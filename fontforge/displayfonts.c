@@ -45,6 +45,10 @@ typedef struct printdlg {
     GTimer *dpichanged;
     GTextInfo *scriptlangs;
     FontView *fv;
+    CharView *cv;
+    SplineSet *fit_to_path;
+    int insert_text;
+    int *done;
 } PD;
 
 static PD *printwindow;
@@ -527,6 +531,13 @@ return( cnt);
 #define CID_Features	2023
 #define CID_DPI		2024
 
+    /* CIDs for Insert Text */
+#define CID_Bind	3001
+#define CID_Scale	3002
+#define CID_Start	3003
+#define CID_Center	3004
+#define CID_End		3005
+
 static void PRT_SetEnabled(PD *pi) {
     int enable_ps;
 
@@ -545,66 +556,104 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	char *file;
 	char buf[100];
 
-	pi->pi.pt = GTabSetGetSel(GWidgetGetControl(pi->gw,CID_TabSet))==0 ? pt_fontsample :
-		   GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Chars))? pt_chars:
-		   GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_MultiSize))? pt_multisize:
-		   pt_fontdisplay;
-	if ( pi->pi.pt==pt_fontdisplay ) {
-	    pi->pi.pointsize = GetInt8(pi->gw,CID_PointSize,_("_Pointsize:"),&err);
+	if ( pi->insert_text ) {
+	    SplineSet *ss, *end;
+	    int bound = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Bind));
+	    int scale = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Scale));
+	    int align = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Start ))? 0 :
+			GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Center))? 1 : 2;
+	    int dpi   = GetInt8(pi->gw,CID_DPI,_("DPI"),&err);
+	    CharView *cv = pi->cv;
+	    /* int size =*/ GetInt8(pi->gw,CID_Size,_("Size"),&err);
 	    if ( err )
 return(true);
-	    if ( pi->pi.pointsize<1 || pi->pi.pointsize>200 ) {
-		ff_post_error(_("Invalid point size"),_("Invalid point size"));
-return(true);
-	    }
-	}
-	if ( pi->pi.printtype==pt_unknown )
-	    if ( !PageSetup(pi))
-return(true);
-
-	if ( pi->pi.printtype==pt_file || pi->pi.printtype==pt_pdf ) {
-	    sprintf(buf,"pr-%.90s.%s", pi->pi.mainsf->fontname,
-		    pi->pi.printtype==pt_file?"ps":"pdf");
-	    ret = gwwv_save_filename(_("Print To File..."),buf,
-		    pi->pi.printtype==pt_pdf?"*.pdf":"*.ps");
-	    if ( ret==NULL )
-return(true);
-	    file = utf82def_copy(ret);
-	    free(ret);
-	    pi->pi.out = fopen(file,"wb");
-	    if ( pi->pi.out==NULL ) {
-		ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
-		free(file);
-return(true);
+	    ss = LIConvertToSplines(&((SFTextArea *) GWidgetGetControl(pi->gw,CID_SampleText))->li,
+		    dpi,cv->b.layerheads[cv->b.drawmode]->order2);
+	    if ( bound && pi->fit_to_path )
+		SplineSetBindToPath(ss,scale,align,pi->fit_to_path);
+	    if ( ss ) {
+		SplineSet *test;
+		CVPreserveState((CharViewBase *) cv);
+		end = NULL;
+		for ( test=ss; test!=NULL; test=test->next ) {
+		    SplinePoint *sp;
+		    end = test;
+		    for ( sp=test->first; ; ) {
+			sp->selected = true;
+			if ( sp->next==NULL )
+		    break;
+			sp = sp->next->to;
+			if ( sp==test->first )
+		    break;
+		    }
+		}
+		end->next = cv->b.layerheads[cv->b.drawmode]->splines;
+		cv->b.layerheads[cv->b.drawmode]->splines = ss;
+		CVCharChangedUpdate((CharViewBase *) cv);
 	    }
 	} else {
-	    file = NULL;
-	    pi->pi.out = tmpfile();
-	    if ( pi->pi.out==NULL ) {
-		ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+	    pi->pi.pt = GTabSetGetSel(GWidgetGetControl(pi->gw,CID_TabSet))==0 ? pt_fontsample :
+		       GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Chars))? pt_chars:
+		       GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_MultiSize))? pt_multisize:
+		       pt_fontdisplay;
+	    if ( pi->pi.pt==pt_fontdisplay ) {
+		pi->pi.pointsize = GetInt8(pi->gw,CID_PointSize,_("_Pointsize:"),&err);
+		if ( err )
 return(true);
+		if ( pi->pi.pointsize<1 || pi->pi.pointsize>200 ) {
+		    ff_post_error(_("Invalid point size"),_("Invalid point size"));
+return(true);
+		}
+	    }
+	    if ( pi->pi.printtype==pt_unknown )
+		if ( !PageSetup(pi))
+return(true);
+
+	    if ( pi->pi.printtype==pt_file || pi->pi.printtype==pt_pdf ) {
+		sprintf(buf,"pr-%.90s.%s", pi->pi.mainsf->fontname,
+			pi->pi.printtype==pt_file?"ps":"pdf");
+		ret = gwwv_save_filename(_("Print To File..."),buf,
+			pi->pi.printtype==pt_pdf?"*.pdf":"*.ps");
+		if ( ret==NULL )
+return(true);
+		file = utf82def_copy(ret);
+		free(ret);
+		pi->pi.out = fopen(file,"wb");
+		if ( pi->pi.out==NULL ) {
+		    ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
+		    free(file);
+return(true);
+		}
+	    } else {
+		file = NULL;
+		pi->pi.out = tmpfile();
+		if ( pi->pi.out==NULL ) {
+		    ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+return(true);
+		}
+	    }
+
+	    pdefs[di].last_cs = pi->pi.mainmap->enc;
+	    pdefs[di].pt = pi->pi.pt;
+	    pdefs[di].pointsize = pi->pi.pointsize;
+
+	    if ( pi->pi.pt==pt_fontsample ) {
+		pi->pi.sample = LIConvertToPrint(
+			&((SFTextArea *) GWidgetGetControl(pi->gw,CID_SampleText))->li,
+			(pagewidth-1*72)*printdpi/72,
+			(pageheight-1*72)*printdpi/72,
+			printdpi);
+	    }
+
+	    DoPrinting(&pi->pi,file);
+	    free(file);
+	    if ( pi->pi.pt==pt_fontsample ) {
+		LayoutInfo_Destroy(pi->pi.sample);
+		free(pi->pi.sample);
 	    }
 	}
 
-	pdefs[di].last_cs = pi->pi.mainmap->enc;
-	pdefs[di].pt = pi->pi.pt;
-	pdefs[di].pointsize = pi->pi.pointsize;
-
-	if ( pi->pi.pt==pt_fontsample ) {
-	    pi->pi.sample = LIConvertToPrint(
-		    &((SFTextArea *) GWidgetGetControl(pi->gw,CID_SampleText))->li,
-		    (pagewidth-1*72)*printdpi/72,
-		    (pageheight-1*72)*printdpi/72,
-		    printdpi);
-	}
-
-	DoPrinting(&pi->pi,file);
-	free(file);
-	if ( pi->pi.pt==pt_fontsample ) {
-	    LayoutInfo_Destroy(pi->pi.sample);
-	    free(pi->pi.sample);
-	}
-
+	*(pi->done) = true;
 	GDrawDestroyWindow(pi->gw);
     }
 return( true );
@@ -809,6 +858,8 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
     else
 	GGadgetSetChecked(GWidgetGetControl(di->gw,CID_bitmap),true);
 
+    if ( script==0 ) script = DEFAULT_SCRIPT;
+    if ( lang  ==0 ) lang   = DEFAULT_LANG;
     buf[0] = script>>24; buf[1] = script>>16; buf[2] = script>>8; buf[3] = script;
     buf[4] = '{';
     buf[5] = lang>>24; buf[6] = lang>>16; buf[7] = lang>>8; buf[8] = lang;
@@ -842,10 +893,12 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	}
 	ti[i]->text = uc_copy(buf);
 	ti[i]->userdata = (void *) (intpt) tags[i];
-	for ( j=0; feats[j]!=0; ++j ) {
-	    if ( feats[j] == tags[i] ) {
-		ti[i]->selected = true;
-	break;
+	if ( feats!=NULL ) {
+	    for ( j=0; feats[j]!=0; ++j ) {
+		if ( feats[j] == tags[i] ) {
+		    ti[i]->selected = true;
+	    break;
+		}
 	    }
 	}
     }
@@ -1075,7 +1128,7 @@ static int DSP_DpiChanged(GGadget *g, GEvent *e) {
 	    !e->u.control.u.tf_focus.gained_focus ) {
 	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
 	int err=false;
-	int dpi = GetInt8(di->gw,CID_DPI,_("_DPI:"),&err);
+	int dpi = GetInt8(di->gw,CID_DPI,_("DPI"),&err);
 	GGadget *sample = GWidgetGetControl(di->gw,CID_SampleText);
 	if ( err || dpi<20 || dpi>300 )
 return( true );
@@ -1234,6 +1287,18 @@ static int DSP_FeaturesChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int PRT_Bind(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	PD *pi = GDrawGetUserData(GGadgetGetWindow(g));
+	int on = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_Scale),on);
+	GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_Start),on);
+	GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_Center),on);
+	GGadgetSetEnabled(GWidgetGetControl(pi->gw,CID_End),on);
+    }
+return( true );
+}
+
 static int DSP_TextChanged(GGadget *g, GEvent *e) {
 return( true );
 }
@@ -1242,6 +1307,7 @@ static int DSP_Done(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
 	PD *di = GDrawGetUserData(gw);
+	*(di->done) = true;
 	GDrawDestroyWindow(di->gw);
     }
 return( true );
@@ -1250,12 +1316,14 @@ return( true );
 static int dsp_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	PD *di = GDrawGetUserData(gw);
+	*(di->done) = true;
 	GDrawDestroyWindow(di->gw);
     } else if ( event->type==et_destroy ) {
 	PD *di = GDrawGetUserData(gw);
 	TextInfoDataFree(di->scriptlangs);
 	free(di);
-	printwindow = NULL;
+	if ( di==printwindow )
+	    printwindow = NULL;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("display.html");
@@ -1278,15 +1346,16 @@ return( false );
 return( true );
 }
     
-void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
+static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
+	int isprint,CharView *cv,SplineSet *fit_to_path) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[18], boxes[15], mgcd[5], pgcd[8], vbox,
+    GGadgetCreateData gcd[18], boxes[15], mgcd[5], pgcd[8], vbox, tgcd[10],
 	    *harray[8], *farray[8], *barray[4],
 	    *barray2[8], *varray[9], *varray2[9], *harray2[5],
 	    *varray3[4][4], *ptarray[4], *varray4[4], *varray5[4][2],
-	    *regenarray[6], *varray6[3];
-    GTextInfo label[18], mlabel[5], plabel[8];
+	    *regenarray[6], *varray6[3], *tarray[12], *alarray[6];
+    GTextInfo label[18], mlabel[5], plabel[8], tlabel[10];
     GTabInfo aspects[3];
     int dpi;
     char buf[12], dpibuf[12], sizebuf[12];
@@ -1296,8 +1365,10 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     unichar_t *temp;
     int cnt;
     int fromwindow = fv!=NULL?0:sc!=NULL?1:2;
+    PD *active;
+    int done = false;
 
-    if ( printwindow!=NULL ) {
+    if ( printwindow!=NULL && isprint ) {
 	GDrawSetVisible(printwindow->gw,true);
 	GDrawRaise(printwindow->gw);
 return;
@@ -1306,34 +1377,43 @@ return;
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
 
-    printwindow = gcalloc(1,sizeof(PD));
-    printwindow->fv = fv;
+    active = gcalloc(1,sizeof(PD));
+    if ( isprint )
+	printwindow = active;
+    active->fv = fv;
 
     if ( mv!=NULL ) {
-	PI_Init(&printwindow->pi,(FontViewBase *) mv->fv,sc);
-	printwindow->pi.mv = mv;
+	PI_Init(&active->pi,(FontViewBase *) mv->fv,sc);
+	active->pi.mv = mv;
     } else
-	PI_Init(&printwindow->pi,(FontViewBase *) fv,sc);
+	PI_Init(&active->pi,(FontViewBase *) fv,sc);
+    active->cv = cv;
+    active->fit_to_path = fit_to_path;
+    active->insert_text = !isprint;
+    active->done = &done;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Print");
+    wattrs.is_dlg = true;
+    wattrs.utf8_window_title = isprint ? _("Print") : _("Insert Text Outlines");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,410));
     pos.height = GDrawPointsToPixels(NULL,330);
-    printwindow->gw = GDrawCreateTopWindow(NULL,&pos,dsp_e_h,printwindow,&wattrs);
+    active->gw = GDrawCreateTopWindow(NULL,&pos,dsp_e_h,active,&wattrs);
 
     memset(&vbox,0,sizeof(vbox));
     memset(&label,0,sizeof(label));
     memset(&mlabel,0,sizeof(mlabel));
     memset(&plabel,0,sizeof(plabel));
+    memset(&tlabel,0,sizeof(tlabel));
     memset(&gcd,0,sizeof(gcd));
     memset(&mgcd,0,sizeof(mgcd));
     memset(&pgcd,0,sizeof(pgcd));
+    memset(&tgcd,0,sizeof(tgcd));
     memset(&boxes,0,sizeof(boxes));
 
     label[0].text = (unichar_t *) sf->fontname;
@@ -1357,7 +1437,10 @@ return;
     gcd[2].gd.label = &label[2];
     gcd[2].gd.pos.x = 210; gcd[2].gd.pos.y = gcd[0].gd.pos.y+6; 
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Select some text, this specifies the pixel\nsize of those characters");
+    if ( isprint )
+	gcd[2].gd.popup_msg = (unichar_t *) _("Select some text, this specifies the point\nsize of those characters");
+    else
+	gcd[2].gd.popup_msg = (unichar_t *) _("Select some text, this specifies the vertical\nsize of those characters in em-units");
     gcd[2].gd.cid = CID_SizeLab;
     gcd[2].creator = GLabelCreate;
     harray[0] = &gcd[2];
@@ -1386,6 +1469,8 @@ return;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup;
     if ( sf->bitmaps!=NULL && ( !hasfreetype || sf->onlybitmaps ))
 	gcd[1].gd.flags = DSP_AAState(sf,bestbdf);
+    if ( !isprint )
+	gcd[1].gd.flags = gg_enabled | gg_cb_on | gg_utf8_popup;
     gcd[1].gd.popup_msg = (unichar_t *) _("Select some text, this controls whether those characters will be\nAntiAlias (greymap) characters, or bitmap characters");
     gcd[1].gd.handle_controlevent = DSP_AAChange;
     gcd[1].gd.cid = CID_AA;
@@ -1480,6 +1565,12 @@ return;
     boxes[3].gd.u.boxelements = farray;
     boxes[3].creator = GHBoxCreate;
     varray[4] = &boxes[3]; varray[5] = NULL;
+    if ( !isprint ) {
+	int k;
+	for ( k=4; k<=9; ++k )
+	    gcd[k].gd.flags &= ~gg_visible;
+	boxes[3].gd.flags = gg_enabled;
+    }
 
     label[10].text = (unichar_t *) "DFLT{dflt}";
     label[10].text_is_1byte = true;
@@ -1489,7 +1580,7 @@ return;
     gcd[10].gd.pos.width = 150;
     gcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[10].gd.cid = CID_ScriptLang;
-    gcd[10].gd.u.list = printwindow->scriptlangs = SLOfFont(sf);
+    gcd[10].gd.u.list = active->scriptlangs = SLOfFont(sf);
     gcd[10].gd.handle_controlevent = DSP_ScriptLangChanged;
     gcd[10].creator = GListFieldCreate;
     varray[6] = &gcd[10]; varray[7] = NULL; varray[8] = NULL;
@@ -1569,6 +1660,11 @@ return;
     gcd[17].gd.label = &label[17];
     gcd[17].gd.handle_controlevent = DSP_Refresh;
     gcd[17].creator = GButtonCreate;
+    if ( !isprint ) {
+	int k;
+	for ( k=14; k<=17; ++k )
+	    gcd[k].gd.flags &= ~gg_visible;
+    }
 
     regenarray[0] = &gcd[15]; regenarray[1] = &gcd[16]; regenarray[2] = GCD_Glue;
     regenarray[3] = &gcd[17]; regenarray[4] = NULL;
@@ -1582,164 +1678,263 @@ return;
     boxes[6].gd.u.boxelements = varray2;
     boxes[6].creator = GHVBoxCreate;
 
-    memset(aspects,0,sizeof(aspects));
-    aspects[0].text = (unichar_t *) _("Display");
-    aspects[0].text_is_1byte = true;
-    aspects[0].gcd = &boxes[6];
+    if ( isprint ) {
+	memset(aspects,0,sizeof(aspects));
+	aspects[0].text = (unichar_t *) _("Display");
+	aspects[0].text_is_1byte = true;
+	aspects[0].gcd = &boxes[6];
 
-    plabel[0].text = (unichar_t *) _("_Full Font Display");
-    plabel[0].text_is_1byte = true;
-    plabel[0].text_in_resource = true;
-    pgcd[0].gd.label = &plabel[0];
-    pgcd[0].gd.pos.x = 12; pgcd[0].gd.pos.y = 6; 
-    pgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    pgcd[0].gd.cid = CID_Display;
-    pgcd[0].gd.handle_controlevent = PRT_RadioSet;
-    pgcd[0].gd.popup_msg = (unichar_t *) _("Displays all the glyphs in the font on a rectangular grid at the given point size");
-    pgcd[0].creator = GRadioCreate;
-    varray3[0][0] = GCD_HPad10; varray3[0][1] = &pgcd[0]; varray3[0][2] = GCD_Glue; varray3[0][3] = NULL;
+	plabel[0].text = (unichar_t *) _("_Full Font Display");
+	plabel[0].text_is_1byte = true;
+	plabel[0].text_in_resource = true;
+	pgcd[0].gd.label = &plabel[0];
+	pgcd[0].gd.pos.x = 12; pgcd[0].gd.pos.y = 6; 
+	pgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	pgcd[0].gd.cid = CID_Display;
+	pgcd[0].gd.handle_controlevent = PRT_RadioSet;
+	pgcd[0].gd.popup_msg = (unichar_t *) _("Displays all the glyphs in the font on a rectangular grid at the given point size");
+	pgcd[0].creator = GRadioCreate;
+	varray3[0][0] = GCD_HPad10; varray3[0][1] = &pgcd[0]; varray3[0][2] = GCD_Glue; varray3[0][3] = NULL;
 
-    cnt = 1;
-    if ( fv!=NULL )
-	cnt = FVSelCount(fv);
-    else if ( mv!=NULL )
-	cnt = mv->glyphcnt;
-    plabel[1].text = (unichar_t *) (cnt==1?_("Full Pa_ge Glyph"):_("Full Pa_ge Glyphs"));
-    plabel[1].text_is_1byte = true;
-    plabel[1].text_in_resource = true;
-    pgcd[1].gd.label = &plabel[1];
-    pgcd[1].gd.flags = (cnt==0 ? (gg_visible | gg_utf8_popup ): (gg_visible | gg_enabled | gg_utf8_popup));
-    pgcd[1].gd.cid = CID_Chars;
-    pgcd[1].gd.handle_controlevent = PRT_RadioSet;
-    pgcd[1].gd.popup_msg = (unichar_t *) _("Displays all the selected characters, each on its own page, at an extremely large point size");
-    pgcd[1].creator = GRadioCreate;
-    varray3[1][0] = GCD_HPad10; varray3[1][1] = &pgcd[1]; varray3[1][2] = GCD_Glue; varray3[1][3] = NULL;
+	cnt = 1;
+	if ( fv!=NULL )
+	    cnt = FVSelCount(fv);
+	else if ( mv!=NULL )
+	    cnt = mv->glyphcnt;
+	plabel[1].text = (unichar_t *) (cnt==1?_("Full Pa_ge Glyph"):_("Full Pa_ge Glyphs"));
+	plabel[1].text_is_1byte = true;
+	plabel[1].text_in_resource = true;
+	pgcd[1].gd.label = &plabel[1];
+	pgcd[1].gd.flags = (cnt==0 ? (gg_visible | gg_utf8_popup ): (gg_visible | gg_enabled | gg_utf8_popup));
+	pgcd[1].gd.cid = CID_Chars;
+	pgcd[1].gd.handle_controlevent = PRT_RadioSet;
+	pgcd[1].gd.popup_msg = (unichar_t *) _("Displays all the selected characters, each on its own page, at an extremely large point size");
+	pgcd[1].creator = GRadioCreate;
+	varray3[1][0] = GCD_HPad10; varray3[1][1] = &pgcd[1]; varray3[1][2] = GCD_Glue; varray3[1][3] = NULL;
 
-    plabel[2].text = (unichar_t *) (cnt==1?_("_Multi Size Glyph"):_("_Multi Size Glyphs"));
-    plabel[2].text_is_1byte = true;
-    plabel[2].text_in_resource = true;
-    pgcd[2].gd.label = &plabel[2];
-    pgcd[2].gd.flags = pgcd[1].gd.flags;
-    pgcd[2].gd.cid = CID_MultiSize;
-    pgcd[2].gd.handle_controlevent = PRT_RadioSet;
-    pgcd[2].gd.popup_msg = (unichar_t *) _("Displays all the selected characters, at several different point sizes");
-    pgcd[2].creator = GRadioCreate;
+	plabel[2].text = (unichar_t *) (cnt==1?_("_Multi Size Glyph"):_("_Multi Size Glyphs"));
+	plabel[2].text_is_1byte = true;
+	plabel[2].text_in_resource = true;
+	pgcd[2].gd.label = &plabel[2];
+	pgcd[2].gd.flags = pgcd[1].gd.flags;
+	pgcd[2].gd.cid = CID_MultiSize;
+	pgcd[2].gd.handle_controlevent = PRT_RadioSet;
+	pgcd[2].gd.popup_msg = (unichar_t *) _("Displays all the selected characters, at several different point sizes");
+	pgcd[2].creator = GRadioCreate;
 
-    if ( pdefs[fromwindow].pt==pt_chars && cnt==0 )
-	pdefs[fromwindow].pt = pt_fontdisplay;
-    if ( pdefs[fromwindow].pt == pt_fontsample )
-	pgcd[pt_fontdisplay].gd.flags |= gg_cb_on;
-    else
-	pgcd[pdefs[fromwindow].pt].gd.flags |= gg_cb_on;
+	if ( pdefs[fromwindow].pt==pt_chars && cnt==0 )
+	    pdefs[fromwindow].pt = pt_fontdisplay;
+	if ( pdefs[fromwindow].pt == pt_fontsample )
+	    pgcd[pt_fontdisplay].gd.flags |= gg_cb_on;
+	else
+	    pgcd[pdefs[fromwindow].pt].gd.flags |= gg_cb_on;
 
-    varray3[2][0] = GCD_HPad10; varray3[2][1] = &pgcd[2]; varray3[2][2] = GCD_Glue; varray3[2][3] = NULL;
-    varray3[3][0] = NULL;
+	varray3[2][0] = GCD_HPad10; varray3[2][1] = &pgcd[2]; varray3[2][2] = GCD_Glue; varray3[2][3] = NULL;
+	varray3[3][0] = NULL;
 
-    boxes[13].gd.flags = gg_enabled|gg_visible;
-    boxes[13].gd.u.boxelements = varray3[0];
-    boxes[13].creator = GHVBoxCreate;
+	boxes[13].gd.flags = gg_enabled|gg_visible;
+	boxes[13].gd.u.boxelements = varray3[0];
+	boxes[13].creator = GHVBoxCreate;
 
-    plabel[3].text = (unichar_t *) _("_Pointsize:");
-    plabel[3].text_is_1byte = true;
-    plabel[3].text_in_resource = true;
-    pgcd[3].gd.label = &plabel[3];
-    pgcd[3].gd.flags = gg_visible | gg_enabled;
-    pgcd[3].gd.cid = CID_PSLab;
-    pgcd[3].creator = GLabelCreate;
-    ptarray[0] = &pgcd[3];
+	plabel[3].text = (unichar_t *) _("_Pointsize:");
+	plabel[3].text_is_1byte = true;
+	plabel[3].text_in_resource = true;
+	pgcd[3].gd.label = &plabel[3];
+	pgcd[3].gd.flags = gg_visible | gg_enabled;
+	pgcd[3].gd.cid = CID_PSLab;
+	pgcd[3].creator = GLabelCreate;
+	ptarray[0] = &pgcd[3];
 
-    sprintf(sizebuf,"%d",printwindow->pi.pointsize);
-    plabel[4].text = (unichar_t *) sizebuf;
-    plabel[4].text_is_1byte = true;
-    pgcd[4].gd.label = &plabel[4];
-    pgcd[4].gd.pos.width = 60;
-    pgcd[4].gd.flags = gg_visible | gg_enabled;
-    pgcd[4].gd.cid = CID_PointSize;
-    pgcd[4].creator = GNumericFieldCreate;
-    ptarray[1] = &pgcd[4]; ptarray[2] = GCD_Glue; ptarray[3] = NULL;
+	sprintf(sizebuf,"%d",active->pi.pointsize);
+	plabel[4].text = (unichar_t *) sizebuf;
+	plabel[4].text_is_1byte = true;
+	pgcd[4].gd.label = &plabel[4];
+	pgcd[4].gd.pos.width = 60;
+	pgcd[4].gd.flags = gg_visible | gg_enabled;
+	pgcd[4].gd.cid = CID_PointSize;
+	pgcd[4].creator = GNumericFieldCreate;
+	ptarray[1] = &pgcd[4]; ptarray[2] = GCD_Glue; ptarray[3] = NULL;
 
-    boxes[8].gd.flags = gg_enabled|gg_visible;
-    boxes[8].gd.u.boxelements = ptarray;
-    boxes[8].creator = GHBoxCreate;
+	boxes[8].gd.flags = gg_enabled|gg_visible;
+	boxes[8].gd.u.boxelements = ptarray;
+	boxes[8].creator = GHBoxCreate;
 
-    varray4[0] = &boxes[13]; varray4[1] = &boxes[8]; varray4[2] = GCD_Glue; varray4[3] = NULL;
-    boxes[9].gd.flags = gg_enabled|gg_visible;
-    boxes[9].gd.u.boxelements = varray4;
-    boxes[9].creator = GVBoxCreate;
+	varray4[0] = &boxes[13]; varray4[1] = &boxes[8]; varray4[2] = GCD_Glue; varray4[3] = NULL;
+	boxes[9].gd.flags = gg_enabled|gg_visible;
+	boxes[9].gd.u.boxelements = varray4;
+	boxes[9].creator = GVBoxCreate;
 
-    aspects[1].text = (unichar_t *) _("Print");
-    aspects[1].text_is_1byte = true;
-    aspects[1].gcd = &boxes[9];
+	aspects[1].text = (unichar_t *) _("Print");
+	aspects[1].text_is_1byte = true;
+	aspects[1].gcd = &boxes[9];
 
-    mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
-    mgcd[0].gd.u.tabs = aspects;
-    mgcd[0].gd.flags = gg_visible | gg_enabled;
-    mgcd[0].gd.cid = CID_TabSet;
-    mgcd[0].creator = GTabSetCreate;
+	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
+	mgcd[0].gd.u.tabs = aspects;
+	mgcd[0].gd.flags = gg_visible | gg_enabled;
+	mgcd[0].gd.cid = CID_TabSet;
+	mgcd[0].creator = GTabSetCreate;
 
-    mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
-    mgcd[1].gd.flags = gg_visible | gg_enabled ;
-    mlabel[1].text = (unichar_t *) _("S_etup");
-    mlabel[1].text_is_1byte = true;
-    mlabel[1].text_in_resource = true;
-    mgcd[1].gd.label = &mlabel[1];
-    mgcd[1].gd.handle_controlevent = PRT_Setup;
-    mgcd[1].creator = GButtonCreate;
-    barray[0] = GCD_Glue; barray[1] = &mgcd[1]; barray[2] = GCD_Glue; barray[3] = NULL;
+	mgcd[1].gd.pos.width = -1; mgcd[1].gd.pos.height = 0;
+	mgcd[1].gd.flags = gg_visible | gg_enabled ;
+	mlabel[1].text = (unichar_t *) _("S_etup");
+	mlabel[1].text_is_1byte = true;
+	mlabel[1].text_in_resource = true;
+	mgcd[1].gd.label = &mlabel[1];
+	mgcd[1].gd.handle_controlevent = PRT_Setup;
+	mgcd[1].creator = GButtonCreate;
+	barray[0] = GCD_Glue; barray[1] = &mgcd[1]; barray[2] = GCD_Glue; barray[3] = NULL;
 
-    boxes[14].gd.flags = gg_enabled|gg_visible;
-    boxes[14].gd.u.boxelements = barray;
-    boxes[14].creator = GHBoxCreate;
+	boxes[14].gd.flags = gg_enabled|gg_visible;
+	boxes[14].gd.u.boxelements = barray;
+	boxes[14].creator = GHBoxCreate;
 
-    mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
-    mgcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    mlabel[2].text = (unichar_t *) _("_Print");
-    mlabel[2].text_is_1byte = true;
-    mlabel[2].text_in_resource = true;
-    mgcd[2].gd.mnemonic = 'O';
-    mgcd[2].gd.label = &mlabel[2];
-    mgcd[2].gd.handle_controlevent = PRT_OK;
-    mgcd[2].gd.cid = CID_OK;
-    mgcd[2].creator = GButtonCreate;
+	mgcd[2].gd.pos.width = -1; mgcd[2].gd.pos.height = 0;
+	mgcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	mlabel[2].text = (unichar_t *) _("_Print");
+	mlabel[2].text_is_1byte = true;
+	mlabel[2].text_in_resource = true;
+	mgcd[2].gd.mnemonic = 'O';
+	mgcd[2].gd.label = &mlabel[2];
+	mgcd[2].gd.handle_controlevent = PRT_OK;
+	mgcd[2].gd.cid = CID_OK;
+	mgcd[2].creator = GButtonCreate;
 
-    mgcd[3].gd.pos.width = -1; mgcd[3].gd.pos.height = 0;
-    mgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    mlabel[3].text = (unichar_t *) _("_Done");
-    mlabel[3].text_is_1byte = true;
-    mlabel[3].text_in_resource = true;
-    mgcd[3].gd.label = &mlabel[3];
-    mgcd[3].gd.cid = CID_Cancel;
-    mgcd[3].gd.handle_controlevent = DSP_Done;
-    mgcd[3].creator = GButtonCreate;
-    barray2[0] = GCD_Glue; barray2[1] = &mgcd[2]; barray2[2] = GCD_Glue;
-    barray2[3] = GCD_Glue; barray2[4] = &mgcd[3]; barray2[5] = GCD_Glue; barray2[6] = NULL;
+	mgcd[3].gd.pos.width = -1; mgcd[3].gd.pos.height = 0;
+	mgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	mlabel[3].text = (unichar_t *) _("_Done");
+	mlabel[3].text_is_1byte = true;
+	mlabel[3].text_in_resource = true;
+	mgcd[3].gd.label = &mlabel[3];
+	mgcd[3].gd.cid = CID_Cancel;
+	mgcd[3].gd.handle_controlevent = DSP_Done;
+	mgcd[3].creator = GButtonCreate;
+	barray2[0] = GCD_Glue; barray2[1] = &mgcd[2]; barray2[2] = GCD_Glue;
+	barray2[3] = GCD_Glue; barray2[4] = &mgcd[3]; barray2[5] = GCD_Glue; barray2[6] = NULL;
 
-    boxes[11].gd.flags = gg_enabled|gg_visible;
-    boxes[11].gd.u.boxelements = barray2;
-    boxes[11].creator = GHBoxCreate;
+	boxes[11].gd.flags = gg_enabled|gg_visible;
+	boxes[11].gd.u.boxelements = barray2;
+	boxes[11].creator = GHBoxCreate;
 
-    varray5[0][0] = &mgcd[0]; varray5[0][1] = NULL;
-    varray5[1][0] = &boxes[14]; varray5[1][1] = NULL;
-    varray5[2][0] = &boxes[11]; varray5[2][1] = NULL;
-    varray5[3][0] = NULL;
+	varray5[0][0] = &mgcd[0]; varray5[0][1] = NULL;
+	varray5[1][0] = &boxes[14]; varray5[1][1] = NULL;
+	varray5[2][0] = &boxes[11]; varray5[2][1] = NULL;
+	varray5[3][0] = NULL;
 
-    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-    boxes[0].gd.flags = gg_enabled|gg_visible;
-    boxes[0].gd.u.boxelements = varray5[0];
-    boxes[0].creator = GHVGroupCreate;
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray5[0];
+	boxes[0].creator = GHVGroupCreate;
+    } else {
+	tarray[0] = &boxes[6]; tarray[1] = NULL;
 
-    GGadgetsCreate(printwindow->gw,boxes);
+	tgcd[0].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled | gg_cb_on);
+	tlabel[0].text = (unichar_t *) _("Bind to Path");
+	tlabel[0].text_is_1byte = true;
+	tlabel[0].text_in_resource = true;
+	tgcd[0].gd.label = &tlabel[0];
+	tgcd[0].gd.handle_controlevent = PRT_Bind;
+	tgcd[0].gd.cid = CID_Bind;
+	tgcd[0].creator = GCheckBoxCreate;
+	tarray[2] = &tgcd[0]; tarray[3] = NULL;
+
+	tgcd[1].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled | gg_cb_on);
+	tlabel[1].text = (unichar_t *) _("Scale so text width matches path length");
+	tlabel[1].text_is_1byte = true;
+	tlabel[1].text_in_resource = true;
+	tgcd[1].gd.label = &tlabel[1];
+	tgcd[1].gd.cid = CID_Scale;
+	tgcd[1].creator = GCheckBoxCreate;
+	tarray[4] = &tgcd[1]; tarray[5] = NULL;
+
+	tgcd[2].gd.flags = gg_visible | gg_enabled;
+	tlabel[2].text = (unichar_t *) _("Align:");
+	tlabel[2].text_is_1byte = true;
+	tlabel[2].text_in_resource = true;
+	tgcd[2].gd.label = &tlabel[2];
+	tgcd[2].creator = GLabelCreate;
+	alarray[0] = &tgcd[2];
+
+	tgcd[3].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled | gg_cb_on);
+	tlabel[3].text = (unichar_t *) _("At Start");
+	tlabel[3].text_is_1byte = true;
+	tlabel[3].text_in_resource = true;
+	tgcd[3].gd.label = &tlabel[3];
+	tgcd[3].gd.cid = CID_Start;
+	tgcd[3].creator = GRadioCreate;
+	alarray[1] = &tgcd[3];
+
+	tgcd[4].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled);
+	tlabel[4].text = (unichar_t *) _("Centered");
+	tlabel[4].text_is_1byte = true;
+	tlabel[4].text_in_resource = true;
+	tgcd[4].gd.label = &tlabel[4];
+	tgcd[4].gd.cid = CID_Center;
+	tgcd[4].creator = GRadioCreate;
+	alarray[2] = &tgcd[4];
+
+	tgcd[5].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled);
+	tlabel[5].text = (unichar_t *) _("At End");
+	tlabel[5].text_is_1byte = true;
+	tlabel[5].text_in_resource = true;
+	tgcd[5].gd.label = &tlabel[5];
+	tgcd[5].gd.cid = CID_End;
+	tgcd[5].creator = GRadioCreate;
+	alarray[3] = &tgcd[5];
+	alarray[4] = GCD_Glue; alarray[5] = NULL;
+
+	boxes[8].gd.flags = gg_enabled|gg_visible;
+	boxes[8].gd.u.boxelements = alarray;
+	boxes[8].creator = GHBoxCreate;
+	tarray[6] = &boxes[8]; tarray[7] = NULL;
+
+	tgcd[6].gd.pos.width = -1; tgcd[6].gd.pos.height = 0;
+	tgcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	tlabel[6].text = (unichar_t *) _("_Insert");
+	tlabel[6].text_is_1byte = true;
+	tlabel[6].text_in_resource = true;
+	tgcd[6].gd.mnemonic = 'O';
+	tgcd[6].gd.label = &tlabel[6];
+	tgcd[6].gd.handle_controlevent = PRT_OK;
+	tgcd[6].gd.cid = CID_OK;
+	tgcd[6].creator = GButtonCreate;
+
+	tgcd[7].gd.pos.width = -1; tgcd[7].gd.pos.height = 0;
+	tgcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	tlabel[7].text = (unichar_t *) _("_Cancel");
+	tlabel[7].text_is_1byte = true;
+	tlabel[7].text_in_resource = true;
+	tgcd[7].gd.label = &tlabel[7];
+	tgcd[7].gd.cid = CID_Cancel;
+	tgcd[7].gd.handle_controlevent = DSP_Done;
+	tgcd[7].creator = GButtonCreate;
+	barray2[0] = GCD_Glue; barray2[1] = &tgcd[6]; barray2[2] = GCD_Glue;
+	barray2[3] = GCD_Glue; barray2[4] = &tgcd[7]; barray2[5] = GCD_Glue; barray2[6] = NULL;
+
+	boxes[11].gd.flags = gg_enabled|gg_visible;
+	boxes[11].gd.u.boxelements = barray2;
+	boxes[11].creator = GHBoxCreate;
+	tarray[8] = &boxes[11]; tarray[9] = NULL; tarray[10] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = tarray;
+	boxes[0].creator = GHVGroupCreate;
+    }
+
+    GGadgetsCreate(active->gw,boxes);
     GListSetSBAlwaysVisible(gcd[11].ret,true);
     GListSetPopupCallback(gcd[11].ret,MV_FriendlyFeatures);
 
     GTextInfoListFree(gcd[0].gd.u.list);
-    DSP_SetFont(printwindow,true);
-    SFTFSetDPI(gcd[13].ret,dpi);
-    temp = PrtBuildDef(sf,&((SFTextArea *) gcd[13].ret)->li,
-	    (void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
-    GGadgetSetTitle(gcd[13].ret, temp);
-    free(temp);
-    SFTFRegisterCallback(gcd[13].ret,printwindow,DSP_ChangeFontCallback);
+    DSP_SetFont(active,true);
+    if ( isprint ) {
+	SFTFSetDPI(gcd[13].ret,dpi);
+	temp = PrtBuildDef(sf,&((SFTextArea *) gcd[13].ret)->li,
+		(void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
+	GGadgetSetTitle(gcd[13].ret, temp);
+	free(temp);
+    }
+    SFTFRegisterCallback(gcd[13].ret,active,DSP_ChangeFontCallback);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
@@ -1747,20 +1942,66 @@ return;
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
     GHVBoxSetExpandableRow(boxes[6].ret,1);
-    GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[8].ret,gb_expandglue);
-    GHVBoxSetExpandableRow(boxes[9].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[14].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[11].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[12].ret,gb_expandglue);
-    GHVBoxSetExpandableRow(vbox.ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[11].ret,gb_expandglue);
+    if ( isprint ) {
+	GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[8].ret,gb_expandglue);
+	GHVBoxSetExpandableRow(boxes[9].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[14].ret,gb_expandglue);
+	GHVBoxSetExpandableRow(vbox.ret,gb_expandglue);
+    } else {
+	GHVBoxSetExpandableCol(boxes[8].ret,gb_expandglue);
+    }
     GHVBoxFitWindow(boxes[0].ret);
 
     SFTextAreaSelect(gcd[13].ret,0,0);
     SFTextAreaShow(gcd[13].ret,0);
     SFTFProvokeCallback(gcd[13].ret);
 
-    GDrawSetVisible(printwindow->gw,true);
+    GDrawSetVisible(active->gw,true);
+    if ( !isprint ) {
+	while ( !done )
+	    GDrawProcessOneEvent(NULL);
+    }
+}
+
+void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
+    _PrintDlg(fv,sc,mv,true,NULL,NULL);
+}
+
+static SplineSet *OnePathSelected(CharView *cv) {
+    RefChar *rf;
+    SplineSet *ss, *sel=NULL;
+    SplinePoint *sp;
+
+    for ( ss = cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		if ( sel==NULL )
+		    sel = ss;
+		else if ( sel!=ss )
+return( NULL );
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( sel==NULL )
+return( NULL );
+
+    for ( rf = cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
+	if ( rf->selected )
+return( NULL );
+    }
+return( sel );
+}
+
+void InsertTextDlg(CharView *cv) {
+    _PrintDlg(NULL,cv->b.sc,NULL,false,cv,OnePathSelected(cv));
 }
 
 void PrintWindowClose(void) {

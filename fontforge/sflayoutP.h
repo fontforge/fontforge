@@ -109,6 +109,7 @@ extern FontData *LI_FindFontData(LayoutInfo *li, SplineFont *sf,
 extern FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret);
 extern void LayoutInfoInitLangSys(LayoutInfo *li, int end, uint32 script, uint32 lang);
 extern LayoutInfo *LIConvertToPrint(LayoutInfo *li, int width, int height, int dpi);
+extern SplineSet *LIConvertToSplines(LayoutInfo *li,double dpi,int order2);
 extern void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width);
 extern struct fontlist *LI_BreakFontList(LayoutInfo *li,int start,int end);
 extern int LI_SetFontData(LayoutInfo *li, int start, int end, SplineFont *sf,

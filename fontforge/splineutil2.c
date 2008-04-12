@@ -1100,6 +1100,190 @@ double SplineLengthRange(Spline *spline,real from_t, real to_t) {
 return( len );
 }
 
+double PathLength(SplineSet *ss) {
+    Spline *s, *first=NULL;
+    double len=0;
+
+    for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	len += SplineLength(s);
+	if ( first==NULL )
+	    first = s;
+    }
+return( len );
+}
+
+Spline *PathFindDistance(SplineSet *path,double d,double *_t) {
+    Spline *s, *first=NULL, *last=NULL;
+    double len=0, diff;
+    double curx, cury;
+    double t;
+
+    for ( s=path->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	double lastx = 0, lasty = 0;
+	for ( t=1.0/128; t<=1.0001 ; t+=1.0/128 ) {
+	    curx = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t;
+	    cury = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t;
+	    diff = sqrt( (curx-lastx)*(curx-lastx) + (cury-lasty)*(cury-lasty) );
+	    lastx = curx; lasty = cury;
+	    if ( len+diff>=d ) {
+		d -= len;
+		*_t = t - (diff-d)/diff * (1.0/128);
+		if ( *_t<0 ) *_t=0;
+		if ( *_t>1 ) *_t = 1;
+return( s );
+	    }
+	    len += diff;
+	}
+	if ( first==NULL )
+	    first = s;
+	last = s;
+    }
+    *_t = 1;
+return( last );
+}
+
+static void SplinePointBindToPath(SplinePoint *sp,SplineSet *path) {
+    Spline *s;
+    double t;
+    BasePoint pos, slope, ntemp, ptemp;
+    double len;
+
+    s = PathFindDistance(path,sp->me.x,&t);
+    pos.x = ((s->splines[0].a*t + s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+    pos.y = ((s->splines[1].a*t + s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+    slope.x = (3*s->splines[0].a*t + 2*s->splines[0].b)*t+s->splines[0].c;
+    slope.y = (3*s->splines[1].a*t + 2*s->splines[1].b)*t+s->splines[1].c;
+    len = sqrt(slope.x*slope.x + slope.y*slope.y);
+    if ( len!=0 ) {
+	slope.x /= len;
+	slope.y /= len;
+    }
+
+    /* Now I could find a separate transformation matrix for the control points*/
+    /* but I think that would look odd (formerly smooth joints could become */
+    /* discontiguous) so I use the same transformation for all */
+    /* Except that doesn't work for order2 (I'll fix that later) */
+
+    ntemp.x = (sp->nextcp.x-sp->me.x)*slope.x - (sp->nextcp.y-sp->me.y)*slope.y;
+    ntemp.y = (sp->nextcp.x-sp->me.x)*slope.y + (sp->nextcp.y-sp->me.y)*slope.x;
+    ptemp.x = (sp->prevcp.x-sp->me.x)*slope.x - (sp->prevcp.y-sp->me.y)*slope.y;
+    ptemp.y = (sp->prevcp.x-sp->me.x)*slope.y + (sp->prevcp.y-sp->me.y)*slope.x;
+    sp->me.x = pos.x - sp->me.y*slope.y;
+    sp->me.y = pos.y + sp->me.y*slope.x;
+    sp->nextcp.x = sp->me.x + ntemp.x;
+    sp->nextcp.y = sp->me.y + ntemp.y;
+    sp->prevcp.x = sp->me.x + ptemp.x;
+    sp->prevcp.y = sp->me.y + ptemp.y;
+}
+
+static Spline *SplineBindToPath(Spline *s,SplineSet *path) {
+    /* OK. The endpoints and the control points have already been moved. */
+    /*  But the transformation is potentially non-linear, so figure some */
+    /*  intermediate values, and then approximate a new spline based on them */
+    TPoint mids[3];
+    double t, pt,len;
+    int i;
+    BasePoint spos, pos, slope;
+    Spline *ps, *ret;
+
+    for ( i=0, t=.25; i<3 ; t += .25, ++i ) {
+	spos.x = ((s->splines[0].a*t + s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+	spos.y = ((s->splines[1].a*t + s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+	ps = PathFindDistance(path,spos.x,&pt);
+	pos.x = ((ps->splines[0].a*pt + ps->splines[0].b)*pt+ps->splines[0].c)*pt+ps->splines[0].d;
+	pos.y = ((ps->splines[1].a*pt + ps->splines[1].b)*pt+ps->splines[1].c)*pt+ps->splines[1].d;
+	slope.x = (3*ps->splines[0].a*pt + 2*ps->splines[0].b)*pt+ps->splines[0].c;
+	slope.y = (3*ps->splines[1].a*pt + 2*ps->splines[1].b)*pt+ps->splines[1].c;
+	len = sqrt(slope.x*slope.x + slope.y*slope.y);
+	if ( len!=0 ) {
+	    slope.x /= len;
+	    slope.y /= len;
+	}
+	mids[i].t = t;
+	mids[i].x = pos.x - spos.y*slope.y;
+	mids[i].y = pos.y + spos.y*slope.x;
+    }
+    ret = ApproximateSplineFromPointsSlopes(s->from,s->to,mids,i,false);
+    SplineFree(s);
+return( ret );
+}
+
+SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int align,SplineSet *path) {
+    DBounds b;
+    real transform[6];
+    double pathlength = PathLength(path);
+    SplineSet *spl;
+    SplinePoint *sp;
+    Spline *s, *first;
+    int order2 = -1;
+    BasePoint cp;
+
+    memset(transform,0,sizeof(transform));
+    transform[0] = transform[3] = 1;
+    SplineSetFindBounds(ss,&b);
+    
+    if ( doscale && b.maxx-b.minx!=0 ) {
+	transform[0] = transform[3] = pathlength/(b.maxx-b.minx);
+	transform[4] = -b.minx;
+    } else if ( align == 0 ) {	/* At start */
+	transform[4] = -b.minx;
+    } else if ( align == 1 ) {	/* Centered */
+	transform[4] = (pathlength-(b.maxx-b.minx))/2 - b.minx;
+    } else {			/* At end */
+	transform[4] = pathlength - b.maxx;
+    }
+    if ( pathlength==0 ) {
+	transform[4] += path->first->me.x;
+	transform[5] += path->first->me.y;
+    }
+    SplinePointListTransform(ss,transform,true);
+    if ( pathlength==0 )
+return( ss );
+
+    for ( spl = ss; spl!=NULL ; spl=spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    SplinePointBindToPath(sp,path);
+	    if ( sp->next==NULL )
+	break;
+	    order2 = sp->next->order2;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+    if ( order2==1 ) {
+	for ( spl = ss; spl!=NULL ; spl=spl->next ) {
+	    for ( sp = spl->first; ; ) {
+		if ( !sp->noprevcp && sp->prev!=NULL ) {
+		    if ( !IntersectLines(&cp,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me)) {
+			cp.x = (sp->prevcp.x+sp->prev->from->nextcp.x)/2;
+			cp.y = (sp->prevcp.y+sp->prev->from->nextcp.y)/2;
+		    }
+		    sp->prevcp = sp->prev->from->nextcp = cp;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+
+    for ( spl = ss; spl!=NULL ; spl=spl->next ) {
+	first = NULL;
+	for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( s->order2 )
+		SplineRefigure2(s);
+	    else
+		s = SplineBindToPath(s,path);
+	    if ( first==NULL )
+		first = s;
+	}
+    }
+return( ss );
+}
+
 static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	int *tot) {
     int cnt, i, j, pcnt;
