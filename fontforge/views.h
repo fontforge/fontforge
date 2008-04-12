@@ -605,6 +605,7 @@ extern int DebuggingFpgm(struct debugger_context *dc);
 
 extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 extern void PrintWindowClose(void);
+extern void InsertTextDlg(CharView *cv);
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
 extern char *PST2Text(PST *pst,SplineFont *sf);

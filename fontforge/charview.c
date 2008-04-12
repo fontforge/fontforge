@@ -4885,6 +4885,7 @@ return( true );
 #define MID_Align		2246
 #define MID_FontInfo		2247
 #define MID_FindProblems	2248
+#define MID_InsertText		2249
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -7819,6 +7820,11 @@ return;
 	CVCharChangedUpdate(&cv->b);
 }
 
+static void CVMenuInsertText(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    InsertTextDlg(cv);
+}
+
 static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVGetInfo(cv);
@@ -9049,6 +9055,8 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Cloc_kwise"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Clockwise },
     { { (unichar_t *) N_("Cou_nter Clockwise"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'n' }, H_("Counter Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Counter },
     { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, CVMenuCorrectDir, MID_Correct },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Insert Text Outlines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Insert Text Outlines|No Shortcut"), NULL, NULL, CVMenuInsertText, MID_InsertText },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("B_uild"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, NULL, balist, balistcheck, NULL, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

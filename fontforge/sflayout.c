@@ -977,6 +977,44 @@ LayoutInfo *LIConvertToPrint(LayoutInfo *li, int width, int height, int dpi) {
 return( print );
 }
 
+SplineSet *LIConvertToSplines(LayoutInfo *li,double dpi,int order2) {
+    SplineSet *ss, *base, *head=NULL, *last=NULL;
+    double y = 0, x;
+    int l, i;
+    real transform[6];
+
+    transform[1] = transform[2] = 0;
+
+    for ( l=0; l<li->lcnt; ++l ) {
+	struct opentype_str **line = li->lines[l];
+	y = li->lineheights[l].y;
+	x = 0;
+
+	for ( i=0; line[i]!=NULL; ++i ) {
+	    SplineChar *sc = line[i]->sc;
+	    FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
+	    base = LayerAllSplines(&sc->layers[ly_fore]);
+	    ss = SplinePointListCopy(base);
+	    LayerUnAllSplines(&sc->layers[ly_fore]);
+	    if ( sc->layers[ly_fore].order2!=order2 )
+		ss = SplineSetsConvertOrder(ss,order2);
+
+	    transform[0] = transform[3] = fd->pointsize*dpi/72.0/(fd->sf->ascent+fd->sf->descent);
+	    transform[4] = x + line[i]->vr.xoff;
+	    transform[5] = y - (line[i]->vr.yoff + line[i]->bsln_off);
+	    ss = SplinePointListTransform(ss,transform,true);
+	    if ( head==NULL )
+		head = ss;
+	    else
+		last->next = ss;
+	    if ( ss!=NULL )
+		for ( last=ss ; last->next!=NULL; last=last->next );
+	    x += line[i]->advance_width + line[i]->vr.h_adv_off;
+	}
+    }
+return( head );
+}
+
 #include "scripting.h"
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     LayoutInfo *li = gcalloc(1,sizeof(LayoutInfo));
