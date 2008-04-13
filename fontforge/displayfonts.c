@@ -43,18 +43,22 @@ typedef struct printdlg {
     GWindow setup;
     GTimer *sizechanged;
     GTimer *dpichanged;
+    GTimer *widthchanged;
+    GTimer *resized;
     GTextInfo *scriptlangs;
     FontView *fv;
     CharView *cv;
     SplineSet *fit_to_path;
     uint8 script_unknown;
     uint8 insert_text;
+    uint8 ready;
     int *done;
 } PD;
 
 static PD *printwindow;
 
 static int lastdpi=0;
+static unichar_t *old_bind_text = NULL;
 
 /* ************************************************************************** */
 /* *********************** Code for Page Setup dialog *********************** */
@@ -531,6 +535,7 @@ return( cnt);
 #define CID_ScriptLang	2022
 #define CID_Features	2023
 #define CID_DPI		2024
+#define CID_TopBox	2025
 
     /* CIDs for Insert Text */
 #define CID_Bind	3001
@@ -538,6 +543,9 @@ return( cnt);
 #define CID_Start	3003
 #define CID_Center	3004
 #define CID_End		3005
+#define CID_TextWidth	3006
+#define CID_YOffset	3007
+#define CID_GlyphAsUnit	3008
 
 static void PRT_SetEnabled(PD *pi) {
     int enable_ps;
@@ -561,17 +569,27 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	    SplineSet *ss, *end;
 	    int bound = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Bind));
 	    int scale = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Scale));
+	    int gunit = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_GlyphAsUnit));
 	    int align = GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Start ))? 0 :
 			GGadgetIsChecked(GWidgetGetControl(pi->gw,CID_Center))? 1 : 2;
-	    int dpi   = GetInt8(pi->gw,CID_DPI,_("DPI"),&err);
+	    int width = GetInt8(pi->gw,CID_TextWidth,_("Width"),&err);
+	    real offset = GetReal8(pi->gw,CID_YOffset,_("Offset"),&err);
 	    CharView *cv = pi->cv;
+	    LayoutInfo *sample;
+	    /* int dpi  =*/ GetInt8(pi->gw,CID_DPI,_("DPI"),&err);
 	    /* int size =*/ GetInt8(pi->gw,CID_Size,_("Size"),&err);
 	    if ( err )
 return(true);
-	    ss = LIConvertToSplines(&((SFTextArea *) GWidgetGetControl(pi->gw,CID_SampleText))->li,
-		    dpi,cv->b.layerheads[cv->b.drawmode]->order2);
+	    free(old_bind_text);
+	    old_bind_text = GGadgetGetTitle(GWidgetGetControl(pi->gw,CID_SampleText));
+	    sample = LIConvertToPrint(
+			&((SFTextArea *) GWidgetGetControl(pi->gw,CID_SampleText))->li,
+			width, 50000, 72 );
+	    ss = LIConvertToSplines(sample, 72,cv->b.layerheads[cv->b.drawmode]->order2);
+	    LayoutInfo_Destroy(sample);
+	    free(sample);
 	    if ( bound && pi->fit_to_path )
-		SplineSetBindToPath(ss,scale,align,pi->fit_to_path);
+		SplineSetBindToPath(ss,scale,gunit,align,offset,pi->fit_to_path);
 	    if ( ss ) {
 		SplineSet *test;
 		CVPreserveState((CharViewBase *) cv);
@@ -1124,6 +1142,56 @@ static void DSP_SizeChangedTimer(PD *di) {
 }
 
 
+static int DSP_WidthChanged(GGadget *g, GEvent *e) {
+    if ( e==NULL ||
+	    (e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
+	     !e->u.control.u.tf_focus.gained_focus )) {
+	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
+	int err=false;
+	int width = GetInt8(di->gw,CID_TextWidth,_("Width"),&err);
+	GGadget *sample = GWidgetGetControl(di->gw,CID_SampleText);
+	GRect outer;
+	int bp;
+	if ( err || width<20 || width>2000 )
+return( true );
+	if ( !di->ready )
+return( true );
+	bp = GBoxBorderWidth(di->gw,sample->box);
+	GGadgetGetSize(sample,&outer);
+	outer.width = rint(width*lastdpi/72.0)+2*bp;
+	GGadgetSetDesiredSize(sample,&outer,NULL);
+	GHVBoxFitWindow(GWidgetGetControl(di->gw,CID_TopBox));
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	/* Don't change the font on each change to the text field, that might */
+	/*  look rather odd. But wait until we think they may have finished */
+	/*  typing. Either when they change the focus (above) or when they */
+	/*  just don't do anything for a while */
+	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( di->widthchanged!=NULL )
+	    GDrawCancelTimer(di->widthchanged);
+	di->widthchanged = GDrawRequestTimer(di->gw,600,0,NULL);
+    }
+return( true );
+}
+
+static void DSP_WidthChangedTimer(PD *di) {
+
+    di->widthchanged = NULL;
+    DSP_WidthChanged(GWidgetGetControl(di->gw,CID_TextWidth),NULL);
+}
+
+static void DSP_JustResized(PD *di) {
+    GGadget *sample = GWidgetGetControl(di->gw,CID_SampleText);
+    GGadget *widthfield = GWidgetGetControl(di->gw,CID_TextWidth);
+    char buffer[20];
+
+    di->resized = NULL;
+    if ( lastdpi!=0 && widthfield!=NULL ) {
+	sprintf( buffer, "%d", (int) rint( sample->inner.width*72/lastdpi ));
+	GGadgetSetTitle8(widthfield,buffer);
+    }
+}
+
 static int DSP_DpiChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
 	    !e->u.control.u.tf_focus.gained_focus ) {
@@ -1131,13 +1199,20 @@ static int DSP_DpiChanged(GGadget *g, GEvent *e) {
 	int err=false;
 	int dpi = GetInt8(di->gw,CID_DPI,_("DPI"),&err);
 	GGadget *sample = GWidgetGetControl(di->gw,CID_SampleText);
+	GGadget *widthfield = GWidgetGetControl(di->gw,CID_TextWidth);
 	if ( err || dpi<20 || dpi>300 )
 return( true );
-	if ( sample==NULL )
+	if ( !di->ready )
 return( true );		/* Happens during startup */
+	if ( lastdpi==dpi )
+return( true );
 	SFTFSetDPI(sample,dpi);
 	lastdpi = dpi;
-	GGadgetRedraw(sample);
+	if ( widthfield!=NULL ) {
+	    DSP_WidthChanged(widthfield,NULL);
+	} else {
+	    GGadgetRedraw(sample);
+	}
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	/* Don't change the font on each change to the text field, that might */
 	/*  look rather odd. But wait until we think they may have finished */
@@ -1301,7 +1376,8 @@ return( true );
 }
 
 static int DSP_TextChanged(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e==NULL ||
+	    (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
 	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *txt = _GGadgetGetTitle(g);
 	const unichar_t *pt;
@@ -1381,6 +1457,15 @@ return( false );
 	    DSP_SizeChangedTimer(di);
 	else if ( event->u.timer.timer==di->dpichanged )
 	    DSP_DpiChangedTimer(di);
+	else if ( event->u.timer.timer==di->widthchanged )
+	    DSP_WidthChangedTimer(di);
+	else if ( event->u.timer.timer==di->resized )
+	    DSP_JustResized(di);
+    } else if ( event->type==et_resize ) {
+	PD *di = GDrawGetUserData(gw);
+	if ( di->resized!=NULL )
+	    GDrawCancelTimer(di->resized);
+	di->resized = GDrawRequestTimer(di->gw,300,0,NULL);
     }
 return( true );
 }
@@ -1389,15 +1474,16 @@ static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
 	int isprint,CharView *cv,SplineSet *fit_to_path) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[18], boxes[15], mgcd[5], pgcd[8], vbox, tgcd[10],
+    GGadgetCreateData gcd[19], boxes[15], mgcd[5], pgcd[8], vbox, tgcd[14],
 	    *harray[8], *farray[8], *barray[4],
 	    *barray2[8], *varray[9], *varray2[9], *harray2[5],
 	    *varray3[4][4], *ptarray[4], *varray4[4], *varray5[4][2],
-	    *regenarray[6], *varray6[3], *tarray[12], *alarray[6];
-    GTextInfo label[18], mlabel[5], plabel[8], tlabel[10];
+	    *regenarray[8], *varray6[3], *tarray[18], *alarray[6],
+	    *patharray[5], *oarray[4];
+    GTextInfo label[19], mlabel[5], plabel[8], tlabel[14];
     GTabInfo aspects[3];
     int dpi;
-    char buf[12], dpibuf[12], sizebuf[12];
+    char buf[12], dpibuf[12], sizebuf[12], widthbuf[12], pathlen[32];
     SplineFont *sf = fv!=NULL ? fv->b.sf : sc!=NULL ? sc->parent : mv->fv->b.sf;
     int hasfreetype = hasFreeType();
     BDFFont *bestbdf=DSP_BestMatch(sf,true,12);
@@ -1406,6 +1492,7 @@ static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
     int fromwindow = fv!=NULL?0:sc!=NULL?1:2;
     PD *active;
     int done = false;
+    int width = 300;
 
     if ( printwindow!=NULL && isprint ) {
 	GDrawSetVisible(printwindow->gw,true);
@@ -1677,9 +1764,8 @@ return;
     gcd[15].creator = GLabelCreate;
 
     if ( lastdpi==0 )
-	dpi = GDrawPointsToPixels(NULL,72);
-    else
-	dpi = lastdpi;
+	lastdpi = GDrawPointsToPixels(NULL,72);
+    dpi = lastdpi;
     sprintf( dpibuf, "%d", dpi );
     label[16].text = (unichar_t *) dpibuf;
     label[16].text_is_1byte = true;
@@ -1691,22 +1777,38 @@ return;
     gcd[16].gd.handle_controlevent = DSP_DpiChanged;
     gcd[16].creator = GNumericFieldCreate;
 
-    gcd[17].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
-    gcd[17].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
-    label[17].text = (unichar_t *) _("_Refresh");
-    label[17].text_is_1byte = true;
-    label[17].text_in_resource = true;
-    gcd[17].gd.label = &label[17];
-    gcd[17].gd.handle_controlevent = DSP_Refresh;
-    gcd[17].creator = GButtonCreate;
-    if ( !isprint ) {
-	int k;
-	for ( k=14; k<=17; ++k )
-	    gcd[k].gd.flags &= ~gg_visible;
-    }
-
     regenarray[0] = &gcd[15]; regenarray[1] = &gcd[16]; regenarray[2] = GCD_Glue;
-    regenarray[3] = &gcd[17]; regenarray[4] = NULL;
+    if ( isprint ) {
+	gcd[17].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
+	gcd[17].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
+	label[17].text = (unichar_t *) _("_Refresh");
+	label[17].text_is_1byte = true;
+	label[17].text_in_resource = true;
+	gcd[17].gd.label = &label[17];
+	gcd[17].gd.handle_controlevent = DSP_Refresh;
+	gcd[17].creator = GButtonCreate;
+	regenarray[3] = &gcd[17]; regenarray[4] = NULL;
+    } else {
+	label[17].text = (unichar_t *) "Text Width:";
+	label[17].text_is_1byte = true;
+	gcd[17].gd.label = &label[17];
+	gcd[17].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[17].gd.popup_msg = (unichar_t *) _("The text will wrap to a new line after this many em-units");
+	gcd[17].creator = GLabelCreate;
+
+	sprintf( widthbuf, "%d", width );
+	label[18].text = (unichar_t *) widthbuf;
+	label[18].text_is_1byte = true;
+	gcd[18].gd.label = &label[18];
+	gcd[18].gd.pos.width = 50;
+	gcd[18].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[18].gd.popup_msg = (unichar_t *) _("The text will wrap to a new line after this many em-units");
+	gcd[18].gd.cid = CID_TextWidth;
+	gcd[18].gd.handle_controlevent = DSP_WidthChanged;
+	gcd[18].creator = GNumericFieldCreate;
+	regenarray[3] = &gcd[17]; regenarray[4] = &gcd[18]; regenarray[5] = NULL;
+	gcd[13].gd.pos.width = GDrawPixelsToPoints(NULL,width*dpi/72);
+    }
 
     boxes[12].gd.flags = gg_enabled|gg_visible;
     boxes[12].gd.u.boxelements = regenarray;
@@ -1862,6 +1964,7 @@ return;
 	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
 	boxes[0].gd.flags = gg_enabled|gg_visible;
 	boxes[0].gd.u.boxelements = varray5[0];
+	boxes[0].gd.cid = CID_TopBox;
 	boxes[0].creator = GHVGroupCreate;
     } else {
 	tarray[0] = &boxes[6]; tarray[1] = NULL;
@@ -1874,89 +1977,145 @@ return;
 	tgcd[0].gd.handle_controlevent = PRT_Bind;
 	tgcd[0].gd.cid = CID_Bind;
 	tgcd[0].creator = GCheckBoxCreate;
-	tarray[2] = &tgcd[0]; tarray[3] = NULL;
+	patharray[0] = &tgcd[0]; patharray[1] = GCD_Glue;
 
-	tgcd[1].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled | gg_cb_on);
-	tlabel[1].text = (unichar_t *) _("Scale so text width matches path length");
+	if ( fit_to_path==NULL ) {
+	    tgcd[1].gd.flags = 0;
+	    strcpy(pathlen,"0");
+	} else {
+	    tgcd[1].gd.flags = gg_visible | gg_enabled;
+	    sprintf(pathlen, _("Path Length: %g"), PathLength(fit_to_path));
+	}
+	tlabel[1].text = (unichar_t *) pathlen;
 	tlabel[1].text_is_1byte = true;
 	tlabel[1].text_in_resource = true;
 	tgcd[1].gd.label = &tlabel[1];
-	tgcd[1].gd.cid = CID_Scale;
-	tgcd[1].creator = GCheckBoxCreate;
-	tarray[4] = &tgcd[1]; tarray[5] = NULL;
+	tgcd[1].creator = GLabelCreate;
+	patharray[2] = &tgcd[1]; patharray[3] = NULL;
 
-	tgcd[2].gd.flags = gg_visible | gg_enabled;
-	tlabel[2].text = (unichar_t *) _("Align:");
+	boxes[9].gd.flags = gg_enabled|gg_visible;
+	boxes[9].gd.u.boxelements = patharray;
+	boxes[9].creator = GHBoxCreate;
+	tarray[2] = &boxes[9]; tarray[3] = NULL;
+
+	tgcd[2].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled | gg_cb_on);
+	tlabel[2].text = (unichar_t *) _("Scale so text width matches path length");
 	tlabel[2].text_is_1byte = true;
 	tlabel[2].text_in_resource = true;
 	tgcd[2].gd.label = &tlabel[2];
-	tgcd[2].creator = GLabelCreate;
-	alarray[0] = &tgcd[2];
+	tgcd[2].gd.cid = CID_Scale;
+	tgcd[2].creator = GCheckBoxCreate;
+	tarray[4] = &tgcd[2]; tarray[5] = NULL;
 
-	tgcd[3].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled | gg_cb_on);
-	tlabel[3].text = (unichar_t *) _("At Start");
+	tgcd[3].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled);
+	tlabel[3].text = (unichar_t *) _("Rotate each glyph as a unit");
 	tlabel[3].text_is_1byte = true;
 	tlabel[3].text_in_resource = true;
 	tgcd[3].gd.label = &tlabel[3];
-	tgcd[3].gd.cid = CID_Start;
-	tgcd[3].creator = GRadioCreate;
-	alarray[1] = &tgcd[3];
+	tgcd[3].gd.cid = CID_GlyphAsUnit;
+	tgcd[3].creator = GCheckBoxCreate;
+	tarray[6] = &tgcd[3]; tarray[7] = NULL;
 
-	tgcd[4].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled);
-	tlabel[4].text = (unichar_t *) _("Centered");
+	tgcd[4].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled);
+	tlabel[4].text = (unichar_t *) _("Align:");
 	tlabel[4].text_is_1byte = true;
 	tlabel[4].text_in_resource = true;
 	tgcd[4].gd.label = &tlabel[4];
-	tgcd[4].gd.cid = CID_Center;
-	tgcd[4].creator = GRadioCreate;
-	alarray[2] = &tgcd[4];
+	tgcd[4].creator = GLabelCreate;
+	alarray[0] = &tgcd[4];
 
-	tgcd[5].gd.flags = fit_to_path==NULL ? gg_visible : (gg_visible | gg_enabled);
-	tlabel[5].text = (unichar_t *) _("At End");
+	tgcd[5].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled | gg_cb_on);
+	tlabel[5].text = (unichar_t *) _("At Start");
 	tlabel[5].text_is_1byte = true;
 	tlabel[5].text_in_resource = true;
 	tgcd[5].gd.label = &tlabel[5];
-	tgcd[5].gd.cid = CID_End;
+	tgcd[5].gd.cid = CID_Start;
 	tgcd[5].creator = GRadioCreate;
-	alarray[3] = &tgcd[5];
+	alarray[1] = &tgcd[5];
+
+	tgcd[6].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled);
+	tlabel[6].text = (unichar_t *) _("Centered");
+	tlabel[6].text_is_1byte = true;
+	tlabel[6].text_in_resource = true;
+	tgcd[6].gd.label = &tlabel[6];
+	tgcd[6].gd.cid = CID_Center;
+	tgcd[6].creator = GRadioCreate;
+	alarray[2] = &tgcd[6];
+
+	tgcd[7].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled);
+	tlabel[7].text = (unichar_t *) _("At End");
+	tlabel[7].text_is_1byte = true;
+	tlabel[7].text_in_resource = true;
+	tgcd[7].gd.label = &tlabel[7];
+	tgcd[7].gd.cid = CID_End;
+	tgcd[7].creator = GRadioCreate;
+	alarray[3] = &tgcd[7];
 	alarray[4] = GCD_Glue; alarray[5] = NULL;
 
 	boxes[8].gd.flags = gg_enabled|gg_visible;
 	boxes[8].gd.u.boxelements = alarray;
 	boxes[8].creator = GHBoxCreate;
-	tarray[6] = &boxes[8]; tarray[7] = NULL;
+	tarray[8] = &boxes[8]; tarray[9] = NULL;
 
-	tgcd[6].gd.pos.width = -1; tgcd[6].gd.pos.height = 0;
-	tgcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	tlabel[6].text = (unichar_t *) _("_Insert");
-	tlabel[6].text_is_1byte = true;
-	tlabel[6].text_in_resource = true;
-	tgcd[6].gd.mnemonic = 'O';
-	tgcd[6].gd.label = &tlabel[6];
-	tgcd[6].gd.handle_controlevent = PRT_OK;
-	tgcd[6].gd.cid = CID_OK;
-	tgcd[6].creator = GButtonCreate;
+	tgcd[8].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled);
+	tlabel[8].text = (unichar_t *) _("Offset text from path by:");
+	tlabel[8].text_is_1byte = true;
+	tlabel[8].text_in_resource = true;
+	tgcd[8].gd.label = &tlabel[8];
+	tgcd[8].creator = GLabelCreate;
+	oarray[0] = &tgcd[8];
 
-	tgcd[7].gd.pos.width = -1; tgcd[7].gd.pos.height = 0;
-	tgcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	tlabel[7].text = (unichar_t *) _("_Cancel");
-	tlabel[7].text_is_1byte = true;
-	tlabel[7].text_in_resource = true;
-	tgcd[7].gd.label = &tlabel[7];
-	tgcd[7].gd.cid = CID_Cancel;
-	tgcd[7].gd.handle_controlevent = DSP_Done;
-	tgcd[7].creator = GButtonCreate;
-	barray2[0] = GCD_Glue; barray2[1] = &tgcd[6]; barray2[2] = GCD_Glue;
-	barray2[3] = GCD_Glue; barray2[4] = &tgcd[7]; barray2[5] = GCD_Glue; barray2[6] = NULL;
+	tgcd[9].gd.flags = fit_to_path==NULL ? 0 : (gg_visible | gg_enabled);
+	tgcd[9].gd.pos.width = 60;
+	tlabel[9].text = (unichar_t *) "0";
+	tlabel[9].text_is_1byte = true;
+	tlabel[9].text_in_resource = true;
+	tgcd[9].gd.label = &tlabel[9];
+	tgcd[9].gd.cid = CID_YOffset;
+	tgcd[9].creator = GNumericFieldCreate;
+	oarray[1] = &tgcd[9]; oarray[2] = GCD_Glue; oarray[3] = NULL;
+
+	boxes[13].gd.flags = gg_enabled|gg_visible;
+	boxes[13].gd.u.boxelements = oarray;
+	boxes[13].creator = GHBoxCreate;
+	tarray[10] = &boxes[13]; tarray[11] = NULL;
+
+	tgcd[10].gd.flags = gg_visible | gg_enabled ;
+	tgcd[10].creator = GLineCreate;
+	tarray[12] = &tgcd[10]; tarray[13] = NULL;
+
+	tgcd[11].gd.pos.width = -1; tgcd[11].gd.pos.height = 0;
+	tgcd[11].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	tlabel[11].text = (unichar_t *) _("_Insert");
+	tlabel[11].text_is_1byte = true;
+	tlabel[11].text_in_resource = true;
+	tgcd[11].gd.mnemonic = 'O';
+	tgcd[11].gd.label = &tlabel[11];
+	tgcd[11].gd.handle_controlevent = PRT_OK;
+	tgcd[11].gd.cid = CID_OK;
+	tgcd[11].creator = GButtonCreate;
+
+	tgcd[12].gd.pos.width = -1; tgcd[12].gd.pos.height = 0;
+	tgcd[12].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	tlabel[12].text = (unichar_t *) _("_Cancel");
+	tlabel[12].text_is_1byte = true;
+	tlabel[12].text_in_resource = true;
+	tgcd[12].gd.label = &tlabel[12];
+	tgcd[12].gd.cid = CID_Cancel;
+	tgcd[12].gd.handle_controlevent = DSP_Done;
+	tgcd[12].creator = GButtonCreate;
+	barray2[0] = GCD_Glue; barray2[1] = &tgcd[11]; barray2[2] = GCD_Glue;
+	barray2[3] = GCD_Glue; barray2[4] = &tgcd[12]; barray2[5] = GCD_Glue; barray2[6] = NULL;
 
 	boxes[11].gd.flags = gg_enabled|gg_visible;
 	boxes[11].gd.u.boxelements = barray2;
 	boxes[11].creator = GHBoxCreate;
-	tarray[8] = &boxes[11]; tarray[9] = NULL; tarray[10] = NULL;
+	tarray[14] = &boxes[11]; tarray[15] = NULL; tarray[16] = NULL;
 
 	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
 	boxes[0].gd.flags = gg_enabled|gg_visible;
 	boxes[0].gd.u.boxelements = tarray;
+	boxes[0].gd.cid = CID_TopBox;
 	boxes[0].creator = GHVGroupCreate;
     }
 
@@ -1972,8 +2131,13 @@ return;
 		(void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
 	GGadgetSetTitle(gcd[13].ret, temp);
 	free(temp);
-    } else
+    } else {
 	active->script_unknown = true;
+	if ( old_bind_text ) {
+	    SFTextAreaReplace(gcd[13].ret,old_bind_text);
+	    DSP_TextChanged(gcd[13].ret,NULL);
+	}
+    }
     SFTFRegisterCallback(gcd[13].ret,active,DSP_ChangeFontCallback);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
@@ -1984,22 +2148,26 @@ return;
     GHVBoxSetExpandableRow(boxes[6].ret,1);
     GHVBoxSetExpandableCol(boxes[12].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[11].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(vbox.ret,gb_expandglue);
     if ( isprint ) {
-	GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[8].ret,gb_expandglue);
 	GHVBoxSetExpandableRow(boxes[9].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[14].ret,gb_expandglue);
-	GHVBoxSetExpandableRow(vbox.ret,gb_expandglue);
     } else {
 	GHVBoxSetExpandableCol(boxes[8].ret,gb_expandglue);
+	GHVBoxSetExpandableRow(boxes[9].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
     }
     GHVBoxFitWindow(boxes[0].ret);
 
     SFTextAreaSelect(gcd[13].ret,0,0);
     SFTextAreaShow(gcd[13].ret,0);
     SFTFProvokeCallback(gcd[13].ret);
+    GWidgetIndicateFocusGadget(gcd[13].ret);
 
     GDrawSetVisible(active->gw,true);
+    active->ready = true;
     if ( !isprint ) {
 	while ( !done )
 	    GDrawProcessOneEvent(NULL);

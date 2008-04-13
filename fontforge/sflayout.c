@@ -1014,8 +1014,10 @@ SplineSet *LIConvertToSplines(LayoutInfo *li,double dpi,int order2) {
 		head = ss;
 	    else
 		last->next = ss;
-	    if ( ss!=NULL )
+	    if ( ss!=NULL ) {
 		for ( last=ss ; last->next!=NULL; last=last->next );
+		last->ticked = true;		/* Mark end of glyph */
+	    }
 	    x += line[i]->advance_width + line[i]->vr.h_adv_off;
 	}
     }

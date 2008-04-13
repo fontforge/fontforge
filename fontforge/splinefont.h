@@ -2243,7 +2243,8 @@ extern double SplineLength(Spline *spline);
 extern double SplineLengthRange(Spline *spline, real from_t, real to_t);
 extern double PathLength(SplineSet *ss);
 extern Spline *PathFindDistance(SplineSet *path,double d,double *_t);
-extern SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int align,SplineSet *path);
+extern SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int glyph_as_unit,
+	int align,real offset, SplineSet *path);
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);

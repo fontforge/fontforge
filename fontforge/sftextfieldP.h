@@ -94,6 +94,7 @@ extern float SFTFGetDPI(GGadget *g);
 extern void SFTFInitLangSys(GGadget *g, int end, uint32 script, uint32 lang);
 extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 extern void SFTFPopupMenu(SFTextArea *st, GEvent *event);
+extern void SFTextAreaSetTitleNotFonts(GGadget *g,const unichar_t *tit);
 
 extern struct gfuncs sftextarea_funcs;
 #endif
