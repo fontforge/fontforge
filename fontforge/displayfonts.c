@@ -546,6 +546,7 @@ return( cnt);
 #define CID_TextWidth	3006
 #define CID_YOffset	3007
 #define CID_GlyphAsUnit	3008
+#define CID_ActualWidth	3009
 
 static void PRT_SetEnabled(PD *pi) {
     int enable_ps;
@@ -1383,6 +1384,8 @@ static int DSP_TextChanged(GGadget *g, GEvent *e) {
 	const unichar_t *pt;
 	SFTextArea *ta = (SFTextArea *) g;
 	LayoutInfo *li = &ta->li;
+	char buffer[200];
+
 	for ( pt=txt; *pt!='\0' && ScriptFromUnicode(*pt,NULL)==DEFAULT_SCRIPT; ++pt);
 	if ( *pt=='\0' ) {
 	    if ( !di->script_unknown ) {
@@ -1413,6 +1416,11 @@ static int DSP_TextChanged(GGadget *g, GEvent *e) {
 		GGadgetSetTitle(GWidgetGetControl(di->gw,CID_ScriptLang),buf);
 	    }
 	    di->script_unknown = false;
+	}
+
+	if ( di->insert_text && lastdpi!=0) {
+	    sprintf( buffer,_("Text Width:%4d"), (int) rint(li->xmax*72.0/lastdpi));
+	    GGadgetSetTitle8(GWidgetGetControl(di->gw,CID_ActualWidth),buffer);
 	}
     }
 return( true );
@@ -1474,13 +1482,13 @@ static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
 	int isprint,CharView *cv,SplineSet *fit_to_path) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19], boxes[15], mgcd[5], pgcd[8], vbox, tgcd[14],
+    GGadgetCreateData gcd[20], boxes[15], mgcd[5], pgcd[8], vbox, tgcd[14],
 	    *harray[8], *farray[8], *barray[4],
 	    *barray2[8], *varray[9], *varray2[9], *harray2[5],
 	    *varray3[4][4], *ptarray[4], *varray4[4], *varray5[4][2],
-	    *regenarray[8], *varray6[3], *tarray[18], *alarray[6],
+	    *regenarray[9], *varray6[3], *tarray[18], *alarray[6],
 	    *patharray[5], *oarray[4];
-    GTextInfo label[19], mlabel[5], plabel[8], tlabel[14];
+    GTextInfo label[20], mlabel[5], plabel[8], tlabel[14];
     GTabInfo aspects[3];
     int dpi;
     char buf[12], dpibuf[12], sizebuf[12], widthbuf[12], pathlen[32];
@@ -1493,6 +1501,7 @@ static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
     PD *active;
     int done = false;
     int width = 300;
+    extern int _GScrollBar_Width;
 
     if ( printwindow!=NULL && isprint ) {
 	GDrawSetVisible(printwindow->gw,true);
@@ -1789,25 +1798,33 @@ return;
 	gcd[17].creator = GButtonCreate;
 	regenarray[3] = &gcd[17]; regenarray[4] = NULL;
     } else {
-	label[17].text = (unichar_t *) "Text Width:";
+	label[17].text = (unichar_t *) _("Text Width:    0");
 	label[17].text_is_1byte = true;
 	gcd[17].gd.label = &label[17];
 	gcd[17].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	gcd[17].gd.popup_msg = (unichar_t *) _("The text will wrap to a new line after this many em-units");
+	gcd[17].gd.cid = CID_ActualWidth;
 	gcd[17].creator = GLabelCreate;
 
-	sprintf( widthbuf, "%d", width );
-	label[18].text = (unichar_t *) widthbuf;
+	label[18].text = (unichar_t *) _("Wrap Pos:");
 	label[18].text_is_1byte = true;
 	gcd[18].gd.label = &label[18];
-	gcd[18].gd.pos.width = 50;
 	gcd[18].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	gcd[18].gd.popup_msg = (unichar_t *) _("The text will wrap to a new line after this many em-units");
-	gcd[18].gd.cid = CID_TextWidth;
-	gcd[18].gd.handle_controlevent = DSP_WidthChanged;
-	gcd[18].creator = GNumericFieldCreate;
-	regenarray[3] = &gcd[17]; regenarray[4] = &gcd[18]; regenarray[5] = NULL;
-	gcd[13].gd.pos.width = GDrawPixelsToPoints(NULL,width*dpi/72);
+	gcd[18].creator = GLabelCreate;
+
+	sprintf( widthbuf, "%d", width );
+	label[19].text = (unichar_t *) widthbuf;
+	label[19].text_is_1byte = true;
+	gcd[19].gd.label = &label[19];
+	gcd[19].gd.pos.width = 50;
+	gcd[19].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[19].gd.popup_msg = (unichar_t *) _("The text will wrap to a new line after this many em-units");
+	gcd[19].gd.cid = CID_TextWidth;
+	gcd[19].gd.handle_controlevent = DSP_WidthChanged;
+	gcd[19].creator = GNumericFieldCreate;
+	regenarray[3] = &gcd[17]; regenarray[4] = GCD_Glue;
+	regenarray[5] = &gcd[18]; regenarray[6] = &gcd[19]; regenarray[7] = NULL;
+	gcd[13].gd.pos.width = GDrawPixelsToPoints(NULL,width*dpi/72) + _GScrollBar_Width+4;
     }
 
     boxes[12].gd.flags = gg_enabled|gg_visible;
