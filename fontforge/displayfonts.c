@@ -1484,7 +1484,7 @@ static void _PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv,
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[20], boxes[15], mgcd[5], pgcd[8], vbox, tgcd[14],
 	    *harray[8], *farray[8], *barray[4],
-	    *barray2[8], *varray[9], *varray2[9], *harray2[5],
+	    *barray2[8], *varray[11], *varray2[9], *harray2[5],
 	    *varray3[4][4], *ptarray[4], *varray4[4], *varray5[4][2],
 	    *regenarray[9], *varray6[3], *tarray[18], *alarray[6],
 	    *patharray[5], *oarray[4];
@@ -1718,7 +1718,8 @@ return;
     gcd[10].gd.u.list = active->scriptlangs = SLOfFont(sf);
     gcd[10].gd.handle_controlevent = DSP_ScriptLangChanged;
     gcd[10].creator = GListFieldCreate;
-    varray[6] = &gcd[10]; varray[7] = NULL; varray[8] = NULL;
+    varray[6] = GCD_Glue; varray[7] = NULL;
+    varray[8] = &gcd[10]; varray[9] = NULL; varray[10] = NULL;
 
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = varray;
@@ -2160,6 +2161,7 @@ return;
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(boxes[4].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
     GHVBoxSetExpandableRow(boxes[6].ret,1);
