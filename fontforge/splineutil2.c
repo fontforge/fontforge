@@ -1208,11 +1208,47 @@ static Spline *SplineBindToPath(Spline *s,SplineSet *path) {
 return( ret );
 }
 
-SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int align,SplineSet *path) {
+static void GlyphBindToPath(SplineSet *glyph,SplineSet *path) {
+    /* Find the transformation for the middle of the glyph, and then rotate */
+    /*  the entire thing by that */
+    double pt,len;
+    BasePoint pos, slope;
+    Spline *ps;
+    DBounds b;
+    real transform[6], offset[6], mid;
+
+    SplineSetFindBounds(glyph,&b);
+    mid = (b.minx+b.maxx)/2;
+    ps = PathFindDistance(path,mid,&pt);
+    pos.x = ((ps->splines[0].a*pt + ps->splines[0].b)*pt+ps->splines[0].c)*pt+ps->splines[0].d;
+    pos.y = ((ps->splines[1].a*pt + ps->splines[1].b)*pt+ps->splines[1].c)*pt+ps->splines[1].d;
+    slope.x = (3*ps->splines[0].a*pt + 2*ps->splines[0].b)*pt+ps->splines[0].c;
+    slope.y = (3*ps->splines[1].a*pt + 2*ps->splines[1].b)*pt+ps->splines[1].c;
+    len = sqrt(slope.x*slope.x + slope.y*slope.y);
+    if ( len!=0 ) {
+	slope.x /= len;
+	slope.y /= len;
+    }
+
+    memset(offset,0,sizeof(offset));
+    offset[0] = offset[3] = 1;
+    offset[4] = -mid;
+
+    transform[0] = transform[3] = slope.x;
+    transform[1] = slope.y; transform[2] = -slope.y;
+    transform[4] = pos.x;
+    transform[5] = pos.y;
+    MatMultiply(offset,transform,transform);
+    SplinePointListTransform(glyph,transform,true);
+}
+    
+
+SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int glyph_as_unit,
+	int align,real offset, SplineSet *path) {
     DBounds b;
     real transform[6];
     double pathlength = PathLength(path);
-    SplineSet *spl;
+    SplineSet *spl, *eog, *nextglyph;
     SplinePoint *sp;
     Spline *s, *first;
     int order2 = -1;
@@ -1236,49 +1272,65 @@ SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int align,SplineSet *p
 	transform[4] += path->first->me.x;
 	transform[5] += path->first->me.y;
     }
+    transform[5] += offset;
     SplinePointListTransform(ss,transform,true);
     if ( pathlength==0 )
 return( ss );
 
-    for ( spl = ss; spl!=NULL ; spl=spl->next ) {
-	for ( sp = spl->first; ; ) {
-	    SplinePointBindToPath(sp,path);
-	    if ( sp->next==NULL )
-	break;
-	    order2 = sp->next->order2;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
+    if ( glyph_as_unit ) {
+	for ( spl = ss; spl!=NULL ; spl=nextglyph ) {
+	    for ( eog=spl; eog!=NULL && !eog->ticked; eog=eog->next );
+	    if ( eog==NULL )
+		nextglyph = NULL;
+	    else {
+		nextglyph = eog->next;
+		eog->next = NULL;
+	    }
+	    GlyphBindToPath(spl,path);
+	    if ( eog!=NULL )
+		eog->next = nextglyph;
 	}
-    }
-    if ( order2==1 ) {
+    } else {
 	for ( spl = ss; spl!=NULL ; spl=spl->next ) {
 	    for ( sp = spl->first; ; ) {
-		if ( !sp->noprevcp && sp->prev!=NULL ) {
-		    if ( !IntersectLines(&cp,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me)) {
-			cp.x = (sp->prevcp.x+sp->prev->from->nextcp.x)/2;
-			cp.y = (sp->prevcp.y+sp->prev->from->nextcp.y)/2;
-		    }
-		    sp->prevcp = sp->prev->from->nextcp = cp;
-		}
+		SplinePointBindToPath(sp,path);
 		if ( sp->next==NULL )
 	    break;
+		order2 = sp->next->order2;
 		sp = sp->next->to;
 		if ( sp==spl->first )
 	    break;
 	    }
 	}
-    }
+	if ( order2==1 ) {
+	    for ( spl = ss; spl!=NULL ; spl=spl->next ) {
+		for ( sp = spl->first; ; ) {
+		    if ( !sp->noprevcp && sp->prev!=NULL ) {
+			if ( !IntersectLines(&cp,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me)) {
+			    cp.x = (sp->prevcp.x+sp->prev->from->nextcp.x)/2;
+			    cp.y = (sp->prevcp.y+sp->prev->from->nextcp.y)/2;
+			}
+			sp->prevcp = sp->prev->from->nextcp = cp;
+		    }
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
+	    }
+	}
 
-    for ( spl = ss; spl!=NULL ; spl=spl->next ) {
-	first = NULL;
-	for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
-	    if ( s->order2 )
-		SplineRefigure2(s);
-	    else
-		s = SplineBindToPath(s,path);
-	    if ( first==NULL )
-		first = s;
+	for ( spl = ss; spl!=NULL ; spl=spl->next ) {
+	    first = NULL;
+	    for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+		if ( s->order2 )
+		    SplineRefigure2(s);
+		else
+		    s = SplineBindToPath(s,path);
+		if ( first==NULL )
+		    first = s;
+	    }
 	}
     }
 return( ss );

@@ -2028,6 +2028,66 @@ static int sftextarea_hscroll(GGadget *g, GEvent *event) {
 return( true );
 }
 
+static void SFTextFieldSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    SFTextArea *gt = (SFTextArea *) g;
+
+    if ( outer!=NULL ) {
+	g->desired_width = outer->width;
+	g->desired_height = outer->height;
+    } else if ( inner!=NULL ) {
+	int bp = GBoxBorderWidth(g->base,g->box);
+	int extra=0;
+	g->desired_width = inner->width + 2*bp + extra;
+	g->desired_height = inner->height + 2*bp;
+	if ( gt->multi_line ) {
+	    int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
+		    GDrawPointsToPixels(gt->g.base,1);
+	    g->desired_width += sbadd;
+	    if ( !gt->li.wrap )
+		g->desired_height += sbadd;
+	}
+    }
+}
+
+static void SFTextFieldGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    SFTextArea *gt = (SFTextArea *) g;
+    int width=0, height;
+    int extra=0;
+    int bp = GBoxBorderWidth(g->base,g->box);
+
+    width = GGadgetScale(GDrawPointsToPixels(gt->g.base,80));
+    height = gt->multi_line? 4*gt->fh:gt->fh;
+
+    if ( g->desired_width>extra+2*bp ) width = g->desired_width - extra - 2*bp;
+    if ( g->desired_height>2*bp ) height = g->desired_height - 2*bp;
+
+    if ( gt->multi_line ) {
+	int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
+		GDrawPointsToPixels(gt->g.base,1);
+	width += sbadd;
+	if ( !gt->li.wrap )
+	    height += sbadd;
+    }
+
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = width;
+	inner->height = height;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = width + extra + 2*bp;
+	outer->height = height + 2*bp;
+    }
+}
+
+static int SFtextfield_FillsWindow(GGadget *g) {
+return( ((SFTextArea *) g)->multi_line && g->prev==NULL &&
+	(_GWidgetGetGadgets(g->base)==g ||
+	 _GWidgetGetGadgets(g->base)==(GGadget *) ((SFTextArea *) g)->vsb ||
+	 _GWidgetGetGadgets(g->base)==(GGadget *) ((SFTextArea *) g)->hsb ));
+}
+
 struct gfuncs sftextarea_funcs = {
     0,
     sizeof(struct gfuncs),
@@ -2056,7 +2116,23 @@ struct gfuncs sftextarea_funcs = {
     NULL,
     NULL,
     SFTextAreaSetFont,
-    SFTextAreaGetFont
+    SFTextAreaGetFont,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    SFTextFieldGetDesiredSize,
+    SFTextFieldSetDesiredSize,
+    SFtextfield_FillsWindow
 };
 
 static void SFTextAreaInit() {
