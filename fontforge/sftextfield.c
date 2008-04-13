@@ -1459,8 +1459,12 @@ return( false );
 static void STChangeCheck(SFTextArea *st) {
     struct fontlist *fl;
 
+    if ( st->changefontcallback==NULL )
+return;
     for ( fl=st->li.fontlist; fl!=NULL && fl->end<st->sel_end; fl=fl->next );
-    if ( fl==NULL || /* fl->fd==st->last_fd ||*/ st->changefontcallback==NULL )
+    if ( fl!=NULL && fl->next!=NULL && fl->next->end==st->sel_end )
+	fl = fl->next;
+    if ( fl==NULL /* || fl->fd==st->last_fd ||*/ )
 return;
     (st->changefontcallback)(st->cbcontext,fl->fd->sf,fl->fd->fonttype,
 	    fl->fd->pointsize,fl->fd->antialias,fl->script,fl->lang,fl->feats);

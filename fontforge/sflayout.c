@@ -282,6 +282,8 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 		FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
 		struct Base *base = fd->sf->horiz_base;
 		uint32 cur_bsln_tag;
+		if ( fd->sf->horiz_base==NULL )
+	    continue;
 		cur_bsln_tag = FigureBaselineTag(line[i],li,base,start_base);
 		if ( cur_bsln_tag==start_bsln_tag )
 	    continue;		/* Same baseline, offset 0 already set */
@@ -603,10 +605,13 @@ return;
     /* Now join adjacent fontlists with the same properties (except don't merge*/
     /*  over line breaks */
     for ( fl = li->fontlist; fl!=NULL; fl=next ) {
-	for ( next=fl->next; next!=NULL && next->fd==fl->fd &&
-		li->text[fl->end]!='\n' &&
-		next->lang==fl->lang && next->script==fl->script &&
-		TagsSame(next->feats,fl->feats); next = fl->next ) {
+	for ( next=fl->next; next!=NULL && (
+		 (next->fd==fl->fd &&
+		  li->text[fl->end]!='\n' &&
+		  next->lang==fl->lang && next->script==fl->script &&
+		  TagsSame(next->feats,fl->feats)) ||
+		 fl->start==next->end);
+		next = fl->next ) {
 	    if ( li->oldstart==next )
 		li->oldstart = fl;
 	    if ( li->oldend == next )
@@ -685,6 +690,8 @@ static void LayoutInfoChangeFontList(LayoutInfo *li,int rpllen,
     for ( fl=li->fontlist; fl!=NULL && sel_start>fl->end; fl=fl->next );
     if ( fl==NULL )
 return;
+    if ( fl->next!=NULL && fl->end==fl->next->end )
+	fl = fl->next;
     if ( fl->end>=sel_end ) {
 	fl->end += diff;
 	fl = fl->next;
@@ -1047,9 +1054,9 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     last = NULL;
     for ( i=0; i<cnt; ++i ) {
 	if ( last==NULL )
-	    last = li->fontlist = gcalloc(1,sizeof(struct fontlist));
+	    last = li->fontlist = chunkalloc(sizeof(struct fontlist));
 	else {
-	    last->next = gcalloc(1,sizeof(struct fontlist));
+	    last->next = chunkalloc(sizeof(struct fontlist));
 	    last = last->next;
 	}
 	last->fd = LI_FindFontData(li,sf,ly_fore,type,arr->vals[2*i].u.ival,true);
