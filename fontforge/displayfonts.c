@@ -47,7 +47,8 @@ typedef struct printdlg {
     FontView *fv;
     CharView *cv;
     SplineSet *fit_to_path;
-    int insert_text;
+    uint8 script_unknown;
+    uint8 insert_text;
     int *done;
 } PD;
 
@@ -1300,6 +1301,44 @@ return( true );
 }
 
 static int DSP_TextChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *txt = _GGadgetGetTitle(g);
+	const unichar_t *pt;
+	SFTextArea *ta = (SFTextArea *) g;
+	LayoutInfo *li = &ta->li;
+	for ( pt=txt; *pt!='\0' && ScriptFromUnicode(*pt,NULL)==DEFAULT_SCRIPT; ++pt);
+	if ( *pt=='\0' ) {
+	    if ( !di->script_unknown ) {
+		di->script_unknown = true;
+		if ( li->fontlist!=NULL ) {
+		    li->fontlist->script = DEFAULT_SCRIPT;
+		    li->fontlist->lang   = DEFAULT_LANG;
+		}
+		GGadgetSetTitle8(GWidgetGetControl(di->gw,CID_ScriptLang),"DFLT{dflt}");
+	    }
+	} else if ( di->script_unknown ) {
+	    uint32 script = ScriptFromUnicode(*pt,NULL);
+	    struct fontlist *fl;
+	    unichar_t buf[20];
+	    for ( fl=li->fontlist; fl!=NULL && ta->sel_start>fl->end; fl=fl->next );
+	    if ( fl!=NULL && (fl->script==DEFAULT_SCRIPT || fl->script==0 )) {
+		for ( fl=li->fontlist; fl!=NULL; fl=fl->next ) {
+		    if ( fl->script==DEFAULT_SCRIPT || fl->script == 0 ) {
+			fl->script = script;
+			fl->lang = DEFAULT_LANG;
+		    }
+		}
+		buf[0] = (script>>24)&0xff;
+		buf[1] = (script>>16)&0xff;
+		buf[2] = (script>>8 )&0xff;
+		buf[3] = (script    )&0xff;
+		uc_strcpy(buf+4,"{dflt}");
+		GGadgetSetTitle(GWidgetGetControl(di->gw,CID_ScriptLang),buf);
+	    }
+	    di->script_unknown = false;
+	}
+    }
 return( true );
 }
 
@@ -1933,7 +1972,8 @@ return;
 		(void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
 	GGadgetSetTitle(gcd[13].ret, temp);
 	free(temp);
-    }
+    } else
+	active->script_unknown = true;
     SFTFRegisterCallback(gcd[13].ret,active,DSP_ChangeFontCallback);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
