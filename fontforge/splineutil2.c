@@ -774,6 +774,35 @@ return( SplineMake2(from,to));
     }
     /* From here down we are only working with cubic splines */
 
+    if ( cnt==0 ) {
+	/* Just use what we've got, no data to improve it */
+	/* But we do sometimes get some cps which are too big */
+	double len = sqrt((to->me.x-from->me.x)*(to->me.x-from->me.x) + (to->me.y-from->me.y)*(to->me.y-from->me.y));
+	if ( len==0 ) {
+	    from->nonextcp = to->noprevcp = true;
+	    from->nextcp = from->me;
+	    to->prevcp = to->me;
+	} else {
+	    BasePoint noff, poff;
+	    double nlen, plen;
+	    noff.x = from->nextcp.x-from->me.x; noff.y = from->nextcp.y-from->me.y;
+	    poff.x = to->me.x-to->prevcp.x; poff.y = to->me.y-to->prevcp.y;
+	    nlen = sqrt(noff.x*noff.x + noff.y+noff.y);
+	    plen = sqrt(poff.x*poff.x + poff.y+poff.y);
+	    if ( nlen>len/3 ) {
+		noff.x *= len/3/nlen; noff.y *= len/3/nlen;
+		from->nextcp.x = from->me.x + noff.x;
+		from->nextcp.y = from->me.y + noff.y;
+	    }
+	    if ( plen>len/3 ) {
+		poff.x *= len/3/plen; poff.y *= len/3/plen;
+		to->prevcp.x = to->me.x + poff.x;
+		to->prevcp.y = to->me.y + poff.y;
+	    }
+	}
+return( SplineMake3(from,to));
+    }
+
     if ( to->prev!=NULL && (( to->noprevcp && to->nonextcp ) || to->prev->knownlinear )) {
 	tounit.x = to->prev->from->me.x-to->me.x; tounit.y = to->prev->from->me.y-to->me.y;
     } else if ( !to->noprevcp || to->pointtype == pt_corner ) {
