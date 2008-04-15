@@ -1011,6 +1011,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	SplineCharFindBounds(sc,&new);
 	if ( adjust_counters )
 	    AdjustCounters(sc,zones,&old,&new);
+	layer = ly_all;
     } else if ( layer>=0 ) {
 	SCPreserveLayer(sc,layer,false);
 	NumberLayerPoints(sc->layers[layer].splines);
