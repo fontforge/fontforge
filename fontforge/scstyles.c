@@ -516,6 +516,8 @@ static void InterpolateControlPointsAndSet(struct ptmoves *ptmoves,int cnt) {
 	    sp->nextcp = ptmoves[i].newpos;
 	if ( nsp->noprevcp )
 	    nsp->prevcp = ptmoves[i+1].newpos;
+	if ( isnan(ptmoves[i].newpos.y) )
+	    IError( "Nan value in InterpolateControlPointsAndSet\n" );
 	if ( sp->me.y!=nsp->me.y ) {
 	    sp->nextcp.y = ptmoves[i].newpos.y + (sp->nextcp.y-sp->me.y)*
 				(ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
@@ -532,6 +534,8 @@ static void InterpolateControlPointsAndSet(struct ptmoves *ptmoves,int cnt) {
 				    (nsp->me.x - sp->me.x);
 	    }
 	}
+	if ( isnan(sp->nextcp.y) )
+	    IError( "Nan value in InterpolateControlPointsAndSet\n" );
     }
     for ( i=0; i<cnt; ++i )
 	ptmoves[i].sp->me = ptmoves[i].newpos;
@@ -892,16 +896,27 @@ return(ss_expanded);			/* No points? Nothing to do */
 			ptmoves[j].newpos.x += ptmoves[p].newpos.x-psp->me.x ;
 		    }
 		} else {
-		    double ydiff;
-		    ydiff = nsp->me.y - psp->me.y;		/* Not zero, by above test */
-		    ptmoves[j].newpos.y += (ptmoves[p].newpos.y-psp->me.y)
-					    + (sp->me.y-psp->me.y)*(ptmoves[n].newpos.y-nsp->me.y-(ptmoves[p].newpos.y-psp->me.y))/ydiff;
-		    /* Note we even interpolate the x direction depending on */
-		    /*  y position */
-		    ptmoves[j].newpos.x += (ptmoves[p].newpos.x-psp->me.x)
-					    + (sp->me.y-psp->me.y)*(ptmoves[n].newpos.x-nsp->me.x-(ptmoves[p].newpos.x-psp->me.x))/ydiff;
+		    double diff;
+		    diff = nsp->me.y - psp->me.y;
+		    if ( diff!=0 ) {
+			ptmoves[j].newpos.y += (ptmoves[p].newpos.y-psp->me.y)
+						+ (sp->me.y-psp->me.y)*(ptmoves[n].newpos.y-nsp->me.y-(ptmoves[p].newpos.y-psp->me.y))/diff;
+			/* Note we even interpolate the x direction depending on */
+			/*  y position */
+			ptmoves[j].newpos.x += (ptmoves[p].newpos.x-psp->me.x)
+						+ (sp->me.y-psp->me.y)*(ptmoves[n].newpos.x-nsp->me.x-(ptmoves[p].newpos.x-psp->me.x))/diff;
+		    } else if ( (diff = nsp->me.x - psp->me.x)!=0 ) {
+			ptmoves[j].newpos.x += (ptmoves[p].newpos.x-psp->me.x)
+						+ (sp->me.x-psp->me.x)*(ptmoves[n].newpos.x-nsp->me.x-(ptmoves[p].newpos.x-psp->me.x))/diff;
+			/* Note we even interpolate the y direction depending on */
+			/*  x position */
+			ptmoves[j].newpos.y += (ptmoves[p].newpos.y-psp->me.y)
+						+ (sp->me.x-psp->me.x)*(ptmoves[n].newpos.y-nsp->me.y-(ptmoves[p].newpos.y-psp->me.y))/diff;
+		    }
 		}
 		ptmoves[j].touched = true;
+		if ( isnan( ptmoves[j].newpos.y ))
+		    IError("Nan value in LCG_HintedEmboldenHook\n" );
 	    }
 	}
 	InterpolateControlPointsAndSet(ptmoves,cnt);
