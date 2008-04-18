@@ -195,10 +195,16 @@ return;
 
 void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y) {
     struct _GImage *sbase, *dbase;
-    int i,j, di, sbi, dbi, val;
+    int i,j, di, sbi, dbi, val, factor;
 
+    /* This only works for greyscale images */
     dbase = dest->u.image;
     sbase =  src->u.image;
+    if ( dbase->clut!=NULL && sbase->clut!=NULL && sbase->clut->clut_len>1 ) {
+	factor = (dbase->clut->clut_len - 1) / (sbase->clut->clut_len - 1);
+	if ( factor==0 ) factor=1;
+    } else
+	factor = 1;
 
     for ( i=0; i<sbase->height; ++i ) {
 	di = y + i;
@@ -209,7 +215,7 @@ void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y) {
 	for ( j=0; j<sbase->width; ++j ) {
 	    if ( x+j<0 || x+j>=dbase->width )
 	continue;
-	    val = dbase->data[dbi+x+j] + sbase->data[sbi+j];
+	    val = dbase->data[dbi+x+j] + sbase->data[sbi+j]*factor;
 	    if ( val>255 ) val = 255;
 	    dbase->data[dbi+x+j] = val;
 	}
