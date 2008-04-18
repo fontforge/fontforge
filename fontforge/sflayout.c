@@ -1035,6 +1035,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     unichar_t *upt;
     uint32 script;
     struct opentype_str **line;
+    int ybase=0;
 
     if ( !hasFreeType())
 	type = sftf_pfaedit;
@@ -1081,8 +1082,10 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     LayoutInfoRefigureLines(li,0,-1,width==-1 ? 0xff00 : width);
     if ( width==-1 )
 	width = li->xmax+2;
+    if ( li->lcnt!= 0 )
+	ybase = li->lineheights[0].as;
     if ( height==-1 && li->lcnt!=0 )
-	height = li->lineheights[li->lcnt-1].y + li->lineheights[li->lcnt-1].fh + 2;
+	height = li->lineheights[li->lcnt-1].y + li->lineheights[li->lcnt-1].fh + 2 + ybase;
 
     image = GImageCreate(it_index,width,height);
     base = image->u.image;
@@ -1105,7 +1108,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	    LI_FDDrawChar(image,
 		    (void (*)(void *,GImage *,GRect *,int, int)) GImageDrawImage,
 		    (void (*)(void *,GRect *,Color)) GImageDrawRect,
-		    line[j],x,li->lineheights[i].y,0x000000);
+		    line[j],x,li->lineheights[i].y+ybase,0x000000);
 	    x += line[j]->advance_width + line[j]->vr.h_adv_off;
 	}
     }
