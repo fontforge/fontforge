@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 18-Mar-2008 -->
+  <!-- AP: Last modified: 18-Apr-2008 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -310,6 +310,8 @@
       <A HREF="#Compiz">Why does FontForge look ugly under Xgl/Compiz?</A>
     <LI>
       <A HREF="#talk">Why don't I talk at conferences?</A>
+    <LI>
+      <A HREF="source-build.html#patch" TARGET="_top">How do I use a patch file?</A>
   </UL>
   <P>
     <HR>
@@ -403,7 +405,8 @@
 	  Because programming is a lot more fun than marketing and giving things away
 	  is easier than selling them.
 	<LI>
-	  Because I'd have to spend more time doing QA if I sold it
+	  Because I'd have to spend more time doing QA if I sold it (and QA isn't much
+	  fun).
       </UL>
     <DT>
       <B>Why doesn't it use the <A NAME="native">native</A> MS Windows or Mac windowing
@@ -494,6 +497,9 @@
 	    <LI>
 	      So I tend to wrestle with it for a while and then decide than my current
 	      widgets are better after all.
+	    <LI>
+	      I did get a limitted version of fontforge running under gtk. I would be greatful
+	      if someone else would choose to extend and maintain it.
 	  </UL>
       </UL>
     <DT>
@@ -591,7 +597,7 @@
       parts.
       <P>
       When I can't figure out how to do something myself I will use an external
-      library if I must. Even then I will try to ensure that fontforge will run
+      library if I must. Even then I will try to insure that fontforge will run
       if the library is not present on a system. When I release a binary package
       I don't want to have to release 32 packages per host depending on the possible
       presence or absence of 5 different libraries. But I also don't want to force
@@ -610,6 +616,22 @@
     <DT>
       <B><A NAME="roadmap">Why is there no future roadmap for FontForge?</A></B>
     <DD>
+      <TABLE ALIGN=RIGHT>
+	<TR>
+	  <TD><BLOCKQUOTE ID="lit">
+	      <B><SMALL>TYSON:</SMALL></B><BR>
+	      &nbsp;I'm not bewildered, I assure you I'm not<BR>
+	      &nbsp;Bewildered. As a matter of fact a plan<BR>
+	      &nbsp;Is almost certainly forming itself in my head<BR>
+	      &nbsp;At this very moment. It may even be adequate.
+	      <P ALIGN=RIGHT>
+	      <I>The Lady's not for Burning</I><BR>
+	      Christopher Fry
+	    </BLOCKQUOTE>
+	  </TD>
+	</TR>
+      </TABLE>
+      <P>
       Mostly because I don't thnk that way. I don't plan things out, I have a vague
       idea where I want to go and I explore in that direction.
       <P>
@@ -984,7 +1006,7 @@ $ xset fp+ `pwd`
 	  to do font work rather than the X server itself. You may need to use chkfontpath
 	  to add your new directory to the font server's font path (rather than xset
 	  fp).<BR>
-	  You may also need to ensure that the font directory (and all its parent
+	  You may also need to insure that the font directory (and all its parent
 	  directories) are readable to world. (the font server runs as a non-privileged
 	  user)
 	  <P>
@@ -1236,7 +1258,7 @@ $ xset fp+ `pwd`
     <DT>
       <B><A NAME="Mac-ATM">Why doesn't ATM work on my (mac) fonts?</A></B>
     <DD>
-      Ensure that the font has an encoding of Macintosh Latin when you generate
+      Insure that the font has an encoding of Macintosh Latin when you generate
       it.
       <P>
       This is really a limitation on ATM's part and there's nothing FontForge can
@@ -1488,7 +1510,7 @@ Gdraw.ScreenWidthCentimeters: 37.3
     <DT>
       <B><A NAME="monospace">How do I mark a font as monospaced?</A></B>
     <DD>
-      You don't. Just ensure that all the glyphs in the font have the same width
+      You don't. Just insure that all the glyphs in the font have the same width
       and then FontForge will automatically mark it as monospaced for you. (If
       you mark it as monospaced incorrectly some rasterizers will give strange
       results).<BR>
@@ -1894,6 +1916,9 @@ Gdraw.ScreenWidthCentimeters: 37.3
     <DD>
       This is easy since any quadratic spline can already be represented as a cubic,
       it will just happen that the cubic term is always 0.
+      <P>
+      Probably the control points will no longer be at integral coordinates and
+      there will be some loss of precision when they are saved in a cubic format.
     <DT>
       <B><A NAME="dynamic-libs">Why does fontforge say "Error loading dynamic library"
       when trying to import an image file?</A></B>
@@ -1953,9 +1978,13 @@ Gdraw.ScreenWidthCentimeters: 37.3
     <DT>
       <A NAME="default-char"><B>How do I set the default glyph of a font?</B></A>
     <DD>
-      If the glyph at encoding 0 is named ".notdef" and if it contains some splines
-      (but no references) then it will be used as the default glyph (that is the
-      glyph used when an unencoded glyph is called for).
+      If the glyph named ".notdef" contains some splines (but no references) then
+      it will be used as the default glyph (that is the glyph used when an unencoded
+      glyph is called for).
+      <P>
+      Except that in a OpenType font (that is, a PostScript OpenType font), the
+      .notdef glyph is not used for the default glyph, instead the "space" glyph
+      is. (Don't look at me, I didn't write the spec.)
     <DT>
       <A NAME="ttf-degrade"><B>I loaded a ttf font, made a few changes and generated
       a new font. The changed glyphs don't look anywhere near as nice as the originals.
@@ -1983,7 +2012,9 @@ Gdraw.ScreenWidthCentimeters: 37.3
       The major differences I've stumbled onto so far are:
       <UL>
 	<LI>
-	  The postscript name entry in the NAME table.
+	  The postscript name entry in the NAME table.<BR>
+	  (I am told that this is actually an error in Apple's version of the spec,
+	  and the behavior of the Mac matches that of Windows).
 	<LI>
 	  The names of the tables containing bitmap fonts
 	<LI>
@@ -1999,7 +2030,10 @@ Gdraw.ScreenWidthCentimeters: 37.3
       As far as I can tell Windows will mark a truetype font with the "O" icon
       if that font contains a 'DSIG' (Digital Signature) table. FontForge does
       not produce digital signatures (I think they are of negative utility, and
-      anyway I don't know how to create them).
+      anyway I don't know how to create them).<BR>
+      However, it is possible to <A HREF="generate.html#Options" TARGET="_top">ask
+      FontForge to create a 'DSIG' table </A>which contains no signatures. That
+      seems enough to make windows happy.
     <DT>
       <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
       looked nothing like the correct glyphs. What's wrong?</B></A>
@@ -2078,7 +2112,28 @@ Gdraw.ScreenWidthCentimeters: 37.3
       <B>Why don't I <A NAME="talk">talk</A> at conferences?</B>
     <DD>
       Because I have nothing to say.
+      <TABLE ALIGN=RIGHT>
+	<TR>
+	  <TD><BLOCKQUOTE ID="lit">
+	      <B><SMALL>TYSON:</SMALL></B><BR>
+	      <TAB INDENT=15>I'm not<BR>
+	      &nbsp;To be found. I'm fully occupied elsewhere.<BR>
+	      &nbsp;If you wish to find me I shall be in my study.<BR>
+	      &nbsp;You can knock, but I shall give you no reply.<BR>
+	      &nbsp;I wish to be alone with my convictions.<BR>
+	      &nbsp;Good night. <I><SMALL>[Exit]</SMALL></I>
+	      <P ALIGN=RIGHT>
+	      <I>The Lady's not for Burning</I><BR>
+	      Christopher Fry
+	    </BLOCKQUOTE>
+	  </TD>
+	</TR>
+      </TABLE>
+      <P>
+      <BR CLEAR=ALL>
   </DL>
+  <P>
+    <HR>
   <TABLE>
     <TR>
       <TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;
@@ -2097,7 +2152,7 @@ Gdraw.ScreenWidthCentimeters: 37.3
 	  is the answer. I think the problem, to be quite honest with you, is that
 	  you've never actually known what the question is."
 	  <P ALIGN=RIGHT>
-	  <SMALL>The Hitchhiker's Guide to the Galaxy<BR>
+	  <SMALL><I>The Hitchhiker's Guide to the Galaxy</I><BR>
 	  Douglas Adams</SMALL>
 	</BLOCKQUOTE>
       </TD>
@@ -2109,7 +2164,7 @@ Gdraw.ScreenWidthCentimeters: 37.3
 	  It's all in Plato, all in Plato: bless me, what do they teach them in these
 	  schools?
 	  <P ALIGN=RIGHT>
-	  <SMALL>The Last Battle<BR>
+	  <SMALL><I>The Last Battle</I><BR>
 	  C.S. Lewis</SMALL>
 	</BLOCKQUOTE>
       </TD>
