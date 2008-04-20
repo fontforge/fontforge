@@ -6819,18 +6819,19 @@ return( -1 );
 return( dval );
 }
 
-static SplineFont *SFD_Read(char *filename,int fromdir) {
-    FILE *sfd;
+static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     SplineFont *sf=NULL;
     char *oldloc;
     char tok[2000];
     double version;
 
-    if ( fromdir ) {
-	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS, filename );
-	sfd = fopen(tok,"r");
-    } else
-	sfd = fopen(filename,"r");
+    if ( sfd==NULL ) {
+	if ( fromdir ) {
+	    snprintf(tok,sizeof(tok),"%s/" FONT_PROPS, filename );
+	    sfd = fopen(tok,"r");
+	} else
+	    sfd = fopen(filename,"r");
+    }
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
@@ -6865,11 +6866,15 @@ return( sf );
 }
 
 SplineFont *SFDRead(char *filename) {
-return( SFD_Read(filename,false));
+return( SFD_Read(filename,NULL,false));
+}
+
+SplineFont *_SFDRead(char *filename,FILE *sfd) {
+return( SFD_Read(filename,sfd,false));
 }
 
 SplineFont *SFDirRead(char *filename) {
-return( SFD_Read(filename,true));
+return( SFD_Read(filename,NULL,true));
 }
 
 SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {

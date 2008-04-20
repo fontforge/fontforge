@@ -603,6 +603,23 @@ void SFSetModTime(SplineFont *sf) {
     sf->modificationtime = now;
 }
 
+static SplineFont *_SFReadPostscript(FILE *file,char *filename) {
+    FontDict *fd=NULL;
+    SplineFont *sf=NULL;
+
+    ff_progress_change_stages(2);
+    fd = _ReadPSFont(file);
+    ff_progress_next_stage();
+    ff_progress_change_line2(_("Interpreting Glyphs"));
+    if ( fd!=NULL ) {
+	sf = SplineFontFromPSFont(fd);
+	PSFontFree(fd);
+	if ( sf!=NULL )
+	    CheckAfmOfPostscript(sf,filename,sf->map);
+    }
+return( sf );
+}
+
 static SplineFont *SFReadPostscript(char *filename) {
     FontDict *fd=NULL;
     SplineFont *sf=NULL;
@@ -644,6 +661,27 @@ return( tmpfile );
 return( NULL );
 }
 
+static char *ForceFileToHaveName(FILE *file, char *exten) {
+    char tmpfilename[L_tmpnam+100];
+    static int try=0;
+    FILE *newfile;
+
+    forever {
+	sprintf( tmpfilename, P_tmpdir "/fontforge%d-%d", getpid(), try++ );
+	if ( exten!=NULL )
+	    strcat(tmpfilename,exten);
+	if ( access( tmpfilename, F_OK )==-1 &&
+		(newfile = fopen(tmpfilename,"w"))!=NULL ) {
+	    char buffer[1024];
+	    int len;
+	    while ( (len = fread(buffer,1,sizeof(buffer),file))>0 )
+		fwrite(buffer,1,len,newfile);
+	    fclose(newfile);
+	}
+return(copy(tmpfilename));			/* The filename does not exist */
+    }
+}
+    
 /* This does not check currently existing fontviews, and should only be used */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
 SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
@@ -653,9 +691,10 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     int i;
     char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
     int len;
-    FILE *foo;
+    FILE *file=NULL;
     int checked;
     int compression=0;
+    int wasurl = false, nowlocal = true;
 
     if ( filename==NULL )
 return( NULL );
@@ -673,15 +712,29 @@ return( NULL );
 	strippedname[paren-filename] = '\0';
     }
 
+    if ( strncasecmp(strippedname,"http://",7)==0 ) {
+	file = URLToTempFile(strippedname);
+	if ( file==NULL )
+return( NULL );
+	wasurl = true; nowlocal = false;
+    }
+
     pt = strrchr(strippedname,'.');
     i = -1;
     if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
 	if ( strcmp(compressors[i].ext,pt)==0 )
     break;
     oldstrippedname = strippedname;
-    if ( i==-1 || compressors[i].ext==NULL ) i=-1;
+    if ( i==-1 || compressors[i].ext==NULL )
+	i=-1;
     else {
-	tmpfile = Decompress(strippedname,i);
+	if ( wasurl ) {
+	    char *spuriousname = ForceFileToHaveName(file,compressors[i].ext);
+	    tmpfile = Decompress(spuriousname,i);
+	    fclose(file); file = NULL;
+	    unlink(spuriousname); free(spuriousname);
+	} else
+	    tmpfile = Decompress(strippedname,i);
 	if ( tmpfile!=NULL ) {
 	    strippedname = tmpfile;
 	} else {
@@ -709,8 +762,12 @@ return( NULL );
     if ( FontViewFirst()==NULL && !no_windowing_ui )
 	ff_progress_allow_events();
 
+    if ( file==NULL ) {
+	file = fopen(strippedname,"rb");
+	nowlocal = true;
+    }
+
     sf = NULL;
-    foo = fopen(strippedname,"rb");
     checked = false;
 /* checked == false => not checked */
 /* checked == 'u'   => UFO */
@@ -723,7 +780,7 @@ return( NULL );
 /* checked == 'F'   => sfdir */
 /* checked == 'b'   => bdf */
 /* checked == 'i'   => ikarus */
-    if ( GFileIsDir(strippedname) ) {
+    if ( !wasurl && GFileIsDir(strippedname) ) {
 	char *temp = galloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
 	strcpy(temp,strippedname);
 	strcat(temp,"/glyphs/contents.plist");
@@ -739,52 +796,60 @@ return( NULL );
 	    }
 	}
 	free(temp);
-	if ( foo!=NULL )
-	    fclose(foo);
-    } else if ( foo!=NULL ) {
+	if ( file!=NULL )
+	    fclose(file);
+    } else if ( file!=NULL ) {
 	/* Try to guess the file type from the first few characters... */
-	int ch1 = getc(foo);
-	int ch2 = getc(foo);
-	int ch3 = getc(foo);
-	int ch4 = getc(foo);
-	int ch5 = getc(foo);
-	int ch6 = getc(foo);
-	int ch7 = getc(foo);
+	int ch1 = getc(file);
+	int ch2 = getc(file);
+	int ch3 = getc(file);
+	int ch4 = getc(file);
+	int ch5 = getc(file);
+	int ch6 = getc(file);
+	int ch7 = getc(file);
 	int ch9, ch10;
-	fseek(foo, 98, SEEK_SET);
-	ch9 = getc(foo);
-	ch10 = getc(foo);
-	fclose(foo);
+	fseek(file, 98, SEEK_SET);
+	ch9 = getc(file);
+	ch10 = getc(file);
+	rewind(file);
 	if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
 		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
 		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
-	    sf = SFReadTTF(fullname,0,openflags);
+	    sf = _SFReadTTF(file,0,openflags,fullname,NULL);
 	    checked = 't';
 	} else if (( ch1=='%' && ch2=='!' ) ||
 		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
-	    sf = SFReadPostscript(fullname);
+	    sf = _SFReadPostscript(file,fullname);
 	    checked = 'p';
 	} else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
-	    sf = SFReadPdfFont(fullname,openflags);
+	    sf = _SFReadPdfFont(file,fullname,NULL,openflags);
 	    checked = 'P';
 	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
-	    sf = CFFParse(fullname);
+	    int len;
+	    fseek(file,0,SEEK_END);
+	    len = ftell(file);
+	    fseek(file,0,SEEK_SET);
+	    sf = _CFFParse(file,len,NULL);
 	    checked = 'c';
-	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
-	    sf = SFReadSVG(fullname,0);
-	    checked = 'S';
-	} else if ( ch1==0xef && ch2==0xbb && ch3==0xbf &&
-		ch4=='<' && ch5=='?' && (ch6=='x'||ch6=='X') && (ch7=='m'||ch7=='M') ) {
-	    /* UTF-8 SVG with initial byte ordering mark */
-	    sf = SFReadSVG(fullname,0);
+	} else if (( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) ||
+		/* or UTF-8 SVG with initial byte ordering mark */
+			 (( ch1==0xef && ch2==0xbb && ch3==0xbf &&
+			    ch4=='<' && ch5=='?' && (ch6=='x'||ch6=='X') && (ch7=='m'||ch7=='M') )) ) {
+	    if ( nowlocal )
+		sf = SFReadSVG(fullname,0);
+	    else {
+		char *spuriousname = ForceFileToHaveName(file,NULL);
+		sf = SFReadSVG(spuriousname,0);
+		unlink(spuriousname); free(spuriousname);
+	    }
 	    checked = 'S';
 #if 0		/* I'm not sure if this is a good test for mf files... */
 	} else if ( ch1=='%' && ch2==' ' ) {
 	    sf = SFFromMF(fullname);
 #endif
 	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
-	    sf = SFDRead(fullname);
+	    sf = _SFDRead(fullname,file); file = NULL;
 	    checked = 'f';
 	    fromsfd = true;
 	} else if ( ch1=='S' && ch2=='T' && ch3=='A' && ch4=='R' ) {
@@ -798,6 +863,7 @@ return( NULL );
 	    checked = 'i';
 	    sf = SFReadIkarus(fullname);
 	} /* Too hard to figure out a valid mark for a mac resource file */
+	if ( file!=NULL ) fclose(file);
     }
 
     if ( sf!=NULL )
@@ -978,7 +1044,7 @@ return( NULL );
 
     sf = NULL;
     sf = FontWithThisFilename(filename);
-    if ( sf==NULL && *filename!='/' )
+    if ( sf==NULL && *filename!='/' && strstr(filename,"://")==NULL )
 	filename = tobefreed2 = ToAbsolute(filename);
 
     if ( sf==NULL )

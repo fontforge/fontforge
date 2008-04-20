@@ -444,3 +444,113 @@ return( false );
 	ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
 return( true );
 }
+
+FILE *URLToTempFile(char *url) {
+    struct sockaddr_in addr;
+    char *pt, *host, *filename;
+    FILE *ret;
+    char buffer[300];
+    int first, code;
+    int soc;
+    int datalen, len;
+    char *databuf;
+
+    snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
+
+    if ( strncasecmp(url,"http://",7)!=0 ) {
+	ff_post_error(_("Could not parse URL"),_("FontForge only handles http URLs at the moment"));
+return( NULL );
+    }
+    url += 7;
+    pt = strchr(url,'/');
+    if ( pt==NULL ) {
+	pt = url+strlen(url);
+	filename = "/";
+    } else
+	filename = pt;
+    host = copyn(url,pt-url);
+
+    ff_progress_start_indicator(0,_("Font Download..."),buffer,
+	    _("Resolving host"),1,1);
+    ff_progress_allow_events();
+    ff_progress_allow_events();
+
+    if ( !findHTTPhost(&addr, host)) {
+	ff_progress_end_indicator();
+	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
+	free( host );
+return( false );
+    }
+    soc = makeConnection(&addr);
+    if ( soc==-1 ) {
+	ff_progress_end_indicator();
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
+	free( host );
+return( false );
+    }
+
+    datalen = 8*8*1024;
+    databuf = galloc(datalen+1);
+
+    ChangeLine2_8(_("Requesting font..."));
+    sprintf( databuf,"GET %s HTTP/1.1\r\n"
+	"Host: %s\r\n"
+	"User-Agent: FontForge\r\n"
+	"Connection: close\r\n\r\n", filename, host );
+    if ( write(soc,databuf,strlen(databuf))==-1 ) {
+	ff_progress_end_indicator();
+	ff_post_error(_("Could not send request"),_("Could not send request to \"%s\"."), host );
+	close( soc );
+	free( databuf );
+	free( host );
+return( NULL );
+    }
+
+    ChangeLine2_8(_("Downloading font..."));
+
+    ret = tmpfile();
+
+    first = 1;
+    code = 404;
+    while ((len = read(soc,databuf,datalen))>0 ) {
+	if ( first ) {
+	    sscanf(databuf,"HTTP/%*f %d", &code );
+	    first = 0;
+	    /* check for redirects */
+	    if ( code>=300 && code<399 && (pt=strstr(databuf,"Location: "))!=NULL ) {
+		char *newurl = pt + strlen("Location: ");
+		pt = strchr(newurl,'\r');
+		if ( *pt )
+		    *pt = '\0';
+		close( soc );
+		fclose(ret);
+		free(host);
+		ret = URLToTempFile(newurl);
+		free(databuf);
+return( ret );
+	    }
+	    pt = strstr(databuf,"\r\n\r\n");
+	    if ( pt!=NULL ) {
+		pt += strlen("\r\n\r\n");
+		fwrite(pt,1,len-(pt-databuf),ret);
+	    }
+	} else {
+	    fwrite(databuf,1,len,ret);
+	}
+    }
+    ff_progress_end_indicator();
+    close( soc );
+    free( databuf );
+    free( host );
+    if ( len==-1 ) {
+	ff_post_error(_("Could not download data"),_("Could not download data.") );
+	fclose(ret);
+return( NULL );
+    } else if ( code<200 || code>299 ) {
+	ff_post_error(_("Could not download data"),_("HTTP return code: %d."), code );
+	fclose(ret);
+return( NULL );
+    }
+    rewind(ret);
+return( ret );
+}
