@@ -720,7 +720,10 @@ int main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-allglyphs")==0 )
 	    openflags |= of_all_glyphs_in_ttc;
 	else {
-	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
+	    if ( strstr(argv[i],"://")!=NULL )		/* Assume an absolute URL */
+		strncpy(buffer,argv[i],sizeof(buffer));
+	    else
+		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
 		char *fname;
 		fname = galloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
