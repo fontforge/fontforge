@@ -472,6 +472,7 @@ return( NULL );
 
     ff_progress_start_indicator(0,_("Font Download..."),buffer,
 	    _("Resolving host"),1,1);
+    ff_progress_enable_stop(false);
     ff_progress_allow_events();
     ff_progress_allow_events();
 
@@ -529,13 +530,20 @@ return( NULL );
 		free(databuf);
 return( ret );
 	    }
+	    pt = strstr(databuf,"Content-Length: ");
+	    if ( pt!=NULL ) {
+		pt += strlen( "Content-Length: ");
+		ff_progress_change_total(strtol(pt,NULL,10));
+	    }
 	    pt = strstr(databuf,"\r\n\r\n");
 	    if ( pt!=NULL ) {
 		pt += strlen("\r\n\r\n");
 		fwrite(pt,1,len-(pt-databuf),ret);
+		ff_progress_increment(len-(pt-databuf));
 	    }
 	} else {
 	    fwrite(databuf,1,len,ret);
+	    ff_progress_increment(len);
 	}
     }
     ff_progress_end_indicator();

@@ -400,8 +400,10 @@ return( true );
     pt = spt = _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( true );
-    while ( *pt && *pt!='/' && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
+    while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
 	++pt;
+    if ( spt[u_strlen(spt)-1]=='/' )
+	pt = spt+u_strlen(spt)-1;
     gfc = (GFileChooser *) GGadgetGetUserData(t);
 
     /* if there are no wildcards and no directories in the filename */

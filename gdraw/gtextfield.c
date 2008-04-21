@@ -2957,10 +2957,15 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
     unichar_t **ret;
     int i, len, orig_len;
     unichar_t *pt1, *pt2, ch;
+    /* If not from_tab, then the textfield has already been changed and we */
+    /* must mark it as such (but don't mark twice) */
 
     ret = (gc->completion)(&gt->g,from_tab);
     if ( ret==NULL || ret[0]==NULL ) {
-	if ( from_tab ) GDrawBeep(NULL);
+	if ( from_tab )
+	    GDrawBeep(NULL);
+	else
+	    GTextFieldChanged(gt,-1);
 	free(ret);
     } else if ( ret[1]==NULL ) {
 	GTextFieldSetTitle(&gt->g,ret[0]);
@@ -2984,7 +2989,8 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
 	    if ( !from_tab )
 		GTextFieldSelect(&gt->g,orig_len,len);
 	    GTextFieldChanged(gt,-1);
-	}
+	} else if ( !from_tab )
+	    GTextFieldChanged(gt,-1);
 	qsort(ret,i,sizeof(unichar_t *),ucmp);
 	gc->ctot = i;
 	if ( i>=MAXLINES ) {
