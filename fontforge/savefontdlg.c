@@ -1568,7 +1568,8 @@ return;
 	force_names_when_saving = rename_to;
 
     free(temp);
-    if ( !err && GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibUpload)) )
+    if ( !err && !d->family &&
+	    GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibUpload)) )
 	err = !OFLibUploadGather(d,path);
     d->done = !err;
     d->ret = !err;
@@ -1604,7 +1605,7 @@ static void _GFD_SaveOk(struct gfc_data *d) {
     unichar_t *ret;
     int formatstate = GGadgetGetFirstListSelectedItem(d->pstype);
 
-    if ( GGadgetIsChecked(GWidgetGetControl(d->gw, CID_OFLibUpload))) {
+    if ( !d->family && GGadgetIsChecked(GWidgetGetControl(d->gw, CID_OFLibUpload))) {
 	/* Check that we've got all the data we need for an oflib upload */
 	if ( *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibName))=='\0' ||
 		/* Can they get by without keywords? */
@@ -2088,7 +2089,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     extern NameList *force_names_when_saving;
     char **nlnames;
     int cnt, any;
-    GTextInfo *namelistnames, *lynames;
+    GTextInfo *namelistnames, *lynames=NULL;
     GBox small_blue_box;
     extern GBox _GGadget_button_box;
     char *oflpwd;
@@ -2804,8 +2805,10 @@ return( 0 );
 	gcd[k++].creator = GLineCreate;
 	hvarray[hvi++] = &gcd[k-1];
 	hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = NULL; hvarray[hvi++] = NULL;
-    } else
+    } else {
 	hvarray[12] = NULL;
+	oflpwd = NULL;
+    }
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = hvarray;
@@ -2932,7 +2935,7 @@ return( 0 );
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
     d.rename = gcd[rk].ret;
-    d.validate = gcd[vk].ret;
+    d.validate = family ? NULL : gcd[vk].ret;
     d.gw = gw;
 
     d.ps_flags = old_ps_flags;
