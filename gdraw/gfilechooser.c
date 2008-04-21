@@ -402,7 +402,7 @@ return( true );
 return( true );
     while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
 	++pt;
-    if ( spt[u_strlen(spt)-1]=='/' )
+    if ( *spt!='\0' && spt[u_strlen(spt)-1]=='/' )
 	pt = spt+u_strlen(spt)-1;
     gfc = (GFileChooser *) GGadgetGetUserData(t);
 
