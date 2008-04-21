@@ -30,7 +30,9 @@
 #include "gresource.h"
 #include "errno.h"
 
-#include <dynamic.h>
+#ifndef NODYNAMIC
+# include <dynamic.h>
+#endif
 
 struct stdfuncs _GIO_stdfuncs = {
     GIOguessMimeType, _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
@@ -48,7 +50,7 @@ struct stdfuncs _GIO_stdfuncs = {
 static struct protocols {
     int index;
     unichar_t *proto;
-    DL_CONST void *handle;
+    void *handle;
     void *(*dispatcher)(GIOControl *gc);
     void (*cancel)(GIOControl *gc);
     void (*term)(void *);
@@ -69,6 +71,7 @@ static int AddProtocol(unichar_t *prefix,int len) {
 	    protocols = grealloc(protocols,pmax*sizeof(struct protocols));
 	}
     }
+    memset(protocols+plen,0,sizeof(struct protocols));
     if ( uc_strncmp(prefix,"file",len)==0 ) {
 	protocols[plen].handle = NULL;
 	protocols[plen].dispatcher = _GIO_fileDispatch;
@@ -81,7 +84,7 @@ return( false );
 #else
 	char lib[300], buffer[1400];
 	DL_CONST void *handle;
-	void (*init)(void *,struct stdfuncs *,int);
+	void (*init)(DL_CONST void *,struct stdfuncs *,int);
 	strcpy(lib,"libgio");
 	cu_strncat(lib,prefix,len);
 	strcat(lib,SO_EXT);
