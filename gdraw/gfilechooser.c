@@ -375,7 +375,7 @@ static void GFileChooserErrorDir(GIOControl *gc) {
 static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
     GTextInfo **ti=NULL;
     int cnt, tot=0;
-    unichar_t *pt, *ept;
+    unichar_t *pt, *ept, *freeme;
 
     dir = u_GFileNormalize(dir);
     while ( 1 ) {
@@ -429,6 +429,25 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	    GFileChooserErrorDir);
     gfc->outstanding->receiveintermediate = GFileChooserIntermediateDir;
     GIOdir(gfc->outstanding);
+
+    freeme = NULL;
+    if ( dir[u_strlen(dir)-1]!='/' ) {
+	freeme = galloc((u_strlen(dir)+3)*sizeof(unichar_t));
+	u_strcpy(freeme,dir);
+	uc_strcat(freeme,"/");
+	dir = freeme;
+    }
+    if ( gfc->hpos>=gfc->hmax )
+	gfc->history = grealloc(gfc->history,(gfc->hmax+20)*sizeof(unichar_t *));
+    if ( gfc->hcnt==0 ) {
+	gfc->history[gfc->hcnt++] = u_copy(dir);
+    } else if ( u_strcmp(gfc->history[gfc->hpos],dir)==0 )
+	/* Just a refresh */;
+    else {
+	gfc->history[++gfc->hpos] = u_copy(dir);
+	gfc->hcnt = gfc->hpos+1;
+    }
+    free(freeme);
 }
 
 /* Handle events from the text field */
@@ -830,9 +849,144 @@ static int GFileChooserConfigure(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void GFCBack(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+
+    if ( gfc->hpos<=0 )
+return;
+    --gfc->hpos;
+    GFileChooserScanDir(gfc,gfc->history[gfc->hpos]);
+}
+
+static void GFCForward(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+
+    if ( gfc->hpos+1>=gfc->hcnt )
+return;
+    ++gfc->hpos;
+    GFileChooserScanDir(gfc,gfc->history[gfc->hpos]);
+}
+
+static void GFCAddCur(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    unichar_t *dir;
+    int bcnt;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    bcnt = 0;
+    if ( bookmarks!=NULL )
+	for ( ; bookmarks[bcnt]!=NULL; ++bcnt );
+    bookmarks = grealloc(bookmarks,(bcnt+2)*sizeof(unichar_t *));
+    bookmarks[bcnt] = dir;
+    bookmarks[bcnt+1] = NULL;
+}
+
+static void GFCRemoveBook(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    int i,bcnt;
+    char **books;
+    char *sel;
+    char *buts[2];
+
+    if ( bookmarks==NULL || bookmarks[0]==NULL )
+return;		/* All gone */
+    for ( bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt );
+    sel = gcalloc(bcnt,1);
+    books = gcalloc(bcnt+1,sizeof(char *));
+    for ( bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt )
+	books[bcnt] = u2utf8_copy(bookmarks[bcnt]);
+    books[bcnt] = NULL;
+    buts[0] = _("_Remove");
+    buts[1] = _("_Cancel");
+    if ( GWidgetChoicesBM8( _("Remove bookmarks"),(const char **) books,sel,bcnt,buts,
+	    _("Remove selected bookmarks"))==0 ) {
+	for ( i=bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt ) {
+	    if ( sel[bcnt] ) {
+		free(bookmarks[bcnt]);
+	    } else {
+		bookmarks[i++] = bookmarks[bcnt];
+	    }
+	}
+	bookmarks[i] = NULL;
+    }
+    for ( i=0; books[i]!=NULL; ++i )
+	free(books[i]);
+    free(books);
+    free(sel);
+}
+
+static void GFCBookmark(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    char *home;
+
+    if ( *bookmarks[mi->mid]=='~' && bookmarks[mi->mid][1]=='/' &&
+	    (home = getenv("HOME"))!=NULL ) {
+	unichar_t *space;
+	space = galloc((strlen(home)+u_strlen(bookmarks[mi->mid])+2)*sizeof(unichar_t));
+	uc_strcpy(space,home);
+	u_strcat(space,bookmarks[mi->mid]+1);
+	GFileChooserScanDir(gfc,space);
+	free(space);
+    } else
+	GFileChooserScanDir(gfc,bookmarks[mi->mid]);
+}
+
+static GMenuItem gfcbookmarkmenu[] = {
+    { { (unichar_t *) N_("Back"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCBack },
+    { { (unichar_t *) N_("Forward"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCForward },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Bookmark Current Dir"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCAddCur },
+    { { (unichar_t *) N_("Remove Bookmark..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCRemoveBook },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    NULL
+};
+static int bgotten=false;
+
 static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
 	GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
+	GMenuItem *mi;
+	int i, bcnt, mcnt;
+	GEvent fake;
+	GRect pos;
+
+	if ( !bgotten ) {
+	    bgotten = true;
+	    for ( i=0; gfcbookmarkmenu[i].ti.text!=NULL || gfcbookmarkmenu[i].ti.line; ++i )
+		gfcbookmarkmenu[i].ti.text = (unichar_t *) _( (char *) gfcbookmarkmenu[i].ti.text);
+	}
+	for ( mcnt=0; gfcbookmarkmenu[mcnt].ti.text!=NULL || gfcbookmarkmenu[mcnt].ti.line; ++mcnt );
+	bcnt = 0;
+	if ( bookmarks!=NULL )
+	    for ( ; bookmarks[bcnt]!=NULL; ++bcnt );
+	mi = gcalloc((mcnt+bcnt+1),sizeof(GMenuItem));
+	for ( mcnt=0; gfcbookmarkmenu[mcnt].ti.text!=NULL || gfcbookmarkmenu[mcnt].ti.line; ++mcnt ) {
+	    mi[mcnt] = gfcbookmarkmenu[mcnt];
+	    mi[mcnt].ti.text = (unichar_t *) copy( (char *) mi[mcnt].ti.text);
+	    mi[mcnt].ti.userdata = gfc;
+	}
+	if ( gfc->hpos==0 )
+	    mi[0].ti.disabled = true;		/* can't go further back */
+	if ( gfc->hpos+1>=gfc->hcnt )
+	    mi[1].ti.disabled = true;		/* can't go further forward */
+	if ( bookmarks==NULL )
+	    mi[4].ti.disabled = true;		/* can't remove bookmarks, already none */
+	else {
+	    for ( bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt ) {
+		mi[mcnt+bcnt].ti.text = u_copy(bookmarks[bcnt]);
+		mi[mcnt+bcnt].ti.fg = mi[mcnt+bcnt].ti.bg = COLOR_DEFAULT;
+		mi[mcnt+bcnt].ti.userdata = gfc;
+		mi[mcnt+bcnt].mid = bcnt;
+		mi[mcnt+bcnt].invoke = GFCBookmark;
+	    }
+	}
+	GGadgetGetSize(g,&pos);
+	memset(&fake,0,sizeof(fake));
+	fake.type = et_mousedown;
+	fake.w = g->base;
+	fake.u.mouse.x = pos.x;
+	fake.u.mouse.y = pos.y+pos.height;
+	GMenuCreatePopupMenu(gfc->g.base,&fake, mi);
+	GMenuItemArrayFree(mi);
     }
 return( true );
 }
@@ -1064,6 +1218,9 @@ static void GFileChooser_destroy(GGadget *g) {
 	    free( gfc->mimetypes[i]);
 	free(gfc->mimetypes);
     }
+    for ( i=0; i<gfc->hcnt; ++i )
+	free(gfc->history[i]);
+    free(gfc->history);
     _ggadget_destroy(&gfc->g);
 }
 
@@ -1081,6 +1238,25 @@ return( GGadgetDispatchEvent(&gfc->files->vsb->g,event));
 
 return( false );
 }
+
+#if 0		/* Our subwidgets get the key events first and we never see anything */
+static int gfilechooser_key(GGadget *g, GEvent *event) {
+    GFileChooser *gfc = (GFileChooser *) g;
+
+    if ( event->type!=et_char  )
+return( false );
+    if ( (event->u.chr.state & ksm_control) &&
+	    (event->u.chr.chars[0] == 'b' || event->u.chr.chars[0]=='B')) {
+	if ( gfc->hpos>0 ) {
+	    --gfc->hpos;
+	    GFileChooserScanDir(gfc,gfc->history[gfc->hpos]);
+	}
+return( true );
+    }
+
+return( false );
+}
+#endif
 
 static int gfilechooser_noop(GGadget *g, GEvent *event) {
 return( false );

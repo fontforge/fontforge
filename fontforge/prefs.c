@@ -415,18 +415,34 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { 0 }
  };
 
-static void GetFileChooserPrefsChanged(void *pointless) {
+static void FileChooserPrefsChanged(void *pointless) {
     SavePrefs(true);
 }
 
 static void ProcessFileChooserPrefs(void) {
+    unichar_t **b;
+    int i;
+
     GFileChooserSetShowHidden(gfc_showhidden);
     GFileChooserSetDirectoryPlacement(gfc_dirplace);
-    if ( gfc_bookmarks==NULL )
-	GFileChooserSetBookmarks(NULL);
-    else {
-	unichar_t **b;
-	int i;
+    if ( gfc_bookmarks==NULL ) {
+	b = galloc(7*sizeof(unichar_t *));
+	i = 0;
+#ifdef __Mac
+	b[i++] = uc_copy("~/Library/Fonts/");
+#endif
+	b[i++] = uc_copy("~/fonts");
+#ifdef __Mac
+	b[i++] = uc_copy("/Library/Fonts/");
+	b[i++] = uc_copy("/System/Library/Fonts/");
+#endif
+#if __CygWin
+	b[i++] = uc_copy("/cygdrive/c/Windows/Fonts/");
+#endif
+	b[i++] = uc_copy("/usr/X11R6/lib/X11/fonts/");
+	b[i++] = NULL;
+	GFileChooserSetBookmarks(b);
+    } else {
 	char *pt, *start;
 	start = gfc_bookmarks;
 	for ( i=0; ; ++i ) {
@@ -449,7 +465,7 @@ static void ProcessFileChooserPrefs(void) {
 	b[i+1] = NULL;
 	GFileChooserSetBookmarks(b);
     }
-    GFileChooserSetPrefsChangedCallback(NULL,GetFileChooserPrefsChanged);
+    GFileChooserSetPrefsChangedCallback(NULL,FileChooserPrefsChanged);
 }
 
 static void GetFileChooserPrefs(void) {
