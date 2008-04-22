@@ -367,6 +367,8 @@ typedef struct gfilechooser {
     GButton *up, *home;
     GButton *bookmarks, *config;
     struct ghvbox *topbox;
+    unichar_t **history;
+    int hpos, hcnt, hmax;
 } GFileChooser;
 
 typedef struct ghvbox {
