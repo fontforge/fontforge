@@ -354,7 +354,7 @@ struct gdirentry;
 typedef struct gfilechooser {
     struct ggadget g;
     GTextField *name;
-    GList *files;
+    GList *files, *subdirs;
     GListButton *directories;
     GButton *ok, *filterb;	/* Not created by us, can be set by user to give chooser a better appearance */
     unichar_t **mimetypes;
@@ -365,6 +365,8 @@ typedef struct gfilechooser {
     struct giocontrol *outstanding;
     GCursor old_cursor;
     GButton *up, *home;
+    GButton *bookmarks, *config;
+    struct ghvbox *topbox;
 } GFileChooser;
 
 typedef struct ghvbox {

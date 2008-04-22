@@ -43,6 +43,10 @@
 static GBox gfilechooser_box = { 0 };	/* no box */
 static unichar_t *lastdir;
 static int showhidden = false;
+static enum { dirs_mixed, dirs_first, dirs_separate } dir_placement = dirs_mixed;
+static unichar_t **bookmarks = NULL;
+static void *prefs_changed_data = NULL;
+static void (*prefs_changed)(void *) = NULL;
 
 static unichar_t *SubMatch(unichar_t *pattern, unichar_t *eop, unichar_t *name,int ignorecase) {
     unichar_t ch, *ppt, *npt, *ept, *eon;
@@ -234,16 +238,18 @@ return( &_GIcon_tar );
 return( &_GIcon_compressed );
     if ( cu_strstartmatch("application/pdf",m) )
 return( &_GIcon_texthtml );
-    if ( cu_strstartmatch("application/x-font/ttf",m) || cu_strstartmatch("application/x-font/otf",m))
+    if ( cu_strstartmatch("application/x-font-type1",m))
+return( &_GIcon_textfontps );
+    if ( cu_strstartmatch("application/x-font-ttf",m) || cu_strstartmatch("application/x-font-otf",m))
 return( &_GIcon_ttf );
-    if ( cu_strstartmatch("application/x-font/cid",m) )
+    if ( cu_strstartmatch("application/x-font-cid",m) )
 return( &_GIcon_cid );
     if ( cu_strstartmatch("application/x-macbinary",m) || cu_strstartmatch("application/x-mac-binhex40",m) )
 return( &_GIcon_mac );
     if ( cu_strstartmatch("application/x-mac-dfont",m) ||
 	    cu_strstartmatch("application/x-mac-suit",m) )
 return( &_GIcon_macttf );
-    if ( cu_strstartmatch("application/x-font/pcf",m) || cu_strstartmatch("application/x-font/snf",m))
+    if ( cu_strstartmatch("application/x-font-pcf",m) || cu_strstartmatch("application/x-font-snf",m))
 return( &_GIcon_textfontbdf );
 
 return( &_GIcon_unknown );
@@ -252,34 +258,69 @@ return( &_GIcon_unknown );
 static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
 	const unichar_t *dir) {
     GDirEntry *e;
-    int len;
-    GTextInfo **ti;
+    int len, dlen;
+    GTextInfo **ti, **dti;
 
-    len = 0;
+    len = dlen = 0;
     for ( e=first; e!=NULL; e=e->next ) {
 	e->fcdata = (gfc->filter)(&gfc->g,e,dir);
-	if ( e->fcdata!=fc_hide )
-	    ++len;
-    }
-
-    ti = galloc((len+1)*sizeof(GTextInfo *));
-    len = 0;
-    for ( e=first; e!=NULL; e=e->next ) {
 	if ( e->fcdata!=fc_hide ) {
-	    ti[len] = gcalloc(1,sizeof(GTextInfo));
-	    ti[len]->text = u_copy(e->name);
-	    ti[len]->image = GFileChooserPickIcon(e);
-	    ti[len]->fg = COLOR_DEFAULT;
-	    ti[len]->bg = COLOR_DEFAULT;
-	    ti[len]->font = NULL;
-	    ti[len]->disabled = e->fcdata==fc_showdisabled;
-	    ti[len]->image_precedes = true;
-	    ti[len]->checked = e->isdir;
-	    ++len;
+	    if ( e->isdir )
+		++dlen;
+	    else
+		++len;
 	}
     }
-    ti[len] = gcalloc(1,sizeof(GTextInfo));
-    GGadgetSetList(&gfc->files->g,ti,false);
+
+    if ( dir_placement == dirs_separate ) {
+	ti = galloc((len+1)*sizeof(GTextInfo *));
+	dti = galloc((dlen+1)*sizeof(GTextInfo *));
+	len = dlen = 0;
+	for ( e=first; e!=NULL; e=e->next ) {
+	    if ( e->fcdata!=fc_hide ) {
+		GTextInfo **me;
+		if ( e->isdir )
+		    me = &dti[dlen++];
+		else
+		    me = &ti[len++];
+
+		*me = gcalloc(1,sizeof(GTextInfo));
+		(*me)->text = u_copy(e->name);
+		(*me)->image = GFileChooserPickIcon(e);
+		(*me)->fg = COLOR_DEFAULT;
+		(*me)->bg = COLOR_DEFAULT;
+		(*me)->font = NULL;
+		(*me)->disabled = e->fcdata==fc_showdisabled;
+		(*me)->image_precedes = true;
+		(*me)->checked = e->isdir;
+	    }
+	}
+	ti[len] = gcalloc(1,sizeof(GTextInfo));
+	dti[dlen] = gcalloc(1,sizeof(GTextInfo));
+	GGadgetSetList(&gfc->files->g,ti,false);
+	GGadgetSetList(&gfc->subdirs->g,dti,false);
+    } else {
+	ti = galloc((len+dlen+1)*sizeof(GTextInfo *));
+	len = 0;
+	for ( e=first; e!=NULL; e=e->next ) {
+	    if ( e->fcdata!=fc_hide ) {
+		ti[len] = gcalloc(1,sizeof(GTextInfo));
+		ti[len]->text = u_copy(e->name);
+		ti[len]->image = GFileChooserPickIcon(e);
+		ti[len]->fg = COLOR_DEFAULT;
+		ti[len]->bg = COLOR_DEFAULT;
+		ti[len]->font = NULL;
+		ti[len]->disabled = e->fcdata==fc_showdisabled;
+		ti[len]->image_precedes = true;
+		ti[len]->checked = e->isdir;
+		if ( dir_placement==dirs_first && e->isdir )
+		    ((GTextInfo2 *) ti[len])->sort_me_first_in_list = true;
+		++len;
+	    }
+	}
+	ti[len] = gcalloc(1,sizeof(GTextInfo));
+	GGadgetSetList(&gfc->files->g,ti,false);
+    }
 
     GGadgetScrollListToText(&gfc->files->g,u_GFileNameTail(_GGadgetGetTitle(&gfc->name->g)),true);
 }
@@ -643,6 +684,70 @@ static void GFCHideToggle(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     dir = GFileChooserGetCurDir(gfc,-1);
     GFileChooserScanDir(gfc,dir);
     free(dir);
+
+    if ( prefs_changed!=NULL )
+	(prefs_changed)(prefs_changed_data);
+}
+
+static void GFCRemetric(GFileChooser *gfc) {
+    GRect size;
+
+    GGadgetGetSize(&gfc->topbox->g,&size);
+    GGadgetResize(&gfc->topbox->g,size.width,size.height);
+}
+
+static void GFCDirsAmidToggle(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    unichar_t *dir;
+
+    if ( dir_placement==dirs_separate ) {
+	GGadgetSetVisible(&gfc->subdirs->g,false);
+	GFCRemetric(gfc);
+    }
+    dir_placement = dirs_mixed;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    GFileChooserScanDir(gfc,dir);
+    free(dir);
+
+    if ( prefs_changed!=NULL )
+	(prefs_changed)(prefs_changed_data);
+}
+
+static void GFCDirsFirstToggle(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    unichar_t *dir;
+
+    if ( dir_placement==dirs_separate ) {
+	GGadgetSetVisible(&gfc->subdirs->g,false);
+	GFCRemetric(gfc);
+    }
+    dir_placement = dirs_first;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    GFileChooserScanDir(gfc,dir);
+    free(dir);
+
+    if ( prefs_changed!=NULL )
+	(prefs_changed)(prefs_changed_data);
+}
+
+static void GFCDirsSeparateToggle(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    unichar_t *dir;
+
+    if ( dir_placement!=dirs_separate ) {
+	GGadgetSetVisible(&gfc->subdirs->g,true);
+	GFCRemetric(gfc);
+    }
+    dir_placement = dirs_separate;
+
+    dir = GFileChooserGetCurDir(gfc,-1);
+    GFileChooserScanDir(gfc,dir);
+    free(dir);
+
+    if ( prefs_changed!=NULL )
+	(prefs_changed)(prefs_changed_data);
 }
 
 static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -684,10 +789,53 @@ return( true );
 
 static GMenuItem gfcpopupmenu[] = {
     { { (unichar_t *) N_("Show Hidden Files"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCHideToggle },
+    { { (unichar_t *) N_("Directories Amid Files"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCDirsAmidToggle },
+    { { (unichar_t *) N_("Directories First"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCDirsFirstToggle },
+    { { (unichar_t *) N_("Directories Separate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCDirsSeparateToggle },
     { { (unichar_t *) N_("Refresh File List"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'H' }, '\0', ksm_control, NULL, NULL, GFCRefresh },
     NULL
 };
 static int gotten=false;
+
+static void GFCPopupMenu(GGadget *g, GEvent *e) {
+    int i;
+    GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
+
+    for ( i=0; gfcpopupmenu[i].ti.text!=NULL || gfcpopupmenu[i].ti.line; ++i )
+	gfcpopupmenu[i].ti.userdata = gfc;
+    gfcpopupmenu[0].ti.checked = showhidden;
+    gfcpopupmenu[1].ti.checked = dir_placement == dirs_mixed;
+    gfcpopupmenu[2].ti.checked = dir_placement == dirs_first;
+    gfcpopupmenu[3].ti.checked = dir_placement == dirs_separate;
+    if ( !gotten ) {
+	gotten = true;
+	for ( i=0; gfcpopupmenu[i].ti.text!=NULL || gfcpopupmenu[i].ti.line; ++i )
+	    gfcpopupmenu[i].ti.text = (unichar_t *) _( (char *) gfcpopupmenu[i].ti.text);
+    }
+    GMenuCreatePopupMenu(g->base,e, gfcpopupmenu);
+}
+
+static int GFileChooserConfigure(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
+	GEvent fake;
+	GRect pos;
+	GGadgetGetSize(g,&pos);
+	memset(&fake,0,sizeof(fake));
+	fake.type = et_mousedown;
+	fake.w = g->base;
+	fake.u.mouse.x = pos.x;
+	fake.u.mouse.y = pos.y+pos.height;
+	GFCPopupMenu(g,&fake);
+    }
+return( true );
+}
+
+static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
+	GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
+    }
+return( true );
+}
 
 /* Routine to be called as the mouse moves across the dlg */
 void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
@@ -711,16 +859,7 @@ void GFileChooserPopupCheck(GGadget *g,GEvent *e) {
 	if ( !inside )
 	    GGadgetPreparePopup(gfc->g.base,gfc->wildcard);
     } else if ( e->type == et_mousedown && e->u.mouse.button==3 ) {
-	int i;
-	for ( i=0; gfcpopupmenu[i].ti.text!=NULL || gfcpopupmenu[i].ti.line; ++i )
-	    gfcpopupmenu[i].ti.userdata = gfc;
-	gfcpopupmenu[0].ti.checked = showhidden;
-	if ( !gotten ) {
-	    gotten = true;
-	    gfcpopupmenu[0].ti.text = (unichar_t *) _( (char *) gfcpopupmenu[0].ti.text);
-	    gfcpopupmenu[1].ti.text = (unichar_t *) _( (char *) gfcpopupmenu[1].ti.text);
-	}
-	GMenuCreatePopupMenu(g->base,e, gfcpopupmenu);
+	GFCPopupMenu(g,e);
     }
 }
 
@@ -908,11 +1047,16 @@ static void GFileChooser_destroy(GGadget *g) {
 
     if ( gfc->outstanding )
 	GIOcancel(gfc->outstanding);
+    GGadgetDestroy(&gfc->topbox->g);	/* destroys everything */
+#if 0
     GGadgetDestroy(&gfc->name->g);
     GGadgetDestroy(&gfc->files->g);
     GGadgetDestroy(&gfc->directories->g);
     GGadgetDestroy(&gfc->up->g);
     GGadgetDestroy(&gfc->home->g);
+    GGadgetDestroy(&gfc->bookmarks->g);
+    GGadgetDestroy(&gfc->config->g);
+#endif
     free(gfc->wildcard);
     free(gfc->lastname);
     if ( gfc->mimetypes ) {
@@ -948,17 +1092,25 @@ return( false );
 
 static void gfilechooser_move(GGadget *g, int32 x, int32 y ) {
     GFileChooser *gfc = (GFileChooser *) g;
+
+#if 1
+    GGadgetMove(&gfc->topbox->g,x,y);
+#else
     GGadgetMove(&gfc->files->g,x+(gfc->files->g.r.x-g->r.x),y+(gfc->files->g.r.y-g->r.y));
     GGadgetMove(&gfc->directories->g,x+(gfc->directories->g.r.x-g->r.x),y+(gfc->directories->g.r.y-g->r.y));
     GGadgetMove(&gfc->name->g,x+(gfc->name->g.r.x-g->r.x),y+(gfc->name->g.r.y-g->r.y));
     GGadgetMove(&gfc->up->g,x+(gfc->up->g.r.x-g->r.x),y+(gfc->up->g.r.y-g->r.y));
     GGadgetMove(&gfc->home->g,x+(gfc->home->g.r.x-g->r.x),y+(gfc->home->g.r.y-g->r.y));
+#endif
     _ggadget_move(g,x,y);
 }
 
 static void gfilechooser_resize(GGadget *g, int32 width, int32 height ) {
     GFileChooser *gfc = (GFileChooser *) g;
 
+#if 1
+    GGadgetResize(&gfc->topbox->g,width,height);
+#else    
     if ( width!=gfc->g.r.width ) {
 	int space = 8 + (width>100) ? (width-100)/12 : 0;
 	GGadgetResize(&gfc->directories->g,width-gfc->up->g.r.width-gfc->home->g.r.width-space,gfc->directories->g.r.height);
@@ -971,6 +1123,7 @@ static void gfilechooser_resize(GGadget *g, int32 width, int32 height ) {
 	GGadgetMove(&gfc->name->g,gfc->name->g.r.x,gfc->g.r.y+height-gfc->name->g.r.height);
     }
     GGadgetResize(&gfc->files->g,width,height-gfc->directories->g.r.height-gfc->name->g.r.height-10);
+#endif
     _ggadget_resize(g,width,height);
 }
 
@@ -979,6 +1132,11 @@ static void gfilechooser_setvisible(GGadget *g, int visible ) {
     GGadgetSetVisible(&gfc->files->g,visible);
     GGadgetSetVisible(&gfc->directories->g,visible);
     GGadgetSetVisible(&gfc->name->g,visible);
+    GGadgetSetVisible(&gfc->up->g,visible);
+    GGadgetSetVisible(&gfc->home->g,visible);
+    GGadgetSetVisible(&gfc->bookmarks->g,visible);
+    GGadgetSetVisible(&gfc->config->g,visible);
+    GGadgetSetVisible(&gfc->topbox->g,visible);
     _ggadget_setvisible(g,visible);
 }
 
@@ -987,6 +1145,11 @@ static void gfilechooser_setenabled(GGadget *g, int enabled ) {
     GGadgetSetEnabled(&gfc->files->g,enabled);
     GGadgetSetEnabled(&gfc->directories->g,enabled);
     GGadgetSetEnabled(&gfc->name->g,enabled);
+    GGadgetSetEnabled(&gfc->up->g,enabled);
+    GGadgetSetEnabled(&gfc->home->g,enabled);
+    GGadgetSetEnabled(&gfc->bookmarks->g,enabled);
+    GGadgetSetEnabled(&gfc->config->g,enabled);
+    GGadgetSetEnabled(&gfc->topbox->g,enabled);
     _ggadget_setenabled(g,enabled);
 }
 
@@ -1058,61 +1221,133 @@ struct gfuncs GFileChooser_funcs = {
 };
 
 static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
-    GGadgetData gd;
-    GTextInfo label;
-    int space = GDrawPointsToPixels(gfc->g.base,3);
+    GGadgetCreateData gcd[9], boxes[4], *varray[9], *harray[12], *harray2[4];
+    GTextInfo label[9];
+    int k=0, l=0, homek, upk, bookk, confk, dirsk, subdirsk, filesk, textk;
 
-    memset(&gd,'\0',sizeof(gd));
-    gd.pos.y = gfc->g.r.y; gd.pos.height = 0;
-    gd.pos.width = GGadgetScale(GDrawPointsToPixels(gfc->g.base,150));
-    if ( gd.pos.width>gfc->g.r.width ) gd.pos.width = gfc->g.r.width;
-    gd.pos.x = gfc->g.r.x+(gfc->g.r.width - gd.pos.width)/2;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_list_exactlyone;
-    gd.handle_controlevent = GFileChooserDListChanged;
-    gfc->directories = (GListButton *) GListButtonCreate(gfc->g.base,&gd,gfc);
-    gfc->directories->g.contained = true;
+    memset(&gcd,'\0',sizeof(gcd));
+    memset(&boxes,'\0',sizeof(boxes));
+    memset(&label,'\0',sizeof(label));
 
-    gd.pos.height = 0/*gfc->directories->g.r.height*/;
-    gd.pos.y = gfc->g.r.y+gfc->g.r.height-gfc->directories->g.r.height;
-    gd.pos.width = gfc->g.r.width;
-    gd.pos.x = gfc->g.r.x;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
-    gd.handle_controlevent = GFileChooserTextChanged;
-    if ( flags&gg_file_pulldown )
-	gfc->name = (GTextField *) GListFieldCreate(gfc->g.base,&gd,gfc);
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Home Folder");
+    label[k].image = &_GIcon_homefolder;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = GFileChooserHome;
+    homek = k;
+    gcd[k++].creator = GButtonCreate;
+    harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Bookmarks");
+    label[k].image = &_GIcon_bookmark;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = GFileChooserBookmarks;
+    bookk = k;
+    gcd[k++].creator = GButtonCreate;
+    harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_list_exactlyone;
+    gcd[k].gd.handle_controlevent = GFileChooserDListChanged;
+    dirsk = k;
+    gcd[k++].creator = GListButtonCreate;
+    harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Parent Folder");
+    label[k].image = &_GIcon_updir;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = GFileChooserUpDirButton;
+    upk = k;
+    gcd[k++].creator = GButtonCreate;
+    harray[l++] = &gcd[k-1]; harray[l++] = GCD_Glue;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Configure");
+    label[k].image = &_GIcon_configtool;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = GFileChooserConfigure;
+    confk = k;
+    gcd[k++].creator = GButtonCreate;
+    harray[l++] = &gcd[k-1]; harray[l++] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+
+    l=0;
+    varray[l++] = &boxes[2];
+
+    if ( dir_placement==dirs_separate )
+	gcd[k].gd.flags = gg_visible|gg_enabled|gg_list_alphabetic|gg_list_exactlyone;
     else
-	gfc->name = (GTextField *) GTextCompletionCreate(gfc->g.base,&gd,gfc);
+	gcd[k].gd.flags =            gg_enabled|gg_list_alphabetic|gg_list_exactlyone;
+    gcd[k].gd.handle_controlevent = GFileChooserFListSelected;
+    subdirsk = k;
+    gcd[k++].creator = GListCreate;
+    harray2[0] = &gcd[k-1];
+
+    if ( flags & gg_file_multiple )
+	gcd[k].gd.flags = gg_visible|gg_enabled|gg_list_alphabetic|gg_list_multiplesel;
+    else
+	gcd[k].gd.flags = gg_visible|gg_enabled|gg_list_alphabetic|gg_list_exactlyone;
+    gcd[k].gd.handle_controlevent = GFileChooserFListSelected;
+    filesk = k;
+    gcd[k++].creator = GListCreate;
+    harray2[1] = &gcd[k-1]; harray2[2] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray2;
+    boxes[3].creator = GHBoxCreate;
+    varray[l++] = &boxes[3];
+
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.handle_controlevent = GFileChooserTextChanged;
+    textk = k;
+    if ( flags&gg_file_pulldown )
+	gcd[k++].creator = GListFieldCreate;
+    else
+	gcd[k++].creator = GTextCompletionCreate;
+    varray[l++] = &gcd[k-1]; varray[l] = NULL;
+
+    boxes[0].gd.pos.x = gfc->g.r.x;
+    boxes[0].gd.pos.y = gfc->g.r.y;
+    boxes[0].gd.pos.width  = gfc->g.r.width;
+    boxes[0].gd.pos.height = gfc->g.r.height;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    for ( l=0; l<k; ++l )
+	gcd[l].data = gfc;
+    
+    GGadgetsCreate(gfc->g.base,boxes);
+
+    gfc->topbox      = (GHVBox *)      boxes[0].ret;
+    gfc->home        = (GButton *)     gcd[homek].ret;
+    gfc->bookmarks   = (GButton *)     gcd[bookk].ret;
+    gfc->directories = (GListButton *) gcd[dirsk].ret;
+    gfc->up          = (GButton *)     gcd[upk  ].ret;
+    gfc->config      = (GButton *)     gcd[confk].ret;
+    gfc->subdirs     = (GList *)       gcd[subdirsk].ret;
+    gfc->files       = (GList *)       gcd[filesk].ret;
+    gfc->name        = (GTextField *)  gcd[textk].ret;
+
+    gfc->home->g.contained = true;
+    gfc->bookmarks->g.contained = true;
+    gfc->directories->g.contained = true;
+    gfc->up->g.contained = true;
+    gfc->config->g.contained = true;
+    gfc->subdirs->g.contained = true;
+    gfc->files->g.contained = true;
+    gfc->name->g.contained = true;
+    gfc->topbox->g.contained = true;
+
     GCompletionFieldSetCompletion(&gfc->name->g,GFileChooserCompletion);
     GCompletionFieldSetCompletionMode(&gfc->name->g,true);
-    gfc->name->g.contained = true;
 
-    gd.pos.height = gfc->g.r.height-
-	    (2*gfc->directories->g.r.height+2*space);
-    gd.pos.y = gfc->g.r.y+gfc->directories->g.r.height+space;
-    if ( flags & gg_file_multiple )
-	gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_list_alphabetic|gg_list_multiplesel;
-    else
-	gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_list_alphabetic|gg_list_exactlyone;
-    gd.handle_controlevent = GFileChooserFListSelected;
-    gfc->files = (GList *) GListCreate(gfc->g.base,&gd,gfc);
-    gfc->files->g.contained = true;
-
-    memset(&gd,0,sizeof(gd));
-    memset(&label,0,sizeof(label));
-    gd.pos.x = gfc->g.r.x; gd.pos.y = gfc->g.r.y;
-    gd.pos.height = 0; gd.pos.width = 0;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
-    label.image = &_GIcon_homefolder;
-    gd.label = &label;
-    gd.handle_controlevent = GFileChooserHome;
-    gfc->home = (GButton *) GButtonCreate(gfc->g.base,&gd,gfc);
-    gfc->home->g.contained = true;
-
-    gd.pos.x = gfc->g.r.x + gfc->g.r.width - 16 - GDrawPointsToPixels(gfc->g.base,10);
-    label.image = &_GIcon_updir;
-    gd.handle_controlevent = GFileChooserUpDirButton;
-    gfc->up = (GButton *) GButtonCreate(gfc->g.base,&gd,gfc);
-    gfc->up->g.contained = true;
+    GHVBoxSetExpandableRow(boxes[0].ret,1);
+    GHVBoxSetExpandableCol(boxes[2].ret,4);
 }
 
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
@@ -1213,4 +1448,40 @@ return( NULL );
     file = u_GFileAppendFile(curdir,ti->text,false);
     free(curdir);
 return( file );
+}
+
+void GFileChooserSetShowHidden(int sh) {
+    showhidden = sh;
+}
+
+int GFileChooserGetShowHidden(void) {
+return( showhidden );
+}
+
+void GFileChooserSetDirectoryPlacement(int dp) {
+    dir_placement = dp;
+}
+
+int GFileChooserGetDirectoryPlacement(void) {
+return( dir_placement );
+}
+
+void GFileChooserSetBookmarks(unichar_t **b) {
+    if ( bookmarks!=NULL && bookmarks!=b ) {
+	int i;
+
+	for ( i=0; bookmarks[i]!=NULL; ++i )
+	    free(bookmarks[i]);
+	free(bookmarks);
+    }
+    bookmarks = b;
+}
+
+unichar_t **GFileChooserGetBookmarks(void) {
+return( bookmarks );
+}
+
+void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *)) {
+    prefs_changed = p_c;
+    prefs_changed_data = data;
 }

@@ -147,6 +147,9 @@ extern int default_font_filter_index;
 extern struct openfilefilters *user_font_filters;
 static int alwaysgenapple=false, alwaysgenopentype=false;
 
+static int gfc_showhidden, gfc_dirplace;
+static char *gfc_bookmarks=NULL;
+
 static int pointless;
 
     /* These first three must match the values in macenc.c */
@@ -379,6 +382,9 @@ static struct prefs_list {
 	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
+	{ "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1 },
+	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1 },
+	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
@@ -408,6 +414,72 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { N_("OpenType"), 1, opentype_list},
     { 0 }
  };
+
+static void GetFileChooserPrefsChanged(void *pointless) {
+    SavePrefs(true);
+}
+
+static void ProcessFileChooserPrefs(void) {
+    GFileChooserSetShowHidden(gfc_showhidden);
+    GFileChooserSetDirectoryPlacement(gfc_dirplace);
+    if ( gfc_bookmarks==NULL )
+	GFileChooserSetBookmarks(NULL);
+    else {
+	unichar_t **b;
+	int i;
+	char *pt, *start;
+	start = gfc_bookmarks;
+	for ( i=0; ; ++i ) {
+	    pt = strchr(start,';');
+	    if ( pt==NULL )
+	break;
+	    start = pt+1;
+	}
+	b = galloc((i+2)*sizeof(unichar_t *));
+	for ( i=0; ; ++i ) {
+	    pt = strchr(start,';');
+	    if ( pt!=NULL )
+		*pt = '\0';
+	    b[i] = utf82u_copy(start);
+	    if ( pt==NULL )
+	break;
+	    *pt = ';';
+	    start = pt+1;
+	}
+	b[i+1] = NULL;
+	GFileChooserSetBookmarks(b);
+    }
+    GFileChooserSetPrefsChangedCallback(NULL,GetFileChooserPrefsChanged);
+}
+
+static void GetFileChooserPrefs(void) {
+    unichar_t **foo;
+
+    gfc_showhidden = GFileChooserGetShowHidden();
+    gfc_dirplace = GFileChooserGetDirectoryPlacement();
+    foo = GFileChooserGetBookmarks();
+    free(gfc_bookmarks);
+    if ( foo==NULL || foo[0]==NULL )
+	gfc_bookmarks = NULL;
+    else {
+	int i,len=0;
+	for ( i=0; foo[i]!=NULL; ++i )
+	    len = 4*u_strlen(foo[i])+1;
+	gfc_bookmarks = galloc(len+10);
+	len = 0;
+	for ( i=0; foo[i]!=NULL; ++i ) {
+	    u2utf8_strcpy(gfc_bookmarks+len,foo[i]);
+	    len += strlen(gfc_bookmarks+len);
+	    gfc_bookmarks[len++] = ';';
+	}
+	if ( len>0 )
+	    gfc_bookmarks[len-1] = '\0';
+	else {
+	    free(gfc_bookmarks);
+	    gfc_bookmarks = NULL;
+	}
+    }
+}
 
 #define TOPICS	(sizeof(visible_prefs_list)/sizeof(visible_prefs_list[0])-1)
 
@@ -935,6 +1007,7 @@ static void PrefsUI_LoadPrefs(void) {
 	old_otf_flags |= ttf_flag_glyphmap;
     }
     LoadNamelistDir(NULL);
+    ProcessFileChooserPrefs();
 }
 
 static void PrefsUI_SavePrefs(int not_if_script) {
@@ -952,6 +1025,8 @@ return;
 
     if ( (p=fopen(prefs,"w"))==NULL )
 return;
+
+    GetFileChooserPrefs();
 
     for ( j=0; prefs_list[j]!=NULL; ++j ) for ( i=0; prefs_list[j][i].name!=NULL; ++i ) {
 	pl = &prefs_list[j][i];
