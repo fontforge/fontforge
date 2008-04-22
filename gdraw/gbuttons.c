@@ -240,6 +240,8 @@ return( true );
     if ( event->type == et_crossing ) {
 	if ( gb->within && !event->u.crossing.entered )
 	    gb->within = false;
+	if ( gb->pressed && (event->u.crossing.state&ksm_buttons)==0 )
+	    gb->pressed = false;
     } else if ( gb->pressed && event->type==et_mouseup ) {
 	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	    if ( event->type == et_mouseup ) {
