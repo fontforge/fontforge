@@ -50,17 +50,18 @@ unichar_t pdf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','p','d','f',
 unichar_t object[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','o','b','j','e','c','t', '\0' };
 unichar_t dir[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','n','a','v','i','d','i','r', '\0' };
 unichar_t core[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c','o','r','e', '\0' };
-unichar_t fontttf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','t','t','f', '\0' };
-unichar_t fontotf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','o','t','f', '\0' };
-unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','c','i','d', '\0' };
+unichar_t fontttf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','t','t','f', '\0' };
+unichar_t fontotf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','o','t','f', '\0' };
+unichar_t fontcid[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','c','i','d', '\0' };
+unichar_t fonttype1[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','t','y','p','e','1', '\0' };
 unichar_t fontmacsuit[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','s','u','i','t', '\0' };
 unichar_t macbin[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','b','i','n','a','r','y', '\0' };
 unichar_t machqx[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','b','i','n','h','e','x','4','0', '\0' };
 unichar_t macdfont[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','m','a','c','-','d','f','o','n','t', '\0' };
 unichar_t compressed[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','c','o','m','p','r','e','s','s','e','d', '\0' };
 unichar_t tar[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','t','a','r', '\0' };
-unichar_t fontpcf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','p','c','f', '\0' };
-unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','/','s','n','f', '\0' };
+unichar_t fontpcf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','p','c','f', '\0' };
+unichar_t fontsnf[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','x','-','f','o','n','t','-','s','n','f', '\0' };
 
 #ifdef __Mac
 #include </Developer/Headers/FlatCarbon/Files.h>
@@ -166,6 +167,7 @@ return( machqx );
 return( macdfont );
     else if ( uc_strmatch(pt,".gz")==0 || uc_strmatch(pt,".tgz")==0 ||
 	    uc_strmatch(pt,".Z")==0 || uc_strmatch(pt,".zip")==0 ||
+	    uc_strmatch(pt,".bz2")==0 || uc_strmatch(pt,".tbz")==0 ||
 	    uc_strmatch(pt,".rpm")==0 )
 return( compressed );
     else if ( uc_strmatch(pt,".tar")==0 )

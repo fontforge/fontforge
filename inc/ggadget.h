@@ -51,6 +51,27 @@ typedef struct gtextinfo {
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
 } GTextInfo;
 
+typedef struct gtextinfo2 {
+    unichar_t *text;
+    GImage *image;
+    Color fg;
+    Color bg;
+    void *userdata;
+    GFont *font;
+    unsigned int disabled: 1;
+    unsigned int image_precedes: 1;
+    unsigned int checkable: 1;			/* Only for menus */
+    unsigned int checked: 1;			/* Only for menus */
+    unsigned int selected: 1;			/* Only for lists (used internally for menu(bar)s, when cursor is on the line) */
+    unsigned int line: 1;			/* Only for menus */
+    unsigned int text_is_1byte: 1;		/* If passed in as 1byte (ie. iso-8859-1) text, will be converted */
+    unsigned int text_in_resource: 1;		/* the text field is actually an index into the string resource table */
+    unsigned int changed: 1;			/* If a row/column widget changed this */
+    unsigned int sort_me_first_in_list: 1;	/* used for directories in file chooser widgets */
+    unichar_t mnemonic;				/* Only for menus and menubars */
+						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
+} GTextInfo2;
+
 typedef struct gmenuitem {
     GTextInfo ti;
     unichar_t shortcut;
@@ -363,6 +384,13 @@ unichar_t **GFileChooserGetMimetypes(GGadget *g);
 void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGadget **tf);
 int GFileChooserPosIsDir(GGadget *g, int pos);
 unichar_t *GFileChooserFileNameOfPos(GGadget *g, int pos);
+void GFileChooserSetShowHidden(int sh);
+int GFileChooserGetShowHidden(void);
+void GFileChooserSetDirectoryPlacement(int dp);
+int GFileChooserGetDirectoryPlacement(void);
+void GFileChooserSetBookmarks(unichar_t **b);
+unichar_t **GFileChooserGetBookmarks(void);
+void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *));
 
 void GHVBoxSetExpandableCol(GGadget *g,int col);
 void GHVBoxSetExpandableRow(GGadget *g,int row);

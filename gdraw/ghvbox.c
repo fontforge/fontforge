@@ -309,13 +309,21 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
 		    si.cols[gb->grow_col].sized+(width-si.width)-gb->hpad>2 ) {
 		si.cols[gb->grow_col].sized += width-si.width;
 	    } else {
-		plus = (width-si.width)/gb->cols;
-		if ( width<si.width )
-		    --plus;
-		extra = (width-si.width-gb->cols*plus);
-		for ( i=0; i<gb->cols; ++i ) {
-		    si.cols[i].sized += plus + (extra>0);
-		    --extra;
+		int vcols=0;
+		for ( i=0; i<gb->cols; ++i )
+		    if ( si.cols[i].sized>0 )
+			++vcols;
+		if ( vcols!=0 ) {
+		    plus = (width-si.width)/vcols;
+		    if ( width<si.width )
+			--plus;
+		    extra = (width-si.width-vcols*plus);
+		    for ( i=0; i<gb->cols; ++i ) {
+			if ( si.cols[i].sized!=0 ) {
+			    si.cols[i].sized += plus + (extra>0);
+			    --extra;
+			}
+		    }
 		}
 	    }
 	}

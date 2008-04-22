@@ -50,3 +50,5 @@ extern GImage _GIcon_macttf;
 extern GImage _GIcon_compressed;
 extern GImage _GIcon_tar;
 extern GImage _GIcon_homefolder;
+extern GImage _GIcon_configtool;
+extern GImage _GIcon_bookmark;
