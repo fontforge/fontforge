@@ -282,6 +282,9 @@ return( true );
 	    handled = (topd->popupowner->funcs->handle_mouse)(topd->popupowner,event);
 return( handled );
 	}
+	if ( gd->grabgadget && event->type==et_mousedown &&
+		(event->u.mouse.state&ksm_buttons)==0 )
+	    gd->grabgadget = NULL;		/* Happens if a gadget invokes a popup menu. Gadget remains grabbed because menu gets the mouse up */
 	if ( gd->grabgadget!=NULL ) {
 	    handled = (gd->grabgadget->funcs->handle_mouse)(gd->grabgadget,event);
 	    if ( !GDrawNativeWindowExists(NULL,event->native_window) ||
