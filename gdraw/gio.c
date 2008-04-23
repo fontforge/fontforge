@@ -39,8 +39,11 @@ struct stdfuncs _GIO_stdfuncs = {
     _GIO_PostError, _GIO_RequestAuthorization, _GIO_LookupHost,
     NULL,			/* default authorizer */
     GIOFreeDirEntries,
-
+#ifdef GWW_TEST
     _GIO_ReportHeaders,		/* set to NULL when not debugging */
+#else
+    NULL,
+#endif
 
 #ifndef NOTHREADS
     PTHREAD_MUTEX_INITIALIZER,
@@ -89,9 +92,18 @@ return( false );
 	cu_strncat(lib,prefix,len);
 	strcat(lib,SO_EXT);
 	if ( (handle = dlopen(lib,RTLD_LAZY))==NULL ) {
-	    sprintf(buffer,"%s/%s",GResourceProgramDir,lib);
+#ifdef LIBDIR
+	    sprintf(buffer,LIBDIR "/%s",lib);
 	    if ( (handle = dlopen(buffer,RTLD_LAZY))==NULL )
+#endif
+	    {
+#ifdef GWW_TEST
+ printf ( "dlopen failed: %s\n", dlerror());
+#endif
+		sprintf(buffer,"%s/../lib/%s",GResourceProgramDir,lib);
+		if ( (handle = dlopen(buffer,RTLD_LAZY))==NULL )
 return( false );
+	    }
 	}
 	protocols[plen].handle = handle;
 	protocols[plen].dispatcher = dlsym(handle,"GIO_dispatch");
@@ -159,9 +171,11 @@ return;
 	    if ( u_strnmatch(protocols[i].proto,gc->path,pt-gc->path)==0 )
 	break;
 	if ( i>=plen && !AddProtocol(gc->path,pt-gc->path) ) {
+	    gc->protocol_index = -2;
 	    gc->return_code = 501;
 	    gc->error = err501;
-	    uc_strcpy(gc->status,"No support for protocol");
+	    uc_strcpy(gc->status,"No support for browsing: ");
+	    u_strncpy(gc->status+u_strlen(gc->status), gc->path, pt-gc->path );
 	    gc->done = true;
 	    (gc->receiveerror)(gc);
 return;
@@ -247,7 +261,7 @@ return( NULL );
 }
 
 void GIOcancel(GIOControl *gc) {
-    if ( gc->protocol_index!=-1 && protocols[gc->protocol_index].cancel!=NULL )
+    if ( gc->protocol_index>=0 && protocols[gc->protocol_index].cancel!=NULL )
 	/* Per connection cleanup, cancels io if not done and removes from any queues */
 	(protocols[gc->protocol_index].cancel)(gc);
     if ( gc->direntrydata )

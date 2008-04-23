@@ -712,7 +712,7 @@ return( NULL );
 	strippedname[paren-filename] = '\0';
     }
 
-    if ( strncasecmp(strippedname,"http://",7)==0 ) {
+    if ( strstr(strippedname,"://")!=NULL ) {
 	file = URLToTempFile(strippedname);
 	if ( file==NULL )
 return( NULL );

@@ -35,6 +35,7 @@ char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **user
 	char **password) {
     unichar_t *pt, *pt2, *upt, *ppt;
     char *path;
+    /* ftp://[user[:password]@]ftpserver[:port]/url-path */
 
     *username = NULL; *password = NULL; *port = -1;
     pt = uc_strstr(url,"://");
@@ -54,14 +55,14 @@ return( cu_copy(url));
 
     upt = u_strchr(pt,'@');
     if ( upt!=NULL && upt<pt2 ) {
-	ppt = u_strchr(upt,':');
+	ppt = u_strchr(pt,':');
 	if ( ppt==NULL )
-	    *username = cu_copyn(upt+1,pt2-upt-1);
+	    *username = cu_copyn(pt,upt-pt);
 	else {
-	    *username = cu_copyn(upt+1,ppt-upt-1);
-	    *password = cu_copyn(ppt+1,pt2-ppt-1);
+	    *username = cu_copyn(pt,ppt-pt);
+	    *password = cu_copyn(ppt+1,upt-ppt-1);
 	}
-	pt2 = upt;
+	pt = upt+1;
     }
 
     ppt = u_strchr(pt,':');

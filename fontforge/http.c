@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
 
 struct siteinfo {
     int cookie_cnt;
@@ -48,17 +49,154 @@ struct siteinfo {
 
 enum conversation_type { ct_savecookies, ct_slurpdata, ct_getuserid };
 
-static int findHTTPhost(struct sockaddr_in *addr, char *hostname) {
+static int findHTTPhost(struct sockaddr_in *addr, char *hostname, int port) {
     struct servent *servent;
     struct hostent *hostent;
     int i;
 
     memset(addr,0,sizeof(*addr));
     addr->sin_family = AF_INET;
-    if (( servent = getservbyname("http","tcp"))!=NULL )
+    if ( port>=0 )
+	addr->sin_port = htons(port);
+    else if (( servent = getservbyname("http","tcp"))!=NULL )
 	addr->sin_port = servent->s_port;	/* Already in server byteorder */
     else
 	addr->sin_port = htons(80);
+    endservent();
+    hostent = gethostbyname(hostname);
+    if ( hostent==NULL )
+return( 0 );
+    for ( i=0; hostent->h_addr_list[i]!=NULL; ++i );
+    memcpy(&addr->sin_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
+    endhostent();
+return( 1 );
+}
+
+/* this excedingly complex routine tries to send data on a socket. */
+/*  first it waits until the socket is ready to accept data (there is no time-*/
+/*  out on send/write), checking to see if the user has aborted the operation */
+/*  if an interrupt happens which kills the select call then restart the call */
+/*  if we get an select error we assume the connection died. If we time-out we*/
+/*  essentially assume the same. If the send fails, ditto. If everything succedes */
+/*  record that we sent the command */
+static int ftpsend(int ctl, char *cmd) {
+    struct timeval tv;
+    fd_set wts;
+    int i=0, ret=0;
+
+  restart:
+    FD_ZERO(&wts);
+    while ( i<60 ) {
+	FD_SET(ctl,&wts);
+	tv.tv_sec = 4; tv.tv_usec = 0;
+	if (( ret = select(ctl+1,NULL,&wts,NULL,&tv))<0 ) {
+	    if ( errno==EINTR )
+  goto restart;
+return( -1 );
+	} else if ( ret>0 )
+    break;
+	++i;
+    }
+    if ( ret==0 ) {
+return( -1 );
+    }
+    if ( send(ctl,cmd,strlen(cmd),MSG_NOSIGNAL)<=0 ) {
+	if ( errno==EINTR )	/* interrupted, try again */
+  goto restart;
+return( -1 );
+    }
+return( true );
+}
+
+/* Similar thing for read */
+static int getresponse(int ctl, char *buf, int buflen) {
+    struct timeval tv;
+    fd_set rds;
+    int len;
+    int ret=false, i;
+    char *pt, *start;
+
+  restart:
+    while ( 1 ) {
+	FD_ZERO(&rds);
+	i = 0;
+	while ( i<60 ) {
+	    FD_SET(ctl,&rds);
+	    tv.tv_sec = 4; tv.tv_usec = 0;
+	    if (( ret = select(ctl+1,&rds,NULL,NULL,&tv))<0 ) {
+		if ( errno==EINTR )
+  goto restart;
+return( -1 );
+	    } else if ( ret>0 )
+	break;
+	    ++i;
+	}
+	if ( ret==0 )		/* Time out */
+return( -1 );
+	len = read(ctl,buf,buflen);
+	if ( len==0 )
+return( -1 );
+	buf[len]='\0';
+	start = buf;
+	while ( (pt = strchr(start,'\n' ))!=NULL ) {
+	    if ( start[3]==' ' )
+return(start[0]=='2' || start[0]=='1');
+	    start = pt+1;
+	}
+    }
+}
+
+static int ftpsendr(int ctl, char *cmd, char *buf, int buflen) {
+
+    if ( ftpsend(ctl,cmd)==-1 )
+return( -1 );
+return( getresponse(ctl,buf,buflen));
+}
+
+static int ftpsendpassive(int ctl, struct sockaddr_in *data_addr, char *buf, int buflen) {
+    char *pt, *start;
+
+    if ( ftpsend(ctl,"PASV\r\n")==-1 )
+return( -1 );
+    if ( getresponse(ctl,buf,buflen)== -1 )
+return( -1 );
+
+    start = buf;
+    while ( (pt = strchr(start,'\n' ))!=NULL ) {
+	if ( start[3]==' ' )
+    break;
+	start = pt+1;
+    }
+    if ( strtol(buf,NULL,10) == 227 ) {
+	/* 227 Entering Passive Mode (h1,h2,h3,h4,p1,p2) */
+	int h1,h2,h3,h4,p1,p2;
+	for ( pt=buf+4; !isdigit(*pt) && *pt!='\n' ; ++pt );
+	if ( *pt=='\n' )
+return( -2 );		/* can't parse it */
+	sscanf(pt,"%d,%d,%d,%d,%d,%d", &h1, &h2, &h3, &h4, &p1, &p2 );
+	data_addr->sin_family = AF_INET;
+	data_addr->sin_port = htons((p1<<8)|p2);
+	data_addr->sin_addr.s_addr = htonl((h1<<24)|(h2<<16)|(h3<<8)|h4);
+return( 1 );
+    } else if ( *start=='4' || *start=='5' )
+return( 0 );
+
+return( 0 );	/* shouldn't get here */
+}
+
+static int findFTPhost(struct sockaddr_in *addr, char *hostname, int port) {
+    struct servent *servent;
+    struct hostent *hostent;
+    int i;
+
+    memset(addr,0,sizeof(*addr));
+    addr->sin_family = AF_INET;
+    if ( port>=0 )
+	addr->sin_port = htons(port);
+    else if (( servent = getservbyname("ftp","tcp"))!=NULL )
+	addr->sin_port = servent->s_port;	/* Already in server byteorder */
+    else
+	addr->sin_port = htons(21);
     endservent();
     hostent = gethostbyname(hostname);
     if ( hostent==NULL )
@@ -269,7 +407,7 @@ int OFLibUploadFont(OFLibData *oflib) {
     ff_progress_allow_events();
     ff_progress_allow_events();
 
-    if ( !findHTTPhost(&addr, "openfontlibrary.org")) {
+    if ( !findHTTPhost(&addr, "openfontlibrary.org",-1)) {
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), "openfontlibrary.org" );
 return( false );
@@ -407,7 +545,7 @@ return( false );
 
     ChangeLine2_8("Transmitting font...");
 #if 0
-    findHTTPhost(&addr, "powerbook");		/* Debug!!!! */
+    findHTTPhost(&addr, "powerbook",-1);	/* Debug!!!! */
 	/*addr.sin_port = htons(8080);		/* Debug!!!! */
 #endif
     soc = makeConnection(&addr);
@@ -445,9 +583,58 @@ return( false );
 return( true );
 }
 
-FILE *URLToTempFile(char *url) {
+static char *decomposeURL(const char *url,char **host, int *port, char **username,
+	char **password) {
+    char *pt, *pt2, *upt, *ppt;
+    char *path;
+    /* ftp://[user[:password]@]ftpserver[:port]/url-path */
+
+    *username = NULL; *password = NULL; *port = -1;
+    pt = strstr(url,"://");
+    if ( pt==NULL ) {
+	*host = NULL;
+return( copy(url));
+    }
+    pt += 3;
+
+    pt2 = strchr(pt,'/');
+    if ( pt2==NULL ) {
+	pt2 = pt+strlen(pt);
+	path = copy("/");
+    } else {
+	path = copy(pt2);
+    }
+
+    upt = strchr(pt,'@');
+    if ( upt!=NULL && upt<pt2 ) {
+	ppt = strchr(pt,':');
+	if ( ppt==NULL ) {
+	    *username = copyn(pt,upt-pt);
+	    *password = ff_ask_string(_("Password?"),"",_("Enter password for %s"), *username );
+	} else {
+	    *username = copyn(pt,ppt-pt);
+	    *password = copyn(ppt+1,upt-ppt-1);
+	}
+	pt = upt+1;
+    }
+
+    ppt = strchr(pt,':');
+    if ( ppt!=NULL && ppt<pt2 ) {
+	char *temp = copyn(ppt+1,pt2-ppt-1), *end;
+	*port = strtol(temp,&end,10);
+	if ( *end!='\0' )
+	    *port = -2;
+	free(temp);
+	pt2 = ppt;
+    }
+    *host = copyn(pt,pt2-pt);
+return( path );
+}
+
+static FILE *HttpURLToTempFile(char *url) {
     struct sockaddr_in addr;
-    char *pt, *host, *filename;
+    char *pt, *host, *filename, *username, *password;
+    int port;
     FILE *ret;
     char buffer[300];
     int first, code;
@@ -458,17 +645,12 @@ FILE *URLToTempFile(char *url) {
     snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
 
     if ( strncasecmp(url,"http://",7)!=0 ) {
-	ff_post_error(_("Could not parse URL"),_("FontForge only handles http URLs at the moment"));
+	ff_post_error(_("Could not parse URL"),_("Got something else when expecting an http URL"));
 return( NULL );
     }
-    url += 7;
-    pt = strchr(url,'/');
-    if ( pt==NULL ) {
-	pt = url+strlen(url);
-	filename = "/";
-    } else
-	filename = pt;
-    host = copyn(url,pt-url);
+    filename = decomposeURL(url, &host, &port, &username, &password);
+    /* I don't support username/passwords for http */
+    free( username ); free( password );
 
     ff_progress_start_indicator(0,_("Font Download..."),buffer,
 	    _("Resolving host"),1,1);
@@ -476,17 +658,17 @@ return( NULL );
     ff_progress_allow_events();
     ff_progress_allow_events();
 
-    if ( !findHTTPhost(&addr, host)) {
+    if ( !findHTTPhost(&addr, host, port)) {
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
-	free( host );
+	free( host ); free( filename );
 return( false );
     }
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
-	free( host );
+	free( host ); free( filename );
 return( false );
     }
 
@@ -503,7 +685,7 @@ return( false );
 	ff_post_error(_("Could not send request"),_("Could not send request to \"%s\"."), host );
 	close( soc );
 	free( databuf );
-	free( host );
+	free( host ); free( filename );
 return( NULL );
     }
 
@@ -525,7 +707,7 @@ return( NULL );
 		    *pt = '\0';
 		close( soc );
 		fclose(ret);
-		free(host);
+		free(host); free( filename );
 		ret = URLToTempFile(newurl);
 		free(databuf);
 return( ret );
@@ -549,7 +731,7 @@ return( ret );
     ff_progress_end_indicator();
     close( soc );
     free( databuf );
-    free( host );
+    free( host ); free( filename );
     if ( len==-1 ) {
 	ff_post_error(_("Could not download data"),_("Could not download data.") );
 	fclose(ret);
@@ -561,4 +743,139 @@ return( NULL );
     }
     rewind(ret);
 return( ret );
+}
+
+static FILE *FtpURLToTempFile(char *url) {
+    struct sockaddr_in addr, data_addr;
+    char *host, *filename, *username, *password;
+    int port;
+    FILE *ret;
+    char buffer[300];
+    int soc, data;
+    int datalen, len;
+    char *databuf, *cmd;
+
+    snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
+
+    if ( strncasecmp(url,"ftp://",6)!=0 ) {
+	ff_post_error(_("Could not parse URL"),_("Got something else when expecting an ftp URL"));
+return( NULL );
+    }
+    filename = decomposeURL(url, &host, &port, &username, &password);
+
+    ff_progress_start_indicator(0,_("Font Download..."),buffer,
+	    _("Resolving host"),1,1);
+    ff_progress_enable_stop(false);
+    ff_progress_allow_events();
+    ff_progress_allow_events();
+
+    if ( !findFTPhost(&addr, host, port)) {
+	ff_progress_end_indicator();
+	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
+	free( host ); free( filename );
+return( NULL );
+    }
+    soc = makeConnection(&addr);
+    if ( soc==-1 ) {
+	ff_progress_end_indicator();
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
+	free( host ); free( filename );
+return( NULL );
+    }
+
+    datalen = 8*8*1024;
+    databuf = galloc(datalen+1);
+    cmd = databuf;
+
+    ChangeLine2_8(_("Logging in..."));
+    if ( getresponse(soc,databuf,datalen) == -1 ) {		/* ftp servers say "Hi" when then connect */
+	ff_progress_end_indicator();
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
+	free( host ); free( filename ); free(username); free(password);
+	close( soc );
+return( NULL );
+    }
+    free( host );
+
+    if ( username==NULL ) {
+	username=copy("anonymous");
+	if ( password==NULL )
+	    password=copy("FontForge");
+    } else if ( password==NULL )
+	password = copy("");
+    
+    sprintf(cmd,"USER %s\r\n", username);
+    if ( ftpsendr(soc,cmd,databuf,datalen)== -1 ) {
+	ff_progress_end_indicator();
+	close( soc ); free(filename); free(databuf); free(username); free(password);
+return( NULL );
+    }
+    sprintf(cmd,"PASS %s\r\n", password);
+    free(username); free(password);
+    if ( ftpsendr(soc,cmd,databuf,datalen)<=0 ) {
+	ff_progress_end_indicator();
+	LogError(_("Bad Username/Password\n"));
+	close( soc ); free(filename); free(databuf);
+return( NULL );
+    }
+
+    if ( ftpsendr(soc,"TYPE I\r\n",databuf,datalen)==-1 ) {	/* Binary */
+	ff_progress_end_indicator();
+	close( soc ); free(filename); free(databuf);
+return( NULL );
+    }
+
+    ChangeLine2_8(_("Requesting font..."));
+    if ( ftpsendpassive(soc,&data_addr,databuf,datalen)<= 0 ) {
+	ff_progress_end_indicator();
+	close( soc ); free(filename); free(databuf);
+return( NULL );
+    }
+    if (( data = socket(PF_INET,SOCK_STREAM,0))==-1 ||
+	    connect(data,(struct sockaddr *) &data_addr,sizeof(data_addr))== -1 ) {
+	ff_progress_end_indicator();
+	if ( data!=-1 )
+	    close(data);
+	close( soc ); free(filename); free(databuf);
+	LogError(_("FTP passive Data Connect failed\n"));
+return( 0 );
+    }
+
+    sprintf(cmd,"RETR %s\r\n", filename+1);
+    if ( ftpsendr(soc,cmd, databuf, datalen)<=0 ) {
+	ff_progress_end_indicator();
+	close(data);
+	close( soc ); free(filename); free(databuf);
+return( ret );
+    }
+
+    ChangeLine2_8(_("Downloading font..."));
+
+    ret = tmpfile();
+
+    while ((len = read(data,databuf,datalen))>0 ) {
+	fwrite(databuf,1,len,ret);
+    }
+    close( soc ); close( data );
+    free( databuf );
+    free( filename );
+    if ( len==-1 ) {
+	ff_post_error(_("Could not download data"),_("Could not download data.") );
+	fclose(ret);
+return( NULL );
+    }
+    rewind(ret);
+return( ret );
+}
+
+FILE *URLToTempFile(char *url) {
+
+    if ( strncasecmp(url,"http://",7)==0 )
+return( HttpURLToTempFile(url));
+    else if ( strncasecmp(url,"ftp://",6)==0 )
+return( FtpURLToTempFile(url));
+    else {
+	ff_post_error(_("Could not parse URL"),_("FontForge only handles ftp and http URLs at the moment"));
+return( NULL );
+    }
 }
