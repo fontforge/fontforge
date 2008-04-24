@@ -637,7 +637,7 @@ return( copy(url));
     if ( *username ) {
 	*password = GIO_PasswordCache(proto,*host,*username,*password);
 	if ( *password==NULL ) {
-	    *password = ff_ask_string(_("Password?"),"",_("Enter password for %s@%s"), *username, *host );
+	    *password = ff_ask_password(_("Password?"),"",_("Enter password for %s@%s"), *username, *host );
 	    *password = GIO_PasswordCache(proto,*host,*username,*password);
 	}
     }

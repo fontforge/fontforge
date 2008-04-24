@@ -977,6 +977,7 @@ struct ui_interface gdraw_ui_interface = {
     gwwv_choose,
     gwwv_choose_multiple,
     gwwv_ask_string,
+    gwwv_ask_password,
     UI_open_file,
     UI_saveas_file,
     gwwv_progress_start_indicator,

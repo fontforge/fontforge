@@ -427,7 +427,7 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	char *host, *username, *password;
 	free( _GIO_decomposeURL(dir,&host,&port,&username,&password));
 	if ( username!=NULL && password==NULL ) {
-	    password = gwwv_ask_string(_("Password?"),"",_("Enter password for %s@%s"), username, host );
+	    password = gwwv_ask_password(_("Password?"),"",_("Enter password for %s@%s"), username, host );
 	    cu_strncpy(proto,dir,pt-dir<sizeof(proto)?pt-dir:sizeof(proto));
 	    password = GIO_PasswordCache(proto,host,username,password);
 	}

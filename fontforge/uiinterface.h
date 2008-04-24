@@ -81,6 +81,9 @@ struct ui_interface {
    /* The return is NULL on cancel, otherwise a string which must be freed */
     char *(*ask_string)(const char *title,
 	    const char *def,const char *question,...);
+   /* Same as above, except for entering a password */
+    char *(*ask_password)(const char *title,
+	    const char *def,const char *question,...);
 
    /* The next two routines are only used in the python interface to provide */
    /*  a python script running in ff a way to open a file */
@@ -130,6 +133,7 @@ extern struct ui_interface *ui_interface;
 #define ff_choose		(ui_interface->choose)
 #define ff_choose_multiple	(ui_interface->choose_multiple)
 #define ff_ask_string		(ui_interface->ask_string)
+#define ff_ask_password		(ui_interface->ask_password)
 
 #define ff_open_filename	(ui_interface->open_file)
 #define ff_save_filename	(ui_interface->saveas_file)

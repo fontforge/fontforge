@@ -986,6 +986,8 @@ return( NULL );
 	gcd[bcnt+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0 | gg_text_xim;
 	gcd[bcnt+lb].gd.cid = bcnt;
 	gcd[bcnt+lb].creator = GTextFieldCreate;
+	if ( add_text==2 )
+	    gcd[bcnt+lb].creator = GPasswordCreate;
 	y += fh + GDrawPointsToPixels(gw,6) + GDrawPointsToPixels(gw,10);
     }
     y += GDrawPointsToPixels(gw,2);
@@ -1094,6 +1096,43 @@ return( copy(def ));
     }
     va_start(ap,question);
     gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,true,true,false);
+    va_end(ap);
+    if ( def!=NULL && *def!='\0' )
+	GGadgetSetTitle8(GWidgetGetControl(gw,2),def);
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    if ( d.ret==0 )
+	ret = GGadgetGetTitle8(GWidgetGetControl(gw,2));
+    GDrawDestroyWindow(gw);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    if ( !_ggadget_use_gettext ) {
+	free(ocb[0]); free(ocb[1]);
+    }
+return(ret);
+}
+
+char *GWidgetAskPassword8(const char *title,const char *def,
+	const char *question,...) {
+    struct dlg_info d;
+    GWindow gw;
+    char *ret = NULL;
+    char *ocb[3];
+    va_list ap;
+
+    if ( screen_display==NULL )
+return( copy(def ));
+
+    ocb[2]=NULL;
+    if ( _ggadget_use_gettext ) {
+	ocb[0] = _("_OK");
+	ocb[1] = _("_Cancel");
+    } else {
+	ocb[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
+	ocb[1] = u2utf8_copy(GStringGetResource( _STR_Cancel, NULL));
+    }
+    va_start(ap,question);
+    gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,2,true,false);
     va_end(ap);
     if ( def!=NULL && *def!='\0' )
 	GGadgetSetTitle8(GWidgetGetControl(gw,2),def);
