@@ -9,7 +9,7 @@ bindir = @bindir@
 libdir = @libdir@
 
 GU_VERSION=1
-GU_REVISION=0
+GU_REVISION=1
 GU_AGE=0
 
 LIBTOOL = @LIBTOOL@
@@ -27,7 +27,8 @@ libgutils_OBJECTS = divisors.lo fsys.lo gimage.lo gimagereadbmp.lo \
  gimagereadras.lo gimagereadrgb.lo gimagereadtiff.lo gimagereadxbm.lo \
  gimagereadxpm.lo gimagewritebmp.lo gimagewritegimage.lo \
  gimagewritejpeg.lo gimagewritepng.lo gimagewritexbm.lo gimagewritexpm.lo \
- gwwintl.lo dynamic.lo
+ gwwintl.lo dynamic.lo \
+ gio.lo giofile.lo giohosts.lo giomime.lo giothread.lo giotrans.lo 
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'

@@ -8,8 +8,8 @@ VPATH = @srcdir@
 bindir = @bindir@
 libdir = @libdir@
 
-GD_VERSION=3
-GD_REVISION=2
+GD_VERSION=4
+GD_REVISION=0
 GD_AGE=0
 
 LIBTOOL = @LIBTOOL@
@@ -28,8 +28,7 @@ libgdraw_OBJECTS =  choosericons.lo drawboxborder.lo \
  genkeysym.lo gfilechooser.lo gfiledlg.lo ggadgets.lo ggroupbox.lo \
  gimageclut.lo gimagecvt.lo gimagepsdraw.lo \
  gimagewriteeps.lo gdrawgimage.lo \
- gimagexdraw.lo gio.lo giofile.lo \
- giohosts.lo giomime.lo giothread.lo giotrans.lo gkeysym.lo glist.lo \
+ gimagexdraw.lo gkeysym.lo glist.lo \
  gmenu.lo gprogress.lo gpsdraw.lo gpstxtinit.lo gradio.lo gresource.lo \
  gresourceimage.lo gsavefiledlg.lo gscrollbar.lo gtabset.lo \
  gtextfield.lo gtextinfo.lo gwidgets.lo gxdraw.lo \

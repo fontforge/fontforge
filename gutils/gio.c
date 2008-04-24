@@ -261,6 +261,15 @@ return( NULL );
 }
 
 void GIOcancel(GIOControl *gc) {
+#ifndef NOTHREADS
+    if ( gc->protocol_index>=0 && protocols[gc->protocol_index].dothread &&
+	    gc->threaddata!=NULL && !gc->done ) {
+	void *ret;
+	gc->abort = true;
+	pthread_cancel(gc->threaddata->thread);
+	pthread_join(gc->threaddata->thread, &ret);
+    }
+#endif
     if ( gc->protocol_index>=0 && protocols[gc->protocol_index].cancel!=NULL )
 	/* Per connection cleanup, cancels io if not done and removes from any queues */
 	(protocols[gc->protocol_index].cancel)(gc);

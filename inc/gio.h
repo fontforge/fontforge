@@ -30,11 +30,6 @@
 #include "basics.h"
 #include <time.h>
 
-typedef struct gauth {
-    unichar_t *username;
-    unichar_t *password;
-} GAuth;
-
 enum giofuncs { gf_dir, gf_statfile, gf_getfile, gf_putfile,
 	gf_mkdir, gf_delfile, gf_deldir, gf_renamefile,
 	/*gf_lockfile, gf_unlockfile,*/
@@ -44,7 +39,6 @@ typedef struct giocontrol {
     unichar_t *path;
     unichar_t *origpath;		/* what the user asked for (before any redirects), NULL if path doesn't change */
     unichar_t *topath;			/* for renames and copies */
-    GAuth auth;
     void *userdata;
     struct gio_connectiondata *connectiondata;
     struct gio_threaddata *threaddata;
@@ -106,4 +100,8 @@ extern void GIOSetUserAgent(unichar_t *agent);
 
 extern unichar_t *GIOguessMimeType(const unichar_t *path,int isdir);
 extern unichar_t *_GioMacMime(const char *path);
+
+extern char *GIO_PasswordCache(char *proto,char *host,char *username,char *password);
+extern char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **username,
+	char **password);
 #endif

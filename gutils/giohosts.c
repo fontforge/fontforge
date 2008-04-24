@@ -35,6 +35,7 @@ char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **user
 	char **password) {
     unichar_t *pt, *pt2, *upt, *ppt;
     char *path;
+    char proto[40];
     /* ftp://[user[:password]@]ftpserver[:port]/url-path */
 
     *username = NULL; *password = NULL; *port = -1;
@@ -43,6 +44,7 @@ char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **user
 	*host = NULL;
 return( cu_copy(url));
     }
+    cu_strncpy(proto,url,pt-url<sizeof(proto)?pt-url:sizeof(proto));
     pt += 3;
 
     pt2 = u_strchr(pt,'/');
@@ -75,7 +77,65 @@ return( cu_copy(url));
 	pt2 = ppt;
     }
     *host = cu_copyn(pt,pt2-pt);
+    if ( *username )
+	*password = GIO_PasswordCache(proto,*host,*username,*password);
 return( path );
+}
+
+struct passwd_cache {
+    char *proto;
+    char *host;
+    char *username;
+    char *password;
+};
+static int pc_cnt = 0, pc_max=0;
+struct passwd_cache *pc = NULL;
+
+char *GIO_PasswordCache(char *proto,char *host,char *username,char *password) {
+    int i;
+#ifndef NOTHREADS
+    static pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
+    if ( proto==NULL || host==NULL || username==NULL )
+return( password );
+
+#ifndef NOTHREADS
+	pthread_mutex_lock(&mymutex);
+#endif
+
+    for ( i=0; i<pc_cnt; ++i ) {
+	if ( strcasecmp(proto,pc[i].proto)==0 &&
+		strcasecmp(host,pc[i].host)==0 &&
+		strcmp(username,pc[i].username)==0 ) {
+	    if ( password==NULL ) {
+		password = copy( pc[i].password );
+ goto leave;
+	    }
+	    if ( strcmp(password,pc[i].password)!=0 ) {
+		free( pc[i].password );
+		pc[i].password = copy( password );
+	    }
+ goto leave;
+	}
+    }
+
+    if ( password==NULL )
+ goto leave;
+
+    if ( pc_cnt>=pc_max )
+	pc = grealloc(pc,(pc_max+=10)*sizeof(struct passwd_cache));
+    pc[pc_cnt].proto = copy( proto );
+    pc[pc_cnt].host  = copy( host  );
+    pc[pc_cnt].username = copy( username );
+    pc[pc_cnt].password = copy( password );
+    ++pc_cnt;
+ leave:
+#ifndef NOTHREADS
+    pthread_mutex_unlock(&mymutex);
+#endif
+
+return( password );
 }
 
 /* simple hash tables */
