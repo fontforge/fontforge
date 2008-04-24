@@ -2457,7 +2457,10 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
 	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
     }
 
-    sfd = fopen(tempfilename,"w");
+    if ( !todir && strstr(filename,"://")!=NULL )
+	sfd = tmpfile();
+    else
+	sfd = fopen(tempfilename,"w");
     if ( tempfilename!=filename ) free(tempfilename);
     if ( sfd==NULL )
 return( 0 );
@@ -2476,6 +2479,8 @@ return( 0 );
 	err = SFDDump(sfd,sf,map,normal,todir,filename);
     setlocale(LC_NUMERIC,oldloc);
     if ( ferror(sfd) ) err = true;
+    if ( !err && !todir && strstr(filename,"://")!=NULL )
+	err = !URLFromFile(filename,sfd);
     if ( fclose(sfd) ) err = true;
     if ( todir )
 	SFFinalDirClean(filename);

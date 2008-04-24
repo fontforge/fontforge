@@ -2716,9 +2716,16 @@ int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
     FILE *out;
     int ret;
 
-    if (( out=fopen(fontname,"wb"))==NULL )
+    if ( strstr(fontname,"://")!=NULL ) {
+	if (( out = tmpfile())==NULL )
 return( 0 );
+    } else {
+	if (( out=fopen(fontname,"wb"))==NULL )
+return( 0 );
+    }
     ret = _WritePSFont(out,sf,format,flags,map,fullsf,layer);
+    if ( strstr(fontname,"://")!=NULL && ret )
+	ret = URLFromFile(fontname,out);
     if ( fclose(out)==-1 )
 	ret = 0;
 return( ret );

@@ -88,11 +88,18 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
 	strcpy(pt,".afm");
     ff_progress_change_line1(_("Saving AFM File"));
     ff_progress_change_line2(buf);
-    afm = fopen(buf,"w");
-    free(buf);
-    if ( afm==NULL )
+    if ( strstr(buf,"://")==NULL )
+	afm = fopen(buf,"w");
+    else
+	afm = tmpfile();
+    if ( afm==NULL ) {
+	free(buf);
 return( false );
+    }
     ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,fullsf,layer);
+    if ( ret && strstr(buf,"://")!=NULL )
+	ret = URLFromFile(buf,afm);
+    free(buf);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -802,7 +809,16 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,subfontdefinition,map,layer));
 	int oerr = 0;
 	int bmap = oldbitmapstate;
 	if ( bmap==bf_otb ) bmap = bf_none;
-	switch ( oldformatstate ) {
+	if ( strstr(newname,"://")!=NULL ) {
+	    if ( oldformatstate==ff_pfbmacbin || oldformatstate==ff_ttfmacbin ) {
+		ff_post_error(_("Mac Resource Not Remote"),_("You may not save a mac resource file to a remote location"));
+		oerr = true;
+	    } else if ( oldformatstate==ff_ufo ) {
+		ff_post_error(_("Directory Not Remote"),_("You may not save ufo directory to a remote location"));
+		oerr = true;
+	    }
+	}
+	if ( !oerr ) switch ( oldformatstate ) {
 	  case ff_mma: case ff_mmb:
 	    sf = sf->mm->instances[0];
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0:
