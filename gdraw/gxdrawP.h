@@ -76,11 +76,11 @@ capable of using composite.
 # endif
 #endif
 
-#ifndef NOTHREADS
+#include "gdrawP.h"
+
+#ifdef HAVE_PTHREAD_H
 # include <pthread.h>
 #endif
-
-#include "gdrawP.h"
 
 typedef struct gcstate {
     void *gc;
@@ -198,7 +198,7 @@ struct gxseltypes {
 };
 
 struct xthreaddata {
-# ifndef NOTHREADS
+# ifdef HAVE_PTHREAD_H
     pthread_mutex_t sync_mutex;		/* controls access to the rest of this structure */
     struct things_to_do { void (*func)(void *); void *data; struct things_to_do *next; } *things_to_do;
 # endif

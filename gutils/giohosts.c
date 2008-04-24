@@ -93,14 +93,14 @@ struct passwd_cache *pc = NULL;
 
 char *GIO_PasswordCache(char *proto,char *host,char *username,char *password) {
     int i;
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     static pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
     if ( proto==NULL || host==NULL || username==NULL )
 return( password );
 
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 	pthread_mutex_lock(&mymutex);
 #endif
 
@@ -131,7 +131,7 @@ return( password );
     pc[pc_cnt].password = copy( password );
     ++pc_cnt;
  leave:
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     pthread_mutex_unlock(&mymutex);
 #endif
 
@@ -143,12 +143,12 @@ static struct hostdata *names[26], *numbers[10];
 
 struct hostdata *_GIO_LookupHost(char *host) {
     struct hostdata **base, *cur;
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
     int i;
 
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     pthread_mutex_lock(&mutex);
 #endif
     if ( isdigit(host[0]))
@@ -162,7 +162,7 @@ struct hostdata *_GIO_LookupHost(char *host) {
 
     for ( cur= *base; cur!=NULL && strmatch(cur->hostname,host)!=0; cur = cur->next );
     if ( cur!=NULL ) {
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 	pthread_mutex_unlock(&mutex);
 #endif
 return( cur );
@@ -174,7 +174,7 @@ return( cur );
     if ( isdigit(host[0])) {
     	if ( !inet_aton(host,&cur->addr.sin_addr)) {
 	    free(cur);
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 	    pthread_mutex_unlock(&mutex);
 #endif
 return( NULL );
@@ -184,7 +184,7 @@ return( NULL );
 	he = gethostbyname(host);
 	if ( he==NULL ) {
 	    free(cur);
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 	    pthread_mutex_unlock(&mutex);
 #endif
 return( NULL );
@@ -195,7 +195,7 @@ return( NULL );
     cur->hostname = copy(host);
     cur->next = *base;
     *base = cur;
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     pthread_mutex_unlock(&mutex);
 #endif
 return( cur );

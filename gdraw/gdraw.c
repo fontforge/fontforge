@@ -25,8 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "gdrawP.h"
-#include "gkeysym.h"
-#include "ustring.h"
+#include <gkeysym.h>
+#include <ustring.h>
+#include <gio.h>
 
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
@@ -769,6 +770,7 @@ return;
 }
 
 void GDrawCreateDisplays(char *displayname,char *programname) {
+    GIO_SetThreadCallback((void (*)(void *,void *,void *)) GDrawSyncThread);
     screen_display = _GXDraw_CreateDisplay(displayname,programname);
     printer_display = _GPSDraw_CreateDisplay();
     if ( screen_display==NULL ) {

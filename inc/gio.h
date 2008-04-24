@@ -104,4 +104,6 @@ extern unichar_t *_GioMacMime(const char *path);
 extern char *GIO_PasswordCache(char *proto,char *host,char *username,char *password);
 extern char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **username,
 	char **password);
+
+extern void GIO_SetThreadCallback(void (*callback)(void *,void *,void *));
 #endif

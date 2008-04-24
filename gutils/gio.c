@@ -25,10 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "giofuncP.h"
-#include "gfile.h"
-#include "ustring.h"
-#include "gresource.h"
-#include "errno.h"
+#include <gfile.h>
+#include <ustring.h>
+#include <errno.h>
 
 #ifndef NODYNAMIC
 # include <dynamic.h>
@@ -45,9 +44,10 @@ struct stdfuncs _GIO_stdfuncs = {
     NULL,
 #endif
 
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     PTHREAD_MUTEX_INITIALIZER,
 #endif
+    NULL,
     NULL
 };
 static struct protocols {
@@ -100,8 +100,6 @@ return( false );
 #ifdef GWW_TEST
  printf ( "dlopen failed: %s\n", dlerror());
 #endif
-		sprintf(buffer,"%s/../lib/%s",GResourceProgramDir,lib);
-		if ( (handle = dlopen(buffer,RTLD_LAZY))==NULL )
 return( false );
 	    }
 	}
@@ -184,7 +182,7 @@ return;
 	if ( !protocols[i].dothread )
 	    (protocols[i].dispatcher)(gc);
 	else {
-#ifdef NOTHREADS
+#ifndef HAVE_PTHREAD_H
 	    gc->return_code = 501;
 	    gc->error = err501;
 	    uc_strcpy(gc->status,"No support for protocol");
@@ -200,7 +198,8 @@ return;
 	    gc->threaddata = galloc(sizeof(struct gio_threaddata));
 	    gc->threaddata->mutex = initmutex;
 	    gc->threaddata->cond = initcond;
-	    GDrawSyncThread(NULL,NULL,NULL);
+	    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
+		(_GIO_stdfuncs.gdraw_sync_thread)(NULL,NULL,NULL);
 	    pthread_create(&gc->threaddata->thread,NULL,
 		    (ptread_startfunc_t *) (protocols[i].dispatcher), gc);
 #endif
@@ -261,7 +260,7 @@ return( NULL );
 }
 
 void GIOcancel(GIOControl *gc) {
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     if ( gc->protocol_index>=0 && protocols[gc->protocol_index].dothread &&
 	    gc->threaddata!=NULL && !gc->done ) {
 	void *ret;
@@ -307,4 +306,8 @@ void GIOSetDefAuthorizer(int32 (*getauth)(struct giocontrol *)) {
 void GIOSetUserAgent(unichar_t *agent) {
     free( _GIO_stdfuncs.useragent );
     _GIO_stdfuncs.useragent = cu_copy(agent);
+}
+
+void GIO_SetThreadCallback(void (*callback)(void *,void *,void *)) {
+    _GIO_stdfuncs.gdraw_sync_thread = callback;
 }
