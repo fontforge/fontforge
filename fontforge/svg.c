@@ -1000,12 +1000,19 @@ int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
     FILE *file;
     int ret;
 
-    if (( file=fopen(fontname,"w+"))==NULL )
+    if ( strstr(fontname,"://")!=NULL ) {
+	if (( file = tmpfile())==NULL )
 return( 0 );
+    } else {
+	if (( file=fopen(fontname,"w+"))==NULL )
+return( 0 );
+    }
     svg_sfdump(file,sf,layer);
     ret = true;
     if ( ferror(file))
 	ret = false;
+    if ( strstr(fontname,"://")!=NULL && ret )
+	ret = URLFromFile(fontname,file);
     if ( fclose(file)==-1 )
 return( 0 );
 return( ret );

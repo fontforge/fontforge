@@ -758,7 +758,7 @@ return( NULL );
 return( ret );
 }
 
-static FILE *FtpURLToTempFile(char *url) {
+static int FtpURLAndTempFile(char *url,FILE **to,FILE *from) {
     struct sockaddr_in addr, data_addr;
     char *host, *filename, *username, *password;
     int port;
@@ -768,11 +768,15 @@ static FILE *FtpURLToTempFile(char *url) {
     int datalen, len;
     char *databuf, *cmd;
 
-    snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
+    if ( from==NULL ) {
+	snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
+	*to = NULL;
+    } else
+	snprintf(buffer,sizeof(buffer),_("Uploading to %s"), url);
 
     if ( strncasecmp(url,"ftp://",6)!=0 ) {
 	ff_post_error(_("Could not parse URL"),_("Got something else when expecting an ftp URL"));
-return( NULL );
+return( false );
     }
     filename = decomposeURL(url, &host, &port, &username, &password);
 
@@ -786,14 +790,14 @@ return( NULL );
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
 	free( host ); free( filename );
-return( NULL );
+return( false );
     }
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
 	ff_progress_end_indicator();
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
 	free( host ); free( filename );
-return( NULL );
+return( false );
     }
 
     datalen = 8*8*1024;
@@ -806,7 +810,7 @@ return( NULL );
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
 	free( host ); free( filename ); free(username); free(password);
 	close( soc );
-return( NULL );
+return( false );
     }
     free( host );
 
@@ -821,7 +825,7 @@ return( NULL );
     if ( ftpsendr(soc,cmd,databuf,datalen)== -1 ) {
 	ff_progress_end_indicator();
 	close( soc ); free(filename); free(databuf); free(username); free(password);
-return( NULL );
+return( false );
     }
     sprintf(cmd,"PASS %s\r\n", password);
     free(username); free(password);
@@ -829,20 +833,24 @@ return( NULL );
 	ff_progress_end_indicator();
 	LogError(_("Bad Username/Password\n"));
 	close( soc ); free(filename); free(databuf);
-return( NULL );
+return( false );
     }
 
     if ( ftpsendr(soc,"TYPE I\r\n",databuf,datalen)==-1 ) {	/* Binary */
 	ff_progress_end_indicator();
 	close( soc ); free(filename); free(databuf);
-return( NULL );
+return( false );
     }
 
-    ChangeLine2_8(_("Requesting font..."));
+    if ( from==NULL )
+	ChangeLine2_8(_("Requesting font..."));
+    else
+	ChangeLine2_8(_("Transmitting font..."));
+	
     if ( ftpsendpassive(soc,&data_addr,databuf,datalen)<= 0 ) {
 	ff_progress_end_indicator();
 	close( soc ); free(filename); free(databuf);
-return( NULL );
+return( false );
     }
     if (( data = socket(PF_INET,SOCK_STREAM,0))==-1 ||
 	    connect(data,(struct sockaddr *) &data_addr,sizeof(data_addr))== -1 ) {
@@ -854,42 +862,77 @@ return( NULL );
 return( 0 );
     }
 
-    sprintf(cmd,"RETR %s\r\n", filename);
-    if ( ftpsendr(soc,cmd, databuf, datalen)<=0 ) {
-	ff_progress_end_indicator();
-	ff_post_error(_("Could not download data"),_("Could not find file.") );
-	close(data);
-	close( soc ); free(filename); free(databuf);
-return( ret );
+    if ( from==NULL ) {
+	sprintf(cmd,"RETR %s\r\n", filename);
+	if ( ftpsendr(soc,cmd, databuf, datalen)<=0 ) {
+	    ff_progress_end_indicator();
+	    ff_post_error(_("Could not download data"),_("Could not find file.") );
+	    close(data);
+	    close( soc ); free(filename); free(databuf);
+return( false );
+	}
+
+	ChangeLine2_8(_("Downloading font..."));
+
+	ret = tmpfile();
+
+	while ((len = read(data,databuf,datalen))>0 ) {
+	    fwrite(databuf,1,len,ret);
+	}
+	*to = ret;
+	rewind(ret);
+    } else {
+	sprintf(cmd,"STOR %s\r\n", filename);
+	if ( ftpsendr(soc,cmd, databuf, datalen)<=0 ) {
+	    ff_progress_end_indicator();
+	    ff_post_error(_("Could not download data"),_("Could not find file.") );
+	    close(data);
+	    close( soc ); free(filename); free(databuf);
+return( false );
+	}
+
+	ChangeLine2_8(_("Uploading font..."));
+
+	rewind(from);
+	while ((len = fread(databuf,1,datalen,from))>0 ) {
+	    if ( (len = write(data,databuf,len))<0 )
+	break;
+	}
+	ret = NULL;
     }
-
-    ChangeLine2_8(_("Downloading font..."));
-
-    ret = tmpfile();
-
-    while ((len = read(data,databuf,datalen))>0 ) {
-	fwrite(databuf,1,len,ret);
-    }
+    ff_progress_end_indicator();
     close( soc ); close( data );
     free( databuf );
     free( filename );
     if ( len==-1 ) {
-	ff_post_error(_("Could not download data"),_("Could not download data.") );
-	fclose(ret);
-return( NULL );
+	ff_post_error(_("Could not transmit data"),_("Could not transmit data.") );
+	if ( ret!=NULL ) fclose(ret);
+return( false );
     }
-    rewind(ret);
-return( ret );
+return( true );
 }
 
 FILE *URLToTempFile(char *url) {
+    FILE *ret;
 
     if ( strncasecmp(url,"http://",7)==0 )
 return( HttpURLToTempFile(url));
-    else if ( strncasecmp(url,"ftp://",6)==0 )
-return( FtpURLToTempFile(url));
-    else {
+    else if ( strncasecmp(url,"ftp://",6)==0 ) {
+	if ( FtpURLAndTempFile(url,&ret,NULL))
+return( ret );
+return( NULL );
+    } else {
 	ff_post_error(_("Could not parse URL"),_("FontForge only handles ftp and http URLs at the moment"));
 return( NULL );
+    }
+}
+
+int URLFromFile(char *url,FILE *from) {
+
+    if ( strncasecmp(url,"ftp://",6)==0 ) {
+return( FtpURLAndTempFile(url,NULL,from));
+    } else {
+	ff_post_error(_("Could not parse URL"),_("FontForge can only upload to ftp URLs at the moment"));
+return( false );
     }
 }

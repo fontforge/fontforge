@@ -5927,9 +5927,16 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
     FILE *ttf;
     int ret;
 
-    if (( ttf=fopen(fontname,"wb+"))==NULL )
+    if ( strstr(fontname,"://")!=NULL ) {
+	if (( ttf = tmpfile())==NULL )
 return( 0 );
+    } else {
+	if (( ttf=fopen(fontname,"wb"))==NULL )
+return( 0 );
+    }
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
+    if ( strstr(fontname,"://")!=NULL && ret )
+	ret = URLFromFile(fontname,ttf);
     if ( ret && (flags&ttf_flag_glyphmap) )
 	DumpGlyphToNameMap(fontname,sf);
     if ( fclose(ttf)==-1 )

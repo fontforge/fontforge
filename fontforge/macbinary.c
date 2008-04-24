@@ -1656,7 +1656,7 @@ return( 0 );
     if ( bf!=bf_ttf && bf!=bf_sfnt_dfont )
 	bsizes = NULL;		/* as far as the FOND for the truetype is concerned anyway */
 
-    if ( __Mac && format==ff_ttfmacbin )
+    if ( (__Mac && format==ff_ttfmacbin) || strstr(filename,"://")!=NULL )
 	res = tmpfile();
     else
 	res = fopen(filename,"wb+");
@@ -1703,6 +1703,8 @@ return( 0 );
 	ret = DumpMacBinaryHeader(res,&header);
     }
     if ( ferror(res) ) ret = false;
+    if ( ret && strstr(filename,"://")!=NULL )
+	ret = URLFromFile(filename,res);
     if ( fclose(res)==-1 ) ret = 0;
 return( ret );
 }
