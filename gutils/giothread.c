@@ -33,7 +33,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#ifdef NOTHREADS
+#ifndef HAVE_PTHREAD_H
 void _GIO_ReportHeaders(char *format, ...) {
     va_list args;
 
@@ -80,15 +80,18 @@ void _GIO_ReportHeaders(char *format, ...) {
 }
 
 void _GIO_PostError(GIOControl *gc) {
-    GDrawSyncThread(NULL,(void (*)(void *)) gc->receiveerror,gc);
+    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
+	(_GIO_stdfuncs.gdraw_sync_thread)(NULL,(void (*)(void *)) gc->receiveerror,gc);
 }
 
 void _GIO_PostInter(GIOControl *gc) {
-    GDrawSyncThread(NULL,(void (*)(void *)) gc->receiveintermediate,gc);
+    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
+	(_GIO_stdfuncs.gdraw_sync_thread)(NULL,(void (*)(void *)) gc->receiveintermediate,gc);
 }
 
 void _GIO_PostSuccess(GIOControl *gc) {
-    GDrawSyncThread(NULL,(void (*)(void *)) gc->receivedata,gc);
+    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
+	(_GIO_stdfuncs.gdraw_sync_thread)(NULL,(void (*)(void *)) gc->receivedata,gc);
 }
 
 static void _GIO_AuthorizationWrapper(void *d) {
@@ -106,7 +109,8 @@ void _GIO_RequestAuthorization(GIOControl *gc) {
     if ( _GIO_stdfuncs.getauth==NULL )
 return;
     pthread_mutex_lock(&gc->threaddata->mutex);
-    GDrawSyncThread(NULL,_GIO_AuthorizationWrapper,gc);
+    if ( _GIO_stdfuncs.gdraw_sync_thread!=NULL )
+	(_GIO_stdfuncs.gdraw_sync_thread)(NULL,_GIO_AuthorizationWrapper,gc);
     pthread_cond_wait(&gc->threaddata->cond,&gc->threaddata->mutex);
     pthread_mutex_unlock(&gc->threaddata->mutex);
 }

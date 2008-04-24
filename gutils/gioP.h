@@ -27,14 +27,14 @@
 #ifndef _GIOP_H
 #define _GIOP_H
 
+#include "gio.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
-#include "gio.h"
 
 struct stdfuncs {
     unichar_t *(*guessMimeType)(const unichar_t *path,int isdir);
@@ -48,14 +48,15 @@ struct stdfuncs {
     int32 (*getauth)(struct giocontrol *);
     void (*FreeDirEntries)(GDirEntry *lst);
     void (*reportheaders)(char *, ...);
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     pthread_mutex_t hostacccess_mutex;
 #endif
     char *useragent;
+    void (*gdraw_sync_thread)(void *,void *,void *);
 };
 
 struct gio_threaddata {
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     pthread_t thread;
     pthread_mutex_t mutex;
     pthread_cond_t cond;

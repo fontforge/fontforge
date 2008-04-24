@@ -39,7 +39,7 @@
 #include <signal.h>		/* error handler */
 #include <locale.h>		/* for setting the X locale properly */
 
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
@@ -2579,7 +2579,7 @@ static void GXDrawCancelTimer(GTimer *timer) {
 }
 
 static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     GXDisplay *gdisp = (GXDisplay *) gd;
     struct things_to_do *ttd;
 
@@ -2664,7 +2664,7 @@ static void GXDrawCheckPendingTimers(GXDisplay *gdisp) {
     }
 }
 
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 static void GXDrawDoThings(GXDisplay *gdisp) {
     char buffer[10];
     /* we enter and leave with the mutex locked */
@@ -2704,7 +2704,7 @@ static void GXDrawWaitForEvent(GXDisplay *gdisp) {
 
 	if ( XEventsQueued(display,QueuedAfterFlush))
 return;
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 	if ( gdisp->xthread.sync_sock!=-1 ) {
 	    pthread_mutex_lock(&gdisp->xthread.sync_mutex);
 	    if ( gdisp->xthread.things_to_do )
@@ -3572,7 +3572,7 @@ static int GXDrawWaitForNotifyEvent(GXDisplay *gdisp,XEvent *event, Window w) {
 #ifdef _WACOM_DRV_BROKEN
 	_GXDraw_Wacom_TestEvents(gdisp);
 #endif
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
 	if ( gdisp->xthread.sync_sock!=-1 ) {
 	    pthread_mutex_lock(&gdisp->xthread.sync_mutex);
 	    if ( gdisp->xthread.things_to_do )
@@ -4204,7 +4204,7 @@ GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname) {
     int revert;
     static unsigned char grey_init[8] = { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa };
     static unsigned char fence_init[8] = { 0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     static pthread_mutex_t defmutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
@@ -4293,7 +4293,7 @@ return( NULL );
     gdisp->selinfo[sn_drag_and_drop].sel_atom = XInternAtom(display,"DRAG_AND_DROP",False);
 
     gdisp->xthread.sync_sock = -1;
-#ifndef NOTHREADS
+#ifdef HAVE_PTHREAD_H
     gdisp->xthread.sync_mutex = defmutex;
     gdisp->xthread.things_to_do = NULL;
 #endif

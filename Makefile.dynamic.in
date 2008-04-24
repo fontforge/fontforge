@@ -68,6 +68,7 @@ install_libs: libs
 	#-rm $(DESTDIR)$(libdir)/libgdraw.so* $(DESTDIR)$(libdir)/libgunicode.so.*
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(DESTDIR)$(libdir)/libgunicode.la
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgutils.la $(DESTDIR)$(libdir)/libgutils.la
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgioftp.la $(DESTDIR)$(libdir)/libgioftp.la
 #We don't build gdraw if no X
 	if test -r libgdraw.la ; then $(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(DESTDIR)$(libdir)/libgdraw.la ; fi
 #We don't always build libfontforge
@@ -145,6 +146,7 @@ uninstall:
 	-rm $(DESTDIR)$(mandir)/man1/fontlint.1
 	-rm $(DESTDIR)$(libdir)/libgdraw.*
 	-rm $(DESTDIR)$(libdir)/libgutils.*
+	-rm $(DESTDIR)$(libdir)/libgioftp.*
 	-rm $(DESTDIR)$(libdir)/libgunicode.*
 	-rm $(DESTDIR)$(libdir)/libfontforge.*
 	-rm $(DESTDIR)$(sharedir)/*.cidmap
