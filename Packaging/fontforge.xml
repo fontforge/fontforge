@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+   <mime-type type="application/x-font-fontforge-sfd">
+     <sub-class-of type="text/plain"/>
+     <comment>Fontforge Spline Font Database</comment>
+     <glob pattern="*.sfd"/>
+     <magic>
+       <match type="string" offset="0" value="SplineFontDB"/>
+     </magic>
+   </mime-type>
+</mime-info>

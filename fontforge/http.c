@@ -27,6 +27,7 @@
 #include "fontforgevw.h"
 #include <ustring.h>
 #include <utype.h>
+#include <gio.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -587,6 +588,7 @@ static char *decomposeURL(const char *url,char **host, int *port, char **usernam
 	char **password) {
     char *pt, *pt2, *upt, *ppt;
     char *path;
+    char proto[40];
     /* ftp://[user[:password]@]ftpserver[:port]/url-path */
 
     *username = NULL; *password = NULL; *port = -1;
@@ -595,6 +597,8 @@ static char *decomposeURL(const char *url,char **host, int *port, char **usernam
 	*host = NULL;
 return( copy(url));
     }
+    strncpy(proto,url,pt-url<sizeof(proto)?pt-url:sizeof(proto));
+    proto[(pt-url)] = '\0';
     pt += 3;
 
     pt2 = strchr(pt,'/');
@@ -610,7 +614,6 @@ return( copy(url));
 	ppt = strchr(pt,':');
 	if ( ppt==NULL ) {
 	    *username = copyn(pt,upt-pt);
-	    *password = ff_ask_string(_("Password?"),"",_("Enter password for %s"), *username );
 	} else {
 	    *username = copyn(pt,ppt-pt);
 	    *password = copyn(ppt+1,upt-ppt-1);
@@ -628,6 +631,13 @@ return( copy(url));
 	pt2 = ppt;
     }
     *host = copyn(pt,pt2-pt);
+    if ( *username ) {
+	*password = GIO_PasswordCache(proto,*host,*username,*password);
+	if ( *password==NULL ) {
+	    *password = ff_ask_string(_("Password?"),"",_("Enter password for %s@%s"), *username, *host );
+	    *password = GIO_PasswordCache(proto,*host,*username,*password);
+	}
+    }
 return( path );
 }
 
@@ -841,9 +851,10 @@ return( NULL );
 return( 0 );
     }
 
-    sprintf(cmd,"RETR %s\r\n", filename+1);
+    sprintf(cmd,"RETR %s\r\n", filename);
     if ( ftpsendr(soc,cmd, databuf, datalen)<=0 ) {
 	ff_progress_end_indicator();
+	ff_post_error(_("Could not download data"),_("Could not find file.") );
 	close(data);
 	close( soc ); free(filename); free(databuf);
 return( ret );

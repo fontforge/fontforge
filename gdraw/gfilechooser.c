@@ -335,6 +335,7 @@ static void GFileChooserReceiveDir(GIOControl *gc) {
     GFileChooser *gfc = (GFileChooser *) (gc->userdata);
 
     GGadgetSetEnabled(&gfc->files->g,true);
+    GGadgetSetEnabled(&gfc->subdirs->g,true);
     if ( gfc->lastname!=NULL ) {
 	GGadgetSetTitle(&gfc->name->g,gfc->lastname);
 	free(gfc->lastname);
@@ -359,6 +360,8 @@ static void GFileChooserErrorDir(GIOControl *gc) {
     ti[0] = _ti; ti[1] = _ti+1; ti[2] = _ti+2;
     GGadgetSetEnabled(&gfc->files->g,false);
     GGadgetSetList(&gfc->files->g,ti,true);
+    GGadgetSetEnabled(&gfc->subdirs->g,false);
+    GGadgetSetList(&gfc->subdirs->g,ti,true);
     if ( gfc->lastname!=NULL ) {
 	GGadgetSetTitle(&gfc->name->g,gfc->lastname);
 	free(gfc->lastname);
@@ -416,6 +419,20 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 
     GGadgetSetList(&gfc->directories->g,ti,false);
     GGadgetSelectOneListItem(&gfc->directories->g,0);
+
+    /* Password management for URLs */
+    if ( (pt = uc_strstr(dir,"://"))!=NULL ) {
+	int port;
+	char proto[40];
+	char *host, *username, *password;
+	free( _GIO_decomposeURL(dir,&host,&port,&username,&password));
+	if ( username!=NULL && password==NULL ) {
+	    password = gwwv_ask_string(_("Password?"),"",_("Enter password for %s@%s"), username, host );
+	    cu_strncpy(proto,dir,pt-dir<sizeof(proto)?pt-dir:sizeof(proto));
+	    password = GIO_PasswordCache(proto,host,username,password);
+	}
+	free(host); free(username); free(password);
+    }
 
     if ( gfc->outstanding!=NULL ) {
 	GIOcancel(gfc->outstanding);
@@ -1325,6 +1342,7 @@ static void gfilechooser_setvisible(GGadget *g, int visible ) {
 static void gfilechooser_setenabled(GGadget *g, int enabled ) {
     GFileChooser *gfc = (GFileChooser *) g;
     GGadgetSetEnabled(&gfc->files->g,enabled);
+    GGadgetSetEnabled(&gfc->subdirs->g,enabled);
     GGadgetSetEnabled(&gfc->directories->g,enabled);
     GGadgetSetEnabled(&gfc->name->g,enabled);
     GGadgetSetEnabled(&gfc->up->g,enabled);
