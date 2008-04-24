@@ -34,6 +34,9 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL        0x4000	/* send man page implies MSG_NOSIGNAL is in sys/socket.h, but it ain't always */
+#endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
