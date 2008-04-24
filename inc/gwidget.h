@@ -134,6 +134,8 @@ int GWidgetAskCentered8(const char *title,
 	const char ** answers, int def, int cancel,const char *question,...);
 char *GWidgetAskString8(const char *title,
 	const char *def,const char *question,...);
+char *GWidgetAskPassword8(const char *title,
+	const char *def,const char *question,...);
 void GWidgetPostNotice8(const char *title,const char *statement,...);
 void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap);
 int GWidgetPostNoticeActive8(const char *title);
@@ -155,6 +157,7 @@ int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
 #define gwwv_choose_with_buttons	GWidgetChoicesB8
 #define gwwv_choose		GWidgetChoices8
 #define gwwv_ask_string		GWidgetAskString8
+#define gwwv_ask_password	GWidgetAskPassword8
 #define gwwv_ask		GWidgetAsk8
 #define gwwv_ask_centered	GWidgetAskCentered8
 #define gwwv_post_error		GWidgetError8

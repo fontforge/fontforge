@@ -135,6 +135,7 @@ static struct ui_interface noui_interface = {
     NOUI_choose,
     NOUI_choose_multiple,
     NOUI_ask_string,
+    NOUI_ask_string,			/* password */
     NOUI_open_file,
     NOUI_saveas_file,
 
