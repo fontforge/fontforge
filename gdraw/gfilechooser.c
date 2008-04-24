@@ -879,6 +879,9 @@ static void GFCAddCur(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     bookmarks = grealloc(bookmarks,(bcnt+2)*sizeof(unichar_t *));
     bookmarks[bcnt] = dir;
     bookmarks[bcnt+1] = NULL;
+
+    if ( prefs_changed!=NULL )
+	(prefs_changed)(prefs_changed_data);
 }
 
 static void GFCRemoveBook(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -907,6 +910,9 @@ return;		/* All gone */
 	    }
 	}
 	bookmarks[i] = NULL;
+
+	if ( prefs_changed!=NULL )
+	    (prefs_changed)(prefs_changed_data);
     }
     for ( i=0; books[i]!=NULL; ++i )
 	free(books[i]);
