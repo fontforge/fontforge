@@ -445,7 +445,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[8], boxes[4], *hvarray[8], *harray[5], *barray[10];
     GTextInfo label[7];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
@@ -499,7 +499,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Export");
     pos.x = pos.y = 0;
-    totwid = GGadgetScale(223);
+    totwid = GGadgetScale(300);
     bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,255);
@@ -507,11 +507,13 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
-    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid*100/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 182;
+    memset(&boxes,0,sizeof(boxes));
+
+    gcd[0].gd.pos.width = totwid*100/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
+    hvarray[0] = &gcd[0]; hvarray[1] = NULL;
 
-    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[1].text = (unichar_t *) _("_Save");
     label[1].text_is_1byte = true;
@@ -519,6 +521,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     gcd[1].gd.label = &label[1];
     gcd[1].gd.handle_controlevent = GFD_SaveOk;
     gcd[1].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[1]; barray[2] = GCD_Glue;
 
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
@@ -528,6 +531,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
     gcd[2].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[2]; barray[5] = GCD_Glue;
 
     gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -537,6 +541,13 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = GFD_Cancel;
     gcd[3].creator = GButtonCreate;
+    barray[6] = GCD_Glue; barray[7] = &gcd[3]; barray[8] = GCD_Glue;
+    barray[9] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+    hvarray[4] = &boxes[2]; hvarray[5] = NULL;
 
     gcd[4].gd.pos.x = gcd[3].gd.pos.x; gcd[4].gd.pos.y = 194; gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
     gcd[4].gd.flags = gg_visible | gg_enabled;
@@ -555,6 +566,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     label[5].text_is_1byte = true;
     gcd[5].gd.label = &label[5];
     gcd[5].creator = GLabelCreate;
+    harray[0] = &gcd[5];
 
     _format = last_format;
     if ( bc!=NULL ) {
@@ -575,9 +587,28 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     for ( i=0; cur_formats[i].text!=NULL; ++i )
 	cur_formats[i].selected =false;
     cur_formats[_format].selected = true;
+    harray[1] = &gcd[6];
+    harray[2] = GCD_Glue;
+    harray[3] = &gcd[4];
+    harray[4] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[2] = &boxes[3]; hvarray[3] = NULL;
+    hvarray[6] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     if ( bc!=NULL )
@@ -619,6 +650,8 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     d.layer = layer;
     d.gfc = gcd[0].ret;
     d.format = gcd[6].ret;
+
+    GHVBoxFitWindow(boxes[0].ret);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
