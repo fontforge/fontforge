@@ -1548,6 +1548,8 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
 
     GHVBoxSetExpandableRow(boxes[0].ret,1);
     GHVBoxSetExpandableCol(boxes[2].ret,4);
+    if ( boxes[0].gd.pos.width!=0 && boxes[0].gd.pos.height!=0 )
+	GGadgetResize(boxes[0].ret,boxes[0].gd.pos.width,boxes[0].gd.pos.height);
 }
 
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
