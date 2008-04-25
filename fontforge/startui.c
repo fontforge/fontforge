@@ -724,7 +724,7 @@ int main( int argc, char **argv ) {
 		strncpy(buffer,argv[i],sizeof(buffer));
 	    else
 		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
-	    if ( GFileIsDir(buffer)) {
+	    if ( GFileIsDir(buffer) || (strstr(buffer,"://")!=NULL && buffer[strlen(buffer)-1]=='/')) {
 		char *fname;
 		fname = galloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
 		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
