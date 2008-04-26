@@ -50,9 +50,262 @@ int ask_user_for_cmap = false;
 /* It grows on you though... now that I understand it better it seems better designed */
 /*  but the docs remain in conflict. Sometimes badly so */
 
-/* !!!I don't currently parse instructions to get hints, but I do save them */
-
 int prefer_cjk_encodings=false;
+
+/* ************************************************************************** */
+static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
+    { "af", 0x436 },
+    { "sq_AL", 0x41c },
+    { "am", 0x45e },
+    { "ar_SA", 0x401 },
+    { "ar_IQ", 0x801 },
+    { "ar_EG", 0xc01 },
+    { "ar_LY", 0x1001 },
+    { "ar_DZ", 0x1401 },
+    { "ar_MA", 0x1801 },
+    { "ar_TN", 0x1C01 },
+    { "ar_OM", 0x2001 },
+    { "ar_YE", 0x2401 },
+    { "ar_SY", 0x2801 },
+    { "ar_JO", 0x2c01 },
+    { "ar_LB", 0x3001 },
+    { "ar_KW", 0x3401 },
+    { "ar_AE", 0x3801 },
+    { "ar_BH", 0x3c01 },
+    { "ar_QA", 0x4001 },
+    { "hy", 0x42b },
+    { "as", 0x44d },
+    { "az", 0x42c },
+    { "az", 0x82c },
+    { "eu", 0x42d },
+    { "be_BY", 0x423 },
+    { "bn_IN", 0x445 },
+    { "bn_BD", 0x845 },
+    { "bg_BG", 0x402 },
+    { "my", 0x455 },
+    { "ca", 0x403 },
+    { "km", 0x453 },
+    { "zh_TW", 0x404 },		/* Trad */
+    { "zh_CN", 0x804 },		/* Simp */
+    { "zh_HK", 0xc04 },		/* Trad */
+    { "zh_SG", 0x1004 },	/* Simp */
+    { "zh_MO", 0x1404 },	/* Trad */
+    { "hr", 0x41a },
+    { "hr_BA", 0x101a },
+    { "cs_CZ", 0x405 },
+    { "da_DK", 0x406 },
+    { "div", 0x465 },
+    { "nl_NL", 0x413 },
+    { "nl_BE", 0x813 },
+    { "en_UK", 0x809 },
+    { "en_US", 0x409 },
+    { "en_CA", 0x1009 },
+    { "en_AU", 0xc09 },
+    { "en_NZ", 0x1409 },
+    { "en_IE", 0x1809 },
+    { "en_ZA", 0x1c09 },
+    { "en_JM", 0x2009 },
+    { "en", 0x2409 },
+    { "en_BZ", 0x2809 },
+    { "en_TT", 0x2c09 },
+    { "en_ZW", 0x3009 },
+    { "en_PH", 0x3409 },
+    { "en_ID", 0x3809 },
+    { "en_HK", 0x3c09 },
+    { "en_IN", 0x4009 },
+    { "en_MY", 0x4409 },
+    { "et_EE", 0x425 },
+    { "fo", 0x438 },
+/* No language code for filipino */
+    { "fa", 0x429 },
+    { "fi_FI", 0x40b },
+    { "fr_FR", 0x40c },
+    { "fr_BE", 0x80c },
+    { "fr_CA", 0xc0c },
+    { "fr_CH", 0x100c },
+    { "fr_LU", 0x140c },
+    { "fr_MC", 0x180c },
+    { "fr", 0x1c0c },		/* West Indes */
+    { "fr_RE", 0x200c },
+    { "fr_CD", 0x240c },
+    { "fr_SN", 0x280c },
+    { "fr_CM", 0x2c0c },
+    { "fr_CI", 0x300c },
+    { "fr_ML", 0x340c },
+    { "fr_MA", 0x380c },
+    { "fr_HT", 0x3c0c },
+    { "fr_DZ", 0xe40c },	/* North African is most likely to be Algeria, possibly Tunisia */
+    { "fy", 0x462 },
+    { "gl", 0x456 },
+    { "ka", 0x437 },
+    { "de_DE", 0x407 },
+    { "de_CH", 0x807 },
+    { "de_AT", 0xc07 },
+    { "de_LU", 0x1007 },
+    { "de_LI", 0x1407 },
+    { "el_GR", 0x408 },
+    { "ga", 0x83c },
+    { "gd", 0x43c },
+    { "gn", 0x474 },
+    { "gu", 0x447 },
+    { "ha", 0x468 },
+    { "he_IL", 0x40d },
+    { "iw", 0x40d },		/* Obsolete name for Hebrew */
+    { "hi", 0x439 },
+    { "hu_HU", 0x40e },
+    { "is_IS", 0x40f },
+    { "id", 0x421 },
+    { "in", 0x421 },		/* Obsolete name for Indonesean */
+    { "iu", 0x45d },
+    { "it_IT", 0x410 },
+    { "it_CH", 0x810 },
+    { "ja_JP", 0x411 },
+    { "kn", 0x44b },
+    { "ks_IN", 0x860 },
+    { "kk", 0x43f },
+    { "ky", 0x440 },
+    { "km", 0x453 },
+    { "kok", 0x457 },
+    { "ko", 0x412 },
+    { "ko", 0x812 },	/*Johab */
+    { "lo", 0x454 },
+    { "la", 0x476 },
+    { "lv_LV", 0x426 },
+    { "lt_LT", 0x427 },
+    { "lt", 0x827 },	/* Classic */
+    { "mk", 0x42f },
+    { "ms", 0x43e },
+    { "ms", 0x83e },
+    { "ml", 0x44c },
+    { "mt", 0x43a },
+    { "mr", 0x44e },
+    { "mn", 0x450 },
+    { "ne_NP", 0x461 },
+    { "ne_IN", 0x861 },
+    { "no_NO", 0x414 },	/* Bokmal */
+    { "no_NO", 0x814 },	/* Nynorsk */
+    { "or", 0x448 },
+    { "om", 0x472 },
+    { "ps", 0x463 },
+    { "pl_PL", 0x415 },
+    { "pt_PT", 0x416 },
+    { "pt_BR", 0x816 },
+    { "pa_IN", 0x446 },
+    { "pa_PK", 0x846 },
+    { "qu_BO", 0x46b },
+    { "qu_EC", 0x86b },
+    { "qu_PE", 0xc6b },
+    { "rm", 0x417 },
+    { "ro_RO", 0x418 },
+    { "ro_MD", 0x818 },
+    { "ru_RU", 0x419 },
+    { "ru_MD", 0x819 },
+    { "smi", 0x43b },
+    { "sa", 0x43b },
+/* No language code for Sepedi */
+    { "sr", 0xc1a },	/* Cyrillic */
+    { "sr", 0x81a },	/* Latin */
+    { "sd_IN", 0x459 },
+    { "sd_PK", 0x859 },
+    { "si", 0x45b },
+    { "sk_SK", 0x41b },
+    { "sl_SI", 0x424 },
+    { "wen", 0x42e },
+    { "es_ES", 0x40a },	/* traditional spanish */
+    { "es_MX", 0x80a },
+    { "es_ES", 0xc0a },	/* Modern spanish */
+    { "es_GT", 0x100a },
+    { "es_CR", 0x140a },
+    { "es_PA", 0x180a },
+    { "es_DO", 0x1c0a },
+    { "es_VE", 0x200a },
+    { "es_CO", 0x240a },
+    { "es_PE", 0x280a },
+    { "es_AR", 0x2c0a },
+    { "es_EC", 0x300a },
+    { "es_CL", 0x340a },
+    { "es_UY", 0x380a },
+    { "es_PY", 0x3c0a },
+    { "es_BO", 0x400a },
+    { "es_SV", 0x440a },
+    { "es_HN", 0x480a },
+    { "es_NI", 0x4c0a },
+    { "es_PR", 0x500a },
+    { "es_US", 0x540a },
+    { "sutu", 0x430 },
+    { "sw_KE", 0x441 },
+    { "sv_SE", 0x41d },
+    { "sv_FI", 0x81d },
+    { "tl", 0x464 },
+    { "tg", 0x464 },
+    { "ta", 0x449 },
+    { "tt", 0x444 },
+    { "te", 0x44a },
+    { "th", 0x41e },
+    { "bo_CN", 0x451 },
+    { "bo_BT", 0x451 },
+    { "ti_ET", 0x473 },
+    { "ti_ER", 0x873 },
+    { "ts", 0x431 },
+    { "tn", 0x432 },
+    { "tr_TR", 0x41f },
+    { "tk", 0x442 },
+    { "uk_UA", 0x422 },
+    { "ug", 0x480 },
+    { "ur_PK", 0x420 },
+    { "ur_IN", 0x820 },
+    { "uz", 0x443 },	/* Latin */
+    { "uz", 0x843 },	/* Cyrillic */
+    { "ven", 0x433 },
+    { "vi", 0x42a },
+    { "cy", 0x452 },
+    { "xh", 0x434 },
+    { "yi", 0x43d },
+    { "ji", 0x43d },	/* Obsolete Yiddish */
+    { "yo", 0x46a },
+    { "zu", 0x435 },
+    { NULL }};
+
+int MSLanguageFromLocale(void) {
+    const char *lang=NULL;
+    int i, langlen;
+    static char *envs[] = { "LC_ALL", "LC_MESSAGES", "LANG", NULL };
+    char langcountry[8], language[4];
+    int langcode, langlocalecode;
+
+    for ( i=0; envs[i]!=NULL; ++i ) {
+	lang = getenv(envs[i]);
+	if ( lang!=NULL ) {
+	    langlen = strlen(lang);
+	    if (( langlen>5 && lang[5]=='.' && lang[2]=='_' ) ||
+		    (langlen==5 && lang[2]=='_' ) ||
+		    (langlen==2) ||
+		    (langlen==3))	/* Some obscure languages have a 3 letter code */
+		/* I understand this language */
+    break;
+	}
+    }
+    if ( lang==NULL )
+	lang = "en_US";
+    strncpy(langcountry,lang,5); langcountry[5] = '\0';
+    strncpy(language,lang,3); language[3] = '\0';
+    if ( language[2]=='_' ) language[2] = '\0';
+    langlen = strlen(language);
+
+    langcode = langlocalecode = -1;
+    for ( i=0; ms_2_locals[i].loc_name!=NULL; ++i ) {
+	if ( strmatch(langcountry,ms_2_locals[i].loc_name)==0 ) {
+	    langlocalecode = ms_2_locals[i].local_id;
+	    langcode = langlocalecode&0x3ff;
+    break;
+	} else if ( strncmp(language,ms_2_locals[i].loc_name,langlen)==0 )
+	    langcode = ms_2_locals[i].local_id&0x3ff;
+    }
+    if ( langcode==-1 )		/* Default to English */
+	langcode = 0x9;
+return( langlocalecode==-1 ? (langcode|0x400) : langlocalecode );
+}
+/* ************************************************************************** */
 
 int getushort(FILE *ttf) {
     int ch1 = getc(ttf);
@@ -237,6 +490,8 @@ char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2) {
     int fullval, fullstr, fulllen, famval, famstr, famlen;
     Encoding *enc;
     int fullplat, fullspec, fulllang, famplat, famspec, famlang;
+    int locale = MSLanguageFromLocale();
+    int maclang = WinLangToMac(locale);
 
     fseek(ttf,offset,SEEK_SET);
     /* version = */ getlong(ttf);
@@ -271,11 +526,19 @@ return( NULL );
 	if ( enc==NULL )
     continue;
 	val = 0;
-    /* I really want an english name */
-	if ( (plat==0 || plat==1) && !enc->is_custom && lang==0 )
-	    val = 11;
-	else if ( plat==3 && !enc->is_custom && (lang&0xff)==0x09 )
+	if ( plat==3 && !enc->is_custom && lang==locale )
+	    val = 15;
+	else if ( plat==3 && !enc->is_custom && (lang&0xff)==(locale&0xff) )
+	    val = 14;
+	else if ( (plat==0 || plat==1) && !enc->is_custom && lang==maclang )
+	    val = 13;
+    /* Ok, that didn't work, how about an english name? */
+	else if ( plat==3 && !enc->is_custom && lang==0x409 )
 	    val = 12;
+	else if ( plat==3 && !enc->is_custom && (lang&0xff)==0x09 )
+	    val = 11;
+	else if ( (plat==0 || plat==1) && !enc->is_custom && lang==0 )
+	    val = 10;
     /* failing that I'll take what I can get */
 	else if ( !enc->is_custom )
 	    val = 1;
