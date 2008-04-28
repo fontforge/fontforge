@@ -2009,7 +2009,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
 	DrawSelImageList(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->images);
 
-	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled ) {
+	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled &&
+		cv->filled!=NULL ) {
 	    /* Wrong order, I know. But it is useful to have the background */
 	    /*  visible on top of the fill... */
 	    GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
@@ -2159,31 +2160,25 @@ static void CVRegenFill(CharView *cv) {
 	extern int use_freetype_to_rasterize_fv;
 	int layer = CVLayer((CharViewBase *) cv);
 	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
-#if 1
+	int clut_len= 2;
+	/* Generally I don't think there's much point in doing an anti-aliased*/
+	/*  fill. But on the "M" (and "W") glyph of extravigant caps, ft won't*/
+	/*  do a mono fill */
 	if ( use_freetype_to_rasterize_fv && hasFreeType()) {
 	    cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,layer,
 		size, 1);
-	} else {
+	    if ( cv->filled==NULL && size<2000 ) {
+		/* There are some glyphs which freetype won't rasterize in */
+		/* mono mode, but will in grey scale. Don't ask me why */
+		cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,
+		    layer, size, 4);
+		clut_len = 16;
+	    }
+	}
+	if ( cv->filled==NULL )
 	    cv->filled = SplineCharRasterize(cv->b.sc,layer,size+.1);
-	}
-	cv->gi.u.image->data = cv->filled->bitmap;
-	cv->gi.u.image->bytes_per_line = cv->filled->bytes_per_line;
-	cv->gi.u.image->width = cv->filled->xmax-cv->filled->xmin+1;
-	cv->gi.u.image->height = cv->filled->ymax-cv->filled->ymin+1;
-#else /* I don't think there is any point to doing an anti-aliased fill image */
-	int cv_aa = ((FontView *) (cv->b.fv))->antialias;
-	int clut_len;
-	if ( use_freetype_to_rasterize_fv ) {
-	    cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,
-		size, cv_aa?4:1);
-	    clut_len = cv_aa?16:2;
-	} else if ( cv_aa && size<2000 ) {
-	    cv->filled = SplineCharAntiAlias(cv->b.sc,size,4);
-	    clut_len = 16;
-	} else {
-	    cv->filled = SplineCharRasterize(cv->b.sc,size+.1);
-	    clut_len = 2;
-	}
+	if ( cv->filled==NULL )
+return;
 	cv->gi.u.image->image_type = clut_len==2 ? it_mono : it_index;
 	cv->gi.u.image->data = cv->filled->bitmap;
 	cv->gi.u.image->bytes_per_line = cv->filled->bytes_per_line;
@@ -2202,7 +2197,6 @@ static void CVRegenFill(CharView *cv) {
 	    }
 	    clut->clut_len = clut_len;
 	}
-#endif
 	GDrawRequestExpose(cv->v,NULL,false);
     }
 }
