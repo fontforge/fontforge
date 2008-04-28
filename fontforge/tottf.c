@@ -4864,7 +4864,7 @@ static int32 filecheck(FILE *file) {
     rewind(file);
     while ( 1 ) {
 	chunk = getuint32(file);
-	if ( feof(file))
+	if ( feof(file) || ferror(file))
     break;
 	sum += chunk;
     }
@@ -5718,10 +5718,11 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	putlong(ttf,at->tabdir.alpha[i]->length);
     }
 
-    for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data!=NULL )
+    for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data!=NULL ) {
 	if ( !ttfcopyfile(ttf,at->tabdir.ordered[i]->data,
 		at->tabdir.ordered[i]->offset,Tag2String(at->tabdir.ordered[i]->tag)))
 	    at->error = true;
+    }
 
     checksum = filecheck(ttf);
     checksum = 0xb1b0afba-checksum;
@@ -5931,7 +5932,7 @@ int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
 	if (( ttf = tmpfile())==NULL )
 return( 0 );
     } else {
-	if (( ttf=fopen(fontname,"wb"))==NULL )
+	if (( ttf=fopen(fontname,"wb+"))==NULL )
 return( 0 );
     }
     ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
