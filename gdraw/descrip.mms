@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 4 January 2008
+# Date : 28 April 2008
 
 libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
  gaskdlg.obj,gbuttons.obj,gchardlg.obj,gcontainer.obj,gdraw.obj,\
@@ -7,8 +7,7 @@ libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
  genkeysym.obj,gfilechooser.obj,gfiledlg.obj,ggadgets.obj,ggroupbox.obj,\
  gimageclut.obj,gimagecvt.obj,gimagepsdraw.obj,gdrawgimage.obj,\
  gimagewriteeps.obj,\
- gimagexdraw.obj,gio.obj,giofile.obj,\
- giohosts.obj,giomime.obj,giothread.obj,giotrans.obj,gkeysym.obj,glist.obj,\
+ gimagexdraw.obj,gkeysym.obj,glist.obj,\
  gmenu.obj,gprogress.obj,gpsdraw.obj,gpstxtinit.obj,gradio.obj,gresource.obj,\
  gresourceimage.obj,gsavefiledlg.obj,gscrollbar.obj,gtabset.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj,ghvbox.obj,\
@@ -20,7 +19,8 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
 	/define=("NOTHREADS=1","_NO_XKB=1","_STATIC_LIBFREETYPE=1",\
 	"_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1","_NO_XINPUT=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1",\
-	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1")
+	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
+	"HAVE_PTHREAD_H=1")
 
 all : [-.libs]libgdraw.olb
 	write sys$output "gdraw finished"
@@ -50,12 +50,6 @@ gimagecvt.obj : gimagecvt.c
 gimagepsdraw.obj : gimagepsdraw.c
 gimagewriteeps.obj : gimagewriteeps.c
 gimagexdraw.obj : gimagexdraw.c
-gio.obj : gio.c
-giofile.obj : giofile.c
-giohosts.obj : giohosts.c
-giomime.obj : giomime.c
-giothread.obj : giothread.c
-giotrans.obj : giotrans.c
 gkeysym.obj : gkeysym.c
 glist.obj : glist.c
 gmenu.obj : gmenu.c

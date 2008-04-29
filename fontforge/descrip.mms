@@ -6,7 +6,8 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1","_NO_XINPUT=1",\
 	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
 	"_NO_PYTHON=1","_NO_LIBSPIRO=1","fork=vfork",\
-        "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""")
+        "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""",\
+	"HAVE_PTHREAD_H=1")
 
 fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  bitmapdlg.obj,scstyles.obj,parsettfbmf.obj,\
