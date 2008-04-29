@@ -9573,7 +9573,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = infofamily;
-    rq.point_size = -7;
+    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", -7);
     rq.weight = 400;
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);
