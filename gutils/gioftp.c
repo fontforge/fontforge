@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL        0x4000	/* send man page implies MSG_NOSIGNAL is in sys/socket.h, but it ain't always */
+#define MSG_NOSIGNAL        0x0		/* linux man page for "send" implies MSG_NOSIGNAL is in sys/socket.h, but it ain't implemente for Mac and Solaris */
 #endif
 #include <errno.h>
 
@@ -412,6 +412,20 @@ return( parseunix_ldir );
 return( parseunix_Fdir );
 }
 
+static int setnopipe(int soc) {
+#if MSG_NOSIGNAL==0 && defined(SO_NOSIGPIPE)
+    int value=1;
+    socklen_t len = sizeof(value);
+    
+    if ( soc==-1 )
+return( -1 );
+
+return( setsockopt(soc,SOL_SOCKET,SO_NOSIGPIPE,&value,len));
+#else
+return( 0 );
+#endif
+}
+
 static int ftpgetdir(GIOControl *gc,int ctl,char *dirname,int tzdiff) {
     struct sockaddr_in data_addr;
     int data, len, ret, i;
@@ -439,7 +453,8 @@ return( ret );
 	free(buf); free(line);
 return( ret );
     }
-    if (( data = socket(PF_INET,SOCK_STREAM,0))==-1 ||
+    if (( data = socket(PF_INET,SOCK_STREAM,IPPROTO_TCP))==-1 ||
+	    setnopipe(data)==-1 ||
 	    connect(data,(struct sockaddr *) &data_addr,sizeof(data_addr))== -1 ) {
 	if ( data!=-1 )
 	    close(data);
@@ -598,7 +613,8 @@ void *GIO_dispatch(GIOControl *gc) {
 	    had->tzoff = -9999;
 	}
 	pthread_mutex_unlock(&stdfuncs->hostacccess_mutex);
-	ftp->ctl = ctl = socket(PF_INET,SOCK_STREAM,0);
+	ftp->ctl = ctl = socket(PF_INET,SOCK_STREAM,IPPROTO_TCP);
+	setnopipe(ctl);
 	locaddr = addr->addr;
 	locaddr.sin_port = htons(port);
 	if ( connect(ctl,(struct sockaddr *) &locaddr,sizeof(addr->addr))== -1 ) {

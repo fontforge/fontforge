@@ -35,7 +35,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL        0x4000	/* send man page implies MSG_NOSIGNAL is in sys/socket.h, but it ain't always */
+#define MSG_NOSIGNAL        0x0		/* linux man page for "send" implies MSG_NOSIGNAL is in sys/socket.h, but it ain't implemente for Mac and Solaris */
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -221,7 +221,19 @@ static int getTCPsocket() {
 	proto = IPPROTO_TCP;
     endprotoent();
 
+#if MSG_NOSIGNAL!=0 || !defined(SO_NOSIGPIPE)
 return( socket(PF_INET,SOCK_STREAM,proto));
+#else
+    {
+	int soc = socket(PF_INET,SOCK_STREAM,proto);
+	int value=1;
+	socklen_t len = sizeof(value);
+
+	if ( soc!=-1 )
+	    setsockopt(soc,SOL_SOCKET,SO_NOSIGPIPE,&value,len);
+return( soc );
+    }
+#endif
 }
 
 static int makeConnection(struct sockaddr_in *addr) {
