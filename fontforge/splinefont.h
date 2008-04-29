@@ -2921,6 +2921,8 @@ extern int SSExistsInLayer(SplineSet *ss,SplineSet *lots );
 extern int SplineExistsInSS(Spline *s,SplineSet *ss);
 extern int SpExistsInSS(SplinePoint *sp,SplineSet *ss);
 
+extern int MSLanguageFromLocale(void);
+
 extern struct math_constants_descriptor {
     char *ui_name;
     char *script_name;
