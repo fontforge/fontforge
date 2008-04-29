@@ -69,7 +69,8 @@ struct cvshows CVShows = {
 	1,		/* show anchor points */
 	1,		/* show control point info when moving them */
 	1,		/* show tabs containing names of former glyphs */
-	1		/* show side bearings */
+	1,		/* show side bearings */
+	1		/* show the names of references */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -2035,7 +2036,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			!sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
 			false,&clip);
 		for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-		    if ( cv->b.drawmode==dm_back )
+		    if ( cv->b.drawmode==dm_back && cv->showrefnames )
 			CVDrawRefName(cv,pixmap,rf,0);
 		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
 			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,-1,&clip);
@@ -2057,7 +2058,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     layer = cvlayer;
     if ( layer>=0 ) {	/* Not the guidelines "layer" */
 	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-	    if ( CVLayer((CharViewBase *) cv)==layer )
+	    if ( CVLayer((CharViewBase *) cv)==layer && cv->showrefnames )
 		CVDrawRefName(cv,pixmap,rf,0);
 	    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
 		CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
@@ -4801,6 +4802,7 @@ return( true );
 #define MID_ShowAnchors		2042
 #define MID_ShowHMetrics	2043
 #define MID_ShowVMetrics	2044
+#define MID_ShowRefNames	2045
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5241,6 +5243,14 @@ static void CVMenuShowSideBearings(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     CVShows.showsidebearings = cv->showsidebearings = !cv->showsidebearings;
+    SavePrefs(true);
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuShowRefNames(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.showrefnames = cv->showrefnames = !cv->showrefnames;
     SavePrefs(true);
     GDrawRequestExpose(cv->v,NULL,false);
 }
@@ -8521,6 +8531,9 @@ static void swlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_ShowSideBearings:
 	    mi->ti.checked = cv->showsidebearings;
 	  break;
+	  case MID_ShowRefNames:
+	    mi->ti.checked = cv->showrefnames;
+	  break;
 	  case MID_ShowTabs:
 	    mi->ti.checked = cv->showtabs;
 	    mi->ti.disabled = cv->former_cnt<=1;
@@ -9241,6 +9254,7 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("_Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) N_("Points of _Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
     { { (unichar_t *) N_("_Side Bearings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
+    { { (unichar_t *) N_("Reference Names"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Reference Names|No Shortcut"), NULL, NULL, CVMenuShowRefNames, MID_ShowRefNames },
     { { (unichar_t *) N_("_Fill"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, pllist, pllistcheck },
@@ -9508,6 +9522,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showvmetrics = CVShows.showvmetrics;
     cv->markextrema = CVShows.markextrema;
     cv->showsidebearings = CVShows.showsidebearings;
+    cv->showrefnames = CVShows.showrefnames;
     cv->markpoi = CVShows.markpoi;
     cv->showblues = CVShows.showblues;
     cv->showfamilyblues = CVShows.showfamilyblues;

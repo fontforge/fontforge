@@ -348,6 +348,7 @@ static struct prefs_list {
 	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1 },
 	{ "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowSideBearings", pr_int, &CVShows.showsidebearings, NULL, NULL, '\0', NULL, 1 },
+	{ "ShowRefNames", pr_int, &CVShows.showrefnames, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowFilled", pr_int, &CVShows.showfilled, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowTabs", pr_int, &CVShows.showtabs, NULL, NULL, '\0', NULL, 1 },
