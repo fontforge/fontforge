@@ -4529,13 +4529,28 @@ static void VWMouse(struct val_data *vw, GEvent *e) {
     int skips;
     int gid = VW_FindLine(vw,vw->loff_top + e->u.mouse.y/vw->fh, &skips);
     SplineChar *sc;
+    int k=0;
 
     if ( gid==-2 && e->u.mouse.clicks==2 && e->type==et_mouseup ) {
 	FontInfo(vw->sf,vw->layer,4,false);	/* Bring up the Private Dict */
 return;
     }
-    if ( gid<0 || (sc = vw->sf->glyphs[gid])==NULL )
+    if ( gid<0 )
 return;
+    if ( vw->sf->subfontcnt==0 ) {
+	if ( (sc = vw->sf->glyphs[gid])==NULL )
+return;
+    } else {
+	sc = NULL;
+	for ( k=0; k<vw->sf->subfontcnt; ++k ) {
+	    if ( gid<vw->sf->subfonts[k]->glyphcnt &&
+		    (sc=vw->sf->subfonts[k]->glyphs[gid])!=NULL )
+	break;
+	}
+	if ( sc==NULL )
+return;
+    }
+
     if ( e->u.mouse.clicks==2 && e->type==et_mouseup ) {
 	VWReuseCV(vw,sc);
     } else if ( e->type==et_mouseup && e->u.mouse.x<10+vw->as && skips==0 ) {

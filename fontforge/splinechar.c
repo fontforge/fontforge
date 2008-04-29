@@ -1492,7 +1492,7 @@ int SFValidate(SplineFont *sf, int layer, int force) {
 	k = 0;
 	do {
 	    sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sub->glyphs[gid])!=NULL ) {
 		if ( force || !(sc->layers[layer].validation_state&vs_known) )
 		    ++cnt;
 	    }
@@ -1505,7 +1505,7 @@ int SFValidate(SplineFont *sf, int layer, int force) {
     k = 0;
     do {
 	sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sub->glyphs[gid])!=NULL ) {
 	    if ( force || !(sc->layers[layer].validation_state&vs_known) ) {
 		SCValidate(sc,layer,true);
 		if ( !ff_progress_next())
