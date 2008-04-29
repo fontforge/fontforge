@@ -52,3 +52,7 @@ extern GImage _GIcon_tar;
 extern GImage _GIcon_homefolder;
 extern GImage _GIcon_configtool;
 extern GImage _GIcon_bookmark;
+extern GImage _GIcon_nobookmark;
+extern GImage _GIcon_nobookmark;
+extern GImage _GIcon_backarrow;
+extern GImage _GIcon_forwardarrow;

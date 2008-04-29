@@ -954,11 +954,11 @@ static void GFCBookmark(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem gfcbookmarkmenu[] = {
-    { { (unichar_t *) N_("Back"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCBack },
-    { { (unichar_t *) N_("Forward"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCForward },
+    { { (unichar_t *) N_("Directory|Back"), &_GIcon_backarrow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCBack },
+    { { (unichar_t *) N_("Directory|Forward"), &_GIcon_forwardarrow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCForward },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Bookmark Current Dir"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCAddCur },
-    { { (unichar_t *) N_("Remove Bookmark..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCRemoveBook },
+    { { (unichar_t *) N_("Bookmark Current Dir"), &_GIcon_bookmark, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCAddCur },
+    { { (unichar_t *) N_("Remove Bookmark..."), &_GIcon_nobookmark, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCRemoveBook },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     NULL
 };
@@ -975,7 +975,8 @@ static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
 	if ( !bgotten ) {
 	    bgotten = true;
 	    for ( i=0; gfcbookmarkmenu[i].ti.text!=NULL || gfcbookmarkmenu[i].ti.line; ++i )
-		gfcbookmarkmenu[i].ti.text = (unichar_t *) _( (char *) gfcbookmarkmenu[i].ti.text);
+		if ( gfcbookmarkmenu[i].ti.text!=NULL )
+		    gfcbookmarkmenu[i].ti.text = (unichar_t *) S_( (char *) gfcbookmarkmenu[i].ti.text);
 	}
 	for ( mcnt=0; gfcbookmarkmenu[mcnt].ti.text!=NULL || gfcbookmarkmenu[mcnt].ti.line; ++mcnt );
 	bcnt = 0;
