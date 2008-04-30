@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-29 09:44+0200\n"
+"POT-Creation-Date: 2008-04-30 08:47+0200\n"
 "PO-Revision-Date: 2006-09-16 10:22+0200\n"
 "Last-Translator: Michal Nowakowski\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -2174,7 +2174,7 @@ msgstr "Plan pierwszy"
 
 #. GT: Background, make it short
 #: charview.c:2799 cvpalettes.c:1221 cvstroke.c:1209 math.c:1931 searchview.c:618
-#: splinefont.c:1349 tilepath.c:1021 ../gdraw/gfilechooser.c:957
+#: splinefont.c:1349 tilepath.c:1021
 msgid "Back"
 msgstr "Warstwa tła"
 
@@ -11098,13 +11098,10 @@ msgstr "Data modyfikacji:"
 
 #: fontinfo.c:10063
 msgid ""
-"This pane is informatative only and shows the characters\n"
+"This pane is informative only and shows the characters\n"
 "actually in the font. If you wish to set the OS/2 Unicode\n"
 "Range field, change the pane to"
 msgstr ""
-"Ta zakładka tylko pokazuje, z jakich unikodowych zakresów\n"
-"znaków pochodzą glify w bieżącym foncie. Zmiana tych zakresów\n"
-"jest możliwa w:"
 
 #: fontinfo.c:10072
 msgid "OS/2 -> Charsets"
@@ -26772,9 +26769,13 @@ msgstr "Usuń zakładkę"
 msgid "Remove selected bookmarks"
 msgstr "Usuń wybrane zakładki"
 
+#: ../gdraw/gfilechooser.c:957
+msgid "Directory|Back"
+msgstr "Wstecz"
+
 #: ../gdraw/gfilechooser.c:958
-msgid "Forward"
-msgstr "Prześlij"
+msgid "Directory|Forward"
+msgstr "Dalej"
 
 #: ../gdraw/gfilechooser.c:960
 msgid "Bookmark Current Dir"
@@ -26784,19 +26785,19 @@ msgstr "Bieżący folder do zakładek"
 msgid "Remove Bookmark..."
 msgstr "Usuń zakładkę..."
 
-#: ../gdraw/gfilechooser.c:1433
+#: ../gdraw/gfilechooser.c:1434
 msgid "Home Folder"
 msgstr "Folder domowy"
 
-#: ../gdraw/gfilechooser.c:1442
+#: ../gdraw/gfilechooser.c:1443
 msgid "Bookmarks"
 msgstr "Zakładki"
 
-#: ../gdraw/gfilechooser.c:1457
+#: ../gdraw/gfilechooser.c:1458
 msgid "Parent Folder"
 msgstr "Przejdź poziom wyżej"
 
-#: ../gdraw/gfilechooser.c:1466
+#: ../gdraw/gfilechooser.c:1467
 msgid "Configure"
 msgstr "Konfiguracja"
 
@@ -26848,6 +26849,18 @@ msgstr "65"
 #: ../gdraw/gtextinfo.c:666
 msgid "GGadget|ScaleFactor|100"
 msgstr "130"
+
+#~ msgid ""
+#~ "This pane is informatative only and shows the characters\n"
+#~ "actually in the font. If you wish to set the OS/2 Unicode\n"
+#~ "Range field, change the pane to"
+#~ msgstr ""
+#~ "Ta zakładka tylko pokazuje, z jakich unikodowych zakresów\n"
+#~ "znaków pochodzą glify w bieżącym foncie. Zmiana tych zakresów\n"
+#~ "jest możliwa w:"
+
+#~ msgid "Forward"
+#~ msgstr "Prześlij"
 
 #~ msgid ""
 #~ "The %1$s contains a reference to %2$.20hs which does not exist in the new font.\n"
