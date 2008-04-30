@@ -10060,7 +10060,7 @@ return;
 		    small_blue_box.main_background;
 
     ulabel[0].text = (unichar_t *) _(
-	    "This pane is informatative only and shows the characters\n"
+	    "This pane is informative only and shows the characters\n"
 	    "actually in the font. If you wish to set the OS/2 Unicode\n"
 	    "Range field, change the pane to");
     ulabel[0].text_is_1byte = true;
