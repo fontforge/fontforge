@@ -21525,8 +21525,8 @@ fi;
  fi
 fi
 
-if test "$gww_hasbytecode" = "yes" ; then
-  echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
+# Used for ftp and the freetype bytecode debugger
+echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
 echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6
 if test "${ac_cv_lib_pthread_pthread_create+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -21591,11 +21591,8 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_pthread_create" >&5
 echo "${ECHO_T}$ac_cv_lib_pthread_pthread_create" >&6
 if test $ac_cv_lib_pthread_pthread_create = yes; then
-  LIBS="$LIBS -lpthread"
-else
-  gww_hasbytecode="no"
-fi
 
+    LIBS="$LIBS -lpthread"
 
 for ac_header in pthread.h
 do
@@ -21748,7 +21745,13 @@ fi
 
 done
 
+
+else
+
+    gww_hasbytecode="no"
+
 fi
+
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
