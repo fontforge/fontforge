@@ -385,10 +385,15 @@ if test "$gww_use_freetype" != "no" >/dev/null 2>&1 ; then
  fi
 fi
 
-if test "$gww_hasbytecode" = "yes" ; then
-  AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
-  AC_CHECK_HEADERS([pthread.h], : , gww_hasbytecode="no")
-fi
+# Used for ftp and the freetype bytecode debugger
+AC_CHECK_LIB(pthread, pthread_create,
+  [
+    LIBS="$LIBS -lpthread"
+    AC_CHECK_HEADERS([pthread.h], : , gww_hasbytecode="no")
+  ] ,
+  [
+    gww_hasbytecode="no"
+  ])
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
