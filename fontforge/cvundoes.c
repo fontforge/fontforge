@@ -162,7 +162,12 @@ return( NULL );
 }
 
 static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
-    RefChar *crefs = sc->layers[layer].refs, *cend, *cprev, *unext, *cnext;
+    RefChar *crefs, *cend, *cprev, *unext, *cnext;
+
+    if ( layer==ly_grid )
+return;
+
+    crefs = sc->layers[layer].refs;
 
     cprev = NULL;
     while ( crefs!=NULL && urefs!=NULL ) {
