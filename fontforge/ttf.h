@@ -654,6 +654,8 @@ struct alltabs {
     int fftmlen;
     FILE *dsigf;
     int dsiglen;
+    FILE *hdmxf;
+    int hdmxlen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
