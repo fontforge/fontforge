@@ -57,7 +57,7 @@ void LoadPlugin(char *dynamic_lib_name) {
     }
     plugin = dlopen(dynamic_lib_name,RTLD_LAZY);
     if ( plugin==NULL ) {
-	LogError("Failed to dlopen: %s", dynamic_lib_name);
+	LogError("Failed to dlopen: %s\n%s", dynamic_lib_name, dlerror());
 	free(freeme);
 return;
     }
