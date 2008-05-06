@@ -949,18 +949,22 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename,int layer) {
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
 	if ( autohint_before_generate && sc!=NULL &&
-		sc->changedsincelasthinted && !sc->manualhints )
+		sc->changedsincelasthinted && !sc->manualhints ) {
+	    no_windowing_ui = true;
 	    SplineCharAutoHint(sc,layer,NULL);	/* Do this now, else we get an unwanted undo on the stack from hinting */
+	}
 	no_windowing_ui = false;
 	SCPreserveLayer(sc,layer,false);
+	no_windowing_ui = true;			/* Clustering wants to create an undo that I don't need */
 	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=refnext ) {
 	    refnext = ref->next;
 	    SCRefToSplines(sc,ref,layer);
 	}
-	no_windowing_ui = true;			/* Clustering wants to create an undo that I don't need */
-	SCRoundToCluster(sc,ly_all,false,.03,.12);
-	no_windowing_ui = false;
+	SCRoundToCluster(sc,layer,false,.03,.12);
 	sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,over_remove);
+	no_windowing_ui = false;
+	if ( !sc->manualhints )
+	    sc->changedsincelasthinted = false;
     }
     no_windowing_ui = old_nwui;
     maxundoes = old_maxundoes;
@@ -972,6 +976,8 @@ void RestoreUnlinkRmOvrlp(SplineFont *sf,char *filename,int layer) {
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
 	SCDoUndo(sc,layer);
+	if ( !sc->manualhints )
+	    sc->changedsincelasthinted = false;
     }
 #if !defined(_NO_PYTHON)
     PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
