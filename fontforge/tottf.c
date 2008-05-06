@@ -1454,6 +1454,36 @@ static int dumpnoglyphs(SplineFont *sf,struct glyphinfo *gi) {
 return( true );
 }
 
+static void ttfdumphdmx(SplineFont *sf,struct alltabs *at,int *bsizes) {
+    /* Create an 'hdmx' table. For now, only do this for the pixel sizes of */
+    /*  the bitmap strikes in the font (a user reports that windows doesn't */
+    /*  use the bitmap metrics data, only the vector data when calculating  */
+    /*  advance widths) */
+    /* Probably not a great idea, let's hold off */
+#if 0
+    int i,j;
+    BDFFont **strikes = NULL, *bdf;
+
+    if ( bsizes!=NULL ) {
+	for ( i=0; bsizes[i]!=0; ++i );
+	strikes = galloc(i*sizeof(BDFFont *));
+	for ( i=j=0; bsizes[i]!=0; ++i ) {
+	    if ( i!=0 && (bsizes[i-1]&0xffff) == (bsizes[i]&0xffff))
+	continue;		/* Same pixel size, different depths */
+	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
+	    if ( bdf==NULL )
+	continue;
+	    strikes[j++] = bdf;
+	}
+    }
+    if ( true || j==0 )
+return;
+
+    /* what happens if a strike is missing a glyph????? */
+    at->hdmxf = tmpfile();
+#endif
+}
+
 /* Standard names for cff */
 extern const char *cffnames[];
 extern const int nStdStrings;
@@ -5182,6 +5212,8 @@ return( false );
 	if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
 	    ttfdumpbitmapscaling(sf,at,bsizes);
     }
+    if ( !aborted && format>=ff_ttf && format<=ff_ttfdfont )	/* No hdmx table for cff or bitmap only fonts. Apple doesn't even want a hmtx, and otbitmap doesn't expect one */
+	ttfdumphdmx(sf,at,bsizes);
     if ( aborted ) {
 	AbortTTF(at,sf);
 return( false );
@@ -5461,6 +5493,12 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('g','l','y','f');
 	at->tabdir.tabs[i].data = at->gi.glyphs;
 	at->tabdir.tabs[i++].length = at->gi.glyph_len;
+    }
+
+    if ( at->hdmxf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('h','d','m','x');
+	at->tabdir.tabs[i].data = at->hdmxf;
+	at->tabdir.tabs[i++].length = at->hdmxlen;
     }
 
     if ( format!=ff_none || !at->applebitmaps ) {
