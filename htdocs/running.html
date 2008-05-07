@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 12-Oct-2006 -->
+  <!-- AP: Last modified: 5-May-2008 -->
   <TITLE>Starting fontforge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -98,8 +98,9 @@
 </PRE>
   </BLOCKQUOTE>
   <P>
-  Unfortunately there are two ways of doing this because there are two different
-  conventions used by unix shells. Type:
+  Unfortunately there are four ways of doing this because there are two different
+  conventions used by unix shells and then the mac doesn't behave normally
+  requiring another two conventions. Type:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>echo $SHELL
 /bin/bash
@@ -122,11 +123,12 @@
   But you'd have to do that every time you logged in. Instead you want this
   included in the shell's initialization. Again there are two cases, for the
   <KBD>bash</KBD> family of shells you want to edit the file
-  <KBD>~/.profile</KBD> while for the <KBD>csh</KBD> family you want to edit
-  the file <KBD>~/.login</KBD>. On a bash system the following command is generally
+  <KBD>~/.bashrc</KBD> (or <KBD>~/.profile</KBD>) while for the <KBD>csh</KBD>
+  family you want to edit the file <KBD>~/.cshrc</KBD> (or
+  <KBD>~/.login</KBD>). On a bash system the following command is generally
   sufficient:
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.profile
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.bashrc
 PATH=/usr/local/bin:$PATH ; export PATH
 ^D
 </PRE>
@@ -136,11 +138,14 @@ PATH=/usr/local/bin:$PATH ; export PATH
   key while depressing <KBD>d</KBD>. <BR>
   And for the csh family you would type:
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.login
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.cshrc
 setenv PATH /usr/local/bin:$PATH
 ^D
 </PRE>
   </BLOCKQUOTE>
+  <P>
+  On non-mac systems it is better to use <CODE>~/.profile</CODE> and
+  <CODE>~/.login</CODE> rather than the files given above.
   <H3>
     <A NAME="Starting">Starting</A> fontforge from the command line
   </H3>

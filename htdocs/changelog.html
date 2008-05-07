@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 30-Mar-2008 -->
+  <!-- AP: Last modified: 5-May-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,76 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      29-Apr-2008
+      <UL>
+	<LI>
+	  Validate didn't work in CID keyed fonts.
+	<LI>
+	  Pierre Hanser wants an X Resource (fontforge.CharView.Rulers.FontSize) to
+	  specify the font size of text displayed in the info line and the rulers.
+	  I have applied his patch, but have made no effort to insure that text will
+	  fit in the space allowed for it.
+	<LI>
+	  Hmm. Freetype seems to dislike rasterizing some complex outlines at large
+	  pixelsizes in black and white, but seems fine with doing them in greyscale.
+	<LI>
+	  When opening a ttc file (and posting a dlg which lists all the fonts in the
+	  file) try to find a fontname in the current locale. We used to look first
+	  for English and then anything. Now try: First current locale, then english,
+	  then anything.
+	<LI>
+	  Make the Open Font dlg (and similar file chooser dlgs) be customizable, and
+	  store that info in prefs. Specifically control whether directories are displayed
+	  in alphabetical order among other files, before normal files, or in a separate
+	  pane.
+	  <P>
+	  Also add a bookmark (and back/forward) mechanism.
+	<LI>
+	  Add support for opening a font from http &amp; ftp URLs. Can browse ftp URLs,
+	  and save fonts back to ftp.<BR>
+	  <CODE>$ fontforge
+	  http://openfontlibrary.org/people/Nasenbaer/Nasenbaer_-_Widelands.ttf</CODE>
+	<LI>
+	  The validation patch broke the save mac family dialog, and then the upload
+	  to open font library broke it further.
+	<LI>
+	  When doing expand stroke, it is possible to have two points so close together
+	  that there is no data on the curve in between the two. If this happens
+	  ApproximateFromPointsSlopes can't do a good job. So be careful of this case.
+	<LI>
+	  Layers change introduced a potential crash in the Embolden command.
+	<LI>
+	  fontimage didn't draw the first line.
+	<LI>
+	  In the Display dlg, if you changed the font, or the point size without selecting
+	  something, then that change would vanish instantly. Fix that.
+	  <P>
+	  Also, was a crash bug when mixing a font with a baseline table and a font
+	  without one (in the disply dlg).
+	<LI>
+	  Add a command to insert text into a glyph. (<CODE>Element-&gt;Insert Text
+	  Outlines)</CODE> It adds the text outlines directly (instead of a draw command
+	  using another font) because most fonts can't include text drawing in their
+	  glyphs. Also include a Bind to Path variant.
+	<LI>
+	  GLyph lists in kerning classes (in show att) were displayed as ligatures.
+	<LI>
+	  Upgrade to unicode 5.1
+	<LI>
+	  If an sfd file were saved with spiros active, and then loaded into a version
+	  of fontforge without libspiro, then bad things would happen. Whenever we
+	  check that spiros are active also check that they can be active, and add
+	  some warnings for the user to let him/her know that spiros aren't available.
+	<LI>
+	  Add a tile pattern command (if --enable-tile-path) this allows the user to
+	  replicate any given pattern in another glyph.
+	  <P>
+	  This could be used to produce a grid of guidelines, or, in conjunction with
+	  <CODE>Element-&gt;Overlap-&gt;Intersec</CODE>t it could provide a poor man's
+	  "Pattern Fill" (Since Pattern fills are only available in type3 fonts this
+	  sort of makes them work for any font type).
+      </UL>
     <LI>
       30-Mar-2008
       <UL>
