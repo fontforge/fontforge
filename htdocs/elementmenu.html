@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 13-Apr-2008 -->
+  <!-- AP: Last modified: 5-May-2008 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -165,6 +165,10 @@
       </UL>
     <LI>
       <A HREF="#Expand">Expand Stroke...</A>
+    <LI>
+      <A HREF="elementmenu.html#TilePath">Tile Path...</A>
+    <LI>
+      <A HREF="#TilePattern">Tile Pattern...</A>
     <LI>
       Overlap
       <UL>
@@ -625,10 +629,19 @@
     <DT>
       <A NAME="TilePath">Tile Path</A>
     <DD>
-      This command is not available in the default build, you must modify the file
-      <CODE>configure-fontforge.h</CODE> and then rebuild FontForge. Not available
-      in quadratic (truetype) fonts. This command takes the contents of the clipboard
-      and treats it as a tile which is applied to any selected contours.
+      This command is not available in the default build, you must reconfigure
+      $ <CODE>configure --with-tilepath</CODE> and then rebuild FontForge. Not
+      available in quadratic (truetype) fonts. This command brings up a
+      <A HREF="tilepath.html">dialog</A> which allows you to specify a tile to
+      be applied to any selected contours.
+    <DT>
+      <A NAME="TilePattern">Tile Pattern...</A>
+    <DD>
+      Also not available in the default build, also controled by $ <CODE>configure
+      --with-tilepath</CODE>. <A HREF="tilepath.html#Pattern">This command</A>
+      allows you to design a pattern which will be layed down on the current layer
+      m*n times (where m is the number of horizontal repeats and n the number of
+      vertical repeats.
     <DT>
       Overlap
     <DD>
