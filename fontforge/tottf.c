@@ -2626,6 +2626,31 @@ return( true );
 return( false );
 }
 
+static int AnyMisleadingBitmapAdvances(SplineFont *sf, int32 *bsizes) {
+    int strike, gid;
+    double em = sf->ascent+sf->descent;
+    BDFFont *bdf;
+    /* Are there any bitmap glyphs whose advance width differs from the */
+    /*  expected value from scaling the outline's advance width? */
+
+    if ( bsizes==NULL )
+return( false );
+    for ( strike = 0; bsizes[strike]!=0; ++strike ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[strike]&0xffff) || BDFDepth(bdf)!=(bsizes[strike]>>16)); bdf=bdf->next );
+	if ( bdf==NULL )
+    continue;
+	for ( gid=0; gid<sf->glyphcnt && gid<bdf->glyphcnt; ++gid ) {
+	    SplineChar *sc = sf->glyphs[gid];
+	    BDFChar *bc = bdf->glyphs[gid];
+	    if ( sc==NULL || bc==NULL )
+	continue;
+	    if ( (int) rint( (sc->width*bdf->pixelsize)/em ) != bc->width )
+return( true );
+	}
+    }
+return( false );
+}
+
 #ifdef _HAS_LONGLONG
 void cvt_unix_to_1904( long long time, int32 result[2]) {
     uint32 date1970[4], tm[4];
@@ -2674,7 +2699,8 @@ void cvt_unix_to_1904( long time, int32 result[2]) {
     result[1] = (tm[3]<<16) | tm[2];
 }
 
-static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
+static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
+	enum fontformat format, int32 *bsizes) {
     time_t now;
     int i, lr, rl, indic_rearrange, arabic;
     ASM *sm;
@@ -2713,8 +2739,16 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
     head->flags = 8|2|1;		/* baseline at 0, lsbline at 0, round ppem */
-    if ( AnyInstructions(sf))
-	head->flags = 0x10|8|4|2|1;	/* baseline at 0, lsbline at 0, round ppem, instructions may depend on point size, instructions change metrics */
+    if ( format>=ff_ttf && format<=ff_ttfdfont ) {
+	if ( AnyInstructions(sf) )
+	    head->flags = 0x10|8|4|2|1;	/* baseline at 0, lsbline at 0, round ppem, instructions may depend on point size, instructions change metrics */
+	else if ( AnyMisleadingBitmapAdvances(sf,bsizes))
+	    head->flags = 0x10|8|2|1;	/* baseline at 0, lsbline at 0, round ppem, instructions change metrics */
+    }
+    /* If a font contains embedded bitmaps, and if some of those bitmaps have */
+    /*  a different advance width from that expected by scaling, then windows */
+    /*  will only notice the fact if the 0x10 bit is set (even though this has*/
+    /*  nothing to do with instructions) */
 /* Apple flags */
     if ( sf->hasvmetrics )
 	head->flags |= (1<<5);		/* designed to be layed out vertically */
@@ -5230,7 +5264,7 @@ return( false );
     at->head.xmax = at->gi.xmax;
     at->head.ymax = at->gi.ymax;
 
-    sethead(&at->head,sf,at);
+    sethead(&at->head,sf,at,format,bsizes);
     sethhead(&at->hhead,&at->vhead,at,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->gi.glyph_len<0x20000 )
