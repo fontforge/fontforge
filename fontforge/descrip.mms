@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 14 February 2008
+# Date : 8 May 2008
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
@@ -9,62 +9,56 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
         "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""",\
 	"HAVE_PTHREAD_H=1")
 
-fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
- bitmapdlg.obj,scstyles.obj,parsettfbmf.obj,\
- bitmapview.obj,bvedit.obj,charview.obj,cursors.obj
+fontforge_LIBOBJECTS = asmfpst.obj,autohint.obj,autosave.obj,autotrace.obj,autowidth.obj,\
+ bezctx_ff.obj,bitmapchar.obj,bitmapcontrol.obj,bvedit.obj,clipnoui.obj,crctab.obj,\
+ cvexport.obj,cvimages.obj,cvundoes.obj,dumpbdf.obj,dumppfa.obj,effects.obj,encoding.obj
 
-fontforge_OBJECTS1=cvaddpoints.obj,cvexport.obj,cvgetinfo.obj,cvhints.obj,cvimages.obj,cvknife.obj,\
-cvpalettes.obj,cvpointer.obj,cvruler.obj,cvshapes.obj,cvstroke.obj,cvtranstools.obj
+fontforge_LIBOBJECTS1=featurefile.obj,fontviewbase.obj,freetype.obj,fvcomposit.obj,fvfonts.obj,fvimportbdf.obj,\
+ fvmetrics.obj,glyphcomp.obj,http.obj,ikarus.obj,lookups.obj,macbinary.obj
 
-fontforge_OBJECTS2=cvundoes.obj,dumpbdf.obj,dumppfa.obj,fontinfo.obj,fontview.obj,fvcomposit.obj,\
-	fvfonts.obj,fvimportbdf.obj,fvmetrics.obj,images.obj,metricsview.obj,\
- parsepfa.obj,parsettf.obj,prefs.obj,psread.obj,namelist.obj,savefontdlg.obj
+fontforge_LIBOBJECTS2=macenc.obj,mathconstants.obj,mm.obj,namelist.obj,nonlineartrans.obj,noprefs.obj,nouiutil.obj
 
-fontforge_OBJECTS3=sfd.obj,splashimage.obj,splinefill.obj,splineoverlap.obj,splinesave.obj,\
- splinesaveafm.obj,splinestroke.obj,splineutil.obj,splineutil2.obj,stamp.obj,\
- start.obj,tottf.obj,transform.obj,uiutil.obj,utils.obj,windowmenu.obj
+fontforge_LIBOBJECTS3=nowakowskittfinstr.obj,ofl.obj,othersubrs.obj,palmfonts.obj,parsepdf.obj,parsepfa.obj,\
+ parsettfatt.obj,parsettfbmf.obj,parsettf.obj,parsettfvar.obj,plugins.obj,print.obj
 
-fontforge_OBJECTS4=zapfnomen.obj,othersubrs.obj,autotrace.obj,openfontdlg.obj,encoding.obj,\
- problems.obj,crctab.obj,macbinary.obj,scripting.obj
- 
-fontforge_OBJECTS5=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
-        cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
-	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj,tottfaat.obj
+fontforge_LIBOBJECTS4=psread.obj,pua.obj,python.obj,savefont.obj,scripting.obj,scstyles.obj,search.obj
 
-fontforge_OBJECTS6=splineorder2.obj,ttfinstrs.obj,cvgridfit.obj,\
-	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
-	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj
+fontforge_LIBOBJECTS5=sfd1.obj,sfd.obj,sflayout.obj,spiro.obj,splinechar.obj,splinefill.obj,\
+ splinefont.obj,splineorder2.obj,splineoverlap.obj,splinerefigure.obj,\
+ splinesaveafm.obj,splinesave.obj,splinestroke.obj,splineutil2.obj,splineutil.obj
 
-fontforge_OBJECTS7=macenc.obj,statemachine.obj,splinerefigure.obj,mm.obj,\
-	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
-	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj,plugins.obj
+fontforge_LIBOBJECTS6=start.obj,stemdb.obj,svg.obj,tottfaat.obj,tottfgpos.obj,tottf.obj,\
+ tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,unicoderange.obj,utils.obj,\
+ winfonts.obj,zapfnomen.obj,groups.obj,langfreq.obj
 
-fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
-	ofl.obj,lookups.obj,sfd1.obj,python.obj,featurefile.obj,\
-	math.obj,nowakowskittfinstr.obj,http.obj,spiro.obj,bezctx_ff.obj
+fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj
 
-fontforge_OBJECTS9=scriptingdlg.obj,fvfontsdlg.obj,splinefont.obj,\
-	splinechar.obj,cvexportdlg.obj,cvimportdlg.obj,encodingui.obj,\
-	bitmapchar.obj,lookupui.obj,nouiutil.obj,noprefs.obj,\
-	bitmapcontrol.obj,fontviewbase.obj,mathconstants.obj,print.obj
+fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj,\
+ bdfinfo.obj,bitmapdlg.obj,bitmapview.obj,charinfo.obj,charview.obj,clipui.obj,\
+ combinations.obj,contextchain.obj,cursors.obj,cvaddpoints.obj,cvdebug.obj,cvdgloss.obj,\
+ cvexportdlg.obj,cvfreehand.obj,cvgetinfo.obj,cvgridfit.obj,cvhand.obj,cvhints.obj,\
+ cvimportdlg.obj,cvknife.obj,cvpalettes.obj,cvpointer.obj,cvruler.obj,cvshapes.obj,\
+ cvstroke.obj,cvtranstools.obj,displayfonts.obj,effectsui.obj,encodingui.obj,\
+ fontinfo.obj,fontview.obj,freetypeui.obj,fvfontsdlg.obj,fvmetricsdlg.obj,gotodlg.obj,\
+ groupsdlg.obj,histograms.obj,images.obj,kernclass.obj,layer2layer.obj,lookupui.obj,\
+ macencui.obj,math.obj,metricsview.obj,mmdlg.obj,nonlineartransui.obj,openfontdlg.obj,\
+ prefs.obj,problems.obj,pythonui.obj,savefontdlg.obj,scriptingdlg.obj,scstylesui.obj,\
+ searchview.obj,sftextfield.obj,showatt.obj,simplifydlg.obj,splashimage.obj,stamp.obj,\
+ startui.obj,statemachine.obj,tilepath.obj,transform.obj,ttfinstrsui.obj,uiutil.obj,\
+ windowmenu.obj
 
-fontforge_OBJECTS10=asmfpst.obj,sflayout.obj,searchview.obj,\
-	nonlineartransui.obj,scstylesui.obj,groupsdlg.obj,\
-	fvmetricsdlg.obj,clipnoui.obj,autowidthdlg.obj,macencui.obj,\
-	savefont.obj,mmdlg.obj,effectsui.obj,langfreq.obj,ttfinstrsui.obj
+fontforge.exe : $(fontforge_UIOBJECTS) lff.opt xlib.opt\
+	[-.libs]libfontforge.exe [-.libs]LIBGDRAW.olb
+	library/create tmp.olb $(fontforge_UIOBJECTS)
+        link/exec=fontforge.exe startui.obj,tmp/lib,[-.libs]LIBGDRAW/lib,\
+	[]lff/opt,xlib.opt/opt
+	delete tmp.olb;*
 
-fontforge_OBJECTS11=libstamp.obj,exelibstamp.obj,clipui.obj,layer2layer.obj,\
-	basedlg.obj
-
-fontforge.exe : startui.obj lff.opt xlib.opt [-.libs]libfontforge.exe
-        link/exec=fontforge.exe startui,lff/opt,xlib.opt/opt
-
-[-.libs]libfontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS1)\
-	$(fontforge_OBJECTS2) $(fontforge_OBJECTS3) $(fontforge_OBJECTS4)\
-	$(fontforge_OBJECTS5) $(fontforge_OBJECTS6) $(fontforge_OBJECTS7)\
-	$(fontforge_OBJECTS8) $(fontforge_OBJECTS9) $(fontforge_OBJECTS10) \
-	$(fontforge_OBJECTS11) [-.libs]LIBGDRAW.olb [-.libs]LIBGUNICODE.olb \
-	[-.libs]LIBGUTIL.olb
+[-.libs]libfontforge.exe : $(fontforge_LIBOBJECTS) $(fontforge_LIBOBJECTS1)\
+	$(fontforge_LIBOBJECTS2) $(fontforge_LIBOBJECTS3)\
+	$(fontforge_LIBOBJECTS4) $(fontforge_LIBOBJECTS5)\
+	$(fontforge_LIBOBJECTS6) $(fontforge_LIBOBJECTS7) [-.libs]LIBGUTIL.olb\
+	[-.libs]LIBGUNICODE.olb
 	@ WRITE_ SYS$OUTPUT "  generating lff1.opt"
 	@ OPEN_/WRITE FILE  lff1.opt
 	@ WRITE_ FILE "!"
@@ -72,38 +66,32 @@ fontforge.exe : startui.obj lff.opt xlib.opt [-.libs]libfontforge.exe
 	@ WRITE_ FILE "!"
 	@ WRITE_ FILE "IDENTIFICATION=""lff"""
 	@ WRITE_ FILE "GSMATCH=LEQUAL,1,0
-	@ WRITE_ FILE "$(fontforge_OBJECTS)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS1)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS2)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS3)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS4)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS5)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS6)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS7)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS8)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS9)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS10)"
-	@ WRITE_ FILE "$(fontforge_OBJECTS11)"
-	@ write_ file "[-.libs]LIBGDRAW/lib"
-	@ write_ file "[-.libs]LIBGUTIL/lib"
-	@ write_ file "[-.libs]LIBGUNICODE/lib"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS1)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS2)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS3)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS4)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS5)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS6)"
+	@ WRITE_ FILE "$(fontforge_LIBOBJECTS7)"
+	@ librar/extract=* [-.libs]libgutil
+	@ write_ file "libgutil.obj"
+	@ librar/extract=* [-.libs]libgunicode
+	@ write_ file "libgunicode.obj"
 	@ CLOSE_ FILE
 	@ $(MMS)$(MMSQUALIFIERS)/ignore=warning lff_vms
 	@ WRITE_ SYS$OUTPUT "  linking libfontforge.exe ..."
 	@ LINK_/NODEB/SHARE=[-.libs]libfontforge.exe/MAP=lff.map/FULL \
-	lff1.opt/opt,startui.obj,lff_vms.opt/opt,[-.fontforge]xlib.opt/opt
+	lff1.opt/opt,lff_vms.opt/opt,[-.fontforge]xlib.opt/opt
+	@ delete libgunicode.obj;*,libgutil.obj;*
 	library/create [-.libs]libfontforge.olb $(fontforge_OBJECTS)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS1)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS2)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS3)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS4)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS5)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS6)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS7)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS8)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS9)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS10)
-	library [-.libs]libfontforge.olb $(fontforge_OBJECTS11)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS1)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS2)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS3)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS4)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS5)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS6)
+	library [-.libs]libfontforge.olb $(fontforge_LIBOBJECTS7)
 
 lff_vms :
 	@ WRITE_ SYS$OUTPUT "  generating lff.map ..."
