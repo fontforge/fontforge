@@ -4781,6 +4781,14 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	info->pfminfo.codepages[1] = getlong(ttf);
 	info->pfminfo.hascodepages = true;
     }
+
+    if ( info->os2_version==0 ) {
+	LogError("Windows will reject fonts with an OS/2 version number of 0\n");
+	info->bad_os2_version = true;
+    } else if ( info->os2_version==1 && info->cff_start!=0 ) {
+	LogError("Windows will reject otf (cff) fonts with an OS/2 version number of 1\n");
+	info->bad_os2_version = true;
+    }
 }
 
 #if 0
@@ -5953,7 +5961,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    (info->bad_cmap		?lvs_bad_cmap_table:0) |
 	    (info->bad_embedded_bitmap	?lvs_bad_bitmaps_table:0) |
 	    (info->bad_gx		?lvs_bad_gx_table:0) |
-	    (info->bad_ot		?lvs_bad_ot_table:0);
+	    (info->bad_ot		?lvs_bad_ot_table:0) |
+	    (info->bad_os2_version	?lvs_bad_os2_version:0);
 return( sf );
 }
 

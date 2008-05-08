@@ -71,6 +71,9 @@ while ( $argc > 1 )
     if ( mask & 0x20000 )
       Print( "  'prep' or 'fpgm' tables are longer than specified in 'maxp'" )
     endif
+    if ( mask & 0x40000 )
+      Print( "  Adjacent points too far apart in a glyph" )
+    endif
 
     mask = $loadState;
     if ( mask & 0x01 )
@@ -96,6 +99,9 @@ while ( $argc > 1 )
     endif
     if ( mask & 0x80 )
       Print( "  Bad OpenType advanced typography table" )
+    endif
+    if ( mask & 0x100 )
+      Print( "  Bad version number in OS/2 table (must be >0, and must be >1 for OT-CFF fonts)" )
     endif
 
     if ( blues & 0x010000 )

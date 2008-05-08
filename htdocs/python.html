@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 28-Mar-2008 -->
+  <!-- AP: Last modified: 8-May-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1654,6 +1654,11 @@ pen = None;				# Finalize the pen. This tells FontForge
 	      present in the font.</TD>
 	  </TR>
 	  <TR>
+	    <TD>0x40000</TD>
+	    <TD>Points (or control points) are too far apart. (Coordinates must be within
+	      32767)</TD>
+	  </TR>
+	  <TR>
 	    <TH COLSPAN=2>PostScript only</TH>
 	  </TR>
 	  <TR>
@@ -2586,7 +2591,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  </TR>
 	  <TR>
 	    <TD>0x80</TD>
-	    <TD>Bad OpenType advanced typography table</TD>
+	    <TD>Bad OpenType advanced typography table (GPOS, GSUB, GDEF, BASE)</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x100</TD>
+	    <TD>Bad OS/2 version number<BR>
+	      Windows will reject all fonts with a OS/2 version number of 0 and will reject
+	      OT-CFF fonts with a version number of 1</TD>
 	  </TR>
 	</TABLE>
       </TD>

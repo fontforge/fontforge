@@ -1194,7 +1194,7 @@ enum validation_state { vs_unknown = 0,
 	vs_maskps = 0x3fe | vs_pointstoofarapart,
 	vs_maskcid = 0x1fe | vs_pointstoofarapart,
 	vs_maskttf = 0x7e | vs_pointstoofarapart,
-	vs_maskfindproblems = 0x1be
+	vs_maskfindproblems = 0x1be | vs_pointstoofarapart
 	};
 
 typedef struct splinechar {
@@ -1496,14 +1496,15 @@ struct MATH {
 
 enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
 enum loadvalidation_state {
-	lvs_bad_ps_fontname    = 0x01,
-	lvs_bad_glyph_table    = 0x02,
-	lvs_bad_cff_table      = 0x04,
-	lvs_bad_metrics_table  = 0x08,
-	lvs_bad_cmap_table     = 0x10,
-	lvs_bad_bitmaps_table  = 0x20,
-	lvs_bad_gx_table       = 0x40,
-	lvs_bad_ot_table       = 0x80
+	lvs_bad_ps_fontname    = 0x001,
+	lvs_bad_glyph_table    = 0x002,
+	lvs_bad_cff_table      = 0x004,
+	lvs_bad_metrics_table  = 0x008,
+	lvs_bad_cmap_table     = 0x010,
+	lvs_bad_bitmaps_table  = 0x020,
+	lvs_bad_gx_table       = 0x040,
+	lvs_bad_ot_table       = 0x080,
+	lvs_bad_os2_version    = 0x100
     };
 
 typedef struct layerinfo {
