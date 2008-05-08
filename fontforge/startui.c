@@ -422,6 +422,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	GDrawSetVisible(gw,false);
     } else if ( event->type==et_mousemove ) {
 	GGadgetPreparePopup8(gw,_(foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))]) );
+    } else if ( event->type==et_destroy ) {
+	IError("Who killed the splash screen?");
     }
 return( true );
 }

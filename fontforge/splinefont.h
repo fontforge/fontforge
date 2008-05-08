@@ -1093,8 +1093,8 @@ typedef struct layer /* : reflayer */{
     RefChar *refs;			/* Only in foreground layer(s) */
     Undoes *undoes;
     Undoes *redoes;
-    uint16 validation_state;
-    uint16 old_vs;
+    uint32 validation_state;
+    uint32 old_vs;
 } Layer;
 
 enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1,
@@ -1187,11 +1187,13 @@ enum validation_state { vs_unknown = 0,
 	vs_maxp_toomanyrefs=0x8000,
 	vs_maxp_refstoodeep=0x10000,
 	vs_maxp_prepfpgmtoolong=0x20000,
+	    /* Oops, we need another one for the glyphs */
+	vs_pointstoofarapart = 0x40000,
 
-	vs_last = vs_badglyphname,
-	vs_maskps = 0x3fe,
-	vs_maskcid = 0x1fe,
-	vs_maskttf = 0x7e,
+	vs_last = vs_pointstoofarapart,
+	vs_maskps = 0x3fe | vs_pointstoofarapart,
+	vs_maskcid = 0x1fe | vs_pointstoofarapart,
+	vs_maskttf = 0x7e | vs_pointstoofarapart,
 	vs_maskfindproblems = 0x1be
 	};
 
@@ -2932,6 +2934,7 @@ extern struct math_constants_descriptor {
     int new_page;
 } math_constants_descriptor[];
 
+extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern char *VSErrorsFromMask(int mask,int private_mask);
 extern int SCValidate(SplineChar *sc, int layer, int force);
 extern void SCTickValidationState(SplineChar *sc,int layer);

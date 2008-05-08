@@ -1464,6 +1464,8 @@ return;
 	    int vs = SFValidate(d->sf,layer,false);
 	    int mask = VSMaskFromFormat(d->sf,layer,oldformatstate);
 	    int blues = ValidatePrivate(d->sf)& ~pds_missingblue;
+	    if ( d->sf->os2_version==1 && (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont))
+		ff_post_error(_("Bad OS/2 version"), _("OpenType fonts must have a version greater than 1"));
 	    if ( (vs&mask) || blues!=0 ) {
 		const char *rsb[3];
 		char *errs;
