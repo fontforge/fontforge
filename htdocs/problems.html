@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 17-Jan-2008 -->
+  <!-- AP: Last modified: 8-May-2008 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -135,7 +135,17 @@
   it is unlikely that they will make a detectable difference when the font
   is printed. Probably you should remove one of them... If FontForge detects
   two points on the same path which it deems to be too close it will select
-  both, stop and let you fix things.<BR Clear=Right>
+  both, stop and let you fix things.
+  <P>
+  <STRONG><BIG>Points Too Far Apart</BIG></STRONG>
+  <P>
+  Most font formats use 16 bit integers to describe the distance from one point
+  (or control point) to the next. This means that each point must be within
+  32767 em-units of the next point. If it is further away then it cannot be
+  represented in a generated font. If FontForge detects two points too far
+  from each other it will select both (a special case -- the first point in
+  a glyph must be within 32767 of the origin, if it is further, only the first
+  point will be selected), stop and let you fix things.<BR Clear=Right>
   <P>
   <IMG SRC="findprobs-paths.png" WIDTH="307" HEIGHT="439" ALIGN="Right"><STRONG><BIG>Open
   Paths</BIG></STRONG>
@@ -328,6 +338,13 @@
   Look through the associated bitmap fonts, and find if there is a bitmap font
   which is missing versions of glyphs present in the outline font. Conversely
   look for bitmap fonts with glyphs which are not present in the outline font.
+  <P>
+  <STRONG><BIG>Bitmap/Outline Advance Width Mismatch</BIG></STRONG>
+  <P>
+  If you have a font with embedded bitmaps, then you would expect that the
+  bitmap advance width would be the same as the outline glyph's advance width
+  (with approprate scaling and rounding, of course). This checks to ensure
+  that that is true.
   <P>
   <STRONG><BIG>Check Multiple Unicode</BIG></STRONG>
   <P>
