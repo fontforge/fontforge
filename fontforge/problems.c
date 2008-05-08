@@ -3744,7 +3744,16 @@ static char *vserrornames[] = {
     N_("Unknown glyph referenced in GSUB/GPOS/MATH"),
     N_("Too Many Points"),
     N_("Too Many Hints"),
-    N_("Bad Glyph Name")
+    N_("Bad Glyph Name"),
+    NULL,		/* Maxp too many points */
+    NULL,		/* Maxp too many paths */
+    NULL,		/* Maxp too many component points */
+    NULL,		/* Maxp too many component paths */
+    NULL,		/* Maxp instructions too long */
+    NULL,		/* Maxp too many references */
+    NULL,		/* Maxp references too deep */
+    NULL,		/* prep or fpgm too long */
+    N_("Distance between adjacent points is too big")
 };
 
 static char *privateerrornames[] = {
@@ -3784,14 +3793,14 @@ char *VSErrorsFromMask(int mask, int private_mask) {
 
     len = 0;
     for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
-	if ( mask&bit )
+	if ( (mask&bit) && vserrornames[m]!=NULL )
 	    len += strlen( _(vserrornames[m]))+2;
     if ( private_mask != 0 )
 	len += strlen( _("Bad Private Dictionary")) +2;
     ret = galloc(len+1);
     len = 0;
     for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
-	if ( mask&bit ) {
+	if ( (mask&bit) && vserrornames[m]!=NULL ) {
 	    ret[len++] =' ';
 	    strcpy(ret+len,_(vserrornames[m]));
 	    len += strlen( ret+len );
@@ -4639,7 +4648,7 @@ return;
 		++sofar;
 		if ( sc->vs_open ) {
 		    for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
-			if ( (bit&vw->mask) && (vs&bit) ) {
+			if ( (bit&vw->mask) && (vs&bit) && vserrornames[m]!=NULL ) {
 			    GDrawDrawText8(pixmap,10+r.width+r.x,y,_(vserrornames[m]),-1,NULL,0xff0000 );
 			    y += vw->fh;
 			    ++sofar;

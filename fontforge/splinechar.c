@@ -1251,6 +1251,11 @@ return( -1 );
     }
 }
 
+int BPTooFar(BasePoint *bp1, BasePoint *bp2) {
+return( bp1->x - bp2->x > 32767 || bp2->x - bp1->x > 32767 ||
+	bp1->y - bp2->y > 32767 || bp2->y - bp1->y > 32767 );
+}
+
 int SCValidate(SplineChar *sc, int layer, int force) {
     SplineSet *ss;
     Spline *s1, *s2, *s, *first;
@@ -1266,6 +1271,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     struct ttf_table *tab;
     extern int allow_utf8_glyphnames;
     RefChar *r;
+    BasePoint lastpt;
 
     if ( (sc->layers[layer].validation_state&vs_known) && !force )
   goto end;
@@ -1373,14 +1379,28 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     if ( cnt>=96 )
 	sc->layers[layer].validation_state |= vs_toomanyhints|vs_known;
 
+    memset(&lastpt,0,sizeof(lastpt));
     for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	for ( sp=ss->first; ; ) {
+	    if ( BPTooFar(&lastpt,&sp->prevcp) ||
+		    BPTooFar(&sp->prevcp,&sp->me) ||
+		    BPTooFar(&sp->me,&sp->nextcp))
+		sc->layers[layer].validation_state |= vs_pointstoofarapart|vs_known;
+	    memcpy(&lastpt,&sp->nextcp,sizeof(lastpt));
 	    ++pt_cnt;
 	    if ( sp->next==NULL )
 	break;
+	    if ( !sp->next->knownlinear ) {
+		if ( sp->next->order2 )
+		    ++pt_cnt;
+		else
+		    pt_cnt += 2;
+	    }
 	    sp = sp->next->to;
-	    if ( sp==ss->first )
+	    if ( sp==ss->first ) {
+		memcpy(&lastpt,&sp->me,sizeof(lastpt));
 	break;
+	    }
 	}
     }
     if ( pt_cnt>1500 )
