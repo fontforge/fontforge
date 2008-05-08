@@ -211,12 +211,14 @@ wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
 wildwin, wildpalm,
 wildimg, wildtemplate, wildps, wildepstemplate,
-wildplate, wildplatetemplate
+wildplate, wildplatetemplate,
 #ifndef _NO_LIBXML
-, wildsvg, wildsvgtemplate
-, wildglif, wildgliftemplate
+wildsvg, wildsvgtemplate,
+wildglif, wildgliftemplate,
+#else
+NULL, NULL, NULL, NULL,
 #endif
-
+wildfig
 };
 
 #define PSSF_Width 220
