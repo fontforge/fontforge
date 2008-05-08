@@ -5342,6 +5342,7 @@ return;
 		    curScript->def_baseline = getushort(ttf);
 		    tot = coordcnt = getushort(ttf);
 		    if ( coordcnt!=curBase->baseline_cnt ) {
+			info->bad_ot = true;
 			LogError( "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n",
 				coordcnt,
 				bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
@@ -5358,11 +5359,13 @@ return;
 			fseek( ttf,bs[i].offset+basevalues+coords[j],SEEK_SET);
 			format = getushort(ttf);
 			curScript->baseline_pos[j]  = (short) getushort(ttf);
-			if ( format!=1 && format!=2 && format!=3 )
+			if ( format!=1 && format!=2 && format!=3 ) {
+			    info->bad_ot = true;
 			    LogError("!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n",
 					format,
 					curBase->baseline_tags[j]>>24, curBase->baseline_tags[j]>>16, curBase->baseline_tags[j]>>8, curBase->baseline_tags[j],
 					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+			}
 		    }
 		    free(coords);
 		}

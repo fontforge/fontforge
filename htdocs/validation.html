@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 15-Aug-2007 -->
-  <!-- AP: Last modified: 16-Aug-2007 -->
+  <!-- AP: Last modified: 8-May-2008 -->
   <TITLE>The font validation window</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -37,6 +37,9 @@
       for small curved sections like serifs. The exception is not defined very
       well, and FontForge makes a guess and will not report errors if the spline
       is small -- but the actual definition of "small" is somewhat arbetrary).
+    <LI>
+      The coordinate offsets between adjacent points (or control points) must not
+      be greater than 32767.
     <LI>
       All opentype substitution commands must refer to real glyphs.
     <LI>

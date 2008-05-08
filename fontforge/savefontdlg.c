@@ -1373,6 +1373,11 @@ return;
 	end_of_loop:;
     }
 
+    if ( d->sf->os2_version==1 && (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
+	ff_post_error(_("Bad OS/2 version"), _("OpenType fonts must have a version greater than 1\nUse Element->Font Info->OS/2->Misc to change this."));
+return;
+    }
+
     if ( oldformatstate<=ff_cffcid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
 	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),
@@ -1464,8 +1469,6 @@ return;
 	    int vs = SFValidate(d->sf,layer,false);
 	    int mask = VSMaskFromFormat(d->sf,layer,oldformatstate);
 	    int blues = ValidatePrivate(d->sf)& ~pds_missingblue;
-	    if ( d->sf->os2_version==1 && (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont))
-		ff_post_error(_("Bad OS/2 version"), _("OpenType fonts must have a version greater than 1"));
 	    if ( (vs&mask) || blues!=0 ) {
 		const char *rsb[3];
 		char *errs;

@@ -2856,6 +2856,7 @@ static void DummyFindProblems(CharView *cv) {
     p.missingextrema = true;
     p.toomanypoints = true;
     p.toomanyhints = true;
+    p.pointstoofar = true;
 
     p.pointsmax = 1500;
     p.hintsmax = 96;
