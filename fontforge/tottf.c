@@ -3044,7 +3044,9 @@ return( pcnt>acnt );
 void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     int i;
     uint32 latin1[8];
-    int has_ascii, has_latin1;
+    int has_ascii, has_latin1, has_lineart=0, has_radical=0, has_summation=0;
+    int cp852=0, cp775=0, cp861=0, cp860=0, cp857=0, cp855=0, cp862=0, cp863=0;
+    int cp864=0, cp865=0, cp866=0, cp869=0, cp737=0, cp708=0, mac=0;
     int k;
     SplineChar *sc;
     SplineFont *sub;
@@ -3078,28 +3080,30 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 		CodePage[1] |= 1U<<31;		/* US */
 	    } else if ( uni==0x13d && has_ascii ) {
 		CodePage[0] |= 1<<1;		/* latin2 */
-		CodePage[1] |= 1<<26;		/* latin2 */
+		++cp852;
 	    } else if ( uni==0x411 ) {
 		CodePage[0] |= 1<<2;		/* cyrillic */
-		CodePage[1] |= 1<<17;		/* MS DOS Russian */
-		CodePage[1] |= 1<<25;		/* IBM Cyrillic */
+		++cp866;
+		++cp855;
+	    } else if ( uni==0x405 ) {
+		++cp855;
 	    } else if ( uni==0x386 ) {
 		CodePage[0] |= 1<<3;		/* greek */
-		CodePage[1] |= 1<<16;		/* IBM Greek */
-		CodePage[1] |= 1<<28;		/* Greek, former 437 G */
+		++cp869;
+		++cp737;
 	    } else if ( uni==0x130 && has_ascii ) {
 		CodePage[0] |= 1<<4;		/* turkish */
-		CodePage[1] |= 1<<24;		/* IBM turkish */
+		++cp857;
 	    } else if ( uni==0x5d0 ) {
 		CodePage[0] |= 1<<5;		/* hebrew */
-		CodePage[1] |= 1<<21;		/* hebrew */
+		++cp862;
 	    } else if ( uni==0x631 ) {
 		CodePage[0] |= 1<<6;		/* arabic */
-		CodePage[1] |= 1<<19;		/* arabic */
-		CodePage[1] |= 1<<29;		/* arabic; ASMO 708 */
+		++cp864;
+		++cp708;
 	    } else if ( uni==0x157 && has_ascii ) {
 		CodePage[0] |= 1<<7;		/* baltic */
-		CodePage[1] |= 1<<27;		/* baltic */
+		++cp775;
 	    } else if ( uni==0x20AB && has_ascii ) {
 		CodePage[0] |= 1<<8;		/* vietnamese */
 	    } else if ( uni==0xe45 )
@@ -3115,7 +3119,7 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	    else if ( uni==0xacf4 )
 		CodePage[0] |= 1<<21;		/* korean Johab */
 	    else if ( uni==0x2030 && has_ascii )
-		CodePage[0] |= 1U<<29;		/* mac roman */
+		++mac;
 	    else if ( uni==0x2665 && has_ascii )
 		CodePage[0] |= 1U<<30;		/* OEM */
 #if 0	/* the symbol bit doesn't mean it contains the glyphs in symbol */
@@ -3132,17 +3136,59 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	    else if ( uni>=0xf000 && uni<=0xf0ff )
 		CodePage[0] |= 1U<<31;		/* symbol */
 #endif
-	    else if ( uni==0xc3 && has_ascii )
-		CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
+	    else if ( uni==0xc5 && has_ascii )
+		++cp865;
 	    else if ( uni==0xe9 && has_ascii )
-		CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
+		++cp863;
 	    else if ( uni==0xf5 && has_ascii )
-		CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
+		++cp860;
 	    else if ( uni==0xfe && has_ascii )
-		CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
+		++cp861;
+	    else if ( uni==0x2524 )
+		++has_lineart;
+	    else if ( uni==0x255c )
+		++cp866;
+	    else if ( uni==0xbd )
+		++cp869;
+	    else if ( uni==0x221A )
+		has_radical=true;
+	    else if ( uni==0x2211 )
+		has_summation=true;
 	}
 	++k;
     } while ( k<sf->subfontcnt );
+    if ( cp852 && has_lineart )
+	CodePage[1] |= 1<<26;		/* latin2 */
+    if ( cp775 && has_lineart )
+	CodePage[1] |= 1<<27;		/* baltic */
+    if ( cp861 && has_lineart )
+	CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
+    if ( cp866==2 && has_lineart )
+	CodePage[1] |= 1<<17;		/* MS DOS Russian */
+    if ( cp855==2 && has_lineart )
+	CodePage[1] |= 1<<25;		/* IBM Cyrillic */
+    if ( cp869==2 && has_lineart )
+	CodePage[1] |= 1<<16;		/* IBM Greek */
+    if ( cp737 && has_lineart && has_radical )
+	CodePage[1] |= 1<<28;		/* Greek, former 437 G */
+    if ( cp857 && has_lineart )
+	CodePage[1] |= 1<<24;		/* IBM turkish */
+    if ( cp862 && has_lineart && has_radical )
+	CodePage[1] |= 1<<21;		/* hebrew */
+    if ( cp864 && has_radical )
+	CodePage[1] |= 1<<19;		/* arabic */
+#if 0		/* Can't find this codepage */
+    if ( cp708 && )
+	CodePage[1] |= 1<<29;		/* arabic; ASMO 708 */
+#endif
+    if ( cp863 && has_lineart && has_radical )
+	CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
+    if ( cp865 && has_lineart && has_radical )
+	CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
+    if ( cp860 && has_lineart && has_radical )
+	CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
+    if ( mac && has_summation )
+	CodePage[0] |= 1U<<29;		/* mac roman */
 }
 
 void OS2FigureUnicodeRanges(SplineFont *sf, uint32 Ranges[4]) {
@@ -3279,7 +3325,8 @@ docs are wrong.
 	    /*  BMP then last is 0xffff */
 	    /* sc->ttf_glyph>2 is to skip the first few truetype glyphs but */
 	    /*  that doesn't work for cff files which only have .notdef to ignore */
-	    if ( sc->ttf_glyph>2 || sc->unicodeenc>=0x20 ) {
+	    if ( ( format>=ff_ttf && format<=ff_otfdfont && sc->ttf_glyph>2) ||
+		    !(( format>=ff_ttf && format<=ff_otfdfont ) && sc->ttf_glyph>0) ) {
 		if ( sc->unicodeenc<=0xffff ) {
 		    if ( sc->unicodeenc<first ) first = sc->unicodeenc;
 		    if ( sc->unicodeenc>last ) last = sc->unicodeenc;
