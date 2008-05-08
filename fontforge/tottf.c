@@ -3277,7 +3277,9 @@ docs are wrong.
 	    /*  for the first/last char and can't represent them. */
 	    /* If no BMP glyphs, then first should be 0xffff. If any outside */
 	    /*  BMP then last is 0xffff */
-	    if ( sc->ttf_glyph>2 ) {
+	    /* sc->ttf_glyph>2 is to skip the first few truetype glyphs but */
+	    /*  that doesn't work for cff files which only have .notdef to ignore */
+	    if ( sc->ttf_glyph>2 || sc->unicodeenc>=0x20 ) {
 		if ( sc->unicodeenc<=0xffff ) {
 		    if ( sc->unicodeenc<first ) first = sc->unicodeenc;
 		    if ( sc->unicodeenc>last ) last = sc->unicodeenc;
