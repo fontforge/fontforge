@@ -2606,6 +2606,7 @@ struct topdicts {
     int painttype;
     int charstringtype;
     real fontmatrix[6];
+    int fontmatrix_set;
     int uniqueid;
     real fontbb[4];
     real strokewidth;
@@ -2798,6 +2799,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	  break;
 	  case (12<<8)+7:
 	    memcpy(td->fontmatrix,stack,(sp>=6?6:sp)*sizeof(real));
+	    td->fontmatrix_set = 1;
 	  break;
 	  case 13:
 	    td->uniqueid = stack[sp-1];
@@ -3021,7 +3023,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 }
 
 static struct topdicts **readcfftopdicts(FILE *ttf, char **fontnames, int32 cff_start,
-	struct ttfinfo *info) {
+	struct ttfinfo *info, struct topdicts *parent_dict) {
     uint16 count = getushort(ttf);
     int offsize;
     uint32 *offsets;
@@ -3038,6 +3040,9 @@ return( NULL );
     for ( i=0; i<count; ++i ) {
 	dicts[i] = readcfftopdict(ttf,fontnames!=NULL?fontnames[i]:NULL,
 		offsets[i+1]-offsets[i], info);
+	if ( parent_dict!=NULL && parent_dict->fontmatrix_set ) {
+	    MatMultiply(parent_dict->fontmatrix,dicts[i]->fontmatrix,dicts[i]->fontmatrix);
+	}
 	dicts[i]->cff_start = cff_start;
     }
     dicts[i] = NULL;
@@ -3639,7 +3644,7 @@ return( 0 );
 return( 0 );
 	}
     }
-    dicts = readcfftopdicts(ttf,fontnames,info->cff_start,info);
+    dicts = readcfftopdicts(ttf,fontnames,info->cff_start,info, NULL);
 	/* String index is just the same as fontname index */
     strings = readcfffontnames(ttf,&scnt,info);
     readcffsubrs(ttf,&gsubs,info );
@@ -3656,7 +3661,7 @@ return( 0 );
 	cfffigure(info,dicts[which],strings,scnt,&gsubs);
     else {
 	fseek(ttf,info->cff_start+dicts[which]->fdarrayoff,SEEK_SET);
-	subdicts = readcfftopdicts(ttf,NULL,info->cff_start,info);
+	subdicts = readcfftopdicts(ttf,NULL,info->cff_start,info,dicts[which]);
 	fseek(ttf,info->cff_start+dicts[which]->fdselectoff,SEEK_SET);
 	fdselect = readfdselect(ttf,dicts[which]->glyphs.cnt,info);
 	for ( j=0; subdicts[j]!=NULL; ++j ) {

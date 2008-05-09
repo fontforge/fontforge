@@ -2785,6 +2785,9 @@ return( NULL );
     sf->subfontcnt = fd->fdcnt;
     sf->subfonts = galloc((sf->subfontcnt+1)*sizeof(SplineFont *));
     for ( i=0; i<fd->fdcnt; ++i ) {
+	if ( fd->fontmatrix[0]!=0 ) {
+	    MatMultiply(fd->fontmatrix,fd->fds[i]->fontmatrix,fd->fds[i]->fontmatrix);
+	}
 	sf->subfonts[i] = SplineFontEmpty();
 	SplineFontMetaData(sf->subfonts[i],fd->fds[i]);
 	sf->subfonts[i]->cidmaster = sf;
