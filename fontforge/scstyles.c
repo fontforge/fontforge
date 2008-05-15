@@ -2036,7 +2036,7 @@ return;
     }
     StemInfosFree(sc_sc->hstem); sc_sc->hstem = NULL;
     StemInfosFree(sc_sc->vstem); sc_sc->vstem = NULL;
-    SCCharChangedUpdate(sc_sc,layer);
+    SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
 }
 
 void FVAddSmallCaps(FontViewBase *fv) {
