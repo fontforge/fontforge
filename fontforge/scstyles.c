@@ -1325,6 +1325,45 @@ return( -1 );
 return( best_width );
 }
 
+/* Ok, we couldn't hint it, or it was italic. Make a copy of it, deskew it, */
+/*  and hint that */
+static double ReallyMajorVerticalStemWidth(SplineChar *sc, int layer,double tan_ia) {
+    double best_len, best_width;
+    StemInfo *s;
+    SplineChar dummy;
+    Layer layers[2];
+    real deskew[6];
+
+    if ( sc==NULL )
+return( -1 );
+    memset(deskew,0,sizeof(deskew));
+    deskew[0] = deskew[3] = 1;
+    deskew[2] = tan_ia;
+    memset(&dummy,0,sizeof(dummy));
+    memset(layers,0,sizeof(layers));
+    dummy.color = COLOR_DEFAULT;
+    dummy.layer_cnt = 2;
+    dummy.layers = layers;
+    dummy.parent = sc->parent;
+    dummy.name = copy("Fake");
+
+    dummy.layers[ly_fore].order2 = sc->layers[layer].order2;
+    dummy.layers[ly_fore].splines = SplinePointListTransform(
+	    SplinePointListCopy(LayerAllSplines(&sc->layers[layer])),
+	    deskew,true);
+    LayerUnAllSplines(&sc->layers[ly_fore]);
+    
+    SplineCharAutoHint(&dummy,ly_fore,NULL);
+    best_len = 0; best_width = -1;
+    for ( s = dummy.vstem; s!=NULL; s=s->next ) if ( !s->ghost ) {
+	double len = HIlen(s);
+	if ( len>best_len )
+	    best_width = s->width;
+    }
+    SCClearContents(&dummy,ly_fore);
+return( best_width );
+}
+
 static double CharHeight(SplineChar *sc, int layer) {
     DBounds b;
 
@@ -1353,23 +1392,50 @@ static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int l
     small->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
     small->tan_ia = tan( small->italic_angle );
 
-    for ( i=cnt=0, sum=0; lc_stem_str[i]!=0; ++i ) {
-	val = MajorVerticalStemWidth(SFGetChar(sf,lc_stem_str[i],NULL),layer);
-	if ( val!=-1 ) {
-	    sum += val;
-	    ++cnt;
+    cnt = 0;
+    small->lc_stem_width = small->uc_stem_width = -1;
+    if ( small->tan_ia==0 ) {
+	for ( i=0, sum=0; lc_stem_str[i]!=0; ++i ) {
+	    val = MajorVerticalStemWidth(SFGetChar(sf,lc_stem_str[i],NULL),layer);
+	    if ( val!=-1 ) {
+		sum += val;
+		++cnt;
+	    }
+	}
+	if ( cnt!=0 )
+	    small->lc_stem_width = sum/cnt;
+    }
+    if ( cnt==0 ) {
+	for ( i=0, sum=0; lc_stem_str[i]!=0 ; ++i ) {
+	    val = ReallyMajorVerticalStemWidth(SFGetChar(sf,lc_stem_str[i],NULL),layer, small->tan_ia);
+	    if ( val!=-1 ) {
+		small->lc_stem_width = val;
+	break;
+	    }
 	}
     }
-    small->lc_stem_width = cnt==0 ? -1 : sum/cnt;
 
-    for ( i=cnt=0, sum=0; uc_stem_str[i]!=0; ++i ) {
-	val = MajorVerticalStemWidth(SFGetChar(sf,uc_stem_str[i],NULL),layer);
-	if ( val!=-1 ) {
-	    sum += val;
-	    ++cnt;
+    cnt = 0;
+    if ( small->tan_ia==0 ) {
+	for ( i=0, sum=0; uc_stem_str[i]!=0; ++i ) {
+	    val = MajorVerticalStemWidth(SFGetChar(sf,uc_stem_str[i],NULL),layer);
+	    if ( val!=-1 ) {
+		sum += val;
+		++cnt;
+	    }
+	}
+	if ( cnt!=0 )
+	    small->uc_stem_width = sum/cnt;
+    }
+    if ( cnt==0 ) {
+	for ( i=0, sum=0; uc_stem_str[i]!=0 ; ++i ) {
+	    val = ReallyMajorVerticalStemWidth(SFGetChar(sf,uc_stem_str[i],NULL),layer, small->tan_ia);
+	    if ( val!=-1 ) {
+		small->uc_stem_width = val;
+	break;
+	    }
 	}
     }
-    small->uc_stem_width = cnt==0 ? -1 : sum/cnt;
     if ( small->uc_stem_width<=small->lc_stem_width || small->lc_stem_width==-1 )
 	small->stem_factor = 1;
     else
@@ -1553,7 +1619,7 @@ return( sc_sc );
 return( sc_sc );
 }
 
-static void SmallCapsRemoveSpace(SplineSet *ss,StemInfo *hints,int coord,double remove,
+static void SmallCapsRemoveSpace(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,double remove,
 	double min_coord, double max_coord) {
     struct overlaps { double start, stop, new_start, new_stop; } *overlaps;
     struct ptpos { double old, new; int hint_index; } *ptpos;
@@ -1562,6 +1628,7 @@ static void SmallCapsRemoveSpace(SplineSet *ss,StemInfo *hints,int coord,double 
     double counter_len, val, shrink;
     SplineSet *spl;
     SplinePoint *sp, *first, *start, *last;
+    AnchorPoint *ap;
 
     if ( remove > max_coord-min_coord )
 return;
@@ -1763,6 +1830,7 @@ return;
 	    
     /* Any points which aren't currently positioned, just interpolate them */
     /*  between the hint zones between which they lie */
+    /* I don't think this can actually happen... but do it just in case */
     for ( spl=ss; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    if ( !sp->ticked ) {
@@ -1794,6 +1862,32 @@ return;
 	    sp = sp->next->to;
 	    if ( sp==spl->first )
 	break;
+	}
+    }
+    /* And do the same for anchor points */
+    for ( ap=aps; ap!=NULL; ap=ap->next ) {
+	val = (&ap->me.x)[coord];
+	for ( i=0; i<tot; ++i ) {
+	    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
+		(&ap->me.x)[coord] = overlaps[i].new_start +
+			(val-overlaps[i].start) *
+			    (overlaps[i].new_stop - overlaps[i].new_start)/
+			    (overlaps[i].stop - overlaps[i].start);
+	break;
+	    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
+		(&ap->me.x)[coord] = overlaps[i-1].new_stop +
+			(val-overlaps[i-1].stop) *
+			    (overlaps[i].new_start - overlaps[i-1].new_stop)/
+			    (overlaps[i].start - overlaps[i-1].stop);
+	break;
+	    }
+	}
+	/* Anchor points might be outside the bounding box */
+	if ( i==tot ) {
+	    if ( val<overlaps[0].start )
+		(&ap->me.x)[coord] += overlaps[0].new_start - overlaps[0].start;
+	    else
+		(&ap->me.x)[coord] += overlaps[tot-1].new_stop - overlaps[tot-1].stop;
 	}
     }
 
@@ -1892,6 +1986,7 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     double remove_y, remove_x;
     extern int no_windowing_ui;
     int nwi = no_windowing_ui;
+    AnchorPoint *ap;
 
     memset(scale,0,sizeof(scale));
     scale[0] = scale[3] = small->stem_factor;
@@ -1900,6 +1995,13 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
 	    cap_sc->layers[layer].splines),scale,true);
     sc_sc->width = small->stem_factor * cap_sc->width;
+    sc_sc->anchor = AnchorPointsCopy(cap_sc->anchor);
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+	BasePoint me;
+	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+	me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+	ap->me = me;
+    }
     no_windowing_ui = true;		/* Turn off undoes */
     SplineCharAutoHint(sc_sc,layer,NULL);
     no_windowing_ui = nwi;
@@ -1916,8 +2018,8 @@ return;
     else
 	remove_x = (sc_b.maxx - sc_b.minx) * remove_y / (cap_b.maxy - cap_b.miny);
     sc_sc->width -= remove_x;
-    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
+    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
     SplineSetRefigure(sc_sc->layers[layer].splines);
 
     if ( small->tan_ia!=0 ) {
@@ -1925,6 +2027,12 @@ return;
 	scale[2] = -small->tan_ia;
 	sc_sc->layers[layer].splines =
 		SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+	    BasePoint me;
+	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+	    me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+	    ap->me = me;
+	}
     }
     StemInfosFree(sc_sc->hstem); sc_sc->hstem = NULL;
     StemInfosFree(sc_sc->vstem); sc_sc->vstem = NULL;
