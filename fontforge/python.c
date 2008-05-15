@@ -11480,6 +11480,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+
+    FVAddSmallCaps(fv);
+
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_autoHint(PyObject *self, PyObject *args) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
@@ -11746,6 +11754,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "replaceWithReference", (PyCFunction) PyFFFont_replaceWithReference, METH_VARARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
+    { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_NOARGS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
     { "autoHint", PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoWidth", PyFFFont_autoWidth, METH_VARARGS, "Guess horizontal advance widths for selected glyphs" },

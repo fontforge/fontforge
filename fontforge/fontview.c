@@ -1288,6 +1288,18 @@ static void FVMenuEmbolden(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     EmboldenDlg(fv,NULL);
 }
 
+#ifdef GWW_TEST
+static void FVMenuItalic(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    ItalicDlg(fv,NULL);
+}
+#endif
+
+static void FVMenuSmallCaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    FVAddSmallCaps((FontViewBase *) fv);
+}
+
 static void FVMenuOblique(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     ObliqueDlg(fv,NULL);
@@ -1357,6 +1369,8 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_RemoveBitmaps	2244
 #define MID_Validate		2245
 #define MID_MassRename		2246
+#define MID_Italic		2247
+#define MID_SmallCaps		2248
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -3735,13 +3749,18 @@ static GMenuItem2 rmlist[] = {
 };
 
 static GMenuItem2 eflist[] = {
-    { { (unichar_t *) N_("Change _Weight..."), &GIcon_bold, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Change Weight...|Ctl+Shft+!"), NULL, NULL, FVMenuEmbolden, MID_Embolden },
-    { { (unichar_t *) N_("Obl_ique..."), &GIcon_oblique, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Oblique...|No Shortcut"), NULL, NULL, FVMenuOblique },
-    { { (unichar_t *) N_("_Condense/Extend..."), &GIcon_condense, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Condense...|No Shortcut"), NULL, NULL, FVMenuCondense, MID_Condense },
-    { { (unichar_t *) N_("_Inline"), &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Inline|No Shortcut"), NULL, NULL, FVMenuInline },
-    { { (unichar_t *) N_("_Outline"), &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Outline|No Shortcut"), NULL, NULL, FVMenuOutline },
-    { { (unichar_t *) N_("_Shadow"), &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Shadow|No Shortcut"), NULL, NULL, FVMenuShadow },
-    { { (unichar_t *) N_("_Wireframe"), &GIcon_wireframe, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Wireframe|No Shortcut"), NULL, NULL, FVMenuWireframe },
+    { { (unichar_t *) N_("Change _Weight..."), &GIcon_bold, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Change Weight...|Ctl+Shft+!"), NULL, NULL, FVMenuEmbolden, MID_Embolden },
+#ifdef GWW_TEST
+    { { (unichar_t *) N_("_Italic..."), &GIcon_italic, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Italic...|No Shortcut"), NULL, NULL, FVMenuItalic, MID_Italic },
+#endif
+    { { (unichar_t *) N_("Obli_que..."), &GIcon_oblique, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Oblique...|No Shortcut"), NULL, NULL, FVMenuOblique },
+    { { (unichar_t *) N_("_Condense/Extend..."), &GIcon_condense, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Condense...|No Shortcut"), NULL, NULL, FVMenuCondense, MID_Condense },
+    { { (unichar_t *) N_("Add _Small Capitals"), &GIcon_smallcaps, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Italic...|No Shortcut"), NULL, NULL, FVMenuSmallCaps, MID_SmallCaps },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("In_line..."), &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Inline|No Shortcut"), NULL, NULL, FVMenuInline },
+    { { (unichar_t *) N_("_Outline..."), &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Outline|No Shortcut"), NULL, NULL, FVMenuOutline },
+    { { (unichar_t *) N_("S_hadow..."), &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Shadow|No Shortcut"), NULL, NULL, FVMenuShadow },
+    { { (unichar_t *) N_("_Wireframe..."), &GIcon_wireframe, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Wireframe|No Shortcut"), NULL, NULL, FVMenuWireframe },
     { NULL }
 };
 

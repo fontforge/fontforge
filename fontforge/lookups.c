@@ -212,6 +212,16 @@ return( -1 );
 return( 0 );
 }
 
+FeatureScriptLangList *FindFeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl) {
+
+    while ( fl!=NULL ) {
+	if ( fl->featuretag==tag )
+return( fl );
+	fl = fl->next;
+    }
+return( NULL );
+}
+
 int FeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl) {
 
     while ( fl!=NULL ) {
@@ -3699,8 +3709,7 @@ return( sub );
     sub->lookup = found;
     sub->per_glyph_pst_or_kern = true;
 
-    if ( isnew )
-	NameOTLookup(found,sf);
+    NameOTLookup(found,sf);
 return( sub );
 }
 

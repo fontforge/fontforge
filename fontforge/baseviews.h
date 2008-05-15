@@ -326,6 +326,7 @@ extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
 extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
 extern void FVCondenseExtend(struct fontviewbase *fv,struct counterinfo *ci);
 extern void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci);
+extern void FVAddSmallCaps(FontViewBase *fv);
 extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
 extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
