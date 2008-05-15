@@ -1070,7 +1070,7 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
     const unichar_t *upt, *pt; unichar_t *gpt;
     char *dot = NULL;
 
-    if ( base==-1 && sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
+    if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
 	*dot = '\0';
 	base = UniFromName(sc->name,sf->uni_interp,NULL);
@@ -1187,7 +1187,7 @@ int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc,int layer
     if ( unicodeenc==0x131 || unicodeenc==0x0237 || unicodeenc==0xf6be )
 return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,false,false));
 
-    if ( unicodeenc==-1 && sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
+    if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
 	*dot = '\0';
 	unicodeenc = UniFromName(sc->name,sf->uni_interp,NULL);
@@ -2703,9 +2703,7 @@ return;
 	ia = SFGuessItalicAngle(sf);
     ia *= 3.1415926535897932/180;
 
-    dot = NULL;
-    if ( sc->unicodeenc==-1 )
-	dot = strchr(sc->name,'.');
+    dot = strchr(sc->name,'.');
 
     pt= SFGetAlternate(sf,sc->unicodeenc,sc,false);
     ch = *pt++;

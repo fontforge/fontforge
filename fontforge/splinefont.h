@@ -2814,6 +2814,7 @@ extern void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl);
 extern void FLMerge(OTLookup *into, OTLookup *from);
 extern FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl);
 extern int FeatureScriptTagInFeatureScriptList(uint32 tag, uint32 script, FeatureScriptLangList *fl);
+extern FeatureScriptLangList *FindFeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
 extern int FeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
 extern int DefaultLangTagInOneScriptList(struct scriptlanglist *sl);
 extern struct scriptlanglist *DefaultLangTagInScriptList(struct scriptlanglist *sl, int DFLT_ok);

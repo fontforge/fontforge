@@ -951,7 +951,7 @@ static void AdjustCounters(SplineChar *sc, struct lcg_zones *zones,
     SCCondenseExtend(&ci,sc,ly_fore,false);
 }
 
-static void NumberLayerPoints(SplineSet *ss) {
+static int NumberLayerPoints(SplineSet *ss) {
     int cnt;
     SplinePoint *pt;
 
@@ -966,6 +966,7 @@ static void NumberLayerPoints(SplineSet *ss) {
 	break;
 	}
     }
+return( cnt );
 }
 	    
 static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
@@ -1288,4 +1289,777 @@ void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lc
 
     PerGlyphInit(sc,zones,type);
     SCEmbolden(sc, zones, layer);
+}
+
+/* ************************************************************************** */
+/* ***************************** Small Capitals ***************************** */
+/* ************************************************************************** */
+
+
+extern int autohint_before_generate;
+
+struct smallcaps {
+    double lc_stem_width, uc_stem_width;
+    double stem_factor;
+    double xheight, capheight;
+    SplineFont *sf;
+    int layer;
+    double italic_angle, tan_ia;
+};
+
+static double MajorVerticalStemWidth(SplineChar *sc, int layer) {
+    double best_len, best_width;
+    StemInfo *s;
+
+    if ( sc==NULL )
+return( -1 );
+    if ( autohint_before_generate && sc->changedsincelasthinted &&
+	    !sc->manualhints )
+	SplineCharAutoHint(sc,layer,NULL);
+    best_len = 0; best_width = -1;
+    for ( s = sc->vstem; s!=NULL; s=s->next ) if ( !s->ghost ) {
+	double len = HIlen(s);
+	if ( len>best_len )
+	    best_width = s->width;
+    }
+return( best_width );
+}
+
+static double CharHeight(SplineChar *sc, int layer) {
+    DBounds b;
+
+    if ( sc==NULL )
+return( 0 );
+
+    SplineCharLayerFindBounds(sc,layer,&b);
+return( b.maxy );
+}
+
+static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int layer) {
+    int i, cnt;
+    double sum, val;
+    static unichar_t lc_stem_str[] = { 'l', 'l', 'l', 'm', 'f', 't', 0x438, 0x43D,
+	    0x43f, 0x448, 0x3c0, 0x3bc, 0 };
+    static unichar_t uc_stem_str[] = { 'I', 'L', 'T', 'H', 0x3a0, 0x397, 0x399,
+	    0x406, 0x418, 0x41d, 0x41f, 0x422, 0x428, 0 };
+    static unichar_t xheight_str[] = { 'x', 'u', 'v', 'w', 'y', 'z', 0x3b9, 0x3ba,
+	    0x3bc, 0x3c0, 0x3c7, 0x438, 0x43f, 0x43d, 0x442, 0x448, 0 };
+    static unichar_t capheight_str[] = { 'X', 'I', 'L', 'U', 'V', 'W', 0x397,
+	    0x399, 0x3a0, 0x3a4, 0x406, 0x408, 0x418, 0x41d, 0x41f, 0x422, 0 };
+
+    memset(small,0,sizeof(*small));
+
+    small->sf = sf; small->layer = layer;
+    small->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
+    small->tan_ia = tan( small->italic_angle );
+
+    for ( i=cnt=0, sum=0; lc_stem_str[i]!=0; ++i ) {
+	val = MajorVerticalStemWidth(SFGetChar(sf,lc_stem_str[i],NULL),layer);
+	if ( val!=-1 ) {
+	    sum += val;
+	    ++cnt;
+	}
+    }
+    small->lc_stem_width = cnt==0 ? -1 : sum/cnt;
+
+    for ( i=cnt=0, sum=0; uc_stem_str[i]!=0; ++i ) {
+	val = MajorVerticalStemWidth(SFGetChar(sf,uc_stem_str[i],NULL),layer);
+	if ( val!=-1 ) {
+	    sum += val;
+	    ++cnt;
+	}
+    }
+    small->uc_stem_width = cnt==0 ? -1 : sum/cnt;
+    if ( small->uc_stem_width<=small->lc_stem_width || small->lc_stem_width==-1 )
+	small->stem_factor = 1;
+    else
+	small->stem_factor = small->lc_stem_width / small->uc_stem_width;
+
+    for ( i=cnt=0, sum=0; xheight_str[i]!=0; ++i ) {
+	val = CharHeight(SFGetChar(sf,xheight_str[i],NULL),layer);
+	if ( val>0 ) {
+	    sum += val;
+	    ++cnt;
+	}
+    }
+    small->xheight = cnt==0 ? 0 : sum/cnt;
+
+    for ( i=cnt=0, sum=0; capheight_str[i]!=0; ++i ) {
+	val = CharHeight(SFGetChar(sf,capheight_str[i],NULL),layer);
+	if ( val>0 ) {
+	    sum += val;
+	    ++cnt;
+	}
+    }
+    small->capheight = cnt==0 ? 0 : sum/cnt;
+}
+
+static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int grk,
+	uint32 ftag) {
+    OTLookup *any = NULL;
+    int i;
+    struct lookup_subtable *sub;
+
+    for ( i=0; i<3; ++i ) {
+	if ( any==NULL )
+	    any = lookups[i];
+	else if ( lookups[i]!=NULL && lookups[i]!=any )
+	    any = (OTLookup *) -1;
+    }
+
+    if ( any==(OTLookup *) -1 ) {
+	/* Each script has it's own lookup. So if we are missing a script we */
+	/*  should create a new lookup for it */
+	if ( lookups[0]==NULL && ltn ) {
+	    sub = SFSubTableFindOrMake(sf,ftag,CHR('l','a','t','n'),gsub_single);
+	    lookups[0] = sub->lookup;
+	}
+	if ( lookups[1]==NULL && crl ) {
+	    sub = SFSubTableFindOrMake(sf,ftag,CHR('c','y','r','l'),gsub_single);
+	    lookups[1] = sub->lookup;
+	}
+	if ( lookups[2]==NULL && grk ) {
+	    sub = SFSubTableFindOrMake(sf,ftag,CHR('g','r','e','k'),gsub_single);
+	    lookups[2] = sub->lookup;
+	}
+    } else {
+	if ( any!=NULL ) {
+	    /* There's only one lookup, let's extend it to deal with any script */
+	    /*  we need for which there is no lookup */
+	} else {
+	    /* No lookup. Create one for all the scripts we need */
+	    sub = SFSubTableFindOrMake(sf,ftag,
+		    ltn?CHR('l','a','t','n'):
+		    crl?CHR('c','y','r','l'):
+			CHR('g','r','e','k'),gsub_single);
+	    any = sub->lookup;
+	}
+	if ( lookups[0]==NULL && ltn ) {
+	    lookups[0] = any;
+	    FListAppendScriptLang(FindFeatureTagInFeatureScriptList(ftag,any->features),CHR('l','a','t','n'),DEFAULT_LANG);
+	}
+	if ( lookups[1]==NULL && crl ) {
+	    lookups[1] = any;
+	    FListAppendScriptLang(FindFeatureTagInFeatureScriptList(ftag,any->features),CHR('c','y','r','l'),DEFAULT_LANG);
+	}
+	if ( lookups[2]==NULL && grk ) {
+	    lookups[2] = any;
+	    FListAppendScriptLang(FindFeatureTagInFeatureScriptList(ftag,any->features),CHR('g','r','e','k'),DEFAULT_LANG);
+	}
+    }
+    for ( i=0; i<3; ++i ) {
+	if ( lookups[i]!=NULL && lookups[i]->subtables==NULL ) {
+	    lookups[i]->subtables = chunkalloc(sizeof(struct lookup_subtable));
+	    lookups[i]->subtables->lookup = lookups[i];
+	    lookups[i]->subtables->per_glyph_pst_or_kern = true;
+	    NameOTLookup(lookups[i],sf);
+	}
+    }
+}
+
+static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
+	struct lookup_subtable **smcp,
+	int ltn,int crl,int grk) {
+    OTLookup *test;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    OTLookup *lc2sc[3], *lsmcp[3];
+    int i;
+
+    memset(lc2sc,0,sizeof(lc2sc)); memset(lsmcp,0,sizeof(lsmcp));
+
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+    for ( test=sf->gsub_lookups; test!=NULL; test=test->next ) if ( test->lookup_type==gsub_single ) {
+	for ( fl=test->features; fl!=NULL; fl=fl->next ) {
+	    if ( fl->featuretag==CHR('c','2','s','c') || fl->featuretag==CHR('s','m','c','p')) {
+		for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+		    if ( sl->script==CHR('l','a','t','n')) {
+			if ( fl->featuretag==CHR('c','2','s','c') )
+			    lc2sc[0] = test;
+			else
+			    lsmcp[0] = test;
+		    } else if ( sl->script==CHR('c','y','r','l')) {
+			if ( fl->featuretag==CHR('c','2','s','c') )
+			    lc2sc[1] = test;
+			else
+			    lsmcp[1] = test;
+		    } else if ( sl->script==CHR('g','r','e','k')) {
+			if ( fl->featuretag==CHR('c','2','s','c') )
+			    lc2sc[2] = test;
+			else
+			    lsmcp[2] = test;
+		    }
+		}
+	    }
+	}
+    }
+
+    MakeLookups(sf,lc2sc,ltn,crl,grk,CHR('c','2','s','c'));
+    MakeLookups(sf,lsmcp,ltn,crl,grk,CHR('s','c','m','p'));
+
+    for ( i=0; i<3; ++i ) {
+	if ( lc2sc[i]!=NULL )
+	    c2sc[i] = lc2sc[i]->subtables;
+	if ( lsmcp[i]!=NULL )
+	    smcp[i] = lsmcp[i]->subtables;
+    }
+}
+
+static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
+	uint32 script,struct lookup_subtable **c2sc,struct lookup_subtable **smcp,
+	FontViewBase *fv) {
+    SplineChar *sc_sc, *lc_sc;
+    char buffer[200];
+    PST *pst;
+    int enc;
+
+    lc_sc = SFGetChar(sf,tolower(cap_sc->unicodeenc),NULL);
+    if ( lc_sc!=NULL )
+	snprintf(buffer,sizeof(buffer),"%s.sc", lc_sc->name );
+    else {
+	const char *pt = StdGlyphName(buffer,tolower(cap_sc->unicodeenc),sf->uni_interp,sf->for_new_glyphs);
+	if ( pt!=buffer )
+	    strcpy(buffer,pt);
+	strcat(buffer,".sc");
+    }
+    sc_sc = SFGetChar(sf,-1,buffer);
+    if ( sc_sc!=NULL ) {
+	SCPreserveLayer(sc_sc,fv->active_layer,false);
+	SCClearLayer(sc_sc,fv->active_layer);
+return( sc_sc );
+    }
+    enc = SFFindSlot(sf, fv->map, -1, buffer );
+    if ( enc==-1 )
+	enc = fv->map->enccount;
+    sc_sc = SFMakeChar(sf,fv->map,enc);
+    free(sc_sc->name);
+    sc_sc->name = copy(buffer);
+
+    pst = chunkalloc(sizeof(PST));
+    pst->next = cap_sc->possub;
+    cap_sc->possub = pst;
+    pst->subtable = c2sc[script==CHR('l','a','t','n')?0:script==CHR('c','y','r','l')?1:2];
+    pst->type = pst_substitution;
+    pst->u.subs.variant = copy(buffer);
+
+    if ( lc_sc!=NULL ) {
+	pst = chunkalloc(sizeof(PST));
+	pst->next = lc_sc->possub;
+	lc_sc->possub = pst;
+	pst->subtable = smcp[script==CHR('l','a','t','n')?0:script==CHR('c','y','r','l')?1:2];
+	pst->type = pst_substitution;
+	pst->u.subs.variant = copy(buffer);
+    }
+return( sc_sc );
+}
+
+static void SmallCapsRemoveSpace(SplineSet *ss,StemInfo *hints,int coord,double remove,
+	double min_coord, double max_coord) {
+    struct overlaps { double start, stop, new_start, new_stop; } *overlaps;
+    struct ptpos { double old, new; int hint_index; } *ptpos;
+    int cnt, i, j, tot, order2, set;
+    StemInfo *h;
+    double counter_len, val, shrink;
+    SplineSet *spl;
+    SplinePoint *sp, *first, *start, *last;
+
+    if ( remove > max_coord-min_coord )
+return;
+
+    /* Coalesce overlapping hint zones. These won't shrink, but the counters */
+    /*  between them will */
+    for ( h=hints, cnt=0; h!=NULL; h=h->next ) if ( !h->ghost )
+	++cnt;
+
+    overlaps = galloc((cnt+3)*sizeof(struct overlaps));
+    overlaps[0].start = min_coord; overlaps[0].stop = min_coord;
+    overlaps[1].start = max_coord; overlaps[1].stop = max_coord;
+    tot = 2;
+
+    for ( h=hints; h!=NULL; h=h->next ) if ( !h->ghost ) {
+	for ( i=0; i<tot && overlaps[i].stop<h->start; ++i );
+	if ( i==tot )	/* Can't happen */
+    continue;
+	/* So h->start<=overlaps[i].stop */
+	if ( h->start+h->width<overlaps[i].start ) {
+	    /* New entry */
+	    for ( j=tot; j>i; --j )
+		overlaps[j] = overlaps[j-1];
+	    overlaps[i].start = h->start;
+	    overlaps[i].stop  = h->start+h->width;
+	    ++tot;
+	} else {
+	    if ( h->start<overlaps[i].start )
+		overlaps[i].start = h->start;
+	    if ( h->start+h->width > overlaps[i].stop )
+		overlaps[i].stop = h->start+h->width;
+	    while ( i+1<tot && overlaps[i].stop>=overlaps[i+1].start ) {
+		overlaps[i].stop = overlaps[i+1].stop;
+		--tot;
+		for ( j=i+1; j<tot; ++j )
+		    overlaps[j] = overlaps[j+1];
+	    }
+	}
+    }
+    for ( i=0, counter_len=0; i<tot-1; ++i )
+	counter_len += overlaps[i+1].start-overlaps[i].stop;
+
+    if ( 2*remove >counter_len ) {
+	/* The amount we need to remove is disproportionate to the counter */
+	/*  space we have available from which to remove it. So just scale */
+	/*  everything linearly between min_coord and max */
+	overlaps[0].start = min_coord-100; overlaps[0].stop = min_coord;
+	overlaps[1].start = max_coord    ; overlaps[1].stop = max_coord+100;
+	tot = 2;
+	counter_len = max_coord - min_coord;
+    }
+    if ( counter_len==0 || counter_len<remove ) {
+	free( overlaps );
+return;
+    }
+
+    shrink = (counter_len-remove)/counter_len;
+    /* 0 is a fixed point */
+    for ( i=0; i<tot && overlaps[i].stop<0; ++i );
+    if ( i==tot ) {
+	/* glyph is entirely <0 */
+	set = tot-1;
+	overlaps[set].new_stop = shrink*overlaps[set].stop;
+	overlaps[set].new_start = overlaps[set].new_stop - (overlaps[set].stop - overlaps[set].start);
+    } else if ( overlaps[i].start>0 ) {
+	set = i;
+	overlaps[set].new_start = shrink*overlaps[set].start;
+	overlaps[set].new_stop  = overlaps[set].new_start + (overlaps[set].stop - overlaps[set].start);
+    } else {
+	set = i;
+	overlaps[set].new_start = overlaps[set].start;
+	overlaps[set].new_stop = overlaps[set].stop;
+    }
+    for ( i=set+1; i<tot; ++i ) {
+	overlaps[i].new_start = overlaps[i-1].new_stop +
+		(overlaps[i].start - overlaps[i-1].stop)*shrink;
+	overlaps[i].new_stop  = overlaps[i].new_start +
+		(overlaps[i].stop  -overlaps[i].start);
+    }
+    for ( i=set-1; i>=0; --i ) {
+	overlaps[i].new_stop = overlaps[i+1].new_start -
+		(overlaps[i+1].start - overlaps[i].stop)*shrink;
+	overlaps[i].new_start = overlaps[i].new_stop - (overlaps[i].stop - overlaps[i].start);
+    }
+
+    cnt = NumberLayerPoints(ss);
+    ptpos = gcalloc(cnt,sizeof(struct ptpos));
+
+    /* Position any points which lie within a hint zone */
+    order2 = false;
+    for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    sp->ticked = false;
+	    val = (&sp->me.x)[coord];
+	    ptpos[sp->ptindex].old = val;
+	    ptpos[sp->ptindex].hint_index = -2;
+	    for ( i=0; i<tot; ++i ) {
+		if ( val>=overlaps[i].start && val<=overlaps[i].stop ) {
+		    for ( h=hints; h!=NULL; h=h->next ) {
+			if ( RealNear(val,h->start) || RealNear(val,h->start+h->width)) {
+			    sp->ticked = true;
+			    ptpos[sp->ptindex].hint_index = i;
+			    ptpos[sp->ptindex].new = overlaps[i].new_start +
+				    (val-overlaps[i].start);
+		    break;
+			}
+		    }
+	    break;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    order2 = sp->next->order2;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    /* Look for any local minimum or maximum points */
+    for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    if ( sp->next==NULL )
+	break;
+	    val = (&sp->me.x)[coord];
+	    if ( !sp->ticked && sp->prev!=NULL &&
+		    ((val>=(&sp->prev->from->me.x)[coord] && val>=(&sp->next->to->me.x)[coord]) ||
+		     (val<=(&sp->prev->from->me.x)[coord] && val<=(&sp->next->to->me.x)[coord]))) {
+		for ( i=0; i<tot; ++i ) {
+		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
+			sp->ticked = true;
+			ptpos[sp->ptindex].new = overlaps[i].new_start +
+				(val-overlaps[i].start) *
+				    (overlaps[i].new_stop - overlaps[i].new_start)/
+				    (overlaps[i].stop - overlaps[i].start);
+		break;
+		    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
+			sp->ticked = true;
+			ptpos[sp->ptindex].new = overlaps[i-1].new_stop +
+				(val-overlaps[i-1].stop) *
+				    (overlaps[i].new_start - overlaps[i-1].new_stop)/
+				    (overlaps[i].start - overlaps[i-1].stop);
+		break;
+		    }
+		}
+	    }
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    /* Position any points which line between points already positioned */
+    for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; !sp->ticked; ) {
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( !sp->ticked )		/* Nothing on this contour positioned */
+    continue;
+	first = sp;
+	do {
+	    start = sp;
+	    if ( sp->next==NULL )
+	break;
+	    /* Find the next point which has been positioned */
+	    for ( sp=sp->next->to; !sp->ticked; ) {
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==first )
+	    break;
+	    }
+	    if ( !sp->ticked )
+	break;
+	    /* Interpolate any points between these two */
+	    last = sp;
+	    /* Make sure all the points are BETWEEN */
+	    for ( sp=start->next->to; sp!=last; sp=sp->next->to ) {
+		if (( (&sp->me.x)[coord] < (&start->me.x)[coord] && (&sp->me.x)[coord] < (&last->me.x)[coord]) ||
+			( (&sp->me.x)[coord] > (&start->me.x)[coord] && (&sp->me.x)[coord] > (&last->me.x)[coord]))
+	    break;
+	    }
+	    if ( sp==last ) {
+		for ( sp=start->next->to; sp!=last; sp=sp->next->to ) {
+		    ptpos[sp->ptindex].new = ptpos[start->ptindex].new +
+			    ((&sp->me.x)[coord] - ptpos[start->ptindex].old) *
+			      (ptpos[last->ptindex].new - ptpos[start->ptindex].new) /
+			      (ptpos[last->ptindex].old - ptpos[start->ptindex].old);
+		    sp->ticked = true;
+		}
+	    } else
+		sp = last;
+	} while ( sp!=first );
+    }
+	    
+    /* Any points which aren't currently positioned, just interpolate them */
+    /*  between the hint zones between which they lie */
+    for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    if ( !sp->ticked ) {
+		val = (&sp->me.x)[coord];
+		for ( i=0; i<tot; ++i ) {
+		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
+			sp->ticked = true;
+			ptpos[sp->ptindex].new = overlaps[i].new_start +
+				(val-overlaps[i].start) *
+				    (overlaps[i].new_stop - overlaps[i].new_start)/
+				    (overlaps[i].stop - overlaps[i].start);
+		break;
+		    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
+			sp->ticked = true;
+			ptpos[sp->ptindex].new = overlaps[i-1].new_stop +
+				(val-overlaps[i-1].stop) *
+				    (overlaps[i].new_start - overlaps[i-1].new_stop)/
+				    (overlaps[i].start - overlaps[i-1].stop);
+		break;
+		    }
+		}
+		if ( !sp->ticked ) {
+		    IError( "Unticked point in smallcaps" );
+		    ptpos[sp->ptindex].new = ptpos[sp->ptindex].old;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    /* Interpolate the control points. More complex in order2. We want to */
+    /*  preserve interpolated points, but simplified as we only have one cp */
+    if ( !order2 ) {
+	for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	    for ( sp=spl->first; ; ) {
+		if ( sp->prev!=NULL ) {
+		    if ( ptpos[sp->prev->from->ptindex].old == ptpos[sp->ptindex].old )
+			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new;
+		    else
+			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new +
+				((&sp->prevcp.x)[coord] - ptpos[sp->ptindex].old)*
+				(ptpos[sp->prev->from->ptindex].new-ptpos[sp->ptindex].new)/
+				(ptpos[sp->prev->from->ptindex].old-ptpos[sp->ptindex].old);
+		}
+		if ( sp->next==NULL )
+	    break;
+		if ( ptpos[sp->next->to->ptindex].old == ptpos[sp->ptindex].old )
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new;
+		else
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new +
+			    ((&sp->nextcp.x)[coord] - ptpos[sp->ptindex].old)*
+			    (ptpos[sp->next->to->ptindex].new-ptpos[sp->ptindex].new)/
+			    (ptpos[sp->next->to->ptindex].old-ptpos[sp->ptindex].old);
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    } else {
+	for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	    for ( sp=spl->first; ; ) {
+		sp->ticked = SPInterpolate(sp);
+		if ( sp->next==NULL )
+	    break;
+		if ( ptpos[sp->next->to->ptindex].old == ptpos[sp->ptindex].old )
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new;
+		else
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new +
+			    ((&sp->nextcp.x)[coord] - ptpos[sp->ptindex].old)*
+			    (ptpos[sp->next->to->ptindex].new-ptpos[sp->ptindex].new)/
+			    (ptpos[sp->next->to->ptindex].old-ptpos[sp->ptindex].old);
+		(&sp->next->to->prevcp.x)[coord] = (&sp->nextcp.x)[coord];
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    for ( sp=spl->first; ; ) {
+		if ( sp->ticked ) {
+		    ptpos[sp->ptindex].new = ((&sp->nextcp.x)[coord] + (&sp->prevcp.x)[coord])/2;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	}
+    }
+
+    /* Finally move every point to its new location */
+    for ( spl=ss; spl!=NULL; spl=spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    (&sp->me.x)[coord] = ptpos[sp->ptindex].new;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    free(ptpos);
+    free(overlaps);
+}
+
+static void SplineSetRefigure(SplineSet *ss) {
+    Spline *s, *first;
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( first == NULL ) first = s;
+	    SplineRefigure(s);
+	}
+	ss = ss->next;
+    }
+}
+
+static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
+	struct smallcaps *small) {
+    real scale[6];
+    DBounds cap_b, sc_b;
+    double remove_y, remove_x;
+    extern int no_windowing_ui;
+    int nwi = no_windowing_ui;
+
+    memset(scale,0,sizeof(scale));
+    scale[0] = scale[3] = small->stem_factor;
+    scale[2] = small->stem_factor * small->tan_ia;
+
+    sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
+	    cap_sc->layers[layer].splines),scale,true);
+    sc_sc->width = small->stem_factor * cap_sc->width;
+    no_windowing_ui = true;		/* Turn off undoes */
+    SplineCharAutoHint(sc_sc,layer,NULL);
+    no_windowing_ui = nwi;
+    if ( RealNear( small->stem_factor, small->xheight/small->capheight ))
+return;
+
+    SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
+    SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+    remove_y = sc_b.maxy - small->xheight + small->stem_factor*(cap_b.maxy - small->capheight);
+    if ( remove_y>-1 && remove_y<1 )
+return;
+    if ( cap_b.maxy == cap_b.miny )
+	remove_x = 0;
+    else
+	remove_x = (sc_b.maxx - sc_b.minx) * remove_y / (cap_b.maxy - cap_b.miny);
+    sc_sc->width -= remove_x;
+    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
+    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+    SplineSetRefigure(sc_sc->layers[layer].splines);
+
+    if ( small->tan_ia!=0 ) {
+	scale[0] = scale[3] = 1;
+	scale[2] = -small->tan_ia;
+	sc_sc->layers[layer].splines =
+		SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    }
+    StemInfosFree(sc_sc->hstem); sc_sc->hstem = NULL;
+    StemInfosFree(sc_sc->vstem); sc_sc->vstem = NULL;
+    SCCharChangedUpdate(sc_sc,layer);
+}
+
+void FVAddSmallCaps(FontViewBase *fv) {
+    int gid, enc, cnt, ltn,crl,grk;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc, *sc_sc, *rsc;
+    RefChar *ref, *r;
+    struct lookup_subtable *c2sc[3], *smcp[3];
+    char buffer[200];
+    const unichar_t *alts;
+    struct smallcaps small;
+
+    if ( sf->cidmaster!=NULL )
+return;		/* Can't randomly add things to a CID keyed font */
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
+	sc->ticked = false;
+    cnt=ltn=crl=grk=0;
+    memset(c2sc,0,sizeof(c2sc)); memset(smcp,0,sizeof(smcp));
+
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->unicodeenc<0x10000 &&
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) ) {
+		uint32 script = SCScriptFromUnicode(sc);
+		if ( script==CHR('l','a','t','n'))
+		    ++ltn, ++cnt;
+		else if ( script==CHR('g','r','e','k'))
+		    ++grk, ++cnt;
+		else if ( script==CHR('c','y','r','l'))
+		    ++crl, ++cnt;
+	    }
+	}
+    }
+    if ( cnt==0 )
+return;
+    SmallCapsFindConstants(&small,sf,fv->active_layer);
+    if ( small.xheight==0 || small.capheight==0 ) {
+	ff_post_error(_("Unknown scale"),_("Could not figure out scaling factor for small caps"));
+return;
+    }
+
+    MakeSCLookups(sf,c2sc,smcp,ltn,crl,grk);
+    ff_progress_start_indicator(10,_("Small Capitals"),
+	_("Building small capitals"),NULL,cnt,1);
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->unicodeenc<0x10000 &&
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) ) {
+		uint32 script = SCScriptFromUnicode(sc);
+		if ( script!=CHR('l','a','t','n') &&
+			script!=CHR('g','r','e','k') &&
+			script!=CHR('c','y','r','l'))
+    continue;
+		if ( islower(sc->unicodeenc)) {
+		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
+		    if ( sc==NULL )
+      goto end_loop;
+		}
+		if ( sc->ticked )
+      goto end_loop;
+		if ( sc->layers[fv->active_layer].refs!=NULL ||
+			((alts = SFGetAlternate(sf,sc->unicodeenc,sc,true))!=NULL &&
+			 alts[1]!=0 ))
+    continue;	/* Deal with these later */
+		sc->ticked = true;
+		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv);
+		if ( sc_sc==NULL )
+      goto end_loop;
+		BuildSmallCap(sc_sc,sc,fv->active_layer,&small);
+      end_loop:
+		if ( !ff_progress_next())
+    break;
+	    }
+	}
+    }
+    /* OK. Here we have done all the base glyphs we are going to do. Now let's*/
+    /*  look at things which depend on references */
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->unicodeenc<0x10000 &&
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) ) {
+		uint32 script = SCScriptFromUnicode(sc);
+		if ( script!=CHR('l','a','t','n') &&
+			script!=CHR('g','r','e','k') &&
+			script!=CHR('c','y','r','l'))
+    continue;
+		if ( islower(sc->unicodeenc)) {
+		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
+		    if ( sc==NULL )
+      goto end_loop2;
+		}
+		if ( sc->ticked )
+    continue;
+		sc->ticked = true;
+		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv);
+		if ( sc_sc==NULL )
+      goto end_loop2;
+		if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
+		    SCBuildComposit(sf,sc_sc,fv->active_layer,true);
+		else if ( sc->layers[fv->active_layer].splines==NULL ) {
+		    RefChar *rlast = NULL;
+		    for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
+			snprintf(buffer,sizeof(buffer),"%s.sc", ref->sc->name );
+			rsc = SFGetChar(sf,-1,buffer);
+			if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
+			    rsc = ref->sc;
+			if ( rsc!=NULL ) {
+			    r = RefCharCreate();
+			    *r = *ref;
+#ifdef FONTFORGE_CONFIG_TYPE3
+			    r->layers = NULL;
+			    r->layer_cnt = 0;
+#else
+			    r->layers[0].splines = NULL;
+#endif
+			    r->next = NULL;
+			    r->sc = rsc;
+			    SCReinstanciateRefChar(sc_sc,r,fv->active_layer);
+			    if ( rlast==NULL )
+				sc_sc->layers[fv->active_layer].refs=r;
+			    else
+				rlast->next = r;
+			    rlast = r;
+			}
+		    }
+		}
+      end_loop2:
+		if ( !ff_progress_next())
+    break;
+	    }
+	}
+    }
+    ff_progress_end_indicator();
 }
