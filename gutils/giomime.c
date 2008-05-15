@@ -37,7 +37,8 @@ unichar_t textcss[] = { 't','e','x','t','/','c','s','s', '\0' };
 unichar_t textmake[] = { 't','e','x','t','/','m','a','k','e', '\0' };
 unichar_t textjava[] = { 't','e','x','t','/','j','a','v','a', '\0' };
 unichar_t textps[] = { 't','e','x','t','/','p','s', '\0' };
-unichar_t textsfdfont[] = { 't','e','x','t','/','f','o','n','t','s','f','d', '\0' };
+	/* Officially registered with IANA on 14 May 2008 */
+unichar_t sfdfont[] = { 'a','p','p','l','i','c','a','t','i','o','n','/','v','n','d','.','f','o','n','t','-','f','o','n','t','f','o','r','g','e','-','s','f','d', '\0' };
 unichar_t textpsfont[] = { 't','e','x','t','/','f','o','n','t','p','s', '\0' };
 unichar_t textbdffont[] = { 't','e','x','t','/','f','o','n','t','b','d','f', '\0' };
 unichar_t imagegif[] = { 'i','m','a','g','e','/','g','i','f', '\0' };
@@ -131,7 +132,7 @@ return( textxml );
 	    uc_strmatch(pt,".pt3")==0 || uc_strmatch(pt,".cff")==0 )
 return( textpsfont );
     else if ( uc_strmatch(pt,".sfd")==0 )
-return( textsfdfont );
+return( sfdfont );
     else if ( uc_strmatch(pt,".ttf")==0 )
 return( fontttf );
     else if ( uc_strmatch(pt,".otf")==0 || uc_strmatch(pt,".otb")==0 ||
