@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 5-May-2008 -->
+  <!-- AP: Last modified: 14-May-2008 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -132,6 +132,8 @@
 	  <A HREF="#Oblique">Oblique</A>
 	<LI>
 	  <A HREF="#Condense">Condense/Extend</A>
+	<LI>
+	  <A HREF="#SmallCaps">Add Small Caps</A>
 	<LI>
 	  <A HREF="#Outline">Outline</A>
 	<LI>
@@ -519,6 +521,17 @@
 	  The algorithm only works on simple latin glyphs, and it has problems with
 	  diagonal stems. See the <A HREF="Styles.html#Condense">Condense/Extend
 	  dialog</A>.
+	<DT>
+	  Add <A NAME="SmallCaps">Small</A> Caps
+	<DD>
+	  This is a little different from the previous menu items as it does not change
+	  the selected characters themselves. Instead it creates a new glyph (or reuses
+	  an old one) with the appropriate name. So if you selected "A", "B", and "C"
+	  it would create glyphs "a.sc", "b.sc" and "c.sc". It will create two lookups
+	  one bound to 'c2sc' which maps capital letters to small caps, and the other
+	  bound to 'smcp' which maps lower case letters to small caps. It will build
+	  the appropriate small caps glyphs in the new glyph slots. This only applies
+	  to upper and lower case letters in the latin, greek and cyrillic scripts.
 	<DT>
 	  <A NAME="Outline">Outline</A>
 	<DD>
@@ -936,6 +949,10 @@
       reference to the accent glyph into the foreground. So if the current glyph
       were "&Agrave;" then a reference to "A" would be added to it, and a reference
       to "`" would be centered above the "A". <BR>
+      If the current glyph is something like "agrave.sc" then it will be build
+      using the rules of "agrave" but with ".sc" variants. So "agrave.sc" would
+      contain an U+061, but the "a.sc" variant of that. For accents it will use
+      "grave.sc" if it exists and "grave" if it does not.<BR>
       If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
       bitmaps will have a similar process done (even in the outline glyph view).<BR>
       A more complete description is given in the section on
