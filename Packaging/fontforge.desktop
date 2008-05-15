@@ -9,6 +9,7 @@ Terminal=false
 Type=Application
 Categories=Application;Graphics;
 Encoding=UTF-8
+MimeType=application/vnd.font-fontforge-sfd
 MimeType=application/x-font-ttf
 MimeType=application/x-font-type1
 MimeType=application/x-font-bdf

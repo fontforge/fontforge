@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-   <mime-type type="application/x-font-fontforge-sfd">
+   <mime-type type="application/vnd.font-fontforge-sfd">
      <sub-class-of type="text/plain"/>
      <comment>Fontforge Spline Font Database</comment>
      <glob pattern="*.sfd"/>
