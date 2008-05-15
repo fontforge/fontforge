@@ -1278,7 +1278,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 
     sc->layers[layer].validation_state = 0;
 
-    base = LayerAllSplines(&sc->layers[ly_fore]);
+    base = LayerAllSplines(&sc->layers[layer]);
 
     if ( !allow_utf8_glyphnames ) {
 	if ( strlen(sc->name)>31 )
