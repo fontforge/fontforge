@@ -210,7 +210,7 @@ return( &_GIcon_textjava );
 return( &_GIcon_textmake );
 	if ( cu_strstartmatch("text/fontps",m))
 return( &_GIcon_textfontps );
-	if ( cu_strstartmatch("text/fontsfd",m))
+	if ( cu_strstartmatch("application/vnd.font-fontforge-sfd",m))
 return( &_GIcon_textfontsfd );
 	if ( cu_strstartmatch("text/font",m))
 return( &_GIcon_textfontbdf );
