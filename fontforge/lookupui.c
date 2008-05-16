@@ -512,7 +512,7 @@ GTextInfo languages[] = {
     { (unichar_t *) N_("Palpa"), NULL, 0, 0, (void *) CHR('P','A','P',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Pashto"), NULL, 0, 0, (void *) CHR('P','A','S',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Polytonic Greek"), NULL, 0, 0, (void *) CHR('P','G','R',' '), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Pilipino"), NULL, 0, 0, (void *) CHR('P','I','L',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Pilipino (Filipino)"), NULL, 0, 0, (void *) CHR('P','I','L',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Palaung"), NULL, 0, 0, (void *) CHR('P','L','G',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Polish"), NULL, 0, 0, (void *) CHR('P','L','K',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Provencal"), NULL, 0, 0, (void *) CHR('P','R','O',' '), NULL, false, false, false, false, false, false, true },
