@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=FontForge
+Name[ru]=FontForge
 Name[zh_TW]=FontForge 字型鍛造廠
 Comment=An outline font editor
+Comment[ru]=Редактор шрифтов
 Comment[zh_TW]=描邊字型編輯器
 Exec=fontforge
 Icon=fontforge.png
