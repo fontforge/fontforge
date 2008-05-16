@@ -455,6 +455,7 @@ static void ProcessFileChooserPrefs(void) {
 	break;
 	    start = pt+1;
 	}
+	start = gfc_bookmarks;
 	b = galloc((i+2)*sizeof(unichar_t *));
 	for ( i=0; ; ++i ) {
 	    pt = strchr(start,';');
