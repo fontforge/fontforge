@@ -352,6 +352,8 @@ void GTabSetSetNestedExpose(GGadget *g, void (*)(GWindow,GGadget *,GEvent *));
 void GTabSetSetNestedMouse(GGadget *g, int (*)(GGadget *,GEvent *));
 void GTabSetChangeTabName(GGadget *g, char *name, int pos);
 void GTabSetRemetric(GGadget *g);
+void GTabSetRemoveTabByPos(GGadget *g, int pos);
+void GTabSetRemoveTabByName(GGadget *g, char *name);
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);

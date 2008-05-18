@@ -836,3 +836,35 @@ void GTabSetRemetric(GGadget *g) {
     GTabSet *gts = (GTabSet *) g;
     GTabSet_Remetric(gts);
 }
+
+void GTabSetRemoveTabByPos(GGadget *g, int pos) {
+    GTabSet *gts = (GTabSet *) g;
+    int i;
+
+    if ( gts->nowindow && pos>=0 && pos<gts->tabcnt && gts->tabcnt>1 ) {
+	free(gts->tabs[pos].name);
+	for ( i=pos+1; i<gts->tabcnt; ++i )
+	    gts->tabs[i-1] = gts->tabs[i];
+	--gts->tabcnt;
+	if ( gts->sel==pos ) {
+	    if ( gts->sel==gts->tabcnt )
+		--gts->sel;
+	    GTabSetChanged(gts,pos);
+	}
+    }
+}
+	
+void GTabSetRemoveTabByName(GGadget *g, char *name) {
+    GTabSet *gts = (GTabSet *) g;
+    int pos;
+    unichar_t *uname = utf82u_copy(name);
+
+    for ( pos=0; pos<gts->tabcnt; ++pos ) {
+	if ( u_strcmp(uname,gts->tabs[pos].name)==0 ) {
+	    GTabSetRemoveTabByPos(g,pos);
+    break;
+	}
+    }
+
+    free(uname);
+}

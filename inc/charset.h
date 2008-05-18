@@ -65,7 +65,7 @@ extern int /*enum charset*/ local_encoding;
 # include <iconv.h>
 extern char *iconv_local_encoding_name;
 #else
-# include <gwwiconv.h>		/* My fake iconv based on encodings in gdraw/gunicode */
+# include "gwwiconv.h"		/* My fake iconv based on encodings in gdraw/gunicode */
 #endif
 extern struct namemap { char *name; int map; } encodingnames[];
 #endif
