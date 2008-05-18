@@ -1652,9 +1652,11 @@ static void CVLCheckLayerCount(CharView *cv) {
 	    gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
 	    gcd[0].creator = GCheckBoxCreate;
 
-	    label[1].text = (unichar_t *) sc->parent->layers[i].name;
-	    label[1].text_is_1byte = true;
-	    gcd[1].gd.label = &label[1];
+	    if ( i < sc->parent->layer_cnt ) {	/* Happens when viewing a Type3 sfd file from a non-type3 fontforge */
+		label[1].text = (unichar_t *) sc->parent->layers[i].name;
+		label[1].text_is_1byte = true;
+		gcd[1].gd.label = &label[1];
+	    }
 	    gcd[1].gd.flags = gg_enabled|gg_utf8_popup|gg_rad_continueold;
 	    gcd[1].gd.cid = CID_EBase+i;
 	    gcd[1].gd.popup_msg = (unichar_t *) _("Is Layer Editable?");
