@@ -253,11 +253,16 @@ struct cv_interface {
    /* And mark as changed */
     void (*glyph_changed_update)(struct charviewbase *);
     void (*_glyph_changed_update)(struct charviewbase *, int);
+
+   /* A glyph's name has changed find all charviews with tabs with that name */
+   /*  and update those tabs */
+    void (*glyph_name_change)(SplineFont *sf, char *oldname, char *newname);
 };
 extern struct cv_interface *cv_interface;
 
 #define CVCharChangedUpdate		(cv_interface->glyph_changed_update)
 #define _CVCharChangedUpdate		(cv_interface->_glyph_changed_update)
+#define CVGlyphRenameFixup		(cv_interface->glyph_name_change)
 
 void FF_SetCVInterface(struct cv_interface *cvi);
 

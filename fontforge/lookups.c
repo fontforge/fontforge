@@ -3575,6 +3575,7 @@ void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
     KernClass *kc;
     ASM *sm;
 
+    CVGlyphRenameFixup(sf,old,new);
     if ( sf->cidmaster!=NULL )
 	master = sf->cidmaster;
 
