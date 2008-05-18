@@ -116,8 +116,9 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
 		}
 	    }
 	} else if ( cv->dv!=NULL || cv->b.gridfit!=NULL ) {
-	    double scale = scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0));
-	    sprintf( buf, "%.2f,%.2f", (double) (cv->info.x/scale), (double) (cv->info.y/scale));
+	    double scalex = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizex*cv->ft_dpi/72.0));
+	    double scaley = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizey*cv->ft_dpi/72.0));
+	    sprintf( buf, "%.2f,%.2f", (double) (cv->info.x/scalex), (double) (cv->info.y/scaley));
 	} else if ( cv->p.spline!=NULL ) {
 	    s = cv->p.spline;
 	    t = cv->p.t;

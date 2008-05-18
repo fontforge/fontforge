@@ -69,12 +69,12 @@ void FreeTypeFreeContext(void *freetypecontext) {
 }
 
 struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int depth) {
+	int enc, real ptsizey, real ptsizex, int dpi, int depth) {
 return( NULL );
 }
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc, int depth) {
+	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc, int depth) {
 return( NULL );
 }
 
@@ -571,7 +571,7 @@ return( bdf );
 struct ft_context {
     SplinePointList *hcpl, *lcpl, *cpl;
     SplinePoint *last;
-    double scale;
+    double scalex, scaley;
     SplinePointList *orig_cpl;
     SplinePoint *orig_sp;
     RefChar *orig_ref;
@@ -627,8 +627,8 @@ static int FT_MoveTo(FT_Vector *to,void *user) {
 	context->orig_sp = context->orig_cpl->first;
 
     context->last = context->cpl->first = chunkalloc(sizeof(SplinePoint));
-    context->last->me.x = to->x*context->scale;
-    context->last->me.y = to->y*context->scale;
+    context->last->me.x = to->x*context->scalex;
+    context->last->me.y = to->y*context->scaley;
     if ( context->orig_sp==NULL )
 	context->last->ttfindex = -2;
     else {
@@ -646,7 +646,7 @@ static int FT_LineTo(FT_Vector *to,void *user) {
     struct ft_context *context = user;
     SplinePoint *sp;
 
-    sp = SplinePointCreate( to->x*context->scale, to->y*context->scale );
+    sp = SplinePointCreate( to->x*context->scalex, to->y*context->scaley );
     sp->ttfindex = -1;
     SplineMake(context->last,sp,context->order2);
     context->last = sp;
@@ -669,10 +669,10 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
     struct ft_context *context = user;
     SplinePoint *sp;
 
-    sp = SplinePointCreate( to->x*context->scale, to->y*context->scale );
+    sp = SplinePointCreate( to->x*context->scalex, to->y*context->scaley );
     sp->noprevcp = false;
-    sp->prevcp.x = _cp->x*context->scale;
-    sp->prevcp.y = _cp->y*context->scale;
+    sp->prevcp.x = _cp->x*context->scalex;
+    sp->prevcp.y = _cp->y*context->scaley;
     context->last->nextcp = sp->prevcp;
     context->last->nonextcp = false;
     SplineMake2(context->last,sp);
@@ -697,12 +697,12 @@ static int FT_CubicTo(FT_Vector *cp1, FT_Vector *cp2,FT_Vector *to,void *user) {
     struct ft_context *context = user;
     SplinePoint *sp;
 
-    sp = SplinePointCreate( to->x*context->scale, to->y*context->scale );
+    sp = SplinePointCreate( to->x*context->scalex, to->y*context->scaley );
     sp->noprevcp = false;
-    sp->prevcp.x = cp2->x*context->scale;
-    sp->prevcp.y = cp2->y*context->scale;
-    context->last->nextcp.x = cp1->x*context->scale;
-    context->last->nextcp.y = cp1->y*context->scale;
+    sp->prevcp.x = cp2->x*context->scalex;
+    sp->prevcp.y = cp2->y*context->scaley;
+    context->last->nextcp.x = cp1->x*context->scalex;
+    context->last->nextcp.y = cp1->y*context->scaley;
     SplineMake3(context->last,sp);
     context->last = sp;
 
@@ -723,7 +723,7 @@ static FT_Outline_Funcs outlinefuncs = {
 };
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context, int enc,
-	real ptsize, int dpi, uint16 *width, SplineChar *sc, int depth) {
+	real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc, int depth) {
     FT_GlyphSlot slot;
     FTC *ftc = (FTC *) single_glyph_context;
     struct ft_context outline_context;
@@ -738,7 +738,7 @@ return( NULL );
 	    ff_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
     }
 
-    if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
+    if ( _FT_Set_Char_Size(ftc->face,(int) (ptsizex*64),(int) (ptsizey*64), dpi, dpi))
 return( NULL );	/* Error Return */
 
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
@@ -749,7 +749,8 @@ return( NULL );
     memset(&outline_context,'\0',sizeof(outline_context));
     /* The outline's position is expressed in 24.6 fixed numbers representing */
     /*  pixels. I want to scale it back to the original coordinate system */
-    outline_context.scale = ftc->em/(64.0*ptsize*dpi/72.0);
+    outline_context.scalex = ftc->em/(64.0*ptsizex*dpi/72.0);
+    outline_context.scaley = ftc->em/(64.0*ptsizey*dpi/72.0);
     outline_context.orig_ref = sc->layers[ly_fore].refs;
     outline_context.orig_cpl = sc->layers[ly_fore].splines;
     while ( outline_context.orig_cpl==NULL && outline_context.orig_ref != NULL ) {
@@ -764,14 +765,14 @@ return( NULL );
     outline_context.order2 = ftc->isttf;
     if ( !_FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {
 	FT_ClosePath(&outline_context);
-	*width = outline_context.scale*slot->advance.x;
+	*width = outline_context.scalex*slot->advance.x;
 return( outline_context.hcpl );
     }
 return( NULL );
 }
 
 struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int depth) {
+	int enc, real ptsizey, real ptsizex, int dpi, int depth) {
     FT_GlyphSlot slot;
     struct freetype_raster *ret;
     FTC *ftc = (FTC *) single_glyph_context;
@@ -779,7 +780,7 @@ struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
     if ( ftc->face==(void *) -1 )
 return( NULL );
 
-    if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
+    if ( _FT_Set_Char_Size(ftc->face,(int) (ptsizex*64) ,(int) (ptsizey*64), dpi, dpi))
 return( NULL );	/* Error Return */
 
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],

@@ -91,7 +91,7 @@ typedef struct freetypecontext {
 			        /*  have multiple pointsizes without loading the font many */
 			        /*  times */
     int isttf;
-    int em;
+    int em;			/* Em size in the spline font, not ppem */
 } FTC;
 
 extern void *__FreeTypeFontContext(FT_Library context,

@@ -66,7 +66,7 @@ struct debugger_context {
     unsigned int initted_pts: 1;
     unsigned int is_bitmap: 1;
     int wp_ptindex, wp_cvtindex, wp_storeindex;
-    real ptsize;
+    real ptsizey, ptsizex;
     int dpi;
     TT_ExecContext exc;
     SplineChar *sc;
@@ -294,7 +294,7 @@ static void *StartChar(void *_dc) {
 	memset(dc->storetouched,0,dc->storeSize);
 
     massive_kludge = dc;
-    if ( _FT_Set_Char_Size(dc->ftc->face,0,(int) (dc->ptsize*64), dc->dpi, dc->dpi))
+    if ( _FT_Set_Char_Size(dc->ftc->face,(int) (dc->ptsizex*64),(int) (dc->ptsizey*64), dc->dpi, dc->dpi))
  goto finish;
 
     massive_kludge = dc;
@@ -339,7 +339,7 @@ void DebuggerTerminate(struct debugger_context *dc) {
     free(dc);
 }
 
-void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
+void DebuggerReset(struct debugger_context *dc,real ptsizey, real ptsizex,int dpi,int dbg_fpgm, int is_bitmap) {
     /* Kill off the old thread, and start up a new one working on the given */
     /*  pointsize and resolution */ /* I'm not prepared for errors here */
     /* Note that if we don't want to look at the fpgm/prep code (and we */
@@ -359,7 +359,8 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm,
 	FreeTypeFreeContext(dc->ftc);
 
     dc->debug_fpgm = dbg_fpgm;
-    dc->ptsize = ptsize;
+    dc->ptsizey = ptsizey;
+    dc->ptsizex = ptsizex;
     dc->dpi = dpi;
     dc->is_bitmap = is_bitmap;
     dc->terminate = dc->has_finished = false;
@@ -376,7 +377,7 @@ return;
     pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,int layer, real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,int layer, real ptsizey,real ptsizex,int dpi,int dbg_fpgm, int is_bitmap) {
     struct debugger_context *dc;
 
     if ( !hasFreeTypeDebugger())
@@ -386,7 +387,8 @@ return( NULL );
     dc->sc = sc;
     dc->layer = layer;
     dc->debug_fpgm = dbg_fpgm;
-    dc->ptsize = ptsize;
+    dc->ptsizey = ptsizey;
+    dc->ptsizex = ptsizex;
     dc->dpi = dpi;
     dc->is_bitmap = is_bitmap;
     if ( _FT_Init_FreeType( &dc->context )) {
@@ -418,7 +420,7 @@ void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt,DebugView *dv)
 
     if ( !dc->has_thread || dc->has_finished || dc->exc==NULL ) {
 	FreeType_FreeRaster(dv->cv->raster); dv->cv->raster = NULL;
-	DebuggerReset(dc,dc->ptsize,dc->dpi,dc->debug_fpgm,dc->is_bitmap);
+	DebuggerReset(dc,dc->ptsizey,dc->ptsizex,dc->dpi,dc->debug_fpgm,dc->is_bitmap);
     } else {
 	switch ( dgt ) {
 	  case dgt_continue:
@@ -682,10 +684,10 @@ struct debugger_context;
 void DebuggerTerminate(struct debugger_context *dc) {
 }
 
-void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
+void DebuggerReset(struct debugger_context *dc,real ptsizey, real ptsizex,int dpi,int dbg_fpgm, int is_bitmap) {
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsize,int dpi, int dbg_fpgm, int is_bitmap) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsizey, real pointsizex,int dpi, int dbg_fpgm, int is_bitmap) {
 return( NULL );
 }
 

@@ -110,7 +110,9 @@ static int glyph_2_name_map=0;		/* was in tottf.c, now a flag in savefont option
 extern int coverageformatsallowed;	/* in tottfgpos.c */
 extern int debug_wins;			/* in cvdebug.c */
 extern int gridfit_dpi, gridfit_depth;	/* in cvgridfit.c */
-extern float gridfit_pointsize;		/* in cvgridfit.c */
+extern float gridfit_pointsizey;	/* in cvgridfit.c */
+extern float gridfit_pointsizex;	/* in cvgridfit.c */
+extern int gridfit_x_sameas_y;		/* in cvgridfit.c */
 extern int hint_diagonal_ends;		/* in stemdb.c */
 extern int hint_diagonal_intersections;	/* in stemdb.c */
 extern int hint_bounding_boxes;		/* in stemdb.c */
@@ -379,7 +381,9 @@ static struct prefs_list {
 	{ "DebugWins", pr_int, &debug_wins, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitDpi", pr_int, &gridfit_dpi, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitDepth", pr_int, &gridfit_depth, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitPointSize", pr_real, &gridfit_pointsize, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitPointSize", pr_real, &gridfit_pointsizey, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitPointSizeX", pr_real, &gridfit_pointsizex, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitSameAs", pr_int, &gridfit_x_sameas_y, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },

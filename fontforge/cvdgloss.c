@@ -675,7 +675,7 @@ return(1);
       break;
       case 0x4C:
         scrprintf(&scr," Push Pointsize");
-        scrprintf(&scr,"(one might assume this returns the pointsize, %d", cv->ft_pointsize);
+        scrprintf(&scr,"(one might assume this returns the pointsize, %d", cv->ft_pointsizey);
         scrprintf(&scr," as it is documented to do, but instead it");
         scrprintf(&scr," returns ppem)");
 	scrprintf(&scr,"Pushes: %d", exc->size->metrics.x_ppem );

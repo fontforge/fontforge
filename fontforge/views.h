@@ -97,7 +97,7 @@ typedef struct debugview {
     struct instrinfo ii;
     int dwidth, toph;
     struct charview *cv;
-    double scale;
+    double scalex, scaley;
     int pts_head, cvt_offtop, gloss_offtop, storage_offtop, stack_offtop, reg_offtop;
     int points_offtop;
 
@@ -220,8 +220,8 @@ typedef struct charview {
     PST *lcarets;
     int16 nearcaret;
 	/* freetype results display */
-    int16 ft_dpi, ft_ppem, ft_depth;
-    real ft_pointsize;
+    int16 ft_dpi, ft_ppemy, ft_ppemx, ft_depth;
+    real ft_pointsizey, ft_pointsizex;
     struct freetype_raster *raster, *oldraster;
     DebugView *dv;
     uint32 mmvisible;
@@ -588,8 +588,8 @@ extern void RecentFilesRemember(char *filename);
 
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
-extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
-extern struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
+extern void DebuggerReset(struct debugger_context *dc,real pointsizey, real pointsizex,int dpi,int dbg_fpgm, int is_bitmap);
+extern struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsizey,real pointsizex,int dpi,int dbg_fpgm, int is_bitmap);
 enum debug_gotype { dgt_continue, dgt_step, dgt_next, dgt_stepout };
 extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype,DebugView *dv);
 extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
