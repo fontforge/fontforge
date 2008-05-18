@@ -1600,6 +1600,7 @@ return( sc_sc );
     sc_sc = SFMakeChar(sf,fv->map,enc);
     free(sc_sc->name);
     sc_sc->name = copy(buffer);
+    SFHashGlyph(sf,sc_sc);
 
     pst = chunkalloc(sizeof(PST));
     pst->next = cap_sc->possub;
