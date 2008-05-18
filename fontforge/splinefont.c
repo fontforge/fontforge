@@ -232,92 +232,62 @@ return( enc );
 
     enc = uni = -1;
 	
-    while ( 1 ) {
-	enc = SFFindSlot(sf,map,-1,name);
-	if ( enc!=-1 ) {
-	    free(freeme);
+    enc = SFFindSlot(sf,map,-1,name);
+    if ( enc!=-1 ) {
+	free(freeme);
 return( enc );
+    }
+    if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
+	uni = strtol(name+2,&end,16);
+	if ( *end!='\0' )
+	    uni = -1;
+    } else if ( name[0]=='u' && name[1]=='n' && name[2]=='i' ) {
+	uni = strtol(name+3,&end,16);
+	if ( *end!='\0' )
+	    uni = -1;
+    } else if ( name[0]=='g' && name[1]=='l' && name[2]=='y' && name[3]=='p' && name[4]=='h' ) {
+	int orig = strtol(name+5,&end,10);
+	if ( *end!='\0' )
+	    orig = -1;
+	if ( orig!=-1 )
+	    enc = map->backmap[orig];
+    } else if ( isdigit(*name)) {
+	enc = strtoul(name,&end,0);
+	if ( *end!='\0' )
+	    enc = -1;
+	if ( map->remap!=NULL && enc!=-1 ) {
+	    struct remap *remap = map->remap;
+	    while ( remap->infont!=-1 ) {
+		if ( enc>=remap->firstenc && enc<=remap->lastenc ) {
+		    enc += remap->infont-remap->firstenc;
+	    break;
+		}
+		++remap;
+	    }
 	}
-	if ( (*name=='U' || *name=='u') && name[1]=='+' ) {
-	    uni = strtol(name+2,&end,16);
-	    if ( *end!='\0' )
-		uni = -1;
-	} else if ( name[0]=='u' && name[1]=='n' && name[2]=='i' ) {
-	    uni = strtol(name+3,&end,16);
-	    if ( *end!='\0' )
-		uni = -1;
-	} else if ( name[0]=='g' && name[1]=='l' && name[2]=='y' && name[3]=='p' && name[4]=='h' ) {
-	    int orig = strtol(name+5,&end,10);
-	    if ( *end!='\0' )
-		orig = -1;
-	    if ( orig!=-1 )
-		enc = map->backmap[orig];
-	} else if ( isdigit(*name)) {
-	    enc = strtoul(name,&end,0);
-	    if ( *end!='\0' )
-		enc = -1;
-	    if ( map->remap!=NULL && enc!=-1 ) {
-		struct remap *remap = map->remap;
-		while ( remap->infont!=-1 ) {
-		    if ( enc>=remap->firstenc && enc<=remap->lastenc ) {
-			enc += remap->infont-remap->firstenc;
+    } else {
+	if ( enc==-1 ) {
+	    uni = UniFromName(name,sf->uni_interp,map->enc);
+	    if ( uni<0 ) {
+		for ( i=0; specialnames[i].name!=NULL; ++i )
+		    if ( strcmp(name,specialnames[i].name)==0 ) {
+			uni = specialnames[i].first;
 		break;
 		    }
-		    ++remap;
-		}
 	    }
-	} else {
-	    if ( enc==-1 ) {
-		uni = UniFromName(name,sf->uni_interp,map->enc);
-		if ( uni<0 ) {
-		    for ( i=0; specialnames[i].name!=NULL; ++i )
-			if ( strcmp(name,specialnames[i].name)==0 ) {
-			    uni = specialnames[i].first;
-		    break;
-			}
-		}
-		if ( uni<0 && name[1]=='\0' )
-		    uni = name[0];
-	    }
+	    if ( uni<0 && name[1]=='\0' )
+		uni = name[0];
 	}
-	if ( enc>=map->enccount || enc<0 )
-	    enc = -1;
-	if ( enc==-1 && uni!=-1 )
-	    enc = SFFindSlot(sf,map,uni,NULL);
-	if ( enc!=-1 && uni==-1 ) {
-	    int gid = map->map[enc];
-	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
-		uni = sf->glyphs[gid]->unicodeenc;
-	    else if ( map->enc->is_unicodebmp || map->enc->is_unicodefull )
-		uni = enc;
-	}
-	if ( dot!=NULL ) {
-	    free(freeme);
-	    if ( uni==-1 )
-return( -1 );
-	    if ( uni<0x600 || uni>0x6ff )
-return( -1 );
-	    if ( strmatch(dot,".begin")==0 || strmatch(dot,".initial")==0 )
-		uni = ArabicForms[uni-0x600].initial;
-	    else if ( strmatch(dot,".end")==0 || strmatch(dot,".final")==0 )
-		uni = ArabicForms[uni-0x600].final;
-	    else if ( strmatch(dot,".medial")==0 )
-		uni = ArabicForms[uni-0x600].medial;
-	    else if ( strmatch(dot,".isolated")==0 )
-		uni = ArabicForms[uni-0x600].isolated;
-	    else
-return( -1 );
-return( SFFindSlot(sf,map,uni,NULL) );
-	} else 	if ( enc!=-1 ) {
-	    free(freeme);
-return( enc );
-	}
-	dot = strrchr(name,'.');
-	if ( dot==NULL )
-return( -1 );
-	free(freeme);
-	name = freeme = copyn(name,dot-name);
     }
+    if ( enc>=map->enccount || enc<0 )
+	enc = -1;
+    if ( enc==-1 && uni!=-1 )
+	enc = SFFindSlot(sf,map,uni,NULL);
+    /* Used to have code to remove dotted variant names and apply extensions */
+    /*  like ".initial" to get the unicode for arabic init/medial/final variants */
+    /*  But that doesn't sound like a good idea. And it would also map "a.sc" */
+    /*  to "a" -- which was confusing */
+return( enc );
 }
 
 void SFRemoveUndoes(SplineFont *sf,uint8 *selected, EncMap *map) {
