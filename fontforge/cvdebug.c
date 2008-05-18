@@ -1334,6 +1334,48 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static int dvpts_cnt(DebugView *dv) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    int i, l, cnt;
+    FT_Vector *pts;
+    int n;
+    TT_GlyphZoneRec *r;
+
+    if ( exc==NULL )		/* Can happen in glyphs with no instructions */
+return( 0 );
+
+    show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
+    show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
+    r = show_twilight ? &exc->twilight : &exc->pts;
+    n = r->n_points;
+    pts = show_current ? r->cur : r->org;
+
+    cnt = 0;
+    for ( i=0; i<n; ++i ) {
+	if ( i==0 ) l=n-5; else l=i-1;
+	if ( !show_twilight && i<n-4 &&
+		!(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On))
+	    ++cnt;
+	++cnt;
+    }
+return( cnt );
+}
+
+static void DVPointsFigureSB(DebugView *dv) {
+    int l, cnt;
+    GRect size;
+
+    cnt = dvpts_cnt(dv);
+    GDrawGetSize(dv->points_v,&size);
+    l = size.height/dv->ii.fh;
+    GScrollBarSetBounds(dv->pts_vsb,0,cnt,l);
+    if ( dv->points_offtop+l > cnt )
+	dv->points_offtop = cnt-l;
+    if ( dv->points_offtop < 0 )
+	dv->points_offtop = 0;
+    GScrollBarSetPos(dv->pts_vsb,dv->points_offtop);
+}
+
 static int dvpointsv_e_h(GWindow gw, GEvent *event) {
     DebugView *dv = (DebugView *) GDrawGetUserData(gw);
 
@@ -1396,50 +1438,11 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      case et_resize:
+	DVPointsFigureSB(dv);
+      break;
     }
 return( true );
-}
-
-static int dvpts_cnt(DebugView *dv) {
-    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
-    int i, l, cnt;
-    FT_Vector *pts;
-    int n;
-    TT_GlyphZoneRec *r;
-
-    if ( exc==NULL )		/* Can happen in glyphs with no instructions */
-return( 0 );
-
-    show_twilight = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight));
-    show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
-    r = show_twilight ? &exc->twilight : &exc->pts;
-    n = r->n_points;
-    pts = show_current ? r->cur : r->org;
-
-    cnt = 0;
-    for ( i=0; i<n; ++i ) {
-	if ( i==0 ) l=n-5; else l=i-1;
-	if ( !show_twilight && i<n-4 &&
-		!(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On))
-	    ++cnt;
-	++cnt;
-    }
-return( cnt );
-}
-
-static void DVPointsFigureSB(DebugView *dv) {
-    int l, cnt;
-    GRect size;
-
-    cnt = dvpts_cnt(dv);
-    GDrawGetSize(dv->points_v,&size);
-    l = size.width/dv->ii.fh;
-    GScrollBarSetBounds(dv->pts_vsb,0,cnt,l);
-    if ( dv->points_offtop+l > cnt )
-	dv->points_offtop = cnt-l;
-    if ( dv->points_offtop < 0 )
-	dv->points_offtop = 0;
-    GScrollBarSetPos(dv->pts_vsb,dv->points_offtop);
 }
 
 static void dvpts_scroll(DebugView *dv,struct sbevent *sb) {
@@ -1516,7 +1519,6 @@ return( DVChar(dv,event));
 	sbwidth = GDrawPointsToPixels(gw,_GScrollBar_Width);
 	GDrawResize(dv->points_v,r.width-sbwidth,r.height-dv->pts_head);
 	GGadgetResize(dv->pts_vsb,sbwidth,r.height-dv->pts_head);
-	DVPointsFigureSB(dv);
       break;
       case et_close:
 	GDrawDestroyWindow(dv->points);
