@@ -110,6 +110,7 @@ return(true);
 
 	last_fpgm = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_Debugfpgm));
 	cv->ft_pointsizey = ptsize; cv->ft_dpi = _dpi; cv->ft_depth = _depth;
+	cv->ft_pointsizex = ptsizex;
 	cv->ft_ppemy = rint(cv->ft_pointsizey*cv->ft_dpi/72.0);
 	cv->ft_ppemx = rint(cv->ft_pointsizex*cv->ft_dpi/72.0);
 
