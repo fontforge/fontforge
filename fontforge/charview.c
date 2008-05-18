@@ -10209,7 +10209,27 @@ struct sc_interface gdraw_sc_interface = {
     SC_MoreLayers
 };
 
+static void UI_CVGlyphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
+    int gid, i;
+    SplineChar *sc;
+    CharView *cv;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL) {
+	for ( cv=(CharView *) (sc->views); cv!=NULL; cv = (CharView *) (cv->b.next)) {
+	    for ( i=0; i<cv->former_cnt; ++i ) if ( strcmp(oldname,cv->former_names[i])==0 ) {
+		free( cv->former_names[i] );
+		cv->former_names[i] = copy( newname );
+		if ( cv->tabs!=NULL ) {
+		    GTabSetChangeTabName(cv->tabs,newname,i);
+		    GTabSetRemetric(cv->tabs);
+		}
+	    }
+	}
+    }
+}
+
 struct cv_interface gdraw_cv_interface = {
     (void (*)(CharViewBase *)) CV_CharChangedUpdate,
     (void (*)(CharViewBase *,int)) _CV_CharChangedUpdate,
+    UI_CVGlyphRenameFixup
 };

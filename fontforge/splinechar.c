@@ -2250,9 +2250,13 @@ static void _CVChngNoUpdate(CharViewBase *cv,int changed) {
     _SCChngNoUpdate(cv->sc,CVLayer(cv),changed);
 }
 
+static void CVGlphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
+}
+
 static struct cv_interface noui_cv = {
     CVChngNoUpdate,
     _CVChngNoUpdate,
+    CVGlphRenameFixup
 };
 
 struct cv_interface *cv_interface = &noui_cv;
