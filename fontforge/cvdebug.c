@@ -55,9 +55,11 @@ void CVDebugPointPopup(CharView *cv) {
 #include "ttinterp.h"
 
 #if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
-# define PPEM(exc)	((exc)->size->metrics.x_ppem)
+# define PPEMX(exc)	((exc)->size->metrics.x_ppem)
+# define PPEMY(exc)	((exc)->size->metrics.y_ppem)
 #else
-# define PPEM(exc)	((exc)->size->root.metrics.x_ppem)
+# define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
+# define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)
 #endif
 
 static Color rasterbackcol = 0xffffff;
@@ -97,14 +99,15 @@ return;
 
 static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     CharView *cv = dv->cv;
-    int y,x,em;
+    int y,x,xem, yem;
     GRect r;
 
     GDrawGetSize(dv->raster,&r);
     GDrawFillRect(pixmap,&event->u.expose.rect,rasterbackcol);
-    em = cv->ft_ppem;
-    x = (r.width - em)/2;
-    y = (r.height - em)/2 + em*cv->b.sc->parent->ascent/(cv->b.sc->parent->ascent+cv->b.sc->parent->descent);
+    xem = cv->ft_ppemx;
+    yem = cv->ft_ppemy;
+    x = (r.width - xem)/2;
+    y = (r.height - yem)/2 + yem*cv->b.sc->parent->ascent/(cv->b.sc->parent->ascent+cv->b.sc->parent->descent);
 
     GDrawDrawLine(pixmap,0,y,r.width,y,0xa0a0a0);	/* Axes */
     GDrawDrawLine(pixmap,x,0,x,r.height,0xa0a0a0);
@@ -233,7 +236,7 @@ return;
     /* Instruction control, scan control, scan type, phase, threshold for super rounding */
 
     y += 2;
-    sprintf( buffer, "Pixels/Em: %d", PPEM(exc) ); uc_strcpy(ubuffer,buffer);
+    sprintf( buffer, "Pixels/Em: %d", PPEMY(exc) ); uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
 }
 
@@ -317,11 +320,11 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     }
 }
 
-static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,struct reflist *a) {
+static void ScalePoint(BasePoint *me,FT_Vector *cur,real scalex, real scaley,struct reflist *a) {
     double x,y,temp, offx, offy;
 
-    x = cur->x*scale;
-    y = cur->y*scale;
+    x = cur->x*scalex;
+    y = cur->y*scaley;
     while ( a!=NULL ) {
 	RefChar *r = a->ref;
 	a = a->parent;
@@ -331,9 +334,8 @@ static void ScalePoint(BasePoint *me,FT_Vector *cur,real scale,struct reflist *a
 	offx = r->transform[4];
 	offy = r->transform[5];
 	if ( r->round_translation_to_grid ) {
-	    scale *= 64.0;
-	    offx = rint(offx/scale)*scale;
-	    offy = rint(offy/scale)*scale;
+	    offx = rint(offx/(scalex*64))*scalex*64;
+	    offy = rint(offy/(scaley*64))*scaley*64;
 	}
 	x += offx; y += offy;
     }
@@ -391,12 +393,12 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( i==0 ) l=n-ph; else l=i-1;	/* Skip 4 phantom points */
 	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
-		ScalePoint(&me,&pts[i],dv->scale,actives);
-		ScalePoint(&me2,&pts[l],dv->scale,actives);
+		ScalePoint(&me,&pts[i],dv->scalex,dv->scaley,actives);
+		ScalePoint(&me2,&pts[l],dv->scalex,dv->scaley,actives);
 		me.x = (me.x+me2.x)/2;  me.y = (me.y+me2.y)/2;
 		if ( show_grid )
 		    sprintf(buffer, "   : I   %.2f,%.2f",
-			    (double) (me.x/dv->scale/64.0), (double) (me.y/dv->scale/64.0) );
+			    (double) (me.x/dv->scalex/64.0), (double) (me.y/dv->scaley/64.0) );
 		else if ( show_raw )
 		    sprintf(buffer, "   : I   %g,%g",
 			    (double) ((pts[i].x+pts[l].x)/2.0), (double) ((pts[i].y+pts[l].y)/2.0) );
@@ -416,12 +418,12 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( i<n_watch && !show_twilight && watches!=NULL && watches[i] && y>0 )
 		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
 			    y-dv->ii.as-2);
-	    ScalePoint(&me,&pts[i],dv->scale,actives);
+	    ScalePoint(&me,&pts[i],dv->scalex,dv->scaley,actives);
 	    if ( show_grid )
 		sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
 			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
-			(double) (me.x/dv->scale/64.0), (double) (me.y/dv->scale/64.0) );
+			(double) (me.x/dv->scalex/64.0), (double) (me.y/dv->scaley/64.0) );
 	    else if ( show_raw )
 		sprintf(buffer, "%3d: %c%c%c %d,%d", i,
 			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
@@ -447,13 +449,13 @@ static void DVPointsExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GDrawDrawLine(pixmap,event->u.expose.rect.x,dv->pts_head-1,event->u.expose.rect.x+event->u.expose.rect.width,dv->pts_head-1,0x000000);
 }
 
-static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scale,int i,
+static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scalex, real scaley,int i,
 	SplineSet *last, struct reflist *actives ) {
     SplineSet *cur;
     SplinePoint *sp;
     BasePoint me;
 
-    ScalePoint(&me,&pts->cur[i],scale,actives);
+    ScalePoint(&me,&pts->cur[i],scalex,scaley,actives);
 
     sp = SplinePointCreate(me.x,me.y);
     sp->ttfindex = i;
@@ -464,7 +466,7 @@ static SplineSet *ContourFromPoint(TT_GlyphZoneRec *pts, real scale,int i,
 return( cur );
 }
 
-static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
+static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scalex, real scaley,
 	struct reflist *actives) {
     int i=0, c, last_off, start;
     SplineSet *head=NULL, *last=NULL, *cur;
@@ -485,11 +487,11 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 	start = i;
 	while ( i<=pts->contours[c] && i<pts->n_points ) {
 	    if ( pts->tags[i]&FT_Curve_Tag_On ) {
-		ScalePoint(&me,&pts->cur[i],scale,actives);
+		ScalePoint(&me,&pts->cur[i],scalex,scaley,actives);
 		sp = SplinePointCreate(me.x,me.y);
 		sp->ttfindex = i;
 		if ( last_off && cur->last!=NULL ) {
-		    ScalePoint(&cur->last->nextcp,&pts->cur[i-1],scale,actives);
+		    ScalePoint(&cur->last->nextcp,&pts->cur[i-1],scalex,scaley,actives);
 		    sp->prevcp = cur->last->nextcp;
 		    cur->last->nonextcp = false;
 		    cur->last->nextcpindex = i-1;
@@ -497,8 +499,8 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 		}
 		last_off = false;
 	    } else if ( last_off ) {
-		ScalePoint(&me,&pts->cur[i],scale,actives);
-		ScalePoint(&me2,&pts->cur[i-1],scale,actives);
+		ScalePoint(&me,&pts->cur[i],scalex,scaley,actives);
+		ScalePoint(&me2,&pts->cur[i-1],scalex,scaley,actives);
 		sp = SplinePointCreate((me.x+me2.x)/2, (me.y+me2.y)/2 );
 		sp->noprevcp = false;
 		sp->ttfindex = 0xffff;
@@ -523,13 +525,13 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 	}
 	if ( start==i-1 ) {
 	    /* Single point contours (probably for positioning components, etc.) */
-	    ScalePoint(&me,&pts->cur[start],scale,actives);
+	    ScalePoint(&me,&pts->cur[start],scalex,scaley,actives);
 	    sp = SplinePointCreate(me.x,me.y);
 	    sp->ttfindex = i-1;
 	    cur->first = cur->last = sp;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) && !(pts->tags[i-1]&FT_Curve_Tag_On) ) {
-	    ScalePoint(&me,&pts->cur[start],scale,actives);
-	    ScalePoint(&me2,&pts->cur[i-1],scale,actives);
+	    ScalePoint(&me,&pts->cur[start],scalex,scaley,actives);
+	    ScalePoint(&me2,&pts->cur[i-1],scalex,scaley,actives);
 	    sp = SplinePointCreate((me.x+me2.x)/2 , (me.y+me2.y)/2);
 	    sp->noprevcp = sp->nonextcp = false;
 	    cur->last->nextcp = sp->prevcp = me2;
@@ -539,12 +541,12 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
 	    cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
 	} else if ( !(pts->tags[i-1]&FT_Curve_Tag_On)) {
-	    ScalePoint(&me,&pts->cur[i-1],scale,actives);
+	    ScalePoint(&me,&pts->cur[i-1],scalex,scaley,actives);
 	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = i-1;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) ) {
-	    ScalePoint(&me,&pts->cur[start],scale,actives);
+	    ScalePoint(&me,&pts->cur[start],scalex,scaley,actives);
 	    cur->last->nextcp = cur->first->prevcp = me;
 	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
@@ -557,12 +559,12 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scale,
     if ( i+1<pts->n_points ) {
 	/* depending on the version of freetype there should be either 2 or 4 */
 	/*  metric phantom points (2 horizontal metrics + 2 vertical metrics) */
-	last = ContourFromPoint(pts,scale,i,last,actives);
+	last = ContourFromPoint(pts,scalex,scaley,i,last,actives);
 	if ( head==NULL ) head = last;
-	last = ContourFromPoint(pts,scale,i+1,last,actives);
+	last = ContourFromPoint(pts,scalex,scaley,i+1,last,actives);
 	if ( i+3<pts->n_points ) {
-	    last = ContourFromPoint(pts,scale,i+2,last,actives);
-	    last = ContourFromPoint(pts,scale,i+3,last,actives);
+	    last = ContourFromPoint(pts,scalex,scaley,i+2,last,actives);
+	    last = ContourFromPoint(pts,scalex,scaley,i+3,last,actives);
 	}
     }
 return( head );
@@ -696,8 +698,10 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     /*  that, let's just ask it... */
     /* The exact size is: cv->ft_pointsize*cv->ft_dpi/72.0 */
     /* Rounded size is:   exc->size->root.metrics.x_ppem (or y_ppem) */
-    if ( exc!=NULL )
-	dv->scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/((double) PPEM(exc)) / (1<<6);
+    if ( exc!=NULL ) {
+	dv->scalex = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/((double) PPEMX(exc)) / (1<<6);
+	dv->scaley = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/((double) PPEMY(exc)) / (1<<6);
+    }
     if ( cv!=NULL && cv->coderange!=range ) {
 	cv->coderange = range;
 	CVInfoDraw(cv,cv->gw);
@@ -708,15 +712,15 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	    FreeType_FreeRaster(cv->oldraster);
 	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->b.gridfit);
-	cv->b.gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_refs);
+	cv->b.gridfit = SplineSetsFromPoints(&exc->pts,dv->scalex,dv->scaley,dv->active_refs);
 	cv->raster = DebuggerCurrentRaster(exc,cv->ft_depth);
 	if ( exc->pts.n_points<=2 )
 	    cv->b.ft_gridfitwidth = 0;
 	/* suport for vertical phantom pts */
 	else if ( FreeTypeAtLeast(2,1,8))
-	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-3].x * dv->scale;
+	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-3].x * dv->scalex;
 	else
-	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
+	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scalex;
     }
 
     if ( cv!=NULL )
@@ -757,7 +761,7 @@ static void DVDefaultRaster(DebugView *dv) {
 	    cv->b.sc->layers[layer].order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context!=NULL ) {
 	cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
-		cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
+		cv->ft_pointsizey, cv->ft_pointsizex, cv->ft_dpi, cv->ft_depth );
 	FreeTypeFreeContext(single_glyph_context);
     }
     cv->b.ft_gridfitwidth = 0;
@@ -2033,11 +2037,12 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     GGadgetCreateData gcd[9];
     GTextInfo label[9];
     extern int _GScrollBar_Width;
-    double scale;
+    double scalex, scaley;
     int i;
 
+    scalex = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizex*cv->ft_dpi/72.0)) / (1<<6);
+    scaley = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizey*cv->ft_dpi/72.0)) / (1<<6);
     if ( restart_debug ) {
-	scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0)) / (1<<6);
 	if ( cv->b.sc->instructions_out_of_date && cv->b.sc->ttf_instrs_len!=0 )
 	    ff_post_notice(_("Instructions out of date"),
 		_("The points have been changed. This may mean that the truetype instructions now refer to the wrong points and they may cause unexpected results."));
@@ -2049,9 +2054,10 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	cv->show_ft_results = false;
 	cv->dv = dv = gcalloc(1,sizeof(DebugView));
 	dv->dwidth = 260;
-	dv->scale = scale;
+	dv->scalex = scalex;
+	dv->scaley = scaley;
 	dv->cv = cv;
-	dv->dc = DebuggerCreate(cv->b.sc,CVLayer((CharViewBase*) cv),cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
+	dv->dc = DebuggerCreate(cv->b.sc,CVLayer((CharViewBase*) cv),cv->ft_pointsizey,cv->ft_pointsizex,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if ( dv->dc==NULL ) {
 	    free(dv);
@@ -2181,8 +2187,9 @@ return;
 		(wcreat[i].create)(dv);
 	}
     } else {
-	dv->scale = scale;
-	DebuggerReset(dv->dc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
+	dv->scalex = scalex;
+	dv->scaley = scaley;
+	DebuggerReset(dv->dc,cv->ft_pointsizey,cv->ft_pointsizex,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
@@ -2207,10 +2214,10 @@ void CVDebugPointPopup(CharView *cv) {
     n = r->n_points;
     pts = r->cur;
 
-    x = rint(cv->info.x/dv->scale);
-    y = rint(cv->info.y/dv->scale);
+    x = rint(cv->info.x/dv->scalex);
+    y = rint(cv->info.y/dv->scaley);
 
-    fudge = rint(snapdistance/cv->scale/dv->scale);
+    fudge = rint(snapdistance/cv->scale/dv->scaley);
     for ( i=n-1; i>=0; --i ) {
 	if ( x>=pts[i].x-fudge && x<=pts[i].x+fudge &&
 		y>=pts[i].y-fudge && y<=pts[i].y+fudge )
@@ -2224,9 +2231,9 @@ void CVDebugPointPopup(CharView *cv) {
 #endif
 		"Point %d %s-curve\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
 		i, r->tags[i]&FT_Curve_Tag_On?"On":"Off",
-		pts[i].x*dv->scale, pts[i].y*dv->scale,
+		pts[i].x*dv->scalex, pts[i].y*dv->scaley,
 		pts[i].x/64.0, pts[i].y/64.0,
-		r->org[i].x*dv->scale, r->org[i].y*dv->scale );
+		r->org[i].x*dv->scalex, r->org[i].y*dv->scaley );
     } else {
 	int xx, yy;
 	for ( i=n-1; i>=0; --i ) {
@@ -2247,9 +2254,9 @@ void CVDebugPointPopup(CharView *cv) {
 #endif
 		"Interpolated between %d %d\nCur (em): %7.2f,%7.2f\nCur (px): %7.2f,%7.2f\nOrg (em): %7.2f,%7.2f",
 		l,i,
-		xx*dv->scale, yy*dv->scale,
+		xx*dv->scalex, yy*dv->scaley,
 		xx/64.0, yy/64.0,
-		(r->org[i].x+r->org[l].x)*dv->scale/2.0, (r->org[i].y+r->org[l].y)*dv->scale/2.0 );
+		(r->org[i].x+r->org[l].x)*dv->scalex/2.0, (r->org[i].y+r->org[l].y)*dv->scaley/2.0 );
     }
   goto showit;
 
@@ -2259,12 +2266,12 @@ void CVDebugPointPopup(CharView *cv) {
 #else
     snprintf(cspace,sizeof(cspace),
 #endif
-		"%.2f, %.2f", (double) (cv->info.x/dv->scale/64.0), (double) (cv->info.y/dv->scale/64.0) );
+		"%.2f, %.2f", (double) (cv->info.x/dv->scalex/64.0), (double) (cv->info.y/dv->scaley/64.0) );
 
   showit:
     if ( cv->raster!=NULL ) {
-	int x = cv->info.x/dv->scale/64.0 - cv->raster->lb;
-	int y = cv->raster->as-cv->info.y/dv->scale/64.0;
+	int x = cv->info.x/dv->scalex/64.0 - cv->raster->lb;
+	int y = cv->raster->as-cv->info.y/dv->scaley/64.0;
 	int val;
 	if ( cv->raster->num_greys>2 ) {
 	    if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->rows )
@@ -2289,8 +2296,8 @@ void CVDebugPointPopup(CharView *cv) {
 	}
     }
     if ( cv->oldraster!=NULL ) {
-	int x = cv->info.x/dv->scale/64.0 - cv->oldraster->lb;
-	int y = cv->oldraster->as-cv->info.y/dv->scale/64.0;
+	int x = cv->info.x/dv->scalex/64.0 - cv->oldraster->lb;
+	int y = cv->oldraster->as-cv->info.y/dv->scaley/64.0;
 	int val;
 	if ( cv->oldraster->num_greys>2 ) {
 	    if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->rows )

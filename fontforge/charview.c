@@ -1617,12 +1617,14 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
     if ( cv->showgrids ) {
 	/* Draw ppem grid, and the raster for truetype debugging, grid fit */
 	GRect pixel;
-	real grid_spacing = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent) / (real) cv->ft_ppem;
+	real ygrid_spacing = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent) / (real) cv->ft_ppemy;
+	real xgrid_spacing = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent) / (real) cv->ft_ppemx;
 	int max,jmax,ii,i,jj,j;
 	int minx, maxx, miny, maxy, r,or;
 	Color clut[256];
 
-	pixel.width = pixel.height = grid_spacing*cv->scale+1;
+	pixel.width = xgrid_spacing*cv->scale+1;
+	pixel.height = ygrid_spacing*cv->scale+1;
 	if ( cv->raster!=NULL ) {
 	    if ( cv->raster->num_greys>2 ) {
 		int rb, gb, bb, rd, gd, bd;
@@ -1666,8 +1668,8 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
 		    }
 		    if ( r || or ) {
-			pixel.x = jj*grid_spacing*cv->scale + cv->xoff;
-			pixel.y = cv->height-cv->yoff - rint(ii*grid_spacing*cv->scale);
+			pixel.x = jj*xgrid_spacing*cv->scale + cv->xoff;
+			pixel.y = cv->height-cv->yoff - rint(ii*ygrid_spacing*cv->scale);
 			if ( cv->raster->num_greys<=2 )
 			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
 			else
@@ -1677,19 +1679,19 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	    }
 	}
 
-	for ( i = floor( clip->x/grid_spacing ), max = ceil((clip->x+clip->width)/grid_spacing);
+	for ( i = floor( clip->x/xgrid_spacing ), max = ceil((clip->x+clip->width)/xgrid_spacing);
 		i<=max; ++i )
-	    DrawLine(cv,pixmap,i*grid_spacing,-32768,i*grid_spacing,32767,i==0?coordcol:rastergridcol);
-	for ( i = floor( clip->y/grid_spacing ), max = ceil((clip->y+clip->height)/grid_spacing);
+	    DrawLine(cv,pixmap,i*xgrid_spacing,-32768,i*xgrid_spacing,32767,i==0?coordcol:rastergridcol);
+	for ( i = floor( clip->y/ygrid_spacing ), max = ceil((clip->y+clip->height)/ygrid_spacing);
 		i<=max; ++i )
-	    DrawLine(cv,pixmap,-32768,i*grid_spacing,32767,i*grid_spacing,i==0?coordcol:rastergridcol);
-	if ( grid_spacing*cv->scale>=7 ) {
-	    for ( i = floor( clip->x/grid_spacing ), max = ceil((clip->x+clip->width)/grid_spacing);
+	    DrawLine(cv,pixmap,-32768,i*ygrid_spacing,32767,i*ygrid_spacing,i==0?coordcol:rastergridcol);
+	if ( xgrid_spacing*cv->scale>=7 && ygrid_spacing*cv->scale>=7) {
+	    for ( i = floor( clip->x/xgrid_spacing ), max = ceil((clip->x+clip->width)/xgrid_spacing);
 		    i<=max; ++i )
-		for ( j = floor( clip->y/grid_spacing ), jmax = ceil((clip->y+clip->height)/grid_spacing);
+		for ( j = floor( clip->y/ygrid_spacing ), jmax = ceil((clip->y+clip->height)/ygrid_spacing);
 			j<=jmax; ++j ) {
-		    int x = (i+.5)*grid_spacing*cv->scale + cv->xoff;
-		    int y = cv->height-cv->yoff - rint((j+.5)*grid_spacing*cv->scale);
+		    int x = (i+.5)*xgrid_spacing*cv->scale + cv->xoff;
+		    int y = cv->height-cv->yoff - rint((j+.5)*ygrid_spacing*cv->scale);
 		    GDrawDrawLine(pixmap,x-2,y,x+2,y,rastergridcol);
 		    GDrawDrawLine(pixmap,x,y-2,x,y+2,rastergridcol);
 		}
@@ -2469,7 +2471,7 @@ static char *CVMakeTitles(CharView *cv,char *buf) {
 	latin1_2_utf8_strcpy(buf+strlen(buf), _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
     }
     if ( cv->show_ft_results || cv->dv )
-	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsize, cv->ft_dpi );
+	sprintf(buf+strlen(buf), " (%gpt, %ddpi)", (double) cv->ft_pointsizey, cv->ft_dpi );
 return( title );
 }
 
@@ -5381,14 +5383,20 @@ return;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	GDrawRequestExpose(cv->v,NULL,false);
     } else {
-	if ( mi->mid==MID_Bigger )
-	    ++cv->ft_pointsize;
-	else if ( mi->mid==MID_Smaller && cv->ft_pointsize>0 )
-	    --cv->ft_pointsize;
+	if ( mi->mid==MID_Bigger ) {
+	    ++cv->ft_pointsizex;
+	    ++cv->ft_pointsizey;
+	} else if ( mi->mid==MID_Smaller ) {
+	    if ( cv->ft_pointsizex>1 )
+		--cv->ft_pointsizex;
+	    if ( cv->ft_pointsizey>1 )
+		--cv->ft_pointsizey;
+	}
 
 	if ( mi->mid==MID_GridFitAA )
 	    cv->ft_depth = cv->ft_depth==8 ? 2 : 8;
-	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
+	cv->ft_ppemx = rint(cv->ft_pointsizex*cv->ft_dpi/72.0);
+	cv->ft_ppemy = rint(cv->ft_pointsizey*cv->ft_dpi/72.0);
 	CVGridFitChar(cv);
     }
     SCRefreshTitles(cv->b.sc);
@@ -8522,7 +8530,7 @@ static void gflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = !cv->show_ft_results;
 	  break;
 	  case MID_Smaller:
-	    mi->ti.disabled = !cv->show_ft_results && cv->ft_pointsize>0;
+	    mi->ti.disabled = !cv->show_ft_results || cv->ft_pointsizex<2 || cv->ft_pointsizey<2;
 	  break;
 	  case MID_GridFitAA:
 	    mi->ti.disabled = !cv->show_ft_results;
@@ -9640,7 +9648,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 
     cv->olde.x = -1;
 
-    cv->ft_dpi = 72; cv->ft_pointsize = 12.0; cv->ft_ppem = 12;
+    cv->ft_dpi = 72; cv->ft_pointsizex = cv->ft_pointsizey = 12.0;
+    cv->ft_ppemx = cv->ft_ppemy = 12;
 
     /*GWidgetHidePalettes();*/
     /*cv->tools = CVMakeTools(cv);*/

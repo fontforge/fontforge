@@ -246,6 +246,7 @@ void FF_SetSCInterface(struct sc_interface *sci);
 /* ************************************************************************** */
 
 struct charviewbase;
+struct splinefont;
 
 struct cv_interface {
    /* Update all windows looking at what this char window looks at */
@@ -256,7 +257,7 @@ struct cv_interface {
 
    /* A glyph's name has changed find all charviews with tabs with that name */
    /*  and update those tabs */
-    void (*glyph_name_change)(SplineFont *sf, char *oldname, char *newname);
+    void (*glyph_name_change)(struct splinefont *sf, char *oldname, char *newname);
 };
 extern struct cv_interface *cv_interface;
 
