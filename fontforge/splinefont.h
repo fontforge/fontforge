@@ -233,6 +233,15 @@ struct simplifyinfo {
     int check_selected_contours;
 };
 
+typedef struct italicinfo {
+    double italic_angle, tan_ia;
+    struct hsquash { double lsb_percent, stem_percent, counter_percent, rsb_percent; }
+	uc, lc;
+  /* When I say "f" I also mean "f_f" ligature, "longs", and other things shaped like "f" */
+    unsigned int f_long_tail: 1;	/* Some Italic fonts have the "f" grow an extension of the main stem below the baseline */
+    unsigned int f_rotate_top: 1;	/* Most Italic fonts take the top curve of the "f", rotate it 180 and attach to the bottom */
+} ItalicInfo;
+
 typedef struct bluedata {
     real xheight, xheighttop;		/* height of "x" and "o" (u,v,w,x,y,z) */
     real caph, caphtop;			/* height of "I" and "O" */
@@ -1504,7 +1513,8 @@ enum loadvalidation_state {
 	lvs_bad_bitmaps_table  = 0x020,
 	lvs_bad_gx_table       = 0x040,
 	lvs_bad_ot_table       = 0x080,
-	lvs_bad_os2_version    = 0x100
+	lvs_bad_os2_version    = 0x100,
+	lvs_bad_sfnt_header    = 0x200
     };
 
 typedef struct layerinfo {
@@ -1790,7 +1800,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_symbol=0x4000,
 		    ttf_flag_dummyDSIG=0x8000
 		};
-enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4 };
+enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
+	of_fontlint=8 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,

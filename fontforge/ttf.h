@@ -295,6 +295,7 @@ struct ttfinfo {
     unsigned int bad_gx: 1;
     unsigned int bad_ot: 1;
     unsigned int bad_os2_version: 1;
+    unsigned int bad_sfnt_header: 1;
     Layer guidelines;
     struct Base *horiz_base, *vert_base;
 };
