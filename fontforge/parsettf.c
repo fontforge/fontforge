@@ -688,6 +688,116 @@ return;
     }
 }
 
+static int32 filechecksum(FILE *file, int start, int len) {
+    uint32 sum = 0, chunk;
+
+    fseek(file,start,SEEK_SET);
+    if ( len!=-1 ) len=(len+3)>>2;
+    while ( len==-1 || --len>=0 ) {
+	chunk = getlong(file);
+	if ( feof(file))
+    break;
+	sum += chunk;
+    }
+return( sum );
+}
+
+static void ValidateTTFHead(FILE *ttf,struct ttfinfo *info) {
+    /* When doing font lint we want to check the ttf header and make */
+    /*  sure all the offsets and lengths are valid, and the checksums */
+    /*  match. Most of the time this is just extra work and we don't */
+    /*  bather */
+    uint32 restore_this_pos = ftell(ttf);
+    struct tt_tables {
+	uint32 tag;
+	uint32 checksum;
+	uint32 offset;
+	uint32 length;
+    } *tabs, temp;
+    int i,j;
+    uint32 file_len;
+    int sr, es, rs, e_sr, e_es, e_rs;
+
+    info->numtables = getushort(ttf);
+    sr = getushort(ttf);
+    es = getushort(ttf);
+    rs = getushort(ttf);
+    e_sr = (info->numtables<8?4:info->numtables<16?8:info->numtables<32?16:info->numtables<64?32:64)*16;
+    e_es = (info->numtables<8?2:info->numtables<16?3:info->numtables<32?4:info->numtables<64?5:6);
+    e_rs = info->numtables*16-e_sr;
+    if ( e_sr!=sr || e_es!=es || e_rs!=rs ) {
+	LogError( _("Unexpected values for binsearch header. Based on the number of tables I\n expect searchRange=%d (not %d), entrySel=%d (not %d) rangeShift=%d (not %d)\n"),
+		e_sr, sr, e_es, es, e_rs, rs );
+	info->bad_sfnt_header = true;
+    }
+
+    if ( info->numtables<=0 ) {
+	LogError(_("An sfnt file must contain SOME tables, but this one does not."));
+	info->bad_sfnt_header = true;
+	fseek(ttf,restore_this_pos,SEEK_SET);
+return;
+    } else if ( info->numtables>1000 ) {
+	LogError(_("An sfnt file may contain a large number of tables, but this one has over 1000\n and that seems like too many\n"));
+	info->bad_sfnt_header = true;
+	fseek(ttf,restore_this_pos,SEEK_SET);
+return;
+    }
+
+    tabs = galloc(info->numtables*sizeof(struct tt_tables));
+
+    for ( i=0; i<info->numtables; ++i ) {
+	tabs[i].tag = getlong(ttf);
+	tabs[i].checksum = getlong(ttf);
+	tabs[i].offset = getlong(ttf);
+	tabs[i].length = getlong(ttf);
+    }
+    fseek(ttf,0,SEEK_END);
+    file_len = ftell(ttf);
+
+    for ( i=0; i<info->numtables; ++i ) for ( j=i+1; j<info->numtables; ++j ) {
+	if ( tabs[i].offset>tabs[j].offset ) {
+	    temp = tabs[i];
+	    tabs[i] = tabs[j];
+	    tabs[j] = temp;
+	}
+    }
+    for ( i=0; i<info->numtables-1; ++i ) {
+	for ( j=i+1; j<info->numtables; ++j ) {
+	    if ( tabs[i].tag==tabs[j].tag ) {
+		LogError(_("Same table tag, '%c%c%c%c', appears twice in sfnt header"),
+			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
+		info->bad_sfnt_header = true;
+	    }
+	}
+	if ( tabs[i].offset+tabs[i].length > tabs[i+1].offset ) {
+	    LogError(_("Tables '%c%c%c%c' and '%c%c%c%c' overlap"),
+		    tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag,
+		    tabs[j].tag>>24, tabs[j].tag>>16, tabs[j].tag>>8, tabs[j].tag );
+	}
+    }
+    if ( tabs[i].offset+tabs[i].length > file_len ) {
+	LogError(_("Table '%c%c%c%c' extends beyond end of file."),
+		tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
+	info->bad_sfnt_header = true;
+    }
+
+    /* Checksums. First file as a whole, then each table */
+    if ( filechecksum(ttf,0,-1)!=0xb1b0afba ) {
+	LogError(_("File checksum is incorrect."));
+	info->bad_sfnt_header = true;
+    }
+    for ( i=0; i<info->numtables-1; ++i ) if ( tabs[i].tag!=CHR('h','e','a','d')) {
+	if ( filechecksum(ttf,tabs[i].offset,tabs[i].length)!=tabs[i].checksum ) {
+	    LogError(_("Table '%c%c%c%c' has a bad checksum."),
+		    tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
+	    info->bad_sfnt_header = true;
+	}
+    }
+
+    free(tabs);
+    fseek(ttf,restore_this_pos,SEEK_SET);
+}
+	    
 static struct tablenames { uint32 tag; char *name; } stdtables[] = {
     { CHR('a','c','n','t'), N_("accent attachment table") },
     { CHR('a','v','a','r'), N_("axis variation table") },
@@ -781,14 +891,18 @@ return( 0 );
 
     /* Apple says that 'typ1' is a valid code for a type1 font wrapped up in */
     /*  a truetype table structure, but gives no docs on what tables get used */
-    /*  or how */
-    if ( version==CHR('t','y','p','1')) {
+    /*  or how */ /* Turns out to be pretty simple */
+    if ( version==CHR('t','y','p','1') || version==CHR('C','I','D',' ')) {
 	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n") );
     } else if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=0x00020000 &&	/* Windows 3.1 Chinese version used this version for some arphic fonts */
 					/* See discussion on freetype list, july 2004 */
 	    version!=CHR('O','T','T','O'))
 return( 0 );			/* Not version 1 of true type, nor Open Type */
+
+    if ( info->openflags & of_fontlint )
+	ValidateTTFHead(ttf,info);
+
     info->numtables = getushort(ttf);
     /* searchRange = */ getushort(ttf);
     /* entrySelector = */ getushort(ttf);
@@ -5967,7 +6081,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    (info->bad_embedded_bitmap	?lvs_bad_bitmaps_table:0) |
 	    (info->bad_gx		?lvs_bad_gx_table:0) |
 	    (info->bad_ot		?lvs_bad_ot_table:0) |
-	    (info->bad_os2_version	?lvs_bad_os2_version:0);
+	    (info->bad_os2_version	?lvs_bad_os2_version:0)|
+	    (info->bad_sfnt_header	?lvs_bad_sfnt_header:0);
 return( sf );
 }
 

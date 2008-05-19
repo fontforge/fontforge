@@ -10,7 +10,7 @@ return( 1 );
 endif
 
 while ( $argc > 1 )
-  Open( $1 )
+  Open( $1, 8 )
   mask = Validate()
   blues = $privateState
   if ( $order==2 )
@@ -102,6 +102,9 @@ while ( $argc > 1 )
     endif
     if ( mask & 0x100 )
       Print( "  Bad version number in OS/2 table (must be >0, and must be >1 for OT-CFF fonts)" )
+    endif
+    if ( mask & 0x200 )
+      Print( "  Bad sfnt file header" )
     endif
 
     if ( blues & 0x010000 )
