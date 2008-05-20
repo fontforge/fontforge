@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 8 May 2008
+# Date : 20 May 2008
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
@@ -31,7 +31,7 @@ fontforge_LIBOBJECTS6=start.obj,stemdb.obj,svg.obj,tottfaat.obj,tottfgpos.obj,to
  tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,unicoderange.obj,utils.obj,\
  winfonts.obj,zapfnomen.obj,groups.obj,langfreq.obj
 
-fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj
+fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj
 
 fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj,\
  bdfinfo.obj,bitmapdlg.obj,bitmapview.obj,charinfo.obj,charview.obj,clipui.obj,\
@@ -40,7 +40,7 @@ fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj
  cvimportdlg.obj,cvknife.obj,cvpalettes.obj,cvpointer.obj,cvruler.obj,cvshapes.obj,\
  cvstroke.obj,cvtranstools.obj,displayfonts.obj,effectsui.obj,encodingui.obj,\
  fontinfo.obj,fontview.obj,freetypeui.obj,fvfontsdlg.obj,fvmetricsdlg.obj,gotodlg.obj,\
- groupsdlg.obj,histograms.obj,images.obj,kernclass.obj,layer2layer.obj,lookupui.obj,\
+ groupsdlg.obj,histograms.obj,kernclass.obj,layer2layer.obj,lookupui.obj,\
  macencui.obj,math.obj,metricsview.obj,mmdlg.obj,nonlineartransui.obj,openfontdlg.obj,\
  prefs.obj,problems.obj,pythonui.obj,savefontdlg.obj,scriptingdlg.obj,scstylesui.obj,\
  searchview.obj,sftextfield.obj,showatt.obj,simplifydlg.obj,splashimage.obj,stamp.obj,\
