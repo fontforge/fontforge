@@ -78,7 +78,7 @@ struct opentype_feature_friendlynames friendlies[] = {
     { CHR('d','i','s','t'),	"dist", N_("Distance"),			gpos_pair_mask },
     { CHR('d','l','i','g'),	"dlig", N_("Discretionary Ligatures"),	gsub_ligature_mask },
     { CHR('d','n','o','m'),	"dnom", N_("Denominators"),		gsub_single_mask },
-    { CHR('d','p','n','g'),	"dpng", N_("Dipthongs"),		gsub_ligature_mask },
+    { CHR('d','p','n','g'),	"dpng", N_("Dipthongs (Obsolete)"),	gsub_ligature_mask },
     { CHR('e','x','p','t'),	"expt", N_("Expert Forms"),		gsub_single_mask },
     { CHR('f','a','l','t'),	"falt", N_("Final Glyph On Line"),	gsub_alternate_mask },
     { CHR('f','i','n','2'),	"fin2", N_("Terminal Forms #2"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
