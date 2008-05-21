@@ -489,7 +489,7 @@ static void GetFileChooserPrefs(void) {
     else {
 	int i,len=0;
 	for ( i=0; foo[i]!=NULL; ++i )
-	    len = 4*u_strlen(foo[i])+1;
+	    len += 4*u_strlen(foo[i])+1;
 	gfc_bookmarks = galloc(len+10);
 	len = 0;
 	for ( i=0; foo[i]!=NULL; ++i ) {
