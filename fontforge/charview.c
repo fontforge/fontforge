@@ -2027,6 +2027,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL && cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
 	DrawOldState(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->undoes, &clip);
 
+    if ( cv->showfore )
+	cv->showback[0] |= (1<<ly_fore);
+    else
+	cv->showback[0] &= ~(1<<ly_fore);
+
     for ( layer=ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( layer!=cvlayer ) {
 	if ( layer!=ly_back || (!cv->show_ft_results && cv->dv==NULL )) {
 	    if (( cv->showback[layer>>5]&(1<<(layer&31))) || layer==cvlayer ) {
