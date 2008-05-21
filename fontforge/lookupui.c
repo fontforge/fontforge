@@ -283,6 +283,7 @@ GTextInfo languages[] = {
     { (unichar_t *) N_("Chuvash"), NULL, 0, 0, (void *) CHR('C','H','U',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Comorian"), NULL, 0, 0, (void *) CHR('C','M','R',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Lang|Coptic"), NULL, 0, 0, (void *) CHR('C','O','P',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Corsican"), NULL, 0, 0, (void *) CHR('C','O','S',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Cree"), NULL, 0, 0, (void *) CHR('C','R','E',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Carrier"), NULL, 0, 0, (void *) CHR('C','R','R',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Crimean Tatar"), NULL, 0, 0, (void *) CHR('C','R','T',' '), NULL, false, false, false, false, false, false, true },
