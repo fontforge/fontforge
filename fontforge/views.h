@@ -617,6 +617,7 @@ extern char *PST2Text(PST *pst,SplineFont *sf);
 void EmboldenDlg(FontView *fv, CharView *cv);
 void CondenseExtendDlg(FontView *fv, CharView *cv);
 void ObliqueDlg(FontView *fv, CharView *cv);
+void ItalicDlg(FontView *fv, CharView *cv);
 
 extern int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
 	int search_type);

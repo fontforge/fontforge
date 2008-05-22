@@ -234,12 +234,46 @@ struct simplifyinfo {
 };
 
 typedef struct italicinfo {
-    double italic_angle, tan_ia;
+    double italic_angle;
     struct hsquash { double lsb_percent, stem_percent, counter_percent, rsb_percent; }
-	uc, lc;
-  /* When I say "f" I also mean "f_f" ligature, "longs", and other things shaped like "f" */
+	uc, lc, neither;
+    enum { srf_flat, srf_simpleslant, srf_complexslant } secondary_serif;
+    /* |    | (flat)    |   | (simple)     |    | (complex) */
+    /* |    |           |  /               |   /            */
+    /* |    |           | /                |  /             */
+    /* +----+           |/                 \ /              */
+
+    unsigned int transform_bottom_serifs: 1;
+    unsigned int transform_top_xh_serifs: 1;	/* Those at x-height */
+    unsigned int transform_top_as_serifs: 1;	/* Those at ascender-height */
+
+  /* When I say "f" I also mean "f_f" ligature, "longs", cyrillic phi and other things shaped like "f" */
     unsigned int f_long_tail: 1;	/* Some Italic fonts have the "f" grow an extension of the main stem below the baseline */
     unsigned int f_rotate_top: 1;	/* Most Italic fonts take the top curve of the "f", rotate it 180 and attach to the bottom */
+    unsigned int pq_deserif: 1;		/* Remove a serif from the descender of p or q and replace with a secondary serif as above */
+    unsigned int cyrl_phi: 1;		/* Gains an "f" like top, bottom treated like "f" */
+
+    unsigned int cyrl_i: 1;		/* Turns into a latin u */
+    unsigned int cyrl_pi: 1;		/* Turns into a latin n */
+    unsigned int cyrl_te: 1;		/* Turns into a latin m */
+    unsigned int cyrl_sha: 1;		/* Turns into a latin m rotated 180 */
+    unsigned int cyrl_dje: 1;		/* Turns into a latin smallcaps T */
+    unsigned int cyrl_dzhe: 1;		/* Turns into a latin u */
+		    /* Is there a difference between dzhe and i? both look like u to me */
+
+/* This half of the structure gets filled in later */
+    double tan_ia;
+    double x_height;
+    double pq_depth;
+    double ascender_height;
+    double emsize;
+    int order2;
+    struct splinefont *sf;
+    int layer;
+    double serif_extent;
+    struct splinepoint *f_start, *f_end;		/* start has next pointing into the f head and up */
+    struct splinepoint *ff_start1, *ff_end1, *ff_start2, *ff_end2;
+    double f_height, ff_height;
 } ItalicInfo;
 
 typedef struct bluedata {
