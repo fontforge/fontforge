@@ -775,13 +775,15 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
 /* ***************************** Oblique Dialog ***************************** */
 /* ************************************************************************** */
 
+static double last_angle = -10;
+
 void ObliqueDlg(FontView *fv, CharView *cv) {
-    static double last_angle = -10, temp;
+    double temp;
     char def[40], *ret, *end;
     real transform[6];
 
     sprintf( def, "%g", last_angle );
-    ret = gwwv_ask_string(_("Italic Slant..."),def,_("By what angle (in degrees) do you want to slant the font?"));
+    ret = gwwv_ask_string(_("Oblique Slant..."),def,_("By what angle (in degrees) do you want to slant the font?"));
     if ( ret==NULL )
 return;
     temp = strtod(ret,&end);
@@ -810,3 +812,51 @@ return;
     }
 }
 
+
+/* ************************************************************************** */
+/* ********************************* Italic ********************************* */
+/* ************************************************************************** */
+
+void ItalicDlg(FontView *fv, CharView *cv) {
+    ItalicInfo ii;
+    double temp;
+    char def[40], *ret, *end;
+
+    sprintf( def, "%g", last_angle );
+    ret = gwwv_ask_string(_("Italic Slant..."),def,_("By what angle (in degrees) do you want to slant the font?"));
+    if ( ret==NULL )
+return;
+    temp = strtod(ret,&end);
+    if ( *end || temp>90 || temp<-90 ) {
+	free(ret);
+	ff_post_error( _("Bad Number"),_("Bad Number") );
+return;
+    }
+
+    last_angle = temp;
+
+    memset(&ii,0,sizeof(ii));
+    ii.italic_angle = last_angle;
+
+    ii.neither.lsb_percent = .91; ii.neither.stem_percent = .93; ii.neither.counter_percent= .93; ii.neither.rsb_percent = .91;
+    ii.uc.lsb_percent = .91; ii.uc.stem_percent = .93; ii.uc.counter_percent= .93; ii.uc.rsb_percent = .91;
+    ii.lc.lsb_percent = .91; ii.lc.stem_percent = .89; ii.lc.counter_percent= .90; ii.lc.rsb_percent = .91;
+
+    ii.secondary_serif = srf_complexslant;
+    ii.transform_bottom_serifs = true;
+    ii.transform_top_xh_serifs = true;
+    ii.transform_top_as_serifs = true;
+
+    ii.f_rotate_top  = true;
+    ii.pq_deserif    = true;
+    ii.cyrl_phi      = true;
+
+    ii.cyrl_i    = 1;
+    ii.cyrl_pi   = 1;
+    ii.cyrl_te   = 1;
+    ii.cyrl_sha  = 1;
+    ii.cyrl_dje  = 1;
+    ii.cyrl_dzhe = 1;
+
+    MakeItalic((FontViewBase *) fv,(CharViewBase *) cv,&ii);
+}
