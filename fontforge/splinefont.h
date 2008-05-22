@@ -247,6 +247,7 @@ typedef struct italicinfo {
     unsigned int transform_top_xh_serifs: 1;	/* Those at x-height */
     unsigned int transform_top_as_serifs: 1;	/* Those at ascender-height */
 
+    unsigned int a_from_d: 1;		/* replace the "a" glyph with the variant which looks like a "d" without an ascender */
   /* When I say "f" I also mean "f_f" ligature, "longs", cyrillic phi and other things shaped like "f" */
     unsigned int f_long_tail: 1;	/* Some Italic fonts have the "f" grow an extension of the main stem below the baseline */
     unsigned int f_rotate_top: 1;	/* Most Italic fonts take the top curve of the "f", rotate it 180 and attach to the bottom */

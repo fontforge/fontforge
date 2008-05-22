@@ -2567,8 +2567,7 @@ static void FindBottomSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
     *_ss    = ss;
 }
 
-static void SerifRemove(SplinePoint *start,SplinePoint *end,SplineSet *ss,
-	SplineChar *sc,int layer) {
+static void SerifRemove(SplinePoint *start,SplinePoint *end,SplineSet *ss) {
     SplinePoint *mid, *spnext;
 
     for ( mid=start; mid!=end; mid=spnext ) {
@@ -2680,7 +2679,7 @@ return;
     FindBottomSerifOnStem(sc,layer,h,y,ii,&start,&end,&ss);
     if ( start==NULL || end==NULL || start==end )
 return;
-    SerifRemove(start,end,ss,sc,layer);
+    SerifRemove(start,end,ss);
 
     if ( ii->secondary_serif == srf_flat ) {
 	start = StemMoveBottomEndTo(start,y,true);
@@ -2697,13 +2696,13 @@ return;
 	SplineMake(start,end,sc->layers[layer].order2);
     } else {
 	if ( ii->tan_ia<0 ) {
-	    start = StemMoveBottomEndTo(start,y+ .9*(end->me.x-start->me.x)*ii->tan_ia,true);
-	    end = StemMoveBottomEndTo(end,y+ .1*(end->me.x-start->me.x)*ii->tan_ia,false);
-	    mid = SplinePointCreate(.1*start->me.x+.9*end->me.x,y);
+	    start = StemMoveBottomEndTo(start,y+ .8*(end->me.x-start->me.x)*ii->tan_ia,true);
+	    end = StemMoveBottomEndTo(end,y+ .2*(end->me.x-start->me.x)*ii->tan_ia,false);
+	    mid = SplinePointCreate(.2*start->me.x+.8*end->me.x,y);
 	} else {
-	    start = StemMoveBottomEndTo(start,y- .1*(end->me.x-start->me.x)*ii->tan_ia,true);
-	    end = StemMoveBottomEndTo(end,y- .9*(end->me.x-start->me.x)*ii->tan_ia,false);
-	    mid = SplinePointCreate(.1*end->me.x+.9*start->me.x,y);
+	    start = StemMoveBottomEndTo(start,y- .2*(end->me.x-start->me.x)*ii->tan_ia,true);
+	    end = StemMoveBottomEndTo(end,y- .8*(end->me.x-start->me.x)*ii->tan_ia,false);
+	    mid = SplinePointCreate(.2*end->me.x+.8*start->me.x,y);
 	}
 	mid->pointtype = pt_corner;
 	SplineMake(start,mid,sc->layers[layer].order2);
@@ -2949,7 +2948,7 @@ return;
     FindBottomSerifOnStem(sc,layer,h,0,ii,&start,&end,&oldss);
     if ( start==NULL || end==NULL || start==end )
 return;
-    SerifRemove(start,end,oldss,sc,layer);
+    SerifRemove(start,end,oldss);
 
     ss = MakeBottomItalicSerif(start->me.x-end->me.x,end->me.x,ii);
     start = StemMoveBottomEndCarefully(start,ss,true );
@@ -2993,7 +2992,7 @@ return;
     FindTopSerifOnStem(sc,layer,h,y,ii,&start,&end,&ss);
     if ( start==NULL || end==NULL || start==end )
 return;
-    SerifRemove(start,end,ss,sc,layer);
+    SerifRemove(start,end,ss);
 
     start = StemMoveBottomEndTo(start,y,true);
     end = StemMoveBottomEndTo(end,y,false);
@@ -3016,7 +3015,7 @@ return;
     }
     if ( start==NULL || end==NULL || start==end || !IsLeftHalfSerif(start,end,h))
 return;
-    SerifRemove(start,end,oldss,sc,layer);
+    SerifRemove(start,end,oldss);
 
     ss = MakeTopItalicSerif(start->me.x-end->me.x,end->me.x,ii,at_xh);
     start = StemMoveTopEndCarefully(start,ss,true );
@@ -3053,7 +3052,6 @@ static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
     }
 }
 
-
 static void FigureFFTop(ItalicInfo *ii) {
     SplineChar *ff;
     StemInfo *h;
@@ -3063,7 +3061,7 @@ static void FigureFFTop(ItalicInfo *ii) {
     DBounds b;
     int i;
 
-    if ( ii->f_start!=NULL )
+    if ( ii->ff_start1!=NULL )
 return;
 
     ff = SFGetChar(ii->sf,0xfb00,NULL);			/* unicode ff ligature */
@@ -3084,7 +3082,7 @@ return;
     continue;
 	for ( sp=ss->first; ; ) {
 	    if ( sp->me.y>.9*ii->x_height ) {
-		for ( h=ff->vstem, i=0; h!=NULL; h=h->next ) if ( h->tobeused ) {
+		for ( h=ff->vstem, i=0; h!=NULL && i<2; h=h->next ) if ( h->tobeused ) {
 		    if ( (sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
 		    if ( (ediff = sp->me.x-h->start-h->width)<0 ) ediff = -ediff;
 		    if ( sdiff<3 && (bests[i][0]==NULL || sp->me.y>bests[i][0]->me.y )) {
@@ -3092,11 +3090,12 @@ return;
 		    } else if ( ediff<3 && (bests[i][1]==NULL || sp->me.y>bests[i][1]->me.y )) {
 			bests[i][1] = sp;
 		    }
+		    ++i;
 		}
-		sp = sp->next->to;
-		if ( sp==ss->first )
-	    break;
 	    }
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
 	}
     }
 
@@ -3134,10 +3133,10 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
     }
     if ( sp==ii->ff_end1 ) {
 	touches = false;
-	*ff_end1 = sp;
+	*ff_end1 = last;
     } else {
 	touches = true;
-	*ff_end2 = sp;
+	*ff_end2 = last;
     }
 
     last = NULL;
@@ -3159,9 +3158,9 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
     break;
     }
     if ( sp==ii->ff_end1 ) {
-	*ff_end1 = sp;
+	*ff_end1 = last;
     } else {
-	*ff_end2 = sp;
+	*ff_end2 = last;
     }
 return( touches );
 }
@@ -3191,8 +3190,8 @@ return;
     if ( cnt!=2 )
 return;
 
-    SerifRemove(start[0],end[0],ss,sc,layer);
-    SerifRemove(start[1],end[1],ss,sc,layer);
+    SerifRemove(start[0],end[0],ss);
+    SerifRemove(start[1],end[1],ss);
 
     memset(transform,0,sizeof(transform));
     transform[0] = transform[3] = -1;
@@ -3207,6 +3206,9 @@ return;
     end[1] = StemMoveBottomEndTo(end[1],f_end[0]->me.y,false);
     SplineNextSplice(start[1],f_start[0]);
     SplinePrevSplice(end[1],f_end[0]);
+
+    SplineSetRefigure(sc->layers[layer].splines);
+ ExportEPS("foobar.eps",sc,layer);		/* !!!! debug code */
 }
 
 static void FigureFTop(ItalicInfo *ii) {
@@ -3311,6 +3313,7 @@ static void FBottomFromTop(SplineChar *sc,int layer,ItalicInfo *ii) {
 	cnt = LikeAnF(sc);
     if ( cnt==2 ) {
 	FFBottomFromTop(sc,layer,ii);
+return;
     } else if ( cnt!=1 )
 return;		/* I don't think the combination fff ever happens except in hex dumps */
     FigureFTop(ii);
@@ -3322,7 +3325,7 @@ return;
 	FindBottomSerifOnStem(sc,layer,h,bottom_y,ii,&start,&end,&ss);
 	if ( start==NULL )
     continue;
-	SerifRemove(start,end,ss,sc,layer);
+	SerifRemove(start,end,ss);
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = -1;
 	transform[4] = start->me.x + ii->f_start->me.x;
@@ -3411,7 +3414,7 @@ return;
 	FindTopSerifOnStem(sc,layer,h,b.maxy,ii,&start,&end,&ss);
 	if ( start==NULL )
     continue;
-	SerifRemove(start,end,ss,sc,layer);
+	SerifRemove(start,end,ss);
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
 	transform[4] = start->me.x - ii->f_start->me.x;
@@ -3478,6 +3481,81 @@ return;
     SCMakeDependent(sc,replacement);
 }
 
+static void Ital_a_From_d(SplineChar *sc,int layer, ItalicInfo *ii) {
+    SplineChar *d = SFGetChar(sc->parent,'d',NULL);
+    SplineSet *d_ss, *ss, *sses[4];
+    Spline *s, *first, *splines[4], *left, *right;
+    SplinePoint *start, *end, *ltemp, *rtemp;
+    int scnt, left_is_start;
+    double stemwidth, drop, min;
+    extended ts[3];
+
+    if ( d==NULL )
+return;
+    d_ss = SplinePointListCopy(LayerAllSplines(&d->layers[layer]));
+    LayerUnAllSplines(&d->layers[ly_fore]);
+
+    scnt = 0;
+    for ( ss=d_ss; ss!=NULL; ss=ss->next ) {
+	first = NULL;
+	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if (( s->to->me.y<ii->x_height && s->from->me.y>ii->x_height+50) ||
+		    ( s->from->me.y<ii->x_height && s->to->me.y>ii->x_height+50)) {
+		if ( scnt>=2 ) {
+		    SplinePointListsFree(d_ss);
+return;
+		}
+		splines[scnt] = s;
+		sses[scnt++] = ss;
+	    }
+	}
+    }
+    if ( scnt!=2 || sses[0]!=sses[1] ) {
+	SplinePointListsFree(d_ss);
+return;
+    }
+    if ( splines[0]->from->me.x<splines[1]->from->me.x ) {
+	left = splines[0];
+	right = splines[1];
+    } else {
+	left = splines[1];
+	right = splines[0];
+    }
+    stemwidth = right->from->me.x - left->from->me.x;
+    drop = stemwidth*ii->tan_ia;
+    if ( left->from->me.y<left->to->me.y ) {
+	min = left->from->me.y;
+	left_is_start = true;
+    } else {
+	min = left->to->me.y;
+	left_is_start = false;
+    }
+    if ( ii->x_height+drop < min ) {
+	ltemp = left->from;
+    } else {
+	SplineSolveFull(&left->splines[1],ii->x_height+drop,ts);
+	ltemp = SplineBisect(left,ts[0]);
+    }
+    SplineSolveFull(&right->splines[1],ii->x_height,ts);
+    rtemp = SplineBisect(right,ts[0]);
+    if ( left_is_start ) {
+	start = ltemp;
+	end   = rtemp;
+    } else {
+	start = rtemp;
+	end   = ltemp;
+    }
+    SerifRemove(start,end,sses[0]);
+    SplineMake(start,end,sc->layers[layer].order2);
+
+    SCClearLayer(sc,layer);
+    sc->layers[layer].splines = d_ss;
+    sc->width = d->width;
+    SplineCharAutoHint(sc,layer,NULL);
+    FigureGoodStems(sc->vstem);
+}
+
 static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     real skew[6], refpos[6];;
     RefChar *ref;
@@ -3503,6 +3581,8 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     if ( letter_case==cs_lc ) {
 	FigureGoodStems(sc->vstem);
 
+	if ( ii->a_from_d && (sc->unicodeenc=='a' || sc->unicodeenc==0x430))
+	    Ital_a_From_d(sc,layer,ii);
 	if ( ii->cyrl_i   && sc->unicodeenc==0x438 )
 	    ItalReplaceWithReferenceTo(sc,layer,'u');
 	else if ( ii->cyrl_pi  && sc->unicodeenc==0x43f )

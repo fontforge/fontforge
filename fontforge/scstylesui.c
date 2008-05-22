@@ -842,11 +842,12 @@ return;
     ii.uc.lsb_percent = .91; ii.uc.stem_percent = .93; ii.uc.counter_percent= .93; ii.uc.rsb_percent = .91;
     ii.lc.lsb_percent = .91; ii.lc.stem_percent = .89; ii.lc.counter_percent= .90; ii.lc.rsb_percent = .91;
 
-    ii.secondary_serif = srf_complexslant;
+    ii.secondary_serif = srf_simpleslant;
     ii.transform_bottom_serifs = true;
     ii.transform_top_xh_serifs = true;
     ii.transform_top_as_serifs = true;
 
+    ii.a_from_d      = true;
     ii.f_rotate_top  = true;
     ii.pq_deserif    = true;
     ii.cyrl_phi      = true;
