@@ -236,7 +236,7 @@ struct simplifyinfo {
 typedef struct italicinfo {
     double italic_angle;
     struct hsquash { double lsb_percent, stem_percent, counter_percent, rsb_percent; }
-	uc, lc, neither;
+	lc, uc, neither;
     enum { srf_flat, srf_simpleslant, srf_complexslant } secondary_serif;
     /* |    | (flat)    |   | (simple)     |    | (complex) */
     /* |    |           |  /               |   /            */
@@ -252,8 +252,14 @@ typedef struct italicinfo {
     unsigned int f_long_tail: 1;	/* Some Italic fonts have the "f" grow an extension of the main stem below the baseline */
     unsigned int f_rotate_top: 1;	/* Most Italic fonts take the top curve of the "f", rotate it 180 and attach to the bottom */
     unsigned int pq_deserif: 1;		/* Remove a serif from the descender of p or q and replace with a secondary serif as above */
-    unsigned int cyrl_phi: 1;		/* Gains an "f" like top, bottom treated like "f" */
 
+  /* Unsupported */
+    /* e becomes rounder, cross bar slightly slanted */
+    /* g closed counter at bottom */
+    /* k closed counter at top */
+    /* v-z diagonal stems become more curvatious */
+
+    unsigned int cyrl_phi: 1;		/* Gains an "f" like top, bottom treated like "f" */
     unsigned int cyrl_i: 1;		/* Turns into a latin u */
     unsigned int cyrl_pi: 1;		/* Turns into a latin n */
     unsigned int cyrl_te: 1;		/* Turns into a latin m */
@@ -261,6 +267,19 @@ typedef struct italicinfo {
     unsigned int cyrl_dje: 1;		/* Turns into a latin smallcaps T */
     unsigned int cyrl_dzhe: 1;		/* Turns into a latin u */
 		    /* Is there a difference between dzhe and i? both look like u to me */
+
+  /* Unsupported */
+    /* u432 curved B */
+    /* u433 strange gamma */
+    /* u434 normal delta */
+    /* u436 */
+    /* u43b lambda ? */
+    /* u43c */
+    /* u446 */
+    /* u449 */
+    /* u449 */
+    /* u44a */
+    /* u452 */
 
 /* This half of the structure gets filled in later */
     double tan_ia;

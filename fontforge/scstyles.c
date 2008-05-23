@@ -3052,62 +3052,6 @@ static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
     }
 }
 
-static void FigureFFTop(ItalicInfo *ii) {
-    SplineChar *ff;
-    StemInfo *h;
-    SplinePoint *bests[2][2], *sp;
-    SplineSet *ss;
-    double sdiff, ediff;
-    DBounds b;
-    int i;
-
-    if ( ii->ff_start1!=NULL )
-return;
-
-    ff = SFGetChar(ii->sf,0xfb00,NULL);			/* unicode ff ligature */
-    if ( ff==NULL )
-	ff = SFGetChar(ii->sf,-1, "f_f");
-    if ( ff==NULL )
-	ff = SFGetChar(ii->sf,-1, "longs_longs");		/* Long s */
-    if ( ff==NULL )
-return;
-    if ( autohint_before_generate && ff->changedsincelasthinted &&
-	    !ff->manualhints )
-	SplineCharAutoHint(ff,ii->layer,NULL);
-    FigureGoodStems(ff->vstem);
-
-    memset(bests,0,sizeof(bests));
-    for ( ss=ff->layers[ii->layer].splines; ss!=NULL; ss=ss->next ) {
-	if ( ss->first->prev==NULL )
-    continue;
-	for ( sp=ss->first; ; ) {
-	    if ( sp->me.y>.9*ii->x_height ) {
-		for ( h=ff->vstem, i=0; h!=NULL && i<2; h=h->next ) if ( h->tobeused ) {
-		    if ( (sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
-		    if ( (ediff = sp->me.x-h->start-h->width)<0 ) ediff = -ediff;
-		    if ( sdiff<3 && (bests[i][0]==NULL || sp->me.y>bests[i][0]->me.y )) {
-			bests[i][0] = sp;
-		    } else if ( ediff<3 && (bests[i][1]==NULL || sp->me.y>bests[i][1]->me.y )) {
-			bests[i][1] = sp;
-		    }
-		    ++i;
-		}
-	    }
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-
-    if ( bests[0][0]==NULL || bests[0][1]==NULL || bests[1][0]==NULL || bests[1][1]==NULL )
-return;
-
-    ii->ff_start1 = bests[0][0]; ii->ff_end1 = bests[0][1];
-    ii->ff_start2 = bests[1][0]; ii->ff_end2 = bests[1][1];
-    SplineCharLayerFindBounds(ff,ii->layer,&b);
-    ii->ff_height = b.maxy - ii->ff_start1->me.y;
-}
-
 static int FFCopyTrans(ItalicInfo *ii,real *transform,
 	SplinePoint **ff_start1,SplinePoint **ff_end1, SplinePoint **ff_start2, SplinePoint **ff_end2) {
     SplinePoint *sp, *last, *cur;
@@ -3117,6 +3061,7 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
     for ( sp = ii->ff_start1; ; sp=sp->next->to ) {
 	cur = chunkalloc(sizeof(SplinePoint));
 	*cur = *sp;
+	cur->hintmask = NULL;
 	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
 	cur->me.y = transform[1]*sp->me.x + transform[3]*sp->me.y + transform[5];
 	cur->nextcp.x = transform[0]*sp->nextcp.x + transform[2]*sp->nextcp.y + transform[4];
@@ -3165,10 +3110,77 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
 return( touches );
 }
 
+static void FigureFFTop(ItalicInfo *ii) {
+    SplineChar *ff;
+    StemInfo *h;
+    SplinePoint *bests[2][2], *sp;
+    SplineSet *ss;
+    double sdiff, ediff;
+    DBounds b;
+    int i;
+    real trans[6];
+
+    if ( ii->ff_start1!=NULL )
+return;
+
+    ff = SFGetChar(ii->sf,0xfb00,NULL);			/* unicode ff ligature */
+    if ( ff==NULL )
+	ff = SFGetChar(ii->sf,-1, "f_f");
+    if ( ff==NULL )
+	ff = SFGetChar(ii->sf,-1, "longs_longs");		/* Long s */
+    if ( ff==NULL )
+return;
+    if ( autohint_before_generate && ff->changedsincelasthinted &&
+	    !ff->manualhints )
+	SplineCharAutoHint(ff,ii->layer,NULL);
+    FigureGoodStems(ff->vstem);
+
+    memset(bests,0,sizeof(bests));
+    for ( ss=ff->layers[ii->layer].splines; ss!=NULL; ss=ss->next ) {
+	if ( ss->first->prev==NULL )
+    continue;
+	for ( sp=ss->first; ; ) {
+	    if ( sp->me.y>.9*ii->x_height ) {
+		for ( h=ff->vstem, i=0; h!=NULL && i<2; h=h->next ) if ( h->tobeused ) {
+		    if ( (sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
+		    if ( (ediff = sp->me.x-h->start-h->width)<0 ) ediff = -ediff;
+		    if ( sdiff<3 && (bests[i][0]==NULL || sp->me.y>bests[i][0]->me.y )) {
+			bests[i][0] = sp;
+		    } else if ( ediff<3 && (bests[i][1]==NULL || sp->me.y>bests[i][1]->me.y )) {
+			bests[i][1] = sp;
+		    }
+		    ++i;
+		}
+	    }
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+
+    if ( bests[0][0]==NULL || bests[0][1]==NULL || bests[1][0]==NULL || bests[1][1]==NULL )
+return;
+
+    ii->ff_start1 = bests[0][0]; ii->ff_end1 = bests[0][1];
+    ii->ff_start2 = bests[1][0]; ii->ff_end2 = bests[1][1];
+    SplineCharLayerFindBounds(ff,ii->layer,&b);
+    ii->ff_height = b.maxy - ii->ff_start1->me.y;
+
+    /* Now we need to save a copy of this because we might modify the ff glyph */
+    /*  before we do the "ffi" glyph (we will if things are in unicode ordering) */
+    /*  and then we'd try to put a pre-slanted thing on the bottom of ffi and */
+    /*  cause all kinds of havoc */
+    memset(trans,0,sizeof(trans));
+    trans[0] = trans[3] = 1;
+    FFCopyTrans(ii,trans,&bests[0][0],&bests[0][1],&bests[1][0],&bests[1][1]);
+    ii->ff_start1 = bests[0][0]; ii->ff_end1 = bests[0][1];
+    ii->ff_start2 = bests[1][0]; ii->ff_end2 = bests[1][1];
+}
+
 static void FFBottomFromTop(SplineChar *sc,int layer,ItalicInfo *ii) {
     StemInfo *h;
     SplinePoint *start[2], *end[2], *f_start[2], *f_end[2];
-    SplineSet *ss;
+    SplineSet *ss[2];
     real transform[6];
     int cnt;
     double bottom_y = 0;
@@ -3181,7 +3193,7 @@ return;
     for ( h=sc->vstem; h!=NULL && cnt<2; h=h->next ) {
 	if ( !h->tobeused )
     continue;
-	FindBottomSerifOnStem(sc,layer,h,bottom_y,ii,&start[cnt],&end[cnt],&ss);
+	FindBottomSerifOnStem(sc,layer,h,bottom_y,ii,&start[cnt],&end[cnt],&ss[cnt]);
 	if ( start[cnt]==NULL )
     continue;
 	++cnt;
@@ -3190,14 +3202,30 @@ return;
     if ( cnt!=2 )
 return;
 
-    SerifRemove(start[0],end[0],ss);
-    SerifRemove(start[1],end[1],ss);
+    SerifRemove(start[0],end[0],ss[0]);
+    SerifRemove(start[1],end[1],ss[1]);
 
     memset(transform,0,sizeof(transform));
     transform[0] = transform[3] = -1;
     transform[4] = start[0]->me.x + ii->ff_start2->me.x;
     transform[5] = ii->ff_start1->me.y + ii->pq_depth + ii->ff_height;
     touches = FFCopyTrans(ii,transform,&f_start[0],&f_end[0],&f_start[1],&f_end[1]);
+    /* Now there are several cases to consider */
+    /* First: Did the tops of the two "f"s touch one another or were they two */
+    /*  distinct stems with no connection. If they touch then start1->end2 is */
+    /*  one path and start2->end1 (counterclockwise) is the other. If they do */
+    /*  not touch then start1->end1 and start2->end2. */
+    /* If they do not touch then things are pretty simple. We remove serifs  */
+    /*  with one shape from the bottom of two stems and we replace them with */
+    /*  serifs of a different shape, but the contour structure does not change*/
+    /* But if they touch... things are more complicated. And we have more cases*/
+    /* Suppose we are applying things to two "longs"es. Do the two longses */
+    /*  touch (forming one contour) or are they distinct (forming two) */
+    /* If they formed two contours then we will join them with our touching */
+    /*  f-tails and we will need to remove one of the two SplineSet structs */
+    /* If they form a single contour then we will change that single contour */
+    /*  into two, an inner and and outer contour, and we need to add an SS */
+    /*  structure. */
     start[0] = StemMoveBottomEndTo(start[0],f_start[1]->me.y,true);
     end[0] = StemMoveBottomEndTo(end[0],f_end[1]->me.y,false);
     SplineNextSplice(start[0],f_start[1]);
@@ -3206,9 +3234,51 @@ return;
     end[1] = StemMoveBottomEndTo(end[1],f_end[0]->me.y,false);
     SplineNextSplice(start[1],f_start[0]);
     SplinePrevSplice(end[1],f_end[0]);
+    if ( touches ) {
+	if ( ss[0]==ss[1] ) {
+	    ss[0]->first = ss[0]->last = start[0];
+	    ss[1] = chunkalloc(sizeof(SplineSet));
+	    ss[1]->next = ss[0]->next;
+	    ss[0]->next = ss[1];
+	    ss[1]->first = ss[1]->last = start[1];
+	} else {
+	    SplineSet *spl, *prev;
+	    for ( prev=NULL, spl=sc->layers[layer].splines; spl!=ss[1]; spl=spl->next )
+		prev = spl;
+	    if ( prev==NULL )
+		sc->layers[layer].splines = ss[1]->next;
+	    else
+		prev->next = ss[1]->next;
+	    chunkfree(ss[1],sizeof(SplineSet));
+	}
+    }
 
     SplineSetRefigure(sc->layers[layer].splines);
- ExportEPS("foobar.eps",sc,layer);		/* !!!! debug code */
+}
+
+static void FCopyTrans(ItalicInfo *ii,real *transform,SplinePoint **f_start,SplinePoint **f_end) {
+    SplinePoint *sp, *last, *cur;
+
+    last = NULL;
+    for ( sp = ii->f_start; ; sp=sp->next->to ) {
+	cur = chunkalloc(sizeof(SplinePoint));
+	*cur = *sp;
+	cur->hintmask = NULL;
+	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
+	cur->me.y = transform[1]*sp->me.x + transform[3]*sp->me.y + transform[5];
+	cur->nextcp.x = transform[0]*sp->nextcp.x + transform[2]*sp->nextcp.y + transform[4];
+	cur->nextcp.y = transform[1]*sp->nextcp.x + transform[3]*sp->nextcp.y + transform[5];
+	cur->prevcp.x = transform[0]*sp->prevcp.x + transform[2]*sp->prevcp.y + transform[4];
+	cur->prevcp.y = transform[1]*sp->prevcp.x + transform[3]*sp->prevcp.y + transform[5];
+	if ( last==NULL )
+	    *f_start = cur;
+	else
+	    SplineMake(last,cur,sp->prev->order2);
+	last = cur;
+	if ( sp==ii->f_end )
+    break;
+    }
+    *f_end = last;
 }
 
 static void FigureFTop(ItalicInfo *ii) {
@@ -3218,6 +3288,7 @@ static void FigureFTop(ItalicInfo *ii) {
     SplineSet *ss;
     double bestsdiff, bestediff, sdiff, ediff;
     DBounds b;
+    real trans[6];
 
     if ( ii->f_start!=NULL )
 return;
@@ -3266,34 +3337,17 @@ return;
 		}
 		SplineCharLayerFindBounds(f,ii->layer,&b);
 		ii->f_height = b.maxy - ii->f_start->me.y;
+    /* Now we need to save a copy of this because we might modify the f glyph */
+    /*  before we do the "fi" glyph (we will if things are in unicode ordering) */
+    /*  and then we'd try to put a pre-slanted thing on the bottom of fi and */
+    /*  cause all kinds of havoc */
+		memset(trans,0,sizeof(trans));
+		trans[0] = trans[3] = 1;
+		FCopyTrans(ii,trans,&ii->f_start,&ii->f_end);
 return;
 	    }
 	}
     }
-}
-
-static void FCopyTrans(ItalicInfo *ii,real *transform,SplinePoint **f_start,SplinePoint **f_end) {
-    SplinePoint *sp, *last, *cur;
-
-    last = NULL;
-    for ( sp = ii->f_start; ; sp=sp->next->to ) {
-	cur = chunkalloc(sizeof(SplinePoint));
-	*cur = *sp;
-	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
-	cur->me.y = transform[1]*sp->me.x + transform[3]*sp->me.y + transform[5];
-	cur->nextcp.x = transform[0]*sp->nextcp.x + transform[2]*sp->nextcp.y + transform[4];
-	cur->nextcp.y = transform[1]*sp->nextcp.x + transform[3]*sp->nextcp.y + transform[5];
-	cur->prevcp.x = transform[0]*sp->prevcp.x + transform[2]*sp->prevcp.y + transform[4];
-	cur->prevcp.y = transform[1]*sp->prevcp.x + transform[3]*sp->prevcp.y + transform[5];
-	if ( last==NULL )
-	    *f_start = cur;
-	else
-	    SplineMake(last,cur,sp->prev->order2);
-	last = cur;
-	if ( sp==ii->f_end )
-    break;
-    }
-    *f_end = last;
 }
 
 static void FBottomFromTop(SplineChar *sc,int layer,ItalicInfo *ii) {
@@ -3581,8 +3635,10 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     if ( letter_case==cs_lc ) {
 	FigureGoodStems(sc->vstem);
 
-	if ( ii->a_from_d && (sc->unicodeenc=='a' || sc->unicodeenc==0x430))
+	if ( ii->a_from_d && sc->unicodeenc=='a' )
 	    Ital_a_From_d(sc,layer,ii);
+	if ( ii->a_from_d && sc->unicodeenc==0x430 )
+	    ItalReplaceWithReferenceTo(sc,layer,'a');
 	if ( ii->cyrl_i   && sc->unicodeenc==0x438 )
 	    ItalReplaceWithReferenceTo(sc,layer,'u');
 	else if ( ii->cyrl_pi  && sc->unicodeenc==0x43f )
@@ -3745,6 +3801,23 @@ static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
     ii->layer = layer;
 }
 
+static void StuffFree(SplinePoint *from, SplinePoint *to1, SplinePoint *to2) {
+    SplinePoint *mid, *spnext;
+
+    for ( mid=from; mid!=to1 && mid!=to2; mid=spnext ) {
+	spnext = mid->next->to;
+	SplinePointFree(mid);
+	SplineFree(spnext->prev);
+    }
+    SplinePointFree(mid);
+}
+
+static void ItalicInfoFreeContents(ItalicInfo *ii) {
+    StuffFree(ii->f_start,ii->f_end,NULL);
+    StuffFree(ii->ff_start1,ii->ff_end1,ii->ff_end2);
+    StuffFree(ii->ff_start2,ii->ff_end1,ii->ff_end2);
+}
+
 void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
     int cnt, enc, gid;
     SplineChar *sc;
@@ -3783,4 +3856,5 @@ void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
 	}
     }
     detect_diagonal_stems = dds;
+    ItalicInfoFreeContents(ii);
 }

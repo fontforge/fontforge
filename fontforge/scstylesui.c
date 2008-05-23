@@ -109,7 +109,7 @@ static int style_e_h(GWindow gw, GEvent *event) {
 	ed->done = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("Styles.html#Embolden");
+	    help("Styles.html");
 return( true );
 	}
 return( false );
@@ -775,14 +775,37 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
 /* ***************************** Oblique Dialog ***************************** */
 /* ************************************************************************** */
 
-static double last_angle = -10;
+static ItalicInfo last_ii = {
+    -13,		/* Italic angle (in degrees) */
+    /* horizontal squash, lsb, stemsize, countersize, rsb */
+    .91, .89, .90, .91,		/* For lower case */
+    .91, .93, .93, .91,		/* For upper case */
+    .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
+    srf_simpleslant,	/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
+    true,		/* Transform bottom serifs */
+    true,		/* Transform serifs at x-height */
+    false,		/* Transform serifs on ascenders */
+
+    true,		/* Change the shape of an "a" to look like a "d" without ascender */
+    false,		/* Change the shape of "f" so it descends below baseline (straight down no flag at end) */
+    true,		/* Change the shape of "f" so the bottom looks like the top */
+    true,		/* Remove serifs from the bottom of descenders */
+
+    true,		/* Make the cyrillic "phi" glyph have a top like an "f" */
+    true,		/* Make the cyrillic "i" glyph look like a latin "u" */
+    true,		/* Make the cyrillic "pi" glyph look like a latin "n" */
+    true,		/* Make the cyrillic "te" glyph look like a latin "m" */
+    true,		/* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
+    true,		/* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
+    true		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+};
 
 void ObliqueDlg(FontView *fv, CharView *cv) {
     double temp;
     char def[40], *ret, *end;
     real transform[6];
 
-    sprintf( def, "%g", last_angle );
+    sprintf( def, "%g", last_ii.italic_angle );
     ret = gwwv_ask_string(_("Oblique Slant..."),def,_("By what angle (in degrees) do you want to slant the font?"));
     if ( ret==NULL )
 return;
@@ -793,10 +816,10 @@ return;
 return;
     }
 
-    last_angle = temp;
+    last_ii.italic_angle = temp;
     memset(transform,0,sizeof(transform));
     transform[0] = transform[3] = 1;
-    transform[2] = -tan( last_angle * 3.1415926535897932/180.0 );
+    transform[2] = -tan( last_ii.italic_angle * 3.1415926535897932/180.0 );
     if ( cv!=NULL ) {
 	CVPreserveState((CharViewBase *) cv);
 	CVTransFunc(cv,transform,fvt_dontmovewidth);
@@ -817,47 +840,489 @@ return;
 /* ********************************* Italic ********************************* */
 /* ************************************************************************** */
 
-void ItalicDlg(FontView *fv, CharView *cv) {
-    ItalicInfo ii;
-    double temp;
-    char def[40], *ret, *end;
+#define CID_A		1001
+#define CID_F		1002
+#define CID_F2		1003
+#define CID_P		1004
+#define CID_Cyrl_I	1011
+#define CID_Cyrl_Pi	1012
+#define CID_Cyrl_Te	1013
+#define CID_Cyrl_Phi	1014
+#define CID_Cyrl_Sha	1015
+#define CID_Cyrl_Dzhe	1016
+#define CID_BottomSerifs	2001
+#define CID_XHeightSerifs	2002
+#define CID_AscenderSerifs	2003
+#define CID_Flat		2004
+#define CID_Slanted		2005
+#define CID_PenSlant		2006
+#define CID_CompressLSB		3001		/* for lc, 3011 for uc, 3021 for others */
+#define CID_CompressStem	3002		/* for lc, 3012 for uc, 3022 for others */
+#define CID_CompressCounter	3003		/* for lc, 3013 for uc, 3023 for others */
+#define CID_CompressRSB		3004		/* for lc, 3014 for uc, 3024 for others */
+#define CID_ItalicAngle		4001
 
-    sprintf( def, "%g", last_angle );
-    ret = gwwv_ask_string(_("Italic Slant..."),def,_("By what angle (in degrees) do you want to slant the font?"));
-    if ( ret==NULL )
-return;
-    temp = strtod(ret,&end);
-    if ( *end || temp>90 || temp<-90 ) {
-	free(ret);
-	ff_post_error( _("Bad Number"),_("Bad Number") );
-return;
+static int Ital_Ok(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	ItalicInfo ii;
+	int err = false, i;
+
+	memset(&ii,0,sizeof(ii));
+	for ( i=0; i<3; ++i ) {
+	    struct hsquash *hs = &(&ii.lc)[i];
+	    hs->lsb_percent = GetReal8(ew,CID_CompressLSB+i*10,_("LSB Compression Percent"),&err)/100.0;
+	    hs->stem_percent = GetReal8(ew,CID_CompressStem+i*10,_("Stem Compression Percent"),&err)/100.0;
+	    hs->counter_percent = GetReal8(ew,CID_CompressCounter+i*10,_("Counter Compression Percent"),&err)/100.0;
+	    hs->rsb_percent = GetReal8(ew,CID_CompressRSB+i*10,_("RSB Compression Percent"),&err)/100.0;
+	    if ( err )
+return( true );
+	}
+	ii.italic_angle = GetReal8(ew,CID_ItalicAngle,_("Italic Angle"),&err);
+	if ( err )
+return( true );
+
+	ii.secondary_serif = GGadgetIsChecked(GWidgetGetControl(ew,CID_Flat)) ? srf_flat :
+		GGadgetIsChecked(GWidgetGetControl(ew,CID_Slanted)) ? srf_simpleslant :
+			 srf_complexslant;
+
+	ii.transform_bottom_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_BottomSerifs));
+	ii.transform_top_xh_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_XHeightSerifs));
+	ii.transform_top_as_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_AscenderSerifs));
+
+	ii.a_from_d = GGadgetIsChecked(GWidgetGetControl(ew,CID_A));
+	ii.f_rotate_top = GGadgetIsChecked(GWidgetGetControl(ew,CID_F));
+	ii.f_long_tail = GGadgetIsChecked(GWidgetGetControl(ew,CID_F2));
+	ii.pq_deserif = GGadgetIsChecked(GWidgetGetControl(ew,CID_P));
+	if ( ii.f_rotate_top && ii.f_long_tail ) {
+	    ff_post_error(_("Bad setting"),_("You may not select both variants of 'f'"));
+return( true );
+	}
+
+	ii.cyrl_i = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_I));
+	ii.cyrl_pi = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Pi));
+	ii.cyrl_te = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Te));
+	ii.cyrl_phi = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Phi));
+	ii.cyrl_sha = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Sha));
+	ii.cyrl_dzhe = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Dzhe));
+	
+	last_ii = ii;
+	MakeItalic((FontViewBase *) ed->fv,(CharViewBase *) ed->cv,&ii);
+	ed->done = true;
     }
+return( true );
+}
 
-    last_angle = temp;
+void ItalicDlg(FontView *fv, CharView *cv) {
+    StyleDlg ed;
+    SplineFont *sf = fv!=NULL ? fv->b.sf : cv->b.sc->parent;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[50], boxes[7], *forms[25], *compress[5][6], *sarray[5],
+	    *iaarray[4], *barray[10], *varray[35];
+    GTextInfo label[50];
+    int k,f,r,i;
+    char lsb[3][40], stems[3][40], counters[3][40], rsb[3][40], ia[40];
 
-    memset(&ii,0,sizeof(ii));
-    ii.italic_angle = last_angle;
+    memset(&ed,0,sizeof(ed));
+    ed.fv = fv;
+    ed.cv = cv;
+    ed.sf = sf;
 
-    ii.neither.lsb_percent = .91; ii.neither.stem_percent = .93; ii.neither.counter_percent= .93; ii.neither.rsb_percent = .91;
-    ii.uc.lsb_percent = .91; ii.uc.stem_percent = .93; ii.uc.counter_percent= .93; ii.uc.rsb_percent = .91;
-    ii.lc.lsb_percent = .91; ii.lc.stem_percent = .89; ii.lc.counter_percent= .90; ii.lc.rsb_percent = .91;
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Italic");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    ed.gw = gw = GDrawCreateTopWindow(NULL,&pos,style_e_h,&ed,&wattrs);
 
-    ii.secondary_serif = srf_simpleslant;
-    ii.transform_bottom_serifs = true;
-    ii.transform_top_xh_serifs = true;
-    ii.transform_top_as_serifs = true;
+    k=f=r=0;
 
-    ii.a_from_d      = true;
-    ii.f_rotate_top  = true;
-    ii.pq_deserif    = true;
-    ii.cyrl_phi      = true;
+    memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
+    memset(label,0,sizeof(label));
 
-    ii.cyrl_i    = 1;
-    ii.cyrl_pi   = 1;
-    ii.cyrl_te   = 1;
-    ii.cyrl_sha  = 1;
-    ii.cyrl_dje  = 1;
-    ii.cyrl_dzhe = 1;
+    label[k].image = &GIcon_aItalic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.a_from_d ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_A;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
 
-    MakeItalic((FontViewBase *) fv,(CharViewBase *) cv,&ii);
+    label[k].image = &GIcon_fItalic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.f_rotate_top ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_F;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+
+    label[k].image = &GIcon_f2Italic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.f_long_tail ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_F2;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+    forms[f++] = GCD_Glue; forms[f++] = NULL;
+
+    label[k].image = &GIcon_pItalic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.pq_deserif ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_P;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+    forms[f++] = GCD_ColSpan; forms[f++] = GCD_ColSpan;
+    forms[f++] = GCD_Glue; forms[f++] = NULL;
+
+    label[k].image = &GIcon_u438Italic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_i ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_I;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+
+    label[k].image = &GIcon_u43fItalic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_pi ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_Pi;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+
+    label[k].image = &GIcon_u442Italic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_te ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_Te;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+    forms[f++] = GCD_Glue; forms[f++] = NULL;
+
+    label[k].image = &GIcon_u444Italic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_phi ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_Phi;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+
+    label[k].image = &GIcon_u448Italic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_sha ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_Sha;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+
+    label[k].image = &GIcon_u45fItalic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_dzhe ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_Dzhe;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+    forms[f++] = GCD_Glue; forms[f++] = NULL;
+    forms[f++] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = forms;
+    boxes[2].creator = GHVBoxCreate;
+    varray[r++] = &boxes[2]; varray[r++] = NULL;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.pos.height = 5; gcd[k].gd.pos.width = 20;
+    gcd[k++].creator = GSpacerCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Transform baseline serifs");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_BottomSerifs;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.transform_bottom_serifs ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_BottomSerifs;
+    gcd[k++].creator = GCheckBoxCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Transform x-height serifs");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_TopSerifs;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.transform_top_xh_serifs ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_XHeightSerifs;
+    gcd[k++].creator = GCheckBoxCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Transform ascender serifs");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_TopSerifs;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.transform_top_as_serifs ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_AscenderSerifs;
+    gcd[k++].creator = GCheckBoxCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("When serifs are removed (as first two in \"m\"), replace with:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Flat");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.secondary_serif==srf_flat ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Flat;
+    gcd[k++].creator = GRadioCreate;
+    sarray[0] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Slanted");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.secondary_serif==srf_simpleslant ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Slanted;
+    gcd[k++].creator = GRadioCreate;
+    sarray[1] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Pen Slanted");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.secondary_serif==srf_complexslant ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_PenSlant;
+    gcd[k++].creator = GRadioCreate;
+    sarray[2] = &gcd[k-1]; sarray[3] = GCD_Glue; sarray[4] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = sarray;
+    boxes[3].creator = GHBoxCreate;
+    varray[r++] = &boxes[3]; varray[r++] = NULL;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.pos.height = 5; gcd[k].gd.pos.width = 20;
+    gcd[k++].creator = GSpacerCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Compress (as a percentage)");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    compress[0][0] = GCD_Glue;
+
+    label[k].text = (unichar_t *) _("LSB");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Left Side Bearing");
+    gcd[k++].creator = GLabelCreate;
+    compress[0][1] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Stems");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k++].creator = GLabelCreate;
+    compress[0][2] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Counters");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k++].creator = GLabelCreate;
+    compress[0][3] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("RSB");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Right Side Bearing");
+    gcd[k++].creator = GLabelCreate;
+    compress[0][4] = &gcd[k-1]; compress[0][5] = NULL;
+
+    for ( i=0; i<3; ++i ) {
+	struct hsquash *hs = &(&last_ii.lc)[i];
+
+	label[k].text = (unichar_t *) (i==0 ? _("Lower Case") : i==1 ? _("Upper Case") : _("Others"));
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+	gcd[k++].creator = GLabelCreate;
+	compress[i+1][0] = &gcd[k-1];
+
+	sprintf( lsb[i], "%g", 100.0* hs->lsb_percent );
+	label[k].text = (unichar_t *) lsb[i];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.cid = CID_CompressLSB+10*i;
+	gcd[k++].creator = GTextFieldCreate;
+	compress[i+1][1] = &gcd[k-1];
+
+	sprintf( stems[i], "%g", 100.0* hs->stem_percent );
+	label[k].text = (unichar_t *) stems[i];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.cid = CID_CompressStem+10*i;
+	gcd[k++].creator = GTextFieldCreate;
+	compress[i+1][2] = &gcd[k-1];
+
+	sprintf( counters[i], "%g", 100.0* hs->counter_percent );
+	label[k].text = (unichar_t *) counters[i];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.cid = CID_CompressCounter+10*i;
+	gcd[k++].creator = GTextFieldCreate;
+	compress[i+1][3] = &gcd[k-1];
+
+	sprintf( rsb[i], "%g", 100.0* hs->rsb_percent );
+	label[k].text = (unichar_t *) rsb[i];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.width = 50;
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.cid = CID_CompressRSB+10*i;
+	gcd[k++].creator = GTextFieldCreate;
+	compress[i+1][4] = &gcd[k-1]; compress[i+1][5] = NULL;
+    }
+    compress[i+1][0] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = compress[0];
+    boxes[4].creator = GHVBoxCreate;
+    varray[r++] = &boxes[4]; varray[r++] = NULL;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.pos.height = 5; gcd[k].gd.pos.width = 20;
+    gcd[k++].creator = GSpacerCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Italic Angle:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k++].creator = GLabelCreate;
+    iaarray[0] = &gcd[k-1];
+
+    sprintf( ia, "%g", last_ii.italic_angle );
+    label[k].text = (unichar_t *) ia;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_ItalicAngle;
+    gcd[k++].creator = GTextFieldCreate;
+    iaarray[1] = &gcd[k-1]; iaarray[2] = NULL;
+
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = iaarray;
+    boxes[5].creator = GHBoxCreate;
+    varray[r++] = &boxes[5]; varray[r++] = NULL;
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 17+31+16;
+    gcd[k].gd.pos.width = 190-10;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k++].creator = GLineCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) U_(
+	"This italic conversion will be incomplete!\n"
+	"You will probably want to do manual fixups on e, g, k, and v-z\n"
+	"And on в, г, д, е, ж, л, м, ц, щ, ъ, ђ\n"
+	"And on all Greek lower case letters");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k++].creator = GLabelCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 17+31+16;
+    gcd[k].gd.pos.width = 190-10;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k++].creator = GLineCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_default;
+    gcd[k].gd.handle_controlevent = Ital_Ok;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.handle_controlevent = CondenseExtend_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    if ( k>sizeof(gcd)/sizeof(gcd[0]) )
+	IError( "Too many options in Italic Dlg");
+
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-2]; barray[2] = GCD_Glue;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k-1]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
+
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = barray;
+    boxes[6].creator = GHBoxCreate;
+    varray[r++] = &boxes[6]; varray[r++] = NULL;
+    varray[r++] = NULL;
+    if ( r>sizeof(varray)/sizeof(varray[0]) )
+	IError( "Too many rows in Italic Dlg");
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+
+    GDrawSetVisible(gw,true);
+
+    while ( !ed.done )
+	GDrawProcessOneEvent(NULL);
+
+    GDrawDestroyWindow(gw);
 }
