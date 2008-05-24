@@ -3765,6 +3765,7 @@ return( fv->selected[enc]);
 static int FVMakeAllItalic(FontViewBase *fv,SplineChar *sc,int layer,ItalicInfo *ii) {
     RefChar *ref;
 
+    sc->ticked = true;
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( !ref->sc->ticked && IsSelected(fv,ref->sc)) {
 	    if ( !FVMakeAllItalic(fv,ref->sc,layer,ii))
@@ -3915,9 +3916,8 @@ void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
 	    for ( enc=0; enc<fv->map->enccount; ++enc ) {
 		if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] &&
 			(sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
-		    sc->ticked = true;
 		    if ( !FVMakeAllItalic(fv,sc,layer,ii))
-	break;
+	    break;
 		}
 	    }
 	    ff_progress_end_indicator();
