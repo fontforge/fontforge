@@ -46,6 +46,24 @@ static unichar_t lc_botserif_str[] = { 'i', 'k', 'l', 'm', 'f', 0x433, 0x43a,
 	0x43f, 0x442, 0x3c0, 0x3ba, 0 };
 static unichar_t lc_topserif_str[] = { 'k', 'l', 'm', 0x444, 0x3b9, 0 };
 
+static void SSCPValidate(SplineSet *ss) {
+    SplinePoint *sp, *nsp;
+
+    while ( ss!=NULL ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->next==NULL )
+	break;
+	    nsp = sp->next->to;
+	    if ( !sp->nonextcp && (sp->nextcp.x!=nsp->prevcp.x || sp->nextcp.y!=nsp->prevcp.y))
+		IError( "Invalid 2nd order" );
+	    sp = nsp;
+	    if ( sp==ss->first )
+	break;
+	}
+	ss = ss->next;
+    }
+}
+
 /* ************************************************************************** */
 /* ***************************** Small Capitals ***************************** */
 /* ************************************************************************** */
@@ -86,7 +104,7 @@ static double MajorVerticalStemWidth(SplineChar *sc, int layer) {
 
     if ( sc==NULL )
 return( -1 );
-    if ( autohint_before_generate && sc->changedsincelasthinted &&
+    if ( autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL )&&
 	    !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
     best_len = 0; best_width = -1;
@@ -2382,7 +2400,7 @@ static struct italicserifdata normalitalicserif =
 	{ 0,      123, pt_oncurve },
 	{ 0, 0, pt_end }} };
 static struct italicserifdata bolditalicserif =
-    { 1000, 146, 450, -15.2, 90, /* vertical */{
+    { 1000, 139, 450, -15.2, 90, /* vertical */{
 	{ 139,    128, pt_oncurve },
 	{ 139,    116, pt_offcurve },
 	{ 143.21, 82,  pt_offcurve },
@@ -2452,8 +2470,14 @@ static SplineSet *MakeBottomItalicSerif(double stemwidth,double endx,ItalicInfo 
 	SplineSetsRound2Int(ss,1.0,false,false);
 	newss = SSttfApprox(ss);
 	SplinePointListFree(ss);
+	ss = newss;
     } else {
 	SPLCatagorizePoints(ss);
+    }
+    { double temp;
+	if ( (temp = ss->first->me.x-ss->last->me.x)<0 ) temp = -temp;
+	if ( !RealWithin(temp,stemwidth,.1))
+	    IError( "Stem width doesn't match serif" );
     }
 return( ss );
 }
@@ -2589,20 +2613,26 @@ static SplinePoint *StemMoveBottomEndTo(SplinePoint *sp,double y,int is_start) {
     if ( is_start ) {
 	if ( sp->noprevcp || y>=sp->me.y ) {
 	    sp->prevcp.y += (y-sp->me.y);
+	    if ( sp->prev->order2 && !sp->prev->from->nonextcp )
+		sp->prev->from->nextcp = sp->prevcp;
 	    sp->me.y = y;
 	    SplineRefigure(sp->prev);
 	} else {
 	    other = SplinePointCreate(sp->me.x,y);
+	    sp->nonextcp = true;
 	    SplineMake(sp,other,sp->prev->order2);
 	    sp = other;
 	}
     } else {
 	if ( sp->nonextcp || y>=sp->me.y ) {
 	    sp->nextcp.y += (y-sp->me.y);
+	    if ( sp->next->order2 && !sp->next->to->noprevcp )
+		sp->next->to->prevcp = sp->nextcp;
 	    sp->me.y = y;
 	    SplineRefigure(sp->next);
 	} else {
 	    other = SplinePointCreate(sp->me.x,y);
+	    sp->noprevcp = true;
 	    SplineMake(other,sp,sp->next->order2);
 	    sp = other;
 	}
@@ -2610,7 +2640,8 @@ static SplinePoint *StemMoveBottomEndTo(SplinePoint *sp,double y,int is_start) {
 return( sp );
 }
 
-static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *ss,int is_start) {
+static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *oldss,
+	SplineSet *ss,int is_start) {
     SplinePoint *other = is_start ? ss->first : ss->last;
 
     if ( is_start ) {
@@ -2625,6 +2656,8 @@ static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *ss,int
 		SplinePoint *newsp = sp->prev->from;
 		SplineFree(sp->prev);
 		SplinePointFree(sp);
+		if ( sp==oldss->first )
+		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
 	    SplineSolveFull(&other->next->splines[1],sp->me.y,ts);
@@ -2632,8 +2665,10 @@ static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *ss,int
 		SplinePoint *newend = SplineBisect(other->next,ts[0]);
 		SplineFree(newend->prev);
 		SplinePointFree(other);
-		newend->next = NULL;
-		newend->prevcp.x += sp->me.x-newend->me.x;
+		newend->prev = NULL;
+		newend->nextcp.x += sp->me.x-newend->me.x;
+		if ( newend->next->order2 && !newend->nonextcp )
+		    newend->next->to->prevcp = newend->nextcp;
 		newend->me.x = sp->me.x;
 		ss->first = newend;
 return( sp );
@@ -2648,6 +2683,8 @@ return( sp );
 		SplinePoint *newsp = sp->next->to;
 		SplineFree(sp->next);
 		SplinePointFree(sp);
+		if ( sp==oldss->first )
+		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
 	    SplineSolveFull(&other->prev->splines[1],sp->me.y,ts);
@@ -2657,6 +2694,8 @@ return( sp );
 		SplinePointFree(other);
 		newend->next = NULL;
 		newend->prevcp.x += sp->me.x-newend->me.x;
+		if ( newend->prev->order2 && !newend->noprevcp )
+		    newend->prev->from->nextcp = newend->prevcp;
 		newend->me.x = sp->me.x;
 		ss->last = newend;
 return( sp );
@@ -2684,6 +2723,7 @@ return;
     if ( ii->secondary_serif == srf_flat ) {
 	start = StemMoveBottomEndTo(start,y,true);
 	end = StemMoveBottomEndTo(end,y,false);
+	start->nonextcp = end->noprevcp = true;
 	SplineMake(start,end,sc->layers[layer].order2);
     } else if ( ii->secondary_serif == srf_simpleslant ) {
 	if ( ii->tan_ia<0 ) {
@@ -2693,6 +2733,7 @@ return;
 	    start = StemMoveBottomEndTo(start,y,true);
 	    end = StemMoveBottomEndTo(end,y - (end->me.x-start->me.x)*ii->tan_ia,false);
 	}
+	start->nonextcp = end->noprevcp = true;
 	SplineMake(start,end,sc->layers[layer].order2);
     } else {
 	if ( ii->tan_ia<0 ) {
@@ -2704,6 +2745,7 @@ return;
 	    end = StemMoveBottomEndTo(end,y- .8*(end->me.x-start->me.x)*ii->tan_ia,false);
 	    mid = SplinePointCreate(.2*end->me.x+.8*start->me.x,y);
 	}
+	start->nonextcp = end->noprevcp = true;
 	mid->pointtype = pt_corner;
 	SplineMake(start,mid,sc->layers[layer].order2);
 	SplineMake(mid,end,sc->layers[layer].order2);
@@ -2846,20 +2888,26 @@ static SplinePoint *StemMoveTopEndTo(SplinePoint *sp,double y,int is_start) {
     if ( is_start ) {
 	if ( sp->noprevcp || y<=sp->me.y ) {
 	    sp->prevcp.y += (y-sp->me.y);
+	    if ( sp->prev->order2 && !sp->prev->from->nonextcp )
+		sp->prev->from->nextcp = sp->prevcp;
 	    sp->me.y = y;
 	    SplineRefigure(sp->prev);
 	} else {
 	    other = SplinePointCreate(sp->me.x,y);
+	    sp->nonextcp = true;
 	    SplineMake(sp,other,sp->prev->order2);
 	    sp = other;
 	}
     } else {
 	if ( sp->nonextcp || y<=sp->me.y ) {
 	    sp->nextcp.y += (y-sp->me.y);
+	    if ( sp->next->order2 && !sp->next->to->noprevcp )
+		sp->next->to->prevcp = sp->nextcp;
 	    sp->me.y = y;
 	    SplineRefigure(sp->next);
 	} else {
 	    other = SplinePointCreate(sp->me.x,y);
+	    sp->noprevcp = true;
 	    SplineMake(other,sp,sp->next->order2);
 	    sp = other;
 	}
@@ -2867,7 +2915,8 @@ static SplinePoint *StemMoveTopEndTo(SplinePoint *sp,double y,int is_start) {
 return( sp );
 }
 
-static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *ss,int is_start) {
+static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *oldss,
+	SplineSet *ss,int is_start) {
     SplinePoint *other = is_start ? ss->first : ss->last;
 
     if ( is_start ) {
@@ -2882,6 +2931,8 @@ static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *ss,int is
 		SplinePoint *newsp = sp->prev->from;
 		SplineFree(sp->prev);
 		SplinePointFree(sp);
+		if ( sp==oldss->first )
+		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
 	    SplineSolveFull(&other->next->splines[1],sp->me.y,ts);
@@ -2889,8 +2940,10 @@ static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *ss,int is
 		SplinePoint *newend = SplineBisect(other->next,ts[0]);
 		SplineFree(newend->prev);
 		SplinePointFree(other);
-		newend->next = NULL;
-		newend->prevcp.x += sp->me.x-newend->me.x;
+		newend->prev = NULL;
+		newend->nextcp.x += sp->me.x-newend->me.x;
+		if ( newend->next->order2 && !newend->nonextcp )
+		    newend->next->to->prevcp = newend->nextcp;
 		newend->me.x = sp->me.x;
 		ss->first = newend;
 return( sp );
@@ -2905,6 +2958,8 @@ return( sp );
 		SplinePoint *newsp = sp->next->to;
 		SplineFree(sp->next);
 		SplinePointFree(sp);
+		if ( sp==oldss->first )
+		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
 	    SplineSolveFull(&other->prev->splines[1],sp->me.y,ts);
@@ -2914,6 +2969,8 @@ return( sp );
 		SplinePointFree(other);
 		newend->next = NULL;
 		newend->prevcp.x += sp->me.x-newend->me.x;
+		if ( newend->prev->order2 && !newend->noprevcp )
+		    newend->prev->from->nextcp = newend->prevcp;
 		newend->me.x = sp->me.x;
 		ss->last = newend;
 return( sp );
@@ -2951,8 +3008,8 @@ return;
     SerifRemove(start,end,oldss);
 
     ss = MakeBottomItalicSerif(start->me.x-end->me.x,end->me.x,ii);
-    start = StemMoveBottomEndCarefully(start,ss,true );
-    end   = StemMoveBottomEndCarefully(end  ,ss,false);
+    start = StemMoveBottomEndCarefully(start,oldss,ss,true );
+    end   = StemMoveBottomEndCarefully(end  ,oldss,ss,false);
 
     SplineNextSplice(start,ss->first);
     SplinePrevSplice(end,ss->last);
@@ -2996,6 +3053,7 @@ return;
 
     start = StemMoveBottomEndTo(start,y,true);
     end = StemMoveBottomEndTo(end,y,false);
+    start->nonextcp = end->noprevcp = true;
     SplineMake(start,end,sc->layers[layer].order2);
     start->pointtype = end->pointtype = pt_corner;
 }
@@ -3018,8 +3076,8 @@ return;
     SerifRemove(start,end,oldss);
 
     ss = MakeTopItalicSerif(start->me.x-end->me.x,end->me.x,ii,at_xh);
-    start = StemMoveTopEndCarefully(start,ss,true );
-    end   = StemMoveTopEndCarefully(end  ,ss,false);
+    start = StemMoveTopEndCarefully(start,oldss,ss,true );
+    end   = StemMoveTopEndCarefully(end  ,oldss,ss,false);
 
     SplineNextSplice(start,ss->first);
     SplinePrevSplice(end,ss->last);
@@ -3088,6 +3146,7 @@ static int FFCopyTrans(ItalicInfo *ii,real *transform,
     for ( sp = ii->ff_start2; ; sp=sp->next->to ) {
 	cur = chunkalloc(sizeof(SplinePoint));
 	*cur = *sp;
+	cur->hintmask = NULL;
 	cur->me.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
 	cur->me.y = transform[1]*sp->me.x + transform[3]*sp->me.y + transform[5];
 	cur->nextcp.x = transform[0]*sp->nextcp.x + transform[2]*sp->nextcp.y + transform[4];
@@ -3130,7 +3189,7 @@ return;
 	ff = SFGetChar(ii->sf,-1, "longs_longs");		/* Long s */
     if ( ff==NULL )
 return;
-    if ( autohint_before_generate && ff->changedsincelasthinted &&
+    if ( autohint_before_generate && (ff->changedsincelasthinted || ff->vstem==NULL) &&
 	    !ff->manualhints )
 	SplineCharAutoHint(ff,ii->layer,NULL);
     FigureGoodStems(ff->vstem);
@@ -3298,7 +3357,7 @@ return;
 	f = SFGetChar(ii->sf,0x17f,NULL);		/* Long s */
     if ( f==NULL )
 return;
-    if ( autohint_before_generate && f->changedsincelasthinted &&
+    if ( autohint_before_generate && (f->changedsincelasthinted || f->vstem==NULL) &&
 	    !f->manualhints )
 	SplineCharAutoHint(f,ii->layer,NULL);
     FigureGoodStems(f->vstem);
@@ -3415,6 +3474,7 @@ static void FBottomGrows(SplineChar *sc,int layer,ItalicInfo *ii) {
 		sp = SplinePointCreate(start->me.x,start->me.y+ii->pq_depth);
 		sp->next = start->next;
 		sp->next->from = sp;
+		start->nonextcp = true;
 		SplineMake(start,sp,sc->layers[layer].order2);
 		start = sp;
 	    } else {
@@ -3425,6 +3485,7 @@ static void FBottomGrows(SplineChar *sc,int layer,ItalicInfo *ii) {
 		sp = SplinePointCreate(end->me.x,end->me.y+ii->pq_depth);
 		sp->prev = start->prev;
 		sp->prev->to = sp;
+		end->noprevcp = true;
 		SplineMake(sp,end,sc->layers[layer].order2);
 		end = sp;
 	    } else {
@@ -3601,7 +3662,10 @@ return;
 	end   = ltemp;
     }
     SerifRemove(start,end,sses[0]);
+    start->nonextcp = end->noprevcp = true;
     SplineMake(start,end,sc->layers[layer].order2);
+ if ( sc->layers[layer].order2 )
+  SSCPValidate(sses[0]);
 
     SCClearLayer(sc,layer);
     sc->layers[layer].splines = d_ss;
@@ -3620,7 +3684,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     SCPreserveLayer(sc,layer,true);
     no_windowing_ui = true;		/* Turn off undoes */
 
-    if ( autohint_before_generate && sc->changedsincelasthinted &&
+    if ( autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL ) &&
 	    !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
     else if ( sc->dstem==NULL &&
@@ -3723,7 +3787,7 @@ return( 0 );
     memset(&tempii,0,sizeof(tempii));
     tempii.serif_extent = 1000;
 
-    if ( autohint_before_generate && sc->changedsincelasthinted &&
+    if ( autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL) &&
 	    !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
     FigureGoodStems(sc->vstem);
@@ -3804,6 +3868,9 @@ static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
 static void StuffFree(SplinePoint *from, SplinePoint *to1, SplinePoint *to2) {
     SplinePoint *mid, *spnext;
 
+    if ( from==NULL )
+return;
+
     for ( mid=from; mid!=to1 && mid!=to2; mid=spnext ) {
 	spnext = mid->next->to;
 	SplinePointFree(mid);
@@ -3816,6 +3883,7 @@ static void ItalicInfoFreeContents(ItalicInfo *ii) {
     StuffFree(ii->f_start,ii->f_end,NULL);
     StuffFree(ii->ff_start1,ii->ff_end1,ii->ff_end2);
     StuffFree(ii->ff_start2,ii->ff_end1,ii->ff_end2);
+    memset(&ii->tan_ia,0,sizeof(ItalicInfo) - (((char *) &ii->tan_ia) - ((char *) ii)));
 }
 
 void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {

@@ -4366,6 +4366,47 @@ static void bScaleToEm(Context *c) {
     SFScaleToEm(c->curfv->sf,ascent,descent);
 }
 
+static ItalicInfo default_ii = {
+    -13,		/* Italic angle (in degrees) */
+    /* horizontal squash, lsb, stemsize, countersize, rsb */
+    .91, .89, .90, .91,		/* For lower case */
+    .91, .93, .93, .91,		/* For upper case */
+    .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
+    srf_simpleslant,	/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
+    true,		/* Transform bottom serifs */
+    true,		/* Transform serifs at x-height */
+    false,		/* Transform serifs on ascenders */
+
+    true,		/* Change the shape of an "a" to look like a "d" without ascender */
+    false,		/* Change the shape of "f" so it descends below baseline (straight down no flag at end) */
+    true,		/* Change the shape of "f" so the bottom looks like the top */
+    true,		/* Remove serifs from the bottom of descenders */
+
+    true,		/* Make the cyrillic "phi" glyph have a top like an "f" */
+    true,		/* Make the cyrillic "i" glyph look like a latin "u" */
+    true,		/* Make the cyrillic "pi" glyph look like a latin "n" */
+    true,		/* Make the cyrillic "te" glyph look like a latin "m" */
+    true,		/* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
+    true,		/* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
+    true		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+};
+
+static void bItalic(Context *c) {
+    int i;
+
+    if ( c->a.argc>2 )
+	ScriptError( c, "Wrong number of arguments");
+    for ( i=1; i<c->a.argc; ++i ) {
+	if ( c->a.vals[i].type==v_real )
+	    default_ii.italic_angle = c->a.vals[i].u.fval;
+	else if ( c->a.vals[i].type==v_int )
+	    default_ii.italic_angle = c->a.vals[i].u.ival;
+	else
+	    ScriptError(c,"Bad argument type in Italic");
+    }
+    MakeItalic(c->curfv,NULL,&default_ii);
+}
+
 static int RefMatchesNamesUni(RefChar *ref,char **refnames, int *refunis, int refcnt) {
     int i;
 
@@ -7856,6 +7897,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Skew", bSkew },
     { "Move", bMove },
     { "ScaleToEm", bScaleToEm },
+    { "Italic", bItalic },
     { "MoveReference", bMoveReference },
     { "PositionReference", bPositionReference },
     { "NonLinearTransform", bNonLinearTransform },
