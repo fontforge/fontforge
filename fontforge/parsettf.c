@@ -4965,7 +4965,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	info->italicAngle = getfixed(ttf);
 	info->upos = (short) getushort(ttf);
 	info->uwidth = (short) getushort(ttf);
-	info->upos -= info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
+	info->upos += info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
 	/* fixedpitch = */ getlong(ttf);
 	/* mem1 = */ getlong(ttf);
 	/* mem2 = */ getlong(ttf);
