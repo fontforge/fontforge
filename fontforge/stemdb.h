@@ -79,7 +79,9 @@ typedef struct pointdata {
     double next_e_t, prev_e_t;			/* Location on other edge where our normal hits it */
     double both_e_t;
     double next_dist, prev_dist;		/* Distance from the point to the matching edge */
-    struct stemdata *nextstem, *prevstem;
+    struct stemdata **nextstems, **prevstems;
+    int *next_is_l, *prev_is_l;
+    int nextcnt, prevcnt;
     struct stemdata *bothstem;
     double nextlen, prevlen;
     int value;                          /* Temporary value, used to compare points assigned to the same edge and determine if it can be used as a reference point*/
@@ -95,8 +97,6 @@ typedef struct pointdata {
     unsigned int prev_hor: 1;
     unsigned int prev_ver: 1;
     unsigned int newpos_set: 2;		/* Holds three values: 0 (not), 1 (positioned by 1 stem), 2 (2 stems) */
-    unsigned int next_is_l: 1;
-    unsigned int prev_is_l: 1;
     unsigned int ticked: 1;
     uint8 x_extr, y_extr;
     uint8 x_corner, y_corner;
@@ -151,6 +151,13 @@ typedef struct stemdata {
     struct linedata *leftline, *rightline;
     struct stemdata *master;
 } StemData;
+
+typedef struct vchunk {
+    struct stem_chunk *chunk;
+    double dist;
+    int parallel;
+    int value;
+} VChunk;
 
 struct stembounds {
     struct stembounds *next;
