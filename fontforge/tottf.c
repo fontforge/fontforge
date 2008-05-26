@@ -2086,7 +2086,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	dumpint(cfff,0);
 	dumpintoper(cfff,0,(12<<8)|7);
     }
-    if ( sf->uniqueid!=-1 )
+    if ( sf->uniqueid!=-1 && sf->use_uniqueid )
 	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
     SplineFontLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
@@ -2098,7 +2098,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpdbl(cfff,ceil(b.maxx));
     dumpdbloper(cfff,ceil(b.maxy),5);
     /* We'll never set StrokeWidth */
-    if ( sf->xuid!=NULL ) {
+    if ( sf->xuid!=NULL && sf->use_xuid ) {
 	pt = sf->xuid; if ( *pt=='[' ) ++pt;
 	while ( *pt && *pt!=']' ) {
 	    dumpint(cfff,strtol(pt,&end,10));
@@ -2178,7 +2178,8 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     dumpintoper(cfff,sf->supplement,(12<<8)|30);		/* ROS operator must be first */
     dumpdbloper(cfff,sf->cidversion,(12<<8)|31);
     dumpintoper(cfff,cidcnt,(12<<8)|34);
-    dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), (12<<8)|35 );
+    if ( sf->use_uniqueid )
+	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), (12<<8)|35 );
 
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
@@ -2209,7 +2210,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     dumpdbl(cfff,ceil(b.maxx));
     dumpdbloper(cfff,ceil(b.maxy),5);
     /* We'll never set StrokeWidth */
-    if ( sf->xuid!=NULL ) {
+    if ( sf->xuid!=NULL && sf->use_xuid ) {
 	pt = sf->xuid; if ( *pt=='[' ) ++pt;
 	while ( *pt && *pt!=']' ) {
 	    dumpint(cfff,strtol(pt,&end,10));

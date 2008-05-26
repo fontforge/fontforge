@@ -1644,7 +1644,9 @@ typedef struct splinefont {
     unsigned int ticked: 1;
     unsigned int internal_temp: 1;		/* Internal temporary font to be passed to freetype for rasterizing. Don't complain about oddities */
     unsigned int complained_about_spiros: 1;
-	/* 4 bits left */
+    unsigned int use_xuid: 1;			/* Adobe has deprecated these two */
+    unsigned int use_uniqueid: 1;		/* fields. Mostly we don't want to use them */
+	/* 2 bits left */
     struct fontviewbase *fv;
     struct metricsview *metrics;
     enum uni_interp uni_interp;

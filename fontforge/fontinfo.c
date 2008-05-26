@@ -1131,6 +1131,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_SameAsFontname	1115
 #define CID_HasDefBase	1116
 #define CID_DefBaseName	1117
+#define CID_UseXUID	1118
+#define CID_UseUniqueID	1119
 
 #define CID_GuideOrder2		1200
 #define CID_IsMixed		1217
@@ -4063,7 +4065,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	const unichar_t *txt, *fond; unichar_t *end;
 	int i,j, mcs;
 	int vmetrics, namechange, guideorder2;
-	int xuidchanged = false;
+	int xuidchanged = false, usexuid, useuniqueid;
 	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
 	int32 len;
 	GTextInfo **ti;
@@ -4282,12 +4284,14 @@ return(true);
 	GDrawSetCursor(gw,ct_watch);
 	namechange = SetFontName(gw,sf);
 	if ( namechange ) retitle_fv = true;
+	usexuid = GGadgetIsChecked(GWidgetGetControl(gw,CID_UseXUID));
+	useuniqueid = GGadgetIsChecked(GWidgetGetControl(gw,CID_UseUniqueID));
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_XUID));
 	xuidchanged = (sf->xuid==NULL && *txt!='\0') ||
 			(sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0);
 	if ( namechange &&
-		((uniqueid!=0 && uniqueid==sf->uniqueid) ||
-		 (sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0) ||
+		((uniqueid!=0 && uniqueid==sf->uniqueid && useuniqueid) ||
+		 (sf->xuid!=NULL && uc_strcmp(txt,sf->xuid)==0 && usexuid) ||
 		 ttfuniqueidmatch(sf,d)) ) {
 	    char *buts[4];
 	    int ans;
@@ -4314,6 +4318,8 @@ return(true);
 	    free(sf->xuid);
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
 	}
+	sf->use_xuid = usexuid;
+	sf->use_uniqueid = useuniqueid;
 
 	free(sf->gasp);
 	sf->gasp_cnt = gasprows;
@@ -5351,6 +5357,26 @@ static int OS2_CPageDefault(GGadget *g, GEvent *e) {
 	    GGadgetSetTitle8(GWidgetGetControl(gfi->gw,CID_CodePageRanges),codepages);
 	    OS2_CodePageChange(GWidgetGetControl(gfi->gw,CID_CodePageRanges),NULL);
 	}
+    }
+return( true );
+}
+
+static int GFI_UseUniqueIDChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_UniqueID),
+		GGadgetIsChecked(g));
+    }
+return( true );
+}
+
+static int GFI_UseXUIDChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_XUID),
+		GGadgetIsChecked(g));
     }
 return( true );
 }
@@ -7197,7 +7223,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
+	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
@@ -7205,7 +7231,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
 	    lkbox[7], cbox[6], lbox[8];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
-	*xuarray[13], *psarray[10], *psarray2[21], *psarray4[10],
+	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
 	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
 	*mkarray[6], *mkarray2[4], *txarray[5], *txarray2[30],
@@ -7219,7 +7245,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
-	sslabel[23], xulabel[6], dlabel[5], ulabel[3], gasplabel[5],
+	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20];
     GTextInfo *namelistnames;
     struct gfi_data *d;
@@ -7469,57 +7495,77 @@ return;
     memset(&xulabel,0,sizeof(xulabel));
     memset(&xugcd,0,sizeof(xugcd));
 
-    xugcd[0].gd.pos.x = 12; xugcd[0].gd.pos.y = 10+6;
-    xugcd[0].gd.flags = gg_visible | gg_enabled;
-    xulabel[0].text = (unichar_t *) _("_XUID:");
+    xulabel[0].text = (unichar_t *) _("(Adobe now considers XUID/UniqueID unnecessary)");
     xulabel[0].text_is_1byte = true;
     xulabel[0].text_in_resource = true;
     xugcd[0].gd.label = &xulabel[0];
+    xugcd[0].gd.flags = gg_visible | gg_enabled;
     xugcd[0].creator = GLabelCreate;
 
-    xugcd[1].gd.pos.x = 103; xugcd[1].gd.pos.y = xugcd[0].gd.pos.y-6; xugcd[1].gd.pos.width = 142;
+    xulabel[1].text = (unichar_t *) _("Use XUID");
+    xulabel[1].text_is_1byte = true;
+    xulabel[1].text_in_resource = true;
+    xugcd[1].gd.label = &xulabel[1];
     xugcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( sf->xuid!=NULL ) {
-	xulabel[1].text = (unichar_t *) sf->xuid;
-	xulabel[1].text_is_1byte = true;
-	xugcd[1].gd.label = &xulabel[1];
-    }
-    xugcd[1].gd.cid = CID_XUID;
-    xugcd[1].creator = GTextFieldCreate;
+    if ( sf->use_xuid ) xugcd[1].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    xugcd[1].gd.cid = CID_UseXUID;
+    xugcd[1].gd.handle_controlevent = GFI_UseXUIDChanged;
+    xugcd[1].creator = GCheckBoxCreate;
 
-    xugcd[2].gd.pos.x = 12; xugcd[2].gd.pos.y = xugcd[1].gd.pos.y+26+6;
-    xulabel[2].text = (unichar_t *) _("_UniqueID:");
+    xugcd[2].gd.pos.x = 12; xugcd[2].gd.pos.y = 10+6;
+    xugcd[2].gd.flags = gg_visible | gg_enabled;
+    xulabel[2].text = (unichar_t *) _("_XUID:");
     xulabel[2].text_is_1byte = true;
     xulabel[2].text_in_resource = true;
     xugcd[2].gd.label = &xulabel[2];
-    xugcd[2].gd.flags = gg_visible | gg_enabled;
     xugcd[2].creator = GLabelCreate;
 
-    xugcd[3].gd.pos.x = xugcd[1].gd.pos.x; xugcd[3].gd.pos.y = xugcd[2].gd.pos.y-6; xugcd[3].gd.pos.width = 80;
-    xugcd[3].gd.flags = gg_visible | gg_enabled;
-    xulabel[3].text = (unichar_t *) "";
-    xulabel[3].text_is_1byte = true;
-    if ( sf->uniqueid!=0 ) {
-	sprintf( uibuf, "%d", sf->uniqueid );
-	xulabel[3].text = (unichar_t *) uibuf;
+    xugcd[3].gd.flags = gg_visible;
+    if ( sf->use_xuid ) xugcd[3].gd.flags = gg_visible | gg_enabled;
+    if ( sf->xuid!=NULL ) {
+	xulabel[3].text = (unichar_t *) sf->xuid;
+	xulabel[3].text_is_1byte = true;
+	xugcd[3].gd.label = &xulabel[3];
     }
-    xugcd[3].gd.label = &xulabel[3];
-    xugcd[3].gd.cid = CID_UniqueID;
+    xugcd[3].gd.cid = CID_XUID;
     xugcd[3].creator = GTextFieldCreate;
 
-    xugcd[4].gd.pos.x = 8; xugcd[4].gd.pos.y = xugcd[3].gd.pos.y+26+6;
-    xulabel[4].text = (unichar_t *) _("(Adobe now considers XUID/UniqueID unnecessary)");
+    xulabel[4].text = (unichar_t *) _("Use UniqueID");
     xulabel[4].text_is_1byte = true;
     xulabel[4].text_in_resource = true;
     xugcd[4].gd.label = &xulabel[4];
     xugcd[4].gd.flags = gg_visible | gg_enabled;
-    xugcd[4].creator = GLabelCreate;
+    if ( sf->use_uniqueid ) xugcd[4].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    xugcd[4].gd.cid = CID_UseUniqueID;
+    xugcd[4].gd.handle_controlevent = GFI_UseUniqueIDChanged;
+    xugcd[4].creator = GCheckBoxCreate;
 
-    xuarray[0] = &xugcd[0]; xuarray[1] = &xugcd[1]; xuarray[2] = NULL;
-    xuarray[3] = &xugcd[2]; xuarray[4] = &xugcd[3]; xuarray[5] = NULL;
-    xuarray[6] = &xugcd[4]; xuarray[7] = GCD_ColSpan; xuarray[8] = NULL;
-    xuarray[9] = GCD_Glue; xuarray[10] = GCD_Glue; xuarray[11] = NULL;
-    xuarray[12] = NULL;
+    xulabel[5].text = (unichar_t *) _("_UniqueID:");
+    xulabel[5].text_is_1byte = true;
+    xulabel[5].text_in_resource = true;
+    xugcd[5].gd.label = &xulabel[5];
+    xugcd[5].gd.flags = gg_visible | gg_enabled;
+    xugcd[5].creator = GLabelCreate;
+
+    xugcd[6].gd.flags = gg_visible;
+    if ( sf->use_uniqueid ) xugcd[6].gd.flags = gg_visible | gg_enabled;
+    xulabel[6].text = (unichar_t *) "";
+    xulabel[6].text_is_1byte = true;
+    if ( sf->uniqueid!=0 ) {
+	sprintf( uibuf, "%d", sf->uniqueid );
+	xulabel[6].text = (unichar_t *) uibuf;
+    }
+    xugcd[6].gd.label = &xulabel[6];
+    xugcd[6].gd.cid = CID_UniqueID;
+    xugcd[6].creator = GTextFieldCreate;
+
+    xuarray[0] = &xugcd[0]; xuarray[1] = GCD_ColSpan; xuarray[2] = NULL;
+    xuarray[3] = &xugcd[1]; xuarray[4] = GCD_ColSpan; xuarray[5] = NULL;
+    xuarray[6] = &xugcd[2]; xuarray[7] = &xugcd[3]; xuarray[8] = NULL;
+    xuarray[9] = &xugcd[4]; xuarray[10] = GCD_ColSpan; xuarray[11] = NULL;
+    xuarray[12] = &xugcd[5]; xuarray[13] = &xugcd[6]; xuarray[14] = NULL;
+    xuarray[15] = GCD_Glue; xuarray[16] = GCD_Glue; xuarray[17] = NULL;
+    xuarray[18] = NULL;
 
     memset(xub,0,sizeof(xub));
     xub[0].gd.flags = gg_enabled|gg_visible;
@@ -10304,7 +10350,7 @@ return;
     GHVBoxSetExpandableCol(nb3.ret,1);
 
     GHVBoxSetExpandableCol(xub[0].ret,1);
-    GHVBoxSetExpandableRow(xub[0].ret,3);
+    GHVBoxSetExpandableRow(xub[0].ret,5);
 
     GHVBoxSetExpandableRow(psb[0].ret,psrow);
     GHVBoxSetExpandableCol(psb2[0].ret,3);
