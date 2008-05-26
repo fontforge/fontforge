@@ -33,7 +33,7 @@
 
 
 static unichar_t lc_stem_str[] = { 'l', 'l', 'l', 'm', 'f', 't', 0x438, 0x43D,
-	0x43f, 0x448, 0x3c0, 0x3bc, 0 };
+	0x43f, 0x448, 0x3bc, 0 };
 static unichar_t uc_stem_str[] = { 'I', 'L', 'T', 'H', 0x3a0, 0x397, 0x399,
 	0x406, 0x418, 0x41d, 0x41f, 0x422, 0x428, 0 };
 static unichar_t xheight_str[] = { 'x', 'u', 'v', 'w', 'y', 'z', 0x3b9, 0x3ba,
@@ -98,61 +98,113 @@ static int NumberLayerPoints(SplineSet *ss) {
 return( cnt );
 }
 
-static double MajorVerticalStemWidth(SplineChar *sc, int layer) {
-    double best_len, best_width;
-    StemInfo *s;
-
-    if ( sc==NULL )
-return( -1 );
-    if ( autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL )&&
-	    !sc->manualhints )
-	SplineCharAutoHint(sc,layer,NULL);
-    best_len = 0; best_width = -1;
-    for ( s = sc->vstem; s!=NULL; s=s->next ) if ( !s->ghost ) {
-	double len = HIlen(s);
-	if ( len>best_len )
-	    best_width = s->width;
-    }
-return( best_width );
-}
-
-/* Ok, we couldn't hint it, or it was italic. Make a copy of it, deskew it, */
-/*  and hint that */
-static double ReallyMajorVerticalStemWidth(SplineChar *sc, int layer,double tan_ia) {
-    double best_len, best_width;
-    StemInfo *s;
-    SplineChar dummy;
+static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
+	unichar_t *list, double tan_ia) {
+    const int MW=100;
+    struct widths { double width, total; } widths[MW];
+    int cnt,i,j;
+    double width, sum, total;
+    SplineChar *sc, dummy, *which;
     Layer layers[2];
+    char *snaps, *end;
+    StemInfo *s;
+    double val, diff, bestwidth, bestdiff;
     real deskew[6];
 
-    if ( sc==NULL )
-return( -1 );
     memset(deskew,0,sizeof(deskew));
     deskew[0] = deskew[3] = 1;
     deskew[2] = tan_ia;
-    memset(&dummy,0,sizeof(dummy));
-    memset(layers,0,sizeof(layers));
-    dummy.color = COLOR_DEFAULT;
-    dummy.layer_cnt = 2;
-    dummy.layers = layers;
-    dummy.parent = sc->parent;
-    dummy.name = copy("Fake");
 
-    dummy.layers[ly_fore].order2 = sc->layers[layer].order2;
-    dummy.layers[ly_fore].splines = SplinePointListTransform(
-	    SplinePointListCopy(LayerAllSplines(&sc->layers[layer])),
-	    deskew,true);
-    LayerUnAllSplines(&sc->layers[ly_fore]);
-    
-    SplineCharAutoHint(&dummy,ly_fore,NULL);
-    best_len = 0; best_width = -1;
-    for ( s = dummy.vstem; s!=NULL; s=s->next ) if ( !s->ghost ) {
-	double len = HIlen(s);
-	if ( len>best_len )
-	    best_width = s->width;
+    cnt = 0;
+    for ( i=0; list[i]!=0; ++i ) {
+	sc = SFGetChar(sf,list[i],NULL);
+	if ( sc==NULL )
+    continue;
+	if ( tan_ia== 0 && autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL )&&
+		!sc->manualhints )
+	    SplineCharAutoHint(sc,layer,NULL);
+	if ( tan_ia==0 && sc->vstem!=NULL ) {
+	    which = sc;
+	} else {
+/* Ok, we couldn't hint it, or it was italic. Make a copy of it, deskew it, */
+/*  and hint that */
+	    memset(&dummy,0,sizeof(dummy));
+	    memset(layers,0,sizeof(layers));
+	    dummy.color = COLOR_DEFAULT;
+	    dummy.layer_cnt = 2;
+	    dummy.layers = layers;
+	    dummy.parent = sc->parent;
+	    dummy.name = copy("Fake");
+
+	    dummy.layers[ly_fore].order2 = sc->layers[layer].order2;
+	    dummy.layers[ly_fore].splines = SplinePointListTransform(
+		    SplinePointListCopy(LayerAllSplines(&sc->layers[layer])),
+		    deskew,true);
+	    LayerUnAllSplines(&sc->layers[ly_fore]);
+
+	    SplineCharAutoHint(&dummy,ly_fore,NULL);
+	    which = &dummy;
+	}
+	for ( s= which->vstem; s!=NULL; s=s->next ) {
+	    for ( j=0; j<cnt; ++j )
+		if ( widths[j].width==val )
+	    break;
+	    if ( j<cnt )
+		widths[j].total += HIlen(s);
+	    else if ( j<MW ) {
+		++cnt;
+		widths[j].width = val;
+		widths[j].total = HIlen(s);
+	    }
+	}
+	if ( which==&dummy )
+	    SCClearContents(&dummy,ly_fore);
     }
-    SCClearContents(&dummy,ly_fore);
-return( best_width );
+    if ( cnt==0 )
+return( -1 );
+
+    /* Is there a width that occurs significantly more often than any other? */
+    for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
+	if ( widths[i].total > widths[j].total ) {
+	    struct widths temp;
+	    temp = widths[j];
+	    widths[j] = widths[i];
+	    widths[i] = temp;
+	}
+    }
+    if ( cnt==1 || widths[cnt-1].total > 1.5*widths[cnt-2].total )
+	width = widths[cnt-1].width;
+    else {
+	/* Ok, that didn't work find an average */
+	sum = 0; total=0;
+	for ( i=0; i<cnt; ++i ) {
+	    sum += widths[i].total*widths[i].width;
+	    total += widths[i].total;
+	}
+	width = sum/total;
+    }
+
+    /* Do we have a StemSnapV entry? */
+    /* If so, snap width to the closest value in it */
+    if ( sf->private!=NULL && (snaps = PSDictHasEntry(sf->private,"StemSnapV"))!=NULL ) {
+	while ( *snaps==' ' || *snaps=='[' ) ++snaps;
+	/* Must get at least this close, else we'll just use what we found */
+	bestwidth = width; bestdiff = (sf->ascent+sf->descent)/100.0;
+	while ( *snaps!='\0' && *snaps!=']' ) {
+	    val = strtod(snaps,&end);
+	    if ( snaps==end )
+	break;
+	    snaps = end;
+	    while ( *snaps==' ' ) ++snaps;
+	    if ( (diff = val-width)<0 ) diff = -diff;
+	    if ( diff<bestdiff ) {
+		bestwidth = val;
+		bestdiff = diff;
+	    }
+	}
+	width = bestwidth;
+    }
+return( width );
 }
 
 static double CharHeight(SplineChar *sc, int layer) {
@@ -185,50 +237,9 @@ static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int l
     small->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
     small->tan_ia = tan( small->italic_angle );
 
-    cnt = 0;
-    small->lc_stem_width = small->uc_stem_width = -1;
-    if ( small->tan_ia==0 ) {
-	for ( i=0, sum=0; lc_stem_str[i]!=0; ++i ) {
-	    val = MajorVerticalStemWidth(SFGetChar(sf,lc_stem_str[i],NULL),layer);
-	    if ( val!=-1 ) {
-		sum += val;
-		++cnt;
-	    }
-	}
-	if ( cnt!=0 )
-	    small->lc_stem_width = sum/cnt;
-    }
-    if ( cnt==0 ) {
-	for ( i=0, sum=0; lc_stem_str[i]!=0 ; ++i ) {
-	    val = ReallyMajorVerticalStemWidth(SFGetChar(sf,lc_stem_str[i],NULL),layer, small->tan_ia);
-	    if ( val!=-1 ) {
-		small->lc_stem_width = val;
-	break;
-	    }
-	}
-    }
+    small->lc_stem_width = CaseMajorVerticalStemWidth(sf, layer,lc_stem_str, small->tan_ia );
+    small->uc_stem_width = CaseMajorVerticalStemWidth(sf, layer,uc_stem_str, small->tan_ia );
 
-    cnt = 0;
-    if ( small->tan_ia==0 ) {
-	for ( i=0, sum=0; uc_stem_str[i]!=0; ++i ) {
-	    val = MajorVerticalStemWidth(SFGetChar(sf,uc_stem_str[i],NULL),layer);
-	    if ( val!=-1 ) {
-		sum += val;
-		++cnt;
-	    }
-	}
-	if ( cnt!=0 )
-	    small->uc_stem_width = sum/cnt;
-    }
-    if ( cnt==0 ) {
-	for ( i=0, sum=0; uc_stem_str[i]!=0 ; ++i ) {
-	    val = ReallyMajorVerticalStemWidth(SFGetChar(sf,uc_stem_str[i],NULL),layer, small->tan_ia);
-	    if ( val!=-1 ) {
-		small->uc_stem_width = val;
-	break;
-	    }
-	}
-    }
     if ( small->uc_stem_width<=small->lc_stem_width || small->lc_stem_width==-1 )
 	small->stem_factor = 1;
     else
@@ -844,8 +855,9 @@ return;
 	    ap->me = me;
 	}
     }
-    StemInfosFree(sc_sc->hstem); sc_sc->hstem = NULL;
-    StemInfosFree(sc_sc->vstem); sc_sc->vstem = NULL;
+    StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
+    StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
+    DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
     SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
 }
 
@@ -3748,8 +3760,9 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	ref->transform[4] += refpos[4];
 	SplinePointListTransform(ref->layers[0].splines,refpos,true);
     }
-    StemInfosFree(sc->hstem); sc->hstem = NULL;
-    StemInfosFree(sc->vstem); sc->vstem = NULL;
+    StemInfosFree(sc->hstem);  sc->hstem = NULL;
+    StemInfosFree(sc->vstem);  sc->vstem = NULL;
+    DStemInfosFree(sc->dstem); sc->dstem = NULL;
     no_windowing_ui = nwi;
     SCRound2Int(sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc,layer); */
 }
