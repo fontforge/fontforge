@@ -1491,7 +1491,7 @@ return( false );
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
     hasshift = PSDictHasEntry(sf->private,"BlueShift")!=NULL;
-    hasxuid = PSDictHasEntry(sf->private,"XUID")!=NULL;
+    /*hasxuid = PSDictHasEntry(sf->private,"XUID")!=NULL;*/
     haslg = PSDictHasEntry(sf->private,"LanguageGroup")!=NULL;
     if ( sf->weight!=NULL &&
 	    (strstrmatch(sf->weight,"Bold")!=NULL ||
@@ -1557,7 +1557,7 @@ return( false );
     ++cnt;	/* minfeature is required */
     if ( !hasblue && (otherblues[0]!=0 || otherblues[1]!=0) ) ++cnt;
     ++cnt;	/* password is required */
-    if ( sf->tempuniqueid!=0 )
+    if ( sf->tempuniqueid!=0 && sf->use_uniqueid )
 	++cnt;	/* UniqueID should be in both private and public areas */
     if ( incid==NULL ) {
 	++cnt;	/* nd is required */
@@ -1619,7 +1619,7 @@ return( false );
 	dumpf(dumpchar,data,"/ForceBold true def\n" );
     if ( !haslg && iscjk ) 
 	dumpf(dumpchar,data,"/LanguageGroup 1 def\n" );
-    if ( sf->tempuniqueid!=0 && sf->tempuniqueid!=-1 )
+    if ( sf->tempuniqueid!=0 && sf->tempuniqueid!=-1 && sf->use_uniqueid )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", sf->tempuniqueid );
     if ( sf->private!=NULL ) {
 	for ( i=0; i<sf->private->next; ++i ) {
@@ -1900,7 +1900,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     ++cnt;		/* fontinfo */
     ++cnt;		/* encoding */
     ++cnt;		/* fontbb */
-    if ( sf->uniqueid!=-1 ) ++cnt;
+    if ( sf->uniqueid!=-1 && sf->use_uniqueid ) ++cnt;
     ++cnt;		/* painttype */
     if ( sf->strokedfont )
 	++cnt;		/* StrokeWidth */
@@ -1912,7 +1912,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	++cnt;		/* private */
 	++cnt;		/* chars */
     }
-    if ( sf->xuid!=NULL ) ++cnt;
+    if ( sf->xuid!=NULL && sf->use_xuid ) ++cnt;
     if ( format==ff_mma || format==ff_mmb )
 	cnt += 7;
 
@@ -1922,7 +1922,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	uniqueid = sf->uniqueid ;
     sf->tempuniqueid = uniqueid;
 
-    if ( format!=ff_ptype3 && uniqueid!=-1 ) {
+    if ( format!=ff_ptype3 && uniqueid!=-1 && sf->use_uniqueid ) {
 	dumpf(dumpchar,data,"FontDirectory/%s known{/%s findfont dup/UniqueID known{dup\n", sf->fontname, sf->fontname);
 	dumpf(dumpchar,data,"/UniqueID get %d eq exch/FontType get 1 eq and}{pop false}ifelse\n", uniqueid );
 	dumpf(dumpchar,data,"{save true}{false}ifelse}{false}ifelse\n" );
@@ -1941,9 +1941,9 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     fm[2] = ceil( b.maxx);
     fm[3] = ceil( b.maxy);
     dumpdblarray(dumpchar,data,"FontBBox",fm,4,"readonly ", true);
-    if ( uniqueid!=-1 )
+    if ( uniqueid!=-1 && sf->use_uniqueid )
 	dumpf(dumpchar,data,"/UniqueID %d def\n", uniqueid );
-    if ( sf->xuid!=NULL ) {
+    if ( sf->xuid!=NULL && sf->use_xuid ) {
 	dumpf(dumpchar,data,"/XUID %s def\n", sf->xuid );
 	if ( sf->changed_since_xuidchanged )
 	    SFIncrementXUID(sf);
@@ -2080,7 +2080,7 @@ static void dumpfinalascii(void (*dumpchar)(int ch,void *data), void *data,
     for ( i = 0; i<8; ++i )
 	dumpstr(dumpchar,data,"0000000000000000000000000000000000000000000000000000000000000000\n");
     dumpstr(dumpchar,data,"cleartomark\n");
-    if ( format!=ff_ptype3 && uniqueid!=-1 ) 
+    if ( format!=ff_ptype3 && uniqueid!=-1 && sf->use_uniqueid )
 	dumpstr(dumpchar,data,"{restore}if\n");
 }
 
@@ -2177,9 +2177,9 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
     else
 	uniqueid = sf->uniqueid ;
     sf->tempuniqueid = uniqueid;
-    if ( uniqueid!=-1 )
+    if ( uniqueid!=-1 && sf->use_uniqueid )
 	fprintf( out, "  /UniqueID %d def\n", uniqueid );
-    if ( sf->xuid!=NULL ) {
+    if ( sf->xuid!=NULL && sf->use_xuid ) {
 	fprintf(out,"  /XUID %s def\n", sf->xuid );
 	if ( sf->changed_since_xuidchanged )
 	    SFIncrementXUID(sf);
@@ -2610,10 +2610,12 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map,in
 	    floor(res.minx), floor(res.miny),
 	    ceil(res.maxx), ceil(res.maxy));
 
-    fprintf( out,"/UIDBase %d def\n", cidmaster->uniqueid?cidmaster->uniqueid: 4000000 + (rand()&0x3ffff) );
-    if ( cidmaster->xuid!=NULL ) {
-	fprintf( out,"/XUID %s def\n", cidmaster->xuid );
-	/* SFIncrementXUID(cidmaster); */ /* Unique ID managment in CID fonts is too complex for this simple trick to work */
+    if ( cidmaster->use_uniqueid ) {
+	fprintf( out,"/UIDBase %d def\n", cidmaster->uniqueid?cidmaster->uniqueid: 4000000 + (rand()&0x3ffff) );
+	if ( cidmaster->xuid!=NULL && cidmaster->use_xuid ) {
+	    fprintf( out,"/XUID %s def\n", cidmaster->xuid );
+	    /* SFIncrementXUID(cidmaster); */ /* Unique ID managment in CID fonts is too complex for this simple trick to work */
+	}
     }
 
     dumpfontinfo((DumpChar) fputc,out,cidmaster,ff_cid);

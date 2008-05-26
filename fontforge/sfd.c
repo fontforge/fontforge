@@ -1765,6 +1765,10 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
     if ( sf->uniqueid!=0 )
 	fprintf(sfd, "UniqueID: %d\n", sf->uniqueid );
+    if ( sf->use_xuid )
+	fprintf(sfd, "UseXUID: 1\n" );
+    if ( sf->use_uniqueid )
+	fprintf(sfd, "UseUniqueID: 1\n" );
     if ( sf->horiz_base!=NULL )
 	SFDDumpBase(sfd,"BaseHoriz:",sf->horiz_base);
     if ( sf->vert_base!=NULL )
@@ -6224,6 +6228,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->use_typo_metrics = temp;
+	} else if ( strmatch(tok,"UseUniqueID:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->use_uniqueid = temp;
+	} else if ( strmatch(tok,"UseXUID:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->use_xuid = temp;
 	} else if ( strmatch(tok,"UniqueID:")==0 ) {
 	    getint(sfd,&sf->uniqueid);
 	} else if ( strmatch(tok,"XUID:")==0 ) {
