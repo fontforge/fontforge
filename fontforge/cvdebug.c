@@ -374,8 +374,9 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 #if defined(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
 	show_raw = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Raw));
 #endif
+	if ( !show_raw )
+	    show_transformed = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Transform));
 	show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
-	show_transformed = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Transform));
 	r = show_twilight ? &exc->twilight : &exc->pts;
 	n = r->n_points;
 	pts = show_current ? r->cur : r->org;
@@ -383,7 +384,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	ph = FreeTypeAtLeast(2,1,8)?4:2;	/* number of phantom pts */
 
 	actives = dv->active_refs;
-	if ( !show_transformed )
+	if ( !show_transformed || show_raw )
 	    actives = NULL;
 
 	watches = DebuggerGetWatches(dv->dc,&n_watch);
@@ -410,8 +411,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    }
 	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
 		++c;
-		if ( y>0 )
-		    GDrawDrawLine(pixmap,0,y+dv->ii.fh-dv->ii.as,
+		GDrawDrawLine(pixmap,0,y+dv->ii.fh-dv->ii.as,
 			    event->u.expose.rect.x+event->u.expose.rect.width,y+dv->ii.fh-dv->ii.as,
 			    0x000000);
 	    }
@@ -634,6 +634,8 @@ return( ret );
 return( parent );
 }
 
+static void DVPointsFigureSB(DebugView *dv);
+
 static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
     int i;
 
@@ -674,6 +676,8 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
 	break;
 	}
     }
+    if ( dv->points!=NULL )
+	DVPointsFigureSB(dv);
 }
     
 static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
@@ -1523,6 +1527,7 @@ return( DVChar(dv,event));
 	sbwidth = GDrawPointsToPixels(gw,_GScrollBar_Width);
 	GDrawResize(dv->points_v,r.width-sbwidth,r.height-dv->pts_head);
 	GGadgetResize(dv->pts_vsb,sbwidth,r.height-dv->pts_head);
+	GGadgetMove(dv->pts_vsb,r.width-sbwidth,dv->pts_head);
       break;
       case et_close:
 	GDrawDestroyWindow(dv->points);
@@ -1767,6 +1772,20 @@ static void DVCreateStore(DebugView *dv) {
     GDrawSetVisible(dv->storage,true);
 }
 
+#if defined(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
+static int DV_Raw(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int on = GGadgetIsChecked(g);
+	GGadget *trans = GWidgetGetControl(ew,CID_Transform);
+	GGadgetSetEnabled(trans,!on);
+	GGadgetSetChecked(trans, on? false : show_transformed );
+    }
+return( true );
+}
+#endif
+
 static void DVCreatePoints(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
@@ -1827,7 +1846,7 @@ static void DVCreatePoints(DebugView *dv) {
     label[4].text_is_1byte = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[2].gd.pos.y+16;
-    gcd[4].gd.flags = gg_visible | gg_enabled | gg_rad_startnew | (show_current ? gg_cb_on : 0 );
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_rad_startnew | (show_grid ? gg_cb_on : 0 );
     gcd[4].gd.cid = CID_Grid;
     gcd[4].creator = GRadioCreate;
 
@@ -1838,8 +1857,9 @@ static void DVCreatePoints(DebugView *dv) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 43; gcd[k].gd.pos.y = gcd[4].gd.pos.y;
-    gcd[k].gd.flags = gg_visible | gg_enabled | (!show_current ? gg_cb_on : 0 );
+    gcd[k].gd.flags = gg_visible | gg_enabled | (show_raw ? gg_cb_on : 0 );
     gcd[k].gd.cid = CID_Raw;
+    gcd[k].gd.handle_controlevent = DV_Raw;
     gcd[k++].creator = GRadioCreate;
 #endif
 
