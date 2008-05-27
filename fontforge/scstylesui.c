@@ -319,6 +319,168 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 }
 
 /* ************************************************************************** */
+/* *************************** Small Caps Dialog **************************** */
+/* ************************************************************************** */
+#define CID_SCH_Is_XH	1001
+#define CID_SCH_Lab	1002
+#define CID_SCH		1003
+
+static int SmallCaps_OK(GGadget *g, GEvent *e) {
+    int err = false;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	double small_caps_height = 0;
+	if ( !GGadgetIsChecked(GWidgetGetControl(ew,CID_SCH_Is_XH))) {
+	    small_caps_height  = GetReal8(ew,CID_SCH,_("Small Caps Height"),&err);
+	    if ( err )
+return( true );
+	}
+	FVAddSmallCaps( (FontViewBase *) ed->fv, small_caps_height );
+	ed->done = true;
+    }
+return( true );
+}
+
+static int SC_Def_Changed(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int on = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_SCH), !on);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_SCH_Lab), !on);
+    }
+return( true );
+}
+
+void AddSmallCapsDlg(FontView *fv) {
+    StyleDlg ed;
+    SplineFont *sf = fv->b.sf;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[15], boxes[6], *barray[8], *hvarray[31];
+    GTextInfo label[15];
+    int k;
+    char sch[40];
+
+    memset(&ed,0,sizeof(ed));
+    ed.fv = fv;
+    ed.sf = sf;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Add Small Caps");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    ed.gw = gw = GDrawCreateTopWindow(NULL,&pos,style_e_h,&ed,&wattrs);
+
+
+    k=0;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
+    memset(label,0,sizeof(label));
+
+    label[k].text = (unichar_t *) _(
+	"Unlike most commands this one does not work directly on the\n"
+	"selected glyphs. Instead, if you select an \"A\" (or an \"a\")\n"
+	"FontForge will create (or reuse) a glyph named \"a.sc\", and\n"
+	"it will copied a modified version of the \"A\" glyph into this one.");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[0] = &gcd[k-1]; hvarray[1] = GCD_ColSpan; hvarray[2] = NULL;
+
+    gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GSpacerCreate;
+    hvarray[3] = &gcd[k-1]; hvarray[4] = GCD_ColSpan; hvarray[5] = NULL;
+
+    label[k].text = (unichar_t *) _("Small Caps letters should be as tall as the x-height");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+    gcd[k].gd.cid = CID_SCH_Is_XH;
+    gcd[k].gd.handle_controlevent = SC_Def_Changed;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[6] = &gcd[k-1]; hvarray[7] = GCD_ColSpan; hvarray[8] = NULL;
+
+    label[k].text = (unichar_t *) _("Small Cap Height:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible ;
+    gcd[k].gd.cid = CID_SCH_Lab;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( sch, "%g", rint( SFFindXHeight(fv->b.sf,fv->b.active_layer)));
+    label[k].text = (unichar_t *) sch;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_SCH;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[9] = &gcd[k-2]; hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
+
+    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = SmallCaps_OK;
+    gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
+
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = CondenseExtend_Cancel;
+    gcd[k].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = barray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[12] = &boxes[3]; hvarray[13] = GCD_ColSpan; hvarray[14] = NULL;
+    hvarray[15] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+    GDrawSetVisible(gw,true);
+
+    while ( !ed.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}
+
+/* ************************************************************************** */
 /* ***************************** Embolden Dialog **************************** */
 /* ************************************************************************** */
 

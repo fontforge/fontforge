@@ -74,7 +74,7 @@ extern int autohint_before_generate;
 struct smallcaps {
     double lc_stem_width, uc_stem_width;
     double stem_factor;
-    double xheight, capheight;
+    double xheight, scheight, capheight;
     SplineFont *sf;
     int layer;
     double italic_angle, tan_ia;
@@ -145,7 +145,7 @@ static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 	    SplineCharAutoHint(&dummy,ly_fore,NULL);
 	    which = &dummy;
 	}
-	for ( s= which->vstem; s!=NULL; s=s->next ) {
+	for ( s= which->vstem; s!=NULL; s=s->next ) if ( !s->ghost ) {
 	    for ( j=0; j<cnt; ++j )
 		if ( widths[j].width==val )
 	    break;
@@ -153,7 +153,7 @@ static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 		widths[j].total += HIlen(s);
 	    else if ( j<MW ) {
 		++cnt;
-		widths[j].width = val;
+		widths[j].width = s->width;
 		widths[j].total = HIlen(s);
 	    }
 	}
@@ -227,7 +227,22 @@ return( 0 );
 return( b.miny );
 }
 
-static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int layer) {
+double SFFindXHeight(SplineFont *sf,int layer) {
+    int i,cnt;
+    double sum,val;
+
+    for ( i=cnt=0, sum=0; xheight_str[i]!=0; ++i ) {
+	val = CharHeight(SFGetChar(sf,xheight_str[i],NULL),layer);
+	if ( val>0 ) {
+	    sum += val;
+	    ++cnt;
+	}
+    }
+return( cnt==0 ? 0 : sum/cnt );
+}
+
+static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
+	int layer, double small_caps_height ) {
     int i, cnt;
     double sum, val;
 
@@ -240,7 +255,7 @@ static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int l
     small->lc_stem_width = CaseMajorVerticalStemWidth(sf, layer,lc_stem_str, small->tan_ia );
     small->uc_stem_width = CaseMajorVerticalStemWidth(sf, layer,uc_stem_str, small->tan_ia );
 
-    if ( small->uc_stem_width<=small->lc_stem_width || small->lc_stem_width==-1 )
+    if ( small->uc_stem_width<=small->lc_stem_width || small->lc_stem_width==0 )
 	small->stem_factor = 1;
     else
 	small->stem_factor = small->lc_stem_width / small->uc_stem_width;
@@ -252,7 +267,7 @@ static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int l
 	    ++cnt;
 	}
     }
-    small->xheight = cnt==0 ? 0 : sum/cnt;
+    small->xheight = cnt==0 ? 0 : rint( sum/cnt );
 
     for ( i=cnt=0, sum=0; capheight_str[i]!=0; ++i ) {
 	val = CharHeight(SFGetChar(sf,capheight_str[i],NULL),layer);
@@ -262,6 +277,8 @@ static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,int l
 	}
     }
     small->capheight = cnt==0 ? 0 : sum/cnt;
+
+    small->scheight = small_caps_height > 0 ? small_caps_height : small->xheight;
 }
 
 static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int grk,
@@ -826,12 +843,12 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     no_windowing_ui = true;		/* Turn off undoes */
     SplineCharAutoHint(sc_sc,layer,NULL);
     no_windowing_ui = nwi;
-    if ( RealNear( small->stem_factor, small->xheight/small->capheight ))
+    if ( RealNear( small->stem_factor, small->scheight/small->capheight ))
 return;
 
     SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
     SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-    remove_y = sc_b.maxy - small->xheight + small->stem_factor*(cap_b.maxy - small->capheight);
+    remove_y = sc_b.maxy - small->scheight + small->stem_factor*(cap_b.maxy - small->capheight);
     if ( remove_y>-1 && remove_y<1 )
 return;
     if ( cap_b.maxy == cap_b.miny )
@@ -861,7 +878,7 @@ return;
     SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
 }
 
-void FVAddSmallCaps(FontViewBase *fv) {
+void FVAddSmallCaps(FontViewBase *fv, double small_cap_height) {
     int gid, enc, cnt, ltn,crl,grk;
     SplineFont *sf = fv->sf;
     SplineChar *sc, *sc_sc, *rsc;
@@ -894,8 +911,8 @@ return;		/* Can't randomly add things to a CID keyed font */
     }
     if ( cnt==0 )
 return;
-    SmallCapsFindConstants(&small,sf,fv->active_layer);
-    if ( small.xheight==0 || small.capheight==0 ) {
+    SmallCapsFindConstants(&small,sf,fv->active_layer,small_cap_height);
+    if ( small.scheight==0 || small.capheight==0 ) {
 	ff_post_error(_("Unknown scale"),_("Could not figure out scaling factor for small caps"));
 return;
     }

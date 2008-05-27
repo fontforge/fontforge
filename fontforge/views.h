@@ -616,6 +616,7 @@ extern char *PST2Text(PST *pst,SplineFont *sf);
 
 void EmboldenDlg(FontView *fv, CharView *cv);
 void CondenseExtendDlg(FontView *fv, CharView *cv);
+void AddSmallCapsDlg(FontView *fv);
 void ObliqueDlg(FontView *fv, CharView *cv);
 void ItalicDlg(FontView *fv, CharView *cv);
 
