@@ -1098,7 +1098,6 @@ typedef struct steminfo {
     unsigned int linearedges: 1;/* If we have a nice rectangle then we aren't */
 				/*  interested in the orientation which is */
 			        /*  wider than long */
-    unsigned int bigsteminfo: 1;/* See following structure */
     int16 hintnumber;		/* when dumping out hintmasks we need to know */
 				/*  what bit to set for this hint */
     union {
@@ -1111,25 +1110,13 @@ typedef struct steminfo {
     HintInstance *where;	/* location(s) in the other coord */
 } StemInfo;
 
-typedef struct pointlist { struct pointlist *next; SplinePoint *sp; } PointList;
-typedef struct bigsteminfo {
-    StemInfo s;
-    PointList *left, *right;
-} BigStemInfo;
-    
 typedef struct dsteminfo {
     struct dsteminfo *next;	/* First two fields match those in steminfo */
     unsigned int hinttype: 2;	/* Only used by undoes */
     unsigned int used: 1;	/* used only by tottf.c:gendinstrs, metafont.c to mark a hint that has been dealt with */
-    unsigned int bigsteminfo: 1;/* See following structure */
     BasePoint left, right, unit;
     HintInstance *where;	/* location(s) along the unit vector */
 } DStemInfo;
-
-typedef struct bigdsteminfo {
-    DStemInfo s;
-    PointList *left, *right;
-} BigDStemInfo;
 
 typedef struct minimumdistance {
     /* If either point is NULL it will be assumed to mean either the origin */
