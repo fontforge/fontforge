@@ -5801,6 +5801,7 @@ static int GFI_LookupSort(GGadget *g, GEvent *e) {
 		}
 	    }
 	}
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,true);
 	GFI_LookupEnableButtons(gfi,isgpos);
     }
 return( true );
