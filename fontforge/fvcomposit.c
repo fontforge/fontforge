@@ -1903,7 +1903,8 @@ return( ap1->anchor );
 return( NULL );
 }
 
-static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int layer, int ch,
+static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
+	int layer, int ch,
 	SplineChar *rsc, int copybmp, real ia, int basech, int invert, int pos ) {
     real transform[6];
     DBounds bb, rbb, bbb;
@@ -1914,7 +1915,6 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int layer, int ch,
     BDFFont *bdf;
     real ybase, italicoff;
     const unichar_t *temp;
-    SplineChar *basersc=NULL;
     int baserch = basech;
     int eta;
     AnchorPoint *ap1, *ap2;
@@ -1941,7 +1941,13 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int layer, int ch,
 	/* Again, a tiny bit of overlap is usual for Aring */
 	rbb.miny += (rbb.maxy-rbb.miny)/30;
     ybase = SplineCharFindSlantedBounds(sc,layer,&bb,ia);
-    if ( ia==0 && baserch!=basech && (basersc = SFGetChar(sf,baserch,NULL))!=NULL ) {
+    if ( basersc==NULL ) {
+	if ( baserch!=basech && ( basersc = SFGetChar(sf,baserch,NULL))!=NULL )
+	    /* Do Nothing */;
+	else if ( basech==sc->unicodeenc || ( basersc = SFGetChar(sf,basech,NULL))==NULL )
+	    basersc = sc;
+    }
+    if ( ia==0 && baserch!=basech && basersc!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,layer,&bbb,ia);
 	if ( ____utype2[1+ch]&(____ABOVE|____BELOW) ) {
 	    bbb.maxy = bb.maxy;
@@ -1952,8 +1958,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int layer, int ch,
 	    bbb.minx = bb.minx;
 	}
 	bb = bbb;
-    } else if ( basech==sc->unicodeenc || ( basersc = SFGetChar(sf,basech,NULL))==NULL )
-	basersc = sc;
+    }
 
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
@@ -2181,12 +2186,13 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int layer, int ch,
     }
 }
 
-static void SCCenterAccent(SplineChar *sc,SplineFont *sf,int layer, int ch, int copybmp,
+static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
+	int layer, int ch, int copybmp,
 	real ia, int basech, char *dot ) {
     int invert = false;
     SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot);
 
-    _SCCenterAccent(sc,sf,layer,ch,rsc,copybmp,ia,basech,invert,-1);
+    _SCCenterAccent(sc,basersc,sf,layer,ch,rsc,copybmp,ia,basech,invert,-1);
 }
 
 static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int layer, int ch, int copybmp) {
@@ -2736,7 +2742,7 @@ return;
 	    base->use_my_metrics = true;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
-	    SCCenterAccent(sc,sf,layer,*pt++,copybmp,ia, ch, dot);
+	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,copybmp,ia, ch, dot);
 	while ( *pt ) {
 	    if ( base!=NULL ) base->use_my_metrics = false;
 	    SCPutRefAfter(sc,sf,layer,*pt++,copybmp);
@@ -2800,6 +2806,6 @@ return( 2 );
 	}
     }
 
-    _SCCenterAccent(sc,sf,layer,uni,asc,copybmp,ia,basech,invert,pos);
+    _SCCenterAccent(sc,NULL,sf,layer,uni,asc,copybmp,ia,basech,invert,pos);
 return( 0 );
 }
