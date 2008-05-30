@@ -1962,6 +1962,7 @@ return;
     tok->filename[tok->inc_depth] = filename;
     tok->inlist[tok->inc_depth] = in;
     tok->line[tok->inc_depth] = 1;
+    fea_ParseTok(tok);
 }
 
 static void fea_ParseTok(struct parseState *tok) {
