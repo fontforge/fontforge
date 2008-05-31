@@ -210,8 +210,6 @@ return( &_GIcon_textjava );
 return( &_GIcon_textmake );
 	if ( cu_strstartmatch("text/fontps",m))
 return( &_GIcon_textfontps );
-	if ( cu_strstartmatch("application/vnd.font-fontforge-sfd",m))
-return( &_GIcon_textfontsfd );
 	if ( cu_strstartmatch("text/font",m))
 return( &_GIcon_textfontbdf );
 	if ( cu_strstartmatch("text/ps",m))
@@ -238,6 +236,8 @@ return( &_GIcon_tar );
 return( &_GIcon_compressed );
     if ( cu_strstartmatch("application/pdf",m) )
 return( &_GIcon_texthtml );
+    if ( cu_strstartmatch("application/vnd.font-fontforge-sfd",m))
+return( &_GIcon_textfontsfd );
     if ( cu_strstartmatch("application/x-font-type1",m))
 return( &_GIcon_textfontps );
     if ( cu_strstartmatch("application/x-font-ttf",m) || cu_strstartmatch("application/x-font-otf",m))
