@@ -3758,6 +3758,308 @@ struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
 return( sub );
 }
 
+int LookupUsedNested(SplineFont *sf,OTLookup *checkme) {
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    int r,c;
+
+    if ( checkme->lookup_type>=gpos_start )
+	otl = sf->gpos_lookups;
+    else
+	otl = sf->gsub_lookups;
+    while ( otl!=NULL ) {
+	for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
+	    if ( sub->fpst!=NULL ) {
+		for ( r=0; r<sub->fpst->rule_cnt; ++r ) {
+		    struct fpst_rule *rule = &sub->fpst->rules[r];
+		    for ( c=0; c<rule->lookup_cnt; ++c ) {
+			if ( rule->lookups[c].lookup == checkme )
+return( true );
+		    }
+		}
+	    } else if ( otl->lookup_type==morx_context ) {
+		for ( c = 0; c<sub->sm->class_cnt*sub->sm->state_cnt; ++c ) {
+		    struct asm_state *state = &sub->sm->state[c];
+		    if ( state->u.context.mark_lookup==checkme )
+return( true );
+		    if ( state->u.context.cur_lookup==checkme )
+return( true );
+		}
+	    }
+	}
+    }
+return( false );
+}
+
+static void AALTRemoveOld(SplineFont *sf) {
+    FeatureScriptLangList *fl, *prev;
+    OTLookup *otl, *otlnext;
+
+    for ( otl=sf->gsub_lookups; otl!=NULL; otl=otlnext ) {
+	otlnext = otl->next;
+	prev = NULL;
+	for ( fl = otl->features; fl!=NULL; prev=fl, fl=fl->next ) {
+	    if ( fl->featuretag==CHR('a','a','l','t') ) {
+		if ( fl==otl->features && fl->next==NULL && !LookupUsedNested(sf,otl))
+		    SFRemoveLookup(sf,otl);
+		else {
+		    if ( prev==NULL )
+			otl->features = fl->next;
+		    else
+			prev->next = fl->next;
+		    fl->next = NULL;
+		    FeatureScriptLangListFree(fl);
+		}
+	break;
+	    }
+	}
+    }
+}
+
+void SllkFree(struct sllk *sllk,int sllk_cnt) {
+    int i;
+
+    for ( i=0; i<sllk_cnt; ++i ) {
+	free( sllk[i].langs );
+	free( sllk[i].lookups );
+    }
+    free(sllk);
+}
+
+static void AddOTLToSllk(struct sllk *sllk, OTLookup *otl, struct scriptlanglist *sl) {
+    int i,j,k,l;
+
+    if ( otl->lookup_type==gsub_single || otl->lookup_type==gsub_alternate ) {
+	for ( i=0; i<sllk->cnt; ++i )
+	    if ( sllk->lookups[i]==otl )
+	break;
+	if ( i==sllk->cnt ) {
+	    if ( sllk->cnt>=sllk->max )
+		sllk->lookups = grealloc(sllk->lookups,(sllk->max+=5)*sizeof(OTLookup *));
+	    sllk->lookups[sllk->cnt++] = otl;
+	    for ( l=0; l<sl->lang_cnt; ++l ) {
+		uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+		for ( j=0; j<sllk->lcnt; ++j )
+		    if ( sllk->langs[j]==lang )
+		break;
+		if ( j==sllk->lcnt ) {
+		    if ( sllk->lcnt>=sllk->lmax )
+			sllk->langs = grealloc(sllk->langs,(sllk->lmax+=sl->lang_cnt+MAX_LANG)*sizeof(uint32));
+		    sllk->langs[sllk->lcnt++] = lang;
+		}
+	    }
+	}
+    } else if ( otl->lookup_type==gsub_context || otl->lookup_type==gsub_contextchain ) {
+	struct lookup_subtable *sub;
+	for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	    FPST *fpst = sub->fpst;
+	    for ( j=0; j<fpst->rule_cnt; ++j ) {
+		struct fpst_rule *r = &fpst->rules[j];
+		for ( k=0; k<r->lookup_cnt; ++k )
+		    AddOTLToSllk(sllk,r->lookups[k].lookup,sl);
+	    }
+	}
+    }
+    /* reverse contextual chaining is weird and I shall ignore it. Adobe does too*/
+}
+
+static char *ComponentsFromPSTs(PST **psts,int pcnt) {
+    char **names=NULL;
+    int ncnt=0, nmax=0;
+    int i,j,len;
+    char *ret;
+
+    /* First find all the names */
+    for ( i=0; i<pcnt; ++i ) {
+	char *nlist = psts[i]->u.alt.components;
+	char *start, *pt, ch;
+
+	for ( start = nlist; ; ) {
+	    while ( *start==' ' )
+		++start;
+	    if ( *start=='\0' )
+	break;
+	    for ( pt=start; *pt!=' ' && *pt!='\0'; ++pt );
+	    ch = *pt; *pt = '\0';
+	    for ( j=0; j<ncnt; ++j )
+		if ( strcmp( start,names[j])==0 )
+	    break;
+	    if ( j==ncnt ) {
+		if ( ncnt>=nmax )
+		    names = grealloc(names,(nmax+=10)*sizeof(char *));
+		names[ncnt++] = copy(start);
+	    }
+	    *pt = ch;
+	    start = pt;
+	}
+    }
+
+    len = 0;
+    for ( i=0; i<ncnt; ++i )
+	len += strlen(names[i])+1;
+    if ( len==0 ) len=1;
+    ret = galloc(len);
+    len = 0;
+    for ( i=0; i<ncnt; ++i ) {
+	strcpy(ret+len,names[i]);
+	len += strlen(names[i]);
+	ret[len++] = ' ';
+    }
+    if ( len==0 )
+	*ret = '\0';
+    else
+	ret[len-1] = '\0';
+
+    for ( i=0; i<ncnt; ++i )
+	free(names[i]);
+    free(names);
+return( ret );
+}
+
+static int SllkMatch(struct sllk *sllk,int s1,int s2) {
+    int i;
+
+    if ( sllk[s1].cnt != sllk[s2].cnt )
+return( false );
+
+    for ( i=0; i<sllk[s1].cnt; ++i ) {
+	if ( sllk[s1].lookups[i] != sllk[s2].lookups[i] )
+return( false );
+    }
+
+return( true );
+}
+
+struct sllk *AddOTLToSllks( OTLookup *otl, struct sllk *sllk,
+	int *_sllk_cnt, int *_sllk_max ) {
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int s;
+
+    for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+	for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+	    for ( s=0; s<*_sllk_cnt; ++s )
+		if ( sl->script == sllk[s].script )
+	    break;
+	    if ( s==*_sllk_cnt ) {
+		if ( *_sllk_cnt>=*_sllk_max )
+		    sllk = grealloc(sllk,((*_sllk_max)+=10)*sizeof(struct sllk));
+		memset(&sllk[*_sllk_cnt],0,sizeof(struct sllk));
+		sllk[(*_sllk_cnt)++].script = sl->script;
+	    }
+	    AddOTLToSllk(&sllk[s], otl,sl);
+	}
+    }
+return( sllk );
+}
+
+OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    PST **psts, *pst;
+    int j,k,l;
+    int gid,pcnt;
+    SplineFont *_sf;
+    SplineChar *sc;
+
+    /* Make the new lookup (and all its supporting data structures) */
+    otl = chunkalloc(sizeof(OTLookup));
+    otl->lookup_type = gsub_alternate;
+    otl->lookup_flags = sllk[i].lookups[0]->lookup_flags & pst_r2l;
+    otl->features = fl = chunkalloc(sizeof(FeatureScriptLangList));
+    fl->featuretag = CHR('a','a','l','t');
+    /* Any other scripts with the same lookup set? */
+    for ( j=i; j<sllk_cnt; ++j ) {
+	if ( i==j || SllkMatch(sllk,i,j)) {
+	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl->next = fl->scripts;
+	    fl->scripts = sl;
+	    sl->script = sllk[j].script;
+	    sl->lang_cnt = sllk[j].lcnt;
+	    if ( sl->lang_cnt>MAX_LANG )
+		sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+	    for ( l=0; l<sl->lang_cnt; ++l )
+		if ( l<MAX_LANG )
+		    sl->langs[l] = sllk[j].langs[l];
+		else
+		    sl->morelangs[l-MAX_LANG] = sllk[j].langs[l];
+	    if ( i!=j ) sllk[j].cnt = 0;	/* Mark as processed */
+	}
+    }
+    otl->subtables = sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub->lookup = otl;
+    sub->per_glyph_pst_or_kern = true;
+
+    /* Add it to the various lists it needs to be in */
+    otl->next = sf->gsub_lookups;
+    sf->gsub_lookups = otl;
+
+    /* Now look at every glyph in the font, and see if it has any of the */
+    /*  lookups we are interested in, and if it does, build a new pst */
+    /*  containing all posibilities listed on any of them */
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    psts = galloc(sllk[i].cnt*sizeof(PST *));
+    k=0;
+    do {
+	_sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
+	for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc = _sf->glyphs[gid])!=NULL ) {
+	    pcnt = 0;
+	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->subtable==NULL )
+	    continue;
+		for ( j=0; j<sllk[i].cnt; ++j )
+		    if ( pst->subtable->lookup == sllk[i].lookups[j] )
+		break;
+		if ( j<sllk[i].cnt )
+		    psts[pcnt++] = pst;
+	    }
+	    if ( pcnt==0 )
+	continue;
+	    pst = chunkalloc(sizeof(PST));
+	    pst->subtable = sub;
+	    pst->type = pst_alternate;
+	    pst->next = sc->possub;
+	    sc->possub = pst;
+	    pst->u.alt.components = ComponentsFromPSTs(psts,pcnt);
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
+    free(psts);
+    NameOTLookup(otl,sf);
+return( otl );
+}
+
+void AddNewAALTFeatures(SplineFont *sf) {
+    /* different script/lang combinations may need different 'aalt' lookups */
+    /*  well, let's just say different script combinations */
+    /* for each script/lang combo find all single/alternate subs for each */
+    /*  glyph. Merge those choices and create new lookup with that info */
+    struct sllk *sllk = NULL;
+    int sllk_cnt=0, sllk_max = 0;
+    int i;
+    OTLookup *otl;
+
+    AALTRemoveOld(sf);
+
+    /* Find all scripts, and all the single/alternate lookups for each */
+    /*  and all the languages used for these in each script */
+    for ( otl=sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
+	sllk = AddOTLToSllks( otl, sllk, &sllk_cnt, &sllk_max );
+    }
+    /* Each of these gets its own gsub_alternate lookup which gets inserted */
+    /*  at the head of the lookup list. Each lookup has one subtable */
+    for ( i=0; i<sllk_cnt; ++i ) {
+	if ( sllk[i].cnt==0 )		/* Script used, but provides no alternates */
+    continue;
+	NewAALTLookup(sf,sllk,sllk_cnt,i);
+    }
+
+    SllkFree(sllk,sllk_cnt);
+}
+
+
 int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask) {
     FeatureScriptLangList *fl;
     struct lookup_subtable *sub;
