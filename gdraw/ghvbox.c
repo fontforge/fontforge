@@ -332,7 +332,7 @@ static void GHVBoxResize(GGadget *g, int32 width, int32 height) {
 
     if ( si.height!=height ) {
 	int vrows=0;
-	for ( i=0; i<gb->cols; ++i )
+	for ( i=0; i<gb->rows; ++i )
 	    if ( si.rows[i].sized>0 )
 		++vrows;
 	if ( height<si.height ) {
