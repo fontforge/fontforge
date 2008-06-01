@@ -1406,7 +1406,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 	    uint32 *scripts = SFScriptsInLookups(sf,isgpos);
 	    fprintf( out, "\n# %s \n\n", isgpos ? "GPOS" : "GSUB" );
 	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
-		if ( otl->features!=NULL )	/* Nested lookups will be output with the lookups which invoke them */
+		if ( otl->features!=NULL && !otl->unused )	/* Nested lookups will be output with the lookups which invoke them */
 		    dump_lookup( out, sf, otl );
 	    for ( i=0; feats[i]!=0; ++i ) {
 		fprintf( out, "\nfeature %s%c%c%c%c {\n",
@@ -1569,6 +1569,8 @@ void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
 
+    SFFindUnusedLookups(sf);
+    
     untick_lookups(sf);
     preparenames(sf);
     dump_gsubgpos(out,sf);
