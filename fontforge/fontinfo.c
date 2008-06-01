@@ -6668,6 +6668,11 @@ static void lookupmenu_dispatch(GWindow v, GMenuItem *mi, GEvent *e) {
 	    if ( i==lk->cnt )
 return;
 	    otl = lk->all[i].lookup;
+	    SFFindUnusedLookups(gfi->sf);
+	    if ( otl->unused ) {
+		ff_post_error(_("No data"), _("This lookup contains no data"));
+return;
+	    }
 	}
 	defname = strconcat(gfi->sf->fontname,".fea");
 	filename = gwwv_save_filename(_("Feature file?"),defname,"*.fea");
