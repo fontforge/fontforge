@@ -10025,6 +10025,14 @@ return( NULL );
 return( sub );
 }
 
+static PyObject *PyFFFont_buildOrReplaceAALTFeatures(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+
+    AddNewAALTFeatures(sf);
+
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_addAnchorClass(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     char *subtable, *anchor_name;
@@ -11724,6 +11732,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "addAnchorClass", PyFFFont_addAnchorClass, METH_VARARGS, "Add a new anchor class to the subtable"},
     { "addKerningClass", PyFFFont_addKerningClass, METH_VARARGS, "Add a new subtable with a new kerning class to a lookup"},
     { "alterKerningClass", PyFFFont_alterKerningClass, METH_VARARGS, "Changes the existing kerning class in the named subtable"},
+    { "buildOrReplaceAALTFeatures", PyFFFont_buildOrReplaceAALTFeatures, METH_NOARGS, "Removes any existing 'aalt' features and builds new ones."},
     { "findEncodingSlot", PyFFFont_findEncodingSlot, METH_VARARGS, "Returns the encoding of a unicode code point or glyph name if they are in the current encoding. Else returns -1" },
     { "getKerningClass", PyFFFont_getKerningClass, METH_VARARGS, "Returns the contents of the kerning class in the named subtable"},
     { "getLookupInfo", PyFFFont_getLookupInfo, METH_VARARGS, "Get info about the named lookup" },

@@ -2732,7 +2732,6 @@ int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 extern int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
 	uint32 totag, int tosli, int toflags, int ismac);
 extern int SFRemoveUnusedNestedFeatures(SplineFont *sf);
-extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
 extern FPST *FPSTGlyphToClass(FPST *fpst);
 
@@ -2851,6 +2850,7 @@ extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subta
 extern SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf,struct lookup_subtable *subtable);
 extern void SFFindUnusedLookups(SplineFont *sf);
 extern void SFFindClearUnusedLookupBits(SplineFont *sf);
+extern int LookupUsedNested(SplineFont *sf,OTLookup *checkme);
 extern void SFRemoveUnusedLookupSubTables(SplineFont *sf,
 	int remove_incomplete_anchorclasses,
 	int remove_unused_lookups);
@@ -2886,6 +2886,13 @@ extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, ui
 	int pixelsize, SplineChar **glyphs);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
 extern void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new);
+
+struct sllk { uint32 script; int cnt, max; OTLookup **lookups; int lcnt, lmax; uint32 *langs; };
+extern void SllkFree(struct sllk *sllk,int sllk_cnt);
+extern struct sllk *AddOTLToSllks( OTLookup *otl, struct sllk *sllk,
+	int *_sllk_cnt, int *_sllk_max );
+extern OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i);
+extern void AddNewAALTFeatures(SplineFont *sf);
 
 extern void SplinePointRound(SplinePoint *,real);
 
