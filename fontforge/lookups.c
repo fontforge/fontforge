@@ -1610,9 +1610,22 @@ struct scriptlanglist *SLCopy(struct scriptlanglist *sl) {
 return( newsl );
 }
 
+struct scriptlanglist *SListCopy(struct scriptlanglist *sl) {
+    struct scriptlanglist *head=NULL, *last=NULL, *cur;
+
+    for ( ; sl!=NULL; sl=sl->next ) {
+	cur = SLCopy(sl);
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+return( head );
+}
+
 FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl) {
     FeatureScriptLangList *newfl;
-    struct scriptlanglist *sl, *prev;
 
     if ( fl==NULL )
 return( NULL );
@@ -1621,15 +1634,7 @@ return( NULL );
     *newfl = *fl;
     newfl->next = NULL;
 
-    prev = NULL;
-    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
-	if ( prev==NULL )
-	    newfl->scripts = prev = SLCopy(sl);
-	else {
-	    prev->next = SLCopy(sl);
-	    prev = prev->next;
-	}
-    }
+    newfl->scripts = SListCopy(fl->scripts);
 return( newfl );
 }
     

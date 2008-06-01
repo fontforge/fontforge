@@ -2863,6 +2863,7 @@ extern void NameOTLookup(OTLookup *otl,SplineFont *sf);
 extern void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
 extern void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
 struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
+struct scriptlanglist *SListCopy(struct scriptlanglist *sl);
 extern FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl);
 extern void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl);
 extern void FLMerge(OTLookup *into, OTLookup *from);

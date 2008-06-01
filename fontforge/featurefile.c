@@ -1480,7 +1480,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 }
 
 /* Sadly the lookup names I generate are often not distinguishable in the */
-/*  first 31 characters. So provide a fall back mechanism if we get a name */
+/*  first 31 characters. So provide a fall-back mechanism if we get a name */
 /*  collision */
 static void preparenames(SplineFont *sf) {
     int isgpos, cnt, try, i;
@@ -2627,7 +2627,7 @@ return;
     if ( inside_feat ) {
 	struct feat_item *item = chunkalloc(sizeof(struct feat_item));
 	item->type = ft_langsys;
-	item->u2.sl = SLCopy(tok->def_langsyses);
+	item->u2.sl = SListCopy(tok->def_langsyses);
 	item->next = tok->sofar;
 	tok->sofar = item;
     }
@@ -4075,7 +4075,7 @@ return;
     item->type = ft_feat_start;
     item->u1.tag = feat_tag;
     if ( tok->def_langsyses!=NULL )
-	item->u2.sl = SLCopy(tok->def_langsyses);
+	item->u2.sl = SListCopy(tok->def_langsyses);
     else {
 	item->u2.sl = chunkalloc(sizeof(struct scriptlanglist));
 	item->u2.sl->script = DEFAULT_SCRIPT;
@@ -5278,7 +5278,7 @@ static void fea_AttachFeatureToLookup(OTLookup *otl,uint32 feat_tag,
 	fl->next = otl->features;
 	otl->features = fl;
 	fl->featuretag = feat_tag;
-	fl->scripts = SLCopy(sl);
+	fl->scripts = SListCopy(sl);
     } else
 	SLMerge(fl,sl);
 }
