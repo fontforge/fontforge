@@ -4733,6 +4733,8 @@ static void fea_ApplyLookupListContextual(struct parseState *tok,
 		last->next = sub;
 	    last = sub;
 	    sub->fpst = l->u2.fpst;
+	    l->u2.fpst->next = tok->sf->possub;
+	    tok->sf->possub = l->u2.fpst;
 	    l->u2.fpst = NULL;
 	    sub->fpst->subtable = sub;
 	    for ( i=0; i<sub->fpst->rule_cnt; ++i ) {
