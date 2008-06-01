@@ -3287,7 +3287,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 		    ( g->next->next==NULL || g->next->next->mark_count!=g->mark_count)) {
 		head = fea_process_pos_pair(tok,g,NULL,false);
 	    } else {
-		LogError(_("Unparseable contetual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		LogError(_("Unparseable contextual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
 	    }
 	    r->lookups[i].lookup = (OTLookup *) head;
@@ -3440,7 +3440,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    } else if ( g->next!=NULL && g->mark_count==g->next->mark_count ) {
 		head = fea_process_sub_ligature(tok,g,rpl,NULL);
 	    } else {
-		LogError(_("Unparseable contetual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		LogError(_("Unparseable contextual sequence on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
 	    }
 	    r->lookups[i].lookup = (OTLookup *) head;
