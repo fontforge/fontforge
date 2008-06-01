@@ -1644,17 +1644,6 @@ static int strcmpD(const void *_str1, const void *_str2) {
 return( strcmp(str1,str2));
 }
 
-/* Ok, somes strings overlap so can't use normal strcpy */
-static char *mystrcpy(char *str1, const char *str2) {
-    int ch;
-    char *dest = str1;
-
-    while ( (ch = *str2++)!='\0' )
-	*str1++ = ch;
-    *str1 = '\0';
-return( dest );
-}
-
 /* Order glyph classes just so we can do a simple string compare to check for */
 /*  class match. So the order doesn't really matter, just so it is consistent */
 static char *fea_canonicalClassOrder(char *class) {
@@ -1702,70 +1691,96 @@ static int fea_classesIntersect(char *class1, char *class2) {
     int ch1, ch2;
 
     for ( pt1=class1 ; ; ) {
-	while ( *pt1==' ' ) ++pt1;
-	if ( *pt1=='\0' )
-return( 0 );
-	for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
-	ch1 = *pt1; *pt1 = '\0';
-	for ( pt2=class2 ; ; ) {
-	    while ( *pt2==' ' ) ++pt2;
-	    if ( *pt2=='\0' )
-	break;
-	    for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
-	    ch2 = *pt2; *pt2 = '\0';
-	    if ( strcmp(start1,start2)==0 ) {
-		*pt2 = ch2; *pt1 = ch1;
-return( 1 );
-	    }
-	    *pt2 = ch2;
-	}
-	*pt1 = ch1;
+        while ( *pt1==' ' ) ++pt1;
+        if ( *pt1=='\0' )
+            return( 0 );
+        for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
+        ch1 = *pt1; *pt1 = '\0';
+        for ( pt2=class2 ; ; ) {
+            while ( *pt2==' ' ) ++pt2;
+            if ( *pt2=='\0' )
+                break;
+            for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
+            ch2 = *pt2; *pt2 = '\0';
+            if ( strcmp(start1,start2)==0 ) {
+                *pt2 = ch2; *pt1 = ch1;
+                return( 1 );
+            }
+            *pt2 = ch2;
+        }
+        *pt1 = ch1;
     }
 }
 
+
+#define SKIP_SPACES(s, i)                       \
+    do {                                        \
+        while ((s)[i] == ' ')                   \
+            i++;                                \
+    }                                           \
+    while (0)
+
+#define FIND_SPACE(s, i)                        \
+    do {                                        \
+        while ((s)[i] != ' ' && (s)[i] != '\0') \
+            i++;                                \
+    }                                           \
+    while (0)
+
+
 static char *fea_classesSplit(char *class1, char *class2) {
-    char *pt1, *start1, *pt2, *start2;
-    int ch1, ch2;
+    char *intersection;
     int len = strlen(class1), len2 = strlen(class2);
-    char *intersection, *ipt;
+    int ix;
+    int i, j, i_end, j_end;
+    int length;
+    int match_found;
 
     if ( len2>len ) len = len2;
-    intersection = ipt = galloc(len2+1);
-    
-    for ( pt1=class1 ; ; ) {
-	while ( *pt1==' ' ) ++pt1;
-	if ( *pt1=='\0' )
-    break;
-	for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
-	ch1 = *pt1; *pt1 = '\0';
-	for ( pt2=class2 ; ; ) {
-	    while ( *pt2==' ' ) ++pt2;
-	    if ( *pt2=='\0' )
-	break;
-	    for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
-	    ch2 = *pt2; *pt2 = '\0';
-	    if ( strcmp(start1,start2)==0 ) {
-		/* Here's a glyph name in both classes. Remove it from each */
-		/*  and add to the new intersection class */
-		strcpy(ipt,start1);
-		ipt += strlen(ipt);
-		*ipt++ = ' ';
-		*pt2 = ch2; *pt1 = ch1;
-		while ( *pt2==' ' ) ++pt2;
-		while ( *pt1==' ' ) ++pt1;
-		mystrcpy(start1,pt1); ch1 = *pt1;
-		mystrcpy(start2,pt2);
-	break;
-	    }
-	    *pt2 = ch2;
-	}
-	*pt1 = ch1;
+    intersection = galloc(len+1);
+    ix = 0;
+
+    i = 0;
+    SKIP_SPACES(class1, i);
+    while (class1[i] != '\0') {
+        i_end = i;
+        FIND_SPACE(class1, i_end);
+
+        length = i_end - i;
+
+        match_found = 0;
+        j = 0;
+        SKIP_SPACES(class2, j);
+        while (!match_found && class2[j] != '\0') {
+            j_end = j;
+            FIND_SPACE(class2, j_end);
+
+            if (length == j_end - j && strncmp(class1 + i, class2 + j, length) == 0) {
+                match_found = 1;
+
+                if (ix != 0) {
+                    intersection[ix] = ' ';
+                    ix++;
+                }
+                memcpy(intersection + ix, class1 + i, length * sizeof (char));
+                ix += length;
+
+                SKIP_SPACES(class1, i_end);
+                memmove(class1 + i, class1 + i_end, (strlen(class1 + i_end) + 1) * sizeof (char));
+                SKIP_SPACES(class2, j_end);
+                memmove(class2 + j, class2 + j_end, (strlen(class2 + j_end) + 1) * sizeof (char));
+            } else {
+                j = j_end;
+                SKIP_SPACES(class2, j);
+            }
+        }
+        if (!match_found) {
+            i = i_end;
+            SKIP_SPACES(class1, i);
+        }
     }
-    if ( ipt!=intersection )
-	ipt[-1] = '\0';
-    else
-	*intersection = '\0';		/* Should never happen (we only call this if there is one) */
-return( intersection );
+    intersection[ix] = '\0';
+    return( intersection );
 }
 
 #define MAXT	40
@@ -4985,7 +5000,7 @@ static void fea_fillKernClass(KernClass *kc,struct feat_item *l) {
 	    pst = l->u2.pst;
 	    for ( i=1; i<kc->first_cnt; ++i ) {
 		if ( fea_classesIntersect(kc->firsts[i],l->u1.class) ) {
-		    for ( j=1; j<kc->first_cnt; ++j ) {
+		    for ( j=1; j<kc->second_cnt; ++j ) {
 			if ( fea_classesIntersect(kc->seconds[j],pst->u.pair.paired) ) {
 			    /* FontForge only supports kerning classes in one direction at a time, not full value records */
 			    if ( pst->u.pair.vr[0].h_adv_off != 0 ) {
