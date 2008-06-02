@@ -71,15 +71,6 @@ static void SSCPValidate(SplineSet *ss) {
 
 extern int autohint_before_generate;
 
-struct smallcaps {
-    double lc_stem_width, uc_stem_width;
-    double stem_factor;
-    double xheight, scheight, capheight;
-    SplineFont *sf;
-    int layer;
-    double italic_angle, tan_ia;
-};
-
 static int NumberLayerPoints(SplineSet *ss) {
     int cnt;
     SplinePoint *pt;
@@ -227,24 +218,52 @@ return( 0 );
 return( b.miny );
 }
 
-double SFFindXHeight(SplineFont *sf,int layer) {
+static double StandardGlyphHeight(SplineFont *sf,int layer,unichar_t *str) {
     int i,cnt;
-    double sum,val;
+    double sum,height, bestheight, bestdiff, val, diff;
+    int useit;
+    char *blues, *end;
 
-    for ( i=cnt=0, sum=0; xheight_str[i]!=0; ++i ) {
-	val = CharHeight(SFGetChar(sf,xheight_str[i],NULL),layer);
+    for ( i=cnt=0, sum=0; str[i]!=0; ++i ) {
+	val = CharHeight(SFGetChar(sf,str[i],NULL),layer);
 	if ( val>0 ) {
 	    sum += val;
 	    ++cnt;
 	}
     }
-return( cnt==0 ? 0 : sum/cnt );
+    if ( cnt==0 )
+return( 0 );
+    height = sum / cnt;
+
+    /* Do we have a BlueValues entry? */
+    /* If so, snap height to the closest alignment zone (bottom of the zone) */
+    if ( sf->private!=NULL && (blues = PSDictHasEntry(sf->private,"BlueValues"))!=NULL ) {
+	while ( *blues==' ' || *blues=='[' ) ++blues;
+	/* Must get at least this close, else we'll just use what we found */
+	bestheight = height; bestdiff = (sf->ascent+sf->descent)/100.0;
+	useit = true;
+	while ( *blues!='\0' && *blues!=']' ) {
+	    val = strtod(blues,&end);
+	    if ( blues==end )
+	break;
+	    blues = end;
+	    while ( *blues==' ' ) ++blues;
+	    if ( useit ) {
+		if ( (diff = val-height)<0 ) diff = -diff;
+		if ( diff<bestdiff ) {
+		    bestheight = val;
+		    bestdiff = diff;
+		}
+	    }
+	    useit = !useit;	/* Only interested in every other BV entry */
+	}
+	height = bestheight;
+    }
+return( height );
 }
 
-static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
-	int layer, double small_caps_height ) {
-    int i, cnt;
-    double sum, val;
+void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
+	int layer ) {
 
     memset(small,0,sizeof(*small));
 
@@ -260,29 +279,13 @@ static void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
     else
 	small->stem_factor = small->lc_stem_width / small->uc_stem_width;
 
-    for ( i=cnt=0, sum=0; xheight_str[i]!=0; ++i ) {
-	val = CharHeight(SFGetChar(sf,xheight_str[i],NULL),layer);
-	if ( val>0 ) {
-	    sum += val;
-	    ++cnt;
-	}
-    }
-    small->xheight = cnt==0 ? 0 : rint( sum/cnt );
-
-    for ( i=cnt=0, sum=0; capheight_str[i]!=0; ++i ) {
-	val = CharHeight(SFGetChar(sf,capheight_str[i],NULL),layer);
-	if ( val>0 ) {
-	    sum += val;
-	    ++cnt;
-	}
-    }
-    small->capheight = cnt==0 ? 0 : sum/cnt;
-
-    small->scheight = small_caps_height > 0 ? small_caps_height : small->xheight;
+    small->xheight   = StandardGlyphHeight(sf,layer,  xheight_str);
+    small->capheight = StandardGlyphHeight(sf,layer,capheight_str);
+    small->scheight  = small->xheight;
 }
 
 static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int grk,
-	uint32 ftag) {
+	int symbols, uint32 ftag) {
     OTLookup *any = NULL;
     int i;
     struct lookup_subtable *sub;
@@ -309,6 +312,10 @@ static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int gr
 	    sub = SFSubTableFindOrMake(sf,ftag,CHR('g','r','e','k'),gsub_single);
 	    lookups[2] = sub->lookup;
 	}
+	if ( lookups[3]==NULL && symbols ) {
+	    sub = SFSubTableFindOrMake(sf,ftag,DEFAULT_SCRIPT,gsub_single);
+	    lookups[3] = sub->lookup;
+	}
     } else {
 	if ( any!=NULL ) {
 	    /* There's only one lookup, let's extend it to deal with any script */
@@ -333,8 +340,12 @@ static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int gr
 	    lookups[2] = any;
 	    FListAppendScriptLang(FindFeatureTagInFeatureScriptList(ftag,any->features),CHR('g','r','e','k'),DEFAULT_LANG);
 	}
+	if ( lookups[3]==NULL && symbols ) {
+	    lookups[3] = any;
+	    FListAppendScriptLang(FindFeatureTagInFeatureScriptList(ftag,any->features),DEFAULT_SCRIPT,DEFAULT_LANG);
+	}
     }
-    for ( i=0; i<3; ++i ) {
+    for ( i=0; i<4; ++i ) {
 	if ( lookups[i]!=NULL && lookups[i]->subtables==NULL ) {
 	    lookups[i]->subtables = chunkalloc(sizeof(struct lookup_subtable));
 	    lookups[i]->subtables->lookup = lookups[i];
@@ -346,11 +357,11 @@ static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int gr
 
 static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 	struct lookup_subtable **smcp,
-	int ltn,int crl,int grk) {
+	int ltn,int crl,int grk,int symbols) {
     OTLookup *test;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
-    OTLookup *lc2sc[3], *lsmcp[3];
+    OTLookup *lc2sc[4], *lsmcp[4];
     int i;
 
     memset(lc2sc,0,sizeof(lc2sc)); memset(lsmcp,0,sizeof(lsmcp));
@@ -381,10 +392,10 @@ static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 	}
     }
 
-    MakeLookups(sf,lc2sc,ltn,crl,grk,CHR('c','2','s','c'));
-    MakeLookups(sf,lsmcp,ltn,crl,grk,CHR('s','c','m','p'));
+    MakeLookups(sf,lc2sc,ltn,crl,grk,symbols,CHR('c','2','s','c'));
+    MakeLookups(sf,lsmcp,ltn,crl,grk,symbols,CHR('s','m','c','p'));
 
-    for ( i=0; i<3; ++i ) {
+    for ( i=0; i<4; ++i ) {
 	if ( lc2sc[i]!=NULL )
 	    c2sc[i] = lc2sc[i]->subtables;
 	if ( lsmcp[i]!=NULL )
@@ -394,20 +405,31 @@ static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 
 static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
 	uint32 script,struct lookup_subtable **c2sc,struct lookup_subtable **smcp,
-	FontViewBase *fv) {
+	FontViewBase *fv, struct smallcaps *small) {
     SplineChar *sc_sc, *lc_sc;
-    char buffer[200];
+    char buffer[300];
     PST *pst;
     int enc;
+    char *ext;
+    int lower, script_index;
 
-    lc_sc = SFGetChar(sf,tolower(cap_sc->unicodeenc),NULL);
+    if ( cap_sc->unicodeenc>=0 && cap_sc->unicodeenc<=0x10000 ) {
+	lower = tolower(cap_sc->unicodeenc);
+	ext = isupper(cap_sc->unicodeenc) ? small->extension_for_letters :
+					    small->extension_for_symbols;
+    } else {
+	lower = cap_sc->unicodeenc;
+	ext = small->extension_for_symbols;
+    }
+    lc_sc = SFGetChar(sf,lower,NULL);
     if ( lc_sc!=NULL )
-	snprintf(buffer,sizeof(buffer),"%s.sc", lc_sc->name );
+	snprintf(buffer,sizeof(buffer),"%s.%s", lc_sc->name, ext );
     else {
 	const char *pt = StdGlyphName(buffer,tolower(cap_sc->unicodeenc),sf->uni_interp,sf->for_new_glyphs);
 	if ( pt!=buffer )
 	    strcpy(buffer,pt);
-	strcat(buffer,".sc");
+	strcat(buffer,".");
+	strcat(buffer,ext);
     }
     sc_sc = SFGetChar(sf,-1,buffer);
     if ( sc_sc!=NULL ) {
@@ -426,15 +448,20 @@ return( sc_sc );
     pst = chunkalloc(sizeof(PST));
     pst->next = cap_sc->possub;
     cap_sc->possub = pst;
-    pst->subtable = c2sc[script==CHR('l','a','t','n')?0:script==CHR('c','y','r','l')?1:2];
+    script_index = script==CHR('l','a','t','n')?0:
+			 script==CHR('c','y','r','l')?1:
+			 script==CHR('g','r','e','k')?2:3;
+    pst->subtable = c2sc[script_index];
     pst->type = pst_substitution;
     pst->u.subs.variant = copy(buffer);
 
+    /* Adobe's convention seems to be that symbols get both the lc and the uc */
+    /*  feature attached to them. */
     if ( lc_sc!=NULL ) {
 	pst = chunkalloc(sizeof(PST));
 	pst->next = lc_sc->possub;
 	lc_sc->possub = pst;
-	pst->subtable = smcp[script==CHR('l','a','t','n')?0:script==CHR('c','y','r','l')?1:2];
+	pst->subtable = smcp[script_index];
 	pst->type = pst_substitution;
 	pst->u.subs.variant = copy(buffer);
     }
@@ -878,27 +905,26 @@ return;
     SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
 }
 
-void FVAddSmallCaps(FontViewBase *fv, double small_cap_height) {
-    int gid, enc, cnt, ltn,crl,grk;
+void FVAddSmallCaps(FontViewBase *fv, struct smallcaps *small) {
+    int gid, enc, cnt, ltn,crl,grk,symbols;
     SplineFont *sf = fv->sf;
     SplineChar *sc, *sc_sc, *rsc;
     RefChar *ref, *r;
-    struct lookup_subtable *c2sc[3], *smcp[3];
+    struct lookup_subtable *c2sc[4], *smcp[4];
     char buffer[200];
     const unichar_t *alts;
-    struct smallcaps small;
 
     if ( sf->cidmaster!=NULL )
 return;		/* Can't randomly add things to a CID keyed font */
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
 	sc->ticked = false;
-    cnt=ltn=crl=grk=0;
+    cnt=ltn=crl=grk=symbols=0;
     memset(c2sc,0,sizeof(c2sc)); memset(smcp,0,sizeof(smcp));
 
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( sc->unicodeenc<0x10000 &&
-		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) ) {
+	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script==CHR('l','a','t','n'))
 		    ++ltn, ++cnt;
@@ -906,30 +932,32 @@ return;		/* Can't randomly add things to a CID keyed font */
 		    ++grk, ++cnt;
 		else if ( script==CHR('c','y','r','l'))
 		    ++crl, ++cnt;
+		else if ( small->dosymbols )
+		    ++symbols, ++cnt;
 	    }
 	}
     }
     if ( cnt==0 )
 return;
-    SmallCapsFindConstants(&small,sf,fv->active_layer,small_cap_height);
-    if ( small.scheight==0 || small.capheight==0 ) {
+    if ( small->scheight==0 || small->capheight==0 ) {
 	ff_post_error(_("Unknown scale"),_("Could not figure out scaling factor for small caps"));
 return;
     }
 
-    MakeSCLookups(sf,c2sc,smcp,ltn,crl,grk);
+    MakeSCLookups(sf,c2sc,smcp,ltn,crl,grk,symbols);
     ff_progress_start_indicator(10,_("Small Capitals"),
 	_("Building small capitals"),NULL,cnt,1);
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( sc->unicodeenc<0x10000 &&
-		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) ) {
+	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script!=CHR('l','a','t','n') &&
 			script!=CHR('g','r','e','k') &&
-			script!=CHR('c','y','r','l'))
+			script!=CHR('c','y','r','l') &&
+			!small->dosymbols )
     continue;
-		if ( islower(sc->unicodeenc)) {
+		if ( sc->unicodeenc<0x10000 &&islower(sc->unicodeenc)) {
 		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
 		    if ( sc==NULL )
       goto end_loop;
@@ -941,10 +969,10 @@ return;
 			 alts[1]!=0 ))
     continue;	/* Deal with these later */
 		sc->ticked = true;
-		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv);
+		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,small);
 		if ( sc_sc==NULL )
       goto end_loop;
-		BuildSmallCap(sc_sc,sc,fv->active_layer,&small);
+		BuildSmallCap(sc_sc,sc,fv->active_layer,small);
       end_loop:
 		if ( !ff_progress_next())
     break;
@@ -955,14 +983,15 @@ return;
     /*  look at things which depend on references */
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( sc->unicodeenc<0x10000 &&
-		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) ) {
+	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script!=CHR('l','a','t','n') &&
 			script!=CHR('g','r','e','k') &&
-			script!=CHR('c','y','r','l'))
+			script!=CHR('c','y','r','l') &&
+			!small->dosymbols )
     continue;
-		if ( islower(sc->unicodeenc)) {
+		if ( sc->unicodeenc<0x10000 &&islower(sc->unicodeenc)) {
 		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
 		    if ( sc==NULL )
       goto end_loop2;
@@ -970,7 +999,7 @@ return;
 		if ( sc->ticked )
     continue;
 		sc->ticked = true;
-		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv);
+		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,small);
 		if ( sc_sc==NULL )
       goto end_loop2;
 		if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
@@ -978,7 +1007,15 @@ return;
 		else if ( sc->layers[fv->active_layer].splines==NULL ) {
 		    RefChar *rlast = NULL;
 		    for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
-			snprintf(buffer,sizeof(buffer),"%s.sc", ref->sc->name );
+			SplineChar *ref_l_sc;
+			if ( ref->sc->unicodeenc>=0x10000 ||
+				!(islower(ref->sc->unicodeenc) || isupper(ref->sc->unicodeenc)))
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, small->extension_for_symbols );
+			else if ( isupper(ref->sc->unicodeenc) &&
+				(ref_l_sc = SFGetChar(sf,tolower(ref->sc->unicodeenc),NULL))!=NULL )
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref_l_sc->name, small->extension_for_letters );
+			else
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, small->extension_for_letters );
 			rsc = SFGetChar(sf,-1,buffer);
 			if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
 			    rsc = ref->sc;
@@ -2405,9 +2442,9 @@ struct italicserifdata {
     double xheight;
     double ia;
     double stem_angle;
-    struct { double x,y; enum { pt_oncurve, pt_offcurve, pt_end } type; } points[21];
+    struct { double x,y; enum { pt_oncurve, pt_offcurve, pt_end } type; } points[27];
 };
-static struct italicserifdata normalitalicserif =
+static struct italicserifdata normalitalicserif =	/* faces right */
     { 1000, 84, 450, -15.2, 90, /* vertical */{
 	{ 84,     116, pt_oncurve },
 	{ 84,     97,  pt_offcurve },
@@ -2417,7 +2454,7 @@ static struct italicserifdata normalitalicserif =
 	{ 98.86,  36,  pt_offcurve },
 	{ 107.34, 36,  pt_oncurve },
 	{ 116.87, 36,  pt_offcurve },
-	{ 129.88, 46,  pt_offcurve },
+	{ 133.42, 46,  pt_offcurve },
 	{ 143,    63,  pt_oncurve },
 	{ 171.75, 114, pt_oncurve },
 	{ 188.68, 103, pt_oncurve },
@@ -2438,7 +2475,7 @@ static struct italicserifdata bolditalicserif =
 	{ 158.48, 61,  pt_offcurve },
 	{ 168.09, 61,  pt_oncurve },
 	{ 186.12, 61,  pt_offcurve },
-	{ 206.91, 82,  pt_offcurve },
+	{ 205.36, 82,  pt_offcurve },
 	{ 225.43, 121, pt_oncurve },
 	{ 235.72, 141, pt_oncurve },
 	{ 266.74, 127, pt_oncurve },
@@ -2449,44 +2486,108 @@ static struct italicserifdata bolditalicserif =
 	{ 0,      80,  pt_offcurve },
 	{ 0,      123, pt_oncurve },
 	{ 0, 0, pt_end }} };
+static struct italicserifdata leftfacingitalicserif =	/* bottom left of "x", and top right */
+    { 1000, 34, 450, -15.2, 90, /* vertical */{
+	{   25,    111, pt_oncurve },
+	{   25,    91, pt_offcurve },
+	{   19,     75, pt_offcurve },
+	{   10,     59, pt_offcurve },
+	{  -24,      1, pt_offcurve },
+	{  -33,    -11, pt_offcurve },
+	{  -64,    -11, pt_oncurve },
+	{  -94,    -11, pt_offcurve },
+	{ -118,      5, pt_offcurve },
+	{ -125,     31, pt_oncurve },
+	{ -130,     51, pt_offcurve },
+	{ -120,     66, pt_offcurve },
+	{ -101,     66, pt_oncurve },
+	{  -93,     66, pt_offcurve },
+	{  -81,     63, pt_offcurve },
+	{  -66,     56, pt_oncurve },
+	{  -54,     50, pt_offcurve },
+	{  -43,     47, pt_offcurve },
+	{  -37,     47, pt_oncurve },
+	{  -28,     47, pt_offcurve },
+	{  -18,     56, pt_offcurve },
+	{   -8,     76, pt_oncurve },
+	{   -2,     89, pt_offcurve },
+	{    0,     98, pt_offcurve },
+	{    0,    111, pt_oncurve },
+	{ 0, 0, pt_end }} };
+static struct italicserifdata boldleftfacingitalicserif =	/* bottom left of "x", and top right */
+    { 1000, 60, 450, -15.2, 90, /* vertical */{
+	{   39,    176, pt_oncurve },
+	{   39,    159, pt_offcurve },
+	{   33,    131, pt_offcurve },
+	{   24,    103, pt_offcurve },
+	{   -8,      7, pt_offcurve },
+	{  -25,    -13, pt_offcurve },
+	{  -75,    -13, pt_oncurve },
+	{ -113,    -13, pt_offcurve },
+	{ -146,     11, pt_offcurve },
+	{ -156,     46, pt_oncurve },
+	{ -164,     77, pt_offcurve },
+	{ -147,    102, pt_offcurve },
+	{ -116,    102, pt_oncurve },
+	{ -104,    102, pt_offcurve },
+	{  -91,     98, pt_offcurve },
+	{  -72,     89, pt_oncurve },
+	{  -61,     83, pt_offcurve },
+	{  -55,     81, pt_offcurve },
+	{  -49,     81, pt_oncurve },
+	{  -32,     81, pt_offcurve },
+	{  -23,     90, pt_offcurve },
+	{  -12,    122, pt_oncurve },
+	{   -4,    144, pt_offcurve },
+	{    0,    162, pt_offcurve },
+	{    0,    180, pt_oncurve },
+	{ 0, 0, pt_end }} };
+static struct italicserifdata *normalserifs[] = { &normalitalicserif, &leftfacingitalicserif, &leftfacingitalicserif };
+static struct italicserifdata *boldserifs[] = { &bolditalicserif, &boldleftfacingitalicserif, &boldleftfacingitalicserif };
+
 static void InterpBp(BasePoint *bp, int index, double xscale, double yscale,
-	double interp, double endx) {
-    bp->x = xscale * ((1-interp)*normalitalicserif.points[index].x + interp*bolditalicserif.points[index].x) + endx;
-    bp->y = yscale * ((1-interp)*normalitalicserif.points[index].y + interp*bolditalicserif.points[index].y);
+	double interp, double endx, struct italicserifdata *normal,struct italicserifdata  *bold) {
+    bp->x = xscale * ((1-interp)*normal->points[index].x + interp*bold->points[index].x) + endx;
+    bp->y = yscale * ((1-interp)*normal->points[index].y + interp*bold->points[index].y);
 }
 
-static SplineSet *MakeBottomItalicSerif(double stemwidth,double endx,ItalicInfo *ii) {
+static SplineSet *MakeBottomItalicSerif(double stemwidth,double endx,
+	ItalicInfo *ii, int seriftype) {
     double xscale, yscale, interp;
     BasePoint bp;
     int i;
     SplinePoint *last, *cur;
     SplineSet *ss;
+    struct italicserifdata *normal, *bold;
+
+    normal = normalserifs[seriftype];
+    bold   =   boldserifs[seriftype];
 
     if ( stemwidth<0 )
 	stemwidth = -stemwidth;
 
     xscale = ii->emsize/1000.0;
-    interp = (stemwidth/xscale - normalitalicserif.stemwidth)/
-	    (bolditalicserif.stemwidth-normalitalicserif.stemwidth);
-    yscale = ii->x_height/normalitalicserif.xheight;
+    interp = (stemwidth/xscale - normal->stemwidth)/
+	    (bold->stemwidth-normal->stemwidth);
+    yscale = ii->x_height/normal->xheight;
 
     ss = chunkalloc(sizeof(SplineSet));
     i=0;
-    InterpBp(&bp,i,xscale,yscale,interp,endx);
+    InterpBp(&bp,i,xscale,yscale,interp,endx,normal,bold);
     ss->first = last = SplinePointCreate(bp.x,bp.y);
-    for ( ++i; normalitalicserif.points[i].type!=pt_end; ) {
-	if ( normalitalicserif.points[i].type==pt_oncurve ) {
-	    InterpBp(&bp,i,xscale,yscale,interp,endx);
+    for ( ++i; normal->points[i].type!=pt_end; ) {
+	if ( normal->points[i].type==pt_oncurve ) {
+	    InterpBp(&bp,i,xscale,yscale,interp,endx,normal,bold);
 	    cur = SplinePointCreate(bp.x,bp.y);
 	    SplineMake3(last,cur);
 	    ++i;
 	} else {
-	    InterpBp(&last->nextcp,i,xscale,yscale,interp,endx);
+	    InterpBp(&last->nextcp,i,xscale,yscale,interp,endx,normal,bold);
 	    last->nonextcp = false;
 	    i+=2;
-	    InterpBp(&bp,i,xscale,yscale,interp,endx);
+	    InterpBp(&bp,i,xscale,yscale,interp,endx,normal,bold);
 	    cur = SplinePointCreate(bp.x,bp.y);
-	    InterpBp(&cur->prevcp,i-1,xscale,yscale,interp,endx);
+	    InterpBp(&cur->prevcp,i-1,xscale,yscale,interp,endx,normal,bold);
 	    cur->noprevcp = false;
 	    SplineMake3(last,cur);
 	    ++i;
@@ -2505,7 +2606,7 @@ static SplineSet *MakeBottomItalicSerif(double stemwidth,double endx,ItalicInfo 
     }
     { double temp;
 	if ( (temp = ss->first->me.x-ss->last->me.x)<0 ) temp = -temp;
-	if ( !RealWithin(temp,stemwidth,.1))
+	if ( seriftype==0 && !RealWithin(temp,stemwidth,.1))
 	    IError( "Stem width doesn't match serif" );
     }
 return( ss );
@@ -2513,7 +2614,7 @@ return( ss );
 
 static SplineSet *MakeTopItalicSerif(double stemwidth,double endx,
 	ItalicInfo *ii,int at_xh) {
-    SplineSet *ss = MakeBottomItalicSerif(stemwidth,0,ii);
+    SplineSet *ss = MakeBottomItalicSerif(stemwidth,0,ii,0);
     real trans[6];
 
     memset(trans,0,sizeof(trans));
@@ -2522,10 +2623,166 @@ static SplineSet *MakeTopItalicSerif(double stemwidth,double endx,
 return( SplinePointListTransform(ss,trans,true));
 }
 
-static int InHintRange(StemInfo *h, double pos) {
-    HintInstance *hi;
+static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
+	double endx, ItalicInfo *ii,int seriftype, int top) {
+    SplineSet *ss;
+    real trans[6];
+    int newright, i;
+    double spos, epos, dpos;
+    extended t1, t2;
+    SplinePoint *sp;
+    Spline *s;
+    double cur_sw;
+    int order2 = ii->order2;
 
-    for ( hi=h->where; hi!=NULL; hi=hi->next ) {
+    ii->order2 = false;		/* Don't convert to order2 untill after */
+    ss = MakeBottomItalicSerif(stemwidth,0,ii,seriftype);
+    ii->order2 = order2;	/* We finish messing with the serif */
+
+    memset(trans,0,sizeof(trans));
+
+    if ( top ) {
+	trans[0] = trans[3] = -1;
+	trans[4] = endx; trans[5] = top==1 ? ii->x_height : ii->ascender_height;
+	SplinePointListTransform(ss,trans,true);
+    }
+    /* given the orientation of the dstem, do we need to flip the serif? */
+    newright = (( top && seriftype!=0 ) || (!top && seriftype==0));
+    if ( (newright && d->unit.x*d->unit.y>0) || (!newright && d->unit.x*d->unit.y<0)) {
+	trans[0] = -1; trans[3] = 1;
+	trans[4] = ss->first->me.x+endx;
+	trans[5] = 0;
+	SplinePointListTransform(ss,trans,true);
+	SplineSetReverse(ss);
+    }
+
+    /* Now we want to find the places near the start and end of the serif */
+    /*  where it is parallel to the stem. We want to truncate the serif   */
+    /*  at those points, so that the serif now starts and ends parallel to*/
+    /*  the stem. */
+    /* How to do that? rotate it parallel to the stem and then look for */
+    /*  min/max points */
+    trans[0] = trans[3] = d->unit.x;
+    trans[2] = -(trans[1] = -d->unit.y);
+    trans[4] = trans[5] = 0;
+    SplinePointListTransform(ss,trans,true);
+
+    /* Now the min/max point will probably be on the first spline, but might */
+    /*  be on the second (and will probably be on the last spline, but might */
+    /*  be on the penultimate) */
+    s = ss->first->next;
+    for ( i=0; i<2; ++i ) {
+	SplineFindExtrema(&s->splines[1],&t1,&t2);
+	if ( t1>=0 && t1<=1 ) {
+	    if ( s!=ss->first->next ) {
+		SplineFree(ss->first->next);
+		SplinePointFree(ss->first);
+		ss->first = s->from;
+	    }
+	    if ( t1>=.999 ) {
+		SplinePointFree(ss->first);
+		ss->first = s->to;
+		SplineFree(ss->first->prev);
+		ss->first->prev = NULL;
+	    } else if ( t1>.001 ) {
+		sp = SplineBisect(s,t1);
+		SplinePointFree(ss->first);
+		SplineFree(sp->prev);
+		sp->prev = NULL;
+		ss->first = sp;
+	    }
+    break;
+	}
+	s=s->to->next;
+    }
+    s = ss->last->prev;
+    for ( i=0; i<2; ++i ) {
+	SplineFindExtrema(&s->splines[1],&t1,&t2);
+	if ( t1>=0 && t1<=1 ) {
+	    if ( s!=ss->last->prev ) {
+		SplineFree(ss->last->prev);
+		SplinePointFree(ss->last);
+		ss->last = s->to;
+	    }
+	    if ( t1<=.001 ) {
+		SplinePointFree(ss->last);
+		ss->last = s->from;
+		SplineFree(ss->last->next);
+		ss->last->next = NULL;
+	    } else if ( t1<.999 ) {
+		sp = SplineBisect(s,t1);
+		SplinePointFree(ss->last);
+		SplineFree(sp->next);
+		sp->next = NULL;
+		ss->last = sp;
+	    }
+    break;
+	}
+	s = s->from->prev;
+    }
+    /* Now rotate it back to the correct orientation */
+    trans[2] = -trans[2]; trans[1] = -trans[1];
+    SplinePointListTransform(ss,trans,true);
+
+    /* Now it probably doesn't have the correct stemwidth */
+    cur_sw = (ss->first->me.x-ss->last->me.x)*d->unit.y - (ss->first->me.y-ss->last->me.y)*d->unit.x;
+    if ( cur_sw<0 ) cur_sw = -cur_sw;
+    if ( cur_sw!=stemwidth ) {
+	double diff3 = (cur_sw-stemwidth)/3;
+	if ( ss->first->me.x*d->unit.y-ss->first->me.y*d->unit.x <
+		ss->last->me.x*d->unit.y-ss->last->me.y*d->unit.x )
+	    diff3 = -diff3;
+	ss->first->me.x -= diff3*d->unit.y;
+	ss->first->me.y -= -diff3*d->unit.x;
+	ss->first->nextcp.x -= diff3*d->unit.y;
+	ss->first->nextcp.y -= -diff3*d->unit.x;
+	SplineRefigure(ss->first->next);
+	ss->last->me.x += 2*diff3*d->unit.y;
+	ss->last->me.y += -2*diff3*d->unit.x;
+	ss->last->prevcp.x += 2*diff3*d->unit.y;
+	ss->last->prevcp.y += -2*diff3*d->unit.x;
+	SplineRefigure(ss->last->prev);
+    }
+
+    /* Finally, position so that the serif lies on the dstem. We've already */
+    /*  given it the correct height, so all we can adjust is the x value */
+    /* (We played with the x-value earlier, but that only worked if we didn't */
+    /*  need to truncate anything) */
+    memset(trans,0,sizeof(trans));
+    trans[0] = trans[3] = 1;
+
+    spos = d->left .x + (ss->first->me.y-d->left .y)*d->unit.x/d->unit.y;
+    epos = d->right.x + (ss->first->me.y-d->right.y)*d->unit.x/d->unit.y;
+    dpos = ss->first->me.x + (ss->last->me.y-ss->first->me.y)*d->unit.x/d->unit.y;
+    if ( dpos>ss->last->me.x ) {
+	/* ss->last is to the left of ss->first */
+	/* move ss->first to the rightmost edge of the dstem */
+	if ( spos>epos )
+	    trans[4] = spos-ss->first->me.x;
+	else
+	    trans[4] = epos-ss->first->me.x;
+    } else {
+	if ( spos<epos )
+	    trans[4] = spos-ss->first->me.x;
+	else
+	    trans[4] = epos-ss->first->me.x;
+    }
+    SplinePointListTransform(ss,trans,true);
+    if ( ii->order2 ) {
+	SplineSet *newss;
+	SplineSetsRound2Int(ss,1.0,false,false);
+	newss = SSttfApprox(ss);
+	SplinePointListFree(ss);
+	ss = newss;
+    } else {
+	SPLCatagorizePoints(ss);
+    }
+return( ss );
+}
+
+static int InHintRange(HintInstance *hi, double pos) {
+
+    for ( ; hi!=NULL; hi=hi->next ) {
 	if ( pos>=hi->begin && pos<=hi->end )
 return( true );
     }
@@ -2586,10 +2843,10 @@ static void FindBottomSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
 	    if ( ( sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
 	    if ( ( ediff = sp->me.x-(h->start+h->width))<0 ) ediff = -ediff;
 	    if ( sdiff<=3 && ( start==NULL ||
-		    ( sp->me.y<start->me.y && (InHintRange(h,sp->me.y) || !InHintRange(h,start->me.y))))) {
+		    ( sp->me.y<start->me.y && (InHintRange(h->where,sp->me.y) || !InHintRange(h->where,start->me.y))))) {
 		start=sp;
 	    } else if ( ediff<=3 && ( end==NULL ||
-		    ( sp->me.y<end->me.y && (InHintRange(h,sp->me.y) || !InHintRange(h,end->me.y)) ))) {
+		    ( sp->me.y<end->me.y && (InHintRange(h->where,sp->me.y) || !InHintRange(h->where,end->me.y)) ))) {
 		end=sp;
 	    }
 	    if ( sp->next==NULL )
@@ -2604,6 +2861,233 @@ static void FindBottomSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
 	    if ( ValidBottomSerif(start,end,depth,fuzz,h->start-ii->serif_extent-fuzz,h->start+h->width+ii->serif_extent+fuzz))
     break;
 	    else if ( ValidBottomSerif(end,start,depth,fuzz,h->start-ii->serif_extent-fuzz,h->start+h->width+ii->serif_extent+fuzz)) {
+		SplinePoint *temp = start;
+		start = end;
+		end = temp;
+    break;
+	    } else
+		start = NULL;
+	}
+    }
+
+    if ( start==NULL || end==NULL )
+	start = end = NULL;
+    *_start = start;
+    *_end   = end;
+    *_ss    = ss;
+}
+
+static double ValidBottomDSerif(SplinePoint *start,SplinePoint *end,
+	double depth, double fuzz, ItalicInfo *ii, DStemInfo *d ) {
+    double max = start->me.y>end->me.y ? start->me.y : end->me.y;
+    SplinePoint *sp, *last;
+    int got_down = false, got_up=false;
+    /* To be a serif it must go down about as far down as we expect       */
+    /*  (baseline, or the bottom of descenders), it can bounce around     */
+    /*  a little down there, but it can't go too far down. Once it starts */
+    /*  going significantly up, it must continue going up until the end.  */
+    double dlpos, drpos;
+
+    if ( start==end )
+return( false );
+
+    last = NULL;
+    for ( sp=start ; ; ) {
+	dlpos = (sp->me.x-d->left .x)*d->unit.y - (sp->me.y-d->left .y)*d->unit.x;
+	drpos = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x;
+	if ( dlpos< -1.5*ii->serif_extent-fuzz || drpos > 1.5*ii->serif_extent+fuzz )
+return( false );
+	if ( sp->me.y > max+fuzz )
+return( false );
+	if ( sp->me.y < depth-fuzz )
+return( false );
+	if ( sp->me.y < depth+fuzz/2+1 )
+	    got_down = true;
+	else if ( got_down && sp->me.y > depth+fuzz/2 )
+	    got_up = true;
+	if ( last!=NULL ) {
+	    if ( !got_down && sp->me.y>last->me.y+fuzz/10 )
+return( false );
+	    else if ( got_up && sp->me.y<last->me.y-fuzz/10 )
+return( false );
+	}
+	last = sp;
+	if ( sp==end )
+return( got_down );
+	if ( sp->next==NULL )
+return( false );
+	sp = sp->next->to;
+    }
+}
+
+static double ValidTopDSerif(SplinePoint *start,SplinePoint *end,
+	double height, double fuzz, ItalicInfo *ii, DStemInfo *d ) {
+    double min = start->me.y<end->me.y ? start->me.y : end->me.y;
+    SplinePoint *sp, *last;
+    int got_down = false, got_up=false;
+    double dlpos, drpos;
+
+    if ( start==end )
+return( false );
+
+    last = NULL;
+    for ( sp=start ; ; ) {
+	dlpos = (sp->me.x-d->left .x)*d->unit.y - (sp->me.y-d->left .y)*d->unit.x;
+	drpos = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x;
+	if ( dlpos< -1.5*ii->serif_extent-fuzz || drpos > 1.5*ii->serif_extent+fuzz )
+return( false );
+	if ( sp->me.y < min-fuzz )
+return( false );
+	if ( sp->me.y > height+2*fuzz )
+return( false );
+	if ( sp->me.y > height-fuzz/2 )
+	    got_up = true;
+	else if ( got_up && sp->me.y < height-fuzz/2-1 )
+	    got_down = true;
+	if ( last!=NULL ) {
+	    if ( !got_up && sp->me.y<last->me.y-fuzz/2 )
+return( false );
+	    else if ( got_down && sp->me.y>last->me.y+fuzz/2 )
+return( false );
+	}
+	last = sp;
+	if ( sp==end )
+return( got_up );
+	if ( sp->next==NULL )
+return( false );
+	sp = sp->next->to;
+    }
+}
+
+static int RoughlyParallel(SplinePoint *sp,BasePoint *unit) {
+    BasePoint diff;
+    double len, off;
+
+    if ( sp->nonextcp && sp->next!=NULL ) {
+	diff.x = sp->next->to->me.x - sp->me.x;
+	diff.y = sp->next->to->me.y - sp->me.y;
+    } else {
+	diff.x = sp->nextcp.x - sp->me.x;
+	diff.y = sp->nextcp.y - sp->me.y;
+    }
+    len = sqrt(diff.x*diff.x + diff.y*diff.y);
+    if ( len!=0 ) {
+	if ( (off = (diff.x*unit->y - diff.y*unit->x)/len) < 0 ) off = -off;
+	if ( off<.04 )
+return( true );
+    }
+
+    if ( sp->noprevcp && sp->prev!=NULL ) {
+	diff.x = sp->prev->from->me.x - sp->me.x;
+	diff.y = sp->prev->from->me.y - sp->me.y;
+    } else {
+	diff.x = sp->prevcp.x - sp->me.x;
+	diff.y = sp->prevcp.y - sp->me.y;
+    }
+    len = sqrt(diff.x*diff.x + diff.y*diff.y);
+    if ( len!=0 ) {
+	if ( (off = (diff.x*unit->y - diff.y*unit->x)/len) < 0 ) off = -off;
+	if ( off<.04 )
+return( true );
+    }
+return( false );
+}
+
+static void FindBottomSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
+	double depth, ItalicInfo *ii,
+	SplinePoint **_start,SplinePoint **_end, SplineSet **_ss) {
+    SplinePoint *start=NULL, *end=NULL, *sp;
+    SplinePointList *ss;
+    double sdiff, ediff;
+    double pos, spos=0, epos=0;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+	start=end=NULL;
+	for ( sp=ss->first; ; ) {
+	    if ( RoughlyParallel(sp,&d->unit)) {
+		pos = (sp->me.x-d->left.x)*d->unit.x + (sp->me.y-d->left.y)*d->unit.y;
+		if ( ( sdiff = (sp->me.x-d->left.x)*d->unit.y - (sp->me.y-d->left.y)*d->unit.x)<0 ) sdiff = -sdiff;
+		if ( ( ediff = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x)<0 ) ediff = -ediff;
+		/* Hint Ranges for diagonals seem not to be what we want here */
+		if ( sdiff<=10 && ( start==NULL ||
+			( sp->me.y<start->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,spos))*/ ))) {
+		    start=sp;
+		    spos = pos;
+		} else if ( ediff<=10 && ( end==NULL ||
+			( sp->me.y<end->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,epos))*/ ))) {
+		    end=sp;
+		    epos = pos;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+	if ( sp->next==NULL )
+    continue;
+	if ( start!=NULL && end!=NULL ) {
+	    if ( ValidBottomDSerif(start,end,depth,fuzz,ii,d))
+    break;
+	    else if ( ValidBottomDSerif(end,start,depth,fuzz,ii,d)) {
+		SplinePoint *temp = start;
+		start = end;
+		end = temp;
+    break;
+	    } else
+		start = NULL;
+	}
+    }
+
+    if ( start==NULL || end==NULL )
+	start = end = NULL;
+    *_start = start;
+    *_end   = end;
+    *_ss    = ss;
+}
+
+
+static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
+	double height, ItalicInfo *ii,
+	SplinePoint **_start,SplinePoint **_end, SplineSet **_ss) {
+    SplinePoint *start=NULL, *end=NULL, *sp;
+    SplinePointList *ss;
+    double sdiff, ediff;
+    double pos, spos=0, epos=0;
+    double fuzz = (sc->parent->ascent+sc->parent->descent)/100;
+
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+	start=end=NULL;
+	for ( sp=ss->first; ; ) {
+	    if ( RoughlyParallel(sp,&d->unit)) {
+		pos = (sp->me.x-d->left.x)*d->unit.x + (sp->me.y-d->left.y)*d->unit.y;
+		if ( ( sdiff = (sp->me.x-d->left.x)*d->unit.y - (sp->me.y-d->left.y)*d->unit.x)<0 ) sdiff = -sdiff;
+		if ( ( ediff = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x)<0 ) ediff = -ediff;
+		/* Hint Ranges for diagonals seem not to be what we want here */
+		if ( sdiff<=10 && ( start==NULL ||
+			( sp->me.y<start->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,spos))*/ ))) {
+		    start=sp;
+		    spos = pos;
+		} else if ( ediff<=10 && ( end==NULL ||
+			( sp->me.y<end->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,epos))*/ ))) {
+		    end=sp;
+		    epos = pos;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+	if ( sp->next==NULL )
+    continue;
+	if ( start!=NULL && end!=NULL ) {
+	    if ( ValidTopDSerif(start,end,height,fuzz,ii,d))
+    break;
+	    else if ( ValidTopDSerif(end,start,height,fuzz,ii,d)) {
 		SplinePoint *temp = start;
 		start = end;
 		end = temp;
@@ -2669,8 +3153,48 @@ static SplinePoint *StemMoveBottomEndTo(SplinePoint *sp,double y,int is_start) {
 return( sp );
 }
 
+static SplinePoint *StemMoveDBottomEndTo(SplinePoint *sp,double y,DStemInfo *d,
+	int is_start) {
+    SplinePoint *other;
+    double xoff;
+
+    xoff = (y-sp->me.y)*d->unit.x/d->unit.y;
+    if ( is_start ) {
+	if ( sp->noprevcp || y>=sp->me.y ) {
+	    sp->prevcp.y += (y-sp->me.y);
+	    sp->prevcp.x += xoff;
+	    if ( sp->prev->order2 && !sp->prev->from->nonextcp )
+		sp->prev->from->nextcp = sp->prevcp;
+	    sp->me.y = y;
+	    sp->me.x += xoff;
+	    SplineRefigure(sp->prev);
+	} else {
+	    other = SplinePointCreate(sp->me.x+xoff,y);
+	    sp->nonextcp = true;
+	    SplineMake(sp,other,sp->prev->order2);
+	    sp = other;
+	}
+    } else {
+	if ( sp->nonextcp || y>=sp->me.y ) {
+	    sp->nextcp.y += (y-sp->me.y);
+	    sp->nextcp.x += xoff;
+	    if ( sp->next->order2 && !sp->next->to->noprevcp )
+		sp->next->to->prevcp = sp->nextcp;
+	    sp->me.y = y;
+	    sp->me.x += xoff;
+	    SplineRefigure(sp->next);
+	} else {
+	    other = SplinePointCreate(sp->me.x+xoff,y);
+	    sp->noprevcp = true;
+	    SplineMake(other,sp,sp->next->order2);
+	    sp = other;
+	}
+    }
+return( sp );
+}
+
 static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *oldss,
-	SplineSet *ss,int is_start) {
+	SplineSet *ss,DStemInfo *d, int is_start) {
     SplinePoint *other = is_start ? ss->first : ss->last;
 
     if ( is_start ) {
@@ -2731,7 +3255,10 @@ return( sp );
 	    }
 	}
     }
+    if ( d==NULL )
 return( StemMoveBottomEndTo(sp,other->me.y,is_start));
+    else
+return( StemMoveDBottomEndTo(sp,other->me.y,d,is_start));
 }
 
 static void DeSerifBottomStem(SplineChar *sc,int layer,StemInfo *h,ItalicInfo *ii,
@@ -2875,10 +3402,10 @@ static void FindTopSerifOnStem(SplineChar *sc,int layer,StemInfo *h,
 	    if ( ( sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
 	    if ( ( ediff = sp->me.x-(h->start+h->width))<0 ) ediff = -ediff;
 	    if ( sdiff<=3 && ( start==NULL ||
-		    ( sp->me.y>start->me.y && (InHintRange(h,sp->me.y) || !InHintRange(h,start->me.y))))) {
+		    ( sp->me.y>start->me.y && (InHintRange(h->where,sp->me.y) || !InHintRange(h->where,start->me.y))))) {
 		start=sp;
 	    } else if ( ediff<=3 && ( end==NULL ||
-		    ( sp->me.y>end->me.y && (InHintRange(h,sp->me.y) || !InHintRange(h,end->me.y)) ))) {
+		    ( sp->me.y>end->me.y && (InHintRange(h->where,sp->me.y) || !InHintRange(h->where,end->me.y)) ))) {
 		end=sp;
 	    }
 	    if ( sp->next==NULL )
@@ -3014,6 +3541,20 @@ static void SplineNextSplice(SplinePoint *start,SplinePoint *newstuff) {
     start->next->from = start;
     start->nextcp = newstuff->nextcp;
     start->nonextcp = newstuff->nonextcp;
+    if ( start->me.x!=newstuff->me.x || start->me.y!=newstuff->me.y ) {
+	double xdiff = start->me.x-newstuff->me.x, ydiff = start->me.y-newstuff->me.y;
+	SplinePoint *nsp = start->next->to;
+	start->nextcp.x += xdiff;
+	start->nextcp.y += ydiff;
+	nsp->prevcp.x += xdiff/2;
+	nsp->prevcp.y += ydiff/2;
+	nsp->me.x += xdiff/2;
+	nsp->me.y += ydiff/2;
+	nsp->nextcp.x += xdiff/2;
+	nsp->nextcp.y += ydiff/2;
+	SplineRefigure(nsp->prev);
+	SplineRefigure(nsp->next);
+    }
     SplinePointFree(newstuff);
 }
 
@@ -3022,6 +3563,20 @@ static void SplinePrevSplice(SplinePoint *end,SplinePoint *newstuff) {
     end->prev->to = end;
     end->prevcp = newstuff->prevcp;
     end->noprevcp = newstuff->noprevcp;
+    if ( end->me.x!=newstuff->me.x || end->me.y!=newstuff->me.y ) {
+	double xdiff = end->me.x-newstuff->me.x, ydiff = end->me.y-newstuff->me.y;
+	SplinePoint *psp = end->prev->from;
+	end->nextcp.x += xdiff;
+	end->nextcp.y += ydiff;
+	psp->prevcp.x += xdiff/2;
+	psp->prevcp.y += ydiff/2;
+	psp->me.x += xdiff/2;
+	psp->me.y += ydiff/2;
+	psp->nextcp.x += xdiff/2;
+	psp->nextcp.y += ydiff/2;
+	SplineRefigure(psp->prev);
+	SplineRefigure(psp->next);
+    }
     SplinePointFree(newstuff);
 }
 
@@ -3036,23 +3591,145 @@ return;
 return;
     SerifRemove(start,end,oldss);
 
-    ss = MakeBottomItalicSerif(start->me.x-end->me.x,end->me.x,ii);
-    start = StemMoveBottomEndCarefully(start,oldss,ss,true );
-    end   = StemMoveBottomEndCarefully(end  ,oldss,ss,false);
+    ss = MakeBottomItalicSerif(start->me.x-end->me.x,end->me.x,ii,0);
+    start = StemMoveBottomEndCarefully(start,oldss,ss,NULL,true );
+    end   = StemMoveBottomEndCarefully(end  ,oldss,ss,NULL,false);
 
     SplineNextSplice(start,ss->first);
     SplinePrevSplice(end,ss->last);
     chunkfree(ss,sizeof(*ss));
 }
 
+static void ReSerifBottomDStem(SplineChar *sc,int layer,DStemInfo *d,ItalicInfo *ii) {
+    SplinePoint *start, *end;
+    SplineSet *ss, *oldss;
+    double stemwidth;
+    int seriftype;
+
+    if ( d==NULL )
+return;
+    FindBottomSerifOnDStem(sc,layer,d,0,ii,&start,&end,&oldss);
+    if ( start==NULL || end==NULL || start==end )
+return;
+    SerifRemove(start,end,oldss);
+
+    stemwidth = (d->right.x-d->left.x)*d->unit.y - (d->right.y-d->left.y)*d->unit.x;
+    if ( stemwidth<0 ) stemwidth = -stemwidth;
+    if ( d->unit.x*d->unit.y<0 )
+	seriftype = 0;
+    else if ( stemwidth<boldleftfacingitalicserif.stemwidth*ii->emsize/1000.0+5 )
+	seriftype = 1;
+    else
+	seriftype = 0;
+    ss = MakeItalicDSerif(d,stemwidth, end->me.x,ii,seriftype,false);
+ { SplineSet *fub = SplinePointListCopy(ss);		/* !!! debug */
+  fub->next = sc->layers[ly_back].splines;
+  sc->layers[ly_back].splines = fub;		/* !!! Debug */
+ }
+    start = StemMoveBottomEndCarefully(start,oldss,ss,d,true );
+    end   = StemMoveBottomEndCarefully(end  ,oldss,ss,d,false);
+
+    SplineNextSplice(start,ss->first);
+    SplinePrevSplice(end,ss->last);
+    chunkfree(ss,sizeof(*ss));
+}
+
+static void ReSerifXHeightDStem(SplineChar *sc,int layer,DStemInfo *d,ItalicInfo *ii) {
+    SplinePoint *start, *end;
+    SplineSet *ss, *oldss;
+    double stemwidth;
+    int seriftype;
+
+    if ( d==NULL )
+return;
+    FindTopSerifOnDStem(sc,layer,d,ii->x_height,ii,&start,&end,&oldss);
+    if ( start==NULL || end==NULL || start==end )
+return;
+    SerifRemove(start,end,oldss);
+
+    stemwidth = (d->right.x-d->left.x)*d->unit.y - (d->right.y-d->left.y)*d->unit.x;
+    if ( stemwidth<0 ) stemwidth = -stemwidth;
+    if ( d->unit.x*d->unit.y<0 )
+	seriftype = 0;
+    else if ( stemwidth<boldleftfacingitalicserif.stemwidth*ii->emsize/1000.0+5 )
+	seriftype = 1;
+    else
+	seriftype = 0;
+    ss = MakeItalicDSerif(d,stemwidth, end->me.x,ii,seriftype,1);
+ { SplineSet *fub = SplinePointListCopy(ss);		/* !!! debug */
+  fub->next = sc->layers[ly_back].splines;
+  sc->layers[ly_back].splines = fub;		/* !!! Debug */
+ }
+    start = StemMoveBottomEndCarefully(start,oldss,ss,d,true );
+    end   = StemMoveBottomEndCarefully(end  ,oldss,ss,d,false);
+
+    SplineNextSplice(start,ss->first);
+    SplinePrevSplice(end,ss->last);
+    chunkfree(ss,sizeof(*ss));
+}
+
+static int NearBottomRightSide(DStemInfo *d,DBounds *b,ItalicInfo *ii) {
+    double x;
+
+    x = d->left.x - d->left.y*d->unit.x/d->unit.y;
+    if ( x+1.5*ii->serif_extent+30>b->maxx )
+return( true );
+    x = d->right.x - d->right.y*d->unit.x/d->unit.y;
+    if ( x+1.5*ii->serif_extent+30>b->maxx )
+return( true );
+
+return( false );
+}
+
+static int NearBottomLeftSide(DStemInfo *d,DBounds *b,ItalicInfo *ii) {
+    double x;
+
+    x = d->left.x - d->left.y*d->unit.x/d->unit.y;
+    if ( x-1.5*ii->serif_extent-30<b->minx )
+return( true );
+    x = d->right.x - d->right.y*d->unit.x/d->unit.y;
+    if ( x-1.5*ii->serif_extent-30<b->minx )
+return( true );
+
+return( false );
+}
+
+static int NearXHeightRightSide(DStemInfo *d,DBounds *b,ItalicInfo *ii) {
+    double x;
+
+    x = d->left.x - (d->left.y-ii->x_height)*d->unit.x/d->unit.y;
+    if ( x+1.5*ii->serif_extent+30>b->maxx )
+return( true );
+    x = d->right.x - (d->right.y-ii->x_height)*d->unit.x/d->unit.y;
+    if ( x+1.5*ii->serif_extent+30>b->maxx )
+return( true );
+
+return( false );
+}
+
+static int NearXHeightLeftSide(DStemInfo *d,DBounds *b,ItalicInfo *ii) {
+    double x;
+
+    x = d->left.x - (d->left.y-ii->x_height)*d->unit.x/d->unit.y;
+    if ( x-1.5*ii->serif_extent-30<b->minx )
+return( true );
+    x = d->right.x - (d->right.y-ii->x_height)*d->unit.x/d->unit.y;
+    if ( x-1.5*ii->serif_extent-30<b->minx )
+return( true );
+
+return( false );
+}
+
 static void AddBottomItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
     StemInfo *h;
+    DStemInfo *d;
     int j, cnt;
     /* If a glyph has multiple stems then only the last one gets turned to */
     /*  the italic serif. The others get deserifed. Note that if the glyph is */
     /*  "k" then the "last stem" is actually a diagonal stem rather than a */
     /*  vertical one */
     /* "r", on the other hand, just doesn't get a serif */
+    /* Hmm better than saying the last stem, let's say stem at the right edge */
     DBounds b;
 
     SplineCharLayerFindBounds(sc,layer,&b);
@@ -3065,6 +3742,12 @@ static void AddBottomItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
 	else
 	    DeSerifBottomStem(sc,layer,h,ii,0,NULL,NULL);
 	++j;
+    }
+    for ( d=sc->dstem; d!=NULL; d=d->next ) {
+	if ( d->unit.x*d->unit.y<0 && NearBottomRightSide(d,&b,ii))
+	    ReSerifBottomDStem(sc,layer,d,ii);
+	else if ( d->unit.x*d->unit.y>0 && NearBottomLeftSide(d,&b,ii))
+	    ReSerifBottomDStem(sc,layer,d,ii);
     }
 }
 
@@ -3115,6 +3798,7 @@ return;
 
 static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
     StemInfo *h;
+    DStemInfo *d;
     /* The leftmost stem of certain lower case letters can go from a half */
     /* serif to an italic serif. Sometimes it is just stems at the x-height */
     /* sometimes ascenders too, often none */
@@ -3126,8 +3810,8 @@ static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    ReSerifTopStem(sc,layer,h,ii);
     break;
     }
-    if ( sc->unicodeenc=='u' ) {
-	if ( h!=NULL )
+    if ( sc->unicodeenc=='u' || sc->unicodeenc==0x436 ) {
+	if ( h!=NULL && sc->unicodeenc=='u' )
 	    h=h->next;
 	while ( h!=NULL ) {
 	    if ( h->tobeused ) {
@@ -3136,6 +3820,12 @@ static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    }
 	    h = h->next;
 	}
+    }
+    for ( d=sc->dstem; d!=NULL; d=d->next ) {
+	if ( d->unit.x*d->unit.y<0 && NearXHeightRightSide(d,&b,ii))
+	    ReSerifXHeightDStem(sc,layer,d,ii);
+	else if ( d->unit.x*d->unit.y>0 && NearXHeightLeftSide(d,&b,ii))
+	    ReSerifXHeightDStem(sc,layer,d,ii);
     }
 }
 
@@ -3759,6 +4449,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    AddTopItalicSerifs(sc,layer,ii);
     }
 
+#ifndef GWW_TEST			/* !!!!! debug */
     /* But small caps letters have the same stem sizes as lc so stems should be transformed like lc */
     ItalicCompress(sc,layer,letter_case==cs_lc? &ii->lc :
 			    letter_case==cs_uc? &ii->uc :
@@ -3777,6 +4468,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	ref->transform[4] += refpos[4];
 	SplinePointListTransform(ref->layers[0].splines,refpos,true);
     }
+#endif
     StemInfosFree(sc->hstem);  sc->hstem = NULL;
     StemInfosFree(sc->vstem);  sc->vstem = NULL;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;

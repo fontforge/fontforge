@@ -326,8 +326,21 @@ extern void CI_Init(struct counterinfo *ci,SplineFont *sf);
 extern void FVEmbolden(struct fontviewbase *fv,enum embolden_type type,struct lcg_zones *zones);
 extern void FVCondenseExtend(struct fontviewbase *fv,struct counterinfo *ci);
 extern void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci);
-extern void FVAddSmallCaps(FontViewBase *fv,double small_caps_height);
-extern double SFFindXHeight(SplineFont *sf,int layer);
+
+struct smallcaps {
+    double lc_stem_width, uc_stem_width;
+    double stem_factor;
+    double xheight, scheight, capheight;
+    char *extension_for_letters, *extension_for_symbols;
+    int dosymbols;
+    SplineFont *sf;
+    int layer;
+    double italic_angle, tan_ia;
+};
+
+extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
+	int layer );
+extern void FVAddSmallCaps(FontViewBase *fv,struct smallcaps *small);
 extern void MakeItalic(FontViewBase *fv,CharViewBase *cv,ItalicInfo *ii);
 extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
