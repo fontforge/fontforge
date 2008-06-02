@@ -2268,7 +2268,7 @@ return( copy( test->glyphs) );
     }
     LogError(_("Use of undefined glyph class, %s, on line %d of %s"), classname, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
     ++tok->err_count;
-return( NULL );
+return( copy("") );
 }
 
 static void fea_AddClassDef(struct parseState *tok,char *classname,char *contents) {
@@ -2411,7 +2411,7 @@ static char *fea_ParseGlyphClass(struct parseState *tok) {
     } else if ( tok->type!=tk_char || tok->tokbuf[0]!='[' ) {
 	LogError(_("Expected '[' in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
-return(NULL);
+return(copy(""));
     } else {
 	char *contents;
 	int cnt=0, max=0;
@@ -2586,7 +2586,7 @@ return;
     }
     fea_ParseTok(tok);
     contents = fea_ParseGlyphClass(tok);
-    if ( contents==NULL ) {
+    if ( contents==NULL || *contents=='\0' ) {
 	fea_skip_to_semi(tok);
 return;
     }
