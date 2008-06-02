@@ -47,7 +47,7 @@ clean:
 	( cd plugins ; $(MAKE) clean )
 	if test -d gtkui; then cd gtkui ; $(MAKE) clean ; fi
 	-( cd po ; rm *.mo )
-	-( cd pyhook ; rm -rf build dist )
+	-( cd pyhook ; rm -rf */. )
 	-rm -rf .libs
 
 distclean cleaner:
@@ -58,7 +58,7 @@ distclean cleaner:
 	( cd plugins ; $(MAKE) distclean )
 	if test -d gtkui; then cd gtkui ; $(MAKE) distclean ; fi
 	-( cd po ; rm *.mo Makefile* )
-	-( cd pyhook ; rm -rf build dist */. setup.py )
+	-( cd pyhook ; rm -rf */. setup.py )
 	-rm -rf .libs
 	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific inc/config.h
 
