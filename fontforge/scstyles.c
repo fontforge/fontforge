@@ -870,22 +870,21 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     no_windowing_ui = true;		/* Turn off undoes */
     SplineCharAutoHint(sc_sc,layer,NULL);
     no_windowing_ui = nwi;
-    if ( RealNear( small->stem_factor, small->scheight/small->capheight ))
-return;
-
-    SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
-    SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-    remove_y = sc_b.maxy - small->scheight + small->stem_factor*(cap_b.maxy - small->capheight);
-    if ( remove_y>-1 && remove_y<1 )
-return;
-    if ( cap_b.maxy == cap_b.miny )
-	remove_x = 0;
-    else
-	remove_x = (sc_b.maxx - sc_b.minx) * remove_y / (cap_b.maxy - cap_b.miny);
-    sc_sc->width -= remove_x;
-    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
-    SplineSetRefigure(sc_sc->layers[layer].splines);
+    if ( !RealNear( small->stem_factor, small->scheight/small->capheight )) {
+	SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
+	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+	remove_y = sc_b.maxy - small->scheight + small->stem_factor*(cap_b.maxy - small->capheight);
+	if ( remove_y<=-1 || remove_y>=1 ) {
+	    if ( cap_b.maxy == cap_b.miny )
+		remove_x = 0;
+	    else
+		remove_x = (sc_b.maxx - sc_b.minx) * remove_y / (cap_b.maxy - cap_b.miny);
+	    sc_sc->width -= remove_x;
+	    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
+	    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+	    SplineSetRefigure(sc_sc->layers[layer].splines);
+	}
+    }
 
     if ( small->tan_ia!=0 ) {
 	scale[0] = scale[3] = 1;
@@ -908,7 +907,7 @@ return;
 void FVAddSmallCaps(FontViewBase *fv, struct smallcaps *small) {
     int gid, enc, cnt, ltn,crl,grk,symbols;
     SplineFont *sf = fv->sf;
-    SplineChar *sc, *sc_sc, *rsc;
+    SplineChar *sc, *sc_sc, *rsc, *achar=NULL;
     RefChar *ref, *r;
     struct lookup_subtable *c2sc[4], *smcp[4];
     char buffer[200];
@@ -972,6 +971,8 @@ return;
 		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,small);
 		if ( sc_sc==NULL )
       goto end_loop;
+		if ( achar==NULL )
+		    achar = sc_sc;
 		BuildSmallCap(sc_sc,sc,fv->active_layer,small);
       end_loop:
 		if ( !ff_progress_next())
@@ -1002,6 +1003,8 @@ return;
 		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,small);
 		if ( sc_sc==NULL )
       goto end_loop2;
+		if ( achar==NULL )
+		    achar = sc_sc;
 		if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
 		    SCBuildComposit(sf,sc_sc,fv->active_layer,true);
 		else if ( sc->layers[fv->active_layer].splines==NULL ) {
@@ -1046,6 +1049,263 @@ return;
 	}
     }
     ff_progress_end_indicator();
+    if ( achar!=NULL )
+	FVDisplayChar(fv,achar->orig_pos);
+}
+
+/* ************************************************************************** */
+/* ************************** Subscript/Superscript ************************* */
+/* ************************************************************************** */
+
+static struct lookup_subtable *MakeSupSupLookup(SplineFont *sf,uint32 feature_tag,
+	uint32 *scripts,int scnt) {
+    OTLookup *test, *found;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int i;
+    struct lookup_subtable *sub;
+
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+    found = NULL;
+    for ( i=0; i<scnt && found == NULL; ++i ) {
+	for ( test=sf->gsub_lookups; test!=NULL; test=test->next ) if ( test->lookup_type==gsub_single ) {
+	    if ( FeatureScriptTagInFeatureScriptList(feature_tag,scripts[i],test->features)) {
+		found = test;
+	break;
+	    }
+	}
+    }
+
+    if ( found==NULL ) {
+	sub = SFSubTableFindOrMake(sf,feature_tag,scripts[0],gsub_single);
+	found = sub->lookup;
+    }
+    fl = FindFeatureTagInFeatureScriptList(feature_tag,found->features);
+    for ( i=0; i<scnt; ++i ) {
+	for ( sl=fl->scripts; sl!=NULL && sl->script!=scripts[i]; sl=sl->next );
+	if ( sl==NULL ) {
+	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl->script = scripts[i];
+	    sl->lang_cnt = 1;
+	    sl->langs[0] = DEFAULT_LANG;
+	    sl->next = fl->scripts;
+	    fl->scripts = sl;
+	}
+    }
+
+return( found->subtables );
+}
+
+static SplineChar *MakeSubSupGlyphSlot(SplineFont *sf,SplineChar *sc,
+	struct lookup_subtable *feature,
+	FontViewBase *fv, struct subsup *subsup) {
+    SplineChar *sc_sc;
+    char buffer[300];
+    PST *pst;
+    int enc;
+
+    snprintf(buffer,sizeof(buffer),"%s.%s", sc->name, subsup->glyph_extension );
+    sc_sc = SFGetChar(sf,-1,buffer);
+    if ( sc_sc!=NULL ) {
+	SCPreserveLayer(sc_sc,fv->active_layer,false);
+	SCClearLayer(sc_sc,fv->active_layer);
+return( sc_sc );
+    }
+    enc = SFFindSlot(sf, fv->map, -1, buffer );
+    if ( enc==-1 )
+	enc = fv->map->enccount;
+    sc_sc = SFMakeChar(sf,fv->map,enc);
+    free(sc_sc->name);
+    sc_sc->name = copy(buffer);
+    SFHashGlyph(sf,sc_sc);
+
+    pst = chunkalloc(sizeof(PST));
+    pst->next = sc->possub;
+    sc->possub = pst;
+    pst->subtable = feature;
+    pst->type = pst_substitution;
+    pst->u.subs.variant = copy(buffer);
+
+return( sc_sc );
+}
+
+static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct subsup *subsup) {
+    real scale[6];
+    DBounds orig_b, sc_b;
+    double remove_y, remove_x;
+    extern int no_windowing_ui;
+    int nwi = no_windowing_ui;
+    AnchorPoint *ap;
+
+    memset(scale,0,sizeof(scale));
+    scale[0] = subsup->h_stem_scale;
+    scale[3] = subsup->v_stem_scale;
+    scale[2] = subsup->h_stem_scale * subsup->tan_ia;
+
+    sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
+	    orig_sc->layers[layer].splines),scale,true);
+    sc_sc->width = subsup->h_stem_scale * orig_sc->width;
+    sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+	BasePoint me;
+	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+	me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+	ap->me = me;
+    }
+    no_windowing_ui = true;		/* Turn off undoes */
+    SplineCharAutoHint(sc_sc,layer,NULL);
+    no_windowing_ui = nwi;
+    if ( !RealNear( subsup->h_stem_scale, subsup->h_scale ) &&
+	    !RealNear( subsup->v_stem_scale, subsup->v_scale )) {
+	SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
+	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+
+	remove_y = (sc_b.maxy-sc_b.miny) - subsup->v_scale*(orig_b.maxy-orig_b.miny);
+	remove_x = (sc_b.maxx-sc_b.minx) - subsup->h_scale*(orig_b.maxx-orig_b.minx);
+	sc_sc->width -= remove_x;
+	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
+	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+	SplineSetRefigure(sc_sc->layers[layer].splines);
+    }
+
+    memset(scale,0,sizeof(scale));
+    scale[0] = scale[3] = 1;
+    scale[5] = subsup->vertical_offset;
+    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
+	ap->me.y += subsup->vertical_offset;
+
+    if ( subsup->tan_ia!=0 ) {
+	scale[0] = scale[3] = 1;
+	scale[2] = -subsup->tan_ia;
+	scale[5] = 0;
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+	    BasePoint me;
+	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+	    me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+	    ap->me = me;
+	}
+    }
+    StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
+    StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
+    DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
+    SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
+}
+
+void FVAddSubSup(FontViewBase *fv, struct subsup *subsup) {
+    int gid, enc, cnt;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc, *sc_sc, *rsc, *achar=NULL;
+    RefChar *ref, *r;
+    struct lookup_subtable *feature;
+    char buffer[200];
+    const unichar_t *alts;
+
+    if ( sf->cidmaster!=NULL )
+return;		/* Can't randomly add things to a CID keyed font */
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
+	sc->ticked = false;
+
+    cnt = 0;
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    ++cnt;
+	}
+    }
+    if ( cnt==0 )
+return;
+    if ( subsup->feature_tag!=0 ) {
+	uint32 *scripts = galloc(cnt*sizeof(uint32));
+	int scnt = 0;
+	for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	    if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+		uint32 script = SCScriptFromUnicode(sc);
+		int i;
+		for ( i=0; i<scnt; ++i )
+		    if ( scripts[i]==script )
+		break;
+		if ( i==scnt )
+		    scripts[scnt++] = script;
+	    }
+	}
+    
+	feature = MakeSupSupLookup(sf,subsup->feature_tag,scripts,scnt);
+	free(scripts);
+    } else
+	feature = NULL;
+
+    ff_progress_start_indicator(10,_("Subscripts/Superscripts"),
+	_("Building sub/superscripts"),NULL,cnt,1);
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->ticked )
+  goto end_loop;
+	    if ( sc->layers[fv->active_layer].refs!=NULL ||
+		    ((alts = SFGetAlternate(sf,sc->unicodeenc,sc,true))!=NULL &&
+		     alts[1]!=0 ))
+    continue;	/* Deal with these later */
+	    sc->ticked = true;
+	    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,subsup);
+	    if ( sc_sc==NULL )
+      goto end_loop;
+	    if ( achar==NULL )
+		achar = sc_sc;
+	    BuildSubSup(sc_sc,sc,fv->active_layer,subsup);
+      end_loop:
+	    if ( !ff_progress_next())
+    break;
+	}
+    }
+    /* OK. Here we have done all the base glyphs we are going to do. Now let's*/
+    /*  look at things which depend on references */
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->ticked )
+    continue;
+	    sc->ticked = true;
+	    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,subsup);
+	    if ( sc_sc==NULL )
+      goto end_loop2;
+	    if ( achar==NULL )
+		achar = sc_sc;
+	    if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
+		SCBuildComposit(sf,sc_sc,fv->active_layer,true);
+	    else if ( sc->layers[fv->active_layer].splines==NULL ) {
+		RefChar *rlast = NULL;
+		for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
+		    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, subsup->glyph_extension );
+		    rsc = SFGetChar(sf,-1,buffer);
+		    if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
+			rsc = ref->sc;
+		    if ( rsc!=NULL ) {
+			r = RefCharCreate();
+			*r = *ref;
+#ifdef FONTFORGE_CONFIG_TYPE3
+			r->layers = NULL;
+			r->layer_cnt = 0;
+#else
+			r->layers[0].splines = NULL;
+#endif
+			r->next = NULL;
+			r->sc = rsc;
+			SCReinstanciateRefChar(sc_sc,r,fv->active_layer);
+			if ( rlast==NULL )
+			    sc_sc->layers[fv->active_layer].refs=r;
+			else
+			    rlast->next = r;
+			rlast = r;
+		    }
+		}
+	    }
+      end_loop2:
+	    if ( !ff_progress_next())
+    break;
+	}
+    }
+    ff_progress_end_indicator();
+    if ( achar!=NULL )
+	FVDisplayChar(fv,achar->orig_pos);
 }
 
 /* ************************************************************************** */
@@ -3821,6 +4081,9 @@ static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    h = h->next;
 	}
     }
+#ifndef GWW_TEST
+return;
+#endif
     for ( d=sc->dstem; d!=NULL; d=d->next ) {
 	if ( d->unit.x*d->unit.y<0 && NearXHeightRightSide(d,&b,ii))
 	    ReSerifXHeightDStem(sc,layer,d,ii);

@@ -644,6 +644,394 @@ void AddSmallCapsDlg(FontView *fv) {
 }
 
 /* ************************************************************************** */
+/* ********************** Subscript/Superscript Dialog ********************** */
+/* ************************************************************************** */
+#define CID_Feature	1001
+#define CID_Extension	1002
+#define CID_H_is_V	1003
+#define CID_HStemScale	1004
+#define CID_VStemScale	1005
+#define CID_HScale	1006
+#define CID_VScale	1007
+#define CID_VerticalOff	1008
+
+static GTextInfo ss_features[] = {
+    { (unichar_t *) N_("Superscript"), NULL, 0, 0, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Scientific Inferiors"), NULL, 0, 0, (void *) CHR('s','i','n','f'), NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Subscript"), NULL, 0, 0, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Denominators"), NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Numerators"), NULL, 0, 0, (void *) CHR('n','u','m','r'), NULL, 0, 0, 0, 0, 0, 0, 1},
+    NULL
+};
+/* Not translated */
+static char *ss_extensions[] = {
+    "superior",
+    "inferior",
+    "subscript",
+    "denominator",
+    "numerator",
+    NULL
+};
+static int ss_percent_xh_up[] = {
+    90,
+    -100,
+    -70,
+    -50,
+    50
+};
+
+static int SubSup_OK(GGadget *g, GEvent *e) {
+    int err = false;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	struct subsup subsup;
+	int xy_same = GGadgetIsChecked(GWidgetGetControl(ew,CID_H_is_V));
+	const unichar_t *tag_str = _GGadgetGetTitle(GWidgetGetControl(ew,CID_Feature));
+	char tag[4];
+
+	memset(&subsup,0,sizeof(subsup));
+	subsup.vertical_offset = GetReal8(ew,CID_VerticalOff,_("Vertical Offset"),&err);
+	subsup.v_stem_scale = GetReal8(ew,CID_VStemScale,_("Vertical Stem Scale"),&err)/100.;
+	subsup.v_scale = GetReal8(ew,CID_VScale,_("Vertical Scale"),&err)/100.;
+	if ( xy_same ) {
+	    subsup.h_stem_scale = subsup.v_stem_scale;
+	    subsup.h_scale = subsup.v_scale;
+	} else {
+	    subsup.h_stem_scale = GetReal8(ew,CID_HStemScale,_("Horizontal Stem Scale"),&err)/100.;
+	    subsup.h_scale = GetReal8(ew,CID_HScale,_("Horizontal Scale"),&err)/100.;
+	}
+	if ( err )
+return( true );
+	if ( subsup.v_stem_scale<.03 || subsup.v_stem_scale>10 ||
+		subsup.h_stem_scale<.03 || subsup.h_stem_scale>10 ||
+		subsup.h_scale<.03 || subsup.h_scale>10 ||
+		subsup.v_scale<.03 || subsup.v_scale>10 ) {
+	    ff_post_error(_("Unlikely scale factor"), _("Scale factors must be between 3 and 1000 percent"));
+return( true );
+	}
+
+	memset(tag,' ',sizeof(tag));
+	if ( *tag_str=='\0' )
+	    subsup.feature_tag = 0;		/* Perfectly valid to have no tag */
+	else {
+	    tag[0] = *tag_str;
+	    if ( tag_str[1]!='\0' ) {
+		tag[1] = tag_str[1];
+		if ( tag_str[2]!='\0' ) {
+		    tag[2] = tag_str[2];
+		    if ( tag_str[3]!='\0' ) {
+			tag[3] = tag_str[3];
+			if ( tag_str[4]!='\0' ) {
+			    ff_post_error(_("Bad tag"), _("Feature tags are limited to 4 letters"));
+return( true );
+			}
+		    }
+		}
+	    }
+	    subsup.feature_tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
+	}
+	subsup.glyph_extension = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Extension));
+	if ( *subsup.glyph_extension=='\0' ) {
+	    ff_post_error(_("Missing glyph extension"),_("You must specify a glyph extension"));
+	    free(subsup.glyph_extension);
+return( true );
+	}
+	FVAddSubSup( (FontViewBase *) ed->fv, &subsup );
+	free(subsup.glyph_extension);
+	ed->done = true;
+    }
+return( true );
+}
+
+static int SS_SameAs_Changed(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int on = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_HStemScale), !on);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_HScale), !on);
+	if ( on ) {
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_HStemScale),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_VStemScale)));
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_HScale),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_VScale)));
+	}
+    }
+return( true );
+}
+
+static int SS_Feature_Changed(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged &&
+	    e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	int index = e->u.control.u.tf_changed.from_pulldown;
+	uint32 tag = (intpt) ss_features[index].userdata;
+	char tagbuf[5], offset[40];
+
+	tagbuf[0] = tag>>24; tagbuf[1] = tag>>16; tagbuf[2] = tag>>8; tagbuf[3] = tag; tagbuf[4] = 0;
+	GGadgetSetTitle8(g,tagbuf);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_Extension), ss_extensions[index]);
+
+	sprintf( offset, "%g", rint( ed->small->xheight*ss_percent_xh_up[index]/100.0 ));
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_VerticalOff), offset);
+    }
+return( true );
+}
+
+void AddSubSupDlg(FontView *fv) {
+    StyleDlg ed;
+    SplineFont *sf = fv->b.sf;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[23], boxes[6], *barray[8], *hvarray[46], *voarray[6];
+    GTextInfo label[23];
+    int k;
+    struct smallcaps small;
+
+    memset(&ed,0,sizeof(ed));
+    ed.fv = fv;
+    ed.sf = sf;
+    ed.small = &small;
+
+    SmallCapsFindConstants(&small,fv->b.sf,fv->b.active_layer); /* I want to know the xheight... */
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Add Subscripts/Supperscripts");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    ed.gw = gw = GDrawCreateTopWindow(NULL,&pos,style_e_h,&ed,&wattrs);
+
+
+    k=0;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
+    memset(label,0,sizeof(label));
+
+    label[k].text = (unichar_t *) _(
+	"Unlike most commands this one does not work directly on the\n"
+	"selected glyphs. Instead, if you select a glyph FontForge will\n"
+	"create (or reuse) another glyph named by appending the extension\n"
+	"to the original name, and it will copied a modified version of\n"
+	"the original glyph into the new one");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[0] = &gcd[k-1]; hvarray[1] = hvarray[2] = hvarray[3] = GCD_ColSpan; hvarray[4] = NULL;
+
+    gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GSpacerCreate;
+    hvarray[5] = &gcd[k-1]; hvarray[6] = hvarray[7] = hvarray[8] = GCD_ColSpan; hvarray[9] = NULL;
+
+    label[k].text = (unichar_t *) _("Feature Tag:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[10] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.cid = CID_Feature;
+    gcd[k].gd.u.list = ss_features;
+    gcd[k].gd.handle_controlevent = SS_Feature_Changed;
+    gcd[k++].creator = GListFieldCreate;
+    hvarray[11] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Glyph Extension:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[12] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.cid = CID_Extension;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[13] = &gcd[k-1]; hvarray[14] = NULL;
+
+    label[k].text = (unichar_t *) _("Uniform scaling along both axes");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+    gcd[k].gd.cid = CID_H_is_V;
+    gcd[k].gd.handle_controlevent = SS_SameAs_Changed;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[15] = &gcd[k-1]; hvarray[16] = hvarray[17] = hvarray[18] = GCD_ColSpan; hvarray[19] = NULL;
+
+    label[k].text = (unichar_t *) _("Vertical %:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[20] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "67";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.cid = CID_VScale;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[21] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Horizontal %:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[22] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "67";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.cid = CID_HScale;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[23] = &gcd[k-1]; hvarray[24] = NULL;
+
+    label[k].text = (unichar_t *) _("V Stem %:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[25] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "75";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.cid = CID_VStemScale;
+    gcd[k].gd.pos.width = 60;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[26] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("H Stem %:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[27] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "75";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.cid = CID_HStemScale;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[28] = &gcd[k-1]; hvarray[29] = NULL;
+
+    gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GSpacerCreate;
+    hvarray[30] = &gcd[k-1]; hvarray[31] = hvarray[32] = hvarray[33] = GCD_ColSpan; hvarray[34] = NULL;
+
+    label[k].text = (unichar_t *) _("Vertical Offset:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    voarray[0] = &gcd[k-1]; 
+
+    label[k].text = (unichar_t *) "0";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.cid = CID_VerticalOff;
+    gcd[k++].creator = GTextFieldCreate;
+    voarray[1]= &gcd[k-1]; voarray[2] = GCD_Glue; voarray[3] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = voarray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[35] = &boxes[3]; hvarray[36] = hvarray[37] = hvarray[38] = GCD_ColSpan; hvarray[39] = NULL;
+
+    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = SubSup_OK;
+    gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
+
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = CondenseExtend_Cancel;
+    gcd[k].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = barray;
+    boxes[4].creator = GHBoxCreate;
+    hvarray[40] = &boxes[4]; hvarray[41] = hvarray[42] = hvarray[43] = GCD_ColSpan; hvarray[44] = NULL;
+    hvarray[45] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+    GDrawSetVisible(gw,true);
+
+    while ( !ed.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}
+
+/* ************************************************************************** */
 /* ***************************** Embolden Dialog **************************** */
 /* ************************************************************************** */
 
