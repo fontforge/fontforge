@@ -75,7 +75,7 @@ extern GImage GIcon_menumark;
 extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
 extern GImage GIcon_bold, GIcon_italic, GIcon_condense, GIcon_oblique, GIcon_smallcaps;
 extern GImage GIcon_outline, GIcon_inline, GIcon_shadow, GIcon_wireframe;
-GImage GIcon_u45fItalic, GIcon_u448Italic, GIcon_u446Italic, GIcon_u444Italic,
+extern GImage GIcon_u45fItalic, GIcon_u448Italic, GIcon_u446Italic, GIcon_u444Italic,
     GIcon_u442Italic, GIcon_u43fItalic, GIcon_u43cItalic, GIcon_u438Italic,
     GIcon_u436Italic, GIcon_u434Italic, GIcon_u433Italic, GIcon_u432Italic,
     GIcon_zItalic, GIcon_yItalic, GIcon_xItalic, GIcon_wItalic, GIcon_vItalic,
