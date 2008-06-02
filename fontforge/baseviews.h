@@ -341,6 +341,19 @@ struct smallcaps {
 extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 	int layer );
 extern void FVAddSmallCaps(FontViewBase *fv,struct smallcaps *small);
+
+struct subsup {
+    uint32 feature_tag;
+    char *glyph_extension;
+    double h_stem_scale, v_stem_scale;
+    double h_scale, v_scale;
+    double vertical_offset;
+    SplineFont *sf;
+    int layer;
+    double italic_angle, tan_ia;
+};
+
+extern void FVAddSubSup(FontViewBase *fv,struct subsup *subsup);
 extern void MakeItalic(FontViewBase *fv,CharViewBase *cv,ItalicInfo *ii);
 extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );

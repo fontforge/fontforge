@@ -4157,6 +4157,33 @@ static struct _GImage smallcaps_base = {
     1
 };
 
+static uint8 subsuper0_data[] = {
+    0xff, 0xff, 
+    0xff, 0xff, 
+    0xff, 0xef, 
+    0xff, 0xcf, 
+    0xff, 0xef, 
+    0xf5, 0xef, 
+    0xff, 0xc7, 
+    0xdf, 0x7f, 
+    0xff, 0xff, 
+    0xbf, 0xbf, 
+    0xff, 0xff, 
+    0xdf, 0x6f, 
+    0xff, 0xd7, 
+    0xf5, 0xf7, 
+    0xff, 0xef, 
+    0xff, 0xc7, 
+};
+
+static struct _GImage subsuper0_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) subsuper0_data,
+    NULL,
+    1
+};
+
 static uint8 italic0_data[] = {
     0xfe, 0x7f, 
     0xfd, 0x3f, 
@@ -4506,6 +4533,7 @@ GImage GIcon_bold = { 0, &bold_base };
 GImage GIcon_italic = { 0, &italic_base };
 GImage GIcon_oblique = { 0, &oblique_base };
 GImage GIcon_smallcaps = { 0, &smallcaps_base };
+GImage GIcon_subsup = { 0, &subsuper0_base };
 GImage GIcon_condense = { 0, &condense_base };
 GImage GIcon_outline = { 0, &outline_base };
 GImage GIcon_inline = { 0, &inline_base };
