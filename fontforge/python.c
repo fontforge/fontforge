@@ -11488,14 +11488,23 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    double small_caps_height = 0;
+static char *smallcaps_keywords[] = { "scheight", "capheight", "lcstem", "ucstem",
+	"symbols", "letter-extension", "symbol-extension", NULL };
 
-    if ( !PyArg_ParseTuple(args,"|d",&small_caps_height ))
+static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    struct smallcaps small;
+
+    SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
+    small.extension_for_letters = "sc";
+    small.extension_for_symbols = "taboldstyle";
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddddiss",smallcaps_keywords,
+	    &small.scheight,&small.capheight,&small.lc_stem_width,&small.uc_stem_width,
+	    &small.dosymbols, &small.extension_for_letters,
+	    &small.extension_for_symbols))
 return( NULL );
 
-    FVAddSmallCaps(fv,small_caps_height);
+    FVAddSmallCaps(fv,&small);
 
 Py_RETURN( self );
 }
@@ -11767,7 +11776,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "replaceWithReference", (PyCFunction) PyFFFont_replaceWithReference, METH_VARARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
-    { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
+    { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
     { "autoHint", PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoWidth", PyFFFont_autoWidth, METH_VARARGS, "Guess horizontal advance widths for selected glyphs" },

@@ -56,6 +56,7 @@ typedef struct styledlg {
     FontView *fv;
     SplineFont *sf;
     int layer;
+    struct smallcaps *small;
 } StyleDlg;
 
 #define CID_C_Factor	1001
@@ -324,6 +325,13 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_SCH_Is_XH	1001
 #define CID_SCH_Lab	1002
 #define CID_SCH		1003
+#define CID_Cap_Lab	1004
+#define CID_Cap		1005
+#define CID_LC_Stem_Width	1006
+#define CID_UC_Stem_Width	1007
+#define CID_Symbols_Too	1008
+#define CID_Letter_Ext	1009
+#define CID_Symbol_Ext	1010
 
 static int SmallCaps_OK(GGadget *g, GEvent *e) {
     int err = false;
@@ -331,13 +339,30 @@ static int SmallCaps_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow ew = GGadgetGetWindow(g);
 	StyleDlg *ed = GDrawGetUserData(ew);
-	double small_caps_height = 0;
+	struct smallcaps *small = ed->small;
 	if ( !GGadgetIsChecked(GWidgetGetControl(ew,CID_SCH_Is_XH))) {
-	    small_caps_height  = GetReal8(ew,CID_SCH,_("Small Caps Height"),&err);
+	    small->scheight  = GetReal8(ew,CID_SCH,_("Small Caps Height"),&err);
+	    small->capheight = GetReal8(ew,CID_Cap,_("Capital Height"),&err);
 	    if ( err )
 return( true );
 	}
-	FVAddSmallCaps( (FontViewBase *) ed->fv, small_caps_height );
+	small->lc_stem_width = GetReal8(ew,CID_LC_Stem_Width,_("Primary stem width for lower case letters"),&err);
+	small->uc_stem_width = GetReal8(ew,CID_UC_Stem_Width,_("Primary stem width for upper case letters"),&err);
+	if ( err )
+return( true );
+	small->dosymbols = GGadgetIsChecked(GWidgetGetControl(ew,CID_Symbols_Too));
+	small->extension_for_letters = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Letter_Ext));
+	small->extension_for_symbols = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Symbol_Ext));
+	if ( *small->extension_for_letters=='\0' || (*small->extension_for_symbols=='\0' && small->dosymbols )) {
+	    free( small->extension_for_letters );
+	    free( small->extension_for_symbols );
+	    ff_post_error(_("Missing extension"),_("You must provide a glyph extension"));
+return( true );
+	}
+
+	FVAddSmallCaps( (FontViewBase *) ed->fv, small );
+	free( small->extension_for_letters );
+	free( small->extension_for_symbols );
 	ed->done = true;
     }
 return( true );
@@ -350,6 +375,8 @@ static int SC_Def_Changed(GGadget *g, GEvent *e) {
 	int on = GGadgetIsChecked(g);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_SCH), !on);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_SCH_Lab), !on);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_Cap), !on);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_Cap_Lab), !on);
     }
 return( true );
 }
@@ -360,14 +387,19 @@ void AddSmallCapsDlg(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[15], boxes[6], *barray[8], *hvarray[31];
-    GTextInfo label[15];
+    GGadgetCreateData gcd[23], boxes[6], *barray[8], *hvarray[37], *swarray[6],
+	    *exarray[6];
+    GTextInfo label[23];
     int k;
-    char sch[40];
+    char sch[40], caph[40], lcsw[40], ucsw[40];
+    struct smallcaps small;
 
     memset(&ed,0,sizeof(ed));
     ed.fv = fv;
     ed.sf = sf;
+    ed.small = &small;
+
+    SmallCapsFindConstants(&small,fv->b.sf,fv->b.active_layer);    
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -427,7 +459,7 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.cid = CID_SCH_Lab;
     gcd[k++].creator = GLabelCreate;
 
-    sprintf( sch, "%g", rint( SFFindXHeight(fv->b.sf,fv->b.active_layer)));
+    sprintf( sch, "%g", rint( small.scheight ));
     label[k].text = (unichar_t *) sch;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -435,6 +467,137 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.cid = CID_SCH;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[9] = &gcd[k-2]; hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
+
+    label[k].text = (unichar_t *) _("Capital Height:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible ;
+    gcd[k].gd.cid = CID_Cap_Lab;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( caph, "%g", rint( small.capheight ));
+    label[k].text = (unichar_t *) caph;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_Cap;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[12] = &gcd[k-2]; hvarray[13] = &gcd[k-1]; hvarray[14] = NULL;
+
+    label[k].text = (unichar_t *) _("Primary Stem Widths");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[15] = &gcd[k-1]; hvarray[16] = GCD_ColSpan; hvarray[17] = NULL;
+
+    label[k].text = (unichar_t *) _("Lower Case:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( lcsw, "%g", rint( small.lc_stem_width ));
+    label[k].text = (unichar_t *) lcsw;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_LC_Stem_Width;
+    gcd[k++].creator = GTextFieldCreate;
+
+    label[k].text = (unichar_t *) _("Upper Case:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( ucsw, "%g", rint( small.uc_stem_width ));
+    label[k].text = (unichar_t *) ucsw;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_UC_Stem_Width;
+    gcd[k++].creator = GTextFieldCreate;
+    swarray[0] = &gcd[k-4]; swarray[1] = &gcd[k-3]; swarray[2] = &gcd[k-2]; swarray[3] = &gcd[k-1];
+    swarray[4] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = swarray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[18] = &boxes[3]; hvarray[19] = GCD_ColSpan; hvarray[20] = NULL;
+
+    label[k].text = (unichar_t *) _("Create small caps variants for symbols as well as letters");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.cid = CID_Symbols_Too;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[21] = &gcd[k-1]; hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
+
+    gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GSpacerCreate;
+    hvarray[24] = &gcd[k-1]; hvarray[25] = GCD_ColSpan; hvarray[26] = NULL;
+
+    label[k].text = (unichar_t *) _("Glyph Extensions");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[27] = &gcd[k-1]; hvarray[28] = GCD_ColSpan; hvarray[29] = NULL;
+
+    label[k].text = (unichar_t *) _("Letters:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) "sc";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 80;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Letter_Ext;
+    gcd[k++].creator = GTextFieldCreate;
+
+    label[k].text = (unichar_t *) _("Symbols:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    label[k].text = (unichar_t *) "taboldstyle";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 80;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Symbol_Ext;
+    gcd[k++].creator = GTextFieldCreate;
+    exarray[0] = &gcd[k-4]; exarray[1] = &gcd[k-3]; exarray[2] = &gcd[k-2]; exarray[3] = &gcd[k-1];
+    exarray[4] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = exarray;
+    boxes[4].creator = GHBoxCreate;
+    hvarray[30] = &boxes[4]; hvarray[31] = GCD_ColSpan; hvarray[32] = NULL;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
@@ -459,11 +622,11 @@ void AddSmallCapsDlg(FontView *fv) {
     barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
     barray[6] = NULL;
 
-    boxes[3].gd.flags = gg_enabled|gg_visible;
-    boxes[3].gd.u.boxelements = barray;
-    boxes[3].creator = GHBoxCreate;
-    hvarray[12] = &boxes[3]; hvarray[13] = GCD_ColSpan; hvarray[14] = NULL;
-    hvarray[15] = NULL;
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = barray;
+    boxes[5].creator = GHBoxCreate;
+    hvarray[33] = &boxes[5]; hvarray[34] = GCD_ColSpan; hvarray[35] = NULL;
+    hvarray[36] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
@@ -471,7 +634,7 @@ void AddSmallCapsDlg(FontView *fv) {
     boxes[0].creator = GHVGroupCreate;
 
     GGadgetsCreate(gw,boxes);
-    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
 
