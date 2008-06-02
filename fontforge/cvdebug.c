@@ -718,6 +718,15 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	SplinePointListsFree(cv->b.gridfit);
 	cv->b.gridfit = SplineSetsFromPoints(&exc->pts,dv->scalex,dv->scaley,dv->active_refs);
 	cv->raster = DebuggerCurrentRaster(exc,cv->ft_depth);
+	if ( show_transformed && !show_raw && cv->raster!=NULL ) {
+	    BasePoint me;
+	    FT_Vector cur;
+	    cur.y = cv->raster->as * 64;
+	    cur.x = cv->raster->lb * 64;
+	    ScalePoint(&me,&cur,dv->scalex,dv->scaley,dv->active_refs);
+	    cv->raster->lb = rint(me.x/dv->scalex/64);
+	    cv->raster->as = rint(me.y/dv->scaley/64);
+	}
 	if ( exc->pts.n_points<=2 )
 	    cv->b.ft_gridfitwidth = 0;
 	/* suport for vertical phantom pts */
