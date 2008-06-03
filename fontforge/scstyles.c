@@ -46,6 +46,15 @@ static unichar_t lc_botserif_str[] = { 'i', 'k', 'l', 'm', 'f', 0x433, 0x43a,
 	0x43f, 0x442, 0x3c0, 0x3ba, 0 };
 static unichar_t lc_topserif_str[] = { 'k', 'l', 'm', 0x444, 0x3b9, 0 };
 
+struct fixed_maps {
+    int cnt;
+    struct position_maps {
+	double current;
+	double desired;
+	int overlap_index;
+    } maps[5];
+};
+
 static void SSCPValidate(SplineSet *ss) {
     SplinePoint *sp, *nsp;
 
@@ -518,66 +527,16 @@ static struct overlaps *SCFindHintOverlaps(StemInfo *hints,double min_coord,
 return( overlaps );
 }
 
-static void SmallCapsRemoveSpace(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,double remove,
-	double min_coord, double max_coord) {
-    struct overlaps *overlaps;
+static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
+	int coord, StemInfo *hints,
+	struct overlaps *overlaps, int tot) {
     struct ptpos { double old, new; int hint_index; } *ptpos;
-    int cnt, i, tot, order2, set;
+    int cnt, i, order2;
+    double val;
     StemInfo *h;
-    double counter_len, val, shrink;
     SplineSet *spl;
     SplinePoint *sp, *first, *start, *last;
     AnchorPoint *ap;
-
-    if ( remove > max_coord-min_coord )
-return;
-
-    /* Coalesce overlapping hint zones. These won't shrink, but the counters */
-    /*  between them will */
-    overlaps = SCFindHintOverlaps(hints, min_coord, max_coord, &tot, &counter_len );
-
-    if ( 2*remove >counter_len ) {
-	/* The amount we need to remove is disproportionate to the counter */
-	/*  space we have available from which to remove it. So just scale */
-	/*  everything linearly between min_coord and max */
-	overlaps[0].start = min_coord-100; overlaps[0].stop = min_coord;
-	overlaps[1].start = max_coord    ; overlaps[1].stop = max_coord+100;
-	tot = 2;
-	counter_len = max_coord - min_coord;
-    }
-    if ( counter_len==0 || counter_len<remove ) {
-	free( overlaps );
-return;
-    }
-
-    shrink = (counter_len-remove)/counter_len;
-    /* 0 is a fixed point */
-    for ( i=0; i<tot && overlaps[i].stop<0; ++i );
-    if ( i==tot ) {
-	/* glyph is entirely <0 */
-	set = tot-1;
-	overlaps[set].new_stop = shrink*overlaps[set].stop;
-	overlaps[set].new_start = overlaps[set].new_stop - (overlaps[set].stop - overlaps[set].start);
-    } else if ( overlaps[i].start>0 ) {
-	set = i;
-	overlaps[set].new_start = shrink*overlaps[set].start;
-	overlaps[set].new_stop  = overlaps[set].new_start + (overlaps[set].stop - overlaps[set].start);
-    } else {
-	set = i;
-	overlaps[set].new_start = overlaps[set].start;
-	overlaps[set].new_stop = overlaps[set].stop;
-    }
-    for ( i=set+1; i<tot; ++i ) {
-	overlaps[i].new_start = overlaps[i-1].new_stop +
-		(overlaps[i].start - overlaps[i-1].stop)*shrink;
-	overlaps[i].new_stop  = overlaps[i].new_start +
-		(overlaps[i].stop  -overlaps[i].start);
-    }
-    for ( i=set-1; i>=0; --i ) {
-	overlaps[i].new_stop = overlaps[i+1].new_start -
-		(overlaps[i+1].start - overlaps[i].stop)*shrink;
-	overlaps[i].new_start = overlaps[i].new_stop - (overlaps[i].stop - overlaps[i].start);
-    }
 
     cnt = NumberLayerPoints(ss);
     ptpos = gcalloc(cnt,sizeof(struct ptpos));
@@ -828,6 +787,149 @@ return;
     }
 
     free(ptpos);
+}
+
+static double SmallCapsRemoveSpace(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,double remove,
+	double min_coord, double max_coord ) {
+    struct overlaps *overlaps;
+    int i, tot, set;
+    double counter_len, shrink;
+
+    if ( remove > max_coord-min_coord )
+return(0);
+
+    /* Coalesce overlapping hint zones. These won't shrink, but the counters */
+    /*  between them will */
+    overlaps = SCFindHintOverlaps(hints, min_coord, max_coord, &tot, &counter_len );
+    /* A glyph need not have any counters at all (lower case "l" doesn't) */
+    if ( counter_len==0 ) {
+	free( overlaps );
+return( 0 );
+    }
+
+    if ( 1.5*remove > counter_len ) {
+	/* The amount we need to remove is disproportionate to the counter */
+	/*  space we have available from which to remove it. So just remove */
+	/*  what seems reasonable */
+	remove = 2*counter_len/3;
+    }
+
+    shrink = (counter_len-remove)/counter_len;
+    /* 0 is a fixed point */
+    /* extra->current is a known point */
+    for ( i=0; i<tot && overlaps[i].stop<0; ++i );
+    if ( i==tot ) {
+	/* glyph is entirely <0 */
+	set = tot-1;
+	overlaps[set].new_stop = shrink*overlaps[set].stop;
+	overlaps[set].new_start = overlaps[set].new_stop - (overlaps[set].stop - overlaps[set].start);
+    } else if ( overlaps[i].start>0 ) {
+	set = i;
+	overlaps[set].new_start = shrink*overlaps[set].start;
+	overlaps[set].new_stop  = overlaps[set].new_start + (overlaps[set].stop - overlaps[set].start);
+    } else {
+	set = i;
+	overlaps[set].new_start = overlaps[set].start;
+	overlaps[set].new_stop = overlaps[set].stop;
+    }
+    for ( i=set+1; i<tot; ++i ) {
+	overlaps[i].new_start = overlaps[i-1].new_stop +
+		(overlaps[i].start - overlaps[i-1].stop)*shrink;
+	overlaps[i].new_stop  = overlaps[i].new_start +
+		(overlaps[i].stop  -overlaps[i].start);
+    }
+    for ( i=set-1; i>=0; --i ) {
+	overlaps[i].new_stop = overlaps[i+1].new_start -
+		(overlaps[i+1].start - overlaps[i].stop)*shrink;
+	overlaps[i].new_start = overlaps[i].new_stop - (overlaps[i].stop - overlaps[i].start);
+    }
+
+    SmallCapsPlacePoints(ss,aps,coord,hints,overlaps, tot);
+    free(overlaps);
+return( remove );
+}
+
+static void LowerCaseRemoveSpace(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,
+	struct fixed_maps *fix ) {
+    struct overlaps *overlaps;
+    int i,j,k,l, tot;
+    double counter_len, shrink;
+
+    /* This is a variant on the previous routine. Instead of removing a given */
+    /*  amount to be spread out among all the counters, here we are given */
+    /*  certain locations and told where they map to. Basically the same idea */
+    /*  except the glyph is sub-divided and each chunk can have a different */
+    /*  amount/proportion removed from it */
+    /* The end maps will be for the min/max points of the glyph. so they will */
+    /*  be present. Intermediate maps might not be (lower case "l" has nothing*/
+    /*  at the xheight), in which case we just ignore that map. */
+
+    /* Coalesce overlapping hint zones. These won't shrink, but the counters */
+    /*  between them will */
+    overlaps = SCFindHintOverlaps(hints, fix->maps[0].current, fix->maps[fix->cnt-1].current, &tot, &counter_len );
+    /* A glyph need not have any counters at all */
+    if ( counter_len==0 ) {
+	free( overlaps );
+return;
+    }
+
+    for ( j=0; j<tot; ++j )
+	overlaps[j].new_start = -10000;
+
+    k=-1;
+    for ( i=0; i<fix->cnt; ++i ) {
+	fix->maps[i].overlap_index = -1;
+	for ( j=k+1; j<tot; ++j ) {
+	    if ( overlaps[j].start<=fix->maps[i].current+2 && overlaps[j].stop>=fix->maps[i].current-2 ) {
+		overlaps[j].new_start = fix->maps[i].desired + overlaps[j].start-fix->maps[i].current;
+		overlaps[j].new_stop  = fix->maps[i].desired + overlaps[j].stop -fix->maps[i].current;
+		fix->maps[i].overlap_index = j;
+		if ( k!=-1 ) {
+		    /* Position any hint overlap zones between the one we just*/
+		    /*  positioned, and the one we positioned just before this*/
+		    double osum = 0;
+		    for ( l=k+1; l<j; ++l )
+			osum += overlaps[l].stop-overlaps[l].start;
+		    shrink = (overlaps[j].new_start-overlaps[k].new_stop - osum) /
+				(overlaps[j].start -overlaps[k].stop     - osum);
+		    for ( l=k+1; l<j; ++l ) {
+			overlaps[l].new_start = overlaps[l-1].new_stop +
+				shrink*(overlaps[l].start - overlaps[l-1].stop);
+			overlaps[l].new_stop  = overlaps[l].new_start +
+				(overlaps[l].stop - overlaps[l].start);
+		    }
+		}
+		k = j;
+	break;
+	    }
+	}
+	if ( fix->maps[i].overlap_index==-1 ) {
+	    /* remove this mapping, doesn't correspond to anything in the */
+	    /*  current glyph */
+	    if ( i==fix->cnt-1 && k!=-1 && 
+		    overlaps[k].start<=fix->maps[i].current+2 &&
+		    overlaps[k].stop>=fix->maps[i].current-2 )
+		/* Ok, normally it's a bad thing if the last fix point doesn't */
+		/*  get mapped, but here it gets mapped to essentially the same*/
+		/*  place as the previous point (A glyph which is as high as */
+		/*  the xheight, for instance), so we can afford to ignore it */;
+	    else if ( i==0 || i==fix->cnt-1 )
+		IError("Failed to position end points in LowerCaseRemoveSpace" );
+	    for ( j=i+1; j<fix->cnt; ++j )
+		fix->maps[j-1] = fix->maps[j];
+	    --(fix->cnt);
+	    --i;		/* Try again on the new zone */
+	}
+    }
+
+    for ( j=0; j<tot; ++j ) {
+	if ( overlaps[j].new_start == -10000 ) {
+	    IError( "Hint zone not positioned" );
+return;
+	}
+    }
+
+    SmallCapsPlacePoints(ss,aps,coord,hints,overlaps, tot);
     free(overlaps);
 }
 
@@ -1136,15 +1238,16 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
     extern int no_windowing_ui;
     int nwi = no_windowing_ui;
     AnchorPoint *ap;
+    struct fixed_maps fix;
 
     memset(scale,0,sizeof(scale));
-    scale[0] = subsup->h_stem_scale;
-    scale[3] = subsup->v_stem_scale;
-    scale[2] = subsup->h_stem_scale * subsup->tan_ia;
+    scale[0] = subsup->stem_width_scale;
+    scale[3] = subsup->stem_height_scale;
+    scale[2] = subsup->stem_width_scale * subsup->tan_ia;
 
     sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
 	    orig_sc->layers[layer].splines),scale,true);
-    sc_sc->width = subsup->h_stem_scale * orig_sc->width;
+    sc_sc->width = subsup->stem_width_scale * orig_sc->width;
     sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
     for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
 	BasePoint me;
@@ -1155,17 +1258,45 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
     no_windowing_ui = true;		/* Turn off undoes */
     SplineCharAutoHint(sc_sc,layer,NULL);
     no_windowing_ui = nwi;
-    if ( !RealNear( subsup->h_stem_scale, subsup->h_scale ) &&
-	    !RealNear( subsup->v_stem_scale, subsup->v_scale )) {
+    if ( !RealNear( subsup->stem_width_scale, subsup->h_scale ) ||
+	    !RealNear( subsup->stem_height_scale, subsup->v_scale )) {
 	SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
 	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
 
-	remove_y = (sc_b.maxy-sc_b.miny) - subsup->v_scale*(orig_b.maxy-orig_b.miny);
 	remove_x = (sc_b.maxx-sc_b.minx) - subsup->h_scale*(orig_b.maxx-orig_b.minx);
-	sc_sc->width -= remove_x;
 	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+	if ( subsup->preserve_consistent_xheight && orig_sc->unicodeenc<0x10000 &&
+		islower(orig_sc->unicodeenc) &&
+		sc_b.maxy>=subsup->xheight_current &&
+		sc_b.miny<subsup->xheight_current/2 ) {
+	    int l=0;
+	    fix.maps[l].current = sc_b.miny;
+	    fix.maps[l++].desired = orig_b.miny;
+	    if ( sc_b.miny<-subsup->xheight_current/4 ) {
+		fix.maps[l].current = 0;
+		fix.maps[l++].desired = 0;
+	    }
+	    fix.maps[l].current = subsup->xheight_current;
+	    fix.maps[l++].desired = subsup->xheight_desired;
+	    fix.maps[l].current = sc_b.maxy;
+	    fix.maps[l++].desired = orig_b.maxy;
+	    fix.cnt = l;
+	    LowerCaseRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,&fix);
+	} else {
+	    remove_y = (sc_b.maxy-sc_b.miny) - subsup->v_scale*(orig_b.maxy-orig_b.miny);
+	    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+	}
 	SplineSetRefigure(sc_sc->layers[layer].splines);
+	/* Set the left and right side bearings appropriately */
+	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+	sc_sc->width = (orig_sc->width-orig_b.maxx)*subsup->h_scale + sc_b.maxx;
+	memset(scale,0,sizeof(scale));
+	scale[0] = scale[3] = 1;
+	scale[4] = orig_b.minx*subsup->h_scale - sc_b.minx;
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
+	    ap->me.x += scale[4];
+	sc_sc->width += scale[4];
     }
 
     memset(scale,0,sizeof(scale));
@@ -1201,13 +1332,17 @@ void FVAddSubSup(FontViewBase *fv, struct subsup *subsup) {
     struct lookup_subtable *feature;
     char buffer[200];
     const unichar_t *alts;
+    struct smallcaps small;
 
     if ( sf->cidmaster!=NULL )
 return;		/* Can't randomly add things to a CID keyed font */
 
-    subsup->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
-    subsup->tan_ia = tan( subsup->italic_angle );
-    
+    SmallCapsFindConstants(&small,sf,fv->active_layer);
+    subsup->italic_angle = small.italic_angle;
+    subsup->tan_ia = small.tan_ia;
+    subsup->xheight_current = small.xheight*subsup->stem_height_scale;	/* height of h stems is vertical */
+    subsup->xheight_desired = small.xheight*subsup->v_scale;
+
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
 	sc->ticked = false;
 
@@ -2891,7 +3026,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
 	double endx, ItalicInfo *ii,int seriftype, int top) {
     SplineSet *ss;
     real trans[6];
-    int newright, i;
+    int i;
     double spos, epos, dpos;
     extended t1, t2;
     SplinePoint *sp;

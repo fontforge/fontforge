@@ -345,12 +345,15 @@ extern void FVAddSmallCaps(FontViewBase *fv,struct smallcaps *small);
 struct subsup {
     uint32 feature_tag;
     char *glyph_extension;
-    double h_stem_scale, v_stem_scale;
+    double stem_height_scale, stem_width_scale;
     double h_scale, v_scale;
     double vertical_offset;
+    unsigned int preserve_consistent_xheight;
+/* Filled in by called routine */
     SplineFont *sf;
     int layer;
     double italic_angle, tan_ia;
+    double xheight_current, xheight_desired;
 };
 
 extern void FVAddSubSup(FontViewBase *fv,struct subsup *subsup);
