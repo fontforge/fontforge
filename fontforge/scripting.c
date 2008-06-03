@@ -4376,6 +4376,7 @@ static ItalicInfo default_ii = {
     true,		/* Transform bottom serifs */
     true,		/* Transform serifs at x-height */
     false,		/* Transform serifs on ascenders */
+    true,		/* Transform serifs on diagonal stems at baseline and x-height */
 
     true,		/* Change the shape of an "a" to look like a "d" without ascender */
     false,		/* Change the shape of "f" so it descends below baseline (straight down no flag at end) */

@@ -15205,7 +15205,7 @@ static struct psaltnames psaltnames[] = {
 	{ "cieucparenkorean", 0x3208 },
 	{ "cieucuparenkorean", 0x321c },
 	{ "circleot", 0x2299 },			/* Typo in Adobe's glyphlist */
-	{ "circledot", 0x2299 },
+	{ "circledot", 0x2299 },		/* But same typo exists in acrobat */
 	{ "circlepostalmark", 0x3036 },
 	{ "circlewithlefthalfblack", 0x25d0 },
 	{ "circlewithrighthalfblack", 0x25d1 },

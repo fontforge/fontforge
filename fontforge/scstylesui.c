@@ -1498,6 +1498,7 @@ static ItalicInfo last_ii = {
     true,		/* Transform bottom serifs */
     true,		/* Transform serifs at x-height */
     false,		/* Transform serifs on ascenders */
+    true,		/* Transform serifs on diagonal stems at baseline and x-height */
 
     true,		/* Change the shape of an "a" to look like a "d" without ascender */
     false,		/* Change the shape of "f" so it descends below baseline (straight down no flag at end) */
@@ -1562,13 +1563,15 @@ return;
 #define CID_Cyrl_Te	1013
 #define CID_Cyrl_Phi	1014
 #define CID_Cyrl_Sha	1015
-#define CID_Cyrl_Dzhe	1016
+#define CID_Cyrl_Dje	1016
+#define CID_Cyrl_Dzhe	1017
 #define CID_BottomSerifs	2001
 #define CID_XHeightSerifs	2002
 #define CID_AscenderSerifs	2003
-#define CID_Flat		2004
-#define CID_Slanted		2005
-#define CID_PenSlant		2006
+#define CID_DiagSerifs		2004
+#define CID_Flat		2011
+#define CID_Slanted		2012
+#define CID_PenSlant		2013
 #define CID_CompressLSB		3001		/* for lc, 3011 for uc, 3021 for others */
 #define CID_CompressStem	3002		/* for lc, 3012 for uc, 3022 for others */
 #define CID_CompressCounter	3003		/* for lc, 3013 for uc, 3023 for others */
@@ -1603,6 +1606,7 @@ return( true );
 	ii.transform_bottom_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_BottomSerifs));
 	ii.transform_top_xh_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_XHeightSerifs));
 	ii.transform_top_as_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_AscenderSerifs));
+	ii.transform_diagon_serifs= GGadgetIsChecked(GWidgetGetControl(ew,CID_DiagSerifs));
 
 	ii.a_from_d = GGadgetIsChecked(GWidgetGetControl(ew,CID_A));
 	ii.f_rotate_top = GGadgetIsChecked(GWidgetGetControl(ew,CID_F));
@@ -1618,6 +1622,7 @@ return( true );
 	ii.cyrl_te = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Te));
 	ii.cyrl_phi = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Phi));
 	ii.cyrl_sha = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Sha));
+	ii.cyrl_dje = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Dje));
 	ii.cyrl_dzhe = GGadgetIsChecked(GWidgetGetControl(ew,CID_Cyrl_Dzhe));
 	
 	last_ii = ii;
@@ -1633,9 +1638,9 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[50], boxes[7], *forms[25], *compress[5][6], *sarray[5],
-	    *iaarray[4], *barray[10], *varray[35];
-    GTextInfo label[50];
+    GGadgetCreateData gcd[51], boxes[7], *forms[30], *compress[5][6], *sarray[5],
+	    *iaarray[4], *barray[10], *varray[37];
+    GTextInfo label[51];
     int k,f,r,i;
     char lsb[3][40], stems[3][40], counters[3][40], rsb[3][40], ia[40];
 
@@ -1739,6 +1744,15 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     gcd[k++].creator = GCheckBoxCreate;
     forms[f++] = &gcd[k-1];
 
+    label[k].image = &GIcon_u452Italic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.cyrl_dje ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_Cyrl_Dje;
+    gcd[k++].creator = GCheckBoxCreate;
+    forms[f++] = &gcd[k-1];
+    forms[f++] = GCD_Glue; forms[f++] = NULL;
+
     label[k].image = &GIcon_u45fItalic;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
@@ -1746,7 +1760,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     gcd[k].gd.cid = CID_Cyrl_Dzhe;
     gcd[k++].creator = GCheckBoxCreate;
     forms[f++] = &gcd[k-1];
-    forms[f++] = GCD_Glue; forms[f++] = NULL;
+    forms[f++] = GCD_Glue; forms[f++] = GCD_Glue; forms[f++] = GCD_Glue; forms[f++] = NULL;
     forms[f++] = NULL;
 
     boxes[2].gd.flags = gg_enabled|gg_visible;
@@ -1795,6 +1809,18 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     gcd[k++].creator = GCheckBoxCreate;
     varray[r++] = &gcd[k-1]; varray[r++] = NULL;
 
+    label[k].text = (unichar_t *) _("Transform diagonal serifs");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_DiagSerifs;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.transform_diagon_serifs ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_DiagSerifs;
+    gcd[k++].creator = GCheckBoxCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
     label[k].text = (unichar_t *) _("When serifs are removed (as first two in \"m\"), replace with:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -1805,6 +1831,8 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) _("Flat");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_FlatSerif;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     if ( last_ii.secondary_serif==srf_flat ) gcd[k].gd.flags |= gg_cb_on;
@@ -1815,6 +1843,8 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) _("Slanted");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_SlantSerif;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     if ( last_ii.secondary_serif==srf_simpleslant ) gcd[k].gd.flags |= gg_cb_on;
@@ -1825,6 +1855,8 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) _("Pen Slanted");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_PenSerif;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     if ( last_ii.secondary_serif==srf_complexslant ) gcd[k].gd.flags |= gg_cb_on;
