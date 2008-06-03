@@ -1204,6 +1204,10 @@ void FVAddSubSup(FontViewBase *fv, struct subsup *subsup) {
 
     if ( sf->cidmaster!=NULL )
 return;		/* Can't randomly add things to a CID keyed font */
+
+    subsup->italic_angle = sf->italicangle * 3.1415926535897932/180.0;
+    subsup->tan_ia = tan( subsup->italic_angle );
+    
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
 	sc->ticked = false;
 
@@ -2907,8 +2911,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
 	SplinePointListTransform(ss,trans,true);
     }
     /* given the orientation of the dstem, do we need to flip the serif? */
-    newright = (( top && seriftype!=0 ) || (!top && seriftype==0));
-    if ( (newright && d->unit.x*d->unit.y>0) || (!newright && d->unit.x*d->unit.y<0)) {
+    if ( (seriftype==0 && d->unit.x*d->unit.y>0) || (seriftype!=0 && d->unit.x*d->unit.y<0)) {
 	trans[0] = -1; trans[3] = 1;
 	trans[4] = ss->first->me.x+endx;
 	trans[5] = 0;
@@ -3327,11 +3330,11 @@ static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
 		if ( ( ediff = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x)<0 ) ediff = -ediff;
 		/* Hint Ranges for diagonals seem not to be what we want here */
 		if ( sdiff<=10 && ( start==NULL ||
-			( sp->me.y<start->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,spos))*/ ))) {
+			( sp->me.y>start->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,spos))*/ ))) {
 		    start=sp;
 		    spos = pos;
 		} else if ( ediff<=10 && ( end==NULL ||
-			( sp->me.y<end->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,epos))*/ ))) {
+			( sp->me.y>end->me.y /*&& (InHintRange(d->where,pos) || !InHintRange(d->where,epos))*/ ))) {
 		    end=sp;
 		    epos = pos;
 		}
@@ -3731,8 +3734,28 @@ static SplinePoint *StemMoveTopEndTo(SplinePoint *sp,double y,int is_start) {
 return( sp );
 }
 
+static SplinePoint *StemMoveDTopEndTo(SplinePoint *sp,double y,DStemInfo *d,
+	int is_start) {
+    SplinePoint *other;
+    double xoff;
+
+    xoff = (y-sp->me.y)*d->unit.x/d->unit.y;
+    if ( is_start ) {
+	other = SplinePointCreate(sp->me.x+xoff,y);
+	sp->nonextcp = true;
+	SplineMake(sp,other,sp->prev->order2);
+	sp = other;
+    } else {
+	other = SplinePointCreate(sp->me.x+xoff,y);
+	sp->noprevcp = true;
+	SplineMake(other,sp,sp->next->order2);
+	sp = other;
+    }
+return( sp );
+}
+
 static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *oldss,
-	SplineSet *ss,int is_start) {
+	SplineSet *ss,DStemInfo *d, int is_start) {
     SplinePoint *other = is_start ? ss->first : ss->last;
 
     if ( is_start ) {
@@ -3793,7 +3816,10 @@ return( sp );
 	    }
 	}
     }
+    if ( d==NULL )
 return( StemMoveTopEndTo(sp,other->me.y,is_start));
+    else
+return( StemMoveDTopEndTo(sp,other->me.y,d,is_start));
 }
 
 static void SplineNextSplice(SplinePoint *start,SplinePoint *newstuff) {
@@ -3882,10 +3908,7 @@ return;
     else
 	seriftype = 0;
     ss = MakeItalicDSerif(d,stemwidth, end->me.x,ii,seriftype,false);
- { SplineSet *fub = SplinePointListCopy(ss);		/* !!! debug */
-  fub->next = sc->layers[ly_back].splines;
-  sc->layers[ly_back].splines = fub;		/* !!! Debug */
- }
+
     start = StemMoveBottomEndCarefully(start,oldss,ss,d,true );
     end   = StemMoveBottomEndCarefully(end  ,oldss,ss,d,false);
 
@@ -3916,12 +3939,9 @@ return;
     else
 	seriftype = 0;
     ss = MakeItalicDSerif(d,stemwidth, end->me.x,ii,seriftype,1);
- { SplineSet *fub = SplinePointListCopy(ss);		/* !!! debug */
-  fub->next = sc->layers[ly_back].splines;
-  sc->layers[ly_back].splines = fub;		/* !!! Debug */
- }
-    start = StemMoveBottomEndCarefully(start,oldss,ss,d,true );
-    end   = StemMoveBottomEndCarefully(end  ,oldss,ss,d,false);
+
+    start = StemMoveTopEndCarefully(start,oldss,ss,d,true );
+    end   = StemMoveTopEndCarefully(end  ,oldss,ss,d,false);
 
     SplineNextSplice(start,ss->first);
     SplinePrevSplice(end,ss->last);
@@ -3982,7 +4002,6 @@ return( false );
 
 static void AddBottomItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
     StemInfo *h;
-    DStemInfo *d;
     int j, cnt;
     /* If a glyph has multiple stems then only the last one gets turned to */
     /*  the italic serif. The others get deserifed. Note that if the glyph is */
@@ -4002,12 +4021,6 @@ static void AddBottomItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
 	else
 	    DeSerifBottomStem(sc,layer,h,ii,0,NULL,NULL);
 	++j;
-    }
-    for ( d=sc->dstem; d!=NULL; d=d->next ) {
-	if ( d->unit.x*d->unit.y<0 && NearBottomRightSide(d,&b,ii))
-	    ReSerifBottomDStem(sc,layer,d,ii);
-	else if ( d->unit.x*d->unit.y>0 && NearBottomLeftSide(d,&b,ii))
-	    ReSerifBottomDStem(sc,layer,d,ii);
     }
 }
 
@@ -4048,8 +4061,8 @@ return;
     SerifRemove(start,end,oldss);
 
     ss = MakeTopItalicSerif(start->me.x-end->me.x,end->me.x,ii,at_xh);
-    start = StemMoveTopEndCarefully(start,oldss,ss,true );
-    end   = StemMoveTopEndCarefully(end  ,oldss,ss,false);
+    start = StemMoveTopEndCarefully(start,oldss,ss,NULL,true );
+    end   = StemMoveTopEndCarefully(end  ,oldss,ss,NULL,false);
 
     SplineNextSplice(start,ss->first);
     SplinePrevSplice(end,ss->last);
@@ -4058,7 +4071,6 @@ return;
 
 static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
     StemInfo *h;
-    DStemInfo *d;
     /* The leftmost stem of certain lower case letters can go from a half */
     /* serif to an italic serif. Sometimes it is just stems at the x-height */
     /* sometimes ascenders too, often none */
@@ -4081,13 +4093,24 @@ static void AddTopItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    h = h->next;
 	}
     }
-#ifndef GWW_TEST
-return;
-#endif
+}
+
+static void AddDiagonalItalicSerifs(SplineChar *sc,int layer,ItalicInfo *ii) {
+    DStemInfo *d;
+    DBounds b;
+
+    SplineCharLayerFindBounds(sc,layer,&b);
     for ( d=sc->dstem; d!=NULL; d=d->next ) {
-	if ( d->unit.x*d->unit.y<0 && NearXHeightRightSide(d,&b,ii))
+      /* Serifs on diagonal stems at baseline */
+	if ( d->unit.x*d->unit.y<0 && NearBottomRightSide(d,&b,ii))
+	    ReSerifBottomDStem(sc,layer,d,ii);
+	else if ( d->unit.x*d->unit.y>0 && NearBottomLeftSide(d,&b,ii))
+	    ReSerifBottomDStem(sc,layer,d,ii);
+
+      /* Serifs on diagonal stems at xheight */
+	if ( d->unit.x*d->unit.y>0 && NearXHeightRightSide(d,&b,ii))
 	    ReSerifXHeightDStem(sc,layer,d,ii);
-	else if ( d->unit.x*d->unit.y>0 && NearXHeightLeftSide(d,&b,ii))
+	else if ( d->unit.x*d->unit.y<0 && NearXHeightLeftSide(d,&b,ii))
 	    ReSerifXHeightDStem(sc,layer,d,ii);
     }
 }
@@ -4578,6 +4601,24 @@ return;
     SCMakeDependent(sc,replacement);
 }
 
+static void ItalReplaceWithSmallCaps(SplineChar *sc,int layer, int uni, ItalicInfo *ii) {
+    SplineChar *uc = SFGetChar(sc->parent,uni,NULL);
+    struct smallcaps small;
+
+    if ( uc==NULL )
+return;
+
+    SmallCapsFindConstants(&small, sc->parent, layer);
+    if ( uc->ticked ) {
+	small.italic_angle = ii->italic_angle;
+	small.tan_ia       = ii->tan_ia;
+    }
+
+    SCClearLayer(sc,layer);
+
+    BuildSmallCap(sc,uc,layer,&small);
+}
+
 static void Ital_a_From_d(SplineChar *sc,int layer, ItalicInfo *ii) {
     SplineChar *d = SFGetChar(sc->parent,'d',NULL);
     SplineSet *d_ss, *ss, *sses[4];
@@ -4591,6 +4632,14 @@ static void Ital_a_From_d(SplineChar *sc,int layer, ItalicInfo *ii) {
 return;
     d_ss = SplinePointListCopy(LayerAllSplines(&d->layers[layer]));
     LayerUnAllSplines(&d->layers[ly_fore]);
+
+    if ( d->ticked ) {
+	real deskew[6];
+	memset(deskew,0,sizeof(deskew));
+	deskew[0] = deskew[3] = 1;
+	deskew[2] = ii->tan_ia;
+	SplinePointListTransform(d_ss,deskew,true);
+    }
 
     scnt = 0;
     for ( ss=d_ss; ss!=NULL; ss=ss->next ) {
@@ -4694,7 +4743,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	else if ( ii->cyrl_dje  && sc->unicodeenc==0x448 )
 	    ItalReplaceWithRotated(sc,layer,'m',ii);
 	else if ( ii->cyrl_dje  && sc->unicodeenc==0x452 )
-	    /* Replace with smallcaps variant of T */;
+	    ItalReplaceWithSmallCaps(sc,layer,'T',ii);
 	if ( ii->cyrl_dzhe && sc->unicodeenc==0x45f )
 	    ItalReplaceWithReferenceTo(sc,layer,'u');
 
@@ -4710,6 +4759,9 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    CyrilicPhiTop(sc,layer,ii);
 	else if ( ii->transform_top_xh_serifs || ii->transform_top_as_serifs )
 	    AddTopItalicSerifs(sc,layer,ii);
+
+	if ( ii->transform_diagon_serifs )
+	    AddDiagonalItalicSerifs(sc,layer,ii);
     }
 
 #ifndef GWW_TEST			/* !!!!! debug */

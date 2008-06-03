@@ -1895,7 +1895,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		fprintf( sfd, "0 \n" );
 	}
     }
-    fprintf( sfd, "DEI: 0\n" );
+    fprintf( sfd, "DEI: 91125\n" );
     for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
 	    fprintf( sfd, "%s: %d%s %d ", isv ? "VKernClass2" : "KernClass2",

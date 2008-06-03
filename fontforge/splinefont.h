@@ -246,6 +246,7 @@ typedef struct italicinfo {
     unsigned int transform_bottom_serifs: 1;
     unsigned int transform_top_xh_serifs: 1;	/* Those at x-height */
     unsigned int transform_top_as_serifs: 1;	/* Those at ascender-height */
+    unsigned int transform_diagon_serifs: 1;	/* Those at baseline/xheight */
 
     unsigned int a_from_d: 1;		/* replace the "a" glyph with the variant which looks like a "d" without an ascender */
   /* When I say "f" I also mean "f_f" ligature, "longs", cyrillic phi and other things shaped like "f" */
@@ -279,7 +280,6 @@ typedef struct italicinfo {
     /* u449 */
     /* u449 */
     /* u44a */
-    /* u452 */
 
 /* This half of the structure gets filled in later */
     double tan_ia;
