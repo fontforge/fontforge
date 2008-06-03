@@ -649,8 +649,8 @@ void AddSmallCapsDlg(FontView *fv) {
 #define CID_Feature	1001
 #define CID_Extension	1002
 #define CID_H_is_V	1003
-#define CID_HStemScale	1004
-#define CID_VStemScale	1005
+#define CID_StemHeight	1004
+#define CID_StemWidth	1005
 #define CID_HScale	1006
 #define CID_VScale	1007
 #define CID_VerticalOff	1008
@@ -692,20 +692,21 @@ static int SubSup_OK(GGadget *g, GEvent *e) {
 	char tag[4];
 
 	memset(&subsup,0,sizeof(subsup));
+	subsup.preserve_consistent_xheight = true;
 	subsup.vertical_offset = GetReal8(ew,CID_VerticalOff,_("Vertical Offset"),&err);
-	subsup.v_stem_scale = GetReal8(ew,CID_VStemScale,_("Vertical Stem Scale"),&err)/100.;
+	subsup.stem_height_scale = GetReal8(ew,CID_StemHeight,_("Horizontal Stem Height Scale"),&err)/100.;
 	subsup.v_scale = GetReal8(ew,CID_VScale,_("Vertical Scale"),&err)/100.;
 	if ( xy_same ) {
-	    subsup.h_stem_scale = subsup.v_stem_scale;
+	    subsup.stem_width_scale = subsup.stem_height_scale;
 	    subsup.h_scale = subsup.v_scale;
 	} else {
-	    subsup.h_stem_scale = GetReal8(ew,CID_HStemScale,_("Horizontal Stem Scale"),&err)/100.;
+	    subsup.stem_width_scale = GetReal8(ew,CID_StemWidth,_("Vertical Stem Width Scale"),&err)/100.;
 	    subsup.h_scale = GetReal8(ew,CID_HScale,_("Horizontal Scale"),&err)/100.;
 	}
 	if ( err )
 return( true );
-	if ( subsup.v_stem_scale<.03 || subsup.v_stem_scale>10 ||
-		subsup.h_stem_scale<.03 || subsup.h_stem_scale>10 ||
+	if ( subsup.stem_width_scale<.03 || subsup.stem_width_scale>10 ||
+		subsup.stem_height_scale<.03 || subsup.stem_height_scale>10 ||
 		subsup.h_scale<.03 || subsup.h_scale>10 ||
 		subsup.v_scale<.03 || subsup.v_scale>10 ) {
 	    ff_post_error(_("Unlikely scale factor"), _("Scale factors must be between 3 and 1000 percent"));
@@ -750,13 +751,37 @@ static int SS_SameAs_Changed(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GWindow ew = GGadgetGetWindow(g);
 	int on = GGadgetIsChecked(g);
-	GGadgetSetEnabled(GWidgetGetControl(ew,CID_HStemScale), !on);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemWidth), !on);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_HScale), !on);
 	if ( on ) {
-	    GGadgetSetTitle(GWidgetGetControl(ew,CID_HStemScale),
-		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_VStemScale)));
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidth),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeight)));
 	    GGadgetSetTitle(GWidgetGetControl(ew,CID_HScale),
 		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_VScale)));
+	}
+    }
+return( true );
+}
+
+static int SS_VStem_Changed(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_H_is_V))) {
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidth),
+		    _GGadgetGetTitle(g));
+	}
+    }
+return( true );
+}
+
+static int SS_Vertical_Changed(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_H_is_V))) {
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_HScale),
+		    _GGadgetGetTitle(g));
 	}
     }
 return( true );
@@ -900,6 +925,7 @@ void AddSubSupDlg(FontView *fv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.pos.width = 60;
+    gcd[k].gd.handle_controlevent = SS_Vertical_Changed;
     gcd[k].gd.cid = CID_VScale;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[21] = &gcd[k-1];
@@ -922,7 +948,7 @@ void AddSubSupDlg(FontView *fv) {
     gcd[k++].creator = GTextFieldCreate;
     hvarray[23] = &gcd[k-1]; hvarray[24] = NULL;
 
-    label[k].text = (unichar_t *) _("V Stem %:");
+    label[k].text = (unichar_t *) _("Stem Height %:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -935,12 +961,13 @@ void AddSubSupDlg(FontView *fv) {
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k].gd.cid = CID_VStemScale;
+    gcd[k].gd.cid = CID_StemHeight;
+    gcd[k].gd.handle_controlevent = SS_VStem_Changed;
     gcd[k].gd.pos.width = 60;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[26] = &gcd[k-1];
 
-    label[k].text = (unichar_t *) _("H Stem %:");
+    label[k].text = (unichar_t *) _("Stem Width %:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -954,7 +981,7 @@ void AddSubSupDlg(FontView *fv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible;
     gcd[k].gd.pos.width = 60;
-    gcd[k].gd.cid = CID_HStemScale;
+    gcd[k].gd.cid = CID_StemWidth;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[28] = &gcd[k-1]; hvarray[29] = NULL;
 
