@@ -177,7 +177,7 @@ return( 0 );
       case me_int:
 	width = GDrawGetText8Width(gme->g.base,"1234", -1, NULL );
       break;
-      case me_hex:
+      case me_hex: case me_addr:
 	width = GDrawGetText8Width(gme->g.base,"0xFFFF", -1, NULL );
       break;
       case me_uhex:
@@ -669,7 +669,7 @@ static void GME_StrSmallEdit(GMatrixEdit *gme,char *str, GEvent *event) {
 static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
     int c = gme->active_col;
     int r = gme->active_row;
-    int ival;
+    long lval;
     double dval;
     char *end="";
     char *str = GGadgetGetTitle8(g), *pt;
@@ -692,7 +692,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 	}
 	/* Didn't match any of the enums try as a direct integer */
 	/* Fall through */
-      case me_int: case me_hex: case me_uhex:
+      case me_int: case me_hex: case me_uhex: case me_addr:
 	if ( gme->validatestr!=NULL )
 	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
 	if ( *end=='\0' ) {
@@ -703,9 +703,9 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 		    pt += 2;
 		else if ( *pt=='0' && (pt[1]=='x' || pt[1]=='X'))
 		    pt += 2;
-		ival = strtol(pt,&end,16);
+		lval = strtoul(pt,&end,16);
 	    } else
-		ival = strtol(str,&end,10);
+		lval = strtol(str,&end,10);
 	}
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
@@ -713,7 +713,10 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 	    GDrawBeep(NULL);
 return( false );
 	}
-	gme->data[r*gme->cols+c].u.md_ival = ival;
+	if ( gme->col_data[c].me_type == me_addr )
+	    gme->data[r*gme->cols+c].u.md_addr = (void *) lval;
+	else
+	    gme->data[r*gme->cols+c].u.md_ival = lval;
 	free(str);
   goto good;
       case me_real:
@@ -1129,6 +1132,10 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
       break;
       case me_uhex:
 	sprintf( buffer,"U+%04X",(int) d->u.md_ival );
+	str = buffer;
+      break;
+      case me_addr:
+	sprintf( buffer,"%p", d->u.md_addr );
 	str = buffer;
       break;
       case me_real:
