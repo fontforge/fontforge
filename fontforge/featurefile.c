@@ -2268,7 +2268,7 @@ return( copy( test->glyphs) );
     }
     LogError(_("Use of undefined glyph class, %s, on line %d of %s"), classname, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
     ++tok->err_count;
-return( copy("") );
+return( NULL );
 }
 
 static void fea_AddClassDef(struct parseState *tok,char *classname,char *contents) {
@@ -2411,7 +2411,7 @@ static char *fea_ParseGlyphClass(struct parseState *tok) {
     } else if ( tok->type!=tk_char || tok->tokbuf[0]!='[' ) {
 	LogError(_("Expected '[' in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
-return(copy(""));
+return( NULL );
     } else {
 	char *contents;
 	int cnt=0, max=0;
@@ -2526,6 +2526,13 @@ return(copy(""));
 return( glyphs );
 }
 
+static char *fea_ParseGlyphClassGuarded(struct parseState *tok) {
+    char *ret = fea_ParseGlyphClass(tok);
+    if ( ret==NULL )
+	ret = copy("");
+return( ret );
+}
+
 static void fea_ParseLookupFlags(struct parseState *tok) {
     int val = 0;
     struct feat_item *item;
@@ -2586,7 +2593,7 @@ return;
     }
     fea_ParseTok(tok);
     contents = fea_ParseGlyphClass(tok);
-    if ( contents==NULL || *contents=='\0' ) {
+    if ( contents==NULL ) {
 	fea_skip_to_semi(tok);
 return;
     }
@@ -2908,7 +2915,7 @@ static struct markedglyphs *fea_ParseMarkedGlyphs(struct parseState *tok,
 	    cur->is_cursive = is_cursive;
 	    cur->is_mark = is_mark;
 	    cur->is_name = false;
-	    cur->name_or_class = fea_ParseGlyphClass(tok);
+	    cur->name_or_class = fea_ParseGlyphClassGuarded(tok);
 	} else if ( allow_marks && tok->type==tk_char &&
 		(tok->tokbuf[0]=='\'' || tok->tokbuf[0]=='"') && last!=NULL ) {
 	    if ( last_mark!=tok->tokbuf[0] || (prev!=NULL && prev->mark_count==0)) {
@@ -3374,7 +3381,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    /* Alternate subs */
 	    char *alts;
 	    fea_ParseTok(tok);
-	    alts = fea_ParseGlyphClass(tok);
+	    alts = fea_ParseGlyphClassGuarded(tok);
 	    sc = fea_glyphname_get(tok,glyphs->name_or_class);
 	    if ( sc!=NULL ) {
 		item = chunkalloc(sizeof(struct feat_item));
@@ -3615,7 +3622,7 @@ static void fea_ParsePosition(struct parseState *tok, int enumer) {
 	    if ( tok->type==tk_name )
 		mark_class = copy(tok->tokbuf);
 	    else
-		mark_class = fea_canonicalClassOrder(fea_ParseGlyphClass(tok));
+		mark_class = fea_canonicalClassOrder(fea_ParseGlyphClassGuarded(tok));
 	    fea_ParseTok(tok);
 	    if ( glyphs->is_mark && glyphs->ap_cnt>1 ) {
 		LogError(_("Mark to base anchor statements may only have one anchor on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -4394,7 +4401,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    else if ( tok->type==tk_cid )
 		item->u1.class = fea_cid_validate(tok,tok->value);
 	    else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='['))
-		item->u1.class = fea_ParseGlyphClass(tok);
+		item->u1.class = fea_ParseGlyphClassGuarded(tok);
 	    else {
 		LogError(_("Expected name or class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -4429,7 +4436,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    tok->sofar = item;
 	    for ( i=0; i<4; ++i ) {
 		fea_ParseTok(tok);
-		item->u1.gdef_classes[i] = fea_ParseGlyphClass(tok);
+		item->u1.gdef_classes[i] = fea_ParseGlyphClassGuarded(tok);
 	    }
 	    fea_ParseTok(tok);
 	} else {
