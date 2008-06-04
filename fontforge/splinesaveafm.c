@@ -3499,27 +3499,37 @@ return( mf_none );
 }
 
 int LoadKerningDataFromMetricsFile(SplineFont *sf,char *filename,EncMap *map) {
+    int ret;
 
     switch ( MetricsFormatType(filename)) {
       case mf_afm:
-return( LoadKerningDataFromAfm(sf,filename,map));
+	ret = LoadKerningDataFromAfm(sf,filename,map);
+      break;
       case mf_amfm:
-return( LoadKerningDataFromAmfm(sf,filename,map));
+	ret = LoadKerningDataFromAmfm(sf,filename,map);
+      break;
       case mf_tfm:
-return( LoadKerningDataFromTfm(sf,filename,map));
+	ret = LoadKerningDataFromTfm(sf,filename,map);
+      break;
       case mf_ofm:
-return( LoadKerningDataFromOfm(sf,filename,map));
+	ret = LoadKerningDataFromOfm(sf,filename,map);
+      break;
       case mf_pfm:
-return( LoadKerningDataFromPfm(sf,filename,map));
+	ret = LoadKerningDataFromPfm(sf,filename,map);
+      break;
       case mf_feat:
 	SFApplyFeatureFilename(sf,filename);
-return( true );
-
+	ret = true;
+      break;
       case mf_none:
       default:
 	/* If all else fails try a mac resource */
 	/* mac resources can be in so many different formats and even files */
 	/*  that I'm not even going to try to check for it here */
-return( LoadKerningDataFromMacFOND(sf,filename,map));
+	ret = LoadKerningDataFromMacFOND(sf,filename,map);
+      break;
     }
+    if ( ret )
+	MVReKernAll(sf);
+return( ret );
 }
