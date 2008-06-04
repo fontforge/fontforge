@@ -307,6 +307,8 @@ struct mv_interface {
     struct splinechar *(*get_glyph)(struct metricsview *,int);
 
    /* Kerning information for this font has changed. Remetric the metric views*/
+   /* Now-a-days, call this when any kind of lookup information changes, not */
+   /*  just kerning */
     void (*rekern)(struct splinefont *);
 
    /* Close any metrics views associated with this font */
