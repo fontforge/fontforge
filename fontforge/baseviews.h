@@ -357,6 +357,9 @@ struct subsup {
 };
 
 extern void FVAddSubSup(FontViewBase *fv,struct subsup *subsup);
+extern SplineSet *SSControlStems(SplineSet *ss,
+	double stemwidthscale, double stemheightscale,
+	double hscale, double vscale, double xheight);
 extern void MakeItalic(FontViewBase *fv,CharViewBase *cv,ItalicInfo *ii);
 extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );

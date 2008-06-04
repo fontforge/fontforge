@@ -1521,7 +1521,7 @@ static ItalicInfo last_ii = {
     .91, .89, .90, .91,		/* For lower case */
     .91, .93, .93, .91,		/* For upper case */
     .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
-    srf_simpleslant,	/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
+    srf_flat,		/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
     true,		/* Transform bottom serifs */
     true,		/* Transform serifs at x-height */
     false,		/* Transform serifs on ascenders */

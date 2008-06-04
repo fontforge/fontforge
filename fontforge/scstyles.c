@@ -1234,21 +1234,28 @@ return( sc_sc );
 static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct subsup *subsup) {
     real scale[6];
     DBounds orig_b, sc_b;
+    int owidth = orig_sc->width;
     double remove_y, remove_x;
     extern int no_windowing_ui;
     int nwi = no_windowing_ui;
     AnchorPoint *ap;
     struct fixed_maps fix;
 
+    SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
+
     memset(scale,0,sizeof(scale));
     scale[0] = subsup->stem_width_scale;
     scale[3] = subsup->stem_height_scale;
     scale[2] = subsup->stem_width_scale * subsup->tan_ia;
 
-    sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
-	    orig_sc->layers[layer].splines),scale,true);
+    if ( orig_sc==sc_sc )
+	SplinePointListTransform(orig_sc->layers[layer].splines,scale,true);
+    else {
+	sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
+		orig_sc->layers[layer].splines),scale,true);
+	sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
+    }
     sc_sc->width = subsup->stem_width_scale * orig_sc->width;
-    sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
     for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
 	BasePoint me;
 	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
@@ -1260,7 +1267,6 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
     no_windowing_ui = nwi;
     if ( !RealNear( subsup->stem_width_scale, subsup->h_scale ) ||
 	    !RealNear( subsup->stem_height_scale, subsup->v_scale )) {
-	SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
 	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
 
 	remove_x = (sc_b.maxx-sc_b.minx) - subsup->h_scale*(orig_b.maxx-orig_b.minx);
@@ -1289,7 +1295,7 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
 	SplineSetRefigure(sc_sc->layers[layer].splines);
 	/* Set the left and right side bearings appropriately */
 	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	sc_sc->width = (orig_sc->width-orig_b.maxx)*subsup->h_scale + sc_b.maxx;
+	sc_sc->width = (owidth-orig_b.maxx)*subsup->h_scale + sc_b.maxx;
 	memset(scale,0,sizeof(scale));
 	scale[0] = scale[3] = 1;
 	scale[4] = orig_b.minx*subsup->h_scale - sc_b.minx;
@@ -1445,6 +1451,61 @@ return;
     ff_progress_end_indicator();
     if ( achar!=NULL )
 	FVDisplayChar(fv,achar->orig_pos);
+}
+
+SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheightscale,
+	double hscale, double vscale, double xheight) {
+    SplineFont dummysf;
+    SplineChar dummy;
+    Layer layers[2];
+    LayerInfo li[2];
+    struct subsup subsup;
+    SplineSet *spl;
+    int order2 = 0;
+
+    for ( spl=ss; spl!=NULL ; spl=spl->next ) {
+	if ( spl->first->next!= NULL ) {
+	    order2 = spl->first->next->order2;
+    break;
+	}
+    }
+
+    memset(&dummysf,0,sizeof(dummysf));
+    memset(&dummy,0,sizeof(dummy));
+    memset(&li,0,sizeof(li));
+    memset(&layers,0,sizeof(layers));
+    memset(&subsup,0,sizeof(subsup));
+
+    dummysf.ascent = 800; dummysf.descent = 200;
+    dummysf.layer_cnt = 2;
+    dummysf.layers = li;
+    li[ly_fore].order2 = order2;
+    dummy.parent=&dummysf;
+    dummy.name="nameless";
+    dummy.layer_cnt = 2;
+    dummy.layers = layers;
+    dummy.unicodeenc = -1;
+    layers[ly_fore].order2 = order2;
+    layers[ly_fore].splines = ss;
+
+    if ( hscale==-1 && vscale==-1 )
+	hscale = vscale = 1;
+    if ( stemwidthscale==-1 && stemheightscale==-1 )
+	stemwidthscale = stemheightscale = 1;
+
+    subsup.stem_width_scale  = stemwidthscale !=-1 ? stemwidthscale  : stemheightscale;
+    subsup.stem_height_scale = stemheightscale!=-1 ? stemheightscale : stemwidthscale ;
+    subsup.h_scale  = hscale !=-1 ? hscale  : vscale;
+    subsup.v_scale  = vscale !=-1 ? vscale  : hscale;
+    if ( xheight>0 ) {
+	dummy.unicodeenc = 'a';		/* Must be a lower case letter for this to be meaningful */
+	subsup.preserve_consistent_xheight = true;
+	subsup.xheight_current = xheight*subsup.stem_height_scale;
+	subsup.xheight_desired = xheight*subsup.v_scale;
+    }
+
+    BuildSubSup(&dummy,&dummy,ly_fore,&subsup);
+return( ss );
 }
 
 /* ************************************************************************** */
@@ -4899,7 +4960,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    AddDiagonalItalicSerifs(sc,layer,ii);
     }
 
-#ifndef GWW_TEST			/* !!!!! debug */
+#if 1 /* GWW_TEST*/			/* !!!!! debug */
     /* But small caps letters have the same stem sizes as lc so stems should be transformed like lc */
     ItalicCompress(sc,layer,letter_case==cs_lc? &ii->lc :
 			    letter_case==cs_uc? &ii->uc :
@@ -4914,7 +4975,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
 	memset(refpos,0,sizeof(refpos));
 	refpos[0] = refpos[3] = 1;
-	refpos[4] = ii->tan_ia*ref->transform[5];
+	refpos[4] = -ii->tan_ia*ref->transform[5];
 	ref->transform[4] += refpos[4];
 	SplinePointListTransform(ref->layers[0].splines,refpos,true);
     }
