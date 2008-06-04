@@ -10973,6 +10973,18 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_revert(PyObject *self, PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVRevert(fv);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_revertToBackup(PyObject *self, PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVRevertBackup(fv);
+Py_RETURN( self );
+}
+
 /* filename, bitmaptype,flags,resolution,mult-sfd-file,namelist */
 static char *gen_keywords[] = { "filename", "bitmap_type", "flags", "bitmap_resolution",
 	"subfont_directory", "namelist", "layer", NULL };
@@ -11884,6 +11896,8 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
     { "mergeFeature", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
     { "mergeFonts", PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
+    { "revert", PyFFFont_revert, METH_NOARGS, "Reloads the current font from the disk" },
+    { "revertFromBackup", PyFFFont_revertToBackup, METH_NOARGS, "Reloads the current font from a backup copy on the disk" },
     { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
     { "createChar", PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },
     { "createInterpolatedGlyph", PyFFFont_CreateInterpolatedGlyph, METH_VARARGS, "Creates (and returns) a new glyph interpolated between the two arguments." },
