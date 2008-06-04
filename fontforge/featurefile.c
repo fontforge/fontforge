@@ -5217,7 +5217,11 @@ static OTLookup *fea_ApplyLookupList(struct parseState *tok,
 	    if ( otl->lookup_name!=NULL &&
 		    strcmp(otl->lookup_name,lookup_data->u1.lookup_name)==0)
 return( otl );
-return( SFFindLookup(tok->sf,lookup_data->u1.lookup_name));
+	otl = SFFindLookup(tok->sf,lookup_data->u1.lookup_name);
+	if ( otl==NULL )
+	    LogError( _("No lookup named %s"),lookup_data->u1.lookup_name );
+	    /* Can't give a line number, this is second pass */
+return( otl );
     }
 
     otl = chunkalloc(sizeof(OTLookup));
@@ -5286,6 +5290,9 @@ return( head );
 static void fea_AttachFeatureToLookup(OTLookup *otl,uint32 feat_tag,
 	struct scriptlanglist *sl) {
     FeatureScriptLangList *fl;
+
+    if ( otl==NULL )
+return;
 
     for ( fl = otl->features; fl!=NULL && fl->featuretag!=feat_tag; fl=fl->next );
     if ( fl==NULL ) {
