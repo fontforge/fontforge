@@ -4733,6 +4733,7 @@ static int PyFF_Glyph_set_width(PyFF_Glyph *self,PyObject *value,void *closure) 
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
     SCSynchronizeWidth(self->sc,val,self->sc->width,NULL);
+    SCCharChangedUpdate(self->sc,ly_none);
 return( 0 );
 }
 
@@ -4781,6 +4782,7 @@ return( -1 );
 
     SplineCharFindBounds(self->sc,&b);
     SCSynchronizeWidth(self->sc,rint( val+b.maxx ),self->sc->width,NULL);
+    SCCharChangedUpdate(self->sc,ly_none);
 return( 0 );
 }
 
