@@ -1669,7 +1669,7 @@ void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl) {
 	break;
 	}
 	if ( isl!=NULL )
-	    LangMerge(fsl,isl);
+	    LangMerge(isl,fsl);
 	else {
 	    isl = SLCopy(fsl);
 	    isl->next = into->scripts;
