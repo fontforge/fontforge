@@ -71,13 +71,13 @@ static struct col_init baselangci[4] = {
     { me_stringchoicetag , NULL, languages, NULL, N_("Language") },
     { me_int , NULL, NULL, NULL, N_("Min") },
     { me_int , NULL, NULL, NULL, N_("Max") },
-    { me_int, NULL, NULL, NULL, "hidden" }	/* Used to hold per-language data */
+    { me_addr, NULL, NULL, NULL, "hidden" }	/* Used to hold per-language data */
     };
 static struct col_init basefeatci[4] = {
     { me_string , NULL, NULL, NULL, N_("Feature") },
     { me_int , NULL, NULL, NULL, N_("Min") },
     { me_int , NULL, NULL, NULL, N_("Max") },
-    { me_int, NULL, NULL, NULL, "hidden" }	/* Not used */
+    { me_addr, NULL, NULL, NULL, "hidden" }	/* Not used */
     };
 
 #define CID_Languages	1008
