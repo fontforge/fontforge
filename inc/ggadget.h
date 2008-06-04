@@ -214,7 +214,7 @@ struct matrixinit {
 		me_funcedit,
 		me_stringchoice, me_stringchoicetrans, me_stringchoicetag,
 		me_button,
-		me_hex, me_uhex } me_type;
+		me_hex, me_uhex, me_addr } me_type;
 	char *(*func)(GGadget *,int r,int c);
 	GTextInfo *enum_vals;
 	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
@@ -226,6 +226,7 @@ struct matrixinit {
 	    intpt md_ival;
 	    double md_real;
 	    char *md_str;
+	    void *md_addr;
 	} u;
 	uint8 frozen;
 	uint8 user_bits;
@@ -245,6 +246,7 @@ struct gdirentry;
 typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 
+    /* Obsolete */
 #define _STR_NULL	(-1)		/* Null string resource */
 #define _STR_Language	0
 #define _STR_OK		1
