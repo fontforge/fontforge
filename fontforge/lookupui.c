@@ -1960,48 +1960,67 @@ static int AC_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct matrix_data *classes;
 	int32 class_cnt;
-	int i, justtest;
-	AnchorClass *ac, *acnext;
+	int i,j;
+	AnchorClass *ac, *acnext, *actest;
 
 	acd = GDrawGetUserData(GGadgetGetWindow(g));
 	classes = GMatrixEditGet(GWidgetGetControl(acd->gw,CID_Anchors), &class_cnt);
 	acd->sub->anchor_classes = true /*class_cnt!=0*/;
-	for ( justtest=1; justtest>=0 ; --justtest ) {
-	    for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
-		ac->processed = false;
-	    for ( i=0; i<class_cnt; ++i ) {
-		if ( *classes[i].u.md_str=='\0' )
-	    continue;			/* Ignore blank lines. They pressed return once too much or something */
-		for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
-		    if ( strcmp(ac->name,classes[i].u.md_str)==0 )
-		break;
-		if ( ac==NULL ) {
-		    if ( !justtest ) {
-			ac = SFAddAnchorClass(acd->sf,acd->sub,classes[i].u.md_str);
-			ac->processed = true;
-		    }
-		} else if ( ac->subtable!=acd->sub ) {
-		    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
-			    ac->name, ac->subtable->subtable_name );
+	for ( i=0; i<class_cnt; ++i ) {
+	    if ( *classes[2*i+0].u.md_str=='\0' )
+	continue;			/* Ignore blank lines. They pressed return once too often or something */
+	    for ( j=i+1; j<class_cnt; ++j ) {
+		if ( strcmp(classes[2*i+0].u.md_str,classes[2*j+0].u.md_str)==0 ) {
+		    ff_post_error(_("Name used twice"),_("The name, %.80s, appears twice in this list.\nEach anchor class must have a distinct name."),
+			    classes[2*i+0].u.md_str );
 return( true );
-		} else if ( ac->processed ) {
-		    ff_post_error(_("Name in use"),_("The name, %.80s, is used twice in this subtable"),
-			    ac->name );
-return( true );
-		} else
-		    ac->processed = true;
-	    }
-	    for ( ac = acd->sf->anchor; ac!=NULL; ac=acnext ) {
-		acnext = ac->next;
-		if ( !ac->processed && ac->subtable == acd->sub ) {
-		    if ( justtest ) {
-			char *buts[3];
-			buts[0] = _("_Remove"); buts[1] = _("_Cancel"); buts[2]=NULL;
-			if ( gwwv_ask(_("Remove Anchor Class?"),(const char **) buts,0,1,_("Do you really want to remove the anchor class, %.80s?\nThis will remove all anchor points associated with that class."))==1 )
-return( true );
-		    } else
-			SFRemoveAnchorClass(acd->sf,ac);
 		}
+	    }
+	    for ( actest = acd->sf->anchor; actest!=NULL; actest=actest->next )
+		if ( actest->subtable!=acd->sub &&
+			strcmp(actest->name,classes[2*i+0].u.md_str)==0 )
+	    break;
+	    if ( actest!=NULL ) {
+		ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
+			actest->name, actest->subtable->subtable_name );
+return( true );
+	    }
+	}
+
+	for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
+	    ac->processed = false;
+	for ( i=0; i<class_cnt; ++i ) {
+	    ac = classes[2*i+1].u.md_addr;
+	    if ( ac!=NULL )
+		ac->processed = true;
+	}
+	for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next ) {
+	    if ( !ac->processed && ac->subtable == acd->sub ) {
+		char *buts[3];
+		buts[0] = _("_Remove"); buts[1] = _("_Cancel"); buts[2]=NULL;
+		if ( gwwv_ask(_("Remove Anchor Class?"),(const char **) buts,0,1,_("Do you really want to remove the anchor class, %.80s?\nThis will remove all anchor points associated with that class."),
+			ac->name )==1 )
+return( true );
+	    }
+	}
+
+	for ( i=0; i<class_cnt; ++i ) {
+	    if ( *classes[2*i+0].u.md_str=='\0' )
+	continue;			/* Ignore blank lines. They pressed return once too much or something */
+	    ac = classes[2*i+1].u.md_addr;
+	    if ( ac==NULL ) {
+		ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*i+0].u.md_str);
+		ac->processed = true;
+	    } else {
+		free(ac->name);
+		ac->name = copy(classes[2*i+0].u.md_str);
+		ac->processed = true;
+	    }
+	}
+	for ( ac = acd->sf->anchor; ac!=NULL; ac=acnext ) {
+	    acnext = ac->next;
+	    if ( !ac->processed && ac->subtable == acd->sub ) {
+		SFRemoveAnchorClass(acd->sf,ac);
 	    }
 	}
 	acd->done = true;
@@ -2055,6 +2074,7 @@ static void ACDMatrixInit(struct matrixinit *mi,SplineFont *sf, struct lookup_su
     struct matrix_data *md;
     static struct col_init ci[] = {
 	{ me_string , NULL, NULL, NULL, N_("Anchor Class Name") },
+	{ me_addr   , NULL, NULL, NULL, "Anchor Class Pointer, hidden" },
 	0
 	};
     static int initted = false;
@@ -2065,7 +2085,7 @@ static void ACDMatrixInit(struct matrixinit *mi,SplineFont *sf, struct lookup_su
     }
 
     memset(mi,0,sizeof(*mi));
-    mi->col_cnt = 1;
+    mi->col_cnt = 2;
     mi->col_init = ci;
 
     for ( ac=sf->anchor, cnt=0; ac!=NULL; ac=ac->next )
@@ -2075,10 +2095,12 @@ static void ACDMatrixInit(struct matrixinit *mi,SplineFont *sf, struct lookup_su
 	md = gcalloc(1,sizeof(struct matrix_data));
 	mi->initial_row_cnt = 0;
     } else {
-	md = gcalloc(cnt,sizeof(struct matrix_data));
+	md = gcalloc(2*cnt,sizeof(struct matrix_data));
 	for ( ac=sf->anchor, cnt=0; ac!=NULL; ac=ac->next )
-	    if ( ac->subtable == sub )
-		md[cnt++].u.md_str = ac->name;
+	    if ( ac->subtable == sub ) {
+		md[2*cnt   +0].u.md_str  = ac->name;
+		md[2*cnt++ +1].u.md_addr = ac;
+	    }
 	mi->initial_row_cnt = cnt;
     }
     mi->matrix_data = md;
@@ -2172,6 +2194,7 @@ static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub, int def_la
     GGadgetsCreate(acd.gw,mainbox);
     GHVBoxSetExpandableRow(mainbox[0].ret,0);
     GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
+    GMatrixEditShowColumn(gcd[0].ret,1,false);
 
     gcd[i].gd.flags = gg_visible | gg_enabled;
     label[i].text = (unichar_t *) S_("Anchor Control...");
