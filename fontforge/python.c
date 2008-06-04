@@ -3273,6 +3273,22 @@ return( NULL );
 return( obj );
 }
 
+static PyObject *PyFFLayer_stemControl(PyObject *self, PyObject *args) {
+    SplineSet *ss;
+    double stemwidthscale, stemheightscale= -1, vscale= -1, hscale=1, xheight=-1;
+
+    if ( !PyArg_ParseTuple(args,"d|dddd", &stemwidthscale, &hscale, &stemheightscale, &vscale, &xheight ) )
+return( NULL );
+
+    ss = SSFromLayer((PyFF_Layer *) self);
+    if ( ss==NULL )
+Py_RETURN( self );		/* no contours=> nothing to do */
+    ss = SSControlStems(ss,stemwidthscale,stemheightscale,hscale,vscale,xheight);
+    LayerFromSS(ss,(PyFF_Layer *) self);
+    SplinePointListsFree(ss);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *args) {
     double xmin, xmax, ymin, ymax;
     int i,j,none;
@@ -3338,6 +3354,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Leaves the areas where the contours of a layer overlap." },
     {"exclude", (PyCFunction)PyFFLayer_Exclude, METH_VARARGS,
 	     "Exclude the area of the argument (also a layer) from the current layer" },
+    {"stemControl", (PyCFunction)PyFFLayer_stemControl, METH_VARARGS,
+	     "Allows you to scale stems and counters differently" },
     {"draw", (PyCFunction)PyFFLayer_draw, METH_VARARGS,
 	     "Support for the \"pen\" protocol (I hope)\nhttp://just.letterror.com/ltrwiki/PenProtocol" },
     {"__reduce__", (PyCFunction)PyFFLayer_pickleReducer, METH_NOARGS,
@@ -11490,8 +11508,142 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static char *italicize_keywords[] = { 
+    "italic_angle", "ia",
+    "lc_condense", "lc",
+    "uc_condense", "uc",
+    "symbol_condense", "symbol",
+    "deserif_flat", "deserif_slant", "deserif_pen",
+    "baseline_serifs",
+    "xheight_serifs",
+    "ascent_serifs",
+    "descent_serifs",
+    "diagonal_serifs",
+    "a",
+    "f",
+    "u0444",
+    "u0438",
+    "u043f",
+    "u0442",
+    "u0448",
+    "u0452",
+    "u045f",
+    NULL };
+
+static ItalicInfo default_ii = {
+    -13,		/* Italic angle (in degrees) */
+    /* horizontal squash, lsb, stemsize, countersize, rsb */
+    .91, .89, .90, .91,		/* For lower case */
+    .91, .93, .93, .91,		/* For upper case */
+    .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
+    srf_flat,		/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
+    true,		/* Transform bottom serifs */
+    true,		/* Transform serifs at x-height */
+    false,		/* Transform serifs on ascenders */
+    true,		/* Transform serifs on diagonal stems at baseline and x-height */
+
+    true,		/* Change the shape of an "a" to look like a "d" without ascender */
+    false,		/* Change the shape of "f" so it descends below baseline (straight down no flag at end) */
+    true,		/* Change the shape of "f" so the bottom looks like the top */
+    true,		/* Remove serifs from the bottom of descenders */
+
+    true,		/* Make the cyrillic "phi" glyph have a top like an "f" */
+    true,		/* Make the cyrillic "i" glyph look like a latin "u" */
+    true,		/* Make the cyrillic "pi" glyph look like a latin "n" */
+    true,		/* Make the cyrillic "te" glyph look like a latin "m" */
+    true,		/* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
+    true,		/* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
+    true		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+};
+
+static int SquashParse(struct hsquash *squash,PyObject *po) {
+    if ( po==NULL )
+return( true );
+
+    if ( PyFloat_Check(po)) {
+	squash->lsb_percent = squash->stem_percent = squash->counter_percent = squash->rsb_percent =
+		PyFloat_AsDouble(po);
+    } else if ( !PyArg_ParseTuple(po,"dddd",
+	    squash->lsb_percent, squash->stem_percent,
+	    squash->counter_percent, squash->rsb_percent ))
+return( false );
+
+return( true );
+}
+
+static int Parse_ItalicArgs(ItalicInfo *ii, PyObject *args, PyObject *keywds) {
+    PyObject *lc=NULL, *uc=NULL, *symbols=NULL;
+    int deserif_flat=false, deserif_slant=false, deserif_pen=false;
+    int bottom_serif=default_ii.transform_bottom_serifs;
+    int xh_serif = default_ii.transform_top_xh_serifs;
+    int as_serif = default_ii.transform_top_as_serifs;
+    int dg_serif = default_ii.transform_diagon_serifs;
+    int ds_serif = default_ii.pq_deserif;
+    int a = default_ii.a_from_d;
+    int f = default_ii.f_long_tail ? 2 : default_ii.f_rotate_top ? 1 : 0;
+    int u0444 = default_ii.cyrl_phi;
+    int u0438 = default_ii.cyrl_i;
+    int u043f = default_ii.cyrl_pi;
+    int u0442 = default_ii.cyrl_te;
+    int u0448 = default_ii.cyrl_sha;
+    int u0452 = default_ii.cyrl_dje;
+    int u045f = default_ii.cyrl_dzhe;
+
+    *ii = default_ii;
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddOOOOOOiiiiiiiiiiiiiiiii",italicize_keywords,
+	    &ii->italic_angle, &ii->italic_angle,
+	    &lc, &lc,
+	    &uc, &uc,
+	    &symbols, &symbols,
+	    &deserif_flat, &deserif_slant, &deserif_pen,
+	    &bottom_serif, &xh_serif, &as_serif, &dg_serif, &ds_serif,
+	    &a, &f,
+	    &u0444, &u0438, &u043f, &u0442, &u0448, &u0452, &u045f ))
+return( false );
+    if ( !SquashParse(&ii->lc,lc) || !SquashParse(&ii->uc,uc) || !SquashParse(&ii->neither,symbols))
+return( false );
+    if ( deserif_flat )
+	ii->secondary_serif = srf_flat;
+    else if ( deserif_slant )
+	ii->secondary_serif = srf_simpleslant;
+    else if ( deserif_pen )
+	ii->secondary_serif = srf_complexslant;
+    ii->transform_bottom_serifs = bottom_serif;
+    ii->transform_top_xh_serifs = xh_serif;
+    ii->transform_top_as_serifs = as_serif;
+    ii->transform_diagon_serifs = dg_serif;
+    ii->pq_deserif = ds_serif;
+
+    ii->f_long_tail = ii->f_rotate_top = false;
+    if ( f==2 )
+	ii->f_long_tail = true;
+    else if ( f==1 )
+	ii->f_rotate_top = true;
+    ii->a_from_d = a;
+
+    ii->cyrl_phi  = u0444;
+    ii->cyrl_i    = u0438;
+    ii->cyrl_pi   = u043f;
+    ii->cyrl_te   = u0442;
+    ii->cyrl_sha  = u0448;
+    ii->cyrl_dje  = u0452;
+    ii->cyrl_dzhe = u045f;
+return( true );
+}
+
+static PyObject *PyFFFont_italicize(PyObject *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    ItalicInfo ii;
+
+    if ( !Parse_ItalicArgs(&ii,args,keywds))
+return( NULL );
+    MakeItalic(fv,NULL,&ii);
+    
+Py_RETURN( self );
+}
+
 static char *smallcaps_keywords[] = { "scheight", "capheight", "lcstem", "ucstem",
-	"symbols", "letter-extension", "symbol-extension", NULL };
+	"symbols", "letter_extension", "symbol_extension", NULL };
 
 static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args, PyObject *keywds) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
@@ -11792,6 +11944,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     /*{ "compareGlyphs", (PyCFunction) PyFFFont_compareGlyphs, METH_VARARGS, "Compares two sets of glyphs"},*/
     /* compareGlyphs assumes an old scripting context */
     { "correctDirection", (PyCFunction) PyFFFont_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
+    { "italicize", (PyCFunction) PyFFFont_italicize, METH_VARARGS | METH_KEYWORDS, "Italicize the selected glyphs"},
     { "intersect", (PyCFunction) PyFFFont_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
     { "removeOverlap", (PyCFunction) PyFFFont_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},
     { "round", (PyCFunction)PyFFFont_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
