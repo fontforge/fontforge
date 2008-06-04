@@ -4967,6 +4967,19 @@ static void fea_canonicalClassSet(struct class_set *set) {
 	    set->classes[set->cnt++] = fea_classesSplit(set->classes[i-1],set->classes[i]);
 	}
     }
+
+    /* Remove empty classes */
+    for ( i = 0; i < set->cnt; ++i ) {
+        for ( j = 0; set->classes[i][j] != '\0'; ++j )
+            if (j != ' ')
+                break;
+        if (set->classes[i][j] == '\0') {
+            free(set->classes[i]);
+            for ( k=i+1 ; k < set->cnt; ++k )
+                set->classes[k-1] = set->classes[k];
+            set->cnt -= 1;
+        }
+    }
 }
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
