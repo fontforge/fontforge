@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-May-2008 -->
+  <!-- AP: Last modified: 4-Jun-2008 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -129,11 +129,15 @@
 	<LI>
 	  <A HREF="#Embolden">Change Weight...</A>
 	<LI>
+	  <A HREF="#Italic">Italic</A>
+	<LI>
 	  <A HREF="#Oblique">Oblique</A>
 	<LI>
 	  <A HREF="#Condense">Condense/Extend</A>
 	<LI>
 	  <A HREF="#SmallCaps">Add Small Caps</A>
+	<LI>
+	  <A HREF="#SubSuper">Add Subscripts/Superscripts</A>
 	<LI>
 	  <A HREF="#Outline">Outline</A>
 	<LI>
@@ -510,10 +514,19 @@
 	  fall into one of the two cases above.<BR>
 	  See the <A HREF="Styles.html#Embolden">Change Weight dialog</A>.
 	<DT>
+	  <A NAME="Italic">Italic</A>
+	<DD>
+	  An italic font is different from and more complex than an oblique font.
+	  Traditionally fonts with serifs are made italic and fonts without serifs
+	  are made oblique. This will change some letterforms, change the serifs, condense
+	  the font and slant things. See the <A HREF="Styles.html#Italic">Italic
+	  dialog.</A>
+	<DT>
 	  <A NAME="Oblique">Oblique</A>
 	<DD>
-	  This is a first stage toward making an italic font (or all that's involved
-	  in making an oblique font). It will slant the letters.
+	  An oblique font is different from and simpler than an italic font. Traditionally
+	  fonts with serifs are made italic and fonts without serifs are made oblique.
+	  This will slant the letters.
 	<DT>
 	  <A NAME="Condense">Condense</A>/Extend
 	<DD>
@@ -532,6 +545,16 @@
 	  bound to 'smcp' which maps lower case letters to small caps. It will build
 	  the appropriate small caps glyphs in the new glyph slots. This only applies
 	  to upper and lower case letters in the latin, greek and cyrillic scripts.
+	  <A HREF="Styles.html#Smallcaps">See the Small Caps dialog</A>.
+	<DT>
+	  Add Subscripts/Superscripts
+	<DD>
+	  Like the previous command this creates new glyphs based on the selected ones.
+	  The outlines of the selected glyphs will be scaled (with stems potentially
+	  being scaled differently from the glyph as a whole), and moved vertically.
+	  Then a new lookup will be created mapping the original glyph to the newly
+	  created one under control of the appropriate feature.
+	  <A HREF="Styles.html#SubSuper">See the Subscript/Superscript dialog</A>.
 	<DT>
 	  <A NAME="Outline">Outline</A>
 	<DD>
