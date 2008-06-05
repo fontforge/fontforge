@@ -937,7 +937,7 @@ static PyObject *PyFF_askChoices(PyObject *self, PyObject *args) {
 return( NULL );
     }
 
-    if ( !PyArg_ParseTuple(args,"es:esO|i","UTF-8", &title, "UTF-8", &quest, &answero, &def) )
+    if ( !PyArg_ParseTuple(args,"esesO|i","UTF-8", &title, "UTF-8", &quest, &answero, &def) )
 return( NULL );
     if ( !PySequence_Check(answero) || PyString_Check(answero)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
@@ -951,7 +951,7 @@ return( NULL );
 return( NULL );
     }
     for ( i=0; i<cnt; ++i ) {
-	PyObject *utf8_name = PyString_AsEncodedObject(PyTuple_GetItem(answero,i),
+	PyObject *utf8_name = PyString_AsEncodedObject(PySequence_GetItem(answero,i),
 		    "UTF-8",NULL);
 	if ( utf8_name==NULL )
 return( NULL );
