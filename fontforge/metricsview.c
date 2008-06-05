@@ -872,7 +872,7 @@ return( true );
 return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
-	int val = u_strtol(_GGadgetGetTitle(g),&end,10);
+	double val = u_strtod(_GGadgetGetTitle(g),&end);
 	SplineChar *sc = mv->glyphs[which].sc;
 	DBounds bb;
 	SplineCharFindBounds(sc,&bb);
@@ -883,13 +883,13 @@ return( true );
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[4] = 0;
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
-	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -912,7 +912,7 @@ return( true );
 return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
-	int val = u_strtol(_GGadgetGetTitle(g),&end,10);
+	int val = u_strtod(_GGadgetGetTitle(g),&end);
 	SplineChar *sc = mv->glyphs[which].sc;
 	DBounds bb;
 	SplineCharFindBounds(sc,&bb);
@@ -928,7 +928,7 @@ return( true );
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
 		transform[4] = sc->width-val-bb.maxx;
-		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	    }
 	    SCCharChangedUpdate(sc,ly_none);
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
@@ -942,7 +942,7 @@ return( true );
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[4] = 0;
 		transform[5] = vw-sc->vwidth;
-		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	    }
 	    SCCharChangedUpdate(sc,ly_none);
 	}
