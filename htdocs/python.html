@@ -582,7 +582,7 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	Throws an exception if there is no user interface.</TD>
     </TR>
     <TR>
-      <TD><CODE>askChoice</CODE></TD>
+      <TD><CODE>askChoice</CODE>s</TD>
       <TD><CODE>(title,question,answers,<BR>
 	[def])</CODE></TD>
       <TD>Similar to the above allows you to ask the user a multiple choice question.
@@ -3640,10 +3640,13 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>removeGlyph</CODE></TD>
       <TD><CODE>(uni[,name])<BR>
+	(name)<BR>
 	(glyph)</CODE></TD>
       <TD>You may either pass in a FontForge glyph object (from this font) or identify
 	a glyph in the font by unicode code point or name. In any case the glyph
 	will be removed from the font.
+	<P>
+	If you use (uni,name) to specify a name, set uni to -1.
 	<P>
 	<STRONG>WARNING:</STRONG> This frees fontforge's storage to this glyph. If
 	you have any python pointers to that storage they will be looking at garbage.
