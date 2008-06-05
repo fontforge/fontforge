@@ -751,11 +751,11 @@ If the name of your shell is <KBD>tcsh</KBD> or <KBD>csh</KBD> then you say
 But you'd have to do that every time you logged in. Instead you want this
 included in the shell's initialization. Again there are two cases, for the
 <KBD>bash</KBD> family of shells you want to edit the file
-<KBD>~/.profile</KBD> while for the <KBD>csh</KBD> family you want to edit
-the file <KBD>~/.login</KBD>. On a bash system the following command is generally
+<KBD>~/.bashrc</KBD> while for the <KBD>csh</KBD> family you want to edit
+the file <KBD>~/.cshrc</KBD>. On a bash system the following command is generally
 sufficient:
 <BLOCKQUOTE>
-  <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.profile
+  <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.bashrc
 PATH=/usr/local/bin:$PATH ; export PATH
 ^D
 </PRE>
@@ -765,7 +765,7 @@ PATH=/usr/local/bin:$PATH ; export PATH
 key while depressing <KBD>d</KBD>. <BR>
 And for the csh family you would type:
 <BLOCKQUOTE>
-  <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.login
+  <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt;~/.cshrc
 setenv PATH /usr/local/bin:$PATH
 ^D
 </PRE>
