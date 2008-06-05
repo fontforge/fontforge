@@ -315,3 +315,11 @@ msgstr ""
 #: cvruler.c
 msgid "∆Curvature: %g"
 msgstr ""
+
+#: scstylesui.c:2127
+msgid ""
+"This italic conversion will be incomplete!\n"
+"You will probably want to do manual fixups on e, g, k, and v-z\n"
+"And on в, г, д, е, ж, л, м, ц, щ, ъ, ђ\n"
+"And on all Greek lower case letters. And maybe everything else."
+msgstr ""

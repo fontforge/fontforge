@@ -2127,7 +2127,7 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 	"This italic conversion will be incomplete!\n"
 	"You will probably want to do manual fixups on e, g, k, and v-z\n"
 	"And on в, г, д, е, ж, л, м, ц, щ, ъ, ђ\n"
-	"And on all Greek lower case letters");
+	"And on all Greek lower case letters. And maybe everything else.");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
