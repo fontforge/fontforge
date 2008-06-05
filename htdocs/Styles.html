@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 31-Aug-2007 -->
+  <!-- AP: Last modified: 4-Jun-2008 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -15,6 +15,8 @@
   <UL>
     <LI>
       <A HREF="#Embolden">Change Weight dialog</A>
+    <LI>
+      <A HREF="#Italic">Italic dialog</A>
     <LI>
       <A HREF="#Condense">Condense/Extend dialog</A>
   </UL>
@@ -346,9 +348,9 @@
   </H3>
   <P>
   A SmallCaps font is made by <A HREF="transform.html">scaling</A> the capital
-  letters to the x-height (so that they are the same height as lower case letters
-  without ascenders) and then adjusting the stem widths (emboldening) so that
-  they too will match stem widths of the lower case.
+  letters approximately to the x-height (so that they are the same height as
+  lower case letters without ascenders) and then adjusting the stem widths
+  (emboldening) so that they too will match stem widths of the lower case.
   <H3>
     Italic
   </H3>
@@ -470,8 +472,7 @@
 	moved appropriately, the side bearings restored to their original size, and
 	the internal counters expanded to be closer to their original size.</TD>
       <TD>Now consider the case of a serifed font. The serifs on the B above have
-	become huge, disproportionally bigger than they were in the original glyph.
-      </TD>
+	become huge, disproportionally bigger than they were in the original glyph.</TD>
     </TR>
   </TABLE>
   <P>
@@ -512,6 +513,127 @@
   &lt;&gt;Retain will attempt to retain the counters, and &lt;&gt;Auto will
   Squish CJK glyphs and Retain LCG glyphs.
   <H2>
+    <A NAME="Italic">Italic</A> dialog
+  </H2>
+  <P>
+  Let me reiterate that the italic transformation is quite different and much
+  more complex than the oblique transformation. Oblique fonts are made by the
+  same simple mathematical operation applied to the entire font. The italic
+  transformation can be different for each glyph.
+  <P>
+  Let me further add that FontForge will never be able to do everything that
+  should be done to make a good italic font from an upright font. It may provide
+  a helpful starting point. Some of my friends who know more about typography
+  than I have urged me not to write this dialog, saying that each italic font
+  should be made by hand, and there is much truth to their view. I made the
+  dialog anyway because I found it interesting to do so. Be warned: It isn't
+  complete. You need to examine what it has done and be prepared to redo many
+  characters (especially lower case letters) which it has not been able to
+  adapt.
+  <P>
+  The complexities of italic design stem from its origin. The Latin alphabet
+  as we now know it evolved over time. The upper case letters come from the
+  style the Romans used when carving inscriptions on their monuments. The lower
+  case letters come from a monastic script style, uncials, which were later
+  paired with the monumental capitals. The italic hand was another script,
+  initially monocase. Just as the lower case letters come from a different
+  stylistic tradition than the upper case (and hence look markedly dissimilar)
+  so the italic lower case comes from yet another tradition and looks different
+  from upright forms. Italic upper case were a much later addition and are
+  also based on the monumental capitals.
+  <P>
+  The italic lower case is
+  <UL>
+    <LI>
+      slanted -- this is extremely obvious (so obvious that when I compare upright
+      and italic glyphs I always deslant the italic to make other differences more
+      visible)
+    <LI>
+      condensed -- less obvious. Generally it will be condensed by about 90% which
+      isn't noticeable unless you look hard. Stems may be condensed at a different
+      percentage than counters (indeed, different stems may be condensed differently,
+      but fontforge doesn't support that because I don't find any consistency in
+      behavior to emulate).
+    <LI>
+      more flowing -- This may be extremely
+      obvious<IMG SRC="wItalic.png" WIDTH="68" HEIGHT="24">or more subtle -- in
+      some fonts even the apparently straight sides of "l" will have a slight curve
+      to them.
+    <LI>
+      different serifs -- The baseline serifs for the last stem on a glyph change
+      <IMG SRC="BottomSerif.png" WIDTH="68" HEIGHT="24">, while those of intermediate
+      stems become degenerate<IMG SRC="FlatSerif.png" WIDTH="49" HEIGHT="24">
+    <LI>
+      different letterforms -- Some letters simply have different shapes in italic:
+      <IMG SRC="fItalic.png" WIDTH="68" HEIGHT="26"><IMG SRC="aItalic.png" WIDTH="68"
+	  HEIGHT="24"><IMG SRC="u433Italic.png" WIDTH="68" HEIGHT="24"><IMG SRC="u432Italic.png"
+	  WIDTH="68" HEIGHT="24">
+  </UL>
+  <P>
+  The italic upper case is also slanted (and by the same angle), generally
+  condensed (but often less so than the lower case), and usually its serifs
+  and letter forms do not change significantly (though there can be exceptions:
+  <IMG SRC="EItalic.png" WIDTH="68" HEIGHT="24">)
+  <P>
+  In typographic tradition serifed fonts have a paired italic font, while
+  sans-serif fonts have an oblique font.
+  <P>
+  <IMG SRC="ItalicDlg.png" WIDTH="404" HEIGHT="674" ALIGN="Right">The italic
+  dialog attempts to give you control over as much of this as fontforge thinks
+  it can do. The dialog displays the steps mentioned above, but backwards.
+  <P>
+  First there are a series of check boxes for gross letterform changes. The
+  "a" glyph generally turns into a something that looks like the "d" glyph
+  without the ascender. The "f" glyph has (at least) two variants -- in one
+  the curved top is duplicated at the bottom, and in the other the main stem
+  is extended below the baseline but the serif is removed.
+  <P>
+  In actual practice these changes are more complex. If examined closely there
+  bottom part of the f doesn't look precisely like the top. FontForge isn't
+  up to such subtleties however.
+  <P>
+  The [] f checkboxes control additional characters which are similar to "f",
+  "long-s" for example, also the "fi", "fl", "ff", "ffi", "ffl", "longs_longs",
+  "longs_t", etc. ligatures.
+  <P>
+  This does not exhaust the list of changes that should be done -- Merely the
+  list of what FontForge thinks it can do. There should also be checkboxes
+  for:
+  <IMG SRC="eItalic.png" WIDTH="68" HEIGHT="24"><IMG SRC="vItalic.png" WIDTH="68"
+      HEIGHT="24"><IMG SRC="wItalic.png" WIDTH="68" HEIGHT="24"><IMG SRC="u432Italic.png"
+      WIDTH="68" HEIGHT="24"><IMG SRC="u432Italic.png" WIDTH="68" HEIGHT="24">
+  and so forth.
+  <P>
+  FontForge will change serifs in various places.
+  <UL>
+    <LI>
+      baseline serifs -- The final stem of a glyph almost always undergoes a serif
+      transformation at the baseline. Previous stems generally have their serifs
+      become degenerate (flat lines)<IMG SRC="mItalic.png" WIDTH="108" HEIGHT="31">.
+      This transformation almost always happens.
+    <LI>
+      xheight serifs -- This transformation frequently happens.
+    <LI>
+      ascender serifs -- This transformation happens occasionally. Sometimes the
+      serif becomes very swash, somethings nothing changes.
+    <LI>
+      descender serifs -- Usually serifs on descenders degenerate into flat lines.
+    <LI>
+      diagonal serifs -- This transformation usually happens
+      <IMG SRC="xItalic.png" WIDTH="68" HEIGHT="24">
+  </UL>
+  <P>
+  When a serif becomes degenerate (as the first two do in the "m" above) they
+  often become flat with the baseline, but sometimes they will have a slant
+  to them.
+  <P>
+  Next is a matrix of compression factors (expressed as percentages). You can
+  control left and right side bearings, as well as stem and counter widths.
+  You may specify different values for lower case, upper case and symbols.
+  <P>
+  Finally we come to the italic angle. This will generally be between -10 and
+  -15 degrees.<BR CLEAR=ALL>
+  <H2>
     <A NAME="Condense">Condense</A>/Extend
     dialog<IMG SRC="CondenseExtend.png" WIDTH="321" HEIGHT="193" ALIGN="Right">
   </H2>
@@ -522,7 +644,64 @@
   <P>
   If the font has and Italic Angle specified in Font Info, then fontforge will
   first unskew the glyph in the hopes of getting some vertical stems, then
-  Condense it, and the reskew it.
+  Condense it, and the reskew it.<BR CLEAR=ALL>
+  <H2>
+    <A NAME="Smallcaps">Small Capitals</A>
+    dialog<IMG SRC="SmallcapsDlg.png" ALIGN="Right" WIDTH="407" HEIGHT="431">
+  </H2>
+  <P>
+  This dialog allows you to create a series of small caps glyphs. As the dialog
+  says, it is unlike most commands in that it does not change the selected
+  glyphs, instead it uses them to decide what glyphs to create (or if the glyphs
+  already exist, what glyphs to change).
+  <P>
+  So if you select "A" FontForge will create a glyph named "a.sc" copy the
+  outlines of "A" into that glyph, and then modify them. If you select lower
+  case "a", FontForge will again create "a.sc" and will copy the outlines of
+  upper case "A".
+  <P>
+  FontForge will also create two lookups, one which maps upper case letters
+  to small caps variants, and the other which maps lower case letters to the
+  small caps glyph. These will be bound to the "c2sc" and "smcp" features
+  respectively.
+  <P>
+  If you turn on the <CODE>[] Create small caps variants for symbols</CODE>
+  checkbox, then any selected symbols will also be converted. However most
+  symbols don't have upper and lower case variants (one could argue that digits
+  do, but I shall ignore that complication here), so each selected symbol glyph
+  will get both feature mappings attached to it. Furthermore, symbols seem
+  to use a different glyph extension so the created glyphs will be
+  "nine.taboldstyle" rather than "nine.sc".
+  <P>
+  The outlines are transformed by scaling the upper case outlines so that the
+  cap height becomes the small cap height, and scaling the stems so that the
+  upper case stem width becomes the lower case stem width. The dialog is set
+  up so that it defaults the small cap height to the x-height. Often the small
+  cap height will be a little taller than the x-height -- though the exact
+  value will change from font to font -- the x-height is as good a default
+  as any. You may also control how the stem widths are changed (and if you
+  really want to, scale stem heights differently from widths).<BR CLEAR=ALL>
+  <H2>
+    <A NAME="SubSuper">Subscipt</A>/Superscript
+    dialog<IMG SRC="SubSuperDlg.png" WIDTH="518" HEIGHT="357" ALIGN="Right">
+  </H2>
+  <P>
+  There are several OpenType features which produce small variants of standard
+  glyphs. Often the stems are scaled differently (made bolder) from the remainder
+  of glyph.
+  <P>
+  As with the previous dialog this one does not modified the selected glyphs.
+  Instead it uses their outlines to create a new glyph (with the indicated
+  glyph extension) and creates a lookup mapping the original glyph to the new
+  glyph.
+  <P>
+  So in the example at right, if you selected all the digits, then FontForge
+  would create a new set names "zero.superior", "one.superior" ... "nine.superior".
+  It would create a new lookup bound to the feature "sups" which would map
+  "zero" to "zero.superior", etc. Each new glyph would be scaled down to be
+  2/3<SUP>rd</SUP>s the original size, but the stems would only be scaled by
+  3/4 (so the glyph will look proportionately darker). Finally each new glyph
+  will be moved up by 452 em-units.<BR CLEAR=ALL>
   <P>
 </DIV>
 </BODY></HTML>
