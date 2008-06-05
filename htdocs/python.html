@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 14-May-2008 -->
+  <!-- AP: Last modified: 5-Jun-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1264,6 +1264,22 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	    If the contour contains just one point then remove it
 	</DL>
       </TD>
+    </TR>
+    <TR>
+      <TD><CODE>stemControl</CODE></TD>
+      <TD><CODE>(stem_width_scale, [hscale, stem_height_scale, vscale,
+	xheight])</CODE></TD>
+      <TD>Allows you to scale counters and stems independently of each other.
+	<CODE>Stem_width_scale</CODE> specifies by how much the widths of stems should
+	be scaled (this should be a number around 1). If omitted <CODE>hscale</CODE>
+	defaults to 1, otherwise it will indicate the horizontal scaling factor for
+	the glyph as a whole. If omitted <CODE>stem_height_scale</CODE> defaults
+	to <CODE>stem_width_scale</CODE>, otherwise it specifies the scaling for
+	stem heights. If omitted <CODE>vscale</CODE> defaults to <CODE>hscale</CODE>,
+	otherwise it specifies the vertical scale factor for the glyph as a whole.
+	<P>
+	<CODE>Xheight</CODE> is optional, if specified it will fix the points at
+	that height so that they will be at the same level across glyphs.</TD>
     </TR>
     <TR>
       <TD><CODE>stroke</CODE></TD>
@@ -3123,6 +3139,42 @@ pen = None;				# Finalize the pen. This tells FontForge
 	this subtable will be first in the lookup.</TD>
     </TR>
     <TR>
+      <TD><CODE>addSmallCaps</CODE></TD>
+      <TD><CODE>(scheight=,<BR>
+	&nbsp;capheight=,<BR>
+	&nbsp;lcstem=,<BR>
+	&nbsp;ucstem=,<BR>
+	&nbsp;symbols=,<BR>
+	&nbsp;letter_extension=,<BR>
+	&nbsp;symbol_extension=,<BR>
+	&nbsp;stem_height_factor=)</CODE></TD>
+      <TD>This function uses keyword parameters. None is required, if omitted a
+	default value will be used (generally found by analyzing the font).
+	<P>
+	For each selected letter, this function will create a corresponding small
+	caps glyph. If you set the <CODE>symbol</CODE> keyword to <CODE>true</CODE>
+	it will also create small caps variants of digits and symbols.
+	<P>
+	The outlines of the new glyph will be based on the outlines of the upper-case
+	variant of the letter. These will then be scaled so that a glyph which was
+	<CODE>capheight</CODE> high will now be <CODE>scheight</CODE> high, and so
+	that stems which were <CODE>ucstem</CODE> wide will be <CODE>lcstem</CODE>
+	wide. Normally the ratio of stem heights is the same as the ratio of stem
+	widths, but you may change that with <CODE>stem_height_factor</CODE>.
+	<P>
+	When it creates a new glyph it will name that glyph by appending ".sc" to
+	the original lower case letter name (so "a" would become "a.sc") you may
+	change the extension used with <CODE>letter_extension</CODE>. Similary symbols
+	and digits will use the extension "taboldstyle", but you may change that
+	with <CODE>symbol_extension</CODE>.
+	<P>
+	When it creates a glyph it also creates two lookups one bound to the feature
+	"c2sc" and the other to "smcp". A mapping from the lower case letter to the
+	small caps letter will be provided under "smcp", while a mapping from the
+	upper case to the small caps under "c2sc". Symbols will have both lookup
+	maps attached to the original glyph.</TD>
+    </TR>
+    <TR>
       <TD><CODE>alterKerningClass</CODE></TD>
       <TD><CODE>(subtable-name,<BR>
 	&nbsp;first-classes,<BR>
@@ -3142,6 +3194,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	number representing that language in MicroSoft's specification. Strid may
 	be one of the (english) string names (Copyright, Family, SubFamily, etc.)
 	or the numeric value of that item. The string itself is in UTF-8.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>buildOrReplaceAALTFeatures</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Removes any existing AALT features (and any lookups solely controled
+	by such features) and creates new ones containing all possible single and
+	alternate substutions available for each glyph.</TD>
     </TR>
     <TR>
       <TD><CODE>close</CODE></TD>
@@ -3424,6 +3483,53 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Returns whether the named subtable contains a vertical kerning data</TD>
     </TR>
     <TR>
+      <TD><CODE>italicize</CODE></TD>
+      <TD><CODE>(italic_angle=, ia=<BR>
+	&nbsp;lc_condense=, lc=<BR>
+	&nbsp;uc_condense=, uc=<BR>
+	&nbsp;symbol_condense=, symbol=<BR>
+	&nbsp;deserif_flat=,<BR>
+	&nbsp;deserif_slant=,<BR>
+	&nbsp;deserif_pen=,<BR>
+	&nbsp;baseline_serifs=,<BR>
+	&nbsp;xheight_serifs=,<BR>
+	&nbsp;ascent_serifs=,<BR>
+	&nbsp;descent_serifs=,<BR>
+	&nbsp;diagonal_serifs=,<BR>
+	&nbsp;a=,<BR>
+	&nbsp;f=,<BR>
+	&nbsp;u0438=,<BR>
+	&nbsp;u043f=,<BR>
+	&nbsp;u0442=,<BR>
+	&nbsp;u0444=,<BR>
+	&nbsp;u0448=,<BR>
+	&nbsp;u0452=,<BR>
+	&nbsp;u045f=)</CODE></TD>
+      <TD>This function uses keyword parameters. None is required, if omitted a
+	default value will be used. Some keywords have abbreviations ("ia" for
+	"italic_angle") you may use either.
+	<P>
+	This function will attempt to italicize each selected glyph. For a detailed
+	explanation of what this entails please see the information on the
+	<A href="Styles.html#Italic"> Italic dialog</A>.
+	<P>
+	The <CODE>*_condense</CODE> keywords should be 4 element tuples of floating
+	point numbers; these numbers correspond to: Left side bearing condensation,
+	stem condensation, counter condensation and right side bearing condensation.
+	These numbers should be small numbers around 1 (scale factors, not percentages).
+	<P>
+	Set at most one of the <CODE>deserif_*</CODE> keywords.
+	<P>
+	Setting <CODE>a</CODE> to <CODE>true</CODE> will turn on the transformation
+	that applies to the "a" glyph. Setting <CODE>u0438</CODE> will control the
+	transformation that applies to the glyph at unicode codepoint U+0438.
+	<P>
+	The <CODE>f</CODE> keyword is slightly more complex. Setting it to 0 turns
+	off all transformations of glyphs like "f", setting it to 1 will give "f"
+	a tail which looks like a rotated version of its head, and setting it to
+	2 will simply extend the main stem of "f" below the baseline.</TD>
+    </TR>
+    <TR>
       <TD><CODE>lookupSetFeatureList</CODE></TD>
       <TD><CODE>(lookup-name,<BR>
 	feature-script-lang-tuple)</CODE></TD>
@@ -3548,6 +3654,24 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>(srch,rpl[,error-bound])</CODE></TD>
       <TD>Searches the font for all occurances of the srch contour (or layer) and
 	replaces them with the replace contour (or layer).</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="font-revert">revert</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Reloads the font from the disk.
+	<P>
+	<B>Caveat:</B> if you have any pointers to glyphs which live in the font
+	those pointers will no longer be valid, and using them will cause crashes.
+	This is very un-python-like.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>revertFromBackup</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Reloads the font from the backup file on the disk.
+	<P>
+	<B>Caveat:</B> if you have any pointers to glyphs which live in the font
+	those pointers will no longer be valid, and using them will cause crashes.
+	This is very un-python-like.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="font-save">save</A></CODE></TD>

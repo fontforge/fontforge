@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 4-Jun-2008 -->
+  <!-- AP: Last modified: 5-Jun-2008 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -19,6 +19,10 @@
       <A HREF="#Italic">Italic dialog</A>
     <LI>
       <A HREF="#Condense">Condense/Extend dialog</A>
+    <LI>
+      <A HREF="#Smallcaps">Small Caps dialog</A>
+    <LI>
+      <A HREF="#SubSuper">Subscripts/superscripts dialog</A>
   </UL>
   <P>
   <P>
@@ -573,7 +577,7 @@
   The italic upper case is also slanted (and by the same angle), generally
   condensed (but often less so than the lower case), and usually its serifs
   and letter forms do not change significantly (though there can be exceptions:
-  <IMG SRC="EItalic.png" WIDTH="68" HEIGHT="24">)
+  <IMG SRC="ucEItalic.png" WIDTH="68" HEIGHT="24">)
   <P>
   In typographic tradition serifed fonts have a paired italic font, while
   sans-serif fonts have an oblique font.
@@ -588,21 +592,23 @@
   the curved top is duplicated at the bottom, and in the other the main stem
   is extended below the baseline but the serif is removed.
   <P>
-  In actual practice these changes are more complex. If examined closely there
+  In actual practice these changes are more complex. If examined closely the
   bottom part of the f doesn't look precisely like the top. FontForge isn't
   up to such subtleties however.
   <P>
   The [] f checkboxes control additional characters which are similar to "f",
   "long-s" for example, also the "fi", "fl", "ff", "ffi", "ffl", "longs_longs",
-  "longs_t", etc. ligatures.
+  "longs_t", etc. ligatures. FontForge determines what glyphs it applies to
+  by examining the glyph name and unicode encoding; it does NOT do a sophisticated
+  analysis of the glyph's shape.
   <P>
-  This does not exhaust the list of changes that should be done -- Merely the
-  list of what FontForge thinks it can do. There should also be checkboxes
-  for:
+  This does not exhaust the list of changes that could or should be done --
+  Merely the list of what FontForge thinks it can do. There should also be
+  checkboxes for:
   <IMG SRC="eItalic.png" WIDTH="68" HEIGHT="24"><IMG SRC="vItalic.png" WIDTH="68"
       HEIGHT="24"><IMG SRC="wItalic.png" WIDTH="68" HEIGHT="24"><IMG SRC="u432Italic.png"
-      WIDTH="68" HEIGHT="24"><IMG SRC="u432Italic.png" WIDTH="68" HEIGHT="24">
-  and so forth.
+      WIDTH="68" HEIGHT="24"><IMG SRC="u433Italic.png" WIDTH="68" HEIGHT="24">
+  and many more.
   <P>
   FontForge will change serifs in various places.
   <UL>

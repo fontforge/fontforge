@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 5-May-2008 -->
+  <!-- AP: Last modified: 5-Jun-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -51,6 +51,175 @@
       <UL>
 	<LI>
 	  New Russian translation of the UI
+	<LI>
+	  New <A href="Styles.html#Italic">dialog</A> to help users convert an upright
+	  font into an italic one.
+	<LI>
+	  New <A href="Styles.html#Smallcaps">dialog</A> to help users create small
+	  caps glyphs.
+	<LI>
+	  New <A href="Styles.html#SubSuper">dialog</A> to help users create
+	  subscript/superscript glyphs.
+	<LI>
+	  And matching python commands: font.italicize(), font.addSmallCaps(),
+	  layer.stemControl()
+	<LI>
+	  Make it clear that the transform dlg from the fontview will move the width
+	  of a glyph by default, and provide a checkbox so the user can turn this off.
+	<LI>
+	  FF didn't like decimal points in the metrics view l/r bearing fields -- even
+	  though it could put them there itself.
+	<LI>
+	  Metrics windows weren't being remetricked after a feature file was loaded
+	  (nor an afm file for that matter). Nor were they remetricked after lookups
+	  changed in fontinfo.
+	<LI>
+	  Add to python
+	  <UL>
+	    <LI>
+	      font.revert()
+	    <LI>
+	      font.revertFromBackup()
+	    <LI>
+	      font.buildOrReplaceAALTFeatures()
+	  </UL>
+	<LI>
+	  Changing a glyph's width from a python script didn't update the metrics window.
+	<LI>
+	  Adding two languages in the same script to a lookup in a feature file didn't
+	  work.
+	<LI>
+	  It wasn't possible to rename an anchor class (at least not by the obvious
+	  method through the dlg). Attempting to delete an anchor class popped up an
+	  error message which didn't provide all its own arguments and so could crash
+	  on some systems.
+	<LI>
+	  Better error recovery in feature file parsing.
+	<LI>
+	  Werner points out that since I allow the user to see points in references
+	  transformed to their ultimate position, I should also transform the raster.
+	<LI>
+	  Patch by Barry to fix kerning classes (ie. figuring out WHAT glyphs go into
+	  a class).
+	<LI>
+	  When parsing a feature file which used a default languagesystem setup, ff
+	  only used the most recent script.
+	<LI>
+	  If a lookup contained no data (no subtables, or empty subtables) then when
+	  generating a feature file ff would output stuff to declare a lookup, but
+	  when there was no content that frame could not be parsed as it would be
+	  impossible to figure out the lookup type. Try to avoid that.
+	<LI>
+	  FF did not put contextual lookups on all the lists they needed to be on when
+	  loading them from a feature file.
+	<LI>
+	  Sometimes the Open Font dlg opened with the files shifted left so the first
+	  characters of the name were outside the window.
+	<LI>
+	  Patch from Barry Schwartz. "include" syntax in feature files didn't work.
+	<LI>
+	  Sort button in the lookups pane of font info didn't refresh the window after
+	  it finished (so things looked unsorted even after pressing it).
+	<LI>
+	  When doing a Build Accented on dotted glyphname (agrave.sc, etc.) the accent
+	  was positioned using anchors in the undotted base glyph (a rather than a.sc).
+	<LI>
+	  Fix various problems with tt debugging.
+	<LI>
+	  The XUID and UniqueID fields of a PostScript font are deprecated, yet FF
+	  has continued to output them by default. Make it so FF no longer does so.
+	<LI>
+	  When outputing an sfd file, ff would sometimes output a truetype spline as
+	  a line if it had a colinear control-point. I thought I'd taken care of that,
+	  but here's another case which needed fixing.
+	<LI>
+	  Typo when loading the underline position field from a 'post' table. I was
+	  subtracting half the underline width. I should have been adding it instead.
+	  (Why did adobe use a different definition of the same concept in two places?
+	  GRRR).
+	<LI>
+	  It wasn't possible to make the foreground layer invisible.
+	<LI>
+	  When the file chooser bookmark list got too long ff would crash.
+	<LI>
+	  I wasn't doing the obvious checks to the sfnt header in font lint. So now:
+	  <OL>
+	    <LI>
+	      Check that there are no duplicate table entries
+	    <LI>
+	      Check that there are no overlapping tables
+	    <LI>
+	      Check that no tables extend beyond the end of file
+	    <LI>
+	      Check that the file's checksum is correct
+	    <LI>
+	      Check that each table's checksum is correct
+	    <LI>
+	      Check that the number of tables is reasonable and that the binary search
+	      header is consistent with the number of tables.
+	  </OL>
+	<LI>
+	  Werner would like to be able to debug (truetype instructions) when using
+	  non-square pixels (x_ppem != y_ppem).
+	<LI>
+	  Barry wants to be able to close a tab. Add a menu item.
+	<LI>
+	  When a glyph's name changed, I did not update the names in any tabs in the
+	  charviews -- so those tabs would stop working after the change.
+	<LI>
+	  Scrollbar in points debug window wasn't set right.
+	<LI>
+	  A. Panov provides a patch. Prefs was losing bookmarks.
+	<LI>
+	  the new release of volt reveals some new opentype tags.
+	<LI>
+	  If we have a glyph named "agrave.sc" or "eacute.sc" then FF will now let
+	  you build this as an accented character. It will remove the suffix from then
+	  name, and look up the components of the bare glyph. Then for the first component
+	  it will search for a glyph named "a.sc" and insert it. For the accents it
+	  will use "grave.sc" if present, and "grave" if it is not.
+	<LI>
+	  FF wasn't handling a FontMatrix in the top dict of a cid font.
+	<LI>
+	  Trying to filter for fig files in the Import dlg caused a crash.
+	<LI>
+	  Check for bad OS/2 versions (that is, versions windows will reject) when
+	  loading a font.<BR>
+	  Connect validation's "Points too far" with Find Problem's version.<BR>
+	  Make fontlint aware of the new validation states.<BR>
+	  When generating a font we complained about bad os/2 version only if they
+	  asked for a validation. Move it somewhere more prominant.
+	<LI>
+	  Add two new problems to find
+	  <OL>
+	    <LI>
+	      Points too far apart
+	    <LI>
+	      Bitmap advance width different from scaled outline advance widths
+	  </OL>
+	  <P>
+	  (also boxify the Find Problems dlg).
+	<LI>
+	  Add a new validation state: Test that points aren't too far appart (must
+	  be within 32767 of each other or we can't output them).
+	<LI>
+	  Try a little harder to get some of the obscure code pages right in the OS/2
+	  table.
+	<LI>
+	  Was getting the first glyph index of OS/2 wrong for OTF fonts.
+	<LI>
+	  If an sfnt contains embedded bitmaps, and if those bitmaps contain a glyph
+	  whose advance width is different from that expected by scaling the horizontal
+	  advance of the vector data, then windows will only get the correct metrics
+	  if the "Instructions modify width" bit is set in the 'head'.flags field.
+	<LI>
+	  If the "changedsincelasthinted" bit got set on a glyph by the unlink/remove
+	  overlap flag on a glyph during font saving, then the glyph did not get restored
+	  to its original state.
+	<LI>
+	  Doing an Undo in the Guidelines layer didn't work, usually crashed.
+	<LI>
+	  Validate didn't work on CID keyed fonts.
       </UL>
     <LI>
       29-Apr-2008
@@ -93,8 +262,8 @@
 	  Layers change introduced a potential crash in the Embolden command.
 	<LI>
 	  fontimage didn't draw the first line.<BR>
-	  Add a cgi front end to <A HREF="fontimage.html">fontimage</A> so now
-	  it is possible to get a font sample of any font on my website.
+	  Add a cgi front end to <A HREF="fontimage.html">fontimage</A> so now it is
+	  possible to get a font sample of any font on my website.
 	<LI>
 	  In the Display dlg, if you changed the font, or the point size without selecting
 	  something, then that change would vanish instantly. Fix that.
