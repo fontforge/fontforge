@@ -287,6 +287,7 @@ void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 	small->stem_factor = 1;
     else
 	small->stem_factor = small->lc_stem_width / small->uc_stem_width;
+    small->v_stem_factor = small->stem_factor;
 
     small->xheight   = StandardGlyphHeight(sf,layer,  xheight_str);
     small->capheight = StandardGlyphHeight(sf,layer,capheight_str);
@@ -956,7 +957,8 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     AnchorPoint *ap;
 
     memset(scale,0,sizeof(scale));
-    scale[0] = scale[3] = small->stem_factor;
+    scale[0] = small->stem_factor;
+    scale[3] = small->v_stem_factor;
     scale[2] = small->stem_factor * small->tan_ia;
 
     sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
@@ -972,20 +974,16 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     no_windowing_ui = true;		/* Turn off undoes */
     SplineCharAutoHint(sc_sc,layer,NULL);
     no_windowing_ui = nwi;
-    if ( !RealNear( small->stem_factor, small->scheight/small->capheight )) {
+    if ( !RealNear( small->stem_factor, small->scheight/small->capheight ) ||
+	    !RealNear(small->stem_factor,small->v_stem_factor)) {
 	SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
 	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	remove_y = sc_b.maxy - small->scheight + small->stem_factor*(cap_b.maxy - small->capheight);
-	if ( remove_y<=-1 || remove_y>=1 ) {
-	    if ( cap_b.maxy == cap_b.miny )
-		remove_x = 0;
-	    else
-		remove_x = (sc_b.maxx - sc_b.minx) * remove_y / (cap_b.maxy - cap_b.miny);
-	    sc_sc->width -= remove_x;
-	    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-	    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
-	    SplineSetRefigure(sc_sc->layers[layer].splines);
-	}
+	remove_y = (sc_b.maxy - sc_b.miny) - small->scheight *(cap_b.maxy-cap_b.miny)/small->capheight;
+	remove_x = (sc_b.maxx - sc_b.minx) - small->scheight *(cap_b.maxx-cap_b.minx)/small->capheight;
+	sc_sc->width -= remove_x;
+	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
+	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+	SplineSetRefigure(sc_sc->layers[layer].splines);
     }
 
     if ( small->tan_ia!=0 ) {

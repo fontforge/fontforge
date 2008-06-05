@@ -329,7 +329,7 @@ extern void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci);
 
 struct smallcaps {
     double lc_stem_width, uc_stem_width;
-    double stem_factor;
+    double stem_factor, v_stem_factor;
     double xheight, scheight, capheight;
     char *extension_for_letters, *extension_for_symbols;
     int dosymbols;

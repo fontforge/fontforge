@@ -332,6 +332,9 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_Symbols_Too	1008
 #define CID_Letter_Ext	1009
 #define CID_Symbol_Ext	1010
+#define CID_V_isnt_H	1011
+#define CID_HStemFactor	1012
+#define CID_VStemFactor	1013
 
 static int SmallCaps_OK(GGadget *g, GEvent *e) {
     int err = false;
@@ -348,8 +351,16 @@ return( true );
 	}
 	small->lc_stem_width = GetReal8(ew,CID_LC_Stem_Width,_("Primary stem width for lower case letters"),&err);
 	small->uc_stem_width = GetReal8(ew,CID_UC_Stem_Width,_("Primary stem width for upper case letters"),&err);
-	if ( err )
+	if ( err || small->lc_stem_width<=0 || small->uc_stem_width<=0 )
 return( true );
+	small->stem_factor = small->lc_stem_width / small->uc_stem_width;
+	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_V_isnt_H)) )
+	    small->v_stem_factor = GetReal8(ew,CID_VStemFactor,_("Vertical Stem Factor"),&err);
+	else
+	    small->v_stem_factor = small->stem_factor;
+	if ( err || small->v_stem_factor<=0 )
+return( true );
+	
 	small->dosymbols = GGadgetIsChecked(GWidgetGetControl(ew,CID_Symbols_Too));
 	small->extension_for_letters = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Letter_Ext));
 	small->extension_for_symbols = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Symbol_Ext));
@@ -381,17 +392,50 @@ static int SC_Def_Changed(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int SC_RatioChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int candiff = GGadgetIsChecked(GWidgetGetControl(ew,CID_V_isnt_H));
+	double lc,uc;
+	char rat[40];
+	int err = false;
+	lc = GetCalmReal8(ew,CID_LC_Stem_Width,"unused",&err);
+	uc = GetCalmReal8(ew,CID_UC_Stem_Width,"unused",&err);
+	if ( err || lc==0 || uc==0)
+return( true );
+	sprintf( rat, "%.3g", lc/uc );
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_HStemFactor), rat);
+	if ( !candiff )
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_VStemFactor), rat);
+    }
+return( true );
+}
+
+static int SC_HVChecked(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int on = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_VStemFactor), on);
+	if ( !on )
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_VStemFactor),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_HStemFactor)));
+    }
+return( true );
+}
+
 void AddSmallCapsDlg(FontView *fv) {
     StyleDlg ed;
     SplineFont *sf = fv->b.sf;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[23], boxes[6], *barray[8], *hvarray[37], *swarray[6],
+    GGadgetCreateData gcd[27], boxes[6], *barray[8], *hvarray[37], *swarray[11],
 	    *exarray[6];
-    GTextInfo label[23];
+    GTextInfo label[27];
     int k;
-    char sch[40], caph[40], lcsw[40], ucsw[40];
+    char sch[40], caph[40], lcsw[40], ucsw[40], hrat[40], vrat[40];
     struct smallcaps small;
 
     memset(&ed,0,sizeof(ed));
@@ -510,6 +554,7 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.pos.width = 50;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_LC_Stem_Width;
+    gcd[k].gd.handle_controlevent = SC_RatioChanged;
     gcd[k++].creator = GTextFieldCreate;
 
     label[k].text = (unichar_t *) _("Upper Case:");
@@ -527,13 +572,52 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.pos.width = 50;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_UC_Stem_Width;
+    gcd[k].gd.handle_controlevent = SC_RatioChanged;
     gcd[k++].creator = GTextFieldCreate;
     swarray[0] = &gcd[k-4]; swarray[1] = &gcd[k-3]; swarray[2] = &gcd[k-2]; swarray[3] = &gcd[k-1];
     swarray[4] = NULL;
 
+    label[k].text = (unichar_t *) _("Ratio:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( hrat, "%.3g", small.stem_factor );
+    label[k].text = (unichar_t *) hrat;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_HStemFactor;
+    gcd[k++].creator = GTextFieldCreate;
+
+    label[k].text = (unichar_t *) _("Stem Height Ratio:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_V_isnt_H;
+    gcd[k].gd.handle_controlevent = SC_HVChecked;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    sprintf( vrat, "%.3g", small.v_stem_factor );
+    label[k].text = (unichar_t *) vrat;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_VStemFactor;
+    gcd[k++].creator = GTextFieldCreate;
+    swarray[5] = &gcd[k-4]; swarray[6] = &gcd[k-3]; swarray[7] = &gcd[k-2]; swarray[8] = &gcd[k-1];
+    swarray[9] = NULL; swarray[10] = NULL;
+
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = swarray;
-    boxes[3].creator = GHBoxCreate;
+    boxes[3].creator = GHVBoxCreate;
     hvarray[18] = &boxes[3]; hvarray[19] = GCD_ColSpan; hvarray[20] = NULL;
 
     label[k].text = (unichar_t *) _("Create small caps variants for symbols as well as letters");
@@ -1665,9 +1749,9 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[51], boxes[7], *forms[30], *compress[5][6], *sarray[5],
-	    *iaarray[4], *barray[10], *varray[37];
-    GTextInfo label[51];
+    GGadgetCreateData gcd[52], boxes[7], *forms[30], *compress[5][6], *sarray[5],
+	    *iaarray[4], *barray[10], *varray[39];
+    GTextInfo label[52];
     int k,f,r,i;
     char lsb[3][40], stems[3][40], counters[3][40], rsb[3][40], ia[40];
 
@@ -1720,14 +1804,11 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     forms[f++] = &gcd[k-1];
     forms[f++] = GCD_Glue; forms[f++] = NULL;
 
-    label[k].image = &GIcon_pItalic;
-    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
     gcd[k].gd.flags = gg_enabled | gg_visible;
-    if ( last_ii.pq_deserif ) gcd[k].gd.flags |= gg_cb_on;
-    gcd[k].gd.cid = CID_P;
-    gcd[k++].creator = GCheckBoxCreate;
-    forms[f++] = &gcd[k-1];
-    forms[f++] = GCD_ColSpan; forms[f++] = GCD_ColSpan;
+    gcd[k++].creator = GSpacerCreate;
+    forms[f++] = GCD_Glue;
+    forms[f++] = GCD_Glue; forms[f++] = GCD_Glue;
     forms[f++] = GCD_Glue; forms[f++] = NULL;
 
     label[k].image = &GIcon_u438Italic;
@@ -1833,6 +1914,18 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     gcd[k].gd.flags = gg_enabled | gg_visible;
     if ( last_ii.transform_top_as_serifs ) gcd[k].gd.flags |= gg_cb_on;
     gcd[k].gd.cid = CID_AscenderSerifs;
+    gcd[k++].creator = GCheckBoxCreate;
+    varray[r++] = &gcd[k-1]; varray[r++] = NULL;
+
+    label[k].text = (unichar_t *) _("Transform descender serifs");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    label[k].image_precedes = true;
+    label[k].image = &GIcon_pItalic;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    if ( last_ii.pq_deserif ) gcd[k].gd.flags |= gg_cb_on;
+    gcd[k].gd.cid = CID_P;
     gcd[k++].creator = GCheckBoxCreate;
     varray[r++] = &gcd[k-1]; varray[r++] = NULL;
 
