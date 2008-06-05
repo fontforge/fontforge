@@ -45,6 +45,7 @@ typedef struct transdata {
 #define CID_DoKerns		3004
 #define CID_DoSimplePos		3005
 #define CID_DoGrid		3006
+#define CID_DoWidth		3007
 
 #define CID_Type	1001
 #define CID_XMove	1002
@@ -107,7 +108,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     double angle, angle2;
     int i, index, err;
     int dobackground = false, round_2_int = false, dokerns = false, dokp=false;
-    int dogrid = false;
+    int dogrid = false, dowidth = false;
     BasePoint base;
     int origin, bvpos=0;
     BVTFunc bvts[TCnt+1];
@@ -125,6 +126,10 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	    dobackground = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoBackground));
 	if ( GWidgetGetControl(td->gw,CID_DoGrid)!=NULL )
 	    dogrid = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoGrid));
+	if ( GWidgetGetControl(td->gw,CID_DoWidth)!=NULL )
+	    dowidth = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoWidth));
+	else
+	    dowidth = true;
 	if ( GWidgetGetControl(td->gw,CID_DoSimplePos)!=NULL )
 	    dokp = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoSimplePos));
 	if ( GWidgetGetControl(td->gw,CID_DoKerns)!=NULL )
@@ -244,6 +249,7 @@ return(true);
 	(td->transfunc)(td->userdata,transform,origin,bvts,
 		(dobackground?fvt_dobackground:0)|
 		(dogrid?fvt_dogrid:0)|
+		 (dowidth?0:fvt_dontmovewidth)|
 		 (round_2_int?fvt_round_to_int:0)|
 		 (dokp?fvt_scalepstpos:0)|
 		 (dokerns?fvt_scalekernclasses:0));
@@ -564,7 +570,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11+TCnt*24], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+8)+2], *buttons[9], *origarray[4];
+    GGadgetCreateData gcd[11+TCnt*25], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+8)+4], *buttons[9], *origarray[4];
     GTextInfo label[8+TCnt*24];
     static TransData td;
     int i, y, gci, subai, ai;
@@ -657,6 +663,17 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    label[gci].text_in_resource = true;
 	    gcd[gci].gd.label = &label[gci];
 	    gcd[gci].gd.cid = CID_DoGrid;
+	    gcd[gci++].creator = GCheckBoxCreate;
+	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
+	    y += 16;
+
+	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
+	    gcd[gci].gd.flags = (enableback&1) ? (gg_visible | gg_enabled | gg_cb_on) : gg_visible;
+	    label[gci].text = (unichar_t *) _("Transform _Width Too");
+	    label[gci].text_is_1byte = true;
+	    label[gci].text_in_resource = true;
+	    gcd[gci].gd.label = &label[gci];
+	    gcd[gci].gd.cid = CID_DoWidth;
 	    gcd[gci++].creator = GCheckBoxCreate;
 	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
 	    y += 16;
