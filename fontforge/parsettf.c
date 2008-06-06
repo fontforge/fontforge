@@ -717,6 +717,8 @@ static void ValidateTTFHead(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     uint32 file_len;
     int sr, es, rs, e_sr, e_es, e_rs;
+    int hashead, hashhea, hasmaxp, masos2, haspost, hasname, hasos2;
+    int hasloca, hascff, hasglyf;
 
     info->numtables = getushort(ttf);
     sr = getushort(ttf);
@@ -793,6 +795,83 @@ return;
 	    info->bad_sfnt_header = true;
 	}
     }
+
+    hashead = hashhea = hasmaxp = masos2 = haspost = hasname = hasos2 = false;
+    hasloca = hascff = hasglyf = false;
+    for ( i=0; i<info->numtables-1; ++i ) {
+	switch ( tabs[i].tag ) {
+	  case CHR('c','v','t',' '):
+	    if ( tabs[i].length&1 )
+		LogError(_("Table '%c%c%c%c' has a bad length, must be even."),
+			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
+	  break;
+	  case CHR('g','a','s','p'):
+	  break;
+	  case CHR('b','h','e','d'):	/* Fonts with bitmaps but no outlines get bhea */
+	  case CHR('h','e','a','d'):
+	    if ( tabs[i].length!=54 )
+		LogError(_("Table '%c%c%c%c' has a bad length, must be 54 but is %d."),
+			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag,
+			tabs[i].length );
+	    hashead = true;
+	  break;
+	  case CHR('h','h','e','a'):
+	    hashhea = true;
+	  case CHR('v','h','e','a'):
+	    if ( tabs[i].length!=36 )
+		LogError(_("Table '%c%c%c%c' has a bad length, must be 36 but is %d."),
+			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag,
+			tabs[i].length );
+	  break;
+	  case CHR('m','a','x','p'):
+	    hasmaxp = true;
+	    if ( tabs[i].length!=32 && tabs[i].length!=6 )
+		LogError(_("Table '%c%c%c%c' has a bad length, must be 32 or 6 but is %d."),
+			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag,
+			tabs[i].length );
+	  break;
+	  case CHR('O','S','/','2'):
+	    hasos2 = true;
+	    if ( tabs[i].length!=78 && tabs[i].length!=86 && tabs[i].length!=96 )
+		LogError(_("Table '%c%c%c%c' has a bad length, must be 78, 88 or 96 but is %d."),
+			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag,
+			tabs[i].length );
+	  break;
+	  case CHR('p','o','s','t'):
+	    haspost = true;
+	  break;
+	  case CHR('n','a','m','e'):
+	    hasname = true;
+	  break;
+	  case CHR('l','o','c','a'):
+	    hasloca = true;
+	  break;
+	  case CHR('g','l','y','f'):
+	    hasglyf = true;
+	  break;
+	  case CHR('C','F','F',' '):
+	    hascff = true;
+	  break;
+	}
+    }
+    if ( !hashead )
+	LogError(_("Missing required table: \"head\""));
+    if ( !hashhea )
+	LogError(_("Missing required table: \"hhea\""));
+    if ( !hasmaxp )
+	LogError(_("Missing required table: \"maxp\""));
+    if ( !haspost )
+	LogError(_("Missing required table: \"post\""));
+    if ( !hasname )
+	LogError(_("Missing required table: \"name\""));
+    if ( hasglyf && !hasloca )
+	LogError(_("Missing required table: \"loca\""));
+    if ( !hasos2 )
+	LogError(_("Missing \"OS/2\" table"));
+    if ( !hasglyf && hasloca )
+	LogError(_("Missing required table: \"glyf\""));
+    if ( !hasglyf && !hascff )
+	LogError(_("This font contains neither \"CFF \" nor \"glyf\"/\"loca\" tables"));
 
     free(tabs);
     fseek(ttf,restore_this_pos,SEEK_SET);
