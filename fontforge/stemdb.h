@@ -48,6 +48,8 @@ typedef struct glyphdata {
     struct stemdata *stems;
     int linecnt;
     struct linedata *lines;
+    struct stembundle *hbundle;
+    struct stembundle *vbundle;
 
     /* Temporary values, quickly freed */
     int mcnt;
@@ -58,7 +60,6 @@ typedef struct glyphdata {
     struct st *stspace;
     DBounds size;
     struct pointdata **pspace;
-    struct stembundle *bundles;
     struct segment { 
         double start, end, sbase, ebase; 
         int curved, scurved, ecurved; 
@@ -149,7 +150,13 @@ typedef struct stemdata {
     double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
     int lpcnt, rpcnt;           /* Count of points assigned to left and right edges of this stem */
     struct linedata *leftline, *rightline;
-    struct stemdata *master;
+    int secondary;              /* Should this stem be positioned relatively to another stem? */
+    int depcount;
+    struct dependent_stem {
+        struct stemdata *stem;
+        char dep_type;          /* may be 'a' (align), 'i' (interpolate) or 'l' (link) */
+        char dep_edge;          /* may be 'l' or 'r' */
+    } *dependent;
 } StemData;
 
 typedef struct vchunk {
@@ -172,12 +179,11 @@ struct splinesteminfo {
 };
 
 struct stembundle {
-    BasePoint *unit;		/* All these stems are parallel, pointing in unit direction */
-    BasePoint *l_to_r;		/* Axis along which these stems are ordered (normal to unit) */
-    BasePoint *bp;		/* Base point for measuring by l_to_r (stem->lpos,rpos) */
+    BasePoint unit;		/* All these stems are parallel, pointing in unit direction */
+    BasePoint l_to_r;		/* Axis along which these stems are ordered (normal to unit) */
+    BasePoint bp;		/* Base point for measuring by l_to_r (stem->lpos,rpos) */
     int cnt;			/* Number of stems in the bundle */
     struct stemdata **stemlist;
-    struct stembundle *next;
 };
     
 extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int layer, BlueData *bd, int use_existing);
