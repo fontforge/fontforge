@@ -4408,6 +4408,18 @@ static void bItalic(Context *c) {
     MakeItalic(c->curfv,NULL,&default_ii);
 }
 
+static void bSmallCaps(Context *c) {
+    struct smallcaps small;
+
+    if ( c->a.argc>1 )
+	ScriptError( c, "Wrong number of arguments");
+    SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
+    small.extension_for_letters = "sc";
+    small.extension_for_symbols = "taboldstyle";
+
+    FVAddSmallCaps(c->curfv,&small);
+}
+
 static int RefMatchesNamesUni(RefChar *ref,char **refnames, int *refunis, int refcnt) {
     int i;
 
@@ -7899,6 +7911,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Move", bMove },
     { "ScaleToEm", bScaleToEm },
     { "Italic", bItalic },
+    { "SmallCaps", bSmallCaps },
     { "MoveReference", bMoveReference },
     { "PositionReference", bPositionReference },
     { "NonLinearTransform", bNonLinearTransform },

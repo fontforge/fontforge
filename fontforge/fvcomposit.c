@@ -2195,7 +2195,8 @@ static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
     _SCCenterAccent(sc,basersc,sf,layer,ch,rsc,copybmp,ia,basech,invert,-1);
 }
 
-static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int layer, int ch, int copybmp) {
+static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int layer, int ch,
+	int copybmp, char *dot) {
     SplineChar *rsc = SFGetChar(sf,ch,NULL);
     BDFFont *bdf;
     BDFChar *bc, *rbc;
@@ -2203,6 +2204,17 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int layer, int ch, int c
     DBounds bb, rbb;
     real spacing = (sf->ascent+sf->descent)*accent_offset/100;
     int ispacing;
+    char buffer[300], namebuf[300];
+
+    if ( dot!=NULL && rsc!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s%s", rsc->name, dot );
+	rsc = SFGetChar(sf,-1,buffer);
+    } else if ( dot!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s%s",
+		(char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
+		dot);
+	rsc = SFGetChar(sf,-1,buffer);
+    }
 
     if ( full<0x1100 || full>0x11ff ) {
 	SCAddRef(sc,rsc,layer,sc->width,0);
@@ -2558,7 +2570,7 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 		if ( alt_ch!=0 && haschar(sf,alt_ch,NULL))
 		    ch = alt_ch;
 	    }
-	    SCPutRefAfter(sc,sf,layer,ch,copybmp);
+	    SCPutRefAfter(sc,sf,layer,ch,copybmp,NULL);
 	}
 	ret = true;
     }
@@ -2745,7 +2757,7 @@ return;
 	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,copybmp,ia, ch, dot);
 	while ( *pt ) {
 	    if ( base!=NULL ) base->use_my_metrics = false;
-	    SCPutRefAfter(sc,sf,layer,*pt++,copybmp);
+	    SCPutRefAfter(sc,sf,layer,*pt++,copybmp,dot);
 	}
 	/* All along we assumed the base glyph didn't move. This makes       */
 	/* positioning easier. But if we add accents to the left we now want */
