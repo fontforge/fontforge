@@ -28,7 +28,7 @@
 #include "edgelist2.h"
 #include "stemdb.h"
 #include <math.h>
-#define GLYPH_DATA_DEBUG 1
+#define GLYPH_DATA_DEBUG 0
 #define PI 3.14159265358979323846264338327
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
@@ -189,7 +189,7 @@ return( true );
 
 static int IsSplinePeak( struct glyphdata *gd,struct pointdata *pd,int outer,int is_x,int flags );
 
-static void PointInit(struct glyphdata *gd,SplinePoint *sp, SplineSet *ss) {
+static void PointInit( struct glyphdata *gd,SplinePoint *sp, SplineSet *ss ) {
     struct pointdata *pd, *prevpd=NULL, *nextpd=NULL;
     double len, same;
 
@@ -205,14 +205,17 @@ return;
     pd->nextstems = pd->prevstems = NULL;
     pd->next_is_l = pd->prev_is_l = NULL;
     
-    if ( !sp->nonextcp && gd->order2 ) {
+    if ( !sp->nonextcp && gd->order2 && sp->nextcpindex < gd->realcnt ) {
+    
         nextpd = &gd->points[sp->nextcpindex];
         nextpd->ss = ss;
         nextpd->x_extr = nextpd->y_extr = 0;
         nextpd->base = sp->nextcp;
         nextpd->ttfindex = sp->nextcpindex;
     }
-    if ( !sp->noprevcp && gd->order2 ) {
+    if ( !sp->noprevcp && gd->order2 && sp->prev != NULL &&
+        sp->prev->from->nextcpindex < gd->realcnt ) {
+        
         nextpd = &gd->points[sp->prev->from->nextcpindex];
         nextpd->ss = ss;
         nextpd->x_extr = nextpd->y_extr = 0;
@@ -1467,7 +1470,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
                 /* For quadratic layers assign the stem not only to
                 /* spline points, but for their control points as well
                 /* (this may be important for TTF instructions */
-                if ( gd->order2 && !pd1->sp->nonextcp ) {
+                if ( gd->order2 && !pd1->sp->nonextcp && pd1->sp->nextcpindex < gd->realcnt ) {
                     cpidx = pd1->sp->nextcpindex;
                     npd = &gd->points[cpidx];
                     if ( OnStem( stem,&npd->base,true ))
@@ -1476,7 +1479,8 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
             }
 	    if ( is_next1==0 || pd1->colinear  ) {
                 AssignStemToPoint( pd1,stem,false,true );
-                if ( gd->order2 && !pd1->sp->noprevcp ) {
+                if ( gd->order2 && !pd1->sp->noprevcp && pd1->sp->prev != NULL &&
+                    pd1->sp->prev->from->nextcpindex < gd->realcnt ) {
                     cpidx = pd1->sp->prev->from->nextcpindex;
                     ppd = &gd->points[cpidx];
                     if ( OnStem( stem,&ppd->base,true ))
@@ -1494,7 +1498,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
 	if ( is_next2 < 2 ) {
 	    if ( is_next2==1 || pd2->colinear ) {
                 AssignStemToPoint( pd2,stem,true,false );
-                if ( gd->order2 && !pd2->sp->nonextcp ) {
+                if ( gd->order2 && !pd2->sp->nonextcp && pd2->sp->nextcpindex < gd->realcnt ) {
                     cpidx = pd2->sp->nextcpindex;
                     npd = &gd->points[cpidx];
                     if ( OnStem( stem,&npd->base,false ))
@@ -1503,7 +1507,8 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
             }
 	    if ( is_next2==0 || pd2->colinear ) {
                 AssignStemToPoint( pd2,stem,false,false );
-                if ( gd->order2 && !pd2->sp->noprevcp ) {
+                if ( gd->order2 && !pd2->sp->noprevcp && pd2->sp->prev != NULL &&
+                    pd2->sp->prev->from->nextcpindex < gd->realcnt ) {
                     cpidx = pd2->sp->prev->from->nextcpindex;
                     ppd = &gd->points[cpidx];
                     if ( OnStem( stem,&ppd->base,false ))
@@ -3791,12 +3796,13 @@ static int GetValidPointDataIndex( struct glyphdata *gd,SplinePoint *sp,
 return( -1 );
     if ( sp->ttfindex < gd->realcnt )
 return( sp->ttfindex );
-    if ( !sp->nonextcp ) {
+    if ( !sp->nonextcp && sp->nextcpindex < gd->realcnt ) {
         tpd = &gd->points[sp->nextcpindex];
         if ( IsStemAssignedToPoint( tpd,stem,false ))
 return( sp->nextcpindex );
     }
-    if ( !sp->noprevcp && sp->prev != NULL ) {
+    if ( !sp->noprevcp && sp->prev != NULL && 
+        sp->prev->from->nextcpindex < gd->realcnt ) {
         tpd = &gd->points[sp->prev->from->nextcpindex];
         if ( IsStemAssignedToPoint( tpd,stem,true ))
 return( sp->prev->from->nextcpindex );
@@ -4587,7 +4593,7 @@ static void LookForMasterHVStem( struct stemdata *stem ) {
                 etype = 'l';
                 emstart = tstart;
             }
-        /* The same case for the right edges */
+        /* The same case for right edges */
         } else if (( stem->width > tstem->width || !ValidConflictingStem( tstem,stem )) &&
             tend > emin && tend < emax ) {
             if ( emaster == NULL || etype != 'a' || emaster->width > tstem->width ) {
@@ -5058,7 +5064,7 @@ return;
     free( gd->pspace );		gd->pspace = NULL;
 
     /* Clean up temporary point numbers */
-    for ( i=0; i<gd->pcnt; ++i )
+    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp != NULL )
 	gd->points[i].sp->ptindex = 0;
 
     if ( gd->hbundle != NULL ) {
