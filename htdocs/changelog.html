@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 5-Jun-2008 -->
+  <!-- AP: Last modified: 6-Jun-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -68,7 +68,7 @@
 	  of a glyph by default, and provide a checkbox so the user can turn this off.
 	<LI>
 	  FF didn't like decimal points in the metrics view l/r bearing fields -- even
-	  though it could put them there itself.
+	  though it would put them there itself.
 	<LI>
 	  Metrics windows weren't being remetricked after a feature file was loaded
 	  (nor an afm file for that matter). Nor were they remetricked after lookups
@@ -157,6 +157,10 @@
 	    <LI>
 	      Check that the number of tables is reasonable and that the binary search
 	      header is consistent with the number of tables.
+	    <LI>
+	      Check that required tables are present
+	    <LI>
+	      Check that certain fixed length tables have the correct length.
 	  </OL>
 	<LI>
 	  Werner would like to be able to debug (truetype instructions) when using
