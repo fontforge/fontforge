@@ -120,7 +120,7 @@ static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 	sc = SFGetChar(sf,list[i],NULL);
 	if ( sc==NULL )
     continue;
-	if ( tan_ia== 0 && autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL )&&
+	if ( tan_ia== 0 && autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL ) &&
 		!sc->manualhints )
 	    SplineCharAutoHint(sc,layer,NULL);
 	if ( tan_ia==0 && sc->vstem!=NULL ) {
@@ -147,7 +147,7 @@ static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 	}
 	for ( s= which->vstem; s!=NULL; s=s->next ) if ( !s->ghost ) {
 	    for ( j=0; j<cnt; ++j )
-		if ( widths[j].width==val )
+		if ( widths[j].width==s->width )
 	    break;
 	    if ( j<cnt )
 		widths[j].total += HIlen(s);
@@ -426,6 +426,8 @@ static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
     if ( cap_sc->unicodeenc>=0 && cap_sc->unicodeenc<=0x10000 ) {
 	lower = tolower(cap_sc->unicodeenc);
 	ext = isupper(cap_sc->unicodeenc) ? small->extension_for_letters :
+		cap_sc->unicodeenc==0xdf  ? small->extension_for_letters :
+		cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06 ? small->extension_for_letters :
 					    small->extension_for_symbols;
     } else {
 	lower = cap_sc->unicodeenc;
@@ -947,6 +949,57 @@ static void SplineSetRefigure(SplineSet *ss) {
     }
 }
 
+static void BuildSCLigatures(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
+	struct smallcaps *small) {
+    static char *ligs[] = { "ff", "fi", "fl", "ffi", "ffl", "st", "st" };
+    char *components;
+    int width;
+    RefChar *rlast, *r;
+    SplineChar *rsc;
+    char buffer[300];
+    /* German eszet (the double s ligature) should become two small cap "S"es */
+
+    if ( cap_sc->unicodeenc==0xdf )
+	components = "ss";
+    else if ( cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06 )
+	components = ligs[cap_sc->unicodeenc-0xfb00];
+    else
+return;
+
+    width=0;
+    rlast = NULL;
+    while ( *components!='\0' ) {
+	snprintf(buffer,sizeof(buffer),"%c.%s", *components, small->extension_for_letters );
+	rsc = SFGetChar(small->sf,-1,buffer);
+	if ( rsc!=NULL ) {
+	    r = RefCharCreate();
+	    r->sc = rsc;
+	    r->unicode_enc = rsc->unicodeenc;
+	    r->orig_pos = rsc->orig_pos;
+	    r->adobe_enc = getAdobeEnc(rsc->name);
+	    r->transform[0] = r->transform[3] = 1.0;
+	    r->transform[4] = width;
+	    width += rsc->width;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    r->layers = NULL;
+	    r->layer_cnt = 0;
+#else
+	    r->layers[0].splines = NULL;
+#endif
+	    r->next = NULL;
+	    SCReinstanciateRefChar(sc_sc,r,layer);
+	    if ( rlast==NULL )
+		sc_sc->layers[layer].refs=r;
+	    else
+		rlast->next = r;
+	    rlast = r;
+	}
+	++components;
+    }
+    sc_sc->width = width;
+    SCCharChangedUpdate(sc_sc,layer);
+}
+
 static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
 	struct smallcaps *small) {
     real scale[6];
@@ -955,6 +1008,11 @@ static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
     extern int no_windowing_ui;
     int nwi = no_windowing_ui;
     AnchorPoint *ap;
+
+    if ( cap_sc->unicodeenc==0xdf || (cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06)) {
+	BuildSCLigatures(sc_sc,cap_sc,layer,small);
+return;
+    }
 
     memset(scale,0,sizeof(scale));
     scale[0] = small->stem_factor;
@@ -1023,7 +1081,8 @@ return;		/* Can't randomly add things to a CID keyed font */
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
 	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
-		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) )) {
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc) ||
+		     (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script==CHR('l','a','t','n'))
 		    ++ltn, ++cnt;
@@ -1049,7 +1108,8 @@ return;
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
 	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
-		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) )) {
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc) ||
+		     (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script!=CHR('l','a','t','n') &&
 			script!=CHR('g','r','e','k') &&
@@ -1085,7 +1145,8 @@ return;
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
 	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
-		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc)) )) {
+		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc) ||
+		     (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script!=CHR('l','a','t','n') &&
 			script!=CHR('g','r','e','k') &&
@@ -4024,16 +4085,27 @@ static void SplineNextSplice(SplinePoint *start,SplinePoint *newstuff) {
     if ( start->me.x!=newstuff->me.x || start->me.y!=newstuff->me.y ) {
 	double xdiff = start->me.x-newstuff->me.x, ydiff = start->me.y-newstuff->me.y;
 	SplinePoint *nsp = start->next->to;
-	start->nextcp.x += xdiff;
-	start->nextcp.y += ydiff;
-	nsp->prevcp.x += xdiff/2;
-	nsp->prevcp.y += ydiff/2;
-	nsp->me.x += xdiff/2;
-	nsp->me.y += ydiff/2;
-	nsp->nextcp.x += xdiff/2;
-	nsp->nextcp.y += ydiff/2;
+	if ( start->next->order2 ) {
+	    if ( !nsp->noprevcp ) {
+		start->nextcp.x += xdiff/2;
+		start->nextcp.y += ydiff/2;
+		nsp->prevcp = start->nextcp;
+	    } else {
+		start->nextcp.x += xdiff;
+		start->nextcp.y += ydiff;
+	    }
+	} else {
+	    start->nextcp.x += xdiff;
+	    start->nextcp.y += ydiff;
+	    nsp->prevcp.x += xdiff/2;
+	    nsp->prevcp.y += ydiff/2;
+	    nsp->me.x += xdiff/2;
+	    nsp->me.y += ydiff/2;
+	    nsp->nextcp.x += xdiff/2;
+	    nsp->nextcp.y += ydiff/2;
+	    SplineRefigure(nsp->next);
+	}
 	SplineRefigure(nsp->prev);
-	SplineRefigure(nsp->next);
     }
     SplinePointFree(newstuff);
 }
@@ -4046,15 +4118,26 @@ static void SplinePrevSplice(SplinePoint *end,SplinePoint *newstuff) {
     if ( end->me.x!=newstuff->me.x || end->me.y!=newstuff->me.y ) {
 	double xdiff = end->me.x-newstuff->me.x, ydiff = end->me.y-newstuff->me.y;
 	SplinePoint *psp = end->prev->from;
-	end->nextcp.x += xdiff;
-	end->nextcp.y += ydiff;
-	psp->prevcp.x += xdiff/2;
-	psp->prevcp.y += ydiff/2;
-	psp->me.x += xdiff/2;
-	psp->me.y += ydiff/2;
-	psp->nextcp.x += xdiff/2;
-	psp->nextcp.y += ydiff/2;
-	SplineRefigure(psp->prev);
+	if ( end->prev->order2 ) {
+	    if ( !psp->noprevcp ) {
+		end->prevcp.x += xdiff/2;
+		end->prevcp.y += ydiff/2;
+		psp->nextcp = end->prevcp;
+	    } else {
+		end->nextcp.x += xdiff;
+		end->nextcp.y += ydiff;
+	    }
+	} else {
+	    end->nextcp.x += xdiff;
+	    end->nextcp.y += ydiff;
+	    psp->prevcp.x += xdiff/2;
+	    psp->prevcp.y += ydiff/2;
+	    psp->me.x += xdiff/2;
+	    psp->me.y += ydiff/2;
+	    psp->nextcp.x += xdiff/2;
+	    psp->nextcp.y += ydiff/2;
+	    SplineRefigure(psp->prev);
+	}
 	SplineRefigure(psp->next);
     }
     SplinePointFree(newstuff);
