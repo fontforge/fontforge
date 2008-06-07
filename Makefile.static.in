@@ -63,7 +63,7 @@ install_po:
 
 install_pycontrib:
 	mkdir -p $(DESTDIR)$(pythondir)
-	( cd pycontrib ; -$(INSTALL_DATA) *.py $(DESTDIR)$(pythondir) )
+	( cd pycontrib ; $(INSTALL_DATA) *.py $(DESTDIR)$(pythondir) )
 
 install: $(sharedir) all install_libs install_po install_pycontrib
 # You may need to be root to do the install
