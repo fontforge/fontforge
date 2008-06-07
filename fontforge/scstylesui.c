@@ -335,6 +335,9 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_V_isnt_H	1011
 #define CID_HStemFactor	1012
 #define CID_VStemFactor	1013
+#define CID_VScale_isnt_H	1014
+#define CID_HScale	1015
+#define CID_VScale	1016
 
 static int SmallCaps_OK(GGadget *g, GEvent *e) {
     int err = false;
@@ -346,8 +349,9 @@ static int SmallCaps_OK(GGadget *g, GEvent *e) {
 	if ( !GGadgetIsChecked(GWidgetGetControl(ew,CID_SCH_Is_XH))) {
 	    small->scheight  = GetReal8(ew,CID_SCH,_("Small Caps Height"),&err);
 	    small->capheight = GetReal8(ew,CID_Cap,_("Capital Height"),&err);
-	    if ( err )
+	    if ( err || small->scheight<=0 || small->capheight<=0 )
 return( true );
+	    small->vscale = small->scheight/small->capheight;
 	}
 	small->lc_stem_width = GetReal8(ew,CID_LC_Stem_Width,_("Primary stem width for lower case letters"),&err);
 	small->uc_stem_width = GetReal8(ew,CID_UC_Stem_Width,_("Primary stem width for upper case letters"),&err);
@@ -360,6 +364,10 @@ return( true );
 	    small->v_stem_factor = small->stem_factor;
 	if ( err || small->v_stem_factor<=0 )
 return( true );
+	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_VScale_isnt_H)) )
+	    small->hscale = GetReal8(ew,CID_HScale,_("Vertical Stem Factor"),&err);
+	else
+	    small->hscale = small->vscale;
 	
 	small->dosymbols = GGadgetIsChecked(GWidgetGetControl(ew,CID_Symbols_Too));
 	small->extension_for_letters = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Letter_Ext));
@@ -383,11 +391,24 @@ static int SC_Def_Changed(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	struct smallcaps *small = ed->small;
 	int on = GGadgetIsChecked(g);
+	char buf[40];
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_SCH), !on);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_SCH_Lab), !on);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_Cap), !on);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_Cap_Lab), !on);
+	if ( on ) {
+	    sprintf( buf, "%g", rint( small->scheight ));
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_SCH),buf);
+	    sprintf( buf, "%g", rint( small->capheight ));
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Cap),buf);
+	    sprintf( buf, "%.3g", small->vscale );
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_VScale),buf);
+	    if ( !GGadgetIsChecked(GWidgetGetControl(ew,CID_VScale_isnt_H)) )
+		GGadgetSetTitle8(GWidgetGetControl(ew,CID_HScale),buf);
+	}
     }
 return( true );
 }
@@ -425,17 +446,50 @@ static int SC_HVChecked(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int SC_ScaleRatioChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int candiff = GGadgetIsChecked(GWidgetGetControl(ew,CID_VScale_isnt_H));
+	double sch,caph;
+	char rat[40];
+	int err = false;
+	sch = GetCalmReal8(ew,CID_SCH,"unused",&err);
+	caph = GetCalmReal8(ew,CID_Cap,"unused",&err);
+	if ( err || caph==0 || sch==0)
+return( true );
+	sprintf( rat, "%.3g", sch/caph );
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_VScale), rat);
+	if ( !candiff )
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_HScale), rat);
+    }
+return( true );
+}
+
+static int SC_HVScaleChecked(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int on = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_HScale), on);
+	if ( !on )
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_HScale),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_VScale)));
+    }
+return( true );
+}
+
 void AddSmallCapsDlg(FontView *fv) {
     StyleDlg ed;
     SplineFont *sf = fv->b.sf;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[27], boxes[6], *barray[8], *hvarray[37], *swarray[11],
-	    *exarray[6];
-    GTextInfo label[27];
+    GGadgetCreateData gcd[31], boxes[7], *barray[8], *hvarray[40], *swarray[11],
+	    *exarray[6], *slarray[6];
+    GTextInfo label[31];
     int k;
-    char sch[40], caph[40], lcsw[40], ucsw[40], hrat[40], vrat[40];
+    char sch[40], caph[40], lcsw[40], ucsw[40], hrat[40], vrat[40], vscale[40], hscale[40];
     struct smallcaps small;
 
     memset(&ed,0,sizeof(ed));
@@ -509,6 +563,7 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible;
     gcd[k].gd.cid = CID_SCH;
+    gcd[k].gd.handle_controlevent = SC_ScaleRatioChanged;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[9] = &gcd[k-2]; hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
 
@@ -527,8 +582,52 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible;
     gcd[k].gd.cid = CID_Cap;
+    gcd[k].gd.handle_controlevent = SC_ScaleRatioChanged;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[12] = &gcd[k-2]; hvarray[13] = &gcd[k-1]; hvarray[14] = NULL;
+
+    label[k].text = (unichar_t *) _("Vertical Scale:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( vscale, "%.3g", small.vscale );
+    label[k].text = (unichar_t *) vscale;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_VScale;
+    gcd[k++].creator = GTextFieldCreate;
+
+    label[k].text = (unichar_t *) _("Horizontal Ratio:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_VScale_isnt_H;
+    gcd[k].gd.handle_controlevent = SC_HVScaleChecked;
+    gcd[k++].creator = GCheckBoxCreate;
+
+    sprintf( hscale, "%.3g", small.hscale );
+    label[k].text = (unichar_t *) hscale;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_HScale;
+    gcd[k++].creator = GTextFieldCreate;
+    slarray[0] = &gcd[k-4]; slarray[1] = &gcd[k-3]; slarray[2] = &gcd[k-2]; slarray[3] = &gcd[k-1];
+    slarray[4] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = slarray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[15] = &boxes[3]; hvarray[16] = GCD_ColSpan; hvarray[17] = NULL;
 
     label[k].text = (unichar_t *) _("Primary Stem Widths");
     label[k].text_is_1byte = true;
@@ -537,7 +636,7 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
-    hvarray[15] = &gcd[k-1]; hvarray[16] = GCD_ColSpan; hvarray[17] = NULL;
+    hvarray[18] = &gcd[k-1]; hvarray[19] = GCD_ColSpan; hvarray[20] = NULL;
 
     label[k].text = (unichar_t *) _("Lower Case:");
     label[k].text_is_1byte = true;
@@ -615,10 +714,10 @@ void AddSmallCapsDlg(FontView *fv) {
     swarray[5] = &gcd[k-4]; swarray[6] = &gcd[k-3]; swarray[7] = &gcd[k-2]; swarray[8] = &gcd[k-1];
     swarray[9] = NULL; swarray[10] = NULL;
 
-    boxes[3].gd.flags = gg_enabled|gg_visible;
-    boxes[3].gd.u.boxelements = swarray;
-    boxes[3].creator = GHVBoxCreate;
-    hvarray[18] = &boxes[3]; hvarray[19] = GCD_ColSpan; hvarray[20] = NULL;
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = swarray;
+    boxes[4].creator = GHVBoxCreate;
+    hvarray[21] = &boxes[4]; hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
 
     label[k].text = (unichar_t *) _("Create small caps variants for symbols as well as letters");
     label[k].text_is_1byte = true;
@@ -628,12 +727,12 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_Symbols_Too;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray[21] = &gcd[k-1]; hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
+    hvarray[24] = &gcd[k-1]; hvarray[25] = GCD_ColSpan; hvarray[26] = NULL;
 
     gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GSpacerCreate;
-    hvarray[24] = &gcd[k-1]; hvarray[25] = GCD_ColSpan; hvarray[26] = NULL;
+    hvarray[27] = &gcd[k-1]; hvarray[28] = GCD_ColSpan; hvarray[29] = NULL;
 
     label[k].text = (unichar_t *) _("Glyph Extensions");
     label[k].text_is_1byte = true;
@@ -642,7 +741,7 @@ void AddSmallCapsDlg(FontView *fv) {
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
-    hvarray[27] = &gcd[k-1]; hvarray[28] = GCD_ColSpan; hvarray[29] = NULL;
+    hvarray[30] = &gcd[k-1]; hvarray[31] = GCD_ColSpan; hvarray[32] = NULL;
 
     label[k].text = (unichar_t *) _("Letters:");
     label[k].text_is_1byte = true;
@@ -678,10 +777,10 @@ void AddSmallCapsDlg(FontView *fv) {
     exarray[0] = &gcd[k-4]; exarray[1] = &gcd[k-3]; exarray[2] = &gcd[k-2]; exarray[3] = &gcd[k-1];
     exarray[4] = NULL;
 
-    boxes[4].gd.flags = gg_enabled|gg_visible;
-    boxes[4].gd.u.boxelements = exarray;
-    boxes[4].creator = GHBoxCreate;
-    hvarray[30] = &boxes[4]; hvarray[31] = GCD_ColSpan; hvarray[32] = NULL;
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = exarray;
+    boxes[5].creator = GHBoxCreate;
+    hvarray[33] = &boxes[5]; hvarray[34] = GCD_ColSpan; hvarray[35] = NULL;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
@@ -706,11 +805,11 @@ void AddSmallCapsDlg(FontView *fv) {
     barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
     barray[6] = NULL;
 
-    boxes[5].gd.flags = gg_enabled|gg_visible;
-    boxes[5].gd.u.boxelements = barray;
-    boxes[5].creator = GHBoxCreate;
-    hvarray[33] = &boxes[5]; hvarray[34] = GCD_ColSpan; hvarray[35] = NULL;
-    hvarray[36] = NULL;
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = barray;
+    boxes[6].creator = GHBoxCreate;
+    hvarray[36] = &boxes[6]; hvarray[37] = GCD_ColSpan; hvarray[38] = NULL;
+    hvarray[39] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
@@ -718,7 +817,7 @@ void AddSmallCapsDlg(FontView *fv) {
     boxes[0].creator = GHVGroupCreate;
 
     GGadgetsCreate(gw,boxes);
-    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
 
@@ -730,6 +829,9 @@ void AddSmallCapsDlg(FontView *fv) {
 /* ************************************************************************** */
 /* ********************** Subscript/Superscript Dialog ********************** */
 /* ************************************************************************** */
+#undef CID_HScale
+#undef CID_VScale
+
 #define CID_Feature	1001
 #define CID_Extension	1002
 #define CID_H_is_V	1003

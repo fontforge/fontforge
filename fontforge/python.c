@@ -11659,21 +11659,23 @@ Py_RETURN( self );
 }
 
 static char *smallcaps_keywords[] = { "scheight", "capheight", "lcstem", "ucstem",
-	"symbols", "letter_extension", "symbol_extension", "stem_height_factor", NULL };
+	"symbols", "letter_extension", "symbol_extension", "stem_height_factor",
+	"hscale", "vscale", NULL };
 
 static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args, PyObject *keywds) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     struct smallcaps small;
-    double lc_width=0, uc_width=0, vstem_factor=0;
+    double lc_width=0, uc_width=0, vstem_factor=0, hscale=0, vscale=0, scheight=0, capheight=0;
 
     SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
     small.extension_for_letters = "sc";
     small.extension_for_symbols = "taboldstyle";
-    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddddissd",smallcaps_keywords,
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddddissddd",smallcaps_keywords,
 	    &small.scheight,&small.capheight,&lc_width,&uc_width,
 	    &small.dosymbols, &small.extension_for_letters,
 	    &small.extension_for_symbols,
-	    &vstem_factor))
+	    &vstem_factor,
+	    &hscale, &vscale))
 return( NULL );
     if ( lc_width!=0 || uc_width!=0 ) {
 	if ( lc_width!=0 )
@@ -11685,6 +11687,18 @@ return( NULL );
     }
     if ( vstem_factor!=0 )
 	small.v_stem_factor = vstem_factor;
+    if ( scheight>0 || capheight>0 ) {
+	if ( scheight>0 )
+	    small.scheight = scheight;
+	if ( capheight>0 )
+	    small.capheight = capheight;
+	if ( small.capheight>0 )
+	    small.vscale = small.hscale = small.scheight/small.capheight;
+    }
+    if ( hscale>0 )
+	small.hscale = hscale;
+    if ( vscale>0 )
+	small.vscale = vscale;
 
     FVAddSmallCaps(fv,&small);
 
