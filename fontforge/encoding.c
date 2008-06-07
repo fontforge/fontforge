@@ -735,7 +735,8 @@ int CIDFromName(char *name,SplineFont *cidmaster) {
 	if ( name[len]=='.' ) ++len;
     } else if ( strncmp(name,"cid-",4)==0 ) {
 	len = 4;
-    }
+    } else
+	len = 0;
     cid = strtol(name+len,&end,10);
     if ( end==name+len )
 return( -1 );
