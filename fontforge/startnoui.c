@@ -59,8 +59,10 @@ return( sharedir );
     set = true;
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
-#ifdef PREFIX
-return( PREFIX "/share/locale" );
+#ifdef SHAREDIR
+return( sharedir = SHAREDIR "/../locale" );
+#elif defined( PREFIX )
+return( sharedir = PREFIX "/share/locale" );
 #else
 	pt = GResourceProgramDir + strlen(GResourceProgramDir);
 #endif
