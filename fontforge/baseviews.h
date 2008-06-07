@@ -331,6 +331,7 @@ struct smallcaps {
     double lc_stem_width, uc_stem_width;
     double stem_factor, v_stem_factor;
     double xheight, scheight, capheight;
+    double vscale, hscale;
     char *extension_for_letters, *extension_for_symbols;
     int dosymbols;
     SplineFont *sf;

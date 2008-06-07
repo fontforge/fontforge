@@ -292,6 +292,11 @@ void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
     small->xheight   = StandardGlyphHeight(sf,layer,  xheight_str);
     small->capheight = StandardGlyphHeight(sf,layer,capheight_str);
     small->scheight  = small->xheight;
+    if ( small->capheight>0 )
+	small->vscale = small->scheight / small->capheight;
+    else
+	small->vscale = .75;
+    small->hscale     = small->vscale;
 }
 
 static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int grk,
@@ -1002,7 +1007,7 @@ return;
 
 static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
 	struct smallcaps *small) {
-    real scale[6];
+    real scale[6], move[6];
     DBounds cap_b, sc_b;
     double remove_y, remove_x;
     extern int no_windowing_ui;
@@ -1032,23 +1037,28 @@ return;
     no_windowing_ui = true;		/* Turn off undoes */
     SplineCharAutoHint(sc_sc,layer,NULL);
     no_windowing_ui = nwi;
-    if ( !RealNear( small->stem_factor, small->scheight/small->capheight ) ||
+    if ( !RealNear( small->stem_factor, small->vscale ) ||
+	    !RealNear(small->hscale,small->vscale) ||
 	    !RealNear(small->stem_factor,small->v_stem_factor)) {
 	SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
 	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	remove_y = (sc_b.maxy - sc_b.miny) - small->scheight *(cap_b.maxy-cap_b.miny)/small->capheight;
-	remove_x = (sc_b.maxx - sc_b.minx) - small->scheight *(cap_b.maxx-cap_b.minx)/small->capheight;
-	sc_sc->width -= remove_x;
-	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
+	remove_y = (sc_b.maxy - sc_b.miny) - small->vscale *(cap_b.maxy-cap_b.miny);
+	remove_x = (sc_b.maxx - sc_b.minx) - small->hscale *(cap_b.maxx-cap_b.minx);
+	sc_sc->width -= SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
+			SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
 	SplineSetRefigure(sc_sc->layers[layer].splines);
+	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+	memset(move,0,sizeof(move));
+	move[0] = move[3] = 1;
+	move[4] = cap_b.minx*small->hscale - sc_b.minx;
+	SplinePointListTransform(sc_sc->layers[layer].splines,move,true);
+	sc_sc->width = sc_b.maxx + move[4] + (cap_sc->width - cap_b.maxx)*small->hscale;
     }
 
     if ( small->tan_ia!=0 ) {
 	scale[0] = scale[3] = 1;
 	scale[2] = -small->tan_ia;
-	sc_sc->layers[layer].splines =
-		SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
 	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
 	    BasePoint me;
 	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
