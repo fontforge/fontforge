@@ -805,8 +805,6 @@ return;
 		LogError(_("Table '%c%c%c%c' has a bad length, must be even."),
 			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
 	  break;
-	  case CHR('g','a','s','p'):
-	  break;
 	  case CHR('b','h','e','d'):	/* Fonts with bitmaps but no outlines get bhea */
 	  case CHR('h','e','a','d'):
 	    if ( tabs[i].length!=54 )
@@ -833,7 +831,7 @@ return;
 	  case CHR('O','S','/','2'):
 	    hasos2 = true;
 	    if ( tabs[i].length!=78 && tabs[i].length!=86 && tabs[i].length!=96 )
-		LogError(_("Table '%c%c%c%c' has a bad length, must be 78, 88 or 96 but is %d."),
+		LogError(_("Table '%c%c%c%c' has a bad length, must be 78, 86 or 96 but is %d."),
 			tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag,
 			tabs[i].length );
 	  break;
@@ -1298,6 +1296,7 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
 	info->onlystrikes = true;
     } else if ( cnt!=info->glyph_cnt && info->loca_length!=0 ) {
 	ff_post_notice(_("Bad Glyph Count"), _("Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"), cnt, info->glyph_cnt);
+	info->bad_glyph_data = true;
 	if ( cnt>info->glyph_cnt )
 	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */
     }
@@ -2164,7 +2163,12 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int en
 	info->complainedbeyondglyfend = true;
 	SplineCharFree(sc);
 return( NULL );
+    } else if ( end<start ) {
+	LogError(_("Bad glyph (%d), its data length is negative\n"), gid );
+	SplineCharFree(sc);
+return( NULL );
     }
+
     if ( start==end ) {
 	/* This isn't mentioned, but we seem to get some glyphs with no size,*/
 	/*  not even a path cnt. They appear to be empty glyphs */
