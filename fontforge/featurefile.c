@@ -4967,12 +4967,15 @@ static void fea_canonicalClassSet(struct class_set *set) {
 	    set->cnt -= off;
 	}
     }
-    for ( i=1; i<set->cnt; ++i ) {
-	if ( fea_classesIntersect(set->classes[i-1],set->classes[i]) ) {
-	    if ( set->cnt>=set->max )
-		set->classes = grealloc(set->classes,(set->max+=20)*sizeof(char *));
-	    set->classes[set->cnt++] = fea_classesSplit(set->classes[i-1],set->classes[i]);
-	}
+
+    for ( i=0; i < set->cnt - 1; ++i ) {
+        for ( j=i+1; j < set->cnt; ++j ) {
+            if ( fea_classesIntersect(set->classes[i],set->classes[j]) ) {
+                if ( set->cnt>=set->max )
+                    set->classes = grealloc(set->classes,(set->max+=20)*sizeof(char *));
+                set->classes[set->cnt++] = fea_classesSplit(set->classes[i],set->classes[j]);
+            }
+        }
     }
 
     /* Remove empty classes */
