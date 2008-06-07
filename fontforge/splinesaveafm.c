@@ -3529,7 +3529,9 @@ int LoadKerningDataFromMetricsFile(SplineFont *sf,char *filename,EncMap *map) {
 	ret = LoadKerningDataFromMacFOND(sf,filename,map);
       break;
     }
-    if ( ret )
+    if ( ret ) {
+	FontInfo_Destroy(sf);
 	MVReKernAll(sf);
+    }
 return( ret );
 }
