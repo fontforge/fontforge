@@ -7,6 +7,7 @@ mandir = @mandir@
 includedir = @includedir@
 sharedir = $(prefix)/share/fontforge
 docdir = $(prefix)/share/doc/fontforge
+pythondir = $(sharedir)/python
 
 srcdir = @srcdir@
 top_builddir = .
@@ -60,7 +61,11 @@ install_docs:
 install_po:
 	( cd po ; $(MAKE) install )
 
-install: $(sharedir) all install_libs install_po
+install_pycontrib:
+	mkdir -p $(DESTDIR)$(pythondir)
+	( cd pycontrib ; -$(INSTALL_DATA) *.py $(DESTDIR)$(pythondir) )
+
+install: $(sharedir) all install_libs install_po install_pycontrib
 # You may need to be root to do the install
 	mkdir -p $(DESTDIR)$(bindir)
 	mkdir -p $(DESTDIR)$(mandir)/man1
@@ -98,6 +103,7 @@ uninstall:
 	-rm $(DESTDIR)$(sharedir)/*.cidmap
 	-rm -rf $(DESTDIR)$(docdir)/*
 	-rm $(DESTDIR)$(libdir)/pkgconfig/fontforge.pc
+	-rm $(DESTDIR)$(pythondir)/*
 
 $(DESTDIR)$(sharedir):
 	mkdir -p $(DESTDIR)$(sharedir)

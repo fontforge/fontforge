@@ -8,6 +8,7 @@ includedir = @includedir@
 sharedir = $(prefix)/share/fontforge
 docdir = $(prefix)/share/doc/fontforge
 localedir = $(prefix)/share/locale
+pythondir = $(sharedir)/python
 
 srcdir = @srcdir@
 top_builddir = .
@@ -95,6 +96,10 @@ install_docs:
 install_po:
 	( cd po ; $(MAKE) install )
 
+install_pycontrib:
+	mkdir -p $(DESTDIR)$(pythondir)
+	( cd pycontrib ; -$(INSTALL_DATA) *.py $(DESTDIR)$(pythondir) )
+
 install_prog:
 	mkdir -p $(DESTDIR)$(bindir)
 	mkdir -p $(DESTDIR)$(mandir)/man1
@@ -115,7 +120,7 @@ install_prog:
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontlint.1 $(DESTDIR)$(mandir)/man1
 
-install: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_prog
+install: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_prog install_pycontrib
 # You may need to be root to do the install
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
@@ -153,6 +158,7 @@ uninstall:
 	-rm $(DESTDIR)$(includedir)/fontforge/*.h
 	-rm -rf $(DESTDIR)$(docdir)/*
 	-rm $(DESTDIR)$(libdir)/pkgconfig/fontforge.pc
+	-rm $(DESTDIR)$(pythondir)/*
 
 $(DESTDIR)$(sharedir):
 	mkdir -p $(DESTDIR)$(sharedir)
