@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 6-Jun-2008 -->
+  <!-- AP: Last modified: 7-Jun-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,10 +47,16 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
-      ???
+      07-June-2008
       <UL>
 	<LI>
 	  New Russian translation of the UI
+	<LI>
+	  Sometimes FF didn't set the message locale directory properly.
+	<LI>
+	  Since FF will crash if you load a feature file when the Font Info window
+	  is open for that font, close the Font Info window when loading a feature
+	  file.
 	<LI>
 	  New <A href="Styles.html#Italic">dialog</A> to help users convert an upright
 	  font into an italic one.
@@ -64,8 +70,15 @@
 	  And matching python commands: font.italicize(), font.addSmallCaps(),
 	  layer.stemControl()
 	<LI>
+	  Script by Max to trap python exceptions
+	<LI>
 	  Make it clear that the transform dlg from the fontview will move the width
 	  of a glyph by default, and provide a checkbox so the user can turn this off.
+	<LI>
+	  Fix various bugs in argument handling of fontforge.askChoices
+	<LI>
+	  Change font.removeGlyph to accept a single string argument to remove the
+	  glyph with that name.
 	<LI>
 	  FF didn't like decimal points in the metrics view l/r bearing fields -- even
 	  though it would put them there itself.
