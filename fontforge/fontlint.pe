@@ -69,7 +69,8 @@ while ( $argc > 1 )
       Print( "  References nested more deeply than specified in 'maxp'" )
     endif
     if ( mask & 0x20000 )
-      Print( "  'prep' or 'fpgm' tables are longer than specified in 'maxp'" )
+#      Print( "  'prep' or 'fpgm' tables are longer than specified in 'maxp'" )
+#I no longer think this is an error
     endif
     if ( mask & 0x40000 )
       Print( "  Adjacent points too far apart in a glyph" )
