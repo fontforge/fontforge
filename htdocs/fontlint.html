@@ -1,0 +1,158 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 8-Jun-2008 -->
+  <!-- AP: Last modified: 8-Jun-2008 -->
+  <TITLE>fontlint -- A program for checking the validity of fonts</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    fontlint<BR>
+    <SMALL>A program for checking the validity of fonts</SMALL>
+  </H1>
+  <P>
+  <CODE>fontlint fontfile1 ...</CODE>
+  <P>
+  <EM>fontlint</EM> checks a font for certain standard problems
+  <P>
+  It will notice:
+  <UL>
+    <LI>
+      Any glyphs with intersecting (or self-intersecting) contours.
+    <LI>
+      Any contours drawn in the wrong orientation
+    <LI>
+      Any glyphs with a flipped reference
+    <LI>
+      Missing points at extrema.
+  </UL>
+  <P>
+  For sfd fonts it will also notice:
+  <UL>
+    <LI>
+      Any open contours (more an issue in sfd files than in released fonts)
+    <LI>
+      Adjacent points too far apart in a glyph
+    <LI>
+      Unknown glyph referenced in GSUB/GPOS/MATH
+  </UL>
+  <P>
+  For PostScript fonts it will also notice:
+  <UL>
+    <LI>
+      More points in a glyph than allowed by PostScript.
+    <LI>
+      Too many hints in a glyph.
+    <LI>
+      Invalid glyph name.
+    <LI>
+      Missing BlueValues entry in PostScript Private dictionary
+    <LI>
+      Odd number of elements in either the BlueValues or OtherBlues entries in
+      the PostScript Private dictionary.
+    <LI>
+      Disordered elements in either the BlueValues or OtherBlues entries in the
+      PostScript Private dictionary.
+    <LI>
+      Too many elements in either the BlueValues or OtherBlues entries in the
+      PostScript Private dictionary.
+    <LI>
+      Elements too close in either the BlueValues or OtherBlues entries in the
+      PostScript Private dictionary (must be at least 2*BlueFuzz+1 apart).
+    <LI>
+      Non-integral elements in either the BlueValues or OtherBlues entries in the
+      PostScript Private dictionary.
+    <LI>
+      Alignment zone height in either the BlueValues or OtherBlues is too big for
+      the BlueScale in the PostScript Private dictionary.
+    <LI>
+      Odd number of elements in either the FamilyBlues or FamilyOtherBlues entries
+      in the PostScript Private dictionary.
+    <LI>
+      Disordered elements in either the FamilyBlues or FamilyOtherBlues entries
+      in the PostScript Private dictionary.
+    <LI>
+      Too many elements in either the FamilyBlues or FamilyOtherBlues entries in
+      the PostScript Private dictionary.
+    <LI>
+      Elements too close in either the FamilyBlues or FamilyOtherBlues entries
+      in the PostScript Private dictionary (must be at least 2*BlueFuzz+1 apart).
+    <LI>
+      Non-integral elements in either the FamilyBlues or FamilyOtherBlues entries
+      in the PostScript Private dictionary.
+    <LI>
+      Alignment zone height in either the FamilyBlues or FamilyOtherBlues is too
+      big for the BlueScale in the PostScript Private dictionary.
+    <LI>
+      Bad BlueFuzz entry in PostScript Private dictionary.
+    <LI>
+      Bad BlueScale entry in PostScript Private dictionary.
+    <LI>
+      Bad StdHW entry in PostScript Private dictionary.
+    <LI>
+      Bad StdVW entry in PostScript Private dictionary.
+    <LI>
+      Bad StemSnapH entry in PostScript Private dictionary.
+    <LI>
+      Bad StemSnapV entry in PostScript Private dictionary.
+    <LI>
+      StemSnapH does not contain StdHW value in PostScript Private dictionary.
+    <LI>
+      StemSnapV does not contain StdVW value in PostScript Private dictionary.
+    <LI>
+      Bad BlueShift entry in PostScript Private dictionary.
+    <LI>
+      Bad 'CFF ' table.
+  </UL>
+  <P>
+  For TrueType fonts it will also notice:
+  <UL>
+    <LI>
+      More points in a glyph than specified in 'maxp'
+    <LI>
+      More paths in a glyph than specified in 'maxp'
+    <LI>
+      More points in a composite glyph than specified in 'maxp'
+    <LI>
+      More paths in a composite glyph than specified in 'maxp'
+    <LI>
+      Instructions longer than allowed in 'maxp'
+    <LI>
+      More references in a glyph than specified in 'maxp'
+    <LI>
+      References nested more deeply than specified in 'maxp'
+    <LI>
+      Bad 'glyf' or 'loca' table
+  </UL>
+  <P>
+  In any sfnt (True or OpenType font):
+  <UL>
+    <LI>
+      Bad sfnt table header, bad file/table checksums, overlapping tables, standard
+      tables with incorrect lengths, etc.
+    <LI>
+      Bad PostScript fontname entry in the 'name' table
+    <LI>
+      Bad 'hhea', 'hmtx', 'vhea' or 'vmtx' table
+    <LI>
+      Bad 'cmap' table
+    <LI>
+      Bad 'EBDT', 'bdat', 'EBLC' or 'bloc' (embedded bitmap) table
+    <LI>
+      Bad Apple GX advanced typography table
+    <LI>
+      Bad OpenType advanced typography table
+    <LI>
+      Bad version number in OS/2 table (must be &gt;0, and must be &gt;1 for OT-CFF
+      fonts)
+  </UL>
+  <H3>
+    See Also
+  </H3>
+  <P>
+  <A HREF="overview.html">FontForge</A>
+</DIV>
+</BODY></HTML>
