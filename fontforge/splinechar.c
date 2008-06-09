@@ -1540,6 +1540,10 @@ return( -1 );
     } while ( k<sf->subfontcnt );
     ff_progress_end_indicator();
 
+#if 0
+    /* Ah... I no longer believe that the maxp instr_len entry refers to */
+    /* prep/fpgm. The footnote I thought was relevant I see actually */
+    /* refers to something else. Oops. */
     if ( (tab = SFFindTable(sf,CHR('m','a','x','p')))!=NULL && tab->len>=32 ) {
 	/* If we have a maxp table then do some truetype checks */
 	/* these are only errors for fontlint, we'll fix them up when we */
@@ -1554,6 +1558,7 @@ return( -1 );
 		any |= vs_maxp_prepfpgmtoolong;
 	}
     }
+#endif
     /* a lot of asian ttf files have a bad postscript fontname stored in the */
     /*  name table */
 return( any&~vs_known );

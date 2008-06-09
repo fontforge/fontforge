@@ -5273,6 +5273,9 @@ return( false );
     } else if ( format==ff_none && at->msbitmaps ) {
 	aborted = !dumpglyphs(sf,&at->gi);
     } else {
+#if 0
+	/* I think the footnote I thought relevant actually refered to */
+	/*  something else */
 	struct ttf_table *tab;
 	/* There's a typo in Adobe's docs, and the instructions in these tables*/
 	/*  need to be included in the max glyph instruction length */
@@ -5285,6 +5288,7 @@ return( false );
 		at->maxp.maxglyphInstr = tab->len;
 	    at->gi.has_instrs = true;
 	}
+#endif
 	at->gi.has_instrs = (SFFindTable(sf,CHR('f','p','g','m')) != NULL ||
 		SFFindTable(sf,CHR('p','r','e','p')) != NULL);
 	/* if format==ff_none the following will put out lots of space glyphs */

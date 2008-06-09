@@ -1236,7 +1236,7 @@ enum validation_state { vs_unknown = 0,
 	vs_maxp_instrtoolong=0x4000,
 	vs_maxp_toomanyrefs=0x8000,
 	vs_maxp_refstoodeep=0x10000,
-	vs_maxp_prepfpgmtoolong=0x20000,
+	/* vs_maxp_prepfpgmtoolong=0x20000, */	/* I think I was wrong about this "error" */
 	    /* Oops, we need another one for the glyphs */
 	vs_pointstoofarapart = 0x40000,
 
