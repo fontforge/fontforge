@@ -1668,7 +1668,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
 		    }
 		    if ( r || or ) {
-			pixel.x = jj*xgrid_spacing*cv->scale + cv->xoff;
+			pixel.x = jj*xgrid_spacing*cv->scale + cv->xoff+1;
 			pixel.y = cv->height-cv->yoff - rint(ii*ygrid_spacing*cv->scale);
 			if ( cv->raster->num_greys<=2 )
 			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
