@@ -1346,7 +1346,7 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
 		sc_b.miny<subsup->xheight_current/2 ) {
 	    int l=0;
 	    fix.maps[l].current = sc_b.miny;
-	    fix.maps[l++].desired = orig_b.miny;
+	    fix.maps[l++].desired = orig_b.miny*subsup->v_scale;
 	    if ( sc_b.miny<-subsup->xheight_current/4 ) {
 		fix.maps[l].current = 0;
 		fix.maps[l++].desired = 0;
@@ -1354,7 +1354,7 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
 	    fix.maps[l].current = subsup->xheight_current;
 	    fix.maps[l++].desired = subsup->xheight_desired;
 	    fix.maps[l].current = sc_b.maxy;
-	    fix.maps[l++].desired = orig_b.maxy;
+	    fix.maps[l++].desired = orig_b.maxy*subsup->v_scale;
 	    fix.cnt = l;
 	    LowerCaseRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,&fix);
 	} else {
