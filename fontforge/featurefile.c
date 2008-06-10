@@ -2480,7 +2480,7 @@ return( NULL );
 			v1 = *start1; v2 = *start2;
 			for ( ++v1; v1<=v2; ++v1 ) {
 			    *start1 = v1;
-			    contents = fea_glyphname_validate(tok,tok->tokbuf);
+			    contents = fea_glyphname_validate(tok,start1);
 			    if ( v1==v2 )
 			break;
 			    if ( contents!=NULL )
@@ -4939,6 +4939,16 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
     }
 }
 
+
+static int is_blank(const char *s) {
+    int i;
+
+    i = 0;
+    while (s[i] != '\0' && s[i] == ' ')
+        i++;
+    return( s[i] == '\0');
+}
+
 struct class_set {
     char **classes;
     int cnt, max;
@@ -4979,15 +4989,15 @@ static void fea_canonicalClassSet(struct class_set *set) {
     }
 
     /* Remove empty classes */
-    for ( i = 0; i < set->cnt; ++i ) {
-        for ( j = 0; set->classes[i][j] != '\0'; ++j )
-            if (j != ' ')
-                break;
-        if (set->classes[i][j] == '\0') {
+    i = 0;
+    while (i < set->cnt) {
+        if (is_blank(set->classes[i])) {
             free(set->classes[i]);
             for ( k=i+1 ; k < set->cnt; ++k )
                 set->classes[k-1] = set->classes[k];
             set->cnt -= 1;
+        } else {
+            i++;
         }
     }
 }
