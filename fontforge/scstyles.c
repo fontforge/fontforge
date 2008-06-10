@@ -5375,9 +5375,7 @@ static void SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
 	}
 	fix.cnt = l;
 	LowerCaseRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->hstem,1,&fix);
-	/* for glyphs like "k" or "x", if we change the xheight we should also */
-	/*  expand the counters (because they have diagonal stems */
-	if ( sc->dstem!=NULL && xi->xheight_current!=0 ) {
+	if ( xi->xheight_current!=0 ) {
 	    double counter_len = SCFindCounterLen(sc->vstem,b.minx,b.maxx);
 	    double remove_x = counter_len - xi->xheight_desired*counter_len/xi->xheight_current;
 	    sc->width -= SmallCapsRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->vstem,0,remove_x,b.minx,b.maxx);
