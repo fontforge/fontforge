@@ -358,6 +358,14 @@ struct subsup {
 };
 
 extern void FVAddSubSup(FontViewBase *fv,struct subsup *subsup);
+
+struct xheightinfo {
+    double xheight_current, xheight_desired;
+    double serif_height;
+};
+
+extern void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi);
+extern void ChangeXHeight(FontViewBase *fv,CharViewBase *cv, struct xheightinfo *xi);
 extern SplineSet *SSControlStems(SplineSet *ss,
 	double stemwidthscale, double stemheightscale,
 	double hscale, double vscale, double xheight);

@@ -620,6 +620,7 @@ void AddSmallCapsDlg(FontView *fv);
 void AddSubSupDlg(FontView *fv);
 void ObliqueDlg(FontView *fv, CharView *cv);
 void ItalicDlg(FontView *fv, CharView *cv);
+void ChangeXHeightDlg(FontView *fv,CharView *cv);
 
 extern int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
 	int search_type);
