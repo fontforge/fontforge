@@ -3108,6 +3108,10 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
     td->bluescale = .039625;
 
     while ( ftell(ttf)<end ) {
+	if ( feof(ttf) ) {
+	    LogError("End of file found when reading private dictionary.\n" );
+    break;
+	}
 	sp = 0;
 	while ( (ret=readcffthing(ttf,&ival,&stack[sp],&oval,info))!=3 && ftell(ttf)<end ) {
 	    if ( ret==1 )
