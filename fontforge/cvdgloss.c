@@ -39,6 +39,14 @@
 #endif
 #include "ttinterp.h"
 
+#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
+# define PPEMX(exc)	((exc)->size->metrics.x_ppem)
+# define PPEMY(exc)	((exc)->size->metrics.y_ppem)
+#else
+# define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
+# define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)
+#endif
+
 struct scr {
     int y, fh;
     int lines;
@@ -670,15 +678,15 @@ return(1);
 	scrprintf(&scr,"Pushes: distance" ); 
       break;
       case 0x4B:
-        scrprintf(&scr," Push Pixels Per Em");
-	scrprintf(&scr,"Pushes: %d", exc->size->metrics.x_ppem );
+        scrprintf(&scr," MPPEM Push Pixels Per Em");
+	scrprintf(&scr,"Pushes: %d", PPEMY(exc));
       break;
       case 0x4C:
         scrprintf(&scr," Push Pointsize");
         scrprintf(&scr,"(one might assume this returns the pointsize, %d", cv->ft_pointsizey);
         scrprintf(&scr," as it is documented to do, but instead it");
         scrprintf(&scr," returns ppem)");
-	scrprintf(&scr,"Pushes: %d", exc->size->metrics.x_ppem );
+	scrprintf(&scr,"Pushes: %d", PPEMY(exc) );
       break;
       case 0x4D: case 0x4E:
         switch ( operator ) {
@@ -869,7 +877,7 @@ return(1);
 	val2 = exc->stack[exc->top-1];
 	val1 = exc->stack[exc->top-2];
 	scrprintf(&scr,"Pops: %d (em-units=%.2fpixels)", val2,
-		val2*exc->size->metrics.x_ppem*64.0/
+		val2*PPEMX(exc)*64.0/
 		    (cv->b.sc->parent->ascent+cv->b.sc->parent->descent));
 	scrprintf(&scr,"Pops: %d (cvt index)", val1 );
       break;
@@ -1029,6 +1037,12 @@ return(1);
 	    scrprintf(&scr, "            38=> Win rasterizer 1.9" );
 	}
 	scrprintf(&scr,"Pushes: result"); 
+	scrprintf(&scr,"FreeType returns: %s%s%s%s",
+	    (val1&1) ? "35 (Win 1.7) |": "",
+	    (val1&2) ? exc->tt_metrics.rotated ? "0x80 (rotated) |": "(not rotated) |" : "",
+	    (val1&4) ? exc->tt_metrics.stretched ? "0x100 (stretched) |": "(not stretched) |" : "",
+	    (val1&32) ? exc->grayscale ? "0x1000 (grey scale)": "(black/white)" : ""
+	); 
       break;
       case 0x89:
 	scrprintf(&scr," Instruction Definition"); 
@@ -1043,11 +1057,15 @@ return(1);
 	val1 = exc->stack[exc->top-1];
 	scrprintf(&scr,"Pops: %d (mode)",val1 );
 	if ( val1==0 )
-	    scrprintf(&scr,"dropout scan conversion including stubs (rules 1,2)");
+	    scrprintf(&scr,"simple dropout control scan conversion including stubs (rules 1,2,3)");
 	else if ( val1==1 )
-	    scrprintf(&scr,"dropout scan conversion excluding stubs (rules 1,3)");
-	else if ( val1==2 )
-	    scrprintf(&scr,"fast scan conversion (rule 1)");
+	    scrprintf(&scr,"simple dropout control scan conversion excluding stubs (rules 1,2,4)");
+	else if ( val1==2 || val1==3 || val1==6 || val1==7 )
+	    scrprintf(&scr,"fast scan conversion; dropout control turned off (rule 1,2)");
+	else if ( val1==4 )
+	    scrprintf(&scr,"smart dropout control scan conversion including stubs (rule 1,2,5)");
+	else if ( val1==5 )
+	    scrprintf(&scr,"smart dropout control scan conversion excluding stubs (rule 1,2,6)");
 	else
 	    scrprintf(&scr,"*** Unknown mode ***");
       break;
