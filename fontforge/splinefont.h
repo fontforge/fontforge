@@ -290,7 +290,7 @@ typedef struct italicinfo {
     int order2;
     struct splinefont *sf;
     int layer;
-    double serif_extent;
+    double serif_extent, serif_height;
     struct splinepoint *f_start, *f_end;		/* start has next pointing into the f head and up */
     struct splinepoint *ff_start1, *ff_end1, *ff_start2, *ff_end2;
     double f_height, ff_height;

@@ -679,7 +679,7 @@ return(1);
       break;
       case 0x4B:
         scrprintf(&scr," MPPEM Push Pixels Per Em");
-	scrprintf(&scr,"Pushes: %d", PPEMY(exc));
+	scrprintf(&scr,"Pushes: %d", PPEMY(exc));	/* Actually this depends on the projection vector. But if xppem==yppem it will make no difference */
       break;
       case 0x4C:
         scrprintf(&scr," Push Pointsize");
@@ -1038,10 +1038,10 @@ return(1);
 	}
 	scrprintf(&scr,"Pushes: result"); 
 	scrprintf(&scr,"FreeType returns: %s%s%s%s",
-	    (val1&1) ? "35 (Win 1.7) |": "",
-	    (val1&2) ? exc->tt_metrics.rotated ? "0x80 (rotated) |": "(not rotated) |" : "",
-	    (val1&4) ? exc->tt_metrics.stretched ? "0x100 (stretched) |": "(not stretched) |" : "",
-	    (val1&32) ? exc->grayscale ? "0x1000 (grey scale)": "(black/white)" : ""
+	    (val1&1) ? "(Win 1.7) | ": "",
+	    (val1&2) ? exc->tt_metrics.rotated ? "(rotated) | ": "(not rotated) | " : "",
+	    (val1&4) ? exc->tt_metrics.stretched ? "(stretched) | ": "(not stretched) | " : "",
+	    (val1&32) ? exc->grayscale ? "(grey scale)": "(black/white)" : ""
 	); 
       break;
       case 0x89:

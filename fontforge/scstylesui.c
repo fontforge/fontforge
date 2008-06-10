@@ -2293,3 +2293,164 @@ void ItalicDlg(FontView *fv, CharView *cv) {
 
     GDrawDestroyWindow(gw);
 }
+
+/* ************************************************************************** */
+/* ************************* Change XHeight Dialog ************************** */
+/* ************************************************************************** */
+#define CID_XHeight_Current	1001
+#define CID_XHeight_Desired	1002
+#define CID_Serif_Height	1003
+
+static int XHeight_OK(GGadget *g, GEvent *e) {
+    int err = false;
+    struct xheightinfo xi;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	xi.xheight_current = GetReal8(ew,CID_XHeight_Current,_("Current X-Height"),&err);
+	xi.xheight_desired = GetReal8(ew,CID_XHeight_Desired,_("Desired X-Height"),&err);
+	xi.serif_height    = GetReal8(ew,CID_Serif_Height   ,_("Serif Height"),&err);
+	if ( err )
+return( true );
+
+	ChangeXHeight( (FontViewBase *) ed->fv, (CharViewBase *) ed->cv, &xi );
+	ed->done = true;
+    }
+return( true );
+}
+
+void ChangeXHeightDlg(FontView *fv,CharView *cv) {
+    StyleDlg ed;
+    SplineFont *sf = fv!=NULL ? fv->b.sf : cv->b.sc->parent;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[31], boxes[7], *barray[8], *hvarray[40];
+    GTextInfo label[31];
+    int k;
+    char xh_c[40], xh_d[40], sh[40];
+    struct xheightinfo xi;
+
+    memset(&ed,0,sizeof(ed));
+    ed.fv = fv;
+    ed.cv = cv;
+    ed.sf = sf;
+
+    InitXHeightInfo(sf,fv!=NULL ? fv->b.active_layer: CVLayer((CharViewBase *) cv),&xi);    
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Change XHeight");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    ed.gw = gw = GDrawCreateTopWindow(NULL,&pos,style_e_h,&ed,&wattrs);
+
+
+    k=0;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
+    memset(label,0,sizeof(label));
+
+    label[k].text = (unichar_t *) _("Current x-height:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible | gg_enabled ;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( xh_c, "%g", rint( xi.xheight_current ));
+    label[k].text = (unichar_t *) xh_c;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_XHeight_Current;
+    gcd[k].gd.handle_controlevent = SC_ScaleRatioChanged;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[0] = &gcd[k-2]; hvarray[1] = &gcd[k-1]; hvarray[2] = NULL;
+
+    label[k].text = (unichar_t *) _("Desired x-height:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible  | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( xh_d, "%g", rint( xi.xheight_current ));
+    label[k].text = (unichar_t *) xh_d;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_XHeight_Desired;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[3] = &gcd[k-2]; hvarray[4] = &gcd[k-1]; hvarray[5] = NULL;
+
+    label[k].text = (unichar_t *) _("Serif height:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_visible  | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+
+    sprintf( sh, "%g", rint( xi.xheight_desired ));
+    label[k].text = (unichar_t *) sh;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Serif_Height;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[6] = &gcd[k-2]; hvarray[7] = &gcd[k-1]; hvarray[8] = NULL;
+
+    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = XHeight_OK;
+    gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
+
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = CondenseExtend_Cancel;
+    gcd[k].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = barray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[9] = &boxes[3]; hvarray[10] = GCD_ColSpan; hvarray[11] = NULL;
+    hvarray[12] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+    GDrawSetVisible(gw,true);
+
+    while ( !ed.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}

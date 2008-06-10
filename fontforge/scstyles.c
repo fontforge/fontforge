@@ -52,7 +52,7 @@ struct fixed_maps {
 	double current;
 	double desired;
 	int overlap_index;
-    } maps[5];
+    } maps[7];
 };
 
 static void SSCPValidate(SplineSet *ss) {
@@ -533,6 +533,17 @@ static struct overlaps *SCFindHintOverlaps(StemInfo *hints,double min_coord,
     *_tot = tot;
     *_counter_len = counter_len;
 return( overlaps );
+}
+
+static double SCFindCounterLen(StemInfo *hints,double min_coord,
+	double max_coord) {
+    int tot=0;
+    double counter_len=0;
+    struct overlaps *overlaps;
+
+    overlaps = SCFindHintOverlaps(hints,min_coord,max_coord,&tot,&counter_len);
+    free(overlaps);
+return( counter_len );
 }
 
 static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
@@ -5140,6 +5151,34 @@ return( max );
 return( 0 );
 }
 
+static double SCSerifHeight(SplineChar *sc,int layer) {
+    StemInfo *h;
+    SplineSet *ss;
+    SplinePoint *sp, *nsp, *start, *end;
+    ItalicInfo tempii;
+
+    if ( sc==NULL )
+return( 0 );
+    memset(&tempii,0,sizeof(tempii));
+    tempii.serif_extent = 1000;
+
+    if ( autohint_before_generate && (sc->changedsincelasthinted || sc->vstem==NULL) &&
+	    !sc->manualhints )
+	SplineCharAutoHint(sc,layer,NULL);
+    FigureGoodStems(sc->vstem);
+    for ( h=sc->vstem; h!=NULL; h=h->next ) if ( h->tobeused ) {
+	FindBottomSerifOnStem(sc,layer,h,0,&tempii,&start,&end,&ss);
+	if ( start==NULL )
+    continue;
+	for ( sp=start; sp!=end; sp=nsp ) {
+	    nsp = sp->next->to;
+	    if ( sp->me.y>5 && sp->me.y>=nsp->me.y-1 && sp->me.y<=nsp->me.y+1 )
+return( sp->me.y );
+	}
+    }
+return( 0 );
+}
+
 static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
     int i,cnt;
     double sum, val;
@@ -5249,4 +5288,154 @@ void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
     }
     detect_diagonal_stems = dds;
     ItalicInfoFreeContents(ii);
+}
+
+/* ************************************************************************** */
+/* ***************************** Change X-Height **************************** */
+/* ************************************************************************** */
+
+void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
+    int i, j, cnt, besti;
+    double sum, val;
+    const int MW=100;
+    struct widths { double width, total; } widths[MW];
+
+    memset(xi,0,sizeof(*xi));
+    xi->xheight_current = StandardGlyphHeight(sf,layer,  xheight_str);
+    sum = 0;
+    for ( i=cnt=0; lc_botserif_str[i]!=0; ++i ) {
+	val = SCSerifHeight(SFGetChar(sf,lc_botserif_str[i],NULL),layer);
+	if ( val!=0 ) {
+	    for ( j=0; j<cnt; ++j ) {
+		if ( widths[j].width==val ) {
+		    ++widths[j].total;
+	    break;
+		}
+	    }
+	    if ( j==cnt && j<MW ) {
+		widths[j].width = val;
+		widths[j].total = 1;
+	    }
+	}
+    }
+
+    besti = -1;
+    for ( j=0 ; j<cnt; ++j ) {
+	if ( besti==-1 )
+	    besti = j;
+	else if ( widths[j].total >= widths[besti].total )
+	    besti = j;
+    }
+    if ( besti!=-1 )
+	xi->serif_height = widths[besti].total;
+}
+
+static void SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
+    int l;
+    struct fixed_maps fix;
+    DBounds b;
+    const unichar_t *alts;
+    extern int no_windowing_ui;
+    int nwi = no_windowing_ui;
+
+    if ( sc->layers[layer].refs!=NULL &&
+			((alts = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true))!=NULL &&
+			 alts[1]!=0 ))
+	SCBuildComposit(sc->parent,sc,layer,true);
+    else {
+	SplineCharLayerFindBounds(sc,layer,&b);
+	SCPreserveLayer(sc,layer,true);
+	no_windowing_ui = true;		/* Turn off undoes */
+
+	l=0;
+	fix.maps[l].current = b.miny;
+	fix.maps[l++].desired = b.miny;
+	if ( b.miny<-xi->xheight_current/4 ) {
+	    fix.maps[l].current = 0;
+	    fix.maps[l++].desired = 0;
+	    if ( xi->serif_height!=0 ) {
+		fix.maps[l].current = xi->serif_height;
+		fix.maps[l++].desired = xi->serif_height;
+	    }
+	}
+	if ( xi->serif_height!=0 && b.maxy>=xi->xheight_current ) {
+	    fix.maps[l].current = xi->xheight_current-xi->serif_height;
+	    fix.maps[l++].desired = xi->xheight_desired-xi->serif_height;
+	}
+	if ( b.maxy>=xi->xheight_current ) {
+	    fix.maps[l].current = xi->xheight_current;
+	    fix.maps[l++].desired = xi->xheight_desired;
+	}
+	if ( b.maxy>=xi->xheight_desired ) {
+	    fix.maps[l].current = b.maxy;
+	    fix.maps[l++].desired = b.maxy;
+	} else {
+	    fix.maps[l].current = b.maxy;
+	    fix.maps[l++].desired = b.maxy + xi->xheight_desired - xi->xheight_current;
+	}
+	fix.cnt = l;
+	LowerCaseRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->hstem,1,&fix);
+	/* for glyphs like "k" or "x", if we change the xheight we should also */
+	/*  expand the counters (because they have diagonal stems */
+	if ( sc->dstem!=NULL && xi->xheight_current!=0 ) {
+	    double counter_len = SCFindCounterLen(sc->vstem,b.minx,b.maxx);
+	    double remove_x = counter_len - xi->xheight_desired*counter_len/xi->xheight_current;
+	    sc->width -= SmallCapsRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->vstem,0,remove_x,b.minx,b.maxx);
+	}
+	SplineSetRefigure(sc->layers[layer].splines);
+	no_windowing_ui = nwi;
+	SCCharChangedUpdate(sc,layer);
+    }
+}
+
+static int FVChangeXHeight(FontViewBase *fv,SplineChar *sc,int layer,struct xheightinfo *xi) {
+    RefChar *ref;
+
+    sc->ticked = true;
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+	if ( !ref->sc->ticked && IsSelected(fv,ref->sc)) {
+	    if ( !FVChangeXHeight(fv,ref->sc,layer,xi))
+return( false );
+	}
+    }
+    SCChangeXHeight(sc,layer,xi);
+return( ff_progress_next());
+}
+
+void ChangeXHeight(FontViewBase *fv,CharViewBase *cv, struct xheightinfo *xi) {
+    int cnt, enc, gid;
+    SplineChar *sc;
+    SplineFont *sf = fv!=NULL ? fv->sf : cv->sc->parent;
+    int layer = fv!=NULL ? fv->active_layer : CVLayer(cv);
+    extern int detect_diagonal_stems;
+    int dds = detect_diagonal_stems;
+
+    detect_diagonal_stems = true;
+
+    if ( cv!=NULL )
+	SCChangeXHeight(cv->sc,layer,xi);
+    else {
+	cnt=0;
+
+	for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	    if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+		++cnt;
+		sc->ticked = false;
+	    }
+	}
+	if ( cnt!=0 ) {
+	    ff_progress_start_indicator(10,_("Change X-Height"),
+		_("Change X-Height"),NULL,cnt,1);
+
+	    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+		if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] &&
+			(sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
+		    if ( !FVChangeXHeight(fv,sc,layer,xi))
+	    break;
+		}
+	    }
+	    ff_progress_end_indicator();
+	}
+    }
+    detect_diagonal_stems = dds;
 }
