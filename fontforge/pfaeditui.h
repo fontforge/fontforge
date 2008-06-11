@@ -74,7 +74,7 @@ extern GImage GIcon_lock;
 extern GImage GIcon_menumark;
 extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
 extern GImage GIcon_bold, GIcon_italic, GIcon_condense, GIcon_oblique, GIcon_smallcaps,
-	GIcon_subsup;
+	GIcon_subsup, GIcon_changexheight, GIcon_styles;
 extern GImage GIcon_outline, GIcon_inline, GIcon_shadow, GIcon_wireframe;
 extern GImage GIcon_u45fItalic, GIcon_u452Italic,
     GIcon_u448Italic, GIcon_u446Italic, GIcon_u444Italic,
