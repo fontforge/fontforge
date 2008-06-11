@@ -6671,8 +6671,8 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	if ( fv->b.nextsame==NULL ) { EncMapFree(sf->map); sf->map = NULL; }
 	fv->b.map = EncMap1to1(sf->glyphcnt);
 	if ( sf->compacted ) {
-	    fv->b.normal = sf->map;
-	    fv->b.map = CompactEncMap(EncMapCopy(sf->map),sf);
+	    fv->b.normal = fv->b.map;
+	    fv->b.map = CompactEncMap(EncMapCopy(fv->b.map),sf);
 	}
     }
     fv->b.selected = gcalloc(fv->b.map->enccount,sizeof(char));
