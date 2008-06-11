@@ -3032,7 +3032,7 @@ static void _SFReinstanciateRefs(SplineFont *sf) {
     cnt = 0;
     while ( undone && cnt<200) {
 	undone = false;
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked ) {
 	    undoable = false;
 	    for ( j=0; j<sf->glyphs[i]->layer_cnt; ++j ) {
 		for ( ref=sf->glyphs[i]->layers[j].refs; ref!=NULL; ref=ref->next ) {

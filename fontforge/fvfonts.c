@@ -484,7 +484,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     Layer *layers = nsc->layers;
     int layer;
 
-    *nsc = *sc;		/* ???? Shouldn't we copy the layers? !!!! */
+    *nsc = *sc;		/* We copy the layers just below */
     if ( sc->layer_cnt!=into->layer_cnt )
 	layers = grealloc(layers,sc->layer_cnt*sizeof(Layer));
     memcpy(layers,sc->layers,sc->layer_cnt*sizeof(Layer));
@@ -917,31 +917,35 @@ return( gid );
 
 static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     RefChar *ref, *prev;
+    int l;
 
     sc->orig_pos = i;
     sc->parent = sf;
- retry:
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	/* The sc in the ref is from the old font. It's got to be in the */
-	/*  new font too (was either already there or just got copied) */
-	ref->orig_pos =  SFFindExistingSlot(sf,ref->sc->unicodeenc,ref->sc->name);
-	if ( ref->orig_pos==-1 ) {
-	    IError("Bad reference, can't fix it up");
-	    if ( ref==sc->layers[ly_fore].refs ) {
-		sc->layers[ly_fore].refs = ref->next;
- goto retry;
+    sc->ticked = true;
+    for ( l=0; l<sc->layer_cnt; ++l ) {
+     retry:
+	for ( ref=sc->layers[l].refs; ref!=NULL; ref=ref->next ) {
+	    /* The sc in the ref is from the old font. It's got to be in the */
+	    /*  new font too (was either already there or just got copied) */
+	    ref->orig_pos =  SFFindExistingSlot(sf,ref->sc->unicodeenc,ref->sc->name);
+	    if ( ref->orig_pos==-1 ) {
+		IError("Bad reference, can't fix it up");
+		if ( ref==sc->layers[l].refs ) {
+		    sc->layers[l].refs = ref->next;
+     goto retry;
+		} else {
+		    for ( prev=sc->layers[l].refs; prev->next!=ref; prev=prev->next );
+		    prev->next = ref->next;
+		    chunkfree(ref,sizeof(*ref));
+		    ref = prev;
+		}
 	    } else {
-		for ( prev=sc->layers[ly_fore].refs; prev->next!=ref; prev=prev->next );
-		prev->next = ref->next;
-		chunkfree(ref,sizeof(*ref));
-		ref = prev;
+		ref->sc = sf->glyphs[ref->orig_pos];
+		if ( !ref->sc->ticked )
+		    MFixupSC(sf,ref->sc,ref->orig_pos);
+		SCReinstanciateRefChar(sc,ref,l);
+		SCMakeDependent(sc,ref->sc);
 	    }
-	} else {
-	    ref->sc = sf->glyphs[ref->orig_pos];
-	    if ( ref->sc->orig_pos==-2 )
-		MFixupSC(sf,ref->sc,ref->orig_pos);
-	    SCReinstanciateRefChar(sc,ref,ly_fore);
-	    SCMakeDependent(sc,ref->sc);
 	}
     }
 #if 0
@@ -955,7 +959,10 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 static void MergeFixupRefChars(SplineFont *sf) {
     int i;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->orig_pos==-2 ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	sf->glyphs[i]->ticked = false;
+    }
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked ) {
 	MFixupSC(sf,sf->glyphs[i], i);
     }
 }
@@ -1009,7 +1016,7 @@ static void FVMergeRefigureMapSel(FontViewBase *fv,SplineFont *into,SplineFont *
 }
 
 static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext *mc) {
-    int i,cnt, doit, emptypos, index, k;
+    int i, cnt, doit, emptypos, index, k;
     SplineFont *o_sf, *bitmap_into;
     BDFFont *bdf;
     FontViewBase *fvs;
