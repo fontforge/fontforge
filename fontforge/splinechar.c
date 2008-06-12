@@ -1568,8 +1568,12 @@ void SCTickValidationState(SplineChar *sc,int layer) {
     struct splinecharlist *dlist;
 
     sc->layers[layer].validation_state = vs_unknown;
-    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
-	SCTickValidationState(dlist->sc,layer);
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	if ( dlist->sc==sc )
+	    IError("A glyph may not depend on itself in SCTickValidationState");
+	else
+	    SCTickValidationState(dlist->sc,layer);
+    }
 }
 
 int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format) {

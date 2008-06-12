@@ -978,6 +978,24 @@ return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
 return( false );
 }
 
+static SplineChar *GetChar(SplineFont *sf,unichar_t ch,char *dot) {
+    char buffer[200], namebuf[200];
+    SplineChar *sc;
+    /* Basically the same as above */
+
+    if ( dot==NULL || ch==-1 )
+return( SFGetChar(sf,ch,NULL) );
+    snprintf(buffer,sizeof(buffer),"%s%s",
+	    (char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
+	    dot);
+    if ( (sc = SFGetChar(sf,-1,buffer)) )
+return( sc );
+    else if ( iscombining(ch))
+return( SFGetChar(sf,ch,NULL) );
+    else
+return( NULL );
+}
+
 static const unichar_t *arabicfixup(SplineFont *sf, const unichar_t *upt, int ini, int final) {
     static unichar_t arabicalts[20];
     unichar_t *apt; const unichar_t *pt;
@@ -1179,10 +1197,14 @@ return( greekalts );
 return( upt );
 }
 
+static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
+	int *invert,double ia, char *dot, SplineChar *destination);
+
 int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc,int layer) {
-    const unichar_t *pt, *apt, *end; unichar_t ch;
+    const unichar_t *pt; unichar_t ch, basech;
     SplineChar *one, *two;
     char *dot = NULL;
+    int invert = false;
 
     if ( unicodeenc==0x131 || unicodeenc==0x0237 || unicodeenc==0xf6be )
 return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,false,false));
@@ -1201,34 +1223,19 @@ return( false );
 	one = sc;
     else
 	one=SFGetOrMakeChar(sf,unicodeenc,NULL);
-    
+
+    basech = *pt;
     for ( ; *pt; ++pt ) {
 	ch = *pt;
-	if ( !haschar(sf,ch,dot)) {
-	    if ( ch>=BottomAccent && ch<=TopAccent ) {
-		apt = accents[ch-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-		while ( apt<end && *apt && !haschar(sf,*apt,dot) && !haschar(sf,*apt,NULL)) ++apt;
-		if ( apt==end || *apt=='\0' ) {
-		    /* check for caron */
-		    /*  and for inverted breve */
-		    if ( (ch == 0x30c || ch == 0x32c ) &&
-			    (haschar(sf,0x302,dot) || haschar(sf,0x2c6,dot) || haschar(sf,'^',dot)) )
-			/* It's ok */;
-		    if ( ch==0x31b && haschar(sf,',',dot))
-			ch = ',';
-		    else if ( (ch != 0x32f && ch != 0x311 ) || sf->italicangle!=0 ||
-			    !haschar(sf,0x2d8,dot))
-return( false );		/* we can try inverting the breve for non-italic fonts... */
-		    else
-			ch = 0x2d8;
-		} else
-		    ch = *apt;
-	    } else
+	if ( iscombining(ch) ) {
+	    two = GetGoodAccentGlyph(sf,ch,basech,&invert,sf->italicangle,dot,one);
+	} else if ( !haschar(sf,ch,dot))
 return( false );
-	}
+	else
+	    two = GetChar(sf,ch,dot);
 	/* No recursive references */
 	/* Cyrillic gamma could refer to Greek gamma, which the entry gives as an alternate */
-	if ( one!=NULL && (two=SFGetChar(sf,ch,NULL))!=NULL && SCDependsOnSC(two,one))
+	if ( one!=NULL && (two==NULL || SCDependsOnSC(two,one)) )
 return( false );
     }
 return( true );
@@ -1275,7 +1282,11 @@ int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
 
     if ( upt!=NULL ) {
 	while ( *upt ) {
-	    if ( iscombining(*upt) || *upt==0xb7 ||	/* b7, centered dot is used as a combining accent for Ldot */
+	    if ( (u==0x13f || u==0x140 ) && *upt==0xb7 )
+return( true );	/* b7, centered dot is used as a combining accent for Ldot */
+		/* It's spacing for ldot (but we want to pretend it's an accent) */
+		/*  and 0x22EF is a ligature of ... */
+	    else if ( iscombining(*upt) ||
 		    *upt==0x0384 ||	/* tonos */
 		    *upt==0x0385 ||	/* dieresis/tonos */
 		    *upt==0x1ffe || *upt==0x1fbf || *upt==0x1fcf || *upt==0x1fdf ||
@@ -1708,7 +1719,7 @@ return( 1 );
 }
 
 static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
-	int *invert,double ia, char *dot) {
+	int *invert,double ia, char *dot, SplineChar *destination) {
     int ach= -1;
     const unichar_t *apt, *end;
     SplineChar *rsc;
@@ -1719,14 +1730,18 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( uni==0x327 && basech=='g' && haschar(sf,0x312, dot))
 	uni = 0x312;
-    if ( !PreferSpacingAccents && haschar(sf,uni, dot))
+    if ( !PreferSpacingAccents && haschar(sf,uni, dot) &&
+	    !SCDependsOnSC(GetChar(sf,uni,dot),destination))
 	ach = uni;
     else if ( uni>=BottomAccent && uni<=TopAccent ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-	while ( *apt && apt<end && !haschar(sf,*apt,dot) && !haschar(sf,*apt,NULL)) ++apt;
+	while ( *apt && apt<end &&
+		(!haschar(sf,*apt,dot) || !SCDependsOnSC(GetChar(sf,uni,dot),destination)) &&
+		(!haschar(sf,*apt,NULL) || !SCDependsOnSC(GetChar(sf,uni,NULL),destination)) )
+	    ++apt;
 	if ( *apt!='\0' && apt<end )
 	    ach = *apt;
-	else if ( haschar(sf,uni,dot))
+	else if ( haschar(sf,uni,dot) && !SCDependsOnSC(GetChar(sf,uni,dot),destination))
 	    ach = uni;
 	else if ( uni==0x31b && haschar(sf,',',NULL))
 	    ach = ',';
@@ -1829,6 +1844,8 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 #endif
 	free(uc_accent);
     }
+    if ( rsc!=NULL && SCDependsOnSC(rsc,destination))
+	rsc = NULL;
 return( rsc );
 }
 
@@ -1918,6 +1935,9 @@ static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
     int baserch = basech;
     int eta;
     AnchorPoint *ap1, *ap2;
+
+    if ( rsc==NULL || sc==NULL )
+return;
 
     /* When we center an accent on Uhorn, we don't really want it centered */
     /*  on the combination, we want it centered on "U". So if basech is itself*/
@@ -2038,8 +2058,10 @@ static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 		pos = ____RIGHT;
 	    else if ( basech=='l' && ch==0xb7 )
 		pos = ____RIGHT|____OVERSTRIKE;
-	    else if ( ch==0xb7 )
+	    else if ( basech=='L' && ch==0xb7 )
 		pos = ____OVERSTRIKE;
+	    else if ( ch==0xb7 )
+		pos = ____RIGHT;
 	    else if ( basech=='A' && ch==0x30a )	/* Aring usually touches */
 		pos = ____ABOVE|____TOUCHING;
 	    else if (( basech=='A' || basech=='a' || basech=='E' || basech=='u' ) &&
@@ -2190,7 +2212,7 @@ static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, int copybmp,
 	real ia, int basech, char *dot ) {
     int invert = false;
-    SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot);
+    SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot,sc);
 
     _SCCenterAccent(sc,basersc,sf,layer,ch,rsc,copybmp,ia,basech,invert,-1);
 }
@@ -2752,7 +2774,7 @@ return;
 	    /* a reference to space */;
 	else if ( sc->width == base->sc->width )
 	    base->use_my_metrics = true;
-	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
+	while ( iscombining(*pt) || (ch=='L' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
 	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,copybmp,ia, ch, dot);
 	while ( *pt ) {
@@ -2801,7 +2823,7 @@ return( 1 );
     if ( asc!=NULL && uni==-1 )
 	uni = asc->unicodeenc;
     else if ( asc==NULL && uni!=-1 )
-	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia,NULL);
+	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia,NULL,sc);
     if ( asc==NULL )
 return( 2 );
     if ( uni<=BottomAccent || uni>=TopAccent ) {
