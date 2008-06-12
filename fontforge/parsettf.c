@@ -3185,7 +3185,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 	  case (12<<8)+14:
 	    td->forcebold = stack[sp-1];
 	  break;
-	  case (12<<8)+15:
+	  case (12<<8)+15:		/* obsolete */
 	    td->forceboldthreshold = stack[sp-1];
 	  break;
 	  case (12<<8)+16:
@@ -3540,9 +3540,9 @@ return;
     privateadd(private,key,copy(buf));
 }
 
-static void privateaddreal(struct psdict *private,char *key,double val) {
+static void privateaddreal(struct psdict *private,char *key,double val,double def) {
     char buf[10];
-    if ( val==0 )
+    if ( val==def )
 return;
     sprintf( buf,"%g", val );
     privateadd(private,key,copy(buf));
@@ -3560,9 +3560,9 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
 	    realarray2str(dict->familyblues,sizeof(dict->familyblues)/sizeof(dict->familyblues[0]),true));
     privateadd(private,"FamilyOtherBlues",
 	    realarray2str(dict->familyotherblues,sizeof(dict->familyotherblues)/sizeof(dict->familyotherblues[0]),true));
-    privateaddreal(private,"BlueScale",dict->bluescale);
-    privateaddreal(private,"BlueShift",dict->blueshift);
-    privateaddreal(private,"BlueFuzz",dict->bluefuzz);
+    privateaddreal(private,"BlueScale",dict->bluescale,0.039625);
+    privateaddreal(private,"BlueShift",dict->blueshift,7);
+    privateaddreal(private,"BlueFuzz",dict->bluefuzz,1);
     privateaddintarray(private,"StdHW",dict->stdhw);
     privateaddintarray(private,"StdVW",dict->stdvw);
     privateadd(private,"StemSnapH",
@@ -3572,9 +3572,9 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     if ( dict->forcebold )
 	privateadd(private,"ForceBold",copy("true"));
     if ( dict->forceboldthreshold!=0 )
-	privateaddreal(private,"ForceBoldThreshold",dict->forceboldthreshold);
+	privateaddreal(private,"ForceBoldThreshold",dict->forceboldthreshold,0);
     privateaddint(private,"LanguageGroup",dict->languagegroup);
-    privateaddreal(private,"ExpansionFactor",dict->expansionfactor);
+    privateaddreal(private,"ExpansionFactor",dict->expansionfactor,0.06);
 }
 
 static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
