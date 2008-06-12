@@ -1318,6 +1318,7 @@ typedef struct splinechar {
 	/*  of unicode's variation selectors then this glyph is somehow a */
 	/*  variant shape. The specifics depend on the selector and script */
 	/*  fid is currently unused, but may, someday, be used to do ttcs */
+	/* NOTE: GlyphInfo displays vs==-1 as vs==0, and fixes things up */
 /* for TeX */
     int16 tex_height, tex_depth;
 /* TeX also uses italic_correction and glyph variants below */
