@@ -4674,6 +4674,59 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_altuni(PyFF_Glyph *self,void *closure) {
+    int cnt;
+    struct altuni *au;
+    PyObject *ret;
+
+    for ( cnt=0, au = self->sc->altuni; au!=NULL; au=au->next, ++cnt );
+    if ( cnt==0 )
+Py_RETURN_NONE;
+
+    ret = PyTuple_New(cnt);
+    for ( cnt=0, au = self->sc->altuni; au!=NULL; au=au->next, ++cnt ) {
+	PyTuple_SET_ITEM(ret,cnt,Py_BuildValue("(iii)", au->unienc,
+		au->vs, au->fid));
+    }
+return( ret );
+}
+
+static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int cnt, i;
+    struct altuni *head, *last=NULL, *cur;
+    int uni, vs, fid;
+    PyObject *obj;
+
+    if ( value == Py_None )
+	head = NULL;
+    else if ( !PySequence_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a tuple of alternate unicode values");
+return( -1 );
+    } else {
+	cnt = PySequence_Size(value);
+	for ( i=0; i<cnt; ++i ) {
+	    obj = PySequence_GetItem(value,i);
+	    uni = 0; vs = -1; fid = 0;
+	    if ( PyInt_Check(obj))
+		uni = PyInt_AsLong(obj);
+	    else if ( !PyArg_ParseTuple(obj,"i|ii", &uni, &vs, &fid))
+return( -1 );
+	    cur = chunkalloc(sizeof(struct altuni));
+	    if ( vs==0 ) vs=-1;		/* convention used in charinfo */
+	    cur->unienc = uni; cur->vs = vs; cur->fid = fid;
+	    if ( last == NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+    }
+
+    AltUniFree(self->sc->altuni);
+    self->sc->altuni = head;
+return( 0 );
+}
+
 static PyObject *PyFF_Glyph_get_changed(PyFF_Glyph *self,void *closure) {
 
 return( Py_BuildValue("i", self->sc->changed ));
@@ -5309,6 +5362,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"unicode",
 	 (getter)PyFF_Glyph_get_unicode, (setter)PyFF_Glyph_set_unicode,
 	 "Unicode code point for this glyph, or -1", NULL},
+    {"altuni",
+	 (getter)PyFF_Glyph_get_altuni, (setter)PyFF_Glyph_set_altuni,
+	 "Alternate unicode encodings (and variation selectors) for this glyph", NULL},
     {"encoding",
 	 (getter)PyFF_Glyph_get_encoding, (setter)PyFF_cant_set,
 	 "Returns the glyph's encoding in the current font (readonly)", NULL},
