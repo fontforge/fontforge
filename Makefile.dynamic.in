@@ -6,6 +6,7 @@ libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
 sharedir = $(prefix)/share/fontforge
+pixmapsdir = $(sharedir)/pixmaps
 docdir = $(prefix)/share/doc/fontforge
 localedir = $(prefix)/share/locale
 pythondir = $(sharedir)/python
@@ -104,6 +105,7 @@ install_prog:
 	mkdir -p $(DESTDIR)$(bindir)
 	mkdir -p $(DESTDIR)$(mandir)/man1
 	mkdir -p $(DESTDIR)$(sharedir)
+	mkdir -p $(DESTDIR)$(pixmapsdir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontforge $(DESTDIR)$(bindir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(DESTDIR)$(bindir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontimage $(DESTDIR)$(bindir)
@@ -115,6 +117,7 @@ install_prog:
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
 	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(DESTDIR)$(sharedir) >/dev/null 2>&1
+	-$(INSTALL_DATA) $(srcdir)/fontforge/pixmaps/*.png $(DESTDIR)$(pixmapsdir)
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1

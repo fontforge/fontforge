@@ -6,6 +6,7 @@ libdir = @libdir@
 mandir = @mandir@
 includedir = @includedir@
 sharedir = $(prefix)/share/fontforge
+pixmapsdir = $(sharedir)/pixmaps
 docdir = $(prefix)/share/doc/fontforge
 pythondir = $(sharedir)/python
 
@@ -70,6 +71,7 @@ install: $(sharedir) all install_libs install_po install_pycontrib
 	mkdir -p $(DESTDIR)$(bindir)
 	mkdir -p $(DESTDIR)$(mandir)/man1
 	mkdir -p $(DESTDIR)$(sharedir)
+	mkdir -p $(DESTDIR)$(pixmapsdir)
 	cp fontforge/fontforge $(DESTDIR)$(bindir)
 	cp fontforge/sfddiff $(DESTDIR)$(bindir)
 	cp fontforge/fontimage $(DESTDIR)$(bindir)
@@ -79,6 +81,7 @@ install: $(sharedir) all install_libs install_po install_pycontrib
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
 	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(DESTDIR)$(sharedir) >/dev/null 2>&1
+	-$(INSTALL_DATA) $(srcdir)/fontforge/pixmaps/*.png $(DESTDIR)$(pixmapsdir)
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1

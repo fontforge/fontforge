@@ -889,7 +889,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     int i, width, keywidth;
     unichar_t buffer[300];
     FontInstance *old;
-    int ds, ld, temp;
+    int ds, ld, temp, lh;
     GRect screen;
 
     m->owner = owner;
@@ -900,6 +900,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     m->tickoff = m->tioff = m->bp = GBoxBorderWidth(owner,m->box);
     GDrawFontMetrics(m->font,&m->as, &ds, &ld);
     m->fh = m->as + ds + 1;		/* I need some extra space, else mneumonic underlines look bad */
+    lh = m->fh;
     m->line_with_mouse = -1;
 
     old = GDrawSetFont(owner,m->font);
@@ -913,7 +914,14 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
+	temp = GTextInfoGetHeight(owner,&mi[i].ti,m->font);
+	if ( temp>lh ) {
+	    if ( temp>3*m->fh/2 )
+		temp = 3*m->fh/2;
+	    lh = temp;
+	}
     }
+    m->fh = lh;
     GDrawSetFont(owner,old);
     m->mcnt = m->lcnt = i;
     if ( keywidth!=0 ) width += keywidth + GDrawPointsToPixels(owner,8);
@@ -1319,7 +1327,7 @@ static void GMenuBarFindXs(GMenuBar *mb) {
     wid = GDrawPointsToPixels(mb->g.base,8);
     mb->xs[0] = GDrawPointsToPixels(mb->g.base,2);
     for ( i=0; i<mb->mtot; ++i )
-	mb->xs[i+1] = mb->xs[i]+wid+GDrawGetTextWidth(mb->g.base,mb->mi[i].ti.text,-1,NULL);
+	mb->xs[i+1] = mb->xs[i]+wid+GTextInfoGetWidth(mb->g.base,&mb->mi[i].ti,NULL);
 #else
     for ( i=wid=0; i<mb->mtot; ++i ) {
 	temp = GDrawGetTextWidth(mb->g.base,mb->mi[i].ti.text,-1,NULL);

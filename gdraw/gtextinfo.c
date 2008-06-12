@@ -39,7 +39,8 @@ int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font) {
 	if ( ti->font!=NULL )
 	    font = ti->font;
 
-	GDrawSetFont(base,font);
+	if ( font!=NULL )
+	    GDrawSetFont(base,font);
 	width = GDrawGetTextWidth(base,ti->text, -1, NULL);
     }
     if ( ti->image!=NULL ) {
@@ -79,6 +80,7 @@ int GTextInfoGetHeight(GWindow base,GTextInfo *ti,FontInstance *font) {
     fh = as+ds;
     if ( ti->image!=NULL ) {
 	iheight = GImageGetScaledHeight(base,ti->image);
+	iheight += 1;
     }
     if ( (height = fh)<iheight ) height = iheight;
 return( height );
@@ -149,7 +151,7 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(base));
     if ( ti->image!=NULL ) {
 	iwidth = GImageGetScaledWidth(base,ti->image);
-	iheight = GImageGetScaledHeight(base,ti->image);
+	iheight = GImageGetScaledHeight(base,ti->image)+1;
 	if ( ti->text!=NULL )
 	    skip = GDrawPointsToPixels(base,6);
     }
@@ -268,6 +270,97 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
 	    copy->text = u_copy(copy->text);
     }
 return( copy);
+}
+
+static char *imagedir = "fontforge-pixmaps";
+
+void GGadgetSetImageDir(char *dir) {
+    if ( dir!=NULL )
+	imagedir = copy( dir );
+}
+
+struct image_bucket {
+    struct image_bucket *next;
+    char *filename;
+    GImage *image;
+};
+
+#define IC_SIZE	127
+static struct image_bucket *imagecache[IC_SIZE];
+
+static int hash_filename(char *_pt ) {
+    unsigned char *pt = (unsigned char *) _pt;
+    int val = 0;
+
+    while ( *pt ) {
+	val <<= 1;
+	if ( val & 0x8000 ) {
+	    val &= ~0x8000;
+	    val ^= 1;
+	}
+	val ^= *pt++;
+    }
+return( val%IC_SIZE );
+}
+
+GImage *GGadgetImageCache(char *filename) {
+    int index = hash_filename(filename);
+    struct image_bucket *bucket;
+    char *path;
+
+    for ( bucket = imagecache[index]; bucket!=NULL; bucket = bucket->next ) {
+	if ( strcmp(bucket->filename,filename)==0 )
+return( bucket->image );
+    }
+    bucket = galloc(sizeof(struct image_bucket));
+    bucket->next = imagecache[index];
+    imagecache[index] = bucket;
+    bucket->filename = copy(filename);
+
+    path = galloc(strlen(filename)+strlen(imagedir)+10 );
+    sprintf( path,"%s/%s", imagedir, filename );
+    bucket->image = GImageRead(path);
+    free(path);
+    if ( bucket->image!=NULL ) {
+	/* Play with the clut to make white be transparent */
+	struct _GImage *base = bucket->image->u.image;
+	if ( base->image_type==it_mono && base->clut==NULL )
+	    base->trans = 1;
+	else if ( base->image_type!=it_true && base->clut!=NULL && base->trans==0xffffffff ) {
+	    int i;
+	    for ( i=0 ; i<base->clut->clut_len; ++i ) {
+		if ( base->clut->clut[i]==0xffffff ) {
+		    base->trans = i;
+	    break;
+		}
+	    }
+	}
+    }
+return( bucket->image );
+}
+    
+static void GTextInfoImageLookup(GTextInfo *ti) {
+    char *pt;
+    int any;
+
+    if ( ti->image==NULL )
+return;
+
+    /* Image might be an image pointer, or it might be a filename we want to */
+    /*  read and convert into an image. If it's an image it will begin with */
+    /*  a short containing a small number (usually 1), which won't look like */
+    /*  a filename */
+    any = 0;
+    for ( pt = (char *) (ti->image); *pt!='\0'; ++pt ) {
+	if ( *pt<' ' || *pt>=0x7f )
+return;
+	if ( *pt=='.' )
+	    any = 1;
+    }
+    if ( !any )		/* Must have an extension */
+return;
+
+    ti->image = GGadgetImageCache((char *) (ti->image));
 }
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt) {
@@ -416,6 +509,7 @@ return( NULL );
     arr = galloc((i+1)*sizeof(GMenuItem));
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	arr[i] = mi[i];
+	GTextInfoImageLookup(&arr[i].ti);
 	if ( mi[i].ti.text!=NULL ) {
 	    if ( mi[i].ti.text_in_resource && mi[i].ti.text_is_1byte )
 		arr[i].ti.text = utf82u_mncopy((char *) mi[i].ti.text,&arr[i].ti.mnemonic);
@@ -543,6 +637,7 @@ return( NULL );
     arr = gcalloc((i+1),sizeof(GMenuItem));
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	arr[i].ti = mi[i].ti;
+	GTextInfoImageLookup(&arr[i].ti);
 	arr[i].moveto = mi[i].moveto;
 	arr[i].invoke = mi[i].invoke;
 	arr[i].mid = mi[i].mid;
