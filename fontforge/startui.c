@@ -560,6 +560,9 @@ int main( int argc, char **argv ) {
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
     GResourceUseGetText();
+#ifdef SHAREDIR
+    GGadgetSetImageDir(SHAREDIR "/pixmaps");
+#endif
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )
 	LoadPrefs();

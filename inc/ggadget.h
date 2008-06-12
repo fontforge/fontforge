@@ -486,6 +486,9 @@ GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 
+void GGadgetSetImageDir(char *dir);
+GImage *GGadgetImageCache(char *filename);
+
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
 
 #endif
