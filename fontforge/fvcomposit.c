@@ -1736,8 +1736,8 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     else if ( uni>=BottomAccent && uni<=TopAccent ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	while ( *apt && apt<end &&
-		(!haschar(sf,*apt,dot) || !SCDependsOnSC(GetChar(sf,uni,dot),destination)) &&
-		(!haschar(sf,*apt,NULL) || !SCDependsOnSC(GetChar(sf,uni,NULL),destination)) )
+		(!haschar(sf,*apt,dot) || !SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
+		(!haschar(sf,*apt,NULL) || !SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
 	    ++apt;
 	if ( *apt!='\0' && apt<end )
 	    ach = *apt;
@@ -1782,8 +1782,11 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	char *suffixes[4];
 	int scnt=0, i;
 
-	uc_accent = galloc(strlen(rsc->name)+11);
-	strcpy(uc_accent,rsc->name);
+	if ( rsc!=NULL ) {
+	    uc_accent = galloc(strlen(rsc->name)+11);
+	    strcpy(uc_accent,rsc->name);
+	} else
+	    uc_accent = NULL;
 	memset(suffixes,0,sizeof(suffixes));
 	if ( basech>=0x400 && basech<=0x52f ) {
 	    if ( isupper(basech) )
@@ -1825,7 +1828,7 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 		uc_accent_names[uni-BottomAccent]!=NULL && isupper(basech))
 	    if ( (test = SFGetChar(sf,-1,uc_accent_names[uni-BottomAccent]))!=NULL )
 		rsc = test;
-	if ( test==NULL && islower(*uc_accent) && isupper(basech)) {
+	if ( test==NULL && uc_accent!=NULL && islower(*uc_accent) && isupper(basech)) {
 	    *uc_accent = toupper(*uc_accent);
 	    if ( (test=SFGetChar(sf,-1,uc_accent))!=NULL )
 		rsc = test;
