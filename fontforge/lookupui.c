@@ -1934,11 +1934,9 @@ static int AnchorClassD_ShowAnchors(GGadget *g, GEvent *e) {
 	row = GMatrixEditGetActiveRow(GWidgetGetControl(acd->gw,CID_Anchors));
 	if ( row==-1 )
 return( true );
-	for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
-	    if ( strcmp(ac->name,classes[row].u.md_str)==0 )
-	break;
+	ac = classes[2*row+1].u.md_addr;
 	if ( ac==NULL ) {
-	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[row].u.md_str);
+	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[2*row+1].u.md_str);
 	} else if ( ac->subtable!=acd->sub ) {
 	    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
 		    ac->name, ac->subtable->subtable_name );
