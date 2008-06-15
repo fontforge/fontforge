@@ -505,11 +505,33 @@ static SplinePoint *CvtDataToSplines(QPoint *data,int qfirst,int qlast,SplinePoi
 return( start );
 }
 
+static int SplineWithWellBehavedControlPoints(Spline *ps) {
+    BasePoint splineunit;
+    double splinelen, npos, ppos;
+
+    splineunit.x = ps->to->me.x - ps->from->me.x;
+    splineunit.y = ps->to->me.y - ps->from->me.y;
+    splinelen = sqrt(splineunit.x*splineunit.x + splineunit.y*splineunit.y);
+    if ( splinelen!=0 ) {
+	splineunit.x /= splinelen;
+	splineunit.y /= splinelen;
+    }
+
+    npos = (ps->from->nextcp.x-ps->from->me.x) * splineunit.x +
+	    (ps->from->nextcp.y-ps->from->me.y) * splineunit.y;
+    ppos = (ps->to->prevcp.x-ps->from->me.x) * splineunit.x +
+	    (ps->to->prevcp.y-ps->from->me.y) * splineunit.y;
+return( npos>=0 && /* npos<=ppos &&*/ ppos<=splinelen );
+}
+
 static int PrettyApprox(Spline *ps,double tmin, double tmax,
 	QPoint *data, int qcnt, int round_to_int ) {
     int ptcnt, q, i;
     double distance, dx, dy, tstart;
     BasePoint end, mid, slopemin, slopemid, slopeend;
+    BasePoint splineunit, start;
+    double splinelen, midpos, lastpos, lastpos2, cppos;
+    int do_good_spline_check;
     QPoint data2[12];
 
     if ( qcnt==-1 )
@@ -539,6 +561,17 @@ return( -1 );
 	slopeend.y = (3*ps->splines[1].a*t+2*ps->splines[1].b)*t+ps->splines[1].c;
     }
 
+    start.x = data[qcnt-1].bp.x;
+    start.y = data[qcnt-1].bp.y;
+    splineunit.x = end.x - start.x;
+    splineunit.y = end.y - start.y;
+    splinelen = sqrt(splineunit.x*splineunit.x + splineunit.y*splineunit.y);
+    if ( splinelen!=0 ) {
+	splineunit.x /= splinelen;
+	splineunit.y /= splinelen;
+    }
+    do_good_spline_check = SplineWithWellBehavedControlPoints(ps);
+
     if ( round_to_int && tmax!=1 ) {
 	end.x = rint( end.x );
 	end.y = rint( end.y );
@@ -547,11 +580,20 @@ return( -1 );
     dx = end.x-data[qcnt-1].bp.x; dy = end.y-data[qcnt-1].bp.y;
     distance = dx*dx + dy*dy;
 
+    if ( distance<.3 ) {
+	/* This is meaningless in truetype, use a line */
+	data[qcnt-1].cp = data[qcnt-1].bp;
+	data[qcnt].bp = end;
+	data[qcnt].t = 1;
+return( qcnt+1 );
+    }
+
     for ( ptcnt=0; ptcnt<10; ++ptcnt ) {
 	if ( ptcnt>1 && distance/(ptcnt*ptcnt)<100 )
 return( -1 );			/* Points too close for a good approx */
 	q = qcnt;
 	data2[ptcnt+1].bp = end;
+	lastpos=0; lastpos2 = splinelen;
 	for ( i=0; i<=ptcnt; ++i ) {
 	    tstart = (tmin*(ptcnt-i) + tmax*(i+1))/(ptcnt+1);
 	    mid.x = ((ps->splines[0].a*tstart+ps->splines[0].b)*tstart+ps->splines[0].c)*tstart+ps->splines[0].d;
@@ -579,6 +621,15 @@ return( -1 );			/* Points too close for a good approx */
 		data[q-1].cp.x = 2*data[q-1].bp.x - data[q-2].cp.x;
 		data[q-1].cp.y = 2*data[q-1].bp.y - data[q-2].cp.y;
 	    }
+
+	    midpos = (mid.x-start.x)*splineunit.x + (mid.y-start.y)*splineunit.y;
+	    cppos  = (data2[q-1].cp.x-start.x)*splineunit.x + (data2[q-1].cp.y-start.y)*splineunit.y;
+	    if ( ((do_good_spline_check || i!=0 ) &&  cppos<lastpos) || cppos>midpos ) {
+		i = 0;		/* Means we failed */
+	break;
+	    }
+	    lastpos = midpos;
+
 	    data[q].bp = mid;
 	    data[q++].t = tstart;
 
@@ -609,6 +660,15 @@ return( -1 );			/* Points too close for a good approx */
 		data2[ptcnt-i].cp.y = 2*data2[ptcnt-i+1].bp.y - data2[ptcnt-i+1].cp.y;
 	    }
 	    data2[ptcnt-i].bp = mid;
+
+	    midpos = (mid.x-start.x)*splineunit.x + (mid.y-start.y)*splineunit.y;
+	    cppos  = (data2[ptcnt-i].cp.x-start.x)*splineunit.x + (data2[ptcnt-i].cp.y-start.y)*splineunit.y;
+	    if ( ((do_good_spline_check || i!=0 ) && cppos>lastpos2) || cppos<midpos ) {
+		i = 0;		/* Means we failed */
+	break;
+	    }
+	    lastpos2 = midpos;
+
 	}
 	if ( i==0 )
     continue;
