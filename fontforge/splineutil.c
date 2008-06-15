@@ -3905,6 +3905,8 @@ static int AddPoint(extended x,extended y,extended t,extended s,BasePoint *pts,
     for ( i=0; i<soln; ++i )
 	if ( x==pts[i].x && y==pts[i].y )
 return( soln );
+    if ( soln>=9 )
+	IError( "Too many solutions!\n" );
     t1s[soln] = t;
     t2s[soln] = s;
     pts[soln].x = x;
@@ -4047,7 +4049,11 @@ return( -1 );
 }
 
 static int ICAddInter(int cnt,BasePoint *foundpos,extended *foundt1,extended *foundt2,
-	const Spline *s1,const Spline *s2,extended t1,extended t2) {
+	const Spline *s1,const Spline *s2,extended t1,extended t2, int maxcnt) {
+
+    if ( cnt>=maxcnt )
+return( cnt );
+
     foundt1[cnt] = t1;
     foundt2[cnt] = t2;
     foundpos[cnt].x = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+
@@ -4059,7 +4065,8 @@ return( cnt+1 );
 
 static int ICBinarySearch(int cnt,BasePoint *foundpos,extended *foundt1,extended *foundt2,
 	int other,
-	const Spline *s1,const Spline *s2,extended t1low,extended t1high,extended t2low,extended t2high) {
+	const Spline *s1,const Spline *s2,extended t1low,extended t1high,extended t2low,extended t2high,
+	int maxcnt) {
     int major;
     extended t1, t2;
     extended o1o, o2o, o1n, o2n, m;
@@ -4083,7 +4090,7 @@ return( cnt );
 			s2->splines[other].c)*t2+s2->splines[other].d;
 	if (( o1n-o2n<.001 && o1n-o2n>-.001) ||
 		(t1-t1low<.0001 && t1-t1low>-.0001))
-return( ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2));
+return( ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt));
 	if ( (o1o>o2o && o1n<o2n) || (o1o<o2o && o1n>o2n)) {
 	    t1high = t1;
 	    t2high = t2;
@@ -4096,7 +4103,8 @@ return( ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2));
 
 static int CubicsIntersect(const Spline *s1,extended lowt1,extended hight1,BasePoint *min1,BasePoint *max1,
 			    const Spline *s2,extended lowt2,extended hight2,BasePoint *min2,BasePoint *max2,
-			    BasePoint *foundpos,extended *foundt1,extended *foundt2) {
+			    BasePoint *foundpos,extended *foundt1,extended *foundt2,
+			    int maxcnt) {
     int major, other;
     BasePoint max, min;
     extended t1max, t1min, t2max, t2min, t1, t2, t1diff, oldt2;
@@ -4131,8 +4139,10 @@ return( 0 );
     o2o = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
 		    s2->splines[other].c)*t2+s2->splines[other].d;
     if ( o1o==o2o )
-	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2);
+	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt);
     forever {
+	if ( cnt>=maxcnt )
+    break;
 	t1 += t1diff;
 	if (( t1max>t1min && t1>t1max ) || (t1max<t1min && t1<t1max) || cnt>3 )
     break;
@@ -4148,10 +4158,10 @@ return( 0 );
 	o2n = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
 			s2->splines[other].c)*t2+s2->splines[other].d;
 	if ( o1n==o2n )
-	    cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2);
+	    cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt);
 	if ( (o1o>o2o && o1n<o2n) || (o1o<o2o && o1n>o2n))
 	    cnt = ICBinarySearch(cnt,foundpos,foundt1,foundt2,other,
-		    s1,s2,t1-t1diff,t1,oldt2,t2);
+		    s1,s2,t1-t1diff,t1,oldt2,t2,maxcnt);
 	o1o = o1n; o2o = o2n;
     }
 return( cnt );
@@ -4393,12 +4403,12 @@ return( soln!=0 );
 	    else if ( s1!=s2 )
 		found += CubicsIntersect(s1,extrema1[i],extrema1[i+1],&min1,&max1,
 				    s2,extrema2[j],extrema2[j+1],&min2,&max2,
-				    &pts[found],&t1s[found],&t2s[found]);
+				    &pts[found],&t1s[found],&t2s[found],9-found);
 	    else {
 		int k,l;
 		int cnt = CubicsIntersect(s1,extrema1[i],extrema1[i+1],&min1,&max1,
 				    s2,extrema2[j],extrema2[j+1],&min2,&max2,
-				    &pts[found],&t1s[found],&t2s[found]);
+				    &pts[found],&t1s[found],&t2s[found],9-found);
 		for ( k=0; k<cnt; ++k ) {
 		    if ( RealNear(t1s[found+k],t2s[found+k]) ) {
 			for ( l=k+1; l<cnt; ++l ) {
@@ -4410,6 +4420,11 @@ return( soln!=0 );
 		    }
 		}
 		found += cnt;
+	    }
+	    if ( found>=8 ) {
+		/* If the splines are colinear then we might get an unbounded */
+		/*  number of intersections */
+	break;
 	    }
 	}
     }
