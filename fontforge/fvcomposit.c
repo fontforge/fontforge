@@ -1730,14 +1730,16 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( uni==0x327 && basech=='g' && haschar(sf,0x312, dot))
 	uni = 0x312;
-    if ( !PreferSpacingAccents && haschar(sf,uni, dot) &&
-	    !SCDependsOnSC(GetChar(sf,uni,dot),destination))
+    if ( !PreferSpacingAccents && ((haschar(sf,uni, dot) &&
+		!SCDependsOnSC(GetChar(sf,uni,dot),destination)) ||
+	    (dot!=NULL && haschar(sf,uni, NULL) &&
+		!SCDependsOnSC(GetChar(sf,uni,NULL),destination))) )
 	ach = uni;
     else if ( uni>=BottomAccent && uni<=TopAccent ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	while ( *apt && apt<end &&
-		(!haschar(sf,*apt,dot) || !SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
-		(!haschar(sf,*apt,NULL) || !SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
+		(             !haschar(sf,*apt,dot) || SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
+		(dot==NULL || !haschar(sf,*apt,NULL) || SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
 	    ++apt;
 	if ( *apt!='\0' && apt<end )
 	    ach = *apt;
