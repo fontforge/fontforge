@@ -1502,7 +1502,9 @@ int SFValidate(SplineFont *sf, int layer, int force) {
     int any = 0;
     SplineChar *sc;
     int cnt=0;
+#if 0		/* See comment below, leave code in just in case I'm wrong again */
     struct ttf_table *tab;
+#endif
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
