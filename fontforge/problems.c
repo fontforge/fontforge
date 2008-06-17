@@ -2857,6 +2857,7 @@ static void DummyFindProblems(CharView *cv) {
     p.toomanypoints = true;
     p.toomanyhints = true;
     p.pointstoofar = true;
+    p.nonintegral = true;
 
     p.pointsmax = 1500;
     p.hintsmax = 96;
@@ -4002,6 +4003,7 @@ struct val_data {
     SplineFont *sf;
     int cidmax;
     enum validation_state mask;
+    int need_to_check_with_user_on_mask;
     int needs_blue;
     GTimer *recheck;
     int laststart;
@@ -4032,7 +4034,8 @@ static char *vserrornames[] = {
     NULL,		/* Maxp too many references */
     NULL,		/* Maxp references too deep */
     NULL,		/* prep or fpgm too long */
-    N_("Distance between adjacent points is too big")
+    N_("Distance between adjacent points is too big"),
+    N_("Non-integral coordinates")
 };
 
 static char *privateerrornames[] = {
@@ -4966,6 +4969,7 @@ static int VWCheckup(struct val_data *vw) {
     SplineChar *sc;
     int a_change = false;
     int firstv = true;
+    char *buts[4];
 
     if ( sf->subfontcnt==0 )
 	max = vw->cidmax = sf->glyphcnt;
@@ -4990,6 +4994,18 @@ static int VWCheckup(struct val_data *vw) {
 	    }
 	    SCValidate(sc,vw->layer,true);
 	    ++cnt;
+	}
+	if ( vw->need_to_check_with_user_on_mask &&
+		(sc->layers[vw->layer].validation_state&vs_nonintegral )) {
+	    vw->need_to_check_with_user_on_mask = false;
+	    buts[0] = _("Erroneous"); buts[1]=_("Acceptable"); buts[2] = NULL;
+	    if ( ff_ask(_("Not sure if this is an error..."),(const char **) buts,0,1,
+		    _("This font contains non-integral coordinates. That's ok\n"
+			"in PostScript and SVG but causes problems in TrueType.\n"
+			"Should I consider that an error here?"))==0 ) {
+		a_change = true;
+		vw->mask |= vs_nonintegral;
+	    }
 	}
 	if ( sc->layers[vw->layer].validation_state!=sc->layers[vw->layer].old_vs ) {
 	    a_change = true;
@@ -5094,7 +5110,7 @@ void SFValidationWindow(SplineFont *sf,int layer,enum fontformat format) {
     if ( sf->valwin!=NULL ) {
 	/* Don't need to force a revalidation because if the window exists */
 	/*  it's been doing that all by itself */
-	if ( mask!=sf->valwin->mask ) {
+	if ( mask!=(sf->valwin->mask&~vs_nonintegral) ) {
 	    /* But if we go from postscript to truetype the types of errors */
 	    /*  change, so what we display might be different */
 	    sf->valwin->mask = mask;
@@ -5139,6 +5155,7 @@ return;
     valwin->cidmax = cidmax;
     valwin->lastgid = -1;
     valwin->layer = layer;
+    valwin->need_to_check_with_user_on_mask = (format==ff_none && !sf->layers[layer].order2 );
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg;
