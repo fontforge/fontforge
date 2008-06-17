@@ -274,11 +274,6 @@ return( copy);
 
 static char *imagedir = "fontforge-pixmaps";
 
-void GGadgetSetImageDir(char *dir) {
-    if ( dir!=NULL )
-	imagedir = copy( dir );
-}
-
 struct image_bucket {
     struct image_bucket *next;
     char *filename;
@@ -301,6 +296,46 @@ static int hash_filename(char *_pt ) {
 	val ^= *pt++;
     }
 return( val%IC_SIZE );
+}
+
+void GGadgetSetImageDir(char *dir) {
+    int i;
+    struct image_bucket *bucket;
+    char *path=NULL;
+    int pathlen;
+    GImage *temp, hold;
+
+    if ( dir!=NULL && strcmp(imagedir,dir)!=0 ) {
+	imagedir = copy( dir );
+
+	/* Try to reload the cache from the new directory */
+	/* If a file doesn't exist in the new dir when it did in the old then */
+	/*  retain the old copy (people may hold pointers to it) */
+	pathlen = strlen(imagedir)+270; path = galloc(pathlen);
+	for ( i=0; i<IC_SIZE; ++i ) {
+	    for ( bucket = imagecache[i]; bucket!=NULL; bucket=bucket->next ) {
+		if ( strlen(bucket->filename)+strlen(imagedir)+3 > pathlen ) {
+		    pathlen = strlen(bucket->filename)+strlen(imagedir)+20;
+		    path = grealloc(path,pathlen);
+		}
+		sprintf( path,"%s/%s", imagedir, bucket->filename );
+		temp = GImageRead(path);
+		if ( temp!=NULL ) {
+		    if ( bucket->image==NULL )
+			bucket->image = temp;
+		    else {
+			/* Need to retain the GImage point, but update its */
+			/*  contents, and free the old stuff */
+			hold = *(bucket->image);
+			*bucket->image = *temp;
+			*temp = hold;
+			GImageDestroy(temp);
+		    }
+		}
+	    }
+	}
+	free(path);
+    }
 }
 
 GImage *GGadgetImageCache(char *filename) {
