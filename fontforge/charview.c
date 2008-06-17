@@ -10252,6 +10252,9 @@ static void UI_CVGlyphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
     SplineChar *sc;
     CharView *cv;
 
+    if ( no_windowing_ui )
+return;
+
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL) {
 	for ( cv=(CharView *) (sc->views); cv!=NULL; cv = (CharView *) (cv->b.next)) {
 	    for ( i=0; i<cv->former_cnt; ++i ) if ( strcmp(oldname,cv->former_names[i])==0 ) {
@@ -10260,6 +10263,7 @@ static void UI_CVGlyphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
 		if ( cv->tabs!=NULL ) {
 		    GTabSetChangeTabName(cv->tabs,newname,i);
 		    GTabSetRemetric(cv->tabs);
+		    GGadgetRedraw(cv->tabs);
 		}
 	    }
 	}
