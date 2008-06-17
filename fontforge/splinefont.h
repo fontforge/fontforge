@@ -1229,22 +1229,23 @@ enum validation_state { vs_unknown = 0,
 	vs_badglyphname=0x200,
 	    /* Next few are only for fontlint */
 	    /* These are relative to maxp values which ff would fix on generating a font */
-	vs_maxp_toomanypoints=0x400,
-	vs_maxp_toomanypaths=0x800,
+	vs_maxp_toomanypoints    =0x400,
+	vs_maxp_toomanypaths     =0x800,
 	vs_maxp_toomanycomppoints=0x1000,
-	vs_maxp_toomanycomppaths=0x2000,
-	vs_maxp_instrtoolong=0x4000,
-	vs_maxp_toomanyrefs=0x8000,
-	vs_maxp_refstoodeep=0x10000,
+	vs_maxp_toomanycomppaths =0x2000,
+	vs_maxp_instrtoolong     =0x4000,
+	vs_maxp_toomanyrefs      =0x8000,
+	vs_maxp_refstoodeep      =0x10000,
 	/* vs_maxp_prepfpgmtoolong=0x20000, */	/* I think I was wrong about this "error" */
-	    /* Oops, we need another one for the glyphs */
+	    /* Oops, we need another one, two, for the glyphs */
 	vs_pointstoofarapart = 0x40000,
+	vs_nonintegral       = 0x80000,	/* This will never be interesting in a real font, but might be in an sfd file */
 
-	vs_last = vs_pointstoofarapart,
+	vs_last = vs_nonintegral,
 	vs_maskps = 0x3fe | vs_pointstoofarapart,
 	vs_maskcid = 0x1fe | vs_pointstoofarapart,
-	vs_maskttf = 0x7e | vs_pointstoofarapart,
-	vs_maskfindproblems = 0x1be | vs_pointstoofarapart
+	vs_maskttf = 0x7e | vs_pointstoofarapart | vs_nonintegral,
+	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral
 	};
 
 typedef struct splinechar {
