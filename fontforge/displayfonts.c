@@ -673,7 +673,8 @@ return(true);
 	    }
 	}
 
-	*(pi->done) = true;
+	if ( pi->done!=NULL )
+	    *(pi->done) = true;
 	GDrawDestroyWindow(pi->gw);
     }
 return( true );
@@ -1430,7 +1431,8 @@ static int DSP_Done(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
 	PD *di = GDrawGetUserData(gw);
-	*(di->done) = true;
+	if ( di->done!=NULL )
+	    *(di->done) = true;
 	GDrawDestroyWindow(di->gw);
     }
 return( true );
@@ -1439,7 +1441,8 @@ return( true );
 static int dsp_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	PD *di = GDrawGetUserData(gw);
-	*(di->done) = true;
+	if ( di->done!=NULL )
+	    *(di->done) = true;
 	GDrawDestroyWindow(di->gw);
     } else if ( event->type==et_destroy ) {
 	PD *di = GDrawGetUserData(gw);
@@ -1525,7 +1528,7 @@ return;
     active->cv = cv;
     active->fit_to_path = fit_to_path;
     active->insert_text = !isprint;
-    active->done = &done;
+    active->done = isprint ? NULL : &done;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
