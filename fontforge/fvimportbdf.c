@@ -2169,12 +2169,7 @@ return( b );
 }
 
 static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback, EncMap *map) {
-    static struct { char *ext, *decomp, *recomp; } compressors[] = {
-	{ "gz", "gunzip", "gzip" },
-	{ "bz2", "bunzip2", "bzip2" },
-	{ "Z", "gunzip", "compress" },
-	{ NULL }
-    };
+    extern struct compressors compressors[];
     int i;
     char *pt, *temp=NULL;
     char buf[1500];

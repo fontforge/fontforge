@@ -1865,6 +1865,10 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		};
 
 struct compressors { char *ext, *decomp, *recomp; };
+struct archivers {
+    char *ext, *unarchive, *archive, *listargs, *extractargs, *appendargs;
+    enum archive_list_style { ars_tar, ars_zip } ars;
+};
 
 struct fontdict;
 struct pschars;
@@ -2533,6 +2537,8 @@ extern SplineFont *LoadSplineFont(char *filename,enum openflags);
 extern SplineFont *ReadSplineFont(char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern FILE *URLToTempFile(char *url);
 extern int URLFromFile(char *url,FILE *from);
+extern void ArchiveCleanup(char *archivedir);
+extern char *Unarchive(char *name, char **_archivedir);
 extern char *Decompress(char *name, int compression);
 extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
 extern SplineFont *SFFromMF(char *filename);
