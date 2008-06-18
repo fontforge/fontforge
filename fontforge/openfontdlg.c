@@ -114,9 +114,9 @@ struct openfilefilters def_font_filters[] = {
 	   "}"
 	     "{.gz,.Z,.bz2,}",
 	NU_("ΤεΧ Bitmap Fonts"), "*{pk,gf}",
-	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz2,}",
-	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz2,}",
-	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz2,}",
+	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,}",
+	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,}",
+	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,}",
 	N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,}",
 	N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,}",
 	N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,}",
@@ -127,6 +127,7 @@ struct openfilefilters def_font_filters[] = {
 	 N_("Backup SFD"), "*.sfd~",
 	 N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,}",
 	 "-", NULL,
+	 N_("Archives"), "*.{zip,tgz,tbz,tbz2,tar.gz,tar.bz,tar.bz2,tar}",
 	 N_("All Files"), "*",
 	 NULL };
 

@@ -155,6 +155,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     int i, y;
     unichar_t ubuf[800];
 
+    GGadgetInit();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     if ( screen_display==NULL ) {
 	char *temp;
@@ -650,6 +651,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     int i, y, listi;
     unichar_t ubuf[300];
 
+    GGadgetInit();
     GProgressPauseTimer();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     memset(qlabels,'\0',sizeof(qlabels));
@@ -902,6 +904,7 @@ return( NULL );
     }
     ubuf = utf82u_copy(buf);
 
+    GGadgetInit();
     GProgressPauseTimer();
     memset(qlabels,'\0',sizeof(qlabels));
     lb = FindLineBreaks(ubuf,qlabels);
@@ -1266,6 +1269,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 		/* but if we get the size too small, the cursor isn't in dlg */
     gw = GDrawCreateTopWindow(NULL,&pos,c_e_h,d,&wattrs);
 
+    GGadgetInit();
     GDrawSetFont(gw,_ggadget_default_font);
     GDrawFontMetrics(_ggadget_default_font,&as,&ds,&ld);
     fh = as+ds;

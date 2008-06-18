@@ -30,6 +30,8 @@
 #include <ustring.h>
 #include <math.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <gfile.h>
 #include <time.h>
 #include "unicoderange.h"
@@ -220,7 +222,7 @@ struct unicoderange specialnames[] = {
 
 int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
     int enc, uni, i, ch;
-    char *end, *dot=NULL, *freeme=NULL;
+    char *end, *freeme=NULL;
     const char *upt = name;
 
     ch = utf8_ildb(&upt);
@@ -607,7 +609,242 @@ static SplineFont *SFReadPostscript(char *filename) {
 return( sf );
 }
 
-extern struct compressors compressors[];
+struct archivers archivers[] = {
+    { ".tar", "tar", "tar", "tf", "xf", "rf", ars_tar },
+    { ".tgz", "tar", "tar", "tfz", "xfz", "rfz", ars_tar },
+    { ".tar.gz", "tar", "tar", "tfz", "xfz", "rfz", ars_tar },
+    { ".tar.bz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
+    { ".tbz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
+    { ".tbz", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
+    { ".zip", "unzip", "zip", "-l", "", "", ars_zip },
+    NULL
+};
+
+void ArchiveCleanup(char *archivedir) {
+    /* Free this directory and all files within it */
+    char *cmd;
+
+    cmd = galloc(strlen(archivedir) + 20);
+    sprintf( cmd, "rm -rf %s", archivedir );
+    system( cmd );
+    free( cmd ); free(archivedir);
+}
+
+static char *ArchiveParseTOC(char *listfile, enum archive_list_style ars, int *doall) {
+    FILE *file;
+    int nlcnt, ch, linelen, linelenmax, fcnt, choice, i, def, def_prio, prio;
+    char **files, *linebuffer, *pt, *name;
+
+    *doall = false;
+    file = fopen(listfile,"r");
+    if ( file==NULL )
+return( NULL );
+
+    nlcnt=linelenmax=linelen=0;
+    while ( (ch=getc(file))!=EOF ) {
+	if ( ch=='\n' ) {
+	    ++nlcnt;
+	    if ( linelen>linelenmax ) linelenmax = linelen;
+	    linelen = 0;
+	} else
+	    ++linelen;
+    }
+    rewind(file);
+
+    /* tar outputs its table of contents as a simple list of names */
+    /* zip includes a bunch of other info, headers (and lines for directories)*/
+
+    linebuffer = galloc(linelenmax+3);
+    fcnt = 0;
+    files = galloc((nlcnt+1)*sizeof(char *));
+
+    if ( ars == ars_tar ) {
+	pt = linebuffer;
+	while ( (ch=getc(file))!=EOF ) {
+	    if ( ch=='\n' ) {
+		*pt = '\0';
+		/* Blessed if I know what encoded was used for filenames */
+		/*  inside the tar file. I shall assume utf8, faut de mieux */
+		files[fcnt++] = copy(linebuffer);
+		pt = linebuffer;
+	    } else
+		*pt++ = ch;
+	}
+    } else {
+	/* Skip the first three lines, header info */
+	fgets(linebuffer,linelenmax+3,file);
+	fgets(linebuffer,linelenmax+3,file);
+	fgets(linebuffer,linelenmax+3,file);
+	pt = linebuffer;
+	while ( (ch=getc(file))!=EOF ) {
+	    if ( ch=='\n' ) {
+		*pt = '\0';
+		if ( linebuffer[0]==' ' && linebuffer[1]=='-' && linebuffer[2]=='-' )
+	break;		/* End of file list */
+		/* Blessed if I know what encoded was used for filenames */
+		/*  inside the zip file. I shall assume utf8, faut de mieux */
+		if ( pt-linebuffer>=28 && pt[-1]!='/' )
+		    files[fcnt++] = copy(linebuffer+28);
+		pt = linebuffer;
+	    } else
+		*pt++ = ch;
+	}
+    }
+    files[fcnt] = NULL;
+
+    free(linebuffer);
+    if ( fcnt==0 ) {
+	free(files);
+return( NULL );
+    } else if ( fcnt==1 ) {
+	char *onlyname = files[0];
+	free(files);
+return( onlyname );
+    }
+
+    /* Suppose they've got an archive of a directory format font? I mean a ufo*/
+    /*  or a sfdir. It won't show up in the list of files (because either     */
+    /*  tar or I have removed all directories from that list) */
+    pt = strrchr(files[0],'/');
+    if ( pt!=NULL ) {
+	if (( pt-files[0]>4 && (strncasecmp(pt-4,".ufo",4)==0 || strncasecmp(pt-4,"_ufo",4)==0)) ||
+		( pt-files[0]>6 && (strncasecmp(pt-6,".sfdir",6)==0 || strncasecmp(pt-6,"_sfdir",6)==0)) ) {
+	    /* Ok, looks like a potential directory font. Now is EVERYTHING */
+	    /*  in the archive inside this guy? */
+	    for ( i=0; i<fcnt; ++i )
+		if ( strncmp(files[i],files[0],pt-files[0]+1)!=0 )
+	    break;
+	    if ( i==fcnt ) {
+		char *onlydirfont = copyn(files[0],pt-files[0]+1);
+		for ( i=0; i<fcnt; ++i )
+		    free(files[i]);
+		free(files);
+		*doall = true;
+return( onlydirfont );
+	    }
+	}
+    }
+
+    def=0; def_prio = -1;
+    for ( i=0; i<fcnt; ++i ) {
+	pt = strrchr(files[i],'.');
+	if ( pt==NULL )
+    continue;
+	if ( strcasecmp(pt,".svg")==0 )
+	    prio = 10;
+	else if ( strcasecmp(pt,".pfb")==0 || strcasecmp(pt,".pfa")==0 ||
+		strcasecmp(pt,".cff")==0 || strcasecmp(pt,".cid")==0 )
+	    prio = 20;
+	else if ( strcasecmp(pt,".otf")==0 || strcasecmp(pt,".ttf")==0 || strcasecmp(pt,".ttc")==0 )
+	    prio = 30;
+	else if ( strcasecmp(pt,".sfd")==0 )
+	    prio = 40;
+	else
+    continue;
+	if ( prio>def_prio ) {
+	    def = i;
+	    def_prio = prio;
+	}
+    }
+
+    choice = ff_choose(_("Which archived item should be opened?"),(const char **) files,fcnt,def,_("There are multiple files in this archive, pick one"));
+    if ( choice==-1 )
+	name = NULL;
+    else
+	name = copy(files[choice]);
+
+    for ( i=0; i<fcnt; ++i )
+	free(files[i]);
+    free(files);
+return( name );
+}
+    
+#define TOC_NAME	"ff-archive-table-of-contents"
+
+char *Unarchive(char *name, char **_archivedir) {
+    char *dir = getenv("TMPDIR");
+    char *pt, *archivedir, *listfile, *listcommand, *unarchivecmd, *desiredfile;
+    char *finalfile;
+    int i;
+    int doall=false;
+    static int cnt=0;
+
+    *_archivedir = NULL;
+
+    pt = strrchr(name,'.');
+    if ( pt==NULL )
+return( NULL );
+    for ( i=0; archivers[i].ext!=NULL; ++i )
+	if ( strcmp(archivers[i].ext,pt)==0 )
+    break;
+    if ( archivers[i].ext==NULL )
+return( NULL );
+
+    if ( dir==NULL ) dir = P_tmpdir;
+    archivedir = galloc(strlen(dir)+100);
+    sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
+    if ( mkdir(archivedir,0700)!=0 ) {
+	free(archivedir);
+return( NULL );
+    }
+
+    listfile = galloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
+    sprintf( listfile, "%s/" TOC_NAME, archivedir );
+
+    listcommand = galloc( strlen(archivers[i].unarchive) + 1 +
+			strlen( archivers[i].listargs) + 1 +
+			strlen( name ) + 3 +
+			strlen( listfile ) +4 );
+    sprintf( listcommand, "%s %s %s > %s", archivers[i].unarchive,
+	    archivers[i].listargs, name, listfile );
+    if ( system(listcommand)!=0 ) {
+	free(listcommand); free(listfile);
+	ArchiveCleanup(archivedir);
+return( NULL );
+    }
+    free(listcommand);
+
+    desiredfile = ArchiveParseTOC(listfile, archivers[i].ars, &doall);
+    free(listfile);
+    if ( desiredfile==NULL ) {
+	ArchiveCleanup(archivedir);
+return( NULL );
+    }
+
+    /* I tried sending everything to stdout, but that doesn't work if the */
+    /*  output is a directory file (ufo, sfdir) */
+    unarchivecmd = galloc( strlen(archivers[i].unarchive) + 1 +
+			strlen( archivers[i].listargs) + 1 +
+			strlen( name ) + 1 +
+			strlen( desiredfile ) + 3 +
+			strlen( archivedir ) + 30 );
+    sprintf( unarchivecmd, "( cd %s ; %s %s %s %s ) > /dev/null", archivedir,
+	    archivers[i].unarchive,
+	    archivers[i].extractargs, name, doall ? "" : desiredfile );
+    if ( system(unarchivecmd)!=0 ) {
+	free(unarchivecmd); free(desiredfile);
+	ArchiveCleanup(archivedir);
+return( NULL );
+    }
+    free(unarchivecmd);
+
+    finalfile = galloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
+    sprintf( finalfile, "%s/%s", archivedir, desiredfile );
+    free( desiredfile );
+
+    *_archivedir = archivedir;
+return( finalfile );
+}
+
+struct compressors compressors[] = {
+    { ".gz", "gunzip", "gzip" },
+    { ".bz2", "bunzip2", "bzip2" },
+    { ".bz", "bunzip2", "bzip2" },
+    { ".Z", "gunzip", "compress" },
+/* file types which are both archived and compressed (.tgz, .zip) are handled */
+/*  by the archiver above */
+    NULL
+};
 
 char *Decompress(char *name, int compression) {
     char *dir = getenv("TMPDIR");
@@ -660,11 +897,12 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     int fromsfd = false;
     int i;
     char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
+    char *archivedir=NULL;
     int len;
     FILE *file=NULL;
     int checked;
     int compression=0;
-    int wasurl = false, nowlocal = true;
+    int wasurl = false, nowlocal = true, wasarchived=false;
 
     if ( filename==NULL )
 return( NULL );
@@ -690,6 +928,18 @@ return( NULL );
     }
 
     pt = strrchr(strippedname,'.');
+    if ( pt!=NULL ) {
+	for ( i=0; archivers[i].ext!=NULL; ++i )
+	    if ( strcmp(archivers[i].ext,pt)==0 ) {
+		strippedname = Unarchive(strippedname,&archivedir);
+	    if ( strippedname==NULL )
+return( NULL );
+	    pt = strrchr(strippedname,'.');
+	    wasarchived = true;
+	break;
+	}
+    }
+
     i = -1;
     if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
 	if ( strcmp(compressors[i].ext,pt)==0 )
@@ -907,7 +1157,11 @@ return( NULL );
 	if ( fromsfd )
 	    sf->compression = compression;
 	free( norm->origname );
-	if ( sf->chosenname!=NULL && strippedname==filename ) {
+	if ( wasarchived ) {
+	    norm->origname = NULL;
+	    free(norm->filename); norm->filename = NULL;
+	    norm->new = true;
+	} else if ( sf->chosenname!=NULL && strippedname==filename ) {
 	    norm->origname = galloc(strlen(filename)+strlen(sf->chosenname)+8);
 	    strcpy(norm->origname,filename);
 	    strcat(norm->origname,"(");
@@ -915,7 +1169,7 @@ return( NULL );
 	    strcat(norm->origname,")");
 	} else
 	    norm->origname = copy(filename);
-	free( sf->chosenname ); sf->chosenname = NULL;
+	free( norm->chosenname ); norm->chosenname = NULL;
 	if ( sf->mm!=NULL ) {
 	    int j;
 	    for ( j=0; j<sf->mm->instance_count; ++j ) {
@@ -938,6 +1192,8 @@ return( NULL );
 	unlink(tmpfile);
 	free(tmpfile);
     }
+    if ( wasarchived )
+	ArchiveCleanup(archivedir);
     if ( (openflags&of_fstypepermitted) && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
 	/* Ok, they have told us from a script they have access to the font */
     } else if ( !fromsfd && sf!=NULL && (sf->pfminfo.fstype&0xff)==0x0002 ) {
