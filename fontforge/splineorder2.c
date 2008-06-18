@@ -623,8 +623,9 @@ return( -1 );			/* Points too close for a good approx */
 	    }
 
 	    midpos = (mid.x-start.x)*splineunit.x + (mid.y-start.y)*splineunit.y;
-	    cppos  = (data2[q-1].cp.x-start.x)*splineunit.x + (data2[q-1].cp.y-start.y)*splineunit.y;
-	    if ( ((do_good_spline_check || i!=0 ) &&  cppos<lastpos) || cppos>midpos ) {
+	    cppos  = (data[q-1].cp.x-start.x)*splineunit.x + (data[q-1].cp.y-start.y)*splineunit.y;
+
+ 	    if ( ((do_good_spline_check || i!=0 ) &&  cppos<lastpos) || cppos>midpos ) {
 		i = 0;		/* Means we failed */
 	break;
 	    }
