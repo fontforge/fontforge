@@ -2373,7 +2373,6 @@ void ChangeXHeightDlg(FontView *fv,CharView *cv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_XHeight_Current;
-    gcd[k].gd.handle_controlevent = SC_ScaleRatioChanged;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[0] = &gcd[k-2]; hvarray[1] = &gcd[k-1]; hvarray[2] = NULL;
 
