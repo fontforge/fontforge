@@ -75,30 +75,31 @@ typedef struct pointdata {
     BasePoint base;                             /* normally same as sp->me, but needed for offcurve points */
     BasePoint nextunit, prevunit;		/* unit vectors pointing in the next/prev directions */
     struct linedata *nextline, *prevline;	/* any other points lying on approximately the same line */
-    Spline *nextedge, *prevedge;		/* There should always be a matching spline, which may end up as part of a stem, and may not */
+    Spline *nextedges[2], *prevedges[2];	/* There should always be a matching spline, which may end up as part of a stem, and may not */
     Spline *bothedge;
-    double next_e_t, prev_e_t;			/* Location on other edge where our normal hits it */
+    double next_e_t[2], prev_e_t[2];	        /* Location on other edge where our normal hits it */
     double both_e_t;
-    double next_dist, prev_dist;		/* Distance from the point to the matching edge */
+    int next_e_cnt, prev_e_cnt;
+    double next_dist[2], prev_dist[2];		/* Distance from the point to the matching edge */
     struct stemdata **nextstems, **prevstems;
     int *next_is_l, *prev_is_l;
     int nextcnt, prevcnt;
-    struct stemdata *bothstem;
     double nextlen, prevlen;
-    int value;                          /* Temporary value, used to compare points assigned to the same edge and determine if it can be used as a reference point*/
+    int value;                          /* Temporary value, used to compare points assigned to the same edge and determine which one can be used as a reference point*/
     unsigned int nextlinear: 1;
     unsigned int nextzero: 1;
     unsigned int prevlinear: 1;
     unsigned int prevzero: 1;
     unsigned int colinear: 1;
-    unsigned int symetrical_h: 1;			/* Are next & prev symetrical? */
-    unsigned int symetrical_v: 1;			/* Are next & prev symetrical? */
+    unsigned int symetrical_h: 1;	/* Are next & prev symetrical? */
+    unsigned int symetrical_v: 1;	/* Are next & prev symetrical? */
     unsigned int next_hor: 1;
     unsigned int next_ver: 1;
     unsigned int prev_hor: 1;
     unsigned int prev_ver: 1;
-    unsigned int newpos_set: 2;		/* Holds three values: 0 (not), 1 (positioned by 1 stem), 2 (2 stems) */
     unsigned int ticked: 1;
+    unsigned int touched: 1;
+    unsigned int affected: 1;
     uint8 x_extr, y_extr;
     uint8 x_corner, y_corner;
     BasePoint newpos;
@@ -134,6 +135,8 @@ typedef struct stemdata {
 	uint8 ltick, rtick;
 	uint8 stub;
 	uint8 stemcheat;	/* It's not a real stem, but it's something we'd like PostScript to hint for us */
+        uint8 is_ball;          /* Specifies if this chunk marks the opposite sides of a ball terminal (useful for TTF instructions) */
+        int l_e_idx, r_e_idx;   /* Which of the opposed edges assigned to the left and right points corresponds to this chunk */
     } *chunks;
     int activecnt;
     struct segment *active;
@@ -146,17 +149,22 @@ typedef struct stemdata {
     int blue;			/* Blue zone a ghost hint is attached to */
     double len, clen;		/* Length of linear segments. clen adds "length" of curved bits */
     struct stembundle *bundle;
-    double lpos, rpos;		/* When placed in a bundle, relative to the bundle's basepoint in l_to_r */
-    double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
     int lpcnt, rpcnt;           /* Count of points assigned to left and right edges of this stem */
     struct linedata *leftline, *rightline;
-    int secondary;              /* Should this stem be positioned relatively to another stem? */
-    int depcount;
+    struct stemdata *master;
+    int dep_cnt;
+    int serif_cnt;
     struct dependent_stem {
         struct stemdata *stem;
-        char dep_type;          /* may be 'a' (align), 'i' (interpolate) or 'l' (link) */
-        char dep_edge;          /* may be 'l' or 'r' */
-    } *dependent;
+        uint8 lbase;
+        char dep_type;          /* can be 'a' (align), 'i' (interpolate), 'm' (move) or 's' (serif) */
+    } *dependent;               /* Lists other stems dependent from the given stem */
+    struct dependent_serif {
+        struct stemdata *stem;
+        double width;           /* The distance from an edge of the main stem to the opposite edge of the serif stem */
+        uint8 lbase;
+        uint8 is_ball;
+    } *serifs;                  /* Lists serifs and other elements protruding from the base stem */
 } StemData;
 
 typedef struct vchunk {
@@ -178,18 +186,19 @@ struct splinesteminfo {
     struct stembounds *sb;
 };
 
-struct stembundle {
+typedef struct stembundle {
     BasePoint unit;		/* All these stems are parallel, pointing in unit direction */
     BasePoint l_to_r;		/* Axis along which these stems are ordered (normal to unit) */
     BasePoint bp;		/* Base point for measuring by l_to_r (stem->lpos,rpos) */
     int cnt;			/* Number of stems in the bundle */
     struct stemdata **stemlist;
-};
+} StemBundle;
     
 extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int layer, BlueData *bd, int use_existing);
 extern struct glyphdata *GlyphDataInit(SplineChar *sc, int layer, double em_size, int only_hv);
 extern struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v );
 extern struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi );
+extern int IsStemAssignedToPoint( struct pointdata *pd,struct stemdata *stem,int is_next );
 extern void GlyphDataFree(struct glyphdata *gd);
 
 #endif		/* _STEMDB_H_ */
