@@ -1067,7 +1067,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 
 	utf82u_strcpy(li->text+len,arr->vals[2*i+1].u.sval);
 	script = DEFAULT_SCRIPT;
-	for ( upt = li->text+len; *upt && script!=DEFAULT_SCRIPT; ++upt )
+	for ( upt = li->text+len; *upt && script==DEFAULT_SCRIPT; ++upt )
 	    script = ScriptFromUnicode(*upt,NULL);
 	len += utf8_strlen( arr->vals[2*i+1].u.sval );
 	li->text[len++] = '\n';
@@ -1132,6 +1132,27 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     GImageDestroy(image);
 
     LayoutInfo_Destroy(li);
+}
+
+#include <stdlib.h>
+#include <unistd.h>
+char *SFDefaultImage(SplineFont *sf,char *filename) {
+    Array arr;
+
+    memset(&arr,0,sizeof(arr));
+    if ( filename==NULL ) {
+	static int cnt=0;
+	char *dir = getenv("TMPDIR");
+	if ( dir==NULL ) dir = P_tmpdir;
+	filename = galloc(strlen(dir)+strlen(sf->fontname)+100);
+#ifdef _NO_LIBPNG
+	sprintf( filename, "%s/ff-preview-%s-%d-%d.bmp", dir, sf->fontname, getpid(), ++cnt );
+#else
+	sprintf( filename, "%s/ff-preview-%s-%d-%d.png", dir, sf->fontname, getpid(), ++cnt );
+#endif
+    }
+    FontImage(sf,filename,&arr,-1,-1);
+return( filename );
 }
 
 void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width) {
