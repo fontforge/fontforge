@@ -1025,6 +1025,102 @@ return( head );
 }
 
 #include "scripting.h"
+static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
+    int pixelsize=24;
+    uint32 scripts[200], script;
+    char *lines[209];
+    int i, scnt, lcnt, gid;
+    /* If the font has more than 200 scripts we can't give a good sample image */
+    SplineChar *sc;
+    char buffer[51*4+1], *pt;
+    Array *ret;
+    char *str;
+    int start, end;
+
+    if ( arr!=NULL && arr->argc==1 )
+	pixelsize = arr->vals[0].u.ival;
+
+    scnt = 0;
+    lines[0] = copy(sf->fullname!=NULL ? sf->fullname : sf->fontname);
+    lcnt = 1;
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	int uni = sc->unicodeenc;
+
+	if ( uni==-1 )
+    continue;
+	script = SCScriptFromUnicode(sc);
+	for ( i=scnt-1; i>=0; --i )
+	    if ( scripts[i]==script )
+	break;
+	if ( i>=0 )
+    continue;
+	switch ( script ) {
+	  /* Some standard cases */
+	  case DEFAULT_SCRIPT:
+	    str = "0123456789!?(){}[]&";
+	  break;
+	  case CHR('l','a','t','n'):
+	    str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz";
+	  break;
+	  case CHR('g','r','e','k'):
+	    str = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ αβγδεζηθικλμνξοπρστυφχψω";
+	  break;
+	  case CHR('c','y','r','l'):
+	    str = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдежзийклмнопрстуфхцчшщъыьэюя";
+	  break;
+	  case CHR('h','e','b','r'):
+	    str = "אבגדהוזחטיךכלםמןנסעףפץצקרשת";
+	  break;
+	  case CHR('a','r','a','b'):  /* Contains ZWNJ between glyphs */
+	    str = "‌س‌ز‌ر‌ذ‌ت‌ء‌ا‌ب‌ث‌ج‌ح‌خ‌د‌ش‌ص‌ض‌ط‌ظ‌ع‌غ‌ف‌ق‌ك‌ل‌م‌ن‌ه‌و‌ي";
+	  break;
+	  case CHR('d','e','v','a'):
+	    str = "अ‌आ‌इ‌ई‌उ‌ऊ‌ऋ‌ऌ‌ऍ‌ऎ‌ए‌ऐ‌ऑ‌ऒ‌ओ‌औ‌क‌ख‌ग‌घ‌ङ‌च‌छ‌ज‌झ‌ञ‌ट‌ठ‌ड‌ढ‌ण‌त‌थ‌द‌ध‌न‌ऩ‌प‌फ‌ब‌म‌य‌ऱ‌ल‌ळ‌ऴ‌व‌श‌ष‌स‌ह‌र‌भ";
+	  break;
+	  case CHR('h','a','n','i'):
+	    /* Chinese Tranditional */
+	    lines[lcnt++] = copy("道可道非常道，名可名非常名。");
+	    /* Japanese */
+	    str = "吾輩は猫で∂る（夏ｭﾚ漱⽯）：吾輩は猫で∂る";
+	  break;
+	  case CHR('k','a','n','a'):
+	      /* Hiragana */
+	    lines[lcnt++] = copy("あいうえおかがきぎくぐけこさざしじすせそただちぢつてとなにぬねのはばぱひふへほまみむ");
+	      /* Katakana */
+	    str = "アイウエオカガキギクケコサザシジスセソタダチヂツテトナニヌネノハバパヒフヘホマミムメモ";
+	  break;
+	  case CHR('h','a','n','g'):
+	    str = "어버이 살아신 제 섬길 일란 다 하여라";
+	  break;
+	  default:
+	    ScriptMainRange(script,&start,&end);
+	    if ( end-start>50 ) end = start+50;
+	    pt = buffer;
+	    for ( i=start; i<=end; ++i )
+		pt = utf8_idpb(pt,i);
+	    *pt = '\0';
+	    str = buffer;
+	  break;
+	  }
+	  lines[lcnt++] = copy(str);
+	  scripts[scnt++] = script;
+	  if ( scnt==200 )
+      break;
+      }
+
+      ret = gcalloc(1,sizeof(Array));
+      ret->argc = 2*lcnt;
+      ret->vals = gcalloc(2*lcnt,sizeof(Val));
+      for ( i=0; i<lcnt; ++i ) {
+	  ret->vals[2*i+0].type = v_int;
+	  ret->vals[2*i+0].u.ival = pixelsize;
+	  ret->vals[2*i+1].type = v_str;
+	  ret->vals[2*i+1].u.sval = lines[i];
+      }
+      ret->vals[0].u.ival = 3*pixelsize/2;	/* Use as a title, make bigger */
+return( ret );
+}
+
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     LayoutInfo *li = gcalloc(1,sizeof(LayoutInfo));
     int cnt, len, i,j, ret, p, x;
@@ -1036,6 +1132,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     uint32 script;
     struct opentype_str **line;
     int ybase=0;
+    Array *freeme=NULL;
 
     if ( !hasFreeType())
 	type = sftf_pfaedit;
@@ -1046,6 +1143,9 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     li->dpi = 72;
     li->ps = -1;
     SFMapOfSF(li,sf);
+
+    if ( arr==NULL || arr->argc<2 )
+	arr = freeme = SFDefaultScriptsLines(arr,sf);
 
     cnt = arr->argc/2;
     len = 1;
@@ -1132,14 +1232,14 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     GImageDestroy(image);
 
     LayoutInfo_Destroy(li);
+    if ( freeme!=NULL )
+	arrayfree(freeme);
 }
 
 #include <stdlib.h>
 #include <unistd.h>
 char *SFDefaultImage(SplineFont *sf,char *filename) {
-    Array arr;
 
-    memset(&arr,0,sizeof(arr));
     if ( filename==NULL ) {
 	static int cnt=0;
 	char *dir = getenv("TMPDIR");
@@ -1151,7 +1251,7 @@ char *SFDefaultImage(SplineFont *sf,char *filename) {
 	sprintf( filename, "%s/ff-preview-%s-%d-%d.png", dir, sf->fontname, getpid(), ++cnt );
 #endif
     }
-    FontImage(sf,filename,&arr,-1,-1);
+    FontImage(sf,filename,NULL,-1,-1);
 return( filename );
 }
 
