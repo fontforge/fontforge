@@ -826,6 +826,7 @@ static void SFTextAreaSaveImage(SFTextArea *st) {
     char *basename;
     int i,ret, p, x, j;
     struct opentype_str **line;
+    int as;
 
     if ( st->li.lcnt==0 )
 return;
@@ -858,6 +859,10 @@ return;
     base->clut->is_grey = true;
     base->clut->clut_len = 256;
 
+    as = 0;
+    if ( st->li.lcnt!=0 )
+	as = st->li.lineheights[0].as;
+
     for ( i=0; i<st->li.lcnt; ++i ) {
 	/* Does this para start out r2l or l2r? */
 	p = st->li.lineheights[i].p;
@@ -871,7 +876,7 @@ return;
 	    LI_FDDrawChar(image,
 		    (void (*)(void *,GImage *,GRect *,int, int)) GImageDrawImage,
 		    (void (*)(void *,GRect *,Color)) GImageDrawRect,
-		    line[j],x,st->li.lineheights[i].y,0x000000);
+		    line[j],x,st->li.lineheights[i].y+as,0x000000);
 	    x += line[j]->advance_width + line[j]->vr.h_adv_off;
 	}
     }
