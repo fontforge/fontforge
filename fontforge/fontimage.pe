@@ -1,5 +1,5 @@
 
-if ( Strtol($version)<20061025 )
+if ( Strtol($version)<20080616 )
   Error( "Please upgrade to a more recent version of fontforge" )
 endif
 
@@ -7,7 +7,7 @@ lines=[]
 width = -1
 height = -1
 outfile = ""
-pixelsize = 16
+pixelsize = 24
 foundfont = 0
 
 while ( $argc > 1 )
@@ -76,79 +76,9 @@ if ( !foundfont )
 endif
 
 if ( SizeOf(lines)==0 )
-#  They didn't specify any text see what we can find.
-  lines = lines + [ pixelsize*3/2, $fontname ]
-#  Ok, we've given them some latin glyphs. So latin is probably the
-#  least interesting alphabet we could show here. Start with some
-#  others
-
-  if ( WorthOutputting(0U393) )
-#Greek
-    lines = lines + [ pixelsize, "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ αβγδεζηθικλμνξοπρστυφχψω" ]
-  endif
-
-  if ( WorthOutputting(0U411) )
-#Cyrillic
-    lines = lines + [ pixelsize, "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдежзийклмнопрстуфхцчшщъыьэюя" ]
-  endif
-
-  if ( WorthOutputting(0U5d0) )
-#Hebrew
-    lines = lines + [ pixelsize, "אבגדהוזחטיךכלםמןנסעףפץצקרשת" ]
-  endif
-
-  if ( WorthOutputting(0U621) )
-#Arabic (with ZWNJ)
-    lines = lines + [ pixelsize, "‌س‌ز‌ر‌ذ‌ت‌ء‌ا‌ب‌ث‌ج‌ح‌خ‌د‌ش‌ص‌ض‌ط‌ظ‌ع‌غ‌ف‌ق‌ك‌ل‌م‌ن‌ه‌و‌ي" ]
-  endif
-
-  if ( WorthOutputting(0U710) )
-#Syriac
-    lines = lines + [ pixelsize, "ܘ‌ܐ‌ܑ‌ܒ‌ܓ‌ܔ‌ܕ‌ܖ‌ܗ‌ܙ" ]
-  endif
-
-  if ( WorthOutputting(0U905) )
-#Devanagari
-    lines = lines + [ pixelsize, "अ‌आ‌इ‌ई‌उ‌"+"ऊ‌ऋ‌ऌ‌ऍ‌ऎ‌ए‌"+"ऐ‌ऑ‌ऒ‌ओ‌औ‌क‌ख‌ग‌घ‌ङ‌"+ "च‌छ‌ज‌झ‌ञ‌ट‌ठ‌ड‌ढ‌"+"ण‌त‌थ‌द‌ध‌न‌ऩ‌प‌फ‌ब‌म‌"+"य‌ऱ‌ल‌ळ‌ऴ‌व‌श‌ष‌"+"स‌ह‌र‌भ" ]
-  endif
-
-  if ( WorthOutputting(0U0e01) )
-#Thai
-    lines = lines + [ pixelsize, "กขฃคฅฆงจฉชซฌญ"+"ฎฏฐฑฒณดตถทธนบปผฝ"+"พฟภมยรฤลฦวศษสหฬอ"+"ฮฯะัาำิีึืฺุู" ]
-  endif
-
-  temp = Ucs4("道可道非常道，名可名非常名。")
-  if ( WorthOutputting(UCodePoint(temp[0])) && WorthOutputting(UCodePoint(temp[1])) && WorthOutputting(UCodePoint(temp[2])) )
-#Chinese Traditional
-    lines = lines + [ pixelsize, "道可道非常道，名可名非常名。" ]
-  endif
-
-  if ( WorthOutputting(0U3042) )
-#Hiragana
-    lines = lines + [ pixelsize, "あいうえおかがきぎくぐけこさざしじすせそただちぢつてとなにぬねのはばぱひふへほまみむ" ]
-  endif
-  if ( WorthOutputting(0U30a2) )
-#Katakana
-    lines = lines + [ pixelsize, "アイウエオカガキギクケコサザシジスセソタダチヂツテトナニヌネノハバパヒフヘホマミムメモ" ]
-  endif
-  temp = Ucs4("吾輩は猫で∂る（夏ｭﾚ漱⽯）")
-  if ( WorthOutputting(UCodePoint(temp[0])) && WorthOutputting(UCodePoint(temp[1])) && WorthOutputting(UCodePoint(temp[2])) )
-#Japanese Kanji
-    lines = lines + [ pixelsize, "吾輩は猫で∂る（夏ｭﾚ漱⽯）：吾輩は猫で∂る" ]
-  endif
-
-  if ( WorthOutputting(0UAC00) )
-#Hangul
-    lines = lines + [ pixelsize, "어버이 살아신 제 섬길 일란 다 하여라" ]
-  endif
-
-  if ( WorthOutputting(0U41) )
-    lines = lines + [ pixelsize, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz" ]
-  endif
-
-  if ( WorthOutputting(0U30) )
-    lines = lines + [ pixelsize, "0123456789" ]
-  endif
+# I used to have the script generate default lines, but have moved that logic
+# into fontforge
+  lines = [ pixelsize ];
 endif
 
 if ( outfile=="" )
