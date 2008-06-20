@@ -1382,7 +1382,9 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     memset(&lastpt,0,sizeof(lastpt));
     for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	for ( sp=ss->first; ; ) {
-	    if ( sp->me.x != rint(sp->me.x) || sp->me.y != rint(sp->me.y) ||
+	    /* If we're interpolating the point, it won't show up in the truetype */
+	    /*  points list and it need not be integral (often it will end in .5) */
+	    if ( (!SPInterpolate(sp) && (sp->me.x != rint(sp->me.x) || sp->me.y != rint(sp->me.y))) ||
 		    sp->nextcp.x != rint(sp->nextcp.x) || sp->nextcp.y != rint(sp->nextcp.y) ||
 		    sp->prevcp.x != rint(sp->prevcp.x) || sp->prevcp.y != rint(sp->prevcp.y))
 		sc->layers[layer].validation_state |= vs_nonintegral|vs_known;
