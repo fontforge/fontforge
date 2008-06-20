@@ -4453,7 +4453,7 @@ return(true);
 	    sf->pfminfo.hheaddescent_add = hdoff;
 	    sf->pfminfo.pfmset = true;
 
-	    sf->pfminfo.subsuper_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_PanDefault));
+	    sf->pfminfo.subsuper_set = !GGadgetIsChecked(GWidgetGetControl(gw,CID_SubSuperDefault));
 	    if ( sf->pfminfo.subsuper_set ) {
 		sf->pfminfo.os2_subxsize = subs[0];
 		sf->pfminfo.os2_subysize = subs[1];
