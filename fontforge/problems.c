@@ -1070,8 +1070,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    do {
 		int interp = SPInterpolate(sp);
 		int badme = interp
-			? rint(2*sp->me.x)!=2*sp->me.x || 2*rint(sp->me.y)!=2*sp->me.y
-			: rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y;
+			? (rint(2*sp->me.x)!=2*sp->me.x || rint(2*sp->me.y)!=2*sp->me.y)
+			: (rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y);
 		if ( badme ||
 			rint(sp->nextcp.x)!=sp->nextcp.x || rint(sp->nextcp.y)!=sp->nextcp.y ||
 			rint(sp->prevcp.x)!=sp->prevcp.x || rint(sp->prevcp.y)!=sp->prevcp.y ) {
@@ -1462,6 +1462,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->ptnearhint && !p->finish ) {
 	real found, expected;
+	h = NULL;
 	for ( test=spl; test!=NULL && !p->finish && p->ptnearhint; test=test->next ) {
 	    sp = test->first;
 	    do {
@@ -1502,6 +1503,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    changed = true;
 		    sp->selected = true;
 		    ExplainIt(p,sc,hs?_("The selected point is near a horizontal stem hint"):_("The selected point is near a vertical stem hint"),found,expected);
+		    if ( h!=NULL )
+			h->active = false;
 		    if ( p->ignorethis ) {
 			p->ptnearhint = false;
 	    break;
@@ -5000,7 +5003,7 @@ static int VWCheckup(struct val_data *vw) {
 	    vw->need_to_check_with_user_on_mask = false;
 	    buts[0] = _("Erroneous"); buts[1]=_("Acceptable"); buts[2] = NULL;
 	    if ( ff_ask(_("Not sure if this is an error..."),(const char **) buts,0,1,
-		    _("This font contains non-integral coordinates. That's ok\n"
+		    _("This font contains non-integral coordinates. That's OK\n"
 			"in PostScript and SVG but causes problems in TrueType.\n"
 			"Should I consider that an error here?"))==0 ) {
 		a_change = true;
