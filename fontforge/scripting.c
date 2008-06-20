@@ -103,7 +103,7 @@ return( ret );
 }
 #endif /* _NO_FFSCRIPT */
 
-static void arrayfree(Array *a) {
+void arrayfree(Array *a) {
     int i;
 
     for ( i=0; i<a->argc; ++i ) {
@@ -2213,9 +2213,12 @@ static void bFontImage(Context *c) {
 	height = c->a.vals[4].u.ival;
 
     arr = c->a.vals[2].u.aval;
-    if ( (arr->argc&1) || arr->argc==0 )
+    if ( (arr->argc&1) && arr->argc>=2 )
 	ScriptError(c, "Second argument must be an array with an even number of entries");
-    for ( i=0; i<arr->argc; i+=2 ) {
+    if ( arr->argc==1 ) {
+	if ( arr->vals[0].type != v_int )
+	    ScriptError( c, "Second argument must be an array where each even numbered entry is an integer pixelsize" );
+    } else for ( i=0; i<arr->argc; i+=2 ) {
 	if ( arr->vals[i].type != v_int )
 	    ScriptError( c, "Second argument must be an array where each even numbered entry is an integer pixelsize" );
 	if ( arr->vals[i+1].type != v_str )

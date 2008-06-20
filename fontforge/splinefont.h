@@ -1967,6 +1967,7 @@ extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
 extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italicangle);
 extern void VerifyLanguages(SplineFont *sf);
 extern int ScriptIsRightToLeft(uint32 script);
+extern void ScriptMainRange(uint32 script, int *start, int *end);
 extern uint32 ScriptFromUnicode(int u,SplineFont *sf);
 extern uint32 SCScriptFromUnicode(SplineChar *sc);
 extern int SCRightToLeft(SplineChar *sc);
@@ -3038,5 +3039,7 @@ extern void PatternFree(struct pattern *pat);
 extern void BrushCopy(struct brush *into, struct brush *from);
 extern void PenCopy(struct pen *into, struct pen *from);
 extern void PatternSCBounds(SplineChar *sc,DBounds *b);
+
+extern char *SFDefaultImage(SplineFont *sf,char *filename);
 
 #endif

@@ -146,6 +146,19 @@ static uint32 scripts[][15] = {
 		{ 0 }
 };
 
+void ScriptMainRange(uint32 script, int *start, int *end) {
+    int i;
+
+    for ( i=0; scripts[i][0]!=0; ++i ) {
+	if ( scripts[i][0] == script ) {
+	    *start = scripts[i][1];
+	    *end   = scripts[i][2];
+return;
+	}
+    }
+    *start = *end = -1;
+}
+
 int ScriptIsRightToLeft(uint32 script) {
     if ( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') ||
 	    script==CHR('c','p','m','n') || script==CHR('k','h','a','r') ||

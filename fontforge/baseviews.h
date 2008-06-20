@@ -178,6 +178,7 @@ typedef struct {
     char *artists;
     int notsafeforwork;
     int oflicense;
+    char *previewimage;			/* NULL => No image */
 } OFLibData;
 
 struct lcg_zones {

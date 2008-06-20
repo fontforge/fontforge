@@ -4269,11 +4269,11 @@ return( false );		/* no intersection of bounding boxes */
 #endif
 
     if ( s1->knownlinear ) {
-	spline.d = s1->splines[1].c*((double) s2->splines[0].d-(double) s1->splines[0].d)-
-		s1->splines[0].c*((double) s2->splines[1].d-(double) s1->splines[1].d);
-	spline.c = s1->splines[1].c*(double) s2->splines[0].c - s1->splines[0].c*(double) s2->splines[1].c;
-	spline.b = s1->splines[1].c*(double) s2->splines[0].b - s1->splines[0].c*(double) s2->splines[1].b;
-	spline.a = s1->splines[1].c*(double) s2->splines[0].a - s1->splines[0].c*(double) s2->splines[1].a;
+	spline.d = s1->splines[1].c*((bigreal) s2->splines[0].d-(bigreal) s1->splines[0].d)-
+		s1->splines[0].c*((bigreal) s2->splines[1].d-(bigreal) s1->splines[1].d);
+	spline.c = s1->splines[1].c*(bigreal) s2->splines[0].c - s1->splines[0].c*(bigreal) s2->splines[1].c;
+	spline.b = s1->splines[1].c*(bigreal) s2->splines[0].b - s1->splines[0].c*(bigreal) s2->splines[1].b;
+	spline.a = s1->splines[1].c*(bigreal) s2->splines[0].a - s1->splines[0].c*(bigreal) s2->splines[1].a;
 	IterateSolve(&spline,tempts);
 	if ( tempts[0]==-1 )
 return( false );

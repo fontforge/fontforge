@@ -405,6 +405,40 @@ static void AttachCookies(char *databuf,struct siteinfo *siteinfo) {
     }
 }
 
+static int dumpfile(FILE *formdata,char *pathspec) {
+    FILE *font = fopen( pathspec,"rb");
+    int ch;
+
+    if ( font==NULL ) {
+	fclose(formdata);
+	ff_progress_end_indicator();
+return( false );
+    }
+    while ( (ch=getc(font))!=EOF )
+	putc(ch,formdata);
+    fclose(font);
+    fprintf(formdata,"\r\n");		/* Final line break not part of message (I hope) */
+return( true );
+}
+
+static char *ImageMimeType(char *ext) {
+    if ( ext==NULL )
+return( "application/octet-stream" );
+
+    if ( strcasecmp(ext,".png")==0 )
+return( "image/png" );
+    if ( strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 )
+return( "image/jpeg" );
+    if ( strcasecmp(ext,".gif")==0 )
+return( "image/gif" );
+    if ( strcasecmp(ext,".bmp")==0 )
+return( "image/bmp" );
+    if ( strcasecmp(ext,".pdf")==0 )
+return( "application/pdf" );
+
+return( "application/octet-stream" );
+}
+
 int OFLibUploadFont(OFLibData *oflib) {
     struct sockaddr_in addr;
     int soc;
@@ -412,8 +446,8 @@ int OFLibUploadFont(OFLibData *oflib) {
     char *databuf;
     char msg[1024], *pt;
     struct siteinfo siteinfo;
-    int ch, code;
-    FILE *formdata, *font;
+    int code;
+    FILE *formdata;
     char boundary[80], *fontfilename;
     time_t now;
     struct tm *tm;
@@ -501,21 +535,41 @@ return( false );
 		     /*"Content-Type: text/plain; charset=UTF-8\r\n"*/"\r\n" );
     fprintf(formdata,"%s\r\n", oflib->artists );
     fprintf(formdata,"--%s\r\n", boundary );
-    fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
-		     "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
-
-    font = fopen( oflib->pathspec,"rb");
-    if ( font==NULL ) {
-	fclose(formdata);
-	free(databuf);
-	ff_progress_end_indicator();
-	ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
+    if ( oflib->previewimage==NULL ) {
+	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
+			 "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
+	if ( !dumpfile(formdata,oflib->pathspec)) {
+	    free(databuf);
+	    ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
+	}
+    } else {
+	char *previewname;
+	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\";\r\n"
+			 "Content-Type: multipart/mixed; boundary=Sub%s\r\n\r\n", boundary  );
+	fprintf(formdata,"--Sub%s\r\n", boundary );
+	fprintf(formdata,"Content-Disposition: file; filename=\"%s\"\r\n"
+			 "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
+	if ( !dumpfile(formdata,oflib->pathspec)) {
+	    free(databuf);
+	    ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
+return( false );
+	}
+	fprintf(formdata,"--Sub%s\r\n", boundary );
+	previewname = strrchr(oflib->previewimage,'/');
+	if ( previewname==NULL ) previewname = oflib->previewimage;
+	else ++previewname;
+	fprintf(formdata,"Content-Disposition: file; filename=\"%s\"\r\n"
+			 "Content-Type: %s\r\n\r\n", previewname,
+			 ImageMimeType(strrchr(previewname,'.')));
+	if ( !dumpfile(formdata,oflib->previewimage)) {
+	    free(databuf);
+	    ff_post_error(_("Image file vanished"),_("The preview image we just created can no longer be opened.") );
+return( false );
+	}
+	fprintf(formdata,"--Sub%s--\r\n", boundary );
     }
-    while ( (ch=getc(font))!=EOF )
-	putc(ch,formdata);
-    fclose(font);
-    fprintf(formdata,"\r\n");		/* Final line break not part of message (I hope) */
+
     fprintf(formdata,"--%s\r\n", boundary );
     fprintf(formdata,"Content-Disposition: form-data; name=\"upload_tags\"\r\n"
 		     /*"Content-Type: text/plain; charset=UTF-8\r\n"*/"\r\n" );
