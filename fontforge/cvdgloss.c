@@ -420,7 +420,7 @@ return(1);
 	scrprintf(&scr,"Pops: %d (function number)", val1 );
 	if ( operator==0x2a ) {
 	    val2 = exc->stack[exc->top-2];
-	    scrprintf(&scr,"Pops: %d (count)", val1 );
+	    scrprintf(&scr,"Pops: %d (count)", val2 );
 	}
       break;
       case 0x2E: case 0x2F:
