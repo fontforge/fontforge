@@ -28,7 +28,7 @@
 #include "edgelist2.h"
 #include "stemdb.h"
 #include <math.h>
-#define GLYPH_DATA_DEBUG 0
+#define GLYPH_DATA_DEBUG 1
 #define PI 3.14159265358979323846264338327
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
@@ -735,14 +735,14 @@ return( 0 );
         edges[0] = space[j]->s;
         ret++;
     }
-    if ( pd->x_extr == 1 || pd->y_extr == 1 ) {
+    if ( ret > 0 && ( pd->x_extr == 1 || pd->y_extr == 1 )) {
         j = MatchWinding(space,i,nw,winding,which,1);
         if ( j!=-1 ) {
-	    other_t[1] = space[j]->t;
+	    other_t[ret] = space[j]->t;
             end = space[j]->other;
-            dist[1] = end - start;
-            if ( dist[1] < 0 ) dist[1] = -dist[1];
-            edges[1] = space[j]->s;
+            dist[ret] = end - start;
+            if ( dist[ret] < 0 ) dist[ret] = -dist[ret];
+            edges[ret] = space[j]->s;
             ret++;
         }
     }
@@ -1071,7 +1071,7 @@ static BasePoint MiddleUnit( BasePoint *unit1, BasePoint *unit2 ) {
 return( ret );
 }
 
-static int IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1, 
+static uint8 IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1, 
     struct pointdata *pd1, struct pointdata *pd2, int is_next1, int is_next2 ) {
     int i;
     int exc=0;
@@ -1120,7 +1120,7 @@ return( 2 );
         IsVectorHV( dir1,0,true ) && UnitsOrthogonal( dir1,odir2,false )) ||
         ( norm2 < 0 && pd2->colinear &&
         IsVectorHV( dir2,0,true ) && UnitsOrthogonal( dir2,odir1,false ))))
-return( 3 );
+return( 4 );
     
     /* Now check if our 2 points form a serif termination or a feature stub
     /* The check is pretty dumb: it returns 'true' if all the following 
@@ -1196,8 +1196,8 @@ static void SwapEdges( struct stemdata *stem ) {
     }
 }
 
-static int StemFitsHV( struct stemdata *stem,int hv ) {
-    int i,cnt,is_x;
+static int StemFitsHV( struct stemdata *stem,int is_x,uint8 mask ) {
+    int i,cnt;
     double loff,roff;
     double lmin=0,lmax=0,rmin=0,rmax=0;
     struct stem_chunk *chunk;
@@ -1205,7 +1205,7 @@ static int StemFitsHV( struct stemdata *stem,int hv ) {
     cnt = stem->chunk_cnt;
     
     for ( i=0 ; i<stem->chunk_cnt; i++ ) {
-        if( stem->chunks[i].stub )
+        if( stem->chunks[i].stub & mask )
     break;
     }
     if ( i == stem->chunk_cnt )
@@ -1213,7 +1213,6 @@ return( false );
     if ( stem->chunk_cnt == 1 )
 return( true );
     
-    is_x = ( hv == 1 ) ? 1 : 0;
     for ( i=0;i<cnt;i++ ) {
         chunk = &stem->chunks[i];
         
@@ -1302,7 +1301,7 @@ static int BothOnStem( struct stemdata *stem,BasePoint *test1,BasePoint *test2,
     if ( force_hv ) {
         if ( force_hv != hv )
 return( false );
-        if ( !hv_strict && !StemFitsHV( stem,hv ))
+        if ( !hv_strict && !StemFitsHV( stem,( hv == 1 ),7 ))
 return( false );
         if ( !hv_strict ) {
             dir.x = ( force_hv == 2 ) ? 0 : 1;
@@ -1648,7 +1647,7 @@ return( stem );
 }
 
 static int ParallelToDir( struct pointdata *pd,int checknext,BasePoint *dir,
-    BasePoint *opposite,SplinePoint *basesp,int is_stub ) {
+    BasePoint *opposite,SplinePoint *basesp,uint8 is_stub ) {
     
     BasePoint n, o, *base = &basesp->me;
     SplinePoint *sp;
@@ -1659,8 +1658,8 @@ static int ParallelToDir( struct pointdata *pd,int checknext,BasePoint *dir,
 
     err = fabs( n.x*dir->y - n.y*dir->x );
     if (( !is_stub && err > slope_error ) ||
-        ( is_stub == 1 && err > 6*slope_error ) ||
-        ( is_stub > 1 && err > 3*slope_error ))
+        ( is_stub & 1 && err > 6*slope_error ) ||
+        ( is_stub & 6 && err > 3*slope_error ))
 return( false );
 
     /* Now sp must be on the same side of the spline as opposite */
@@ -1781,7 +1780,7 @@ return( hv );
 }
 
 static struct stemdata *TestStem( struct glyphdata *gd,struct pointdata *pd,
-    BasePoint *dir,SplinePoint *match,int is_next,int is_next2,int require_existing,int is_stub,int eidx ) {
+    BasePoint *dir,SplinePoint *match,int is_next,int is_next2,int require_existing,uint8 is_stub,int eidx ) {
     struct pointdata *pd2;
     struct stemdata *stem, *destem;
     struct stem_chunk *chunk;
@@ -1813,7 +1812,7 @@ return( NULL );         /* cannot determine the opposite point's direction */
     if (( err>slope_error || err<-slope_error ) && !is_stub )
 return( NULL );         /* Cannot make a stem if edges are not parallel (unless it is a serif) */
     
-    if ( is_stub == 1 && !IsVectorHV( dir,slope_error,true )) {
+    if ( is_stub & 1 && !IsVectorHV( dir,slope_error,true )) {
         /* For serifs we prefer the vector which is closer to horizontal/vertical */
         middle = MiddleUnit( dir,mdir );
         if ( VectorCloserToHV( &middle,dir ) == 1  && VectorCloserToHV( &middle,mdir ) == 1 )
@@ -2078,7 +2077,7 @@ static int ConnectsAcrossToStem( struct glyphdata *gd,struct pointdata *pd,
     int ecnt, stemidx;
 
     ecnt = ( is_next ) ? pd->next_e_cnt : pd->prev_e_cnt;
-    if ( ecnt == 0 )
+    if ( ecnt < eidx + 1 )
 return( false );
     other = ( is_next ) ? pd->nextedges[eidx] : pd->prevedges[eidx];
 
@@ -2141,7 +2140,8 @@ static int BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
     SplinePoint *testpt, *topt, *frompt;
     struct linedata *line;
     struct pointdata *testpd, *topd, *frompd;
-    int tp, fp, tstub, fstub, t_needs_recalc=false, ret=0;
+    int tp, fp, t_needs_recalc=false, ret=0;
+    uint8 tstub=0, fstub=0;
     BasePoint opposite;
     struct stemdata *stem=NULL;
 
@@ -2172,8 +2172,8 @@ return( 0 );
     opposite.x = ((other->splines[0].a*t+other->splines[0].b)*t+other->splines[0].c)*t+other->splines[0].d;
     opposite.y = ((other->splines[1].a*t+other->splines[1].b)*t+other->splines[1].c)*t+other->splines[1].d;
 
-    tstub = ( eidx == 0 && IsStubOrIntersection( gd,dir,pd,topd,is_next,false ));
-    fstub = ( eidx == 0 && IsStubOrIntersection( gd,dir,pd,frompd,is_next,true ));
+    if ( eidx == 0 ) tstub = IsStubOrIntersection( gd,dir,pd,topd,is_next,false );
+    if ( eidx == 0 ) fstub = IsStubOrIntersection( gd,dir,pd,frompd,is_next,true );
     tp = ParallelToDir( topd,false,dir,&opposite,pd->sp,tstub );
     fp = ParallelToDir( frompd,true,dir,&opposite,pd->sp,fstub );
     
@@ -3489,30 +3489,22 @@ return( false );
 static void GDNormalizeStubs( struct glyphdata *gd ) {
     int i, hv;
     struct stemdata *stem;
+    BasePoint newdir;
     
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
         if ( stem->positioned )
     continue;
         
-        if ( stem->chunk_cnt == 1 && 
-            stem->chunks[0].stub > 0 && stem->chunks[0].stub < 3 && 
-            !IsVectorHV( &stem->unit,0,true )) {
-
+        if ( !IsVectorHV( &stem->unit,0,true )) {
             hv = IsVectorHV( &stem->unit,slope_error,false );
-            if ( hv ) {
+            if ( hv && StemFitsHV( stem,( hv == 1 ),3 )) {
                 if ( hv == 2 && stem->unit.y < 0 )
                     SwapEdges( stem );
 
-                stem->unit.x = fabs( rint( stem->unit.x ));
-                stem->unit.y = fabs( rint( stem->unit.y ));
-                stem->l_to_r.y = stem->unit.x;
-                stem->l_to_r.x = stem->unit.y;
-                /* recalculate the stem width so that it matches the new vector */
-                /* we don't care about left/right offsets: as the stem has just
-                /* one chunk, they should be zero anyway */
-                stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
-                              ( stem->right.y - stem->left.y ) * stem->unit.x;
+                newdir.x = fabs( rint( stem->unit.x ));
+                newdir.y = fabs( rint( stem->unit.y ));
+                SetStemUnit( stem,newdir );
             }
         }
     }
@@ -3580,7 +3572,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         if ( stem->positioned )
     continue;
         
-        if ( stem->chunk_cnt == 1 && stem->chunks[0].stub > 0 && stem->chunks[0].stub < 3 ) {
+        if ( stem->chunk_cnt == 1 && stem->chunks[0].stub & 3 ) {
             chunk = &stem->chunks[0];
             slunit = chunk->lnext ? &chunk->l->nextunit : &chunk->l->prevunit;
             srunit = chunk->rnext ? &chunk->r->nextunit : &chunk->r->prevunit;
@@ -3654,8 +3646,8 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         /* there is already a stem controlling the middle of the curve (between two
         /* bars).*/
         else if ( stem->chunk_cnt == 2 && 
-            (( stem->chunks[0].stub > 0 && stem->chunks[1].stub > 1 ) ||
-             ( stem->chunks[0].stub > 1 && stem->chunks[1].stub > 0 ))) {
+            (( stem->chunks[0].stub & 7 && stem->chunks[1].stub & 6 ) ||
+             ( stem->chunks[0].stub & 6 && stem->chunks[1].stub & 7 ))) {
             for ( j=0; j<gd->stemcnt; ++j) {
 	        stem1 = &gd->stems[j];
                 if ( !stem1->toobig && StemsWouldConflict( stem,stem1 ))
