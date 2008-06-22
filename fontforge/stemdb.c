@@ -317,13 +317,13 @@ return;
         else if ( IsSplinePeak( gd,pd,false,true,2 )) pd->x_corner = 2;
     }
     if ( hint_diagonal_intersections ) {
-	if ( pd->prev_hor || pd->prev_ver )
-	    /* It IS horizontal or vertical. No need to fake it */;
-	else if ( pd->y_corner && RealNear(pd->nextunit.x,-pd->prevunit.x) &&
-		RealNear(pd->nextunit.y,pd->prevunit.y) && !pd->nextzero)
+	if (( pd->y_corner || pd->y_extr ) && 
+            RealNear( pd->nextunit.x,-pd->prevunit.x ) &&
+            RealNear( pd->nextunit.y,pd->prevunit.y ) && !pd->nextzero)
 	    pd->symetrical_h = true;
-	else if ( pd->x_corner && RealNear(pd->nextunit.y,-pd->prevunit.y) &&
-		RealNear(pd->nextunit.x,pd->prevunit.x) && !pd->nextzero)
+	else if (( pd->x_corner || pd->x_extr ) &&
+            RealNear( pd->nextunit.y,-pd->prevunit.y ) &&
+            RealNear( pd->nextunit.x,pd->prevunit.x ) && !pd->nextzero)
 	    pd->symetrical_v = true;
     }
 }
@@ -735,7 +735,7 @@ return( 0 );
         edges[0] = space[j]->s;
         ret++;
     }
-    if ( ret > 0 && ( pd->x_extr == 1 || pd->y_extr == 1 )) {
+    if ( ret > 0 && is_next != 2 && ( pd->x_extr == 1 || pd->y_extr == 1 )) {
         j = MatchWinding(space,i,nw,winding,which,1);
         if ( j!=-1 ) {
 	    other_t[ret] = space[j]->t;
@@ -743,6 +743,8 @@ return( 0 );
             dist[ret] = end - start;
             if ( dist[ret] < 0 ) dist[ret] = -dist[ret];
             edges[ret] = space[j]->s;
+            fprintf(stderr,"assigned second edge to %f,%f, next=%d ret=%d\n",
+                pd->base.x,pd->base.y,is_next,ret);
             ret++;
         }
     }
@@ -1181,7 +1183,7 @@ static void SwapEdges( struct stemdata *stem ) {
     struct linedata *tl;
     struct stem_chunk *chunk;
     double toff;
-    int i, temp;
+    int i, j, temp;
     
     tpos = stem->left; stem->left = stem->right; stem->right = tpos;
     toff = stem->lmin; stem->lmin = stem->rmax; stem->rmax = toff;
@@ -1193,6 +1195,25 @@ static void SwapEdges( struct stemdata *stem ) {
         tpd = chunk->l; chunk->l = chunk->r; chunk->r = tpd;
         temp = chunk->lpotential; chunk->lpotential = chunk->rpotential; chunk->rpotential = temp;
         temp = chunk->lnext; chunk->lnext = chunk->rnext; chunk->rnext = temp;
+        
+        tpd = chunk->l;
+        if ( tpd != NULL ) {
+            for ( j=0; j<tpd->nextcnt; j++ )
+                if ( tpd->nextstems[j] == stem )
+                    tpd->next_is_l[j] = true;
+            for ( j=0; j<tpd->prevcnt; j++ )
+                if ( tpd->prevstems[j] == stem )
+                    tpd->prev_is_l[j] = true;
+        }
+        tpd = chunk->r;
+        if ( tpd != NULL ) {
+            for ( j=0; j<tpd->nextcnt; j++ )
+                if ( tpd->nextstems[j] == stem )
+                    tpd->next_is_l[j] = false;
+            for ( j=0; j<tpd->prevcnt; j++ )
+                if ( tpd->prevstems[j] == stem )
+                    tpd->prev_is_l[j] = false;
+        }
     }
 }
 
@@ -2158,6 +2179,8 @@ static int BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
 	t = pd->prev_e_t[eidx];
         dist = pd->prev_dist[eidx];
     }
+    if (other==NULL) fprintf(stderr,"NULL eidx=%d next=%d pd %f,%f\n",
+        eidx,is_next,pd->base.x,pd->base.y);
     topt = other->to; frompt = other->from;
     topd = &gd->points[topt->ptindex];
     frompd = &gd->points[frompt->ptindex];
@@ -3512,12 +3535,13 @@ static void GDNormalizeStubs( struct glyphdata *gd ) {
 
 static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     double width, minl, ratio;
-    int i, j, stem_cnt;
+    int i, j, k, stem_cnt, ls_cnt, rs_cnt;
     struct pointdata *lpd, *rpd;
     Spline *ls, *rs;
     SplinePoint *lsp, *rsp;
     BasePoint *lunit, *runit, *slunit, *srunit, *sunit;
-    struct stemdata *stem, *stem1, *lstem, *rstem, *tstem;
+    struct stemdata *stem, *stem1, *tstem;
+    struct stemdata **tstems, **lstems, **rstems;
     struct stem_chunk *chunk;
 
     GDStemsFixupIntersects( gd );
@@ -3586,19 +3610,22 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
             if ( VectorCloserToHV( srunit,slunit ) > 0 ) sunit = srunit;
             else sunit = slunit;
             
-            lpd = chunk->l; lsp = lpd->sp; lstem = tstem = NULL;
+            lpd = chunk->l; lsp = lpd->sp; lstems = tstems = NULL;
+            ls_cnt = 0;
             do {
                 stem_cnt = (( chunk->lnext && lpd == chunk->l ) ||
                             ( !chunk->lnext && lpd != chunk->l )) ? lpd->nextcnt : lpd->prevcnt;
                 for ( j=0; j<stem_cnt; j++ ) {
-                    tstem = (( chunk->lnext && lpd == chunk->l ) ||
-                            ( !chunk->lnext && lpd != chunk->l )) ? lpd->nextstems[j] : lpd->prevstems[j];
+                    tstems= (( chunk->lnext && lpd == chunk->l ) ||
+                            ( !chunk->lnext && lpd != chunk->l )) ? lpd->nextstems : lpd->prevstems;
+                    tstem = tstems[j];
                     if ( tstem != stem ) {
-                        lstem = tstem;
+                        lstems = tstems;
+                        ls_cnt = stem_cnt;
                 break;
                     }
                 }
-                if( lstem != NULL )
+                if( lstems != NULL )
             break;
                 ls = ( chunk->lnext ) ? lsp->next : lsp->prev;
                 if ( ls == NULL )
@@ -3609,19 +3636,22 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
             } while ( lpd != chunk->l && lpd != chunk->r &&
                 UnitsParallel( lunit,sunit,false ));
 
-            rpd = chunk->r; rsp = rpd->sp; rstem = tstem = NULL;
+            rpd = chunk->r; rsp = rpd->sp; rstems = tstems = NULL;
+            rs_cnt = 0;
             do {
                 stem_cnt = (( chunk->rnext && rpd == chunk->r ) ||
                             ( !chunk->rnext && rpd != chunk->r )) ? rpd->nextcnt : rpd->prevcnt;
                 for ( j=0; j<stem_cnt; j++ ) {
-                    tstem = (( chunk->rnext && rpd == chunk->r ) ||
-                            ( !chunk->rnext && rpd != chunk->r )) ? rpd->nextstems[j] : rpd->prevstems[j];
+                    tstems= (( chunk->rnext && rpd == chunk->r ) ||
+                            ( !chunk->rnext && rpd != chunk->r )) ? rpd->nextstems : rpd->prevstems;
+                    tstem = tstems[j];
                     if ( tstem != stem ) {
-                        rstem = tstem;
+                        rstems = tstems;
+                        rs_cnt = stem_cnt;
                 break;
                     }
                 }
-                if( rstem != NULL )
+                if( rstems != NULL )
             break;
                 rs = ( chunk->rnext ) ? rsp->next : rsp->prev;
                 if ( rs == NULL )
@@ -3632,9 +3662,15 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
             } while ( rpd != chunk->r && rpd != chunk->l &&
                 UnitsParallel( runit,sunit,false ));
             
-            if ( lstem != NULL && rstem !=NULL && lstem == rstem &&
-                IsVectorHV( &lstem->unit,0,true ))
-                stem->toobig = true;
+            if ( lstems != NULL && rstems !=NULL ) {
+                for ( j=0; j<ls_cnt && !stem->toobig; j++ ) {
+                    for ( k=0; k<rs_cnt && !stem->toobig; k++ ) {
+                        if ( lstems[j] == rstems[k] && IsVectorHV( &lstems[j]->unit,0,true )) {
+                            stem->toobig = true;
+                        }
+                    }
+                }
+            }
         }
 
         /* One more check for intersections between a curved segment and a
@@ -5245,7 +5281,7 @@ return( NULL );
 	    pd->next_e_cnt = FindMatchingEdge(gd,pd,true,pd->nextedges);
 	if ( !pd->prevzero )
 	    pd->prev_e_cnt = FindMatchingEdge(gd,pd,false,pd->prevedges);
-	if ( (pd->symetrical_h || pd->symetrical_v ))
+	if (( pd->symetrical_h || pd->symetrical_v ) && ( pd->x_corner || pd->y_corner))
 	    FindMatchingEdge(gd,pd,2,&pd->bothedge);
     }
 
