@@ -743,8 +743,6 @@ return( 0 );
             dist[ret] = end - start;
             if ( dist[ret] < 0 ) dist[ret] = -dist[ret];
             edges[ret] = space[j]->s;
-            fprintf(stderr,"assigned second edge to %f,%f, next=%d ret=%d\n",
-                pd->base.x,pd->base.y,is_next,ret);
             ret++;
         }
     }
@@ -2179,8 +2177,6 @@ static int BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
 	t = pd->prev_e_t[eidx];
         dist = pd->prev_dist[eidx];
     }
-    if (other==NULL) fprintf(stderr,"NULL eidx=%d next=%d pd %f,%f\n",
-        eidx,is_next,pd->base.x,pd->base.y);
     topt = other->to; frompt = other->from;
     topd = &gd->points[topt->ptindex];
     frompd = &gd->points[frompt->ptindex];
