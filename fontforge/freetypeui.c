@@ -581,7 +581,32 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     else
 	outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
     outline.points = exc->pts.cur;
+#ifndef FT_OUTLINE_SMART_DROPOUTS	/* Appeared in 2.3.7 (June, 2008) */
+/* FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<7)) */
     outline.flags = FT_OUTLINE_NONE;
+#else
+    outline.flags = 0;
+    switch ( exc->GS.scan_type ) {
+      /* Taken, at Werner's suggestion, from the freetype sources: ttgload.c:1970 */
+      case 0: /* simple drop-outs including stubs */
+	outline.flags |= FT_OUTLINE_INCLUDE_STUBS;
+      break;
+      case 1: /* simple drop-outs excluding stubs */
+	/* nothing; it's the default rendering mode */
+      break;
+      case 4: /* smart drop-outs including stubs */
+	outline.flags |= FT_OUTLINE_SMART_DROPOUTS |
+				FT_OUTLINE_INCLUDE_STUBS;
+      break;
+      case 5: /* smart drop-outs excluding stubs  */
+	outline.flags |= FT_OUTLINE_SMART_DROPOUTS;
+      break;
+
+      default: /* no drop-out control */
+	outline.flags |= FT_OUTLINE_IGNORE_DROPOUTS;
+      break;
+    }
+#endif
 
     first = true;
     for ( k=0; k<outline.n_contours; ++k ) {
