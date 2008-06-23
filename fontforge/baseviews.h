@@ -179,6 +179,7 @@ typedef struct {
     int notsafeforwork;
     int oflicense;
     char *previewimage;			/* NULL => No image */
+    char *upload_id;			/* Way to manipulate upload on OFLib */
 } OFLibData;
 
 struct lcg_zones {

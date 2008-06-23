@@ -49,9 +49,10 @@ struct siteinfo {
     int cookie_cnt;
     char *cookies[30];
     int user_id;
+    char *upload_id;
 };
 
-enum conversation_type { ct_savecookies, ct_slurpdata, ct_getuserid };
+enum conversation_type { ct_savecookies, ct_slurpdata, ct_getuserid, ct_getuploadid };
 
 static int findHTTPhost(struct sockaddr_in *addr, char *hostname, int port) {
     struct servent *servent;
@@ -341,7 +342,13 @@ return( 404 );
 
     first = 1; ended = 0;
     code = 404;
+ { FILE *out;
+   char fbuf[400];
+   static int msgid=0;
+   sprintf(fbuf,"response%d", ++msgid);
+   out = fopen( fbuf,"w");
     while ((len = read(soc,databuf,databuflen))>0 ) {
+  fwrite(databuf,1,len,out);
 	if ( first ) {
 	    sscanf(databuf,"HTTP/%*f %d", &code );
 	    first = 0;
@@ -383,10 +390,21 @@ return( 404 );
 	    pt = strstr(pt,"value=\"");
 	    if ( pt!=NULL )
 		siteinfo->user_id = strtol(pt+7,NULL,10);
+	} else if ( ct== ct_getuploadid && (pt=strstr(databuf,"<!-- CONTENT STARTS -->"))!=NULL ) {
+	    char *search = "http://openfontlibrary.org/media/files/";
+	    pt = strstr(pt,search);
+	    if ( pt!=NULL ) {
+		char *end = strchr(pt,'"');
+		pt += strlen(search);
+		if ( end!=NULL )
+		    siteinfo->upload_id = copyn(pt,end-pt);
+	    }
 	}
 	if ( verbose>=2 || ( verbose!=0 && verbose<2 && !ended) )
 	    write(fileno(stdout),databuf,len);
     }
+ fclose(out);
+ }
     if ( len==-1 )
 	fprintf( stderr, "Socket read failed\n" );
     close( soc );
@@ -535,14 +553,14 @@ return( false );
 		     /*"Content-Type: text/plain; charset=UTF-8\r\n"*/"\r\n" );
     fprintf(formdata,"%s\r\n", oflib->artists );
     fprintf(formdata,"--%s\r\n", boundary );
-    if ( oflib->previewimage==NULL ) {
-	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
-			 "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
-	if ( !dumpfile(formdata,oflib->pathspec)) {
-	    free(databuf);
-	    ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
+		     "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
+    if ( !dumpfile(formdata,oflib->pathspec)) {
+	free(databuf);
+	ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
-	}
+    }
+#if 0		/* Posting multiple files doesn't work */
     } else {
 	char *previewname;
 	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\";\r\n"
@@ -569,6 +587,7 @@ return( false );
 	}
 	fprintf(formdata,"--Sub%s--\r\n", boundary );
     }
+#endif
 
     fprintf(formdata,"--%s\r\n", boundary );
     fprintf(formdata,"Content-Disposition: form-data; name=\"upload_tags\"\r\n"
@@ -639,17 +658,93 @@ return( false );
 	    (long) ftell(formdata) );
     AttachCookies(databuf,&siteinfo);
     strcat(databuf,"\r\n");
-    code = Converse( soc, databuf, datalen, formdata, ct_slurpdata, &siteinfo );
-    ff_progress_end_indicator();
-    free( databuf );
+    code = Converse( soc, databuf, datalen, formdata, ct_getuploadid, &siteinfo );
 
     /* I think the expected return code here is 200, that's what I've seen the*/
     /*  two times I've done a successful upload */
     if ( code<200 || code > 399 ) {
 	ff_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
+	ff_progress_end_indicator();
+	free( databuf );
 return( false );
     } else if ( code!=200 )
 	ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
+    if ( siteinfo.upload_id==NULL ) {
+	ff_post_error(_("Error from openfontlibrary"),_("Failed to find an upload id.") );
+	ff_progress_end_indicator();
+	free( databuf );
+return( false );
+    }
+
+    oflib->upload_id = siteinfo.upload_id;
+ fprintf( stderr, "Upload ID: %s\n", siteinfo.upload_id );
+
+    if ( oflib->previewimage!=NULL ) {
+	char *previewname;
+	ChangeLine2_8("Preparing to transmit preview image...");
+	formdata = tmpfile();
+	sprintf( boundary, "-------GaB03x-------%X-------", rand());
+	previewname = strrchr(oflib->previewimage,'/');
+	if ( previewname==NULL ) fontfilename = oflib->previewimage;
+	else ++previewname;
+	fprintf(formdata,"--%s\r\n", boundary );	/* Multipart data begins with a boundary */
+	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
+			 "Content-Type: %s\r\n\r\n", previewname, ImageMimeType(strrchr(previewname,'.')) );
+	if ( !dumpfile(formdata,oflib->previewimage)) {
+	    free(databuf);
+	    ff_post_error(_("Preview file vanished"),_("The preview file we just created can no longer be opened.") );
+return( false );
+	}
+	fprintf(formdata,"--%s\r\n", boundary );
+	fprintf(formdata,"Content-Disposition: form-data; name=\"file_nicname\"\r\n"
+			 /*"Content-Type: text/plain; charset=UTF-8\r\n"*/"\r\n" );
+	fprintf(formdata,"\r\n" );
+	fprintf(formdata,"--%s\r\n", boundary );
+	fprintf(formdata,"Content-Disposition: form-data; name=\"form_submit\"\r\n\r\n" );
+	fprintf(formdata,"Submit\r\n" );	/* Although the "value" in the <input> is something else, this is what gets sent */
+	fprintf(formdata,"--%s\r\n", boundary );
+	fprintf(formdata,"Content-Disposition: form-data; name=\"http_referer\"\r\n\r\n" );
+	fprintf(formdata,"http%%3A%%2F%%2Fopenfontlibrary.org%%2Fmedia%%2Ffile%%2Fmanage%%2F%s\r\n",
+		strchr(siteinfo.upload_id,'/')+1 );
+	fprintf(formdata,"--%s\r\n", boundary );
+	fprintf(formdata,"Content-Disposition: form-data; name=\"fileadd\"\r\n\r\n" );
+	fprintf(formdata,"classname\r\n" );
+	fprintf(formdata,"--%s--\r\n", boundary );
+
+	ChangeLine2_8("Transmitting preview...");
+	soc = makeConnection(&addr);
+	if ( soc==-1 ) {
+	    ff_progress_end_indicator();
+	    free(databuf);
+	    fclose(formdata);
+	    ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
+return( false );
+	}
+	sprintf( databuf,"POST /media/file/add/%s HTTP/1.1\r\n"
+	    "Host: www.openfontlibrary.org\r\n"
+	    "Accept: text/html,text/plain\r\n"
+	    "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n"
+	    "User-Agent: FontForge\r\n"
+	    "Content-Type: multipart/form-data; boundary=\"%s\"\r\n"
+	    "Content-Length: %ld\r\n"
+	    "Connection: close\r\n",
+		strchr(siteinfo.upload_id,'/')==NULL ? siteinfo.upload_id : strchr(siteinfo.upload_id,'/')+1,
+		boundary ,
+		(long) ftell(formdata) );
+	AttachCookies(databuf,&siteinfo);
+	strcat(databuf,"\r\n");
+	code = Converse( soc, databuf, datalen, formdata, ct_getuploadid, &siteinfo );
+	if ( code<200 || code > 399 ) {
+	    ff_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
+	    ff_progress_end_indicator();
+	    free( databuf );
+return( false );
+	} else if ( code!=200 )
+	    ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
+    }
+    ff_progress_end_indicator();
+    free( databuf );
+
 return( true );
 }
 

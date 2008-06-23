@@ -1298,11 +1298,17 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
 	    oflib.previewimage = NULL;
 	}
     }
-#ifndef GWW_TEST
- oflib.previewimage = NULL;
-#endif
 
     ret = OFLibUploadFont( &oflib );
+    if ( oflib.upload_id!=NULL ) {
+	char *baseurl = "http://openfontlibrary.org/media/files/";
+	char *uploadcontrol = galloc(strlen(baseurl) + strlen(oflib.upload_id) + 1 );
+	strcpy(uploadcontrol,baseurl);
+	strcat(uploadcontrol,oflib.upload_id);
+	help(uploadcontrol);
+	free(uploadcontrol);
+    }
+    
     if ( ret && GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibRememberMe))) {
 	free(oflib_username); free(oflib_password);
 	oflib_username = copy( oflib.username );
@@ -1924,10 +1930,8 @@ static int GFD_ToggleOFLib(GGadget *g, GEvent *e) {
 	    CID_OFLibName, CID_OFLibTags, CID_OFLibDescription, CID_OFLibArtists,
 	    CID_OFLibNotSafe,
 	    CID_OFLibLine1, CID_OFLibLine2,
-#ifndef GWW_TEST
 	    CID_OFLibGenPreview, CID_OFLibNoPreview, CID_OFLibDiskPreview,
 	    CID_OFLibPreviewText, CID_OFLibPreviewBrowse,
-#endif
 	    0 };
 	int i, visible = GGadgetIsChecked(g);
 
