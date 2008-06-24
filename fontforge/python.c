@@ -3458,6 +3458,7 @@ return( NULL );
 	    if ( c->pt_cnt==1 ) {
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
 		ss->first->selected = c->points[0]->selected;
+		SPLCatagorizePoints(ss);
 return( ss );
 	    }
 	    ++i;
@@ -3592,6 +3593,7 @@ return( NULL );
     }
     if ( tt_start!=NULL )
 	*tt_start = next;
+    SPLCatagorizePoints(ss);
 return( ss );
 }
 
