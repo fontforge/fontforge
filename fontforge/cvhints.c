@@ -40,6 +40,7 @@
 #define CID_Overlap	1010
 #define CID_Count	1011
 #define CID_MovePoints	1012
+#define CID_TopBox	1013
 
 typedef struct reviewhintdata {
     unsigned int done: 1;
@@ -240,8 +241,11 @@ return( true );
 		hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
 	    hd->cv->b.sc->manualhints = true;
 	    hd->changed = true;
-	    if ( wasconflict!=hd->active->hasconflicts )
+	    if ( wasconflict!=hd->active->hasconflicts ) {
 		GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),hd->active->hasconflicts);
+		if ( hd->active->hasconflicts )
+		    GHVBoxFitWindow(GWidgetGetControl(hd->gw,CID_TopBox));
+	    }
 	    SCOutOfDateBackground(hd->cv->b.sc);
 	    SCUpdateAll(hd->cv->b.sc);
 	}
@@ -383,7 +387,8 @@ void CVReviewHints(CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
+    GGadgetCreateData gcd[17], *harray1[5], *harray2[6], *harray3[6], *harray4[6],
+	*varray[6][2], boxes[7], *barray[5][6];
     GTextInfo label[17];
     static ReviewHintData hd;
 
@@ -406,6 +411,7 @@ void CVReviewHints(CharView *cv) {
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
 	label[0].text = (unichar_t *) _("_Base:");
 	label[0].text_is_1byte = true;
@@ -414,12 +420,15 @@ void CVReviewHints(CharView *cv) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 14+17+5+3; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	harray1[0] = &gcd[0];
 
 	gcd[1].gd.pos.x = 37; gcd[1].gd.pos.y = gcd[0].gd.pos.y-3;  gcd[1].gd.pos.width = 40;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.cid = CID_Base;
 	gcd[1].gd.handle_controlevent = RH_TextChanged;
 	gcd[1].creator = GTextFieldCreate;
+	harray1[1] = &gcd[1];
+	
 
 	label[2].text = (unichar_t *) _("_Size:");
 	label[2].text_is_1byte = true;
@@ -428,12 +437,14 @@ void CVReviewHints(CharView *cv) {
 	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
+	harray1[2] = &gcd[2];
 
 	gcd[3].gd.pos.x = 120; gcd[3].gd.pos.y = gcd[1].gd.pos.y;  gcd[3].gd.pos.width = 40;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.cid = CID_Width;
 	gcd[3].gd.handle_controlevent = RH_TextChanged;
 	gcd[3].creator = GTextFieldCreate;
+	harray1[3] = &gcd[3]; harray1[4] = GCD_Glue; harray1[5] = NULL;
 
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 14+17+37+14+60;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
@@ -445,6 +456,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.handle_controlevent = RH_OK;
 	gcd[4].creator = GButtonCreate;
+	barray[3][0] = GCD_Glue; barray[3][1] = &gcd[4]; barray[3][2] = GCD_Glue;
 
 	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
@@ -456,6 +468,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = RH_Cancel;
 	gcd[5].creator = GButtonCreate;
+	barray[3][3] = &gcd[5]; barray[3][4] = GCD_Glue; barray[3][5] = NULL;
 
 	label[6].text = (unichar_t *) _("_HStem");
 	label[6].text_is_1byte = true;
@@ -466,6 +479,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[6].gd.cid = CID_HStem;
 	gcd[6].gd.handle_controlevent = RH_HVStem;
 	gcd[6].creator = GRadioCreate;
+	harray2[0] = &gcd[6];
 
 	label[7].text = (unichar_t *) _("_VStem");
 	label[7].text_is_1byte = true;
@@ -476,11 +490,13 @@ void CVReviewHints(CharView *cv) {
 	gcd[7].gd.cid = CID_VStem;
 	gcd[7].gd.handle_controlevent = RH_HVStem;
 	gcd[7].creator = GRadioCreate;
+	harray2[1] = &gcd[7];
 
 	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 14+17+31+14+30;
 	gcd[8].gd.pos.width = 170-10;
 	gcd[8].gd.flags = gg_enabled|gg_visible;
 	gcd[8].creator = GLineCreate;
+	barray[1][0] = GCD_Glue; barray[1][1] = &gcd[8]; barray[1][2] = barray[1][3] = GCD_ColSpan; barray[1][4] = GCD_Glue; barray[1][5] = NULL;
 
 	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 14+17+14+33;
 	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
@@ -493,6 +509,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[9].gd.cid = CID_Add;
 	gcd[9].gd.handle_controlevent = RH_Add;
 	gcd[9].creator = GButtonCreate;
+	barray[0][0] = GCD_Glue; barray[0][1] = &gcd[9]; barray[0][2] = GCD_Glue;
 
 	gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = gcd[9].gd.pos.y;
 	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
@@ -505,6 +522,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[10].gd.cid = CID_Remove;
 	gcd[10].gd.handle_controlevent = RH_Remove;
 	gcd[10].creator = GButtonCreate;
+	barray[0][3] = &gcd[10]; barray[0][4] = GCD_Glue; barray[0][5] = NULL;
 
 	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 14+17+37+14+30;
 	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
@@ -517,6 +535,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[11].gd.cid = CID_Prev;
 	gcd[11].gd.handle_controlevent = RH_NextPrev;
 	gcd[11].creator = GButtonCreate;
+	barray[2][0] = GCD_Glue; barray[2][1] = &gcd[11]; barray[2][2] = GCD_Glue;
 
 	gcd[12].gd.pos.x = -20; gcd[12].gd.pos.y = 14+17+37+14+30;
 	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
@@ -529,6 +548,8 @@ void CVReviewHints(CharView *cv) {
 	gcd[12].gd.cid = CID_Next;
 	gcd[12].gd.handle_controlevent = RH_NextPrev;
 	gcd[12].creator = GButtonCreate;
+	barray[2][3] = &gcd[12]; barray[2][4] = GCD_Glue; barray[2][5] = NULL;
+	barray[4][0] = NULL;
 
 	gcd[13].gd.pos.x = 66; gcd[13].gd.pos.y = 14+17+30;
 	gcd[13].gd.flags = gg_visible | gg_enabled;
@@ -538,6 +559,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[13].gd.label = &label[13];
 	gcd[13].gd.cid = CID_Overlap;
 	gcd[13].creator = GLabelCreate;
+	harray4[0] = GCD_Glue; harray4[1] = &gcd[13]; harray4[2] = GCD_Glue; harray4[3] = NULL;
 
 	label[14].text = (unichar_t *) "999/999 hstem3";
 	label[14].text_is_1byte = true;
@@ -546,6 +568,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[14].gd.flags = gg_enabled|gg_visible;
 	gcd[14].gd.cid = CID_Count;
 	gcd[14].creator = GLabelCreate;
+	harray2[2] = GCD_HPad10; harray2[3] = &gcd[14]; harray2[4] = GCD_Glue; harray2[5] = NULL;
 
 	label[15].text = (unichar_t *) _("_Move Points");
 	label[15].text_is_1byte = true;
@@ -556,8 +579,51 @@ void CVReviewHints(CharView *cv) {
 	gcd[15].gd.cid = CID_MovePoints;
 	gcd[15].gd.popup_msg = (unichar_t *) _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
 	gcd[15].creator = GCheckBoxCreate;
+	harray3[0] = &gcd[15]; harray3[1] = GCD_Glue; harray3[2] = NULL;
 
-	GGadgetsCreate(gw,gcd);
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray2;
+	boxes[2].creator = GHBoxCreate;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = harray3;
+	boxes[3].creator = GHBoxCreate;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = harray1;
+	boxes[4].creator = GHBoxCreate;
+
+	boxes[5].gd.flags = gg_enabled|gg_visible;
+	boxes[5].gd.u.boxelements = harray4;
+	boxes[5].creator = GHBoxCreate;
+
+	boxes[6].gd.flags = gg_enabled|gg_visible;
+	boxes[6].gd.u.boxelements = barray[0];
+	boxes[6].creator = GHVBoxCreate;
+
+	varray[0][0] = &boxes[2]; varray[0][1] = NULL;
+	varray[1][0] = &boxes[3]; varray[1][1] = NULL;
+	varray[2][0] = &boxes[4]; varray[2][1] = NULL;
+	varray[3][0] = &boxes[5]; varray[3][1] = NULL;
+	varray[4][0] = &boxes[6]; varray[4][1] = NULL;
+	varray[5][0] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray[0];
+	boxes[0].gd.cid = CID_TopBox;
+	boxes[0].creator = GHVGroupCreate;
+
+
+	GGadgetsCreate(gw,boxes);
+
+	GHVBoxSetExpandableRow(boxes[0].ret,3);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandglue);
+	GHVBoxFitWindow(boxes[0].ret);
     } else
 	gw = hd.gw;
     if ( cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL )
@@ -668,7 +734,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
+    GGadgetCreateData gcd[9], *harray1[4], *harray2[9], *barray[7], *varray[5][2], boxes[5];
     GTextInfo label[9];
     static CreateHintData chd;
     char buffer[20]; unichar_t ubuf[20];
@@ -694,6 +760,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
 	label[0].text = (unichar_t *) _("_Base:");
 	label[0].text_is_1byte = true;
@@ -702,6 +769,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 17+5+6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	harray2[0] = GCD_Glue; harray2[1] = &gcd[0];
 
 	sprintf( buffer, "%g", (double) (ishstem ? cv->p.cy : cv->p.cx) );
 	label[1].text = (unichar_t *) buffer;
@@ -711,6 +779,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].gd.cid = CID_Base;
 	gcd[1].creator = GTextFieldCreate;
+	harray2[2] = &gcd[1];
 
 	label[2].text = (unichar_t *) _("_Size:");
 	label[2].text_is_1byte = true;
@@ -719,6 +788,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = 17+5+6; 
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
+	harray2[3] = GCD_Glue; harray2[4] = &gcd[2];
 
 	label[3].text = (unichar_t *) "60";
 	label[3].text_is_1byte = true;
@@ -727,6 +797,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.cid = CID_Width;
 	gcd[3].creator = GTextFieldCreate;
+	harray2[5] = &gcd[1]; harray2[6] = GCD_Glue; harray2[7] = NULL;
 
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
@@ -738,6 +809,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.handle_controlevent = CH_OK;
 	gcd[4].creator = GButtonCreate;
+	barray[0] = GCD_Glue; barray[1] = &gcd[4]; barray[2] = GCD_Glue;
 
 	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 17+37+3;
 	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
@@ -749,6 +821,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[5].gd.mnemonic = 'C';
 	gcd[5].gd.handle_controlevent = CH_Cancel;
 	gcd[5].creator = GButtonCreate;
+	barray[3] = GCD_Glue; barray[4] = &gcd[5]; barray[5] = GCD_Glue; barray[6] = NULL;
 
 	label[6].text = (unichar_t *) _("Create Horizontal Stem Hint");	/* Initialize to bigger size */
 	label[6].text_is_1byte = true;
@@ -757,13 +830,42 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[6].gd.flags = gg_enabled|gg_visible;
 	gcd[6].gd.cid = CID_Label;
 	gcd[6].creator = GLabelCreate;
+	harray1[0] = GCD_Glue; harray1[1] = &gcd[6]; harray1[2] = GCD_Glue; harray1[3] = NULL;
 
 	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 17+31;
 	gcd[7].gd.pos.width = 170-10;
 	gcd[7].gd.flags = gg_enabled|gg_visible;
 	gcd[7].creator = GLineCreate;
 
-	GGadgetsCreate(gw,gcd);
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray1;
+	boxes[2].creator = GHBoxCreate;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = harray2;
+	boxes[3].creator = GHBoxCreate;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = barray;
+	boxes[4].creator = GHBoxCreate;
+
+	varray[0][0] = &boxes[2]; varray[0][1] = NULL;
+	varray[1][0] = &boxes[3]; varray[1][1] = NULL;
+	varray[2][0] = &gcd[7];   varray[2][1] = NULL;
+	varray[3][0] = &boxes[4]; varray[3][1] = NULL;
+	varray[4][0] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray[0];
+	boxes[0].creator = GHVGroupCreate;
+	
+
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+	GHVBoxFitWindow(boxes[0].ret);
     } else {
 	gw = chd.gw;
 	sprintf( buffer, "%g", (double) (ishstem ? cv->p.cy : cv->p.cx) );
