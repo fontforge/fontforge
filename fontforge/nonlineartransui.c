@@ -53,7 +53,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     struct nldlg d;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[8], boxes[4], *hvarray[3][3], *barray[9], *varray[3][2];
     GTextInfo label[8];
     struct context c;
     char *expstr;
@@ -73,6 +73,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     d.gw = GDrawCreateTopWindow(NULL,&pos,nld_e_h,&d,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
     memset(label,0,sizeof(label));
 
 /* GT: an expression describing the transformation applied to the X coordinate */
@@ -83,6 +84,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[0].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[0].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[0];
 
     if ( lastx!=NULL )
 	label[1].text = lastx;
@@ -95,6 +97,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[1].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[1].creator = GTextFieldCreate;
+    hvarray[0][1] = &gcd[1]; hvarray[0][2] = NULL;
 
 /* GT: an expression describing the transformation applied to the Y coordinate */
     label[2].text = (unichar_t *) _("Y Expr:");
@@ -104,6 +107,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[2].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[2].creator = GLabelCreate;
+    hvarray[1][0] = &gcd[2];
 
     if ( lastx!=NULL )
 	label[3].text = lasty;
@@ -117,6 +121,12 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[3].gd.popup_msg = (unichar_t *) _("These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\nExamples:\n x^3+2.5*x^2+5\n (x-300)*(y-200)/100\n y+sin(100*x)");
     gcd[3].creator = GTextFieldCreate;
+    hvarray[1][1] = &gcd[3]; hvarray[1][2] = NULL; hvarray[2][0] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = hvarray[0];
+    boxes[2].creator = GHVBoxCreate;
+    varray[0][0] = &boxes[2]; varray[0][1] = NULL;
 
     gcd[4].gd.pos.x = 30-3; gcd[4].gd.pos.y = gcd[3].gd.pos.y+30;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
@@ -127,6 +137,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[4].gd.label = &label[4];
     gcd[4].gd.cid = true;
     gcd[4].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[4]; barray[2] = GCD_Glue;
 
     gcd[5].gd.pos.x = -30; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
@@ -137,13 +148,23 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     gcd[5].gd.label = &label[5];
     gcd[5].gd.cid = false;
     gcd[5].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[5]; barray[5] = GCD_Glue; barray[6] = NULL;
 
-    gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
-    gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-4;
-    gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[6].creator = GGroupCreate;
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = barray;
+    boxes[3].creator = GHBoxCreate;
+    varray[1][0] = &boxes[3]; varray[1][1] = NULL;
+    varray[2][0] = NULL;
 
-    GGadgetsCreate(d.gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(d.gw,boxes);
+    GHVBoxSetExpandableCol(boxes[2].ret,1);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(d.gw,true);
     while ( !d.done ) {
 	GDrawProcessOneEvent(NULL);
@@ -263,9 +284,10 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     struct nldlg d;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[24];
+    GGadgetCreateData gcd[24], boxes[7], *varray[10][3], *harray1[3], *harray2[3],
+	    *barray[9], *harray3[3], *harray4[3];
     GTextInfo label[24];
-    int i,k;
+    int i,k,l;
     char xval[40], yval[40], zval[40], dval[40], tval[40], dirval[40];
     double x,y,z,dv,tilt,dir;
     int err;
@@ -301,15 +323,17 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     d.gw = GDrawCreateTopWindow(NULL,&pos,nld_e_h,&d,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
     memset(label,0,sizeof(label));
 
-    k=0;
+    k=l=0;
     label[k].text = (unichar_t *) _("View Point");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 8;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    varray[l][0] = &gcd[k-1]; varray[l][1] = GCD_ColSpan; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("_X");
     label[k].text_is_1byte = true;
@@ -318,6 +342,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 16;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    harray1[0] = &gcd[k-1];
 
     for ( i=or_zero; i<or_undefined; ++i ) originx[i].selected = false;
     originx[pov->xorigin].selected = true;
@@ -328,6 +353,12 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.u.list = originx;
     gcd[k].gd.cid = CID_XType;
     gcd[k++].creator = GListButtonCreate;
+    harray1[1] = &gcd[k-1]; harray1[2] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray1;
+    boxes[2].creator = GHBoxCreate;
+    varray[l][0] = &boxes[2];
 
     sprintf( xval, "%g", rint(pov->x));
     label[k].text = (unichar_t *) xval;
@@ -338,6 +369,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_XValue;
     gcd[k++].creator = GTextFieldCreate;
+    varray[l][1] = &gcd[k-1]; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("_Y");
     label[k].text_is_1byte = true;
@@ -346,6 +378,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 28;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    harray2[0] = &gcd[k-1];
 
     for ( i=or_zero; i<or_undefined; ++i ) originy[i].selected = false;
     originy[pov->yorigin].selected = true;
@@ -356,6 +389,12 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.u.list = originy;
     gcd[k].gd.cid = CID_YType;
     gcd[k++].creator = GListButtonCreate;
+    harray2[1] = &gcd[k-1]; harray2[2] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray2;
+    boxes[3].creator = GHBoxCreate;
+    varray[l][0] = &boxes[3];
 
     sprintf( yval, "%g", rint(pov->y));
     label[k].text = (unichar_t *) yval;
@@ -366,6 +405,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.cid = CID_YValue;
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k++].creator = GTextFieldCreate;
+    varray[l][1] = &gcd[k-1]; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("Distance to drawing plane:");
     label[k].text_is_1byte = true;
@@ -373,6 +413,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y + 28;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    varray[l][0] = &gcd[k-1];
 
     sprintf( zval, "%g", rint(pov->z));
     label[k].text = (unichar_t *) zval;
@@ -383,6 +424,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_ZValue;
     gcd[k++].creator = GTextFieldCreate;
+    varray[l][1] = &gcd[k-1]; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("Distance to projection plane:");
     label[k].text_is_1byte = true;
@@ -390,6 +432,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y + 24;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    varray[l][0] = &gcd[k-1];
 
     sprintf( dval, "%g", rint(pov->d));
     label[k].text = (unichar_t *) dval;
@@ -400,6 +443,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_DValue;
     gcd[k++].creator = GTextFieldCreate;
+    varray[l][1] = &gcd[k-1]; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("Drawing plane tilt:");
     label[k].text_is_1byte = true;
@@ -407,6 +451,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y + 24;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    varray[l][0] = &gcd[k-1];
 
     sprintf( tval, "%g", rint(pov->tilt*180/3.1415926535897932));
     label[k].text = (unichar_t *) tval;
@@ -417,6 +462,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_Tilt;
     gcd[k++].creator = GTextFieldCreate;
+    harray3[0] = &gcd[k-1];
 
     label[k].text = (unichar_t *) U_("°");
     label[k].text_is_1byte = true;
@@ -424,6 +470,12 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    harray3[1] = &gcd[k-1]; harray3[2] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = harray3;
+    boxes[4].creator = GHBoxCreate;
+    varray[l][1] = &boxes[4]; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("Direction of gaze:");
     label[k].text_is_1byte = true;
@@ -431,6 +483,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y + 24;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    varray[l][0] = &gcd[k-1];
 
     sprintf( dirval, "%g", rint(pov->direction*180/3.1415926535897932));
     label[k].text = (unichar_t *) dirval;
@@ -441,6 +494,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.handle_controlevent = PoV_Vanish;
     gcd[k].gd.cid = CID_GazeDirection;
     gcd[k++].creator = GTextFieldCreate;
+    harray4[0] = &gcd[k-1];
 
     label[k].text = (unichar_t *) U_("°");
     label[k].text_is_1byte = true;
@@ -448,6 +502,12 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    harray4[1] = &gcd[k-1]; harray4[2] = NULL;
+
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = harray4;
+    boxes[5].creator = GHBoxCreate;
+    varray[l][1] = &boxes[5]; varray[l++][2] = NULL;
 
     label[k].text = (unichar_t *) _("Vanishing Point:");
     label[k].text_is_1byte = true;
@@ -456,6 +516,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.popup_msg = (unichar_t *) _("This is the approximate location of the vanishing point.\nIt does not include the offset induced by \"Center of selection\"\nnor \"Last Press\".");
     gcd[k++].creator = GLabelCreate;
+    varray[l][0] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "123456.,123456.";
     label[k].text_is_1byte = true;
@@ -465,6 +526,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.popup_msg = (unichar_t *) _("This is the approximate location of the vanishing point.\nIt does not include the offset induced by \"Center of selection\"\nnor \"Last Press\".");
     gcd[k].gd.cid = CID_Vanish;
     gcd[k++].creator = GLabelCreate;
+    varray[l][1] = &gcd[k-1]; varray[l++][2] = NULL;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
@@ -475,6 +537,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = true;
     gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
 
     gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
@@ -485,13 +548,21 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = false;
     gcd[k++].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k-1]; barray[5] = GCD_Glue; barray[6] = NULL;
 
-    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[k].creator = GGroupCreate;
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = barray;
+    boxes[6].creator = GHBoxCreate;
+    varray[l][0] = &boxes[6]; varray[l][1] = GCD_ColSpan; varray[l++][2] = NULL;
+    varray[l][0] = NULL;
 
-    GGadgetsCreate(d.gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(d.gw,boxes);
+    GHVBoxFitWindow(boxes[0].ret);
     PoV_DoVanish(&d);
     GDrawSetVisible(d.gw,true);
     while ( !d.done ) {
