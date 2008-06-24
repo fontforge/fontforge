@@ -619,6 +619,7 @@ void CondenseExtendDlg(FontView *fv, CharView *cv);
 void AddSmallCapsDlg(FontView *fv);
 void AddSubSupDlg(FontView *fv);
 void ObliqueDlg(FontView *fv, CharView *cv);
+void GlyphChangeDlg(FontView *fv, CharView *cv);
 void ItalicDlg(FontView *fv, CharView *cv);
 void ChangeXHeightDlg(FontView *fv,CharView *cv);
 
