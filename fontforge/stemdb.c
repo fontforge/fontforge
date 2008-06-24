@@ -2052,7 +2052,7 @@ static int ConnectsAcross( struct glyphdata *gd,SplinePoint *sp,
     int is_next,Spline *findme,int eidx ) {
     struct pointdata *pd = &gd->points[sp->ptindex];
     Spline *other, *test;
-    BasePoint *dir;
+    BasePoint dir;
 
     other = ( is_next ) ? pd->nextedges[eidx] : pd->prevedges[eidx];
 
@@ -2061,28 +2061,26 @@ return( true );
     if ( other==NULL )
 return( false );
 
-    dir = &gd->points[other->to->ptindex].nextunit;
+    dir.x = ( is_next ) ? -pd->nextunit.x : pd->prevunit.x;
+    dir.y = ( is_next ) ? -pd->nextunit.y : pd->prevunit.y;
     test = other->to->next;
-    while ( test!=NULL &&
-	    gd->points[test->from->ptindex].nextunit.x * dir->x +
-	    gd->points[test->from->ptindex].nextunit.y * dir->y > 0 ) {
+    while ( test!=NULL && test != other &&
+            gd->points[test->from->ptindex].nextunit.x * dir.x +
+            gd->points[test->from->ptindex].nextunit.y * dir.y > 0 ) {
 	if ( test==findme )
 return( true );
 	test = test->to->next;
-	if ( test==other )
-    break;
     }
 	    
-    dir = &gd->points[other->from->ptindex].prevunit;
+    dir.x = ( is_next ) ? pd->nextunit.x : -pd->prevunit.x;
+    dir.y = ( is_next ) ? pd->nextunit.y : -pd->prevunit.y;
     test = other->from->prev;
-    while ( test!=NULL &&
-	    gd->points[test->to->ptindex].prevunit.x * dir->x +
-	    gd->points[test->to->ptindex].prevunit.y * dir->y > 0 ) {
+    while ( test!=NULL && test != other &&
+            gd->points[test->to->ptindex].prevunit.x * dir.x +
+            gd->points[test->to->ptindex].prevunit.y * dir.y > 0 ) {
 	if ( test==findme )
 return( true );
 	test = test->from->prev;
-	if ( test==other )
-    break;
     }
 return( false );
 }
@@ -2091,7 +2089,7 @@ static int ConnectsAcrossToStem( struct glyphdata *gd,struct pointdata *pd,
     int is_next,struct stemdata *target,int is_l,int eidx ) {
 
     Spline *other, *test;
-    BasePoint *dir;
+    BasePoint dir;
     struct pointdata *tpd;
     int ecnt, stemidx;
 
@@ -2101,7 +2099,8 @@ return( false );
     other = ( is_next ) ? pd->nextedges[eidx] : pd->prevedges[eidx];
 
     test = other;
-    dir = &gd->points[other->to->ptindex].prevunit;
+    dir.x = ( is_next ) ? pd->nextunit.x : -pd->prevunit.x;
+    dir.y = ( is_next ) ? pd->nextunit.y : -pd->prevunit.y;
     do {
         tpd = &gd->points[test->to->ptindex];
         stemidx = IsStemAssignedToPoint( tpd,target,false );
@@ -2111,10 +2110,11 @@ return( true );
         
 	test = test->to->next;
     } while ( test!=NULL && test != other &&
-        ( tpd->prevunit.x * dir->x + tpd->prevunit.y * dir->y >= 0 ));
+        ( tpd->prevunit.x * dir.x + tpd->prevunit.y * dir.y >= 0 ));
 	    
     test = other;
-    dir = &gd->points[other->from->ptindex].nextunit;
+    dir.x = ( is_next ) ? -pd->nextunit.x : pd->prevunit.x;
+    dir.y = ( is_next ) ? -pd->nextunit.y : pd->prevunit.y;
     do {
         tpd = &gd->points[test->from->ptindex];
         stemidx = IsStemAssignedToPoint( tpd,target,true );
@@ -2124,7 +2124,7 @@ return( true );
 
 	test = test->from->prev;
     } while ( test!=NULL && test != other &&
-        ( tpd->nextunit.x * dir->x + tpd->nextunit.y * dir->y >= 0 ));
+        ( tpd->nextunit.x * dir.x + tpd->nextunit.y * dir.y >= 0 ));
 return( false );
 }
 
