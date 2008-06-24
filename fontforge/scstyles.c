@@ -46,15 +46,6 @@ static unichar_t lc_botserif_str[] = { 'i', 'k', 'l', 'm', 'f', 0x433, 0x43a,
 	0x43f, 0x442, 0x3c0, 0x3ba, 0 };
 static unichar_t lc_topserif_str[] = { 'k', 'l', 'm', 0x444, 0x3b9, 0 };
 
-struct fixed_maps {
-    int cnt;
-    struct position_maps {
-	double current;
-	double desired;
-	int overlap_index;
-    } maps[7];
-};
-
 static void SSCPValidate(SplineSet *ss) {
     SplinePoint *sp, *nsp;
 
@@ -1346,6 +1337,7 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
     extern int no_windowing_ui;
     int nwi = no_windowing_ui;
     AnchorPoint *ap;
+    struct position_maps pmaps[7];
     struct fixed_maps fix;
 
     SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
@@ -1383,6 +1375,7 @@ static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struc
 		sc_b.maxy>=subsup->xheight_current &&
 		sc_b.miny<subsup->xheight_current/2 ) {
 	    int l=0;
+	    fix.maps = pmaps;
 	    fix.maps[l].current = sc_b.miny;
 	    fix.maps[l++].desired = orig_b.miny*subsup->v_scale;
 	    if ( sc_b.miny<-subsup->xheight_current/4 ) {
@@ -1498,9 +1491,12 @@ return;
 		     alts[1]!=0 ))
     continue;	/* Deal with these later */
 	    sc->ticked = true;
-	    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,subsup);
-	    if ( sc_sc==NULL )
+	    if ( subsup->glyph_extension != NULL ) {
+		sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,subsup);
+		if ( sc_sc==NULL )
       goto end_loop;
+	    } else
+		sc_sc = sc;
 	    if ( achar==NULL )
 		achar = sc_sc;
 	    BuildSubSup(sc_sc,sc,fv->active_layer,subsup);
@@ -5359,6 +5355,7 @@ void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
 
 static void SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
     int l;
+    struct position_maps pmaps[7];
     struct fixed_maps fix;
     DBounds b;
     const unichar_t *alts;
@@ -5375,6 +5372,7 @@ static void SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
 	no_windowing_ui = true;		/* Turn off undoes */
 
 	l=0;
+	fix.maps = pmaps;
 	fix.maps[l].current = b.miny;
 	fix.maps[l++].desired = b.miny;
 	if ( b.miny<-xi->xheight_current/4 ) {

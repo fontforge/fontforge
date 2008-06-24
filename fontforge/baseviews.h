@@ -352,6 +352,14 @@ struct subsup {
     double h_scale, v_scale;
     double vertical_offset;
     unsigned int preserve_consistent_xheight;
+    struct fixed_maps {
+	int cnt;
+	struct position_maps {
+	    double current;
+	    double desired;
+	    int overlap_index;
+	} *maps;
+    } m;
 /* Filled in by called routine */
     SplineFont *sf;
     int layer;
