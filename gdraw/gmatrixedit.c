@@ -1780,7 +1780,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     sub_gd.pos = pos;
     sub_gd.pos.x = pos.x+pos.width; sub_gd.pos.width = sbwidth;
-    sub_gd.flags = gg_visible | gg_enabled | gg_sb_vert | gg_pos_in_pixels;
+    sub_gd.flags = (gd->flags & (gg_visible | gg_enabled)) | gg_sb_vert | gg_pos_in_pixels;
     sub_gd.handle_controlevent = _GME_VScroll;
     gme->vsb = GScrollBarCreate(base,&sub_gd,gme);
     gme->vsb->contained = true;
