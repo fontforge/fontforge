@@ -12231,13 +12231,13 @@ return( Py_BuildValue("(dddddd)",  c, s, -s, c,  0.0, 0.0));
 }
 
 static PyObject *PyPS_Skew(PyObject *noself, PyObject *args) {
-    double theta, s;
+    double theta, t;
 
     if ( !PyArg_ParseTuple(args,"d",&theta) )
 return( NULL );
-    s = sin(theta);
+    t = tan(theta);
 
-return( Py_BuildValue("(dddddd)",  1.0, s, 0.0, 1.0,  0.0, 0.0));
+return( Py_BuildValue("(dddddd)",  1.0, 0.0, t, 1.0,  0.0, 0.0));
 }
 
 static PyObject *PyPS_Compose(PyObject *noself, PyObject *args) {
