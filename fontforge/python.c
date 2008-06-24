@@ -12010,7 +12010,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "lookupSetStoreLigatureInAfm", PyFFFont_lookupSetStoreLigatureInAfm, METH_VARARGS, "Sets whether this ligature lookup contains data which should live in the afm file"},
     { "mergeLookups", PyFFFont_mergeLookups, METH_VARARGS, "Merges two lookups" },
     { "mergeLookupSubtables", PyFFFont_mergeLookupSubtables, METH_VARARGS, "Merges two lookup subtables" },
-    { "print", PyFFFont_print, METH_VARARGS, "Produces a font sample printout" },
+    { "printSample", PyFFFont_print, METH_VARARGS, "Produces a font sample printout" },
     { "regenBitmaps", (PyCFunction) PyFFFont_regenBitmaps, METH_VARARGS, "Rerasterize the bitmap fonts specified in the argument tuple" },
     { "removeAnchorClass", PyFFFont_removeAnchorClass, METH_VARARGS, "Removes the named anchor class" },
     { "removeGlyph", PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
