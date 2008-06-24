@@ -1242,7 +1242,7 @@ return;
     }
 
     fprintf( pi->out, "%%!PS-Adobe-3.0\n" );
-    fprintf( pi->out, "%%%%BoundingBox: 40 20 %d %d\n", pi->pagewidth-30, pi->pageheight-20 );
+    fprintf( pi->out, "%%%%BoundingBox: 20 20 %d %d\n", pi->pagewidth-30, pi->pageheight-20 );
     fprintf( pi->out, "%%%%Creator: FontForge\n" );
     time(&now);
     fprintf( pi->out, "%%%%CreationDate: %s", ctime(&now) );
@@ -1784,7 +1784,7 @@ static void samplestartpage(PI *pi ) {
     ++pi->page;
     if ( pi->printtype==pt_pdf ) {
 	pdf_addpage(pi);
-	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  80 %d Td\n", pageheight-84 );
+	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  80 %d Td\n", pi->pageheight-84 );
 	if ( pi->pt==pt_fontsample )
 	    fprintf(pi->out,"(Sample Text from %s) Tj\nET\n", sfbit->sf->fullname );
 	else {
@@ -1800,9 +1800,9 @@ static void samplestartpage(PI *pi ) {
 	fprintf(pi->out,"save mark\n" );
 	fprintf(pi->out,"Times-Bold__12 setfont\n" );
 	if ( pi->pt==pt_fontsample )
-	    fprintf(pi->out,"(Sample Text from %s) 80 %d n_show\n", sfbit->sf->fullname, pageheight-84 );
+	    fprintf(pi->out,"(Sample Text from %s) 80 %d n_show\n", sfbit->sf->fullname, pi->pageheight-84 );
 	else {
-	    fprintf(pi->out,"(Sample Sizes of %s) 80 %d n_show\n", sfbit->sf->fullname, pageheight-84 );
+	    fprintf(pi->out,"(Sample Sizes of %s) 80 %d n_show\n", sfbit->sf->fullname, pi->pageheight-84 );
 	    fprintf(pi->out,"40 %d translate\n", pi->pageheight-34-
 		    pi->pointsize*sfbit->sf->ascent/(sfbit->sf->ascent+sfbit->sf->descent) );
 	}
@@ -1911,7 +1911,7 @@ return;
 	fprintf(pi->out, "BT\n" );
 	pi->lastx = pi->lasty = 0;
     }
-    y = top = rint((pageheight - 96)/pi->scale);	/* In dpi units */
+    y = top = rint((pi->pageheight - 96)/pi->scale);	/* In dpi units */
     bottom = rint(36/pi->scale);			/* multiply by scale to get ps points */
 
     for ( i=0; i<li->lcnt; ++i ) {
@@ -2915,7 +2915,7 @@ void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
     }
     pi.pt = type;
     if ( type==pt_fontsample ) {
-	int width = (pagewidth-1*72)*printdpi/72;
+	int width = (pi.pagewidth-1*72)*printdpi/72;
 	li = gcalloc(1,sizeof(LayoutInfo));
 	temp[0] = 0;
 	li->wrap = true;
