@@ -546,6 +546,35 @@ static double SCFindCounterLen(StemInfo *hints,double min_coord,
 return( counter_len );
 }
 
+static int IsAnglePoint(SplinePoint *sp) {
+    SplinePoint *psp, *nsp;
+    double PrevTangent, NextTangent;
+
+    if (sp->next == NULL || sp->prev == NULL || 
+        sp->pointtype != pt_corner || sp->ttfindex == 0xffff)
+return( false );
+
+    psp = sp->prev->from;
+    nsp = sp->next->to;
+    PrevTangent = atan2(sp->me.y - psp->me.y, sp->me.x - psp->me.x);
+    NextTangent = atan2(nsp->me.y - sp->me.y, nsp->me.x - sp->me.x);
+
+return fabs(PrevTangent - NextTangent) > 0.261;
+}
+
+static int IsExtremum(SplinePoint *sp,int xdir) {
+    SplinePoint *psp, *nsp;
+    double val = (&sp->me.x)[xdir];
+    
+    if (sp->next == NULL || sp->prev == NULL )
+return( false );
+
+    psp = sp->prev->from;
+    nsp = sp->next->to;
+return ((val < (&psp->me.x)[xdir] && val < (&nsp->me.x)[xdir]) ||
+        (val > (&psp->me.x)[xdir] && val > (&nsp->me.x)[xdir]));
+}
+
 static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	int coord, StemInfo *hints,
 	struct overlaps *overlaps, int tot) {
@@ -597,9 +626,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	    if ( sp->next==NULL )
 	break;
 	    val = (&sp->me.x)[coord];
-	    if ( !sp->ticked && sp->prev!=NULL &&
-		    ((val>=(&sp->prev->from->me.x)[coord] && val>=(&sp->next->to->me.x)[coord]) ||
-		     (val<=(&sp->prev->from->me.x)[coord] && val<=(&sp->next->to->me.x)[coord]))) {
+	    if ( !sp->ticked && ( IsExtremum(sp,coord) || IsAnglePoint(sp))) {
 		for ( i=0; i<tot; ++i ) {
 		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
 			sp->ticked = true;
