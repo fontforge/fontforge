@@ -2930,6 +2930,8 @@ extern int HasUFO(void);
 extern void SCImportGlif(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
 extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
 extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
+extern void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags);
+extern void SCImportPDFFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
 extern void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear,int flags);
 extern void SCAddScaleImage(SplineChar *sc,struct gimage *image,int doclear,int layer);
 extern void SCInsertImage(SplineChar *sc,struct gimage *image,real scale,real yoff, real xoff, int layer);

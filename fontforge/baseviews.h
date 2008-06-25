@@ -237,7 +237,9 @@ struct counterinfo {
 };
 
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
-	fv_image, fv_imgtemplate, fv_eps, fv_epstemplate,
+	fv_image, fv_imgtemplate,
+	fv_eps, fv_epstemplate,
+	fv_pdf, fv_pdftemplate,
 	fv_plate, fv_platetemplate,
 	fv_svg, fv_svgtemplate,
 	fv_glif, fv_gliftemplate,
