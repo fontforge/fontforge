@@ -121,7 +121,7 @@ return;
 	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 return;
 	}
-	if ( sc->layers[ly_fore].order2 )
+	if ( sc->layers[layer].order2 )
 	    spl = SplineSetsConvertOrder(spl,true);
 	for ( espl=spl; espl->next!=NULL; espl = espl->next );
 	if ( layer==ly_grid )
@@ -149,6 +149,55 @@ void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags) {
 return;
     SCImportPSFile(sc,layer,ps,doclear,flags);
     fclose(ps);
+}
+
+void SCImportPDFFile(SplineChar *sc,int layer,FILE *pdf,int doclear,int flags) {
+    SplinePointList *spl, *espl;
+    SplineSet **head;
+    int empty, width;
+
+    if ( pdf==NULL )
+return;
+
+    width = UNDEFINED_WIDTH;
+    empty = sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( sc->parent->multilayer && layer>ly_back ) {
+	SCAppendEntityLayers(sc, EntityInterpretPDFPage(pdf,-1));
+    } else
+#endif
+    {
+	spl = SplinesFromEntities(EntityInterpretPDFPage(pdf,-1),&flags,sc->parent->strokedfont);
+	if ( spl==NULL ) {
+	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
+return;
+	}
+	if ( sc->layers[layer].order2 )
+	    spl = SplineSetsConvertOrder(spl,true);
+	for ( espl=spl; espl->next!=NULL; espl = espl->next );
+	if ( layer==ly_grid )
+	    head = &sc->parent->grid.splines;
+	else {
+	    SCPreserveLayer(sc,layer,false);
+	    head = &sc->layers[layer].splines;
+	}
+	if ( doclear ) {
+	    SplinePointListsFree(*head);
+	    *head = NULL;
+	}
+	espl->next = *head;
+	*head = spl;
+    }
+    SCCharChangedUpdate(sc,layer);
+}
+
+void SCImportPDF(SplineChar *sc,int layer,char *path,int doclear, int flags) {
+    FILE *pdf = fopen(path,"r");
+
+    if ( pdf==NULL )
+return;
+    SCImportPDFFile(sc,layer,pdf,doclear,flags);
+    fclose(pdf);
 }
 
 void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear,int flags) {
@@ -236,7 +285,7 @@ return;
     /* After doing the above flip, the contours appear oriented acording to my*/
     /*  conventions */
 
-    if ( sc->layers[ly_fore].order2 ) {
+    if ( sc->layers[layer].order2 ) {
 	head = SplineSetsConvertOrder(head,true);
 	for ( last=head; last->next!=NULL; last = last->next );
     }
@@ -270,8 +319,8 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen, i
 		sc->parent->ascent,sc->parent->strokedfont);
 	for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
 	if ( espl!=NULL )
-	    if ( espl->first->next->order2!=sc->layers[ly_fore].order2 )
-		spl = SplineSetsConvertOrder(spl,sc->layers[ly_fore].order2);
+	    if ( espl->first->next->order2!=sc->layers[layer].order2 )
+		spl = SplineSetsConvertOrder(spl,sc->layers[layer].order2);
 	if ( spl==NULL ) {
 	    ff_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 return;
@@ -300,8 +349,8 @@ void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen, 
 	    sc->parent->ascent,sc->parent->strokedfont);
     for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
     if ( espl!=NULL )
-	if ( espl->first->next->order2!=sc->layers[ly_fore].order2 )
-	    spl = SplineSetsConvertOrder(spl,sc->layers[ly_fore].order2);
+	if ( espl->first->next->order2!=sc->layers[layer].order2 )
+	    spl = SplineSetsConvertOrder(spl,sc->layers[layer].order2);
     if ( spl==NULL ) {
 	ff_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 return;
@@ -936,18 +985,21 @@ return(false);
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
 	} else if ( format==fv_glif ) {
-	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    SCImportGlif(sc,toback?ly_back:fv->active_layer,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	} else if ( format==fv_eps ) {
-	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
+	    SCImportPS(sc,toback?ly_back:fv->active_layer,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
+	    ++tot;
+	} else if ( format==fv_pdf ) {
+	    SCImportPDF(sc,toback?ly_back:fv->active_layer,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
 #ifndef _NO_PYTHON
 	} else if ( format>=fv_pythonbase ) {
-	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback?ly_back:ly_fore,flags&sf_clearbeforeinput);
+	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback?ly_back:fv->active_layer,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	}
@@ -1050,14 +1102,17 @@ return( false );
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
 	} else if ( format==fv_gliftemplate ) {
-	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    SCImportGlif(sc,toback?ly_back:fv->active_layer,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
+	} else if ( format==fv_pdftemplate ) {
+	    SCImportPDF(sc,toback?ly_back:fv->active_layer,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
+	    ++tot;
 	} else {
-	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
+	    SCImportPS(sc,toback?ly_back:fv->active_layer,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
 	}
     }

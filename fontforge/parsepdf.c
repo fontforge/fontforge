@@ -51,6 +51,9 @@ struct pdfcontext {
     enum openflags openflags;
     int encrypted;
     int enc_dict;
+    int pcnt;
+    long *pages;
+    int root;
 };
 
 static long FindXRef(FILE *pdf) {
@@ -125,6 +128,13 @@ return( false );
 	int bar;
 	if ( fscanf( pdf, "%d %d", &pc->enc_dict, &bar )==2 )
 	    pc->encrypted = true;
+    }
+    if ( pc->root == 0 ) {
+	fseek(pdf,pos,SEEK_SET);
+	if ( findkeyword(pdf,"/Root",">>") ) {
+	    int bar;
+	    fscanf( pdf, "%d %d", &pc->root, &bar );
+	}
     }
     fseek(pdf,pos,SEEK_SET);
     if ( !findkeyword(pdf,"/Prev",">>"))
@@ -418,6 +428,61 @@ return( 0 );
     if ( ret!=1 )
 return( 0 );
 return( val );
+}
+
+static void pdf_addpages(struct pdfcontext *pc, int obj) {
+    /* Object is either a page or a page catalog */
+    FILE *pdf = pc->pdf;
+    char *pt, *end;
+
+    fseek(pdf,pc->objs[obj],SEEK_SET);
+    pdf_skipobjectheader(pc);
+    if ( pdf_readdict(pc) ) {
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL ) {
+	    if ( strcmp(pt,"/Page")==0 ) {
+		pc->pages[pc->pcnt++] = obj;
+	    } else if ( strcmp(pt,"/Pages")==0 ) {
+		if ( (pt=PSDictHasEntry(&pc->pdfdict,"Kids"))!=NULL ) {
+		    char *kids = copy(pt);
+		    for ( pt = kids; *pt!=']' && *pt!='\0' ;  ) {
+			if ( *pt=='[' || isspace(*pt)) {
+			    ++pt;
+			} else {
+			    int o = strtol(pt,&end,10);
+			    int r;
+			    r = strtol(end,&end,10);
+			    if ( pt==end )
+return;
+			    pt = end;
+			    while ( isspace( *pt )) ++pt;
+			    if ( *pt=='R' )
+				++pt;
+			    pdf_addpages(pc,o);
+			}
+		    }
+		    free(kids);
+		}
+	    }
+	}
+    }
+}
+
+static int pdf_findpages(struct pdfcontext *pc) {
+    FILE *pdf = pc->pdf;
+    int top_ref;
+    /* I could just find all the Page objects, but they would not be in order then */
+
+    if ( pc->root==0 )
+return( 0 );
+
+    fseek(pdf,pc->objs[pc->root],SEEK_SET);
+    if ( !findkeyword(pdf,"/Pages",">>"))
+return( 0 );
+    if ( fscanf( pdf, "%d", &top_ref )!=1 )
+return( 0 );
+    pc->pages = galloc(pc->ocnt*sizeof(long));
+    pdf_addpages(pc,top_ref);
+return( pc->pcnt );
 }
 
 /* ************************************************************************** */
@@ -1248,6 +1313,47 @@ return( sc );
     LogError( _("Syntax error while parsing type3 glyph: %s"), glyphname );
 return( NULL );
 }
+
+static Entity *pdf_InterpretEntity(struct pdfcontext *pc,int page_num) {
+    EntityChar ec;
+    SplineChar dummy;
+    FILE *glyph_stream;
+    char *pt;
+    int content;
+
+    fseek(pc->pdf,pc->objs[pc->pages[page_num]],SEEK_SET);
+    pdf_skipobjectheader(pc);
+    if ( !pdf_readdict(pc) ) {
+	LogError( _("Syntax error while parsing pdf graphics"));
+return( NULL );
+    }
+    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Contents"))==NULL ||
+	    sscanf(pt,"%d",&content)!=1 ) {
+	LogError( _("Syntax error while parsing pdf graphics: Page with no Contents"));
+return( NULL );
+    }
+    fseek(pc->pdf,pc->objs[content],SEEK_SET);
+    pdf_skipobjectheader(pc);
+    if ( !pdf_readdict(pc) ) {
+	LogError( _("Syntax error while parsing pdf graphics"));
+return( NULL );
+    }
+    glyph_stream = pdf_defilterstream(pc);
+    if ( glyph_stream==NULL )
+return( NULL );
+    rewind(glyph_stream);
+
+    memset(&ec,'\0',sizeof(ec));
+    memset(&dummy,0,sizeof(dummy));
+    ec.fromtype3 = true;
+    ec.sc = &dummy;
+    dummy.name = "Nameless glyph";
+
+    _InterpretPdf(glyph_stream,pc,&ec);
+
+    fclose(glyph_stream);
+return( ec.splines );
+}
     
 /* ************************************************************************** */
 /* ****************************** End graphics ****************************** */
@@ -1434,6 +1540,7 @@ static void pcFree(struct pdfcontext *pc) {
 	free(pc->fontnames[i]);
     free(pc->fontnames);
     free(pc->fonts);
+    free(pc->pages);
     free(pc->tokbuf);
 }
 
@@ -1522,4 +1629,63 @@ SplineFont *SFReadPdfFont(char *filename,enum openflags openflags) {
     free(freeme); free(freeme2);
 return( sf );
 }
-	
+
+Entity *EntityInterpretPDFPage(FILE *pdf,int select_page) {
+    struct pdfcontext pc;
+    char *oldloc;
+    Entity *ent;
+    char *ret;
+    int choice;
+
+    oldloc = setlocale(LC_NUMERIC,"C");
+    memset(&pc,0,sizeof(pc));
+    pc.pdf = pdf;
+    pc.openflags = 0;
+    if ( (pc.objs = FindObjects(&pc))==NULL ) {
+	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    if ( pc.encrypted ) {
+	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    if ( pdf_findpages(&pc)==0 ) {
+	LogError( _("This pdf file has no pages"));
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    if ( pc.pcnt==1 ) {
+	ent = pdf_InterpretEntity(&pc,0);
+    } else if ( select_page>=0 && select_page<pc.pcnt ) {
+	ent = pdf_InterpretEntity(&pc,select_page);
+    } else {
+	if ( no_windowing_ui )
+	    choice = 0;
+	else {
+	    char buffer[200];
+	    snprintf( buffer, sizeof(buffer), _("There are %d pages in this file, which do you want?"), pc.pcnt );
+	    ret = ff_ask_string(_("Pick a page"),"1",buffer);
+	    if ( ret==NULL ) {
+		pcFree(&pc);
+		setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+	    }
+	    choice = strtol(ret,NULL,10)-1;
+	    if ( choice<0 || choice>=pc.pcnt ) {
+		pcFree(&pc);
+		setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+	    }
+	}
+	ent = pdf_InterpretEntity(&pc,choice);
+    }
+    setlocale(LC_NUMERIC,oldloc);
+    pcFree(&pc);
+return( ent );
+}
+
