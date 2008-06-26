@@ -4235,7 +4235,7 @@ static int VW_VScroll(GGadget *g, GEvent *e) {
       break;
       case et_sb_thumb:
       case et_sb_thumbrelease:
-        newpos = e->u.control.u.sb.pos+vw->vlcnt;
+        newpos = e->u.control.u.sb.pos;
       break;
       case et_sb_halfup:
         newpos -= vw->vlcnt/30;
@@ -4470,6 +4470,24 @@ static void VWMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCValidate(vw->sc,vw->layer,true);
     if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
+}
+
+static void VWMenuRevalidateAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf;
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    sc->layers[vw->layer].validation_state = 0;
+	    sc->layers[vw->layer].old_vs = 2;
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+    VW_Remetric(vw);
 }
 
 static void VWMenuRevalidate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4809,6 +4827,7 @@ static GMenuItem vw_popuplist[] = {
     { { (unichar_t *) N_("Add All Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuAllExtrema },
     { { (unichar_t *) N_("Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuSimplify },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Revalidate All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuRevalidateAll },
     { { (unichar_t *) N_("Revalidate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuRevalidate },
     { { (unichar_t *) N_("Open Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuOpenGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
