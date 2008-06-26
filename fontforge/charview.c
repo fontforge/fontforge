@@ -3663,6 +3663,10 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 
     if ( layer>=0 )
 	TTFPointMatches(sc,layer,true);
+    if ( layer>=sc->layer_cnt ) {
+	IError( "Bad layer in _SC_CharChangedUpdate");
+	layer = ly_fore;
+    }
     if ( changed != -1 ) {
 	sc->changed_since_autosave = true;
 	SFSetModTime(sf);
@@ -5041,6 +5045,7 @@ static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     Undoes **undoes;
     int layer, lc;
     CharView *cvs;
+    int mylayer = CVLayer(cv);
 
     if ( cv->b.sc->parent->filename==NULL || cv->b.sc->namechanged || cv->b.sc->parent->mm!=NULL )
 return;
@@ -5075,12 +5080,14 @@ return;
 	cv->b.sc->views = temp.views;
 	/* cv->b.sc->changed = temp.changed; */
 	for ( cvs=(CharView *) (cv->b.sc->views); cvs!=NULL; cvs=(CharView *) (cvs->b.next) ) {
+	    cvs->b.layerheads[dm_back] = &cv->b.sc->layers[ly_back];
+	    cvs->b.layerheads[dm_fore] = &cv->b.sc->layers[ly_fore];
 	    if ( cv->b.sc->parent->multilayer ) {
-		cvs->b.layerheads[dm_back] = &cv->b.sc->layers[ly_back];
-		cvs->b.layerheads[dm_fore] = &cv->b.sc->layers[CVLayer((CharViewBase *) cv)];
+		if ( mylayer!=ly_back )
+		    cvs->b.layerheads[dm_fore] = &cv->b.sc->layers[mylayer];
 	    } else {
-		cvs->b.layerheads[dm_back] = &cv->b.sc->layers[CVLayer((CharViewBase *) cv)];
-		cvs->b.layerheads[dm_fore] = &cv->b.sc->layers[ly_fore];
+		if ( mylayer!=ly_fore )
+		    cvs->b.layerheads[dm_back] = &cv->b.sc->layers[mylayer];
 	    }
 	}
 	RevertedGlyphReferenceFixup(cv->b.sc, temp.parent);

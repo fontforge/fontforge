@@ -1649,6 +1649,7 @@ void FVRevertGlyph(FontViewBase *fv) {
     int layer, lc;
     EncMap *map = fv->map;
     CharViewBase *cvs;
+    int alayer = ly_fore;
 
     if ( fv->sf->sfd_version<2 )
 	ff_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
@@ -1668,6 +1669,8 @@ void FVRevertGlyph(FontViewBase *fv) {
 	    } else {
 		SCPreserveState(tsc,true);
 		SCPreserveBackground(tsc);
+		if ( tsc->views!=NULL )
+		    alayer = CVLayer(tsc->views);
 		temp = *tsc;
 		tsc->dependents = NULL;
 		lc = tsc->layer_cnt;
@@ -1690,17 +1693,18 @@ void FVRevertGlyph(FontViewBase *fv) {
 		/* tsc->changed = temp.changed; */
 		/* tsc->orig_pos = temp.orig_pos; */
 		for ( cvs=tsc->views; cvs!=NULL; cvs= cvs->next ) {
-		    int layer = CVLayer(cvs);
-		    if ( fv->sf->multilayer ) {
-			cvs->layerheads[dm_back] = &tsc->layers[ly_back];
-			cvs->layerheads[dm_fore] = &tsc->layers[layer];
+		    cvs->layerheads[dm_back] = &tsc->layers[ly_back];
+		    cvs->layerheads[dm_fore] = &tsc->layers[ly_fore];
+		    if ( sf->multilayer ) {
+			if ( alayer!=ly_back )
+			    cvs->layerheads[dm_fore] = &tsc->layers[alayer];
 		    } else {
-			cvs->layerheads[dm_back] = &tsc->layers[layer];
-			cvs->layerheads[dm_fore] = &tsc->layers[ly_fore];
+			if ( alayer!=ly_fore )
+			    cvs->layerheads[dm_back] = &tsc->layers[alayer];
 		    }
 		}
 		RevertedGlyphReferenceFixup(tsc, sf);
-		_SCCharChangedUpdate(tsc,layer,false);
+		_SCCharChangedUpdate(tsc,alayer,false);
 	    }
 	}
     }
