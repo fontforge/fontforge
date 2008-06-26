@@ -3297,10 +3297,11 @@ static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *args) {
     none = true;
     for ( j=0; j<self->cntr_cnt; ++j ) {
 	cntr = self->contours[j];
-	for ( i=1; i<cntr->pt_cnt; ++i ) {
+	for ( i=0; i<cntr->pt_cnt; ++i ) {
 	    if ( none ) {
 		xmin = xmax = cntr->points[0]->x;
 		ymin = ymax = cntr->points[0]->y;
+		none = false;
 	    } else {
 		if ( cntr->points[i]->x < xmin ) xmin = cntr->points[i]->x;
 		if ( cntr->points[i]->x > xmax ) xmax = cntr->points[i]->x;
