@@ -3311,7 +3311,7 @@ static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *args) {
 	}
     }
     if ( none )
-return( Py_BuildValue("(dddd)", 0,0,0,0 ));
+return( Py_BuildValue("(dddd)", 0.0,0.0,0.0,0.0 ));
 
 return( Py_BuildValue("(dddd)", xmin,ymin, xmax,ymax ));
 }
