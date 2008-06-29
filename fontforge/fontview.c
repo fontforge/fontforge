@@ -1295,7 +1295,7 @@ static void FVMenuItalic(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuSmallCaps(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    AddSmallCapsDlg(fv);
+    GlyphChangeDlg(fv,NULL,gc_smallcaps);
 }
 
 static void FVMenuChangeXHeight(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1305,12 +1305,13 @@ static void FVMenuChangeXHeight(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuChangeGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    GlyphChangeDlg(fv,NULL);
+    GlyphChangeDlg(fv,NULL,gc_generic);
 }
 
 static void FVMenuSubSup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    AddSubSupDlg(fv);
+    GlyphChangeDlg(fv,NULL,gc_subsuper);
+    /*AddSubSupDlg(fv);*/
 }
 
 static void FVMenuOblique(GWindow gw,struct gmenuitem *mi,GEvent *e) {

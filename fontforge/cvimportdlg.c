@@ -520,8 +520,8 @@ return( true );
 #endif
 	}
 	free(temp);
+	GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
     }
-    GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
 return( true );
 }
 

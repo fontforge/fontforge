@@ -383,6 +383,7 @@ return( NULL );
     fseek(fon,0,SEEK_SET);
     if ( magic!=0x200 && magic!=0x300 && magic!=FON_MZ_MAGIC ) {
 	fclose(fon);
+	ff_post_error(_("Bad magic number"), _("This does not appear to be a Windows FNT for FON file"));
 return( NULL );
     }
     sf = SplineFontBlank(256);
