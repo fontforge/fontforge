@@ -4413,14 +4413,24 @@ static void bItalic(Context *c) {
 
 static void bSmallCaps(Context *c) {
     struct smallcaps small;
+    struct genericchange genchange;
 
     if ( c->a.argc>1 )
 	ScriptError( c, "Wrong number of arguments");
     SmallCapsFindConstants(&small,c->curfv->sf,c->curfv->active_layer);
-    small.extension_for_letters = "sc";
-    small.extension_for_symbols = "taboldstyle";
+    memset(&genchange,0,sizeof(genchange));
+    genchange.small = &small;
+    genchange.gc = gc_smallcaps;
+    genchange.extension_for_letters = "sc";
+    genchange.extension_for_symbols = "taboldstyle";
 
-    FVAddSmallCaps(c->curfv,&small);
+    genchange.stem_width_scale  = small.lc_stem_width / small.uc_stem_width;
+    genchange.stem_height_scale = genchange.stem_width_scale;
+    genchange.v_scale           = small.xheight / small.capheight;
+    genchange.hcounter_scale    = genchange.v_scale;
+    genchange.lsb_scale = genchange.rsb_scale = genchange.v_scale;
+
+    FVAddSmallCaps(c->curfv,&genchange);
 }
 
 static int RefMatchesNamesUni(RefChar *ref,char **refnames, int *refunis, int refcnt) {

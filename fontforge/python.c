@@ -11724,15 +11724,20 @@ static char *smallcaps_keywords[] = { "scheight", "capheight", "lcstem", "ucstem
 static PyObject *PyFFFont_addSmallCaps(PyObject *self, PyObject *args, PyObject *keywds) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     struct smallcaps small;
+    struct genericchange genchange;
     double lc_width=0, uc_width=0, vstem_factor=0, hscale=0, vscale=0, scheight=0, capheight=0;
+    int dosymbols=0;
 
+    memset(&genchange,0,sizeof(genchange));
     SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
-    small.extension_for_letters = "sc";
-    small.extension_for_symbols = "taboldstyle";
+    genchange.small = &small;
+    genchange.gc = gc_subsuper;
+    genchange.extension_for_letters = "sc";
+    genchange.extension_for_symbols = "taboldstyle";
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddddissddd",smallcaps_keywords,
-	    &small.scheight,&small.capheight,&lc_width,&uc_width,
-	    &small.dosymbols, &small.extension_for_letters,
-	    &small.extension_for_symbols,
+	    &scheight,&capheight,&lc_width,&uc_width,
+	    &dosymbols, &genchange.extension_for_letters,
+	    &genchange.extension_for_symbols,
 	    &vstem_factor,
 	    &hscale, &vscale))
 return( NULL );
@@ -11741,25 +11746,27 @@ return( NULL );
 	    small.lc_stem_width = lc_width;
 	if ( uc_width!=0 )
 	    small.uc_stem_width = uc_width;
-	small.stem_factor = small.v_stem_factor =
+	genchange.stem_width_scale = genchange.stem_height_scale =
 		small.lc_stem_width / small.uc_stem_width;
     }
+    genchange.do_smallcap_symbols = dosymbols;
     if ( vstem_factor!=0 )
-	small.v_stem_factor = vstem_factor;
+	genchange.stem_height_scale = vstem_factor;
     if ( scheight>0 || capheight>0 ) {
 	if ( scheight>0 )
 	    small.scheight = scheight;
 	if ( capheight>0 )
 	    small.capheight = capheight;
-	if ( small.capheight>0 )
-	    small.vscale = small.hscale = small.scheight/small.capheight;
     }
+    if ( small.capheight>0 )
+	genchange.v_scale = genchange.hcounter_scale = small.scheight/small.capheight;
     if ( hscale>0 )
-	small.hscale = hscale;
+	genchange.hcounter_scale = hscale;
+    genchange.lsb_scale = genchange.rsb_scale = genchange.hcounter_scale;
     if ( vscale>0 )
-	small.vscale = vscale;
+	genchange.v_scale = vscale;
 
-    FVAddSmallCaps(fv,&small);
+    FVAddSmallCaps(fv,&genchange);
 
 Py_RETURN( self );
 }

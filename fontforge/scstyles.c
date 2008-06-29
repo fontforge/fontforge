@@ -411,7 +411,7 @@ static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 
 static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
 	uint32 script,struct lookup_subtable **c2sc,struct lookup_subtable **smcp,
-	FontViewBase *fv, struct smallcaps *small) {
+	FontViewBase *fv, struct genericchange *genchange) {
     SplineChar *sc_sc, *lc_sc;
     char buffer[300];
     PST *pst;
@@ -421,13 +421,13 @@ static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
 
     if ( cap_sc->unicodeenc>=0 && cap_sc->unicodeenc<=0x10000 ) {
 	lower = tolower(cap_sc->unicodeenc);
-	ext = isupper(cap_sc->unicodeenc) ? small->extension_for_letters :
-		cap_sc->unicodeenc==0xdf  ? small->extension_for_letters :
-		cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06 ? small->extension_for_letters :
-					    small->extension_for_symbols;
+	ext = isupper(cap_sc->unicodeenc) ? genchange->extension_for_letters :
+		cap_sc->unicodeenc==0xdf  ? genchange->extension_for_letters :
+		cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06 ? genchange->extension_for_letters :
+					    genchange->extension_for_symbols;
     } else {
 	lower = cap_sc->unicodeenc;
-	ext = small->extension_for_symbols;
+	ext = genchange->extension_for_symbols;
     }
     lc_sc = SFGetChar(sf,lower,NULL);
     if ( lc_sc!=NULL )
@@ -886,6 +886,64 @@ return( 0 );
 return( remove );
 }
 
+static double SmallCapsScaleCounters(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,
+	double factor, double add, double stem_f, double stem_a,
+	double min_coord, double max_coord ) {
+    struct overlaps *overlaps;
+    int i, tot;
+    double counter_len;
+    double zpos, removed;
+
+    /* This is a variant on the previous routine. Instead of removing a given */
+    /*  amount to be spread out among all the counters, here we attempt to */
+    /*  scale each counter by a factor and potentially add/subtract to it */
+
+    /* Coalesce overlapping hint zones. These won't shrink, but the counters */
+    /*  between them will */
+    overlaps = SCFindHintOverlaps(hints, min_coord, max_coord, &tot, &counter_len );
+    /* A glyph need not have any counters at all (lower case "l" doesn't) */
+    if ( counter_len==0 ) {
+	free( overlaps );
+return( 0 );
+    }
+
+    zpos=3e40;
+
+    overlaps[0].new_start = overlaps[0].start;
+    overlaps[0].new_stop  = overlaps[0].stop;
+    if ( 0<=overlaps[0].stop )
+	zpos = 0;
+    removed = 0;
+    for ( i=1; i<tot; ++i ) {
+	double diff    = overlaps[i].start - overlaps[i-1].stop;
+	double olddiff = diff/stem_f + (i!=1 && i!=tot-1 ? stem_a : stem_a/2);
+	double newdiff = factor*olddiff + add;
+	if ( diff==0 ) newdiff = 0;
+	if ( 4*newdiff<diff )
+	    newdiff = diff/4;
+	removed += newdiff-diff;
+	overlaps[i].new_start = overlaps[i-1].new_stop + newdiff;
+	overlaps[i].new_stop  = overlaps[i].new_start + (overlaps[i].stop - overlaps[i].start);
+	if ( 0>=overlaps[i-1].stop && 0<=overlaps[i].start )
+	    zpos = overlaps[i-1].new_stop +
+		    (0-overlaps[i-1].stop) *
+		     (overlaps[i].new_start - overlaps[i-1].new_stop) /
+		     (overlaps[i].start - overlaps[i-1].stop);
+	else if ( 0>overlaps[i].start && 0<=overlaps[i].stop )
+	    zpos = overlaps[i].new_start + (0-overlaps[i].start);
+    }
+    if ( zpos!=0 && zpos!=3e40 ) {
+	for ( i=0; i<tot; ++i ) {
+	    overlaps[i].new_start -= zpos;
+	    overlaps[i].new_stop  -= zpos;
+	}
+    }
+
+    SmallCapsPlacePoints(ss,aps,coord,hints,overlaps, tot);
+    free(overlaps);
+return( removed );
+}
+
 static void LowerCaseRemoveSpace(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,
 	struct fixed_maps *fix ) {
     struct overlaps *overlaps;
@@ -917,7 +975,9 @@ return;
     for ( i=0; i<fix->cnt; ++i ) {
 	fix->maps[i].overlap_index = -1;
 	for ( j=k+1; j<tot; ++j ) {
-	    if ( overlaps[j].start<=fix->maps[i].current+2 && overlaps[j].stop>=fix->maps[i].current-2 ) {
+	    if ( (overlaps[j].start<=fix->maps[i].current+2 && overlaps[j].stop>=fix->maps[i].current-2 ) &&
+		    (j==tot-1 ||
+		     !(overlaps[j+1].start<=fix->maps[i].current+2 && overlaps[j+1].stop>=fix->maps[i].current-2 ))) {
 		overlaps[j].new_start = fix->maps[i].desired + overlaps[j].start-fix->maps[i].current;
 		overlaps[j].new_stop  = fix->maps[i].desired + overlaps[j].stop -fix->maps[i].current;
 		fix->maps[i].overlap_index = j;
@@ -983,8 +1043,217 @@ static void SplineSetRefigure(SplineSet *ss) {
     }
 }
 
+static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
+    SplineSet *temp;
+    Spline *s1, *s2;
+
+    /* We don't want to use the remove overlap built into SSStroke because */
+    /*  only looks at one contour at a time, but we need to look at all together */
+    /*  else we might get some unreal internal hints that will screw up */
+    /*  counter correction */
+    temp = SSStroke(ss,si,sc);
+    if ( ro && temp!=NULL && SplineSetIntersect(temp,&s1,&s2))
+	temp = SplineSetRemoveOverlap(sc,temp,over_remove);
+return( temp );
+}
+
+static void PerformGenericChange(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange) {
+    real scale[6];
+    DBounds orig_b, sc_b;
+    int owidth = orig_sc->width;
+    extern int no_windowing_ui;
+    int nwi = no_windowing_ui;
+    AnchorPoint *ap;
+    StrokeInfo si;
+    int removeoverlap = true;
+    SplineSet *temp;
+    int i;
+    struct fixed_maps fix;
+
+    SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
+
+    memset(scale,0,sizeof(scale));
+    scale[0] = genchange->stem_width_scale;
+    scale[3] = genchange->stem_height_scale;
+    scale[2] = genchange->stem_width_scale * genchange->tan_ia;
+
+    if ( orig_sc!=sc_sc ) {
+	sc_sc->layers[layer].splines = SplinePointListCopy(
+		orig_sc->layers[layer].splines);
+	sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
+	sc_sc->width  = orig_sc->width;
+    }
+    if ( genchange->stem_height_add==0 || genchange->stem_width_add==0 ) {
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    } else {
+	double ratio = genchange->stem_height_add/genchange->stem_width_add;
+	double add;
+	if ( ratio>1 ) {
+	    add = genchange->stem_width_add;
+	    scale[3] /= ratio;
+	} else {
+	    add = genchange->stem_height_add;
+	    scale[0] *= ratio;
+	    scale[2] *= ratio;
+	}
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+
+	memset(&si,0,sizeof(si));
+	si.stroke_type = si_std;
+	si.join = lj_miter;
+	si.cap = lc_square;
+	if ( add>=0 ) {
+	    si.radius = add/2.;
+	    si.removeinternal = true;
+	} else {
+	    si.radius = -add/2.;
+	    si.removeexternal = true;
+	}
+	si.removeoverlapifneeded = false;
+	si.toobigwarn = true;
+
+	temp = BoldSSStroke(sc_sc->layers[layer].splines,&si,sc_sc,removeoverlap);
+	SplinePointListsFree( sc_sc->layers[layer].splines );
+	sc_sc->layers[layer].splines = temp;
+	if ( ratio!=1.0 ) {
+	    scale[0] = scale[3] = 1; scale[2] = 0;
+	    if ( ratio>1 )
+		scale[3] = ratio;
+	    else
+		scale[0] = 1/ratio;
+	}
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    }
+
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+	BasePoint me;
+	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+	me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+	ap->me = me;
+    }
+    no_windowing_ui = true;		/* Turn off undoes */
+    SplineCharAutoHint(sc_sc,layer,NULL);
+    no_windowing_ui = nwi;
+
+    SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+
+    /* When we get here, we have scaled the stems of our glyph appropriately */
+    /*  now we must fix up the counters */
+
+    /* Horizontal first */
+    SmallCapsScaleCounters( sc_sc->layers[layer].splines, sc_sc->anchor,
+	    sc_sc->vstem, 0,
+	    genchange->hcounter_scale, genchange->hcounter_add,
+	    genchange->stem_width_scale, genchange->stem_width_add,
+	    sc_b.minx, sc_b.maxx);
+
+    /* Vertical positions may be mapped, or counters may be manipulated as above */
+    if ( !genchange->use_vert_mapping ) {
+	SmallCapsScaleCounters( sc_sc->layers[layer].splines, sc_sc->anchor,
+		sc_sc->hstem, 1,
+		genchange->vcounter_scale, genchange->vcounter_add,
+		genchange->stem_height_scale, genchange->stem_height_add,
+		sc_b.miny, sc_b.maxy);
+    } else {
+	int l=0;
+	int donelast=false;
+	memset(&fix,0,sizeof(fix));
+	fix.maps = genchange->g.maps;
+	fix.maps[l].current = sc_b.miny;
+	fix.maps[l++].desired = orig_b.miny*genchange->v_scale;
+	for ( i=0; i<genchange->m.cnt; ++i ) {
+	    double curpos;
+	    if ( !genchange->m.maps[i].isserif ) {
+		if ( genchange->m.maps[i].current>0 )
+		    curpos = genchange->m.maps[i].current + genchange->stem_height_add/2;
+		else
+		    curpos = genchange->m.maps[i].current - genchange->stem_height_add/2;
+	    } else {
+		int spos;
+		/* The map is ordered */
+		if ( i==0 )
+		    spos = 1;
+		else if ( i==genchange->m.cnt-1 )
+		    spos = i-1;
+		else if ( genchange->m.maps[i].current - genchange->m.maps[i-1].current
+				>
+			genchange->m.maps[i+1].current - genchange->m.maps[i].current )
+		    spos = i+1;
+		else
+		    spos = i-1;
+		if ( spos>i )
+		    curpos = genchange->m.maps[i].current + genchange->stem_height_add/2;
+		else
+		    curpos = genchange->m.maps[i].current - genchange->stem_height_add/2;
+	    }
+	    if ( RealWithin(curpos,sc_b.miny,1.0) )
+		fix.maps[l-1].desired = genchange->m.maps[i].desired;
+	    else if ( RealWithin(curpos,sc_b.maxy,1.0) ||
+		    ( curpos > sc_b.miny && curpos < sc_b.maxy )) {
+		fix.maps[l].isserif   = genchange->m.maps[i].isserif;
+		fix.maps[l].current   = curpos;
+		fix.maps[l++].desired = genchange->m.maps[i].desired;
+		donelast = RealWithin(curpos,sc_b.maxy,1.0);
+	    }
+	}
+	if ( !donelast ) {
+	    fix.maps[l].current   = sc_b.maxy;
+	    fix.maps[l++].desired = orig_b.maxy*genchange->v_scale;
+	}
+	if ( fix.maps[0].desired > fix.maps[1].desired )
+	    fix.maps[0].desired = fix.maps[1].desired +
+		    genchange->v_scale * (fix.maps[0].current - fix.maps[1].current);
+	if ( fix.maps[l-1].desired < fix.maps[l-2].desired )
+	    fix.maps[l-1].desired = fix.maps[l-2].desired +
+		    genchange->v_scale * (fix.maps[l-1].current - fix.maps[l-2].current);
+	fix.cnt = l;
+	LowerCaseRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,
+		sc_sc->hstem,1,&fix);
+    }
+    SplineSetRefigure(sc_sc->layers[layer].splines);
+
+    /* Set the left and right side bearings appropriately */
+    memset(scale,0,sizeof(scale));
+    scale[0] = scale[3] = 1;
+    if ( genchange->center_in_hor_advance ) {
+	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+	scale[4] = (sc_sc->width - (sc_b.maxx -sc_b.maxy))/2.0;
+    } else {
+	scale[4] = orig_b.minx*genchange->lsb_scale + genchange->lsb_add - sc_b.minx;
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
+	    ap->me.x += scale[4];
+	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
+	sc_sc->width = (owidth-orig_b.maxx)*genchange->rsb_scale + genchange->rsb_add + sc_b.maxx;
+    }
+
+    memset(scale,0,sizeof(scale));
+    scale[0] = scale[3] = 1;
+    scale[5] = genchange->vertical_offset;
+    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
+	ap->me.y += genchange->vertical_offset;
+
+    if ( genchange->tan_ia!=0 ) {
+	scale[0] = scale[3] = 1;
+	scale[2] = -genchange->tan_ia;
+	scale[5] = 0;
+	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+	    BasePoint me;
+	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+	    me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+	    ap->me = me;
+	}
+    }
+    StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
+    StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
+    DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
+    SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
+}
+
 static void BuildSCLigatures(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
-	struct smallcaps *small) {
+	struct genericchange *genchange) {
     static char *ligs[] = { "ff", "fi", "fl", "ffi", "ffl", "st", "st" };
     char *components;
     int width;
@@ -1003,8 +1272,8 @@ return;
     width=0;
     rlast = NULL;
     while ( *components!='\0' ) {
-	snprintf(buffer,sizeof(buffer),"%c.%s", *components, small->extension_for_letters );
-	rsc = SFGetChar(small->sf,-1,buffer);
+	snprintf(buffer,sizeof(buffer),"%c.%s", *components, genchange->extension_for_letters );
+	rsc = SFGetChar(genchange->sf,-1,buffer);
 	if ( rsc!=NULL ) {
 	    r = RefCharCreate();
 	    r->sc = rsc;
@@ -1034,74 +1303,7 @@ return;
     SCCharChangedUpdate(sc_sc,layer);
 }
 
-static void BuildSmallCap(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
-	struct smallcaps *small) {
-    real scale[6], move[6];
-    DBounds cap_b, sc_b;
-    double remove_y, remove_x;
-    extern int no_windowing_ui;
-    int nwi = no_windowing_ui;
-    AnchorPoint *ap;
-
-    if ( cap_sc->unicodeenc==0xdf || (cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06)) {
-	BuildSCLigatures(sc_sc,cap_sc,layer,small);
-return;
-    }
-
-    memset(scale,0,sizeof(scale));
-    scale[0] = small->stem_factor;
-    scale[3] = small->v_stem_factor;
-    scale[2] = small->stem_factor * small->tan_ia;
-
-    sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
-	    cap_sc->layers[layer].splines),scale,true);
-    sc_sc->width = small->stem_factor * cap_sc->width;
-    sc_sc->anchor = AnchorPointsCopy(cap_sc->anchor);
-    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
-	BasePoint me;
-	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
-	me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
-	ap->me = me;
-    }
-    no_windowing_ui = true;		/* Turn off undoes */
-    SplineCharAutoHint(sc_sc,layer,NULL);
-    no_windowing_ui = nwi;
-    if ( !RealNear( small->stem_factor, small->vscale ) ||
-	    !RealNear(small->hscale,small->vscale) ||
-	    !RealNear(small->stem_factor,small->v_stem_factor)) {
-	SplineCharLayerFindBounds(cap_sc,layer,&cap_b);
-	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	remove_y = (sc_b.maxy - sc_b.miny) - small->vscale *(cap_b.maxy-cap_b.miny);
-	remove_x = (sc_b.maxx - sc_b.minx) - small->hscale *(cap_b.maxx-cap_b.minx);
-	sc_sc->width -= SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-			SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
-	SplineSetRefigure(sc_sc->layers[layer].splines);
-	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	memset(move,0,sizeof(move));
-	move[0] = move[3] = 1;
-	move[4] = cap_b.minx*small->hscale - sc_b.minx;
-	SplinePointListTransform(sc_sc->layers[layer].splines,move,true);
-	sc_sc->width = sc_b.maxx + move[4] + (cap_sc->width - cap_b.maxx)*small->hscale;
-    }
-
-    if ( small->tan_ia!=0 ) {
-	scale[0] = scale[3] = 1;
-	scale[2] = -small->tan_ia;
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
-	    BasePoint me;
-	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
-	    me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
-	    ap->me = me;
-	}
-    }
-    StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
-    StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
-    DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
-    SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
-}
-
-void FVAddSmallCaps(FontViewBase *fv, struct smallcaps *small) {
+void FVAddSmallCaps(FontViewBase *fv, struct genericchange *genchange) {
     int gid, enc, cnt, ltn,crl,grk,symbols;
     SplineFont *sf = fv->sf;
     SplineChar *sc, *sc_sc, *rsc, *achar=NULL;
@@ -1119,7 +1321,7 @@ return;		/* Can't randomly add things to a CID keyed font */
 
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
+	    if ( genchange->do_smallcap_symbols || ( sc->unicodeenc<0x10000 &&
 		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc) ||
 		     (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
@@ -1129,31 +1331,32 @@ return;		/* Can't randomly add things to a CID keyed font */
 		    ++grk, ++cnt;
 		else if ( script==CHR('c','y','r','l'))
 		    ++crl, ++cnt;
-		else if ( small->dosymbols )
+		else if ( genchange->do_smallcap_symbols )
 		    ++symbols, ++cnt;
 	    }
 	}
     }
     if ( cnt==0 )
 return;
-    if ( small->scheight==0 || small->capheight==0 ) {
-	ff_post_error(_("Unknown scale"),_("Could not figure out scaling factor for small caps"));
-return;
-    }
+
+    genchange->g.cnt = genchange->m.cnt+2;
+    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+    genchange->sf     = fv->sf;
+    genchange->layer  = fv->active_layer;
 
     MakeSCLookups(sf,c2sc,smcp,ltn,crl,grk,symbols);
     ff_progress_start_indicator(10,_("Small Capitals"),
 	_("Building small capitals"),NULL,cnt,1);
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
+	    if ( genchange->do_smallcap_symbols || ( sc->unicodeenc<0x10000 &&
 		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc) ||
 		     (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script!=CHR('l','a','t','n') &&
 			script!=CHR('g','r','e','k') &&
 			script!=CHR('c','y','r','l') &&
-			!small->dosymbols )
+			!genchange->do_smallcap_symbols )
     continue;
 		if ( sc->unicodeenc<0x10000 &&islower(sc->unicodeenc)) {
 		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
@@ -1167,12 +1370,15 @@ return;
 			 alts[1]!=0 ))
     continue;	/* Deal with these later */
 		sc->ticked = true;
-		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,small);
+		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,genchange);
 		if ( sc_sc==NULL )
       goto end_loop;
 		if ( achar==NULL )
 		    achar = sc_sc;
-		BuildSmallCap(sc_sc,sc,fv->active_layer,small);
+		if ( sc->unicodeenc==0xdf || (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06))
+		    BuildSCLigatures(sc_sc,sc,fv->active_layer,genchange);
+		else
+		    PerformGenericChange(sc_sc,sc,fv->active_layer,genchange);
       end_loop:
 		if ( !ff_progress_next())
     break;
@@ -1183,14 +1389,14 @@ return;
     /*  look at things which depend on references */
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( small->dosymbols || ( sc->unicodeenc<0x10000 &&
+	    if ( genchange->do_smallcap_symbols || ( sc->unicodeenc<0x10000 &&
 		    (isupper(sc->unicodeenc) || islower(sc->unicodeenc) ||
 		     (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06)) )) {
 		uint32 script = SCScriptFromUnicode(sc);
 		if ( script!=CHR('l','a','t','n') &&
 			script!=CHR('g','r','e','k') &&
 			script!=CHR('c','y','r','l') &&
-			!small->dosymbols )
+			!genchange->do_smallcap_symbols )
     continue;
 		if ( sc->unicodeenc<0x10000 &&islower(sc->unicodeenc)) {
 		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
@@ -1200,7 +1406,7 @@ return;
 		if ( sc->ticked )
     continue;
 		sc->ticked = true;
-		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,small);
+		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,genchange);
 		if ( sc_sc==NULL )
       goto end_loop2;
 		if ( achar==NULL )
@@ -1213,12 +1419,12 @@ return;
 			SplineChar *ref_l_sc;
 			if ( ref->sc->unicodeenc>=0x10000 ||
 				!(islower(ref->sc->unicodeenc) || isupper(ref->sc->unicodeenc)))
-			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, small->extension_for_symbols );
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->extension_for_symbols );
 			else if ( isupper(ref->sc->unicodeenc) &&
 				(ref_l_sc = SFGetChar(sf,tolower(ref->sc->unicodeenc),NULL))!=NULL )
-			    snprintf(buffer,sizeof(buffer),"%s.%s", ref_l_sc->name, small->extension_for_letters );
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref_l_sc->name, genchange->extension_for_letters );
 			else
-			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, small->extension_for_letters );
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->extension_for_letters );
 			rsc = SFGetChar(sf,-1,buffer);
 			if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
 			    rsc = ref->sc;
@@ -1251,6 +1457,7 @@ return;
     ff_progress_end_indicator();
     if ( achar!=NULL )
 	FVDisplayChar(fv,achar->orig_pos);
+    free(genchange->g.maps);
 }
 
 /* ************************************************************************** */
@@ -1298,13 +1505,13 @@ return( found->subtables );
 
 static SplineChar *MakeSubSupGlyphSlot(SplineFont *sf,SplineChar *sc,
 	struct lookup_subtable *feature,
-	FontViewBase *fv, struct subsup *subsup) {
+	FontViewBase *fv, struct genericchange *genchange) {
     SplineChar *sc_sc;
     char buffer[300];
     PST *pst;
     int enc;
 
-    snprintf(buffer,sizeof(buffer),"%s.%s", sc->name, subsup->glyph_extension );
+    snprintf(buffer,sizeof(buffer),"%s.%s", sc->name, genchange->glyph_extension );
     sc_sc = SFGetChar(sf,-1,buffer);
     if ( sc_sc!=NULL ) {
 	SCPreserveLayer(sc_sc,fv->active_layer,false);
@@ -1329,108 +1536,7 @@ return( sc_sc );
 return( sc_sc );
 }
 
-static void BuildSubSup(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct subsup *subsup) {
-    real scale[6];
-    DBounds orig_b, sc_b;
-    int owidth = orig_sc->width;
-    double remove_y, remove_x;
-    extern int no_windowing_ui;
-    int nwi = no_windowing_ui;
-    AnchorPoint *ap;
-    struct position_maps pmaps[7];
-    struct fixed_maps fix;
-
-    SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
-
-    memset(scale,0,sizeof(scale));
-    scale[0] = subsup->stem_width_scale;
-    scale[3] = subsup->stem_height_scale;
-    scale[2] = subsup->stem_width_scale * subsup->tan_ia;
-
-    if ( orig_sc==sc_sc )
-	SplinePointListTransform(orig_sc->layers[layer].splines,scale,true);
-    else {
-	sc_sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(
-		orig_sc->layers[layer].splines),scale,true);
-	sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
-    }
-    sc_sc->width = subsup->stem_width_scale * orig_sc->width;
-    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
-	BasePoint me;
-	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
-	me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
-	ap->me = me;
-    }
-    no_windowing_ui = true;		/* Turn off undoes */
-    SplineCharAutoHint(sc_sc,layer,NULL);
-    no_windowing_ui = nwi;
-    if ( !RealNear( subsup->stem_width_scale, subsup->h_scale ) ||
-	    !RealNear( subsup->stem_height_scale, subsup->v_scale )) {
-	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-
-	remove_x = (sc_b.maxx-sc_b.minx) - subsup->h_scale*(orig_b.maxx-orig_b.minx);
-	SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->vstem,0,remove_x,sc_b.minx,sc_b.maxx);
-	if ( subsup->preserve_consistent_xheight && orig_sc->unicodeenc<0x10000 &&
-		islower(orig_sc->unicodeenc) &&
-		sc_b.maxy>=subsup->xheight_current &&
-		sc_b.miny<subsup->xheight_current/2 ) {
-	    int l=0;
-	    fix.maps = pmaps;
-	    fix.maps[l].current = sc_b.miny;
-	    fix.maps[l++].desired = orig_b.miny*subsup->v_scale;
-	    if ( sc_b.miny<-subsup->xheight_current/4 ) {
-		fix.maps[l].current = 0;
-		fix.maps[l++].desired = 0;
-	    }
-	    fix.maps[l].current = subsup->xheight_current;
-	    fix.maps[l++].desired = subsup->xheight_desired;
-	    fix.maps[l].current = sc_b.maxy;
-	    fix.maps[l++].desired = orig_b.maxy*subsup->v_scale;
-	    fix.cnt = l;
-	    LowerCaseRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,&fix);
-	} else {
-	    remove_y = (sc_b.maxy-sc_b.miny) - subsup->v_scale*(orig_b.maxy-orig_b.miny);
-	    SmallCapsRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,sc_sc->hstem,1,remove_y,sc_b.miny,sc_b.maxy);
-	}
-	SplineSetRefigure(sc_sc->layers[layer].splines);
-	/* Set the left and right side bearings appropriately */
-	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	sc_sc->width = (owidth-orig_b.maxx)*subsup->h_scale + sc_b.maxx;
-	memset(scale,0,sizeof(scale));
-	scale[0] = scale[3] = 1;
-	scale[4] = orig_b.minx*subsup->h_scale - sc_b.minx;
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
-	    ap->me.x += scale[4];
-	sc_sc->width += scale[4];
-    }
-
-    memset(scale,0,sizeof(scale));
-    scale[0] = scale[3] = 1;
-    scale[5] = subsup->vertical_offset;
-    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
-	ap->me.y += subsup->vertical_offset;
-
-    if ( subsup->tan_ia!=0 ) {
-	scale[0] = scale[3] = 1;
-	scale[2] = -subsup->tan_ia;
-	scale[5] = 0;
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
-	    BasePoint me;
-	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
-	    me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
-	    ap->me = me;
-	}
-    }
-    StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
-    StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
-    DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
-    SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
-}
-
-void FVAddSubSup(FontViewBase *fv, struct subsup *subsup) {
+void FVGenericChange(FontViewBase *fv, struct genericchange *genchange) {
     int gid, enc, cnt;
     SplineFont *sf = fv->sf;
     SplineChar *sc, *sc_sc, *rsc, *achar=NULL;
@@ -1438,16 +1544,12 @@ void FVAddSubSup(FontViewBase *fv, struct subsup *subsup) {
     struct lookup_subtable *feature;
     char buffer[200];
     const unichar_t *alts;
-    struct smallcaps small;
 
     if ( sf->cidmaster!=NULL )
 return;		/* Can't randomly add things to a CID keyed font */
 
-    SmallCapsFindConstants(&small,sf,fv->active_layer);
-    subsup->italic_angle = small.italic_angle;
-    subsup->tan_ia = small.tan_ia;
-    subsup->xheight_current = small.xheight*subsup->stem_height_scale;	/* height of h stems is vertical */
-    subsup->xheight_desired = small.xheight*subsup->v_scale;
+    genchange->italic_angle = genchange->small->italic_angle;
+    genchange->tan_ia = genchange->small->tan_ia;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
 	sc->ticked = false;
@@ -1460,7 +1562,11 @@ return;		/* Can't randomly add things to a CID keyed font */
     }
     if ( cnt==0 )
 return;
-    if ( subsup->feature_tag!=0 ) {
+
+    genchange->g.cnt = genchange->m.cnt+2;
+    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+
+    if ( genchange->feature_tag!=0 ) {
 	uint32 *scripts = galloc(cnt*sizeof(uint32));
 	int scnt = 0;
 	for ( enc=0; enc<fv->map->enccount; ++enc ) {
@@ -1475,7 +1581,7 @@ return;
 	    }
 	}
     
-	feature = MakeSupSupLookup(sf,subsup->feature_tag,scripts,scnt);
+	feature = MakeSupSupLookup(sf,genchange->feature_tag,scripts,scnt);
 	free(scripts);
     } else
 	feature = NULL;
@@ -1491,15 +1597,17 @@ return;
 		     alts[1]!=0 ))
     continue;	/* Deal with these later */
 	    sc->ticked = true;
-	    if ( subsup->glyph_extension != NULL ) {
-		sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,subsup);
+	    if ( genchange->glyph_extension != NULL ) {
+		sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,genchange);
 		if ( sc_sc==NULL )
       goto end_loop;
-	    } else
+	    } else {
 		sc_sc = sc;
+		SCPreserveLayer(sc,fv->active_layer,true);
+	    }
 	    if ( achar==NULL )
 		achar = sc_sc;
-	    BuildSubSup(sc_sc,sc,fv->active_layer,subsup);
+	    PerformGenericChange(sc_sc,sc,fv->active_layer,genchange);
       end_loop:
 	    if ( !ff_progress_next())
     break;
@@ -1512,7 +1620,7 @@ return;
 	    if ( sc->ticked )
     continue;
 	    sc->ticked = true;
-	    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,subsup);
+	    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,genchange);
 	    if ( sc_sc==NULL )
       goto end_loop2;
 	    if ( achar==NULL )
@@ -1522,7 +1630,7 @@ return;
 	    else if ( sc->layers[fv->active_layer].splines==NULL ) {
 		RefChar *rlast = NULL;
 		for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
-		    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, subsup->glyph_extension );
+		    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->glyph_extension );
 		    rsc = SFGetChar(sf,-1,buffer);
 		    if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
 			rsc = ref->sc;
@@ -1554,6 +1662,7 @@ return;
     ff_progress_end_indicator();
     if ( achar!=NULL )
 	FVDisplayChar(fv,achar->orig_pos);
+    free(genchange->g.maps);
 }
 
 SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheightscale,
@@ -1562,7 +1671,7 @@ SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheight
     SplineChar dummy;
     Layer layers[2];
     LayerInfo li[2];
-    struct subsup subsup;
+    struct genericchange genchange;
     SplineSet *spl;
     int order2 = 0;
 
@@ -1577,7 +1686,7 @@ SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheight
     memset(&dummy,0,sizeof(dummy));
     memset(&li,0,sizeof(li));
     memset(&layers,0,sizeof(layers));
-    memset(&subsup,0,sizeof(subsup));
+    memset(&genchange,0,sizeof(genchange));
 
     dummysf.ascent = 800; dummysf.descent = 200;
     dummysf.layer_cnt = 2;
@@ -1596,18 +1705,13 @@ SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheight
     if ( stemwidthscale==-1 && stemheightscale==-1 )
 	stemwidthscale = stemheightscale = 1;
 
-    subsup.stem_width_scale  = stemwidthscale !=-1 ? stemwidthscale  : stemheightscale;
-    subsup.stem_height_scale = stemheightscale!=-1 ? stemheightscale : stemwidthscale ;
-    subsup.h_scale  = hscale !=-1 ? hscale  : vscale;
-    subsup.v_scale  = vscale !=-1 ? vscale  : hscale;
-    if ( xheight>0 ) {
-	dummy.unicodeenc = 'a';		/* Must be a lower case letter for this to be meaningful */
-	subsup.preserve_consistent_xheight = true;
-	subsup.xheight_current = xheight*subsup.stem_height_scale;
-	subsup.xheight_desired = xheight*subsup.v_scale;
-    }
+    genchange.stem_width_scale  = stemwidthscale !=-1 ? stemwidthscale  : stemheightscale;
+    genchange.stem_height_scale = stemheightscale!=-1 ? stemheightscale : stemwidthscale ;
+    genchange.hcounter_scale    = hscale !=-1 ? hscale  : vscale;
+    genchange.v_scale           = vscale !=-1 ? vscale  : hscale;
+    genchange.lsb_scale = genchange.rsb_scale = genchange.hcounter_scale;
 
-    BuildSubSup(&dummy,&dummy,ly_fore,&subsup);
+    PerformGenericChange(&dummy,&dummy,ly_fore,&genchange);
 return( ss );
 }
 
@@ -2529,20 +2633,6 @@ static void AdjustCounters(SplineChar *sc, struct lcg_zones *zones,
     ci.c_factor = ci.sb_factor = 100;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
     SCCondenseExtend(&ci,sc,ly_fore,false);
-}
-	    
-static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
-    SplineSet *temp;
-    Spline *s1, *s2;
-
-    /* We don't want to use the remove overlap built into SSStroke because */
-    /*  only looks at one contour at a time, but we need to look at all together */
-    /*  else we might get some unreal internal hints that will screw up */
-    /*  counter correction */
-    temp = SSStroke(ss,si,sc);
-    if ( ro && temp!=NULL && SplineSetIntersect(temp,&s1,&s2))
-	temp = SplineSetRemoveOverlap(sc,temp,over_remove);
-return( temp );
 }
 
 static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
@@ -4925,6 +5015,7 @@ return;
 static void ItalReplaceWithSmallCaps(SplineChar *sc,int layer, int uni, ItalicInfo *ii) {
     SplineChar *uc = SFGetChar(sc->parent,uni,NULL);
     struct smallcaps small;
+    struct genericchange genchange;
 
     if ( uc==NULL )
 return;
@@ -4937,7 +5028,19 @@ return;
 
     SCClearLayer(sc,layer);
 
-    BuildSmallCap(sc,uc,layer,&small);
+    memset(&genchange,0,sizeof(genchange));
+    genchange.small = &small;
+    genchange.gc = gc_smallcaps;
+    genchange.extension_for_letters = "sc";
+    genchange.extension_for_symbols = "taboldstyle";
+
+    genchange.stem_width_scale  = small.lc_stem_width / small.uc_stem_width;
+    genchange.stem_height_scale = genchange.stem_width_scale;
+    genchange.v_scale           = small.xheight / small.capheight;
+    genchange.hcounter_scale    = genchange.v_scale;
+    genchange.lsb_scale = genchange.rsb_scale = genchange.v_scale;
+
+    PerformGenericChange(sc,uc,layer,&genchange);
 }
 
 static void Ital_a_From_d(SplineChar *sc,int layer, ItalicInfo *ii) {

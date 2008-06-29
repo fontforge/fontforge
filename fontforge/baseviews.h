@@ -345,31 +345,44 @@ struct smallcaps {
 
 extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 	int layer );
-extern void FVAddSmallCaps(FontViewBase *fv,struct smallcaps *small);
 
-struct subsup {
+enum glyphchange_type { gc_generic, gc_smallcaps, gc_subsuper };
+
+struct genericchange {
+    enum glyphchange_type gc;
     uint32 feature_tag;
     char *glyph_extension;
+    char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
-    double h_scale, v_scale;
-    double vertical_offset;
-    unsigned int preserve_consistent_xheight;
+    double stem_height_add  , stem_width_add  ;
+    double hcounter_scale, hcounter_add;
+    double lsb_scale, lsb_add;
+    double rsb_scale, rsb_add;
+    uint8 center_in_hor_advance;
+    uint8 use_vert_mapping;
+    uint8 do_smallcap_symbols;
+    double vcounter_scale, vcounter_add;	/* If not using mapping */
+    double v_scale;				/* If using mapping */
     struct fixed_maps {
 	int cnt;
 	struct position_maps {
 	    double current;
 	    double desired;
 	    int overlap_index;
+	    int isserif;
 	} *maps;
     } m;
+    struct fixed_maps g;			/* Adjusted for each glyph */
+    double vertical_offset;
+    struct smallcaps *small;
 /* Filled in by called routine */
     SplineFont *sf;
     int layer;
     double italic_angle, tan_ia;
-    double xheight_current, xheight_desired;
 };
 
-extern void FVAddSubSup(FontViewBase *fv,struct subsup *subsup);
+extern void FVAddSmallCaps(FontViewBase *fv,struct genericchange *genchange);
+extern void FVGenericChange(FontViewBase *fv,struct genericchange *genchange);
 
 struct xheightinfo {
     double xheight_current, xheight_desired;
