@@ -1377,7 +1377,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 
 
     MappingMatrixInit(&mapmi,
-	    gc==gc_subsuper?0:serifheight,
+	    /*gc==gc_subsuper?0:serifheight*/ 0,
 	    gc==gc_smallcaps?0:small.xheight,
 	    small.capheight,glyph_scale);
 
@@ -1464,7 +1464,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
     GHVBoxSetExpandableRow(boxes[0].ret,(l-5)/2);
     GHVBoxFitWindow(boxes[0].ret);
-    if ( gc==gc_subsuper )
+    /* if ( gc==gc_subsuper ) */
 	GMatrixEditShowColumn(GWidgetGetControl(gw,CID_VMappings),2,false);
     free( map_msg );
     GDrawSetVisible(gw,true);
