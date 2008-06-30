@@ -231,6 +231,7 @@ GTextInfo languages[] = {
     { (unichar_t *) N_("Agaw"), NULL, 0, 0, (void *) CHR('A','G','W',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Alsatian"), NULL, 0, 0, (void *) CHR('A','L','S',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Altai"), NULL, 0, 0, (void *) CHR('A','L','T',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("Americanist IPA"), NULL, 0, 0, (void *) CHR('A','M','P','H'), NULL, false, false, false, false, false, false, true },
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "Amharic", ignore "Lang|" */
     { (unichar_t *) N_("Lang|Amharic"), NULL, 0, 0, (void *) CHR('A','M','H',' '), NULL, false, false, false, false, false, false, true },
@@ -364,6 +365,7 @@ GTextInfo languages[] = {
     { (unichar_t *) N_("Indonesian"), NULL, 0, 0, (void *) CHR('I','N','D',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Ingush"), NULL, 0, 0, (void *) CHR('I','N','G',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Inuktitut"), NULL, 0, 0, (void *) CHR('I','N','U',' '), NULL, false, false, false, false, false, false, true },
+    { (unichar_t *) N_("IPA usage"), NULL, 0, 0, (void *) CHR('I','P','P','H'), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Irish"), NULL, 0, 0, (void *) CHR('I','R','I',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Irish Traditional"), NULL, 0, 0, (void *) CHR('I','R','T',' '), NULL, false, false, false, false, false, false, true },
     { (unichar_t *) N_("Icelandic"), NULL, 0, 0, (void *) CHR('I','S','L',' '), NULL, false, false, false, false, false, false, true },
