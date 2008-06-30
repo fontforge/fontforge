@@ -311,10 +311,11 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     static GIData gi;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[22], boxes[6];
-    GGadgetCreateData *varray[16], *hvarray[16], *harray1[6], *harray2[4], *harray3[7];
-    GTextInfo label[22];
-    char tbuf[6][40];
+    GGadgetCreateData gcd[33], boxes[7];
+    GGadgetCreateData *varray[19], *hvarray[16], *harray1[6], *harray2[4],
+	    *harray3[7], *hvarray2[4][6];
+    GTextInfo label[33];
+    char tbuf[6][40], bbbuf[4][40];
     char basebuf[20], refbuf[20];
     char namebuf[100];
     char ubuf[40];
@@ -496,6 +497,69 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GLineCreate;
 
+	label[6+j].text = (unichar_t *) _("Bounding Box:");
+	label[6+j].text_is_1byte = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].creator = GLabelCreate;
+	varray[l++] = &gcd[6+j];
+	++j;
+
+	hvarray2[0][0] = GCD_Glue; hvarray2[0][1] = GCD_Glue;
+
+	label[6+j].text = (unichar_t *) _("Min");
+	label[6+j].text_is_1byte = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].creator = GLabelCreate;
+	hvarray2[0][2] = &gcd[6+j++];
+
+	label[6+j].text = (unichar_t *) _("Max");
+	label[6+j].text_is_1byte = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].creator = GLabelCreate;
+	hvarray2[0][3] = &gcd[6+j++]; hvarray2[0][4] = GCD_Glue; hvarray2[0][5] = NULL;
+
+	hvarray2[1][0] = hvarray2[1][4] = GCD_Glue; hvarray2[1][5] = NULL;
+	hvarray2[2][0] = hvarray2[2][4] = GCD_Glue; hvarray2[2][5] = NULL;
+
+	label[6+j].text = (unichar_t *) _("X:");
+	label[6+j].text_is_1byte = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].creator = GLabelCreate;
+	hvarray2[1][1] = &gcd[6+j++];
+
+	label[6+j].text = (unichar_t *) _("Y:");
+	label[6+j].text_is_1byte = true;
+	gcd[6+j].gd.label = &label[6+j];
+	gcd[6+j].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[6+j].creator = GLabelCreate;
+	hvarray2[2][1] = &gcd[6+j++];
+
+	for ( i=0; i<4; ++i ) {
+	    sprintf(bbbuf[i],"%g", (double) ((&ref->bb.minx)[i]));
+	    label[6+j].text = (unichar_t *) bbbuf[i];
+	    label[6+j].text_is_1byte = true;
+	    gcd[6+j].gd.label = &label[6+j];
+	    gcd[6+j].gd.flags = gg_enabled|gg_visible;
+	    gcd[6+j].creator = GLabelCreate;
+	    hvarray2[1+i/2][2+(i&1)] = &gcd[6+j++];
+	}
+	hvarray2[3][0] = NULL;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = hvarray2[0];
+	boxes[4].creator = GHVBoxCreate;
+	varray[l++] = &boxes[4];
+
+	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = RI_Height+(j==10?12:0)-70;
+	gcd[6+j].gd.pos.width = RI_Width-10;
+	gcd[6+j].gd.flags = gg_visible | gg_enabled;
+	varray[l++] = &gcd[6+j];
+	gcd[6+j++].creator = GLineCreate;
+
 	gcd[6+j].gd.pos.x = (RI_Width-GIntGetResource(_NUM_Buttonsize))/2;
 	gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+6;
 	gcd[6+j].gd.pos.width = -1; gcd[6+j].gd.pos.height = 0;
@@ -509,10 +573,10 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	harray2[0] = GCD_Glue; harray2[1] = &gcd[6+j]; harray2[2] = GCD_Glue; harray2[3] = NULL;
 	gcd[6+j++].creator = GButtonCreate;
 
-	boxes[4].gd.flags = gg_enabled|gg_visible;
-	boxes[4].gd.u.boxelements = harray2;
-	boxes[4].creator = GHBoxCreate;
-	varray[l++] = &boxes[4];
+	boxes[5].gd.flags = gg_enabled|gg_visible;
+	boxes[5].gd.u.boxelements = harray2;
+	boxes[5].creator = GHBoxCreate;
+	varray[l++] = &boxes[5];
 
 	gcd[6+j] = gcd[6+j-2];
 	varray[l++] = &gcd[6+j++];
@@ -542,10 +606,10 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	harray3[0] = GCD_Glue; harray3[1] = &gcd[6+j-1]; harray3[2] = GCD_Glue;
 	 harray3[3] = GCD_Glue; harray3[4] = &gcd[6+j]; harray3[5] = GCD_Glue;
 	 harray3[6] = NULL;
-	boxes[5].gd.flags = gg_enabled|gg_visible;
-	boxes[5].gd.u.boxelements = harray3;
-	boxes[5].creator = GHBoxCreate;
-	varray[l++] = &boxes[5];
+	boxes[6].gd.flags = gg_enabled|gg_visible;
+	boxes[6].gd.u.boxelements = harray3;
+	boxes[6].creator = GHBoxCreate;
+	varray[l++] = &boxes[6];
 	varray[l] = NULL;
 
 	boxes[0].gd.flags = gg_enabled|gg_visible;
@@ -559,7 +623,9 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
     GHVBoxSetPadding(boxes[3].ret,6,2);
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gi.gw,true);
