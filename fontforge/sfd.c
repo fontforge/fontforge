@@ -6899,6 +6899,7 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
     LayerInfo layers[2];
     double version;
     int had_layer_cnt=false;
+    int chars_seen = false;
 
     if ( cur_sf->save_to_dir ) {
 	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS,cur_sf->filename);
@@ -6928,6 +6929,11 @@ return( NULL );
 		    sc = SFDGetChar(sfd,&sf,had_layer_cnt);
 	break;
 		}
+	    } else if ( strmatch(tok,"BeginChars:")==0 ) {
+		chars_seen = true;
+	    } else if ( chars_seen ) {
+		/* Don't try to look for things in the file header any more */
+		/* The "Layer" keyword has a different meaning in this context */
 	    } else if ( strmatch(tok,"Order2:")==0 ) {
 		int order2;
 		getint(sfd,&order2);
