@@ -3619,7 +3619,7 @@ static void Gasp_FinishEdit(GGadget *g,int row,int col,int wasnew) {
     struct matrix_data *gasp = GMatrixEditGet(g, &rows);
 
     if ( col==0 ) {
-	qsort(gasp,rows,3*sizeof(struct matrix_data),gasp_comp);
+	qsort(gasp,rows,5*sizeof(struct matrix_data),gasp_comp);
 	GGadgetRedraw(g);
     }
 }
