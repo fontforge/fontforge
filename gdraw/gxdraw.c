@@ -342,15 +342,26 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
     }
     gdisp->cmap = DefaultColormap(display,gdisp->screen);
 #else
-    static int vsearch[][2] = {{ 24, TrueColor },
-				{ 32, TrueColor },
+    /* In the old days before 24bit color was common, a 32 bit visual was */
+    /* the standard way to go (extra 8 bits were ignored). Then came the */
+    /* composite extension which supported alpha channels in images, and */
+    /* we had to be careful what went into the extra byte, 0 doesn't work */
+    static int oldvsearch[][2] = {{ 32, TrueColor },
+				{ 24, TrueColor },
 				{ 16, TrueColor },
 				{ 15, TrueColor },
-				{ 12, TrueColor }};
+				{ 12, TrueColor },
+			        {0}};
+    static int newvsearch[][2] = {{ 24, TrueColor },
+				{ 16, TrueColor },
+				{ 15, TrueColor },
+				{ 12, TrueColor },
+			        {0}};
     static int v2search[][2] = {{ 8, PseudoColor },
 				{ 8, GrayScale },
 			        { 1, GrayScale },
 			        { 1, StaticGray }};
+    int (*vsearch)[2] = gdisp->supports_alpha_images ? newvsearch : oldvsearch;
     Display *display = gdisp->display;
     XVisualInfo vinf, *ret;
     int pixel_size, vc, i, first;
@@ -374,7 +385,7 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 
     /* I'd like TrueColor if I can get it */
     if ( gdisp->visual == NULL ) {
-	for ( i=0; i<sizeof(vsearch)/(2*sizeof(int)) && gdisp->visual==NULL; ++i ) {
+	for ( i=0; vsearch[i][0]!=0 && gdisp->visual==NULL; ++i ) {
 	    if ( XMatchVisualInfo(display,gdisp->screen,vsearch[i][0],vsearch[i][1],&vinf)) {
 		gdisp->visual = vinf.visual;
 		gdisp->depth = vinf.depth;
@@ -577,6 +588,17 @@ static void _GXDraw_InitCols(GXDisplay *gdisp) {
     GClut clut;
     int x_color_max;
     int vclass, depth;
+    int n=0;
+    char **extlist = XListExtensions(gdisp->display,&n);
+
+    for ( i=0; i<n; ++i ) {
+	if ( strcasecmp(extlist[i],"Composite")==0 ) {
+	    gdisp->supports_alpha_images = true;
+    break;
+	}
+    }
+    if ( extlist!=NULL )
+	XFreeExtensionList(extlist);
 
     _GXDraw_FindVisual(gdisp);
     vclass = gdisp->visual->class;

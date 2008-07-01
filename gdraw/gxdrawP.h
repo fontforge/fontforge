@@ -229,6 +229,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     unsigned int devicesinit: 1;	/* the devices structure has been initialized. Else call XListInputDevices */
     unsigned int expecting_core_event: 1;/* when we move an input extension device we generally get two events, one for the device, one later for the core device. eat the core event */
     unsigned int has_xkb: 1;		/* we were able to initialize the XKB extension */
+    unsigned int supports_alpha_images: 1;
     struct gcstate gcstate[2];			/* 0 is state for normal images, 1 for bitmap (pixmaps) */
     Display *display;
     Window root;
