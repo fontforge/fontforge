@@ -1090,9 +1090,9 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
 
     if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
-	*dot = '\0';
-	base = UniFromName(sc->name,sf->uni_interp,NULL);
-	*dot = '.';
+	char *temp = copyn(sc->name,dot-sc->name);
+	base = UniFromName(temp,sf->uni_interp,NULL);
+	free(temp);
     }
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
@@ -1211,9 +1211,9 @@ return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,false,false))
 
     if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
-	*dot = '\0';
-	unicodeenc = UniFromName(sc->name,sf->uni_interp,NULL);
-	*dot = '.';
+	char *temp = copyn(sc->name,dot-sc->name);
+	unicodeenc = UniFromName(temp,sf->uni_interp,NULL);
+	free(temp);
     }
 
     if (( pt = SFGetAlternate(sf,unicodeenc,sc,false))==NULL )
