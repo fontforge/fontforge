@@ -42,6 +42,7 @@ struct dlg_info {
     int multi;
     int exposed;
     int size_diff;
+    int bcnt;
 };
 
 static int d_e_h(GWindow gw, GEvent *event) {
@@ -68,6 +69,14 @@ return( false );
 	    if ( pos.y+pos.height>=rootsize.height )
 		if (( pos.y = rootsize.height - pos.height )<0 ) pos.y = 0;
 	    GDrawMove(gw,pos.x,pos.y);
+	}
+    } else if ( event->type == et_resize ) {
+	GRect size,pos;
+	GGadget *g = GWidgetGetControl(gw,d->bcnt);
+	if ( g!=NULL ) {
+	    GDrawGetSize(gw,&size);
+	    GGadgetGetSize(g,&pos);
+	    GGadgetResize(g,size.width-2*pos.x,pos.height);
 	}
     } else if ( event->type == et_map ) {
 	/* Above palettes */
@@ -281,7 +290,8 @@ return( NULL );
     GWidgetHidePalettes();
     if ( d!=NULL ) {
 	memset(d,'\0',sizeof(*d));
-	d->ret = cancel;
+	d->ret  = cancel;
+	d->bcnt = bcnt;
     }
     GDrawSetVisible(gw,true);
     free(blabels);
@@ -882,7 +892,8 @@ return(d.ret);
 
 static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
 	const char **answers, int def, int cancel,
-	struct dlg_info *d, int add_text, int restrict_input, int center) {
+	struct dlg_info *d, int add_text, const char *defstr,
+	int restrict_input, int center) {
     GTextInfo qlabels[GLINE_MAX+1], *blabels;
     GGadgetCreateData *gcd;
     int lb, bcnt=0;
@@ -948,6 +959,18 @@ return( NULL );
     maxw = 0;
     for ( i=0; i<lb; ++i ) {
 	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	if ( w>maxw ) maxw = w;
+    }
+    if ( add_text && defstr!=NULL ) {
+	extern GFont *_gtextfield_font;
+	if ( _gtextfield_font!=NULL ) {
+	    GDrawSetFont(gw,_gtextfield_font);
+	    w = GDrawGetText8Width(gw,defstr,-1,NULL);
+	    GDrawSetFont(gw,_ggadget_default_font);
+	} else
+	    w = 8*GDrawGetText8Width(gw,defstr,-1,NULL)/5;
+	w += GDrawPointsToPixels(gw,40);
+	if ( w >1000 ) w = 1000;
 	if ( w>maxw ) maxw = w;
     }
     bw = 0;
@@ -1022,7 +1045,8 @@ return( NULL );
     GWidgetHidePalettes();
     if ( d!=NULL ) {
 	memset(d,'\0',sizeof(*d));
-	d->ret = cancel;
+	d->ret  = cancel;
+	d->bcnt = bcnt;
     }
     GDrawSetVisible(gw,true);
     free(blabels);
@@ -1045,7 +1069,7 @@ int GWidgetAsk8(const char *title,
 return( def );
 
     va_start(ap,question);
-    gw = DlgCreate8(title,question,ap,answers,def,cancel,&d,false,true,false);
+    gw = DlgCreate8(title,question,ap,answers,def,cancel,&d,false,NULL,true,false);
     va_end(ap);
 
     while ( !d.done )
@@ -1067,7 +1091,7 @@ int GWidgetAskCentered8(const char *title,
 return( def );
 
     va_start(ap,question);
-    gw = DlgCreate8(title,question,ap,answers,def,cancel,&d,false,true,true);
+    gw = DlgCreate8(title,question,ap,answers,def,cancel,&d,false,NULL,true,true);
     va_end(ap);
 
     while ( !d.done )
@@ -1098,7 +1122,7 @@ return( copy(def ));
 	ocb[1] = u2utf8_copy(GStringGetResource( _STR_Cancel, NULL));
     }
     va_start(ap,question);
-    gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,true,true,false);
+    gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,true,def,true,false);
     va_end(ap);
     if ( def!=NULL && *def!='\0' )
 	GGadgetSetTitle8(GWidgetGetControl(gw,2),def);
@@ -1135,7 +1159,7 @@ return( copy(def ));
 	ocb[1] = u2utf8_copy(GStringGetResource( _STR_Cancel, NULL));
     }
     va_start(ap,question);
-    gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,2,true,false);
+    gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,2,def,true,false);
     va_end(ap);
     if ( def!=NULL && *def!='\0' )
 	GGadgetSetTitle8(GWidgetGetControl(gw,2),def);
@@ -1161,7 +1185,7 @@ void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap) {
 	ob[0] = _("_OK");
     else
 	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
-    gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,NULL,false,false,true);
+    gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,NULL,false,NULL,false,true);
     if ( gw!=NULL ) 
 	GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
@@ -1196,7 +1220,7 @@ void GWidgetError8(const char *title,const char *statement, ...) {
     else
 	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
     va_start(ap,statement);
-    gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,&d,false,true,true);
+    gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,&d,false,NULL,true,true);
     va_end(ap);
     if ( gw!=NULL ) {
 	while ( !d.done )
