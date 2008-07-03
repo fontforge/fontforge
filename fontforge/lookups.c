@@ -1853,6 +1853,7 @@ return( NULL );
 return( newclasses );
 }
 
+static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl,char *prefix);
 static OTLookup *OTLookupCopyNested(SplineFont *to_sf,SplineFont *from_sf, char *prefix,
 	OTLookup *from_otl) {
     char *newname;
@@ -1864,7 +1865,7 @@ return( NULL );
     to_nested_otl = SFFindLookup(to_sf,newname);
     free(newname);
     if ( to_nested_otl==NULL )
-	to_nested_otl = OTLookupCopyInto(to_sf,from_sf, from_otl);
+	to_nested_otl = _OTLookupCopyInto(to_sf,from_sf, from_otl, prefix);
 return( to_nested_otl );
 }
 
@@ -2286,10 +2287,9 @@ void SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 	FISortInsertLookup(sf,newotl);
 }
 
-OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
+static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl,char *prefix) {
     OTLookup *otl = chunkalloc(sizeof(OTLookup));
     struct lookup_subtable *sub, *last, *from_sub;
-    char *prefix = strconcat(from_sf->fontname,"-");
     int scnt;
 
     into_sf->changed = true;
@@ -2327,6 +2327,41 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
     }
     FIOTLookupCopyInto(into_sf,from_sf, from_otl, otl, scnt);
 return( otl );
+}
+
+static int NeedsPrefix(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
+    struct lookup_subtable *from_sub;
+    int i,j;
+
+    if ( from_otl==NULL )
+return( false );
+    if ( SFFindLookup(into_sf,from_otl->lookup_name)!=NULL )
+return( true );
+    for ( from_sub = from_otl->subtables; from_sub!=NULL; from_sub=from_sub->next ) {
+	if ( from_sub->fpst!=NULL ) {
+	    for ( i=0; i<from_sub->fpst->rule_cnt; ++i ) {
+		struct fpst_rule *r = &from_sub->fpst->rules[i];
+		for ( j=0; j<r->lookup_cnt; ++j )
+		    if ( NeedsPrefix(into_sf,from_sf, r->lookups[j].lookup))
+return( true );
+	    }
+	} else if ( from_sub->sm!=NULL && from_sub->sm->type==asm_context ) {
+	    for ( i=0; i<from_sub->sm->class_cnt*from_sub->sm->state_cnt; ++i ) {
+		if ( NeedsPrefix(into_sf,from_sf,from_sub->sm->state[i].u.context.mark_lookup) ||
+			NeedsPrefix(into_sf,from_sf,from_sub->sm->state[i].u.context.cur_lookup))
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
+OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
+    char *prefix = NeedsPrefix(into_sf,from_sf,from_otl)
+	    ? strconcat(from_sf->fontname,"-") : copy("");
+    OTLookup *newotl = _OTLookupCopyInto(into_sf,from_sf,from_otl,prefix);
+    free(prefix);
+return( newotl );
 }
 
 /* ************************************************************************** */
