@@ -36,7 +36,7 @@
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
 static GBox gtextfield_box = { /* Don't initialize here */ 0 };
-static FontInstance *gtextfield_font = NULL;
+FontInstance *_gtextfield_font = NULL;
 static int gtextfield_inited = false;
 
 static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },
@@ -2530,11 +2530,11 @@ static void GTextFieldInit() {
     GGadgetInit();
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.family_name = courier;
-    gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
+    _gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
     _GGadgetCopyDefaultBox(&gtextfield_box);
     gtextfield_box.padding = 3;
     gtextfield_box.flags = box_active_border_inner;
-    gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&gtextfield_box,gtextfield_font);
+    _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&gtextfield_box,_gtextfield_font);
     gtextfield_inited = true;
 }
 
@@ -2677,7 +2677,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     }
     if ( gt->text==NULL )
 	gt->text = gcalloc(1,sizeof(unichar_t));
-    gt->font = gtextfield_font;
+    gt->font = _gtextfield_font;
     if ( gd->label!=NULL && gd->label->font!=NULL )
 	gt->font = gd->label->font;
     if ( (gd->flags & gg_textarea_wrap) && gt->multi_line )

@@ -5045,7 +5045,7 @@ static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     Undoes **undoes;
     int layer, lc;
     CharView *cvs;
-    int mylayer = CVLayer(cv);
+    int mylayer = CVLayer((CharViewBase *) cv);
 
     if ( cv->b.sc->parent->filename==NULL || cv->b.sc->namechanged || cv->b.sc->parent->mm!=NULL )
 return;
