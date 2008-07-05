@@ -309,12 +309,15 @@ return;
     } else if (( pd->prev_ver || pd->next_ver ) && pd->colinear ) {
         if ( IsSplinePeak( gd,pd,true,true,1 )) pd->x_extr = 1;
         else if ( IsSplinePeak( gd,pd,false,true,1 )) pd->x_extr = 2;
-    } else if (( pd->nextunit.y < 0 && pd->prevunit.y < 0 ) || ( pd->nextunit.y > 0 && pd->prevunit.y > 0 )) {
-        if ( IsSplinePeak( gd,pd,false,false,2 )) pd->y_corner = 1;
-        else if ( IsSplinePeak( gd,pd,true,false,2 )) pd->y_corner = 2;
-    } else if (( pd->nextunit.x < 0 && pd->prevunit.x < 0 ) || ( pd->nextunit.x > 0 && pd->prevunit.x > 0 )) {
-        if ( IsSplinePeak( gd,pd,true,true,2 )) pd->x_corner = 1;
-        else if ( IsSplinePeak( gd,pd,false,true,2 )) pd->x_corner = 2;
+    } else {
+        if (( pd->nextunit.y < 0 && pd->prevunit.y < 0 ) || ( pd->nextunit.y > 0 && pd->prevunit.y > 0 )) {
+            if ( IsSplinePeak( gd,pd,false,false,2 )) pd->y_corner = 1;
+            else if ( IsSplinePeak( gd,pd,true,false,2 )) pd->y_corner = 2;
+        }
+        if (( pd->nextunit.x < 0 && pd->prevunit.x < 0 ) || ( pd->nextunit.x > 0 && pd->prevunit.x > 0 )) {
+            if ( IsSplinePeak( gd,pd,true,true,2 )) pd->x_corner = 1;
+            else if ( IsSplinePeak( gd,pd,false,true,2 )) pd->x_corner = 2;
+        }
     }
     if ( hint_diagonal_intersections ) {
 	if (( pd->y_corner || pd->y_extr ) && 
@@ -1292,14 +1295,10 @@ static int OnStem( struct stemdata *stem,BasePoint *test,int left ) {
     if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
     if ( left ) {
         off = (test->x - stem->left.x)*dir->y - (test->y - stem->left.y)*dir->x;
-        if ( !stem->positioned ) {
-            max = stem->lmax; min = stem->lmin;
-        }
+        max = stem->lmax; min = stem->lmin;
     } else {
         off = (test->x - stem->right.x)*dir->y - (test->y - stem->right.y)*dir->x;
-        if ( !stem->positioned ) {
-            max = stem->rmax; min = stem->rmin;
-        }
+        max = stem->rmax; min = stem->rmin;
     }
     
     if ( off > ( max - dist_error ) && off < ( min + dist_error ) )
@@ -1355,32 +1354,37 @@ return( true );
 return( false );
 }
 
-static void RecalcStemOffsets( struct stemdata *stem,int left,int right ) {
-    double off;
+static int RecalcStemOffsets( struct stemdata *stem,BasePoint *dir,int left,int right ) {
+    double off, err;
     double lmin=0, lmax=0, rmin=0, rmax=0;
     struct stem_chunk *chunk;
     int i;
     
     if ( !left && !right )
-return;
+return( false );
+    err = ( IsVectorHV( dir,0,true )) ? dist_error_hv : dist_error_diag;
 
     if ( stem->chunk_cnt > 1 ) for ( i=0; i<stem->chunk_cnt; i++ ) {
         chunk = &stem->chunks[i];
         if ( left && chunk->l != NULL ) {
-            off =  ( chunk->l->sp->me.x - stem->left.x )*stem->l_to_r.x +
-                   ( chunk->l->sp->me.y - stem->left.y )*stem->l_to_r.y;
+            off =  ( chunk->l->sp->me.x - stem->left.x )*dir->y -
+                   ( chunk->l->sp->me.y - stem->left.y )*dir->x;
             if ( off < lmin ) lmin = off;
             else if ( off > lmax ) lmax = off;
         }
         if ( right && chunk->r != NULL ) {
-            off =  ( chunk->r->sp->me.x - stem->right.x )*stem->l_to_r.x +
-                   ( chunk->r->sp->me.y - stem->right.y )*stem->l_to_r.y;
+            off =  ( chunk->r->sp->me.x - stem->right.x )*dir->y +
+                   ( chunk->r->sp->me.y - stem->right.y )*dir->x;
             if ( off < rmin ) rmin = off;
             else if ( off > rmax ) rmax = off;
         }
     }
-    stem->lmin = lmin; stem->lmax = lmax;
-    stem->rmin = rmin; stem->rmax = rmax;
+    if ( lmax - lmin < 2*err && rmax - rmin < 2*err ) {
+        stem->lmin = lmin; stem->lmax = lmax;
+        stem->rmin = rmin; stem->rmax = rmax;
+return( true );
+    }
+return( false );
 }
 
 static void SetStemUnit( struct stemdata *stem,BasePoint dir ) {
@@ -1406,7 +1410,7 @@ static void SetStemUnit( struct stemdata *stem,BasePoint dir ) {
     }
     
     /* Recalculate left/right offsets relatively to new vectors */
-    RecalcStemOffsets( stem,true,true );
+    RecalcStemOffsets( stem,&dir,true,true );
 }
 
 static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
@@ -1583,7 +1587,7 @@ return( stem );
 	err = stem->unit.x*dir->y - stem->unit.y*dir->x;
 	if ( err<slope_error && err>-slope_error &&
             BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false,true,cove )) {
-return( stem );
+ return( stem );
         }
     }
     /* One more pass. At this stage larger deviations are allowed */
@@ -1807,7 +1811,7 @@ static struct stemdata *TestStem( struct glyphdata *gd,struct pointdata *pd,
     double width, err;
     struct linedata *line, *line2;
     BasePoint *mdir, middle;
-    int de=false, hv;
+    int de=false, hv, l_changed;
     
     width = ( match->me.x - pd->sp->me.x )*dir->y - 
             ( match->me.y - pd->sp->me.y )*dir->x;
@@ -1856,49 +1860,57 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
             chunk->stub = is_stub;
             chunk->l_e_idx = chunk->r_e_idx = eidx;
         }
-            
+
         if ( chunk != NULL && gd->linecnt > 0 ) {
             hv = IsVectorHV( &stem->unit,0,true );
             /* For HV stems allow assigning a line to a stem edge only
             /* if that line also has an exactly HV vector */
-            if ( line != NULL && (
-                ( !hv && UnitsParallel( &stem->unit,&line->unit,true )) || 
+            if ( line != NULL && (( !hv &&
+                UnitsParallel( &stem->unit,&line->unit,true ) && 
+                RecalcStemOffsets( stem,&line->unit,true,true )) || 
                 ( hv && line->unit.x == stem->unit.x && line->unit.y == stem->unit.y ))) {
                 
-                otherline = NULL;
+                otherline = NULL; l_changed = false;
                 if (( stem->leftline == NULL || 
                     stem->leftline->length < line->length ) && chunk->l == pd ) {
                     
                     stem->leftline = line;
+                    l_changed = true;
                     otherline = stem->rightline;
                 } else if (( stem->rightline == NULL ||
                     stem->rightline->length < line->length ) && chunk->r == pd ) {
                     
                     stem->rightline = line;
+                    l_changed = true;
                     otherline = stem->leftline;
                 }
                 /* If lines are attached to both sides of a diagonal stem,
                 /* then prefer the longer line */
-                if ( !hv && ( otherline == NULL || ( otherline->length < line->length )))
+                if ( !hv && l_changed && !stem->positioned && 
+                    ( otherline == NULL || ( otherline->length < line->length )))
                     SetStemUnit( stem,line->unit );
             }
-            if ( line2 != NULL && (
-                ( !hv && UnitsParallel( &stem->unit,&line2->unit,true )) || 
+            if ( line2 != NULL && (( !hv &&
+                UnitsParallel( &stem->unit,&line2->unit,true ) && 
+                RecalcStemOffsets( stem,&line2->unit,true,true )) || 
                 ( hv && line2->unit.x == stem->unit.x && line2->unit.y == stem->unit.y ))) {
                 
-                otherline = NULL;
+                otherline = NULL; l_changed = false;
                 if (( stem->leftline == NULL ||
                     stem->leftline->length < line2->length ) && chunk->l == pd2 ) {
                     
                     stem->leftline = line2;
+                    l_changed = true;
                     otherline = stem->rightline;
                 } else if (( stem->rightline == NULL ||
                     stem->rightline->length < line2->length ) && chunk->r == pd2 ) {
                     
                     stem->rightline = line2;
+                    l_changed = true;
                     otherline = stem->leftline;
                 }
-                if ( !hv && ( otherline == NULL || ( otherline->length < line2->length )))
+                if ( !hv && l_changed && !stem->positioned && 
+                    ( otherline == NULL || ( otherline->length < line2->length )))
                     SetStemUnit( stem,line2->unit );
             }
         }
@@ -1945,7 +1957,7 @@ return( t1 );
 /* but have no corresponding position at the opposite edge. */
 static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
     struct stemdata *stem,BasePoint *dir,int is_next ) {
-    int i, ret=0, allowleft, allowright;
+    int i, ret=0, allowleft, allowright, hv, corner;
     double err;
     struct stemdata *tstem;
     
@@ -1955,9 +1967,11 @@ static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
     continue;
         allowleft = ( !tstem->ghost || tstem->width == 20 );
         allowright = ( !tstem->ghost || tstem->width == 21 );
-        
+        hv = IsVectorHV( &tstem->unit,0,true );
+        corner = (( pd->x_corner && hv == 2 ) || ( pd->y_corner && hv == 1 ));
         err = tstem->unit.x*dir->y - tstem->unit.y*dir->x;
-        if (( err<slope_error && err>-slope_error ) || tstem->ghost ) {
+
+        if (( err<slope_error && err>-slope_error ) || tstem->ghost || corner ) {
             if ( OnStem( tstem,&pd->sp->me,true ) && allowleft ) {
 	        if ( IsCorrectSide( gd,pd->sp,is_next,true,&tstem->unit )) {
                     AddToStem( gd,tstem,pd,NULL,is_next,false,false );
@@ -2964,7 +2978,7 @@ return( cnt );
     dot =   ( stem->unit.x * pd->nextunit.x ) +
             ( stem->unit.y * pd->nextunit.y );
     /* We used to apply normal checks only if the point's unit vector pointing
-    /* to the direction we are going to check is nearly parallel to the stem unit.
+    /* in the direction we are going to check is nearly parallel to the stem unit.
     /* But this is not the best method, because a spline, "parallel" to our
     /* stem, may actually have filled space at a wrong side. On the other hand,
     /* sometimes it makes sense to calculate active space even for splines
@@ -3027,7 +3041,7 @@ return( cnt );
         /* this segment is positioned on a prominent curve: 
         /* 1 if the inner side of that curve is inside of the contour
         /* and 2 otherwise.
-        /* Later, if we get a pair of "inner" and "outer curves, then
+        /* Later, if we get a pair of "inner" and "outer" curves, then
         /* we are probably dealing with a feature's bend which should be
         /* necessarily marked with a hint. Checks we apply for this type
         /* of curved segments should be less strict than in other cases. */
@@ -4009,7 +4023,7 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
                             ( chunk->r->sp->me.y - stem->right.y )*stem->l_to_r.y;
                     stem->left = chunk->l->sp->me;
                     stem->right = chunk->r->sp->me;
-                    RecalcStemOffsets( stem,loff != 0,roff != 0 );
+                    RecalcStemOffsets( stem,&stem->unit,loff != 0,roff != 0 );
         break;
                 }
             }
@@ -4031,7 +4045,7 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
                 rset = true;
             }
             if ( lset && rset ) {
-                RecalcStemOffsets( stem,loff != 0,roff != 0 );
+                RecalcStemOffsets( stem,&stem->unit,loff != 0,roff != 0 );
         break;
             }
         }
@@ -5317,7 +5331,7 @@ struct glyphdata *GlyphDataBuild( SplineChar *sc,int layer, BlueData *bd,int use
     em_size = ( sc->parent != NULL ) ? sc->parent->ascent + sc->parent->descent : 1000;
 
     gd = GlyphDataInit( sc,layer,em_size,only_hv );
-    if ( gd ==  NULL )
+    if ( gd == NULL )
 return( gd );
     /* Get the alignment zones */
     if ( bd == NULL )
@@ -5439,8 +5453,8 @@ return( gd );
 	CheckForBoundingBoxHints( gd );
     CheckForGhostHints( gd );
 
-    GDBundleStems( gd,0 );
-    if ( gd->order2 && use_existing ) {
+    if ( use_existing ) {
+        GDBundleStems( gd,0 );
         for ( i=0; i<gd->stemcnt; ++i ) {
             stem = &gd->stems[i];
             if ( stem->toobig == 1 && IsVectorHV( &stem->unit,0,true ))
