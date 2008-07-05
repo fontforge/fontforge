@@ -98,8 +98,7 @@ typedef struct pointdata {
     unsigned int prev_hor: 1;
     unsigned int prev_ver: 1;
     unsigned int ticked: 1;
-    unsigned int touched: 1;
-    unsigned int affected: 1;
+    uint8 touched, affected;
     uint8 x_extr, y_extr;
     uint8 x_corner, y_corner;
     BasePoint newpos;
@@ -122,7 +121,10 @@ typedef struct stemdata {
     BasePoint l_to_r;		/* Unit vector pointing from left to right (across stem) */
     BasePoint left;		/* a point on one side of the stem (not necissarily left, even for vertical stems) */
     BasePoint right;		/* and one on the other */
+    BasePoint newunit;          /* Unit vector after repositioning (e. g. in Metafont routines) */
+    BasePoint newleft, newright;/* Left and right edges after repositioning */
     int leftidx, rightidx;      /* TTF indices of the left and right key points */
+    struct pointdata *keypts[4];/* Uppest and lowest points on left and right edges. Used for positioning diagonal stems */
     double lmin, lmax, rmin, rmax;
     double width;
     int chunk_cnt;		/* number of separate point-pairs on this stem */
