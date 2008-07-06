@@ -503,6 +503,7 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
 	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
 	    *upt = w*0x400 + w2 + 0x10000;
+	    pt += 4;
 #endif
 	}
 	++upt;
@@ -858,7 +859,7 @@ int utf8_strlen(const char *utf8_str) {
     /* how many characters in the string NOT bytes */
     int len = 0;
 
-    while ( utf8_ildb(&utf8_str)!=0 )
+    while ( utf8_ildb(&utf8_str)>0 )
 	++len;
 return( len );
 }
@@ -868,7 +869,7 @@ int utf82u_strlen(const char *utf8_str) {
     int ch;
     int len = 0;
 
-    while ( (ch = utf8_ildb(&utf8_str))!=0 )
+    while ( (ch = utf8_ildb(&utf8_str))>0 )
 	if ( ch>0x10000 )
 	    len += 2;
 	else
