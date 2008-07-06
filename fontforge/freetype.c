@@ -315,7 +315,7 @@ void *__FreeTypeFontContext(FT_Library context,
     FTC *ftc;
     SplineChar **old=sf->glyphs, **new;
     uint8 *selected = fv!=NULL ? fv->selected : NULL;
-    EncMap *map = fv!=NULL ? fv->map : sf->fv->map;
+    EncMap *map = fv!=NULL ? fv->map : sf->fv!=NULL ? sf->fv->map : sf->map;
     int i,cnt, notdefpos;
 
     if ( !hasFreeType())

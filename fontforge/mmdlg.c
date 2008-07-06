@@ -327,7 +327,7 @@ static void MakeAppleBlend(MMSet *mm,real *blends,real *normalized) {
     /* Nor is it clear whether the kerning info is a delta or not */
 
     sf->changed = true;
-    FontViewCreate(sf);
+    FontViewCreate(sf,false);
 }
 
 struct mmcb {
@@ -1941,7 +1941,7 @@ continue;
     }
 
     if ( fv==NULL )
-	fv = (FontView *) FontViewCreate(setto->normal);
+	fv = (FontView *) FontViewCreate(setto->normal,false);
     mmw->done = true;
 }
 

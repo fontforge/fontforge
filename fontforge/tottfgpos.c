@@ -95,7 +95,7 @@ static uint32 scripts[][15] = {
 /* Lao */	{ CHR('l','a','o',' '), 0x0e80, 0x0eff },
 /* Lepcha */    { CHR('l','e','p','c'), 0 },
 /* Limbu */	{ CHR('l','i','m','b'), 0x1900, 0x194f },
-/* Linear A */	{ CHR('l','i','n','a'), 0x10180, 0x102cf },
+/* Linear A */	/*{ CHR('l','i','n','a'), 0x10180, 0x102cf },*/ /* What happened to linear A? */
 /* Linear B */	{ CHR('l','i','n','b'), 0x10000, 0x100fa },
 /* Lycian */    { CHR('l','y','c','i'), 0 },
 /* Lydian */    { CHR('l','y','d','i'), 0 },

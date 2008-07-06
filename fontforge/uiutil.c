@@ -935,7 +935,7 @@ static void UI_post_notice(const char *title,const char *statement,...) {
 	if ( GWidgetPostNoticeActive8(title))
 	    _LogError(statement,ap);
 	else
-	    _GWidgetPostNotice8(title,statement,ap);
+	    _GWidgetPostNotice8(title,statement,ap,40);
     }
     va_end(ap);
 }

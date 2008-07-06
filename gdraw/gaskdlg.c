@@ -1176,9 +1176,16 @@ return( copy(def ));
 return(ret);
 }
 
-void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap) {
+void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap, int timeout) {
     GWindow gw;
     char *ob[2];
+
+    /* Force an old notice to disappear */
+    if ( title==NULL ) {
+	if ( last!=NULL )
+	    GDrawDestroyWindow(last);
+return;
+    }
 
     ob[1]=NULL;
     if ( _ggadget_use_gettext )
@@ -1186,8 +1193,8 @@ void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap) {
     else
 	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
     gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,NULL,false,NULL,false,true);
-    if ( gw!=NULL ) 
-	GDrawRequestTimer(gw,40*1000,0,NULL);
+    if ( gw!=NULL && timeout>0 ) 
+	GDrawRequestTimer(gw,timeout*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
     if ( !_ggadget_use_gettext )
@@ -1199,8 +1206,30 @@ void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap) {
 void GWidgetPostNotice8(const char *title,const char *statement,...) {
     va_list ap;
 
+    /* Force an old notice to disappear */
+    if ( title==NULL ) {
+	if ( last!=NULL )
+	    GDrawDestroyWindow(last);
+return;
+    }
+
     va_start(ap,statement);
-    _GWidgetPostNotice8(title,statement,ap);
+    _GWidgetPostNotice8(title,statement,ap,40);
+    va_end(ap);
+}
+
+void GWidgetPostNoticeTimeout8(int timeout,const char *title,const char *statement,...) {
+    va_list ap;
+
+    /* Force an old notice to disappear */
+    if ( title==NULL ) {
+	if ( last!=NULL )
+	    GDrawDestroyWindow(last);
+return;
+    }
+
+    va_start(ap,statement);
+    _GWidgetPostNotice8(title,statement,ap,timeout);
     va_end(ap);
 }
 

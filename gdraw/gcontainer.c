@@ -259,7 +259,7 @@ return(true);
     GGadgetPopupExternalEvent(event);
     if ( event->type == et_expose ) {
 	GRect old;
-	
+
 	pixmap = _GWidget_GetPixmap(gw,&event->u.expose.rect);
 	pixmap->ggc->bg = gw->ggc->bg;
 	GDrawPushClip(pixmap,&event->u.expose.rect,&old);

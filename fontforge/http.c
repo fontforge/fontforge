@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
+#include <pthread.h>
 
 struct siteinfo {
     int cookie_cnt;
@@ -54,11 +55,39 @@ struct siteinfo {
 
 enum conversation_type { ct_savecookies, ct_slurpdata, ct_getuserid, ct_getuploadid };
 
-static int findHTTPhost(struct sockaddr_in *addr, char *hostname, int port) {
-    struct servent *servent;
+static int findhost(struct sockaddr_in *addr, char *hostname) {
     struct hostent *hostent;
     int i;
+    static int  last_len;
+    static char last_addr[40];
+    static char *last_host=NULL;
 
+    if ( last_host!=NULL && strcmp(last_host,hostname)==0 ) {
+	memcpy(&addr->sin_addr,last_addr,last_len);
+return( 1 );
+    } else {
+	hostent = gethostbyname(hostname);
+	if ( hostent==NULL )
+return( 0 );
+    }
+    for ( i=0; hostent->h_addr_list[i]!=NULL; ++i );
+    memcpy(&addr->sin_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
+    if ( hostent->h_length < sizeof(last_addr)) {	/* Cache the last hostname, in case they ask for it again */
+	free(last_host); last_host = copy(hostname);
+	last_len = hostent->h_length;
+	memcpy(last_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
+    }
+    endhostent();
+return( 1 );
+}
+
+static pthread_mutex_t host_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static int findHTTPhost(struct sockaddr_in *addr, char *hostname, int port) {
+    struct servent *servent;
+    int ret;
+
+    pthread_mutex_lock(&host_lock);
     memset(addr,0,sizeof(*addr));
     addr->sin_family = AF_INET;
     if ( port>=0 )
@@ -68,13 +97,28 @@ static int findHTTPhost(struct sockaddr_in *addr, char *hostname, int port) {
     else
 	addr->sin_port = htons(80);
     endservent();
-    hostent = gethostbyname(hostname);
-    if ( hostent==NULL )
-return( 0 );
-    for ( i=0; hostent->h_addr_list[i]!=NULL; ++i );
-    memcpy(&addr->sin_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
-    endhostent();
-return( 1 );
+    ret = findhost(addr,hostname);
+    pthread_mutex_unlock(&host_lock);
+return( ret );
+}
+
+static int findFTPhost(struct sockaddr_in *addr, char *hostname, int port) {
+    struct servent *servent;
+    int ret;
+
+    pthread_mutex_lock(&host_lock);
+    memset(addr,0,sizeof(*addr));
+    addr->sin_family = AF_INET;
+    if ( port>=0 )
+	addr->sin_port = htons(port);
+    else if (( servent = getservbyname("ftp","tcp"))!=NULL )
+	addr->sin_port = servent->s_port;	/* Already in server byteorder */
+    else
+	addr->sin_port = htons(21);
+    endservent();
+    ret = findhost(addr,hostname);
+    pthread_mutex_unlock(&host_lock);
+return( ret );
 }
 
 /* this excedingly complex routine tries to send data on a socket. */
@@ -187,29 +231,6 @@ return( 1 );
 return( 0 );
 
 return( 0 );	/* shouldn't get here */
-}
-
-static int findFTPhost(struct sockaddr_in *addr, char *hostname, int port) {
-    struct servent *servent;
-    struct hostent *hostent;
-    int i;
-
-    memset(addr,0,sizeof(*addr));
-    addr->sin_family = AF_INET;
-    if ( port>=0 )
-	addr->sin_port = htons(port);
-    else if (( servent = getservbyname("ftp","tcp"))!=NULL )
-	addr->sin_port = servent->s_port;	/* Already in server byteorder */
-    else
-	addr->sin_port = htons(21);
-    endservent();
-    hostent = gethostbyname(hostname);
-    if ( hostent==NULL )
-return( 0 );
-    for ( i=0; hostent->h_addr_list[i]!=NULL; ++i );
-    memcpy(&addr->sin_addr,hostent->h_addr_list[rand()%i],hostent->h_length);
-    endhostent();
-return( 1 );
 }
 
 static int getTCPsocket() {
@@ -342,14 +363,19 @@ return( 404 );
 
     first = 1; ended = 0;
     code = 404;
+#if 0
  { FILE *out;
    char fbuf[400];
    static int msgid=0;
    sprintf(fbuf,"response%d", ++msgid);
    out = fopen( fbuf,"w");
+#endif
     while ((len = read(soc,databuf,databuflen))>0 ) {
+#if 0
   fwrite(databuf,1,len,out);
+#endif
 	if ( first ) {
+	    databuf[len] = '\0';
 	    sscanf(databuf,"HTTP/%*f %d", &code );
 	    first = 0;
 	}
@@ -403,8 +429,10 @@ return( 404 );
 	if ( verbose>=2 || ( verbose!=0 && verbose<2 && !ended) )
 	    write(fileno(stdout),databuf,len);
     }
+#if 0
  fclose(out);
  }
+#endif
     if ( len==-1 )
 	fprintf( stderr, "Socket read failed\n" );
     close( soc );
@@ -871,6 +899,7 @@ return( NULL );
     code = 404;
     while ((len = read(soc,databuf,datalen))>0 ) {
 	if ( first ) {
+	    databuf[len] = '\0';
 	    sscanf(databuf,"HTTP/%*f %d", &code );
 	    first = 0;
 	    /* check for redirects */
@@ -917,6 +946,165 @@ return( NULL );
     }
     rewind(ret);
 return( ret );
+}
+
+/* Perform an HTTP GET, and return the results in the supplied buffer */
+int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
+    pthread_mutex_t *lock = _lock;
+    struct sockaddr_in addr;
+    char *pt, *host, *filename, *username, *password;
+    int port;
+    char buffer[300];
+    int first, code;
+    int soc;
+    int len, sofar;
+
+    snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
+
+    if ( strncasecmp(url,"http://",7)!=0 ) {
+	if ( lock!=NULL )
+	    pthread_mutex_lock(lock);
+	ff_post_error(_("Could not parse URL"),_("Got something else when expecting an http URL"));
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
+return( -1 );
+    }
+    filename = decomposeURL(url, &host, &port, &username, &password);
+    /* I don't support username/passwords for http */
+    if ( lock!=NULL )
+	pthread_mutex_lock(lock);
+    free( username ); free( password );
+    if ( lock!=NULL )
+	pthread_mutex_unlock(lock);
+
+    if ( lock==NULL ) {
+	ff_progress_start_indicator(0,_("Font Download..."),buffer,
+		_("Resolving host"),1,1);
+	ff_progress_enable_stop(false);
+	ff_progress_allow_events();
+	ff_progress_allow_events();
+    }
+
+    /* This routine contains it's own lock */
+    if ( !findHTTPhost(&addr, host, port) ) {
+	if ( lock==NULL )
+	    ff_progress_end_indicator();
+	else
+	    pthread_mutex_lock(lock);
+	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
+	free( host ); free( filename );
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
+return( -1 );
+    }
+    soc = makeConnection(&addr);
+    if ( soc==-1 ) {
+	if ( lock==NULL )
+	    ff_progress_end_indicator();
+	else
+	    pthread_mutex_lock(lock);
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
+	free( host ); free( filename );
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
+return( -1 );
+    }
+
+    if ( lock==NULL )
+	ChangeLine2_8(_("Requesting file..."));
+    sprintf( databuf,"GET %s HTTP/1.1\r\n"
+	"Host: %s\r\n"
+	"User-Agent: FontForge\r\n"
+	"Connection: close\r\n\r\n", filename, host );
+    if ( write(soc,databuf,strlen(databuf))==-1 ) {
+	if ( lock==NULL )
+	    ff_progress_end_indicator();
+	if ( lock!=NULL )
+	    pthread_mutex_lock(lock);
+	ff_post_error(_("Could not send request"),_("Could not send request to \"%s\"."), host );
+	free( host ); free( filename );
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
+	close( soc );
+return( -1 );
+    }
+
+    if ( lock==NULL )
+	ChangeLine2_8(_("Downloading file..."));
+
+    first = 1;
+    code = 404;
+    sofar = 0;
+    while ( *datalen>sofar+1 && (len = read(soc,databuf+sofar,*datalen-1-sofar))>0 ) {
+	if ( first ) {
+	    databuf[len] = '\0';
+	    sscanf(databuf,"HTTP/%*f %d", &code );
+	    first = 0;
+	    /* check for redirects */
+	    if ( code>=300 && code<399 && (pt=strstr(databuf,"Location: "))!=NULL ) {
+		char *newurl = pt + strlen("Location: ");
+		pt = strchr(newurl,'\r');
+		if ( *pt )
+		    *pt = '\0';
+		close( soc );
+		if ( lock!=NULL )
+		    pthread_mutex_lock(lock);
+		free(host); free( filename );
+		if ( lock!=NULL )
+		    pthread_mutex_unlock(lock);
+		sofar = HttpGetBuf(newurl, databuf, datalen,lock);
+return( sofar );
+	    }
+	    pt = strstr(databuf,"Content-Length: ");
+	    if ( pt!=NULL ) {
+		int tot;
+		pt += strlen( "Content-Length: ");
+		tot = strtol(pt,NULL,10);
+		if ( lock==NULL )
+		    ff_progress_change_total(tot);
+		if ( tot+1>*datalen ) {
+		    if ( lock!=NULL )
+			pthread_mutex_lock(lock);
+		    databuf = grealloc(databuf,*datalen = tot+10);
+		    if ( lock!=NULL )
+			pthread_mutex_unlock(lock);
+		}
+	    }
+	    pt = strstr(databuf,"\r\n\r\n");
+	    if ( pt!=NULL ) {
+		pt += strlen("\r\n\r\n");
+		memcpy(databuf,pt,len-(pt-databuf));
+		sofar = len-(pt-databuf);
+		if ( lock==NULL )
+		    ff_progress_increment(len-(pt-databuf));
+	    }
+	} else {
+	    sofar += len;
+	    if ( lock==NULL && !ff_progress_increment(len)) {
+		ff_progress_end_indicator();
+		close( soc );
+		free( host ); free( filename );
+return( -2 );		/* Stopped by user */
+	    }
+	}
+    }
+    databuf[sofar] = '\0';
+    if ( lock==NULL )
+	ff_progress_end_indicator();
+    close( soc );
+    if ( lock!=NULL )
+	pthread_mutex_lock(lock);
+    free( host ); free( filename );
+    if ( len==-1 ) {
+	ff_post_error(_("Could not download data"),_("Could not download data.") );
+	sofar = -1;
+    } else if ( code<200 || code>299 ) {
+	ff_post_error(_("Could not download data"),_("HTTP return code: %d."), code );
+	sofar = -1;
+    }
+    if ( lock!=NULL )
+	pthread_mutex_unlock(lock);
+return( sofar );
 }
 
 static int FtpURLAndTempFile(char *url,FILE **to,FILE *from) {

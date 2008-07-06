@@ -137,7 +137,8 @@ char *GWidgetAskString8(const char *title,
 char *GWidgetAskPassword8(const char *title,
 	const char *def,const char *question,...);
 void GWidgetPostNotice8(const char *title,const char *statement,...);
-void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap);
+void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap,int timeout);
+void GWidgetPostNoticeTimeout8(int timeout, const char *title,const char *statement,...);
 int GWidgetPostNoticeActive8(const char *title);
 void GWidgetError8(const char *title,const char *statement,...);
 
@@ -162,6 +163,7 @@ int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
 #define gwwv_ask_centered	GWidgetAskCentered8
 #define gwwv_post_error		GWidgetError8
 #define gwwv_post_notice	GWidgetPostNotice8
+#define gwwv_post_notice_timeout	GWidgetPostNoticeTimeout8
 #define gwwv_open_filename(tit,def,filter,filtfunc)	GWidgetOpenFile8(tit,def,filter,NULL,filtfunc)
 #define gwwv_save_filename(tit,def,filter)		GWidgetSaveAsFile8(tit,def,filter,NULL,NULL)
 #define gwwv_save_filename_with_gadget(tit,def,filter,gcd)		GWidgetSaveAsFileWithGadget8(tit,def,filter,NULL,NULL,gcd)

@@ -2572,11 +2572,12 @@ return( false );
 
 unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) ) {
-    int i, j, gotem, len, any=0;
+    int i, j, gotem, len, any=0, foundsomething=0;
     unichar_t *ret=NULL;
     char **cur;
     uint32 scriptsdone[100], scriptsthere[100], langs[100];
     char *randoms[100];
+    char buffer[220], *pt;
     int scnt,s,therecnt, rcnt;
 
     OrderSampleByLang();
@@ -2603,8 +2604,8 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		break;
 		if ( s==scnt )
 		    scriptsdone[scnt++] = sample[i].otf_script;
-	    }
-	    if ( gotem ) {
+
+		foundsomething = true;
 		++any;
 		for ( j=0; cur[j]!=NULL; ++j ) {
 		    if ( ret )
@@ -2661,18 +2662,53 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	rcnt = 0;
 	for ( s=0; s<therecnt; ++s ) if ( !ScriptInList(scriptsthere[s],scriptsdone,scnt)) {
 	    if ( ret ) {
-		utf82u_strcpy(ret+len,randoms[rcnt]);
-		len += u_strlen(ret+len);
-		ret[len++] = '\n';
-		ret[len] = '\0';
-		if ( langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,scriptsthere[s],langs[rcnt]);
+		if ( randoms[rcnt]!='\0' ) {
+		    utf82u_strcpy(ret+len,randoms[rcnt]);
+		    len += u_strlen(ret+len);
+		    ret[len++] = '\n';
+		    ret[len] = '\0';
+		    if ( langsyscallback!=NULL )
+			(langsyscallback)(tf,len,scriptsthere[s],langs[rcnt]);
+		}
 		free(randoms[rcnt]);
 	    } else {
 		randoms[rcnt] = RandomParaFromScript(scriptsthere[s],&langs[rcnt],sf);
-		len += utf8_strlen( randoms[rcnt])+1;
+		for ( pt=randoms[rcnt]; *pt==' '; ++pt );
+		if ( *pt=='\0' )
+		    *randoms[rcnt] = '\0';
+		else {
+		    len += utf8_strlen( randoms[rcnt])+1;
+		    foundsomething = true;
+		}
 	    }
 	    ++rcnt;
+	}
+
+	if ( !foundsomething ) {
+	    /* For example, Apostolos's Phaistos Disk font. There is no OT script*/
+	    /*  code assigned for those unicode points */
+	    int gid;
+	    SplineChar *sc;
+
+	    pt = buffer;
+	    for ( gid=i=0; gid<sf->glyphcnt && pt<buffer+sizeof(buffer)-4 && i<50; ++gid ) {
+		if ( (sc=sf->glyphs[gid])!=NULL && sc->unicodeenc!=-1 ) {
+		    pt = utf8_idpb(pt,sc->unicodeenc);
+		    ++i;
+		}
+	    }
+	    *pt = '\0';
+	    if ( i>0 ) {
+		if ( ret ) {
+		    utf82u_strcpy(ret+len,buffer);
+		    len += u_strlen(ret+len);
+		    ret[len++] = '\n';
+		    ret[len] = '\0';
+		    if ( langsyscallback!=NULL )
+			(langsyscallback)(tf,len,DEFAULT_SCRIPT,DEFAULT_LANG);
+		} else
+		    len += utf8_strlen( buffer )+1;
+	    }
 	}
 
 	if ( ret ) {
