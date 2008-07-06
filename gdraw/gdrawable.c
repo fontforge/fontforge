@@ -176,7 +176,8 @@ struct gfuncs gdrawable_funcs = {
     gdrawable_FillsWindow
 };
 
-static int drawable_e_h(GWindow gw, GEvent *event) {
+static int drawable_e_h(GWindow pixmap, GEvent *event) {
+    GWindow gw = event->type==et_expose ? event->w : pixmap;
     GGadget *g = _GWidgetGetGadgets(GDrawGetParentWindow(gw));
     GDrawable *gdr = NULL;
 
@@ -194,7 +195,7 @@ return( false );
 	gdr->gw = NULL;
     }
     if ( gdr->e_h!=NULL )
-return( (gdr->e_h)(gw,event));
+return( (gdr->e_h)(pixmap,event));
 
 return( false );
 }
@@ -237,7 +238,7 @@ GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gdr->e_h = gd->u.drawable_e_h;
 
     if ( !(gd->flags&gg_tabset_nowindow) ) {
-	gdr->gw = GDrawCreateSubWindow(base,&gdr->g.inner,drawable_e_h,GDrawGetUserData(base),&childattrs);
+	gdr->gw = GWidgetCreateSubWindow(base,&gdr->g.inner,drawable_e_h,GDrawGetUserData(base),&childattrs);
 	if ( gd->flags&gg_visible )
 	    GDrawSetVisible(gdr->gw,true);
     }

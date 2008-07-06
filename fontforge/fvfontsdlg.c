@@ -281,7 +281,7 @@ return;
     free(filename);
     if ( sf==NULL )
 return;
-    FontViewCreate(InterpolateFont(fv->b.sf,sf,amount,fv->b.map->enc));
+    FontViewCreate(InterpolateFont(fv->b.sf,sf,amount,fv->b.map->enc),false);
 }
 
 #define CID_Amount	1000
@@ -310,7 +310,7 @@ return( true );
 	if ( fv==NULL )
 	    InterAskFilename(d->fv,last_amount/100.0);
 	else
-	    FontViewCreate(InterpolateFont(d->fv->b.sf,fv->b.sf,last_amount/100.0,d->fv->b.map->enc));
+	    FontViewCreate(InterpolateFont(d->fv->b.sf,fv->b.sf,last_amount/100.0,d->fv->b.map->enc),false);
 	d->done = true;
     }
 return( true );

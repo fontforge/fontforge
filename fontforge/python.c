@@ -554,11 +554,11 @@ static PyObject *PyFF_ActiveLayer(PyObject *self, PyObject *args) {
 return( Py_BuildValue("i", layer_active_in_ui ));
 }
 
-static FontViewBase *SFAdd(SplineFont *sf) {
+static FontViewBase *SFAdd(SplineFont *sf,int hide) {
     if ( sf->fv!=NULL )
 	/* All done */;
     else if ( !no_windowing_ui )
-	FontViewCreate(sf);
+	FontViewCreate(sf,hide);
     else
 	FVAppend(_FontViewCreate(sf));
 return( sf->fv );
@@ -578,7 +578,7 @@ return( NULL );
 	PyErr_Format(PyExc_EnvironmentError, "Open failed");
 return( NULL );
     }
-return( PyFV_From_FV_I( SFAdd( sf )));
+return( PyFV_From_FV_I( SFAdd( sf, openflags&of_hidewindow )));
 }
 
 static PyObject *PyFF_FontsInFile(PyObject *self, PyObject *args) {
@@ -7865,7 +7865,7 @@ static PyObject *PyFF_Font_new(PyTypeObject *type,PyObject *args,PyObject *kwds)
 
     self = (PyFF_Font *) (type->tp_alloc)(type,0);
     if ( self!=NULL ) {
-	self->fv = SFAdd(SplineFontNew());
+	self->fv = SFAdd(SplineFontNew(),false);
     }
 return( (PyObject *) self );
 }
@@ -11240,7 +11240,7 @@ return( NULL );
     }
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ));
+    newfv = SFAdd(InterpolateFont(fv->sf,sf,fraction, fv->map->enc ),false);
 return( PyFV_From_FV_I(newfv));
 }
 

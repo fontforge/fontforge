@@ -1035,7 +1035,7 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
     char buffer[51*4+1], *pt;
     Array *ret;
     char *str;
-    int start, end;
+    int start, end, anyscript = 0, anyhere;
 
     if ( arr!=NULL && arr->argc==1 )
 	pixelsize = arr->vals[0].u.ival;
@@ -1102,10 +1102,40 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	    str = buffer;
 	  break;
 	  }
-	  lines[lcnt++] = copy(str);
-	  scripts[scnt++] = script;
+	  anyhere = false;
+	  for ( pt=str; *pt; ) {
+	      int ch = utf8_ildb((const char **) &pt);
+	      if ( ch==' ' )
+	  continue;
+	      if ( SFGetChar(sf,ch,NULL)!=NULL ) {
+		  anyhere = true;
+	  break;
+	      }
+	  }
+	  if ( anyhere ) {
+	      lines[lcnt++] = copy(str);
+	      scripts[scnt++] = script;
+	      anyscript = true;
+	  }
 	  if ( scnt==200 )
       break;
+      }
+
+      if ( !anyscript ) {
+	  /* For example, Apostolos's Phaistos Disk font. There is no OT script*/
+	  /*  code assigned for those unicode points */
+	  pt = buffer;
+	  for ( gid=i=0; gid<sf->glyphcnt && pt<buffer+sizeof(buffer)-4 && i<50; ++gid ) {
+	      if ( (sc=sf->glyphs[gid])!=NULL && sc->unicodeenc!=-1 ) {
+		  pt = utf8_idpb(pt,sc->unicodeenc);
+		  ++i;
+	      }
+	  }
+	  *pt = '\0';
+	  if ( i>0 ) {
+	      lines[lcnt++] = copy(buffer);
+	      scripts[scnt++] = DEFAULT_SCRIPT;
+	  }
       }
 
       ret = gcalloc(1,sizeof(Array));

@@ -356,7 +356,7 @@ struct bdffont;
 
 struct fv_interface {
    /* Create a new font view. Whatever that may entail */
-    struct fontviewbase *(*create)(struct splinefont *);
+    struct fontviewbase *(*create)(struct splinefont *,int hide);
 
    /* Create a new font view but without attaching it to a window */
     struct fontviewbase *(*_create)(struct splinefont *);

@@ -1667,7 +1667,7 @@ static void bOpen(Context *c) {
     if ( sf->fv!=NULL )
 	/* All done */;
     else if ( !no_windowing_ui )
-	FontViewCreate(sf);
+	FontViewCreate(sf,openflags&of_hidewindow);
     else
 	FVAppend(_FontViewCreate(sf));
     c->curfv = sf->fv;
@@ -1699,7 +1699,10 @@ static void bSelectBitmap(Context *c) {
 static void bNew(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    c->curfv = FVAppend(_FontViewCreate(SplineFontNew()));
+    if ( !no_windowing_ui )
+	c->curfv = FontViewCreate(SplineFontNew(),false);
+    else
+	c->curfv = FVAppend(_FontViewCreate(SplineFontNew()));
 }
 
 static void bClose(Context *c) {

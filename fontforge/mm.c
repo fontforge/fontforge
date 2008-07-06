@@ -781,7 +781,7 @@ FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],
 	new->weight = _MMGuessWeight(mm,axispos,new->weight);
 	new->private = BlendPrivate(PSDictCopy(hold->private),mm);
 	new->fv = NULL;
-	fv = FontViewCreate(new);
+	fv = FontViewCreate(new,false);
 	MMReblend(fv,mm);
 	new->mm = NULL;
 	mm->normal = hold;

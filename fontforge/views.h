@@ -663,6 +663,7 @@ extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void mb2DoGetText(GMenuItem2 *mb);
 extern void mbDoGetText(GMenuItem *mb);
+extern void OFLibBrowse(void);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));

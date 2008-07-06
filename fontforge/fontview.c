@@ -1162,6 +1162,10 @@ return;
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
 }
 
+static void MenuBrowseOFLib(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    OFLibBrowse();
+}
+
 static void FVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
     help("fontview.html");
 }
@@ -3638,12 +3642,18 @@ static void infolistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem2 dummyitem[] = { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
+static GMenuItem2 sites[] = {
+    { { (unichar_t *) N_("Open Font Library..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL, NULL, NULL, MenuBrowseOFLib },
+    NULL
+};
+
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|Ctl+N"), NULL, NULL, MenuNew },
 #if HANYANG
     { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, hglist, hglistcheck, NULL, 0 },
 #endif
     { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|Ctl+O"), NULL, NULL, MenuOpen },
+    { { (unichar_t *) N_("Browse web"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, NULL, sites, NULL, NULL },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, NULL, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|Ctl+Shft+Q"), NULL, NULL, FVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
@@ -6708,7 +6718,7 @@ static void FontViewInit(void) {
     mbDoGetText(fvpopupmenu);
 }
 
-static FontView *FontView_Create(SplineFont *sf) {
+static FontView *FontView_Create(SplineFont *sf, int hide) {
     FontView *fv = (FontView *) __FontViewCreate(sf);
     static int done = false;
     GRect pos;
@@ -6817,8 +6827,10 @@ static FontView *FontView_Create(SplineFont *sf) {
     FVChangeDisplayFont(fv,bdf);
 
     /*GWidgetHidePalettes();*/
-    GDrawSetVisible(gw,true);
-    FontViewOpenKids(fv);
+    if ( !hide ) {
+	GDrawSetVisible(gw,true);
+	FontViewOpenKids(fv);
+    }
 return( fv );
 }
 
@@ -6836,7 +6848,7 @@ return( fv );
 }
 
 FontView *FontNew(void) {
-return( FontView_Create(SplineFontNew()));
+return( FontView_Create(SplineFontNew(),false));
 }
 
 static void FontView_Free(FontView *fv) {
@@ -6948,7 +6960,7 @@ static void FontView_Close(FontView *fv) {
 
 
 struct fv_interface gdraw_fv_interface = {
-    (FontViewBase *(*)(SplineFont *)) FontView_Create,
+    (FontViewBase *(*)(SplineFont *, int)) FontView_Create,
     (FontViewBase *(*)(SplineFont *)) __FontViewCreate,
     (void (*)(FontViewBase *)) FontView_Close,
     (void (*)(FontViewBase *)) FontView_Free,
