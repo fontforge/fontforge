@@ -500,8 +500,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     wattrs.utf8_window_title = _("Export");
     pos.x = pos.y = 0;
     totwid = GGadgetScale(300);
-    bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
-    pos.width = GDrawPointsToPixels(NULL,totwid);
+    pos.width = GDrawPointsToPixels(NULL,200);
     pos.height = GDrawPointsToPixels(NULL,255);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
 
@@ -509,7 +508,6 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
 
-    gcd[0].gd.pos.width = totwid*100/GIntGetResource(_NUM_ScaleFactor)-24; gcd[0].gd.pos.height = 182;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GFileChooserCreate;
     hvarray[0] = &gcd[0]; hvarray[1] = NULL;
@@ -523,7 +521,6 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     gcd[1].creator = GButtonCreate;
     barray[0] = GCD_Glue; barray[1] = &gcd[1]; barray[2] = GCD_Glue;
 
-    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     label[2].text = (unichar_t *) _("_Filter");
     label[2].text_is_1byte = true;

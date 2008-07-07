@@ -307,6 +307,12 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     }
 }
 
+void BCExpandBitmapToEmBox(BDFChar *bc, int xmin, int ymin, int xmax, int ymax) {
+    /* Expand a bitmap so it will always contain 0..width, ascent..descent */
+    BCExpandBitmap(bc,xmin,ymin);
+    BCExpandBitmap(bc,xmax,ymax);
+}
+
 void BCSetPoint(BDFChar *bc, int x, int y, int color ) {
 
     if ( x<bc->xmin || x>bc->xmax || y<bc->ymin || y>bc->ymax ) {

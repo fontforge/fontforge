@@ -495,6 +495,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
     uint8 *pt, *end;
     int scale;
     void *freetypecontext;
+    double emsize = sc->parent->ascent+sc->parent->descent;
 
     if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
@@ -512,6 +513,14 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeBitmap(bdfc);
+	/* People don't seem to like having a minimal bounding box for their */
+	/*  images. */
+	BCExpandBitmapToEmBox(bdfc,
+		0,
+		(int) rint(sc->parent->ascent*pixelsize/emsize)-pixelsize,
+		(int) rint(sc->width*pixelsize/emsize),
+		(int) rint(sc->parent->ascent*pixelsize/emsize));
+
 	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
 	tot = bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
 	for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
@@ -539,6 +548,11 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeGreymap(bdfc);
+	BCExpandBitmapToEmBox(bdfc,
+		0,
+		(int) rint(sc->parent->ascent*pixelsize/emsize) - pixelsize,
+		(int) rint(sc->width*pixelsize/emsize),
+		(int) rint(sc->parent->ascent*pixelsize/emsize));
 	base.image_type = it_index;
 	base.data = bdfc->bitmap;
 	base.bytes_per_line = bdfc->bytes_per_line;
