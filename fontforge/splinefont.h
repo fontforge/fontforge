@@ -478,6 +478,7 @@ typedef struct anchorclass {
     uint8 type;		/* anchorclass_type */
     uint8 has_base;
     uint8 processed, has_mark, matches, ac_num;
+    uint8 ticked;
     struct anchorclass *next;
 } AnchorClass;
 
@@ -1238,14 +1239,15 @@ enum validation_state { vs_unknown = 0,
 	vs_maxp_refstoodeep      =0x10000,
 	/* vs_maxp_prepfpgmtoolong=0x20000, */	/* I think I was wrong about this "error" */
 	    /* Oops, we need another one, two, for the glyphs */
-	vs_pointstoofarapart = 0x40000,
-	vs_nonintegral       = 0x80000,	/* This will never be interesting in a real font, but might be in an sfd file */
+	vs_pointstoofarapart	= 0x40000,
+	vs_nonintegral		= 0x80000,	/* This will never be interesting in a real font, but might be in an sfd file */
+	vs_missinganchor	= 0x100000,
 
-	vs_last = vs_nonintegral,
-	vs_maskps = 0x3fe | vs_pointstoofarapart,
-	vs_maskcid = 0x1fe | vs_pointstoofarapart,
-	vs_maskttf = 0x7e | vs_pointstoofarapart | vs_nonintegral,
-	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral
+	vs_last = vs_missinganchor,
+	vs_maskps = 0x3fe | vs_pointstoofarapart | vs_missinganchor,
+	vs_maskcid = 0x1fe | vs_pointstoofarapart | vs_missinganchor,
+	vs_maskttf = 0x7e | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor,
+	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor
 	};
 
 typedef struct splinechar {
@@ -3013,6 +3015,7 @@ extern struct math_constants_descriptor {
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern char *VSErrorsFromMask(int mask,int private_mask);
 extern int SCValidate(SplineChar *sc, int layer, int force);
+extern AnchorClass *SCValidateAnchors(SplineChar *sc);
 extern void SCTickValidationState(SplineChar *sc,int layer);
 extern int ValidatePrivate(SplineFont *sf);
 extern int SFValidate(SplineFont *sf, int layer, int force);
