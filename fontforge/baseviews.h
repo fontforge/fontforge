@@ -372,7 +372,6 @@ struct genericchange {
 	    double current  , desired;
             double cur_width, des_width;
 	    int overlap_index;
-	    int isserif;
             int blue_index;
 	} *maps;
     } m;

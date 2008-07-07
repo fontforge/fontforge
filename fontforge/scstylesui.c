@@ -338,6 +338,7 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_StemWidth	1005
 #define CID_StemHeightAdd	1006
 #define CID_StemWidthAdd	1007
+#define CID_DStemOn		1008
 
 #define CID_Counter_SameAdvance	1020
 #define CID_Counter_is_SideB	1021
@@ -361,6 +362,8 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_Letter_Ext		1081
 #define CID_Symbol_Ext		1082
 #define CID_Symbols_Too		1083
+
+#define CID_TabSet		1100
 
 static GTextInfo ss_features[] = {
     { (unichar_t *) N_("Superscript"), NULL, 0, 0, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -429,6 +432,7 @@ static int GlyphChange_OK(GGadget *g, GEvent *e) {
 	    genchange.stem_width_scale = GetReal8(ew,CID_StemWidth,_("Vertical Stem Width Scale"),&err)/100.;
 	    genchange.stem_width_add   = GetReal8(ew,CID_StemWidthAdd,_("Vertical Stem Width Add"),&err);
 	}
+	genchange.dstem_control        = GGadgetIsChecked(GWidgetGetControl(ew,CID_DStemOn));
 	if ( err )
 return( true );
 	if ( genchange.stem_width_scale<.03 || genchange.stem_width_scale>10 ||
@@ -525,10 +529,11 @@ return( true );
 	    genchange.m.cnt = rows;
 	    genchange.m.maps = galloc(rows*sizeof(struct position_maps));
 	    for ( i=0; i<rows; ++i ) {
-		genchange.m.maps[i].current = mappings[cols*i+0].u.md_real;
-		genchange.m.maps[i].desired = mappings[cols*i+1].u.md_real;
-		genchange.m.maps[i].isserif = mappings[cols*i+2].u.md_ival;
+		genchange.m.maps[i].current   = mappings[cols*i+0].u.md_real;
+		genchange.m.maps[i].desired   = mappings[cols*i+2].u.md_real;
+		genchange.m.maps[i].cur_width = mappings[cols*i+1].u.md_real;
 	    }
+	    /* Order maps */
 	    for ( i=0; i<rows; ++i ) for ( j=i+1; j<rows; ++j ) {
 		if ( genchange.m.maps[i].current > genchange.m.maps[j].current ) {
 		    struct position_maps temp;
@@ -694,27 +699,72 @@ static int CG_SmallCapSymbols(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static GTextInfo truefalse[] = {
-    { (unichar_t *) N_("False"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("True"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
-};
+static int ParseBlue(double blues[14],struct psdict *private,char *key) {
+    int i;
+    char *val, *end;
+
+    if ( private==NULL )
+return( 0 );
+    if ( (val = PSDictHasEntry(private,key))==NULL )
+return( 0 );
+    while ( isspace( *val ) || *val=='[' ) ++val;
+
+    for ( i=0; i<14; ++i ) {
+	while ( isspace( *val )) ++val;
+	if ( *val==']' || *val=='\0' )
+return( i );
+	blues[i] = strtod(val,&end);
+	if ( end==val )		/* Not a number */
+return( 0 );
+	val = end;
+    }
+return( i );
+}
+
 static struct col_init mapci[5] = {
     { me_real, NULL, NULL, NULL, N_("Original Y Position") },
+    { me_real, NULL, NULL, NULL, N_("Extent") },
     { me_real, NULL, NULL, NULL, N_("Resultant Y Position") },
-    { me_enum, NULL, truefalse, NULL, N_("Is Serif") },
-    };
-static void MappingMatrixInit(struct matrixinit *mi,double serifheight,
+};
+static void MappingMatrixInit(struct matrixinit *mi,SplineFont *sf,
 	double xheight, double capheight, double scale) {
     struct matrix_data *md;
     int cnt;
+    double blues[14], others[14];
+    int b=0,o=0,i,j;
 
     memset(mi,0,sizeof(*mi));
     mi->col_cnt = 3;
     mi->col_init = mapci;
 
-    if ( xheight==0 && capheight==0 ) {
-	md = gcalloc(3,sizeof(struct matrix_data));
+    if ( sf->private!=NULL ) {
+	b = ParseBlue(blues,sf->private,"BlueValues");
+	o = ParseBlue(others,sf->private,"OtherBlues");
+    }
+
+    if ( (b>1 && (b&1)==0) || (o>1 && (o&1)==0)) {
+	b>>=1; o>>=1;
+	md = gcalloc(3*(b+o),sizeof(struct matrix_data));
+	mi->initial_row_cnt = b+o;
+	mi->matrix_data = md;
+
+	for ( i=0; i<o; ++i ) {
+	    md[3*i+0].u.md_real = others[2*i+1];
+	    md[3*i+1].u.md_real = others[2*i] - others[2*i+1];
+	    md[3*i+2].u.md_real = rint(scale*md[3*i+0].u.md_real);
+	}
+	for ( j=0; j<b; ++j ) {
+	    if ( j==0 ) {
+		md[3*(i+j)+0].u.md_real = blues[1];
+		md[3*(i+j)+1].u.md_real = blues[0] - blues[1];
+	    } else {
+		md[3*(i+j)+0].u.md_real = blues[2*j];
+		md[3*(i+j)+1].u.md_real = blues[2*j+1] - blues[2*j];
+	    }
+	    md[3*(i+j)+2].u.md_real = rint(scale*md[3*(i+j)+0].u.md_real);
+	}
+    } else if ( xheight==0 && capheight==0 ) {
+	md = gcalloc(4,sizeof(struct matrix_data));
 	mi->initial_row_cnt = 0;
 	mi->matrix_data = md;
     } else {
@@ -723,38 +773,21 @@ static void MappingMatrixInit(struct matrixinit *mi,double serifheight,
 	    ++cnt;
 	if ( capheight!=0 )
 	    ++cnt;
-	if ( serifheight!=0 )
-	    cnt *= 2;
 	md = gcalloc(3*cnt,sizeof(struct matrix_data));
 	mi->initial_row_cnt = cnt;
 	mi->matrix_data = md;
+	md[3*0+1].u.md_real = -1;
 	cnt = 1;
-	if ( serifheight!=0 ) {
-	    md[3*cnt+0].u.md_real = serifheight;
-	    md[3*cnt+1].u.md_real = serifheight;
-	    md[3*cnt+2].u.md_ival = 1;
-	    ++cnt;
-	}
 	if ( xheight!=0 ) {
-	    if ( serifheight!=0 ) {
-		md[3*cnt+0].u.md_real =       xheight-serifheight;
-		md[3*cnt+1].u.md_real = scale*xheight-serifheight;
-		md[3*cnt+2].u.md_ival = 1;
-		++cnt;
-	    }
 	    md[3*cnt+0].u.md_real =       xheight;
-	    md[3*cnt+1].u.md_real = scale*xheight;
+	    md[3*cnt+1].u.md_real =       1;
+	    md[3*cnt+2].u.md_real = scale*xheight;
 	    ++cnt;
 	}
 	if ( capheight!=0 ) {
-	    if ( serifheight!=0 ) {
-		md[3*cnt+0].u.md_real =       capheight-serifheight;
-		md[3*cnt+1].u.md_real = scale*capheight-serifheight;
-		md[3*cnt+2].u.md_ival = 1;
-		++cnt;
-	    }
 	    md[3*cnt+0].u.md_real =       capheight;
-	    md[3*cnt+1].u.md_real = scale*capheight;
+	    md[3*cnt+1].u.md_real =       1;
+	    md[3*cnt+2].u.md_real = scale*capheight;
 	    ++cnt;
 	}
     }
@@ -766,10 +799,13 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[54], boxes[8], *barray[8], *stemarray[75],
-	    *varray[27], *harray[6], *voarray[6], *extarray[7], *exarray[6];
+    GGadgetCreateData gcd[54], boxes[20], *barray[8], *stemarray[15],
+	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[14], *varrays[10],
+	    *varrayhc[12], *varrayvc[12],
+	    *varray[6], *harray[6], *voarray[6], *extarray[7], *exarray[6];
     GTextInfo label[54];
-    int k,l,s;
+    GTabInfo aspects[5];
+    int k,l,s, a;
     struct smallcaps small;
     struct matrixinit mapmi;
     double serifheight;
@@ -792,7 +828,9 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Change Glyphs");
+    wattrs.utf8_window_title =  gc==gc_subsuper  ? _("Create Subscript/Superscript") :
+				gc==gc_smallcaps ? _("Create Small Caps") :
+						    _("Change Glyphs");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
@@ -800,8 +838,9 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     ed.gw = gw = GDrawCreateTopWindow(NULL,&pos,style_e_h,&ed,&wattrs);
 
 
-    k=l=s=0;
+    k=l=s=a=0;
 
+    memset(aspects,0,sizeof(aspects));
     memset(gcd,0,sizeof(gcd));
     memset(boxes,0,sizeof(boxes));
     memset(label,0,sizeof(label));
@@ -813,20 +852,20 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    "selected glyphs. Instead, if you select a glyph FontForge will\n"
 	    "create (or reuse) another glyph named by appending the extension\n"
 	    "to the original name, and it will copy a modified version of\n"
-	    "the original glyph into the new one");
+	    "the original glyph into the new one.");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_enabled | gg_visible;
 	gcd[k++].creator = GLabelCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
 
 
 	gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
 	gcd[k].gd.flags = gg_enabled | gg_visible;
 	gcd[k++].creator = GSpacerCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
 
 	label[k].text = (unichar_t *) _("Feature Tag:");
 	label[k].text_is_1byte = true;
@@ -867,12 +906,39 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	boxes[2].gd.flags = gg_enabled|gg_visible;
 	boxes[2].gd.u.boxelements = extarray;
 	boxes[2].creator = GHBoxCreate;
-	varray[l++] = &boxes[2]; varray[l++] = NULL;
+	varrayi[l++] = &boxes[2]; varrayi[l++] = NULL;
 
-	gcd[k].gd.pos.width = 100;
-	gcd[k].gd.flags = gg_enabled|gg_visible;
-	gcd[k++].creator = GLineCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	label[k].text = (unichar_t *) _("Vertical Offset:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k++].creator = GLabelCreate;
+	voarray[0] = &gcd[k-1]; 
+
+	label[k].text = (unichar_t *) "0";
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k].gd.pos.width = 60;
+	gcd[k].gd.cid = CID_VerticalOff;
+	gcd[k++].creator = GTextFieldCreate;
+	voarray[1]= &gcd[k-1]; voarray[2] = GCD_Glue; voarray[3] = NULL;
+
+	boxes[3].gd.flags = gg_enabled|gg_visible;
+	boxes[3].gd.u.boxelements = voarray;
+	boxes[3].creator = GHBoxCreate;
+	varrayi[l++] = &boxes[3]; varrayi[l++] = NULL;
+	varrayi[l++] = GCD_Glue; varrayi[l++] = NULL; varrayi[l++] = NULL;
+
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = varrayi;
+	boxes[4].creator = GHVBoxCreate;
+
+	aspects[a].text = (unichar_t *) _("Introduction");
+	aspects[a].text_is_1byte = true;
+	aspects[a++].gcd = &boxes[4];
 
 	glyph_scale = 2.0/3.0;
 	stem_scale  = 3.0/4.0;
@@ -881,14 +947,19 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    "Unlike most commands this one does not work directly on the\n"
 	    "selected glyphs. Instead, if you select an \"A\" (or an \"a\")\n"
 	    "FontForge will create (or reuse) a glyph named \"a.sc\", and\n"
-	    "it will copy a modified version of the \"A\" glyph into this one.");
+	    "it will copy a modified version of the \"A\" glyph into \"a.sc\".");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_enabled | gg_visible;
 	gcd[k++].creator = GLabelCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
+
+	gcd[k].gd.pos.width = 10; gcd[k].gd.pos.height = 10;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k++].creator = GSpacerCreate;
+	varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
 
 	label[k].text = (unichar_t *) _("Glyph Extensions");
 	label[k].text_is_1byte = true;
@@ -897,7 +968,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_visible | gg_enabled;
 	gcd[k++].creator = GLabelCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
 
 	label[k].text = (unichar_t *) _("Letters:");
 	label[k].text_is_1byte = true;
@@ -936,7 +1007,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	boxes[2].gd.flags = gg_enabled|gg_visible;
 	boxes[2].gd.u.boxelements = exarray;
 	boxes[2].creator = GHBoxCreate;
-	varray[l++] = &boxes[2]; varray[l++] = NULL;
+	varrayi[l++] = &boxes[2]; varrayi[l++] = NULL;
 
 	label[k].text = (unichar_t *) _("Create small caps variants for symbols as well as letters");
 	label[k].text_is_1byte = true;
@@ -947,18 +1018,24 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k].gd.handle_controlevent = CG_SmallCapSymbols;
 	gcd[k].gd.cid = CID_Symbols_Too;
 	gcd[k++].creator = GCheckBoxCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
+	varrayi[l++] = GCD_Glue; varrayi[l++] = NULL; varrayi[l++] = NULL;
 
-	gcd[k].gd.pos.width = 100;
-	gcd[k].gd.flags = gg_enabled|gg_visible;
-	gcd[k++].creator = GLineCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = varrayi;
+	boxes[4].creator = GHVBoxCreate;
+
+	aspects[a].text = (unichar_t *) _("Introduction");
+	aspects[a].text_is_1byte = true;
+	aspects[a++].gcd = &boxes[4];
 
 	if ( small.xheight!=0 && small.capheight!=0 )
 	    glyph_scale = small.xheight/small.capheight;
 	if ( small.lc_stem_width!=0 && small.uc_stem_width!=0 )
 	    stem_scale  = small.lc_stem_width/small.uc_stem_width;
     }
+
+    l = 0;
 
     sprintf( glyph_factor, "%.2f", 100*glyph_scale );
     sprintf( stem_factor , "%.2f", 100* stem_scale );
@@ -972,9 +1049,9 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_H_is_V;
     gcd[k].gd.handle_controlevent = CG_SameAs_Changed;
     gcd[k++].creator = GCheckBoxCreate;
-    varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+    varrays[l++] = &gcd[k-1]; varrays[l++] = NULL;
 
-    label[k].text = (unichar_t *) _("Stem Height:");
+    label[k].text = (unichar_t *) _("Height of Horizontal Stems:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -1022,7 +1099,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     stemarray[s++] = &gcd[k-1];
     stemarray[s++] = NULL;
 
-    label[k].text = (unichar_t *) _("Stem Width:");
+    label[k].text = (unichar_t *) _("Width of Vertical Stems:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
@@ -1067,13 +1144,33 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k++].creator = GLabelCreate;
     stemarray[s++] = &gcd[k-1];
     stemarray[s++] = NULL;
-
-    gcd[k].gd.pos.width = 100;
-    gcd[k].gd.flags = gg_enabled|gg_visible;
-    gcd[k++].creator = GLineCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s] = stemarray[s+1] = stemarray[s+2] = stemarray[s+3] = GCD_ColSpan; s+=4;
     stemarray[s++] = NULL;
+
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = stemarray;
+    boxes[6].creator = GHVBoxCreate;
+    varrays[l++] = &boxes[6]; varrays[l++] = NULL;
+
+    label[k].text = (unichar_t *) _("Activate diagonal stem processing");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+    gcd[k].gd.cid = CID_DStemOn;
+    gcd[k++].creator = GCheckBoxCreate;
+    varrays[l++] = &gcd[k-1]; varrays[l++] = NULL;
+    varrays[l++] = GCD_Glue; varrays[l++] = NULL; varrays[l++] = NULL;
+
+    boxes[7].gd.flags = gg_enabled|gg_visible;
+    boxes[7].gd.u.boxelements = varrays;
+    boxes[7].creator = GHVBoxCreate;
+
+    aspects[a].text = (unichar_t *) _("Stems");
+    aspects[a].text_is_1byte = true;
+    aspects[a++].gcd = &boxes[7];
+
+    l=s=0;
 
     label[k].text = (unichar_t *) _("Retain current advance width, center glyph within that width");
     label[k].text_is_1byte = true;
@@ -1084,9 +1181,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_Counter_SameAdvance;
     gcd[k].gd.handle_controlevent = CG_CounterSameAs_Changed;
     gcd[k++].creator = GRadioCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s] = stemarray[s+1] = stemarray[s+2] = stemarray[s+3] = GCD_ColSpan; s+=4;
-    stemarray[s++] = NULL;
+    varrayhc[l++] = &gcd[k-1]; varrayhc[l++] = NULL;
 
     label[k].text = (unichar_t *) _("Uniform scaling for horizontal counters and side bearings");
     label[k].text_is_1byte = true;
@@ -1097,9 +1192,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_Counter_is_SideB;
     gcd[k].gd.handle_controlevent = CG_CounterSameAs_Changed;
     gcd[k++].creator = GRadioCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s] = stemarray[s+1] = stemarray[s+2] = stemarray[s+3] = GCD_ColSpan; s+=4;
-    stemarray[s++] = NULL;
+    varrayhc[l++] = &gcd[k-1]; varrayhc[l++] = NULL;
 
     label[k].text = (unichar_t *) _("Non uniform scaling for horizontal counters and side bearings");
     label[k].text_is_1byte = true;
@@ -1110,10 +1203,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_Counter_isnt_SideB;
     gcd[k].gd.handle_controlevent = CG_CounterSameAs_Changed;
     gcd[k++].creator = GRadioCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s] = stemarray[s+1] = stemarray[s+2] = stemarray[s+3] = GCD_ColSpan; s+=4;
-    stemarray[s++] = NULL;
-
+    varrayhc[l++] = &gcd[k-1]; varrayhc[l++] = NULL;
 
     label[k].text = (unichar_t *) _("Counter Size:");
     label[k].text_is_1byte = true;
@@ -1121,7 +1211,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) glyph_factor;
     label[k].text_is_1byte = true;
@@ -1131,7 +1221,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.handle_controlevent = CG_Counter_Changed;
     gcd[k].gd.pos.width = 60;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("% +");
     label[k].text_is_1byte = true;
@@ -1139,7 +1229,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
@@ -1149,7 +1239,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_CounterAdd;
     gcd[k].gd.handle_controlevent = CG_Counter_Changed;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("em-units");
     label[k].text_is_1byte = true;
@@ -1157,8 +1247,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s++] = NULL;
+    stemarrayhc[s++] = &gcd[k-1];
+    stemarrayhc[s++] = NULL;
 
     label[k].text = (unichar_t *) _("Left Side Bearing:");
     label[k].text_is_1byte = true;
@@ -1166,7 +1256,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) glyph_factor;
     label[k].text_is_1byte = true;
@@ -1175,7 +1265,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_LSBPercent;
     gcd[k].gd.pos.width = 60;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("% +");
     label[k].text_is_1byte = true;
@@ -1183,7 +1273,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
@@ -1192,7 +1282,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.cid = CID_LSBAdd;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("em-units");
     label[k].text_is_1byte = true;
@@ -1200,8 +1290,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s++] = NULL;
+    stemarrayhc[s++] = &gcd[k-1];
+    stemarrayhc[s++] = NULL;
 
     label[k].text = (unichar_t *) _("Right Side Bearing:");
     label[k].text_is_1byte = true;
@@ -1209,7 +1299,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) glyph_factor;
     label[k].text_is_1byte = true;
@@ -1218,7 +1308,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_RSBPercent;
     gcd[k].gd.pos.width = 60;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("% +");
     label[k].text_is_1byte = true;
@@ -1226,7 +1316,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
@@ -1235,7 +1325,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.cid = CID_RSBAdd;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayhc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("em-units");
     label[k].text_is_1byte = true;
@@ -1243,15 +1333,25 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s++] = NULL;
+    stemarrayhc[s++] = &gcd[k-1];
+    stemarrayhc[s++] = NULL;
+    stemarrayhc[s++] = NULL;
 
-    gcd[k].gd.pos.width = 100;
-    gcd[k].gd.flags = gg_enabled|gg_visible;
-    gcd[k++].creator = GLineCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s] = stemarray[s+1] = stemarray[s+2] = stemarray[s+3] = GCD_ColSpan; s+=4;
-    stemarray[s++] = NULL;
+    boxes[9].gd.flags = gg_enabled|gg_visible;
+    boxes[9].gd.u.boxelements = stemarrayhc;
+    boxes[9].creator = GHVBoxCreate;
+    varrayhc[l++] = &boxes[9]; varrayhc[l++] = NULL;
+    varrayhc[l++] = GCD_Glue; varrayhc[l++] = NULL; varrayhc[l++] = NULL;
+
+    boxes[10].gd.flags = gg_enabled|gg_visible;
+    boxes[10].gd.u.boxelements = varrayhc;
+    boxes[10].creator = GHVBoxCreate;
+
+    aspects[a].text = (unichar_t *) _("Horizontal");
+    aspects[a].text_is_1byte = true;
+    aspects[a++].gcd = &boxes[10];
+
+    l=s=0;
 
     label[k].text = (unichar_t *) _("Control Vertical Counters (use for CJK)");
     label[k].text_is_1byte = true;
@@ -1261,9 +1361,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.handle_controlevent = CG_UseVCounters;
     gcd[k].gd.cid = CID_UseVerticalCounters;
     gcd[k++].creator = GRadioCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s] = stemarray[s+1] = stemarray[s+2] = stemarray[s+3] = GCD_ColSpan; s+=4;
-    stemarray[s++] = NULL;
+    varrayvc[l++] = &gcd[k-1]; varrayvc[l++] = NULL;
 
     label[k].text = (unichar_t *) _("Vertical Counters:");
     label[k].text_is_1byte = true;
@@ -1271,7 +1369,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayvc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) glyph_factor;
     label[k].text_is_1byte = true;
@@ -1280,7 +1378,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_VCounterPercent;
     gcd[k].gd.pos.width = 60;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayvc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("% +");
     label[k].text_is_1byte = true;
@@ -1288,7 +1386,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayvc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
@@ -1297,7 +1395,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.cid = CID_VCounterAdd;
     gcd[k++].creator = GTextFieldCreate;
-    stemarray[s++] = &gcd[k-1];
+    stemarrayvc[s++] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("em-units");
     label[k].text_is_1byte = true;
@@ -1305,16 +1403,16 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-    stemarray[s++] = &gcd[k-1];
-    stemarray[s++] = NULL; stemarray[s++] = NULL;
+    stemarrayvc[s++] = &gcd[k-1];
+    stemarrayvc[s++] = NULL; stemarrayvc[s++] = NULL;
 
-    if ( s > sizeof(stemarray)/sizeof(stemarray[0]) )
-	IError( "Increase size of stemarray" );
+    if ( s > sizeof(stemarrayvc)/sizeof(stemarrayvc[0]) )
+	IError( "Increase size of stemarrayvc" );
 
-    boxes[3].gd.flags = gg_enabled|gg_visible;
-    boxes[3].gd.u.boxelements = stemarray;
-    boxes[3].creator = GHVBoxCreate;
-    varray[l++] = &boxes[3]; varray[l++] = NULL;
+    boxes[12].gd.flags = gg_enabled|gg_visible;
+    boxes[12].gd.u.boxelements = stemarrayvc;
+    boxes[12].creator = GHBoxCreate;
+    varrayvc[l++] = &boxes[12]; varrayvc[l++] = NULL;
 
     serifheight = SFSerifHeight(sf);
     if ( serifheight==0 ) {
@@ -1341,7 +1439,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_UseVerticalMappings;
     gcd[k].gd.handle_controlevent = CG_UseVCounters;
     gcd[k++].creator = GRadioCreate;
-    varray[l++] = &gcd[k-1]; varray[l++] = NULL;
+    varrayvc[l++] = &gcd[k-1]; varrayvc[l++] = NULL;
 
     s = 0;
     label[k].text = (unichar_t *) _("Vertical Scale:");
@@ -1370,14 +1468,14 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k++].creator = GLabelCreate;
     harray[s++] = &gcd[k-1]; harray[s++] = GCD_Glue; harray[s++] = NULL;
 
-    boxes[4].gd.flags = gg_enabled|gg_visible;
-    boxes[4].gd.u.boxelements = harray;
-    boxes[4].creator = GHBoxCreate;
-    varray[l++] = &boxes[4]; varray[l++] = NULL;
+    boxes[13].gd.flags = gg_enabled|gg_visible;
+    boxes[13].gd.u.boxelements = harray;
+    boxes[13].creator = GHBoxCreate;
+    varrayvc[l++] = &boxes[13]; varrayvc[l++] = NULL;
 
 
     MappingMatrixInit(&mapmi,
-	    /*gc==gc_subsuper?0:serifheight*/ 0,
+	    sf,
 	    gc==gc_smallcaps?0:small.xheight,
 	    small.capheight,glyph_scale);
 
@@ -1385,37 +1483,24 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     gcd[k].gd.cid = CID_VMappings;
     gcd[k].gd.u.matrix = &mapmi;
     gcd[k++].creator = GMatrixEditCreate;
+    varrayvc[l++] = &gcd[k-1]; varrayvc[l++] = NULL; varrayvc[l++] = NULL;
+
+    boxes[14].gd.flags = gg_enabled|gg_visible;
+    boxes[14].gd.u.boxelements = varrayvc;
+    boxes[14].creator = GHVBoxCreate;
+
+    aspects[a].text = (unichar_t *) _("Vertical");
+    aspects[a].text_is_1byte = true;
+    aspects[a++].gcd = &boxes[14];
+
+    l=0;
+
+    gcd[k].gd.u.tabs = aspects;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_tabset_scroll;
+    gcd[k].gd.cid = CID_TabSet;
+    gcd[k++].creator = GTabSetCreate;
     varray[l++] = &gcd[k-1]; varray[l++] = NULL;
-
-    if ( gc == gc_subsuper ) {
-	gcd[k].gd.pos.width = 100;
-	gcd[k].gd.flags = gg_enabled|gg_visible;
-	gcd[k++].creator = GLineCreate;
-	varray[l++] = &gcd[k-1]; varray[l++] = NULL;
-
-	label[k].text = (unichar_t *) _("Vertical Offset:");
-	label[k].text_is_1byte = true;
-	label[k].text_in_resource = true;
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
-	gcd[k].gd.flags = gg_enabled | gg_visible;
-	gcd[k++].creator = GLabelCreate;
-	voarray[0] = &gcd[k-1]; 
-
-	label[k].text = (unichar_t *) "0";
-	label[k].text_is_1byte = true;
-	gcd[k].gd.label = &label[k];
-	gcd[k].gd.flags = gg_enabled | gg_visible;
-	gcd[k].gd.pos.width = 60;
-	gcd[k].gd.cid = CID_VerticalOff;
-	gcd[k++].creator = GTextFieldCreate;
-	voarray[1]= &gcd[k-1]; voarray[2] = GCD_Glue; voarray[3] = NULL;
-
-	boxes[5].gd.flags = gg_enabled|gg_visible;
-	boxes[5].gd.u.boxelements = voarray;
-	boxes[5].creator = GHBoxCreate;
-	varray[l++] = &boxes[5]; varray[l++] = NULL;
-    }
+    
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
@@ -1440,10 +1525,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
     barray[6] = NULL;
 
-    boxes[6].gd.flags = gg_enabled|gg_visible;
-    boxes[6].gd.u.boxelements = barray;
-    boxes[6].creator = GHBoxCreate;
-    varray[l++] = &boxes[6]; varray[l++] = NULL; varray[l++] = NULL;
+    boxes[16].gd.flags = gg_enabled|gg_visible;
+    boxes[16].gd.u.boxelements = barray;
+    boxes[16].creator = GHBoxCreate;
+    varray[l++] = &boxes[16]; varray[l++] = NULL; varray[l++] = NULL;
 
     if ( l>=sizeof(varray)/sizeof(varray[0]))
 	IError("Increase size of varray" );
@@ -1458,14 +1543,19 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     boxes[0].creator = GHVGroupCreate;
 
     GGadgetsCreate(gw,boxes);
-    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
-    if ( boxes[5].ret!=NULL )
-	GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
-    GHVBoxSetExpandableRow(boxes[0].ret,(l-5)/2);
+    GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
+    if ( boxes[3].ret!=NULL )
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    if ( boxes[4].ret!=NULL )
+	GHVBoxSetExpandableRow(boxes[4].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(boxes[7].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(boxes[10].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(boxes[14].ret,4);
+    GHVBoxSetExpandableCol(boxes[16].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxFitWindow(boxes[0].ret);
     /* if ( gc==gc_subsuper ) */
-	GMatrixEditShowColumn(GWidgetGetControl(gw,CID_VMappings),2,false);
+	/* GMatrixEditShowColumn(GWidgetGetControl(gw,CID_VMappings),2,false);*/
     free( map_msg );
     GDrawSetVisible(gw,true);
 
