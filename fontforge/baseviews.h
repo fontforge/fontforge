@@ -355,6 +355,9 @@ struct genericchange {
     char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
     double stem_height_add  , stem_width_add  ;
+    double stroke_width_add;
+    double serif_height_scale, serif_width_scale;
+    double seirf_height_add  , serif_width_add  ;
     double hcounter_scale, hcounter_add;
     double lsb_scale, lsb_add;
     double rsb_scale, rsb_add;
@@ -366,14 +369,16 @@ struct genericchange {
     struct fixed_maps {
 	int cnt;
 	struct position_maps {
-	    double current;
-	    double desired;
+	    double current  , desired;
+            double cur_width, des_width;
 	    int overlap_index;
 	    int isserif;
+            int blue_index;
 	} *maps;
     } m;
     struct fixed_maps g;			/* Adjusted for each glyph */
     double vertical_offset;
+    unsigned int dstem_control, serif_control;
     struct smallcaps *small;
 /* Filled in by called routine */
     SplineFont *sf;

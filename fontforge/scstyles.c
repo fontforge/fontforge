@@ -29,8 +29,8 @@
 #include <utype.h>
 #include <gkeysym.h>
 #include <math.h>
-
-
+#include <ttf.h>
+#include <stemdb.h>
 
 static unichar_t lc_stem_str[] = { 'l', 'l', 'l', 'm', 'f', 't', 0x438, 0x43D,
 	0x43f, 0x448, 0x3b9, 0 };
@@ -62,6 +62,1504 @@ static void SSCPValidate(SplineSet *ss) {
 	}
 	ss = ss->next;
     }
+}
+
+static void SplineSetRefigure(SplineSet *ss) {
+    Spline *s, *first;
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( first == NULL ) first = s;
+	    SplineRefigure(s);
+	}
+	ss = ss->next;
+    }
+}
+
+static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
+    SplineSet *temp;
+    Spline *s1, *s2;
+
+    /* We don't want to use the remove overlap built into SSStroke because */
+    /*  only looks at one contour at a time, but we need to look at all together */
+    /*  else we might get some unreal internal hints that will screw up */
+    /*  counter correction */
+    temp = SSStroke(ss,si,sc);
+    if ( ro && temp!=NULL && SplineSetIntersect(temp,&s1,&s2))
+	temp = SplineSetRemoveOverlap(sc,temp,over_remove);
+return( temp );
+}
+
+/* ************************************************************************** */
+/* ***************** Generic resize /stem control routines. ***************** */
+/* ************* Used also for building small caps and friends. ************* */
+/* ************************************************************************** */
+
+static int IsAnglePoint(SplinePoint *sp) {
+    SplinePoint *psp, *nsp;
+    double PrevTangent, NextTangent;
+
+    if (sp->next == NULL || sp->prev == NULL || 
+        sp->pointtype != pt_corner || sp->ttfindex == 0xffff)
+return( false );
+
+    psp = sp->prev->from;
+    nsp = sp->next->to;
+    PrevTangent = atan2(sp->me.y - psp->me.y, sp->me.x - psp->me.x);
+    NextTangent = atan2(nsp->me.y - sp->me.y, nsp->me.x - sp->me.x);
+
+return fabs(PrevTangent - NextTangent) > 0.261;
+}
+
+static int IsExtremum(SplinePoint *sp,int xdir) {
+    SplinePoint *psp, *nsp;
+    double val = (&sp->me.x)[xdir];
+    
+    if (sp->next == NULL || sp->prev == NULL )
+return( false );
+
+    psp = sp->prev->from;
+    nsp = sp->next->to;
+return ((val < (&psp->me.x)[xdir] && val < (&nsp->me.x)[xdir]) ||
+        (val > (&psp->me.x)[xdir] && val > (&nsp->me.x)[xdir]));
+}
+
+static double InterpolateVal( double a,double b,double a1, double b1, double val ) {
+return( a1 + ( val - a ) * ( b1 - a1 )/( b - a ));
+}
+
+static int IsPointFixed( PointData *pd ) {
+return (( pd->touched & tf_x && pd->touched & tf_y ) ||
+        ( pd->touched & tf_x && pd->touched & tf_d ) ||
+        ( pd->touched & tf_y && pd->touched & tf_d ));
+}
+
+static int active_cmp(const void *_s1, const void *_s2) {
+    const struct segment *s1 = _s1, *s2 = _s2;
+    if ( s1->start<s2->start )
+return( -1 );
+    else if ( s1->start>s2->start )
+return( 1 );
+
+return( 0 );
+}
+
+static int fixed_cmp(const void *_s1, const void *_s2) {
+    const struct position_maps *s1 = _s1, *s2 = _s2;
+    if ( s1->current<s2->current )
+return( -1 );
+    else if ( s1->current>s2->current )
+return( 1 );
+
+return( 0 );
+}
+
+static int ds_cmp( const void *_s1, const void *_s2 ) {
+    StemData * const *s1 = _s1, * const *s2 = _s2;
+
+    BasePoint *bp1, *bp2;
+    bp1 = (*s1)->unit.y > 0 ? &(*s1)->keypts[0]->base : &(*s1)->keypts[2]->base;
+    bp2 = (*s2)->unit.y > 0 ? &(*s2)->keypts[0]->base : &(*s2)->keypts[2]->base;
+    if ( bp1->x < bp2->x || ( bp1->x == bp2->x && bp1->y < bp2->y ))
+return( -1 );
+    else if ( bp2->x < bp1->x || ( bp2->x == bp1->x && bp2->y < bp1->y ))
+return( 1 );
+
+return( 0 );
+}
+
+static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt, 
+    double cstart, double cend, double pos, int x_dir ) {
+    
+    double ldist, rdist, lrdist, is, ie, temp, black=0;
+    struct segment *inters;
+    StemBundle *bundle;
+    StemData *stem;
+    int i, j, icnt=0;
+    
+    bundle = x_dir ? gd->vbundle : gd->hbundle;
+    inters = gcalloc( dcnt + bundle->cnt,sizeof( struct segment ));
+
+    for ( i=0; i<dcnt; i++ ) {
+        stem = dstems[i];
+        ldist = ( pos - (&stem->left.x)[x_dir] )/(&stem->unit.x)[x_dir];
+        rdist = ( pos - (&stem->right.x)[x_dir] )/(&stem->unit.x)[x_dir];
+        lrdist =( stem->right.x - stem->left.x ) * stem->unit.x +
+                ( stem->right.y - stem->left.y ) * stem->unit.y;
+        
+        for ( j=0; j<stem->activecnt; j++ ) {
+            if (ldist >= stem->active[j].start && ldist <= stem->active[j].end &&
+                rdist + lrdist >= stem->active[j].start && rdist + lrdist <= stem->active[j].end ) {
+
+                is = (&stem->left.x)[!x_dir] + ldist * (&stem->unit.x)[!x_dir];
+                ie = (&stem->right.x)[!x_dir] + rdist * (&stem->unit.x)[!x_dir];
+                if ( is > ie ) {
+                    temp = is; is = ie; ie = temp;
+                }
+                if ( is >= cstart && is < cend ) {
+                    inters[icnt  ].start = is;
+                    inters[icnt++].end = ( ie < cend ) ? ie : cend;
+                } else if ( ie > cstart && ie <=cend ) {
+                    inters[icnt  ].start = ( is > cstart ) ? is : cstart;
+                    inters[icnt++].end = ie;
+                }
+            }
+        }
+    }
+    for ( i=0; i<bundle->cnt; i++ ) {
+        stem = bundle->stemlist[i];
+        is = x_dir ? stem->left.x : stem->right.y;
+        ie = x_dir ? stem->right.x : stem->left.y;
+        
+        if ( is >= cstart && is < cend ) {
+            inters[icnt  ].start = is;
+            inters[icnt++].end = ( ie < cend ) ? ie : cend;
+        } else if ( ie > cstart && ie <=cend ) {
+            inters[icnt  ].start = ( is > cstart ) ? is : cstart;
+            inters[icnt++].end = ie;
+        }
+    }
+    qsort( inters,icnt,sizeof(struct segment),active_cmp );
+    
+    for ( i=j=0; i<icnt; i++ ) {
+        if ( i == 0 )
+            black += ( inters[i].end - inters[i].start );
+        else {
+            while ( i<icnt && inters[i].end <= inters[j].end ) i++;
+            if ( i == icnt )
+    break;
+            if ( inters[i].start < inters[i-1].end )
+                black += ( inters[i].end - inters[i-1].end );
+            else
+                black += ( inters[i].end - inters[i].start );
+        }
+        j = i;
+    }
+    free( inters );
+return( black );
+}
+
+/* Check if the given counter is intersected by some DStems. If so, then only
+/* the "white" part of the counter can be scaled by the normal counter ratio, while
+/* for the space covered with DStems the stem ratio should be used instead */
+static double ScaleCounter( GlyphData *gd, StemData **dstems, int dcnt,
+    DBounds *orig_b, double cstart, double cend, double stem_scale, double cntr_scale, int x_dir ) {
+    
+    double onequarter, threequarters, black25, black75, black;
+    
+    if ( dcnt == 0 )
+return (( cend - cstart ) * cntr_scale );
+    
+    onequarter = ( orig_b->maxy - orig_b->miny )*.25;
+    threequarters = ( orig_b->maxy - orig_b->miny )*.75;
+    black25 = GetCounterBlackSpace( gd,dstems,dcnt,cstart,cend,onequarter,x_dir );
+    black75 = GetCounterBlackSpace( gd,dstems,dcnt,cstart,cend,threequarters,x_dir );
+    
+    black = ( black75 > black25 ) ? black75 : black25;
+return( stem_scale * black + cntr_scale * ( cend - cstart - black ));
+}
+
+static void StemPosDependent( StemData *stem,struct genericchange *genchange,int x_dir ) {
+
+    int i, lbase;
+    StemData *slave;
+    double dist, l, r, l1, r1, stem_scale, stem_add, cntr_scale, serif_scale, width_new;
+
+    l = (&stem->left.x)[!x_dir]; r = (&stem->right.x)[!x_dir];
+    l1 = (&stem->newleft.x)[!x_dir]; r1 = (&stem->newright.x)[!x_dir];
+    if ( x_dir ) {
+        stem_scale = genchange->stem_width_scale;
+        stem_add = genchange->stem_width_add;
+        serif_scale = genchange->serif_width_scale;
+        cntr_scale = genchange->hcounter_scale;
+    } else {
+        stem_scale = genchange->stem_height_scale;
+        stem_add = genchange->stem_height_add;
+        serif_scale = genchange->serif_height_scale;
+        cntr_scale = genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
+    }
+
+    for (i=0; i<stem->dep_cnt; i++) {
+        slave = stem->dependent[i].stem;
+        lbase = stem->dependent[i].lbase;
+        if ( !slave->ldone && !slave->rdone ) {
+            width_new = ( slave->width - genchange->stroke_width_add )*stem_scale + stem_add;
+            if ( !x_dir ) width_new = -width_new;
+            if (stem->dependent[i].dep_type == 'a' || stem->dependent[i].dep_type == 'm') {
+                dist = lbase ? (&slave->left.x)[!x_dir] - l : (&slave->right.x)[!x_dir] - r;
+                dist *= cntr_scale;
+                if (lbase) (&slave->newleft.x)[!x_dir] = l1 + floor( dist + .5 );
+                else (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
+            } else if (stem->dependent[i].dep_type == 'i') {
+                if (lbase)
+                    (&slave->newleft.x)[!x_dir] = floor( InterpolateVal(l,r,l1,r1,(&slave->left.x)[!x_dir]) + .5 );
+                else
+                    (&slave->newright.x)[!x_dir] = floor( InterpolateVal(l,r,l1,r1,(&slave->right.x)[!x_dir]) + .5 );
+            }
+            if (lbase)
+                (&slave->newright.x)[!x_dir] = (&slave->newleft.x)[!x_dir] + floor( width_new + .5 );
+            else
+                (&slave->newleft.x)[!x_dir] = (&slave->newright.x)[!x_dir] - floor( width_new + .5 );
+        }
+        if ( slave->dep_cnt > 0 )
+            StemPosDependent( slave,genchange,x_dir );
+    }
+
+    if ( genchange->serif_control ) {
+        for (i=0; i<stem->serif_cnt; i++) {
+            slave = stem->serifs[i].stem;
+            lbase = stem->serifs[i].lbase;
+            /* In the autoinstructor we usually link an edge of the serif stem to the opposite
+            /* edge of the main stem. So, if 'lbase' is true, this actually means that we are
+            /* interested in the right edge of the serif stem. However, here, despite of
+            /* the variable name, we position the left edge of the serif relatively to the
+            /* left edge of the master stem and vice versa */
+            dist = lbase ? (&slave->right.x)[!x_dir] - r : l - (&slave->left.x)[!x_dir];
+            dist *= serif_scale;
+            if (lbase) (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
+            else (&slave->newleft.x)[!x_dir] = l1 - floor( dist + .5 );
+        }
+    }
+}
+
+static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt,
+    DBounds *orig_b, DBounds *new_b, struct genericchange *genchange, int x_dir ) {
+
+    double stem_scale, cntr_scale, stem_add, cntr_add, cntr_new, width_new;
+    double min_coord = x_dir ? orig_b->minx : orig_b->miny;
+    double max_coord = x_dir ? orig_b->maxx : orig_b->maxy;
+    real *min_new = x_dir ? &new_b->minx : &new_b->miny;
+    real *max_new = x_dir ? &new_b->maxx : &new_b->maxy;
+    real *start, *end, *newstart, *newend, *prevend=NULL, *newprevend=NULL;
+    StemData *stem, *prev=NULL;
+    StemBundle *bundle = x_dir ? gd->vbundle : gd->hbundle;
+    int i;
+
+    if (bundle == NULL)
+return;
+    if ( x_dir ) {
+        stem_scale = genchange->stem_width_scale;
+        stem_add = genchange->stem_width_add;
+        cntr_scale = genchange->hcounter_scale;
+        cntr_add = genchange->hcounter_add;
+    } else {
+        stem_scale = genchange->stem_height_scale;
+        stem_add = genchange->stem_height_add;
+        cntr_scale = genchange->vcounter_scale;
+        cntr_add = genchange->vcounter_add;
+    }
+
+    *min_new = floor( min_coord * cntr_scale + cntr_add + .5 );
+    for ( i=0; i<bundle->cnt; i++ ) {
+        stem = bundle->stemlist[i];
+        start = x_dir ? &stem->left.x : &stem->right.x;
+        end = x_dir ? &stem->right.x : &stem->left.x;
+        newstart = x_dir ? &stem->newleft.x : &stem->newright.x;
+        newend = x_dir ? &stem->newright.x : &stem->newleft.x;
+        if ( stem->master == NULL ) {
+            if ( prev == NULL ) {
+                cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,0,start[!x_dir],stem_scale,cntr_scale,x_dir );
+                newstart[!x_dir] = floor( cntr_new + .5 );
+            } else {
+                cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,prevend[!x_dir],start[!x_dir],stem_scale,cntr_scale,x_dir );
+                newstart[!x_dir] = newprevend[!x_dir] + floor( cntr_new + cntr_add + .5 );
+            }
+            width_new = ( stem->width - genchange->stroke_width_add )*stem_scale + stem_add;
+            newend[!x_dir] = newstart[!x_dir] + floor( width_new + .5 );
+            stem->ldone = stem->rdone = true;
+            StemPosDependent( stem,genchange,x_dir );
+            prev = stem;
+            prevend = end; newprevend = newend;
+        }
+    }
+
+    *max_new = *min_new;
+    for ( i=0; i<bundle->cnt; i++ ) {
+        stem = bundle->stemlist[i];
+        end = x_dir ? &stem->right.x : &stem->left.x;
+        newend = x_dir ? &stem->newright.x : &stem->newleft.x;
+        if ( end[!x_dir] < max_coord ) {
+            *max_new = floor( newend[!x_dir] + .5 );
+            prevend = end; newprevend = newend;
+        }
+    }
+    if ( prevend != NULL && prevend[!x_dir] < max_coord ) {
+        cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,prevend[!x_dir],max_coord,stem_scale,cntr_scale,x_dir );
+        *max_new += floor( cntr_new + cntr_add + .5 );
+    }
+    if ( *max_new == *min_new ) {
+        cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,min_coord,max_coord,stem_scale,cntr_scale,x_dir );
+        *max_new = *min_new + floor( cntr_new + cntr_add + .5 );
+    }
+}
+
+static void AssignFixedToStems( StemBundle *bundle,struct fixed_maps *fix,double add ) {
+    int i, j;
+    StemData *stem;
+    struct position_maps *pm;
+    
+    for ( i=0; i<bundle->cnt; i++ ) {
+        stem = bundle->stemlist[i];
+        for ( j=0; j<fix->cnt; j++ ) {
+            pm = &fix->maps[j];
+            if ( stem->blue != -1 && stem->blue == pm->blue_index ) {
+                stem->blue = j;
+        break;
+            } else if ( stem->blue == -1 && pm->blue_index == -1 && (
+                ( pm->cur_width < 0 && stem->right.y + add/2 <= pm->current &&
+                stem->right.y + add/2 >= pm->current + pm->cur_width ) ||
+                ( pm->cur_width > 0 && stem->left.y - add/2 >= pm->current &&
+                stem->right.y - add/2 <= pm->current + pm->cur_width ))) {
+
+                stem->blue = j;
+                stem->master = NULL;
+        break;
+            }
+        }
+        if ( j==fix->cnt )
+            stem->blue = -1;
+    }
+}
+
+static void HStemResize( SplineSet *ss,GlyphData *gd,
+    DBounds *orig_b, DBounds *new_b, struct genericchange *genchange ) {
+    
+    BlueData *bd;
+    double middle, scale, stem_scale, stem_add, width_new, s_cur, e_cur, s_des, e_des;
+    StemData *stem, *test, *upper, *lower;
+    int i, j, is_bot, fcnt;
+    struct fixed_maps *fix = &genchange->m;
+    struct position_maps *pm;
+
+    scale = genchange->v_scale;
+    stem_scale = genchange->stem_height_scale;
+    stem_add = genchange->stem_height_add;
+    
+    bd = &gd->bd;
+    new_b->miny = orig_b->miny * scale;
+    new_b->maxy = orig_b->maxy * scale;
+    /* Merge the blues and the user-specified mappings. Mappings can override default
+    /* (scaled) values for blue zones we would get otherwise. It is also possible
+    /* to specify mappings not corresponding to any existing blue zones, and stems will
+    /* be snapped to them just like to real blues when appropriate (except that currently 
+    /* there is no GUI to specify the snapping zone width, so it always will be 1 or -1 ) */
+    for ( i=0; i<fix->cnt; i++ )
+        fix->maps[i].blue_index = -1;
+    for ( i=0; i<bd->bluecnt; i++ ) {
+        is_bot = ( bd->blues[i][0] < 0 );
+        for ( j=0; j<fix->cnt; j++ ) {
+            if ( fix->maps[j].current == bd->blues[i][is_bot] ) {
+                fix->maps[j].cur_width = bd->blues[i][!is_bot] - bd->blues[i][is_bot];
+                fix->maps[j].des_width = floor(
+                    ( bd->blues[i][!is_bot] - bd->blues[i][is_bot] ) * stem_scale + .5 );
+                fix->maps[j].blue_index = i;
+        break;
+            }
+        }
+        if ( j == fix->cnt ) {
+            fix->maps = grealloc(
+                fix->maps,( fix->cnt+1 )*sizeof( struct position_maps ));
+            fix->maps[j].current = bd->blues[i][is_bot];
+            fix->maps[j].desired = floor( bd->blues[i][is_bot] * scale + .5 );
+            fix->maps[j].cur_width = bd->blues[i][!is_bot] - bd->blues[i][is_bot];
+            fix->maps[j].des_width = floor(
+                ( bd->blues[i][!is_bot] - bd->blues[i][is_bot] ) * stem_scale + .5 );
+            fix->maps[j].blue_index = i;
+            fix->cnt++;
+        }
+    }
+    for ( i=0; i<fix->cnt; i++ ) {
+        if ( fix->maps[i].blue_index == -1 ) {
+            fix->maps[i].cur_width = ( fix->maps[i].current > 0 ) ? 1 : -1;
+            fix->maps[i].des_width = fix->maps[i].cur_width;
+        }
+    }
+    qsort( fix->maps,fix->cnt,sizeof( struct position_maps ),fixed_cmp );
+    /* Remove overlapping mappings */
+    for ( i=j=0; i<fix->cnt; i++ ) {
+        if ( i==j)
+    continue;
+        s_cur = ( fix->maps[i].cur_width > 0 ) ? 
+            fix->maps[i].current : fix->maps[i].current + fix->maps[i].cur_width;
+        e_cur = ( fix->maps[j].cur_width > 0 ) ? 
+            fix->maps[j].current + fix->maps[j].cur_width : fix->maps[j].current;
+        s_des = ( fix->maps[i].des_width > 0 ) ? 
+            fix->maps[i].desired : fix->maps[i].desired + fix->maps[i].des_width;
+        e_des = ( fix->maps[j].des_width > 0 ) ? 
+            fix->maps[j].desired + fix->maps[j].des_width : fix->maps[j].desired;
+        if ( s_cur > e_cur && s_des > e_des ) {
+            j++;
+            if ( j<i )
+                memcpy( &fix->maps[j],&fix->maps[i],sizeof( struct position_maps ));
+        }
+    }
+    if ( i>0 ) fix->cnt = j+1;
+    
+    /* Extend the scaled glyph bounding box if necessary to ensure all mapped values are inside */
+    if ( fix->cnt > 0 ) {
+        if ( fix->maps[0].cur_width < 0 && new_b->miny > fix->maps[0].desired + fix->maps[0].des_width )
+	    new_b->miny = fix->maps[0].desired + fix->maps[0].des_width -
+		genchange->v_scale * ( fix->maps[0].current + fix->maps[0].cur_width - orig_b->miny );
+        else if ( fix->maps[0].cur_width > 0 && new_b->miny > fix->maps[0].desired )
+	    new_b->miny = fix->maps[0].desired -
+		genchange->v_scale * ( fix->maps[0].current - orig_b->miny );
+
+        fcnt = fix->cnt - 1;
+        if ( fix->maps[fcnt].cur_width > 0 && new_b->maxy < fix->maps[fcnt].desired + fix->maps[fcnt].des_width )
+	    new_b->maxy = fix->maps[fcnt].desired + fix->maps[fcnt].des_width +
+		genchange->v_scale * ( orig_b->maxy - ( fix->maps[fcnt].current + fix->maps[fcnt].cur_width ));
+        else if ( fix->maps[fcnt].cur_width < 0 && new_b->maxy < fix->maps[fcnt].desired )
+	    new_b->maxy = fix->maps[fcnt].desired +
+		genchange->v_scale * ( orig_b->maxy - fix->maps[fcnt].current );
+    }
+
+    /* GlyphDataBuild() has assotiated some stems with blue zones, but we would
+    /* like to associate them now with mappings instead */
+    AssignFixedToStems( gd->hbundle,fix,genchange->stroke_width_add );
+
+    for ( i=0; i<gd->hbundle->cnt; i++ ) {
+        stem = gd->hbundle->stemlist[i];
+        /* The 'blue' field now actually points to a 'position_maps' structure.
+        /* So the name is wrong, but who cares... */
+        if (stem->blue != -1 ) {
+            pm = &fix->maps[stem->blue];
+            width_new = ( stem->width - genchange->stroke_width_add )*stem_scale + stem_add;
+            if ( pm->cur_width < 0 ) {
+                stem->newright.y = floor( InterpolateVal( 
+                    pm->current + pm->cur_width,pm->current,pm->desired + pm->des_width,pm->desired,
+                    stem->right.y + genchange->stroke_width_add/2 ) + .5 );
+                if ( !stem->ghost )
+                    stem->newleft.y = stem->newright.y + floor( width_new + .5 );
+                else
+                    stem->newleft.y = stem->newright.y + 21;
+                stem->ldone = stem->rdone = true;
+            } else if ( pm->cur_width > 0 ) {
+                stem->newleft.y = floor( InterpolateVal( 
+                    pm->current,pm->current + pm->cur_width,pm->desired,pm->desired + pm->des_width,
+                    stem->left.y - genchange->stroke_width_add/2 ) + .5 );
+                if ( !stem->ghost )
+                    stem->newright.y = stem->newleft.y - floor( width_new + .5 );
+                else
+                    stem->newright.y = stem->newleft.y - 20;
+                stem->ldone = stem->rdone = true;
+            } else
+                stem->blue = -1;
+        }
+    }
+
+    for ( i=0; i<gd->hbundle->cnt; i++ ) {
+        stem = gd->hbundle->stemlist[i];
+        if (stem->blue == -1 && stem->master == NULL) {
+            middle = stem->right.y + stem->width/2;
+            upper = lower = NULL;
+            width_new = ( stem->width - genchange->stroke_width_add )*stem_scale + stem_add;
+            for ( j=0; j<gd->hbundle->cnt; j++ ) {
+                test = gd->hbundle->stemlist[j];
+                if ( test != stem && test->blue != -1 ) {
+                    if ( test->right.y > stem->left.y &&
+                        ( upper == NULL || test->right.y < upper->right.y ))
+                        upper = test;
+                    else if ( test->left.y < stem->right.y &&
+                        ( lower == NULL || test->left.y > lower->left.y ))
+                        lower = test;
+                }
+            }
+            if ( upper != NULL && lower != NULL ) {
+                middle = InterpolateVal( lower->left.y,upper->right.y,
+                    lower->newleft.y,upper->newright.y,middle );
+                stem->newleft.y = floor( middle + ( width_new/2 + .5 ));
+                stem->newright.y = floor( middle - ( width_new/2 + .5 ));
+            } else if ( upper != NULL ) {
+                stem->newright.y = floor( InterpolateVal( orig_b->miny,upper->right.y,
+                    new_b->miny,upper->newright.y,stem->right.y ) + .5 );
+                stem->newleft.y = stem->newright.y + floor( width_new + .5 );
+            } else if ( lower != NULL ) {
+                stem->newleft.y = floor( InterpolateVal( lower->left.y,orig_b->maxy,
+                    lower->newleft.y,new_b->maxy,stem->left.y ) + .5 );
+                stem->newright.y = stem->newleft.y - floor( width_new + .5 );
+            } else {
+                middle = InterpolateVal( orig_b->miny,orig_b->maxy,
+                    new_b->miny,new_b->maxy,middle );
+                stem->newleft.y = floor( middle + ( width_new/2 + .5 ));
+                stem->newright.y = floor( middle - ( width_new/2 + .5 ));
+            }
+        }
+    }
+
+    for ( i=0; i<gd->hbundle->cnt; i++ ) {
+        stem = gd->hbundle->stemlist[i];
+        if ( stem->master == NULL )
+            StemPosDependent( stem,genchange,false );
+    }
+}
+
+static void PosStemPoints( GlyphData *gd, double stem_scale, int has_dstems, int x_dir ) {
+    
+    int i, j, best_is_l;
+    uint8 flag = x_dir ? tf_x : tf_y;
+    PointData *pd;
+    StemData *tstem, *best;
+    struct stem_chunk *chunk;
+    double dist, bdist;
+    BasePoint *sbase;
+
+    for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+        best = NULL; bdist = 0;
+        for ( j=0; j<pd->prevcnt; j++ ) {
+            tstem = pd->prevstems[j];
+            if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir ) {
+                sbase = pd->prev_is_l[j] ? &tstem->left : &tstem->right;
+                dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
+                if ( best == NULL || fabs( dist ) < fabs( bdist )) {
+                    best = tstem;
+                    bdist = dist;
+                    best_is_l = pd->prev_is_l[j];
+                }
+            }
+        }
+        for ( j=0; j<pd->nextcnt; j++ ) {
+            tstem = pd->nextstems[j];
+            if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir ) {
+                sbase = pd->next_is_l[j] ? &tstem->left : &tstem->right;
+                dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
+                if ( best == NULL || fabs( dist ) < fabs( bdist )) {
+                    best = tstem;
+                    bdist = dist;
+                    best_is_l = pd->next_is_l[j];
+                }
+            }
+        }
+
+        if ( best != NULL ) {
+            if ( has_dstems && ( pd->x_corner == 2 || pd->y_corner == 2 )) {
+                for ( j=0; j<best->chunk_cnt; j++ ) {
+                    chunk = &best->chunks[j];
+                    if (( chunk->l == pd || chunk->r == pd ) && 
+                        ( chunk->stemcheat == 2 || chunk->stemcheat == 3 ))
+                break;
+                }
+                /* Don't attempt to position inner points at diagonal intersections:
+                /* our diagonal stem processor will handle them better */
+                if ( j<best->chunk_cnt )
+    continue;
+            }
+            
+            if ( !x_dir ) bdist = -bdist;
+            (&pd->newpos.x)[!x_dir] = best_is_l ?
+                (&best->newleft.x)[!x_dir] + bdist * stem_scale : 
+                (&best->newright.x)[!x_dir] + bdist * stem_scale;
+            pd->touched |= flag;
+            pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+        }
+    }
+}
+
+static double InterpolateBetweenEdges( GlyphData *gd, double coord, double min, double max,
+    double min_new, double max_new, int x_dir ) {
+
+    StemData *stem;
+    StemBundle *bundle = x_dir ? gd->vbundle : gd->hbundle;
+    double prev_pos, next_pos, prev_new, next_new, start, end, ret;
+    int i;
+
+    prev_pos = -1e4; next_pos = 1e4;
+    for ( i=0; i<bundle->cnt; i++ ) {
+        stem = bundle->stemlist[i];
+        start = x_dir ? stem->left.x : stem->right.y;
+        end = x_dir ? stem->right.x : stem->left.y;
+
+        if ( start >= min && start <= max ) {
+            if ( start < coord && start > prev_pos ) {
+                prev_pos = start;
+                prev_new = x_dir ? stem->newleft.x : stem->newright.y;
+            }
+            if ( start > coord && start < next_pos ) {
+                next_pos = start;
+                next_new = x_dir ? stem->newleft.x : stem->newright.y;
+            }
+        }
+        if ( end >= min && end <= max ) {
+            if ( end > coord && end < next_pos ) {
+                next_pos = end;
+                next_new = x_dir ? stem->newright.x : stem->newleft.y;
+            }
+            if ( end < coord && end > prev_pos ) {
+                prev_pos = end;
+                prev_new = x_dir ? stem->newright.x : stem->newleft.y;
+            }
+        }
+    }
+    if ( prev_pos > -1e4 && next_pos < 1e4 )
+        ret = InterpolateVal( prev_pos,next_pos,prev_new,next_new,coord );
+    else if ( prev_pos > -1e4 )
+        ret = InterpolateVal( prev_pos,max,prev_new,max_new,coord );
+    else if ( next_pos < -1e4 )
+        ret = InterpolateVal( min,next_pos,min_new,next_new,coord );
+    else
+        ret = InterpolateVal( min,max,min_new,max_new,coord );
+return( ret );
+}
+
+static void InterpolateStrong( GlyphData *gd, DBounds *orig_b, DBounds *new_b, int x_dir ) {
+    int i;
+    uint8 mask, flag = x_dir ? tf_x : tf_y;
+    double coord, new;
+    double min, max, min_new, max_new;
+    PointData *pd;
+
+    mask = flag | tf_d;
+    min = x_dir ? orig_b->minx : orig_b->miny;
+    max = x_dir ? orig_b->maxx : orig_b->maxy;
+    min_new = x_dir ? new_b->minx : new_b->miny;
+    max_new = x_dir ? new_b->maxx : new_b->maxy;
+    for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+
+        if ( !(pd->touched & mask) && ( IsExtremum(pd->sp,!x_dir) || IsAnglePoint(pd->sp))) {
+            coord = (&pd->base.x)[!x_dir];
+            new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
+
+            (&pd->newpos.x)[!x_dir] = new;
+            pd->touched |= flag;
+            pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+        }
+    }
+}
+
+static void InterpolateWeak( GlyphData *gd, DBounds *orig_b, DBounds *new_b, double scale, int x_dir ) {
+    PointData *pd, *tpd, *fpd;
+    int i;
+    uint8 mask, flag = x_dir ? tf_x : tf_y;
+    double coord, new, min, max, min_new, max_new;
+
+    mask = flag | tf_d;
+    min = x_dir ? orig_b->minx : orig_b->miny;
+    max = x_dir ? orig_b->maxx : orig_b->maxy;
+    min_new = x_dir ? new_b->minx : new_b->miny;
+    max_new = x_dir ? new_b->maxx : new_b->maxy;
+    
+    /* Position any points which line between points already positioned */
+    for ( i=0; i<gd->pcnt; i++ ) {
+        pd = &gd->points[i];
+        if ( pd->sp != NULL && !(pd->touched & mask) ) {
+            coord = (&pd->base.x)[!x_dir];
+            if ( pd->sp->prev != NULL && pd->sp->next != NULL ) {
+                fpd = &gd->points[pd->sp->prev->from->ptindex];
+                while ( !(fpd->touched & mask) && fpd != pd && fpd->sp->prev != NULL )
+                    fpd = &gd->points[fpd->sp->prev->from->ptindex];
+
+                tpd = &gd->points[pd->sp->next->to->ptindex];
+                while ( !(tpd->touched & mask) && tpd != pd && fpd->sp->next != NULL )
+                    tpd = &gd->points[tpd->sp->next->to->ptindex];
+
+                if (( fpd->touched & mask ) && ( tpd->touched & mask ) && (
+                    ( (&fpd->base.x)[!x_dir] <= coord && coord <= (&tpd->base.x)[!x_dir] ) ||
+                    ( (&tpd->base.x)[!x_dir] <= coord && coord <= (&fpd->base.x)[!x_dir] ))) {
+                    new = InterpolateVal( (&fpd->base.x)[!x_dir],(&tpd->base.x)[!x_dir],
+                                            (&fpd->newpos.x)[!x_dir],(&tpd->newpos.x)[!x_dir],coord );
+                    (&pd->newpos.x)[!x_dir] = new;
+                    pd->touched |= flag;
+                    pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+                }
+            }
+        }
+    }
+    /* Any points which aren't currently positioned, just interpolate them */
+    /*  between the hint zones between which they lie */
+    /* I don't think this can actually happen... but do it just in case */
+    for ( i=0; i<gd->pcnt; i++ ) {
+        pd = &gd->points[i];
+        if ( pd->sp != NULL && !(pd->touched & mask) ) {
+            coord = (&pd->base.x)[!x_dir];
+            new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
+            (&pd->newpos.x)[!x_dir] = new;
+            pd->touched |= flag;
+            pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+        }
+    }
+
+    /* Interpolate the control points. More complex in order2. We want to */
+    /*  preserve interpolated points, but simplified as we only have one cp */
+    for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+        if ( !pd->sp->noprevcp && !gd->order2 ) {
+            coord = (&pd->sp->prevcp.x)[!x_dir];
+            fpd = &gd->points[pd->sp->prev->from->ptindex];
+            if (coord == (&pd->base.x)[!x_dir] )
+                (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
+            else {
+                if (( coord >= (&fpd->base.x)[!x_dir] && coord <= (&pd->base.x)[!x_dir] ) ||
+                    ( coord <= (&fpd->base.x)[!x_dir] && coord >= (&pd->base.x)[!x_dir] ))
+
+                    (&pd->newprev.x)[!x_dir] = InterpolateVal((&pd->base.x)[!x_dir],
+                        (&fpd->base.x)[!x_dir],(&pd->newpos.x)[!x_dir],(&fpd->newpos.x)[!x_dir],coord);
+                else
+                    (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir] + 
+                        ( coord - (&pd->base.x)[!x_dir] )*scale;
+            }
+        }
+        if ( !pd->sp->nonextcp ) {
+            coord = (&pd->sp->nextcp.x)[!x_dir];
+            tpd = &gd->points[pd->sp->next->to->ptindex];
+            if ( coord == (&pd->base.x)[!x_dir] )
+                (&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
+            else {
+                if (( coord >= (&tpd->base.x)[!x_dir] && coord <= (&pd->base.x)[!x_dir] ) ||
+                    ( coord <= (&tpd->base.x)[!x_dir] && coord >= (&pd->base.x)[!x_dir] ))
+                    
+                    (&pd->newnext.x)[!x_dir] = InterpolateVal((&pd->base.x)[!x_dir],
+                        (&tpd->base.x)[!x_dir],(&pd->newpos.x)[!x_dir],(&tpd->newpos.x)[!x_dir],coord);
+                else
+                    (&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir] + 
+                        ( coord - (&pd->base.x)[!x_dir] )*scale;
+            }
+            if ( gd->order2 )
+               (&tpd->newprev.x)[!x_dir] = (&pd->newnext.x)[!x_dir];
+        }
+    }
+    if ( gd->order2 ) {
+        for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+            pd = &gd->points[i];
+            if ( pd->ttfindex == 0xFFFF ) {
+                (&pd->newpos.x)[!x_dir] = ((&pd->newnext.x)[!x_dir] + (&pd->newprev.x)[!x_dir])/2;
+            }
+        }
+    }
+}
+
+static void InterpolateAnchorPoints( GlyphData *gd,AnchorPoint *aps,
+    DBounds *orig_b, DBounds *new_b,double scale,int x_dir ) {
+
+    AnchorPoint *ap;
+    double coord, new, min, max, min_new, max_new;
+
+    min = x_dir ? orig_b->minx : orig_b->miny;
+    max = x_dir ? orig_b->maxx : orig_b->maxy;
+    min_new = x_dir ? new_b->minx : new_b->miny;
+    max_new = x_dir ? new_b->maxx : new_b->maxy;
+
+    for ( ap=aps; ap!=NULL; ap=ap->next ) {
+        coord = (&ap->me.x)[!x_dir];
+	/* Anchor points might be outside the bounding box */
+        if ( coord >= min && coord <= max )
+            new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
+        else if ( coord < min )
+            new = min - ( min - coord ) * scale;
+        else
+            new = max + ( coord - max ) * scale;
+
+        (&ap->me.x)[!x_dir] = new;
+    }
+}
+
+static int PrepareDStemList( GlyphData *gd, StemData **dstems ) {
+    double lpos, rpos, prevlsp, prevrsp, prevlep, prevrep;
+    PointData *ls, *rs, *le, *re;
+    struct stem_chunk *chunk;
+    StemData *stem;
+    int i, j, dcnt=0;
+
+    for ( i=0; i<gd->stemcnt; i++ ) {
+        stem = &gd->stems[i];
+        if ( stem->toobig ||
+            ( stem->unit.y > -.05 && stem->unit.y < .05 ) ||
+            ( stem->unit.x > -.05 && stem->unit.x < .05 ))
+    continue;
+
+        prevlsp = prevrsp = 1e4;
+        prevlep = prevrep = -1e4;
+        ls = rs = le = re = NULL;
+        for ( j=0; j<stem->chunk_cnt; j++ ) {
+            chunk = &stem->chunks[j];
+            if ( chunk->l != NULL ) {
+                lpos =  ( chunk->l->base.x - stem->left.x )*stem->unit.x +
+                        ( chunk->l->base.y - stem->left.y )*stem->unit.y;
+                if ( lpos < prevlsp ) {
+                    ls = chunk->l; prevlsp = lpos;
+                } else if ( lpos > prevlep ) {
+                    le = chunk->l; prevlep = lpos;
+                }
+            }
+            if ( chunk->r != NULL ) {
+                rpos =  ( chunk->r->base.x - stem->right.x )*stem->unit.x +
+                        ( chunk->r->base.y - stem->right.y )*stem->unit.y;
+                if ( rpos < prevrsp ) {
+                    rs = chunk->r; prevrsp = rpos;
+                } else if ( rpos > prevrep ) {
+                    re = chunk->r; prevrep = lpos;
+                }
+           }
+        }
+        if ( ls == NULL || rs == NULL || le == NULL || re == NULL )
+    continue;
+        stem->keypts[0] = ls; stem->keypts[1] = le;
+        stem->keypts[2] = rs; stem->keypts[3] = re;
+        dstems[dcnt++] = stem;
+    }
+    qsort( dstems,dcnt,sizeof( StemData *),ds_cmp );
+return( dcnt );
+}
+
+static void MovePointToDiag( PointData *pd, StemData *stem, int is_l ) {
+    BasePoint fv, *base, *ptpos;
+    double d, da, db;
+
+    base = is_l ? &stem->newleft : &stem->newright;
+    if ( !pd->touched ) {
+        ptpos = &pd->base;
+        if ( fabs( stem->unit.x ) > fabs( stem->unit.y )) {
+            fv.x = 1; fv.y = 0;
+        } else {
+            fv.x = 0; fv.y = 1;
+        }
+    } else {
+        fv.x = pd->posdir.x; fv.y = pd->posdir.y;
+        ptpos = &pd->newpos;
+    }
+
+    d = stem->newunit.x * fv.y - stem->newunit.y * fv.x;
+    da = ( base->x - ptpos->x )*fv.y - ( base->y - ptpos->y )*fv.x;
+    db = ( base->y - ptpos->y )*stem->newunit.x - ( base->x - ptpos->x )*stem->newunit.y;
+
+    if ( fabs( d ) > 0 ) {
+        pd->newpos.x = base->x - ( da/d )*stem->newunit.x;
+        pd->newpos.y = base->y - ( da/d )*stem->newunit.y;
+        if ( pd->touched & tf_d && ( pd->posdir.x != stem->newunit.x || pd->posdir.y != stem->newunit.y )) {
+            pd->touched |= tf_x; pd->touched |= tf_y;
+        } else
+            pd->touched |= tf_d;
+        pd->posdir.x = stem->newunit.x; pd->posdir.y = stem->newunit.y;
+    }
+}
+
+static void GetDStemBounds( GlyphData *gd, StemData *stem, real *prev, real *next, int x_dir ) {
+    int i, maxact;
+    double roff, dstart, dend, hvstart, hvend, temp;
+    StemBundle *bundle;
+    StemData *hvstem;
+    
+    roff =  ( stem->right.x - stem->left.x ) * stem->unit.x +
+            ( stem->right.y - stem->left.y ) * stem->unit.y;
+    maxact = stem->activecnt - 1;
+
+    if ( stem->unit.y > 0 ) {
+        dstart = x_dir ?
+            stem->right.x + ( stem->active[0].start - roff ) * stem->unit.x :
+            stem->left.y + stem->active[0].start * stem->unit.y;
+        dend = x_dir ?
+            stem->left.x + stem->active[maxact].end * stem->unit.x :
+            stem->right.y + ( stem->active[maxact].end - roff ) * stem->unit.y;
+    } else {
+        dstart = x_dir ?
+            stem->left.x + stem->active[0].start * stem->unit.x :
+            stem->right.y + ( stem->active[0].start - roff ) * stem->unit.y ;
+        dend = x_dir ?
+            stem->right.x + ( stem->active[maxact].end - roff ) * stem->unit.x :
+            stem->left.y + stem->active[maxact].end * stem->unit.y;
+    }
+    if ( dstart > dend ) {
+        temp = dstart; dstart = dend; dend = temp;
+    }
+    
+    bundle = x_dir ? gd->vbundle : gd->hbundle;
+    for ( i=0; i<bundle->cnt; i++ ) {
+        hvstem = bundle->stemlist[i];
+        hvstart = x_dir ? hvstem->left.x : hvstem->right.y;
+        hvend = x_dir ? hvstem->right.x : hvstem->left.y;
+        if ( hvend > *prev && hvend <= dstart )
+            *prev = hvend;
+        else if ( hvstart < *next && hvstart >= dend )
+            *next = hvstart;
+    }
+}
+
+static void AlignPointPair( StemData *stem,PointData *lpd, PointData *rpd, double hscale,double vscale ) {
+    double off, newoff;
+    if ( !IsPointFixed( rpd )) {
+         off    =( rpd->base.x - lpd->base.x ) * stem->unit.x +
+                 ( rpd->base.y - lpd->base.y ) * stem->unit.y;
+         newoff =( rpd->newpos.x - lpd->newpos.x ) * stem->newunit.x +
+                 ( rpd->newpos.y - lpd->newpos.y ) * stem->newunit.y;
+         rpd->newpos.x += ( off*hscale - newoff )*stem->newunit.x;
+         rpd->newpos.y += ( off*vscale - newoff )*stem->newunit.y;
+     } else if ( !IsPointFixed( lpd )) {
+         off    =( lpd->base.x - rpd->base.x ) * stem->unit.x +
+                 ( lpd->base.y - rpd->base.y ) * stem->unit.y;
+         newoff =( lpd->newpos.x - rpd->newpos.x ) * stem->newunit.x +
+                 ( lpd->newpos.y - rpd->newpos.y ) * stem->newunit.y;
+         lpd->newpos.x += ( off*hscale - newoff )*stem->newunit.x;
+         lpd->newpos.y += ( off*vscale - newoff )*stem->newunit.y;
+     }
+}
+
+static int CorrectDPointPos( GlyphData *gd, PointData *pd, StemData *stem, 
+    double scale, int next, int is_l, int x_dir ) {
+    
+    int i, found = 0;
+    uint8 flag = x_dir ? tf_x : tf_y;
+    double dot, off, coord_orig, coord_new, base_orig, base_new;
+    Spline *ns;
+    StemData *tstem;
+    PointData *npd;
+    
+    ns = next ? pd->sp->next : pd->sp->prev;
+    if ( ns == NULL )
+return( false );
+    npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
+    if ( IsStemAssignedToPoint( npd,stem,!next ) != -1 )
+return( false );
+    dot = next ?pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y :
+                pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
+    off =   ( npd->base.x - pd->base.x )*stem->unit.y -
+            ( npd->base.y - pd->base.y )*stem->unit.x;
+    
+    while ( npd != pd && dot >= 0 && 
+        (( is_l && off < 0 ) || ( !is_l && off > 0 ))) {
+        if ( npd->touched & flag ) {
+            for ( i=0; i<npd->prevcnt && !found; i++ ) {
+                tstem = npd->prevstems[i];
+                if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir )
+                    found = true;
+            }
+            for ( i=0; i<npd->nextcnt && !found; i++ ) {
+                tstem = npd->nextstems[i];
+                if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir )
+                    found = true;
+            }
+        }
+        if ( found )
+    break;
+        ns = next ? npd->sp->next : npd->sp->prev;
+        if ( ns == NULL )
+    break;
+        npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
+        dot = next ?pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y :
+                    pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
+        off =   ( pd->base.x - npd->base.x )*stem->unit.y -
+                ( pd->base.y - npd->base.y )*stem->unit.x;
+    }
+    if ( !found )
+return( false );
+    
+    coord_orig = (&pd->base.x)[!x_dir];
+    coord_new = (&pd->newpos.x)[!x_dir];
+    base_orig = (&npd->base.x)[!x_dir];
+    base_new = (&npd->newpos.x)[!x_dir];
+    if (( coord_orig > base_orig && coord_new <= base_new ) ||
+        ( coord_orig < base_orig && coord_new >= base_new )) {
+        coord_new = base_new + ( coord_orig - base_orig )*scale;
+        if ( x_dir ) {
+            pd->newpos.y += stem->newunit.y * (( coord_new - pd->newpos.x  )/stem->newunit.x );
+            pd->newpos.x = coord_new;
+        } else {
+            pd->newpos.x += stem->newunit.x * (( coord_new - pd->newpos.y )/stem->newunit.y );
+            pd->newpos.y = coord_new;
+        }
+return( true );
+    }
+return( false );
+}
+
+static void ShiftDependent( GlyphData *gd, PointData *pd, StemData *stem, 
+    DBounds *orig_b, DBounds *new_b, int next, int is_l, int x_dir ) {
+    
+    uint8 flag = x_dir ? tf_x : tf_y;
+    int i, from_min;
+    double dot, off, dist, s, s_new, e, e_new;
+    Spline *ns;
+    PointData *npd;
+    StemData *tstem, *dstem = NULL;
+    
+    /* Is this edge closer to the initial or the final coordinate of the bounding box? */
+    from_min = (( x_dir && is_l && stem->unit.y > 0 ) || 
+                ( x_dir && !is_l && stem->unit.y < 0 ) ||
+                ( !x_dir && !is_l ));
+    ns = next ? pd->sp->next : pd->sp->prev;
+    if ( ns == NULL )
+return;
+    npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
+    if ( IsStemAssignedToPoint( npd,stem,!next ) != -1 )
+return;
+    dot = next ?pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y :
+                pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
+    off =   ( npd->base.x - pd->base.x )*stem->unit.y -
+            ( npd->base.y - pd->base.y )*stem->unit.x;
+    dist =  (&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir];
+    
+    while ( npd != pd && dot > 0 && !( npd->touched & flag ) && (
+        ( is_l && off <= 0 ) || ( !is_l && off >= 0 ) || 
+        ( from_min && dist <= 0 ) || ( !from_min && dist >= 0 ))) {
+        
+        /* Can't just check if the point is touched in a diagonal direction,
+        /* since not all DStems may have be done at the moment. So see if there
+        /* are any valid DStems attached to the point. If so, then it is not
+        /* a candidate for the strong interpolation, and thus there is no need
+        /* to adjust its position here */
+        for ( i=0; i<npd->prevcnt && dstem == NULL; i++ ) {
+            tstem = npd->prevstems[i];
+            if ( !tstem->toobig && 
+                ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
+                ( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
+                dstem = tstem;
+        }
+        for ( i=0; i<npd->nextcnt && dstem == NULL; i++ ) {
+            tstem = npd->nextstems[i];
+            if ( !tstem->toobig && 
+                ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
+                ( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
+                dstem = tstem;
+        }
+        if ( dstem != NULL )
+    break;
+        if ( IsExtremum( npd->sp,!x_dir ) || IsAnglePoint( npd->sp )) {
+            if ( (&npd->base.x)[!x_dir] < (&pd->base.x)[!x_dir] ) {
+                s = x_dir ? orig_b->minx : orig_b->miny;
+                s_new = x_dir ? new_b->minx : new_b->miny;
+                e = (&pd->base.x)[!x_dir]; e_new = (&pd->newpos.x)[!x_dir];
+            } else {
+                s = (&pd->base.x)[!x_dir]; s_new = (&pd->newpos.x)[!x_dir];
+                e = x_dir ? orig_b->maxx : orig_b->maxy;
+                e_new = x_dir ? new_b->maxx : new_b->maxy;
+            }
+            /* Prevent a zero division error in our interpolation routine in the
+            /* case both the point snapped to a diagonal stem and its next/previous point
+            /* have the same coordinate and lie on the glyph bounding box edge, but the second
+            /* point has not yet been positioned in the given direction. Most designs of a 
+            /* Latin "Z" is a typical example */
+            if ( s == e )
+                (&npd->newpos.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
+            else
+                (&npd->newpos.x)[!x_dir] = InterpolateBetweenEdges( 
+                    gd,(&npd->base.x)[!x_dir],s,e,s_new,e_new,x_dir );
+            npd->touched |= flag;
+            npd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+        }
+        
+        ns = next ? npd->sp->next : npd->sp->prev;
+        if ( ns == NULL )
+    break;
+        npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
+        dot = next ?pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y :
+                    pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
+        off =   ( npd->base.x - pd->base.x )*stem->unit.y -
+                ( npd->base.y - pd->base.y )*stem->unit.x;
+        dist =  (&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir];
+    }
+}
+
+/* If several DStems share one common edge, then use the longer one to
+/* position point on that edge and ignore others. Otherwise we can go
+/* far outside of our bounding box, attempting to find an intersection
+/* of two almost parallel (but still different) vectors */
+static int PreferredDStem( PointData *pd, StemData *stem, int next ) {
+    int i, stemcnt = next ? pd->nextcnt : pd->prevcnt;
+    StemData *tstem;
+    
+    for ( i=0; i<stemcnt; i++ ) {
+        tstem = next ? pd->nextstems[i] : pd->prevstems[i];
+        if ( tstem != stem && !tstem->toobig &&
+            ( tstem->unit.y < -.05 || tstem->unit.y > .05 ) &&
+            ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) && tstem->clen > stem->clen )
+return( false );
+    }
+return( true );
+}
+
+static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcnt,
+    DBounds *orig_b, DBounds *new_b, struct genericchange *genchange ) {
+    
+    int i, is_l, pref_y, nextidx, previdx;
+    PointData *pd, *lfixed=NULL, *rfixed=NULL;
+    double new_hyp, new_w, des_w, dscale, hscale, vscale;
+    double coord_new, min, max, min_new, max_new;
+    BasePoint l_to_r;
+    DBounds stem_b;
+    StemData *hvstem;
+
+    /* Find the ratio by which the stem is going to be downsized in both directions. 
+    /* To do this, we assume each DStem crosses a counter and calculate the ratio by
+    /* comparing the original and resulting size of that counter. For "A" or "V"
+    /* such a "counter" will most probably cover the overall glyph width, while for
+    /* "M" or "N" it will be limited to the space between two vertical stems.
+    /* For the vertical direction we could just use genchange->v_scale instead, but it
+    /* is not guaranteed to be relevant if some blues were mapped to positions,
+    /* different from their default (scaled) values */
+    stem_b.minx = orig_b->minx; stem_b.maxx = orig_b->maxx;
+    GetDStemBounds( gd,stem,&stem_b.minx,&stem_b.maxx,true );
+    min = orig_b->minx; max = orig_b->maxx;
+    min_new = new_b->minx; max_new = new_b->maxx;
+    for ( i=0; i<gd->vbundle->cnt; i++ ) {
+        hvstem = gd->vbundle->stemlist[i];
+        if ( hvstem->left.x >= stem_b.maxx && hvstem->left.x < max ) {
+            max = hvstem->left.x;
+            max_new = hvstem->newleft.x;
+        } else if ( hvstem->right.x <= stem_b.minx && hvstem->right.x > min ) {
+            min = hvstem->right.x;
+            min_new = hvstem->newright.x;
+        }
+    }
+    hscale = ( max_new - min_new )/( max - min );
+    
+    stem_b.miny = orig_b->miny; stem_b.maxy = orig_b->maxy;
+    GetDStemBounds( gd,stem,&stem_b.miny,&stem_b.maxy,false );
+    min = orig_b->miny; max = orig_b->maxy;
+    min_new = new_b->miny; max_new = new_b->maxy;
+    for ( i=0; i<gd->hbundle->cnt; i++ ) {
+        hvstem = gd->hbundle->stemlist[i];
+        if ( hvstem->right.y >= stem_b.maxy && hvstem->right.y < max ) {
+            max = hvstem->right.y;
+            max_new = hvstem->newright.y;
+        } else if ( hvstem->left.y <= stem_b.miny && hvstem->left.y > min ) {
+            min = hvstem->left.y;
+            min_new = hvstem->newleft.y;
+        }
+    }
+    vscale = ( max_new - min_new )/( max - min );
+    
+    /* Now scale positions of the left and right virtual points on the stem
+    /* by the ratios used to resize horizontal and vertical stems. We need
+    /* this solely to calculate the desired stem width */
+    stem->newleft.x = stem->left.x * genchange->stem_width_scale;
+    stem->newleft.y = stem->left.y * genchange->stem_height_scale;
+    stem->newright.x = stem->right.x * genchange->stem_width_scale;
+    stem->newright.y = stem->right.y * genchange->stem_height_scale;
+    stem->newunit.x = stem->unit.x * genchange->stem_width_scale;
+    stem->newunit.y = stem->unit.y * genchange->stem_height_scale;
+    new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
+    stem->newunit.x /= new_hyp;
+    stem->newunit.y /= new_hyp;
+
+    des_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
+            ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
+
+    /* OK, now we know the desired width, so interpolate the coordinates of our
+    /* left and right points to determine where our DStem would probably be
+    /* placed if there were no DStem processor. We are not expecting to get an
+    /* exact result here, but it still would be a good starting point */
+    stem->newleft.x = InterpolateBetweenEdges( 
+        gd,stem->left.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
+    stem->newleft.y = InterpolateBetweenEdges( 
+        gd,stem->left.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
+    stem->newright.x = InterpolateBetweenEdges( 
+        gd,stem->right.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
+    stem->newright.y = InterpolateBetweenEdges( 
+        gd,stem->right.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
+
+    /* Adjust the stem unit vector according to the horizontal and vertical
+    /* ratios we have previously determined */
+    stem->newunit.x = stem->unit.x * hscale;
+    stem->newunit.y = stem->unit.y * vscale;
+    new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
+    stem->newunit.x /= new_hyp;
+    stem->newunit.y /= new_hyp;
+
+    /* Get a possible width of the stem in the scaled glyph. We are going to
+    /* adjust that width then */
+    new_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
+            ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
+    /* Guess at which normal we want */
+    l_to_r.x = stem->newunit.y; l_to_r.y = -stem->newunit.x;
+    /* If we guessed wrong, use the other */
+    if (( stem->newright.x - stem->newleft.x )*l_to_r.x +
+        ( stem->newright.y - stem->newleft.y )*l_to_r.y < 0 ) {
+        l_to_r.x = -l_to_r.x;
+        l_to_r.y = -l_to_r.y;
+    }
+
+    /* Now look if there are any points on the edges of our stem which are already fixed
+    /* both by x and y and thus can no longer be moved */
+    for ( i=0; i<gd->pcnt && ( lfixed == NULL || rfixed == NULL ); i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+        nextidx = IsStemAssignedToPoint( pd,stem,true );
+        previdx = IsStemAssignedToPoint( pd,stem,false );
+        if (( nextidx != -1 || previdx != -1 ) && IsPointFixed( pd )) {
+            is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
+            if ( is_l ) lfixed = pd;
+            else rfixed = pd;
+        }
+    }
+    /* If there are such points at both edges, then we probably can do nothing useful
+    /* with this stem */
+    if ( lfixed != NULL && rfixed != NULL ) {
+        stem->toobig = 1;
+return;
+    }
+    /* If just one edge is fixed, then use it as a base and move another edge to
+    /* maintain the desired stem width */
+    else if ( lfixed != NULL ) {
+        stem->newleft.x = lfixed->newpos.x; stem->newleft.y = lfixed->newpos.y;
+        stem->newright.x = stem->newleft.x + des_w * l_to_r.x;
+        stem->newright.y = stem->newleft.y + des_w * l_to_r.y;
+    } else if ( rfixed != NULL ) {
+        stem->newright.x = rfixed->newpos.x; stem->newright.y = rfixed->newpos.y;
+        stem->newleft.x = stem->newright.x - des_w * l_to_r.x;
+        stem->newleft.y = stem->newright.y - des_w * l_to_r.y;
+    /* Otherwise move both edges to an equal amount of space from their initial
+    /* positions */
+    } else {
+        stem->newleft.x = stem->newleft.x - ( des_w - new_w )/2 * l_to_r.x;
+        stem->newleft.y = stem->newleft.y - ( des_w - new_w )/2 * l_to_r.y;
+        stem->newright.x = stem->newright.x + ( des_w - new_w )/2 * l_to_r.x;
+        stem->newright.y = stem->newright.y + ( des_w - new_w )/2 * l_to_r.y;
+    }
+
+    /* Determine the preferred direction for moving points which have not
+    /* already been touched */
+    pref_y = fabs( stem->unit.y ) > fabs( stem->unit.x );
+    min = pref_y ? orig_b->miny : orig_b->minx;
+    max = pref_y ? orig_b->maxy : orig_b->maxx;
+    min_new = pref_y ? new_b->miny : new_b->minx;
+    max_new = pref_y ? new_b->maxy : new_b->maxx;
+
+    /* Now proceed to positioning points */
+    for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+        nextidx = IsStemAssignedToPoint( pd,stem,true );
+        previdx = IsStemAssignedToPoint( pd,stem,false );
+        if (( nextidx == -1 && previdx == -1 ) || IsPointFixed( pd ))
+    continue;
+        if (( nextidx != -1 && !PreferredDStem( pd,stem,true)) ||
+            ( previdx != -1 && !PreferredDStem( pd,stem,false)))
+    continue;
+        is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
+        /* Move the point to a diagonal line. This doesn't yes guarantees it will
+        /* be placed inside our bounding box */
+        MovePointToDiag( pd,stem,is_l );
+
+        if ( !IsPointFixed( pd )) {
+            /* Interpolate the point between either horizontal or vertical stem
+            /* edges along the preferred direction (determined according to the stem
+            /* unit vector). This will position points still floating outside the bounding
+            /* box and also guarantees e. g. proper point positioning relatively to serifs
+            /* if they have been expanded */
+            coord_new = InterpolateBetweenEdges(
+                gd,(&pd->base.x)[pref_y],min,max,min_new,max_new,!pref_y );
+            if ( pref_y ) {
+                pd->newpos.x += stem->newunit.x * (( coord_new - pd->newpos.y )/stem->newunit.y );
+                pd->newpos.y = coord_new;
+            } else {
+                pd->newpos.y += stem->newunit.y * (( coord_new - pd->newpos.x  )/stem->newunit.x );
+                pd->newpos.x = coord_new;
+            }
+
+            /* Check if there are obvious displacements relatively to stems going in the
+            /* other direction and correct them. For example, the top left point of the diagonal
+            /* stem in a Latin "N" may be moved inside the nearby vertical stem, and we have
+            /* to prevent this */
+            if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,true,is_l,pref_y ))
+                ShiftDependent( gd,pd,stem,orig_b,new_b,true,is_l,pref_y );
+            if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,false,is_l,pref_y ))
+                ShiftDependent( gd,pd,stem,orig_b,new_b,false,is_l,pref_y );
+            ShiftDependent( gd,pd,stem,orig_b,new_b,true,is_l,!pref_y );
+            ShiftDependent( gd,pd,stem,orig_b,new_b,false,is_l,!pref_y );
+         }
+    }
+
+    /* This is to fix relative positioning of starting/terminal points on a diagonal stem
+    /* which starts/finishes with a "stub" (i. e. no terminal serifs or connections with
+    /* other features), like in a slash or less/greater signs. We would expect such points
+    /* to be aligned as in the original outline, even if horizontal and vertical ratios
+    /* were different */
+    dscale = fabs( hscale * stem->unit.x ) + fabs( vscale * stem->unit.y );
+    if ( stem->keypts[0] != stem->keypts[2] && (
+        ( stem->keypts[0]->sp->next->to == stem->keypts[2]->sp ) ||
+        ( stem->keypts[0]->sp->prev->from == stem->keypts[2]->sp )))
+        AlignPointPair( stem,stem->keypts[0],stem->keypts[2],hscale,vscale );
+
+    if ( stem->keypts[1] != stem->keypts[3] && (
+        ( stem->keypts[1]->sp->next->to == stem->keypts[3]->sp ) ||
+        ( stem->keypts[1]->sp->prev->from == stem->keypts[3]->sp )))
+        AlignPointPair( stem,stem->keypts[1],stem->keypts[3],hscale,vscale );
+}
+
+static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange ) {
+    real scale[6];
+    DBounds orig_b, new_b;
+    int i, dcnt = 0, removeoverlap = true;
+    double owidth = orig_sc->width;
+    AnchorPoint *ap;
+    GlyphData *gd;
+    PointData *pd;
+    StemData **dstems = NULL;
+    StrokeInfo si;
+    SplineSet *temp;
+    BlueData bd;
+
+    genchange->dstem_control = true;
+    if ( sc_sc != orig_sc ) {
+        sc_sc->layers[layer].splines = SplinePointListCopy( orig_sc->layers[layer].splines );
+        sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
+    }
+    memset( &bd,0,sizeof( bd ));
+    if ( orig_sc->parent != NULL && orig_sc->parent->mm == NULL )
+	QuickBlues( orig_sc->parent,layer,&bd );
+        
+    if ( genchange->stem_height_add!=0 || genchange->stem_width_add!=0 ) {
+	genchange->stroke_width_add = ( genchange->stem_width_add + genchange->stem_height_add )/2;
+
+	memset( &si,0,sizeof( si ));
+	si.stroke_type = si_std;
+	si.join = lj_miter;
+	si.cap = lc_square;
+	if ( genchange->stroke_width_add >=0 ) {
+	    si.radius = genchange->stroke_width_add/2.;
+	    si.removeinternal = true;
+	} else {
+	    si.radius = -genchange->stroke_width_add/2.;
+	    si.removeexternal = true;
+	}
+	si.removeoverlapifneeded = false;
+	si.toobigwarn = true;
+
+	temp = BoldSSStroke( sc_sc->layers[layer].splines,&si,sc_sc,removeoverlap );
+	SplinePointListsFree( sc_sc->layers[layer].splines );
+	sc_sc->layers[layer].splines = temp;
+
+        /* If stroke has been expanded/condensed, then the old hints are no longer
+        /* relevant; so just remove them and rely solely on the stem detector */
+        StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
+        StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
+        DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
+        
+        /* Resize blues so that GlyphDataBuild() could snap the emboldened stems to them */
+        for ( i=0; i<bd.bluecnt; i++ ) {
+            if ( bd.blues[i][0] < 0 ) {
+                if ( genchange->stroke_width_add > 0  )
+                    bd.blues[i][0] -= genchange->stroke_width_add/2;
+                else
+                    bd.blues[i][1] -= genchange->stroke_width_add/2;
+            } else if ( bd.blues[i][1] > 0 ) {
+                if ( genchange->stroke_width_add > 0 )
+                    bd.blues[i][1] += genchange->stroke_width_add/2;
+                else
+                    bd.blues[i][0] += genchange->stroke_width_add/2;
+            }
+        }
+    }
+
+    SplineCharLayerFindBounds( orig_sc,layer,&orig_b );
+    memcpy( &new_b,&orig_b,sizeof( DBounds ));
+    gd = GlyphDataBuild( sc_sc,layer,&bd,true );
+    if ( gd == NULL )
+return;
+    if ( genchange->stroke_width_add != 0 ) {
+        /* Resize blues back to original values so that stems could be shifted to their original positions */
+        for ( i=0; i<bd.bluecnt; i++ ) {
+            if ( bd.blues[i][0] < 0 ) {
+                if ( genchange->stroke_width_add > 0  )
+                    bd.blues[i][0] += genchange->stroke_width_add/2;
+                else
+                    bd.blues[i][1] += genchange->stroke_width_add/2;
+            } else if ( bd.blues[i][1] > 0 ) {
+                if ( genchange->stroke_width_add > 0  )
+                    bd.blues[i][1] -= genchange->stroke_width_add/2;
+                else
+                    bd.blues[i][0] -= genchange->stroke_width_add/2;
+            }
+        }
+    }
+
+    /* Have to prepare a DStem list before further operations, since they are needed
+    /* to properly calculate counters between vertical stems */
+    if ( genchange->dstem_control ) {
+        dstems = gcalloc( gd->stemcnt,sizeof( StemData *));
+        dcnt = PrepareDStemList( gd,dstems );
+    }
+
+    StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,true );
+    if ( genchange->use_vert_mapping )
+        HStemResize( sc_sc->layers[layer].splines,gd,&orig_b,&new_b,genchange );
+    else
+        StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,false );
+    PosStemPoints( gd,genchange->stem_width_scale,dcnt > 0,true );
+    PosStemPoints( gd,genchange->stem_height_scale,dcnt > 0,false );
+    if ( genchange->dstem_control ) {
+        for ( i=0; i<dcnt; i++ )
+            FixDStem( gd,dstems[i],dstems,dcnt,&orig_b,&new_b,genchange );
+    }
+    /* Our manipulations with DStems may have moved some points outside of 
+    /* borders of the bounding box we have previously calculated. So adjust
+    /* those borders now, as they may be important for point interpolations */
+    for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+        if ( pd->touched & tf_d && pd->newpos.x < new_b.minx )
+            new_b.minx = pd->newpos.x;
+        else if ( pd->touched & tf_d && pd->newpos.x > new_b.maxx )
+            new_b.maxx = pd->newpos.x;
+        if ( pd->touched & tf_d && pd->newpos.y < new_b.miny )
+            new_b.miny = pd->newpos.y;
+        else if ( pd->touched & tf_d && pd->newpos.y > new_b.maxy )
+            new_b.maxy = pd->newpos.y;
+    }
+    InterpolateStrong( gd,&orig_b,&new_b,true );
+    InterpolateStrong( gd,&orig_b,&new_b,false );
+    InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_width_scale,true );
+    InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_height_scale,false );
+    InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,genchange->hcounter_scale,true );
+    InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,
+        genchange->use_vert_mapping ? genchange->vcounter_scale : genchange->v_scale,false );
+
+    /* Finally move every point to its new location */
+    for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+        pd = &gd->points[i];
+        pd->sp->me.x = pd->newpos.x;
+        pd->sp->me.y = pd->newpos.y;
+        if ( !pd->sp->nonextcp ) {
+            pd->sp->nextcp.x = pd->newnext.x;
+            pd->sp->nextcp.y = pd->newnext.y;
+        }
+        if ( !pd->sp->noprevcp ) {
+            pd->sp->prevcp.x = pd->newprev.x;
+            pd->sp->prevcp.y = pd->newprev.y;
+        }
+    }
+    SplineSetRefigure(sc_sc->layers[layer].splines);
+    SplineCharLayerFindBounds(sc_sc,layer,&new_b);
+
+    /* Set the left and right side bearings appropriately */
+    memset(scale,0,sizeof(scale));
+    scale[0] = scale[3] = 1;
+    if ( genchange->center_in_hor_advance )
+	scale[4] = ( owidth - ( new_b.maxx - new_b.minx ))/2.0 - new_b.minx;
+    else
+	scale[4] = orig_b.minx*genchange->lsb_scale + genchange->lsb_add - new_b.minx;
+    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
+	ap->me.x += scale[4];
+    SplineCharLayerFindBounds( sc_sc,layer,&new_b );
+    if ( !genchange->center_in_hor_advance )
+	sc_sc->width = ( owidth-orig_b.maxx )*genchange->rsb_scale + genchange->rsb_add + new_b.maxx;
+
+    /* If it is a subscript/superscript glyph, then move it to the desired vertical position */
+    memset(scale,0,sizeof(scale));
+    scale[0] = scale[3] = 1;
+    scale[5] = genchange->vertical_offset;
+    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
+	ap->me.y += genchange->vertical_offset;
+
+    if ( genchange->tan_ia!=0 ) {
+        scale[0] = scale[3] = 1;
+        scale[2] = -genchange->tan_ia;
+        scale[5] = 0;
+        SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+        for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
+            BasePoint me;
+            me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
+            me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
+            ap->me = me;
+        }
+    }
+
+    if ( genchange->dstem_control )
+        free( dstems );
+    GlyphDataFree( gd );
+    StemInfosFree( sc_sc->hstem );  sc_sc->hstem = NULL;
+    StemInfosFree( sc_sc->vstem );  sc_sc->vstem = NULL;
+    DStemInfosFree( sc_sc->dstem ); sc_sc->dstem = NULL;
+    SCRound2Int( sc_sc,layer, 1.0 );		/* This calls SCCharChangedUpdate(sc_sc,layer); */
 }
 
 /* ************************************************************************** */
@@ -537,35 +2035,6 @@ static double SCFindCounterLen(StemInfo *hints,double min_coord,
 return( counter_len );
 }
 
-static int IsAnglePoint(SplinePoint *sp) {
-    SplinePoint *psp, *nsp;
-    double PrevTangent, NextTangent;
-
-    if (sp->next == NULL || sp->prev == NULL || 
-        sp->pointtype != pt_corner || sp->ttfindex == 0xffff)
-return( false );
-
-    psp = sp->prev->from;
-    nsp = sp->next->to;
-    PrevTangent = atan2(sp->me.y - psp->me.y, sp->me.x - psp->me.x);
-    NextTangent = atan2(nsp->me.y - sp->me.y, nsp->me.x - sp->me.x);
-
-return fabs(PrevTangent - NextTangent) > 0.261;
-}
-
-static int IsExtremum(SplinePoint *sp,int xdir) {
-    SplinePoint *psp, *nsp;
-    double val = (&sp->me.x)[xdir];
-    
-    if (sp->next == NULL || sp->prev == NULL )
-return( false );
-
-    psp = sp->prev->from;
-    nsp = sp->next->to;
-return ((val < (&psp->me.x)[xdir] && val < (&nsp->me.x)[xdir]) ||
-        (val > (&psp->me.x)[xdir] && val > (&nsp->me.x)[xdir]));
-}
-
 static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	int coord, StemInfo *hints,
 	struct overlaps *overlaps, int tot) {
@@ -886,64 +2355,6 @@ return( 0 );
 return( remove );
 }
 
-static double SmallCapsScaleCounters(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,
-	double factor, double add, double stem_f, double stem_a,
-	double min_coord, double max_coord ) {
-    struct overlaps *overlaps;
-    int i, tot;
-    double counter_len;
-    double zpos, removed;
-
-    /* This is a variant on the previous routine. Instead of removing a given */
-    /*  amount to be spread out among all the counters, here we attempt to */
-    /*  scale each counter by a factor and potentially add/subtract to it */
-
-    /* Coalesce overlapping hint zones. These won't shrink, but the counters */
-    /*  between them will */
-    overlaps = SCFindHintOverlaps(hints, min_coord, max_coord, &tot, &counter_len );
-    /* A glyph need not have any counters at all (lower case "l" doesn't) */
-    if ( counter_len==0 ) {
-	free( overlaps );
-return( 0 );
-    }
-
-    zpos=3e40;
-
-    overlaps[0].new_start = overlaps[0].start;
-    overlaps[0].new_stop  = overlaps[0].stop;
-    if ( 0<=overlaps[0].stop )
-	zpos = 0;
-    removed = 0;
-    for ( i=1; i<tot; ++i ) {
-	double diff    = overlaps[i].start - overlaps[i-1].stop;
-	double olddiff = diff/stem_f + (i!=1 && i!=tot-1 ? stem_a : stem_a/2);
-	double newdiff = factor*olddiff + add;
-	if ( diff==0 ) newdiff = 0;
-	if ( 4*newdiff<diff )
-	    newdiff = diff/4;
-	removed += newdiff-diff;
-	overlaps[i].new_start = overlaps[i-1].new_stop + newdiff;
-	overlaps[i].new_stop  = overlaps[i].new_start + (overlaps[i].stop - overlaps[i].start);
-	if ( 0>=overlaps[i-1].stop && 0<=overlaps[i].start )
-	    zpos = overlaps[i-1].new_stop +
-		    (0-overlaps[i-1].stop) *
-		     (overlaps[i].new_start - overlaps[i-1].new_stop) /
-		     (overlaps[i].start - overlaps[i-1].stop);
-	else if ( 0>overlaps[i].start && 0<=overlaps[i].stop )
-	    zpos = overlaps[i].new_start + (0-overlaps[i].start);
-    }
-    if ( zpos!=0 && zpos!=3e40 ) {
-	for ( i=0; i<tot; ++i ) {
-	    overlaps[i].new_start -= zpos;
-	    overlaps[i].new_stop  -= zpos;
-	}
-    }
-
-    SmallCapsPlacePoints(ss,aps,coord,hints,overlaps, tot);
-    free(overlaps);
-return( removed );
-}
-
 static void LowerCaseRemoveSpace(SplineSet *ss,AnchorPoint *aps,StemInfo *hints,int coord,
 	struct fixed_maps *fix ) {
     struct overlaps *overlaps;
@@ -1028,228 +2439,6 @@ return;
 
     SmallCapsPlacePoints(ss,aps,coord,hints,overlaps, tot);
     free(overlaps);
-}
-
-static void SplineSetRefigure(SplineSet *ss) {
-    Spline *s, *first;
-
-    while ( ss!=NULL ) {
-	first = NULL;
-	for ( s=ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
-	    if ( first == NULL ) first = s;
-	    SplineRefigure(s);
-	}
-	ss = ss->next;
-    }
-}
-
-static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
-    SplineSet *temp;
-    Spline *s1, *s2;
-
-    /* We don't want to use the remove overlap built into SSStroke because */
-    /*  only looks at one contour at a time, but we need to look at all together */
-    /*  else we might get some unreal internal hints that will screw up */
-    /*  counter correction */
-    temp = SSStroke(ss,si,sc);
-    if ( ro && temp!=NULL && SplineSetIntersect(temp,&s1,&s2))
-	temp = SplineSetRemoveOverlap(sc,temp,over_remove);
-return( temp );
-}
-
-static void PerformGenericChange(SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange) {
-    real scale[6];
-    DBounds orig_b, sc_b;
-    int owidth = orig_sc->width;
-    extern int no_windowing_ui;
-    int nwi = no_windowing_ui;
-    AnchorPoint *ap;
-    StrokeInfo si;
-    int removeoverlap = true;
-    SplineSet *temp;
-    int i;
-    struct fixed_maps fix;
-
-    SplineCharLayerFindBounds(orig_sc,layer,&orig_b);
-
-    memset(scale,0,sizeof(scale));
-    scale[0] = genchange->stem_width_scale;
-    scale[3] = genchange->stem_height_scale;
-    scale[2] = genchange->stem_width_scale * genchange->tan_ia;
-
-    if ( orig_sc!=sc_sc ) {
-	sc_sc->layers[layer].splines = SplinePointListCopy(
-		orig_sc->layers[layer].splines);
-	sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
-	sc_sc->width  = orig_sc->width;
-    }
-    if ( genchange->stem_height_add==0 || genchange->stem_width_add==0 ) {
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-    } else {
-	double ratio = genchange->stem_height_add/genchange->stem_width_add;
-	double add;
-	if ( ratio>1 ) {
-	    add = genchange->stem_width_add;
-	    scale[3] /= ratio;
-	} else {
-	    add = genchange->stem_height_add;
-	    scale[0] *= ratio;
-	    scale[2] *= ratio;
-	}
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-
-	memset(&si,0,sizeof(si));
-	si.stroke_type = si_std;
-	si.join = lj_miter;
-	si.cap = lc_square;
-	if ( add>=0 ) {
-	    si.radius = add/2.;
-	    si.removeinternal = true;
-	} else {
-	    si.radius = -add/2.;
-	    si.removeexternal = true;
-	}
-	si.removeoverlapifneeded = false;
-	si.toobigwarn = true;
-
-	temp = BoldSSStroke(sc_sc->layers[layer].splines,&si,sc_sc,removeoverlap);
-	SplinePointListsFree( sc_sc->layers[layer].splines );
-	sc_sc->layers[layer].splines = temp;
-	if ( ratio!=1.0 ) {
-	    scale[0] = scale[3] = 1; scale[2] = 0;
-	    if ( ratio>1 )
-		scale[3] = ratio;
-	    else
-		scale[0] = 1/ratio;
-	}
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-    }
-
-    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
-	BasePoint me;
-	me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
-	me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
-	ap->me = me;
-    }
-    no_windowing_ui = true;		/* Turn off undoes */
-    SplineCharAutoHint(sc_sc,layer,NULL);
-    no_windowing_ui = nwi;
-
-    SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-
-    /* When we get here, we have scaled the stems of our glyph appropriately */
-    /*  now we must fix up the counters */
-
-    /* Horizontal first */
-    SmallCapsScaleCounters( sc_sc->layers[layer].splines, sc_sc->anchor,
-	    sc_sc->vstem, 0,
-	    genchange->hcounter_scale, genchange->hcounter_add,
-	    genchange->stem_width_scale, genchange->stem_width_add,
-	    sc_b.minx, sc_b.maxx);
-
-    /* Vertical positions may be mapped, or counters may be manipulated as above */
-    if ( !genchange->use_vert_mapping ) {
-	SmallCapsScaleCounters( sc_sc->layers[layer].splines, sc_sc->anchor,
-		sc_sc->hstem, 1,
-		genchange->vcounter_scale, genchange->vcounter_add,
-		genchange->stem_height_scale, genchange->stem_height_add,
-		sc_b.miny, sc_b.maxy);
-    } else {
-	int l=0;
-	int donelast=false;
-	memset(&fix,0,sizeof(fix));
-	fix.maps = genchange->g.maps;
-	fix.maps[l].current = sc_b.miny;
-	fix.maps[l++].desired = orig_b.miny*genchange->v_scale;
-	for ( i=0; i<genchange->m.cnt; ++i ) {
-	    double curpos;
-	    if ( !genchange->m.maps[i].isserif ) {
-		if ( genchange->m.maps[i].current>0 )
-		    curpos = genchange->m.maps[i].current + genchange->stem_height_add/2;
-		else
-		    curpos = genchange->m.maps[i].current - genchange->stem_height_add/2;
-	    } else {
-		int spos;
-		/* The map is ordered */
-		if ( i==0 )
-		    spos = 1;
-		else if ( i==genchange->m.cnt-1 )
-		    spos = i-1;
-		else if ( genchange->m.maps[i].current - genchange->m.maps[i-1].current
-				>
-			genchange->m.maps[i+1].current - genchange->m.maps[i].current )
-		    spos = i+1;
-		else
-		    spos = i-1;
-		if ( spos>i )
-		    curpos = genchange->m.maps[i].current + genchange->stem_height_add/2;
-		else
-		    curpos = genchange->m.maps[i].current - genchange->stem_height_add/2;
-	    }
-	    if ( RealWithin(curpos,sc_b.miny,1.0) )
-		fix.maps[l-1].desired = genchange->m.maps[i].desired;
-	    else if ( RealWithin(curpos,sc_b.maxy,1.0) ||
-		    ( curpos > sc_b.miny && curpos < sc_b.maxy )) {
-		fix.maps[l].isserif   = genchange->m.maps[i].isserif;
-		fix.maps[l].current   = curpos;
-		fix.maps[l++].desired = genchange->m.maps[i].desired;
-		donelast = RealWithin(curpos,sc_b.maxy,1.0);
-	    }
-	}
-	if ( !donelast ) {
-	    fix.maps[l].current   = sc_b.maxy;
-	    fix.maps[l++].desired = orig_b.maxy*genchange->v_scale;
-	}
-	if ( fix.maps[0].desired > fix.maps[1].desired )
-	    fix.maps[0].desired = fix.maps[1].desired +
-		    genchange->v_scale * (fix.maps[0].current - fix.maps[1].current);
-	if ( fix.maps[l-1].desired < fix.maps[l-2].desired )
-	    fix.maps[l-1].desired = fix.maps[l-2].desired +
-		    genchange->v_scale * (fix.maps[l-1].current - fix.maps[l-2].current);
-	fix.cnt = l;
-	LowerCaseRemoveSpace(sc_sc->layers[layer].splines,sc_sc->anchor,
-		sc_sc->hstem,1,&fix);
-    }
-    SplineSetRefigure(sc_sc->layers[layer].splines);
-
-    /* Set the left and right side bearings appropriately */
-    memset(scale,0,sizeof(scale));
-    scale[0] = scale[3] = 1;
-    if ( genchange->center_in_hor_advance ) {
-	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	scale[4] = (sc_sc->width - (sc_b.maxx -sc_b.maxy))/2.0;
-    } else {
-	scale[4] = orig_b.minx*genchange->lsb_scale + genchange->lsb_add - sc_b.minx;
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
-	    ap->me.x += scale[4];
-	SplineCharLayerFindBounds(sc_sc,layer,&sc_b);
-	sc_sc->width = (owidth-orig_b.maxx)*genchange->rsb_scale + genchange->rsb_add + sc_b.maxx;
-    }
-
-    memset(scale,0,sizeof(scale));
-    scale[0] = scale[3] = 1;
-    scale[5] = genchange->vertical_offset;
-    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-    for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
-	ap->me.y += genchange->vertical_offset;
-
-    if ( genchange->tan_ia!=0 ) {
-	scale[0] = scale[3] = 1;
-	scale[2] = -genchange->tan_ia;
-	scale[5] = 0;
-	SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
-	for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next ) {
-	    BasePoint me;
-	    me.x = scale[0]*ap->me.x + scale[2]*ap->me.y + scale[4];
-	    me.y = scale[1]*ap->me.x + scale[3]*ap->me.y + scale[5];
-	    ap->me = me;
-	}
-    }
-    StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
-    StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
-    DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
-    SCRound2Int(sc_sc,layer, 1.0);		/* This calls SCCharChangedUpdate(sc_sc,layer); */
 }
 
 static void BuildSCLigatures(SplineChar *sc_sc,SplineChar *cap_sc,int layer,
@@ -1378,7 +2567,7 @@ return;
 		if ( sc->unicodeenc==0xdf || (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06))
 		    BuildSCLigatures(sc_sc,sc,fv->active_layer,genchange);
 		else
-		    PerformGenericChange(sc_sc,sc,fv->active_layer,genchange);
+                    ChangeGlyph( sc_sc,sc,fv->active_layer,genchange );
       end_loop:
 		if ( !ff_progress_next())
     break;
@@ -1548,8 +2737,10 @@ void FVGenericChange(FontViewBase *fv, struct genericchange *genchange) {
     if ( sf->cidmaster!=NULL )
 return;		/* Can't randomly add things to a CID keyed font */
 
-    genchange->italic_angle = genchange->small->italic_angle;
-    genchange->tan_ia = genchange->small->tan_ia;
+    if ( genchange->small != NULL ) {
+        genchange->italic_angle = genchange->small->italic_angle;
+        genchange->tan_ia = genchange->small->tan_ia;
+    }
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
 	sc->ticked = false;
@@ -1607,7 +2798,7 @@ return;
 	    }
 	    if ( achar==NULL )
 		achar = sc_sc;
-	    PerformGenericChange(sc_sc,sc,fv->active_layer,genchange);
+            ChangeGlyph( sc_sc,sc,fv->active_layer,genchange );
       end_loop:
 	    if ( !ff_progress_next())
     break;
@@ -1711,7 +2902,7 @@ SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheight
     genchange.v_scale           = vscale !=-1 ? vscale  : hscale;
     genchange.lsb_scale = genchange.rsb_scale = genchange.hcounter_scale;
 
-    PerformGenericChange(&dummy,&dummy,ly_fore,&genchange);
+    ChangeGlyph( &dummy,&dummy,ly_fore,&genchange );
 return( ss );
 }
 
@@ -5040,7 +6231,7 @@ return;
     genchange.hcounter_scale    = genchange.v_scale;
     genchange.lsb_scale = genchange.rsb_scale = genchange.v_scale;
 
-    PerformGenericChange(sc,uc,layer,&genchange);
+    ChangeGlyph( sc,uc,layer,&genchange );
 }
 
 static void Ital_a_From_d(SplineChar *sc,int layer, ItalicInfo *ii) {
