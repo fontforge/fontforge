@@ -1256,6 +1256,35 @@ return( bp1->x - bp2->x > 32767 || bp2->x - bp1->x > 32767 ||
 	bp1->y - bp2->y > 32767 || bp2->y - bp1->y > 32767 );
 }
 
+AnchorClass *SCValidateAnchors(SplineChar *sc) {
+    SplineFont *sf = sc->parent;
+    AnchorClass *ac;
+    AnchorPoint *ap;
+
+    if ( sf==NULL )
+return( NULL );
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	ac->ticked = 0;
+	ac->subtable->ticked = 0;
+    }
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->type==at_basechar || ap->type==at_basemark ) {
+	    ac = ap->anchor;
+	    ac->ticked = true;
+	    ac->subtable->ticked = true;
+	}
+    }
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( !ac->ticked && ac->subtable->ticked )
+return( ac );
+    }
+return( NULL );
+}
+
 int SCValidate(SplineChar *sc, int layer, int force) {
     SplineSet *ss;
     Spline *s1, *s2, *s, *first;
@@ -1494,6 +1523,10 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	    sc->layers[layer].validation_state |= vs_maxp_refstoodeep|vs_known;
     }
   end:;
+    /* This test is intentionally here and should be done even if the glyph */
+    /*  hasn't changed. If the lookup changed it could make the glyph invalid */
+    if ( SCValidateAnchors(sc)!=NULL )
+	sc->layers[layer].validation_state |= vs_missinganchor;
 
     sc->layers[layer].validation_state |= vs_known;
     if ( sc->unlink_rm_ovrlp_save_undo )
@@ -1538,7 +1571,9 @@ int SFValidate(SplineFont *sf, int layer, int force) {
 		SCValidate(sc,layer,true);
 		if ( !ff_progress_next())
 return( -1 );
-	    }
+	    } else if ( SCValidateAnchors(sc)!=NULL )
+		sc->layers[layer].validation_state |= vs_missinganchor;
+	    
 	    if ( sc->unlink_rm_ovrlp_save_undo )
 		any |= sc->layers[layer].validation_state&~vs_selfintersects;
 	    else

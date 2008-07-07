@@ -70,6 +70,7 @@ struct problems {
     unsigned int multuni: 1;
     unsigned int multname: 1;
     unsigned int uninamemismatch: 1;
+    unsigned int missinganchor: 1;
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
     unsigned int missingscriptinfeature: 1;
@@ -103,6 +104,7 @@ struct problems {
     CharView *cvopened;
     char *badsubsname;
     struct lookup_subtable *badsubs_lsubtable;
+    AnchorClass *missinganchor_class;
     int rpl_cnt, rpl_max;
     struct mgrpl {
 	char *search;
@@ -125,7 +127,7 @@ static int hintwidth=0, direction=0, flippedrefs=0, bitmaps=0, bitmapwidths=0;
 static int cidblank=0, cidmultiple=0, advancewidth=0, vadvancewidth=0;
 static int bbymax=0, bbymin=0, bbxmax=0, bbxmin=0;
 static int irrelevantcp=0, missingglyph=0, missingscriptinfeature=0;
-static int badsubs=0, toomanypoints=0, pointsmax = 1500;
+static int badsubs=0, missinganchor=0, toomanypoints=0, pointsmax = 1500;
 static int multuni=0, multname=0, uninamemismatch=0;
 static int toomanyhints=0, hintsmax=96, toodeeprefs=0, refdepthmax=9;
 static int ptmatchrefsoutofdate=0, refsbadtransformttf=0, refsbadtransformps=0;
@@ -199,6 +201,7 @@ static SplineFont *lastsf=NULL;
 #define CID_NonIntegral		1056
 #define CID_PointsTooFar	1057
 #define CID_BitmapWidths	1058
+#define CID_MissingAnchor	1059
 
 
 static void FixIt(struct problems *p) {
@@ -475,7 +478,7 @@ static void ExplainIt(struct problems *p, SplineChar *sc, char *explain,
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[9];
     GTextInfo label[9];
-    char buf[100];
+    char buf[200];
     SplinePointList *spl; Spline *spline, *first;
     int fixable;
 
@@ -589,6 +592,11 @@ return;
 	snprintf(buf,sizeof(buf),
 		_("%2$.20s refers to an empty character \"%1$.20s\""), p->badsubsname,
 		p->badsubs_lsubtable->subtable_name );
+    } else if ( explain==_("This glyph contains anchor points from some, but not all anchor classes in a subtable") ) {
+	snprintf(buf,sizeof(buf),
+		_("There is no anchor for class %1$.30s in subtable %2$.30s"),
+		p->missinganchor_class->name,
+		p->missinganchor_class->subtable->subtable_name );
     } else if ( explain==_("This glyph has the same unicode code point as the glyph named") ) {
 	snprintf(buf,sizeof(buf), _("%.40s"), p->glyphname );
     } else if ( explain==_("This glyph has the same name as the glyph at encoding") ) {
@@ -1893,6 +1901,18 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->missinganchor && !p->finish ) {
+	forever {
+	    p->missinganchor_class = SCValidateAnchors(sc);
+	    if ( p->missinganchor_class == NULL )
+	break;
+	    ExplainIt(p,sc,_("This glyph contains anchor points from some, but not all anchor classes in a subtable"),0,0);
+	    if ( p->ignorethis )
+		p->missinganchor = false;
+	break;
+	}
+    }
+
     if ( p->multuni && !p->finish && strcmp(sc->name,".notdef")!=0 && sc->unicodeenc!=-1 ) {
 	SplineFont *sf = sc->parent;
 	int i;
@@ -2714,7 +2734,8 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
-	    CID_BadSubs, CID_MissingGlyph, CID_MissingScriptInFeature,
+	    CID_BadSubs, CID_MissingAnchor, CID_MissingGlyph,
+	    CID_MissingScriptInFeature,
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
 	    CID_TooManyHints, CID_TooDeepRefs, CID_BitmapWidths,
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
@@ -2770,6 +2791,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
+	missinganchor = p->missinganchor = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingAnchor));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
@@ -2829,7 +2851,7 @@ return( true );
 		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
-		p->bitmapwidths ||
+		p->bitmapwidths || p->missinganchor ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
 		p->missingscriptinfeature || nonintegral || pointstoofar ||
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
@@ -2861,6 +2883,7 @@ static void DummyFindProblems(CharView *cv) {
     p.toomanyhints = true;
     p.pointstoofar = true;
     p.nonintegral = true;
+    p.missinganchor = true;
 
     p.pointsmax = 1500;
     p.hintsmax = 96;
@@ -2907,16 +2930,16 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[15], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
+    GGadgetCreateData pgcd[15], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[7], rfgcd[9];
     GGadgetCreateData bbgcd[14];
     GGadgetCreateData pboxes[6], paboxes[4], rfboxes[4], hboxes[5], aboxes[2],
 	    cboxes[2], bbboxes[2], rboxes[2], mboxes[5];
     GGadgetCreateData *parray[12], *pharray1[4], *pharray2[4], *pharray3[7],
 	    *paarray[8], *paharray[4], *rfarray[8], *rfharray[4],
-	    *harray[8], *hharray1[4], *hharray2[4], *hharray3[4], *aarray[5],
+	    *harray[8], *hharray1[4], *hharray2[4], *hharray3[4], *aarray[6],
 	    *carray[5], *bbarray[8][4], *rarray[7], *marray[7][2],
 	    *mharray1[4], *mharray2[5], *barray[10];
-    GTextInfo plabel[15], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[6], rflabel[9];
+    GTextInfo plabel[15], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[7], rflabel[9];
     GTextInfo bblabel[14];
     GTabInfo aspects[9];
     struct problems p;
@@ -3799,7 +3822,22 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[2].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
     agcd[2].gd.cid = CID_BadSubs;
     agcd[2].creator = GCheckBoxCreate;
-    aarray[2] = &agcd[2]; aarray[3] = GCD_Glue; aarray[4] = NULL;
+    aarray[2] = &agcd[2];
+
+    alabel[3].text = (unichar_t *) _("Check for incomplete mark to base subtables");
+    alabel[3].text_is_1byte = true;
+    agcd[3].gd.label = &alabel[3];
+    agcd[3].gd.pos.x = 3; agcd[3].gd.pos.y = agcd[1].gd.pos.y+15; 
+    agcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( missinganchor ) agcd[3].gd.flags |= gg_cb_on;
+    agcd[3].gd.popup_msg = (unichar_t *) _(
+	"The OpenType documentation suggests in a rather confusing way\n"
+	"that if a base glyph (or base mark) contains an anchor point\n"
+	"for one class in a lookup subtable, then it should contain\n"
+	"anchors for all classes in the subtable" );
+    agcd[3].gd.cid = CID_MissingAnchor;
+    agcd[3].creator = GCheckBoxCreate;
+    aarray[3] = &agcd[3]; aarray[4] = GCD_Glue; aarray[5] = NULL;
 
     aboxes[0].gd.flags = gg_enabled|gg_visible;
     aboxes[0].gd.u.boxelements = aarray;
@@ -4038,7 +4076,8 @@ static char *vserrornames[] = {
     NULL,		/* Maxp references too deep */
     NULL,		/* prep or fpgm too long */
     N_("Distance between adjacent points is too big"),
-    N_("Non-integral coordinates")
+    N_("Non-integral coordinates"),
+    N_("Contains anchor points for some, but not all, classes in a subtable")
 };
 
 static char *privateerrornames[] = {
@@ -5069,8 +5108,8 @@ static int vwv_e_h(GWindow gw, GEvent *event) {
 	if ( vw->recheck==NULL ) {
 	    vw->recheck = GDrawRequestTimer(vw->v,500,500,NULL);
 	    VWCheckup(vw);
-	} else
-	    VWDrawWindow(gw,vw,event);
+	}
+	VWDrawWindow(gw,vw,event);
       break;
       case et_mouseup:
       case et_mousedown:
