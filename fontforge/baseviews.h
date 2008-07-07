@@ -425,6 +425,7 @@ extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff);
 extern void skewselect(BVTFunc *bvtf,real t);
+extern void BCExpandBitmapToEmBox(BDFChar *bc, int xmin, int ymin, int xmax, int ymax);
 
 extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
