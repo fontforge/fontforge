@@ -2869,10 +2869,6 @@ return( 0 );
 	gcd[k++].creator = GRadioCreate;
 	parray[0][2] = &gcd[k-1]; parray[0][3] = NULL;
 
-	label[k].text = (unichar_t *) _("");
-	label[k].image_precedes = false;
-	label[k].text_is_1byte = true;
-	gcd[k].gd.label = &label[k];
 	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup | gg_rad_continueold);
 	gcd[k].gd.popup_msg = (unichar_t *) _("If you have already created a preview image of the font\nthen provide the pathspec here.");
 	gcd[k].gd.cid = CID_OFLibDiskPreview;
