@@ -1143,6 +1143,8 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
 		x,y, src->width, src->height );
 	fg = trans==1?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[1]:COLOR_CREATE(0xff,0xff,0xff));
 	bg = trans==0?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[0]:COLOR_CREATE(0,0,0));
+	fg |= (gdisp)->cs.alpha_bits;
+	bg |= (gdisp)->cs.alpha_bits;
 	if ( /*bg!=fg || fg!=0*/ true ) {
 #ifdef _BrokenBitmapImages
 	    /* See the comment at _GXDraw_Image about why this works */
@@ -1156,10 +1158,10 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
     } else {
 	XSetForeground(display,gc,
 		_GXDraw_GetScreenPixel(gdisp,
-		    clut!=NULL?clut->clut[1]:COLOR_CREATE(0xff,0xff,0xff)));
+		    clut!=NULL?clut->clut[1]:COLOR_CREATE(0xff,0xff,0xff)) | (gdisp)->cs.alpha_bits);
 	XSetBackground(display,gc,
 		_GXDraw_GetScreenPixel(gdisp,
-		    clut!=NULL?clut->clut[0]:COLOR_CREATE(0,0,0)));
+		    clut!=NULL?clut->clut[0]:COLOR_CREATE(0,0,0)) | (gdisp)->cs.alpha_bits);
     }
     XPutImage(display,w->w,gc,xi,src->x,src->y,
 	    x,y, src->width, src->height );
