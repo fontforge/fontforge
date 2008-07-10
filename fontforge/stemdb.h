@@ -50,6 +50,7 @@ typedef struct glyphdata {
     struct linedata *lines;
     struct stembundle *hbundle;
     struct stembundle *vbundle;
+    struct stembundle *ibundle;
 
     /* Temporary values, quickly freed */
     int mcnt;
@@ -148,6 +149,7 @@ typedef struct stemdata {
     uint8 ghost;
     uint8 bbox;
     uint8 ldone, rdone;
+    uint8 italic;
     int blue;			/* Blue zone a ghost hint is attached to */
     double len, clen;		/* Length of linear segments. clen adds "length" of curved bits */
     struct stembundle *bundle;
