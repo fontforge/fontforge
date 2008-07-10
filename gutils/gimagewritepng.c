@@ -176,6 +176,9 @@ return(false);
        }
    } else {
        info_ptr->color_type = PNG_COLOR_TYPE_RGB;
+       if ( base->image_type == it_rgba )
+	   info_ptr->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+
        if ( base->trans!=-1 ) {
 	   info_ptr->trans_values.red = COLOR_RED(base->trans);
 	   info_ptr->trans_values.green = COLOR_GREEN(base->trans);

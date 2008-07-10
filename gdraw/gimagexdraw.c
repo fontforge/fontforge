@@ -145,6 +145,57 @@ static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
     }
 }
 
+static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j,end;
+    unsigned int index;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    uint32 *pt;
+    uint8 *ipt, *mpt;
+    short *g_d;
+    register int gd;
+    int bit;
+
+    for ( i=src->width-1; i>=0; --i )
+	gdisp->gg.green_dith[i] = 0;
+
+    end = src->width;
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	if ( gdisp->gg.img->bitmap_bit_order == MSBFirst )
+	    bit = 0x80;
+	else
+	    bit = 0x1;
+	gd = 0;
+	g_d = gdisp->gg.green_dith;
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( index==trans || (index>>24)<0x80 ) {
+		*mpt |= bit;
+		*ipt &= ~bit;
+		++g_d;
+	    } else {
+		*mpt &= ~bit;
+		gd += *g_d + COLOR_RED(index) + COLOR_GREEN(index) + COLOR_BLUE(index);
+		if ( gd<3*128 ) {
+		    *ipt &= ~bit;
+		    *g_d++ = gd /= 2;
+		} else {
+		    *ipt |= bit;
+		    *g_d++ = gd = (gd - 3*255)/2;
+		}
+	    }
+	    if ( gdisp->gg.img->bitmap_bit_order == MSBFirst ) {
+		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt; ++mpt;};
+	    } else {
+		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt; ++mpt;};
+	    }
+	}
+    }
+}
+
 static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     int i,j,end, index;
@@ -422,6 +473,70 @@ static void gdraw_32_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
     }
 }
 
+static void gdraw_32a_on_8_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    uint32 *pt, index;
+    uint8 *ipt, *mpt;
+    short *r_d, *g_d, *b_d;
+    register int rd, gd, bd;
+    const struct gcol *pos;
+#if FAST_BITS
+    int mbit;
+#endif
+
+    for ( i=src->width-1; i>=0; --i )
+	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+#if FAST_BITS
+	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
+	    mbit = 0x80;
+	else
+	    mbit = 0x1;
+#endif
+	rd = gd = bd = 0;
+	r_d = gdisp->gg.red_dith; g_d = gdisp->gg.green_dith; b_d = gdisp->gg.blue_dith;
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( index==trans || (index>>24)<0x80 ) {
+#if FAST_BITS==0
+		*mpt++ = 0xff;
+#else
+		*mpt |= mbit;
+#endif
+		*ipt++ = 0x00;
+		++r_d; ++g_d; ++b_d;
+	    } else {
+		rd += *r_d + ((index>>16)&0xff); if ( rd<0 ) rd=0; else if ( rd>255 ) rd = 255;
+		gd += *g_d + ((index>>8)&0xff); if ( gd<0 ) gd=0; else if ( gd>255 ) gd = 255;
+		bd += *b_d + (index&0xff); if ( bd<0 ) bd=0; else if ( bd>255 ) bd = 255;
+		pos = _GImage_GetIndexedPixel(COLOR_CREATE(rd,gd,bd),gdisp->cs.rev);
+		*ipt++ = pos->pixel;
+		*r_d++ = rd = (rd - pos->red)/2;
+		*g_d++ = gd = (gd - pos->green)/2;
+		*b_d++ = bd = (bd - pos->blue)/2;
+#if FAST_BITS==0
+		*mpt++ = 0;
+#else
+		*mpt &= ~mbit;
+#endif
+	    }
+#if FAST_BITS
+	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
+		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;};
+	    } else {
+		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;};
+	    }
+#endif
+	}
+    }
+}
+
 static void gdraw_32_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -445,6 +560,54 @@ static void gdraw_32_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *imag
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    if ( index==trans ) {
+#if FAST_BITS==0
+		*mpt++ = 0xff;
+#else
+		*mpt |= mbit;
+#endif
+		*ipt++ = 0x00;
+	    } else {
+		*ipt++ = _GXDraw_GetScreenPixel(gdisp,index);
+#if FAST_BITS==0
+		*mpt++ = 0;
+#else
+		*mpt &= ~mbit;
+#endif
+	    }
+#if FAST_BITS
+	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
+		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;};
+	    } else {
+		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;};
+	    }
+#endif
+	}
+    }
+}
+
+static void gdraw_32a_on_8_nomag_nodithered(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    uint32 *pt, index;
+    register uint8 *ipt, *mpt;
+#if FAST_BITS
+    int mbit;
+#endif
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+#if FAST_BITS
+	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
+	    mbit = 0x80;
+	else
+	    mbit = 0x1;
+#endif
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( (index==trans && trans!=-1 ) || (index>>24)<0x80 ) {
 #if FAST_BITS==0
 		*mpt++ = 0xff;
 #else
@@ -698,6 +861,62 @@ static void gdraw_32_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     }
 }
 
+static void gdraw_32a_on_16_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    register uint32 *pt, index;
+    register uint16 *ipt;
+    int endian_mismatch = gdisp->endian_mismatch;
+#if FAST_BITS==0
+    register uint16 *mpt;
+#else
+    register uint8 *mpt;
+    int mbit;
+#endif
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+#if FAST_BITS==0
+	mpt = (uint16 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+#else
+	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
+	    mbit = 0x80;
+	else
+	    mbit = 0x1;
+#endif
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( (index==trans && trans!=-1 ) || (index>>24)<0x80 ) {
+		*ipt++ = 0x00;
+#if FAST_BITS==0
+		*mpt++ = 0xffff;
+#else
+		*mpt |= mbit;
+#endif
+	    } else {
+		*ipt++ = Pixel16(gdisp,index);
+		if ( endian_mismatch )
+		    ipt[-1] = FixEndian16(ipt[-1]);
+#if FAST_BITS==0
+		*mpt++ = 0;
+#else
+		*mpt &= ~mbit;
+#endif
+	    }
+#if FAST_BITS
+	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
+		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;};
+	    } else {
+		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;};
+	    }
+#endif
+	}
+    }
+}
+
 static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     register int j;
@@ -872,6 +1091,64 @@ static void gdraw_32_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     }
 }
 
+static void gdraw_32a_on_24_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    register uint32 *pt, index;
+    register uint8 *mpt, *ipt;
+#if FAST_BITS
+    int mbit;
+#endif
+    int msbf = gdisp->gg.img->byte_order == MSBFirst;
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+#if FAST_BITS
+	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
+	    mbit = 0x80;
+	else
+	    mbit = 0x1;
+#endif
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( (index==trans && trans!=-1) || (index>>24)<0x80 ) {
+		*ipt++ = 0x00; *ipt++ = 0x00; *ipt++ = 0x00;
+#if FAST_BITS==0
+		*mpt++ = 0xff; *mpt++ = 0xff; *mpt++ = 0xff;
+#else
+		*mpt |= mbit;
+#endif
+	    } else {
+		index = Pixel24(gdisp,index);
+		if ( msbf ) {
+		    *ipt++ = index>>16;
+		    *ipt++ = (index>>8)&0xff;
+		    *ipt++ = index&0xff;
+		} else {
+		    *ipt++ = index&0xff;
+		    *ipt++ = (index>>8)&0xff;
+		    *ipt++ = index>>16;
+		}
+#if FAST_BITS==0
+		*mpt++ = 0; *mpt++ = 0; *mpt++ = 0;
+#else
+		*mpt &= ~mbit;
+#endif
+	    }
+#if FAST_BITS
+	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
+		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;};
+	    } else {
+		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;};
+	    }
+#endif
+	}
+    }
+}
+
 static void gdraw_8_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     register uint8 *ipt;
@@ -934,6 +1211,63 @@ static void gdraw_32_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *
 		*ipt++ = index&0xff;
 		*ipt++ = (index>>8)&0xff;
 		*ipt++ = index>>16;
+	    }
+	}
+    }
+}
+
+static void gdraw_8_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
+    struct gcol clut[256];
+    register int j;
+    int i,index;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    register uint8 *pt;
+    uint32 *ipt;
+    struct gcol *pos;
+
+    _GDraw_getimageclut(base,clut);
+    for ( i=base->clut->clut_len-1; i>=0; --i ) {
+	pos = &clut[i];
+	pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	if ( i==trans )
+	    pos->pixel = 0x00000000;
+	if ( gdisp->endian_mismatch )
+	    pos->pixel = FixEndian32(pos->pixel);
+    }
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    *ipt++ = clut[index].pixel;
+	}
+    }
+}
+
+static void gdraw_32_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    register uint32 *pt, index, *ipt;
+    int endian_mismatch = gdisp->endian_mismatch;
+    int has_alpha = base->image_type == it_rgba;
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( index==trans ) {
+		*ipt++ = 0x00000000;
+	    } else {
+		if ( has_alpha )
+		    *ipt++ = Pixel16(gdisp,(index&0xffffff)) | (index&0xff000000);
+		else
+		    *ipt++ = Pixel32(gdisp,index);
+		if ( endian_mismatch )
+		    ipt[-1] = FixEndian32(ipt[-1]);
 	    }
 	}
     }
@@ -1031,6 +1365,61 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    if ( index==trans ) {
+		*ipt++ = Pixel32(gdisp,0);
+#if FAST_BITS==0
+		*mpt++ = 0xffffffff;
+#else
+		*mpt |= mbit;
+#endif
+	    } else {
+		*ipt++ = Pixel32(gdisp,index);
+		if ( endian_mismatch )
+		    ipt[-1] = FixEndian32(ipt[-1]);
+#if FAST_BITS==0
+		*mpt++ = 0;
+#else
+		*mpt &= ~mbit;
+#endif
+	    }
+#if FAST_BITS
+	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
+		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;};
+	    } else {
+		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;};
+	    }
+#endif
+	}
+    }
+}
+
+static void gdraw_32a_on_32_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
+    int i,j;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    register uint32 *pt, index, *ipt;
+    int endian_mismatch = gdisp->endian_mismatch;
+#if FAST_BITS==0
+    register uint32 *mpt;
+#else
+    register uint8 *mpt;
+    int mbit;
+#endif
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+#if FAST_BITS==0
+	mpt = (uint32 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+#else
+	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
+	    mbit = 0x80;
+	else
+	    mbit = 0x1;
+#endif
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    if ( (index==trans && trans!=-1) || (index>>24)<0x80 ) {
 		*ipt++ = Pixel32(gdisp,0);
 #if FAST_BITS==0
 		*mpt++ = 0xffffffff;
@@ -1281,7 +1670,8 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 	depth = 1;
 
     check_image_buffers(gdisp, src->width, src->height,depth==1);
-    if ( base->trans!=COLOR_UNKNOWN ) {
+    if ( base->trans!=COLOR_UNKNOWN || base->image_type != it_rgba ||
+	    gdisp->supports_alpha_images ) {
 	if ( base->image_type == it_index ) {
 	    switch ( depth ) {
 	      case 1:
@@ -1303,7 +1693,10 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 		gdraw_8_on_24_nomag_masked(gdisp,image,src);
 	      break;
 	      case 32:
-		gdraw_8_on_32_nomag_masked(gdisp,image,src);
+		if ( gdisp->supports_alpha_images )
+		    gdraw_8_on_32a_nomag(gdisp,image,src);
+		else
+		    gdraw_8_on_32_nomag_masked(gdisp,image,src);
 	      break;
 	    }
 	} else if ( base->image_type == it_true ) {
@@ -1327,7 +1720,37 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 		gdraw_32_on_24_nomag_masked(gdisp,image,src);
 	      break;
 	      case 32:
-		gdraw_32_on_32_nomag_masked(gdisp,image,src);
+		if ( gdisp->supports_alpha_images )
+		    gdraw_32_on_32a_nomag(gdisp,image,src);
+		else
+		    gdraw_32_on_32_nomag_masked(gdisp,image,src);
+	      break;
+	    }
+	} else if ( base->image_type == it_rgba ) {
+	    switch ( depth ) {
+	      case 1:
+	      default:
+		/* all servers can handle bitmaps, so if we don't know how to*/
+		/*  write to a 13bit screen, we can at least give a bitmap */
+		gdraw_32a_on_1_nomag_dithered(gdisp,image,src);
+	      break;
+	      case 8:
+		if ( gdisp->do_dithering && !gdisp->cs.is_grey )
+		    gdraw_32a_on_8_nomag_dithered(gdisp,image,src);
+		else
+		    gdraw_32a_on_8_nomag_nodithered(gdisp,image,src);
+	      break;
+	      case 16:
+		gdraw_32a_on_16_nomag(gdisp,image,src);
+	      break;
+	      case 24:
+		gdraw_32a_on_24_nomag(gdisp,image,src);
+	      break;
+	      case 32:
+		if ( gdisp->supports_alpha_images )
+		    gdraw_32_on_32a_nomag(gdisp,image,src);
+		else
+		    gdraw_32a_on_32_nomag(gdisp,image,src);
 	      break;
 	    }
 	}
@@ -1405,7 +1828,7 @@ return;
 
     gximage_to_ximage(gw, image, src);
 
-    if ( base->trans!=COLOR_UNKNOWN ) {
+    if ( !gdisp->supports_alpha_images && (base->trans!=COLOR_UNKNOWN || base->image_type==it_rgba )) {
 	/* ((destination & mask) | src) seems to me to yield the proper behavior */
 	/*  for transparent backgrounds. This is equivalent to: */
 	/* ((destination GXorReverse mask) GXnand src) */
@@ -1567,7 +1990,7 @@ return( xi );
 
 static void gdraw_either_on_1_mag_dithered(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     struct gcol clut[256];
-    int i,j, index;
+    int i,j; uint32 index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     uint8 *pt;
     uint8 *ipt;
@@ -1575,7 +1998,7 @@ static void gdraw_either_on_1_mag_dithered(GXDisplay *gdisp, GImage *image,int d
     struct gcol *pos;
     int swid = base->width;
     int shit = base->height;
-    int is_32bit = base->image_type == it_true;
+    int is_32bit = base->image_type == it_true || base->image_type == it_rgba;
     int gd;
     int16 *g_d;
     /* I'm not going to deal with masks on bitmap displays */
@@ -1625,7 +2048,7 @@ static void gdraw_either_on_1_mag_dithered(GXDisplay *gdisp, GImage *image,int d
 
 static void gdraw_either_on_8_mag_dithered(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     struct gcol clut[256];
-    int i,j, index;
+    int i,j; uint32 index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     uint8 *pt, *mpt;
@@ -1633,7 +2056,8 @@ static void gdraw_either_on_8_mag_dithered(GXDisplay *gdisp, GImage *image,int d
     const struct gcol *pos;
     int swid = base->width;
     int shit = base->height;
-    int is_32bit = base->image_type == it_true;
+    int has_alpha = base->image_type == it_rgba;
+    int is_32bit = base->image_type == it_true || base->image_type == it_rgba;
     int rd, gd, bd;
     int16 *r_d, *g_d, *b_d;
 #if FAST_BITS
@@ -1663,7 +2087,7 @@ static void gdraw_either_on_8_mag_dithered(GXDisplay *gdisp, GImage *image,int d
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
-		if ( index==trans ) {
+		if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
 #if FAST_BITS==0
 		    *mpt++ = 0xff;
 #else
@@ -1720,7 +2144,7 @@ static void gdraw_either_on_8_mag_dithered(GXDisplay *gdisp, GImage *image,int d
 
 static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     struct gcol clut[256];
-    int i,j, index;
+    int i,j; uint32 index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     uint8 *pt, *mpt;
@@ -1729,7 +2153,9 @@ static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dw
     int swid = base->width;
     int shit = base->height;
     int mbit;
-    int is_32bit = base->image_type == it_true, is_1bit = base->image_type == it_mono;
+    int has_alpha = base->image_type == it_rgba;
+    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
+	    is_1bit = base->image_type == it_mono;
 
     if ( !is_32bit ) {
 	_GDraw_getimageclut(base,clut);
@@ -1762,7 +2188,7 @@ static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dw
 		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
 		pixel = clut[index].pixel;
 	    }
-	    if ( index==trans ) {
+	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
 		*mpt |= mbit;
 		*ipt++ = 0x00;
 	    } else {
@@ -1780,7 +2206,7 @@ static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dw
 
 static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     struct gcol clut[256];
-    int i,j, index;
+    int i,j; uint32 index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     uint8 *pt;
@@ -1788,7 +2214,9 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
     struct gcol *pos;
     int swid = base->width;
     int shit = base->height;
-    int is_32bit = base->image_type == it_true, is_1bit = base->image_type == it_mono;
+    int has_alpha = base->image_type == it_rgba;
+    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
+	    is_1bit = base->image_type == it_mono;
     register uint16 *mpt;
 
     if ( !is_32bit ) {
@@ -1822,7 +2250,7 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
 		pixel = clut[index].pixel;
 	    }
-	    if ( index==trans ) {
+	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
 		*mpt++ = 0xffff;
 		*ipt++ = 0x0000;
 	    } else {
@@ -1835,7 +2263,7 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 
 static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     struct gcol clut[256];
-    int i,j, index;
+    int i,j; uint32 index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     uint8 *pt, *mpt, *ipt;
@@ -1843,7 +2271,9 @@ static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
     struct gcol *pos;
     int swid = base->width;
     int shit = base->height;
-    int is_32bit = base->image_type == it_true, is_1bit = base->image_type == it_mono;
+    int has_alpha = base->image_type == it_rgba;
+    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
+	    is_1bit = base->image_type == it_mono;
 #if FAST_BITS
     int mbit;
 #endif
@@ -1879,7 +2309,7 @@ static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
 		pixel = clut[index].pixel;
 	    }
-	    if ( index==trans ) {
+	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
 #if FAST_BITS==0
 		*mpt++ = 0xff; *mpt++ = 0xff; *mpt++ = 0xff;
 #else
@@ -1917,7 +2347,7 @@ static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 
 static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     struct gcol clut[256];
-    int i,j, index;
+    int i,j; uint32 index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
     uint8 *pt;
@@ -1925,7 +2355,9 @@ static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
     struct gcol *pos;
     int swid = base->width;
     int shit = base->height;
-    int is_32bit = base->image_type == it_true, is_1bit = base->image_type == it_mono;
+    int has_alpha = base->image_type == it_rgba;
+    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
+	    is_1bit = base->image_type == it_mono;
     uint32 *mpt;
 
     if ( !is_32bit ) {
@@ -1957,13 +2389,62 @@ static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
 		pixel = clut[index].pixel;
 	    }
-	    if ( index==trans ) {
+	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
 		*mpt++ = 0xffffffff;
 		*ipt++ = 0x00;
 	    } else {
 		*ipt++ = pixel;
 		*mpt++ = 0;
 	    }
+	}
+    }
+}
+
+static void gdraw_any_on_32a_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
+    struct gcol clut[256];
+    int i,j; uint32 index;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    uint8 *pt;
+    uint32 *ipt, pixel;
+    struct gcol *pos;
+    int swid = base->width;
+    int shit = base->height;
+    int has_alpha = base->image_type == it_rgba;
+    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
+	    is_1bit = base->image_type == it_mono;
+
+    if ( !is_32bit ) {
+	_GDraw_getimageclut(base,clut);
+	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
+	    pos = &clut[i];
+	    pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	    if ( gdisp->endian_mismatch )
+		pos->pixel = FixEndian32(pos->pixel);
+	}
+    }
+
+    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
+	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
+	ipt = (uint32 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
+	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
+	    index = (j*swid)/dwid;
+	    /*if ( index>=src->xend ) index = src->xend-1;*/
+	    if ( is_32bit ) {
+	    	index = ((long *) pt)[index];
+		pixel = Pixel32(gdisp,index&0xffffff) | (index&0xff000000);
+		if ( gdisp->endian_mismatch )
+		    pixel = FixEndian32(pixel);
+	    } else if ( !is_1bit ) {
+		index = pt[index];
+		pixel = clut[index].pixel;
+	    } else {
+		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
+		pixel = clut[index].pixel;
+	    }
+	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 ))
+		pixel &= 0x00ffffff;
+	    *ipt++ = pixel;
 	}
     }
 }
@@ -2030,13 +2511,16 @@ return;
 	    gdraw_any_on_24_mag(gdisp,image,width,height,magsrc);
 	  break;
 	  case 32:
-	    gdraw_any_on_32_mag(gdisp,image,width,height,magsrc);
+	    if ( gdisp->supports_alpha_images )
+		gdraw_any_on_32a_mag(gdisp,image,width,height,magsrc);
+	    else
+		gdraw_any_on_32_mag(gdisp,image,width,height,magsrc);
 	  break;
 	}
 	display=gdisp->display;
 	w = gw->w;
 	gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
-	if ( base->trans!=COLOR_UNKNOWN ) {
+	if ( !gdisp->supports_alpha_images && (base->trans!=COLOR_UNKNOWN || base->image_type==it_rgba )) {
 	    XSetFunction(display,gc,GXand);
 	    XSetForeground(display,gc, ~((-1)<<gdisp->pixel_size) );
 	    XSetBackground(display,gc, 0 );

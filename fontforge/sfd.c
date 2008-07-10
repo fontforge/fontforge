@@ -818,7 +818,17 @@ static void SFDDumpImage(FILE *sfd,ImageList *img) {
 	free( rle );
     } else {
 	for ( i=0; i<base->height; ++i ) {
-	    if ( base->image_type==it_true ) {
+	    if ( base->image_type==it_rgba ) {
+		uint32 *ipt = (uint32 *) (base->data + i*base->bytes_per_line);
+		uint32 *iend = (uint32 *) (base->data + (i+1)*base->bytes_per_line);
+		while ( ipt<iend ) {
+		    SFDEnc85(&enc,*ipt>>24);
+		    SFDEnc85(&enc,(*ipt>>16)&0xff);
+		    SFDEnc85(&enc,(*ipt>>8)&0xff);
+		    SFDEnc85(&enc,*ipt&0xff);
+		    ++ipt;
+		}
+	    } else if ( base->image_type==it_true ) {
 		int *ipt = (int *) (base->data + i*base->bytes_per_line);
 		int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
 		while ( ipt<iend ) {
@@ -2865,7 +2875,18 @@ static ImageList *SFDGetImage(FILE *sfd) {
 	rle2image(&dec,rlelen,base);
     } else {
 	for ( i=0; i<height; ++i ) {
-	    if ( image_type==it_true ) {
+	    if ( image_type==it_rgba ) {
+		uint32 *ipt = (uint32 *) (base->data + i*base->bytes_per_line);
+		uint32 *iend = (uint32 *) (base->data + (i+1)*base->bytes_per_line);
+		int r,g,b, a;
+		while ( ipt<iend ) {
+		    a = Dec85(&dec);
+		    r = Dec85(&dec);
+		    g = Dec85(&dec);
+		    b = Dec85(&dec);
+		    *ipt++ = (a<<24)|(r<<16)|(g<<8)|b;
+		}
+	    } else if ( image_type==it_true ) {
 		int *ipt = (int *) (base->data + i*base->bytes_per_line);
 		int *iend = (int *) (base->data + (i+1)*base->bytes_per_line);
 		int r,g,b;

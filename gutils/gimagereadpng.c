@@ -186,6 +186,8 @@ return( NULL );
 	clut->clut_len = 256;
 	for ( i=0; i<256; ++i )
 	    clut->clut[i] = COLOR_CREATE(i,i,i);
+    } else if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA ) {
+	ret = GImageCreate(it_rgba,info_ptr->width,info_ptr->height);
     } else if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA )
 	ret = GImageCreate(it_true,info_ptr->width,info_ptr->height);
     else {
@@ -229,8 +231,11 @@ return( NULL );
 	/* PNG orders its bytes as AABBGGRR instead of 00RRGGBB */
 	uint32 *ipt, *iend;
 	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {
+#if 0
 	    /* Minimal support for alpha channel. Assume default background of white */
-	    if ( (*ipt&0xff000000)==0xff000000 )
+	    if ( __gimage_can_support_alpha )
+		/* Leave alpha channel unchanged */;
+	    else if ( (*ipt&0xff000000)==0xff000000 )
 		*ipt = COLOR_CREATE( ((*ipt)&0xff) , ((*ipt>>8)&0xff) , (*ipt>>16)&0xff );
 	    else {
 		int r, g, b, a = (*ipt>>24)&0xff;
@@ -239,6 +244,13 @@ return( NULL );
 		b = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
 		*ipt = COLOR_CREATE( r,g,b );
 	    }
+#else
+	    uint32 r, g, b, a = *ipt&0xff000000;
+	    r = (*ipt    )&0xff;
+	    g = (*ipt>>8 )&0xff;
+	    b = (*ipt>>16)&0xff;
+	    *ipt = COLOR_CREATE( r,g,b ) | a;
+#endif
 	}
     }
 

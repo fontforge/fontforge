@@ -2520,6 +2520,11 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
  gww_define_caps_for_alt="1"
+
+
+ CPPFLAGS="$CPPFLAGS -I/sw/include"
+ LDFLAGS="$LDFLAGS -L/sw/lib"
+ gww_rpath="-rpath /sw/lib"
 LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)

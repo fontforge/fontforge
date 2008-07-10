@@ -752,6 +752,12 @@ return;
 	tabs[i].checksum = getlong(ttf);
 	tabs[i].offset = getlong(ttf);
 	tabs[i].length = getlong(ttf);
+	if ( i!=0 && tabs[i].tag<tabs[i-1].tag && !info->bad_sfnt_header ) {
+	    LogError(_("Table tags should be in alphabetic order in the font header\n but '%c%c%c%c', appears after '%c%c%c%c'."),
+		    tabs[i-1].tag>>24, tabs[i-1].tag>>16, tabs[i-1].tag>>8, tabs[i-1].tag,
+		    tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
+	    info->bad_sfnt_header = true;
+	}
     }
     fseek(ttf,0,SEEK_END);
     file_len = ftell(ttf);

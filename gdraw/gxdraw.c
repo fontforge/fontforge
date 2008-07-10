@@ -592,7 +592,7 @@ static void _GXDraw_InitCols(GXDisplay *gdisp) {
     char **extlist = XListExtensions(gdisp->display,&n);
 
     for ( i=0; i<n; ++i ) {
-	if ( strcasecmp(extlist[i],"Composite")==0 ) {
+	if ( strcasecmp(extlist[i],"Render")==0 ) {	/* "Composite"??? */
 	    gdisp->supports_alpha_images = true;
     break;
 	}
@@ -601,6 +601,9 @@ static void _GXDraw_InitCols(GXDisplay *gdisp) {
 	XFreeExtensionList(extlist);
 
     _GXDraw_FindVisual(gdisp);
+    if ( gdisp->depth!=32 && gdisp->supports_alpha_images )
+	gdisp->supports_alpha_images = false;
+
     vclass = gdisp->visual->class;
     depth = gdisp->depth;
 

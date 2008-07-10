@@ -3008,7 +3008,7 @@ static int InImage( FindSel *fs, ImageList *img) {
     y = floor((img->yoff-fs->p->cy)/img->yscale);
     if ( x<0 || y<0 || x>=GImageGetWidth(img->image) || y>=GImageGetHeight(img->image))
 return ( false );
-    if ( GImageGetPixelColor(img->image,x,y)&0x80000000 )	/* Transparent */
+    if ( GImageGetPixelRGBA(img->image,x,y)<0x80000000 )	/* Transparent(ish) */
 return( false );
 
 return( true );
