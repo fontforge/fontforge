@@ -30,7 +30,7 @@ GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
     GImage *gi;
     struct _GImage *base;
 
-    if ( type<it_mono || type>it_true )
+    if ( type<it_mono || type>it_rgba )
 return( NULL );
 
     gi = gcalloc(1,sizeof(GImage));
@@ -43,7 +43,7 @@ return( NULL );
     base->image_type = type;
     base->width = width;
     base->height = height;
-    base->bytes_per_line = type==it_true?4*width:type==it_index?width:(width+7)/8;
+    base->bytes_per_line = (type==it_true || type==it_rgba)?4*width:type==it_index?width:(width+7)/8;
     base->data = NULL;
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
@@ -65,7 +65,7 @@ GImage *_GImage_Create(enum image_type type, int32 width, int32 height) {
     GImage *gi;
     struct _GImage *base;
 
-    if ( type<it_mono || type>it_true )
+    if ( type<it_mono || type>it_rgba )
 return( NULL );
 
     gi = gcalloc(1,sizeof(GImage));
@@ -78,7 +78,7 @@ return( NULL );
     base->image_type = type;
     base->width = width;
     base->height = height;
-    base->bytes_per_line = type==it_true?4*width:type==it_index?width:(width+7)/8;
+    base->bytes_per_line = (type==it_true || type==it_rgba)?4*width:type==it_index?width:(width+7)/8;
     base->data = NULL;
     base->clut = NULL;
     if ( type==it_index )
@@ -244,4 +244,67 @@ return( img->userdata );
 
 void GImageSetUserData(GImage *img,void *userdata) {
     img->userdata = userdata;
+}
+
+static Color _GImageGetPixelRGBA(struct _GImage *base,int x, int y) {
+    Color val;
+
+    if ( base->image_type==it_rgba ) {
+	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
+return( val==base->trans?(val&0xffffff):val );
+    } else if ( base->image_type==it_true ) {
+	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
+return( val==base->trans?(val&0xffffff):(val|0xff000000) );
+    } else if ( base->image_type==it_index ) {
+	int pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
+	val = base->clut->clut[pixel];
+return( pixel==base->trans?(val&0xffffff):(val|0xff000000) );
+    } else {
+	int pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
+	if ( base->clut==NULL ) {
+	    if ( pixel )
+		val = COLOR_CREATE(0xff,0xff,0xff);
+	    else
+		val = COLOR_CREATE(0,0,0);
+	} else
+	    val = base->clut->clut[pixel];
+return( pixel==base->trans?(val&0xffffff):(val|0xff000000) );
+    }
+}
+
+Color GImageGetPixelRGBA(GImage *image,int x, int y) {
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+return( _GImageGetPixelRGBA(base,x,y));
+}
+
+/* This routine is now obsolete. I include it for compatability. See GImageGetPixelRGBA */
+Color _GImageGetPixelColor(struct _GImage *base,int x, int y) {
+    Color val;
+
+    if ( base->image_type==it_rgba ) {
+	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
+return( val==base->trans?~val:val );
+    } else if ( base->image_type==it_true ) {
+	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
+return( val==base->trans?~val:val );
+    } else if ( base->image_type==it_index ) {
+	int pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
+	val = base->clut->clut[pixel];
+return( pixel==base->trans?~val:val );
+    } else {
+	int pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
+	if ( base->clut==NULL ) {
+	    if ( pixel )
+		val = COLOR_CREATE(0xff,0xff,0xff);
+	    else
+		val = COLOR_CREATE(0,0,0);
+	} else
+	    val = base->clut->clut[pixel];
+return( pixel==base->trans?~val:val );
+    }
+}
+
+Color GImageGetPixelColor(GImage *image,int x, int y) {
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+return( _GImageGetPixelColor(base,x,y));
 }

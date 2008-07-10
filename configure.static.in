@@ -20,6 +20,12 @@ AC_DEFINE(_CursorsMustBe16x16)
 AC_DEFINE(_Keyboard,1)
 AC_DEFINE(__Mac,1)
  gww_define_caps_for_alt="1"
+
+dnl fink puts stuff under /sw
+
+ CPPFLAGS="$CPPFLAGS -I/sw/include"
+ LDFLAGS="$LDFLAGS -L/sw/lib"
+ gww_rpath="-rpath /sw/lib"
 LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)
