@@ -47,12 +47,13 @@ typedef struct clut {
 
 typedef struct revcmap RevCMap;
 
-enum image_type { it_mono, it_bitmap=it_mono, it_index, it_true };
+enum image_type { it_mono, it_bitmap=it_mono, it_index, it_true, it_rgba };
 
 struct _GImage {
 /* Format: bitmaps are stored with the most significant bit first in byte units
-	    indexed images are stored in byte units
+	    indexed    images are stored in byte units
 	    true color images are stored in 4 byte units, 0,red,green,blue
+	    rgba       images are stored in 4 byte units, alpha,red,green blue
 */
     unsigned int image_type: 2;
     int16 delay;		/* for animated GIFs, delay to next frame */
@@ -100,7 +101,8 @@ extern int GImageInsertToBase(struct _GImage *tobase, GImage *from, GRect *src, 
 	int to_x, int to_y, enum pastetrans_type ptt );
 extern int GImageInsert(GImage *to, GImage *from, GRect *src, RevCMap *rev,
 	int to_x, int to_y, enum pastetrans_type ptt );
-extern Color GImageGetPixelColor(GImage *base,int x, int y);
+extern Color GImageGetPixelColor(GImage *base,int x, int y);	/* Obsolete */
+extern Color GImageGetPixelRGBA(GImage *base,int x, int y);
 extern int GImageGetWidth(GImage *);
 extern int GImageGetHeight(GImage *);
 extern void *GImageGetUserData(GImage *img);
