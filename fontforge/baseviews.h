@@ -355,7 +355,6 @@ struct genericchange {
     char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
     double stem_height_add  , stem_width_add  ;
-    double stroke_width_add;
     double serif_height_scale, serif_width_scale;
     double seirf_height_add  , serif_width_add  ;
     double hcounter_scale, hcounter_add;
@@ -372,7 +371,6 @@ struct genericchange {
 	    double current  , desired;
             double cur_width, des_width;
 	    int overlap_index;
-            int blue_index;
 	} *maps;
     } m;
     struct fixed_maps g;			/* Adjusted for each glyph */
