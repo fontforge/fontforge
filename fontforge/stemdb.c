@@ -1269,6 +1269,7 @@ static void SwapEdges( struct stemdata *stem ) {
         tpd = chunk->l; chunk->l = chunk->r; chunk->r = tpd;
         temp = chunk->lpotential; chunk->lpotential = chunk->rpotential; chunk->rpotential = temp;
         temp = chunk->lnext; chunk->lnext = chunk->rnext; chunk->rnext = temp;
+        temp = chunk->ltick; chunk->ltick = chunk->rtick; chunk->rtick = temp;
         
         tpd = chunk->l;
         if ( tpd != NULL ) {
