@@ -965,6 +965,91 @@ static void gdraw_32_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *
     }
 }
 
+static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *src) {
+    struct gcol clut[256];
+    register int j;
+    int i,index;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int trans = base->trans;
+    register uint8 *pt;
+    struct gcol *pos;
+    Color col;
+    int msbf = gdisp->gg.img->byte_order == MSBFirst/*,
+	    msBf = gdisp->gg.mask->bitmap_bit_order == MSBFirst*/;
+
+    _GDraw_getimageclut(base,clut);
+
+    if ( gdisp->pixel_size==16 ) {
+	uint16 *ipt;
+	for ( i=base->clut->clut_len-1; i>=0; --i ) {
+	    pos = &clut[i];
+	    col = (pos->red<<16)|(pos->green<<8)|pos->blue;
+	    pos->pixel = Pixel16(gdisp,col);
+	    if ( i==trans )
+		pos->pixel = Pixel16(gdisp,0xffffff);
+	    if ( gdisp->endian_mismatch )
+		pos->pixel = FixEndian16(pos->pixel);
+	}
+
+	for ( i=src->y; i<src->y+src->height; ++i ) {
+	    pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
+	    ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	    for ( j=src->width-1; j>=0; --j ) {
+		index = *pt++;
+		*ipt++ = clut[index].pixel;
+	    }
+	}
+    } else if ( gdisp->pixel_size==24 ) {
+	uint8 *ipt;
+	for ( i=base->clut->clut_len-1; i>=0; --i ) {
+	    pos = &clut[i];
+	    pos->pixel = Pixel24(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	    if ( i==trans )
+		pos->pixel = Pixel24(gdisp,0xffffff);
+	}
+
+	for ( i=src->y; i<src->y+src->height; ++i ) {
+	    pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
+	    ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	    for ( j=src->width-1; j>=0; --j ) {
+		register uint32 col;
+		index = *pt++;
+		col = clut[index].pixel;
+		if ( msbf ) {
+		    *ipt++ = col>>16;
+		    *ipt++ = (col>>8)&0xff;
+		    *ipt++ = col&0xff;
+		} else {
+		    *ipt++ = col&0xff;
+		    *ipt++ = (col>>8)&0xff;
+		    *ipt++ = col>>16;
+		}
+	    }
+ printf( "%d\n", ipt - ((uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line) );
+	    pt = ipt;			/* !!!! debug */
+	}
+    } else {
+	uint32 *ipt;
+	for ( i=base->clut->clut_len-1; i>=0; --i ) {
+	    pos = &clut[i];
+	    pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
+	    if ( i==trans )
+		pos->pixel = 0xffffffff;
+	    if ( gdisp->endian_mismatch )
+		pos->pixel = FixEndian32(pos->pixel);
+	}
+
+	for ( i=src->y; i<src->y+src->height; ++i ) {
+	    pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
+	    ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	    for ( j=src->width-1; j>=0; --j ) {
+		index = *pt++;
+		*ipt++ = clut[index].pixel;
+	    }
+	}
+    }
+}
+
 static void gdraw_8_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     register int j;
@@ -1242,6 +1327,25 @@ static void gdraw_8_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = clut[index].pixel;
+	}
+    }
+}
+
+static void gdraw_8a_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src,
+	Color fg) {
+    register int j;
+    int i,index;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    register uint8 *pt;
+    uint32 *ipt;
+    uint32 fg_pixel = Pixel32(gdisp,fg) & 0xffffff;
+
+    for ( i=src->y; i<src->y+src->height; ++i ) {
+	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	for ( j=src->width-1; j>=0; --j ) {
+	    index = *pt++;
+	    *ipt++ = fg_pixel | (index<<24);
 	}
     }
 }
@@ -1947,6 +2051,61 @@ void _GXDraw_TileImage( GWindow _w, GImage *image, GRect *src, int32 x, int32 y)
 	gdisp->gcstate[gw->ggc->bitmap_col].func = df_copy;
     }
 }
+
+/* When drawing an anti-aliased glyph, I've been pretending that it's an image*/
+/*  with colors running from foreground to background and with background be- */
+/*  ing transparent. That works reasonably well -- on a blank background, but */
+/*  when two glyphs overlap (as in a script font, for instance) we get a faint*/
+/*  light halo around the edge of the second glyph. */
+/* What we really want to do is use the grey levels as an alpha channel with */
+/*  the foreground color as the color. But alpha channels haven't been avail- */
+/*  able on most X-displays. An alternative is to do the composing ourselves  */
+/*  in an image that's as big as the window, and then transfer that when done */
+/*  That sounds slow. */
+/* What should the composing look like? I'm not entirely but it should be */
+/* somewhere between a "max" and a "clipped add" applied component by component*/
+/*  of the color. X does not support either of those as primitives -- but X */
+/*  does support bitwise boolean operators, and an "or" will always produce */
+/*  a value somewhere between those extremes. */
+/* Actually since the color values (black==foreground, white==background)   */
+/*  generally run in the oposite direction from the alpha channel (100%=fore, */
+/*  0%=back) we will need to reverse the "or" to be an "and", but the idea    */
+/*  is the same */
+void _GXDraw_Glyph( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
+    GXWindow gw = (GXWindow) _w;
+    GXDisplay *gdisp = gw->display;
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    Color fg = -1;
+
+    if ( base->image_type==it_index )
+	fg = base->clut->clut[base->clut->clut_len-1];
+
+    if ( base->image_type!=it_index )
+	_GXDraw_Image(_w,image,src,x,y);
+    else if ( gdisp->visual->class != TrueColor ||
+	    gdisp->pixel_size<16 || gw->ggc->bitmap_col || fg!=0 )
+	_GXDraw_Image(_w,image,src,x,y);
+    else {
+	Display *display=gdisp->display;
+	Window w = gw->w;
+	GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
+
+	_GXDraw_SetClipFunc(gdisp,gw->ggc);
+
+	check_image_buffers(gdisp, src->width, src->height,false);
+	if ( gdisp->supports_alpha_images ) {
+	    gdraw_8a_on_32a_nomag( gdisp, image, src, fg );
+	} else {
+	    gdraw_8_on_any_nomag_glyph(gdisp, image, src);
+	    XSetFunction(display,gc,GXand);
+	}
+	XPutImage(display,w,gc,gdisp->gg.img,0,0,
+		x,y, src->width, src->height );
+	XSetFunction(display,gc,GXcopy);
+    }
+}
+
+/* ******************************** Magnified ******************************* */
 
 static XImage *gdraw_1_on_1_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
     int i,j, index;

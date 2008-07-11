@@ -466,6 +466,20 @@ void GDrawDrawScaledImage(GWindow w, GImage *img, int32 x, int32 y) {
     (w->display->funcs->drawImage)(w,img,&r,x,y);
 }
 
+/* Similar to DrawImage, but can in some cases make improvements -- if the */
+/*  is an indexed image, then treat as the alpha channel rather than a color */
+/*  in its own right */
+void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
+    GRect r;
+    if ( src==NULL ) {
+	struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
+	r.x = r.y = 0;
+	r.width = base->width; r.height = base->height;
+	src = &r;
+    }
+    (w->display->funcs->drawGlyph)(w,img,src,x,y);
+}
+
 /* We got an expose event for the src rectangle. The image is supposed to be */
 /*  tiled across the window starting at (x,y) and continuing at least to the */
 /*  limit of the expose event. Figure out how to draw what bits of the image */

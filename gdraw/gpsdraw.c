@@ -1315,6 +1315,7 @@ static struct displayfuncs psfuncs = {
 
     _GPSDraw_Image,
     _GPSDraw_TileImage,
+    _GPSDraw_Image,
     _GPSDraw_ImageMagnified,
     _PSDraw_CopyScreenToImage,
     _PSDraw_Pixmap,

@@ -101,7 +101,8 @@ extern int GImageInsertToBase(struct _GImage *tobase, GImage *from, GRect *src, 
 	int to_x, int to_y, enum pastetrans_type ptt );
 extern int GImageInsert(GImage *to, GImage *from, GRect *src, RevCMap *rev,
 	int to_x, int to_y, enum pastetrans_type ptt );
-extern Color GImageGetPixelColor(GImage *base,int x, int y);	/* Obsolete */
+extern Color _GImageGetPixelColor(struct _GImage *base,int x, int y);	/* Obsolete */
+extern Color GImageGetPixelColor(GImage *base,int x, int y);		/* Obsolete */
 extern Color GImageGetPixelRGBA(GImage *base,int x, int y);
 extern int GImageGetWidth(GImage *);
 extern int GImageGetHeight(GImage *);

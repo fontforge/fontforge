@@ -141,7 +141,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	    base.bytes_per_line = bdfc->bytes_per_line;
 	    base.width = width;
 	    base.height = height;
-	    GDrawDrawImage(pixmap,&gi,NULL,x,y);
+	    GDrawDrawGlyph(pixmap,&gi,NULL,x,y);
 	}
     }
     if ( si!=-1 && mv->bdf==NULL && mv->showgrid ) {
@@ -279,7 +279,7 @@ return;
 	    base.bytes_per_line = bdfc->bytes_per_line;
 	    base.width = width;
 	    base.height = height;
-	    GDrawDrawImage(pixmap,&gi,NULL,x,y);
+	    GDrawDrawGlyph(pixmap,&gi,NULL,x,y);
 	}
 #if 0
 	if ( mv->perchar[i].selected )
