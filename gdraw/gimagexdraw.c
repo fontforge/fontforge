@@ -1670,7 +1670,7 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 	depth = 1;
 
     check_image_buffers(gdisp, src->width, src->height,depth==1);
-    if ( base->trans!=COLOR_UNKNOWN || base->image_type != it_rgba ||
+    if ( base->trans!=COLOR_UNKNOWN || base->image_type == it_rgba ||
 	    gdisp->supports_alpha_images ) {
 	if ( base->image_type == it_index ) {
 	    switch ( depth ) {
