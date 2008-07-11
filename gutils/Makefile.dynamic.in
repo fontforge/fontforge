@@ -9,7 +9,7 @@ bindir = @bindir@
 libdir = @libdir@
 
 GU_VERSION=1
-GU_REVISION=1
+GU_REVISION=2
 GU_AGE=0
 
 GFTP_VERSION=1

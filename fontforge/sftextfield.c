@@ -1362,7 +1362,7 @@ return( false );
 		xend = x + line[j]->advance_width + line[j]->vr.h_adv_off;
 		if ( dotext ) {
 		    LI_FDDrawChar(pixmap,
-			    (void (*)(void *,GImage *,GRect *,int, int)) GDrawDrawImage,
+			    (void (*)(void *,GImage *,GRect *,int, int)) GDrawDrawGlyph,
 			    (void (*)(void *,GRect *,Color)) GDrawDrawRect,
 			    line[j],g->inner.x+x-st->xoff_left,y,fg);
 		} else {

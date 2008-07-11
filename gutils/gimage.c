@@ -195,29 +195,58 @@ return;
 
 void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y) {
     struct _GImage *sbase, *dbase;
-    int i,j, di, sbi, dbi, val, factor;
+    int i,j, di, sbi, dbi, val, factor, maxpix, sbit;
 
-    /* This only works for greyscale images */
+    /* This is designed to merge images which should be treated as alpha */
+    /* channels. dest must be indexed, src may be either indexed or mono */
     dbase = dest->u.image;
     sbase =  src->u.image;
+
+    if ( dbase->image_type != it_index ) {
+	fprintf( stderr, "Bad call to GImageMaxImage\n" );
+return;
+    }
+
+    maxpix = 1;
+    if ( dbase->clut!=NULL )
+	maxpix = dbase->clut->clut_len - 1;
+
     if ( dbase->clut!=NULL && sbase->clut!=NULL && sbase->clut->clut_len>1 ) {
 	factor = (dbase->clut->clut_len - 1) / (sbase->clut->clut_len - 1);
 	if ( factor==0 ) factor=1;
     } else
 	factor = 1;
 
-    for ( i=0; i<sbase->height; ++i ) {
-	di = y + i;
-	if ( di<0 || di>=dbase->height )
-    continue;
-	sbi = i*sbase->bytes_per_line;
-	dbi = di*dbase->bytes_per_line;
-	for ( j=0; j<sbase->width; ++j ) {
-	    if ( x+j<0 || x+j>=dbase->width )
+    if ( sbase->image_type == it_index ) {
+	for ( i=0; i<sbase->height; ++i ) {
+	    di = y + i;
+	    if ( di<0 || di>=dbase->height )
 	continue;
-	    val = dbase->data[dbi+x+j] + sbase->data[sbi+j]*factor;
-	    if ( val>255 ) val = 255;
-	    dbase->data[dbi+x+j] = val;
+	    sbi = i*sbase->bytes_per_line;
+	    dbi = di*dbase->bytes_per_line;
+	    for ( j=0; j<sbase->width; ++j ) {
+		if ( x+j<0 || x+j>=dbase->width )
+	    continue;
+		val = dbase->data[dbi+x+j] + sbase->data[sbi+j]*factor;
+		if ( val>255 ) val = 255;
+		dbase->data[dbi+x+j] = val;
+	    }
+	}
+    } else if ( sbase->image_type == it_mono ) {
+	for ( i=0; i<sbase->height; ++i ) {
+	    di = y + i;
+	    if ( di<0 || di>=dbase->height )
+	continue;
+	    sbi = i*sbase->bytes_per_line;
+	    dbi = di*dbase->bytes_per_line;
+	    for ( j=0, sbit=0x80; j<sbase->width; ++j ) {
+		if ( x+j<0 || x+j>=dbase->width )
+	    continue;
+		if ( sbase->data[sbi+(j>>3)] & sbit )
+		    dbase->data[dbi+x+j] = maxpix;
+		if ( (sbit>>=1) == 0 )
+		    sbit = 0x80;
+	    }
 	}
     }
 }
