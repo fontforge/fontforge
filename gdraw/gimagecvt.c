@@ -835,36 +835,10 @@ static struct bounds *FillBounds(int src_start, int src_end, int dest_start, int
 return( bounds );
 }
 
-static Color _GImageGetPixelColor(struct _GImage *base,int x, int y) {
-    Color val;
-
-    if ( base->image_type==it_true ) {
-	val = ((uint32*) (base->data + y*base->bytes_per_line))[x] ;
-return( val==base->trans?~val:val );
-    } else if ( base->image_type==it_index ) {
-	int pixel = ((uint8*) (base->data + y*base->bytes_per_line))[x];
-	val = base->clut->clut[pixel];
-return( pixel==base->trans?~val:val );
-    } else {
-	int pixel = (((uint8*) (base->data + y*base->bytes_per_line))[x>>3]&(1<<(7-(x&7))) )?1:0;
-	if ( base->clut==NULL ) {
-	    if ( pixel )
-		val = COLOR_CREATE(0xff,0xff,0xff);
-	    else
-		val = COLOR_CREATE(0,0,0);
-	} else
-	    val = base->clut->clut[pixel];
-return( pixel==base->trans?~val:val );
-    }
-}
-
-Color GImageGetPixelColor(GImage *image,int x, int y) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-return( _GImageGetPixelColor(base,x,y));
-}
-
 /* Calculate the pixel value for the thing at (x,y) (in the generated coordinate */
 /*  system */
+extern Color _GImageGetPixelColor(struct _GImage *base,int x, int y);
+
 static Color CalculatePixel(struct _GImage *base, int x, int y, struct bounds *xb,
 	struct bounds *yb, int do_trans) {
     float red=0, green=0, blue=0, tot=0, trans_tot=0, factx, facty;
