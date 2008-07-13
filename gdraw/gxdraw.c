@@ -361,7 +361,8 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
 				{ 8, GrayScale },
 			        { 1, GrayScale },
 			        { 1, StaticGray }};
-    int (*vsearch)[2] = gdisp->supports_alpha_images ? newvsearch : oldvsearch;
+    int (*vsearch)[2] = gdisp->supports_alpha_images || gdisp->supports_alpha_windows
+	    ? newvsearch : oldvsearch;
     Display *display = gdisp->display;
     XVisualInfo vinf, *ret;
     int pixel_size, vc, i, first;
@@ -592,8 +593,14 @@ static void _GXDraw_InitCols(GXDisplay *gdisp) {
     char **extlist = XListExtensions(gdisp->display,&n);
 
     for ( i=0; i<n; ++i ) {
-	if ( strcasecmp(extlist[i],"Render")==0 ) {	/* "Composite"??? */
-	    gdisp->supports_alpha_images = true;
+	if ( strcasecmp(extlist[i],"Composite")==0 ) {	/* "Render"??? */
+/* Silly me. I had assumed that writing an alpha channel image to a window*/
+/*  would do overlay composition on what was in the window. Instead it */
+/*  overwrites the window, and retains the alpha channel so that the */
+/*  window becomes translucent, rather than the image. */
+/* In otherwords, it is totally useless to me */
+	    /* gdisp->supports_alpha_images = true; */
+	    gdisp->supports_alpha_windows = true;
     break;
 	}
     }
