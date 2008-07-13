@@ -106,7 +106,7 @@ splinerefigure.o: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint
+	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint exelibstamp.c libstamp.c
 	-rm -f *.o
 	-rm -f *.lo
 	-rm -rf .libs

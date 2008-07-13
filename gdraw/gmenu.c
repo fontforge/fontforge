@@ -46,6 +46,8 @@ static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
 /*  In the next X, the command key is mapped to 0x10 and Option to 0x2000 */
 /*  (again option key conversion are not done) */
 /*  In 10.3, the command key is mapped to 0x10 and Option to 0x8 */
+/*  In 10.5 the command key is mapped to 0x10 and Option to 0x2000 */
+/*   (and option conversions are done) */
 /*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
 /*  and the standard mac option conversions are done */
 
@@ -647,11 +649,140 @@ static int GMenuBarKeyInvoke(struct gmenubar *mb, int i) {
 return( true );
 }
 
+static int getkey(int keysym, int option) {
+    if ( option && keysym>128 ) {
+	/* Under Mac 10.5 (but not under 10.4,3,2,1,0) if the option key is */
+	/*  depressed the keysym changes. Opt-A becomes ARing, etc. */
+	if ( keysym==0xc5 )
+	    keysym = 'a';
+	else if ( keysym==0xe5 )
+	    keysym = 'A';
+	else if ( keysym==0x8bf )
+	    keysym = 'b';
+	else if ( keysym==0x2b9 )
+	    keysym = 'B';
+	else if ( keysym==0xe7 )
+	    keysym = 'c';
+	else if ( keysym==0xc7 )
+	    keysym = 'C';
+	else if ( keysym==0x8ef )
+	    keysym = 'd';
+	else if ( keysym==0xce )
+	    keysym = 'D';
+	else if ( keysym==0xfe51 )
+	    keysym = 'e';
+	else if ( keysym==0xb4 )
+	    keysym = 'E';
+	else if ( keysym==0x8f6 )
+	    keysym = 'f';
+	else if ( keysym==0xcf )
+	    keysym = 'F';
+	else if ( keysym==0xa9 )
+	    keysym = 'g';
+	else if ( keysym==0x1bd )
+	    keysym = 'G';
+	else if ( keysym==0x1ff )
+	    keysym = 'h';
+	else if ( keysym==0xd3 )
+	    keysym = 'H';
+	else if ( keysym==0xfe52 )
+	    keysym = 'i';
+	else if ( keysym==0x2c6 )
+	    keysym = 'I';
+	else if ( keysym==0x2206 )
+	    keysym = 'j';
+	else if ( keysym==0xd4 )
+	    keysym = 'J';
+	else if ( keysym==0x2da )
+	    keysym = 'k';
+	else if ( keysym==0xf8ff )
+	    keysym = 'K';
+	else if ( keysym==0xac )
+	    keysym = 'l';
+	else if ( keysym==0xd2 )
+	    keysym = 'L';
+	else if ( keysym==0xb5 )
+	    keysym = 'm';
+	else if ( keysym==0xc2 )
+	    keysym = 'M';
+	else if ( keysym==0xfe53 )
+	    keysym = 'n';
+	else if ( keysym==0x2dc )
+	    keysym = 'N';
+	else if ( keysym==0xf8 )
+	    keysym = 'o';
+	else if ( keysym==0xd8 )
+	    keysym = 'O';
+	else if ( keysym==0x7f0 )
+	    keysym = 'p';
+	else if ( keysym==0x220f )
+	    keysym = 'P';
+	else if ( keysym==0x13bd )
+	    keysym = 'q';
+	else if ( keysym==0x13bc )
+	    keysym = 'Q';
+	else if ( keysym==0xae )
+	    keysym = 'r';
+	else if ( keysym==0x2030 )
+	    keysym = 'R';
+	else if ( keysym==0xdf )
+	    keysym = 's';
+	else if ( keysym==0xcd )
+	    keysym = 'S';
+	else if ( keysym==0xaf1 )
+	    keysym = 't';
+	else if ( keysym==0x1b7 )
+	    keysym = 'T';
+	else if ( keysym==0xfe57 )
+	    keysym = 'u';
+	else if ( keysym==0xa8 )
+	    keysym = 'U';
+	else if ( keysym==0x8d6 )
+	    keysym = 'v';
+	else if ( keysym==0x25ca )
+	    keysym = 'V';
+	else if ( keysym==0x2211 )
+	    keysym = 'w';
+	else if ( keysym==0xafe )
+	    keysym = 'W';
+	else if ( keysym==0x2248 )
+	    keysym = 'x';
+	else if ( keysym==0x1b2 )
+	    keysym = 'X';
+	else if ( keysym==0xa5 )
+	    keysym = 'y';
+	else if ( keysym==0xc1 )
+	    keysym = 'Y';
+	else if ( keysym==0x7d9 )
+	    keysym = 'z';
+	else if ( keysym==0xb8 )
+	    keysym = 'Z';
+	else if ( keysym==0xaaa )
+	    keysym = '-';
+	else if ( keysym==0xaa9 )
+	    keysym = '_';
+	else if ( keysym==0x8bd )
+	    keysym = '=';
+	else if ( keysym==0xb1 )
+	    keysym = '+';
+	else if ( keysym==0xad2 )
+	    keysym = '[';
+	else if ( keysym==0xad0 )
+	    keysym = ']';
+	else if ( keysym==0xad3 )
+	    keysym = '{';
+	else if ( keysym==0xad1 )
+	    keysym = '}';
+    }
+    if ( islower(keysym)) keysym = toupper(keysym);
+return( keysym );
+}
+
 static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
     int i;
     unichar_t keysym = event->u.chr.keysym;
 
-    if ( islower(keysym)) keysym = toupper(keysym);
+    if ( islower(keysym)) keysym = getkey(keysym,event->u.chr.state&0x2000 );
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( mi[i].sub==NULL && mi[i].shortcut == keysym &&
 		((ksm_shift|ksm_control|ksm_meta)&event->u.chr.state)==mi[i].short_mask )

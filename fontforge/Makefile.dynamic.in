@@ -134,7 +134,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint ../libfontforge.la
+	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint ../libfontforge.la exelibstamp.c libstamp.c
 	-rm -f *.o
 	-rm -f *.lo
 	-rm -rf .libs
