@@ -122,7 +122,7 @@ static Color tracecol = 0x008000;
 static int cvcolsinited = false;
 
 static void CVColInit( void ) {
-    GResStruct cvcolors[] = {
+    static GResStruct cvcolors[] = {
 	{ "PointColor", rt_color, &pointcol },
 	{ "FirstPointColor", rt_color, &firstpointcol },
 	{ "SelectedPointColor", rt_color, &selectedpointcol },
@@ -172,6 +172,7 @@ static void CVColInit( void ) {
 	{ NULL }
     };
     GResourceFind( cvcolors, "CharView.");
+    cvcolsinited = true;
 }
 
 
