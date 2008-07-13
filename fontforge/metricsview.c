@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <gkeysym.h>
+#include <gresource.h>
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>
@@ -33,6 +34,24 @@
 
 static int mv_antialias = true;
 static double mv_scales[] = { 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
+
+static Color widthcol = 0x808080;
+static Color italicwidthcol = 0x909090;
+static Color selglyphcol = 0x909090;
+static Color kernlinecol = 0x008000;
+static Color rbearinglinecol = 0x000080;
+
+static void MVColInit( void ) {
+    GResStruct mvcolors[] = {
+	{ "AdvanceWidthColor", rt_color, &widthcol },
+	{ "ItalicAdvanceColor", rt_color, &italicwidthcol },
+	{ "SelectedGlyphColor", rt_color, &selglyphcol },
+	{ "KernLineColor", rt_color, &kernlinecol },
+	{ "SideBearingLineColor", rt_color, &rbearinglinecol },
+	{ NULL }
+    };
+    GResourceFind( mvcolors, "MetricsView.");
+}
 
 static int MVSetVSb(MetricsView *mv);
 
@@ -73,7 +92,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 
     xbase = (mv->dwidth-mv->xstart)/2 + mv->xstart;
     if ( mv->showgrid )
-	GDrawDrawLine(pixmap,xbase,mv->topend,xbase,mv->displayend,0x808080);
+	GDrawDrawLine(pixmap,xbase,mv->topend,xbase,mv->displayend,widthcol);
 
     r.x = clip->x; r.width = clip->width;
     r.y = mv->topend; r.height = mv->displayend-mv->topend;
@@ -84,7 +103,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GDrawPushClip(pixmap,&r,&old2);
     if ( mv->bdf==NULL && mv->showgrid ) {
 	y = mv->perchar[0].dy-mv->yoff;
-	GDrawDrawLine(pixmap,0,y,mv->dwidth,y,0x808080);
+	GDrawDrawLine(pixmap,0,y,mv->dwidth,y,widthcol);
     }
 
     si = -1;
@@ -93,7 +112,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	y = mv->perchar[i].dy-mv->yoff;
 	if ( mv->bdf==NULL && mv->showgrid ) {
 	    int yp = y+mv->perchar[i].dheight+mv->perchar[i].kernafter;
-	    GDrawDrawLine(pixmap,0, yp,mv->dwidth,yp,0x808080);
+	    GDrawDrawLine(pixmap,0, yp,mv->dwidth,yp,widthcol);
 	}
 	y += mv->perchar[i].yoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
@@ -118,7 +137,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 		clut.clut_len = 2;
 		clut.clut[0] = 0xffffff;
 		if ( mv->perchar[i].selected )
-		    clut.clut[1] = 0x808080;
+		    clut.clut[1] = selglyphcol;
 	    } else {
 		int scale, l;
 		Color fg, bg;
@@ -129,7 +148,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 		base.image_type = it_index;
 		clut.clut_len = 1<<scale;
 		bg = default_background;
-		fg = ( mv->perchar[i].selected ) ? 0x808080 : 0x000000;
+		fg = ( mv->perchar[i].selected ) ? selglyphcol : 0x000000;
 		for ( l=0; l<(1<<scale); ++l )
 		    clut.clut[l] =
 			COLOR_CREATE(
@@ -147,9 +166,9 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     if ( si!=-1 && mv->bdf==NULL && mv->showgrid ) {
 	y = mv->perchar[si].dy-mv->yoff;
 	if ( si!=0 )
-	    GDrawDrawLine(pixmap,0,y,mv->dwidth,y,0x008000);
+	    GDrawDrawLine(pixmap,0,y,mv->dwidth,y,kernlinecol);
 	y += mv->perchar[si].dheight+mv->perchar[si].kernafter;
-	GDrawDrawLine(pixmap,0,y,mv->dwidth,y,0x000080);
+	GDrawDrawLine(pixmap,0,y,mv->dwidth,y,rbearinglinecol);
     }
     GDrawPopClip(pixmap,&old2);
 }
@@ -196,7 +215,7 @@ return;
 
     ybase = mv->topend + 2 + (mv->pixelsize/mv_scales[mv->scale_index] * sf->ascent / (sf->ascent+sf->descent)) - mv->yoff;
     if ( mv->showgrid )
-	GDrawDrawLine(pixmap,0,ybase,mv->dwidth,ybase,0x808080);
+	GDrawDrawLine(pixmap,0,ybase,mv->dwidth,ybase,widthcol);
 
 
     r.x = clip->x; r.width = clip->width;
@@ -210,10 +229,10 @@ return;
 	x = mv->perchar[0].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->dwidth - x - mv->perchar[0].dwidth - mv->perchar[0].kernafter;
-	GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,0x808080);
+	GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,widthcol);
 	x_iaoffh = rint((ybase-mv->topend)*s), x_iaoffl = rint((mv->displayend-ybase)*s);
 	if ( ItalicConstrained && x_iaoffh!=0 ) {
-	    GDrawDrawLine(pixmap,x+x_iaoffh,mv->topend,x-x_iaoffl,mv->displayend,0x909090);
+	    GDrawDrawLine(pixmap,x+x_iaoffh,mv->topend,x-x_iaoffl,mv->displayend,italicwidthcol);
 	}
     }
     si = -1;
@@ -224,9 +243,9 @@ return;
 	    x = mv->dwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
 	if ( mv->bdf==NULL && mv->showgrid ) {
 	    int xp = x+mv->perchar[i].dwidth+mv->perchar[i].kernafter;
-	    GDrawDrawLine(pixmap,xp, mv->topend,xp,mv->displayend,0x808080);
+	    GDrawDrawLine(pixmap,xp, mv->topend,xp,mv->displayend,widthcol);
 	    if ( ItalicConstrained && x_iaoffh!=0 ) {
-		GDrawDrawLine(pixmap,xp+x_iaoffh,mv->topend,xp-x_iaoffl,mv->displayend,0x909090);
+		GDrawDrawLine(pixmap,xp+x_iaoffh,mv->topend,xp-x_iaoffl,mv->displayend,italicwidthcol);
 	    }
 	}
 	if ( mv->right_to_left )
@@ -255,7 +274,7 @@ return;
 		clut.clut_len = 2;
 		clut.clut[0] = 0xffffff;
 		if ( mv->perchar[i].selected )
-		    clut.clut[1] = 0x808080;
+		    clut.clut[1] = selglyphcol;
 	    } else {
 		int lscale = 3000/mv->pixelsize, l;
 		Color fg, bg;
@@ -267,7 +286,7 @@ return;
 		scale = lscale*lscale;
 		clut.clut_len = scale;
 		bg = default_background;
-		fg = ( mv->perchar[i].selected ) ? 0x808080 : 0x000000;
+		fg = ( mv->perchar[i].selected ) ? selglyphcol : 0x000000;
 		for ( l=0; l<scale; ++l )
 		    clut.clut[l] =
 			COLOR_CREATE(
@@ -292,12 +311,12 @@ return;
 	if ( mv->right_to_left )
 	    x = mv->dwidth - x;
 	if ( si!=0 )
-	    GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,0x008000);
+	    GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,kernlinecol);
 	if ( mv->right_to_left )
 	    x -= mv->perchar[si].dwidth+mv->perchar[si].kernafter;
 	else
 	    x += mv->perchar[si].dwidth+mv->perchar[si].kernafter;
-	GDrawDrawLine(pixmap,x, mv->topend,x,mv->displayend,0x000080);
+	GDrawDrawLine(pixmap,x, mv->topend,x,mv->displayend,rbearinglinecol);
     }
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old);
@@ -3904,8 +3923,13 @@ static unsigned char metricsicon_bits[] = {
    0x55, 0x55, 0x00, 0x00, 0x04, 0x10, 0x00, 0x00};
 
 static void MetricsViewInit(void ) {
-    mv_text_init[2].text = (unichar_t *) _((char *) mv_text_init[2].text);
-    mb2DoGetText(mblist);
+    static int inited = false;
+
+    if ( !inited ) {
+	mv_text_init[2].text = (unichar_t *) _((char *) mv_text_init[2].text);
+	mb2DoGetText(mblist);
+	MVColInit();
+    }
 }
 
 MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
