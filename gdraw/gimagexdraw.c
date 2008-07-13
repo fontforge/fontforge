@@ -1626,11 +1626,11 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
     if ( trans!=COLOR_UNKNOWN ) {
 	XSetFunction(display,gc,GXand);
 	if ( trans==1 ) {
-	    XSetForeground(display,gc, ~((-1)<<depth) );
-	    XSetBackground(display,gc, gdisp->cs.alpha_bits );
+	    XSetForeground(display,gc, ~gdisp->cs.alpha_bits );
+	    XSetBackground(display,gc, 0 );
 	} else {
-	    XSetForeground(display,gc, gdisp->cs.alpha_bits );
-	    XSetBackground(display,gc, ~((-1)<<depth) );
+	    XSetForeground(display,gc, 0 );
+	    XSetBackground(display,gc, ~gdisp->cs.alpha_bits );
 	}
 	XPutImage(display,w->w,gc,xi,src->x,src->y,
 		x,y, src->width, src->height );
