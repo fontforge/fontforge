@@ -1619,7 +1619,6 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
 	Color trans, GRect *src, int x, int y) {
     GXDisplay *gdisp = w->display;
     Display *display = gdisp->display;
-    int depth = gdisp->depth;
     GC gc = gdisp->gcstate[w->ggc->bitmap_col].gc;
     Color fg, bg;
 
