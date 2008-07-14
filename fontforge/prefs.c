@@ -132,6 +132,7 @@ extern int updateflex;				/* in charview.c */
 extern int allow_utf8_glyphnames;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in charview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
+extern int mvshowgrid;				/* in metricsview.c */
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
@@ -392,6 +393,7 @@ static struct prefs_list {
 	{ "GridFitPointSize", pr_real, &gridfit_pointsizey, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitPointSizeX", pr_real, &gridfit_pointsizex, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitSameAs", pr_int, &gridfit_x_sameas_y, NULL, NULL, '\0', NULL, 1 },
+	{ "MVShowGrid", pr_int, &mvshowgrid, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
 	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
