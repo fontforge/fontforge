@@ -451,25 +451,69 @@ static void AttachCookies(char *databuf,struct siteinfo *siteinfo) {
     }
 }
 
-static int dumpfile(FILE *formdata,char *pathspec) {
-    FILE *font = fopen( pathspec,"rb");
+static int dumpfile(FILE *formdata,FILE *dump, char *pathspec) {
     int ch;
 
-    if ( font==NULL ) {
+    if ( dump==NULL )
+	dump = fopen( pathspec,"rb");
+    if ( dump==NULL ) {
 	fclose(formdata);
 	ff_progress_end_indicator();
 return( false );
     }
-    while ( (ch=getc(font))!=EOF )
+    while ( (ch=getc(dump))!=EOF )
 	putc(ch,formdata);
-    fclose(font);
+    fclose(dump);
     fprintf(formdata,"\r\n");		/* Final line break not part of message (I hope) */
+return( true );
+}
+
+static int HasLicense(SplineFont *sf,FILE *tmp) {
+    struct ttflangname *strings;
+    char *license=NULL, *enlicense=NULL, *lu=NULL, *enlu=NULL;
+
+    for ( strings=sf->names; strings!=NULL; strings = strings->next ) {
+	if ( strings->lang==0x409 ) {
+	    enlicense = strings->names[ttf_license];
+	    enlu = strings->names[ttf_licenseurl];
+	}
+	if ( license==NULL && strings->names[ttf_license]!=NULL )
+	    license = strings->names[ttf_license];
+	if ( lu==NULL && strings->names[ttf_licenseurl]!=NULL )
+	    lu = strings->names[ttf_licenseurl];
+    }
+    if ( tmp==NULL )
+return( license!=NULL || lu!=NULL );
+
+    if ( license==NULL && lu==NULL )
+return( false );
+
+    if ( enlicense!=NULL )
+	fwrite(enlicense,1,strlen(enlicense),tmp);
+    else if ( license!=NULL )
+	fwrite(license,1,strlen(license),tmp);
+
+    if ( license!=NULL && lu!=NULL ) {
+	char *info = "\r\n---------------------------\r\nSee Also:\r\n";
+	fwrite(info,1,strlen(info),tmp);
+    }
+
+    if ( enlu!=NULL )
+	fwrite(enlu,1,strlen(enlu),tmp);
+    else if ( lu!=NULL )
+	fwrite(lu,1,strlen(lu),tmp);
+    rewind(tmp);
 return( true );
 }
 
 static char *ImageMimeType(char *ext) {
     if ( ext==NULL )
 return( "application/octet-stream" );
+
+    if ( strcasecmp(ext,".txt")==0 )
+return( "text/plain" );
+    if ( strcasecmp(ext,".html")==0 || strcasecmp(ext,".htm")==0 )
+return( "text/html" );
 
     if ( strcasecmp(ext,".png")==0 )
 return( "image/png" );
@@ -483,6 +527,70 @@ return( "image/bmp" );
 return( "application/pdf" );
 
 return( "application/octet-stream" );
+}
+
+static int UploadAdditionalFile(FILE *extrafile, char *uploadfilename,
+	char *databuf, int datalen,
+	char *boundary, struct siteinfo *siteinfo, struct sockaddr_in *addr,
+	char *file_description ) {
+    FILE *formdata;
+    int code, soc;
+
+    formdata = tmpfile();
+    sprintf( boundary, "-------GaB03x-------%X-------", rand());
+    fprintf(formdata,"--%s\r\n", boundary );	/* Multipart data begins with a boundary */
+    fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
+		     "Content-Type: %s\r\n\r\n", uploadfilename, ImageMimeType(strrchr(uploadfilename,'.')) );
+    if ( !dumpfile(formdata,extrafile,NULL)) {
+	ff_post_error(_("File vanished"),_("The %s file we just created can no longer be opened."), file_description );
+return( false );
+    }
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"file_nicname\"\r\n"
+		     /*"Content-Type: text/plain; charset=UTF-8\r\n"*/"\r\n" );
+    fprintf(formdata,"\r\n" );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"form_submit\"\r\n\r\n" );
+    fprintf(formdata,"Submit\r\n" );	/* Although the "value" in the <input> is something else, this is what gets sent */
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"http_referer\"\r\n\r\n" );
+    fprintf(formdata,"http%%3A%%2F%%2Fopenfontlibrary.org%%2Fmedia%%2Ffile%%2Fmanage%%2F%s\r\n",
+	    strchr(siteinfo->upload_id,'/')+1 );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"fileadd\"\r\n\r\n" );
+    fprintf(formdata,"classname\r\n" );
+    fprintf(formdata,"--%s--\r\n", boundary );
+
+    sprintf( databuf, _("Transmitting %s..."), file_description );
+    ChangeLine2_8(databuf);
+    soc = makeConnection(addr);
+    if ( soc==-1 ) {
+	ff_progress_end_indicator();
+	fclose(formdata);
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
+return( false );
+    }
+    sprintf( databuf,"POST /media/file/add/%s HTTP/1.1\r\n"
+	"Host: www.openfontlibrary.org\r\n"
+	"Accept: text/html,text/plain\r\n"
+	"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n"
+	"User-Agent: FontForge\r\n"
+	"Content-Type: multipart/form-data; boundary=\"%s\"\r\n"
+	"Content-Length: %ld\r\n"
+	"Connection: close\r\n",
+	    strchr(siteinfo->upload_id,'/')==NULL ? siteinfo->upload_id : strchr(siteinfo->upload_id,'/')+1,
+	    boundary ,
+	    (long) ftell(formdata) );
+    AttachCookies(databuf,siteinfo);
+    strcat(databuf,"\r\n");
+    code = Converse( soc, databuf, datalen, formdata, ct_getuploadid, siteinfo );
+    if ( code<200 || code > 399 ) {
+	ff_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
+	ff_progress_end_indicator();
+return( false );
+    } else if ( code!=200 )
+	ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
+return( true );
 }
 
 int OFLibUploadFont(OFLibData *oflib) {
@@ -583,7 +691,7 @@ return( false );
     fprintf(formdata,"--%s\r\n", boundary );
     fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
 		     "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
-    if ( !dumpfile(formdata,oflib->pathspec)) {
+    if ( !dumpfile(formdata,NULL,oflib->pathspec)) {
 	free(databuf);
 	ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
@@ -596,7 +704,7 @@ return( false );
 	fprintf(formdata,"--Sub%s\r\n", boundary );
 	fprintf(formdata,"Content-Disposition: file; filename=\"%s\"\r\n"
 			 "Content-Type: application/octet-stream\r\n\r\n", fontfilename );
-	if ( !dumpfile(formdata,oflib->pathspec)) {
+	if ( !dumpfile(formdata,NULL,oflib->pathspec)) {
 	    free(databuf);
 	    ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
@@ -608,7 +716,7 @@ return( false );
 	fprintf(formdata,"Content-Disposition: file; filename=\"%s\"\r\n"
 			 "Content-Type: %s\r\n\r\n", previewname,
 			 ImageMimeType(strrchr(previewname,'.')));
-	if ( !dumpfile(formdata,oflib->previewimage)) {
+	if ( !dumpfile(formdata,NULL,oflib->previewimage)) {
 	    free(databuf);
 	    ff_post_error(_("Image file vanished"),_("The preview image we just created can no longer be opened.") );
 return( false );
@@ -709,66 +817,45 @@ return( false );
 
     if ( oflib->previewimage!=NULL ) {
 	char *previewname;
-	ChangeLine2_8("Preparing to transmit preview image...");
-	formdata = tmpfile();
-	sprintf( boundary, "-------GaB03x-------%X-------", rand());
-	previewname = strrchr(oflib->previewimage,'/');
-	if ( previewname==NULL ) fontfilename = oflib->previewimage;
-	else ++previewname;
-	fprintf(formdata,"--%s\r\n", boundary );	/* Multipart data begins with a boundary */
-	fprintf(formdata,"Content-Disposition: form-data; name=\"upload_file_name\"; filename=\"%s\"\r\n"
-			 "Content-Type: %s\r\n\r\n", previewname, ImageMimeType(strrchr(previewname,'.')) );
-	if ( !dumpfile(formdata,oflib->previewimage)) {
-	    free(databuf);
+	FILE *previewfile = fopen(oflib->previewimage,"rb");
+	if ( previewfile==NULL ) {
 	    ff_post_error(_("Preview file vanished"),_("The preview file we just created can no longer be opened.") );
+	} else {
+	    ChangeLine2_8("Preparing to transmit preview image...");
+	    previewname = strrchr(oflib->previewimage,'/');
+	    if ( previewname==NULL ) previewname = oflib->previewimage;
+	    else ++previewname;
+	    if ( !UploadAdditionalFile(previewfile,previewname,databuf,datalen,
+		    boundary,&siteinfo,&addr,"preview")) {
+		free(databuf);
 return( false );
+	    }
 	}
-	fprintf(formdata,"--%s\r\n", boundary );
-	fprintf(formdata,"Content-Disposition: form-data; name=\"file_nicname\"\r\n"
-			 /*"Content-Type: text/plain; charset=UTF-8\r\n"*/"\r\n" );
-	fprintf(formdata,"\r\n" );
-	fprintf(formdata,"--%s\r\n", boundary );
-	fprintf(formdata,"Content-Disposition: form-data; name=\"form_submit\"\r\n\r\n" );
-	fprintf(formdata,"Submit\r\n" );	/* Although the "value" in the <input> is something else, this is what gets sent */
-	fprintf(formdata,"--%s\r\n", boundary );
-	fprintf(formdata,"Content-Disposition: form-data; name=\"http_referer\"\r\n\r\n" );
-	fprintf(formdata,"http%%3A%%2F%%2Fopenfontlibrary.org%%2Fmedia%%2Ffile%%2Fmanage%%2F%s\r\n",
-		strchr(siteinfo.upload_id,'/')+1 );
-	fprintf(formdata,"--%s\r\n", boundary );
-	fprintf(formdata,"Content-Disposition: form-data; name=\"fileadd\"\r\n\r\n" );
-	fprintf(formdata,"classname\r\n" );
-	fprintf(formdata,"--%s--\r\n", boundary );
+    }
 
-	ChangeLine2_8("Transmitting preview...");
-	soc = makeConnection(&addr);
-	if ( soc==-1 ) {
-	    ff_progress_end_indicator();
+/* Currently the OFLib will not accept txt files. Nor will it accept afm files */
+    if ( oflib->upload_fontlog && oflib->sf->fontlog ) {
+	FILE *tmp = tmpfile();
+	ChangeLine2_8("Preparing to transmit font log file...");
+	fwrite(oflib->sf->fontlog,1,strlen(oflib->sf->fontlog),tmp);
+	rewind(tmp);
+	if ( !UploadAdditionalFile(tmp,"FontLog.txt",databuf,datalen,
+		boundary,&siteinfo,&addr,"font log")) {
 	    free(databuf);
-	    fclose(formdata);
-	    ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
 return( false );
 	}
-	sprintf( databuf,"POST /media/file/add/%s HTTP/1.1\r\n"
-	    "Host: www.openfontlibrary.org\r\n"
-	    "Accept: text/html,text/plain\r\n"
-	    "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n"
-	    "User-Agent: FontForge\r\n"
-	    "Content-Type: multipart/form-data; boundary=\"%s\"\r\n"
-	    "Content-Length: %ld\r\n"
-	    "Connection: close\r\n",
-		strchr(siteinfo.upload_id,'/')==NULL ? siteinfo.upload_id : strchr(siteinfo.upload_id,'/')+1,
-		boundary ,
-		(long) ftell(formdata) );
-	AttachCookies(databuf,&siteinfo);
-	strcat(databuf,"\r\n");
-	code = Converse( soc, databuf, datalen, formdata, ct_getuploadid, &siteinfo );
-	if ( code<200 || code > 399 ) {
-	    ff_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
-	    ff_progress_end_indicator();
-	    free( databuf );
+    }
+
+    if ( oflib->upload_fontlog && HasLicense(oflib->sf,NULL) ) {
+	FILE *tmp = tmpfile();
+	ChangeLine2_8("Preparing to transmit license file...");
+	HasLicense(oflib->sf,tmp);
+	rewind(tmp);
+	if ( !UploadAdditionalFile(tmp,"License.txt",databuf,datalen,
+		boundary,&siteinfo,&addr,"license")) {
+	    free(databuf);
 return( false );
-	} else if ( code!=200 )
-	    ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
+	}
     }
     ff_progress_end_indicator();
     free( databuf );

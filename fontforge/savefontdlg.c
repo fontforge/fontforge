@@ -1287,6 +1287,8 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
     oflib.artists  = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibArtists));
     oflib.notsafeforwork = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibNotSafe));
     oflib.oflicense = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibOFL));
+    oflib.upload_license = true;
+    oflib.upload_fontlog = true;
     if ( gendefaultimage )
 	oflib.previewimage = SFDefaultImage(d->sf,NULL);
     else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibNoPreview)) )
