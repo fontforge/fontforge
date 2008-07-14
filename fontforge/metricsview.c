@@ -32,6 +32,7 @@
 #include <utype.h>
 #include <math.h>
 
+int mvshowgrid = mv_hidemovinggrid;
 static int mv_antialias = true;
 static double mv_scales[] = { 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
 
@@ -78,6 +79,28 @@ return;
 }
 #endif
 
+static int MVShowGrid(MetricsView *mv) {
+    if ( mv->showgrid==mv_hidegrid || (mv->showgrid==mv_hidemovinggrid && mv->pressed ))
+return( false );
+
+return( true );
+}
+
+static void MVDrawLine(MetricsView *mv,GWindow pixmap,
+	int xtop, int top,int xbot,int bot,Color col) {
+    if ( mv->showgrid == mv_partialgrid ) {
+	int y1, y2;
+	int x1, x2;
+	y1 =  bot +   ( top- bot)/4;
+	x1 = xbot +   (xtop-xbot)/4;
+	y2 =  bot + 4*( top- bot)/5;
+	x2 = xbot + 4*(xtop-xbot)/5;
+	GDrawDrawLine(pixmap,xtop,top,x2,y2,col);
+	GDrawDrawLine(pixmap,x1,y1,xbot,bot,col);
+    } else
+	GDrawDrawLine(pixmap,xtop,top,xbot,bot,col);
+}
+
 static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     /* Expose routine for vertical metrics */
     GRect *clip, r, old2;
@@ -101,18 +124,18 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	r.x = mv->xstart;
     }
     GDrawPushClip(pixmap,&r,&old2);
-    if ( mv->bdf==NULL && mv->showgrid ) {
+    if ( mv->bdf==NULL && MVShowGrid(mv) ) {
 	y = mv->perchar[0].dy-mv->yoff;
-	GDrawDrawLine(pixmap,0,y,mv->dwidth,y,widthcol);
+	MVDrawLine(mv,pixmap,0,y,mv->dwidth,y,widthcol);
     }
 
     si = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
 	y = mv->perchar[i].dy-mv->yoff;
-	if ( mv->bdf==NULL && mv->showgrid ) {
+	if ( mv->bdf==NULL &&  MVShowGrid(mv)) {
 	    int yp = y+mv->perchar[i].dheight+mv->perchar[i].kernafter;
-	    GDrawDrawLine(pixmap,0, yp,mv->dwidth,yp,widthcol);
+	    MVDrawLine(mv,pixmap,0, yp,mv->dwidth,yp,widthcol);
 	}
 	y += mv->perchar[i].yoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
@@ -163,12 +186,12 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	    GDrawDrawGlyph(pixmap,&gi,NULL,x,y);
 	}
     }
-    if ( si!=-1 && mv->bdf==NULL && mv->showgrid ) {
+    if ( si!=-1 && mv->bdf==NULL &&  MVShowGrid(mv)) {
 	y = mv->perchar[si].dy-mv->yoff;
 	if ( si!=0 )
-	    GDrawDrawLine(pixmap,0,y,mv->dwidth,y,kernlinecol);
+	    MVDrawLine(mv,pixmap,0,y,mv->dwidth,y,kernlinecol);
 	y += mv->perchar[si].dheight+mv->perchar[si].kernafter;
-	GDrawDrawLine(pixmap,0,y,mv->dwidth,y,rbearinglinecol);
+	MVDrawLine(mv,pixmap,0,y,mv->dwidth,y,rbearinglinecol);
     }
     GDrawPopClip(pixmap,&old2);
 }
@@ -225,14 +248,14 @@ return;
 	r.x = mv->xstart;
     }
     GDrawPushClip(pixmap,&r,&old2);
-    if ( mv->bdf==NULL && mv->showgrid ) {
+    if ( mv->bdf==NULL && MVShowGrid(mv) ) {
 	x = mv->perchar[0].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->dwidth - x - mv->perchar[0].dwidth - mv->perchar[0].kernafter;
-	GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,widthcol);
+	MVDrawLine(mv,pixmap,x,mv->topend,x,mv->displayend,widthcol);
 	x_iaoffh = rint((ybase-mv->topend)*s), x_iaoffl = rint((mv->displayend-ybase)*s);
 	if ( ItalicConstrained && x_iaoffh!=0 ) {
-	    GDrawDrawLine(pixmap,x+x_iaoffh,mv->topend,x-x_iaoffl,mv->displayend,italicwidthcol);
+	    MVDrawLine(mv,pixmap,x+x_iaoffh,mv->topend,x-x_iaoffl,mv->displayend,italicwidthcol);
 	}
     }
     si = -1;
@@ -241,11 +264,11 @@ return;
 	x = mv->perchar[i].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->dwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
-	if ( mv->bdf==NULL && mv->showgrid ) {
+	if ( mv->bdf==NULL && MVShowGrid(mv) ) {
 	    int xp = x+mv->perchar[i].dwidth+mv->perchar[i].kernafter;
-	    GDrawDrawLine(pixmap,xp, mv->topend,xp,mv->displayend,widthcol);
+	    MVDrawLine(mv,pixmap,xp, mv->topend,xp,mv->displayend,widthcol);
 	    if ( ItalicConstrained && x_iaoffh!=0 ) {
-		GDrawDrawLine(pixmap,xp+x_iaoffh,mv->topend,xp-x_iaoffl,mv->displayend,italicwidthcol);
+		MVDrawLine(mv,pixmap,xp+x_iaoffh,mv->topend,xp-x_iaoffl,mv->displayend,italicwidthcol);
 	    }
 	}
 	if ( mv->right_to_left )
@@ -306,17 +329,17 @@ return;
 		MVDrawAnchorPoint(pixmap,mv,i,apl);
 #endif
     }
-    if ( si!=-1 && mv->bdf==NULL && mv->showgrid ) {
+    if ( si!=-1 && mv->bdf==NULL && MVShowGrid(mv) ) {
 	x = mv->perchar[si].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->dwidth - x;
 	if ( si!=0 )
-	    GDrawDrawLine(pixmap,x,mv->topend,x,mv->displayend,kernlinecol);
+	    MVDrawLine(mv,pixmap,x,mv->topend,x,mv->displayend,kernlinecol);
 	if ( mv->right_to_left )
 	    x -= mv->perchar[si].dwidth+mv->perchar[si].kernafter;
 	else
 	    x += mv->perchar[si].dwidth+mv->perchar[si].kernafter;
-	GDrawDrawLine(pixmap,x, mv->topend,x,mv->displayend,rbearinglinecol);
+	MVDrawLine(mv,pixmap,x, mv->topend,x,mv->displayend,rbearinglinecol);
     }
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old);
@@ -1680,6 +1703,9 @@ return( true );
 #define MID_Prev	2006
 #define MID_Outline	2007
 #define MID_ShowGrid	2008
+#define MID_HideGrid	2009
+#define MID_PartialGrid 2010
+#define MID_HideGridWhenMoving	2011
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_AntiAlias	2014
@@ -2482,7 +2508,16 @@ static void MVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuShowGrid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    mv->showgrid = !mv->showgrid;
+    if ( mi->mid == MID_ShowGrid )
+	mv->showgrid = mv_showgrid;
+    else if ( mi->mid == MID_HideGrid )
+	mv->showgrid = mv_hidegrid;
+    else if ( mi->mid == MID_PartialGrid )
+	mv->showgrid = mv_partialgrid;
+    else if ( mi->mid == MID_HideGridWhenMoving )
+	mv->showgrid = mv_hidemovinggrid;
+    mvshowgrid = mv->showgrid;
+    SavePrefs(true);
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
@@ -2823,6 +2858,35 @@ static void lylistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     mi->sub = sub;
 }	
 
+static GMenuItem2 gdlist[] = {
+    { { (unichar_t *) N_("_Show"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Show Grid|No Shortcut"), NULL, NULL, MVMenuShowGrid, MID_ShowGrid },
+    { { (unichar_t *) N_("_Partial"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Partial Grid|No Shortcut"), NULL, NULL, MVMenuShowGrid, MID_PartialGrid },
+    { { (unichar_t *) N_("Hide when _Moving"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Hide Grid when Moving|No Shortcut"), NULL, NULL, MVMenuShowGrid, MID_HideGridWhenMoving },
+    { { (unichar_t *) N_("_Hide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Hide Grid|No Shortcut"), NULL, NULL, MVMenuShowGrid, MID_HideGrid },
+    { NULL }
+};
+
+static void gdlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_ShowGrid:
+	    mi->ti.checked = mv->showgrid == mv_showgrid;
+	  break;
+	  case MID_HideGrid:
+	    mi->ti.checked = mv->showgrid == mv_hidegrid;
+	  break;
+	  case MID_PartialGrid:
+	    mi->ti.checked = mv->showgrid == mv_partialgrid;
+	  break;
+	  case MID_HideGridWhenMoving:
+	    mi->ti.checked = mv->showgrid == mv_hidemovinggrid;
+	  break;
+	}
+    }
+}
+
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Z_oom out"), (GImage *) "viewzoomout.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|Alt+Ctl+-"), NULL, NULL, MVMenuScale, MID_ZoomOut },
     { { (unichar_t *) N_("Zoom _in"), (GImage *) "viewzoomin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Zoom in|Alt+Ctl+Shft++"), NULL, NULL, MVMenuScale, MID_ZoomIn },
@@ -2840,7 +2904,7 @@ static GMenuItem2 vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Hide _Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Hide Grid|Ctl+D"), NULL, NULL, MVMenuShowGrid, MID_ShowGrid },
+    { { (unichar_t *) N_("Show _Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, NULL, gdlist, gdlistcheck, MVMenuShowGrid, MID_ShowGrid },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anti Alias|Ctl+5"), NULL, NULL, MVMenuAA, MID_AntiAlias },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Vertical"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical|No Shortcut"), NULL, NULL, MVMenuVertical, MID_Vertical },
@@ -3008,9 +3072,6 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_ZoomOut:
 	    vwlist[i].ti.disabled = mv->bdf!=NULL || mv->scale_index>=sizeof(mv_scales)/sizeof(mv_scales[0])-1;
-	  break;
-	  case MID_ShowGrid:
-	    vwlist[i].ti.text = (unichar_t *) (mv->showgrid?_("Hide Grid"):_("Show _Grid"));
 	  break;
 	  case MID_AntiAlias:
 	    vwlist[i].ti.checked = mv->antialias;
@@ -3363,6 +3424,8 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	    CharViewCreate(mv->glyphs[within].sc,mv->fv,-1);
 	else
 	    BitmapViewCreate(mv->bdf->glyphs[mv->glyphs[within].sc->orig_pos],mv->bdf,mv->fv,-1);
+	if ( mv->showgrid==mv_hidemovinggrid )
+	    GDrawRequestExpose(mv->gw,NULL,false);
     } else if ( event->type == et_mouseup && mv->pressed ) {
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
@@ -3379,7 +3442,8 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 		    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
 			    mv->perchar[i-1].kernafter ;
 		GDrawRequestExpose(mv->gw,NULL,false);
-	    }
+	    } else if ( mv->showgrid==mv_hidemovinggrid )
+		GDrawRequestExpose(mv->gw,NULL,false);
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;
 	    diff = diff/scale;
@@ -3401,6 +3465,8 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	    if ( j!=within && mv->perchar[j].selected )
 		MVDeselectChar(mv,j);
 	MVSelectChar(mv,within);
+	if ( mv->showgrid==mv_hidemovinggrid )
+	    GDrawRequestExpose(mv->gw,NULL,false);
     }
 }
 
@@ -3656,6 +3722,8 @@ return;
 	    CharViewCreate(mv->glyphs[within].sc,mv->fv,-1);
 	else
 	    BitmapViewCreate(mv->bdf->glyphs[mv->glyphs[within].sc->orig_pos],mv->bdf,mv->fv,-1);
+	if ( mv->showgrid==mv_hidemovinggrid )
+	    GDrawRequestExpose(mv->gw,NULL,false);
     } else if ( event->type == et_mouseup && mv->pressed ) {
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	mv->pressed = false;
@@ -3692,6 +3760,8 @@ return;
 	    if ( transform[4]!=0 )
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	}
+	if ( mv->showgrid==mv_hidemovinggrid )
+	    GDrawRequestExpose(mv->gw,NULL,false);
     } else if ( event->type == et_mouseup && mv->bdf!=NULL && within!=-1 ) {
 	if ( mv->pressed_apl!=NULL ) {
 	    mv->pressed_apl->selected = false;
@@ -3701,6 +3771,8 @@ return;
 	    if ( j!=within && mv->perchar[j].selected )
 		MVDeselectChar(mv,j);
 	MVSelectChar(mv,within);
+	if ( mv->showgrid==mv_hidemovinggrid )
+	    GDrawRequestExpose(mv->gw,NULL,false);
     }
 }
 
@@ -3956,7 +4028,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->fv = fv;
     mv->sf = fv->b.sf;
     mv->bdf = bdf;
-    mv->showgrid = true;
+    mv->showgrid = mvshowgrid;
     mv->antialias = mv_antialias;
     mv->scale_index = 2;
     mv->next = fv->b.sf->metrics;
