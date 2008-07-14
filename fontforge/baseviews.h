@@ -179,6 +179,8 @@ typedef struct {
     int notsafeforwork;
     int oflicense;
     char *previewimage;			/* NULL => No image */
+    uint8 upload_license;
+    uint8 upload_fontlog;
     char *upload_id;			/* Way to manipulate upload on OFLib */
 } OFLibData;
 
