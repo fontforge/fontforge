@@ -1101,7 +1101,7 @@ static int MV_KernChanged(GGadget *g, GEvent *e) {
 
     if ( e->type!=et_controlevent )
 return( true );
-    if ( which>=mv->glyphcnt-1 )
+    if ( which>mv->glyphcnt-1 || which==0 )
 return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
