@@ -474,6 +474,7 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
     
     BlueData *bd;
     double middle, scale, stem_scale, stem_add, stroke_add, width_new;
+    double top, bot, lpos, rpos, fuzz = gd->fuzz;
     StemData *stem, *test, *upper, *lower;
     int i, j, fcnt, expanded;
     struct fixed_maps *fix = &genchange->m;
@@ -515,19 +516,41 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
         if (stem->blue != -1 ) {
             pm = &fix->maps[stem->blue];
             width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
-            if ( pm->cur_width < 0 ) {
-                stem->newright.y = floor( InterpolateVal( 
-                    pm->current + pm->cur_width,pm->current,pm->desired + pm->des_width,pm->desired,
-                    stem->right.y + stroke_add/2 ) + .5 );
+            lpos = stem->left.y - stroke_add/2;
+            rpos = stem->right.y + stroke_add/2;
+            if ( pm->cur_width < 0 && ( !stem->blue || stem->width == 21 ) &&
+                rpos >= pm->current + pm->cur_width - fuzz && rpos <= pm->current + fuzz ) {
+                
+                top = pm->current; bot = pm->current + pm->cur_width;
+                if ( rpos >= bot && rpos <= top )
+                    stem->newright.y = floor( InterpolateVal( bot,top,
+                        pm->desired + pm->des_width,pm->desired,rpos ) + .5 );
+                else if ( rpos < bot )
+                    stem->newright.y = floor( pm->desired + pm->des_width - 
+                        ( bot - rpos ) * stem_scale + .5 );
+                else if ( rpos > top )
+                    stem->newright.y = floor( pm->desired + 
+                        ( rpos - top ) * stem_scale + .5 );
+                    
                 if ( !stem->ghost )
                     stem->newleft.y = stem->newright.y + floor( width_new + .5 );
                 else
                     stem->newleft.y = stem->newright.y + 21;
                 stem->ldone = stem->rdone = true;
-            } else if ( pm->cur_width > 0 ) {
-                stem->newleft.y = floor( InterpolateVal( 
-                    pm->current,pm->current + pm->cur_width,pm->desired,pm->desired + pm->des_width,
-                    stem->left.y - stroke_add/2 ) + .5 );
+            } else if ( pm->cur_width > 0 && ( !stem->blue || stem->width == 20 ) &&
+                lpos >= pm->current - fuzz && lpos <= pm->current + pm->cur_width + fuzz  ) {
+                
+                top = pm->current + pm->cur_width; bot = pm->current;
+                if ( lpos >= bot && lpos <= top )
+                    stem->newleft.y = floor( InterpolateVal( bot,top,
+                        pm->desired,pm->desired + pm->des_width,lpos ) + .5 );
+                else if ( lpos < bot )
+                    stem->newleft.y = floor( pm->desired - 
+                        ( bot - lpos ) * stem_scale + .5 );
+                else if ( lpos > top )
+                    stem->newleft.y = floor( pm->desired + pm->des_width + 
+                        ( lpos - top ) * stem_scale + .5 );
+
                 if ( !stem->ghost )
                     stem->newright.y = stem->newleft.y - floor( width_new + .5 );
                 else
