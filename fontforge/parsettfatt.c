@@ -2263,11 +2263,16 @@ return;
 #endif
 }
 
-static struct scripts *readttfscripts(FILE *ttf,int32 pos, struct ttfinfo *info) {
+static struct scripts *readttfscripts(FILE *ttf,int32 pos, struct ttfinfo *info, int isgpos) {
     int i,j,k,cnt;
     int deflang, lcnt;
     struct scripts *scripts;
 
+    if ( pos>=info->g_bounds ) {
+	LogError(_("Attempt to read script data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	info->bad_ot = true;
+return( NULL );
+    }
     fseek(ttf,pos,SEEK_SET);
     cnt = getushort(ttf);
     if ( cnt<=0 )
@@ -2301,15 +2306,32 @@ return( NULL );
 	    scripts[i].languages[j].offset = scripts[i].offset+getushort(ttf);
 	}
 	for ( j=0; j<lcnt; ++j ) {
+	    if ( pos+scripts[i].languages[j].offset>=info->g_bounds ) {
+		LogError(_("Attempt to read script data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+		info->bad_ot = true;
+return( NULL );
+	    }
 	    fseek(ttf,pos+scripts[i].languages[j].offset,SEEK_SET);
 	    (void) getushort(ttf);	/* lookup ordering table undefined */
 	    scripts[i].languages[j].req = getushort(ttf);
 	    scripts[i].languages[j].fcnt = getushort(ttf);
+	    if ( feof(ttf)) {
+		LogError(_("End of file when reading scripts in %s table"), isgpos ? "GPOS" : "GSUB" );
+		info->bad_ot = true;
+return( NULL );
+	    }
 	    scripts[i].languages[j].features = galloc(scripts[i].languages[j].fcnt*sizeof(uint16));
 	    for ( k=0; k<scripts[i].languages[j].fcnt; ++k )
 		scripts[i].languages[j].features[k] = getushort(ttf);
 	}
     }
+
+    if ( feof(ttf)) {
+	LogError(_("End of file in %s table"), isgpos ? "GPOS" : "GSUB" );
+	info->bad_ot = true;
+return( NULL );
+    }
+
 return( scripts );
 }
 
@@ -2321,6 +2343,11 @@ static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct tt
     struct feature *features;
     int parameters;
 
+    if ( pos>=info->g_bounds ) {
+	LogError(_("Attempt to read feature data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	info->bad_ot = true;
+return( NULL );
+    }
     fseek(ttf,pos,SEEK_SET);
     info->feature_cnt = cnt = getushort(ttf);
     if ( cnt<=0 )
@@ -2338,16 +2365,21 @@ return( NULL );
     }
 
     for ( i=0; i<cnt; ++i ) {
+	if ( pos+pos+features[i].offset>=info->g_bounds ) {
+	    LogError(_("Attempt to read feature data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	    info->bad_ot = true;
+return( NULL );
+	}
 	fseek(ttf,pos+features[i].offset,SEEK_SET);
 	parameters = getushort(ttf);
-	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 )
+	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 && !feof(ttf))
 	    readttfsizeparameters(ttf,pos+parameters,
 		    pos+parameters+features[i].offset,info);
 	features[i].lcnt = getushort(ttf);
-	if ( features[i].lcnt<0 ) {
-	    LogError(_("Bad lookup count in feature.\n") );
+	if ( feof(ttf) ) {
+	    LogError(_("End of file when reading features in %s table"), isgpos ? "GPOS" : "GSUB" );
 	    info->bad_ot = true;
-	    features[i].lcnt = 0;
+return( NULL );
 	}
 	features[i].lookups = galloc(features[i].lcnt*sizeof(uint16));
 	for ( j=0; j<features[i].lcnt; ++j )
@@ -2362,6 +2394,12 @@ static struct lookup *readttflookups(FILE *ttf,int32 pos, struct ttfinfo *info, 
     struct lookup *lookups;
     OTLookup *otlookup, *last=NULL;
     struct lookup_subtable *st;
+
+    if ( pos>=info->g_bounds ) {
+	LogError(_("Attempt to read lookup data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	info->bad_ot = true;
+return( NULL );
+    }
 
     fseek(ttf,pos,SEEK_SET);
     info->lookup_cnt = cnt = getushort(ttf);
@@ -2378,6 +2416,11 @@ return( NULL );
     for ( i=0; i<cnt; ++i )
 	lookups[i].offset = getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
+	if ( pos+lookups[i].offset>=info->g_bounds ) {
+	    LogError(_("Attempt to read lookup data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	    info->bad_ot = true;
+return( NULL );
+	}
 	fseek(ttf,pos+lookups[i].offset,SEEK_SET);
 	lookups[i].type = getushort(ttf);
 	lookups[i].flags = getushort(ttf);
@@ -2396,6 +2439,11 @@ return( NULL );
 	otlookup->lookup_type = (isgpos<<8) | lookups[i].type;
 	otlookup->lookup_flags = lookups[i].flags;
 	otlookup->lookup_index = i;
+	if ( feof(ttf) ) {
+	    LogError(_("End of file when reading lookups in %s table"), isgpos ? "GPOS" : "GSUB" );
+	    info->bad_ot = true;
+return( NULL );
+	}
 	for ( j=0; j<lookups[i].subtabcnt; ++j ) {
 	    st = chunkalloc(sizeof(struct lookup_subtable));
 	    st->next = otlookup->subtables;
@@ -2718,7 +2766,7 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     feature_off = getushort(ttf);
     lookup_start = base+getushort(ttf);
 
-    scripts = readttfscripts(ttf,base+script_off,info);
+    scripts = readttfscripts(ttf,base+script_off,info,gpos);
     features = readttffeatures(ttf,base+feature_off,gpos,info);
     /* It is legal to have lookups with no features or scripts */
     /* For example if all the lookups were controlled by the JSTF table */
