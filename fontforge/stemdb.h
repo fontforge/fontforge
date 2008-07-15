@@ -32,6 +32,7 @@
 typedef struct glyphdata {
     SplineFont *sf;
     BlueData bd;
+    int fuzz;
     SplineChar *sc;
     int layer;
     int emsize;

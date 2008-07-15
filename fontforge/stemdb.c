@@ -27,7 +27,10 @@
 #include "pfaedit.h"
 #include "edgelist2.h"
 #include "stemdb.h"
+
 #include <math.h>
+#include <utype.h>
+
 #define GLYPH_DATA_DEBUG 0
 #define PI 3.14159265358979323846264338327
 
@@ -54,6 +57,15 @@ struct st {
     Spline *s;
     double st, lt;
 };
+
+static int GetBlueFuzz(SplineFont *sf) {
+    char *str, *end;
+
+    if ( sf == NULL || sf->private == NULL || 
+        (str=PSDictHasEntry( sf->private,"BlueFuzz" )) == NULL || !isdigit( str[0] ))
+return 1;
+return strtod( str, &end );
+}
 
 static int IsVectorHV( BasePoint *vec,double fudge,int check_zero ) {
     if ( check_zero ) {
@@ -477,8 +489,8 @@ static void AssignStemToPoint( struct pointdata *pd,struct stemdata *stem,int is
     int i, *stemcnt, **is_l;
     
     stems = ( is_next ) ? &pd->nextstems : &pd->prevstems;
-    stemcnt = ( is_next) ? &pd->nextcnt : &pd->prevcnt;
-    is_l = ( is_next) ? &pd->next_is_l : &pd->prev_is_l;
+    stemcnt = ( is_next ) ? &pd->nextcnt : &pd->prevcnt;
+    is_l = ( is_next ) ? &pd->next_is_l : &pd->prev_is_l;
     for ( i=0; i<*stemcnt; i++ ) {
         if ((*stems)[i] == stem )
 return;
@@ -493,12 +505,12 @@ return;
 
 int IsStemAssignedToPoint( struct pointdata *pd,struct stemdata *stem,int is_next ) {
     struct stemdata **stems;
-    int i, *stemcnt;
+    int i, stemcnt;
     
     stems = ( is_next ) ? pd->nextstems : pd->prevstems;
-    stemcnt = ( is_next) ? &pd->nextcnt : &pd->prevcnt;
+    stemcnt = ( is_next ) ? pd->nextcnt : pd->prevcnt;
     
-    for ( i=0; i<*stemcnt; i++ ) {
+    for ( i=0; i<stemcnt; i++ ) {
         if ( stems[i] == stem )
 return( i );
     }
@@ -4416,7 +4428,9 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
     struct stem_chunk *chunk;
     struct pointdata *pd;
     real base;
-    int i, j, leftfound, rightfound, has_h, peak;
+    int i, j, leftfound, rightfound, has_h, peak, fuzz;
+    
+    fuzz = gd->fuzz;
 
     /* look for any stems stretching from one zone to another and remove them */
     /*  (I used to turn them into ghost hints here, but that didn't work (for */
@@ -4433,9 +4447,9 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
         
 	leftfound = rightfound = -1;
 	for ( j=0; j<bd->bluecnt; ++j ) {
-	    if ( stem->left.y>=bd->blues[j][0]-1 && stem->left.y<=bd->blues[j][1]+1 )
+	    if ( stem->left.y>=bd->blues[j][0]-fuzz && stem->left.y<=bd->blues[j][1]+fuzz )
 		leftfound = j;
-	    else if ( stem->right.y>=bd->blues[j][0]-1 && stem->right.y<=bd->blues[j][1]+1 )
+	    else if ( stem->right.y>=bd->blues[j][0]-fuzz && stem->right.y<=bd->blues[j][1]+fuzz )
 		rightfound = j;
 	}
         /* Assign value 2 to indicate this stem should be ignored also for TTF instrs */
@@ -4474,7 +4488,7 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
 	pd = &gd->points[i];
 	base = pd->sp->me.y;
 	for ( j=0; j<bd->bluecnt; ++j ) {
-	    if ( base>=bd->blues[j][0]-1 && base<=bd->blues[j][1]+1 ) {
+	    if ( base>=bd->blues[j][0]-fuzz && base<=bd->blues[j][1]+fuzz ) {
                 peak = IsSplinePeak( gd,pd,false,false,7 );
                 if ( peak > 0 ) {
                     stem = FindOrMakeGhostStem( gd,pd->sp,j,20 );
@@ -5351,6 +5365,7 @@ return( NULL );
     gd->sf = sc->parent;
     gd->emsize = em_size;
     gd->order2 = ( sc->parent != NULL ) ? sc->parent->layers[layer].order2 : false;
+    gd->fuzz = GetBlueFuzz( sc->parent );
     
     dist_error_hv = .0035*gd->emsize;
     dist_error_diag = .0065*gd->emsize;
