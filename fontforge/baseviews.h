@@ -387,6 +387,7 @@ struct genericchange {
 
 extern void FVAddSmallCaps(FontViewBase *fv,struct genericchange *genchange);
 extern void FVGenericChange(FontViewBase *fv,struct genericchange *genchange);
+extern void CVGenericChange(CharViewBase *cv,struct genericchange *genchange);
 
 struct xheightinfo {
     double xheight_current, xheight_desired;
