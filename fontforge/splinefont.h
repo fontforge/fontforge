@@ -2587,6 +2587,7 @@ extern Undoes *BCPreserveState(BDFChar *bc);
 extern void BCDoRedo(BDFChar *bc);
 extern void BCDoUndo(BDFChar *bc);
 
+extern int isaccent(int uni);
 extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc, int layer);
 extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int onlyaccents);
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);

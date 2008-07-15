@@ -1264,7 +1264,10 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
             min_new = hvstem->newright.x;
         }
     }
-    hscale = ( max_new - min_new )/( max - min );
+    if ( max==min )
+	hscale = 1;
+    else
+	hscale = ( max_new - min_new )/( max - min );
     
     stem_b.miny = orig_b->miny; stem_b.maxy = orig_b->maxy;
     GetDStemBounds( gd,stem,&stem_b.miny,&stem_b.maxy,false );
@@ -1282,7 +1285,10 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
             min_new = hvstem->newleft.y;
         }
     }
-    vscale = ( max_new - min_new )/( max - min );
+    if ( max==min )
+	vscale = 1;
+    else
+	vscale = ( max_new - min_new )/( max - min );
     
     /* Now scale positions of the left and right virtual points on the stem
     /* by the ratios used to resize horizontal and vertical stems. We need
@@ -1450,6 +1456,16 @@ return;
         AlignPointPair( stem,stem->keypts[1],stem->keypts[3],hscale,vscale );
 }
 
+static void NanCheck(GlyphData *gd) {
+    int i;
+
+    for ( i=gd->pcnt-1; i>=0 ; --i ) {
+	PointData *pd = &gd->points[i];
+	if ( !finite(pd->newpos.x) || !finite(pd->newpos.y) )
+	    IError( "NaN in change glyph" );
+    }
+}
+
 static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange ) {
     real scale[6];
     DBounds orig_b, new_b;
@@ -1559,16 +1575,21 @@ return;
     }
 
     StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,true );
+ NanCheck(gd);
     if ( genchange->use_vert_mapping && genchange->m.cnt > 0 )
         HStemResize( sc_sc->layers[layer].splines,gd,&orig_b,&new_b,genchange );
     else
         StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,false );
+ NanCheck(gd);
     PosStemPoints( gd,genchange->stem_width_scale,dcnt > 0,true );
+ NanCheck(gd);
     PosStemPoints( gd,genchange->stem_height_scale,dcnt > 0,false );
+ NanCheck(gd);
     if ( genchange->dstem_control ) {
         for ( i=0; i<dcnt; i++ )
             FixDStem( gd,dstems[i],dstems,dcnt,&orig_b,&new_b,genchange );
     }
+ NanCheck(gd);
     /* Our manipulations with DStems may have moved some points outside of 
     /* borders of the bounding box we have previously calculated. So adjust
     /* those borders now, as they may be important for point interpolations */
@@ -1583,10 +1604,15 @@ return;
         else if ( pd->touched & tf_d && pd->newpos.y > new_b.maxy )
             new_b.maxy = pd->newpos.y;
     }
+ NanCheck(gd);
     InterpolateStrong( gd,&orig_b,&new_b,true );
+ NanCheck(gd);
     InterpolateStrong( gd,&orig_b,&new_b,false );
+ NanCheck(gd);
     InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_width_scale,true );
+ NanCheck(gd);
     InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_height_scale,false );
+ NanCheck(gd);
     InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,genchange->hcounter_scale,true );
     InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,
         genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale,false );
@@ -1984,6 +2010,36 @@ static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
     }
 }
 
+static SplineChar *MakeSmallCapName(char *buffer, int bufsize, SplineFont *sf,
+	SplineChar *sc,struct genericchange *genchange) {
+    SplineChar *lc_sc;
+    char *ext;
+    int lower;
+
+    if ( sc->unicodeenc>=0 && sc->unicodeenc<=0x10000 ) {
+	lower = tolower(sc->unicodeenc);
+	ext = isupper(sc->unicodeenc) ? genchange->extension_for_letters :
+	      islower(sc->unicodeenc) ? genchange->extension_for_letters :
+		sc->unicodeenc==0xdf  ? genchange->extension_for_letters :
+		sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06 ? genchange->extension_for_letters :
+					    genchange->extension_for_symbols;
+    } else {
+	lower = sc->unicodeenc;
+	ext = genchange->extension_for_symbols;
+    }
+    lc_sc = SFGetChar(sf,lower,NULL);
+    if ( lc_sc!=NULL )
+	snprintf(buffer,bufsize,"%s.%s", lc_sc->name, ext );
+    else {
+	const char *pt = StdGlyphName(buffer,lower,sf->uni_interp,sf->for_new_glyphs);
+	if ( pt!=buffer )
+	    strcpy(buffer,pt);
+	strcat(buffer,".");
+	strcat(buffer,ext);
+    }
+return( lc_sc );
+}
+
 static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
 	uint32 script,struct lookup_subtable **c2sc,struct lookup_subtable **smcp,
 	FontViewBase *fv, struct genericchange *genchange) {
@@ -1991,29 +2047,9 @@ static SplineChar *MakeSmallCapGlyphSlot(SplineFont *sf,SplineChar *cap_sc,
     char buffer[300];
     PST *pst;
     int enc;
-    char *ext;
-    int lower, script_index;
+    int script_index;
 
-    if ( cap_sc->unicodeenc>=0 && cap_sc->unicodeenc<=0x10000 ) {
-	lower = tolower(cap_sc->unicodeenc);
-	ext = isupper(cap_sc->unicodeenc) ? genchange->extension_for_letters :
-		cap_sc->unicodeenc==0xdf  ? genchange->extension_for_letters :
-		cap_sc->unicodeenc>=0xfb00 && cap_sc->unicodeenc<=0xfb06 ? genchange->extension_for_letters :
-					    genchange->extension_for_symbols;
-    } else {
-	lower = cap_sc->unicodeenc;
-	ext = genchange->extension_for_symbols;
-    }
-    lc_sc = SFGetChar(sf,lower,NULL);
-    if ( lc_sc!=NULL )
-	snprintf(buffer,sizeof(buffer),"%s.%s", lc_sc->name, ext );
-    else {
-	const char *pt = StdGlyphName(buffer,tolower(cap_sc->unicodeenc),sf->uni_interp,sf->for_new_glyphs);
-	if ( pt!=buffer )
-	    strcpy(buffer,pt);
-	strcat(buffer,".");
-	strcat(buffer,ext);
-    }
+    lc_sc = MakeSmallCapName(buffer,sizeof(buffer),sf,cap_sc,genchange);
     sc_sc = SFGetChar(sf,-1,buffer);
     if ( sc_sc!=NULL ) {
 	SCPreserveLayer(sc_sc,fv->active_layer,false);
@@ -2576,7 +2612,6 @@ void FVAddSmallCaps(FontViewBase *fv, struct genericchange *genchange) {
     RefChar *ref, *r;
     struct lookup_subtable *c2sc[4], *smcp[4];
     char buffer[200];
-    const unichar_t *alts;
 
     if ( sf->cidmaster!=NULL )
 return;		/* Can't randomly add things to a CID keyed font */
@@ -2624,21 +2659,21 @@ return;
 			script!=CHR('c','y','r','l') &&
 			!genchange->do_smallcap_symbols )
     continue;
-		if ( sc->unicodeenc<0x10000 &&islower(sc->unicodeenc)) {
+		if ( sc->unicodeenc<0x10000 && islower(sc->unicodeenc)) {
 		    sc = SFGetChar(sf,toupper(sc->unicodeenc),NULL);
 		    if ( sc==NULL )
       goto end_loop;
 		}
 		if ( sc->ticked )
       goto end_loop;
-		if ( sc->layers[fv->active_layer].refs!=NULL ||
-			((alts = SFGetAlternate(sf,sc->unicodeenc,sc,true))!=NULL &&
-			 alts[1]!=0 ))
-    continue;	/* Deal with these later */
-		sc->ticked = true;
+		/* make the glyph now, even if it contains refs, because we */
+		/*  want to retain the encoding ordering */
 		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,genchange);
 		if ( sc_sc==NULL )
       goto end_loop;
+		if ( sc->layers[fv->active_layer].splines==NULL )
+    continue;	/* Deal with these later */
+		sc->ticked = true;
 		if ( achar==NULL )
 		    achar = sc_sc;
 		if ( sc->unicodeenc==0xdf || (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06))
@@ -2669,30 +2704,29 @@ return;
 		    if ( sc==NULL )
       goto end_loop2;
 		}
-		if ( sc->ticked )
+		if ( sc->layers[fv->active_layer].refs==NULL )
     continue;
-		sc->ticked = true;
-		sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,genchange);
+		MakeSmallCapName(buffer,sizeof(buffer),sf,sc,genchange);
+		sc_sc = SFGetChar(sf,-1,buffer);
+		if ( sc_sc==NULL )	/* Should not happen */
+		    sc_sc = MakeSmallCapGlyphSlot(sf,sc,script,c2sc,smcp,fv,genchange);
 		if ( sc_sc==NULL )
       goto end_loop2;
 		if ( achar==NULL )
 		    achar = sc_sc;
 		if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
 		    SCBuildComposit(sf,sc_sc,fv->active_layer,true);
-		else if ( sc->layers[fv->active_layer].splines==NULL ) {
+		if ( sc_sc->layers[fv->active_layer].refs==NULL ) {
 		    RefChar *rlast = NULL;
 		    for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
-			SplineChar *ref_l_sc;
-			if ( ref->sc->unicodeenc>=0x10000 ||
-				!(islower(ref->sc->unicodeenc) || isupper(ref->sc->unicodeenc)))
-			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->extension_for_symbols );
-			else if ( isupper(ref->sc->unicodeenc) &&
-				(ref_l_sc = SFGetChar(sf,tolower(ref->sc->unicodeenc),NULL))!=NULL )
-			    snprintf(buffer,sizeof(buffer),"%s.%s", ref_l_sc->name, genchange->extension_for_letters );
-			else
-			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->extension_for_letters );
+			MakeSmallCapName(buffer,sizeof(buffer),sf,ref->sc,genchange);
 			rsc = SFGetChar(sf,-1,buffer);
-			if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
+			/* Look for grave.taboldstyle, grave.sc, and grave */
+			if ( rsc==NULL && isaccent(ref->sc->unicodeenc)) {
+			    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->extension_for_letters );
+			    rsc = SFGetChar(sf,-1,buffer);
+			}
+			if ( rsc==NULL && isaccent(ref->sc->unicodeenc))
 			    rsc = ref->sc;
 			if ( rsc!=NULL ) {
 			    r = RefCharCreate();
@@ -2705,6 +2739,7 @@ return;
 #endif
 			    r->next = NULL;
 			    r->sc = rsc;
+			    SCMakeDependent(sc_sc,rsc);
 			    SCReinstanciateRefChar(sc_sc,r,fv->active_layer);
 			    if ( rlast==NULL )
 				sc_sc->layers[fv->active_layer].refs=r;
@@ -2713,10 +2748,12 @@ return;
 			    rlast = r;
 			}
 		    }
+		    SCCharChangedUpdate(sc_sc,fv->active_layer);
 		}
       end_loop2:
-		if ( !ff_progress_next())
+		if ( !sc->ticked && !ff_progress_next())
     break;
+		sc->ticked = true;
 	    }
 	}
     }
@@ -2809,9 +2846,8 @@ void FVGenericChange(FontViewBase *fv, struct genericchange *genchange) {
     RefChar *ref, *r;
     struct lookup_subtable *feature;
     char buffer[200];
-    const unichar_t *alts;
 
-    if ( sf->cidmaster!=NULL )
+    if ( sf->cidmaster!=NULL && genchange->gc == gc_subsuper )
 return;		/* Can't randomly add things to a CID keyed font */
 
     if ( genchange->small != NULL ) {
@@ -2854,16 +2890,24 @@ return;
     } else
 	feature = NULL;
 
-    ff_progress_start_indicator(10,_("Subscripts/Superscripts"),
-	_("Building sub/superscripts"),NULL,cnt,1);
+    if ( genchange->gc==gc_subsuper )
+	ff_progress_start_indicator(10,_("Subscripts/Superscripts"),
+	    _("Building sub/superscripts"),NULL,cnt,1);
+    else
+	ff_progress_start_indicator(10,_("Generic change"),
+	    _("Changing glyphs"),NULL,cnt,1);
+
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
 	    if ( sc->ticked )
   goto end_loop;
-	    if ( sc->layers[fv->active_layer].refs!=NULL ||
-		    ((alts = SFGetAlternate(sf,sc->unicodeenc,sc,true))!=NULL &&
-		     alts[1]!=0 ))
+	    if ( sc->layers[fv->active_layer].splines==NULL ) {
+		/* Create the glyph now, so it gets encoded right, but otherwise */
+		/*  skip for now */
+		if ( genchange->glyph_extension != NULL )
+		    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,genchange);
     continue;	/* Deal with these later */
+	    }
 	    sc->ticked = true;
 	    if ( genchange->glyph_extension != NULL ) {
 		sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,genchange);
@@ -2883,24 +2927,31 @@ return;
     }
     /* OK. Here we have done all the base glyphs we are going to do. Now let's*/
     /*  look at things which depend on references */
-    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+    /* This is only relevant if we've got an extension, else we just use the */
+    /*  same old refs */
+    if ( genchange->glyph_extension != NULL ) for ( enc=0; enc<fv->map->enccount; ++enc ) {
 	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( sc->ticked )
-    continue;
-	    sc->ticked = true;
-	    sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,genchange);
+	    if ( sc->layers[fv->active_layer].refs==NULL )
+	continue;
+	    snprintf(buffer,sizeof(buffer),"%s.%s", sc->name, genchange->glyph_extension );
+	    sc_sc = SFGetChar(sf,-1,buffer);
+	    if ( sc_sc==NULL )	/* Should not happen */
+		sc_sc = MakeSubSupGlyphSlot(sf,sc,feature,fv,genchange);
 	    if ( sc_sc==NULL )
-      goto end_loop2;
+	  goto end_loop2;
 	    if ( achar==NULL )
 		achar = sc_sc;
-	    if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
+	    /* BuildComposite can do a better job of positioning accents */
+	    /*  than I'm going to do here... */
+	    if ( sc->layers[fv->active_layer].splines==NULL &&
+		    SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
 		SCBuildComposit(sf,sc_sc,fv->active_layer,true);
-	    else if ( sc->layers[fv->active_layer].splines==NULL ) {
+	    if ( sc_sc->layers[fv->active_layer].refs==NULL ) {
 		RefChar *rlast = NULL;
 		for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
 		    snprintf(buffer,sizeof(buffer),"%s.%s", ref->sc->name, genchange->glyph_extension );
 		    rsc = SFGetChar(sf,-1,buffer);
-		    if ( rsc==NULL && (ref->sc->unicodeenc<0x10000 && iscombining(ref->sc->unicodeenc)) )
+		    if ( rsc==NULL && isaccent(ref->sc->unicodeenc))
 			rsc = ref->sc;
 		    if ( rsc!=NULL ) {
 			r = RefCharCreate();
@@ -2913,6 +2964,11 @@ return;
 #endif
 			r->next = NULL;
 			r->sc = rsc;
+			r->transform[4] *= genchange->hcounter_scale;
+			r->transform[5] *= genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
+			if ( rsc==ref->sc )
+			    r->transform[5] += genchange->vertical_offset;
+			SCMakeDependent(sc_sc,rsc);
 			SCReinstanciateRefChar(sc_sc,r,fv->active_layer);
 			if ( rlast==NULL )
 			    sc_sc->layers[fv->active_layer].refs=r;
@@ -2921,15 +2977,40 @@ return;
 			rlast = r;
 		    }
 		}
+		SCCharChangedUpdate(sc_sc,fv->active_layer);
 	    }
       end_loop2:
-	    if ( !ff_progress_next())
+	    if ( !sc->ticked && !ff_progress_next())
     break;
+	    sc->ticked = true;
 	}
     }
     ff_progress_end_indicator();
     if ( achar!=NULL )
 	FVDisplayChar(fv,achar->orig_pos);
+    free(genchange->g.maps);
+}
+
+void CVGenericChange(CharViewBase *cv, struct genericchange *genchange) {
+    SplineChar *sc=cv->sc;
+    int layer = CVLayer(cv);
+
+    if ( genchange->gc != gc_generic || layer<0 )
+return;
+
+    if ( genchange->small != NULL ) {
+        genchange->italic_angle = genchange->small->italic_angle;
+        genchange->tan_ia = genchange->small->tan_ia;
+    }
+
+    genchange->g.cnt = genchange->m.cnt+2;
+    genchange->g.maps = galloc(genchange->g.cnt*sizeof(struct position_maps));
+
+    if ( sc->layers[layer].splines!=NULL ) {
+	SCPreserveLayer(sc,layer,true);
+	ChangeGlyph( sc,sc,layer,genchange );
+    }
+
     free(genchange->g.maps);
 }
 

@@ -58,6 +58,7 @@ typedef struct styledlg {
     int layer;
     struct smallcaps *small;
     enum glyphchange_type gc;
+    double scale;
 } StyleDlg;
 
 #define CID_C_Factor	1001
@@ -550,8 +551,10 @@ return( true );
 	}
 	if ( ed->gc == gc_smallcaps )
 	    FVAddSmallCaps( (FontViewBase *) ed->fv, &genchange );
-	else
+	else if ( ed->fv!=NULL )
 	    FVGenericChange( (FontViewBase *) ed->fv, &genchange );
+	else
+	    CVGenericChange( (CharViewBase *) ed->cv, &genchange );
 	free(genchange.glyph_extension);
 	free(genchange.m.maps);
 	free( genchange.extension_for_letters );
@@ -651,39 +654,23 @@ static int CG_VScale_Changed(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
 	int err=0;
 	double scale;
 	GGadget *map = GWidgetGetControl(ew,CID_VMappings);
 	int rows, cols = GMatrixEditGetColCnt(map);
 	struct matrix_data *mappings = GMatrixEditGet(map, &rows);
-	int i, oi, besti;
-	double diff, bestdiff;
+	int i;
 
 	scale = GetCalmReal8(ew,CID_VerticalScale,"unused",&err)/100.0;
-	if ( err || scale<=0 )
+	if ( err || scale<=0 || RealNear(ed->scale,scale) )
 return( true );
 	for ( i=0; i<rows; ++i ) {
-	    int done = false;
-	    if ( mappings[cols*i+2].u.md_ival ) {
-		/* Serif. Make it offset from the line which it is closest to */
-		besti = -1; bestdiff = 3333;
-		for ( oi=0; oi<rows; ++oi ) if ( oi!=i && !mappings[cols*oi+2].u.md_ival ) {
-		    diff = mappings[cols*oi+0].u.md_real - mappings[cols*i+0].u.md_real;
-		    if ( diff<0 ) diff = -diff;
-		    if ( besti==-1 || diff<bestdiff ) {
-			besti = oi;
-			bestdiff = diff;
-		    }
-		}
-		if ( besti!=-1 ) {
-		    done = true;
-		    mappings[cols*i+1].u.md_real = scale * mappings[cols*besti+0].u.md_real +
-			    (mappings[cols*i+0].u.md_real - mappings[cols*besti+0].u.md_real);
-		}
-	    }
-	    if ( !done )
-		mappings[cols*i+1].u.md_real = scale * mappings[cols*i+0].u.md_real;
+	    double offset = mappings[cols*i+2].u.md_real - rint(ed->scale*mappings[cols*i+0].u.md_real);
+	    mappings[cols*i+2].u.md_real =
+		    rint(scale * mappings[cols*i+0].u.md_real) + offset;
 	}
+	ed->scale = scale;
 	GGadgetRedraw(map);
     }
 return( true );
@@ -812,6 +799,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     char *orig_msg, *map_msg;
     double glyph_scale = 1.0, stem_scale=1.0;
     char glyph_factor[40], stem_factor[40];
+    int layer = fv!=NULL ? fv->b.active_layer : CVLayer((CharViewBase *) cv);
 
     memset(&ed,0,sizeof(ed));
     ed.fv = fv;
@@ -820,7 +808,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     ed.small = &small;
     ed.gc = gc;
 
-    SmallCapsFindConstants(&small,fv->b.sf,fv->b.active_layer); /* I want to know the xheight... */
+    SmallCapsFindConstants(&small,sf,layer); /* I want to know the xheight... */
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -1037,6 +1025,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 
     l = 0;
 
+    ed.scale = glyph_scale;
     sprintf( glyph_factor, "%.2f", 100*glyph_scale );
     sprintf( stem_factor , "%.2f", 100* stem_scale );
 

@@ -962,6 +962,23 @@ static real SplineCharQuickTop(SplineChar *sc,int layer) {
 return( max );
 }
 
+int isaccent(int uni) {
+
+    if ( uni<0x10000 && iscombining(uni) )
+return( true );
+    if ( uni>=0x2b0 && uni<0x2ff )
+return( true );
+    if ( uni=='.' || uni==',' || uni==0x60 || uni==0x5e || uni==0x7e ||
+	    uni==0xa8 || uni==0xaf || uni==0xb8 || uni==0x384 || uni==0x385 ||
+	    (uni>=0x1fbd && uni<=0x1fc1) ||
+	    (uni>=0x1fcd && uni<=0x1fcf) ||
+	    (uni>=0x1fed && uni<=0x1fef) ||
+	    (uni>=0x1ffd && uni<=0x1fff) )
+return( true );
+
+return( false );
+}
+
 static int haschar(SplineFont *sf,unichar_t ch,char *dot) {
     char buffer[200], namebuf[200];
 
@@ -972,7 +989,7 @@ return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
 	    dot);
     if ( SCWorthOutputting(SFGetChar(sf,-1,buffer)) )
 return( true );
-    else if ( iscombining(ch))
+    else if ( isaccent(ch))
 return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
     else
 return( false );
@@ -1227,7 +1244,7 @@ return( false );
     basech = *pt;
     for ( ; *pt; ++pt ) {
 	ch = *pt;
-	if ( iscombining(ch) ) {
+	if ( isaccent(ch) ) {
 	    two = GetGoodAccentGlyph(sf,ch,basech,&invert,sf->italicangle,dot,one);
 	} else if ( !haschar(sf,ch,dot))
 return( false );
@@ -1738,8 +1755,8 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     else if ( uni>=BottomAccent && uni<=TopAccent ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	while ( *apt && apt<end &&
-		(             !haschar(sf,*apt,dot) || SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
-		(dot==NULL || !haschar(sf,*apt,NULL) || SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
+		(             GetChar(sf,*apt,dot) ==NULL || SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
+		(dot==NULL || GetChar(sf,*apt,NULL)==NULL || SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
 	    ++apt;
 	if ( *apt!='\0' && apt<end )
 	    ach = *apt;
