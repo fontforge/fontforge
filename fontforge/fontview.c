@@ -6377,9 +6377,13 @@ static void FVResize(FontView *fv,GEvent *event) {
     GDrawRequestExpose(fv->gw,NULL,true);
     GDrawRequestExpose(fv->v,NULL,true);
 
-    default_fv_row_count = fv->rowcnt;
-    default_fv_col_count = fv->colcnt;
-    SavePrefs(true);
+    if ( fv->rowcnt!=fv->b.sf->desired_row_cnt || fv->colcnt!=fv->b.sf->desired_col_cnt ) {
+	default_fv_row_count = fv->rowcnt;
+	default_fv_col_count = fv->colcnt;
+	fv->b.sf->desired_row_cnt = fv->rowcnt;
+	fv->b.sf->desired_col_cnt = fv->colcnt;
+	SavePrefs(true);
+    }
 }
 
 static void FVTimer(FontView *fv,GEvent *event) {
@@ -6938,9 +6942,9 @@ static void FVExtraEncSlots(FontView *fv, int encmax) {
     }
 }
 
-static void FV_BiggerGlyphCache(FontView *fv, int encmax) {
+static void FV_BiggerGlyphCache(FontView *fv, int gidcnt) {
     if ( fv->filled!=NULL )
-	BDFOrigFixup(fv->filled,encmax,fv->b.sf);
+	BDFOrigFixup(fv->filled,gidcnt,fv->b.sf);
 }
 
 static void FontView_Close(FontView *fv) {
