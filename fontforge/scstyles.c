@@ -2739,6 +2739,8 @@ return;
 #endif
 			    r->next = NULL;
 			    r->sc = rsc;
+			    r->transform[4] *= genchange->hcounter_scale;
+			    r->transform[5] *= genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
 			    SCMakeDependent(sc_sc,rsc);
 			    SCReinstanciateRefChar(sc_sc,r,fv->active_layer);
 			    if ( rlast==NULL )
@@ -2983,6 +2985,15 @@ return;
 	    if ( !sc->ticked && !ff_progress_next())
     break;
 	    sc->ticked = true;
+	}
+    } else for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
+		ref->transform[4] *= genchange->hcounter_scale;
+		ref->transform[5] *= genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
+	    }
+	    if ( sc->layers[fv->active_layer].refs!=NULL )
+		SCCharChangedUpdate(sc_sc,fv->active_layer);
 	}
     }
     ff_progress_end_indicator();
