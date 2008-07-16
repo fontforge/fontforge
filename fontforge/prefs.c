@@ -131,6 +131,8 @@ extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 extern int updateflex;				/* in charview.c */
 extern int allow_utf8_glyphnames;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in charview.c */
+extern int default_cv_width;			/* in charview.c */
+extern int default_cv_height;			/* in charview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
 extern int mvshowgrid;				/* in metricsview.c */
 
@@ -348,6 +350,8 @@ static struct prefs_list {
 	{ "SaveToDir", pr_int, &save_to_dir, NULL, NULL, 'S', NULL, 1 },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1 },
 	{ "CVVisible0", pr_bool, &cvvisible[0], NULL, NULL, '\0', NULL, 1 },
 	{ "CVVisible1", pr_bool, &cvvisible[1], NULL, NULL, '\0', NULL, 1 },
 	{ "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1 },
