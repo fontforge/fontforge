@@ -797,7 +797,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.cid = CID_Width;
 	gcd[3].creator = GTextFieldCreate;
-	harray2[5] = &gcd[1]; harray2[6] = GCD_Glue; harray2[7] = NULL;
+	harray2[5] = &gcd[3]; harray2[6] = GCD_Glue; harray2[7] = NULL;
 
 	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 17+37;
 	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
