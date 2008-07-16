@@ -2049,8 +2049,7 @@ return;
     GlyphHashFree(sf);
 }
 
-void FVAddEncodingSlot(FontViewBase *fv,int gid) {
-    EncMap *map = fv->map;
+static int MapAddEncodingSlot(EncMap *map,int gid) {
     int enc;
 
     if ( map->enccount>=map->encmax )
@@ -2058,6 +2057,14 @@ void FVAddEncodingSlot(FontViewBase *fv,int gid) {
     enc = map->enccount++;
     map->map[enc] = gid;
     map->backmap[gid] = enc;
+return( enc );
+}
+
+void FVAddEncodingSlot(FontViewBase *fv,int gid) {
+    EncMap *map = fv->map;
+    int enc;
+
+    enc = MapAddEncodingSlot(map,gid);
 
     fv->selected = grealloc(fv->selected,map->enccount);
     fv->selected[enc] = 0;
@@ -2097,9 +2104,12 @@ static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,
 	}
     }
     if ( basemap!=NULL && map->enc==basemap->enc && baseenc!=-1 ) {
-	if ( baseenc>=map->enccount )
-	    FVAddEncodingSlot(fv,gid);
-	else {
+	if ( baseenc>=map->enccount ) {
+	    if ( map==fv->map )
+		FVAddEncodingSlot(fv,gid);
+	    else
+		MapAddEncodingSlot(map,gid);
+	} else {
 	    map->map[baseenc] = gid;
 	    if ( map->backmap[gid]==-1 )
 		map->backmap[gid] = baseenc;
@@ -2164,6 +2174,10 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	if ( !MapAddEnc(sf,sc,basemap,map,baseenc,gid,fv) )
 	    FVAddEncodingSlot(fv,gid);
 	if ( map==basemap ) mapfound = true;
+	if ( fv->normal!=NULL ) {
+	    if ( !MapAddEnc(sf,sc,basemap,fv->normal,baseenc,gid,fv))
+		MapAddEncodingSlot(fv->normal,gid);
+	}
     }
     if ( !mapfound && basemap!=NULL )
 	MapAddEnc(sf,sc,basemap,basemap,baseenc,gid,fv);
