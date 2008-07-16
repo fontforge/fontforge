@@ -4173,7 +4173,7 @@ static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
     double min, max, test, left, right;
     double dist, prevdist;
     int i, j;
-    int is_next, lcnt=0, rcnt=0, closest;
+    int lcnt=0, rcnt=0, closest;
     BasePoint dir;
     SplinePoint **lpoints, **rpoints;
     struct pointdata *pd, *pd1, *pd2;
@@ -4183,15 +4183,14 @@ static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
     dir.x = !is_v; dir.y = is_v;
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	pd = &gd->points[i];
-        is_next = !UnitsOrthogonal( &dir,&pd->nextunit,true );
         min = ( is_v ) ? bounds->minx : bounds->miny;
         max = ( is_v ) ? bounds->maxx : bounds->maxy;
         test = ( is_v ) ? pd->base.x : pd->base.y;
-	if ( test >= min && test < min + dist_error_hv &&
-            IsCorrectSide( gd,pd,is_next,is_v,&dir ))
+	if ( test >= min && test < min + dist_error_hv && (
+            IsCorrectSide( gd,pd,true,is_v,&dir ) || IsCorrectSide( gd,pd,false,is_v,&dir )))
             lpoints[lcnt++] = pd->sp;
-        else if ( test > max - dist_error_hv && test <= max &&
-            IsCorrectSide( gd,pd,is_next,!is_v,&dir ))
+        else if ( test > max - dist_error_hv && test <= max && (
+            IsCorrectSide( gd,pd,true,!is_v,&dir ) || IsCorrectSide( gd,pd,false,!is_v,&dir )))
             rpoints[rcnt++] = pd->sp;
     }
     if ( lcnt > 0 && rcnt > 0 ) {
@@ -4218,6 +4217,7 @@ static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
             pd2 = &gd->points[rpoints[closest]->ptindex];
             AddToStem( gd,stem,pd1,pd2,false,true,4 );
         }
+        qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
     }
     free( lpoints );
     free( rpoints );
@@ -4235,6 +4235,9 @@ static void CheckForBoundingBoxHints( struct glyphdata *gd ) {
 
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
+        hv = IsVectorHV( &stem->unit,slope_error,true );
+        if ( !hv )
+    continue;
 	if ( stem->toobig ) {
             if ( stem->left.x == bounds.minx && stem->right.x == bounds.maxx )
                 vstem = stem;
@@ -4242,7 +4245,6 @@ static void CheckForBoundingBoxHints( struct glyphdata *gd ) {
                 hstem = stem;
     continue;
         }
-        hv = IsVectorHV( &stem->unit,slope_error,true );
         if ( hv == 1 ) {
             if ( stem->bbox ) hstem = stem;
             else ++hcnt;
