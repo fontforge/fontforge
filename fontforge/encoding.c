@@ -1714,9 +1714,19 @@ return( copy( map->enc->enc_name ));
 /* ************************** Reencoding  routines ************************** */
 
 void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
-    BDFChar **glyphs = gcalloc(orig_cnt,sizeof(BDFChar *));
+    BDFChar **glyphs;
     int i;
 
+    if ( bdf->glyphmax>=orig_cnt ) {
+	if ( bdf->glyphcnt<orig_cnt ) {
+	    for ( i=bdf->glyphcnt; i<orig_cnt; ++i )
+		bdf->glyphs[i] = NULL;
+	    bdf->glyphcnt = orig_cnt;
+	}
+return;
+    }
+
+    glyphs = gcalloc(orig_cnt,sizeof(BDFChar *));
     for ( i=0; i<bdf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	glyphs[sf->glyphs[i]->orig_pos] = bdf->glyphs[i];
 	if ( bdf->glyphs[i]!=NULL )	/* Not all glyphs exist in a piecemeal font */
