@@ -211,6 +211,15 @@ static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt,
 
     for ( i=0; i<dcnt; i++ ) {
         stem = dstems[i];
+        /* If a stem is more horizontal than vertical, then it should not
+        /* cause vertical counters to be increased, and vice versa. 
+        /* However we have to check both directions if stem slope angle
+        /* is close to 45 degrees, as otherwise undesired random effects 
+        /* can occur (e. g. in a multiply sign). So we have selected 0.75
+        /* (sin(48 deg. 36'), cos(41 deg. 24 min)) as a boundary value */
+        if (( x_dir && fabs( stem->unit.x ) > .75 ) ||
+            ( !x_dir && fabs( stem->unit.y ) > .75 ))
+    continue;
         ldist = ( pos - (&stem->left.x)[x_dir] )/(&stem->unit.x)[x_dir];
         rdist = ( pos - (&stem->right.x)[x_dir] )/(&stem->unit.x)[x_dir];
         lrdist =( stem->right.x - stem->left.x ) * stem->unit.x +
@@ -559,6 +568,10 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
             } else
                 stem->blue = -1;
         }
+        if ( stem->bbox && stem->blue != -1 ) {
+            new_b->miny = stem->newright.y;
+            new_b->maxy = stem->newleft.y;
+        }
     }
 
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
@@ -605,6 +618,21 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
         if ( stem->master == NULL )
             StemPosDependent( stem,genchange,false );
     }
+    /* Final bounding box adjustment (it is possible that some of the
+    /* calculated stem boundaries are outside of the new bounding box,
+    /* and we should fix this now */
+    upper = lower = NULL;
+    for ( i=0; i<gd->hbundle->cnt; i++ ) {
+        stem = gd->hbundle->stemlist[i];
+        if ( upper == NULL || stem->newleft.y > upper->newleft.y ) 
+            upper = stem;
+        if ( lower == NULL || stem->newright.y < lower->newright.y ) 
+            lower = stem;
+    }
+    if ( upper != NULL )
+        new_b->maxy = upper->newleft.y + ( orig_b->maxy - upper->left.y )*scale;
+    if ( lower != NULL )
+        new_b->miny = lower->newright.y - ( lower->right.y - orig_b->miny )*scale;
 }
 
 static void InitZoneMappings( struct fixed_maps *fix, BlueData *bd, double stem_scale ) {
@@ -749,7 +777,7 @@ static double InterpolateBetweenEdges( GlyphData *gd, double coord, double min, 
         ret = InterpolateVal( prev_pos,next_pos,prev_new,next_new,coord );
     else if ( prev_pos > -1e4 )
         ret = InterpolateVal( prev_pos,max,prev_new,max_new,coord );
-    else if ( next_pos < -1e4 )
+    else if ( next_pos < 1e4 )
         ret = InterpolateVal( min,next_pos,min_new,next_new,coord );
     else
         ret = InterpolateVal( min,max,min_new,max_new,coord );
@@ -774,7 +802,6 @@ static void InterpolateStrong( GlyphData *gd, DBounds *orig_b, DBounds *new_b, i
         if ( !(pd->touched & mask) && ( IsExtremum(pd->sp,!x_dir) || IsAnglePoint(pd->sp))) {
             coord = (&pd->base.x)[!x_dir];
             new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
-
             (&pd->newpos.x)[!x_dir] = new;
             pd->touched |= flag;
             pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
@@ -1035,6 +1062,13 @@ static void GetDStemBounds( GlyphData *gd, StemData *stem, real *prev, real *nex
 
 static void AlignPointPair( StemData *stem,PointData *lpd, PointData *rpd, double hscale,double vscale ) {
     double off, newoff, dscale;
+    
+    /* If points are already horizontally or vertically aligned,
+    /* then there is nothing more to do here */
+    if (( lpd->base.x == rpd->base.x && lpd->newpos.x == rpd->newpos.x ) ||
+        ( lpd->base.y == rpd->base.y && lpd->newpos.y == rpd->newpos.y ))
+return;
+
     dscale= hscale * fabs( stem->newunit.x ) + 
             vscale * fabs( stem->newunit.y );
     if ( !IsPointFixed( rpd )) {
@@ -1264,10 +1298,11 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
             min_new = hvstem->newright.x;
         }
     }
-    if ( max==min )
-	hscale = 1;
-    else
-	hscale = ( max_new - min_new )/( max - min );
+    if ( max == min ) {
+        stem->toobig = true;
+return;
+    }
+    hscale = ( max_new - min_new )/( max - min );
     
     stem_b.miny = orig_b->miny; stem_b.maxy = orig_b->maxy;
     GetDStemBounds( gd,stem,&stem_b.miny,&stem_b.maxy,false );
@@ -1285,10 +1320,11 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
             min_new = hvstem->newleft.y;
         }
     }
-    if ( max==min )
-	vscale = 1;
-    else
-	vscale = ( max_new - min_new )/( max - min );
+    if ( max == min ) {
+        stem->toobig = true;
+return;
+    }
+    vscale = ( max_new - min_new )/( max - min );
     
     /* Now scale positions of the left and right virtual points on the stem
     /* by the ratios used to resize horizontal and vertical stems. We need
@@ -1361,7 +1397,7 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
     /* If there are such points at both edges, then we probably can do nothing useful
     /* with this stem */
     if ( lfixed != NULL && rfixed != NULL ) {
-        stem->toobig = 1;
+        stem->toobig = true;
 return;
     }
     /* If just one edge is fixed, then use it as a base and move another edge to
@@ -1454,16 +1490,6 @@ return;
         ( stem->keypts[1]->sp->next->to == stem->keypts[3]->sp ) ||
         ( stem->keypts[1]->sp->prev->from == stem->keypts[3]->sp )))
         AlignPointPair( stem,stem->keypts[1],stem->keypts[3],hscale,vscale );
-}
-
-static void NanCheck(GlyphData *gd) {
-    int i;
-
-    for ( i=gd->pcnt-1; i>=0 ; --i ) {
-	PointData *pd = &gd->points[i];
-	if ( !finite(pd->newpos.x) || !finite(pd->newpos.y) )
-	    IError( "NaN in change glyph" );
-    }
 }
 
 static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange ) {
@@ -1575,21 +1601,16 @@ return;
     }
 
     StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,true );
- NanCheck(gd);
     if ( genchange->use_vert_mapping && genchange->m.cnt > 0 )
         HStemResize( sc_sc->layers[layer].splines,gd,&orig_b,&new_b,genchange );
     else
         StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,false );
- NanCheck(gd);
     PosStemPoints( gd,genchange->stem_width_scale,dcnt > 0,true );
- NanCheck(gd);
     PosStemPoints( gd,genchange->stem_height_scale,dcnt > 0,false );
- NanCheck(gd);
     if ( genchange->dstem_control ) {
         for ( i=0; i<dcnt; i++ )
             FixDStem( gd,dstems[i],dstems,dcnt,&orig_b,&new_b,genchange );
     }
- NanCheck(gd);
     /* Our manipulations with DStems may have moved some points outside of 
     /* borders of the bounding box we have previously calculated. So adjust
     /* those borders now, as they may be important for point interpolations */
@@ -1604,15 +1625,10 @@ return;
         else if ( pd->touched & tf_d && pd->newpos.y > new_b.maxy )
             new_b.maxy = pd->newpos.y;
     }
- NanCheck(gd);
     InterpolateStrong( gd,&orig_b,&new_b,true );
- NanCheck(gd);
     InterpolateStrong( gd,&orig_b,&new_b,false );
- NanCheck(gd);
     InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_width_scale,true );
- NanCheck(gd);
     InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_height_scale,false );
- NanCheck(gd);
     InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,genchange->hcounter_scale,true );
     InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,
         genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale,false );
