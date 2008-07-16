@@ -44,6 +44,8 @@ float arrowAccelFactor=10.;
 float snapdistance=3.5;
 int updateflex = false;
 int clear_tt_instructions_when_needed = true;
+int default_cv_width = 540;
+int default_cv_height = 540;
 
 extern struct lconv localeinfo;
 extern char *coord_sep;
@@ -4426,6 +4428,11 @@ return;
 	cv->width = newwidth; cv->height = newheight;
 	CVFit(cv);
 	CVPalettesRaise(cv);
+	if ( cv->b.container == NULL && ( default_cv_width!=size.width || default_cv_height!=size.height )) {
+	    default_cv_width = size.width;
+	    default_cv_height = size.height;
+	    SavePrefs(true);
+	}
     }
 }
 
@@ -9761,7 +9768,8 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     wattrs.icon = CharIcon(cv, fv);
     if ( wattrs.icon )
 	wattrs.mask |= wam_icon;
-    pos.x = GGadgetScale(104)+6; pos.width=pos.height = 540;
+    pos.x = GGadgetScale(104)+6;
+    pos.width=default_cv_width; pos.height = default_cv_height;
     DefaultY(&pos);
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
