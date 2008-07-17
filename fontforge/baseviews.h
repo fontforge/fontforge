@@ -348,7 +348,7 @@ struct smallcaps {
 extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 	int layer );
 
-enum glyphchange_type { gc_generic, gc_smallcaps, gc_subsuper };
+enum glyphchange_type { gc_generic, gc_smallcaps, gc_subsuper, gc_max };
 
 struct genericchange {
     enum glyphchange_type gc;
