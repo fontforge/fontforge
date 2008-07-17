@@ -1555,7 +1555,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k++].creator = GButtonCreate;
 	barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
 
-	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Everything to its default value");
 	label[k].text = (unichar_t *) _("Reset");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
