@@ -428,8 +428,12 @@ struct fv_interface {
     void (*deselect_all)(struct fontviewbase *);
 
    /* Scroll (or whatever) the fontview so that the desired */
-   /*  glyph is displayed */
-    void (*display_char)(struct fontviewbase *,int gid);
+   /*  gid is displayed */
+    void (*display_gid)(struct fontviewbase *,int gid);
+
+   /* Scroll (or whatever) the fontview so that the desired */
+   /*  encoding is displayed */
+    void (*display_enc)(struct fontviewbase *,int enc);
 
    /* Scroll (or whatever) the fontview so that the desired */
    /*  glyph is displayed */
@@ -460,7 +464,8 @@ extern struct fv_interface *fv_interface;
 #define FVChangeDisplayBitmap	(fv_interface->change_display_bitmap)
 #define FVShowFilled		(fv_interface->display_filled)
 #define FVReattachCVs		(fv_interface->reattach_cvs)
-#define FVDisplayChar		(fv_interface->display_char)
+#define FVDisplayGID		(fv_interface->display_gid)
+#define FVDisplayEnc		(fv_interface->display_enc)
 #define FVChangeGID		(fv_interface->select_gid)
 #define SFCloseAllInstrs	(fv_interface->close_all_instrs)
 

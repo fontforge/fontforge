@@ -6986,6 +6986,7 @@ struct fv_interface gdraw_fv_interface = {
     FV_ReattachCVs,
     (void (*)(FontViewBase *)) FVDeselectAll,
     (void (*)(FontViewBase *,int )) FVScrollToGID,
+    (void (*)(FontViewBase *,int )) FVScrollToChar,
     (void (*)(FontViewBase *,int )) FV_ChangeGID,
     SF_CloseAllInstrs
 };
