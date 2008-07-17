@@ -2058,7 +2058,7 @@ void CVDebugFree(DebugView *dv) {
 void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     DebugView *dv = cv->dv;
     GWindowAttrs wattrs;
-    GRect pos;
+    GRect pos, size;
     TT_ExecContext exc;
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
@@ -2177,10 +2177,19 @@ return;
 	gcd[7].creator = GButtonCreate;
 
 	GGadgetsCreate(dv->dv,gcd);
+	GGadgetGetSize(gcd[6].ret,&size);
+	{
+	    int diff = size.y+size.height+2 - dv->toph;
+	    dv->toph = size.y+size.height+2;
+	    GGadgetGetSize(gcd[0].ret,&size);
+	    GGadgetMove(gcd[0].ret,size.x,size.y+diff);
+	    GGadgetResize(gcd[0].ret,size.width,size.height-diff);
+	}
 
+	GGadgetGetSize(gcd[0].ret,&size);
 	dv->ii.vsb = gcd[0].ret;
-	dv->ii.sbw = gcd[0].gd.pos.width;
-	dv->ii.vheight = gcd[0].gd.pos.height; dv->ii.vwidth = pos.width-sbsize;
+	dv->ii.sbw = size.width;
+	dv->ii.vheight = size.height; dv->ii.vwidth = pos.width-sbsize;
 	dv->ii.showaddr = true;
 	dv->ii.userdata = dv;
 	dv->ii.selection_callback = DVToggleBp;
