@@ -666,7 +666,7 @@ int MMReblend(FontViewBase *fv, MMSet *mm) {
 return( true );
 
     if ( fv!=NULL ) {
-	(fv_interface->display_char)(fv,first);
+	FVDisplayEnc(fv,first);
 	if ( olderr==(char *) -1 )
 	    ff_post_error(_("Bad Multiple Master Font"),_("Various errors occurred at the selected glyphs"));
 	else
