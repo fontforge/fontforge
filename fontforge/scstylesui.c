@@ -566,7 +566,7 @@ return( true );
 
 static int CG_SameAs_Changed(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	GWindow ew = GGadgetGetWindow(g);
 	int on = GGadgetIsChecked(g);
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemWidth), !on);
@@ -597,7 +597,7 @@ return( true );
 
 static int CG_CounterSameAs_Changed(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	GWindow ew = GGadgetGetWindow(g);
 	int on = GGadgetIsChecked(GWidgetGetControl(ew,CID_Counter_is_SideB));
 	int enabled = GGadgetIsChecked(GWidgetGetControl(ew,CID_Counter_isnt_SideB));
@@ -639,7 +639,7 @@ return( true );
 
 static int CG_UseVCounters(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	GWindow ew = GGadgetGetWindow(g);
 	int on = GGadgetIsChecked(GWidgetGetControl(ew,CID_UseVerticalCounters));
 	GGadgetSetEnabled(GWidgetGetControl(ew,CID_VCounterPercent), on);
@@ -780,13 +780,78 @@ static void MappingMatrixInit(struct matrixinit *mi,SplineFont *sf,
     }
 }
 
+static int GlyphChange_Default(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StyleDlg *ed = GDrawGetUserData(ew);
+	enum glyphchange_type gc = ed->gc;
+	double glyph_scale = 1.0, stem_scale=1.0;
+	char glyph_factor[40], stem_factor[40];
+	struct matrixinit mapmi;
+
+	if ( gc==gc_subsuper ) {
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Feature),"");
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Extension),"");
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_VerticalOff),"");
+
+	    glyph_scale = 2.0/3.0;
+	    stem_scale  = 3.0/4.0;
+	} else if ( gc == gc_smallcaps ) {
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Letter_Ext),"sc");
+	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Symbol_Ext),"taboldstyle");
+	    GGadgetSetChecked(GWidgetGetControl(ew,CID_Symbols_Too),false);
+
+	    if ( ed->small->xheight!=0 && ed->small->capheight!=0 )
+		glyph_scale = ed->small->xheight/ed->small->capheight;
+	    if ( ed->small->lc_stem_width!=0 && ed->small->uc_stem_width!=0 )
+		stem_scale  = ed->small->lc_stem_width/ed->small->uc_stem_width;
+	}
+	ed->scale = glyph_scale;
+	sprintf( glyph_factor, "%.2f", 100*glyph_scale );
+	sprintf( stem_factor , "%.2f", 100* stem_scale );
+
+	GGadgetSetChecked(GWidgetGetControl(ew,CID_H_is_V),true);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemHeight),stem_factor);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemHeightAdd),"0");
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemWidth),stem_factor);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemWidthAdd),"0");
+	GGadgetSetChecked(GWidgetGetControl(ew,CID_DStemOn),true);
+
+	GGadgetSetChecked(GWidgetGetControl(ew,CID_Counter_is_SideB),true);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_CounterPercent),glyph_factor);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_CounterAdd),"0");
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_LSBPercent),glyph_factor);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_LSBAdd),"0");
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_RSBPercent),glyph_factor);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_RSBAdd),"0");
+
+	GGadgetSetChecked(GWidgetGetControl(ew,CID_UseVerticalMappings),true);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_VCounterPercent),glyph_factor);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_VCounterAdd),"0");
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_VerticalScale),glyph_factor);
+
+	MappingMatrixInit(&mapmi,
+		ed->sf,
+		gc==gc_smallcaps?0:ed->small->xheight,
+		ed->small->capheight,glyph_scale);
+	GMatrixEditSet(GWidgetGetControl(ew,CID_VMappings),
+		mapmi.matrix_data,mapmi.initial_row_cnt,false);
+
+	CG_SameAs_Changed(GWidgetGetControl(ew,CID_H_is_V),NULL);
+	CG_CounterSameAs_Changed(GWidgetGetControl(ew,CID_Counter_is_SideB),NULL);
+	CG_UseVCounters(GWidgetGetControl(ew,CID_UseVerticalMappings),NULL);
+    }
+return( true );
+}
+
 void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     StyleDlg ed;
     SplineFont *sf = fv!=NULL ? fv->b.sf : cv->b.sc->parent;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[54], boxes[20], *barray[8], *stemarray[15],
+    GGadgetCreateData gcd[54], boxes[20], *barray[11], *stemarray[15],
 	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[14], *varrays[10],
 	    *varrayhc[12], *varrayvc[12],
 	    *varray[6], *harray[6], *voarray[6], *extarray[7], *exarray[6];
@@ -795,8 +860,6 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     int k,l,s, a;
     struct smallcaps small;
     struct matrixinit mapmi;
-    double serifheight;
-    char *orig_msg, *map_msg;
     double glyph_scale = 1.0, stem_scale=1.0;
     char glyph_factor[40], stem_factor[40];
     int layer = fv!=NULL ? fv->b.active_layer : CVLayer((CharViewBase *) cv);
@@ -1409,28 +1472,12 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	boxes[12].creator = GHBoxCreate;
 	varrayvc[l++] = &boxes[12]; varrayvc[l++] = NULL;
 
-	serifheight = SFSerifHeight(sf);
-	if ( serifheight==0 ) {
-	    orig_msg = _(   "These mappings may be used to fix certain standard\n"
-			    "heights. For instance often serifs should all be the\n"
-			    "same height.\n\n"
-			    "(But this font appears sans serif)" );
-	    map_msg = copy( orig_msg );
-	} else {
-	    orig_msg = _(   "These mappings may be used to fix certain standard\n"
-			    "heights. For instance often serifs should all be the\n"
-			    "same height.\n\n"
-			    "Serif Height: %g" );
-	    map_msg = galloc(strlen(orig_msg)+40);
-	    sprintf( map_msg, orig_msg, serifheight );
-	}
-
 	label[k].text = (unichar_t *) _("Control Vertical Mapping (use for Latin, Greek, Cyrillic)");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | gg_cb_on | gg_rad_continueold;
-	gcd[k].gd.popup_msg = (unichar_t *) map_msg;
+	gcd[k].gd.popup_msg = (unichar_t *) _("These mappings may be used to fix certain standard heights.");
 	gcd[k].gd.cid = CID_UseVerticalMappings;
 	gcd[k].gd.handle_controlevent = CG_UseVCounters;
 	gcd[k++].creator = GRadioCreate;
@@ -1508,6 +1555,15 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k++].creator = GButtonCreate;
 	barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
 
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	label[k].text = (unichar_t *) _("Reset");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = GlyphChange_Default;
+	gcd[k++].creator = GButtonCreate;
+	barray[3] = GCD_Glue; barray[4] = &gcd[k-1]; barray[5] = GCD_Glue;
+
 	gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
 	gcd[k].gd.pos.width = -1;
 	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -1517,8 +1573,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.handle_controlevent = CondenseExtend_Cancel;
 	gcd[k].creator = GButtonCreate;
-	barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
-	barray[6] = NULL;
+	barray[6] = GCD_Glue; barray[7] = &gcd[k]; barray[8] = GCD_Glue;
+	barray[9] = NULL;
 
 	boxes[16].gd.flags = gg_enabled|gg_visible;
 	boxes[16].gd.u.boxelements = barray;
@@ -1551,7 +1607,6 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	GHVBoxFitWindow(boxes[0].ret);
 	/* if ( gc==gc_subsuper ) */
 	    /* GMatrixEditShowColumn(GWidgetGetControl(gw,CID_VMappings),2,false);*/
-	free( map_msg );
 	last_dlg[gc] = gw;
 	last_sf[gc] = sf;
     } else {
