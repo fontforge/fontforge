@@ -1311,7 +1311,7 @@ static void gt_cursor_pos(GTextField *gt, int *x, int *y) {
     *x = -1; *y= -1;
     GDrawSetFont(gt->g.base,gt->font);
     l = GTextFieldFindLine(gt,gt->sel_start);
-    if ( l<gt->loff_top || l>=gt->loff_top + (gt->g.inner.height/gt->fh))
+    if ( l<gt->loff_top || l>=gt->loff_top + ((gt->g.inner.height+gt->fh/2)/gt->fh))
 return;
     *y = (l-gt->loff_top)*gt->fh;
     sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
