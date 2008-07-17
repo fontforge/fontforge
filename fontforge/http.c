@@ -593,6 +593,72 @@ return( false );
 return( true );
 }
 
+static int HowIDidIt(char *databuf, int datalen,
+	char *boundary, struct siteinfo *siteinfo, struct sockaddr_in *addr ) {
+    FILE *formdata;
+    int code, soc;
+
+    formdata = tmpfile();
+    sprintf( boundary, "-------GaB03x=-------%X-------", rand());
+    fprintf(formdata,"--%s\r\n", boundary );	/* Multipart data begins with a boundary */
+    fprintf(formdata,"Content-Disposition: form-data; name=\"tools\"\r\n\r\n" );
+    fprintf(formdata,"FontForge upload\r\n" );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"samples\"\r\n\r\n" );
+    fprintf(formdata,"\r\n" );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"original\"\r\n\r\n" );
+    fprintf(formdata,"\r\n" );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"process\"\r\n\r\n" );
+    fprintf(formdata,"\r\n" );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"other\"\r\n\r\n" );
+    fprintf(formdata,"\r\n" );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"form_submit\"\r\n\r\n" );
+    fprintf(formdata,"Submit\r\n" );	/* Although the "value" in the <input> is something else, this is what gets sent */
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"http_referer\"\r\n\r\n" );
+    fprintf(formdata,"http%%3A%%2F%%2Fopenfontlibrary.org%%2Fmedia%%2Ffiles%%2F%s\r\n",
+	    strchr(siteinfo->upload_id,'/')+1 );
+    fprintf(formdata,"--%s\r\n", boundary );
+    fprintf(formdata,"Content-Disposition: form-data; name=\"howididit\"\r\n\r\n" );
+    fprintf(formdata,"classname\r\n" );
+    fprintf(formdata,"--%s--\r\n", boundary );
+
+    sprintf( databuf, _("Transmitting Meta Data...") );
+    ChangeLine2_8(databuf);
+    soc = makeConnection(addr);
+    if ( soc==-1 ) {
+	ff_progress_end_indicator();
+	fclose(formdata);
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
+return( false );
+    }
+    sprintf( databuf,"POST /media/edithowididit/%s HTTP/1.1\r\n"
+	"Host: www.openfontlibrary.org\r\n"
+	"Accept: text/html,text/plain\r\n"
+	"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n"
+	"User-Agent: FontForge\r\n"
+	"Content-Type: multipart/form-data; boundary=\"%s\"\r\n"
+	"Content-Length: %ld\r\n"
+	"Connection: close\r\n",
+	    strchr(siteinfo->upload_id,'/')==NULL ? siteinfo->upload_id : strchr(siteinfo->upload_id,'/')+1,
+	    boundary ,
+	    (long) ftell(formdata) );
+    AttachCookies(databuf,siteinfo);
+    strcat(databuf,"\r\n");
+    code = Converse( soc, databuf, datalen, formdata, ct_getuploadid, siteinfo );
+    if ( code<200 || code > 399 ) {
+	ff_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
+	ff_progress_end_indicator();
+return( false );
+    } else if ( code!=200 )
+	ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
+return( true );
+}
+
 int OFLibUploadFont(OFLibData *oflib) {
     struct sockaddr_in addr;
     int soc;
@@ -857,6 +923,12 @@ return( false );
 return( false );
 	}
     }
+
+    if ( !HowIDidIt(databuf,datalen, boundary,&siteinfo,&addr)) {
+	free(databuf);
+return( false );
+    }
+
     ff_progress_end_indicator();
     free( databuf );
 
