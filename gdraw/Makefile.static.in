@@ -15,7 +15,7 @@ X_CFLAGS = @X_CFLAGS@
 libgdraw_OBJECTS =  choosericons.o drawboxborder.o \
  gaskdlg.o gbuttons.o gchardlg.o gcontainer.o gdraw.o \
  gdrawbuildchars.o gdrawerror.o gdrawtxt.o gdrawtxtinit.o \
- genkeysym.o gfilechooser.o gfiledlg.o ggadgets.o ggroupbox.o \
+ gfilechooser.o gfiledlg.o ggadgets.o ggroupbox.o \
  gimageclut.o gimagecvt.o gimagepsdraw.o \
  gimagewriteeps.o gdrawgimage.o \
  gimagexdraw.o gkeysym.o glist.o \
