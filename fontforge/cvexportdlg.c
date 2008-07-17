@@ -452,7 +452,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     char buffer[100]; unichar_t ubuf[100];
     char *ext;
     int _format, i;
-    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
+    int /*bs = GIntGetResource(_NUM_Buttonsize), bsbigger,*/ totwid;
     static int done = false;
     GTextInfo *cur_formats;
 
