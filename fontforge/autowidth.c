@@ -314,6 +314,8 @@ void AW_AutoKern(WidthInfo *wi) {
 
 	if ( wi->threshold!=0 && diff>-wi->threshold && diff<wi->threshold )
 	    diff = 0;
+	if ( wi->onlynegkerns && diff>0 )
+	    diff = 0;
 	lsc = cp->left->sc;
 	rsc = cp->right->sc;
 	for ( kp = lsc->kerns; kp!=NULL && kp->sc!=rsc; kp = kp->next );

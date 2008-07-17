@@ -44,6 +44,7 @@ typedef struct widthinfo {
     int layer;
     unsigned int done: 1;
     unsigned int autokern: 1;
+    unsigned int onlynegkerns: 1;
     struct lookup_subtable *subtable;
 } WidthInfo;
 
