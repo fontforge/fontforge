@@ -76,6 +76,7 @@ return;
 #define CID_Spacing	1001
 #define CID_Total	1002
 #define CID_Threshold	1003
+#define CID_OnlyNeg	1004
 #define CID_Left	1010
 #define CID_Right	1020
 #define CID_Subtable	1030
@@ -230,6 +231,7 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	wi->spacing = GetReal8(gw,CID_Spacing, _("Spacing"),&err);
 	if ( wi->autokern ) {
 	    wi->threshold = GetInt8(gw,CID_Threshold, _("Threshold:"), &err);
+	    wi->onlynegkerns = GGadgetIsChecked(GWidgetGetControl(gw,CID_OnlyNeg));
 	    tot = GetInt8(gw,CID_Total, _("Total Kerns:"), &err);
 	    if ( tot<0 ) tot = 0;
 	}
@@ -369,7 +371,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     GWindow gw;
     GWindowAttrs wattrs;
     GRect pos;
-    GGadgetCreateData *hvarray[20], *varray[10], *h3array[8];
+    GGadgetCreateData *hvarray[24], *varray[10], *h3array[8];
     GGadgetCreateData gcd[29];
     GTextInfo label[29];
     int i, y, selfield, v;
@@ -478,18 +480,26 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 	hvarray[13] = &gcd[i-1]; hvarray[14] = NULL;
 	y += 32;
 
-	gcd[i].gd.flags = gg_enabled ;
+	gcd[i].gd.flags = gg_enabled | gg_visible | gg_cb_on;
+	label[i].text = (unichar_t *) _("Only kern glyphs closer");
+	label[i].text_is_1byte = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = CID_OnlyNeg;
+	gcd[i++].creator = GCheckBoxCreate;
+	hvarray[15] = GCD_Glue; hvarray[16] = &gcd[i-1]; hvarray[17] = NULL;
+
+	gcd[i].gd.flags = gg_enabled | gg_visible;
 	label[i].text = (unichar_t *) _("Lookup subtable:");
 	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i++].creator = GLabelCreate;
-	hvarray[15] = &gcd[i-1];
+	hvarray[18] = &gcd[i-1];
 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.cid = CID_Subtable;
 	gcd[i].gd.handle_controlevent = AW_Subtable;
 	gcd[i++].creator = GListButtonCreate;
-	hvarray[16] = &gcd[i-1]; hvarray[17] = NULL; hvarray[18] = NULL;
+	hvarray[19] = &gcd[i-1]; hvarray[20] = NULL; hvarray[21] = NULL;
     } else
 	hvarray[9] = NULL;
 
@@ -555,15 +565,15 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     GHVBoxSetExpandableCol(varray[2]->ret,1);
     if ( autokern ) {
 	GTextInfo *ti;
-	GGadgetSetList(hvarray[16]->ret,SFSubtablesOfType(sf,gpos_pair,false,false),false);
-	ti = GGadgetGetListItemSelected(hvarray[16]->ret);
+	GGadgetSetList(hvarray[19]->ret,SFSubtablesOfType(sf,gpos_pair,false,false),false);
+	ti = GGadgetGetListItemSelected(hvarray[19]->ret);
 	if ( ti==NULL ) {
 	    int32 len,j;
-	    GTextInfo **list = GGadgetGetList(hvarray[16]->ret,&len);
+	    GTextInfo **list = GGadgetGetList(hvarray[19]->ret,&len);
 	    for ( j=0; j<len; ++j )
 		if ( !list[j]->disabled && !list[j]->line ) {
 		    ti = list[j];
-		    GGadgetSelectOneListItem(hvarray[16]->ret,j);
+		    GGadgetSelectOneListItem(hvarray[19]->ret,j);
 	    break;
 		}
 	}
