@@ -25,7 +25,7 @@ STATIC_LIBS = @STATIC_LIBS@
 libgdraw_OBJECTS =  choosericons.lo drawboxborder.lo \
  gaskdlg.lo gbuttons.lo gchardlg.lo gcontainer.lo gdraw.lo \
  gdrawbuildchars.lo gdrawerror.lo gdrawtxt.lo gdrawtxtinit.lo \
- genkeysym.lo gfilechooser.lo gfiledlg.lo ggadgets.lo ggroupbox.lo \
+ gfilechooser.lo gfiledlg.lo ggadgets.lo ggroupbox.lo \
  gimageclut.lo gimagecvt.lo gimagepsdraw.lo \
  gimagewriteeps.lo gdrawgimage.lo \
  gimagexdraw.lo gkeysym.lo glist.lo \
