@@ -1357,7 +1357,7 @@ void FVAddUnencoded(FontViewBase *fv, int cnt) {
 	memset(fv->selected+map->enccount,0,cnt);
 	map->enccount += cnt;
 	FontViewReformatOne(fv);
-	FVDisplayChar(fv,map->enccount-cnt);
+	FVDisplayEnc(fv,map->enccount-cnt);
     }
 }
 
@@ -1904,6 +1904,7 @@ struct fv_interface noui_fv = {
     FVB_ShowFilled,
     FVB_ReattachCVs,
     FVB_DeselectAll,
+    FVB_DisplayChar,
     FVB_DisplayChar,
     FVB_DisplayChar,
     SFB_CloseAllInstrs

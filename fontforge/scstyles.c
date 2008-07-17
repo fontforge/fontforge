@@ -2777,7 +2777,7 @@ return;
     }
     ff_progress_end_indicator();
     if ( achar!=NULL )
-	FVDisplayChar(fv,achar->orig_pos);
+	FVDisplayGID(fv,achar->orig_pos);
     free(genchange->g.maps);
 }
 
@@ -3014,7 +3014,7 @@ return;
     }
     ff_progress_end_indicator();
     if ( achar!=NULL )
-	FVDisplayChar(fv,achar->orig_pos);
+	FVDisplayGID(fv,achar->orig_pos);
     free(genchange->g.maps);
 }
 
