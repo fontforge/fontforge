@@ -2365,7 +2365,7 @@ return( NULL );
     }
 
     for ( i=0; i<cnt; ++i ) {
-	if ( pos+pos+features[i].offset>=info->g_bounds ) {
+	if ( pos+features[i].offset>=info->g_bounds ) {
 	    LogError(_("Attempt to read feature data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
 	    info->bad_ot = true;
 return( NULL );
