@@ -1468,7 +1468,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     real stdhw[1], stdvw[1];
     int flex_max;
     int i;
-    int hasblue=0, hash=0, hasv=0, hasshift, hasxuid, hasbold, haslg;
+    int hasblue=0, hash=0, hasv=0, hasshift/*, hasxuid*/, hasbold, haslg;
     int isbold=false;
     int iscjk;
     struct pschars *subrs, *chars;
