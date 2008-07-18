@@ -434,59 +434,6 @@ static void KPScrollTo(KPData *kpd, unichar_t uch, enum sortby sort) {
     }
 }
 
-static void KP_Resize(KPData *kpd) {
-    GRect size, bsize;
-    int height;
-    GGadget *sb;
-    int minh, minw;
-
-    kpd->uh = (4*kpd->bdf->pixelsize/3)+kpd->fh+6;
-    kpd->vpad = kpd->bdf->pixelsize/5 + 3;
-
-    GDrawGetSize(kpd->gw,&size);
-
-    GGadgetGetSize(GWidgetGetControl(kpd->gw,CID_Cancel),&bsize);
-    minh = kpd->header_height+(96+kpd->fh+6)+(9+bsize.height+8);
-    minw = 2*(15+bsize.width)+20;
-    if ( size.height < minh || size.width < minw ) {
-	if ( size.height < minh )
-	    size.height = minh;
-	if ( size.width < minw )
-	    size.width = minw;
-	GDrawResize(kpd->gw,size.width,size.height);
-return;
-    }
-
-    GGadgetMove(GWidgetGetControl(kpd->gw,CID_Cancel),
-	    size.width-15-bsize.width, size.height-9-bsize.height);
-    GGadgetMove(GWidgetGetControl(kpd->gw,CID_OK),
-	    15-3, size.height-9-bsize.height-3);
-    height = size.height-9-bsize.height-8 - kpd->header_height;
-    kpd->wh = height/kpd->uh;
-    height = kpd->wh*kpd->uh - 1;
-    if ( kpd->first ) {
-	kpd->first = false;
-	size.height = kpd->header_height+(height+1)+(9+bsize.height+8);
-	GDrawResize(kpd->gw,size.width,size.height);
-return;
-    }
-
-    sb = GWidgetGetControl(kpd->gw,CID_ScrollBar);
-    GGadgetMove(sb, size.width-kpd->sb_width, kpd->header_height-1);
-    GGadgetResize(sb, kpd->sb_width, height+2);
-    GScrollBarSetBounds(sb,0,kpd->kcnt,kpd->wh);
-    if ( kpd->off_top>kpd->kcnt-kpd->wh )
-	kpd->off_top = kpd->kcnt-kpd->wh;
-    if ( kpd->off_top<0 )
-	kpd->off_top = 0;
-    GScrollBarSetPos(sb,kpd->off_top);
-
-    GDrawResize(kpd->v,size.width-kpd->sb_width,height);
-    kpd->vwidth = size.width-kpd->sb_width;
-    GDrawRequestExpose(kpd->gw,NULL,false);
-    GDrawRequestExpose(kpd->v,NULL,false);
-}
-
 static void BaseFillFromBDFC(struct _GImage *base,BDFChar *bdfc) {
     base->data = bdfc->bitmap;
     base->bytes_per_line = bdfc->bytes_per_line;
@@ -764,6 +711,31 @@ static void KP_Commands(KPData *kpd, GEvent *e) {
     }
 }
 
+static void KPV_Resize(KPData *kpd) {
+    GRect size;
+    GGadget *sb;
+
+    GDrawGetSize(kpd->v,&size);
+    kpd->wh = size.height/kpd->uh;
+
+    sb = GWidgetGetControl(kpd->gw,CID_ScrollBar);
+    GScrollBarSetBounds(sb,0,kpd->kcnt,kpd->wh);
+    if ( kpd->off_top>kpd->kcnt-kpd->wh )
+	kpd->off_top = kpd->kcnt-kpd->wh;
+    if ( kpd->off_top<0 )
+	kpd->off_top = 0;
+    GScrollBarSetPos(sb,kpd->off_top);
+    kpd->vwidth = size.width;
+    GDrawRequestExpose(kpd->v,NULL,false);
+    GDrawRequestExpose(kpd->gw,NULL,false);
+}
+
+static void KP_Resize(KPData *kpd) {
+
+    kpd->uh = (4*kpd->bdf->pixelsize/3)+kpd->fh+6;
+    kpd->vpad = kpd->bdf->pixelsize/5 + 3;
+}
+
 static int KP_ChangeSize(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	KPData *kpd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -775,6 +747,7 @@ return( true );
 	BDFFontFree(kpd->bdf);
 	kpd->bdf = temp;
 	KP_Resize(kpd);
+	KPV_Resize(kpd);
     }
 return( true );
 }
@@ -1038,6 +1011,9 @@ return( true );
 	if ( event->type==et_mouseup )
 	    kpd->pressed = false;
       break;
+      case et_resize:
+	KPV_Resize(kpd);
+      break;
     }
 return( true );
 }
@@ -1064,13 +1040,13 @@ static int kpd_e_h(GWindow gw, GEvent *event) {
 	kpdpopup(GDrawGetUserData(gw));
     } else if ( event->type == et_expose ) {
 	KPData *kpd = GDrawGetUserData(gw);
+	GRect size, sbsize;
+	GDrawGetSize(kpd->v,&size);
+	GGadgetGetSize(GWidgetGetControl(kpd->gw,CID_ScrollBar),&sbsize);
 	GDrawSetLineWidth(gw,0);
-	GDrawDrawLine(gw,0,kpd->header_height-1,
-		event->u.expose.rect.x+event->u.expose.rect.width,kpd->header_height-1,
-		0x000000);
-	GDrawDrawLine(gw,0,kpd->header_height+kpd->wh*kpd->uh,
-		event->u.expose.rect.x+event->u.expose.rect.width,kpd->header_height+kpd->wh*kpd->uh,
-		0x000000);
+	GDrawDrawLine(gw,size.x,size.y-1,sbsize.x+sbsize.width-1,size.y-1,0x000000);
+	GDrawDrawLine(gw,size.x,size.y+size.height,sbsize.x+sbsize.width-1,size.y+size.height,0x000000);
+	GDrawDrawLine(gw,size.x-1,size.y-1,size.x-1,size.y+size.height,0x000000);
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("kernpairs.html");
@@ -1097,7 +1073,7 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int layer) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
+    GGadgetCreateData gcd[9], boxes[6], *hvarray[3][3], *harray[3], *barray[10], *varray[5];
     GTextInfo label[9];
     FontRequest rq;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
@@ -1133,6 +1109,7 @@ return;
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     label[0].text = (unichar_t *) _("_Size:");
     label[0].text_is_1byte = true;
@@ -1141,6 +1118,7 @@ return;
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5+6; 
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[0];
 
     gcd[1].gd.label = &sizes[1];  gcd[1].gd.label->selected = true;
     gcd[1].gd.pos.x = 50; gcd[1].gd.pos.y = 5;
@@ -1149,6 +1127,7 @@ return;
     gcd[1].gd.u.list = sizes;
     gcd[1].gd.handle_controlevent = KP_ChangeSize;
     gcd[1].creator = GListButtonCreate;
+    hvarray[0][1] = &gcd[1]; hvarray[0][2] = NULL;
 
     label[2].text = (unichar_t *) _("Sort By:");
     label[2].text_is_1byte = true;
@@ -1156,6 +1135,7 @@ return;
     gcd[2].gd.pos.x = gcd[0].gd.pos.x; gcd[2].gd.pos.y = gcd[0].gd.pos.y+25; 
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
+    hvarray[1][0] = &gcd[2];
 
     if ( !done ) {
 	done = true;
@@ -1170,52 +1150,78 @@ return;
     gcd[3].gd.u.list = sortby;
     gcd[3].gd.handle_controlevent = KP_ChangeSort;
     gcd[3].creator = GListButtonCreate;
+    hvarray[1][1] = &gcd[3]; hvarray[1][2] = NULL; hvarray[2][0] = NULL;
 
-    /* Will be moved to its proper place by KP_Resize */
-    gcd[4].gd.pos.x = 50; gcd[4].gd.pos.y = gcd[0].gd.pos.y+22;
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_sb_vert;
-    gcd[4].gd.cid = CID_ScrollBar;
-    gcd[4].gd.handle_controlevent = KP_Scrolled;
-    gcd[4].creator = GScrollBarCreate;
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = hvarray[0];
+    boxes[2].creator = GHVBoxCreate;
+    varray[0] = &boxes[2];
 
-    gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = 17+37;
-    gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[5].text = (unichar_t *) _("_OK");
-    label[5].text_is_1byte = true;
-    label[5].text_in_resource = true;
-    gcd[5].gd.mnemonic = 'O';
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.cid = CID_OK;
-    gcd[5].gd.handle_controlevent = KP_OK;
-    gcd[5].creator = GButtonCreate;
+    gcd[4].gd.pos.width = 40;
+    gcd[4].gd.pos.height = 250;
+    gcd[4].gd.flags = gg_visible | gg_enabled;
+    gcd[4].gd.u.drawable_e_h = kpdv_e_h;
+    gcd[4].creator = GDrawableCreate;
 
-    gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
+    gcd[5].gd.flags = gg_enabled|gg_visible|gg_sb_vert;
+    gcd[5].gd.cid = CID_ScrollBar;
+    gcd[5].gd.handle_controlevent = KP_Scrolled;
+    gcd[5].creator = GScrollBarCreate;
+    harray[0] = &gcd[4]; harray[1] = &gcd[5]; harray[2] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray;
+    boxes[3].creator = GHBoxCreate;
+    varray[1] = &boxes[3];
+
+    gcd[6].gd.pos.x = 20-3; gcd[6].gd.pos.y = 17+37;
     gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[6].text = (unichar_t *) _("_Cancel");
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[6].text = (unichar_t *) _("_OK");
     label[6].text_is_1byte = true;
     label[6].text_in_resource = true;
     gcd[6].gd.label = &label[6];
-    gcd[6].gd.mnemonic = 'C';
-    gcd[6].gd.cid = CID_Cancel;
-    gcd[6].gd.handle_controlevent = KP_Cancel;
+    gcd[6].gd.cid = CID_OK;
+    gcd[6].gd.handle_controlevent = KP_OK;
     gcd[6].creator = GButtonCreate;
 
-    GGadgetsCreate(gw,gcd);
+    gcd[7].gd.pos.x = -20; gcd[7].gd.pos.y = gcd[6].gd.pos.y+3;
+    gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
+    gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[7].text = (unichar_t *) _("_Cancel");
+    label[7].text_is_1byte = true;
+    label[7].text_in_resource = true;
+    gcd[7].gd.label = &label[7];
+    gcd[7].gd.cid = CID_Cancel;
+    gcd[7].gd.handle_controlevent = KP_Cancel;
+    gcd[7].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[6]; barray[2] = GCD_Glue;
+    barray[3] = GCD_Glue; barray[4] = &gcd[7]; barray[5] = GCD_Glue; barray[6] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = barray;
+    boxes[4].creator = GHBoxCreate;
+    varray[2] = &boxes[4];
+    varray[3] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+
+    GGadgetsCreate(gw,boxes);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,1);
+    GHVBoxSetExpandableCol(boxes[3].ret,0);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GHVBoxSetPadding(boxes[0].ret,0,2);
+    GHVBoxSetPadding(boxes[3].ret,0,0);
+    kpd.v = GDrawableGetWindow(gcd[4].ret);;
 
     GGadgetGetSize(gcd[4].ret,&pos);
     kpd.sb_width = pos.width;
     GGadgetGetSize(gcd[3].ret,&pos);
     kpd.header_height = pos.y+pos.height+4;
-
-    pos.x = 0; pos.y = kpd.header_height;
-    pos.width = pos.height = 100;	/* Will be fixed later (KP_Resize) */
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor;
-    wattrs.event_masks = -1;
-    wattrs.cursor = ct_mypointer;
-    kpd.v = GWidgetCreateSubWindow(gw,&pos,kpdv_e_h,&kpd,&wattrs);
 
     kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intpt) (gcd[1].gd.label->userdata),true,NULL);
 
@@ -1227,7 +1233,10 @@ return;
     GDrawFontMetrics(kpd.font,&as,&ds,&ld);
     kpd.fh = as+ds; kpd.as = as;
 
-    KP_Resize(&kpd);
+    kpd.uh = (4*kpd.bdf->pixelsize/3)+kpd.fh+6;
+    kpd.vpad = kpd.bdf->pixelsize/5 + 3;
+
+    GHVBoxFitWindow(boxes[0].ret);
 
     GDrawSetVisible(kpd.v,true);
     GDrawSetVisible(kpd.gw,true);
