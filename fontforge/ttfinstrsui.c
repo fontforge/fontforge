@@ -239,7 +239,7 @@ return;
 #endif
     lh = ii->lheight;
 
-    GScrollBarSetBounds(ii->vsb,0,lh+2,ii->vheight/ii->fh);
+    GScrollBarSetBounds(ii->vsb,0,lh+2,ii->vheight<ii->fh ? 1 : ii->vheight/ii->fh);
     if ( ii->lpos + ii->vheight/ii->fh > lh )
 	ii->lpos = lh-ii->vheight/ii->fh;
     if ( ii->lpos<0 ) ii->lpos = 0;
@@ -288,7 +288,7 @@ return( true );
     iv->instrdata->bts = NULL;
     instr_info_init(&iv->instrinfo);
     GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight+2,
-	    iv->instrinfo.vheight/iv->instrinfo.fh);
+	    iv->instrinfo.vheight<iv->instrinfo.fh? 1 : iv->instrinfo.vheight/iv->instrinfo.fh);
 return( true );
 }
 
@@ -967,7 +967,7 @@ void IIReinit(struct instrinfo *ii,int ip) {
     free(ii->instrdata->bts);
     ii->instrdata->bts = NULL;
     instr_info_init(ii);
-    GScrollBarSetBounds(ii->vsb,0,ii->lheight+2, ii->vheight/ii->fh);
+    GScrollBarSetBounds(ii->vsb,0,ii->lheight+2, ii->vheight<ii->fh ? 1 : ii->vheight/ii->fh);
     IIScrollTo(ii,ip,true);
 }
 
@@ -1049,7 +1049,7 @@ static void SV_SetScrollBar(ShortView *sv) {
     int lh;
     sv->lheight = lh = sv->len/2;
 
-    GScrollBarSetBounds(sv->vsb,0,lh,sv->vheight/sv->fh);
+    GScrollBarSetBounds(sv->vsb,0,lh,sv->vheight<sv->fh ? 1 : sv->vheight/sv->fh);
     if ( sv->lpos + sv->vheight/sv->fh > lh ) {
 	int lpos = lh-sv->vheight/sv->fh;
 	if ( lpos<0 ) lpos = 0;
