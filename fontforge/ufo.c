@@ -237,17 +237,17 @@ return( false );
 	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc)) {
 	    fprintf( glif, "    <component base=\"%s\"", ref->sc->name );
 	    if ( ref->transform[0]!=1 )
-		fprintf( glif, " xScale=\"%g\"", ref->transform[0] );
+		fprintf( glif, " xScale=\"%g\"", (double) ref->transform[0] );
 	    if ( ref->transform[3]!=1 )
-		fprintf( glif, " yScale=\"%g\"", ref->transform[3] );
+		fprintf( glif, " yScale=\"%g\"", (double) ref->transform[3] );
 	    if ( ref->transform[1]!=0 )
-		fprintf( glif, " xyScale=\"%g\"", ref->transform[1] );
+		fprintf( glif, " xyScale=\"%g\"", (double) ref->transform[1] );
 	    if ( ref->transform[2]!=0 )
-		fprintf( glif, " yxScale=\"%g\"", ref->transform[2] );
+		fprintf( glif, " yxScale=\"%g\"", (double) ref->transform[2] );
 	    if ( ref->transform[4]!=0 )
-		fprintf( glif, " xOffset=\"%g\"", ref->transform[4] );
+		fprintf( glif, " xOffset=\"%g\"", (double) ref->transform[4] );
 	    if ( ref->transform[5]!=0 )
-		fprintf( glif, " yOffset=\"%g\"", ref->transform[5] );
+		fprintf( glif, " yOffset=\"%g\"", (double) ref->transform[5] );
 	    fprintf( glif, "/>\n" );
 	}
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
@@ -256,7 +256,7 @@ return( false );
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
 		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\" smooth=\"%s\"/>\n",
-			    sp->me.x, sp->me.y,
+			    (double) sp->me.x, (double) sp->me.y,
 			    sp->prev==NULL        ? "move"   :
 			    sp->prev->knownlinear ? "line"   :
 			    isquad 		      ? "qcurve" :
@@ -266,11 +266,11 @@ return( false );
 	    break;
 		if ( !sp->next->knownlinear )
 		    fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			    sp->nextcp.x, sp->nextcp.y );
+			    (double) sp->nextcp.x, (double) sp->nextcp.y );
 		sp = sp->next->to;
 		if ( !isquad && !sp->prev->knownlinear )
 		    fprintf( glif, "      <point x=\"%g\" y=\"%g\"/>\n",
-			    sp->prevcp.x, sp->prevcp.y );
+			    (double) sp->prevcp.x, (double) sp->prevcp.y );
 		if ( sp==spl->first )
 	    break;
 	    }
