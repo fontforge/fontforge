@@ -2879,9 +2879,10 @@ static void dump_script_table(FILE *g___,struct scriptset *ss,struct ginfo *ginf
 	    offset = ftell(g___);
 	    ss->langsys[lcnt].offset = offset;
 	}
-	fseek(g___,lcnt==dflt_lang ? base :
-		    lcnt<dflt_lang ? base + 4 + lcnt*6 +4 :
-			base + 4 + (lcnt-1)*6 +4 , SEEK_SET );
+	fseek(g___,lcnt==dflt_lang                 ? base :
+		   lcnt<dflt_lang || dflt_lang==-1 ? base + 4 + lcnt*6 +4 :
+			                             base + 4 + (lcnt-1)*6 +4 ,
+		      SEEK_SET );
 	putshort(g___,offset-base);
 	fseek(g___,0,SEEK_END);
 	if ( ss->langsys[lcnt].same_as==-1 ) {
