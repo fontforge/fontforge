@@ -847,7 +847,10 @@ return;
 		r->lookups[k].lookup = otl;
 	    }
 	}
-	fprintf( out, r->lookup_cnt==0 ? "    ignore sub " : "    sub " );
+	if ( sub->lookup->lookup_type>=gpos_start )
+	    fprintf( out, r->lookup_cnt==0 ? "    ignore pos " : "    pos " );
+	else
+	    fprintf( out, r->lookup_cnt==0 ? "    ignore sub " : "    sub " );
 	if ( fpst->format==pst_class ) {
 	    dump_contextpstclass(out,sf,sub,r,r->lookup_cnt==0);
 	} else if ( fpst->format==pst_glyphs ) {
@@ -3238,7 +3241,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
     int i;
     FPST *fpst;
     struct fpst_rule *r;
-    struct feat_item *item, *head;
+    struct feat_item *item, *head = NULL;
 
     for ( g=glyphs; g!=NULL && g->mark_count==0; g=g->next ) {
 	++bcnt;
@@ -3295,8 +3298,9 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
     item->u2.fpst = fpst;
 
     if ( is_pos ) {
-	for ( g=glyphs; g!=NULL && g->mark_count!=0; g=g->next );
+	for ( g=glyphs; g!=NULL && g->mark_count==0; g=g->next );
 	for ( i=0; g!=NULL; ++i ) {
+	    head = NULL;
 	    if ( g->lookupname!=NULL ) {
 		head = chunkalloc(sizeof(struct feat_item));
 		head->type = ft_lookup_ref;
@@ -3316,7 +3320,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	    cnt = g->mark_count;
 	    while ( g!=NULL && g->mark_count == cnt )	/* skip everything involved here */
 		g=g->next;
-	    for ( ; g!=NULL && g->mark_count!=0; g=g->next ); /* skip any uninvolved glyphs */
+	    for ( ; g!=NULL && g->mark_count==0; g=g->next ); /* skip any uninvolved glyphs */
 	}
     }
 
