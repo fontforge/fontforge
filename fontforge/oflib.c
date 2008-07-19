@@ -674,7 +674,7 @@ enum searchtype { st_showall, st_author, st_name, st_tag, st_license };
 static int initted = false;
 static GTextInfo searchtypes[] = {
     { (unichar_t *) N_("Show All"), NULL, 0, 0, (void *) st_showall, NULL, 0, 0, 0, 0, 1, 0, 1},	/* Selected, One byte */
-    { (unichar_t *) N_("Author"), NULL, 0, 0, (void *) st_author, NULL, 0, 0, 0, 0, 0, 0, 1}, 
+    { (unichar_t *) N_("Designer"), NULL, 0, 0, (void *) st_author, NULL, 0, 0, 0, 0, 0, 0, 1}, 
     { (unichar_t *) N_("Name"), NULL, 0, 0, (void *) st_name, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Tag(s)"), NULL, 0, 0, (void *) st_tag, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("License"), NULL, 0, 0, (void *) st_license, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -1722,7 +1722,7 @@ return;
     gcd[k].creator = GRadioCreate;
     harray1[1] = &gcd[k++];
 
-    label[k].text = (unichar_t *) _("Author");
+    label[k].text = (unichar_t *) _("Designer");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
