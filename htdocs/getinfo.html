@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 31-Oct-2007 -->
+  <!-- AP: Last modified: 19-Jul-2008 -->
   <TITLE>Get Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -133,7 +133,7 @@
   <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor</A> command.
   <BR Clear=All>
   <H2>
-    <IMG SRC="rgetinfo.png" WIDTH="317" HEIGHT="389" ALIGN="Right"><A NAME="GetReferenceInfo">Reference</A>
+    <IMG SRC="rgetinfo.png" WIDTH="319" HEIGHT="480" ALIGN="Right"><A NAME="GetReferenceInfo">Reference</A>
     Info
   </H2>
   <P>
@@ -160,11 +160,10 @@
   <P>
   In a truetype font a reference may be positioned by matching two points,
   one in the base character, and one in the reference itself. In the example
-  at right, the reference to "acute" will be moved until point 2 in "acute"
-  is at the same place as point 0 in whatever the base glyph might be. The
-  glory of this method is that the truetype instructions assocated with the
-  glyphs can move these points around to an appropriate location for the current
-  pixelsize.
+  at right, the reference to "acute" will be moved until point 12 in "acute"
+  is at the same place as point 33 in the base glyph. The glory of this method
+  is that the truetype instructions assocated with the glyphs can move these
+  points around to an appropriate location for the current pixelsize.
   <P>
   Points in a composite glyph are numbered by counting the points of the first
   component, adding 4 (for the 4 phantom (metric) points), then counting the
@@ -176,6 +175,9 @@
   to reorder the references.
   <P>
   (You should probably not set Round To Grid when doing point matching)
+  <P>
+  The bounding box information is informative only and displays the current
+  location and size of the reference.
   <P>
   The [Show] button will open a glyph outline view showing the glyph being
   referred to.<BR CLEAR=ALL>

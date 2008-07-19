@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 15-Aug-2007 -->
-  <!-- AP: Last modified: 5-Jun-2008 -->
+  <!-- AP: Last modified: 19-Jul-2008 -->
   <TITLE>The font validation window</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -53,6 +53,8 @@
       this check because it assumes you know what you are doing and you are planning
       to rename the glyphs before they get saved anyway).
     <LI>
+      In a TrueType font, point coordinates must be integral.
+    <LI>
       Check that the OS/2 version number is valid.
   </UL>
   <P>
@@ -62,6 +64,9 @@
   This means that although the first validation may be slow, subsequent validations
   will probably be very fast -- so don't be discouraged by the time it takes
   to do this the first time.
+  <P>
+  (If, for some reason, you need to revalidate, then right clicking in the
+  window will give you a menu where "Revalidate All" is an option).
   <P>
   The Validation window will recheck the state of the font as you edit it.
   So if you leave the window open you will see glyphs popping into the window
@@ -80,6 +85,9 @@
     <LI>
       revalidate the glyph (usually this happens when needed... but just in case
       fontforge screws up this option is present)
+    <LI>
+      revalidate all glyphs (again, I hope this won't be needed -- but just in
+      case)
     <LI>
       Select all glyphs with a particular error in the font view
     <LI>
