@@ -331,10 +331,10 @@ void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int r
     }
 }
 
-/* added by akrioukov 01/01/2008 to enable resizing and flipping DStem hints */
+/* added by akryukov 01/01/2008 to enable resizing and flipping DStem hints */
 void TransDStemHints( DStemInfo *ds,real xmul,real xoff,real ymul,real yoff,int round_to_int ) {
     HintInstance *hi;
-    double dmul;
+    double dmul, temp;
 
     for ( ; ds!=NULL; ds=ds->next ) {
 	ds->left.x = xmul*ds->left.x + xoff;
@@ -360,8 +360,9 @@ void TransDStemHints( DStemInfo *ds,real xmul,real xoff,real ymul,real yoff,int 
 	        hi->begin = hi->begin * dmul;
 	        hi->end = hi->end * dmul;
             } else {
+                temp = hi->begin;
 	        hi->begin = hi->end * dmul;
-	        hi->end = hi->begin * dmul;
+	        hi->end = temp * dmul;
             }
 	}
     }
