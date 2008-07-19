@@ -157,6 +157,7 @@ typedef struct stemdata {
     int lpcnt, rpcnt;           /* Count of points assigned to left and right edges of this stem */
     struct linedata *leftline, *rightline;
     struct stemdata *master;
+    int confl_cnt;
     int dep_cnt;
     int serif_cnt;
     struct dependent_stem {
