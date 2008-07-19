@@ -31,7 +31,7 @@
 #include <math.h>
 #include <utype.h>
 
-#define GLYPH_DATA_DEBUG 0
+#define GLYPH_DATA_DEBUG 1
 #define PI 3.14159265358979323846264338327
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
@@ -4253,18 +4253,22 @@ static void CheckForBoundingBoxHints( struct glyphdata *gd ) {
             else ++vcnt;
         }
     }
-    if ( hcnt!=0 && vcnt!=0 )
+    if ( hcnt!=0 && vcnt!=0 && 
+        ( hstem == NULL || !hstem->positioned ) && 
+        ( vstem == NULL || !vstem->positioned ))
 return;
 
     ch = bounds.maxy - bounds.miny;
     cw = bounds.maxx - bounds.minx;
     
-    if ( hcnt == 0 && ch > 0 && ch < gd->emsize/3 ) {
+    if ( ch > 0 && (( hstem != NULL && hstem->positioned ) || 
+        ( hcnt == 0 && ch < gd->emsize/3 ))) {
         if ( hstem != NULL && hstem->toobig ) hstem->toobig = false;
         AssignPointsToBBoxHint( gd,&bounds,hstem,false );
         if ( hstem != NULL ) NormalizeStem( gd,hstem );
     }
-    if ( vcnt == 0 && cw > 0 && cw < gd->emsize/3 ) {
+    if ( cw > 0 && (( vstem != NULL && vstem->positioned ) || 
+        ( vcnt == 0 && cw < gd->emsize/3 ))) {
         if ( vstem != NULL && vstem->toobig ) vstem->toobig = false;
         AssignPointsToBBoxHint( gd,&bounds,vstem,true );
         if ( vstem != NULL ) NormalizeStem( gd,vstem );
@@ -4748,8 +4752,43 @@ return( gd );
 }
 
 static int ValidConflictingStem( struct stemdata *stem1,struct stemdata *stem2 ) {
+    int x_dir = fabs( stem1->unit.y ) > fabs( stem1->unit.x );
+    double s1, e1, s2, e2, temp;
+    
+    s1 = (&stem1->left.x)[!x_dir] - 
+        ((&stem1->left.x)[x_dir] * (&stem1->unit.x)[!x_dir] )/(&stem1->unit.x)[x_dir];
+    e1 = (&stem1->right.x)[!x_dir] - 
+        ((&stem1->right.x)[x_dir] * (&stem1->unit.x)[!x_dir] )/(&stem1->unit.x)[x_dir];
+    s2 = (&stem2->left.x)[!x_dir] - 
+        ((&stem2->left.x)[x_dir] * (&stem2->unit.x)[!x_dir] )/(&stem2->unit.x)[x_dir];
+    e2 = (&stem2->right.x)[!x_dir] - 
+        ((&stem2->right.x)[x_dir] * (&stem2->unit.x)[!x_dir] )/(&stem2->unit.x)[x_dir];
+
+    if ( s1 > e1 ) {
+        temp = s1; s1 = e1; e1 = temp;
+    }
+    if ( s2 > e2 ) {
+        temp = s2; s2 = e2; e2 = temp;
+    }
+    /* If stems don't overlap, then there is no conflict here */
+    if ( s2 >= e1 || s1 >= e2 )
+return( false );
+    
+    /* Stems which have no points assigned cannot be valid masters for
+    /* other stems (however there is a notable exception for ghost hints) */
+    if (( stem1->lpcnt > 0 || stem1->rpcnt > 0 ) && 
+        stem2->lpcnt == 0 && stem2->rpcnt == 0 && !stem2->ghost )
+return( false );
+
+    /* Bounding box stems are always preferred */
+    if ( stem1->bbox && !stem2->bbox )
+return( false );
+
+    /* Stems associated with blue zones always preferred to any other stems */
     if ( stem1->blue >=0 && stem2->blue < 0 )
 return( false );
+    /* If both stems are associated with a blue zone, but one of them is for
+    /* a ghost hint, then that stem is preferred */
     if ( stem1->ghost && !stem2->ghost )
 return( false );
 
@@ -4801,7 +4840,7 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
     struct stembundle *bundle = stem->bundle;
     double start, end, tstart, tend;
     double ssdist, sedist, esdist, eedist;
-    double smin, smax, emin, emax;
+    double smin, smax, emin, emax, tsmin, tsmax, temin, temax;
     int is_x, i, link_to_s, stype, etype, allow_s, allow_e;
 
     is_x = ( bundle->unit.x == 1 );
@@ -4824,6 +4863,19 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
 
     for ( i=0; i<bundle->cnt; i++ ) {
         tstem = bundle->stemlist[i];
+        if ( is_x ) {
+            tstart = tstem->right.y; tend = tstem->left.y;
+            tsmin = tstart - tstem->rmin - 2*dist_error_hv;
+            tsmax = tstart - tstem->rmax + 2*dist_error_hv;
+            temin = tend - tstem->lmin - 2*dist_error_hv;
+            temax = tend - tstem->lmax + 2* dist_error_hv;
+        } else {
+            tstart = tstem->left.x; tend = tstem->right.x;
+            tsmin = tstart + tstem->lmax - 2*dist_error_hv;
+            tsmax = tstart + tstem->lmin + 2*dist_error_hv;
+            temin = tend + tstem->rmax - 2*dist_error_hv;
+            temax = tend + tstem->rmin + 2*dist_error_hv;
+        }
         tstart = ( is_x ) ? tstem->right.y : tstem->left.x;
         tend = ( is_x ) ? tstem->left.y : tstem->right.x;
 
@@ -4840,6 +4892,8 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
         if ( stem->clen > tstem->clen && ValidConflictingStem( tstem,stem ))
     continue;
     
+        stem->confl_cnt++;
+    
         /* If the master stem is for a ghost hint or both the stems are
         /* linked to the same blue zone, then we can link only to the edge
         /* which fall into the blue zone */
@@ -4852,14 +4906,14 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
         /* The hinting technique for this case is to merge all points found on
         /* those coincident edges together, position them, and then link to the
         /* opposite edges */
-        if ( allow_s && tstart > smin && tstart < smax ) {
+        if ( allow_s && tstart > smin && tstart < smax && start > tsmin && start < tsmax ) {
             
             if ( smaster == NULL || stype != 'a' || smaster->clen < tstem->clen ) {
                 smaster = tstem;
                 stype = 'a';
             }
         /* The same case for right edges */
-        } else if ( allow_e && tend > emin && tend < emax ) {
+        } else if ( allow_e && tend > emin && tend < emax && end > temin && end < temax ) {
 
             if ( emaster == NULL || etype != 'a' || emaster->clen < tstem->clen ) {
                 emaster = tstem;
@@ -4967,6 +5021,32 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
         emaster->dependent[emaster->dep_cnt  ].stem = stem;
         emaster->dependent[emaster->dep_cnt  ].dep_type = etype;
         emaster->dependent[emaster->dep_cnt++].lbase = is_x;
+    }
+}
+
+/* If a stem has been considered depending from another stem which in
+/* its turn has its own "master", and the first stem doesn't conflict
+/* with the "master" of the stem it overlaps (or any other stems), then
+/* this dependency is unneeded and processing it in the autoinstructor 
+/* can even lead to undesired effects. Unfortunately we can't prevent
+/* detecting such dependecies in LookForMasterHVStem(), because we
+/* need to know the whole stem hierarchy first. So look for undesired
+/* dependencies and clean them now */
+static void ClearUnneededDeps( struct stemdata *stem ) {
+    struct stemdata *master;
+    int i, j;
+    
+    if ( stem->confl_cnt == 1 && 
+        ( master = stem->master ) != NULL && master->master != NULL ) {
+        
+        stem->master = NULL;
+        for ( i=j=0; i<master->dep_cnt; i++ ) {
+            if ( j<i )
+                memcpy( &master->dependent[i-1],&master->dependent[i],
+                    sizeof( struct dependent_stem ));
+            if ( master->dependent[i].stem != stem ) j++;
+        }
+        (master->dep_cnt)--;
     }
 }
 
@@ -5101,8 +5181,12 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
     
     for ( i=0; i<gd->hbundle->cnt; i++ )
         LookForMasterHVStem( gd->hbundle->stemlist[i],&gd->bd );
+    for ( i=0; i<gd->hbundle->cnt; i++ )
+        ClearUnneededDeps( gd->hbundle->stemlist[i] );
     for ( i=0; i<gd->vbundle->cnt; i++ )
         LookForMasterHVStem( gd->vbundle->stemlist[i],&gd->bd );
+    for ( i=0; i<gd->vbundle->cnt; i++ )
+        ClearUnneededDeps( gd->vbundle->stemlist[i] );
 }
 
 static void AddSerifOrBall( struct glyphdata *gd,
