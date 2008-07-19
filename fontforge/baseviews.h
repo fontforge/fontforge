@@ -468,6 +468,7 @@ extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int docle
 
 extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
 
+extern int HasLicense(SplineFont *,FILE *);
 extern int OFLibUploadFont(OFLibData *);
 
 enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,

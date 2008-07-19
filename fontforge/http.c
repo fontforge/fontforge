@@ -468,7 +468,7 @@ return( false );
 return( true );
 }
 
-static int HasLicense(SplineFont *sf,FILE *tmp) {
+int HasLicense(SplineFont *sf,FILE *tmp) {
     struct ttflangname *strings;
     char *license=NULL, *enlicense=NULL, *lu=NULL, *enlu=NULL;
 

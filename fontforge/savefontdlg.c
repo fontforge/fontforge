@@ -66,6 +66,8 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_OFLibDiskPreview	316
 #define CID_OFLibPreviewText	317
 #define CID_OFLibPreviewBrowse	318
+#define CID_UploadLicense	319
+#define CID_UploadFontLog	320
 #define CID_OFLibLabOffset	30
 #define CID_AppendFontLog	400
 #define CID_FontLogBit		401
@@ -1287,8 +1289,8 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
     oflib.artists  = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibArtists));
     oflib.notsafeforwork = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibNotSafe));
     oflib.oflicense = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibOFL));
-    oflib.upload_license = true;
-    oflib.upload_fontlog = true;
+    oflib.upload_license = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_UploadLicense));
+    oflib.upload_fontlog = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_UploadFontLog));
     if ( gendefaultimage )
 	oflib.previewimage = SFDefaultImage(d->sf,NULL);
     else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibNoPreview)) )
@@ -1934,6 +1936,7 @@ static int GFD_ToggleOFLib(GGadget *g, GEvent *e) {
 	    CID_OFLibLine1, CID_OFLibLine2,
 	    CID_OFLibGenPreview, CID_OFLibNoPreview, CID_OFLibDiskPreview,
 	    CID_OFLibPreviewText, CID_OFLibPreviewBrowse,
+	    CID_UploadLicense, CID_UploadFontLog,
 	    0 };
 	int i, visible = GGadgetIsChecked(g);
 
@@ -2134,7 +2137,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[19+2*48+4], *varray[13], *hvarray[46], *famarray[3*50+1],
-	    *harray[10], boxes[9], *oflarray[9][5], *oflibinfo[8], *parray[3][4], *p2array[5];
+	    *harray[10], boxes[9], *oflarray[11][5], *oflibinfo[8], *parray[3][4], *p2array[5];
     GTextInfo label[18+2*48+4];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
@@ -2842,6 +2845,31 @@ return( 0 );
 	gcd[k++].creator = GRadioCreate;
 	oflarray[5][3] = &gcd[k-1]; oflarray[5][4] = NULL;
 
+	label[k].text = (unichar_t *) _("Upload License");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled  | gg_utf8_popup;
+	if ( HasLicense(sf,NULL) )
+	    gcd[k].gd.flags |= gg_cb_on;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Upload the license (as found in the list of truetype names)");
+	gcd[k].gd.cid = CID_UploadLicense;
+	gcd[k++].creator = GCheckBoxCreate;
+	oflarray[6][0] = GCD_Glue; oflarray[6][1] = &gcd[k-1];
+	oflarray[6][2] = GCD_ColSpan; oflarray[6][3] = GCD_Glue;
+	oflarray[6][4] = NULL;
+
+	label[k].text = (unichar_t *) _("Upload FontLog");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled ;
+	if ( sf->fontlog )
+	    gcd[k].gd.flags |= gg_cb_on;
+	gcd[k].gd.cid = CID_UploadFontLog;
+	gcd[k++].creator = GCheckBoxCreate;
+	oflarray[7][0] = GCD_Glue; oflarray[7][1] = &gcd[k-1];
+	oflarray[7][2] = GCD_ColSpan; oflarray[7][3] = GCD_Glue;
+	oflarray[7][4] = NULL;
+
 	label[k].text = (unichar_t *) _("Preview:");
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
@@ -2849,7 +2877,7 @@ return( 0 );
 	gcd[k].gd.popup_msg = (unichar_t *) _("An image of the font in use");
 	gcd[k].gd.cid = CID_OFLibGenPreview + CID_OFLibLabOffset;
 	gcd[k++].creator = GLabelCreate;
-	oflarray[6][0] = &gcd[k-1];
+	oflarray[8][0] = &gcd[k-1];
 
 	label[k].text = (unichar_t *) _("Generated Image");
 	label[k].image_precedes = false;
@@ -2905,8 +2933,8 @@ return( 0 );
 	boxes[5].gd.flags = gg_enabled|gg_visible;
 	boxes[5].gd.u.boxelements = parray[0];
 	boxes[5].creator = GHVBoxCreate;
-	oflarray[6][1] = &boxes[5]; oflarray[6][2] = oflarray[6][3] = GCD_ColSpan;
-	oflarray[6][4] = NULL;
+	oflarray[8][1] = &boxes[5]; oflarray[8][2] = oflarray[8][3] = GCD_ColSpan;
+	oflarray[8][4] = NULL;
 
 	label[k].text = (unichar_t *) _("Not Safe for Work");
 	label[k].text_is_1byte = true;
@@ -2915,10 +2943,10 @@ return( 0 );
 	gcd[k].gd.popup_msg = (unichar_t *) _("If for some reason the font is deemed inappropriate\nfor a work environment.");
 	gcd[k].gd.cid = CID_OFLibNotSafe;
 	gcd[k++].creator = GCheckBoxCreate;
-	oflarray[7][0] = GCD_Glue; oflarray[7][1] = &gcd[k-1];
-	oflarray[7][2] = GCD_ColSpan; oflarray[7][3] = GCD_Glue;
-	oflarray[7][4] = NULL;
-	oflarray[8][0] = NULL;
+	oflarray[9][0] = GCD_Glue; oflarray[9][1] = &gcd[k-1];
+	oflarray[9][2] = GCD_ColSpan; oflarray[9][3] = GCD_Glue;
+	oflarray[9][4] = NULL;
+	oflarray[10][0] = NULL;
 
 	boxes[6].gd.flags = gg_enabled|gg_visible;
 	boxes[6].gd.u.boxelements = oflarray[0];
