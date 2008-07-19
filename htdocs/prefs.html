@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 19-Mar-2008 -->
+  <!-- AP: Last modified: 18-Jul-2008 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -67,6 +67,13 @@
       to specify a file from which these resources should be read (those on the
       screen will also be read and will supersede those in the file).
     <DT>
+      PixmapDir
+    <DD>
+      A directory in which icons maybe found for use in fontforge's menus (and
+      a few other spots). If you leave this blank, the default directory will be
+      used (which is likely to be /usr/local/share/fontforge/pixmaps). If you want
+      no icons then set this to a directory which contains no icon files.
+    <DT>
       <A NAME="HelpDir">HelpDir</A>
     <DD>
       FontForge will search this directory for help files when the user presses
@@ -88,7 +95,11 @@
       <A NAME="AutoHint">AutoHint</A>
     <DD>
       Whether glyphs should be automagically hinted before a bitmap glyph is generated
-      (improves the quality of the bitmap)<BR Clear=all>
+      (improves the quality of the bitmap)
+    <DT>
+      SplashScreen
+    <DD>
+      Controls whether a splash screen is displayed on start up.<BR Clear=all>
   </DL>
   <P>
   <IMG SRC="prefs-newfont.png" WIDTH="502" HEIGHT="339" ALIGN="Right">

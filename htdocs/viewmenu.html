@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 17-Feb-2008 -->
+  <!-- AP: Last modified: 18-Jul-2008 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -175,7 +175,17 @@
     <LI>
       <A HREF="#bitmaps">&lt;list of bitmap pixel sizes, if any&gt;</A>
     <LI>
-      <A HREF="#Grid">Show/Hide Grid</A>
+      <A HREF="#Grid">Show Grid</A>
+      <UL>
+	<LI>
+	  Show
+	<LI>
+	  Partial
+	<LI>
+	  Hide when Moving
+	<LI>
+	  Hide
+      </UL>
     <LI>
       <A HREF="#Outline">Outline</A>
     <LI>
@@ -559,8 +569,20 @@
     <DT>
       Show/Hide <A NAME="Grid">Grid</A>
     <DD>
-      In the Metrics View there is no layers palette. This entry allows you to
-      turn on or off the lines marking the edges of the glyphs on display.
+      In the Metrics View this entry allows you to turn on or off the lines marking
+      the edges of the glyphs on display. There are 4 levels
+      <UL>
+	<LI>
+	  Show Grid -- Always show the full grid lines
+	<LI>
+	  Partial Grid -- Show short lines at the top and bottom of the window so the
+	  line will not be distracting when examining spacing
+	<LI>
+	  Hide when moving -- Show the full grid line normally, but it will vanish
+	  while the user adjusts spacing with the mouse
+	<LI>
+	  Hode Grid -- Always hide the grid.
+      </UL>
     <DT>
       <A NAME="Outline">Outline</A>
     <DD>

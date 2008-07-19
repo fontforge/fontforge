@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 7-Jun-2008 -->
+  <!-- AP: Last modified: 19-Jul-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,6 +47,254 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      ???
+      <UL>
+	<LI>
+	  Updated Russian UI
+	<LI>
+	  Updated Simplified Chinese UI
+	<LI>
+	  Small Caps dialog greatly rewritten and merged into the sub/superscript dialog
+	  and a new change glyph dialog.
+	<LI>
+	  Alexey Kryukov makes Small Caps and friends deal with diagonal stems.
+	<LI>
+	  Update the upload mechanism to OFLib to send a preview image, license text
+	  (if specified in our database) and fontlog (again, if in our database). Currently
+	  OFLib throws away both the license info and the fontlog, but I hope they
+	  will fix that in time.
+	<LI>
+	  Add a dialog to browse fonts on the OFLib.
+	<LI>
+	  Fix some bugs in feature file generation of contextual chaining lookups which
+	  refer to marks. Note these are not supported in the spec. This is a FontForge
+	  only extension.
+	<LI>
+	  If a script contain no default language features (but did contain some languages)
+	  then ff produced a garbage script table for GPOS/GSUB.
+	<LI>
+	  A number of Dialogs still did not autosize themselves for different languages
+	  Create Hints, Kern (Anchor) Pair, Review Hings.
+	<LI>
+	  On systems using different font metrics, the debug pane looks bad with the
+	  buttons partly covered by the instruction pane. If the font is large, and
+	  the cvt dlg empty, then I'm told ff complains.
+	<LI>
+	  Barry points out that Add Encoding Slots scrolls to the wrong place.
+	<LI>
+	  Adding glyphs in compacted encodings caused problems.
+	<LI>
+	  When the user resizes the outline glyph window, retain that size and use
+	  it for the default size of subsequent invocations of the window.
+	<LI>
+	  It used to be that whenever ff opened an sfd file then all subsequent new
+	  fonts (or fonts opened from real font files) would be displayed in windows
+	  the same size as the one requested in the sfd file. Only set the window size
+	  preference when the user explicitly changes it, not upon openning something
+	  with a different setting.
+	<LI>
+	  In a CID-keyed font, when opening an empty CID slot, ff could trample memory.
+	<LI>
+	  BlueFuzz support for autohinter and metafont.
+	<LI>
+	  Add some checks to make sure that we can survive bad font data without crashing.
+	<LI>
+	  When trying to change kerning between the last two glyphs in the metrics
+	  view using the text field (rather than dragging the line) then the textfield
+	  would change, but the kerning would not.
+	<LI>
+	  In the metrics view, give the user several options about the grid (which
+	  shows the advance widths of the glyphs)
+	  <UL>
+	    <LI>
+	      hidden
+	    <LI>
+	      fully displayed
+	    <LI>
+	      small lines at the top and bottom of the pane
+	    <LI>
+	      fully displayed except when the user is adjusting kerning or the advance
+	      width, etc. When adjusting grid vanishes until user releases the mouse button.
+	  </UL>
+	  <P>
+	  (setting is sticky).
+	<LI>
+	  Allow the user to customize the colors in the metrics view.
+	<LI>
+	  In the metrics view (or in the print display dlg) when glyphs are overlapping
+	  (e asier to see when glyphs are large) then the places where one glyph ends
+	  and another begins often have a faint halo of lighter pixels. Try to improve
+	  things and make these joins be more uniform in color.
+	<LI>
+	  Add minimal support for alpha channels (treat them as a bitmask for transparent).
+	<LI>
+	  I find it really hard to believe that this is an error, but I have a second
+	  hand report that MicroSoft claims that it is. To me making it erroneous is
+	  pointless and annoying, but I don't write the spec. <BR>
+	  Add to Find Problems and Validate a check to see that if a base glyph (or
+	  mark) contains an anchor point in one anchor class in a lookup subtable,
+	  then it must have anchor points for ALL anchor classes in that subtable.
+	<LI>
+	  Fontimage would crash if asked to process a font with glyphs not in BMP.
+	  Make fontimage better about fonts which contain no standard scripts (Apostolos's
+	  Phaistos font).
+	<LI>
+	  A few tweaks to make stemdb.c usable for resizing glyphs and stem control.
+	<LI>
+	  When importing lookups into a font, append the fontname to the lookup name
+	  only if there is already a lookup in the new font with the original name.
+	<LI>
+	  Empty glyphs containing a "." in the name could cause ff to crash when doing
+	  or checking to see if it could do a build accented.
+	<LI>
+	  Gasp editing was broken (still) from the change to the cleartype stuff.
+	<LI>
+	  Andrey P. would like to see a reference's bounding box in the Element-&gt;Get
+	  Info dlg for the reference.
+	<LI>
+	  Revert glyph had some stray memory references.
+	<LI>
+	  Add two proposed language tags for IPA use (one for IPA and one for Americanist).
+	<LI>
+	  In an empty python layer layer.boundingBox should return a tuple of 4 zeros,
+	  instead it returned a tuple of 2 zeros and 2 random garbage values.
+	<LI>
+	  Validate dlg's scrollbar was broken, and you couldn't drag the thumb up to
+	  the top (you could get it to the top by other ways).
+	<LI>
+	  Add a revalidate all menu item to the window to force a reevaluation of the
+	  entire font.
+	<LI>
+	  Add ability to import graphics from a page of a pdf file.
+	<LI>
+	  Python interface does not catagorize points.
+	<LI>
+	  The (python) psMat.skew command skewed vertically, rather than horizontally
+	  and by the wrong amoung.
+	<LI>
+	  When doing a font sample from a script which did not set the page width/height
+	  explicitly, then ff would use a size of 0 for each. All text drawn was out
+	  of the imaging area, lines were too short (as well as invisible), too many
+	  pages (all blank).
+	<LI>
+	  Barry points out that "print" is a python keyword. So font.print() doesn't
+	  work. Call it printSample() instead.
+	<LI>
+	  Freetype now (or in the next release, 2.3.7) supports dropout modes, which
+	  means fontforge must do a bit of work when generating rasters for the debugger.
+	<LI>
+	  Move some logic out of fontimage.pe and into fontforge to make a default
+	  string for a font image more widely available.
+	<LI>
+	  When saving an image fromt the print dlg, the top line was off the top of
+	  the image.
+	<LI>
+	  Interpolated points need not be on integral boundaries, but ff was checking
+	  for them. Different problems in validator and find problems, but both wrong.
+	<LI>
+	  In the point near hint check (find problems), ff was leaving the hint selected.
+	<LI>
+	  Fix some rounding errors in spline/line intersection.
+	<LI>
+	  in Font Info, after user pressed [OK] FF set the state of the subscript
+	  superscript default checkbox to the panose default checkbox by mistake. This
+	  means if the user defined panose and not sub/super garbage would appear in
+	  the OS/2 sub/super fields.
+	<LI>
+	  fontimage didn't get the script right, so features weren't applied properly.
+	<LI>
+	  More work on conflicting stems.
+	<LI>
+	  Pressing [Done] in the print dialog would right to a random address on the
+	  stack. Depending on what was going on when this was done it could cause a
+	  crash.
+	<LI>
+	  Fix an uninitialized variable introduced by the last change to order2 conversion.
+	<LI>
+	  Add the ability to open an archive and peek inside it for fonts. Useful if
+	  we want to open stuff from the open font library which is often packaged
+	  in zip files.
+	<LI>
+	  Add a new validation check to see if a glyph has non-integral coordinates.
+	  Only an error in TrueType (and can't happen when fontlinting a truetype file,
+	  but could happen on an sfd file). Add some logic to ask user if they intend
+	  to generate truetype in cases where we aren't sure.
+	<LI>
+	  Add a preference which allows people to change the pixmap dir -- and do what
+	  we can to reload images from the new dir. Some old windows may not be updated,
+	  but new ones should reflect the new stuff.
+	<LI>
+	  When ff changed the name of a glyph, it fixed up all the tabs in charviews
+	  to the new name -- but in neglected to refresh them. So they still showed
+	  on the screen with the old name (until something forced a refresh).
+	<LI>
+	  The Anchor Class dialog (which lists all anchor classes of a subtable) only
+	  let you create an Anchor Control dialog for the first anchor class.
+	<LI>
+	  Guard (harder) against generating pathological results when converting cubic
+	  to quadratic splines.
+	<LI>
+	  If we had a spline which almost doubled back on itself, sufficiently so that
+	  the spline intersector found lots of really close points, which it called
+	  intersections, but not sufficiently so that our colinear detector caught
+	  it, then we'd generate a ton of intersections, overflow certain arrays, and
+	  trash the stack. =&gt; ff would crash. I didn't think this could happen,
+	  until someone provided a test case, so put in guards against this.
+	<LI>
+	  provide python access to
+	  <BLOCKQUOTE>
+	    glyph.altuni
+	  </BLOCKQUOTE>
+	  <P>
+	  either None, or a tuple of tuples, one sub-tuple for each alternate. each
+	  sub-tuple is (alternate-unicode, variation selector (or -1), reserved for
+	  future=0 now).
+	<LI>
+	  Trying to build dieresis with "PreferSpacingAccents" set meant that we tried
+	  to build it out of itself, and crashed.
+	<LI>
+	  Also fix so that 0x22EF (ellipsis variant) is built out of centered dot in
+	  a spacing mode, while Ldot uses it in a non-spacing mode.
+	<LI>
+	  Merge fonts broken again. This time references didn't work.
+	<LI>
+	  Provide a mechanism for loading image files to make menu item icons (instead
+	  of expecting the images to live in memory inside of fontforge). Then provide
+	  a bunch of these icons so the menus will look more interesting.
+	  <P>
+	  Provide some icons
+	  <P>
+	  Also update the install procedure to put them in the right place.
+	  <P>
+	  Preference item containing a directory from which to read icon files
+	<LI>
+	  FF crashed when opening CID keyed fonts with compact_on_open set.
+	<LI>
+	  If fontforge got an end of file in the middle of reading a (corrupt) cff
+	  font, then ff would sit there reading endlessly and ignoring the error.
+	<LI>
+	  Off by one error in drawing the large "pixel" rectangles that show grid fit
+	  generated.
+	<LI>
+	  Werner points out that my instruction glosses are out of date:
+	  <OL>
+	    <LI>
+	      Was following Apple's docs for SCANTYPE, not MS. MS has a number of new values.
+	    <LI>
+	      Was using an old convention for accessing PPEM which broke after freetype
+	      2.3.5
+	    <LI>
+	      Added the FreeType return for GETINFO.
+	  </OL>
+	<LI>
+	  Featurefile patch from Barry.
+	<LI>
+	  I used to think that the max glyph instruction length field of 'maxp' refered
+	  to fpgm and prep. I thought this because there was a footnote (which I now
+	  see was for a different field) saying the the field also applied to fpgm
+	  and prep.
+      </UL>
+    <LI>
       07-June-2008
       <UL>
 	<LI>
@@ -69,8 +317,6 @@
 	<LI>
 	  And matching python commands: font.italicize(), font.addSmallCaps(),
 	  layer.stemControl()
-	<LI>
-	  Script by Max to trap python exceptions
 	<LI>
 	  Make it clear that the transform dlg from the fontview will move the width
 	  of a glyph by default, and provide a checkbox so the user can turn this off.

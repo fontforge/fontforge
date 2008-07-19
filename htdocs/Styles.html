@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 8-Jun-2008 -->
+  <!-- AP: Last modified: 19-Jul-2008 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -19,6 +19,10 @@
       <A HREF="#Italic">Italic dialog</A>
     <LI>
       <A HREF="#Condense">Condense/Extend dialog</A>
+    <LI>
+      <A HREF="Styles.html#xheight">Change X-Height</A>
+    <LI>
+      <A HREF="Styles.html#changeglyph">Change Glyphs</A>
     <LI>
       <A HREF="#Smallcaps">Small Caps dialog</A>
     <LI>
@@ -443,6 +447,11 @@
   the dialog. Of course, this number may be negative, in which case you will
   be making a lighter, rather than a bolder variant of the glyph.
   <P>
+  You may find that in some cases the <A HREF="Styles.html#changeglyph">Change
+  Glyph </A>dialog will do a better job of emboldening or thinning a font.
+  Instead of increasing all stems by the same fixed amount it will increase
+  the thickness of each stem proportionate to its current thickness.
+  <P>
   <IMG SRC="BoldHiraDA.png" WIDTH="270" HEIGHT="270" ALIGN="Left">For CJK fonts,
   with complex shapes but without the constraint of the latin baseline and
   cap height, this expansion is probably enough. The image at right shows the
@@ -652,8 +661,72 @@
   first unskew the glyph in the hopes of getting some vertical stems, then
   Condense it, and the reskew it.<BR CLEAR=ALL>
   <H2>
+    <A NAME="xheight">Change X-Height</A>
+    dialog<IMG SRC="ChangeXHeightDlg.png" ALIGN="Right" WIDTH="258" HEIGHT="188">
+  </H2>
+  <P>
+  This changes the x-height of a font. The dialog shows the current x-height
+  (or what it thinks is the current x-height), and you can chose an new value
+  for it. If the font has serifs and you don't want the serifs to change in
+  height then specify the current serif height. If you do want the serifs to
+  change, then set this field to 0.<BR Clear=ALL>
+  <H2>
+    <A NAME="changeglyph">Change Glyphs</A>
+    dialog<IMG SRC="ChangeGlyph1Dlg.png" ALIGN="Right" WIDTH="472" HEIGHT="242">
+  </H2>
+  <P>
+  The change glyphs dialog allows you to do a number of changes to all the
+  currently selected glyphs. It can
+  <UL>
+    <LI>
+      Increase or decrease the stem size (making the font bolder or less bold)
+    <LI>
+      Change the size of horizontal counters (Condense/Extend)
+    <LI>
+      Manipulate alignment zones with respect to one another (Change the x-height)
+  </UL>
+  <P>
+  The dialog has three pains, each controls one of these funtions.
+  <P>
+  The first dialog affects the stem width (or height, as the case may be).
+  In most cases you will want to scale horizontal and vertical stems by the
+  same proportion, so there is a check box to fix them together.
+  <P>
+  Generally you will also want to control diagonal stems to, but there are
+  still times when the algorithm is less than perfect.
+  <P>
+  Generally a proportional scale is more appropriate than adding a fixed amount
+  to each stem -- at least for Latin glyphs. But there may be cases where you
+  do what to add a fixed amount.
+  <P>
+  There are a few restrictions if you specify an additive amount here (again
+  due to imperfections of the algorithm). The additive amounts must have the
+  same sign for both horizontal and vertical stems (both negative, both zero,
+  or both positive). And the ratio of the two can't be more than 4. 
+    <HR>
+  <P>
+  <IMG SRC="ChangeGlyph2Dlg.png" WIDTH="472" HEIGHT="292" ALIGN="Right">You
+  have various options for controlling horizontal contours. For monospace fonts
+  (or CJK fonts) you probably want to select the first option. For proportional
+  Latin fonts, select one of the other two. 
+    <HR Clear="ALL">
+  <P>
+  <IMG SRC="ChangeGlyph3Dlg.png" WIDTH="472" HEIGHT="407" ALIGN="Right">Latin
+  glyphs are asymetric in their behavior along the horizontal and vertical
+  axes. Vertically glyphs are aligned at certain fixed heights (baseline, x-height,
+  cap-height, etc.), while horizontally there are no corresponding alignment
+  zones. So the vertical part of this dialog looks quite different from the
+  horizontal.
+  <P>
+  In CJK glyphs it may make sense to control vertical glyphs.
+  <P>
+  But in latin it makes more sense to map alignment zones. Here there is a
+  overall (default) scaling factor. If you don't adjust the zones yourself
+  then changing the scale factor will change the "Resultant Y Position" by
+  the obvious amount.<BR CLEAR=ALL>
+  <H2>
     <A NAME="Smallcaps">Small Capitals</A>
-    dialog<IMG SRC="SmallcapsDlg.png" ALIGN="Right" WIDTH="407" HEIGHT="464">
+    dialog<IMG SRC="SmallcapsDlg.png" ALIGN="Right" WIDTH="472" HEIGHT="289">
   </H2>
   <P>
   This dialog allows you to create a series of small caps glyphs. As the dialog
@@ -679,35 +752,36 @@
   to use a different glyph extension so the created glyphs will be
   "nine.taboldstyle" rather than "nine.sc".
   <P>
-  The outlines are transformed by scaling the upper case outlines so that the
-  cap height becomes the small cap height, and scaling the stems so that the
-  upper case stem width becomes the lower case stem width. The dialog is set
-  up so that it defaults the small cap height to the x-height. Often the small
-  cap height will be a little taller than the x-height -- though the exact
-  value will change from font to font -- the x-height is as good a default
-  as any. You may also control how the stem widths are changed (and if you
-  really want to, scale stem heights differently from widths).<BR CLEAR=ALL>
+  The default behavior is to transform the outlines by scaling the upper case
+  outlines so that the cap height becomes the small cap height, and scaling
+  the stems so that the upper case stem width becomes the lower case stem width.
+  Often the small cap height will be a little taller than the x-height -- though
+  the exact value will change from font to font -- the x-height is as good
+  a default as any. If you do not like the default behavior you have all the
+  options of the <A HREF="#changeglyph">Change Glyphs </A>dialog to play
+  with.<BR CLEAR=ALL>
   <H2>
     <A NAME="SubSuper">Subscipt</A>/Superscript
-    dialog<IMG SRC="SubSuperDlg.png" WIDTH="518" HEIGHT="357" ALIGN="Right">
+    dialog<IMG SRC="SubSuperDlg.png" WIDTH="526" HEIGHT="307" ALIGN="Right">
   </H2>
   <P>
   There are several OpenType features which produce small variants of standard
   glyphs. Often the stems are scaled differently (made bolder) from the remainder
   of glyph.
   <P>
-  As with the previous dialog this one does not modified the selected glyphs.
-  Instead it uses their outlines to create a new glyph (with the indicated
-  glyph extension) and creates a lookup mapping the original glyph to the new
-  glyph.
+  As with the previous dialog this one does not modify the selected glyphs.
+  Instead it uses their outlines to create new glyphs (with the indicated glyph
+  extension) and creates a lookup mapping the original glyph to the new glyph.
   <P>
   So in the example at right, if you selected all the digits, then FontForge
-  would create a new set names "zero.superior", "one.superior" ... "nine.superior".
-  It would create a new lookup bound to the feature "sups" which would map
-  "zero" to "zero.superior", etc. Each new glyph would be scaled down to be
-  2/3<SUP>rd</SUP>s the original size, but the stems would only be scaled by
-  3/4 (so the glyph will look proportionately darker). Finally each new glyph
-  will be moved up by 452 em-units.<BR CLEAR=ALL>
+  would create a new set of glyphs named "zero.superior", "one.superior" ...
+  "nine.superior". It would create a new lookup bound to the feature "sups"
+  which would map "zero" to "zero.superior", etc. By default each new glyph
+  will be scaled down to be 2/3<SUP>rd</SUP>s the original size, but the stems
+  would only be scaled by 3/4 (so the glyph will look proportionately darker).
+  Finally each new glyph will be moved up by 450 em-units. Again if you don't
+  like these defaults you have all the options of the
+  <A HREF="#changeglyph">Change Glyphs</A> dialog to play with.<BR CLEAR=ALL>
   <H3>
     <A NAME="Caveat">Caveat</A>
   </H3>
@@ -720,9 +794,8 @@
     <EM>The Hunting of the Snark</EM>, Lewis Carroll
   </BLOCKQUOTE>
   <P>
-  <IMG SRC="ka-change.png" WIDTH="247" HEIGHT="337" ALIGN="Right">These commands
-  are not perfect. In particular if a glyph has significant diagonal stems
-  things may become ugly. If there just isn't room in the glyph for the desired
+  <IMG SRC="ka-change.png" WIDTH="247" HEIGHT="139" ALIGN="Right">These commands
+  are not perfect. If there just isn't room in the glyph for the desired
   transformation contours may overlap. Do look at your results and be prepared
   to fix them up.
 </DIV>

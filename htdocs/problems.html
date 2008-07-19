@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 8-May-2008 -->
+  <!-- AP: Last modified: 19-Jul-2008 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -57,7 +57,7 @@
   (<A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users@lists.sourceforge.net</A>
   this is a public mailing list).
   <P>
-  <IMG SRC="findprobs.png" WIDTH="307" HEIGHT="439" ALIGN="Right">FontForge
+  <IMG SRC="findprobs.png" WIDTH="314" HEIGHT="479" ALIGN="Right">FontForge
   can detect the following potential problems:
   <P>
   <STRONG><BIG>Non-Integral Coordinates</BIG></STRONG>
@@ -331,7 +331,7 @@
   spec says that an interpreter is only required to support a total of 96
   horizontal and vertical hints.
   <H3>
-    <IMG SRC="findprobs-random.png" WIDTH="298" HEIGHT="319" ALIGN="Right"><STRONG>Missing
+    <IMG SRC="findprobs-random.png" WIDTH="314" HEIGHT="331" ALIGN="Right"><STRONG>Missing
     Bitmaps</STRONG>
   </H3>
   <P>
@@ -393,7 +393,7 @@
   Check for any glyphs whose vertical advance (for fonts with vertical metrics)
   differs from the specified value. <BR Clear=ALL>
   <P>
-  <IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="296" ALIGN="Right"><BIG><STRONG>Missing
+  <IMG SRC="findprobs-att.png" WIDTH="347" HEIGHT="304" ALIGN="Right"><BIG><STRONG>Missing
   Glyph Names</STRONG></BIG>
   <P>
   It is possible to create a substitution, ligature, etc. which refers to a
@@ -417,6 +417,14 @@
   substitution and ligature entries that are attached to the current glyph
   and checks to make sure that all the named components are present in the
   font (and contain something).
+  <P>
+  <STRONG><BIG>Check for incomplete mark to base subtables</BIG></STRONG>
+  <P>
+  I find it hard to believe that this is really a problem, but I have a second
+  hand report that MicroSoft considers it to be so.
+  <P>
+  If a mark to base subtable has several anchor classes, then all base glyphs
+  must define anchor points for all anchor classes.
   <P>
     <HR Clear=all>
   <P>
