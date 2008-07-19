@@ -80,6 +80,10 @@ while ( $argc > 1 )
     if ( mask & 0x80000 )
       Print( "  Non integral coordinates in a glyph" )
     endif
+    if ( mask & 0x100000 )
+      Print( "  A glyph uses at least one, but not all, anchor classes in a subtable" )
+      Print( "   (I'm not absolutely sure this is an error)" )
+    endif
 
     mask = $loadState;
     if ( mask & 0x01 )
