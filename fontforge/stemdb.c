@@ -31,7 +31,7 @@
 #include <math.h>
 #include <utype.h>
 
-#define GLYPH_DATA_DEBUG 1
+#define GLYPH_DATA_DEBUG 0
 #define PI 3.14159265358979323846264338327
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
