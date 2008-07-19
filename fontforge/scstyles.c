@@ -247,7 +247,7 @@ static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt,
     for ( i=0; i<bundle->cnt; i++ ) {
         stem = bundle->stemlist[i];
         if ( stem->bbox )
-    break;
+    continue;
         is = x_dir ? stem->left.x : stem->right.y;
         ie = x_dir ? stem->right.x : stem->left.y;
         
@@ -303,15 +303,16 @@ static double ScaleCounter( GlyphData *gd, StemData **dstems, int dcnt,
     max = x_dir ? orig_b->maxx : orig_b->maxy;
     cstart = ( pstem != NULL ) ? x_dir ? pstem->right.x : pstem->left.y : min;
     cend = ( nstem != NULL ) ? x_dir ? nstem->left.x : nstem->right.y : max;
+    if ( cend == cstart )
+return( 0 );
 
     pczone = GetStemCounterZone( pstem,orig_b );
     nczone = GetStemCounterZone( nstem,orig_b );
     
-    if ( dcnt == 0 )
-return (( cend - cstart ) * cntr_scale );
-    
-    onequarter = ( max - min )*.25;
-    threequarters = ( max - min )*.75;
+    min = x_dir ? orig_b->miny : orig_b->minx;
+    max = x_dir ? orig_b->maxy : orig_b->maxx;
+    onequarter = min + ( max - min )*.25;
+    threequarters = min + ( max - min )*.75;
     black25 = GetCounterBlackSpace( gd,dstems,dcnt,orig_b,cstart,cend,onequarter,czone_bot,x_dir );
     black75 = GetCounterBlackSpace( gd,dstems,dcnt,orig_b,cstart,cend,threequarters,czone_top,x_dir );
     white25 = cend - cstart - black25;
@@ -1069,8 +1070,8 @@ static void AlignPointPair( StemData *stem,PointData *lpd, PointData *rpd, doubl
         ( lpd->base.y == rpd->base.y && lpd->newpos.y == rpd->newpos.y ))
 return;
 
-    dscale= hscale * fabs( stem->newunit.x ) + 
-            vscale * fabs( stem->newunit.y );
+    dscale =  sqrt( pow( hscale * stem->unit.x,2 ) + 
+                    pow( vscale * stem->unit.y,2 ));
     if ( !IsPointFixed( rpd )) {
          off    =( rpd->base.x - lpd->base.x ) * stem->unit.x +
                  ( rpd->base.y - lpd->base.y ) * stem->unit.y;
