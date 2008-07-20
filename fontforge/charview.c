@@ -3260,7 +3260,7 @@ static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
 	temp = cv->p;
 	fs->p = &temp;
 	fs->seek_controls = false;
-	for ( rf=cv->b.sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
+	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next ) {
 	    if ( InSplineSet(fs,rf->layers[0].splines,cv->b.sc->inspiro && hasspiro())) {
 		cv->p.ref = rf;
 		cv->p.anysel = true;
