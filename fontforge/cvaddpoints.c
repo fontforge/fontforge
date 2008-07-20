@@ -72,7 +72,7 @@ return( 0 );
     }
     *sp = foundsp; *scp = foundcp; *_spl = found;
 
-    if ( cv->b.drawmode==dm_fore ) {
+    if ( cv->b.drawmode!=dm_grid ) {
 	for ( refs=cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs = refs->next ) {
 	    if ( refs->selected ) {
 		if ( found!=NULL || foundref!=NULL )
