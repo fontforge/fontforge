@@ -159,7 +159,8 @@ static void GTextFieldRefigureLines(GTextField *gt, int start_of_change) {
 	gt->lmax = 10;
 	gt->lcnt = 1;
 	if ( gt->vsb!=NULL )
-	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,gt->g.inner.height/gt->fh);
+	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,
+		    gt->g.inner.height<gt->fh ? 1 : gt->g.inner.height/gt->fh);
     }
 
     if ( gt->password )
@@ -213,7 +214,8 @@ return;
     if ( gt->lcnt!=i ) {
 	gt->lcnt = i;
 	if ( gt->vsb!=NULL )
-	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,gt->g.inner.height/gt->fh);
+	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,
+		    gt->g.inner.height<gt->fh? 1 : gt->g.inner.height/gt->fh);
 	if ( gt->loff_top+gt->g.inner.height/gt->fh>gt->lcnt ) {
 	    gt->loff_top = gt->lcnt-gt->g.inner.height/gt->fh;
 	    if ( gt->loff_top<0 ) gt->loff_top = 0;
@@ -2231,7 +2233,8 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
 
     GTextFieldRefigureLines(gt,0);
     if ( gt->vsb!=NULL ) {
-	GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,gt->g.inner.height/gt->fh);
+	GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,
+		gt->g.inner.height<gt->fh ? 1 : gt->g.inner.height/gt->fh);
 	l = gt->loff_top;
 	if ( gt->loff_top>gt->lcnt-gt->g.inner.height/gt->fh )
 	    l = gt->lcnt-gt->g.inner.height/gt->fh;
