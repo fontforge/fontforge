@@ -566,8 +566,7 @@ return;
 		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff && pnum!=0xfffe ) {
 		    sprintf( buf,"%d", pnum );
-		    uc_strcpy(ubuf,buf);
-		    GDrawDrawText(pixmap,cx,cy-6,ubuf,-1,NULL,nextcpcol);
+		    GDrawDrawText8(pixmap,cx,cy-6,buf,-1,NULL,nextcpcol);
 		}
 	    }
 	}
