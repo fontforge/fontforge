@@ -528,7 +528,7 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
             width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
             lpos = stem->left.y - stroke_add/2;
             rpos = stem->right.y + stroke_add/2;
-            if ( pm->cur_width < 0 && ( !stem->blue || stem->width == 21 ) &&
+            if ( pm->cur_width < 0 && ( !stem->ghost || stem->width == 21 ) &&
                 rpos >= pm->current + pm->cur_width - fuzz && rpos <= pm->current + fuzz ) {
                 
                 top = pm->current; bot = pm->current + pm->cur_width;
@@ -547,7 +547,7 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
                 else
                     stem->newleft.y = stem->newright.y + 21;
                 stem->ldone = stem->rdone = true;
-            } else if ( pm->cur_width > 0 && ( !stem->blue || stem->width == 20 ) &&
+            } else if ( pm->cur_width > 0 && ( !stem->ghost || stem->width == 20 ) &&
                 lpos >= pm->current - fuzz && lpos <= pm->current + pm->cur_width + fuzz  ) {
                 
                 top = pm->current + pm->cur_width; bot = pm->current;
