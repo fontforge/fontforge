@@ -884,7 +884,7 @@ void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p) {
     int j;
 
     SplinePointListSet(cv->layerheads[cv->drawmode]->splines,undo->u.state.splines);
-    if ( cv->drawmode==dm_fore && (!p->anysel || p->transanyrefs)) {
+    if ( !p->anysel || p->transanyrefs ) {
 	for ( ref=cv->layerheads[cv->drawmode]->refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
 	    for ( j=0; j<uref->layer_cnt; ++j )
 		if ( uref->layers[j].splines!=NULL ) {
@@ -905,7 +905,7 @@ void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {
     Undoes * undo = cv->layerheads[cv->drawmode]->undoes;
     RefChar *uref;
 
-    if ( cv->drawmode==dm_fore && (!p->anysel || p->transanyrefs)) {
+    if ( !p->anysel || p->transanyrefs ) {
 	for ( uref=undo->u.state.refs; uref!=NULL; uref=uref->next ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    int i;
@@ -1521,7 +1521,7 @@ void CopySelected(CharViewBase *cv,int doanchors) {
 	copybuffer.u.state.splines = SplinePointListCopySpiroSelected(cv->layerheads[cv->drawmode]->splines);
     else
 	copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);
-    if ( cv->drawmode==dm_fore ) {
+    if ( cv->drawmode!=dm_grid ) {
 	RefChar *refs, *new;
 	for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
 	    new = RefCharCreate();
@@ -2657,8 +2657,8 @@ return;
 	SCPasteLookupsTop(cvsc,paster);
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	wasempty =cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL &&
-		cvsc->layers[ly_fore].refs==NULL;
+	wasempty = layer!=ly_grid && cvsc->layers[layer].splines==NULL &&
+		cvsc->layers[layer].refs==NULL;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( wasempty && cv->layerheads[dm_fore]->images==NULL &&
 		cvsc->parent->multilayer ) {
@@ -2705,7 +2705,7 @@ return;
 		cvsc->ttf_instrs_len = 0;
 	    }
 	}
-	if ( paster->u.state.anchor!=NULL && cv->drawmode==dm_fore && !cvsc->searcherdummy )
+	if ( paster->u.state.anchor!=NULL && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
 	if ( paster->u.state.refs!=NULL && cv->drawmode!=dm_grid ) {
 	    RefChar *new, *refs;
@@ -3366,7 +3366,7 @@ void PasteIntoMV(FontViewBase *fv, BDFFont *mvbdf,SplineChar *sc, int doclear) {
     cur = &copybuffer;
 
     if ( copybuffer.undotype == ut_none ) {
-	SCCheckXClipboard(sc,dm_fore,doclear);
+	SCCheckXClipboard(sc,ly_fore,doclear);
 return;
     }
 
