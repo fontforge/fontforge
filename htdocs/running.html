@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 5-May-2008 -->
+  <!-- AP: Last modified: 20-Jul-2008 -->
   <TITLE>Starting fontforge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -186,6 +186,35 @@ setenv PATH /usr/local/bin:$PATH
   <P>
   For a complete description of possible arguments see <A HREF="cliargs.html">the
   section on the command line</A>.
+  <H3>
+    <A NAME="cygwin-troubles">Troubleshooting</A> on cygwin
+  </H3>
+  <P>
+  One very common problem on cygwin is that you will type in the command line
+  to start fontforge -- and absolutely nothing will happen. The cygwin shell
+  simply prints another prompt. There is no error message. No window appears.
+  Nothing.
+  <P>
+  This generally means that you are missing a required library. Make sure that
+  the following are installed
+  <UL>
+    <LI>
+      libiconv
+    <LI>
+      libintl
+    <LI>
+      libjpeg
+    <LI>
+      libpng
+    <LI>
+      libxml2
+    <LI>
+      libz
+  </UL>
+  <P>
+  (I have no idea why you don't get an error message. That's a bug in cygwin
+  or windows or something. FontForge never gets control and has no chance to
+  generate a message itself).
   <H3>
     On the <A NAME="mac">mac</A>
   </H3>

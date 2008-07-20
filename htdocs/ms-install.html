@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 6-Aug-2007 -->
+  <!-- AP: Last modified: 20-Jul-2008 -->
   <TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -19,6 +19,8 @@
       <UL>
 	<LI>
 	  <A HREF="#Before">Before you install</A>
+	<LI>
+	  <A HREF="ms-install.html#Alternatives">Alternatives to cygwin</A>
 	<LI>
 	  <A HREF="#Obtaining">Obtaining one of my pre-built packages</A>
 	<LI>
@@ -42,10 +44,12 @@
     <LI>
       <A HREF="running.html#cygwin">Running FontForge</A>
     <LI>
+      <A HREF="running.html#cygwin-troubles">Troubleshooting</A>
+    <LI>
       <A HREF="uninstall.html">Uninstalling</A>
   </UL>
   <H2>
-    <A NAME="Installing">Installing</A> from a pre-built package
+    <A NAME="Installing">Installing</A> from a pre-built cygwin package
   </H2>
   <H3>
     <A NAME="Before">Before</A> you install
@@ -63,7 +67,8 @@
     <LI>
       Run it. It will ask you what components of cygwin you wish to install
     <LI>
-      You will need the default stuff, plus the X window system, binutils, libpng, and libxml2.
+      You will need the default stuff, plus the X window system, binutils, libpng,
+      libjpeg, and libxml2.
       <P>
       Most of what you need you get by default. But you must explicitly request
       X11 and the libraries. Scroll down the list of catagories:
@@ -101,6 +106,17 @@
     <LI>
       Once you have cygwin installed, start it. This should give you a terminal
       window running bash (a unix shell)
+  </UL>
+  <H3>
+    <A NAME="Alternatives">Alternatives</A> to cygwin.
+  </H3>
+  <P>
+  There are now alternatives to cygwin. Instead of downloading cygwin you can
+  install one of the virtual machines (or something similar) which run linux,
+  and then install fontforge from a linux package.
+  <UL>
+    <LI>
+      <A HREF="http://www.andlinux.org/">andLinux</A>
   </UL>
   <H3>
     <A NAME="Obtaining">Obtaining</A> one of my pre-built packages
@@ -229,6 +245,8 @@
 	  <A HREF="source-build.html#Documentation">Installing documentation</A>
 	<LI>
 	  <A HREF="running.html#cygwin">Running FontForge</A>
+	<LI>
+	  <A HREF="running.html#cygwin-troubles">Troubleshooting</A>
       </UL>
       <P>
   </UL>
