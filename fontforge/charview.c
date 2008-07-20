@@ -658,7 +658,7 @@ return;
 	DrawTangentPoint(pixmap, x, y, &unit, sp->selected || isfake, col);
     }
     GDrawSetLineWidth(pixmap,0);
-    if ( (cv->showpointnumbers || cv->show_ft_results|| cv->dv ) && sp->ttfindex!=0xffff ) {
+    if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv ) && sp->ttfindex!=0xffff ) {
 	if ( sp->ttfindex==0xfffe )
 	    strcpy(buf,"?");
 	else
@@ -8359,10 +8359,8 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_AutoInstr:
 	  case MID_EditInstructions:
-	    mi->ti.disabled = !cv->b.sc->layers[ly_fore].order2 || multilayer;
-	  break;
 	  case MID_Debug:
-	    mi->ti.disabled = !cv->b.sc->layers[ly_fore].order2 || multilayer || !hasFreeTypeDebugger();
+	    mi->ti.disabled = multilayer || !cv->b.layerheads[cv->b.drawmode]->order2;
 	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->b.sc->ttf_instrs_len==0;

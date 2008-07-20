@@ -751,8 +751,8 @@ return( NULL );
     /*  pixels. I want to scale it back to the original coordinate system */
     outline_context.scalex = ftc->em/(64.0*ptsizex*dpi/72.0);
     outline_context.scaley = ftc->em/(64.0*ptsizey*dpi/72.0);
-    outline_context.orig_ref = sc->layers[ly_fore].refs;
-    outline_context.orig_cpl = sc->layers[ly_fore].splines;
+    outline_context.orig_ref = sc->layers[ftc->layer].refs;
+    outline_context.orig_cpl = sc->layers[ftc->layer].splines;
     while ( outline_context.orig_cpl==NULL && outline_context.orig_ref != NULL ) {
 	outline_context.orig_cpl = outline_context.orig_ref->layers[0].splines;
 	outline_context.orig_ref = outline_context.orig_ref->next;

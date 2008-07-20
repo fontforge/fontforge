@@ -1103,6 +1103,7 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     SplineSet *new;
     RefChar *ref;
     AnchorPoint *ap;
+    int has_order2_layer_still, i;
 
     new = SplineSetsPSApprox(sc->layers[layer].splines);
     SplinePointListsFree(sc->layers[layer].splines);
@@ -1120,7 +1121,13 @@ void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     /*  references or anchors */
     for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	ref->point_match = false;
-    if ( layer==ly_fore ) {
+    has_order2_layer_still = false;
+    for ( i=ly_fore; i<sc->layer_cnt; ++i )
+	if ( sc->layers[i].order2 ) {
+	    has_order2_layer_still = true;
+    break;
+	}
+    if ( !has_order2_layer_still ) {
 	for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
 	    ap->has_ttf_pt = false;
 
