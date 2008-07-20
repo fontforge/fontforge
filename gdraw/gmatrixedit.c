@@ -783,7 +783,7 @@ return( true );
 static int GME_FinishEditPreserve(GMatrixEdit *gme,int r) {
     int i;
 
-    if ( r!=gme->rows ) {
+    if ( r<gme->rows ) {
 	for ( i=0; i<gme->rows; ++i )
 	    gme->data[i*gme->cols].current = 0;
 	gme->data[r*gme->cols].current = 1;
