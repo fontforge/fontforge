@@ -60,7 +60,7 @@ void CVGridFitChar(CharView *cv) {
 return;
     }
 
-    if ( cv->b.sc->layers[ly_fore].refs!=NULL )
+    if ( cv->b.sc->layers[layer].refs!=NULL )
 	SCNumberPoints(cv->b.sc,layer);
 
     cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,

@@ -1787,11 +1787,21 @@ return( true );
 	      case CID_EFore:
 		cv->b.drawmode = dm_fore;
 		cv->lastselpt = NULL;
+
+		SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+		FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
+		FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+		cv->show_ft_results = false;
 	      break;
 	      case CID_EBack:
 		cv->b.drawmode = dm_back;
 		cv->b.layerheads[dm_back] = &cv->b.sc->layers[ly_back];
 		cv->lastselpt = NULL;
+
+		SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+		FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
+		FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+		cv->show_ft_results = false;
 	      break;
 	      case CID_EGrid:
 		cv->b.drawmode = dm_grid;
@@ -1809,6 +1819,11 @@ return( true );
 		    cv->b.drawmode = dm_back;
 		    cv->b.layerheads[dm_back] = &cv->b.sc->layers[cid];
 		    cv->lastselpt = NULL;
+
+		    SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+		    FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
+		    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+		    cv->show_ft_results = false;
 		}
 	    }
 	    GDrawRequestExpose(cv->v,NULL,false);
