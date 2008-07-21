@@ -1538,6 +1538,7 @@ void SFRemoveLayer(SplineFont *sf,int l) {
     int gid, i;
     SplineChar *sc;
     CharViewBase *cvs;
+    FontViewBase *fvs;
 
     if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
 return;
@@ -1554,6 +1555,12 @@ return;
 		cvs->layerheads[dm_fore] = &sc->layers[ly_fore];
 	}
     }
+
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->next ) {
+	if ( fvs->active_layer>=l )
+	    --fvs->active_layer;
+    }
+    MVDestroyAll(sf);
 
     free(sf->layers[l].name);
     for ( i=l+1; i<sf->layer_cnt; ++i )
