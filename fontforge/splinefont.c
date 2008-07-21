@@ -1539,10 +1539,15 @@ void SFRemoveLayer(SplineFont *sf,int l) {
     SplineChar *sc;
     CharViewBase *cvs;
     FontViewBase *fvs;
+    int layers, any_quads;
 
     if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
 return;
 
+    for ( layers=ly_fore, any_quads=0; layers<sf->layer_cnt; ++layers ) {
+	if ( layers!=l && sf->layers[layers].order2 )
+	    any_quads = true;
+    }
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
 	LayerFreeContents(sc,l);
 	for ( i=l+1; i<sc->layer_cnt; ++i )
@@ -1553,6 +1558,10 @@ return;
 		cvs->layerheads[dm_back] = &sc->layers[ly_back];
 	    if ( cvs->layerheads[dm_fore] - sc->layers >= sc->layer_cnt )
 		cvs->layerheads[dm_fore] = &sc->layers[ly_fore];
+	}
+	if ( !any_quads ) {
+	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+	    sc->ttf_instrs_len = 0;
 	}
     }
 
