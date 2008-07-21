@@ -1284,6 +1284,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_SaveFeat		11027
 #define CID_AddAllAlternates	11028
 #define CID_AddDFLT		11029
+#define CID_AddLanguage		11030
+#define CID_RmLanguage		11031
 
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
@@ -6779,6 +6781,11 @@ return;
 		AddDFLT(lk->all[i].lookup);
 	    }
 	}
+    } else if ( mi->mid==CID_AddLanguage || mi->mid==CID_RmLanguage ) {
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+
+	AddRmLang(gfi->sf,lk,mi->mid==CID_AddLanguage);
     } else {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.type = et_controlevent;
@@ -6804,6 +6811,9 @@ static GMenuItem lookuppopupmenu[] = {
     { { (unichar_t *) N_("De_lete"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_DeleteLookup },
     { { (unichar_t *) N_("_Merge"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_MergeLookup },
     { { (unichar_t *) N_("Sa_ve Lookup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_SaveLookup },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Add Language to Script"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddLanguage },
+    { { (unichar_t *) N_("Remove Language from Script"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RmLanguage },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add 'aalt' features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddAllAlternates },
     { { (unichar_t *) N_("Add 'D_FLT' script"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddDFLT },
@@ -6928,7 +6938,10 @@ return;
 return;
 		}
 		if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) ) {
-		    LookupDeselect(lk);
+		    /* If line is selected, and we're going to pop up a menu */
+		    /*  then don't clear other selected lines */
+		    if ( !lk->all[i].selected || event->u.mouse.button!=3 )
+			LookupDeselect(lk);
 		    lk->all[i].selected = true;
 		} else if ( event->u.mouse.state&ksm_control ) {
 		    lk->all[i].selected = !lk->all[i].selected;
@@ -6975,7 +6988,11 @@ return;		/* Can't open this guy */
 			    LookupSubtableContents(gfi,isgpos);
 			else {
 			    if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) ) {
-				LookupDeselect(lk);
+				/* If line is selected, and we're going to pop up a menu */
+				/*  then don't clear other selected lines */
+				if ( !lk->all[i].subtables[j].selected ||
+					event->u.mouse.button!=3 )
+				    LookupDeselect(lk);
 				lk->all[i].subtables[j].selected = true;
 			    } else
 				lk->all[i].subtables[j].selected = !lk->all[i].subtables[j].selected;

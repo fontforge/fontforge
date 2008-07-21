@@ -4244,6 +4244,321 @@ return;
     else
 	PSTKernD(sf,sub,def_layer);
 }
+/******************************************************************************/
+/***************************   Add/Remove Language   **************************/
+/******************************************************************************/
+static uint32 StrNextLang(char **_pt) {
+    unsigned char *pt = (unsigned char *) *_pt;
+    unsigned char tag[4];
+    int i;
+
+    memset(tag,' ',4);
+    while ( *pt==' ' || *pt==',' ) ++pt;
+    if ( *pt=='\0' )
+return( 0 );
+
+    for ( i=0; i<4 && *pt!='\0' && *pt!=','; ++i )
+	tag[i] = *pt++;
+    while ( *pt==' ' ) ++pt;
+    if ( *pt!='\0' && *pt!=',' )
+return( 0xffffffff );
+    *_pt = (char *) pt;
+return( (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3] );
+}
+
+static void lk_AddRm(struct lkdata *lk,int add_lang,uint32 script, char *langs) {
+    int i,l;
+    OTLookup *otl;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    uint32 lang;
+    char *pt;
+
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted || !lk->all[i].selected )
+    continue;
+	otl = lk->all[i].lookup;
+	for ( fl= otl->features; fl!=NULL; fl=fl->next ) {
+	    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==script ) {
+		pt = langs;
+		while ( (lang = StrNextLang(&pt))!=0 ) {
+		    for ( l=sl->lang_cnt-1; l>=0; --l ) {
+			if ( ((l>=MAX_LANG) ? sl->morelangs[l-MAX_LANG] : sl->langs[l]) == lang )
+		    break;
+		    }
+		    if ( add_lang && l<0 ) {
+			if ( sl->lang_cnt<MAX_LANG ) {
+			    sl->langs[sl->lang_cnt++] = lang;
+			} else {
+			    sl->morelangs = grealloc(sl->morelangs,(++sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+			    sl->morelangs[sl->lang_cnt-MAX_LANG-1] = lang;
+			}
+		    } else if ( !add_lang && l>=0 ) {
+			--sl->lang_cnt;
+			while ( l<sl->lang_cnt ) {
+			    uint32 nlang = l+1>=MAX_LANG ? sl->morelangs[l+1-MAX_LANG] : sl->langs[l+1];
+			    if ( l>=MAX_LANG )
+				sl->morelangs[l-MAX_LANG] = nlang;
+			    else
+				sl->langs[l] = nlang;
+			    ++l;
+			}
+			if ( sl->lang_cnt==0 ) {
+			    sl->langs[0] = DEFAULT_LANG;
+			    sl->lang_cnt = 1;
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
+
+#define CID_ScriptTag	1001
+#define CID_Langs	1002
+
+struct addrmlang {
+    GWindow gw;
+    int done;
+    int add_lang;
+    struct lkdata *lk;
+};
+
+static int ARL_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct addrmlang *arl = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *spt;
+	char *langs, *pt;
+	int i;
+	unsigned char tag[4];
+	uint32 script_tag, lang;
+
+	memset(tag,' ',4);
+	spt = _GGadgetGetTitle(GWidgetGetControl(arl->gw,CID_ScriptTag));
+	while ( *spt==' ' ) ++spt;
+	if ( *spt=='\0' ) {
+	    ff_post_error(_("No Script Tag"), _("Please specify a 4 letter opentype script tag"));
+return( true );
+	}
+	for ( i=0; i<4 && *spt!='\0'; ++i )
+	    tag[i] = *spt++;
+	while ( *spt==' ' ) ++spt;
+	if ( *spt!='\0' ) {
+	    ff_post_error(_("Script Tag too long"), _("Please specify a 4 letter opentype script tag"));
+return( true );
+	}
+	script_tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
+
+	pt = langs = GGadgetGetTitle8(GWidgetGetControl(arl->gw,CID_Langs));
+	while ( (lang = StrNextLang(&pt))!=0 ) {
+	    if ( lang==0xffffffff ) {
+		ff_post_error(_("Invalid language"), _("Please specify a comma separated list of 4 letter opentype language tags"));
+return( true );
+	    }
+	}
+
+	lk_AddRm(arl->lk,arl->add_lang,script_tag, langs);
+	free(langs);
+	arl->done = true;
+    }
+return( true );
+}
+
+static int ARL_Cancel(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct addrmlang *arl = GDrawGetUserData(GGadgetGetWindow(g));
+	arl->done = true;
+    }
+return( true );
+}
+
+static int ARL_TagChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged &&
+	    e->u.control.u.tf_changed.from_pulldown != -1 ) {
+	int which = e->u.control.u.tf_changed.from_pulldown;
+	int len;
+	GTextInfo **ti = GGadgetGetList(g,&len);
+	char tag[8];
+	uint32 tagval = (intpt) (ti[which]->userdata);
+
+	tag[0] = tagval>>24;
+	tag[1] = tagval>>16;
+	tag[2] = tagval>>8;
+	tag[3] = tagval;
+	tag[4] = 0;
+	GGadgetSetTitle8(g,tag);
+    }
+return( true );
+}
+
+static int arl_e_h(GWindow gw, GEvent *event) {
+    struct addrmlang *arl = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+return( false );
+      case et_close:
+	arl->done = true;
+      break;
+    }
+return( true );
+}
+
+static GTextInfo *ScriptListOfFont(SplineFont *sf) {
+    uint32 *ourscripts = SFScriptsInLookups(sf,-1);
+    int i,j;
+    GTextInfo *ti;
+    char tag[8];
+
+    if ( ourscripts==NULL || ourscripts[0]==0 ) {
+	ourscripts = galloc(2*sizeof(uint32));
+	ourscripts[0] = DEFAULT_SCRIPT;
+	ourscripts[1] = 0;
+    }
+    for ( i=0; ourscripts[i]!=0; ++i );
+    ti = gcalloc(i+1,sizeof(GTextInfo));
+    for ( i=0; ourscripts[i]!=0; ++i ) {
+	ti[i].userdata = (void *) (intpt) ourscripts[i];
+	for ( j=0; scripts[j].text!=NULL; ++j) {
+	    if ( scripts[j].userdata == (void *) (intpt) ourscripts[i])
+	break;
+	}
+	if ( scripts[j].text!=NULL )
+	    ti[i].text = (unichar_t *) copy( (char *) scripts[j].text );
+	else {
+	    tag[0] = ourscripts[i]>>24;
+	    tag[1] = ourscripts[i]>>16;
+	    tag[2] = ourscripts[i]>>8;
+	    tag[3] = ourscripts[i]&0xff;
+	    tag[4] = 0;
+	    ti[i].text = (unichar_t *) copy( (char *) tag );
+	}
+	ti[i].text_is_1byte = true;
+    }
+    ti[0].selected = true;
+    free(ourscripts);
+return( ti );
+}
+
+void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    struct addrmlang arl;
+    GGadgetCreateData gcd[14], *hvarray[4][3], *barray[8], boxes[3];
+    GTextInfo label[14];
+    int k;
+    GEvent dummy;
+
+    LookupUIInit();
+
+    memset(&arl,0,sizeof(arl));
+    arl.lk = lk;
+    arl.add_lang = add_lang;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+    memset(&label,0,sizeof(label));
+
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = false;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = add_lang ? _("Add Language(s) to Script") : _("Remove Language(s) from Script");
+    wattrs.is_dlg = false;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    arl.gw = gw = GDrawCreateTopWindow(NULL,&pos,arl_e_h,&arl,&wattrs);
+
+    k = 0;
+
+    label[k].text = (unichar_t *) _("Script Tag:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[k-1];
+
+    gcd[k].gd.u.list = ScriptListOfFont(sf);
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
+    gcd[k].gd.cid = CID_ScriptTag;
+    gcd[k].gd.handle_controlevent = ARL_TagChanged;
+    gcd[k++].creator = GListFieldCreate;
+    hvarray[0][1] = &gcd[k-1]; hvarray[0][2] = NULL;
+
+    label[k].text = (unichar_t *) _("Language Tag:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[1][0] = &gcd[k-1];
+
+    gcd[k].gd.u.list = languages;
+    gcd[k].gd.cid = CID_Langs;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
+    gcd[k].gd.handle_controlevent = ARL_TagChanged;
+    gcd[k++].creator = GListFieldCreate;
+    hvarray[1][1] = &gcd[k-1]; hvarray[1][2] = NULL;
+
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_default;
+    gcd[k].gd.handle_controlevent = ARL_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_cancel;
+    gcd[k].gd.handle_controlevent = ARL_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    barray[0] = barray[2] = barray[3] = barray[4] = barray[6] = GCD_Glue; barray[7] = NULL;
+    barray[1] = &gcd[k-2]; barray[5] = &gcd[k-1];
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+
+    hvarray[2][0] = &boxes[2]; hvarray[2][1] = GCD_ColSpan; hvarray[2][2] = NULL;
+    hvarray[3][0] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    memset(&dummy,0,sizeof(dummy));
+    dummy.type = et_controlevent;
+    dummy.u.control.subtype = et_textchanged;
+    dummy.u.control.u.tf_changed.from_pulldown = GGadgetGetFirstListSelectedItem(gcd[1].ret);
+    ARL_TagChanged(gcd[1].ret,&dummy);
+
+    GTextInfoListFree(gcd[1].gd.u.list);
+
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+
+    GHVBoxFitWindow(boxes[0].ret);
+
+    GDrawSetVisible(gw,true);
+    while ( !arl.done )
+	GDrawProcessOneEvent(NULL);
+
+    GDrawDestroyWindow(gw);
+}
 
 /******************************************************************************/
 /****************************   Mass Glyph Rename   ***************************/
@@ -4464,6 +4779,7 @@ void FVMassGlyphRename(FontView *fv) {
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
+    memset(&boxes,0,sizeof(boxes));
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -4588,7 +4904,6 @@ void FVMassGlyphRename(FontView *fv) {
     hvarray[i][0] = &boxes[2]; hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
     hvarray[i][0] = NULL;
 
-    memset(boxes,0,sizeof(boxes));
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
     boxes[0].gd.u.boxelements = hvarray[0];
