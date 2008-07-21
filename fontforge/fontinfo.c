@@ -5478,10 +5478,23 @@ static void LookupParseSelection(struct lkdata *lk, struct selection_bits *sel) 
     sel->lookup_mergeable = lookup_mergeable && lookup_cnt>=2 && sub_cnt==0;
 }
 
+static int LookupsImportable(SplineFont *sf,int isgpos) {
+    FontView *ofv;
+
+    for ( ofv=fv_list; ofv!=NULL; ofv = (FontView *) (ofv->b.next) ) {
+	SplineFont *osf = ofv->b.sf;
+	if ( osf->cidmaster ) osf = osf->cidmaster;
+	if ( osf==sf || sf->cidmaster==osf )
+    continue;
+	if ( (isgpos && osf->gpos_lookups!=NULL) || (!isgpos && osf->gsub_lookups!=NULL) )
+    break;
+    }
+return( ofv!=NULL );
+}
+
 void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
     struct lkdata *lk = &gfi->tables[isgpos];
     struct selection_bits sel;
-    FontView *ofv;
 
     LookupParseSelection(lk,&sel);
 
@@ -5510,15 +5523,8 @@ void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_RevertLookups),true);
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupSort),lk->cnt>1 );
 
-    for ( ofv=fv_list; ofv!=NULL; ofv = (FontView *) (ofv->b.next) ) {
-	SplineFont *osf = ofv->b.sf;
-	if ( osf->cidmaster ) osf = osf->cidmaster;
-	if ( osf==gfi->sf || gfi->sf->cidmaster==osf )
-    continue;
-	if ( (isgpos && osf->gpos_lookups!=NULL) || (!isgpos && osf->gsub_lookups!=NULL) )
-    break;
-    }
-    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_ImportLookups),ofv!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_ImportLookups),
+	    LookupsImportable(gfi->sf,isgpos));
 }
 
 void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh) {
@@ -6819,11 +6825,11 @@ static GMenuItem lookuppopupmenu[] = {
     { { (unichar_t *) N_("Add 'D_FLT' script"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddDFLT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Revert All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RevertLookups },
-    { { (unichar_t *) N_("_Import"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RevertLookups },
+    { { (unichar_t *) N_("_Import"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_ImportLookups },
     { { (unichar_t *) N_("S_ave Feature File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_SaveFeat },
     { NULL }};
 
-static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
+static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,int isgpos, GEvent *event) {
     struct selection_bits sel;
     int i,j;
     static int initted = false;
@@ -6880,6 +6886,9 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
 	    lookuppopupmenu[i].ti.disabled = !(
 		    (sel.lookup_cnt>=2 && sel.sub_cnt==0 && sel.lookup_mergeable) ||
 		    (sel.lookup_cnt==0 && sel.sub_cnt>=2 && sel.sub_table_mergeable)  );
+	  break;
+	  case CID_ImportLookups:
+	    lookuppopupmenu[i].ti.disabled = !LookupsImportable(gfi->sf,isgpos);
 	  break;
 	  case CID_RevertLookups:
 	    lookuppopupmenu[i].ti.disabled = false;
@@ -6966,7 +6975,7 @@ return;
 		GFI_LookupEnableButtons(gfi,isgpos);
 		GDrawRequestExpose(gw,NULL,true);
 		if ( event->u.mouse.button==3 )
-		    LookupMenu(gfi,lk,event);
+		    LookupMenu(gfi,lk,isgpos,event);
 return;
 	    }
 	}
@@ -6999,7 +7008,7 @@ return;		/* Can't open this guy */
 			    GFI_LookupEnableButtons(gfi,isgpos);
 			    GDrawRequestExpose(gw,NULL,true);
 			    if ( event->u.mouse.button==3 )
-				LookupMenu(gfi,lk,event);
+				LookupMenu(gfi,lk,isgpos,event);
 			}
 return;
 		    }
