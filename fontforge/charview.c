@@ -515,7 +515,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     int x, y, cx, cy;
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
     int pnum;
-    char buf[12]; unichar_t ubuf[12];
+    char buf[12];
     int isfake;
     int cvlayer = CVLayer((CharViewBase *) cv);
 

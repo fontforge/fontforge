@@ -1035,6 +1035,7 @@ extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	struct subtable_data *sd,int def_layer);
 extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space);
+extern void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang);
 extern void FVMassGlyphRename(FontView *fv);
 
 extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
