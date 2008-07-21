@@ -352,6 +352,7 @@ int BitmapControl(FontViewBase *fv,int32 *sizes,int isavail,int rasterize) {
     bd.isavail = isavail;
     bd.which = bd_selected;
     bd.rasterize = rasterize;
+    bd.layer = fv->active_layer;
     BitmapsDoIt(&bd,sizes,hasFreeType());
 return( bd.done );
 }
