@@ -4652,6 +4652,10 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /* format 0, horizontal kerning data (as pairs) not perpendicular */
 	    chars = tupleIndex==-1 ? info->chars : info->variations->tuples[tupleIndex].chars;
 	    npairs = getushort(ttf);
+	    if ( version==0 && (len-14 != 6*npairs || npairs>10920 )) {
+		LogError( _("In the 'kern' table, a subtable's length does not match the number of kerning pairs.") );
+		info->bad_gx = true;
+	    }
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
 	    /* rangeShift = */ getushort(ttf);

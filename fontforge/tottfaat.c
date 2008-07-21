@@ -195,6 +195,8 @@ return;
 		c = bmax==1 ? c : breaks[b];
 		if ( version==0 ) {
 		    putshort(at->kern,0);		/* subtable version */
+		    if ( c>10920 )
+			ff_post_error(_("Too many kern pairs"),_("The 'kern' table supports at most 10920 kern pairs in a subtable"));
 		    putshort(at->kern,(7+3*c)*sizeof(uint16)); /* subtable length */
 		    putshort(at->kern,!isv);	/* coverage, flags=hor/vert&format=0 */
 		} else {
