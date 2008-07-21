@@ -4007,6 +4007,34 @@ return;
     }
 }
 
+static int GFI_AnyLayersRemoved(struct gfi_data *d) {
+    GGadget *backs = GWidgetGetControl(d->gw,CID_Backgrounds);
+    int rows, cols = GMatrixEditGetColCnt(backs), r, origr, l;
+    struct matrix_data *layers = GMatrixEditGet(backs, &rows);
+    SplineFont *sf = d->sf;
+    int anytrue_before, anytrue_after;
+
+    for ( l=0; l<sf->layer_cnt; ++l )
+	sf->layers[l].ticked = false;
+
+    anytrue_before = anytrue_after = false;
+    for ( r=ly_fore; r<sf->layer_cnt; ++r ) {
+	if ( sf->layers[r].order2 )
+	    anytrue_before = true;
+    }
+    for ( r=0; r<rows; ++r ) if ( (origr = layers[r*cols+2].u.md_ival)!=0 ) {
+	--origr;
+	sf->layers[origr].ticked = true;
+	if ( origr>=ly_fore && layers[r*cols+1].u.md_ival )
+	    anytrue_after = true;
+    }
+
+    for ( l=sf->layer_cnt-1; l>ly_fore; --l ) if ( !sf->layers[l].ticked )
+return( 1 | (anytrue_before && !anytrue_after? 2 : 0) );
+
+return( 0 | (anytrue_before && !anytrue_after? 2 : 0) );
+}
+
 static int GFI_SetLayers(struct gfi_data *d) {
     GGadget *backs = GWidgetGetControl(d->gw,CID_Backgrounds);
     int rows, cols = GMatrixEditGetColCnt(backs), r, origr, l;
@@ -4089,12 +4117,35 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	uint32 codepages[2], uranges[4];
 	int layer_cnt;
 	struct matrix_data *layers = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Backgrounds), &layer_cnt);
+	int layer_flags;
 
 	if ( strings==NULL || gasp==NULL || layers==NULL )
 return( true );
 	if ( gasprows>0 && gasp[5*gasprows-5].u.md_ival!=65535 ) {
 	    ff_post_error(_("Bad Grid Fitting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
 return( true );
+	}
+	if ( (layer_flags = GFI_AnyLayersRemoved(d))!=0 ) {
+	    char *buts[3];
+	    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
+	    if ( layer_flags & 1 ) {
+		if ( gwwv_ask(_("Deleting a layer cannot be UNDONE!"),(const char **) buts,0,1,_(
+			"You are about to delete a layer.\n"
+			"This will lose all contours in that layer.\n"
+			"If this is the last quadratic layer it will\n"
+			"lose all truetype instructions.\n\n"
+			"Deleting a layer cannot be undone.\n\n"
+			"Is this really your intent?"))==1 )
+return( true );
+	    } else if ( layer_flags & 2 ) {
+		if ( gwwv_ask(_("Remoing instructions cannot be UNDONE!"),(const char **) buts,0,1,_(
+			"You are about to change the last quadratic\n"
+			"layer to cubic. When this happens FontForge\n"
+			"will remove all truetype instructions.\n\n"
+			"This cannot be undone.\n\n"
+			"Is this really your intent?"))==1 )
+return( true );
+	    }
 	}
 	if ( layer_cnt>=BACK_LAYER_MAX-2 ) {
 	    ff_post_error(_("Too many layers"),_("FontForge supports at most %d layers"),BACK_LAYER_MAX-2);
