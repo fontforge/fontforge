@@ -96,7 +96,7 @@ typedef struct gtextbounds {
 			        /*  "width" which may be totally different */
 } GTextBounds;
 
-enum selnames { sn_primary, sn_clipboard, sn_drag_and_drop, sn_max };
+enum selnames { sn_primary, sn_clipboard, sn_drag_and_drop, sn_user1, sn_user2, sn_max };
 typedef struct gwindow *GWindow;
 typedef struct gdisplay GDisplay;
 typedef struct gtimer GTimer;
@@ -446,6 +446,11 @@ extern void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
 	void (*freedata)(void *));
 extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len);
 extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
+extern void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname);
+extern int GDrawSelectionOwned(GDisplay *disp,enum selnames sel);
+extern void GDrawPropertyToSelectionOwner(GDisplay *disp,enum selnames sel,
+	char *property, char *type, int format, int mode,
+	uint8 *data, int nelements);
 
 extern void GDrawPointerUngrab(GDisplay *disp);
 extern void GDrawPointerGrab(GWindow w);

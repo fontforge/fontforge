@@ -594,6 +594,18 @@ int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename) {
 return( (w->display->funcs->selectionHasType)(w,sn,typename));
 }
 
+void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname) {
+    if ( disp==NULL )
+	disp = screen_display;
+    (disp->funcs->bindSelection)(disp,sel,atomname);
+}
+
+int GDrawSelectionOwned(GDisplay *disp,enum selnames sel) {
+    if ( disp==NULL )
+	disp = screen_display;
+return( (disp->funcs->selectionHasOwner)(disp,sel));
+}
+
 int GDrawEnableExposeRequests(GWindow w,int enabled) {
     int old = w->disable_expose_requests;
     w->disable_expose_requests = enabled;
