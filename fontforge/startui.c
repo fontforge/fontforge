@@ -38,6 +38,7 @@
 #endif
 
 int splash = 1;
+static int unique = 0;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -47,8 +48,9 @@ static void _dousage(void) {
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
     printf( "\t-recover none|auto|inquire|clean (control error recovery)\n" );
-    printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf'\n\t\t\t table of ttc)\n" );
+    printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf' table\n\t\t\t of a truetype collection)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
+    printf( "\t-unique\t\t\t (if a fontforge is already running open\n\t\t\t all arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
     printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
@@ -72,8 +74,9 @@ static void _dousage(void) {
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t\tmust be the first option (or follow -lang).\n" );
     printf( "\t\tAll others passed to scriptfile.\n" );
-    printf( "\t-dry scriptfile\t (syntax checks scriptfile)\n" );
+    printf( "\t-dry scriptfile\t\t (syntax checks scriptfile)\n" );
     printf( "\t\tmust be the first option. All others passed to scriptfile.\n" );
+    printf( "\t\tOnly for fontforge's own scripting language, not python.\n" );
     printf( "\t-c script-string\t (executes argument as scripting cmds)\n" );
     printf( "\t\tmust be the first option. All others passed to the script.\n" );
     printf( "\n" );
@@ -365,22 +368,83 @@ static void DoDelayedEvents(GEvent *event) {
     GDrawCancelTimer(t);
 }
 
+struct argsstruct {
+    int next;
+    int argc;
+    char **argv;
+    int any;
+};
+
+static void SendNextArg(struct argsstruct *args) {
+    int i;
+    char *msg;
+
+    for ( i=args->next; i<args->argc; ++i ) {
+	if ( *args->argv[i]!='-' || strcmp(args->argv[i],"-new")==0 || strcmp(args->argv[i],"--new")==0 )
+    break;
+    }
+    if ( i>=args->argc ) {
+	if ( args->any )
+exit(0);		/* Sent everything */
+	msg = "-open";
+    } else
+	msg = args->argv[i];
+    args->next = i+1;
+    args->any  = true;
+
+    GDrawGrabSelection(splashw,sn_user1);
+    GDrawAddSelectionType(splashw,sn_user1,"STRING",
+	    copy(msg),strlen(msg),1,
+	    NULL,NULL);
+}
+
+/* When we want to send filenames to another running fontforge we want a */
+/*  different event handler. We won't have a splash window in that case, */
+/*  just an invisiable utility window on which we perform a little selection */
+/*  dance */
+static int request_e_h(GWindow gw, GEvent *event) {
+    if ( event->type == et_selclear )
+	SendNextArg( GDrawGetUserData(gw));
+return( true );
+}
+
+static void PingOtherFontForge(int argc, char **argv) {
+    struct argsstruct args;
+
+    args.next = 1;
+    args.argc = argc;
+    args.argv = argv;
+    args.any  = false;
+    GDrawSetUserData(splashw,&args);
+    SendNextArg(&args);
+    GDrawEventLoop(NULL);
+exit( 0 );		/* But the event loop should never return */
+}
+
 static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
     int i, y, x;
     static char *foolishness[] = {
-/* GT: These strings are for fun. If they are offensive of incomprehensible */
+/* GT: These strings are for fun. If they are offensive or incomprehensible */
 /* GT: simply translate them as something dull like: "FontForge" */
+/* GT: This is a spoof of political slogans, designed to point out how foolish they are */
 	    N_("A free press discriminates\nagainst the illiterate."),
 	    N_("A free press discriminates\nagainst the illiterate."),
+/* GT: This is a pun on the old latin drinking song "Gaudeamus igature!" */
 	    N_("Gaudeamus Ligature!"),
 	    N_("Gaudeamus Ligature!"),
+/* GT: Spoof on the bible */
 	    N_("In the beginning was the letter..."),
+/* GT: Some wit at MIT came up with this ("ontology recapitulates phylogony" is the original) */
 	    N_("fontology recapitulates file-ogeny")
     };
 
-    if ( event->type == et_expose ) {
+    switch ( event->type ) {
+      case et_create:
+	GDrawGrabSelection(gw,sn_user1);
+      break;
+      case et_expose:
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
 	GDrawDrawImage(gw,&splashimage,NULL,0,0);
 	GDrawSetFont(gw,splash_font);
@@ -399,31 +463,58 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	    y += fh;
 	}
 	GDrawPopClip(gw,&old);
-    } else if ( event->type == et_map ) {
+      break;
+      case et_map:
 	splash_cnt = 0;
-    } else if ( event->type == et_timer && event->u.timer.timer==autosave_timer ) {
-	DoAutoSaves();
-    } else if ( event->type == et_timer && event->u.timer.timer==splasht ) {
-	if ( ++splash_cnt==1 )
-	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-24);
-	else if ( splash_cnt==2 )
-	    GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
-	else if ( splash_cnt>=7 ) {
-	    GGadgetEndPopup();
-	    GDrawSetVisible(gw,false);
-	    GDrawCancelTimer(splasht);
-	    splasht = NULL;
+      break;
+      case et_timer:
+	if ( event->u.timer.timer==autosave_timer ) {
+	    DoAutoSaves();
+	} else if ( event->u.timer.timer==splasht ) {
+	    if ( ++splash_cnt==1 )
+		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-24);
+	    else if ( splash_cnt==2 )
+		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
+	    else if ( splash_cnt>=7 ) {
+		GGadgetEndPopup();
+		GDrawSetVisible(gw,false);
+		GDrawCancelTimer(splasht);
+		splasht = NULL;
+	    }
+	} else {
+	    DoDelayedEvents(event);
 	}
-    } else if ( event->type == et_timer ) {
-	DoDelayedEvents(event);
-    } else if ( event->type==et_char || event->type==et_mousedown ||
-	    event->type==et_close ) {
+      break;
+      case et_char:
+      case et_mousedown:
+      case et_close:
 	GGadgetEndPopup();
 	GDrawSetVisible(gw,false);
-    } else if ( event->type==et_mousemove ) {
+      break;
+      case et_mousemove:
 	GGadgetPreparePopup8(gw,_(foolishness[rand()%(sizeof(foolishness)/sizeof(foolishness[0]))]) );
-    } else if ( event->type==et_destroy ) {
+      break;
+      case et_selclear:
+	/* If this happens, it means someone wants to send us a message with a*/
+	/*  filename to open. So we need to ask for it, process it, and then  */
+	/*  take the selection back again */
+	if ( event->u.selclear.sel == sn_user1 ) {
+	    int len;
+	    char *arg;
+	    arg = GDrawRequestSelection(splashw,sn_user1,"STRING",&len);
+	    if ( strcmp(arg,"-new")==0 || strcmp(arg,"--new")==0 )
+		FontNew();
+	    else if ( strcmp(arg,"-open")==0 || strcmp(arg,"--open")==0 )
+		MenuOpen(NULL,NULL,NULL);
+	    else
+		ViewPostscriptFont(arg,0);
+	    free(arg);
+	    GDrawGrabSelection(splashw,sn_user1);
+	}
+      break;
+      case et_destroy:
 	IError("Who killed the splash screen?");
+      break;
     }
 return( true );
 }
@@ -601,6 +692,8 @@ int main( int argc, char **argv ) {
 # endif
 	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
+	else if ( strcmp(pt,"-unique")==0 )
+	    unique = 1;
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 ) {
 	    ++i;
 	    if ( strcmp(argv[i],"none")==0 )
@@ -663,18 +756,27 @@ int main( int argc, char **argv ) {
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
     pos.height = splashimage.u.image->height-56;		/* 54 */
-    splashw = GDrawCreateTopWindow(NULL,&pos,splash_e_h,NULL,&wattrs);
-	memset(&rq,0,sizeof(rq));
-	rq.family_name = times;
-	rq.point_size = 12;
-	rq.weight = 400;
-	splash_font = GDrawInstanciateFont(NULL,&rq);
-	rq.style = fs_italic;
-	splash_italic = GDrawInstanciateFont(NULL,&rq);
-	GDrawSetFont(splashw,splash_font);
-	GDrawFontMetrics(splash_font,&as,&ds,&ld);
-	fh = as+ds+ld;
-	SplashLayout();
+    GDrawBindSelection(NULL,sn_user1,"FontForge");
+    if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
+	/* Different event handler, not a dialog */
+	wattrs.is_dlg = false;
+	splashw = GDrawCreateTopWindow(NULL,&pos,request_e_h,NULL,&wattrs);
+	PingOtherFontForge(argc,argv);
+    } else
+	splashw = GDrawCreateTopWindow(NULL,&pos,splash_e_h,NULL,&wattrs);
+
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = times;
+    rq.point_size = 12;
+    rq.weight = 400;
+    splash_font = GDrawInstanciateFont(NULL,&rq);
+    rq.style = fs_italic;
+    splash_italic = GDrawInstanciateFont(NULL,&rq);
+    GDrawSetFont(splashw,splash_font);
+    GDrawFontMetrics(splash_font,&as,&ds,&ld);
+    fh = as+ds+ld;
+    SplashLayout();
+
     if ( splash ) {
 	GDrawSetVisible(splashw,true);
 	GDrawSync(NULL);
@@ -716,7 +818,7 @@ int main( int argc, char **argv ) {
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
-		strcmp(pt,"-dontopenxdevices")==0 )
+		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
 		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 || 

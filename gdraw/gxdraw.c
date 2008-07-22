@@ -3108,14 +3108,19 @@ return;
 	    gevent.u.drag_drop.y = event->xclient.data.l[2];
 	}
       break;
-      case SelectionClear:
+      case SelectionClear: {
+	int i;
 	gdisp->last_event_time = event->xselectionclear.time;
 	gevent.type = et_selclear;
-	gevent.u.selclear.sel = event->xselectionclear.selection==XA_PRIMARY? sn_primary:
-		event->xselectionclear.selection==gdisp->selinfo[sn_clipboard].sel_atom? sn_clipboard:
-		sn_drag_and_drop;
+	gevent.u.selclear.sel = sn_primary;
+	for ( i=0; i<sn_max; ++i ) {
+	    if ( event->xselectionclear.selection==gdisp->selinfo[i].sel_atom ) {
+		gevent.u.selclear.sel = i;
+	break;
+	    }
+	}
 	GXDrawClearSelData(gdisp,gevent.u.selclear.sel);
-      break;
+      } break;
       case SelectionRequest:
 	gdisp->last_event_time = event->xselectionrequest.time;
 	GXDrawTransmitSelection(gdisp,event);
@@ -4002,6 +4007,22 @@ return( true );
 return( false );
 }
 
+static void GXDrawBindSelection(GDisplay *disp,enum selnames sn, char *atomname) {
+    GXDisplay *gdisp = (GXDisplay *) disp;
+    Display *display = gdisp->display;
+    if ( sn>=0 && sn<sn_max )
+	gdisp->selinfo[sn].sel_atom = XInternAtom(display,atomname,False);
+}
+
+static int GXDrawSelectionHasOwner(GDisplay *disp,enum selnames sn) {
+    GXDisplay *gdisp = (GXDisplay *) disp;
+    Display *display = ((GXDisplay *) gdisp)->display;
+    if ( sn<0 || sn>=sn_max )
+return( false );
+
+return( XGetSelectionOwner(display,gdisp->selinfo[sn].sel_atom)!=None );
+}
+
 static int match(char **list, char *val) {
     int i;
 
@@ -4186,6 +4207,8 @@ static struct displayfuncs xfuncs = {
     GXDrawAddSelectionType,
     GXDrawRequestSelection,
     GXDrawSelectionHasType,
+    GXDrawBindSelection,
+    GXDrawSelectionHasOwner,
 
     GXDrawPointerUngrab,
     GXDrawPointerGrab,
@@ -4324,6 +4347,8 @@ return( NULL );
     gdisp->selinfo[sn_primary].sel_atom = XA_PRIMARY;
     gdisp->selinfo[sn_clipboard].sel_atom = XInternAtom(display,"CLIPBOARD",False);
     gdisp->selinfo[sn_drag_and_drop].sel_atom = XInternAtom(display,"DRAG_AND_DROP",False);
+    gdisp->selinfo[sn_user1].sel_atom = XA_PRIMARY;
+    gdisp->selinfo[sn_user2].sel_atom = XA_PRIMARY;
 
     gdisp->xthread.sync_sock = -1;
 #ifdef HAVE_PTHREAD_H

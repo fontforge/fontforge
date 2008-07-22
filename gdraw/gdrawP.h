@@ -223,6 +223,8 @@ struct displayfuncs {
 	void (*freedata)(void *));
     void *(*requestSelection)(GWindow w,enum selnames sn, char *typename, int32 *len);
     int (*selectionHasType)(GWindow w,enum selnames sn, char *typename);
+    void (*bindSelection)(GDisplay *disp,enum selnames sn, char *atomname);
+    int (*selectionHasOwner)(GDisplay *disp,enum selnames sn);
 
     void (*pointerUngrab)(GDisplay *);
     void (*pointerGrab)(GWindow);

@@ -229,6 +229,15 @@ static int PSDrawSelectionHasType(GWindow w,enum selnames sn, char *typename) {
 return( false );
 }
 
+static void PSDrawBindSelection(GDisplay *disp,enum selnames sn, char *atomname) {
+    /* Not meaningful */
+}
+
+static int PSDrawSelectionHasOwner(GDisplay *disp,enum selnames sn) {
+    /* Not meaningful */
+return( false );
+}
+
 static void PSDrawRequestExpose(GWindow gw, GRect *rect,int doclear) {
     /* Not meaningful */
 }
@@ -1334,6 +1343,8 @@ static struct displayfuncs psfuncs = {
     PSDrawAddSelectionType,
     PSDrawRequestSelection,
     PSDrawSelectionHasType,
+    PSDrawBindSelection,
+    PSDrawSelectionHasOwner,
 
     PSDrawPointerUngrab,
     PSDrawPointerGrab,

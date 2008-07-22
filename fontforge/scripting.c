@@ -9584,6 +9584,9 @@ void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	    ++i;
 	if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
 	    ++i;
+	if ( argc>i+2 && (strncmp(argv[i],"-lang",5)==0 || strncmp(argv[i],"--lang",6)==0 ) &&
+		    (strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0))
+	    i+=2;
 	if ( strcmp(argv[i],"-script")==0 || strcmp(argv[i],"--script")==0 )
 	    ++i;
 	else if ( strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"--dry")==0 ) {
@@ -9702,7 +9705,11 @@ return;
 	    is_python = true;
 	else if ( strcmp(argv[i],"-lang=ff")==0 || strcmp(argv[i],"-lang=pe")==0 )
 	    is_python = false;
-	else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
+	else if ( strcmp(argv[i],"-lang")==0 && i+1<argc &&
+		(strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0)) {
+	    ++i;
+	    is_python = strcmp(argv[i+1],"py")==0;
+	} else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python )
 		PyFF_Stdin();

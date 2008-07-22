@@ -17,6 +17,8 @@
       <LI>
 	<A HREF="#Before">Before you install</A>
       <LI>
+	<A HREF="#Alternatives">Alternatives to cygwin</A>
+      <LI>
 	<A HREF="#Obtaining">Obtaining one of my pre-built packages</A>
       <LI>
 	<A HREF="#install">Installing</A>
@@ -56,6 +58,8 @@
   <LI>
     <A HREF="#run-cygwin">Running FontForge</A>
   <LI>
+    <A HREF="#cygwin-troubles">Troubleshooting</A>
+  <LI>
     <A HREF="#Bugs">Reporting Bugs</A>
 </UL>
 <H2>
@@ -77,7 +81,8 @@ it is the least expected part.
   <LI>
     Run it. It will ask you what components of cygwin you wish to install
   <LI>
-      You will need the default stuff, plus the X window system, binutils, libpng, and libxml2.
+      You will need the default stuff, plus the X window system, binutils, libpng, libjpeg,
+      and libxml2.
     <P>
       Most of what you need you get by default. But you must explicitly request
       X11 and the libraries. Scroll down the list of catagories:
@@ -116,6 +121,17 @@ it is the least expected part.
     <P>
     Once you have cygwin installed, start it. This should give you a terminal
     window running bash (a unix shell)
+</UL>
+<H3>
+  <A NAME="Alternatives">Alternatives</A> to cygwin.
+</H3>
+<P>
+There are now alternatives to cygwin. Instead of downloading cygwin you can
+install one of the virtual machines (or something similar) which run linux,
+and then install fontforge from a linux package.
+<UL>
+  <LI>
+    <A HREF="http://www.andlinux.org/">andLinux</A>
 </UL>
 <H3>
   <A NAME="Obtaining">Obtaining</A> one of my pre-built packages
@@ -828,7 +844,36 @@ This will invoke fontforge in a non-interactive mode, and have it run the
 named script. Any further arguments on the command line will be passed as
 arguments to the script and processed (or not) by it.
 <P>
-  <HR>
+<HR>
+<H3>
+  <A NAME="cygwin-troubles">Troubleshooting</A> on cygwin
+</H3>
+<P>
+One very common problem on cygwin is that you will type in the command line
+to start fontforge -- and absolutely nothing will happen. The cygwin shell
+simply prints another prompt. There is no error message. No window appears.
+Nothing.
+<P>
+This generally means that you are missing a required library. Make sure that
+the following are installed
+<UL>
+  <LI>
+    libiconv
+  <LI>
+    libintl
+  <LI>
+    libjpeg
+  <LI>
+    libpng
+  <LI>
+    libxml2
+  <LI>
+    libz
+</UL>
+<P>
+(I have no idea why you don't get an error message. That's a bug in cygwin
+or windows or something. FontForge never gets control and has no chance to
+generate a message itself).
 <H2>
   Reporting <A NAME="Bugs">Bugs</A>
 </H2>
