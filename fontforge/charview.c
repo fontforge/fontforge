@@ -2048,7 +2048,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    if ( cv->b.drawmode==dm_back && cv->showrefnames )
 			CVDrawRefName(cv,pixmap,rf,0);
 		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,-1,&clip);
+			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,false,&clip);
 		    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
 			CVDrawBB(cv,pixmap,&rf->bb);
 		}
