@@ -2557,13 +2557,10 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void FVMenuChangeLayer(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FV_LayerChanged( FontView *fv ) {
     extern int use_freetype_to_rasterize_fv;
     BDFFont *new, *old;
 
-    fv->b.active_layer = mi->mid;
-    fv->b.sf->display_layer = mi->mid;
     fv->magnify = 1;
     fv->user_requested_magnify = -1;
 
@@ -2575,6 +2572,14 @@ static void FVMenuChangeLayer(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVChangeDisplayFont(fv,new);
     fv->filled = new;
     BDFFontFree(old);
+}
+
+static void FVMenuChangeLayer(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+
+    fv->b.active_layer = mi->mid;
+    fv->b.sf->display_layer = mi->mid;
+    FV_LayerChanged(fv);
 }
 
 static void FVMenuMagnify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6539,13 +6544,7 @@ return;
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
-	for ( fvs=fv; fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	    if ( fvs->filled == old ) {
-		fvs->filled = new;
-		if ( fvs->show == old )
-		    fvs->show = new;
-		fvs->touched = true;
-	    }
+	fv->filled = new;
 	BDFFontFree(old);
     }
     for ( fv=(FontView *) (sf->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
@@ -6973,6 +6972,7 @@ struct fv_interface gdraw_fv_interface = {
     FontViewRefreshAll,
     (void (*)(FontViewBase *)) FontView_ReformatOne,
     FontView_ReformatAll,
+    (void (*)(FontViewBase *)) FV_LayerChanged,
     FV_ToggleCharChanged,
     (int  (*)(FontViewBase *, int *, int *)) FontViewWinInfo,
     FontIsActive,

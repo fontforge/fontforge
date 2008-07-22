@@ -382,6 +382,9 @@ struct fv_interface {
    /* Reformat all fontviews associated with this font */
     void (*reformat_all)(struct splinefont *);
 
+   /* The active layer has changed. Possibly because the old one was deleted */
+    void (*layer_changed)(struct fontviewbase *);
+
    /* toggle the change indicator of this glyph in the font view */
     void (*flag_glyph_changed)(struct splinechar *);
 
@@ -453,6 +456,7 @@ extern struct fv_interface *fv_interface;
 #define FVRefreshAll		(fv_interface->refresh_all)
 #define FontViewReformatOne	(fv_interface->reformat_one)
 #define FontViewReformatAll	(fv_interface->reformat_all)
+#define FontViewLayerChanged	(fv_interface->layer_changed)
 #define FVToggleCharChanged	(fv_interface->flag_glyph_changed)
 #define FVWinInfo		(fv_interface->win_info)
 #define SFIsActive		(fv_interface->font_is_active)

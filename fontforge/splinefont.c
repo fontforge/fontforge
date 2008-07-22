@@ -1583,8 +1583,11 @@ return;
     }
 
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->next ) {
-	if ( fvs->active_layer>=l )
+	if ( fvs->active_layer>=l ) {
 	    --fvs->active_layer;
+	    if ( fvs->active_layer+1==l )
+		FontViewLayerChanged(fvs);
+	}
     }
     MVDestroyAll(sf);
 

@@ -1821,6 +1821,7 @@ static void FontViewBaseSetTitles(SplineFont *foo) { }
 static void FontViewBaseRefreshAll(SplineFont *foo) { }
 static void FontViewBaseReformatOne(FontViewBase *foo) { }
 static void FontViewBaseReformatAll(SplineFont *foo) { }
+static void FontViewBaseLayerChanged(FontViewBase *foo) { }
 static void FV_ToggleCharChanged(SplineChar *foo) { }
 static FontViewBase *FVAny(void) { return fv_list; }
 static int  FontIsActive(SplineFont *sf) {
@@ -1893,6 +1894,7 @@ struct fv_interface noui_fv = {
     FontViewBaseRefreshAll,
     FontViewBaseReformatOne,
     FontViewBaseReformatAll,
+    FontViewBaseLayerChanged,
     FV_ToggleCharChanged,
     FontViewBaseWinInfo,
     FontIsActive,
