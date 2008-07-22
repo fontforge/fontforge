@@ -992,7 +992,8 @@ return( copy(url));
 return( path );
 }
 
-static FILE *HttpURLToTempFile(char *url) {
+static FILE *HttpURLToTempFile(char *url, void *_lock) {
+    pthread_mutex_t *lock = _lock;
     struct sockaddr_in addr;
     char *pt, *host, *filename, *username, *password;
     int port;
@@ -1006,53 +1007,90 @@ static FILE *HttpURLToTempFile(char *url) {
     snprintf(buffer,sizeof(buffer),_("Downloading from %s"), url);
 
     if ( strncasecmp(url,"http://",7)!=0 ) {
+	if ( lock!=NULL )
+	    pthread_mutex_lock(lock);
 	ff_post_error(_("Could not parse URL"),_("Got something else when expecting an http URL"));
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
 return( NULL );
     }
+    if ( lock!=NULL )
+	pthread_mutex_lock(lock);
     filename = decomposeURL(url, &host, &port, &username, &password);
     /* I don't support username/passwords for http */
     free( username ); free( password );
+    if ( lock!=NULL )
+	pthread_mutex_unlock(lock);
 
-    ff_progress_start_indicator(0,_("Font Download..."),buffer,
-	    _("Resolving host"),1,1);
-    ff_progress_enable_stop(false);
-    ff_progress_allow_events();
-    ff_progress_allow_events();
+    if ( lock==NULL ) {
+	ff_progress_start_indicator(0,_("Font Download..."),buffer,
+		_("Resolving host"),1,1);
+	ff_progress_enable_stop(false);
+	ff_progress_allow_events();
+	ff_progress_allow_events();
+    }
 
+    /* This routine contains it's own lock */
     if ( !findHTTPhost(&addr, host, port)) {
-	ff_progress_end_indicator();
+	if ( lock==NULL )
+	    ff_progress_end_indicator();
+	else
+	    pthread_mutex_lock(lock);
 	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), host );
 	free( host ); free( filename );
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
 return( false );
     }
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
-	ff_progress_end_indicator();
+	if ( lock==NULL )
+	    ff_progress_end_indicator();
+	else
+	    pthread_mutex_lock(lock);
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), host );
 	free( host ); free( filename );
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
 return( false );
     }
 
+    if ( lock!=NULL )
+	pthread_mutex_lock(lock);
     datalen = 8*8*1024;
     databuf = galloc(datalen+1);
+    if ( lock!=NULL )
+	pthread_mutex_unlock(lock);
+    else
+	ChangeLine2_8(_("Requesting font..."));
 
-    ChangeLine2_8(_("Requesting font..."));
     sprintf( databuf,"GET %s HTTP/1.1\r\n"
 	"Host: %s\r\n"
 	"User-Agent: FontForge\r\n"
 	"Connection: close\r\n\r\n", filename, host );
     if ( write(soc,databuf,strlen(databuf))==-1 ) {
-	ff_progress_end_indicator();
+	if ( lock==NULL )
+	    ff_progress_end_indicator();
+	if ( lock!=NULL )
+	    pthread_mutex_lock(lock);
 	ff_post_error(_("Could not send request"),_("Could not send request to \"%s\"."), host );
 	close( soc );
 	free( databuf );
 	free( host ); free( filename );
+	free( host ); free( filename );
+	if ( lock!=NULL )
+	    pthread_mutex_unlock(lock);
 return( NULL );
     }
 
-    ChangeLine2_8(_("Downloading font..."));
+    if ( lock==NULL )
+	ChangeLine2_8(_("Downloading font..."));
 
+    if ( lock!=NULL )
+	pthread_mutex_lock(lock);
     ret = tmpfile();
+    if ( lock!=NULL )
+	pthread_mutex_unlock(lock);
 
     first = 1;
     code = 404;
@@ -1068,14 +1106,18 @@ return( NULL );
 		if ( *pt )
 		    *pt = '\0';
 		close( soc );
+		if ( lock!=NULL )
+		    pthread_mutex_lock(lock);
 		fclose(ret);
 		free(host); free( filename );
-		ret = URLToTempFile(newurl);
 		free(databuf);
+		if ( lock!=NULL )
+		    pthread_mutex_unlock(lock);
+		ret = URLToTempFile(newurl,lock);
 return( ret );
 	    }
 	    pt = strstr(databuf,"Content-Length: ");
-	    if ( pt!=NULL ) {
+	    if ( lock==NULL && pt!=NULL ) {
 		pt += strlen( "Content-Length: ");
 		ff_progress_change_total(strtol(pt,NULL,10));
 	    }
@@ -1083,27 +1125,34 @@ return( ret );
 	    if ( pt!=NULL ) {
 		pt += strlen("\r\n\r\n");
 		fwrite(pt,1,len-(pt-databuf),ret);
-		ff_progress_increment(len-(pt-databuf));
+		if ( lock==NULL )
+		    ff_progress_increment(len-(pt-databuf));
 	    }
 	} else {
 	    fwrite(databuf,1,len,ret);
-	    ff_progress_increment(len);
+	    if ( lock==NULL )
+		ff_progress_increment(len);
 	}
     }
-    ff_progress_end_indicator();
+    if ( lock==NULL )
+	ff_progress_end_indicator();
     close( soc );
     free( databuf );
+    if ( lock!=NULL )
+	pthread_mutex_lock(lock);
     free( host ); free( filename );
     if ( len==-1 ) {
 	ff_post_error(_("Could not download data"),_("Could not download data.") );
 	fclose(ret);
-return( NULL );
+	ret = NULL;
     } else if ( code<200 || code>299 ) {
 	ff_post_error(_("Could not download data"),_("HTTP return code: %d."), code );
 	fclose(ret);
-return( NULL );
-    }
-    rewind(ret);
+	ret = NULL;
+    } else
+	rewind(ret);
+    if ( lock!=NULL )
+	pthread_mutex_unlock(lock);
 return( ret );
 }
 
@@ -1128,10 +1177,10 @@ int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
 	    pthread_mutex_unlock(lock);
 return( -1 );
     }
-    filename = decomposeURL(url, &host, &port, &username, &password);
-    /* I don't support username/passwords for http */
     if ( lock!=NULL )
 	pthread_mutex_lock(lock);
+    filename = decomposeURL(url, &host, &port, &username, &password);
+    /* I don't support username/passwords for http */
     free( username ); free( password );
     if ( lock!=NULL )
 	pthread_mutex_unlock(lock);
@@ -1420,11 +1469,11 @@ return( false );
 return( true );
 }
 
-FILE *URLToTempFile(char *url) {
+FILE *URLToTempFile(char *url,void *_lock) {
     FILE *ret;
 
     if ( strncasecmp(url,"http://",7)==0 )
-return( HttpURLToTempFile(url));
+return( HttpURLToTempFile(url,_lock));
     else if ( strncasecmp(url,"ftp://",6)==0 ) {
 	if ( FtpURLAndTempFile(url,&ret,NULL))
 return( ret );

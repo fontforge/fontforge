@@ -888,10 +888,10 @@ static char *ForceFileToHaveName(FILE *file, char *exten) {
 return(copy(tmpfilename));			/* The filename does not exist */
     }
 }
-    
+
 /* This does not check currently existing fontviews, and should only be used */
 /*  by LoadSplineFont (which does) and by RevertFile (which knows what it's doing) */
-SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
+SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) {
     SplineFont *sf;
     char ubuf[250], *temp;
     int fromsfd = false;
@@ -899,7 +899,6 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
     char *archivedir=NULL;
     int len;
-    FILE *file=NULL;
     int checked;
     int compression=0;
     int wasurl = false, nowlocal = true, wasarchived=false;
@@ -921,7 +920,8 @@ return( NULL );
     }
 
     if ( strstr(strippedname,"://")!=NULL ) {
-	file = URLToTempFile(strippedname);
+	if ( file==NULL )
+	    file = URLToTempFile(strippedname,NULL);
 	if ( file==NULL )
 return( NULL );
 	wasurl = true; nowlocal = false;
@@ -929,14 +929,27 @@ return( NULL );
 
     pt = strrchr(strippedname,'.');
     if ( pt!=NULL ) {
-	for ( i=0; archivers[i].ext!=NULL; ++i )
+	for ( i=0; archivers[i].ext!=NULL; ++i ) {
 	    if ( strcmp(archivers[i].ext,pt)==0 ) {
-		strippedname = Unarchive(strippedname,&archivedir);
-	    if ( strippedname==NULL )
+		if ( file!=NULL ) {
+		    char *spuriousname = ForceFileToHaveName(file,archivers[i].ext);
+		    strippedname = Unarchive(spuriousname,&archivedir);
+		    fclose(file); file = NULL;
+		    unlink(spuriousname); free(spuriousname);
+		} else
+		    strippedname = Unarchive(strippedname,&archivedir);
+		if ( strippedname==NULL )
 return( NULL );
-	    pt = strrchr(strippedname,'.');
-	    wasarchived = true;
+		if ( strippedname!=filename && paren!=NULL ) {
+		    fullname = galloc(strlen(strippedname)+strlen(paren)+1);
+		    strcpy(fullname,strippedname);
+		    strcat(fullname,paren);
+		} else
+		    fullname = strippedname;
+		pt = strrchr(strippedname,'.');
+		wasarchived = true;
 	break;
+	    }
 	}
     }
 
@@ -948,7 +961,7 @@ return( NULL );
     if ( i==-1 || compressors[i].ext==NULL )
 	i=-1;
     else {
-	if ( wasurl ) {
+	if ( file!=NULL ) {
 	    char *spuriousname = ForceFileToHaveName(file,compressors[i].ext);
 	    tmpfile = Decompress(spuriousname,i);
 	    fclose(file); file = NULL;
@@ -1205,6 +1218,10 @@ return( NULL );
 	}
     }
 return( sf );
+}
+
+SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
+return( _ReadSplineFont(NULL,filename,openflags));
 }
 
 char *ToAbsolute(char *filename) {

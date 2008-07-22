@@ -41,7 +41,7 @@
 
 
 /* The OFL returns fonts 10 at a time. The biggest page so far is 52949 bytes */
-/*  (16 June 2008). We might as well just plan to read the whole thing into */
+/*  (16 June 2008). We might as well just plan to read each page entirely into*/
 /*  memory. Not that big, and makes life easier */
 
 #define OFL_FONT_URL	"http://openfontlibrary.org/media/view/media/fonts"
@@ -71,6 +71,7 @@ struct ofl_font_info {
     uint8 potential_gap_after_me;
     uint8 open;		/* Display download URLS in UI */
     uint8 selected;
+    uint8 downloading_in_background;
 };
 
 struct ofl_state {
@@ -638,6 +639,19 @@ return;
 /* ********************************* Dialog ********************************* */
 /* ************************************************************************** */
 
+int oflib_automagic_preview = false;
+
+typedef struct previewthread {
+    struct previewthread *next;
+    pthread_t preview_thread;
+    pthread_mutex_t *http_thread_can_do_stuff;
+    int done;
+    struct ofl_font_info *fi;
+    struct ofl_download_urls *active;
+    int is_image;
+    FILE *result;
+} PreviewThread;
+
 typedef struct oflibdlg {
     GWindow gw;
     struct ofl_state all;
@@ -655,6 +669,7 @@ typedef struct oflibdlg {
   /* Spawn separate thread for downloading fonts information */
   /* (Not for the downloads the user asks for, but the background download */
   /*  to check that our database is up-to-date, with luck, user won't notice) */
+
     pthread_t http_thread;
     pthread_mutex_t http_thread_can_do_stuff;	/* Like allocate memory, call non-thread-safe routines */
     pthread_mutex_t http_thread_done;		/* child releases this when it has finished its current task */
@@ -667,8 +682,11 @@ typedef struct oflibdlg {
     int any_new_stuff;
     int die;
     GWindow alert;
+    int background_preview_requests;
+    PreviewThread *active;
 } OFLibDlg;
 static OFLibDlg *active;
+static pthread_key_t jump_key;
 
 enum searchtype { st_showall, st_author, st_name, st_tag, st_license };
 static int initted = false;
@@ -695,6 +713,7 @@ static GTextInfo searchtypes[] = {
 #define CID_PreviewW	1031
 #define CID_PreviewVSB	1032
 #define CID_PreviewHSB	1033
+#define CID_BackgroundPreview 1034
 
 #define CID_Open	1040
 #define CID_Preview	1041
@@ -707,6 +726,86 @@ static void OFLibInit(void) {
     initted = true;
     for ( i=0; searchtypes[i].text!=NULL; ++i )
 	searchtypes[i].text = (unichar_t *) _((char *) searchtypes[i].text);
+}
+
+static struct ofl_download_urls *OFLibHasImage(OFLibDlg *d,int sel_font) {
+    struct ofl_download_urls *du;
+
+    if ( d->show[sel_font]->open ) {
+	/* If an image is selected use it */
+	for ( du=d->show[sel_font]->urls; du!=NULL; du=du->next ) {
+	    char *ext = strrchr(du->url,'.');
+	    if ( ext==NULL || !du->selected)
+	continue;
+	    if (
+#ifndef _NO_LIBPNG
+		    strcasecmp(ext,".png")==0 ||
+#endif
+#ifndef _NO_LIBJPEG
+		    strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 ||
+#endif
+#ifndef _NO_LIBTIFF
+		    strcasecmp(ext,".tiff")==0 || strcasecmp(ext,".tif")==0 ||
+#endif
+#ifndef _NO_LIBUNGIF
+		    strcasecmp(ext,".gif")==0 ||
+#endif
+		    strcasecmp(ext,".bmp")==0 )
+return( du );
+	}
+    }
+
+    /* Otherwise use an unselected image (if present) */
+    for ( du=d->show[sel_font]->urls; du!=NULL; du=du->next ) {
+	char *ext = strrchr(du->url,'.');
+	if ( ext==NULL )
+    continue;
+	if (
+#ifndef _NO_LIBPNG
+		    strcasecmp(ext,".png")==0 ||
+#endif
+#ifndef _NO_LIBJPEG
+		    strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 ||
+#endif
+#ifndef _NO_LIBTIFF
+		    strcasecmp(ext,".tiff")==0 || strcasecmp(ext,".tif")==0 ||
+#endif
+#ifndef _NO_LIBUNGIF
+		    strcasecmp(ext,".gif")==0 ||
+#endif
+		    strcasecmp(ext,".bmp")==0 )
+return( du );
+    }
+return( NULL );
+}
+
+static struct ofl_download_urls *OFLibHasFont(OFLibDlg *d,int sel_font) {
+    struct ofl_download_urls *du;
+		struct ofl_download_urls *otf=NULL, *pf=NULL, *zip=NULL, *sfd=NULL;
+
+    for ( du=d->show[sel_font]->urls; du!=NULL; du=du->next ) {
+	char *ext = strrchr(du->url,'.');
+	if ( ext==NULL )
+    continue;
+	if ( strcasecmp(ext,".zip")==0 )
+	    zip = du;
+	else if ( strcasecmp(ext,".pfa")==0 || strcasecmp(ext,".pfb")==0 ||
+		strcasecmp(ext,".cff")==0 )
+	    pf = du;
+	else if ( strcasecmp(ext,".ttf")==0 || strcasecmp(ext,".otf")==0 ||
+		strcasecmp(ext,".ttc")==0 )
+	    otf = du;
+	else if ( strcasecmp(ext,".sfd")==0 )
+	    sfd = du;
+    }
+    if ( sfd!=NULL )
+return( sfd );
+    else if ( otf!=NULL )
+return( otf );
+    else if ( pf!=NULL )
+return( pf );
+    else
+return( zip );
 }
 
 static void OFLibSetSb(OFLibDlg *d) {
@@ -879,6 +978,21 @@ static int OFL_SearchStringChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void PreviewThreadsKill(OFLibDlg *d) {
+    PreviewThread *next, *cur;
+    void *status;
+
+    for ( cur = d->active; cur!=NULL; cur = next ) {
+	next = cur->next;
+	pthread_kill(cur->preview_thread,SIGUSR1);	/* I want to use pthread_cancel, but that seems to send a SIG32, (only 0-31 are defined) which can't be trapped */
+	pthread_join(cur->preview_thread,&status);
+	if ( cur->result!=NULL )
+	    fclose(cur->result);
+	chunkfree(cur,sizeof(*cur));
+    }
+    d->active = NULL;
+}
+
 static void HttpThreadKill(OFLibDlg *d) {
     /* This should be called in the parent, obviously */
 
@@ -889,9 +1003,6 @@ pthread_exit(NULL);
     }
 
     d->die = true;
-    if ( d->http_timer )
-	GDrawCancelTimer(d->http_timer);
-    d->http_timer=NULL;
     if ( d->http_thread ) {
 	void *status;
 	pthread_mutex_unlock(&d->http_thread_done);
@@ -914,15 +1025,15 @@ pthread_exit(NULL);
     ff_post_notice(NULL,NULL);
 }
 
-static jmp_buf abort_env;
-
 static void cancel_handler(int sig) {
-    longjmp(abort_env,1);
+    longjmp(pthread_getspecific(jump_key),1);
 }
 
 static void *StartHttpThread(void *_d) {
     OFLibDlg *d = (OFLibDlg *) _d;
+    jmp_buf abort_env;
 
+    pthread_setspecific(jump_key,abort_env);
     if ( setjmp(abort_env) ) {
 	signal(SIGUSR1,SIG_DFL);		/* Restore normal behavior */
 return(NULL);
@@ -958,6 +1069,127 @@ return(NULL);
 	    /*  keep giving it some time */
 	}
 	/* OK, see what the parent wants us to do now... */
+    }
+}
+
+static void *StartPreviewThread(void *_p) {
+    PreviewThread *p = (PreviewThread *) _p;
+    jmp_buf abort_env;
+
+    pthread_setspecific(jump_key,abort_env);
+    if ( setjmp(abort_env) ) {
+	signal(SIGUSR1,SIG_DFL);		/* Restore normal behavior */
+return(NULL);
+    }
+    signal(SIGUSR1,cancel_handler);
+    p->result = URLToTempFile(p->active->url,p->http_thread_can_do_stuff);
+    p->done = true;
+return(NULL);
+}
+
+static void OFLibEnableButtons(OFLibDlg *d);
+
+static void ProcessPreview(OFLibDlg *d,PreviewThread *cur) {
+    char *pt, *name;
+    FILE *final;
+    int ch;
+
+    cur->fi->downloading_in_background = false;
+    if ( cur->result==NULL )		/* Finished, but didn't work */
+return;
+    rewind(cur->result);
+
+    pt = strrchr(cur->active->url,'/');
+    if ( pt==NULL ) {	/* Can't happen */
+	fclose(cur->result);
+return;
+    }
+    name = galloc(strlen(getOFLibDir()) + strlen(pt) + 10 );
+    sprintf( name,"%s%s", getOFLibDir(), pt);
+    final = fopen(name,"w");
+    if ( final==NULL ) {
+	fclose(cur->result);
+return;
+    }
+    GDrawSetCursor(d->gw,ct_watch);
+
+    if ( cur->is_image ) {
+	while ( (ch=getc(cur->result))!=EOF )
+	    putc(ch,final);
+	fclose(final);
+	fclose(cur->result);
+    } else {
+	SplineFont *sf = _ReadSplineFont(cur->result,cur->active->url,0);
+	/* The above routine closes cur->result */
+	if ( sf==NULL ) {
+	    fclose(final);
+	    unlink(name);
+	    free(name);
+	    GDrawSetCursor(d->gw,ct_mypointer);
+return;
+	}
+	pt = strrchr(name,'.');
+	if ( pt==NULL || pt<strrchr(name,'/') )
+	    strcat(name,".png");
+	else
+	    strcpy(pt,".png");
+	SFDefaultImage(sf,name);
+	SplineFontFree(sf);
+    }
+    cur->fi->preview_filename = copy(strrchr(name,'/')+1);
+    free(name);
+
+    OFLibEnableButtons(d);		/* This will load the image */
+    DumpOFLibState(&d->all);
+    GDrawSetCursor(d->gw,ct_mypointer);
+}
+
+static void BackgroundPreviewRequest(OFLibDlg *d,int onefont) {
+    struct ofl_download_urls *du;
+    PreviewThread *newp;
+    int is_image = true;
+
+    if ( d->show[onefont]->downloading_in_background )
+return;
+    if ( getOFLibDir()==NULL )
+return;
+    du = OFLibHasImage(d,onefont);
+    if ( du==NULL ) {
+	du = OFLibHasFont(d,onefont);
+	is_image = false;
+    }
+    if ( du==NULL )
+return;
+
+    newp = chunkalloc(sizeof(PreviewThread));
+    newp->fi = d->show[onefont];
+    newp->fi->downloading_in_background = true;
+    newp->active = du;
+    newp->is_image = is_image;
+    newp->next = d->active;
+    newp->http_thread_can_do_stuff = &d->http_thread_can_do_stuff;
+    d->active = newp;
+    pthread_create( &newp->preview_thread, NULL, StartPreviewThread, newp);
+}
+
+static void CheckPreviewActivity(OFLibDlg *d) {
+    PreviewThread *prev, *next, *cur;
+
+    for ( prev=NULL, cur = d->active; cur!=NULL; cur = next ) {
+	next = cur->next;
+	if ( cur->done ) {
+	    void *status;
+	    ProcessPreview(d,cur);
+	    cur->fi->downloading_in_background = false;
+	    pthread_join(cur->preview_thread,&status);
+	    if ( prev==NULL )
+		d->active = next;
+	    else
+		prev->next = next;
+	    chunkfree(cur,sizeof(*cur));
+	} else {
+	    prev = cur;
+	}
     }
 }
 
@@ -1017,6 +1249,9 @@ return;
 	pthread_mutex_unlock(&d->http_thread_done);	/* Start the thread up again */
     }
 
+    /* There might also be preview download threads active */
+    CheckPreviewActivity(d);
+
     pthread_mutex_unlock(&d->http_thread_can_do_stuff);
     sched_yield();			/* Give the child a chance to allocate memory when we won't be */
     pthread_mutex_lock(&d->http_thread_can_do_stuff);
@@ -1065,86 +1300,6 @@ static int OFLibParseSelection(OFLibDlg *d, int *any) {
 	onefont = hiddenonefont;
     if ( any!=NULL ) *any = anyfont;
 return( onefont );
-}
-
-static struct ofl_download_urls *OFLibHasImage(OFLibDlg *d,int sel_font) {
-    struct ofl_download_urls *du;
-
-    if ( d->show[sel_font]->open ) {
-	/* If an image is selected use it */
-	for ( du=d->show[sel_font]->urls; du!=NULL; du=du->next ) {
-	    char *ext = strrchr(du->url,'.');
-	    if ( ext==NULL || !du->selected)
-	continue;
-	    if (
-#ifndef _NO_LIBPNG
-		    strcasecmp(ext,".png")==0 ||
-#endif
-#ifndef _NO_LIBJPEG
-		    strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 ||
-#endif
-#ifndef _NO_LIBTIFF
-		    strcasecmp(ext,".tiff")==0 || strcasecmp(ext,".tif")==0 ||
-#endif
-#ifndef _NO_LIBUNGIF
-		    strcasecmp(ext,".gif")==0 ||
-#endif
-		    strcasecmp(ext,".bmp")==0 )
-return( du );
-	}
-    }
-
-    /* Otherwise use an unselected image (if present) */
-    for ( du=d->show[sel_font]->urls; du!=NULL; du=du->next ) {
-	char *ext = strrchr(du->url,'.');
-	if ( ext==NULL )
-    continue;
-	if (
-#ifndef _NO_LIBPNG
-		    strcasecmp(ext,".png")==0 ||
-#endif
-#ifndef _NO_LIBJPEG
-		    strcasecmp(ext,".jpeg")==0 || strcasecmp(ext,".jpg")==0 ||
-#endif
-#ifndef _NO_LIBTIFF
-		    strcasecmp(ext,".tiff")==0 || strcasecmp(ext,".tif")==0 ||
-#endif
-#ifndef _NO_LIBUNGIF
-		    strcasecmp(ext,".gif")==0 ||
-#endif
-		    strcasecmp(ext,".bmp")==0 )
-return( du );
-    }
-return( NULL );
-}
-
-static struct ofl_download_urls *OFLibHasFont(OFLibDlg *d,int sel_font) {
-    struct ofl_download_urls *du;
-		struct ofl_download_urls *otf=NULL, *pf=NULL, *zip=NULL, *sfd=NULL;
-
-    for ( du=d->show[sel_font]->urls; du!=NULL; du=du->next ) {
-	char *ext = strrchr(du->url,'.');
-	if ( ext==NULL )
-    continue;
-	if ( strcasecmp(ext,".zip")==0 )
-	    zip = du;
-	else if ( strcasecmp(ext,".pfa")==0 || strcasecmp(ext,".pfb")==0 ||
-		strcasecmp(ext,".cff")==0 )
-	    pf = du;
-	else if ( strcasecmp(ext,".ttf")==0 || strcasecmp(ext,".otf")==0 ||
-		strcasecmp(ext,".ttc")==0 )
-	    otf = du;
-	else if ( strcasecmp(ext,".sfd")==0 )
-	    sfd = du;
-    }
-    if ( sfd!=NULL )
-return( sfd );
-    else if ( otf!=NULL )
-return( otf );
-    else if ( pf!=NULL )
-return( pf );
-    else
-return( zip );
 }
 
 static void OFLibEnableButtons(OFLibDlg *d) {
@@ -1197,6 +1352,9 @@ static void OFLibEnableButtons(OFLibDlg *d) {
 	    GScrollBarSetBounds(vsb,0,height,d->pheight);
 	    GDrawRequestExpose(GDrawableGetWindow(pre), NULL,true);
 	}
+    } else if ( onefont>=0 && d->background_preview_requests ) {
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Preview),false);
+	BackgroundPreviewRequest(d,onefont);
     } else {
 	/* Even if there is no preview image supplied, enable the button */
 	/*  I generate previews if none is provided */
@@ -1246,7 +1404,7 @@ return( true );
 	    if ( final==NULL )
 return( true );
 
-	    temp = URLToTempFile(du->url);
+	    temp = URLToTempFile(du->url,NULL);
 	    if ( temp==NULL ) {
 		fclose(final);
 		unlink(name);
@@ -1312,13 +1470,28 @@ static int OFL_Open(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int OFL_BackgroundPreviewChange(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	OFLibDlg *d = GDrawGetUserData(GGadgetGetWindow(g));
+	d->background_preview_requests = GGadgetIsChecked(g);
+	oflib_automagic_preview = d->background_preview_requests;
+	SavePrefs(true);
+    }
+return( true );
+}
+
 static int oflib_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	GDrawDestroyWindow(gw);
     } else if ( event->type == et_destroy ) {
 	OFLibDlg *d = GDrawGetUserData(gw);
 	int i;
+	if ( d->http_timer )
+	    GDrawCancelTimer(d->http_timer);
+	d->http_timer=NULL;
 	HttpThreadKill(d);
+	PreviewThreadsKill(d);
 	DumpOFLibState(&d->all);
 	for ( i=0; i<d->all.fcnt; ++i )
 	    oflfiFreeContents(&d->all.fonts[i]);
@@ -1326,6 +1499,7 @@ static int oflib_e_h(GWindow gw, GEvent *event) {
 	free(d->show);
 	free(d);
 	active = NULL;
+	pthread_key_delete(jump_key);
     } else if ( event->type == et_char ) {
 return( false );
     } else if ( event->type == et_timer ) {
@@ -1675,6 +1849,8 @@ return;
 	OFLibInit();
 
     active = gcalloc(1,sizeof(OFLibDlg));
+    active->background_preview_requests = oflib_automagic_preview;
+    pthread_key_create(&jump_key,NULL);
     LoadOFLibState(&active->all);
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -1843,6 +2019,18 @@ return;
     boxes[6].creator = GVBoxCreate;
     fontlistl = l;
     varray[l++] = &boxes[6]; varray[l++] = NULL;
+
+    label[k].text = (unichar_t *) _("Automatically download preview after selecting a font (be patient)");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid   = CID_BackgroundPreview;
+    gcd[k].gd.handle_controlevent = OFL_BackgroundPreviewChange;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    if ( oflib_automagic_preview )
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    gcd[k].creator = GCheckBoxCreate;
+    varray[l++] = &gcd[k++]; varray[l++] = NULL;
 
     label[k].text = (unichar_t *) _("Open Font");
     label[k].text_is_1byte = true;

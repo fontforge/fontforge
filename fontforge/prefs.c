@@ -143,6 +143,7 @@ extern int ps_pointcnt;				/* from cvpalettes.c */
 extern float star_percent;			/* from cvpalettes.c */
 extern int home_char;				/* from fontview.c */
 extern int compact_font_on_open;		/* from fontview.c */
+extern int oflib_automagic_preview;		/* from oflib.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -404,6 +405,7 @@ static struct prefs_list {
 	{ "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1 },
 	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1 },
 	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1 },
+	{ "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
