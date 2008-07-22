@@ -3607,7 +3607,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    }
 	    _SCHintsChanged(cv->b.sc);
 	}
-	if ( cv->b.drawmode==dm_fore ) {
+	if ( cv->b.drawmode!=dm_grid ) {
 	    cv->needsrasterize = true;
 	}
     }
