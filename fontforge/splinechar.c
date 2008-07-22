@@ -294,6 +294,34 @@ int SSTtfNumberPoints(SplineSet *ss) {
 return( pnum );
 }
 
+static int SSPsNumberPoints(SplineChar *sc, SplineSet *splines,int pnum) {
+    SplineSet *ss;
+    SplinePoint *sp;
+
+    for ( ss = splines; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    sp->ttfindex = pnum++;
+	    sp->nextcpindex = 0xffff;
+	    if ( sc->numberpointsbackards ) {
+		if ( sp->prev==NULL )
+	break;
+		if ( !sp->noprevcp || !sp->prev->from->nonextcp )
+		    pnum += 2;
+		sp = sp->prev->from;
+	    } else {
+		if ( sp->next==NULL )
+	break;
+		if ( !sp->nonextcp || !sp->next->to->noprevcp )
+		    pnum += 2;
+		sp = sp->next->to;
+	    }
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+return( pnum );
+}
+
 int SCNumberPoints(SplineChar *sc,int layer) {
     int pnum=0;
     SplineSet *ss;
@@ -329,27 +357,9 @@ int SCNumberPoints(SplineChar *sc,int layer) {
 	} else
 	    first = last = layer;
 	for ( layer=first; layer<=last; ++layer ) {
-	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
-		for ( sp=ss->first; ; ) {
-		    sp->ttfindex = pnum++;
-		    sp->nextcpindex = 0xffff;
-		    if ( sc->numberpointsbackards ) {
-			if ( sp->prev==NULL )
-		break;
-			if ( !sp->noprevcp || !sp->prev->from->nonextcp )
-			    pnum += 2;
-			sp = sp->prev->from;
-		    } else {
-			if ( sp->next==NULL )
-		break;
-			if ( !sp->nonextcp || !sp->next->to->noprevcp )
-			    pnum += 2;
-			sp = sp->next->to;
-		    }
-		    if ( sp==ss->first )
-		break;
-		}
-	    }
+	    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+		pnum = SSPsNumberPoints(sc,ref->layers[0].splines,pnum);
+	    pnum = SSPsNumberPoints(sc,sc->layers[layer].splines,pnum);
 	}
     }
 return( pnum );
