@@ -517,7 +517,6 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     int pnum;
     char buf[12];
     int isfake;
-    int cvlayer = CVLayer((CharViewBase *) cv);
 
     if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
@@ -609,8 +608,8 @@ return;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
     isfake = false;
-    if ( cv->b.sc->layers[cvlayer].order2 &&
-	    cv->b.sc->layers[cvlayer].refs==NULL ) {
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 &&
+	    cv->b.layerheads[cv->b.drawmode]->refs==NULL ) {
 	int mightbe_fake = SPInterpolate(sp);
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */

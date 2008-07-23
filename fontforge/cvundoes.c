@@ -769,7 +769,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    sc->anchor = undo->u.state.anchor;
 	    undo->u.state.anchor = ap;
 	}
-	if ( !RefCharsMatch(undo->u.state.refs,sc->layers[layer].refs)) {
+	if ( layer!=ly_grid && !RefCharsMatch(undo->u.state.refs,head->refs)) {
 	    RefChar *refs = RefCharsCopyState(sc,layer);
 	    FixupRefChars(sc,undo->u.state.refs,layer);
 	    undo->u.state.refs = refs;
