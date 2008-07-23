@@ -99,7 +99,7 @@ struct problems {
     int bbymax_val, bbymin_val, bbxmax_val, bbxmin_val;
     int pointsmax, hintsmax, refdepthmax;
     GWindow explainw;
-    GGadget *explaintext, *explainvals, *ignoregadg;
+    GGadget *explaintext, *explainvals, *ignoregadg, *topbox;
     SplineChar *lastcharopened;
     CharView *cvopened;
     char *badsubsname;
@@ -476,7 +476,7 @@ static void ExplainIt(struct problems *p, SplineChar *sc, char *explain,
 	real found, real expected ) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
+    GGadgetCreateData gcd[9], boxes[3], *varray[10], *barray[14];
     GTextInfo label[9];
     char buf[200];
     SplinePointList *spl; Spline *spline, *first;
@@ -498,6 +498,7 @@ return;
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
 	label[0].text = (unichar_t *) explain;
 	label[0].text_is_1byte = true;
@@ -505,6 +506,7 @@ return;
 	gcd[0].gd.pos.x = 6; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 400-12;
 	gcd[0].gd.flags = gg_visible | gg_enabled;
 	gcd[0].creator = GLabelCreate;
+	varray[0] = &gcd[0]; varray[1] = NULL;
 
 	label[4].text = (unichar_t *) "";
 	label[4].text_is_1byte = true;
@@ -512,6 +514,7 @@ return;
 	gcd[4].gd.pos.x = 6; gcd[4].gd.pos.y = gcd[0].gd.pos.y+12; gcd[4].gd.pos.width = 400-12;
 	gcd[4].gd.flags = gg_visible | gg_enabled;
 	gcd[4].creator = GLabelCreate;
+	varray[2] = &gcd[4]; varray[3] = NULL;
 
 	label[5].text = (unichar_t *) _("Ignore this problem in the future");
 	label[5].text_is_1byte = true;
@@ -519,6 +522,7 @@ return;
 	gcd[5].gd.pos.x = 6; gcd[5].gd.pos.y = gcd[4].gd.pos.y+12;
 	gcd[5].gd.flags = gg_visible | gg_enabled;
 	gcd[5].creator = GCheckBoxCreate;
+	varray[4] = &gcd[5]; varray[5] = NULL;
 
 	gcd[1].gd.pos.x = 15-3; gcd[1].gd.pos.y = gcd[5].gd.pos.y+20;
 	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
@@ -530,6 +534,18 @@ return;
 	gcd[1].gd.label = &label[1];
 	gcd[1].gd.cid = CID_Next;
 	gcd[1].creator = GButtonCreate;
+	barray[0] = GCD_Glue; barray[1] = &gcd[1]; barray[2] = GCD_Glue; barray[3] = GCD_Glue;
+
+	gcd[6].gd.pos.x = 200-30; gcd[6].gd.pos.y = gcd[2].gd.pos.y;
+	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+	gcd[6].gd.flags = /*gg_visible |*/ gg_enabled;
+	label[6].text = (unichar_t *) _("Fix");
+	label[6].text_is_1byte = true;
+	gcd[6].gd.mnemonic = 'F';
+	gcd[6].gd.label = &label[6];
+	gcd[6].gd.cid = CID_Fix;
+	gcd[6].creator = GButtonCreate;
+	barray[4] = GCD_Glue; barray[5] = GCD_Glue; barray[6] = &gcd[6]; barray[7] = GCD_Glue;
 
 	gcd[2].gd.pos.x = -15; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
@@ -541,26 +557,26 @@ return;
 	gcd[2].gd.mnemonic = 'S';
 	gcd[2].gd.cid = CID_Stop;
 	gcd[2].creator = GButtonCreate;
+	barray[8] = GCD_Glue; barray[9] = GCD_Glue; barray[10] = GCD_Glue;
+	barray[11] = &gcd[2]; barray[12] = GCD_Glue;
+	barray[13] = NULL;
 
-	gcd[3].gd.pos.x = 2; gcd[3].gd.pos.y = 2;
-	gcd[3].gd.pos.width = pos.width-4; gcd[3].gd.pos.height = pos.height-2;
-	gcd[3].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[3].creator = GGroupCreate;
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = barray;
+	boxes[2].creator = GHBoxCreate;
+	varray[6] = &boxes[2]; varray[7] = NULL; varray[8] = NULL;
 
-	gcd[6].gd.pos.x = 200-30; gcd[6].gd.pos.y = gcd[2].gd.pos.y;
-	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
-	gcd[6].gd.flags = /*gg_visible |*/ gg_enabled;
-	label[6].text = (unichar_t *) _("Fix");
-	label[6].text_is_1byte = true;
-	gcd[6].gd.mnemonic = 'F';
-	gcd[6].gd.label = &label[6];
-	gcd[6].gd.cid = CID_Fix;
-	gcd[6].creator = GButtonCreate;
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray;
+	boxes[0].creator = GHVGroupCreate;
 
-	GGadgetsCreate(p->explainw,gcd);
+	GGadgetsCreate(p->explainw,boxes);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
 	p->explaintext = gcd[0].ret;
 	p->explainvals = gcd[4].ret;
 	p->ignoregadg = gcd[5].ret;
+	p->topbox = boxes[0].ret;
     } else
 	GGadgetSetTitle8(p->explaintext,explain);
     p->explaining = explain;
@@ -609,6 +625,7 @@ return;
     p->found = found; p->expected = expected;
     GGadgetSetTitle8(p->explainvals,buf);
     GGadgetSetChecked(p->ignoregadg,false);
+    GHVBoxFitWindow(p->topbox);
 
     p->doneexplain = false;
     p->ignorethis = false;
