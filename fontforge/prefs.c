@@ -133,6 +133,10 @@ extern int allow_utf8_glyphnames;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in charview.c */
 extern int default_cv_width;			/* in charview.c */
 extern int default_cv_height;			/* in charview.c */
+extern int mv_width;				/* in metricsview.c */
+extern int mv_height;				/* in metricsview.c */
+extern int bv_width;				/* in bitmapview.c */
+extern int bv_height;				/* in bitmapview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
 extern int mvshowgrid;				/* in metricsview.c */
 
@@ -406,6 +410,10 @@ static struct prefs_list {
 	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1 },
 	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1 },
 	{ "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultMVWidth", pr_int, &mv_width, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
