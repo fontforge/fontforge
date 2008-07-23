@@ -1041,7 +1041,11 @@ return(1);
 	    (val1&1) ? "(Win 1.7) | ": "",
 	    (val1&2) ? exc->tt_metrics.rotated ? "(rotated) | ": "(not rotated) | " : "",
 	    (val1&4) ? exc->tt_metrics.stretched ? "(stretched) | ": "(not stretched) | " : "",
+#if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>11 )))
 	    (val1&32) ? exc->grayscale ? "(grey scale)": "(black/white)" : ""
+#else
+	    ""
+#endif
 	); 
       break;
       case 0x89:
