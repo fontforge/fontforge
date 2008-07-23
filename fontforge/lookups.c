@@ -1886,8 +1886,8 @@ static KernClass *SF_AddKernClass(SplineFont *to_sf,KernClass *kc, struct lookup
 
     newkc->firsts = ClassCopy(newkc->first_cnt,newkc->firsts);
     newkc->seconds = ClassCopy(newkc->second_cnt,newkc->seconds);
-    newkc->offsets = galloc(newkc->first_cnt*newkc->first_cnt*sizeof(int16));
-    memcpy(newkc->offsets,kc->offsets,newkc->first_cnt*newkc->first_cnt*sizeof(int16));
+    newkc->offsets = galloc(newkc->first_cnt*newkc->second_cnt*sizeof(int16));
+    memcpy(newkc->offsets,kc->offsets,newkc->first_cnt*newkc->second_cnt*sizeof(int16));
 return( newkc );
 }
 
