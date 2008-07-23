@@ -32,6 +32,8 @@
 #include <locale.h>
 #include <gresource.h>
 
+int bv_width = 270, bv_height=250;
+
 extern int _GScrollBar_Width;
 extern struct lconv localeinfo;
 extern char *coord_sep;
@@ -768,6 +770,10 @@ return;
     GGadgetMove(bv->recalc,event->u.resize.size.width - size.width - GDrawPointsToPixels(bv->gw,6),size.y);
     GDrawRequestExpose(bv->gw,NULL,false);
     BVFit(bv);
+
+    bv_width  = event->u.resize.size.width;
+    bv_height = event->u.resize.size.height;
+    SavePrefs(true);
 }
 
 static void BVHScroll(BitmapView *bv,struct sbevent *sb) {
@@ -2001,7 +2007,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     wattrs.icon = icon;
     if ( wattrs.icon )
 	wattrs.mask |= wam_icon;
-    pos.x = 8+9*16+10; pos.width=270; pos.height = 250;
+    pos.x = 8+9*16+10; pos.width=bv_width; pos.height = bv_height;
     DefaultY(&pos);
 
     bv->gw = gw = GDrawCreateTopWindow(NULL,&pos,bv_e_h,bv,&wattrs);

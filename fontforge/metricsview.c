@@ -32,6 +32,7 @@
 #include <utype.h>
 #include <math.h>
 
+int mv_width = 800, mv_height = 300;
 int mvshowgrid = mv_hidemovinggrid;
 static int mv_antialias = true;
 static double mv_scales[] = { 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
@@ -3168,6 +3169,9 @@ return;
     mv->displayend = wsize.height - (mv->height-mv->displayend);
     mv->height = wsize.height;
 
+    mv_width = wsize.width; mv_height = wsize.height;
+    SavePrefs(true);
+
     pos.width = wsize.width;
     pos.height = mv->sbh;
     pos.y = wsize.height - pos.height; pos.x = 0;
@@ -4044,8 +4048,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     wattrs.utf8_window_title = buf;
     wattrs.icon = icon;
     pos.x = pos.y = 0;
-    pos.width = 800;
-    pos.height = 300;
+    pos.width = mv_width;
+    pos.height = mv_height;
     mv->gw = gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,mv,&wattrs);
     mv->width = pos.width; mv->height = pos.height;
 
