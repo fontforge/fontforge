@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 21-Mar-2008 -->
+  <!-- AP: Last modified: 23-Jul-2008 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -25,7 +25,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html">Introduction</A>
+      <A HREF="overview.html#TOC">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -88,7 +88,7 @@
   </H1>
   <H2>
     <I><IMG SRC="FontForgeSplash.png" WIDTH="379" HEIGHT="375" ALT="Gaudiamus ligature!"
-	ALIGN="Right"></I>Table of Contents
+	ALIGN="Right"></I><A NAME="TOC">Table</A> of Contents
   </H2>
   <UL>
     <LI>
@@ -98,6 +98,8 @@
 	  <A HREF="#Installing">Installing</A>
 	<LI>
 	  <A HREF="#Starting">Starting the program</A>
+	<LI>
+	  <A HREF="overview.html#What">What is a font editor?</A>
 	<LI>
 	  <A HREF="#intro">Introductory concepts: fonts, splines, lines, points and
 	  paths</A>
@@ -350,6 +352,26 @@
   </TABLE>
   <P>
   <A HREF="running.html">Running fontforge</A>
+  <H3>
+    Er... <A NAME="What">What</A> is a font editor?
+  </H3>
+  <P>
+  A font editor is a progam designed to creat and modify fonts. 
+  <P>
+  The most obvious aspect is that it is a drawing program like FreeHand, InkScape
+  or Illustrator which lets you draw the outlines of your letters. Unlike other
+  drawing progams it expects you to draw many pictures at once (one or more
+  for each letter) and collects them into a database. 
+  <P>
+  It allows you to describe the way these pictures interact with each other
+  (if you put one picture after the other then they should normally be separated
+  by a certain distance -- the font's metrics, or if these two pictures are
+  placed adjacent to one another then they turn into a third -- the font's
+  ligatures, and so on). 
+  <P>
+  Finally a font editor will bundle up all the pictures you have drawn, and
+  all the metadata about how those pictures fit together, and will turn that
+  bundle of stuff into a font that your computer can use to display text.
   <H3>
     <A NAME="intro">Introductory</A> concepts: Fonts, Splines, Lines, Points,
     Paths and the em-unit
