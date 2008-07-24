@@ -6090,7 +6090,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
     }
 #endif
     else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
+#if defined( _NO_SNPRINTF )
 	sprintf( cspace, "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
 #else
 	snprintf( cspace, sizeof(cspace), "%u 0x%x U+???? \"%.25s\" ", localenc, localenc, sc->name==NULL?"":sc->name );
@@ -6102,7 +6102,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	/* Do Nothing */;
     else if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name!=NULL ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
+#if defined( _NO_SNPRINTF )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
 #else
@@ -6111,7 +6111,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 #endif
 	utf82u_strcpy(space,cspace);
     } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
+#if defined( _NO_SNPRINTF )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
 		localenc, localenc, upos, sc->name==NULL?"":sc->name,
 		chosung[(upos-0xAC00)/(21*28)],
@@ -6126,7 +6126,8 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 #endif
 	utf82u_strcpy(space,cspace);
     } else {
-#if defined( _NO_SNPRINTF ) || defined( __VMS )
+#endif 
+#if defined( _NO_SNPRINTF )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    	UnicodeRange(upos));
 #else
