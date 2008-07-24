@@ -502,6 +502,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	    int len;
 	    char *arg;
 	    arg = GDrawRequestSelection(splashw,sn_user1,"STRING",&len);
+	    if ( arg==NULL )
+return( true );
 	    if ( strcmp(arg,"-new")==0 || strcmp(arg,"--new")==0 )
 		FontNew();
 	    else if ( strcmp(arg,"-open")==0 || strcmp(arg,"--open")==0 )
