@@ -1346,3 +1346,149 @@ return( fv->sf->glyphs[gid]);
     }
 return( NULL );
 }
+
+/* ************************************************************************** */
+/* *************************** Correct References *************************** */
+/* ************************************************************************** */
+
+/* In TrueType a glyph can either be all contours or all references. FontForge*/
+/*  supports mixed contours and references. This section goes through the font*/
+/*  looking for such mixed glyphs, if it finds one it will create a new glyph */
+/*  move the contours into it, and make a reference to the new glyph in the   */
+/*  original.  This is designed to reduce the size of the TT output file      */
+
+/* Similar problem... The transformation matrix of a truetype reference has   */
+/*  certain restrictions placed on it (all entries must be less than 2 in abs */
+/*  value, etc.  If we have a glyph with a ref with a bad transform, then     */
+/*  go through a similar process to the above */
+
+static SplineChar *RC_MakeNewGlyph(FontViewBase *fv,SplineChar *base, int index,
+	char *reason, char *morereason) {
+    char *namebuf;
+    SplineFont *sf = fv->sf;
+    int enc;
+    SplineChar *ret;
+
+    namebuf = galloc(strlen(base->name)+20);
+    forever {
+	sprintf(namebuf, "%s.ref%d", base->name, index++ );
+	if ( SFGetChar(sf,-1,namebuf)==NULL )
+    break;
+    }
+
+    enc = SFFindSlot(sf, fv->map, -1, namebuf );
+    if ( enc==-1 )
+	enc = fv->map->enccount;
+    ret = SFMakeChar(sf,fv->map,enc);
+    free(ret->name);
+    ret->name = namebuf;
+    SFHashGlyph(sf,ret);
+
+    ret->comment = galloc( strlen(reason)+strlen(ret->name)+strlen(morereason) + 2 );
+    sprintf( ret->comment, reason, base->name, morereason );
+    ret->color = 0xff8080;
+return( ret );
+}
+
+static void AddRef(SplineChar *sc,SplineChar *rsc, int layer) {
+    RefChar *r;
+
+    r = RefCharCreate();
+    r->sc = rsc;
+    r->unicode_enc = rsc->unicodeenc;
+    r->orig_pos = rsc->orig_pos;
+    r->adobe_enc = getAdobeEnc(rsc->name);
+    r->transform[0] = r->transform[3] = 1.0;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    r->layers = NULL;
+    r->layer_cnt = 0;
+#else
+    r->layers[0].splines = NULL;
+#endif
+    r->next = NULL;
+    SCMakeDependent(sc,rsc);
+    SCReinstanciateRefChar(sc,r,layer);
+    r->next = sc->layers[layer].refs;
+    sc->layers[layer].refs = r;
+}
+
+static struct splinecharlist *DListRemove(struct splinecharlist *dependents,SplineChar *this_sc) {
+    struct splinecharlist *dlist, *pd;
+
+    if ( dependents==NULL )
+return( NULL );
+    else if ( dependents->sc==this_sc ) {
+	dlist = dependents->next;
+	chunkfree(dependents,sizeof(*dependents));
+return( dlist );
+    } else {
+	for ( pd=dependents, dlist = pd->next; dlist!=NULL && dlist->sc!=this_sc; pd=dlist, dlist = pd->next );
+	if ( dlist!=NULL ) {
+	    pd->next = dlist->next;
+	    chunkfree(dlist,sizeof(*dlist));
+	}
+return( dependents );
+    }
+}
+
+void FVCorrectReferences(FontViewBase *fv) {
+    int enc, gid, cnt;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc, *rsc;
+    RefChar *ref;
+    int layer = fv->active_layer;
+    int index;
+
+    cnt = 0;
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL )
+	    ++cnt;
+    }
+    ff_progress_start_indicator(10,_("Correcting References"),
+	_("Adding new glyphs and refering to them when a glyph contains a bad truetype reference"),NULL,cnt,1);
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( (gid=fv->map->map[enc])!=-1 && fv->selected[enc] && (sc=sf->glyphs[gid])!=NULL ) {
+	    index = 1;
+	    if ( sc->layers[layer].splines!=NULL && sc->layers[layer].refs!=NULL ) {
+		SCPreserveLayer(sc,layer,false);
+		rsc = RC_MakeNewGlyph(fv,sc,index++,
+		    _("%s had both contours and references, so the contours were moved "
+		      "into this glyph, and the a reference to it was added in the original."),
+		    "");
+		rsc->layers[layer].splines = sc->layers[layer].splines;
+		sc->layers[layer].splines  = NULL;
+		AddRef(sc,rsc,layer);
+	    }
+	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+		if ( ref->transform[0]>0x7fff/16384.0 ||
+			ref->transform[1]>0x7fff/16384.0 ||
+			ref->transform[2]>0x7fff/16384.0 ||
+			ref->transform[3]>0x7fff/16384.0 ||
+			ref->transform[0]<-2.0 ||	/* Numbers are asymetric, negative range slightly bigger */
+			ref->transform[1]<-2.0 ||
+			ref->transform[2]<-2.0 ||
+			ref->transform[3]<-2.0 ) {
+		    if ( index==1 )
+			SCPreserveLayer(sc,layer,false);
+		    rsc = RC_MakeNewGlyph(fv,sc,index++,
+			_("%1$s had a reference, %2$s, with a bad transformation matrix (one of "
+			  "the matrix elements was bigger than 2). I moved the transformed "
+			  "contours into this glyph and made a reference to it, instead."),
+			ref->sc->name);
+		    rsc->layers[layer].splines = ref->layers[0].splines;
+		    ref->layers[0].splines = NULL;
+		    ref->sc->dependents = DListRemove(ref->sc->dependents,sc);
+		    ref->sc = rsc;
+		    memset(ref->transform,0,sizeof(ref->transform));
+		    ref->transform[0] = ref->transform[3] = 1.0;
+		    SCReinstanciateRefChar(sc,ref,layer);
+		}
+	    }
+	    if ( index!=1 )
+		SCCharChangedUpdate(sc,layer);
+	    if ( !ff_progress_next())
+    break;
+	}
+    }
+    ff_progress_end_indicator();
+}

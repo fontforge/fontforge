@@ -402,6 +402,7 @@ extern SplineSet *SSControlStems(SplineSet *ss,
 extern void MakeItalic(FontViewBase *fv,CharViewBase *cv,ItalicInfo *ii);
 extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
+extern void FVCorrectReferences(FontViewBase *fv);
 extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
 extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc);
 extern FontViewBase *ViewPostscriptFont(char *filename,int openflags);

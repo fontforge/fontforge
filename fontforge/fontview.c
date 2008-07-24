@@ -1454,6 +1454,7 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define	MID_TTFInstr	2134
 #define	MID_CopyLookupData	2135
 #define MID_CopyL2L	2136
+#define MID_CorrectRefs	2137
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1749,6 +1750,12 @@ static void FVMenuReplaceWithRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     FVReplaceOutlineWithReference(fv,.001);
+}
+
+static void FVMenuCorrectRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
+
+    FVCorrectReferences(fv);
 }
 
 static void FVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3380,8 +3387,11 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
 	  case MID_CopyRef: case MID_UnlinkRef:
 	  case MID_RemoveUndoes: case MID_CopyFgToBg: case MID_CopyL2L:
-	  case MID_RplRef:
 	    mi->ti.disabled = pos==-1;
+	  break;
+	  case MID_RplRef:
+	  case MID_CorrectRefs:
+	    mi->ti.disabled = pos==-1 || fv->b.cidmaster!=NULL || fv->b.sf->multilayer;
 	  break;
 	  case MID_CopyLookupData:
 	    mi->ti.disabled = pos==-1 || (fv->b.sf->gpos_lookups==NULL && fv->b.sf->gsub_lookups==NULL);
@@ -3759,6 +3769,7 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("_Select"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, sllist, sllistcheck },
     { { (unichar_t *) N_("F_ind / Replace..."), (GImage *) "editfind.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Find / Replace...|Alt+Ctl+F"), NULL, NULL, FVMenuFindRpl },
     { { (unichar_t *) N_("Replace with Reference"), (GImage *) "editrplref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Replace with Reference|Alt+Ctl+Shft+F"), NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
+    { { (unichar_t *) N_("Correct References"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Correct References|No Shortcut"), NULL, NULL, FVMenuCorrectRefs, MID_CorrectRefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|Ctl+U"), NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},

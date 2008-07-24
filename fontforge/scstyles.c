@@ -2609,6 +2609,7 @@ return;
 	    r->layers[0].splines = NULL;
 #endif
 	    r->next = NULL;
+	    SCMakeDependent(sc_sc,rsc);
 	    SCReinstanciateRefChar(sc_sc,r,layer);
 	    if ( rlast==NULL )
 		sc_sc->layers[layer].refs=r;
