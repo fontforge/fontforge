@@ -1,7 +1,7 @@
 # Makefile for OpenVMS
-# Date : 20 May 2008
+# Date : 24 July 2008
 
-CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
+CFLAGS=/nowarn/incl=([],[-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1","_NO_XINPUT=1",\
 	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
@@ -28,7 +28,7 @@ fontforge_LIBOBJECTS5=sfd1.obj,sfd.obj,sflayout.obj,spiro.obj,splinechar.obj,spl
  splinesaveafm.obj,splinesave.obj,splinestroke.obj,splineutil2.obj,splineutil.obj
 
 fontforge_LIBOBJECTS6=start.obj,stemdb.obj,svg.obj,tottfaat.obj,tottfgpos.obj,tottf.obj,\
- tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,unicoderange.obj,utils.obj,\
+ tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,utils.obj,\
  winfonts.obj,zapfnomen.obj,groups.obj,langfreq.obj
 
 fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj
@@ -45,11 +45,13 @@ fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj
  prefs.obj,problems.obj,pythonui.obj,savefontdlg.obj,scriptingdlg.obj,scstylesui.obj,\
  searchview.obj,sftextfield.obj,showatt.obj,simplifydlg.obj,splashimage.obj,stamp.obj,\
  startui.obj,statemachine.obj,tilepath.obj,transform.obj,ttfinstrsui.obj,uiutil.obj,\
- windowmenu.obj
+ windowmenu.obj,oflib.obj
+fontforge_UIOBJECTS1=unicoderange.obj
 
-fontforge.exe : $(fontforge_UIOBJECTS) lff.opt xlib.opt\
+fontforge.exe : $(fontforge_UIOBJECTS) $(fontforge_UIOBJECTS1) lff.opt xlib.opt\
 	[-.libs]libfontforge.exe [-.libs]LIBGDRAW.olb
 	library/create tmp.olb $(fontforge_UIOBJECTS)
+	library tmp.olb $(fontforge_UIOBJECTS1)
         link/exec=fontforge.exe startui.obj,tmp/lib,[-.libs]LIBGDRAW/lib,\
 	[]lff/opt,xlib.opt/opt
 	delete tmp.olb;*
@@ -265,3 +267,4 @@ exelibstamp.obj : exelibstamp.pre
 clipui.obj : clipui.c
 layer2layer.obj : layer2layer.c
 basedlg.obj : basedlg.c
+oflib.obj : oflib.c

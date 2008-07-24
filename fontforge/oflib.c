@@ -33,7 +33,9 @@
 #include <sys/stat.h>
 
 #include <pthread.h>
-#include <sched.h>
+#ifndef __VMS
+# include <sched.h>
+#endif
 #include <setjmp.h>
 #include <signal.h>
 
@@ -984,8 +986,12 @@ static void PreviewThreadsKill(OFLibDlg *d) {
 
     for ( cur = d->active; cur!=NULL; cur = next ) {
 	next = cur->next;
-	pthread_kill(cur->preview_thread,SIGUSR1);	/* I want to use pthread_cancel, but that seems to send a SIG32, (only 0-31 are defined) which can't be trapped */
-	pthread_join(cur->preview_thread,&status);
+#ifdef __VMS
+       pthread_cancel(cur->preview_thread);
+#else
+       pthread_kill(cur->preview_thread,SIGUSR1);	/* I want to use pthread_cancel, but that seems to send a SIG32, (only 0-31 are defined) which can't be trapped */
+#endif
+       pthread_join(cur->preview_thread,&status);
 	if ( cur->result!=NULL )
 	    fclose(cur->result);
 	chunkfree(cur,sizeof(*cur));
@@ -1007,8 +1013,12 @@ pthread_exit(NULL);
 	void *status;
 	pthread_mutex_unlock(&d->http_thread_done);
 	pthread_mutex_unlock(&d->http_thread_can_do_stuff);
-	pthread_kill(d->http_thread,SIGUSR1);	/* I want to use pthread_cancel, but that seems to send a SIG32, (only 0-31 are defined) which can't be trapped */
-	pthread_join(d->http_thread,&status);
+#ifdef __VMS
+       pthread_cancel(d->http_thread);
+#else
+       pthread_kill(d->http_thread,SIGUSR1);	/* I want to use pthread_cancel, but that seems to send a SIG32, (only 0-31 are defined) which can't be trapped */
+#endif
+       pthread_join(d->http_thread,&status);
 	pthread_mutex_destroy(&d->http_thread_can_do_stuff);
 	pthread_mutex_destroy(&d->http_thread_done);
     }
