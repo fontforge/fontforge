@@ -112,6 +112,8 @@ return( l==first?1:lcnt );		/* if we can't even fit one line on, pretend it fits
 	}
 	lcnt += height/gl->fh;
     }
+    if ( lcnt==0 )
+	lcnt=1;
 return( lcnt );
 }
 
