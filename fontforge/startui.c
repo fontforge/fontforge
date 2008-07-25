@@ -726,6 +726,14 @@ int main( int argc, char **argv ) {
 	    doversion(source_version_str);
 	else if ( strcmp(pt,"-library-status")==0 )
 	    dolibrary();
+	else if ( strncmp(pt,"-psn_",5)==0 ) {
+	    /* OK, I don't know what this really means, but to me it means */
+	    /*  that we've been started on the mac from the FontForge.app  */
+	    /*  structure, and the current directory is (shudder) "/" */
+	    unique = 1;
+	    if ( getenv("HOME")!=NULL )
+		chdir(getenv("HOME"));
+	}
     }
 
     GDrawCreateDisplays(display,argv[0]);
@@ -822,6 +830,8 @@ int main( int argc, char **argv ) {
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 )
 	    /* Already done, needed to be before display opened */;
+	else if ( strncmp(pt,"-psn_",5)==0 )
+	    /* Already done */;
 	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
 		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 || 
 		    strcmp(pt,"-keyboard")==0 || 
