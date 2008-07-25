@@ -6126,7 +6126,6 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 #endif
 	utf82u_strcpy(space,cspace);
     } else {
-#endif 
 #if defined( _NO_SNPRINTF )
 	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
 	    	UnicodeRange(upos));
