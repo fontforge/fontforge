@@ -62,7 +62,7 @@ LIBS = -L../libs $(X_LIBS) @LINK_WITH_GDRAW@ ../libs/libgutils.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 
-all: fontforge sfddiff fontimage fontlint
+all: fontforge @MACAPP@ sfddiff fontimage fontlint
 
 fontforge: $(fontforge_OBJECTS) exelibstamp.pre libstamp.pre
 	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/1/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/0/' < exelibstamp.pre > exelibstamp.c
@@ -72,6 +72,17 @@ fontforge: $(fontforge_OBJECTS) exelibstamp.pre libstamp.pre
 	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) \
 	    exelibstamp.o libstamp.o \
 	    $(LIBS)
+
+macshell: macshell.o
+	gcc $(CFLAGS) -o macshell macshell.o \
+	    -Wl,/System/Library/Frameworks/Carbon.framework/Carbon \
+	    -Wl,/System/Library/Frameworks/CoreServices.framework/CoreServices
+
+FontForge.app/Contents/Info.plist: macshell
+	unzip MacFontForgeApp.zip
+	cp macshell FontForge.app/Contents/MacOS/FontForge
+	cp FontForge.app/Contents/Info.plist /tmp
+	( VERSION=`grep source_version_str stamp.c |sed 's/const char \*source_version_str = "//' | sed 's/";//'` ; sed s/20080725/$$VERSION/ < /tmp/Info.plist >FontForge.app/Contents/Info.plist )
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge -lang=ff" >sfddiff
@@ -106,7 +117,8 @@ splinerefigure.o: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint exelibstamp.c libstamp.c
+	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint exelibstamp.c libstamp.c macshell
+	-rm -rf FontForge.app
 	-rm -f *.o
 	-rm -f *.lo
 	-rm -rf .libs

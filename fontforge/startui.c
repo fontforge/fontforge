@@ -378,9 +378,17 @@ struct argsstruct {
 static void SendNextArg(struct argsstruct *args) {
     int i;
     char *msg;
+    static GTimer *timeout;
+
+    if ( timeout!=NULL ) {
+	GDrawCancelTimer(timeout);
+	timeout = NULL;
+    }
 
     for ( i=args->next; i<args->argc; ++i ) {
-	if ( *args->argv[i]!='-' || strcmp(args->argv[i],"-new")==0 || strcmp(args->argv[i],"--new")==0 )
+	if ( *args->argv[i]!='-' ||
+		strcmp(args->argv[i],"-quit")==0 || strcmp(args->argv[i],"--quit")==0 ||
+		strcmp(args->argv[i],"-new")==0 || strcmp(args->argv[i],"--new")==0 )
     break;
     }
     if ( i>=args->argc ) {
@@ -396,15 +404,25 @@ exit(0);		/* Sent everything */
     GDrawAddSelectionType(splashw,sn_user1,"STRING",
 	    copy(msg),strlen(msg),1,
 	    NULL,NULL);
+
+	/* If we just sent the other fontforge a request to die, it will never*/
+	/*  take the selection back. So we should just die quietly */
+	/*  But we can't die instantly, or it will never get our death threat */
+	/*  (it won't have a chance to ask us for the selection if we're dead)*/
+    timeout = GDrawRequestTimer(splashw,1000,0,NULL);
 }
 
 /* When we want to send filenames to another running fontforge we want a */
 /*  different event handler. We won't have a splash window in that case, */
-/*  just an invisiable utility window on which we perform a little selection */
+/*  just an invisible utility window on which we perform a little selection */
 /*  dance */
 static int request_e_h(GWindow gw, GEvent *event) {
-    if ( event->type == et_selclear )
+
+    if ( event->type == et_selclear ) {
 	SendNextArg( GDrawGetUserData(gw));
+    } else if ( event->type == et_timer )
+exit( 0 );
+
 return( true );
 }
 
@@ -508,6 +526,8 @@ return( true );
 		FontNew();
 	    else if ( strcmp(arg,"-open")==0 || strcmp(arg,"--open")==0 )
 		MenuOpen(NULL,NULL,NULL);
+	    else if ( strcmp(arg,"-quit")==0 || strcmp(arg,"--quit")==0 )
+		MenuExit(NULL,NULL,NULL);
 	    else
 		ViewPostscriptFont(arg,0);
 	    free(arg);
@@ -595,6 +615,18 @@ return( sharedir = PREFIX "/share/locale" );
 return( sharedir );
 }
 
+#if defined(__Mac)
+static int hasquit( int argc, char **argv ) {
+    int i;
+
+    for ( i=1; i<argc; ++i )
+	if ( strcmp(argv[i],"-quit")==0 || strcmp(argv[i],"--quit")==0 )
+return( true );
+
+return( false );
+}
+#endif
+
 int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
@@ -610,6 +642,7 @@ int main( int argc, char **argv ) {
     static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     int ds, ld;
     int openflags=0;
+    int doopen=0, quit_request=0;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
     fprintf( stderr, "Copyright (c) 2000-2008 by George Williams.\n Executable based on sources from %s-ML.\n",
@@ -620,11 +653,26 @@ int main( int argc, char **argv ) {
 #endif
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
+    /* Must be done before we cache the current directory */
+    for ( i=1; i<argc; ++i ) if ( strcmp(argv[i],"-home")==0 && getenv("HOME")!=NULL )
+	chdir(getenv("HOME"));
+	
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     if ( uses_local_x(argc,argv) && getenv("DISPLAY")==NULL ) {
-	system( "open /Applications/Utilities/X11.app/" );
+	/* Don't start X if we're just going to quit. */
+	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
+	if ( !hasquit(argc,argv)) {
+#if 0
+	    /* This sequence is supposed to bring up an app without a window */
+	    /*  but X still opens an xterm */
+	    system( "osascript -e 'tell application \"X11\" to launch'" );
+	    system( "osascript -e 'tell application \"X11\" to activate'" );
+#else
+	    system( "open /Applications/Utilities/X11.app/" );
+#endif
+	}
 	setenv("DISPLAY",":0.0",0);
     }
 #endif
@@ -726,7 +774,12 @@ int main( int argc, char **argv ) {
 	    doversion(source_version_str);
 	else if ( strcmp(pt,"-library-status")==0 )
 	    dolibrary();
-	else if ( strncmp(pt,"-psn_",5)==0 ) {
+	else if ( strcmp(pt,"-quit")==0 )
+	    quit_request = true;
+	else if ( strcmp(pt,"-home")==0 ) {
+	    if ( getenv("HOME")!=NULL )
+		chdir(getenv("HOME"));
+	} else if ( strncmp(pt,"-psn_",5)==0 ) {
 	    /* OK, I don't know what this really means, but to me it means */
 	    /*  that we've been started on the mac from the FontForge.app  */
 	    /*  structure, and the current directory is (shudder) "/" */
@@ -772,8 +825,11 @@ int main( int argc, char **argv ) {
 	wattrs.is_dlg = false;
 	splashw = GDrawCreateTopWindow(NULL,&pos,request_e_h,NULL,&wattrs);
 	PingOtherFontForge(argc,argv);
-    } else
+    } else {
+	if ( quit_request )
+exit( 0 );
 	splashw = GDrawCreateTopWindow(NULL,&pos,splash_e_h,NULL,&wattrs);
+    }
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = times;
@@ -828,7 +884,8 @@ int main( int argc, char **argv ) {
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
-		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 )
+		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
+		strcmp(pt,"-home")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )
 	    /* Already done */;
@@ -840,6 +897,8 @@ int main( int argc, char **argv ) {
 	    ++i; /* Already done, needed to be before display opened */
 	else if ( strcmp(pt,"-allglyphs")==0 )
 	    openflags |= of_all_glyphs_in_ttc;
+	else if ( strcmp(pt,"-open")==0 )
+	    doopen = true;
 	else {
 	    if ( strstr(argv[i],"://")!=NULL )		/* Assume an absolute URL */
 		strncpy(buffer,argv[i],sizeof(buffer));
@@ -879,7 +938,7 @@ int main( int argc, char **argv ) {
 		any = 1;
 	}
     }
-    if ( !any )
+    if ( doopen || !any )
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
 return( 0 );

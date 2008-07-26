@@ -127,6 +127,7 @@ install: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_
 # You may need to be root to do the install
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
+	sh -c "if test -d fontforge/FontForge.app >/dev/null ; then rm -rf /Applications/FontForge.app ; mv fontforge/FontForge.app /Applications ; fi"
 	sh < systemspecific
 #we don't always create a setup.py
 	-(cd pyhook ; if test -r setup.py ; then python setup.py install --prefix=$(prefix) --root=$(DESTDIR); for dir in * ; do if test -d $$dir ; then  rm -rf $$dir ; fi; done ; fi )
