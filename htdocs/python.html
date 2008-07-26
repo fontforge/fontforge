@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 5-Jun-2008 -->
+  <!-- AP: Last modified: 25-Jul-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1480,6 +1480,29 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TH>member</TH>
       <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>anchorPoints</CODE></TD>
+      <TD colspan=2>Returns the list of anchor points in the glyph. Each anchor
+	point is a tuple of<BR>
+	<CODE>(anchor-class-name, type, x,y [,ligature-index])</CODE><BR>
+	The first two are strings, the next two doubles, and the last (which is only
+	present if type=="ligature") is an integer. Type may be
+	<UL>
+	  <LI>
+	    mark
+	  <LI>
+	    base
+	  <LI>
+	    ligature
+	  <LI>
+	    basemark
+	  <LI>
+	    entry
+	  <LI>
+	    exit
+	</UL>
+      </TD>
     </TR>
     <TR>
       <TD><CODE><A name="g-background">background</A></CODE></TD>
@@ -3580,7 +3603,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	will be bound to subtable1 and subtable2 will be removed.</TD>
     </TR>
     <TR>
-      <TD><CODE>print</CODE></TD>
+      <TD><CODE>printSample</CODE></TD>
       <TD><CODE>(type,pointsize,<BR>
 	&nbsp;sample,output-file)</CODE></TD>
       <TD>Type is a string which must be one of
