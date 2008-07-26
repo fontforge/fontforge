@@ -90,6 +90,7 @@ install: $(sharedir) all install_libs install_po install_pycontrib
 	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
+	sh -c "if test -d fontforge/FontForge.app >/dev/null ; then rm -rf /Applications/FontForge.app ; mv fontforge/FontForge.app /Applications ; fi"
 	sh < systemspecific
 
 uninstall:

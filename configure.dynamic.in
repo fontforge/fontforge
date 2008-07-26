@@ -10,6 +10,7 @@ AC_DISABLE_STATIC
 AC_ENABLE_SHARED
 AC_CANONICAL_HOST
 AC_SUBST(HOST)
+AC_SUBST(MACAPP)
 HOST="$host"
 
 gww_define_caps_for_alt="dontknow"
@@ -38,6 +39,7 @@ case "$host" in
  AC_DEFINE(_CursorsMustBe16x16)
  AC_DEFINE(_Keyboard,1)
  AC_DEFINE(__Mac,1)
+ MACAPP=FontForge.app/Contents/Info.plist
  gww_define_caps_for_alt="1"
 
 dnl fink puts stuff under /sw
