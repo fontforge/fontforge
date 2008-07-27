@@ -2872,6 +2872,54 @@ return;
 	SCCharChangedUpdate(sc,ly_all);
 }
 
+void SplineSetJoinCpFixup(SplinePoint *sp) {
+    BasePoint ndir, pdir;
+    double nlen, plen;
+    int fixprev=0, fixnext=0;
+
+    if ( sp->pointtype == pt_corner )
+	/* Leave control points as they are */;
+    else if ( sp->pointtype == pt_tangent ) {
+	SplineCharTangentNextCP(sp);
+	SplineCharTangentPrevCP(sp);
+	fixprev = fixnext = 1;
+    } else if ( !BpColinear(&sp->prevcp,&sp->me,&sp->nextcp)) {
+	ndir.x = sp->nextcp.x - sp->me.x;
+	ndir.y = sp->nextcp.y - sp->me.y;
+	nlen = sqrt( ndir.x*ndir.x + ndir.y*ndir.y );
+	if ( nlen!=0 ) { ndir.x /= nlen; ndir.y/=nlen; }
+	pdir.x = sp->prevcp.x - sp->me.x;
+	pdir.y = sp->prevcp.y - sp->me.y;
+	plen = sqrt( pdir.x*pdir.x + pdir.y*pdir.y );
+	if ( plen!=0 ) { pdir.x /= plen; pdir.y/=plen; }
+	if ( !sp->nextcpdef && sp->prevcpdef ) {
+	    sp->prevcp.x = sp->me.x - plen * ndir.x;
+	    sp->prevcp.y = sp->me.y - plen * ndir.y;
+	    fixprev = true;
+	} else if ( sp->nextcpdef && !sp->prevcpdef ) {
+	    sp->nextcp.x = sp->me.x - nlen * pdir.x;
+	    sp->nextcp.y = sp->me.y - nlen * pdir.y;
+	    fixnext = true;
+	} else {
+	    SplineCharDefaultNextCP(sp);
+	    SplineCharDefaultPrevCP(sp);
+	    fixprev = fixnext = 1;
+	}
+    }
+    if ( sp->next!=NULL && sp->next->to->pointtype==pt_tangent && sp->next->to->next!=NULL ) {
+	SplineCharTangentNextCP(sp->next->to);
+	SplineRefigure(sp->next->to->next);
+    }
+    if ( sp->prev!=NULL && sp->prev->from->pointtype==pt_tangent && sp->prev->from->prev!=NULL ) {
+	SplineCharTangentPrevCP(sp->prev->from);
+	SplineRefigure(sp->prev->from->prev);
+    }
+    if ( fixprev && sp->prev!=NULL )
+	SplineRefigure(sp->prev);
+    if ( fixnext && sp->next!=NULL )
+	SplineRefigure(sp->next);
+}
+
 static int SplineSetMakeLoop(SplineSet *spl,real fudge) {
     if ( spl->first!=spl->last &&
 	    (spl->first->me.x >= spl->last->me.x-fudge &&
@@ -2889,6 +2937,8 @@ static int SplineSetMakeLoop(SplineSet *spl,real fudge) {
 	    spl->spiros[0].ty = spl->spiros[spl->spiro_cnt-2].ty;
 	    spl->spiros[spl->spiro_cnt-2] = spl->spiros[spl->spiro_cnt-1];
 	    --spl->spiro_cnt;
+	} else {
+	    SplineSetJoinCpFixup(spl->first);
 	}
 return( true );
     }
@@ -2939,6 +2989,7 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			spl->first->noprevcp = spl2->last->noprevcp;
 			spl->first->prevcpdef = spl2->last->prevcpdef;
 			SplinePointFree(spl2->last);
+			SplineSetJoinCpFixup(spl->first);
 			spl->first = spl2->first;
 			spl2->first = spl2->last = NULL;
 			if ( prev!=NULL )

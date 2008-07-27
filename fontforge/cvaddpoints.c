@@ -669,7 +669,7 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	    !active->nextcpdef && !active->prevcpdef &&
 	    !BpColinear(&active->prev->from->me,&active->me,&active->nextcp))
 	active->nextcpdef = active->prevcpdef = true;
-    AdjustControls(active);
+    SplineSetJoinCpFixup(active);
 }
 
 static void CVMouseMoveSpiroPoint(CharView *cv, PressedOn *p) {
