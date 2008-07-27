@@ -2331,6 +2331,7 @@ extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 extern void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed);
 extern void SPLsStartToLeftmost(SplineChar *sc,int layer);
 extern void CanonicalContours(SplineChar *sc,int layer);
+extern void SplineSetJoinCpFixup(SplinePoint *sp);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
