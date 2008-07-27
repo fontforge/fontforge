@@ -10711,6 +10711,30 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_importLookup(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    SplineFont *othersf;
+    PyObject *otherfont;
+    char *lookup_str;
+    OTLookup *otl;
+
+    if ( !PyArg_ParseTuple(args,"Os", &otherfont, &lookup_str))
+return( NULL );
+    if ( !PyType_IsSubtype(&PyFF_FontType,otherfont->ob_type) ) {
+	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
+return( NULL );
+    }
+    othersf = ((PyFF_Font *) otherfont)->fv->sf;
+
+    otl = SFFindLookup(othersf,lookup_str);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
+return( NULL );
+    }
+    OTLookupCopyInto(sf,othersf,otl);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_lookupSetFeatureList(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     OTLookup *otl;
@@ -12013,6 +12037,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "getLookupSubtableAnchorClasses", PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
     { "getLookupOfSubtable", PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
     { "getSubtableOfAnchor", PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
+    { "importLookup", PyFFFont_importLookup, METH_VARARGS, "Imports a named lookup from another font."},
     { "isKerningClass", PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
     { "isVerticalKerning", PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
     { "lookupSetFeatureList", PyFFFont_lookupSetFeatureList, METH_VARARGS, "Sets the feature, script, language list on a lookup" },

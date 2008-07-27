@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 25-Jul-2008 -->
+  <!-- AP: Last modified: 26-Jul-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3488,6 +3488,14 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>getSubtableOfAnchor</CODE></TD>
       <TD><CODE>(anchor-class-name)</CODE></TD>
       <TD>Returns the name of the subtable containing this anchor class.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>importLookup</CODE></TD>
+      <TD><CODE>(another-font,lookup-name)</CODE></TD>
+      <TD>The first argument must be a FontForge Font object, the second a string.
+	It will search the other font for the named lookup and import it into the
+	current font. (Contextual lookups which invoke other lookups will have any
+	nested lookups imported as well).</TD>
     </TR>
     <TR>
       <TD><CODE>interpolateFonts</CODE></TD>
