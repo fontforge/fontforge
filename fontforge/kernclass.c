@@ -1246,7 +1246,7 @@ static void OffsetMoveClasses(KernClassDlg *kcd, int dir, GTextInfo **movethese,
 		    else
 			new[i*kcd->second_cnt+k-1] = kcd->offsets[i*kcd->second_cnt+j-1];
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-		    memcpy(newd+i*kcd->second_cnt+(j+dir),kcd->offsets+i*kcd->second_cnt+j,
+		    memcpy(newd+i*kcd->second_cnt+(j+dir),kcd->adjusts+i*kcd->second_cnt+j,
 			    (k-j)*sizeof(DeviceTable));
 		    if ( dir>0 )
 			newd[i*kcd->second_cnt+j] = kcd->adjusts[i*kcd->second_cnt+k];
