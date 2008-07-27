@@ -2487,7 +2487,7 @@ static void AnchorsAway(FILE *lfile,SplineFont *sf,
 }
 
 static int lookup_size_cmp(const void *_l1, const void *_l2) {
-    const OTLookup *l1 = _l1, *l2 = _l2;
+    const OTLookup *l1 = *(OTLookup **) _l1, *l2 = *(OTLookup **) _l2;
 return( l1->lookup_length-l2->lookup_length );
 }
 
