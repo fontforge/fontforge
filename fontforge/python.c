@@ -1202,7 +1202,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_ContourIterType = {
-	PyObject_HEAD_INIT(&PyType_Type)
+	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	"contouriter",				/* tp_name */
 	sizeof(contouriterobject),		/* tp_basicsize */
@@ -2565,7 +2565,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerIterType = {
-	PyObject_HEAD_INIT(&PyType_Type)
+	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	"layeriter",				/* tp_name */
 	sizeof(layeriterobject),		/* tp_basicsize */
@@ -4238,7 +4238,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerArrayIterType = {
-	PyObject_HEAD_INIT(&PyType_Type)
+	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	"dictionary-keyiterator",		/* tp_name */
 	sizeof(layersiterobject),		/* tp_basicsize */
@@ -7147,7 +7147,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_LayerInfoArrayIterType = {
-	PyObject_HEAD_INIT(&PyType_Type)
+	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	"fontforge.fontlayeriter",		/* tp_name */
 	sizeof(layerinfoiterobject),		/* tp_basicsize */
@@ -7483,7 +7483,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_PrivateIterType = {
-	PyObject_HEAD_INIT(&PyType_Type)
+	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	"dictionary-keyiterator",		/* tp_name */
 	sizeof(privateiterobject),		/* tp_basicsize */
@@ -7814,7 +7814,7 @@ return NULL;
 }
 
 static PyTypeObject PyFF_FontIterType = {
-	PyObject_HEAD_INIT(&PyType_Type)
+	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	"fontiter",				/* tp_name */
 	sizeof(fontiterobject),			/* tp_basicsize */
