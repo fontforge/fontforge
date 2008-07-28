@@ -5494,6 +5494,41 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFGlyph_useRefsMetrics(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int layer = ((PyFF_Glyph *) self)->layer;
+    RefChar *ref, *itwilldo;
+    char *name=NULL;
+    int setting=true;
+
+    if ( !PyArg_ParseTuple(args,"s|i", &name, &setting ))
+return( NULL );
+    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+	ref->use_my_metrics = 0;
+    itwilldo = NULL;
+    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+	if ( strcmp(ref->sc->name,name)==0 ) {
+	    if ( ref->transform[0]==1 && ref->transform[3]==1 &&
+		    ref->transform[1]==0 && ref->transform[2]==0 &&
+		    ref->transform[4]==0 && ref->transform[5]==0 )
+    break;
+	    else
+		itwilldo = ref;
+	}
+    if ( ref==NULL )
+	ref = itwilldo;
+    if ( ref==NULL ) {
+	PyErr_Format(PyExc_ValueError, "Could not find a reference named %s", name );
+return( NULL );
+    }
+    if ( setting ) {
+	ref->use_my_metrics = true;
+	sc->width = ref->sc->width;
+    }
+
+Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_canonicalContours(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
@@ -6518,6 +6553,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     { "unlinkThisGlyph", PyFFGlyph_unlinkThisGlyph, METH_NOARGS, "Unlink all references to the current glyph in any other glyph in the font."},
+    { "useRefsMetrics", PyFFGlyph_useRefsMetrics, METH_VARARGS, "Search the references of the current layer of the glyph and set the named reference's \"useMyMetrics\" flag."},
     NULL
 };
 /* ************************************************************************** */
