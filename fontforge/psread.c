@@ -4246,9 +4246,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 1: /* hstem */
 	  case 18: /* hstemhm */
 	    base = 0;
-	    if ( (sp&1) ) {
-		if ( ret->width == (int16) 0x8000 )
-		    ret->width = stack[0];
+	    if ( (sp&1) && ret->width == (int16) 0x8000 ) {
+		ret->width = stack[0];
 		base=1;
 	    }
 	    if ( sp-base<2 )
@@ -4293,9 +4292,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 3: /* vstem */
 	  case 23: /* vstemhm */
 	    if ( cur==NULL || v==3 || v==23 ) {
-		if ( (sp&1) && is_type2 ) {
-		    if ( ret->width == (int16) 0x8000 )
-			ret->width = stack[0];
+		if ( (sp&1) && is_type2 && ret->width == (int16) 0x8000 ) {
+		    ret->width = stack[0];
 		    base=1;
 		}
 		/* I've seen a vstemhm with no arguments. I've no idea what that */
@@ -4401,10 +4399,9 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 22: /* hmoveto */
 	  case 4: /* vmoveto */
 	    if ( is_type2 ) {
-		if ( (v==21 && sp==3) || (v!=21 && sp==2)) {
-		    if ( ret->width == (int16) 0x8000 )
-			/* Character's width may be specified on the first moveto */
-			ret->width = stack[0];
+		if (( (v==21 && sp==3) || (v!=21 && sp==2))  && ret->width == (int16) 0x8000 ) {
+		    /* Character's width may be specified on the first moveto */
+		    ret->width = stack[0];
 		    stack[0] = stack[1]; stack[1] = stack[2]; --sp;
 		}
 		if ( context->painttype!=2 )
