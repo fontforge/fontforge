@@ -5466,6 +5466,34 @@ static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
+static char *appendaccent_keywords[] = { "name", "unicode", "pos", NULL };
+
+static PyObject *PyFFGlyph_appendAccent(PyObject *self, PyObject *args, PyObject *keywds) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int layer = ((PyFF_Glyph *) self)->layer;
+    int pos = -1, uni=-1;
+    char *name = NULL;
+    int ret;
+
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|sii",appendaccent_keywords,
+	    &name, &uni, &pos))
+return( NULL );
+    if ( name==NULL && uni==-1 ) {
+	PyErr_Format(PyExc_ValueError, "You must specify either a name of a unicode code point");
+return( NULL );
+    }
+    ret = SCAppendAccent(sc,layer,name,uni,pos);
+    if ( ret==1 ) {
+	PyErr_Format(PyExc_ValueError, "No base character reference found");
+return( NULL );
+    } else if ( ret==2 ) {
+	PyErr_Format(PyExc_ValueError, "Could not find that accent");
+return( NULL );
+    }
+
+Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_canonicalContours(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
@@ -6461,6 +6489,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "addAnchorPoint", PyFFGlyph_addAnchorPoint, METH_VARARGS, "Adds an anchor point"},
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
     { "addPosSub", PyFFGlyph_addPosSub, METH_VARARGS, "Adds position/substitution data to the glyph"},
+    { "appendAccent", (PyCFunction) PyFFGlyph_appendAccent, METH_VARARGS | METH_KEYWORDS, "Append the named accent to the current glyph, positioning according to the rules buildAccent would use" },
     { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
