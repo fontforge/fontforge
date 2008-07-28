@@ -1001,8 +1001,8 @@ return( true );
 
 static int AskNewKernClassEntry(SplineChar *fsc,SplineChar *lsc) {
     char *yesno[3];
-    yesno[0] = _("_Yes");
-    yesno[1] = _("_No");
+    yesno[0] = _("_Alter Class");
+    yesno[1] = _("_Create Pair");
     yesno[2] = NULL;
 return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,_("This kerning pair (%.20s and %.20s) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?"),
 	fsc->name,lsc->name)==0 );
@@ -1022,6 +1022,9 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
     if ( kc!=NULL ) {
 	if ( index==-1 )
 	    kc = NULL;
+	else if ( (!is_diff && offset==kc->offsets[index]) ||
+		  ( is_diff && offset==0))
+return( true );		/* No change, don't bother user */
 	else if ( kc->offsets[index]==0 && !AskNewKernClassEntry(psc,sc))
 	    kc=NULL;
 	else
