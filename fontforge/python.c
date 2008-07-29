@@ -5313,6 +5313,7 @@ return( -1 );
     }
     AnchorPointsFree(sc->anchor);
     sc->anchor = aphead;
+    SCCharChangedUpdate(sc,ly_none);
 return( 0 );
 }
 
