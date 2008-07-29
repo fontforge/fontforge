@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 26-Jul-2008 -->
+  <!-- AP: Last modified: 28-Jul-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1827,6 +1827,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	<P>
 	If there is a previously existing entry, this will replace it (except for
 	ligatures).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>appendAccent</CODE></TD>
+      <TD><CODE>(name="glyph-name")<BR>
+	(unicode=&lt;codepoint&gt;)</CODE></TD>
+      <TD>Makes a reference to the specified glyph, adds that reference to the
+	current layer of this glyph, and positions it to make a reasonable accent.</TD>
     </TR>
     <TR>
       <TD><CODE>autoHint</CODE></TD>
