@@ -5490,6 +5490,7 @@ return( NULL );
 	PyErr_Format(PyExc_ValueError, "Could not find that accent");
 return( NULL );
     }
+    SCCharChangedUpdate(sc,layer);
 
 Py_RETURN( self );
 }
