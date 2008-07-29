@@ -1403,7 +1403,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	CVShowMinimumDistance(cv, pixmap,md);
 
     if ( cv->showvhints || cv->showhhints ) {
-	for ( spl=cv->b.sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+	for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	    if ( spl->first->prev!=NULL ) for ( sp=spl->first ; ; ) {
 		if ( cv->showhhints && sp->flexx ) {
 		    double x,y,end;
@@ -1718,6 +1718,10 @@ static void DrawAPMatch(CharView *cv,GWindow pixmap,DRect *clip) {
     real trans[6];
     SplineSet *head, *tail, *temp;
     RefChar *ref;
+    int layer = CVLayer((CharViewBase *) cv);
+
+    if ( cv->b.drawmode==dm_grid )
+return;
 
     /* The other glyph might have been removed from the font */
     /* Either anchor might have been deleted. Be prepared for that to happen */
@@ -1738,8 +1742,8 @@ return;
     trans[4] = cv->apmine->me.x - cv->apmatch->me.x;
     trans[5] = cv->apmine->me.y - cv->apmatch->me.y;
 
-    head = tail = SplinePointListCopy(apsc->layers[ly_fore].splines);
-    for ( ref = apsc->layers[ly_fore].refs; ref!=NULL; ref = ref->next ) {
+    head = tail = SplinePointListCopy(apsc->layers[layer].splines);
+    for ( ref = apsc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
 	temp = SplinePointListCopy(ref->layers[0].splines);
 	if ( head!=NULL ) {
 	    for ( ; tail->next!=NULL; tail = tail->next );
@@ -1831,15 +1835,20 @@ static void CVSideBearings(GWindow pixmap, CharView *cv) {
     SplineChar *sc = cv->b.sc;
     RefChar *ref;
     BasePoint *bounds[4];
-    int layer,last,l;
+    int layer,last, first,l;
     int x,y, x2, y2;
     char buf[20];
 
     memset(bounds,0,sizeof(bounds));
-    last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent->multilayer ) {
 	last = sc->layer_cnt-1;
-    for ( layer=ly_fore; layer<=last; ++layer ) {
+	first = ly_fore;
+    } else {
+	layer = last = CVLayer( (CharViewBase *) cv);
+	if ( first==ly_grid )
+	    first = last = ly_fore;
+    }
+    for ( layer = first ; layer<=last; ++layer ) {
 	FindQuickBounds(sc->layers[layer].splines,bounds);
 	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	    for ( l=0; l<ref->layer_cnt; ++l )
@@ -1883,7 +1892,7 @@ return;				/* no points. no side bearings */
 	    double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
 	    if ( t!=0 ) {
 		SplinePoint *leftmost=NULL, *rightmost=NULL;
-		for ( layer=ly_fore; layer<=last; ++layer ) {
+		for ( layer=first; layer<=last; ++layer ) {
 		    SSFindItalicBounds(sc->layers[layer].splines,t,&leftmost,&rightmost);
 		    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 			for ( l=0; l<ref->layer_cnt; ++l )
@@ -6199,7 +6208,7 @@ static void CVClearBackground(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void _CVPaste(CharView *cv) {
     enum undotype ut = CopyUndoType();
-    int was_empty = cv->b.drawmode==dm_fore && cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL && cv->b.sc->layers[ly_fore].splines==NULL && cv->b.sc->layers[ly_fore].refs==NULL;
+    int was_empty = cv->b.drawmode==dm_fore && cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL && cv->b.layerheads[cv->b.drawmode]->splines==NULL && cv->b.layerheads[cv->b.drawmode]->refs==NULL;
     if ( ut!=ut_lbearing )	/* The lbearing code does this itself */
 	CVPreserveStateHints(&cv->b);
     if ( ut!=ut_width && ut!=ut_vwidth && ut!=ut_lbearing && ut!=ut_rbearing && ut!=ut_possub )
@@ -6457,7 +6466,7 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_CopyLBearing: case MID_CopyRBearing:
 	    mi->ti.disabled = cv->b.drawmode!=dm_fore ||
-		    (cv->b.sc->layers[ly_fore].splines==NULL && cv->b.sc->layers[ly_fore].refs==NULL);
+		    (cv->b.layerheads[cv->b.drawmode]->splines==NULL && cv->b.layerheads[cv->b.drawmode]->refs==NULL);
 	  break;
 	  case MID_CopyFgToBg:
 	    mi->ti.disabled = cv->b.sc->layers[ly_fore].splines==NULL;
@@ -6494,7 +6503,7 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		    cv->b.container!=NULL;
 	  break;
 	  case MID_UnlinkRef:
-	    mi->ti.disabled = cv->b.drawmode!=dm_fore || cv->b.sc->layers[ly_fore].refs==NULL;
+	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->refs==NULL;
 	  break;
 	}
     }
@@ -6583,7 +6592,7 @@ static void _CVMenuImplicit(CharView *cv,struct gmenuitem *mi) {
     Spline *spline, *first;
     int dontinterpolate = mi->mid==MID_NoImplicitPt;
 
-    if ( !cv->b.sc->layers[ly_fore].order2 )
+    if ( !cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
     CVPreserveState(&cv->b);	/* We should only get here if there's a selection */
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL ; spl = spl->next ) {
@@ -6979,13 +6988,13 @@ static void _CVMenuRound2Int(CharView *cv, double factor) {
     CVPreserveState(&cv->b);
     SplineSetsRound2Int(cv->b.layerheads[cv->b.drawmode]->splines,factor,
 	    cv->b.sc->inspiro && hasspiro(), anysel);
-    if ( cv->b.drawmode==dm_fore ) {
-	for ( r=cv->b.sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
-	    if ( r->selected || !anysel ) {
-		r->transform[4] = rint(r->transform[4]*factor)/factor;
-		r->transform[5] = rint(r->transform[5]*factor)/factor;
-	    }
+    for ( r=cv->b.layerheads[cv->b.drawmode]->refs; r!=NULL; r=r->next ) {
+	if ( r->selected || !anysel ) {
+	    r->transform[4] = rint(r->transform[4]*factor)/factor;
+	    r->transform[5] = rint(r->transform[5]*factor)/factor;
 	}
+    }
+    if ( cv->b.drawmode==dm_fore ) {
 	for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next ) {
 	    if ( ap->selected || !anysel ) {
 		ap->me.x = rint(ap->me.x*factor)/factor;
@@ -7122,15 +7131,15 @@ return;
     } else if ( r!=NULL ) {
 	RefChar *p, *pp, *t;
 	p = pp = NULL;
-	for ( t=cv->b.sc->layers[ly_fore].refs; t!=NULL && t!=r; t=t->next ) {
+	for ( t=cv->b.layerheads[cv->b.drawmode]->refs; t!=NULL && t!=r; t=t->next ) {
 	    pp = p; p = t;
 	}
 	switch ( mi->mid ) {
 	  case MID_First:
 	    if ( p!=NULL ) {
 		p->next = r->next;
-		r->next = cv->b.sc->layers[ly_fore].refs;
-		cv->b.sc->layers[ly_fore].refs = r;
+		r->next = cv->b.layerheads[cv->b.drawmode]->refs;
+		cv->b.layerheads[cv->b.drawmode]->refs = r;
 	    }
 	  break;
 	  case MID_Earlier:
@@ -7138,7 +7147,7 @@ return;
 		p->next = r->next;
 		r->next = p;
 		if ( pp==NULL ) {
-		    cv->b.sc->layers[ly_fore].refs = r;
+		    cv->b.layerheads[cv->b.drawmode]->refs = r;
 		} else {
 		    pp->next = r;
 		}
@@ -7146,10 +7155,10 @@ return;
 	  break;
 	  case MID_Last:
 	    if ( r->next!=NULL ) {
-		for ( t=cv->b.sc->layers[ly_fore].refs; t->next!=NULL; t=t->next );
+		for ( t=cv->b.layerheads[cv->b.drawmode]->refs; t->next!=NULL; t=t->next );
 		t->next = r;
 		if ( p==NULL )
-		    cv->b.sc->layers[ly_fore].refs = r->next;
+		    cv->b.layerheads[cv->b.drawmode]->refs = r->next;
 		else
 		    p->next = r->next;
 		r->next = NULL;
@@ -7161,7 +7170,7 @@ return;
 		r->next = t->next;
 		t->next = r;
 		if ( p==NULL )
-		    cv->b.sc->layers[ly_fore].refs = t;
+		    cv->b.layerheads[cv->b.drawmode]->refs = t;
 		else
 		    p->next = t;
 	    }
@@ -8170,7 +8179,7 @@ static void CVMenuNowakAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineChar *sc = cv->b.sc;
     GlobalInstrCt gic;
 
-    if ( sc->layers[ly_fore].splines!=NULL && sc->hstem==NULL && sc->vstem==NULL
+    if ( cv->b.layerheads[cv->b.drawmode]->splines!=NULL && sc->hstem==NULL && sc->vstem==NULL
 	    && sc->dstem==NULL && !no_windowing_ui )
 	ff_post_notice(_("Things could be better..."), _("Glyph, %s, has no hints. FontForge will not produce many instructions."),
 		sc->name );
@@ -8720,11 +8729,11 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SplineCharFindBounds(cv->b.sc,&bb);
     else {
 	SplineSet *base, *temp;
-	base = LayerAllSplines(&cv->b.sc->layers[ly_fore]);
+	base = LayerAllSplines(cv->b.layerheads[cv->b.drawmode]);
 	transform[2] = tan( cv->b.sc->parent->italicangle * 3.1415926535897932/180.0 );
 	temp = SplinePointListTransform(SplinePointListCopy(base),transform,true);
 	transform[2] = 0;
-	LayerUnAllSplines(&cv->b.sc->layers[ly_fore]);
+	LayerUnAllSplines(cv->b.layerheads[cv->b.drawmode]);
 	SplineSetFindBounds(temp,&bb);
 	SplinePointListsFree(temp);
     }
