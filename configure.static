@@ -2524,10 +2524,15 @@ MACAPP=FontForge.app/Contents/Info.plist
  gww_define_caps_for_alt="1"
 
 
- CPPFLAGS="$CPPFLAGS -I/sw/include"
- LDFLAGS="$LDFLAGS -L/sw/lib"
- gww_rpath="-rpath /sw/lib"
-LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
+ if test -d /sw/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I/sw/include"
+ fi
+ if test -d /sw/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/sw/lib"
+  gww_rpath="-rpath /sw/lib"
+ fi
+ LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
+ LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  ;;
 powerpc-*-*linux*)
 cat >>confdefs.h <<\_ACEOF

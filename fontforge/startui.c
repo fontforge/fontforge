@@ -35,10 +35,15 @@
 #include <dynamic.h>
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
+# include </Developer/Headers/FlatCarbon/Files.h>
+#define FontInfo	MacFontInfo
+#define KernPair	MacKernPair
+# include </Developer/Headers/FlatCarbon/CarbonEvents.h>
 #endif
 
 int splash = 1;
 static int unique = 0;
+static int listen_to_apple_events = false;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -439,6 +444,181 @@ static void PingOtherFontForge(int argc, char **argv) {
 exit( 0 );		/* But the event loop should never return */
 }
 
+static void start_splash_screen(void){
+    GDrawSetVisible(splashw,true);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    GDrawProcessPendingEvents(NULL);
+    splasht = GDrawRequestTimer(splashw,1000,1000,NULL);
+
+    splash = false;
+}
+
+#if defined(__Mac)
+static FILE *logfile;
+
+/* These are the four apple events to which we currently respond */
+static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
+	AppleEvent * reply, SInt32 handlerRefcon) {
+ fprintf( logfile, "OPENAPP event received.\n" ); fflush( logfile );
+    if ( splash )
+	start_splash_screen();
+    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    if ( fv_list==NULL )
+	MenuOpen(NULL,NULL,NULL);
+ fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
+return( noErr );
+}
+
+static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
+	AppleEvent * reply, SInt32 handlerRefcon) {
+ fprintf( logfile, "ReOPEN event received.\n" ); fflush( logfile );
+    if ( splash )
+	start_splash_screen();
+    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    if ( fv_list==NULL )
+	MenuOpen(NULL,NULL,NULL);
+ fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
+return( noErr );
+}
+
+static pascal OSErr ShowPreferencesAE( const AppleEvent * theAppleEvent,
+	AppleEvent * reply, SInt32 handlerRefcon) {
+ fprintf( logfile, "PREFS event received.\n" ); fflush( logfile );
+    if ( splash )
+	start_splash_screen();
+    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    DoPrefs();
+ fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
+return( noErr );
+}
+
+static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
+	AppleEvent * reply, SInt32 handlerRefcon) {
+    AEDescList  docList;
+    FSRef       theFSRef;
+    long        index;
+    long        count = 0;
+    OSErr       err;
+    char	buffer[2048];
+
+ fprintf( logfile, "OPEN event received.\n" ); fflush( logfile );
+    if ( splash )
+	start_splash_screen();
+
+    err = AEGetParamDesc(theAppleEvent, keyDirectObject,
+                         typeAEList, &docList);
+    err = AECountItems(&docList, &count);
+    for(index = 1; index <= count; index++) {
+        err = AEGetNthPtr(&docList, index, typeFSRef,
+                        NULL, NULL, &theFSRef,
+                        sizeof(theFSRef), NULL);// 4
+	err = FSRefMakePath(&theFSRef,(unsigned char *) buffer,sizeof(buffer));
+	ViewPostscriptFont(buffer,0);
+ fprintf( logfile, " file: %s\n", buffer );
+    }
+    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    AEDisposeDesc(&docList);
+ fprintf( logfile, " event processed %d.\n", err ); fflush( logfile );
+
+return( err );
+}
+
+static void AttachErrorCode(AppleEvent *event,OSStatus err) {
+    OSStatus returnVal;
+
+    if ( event==NULL )
+return;
+
+    if (event->descriptorType != typeNull) {
+	/* Check there isn't already an error attached */
+        returnVal = AESizeOfParam(event, keyErrorNumber, NULL, NULL);
+        if (returnVal != noErr ) {	/* Add success if no previous error */
+            AEPutParamPtr(event, keyErrorNumber,
+                        typeSInt32, &err, sizeof(err));
+        }
+    }
+}
+
+static AppleEvent *quit_event = NULL;
+static void we_are_dead(void) {
+    AttachErrorCode(quit_event,noErr);
+    /* Send the reply (I hope) */
+    AESendMessage(quit_event,NULL, kAENoReply, kAEDefaultTimeout);
+    AEDisposeDesc(quit_event);
+    /* fall off the end of the world and die */
+ fprintf( logfile, " event succeded.\n"); fflush( logfile );
+}
+
+static pascal OSErr QuitApplicationAE( const AppleEvent * theAppleEvent,
+	AppleEvent * reply, SInt32 handlerRefcon) {
+    static int first_time = true;
+
+ fprintf( logfile, "QUIT event received.\n" ); fflush( logfile );
+    quit_event = reply;
+    if ( first_time ) {
+	atexit( we_are_dead );
+	first_time = false;
+    }
+    MenuExit(NULL,NULL,NULL);
+    /* if we get here, they canceled the quit, so we return a failure */
+    quit_event = NULL;
+ fprintf( logfile, " event failed %d.\n", errAEEventFailed ); fflush( logfile );
+return(errAEEventFailed);
+}
+
+/* Install event handlers for the Apple Events we care about */
+static  OSErr install_apple_event_handlers(void) {
+    OSErr       err;
+
+    err     = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication,
+                NewAEEventHandlerUPP(OpenApplicationAE), 0, false);
+    require_noerr(err, CantInstallAppleEventHandler);
+
+    err     = AEInstallEventHandler(kCoreEventClass, kAEReopenApplication,
+                NewAEEventHandlerUPP(ReopenApplicationAE), 0, false);
+    require_noerr(err, CantInstallAppleEventHandler);
+
+    err     = AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
+                NewAEEventHandlerUPP(OpenDocumentsAE), 0, false);
+    require_noerr(err, CantInstallAppleEventHandler);
+
+    err     = AEInstallEventHandler(kCoreEventClass, kAEQuitApplication,
+                NewAEEventHandlerUPP(QuitApplicationAE), 0, false);
+    require_noerr(err, CantInstallAppleEventHandler);
+
+    err     = AEInstallEventHandler(kCoreEventClass, kAEShowPreferences,
+                NewAEEventHandlerUPP(ShowPreferencesAE), 0, false);
+    require_noerr(err, CantInstallAppleEventHandler);
+
+ /* some debugging code, for now */
+ if ( getenv("HOME")!=NULL ) {
+  char buffer[1024];
+  sprintf( buffer, "%s/.FontForge-LogFile.txt", getenv("HOME"));
+  logfile = fopen("/Users/gww/LogFile.txt","w");
+ }
+ if ( logfile==NULL )
+  logfile = stderr;
+
+CantInstallAppleEventHandler:
+    return err;
+
+}
+
+static pascal void DoRealStuff(EventLoopTimerRef timer,void *ignored_data) {
+    GDrawProcessPendingEvents(NULL);
+}
+
+static void install_mac_timer(void) {
+    EventLoopTimerRef timer;
+
+    InstallEventLoopTimer(GetMainEventLoop(),
+	    .001,.001,		/* I can't find the units documented: seconds? */
+	    NewEventLoopTimerUPP(DoRealStuff), NULL,
+	    &timer);
+}	    
+#endif
+
 static int splash_e_h(GWindow gw, GEvent *event) {
     static int splash_cnt;
     GRect old;
@@ -660,11 +840,12 @@ int main( int argc, char **argv ) {
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
+    /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
     if ( uses_local_x(argc,argv) && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
 	if ( !hasquit(argc,argv)) {
-#if 0
+#if 1
 	    /* This sequence is supposed to bring up an app without a window */
 	    /*  but X still opens an xterm */
 	    system( "osascript -e 'tell application \"X11\" to launch'" );
@@ -779,6 +960,7 @@ int main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-home")==0 ) {
 	    if ( getenv("HOME")!=NULL )
 		chdir(getenv("HOME"));
+#if defined(__Mac)
 	} else if ( strncmp(pt,"-psn_",5)==0 ) {
 	    /* OK, I don't know what this really means, but to me it means */
 	    /*  that we've been started on the mac from the FontForge.app  */
@@ -786,6 +968,8 @@ int main( int argc, char **argv ) {
 	    unique = 1;
 	    if ( getenv("HOME")!=NULL )
 		chdir(getenv("HOME"));
+	    listen_to_apple_events = true;
+#endif
 	}
     }
 
@@ -815,7 +999,7 @@ int main( int argc, char **argv ) {
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = 0xffffff;
-    wattrs.is_dlg = true;
+    wattrs.is_dlg = !listen_to_apple_events;
     pos.x = pos.y = 200;
     pos.width = splashimage.u.image->width;
     pos.height = splashimage.u.image->height-56;		/* 54 */
@@ -843,13 +1027,9 @@ exit( 0 );
     fh = as+ds+ld;
     SplashLayout();
 
-    if ( splash ) {
-	GDrawSetVisible(splashw,true);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-	GDrawProcessPendingEvents(NULL);
-	splasht = GDrawRequestTimer(splashw,1000,1000,NULL);
-    }
+    if ( splash && !listen_to_apple_events )
+	start_splash_screen();
+
     autosave_timer=GDrawRequestTimer(splashw,60*1000,30*1000,NULL);
 
     GDrawProcessPendingEvents(NULL);
@@ -938,6 +1118,13 @@ exit( 0 );
 		any = 1;
 	}
     }
+#if defined(__Mac)
+    if ( listen_to_apple_events ) {
+	install_apple_event_handlers();
+	install_mac_timer();
+	RunApplicationEventLoop();
+    } else
+#endif
     if ( doopen || !any )
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
