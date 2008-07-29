@@ -840,23 +840,20 @@ static void FVMenuSaveAs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuSaveAs(fv);
 }
 
+static int IsBackupName(char *filename) {
+
+    if ( filename==NULL )
+return( false );
+return( filename[strlen(filename)-1]=='~' );
+}
+
 int _FVMenuSave(FontView *fv) {
     int ret = 0;
     SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:
 		    fv->b.sf->mm!=NULL?fv->b.sf->mm->normal:
 			    fv->b.sf;
 
-#if 0		/* This seems inconsistant with normal behavior. Removed 6 Feb '04 */
-    if ( sf->filename==NULL && sf->origname!=NULL &&
-	    sf->onlybitmaps && sf->bitmaps!=NULL && sf->bitmaps->next==NULL ) {
-	/* If it's a single bitmap font then just save back to the bdf file */
-	FVFlattenAllBitmapSelections(fv);
-	ret = BDFFontDump(sf->origname,sf->bitmaps,EncodingName(sf->encoding_name),sf->bitmaps->res);
-	if ( ret )
-	    SplineFontSetUnChanged(sf);
-    } else
-#endif
-    if ( sf->filename==NULL )
+    if ( sf->filename==NULL || IsBackupName(sf->filename))
 	ret = _FVMenuSaveAs(fv);
     else {
 	FVFlattenAllBitmapSelections(fv);
