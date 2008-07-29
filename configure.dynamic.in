@@ -44,9 +44,14 @@ case "$host" in
 
 dnl fink puts stuff under /sw
 
- CPPFLAGS="$CPPFLAGS -I/sw/include"
- LDFLAGS="$LDFLAGS -L/sw/lib"
- gww_rpath="-rpath /sw/lib"
+ if test -d /sw/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I/sw/include"
+ fi
+ if test -d /sw/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/sw/lib"
+  gww_rpath="-rpath /sw/lib"
+ fi
+ LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
  LIBS="-Wl,/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
  dnl I would like to be able to just leave the framework as a filename. But
  dnl if I do that, libtool eats it and gcc doesn't get it and ld doesn't get

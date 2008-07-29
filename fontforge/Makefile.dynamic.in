@@ -93,16 +93,12 @@ fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
 	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o fontforge \
 	    $(@exeOBJECTS@) exelibstamp.lo ../libfontforge.la $(LIBS)
 
-macshell: macshell.o
-	gcc $(CFLAGS) -o macshell macshell.o \
-	    -Wl,/System/Library/Frameworks/Carbon.framework/Carbon \
-	    -Wl,/System/Library/Frameworks/CoreServices.framework/CoreServices
-
-FontForge.app/Contents/Info.plist: macshell
+FontForge.app/Contents/Info.plist: MacFontForgeApp.zip stamp.c
+	-rm -rf FontForge.app
 	unzip MacFontForgeApp.zip
-	cp macshell FontForge.app/Contents/MacOS/FontForge
 	cp FontForge.app/Contents/Info.plist /tmp
 	( VERSION=`grep source_version_str stamp.c |sed 's/const char \*source_version_str = "//' | sed 's/";//'` ; sed s/20080725/$$VERSION/ < /tmp/Info.plist >FontForge.app/Contents/Info.plist )
+	rm /tmp/Info.plist
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge -lang=ff" > $@
@@ -146,7 +142,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 clean:
 	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint \
-		../libfontforge.la exelibstamp.c libstamp.c macshell
+		../libfontforge.la exelibstamp.c libstamp.c
 	-rm -rf FontForge.app
 	-rm -f *.o
 	-rm -f *.lo
