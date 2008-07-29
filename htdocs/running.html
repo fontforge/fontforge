@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 20-Jul-2008 -->
+  <!-- AP: Last modified: 28-Jul-2008 -->
   <TITLE>Starting fontforge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -219,6 +219,23 @@ setenv PATH /usr/local/bin:$PATH
     On the <A NAME="mac">mac</A>
   </H3>
   <P>
+  FontForge now installs itself as a mac application in the Applications folder.
+  You can start FontForge the way you start any other application, double clicking
+  on it, dragging files to it, etc.
+  <P>
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT><CODE>FontForge</CODE>
+  and <CODE>Font Book</CODE> may fight over which will open standard fonts
+  if you double click on the font file. Both claim they can open these files,
+  neither claims to be the prefered application for them. If an .otf file shows
+  a fontforge
+  icon (<IMG SRC="FFmacotfIcon.png" WIDTH="22" HEIGHT="30" ALIGN="Middle">)
+  it will be opened by fontforge, if a font book icon it will be opened by
+  font book. Dragging a font file to the desired application will always
+  work.
+    <HR>
+  <P>
+  You can also start fontforge using traditional unix methods
+  <P>
   Before you start fontforge on the mac you must start the X11 server. You
   can do this by opening the Applications folder, and then opening the Utilities
   folder, and then double-clicking on "X11". (If you don't have X11 there then
@@ -233,8 +250,7 @@ setenv PATH /usr/local/bin:$PATH
   <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not normally
   show mac resource fonts in this dialog -- however it can still open one even
   it it isn't displayed. Simply type in the name of the file containing it.
-  (or, if you prefer, type a "*" in the textfield and then press the [Filter]
-  button. This should show you all files).
+  (or change the Filter field to "All Files").
   <P>
   If the Applications menu does not contain a "FontForge" entry, you can add
   one yourself:
@@ -255,18 +271,26 @@ setenv PATH /usr/local/bin:$PATH
   </UL>
   <P>
   (You may also start fontforge from the command line here. Go to the Applications
-  menu and select xterm, and then type <A HREF="running.html#Starting">one
-  of the commands listed above</A>)
+  menu and select Terminal (or xterm), and then type
+  <A HREF="running.html#Starting">one of the commands listed above</A>)
   <P>
-  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge does not use
-  the Command key to invoke menu items. (Any use of the Command key is intercepted
-  by X11, so Command-Q will quit out of X11 (and abort fontforge), it will
-  not quit fontforge cleanly)
+  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>Normally FontForge will
+  never see the command key shortcuts. X11 intercepts these and uses them itself.
+  If you would like to be able to use Command-Q to quit FontForge then
+  <UL>
+    <LI>
+      Make sure the X11 menu bar is visible
+    <LI>
+      Select the menu item <CODE>X11-&gt;Preferences-&gt;Input</CODE>
+    <LI>
+      turn off (uncheck) <CODE>[] Enable keyboard shortcuts under X11</CODE>
+  </UL>
   <P>
   <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>FontForge was written assuming
-  the availability of a three button mouse. X11 simulates this by creating
-  a virtual three button mouse where the middle button is invoked by Option-Mouse
-  click and the right button by Command-Mouse click.
+  the availability of a three button mouse. Under 10.4 X11 simulates this by
+  creating a virtual three button mouse where the middle button is invoked
+  by Option-Mouse click and the right button by Command-Mouse click. (You can
+  also control this from X11-&gt;Preferences).
   <P>
 </DIV>
 </BODY></HTML>
