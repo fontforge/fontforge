@@ -4934,6 +4934,8 @@ return( -1 );
     }
     cnt = PySequence_Size(value);
     free(sc->ttf_instrs); sc->ttf_instrs = NULL; sc->ttf_instrs_len = cnt;
+    SCNumberPoints(sc,self->layer);	/* If the point numbering is wrong then we'll just throw away the instructions when we notice it */
+    sc->instructions_out_of_date = false;
     if ( cnt==0 )
 return( 0 );
     if ( PyString_Check(value)) {
