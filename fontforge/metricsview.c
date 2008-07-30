@@ -1153,10 +1153,15 @@ static void MVToggleVertical(MetricsView *mv) {
     }
 }
 
-static SplineChar *SCFromUnicode(SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
-    int i = SFFindSlot(sf,map,ch,NULL);
+static SplineChar *MVSCFromUnicode(MetricsView *mv, SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
+    int i;
     SplineChar *sc;
 
+    if ( mv->fake_unicode_base && ch>=mv->fake_unicode_base &&
+	    ch<=mv->fake_unicode_base+mv->sf->glyphcnt )
+return( mv->sf->glyphs[ch-mv->fake_unicode_base] );
+
+    i = SFFindSlot(sf,map,ch,NULL);
     if ( i==-1 )
 return( NULL );
     else {
@@ -1351,6 +1356,82 @@ static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
     }
 }
 
+#ifdef UNICHAR_16
+# define MVFakeUnicodeOfSc(mv,sc)	0xfffd
+# define MVOddMatch(mv,uni,sc)		(uni==0xfffd && sc->unicodeenc==-1)
+#else
+static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
+
+    if ( sc->unicodeenc!=-1 )
+return( sc->unicodeenc );
+
+    if ( mv->fake_unicode_base==0 ) {		/* Not set */
+	/* If they have nothing in Supplementary Private Use Area-A use it */
+	/* If they have nothing in Supplementary Private Use Area-B use it */
+	/* else just use 0xfffd */
+	int a, al, ah, b, bl, bh;
+	int gid,k,max;
+	SplineChar *test;
+	SplineFont *_sf, *sf;
+	sf = mv->sf;
+	if ( sf->cidmaster ) sf = sf->cidmaster;
+	k=0;
+	a = al = ah = b = bl = bh = 0;
+	max = 0;
+	do {
+	    _sf =  ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
+	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (test=_sf->glyphs[gid])!=NULL ) {
+		if ( test->unicodeenc>=0xf0000 && test->unicodeenc<=0xfffff ) {
+		    a = true;
+		    if ( test->unicodeenc<0xf8000 )
+			al = true;
+		    else
+			ah = true;
+		} else if ( test->unicodeenc>=0x100000 && test->unicodeenc<=0x10ffff ) {
+		    b = true;
+		    if ( test->unicodeenc<0x108000 )
+			bl = true;
+		    else
+			bh = true;
+		}
+	    }
+	    if ( gid>max ) max = gid;
+	    ++k;
+	} while ( k<sf->subfontcnt );
+	if ( !a )		/* Nothing in SPUA-A */
+	    mv->fake_unicode_base = 0xf0000;
+	else if ( !b )
+	    mv->fake_unicode_base = 0x100000;
+	else if ( max<0x8000 ) {
+	    if ( !al )
+		mv->fake_unicode_base = 0xf0000;
+	    else if ( !ah )
+		mv->fake_unicode_base = 0xf8000;
+	    else if ( !bl )
+		mv->fake_unicode_base = 0x100000;
+	    else if ( !bh )
+		mv->fake_unicode_base = 0x108000;
+	}
+	if ( mv->fake_unicode_base==0 )
+	    mv->fake_unicode_base = -1;
+    }
+
+    if ( mv->fake_unicode_base==-1 )
+return( 0xfffd );
+    else
+return( mv->fake_unicode_base+sc->orig_pos );
+}
+
+static int MVOddMatch(MetricsView *mv,int uni,SplineChar *sc) {
+    if ( sc->unicodeenc!=-1 )
+return( false );
+    else if ( mv->fake_unicode_base<=0 )
+return( uni==0xfffd );
+    else
+return( uni>=mv->fake_unicode_base && sc->orig_pos == uni-mv->fake_unicode_base );
+}
+#endif
+
 void MVSetSCs(MetricsView *mv, SplineChar **scs) {
     /* set the list of characters being displayed to those in scs */
     int len;
@@ -1364,10 +1445,14 @@ void MVSetSCs(MetricsView *mv, SplineChar **scs) {
 
     ustr = galloc((len+1)*sizeof(unichar_t));
     for ( len=0; scs[len]!=NULL; ++len )
+#ifdef UNICHAR_16
 	if ( scs[len]->unicodeenc>0 && scs[len]->unicodeenc<0x10000 )
+#else
+	if ( scs[len]->unicodeenc>0 )
+#endif
 	    ustr[len] = scs[len]->unicodeenc;
 	else
-	    ustr[len] = 0xfffd;
+	    ustr[len] = MVFakeUnicodeOfSc(mv,scs[len]);
     ustr[len] = 0;
     GGadgetSetTitle(mv->text,ustr);
     free(ustr);
@@ -1392,13 +1477,13 @@ static void MVTextChanged(MetricsView *mv) {
     }
     for ( pt=ret, i=0; i<mv->clen && *pt!='\0'; ++i, ++pt )
 	if ( *pt!=mv->chars[i]->unicodeenc &&
-		(*pt!=0xfffd || mv->chars[i]->unicodeenc!=-1 ))
+		!MVOddMatch(mv,*pt,mv->chars[i]))
     break;
     if ( i==mv->clen && *pt=='\0' )
 return;					/* Nothing changed */
     for ( ept=ret+u_strlen(ret)-1, ei=mv->clen-1; ; --ei, --ept )
 	if ( ei<0 || ept<ret || (*ept!=mv->chars[ei]->unicodeenc &&
-		(*ept!=0xfffd || mv->chars[ei]->unicodeenc!=-1 ))) {
+		!MVOddMatch(mv,*ept,mv->chars[ei]))) {
 	    ++ei; ++ept;
     break;
 	} else if ( ei<i || ept<pt ) {
@@ -1416,7 +1501,10 @@ return;					/* Nothing changed */
 
     missing = 0;
     for ( tpt=pt; tpt<ept; ++tpt )
-	if ( SFFindSlot(mv->sf,mv->fv->b.map,*tpt,NULL)==-1 )
+	if ( mv->fake_unicode_base>0 && *tpt>=mv->fake_unicode_base &&
+		*tpt<=mv->fake_unicode_base+mv->sf->glyphcnt )
+	    /* That's ok */;
+	else if ( SFFindSlot(mv->sf,mv->fv->b.map,*tpt,NULL)==-1 )
 	    ++missing;
 
     if ( ept-pt-missing > ei-i ) {
@@ -1434,7 +1522,8 @@ return;					/* Nothing changed */
 		mv->chars[j+diff] = mv->chars[j];
     }
     for ( j=i; pt<ept; ++pt ) {
-	SplineChar *sc = SCFromUnicode(mv->sf,mv->fv->b.map,*pt,mv->bdf);
+	SplineChar *sc;
+	sc = MVSCFromUnicode(mv,mv->sf,mv->fv->b.map,*pt,mv->bdf);
 	if ( sc!=NULL )
 	    mv->chars[j++] = sc;
     }
@@ -1489,7 +1578,13 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
     }
     newtext = galloc((cnt+1)*sizeof(unichar_t));
     for ( i=0; i<cnt; ++i ) {
-	newtext[i] = founds[i]->unicodeenc==-1 ? 0xfffd : founds[i]->unicodeenc;
+#ifdef UNICHAR_16
+	newtext[i] = founds[i]->unicodeenc==-1 || founds[i]->unicodeenc>=0x10000?
+#else
+	newtext[i] = founds[i]->unicodeenc==-1 ?
+#endif
+						MVFakeUnicodeOfSc(mv,founds[i]) :
+						founds[i]->unicodeenc;
 	mv->chars[i] = founds[i];
     }
     newtext[i] = 0;
@@ -2362,8 +2457,12 @@ static void MVResetText(MetricsView *mv) {
 
     new = galloc((mv->clen+1)*sizeof(unichar_t));
     for ( pt=new, i=0; i<mv->clen; ++i ) {
+#ifdef UNICHAR_16
 	if ( mv->chars[i]->unicodeenc==-1 || mv->chars[i]->unicodeenc>=0x10000 )
-	    *pt++ = 0xfffd;
+#else
+	if ( mv->chars[i]->unicodeenc==-1 )
+#endif
+	    *pt++ = MVFakeUnicodeOfSc(mv,mv->chars[i]);
 	else
 	    *pt++ = mv->chars[i]->unicodeenc;
     }
@@ -3856,8 +3955,12 @@ return;
     }
     for ( i=within; i<within+cnt; ++i ) {
 	mv->chars[i] = founds[i-within];
+#ifdef UNICHAR_16
 	newtext[i] = (founds[i-within]->unicodeenc>=0 && founds[i-within]->unicodeenc<0x10000)?
-		founds[i-within]->unicodeenc : 0xfffd;
+#else
+	newtext[i] = founds[i-within]->unicodeenc>=0 ?
+#endif
+		founds[i-within]->unicodeenc : MVFakeUnicodeOfSc(mv,founds[i-within]);
     }
     mv->clen += cnt;
     MVRemetric(mv);
@@ -4106,8 +4209,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 
     for ( cnt=0; cnt<mv->clen; ++cnt )
 	pt = utf8_idpb(pt,
+#ifdef UNICHAR_16
 		mv->chars[cnt]->unicodeenc==-1 || mv->chars[cnt]->unicodeenc>=0x10000?
-		0xfffd: mv->chars[cnt]->unicodeenc);
+#else
+		mv->chars[cnt]->unicodeenc==-1?
+#endif
+		MVFakeUnicodeOfSc(mv,mv->chars[cnt]): mv->chars[cnt]->unicodeenc);
     *pt = '\0';
 
     memset(&gd,0,sizeof(gd));

@@ -326,6 +326,7 @@ typedef struct metricsview {
     GTextInfo *scriptlangs;
     int word_index;
     int layer;
+    int fake_unicode_base;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
