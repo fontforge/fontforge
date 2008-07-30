@@ -1955,7 +1955,7 @@ return( 0 );
     if ( mods==NULL ) mods = &dummyfontmods;
 
     while ( text<end ) {
-#ifndef UNICHAR_T
+#ifndef UNICHAR_16
 	if ( *text>=0x1f0000 ) {
 	    /* Not a valid Unicode character */
 	    ++text;
@@ -1963,7 +1963,7 @@ return( 0 );
 	} else if ( *text&0x1f0000 ) {
 	    int plane = (*text>>16);
 	    unichar_t *start = text;
-	    while ( (*text>>16)==plane && text<=end )
+	    while ( (*text>>16)==plane && text<end )
 		text++;
 	    /* the "encoding" we want to use is "unicodeplane-plane" which is */
 	    /* em_uplane+plane */
@@ -1972,11 +1972,24 @@ return( 0 );
 
 	    if ( fd!=NULL && fd->info==NULL )
 		_loadFontMetrics(disp,fd,fi);
-	    if ( fd!=NULL )
+	    if ( fd!=NULL ) {
 		dist += _GDraw_Transform(gw,fd,NULL,enc,x+dist,y,start,text,mods,col,drawit,arg);
-	    if ( drawit==tf_rect ) {
-		arg->size.rbearing += dist;
-		arg->size.width = dist;
+		if ( drawit==tf_rect ) {
+		    arg->size.rbearing += dist;
+		    arg->size.width = dist;
+		}
+	    } else {
+		static unichar_t notfound[]= { 0xfffd, 0xfffd, 0xfffd, 0xfffd, 0 };
+		int i, len;
+		for ( i=0; i<text-start; i += len ) {
+		    len = text-(start+i);
+		    if ( len>4 ) len = 4;
+		    dist += _GDraw_DoText(gw, x+dist, y, notfound, len, mods, col, drawit, arg);
+		    if ( arg->last>= notfound && arg->last<=notfound+4 )
+			arg->last = start+i+(arg->last-notfound);
+		    if ( drawit>=tf_stopat && arg->width>=arg->maxwidth )
+return( dist );
+		}
 	    }
 	    if ( drawit>=tf_stopat && arg->width>=arg->maxwidth )
 return( dist );
