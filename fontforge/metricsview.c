@@ -1470,8 +1470,8 @@ static void MVTextChanged(MetricsView *mv) {
     SplineChar **hold = NULL;
 
     ret = _GGadgetGetTitle(mv->text);
-    if (( isrighttoleft(ret[0]) && !mv->right_to_left ) ||
-	    ( !isrighttoleft(ret[0]) && mv->right_to_left )) {
+    if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||
+	    ( ret[0]<0x10000 && !isrighttoleft(ret[0]) && mv->right_to_left )) {
 	direction_change = true;
 	mv->right_to_left = !mv->right_to_left;
     }
