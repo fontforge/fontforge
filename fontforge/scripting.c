@@ -5303,6 +5303,7 @@ static void GlyphAddInstrs(SplineChar *sc,int replace,
 	sc->ttf_instrs = NULL;
 	sc->ttf_instrs_len = 0;
     }
+    sc->instructions_out_of_date = false;
     if ( icnt==0 )
 return;
     if ( sc->ttf_instrs==NULL ) {
