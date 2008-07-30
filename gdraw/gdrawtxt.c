@@ -2414,14 +2414,14 @@ int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt) {
     if ( cnt==-1 ) cnt = u_strlen(text);
     end = text+cnt;
     while ( text<end ) {
-	if ( isrighttoleft(*text))
+	if ( *text<0x10000 && isrighttoleft(*text))
 return( -1 );
-	if ( islefttoright(*text))
+	if ( *text<0x10000 && islefttoright(*text))
     break;
 	++text;
     }
     while ( text<end ) {
-	if ( isrighttoleft(*text))
+	if ( *text<0x10000 && isrighttoleft(*text))
 return( 0 );
 	++text;
     }
