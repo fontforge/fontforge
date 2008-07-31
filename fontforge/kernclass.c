@@ -116,6 +116,7 @@ typedef struct kernclasslistdlg {
 #define CID_Correction	1037
 #define CID_FreeType	1038
 #define CID_Magnifications	1039
+#define CID_ClearDevice	1040
 
 extern int _GScrollBar_Width;
 
@@ -790,6 +791,20 @@ return( true );
 
 	DeviceTableSet(&kcd->active_adjust,kcd->pixelsize,correction);
 	GDrawRequestExpose(kcd->kw,NULL,false);
+	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClearDevice),
+		kcd->active_adjust.corrections!=NULL);
+    }
+return( true );
+}
+
+static int KCD_ClearDevice(GGadget *g, GEvent *e) {
+    KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	free(kcd->active_adjust.corrections);
+	kcd->active_adjust.corrections = NULL;
+	kcd->active_adjust.first_pixel_size = kcd->active_adjust.last_pixel_size = 0;
+	GGadgetSetTitle8(GWidgetGetControl(kcd->gw,CID_Correction),"0");
+	GGadgetSetEnabled(g,false);
     }
 return( true );
 }
@@ -875,6 +890,8 @@ static void KCD_SetDevTab(KernClassDlg *kcd) {
 	}
     }
     GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
+    GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClearDevice),
+	    kcd->active_adjust.corrections!=NULL);
 }
 #endif
 
@@ -1454,6 +1471,58 @@ return( true );
 return( true );
 }
 
+#define MID_Clear	1000
+#define MID_ClearAll	1001
+#define MID_ClearDevTab	1002
+#define MID_ClearAllDevTab	1003
+
+static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
+    KernClassDlg *kcd = GDrawGetUserData(gw);
+    int i;
+
+    switch ( mi->mid ) {
+      case MID_Clear:
+	kcd->offsets[kcd->st_pos] = 0;
+      break;
+      case MID_ClearAll:
+	for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i )
+	    kcd->offsets[i] = 0;
+      break;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+      case MID_ClearDevTab: {
+	DeviceTable *devtab = &kcd->adjusts[kcd->st_pos];
+	free(devtab->corrections);
+	devtab->corrections = NULL;
+	devtab->first_pixel_size = devtab->last_pixel_size = 0;
+      } break;
+      case MID_ClearAllDevTab:
+	for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i ) {
+	    DeviceTable *devtab = &kcd->adjusts[i];
+	    free(devtab->corrections);
+	    devtab->corrections = NULL;
+	    devtab->first_pixel_size = devtab->last_pixel_size = 0;
+	}
+      break;
+#endif
+    }
+    kcd->st_pos = -1;
+}
+
+static GMenuItem kernpopupmenu[] = {
+    { { (unichar_t *) N_("Clear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_Clear },
+    { { (unichar_t *) N_("Clear All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAll },
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    { { (unichar_t *) N_("Clear Device Table"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearDevTab },
+    { { (unichar_t *) N_("Clear All Device Tables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAllDevTab },
+#endif
+    { NULL }
+};
+
+static void KCD_PopupMenu(KernClassDlg *kcd,GEvent *event,int pos) {
+    kcd->st_pos = pos;
+    GMenuCreatePopupMenu(event->w,event, kernpopupmenu);
+}
+
 static void KCD_Mouse(KernClassDlg *kcd,GEvent *event) {
     static unichar_t space[200];
     char buf[30];
@@ -1500,6 +1569,8 @@ return;
 	GGadgetPreparePopup(kcd->gw,space);
     } else if ( event->u.mouse.x<kcd->xstart2 || event->u.mouse.y<kcd->ystart2 )
 return;
+    else if ( event->type==et_mousedown && event->u.mouse.button==3 )
+	KCD_PopupMenu(kcd,event,pos);
     else if ( event->type==et_mousedown )
 	kcd->st_pos = pos;
     else if ( event->type==et_mouseup ) {
@@ -2019,9 +2090,9 @@ return( k );
 }
 
 static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *sf) {
-    GGadgetCreateData gcd[30], hbox, flagbox, hvbox, buttonbox, mainbox[2];
-    GGadgetCreateData *harray[10], *hvarray[14], *flagarray[4], *buttonarray[9], *varray[12];
-    GTextInfo label[30];
+    GGadgetCreateData gcd[31], hbox, flagbox, hvbox, buttonbox, mainbox[2];
+    GGadgetCreateData *harray[10], *hvarray[15], *flagarray[4], *buttonarray[9], *varray[12];
+    GTextInfo label[31];
     int k,j;
     char buffer[20];
     GRect pos;
@@ -2108,17 +2179,13 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     gcd[k++].creator = GLabelCreate;
     hvarray[2] = &gcd[k-1];
 
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-    gcd[k].gd.pos.x = 255; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
-#else
-    gcd[k].gd.pos.x = 305; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
-#endif
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k].gd.cid = CID_Magnifications;
     gcd[k].gd.u.list = magnifications;
     gcd[k].gd.handle_controlevent = KCD_MagnificationChanged;
     gcd[k++].creator = GListButtonCreate;
-    hvarray[3] = &gcd[k-1]; hvarray[4] = GCD_Glue; hvarray[5] = NULL;
+    hvarray[3] = &gcd[k-1]; hvarray[4] = GCD_Glue; hvarray[5] = GCD_Glue;
+    hvarray[6] = NULL;
 
     label[k].text = (unichar_t *) _("Kern Offset:");
     label[k].text_is_1byte = true;
@@ -2126,7 +2193,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
-    hvarray[6] = &gcd[k-1];
+    hvarray[7] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 60;
@@ -2134,7 +2201,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     gcd[k].gd.cid = CID_KernOffset;
     gcd[k].gd.handle_controlevent = KCD_KernOffChanged;
     gcd[k++].creator = GTextFieldCreate;
-    hvarray[7] = &gcd[k-1];
+    hvarray[8] = &gcd[k-1];
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     label[k].text = (unichar_t *) _("Device Table Correction:");
@@ -2143,7 +2210,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
-    hvarray[8] = &gcd[k-1];
+    hvarray[9] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
@@ -2154,13 +2221,26 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     gcd[k].gd.cid = CID_Correction;
     gcd[k].gd.handle_controlevent = KCD_CorrectionChanged;
     gcd[k++].creator = GTextFieldCreate;
-    hvarray[9] = &gcd[k-1];
+    hvarray[10] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) "Clear";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 305; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Clear all device table corrections associated with this combination");
+    gcd[k].gd.cid = CID_ClearDevice;
+    gcd[k].gd.handle_controlevent = KCD_ClearDevice;
+    gcd[k++].creator = GButtonCreate;
+    hvarray[11] = &gcd[k-1];
 #else
-    hvarray[8] = GCD_Glue;
     hvarray[9] = GCD_Glue;
-#endif
     hvarray[10] = GCD_Glue;
-    hvarray[11] = NULL; hvarray[12] = NULL;
+    hvarray[11] = GCD_Glue;
+#endif
+    hvarray[12] = GCD_Glue;
+    hvarray[13] = NULL; hvarray[14] = NULL;
 
     hvbox.gd.flags = gg_enabled|gg_visible;
     hvbox.gd.u.boxelements = hvarray;
