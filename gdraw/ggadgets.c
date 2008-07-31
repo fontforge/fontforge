@@ -34,8 +34,8 @@
 #include "ustring.h"
 
 GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0, 
-    COLOR_CREATE(0xee,0xee,0xee),		/* border left */ /* brightest */
-    COLOR_CREATE(0xdd,0xdd,0xdd),		/* border top */
+    COLOR_CREATE(0xd8,0xd8,0xd8),		/* border left */ /* brightest */
+    COLOR_CREATE(0xd0,0xd0,0xd0),		/* border top */
     COLOR_CREATE(0x80,0x80,0x80),		/* border right */
     COLOR_CREATE(0x66,0x66,0x66),		/* border bottom */ /* darkest */
     COLOR_DEFAULT,				/* normal background */
