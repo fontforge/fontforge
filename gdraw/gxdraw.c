@@ -4331,7 +4331,7 @@ return( NULL );
     GXResourceInit(gdisp,programname);
 
     gdisp->bs.double_time = GResourceFindInt( "DoubleClickTime", gdisp->bs.double_time );
-    gdisp->def_background = GResourceFindColor( "Background", COLOR_CREATE(0xff,0xff,0xff));
+    gdisp->def_background = GResourceFindColor( "Background", COLOR_CREATE(0xf5,0xff,0xfa));
     gdisp->def_foreground = GResourceFindColor( "Foreground", COLOR_CREATE(0x00,0x00,0x00));
     if ( GResourceFindBool("Synchronize", false ))
 	XSynchronize(gdisp->display,true);
