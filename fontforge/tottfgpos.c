@@ -2670,8 +2670,10 @@ return( lfile );
     final = tmpfile();
     buffer = galloc(32768);
     for ( i=0; i<index; ++i ) {
+	uint32 diff;
 	otl = sizeordered[i];
 	fseek(lfile,otl->lookup_offset,SEEK_SET);
+	diff = ftell(final) - otl->lookup_offset;
 	otl->lookup_offset = ftell(final);
 	len = otl->lookup_length;
 	while ( len>=32768 ) {
@@ -2686,6 +2688,15 @@ return( lfile );
 	    if ( done==EOF )
 	break;
 	    fwrite(buffer,1,done,final);
+	}
+	for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
+	    if ( !sub->unused ) {
+		sub->subtable_offset += diff;
+		if ( sub->extra_subtables!=NULL ) {
+		    for ( i=0; sub->extra_subtables[i]!=-1; ++i )
+			sub->extra_subtables[i] += diff;
+		}
+	    }
 	}
     }
     free(buffer);
