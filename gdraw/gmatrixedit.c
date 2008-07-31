@@ -1333,7 +1333,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		gme->col_data[c].x+gme->col_data[c].width+gme->hpad/2-gme->off_left,size.height,
 		0x000000);
     GDrawDrawLine(pixmap,0,0,size.width,0,0x000000);
-    for ( r=gme->off_top; r<=gme->rows; ++r )
+    for ( r=gme->off_top; r<=gme->rows && (r-gme->off_top)*(gme->fh+gme->vpad)<=gme->g.inner.height; ++r )
 	GDrawDrawLine(pixmap,
 		0,         (r-gme->off_top)*(gme->fh+gme->vpad)-1,
 		size.width,(r-gme->off_top)*(gme->fh+gme->vpad)-1,
