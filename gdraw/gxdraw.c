@@ -3713,9 +3713,9 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 	    (gd->selinfo[sel].owner->eh)((GWindow) gd->selinfo[sel].owner, &e);
     }
     XSetSelectionOwner(gd->display,gd->selinfo[sel].sel_atom,gw->w,gd->last_event_time);
+    GXDrawClearSelData(gd,sel);
     gd->selinfo[sel].owner = gw;
     gd->selinfo[sel].timestamp = gd->last_event_time;
-    GXDrawClearSelData(gd,sel);
 }
 
 static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
