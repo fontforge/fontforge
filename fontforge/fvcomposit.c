@@ -1992,8 +1992,9 @@ return;
     if ( basersc==NULL ) {
 	if ( baserch!=basech && ( basersc = SFGetChar(sf,baserch,NULL))!=NULL )
 	    /* Do Nothing */;
-	else if ( basech==sc->unicodeenc || ( basersc = SFGetChar(sf,basech,NULL))==NULL )
+	else if ( basersc == NULL || (basech!=-1 && (basech==sc->unicodeenc || ( basersc = SFGetChar(sf,basech,NULL))==NULL )))
 	    basersc = sc;
+	
     }
     if ( ia==0 && baserch!=basech && basersc!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,layer,&bbb,ia);
@@ -2837,6 +2838,7 @@ int SCAppendAccent(SplineChar *sc,int layer,char *glyph_name, int uni,int pos) {
     SplineChar *asc;
     int i;
     const unichar_t *apt, *end;
+    char *pt;
 
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	last = ref;
@@ -2857,6 +2859,13 @@ return( 1 );
 	asc = GetGoodAccentGlyph(sf,uni,basech,&invert,ia,NULL,sc);
     if ( asc==NULL )
 return( 2 );
+    if ( uni==-1 && (pt=strchr(asc->name,'.'))!=NULL && pt-asc->name<100 ) {
+	char buffer[101];
+	strncpy(buffer,asc->name,pt-asc->name);
+	buffer[(pt-asc->name)] = '\0';
+	uni = UniFromName(buffer,ui_none,NULL);
+    }
+    
     if ( uni<=BottomAccent || uni>=TopAccent ) {
 	/* Find the real combining character that maps to this glyph */
 	/* that's where we store positioning info */
@@ -2871,6 +2880,6 @@ return( 2 );
 	}
     }
 
-    _SCCenterAccent(sc,NULL,sf,layer,uni,asc,copybmp,ia,basech,invert,pos);
+    _SCCenterAccent(sc,last->sc,sf,layer,uni,asc,copybmp,ia,basech,invert,pos);
 return( 0 );
 }
