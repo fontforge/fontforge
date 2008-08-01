@@ -2061,7 +2061,10 @@ return;
 	    transform[5] = rbb.maxy+rbb.miny;
 	}
 	if ( pos==-1 ) {
-	    pos = ____utype2[1+ch];
+	    if ( ch<0 || ch>=0x10000 )
+		pos = ____ABOVE;
+	    else
+		pos = ____utype2[1+ch];
 	    /* In greek, PSILI and friends are centered above lower case, and kern left*/
 	    /*  for upper case */
 	    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
