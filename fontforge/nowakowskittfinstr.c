@@ -1852,7 +1852,7 @@ return __same_angle(contourends, bp, p, angle) || __same_angle(contourends, bp, 
 
 /* I found it needed to write some simple functions to classify points snapped
  * to hint's edges. Classification helps to establish the most accurate leading
- * point for an edge. IsSnappable is a fallback routine.
+ * point for an edge.
  */
 static int IsExtremum(int xdir, SplinePoint *sp) {
 return xdir?
@@ -1925,22 +1925,6 @@ return 0;
     out/=fabs(out);
 
 return (in*out < 0);
-}
-
-static int IsSnappable(InstrCt *ct, int p) {
-    BasePoint *bp = ct->bp;
-    int coord = ct->xdir ? bp[p].x : bp[p].y;
-    int Prev = PrevOnContour(ct->contourends, p);
-    int Next = NextOnContour(ct->contourends, p);
-
-    if ((coord != ct->edge.base) || (ct->gd->points[p].sp == NULL))
-return 0;
-
-return ct->xdir?
-    (abs(bp[Prev].x - bp[p].x) <= abs(bp[Prev].y - bp[p].y) ||
-     abs(bp[Next].x - bp[p].x) <= abs(bp[Next].y - bp[p].y)):
-    (abs(bp[Prev].x - bp[p].x) >= abs(bp[Prev].y - bp[p].y) ||
-     abs(bp[Next].x - bp[p].x) >= abs(bp[Next].y - bp[p].y));
 }
 
 /******************************************************************************
@@ -2112,24 +2096,6 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     }
 }
 
-/* If we failed to find good snappable points, then let's try to find any. */
-/* TODO! Perhaps we shouldn't? */
-static void search_edge_desperately(int p, SplinePoint *sp, InstrCt *ct) {
-    uint8 touchflag = ct->xdir?tf_x:tf_y;
-
-    if (IsSnappable(ct, p) && !((ct->touched[p] | ct->affected[p]) & touchflag)) {
-	if (ct->edge.refpt == -1) ct->edge.refpt = p;
-	else {
-	    ct->edge.othercnt++;
-
-	    if (ct->edge.othercnt==1) ct->edge.others=(int *)gcalloc(1, sizeof(int));
-	    else ct->edge.others=(int *)grealloc(ct->edge.others, ct->edge.othercnt*sizeof(int));
-
-	    ct->edge.others[ct->edge.othercnt-1] = p;
-	}
-    }
-}
-
 static int StemPreferredForPoint(PointData *pd, StemData *stem,int is_next ) {
     StemData **stems;
     BasePoint bp;
@@ -2263,9 +2229,6 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
     ct->edge.others = NULL;
 
     RunOnPoints(ct, contour_direction, &search_edge);
-
-    if (ct->edge.refpt == -1)
-        RunOnPoints(ct, contour_direction, &search_edge_desperately);
 }
 
 /* Apparatus for edge hinting optimization. For given 'others' in ct,
