@@ -2857,7 +2857,7 @@ return;
 	    }
 	}
 	if ( diff && !changed ) {
-	    SCPreserveState(sc,false);
+	    SCPreserveLayer(sc,layer,false);
 	    changed = true;
 	}
 	if ( diff ) {
