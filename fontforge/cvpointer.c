@@ -1218,7 +1218,7 @@ return( false );
 	needsupdate = CVExpandEdge(cv);
     else if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	if ( cv->info.x!=cv->last_c.x ) {
-	    if ( !cv->recentchange ) SCPreserveState(cv->b.sc,2);
+	    if ( !cv->recentchange ) SCPreserveLayer(cv->b.sc,CVLayer((CharViewBase *) cv),2);
 	    cv->lcarets->u.lcaret.carets[cv->nearcaret] += cv->info.x-cv->last_c.x;
 	    needsupdate = true;
 	    CVSetCharChanged(cv,true);

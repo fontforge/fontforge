@@ -529,6 +529,9 @@ return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
     Undoes *undo;
 
+    if ( layer==ly_grid )
+	layer = ly_fore;
+
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
 
@@ -1991,7 +1994,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
       case ut_state: case ut_statehint: case ut_statename:
 	if ( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL )
 	    sc->parent->onlybitmaps = false;
-	SCPreserveState(sc,paster->undotype==ut_statehint);
+	SCPreserveLayer(sc,layer,paster->undotype==ut_statehint);
 	width = paster->u.state.width;
 	vwidth = paster->u.state.vwidth;
 	if (( pasteinto!=1 || paster->u.state.splines!=NULL ) && sc->ttf_instrs!=NULL ) {
