@@ -606,8 +606,20 @@ static void GTextFieldSelectWords(GTextField *gt,int last) {
 }
 
 static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
+    if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING") ||
+	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=UTF-8")) {
+	unichar_t *temp; char *ctemp;
+	int32 len;
+	ctemp = GDrawRequestSelection(gt->g.base,sel,"UTF8_STRING",&len);
+	if ( ctemp==NULL || len==0 )
+	    ctemp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=UTF-8",&len);
+	if ( ctemp!=NULL ) {
+	    temp = utf82u_copyn(ctemp,strlen(ctemp));
+	    GTextField_Replace(gt,temp);
+	    free(ctemp); free(temp);
+	}
 #ifdef UNICHAR_16
-    if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode") ||
+    } else if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode") ||
 	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
 	unichar_t *temp;
 	int32 len;
@@ -619,7 +631,9 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	    GTextField_Replace(gt,temp[0]==0xfeff?temp+1:temp);
 	free(temp);
 #else
-    if ( GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
+/* Bug in the xorg library on 64 bit machines and 32 bit transfers don't work */
+/*  so avoid them, by looking for utf8 first */
+    } else if ( GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
 	unichar_t *temp;
 	int32 len;
 	temp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4",&len);
@@ -646,18 +660,6 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	}
 	free(temp2);
 #endif
-    } else if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING") ||
-	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=UTF-8")) {
-	unichar_t *temp; char *ctemp;
-	int32 len;
-	ctemp = GDrawRequestSelection(gt->g.base,sel,"UTF8_STRING",&len);
-	if ( ctemp==NULL || len==0 )
-	    ctemp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=UTF-8",&len);
-	if ( ctemp!=NULL ) {
-	    temp = utf82u_copyn(ctemp,strlen(ctemp));
-	    GTextField_Replace(gt,temp);
-	    free(ctemp); free(temp);
-	}
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;

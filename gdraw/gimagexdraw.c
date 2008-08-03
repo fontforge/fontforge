@@ -2179,7 +2179,7 @@ static void gdraw_either_on_1_mag_dithered(GXDisplay *gdisp, GImage *image,int d
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
 	    index = (j*swid)/dwid;
 	    if ( is_32bit ) {
-	    	index = ((long *) pt)[index];
+	    	index = ((uint32 *) pt)[index];
 		index = ((index>>16)&0xff) + ((index>>8)&0xff) + (index&0xff);
 		gd += *g_d + index;
 	    } else {
@@ -2337,7 +2337,7 @@ static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dw
 	    index = (j*swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
-	    	index = ((long *) pt)[index];
+	    	index = ((uint32 *) pt)[index];
 		pixel = Pixel24(gdisp,index);
 	    } else if ( !is_1bit ) {
 		index = pt[index];
@@ -2397,7 +2397,7 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    index = (j*swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
-	    	index = ((long *) pt)[index];
+	    	index = ((uint32 *) pt)[index];
 		pixel = Pixel16(gdisp,index);
 		if ( gdisp->endian_mismatch )
 		    pixel = FixEndian16(pixel);
@@ -2458,7 +2458,7 @@ static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    index = (j*swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
-	    	index = ((long *) pt)[index];
+	    	index = ((uint32 *) pt)[index];
 		pixel = Pixel24(gdisp,index);
 	    } else if ( !is_1bit ) {
 		index = pt[index];
@@ -2536,7 +2536,7 @@ static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    index = (j*swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
-	    	index = ((long *) pt)[index];
+	    	index = ((uint32 *) pt)[index];
 		pixel = Pixel32(gdisp,index);
 		if ( gdisp->endian_mismatch )
 		    pixel = FixEndian32(pixel);
@@ -2589,7 +2589,7 @@ static void gdraw_any_on_32a_mag(GXDisplay *gdisp, GImage *image,int dwid,int dh
 	    index = (j*swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
-	    	index = ((long *) pt)[index];
+	    	index = ((uint32 *) pt)[index];
 		pixel = Pixel32(gdisp,index&0xffffff) | (index&0xff000000);
 		if ( gdisp->endian_mismatch )
 		    pixel = FixEndian32(pixel);
