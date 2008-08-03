@@ -142,8 +142,8 @@ static int readpixels(FILE *file,struct bmpheader *head) {
 
     fseek(file,head->offset,0);
     if ( head->bitsperpixel>=16 ) {
-	head->long_pixels = galloc(head->height* 4*head->width );
-	if ( head->long_pixels==NULL )
+	head->int32_pixels = galloc(head->height* 4*head->width );
+	if ( head->int32_pixels==NULL )
 return( 0 );
     } else if ( head->bitsperpixel!=1 ) {
 	head->byte_pixels = galloc(head->height* head->width );
@@ -271,7 +271,7 @@ return( 0 );
 		int b = getc(file);
 		int g = getc(file);
 		int r = getc(file);
-		head->long_pixels[ii+j] = COLOR_CREATE(r,g,b);
+		head->int32_pixels[ii+j] = COLOR_CREATE(r,g,b);
 	    }
 	    for ( j=0; j<excess; ++j )
 		(void) getc(file);	/* ignore padding */
@@ -281,7 +281,7 @@ return( 0 );
 	    ii = i*head->width;
 	    for ( j=0; j<head->width; ++j ) {
 		int pix = getshort(file);
-		head->long_pixels[ii+j] = COLOR_CREATE((pix&head->red_mask)>>head->red_shift,
+		head->int32_pixels[ii+j] = COLOR_CREATE((pix&head->red_mask)>>head->red_shift,
 			(pix&head->green_mask)>>head->green_shift,
 			(pix&head->blue_mask)>>head->blue_shift);
 	    }
@@ -293,7 +293,7 @@ return( 0 );
 	    ii = i*head->width;
 	    for ( j=0; j<head->width; ++j ) {
 		int pix = getl(file);
-		head->long_pixels[ii+j] = COLOR_CREATE((pix&head->red_mask)>>head->red_shift,
+		head->int32_pixels[ii+j] = COLOR_CREATE((pix&head->red_mask)>>head->red_shift,
 			(pix&head->green_mask)>>head->green_shift,
 			(pix&head->blue_mask)>>head->blue_shift);
 	    }
@@ -301,7 +301,7 @@ return( 0 );
     }
 
     if ( feof(file )) {		/* Did we get an incomplete file? */
-	if ( head->bitsperpixel>=16 ) gfree( head->long_pixels );
+	if ( head->bitsperpixel>=16 ) gfree( head->int32_pixels );
 	else gfree( head->byte_pixels );
 return( 0 );
     }
@@ -326,7 +326,7 @@ return( NULL );
 	ret = _GImage_Create(bmp.bitsperpixel>=16?it_true:bmp.bitsperpixel!=1?it_index:it_mono,
 		bmp.width, bmp.height);
 	if ( bmp.bitsperpixel>=16 ) {
-	    ret->u.image->data = (uint8 *) bmp.long_pixels;
+	    ret->u.image->data = (uint8 *) bmp.int32_pixels;
 	} else if ( bmp.bitsperpixel!=1 ) {
 	    ret->u.image->data = (uint8 *) bmp.byte_pixels;
 	}
@@ -336,9 +336,9 @@ return( NULL );
 	    base = ret->u.image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
-		memcpy(base->data+l*base->bytes_per_line,bmp.long_pixels+i*bmp.width,bmp.width*sizeof(long));
+		memcpy(base->data+l*base->bytes_per_line,bmp.int32_pixels+i*bmp.width,bmp.width*sizeof(uint32));
 	    }
-	    gfree( bmp.long_pixels );
+	    gfree( bmp.int32_pixels );
 	} else if ( bmp.bitsperpixel!=1 ) {
 	    ret = GImageCreate(it_index,bmp.width, bmp.height);
 	    base = ret->u.image;

@@ -525,8 +525,21 @@ static void SFTextAreaSelectWords(SFTextArea *st,int last) {
 }
 
 static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
+    if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING") ||
+	    GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=UTF-8")) {
+	unichar_t *temp; char *ctemp;
+	int32 len;
+	if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING") )
+	    ctemp = GDrawRequestSelection(st->g.base,sel,"UTF8_STRING",&len);
+	else
+	    ctemp = GDrawRequestSelection(st->g.base,sel,"text/plain;charset=UTF-8",&len);
+	if ( ctemp!=NULL ) {
+	    temp = utf82u_copyn(ctemp,strlen(ctemp));
+	    SFTextArea_Replace(st,temp);
+	    free(ctemp); free(temp);
+	}
 #ifdef UNICHAR_16
-    if ( GDrawSelectionHasType(st->g.base,sel,"Unicode") ||
+    } else if ( GDrawSelectionHasType(st->g.base,sel,"Unicode") ||
 	    GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
 	unichar_t *temp;
 	int32 len;
@@ -538,7 +551,7 @@ static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
 	    SFTextArea_Replace(st,temp[0]==0xfeff?temp+1:temp);
 	free(temp);
 #else
-    if ( GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
+    } else if ( GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
 	unichar_t *temp;
 	int32 len;
 	temp = GDrawRequestSelection(st->g.base,sel,"text/plain;charset=ISO-10646-UCS-4",&len);
@@ -565,19 +578,6 @@ static void SFTextAreaPaste(SFTextArea *st,enum selnames sel) {
 	}
 	free(temp2);
 #endif
-    } else if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING") ||
-	    GDrawSelectionHasType(st->g.base,sel,"text/plain;charset=UTF-8")) {
-	unichar_t *temp; char *ctemp;
-	int32 len;
-	if ( GDrawSelectionHasType(st->g.base,sel,"UTF8_STRING") )
-	    ctemp = GDrawRequestSelection(st->g.base,sel,"UTF8_STRING",&len);
-	else
-	    ctemp = GDrawRequestSelection(st->g.base,sel,"text/plain;charset=UTF-8",&len);
-	if ( ctemp!=NULL ) {
-	    temp = utf82u_copyn(ctemp,strlen(ctemp));
-	    SFTextArea_Replace(st,temp);
-	    free(ctemp); free(temp);
-	}
     } else if ( GDrawSelectionHasType(st->g.base,sel,"STRING")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
