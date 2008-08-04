@@ -5406,10 +5406,6 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
                         snext = tstem->chunks[j].rnext;
                         eidx = tstem->chunks[j].r_e_idx;
                     }
-                    if ( spd != NULL )
-                        fprintf( stderr,"ca=%d for pt %d stem l=%f,%f r=%f,%f\n",
-                            ConnectsAcrossToStem( gd,spd,snext,stem,is_x,eidx ),
-                            spd->sp->ptindex,stem->left.x,stem->left.y,stem->right.x,stem->right.y);
                     if ( spd != NULL && ConnectsAcrossToStem( gd,spd,snext,stem,is_x,eidx ) &&
                         ( smaster == NULL || smend - start > tend - start )) {
                         smaster = tstem;
@@ -5428,10 +5424,6 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
                         enext = tstem->chunks[j].lnext;
                         eidx = tstem->chunks[j].l_e_idx;
                     }
-                    if ( epd != NULL )
-                        fprintf( stderr,"ca=%d for pt %d stem l=%f,%f r=%f,%f\n",
-                            ConnectsAcrossToStem( gd,epd,enext,stem,!is_x,eidx ),
-                            epd->sp->ptindex,stem->left.x,stem->left.y,stem->right.x,stem->right.y);
                     if ( epd != NULL && ConnectsAcrossToStem( gd,epd,enext,stem,!is_x,eidx ) &&
                         ( emaster == NULL || end - emstart > end - tstart )) {
                         emaster = tstem;
