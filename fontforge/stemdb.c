@@ -930,7 +930,7 @@ return( FindMatchingHVEdge(gd,pd,is_next,edges,other_t,dist));
     /* For spline segments which have slope close enough to the font's italic
     /* slant look for an opposite edge along the horizontal direction, rather 
     /* than along the normal for the point's next/previous unit. This allows
-    /* as e. g. to detect serifs in italic fonts */
+    /* us e. g. to detect serifs in italic fonts */
     if ( gd->has_slant ) {
         dot = dir->x * gd->slant_unit.y - dir->y * gd->slant_unit.x;
         if ( dot < slope_error && dot > -slope_error ) {
@@ -1425,7 +1425,17 @@ return( false );
     off2 = (test2->x-stem->right.x)*dir.y - (test2->y-stem->right.y)*dir.x;
     if (off1 > ( lmax - dist_error ) && off1 < ( lmin + dist_error ) &&
         off2 > ( rmax - dist_error ) && off2 < ( rmin + dist_error )) {
-        if ( !cove || off1 == 0 || off2 == 0 )
+        /* For some reasons in my patch from Feb 24 2008 I prohibited snapping
+        /* to stems point pairs which together form a bend, if at least
+        /* one point from the pair doesn't have exactly the same position as
+        /* the stem edge. Unfortunately I don't remember why I did this, but 
+        /* this behavior has at least one obviously negative effect: it
+        /* prevents building a stem from chunks which describe an ark 
+        /* intersected by some straight lines, even if the intersections lie
+        /* closely enough to the ark extremum. So don't apply this test
+        /* at least if the force_hv flag is on (which means either the
+        /* chunk or the stem itself is not exactly horizontal/vertical) */
+        if ( !cove || force_hv || off1 == 0 || off2 == 0 )
 return( true );
     }
 
@@ -1433,7 +1443,7 @@ return( true );
     off1 = (test1->x-stem->right.x)*dir.y - (test1->y-stem->right.y)*dir.x;
     if (off2 > ( lmax - dist_error ) && off2 < ( lmin + dist_error ) &&
         off1 > ( rmax - dist_error ) && off1 < ( rmin + dist_error )) {
-        if ( !cove || off1 == 0 || off2 == 0 )
+        if ( !cove || force_hv || off1 == 0 || off2 == 0 )
 return( true );
     }
 
@@ -1698,7 +1708,7 @@ return( NULL );
         stem = &gd->stems[i];
         if ( stem->ghost || stem->bbox )
     continue;
-         if ( hv && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,hv,false,cove )) {
+        if ( hv && BothOnStem( stem,&pd->base,&pd2->base,hv,false,cove )) {
             newdir.x = ( hv == 2 ) ? 0 : 1;
             newdir.y = ( hv == 2 ) ? 1 : 0;
             if ( hv == 2 && stem->unit.y < 0 )
@@ -2205,11 +2215,11 @@ return( false );
         tpd = &gd->points[test->to->ptindex];
         stemidx = IsStemAssignedToPoint( tpd,target,false );
         if ( stemidx != -1 && tpd->prev_is_l[stemidx] == !is_l &&
-            IsSplinePeak( gd,tpd,rint( target->unit.x ),rint( target->unit.x ),7 ))
+            IsSplinePeak( gd,tpd,rint( target->unit.y ),rint( target->unit.y ),7 ))
 return( true );
         
 	test = test->to->next;
-    } while ( test!=NULL && test != other &&
+    } while ( test!=NULL && test != other && stemidx == -1 &&
         ( tpd->prevunit.x * dir.x + tpd->prevunit.y * dir.y >= 0 ));
 	    
     test = other;
@@ -2219,11 +2229,11 @@ return( true );
         tpd = &gd->points[test->from->ptindex];
         stemidx = IsStemAssignedToPoint( tpd,target,true );
         if ( stemidx != -1 && tpd->next_is_l[stemidx] == !is_l &&
-            IsSplinePeak( gd,tpd,rint( target->unit.x ),rint( target->unit.x ),7 ))
+            IsSplinePeak( gd,tpd,rint( target->unit.y ),rint( target->unit.y ),7 ))
 return( true );
 
 	test = test->from->prev;
-    } while ( test!=NULL && test != other &&
+    } while ( test!=NULL && test != other && stemidx == -1 &&
         ( tpd->nextunit.x * dir.x + tpd->nextunit.y * dir.y >= 0 ));
 return( false );
 }
@@ -2251,7 +2261,7 @@ return( ret );
 }
 
 static int BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
-    int require_existing,int eidx ) {
+    int require_existing,int has_existing,int eidx ) {
     BasePoint *dir;
     Spline *other, *cur;
     double t;
@@ -2339,7 +2349,7 @@ return( 0 );
     if ( t_needs_recalc )
         t = RecalcT( other,frompt,topt,t );
     if ( !tp && !fp ) {
-        if ( require_existing )
+        if ( has_existing )
             ret = HalfStemNoOpposite( gd,pd,NULL,dir,is_next );
 return( ret );
     }
@@ -2364,7 +2374,7 @@ return( ret );
         !other->knownlinear && !cur->knownlinear )
 	stem = HalfStem( gd,pd,dir,other,t,is_next,eidx );
     if ( stem != NULL ) ret = 1;
-    if ( require_existing )
+    if ( has_existing )
         ret += HalfStemNoOpposite( gd,pd,stem,dir,is_next );
 return( ret );
 }
@@ -4633,12 +4643,12 @@ static void AssignPointsToStems( struct glyphdata *gd,int startnum,DBounds *boun
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
         pd = &gd->points[i];
 	if ( pd->prev_e_cnt > 0 )
-	    BuildStem( gd,pd,false,true,0 );
+	    BuildStem( gd,pd,false,true,true,0 );
         else
             HalfStemNoOpposite( gd,pd,stem,&pd->prevunit,false );
 
 	if ( pd->next_e_cnt > 0 )
-	    BuildStem( gd,pd,true,true,0 );
+	    BuildStem( gd,pd,true,true,true,0 );
         else
             HalfStemNoOpposite( gd,pd,stem,&pd->nextunit,true );
 
@@ -4905,15 +4915,21 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
         /* Assume there are two stems which have (almost) coincident left edges.
         /* The hinting technique for this case is to merge all points found on
         /* those coincident edges together, position them, and then link to the
-        /* opposite edges */
-        if ( allow_s && tstart > smin && tstart < smax && start > tsmin && start < tsmax ) {
+        /* opposite edges. */
+        /* However we don't allow merging if both stems can be snapped to a blue
+        /* zone, unless their edges are _exactly_ coincident, as shifting features
+        /* relatively to each other instead of snapping them to the same zone would
+        /* obviously be wrong */
+        if ( allow_s && tstart > smin && tstart < smax && start > tsmin && start < tsmax &&
+            ( stem->blue == -1 || RealNear( tstart,start ))) {
             
             if ( smaster == NULL || stype != 'a' || smaster->clen < tstem->clen ) {
                 smaster = tstem;
                 stype = 'a';
             }
         /* The same case for right edges */
-        } else if ( allow_e && tend > emin && tend < emax && end > temin && end < temax ) {
+        } else if ( allow_e && tend > emin && tend < emax && end > temin && end < temax &&
+            ( stem->blue == -1 || RealNear( tend,end ))) {
 
             if ( emaster == NULL || etype != 'a' || emaster->clen < tstem->clen ) {
                 emaster = tstem;
@@ -5390,6 +5406,10 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
                         snext = tstem->chunks[j].rnext;
                         eidx = tstem->chunks[j].r_e_idx;
                     }
+                    if ( spd != NULL )
+                        fprintf( stderr,"ca=%d for pt %d stem l=%f,%f r=%f,%f\n",
+                            ConnectsAcrossToStem( gd,spd,snext,stem,is_x,eidx ),
+                            spd->sp->ptindex,stem->left.x,stem->left.y,stem->right.x,stem->right.y);
                     if ( spd != NULL && ConnectsAcrossToStem( gd,spd,snext,stem,is_x,eidx ) &&
                         ( smaster == NULL || smend - start > tend - start )) {
                         smaster = tstem;
@@ -5408,6 +5428,10 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
                         enext = tstem->chunks[j].lnext;
                         eidx = tstem->chunks[j].l_e_idx;
                     }
+                    if ( epd != NULL )
+                        fprintf( stderr,"ca=%d for pt %d stem l=%f,%f r=%f,%f\n",
+                            ConnectsAcrossToStem( gd,epd,enext,stem,!is_x,eidx ),
+                            epd->sp->ptindex,stem->left.x,stem->left.y,stem->right.x,stem->right.y);
                     if ( epd != NULL && ConnectsAcrossToStem( gd,epd,enext,stem,!is_x,eidx ) &&
                         ( emaster == NULL || end - emstart > end - tstart )) {
                         emaster = tstem;
@@ -5626,14 +5650,14 @@ return( gd );
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	pd = &gd->points[i];
 	if ( pd->prev_e_cnt > 0 ) {
-            ecnt = BuildStem( gd,pd,false,false,0 );
+            ecnt = BuildStem( gd,pd,false,false,use_existing,0 );
             if ( ecnt == 0 && pd->prev_e_cnt > 1 )
-	        BuildStem( gd,pd,false,false,1 );
+	        BuildStem( gd,pd,false,false,false,1 );
         }
 	if ( pd->next_e_cnt > 0 ) {
-            ecnt = BuildStem( gd,pd,true,false,0 );
+            ecnt = BuildStem( gd,pd,true,false,use_existing,0 );
             if ( ecnt == 0 && pd->next_e_cnt > 1 )
-	        BuildStem( gd,pd,true,false,1 );
+	        BuildStem( gd,pd,true,false,false,1 );
         }
 	if ( pd->bothedge!=NULL ) {
 	    DiagonalCornerStem( gd,pd,false );
