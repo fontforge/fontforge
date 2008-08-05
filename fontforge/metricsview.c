@@ -1984,7 +1984,7 @@ return;
 	    if ( yes==2 )
 return;
 	    if ( yes==1 )
-		UnlinkThisReference(NULL,sc);
+		UnlinkThisReference(NULL,sc,mv->layer);
 	}
 
 	if ( onlycopydisplayed && mv->bdf==NULL ) {

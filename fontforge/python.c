@@ -5928,8 +5928,9 @@ Py_RETURN( self );
 
 static PyObject *PyFFGlyph_unlinkThisGlyph(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int layer = ((PyFF_Glyph *) self)->layer;
 
-    UnlinkThisReference(NULL,sc);
+    UnlinkThisReference(NULL,sc,layer);
 Py_RETURN( self );
 }
 
