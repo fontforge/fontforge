@@ -404,7 +404,7 @@ extern int FVReplaceAll( FontViewBase *fv, SplineSet *find, SplineSet *rpl, doub
 extern void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge );
 extern void FVCorrectReferences(FontViewBase *fv);
 extern void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl);
-extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc);
+extern void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer);
 extern FontViewBase *ViewPostscriptFont(char *filename,int openflags);
 extern void FVBuildAccent(FontViewBase *fv,int onlyaccents);
 extern void FVRemoveKerns(FontViewBase *fv);

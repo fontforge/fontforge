@@ -876,7 +876,7 @@ return;
     free( array );
 }
 
-void UnlinkThisReference(FontViewBase *fv,SplineChar *sc) {
+void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer) {
     /* We are about to clear out sc. But somebody refers to it and that we */
     /*  aren't going to delete. So (if the user asked us to) instanciate sc */
     /*  into all characters which refer to it and which aren't about to be */
@@ -890,12 +890,12 @@ void UnlinkThisReference(FontViewBase *fv,SplineChar *sc) {
 	    RefChar *rf, *rnext;
 	    /* May be more than one reference to us, colon has two refs to period */
 	    /*  but only one dlist entry */
-	    for ( rf = dsc->layers[fv->active_layer].refs; rf!=NULL; rf=rnext ) {
+	    for ( rf = dsc->layers[layer].refs; rf!=NULL; rf=rnext ) {
 		rnext = rf->next;
 		if ( rf->sc == sc ) {
 		    /* Even if we were to preserve the state there would be no */
 		    /*  way to undo the operation until we undid the delete... */
-		    SCRefToSplines(dsc,rf,fv->active_layer);
+		    SCRefToSplines(dsc,rf,layer);
 		    SCUpdateAll(dsc);
 		}
 	    }

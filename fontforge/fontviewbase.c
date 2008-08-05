@@ -69,7 +69,7 @@ void FVClear(FontViewBase *fv) {
 		    fv->sf->glyphs[gid]->dependents!=NULL ) {
 		unsel = UnselectedDependents(fv,fv->sf->glyphs[gid]);
 		if ( refstate==-2 && unsel ) {
-		    UnlinkThisReference(fv,fv->sf->glyphs[gid]);
+		    UnlinkThisReference(fv,fv->sf->glyphs[gid],fv->active_layer);
 		} else if ( unsel ) {
 		    if ( refstate<0 )
     continue;
@@ -83,7 +83,7 @@ void FVClear(FontViewBase *fv) {
 		    if ( yes==1 )
 			refstate = 1;
 		    else if ( yes==2 ) {
-			UnlinkThisReference(fv,fv->sf->glyphs[gid]);
+			UnlinkThisReference(fv,fv->sf->glyphs[gid],fv->active_layer);
 			refstate = -2;
 		    } else if ( yes==3 )
 			refstate = -1;
