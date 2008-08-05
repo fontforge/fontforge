@@ -3238,25 +3238,39 @@ void otf_dumpgsub(struct alltabs *at, SplineFont *sf) {
     SFLigatureCleanup(sf);
 }
 
-static int LigCaretCnt(SplineChar *sc) {
+int LigCaretCnt(SplineChar *sc) {
     PST *pst;
+    int j, cnt;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type == pst_lcaret )
+	if ( pst->type == pst_lcaret ) {
+	    if ( sc->lig_caret_cnt_fixed )
 return( pst->u.lcaret.cnt );
+	    else {
+		/* only output non-zero carets */
+		cnt=0;
+		for ( j=pst->u.lcaret.cnt-1; j>=0 ; --j )
+		    if ( pst->u.lcaret.carets[j]!=0 )
+			++cnt;
+return( cnt );
+	    }
+	}
     }
 return( 0 );
 }
-    
+
 static void DumpLigCarets(FILE *gdef,SplineChar *sc) {
     PST *pst;
-    int i, j, offset;
+    int i, j, offset, cnt;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type == pst_lcaret )
     break;
     }
     if ( pst==NULL )
+return;
+    cnt = LigCaretCnt(sc);
+    if ( cnt==0 )
 return;
 
     if ( SCRightToLeft(sc) ) {
@@ -3277,15 +3291,17 @@ return;
 		}
     }
 
-    putshort(gdef,pst->u.lcaret.cnt);	/* this many carets */
-    offset = sizeof(uint16) + sizeof(uint16)*pst->u.lcaret.cnt;
-    for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
+    putshort(gdef,cnt);			/* this many carets */
+    offset = sizeof(uint16) + sizeof(uint16)*cnt;
+    for ( i=0; i<cnt; ++i ) {
 	putshort(gdef,offset);
 	offset+=4;
     }
     for ( i=0; i<pst->u.lcaret.cnt; ++i ) {
-	putshort(gdef,1);		/* Format 1 */
-	putshort(gdef,pst->u.lcaret.carets[i]);
+	if ( sc->lig_caret_cnt_fixed || pst->u.lcaret.carets[i]!=0 ) {
+	    putshort(gdef,1);		/* Format 1 */
+	    putshort(gdef,pst->u.lcaret.carets[i]);
+	}
     }
 }
 
@@ -3385,7 +3401,6 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     /*  control of lookup flags */
     /* All my example fonts contain a ligature caret list subtable, which is */
     /*  empty. Odd, but perhaps important */
-    PST *pst;
     int i,j,k, lcnt, needsclass;
     int pos, offset;
     int cnt, start, last, lastval;
@@ -3403,16 +3418,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
 	    SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
 	    if ( sc->glyph_class!=0 || gdefclass(sc)!=1 )
 		needsclass = true;
-	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->type == pst_lcaret ) {
-		    for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
-			if ( pst->u.lcaret.carets[j]!=0 )
-		    break;
-		    if ( j!=-1 )
-	    break;
-		}
-	    }
-	    if ( pst!=NULL ) {
+	    if ( LigCaretCnt(sc)!=0 ) {
 		if ( glyphs!=NULL ) glyphs[lcnt] = sc;
 		++lcnt;
 	    }

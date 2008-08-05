@@ -1293,7 +1293,8 @@ typedef struct splinechar {
     unsigned int vs_open: 1;
     unsigned int unlink_rm_ovrlp_save_undo: 1;
     unsigned int inspiro: 1;
-    /* 7 bits left (one more if we ignore compositionunit below) */
+    unsigned int lig_caret_cnt_fixed: 1;
+    /* 6 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;

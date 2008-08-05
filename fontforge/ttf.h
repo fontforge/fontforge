@@ -790,6 +790,7 @@ extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);
 extern int Macable(SplineFont *sf, OTLookup *otl);
 
     /* Used by both otf and apple */
+extern int LigCaretCnt(SplineChar *sc);
 extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
 	int numGlyphs, SplineChar ***glyphs, int apple_kc);
 extern SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names);
