@@ -1106,7 +1106,7 @@ return(false);
 	    SplinePointListTransform(refs->layers[j].splines,transform,true);
 	outlinechanged = true;
     }
-    if ( cv->b.drawmode==dm_fore ) {
+    if ( CVLayer( (CharViewBase *) cv) > ly_back ) {
 	if ( cv->showanchor ) {
 	    for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
 		ap->me.x += transform[4];
