@@ -1264,6 +1264,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	fprintf(sfd, "UnlinkRmOvrlpSave: %d\n", sc->unlink_rm_ovrlp_save_undo );
     if ( sc->inspiro )
 	fprintf(sfd, "InSpiro: %d\n", sc->inspiro );
+    if ( sc->lig_caret_cnt_fixed )
+	fprintf(sfd, "LigCaretCntFixed: %d\n", sc->lig_caret_cnt_fixed );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
 	fprintf(sfd, "Flags: %s%s%s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
@@ -4093,6 +4095,9 @@ return( NULL );
 	} else if ( strmatch(tok,"InSpiro:")==0 ) {
 	    getint(sfd,&temp);
 	    sc->inspiro = temp;
+	} else if ( strmatch(tok,"LigCaretCntFixed:")==0 ) {
+	    getint(sfd,&temp);
+	    sc->lig_caret_cnt_fixed = temp;
 	} else if ( strmatch(tok,"Flags:")==0 ) {
 	    while ( isspace(ch=nlgetc(sfd)) && ch!='\n' && ch!='\r');
 	    while ( ch!='\n' && ch!='\r' ) {

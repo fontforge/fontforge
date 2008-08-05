@@ -1220,6 +1220,8 @@ return( false );
 	if ( cv->info.x!=cv->last_c.x ) {
 	    if ( !cv->recentchange ) SCPreserveLayer(cv->b.sc,CVLayer((CharViewBase *) cv),2);
 	    cv->lcarets->u.lcaret.carets[cv->nearcaret] += cv->info.x-cv->last_c.x;
+	    if ( cv->lcarets->u.lcaret.carets[cv->nearcaret]<0 )
+		cv->lcarets->u.lcaret.carets[cv->nearcaret] = 0;
 	    needsupdate = true;
 	    CVSetCharChanged(cv,true);
 	}

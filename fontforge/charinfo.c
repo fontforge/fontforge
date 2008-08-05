@@ -78,10 +78,12 @@ typedef struct charinfo {
 #define CID_AccentDevTab	1023
 
 #define CID_IsExtended	1024
-#define CID_LCCount	1040
+#define CID_DefLCCount	1040
+#define CID_LCCount	1041
+#define CID_LCCountLab	1042
 
-#define CID_UnlinkRmOverlap	1041
-#define CID_AltUni	1042
+#define CID_UnlinkRmOverlap	1045
+#define CID_AltUni	1046
 
 /* Offsets for repeated fields. add 100*index (index<=6) */
 #define CID_List	1220
@@ -1207,6 +1209,7 @@ static int _CI_OK(CharInfo *ci) {
     int hic, vic;
     int lc_cnt=-1;
     char *italicdevtab=NULL, *accentdevtab=NULL, *hicdt=NULL, *vicdt=NULL;
+    int lig_caret_cnt_fixed=0;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     int low,high;
 #endif
@@ -1248,6 +1251,7 @@ return( false );
     }
 #endif
 
+    lig_caret_cnt_fixed = !GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_DefLCCount));
     if ( ci->lc_seen ) {
 	lc_cnt = GetInt8(ci->gw,CID_LCCount,_("Ligature Caret Count"),&err);
 	if ( err )
@@ -1329,6 +1333,7 @@ return( false );
     if ( ret && ci->lc_seen ) {
 	PST *pst, *prev=NULL;
 	int i;
+	ci->sc->lig_caret_cnt_fixed = lig_caret_cnt_fixed;
 	for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next )
 	    prev = pst;
 	if ( pst==NULL && lc_cnt==0 )
@@ -1673,6 +1678,9 @@ void SCLigCaretCheck(SplineChar *sc,int clean) {
     /*  file then there was no way of saying "ffi = f + f + i" instead you    */
     /*  said "ffi = ff + i" (only two component ligatures allowed). This means*/
     /*  we'd get the wrong number of lcaret positions */
+
+    if ( sc->lig_caret_cnt_fixed )
+return;
 
     for ( pst=sc->possub, prev=NULL; pst!=NULL; prev = pst, pst=pst->next ) {
 	if ( pst->type == pst_lcaret ) {
@@ -3279,10 +3287,11 @@ static void CI_NoteAspect(CharInfo *ci) {
     char buf[20];
 
     last_gi_aspect = new_aspect;
-    if ( new_aspect == ci->lc_aspect && !ci->lc_seen ) {
+    if ( new_aspect == ci->lc_aspect && (!ci->lc_seen || GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_DefLCCount)))) {
 	ci->lc_seen = true;
 	for ( pst=ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
-	if ( pst==NULL ) {
+	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_DefLCCount)) &&
+		pst==NULL ) {
 	    int rows, cols, i;
 	    struct matrix_data *possub;
 	    /* Normally we look for ligatures in the possub list, but here*/
@@ -3304,8 +3313,10 @@ static void CI_NoteAspect(CharInfo *ci) {
 		if ( comp>cnt ) cnt = comp;
 	    }
 	    --cnt;		/* We want one fewer caret than there are components -- carets go BETWEEN components */
-	} else
+	} else if ( pst!=NULL )
 	    cnt = pst->u.lcaret.cnt;
+	else
+	    cnt = 0;
 	if ( cnt<0 ) cnt = 0;
 	sprintf( buf, "%d", cnt );
 	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_LCCount),buf);
@@ -3316,6 +3327,16 @@ static int CI_AspectChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	CI_NoteAspect(ci);
+    }
+return( true );
+}
+
+static int CI_DefLCChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	int show = !GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCount),show);
+	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCountLab),show);
     }
 return( true );
 }
@@ -3380,7 +3401,6 @@ static void CIFillup(CharInfo *ci) {
 	ci->oldsc->charinfo = NULL;
     sc->charinfo = ci;
     ci->oldsc = sc;
-    ci->lc_seen = false;
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), ci->enc>0 &&
 	    ((gid=ci->map->map[ci->enc-1])==-1 ||
@@ -3624,6 +3644,12 @@ static void CIFillup(CharInfo *ci) {
 	}
     }
 #endif
+
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_DefLCCount), !sc->lig_caret_cnt_fixed );
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCountLab), sc->lig_caret_cnt_fixed );
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCount), sc->lig_caret_cnt_fixed );
+    ci->lc_seen = false;
+    CI_NoteAspect(ci);
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -3699,16 +3725,16 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData ugcd[14], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[16];
-    GGadgetCreateData lcgcd[3], vargcd[2][7];
+    GGadgetCreateData lcgcd[4], vargcd[2][7];
     GTextInfo ulabel[14], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[16];
-    GTextInfo lclabel[3], varlabel[2][6];
+    GTextInfo lclabel[4], varlabel[2][6];
     GGadgetCreateData mbox[4], *mvarray[7], *mharray1[7], *mharray2[8];
     GGadgetCreateData ubox[3], *uhvarray[29], *uharray[6];
     GGadgetCreateData cbox[3], *cvarray[5], *charray[4];
     GGadgetCreateData pstbox[7][4], *pstvarray[7][5], *pstharray1[7][8];
     GGadgetCreateData cobox[2], *covarray[4];
     GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
-    GGadgetCreateData lcbox[2], *lchvarray[3][4];
+    GGadgetCreateData lcbox[2], *lchvarray[4][4];
     GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
 #ifdef FONTFORGE_CONFIG_TYPE3
     GGadgetCreateData tilegcd[16], tilebox[4];
@@ -4234,24 +4260,37 @@ return;
 	memset(&lcbox,0,sizeof(lcbox));
 	memset(&lclabel,0,sizeof(lclabel));
 
-	lclabel[0].text = (unichar_t *) _("Ligature Caret Count:");
+	lclabel[0].text = (unichar_t *) _("Default Ligature Caret Count");
 	lclabel[0].text_is_1byte = true;
 	lclabel[0].text_in_resource = true;
+	lcgcd[0].gd.cid = CID_DefLCCount;
 	lcgcd[0].gd.label = &lclabel[0];
 	lcgcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	lcgcd[0].gd.popup_msg = (unichar_t *) _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
-	lcgcd[0].creator = GLabelCreate;
+	lcgcd[0].gd.handle_controlevent = CI_DefLCChange;
+	lcgcd[0].creator = GCheckBoxCreate;
 	lchvarray[0][0] = &lcgcd[0];
+	lchvarray[0][1] = lchvarray[0][2] = GCD_Glue; lchvarray[0][3] = NULL;
 
-	lcgcd[1].gd.pos.width = 50;
+	lclabel[1].text = (unichar_t *) _("Ligature Caret Count:");
+	lclabel[1].text_is_1byte = true;
+	lclabel[1].text_in_resource = true;
+	lcgcd[1].gd.label = &lclabel[1];
 	lcgcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	lcgcd[1].gd.cid = CID_LCCount;
+	lcgcd[1].gd.cid = CID_LCCountLab;
 	lcgcd[1].gd.popup_msg = (unichar_t *) _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
-	lcgcd[1].creator = GNumericFieldCreate;
-	lchvarray[0][1] = &lcgcd[1]; lchvarray[0][2] = GCD_Glue; lchvarray[0][3] = NULL;
+	lcgcd[1].creator = GLabelCreate;
+	lchvarray[1][0] = &lcgcd[1];
 
-	lchvarray[1][0] = lchvarray[1][1] = lchvarray[1][2] = GCD_Glue;
-	lchvarray[1][3] = lchvarray[2][0] = NULL;
+	lcgcd[2].gd.pos.width = 50;
+	lcgcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	lcgcd[2].gd.cid = CID_LCCount;
+	lcgcd[2].gd.popup_msg = (unichar_t *) _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
+	lcgcd[2].creator = GNumericFieldCreate;
+	lchvarray[1][1] = &lcgcd[2]; lchvarray[1][2] = GCD_Glue; lchvarray[1][3] = NULL;
+
+	lchvarray[2][0] = lchvarray[2][1] = lchvarray[2][2] = GCD_Glue;
+	lchvarray[2][3] = lchvarray[3][0] = NULL;
 
 	lcbox[0].gd.flags = gg_enabled|gg_visible;
 	lcbox[0].gd.u.boxelements = lchvarray[0];

@@ -388,9 +388,14 @@ static PST *haslcaret(SplineChar *sc) {
 
     for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
     if ( pst!=NULL ) {
-	for ( j=pst->u.lcaret.cnt-1; j>=0 && pst->u.lcaret.carets[j]==0; --j );
-	if ( j==-1 )
-	    pst = NULL;
+	if ( !sc->lig_caret_cnt_fixed ) {
+	    for ( j=pst->u.lcaret.cnt-1; j>=0 && pst->u.lcaret.carets[j]==0; --j );
+	    if ( j==-1 )
+		pst = NULL;
+	} else {
+	    if ( pst->u.lcaret.cnt==0 )
+		pst = NULL;
+	}
     }
 return( pst );
 }
@@ -399,6 +404,7 @@ void aat_dumplcar(struct alltabs *at, SplineFont *sf) {
     int i, j, k, l, seg_cnt, tot, last, offset;
     PST *pst;
     FILE *lcar=NULL;
+    SplineChar *sc;
     /* We do four passes. The first just calculates how much space we will need */
     /*  the second provides the top-level lookup table structure */
     /*  the third provides the arrays of offsets needed for type 4 lookup tables */
@@ -407,30 +413,32 @@ void aat_dumplcar(struct alltabs *at, SplineFont *sf) {
     for ( k=0; k<4; ++k ) {
 	for ( i=seg_cnt=tot=0; i<at->gi.gcnt; ++i )
 		if ( at->gi.bygid[i]!=-1 &&
-		    (pst = haslcaret(sf->glyphs[at->gi.bygid[i]]))!=NULL ) {
+		    (pst = haslcaret(sc = sf->glyphs[at->gi.bygid[i]]))!=NULL ) {
 	    if ( k==1 )
 		tot = 0;
 	    else if ( k==2 ) {
 		putshort(lcar,offset);
-		offset += 2 + 2*pst->u.lcaret.cnt;
+		offset += 2 + 2*LigCaretCnt(sc);
 	    } else if ( k==3 ) {
-		putshort(lcar,pst->u.lcaret.cnt);
+		putshort(lcar,LigCaretCnt(sc));
 		for ( l=0; l<pst->u.lcaret.cnt; ++l )
-		    putshort(lcar,pst->u.lcaret.carets[l]);
+		    if ( pst->u.lcaret.carets[l]!=0 || sc->lig_caret_cnt_fixed )
+			putshort(lcar,pst->u.lcaret.carets[l]);
 	    }
 	    last = i;
 	    for ( j=i+1, ++tot; j<at->gi.gcnt && at->gi.bygid[j]!=-1; ++j ) {
-		if ( (pst = haslcaret(sf->glyphs[at->gi.bygid[j]]))== NULL )
+		if ( (pst = haslcaret(sc = sf->glyphs[at->gi.bygid[j]]))== NULL )
 	    break;
 		++tot;
 		last = j;
 		if ( k==2 ) {
 		    putshort(lcar,offset);
-		    offset += 2 + 2*pst->u.lcaret.cnt;
+		    offset += 2 + 2*LigCaretCnt(sc);
 		} else if ( k==3 ) {
-		    putshort(lcar,pst->u.lcaret.cnt);
+		    putshort(lcar,LigCaretCnt(sc));
 		    for ( l=0; l<pst->u.lcaret.cnt; ++l )
-			putshort(lcar,pst->u.lcaret.carets[l]);
+			if ( pst->u.lcaret.carets[l]!=0 || sc->lig_caret_cnt_fixed )
+			    putshort(lcar,pst->u.lcaret.carets[l]);
 		}
 	    }
 	    if ( k==1 ) {
@@ -458,12 +466,17 @@ return;
 	    putshort(lcar,6*l);
 	    putshort(lcar,j);
 	    putshort(lcar,6*(seg_cnt-l));
-	    offset = 4+7*2 + seg_cnt*6 /*+ 6*/;
+	    offset = /*4+2+*/6*2 + seg_cnt*6 + 6 /* fake segment at end */;
 		    /* Offset relative to lookup table, not to lcar_start */
+		    /* Or, that's true while we build the lookup table. Once we */
+		    /*  start working on the data offsets they are relative to */
+		    /*  lcar_start */
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(lcar,0xffff);
 	    putshort(lcar,0xffff);
 	    putshort(lcar,0);
+
+	    offset += 6;	/* Now offsets are relative to lcar_start */
 	}
     }
     at->lcar = lcar;

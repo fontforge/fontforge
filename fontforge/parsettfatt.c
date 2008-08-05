@@ -2883,6 +2883,7 @@ return;
 		sc->possub = pst;
 		pst->type = pst_lcaret;
 		pst->subtable = NULL;
+		sc->lig_caret_cnt_fixed = true;
 	    }
 	    caret_base = ftell(ttf);
 	    pst->u.lcaret.cnt = getushort(ttf);
@@ -3200,6 +3201,7 @@ return;
     pst->subtable = NULL;
     pst->next = sc->possub;
     sc->possub = pst;
+    sc->lig_caret_cnt_fixed = true;
     pst->u.lcaret.cnt = cnt;
     pst->u.lcaret.carets = galloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
