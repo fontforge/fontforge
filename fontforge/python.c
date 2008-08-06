@@ -5665,6 +5665,7 @@ return( NULL );
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
     _SCAddRef(sc,rsc,((PyFF_Glyph *) self)->layer,transform);
+    SCCharChangedUpdate(sc,((PyFF_Glyph *) self)->layer);
 
 Py_RETURN( self );
 }
@@ -5677,6 +5678,7 @@ static PyObject *PyFFGlyph_addAnchorPoint(PyObject *self, PyObject *args) {
 return( NULL );
     ap->next = sc->anchor;
     sc->anchor = ap;
+    SCCharChangedUpdate(sc,((PyFF_Glyph *) self)->layer);
 
 Py_RETURN( self );
 }
