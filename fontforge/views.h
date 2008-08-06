@@ -317,6 +317,7 @@ typedef struct metricsview {
     unsigned int showgrid: 2;
     unsigned int antialias: 1;
     unsigned int vertical: 1;
+    unsigned int onlykerning: 1;
     struct aplist *pressed_apl;
     int xp, yp, ap_owner;
     BasePoint ap_start;
