@@ -1972,6 +1972,23 @@ return( false );
 return( dontask_ret );
 }
 
+static int SCWasEmpty(SplineChar *sc, int skip_this_layer) {
+    int i;
+
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) if ( i!=skip_this_layer ) {
+	if ( sc->layers[i].refs!=NULL )
+return( false );
+	else if ( sc->layers[i].splines!=NULL ) {
+	    SplineSet *ss;
+	    for ( ss = sc->layers[i].splines; ss!=NULL; ss=ss->next ) {
+		if ( ss->first->prev!=NULL )
+return( false );			/* Closed contour */
+	    }
+	}
+    }
+return( true );
+}
+
 /* when pasting from the fontview we do a clear first */
 static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
 	int layer, real trans[6], struct sfmergecontext *mc,int *refstate) {
@@ -2004,9 +2021,11 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	}
 	was_empty = sc->hstem==NULL && sc->vstem==NULL && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs == NULL;
 	if ( !pasteinto ) {
-	    if ( !sc->parent->onlybitmaps )
-		SCSynchronizeWidth(sc,width,sc->width,fv);
-	    sc->vwidth = vwidth;
+	    if ( SCWasEmpty(sc,pasteinto==0?layer:-1) ) {
+		if ( !sc->parent->onlybitmaps )
+		    SCSynchronizeWidth(sc,width,sc->width,fv);
+		sc->vwidth = vwidth;
+	    }
 	    SplinePointListsFree(sc->layers[layer].splines);
 	    sc->layers[layer].splines = NULL;
 	    ImageListsFree(sc->layers[layer].images);
@@ -2639,6 +2658,9 @@ static void _PasteToCV(CharViewBase *cv,SplineChar *cvsc,Undoes *paster) {
     DBounds bb;
     real transform[6];
     int wasempty = false;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int wasemptylayer = false;
+#endif
     int layer = CVLayer(cv);
 
     if ( copybuffer.undotype == ut_none ) {
@@ -2660,10 +2682,11 @@ return;
 	SCPasteLookupsTop(cvsc,paster);
       break;
       case ut_state: case ut_statehint: case ut_statename:
-	wasempty = layer!=ly_grid && cvsc->layers[layer].splines==NULL &&
-		cvsc->layers[layer].refs==NULL;
+	wasempty = SCWasEmpty(cvsc,-1);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( wasempty && cv->layerheads[dm_fore]->images==NULL &&
+	wasemptylayer = layer!=ly_grid && cvsc->layers[layer].splines==NULL &&
+		cvsc->layers[layer].refs==NULL;
+	if ( wasemptylayer && cv->layerheads[dm_fore]->images==NULL &&
 		cvsc->parent->multilayer ) {
 	    /* pasting into an empty layer sets the fill/stroke */
 	    BrushCopy(&cv->layerheads[dm_fore]->fill_brush, &paster->u.state.fill_brush);
@@ -2778,7 +2801,9 @@ return;
 	    PSTFree(cvsc->possub);
 	    cvsc->possub = paster->u.state.possub;
 	}
-	if ( wasempty ) {
+	if ( wasempty && layer>=ly_fore ) {
+	    /* Don't set the width in background or grid layers */
+	    /* Don't set the width if any potential foreground layer contained something */
 	    int width = paster->u.state.width;
 	    int vwidth = paster->u.state.vwidth;
 	    if ( cvsc->layers[ly_fore].splines==NULL && cvsc->layers[ly_fore].refs!=NULL ) {
