@@ -1853,7 +1853,8 @@ return( NULL );
 return( newclasses );
 }
 
-static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl,char *prefix);
+static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
+	OTLookup *from_otl,char *prefix, OTLookup *before);
 static OTLookup *OTLookupCopyNested(SplineFont *to_sf,SplineFont *from_sf, char *prefix,
 	OTLookup *from_otl) {
     char *newname;
@@ -1865,7 +1866,8 @@ return( NULL );
     to_nested_otl = SFFindLookup(to_sf,newname);
     free(newname);
     if ( to_nested_otl==NULL )
-	to_nested_otl = _OTLookupCopyInto(to_sf,from_sf, from_otl, prefix);
+	to_nested_otl = _OTLookupCopyInto(to_sf,from_sf, from_otl, prefix,
+		(OTLookup *) -1 );
 return( to_nested_otl );
 }
 
@@ -2282,12 +2284,33 @@ void SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 	sf->gpos_lookups = newotl;
     else
 	sf->gsub_lookups = newotl;
-
-    if ( sf->fontinfo )
-	FISortInsertLookup(sf,newotl);
 }
 
-static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl,char *prefix) {
+/* Before may be:
+    * A lookup in into_sf, in which case insert new lookup before it
+    * NULL               , in which case insert new lookup at end
+    * -1                 , in which case insert new lookup at start
+    * -2                 , try to guess a good position
+*/
+static void OrderNewLookup(SplineFont *into_sf,OTLookup *otl,OTLookup *before) {
+    int isgpos = otl->lookup_type>=gpos_start;
+    OTLookup **head = isgpos ? &into_sf->gpos_lookups : &into_sf->gsub_lookups;
+    OTLookup *prev;
+
+    if ( before == (OTLookup *) -2 )
+	SortInsertLookup(into_sf,otl);
+    else if ( before == (OTLookup *) -1 || *head==NULL || *head==before ) {
+	otl->next = *head;
+	*head = otl;
+    } else {
+	for ( prev= *head; prev->next!=NULL && prev->next!=before ; prev=prev->next );
+	otl->next = prev->next;
+	prev->next = otl;
+    }
+}
+
+static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
+	OTLookup *from_otl,char *prefix, OTLookup *before) {
     OTLookup *otl = chunkalloc(sizeof(OTLookup));
     struct lookup_subtable *sub, *last, *from_sub;
     int scnt;
@@ -2298,7 +2321,7 @@ static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLo
     otl->lookup_name = strconcat(prefix,from_otl->lookup_name);
     otl->features = FeatureListCopy(from_otl->features);
     otl->next = NULL; otl->subtables = NULL;
-    SortInsertLookup(into_sf,otl);
+    OrderNewLookup(into_sf,otl,before);
 
     last = NULL;
     scnt = 0;
@@ -2325,31 +2348,42 @@ static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLo
 	    SF_AddPSTKern(into_sf, from_sub, sub, from_sf, prefix);
 	++scnt;
     }
-    FIOTLookupCopyInto(into_sf,from_sf, from_otl, otl, scnt);
+    FIOTLookupCopyInto(into_sf,from_sf, from_otl, otl, scnt, before);
 return( otl );
 }
 
-static int NeedsPrefix(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
+static int NeedsPrefix(SplineFont *into_sf,SplineFont *from_sf, OTLookup **list) {
     struct lookup_subtable *from_sub;
-    int i,j;
+    int i,j,k;
+    OTLookup *sublist[2];
 
-    if ( from_otl==NULL )
+    sublist[1] = NULL;
+
+    if ( list==NULL || list[0]==NULL )
 return( false );
-    if ( SFFindLookup(into_sf,from_otl->lookup_name)!=NULL )
+    for ( k=0; list[k]!=NULL; ++k ) {
+	OTLookup *from_otl = list[k];
+	if ( SFFindLookup(into_sf,from_otl->lookup_name)!=NULL )
 return( true );
-    for ( from_sub = from_otl->subtables; from_sub!=NULL; from_sub=from_sub->next ) {
-	if ( from_sub->fpst!=NULL ) {
-	    for ( i=0; i<from_sub->fpst->rule_cnt; ++i ) {
-		struct fpst_rule *r = &from_sub->fpst->rules[i];
-		for ( j=0; j<r->lookup_cnt; ++j )
-		    if ( NeedsPrefix(into_sf,from_sf, r->lookups[j].lookup))
+	for ( from_sub = from_otl->subtables; from_sub!=NULL; from_sub=from_sub->next ) {
+	    if ( from_sub->fpst!=NULL ) {
+		for ( i=0; i<from_sub->fpst->rule_cnt; ++i ) {
+		    struct fpst_rule *r = &from_sub->fpst->rules[i];
+		    for ( j=0; j<r->lookup_cnt; ++j ) {
+			sublist[0] = r->lookups[j].lookup;
+			if ( NeedsPrefix(into_sf,from_sf, sublist))
 return( true );
-	    }
-	} else if ( from_sub->sm!=NULL && from_sub->sm->type==asm_context ) {
-	    for ( i=0; i<from_sub->sm->class_cnt*from_sub->sm->state_cnt; ++i ) {
-		if ( NeedsPrefix(into_sf,from_sf,from_sub->sm->state[i].u.context.mark_lookup) ||
-			NeedsPrefix(into_sf,from_sf,from_sub->sm->state[i].u.context.cur_lookup))
+		    }
+		}
+	    } else if ( from_sub->sm!=NULL && from_sub->sm->type==asm_context ) {
+		for ( i=0; i<from_sub->sm->class_cnt*from_sub->sm->state_cnt; ++i ) {
+		    sublist[0] = from_sub->sm->state[i].u.context.mark_lookup;
+		    if ( NeedsPrefix(into_sf,from_sf,sublist))
 return( true );
+		    sublist[0] = from_sub->sm->state[i].u.context.cur_lookup;
+		    if ( NeedsPrefix(into_sf,from_sf,sublist))
+return( true );
+		}
 	    }
 	}
     }
@@ -2357,11 +2391,27 @@ return( false );
 }
 
 OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
-    char *prefix = NeedsPrefix(into_sf,from_sf,from_otl)
+    char *prefix;
+    OTLookup *newotl, *list[2];
+
+    list[0] = from_otl; list[1] = NULL;
+    prefix = NeedsPrefix(into_sf,from_sf,list)
 	    ? strconcat(from_sf->fontname,"-") : copy("");
-    OTLookup *newotl = _OTLookupCopyInto(into_sf,from_sf,from_otl,prefix);
+    newotl = _OTLookupCopyInto(into_sf,from_sf,from_otl,prefix,(OTLookup *) -2);
     free(prefix);
 return( newotl );
+}
+
+void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
+	OTLookup **list, OTLookup *before) {
+    char *prefix;
+    int i;
+
+    prefix = NeedsPrefix(into_sf,from_sf,list)
+	    ? strconcat(from_sf->fontname,"-") : copy("");
+    for ( i=0; list[i]!=NULL; ++i )
+	(void) _OTLookupCopyInto(into_sf,from_sf,list[i],prefix,before);
+    free(prefix);
 }
 
 /* ************************************************************************** */
@@ -4255,7 +4305,7 @@ static void NOFI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 }
 
 static void NOFI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl, OTLookup *to_otl, int scnt) {
+	OTLookup *from_otl, OTLookup *to_otl, int scnt, OTLookup *before) {
 }
 
 static void NOFI_Destroy(SplineFont *sf) {

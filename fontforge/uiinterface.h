@@ -334,7 +334,7 @@ struct fi_interface {
 
    /* Merge lookup in from another font */
     void (*copy_into)(struct splinefont *, struct splinefont *,
-	    struct otlookup *, struct otlookup *, int);
+	    struct otlookup *, struct otlookup *, int, struct otlookup *);
 
    /* Removes any font info window for this font */
     void (*destroy)(struct splinefont *);
