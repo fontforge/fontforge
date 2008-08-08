@@ -275,6 +275,7 @@ typedef struct bitmapview {
 struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next; };
 
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
+enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 typedef struct metricsview {
     struct fontview *fv;
     SplineFont *sf;
@@ -317,7 +318,7 @@ typedef struct metricsview {
     unsigned int showgrid: 2;
     unsigned int antialias: 1;
     unsigned int vertical: 1;
-    unsigned int onlykerning: 1;
+    unsigned int type: 2;		/* enum mv_type */
     struct aplist *pressed_apl;
     int xp, yp, ap_owner;
     BasePoint ap_start;
