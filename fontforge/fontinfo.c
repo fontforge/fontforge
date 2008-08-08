@@ -6423,12 +6423,30 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	if ( done==2 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(gcd[1].ret,&len);
+	    OTLookup **list = galloc((len+1)*sizeof(OTLookup));
+	    struct lkdata *lk = &gfi->tables[isgpos];
+	    OTLookup *before = NULL;
+
+	    for ( i=0; i<lk->cnt; ++i ) {
+		if ( lk->all[i].deleted )
+	    continue;
+		if ( lk->all[i].selected ) {
+		    before = lk->all[i].lookup;
+	    break;
+		}
+	    }
 	    osf = NULL;
 	    for ( i=0; i<len; ++i ) {
 		if ( ti[i]->disabled )
 		    osf = ti[i]->userdata;
-		else if ( ti[i]->selected && ti[i]->text!=NULL )
-		    OTLookupCopyInto(gfi->sf,osf,(OTLookup *) ti[i]->userdata);
+		else if ( ti[i]->selected && ti[i]->text!=NULL ) {
+		    for ( j=0; i+j<len && !ti[i+j]->disabled &&
+			    ti[i+j]->selected && ti[i+j]->text; ++j )
+			list[j] = (OTLookup *) ti[i+j]->userdata;
+		    list[j] = NULL;
+		    OTLookupsCopyInto(gfi->sf,osf,list,before);
+		    i += j-1;
+		}
 	    }
 	}
 	GDrawDestroyWindow(gw);

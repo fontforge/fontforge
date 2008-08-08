@@ -4956,8 +4956,43 @@ static void FI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
     }
 }
 
+/* Before may be:
+    * A lookup in into_sf, in which case insert new lookup before it
+    * NULL               , in which case insert new lookup at end
+    * -1                 , in which case insert new lookup at start
+    * -2                 , try to guess a good position
+*/
+static void FI_OrderNewLookup(SplineFont *into_sf,OTLookup *otl,OTLookup *before) {
+    int isgpos = otl->lookup_type>=gpos_start;
+    OTLookup **head = isgpos ? &into_sf->gpos_lookups : &into_sf->gsub_lookups;
+    int i, k;
+
+    if ( into_sf->fontinfo ) {
+	struct lkdata *lk = &into_sf->fontinfo->tables[isgpos];
+
+	if ( lk->cnt>=lk->max )
+	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
+
+	if ( before == (OTLookup *) -2 )
+	    FI_SortInsertLookup(into_sf,otl);
+	else {
+	    if ( before == (OTLookup *) -1 || *head==NULL || *head==before ) {
+		i = 0;
+	    } else {
+		for ( i=0; i<lk->cnt && lk->all[i].lookup!=before; ++i );
+	    }
+	    for ( k=lk->cnt; k>i; --k )
+		lk->all[k] = lk->all[k-1];
+	    lk->all[i].lookup = otl;
+	    ++lk->cnt;
+	    GFI_LookupScrollbars(into_sf->fontinfo,isgpos, true);
+	    GFI_LookupEnableButtons(into_sf->fontinfo,isgpos);
+	}
+    }
+}
+
 static void FI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl, OTLookup *to_otl, int scnt) {
+	OTLookup *from_otl, OTLookup *to_otl, int scnt, OTLookup *before) {
     if ( into_sf->fontinfo ) {
 	int isgpos = from_otl->lookup_type>=gpos_start;
 	struct lkdata *lk = &into_sf->fontinfo->tables[isgpos];
@@ -4967,7 +5002,7 @@ static void FI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	    if ( lk->all[i].lookup==to_otl )
 	break;
 	if ( i==lk->cnt ) {
-	    FI_SortInsertLookup(into_sf,to_otl);
+	    FI_OrderNewLookup(into_sf,to_otl,before);
 	    for ( i=0; i<lk->cnt; ++i )
 		if ( lk->all[i].lookup==to_otl )
 	    break;

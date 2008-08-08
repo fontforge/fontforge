@@ -2899,6 +2899,8 @@ extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,ui
 extern struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
 	int lookup_type );
 extern OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
+extern void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
+	OTLookup **from_list, OTLookup *before);
 extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
 	int pixelsize, SplineChar **glyphs);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
