@@ -2689,6 +2689,7 @@ static int CVChangeToFormer( GGadget *g, GEvent *e) {
 	if ( gid<0 )
 return( true );
 	CVChangeSC(cv,sf->glyphs[gid]);
+	cv->enc = ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos];
     }
 return( true );
 }
