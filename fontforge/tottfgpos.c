@@ -1677,11 +1677,9 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	offset = 2;
 	for ( l=0; l<3; ++l ) {
 	    for ( j=0; j<cnt; ++j ) {
-		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
-		    if ( !ac->has_mark || !ac->has_base ) {
-			--k;
+		for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) if ( ac->matches ) {
+		    if ( !ac->has_mark || !ac->has_base )
 		continue;
-		    }
 		    for ( ap=base[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at);
 			    ap=ap->next );
 		    switch ( l ) {
@@ -1708,6 +1706,7 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 			    dumpanchor(gpos,ap,gi->is_ttf);
 		      break;
 		    }
+		    ++k;
 		}
 	    }
 	}
@@ -1718,11 +1717,12 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    putshort(gpos,offset);
 	    pos = tot = 0;
 	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
-		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
+		for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		    if ( ap->anchor==ac ) {
 			if ( ap->lig_index>pos ) pos = ap->lig_index;
 			++tot;
 		    }
+		    ++k;
 		}
 	    if ( pos>max ) max = pos;
 	    offset += 2+(pos+1)*classcnt*2+tot*6;
@@ -1734,11 +1734,12 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	    memset(aps,0,(classcnt*max)*sizeof(AnchorPoint *));
 	    pos = 0;
 	    for ( ap=base[j]->anchor; ap!=NULL ; ap=ap->next )
-		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
+		for ( k=0, ac=_ac; k<classcnt; ac=ac->next ) if ( ac->matches ) {
 		    if ( ap->anchor==ac ) {
 			if ( ap->lig_index>pos ) pos = ap->lig_index;
 			aps[k*max+ap->lig_index] = ap;
 		    }
+		    ++k;
 		}
 	    ++pos;
 	    putshort(gpos,pos);
