@@ -301,8 +301,11 @@ return;
 	    BuildBase(&node->children[i++],lig,at_baselig,node);
 	if ( mkmk!=NULL )
 	    BuildBase(&node->children[i++],mkmk,at_basemark,node);
-	for ( j=0, ac2=ac; j<classcnt; ++j, ac2=ac2->next ) if ( marks[j]!=NULL )
-	    BuildMark(&node->children[i++],marks[j],ac2,node);
+	for ( j=0, ac2=ac; j<classcnt; ac2=ac2->next ) if ( ac2->matches ) {
+	    if ( marks[j]!=NULL )
+		BuildMark(&node->children[i++],marks[j],ac2,node);
+	    ++j;
+	}
 	node->cnt = i;
 	for ( i=0; i<classcnt; ++i )
 	    free(marks[i]);
