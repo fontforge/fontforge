@@ -2639,7 +2639,6 @@ static void MVMenuAA(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuOnlyKerning(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     mv_onlykerning = mv->onlykerning = !mv->onlykerning;
-    BDFFontFree(mv->show);
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
