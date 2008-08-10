@@ -516,17 +516,19 @@ struct lkdata {
 	unsigned int deleted: 1;
 	unsigned int new: 1;
 	unsigned int selected: 1;
+	unsigned int moved: 1;
 	int16 subtable_cnt, subtable_max;
 	struct lksubinfo {
 	    struct lookup_subtable *subtable;
 	    unsigned int deleted: 1;
 	    unsigned int new: 1;
 	    unsigned int selected: 1;
+	    unsigned int moved: 1;
 	} *subtables;
     } *all;
 };
 
-struct gfi_data {
+struct gfi_data {		/* FontInfo */
     SplineFont *sf;
     int def_layer;
     GWindow gw;
@@ -540,6 +542,8 @@ struct gfi_data {
     unsigned int human_untitled: 1;
     unsigned int done: 1;
     unsigned int mpdone: 1;
+    unsigned int lk_drag_and_drop: 1;
+    unsigned int lk_dropablecursor: 1;
     struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
     struct texdata texdata;
     struct contextchaindlg *ccd;
@@ -554,6 +558,7 @@ struct gfi_data {
     int as, fh;
     struct lkdata tables[2];
     int lkwidth, lkheight;
+    int first_sel_lookup, first_sel_subtable;
 };
 
 

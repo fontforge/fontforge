@@ -37,7 +37,7 @@ GCursor ct_rect, ct_elipse, ct_poly, ct_star, ct_pencil, ct_shift, ct_line,
 	ct_myhand, ct_filledrect, ct_filledelipse, ct_setwidth, ct_eyedropper;
 GCursor ct_updown, ct_leftright, ct_nesw, ct_nwse;
 GCursor ct_rbearing, ct_kerning, ct_lbearing;
-GCursor ct_prohibition, ct_ddcursor;
+GCursor ct_prohibition, ct_ddcursor, ct_features;
 GCursor ct_spiroleft, ct_spiroright;
 GWindow logo_icon;
 
@@ -660,6 +660,14 @@ static unsigned char ddcursor_bits[] = {
    0x0f, 0x00, 0x03, 0x00, 0x05, 0x00, 0x09, 0x00, 0x10, 0x00, 0x00, 0x00,
    0x00, 0x02, 0x00, 0x02, 0x60, 0xc6, 0x50, 0x2a, 0x50, 0x2a, 0xa0, 0xc6,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+#define featurescursor_width 16
+#define featurescursor_height 16
+#define featurescursor_x_hot 0
+#define featurescursor_y_hot 0
+static unsigned char featurescursor_bits[] = {
+   0x0f, 0x00, 0x03, 0x00, 0x05, 0x00, 0x09, 0x00, 0x10, 0x00, 0x00, 0x00,
+   0x04, 0x00, 0x02, 0x40, 0x67, 0xec, 0xf2, 0x4a, 0x12, 0x4a, 0x62, 0x94,
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 
 void InitCursors(void) {
@@ -875,5 +883,9 @@ void InitCursors(void) {
     image = GDrawCreateBitmap(NULL,ddcursor_width,ddcursor_height,ddcursor_bits);
     ct_ddcursor = GDrawCreateCursor(image,image,0xff0000,0xffffff,ddcursor_x_hot,
 	    ddcursor_y_hot);
+    GDrawDestroyWindow(image);
+    image = GDrawCreateBitmap(NULL,featurescursor_width,featurescursor_height,featurescursor_bits);
+    ct_features = GDrawCreateCursor(image,image,0xff0000,0xffffff,featurescursor_x_hot,
+	    featurescursor_y_hot);
     GDrawDestroyWindow(image);
 }
