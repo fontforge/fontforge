@@ -45,7 +45,8 @@ extern GCursor ct_magplus, ct_magminus, ct_mypointer,
 	ct_rect, ct_elipse, ct_poly, ct_star, ct_filledrect, ct_filledelipse,
 	ct_pencil, ct_shift, ct_line, ct_myhand, ct_setwidth,
 	ct_kerning, ct_rbearing, ct_lbearing, ct_eyedropper,
-	ct_prohibition, ct_ddcursor, ct_spiroright, ct_spiroleft, ct_g2circle;
+	ct_prohibition, ct_ddcursor, ct_spiroright, ct_spiroleft, ct_g2circle,
+	ct_features;
 extern GImage GIcon_midtangent, GIcon_midcurve, GIcon_midcorner, GIcon_midhvcurve;
 extern GImage GIcon_tangent, GIcon_curve, GIcon_hvcurve, GIcon_corner, GIcon_ruler,
 	GIcon_pointer, GIcon_magnify, GIcon_pen, GIcon_knife, GIcon_scale,

@@ -6448,6 +6448,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 		    i += j-1;
 		}
 	    }
+	    free(list);
 	}
 	GDrawDestroyWindow(gw);
 
@@ -6987,6 +6988,238 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,int isgpos, GEvent
 }
     
 
+static int LookupIndex(struct gfi_data *othergfi, int isgpos, GWindow gw,
+	GWindow othergw, GEvent *event, int *subindex) {
+    GPoint pt;
+    struct lkdata *otherlk = &othergfi->tables[isgpos];
+    int l,i,j, lcnt;
+
+    pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
+    if ( gw!=othergw )
+	GDrawTranslateCoordinates(gw,othergw,&pt);
+    l = (pt.y-LK_MARGIN)/othergfi->fh + otherlk->off_top;
+
+    if ( l<0 ) {
+	*subindex = -1;
+return( -1 );
+    }
+
+    lcnt = 0;
+    for ( i=0; i<otherlk->cnt; ++i ) {
+	if ( otherlk->all[i].deleted )
+    continue;
+	if ( l==lcnt ) {
+	    *subindex = -1;
+return( i );
+	}
+	++lcnt;
+	if ( otherlk->all[i].open ) {
+	    for ( j=0; j<otherlk->all[i].subtable_cnt; ++j ) {
+		if ( otherlk->all[i].subtables[j].deleted )
+	    continue;
+		if ( l==lcnt ) {
+		    *subindex = j;
+return( i );
+		}
+		++lcnt;
+	    }
+	}
+    }
+    /* drop after last lookup */
+    *subindex = -1;
+return( i );
+}
+
+static int LookupsDropable(struct gfi_data *gfi, struct gfi_data *othergfi,
+	int isgpos, GWindow gw, GWindow othergw, GEvent *event) {
+    int lookup, subtable;
+    struct lkdata *lk = &gfi->tables[isgpos];
+    struct lkdata *otherlk = &othergfi->tables[isgpos];
+
+    if ( gfi->first_sel_subtable==-1 )
+return( true );			/* Lookups can be dropped anywhere */
+
+    lookup = LookupIndex(othergfi,isgpos,gw,othergw,event,&subtable);
+    if ( lookup<0 || lookup>=lk->cnt )
+return( false );		/* Subtables must be dropped in a lookup */
+
+    if ( gfi!=othergfi || lookup!=gfi->first_sel_lookup )
+return( false );		/* Can't merge subtables from one lookup to another */
+
+    /* Subtables can only be dropped in a lookup with the same type */
+    /* At the moment we don't need this test, as we only allow subtables to be dropped within their original lookup */
+return( otherlk->all[lookup].lookup->lookup_type ==
+		lk->all[gfi->first_sel_lookup].lookup->lookup_type );
+}
+
+static void LookupDragDrop(struct gfi_data *gfi, int isgpos, GEvent *event) {
+    FontViewBase *fv;
+    struct gfi_data *othergfi=NULL;
+    GWindow gw = GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos));
+    GWindow othergw = NULL;
+    int i,j;
+
+    for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf->fontinfo!=NULL ) {
+	int otherisgpos;
+
+	othergfi = fv->sf->fontinfo;
+	otherisgpos = GTabSetGetSel(GWidgetGetControl(othergfi->gw,CID_Lookups));
+	if ( otherisgpos!=isgpos )
+    continue;
+	othergw = GDrawableGetWindow(GWidgetGetControl(othergfi->gw,CID_LookupWin+otherisgpos));
+	if ( GDrawEventInWindow( othergw,event ))
+    break;
+    }
+    if ( fv==NULL || !LookupsDropable(gfi,othergfi,isgpos,gw,othergw,event)) {
+	if ( event->type==et_mouseup ) {
+	    GDrawSetCursor(gw,ct_mypointer);
+	    gfi->lk_drag_and_drop = gfi->lk_dropablecursor = false;
+return;
+	} else {
+	    if ( gfi->lk_dropablecursor ) {
+		gfi->lk_dropablecursor = false;
+		GDrawSetCursor(gw,ct_prohibition);
+	    }
+return;
+	}
+    } else {
+	if ( event->type==et_mousemove ) {
+	    if ( !gfi->lk_dropablecursor ) {
+		gfi->lk_dropablecursor = true;
+		GDrawSetCursor(gw,ct_features);
+	    }
+return;
+	} else {
+	    struct lkdata *otherlk = &othergfi->tables[isgpos];
+	    struct lkdata *lk = &gfi->tables[isgpos];
+	    struct lkinfo temp;
+	    struct lksubinfo subtemp;
+	    int lookup, subtable;
+
+	    lookup = LookupIndex(othergfi,isgpos,gw,othergw,event,&subtable);
+
+	    if ( gfi==othergfi ) {
+		/* dropping in the same window just moves things around */
+		if ( gfi->first_sel_subtable == -1 ) {
+		    /* Moving lookups */
+		    if ( lookup<0 ) lookup=0;
+		    else if ( lookup>=lk->cnt ) lookup=lk->cnt;
+		    if ( lookup==gfi->first_sel_lookup )
+  goto done_drop;
+		    for ( i=0; i<lk->cnt; ++i )
+			lk->all[i].moved = false;
+		    for ( i=gfi->first_sel_lookup; i<lk->cnt; ++i ) {
+			if ( lk->all[i].deleted || !lk->all[i].selected ||
+				lk->all[i].moved || i==lookup )
+		    continue;
+			temp = lk->all[i];
+			temp.moved = true;
+			if ( i<lookup ) {
+			    for ( j=i+1; j<lookup; ++j )
+				lk->all[j-1] = lk->all[j];
+			    lk->all[j-1] = temp;
+			} else {
+			    for ( j=i; j>lookup; --j )
+				lk->all[j] = lk->all[j-1];
+			    lk->all[j] = temp;
+			}
+			--i;
+		    }
+		} else if ( lookup==gfi->first_sel_lookup ) {
+		    if ( subtable< 0 ) subtable=0;
+		    if ( subtable==gfi->first_sel_subtable )
+  goto done_drop;
+		    for ( i=0; i<lk->cnt; ++i )
+			lk->all[lookup].subtables[i].moved = false;
+		    for ( i=gfi->first_sel_subtable; i<lk->all[lookup].subtable_cnt; ++i ) {
+			if ( lk->all[lookup].subtables[i].deleted || !lk->all[lookup].subtables[i].selected ||
+				lk->all[lookup].subtables[i].moved || i==subtable )
+		    continue;
+			subtemp = lk->all[lookup].subtables[i];
+			subtemp.moved = true;
+			if ( i<subtable ) {
+			    for ( j=i+1; j<subtable; ++j )
+				lk->all[lookup].subtables[j-1] = lk->all[lookup].subtables[j];
+			    lk->all[lookup].subtables[j-1] = subtemp;
+			} else {
+			    for ( j=i; j>subtable; --j )
+				lk->all[lookup].subtables[j] = lk->all[lookup].subtables[j-1];
+			    lk->all[lookup].subtables[j] = subtemp;
+			}
+			--i;
+		    }
+		} else
+		    IError("Attempt to merge subtables not permitted" );
+	    } else {
+		if ( gfi->first_sel_subtable == -1 ) {
+		    /* Import lookups from one font to another */
+		    OTLookup **list, *before;
+		    int cnt=0;
+		    for ( i=0; i<lk->cnt; ++i ) {
+			if ( lk->all[i].deleted )
+		    continue;
+			if ( lk->all[i].selected )
+			    ++cnt;
+		    }
+		    list = galloc((cnt+1)*sizeof(OTLookup *));
+		    cnt=0;
+		    for ( i=0; i<lk->cnt; ++i ) {
+			if ( lk->all[i].deleted )
+		    continue;
+			if ( lk->all[i].selected )
+			    list[cnt++] = lk->all[i].lookup;
+		    }
+		    list[cnt] = NULL;
+		    if ( lookup<0 ) lookup=0;
+		    before = lookup>=otherlk->cnt ? NULL : otherlk->all[lookup].lookup;
+		    OTLookupsCopyInto(othergfi->sf,gfi->sf,list,before);
+		    free( list );
+		} else
+		    IError("Attempt to merge subtables across fonts not permitted" );
+		GDrawRequestExpose(othergw,NULL,false);
+	    }
+  done_drop:
+	    GDrawSetCursor(gw,ct_mypointer);
+	    GDrawRequestExpose(gw,NULL,false);
+	    gfi->lk_drag_and_drop = gfi->lk_dropablecursor = false;
+return;
+	}
+    }
+}
+
+static int LookupDragDropable(struct gfi_data *gfi, struct lkdata *lk) {
+    int i,j;
+    int first_l= -1, first_s= -1;
+
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	if ( lk->all[i].selected ) {
+	    if ( first_s!=-1 )
+return( false );		/* Can't have mixed lookups and subtables */
+	    if ( first_l==-1 )
+		first_l = i;
+	}
+	if ( lk->all[i].open ) {
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		if ( lk->all[i].subtables[j].selected ) {
+		    if ( first_l==i || first_l==-1 )
+			first_l = i;
+		    else
+return( false );		/* Mixed lookups and subtables */
+		    if ( first_s==-1 )
+			first_s = j;
+		}
+	    }
+	}
+    }
+    gfi->first_sel_lookup   = first_l;
+    gfi->first_sel_subtable = first_s;
+return( true );
+}
+    
 static void LookupMouse(struct gfi_data *gfi, int isgpos, GEvent *event) {
     struct lkdata *lk = &gfi->tables[isgpos];
     int l = (event->u.mouse.y-LK_MARGIN)/gfi->fh + lk->off_top;
@@ -6995,6 +7228,11 @@ static void LookupMouse(struct gfi_data *gfi, int isgpos, GEvent *event) {
 	    event->u.mouse.x<=LK_MARGIN-lk->off_left+gfi->as+1;
     GWindow gw = GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos));
     int i,j,lcnt;
+
+    if ( event->type!=et_mousedown && gfi->lk_drag_and_drop ) {
+	LookupDragDrop(gfi,isgpos,event);
+return;
+    }
 
     if ( l<0 || event->u.mouse.y>=(gfi->lkheight-2*LK_MARGIN) )
 return;
@@ -7010,6 +7248,10 @@ return;
 		LookupPopup(gw,lk->all[i].lookup,NULL,lk);
 return;
 	    } else {
+		if ( gfi->lk_drag_and_drop ) {
+		    GDrawSetCursor(gw,ct_mypointer);
+		    gfi->lk_drag_and_drop = gfi->lk_dropablecursor = false;
+		}
 		if ( inbox || event->u.mouse.clicks>1 ) {
 		    lk->all[i].open = !lk->all[i].open;
 		    GFI_LookupScrollbars(gfi, isgpos, true);
@@ -7018,8 +7260,13 @@ return;
 		if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) ) {
 		    /* If line is selected, and we're going to pop up a menu */
 		    /*  then don't clear other selected lines */
-		    if ( !lk->all[i].selected || event->u.mouse.button!=3 )
+		    if ( !lk->all[i].selected ||
+			    (event->u.mouse.button!=3 && !LookupDragDropable(gfi,lk)))
 			LookupDeselect(lk);
+		    else if ( event->u.mouse.button!=3 ) {
+			gfi->lk_drag_and_drop = gfi->lk_dropablecursor = true;
+			GDrawSetCursor(gw,ct_features);
+		    }
 		    lk->all[i].selected = true;
 		} else if ( event->u.mouse.state&ksm_control ) {
 		    lk->all[i].selected = !lk->all[i].selected;
@@ -7069,8 +7316,12 @@ return;		/* Can't open this guy */
 				/* If line is selected, and we're going to pop up a menu */
 				/*  then don't clear other selected lines */
 				if ( !lk->all[i].subtables[j].selected ||
-					event->u.mouse.button!=3 )
+					(event->u.mouse.button!=3 && !LookupDragDropable(gfi,lk)))
 				    LookupDeselect(lk);
+				else if ( event->u.mouse.button!=3 ) {
+				    gfi->lk_drag_and_drop = gfi->lk_dropablecursor = true;
+				    GDrawSetCursor(gw,ct_features);
+				}
 				lk->all[i].subtables[j].selected = true;
 			    } else
 				lk->all[i].subtables[j].selected = !lk->all[i].subtables[j].selected;
