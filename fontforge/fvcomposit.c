@@ -1007,7 +1007,7 @@ return( SFGetChar(sf,ch,NULL) );
 	    dot);
     if ( (sc = SFGetChar(sf,-1,buffer)) )
 return( sc );
-    else if ( iscombining(ch))
+    else if ( isaccent(ch))
 return( SFGetChar(sf,ch,NULL) );
     else
 return( NULL );
@@ -1218,7 +1218,7 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	int *invert,double ia, char *dot, SplineChar *destination);
 
 int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc,int layer) {
-    const unichar_t *pt; unichar_t ch, basech;
+    const unichar_t *pt, *all; unichar_t ch, basech;
     SplineChar *one, *two;
     char *dot = NULL;
     int invert = false;
@@ -1233,7 +1233,7 @@ return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,false,false))
 	free(temp);
     }
 
-    if (( pt = SFGetAlternate(sf,unicodeenc,sc,false))==NULL )
+    if (( all = pt = SFGetAlternate(sf,unicodeenc,sc,false))==NULL )
 return( false );
 
     if ( sc!=NULL )
@@ -1244,7 +1244,7 @@ return( false );
     basech = *pt;
     for ( ; *pt; ++pt ) {
 	ch = *pt;
-	if ( isaccent(ch) ) {
+	if ( all!=pt && isaccent(ch) ) {	/* first glyph is magic and doesn't go through accent processing */
 	    two = GetGoodAccentGlyph(sf,ch,basech,&invert,sf->italicangle,dot,one);
 	} else if ( !haschar(sf,ch,dot))
 return( false );
@@ -1721,9 +1721,9 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int layer,int ch, i
 		sf->dotlesswarn = true;
 	    }
 	}
-	if ( rsc==NULL )
-return( 0 );
     }
+    if ( rsc==NULL )
+return( 0 );
     sc->width = rsc->width;
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
