@@ -649,10 +649,15 @@ static int GMenuBarKeyInvoke(struct gmenubar *mb, int i) {
 return( true );
 }
 
+#if 0
 static int getkey(int keysym, int option) {
     if ( option && keysym>128 ) {
 	/* Under Mac 10.5 (but not under 10.4,3,2,1,0) if the option key is */
 	/*  depressed the keysym changes. Opt-A becomes ARing, etc. */
+	/* Er... I can't repeat this now. the Option modifier mask (meta) */
+	/*  should be stripped off before we call Xutf8LookupString so the */
+	/*  conversion shouldn't happen. And doesn't in my tests */
+	/* And 0x2000 is not set for option now anyway */
 	if ( keysym==0xc5 )
 	    keysym = 'a';
 	else if ( keysym==0xe5 )
@@ -777,12 +782,13 @@ static int getkey(int keysym, int option) {
     if ( islower(keysym)) keysym = toupper(keysym);
 return( keysym );
 }
+#endif
 
 static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
     int i;
     unichar_t keysym = event->u.chr.keysym;
 
-    if ( islower(keysym)) keysym = getkey(keysym,event->u.chr.state&0x2000 );
+    if ( islower(keysym)) keysym = isupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( mi[i].sub==NULL && mi[i].shortcut == keysym &&
 		((ksm_shift|ksm_control|ksm_meta)&event->u.chr.state)==mi[i].short_mask )
