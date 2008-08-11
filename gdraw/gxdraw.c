@@ -2862,7 +2862,8 @@ return;
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* I don't think it hurts to leave this enabled... */
 	if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control;
-	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta;
+/* Under 10.4 the option key generates the meta mask already */
+/*	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta; */
 /*#endif*/
 	gevent.u.chr.x = event->xkey.x;
 	gevent.u.chr.y = event->xkey.y;
@@ -2890,7 +2891,7 @@ return;
 		/*  string conversion routines twice for one event because */
 		/*  they may change the state. So... Turn off alt for now */
 		/*  and later doctor up the event */
-		((XKeyEvent *) event)->state &=~ (ControlMask|Mod1Mask);
+		((XKeyEvent *) event)->state &=~ (ControlMask|Mod1Mask|Mod2Mask);
 		gevent.u.chr.chars[0] = 0;
 	    }
 	    if ( ((GXWindow) gw)->gic==NULL ) {
