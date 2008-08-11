@@ -1844,7 +1844,7 @@ static void CVSideBearings(GWindow pixmap, CharView *cv) {
 	last = sc->layer_cnt-1;
 	first = ly_fore;
     } else {
-	layer = last = CVLayer( (CharViewBase *) cv);
+	first = last = CVLayer( (CharViewBase *) cv);
 	if ( first==ly_grid )
 	    first = last = ly_fore;
     }
