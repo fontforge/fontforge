@@ -6612,6 +6612,9 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	  break;
 	}
       break;
+      case et_mousedown:
+	GDrawSetGIC(gw,fv->gwgic,0,20);
+      break;
       case et_close:
 	FVMenuClose(gw,NULL,NULL);
       break;
@@ -6802,8 +6805,10 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
 
-    fv->gic = GDrawCreateInputContext(fv->v,gic_root|gic_orlesser);
+    fv->gic   = GDrawCreateInputContext(fv->v,gic_root|gic_orlesser);
+    fv->gwgic = GDrawCreateInputContext(fv->gw,gic_root|gic_orlesser);
     GDrawSetGIC(fv->v,fv->gic,0,20);
+    GDrawSetGIC(fv->gw,fv->gic,0,20);
 
     if ( fontnames==NULL ) {
 	fontnames = uc_copy(GResourceFindString("FontView.FontFamily"));
