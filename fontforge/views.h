@@ -163,6 +163,7 @@ typedef struct charview {
     GTimer *pressed;
     GWindow backimgs;
     GIC *gic;
+    GIC *gwgic;
     int width, height;
     int xoff, yoff;
     int mbh, infoh, rulerh;
@@ -329,6 +330,7 @@ typedef struct metricsview {
     int word_index;
     int layer;
     int fake_unicode_base;
+    GIC *gwgic;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
@@ -342,6 +344,7 @@ typedef struct fontview {
     GTimer *resize;
     GEvent resize_event;
     GIC *gic;
+    GIC *gwgic;
     int width, height;		/* of v */
     int16 infoh,mbh;
     int16 lab_height, lab_as;

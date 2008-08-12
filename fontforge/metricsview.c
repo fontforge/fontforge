@@ -4122,6 +4122,8 @@ static int mv_e_h(GWindow gw, GEvent *event) {
 		(event->u.mouse.button==4 || event->u.mouse.button==5) ) {
 return( GGadgetDispatchEvent(mv->vsb,event));
 	}
+	if ( mv->gwgic!=NULL && event->type==et_mousedown)
+	    GDrawSetGIC(mv->gw,mv->gwgic,0,20);
 	MVMouse(mv,event);
       break;
       case et_drop:
@@ -4285,6 +4287,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     pos.height = mv_height;
     mv->gw = gw = GDrawCreateTopWindow(NULL,&pos,mv_e_h,mv,&wattrs);
     mv->width = pos.width; mv->height = pos.height;
+    mv->gwgic = GDrawCreateInputContext(mv->gw,gic_root|gic_orlesser);
+    GDrawSetGIC(gw,mv->gwgic,0,20);
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;

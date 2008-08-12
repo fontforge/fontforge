@@ -4722,6 +4722,8 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	if ( cv->showrulers ) {
 	    int is_h = event->u.mouse.y>cv->mbh+cv->infoh && event->u.mouse.y<cv->mbh+cv->infoh+cv->rulerh;
 	    int is_v = event->u.mouse.x<cv->rulerh;
+	    if ( cv->gwgic!=NULL && event->type==et_mousedown)
+		GDrawSetGIC(gw,cv->gwgic,0,20);
 	    if ( event->type == et_mousedown ) {
 		if ( is_h && is_v )
 		    /* Ambiguous, ignore */;
@@ -9694,8 +9696,10 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 
     CVFit(cv);
     GDrawSetVisible(cv->v,true);
-    if ( cv_auto_goto )		/* Chinese input method steals hot key key-strokes */
-	cv->gic = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
+    /*if ( cv_auto_goto )*/		/* Chinese input method steals hot key key-strokes */
+	/* But if we don't do this, then people can't type menu short-cuts */
+	cv->gic   = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
+	cv->gwgic = GDrawCreateInputContext(cv->gw,gic_root|gic_orlesser);
     GDrawSetVisible(cv->gw,true);
 
     if ( (CharView *) (sc->views)==NULL && updateflex )
