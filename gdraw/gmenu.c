@@ -786,9 +786,15 @@ return( keysym );
 
 static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
     int i;
-    unichar_t keysym = event->u.chr.keysym;
+    unichar_t keysym;
 
-    if ( islower(keysym)) keysym = isupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
+    if ( event->u.chr.keysym>=GK_Special )
+	keysym = event->u.chr.keysym;
+    else
+	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
+
+    if ( keysym<GK_Special && islower(keysym))
+	keysym = toupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( mi[i].sub==NULL && mi[i].shortcut == keysym &&
 		((ksm_shift|ksm_control|ksm_meta)&event->u.chr.state)==mi[i].short_mask )
@@ -1193,7 +1199,7 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
     GMenuItem *mi;
     unichar_t keysym;
 
-    if ( event->u.chr.keysym>0xff00 )
+    if ( event->u.chr.keysym>=GK_Special )
 	keysym = event->u.chr.keysym;
     else
 	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
@@ -1202,7 +1208,8 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
     if ( g==NULL )
 return( false );
 
-    if ( islower(keysym)) keysym = toupper(keysym);
+    if ( keysym<GK_Special && islower(keysym))
+	keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
