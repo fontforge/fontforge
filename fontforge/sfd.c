@@ -5329,11 +5329,14 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	  case pst_coverage:
 	    getint(sfd,&fpst->rules[i].lookup_cnt);
 	    fpst->rules[i].lookups = galloc(fpst->rules[i].lookup_cnt*sizeof(struct seqlookup));
-	    for ( j=0; j<fpst->rules[i].lookup_cnt; ++j ) {
+	    for ( j=k=0; j<fpst->rules[i].lookup_cnt; ++j ) {
 		getname(sfd,tok);
 		getint(sfd,&fpst->rules[i].lookups[j].seq);
 		fpst->rules[i].lookups[j].lookup = SFD_ParseNestedLookup(sfd,sf,old);
+		if ( fpst->rules[i].lookups[j].lookup!=NULL )
+		    ++k;
 	    }
+	    fpst->rules[i].lookup_cnt = k;
 	  break;
 	  case pst_reversecoverage:
 	    getname(sfd,tok);
