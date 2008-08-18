@@ -4983,6 +4983,7 @@ static void FI_OrderNewLookup(SplineFont *into_sf,OTLookup *otl,OTLookup *before
 	    }
 	    for ( k=lk->cnt; k>i; --k )
 		lk->all[k] = lk->all[k-1];
+	    memset(&lk->all[i],0,sizeof(lk->all[i]));
 	    lk->all[i].lookup = otl;
 	    ++lk->cnt;
 	    GFI_LookupScrollbars(into_sf->fontinfo,isgpos, true);

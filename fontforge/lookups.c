@@ -1853,37 +1853,43 @@ return( NULL );
 return( newclasses );
 }
 
-static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl,char *prefix, OTLookup *before);
-static OTLookup *OTLookupCopyNested(SplineFont *to_sf,SplineFont *from_sf, char *prefix,
+static OTLookup *_OTLookupCopyInto(struct sfmergecontext *mc,
+	OTLookup *from_otl, OTLookup *before);
+static OTLookup *OTLookupCopyNested(struct sfmergecontext *mc,
 	OTLookup *from_otl) {
     char *newname;
     OTLookup *to_nested_otl;
+    int l;
 
     if ( from_otl==NULL )
 return( NULL );
-    newname = strconcat(prefix,from_otl->lookup_name);
-    to_nested_otl = SFFindLookup(to_sf,newname);
+
+    for ( l=0; l<mc->lcnt; ++l ) {
+	if ( mc->lks[l].from == from_otl )
+return( mc->lks[l].to );
+    }
+
+    newname = strconcat(mc->prefix,from_otl->lookup_name);
+    to_nested_otl = SFFindLookup(mc->sf_to,newname);
     free(newname);
     if ( to_nested_otl==NULL )
-	to_nested_otl = _OTLookupCopyInto(to_sf,from_sf, from_otl, prefix,
-		(OTLookup *) -1 );
+	to_nested_otl = _OTLookupCopyInto(mc, from_otl, (OTLookup *) -1 );
 return( to_nested_otl );
 }
 
-static KernClass *SF_AddKernClass(SplineFont *to_sf,KernClass *kc, struct lookup_subtable *sub,
-	SplineFont *from_sf, char *prefix) {
+static KernClass *SF_AddKernClass(struct sfmergecontext *mc,KernClass *kc,
+	struct lookup_subtable *sub ) {
     KernClass *newkc;
 
     newkc = chunkalloc(sizeof(KernClass));
     *newkc = *kc;
     newkc->subtable = sub;
     if ( sub->vertical_kerning ) {
-	newkc->next = to_sf->vkerns;
-	to_sf->vkerns = newkc;
+	newkc->next = mc->sf_to->vkerns;
+	mc->sf_to->vkerns = newkc;
     } else {
-	newkc->next = to_sf->kerns;
-	to_sf->kerns = newkc;
+	newkc->next = mc->sf_to->kerns;
+	mc->sf_to->kerns = newkc;
     }
 
     newkc->firsts = ClassCopy(newkc->first_cnt,newkc->firsts);
@@ -1893,16 +1899,16 @@ static KernClass *SF_AddKernClass(SplineFont *to_sf,KernClass *kc, struct lookup
 return( newkc );
 }
 
-static FPST *SF_AddFPST(SplineFont *to_sf,FPST *fpst, struct lookup_subtable *sub,
-	SplineFont *from_sf, char *prefix) {
+static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
+	struct lookup_subtable *sub ) {
     FPST *newfpst;
     int i, k, cur;
 
     newfpst = chunkalloc(sizeof(FPST));
     *newfpst = *fpst;
     newfpst->subtable = sub;
-    newfpst->next = to_sf->possub;
-    to_sf->possub = newfpst;
+    newfpst->next = mc->sf_to->possub;
+    mc->sf_to->possub = newfpst;
 
     newfpst->nclass = ClassCopy(newfpst->nccnt,newfpst->nclass);
     newfpst->bclass = ClassCopy(newfpst->bccnt,newfpst->bclass);
@@ -1918,7 +1924,7 @@ static FPST *SF_AddFPST(SplineFont *to_sf,FPST *fpst, struct lookup_subtable *su
 	r->lookups = galloc(r->lookup_cnt*sizeof(struct seqlookup));
 	memcpy(r->lookups,oldr->lookups,r->lookup_cnt*sizeof(struct seqlookup));
 	for ( k=0; k<r->lookup_cnt; ++k ) {
-	    r->lookups[k].lookup = OTLookupCopyNested(to_sf,from_sf, prefix,
+	    r->lookups[k].lookup = OTLookupCopyNested(mc,
 		r->lookups[k].lookup);
 	}
 
@@ -1952,17 +1958,16 @@ static FPST *SF_AddFPST(SplineFont *to_sf,FPST *fpst, struct lookup_subtable *su
 return( newfpst );
 }
 
-static ASM *SF_AddASM(SplineFont *to_sf,ASM *sm, struct lookup_subtable *sub,
-	SplineFont *from_sf, char *prefix) {
+static ASM *SF_AddASM(struct sfmergecontext *mc,ASM *sm, struct lookup_subtable *sub ) {
     ASM *newsm;
     int i;
 
     newsm = chunkalloc(sizeof(ASM));
     *newsm = *sm;
     newsm->subtable = sub;
-    newsm->next = to_sf->sm;
-    to_sf->sm = newsm;
-    to_sf->changed = true;
+    newsm->next = mc->sf_to->sm;
+    mc->sf_to->sm = newsm;
+    mc->sf_to->changed = true;
     newsm->classes = ClassCopy(newsm->class_cnt, newsm->classes);
     newsm->state = galloc(newsm->class_cnt*newsm->state_cnt*sizeof(struct asm_state));
     memcpy(newsm->state,sm->state,
@@ -1980,9 +1985,9 @@ static ASM *SF_AddASM(SplineFont *to_sf,ASM *sm, struct lookup_subtable *sub,
 	}
     } else if ( newsm->type == asm_context ) {
 	for ( i=0; i<newsm->class_cnt*newsm->state_cnt; ++i ) {
-	    newsm->state[i].u.context.mark_lookup = OTLookupCopyNested(to_sf,from_sf, prefix,
+	    newsm->state[i].u.context.mark_lookup = OTLookupCopyNested(mc,
 		    newsm->state[i].u.context.mark_lookup);
-	    newsm->state[i].u.context.cur_lookup = OTLookupCopyNested(to_sf,from_sf, prefix,
+	    newsm->state[i].u.context.cur_lookup = OTLookupCopyNested(mc,
 		    newsm->state[i].u.context.cur_lookup);
 	}
     }
@@ -2011,29 +2016,29 @@ static void SF_SCAddAP(SplineChar *tosc,AnchorPoint *ap, AnchorClass *newac) {
     tosc->anchor = newap;
 }
 
-static void SF_AddAnchorClasses(SplineFont *to_sf,struct lookup_subtable *from_sub, struct lookup_subtable *sub,
-	SplineFont *from_sf, char *prefix) {
+static void SF_AddAnchorClasses(struct sfmergecontext *mc,
+	struct lookup_subtable *from_sub, struct lookup_subtable *sub ) {
     AnchorClass *ac, *nac;
     int k, gid;
     SplineFont *fsf;
     AnchorPoint *ap;
     SplineChar *fsc, *tsc;
 
-    for ( ac=from_sf->anchor; ac!=NULL; ac=ac->next ) if ( ac->subtable==from_sub ) {
+    for ( ac=mc->sf_from->anchor; ac!=NULL; ac=ac->next ) if ( ac->subtable==from_sub ) {
 	nac = chunkalloc(sizeof(AnchorClass));
 	*nac = *ac;
 	nac->subtable = sub;
-	nac->name = strconcat(prefix,nac->name);
-	nac->next = to_sf->anchor;
-	to_sf->anchor = nac;
+	nac->name = strconcat(mc->prefix,nac->name);
+	nac->next = mc->sf_to->anchor;
+	mc->sf_to->anchor = nac;
 
 	k=0;
 	do {
-	    fsf = from_sf->subfontcnt==0 ? from_sf : from_sf->subfonts[k];
+	    fsf = mc->sf_from->subfontcnt==0 ? mc->sf_from : mc->sf_from->subfonts[k];
 	    for ( gid = 0; gid<fsf->glyphcnt; ++gid ) if ( (fsc = fsf->glyphs[gid])!=NULL ) {
 		for ( ap=fsc->anchor; ap!=NULL; ap=ap->next ) {
 		    if ( ap->anchor==ac ) {
-			tsc = SCFindOrMake(to_sf,fsc);
+			tsc = SCFindOrMake(mc->sf_to,fsc);
 			if ( tsc==NULL )
 		break;
 			SF_SCAddAP(tsc,ap,nac);
@@ -2041,7 +2046,7 @@ static void SF_AddAnchorClasses(SplineFont *to_sf,struct lookup_subtable *from_s
 		}
 	    }
 	    ++k;
-	} while ( k<from_sf->subfontcnt );
+	} while ( k<mc->sf_from->subfontcnt );
     }
 }
 
@@ -2095,8 +2100,7 @@ return( false );
 return(true);
 }
 
-static void SF_AddPSTKern(SplineFont *to_sf,struct lookup_subtable *from_sub, struct lookup_subtable *sub,
-	SplineFont *from_sf, char *prefix) {
+static void SF_AddPSTKern(struct sfmergecontext *mc,struct lookup_subtable *from_sub, struct lookup_subtable *sub) {
     int k, gid, isv;
     SplineFont *fsf;
     SplineChar *fsc, *tsc;
@@ -2106,13 +2110,13 @@ static void SF_AddPSTKern(SplineFont *to_sf,struct lookup_subtable *from_sub, st
 
     k=0;
     do {
-	fsf = from_sf->subfontcnt==0 ? from_sf : from_sf->subfonts[k];
+	fsf = mc->sf_from->subfontcnt==0 ? mc->sf_from : mc->sf_from->subfonts[k];
 	for ( gid = 0; gid<fsf->glyphcnt; ++gid ) if ( (fsc = fsf->glyphs[gid])!=NULL ) {
 	    tsc = (SplineChar *) -1;
 	    for ( pst = fsc->possub; pst!=NULL; pst=pst->next ) {
 		if ( pst->subtable==from_sub ) {
 		    if ( tsc==(SplineChar *) -1 ) {
-			tsc = SCFindOrMake(to_sf,fsc);
+			tsc = SCFindOrMake(mc->sf_to,fsc);
 			if ( tsc==NULL )
 	    break;
 		    }
@@ -2126,18 +2130,18 @@ static void SF_AddPSTKern(SplineFont *to_sf,struct lookup_subtable *from_sub, st
 			    /* Kerning data tend to be individualistic. Only copy if */
 			    /*  glyphs exist */
 			    if ( tsc==(SplineChar *) -1 ) {
-				tsc = SFGetChar(to_sf,fsc->unicodeenc,fsc->name);
+				tsc = SFGetChar(mc->sf_to,fsc->unicodeenc,fsc->name);
 				if ( tsc==NULL )
 		    break;
 			    }
-			    SF_SCAddKP(tsc,kp,sub,isv,to_sf);
+			    SF_SCAddKP(tsc,kp,sub,isv,mc->sf_to);
 			}
 		    }
 		}
 	    }
 	}
 	++k;
-    } while ( k<from_sf->subfontcnt );
+    } while ( k<mc->sf_from->subfontcnt );
 }
 
 int _FeatureOrderId( int isgpos,uint32 tag ) {
@@ -2309,19 +2313,29 @@ static void OrderNewLookup(SplineFont *into_sf,OTLookup *otl,OTLookup *before) {
     }
 }
 
-static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl,char *prefix, OTLookup *before) {
-    OTLookup *otl = chunkalloc(sizeof(OTLookup));
+static OTLookup *_OTLookupCopyInto(struct sfmergecontext *mc,
+	OTLookup *from_otl, OTLookup *before) {
+    OTLookup *otl;
     struct lookup_subtable *sub, *last, *from_sub;
-    int scnt;
+    int scnt, l;
 
-    into_sf->changed = true;
+    for ( l=0; l<mc->lcnt; ++l ) {
+	if ( mc->lks[l].from == from_otl )
+return( mc->lks[l].to );
+    }
 
+    if ( l>=mc->lmax )
+	mc->lks = grealloc(mc->lks,(mc->lmax += 20)*sizeof(struct lookup_cvt));
+    mc->sf_to->changed = true;
+
+    otl = chunkalloc(sizeof(OTLookup));
     *otl = *from_otl;
-    otl->lookup_name = strconcat(prefix,from_otl->lookup_name);
+    memset(&mc->lks[l],0,sizeof(mc->lks[l]));
+    mc->lks[l].from = from_otl; mc->lks[l].to = otl; ++mc->lcnt;
+    otl->lookup_name = strconcat(mc->prefix,from_otl->lookup_name);
     otl->features = FeatureListCopy(from_otl->features);
     otl->next = NULL; otl->subtables = NULL;
-    OrderNewLookup(into_sf,otl,before);
+    OrderNewLookup(mc->sf_to,otl,before);
 
     last = NULL;
     scnt = 0;
@@ -2329,7 +2343,7 @@ static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	sub = chunkalloc(sizeof(struct lookup_subtable));
 	*sub = *from_sub;
 	sub->lookup = otl;
-	sub->subtable_name = strconcat(prefix,from_sub->subtable_name);
+	sub->subtable_name = strconcat(mc->prefix,from_sub->subtable_name);
 	sub->suffix = copy(sub->suffix);
 	if ( last==NULL )
 	    otl->subtables = sub;
@@ -2337,18 +2351,18 @@ static OTLookup *_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	    last->next = sub;
 	last = sub;
 	if ( from_sub->kc!=NULL )
-	    sub->kc = SF_AddKernClass(into_sf, from_sub->kc, sub, from_sf, prefix);
+	    sub->kc = SF_AddKernClass(mc, from_sub->kc, sub);
 	else if ( from_sub->fpst!=NULL )
-	    sub->fpst = SF_AddFPST(into_sf, from_sub->fpst, sub, from_sf, prefix);
+	    sub->fpst = SF_AddFPST(mc, from_sub->fpst, sub);
 	else if ( from_sub->sm!=NULL )
-	    sub->sm = SF_AddASM(into_sf, from_sub->sm, sub, from_sf, prefix);
+	    sub->sm = SF_AddASM(mc, from_sub->sm, sub);
 	else if ( from_sub->anchor_classes )
-	    SF_AddAnchorClasses(into_sf, from_sub, sub, from_sf, prefix);
+	    SF_AddAnchorClasses(mc, from_sub, sub);
 	else
-	    SF_AddPSTKern(into_sf, from_sub, sub, from_sf, prefix);
+	    SF_AddPSTKern(mc, from_sub, sub);
 	++scnt;
     }
-    FIOTLookupCopyInto(into_sf,from_sf, from_otl, otl, scnt, before);
+    FIOTLookupCopyInto(mc->sf_to,mc->sf_from, from_otl, otl, scnt, before);
 return( otl );
 }
 
@@ -2391,27 +2405,37 @@ return( false );
 }
 
 OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
-    char *prefix;
     OTLookup *newotl, *list[2];
+    struct sfmergecontext mc;
+
+    memset(&mc,0,sizeof(mc));
+    mc.sf_from = from_sf; mc.sf_to = into_sf;
 
     list[0] = from_otl; list[1] = NULL;
-    prefix = NeedsPrefix(into_sf,from_sf,list)
+    mc.prefix = NeedsPrefix(into_sf,from_sf,list)
 	    ? strconcat(from_sf->fontname,"-") : copy("");
-    newotl = _OTLookupCopyInto(into_sf,from_sf,from_otl,prefix,(OTLookup *) -2);
-    free(prefix);
+    newotl = _OTLookupCopyInto(&mc,from_otl,(OTLookup *) -2);
+    free(mc.lks);
+    free(mc.prefix);
 return( newotl );
 }
 
 void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	OTLookup **list, OTLookup *before) {
-    char *prefix;
     int i;
+    struct sfmergecontext mc;
 
-    prefix = NeedsPrefix(into_sf,from_sf,list)
+    memset(&mc,0,sizeof(mc));
+    mc.sf_from = from_sf; mc.sf_to = into_sf;
+
+    mc.prefix = NeedsPrefix(into_sf,from_sf,list)
 	    ? strconcat(from_sf->fontname,"-") : copy("");
+    for ( i=0; list[i]!=NULL; ++i );
+    mc.lks = galloc((mc.lmax=i+5)*sizeof(struct lookup_cvt));
     for ( i=0; list[i]!=NULL; ++i )
-	(void) _OTLookupCopyInto(into_sf,from_sf,list[i],prefix,before);
-    free(prefix);
+	(void) _OTLookupCopyInto(&mc,list[i],before);
+    free(mc.lks);
+    free(mc.prefix);
 }
 
 /* ************************************************************************** */

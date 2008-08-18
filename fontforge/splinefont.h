@@ -2064,6 +2064,7 @@ struct sfmergecontext {
     struct ac_cvt { AnchorClass *from, *to; int old;} *acs;
     char *prefix;
     int preserveCrossFontKerning;
+    int lmax;
 };
 extern PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc);
 extern struct lookup_subtable *MCConvertSubtable(struct sfmergecontext *mc,struct lookup_subtable *sub);
