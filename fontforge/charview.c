@@ -1984,6 +1984,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( cv->showhhints || cv->showvhints || cv->showdhints )
 	    CVShowHints(cv,pixmap);
 
+	if ( cv->backimgs==NULL )
+	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
+	if ( cv->back_img_out_of_date ) {
+	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
+	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
+		CVShowHints(cv,cv->backimgs);
+	}
 	for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
 	    if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
 			((cv->showfore || cvlayer==layer) && layer>ly_back)) ) ||
@@ -1992,19 +1999,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		/* This really should be after the grids, but then it would completely*/
 		/*  hide them. */
 		GRect r;
-		if ( cv->backimgs==NULL )
-		    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
-		if ( cv->back_img_out_of_date ) {
-		    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
-		    if ( cv->showhhints || cv->showvhints || cv->showdhints)
-			CVShowHints(cv,cv->backimgs);
+		if ( cv->back_img_out_of_date )
 		    DrawImageList(cv,cv->backimgs,cv->b.sc->layers[layer].images);
-		    cv->back_img_out_of_date = false;
-		}
 		r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
 		GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	    }
 	}
+	cv->back_img_out_of_date = false;
 	if ( cv->showgrids || cv->b.drawmode==dm_grid ) {
 	    CVDrawSplineSet(cv,pixmap,cv->b.fv->sf->grid.splines,guideoutlinecol,
 		    cv->showpoints && cv->b.drawmode==dm_grid,&clip);
@@ -2053,7 +2054,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			!sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
 			false,&clip);
 		for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-		    if ( cv->b.drawmode==dm_back && cv->showrefnames )
+		    if ( /* cv->b.drawmode==dm_back &&*/ cv->showrefnames )
 			CVDrawRefName(cv,pixmap,rf,0);
 		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
 			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,false,&clip);
@@ -2811,12 +2812,12 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,fg);
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,
-/* GT: Foreground, make it short */
-		cv->b.drawmode==dm_fore ? _("Fore") :
-/* GT: Background, make it short */
-		cv->b.drawmode==dm_back ? _("Back") :
 /* GT: Guide layer, make it short */
-		_("Guide"),
+		cv->b.drawmode==dm_grid ?                      _("Guide") :
+/* GT: Background, make it short */
+		cv->b.layerheads[cv->b.drawmode]->background ? _("Back") :
+/* GT: Foreground, make it short */
+								_("Fore"),
 	    -1,NULL,fg);
     if ( cv->coderange!=cr_none )
 	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
@@ -3640,7 +3641,7 @@ static void TTFPointMatches(SplineChar *sc,int layer,int top) {
     struct splinecharlist *deps;
     RefChar *ref;
 
-    if ( !sc->layers[layer].order2 )
+    if ( !sc->layers[layer].order2 || sc->layers[layer].background )
 return;
     for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
 	if ( ap->has_ttf_pt )
@@ -3694,13 +3695,13 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 		sf->cidmaster->changed = true;
 	    FVSetTitles(sf);
 	}
-	if ( changed && layer>=ly_fore ) {
+	if ( changed && !sc->layers[layer].background ) {
 	    instrcheck(sc,layer);
 	    SCDeGridFit(sc);
 	}
 	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer &&
 		changed==1 && !sc->parent->strokedfont &&
-		layer>=ly_fore && !sc->layers[layer].order2 )
+		!sc->layers[layer].background && !sc->layers[layer].order2 )
 	    sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
@@ -3739,19 +3740,19 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
     if ( cv->needsrasterize ) {
 	TTFPointMatches(cv->b.sc,cvlayer,true);		/* Must precede regen dependents, as this can change references */
 	SCRegenDependents(cv->b.sc,cvlayer);		/* All chars linked to this one need to get the new splines */
-	if ( updateflex )
+	if ( updateflex && cvlayer!=ly_grid && !cv->b.layerheads[cvlayer]->background )
 	    SplineCharIsFlexible(cv->b.sc,cvlayer);
 	SCUpdateAll(cv->b.sc);
 	SCRegenFills(cv->b.sc);
 	for ( fv = (FontView *) (cv->b.sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) )
 	    FVRegenChar(fv,cv->b.sc);
 	cv->needsrasterize = false;
-    } else if ( cv->b.drawmode==dm_back ) {
+    } else if ( cv->b.drawmode!=dm_grid ) {
 	/* If we changed the background then only views of this character */
 	/*  need to know about it. No dependents needed, but why write */
 	/*  another routine for a rare case... */
 	SCUpdateAll(cv->b.sc);
-    } else if ( cv->b.drawmode==dm_grid ) {
+    } else /* if ( cv->b.drawmode==dm_grid )*/ {
 	/* If we changed the grid then any character needs to know it */
 	FVRedrawAllCharViews(cv->b.sc->parent);
     }
@@ -4596,7 +4597,8 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 
     r.x = cv->width+rh;
     r.y = cv->height+cv->mbh+cv->infoh+rh;
-    LogoExpose(pixmap,event,&r,cv->b.drawmode);
+    LogoExpose(pixmap,event,&r,cv->b.drawmode==dm_grid? dm_grid :
+	    cv->b.layerheads[cv->b.drawmode]->background ? dm_back : dm_fore );
 }
 
 static void CVDrawGuideLine(CharView *cv,int guide_pos) {
@@ -9563,7 +9565,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     extern int updateflex;
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     static unichar_t *infofamily=NULL;
-    extern int cv_auto_goto;
+    /* extern int cv_auto_goto; */
 
     if ( !cvcolsinited )
 	CVColInit();

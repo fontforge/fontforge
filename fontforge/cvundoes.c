@@ -1975,7 +1975,7 @@ return( dontask_ret );
 static int SCWasEmpty(SplineChar *sc, int skip_this_layer) {
     int i;
 
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) if ( i!=skip_this_layer ) {
+    for ( i=ly_fore; i<sc->layer_cnt; ++i ) if ( i!=skip_this_layer && !sc->layers[i].background ) {
 	if ( sc->layers[i].refs!=NULL )
 return( false );
 	else if ( sc->layers[i].splines!=NULL ) {
@@ -2021,7 +2021,8 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	}
 	was_empty = sc->hstem==NULL && sc->vstem==NULL && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs == NULL;
 	if ( !pasteinto ) {
-	    if ( SCWasEmpty(sc,pasteinto==0?layer:-1) ) {
+	    if ( !sc->layers[layer].background &&
+		    SCWasEmpty(sc,pasteinto==0?layer:-1) ) {
 		if ( !sc->parent->onlybitmaps )
 		    SCSynchronizeWidth(sc,width,sc->width,fv);
 		sc->vwidth = vwidth;
@@ -2707,16 +2708,16 @@ return;
 	}
 	if ( paster->undotype==ut_state && paster->u.state.images!=NULL ) {
 	    /* Can't paste images to foreground layer (unless type3 font) */
-	    int dm = cvsc->parent->multilayer || CVLayer(cv)!=ly_fore?
-		    cv->drawmode : dm_back;
-	    if ( dm==dm_grid ) dm = dm_back;
 	    ImageList *new, *cimg;
+	    int ly = cvsc->parent->multilayer || cv->layerheads[cv->drawmode]->background ?
+		    CVLayer(cv) : ly_back;
+	    if ( ly==ly_grid ) ly = ly_back;
 	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
 		new = galloc(sizeof(ImageList));
 		*new = *cimg;
 		new->selected = true;
-		new->next = cv->layerheads[dm]->images;
-		cv->layerheads[dm]->images = new;
+		new->next = cvsc->layers[ly].images;
+		cvsc->layers[ly].images = new;
 	    }
 	    SCOutOfDateBackground(cvsc);
 	} else if ( paster->undotype==ut_statehint && cv->container==NULL ) {
@@ -2769,6 +2770,7 @@ return;
 		    PasteNonExistantRefCheck(cvsc,paster,refs,&refstate);
 		}
 	    }
+#if 0
 	} else if ( paster->u.state.refs!=NULL && cv->drawmode==dm_back ) {
 	    /* Paste the CONTENTS of the referred character into this one */
 	    /*  (background contents I think) */
@@ -2793,6 +2795,7 @@ return;
 		    }
 		}
 	    }
+#endif
 	}
 	if ( paster->undotype==ut_statename ) {
 	    SCSetMetaData(cvsc,paster->u.state.charname,
@@ -2801,7 +2804,7 @@ return;
 	    PSTFree(cvsc->possub);
 	    cvsc->possub = paster->u.state.possub;
 	}
-	if ( wasempty && layer>=ly_fore ) {
+	if ( wasempty && layer>=ly_fore && !cvsc->layers[layer].background ) {
 	    /* Don't set the width in background or grid layers */
 	    /* Don't set the width if any potential foreground layer contained something */
 	    int width = paster->u.state.width;

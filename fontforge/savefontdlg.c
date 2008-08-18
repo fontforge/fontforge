@@ -2097,7 +2097,7 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
     for ( layer=0; layer<sf->layer_cnt; ++layer )
 	sf->layers[layer].ticked = false;
     sf->layers[ly_fore].ticked = true;
-    for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( layer!=ly_fore && layer!=ly_back ) {
+    for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( !sf->layers[layer].background ) {
 	known = -1;
 	k = 0;
 	do {

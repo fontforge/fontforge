@@ -1597,7 +1597,7 @@ return;
     -- sf->layer_cnt;
 }
 
-void SFAddLayer(SplineFont *sf,char *name,int order2) {
+void SFAddLayer(SplineFont *sf,char *name,int order2,int background) {
     int gid, l;
     SplineChar *sc;
     CharViewBase *cvs;
@@ -1616,6 +1616,7 @@ return;
     memset(&sf->layers[l],0,sizeof(LayerInfo));
     sf->layers[l].name = copy(name);
     sf->layers[l].order2 = order2;
+    sf->layers[l].background = background;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
 	Layer *old = sc->layers;
@@ -1623,10 +1624,32 @@ return;
 	memset(&sc->layers[l],0,sizeof(Layer));
 	LayerDefault(&sc->layers[l]);
 	sc->layers[l].order2 = order2;
+	sc->layers[l].background = background;
 	++ sc->layer_cnt;
 	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
 	    cvs->layerheads[dm_back] = sc->layers + (cvs->layerheads[dm_back]-old);
 	    cvs->layerheads[dm_fore] = sc->layers + (cvs->layerheads[dm_fore]-old);
 	}
     }
+}
+
+void SFLayerSetBackground(SplineFont *sf,int layer,int is_back) {
+    int k,gid;
+    SplineFont *_sf;
+    SplineChar *sc;
+
+    sf->layers[layer].background = is_back;
+    k=0;
+    do {
+	_sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
+	for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
+	    sc->layers[layer].background = is_back;
+	    if ( !is_back && sc->layers[layer].images!=NULL ) {
+		ImageListsFree(sc->layers[layer].images);
+		sc->layers[layer].images = NULL;
+		SCCharChangedUpdate(sc,layer);
+	    }
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
 }

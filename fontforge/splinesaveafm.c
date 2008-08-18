@@ -1049,7 +1049,7 @@ int SCDrawsSomething(SplineChar *sc) {
 
     if ( sc==NULL )
 return( false );
-    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+    for ( layer = 0; layer<sc->layer_cnt; ++layer ) if ( !sc->layers[layer].background ) {
 	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
 return( true );
 	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )

@@ -1774,7 +1774,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     fprintf(sfd, "Descent: %d\n", sf->descent );
     fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
     for ( i=0; i<sf->layer_cnt; ++i ) {
-	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2 );
+	fprintf( sfd, "Layer: %d %d %d ", i, sf->layers[i].order2, sf->layers[i].background );
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
 	putc('\n',sfd);
     }
@@ -4345,10 +4345,11 @@ return( NULL );
 		lastr->next = ref;
 	    lastr = ref;
 	} else if ( strmatch(tok,"Image:")==0 ) {
-	    if ( !multilayer ) current_layer = ly_back;
+	    int ly = current_layer;
+	    if ( !multilayer && !sc->layers[ly].background ) ly = ly_back;
 	    img = SFDGetImage(sfd);
-	    if ( sc->layers[current_layer].images==NULL )
-		sc->layers[current_layer].images = img;
+	    if ( sc->layers[ly].images==NULL )
+		sc->layers[ly].images = img;
 	    else
 		lasti->next = img;
 	    lasti = img;
@@ -5332,8 +5333,8 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	    for ( j=k=0; j<fpst->rules[i].lookup_cnt; ++j ) {
 		getname(sfd,tok);
 		getint(sfd,&fpst->rules[i].lookups[j].seq);
-		fpst->rules[i].lookups[j].lookup = SFD_ParseNestedLookup(sfd,sf,old);
-		if ( fpst->rules[i].lookups[j].lookup!=NULL )
+		fpst->rules[i].lookups[k].lookup = SFD_ParseNestedLookup(sfd,sf,old);
+		if ( fpst->rules[i].lookups[k].lookup!=NULL )
 		    ++k;
 	    }
 	    fpst->rules[i].lookup_cnt = k;
@@ -6210,7 +6211,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 		memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
 	    }
 	} else if ( strmatch(tok,"Layer:")==0 ) {
-	    int layer, o2;
+	    int layer, o2, bk;
 	    getint(sfd,&layer);
 	    if ( layer>=sf->layer_cnt ) {
 		sf->layers = grealloc(sf->layers,(layer+1)*sizeof(LayerInfo));
@@ -6219,6 +6220,13 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    }
 	    getint(sfd,&o2);
 	    sf->layers[layer].order2 = o2;
+	    sf->layers[layer].background = layer==ly_back;
+	    while ( (ch=nlgetc(sfd))==' ' );
+	    ungetc(ch,sfd);
+	    if ( ch!='"' ) {
+		getint(sfd,&bk);
+		sf->layers[layer].background = bk;
+	    }
 	    sf->layers[layer].name = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"StrokedFont:")==0 ) {
 	    int temp;

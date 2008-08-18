@@ -1038,21 +1038,20 @@ typedef struct refchar {
     int orig_pos;
     int unicode_enc;		/* used by paste */
     real transform[6];		/* transformation matrix (first 2 rows of a 3x3 matrix, missing row is 0,0,1) */
-#ifdef FONTFORGE_CONFIG_TYPE3
     struct reflayer {
-	struct brush fill_brush;
-	struct pen stroke_pen;
+	unsigned int background: 1;
+	unsigned int order2: 1;
+	unsigned int anyflexes: 1;
+#ifdef FONTFORGE_CONFIG_TYPE3
 	unsigned int dofill: 1;
 	unsigned int dostroke: 1;
 	unsigned int fillfirst: 1;
-	SplinePointList *splines;
-	ImageList *images;
-    } *layers;
-#else
-    struct reflayer {
-	SplinePointList *splines;
-    } layers[1];
+	struct brush fill_brush;
+	struct pen stroke_pen;
 #endif
+	SplinePointList *splines;
+	ImageList *images;			/* Only in background or type3 layer(s) */
+    } *layers;
     int layer_cnt;
     struct refchar *next;
     DBounds bb;
@@ -1130,6 +1129,7 @@ typedef struct minimumdistance {
 } MinimumDistance;
 
 typedef struct layer /* : reflayer */{
+    unsigned int background: 1;
     unsigned int order2: 1;
     unsigned int anyflexes: 1;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -1565,6 +1565,7 @@ enum loadvalidation_state {
 
 typedef struct layerinfo {
     char *name;
+    unsigned int background: 1;			/* Layer is to be treated as background: No width, images, not worth outputting */
     unsigned int order2: 1;			/* Layer's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
 						/* In all glyphs in the font */
     unsigned int ticked: 1;
@@ -2656,7 +2657,8 @@ extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,
 	char *name, int onlyone);
 
 extern void SFRemoveLayer(SplineFont *sf,int l);
-extern void SFAddLayer(SplineFont *sf,char *name,int order2);
+extern void SFAddLayer(SplineFont *sf,char *name,int order2, int background);
+extern void SFLayerSetBackground(SplineFont *sf,int layer,int is_back);
 
 extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlysel);
 extern void SCRound2Int(SplineChar *sc,int layer, real factor);
