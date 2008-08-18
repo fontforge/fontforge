@@ -6533,19 +6533,15 @@ return;
 
 static void FontView_ReformatAll(SplineFont *sf) {
     BDFFont *new, *old;
-    FontView *fvs, *fv;
+    FontView *fv;
     MetricsView *mvs;
     extern int use_freetype_to_rasterize_fv;
 
     if ( ((FontView *) (sf->fv))->v==NULL || ((FontView *) (sf->fv))->colcnt==0 )			/* Can happen in scripts */
 return;
 
-    for ( fvs=(FontView *) (sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	fvs->touched = false;
-    while ( 1 ) {
-	for ( fv=(FontView *) (sf->fv); fv!=NULL && fv->touched; fv=(FontView *) (fv->b.nextsame) );
-	if ( fv==NULL )
-    break;
+    for ( fv=(FontView *) (sf->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
+	GDrawSetCursor(fv->v,ct_watch);
 	old = fv->filled;
 				/* In CID fonts fv->b.sf may not be same as sf */
 	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
@@ -6553,10 +6549,9 @@ return;
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
 	fv->filled = new;
+	if ( fv->show==old )
+	    fv->show = new;
 	BDFFontFree(old);
-    }
-    for ( fv=(FontView *) (sf->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
-	GDrawSetCursor(fv->v,ct_watch);
 	fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
 	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
 	if ( fv->rowoff>fv->rowltot-fv->rowcnt ) {
