@@ -5818,11 +5818,14 @@ return( NULL );
     } /* else if ( strcasecmp(pt,".fig")==0 )*/
     else {
 	GImage *image = GImageRead(locfilename);
+	int ly = ((PyFF_Glyph *) self)->layer;
 	if ( image==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file %s", locfilename );
 return(NULL);
 	}
-	SCAddScaleImage(sc,image,false,ly_back);
+	if ( !sc->layers[ly].background )
+	    ly = ly_back;
+	SCAddScaleImage(sc,image,false,ly);
     }
     free( locfilename );
 Py_RETURN( self );
@@ -7303,13 +7306,33 @@ return(0);
 return( -1 );
 }
 
+static PyObject *PyFF_LayerInfo_get_background(PyFF_LayerInfo *self,void *closure) {
+return( Py_BuildValue("i",self->sf->layers[self->layer].background));
+}
+
+static int PyFF_LayerInfo_set_background(PyFF_LayerInfo *self,PyObject *value,void *closure) {
+    if ( PyInt_Check(value)) {
+	int val = PyInt_AsLong(value)!=0;
+	SplineFont *sf = self->sf;
+	int layer = self->layer;
+	if ( val!=sf->layers[layer].background )
+	    SFLayerSetBackground(sf,layer,val);
+return(0);
+    }
+    PyErr_Format(PyExc_TypeError,"Expected boolean value");
+return( -1 );
+}
+
 static PyGetSetDef PyFF_LayerInfo_getset[] = {
     {"name",
 	 (getter)PyFF_LayerInfo_get_name, (setter)PyFF_LayerInfo_set_name,
 	 "arbetrary (non-persistent) user data (deprecated name for temporary)", NULL},
     {"is_quadratic",
 	 (getter)PyFF_LayerInfo_get_order2, (setter)PyFF_LayerInfo_set_order2,
-	 "arbetrary (non-persistent) user data", NULL},
+	 "Does this layer contain quadratic or cubic splines (TrueType or PostScript)", NULL},
+    {"is_background",
+	 (getter)PyFF_LayerInfo_get_background, (setter)PyFF_LayerInfo_set_background,
+	 "Is this a background layer or a foreground one?\nForeground layers may have fonts generated from them.\nBackground layers may contain background images", NULL},
      NULL
 };
 
@@ -7459,12 +7482,12 @@ static PyMappingMethods PyFF_LayerInfoArrayMapping = {
 
 static PyObject *PyFF_LayerInfoArray_add(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
-    int order2;
+    int order2, background=0;
     char *name;
 
-    if ( !PyArg_ParseTuple(args,"si", &name, &order2 ) )
+    if ( !PyArg_ParseTuple(args,"si|i", &name, &order2, &background ) )
 return( NULL );
-    SFAddLayer(sf,name,order2);
+    SFAddLayer(sf,name,order2,background);
 Py_RETURN(self);
 }
 

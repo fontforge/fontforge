@@ -873,9 +873,15 @@ static GTextInfo splineorder[] = {
     { (unichar_t *) N_("Cubic"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) N_("Quadratic"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static GTextInfo layertype[] = {
+    { (unichar_t *) N_("Foreground"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Background"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static void Layers_BackgroundEnable(GGadget *g,GMenuItem *mi, int r, int c);
 static struct col_init layersci[5] = {
     { me_string, NULL, NULL, NULL, N_("Layer Name") },
     { me_enum  , NULL, splineorder, NULL, N_("Curve Type") },
+    { me_enum  , NULL, layertype, Layers_BackgroundEnable, N_("Type") },
     { me_int   , NULL, NULL, NULL, N_("Orig layer") },
     };
 
@@ -3230,7 +3236,7 @@ static void TN_StrIDEnable(GGadget *g,GMenuItem *mi, int r, int c) {
 	    }
     }
     qsort(mi,i,sizeof(mi[0]),menusort);
-}    
+}
 
 static void TN_LangEnable(GGadget *g,GMenuItem *mi, int r, int c) {
     int i;
@@ -3672,6 +3678,12 @@ static int GFI_GaspVersion(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void Layers_BackgroundEnable(GGadget *g,GMenuItem *mi, int r, int c) {
+    int disable = r<=ly_fore;
+    mi[0].ti.disabled = disable;
+    mi[1].ti.disabled = disable;
+}
+    
 static int Layers_CanDelete(GGadget *g,int row) {
 return( row>ly_fore );
 }
@@ -3690,14 +3702,15 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     struct matrix_data *md;
 
     memset(mi,0,sizeof(*mi));
-    mi->col_cnt = 3;
+    mi->col_cnt = 4;
     mi->col_init = layersci;
 
     md = gcalloc(3*(sf->layer_cnt+1),sizeof(struct matrix_data));
     for ( i=j=0; i<sf->layer_cnt; ++i ) {
-	md[3*j  ].u.md_str  = copy(sf->layers[i].name);
-	md[3*j+1].u.md_ival = sf->layers[i].order2;
-	md[3*j+2].u.md_ival = i+1;
+	md[4*j  ].u.md_str  = copy(sf->layers[i].name);
+	md[4*j+1].u.md_ival = sf->layers[i].order2;
+	md[4*j+2].u.md_ival = sf->layers[i].background;
+	md[4*j+3].u.md_ival = i+1;
 	++j;
     }
     mi->initial_row_cnt = sf->layer_cnt;
@@ -4022,7 +4035,7 @@ static int GFI_AnyLayersRemoved(struct gfi_data *d) {
 	if ( sf->layers[r].order2 )
 	    anytrue_before = true;
     }
-    for ( r=0; r<rows; ++r ) if ( (origr = layers[r*cols+2].u.md_ival)!=0 ) {
+    for ( r=0; r<rows; ++r ) if ( (origr = layers[r*cols+3].u.md_ival)!=0 ) {
 	--origr;
 	sf->layers[origr].ticked = true;
 	if ( origr>=ly_fore && layers[r*cols+1].u.md_ival )
@@ -4045,7 +4058,7 @@ static int GFI_SetLayers(struct gfi_data *d) {
     for ( l=0; l<sf->layer_cnt; ++l )
 	sf->layers[l].ticked = false;
 
-    for ( r=0; r<rows; ++r ) if ( (origr = layers[r*cols+2].u.md_ival)!=0 ) {
+    for ( r=0; r<rows; ++r ) if ( (origr = layers[r*cols+3].u.md_ival)!=0 ) {
 	/* It's an old layer. Do we need to change anything? */
 	--origr;
 	sf->layers[origr].ticked = true;
@@ -4054,6 +4067,10 @@ static int GFI_SetLayers(struct gfi_data *d) {
 		SFConvertLayerToOrder2(sf,origr);
 	    else
 		SFConvertLayerToOrder3(sf,origr);
+	    changed = true;
+	}
+	if ( sf->layers[origr].background != layers[r*cols+2].u.md_ival ) {
+	    SFLayerSetBackground(sf,origr,layers[r*cols+2].u.md_ival);
 	    changed = true;
 	}
 	if ( layers[r*cols+0].u.md_str!=NULL && *layers[r*cols+0].u.md_str!='\0' &&
@@ -4070,8 +4087,8 @@ static int GFI_SetLayers(struct gfi_data *d) {
     }
 
     l = 0;
-    for ( r=0; r<rows; ++r ) if ( layers[r*cols+2].u.md_ival==0 ) {
-	SFAddLayer(sf,layers[r*cols+0].u.md_str,layers[r*cols+1].u.md_ival);
+    for ( r=0; r<rows; ++r ) if ( layers[r*cols+3].u.md_ival==0 ) {
+	SFAddLayer(sf,layers[r*cols+0].u.md_str,layers[r*cols+1].u.md_ival, layers[r*cols+2].u.md_ival);
 	changed = true;
     }
     if ( changed )
@@ -10495,7 +10512,7 @@ return;
     GHVBoxSetExpandableCol(lbox[4].ret,gb_expandglue);
     GHVBoxSetExpandableRow(lbox[0].ret,5);
     GMatrixEditEnableColumn(GWidgetGetControl(gw,CID_Backgrounds),1,ltype<0);
-    GMatrixEditShowColumn(GWidgetGetControl(gw,CID_Backgrounds),2,false);
+    GMatrixEditShowColumn(GWidgetGetControl(gw,CID_Backgrounds),3,false);
 	/* This column contains internal state information which the user */
 	/* should not see, ever */
 

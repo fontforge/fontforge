@@ -5542,8 +5542,10 @@ SplineChar *SFSplineCharCreate(SplineFont *sf) {
     SplineChar *sc = SplineCharCreate(sf->layer_cnt);
     int i;
 
-    for ( i=0; i<sf->layer_cnt; ++i )
-	sc->layers[i].order2 = sf->layers[i].order2;
+    for ( i=0; i<sf->layer_cnt; ++i ) {
+	sc->layers[i].background = sf->layers[i].background;
+	sc->layers[i].order2     = sf->layers[i].order2;
+    }
     sc->parent = sf;
 return( sc );
 }

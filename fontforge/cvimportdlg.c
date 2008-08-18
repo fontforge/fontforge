@@ -82,8 +82,12 @@ static void ImportImage(CharView *cv,char *path) {
 return;
     }
     layer = ly_back;
-    if ( cv->b.sc->parent->multilayer && cv->b.drawmode!=dm_grid )
-	layer = cv->b.drawmode-dm_back + ly_back;
+    if ( cv->b.drawmode!=dm_grid ) {
+	if ( cv->b.sc->parent->multilayer )
+	    layer = cv->b.drawmode-dm_back + ly_back;
+	else if ( cv->b.layerheads[cv->b.drawmode]->background )
+	    layer = CVLayer( (CharViewBase *) cv);
+    }
     SCAddScaleImage(cv->b.sc,image,false,layer);
 }
 

@@ -981,7 +981,7 @@ return(false);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
 #else
-	    SCAddScaleImage(sc,image,true,ly_back);
+	    SCAddScaleImage(sc,image,true,toback || !fv->sf->layers[fv->active_layer].background ? ly_back : fv->active_layer );
 #endif
 #ifndef _NO_LIBXML
 	} else if ( format==fv_svg ) {
