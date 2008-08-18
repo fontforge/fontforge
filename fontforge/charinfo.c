@@ -2004,9 +2004,9 @@ return( true );
 }
 
 char *DevTab_Dlg(GGadget *g, int r, int c) {
-    int rows, k, j;
+    int rows, k, j, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *strings = GMatrixEditGet(g, &rows);
-    char *dvstr = strings[2*r+c].u.md_str;
+    char *dvstr = strings[cols*r+c].u.md_str;
     struct devtab_dlg dvd;
     GRect pos;
     GWindow gw;
