@@ -150,6 +150,7 @@ static GTextInfo glyphclasses[] = {
     { NULL, NULL }
 };
 
+#define CUSTOM_COLOR	8
 static GTextInfo std_colors[] = {
     { (unichar_t *) N_("Color|Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
     { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
@@ -159,6 +160,7 @@ static GTextInfo std_colors[] = {
     { NULL, &yellow_image, 0, 0, (void *) 0xffff00, NULL, false, true },
     { NULL, &cyan_image, 0, 0, (void *) 0x00ffff, NULL, false, true },
     { NULL, &magenta_image, 0, 0, (void *) 0xff00ff, NULL, false, true },
+    { NULL, NULL, 0, 0, (void *) 0x000000, NULL, false, true },
     { NULL, NULL }
 };
 
@@ -3393,6 +3395,7 @@ static void CIFillup(CharInfo *ci) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     char *devtabstr;
 #endif
+    uint16 junk;
 
     sprintf(buf,_("Glyph Info for %.40s"),sc->name);
     GDrawSetWindowTitles8(ci->gw, buf, _("Glyph Info..."));
@@ -3530,10 +3533,18 @@ static void CIFillup(CharInfo *ci) {
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_Comment),
 	    sc->comment?sc->comment:"");
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_GClass),sc->glyph_class);
+    std_colors[CUSTOM_COLOR].image = NULL;
     for ( i=0; std_colors[i].image!=NULL; ++i ) {
 	if ( std_colors[i].userdata == (void *) (intpt) sc->color )
-	    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
+    break;
     }
+    if ( std_colors[i].image==NULL ) {
+	std_colors[i].image = &customcolor_image;
+	customcolor_image.u.image->clut->clut[1] = sc->color;
+	std_colors[i].userdata = (void *) (intpt) sc->color;
+    }
+    GGadgetSetList(GWidgetGetControl(ci->gw,CID_Color), GTextInfoArrayFromList(std_colors,&junk), false);
+    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
     ci->first = sc->comment==NULL;
 
     ti = galloc((sc->countermask_cnt+1)*sizeof(GTextInfo *));

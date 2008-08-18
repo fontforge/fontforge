@@ -86,7 +86,7 @@ extern GImage GIcon_u45fItalic, GIcon_u452Italic,
     GIcon_aItalic, GIcon_FlatSerif, GIcon_SlantSerif, GIcon_PenSerif,
     GIcon_TopSerifs, GIcon_BottomSerifs, GIcon_DiagSerifs;
 extern GImage def_image, red_image, blue_image, green_image, magenta_image,
-	yellow_image, cyan_image, white_image;
+	yellow_image, cyan_image, white_image, customcolor_image;
 extern GImage GIcon_continue, GIcon_stepout, GIcon_stepover, GIcon_stepinto,
 	GIcon_watchpnt, GIcon_menudelta, GIcon_exit;
 extern GImage GIcon_Stopped, GIcon_Stop;

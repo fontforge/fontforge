@@ -3577,6 +3577,15 @@ static struct _GImage white_base = {
     &white_clut,
     COLOR_UNKNOWN
 };
+static GClut custom_clut = { 2, 0, COLOR_UNKNOWN,
+    0x0, 0xffff00 };
+static struct _GImage custom_base = {
+    it_mono,
+    0,16,12,2,
+    (uint8 *) image_data,
+    &custom_clut,
+    COLOR_UNKNOWN
+};
 
 GImage def_image = { 0, &def_base };
 GImage red_image = { 0, &red_base };
@@ -3586,6 +3595,7 @@ GImage magenta_image = { 0, &magenta_base };
 GImage yellow_image = { 0, &yellow_base };
 GImage cyan_image = { 0, &cyan_base };
 GImage white_image = { 0, &white_base };
+GImage customcolor_image = { 0, &custom_base };
 
 static uint8 continue_data[] = {
     0xfe, 0xff, 
