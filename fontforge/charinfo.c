@@ -48,6 +48,7 @@ typedef struct charinfo {
     struct lookup_subtable *old_sub;
     int r,c;
     int lc_seen, lc_aspect, vert_aspect;
+    Color last;
 } CharInfo;
 
 #define CI_Width	218
@@ -150,8 +151,10 @@ static GTextInfo glyphclasses[] = {
     { NULL, NULL }
 };
 
-#define CUSTOM_COLOR	8
+#define CUSTOM_COLOR	9
+#define COLOR_CHOOSE	(-10)
 static GTextInfo std_colors[] = {
+    { (unichar_t *) N_("Color|Choose..."), NULL, 0, 0, (void *) COLOR_CHOOSE, NULL, false, true, false, false, false, false, true },
     { (unichar_t *) N_("Color|Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
     { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
     { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, false, true },
@@ -3378,6 +3381,53 @@ return;
     GMatrixEditSet(g, mds,cnt,false);
 }
 
+static void CI_SetColorList(CharInfo *ci,Color color) {
+    int i;
+    uint16 junk;
+
+    std_colors[CUSTOM_COLOR].image = NULL;
+    for ( i=0; std_colors[i].image!=NULL; ++i ) {
+	if ( std_colors[i].userdata == (void *) (intpt) color )
+    break;
+    }
+    if ( std_colors[i].image==NULL ) {
+	std_colors[i].image = &customcolor_image;
+	customcolor_image.u.image->clut->clut[1] = color;
+	std_colors[i].userdata = (void *) (intpt) color;
+    }
+    GGadgetSetList(GWidgetGetControl(ci->gw,CID_Color), GTextInfoArrayFromList(std_colors,&junk), false);
+    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
+    if ( color!=COLOR_DEFAULT )
+	ci->last = color;
+}
+
+static int CI_PickColor(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GTextInfo *ti = GGadgetGetListItemSelected(g);
+	if ( ti==NULL )
+	    /* Can't happen */;
+	else if ( ti->userdata == (void *) COLOR_CHOOSE ) {
+	    struct hslrgb col;
+	    memset(&col,0,sizeof(col));
+	    col.rgb = true;
+	    col.r = ((ci->last>>16)&0xff)/255.;
+	    col.g = ((ci->last>>8 )&0xff)/255.;
+	    col.b = ((ci->last    )&0xff)/255.;
+	    col = GWidgetColor(_("Pick a color"),&col);
+	    if ( col.rgb ) {
+		ci->last = (((int) rint(255.*col.r))<<16 ) |
+			    (((int) rint(255.*col.g))<<8 ) |
+			    (((int) rint(255.*col.b)) );
+		CI_SetColorList(ci,ci->last);
+	    }
+	} else {
+	    ci->last = (intpt) ti->userdata;
+	}
+    }
+return( true );
+}
+
 static void CIFillup(CharInfo *ci) {
     SplineChar *sc = ci->sc;
     SplineFont *sf = sc->parent;
@@ -3395,7 +3445,6 @@ static void CIFillup(CharInfo *ci) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     char *devtabstr;
 #endif
-    uint16 junk;
 
     sprintf(buf,_("Glyph Info for %.40s"),sc->name);
     GDrawSetWindowTitles8(ci->gw, buf, _("Glyph Info..."));
@@ -3533,18 +3582,7 @@ static void CIFillup(CharInfo *ci) {
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_Comment),
 	    sc->comment?sc->comment:"");
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_GClass),sc->glyph_class);
-    std_colors[CUSTOM_COLOR].image = NULL;
-    for ( i=0; std_colors[i].image!=NULL; ++i ) {
-	if ( std_colors[i].userdata == (void *) (intpt) sc->color )
-    break;
-    }
-    if ( std_colors[i].image==NULL ) {
-	std_colors[i].image = &customcolor_image;
-	customcolor_image.u.image->clut->clut[1] = sc->color;
-	std_colors[i].userdata = (void *) (intpt) sc->color;
-    }
-    GGadgetSetList(GWidgetGetControl(ci->gw,CID_Color), GTextInfoArrayFromList(std_colors,&junk), false);
-    GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
+    CI_SetColorList(ci,sc->color);
     ci->first = sc->comment==NULL;
 
     ti = galloc((sc->countermask_cnt+1)*sizeof(GTextInfo *));
@@ -3772,6 +3810,7 @@ return;
     ci->def_layer = deflayer;
     ci->done = false;
     ci->map = map;
+    ci->last = 0xffffff;
     if ( enc==-1 )
 	enc = map->backmap[sc->orig_pos];
     ci->enc = enc;
@@ -3978,6 +4017,8 @@ return;
 	cgcd[3].gd.pos.x = cgcd[3].gd.pos.x; cgcd[3].gd.pos.y = cgcd[2].gd.pos.y-6;
 	cgcd[3].gd.flags = gg_enabled|gg_visible;
 	cgcd[3].gd.cid = CID_Color;
+	cgcd[3].gd.handle_controlevent = CI_PickColor;
+	std_colors[0].image = GGadgetImageCache("colorwheel.png");
 	cgcd[3].gd.u.list = std_colors;
 	cgcd[3].creator = GListButtonCreate;
 	charray[1] = &cgcd[3]; charray[2] = GCD_Glue; charray[3] = NULL;

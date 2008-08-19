@@ -1,0 +1,747 @@
+/* Copyright (C) 2008 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include "pfaeditui.h"
+
+#include <stdlib.h>
+#include <math.h>
+
+void RGB2HSL(struct hslrgb *col) {
+    double mx, mn;
+
+    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
+    if ( col->r>col->g ) {
+	mx = ( col->r>col->b ) ? col->r : col->b;
+	mn = ( col->g<col->b ) ? col->g : col->b;
+    } else {
+	mx = ( col->g>col->b ) ? col->g : col->b;
+	mn = ( col->r<col->b ) ? col->r : col->b;
+    }
+    if ( mx==mn )
+	col->h = 0;
+    else if ( mx==col->r ) {
+	col->h = fmod(60*(col->g-col->b)/(mx-mn),360);
+    } else if ( mx==col->g ) {
+	col->h = 60*(col->b-col->r)/(mx-mn) + 120;
+    } else {
+	col->h = 60*(col->r-col->g)/(mx-mn) + 240;
+    }
+    col->l = (mx+mn)/2;
+    if ( mx==mn )
+	col->s = 0;
+    else if ( col->l<=.5 )
+	col->s = (mx-mn)/(mx+mn);
+    else
+	col->s = (mx-mn)/(2-(mx+mn));
+    col->hsl = true; col->hsv = false;
+}
+
+void HSL2RGB(struct hslrgb *col) {
+    double q,p,hk, ts[3], cs[3];
+    int i;
+
+    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
+    if ( col->l<.5 )
+	q = col->l*(1 + col->s);
+    else
+	q = col->l+col->s - (col->l*col->s);
+    p = 2*col->l - q;
+    hk = fmod(col->h,360)/360;
+    if ( hk<0 ) hk += 1.0;
+    ts[0] = hk + 1./3.;
+    ts[1] = hk;
+    ts[2] = hk - 1./3.;
+
+    for ( i=0; i<3; ++i ) {
+	if ( ts[i]<0 ) ts[i] += 1.0;
+	else if ( ts[i]>1 ) ts[i] -= 1.0;
+	if ( ts[i]<1./6. )
+	    cs[i] = p + ((q-p)*6*ts[i]);
+	else if ( ts[i]<.5 )
+	    cs[i] = q;
+	else if ( ts[i]<2./3. )
+	    cs[i] = p + ((q-p)*6*(2./3.-ts[i]));
+	else
+	    cs[i] = p;
+    }
+    col->r = cs[0];
+    col->g = cs[1];
+    col->b = cs[2];
+    col->rgb = true;
+}
+
+void RGB2HSV(struct hslrgb *col) {
+    double mx, mn;
+
+    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
+    if ( col->r>col->g ) {
+	mx = ( col->r>col->b ) ? col->r : col->b;
+	mn = ( col->g<col->b ) ? col->g : col->b;
+    } else {
+	mx = ( col->g>col->b ) ? col->g : col->b;
+	mn = ( col->r<col->b ) ? col->r : col->b;
+    }
+    if ( mx==mn )
+	col->h = 0;
+    else if ( mx==col->r ) {
+	col->h = fmod(60*(col->g-col->b)/(mx-mn),360);
+    } else if ( mx==col->g ) {
+	col->h = 60*(col->b-col->r)/(mx-mn) + 120;
+    } else {
+	col->h = 60*(col->r-col->g)/(mx-mn) + 240;
+    }
+    col->v = mx;
+    if ( mx==0 )
+	col->s = 0;
+    else 
+	col->s = (mx-mn)/mx;
+    col->hsv = true; col->hsl = false;
+}
+
+void HSV2RGB(struct hslrgb *col) {
+    double q,p,t,f;
+    int h;
+
+    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
+    h = ((int) floor(col->h/60)) % 6;
+    if ( h<0 ) h+=6;
+    f = col->h/60 - floor(col->h/60);
+
+    p = col->v*(1-col->s);
+    q = col->v*(1-f*col->s);
+    t = col->v*(1-(1-f)*col->s);
+
+    if ( h==0 ) {
+	col->r = col->v; col->g = t; col->b = p;
+    } else if ( h==1 ) {
+	col->r = q; col->g = col->v; col->b = p;
+    } else if ( h==2 ) {
+	col->r = p; col->g = col->v; col->b = t;
+    } else if ( h==3 ) {
+	col->r = p; col->g = q; col->b = col->v;
+    } else if ( h==4 ) {
+	col->r = t; col->g = p; col->b = col->v;
+    } else if ( h==5 ) {
+	col->r = col->v; col->g = p; col->b = q;
+    }
+    col->rgb = true;
+}
+
+static GImage *ColorWheel(int width,int height) {
+    struct hslrgb col;
+    GImage *wheel;
+    struct _GImage *base;
+    int i,j;
+    double x,y, hh, hw;
+    uint32 *row;
+
+    memset(&col,0,sizeof(col));
+    col.v = 1.0;
+
+    if ( width<10 ) width = 10;
+    if ( height<10 ) height = 10;
+    hh = height/2.0; hw = width/2.0;
+
+    wheel = GImageCreate(it_true,width,height);
+    base = wheel->u.image;
+    for ( i=0; i<height; ++i ) {
+	row = (uint32 *) (base->data + i*base->bytes_per_line);
+	y = (i-hh)/(hh-1);
+	for ( j=0; j<width; ++j ) {
+	    x = (j-hw)/(hw-1);
+	    col.s = sqrt(x*x + y*y);
+	    if ( col.s>1.0 ) {
+		*row++ = 0xffffff;
+	    } else {
+		col.h = atan2(y,x)*180/3.1415926535897932;
+		if ( col.h < 0 ) col.h += 360;
+		HSV2RGB(&col);
+		*row++ = COLOR_CREATE( (int) rint(255*col.r), (int) rint(255*col.g), (int) rint(255*col.b));
+	    }
+	}
+    }
+return( wheel );	
+}
+
+#define GRAD_WIDTH	20
+static GImage *Gradient(int height) {
+    GImage *grad;
+    struct _GImage *base;
+    int i,j,c;
+    uint32 *row;
+
+    if ( height<10 ) height = 10;
+
+    grad = GImageCreate(it_true,GRAD_WIDTH,height);
+    base = grad->u.image;
+    for ( i=0; i<height; ++i ) {
+	row = (uint32 *) (base->data + i*base->bytes_per_line);
+	c = 255*(height-1-i)/(height-1);
+	for ( j=0; j<GRAD_WIDTH; ++j ) {
+	    *row++ = COLOR_CREATE(c,c,c);
+	}
+    }
+return( grad );
+}
+
+/* ************************************************************************** */
+#define USEFUL_MAX	6
+
+static uint8 image_data[] = {
+    0x00, 0x00,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x7f, 0xfe,
+    0x00, 0x00,
+};
+static GClut cluts[2*USEFUL_MAX] = {
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0},
+    { 2, 0, COLOR_UNKNOWN, 0, 0}
+};
+static struct _GImage bases[2*USEFUL_MAX] = {
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[0], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[1], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[2], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[3], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[4], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[5], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[6], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[7], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[8], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[9], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[10], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[11], COLOR_UNKNOWN }
+};
+static GImage blanks[2*USEFUL_MAX] = {
+    { 0, &bases[0] },
+    { 0, &bases[1] },
+    { 0, &bases[2] },
+    { 0, &bases[3] },
+    { 0, &bases[4] },
+    { 0, &bases[5] },
+    { 0, &bases[6] },
+    { 0, &bases[7] },
+    { 0, &bases[8] },
+    { 0, &bases[9] },
+    { 0, &bases[10] },
+    { 0, &bases[11] }
+};
+/* ************************************************************************** */
+struct hslrgb recent_cols[USEFUL_MAX+1];
+
+struct gcol_data {
+    GImage *wheel;
+    GImage *grad;
+    int wheel_width, wheel_height;
+    GWindow gw;
+    GWindow wheelw, gradw, colw;
+    int done, pressed;
+    struct hslrgb col;
+    struct hslrgb user_cols[USEFUL_MAX+1];
+};
+
+#define CID_Red		1001
+#define CID_Green	1002
+#define CID_Blue	1003
+
+#define CID_Hue		1011
+#define CID_Saturation	1012
+#define CID_Value	1013
+
+#define CID_Wheel	1021
+#define CID_Grad	1022
+#define CID_Color	1023
+
+static int cids[] = { CID_Hue, CID_Saturation, CID_Value, CID_Red, CID_Green, CID_Blue, 0 };
+static char *labs[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red"), N_("Green"), N_("Blue") };
+
+static int GCol_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gcol_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	double *offs[6] = { &d->col.h, &d->col.s, &d->col.l, &d->col.r, &d->col.g, &d->col.b };
+	int err = false, i;
+	double val;
+
+	for ( i=0; i<6; ++i ) {
+	    val = GetReal8(d->gw,cids[i],_(labs[i]),&err);
+	    if ( err )
+return( true );
+	    if ( i==0 ) {
+		val = fmod(val,360);
+		if ( val<0 ) val += 360;
+	    } else {
+		if ( val<0 || val>1 ) {
+		    ff_post_error(_("Value out of bounds"), _("Saturation and Value, and the three colors must be between 0 and 1"));
+return( true );
+		}
+	    }
+	    *offs[i] = val;
+	}
+
+	d->done = true;
+    }
+return( true );
+}
+
+static int GCol_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gcol_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	d->col.rgb = d->col.hsv = false;
+	d->done = true;
+    }
+return( true );
+}
+
+static int GCol_TextChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct gcol_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	double *offs[6] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b };
+	int i, err = false;
+	int low, high;
+	double val;
+	char text[50];
+
+	if ( GGadgetGetCid(g)>=CID_Wheel ) {
+	    low = 0; high=3;
+	    d->col.hsv = true;
+	    d->col.rgb = false;
+	} else {
+	    low = 3; high=6;
+	    d->col.hsv = false;
+	    d->col.rgb = true;
+	}
+	for ( i=low; i<high; ++i ) {
+	    val = GetCalmReal8(d->gw,cids[i],_(labs[i]),&err);
+	    if ( err )
+	break;
+	    if ( i==0 ) {
+		val = fmod(val,360);
+		if ( val<0 ) val += 360;
+	    } else {
+		if ( val<0 || val>1 ) {
+		    err = true;
+	break;
+		}
+	    }
+	    *offs[i] = val;
+	}
+	if ( err ) {
+	    d->col.hsv = d->col.rgb = false;
+	} else if ( d->col.hsv ) {
+	    HSV2RGB(&d->col);
+	    for ( i=3; i<6; ++i ) {
+		sprintf( text, "%.2f", *offs[i]);
+		GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[i]),text);
+	    }
+	} else {
+	    RGB2HSV(&d->col);
+	    sprintf( text, "%3.0f", *offs[0]);
+	    GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[0]),text);
+	    for ( i=1; i<3; ++i ) {
+		sprintf( text, "%.2f", *offs[i]);
+		GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[i]),text);
+	    }
+	}
+	GDrawRequestExpose(d->wheelw,NULL,false);
+	GDrawRequestExpose(d->gradw,NULL,false);
+	GDrawRequestExpose(d->colw,NULL,false);
+    }
+return( true );
+}
+
+static void GCol_ShowTexts(struct gcol_data *d) {
+    double *offs[6] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b };
+    int i;
+    char text[50];
+
+    HSV2RGB(&d->col);
+    sprintf( text, "%3.0f", *offs[0]);
+    GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[0]),text);
+    for ( i=1; i<6; ++i ) {
+	sprintf( text, "%.2f", *offs[i]);
+	GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[i]),text);
+    }
+}
+
+static int wheel_e_h(GWindow gw, GEvent *event) {
+    struct gcol_data *d = GDrawGetUserData(gw);
+    if ( event->type==et_expose ) {
+	GRect size;
+	GRect circle;
+	GDrawGetSize(d->wheelw,&size);
+	if ( d->wheel==NULL || 
+		GImageGetHeight(d->wheel)!=size.height ||
+		GImageGetWidth(d->wheel)!=size.width ) {
+	    if ( d->wheel!=NULL )
+		GImageDestroy(d->wheel);
+	    d->wheel = ColorWheel(size.width,size.height);
+	}
+	GDrawDrawImage(gw,d->wheel,NULL,0,0);
+	if ( d->col.hsv ) {
+	    double s = sin(d->col.h*3.1415926535897932/180.);
+	    double c = cos(d->col.h*3.1415926535897932/180.);
+	    int y = (int) rint(d->col.s*(size.height-1)*s/2.0) + size.height/2;
+	    int x = (int) rint(d->col.s*(size.width-1)*c/2.0) + size.width/2;
+	    circle.x = x-3; circle.y = y-3;
+	    circle.width = circle.height = 7;
+	    GDrawDrawElipse(gw,&circle,0x000000);
+	}
+    } else if ( event->type == et_mousedown ||
+	    (event->type==et_mousemove && d->pressed) ||
+	    event->type==et_mouseup ) {
+	int rgb = GImageGetPixelRGBA(d->wheel,event->u.mouse.x,event->u.mouse.y);
+	struct hslrgb temp;
+	temp.r = ((rgb>>16)&0xff)/255.;
+	temp.g = ((rgb>>8)&0xff)/255.;
+	temp.b = ((rgb   )&0xff)/255.;
+	RGB2HSV(&temp);
+	d->col.h = temp.h; d->col.s = temp.s;
+	GCol_ShowTexts(d);
+	GDrawRequestExpose(d->colw,NULL,false);
+	GDrawRequestExpose(d->wheelw,NULL,false);
+	if ( event->type == et_mousedown )
+	    d->pressed = true;
+	else if ( event->type == et_mouseup )
+	    d->pressed = false;
+    } else if ( event->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+static int grad_e_h(GWindow gw, GEvent *event) {
+    struct gcol_data *d = GDrawGetUserData(gw);
+    GRect size;
+    if ( event->type==et_expose ) {
+	GDrawGetSize(d->wheelw,&size);
+	if ( d->grad==NULL || GImageGetHeight(d->grad)!=size.height ) {
+	    if ( d->grad!=NULL )
+		GImageDestroy(d->grad);
+	    d->grad = Gradient(size.height);
+	}
+	GDrawDrawImage(gw,d->grad,NULL,0,0);
+	if ( d->col.hsv ) {
+	    int y = size.height-1-(int) rint(size.height*d->col.v);
+	    int col = d->col.v>.5 ? 0x000000 : 0xffffff;
+	    GDrawDrawLine(gw,0,y,GRAD_WIDTH,y,col);
+	}
+    } else if ( event->type == et_mousedown ||
+	    (event->type==et_mousemove && d->pressed) ||
+	    event->type==et_mouseup ) {
+	GDrawGetSize(d->wheelw,&size);
+	d->col.v = (size.height-1-event->u.mouse.y) / (double) (size.height-1);
+	if ( d->col.v<0 ) d->col.v = 0;
+	if ( d->col.v>1 ) d->col.v = 1;
+	GCol_ShowTexts(d);
+	GDrawRequestExpose(d->colw,NULL,false);
+	GDrawRequestExpose(d->gradw,NULL,false);
+	if ( event->type == et_mousedown )
+	    d->pressed = true;
+	else if ( event->type == et_mouseup )
+	    d->pressed = false;
+    } else if ( event->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+static int col_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_expose ) {
+	struct gcol_data *d = GDrawGetUserData(gw);
+	if ( d->col.rgb ) {
+	    int col = (((int) rint(255*d->col.r))<<16) |
+		      (((int) rint(255*d->col.g))<<8 ) |
+		      (((int) rint(255*d->col.b))    );
+	    GDrawFillRect(gw,&event->u.expose.rect,col);
+	} else {
+	    GDrawSetStippled(gw,2,0,0);
+	    GDrawSetBackground(gw,0xffff00);
+	    GDrawFillRect(gw,&event->u.expose.rect,0x000000);
+	    GDrawSetStippled(gw,0,0,0);
+	}
+    } else if ( event->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+static void do_popup_color(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct gcol_data *d = GDrawGetUserData(gw);
+    struct hslrgb *col = mi->ti.userdata;
+
+    d->col = *col;
+    GCol_ShowTexts(d);
+    GDrawRequestExpose(d->wheelw,NULL,false);
+    GDrawRequestExpose(d->colw,NULL,false);
+    GDrawRequestExpose(d->gradw,NULL,false);
+}
+
+static int popup_e_h(GWindow gw, GEvent *event) {
+    struct gcol_data *d = GDrawGetUserData(gw);
+    if ( recent_cols[0].hsv || d->user_cols[0].hsv ) {
+	if ( event->type==et_expose ) {
+	    GDrawDrawLine(gw,1,1,GRAD_WIDTH-2,1,0x000000);
+	    GDrawDrawLine(gw,1,1,GRAD_WIDTH/2-1,GRAD_WIDTH-2,0x000000);
+	    GDrawDrawLine(gw,GRAD_WIDTH/2-1,GRAD_WIDTH-2,GRAD_WIDTH-2,1,0x000000);
+	} else if ( event->type == et_mousedown ) {
+	    GMenuItem menu[2*USEFUL_MAX+2];
+	    int i,j,k;
+
+	    memset(menu,0,sizeof(menu));
+	    for ( i=0; i<USEFUL_MAX && recent_cols[i].hsv; ++i ) {
+		menu[i].ti.image = &blanks[i];
+		cluts[i].clut[1] = (((int) rint(255.*recent_cols[i].r))<<16 ) |
+				    (((int) rint(255.*recent_cols[i].g))<<8 ) |
+				    (((int) rint(255.*recent_cols[i].b)) );
+		menu[i].ti.fg = menu[i].ti.bg = COLOR_DEFAULT;
+		menu[i].ti.userdata = &recent_cols[i];
+		menu[i].invoke = do_popup_color;
+	    }
+	    j=i;
+	    if ( i!=0 && d->user_cols[0].hsv ) {
+		menu[i].ti.line = true;
+		menu[i].ti.fg = menu[i].ti.bg = COLOR_DEFAULT;
+		++i;
+	    }
+	    for ( k=0; k<USEFUL_MAX && d->user_cols[k].hsv; ++k, ++i, ++j ) {
+		menu[i].ti.image = &blanks[j];
+		cluts[j].clut[1] = (((int) rint(255.*d->user_cols[k].r))<<16 ) |
+				    (((int) rint(255.*d->user_cols[k].g))<<8 ) |
+				    (((int) rint(255.*d->user_cols[k].b)) );
+		menu[i].ti.fg = menu[i].ti.bg = COLOR_DEFAULT;
+		menu[i].ti.userdata = &d->user_cols[k];
+		menu[i].invoke = do_popup_color;
+	    }
+	    GMenuCreatePopupMenu(gw,event, menu);
+	}
+    }
+
+    if ( event->type == et_char )
+return( false );
+
+return( true );
+}
+
+static int e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	struct gcol_data *d = GDrawGetUserData(gw);
+	d->col.rgb = d->col.hsv = false;
+	d->done = true;
+    } else if ( event->type == et_char ) {
+return( false );
+    }
+return( true );
+}
+
+struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[21], boxes[6], *txarray[8][3], *wheelarray[3][3], *barray[8], *hvarray[3][3];
+    GTextInfo label[21];
+    struct gcol_data d;
+    int k, i;
+    double *offs[6] = { &d.col.h, &d.col.s, &d.col.v, &d.col.r, &d.col.g, &d.col.b };
+    char values[6][40];
+
+    GProgressPauseTimer();
+    memset(&d,0,sizeof(d));
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.window_title = (unichar_t *) title;
+    pos.x = pos.y = 0;
+    pos.width = pos.height = 200;
+    d.gw = gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
+
+    if ( defcol!=NULL && (defcol->rgb || defcol->hsv || defcol->hsl ))
+	d.col = *defcol;
+    else
+	d.col.rgb = true;
+    if ( d.col.rgb )
+	RGB2HSV(&d.col);
+    else if ( defcol->hsv )
+	HSV2RGB(&d.col);
+    else {
+	HSL2RGB(&d.col);
+	RGB2HSV(&d.col);
+    }
+
+    k=0;
+    memset(&gcd,0,sizeof(gcd));
+    memset(&label,0,sizeof(label));
+    memset(&boxes,0,sizeof(boxes));
+
+    gcd[k].gd.pos.height = gcd[k].gd.pos.width = 150;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.u.drawable_e_h = wheel_e_h;
+    gcd[k].gd.cid = CID_Wheel;
+    gcd[k].creator = GDrawableCreate;
+    wheelarray[0][0] = &gcd[k++];
+
+    gcd[k].gd.pos.height = 150; gcd[k].gd.pos.width = GRAD_WIDTH;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.u.drawable_e_h = grad_e_h;
+    gcd[k].gd.cid = CID_Grad;
+    gcd[k].creator = GDrawableCreate;
+    wheelarray[0][1] = &gcd[k++]; wheelarray[0][2] = NULL;
+
+    gcd[k].gd.pos.width = 150; gcd[k].gd.pos.height = GRAD_WIDTH;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.u.drawable_e_h = col_e_h;
+    gcd[k].gd.cid = CID_Color;
+    gcd[k].creator = GDrawableCreate;
+    wheelarray[1][0] = &gcd[k++];
+
+    gcd[k].gd.pos.width = GRAD_WIDTH; gcd[k].gd.pos.height = GRAD_WIDTH;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.u.drawable_e_h = popup_e_h;
+    gcd[k].creator = GDrawableCreate;
+    wheelarray[1][1] = &gcd[k++]; wheelarray[1][2] = NULL;
+    wheelarray[2][0] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = wheelarray[0];
+    boxes[2].creator = GHVBoxCreate;
+
+    for ( i=0; i<6; ++i ) {
+	label[k].text = (unichar_t *) _(labs[i]);
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_visible | gg_enabled ;
+	gcd[k++].creator = GLabelCreate;
+	txarray[i][0] = &gcd[k-1];
+
+	if ( i==0 )
+	    sprintf( values[0], "%3.0f", *offs[0]);
+	else
+	    sprintf( values[i], "%.2f", *offs[i]);
+	label[k].text = (unichar_t *) values[i];
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.width = 60;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.cid = cids[i];
+	gcd[k].gd.handle_controlevent = GCol_TextChanged;
+	gcd[k++].creator = i==0 ? GNumericFieldCreate : GTextFieldCreate;
+	txarray[i][1] = &gcd[k-1]; txarray[i][2] = NULL;
+    }
+    txarray[i][0] = txarray[i][1] = GCD_Glue; txarray[i][2] = NULL;
+    txarray[i+1][0] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = txarray[0];
+    boxes[3].creator = GHVBoxCreate;
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = GCol_OK;
+    gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = GCol_Cancel;
+    gcd[k].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = barray;
+    boxes[4].creator = GHBoxCreate;
+
+    hvarray[0][0] = &boxes[2];
+    hvarray[0][1] = &boxes[3];
+    hvarray[0][2] = NULL;
+    hvarray[1][0] = &boxes[4];
+    hvarray[1][1] = GCD_ColSpan;
+    hvarray[1][2] = NULL;
+    hvarray[2][0] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[0].ret,0);
+    GHVBoxSetExpandableRow(boxes[2].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,0);
+    GHVBoxSetExpandableRow(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+    d.wheelw = GDrawableGetWindow(GWidgetGetControl(gw,CID_Wheel));
+    d.gradw  = GDrawableGetWindow(GWidgetGetControl(gw,CID_Grad));
+    d.colw   = GDrawableGetWindow(GWidgetGetControl(gw,CID_Color));
+    GDrawSetVisible(gw,true);
+
+    while ( !d.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    if ( d.grad!=NULL )
+	GImageDestroy(d.grad);
+    if ( d.wheel!=NULL )
+	GImageDestroy(d.wheel);
+    if ( d.col.hsv || d.col.rgb ) {
+	int j;
+	for ( j=0; j<USEFUL_MAX; ++j )
+	    if ( d.col.r==recent_cols[j].r && d.col.g==recent_cols[j].g && d.col.b==recent_cols[j].b )
+	break;
+	if ( j==USEFUL_MAX )
+	    --j;
+	for ( ; j>0; --j )
+	    recent_cols[j] = recent_cols[j-1];
+	recent_cols[0] = d.col;
+    }
+return( d.col );
+}

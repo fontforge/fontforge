@@ -1084,4 +1084,17 @@ extern void DefineGroups(struct fontview *fv);
 extern void DisplayGroups(struct fontview *fv);
 
 extern struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical);
+
+struct hslrgb {
+    double h,s,l,v;
+    double r,g,b;
+    uint8 rgb, hsl, hsv;
+};
+
+extern void RGB2HSL(struct hslrgb *col);
+extern void HSL2RGB(struct hslrgb *col);
+extern void RGB2HSV(struct hslrgb *col);
+extern void HSV2RGB(struct hslrgb *col);
+extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol);
+
 #endif	/* _VIEWS_H */
