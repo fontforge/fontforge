@@ -1728,7 +1728,17 @@ static void FVMenuSelectAutohintable(GWindow gw,struct gmenuitem *mi,GEvent *e) 
 
 static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FVSelectColor(fv,(uint32) (intpt) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
+    Color col = (Color) (intpt) (mi->ti.userdata);
+    if ( (intpt) mi->ti.userdata == (intpt) -10 ) {
+	struct hslrgb retcol;
+	retcol = GWidgetColor(_("Pick a color"),NULL);
+	if ( !retcol.rgb )
+return;
+	col = (((int) rint(255.*retcol.r))<<16 ) |
+		    (((int) rint(255.*retcol.g))<<8 ) |
+		    (((int) rint(255.*retcol.b)) );
+    }
+    FVSelectColor(fv,col,(e->u.chr.state&ksm_shift)?1:0);
 }
 
 static void FVMenuSelectByPST(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3711,6 +3721,7 @@ static GMenuItem2 cflist[] = {
 };
 
 static GMenuItem2 sclist[] = {
+    { { (unichar_t *) N_("Color|Choose..."), (GImage *)"colorwheel.png", COLOR_DEFAULT, COLOR_DEFAULT, (void *) -10, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Color Choose|No Shortcut"), NULL, NULL, FVMenuSelectColor },
     { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Default|No Shortcut"), NULL, NULL, FVMenuSelectColor },
     { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
     { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },

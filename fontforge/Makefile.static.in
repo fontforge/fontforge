@@ -38,7 +38,8 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
  cvexportdlg.o cvfreehand.o cvgetinfo.o cvgridfit.o cvhand.o cvhints.o \
  cvimportdlg.o cvknife.o cvpalettes.o cvpointer.o cvruler.o cvshapes.o \
  cvstroke.o cvtranstools.o displayfonts.o effectsui.o encodingui.o \
- fontinfo.o fontview.o freetypeui.o fvfontsdlg.o fvmetricsdlg.o gotodlg.o \
+ fontinfo.o fontview.o freetypeui.o fvfontsdlg.o fvmetricsdlg.o gcolor.o \
+ gotodlg.o \
  groupsdlg.o histograms.o images.o layer2layer.o kernclass.o lookupui.o \
  macencui.o math.o metricsview.o mmdlg.o nonlineartransui.o oflib.o \
  openfontdlg.o prefs.o problems.o pythonui.o savefontdlg.o scriptingdlg.o \
