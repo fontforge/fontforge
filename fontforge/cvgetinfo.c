@@ -1995,7 +1995,7 @@ static void PIChangePoint(GIData *ci) {
     PIFillup(ci,0);
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Interpolated),
-	    !ci->cursp->dontinterpolate );
+	    !ci->cursp->dontinterpolate && !(ci->cursp->nonextcp && ci->cursp->noprevcp) );
     interpolate = SPInterpolate(ci->cursp) && ci->cv->b.layerheads[ci->cv->b.drawmode]->order2;
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Normal), !interpolate );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Interpolated), interpolate );
@@ -2107,13 +2107,36 @@ static int PI_InterpChanged(GGadget *g, GEvent *e) {
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_Interpolated ) {
-	    cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
-	    cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
-	    if ( cursp->pointtype==pt_tangent ) {
-		cursp->pointtype = pt_curve;
-		GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve),true);
+	    if ( cursp->nonextcp && cursp->noprevcp )
+		/* Do Nothing */;
+	    else {
+		if ( cursp->nonextcp && cursp->next ) {
+		    SplinePoint *n = cursp->next->to;
+		    cursp->nextcp.x = rint((n->me.x+cursp->me.x)/2);
+		    cursp->nextcp.y = rint((n->me.y+cursp->me.y)/2);
+		    n->prevcp = cursp->nextcp;
+		    cursp->nonextcp = n->noprevcp = false;
+		}
+		if ( cursp->noprevcp && cursp->prev ) {
+		    SplinePoint *p = cursp->prev->from;
+		    cursp->prevcp.x = rint((p->me.x+cursp->me.x)/2);
+		    cursp->prevcp.y = rint((p->me.y+cursp->me.y)/2);
+		    p->nextcp = cursp->prevcp;
+		    cursp->noprevcp = p->nonextcp = false;
+		}
+		cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
+		cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+		if ( cursp->pointtype==pt_tangent ) {
+		    cursp->pointtype = pt_curve;
+		    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve),true);
+		}
+		if ( cursp->next!=NULL )
+		    SplineRefigure(cursp->next);
+		if ( cursp->prev!=NULL )
+		    SplineRefigure(cursp->prev);
+		SplineSetSpirosClear(ci->curspl);
+		CVCharChangedUpdate(&ci->cv->b);
 	    }
-	    SplineSetSpirosClear(ci->curspl);
 	    PIFillup(ci,0);
 	}
 	PIShowHide(ci);
