@@ -293,7 +293,7 @@ struct gcol_data {
 #define CID_Color	1023
 
 static int cids[] = { CID_Hue, CID_Saturation, CID_Value, CID_Red, CID_Green, CID_Blue, 0 };
-static char *labs[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red"), N_("Green"), N_("Blue") };
+static char *labnames[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red"), N_("Green"), N_("Blue") };
 
 static int GCol_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -303,7 +303,7 @@ static int GCol_OK(GGadget *g, GEvent *e) {
 	double val;
 
 	for ( i=0; i<6; ++i ) {
-	    val = GetReal8(d->gw,cids[i],_(labs[i]),&err);
+	    val = GetReal8(d->gw,cids[i],_(labnames[i]),&err);
 	    if ( err )
 return( true );
 	    if ( i==0 ) {
@@ -351,7 +351,7 @@ static int GCol_TextChanged(GGadget *g, GEvent *e) {
 	    d->col.rgb = true;
 	}
 	for ( i=low; i<high; ++i ) {
-	    val = GetCalmReal8(d->gw,cids[i],_(labs[i]),&err);
+	    val = GetCalmReal8(d->gw,cids[i],_(labnames[i]),&err);
 	    if ( err )
 	break;
 	    if ( i==0 ) {
@@ -573,7 +573,7 @@ return( false );
 return( true );
 }
 
-struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol) {
+struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb *usercols) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -599,15 +599,34 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol) {
 
     if ( defcol!=NULL && (defcol->rgb || defcol->hsv || defcol->hsl ))
 	d.col = *defcol;
+    else if ( recent_cols[0].hsv )
+	d.col = recent_cols[0];
+    else if ( usercols!=NULL && (usercols[0].rgb || usercols[0].hsv || usercols[0].hsl ))
+	d.col = usercols[0];
     else
 	d.col.rgb = true;
-    if ( d.col.rgb )
-	RGB2HSV(&d.col);
-    else if ( defcol->hsv )
+    if ( d.col.rgb ) {
+	if ( !d.col.hsv )
+	    RGB2HSV(&d.col);
+    } else if ( d.col.hsv )
 	HSV2RGB(&d.col);
     else {
 	HSL2RGB(&d.col);
 	RGB2HSV(&d.col);
+    }
+    if ( usercols!=NULL ) {
+	for ( i=0; i<6 && (usercols[i].rgb || usercols[i].hsv || usercols[i].hsl ); ++i ) {
+	    d.user_cols[i] = usercols[i];
+	    if ( d.user_cols[i].rgb ) {
+		if ( !d.user_cols[i].hsv )
+		    RGB2HSV(&d.user_cols[i]);
+	    } else if ( d.user_cols[i].hsv )
+		HSV2RGB(&d.user_cols[i]);
+	    else {
+		HSL2RGB(&d.user_cols[i]);
+		RGB2HSV(&d.user_cols[i]);
+	    }
+	}
     }
 
     k=0;
@@ -648,7 +667,7 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol) {
     boxes[2].creator = GHVBoxCreate;
 
     for ( i=0; i<6; ++i ) {
-	label[k].text = (unichar_t *) _(labs[i]);
+	label[k].text = (unichar_t *) _(labnames[i]);
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
