@@ -48,7 +48,7 @@ typedef struct charinfo {
     struct lookup_subtable *old_sub;
     int r,c;
     int lc_seen, lc_aspect, vert_aspect;
-    Color last;
+    Color last, real_last;
 } CharInfo;
 
 #define CI_Width	218
@@ -3399,8 +3399,70 @@ static void CI_SetColorList(CharInfo *ci,Color color) {
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
     if ( color!=COLOR_DEFAULT )
 	ci->last = color;
+    ci->real_last = color;
 }
 
+struct colcount { Color color; int cnt; };
+static int colcountorder(const void *op1, const void *op2) {
+    const struct colcount *c1 = op1, *c2 = op2;
+
+return( c2->cnt - c1->cnt );		/* Biggest first */
+}
+
+struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]) {
+    int i, gid, cnt;
+    struct colcount *colcount, stds[7];
+    SplineChar *sc;
+
+    memset(stds,0,sizeof(stds));
+    stds[0].color = 0xffffff;
+    stds[1].color = 0xff0000;
+    stds[2].color = 0x00ff00;
+    stds[3].color = 0x0000ff;
+    stds[4].color = 0xffff00;
+    stds[5].color = 0x00ffff;
+    stds[6].color = 0xff00ff;
+    colcount = gcalloc(sf->glyphcnt,sizeof(struct colcount));
+
+    cnt = 0;
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc= sf->glyphs[gid])!=NULL ) {
+	if ( sc->color==COLOR_DEFAULT )
+    continue;
+	for ( i=0; i<7 && sc->color!=stds[i].color; ++i );
+	if ( i<7 ) {
+	    ++stds[i].cnt;
+    continue;
+	}
+	for ( i=0; i<cnt && sc->color!=colcount[i].color; ++i );
+	if ( i==cnt )
+	    colcount[cnt++].color = sc->color;
+	++colcount[i].cnt;
+    }
+
+    if ( cnt<6 ) {
+	for ( i=0; i<cnt; ++i )
+	    ++colcount[i].cnt;
+	for ( i=0; i<7; ++i ) if ( stds[i].cnt!=0 ) {
+	    colcount[cnt].color = stds[i].color;
+	    colcount[cnt++].cnt = 1;
+	}
+    }
+    qsort(colcount,cnt,sizeof(struct colcount),colcountorder);
+
+    memset(fontcols,0,6*sizeof(struct hslrgb));
+    for ( i=0; i<6 && i<cnt; ++i ) {
+	fontcols[i].rgb = true;
+	fontcols[i].r = ((colcount[i].color>>16)&0xff)/255.0;
+	fontcols[i].g = ((colcount[i].color>>8 )&0xff)/255.0;
+	fontcols[i].b = ((colcount[i].color    )&0xff)/255.0;
+    }
+    free(colcount);
+    if ( cnt==0 )
+return( NULL );
+
+return(fontcols);
+}
+    
 static int CI_PickColor(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -3408,21 +3470,24 @@ static int CI_PickColor(GGadget *g, GEvent *e) {
 	if ( ti==NULL )
 	    /* Can't happen */;
 	else if ( ti->userdata == (void *) COLOR_CHOOSE ) {
-	    struct hslrgb col;
+	    struct hslrgb col, font_cols[6];
 	    memset(&col,0,sizeof(col));
 	    col.rgb = true;
 	    col.r = ((ci->last>>16)&0xff)/255.;
 	    col.g = ((ci->last>>8 )&0xff)/255.;
 	    col.b = ((ci->last    )&0xff)/255.;
-	    col = GWidgetColor(_("Pick a color"),&col);
+	    col = GWidgetColor(_("Pick a color"),&col,SFFontCols(ci->sc->parent,font_cols));
 	    if ( col.rgb ) {
 		ci->last = (((int) rint(255.*col.r))<<16 ) |
 			    (((int) rint(255.*col.g))<<8 ) |
 			    (((int) rint(255.*col.b)) );
 		CI_SetColorList(ci,ci->last);
-	    }
+	    } else /* Cancelled */
+		CI_SetColorList(ci,ci->real_last);
 	} else {
-	    ci->last = (intpt) ti->userdata;
+	    if ( (intpt) ti->userdata!=COLOR_DEFAULT )
+		ci->last = (intpt) ti->userdata;
+	    ci->real_last = (intpt) ti->userdata;
 	}
     }
 return( true );

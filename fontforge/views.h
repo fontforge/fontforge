@@ -1095,6 +1095,6 @@ extern void RGB2HSL(struct hslrgb *col);
 extern void HSL2RGB(struct hslrgb *col);
 extern void RGB2HSV(struct hslrgb *col);
 extern void HSV2RGB(struct hslrgb *col);
-extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol);
-
+extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb fontcols[6]);
+extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 #endif	/* _VIEWS_H */
