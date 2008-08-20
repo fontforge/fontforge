@@ -12,7 +12,7 @@ RANLIB = @RANLIB@
 
 X_CFLAGS = @X_CFLAGS@
 
-libgutils_OBJECTS = divisors.o fsys.o gimage.o gimagereadbmp.o \
+libgutils_OBJECTS = divisors.o fsys.o gcol.o gimage.o gimagereadbmp.o \
  gimageread.o gimagereadgif.o gimagereadjpeg.o gimagereadpng.o \
  gimagereadras.o gimagereadrgb.o gimagereadtiff.o gimagereadxbm.o \
  gimagereadxpm.o gimagewritebmp.o gimagewritegimage.o \

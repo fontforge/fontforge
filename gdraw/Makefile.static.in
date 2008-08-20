@@ -12,8 +12,8 @@ RANLIB = @RANLIB@
 
 X_CFLAGS = @X_CFLAGS@
 
-libgdraw_OBJECTS =  choosericons.o drawboxborder.o \
- gaskdlg.o gbuttons.o gchardlg.o gcontainer.o gdraw.o \
+libgdraw_OBJECTS =  choosericons.o ctlvalues.o drawboxborder.o \
+ gaskdlg.o gbuttons.o gchardlg.o gcolor.o gcontainer.o gdraw.o \
  gdrawbuildchars.o gdrawerror.o gdrawtxt.o gdrawtxtinit.o \
  gfilechooser.o gfiledlg.o ggadgets.o ggroupbox.o \
  gimageclut.o gimagecvt.o gimagepsdraw.o \

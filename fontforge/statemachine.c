@@ -358,7 +358,7 @@ return( false );
 	break;
 	    kbuf[kerns] = u_strtol(ret,&end,10);
 	    if ( end==ret ) {
-		Protest8(_("Kern Values:"));
+		GGadgetProtest8(_("Kern Values:"));
 return( false );
 	    } else if ( kerns>=8 ) {
 		ff_post_error(_("Too Many Kerns"),_("At most 8 kerning values may be specified here"));

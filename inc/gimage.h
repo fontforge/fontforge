@@ -38,6 +38,12 @@ typedef uint32 Color;
 #define COLOR_GREEN(col)	(((col)>>8) & 0xff)
 #define COLOR_BLUE(col)		((col)&0xff)
 
+struct hslrgb {
+    double h,s,l,v;
+    double r,g,b;
+    uint8 rgb, hsl, hsv;
+};
+
 typedef struct clut {
     int16 clut_len;
     unsigned int is_grey: 1;
@@ -150,5 +156,12 @@ extern GImage *GImageRead(char *filename);
 
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
 extern void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y);
+
+extern void gRGB2HSL(struct hslrgb *col);
+extern void gHSL2RGB(struct hslrgb *col);
+extern void gRGB2HSV(struct hslrgb *col);
+extern void gHSV2RGB(struct hslrgb *col);
+extern void gColor2Hslrgb(struct hslrgb *col,Color from);
+extern Color gHslrgb2Color(struct hslrgb *col);
 
 #endif
