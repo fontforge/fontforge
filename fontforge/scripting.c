@@ -8684,7 +8684,7 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_int;
 	    } else if ( strcmp(name,"$macstyle")==0 || strcmp(name,"$order")==0 ||
 		    strcmp(name,"$em")==0 || strcmp(name,"$ascent")==0 ||
-		    strcmp(name,"$ascent")==0 ) {
+		    strcmp(name,"$descent")==0 ) {
 		if ( c->curfv==NULL ) ScriptError(c,"No current font");
 		if ( strcmp(name,"$macstyle")==0 )
 		    val->u.ival = c->curfv->sf->macstyle;
