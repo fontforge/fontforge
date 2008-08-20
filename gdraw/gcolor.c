@@ -24,131 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include <ggadget.h>
+#include <gwidget.h>
 
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-void RGB2HSL(struct hslrgb *col) {
-    double mx, mn;
-
-    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
-    if ( col->r>col->g ) {
-	mx = ( col->r>col->b ) ? col->r : col->b;
-	mn = ( col->g<col->b ) ? col->g : col->b;
-    } else {
-	mx = ( col->g>col->b ) ? col->g : col->b;
-	mn = ( col->r<col->b ) ? col->r : col->b;
-    }
-    if ( mx==mn )
-	col->h = 0;
-    else if ( mx==col->r ) {
-	col->h = fmod(60*(col->g-col->b)/(mx-mn),360);
-    } else if ( mx==col->g ) {
-	col->h = 60*(col->b-col->r)/(mx-mn) + 120;
-    } else {
-	col->h = 60*(col->r-col->g)/(mx-mn) + 240;
-    }
-    col->l = (mx+mn)/2;
-    if ( mx==mn )
-	col->s = 0;
-    else if ( col->l<=.5 )
-	col->s = (mx-mn)/(mx+mn);
-    else
-	col->s = (mx-mn)/(2-(mx+mn));
-    col->hsl = true; col->hsv = false;
-}
-
-void HSL2RGB(struct hslrgb *col) {
-    double q,p,hk, ts[3], cs[3];
-    int i;
-
-    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
-    if ( col->l<.5 )
-	q = col->l*(1 + col->s);
-    else
-	q = col->l+col->s - (col->l*col->s);
-    p = 2*col->l - q;
-    hk = fmod(col->h,360)/360;
-    if ( hk<0 ) hk += 1.0;
-    ts[0] = hk + 1./3.;
-    ts[1] = hk;
-    ts[2] = hk - 1./3.;
-
-    for ( i=0; i<3; ++i ) {
-	if ( ts[i]<0 ) ts[i] += 1.0;
-	else if ( ts[i]>1 ) ts[i] -= 1.0;
-	if ( ts[i]<1./6. )
-	    cs[i] = p + ((q-p)*6*ts[i]);
-	else if ( ts[i]<.5 )
-	    cs[i] = q;
-	else if ( ts[i]<2./3. )
-	    cs[i] = p + ((q-p)*6*(2./3.-ts[i]));
-	else
-	    cs[i] = p;
-    }
-    col->r = cs[0];
-    col->g = cs[1];
-    col->b = cs[2];
-    col->rgb = true;
-}
-
-void RGB2HSV(struct hslrgb *col) {
-    double mx, mn;
-
-    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
-    if ( col->r>col->g ) {
-	mx = ( col->r>col->b ) ? col->r : col->b;
-	mn = ( col->g<col->b ) ? col->g : col->b;
-    } else {
-	mx = ( col->g>col->b ) ? col->g : col->b;
-	mn = ( col->r<col->b ) ? col->r : col->b;
-    }
-    if ( mx==mn )
-	col->h = 0;
-    else if ( mx==col->r ) {
-	col->h = fmod(60*(col->g-col->b)/(mx-mn),360);
-    } else if ( mx==col->g ) {
-	col->h = 60*(col->b-col->r)/(mx-mn) + 120;
-    } else {
-	col->h = 60*(col->r-col->g)/(mx-mn) + 240;
-    }
-    col->v = mx;
-    if ( mx==0 )
-	col->s = 0;
-    else 
-	col->s = (mx-mn)/mx;
-    col->hsv = true; col->hsl = false;
-}
-
-void HSV2RGB(struct hslrgb *col) {
-    double q,p,t,f;
-    int h;
-
-    /* Algorithm from http://en.wikipedia.org/wiki/HSL_color_space */
-    h = ((int) floor(col->h/60)) % 6;
-    if ( h<0 ) h+=6;
-    f = col->h/60 - floor(col->h/60);
-
-    p = col->v*(1-col->s);
-    q = col->v*(1-f*col->s);
-    t = col->v*(1-(1-f)*col->s);
-
-    if ( h==0 ) {
-	col->r = col->v; col->g = t; col->b = p;
-    } else if ( h==1 ) {
-	col->r = q; col->g = col->v; col->b = p;
-    } else if ( h==2 ) {
-	col->r = p; col->g = col->v; col->b = t;
-    } else if ( h==3 ) {
-	col->r = p; col->g = q; col->b = col->v;
-    } else if ( h==4 ) {
-	col->r = t; col->g = p; col->b = col->v;
-    } else if ( h==5 ) {
-	col->r = col->v; col->g = p; col->b = q;
-    }
-    col->rgb = true;
-}
 
 static GImage *ColorWheel(int width,int height) {
     struct hslrgb col;
@@ -178,7 +59,7 @@ static GImage *ColorWheel(int width,int height) {
 	    } else {
 		col.h = atan2(y,x)*180/3.1415926535897932;
 		if ( col.h < 0 ) col.h += 360;
-		HSV2RGB(&col);
+		gHSV2RGB(&col);
 		*row++ = COLOR_CREATE( (int) rint(255*col.r), (int) rint(255*col.g), (int) rint(255*col.b));
 	    }
 	}
@@ -311,7 +192,7 @@ return( true );
 		if ( val<0 ) val += 360;
 	    } else {
 		if ( val<0 || val>1 ) {
-		    ff_post_error(_("Value out of bounds"), _("Saturation and Value, and the three colors must be between 0 and 1"));
+		    gwwv_post_error(_("Value out of bounds"), _("Saturation and Value, and the three colors must be between 0 and 1"));
 return( true );
 		}
 	    }
@@ -368,13 +249,13 @@ static int GCol_TextChanged(GGadget *g, GEvent *e) {
 	if ( err ) {
 	    d->col.hsv = d->col.rgb = false;
 	} else if ( d->col.hsv ) {
-	    HSV2RGB(&d->col);
+	    gHSV2RGB(&d->col);
 	    for ( i=3; i<6; ++i ) {
 		sprintf( text, "%.2f", *offs[i]);
 		GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[i]),text);
 	    }
 	} else {
-	    RGB2HSV(&d->col);
+	    gRGB2HSV(&d->col);
 	    sprintf( text, "%3.0f", *offs[0]);
 	    GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[0]),text);
 	    for ( i=1; i<3; ++i ) {
@@ -394,7 +275,7 @@ static void GCol_ShowTexts(struct gcol_data *d) {
     int i;
     char text[50];
 
-    HSV2RGB(&d->col);
+    gHSV2RGB(&d->col);
     sprintf( text, "%3.0f", *offs[0]);
     GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[0]),text);
     for ( i=1; i<6; ++i ) {
@@ -434,7 +315,7 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
 	temp.r = ((rgb>>16)&0xff)/255.;
 	temp.g = ((rgb>>8)&0xff)/255.;
 	temp.b = ((rgb   )&0xff)/255.;
-	RGB2HSV(&temp);
+	gRGB2HSV(&temp);
 	d->col.h = temp.h; d->col.s = temp.s;
 	GCol_ShowTexts(d);
 	GDrawRequestExpose(d->colw,NULL,false);
@@ -607,24 +488,24 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
 	d.col.rgb = true;
     if ( d.col.rgb ) {
 	if ( !d.col.hsv )
-	    RGB2HSV(&d.col);
+	    gRGB2HSV(&d.col);
     } else if ( d.col.hsv )
-	HSV2RGB(&d.col);
+	gHSV2RGB(&d.col);
     else {
-	HSL2RGB(&d.col);
-	RGB2HSV(&d.col);
+	gHSL2RGB(&d.col);
+	gRGB2HSV(&d.col);
     }
     if ( usercols!=NULL ) {
 	for ( i=0; i<6 && (usercols[i].rgb || usercols[i].hsv || usercols[i].hsl ); ++i ) {
 	    d.user_cols[i] = usercols[i];
 	    if ( d.user_cols[i].rgb ) {
 		if ( !d.user_cols[i].hsv )
-		    RGB2HSV(&d.user_cols[i]);
+		    gRGB2HSV(&d.user_cols[i]);
 	    } else if ( d.user_cols[i].hsv )
-		HSV2RGB(&d.user_cols[i]);
+		gHSV2RGB(&d.user_cols[i]);
 	    else {
-		HSL2RGB(&d.user_cols[i]);
-		RGB2HSV(&d.user_cols[i]);
+		gHSL2RGB(&d.user_cols[i]);
+		gRGB2HSV(&d.user_cols[i]);
 	    }
 	}
     }

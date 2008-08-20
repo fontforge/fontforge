@@ -33,12 +33,14 @@
 #include <locale.h>
 #include <unistd.h>
 #include <dynamic.h>
+#include <stdlib.h>		/* getenv,setenv */
 #ifdef __Mac
-# include <stdlib.h>		/* getenv,setenv */
 # include </Developer/Headers/FlatCarbon/Files.h>
-#define FontInfo	MacFontInfo
-#define KernPair	MacKernPair
+# define FontInfo	MacFontInfo
+# define KernPair	MacKernPair
 # include </Developer/Headers/FlatCarbon/CarbonEvents.h>
+# undef FontInfo
+# undef KernPair
 #endif
 
 int splash = 1;

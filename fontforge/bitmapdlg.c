@@ -98,7 +98,7 @@ static int32 *ParseList(GWindow gw, int cid,int *err, int final) {
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes); free(ret);
 	    if ( final )
-		Protest8(_("Pixel Sizes:"));
+		GGadgetProtest8(_("Pixel Sizes:"));
 	    *err = true;
 return( NULL );
 	}

@@ -235,7 +235,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	if ( sizes[i]>0 ) ++i;
 	if ( *end!=' ' && *end!=',' && *end!='\0' ) {
 	    free(sizes);
-	    Protest8(msg);
+	    GGadgetProtest8(msg);
 	    *err = true;
 return( NULL );
 	}
@@ -1129,7 +1129,7 @@ return( -1 );
 	    int err = false;
 	    int res = GetInt8(gw,1003,_("Other ..."),&err);
 	    if ( res<10 )
-		Protest8( _("_Other"));
+		GGadgetProtest8( _("_Other"));
 	    else if ( !err ) {
 		GDrawSetVisible(gw,false);
 return( res );

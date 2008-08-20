@@ -104,16 +104,6 @@ extern GTextInfo *GetEncodingTypes(void);
 extern void InitCursors(void);
 extern void InitToolIconClut(Color bg);
 
-extern real GetReal(GWindow gw,int cid,char *name,int *err);
-extern int GetInt(GWindow gw,int cid,char *name,int *err);
-extern void Protest(char *label);
-extern real GetCalmReal8(GWindow gw,int cid,char *namer,int *err);
-extern real GetReal8(GWindow gw,int cid,char *namer,int *err);
-extern int GetCalmInt8(GWindow gw,int cid,char *name,int *err);
-extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
-extern int GetUnicodeChar8(GWindow gw,int cid,char *namer,int *err);
-extern void Protest8(char *labelr);
-
 extern int ErrorWindowExists(void);
 extern void ShowErrorWindow(void);
 extern struct ui_interface gdraw_ui_interface;

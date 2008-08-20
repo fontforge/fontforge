@@ -4192,7 +4192,7 @@ return( true );
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_ItalicAngle));
 	ia = u_strtod(txt,&end);
 	if ( *end!='\0' ) {
-	    Protest8(_("_Italic Angle:"));
+	    GGadgetProtest8(_("_Italic Angle:"));
 return(true);
 	}
 	guideorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_GuideOrder2));

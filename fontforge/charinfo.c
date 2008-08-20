@@ -504,7 +504,7 @@ static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
     if ( val==-1 && minusoneok )
 return( -1 );
     if ( *end || val<0 || val>0x10ffff ) {
-	Protest8( _("Unicode _Value:") );
+	GGadgetProtest8( _("Unicode _Value:") );
 return( -2 );
     }
 return( val );

@@ -9,7 +9,7 @@ bindir = @bindir@
 libdir = @libdir@
 
 GD_VERSION=4
-GD_REVISION=4
+GD_REVISION=5
 GD_AGE=0
 
 LIBTOOL = @LIBTOOL@
@@ -22,8 +22,8 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
-libgdraw_OBJECTS =  choosericons.lo drawboxborder.lo \
- gaskdlg.lo gbuttons.lo gchardlg.lo gcontainer.lo gdraw.lo \
+libgdraw_OBJECTS =  choosericons.lo ctlvalues.lo drawboxborder.lo \
+ gaskdlg.lo gbuttons.lo gcolor.o gchardlg.lo gcontainer.lo gdraw.lo \
  gdrawbuildchars.lo gdrawerror.lo gdrawtxt.lo gdrawtxtinit.lo \
  gfilechooser.lo gfiledlg.lo ggadgets.lo ggroupbox.lo \
  gimageclut.lo gimagecvt.lo gimagepsdraw.lo \

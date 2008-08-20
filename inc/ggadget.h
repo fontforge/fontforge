@@ -491,4 +491,11 @@ GImage *GGadgetImageCache(char *filename);
 
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
 
+extern double GetCalmReal8(GWindow gw,int cid,char *namer,int *err);
+extern double GetReal8(GWindow gw,int cid,char *namer,int *err);
+extern int GetCalmInt8(GWindow gw,int cid,char *name,int *err);
+extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
+extern int GetUnicodeChar8(GWindow gw,int cid,char *namer,int *err);
+extern void GGadgetProtest8(char *labelr);
+
 #endif
