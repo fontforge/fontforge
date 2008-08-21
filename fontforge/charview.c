@@ -1990,22 +1990,24 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
 	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
 		CVShowHints(cv,cv->backimgs);
-	}
-	for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
-	    if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
-			((cv->showfore || cvlayer==layer) && layer>ly_back)) ) ||
-		( !sf->multilayer && (((cv->showfore && cvlayer==layer) && layer==ly_fore) ||
-			(((cv->showback[layer>>5]&(1<<(layer&31))) || cvlayer==layer) && layer!=ly_fore))) ) {
-		/* This really should be after the grids, but then it would completely*/
-		/*  hide them. */
-		GRect r;
-		if ( cv->back_img_out_of_date )
-		    DrawImageList(cv,cv->backimgs,cv->b.sc->layers[layer].images);
-		r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
-		GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
+	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
+		if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
+			    ((cv->showfore || cvlayer==layer) && layer>ly_back)) ) ||
+		    ( !sf->multilayer && (((cv->showfore && cvlayer==layer) && layer==ly_fore) ||
+			    (((cv->showback[layer>>5]&(1<<(layer&31))) || cvlayer==layer) && layer!=ly_fore))) ) {
+		    /* This really should be after the grids, but then it would completely*/
+		    /*  hide them. */
+		    if ( cv->back_img_out_of_date )
+			DrawImageList(cv,cv->backimgs,cv->b.sc->layers[layer].images);
+		}
 	    }
+	    cv->back_img_out_of_date = false;
 	}
-	cv->back_img_out_of_date = false;
+	{
+	    GRect r;
+	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
+	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
+	}
 	if ( cv->showgrids || cv->b.drawmode==dm_grid ) {
 	    CVDrawSplineSet(cv,pixmap,cv->b.fv->sf->grid.splines,guideoutlinecol,
 		    cv->showpoints && cv->b.drawmode==dm_grid,&clip);
