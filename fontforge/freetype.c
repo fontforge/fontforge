@@ -318,7 +318,7 @@ void *__FreeTypeFontContext(FT_Library context,
     EncMap *map = fv!=NULL ? fv->map : sf->fv!=NULL ? sf->fv->map : sf->map;
     int i,cnt, notdefpos;
 
-    if ( !hasFreeType())
+    if ( context==NULL )
 return( NULL );
     if ( sf->multilayer || sf->strokedfont )
 return( NULL );
@@ -450,6 +450,10 @@ return( NULL );
 
 void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer, enum fontformat ff,int flags,void *shared_ftc) {
+
+    if ( !hasFreeType())
+return( NULL );
+
 return( __FreeTypeFontContext(ff_ft_context,sf,sc,fv,
 	layer, ff,flags,shared_ftc));
 }
