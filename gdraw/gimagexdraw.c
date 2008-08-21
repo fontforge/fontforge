@@ -1581,36 +1581,17 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 static void gdraw_32_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
     register uint32 *pt, index, *ipt;
-    register uint8 *mpt;
-    int mbit;
     int endian_mismatch = gdisp->endian_mismatch;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
 	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
 	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
-	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
-	    mbit = 0x80;
-	else
-	    mbit = 0x1;
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
-	    if ( index==trans ) {
-		*ipt++ = Pixel32(gdisp,0);
-		*mpt |= mbit;
-	    } else {
-		*ipt++ = Pixel32(gdisp,index);
-		if ( endian_mismatch )
-		    ipt[-1] = FixEndian32(ipt[-1]);
-		*mpt &= ~mbit;
-	    }
-	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
-		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;};
-	    } else {
-		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;};
-	    }
+	    *ipt++ = Pixel32(gdisp,index);
+	    if ( endian_mismatch )
+		ipt[-1] = FixEndian32(ipt[-1]);
 	}
     }
 }

@@ -174,7 +174,7 @@ struct gcol_data {
 #define CID_Color	1023
 
 static int cids[] = { CID_Hue, CID_Saturation, CID_Value, CID_Red, CID_Green, CID_Blue, 0 };
-static char *labnames[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red"), N_("Green"), N_("Blue") };
+static char *labnames[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red:"), N_("Green:"), N_("Blue:") };
 
 static int GCol_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -222,7 +222,7 @@ static int GCol_TextChanged(GGadget *g, GEvent *e) {
 	double val;
 	char text[50];
 
-	if ( GGadgetGetCid(g)>=CID_Wheel ) {
+	if ( GGadgetGetCid(g)>=CID_Hue ) {
 	    low = 0; high=3;
 	    d->col.hsv = true;
 	    d->col.rgb = false;
@@ -286,8 +286,8 @@ static void GCol_ShowTexts(struct gcol_data *d) {
 
 static int wheel_e_h(GWindow gw, GEvent *event) {
     struct gcol_data *d = GDrawGetUserData(gw);
+    GRect size;
     if ( event->type==et_expose ) {
-	GRect size;
 	GRect circle;
 	GDrawGetSize(d->wheelw,&size);
 	if ( d->wheel==NULL || 
@@ -310,8 +310,13 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
     } else if ( event->type == et_mousedown ||
 	    (event->type==et_mousemove && d->pressed) ||
 	    event->type==et_mouseup ) {
-	int rgb = GImageGetPixelRGBA(d->wheel,event->u.mouse.x,event->u.mouse.y);
+	Color rgb;
 	struct hslrgb temp;
+	GDrawGetSize(d->wheelw,&size);
+	if ( event->u.mouse.y<0 || event->u.mouse.y>=size.height ||
+		event->u.mouse.x<0 || event->u.mouse.x>=size.width )
+return( true );
+	rgb = GImageGetPixelRGBA(d->wheel,event->u.mouse.x,event->u.mouse.y);
 	temp.r = ((rgb>>16)&0xff)/255.;
 	temp.g = ((rgb>>8)&0xff)/255.;
 	temp.b = ((rgb   )&0xff)/255.;
@@ -350,6 +355,8 @@ static int grad_e_h(GWindow gw, GEvent *event) {
 	    (event->type==et_mousemove && d->pressed) ||
 	    event->type==et_mouseup ) {
 	GDrawGetSize(d->wheelw,&size);
+	if ( event->u.mouse.y<0 || event->u.mouse.y>=size.height )
+return( true );
 	d->col.v = (size.height-1-event->u.mouse.y) / (double) (size.height-1);
 	if ( d->col.v<0 ) d->col.v = 0;
 	if ( d->col.v>1 ) d->col.v = 1;
@@ -473,7 +480,7 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = (unichar_t *) title;
+    wattrs.utf8_window_title = title;
     pos.x = pos.y = 0;
     pos.width = pos.height = 200;
     d.gw = gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
