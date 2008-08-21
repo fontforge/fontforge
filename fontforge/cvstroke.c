@@ -2240,6 +2240,33 @@ static int Layer_Inherit(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int Layer_DoColorWheel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	int cid = (intpt) GGadgetGetUserData(g);
+	GGadget *tf = GWidgetGetControl(gw,cid);
+	if ( GGadgetIsEnabled(tf)) {
+	    char *pt, *text = GGadgetGetTitle8(tf);
+	    char buf[12];
+	    Color val;
+	    struct hslrgb col;
+	    pt = text;
+	    while ( isspace(*pt)) ++pt;
+	    if ( *pt=='0' && (pt[1]=='x' || pt[1]=='X')) pt += 2;
+	    else if ( *pt=='#' ) ++pt;
+	    val = strtoul(pt,NULL,16);
+	    gColor2Hslrgb(&col,val);
+	    col = GWidgetColor(_("Pick a color"),&col,NULL);
+	    if ( col.rgb ) {
+		val = gHslrgb2Color(&col);
+		sprintf(buf,"#%06x", val );
+		GGadgetSetTitle8(tf,buf);
+	    }
+	}
+    }
+return( true );
+}
+
 static int layer_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct layer_dlg *ld = GDrawGetUserData(gw);
@@ -2258,11 +2285,11 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[59], boxes[12];
-    GGadgetCreateData *barray[10], *varray[4], *fhvarray[18], *shvarray[38],
+    GGadgetCreateData gcd[62], boxes[12];
+    GGadgetCreateData *barray[10], *varray[4], *fhvarray[22], *shvarray[46],
 	    *lcarray[6], *ljarray[6], *fgarray[5], *fparray[5], *sgarray[5],
 	    *sparray[5];
-    GTextInfo label[59];
+    GTextInfo label[62];
     struct layer_dlg ld;
     int yoff=0;
     int gcdoff, fill_gcd, stroke_gcd, k, j;
@@ -2343,6 +2370,14 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
     fhvarray[k++] = &gcd[gcdoff-1];
+
+    label[gcdoff].image = GGadgetImageCache("colorwheel.png");
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.flags = gg_enabled|gg_visible;
+    gcd[gcdoff].data = (void *) CID_FillColor;
+    gcd[gcdoff].gd.handle_controlevent = Layer_DoColorWheel;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
     fhvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Opacity:");
@@ -2378,6 +2413,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
     fhvarray[k++] = &gcd[gcdoff-1];
+    fhvarray[k++] = GCD_Glue;
     fhvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Gradient:");
@@ -2425,6 +2461,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     boxes[7].creator = GHBoxCreate;
     fhvarray[k++] = &boxes[7];
     fhvarray[k++] = GCD_ColSpan;
+    fhvarray[k++] = GCD_Glue;
     fhvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Pattern:");
@@ -2472,6 +2509,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     boxes[8].creator = GHBoxCreate;
     fhvarray[k++] = &boxes[8];
     fhvarray[k++] = GCD_ColSpan;
+    fhvarray[k++] = GCD_Glue;
     fhvarray[k++] = NULL;
     fhvarray[k++] = NULL;
 
@@ -2527,6 +2565,14 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
     shvarray[k++] = &gcd[gcdoff-1];
+
+    label[gcdoff].image = GGadgetImageCache("colorwheel.png");
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.flags = gg_enabled|gg_visible;
+    gcd[gcdoff].data = (void *) CID_StrokeColor;
+    gcd[gcdoff].gd.handle_controlevent = Layer_DoColorWheel;
+    gcd[gcdoff++].creator = GButtonCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
     shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Opacity:");
@@ -2563,6 +2609,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
     shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = GCD_Glue;
     shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Gradient:");
@@ -2610,6 +2657,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     boxes[9].creator = GHBoxCreate;
     shvarray[k++] = &boxes[9];
     shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = GCD_Glue;
     shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Pattern:");
@@ -2657,6 +2705,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     boxes[10].creator = GHBoxCreate;
     shvarray[k++] = &boxes[10];
     shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = GCD_Glue;
     shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Stroke _Width:");
@@ -2695,6 +2744,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
     shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = GCD_Glue;
     shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Dashes");
@@ -2741,6 +2791,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GCheckBoxCreate;
     shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = GCD_Glue;
     shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("_Transform Pen:");
@@ -2764,6 +2815,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff].gd.cid = CID_Trans;
     gcd[gcdoff++].creator = GTextFieldCreate;
     shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = GCD_ColSpan;
     shvarray[k++] = GCD_ColSpan;
     shvarray[k++] = NULL;
 
@@ -2829,6 +2881,7 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     boxes[3].gd.label = (GTextInfo *) &gcd[gcdoff-5];
     boxes[3].creator = GHVGroupCreate;
     shvarray[k++] = &boxes[3];
+    shvarray[k++] = GCD_ColSpan;
     shvarray[k++] = GCD_ColSpan;
     shvarray[k++] = GCD_ColSpan;
     shvarray[k++] = NULL;
