@@ -1666,6 +1666,31 @@ static void GXDrawGetPointerPosition(GWindow w, GEvent *ret) {
     ret->u.mouse.y = y;
 }
 
+static GWindow GXDrawGetPointerWindow(GWindow w) {
+    GXWindow gw = (GXWindow) w;
+    Display *display = gw->display->display;
+    int junk;
+    Window parent, child, wjunk;
+    int x, y; unsigned int state;
+    void *ret;
+
+    parent = gw->display->groot->w;
+    forever {
+	child = None;
+	if ( !XQueryPointer(display,parent,&wjunk,&child,&junk,&junk,&x,&y,&state))
+    break;
+	if ( child==None )
+    break;
+	parent = child;
+    }
+    if ( (gw->w&0xfff00000) == (parent&0xfff00000)) {
+	/* It is one of our windows, so it is safe to look for it */
+	if ( XFindContext(display,parent,gw->display->mycontext,(void *) &ret)==0 )
+return( (GWindow) ret );
+    }
+return( NULL );
+}
+
 static char *GXDrawGetWindowTitle8(GWindow w);
 
 static unichar_t *GXDrawGetWindowTitle(GWindow w) {
@@ -4164,6 +4189,7 @@ static struct displayfuncs xfuncs = {
     GXDrawGetWindowTitle,
     GXDrawGetWindowTitle8,
     GXDrawGetPointerPosition,
+    GXDrawGetPointerWindow,
     GXDrawSetCursor,
     GXDrawGetCursor,
     GXDrawGetRedirectWindow,

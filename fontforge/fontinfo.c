@@ -7076,6 +7076,8 @@ static void LookupDragDrop(struct gfi_data *gfi, int isgpos, GEvent *event) {
     GWindow othergw = NULL;
     int i,j;
 
+    othergw = GDrawGetPointerWindow(gfi->gw);
+
     for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf->fontinfo!=NULL ) {
 	int otherisgpos;
 
@@ -7083,10 +7085,12 @@ static void LookupDragDrop(struct gfi_data *gfi, int isgpos, GEvent *event) {
 	otherisgpos = GTabSetGetSel(GWidgetGetControl(othergfi->gw,CID_Lookups));
 	if ( otherisgpos!=isgpos )
     continue;
-	othergw = GDrawableGetWindow(GWidgetGetControl(othergfi->gw,CID_LookupWin+otherisgpos));
-	if ( GDrawEventInWindow( othergw,event ))
+	if ( othergw == GDrawableGetWindow(GWidgetGetControl(othergfi->gw,CID_LookupWin+otherisgpos)))
     break;
     }
+    if ( fv==NULL )
+	othergw = NULL;
+
     if ( fv==NULL || !LookupsDropable(gfi,othergfi,isgpos,gw,othergw,event)) {
 	if ( event->type==et_mouseup ) {
 	    GDrawSetCursor(gw,ct_mypointer);

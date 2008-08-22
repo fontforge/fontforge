@@ -152,6 +152,11 @@ static void PSDrawGetPointerPosition(GWindow w, GEvent *ret) {
     ret->u.mouse.y = 0;
 }
 
+static GWindow PSDrawGetPointerWindow(GWindow w) {
+    /* Not meaningful */
+return( NULL );
+}
+
 static void PSDrawSetCursor(GWindow w, GCursor ct) {
     /* Not meaningful */
 }
@@ -1299,6 +1304,7 @@ static struct displayfuncs psfuncs = {
     PSDrawGetWindowTitle,
     PSDrawGetWindowTitle8,
     PSDrawGetPointerPosition,
+    PSDrawGetPointerWindow,
     PSDrawSetCursor,
     PSDrawGetCursor,
     PSDrawGetRedirectWindow,

@@ -177,6 +177,7 @@ struct displayfuncs {
     unichar_t *(*getWindowTitle)(GWindow);
     char *(*getWindowTitle8)(GWindow);
     void (*getPointerPos)(GWindow,GEvent *);
+    GWindow (*getPointerWindow)(GWindow);
     void (*setCursor)(GWindow, GCursor);
     GCursor (*getCursor)(GWindow);
     GWindow (*getRedirectWindow)(GDisplay *gd);

@@ -196,6 +196,10 @@ void GDrawGetPointerPosition(GWindow w, GEvent *ret) {
     (w->display->funcs->getPointerPos)(w,ret);
 }
 
+GWindow GDrawGetPointerWindow(GWindow w) {
+return( (w->display->funcs->getPointerWindow)(w));
+}
+
 void GDrawRaise(GWindow w) {
     (w->display->funcs->raise)(w);
 }
