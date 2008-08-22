@@ -111,7 +111,7 @@ enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
 	ksm_hyper=0x80,
 /* Both Suse and Mac OS/X.2 now map option to 0x2000, but under 10.0 it was meta */
 /* Under 10.4 it is the meta mask again */
-	ksm_option=0x2000,
+	/*ksm_option=0x2000,*/
 	ksm_button1=(1<<8), ksm_button2=(1<<9), ksm_button3=(1<<10),
 	ksm_button4=(1<<11), ksm_button5=(1<<12),
 	ksm_buttons=(ksm_button1|ksm_button2|ksm_button3|ksm_button4|ksm_button5)};
@@ -138,8 +138,6 @@ typedef struct gevent {
 	    int16 x,y;
 	    uint16 keysym;
 	    unichar_t chars[_GD_EVT_CHRLEN];
-	    /* If control/Alt are down then chars[0] will be NUL, and chars[1]*/
-	    /*  will contain the unicode char pressed */
 	} chr;
 	struct {
 	    char *device;		/* for wacom devices */
