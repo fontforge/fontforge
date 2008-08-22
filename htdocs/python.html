@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 28-Jul-2008 -->
+  <!-- AP: Last modified: 21-Aug-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1072,7 +1072,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=3>A layer is a collection of contours. All the contours must
-	be the same order (all quadratic or all cubic).
+	be the same order (all quadratic or all cubic). Currently layers do not contain
+	references.
 	<P>
 	Layers may be compared to see if their contours are similar.</TD>
     </TR>
@@ -2585,7 +2586,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>layer_cnt</CODE></TD>
-      <TD COLSPAN=2>The number of layers in the font.</TD>
+      <TD COLSPAN=2>The number of layers in the font. (Read only. Can change using
+	<CODE>add</CODE> and <CODE>del</CODE> operations on the
+	<A HREF="python.html#f-layers">layers</A> array)</TD>
     </TR>
     <TR>
       <TD><CODE><A NAME="f-layers">layers</A></CODE></TD>
@@ -2595,12 +2598,14 @@ pen = None;				# Finalize the pen. This tells FontForge
 	<P>
 	You may remove a layer with <CODE>del font.layers["unneeded
 	layer"]</CODE><BR>
-	You may add a new layer with
-	<CODE>font.layers.add("layer-name",is_quadratic)</CODE><BR>
+	You may add a new layer with <CODE>font.layers.add("layer-name",is_quadratic[,
+	is_background])</CODE><BR>
 	You may change a layer's name with <CODE>font.layers["layer"].name =
 	"new-name"</CODE><BR>
 	You may change the type of splines in a layer with
-	<CODE>font.layers["layer"].is_quadratic = TRUE</CODE></TD>
+	<CODE>font.layers["layer"].is_quadratic = TRUE</CODE><BR>
+	You may change whether it is a background layer by
+	<CODE>font.layers["layer"].is_backgound = TRUE</CODE></TD>
     </TR>
     <TR>
       <TD><CODE>loadState</CODE></TD>
