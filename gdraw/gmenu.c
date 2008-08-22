@@ -786,12 +786,7 @@ return( keysym );
 
 static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
     int i;
-    unichar_t keysym;
-
-    if ( event->u.chr.keysym>=GK_Special )
-	keysym = event->u.chr.keysym;
-    else
-	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
+    unichar_t keysym = event->u.chr.keysym;
 
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
@@ -934,14 +929,7 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     int i;
     GMenuItem *mi;
     GMenu *top;
-    unichar_t keysym;
-
-    if ( event->u.chr.keysym>0xff00 )
-	keysym = event->u.chr.keysym;
-    else
-	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
-	/* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
-
+    unichar_t keysym = event->u.chr.keysym;
 
     if ( islower(keysym)) keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
@@ -1197,13 +1185,7 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
     int i;
     GMenuBar *mb = (GMenuBar *) g;
     GMenuItem *mi;
-    unichar_t keysym;
-
-    if ( event->u.chr.keysym>=GK_Special )
-	keysym = event->u.chr.keysym;
-    else
-	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
-	/* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
+    unichar_t keysym = event->u.chr.keysym;
 
     if ( g==NULL )
 return( false );

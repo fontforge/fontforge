@@ -57,6 +57,12 @@ enum cm_type { cmt_default=-1, cmt_current, cmt_copy, cmt_private };
 # include <X11/cursorfont.h>
 # include <X11/Xresource.h>
 
+#define XKeysym_Mask	0x01000000
+
+#define XKEYSYM_TOP	8364
+extern int gdraw_xkeysym_2_unicode[];
+
+
 /*#define GREEK_BUG	1*/
 
 static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event);
@@ -2909,22 +2915,12 @@ return;
 	if ( gevent.type==et_char ) {
 	    /* The state may be modified in the gevent where a mac command key*/
 	    /*  entry gets converted to control, etc. */
-	    int accelorator = (gevent.u.chr.state&(ksm_control|ksm_meta))?1:0;
-	    if ( accelorator ) {
-		/* Ok, if I leave the Alt key down, then I shan't get any */
-		/*  characters. But I need the unicode. I can't call the */
-		/*  string conversion routines twice for one event because */
-		/*  they may change the state. So... Turn off alt for now */
-		/*  and later doctor up the event */
-		((XKeyEvent *) event)->state &=~ (ControlMask|Mod1Mask|Mod2Mask);
-		gevent.u.chr.chars[0] = 0;
-	    }
 	    if ( ((GXWindow) gw)->gic==NULL ) {
 		len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
 		charbuf[len] = '\0';
 		gevent.u.chr.keysym = keysym;
-		def2u_strncpy(gevent.u.chr.chars+accelorator,charbuf,
-			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0])-accelorator);
+		def2u_strncpy(gevent.u.chr.chars,charbuf,
+			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
@@ -2941,15 +2937,21 @@ return;
 		    keysym = 0;
 		pt[len] = '\0';
 		gevent.u.chr.keysym = keysym;
-		utf82u_strncpy(gevent.u.chr.chars+accelorator,pt,
-			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0])-accelorator);
+		utf82u_strncpy(gevent.u.chr.chars,pt,
+			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
 		if ( pt!=charbuf )
 		    free(pt);
 #else
-		gevent.u.chr.keysym = keysym;
+		gevent.u.chr.keysym = 0;
 		gevent.u.chr.chars[0] = 0;
 #endif
 	    }
+	    /* Convert X11 keysym values to unicode */
+	    if ( keysym>=XKeysym_Mask )
+		keysym -= XKeysym_Mask;
+	    else if ( keysym<=XKEYSYM_TOP && keysym>=0 )
+		keysym = gdraw_xkeysym_2_unicode[keysym];
+	    gevent.u.chr.keysym = keysym;
 	    if ( keysym==gdisp->mykey_keysym &&
 		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
 		gdisp->mykeybuild = !gdisp->mykeybuild;

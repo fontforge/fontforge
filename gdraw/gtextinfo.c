@@ -608,8 +608,11 @@ void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
 	{ "Flag0x20", 0x20 },
 	{ "Flag0x40", 0x40 },
 	{ "Flag0x80", 0x80 },
-	{ "Opt", 0x2000 },
-	{ "Option", 0x2000 },
+	{ "Opt", ksm_meta },
+	{ "Option", ksm_meta },
+	    /* Command really goes to 0x10 under 10.[45], but we map it to control */
+	{ "Command", ksm_control },
+	{ "Cmd", ksm_control },
 	{ NULL }};
     char *pt, *sh;
     int mask, temp, i;
