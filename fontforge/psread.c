@@ -1258,7 +1258,7 @@ return;		/* Hunh. I don't understand it. I give up */
 return;		/* Hunh. I don't understand it. I give up */
 
     /* Ok, it looks very much like a reference to glyphname */
-    ref = chunkalloc(sizeof(RefChar));
+    ref = RefCharCreate();
     memcpy(ref->transform,transform,sizeof(ref->transform));
     ref->sc = (SplineChar *) glyphname;
     ref->next = ec->refs;
@@ -1438,7 +1438,7 @@ printf( "-%s-\n", toknames[tok]);
 			 stack[sp-1].u.val>=0 && stack[sp-1].u.val<=255 ) ||
 			(wrapper->top->fogns && sp>6 && stack[sp-7].type == ps_num &&
 			 stack[sp-7].u.val>=0 && stack[sp-7].u.val<=255 )) {
-		    ref = chunkalloc(sizeof(RefChar));
+		    ref = RefCharCreate();
 		    memcpy(ref->transform,transform,sizeof(ref->transform));
 		    if ( wrapper->top->fogns ) {
 			sp -= 6;

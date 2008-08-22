@@ -397,19 +397,19 @@ return;
 	PatternFree(ref->layers[i].fill_brush.pattern);
 	PatternFree(ref->layers[i].stroke_pen.brush.pattern);
     }
-    free(ref->layers);
 #else
     if ( ref==NULL )
 return;
     SplinePointListsFree(ref->layers[0].splines);
 #endif
+    free(ref->layers);
     chunkfree(ref,sizeof(RefChar));
 }
 
 RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
-#ifdef FONTFORGE_CONFIG_TYPE3
     ref->layers = gcalloc(1,sizeof(struct reflayer));
+#ifdef FONTFORGE_CONFIG_TYPE3
     ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
     ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
     ref->layers[0].stroke_pen.width = WIDTH_INHERITED;
