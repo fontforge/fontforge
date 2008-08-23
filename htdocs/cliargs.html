@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 22-Jul-2008 -->
+  <!-- AP: Last modified: 22-Aug-2008 -->
   <TITLE>Command Line Arguments</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -82,7 +82,8 @@ $ fontforge -c script-string [arguments]
     <DD>
       Bring up a <A HREF="helpmenu.html">browser</A> looking at this documentation.
     <DT>
-      -lang={py|ff}
+      -lang={py|ff}<BR>
+      -lang {py|ff}
     <DD>
       Specifies whether the script should be interpretted as a python script or
       a fontforge script.
@@ -132,6 +133,15 @@ $ fontforge -c script-string [arguments]
       -nosplash
     <DD>
       FontForge will not display its splash screen on startup (for slow connections)
+    <DT>
+      -open
+    <DD>
+      Bring up an open font dialog
+    <DT>
+      -quit
+    <DD>
+      Exit fontforge (only useful if -unique is passed as well, in which case the
+      master fontforge will be asked to exit)
     <DT>
       -recover type
     <DD>

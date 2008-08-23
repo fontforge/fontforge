@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 21-Aug-2008 -->
+  <!-- AP: Last modified: 22-Aug-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2147,6 +2147,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	in the font.</TD>
     </TR>
     <TR>
+      <TD><CODE>useRefsMetrics</CODE></TD>
+      <TD><CODE>(ref-name)</CODE></TD>
+      <TD>Finds a reference with the given name and sets the "use_my_metrics" flag
+	on it (so this glyph will have the same advance width as the glyph the reference
+	points to).</TD>
+    </TR>
+    <TR>
       <TD><CODE>validate</CODE></TD>
       <TD><CODE>([force])</CODE></TD>
       <TD>Validates the glyph and returns the
@@ -3503,11 +3510,16 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>importLookup</CODE></TD>
-      <TD><CODE>(another-font,lookup-name)</CODE></TD>
-      <TD>The first argument must be a FontForge Font object, the second a string.
-	It will search the other font for the named lookup and import it into the
-	current font. (Contextual lookups which invoke other lookups will have any
-	nested lookups imported as well).</TD>
+      <TD><CODE>(another-font,lookup-names<BR>
+	[,before-name])</CODE></TD>
+      <TD>The first argument must be a FontForge Font object, the second a string
+	or a tuple of strings, and the third, another string. It will search the
+	other font for the named lookup(s) and import it into the current font.
+	(Contextual lookups which invoke other lookups will have any nested lookups
+	imported as well). Lookups will be imported in the order listed. If a before-name
+	is specified, then it is looked up in the current font and all lookups will
+	be added before it, if not specified lookups will appear at the end of the
+	list.</TD>
     </TR>
     <TR>
       <TD><CODE>interpolateFonts</CODE></TD>
