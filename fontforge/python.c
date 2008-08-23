@@ -8474,7 +8474,7 @@ static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value,void *closur
 return( 0 );
 }
 
-static int PyFF_Font_set_str_null(PyFF_Font *self,PyObject *value,
+static int _PyFF_Font_set_str_null(SplineFont *sf,PyObject *value,
 	char *str,int offset) {
     char *newv, **oldpos;
     PyObject *temp;
@@ -8495,10 +8495,24 @@ return( -1 );
 	newv = copy( PyString_AsString(value));
     if ( newv==NULL && value!=Py_None )
 return( -1 );
-    oldpos = (char **) (((char *) (self->fv->sf)) + offset );
+    oldpos = (char **) (((char *) sf) + offset );
     free( *oldpos );
     *oldpos = newv;
 return( 0 );
+}
+
+static int PyFF_Font_set_str_null(PyFF_Font *self,PyObject *value,
+	char *str,int offset) {
+return( _PyFF_Font_set_str_null(self->fv->sf,value,str,offset));
+}
+
+static int PyFF_Font_set_cidstr_null(PyFF_Font *self,PyObject *value,
+	char *str,int offset) {
+    if ( self->fv->cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
+return( -1 );
+    }
+return( _PyFF_Font_set_str_null(self->fv->cidmaster,value,str,offset));
 }
 
 static int PyFF_Font_set_str(PyFF_Font *self,PyObject *value,
@@ -8526,7 +8540,7 @@ return( -1 );
 return( 0 );
 }
 
-static int PyFF_Font_set_real(PyFF_Font *self,PyObject *value,
+static int _PyFF_Font_set_real(SplineFont *sf,PyObject *value,
 	char *str,int offset) {
     double temp;
 
@@ -8537,11 +8551,25 @@ return( -1 );
     temp = PyFloat_AsDouble(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    * (real *) (((char *) (self->fv->sf)) + offset ) = temp;
+    * (real *) (((char *) sf) + offset ) = temp;
 return( 0 );
 }
 
-static int PyFF_Font_set_int(PyFF_Font *self,PyObject *value,
+static int PyFF_Font_set_real(PyFF_Font *self,PyObject *value,
+	char *str,int offset) {
+return( _PyFF_Font_set_real( self->fv->sf,value,str,offset));
+}
+
+static int PyFF_Font_set_cidreal(PyFF_Font *self,PyObject *value,
+	char *str,int offset) {
+    if ( self->fv->cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
+return( -1 );
+    }
+return( _PyFF_Font_set_real( self->fv->cidmaster,value,str,offset));
+}
+
+static int _PyFF_Font_set_int(SplineFont *sf,PyObject *value,
 	char *str,int offset) {
     long temp;
 
@@ -8552,8 +8580,22 @@ return( -1 );
     temp = PyInt_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    * (int *) (((char *) (self->fv->sf)) + offset ) = temp;
+    * (int *) (((char *) sf) + offset ) = temp;
 return( 0 );
+}
+
+static int PyFF_Font_set_int(PyFF_Font *self,PyObject *value,
+	char *str,int offset) {
+return( _PyFF_Font_set_int( self->fv->sf,value,str,offset));
+}
+
+static int PyFF_Font_set_cidint(PyFF_Font *self,PyObject *value,
+	char *str,int offset) {
+    if ( self->fv->cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
+return( -1 );
+    }
+return( _PyFF_Font_set_int( self->fv->cidmaster,value,str,offset));
 }
 
 static int PyFF_Font_set_int2(PyFF_Font *self,PyObject *value,
@@ -8595,6 +8637,21 @@ return( PyFF_Font_set_str_null(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
+#define ff_gs_cidstrnull(name) \
+static PyObject *PyFF_Font_get_cid##name(PyFF_Font *self,void *closure) { \
+    if ( self->fv->cidmaster==NULL )			\
+Py_RETURN_NONE;						\
+    if ( self->fv->cidmaster->name==NULL )		\
+Py_RETURN_NONE;						\
+    else						\
+return( Py_BuildValue("s", self->fv->cidmaster->name )); \
+}							\
+							\
+static int PyFF_Font_set_cid##name(PyFF_Font *self,PyObject *value,void *closure) {\
+return( PyFF_Font_set_cidstr_null(self,value,"cid" #name,offsetof(SplineFont,name)) );\
+}
+
+/* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_real(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
 return( Py_BuildValue("d", self->fv->sf->name ));	\
@@ -8605,6 +8662,18 @@ return( PyFF_Font_set_real(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
+#define ff_gs_cidreal(name) \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+    if ( self->fv->cidmaster==NULL )			\
+Py_RETURN_NONE;						\
+return( Py_BuildValue("d", self->fv->cidmaster->name ));	\
+}							\
+							\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+return( PyFF_Font_set_cidreal(self,value,#name,offsetof(SplineFont,name)) );\
+}
+
+/* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_int(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
 return( Py_BuildValue("i", self->fv->sf->name ));	\
@@ -8612,6 +8681,18 @@ return( Py_BuildValue("i", self->fv->sf->name ));	\
 							\
 static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
 return( PyFF_Font_set_int(self,value,#name,offsetof(SplineFont,name)) );\
+}
+
+/* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
+#define ff_gs_cidint(name) \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+    if ( self->fv->cidmaster==NULL )				\
+Py_RETURN_NONE;							\
+return( Py_BuildValue("i", self->fv->cidmaster->name ));	\
+}							\
+							\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+return( PyFF_Font_set_cidint(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
@@ -8706,19 +8787,25 @@ ff_gs_strnull(copyright)
 ff_gs_strnull(xuid)
 ff_gs_strnull(fondname)
 
-ff_gs_strnull(cidregistry)
-ff_gs_strnull(ordering)
+ff_gs_cidstrnull(fontname)
+ff_gs_cidstrnull(familyname)
+ff_gs_cidstrnull(fullname)
+ff_gs_cidstrnull(weight)
+ff_gs_cidstrnull(copyright)
+ff_gs_cidstrnull(cidregistry)
+ff_gs_cidstrnull(ordering)
+
+ff_gs_cidreal(cidversion)
+ff_gs_cidint(supplement)
 
 ff_gs_real(italicangle)
 ff_gs_real(upos)
 ff_gs_real(uwidth)
-ff_gs_real(cidversion)
 ff_gs_real(strokewidth)
 
 ff_gs_int(ascent)
 ff_gs_int(descent)
 ff_gs_int(uniqueid)
-ff_gs_int(supplement)
 ff_gs_int2(macstyle)
 ff_gs_int2(os2_version)
 ff_gs_int2(gasp_version)
@@ -9309,19 +9396,116 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_cidsubfontcnt(PyFF_Font *self,void *closure) {
-return( Py_BuildValue("i", self->fv->sf->subfontcnt));
+    if ( self->fv->cidmaster==NULL )
+return( Py_BuildValue("i", 0));
+return( Py_BuildValue("i", self->fv->cidmaster->subfontcnt));
 }
 
 static PyObject *PyFF_Font_get_cidsubfontnames(PyFF_Font *self,void *closure) {
     PyObject *tuple;
-    SplineFont *sf = self->fv->sf;
+    SplineFont *sf = self->fv->cidmaster;
     int i;
 
+    if ( sf==NULL )
+Py_RETURN_NONE;
     tuple = PyTuple_New(sf->subfontcnt);
     for ( i=0; i<sf->subfontcnt; ++i )
 	PyTuple_SET_ITEM(tuple,i,Py_BuildValue("s",sf->subfonts[i]->fontname));
 return( tuple );
 }
+
+static PyObject *PyFF_Font_get_cidsubfont(PyFF_Font *self,void *closure) {
+    int i;
+    SplineFont *cidmaster = self->fv->cidmaster, *sf = self->fv->sf;
+
+    if ( cidmaster==NULL )
+return( Py_BuildValue("i", -1));
+    for ( i=0; i<cidmaster->subfontcnt && sf!=cidmaster->subfonts[i]; ++i );
+return( Py_BuildValue("i", i));
+}
+
+static int PyFF_Font_set_cidsubfont(PyFF_Font *self,PyObject *value,void *closure) {
+    int i;
+    SplineFont *cidmaster = self->fv->cidmaster, *sf;
+    EncMap *map = self->fv->map;
+
+    if ( cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Not a cid-keyed font");
+return( -1 );
+    }
+    if ( PyString_Check(value)) {
+	char *name = PyString_AsString(value);
+	for ( i=cidmaster->subfontcnt-1; i>=0 && strcmp(name,cidmaster->subfonts[i]->fontname)!=0; ++i );
+	if ( i<0 ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No subfont named %s", name);
+return( -1 );
+	}
+    } else if ( PyInt_Check(value)) {
+	i = PyInt_AsLong(value);
+	if ( i<0 || i>=cidmaster->subfontcnt ) {
+	    PyErr_Format(PyExc_EnvironmentError, "Subfont index %d out of bounds must be >=0 and <%d.", i, cidmaster->subfontcnt );
+return( -1 );
+	}
+    } else {
+	PyErr_Format(PyExc_TypeError, "Expected either a string (fontname) or an index when setting the subfont");
+return( -1 );
+    }
+
+    sf = cidmaster->subfonts[i];
+
+    MVDestroyAll(self->fv->sf);
+    if ( sf->glyphcnt>self->fv->sf->glyphcnt ) {
+	free(self->fv->selected);
+	self->fv->selected = gcalloc(sf->glyphcnt,sizeof(char));
+	if ( sf->glyphcnt>map->encmax )
+	    map->map = grealloc(map->map,(map->encmax = sf->glyphcnt)*sizeof(int));
+	if ( sf->glyphcnt>map->backmax )
+	    map->backmap = grealloc(map->backmap,(map->backmax = sf->glyphcnt)*sizeof(int));
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    map->map[i] = map->backmap[i] = i;
+	map->enccount = sf->glyphcnt;
+    }
+    self->fv->sf = sf;
+    if ( !no_windowing_ui ) {
+	FVSetTitle(self->fv);
+	FontViewReformatOne(self->fv);
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_is_cid(PyFF_Font *self,void *closure) {
+    SplineFont *cidmaster = self->fv->cidmaster;
+
+    if ( cidmaster==NULL )
+return( Py_BuildValue("i", 0));
+
+return( Py_BuildValue("i", 1));
+}
+
+#if 0
+static int PyFF_Font_set_is_cid(PyFF_Font *self,PyObject *value,void *closure) {
+    int i;
+    SplineFont *cidmaster = self->fv->cidmaster, *sf;
+
+    if ( !PyInt_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Expected boolean value" );
+return( -1 );
+    }
+
+    i = PyInt_AsLong(value);
+    if ( cidmaster==NULL && i==0 )
+return( 0 );
+    if ( cidmaster!=NULL && i!=0 )
+return( 0 );
+
+    if ( i==0 ) {
+	SFFlatten(cidmaster);
+    } else {
+    map = FindCidMap( c->a.vals[1].u.sval, c->a.vals[2].u.sval, c->a.vals[3].u.ival, sf);
+    if ( map == NULL )
+	ScriptError( c, "No cidmap matching given ROS" );
+    MakeCIDMaster(sf, c->curfv->map, false, NULL, map);
+#endif
 
 static PyObject *PyFF_Font_get_encoding(PyFF_Font *self,void *closure) {
 return( Py_BuildValue("s", self->fv->map->enc->enc_name));
@@ -9727,17 +9911,44 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 (getter)PyFF_Font_get_fondname, (setter)PyFF_Font_set_fondname,
 	 "Mac FOND resource name", NULL},
     {"cidregistry",
-	 (getter)PyFF_Font_get_cidregistry, (setter)PyFF_Font_set_cidregistry,
+	 (getter)PyFF_Font_get_cidcidregistry, (setter)PyFF_Font_set_cidcidregistry,
 	 "CID Registry", NULL},
     {"cidordering",
-	 (getter)PyFF_Font_get_ordering, (setter)PyFF_Font_set_ordering,
+	 (getter)PyFF_Font_get_cidordering, (setter)PyFF_Font_set_cidordering,
 	 "CID Ordering", NULL},
+    {"cidsupplement",
+	 (getter)PyFF_Font_get_supplement, (setter)PyFF_Font_set_supplement,
+	 "CID Supplement", NULL},
+    {"cidsubfont",
+	 (getter)PyFF_Font_get_cidsubfont, (setter)PyFF_Font_set_cidsubfont,
+	 "Returns the index of the current subfont of a cid-keyed font (or -1), and allows you to change the subfont.", NULL},
     {"cidsubfontcnt",
 	 (getter)PyFF_Font_get_cidsubfontcnt, (setter)PyFF_cant_set,
 	 "The number of sub fonts that make up a CID keyed font (readonly)", NULL},
     {"cidsubfontnames",
 	 (getter)PyFF_Font_get_cidsubfontnames, (setter)PyFF_cant_set,
 	 "The names of all the sub fonts that make up a CID keyed font (readonly)", NULL},
+    {"cidfontname",
+	 (getter)PyFF_Font_get_cidfontname, (setter)PyFF_Font_set_cidfontname,
+	 "Font name of the cid-keyed font as a whole.", NULL},
+    {"cidfamilyname",
+	 (getter)PyFF_Font_get_cidfamilyname, (setter)PyFF_Font_set_cidfamilyname,
+	 "Family name of the cid-keyed font as a whole.", NULL},
+    {"cidfullname",
+	 (getter)PyFF_Font_get_cidfullname, (setter)PyFF_Font_set_cidfullname,
+	 "Full name of the cid-keyed font as a whole.", NULL},
+    {"cidweight",
+	 (getter)PyFF_Font_get_cidweight, (setter)PyFF_Font_set_cidweight,
+	 "Weight of the cid-keyed font as a whole.", NULL},
+    {"cidcopyright",
+	 (getter)PyFF_Font_get_cidcopyright, (setter)PyFF_Font_set_cidcopyright,
+	 "Copyright message of the cid-keyed font as a whole.", NULL},
+    {"cidversion",
+	 (getter)PyFF_Font_get_cidversion, (setter)PyFF_Font_set_cidversion,
+	 "CID Version", NULL},
+    {"iscid",
+	 (getter)PyFF_Font_get_is_cid, (setter)PyFF_cant_set,
+	 "Whether the font is a cid-keyed font. (readonly)", NULL},
     {"italicangle",
 	 (getter)PyFF_Font_get_italicangle, (setter)PyFF_Font_set_italicangle,
 	 "The Italic angle (skewedness) of the font", NULL},
@@ -9747,9 +9958,6 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"uwidth",
 	 (getter)PyFF_Font_get_uwidth, (setter)PyFF_Font_set_uwidth,
 	 "Underline Width", NULL},
-    {"cidversion",
-	 (getter)PyFF_Font_get_cidversion, (setter)PyFF_Font_set_cidversion,
-	 "CID Version", NULL},
     {"strokewidth",
 	 (getter)PyFF_Font_get_strokewidth, (setter)PyFF_Font_set_strokewidth,
 	 "Stroke Width", NULL},
@@ -9768,9 +9976,6 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"uniqueid",
 	 (getter)PyFF_Font_get_uniqueid, (setter)PyFF_Font_set_uniqueid,
 	 "PostScript Unique ID", NULL},
-    {"cidsupplement",
-	 (getter)PyFF_Font_get_supplement, (setter)PyFF_Font_set_supplement,
-	 "CID Supplement", NULL},
     {"layer_cnt",
 	 (getter)PyFF_Font_get_layer_cnt, (setter)PyFF_cant_set,
 	 "Returns the number of layers in the font (readonly)", NULL},
