@@ -10806,14 +10806,15 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_importLookup(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_importLookups(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     SplineFont *othersf;
-    PyObject *otherfont;
-    char *lookup_str;
-    OTLookup *otl;
+    PyObject *otherfont, *lookup_list;
+    char *lookup_str, *before_str=NULL;
+    OTLookup *otl, *before, **list;
+    int i;
 
-    if ( !PyArg_ParseTuple(args,"Os", &otherfont, &lookup_str))
+    if ( !PyArg_ParseTuple(args,"OO|s", &otherfont, &lookup_list, &before_str))
 return( NULL );
     if ( !PyType_IsSubtype(&PyFF_FontType,otherfont->ob_type) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
@@ -10821,12 +10822,41 @@ return( NULL );
     }
     othersf = ((PyFF_Font *) otherfont)->fv->sf;
 
-    otl = SFFindLookup(othersf,lookup_str);
-    if ( otl==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
+    before = NULL;
+    if ( before_str!=NULL )
+	before = SFFindLookup(sf,before_str);
+    if ( PyString_Check(lookup_list)) {
+	lookup_str = PyString_AsString(lookup_list);
+	otl = SFFindLookup(othersf,lookup_str);
+	if ( otl==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
+return( NULL );
+	}
+	list = gcalloc(2,sizeof(OTLookup *));
+	list[0] = otl;
+    } else if ( PySequence_Check(lookup_list)) {
+	int subcnt = PySequence_Size(lookup_list);
+	list = gcalloc(subcnt+1,sizeof(OTLookup *));
+	for ( i=0; i<subcnt; ++i ) {
+	    PyObject *str = PyTuple_GetItem(lookup_list,i);
+	    if ( !PyString_Check(str)) {
+		PyErr_Format(PyExc_TypeError, "Unexpected type" );
+return( NULL );
+	    }
+	    lookup_str = PyString_AsString(str);
+	    otl = SFFindLookup(othersf,lookup_str);
+	    if ( otl==NULL ) {
+		PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
+return( NULL );
+	    }
+	    list[i] = otl;
+	}
+    } else {
+	PyErr_Format(PyExc_TypeError, "Unexpected type" );
 return( NULL );
     }
-    OTLookupCopyInto(sf,othersf,otl);
+    OTLookupsCopyInto(sf,othersf,list,before);
+    free(list);
 Py_RETURN( self );
 }
 
@@ -11563,7 +11593,7 @@ return( NULL );
 	    }
 	    pointsizes[i] = 0;
 	} else {
-	    PyErr_Format(PyExc_TypeError, "Unexpect type for pointsize" );
+	    PyErr_Format(PyExc_TypeError, "Unexpected type for pointsize" );
 return( NULL );
 	}
     }
@@ -12132,7 +12162,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "getLookupSubtableAnchorClasses", PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
     { "getLookupOfSubtable", PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
     { "getSubtableOfAnchor", PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
-    { "importLookup", PyFFFont_importLookup, METH_VARARGS, "Imports a named lookup from another font."},
+    { "importLookups", PyFFFont_importLookups, METH_VARARGS, "Imports a tuple of named lookups from another font."},
     { "isKerningClass", PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
     { "isVerticalKerning", PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
     { "lookupSetFeatureList", PyFFFont_lookupSetFeatureList, METH_VARARGS, "Sets the feature, script, language list on a lookup" },
