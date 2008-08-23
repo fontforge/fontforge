@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Mar-2009 -->
-  <!-- AP: Last modified: 30-Mar-2008 -->
+  <!-- AP: Last modified: 22-Aug-2008 -->
   <TITLE>Change log for FontForge's sfd format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,10 +14,31 @@
   </H1>
   <P>
   FontForge's <A HREF="sfdformat.html">sfd (spline font database) format</A>
-  changes over time as fontforge supports more things. I have only started
-  keeping track of these changes recently, so older changes are not listed
-  here.
+  changes over time as fontforge supports more things. I have only recently
+  started keeping track of these changes, so older changes are not listed here.
   <UL>
+    <LI>
+      22-Aug-2008
+      <UL>
+	<LI>
+	  Add a flag to the Layer keyword (in the font) to say whether the layer is
+	  a background layer or not. As the flag is at the end of the line, previous
+	  versions of fontforge will just ignore it
+      </UL>
+    <LI>
+      10-July-2008
+      <UL>
+	<LI>
+	  Extend the image output format to support red/green/blue/alpha images. (not
+	  much of an extension -- there's just more data)
+      </UL>
+    <LI>
+      26-May-2008
+      <UL>
+	<LI>
+	  Adobe says UniqueID and XUID are deprecated. Add flags (UseXUID/UseUniqueID)
+	  to indicate we still want to include them in fonts in spite of that.
+      </UL>
     <LI>
       30-Mar-2008
       <UL>
