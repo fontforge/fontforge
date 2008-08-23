@@ -3675,7 +3675,7 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
     extern int updateflex;
     /* layer might be ly_none or ly_all */
 
-    if ( layer>=0 )
+    if ( layer>=0 && !sc->layers[layer].background )
 	TTFPointMatches(sc,layer,true);
     if ( layer>=sc->layer_cnt ) {
 	IError( "Bad layer in _SC_CharChangedUpdate");
@@ -3697,12 +3697,13 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 		sf->cidmaster->changed = true;
 	    FVSetTitles(sf);
 	}
-	if ( changed && !sc->layers[layer].background ) {
+	if ( changed && layer>=0 && !sc->layers[layer].background ) {
 	    instrcheck(sc,layer);
 	    SCDeGridFit(sc);
 	}
 	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer &&
 		changed==1 && !sc->parent->strokedfont &&
+		layer>=0 &&
 		!sc->layers[layer].background && !sc->layers[layer].order2 )
 	    sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
