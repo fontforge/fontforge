@@ -136,7 +136,7 @@ static unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 static char *script_filenames[SCRIPT_MENU_MAX];
 static char *RecentFiles[RECENT_MAX];
 static int ItalicConstrained = true;
-static int clear_tt_instructions_when_needed = true;
+extern int clear_tt_instructions_when_needed;	/* cvundoes.c */
 static int old_validate = true;
 static int old_fontlog = false;
 static int home_char = 'A';

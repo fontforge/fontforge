@@ -3056,5 +3056,6 @@ extern void PenCopy(struct pen *into, struct pen *from);
 extern void PatternSCBounds(SplineChar *sc,DBounds *b);
 
 extern char *SFDefaultImage(SplineFont *sf,char *filename);
+extern void SCClearInstrsOrMark(SplineChar *sc, int layer, int complain);
 
 #endif

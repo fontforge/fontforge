@@ -130,7 +130,7 @@ extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
 extern int updateflex;				/* in charview.c */
 extern int allow_utf8_glyphnames;		/* in charinfo.c */
-extern int clear_tt_instructions_when_needed;	/* in charview.c */
+extern int clear_tt_instructions_when_needed;	/* in cvundoes.c */
 extern int default_cv_width;			/* in charview.c */
 extern int default_cv_height;			/* in charview.c */
 extern int mv_width;				/* in metricsview.c */

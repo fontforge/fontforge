@@ -43,7 +43,7 @@ float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
 int updateflex = false;
-int clear_tt_instructions_when_needed = true;
+extern int clear_tt_instructions_when_needed;
 int default_cv_width = 540;
 int default_cv_height = 540;
 
@@ -3424,13 +3424,8 @@ return;
 static void instrcheck(SplineChar *sc,int layer) {
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
-    struct splinecharlist *dep;
     int any_ptnumbers_shown = false;
     CharView *cv;
-    SplineSet *ss;
-    SplinePoint *sp;
-    AnchorPoint *ap;
-    int had_ap, had_dep, had_instrs;
 
     if ( !sc->layers[layer].order2 )
 return;
@@ -3448,88 +3443,8 @@ return;
     /* If the points are no longer in order then the instructions are not valid */
     /*  (because they'll refer to the wrong points) and should be removed */
     /* Except that annoys users who don't expect it */
-    had_ap = had_dep = had_instrs = 0;
     if ( !SCPointsNumberedProperly(sc,layer)) {
-	if ( instrs!=NULL ) {
-	    if ( clear_tt_instructions_when_needed ) {
-		free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-		sc->ttf_instrs_len = 0;
-		SCMarkInstrDlgAsChanged(sc);
-		had_instrs = 1;
-	    } else {
-		sc->instructions_out_of_date = true;
-		had_instrs = 2;
-	    }
-	}
-	for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
-	    RefChar *ref;
-	    if ( dep->sc->ttf_instrs_len!=0 ) {
-		if ( clear_tt_instructions_when_needed ) {
-		    free(dep->sc->ttf_instrs); dep->sc->ttf_instrs = NULL;
-		    dep->sc->ttf_instrs_len = 0;
-		    SCMarkInstrDlgAsChanged(dep->sc);
-		    had_instrs = 1;
-		} else {
-		    dep->sc->instructions_out_of_date = true;
-		    had_instrs = 2;
-		}
-	    }
-	    for ( ref=dep->sc->layers[layer].refs; ref!=NULL && ref->sc!=sc; ref=ref->next );
-	    for ( ; ref!=NULL ; ref=ref->next ) {
-#if 0
-		ref->point_match = false;
-#endif
-		if ( ref->point_match ) {
-		    ref->point_match_out_of_date = true;
-		    had_dep = true;
-		}
-	    }
-	}
-	SCNumberPoints(sc,layer);
-	for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
-	    if ( ap->has_ttf_pt ) {
-		had_ap = true;
-		ap->has_ttf_pt = false;
-		for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
-		    for ( sp=ss->first; ; ) {
-			if ( sp->me.x==ap->me.x && sp->me.y==ap->me.y && sp->ttfindex!=0xffff ) {
-			    ap->has_ttf_pt = true;
-			    ap->ttf_pt_index = sp->ttfindex;
-		goto found;
-			} else if ( sp->nextcp.x==ap->me.x && sp->nextcp.y==ap->me.y && sp->nextcpindex!=0xffff ) {
-			    ap->has_ttf_pt = true;
-			    ap->ttf_pt_index = sp->nextcpindex;
-		goto found;
-			}
-			if ( sp->next==NULL )
-		    break;
-			sp = sp->next->to;
-			if ( sp==ss->first )
-		    break;
-		    }
-		}
-		found: ;
-	    }
-	}
-    }
-    if ( no_windowing_ui )
-	/* If we're in a script it's annoying (and pointless) to get this message */;
-    else if ( sc->complained_about_ptnums )
-	/* It's annoying to get the same message over and over again as you edit a glyph */;
-    else if ( had_ap || had_dep || had_instrs ) {
-	ff_post_notice(_("You changed the point numbering"),
-		_("You have just changed the point numbering of glyph %s.%s%s%s"),
-			sc->name,
-			had_instrs==0 ? "" :
-			had_instrs==1 ? _(" Instructions in this glyph (or one that refers to it) have been lost.") :
-			                _(" Instructions in this glyph (or one that refers to it) are now out of date."),
-			had_dep ? _(" At least one reference to this glyph used point matching. That match is now out of date.")
-				: "",
-			had_ap ? _(" At least one anchor point used point matching. It may be out of date now.")
-				: "" );
-	sc->complained_about_ptnums = true;
-	if ( had_instrs==2 )
-	    GDrawRequestExpose(((FontView *) (sc->parent->fv))->v,NULL,false);
+	SCClearInstrsOrMark(sc,layer,true);
     }
 }
 

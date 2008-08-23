@@ -1991,7 +1991,8 @@ return( true );
 
 /* when pasting from the fontview we do a clear first */
 static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
-	int layer, real trans[6], struct sfmergecontext *mc,int *refstate) {
+	int layer, real trans[6], struct sfmergecontext *mc,int *refstate,
+	int *already_complained) {
     DBounds bb;
     real transform[6];
     int width, vwidth;
@@ -2014,11 +2015,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	SCPreserveLayer(sc,layer,paster->undotype==ut_statehint);
 	width = paster->u.state.width;
 	vwidth = paster->u.state.vwidth;
-	if (( pasteinto!=1 || paster->u.state.splines!=NULL ) && sc->ttf_instrs!=NULL ) {
-	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-	    sc->ttf_instrs_len = 0;
-	    SCMarkInstrDlgAsChanged(sc);
-	}
 	was_empty = sc->hstem==NULL && sc->vstem==NULL && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs == NULL;
 	if ( !pasteinto ) {
 	    if ( !sc->layers[layer].background &&
@@ -2083,6 +2079,15 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    sc->layers[layer].fillfirst = paster->u.state.fillfirst;
 	}
 #endif
+	if (( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL || pasteinto==0 ) &&
+		sc->layers[layer].order2 &&
+		!sc->layers[layer].background &&
+		!sc->instructions_out_of_date &&
+		sc->ttf_instrs!=NULL ) {
+	    /* The normal change check doesn't respond properly to pasting a reference */
+	    SCClearInstrsOrMark(sc,layer,!*already_complained);
+	    *already_complained = true;
+	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
 	    if ( (pasteinto==2 || pasteinto==3 ) && (xoff!=0 || yoff!=0)) {
@@ -2220,7 +2225,8 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 }
 
 static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
-	int pasteinto, real trans[6], struct sfmergecontext *mc,int *refstate) {
+	int pasteinto, real trans[6], struct sfmergecontext *mc,int *refstate,
+	int *already_complained) {
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
@@ -2250,16 +2256,16 @@ static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
 	    sc->layer_cnt = start+lc;
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
-	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans,mc,refstate);
+	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans,mc,refstate,already_complained);
 	SCMoreLayers(sc,old);
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
 	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next ) {
-	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans,mc,refstate);
+	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans,mc,refstate,already_complained);
 	    pasteinto = true;		/* Merge other layers in */
 	}
     } else
-	_PasteToSC(sc,paster,fv,pasteinto,layer,trans,mc,refstate);
+	_PasteToSC(sc,paster,fv,pasteinto,layer,trans,mc,refstate,already_complained);
 }
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -2697,6 +2703,14 @@ return;
 	    cv->layerheads[dm_fore]->fillfirst = paster->u.state.fillfirst;
 	}
 #endif
+	if (( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL ) &&
+		cv->layerheads[cv->drawmode]->order2 &&
+		!cv->layerheads[cv->drawmode]->background &&
+		!cvsc->instructions_out_of_date &&
+		cvsc->ttf_instrs!=NULL ) {
+	    /* The normal change check doesn't respond properly to pasting a reference */
+	    SCClearInstrsOrMark(cvsc,CVLayer(cv),true);
+	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
 	    if ( paster->was_order2 != cv->layerheads[cv->drawmode]->order2 )
@@ -3231,7 +3245,7 @@ void PasteIntoFV(FontViewBase *fv,int pasteinto,real trans[6]) {
     MMSet *mm = sf->mm;
     struct sfmergecontext mc;
     OTLookup **list = NULL, **backpairlist=NULL;
-    int refstate = 0;
+    int refstate = 0, already_complained = 0;
 
     memset(&mc,0,sizeof(mc));
     mc.sf_to = fv->sf; mc.sf_from = copybuffer.copied_from;
@@ -3318,7 +3332,7 @@ return;
 		    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,fv->map,i),fv->active_layer,cur,fv,pasteinto,trans,&mc,&refstate);
+		PasteToSC(SFMakeChar(sf,fv->map,i),fv->active_layer,cur,fv,pasteinto,trans,&mc,&refstate,&already_complained);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
 		if ( onlycopydisplayed && fv->active_bitmap!=NULL )
@@ -3335,7 +3349,7 @@ return;
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,fv->map,i),fv->active_layer,cur->u.composit.state,fv,pasteinto,trans,&mc,&refstate);
+		    PasteToSC(SFMakeChar(sf,fv->map,i),fv->active_layer,cur->u.composit.state,fv,pasteinto,trans,&mc,&refstate,&already_complained);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -3389,7 +3403,7 @@ void PasteIntoMV(FontViewBase *fv, BDFFont *mvbdf,SplineChar *sc, int doclear) {
     int yestoall=0, first=true;
     extern int onlycopydisplayed;
     struct sfmergecontext mc;
-    int refstate = 0;
+    int refstate = 0, already_complained = 0;
 
     memset(&mc,0,sizeof(mc));
     mc.sf_to = fv->sf;
@@ -3413,7 +3427,7 @@ return;
 	    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 return;
 	}
-	PasteToSC(sc,fv->active_layer,cur,fv,!doclear,NULL,&mc,&refstate);
+	PasteToSC(sc,fv->active_layer,cur,fv,!doclear,NULL,&mc,&refstate,&already_complained);
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mvbdf!=NULL )
@@ -3432,7 +3446,7 @@ return;
       break;
       case ut_composit:
 	if ( cur->u.composit.state!=NULL )
-	    PasteToSC(sc,fv->active_layer,cur->u.composit.state,fv,!doclear,NULL,&mc,&refstate);
+	    PasteToSC(sc,fv->active_layer,cur->u.composit.state,fv,!doclear,NULL,&mc,&refstate,&already_complained);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
