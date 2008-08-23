@@ -3455,7 +3455,8 @@ SplineFont *SplineFontEmpty(void) {
     sf->layers[0].background = true;
     sf->layers[1].name = copy("Fore");
     sf->layers[1].background = false;
-    
+    sf->grid.background = true;
+
 return( sf );
 }
 
