@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 23-Aug-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2394,22 +2394,62 @@ pen = None;				# Finalize the pen. This tells FontForge
 	(should be) maintained automatically, but you may set it if you wish.</TD>
     </TR>
     <TR>
+      <TD><CODE>cidcopyright</CODE></TD>
+      <TD COLSPAN=2>Copyright message of the cid-keyed font as a whole (ie. not
+	the current subfont).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidfamilyname</CODE></TD>
+      <TD COLSPAN=2>Family name of the cid-keyed font as a whole (ie. not the current
+	subfont).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidfontname</CODE></TD>
+      <TD COLSPAN=2>Font name of the cid-keyed font as a whole (ie. not the current
+	subfont).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidfullname</CODE></TD>
+      <TD COLSPAN=2>Full name of the cid-keyed font as a whole (ie. not the current
+	subfont).</TD>
+    </TR>
+    <TR>
       <TD><CODE>cidordering</CODE></TD>
+      <TD COLSPAN=2>&nbsp;</TD>
     </TR>
     <TR>
       <TD><CODE>cidregistry</CODE></TD>
+      <TD COLSPAN=2>&nbsp;</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidsubfont</CODE></TD>
+      <TD COLSPAN=2>Returns the number index of the current subfont in the cid-keyed
+	font (or -1 if this is not a cid-keyed font).
+	<P>
+	May be set to an index (an integer) or a subfont fontname (a string) to change
+	the current subfont.</TD>
     </TR>
     <TR>
       <TD><CODE>cidsubfontcnt</CODE></TD>
+      <TD COLSPAN=2>Returns the number of subfonts in this cid-keyed font (or 0
+	if it is not a cid-keyed font)</TD>
     </TR>
     <TR>
       <TD><CODE>cidsubfontnames</CODE></TD>
+      <TD COLSPAN=2>Returns a tuple of the subfont names in this cid-keyed font
+	(or None if it is not a cid-keyed font)</TD>
     </TR>
     <TR>
       <TD><CODE>cidsupplement</CODE></TD>
+      <TD COLSPAN=2>&nbsp;</TD>
     </TR>
     <TR>
       <TD><CODE>cidversion</CODE></TD>
+      <TD COLSPAN=2>&nbsp;</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidweight</CODE></TD>
+      <TD COLSPAN=2>Weight of the cid-keyed font as a whole</TD>
     </TR>
     <TR>
       <TD><CODE>copyright</CODE></TD>
@@ -2571,6 +2611,10 @@ pen = None;				# Finalize the pen. This tells FontForge
 </PRE>
 	</BLOCKQUOTE>
       </TD>
+    </TR>
+    <TR>
+      <TD><CODE>is_cid</CODE></TD>
+      <TD colspan=2>Indicates whether the font is a cid-keyed font or not. (Read-only)</TD>
     </TR>
     <TR>
       <TD><CODE>is_quadratic</CODE></TD>
@@ -3198,9 +3242,9 @@ pen = None;				# Finalize the pen. This tells FontForge
 	it will also create small caps variants of digits and symbols.
 	<P>
 	The outlines of the new glyph will be based on the outlines of the upper-case
-	variant of the letter. These will then be scaled so that a glyph which was
-	<CODE>capheight</CODE> high will now be <CODE>scheight</CODE> high, and so
-	that stems which were <CODE>ucstem</CODE> wide will be <CODE>lcstem</CODE>
+	variant of the letter. These will then <B></B>be scaled so that a glyph which
+	was <CODE>capheight</CODE> high will now be <CODE>scheight</CODE> high, and
+	so that stems which were <CODE>ucstem</CODE> wide will be <CODE>lcstem</CODE>
 	wide. Normally the ratio of stem heights is the same as the ratio of stem
 	widths, but you may change that with <CODE>stem_height_factor</CODE>.
 	<P>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 24-Jan-2008 -->
+  <!-- AP: Last modified: 23-Aug-2008 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -336,6 +336,8 @@ endloop
     <LI>
       <CODE>$fontversion</CODE> the string containing the font's version
     <LI>
+      <CODE>$iscid </CODE>1 if the current font is a cid keyed font, 0 if not
+    <LI>
       <CODE>$cidfontname </CODE>returns the fontname of the top-level cid-keyed
       font (or the empty string if there is none)<BR>
       Can be used to detect if this is a cid keyed font.
@@ -393,6 +395,9 @@ endloop
     <LI>
       <CODE>$version</CODE> returns a string containing the current version of
       fontforge. This should look something like "20050817".
+    <LI>
+      <CODE>$haspython</CODE> returns 1 if python scripting is available, 0 if
+      it is not.
     <LI>
       <CODE>$</CODE>&lt;<A NAME="Preference">Preference</A> Item&gt; (for example
       <CODE>$AutoHint</CODE>) allows you to examine the value of that preference
