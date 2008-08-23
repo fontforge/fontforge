@@ -2275,7 +2275,8 @@ static void _SCChngNoUpdate(SplineChar *sc,int layer,int changed) {
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = true;
-	SCTickValidationState(sc,layer);
+	if ( layer>=0 )
+	    SCTickValidationState(sc,layer);
     }
 }
 
