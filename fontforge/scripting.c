@@ -6169,7 +6169,7 @@ static void bCIDChangeSubFont(Context *c) {
 	if ( new->glyphcnt>map->encmax )
 	    map->map = grealloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int));
 	if ( new->glyphcnt>map->backmax )
-	    map->backmap = grealloc(map->map,(map->backmax = new->glyphcnt)*sizeof(int));
+	    map->backmap = grealloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int));
 	for ( i=0; i<new->glyphcnt; ++i )
 	    map->map[i] = map->backmap[i] = i;
 	map->enccount = new->glyphcnt;
@@ -8735,6 +8735,10 @@ static void handlename(Context *c,Val *val) {
 		if ( val->u.sval==NULL )
 		    val->u.sval = copy("");
 		free(t);
+	    } else if ( strcmp(name,"$iscid")==0 ) {
+		if ( c->curfv==NULL ) ScriptError(c,"No current font");
+		val->type = v_int;
+		val->u.ival = ( c->curfv->sf->cidmaster!=NULL );
 	    } else if ( strcmp(name,"$cidfontname")==0 || strcmp(name,"$cidfamilyname")==0 ||
 		    strcmp(name,"$cidfullname")==0 || strcmp(name,"$cidweight")==0 ||
 		    strcmp(name,"$cidcopyright")==0 ) {
@@ -8823,6 +8827,13 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_str;
 		sprintf(name,"%d", library_version_configuration.library_source_versiondate);
 		val->u.sval = copy(name);
+	    } else if ( strcmp(name,"$haspython")==0 ) {
+		val->type = v_int;
+#ifdef _NO_PYTHON
+		val->u.ival = 0;
+#else
+		val->u.ival = 1;
+#endif
 	    } else if ( GetPrefs(name+1,val)) {
 		/* Done */
 	    }
