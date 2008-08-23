@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 19-Jul-2008 -->
+  <!-- AP: Last modified: 22-Aug-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,325 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      24-August-2008
+      <UL>
+	<LI>
+	  <TABLE ALIGN="LEFT">
+	    <TR>
+	      <TD><IMG SRC="FF32.png" WIDTH="32" HEIGHT="32"></TD>
+	      <TD><IMG SRC="FFsfd32.png" WIDTH="32" HEIGHT="32"></TD>
+	    </TR>
+	  </TABLE>
+	  <P>
+	  Changes to create a stub Mac application. Add an apple event handler to fontforge
+	  so that it will notice when the finder wants it to open files. Add icons,
+	  etc. so it will look like a mac app.
+	<LI>
+	  Make it possible to drag and drop lookups
+	  <UL>
+	    <LI>
+	      from one font info window to another<BR>
+	      &nbsp; &nbsp; (copy lookups from one font to another)
+	    <LI>
+	      within a font info window<BR>
+	      &nbsp; &nbsp; (reorder lookups)
+	  </UL>
+	<LI>
+	  Layers can now be marked as either background or foreground.
+	  <UL>
+	    <LI>
+	      Foreground layers may be generated into fonts
+	    <LI>
+	      Background layers may contain images. Pasting into an empty glyph in a background
+	      layer will not set the width. Splines in background layers do not make a
+	      glyph worth outputting.
+	  </UL>
+	<LI>
+	  Add a color picker so users can select glyph label colors other than red,
+	  cyan, green, etc.
+	<LI>
+	  Setting device table adjustments from the accent pane of the Math dlg didn't
+	  work.
+	<LI>
+	  File-&gt;Revert File (from the UI) didn't work.
+	<LI>
+	  If a contextual chaining pos/sub in a sfd file referred to a non-existant
+	  lookup we would insert a NULL lookup into a rule. This would cause almost
+	  anything that used that lookup to crash. Now, simply remove the sequence/lookup
+	  info.
+	<LI>
+	  When importing lookups we might import a lookup twice if it were nested.
+	<LI>
+	  When generating bitmaps automatically from a script it was possible that
+	  the freetype library got initialized too late and we'd pass a NULL pointer
+	  to FT_Memory_Face -- and things would crash.
+	<LI>
+	  In a quadratic layer of a glyph, when selecting an on-curve point and trying
+	  to make it interpolated, if that point had no control points then behavior
+	  was odd.
+	<LI>
+	  didn't create an input context for top level window char and font views.
+	  This meant could only use ASCII in menus if the focus were in the top level
+	  window (in the scroll bars, or the menu bar.
+	<LI>
+	  Typo in the code to display side bearings in the charview.
+	<LI>
+	  FontForge assumed that all anchor classes for a given subtable were in sequence,
+	  but Panov has a font where an anchor class for a different subtable appears
+	  in the middle of a list of classes for the desired subtable. Result was garbage
+	  output, and View-&gt;Show Att crashed.
+	<LI>
+	  View-&gt;Next/Prev [Def] &amp; Find In Font View don't work in charviews
+	  when there are tabs active.
+	<LI>
+	  R. Sander points out that if you select an ordered set of lookups in one
+	  font and import them into another they become disordered. Not good.
+	<LI>
+	  When pasting into a charview we only set the width if there was nothing in
+	  foreground. When pasting into the fontview we always set the width because
+	  we were clearing the foreground before we pasted (unless we did paste into
+	  -- then we didn't set the width).
+	  <P>
+	  With layers that should all change. We should only set the width if there
+	  is nothing in any of the potential foreground layers. Don't count the background
+	  layers or the grid psuedo layer. Don't count open contours (might be a secondary
+	  guide line layer or something). If we're going to clear a layer before pasting
+	  (normal behavior in fontview) then don't count the layer cleared.
+	<LI>
+	  Add several different behavior patterms for the metrics view. Users complain
+	  that the current multi-functional window is confusing and would prefer a
+	  view which only does kerning, or only sets the advance widths, etc.
+	<LI>
+	  Due to a typo, merging two splinesets at a curve point generally left the
+	  point marked with default adjustment enabled on its control points.
+	<LI>
+	  Another layers problem. Only in the foreground layer could anchor points
+	  be moved.
+	<LI>
+	  Python glyph.unlinkReference command didn't work.
+	<LI>
+	  My intent was that ligature carets positioned at 0 didn't count (0 isn't
+	  meaningful -- a ligature with a zero-width first component?) but that only
+	  got implemented for 'lcar' table not for 'GDEF'. So fix that.
+	  <P>
+	  Also allow the user to specify exactly how many ligature carets s/he wants
+	  rather than just setting a minimum bound.
+	  <P>
+	  Also 'lcar' (Apple) output was broken.
+	  <P>
+	  Also neither AAT nor OpenType supports negative lig carets, so if the user
+	  drags a lig caret line negative, have it stick at 0.
+	<LI>
+	  Moving ligature carets always marked for an undo in the foreground layer.
+	  Register the movement in the layer in which it happens.
+	<LI>
+	  When placing an accent glyph about which we know nothing, assume it should
+	  be centered on top.
+	<LI>
+	  Change sfd.c so that it will treat the sequence "backslash newline" as no
+	  characters on input (er, except in ASCII85 input). And so that it thinks
+	  it can parse version 4 or the sfd format.
+	  <P>
+	  We don't generate version 4 yet, and we won't for a while. Version 4 will
+	  include the ability to insert backslash newline into long lines. This is
+	  so we can conform to the internet requirements of fewer than 990 bytes on
+	  a line. And the delay is so that people don't scream at me for making an
+	  incompatible change to the format -- if I give the parser time to perculate
+	  through the user community, with luck no one will even notice -- especially
+	  as long lines are rare.
+	<LI>
+	  Selections/Clipboard didn't work in textfields on 64bit intel. There seems
+	  to be a bug in the 64bit Xlib which doesn't transfer 32 bit quantities properly.
+	  I was passing unicode strings as 32bit UCS4, but UTF8 will work just fine
+	  instead.
+	<LI>
+	  Add the ability to clear all device tables associated with a kerning by classes
+	  table. (Needed because of a bug which introduced garbage).
+	<LI>
+	  We didn't think we could read in a kerning subtable (class or pair) with
+	  device tables, so we converted them to pst data. We can read them in in optimized
+	  form and we should do so.
+	<LI>
+	  Alexej points out that if a glyph has "instructions_out_of_date" set on it,
+	  then setting the instructions via a script should clear the bit -- but didn't.
+	<LI>
+	  Werner points out that if a type2 charstring contained a sequence
+	  &lt;num&gt; endchar then ff would set the width of the charater even if the
+	  the width had already been set. Width can only be set on first stack clearing
+	  operation, any extra params on subsequent calls get ignored.
+	  <P>
+	  Actually it's worse than that, the spec says that if there are too many things
+	  on the stack then start parsing the stack from the unexpected end.
+	  <P>
+	  Adobe have admitted that the obvious reading of their spec is incorrect (they
+	  can't quite bring themselves to say the spec is wrong). So revert some of
+	  the way we were parsing type2 charstrings.
+	<LI>
+	  Barry complains that when building ff does not apply the ".cap" suffix when
+	  using inverted breve. 
+	<LI>
+	  Valgrind finds a bug in drawing non-BMP characters in the metrics view.
+	<LI>
+	  Alexej would like to be able to manipulate non-unicode glyphs with the text
+	  field of the metrics view. The textfield used to map all non-unicode code
+	  points to 0xfffd, but if the font doesn't make use of the supplementary private
+	  use areas (planes 15&amp;16) then create a mapping from the font into these
+	  areas so that we can represent non-unicode glyphs as funky private use glyphs.
+	  <P>
+	  (Only do this if font doesn't use these areas).
+	<LI>
+	  Alexej points out that in non-foreground quadratic fonts the "Points-&gt;Dont
+	  Interpolate" command doesn't do anything.
+	  <P>
+	  Fix a couple of other foreground specific things too.
+	<LI>
+	  Barry points out that setting a glyph's anchorPoints from python does not
+	  mark a glyph as changed nor force an update.
+	<LI>
+	  Autoinstructor: large patch from Alexey:
+	  <UL>
+	    <LI>
+	      handlles conflicting H/V stems much better;
+	    <LI>
+	      tries to place HStems between blues better;
+	    <LI>
+	      adds optional apparatus for instructing serifs;
+	    <LI>
+	      relies on generic point-to-stem snapping routines from stemdb.c;
+	    <LI>
+	      needs FPGM changed (older FF's glyph programs should still work, but FPGMs
+	      need updating!).
+	  </UL>
+	<LI>
+	  If the user has opened a backup sfd file (one that ends in .sfd~) and does
+	  a save on it, then pop up a save as dlg instead of blindly saving it. Saving
+	  it back to the backup is probably wrong, yet saving it onto the non-backup
+	  version without prompting the user is questionable.
+	<LI>
+	  glyph.appendAccents didn't mark the glyph as changed nor did it force an
+	  update.
+	<LI>
+	  Barry wants a way to control the use_my_metrics bit of a reference from
+	  python.<BR>
+	  Give him a hack<BR>
+	  glyph.useRefsMetrics(name[,set])
+	<LI>
+	  Add a glyph.appendAccent() command.
+	<LI>
+	  Ralf from end-if.de points out that when trying to change the kerning between
+	  two glyphs which have a kern class setting of 0, then ff keeps asking the
+	  same question several times before a non-zero value is entered. (once when
+	  the field is clicked in, once when a minus sign is typed, and once more when
+	  a number is entered).
+	<LI>
+	  The python stuff won't compile under cygwin because it used pointers to stuff
+	  in shared libraries as initializers of static variables. It seems windows
+	  can't handle that. This patch should provide a work around.
+	<LI>
+	  Add a font.importLookups (from another font) function to python scripting.
+	<LI>
+	  When joining two splinesets (during glyph editing) we didn't pay attention
+	  to any user settings for the control points, and we'd just always refigure
+	  default control points. Now use user specified directions when possible.
+	<LI>
+	  Add a problem (Find Problems) which will look through all glyphs for those
+	  with both contours and references, and which will create a new glyph to contain
+	  the contours and make a reference to it in the original.
+	  <P>
+	  Do something similar for bad transformation matrices (those with members
+	  2 or more (or less than -2)).
+	<LI>
+	  Importing a kerning class from one font to another (and perhaps merging fonts)
+	  could cause memory problems if the number of second classes were bigger than
+	  the number of first classes.
+	<LI>
+	  Retain sizes of bitmap and metrics views. People seem to like this even if
+	  I don't.
+	<LI>
+	  Still problems with the guide lines layer
+	  <OL>
+	    <LI>
+	      Displaying a point read bad memory (probably harmless, might cause visual
+	      artifacts).
+	    <LI>
+	      Edit-&gt;Undo in guide layer trampled memory.
+	  </OL>
+	<LI>
+	  Find Problems would occasionally pop up a blank problem dlg.
+	<LI>
+	  Only show points of inflection in the active layer.
+	<LI>
+	  If a glyph window were displaying something other than the foreground layer
+	  then changes in that window would not be reflected in dependant glyph windows
+	  (a change to tilde didn't show in atilde) nor in the fontview.
+	<LI>
+	  In a cubic glyph with references, turning on point numbering did not renumber
+	  the references. They seem to be numbered for TrueType. Not sure where that
+	  comes from.
+	<LI>
+	  Alexey points out that after deleting the active layer, ff does not update
+	  the internal bitmap font it used to display glyphs in the font view.
+	<LI>
+	  Make "-lang ff" work for "-lang=ff", it's more consistent with the rest of
+	  the arguments.
+	<LI>
+	  Add a -unique argument which means that FF checks to see if another fontforge
+	  is running on the current screen. If no other fontforge exists things proceed
+	  normally, but if there is another, then we send it our arguments and ask
+	  it to open them, and then we exit.
+	<LI>
+	  Make the OFLib dialog have an option to download a preview when you click
+	  on a line (rather than requiring you press the [Preview] button for each).
+	<LI>
+	  The BitmapsAvail and BitmapsRegen scripting functions were broken by the
+	  layers patch (they generated bitmaps of whatever was in the background layer).
+	<LI>
+	  Put in some checks to warn the user when a 'kern' table subtable uses more
+	  than 10920 pairs.
+	<LI>
+	  Give the user one of those "This operation cannot be undone" warnings when
+	  deleting a layer in Font Info. (Similar warning about instructions if user
+	  changes last quadratic layer(s) to cubic without deleting any).
+	<LI>
+	  When deleting the last quadratic layer, delete the tt instructions also.
+	<LI>
+	  When deleting a layer from a font, ff very carefully went through all open
+	  glyph views to make sure none was looking at the layer being deleted (and
+	  fixing them up if they were) -- but it totally ignored the font views. Their
+	  layers needed to be updated too. And the metrics views.
+	<LI>
+	  The Import menu item in Font Info-&gt;Lookups popup menu was always enabled.
+	  It should not have been.
+	<LI>
+	  Add menu items in Font Info-&gt;Lookups (popup menu) to do a global add/remove
+	  language from a specified script in all selected lookups.
+	<LI>
+	  Get Info (maybe a few other things) didn't work on a selected reference which
+	  wasn't in the foreground layer.
+	<LI>
+	  Copy/Paste of references only worked well in foreground layer.
+	<LI>
+	  Only in the foreground layer was it possible to select a reference by clicking
+	  on it.
+	<LI>
+	  Snapping to blues was broken due to a typo in the code.
+	<LI>
+	  Still were a number of places where behavior depended on the spline order
+	  in the foreground layer:
+	  <UL>
+	    <LI>
+	      Could only debug a glyph if the foreground layer were quadratic
+	    <LI>
+	      Show gridfit used some point numbers from the foreground layer and some from
+	      the layer being shown.
+	    <LI>
+	      Gridfit didn't change when changing layers.
+	  </UL>
+	<LI>
+	  Peter Lunicks points out that a tooltip in the prefs dlg actually was for
+	  a different preference item.
+      </UL>
     <LI>
       20-July-2008
       <UL>

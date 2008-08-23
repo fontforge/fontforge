@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jul-2008 -->
+  <!-- AP: Last modified: 22-Aug-2008 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -222,7 +222,7 @@
   on the current
   <A HREF="encodingmenu.html#namelist">namelist</A>.<BR CLEAR=ALL>
   <H2>
-    <IMG SRC="fontinfo-layers.png" WIDTH="614" HEIGHT="546" ALIGN="Right"><A
+    <IMG SRC="fontinfo-layers.png" WIDTH="607" HEIGHT="547" ALIGN="Right"><A
 	NAME="Layers">Layers</A>
   </H2>
   <P>
@@ -237,8 +237,9 @@
   buttons to make that easy), but it isn't required each layer may be in its
   own format.
   <P>
-  If you check <CODE>[*] Quadratic </CODE>then FontForge will use quadratic
-  <A HREF="overview.html#spline">B&eacute;zier</A> splines for this font rather
+  If you mark a layer as quadratic (or check <CODE>[*] All layers Quadratic)
+  </CODE>then FontForge will use quadratic
+  <A HREF="overview.html#spline">B&eacute;zier</A> splines for this layer rather
   than cubic B&eacute;ziers, this means that FontForge will be using the native
   spline format of truetype rather than postscript (or opentype). When FontForge
   generates a font it will convert from whatever format is used internally
@@ -247,7 +248,12 @@
   you get a clearer idea of what the outlines will look like. I find quadratic
   splines harder to edit with because each spline is less flexible, but the
   advantage of actually seeing what your truetype font will look like may outweigh
-  that.<BR Clear=ALL>
+  that.
+  <P>
+  You may also mark a layer as a foreground layer or a background layer. Background
+  layers can hold images. Pasting into an empty glyph in a background layer
+  will not set the width. Splines in background layers do not make a glyph
+  worth outputting.<BR Clear=ALL>
   <H2>
     <IMG SRC="fontinfo-psuid.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PSUID">PostScript
     Unique ID</A>
@@ -851,6 +857,10 @@
   It is possible to import lookups from other fonts (which must already be
   loaded into fontforge.
   <P>
+  It is possible to drag and drop lookups to reorder them, or to copy them
+  from one font to another (by dragging them into the other font's <CODE>Font
+  Info-&gt;Lookups </CODE>pane).
+  <P>
   There is a popup menu, available by right clicking on an entry, which provides
   these functions as well as:
   <DL>
@@ -868,6 +878,15 @@
       Add 'DFLT' script
     <DD>
       Add the DFLT script to all selected lookups
+    <DT>
+      Add language to script
+    <DD>
+      Add the specified language to the specified script in all selected lookups.
+    <DT>
+      Remove Language from script
+    <DD>
+      Removes the specified language from the specified script in all selected
+      lookups.
     <DT>
       Save Feature File
     <DD>
