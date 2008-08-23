@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 15-May-2008 -->
+  <!-- AP: Last modified: 22-Aug-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -116,15 +116,17 @@ UnderlineWidth: 20
 Ascent: 800
 Descent: 200
 LayerCount:
-Layer: 0 0 "Back"
-Layer: 1 1 "Fore"
-Layer: 2 0 "Cubic_Fore"
-Layer: 3 0 "Test"
+Layer: 0 0 "Back" 1
+Layer: 1 1 "Fore" 0
+Layer: 2 0 "Cubic_Fore" 0
+Layer: 3 0 "Test" 1
 DisplaySize: -24
 DisplayLayer: 1
 AntiAlias: 1
 WinInfo: 64 16 4
 FitToEm: 1
+UseUniqueID: 0
+UseXUID: 1
 XUID: 3 18 21
 Encoding: unicode
 Order2: 1
@@ -134,7 +136,7 @@ TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 CreationTime: 1151539072
 ModificationTime: 11516487392
 GaspTable 3 8 2 16 1 65535 3
-DEI: 0
+DEI: 91125
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -175,9 +177,12 @@ DEI: 0
       Layer
     <DD>
       One entry for each layer to name it and describe its splines &#171;Layer:
-      1 1 "Fore"&#187; means this is layer 1, it has quadratic splines and is named
-      "Fore", while &#171;Layer: 2 0 "Cubic_Fore"&#187; means this is layer 2,
-      it does not have quadratic splines (so it has cubic) and is named "Cubic_Fore".
+      1 1 "Fore" 0&#187; means this is layer 1, it has quadratic splines, is named
+      "Fore" and is not a background layer, while &#171;Layer: 2 0 "Cubic_Fore"
+      0&#187; means this is layer 2, it does not have quadratic splines (so it
+      has cubic), is named "Cubic_Fore" and is also not a background layer.<BR>
+      Layer &lt;layer-number&gt; &lt;quadratic-flag&gt; &lt;name&gt;
+      [&lt;background-flag&gt;]
     <DT>
       DisplaySize
     <DD>
@@ -232,6 +237,11 @@ CIDVersion: 1.2
     <DD>
       The first number following the keyword gives the number of ppem/flag pairs
       on the line. The next two numbers are the first ppem and first flag.
+    <DT>
+      UseXUID
+    <DD>
+      Nowadays Adobe says XUID is deprecated. If this flag is set then fontforge
+      will still generate an XUID entry for a postscript font.
     <DT>
       DEI
     <DD>
@@ -1042,14 +1052,15 @@ EndChar
   </BLOCKQUOTE>
   <P>
   Where the numbers on the image line mean respectively: width (of image in
-  pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;true), bytes
-  per line, number of color entries in the color table, the index in the color
-  table of the transparent color (or for true color images the transparent
-  color itself), the x and y coordinates of the upper left corner of the image,
-  the x and y scale factors to convert image pixels into character units. Then
-  follows a bunch of binary data encoded using Adobe's Encode85 filter (See
-  the PostScript Reference manual for a description). These data contain all
-  the colors in the color table followed by a dump of the image pixel data.
+  pixels), height, image type (0=&gt;mono, 1=&gt;indexed, 2=&gt;rgb (true color),
+  3=&gt;rgba), bytes per line, number of color entries in the color table,
+  the index in the color table of the transparent color (or for true color
+  images the transparent color itself), the x and y coordinates of the upper
+  left corner of the image, the x and y scale factors to convert image pixels
+  into character units. Then follows a bunch of binary data encoded using Adobe's
+  Encode85 filter (See the PostScript Reference manual for a description).
+  These data contain all the colors in the color table followed by a dump of
+  the image pixel data.
   <P>
   Bitmap data will be compressed by run length encoding. I'm not going to go
   into that in detail, if you want to understand it I suggest you look at the
