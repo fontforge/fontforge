@@ -1774,9 +1774,9 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     fprintf(sfd, "Descent: %d\n", sf->descent );
     fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
     for ( i=0; i<sf->layer_cnt; ++i ) {
-	fprintf( sfd, "Layer: %d %d %d ", i, sf->layers[i].order2, sf->layers[i].background );
+	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
 	SFDDumpUTF7Str(sfd,sf->layers[i].name);
-	putc('\n',sfd);
+	fprintf( sfd, " %d\n", sf->layers[i].background );
     }
     if ( sf->strokedfont )
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
@@ -6221,13 +6221,21 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&o2);
 	    sf->layers[layer].order2 = o2;
 	    sf->layers[layer].background = layer==ly_back;
+	/* Used briefly, now background is after layer name */
 	    while ( (ch=nlgetc(sfd))==' ' );
 	    ungetc(ch,sfd);
 	    if ( ch!='"' ) {
 		getint(sfd,&bk);
 		sf->layers[layer].background = bk;
 	    }
+	/* end of section for obsolete format */
 	    sf->layers[layer].name = SFDReadUTF7Str(sfd);
+	    while ( (ch=nlgetc(sfd))==' ' );
+	    ungetc(ch,sfd);
+	    if ( ch!='\n' ) {
+		getint(sfd,&bk);
+		sf->layers[layer].background = bk;
+	    }
 	} else if ( strmatch(tok,"StrokedFont:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
