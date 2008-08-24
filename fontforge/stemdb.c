@@ -2721,12 +2721,15 @@ static struct pointdata *FindClosestOpposite(
 return( ret );
 }
 
-static int ValueChunk( struct glyphdata *gd,struct stem_chunk *chunk,int l_base ) {
+static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
+    int chcnt,int idx,int l_base ) {
     
     int peak1=0, peak2=0, val=0; 
-    int is_x, base_next, opp_next;
+    int i, is_x, base_next, opp_next;
     struct pointdata *base, *opp, *frompd, *topd;
+    struct stem_chunk *chunk = vchunks[idx].chunk, *tchunk;
     struct stemdata *stem = chunk->parent;
+    double norm, dist;
     Spline *sbase, *sopp, *other;
     
     /* If a stem was already present before generating glyph data,
@@ -2761,10 +2764,25 @@ static int ValueChunk( struct glyphdata *gd,struct stem_chunk *chunk,int l_base 
         peak1 = ( is_x ) ? base->x_extr : base->y_extr;
         peak2 = ( is_x ) ? opp->x_extr  : opp->y_extr;
 
+        dist =  ( base->base.x - opp->base.x )*stem->unit.x +
+                ( base->base.y - opp->base.y )*stem->unit.y;
+        
+        /* Are there any stems attached to the same base point which
+        /* are narrower than the distance between two points forming the
+        /* given chunk? */
+        for ( i=0; i<chcnt; i++ ) {
+            tchunk = vchunks[i].chunk;
+            if ( tchunk == NULL || tchunk == chunk || chunk->l == NULL || chunk->r == NULL )
+        continue;
+            norm = tchunk->parent->width;
+            if ( norm < fabs( dist ))
+        break;
+        }
+
         /* If both points are curved in the same direction, then check also 
         /* the "line of sight" between those points (if there are interventing
         /* splines, then it is not a real feature bend)*/
-        if ( peak1 + peak2 == 3 && ConnectsAcross( gd,base->sp,opp_next,sopp,0 ))
+        if ( i == chcnt && peak1 + peak2 == 3 && ConnectsAcross( gd,base->sp,opp_next,sopp,0 ))
             val++;
     }
     
@@ -2775,15 +2793,41 @@ static int ValueChunk( struct glyphdata *gd,struct stem_chunk *chunk,int l_base 
         IsStemAssignedToPoint( topd,stem,false ) != -1 )
         if ( other == sbase ) val++;
 
+    dist = vchunks[idx].dist;
+    for ( i=0; i<chcnt; i++ ) {
+        tchunk = vchunks[i].chunk;
+        if ( tchunk == NULL || tchunk == chunk ||
+            ( vchunks[idx].parallel && !vchunks[i].parallel ))
+    continue;
+        if ( vchunks[i].dist <= dist || tchunk->parent->width <= stem->width )
+    break;
+    }
+    if ( i==chcnt ) val++;
+
+    /* If just one of the checked chunks has both its sides parallel
+    /* to the stem direction, then we consider it is always worth to be output.
+    /* This check was introduced to avoid situations where a stem marking
+    /* a feature termination can be preferred to another stem which controls 
+    /* the main part of the same feature */
+    if ( vchunks[idx].parallel ) {
+        for ( i=0; i<chcnt; i++ ) {
+            if ( vchunks[i].chunk == NULL || vchunks[i].chunk == chunk )
+        continue;
+            if ( vchunks[i].parallel )
+        break;
+        }
+        if ( i == chcnt ) val++;
+    }
+    
 return( val );
 }
 
 static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_next ) {
     int i, j, is_l, next1, stemcnt, val;
-    int par_cnt=0, val_cnt=0;
+    int val_cnt=0;
     BasePoint *lunit, *runit;
     struct stemdata **stems;
-    struct vchunk *vchunks, *closest1, *closest2;
+    struct vchunk *vchunks;
     struct stem_chunk *cur;
     
     stemcnt = ( is_next ) ? pd->nextcnt : pd->prevcnt;
@@ -2796,7 +2840,6 @@ static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_nex
         if ( vchunks[i].chunk == NULL )
     continue;
         cur = vchunks[i].chunk;
-        vchunks[i].value =  ValueChunk( gd,cur,is_l );
         if ( vchunks[i].value > 0 ) val_cnt++;
         vchunks[i].dist  =  pow( cur->l->base.x - cur->r->base.x,2 ) + 
                             pow( cur->l->base.y - cur->r->base.y,2 );
@@ -2804,39 +2847,13 @@ static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_nex
         runit = ( cur->rnext ) ? &cur->r->nextunit : &cur->r->prevunit;
         vchunks[i].parallel =   UnitsParallel( lunit,&stems[i]->unit,2 ) &&
                                 UnitsParallel( runit,&stems[i]->unit,2 );
-        if ( vchunks[i].parallel ) par_cnt++;
     }
     
-    closest1 = closest2 = &vchunks[0];
-    for ( i=1; i<stemcnt; i++ ) if ( vchunks[i].chunk != NULL ) {
-        if ( closest1->chunk == NULL || vchunks[i].dist < closest1->dist )
-            closest1 = &vchunks[i];
+    for ( i=0; i<stemcnt; i++ ) if ( vchunks[i].chunk != NULL ) {
+        vchunks[i].value = ValueChunk( gd,vchunks,stemcnt,i,is_l );
+        if ( vchunks[i].value ) val_cnt++;
     }
-    for ( i=1; i<stemcnt; i++ ) if ( vchunks[i].chunk != NULL )  {
-        if ( closest2->chunk == NULL ||
-            vchunks[i].chunk->parent->width < closest2->chunk->parent->width )
-            closest2 = &vchunks[i];
-    }
-    if ( closest1 == closest2 && closest1->chunk != NULL ) {
-        if ( closest1->value == 0 ) val_cnt++;
-        (closest1->value)++;
-    }
-    
-    /* If just one of the checked chunks has both its sides parallel
-    /* to the stem direction, then we consider it is always worth to be output.
-    /* This check was introduced to avoid situations where a stem marking
-    /* a feature termination can be preferred to another stem which controls 
-    /* the main part of the same feature */
-    if ( par_cnt == 1 ) {
-        for ( i=0; i<stemcnt; i++ ) {
-            if ( vchunks[i].parallel ) {
-                if ( vchunks[i].value == 0 ) val_cnt++;
-                vchunks[i].value++;
-        break;
-            }
-        }
-    }
-    
+
     /* If we was unable to figure out any reasons for which at least
     /* one of the checked chunks should really be output, then keep
     /* all the 'potential' flags as they are and do nothing */
@@ -2856,7 +2873,6 @@ static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_nex
             }
         }
     }
-
     free( vchunks );
 }
 
@@ -2929,7 +2945,7 @@ return( StillStem( gd,dist_error_diag,&pos,stem ));
 /* and a spline and determine the extet where this hint can be
 /* considered "active". */
 static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
-    struct stemdata *stem,int is_l,BasePoint *res ) {
+    struct stemdata *stem,int is_l,int force_ac,BasePoint *res ) {
     
     int i, curved;
     double off, dist, min, max;
@@ -2964,7 +2980,7 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     /*  the point */
     /* We used to check the distance between a control point and a spline
     /* and consider the segment "flat" if this distance is smaller than
-    /* normal allowed "error" value. However this method doesn't produce
+    /* the normal allowed "error" value. However this method doesn't produce
     /* consistent results if the spline is not long enough (as usual for
     /* fonts with quadratic splines). So now we consider a spline "flat"
     /* only if it never deviates too far from the hint's edge and both 
@@ -2978,11 +2994,15 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     /* still active at the end of the spline, we can check some subsequent splines 
     /* too. This method produces better effect than any "magic" manipulations 
     /* with control point coordinates, because it takes into account just the 
-    /* spline configuration rather than the point positions */
+    /* spline configuration rather than point positions */
     if ( curved ) {
         max = err = dist_error_curve;
         min = -dist_error_curve;
-        good = ( gonext ) ? sp->nextcp : sp->prevcp;
+        /* The following statement forces our code to detect an active zone
+        /* even if all checks actually fail. This makes sense for stems
+        /* marking arks and bends */
+        if ( force_ac )
+            good = ( gonext ) ? sp->nextcp : sp->prevcp;
         /* If a spline is closer to the opposite stem edge than to the current edge, then we
         /* can no longer consider the stem active at this point */
         if ( err > width/2 ) err = width/2;
@@ -3068,7 +3088,7 @@ static int AddLineSegment( struct stemdata *stem,struct segment *space,int cnt,
     double s, e, t, dot;
     BasePoint stemp, etemp;
     BasePoint *start, *end, *par_unit;
-    int same_dir, corner = 0;
+    int same_dir, corner = 0, par;
     int scurved = false, ecurved = false, c, hv;
     SplinePoint *sp, *psp, *nsp;
     double b;
@@ -3100,12 +3120,13 @@ return( cnt );
     if (( dot > 0 && same_dir ) || ( dot < 0 && !same_dir )) {
         /* If the segment sp-start doesn't have exactly the right slope, then */
         /*  we can only use that bit of it which is less than a standard error */
-	if ( !sp->next->knownlinear ) {
-	    ecurved = WalkSpline( gd,pd,true,stem,is_l,&etemp );
+	par = UnitsParallel( &stem->unit,&pd->nextunit,0 );
+        if ( !sp->next->knownlinear ) {
+	    ecurved = WalkSpline( gd,pd,true,stem,is_l,par,&etemp );
             /* Can merge, but treat as curved relatively to projections */
             if ( !ecurved ) ecurved = 2;
 	    end = &etemp;
-	} else if ( UnitsParallel( &stem->unit,&pd->nextunit,0 ) || corner )  {
+	} else if ( par || corner )  {
 	    nsp = sp->next->to;
 	    ecurved = AdjustForImperfectSlopeMatch( sp,&nsp->me,&etemp,stem,is_l );
 	    end = &etemp;
@@ -3114,11 +3135,12 @@ return( cnt );
     dot =   ( stem->unit.x * pd->prevunit.x ) +
             ( stem->unit.y * pd->prevunit.y );
     if (( dot < 0 && same_dir ) || ( dot > 0 && !same_dir )) {
+	par = UnitsParallel( &stem->unit,&pd->prevunit,0 );
 	if ( !sp->prev->knownlinear ) {
-	    scurved = WalkSpline( gd,pd,false,stem,is_l,&stemp );
+	    scurved = WalkSpline( gd,pd,false,stem,is_l,par,&stemp );
             if ( !scurved ) scurved = 2;
 	    start = &stemp;
-	} else if ( UnitsParallel( &stem->unit,&pd->prevunit,0 ) || corner ) {
+	} else if ( par || corner ) {
 	    psp = sp->prev->from;
 	    scurved = AdjustForImperfectSlopeMatch( sp,&psp->me,&stemp,stem,is_l );
 	    start = &stemp;
@@ -3667,7 +3689,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     struct stem_chunk *chunk;
 
     GDStemsFixupIntersects( gd );
-    
+   
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
 
@@ -4307,7 +4329,7 @@ static struct stemdata *FindOrMakeGhostStem( struct glyphdata *gd,
             ( sp->me.y <= 0 && sp->me.y >= tstem->right.y ))) {
             
             hasl = false; hasr = false; j = 0;
-            while ( j < tstem->chunk_cnt && !hasl && !hasr ) {
+            while ( j < tstem->chunk_cnt && ( !hasl || !hasr )) {
                 chunk = &tstem->chunks[j];
                 if ( chunk->l != NULL && !chunk->lpotential )
                     hasl = true;
@@ -5066,7 +5088,7 @@ static void ClearUnneededDeps( struct stemdata *stem ) {
     }
 }
 
-static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
+static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps ) {
     struct stemdata *stem, *tstem;
     int i, j, k, hv, hasl, hasr, stem_cnt;
     struct pointdata *lpd, *rpd;
@@ -5075,7 +5097,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
     /* Some checks for undesired stems which we couldn't do earlier */
     
     /* First filter out HV stems which have only "potential" points
-    /* from their left or right side. Such stems aren't supposed to be 
+    /* on their left or right edge. Such stems aren't supposed to be 
     /* used for PS hinting, so we mark them as "too big" */
     for ( i=0; i<gd->stemcnt; ++i ) {
         stem = &gd->stems[i];
@@ -5083,7 +5105,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
         
         if ( IsVectorHV( &stem->unit,0,true ) && 
             !stem->toobig && !stem->ghost && !stem->positioned ) {
-	    for ( j=0; j<stem->chunk_cnt; ++j ) {
+	    for ( j=0; j<stem->chunk_cnt && ( !hasl || !hasr ); ++j ) {
 		if ( stem->chunks[j].l!=NULL && !stem->chunks[j].lpotential ) 
                     hasl = true;
 		if ( stem->chunks[j].r!=NULL && !stem->chunks[j].rpotential ) 
@@ -5149,7 +5171,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
     gd->vbundle->unit.x = 0; gd->vbundle->unit.y = 1;
     gd->vbundle->l_to_r.x = 1; gd->vbundle->l_to_r.y = 0;
     
-    if ( gd->has_slant ) {
+    if ( gd->has_slant && !gd->only_hv ) {
         gd->ibundle = gcalloc( 1,sizeof( struct stembundle ));
         gd->ibundle->stemlist = gcalloc( gd->stemcnt,sizeof( struct stemdata *));
         gd->ibundle->unit.x = gd->slant_unit.x; 
@@ -5170,7 +5192,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
         } else if ( hv == 2 ) {
             gd->vbundle->stemlist[(gd->vbundle->cnt)++] = stem;
             stem->bundle = gd->vbundle;
-        } else if ( gd->has_slant && 
+        } else if ( gd->has_slant && !gd->only_hv &&
             RealNear( stem->unit.x,gd->slant_unit.x ) &&
             RealNear( stem->unit.y,gd->slant_unit.y )) {
             
@@ -5192,9 +5214,11 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig ) {
     }
     qsort( gd->hbundle->stemlist,gd->hbundle->cnt,sizeof( struct stemdata *),stem_cmp );
     qsort( gd->vbundle->stemlist,gd->vbundle->cnt,sizeof( struct stemdata *),stem_cmp );
-    if ( gd->has_slant )
+    if ( gd->has_slant && !gd->only_hv )
         qsort( gd->ibundle->stemlist,gd->ibundle->cnt,sizeof( struct stemdata *),stem_cmp );
     
+    if ( !needs_deps )
+return;
     for ( i=0; i<gd->hbundle->cnt; i++ )
         LookForMasterHVStem( gd->hbundle->stemlist[i],&gd->bd );
     for ( i=0; i<gd->hbundle->cnt; i++ )
@@ -5733,8 +5757,8 @@ return( gd );
 	CheckForBoundingBoxHints( gd );
     CheckForGhostHints( gd );
 
+    GDBundleStems( gd,0,use_existing );
     if ( use_existing ) {
-        GDBundleStems( gd,0 );
         for ( i=0; i<gd->stemcnt; ++i ) {
             stem = &gd->stems[i];
             if ( stem->toobig == 1 && IsVectorHV( &stem->unit,0,true ))
