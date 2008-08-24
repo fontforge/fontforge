@@ -84,6 +84,33 @@
 	  Add a color picker so users can select glyph label colors other than red,
 	  cyan, green, etc.
 	<LI>
+	  Werner wants an $iscid variable to determine whether a font is a cid-keyed
+	  font or not.
+	<LI>
+	  add font.iscid to python too.
+	<LI>
+	  python font.cid* variables didn't work, fix them.
+	<LI>
+	  Add $haspython variable to normal scripting so I can detect if python is
+	  available.
+	<LI>
+	  When pasting a reference into an order2 layer, ff would sometimes miss the
+	  fact that the instructions were out of date.
+	<LI>
+	  In the charview, unlink ref only worked on the foreground layer.
+	<LI>
+	  Patch by Barry (fixed up by me) to fix up open charviews when a layer is
+	  added.
+	<LI>
+	  Barry points out that Contour.round and Layer.round are supposed to have
+	  an optional argument, but instead have a required arg.
+	<LI>
+	  Just as pasting references screws up instructions, so does replace with
+	  reference. Do the same thing that we just did to rplref.
+	<LI>
+	  When scripting without a UI, the char changed routine did not check to see
+	  if it should clear the instructions on a change. It now does.
+	<LI>
 	  Setting device table adjustments from the accent pane of the Math dlg didn't
 	  work.
 	<LI>
@@ -202,7 +229,7 @@
 	  the way we were parsing type2 charstrings.
 	<LI>
 	  Barry complains that when building ff does not apply the ".cap" suffix when
-	  using inverted breve. 
+	  using inverted breve.
 	<LI>
 	  Valgrind finds a bug in drawing non-BMP characters in the metrics view.
 	<LI>
