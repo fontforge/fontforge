@@ -9720,7 +9720,7 @@ return;
 	else if ( strcmp(argv[i],"-lang")==0 && i+1<argc &&
 		(strcmp(argv[i+1],"py")==0 || strcmp(argv[i+1],"ff")==0 || strcmp(argv[i+1],"pe")==0)) {
 	    ++i;
-	    is_python = strcmp(argv[i+1],"py")==0;
+	    is_python = strcmp(argv[i],"py")==0;
 	} else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	    if ( is_python )
