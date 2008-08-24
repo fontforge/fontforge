@@ -84,6 +84,8 @@
 	  Add a color picker so users can select glyph label colors other than red,
 	  cyan, green, etc.
 	<LI>
+	  Memory problems with references, introduced recently, have been fixed.
+	<LI>
 	  Werner wants an $iscid variable to determine whether a font is a cid-keyed
 	  font or not.
 	<LI>
@@ -96,6 +98,10 @@
 	<LI>
 	  When pasting a reference into an order2 layer, ff would sometimes miss the
 	  fact that the instructions were out of date.
+	<LI>
+	  Replace with references had the same problem.
+	<LI>
+	  In scripting, instructions did not get checked for up-to-dateness
 	<LI>
 	  In the charview, unlink ref only worked on the foreground layer.
 	<LI>
