@@ -986,6 +986,14 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
 	sc->layers[layer].refs = new;
 	SCReinstanciateRefChar(sc,new,layer);
 	SCMakeDependent(sc,new->sc);
+	if ( sc->layers[layer].order2 &&
+		!sc->layers[layer].background &&
+		!sc->instructions_out_of_date &&
+		sc->ttf_instrs!=NULL ) {
+	    /* The normal change check doesn't respond properly to pasting a reference */
+	    SCClearInstrsOrMark(sc,layer,!s->already_complained);
+	    s->already_complained = true;
+	}
     }
     temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.layers[ly_fore].splines),transform,true);
     if ( sc->layers[layer].splines==NULL )
@@ -1227,6 +1235,9 @@ static void SDCopyToSC(SplineChar *checksc,SplineChar *into,enum fvcopy_type ful
 	ref->transform[0] = ref->transform[3] = 1.0;
 	ref->sc = checksc;
     }
+    /* This is used to fill up the search/rpl patterns, which can't have */
+    /*  instructions, so I don't bother to check for instructions out of */
+    /*  date */
 }
 
 void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge ) {
@@ -1458,6 +1469,8 @@ void FVCorrectReferences(FontViewBase *fv) {
 		rsc->layers[layer].splines = sc->layers[layer].splines;
 		sc->layers[layer].splines  = NULL;
 		AddRef(sc,rsc,layer);
+		/* I don't bother to check for instructions because there */
+		/*  shouldn't be any in a mixed outline and reference glyph */
 	    }
 	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 		if ( ref->transform[0]>0x7fff/16384.0 ||

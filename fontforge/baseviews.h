@@ -494,6 +494,7 @@ typedef struct searchdata {
     unsigned int wrap: 1;
     unsigned int wasreversed: 1;
     unsigned int replacewithref: 1;
+    unsigned int already_complained: 1;	/* User has already been alerted to the fact that we've converted splines to refs and lost the instructions */
     SplineSet *matched_spl;
     SplinePoint *matched_sp, *last_sp;
     real matched_rot, matched_scale;
