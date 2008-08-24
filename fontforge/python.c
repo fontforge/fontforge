@@ -7488,6 +7488,7 @@ static PyObject *PyFF_LayerInfoArray_add(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"si|i", &name, &order2, &background ) )
 return( NULL );
     SFAddLayer(sf,name,order2,background);
+	CVLayerPaletteCheck(sf);
 Py_RETURN(self);
 }
 
