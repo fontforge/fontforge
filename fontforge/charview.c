@@ -3598,7 +3598,7 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
     if ( cv->needsrasterize ) {
 	TTFPointMatches(cv->b.sc,cvlayer,true);		/* Must precede regen dependents, as this can change references */
 	SCRegenDependents(cv->b.sc,cvlayer);		/* All chars linked to this one need to get the new splines */
-	if ( updateflex && cvlayer!=ly_grid && !cv->b.layerheads[cvlayer]->background )
+	if ( updateflex && cvlayer!=ly_grid && !cv->b.layerheads[cv->b.drawmode]->background )
 	    SplineCharIsFlexible(cv->b.sc,cvlayer);
 	SCUpdateAll(cv->b.sc);
 	SCRegenFills(cv->b.sc);
