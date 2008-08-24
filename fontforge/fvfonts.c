@@ -47,8 +47,10 @@ RefChar *RefCharsCopy(RefChar *ref) {
 	}
 	}
 #else
+	{struct reflayer *rl = cur->layers;
 	*cur = *ref;
-	cur->layers[0].splines = NULL;	/* Leave the old sc, we'll fix it later */
+	cur->layers = rl;
+	}
 #endif
 	if ( cur->sc!=NULL )
 	    cur->orig_pos = cur->sc->orig_pos;
@@ -1221,11 +1223,13 @@ static RefChar *InterpRefs(RefChar *base, RefChar *other, real amount, SplineCha
 	if ( test!=NULL ) {
 	    test->checked = true;
 	    cur = RefCharCreate();
+	    free(cur->layers);
 	    *cur = *base;
 	    cur->orig_pos = cur->sc->orig_pos;
 	    for ( i=0; i<6; ++i )
 		cur->transform[i] = base->transform[i] + amount*(other->transform[i]-base->transform[i]);
-	    cur->layers[0].splines = NULL;
+	    cur->layers = NULL;
+	    cur->layer_cnt = 0;
 	    cur->checked = false;
 	    if ( head==NULL )
 		head = cur;

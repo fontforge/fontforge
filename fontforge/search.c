@@ -973,14 +973,11 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
 	subtrans[5] = transform[4]*r->transform[1] + transform[5]*r->transform[3] +
 		r->transform[5];
 	new = RefCharCreate();
+	free(new->layers);
 	*new = *r;
 	memcpy(new->transform,subtrans,sizeof(subtrans));
-#ifdef FONTFORGE_CONFIG_TYPE3
 	new->layers = NULL;
 	new->layer_cnt = 0;
-#else
-	new->layers[0].splines = NULL;
-#endif
 	new->next = sc->layers[layer].refs;
 	new->selected = true;
 	sc->layers[layer].refs = new;
@@ -1405,17 +1402,14 @@ static void AddRef(SplineChar *sc,SplineChar *rsc, int layer) {
     RefChar *r;
 
     r = RefCharCreate();
+    free(r->layers);
+    r->layers = NULL;
+    r->layer_cnt = 0;
     r->sc = rsc;
     r->unicode_enc = rsc->unicodeenc;
     r->orig_pos = rsc->orig_pos;
     r->adobe_enc = getAdobeEnc(rsc->name);
     r->transform[0] = r->transform[3] = 1.0;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    r->layers = NULL;
-    r->layer_cnt = 0;
-#else
-    r->layers[0].splines = NULL;
-#endif
     r->next = NULL;
     SCMakeDependent(sc,rsc);
     SCReinstanciateRefChar(sc,r,layer);

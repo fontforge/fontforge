@@ -53,12 +53,9 @@ RefChar *RefCharsCopyState(SplineChar *sc,int layer) {
 return( NULL );
     for ( crefs = sc->layers[layer].refs; crefs!=NULL; crefs=crefs->next ) {
 	new = RefCharCreate();
+	free(new->layers);
 	*new = *crefs;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	new->layers = gcalloc(new->layer_cnt,sizeof(struct reflayer));
-#else
-	new->layers[0].splines = NULL;
-#endif
 	new->next = NULL;
 	if ( last==NULL )
 	    head = last = new;
@@ -1106,13 +1103,10 @@ static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container,int lay
 
     while ( refs!=NULL ) {
 	cur = RefCharCreate();
+	free(cur->layers);
 	*cur = *refs;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	cur->layers = NULL;
 	cur->layer_cnt = 0;
-#else
-	cur->layers[0].splines = NULL;
-#endif
 	cur->next = NULL;
 	SCReinstanciateRefChar(container,cur,layer);
 	if ( head==NULL )
@@ -1528,13 +1522,10 @@ void CopySelected(CharViewBase *cv,int doanchors) {
 	RefChar *refs, *new;
 	for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {
 	    new = RefCharCreate();
+	    free(new->layers);
 	    *new = *refs;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    new->layers = NULL;
 	    new->layer_cnt = 0;
-#else
-	    new->layers[0].splines = NULL;
-#endif
 	    new->orig_pos = new->sc->orig_pos;
 	    new->sc = NULL;
 	    new->next = copybuffer.u.state.refs;
@@ -2168,15 +2159,12 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		    ff_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
 		else if ( rsc!=NULL ) {
 		    new = RefCharCreate();
+		    free(new->layers);
 		    *new = *refs;
 		    new->transform[4] *= scale; new->transform[5] *= scale;
 		    new->transform[4] += xoff;  new->transform[5] += yoff;
-#ifdef FONTFORGE_CONFIG_TYPE3
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
-#else
-		    new->layers[0].splines = NULL;
-#endif
 		    new->sc = rsc;
 		    new->next = sc->layers[layer].refs;
 		    sc->layers[layer].refs = new;
@@ -2767,13 +2755,10 @@ return;
 		    /* Already complained */;
 		else if ( sc!=NULL ) {
 		    new = RefCharCreate();
+		    free(new->layers);
 		    *new = *refs;
-#ifdef FONTFORGE_CONFIG_TYPE3
 		    new->layers = NULL;
 		    new->layer_cnt = 0;
-#else
-		    new->layers[0].splines = NULL;
-#endif
 		    new->sc = sc;
 		    new->selected = true;
 		    new->next = cvsc->layers[layer].refs;
