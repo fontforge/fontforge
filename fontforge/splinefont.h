@@ -3057,5 +3057,7 @@ extern void PatternSCBounds(SplineChar *sc,DBounds *b);
 
 extern char *SFDefaultImage(SplineFont *sf,char *filename);
 extern void SCClearInstrsOrMark(SplineChar *sc, int layer, int complain);
+extern void instrcheck(SplineChar *sc,int layer);
+extern void TTFPointMatches(SplineChar *sc,int layer,int top);
 
 #endif
