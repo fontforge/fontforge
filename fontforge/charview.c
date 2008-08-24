@@ -10226,5 +10226,6 @@ return;
 struct cv_interface gdraw_cv_interface = {
     (void (*)(CharViewBase *)) CV_CharChangedUpdate,
     (void (*)(CharViewBase *,int)) _CV_CharChangedUpdate,
-    UI_CVGlyphRenameFixup
+    UI_CVGlyphRenameFixup,
+    CV_LayerPaletteCheck
 };

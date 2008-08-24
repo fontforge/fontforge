@@ -2409,10 +2409,14 @@ static void _CVChngNoUpdate(CharViewBase *cv,int changed) {
 static void CVGlphRenameFixup(SplineFont *sf,char *oldname, char *newname) {
 }
 
+static void CV__LayerPaletteCheck(SplineFont *sf) {
+}
+
 static struct cv_interface noui_cv = {
     CVChngNoUpdate,
     _CVChngNoUpdate,
-    CVGlphRenameFixup
+    CVGlphRenameFixup,
+    CV__LayerPaletteCheck
 };
 
 struct cv_interface *cv_interface = &noui_cv;
