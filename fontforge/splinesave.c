@@ -1160,9 +1160,7 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *sofar, int layer) {
     real trans[6];
     RefChar *sub;
-#ifdef FONTFORGE_CONFIG_TYPE3
     struct reflayer *rl;
-#endif
 
     trans[0] = ref->transform[0]*transform[0] +
 		ref->transform[1]*transform[2];
@@ -1189,14 +1187,10 @@ static RefChar *IsRefable(RefChar *ref, int isps, real transform[6], RefChar *so
 	/* Type2 PS (opentype) is the same as truetype here */
 	/* Now that I allow refs to be subrs in type1, it also uses the ttf test */
 	sub = RefCharCreate();
-#ifdef FONTFORGE_CONFIG_TYPE3
 	rl = sub->layers;
 	*sub = *ref;
 	sub->layers = rl;
 	*rl = ref->layers[0];
-#else
-	*sub = *ref;
-#endif
 	sub->next = sofar;
 	/*sub->layers[0].splines = NULL;*/
 	memcpy(sub->transform,trans,sizeof(trans));

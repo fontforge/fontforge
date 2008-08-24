@@ -2595,6 +2595,9 @@ return;
 	rsc = SFGetChar(genchange->sf,-1,buffer);
 	if ( rsc!=NULL ) {
 	    r = RefCharCreate();
+	    free(r->layers);
+	    r->layers = NULL;
+	    r->layer_cnt = 0;
 	    r->sc = rsc;
 	    r->unicode_enc = rsc->unicodeenc;
 	    r->orig_pos = rsc->orig_pos;
@@ -2602,12 +2605,6 @@ return;
 	    r->transform[0] = r->transform[3] = 1.0;
 	    r->transform[4] = width;
 	    width += rsc->width;
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    r->layers = NULL;
-	    r->layer_cnt = 0;
-#else
-	    r->layers[0].splines = NULL;
-#endif
 	    r->next = NULL;
 	    SCMakeDependent(sc_sc,rsc);
 	    SCReinstanciateRefChar(sc_sc,r,layer);
@@ -2748,13 +2745,10 @@ return;
 			    rsc = ref->sc;
 			if ( rsc!=NULL ) {
 			    r = RefCharCreate();
+			    free(r->layers);
 			    *r = *ref;
-#ifdef FONTFORGE_CONFIG_TYPE3
 			    r->layers = NULL;
 			    r->layer_cnt = 0;
-#else
-			    r->layers[0].splines = NULL;
-#endif
 			    r->next = NULL;
 			    r->sc = rsc;
 			    r->transform[4] *= genchange->hcounter_scale;
@@ -2975,13 +2969,10 @@ return;
 			rsc = ref->sc;
 		    if ( rsc!=NULL ) {
 			r = RefCharCreate();
+			free(r->layers);
 			*r = *ref;
-#ifdef FONTFORGE_CONFIG_TYPE3
 			r->layers = NULL;
 			r->layer_cnt = 0;
-#else
-			r->layers[0].splines = NULL;
-#endif
 			r->next = NULL;
 			r->sc = rsc;
 			r->transform[4] *= genchange->hcounter_scale;
@@ -6347,13 +6338,10 @@ return;
     sc->width = replacement->width;
 
     newref = RefCharCreate();
+    free(newref->layers);
     newref->transform[0] = newref->transform[3] = 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
     newref->layers = NULL;
     newref->layer_cnt = 0;
-#else
-    newref->layers[0].splines = NULL;
-#endif
     newref->sc = replacement;
     sc->layers[layer].refs = newref;
     SCReinstanciateRefChar(sc,newref,layer);
@@ -6374,16 +6362,13 @@ return;
     sc->width = replacement->width;
 
     newref = RefCharCreate();
+    free(newref->layers);
     newref->transform[0] = newref->transform[3] = -1;
     newref->transform[4] = replacement->width;
     /* I want the old xheight to be at the baseline */
     newref->transform[5] = ii->x_height;
-#ifdef FONTFORGE_CONFIG_TYPE3
     newref->layers = NULL;
     newref->layer_cnt = 0;
-#else
-    newref->layers[0].splines = NULL;
-#endif
     newref->sc = replacement;
     sc->layers[layer].refs = newref;
     SCReinstanciateRefChar(sc,newref,layer);

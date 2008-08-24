@@ -408,6 +408,7 @@ return;
 
 RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
+    ref->layer_cnt = 1;
     ref->layers = gcalloc(1,sizeof(struct reflayer));
 #ifdef FONTFORGE_CONFIG_TYPE3
     ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
@@ -417,7 +418,6 @@ RefChar *RefCharCreate(void) {
     ref->layers[0].stroke_pen.linejoin = lj_inherited;
     ref->layers[0].dofill = true;
 #endif
-    ref->layer_cnt = 1;
     ref->round_translation_to_grid = true;
 return( ref );
 }
@@ -2993,15 +2993,17 @@ return;
 	rf->bb.minx -= extra; rf->bb.miny -= extra;
 	rf->bb.maxx += extra; rf->bb.maxy += extra;
     } else {
+#else
+    {
+#endif
+	if ( rf->layer_cnt>0 ) {
+	    SplinePointListsFree(rf->layers[0].splines);
+	    rf->layers[0].splines = NULL;
+	}
 	rf->layers = gcalloc(1,sizeof(struct reflayer));
 	rf->layer_cnt = 1;
+#ifdef FONTFORGE_CONFIG_TYPE3
 	rf->layers[0].dofill = true;
-#else
-    SplinePointListsFree(rf->layers[0].splines);
-    rf->layers[0].splines = NULL;
-    if ( rf->sc==NULL )
-return;
-    {
 #endif
 	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,true);
 	if ( new!=NULL ) {
