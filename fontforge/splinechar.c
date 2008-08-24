@@ -2352,9 +2352,67 @@ static void SCHintsChng(SplineChar *sc) {
     }
 }
 
+void instrcheck(SplineChar *sc,int layer) {
+    uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
+		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
+
+    if ( !sc->layers[layer].order2 )
+return;
+
+    if ( sc->instructions_out_of_date && no_windowing_ui && sc->anchor==NULL )
+return;
+    if ( instrs==NULL && sc->dependents==NULL && no_windowing_ui && sc->anchor==NULL )
+return;
+    /* If the points are no longer in order then the instructions are not valid */
+    /*  (because they'll refer to the wrong points) and should be removed */
+    /* Except that annoys users who don't expect it */
+    if ( !SCPointsNumberedProperly(sc,layer)) {
+	SCClearInstrsOrMark(sc,layer,true);
+    }
+}
+
+void TTFPointMatches(SplineChar *sc,int layer,int top) {
+    AnchorPoint *ap;
+    BasePoint here, there;
+    struct splinecharlist *deps;
+    RefChar *ref;
+
+    if ( !sc->layers[layer].order2 || sc->layers[layer].background )
+return;
+    for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
+	if ( ap->has_ttf_pt )
+	    if ( ttfFindPointInSC(sc,layer,ap->ttf_pt_index,&ap->me,NULL)!=-1 )
+		ap->has_ttf_pt = false;
+    }
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->point_match ) {
+	    if ( ttfFindPointInSC(sc,layer,ref->match_pt_base,&there,ref)==-1 &&
+		    ttfFindPointInSC(ref->sc,layer,ref->match_pt_ref,&here,NULL)==-1 ) {
+		if ( ref->transform[4]!=there.x-here.x ||
+			ref->transform[5]!=there.y-here.y ) {
+		    ref->transform[4] = there.x-here.x;
+		    ref->transform[5] = there.y-here.y;
+		    SCReinstanciateRefChar(sc,ref,layer);
+		    if ( !top )
+			_SCCharChangedUpdate(sc,layer,true);
+		}
+	    } else
+		ref->point_match = false;		/* one of the points no longer exists */
+	}
+    }
+    for ( deps = sc->dependents; deps!=NULL; deps = deps->next )
+	TTFPointMatches(deps->sc,layer,false);
+}
+
 static void _SCChngNoUpdate(SplineChar *sc,int layer,int changed) {
     SplineFont *sf = sc->parent;
 
+    if ( layer>=sc->layer_cnt ) {
+	IError( "Bad layer in _SCChngNoUpdate");
+	layer = ly_fore;
+    }
+    if ( layer>=0 && !sc->layers[layer].background )
+	TTFPointMatches(sc,layer,true);
     if ( changed!=-1 ) {
 	sc->changed_since_autosave = true;
 	SFSetModTime(sf);
@@ -2363,6 +2421,8 @@ static void _SCChngNoUpdate(SplineChar *sc,int layer,int changed) {
 	    if ( changed && (sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL))
 		sc->parent->onlybitmaps = false;
 	}
+	if ( changed && layer>=0 && !sc->layers[layer].background )
+	    instrcheck(sc,layer);
 	sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
