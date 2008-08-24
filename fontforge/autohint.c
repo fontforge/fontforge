@@ -1236,34 +1236,6 @@ return( true );
 return( false );
 }
 
-static int StemWouldConflict(StemInfo *stems,double base, double width) {
-    int found;
-
-    if ( width<0 ) {
-	base += width;
-	width = -width;
-    }
-    while ( stems!=NULL && stems->start<base && stems->start+stems->width<base )
-	stems = stems->next;
-
-    found = false;
-    while ( stems!=NULL && ((stems->width>0 && stems->start<base+width) ||
-			    (stems->width<0 && stems->start+stems->width<base+width )) ) {
-	if (( stems->start==base && stems->width==width ) ||
-		(stems->start+stems->width==base && stems->width==-width ))
-return( false );		/* If it has already been added, then too late to worry about conflicts */
-	if ( stems->width>0 ) {
-	    if ( stems->start+stems->width>=base && stems->start<=base+width )
-		found = true;
-	} else {
-	    if ( stems->start>=base && stems->start+stems->width<=base+width )
-		found = true;
-	}
-	stems = stems->next;
-    }
-return( found );
-}
-
 int StemListAnyConflicts(StemInfo *stems) {
     StemInfo *s;
     int any= false;
@@ -2862,93 +2834,41 @@ return;						/* In an MM font we may still need to resolve things like different
 	SCFigureSimpleCounterMasks(sc);
 }
 
-static int inhints(StemInfo *stems,real base, real width) {
-
-    while ( stems!=NULL ) {
-	if ( stems->start==base || stems->start+stems->width==base+width ||
-		stems->start+stems->width==base || stems->start==base+width )
-return( true );
-	stems = stems->next;
-    }
-return( false );
-}
-
-static StemInfo *GhostAdd( StemInfo *ghosts, StemInfo *stems, 
-    struct stemdata *new ) {
-    StemInfo *s, *prev, *test;
-    double base, width;
-    
-    width = new->width;
-    base = new->right.y;
-
-    if ( inhints(stems,base,width))
-return(ghosts);		/* already recorded */
-    if ( StemWouldConflict(stems,base,width))
-return(ghosts);		/* Let's not add a conflicting ghost hint */
-    if ( StemWouldConflict(ghosts,base,width))
-return(ghosts);
-
-    s = chunkalloc(sizeof(StemInfo));
-    s->start = base;
-    s->width = width;
-    s->ghost = true;
-    s->where = StemAddHIFromActive( new,false );
-
-    if ( ghosts==NULL || base<ghosts->start ) {
-	s->next = ghosts;
-	ghosts = s;
-    } else {
-	for ( prev=ghosts, test=ghosts->next; test!=NULL && base<test->start;
-		prev = test, test = test->next);
-	prev->next = s;
-	s->next = test;
-    }
-
-return( ghosts );
-}
-
 static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
     int i;
     StemInfo *head = NULL, *cur, *p, *t;
-    struct stemdata *stem;
+    StemBundle *bundle = major ? gd->vbundle : gd->hbundle;
+    StemData *stem;
     int other = !major;
+    double l, r;
 
-    for ( i=0; i<gd->stemcnt; ++i ) {
-	stem = &gd->stems[i];
-	if ( stem->toobig )
-    continue;
-	if (( stem->unit.y == 0 && major==0 ) || ( stem->unit.x == 0 && major==1 )) {
-	    double l = (&stem->left.x)[other], r = (&stem->right.x)[other];
-	    int j, hasl=false, hasr=false;
-	    for ( j=0; j<stem->chunk_cnt; ++j ) {
-		if ( stem->chunks[j].l!=NULL && !stem->chunks[j].lpotential ) hasl = true;
-		if ( stem->chunks[j].r!=NULL && !stem->chunks[j].rpotential ) hasr = true;
-	    }
-	    if ( !hasl || !hasr )
-    continue;
-	    cur = chunkalloc(sizeof(StemInfo));
-	    if ( l<r ) {
-		cur->start = l;
-		cur->width = r - l;
-		cur->haspointleft = hasl;
-		cur->haspointright = hasr;
-	    } else {
-		cur->start = r;
-		cur->width = l - r;
-		cur->haspointleft = hasr;
-		cur->haspointright = hasl;
-	    }
-	    for ( p=NULL, t=head; t!=NULL ; p=t, t=t->next ) {
-		if ( cur->start<=t->start )
-	    break;
-	    }
-	    cur->next = t;
-	    if ( p==NULL )
-		head = cur;
-	    else
-		p->next = cur;
-	    cur->where = StemAddHIFromActive(stem,major);
+    for ( i=0; i<bundle->cnt; ++i ) {
+	stem = bundle->stemlist[i];
+	l = (&stem->left.x)[other];
+        r = (&stem->right.x)[other];
+	cur = chunkalloc( sizeof( StemInfo ));
+	if ( l<r ) {
+	    cur->start = l;
+	    cur->width = r - l;
+	    cur->haspointleft = stem->lpcnt > 0;
+	    cur->haspointright = stem->rpcnt > 0;
+	} else {
+	    cur->start = r;
+	    cur->width = l - r;
+	    cur->haspointleft = stem->rpcnt > 0;
+	    cur->haspointright = stem->lpcnt > 0;
 	}
+        cur->ghost = stem->ghost;
+	for ( p=NULL, t=head; t!=NULL ; p=t, t=t->next ) {
+	    if ( cur->start<=t->start )
+	break;
+	}
+	cur->next = t;
+	if ( p==NULL )
+	    head = cur;
+	else
+	    p->next = cur;
+	cur->where = StemAddHIFromActive(stem,major);
     }
     head = StemRemoveFlexCandidates(head);
 return( head );
@@ -2966,7 +2886,7 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         /* number of stem chunks (i. e. pairs of the opposite points). If
         /* each chunk has its own active zone, then we probably have got
         /* not a real stem, but rather two (or more) separate point pairs,
-        /* which occationally happened to have nearly the same vectors and 
+        /* which occasionally happened to have nearly the same vectors and 
         /* to be positioned on the same lines */
 	if ( stem->toobig || stem->activecnt >= stem->chunk_cnt )
     continue;
@@ -2985,34 +2905,6 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 	cur->where = DStemAddHIFromActive( stem );
     }
 return( head );
-}
-
-static StemInfo *GDFindGhostHints( struct glyphdata *gd,StemInfo *hstems ) {
-    int i;
-    struct stemdata *stem;
-    StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
-
-    for ( i=0; i<gd->stemcnt; ++i ) {
-	stem = &gd->stems[i];
-	if ( !stem->ghost )
-    continue;
-        
-        ghosts = GhostAdd( ghosts,hstems,stem );
-    }
-
-    /* Finally add any ghosts we've got back into the stem list */
-    for ( s=ghosts; s!=NULL; s=snext ) {
-	snext = s->next;
-	for ( prev=NULL, n=hstems; n!=NULL && s->start>n->start; prev=n, n=n->next );
-	if ( prev==NULL ) {
-	    s->next = hstems;
-	    hstems = s;
-	} else {
-	    prev->next = s;
-	    s->next = n;
-	}
-    }
-return( hstems );
 }
 
 void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2,
@@ -3038,7 +2930,6 @@ void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphd
     if ( gd!=NULL ) {
 	sc->vstem = GDFindStems(gd,1);
 	sc->hstem = GDFindStems(gd,0);
-	sc->hstem = GDFindGhostHints( gd,sc->hstem );
 	if ( !gd->only_hv )
 	    sc->dstem = GDFindDStems(gd);
 	if ( gd2==NULL ) GlyphDataFree(gd);
