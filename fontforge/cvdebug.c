@@ -613,18 +613,18 @@ return( false );
 return( true );		/* As best we can tell... */
 }
 
-static struct reflist *ARFindBase(SplineChar *sc,struct reflist *parent) {
+static struct reflist *ARFindBase(SplineChar *sc,struct reflist *parent,int layer) {
     struct reflist *ret, *temp;
     RefChar *ref;
 
-    if ( sc->layers[ly_fore].splines!=NULL ||
-	    sc->layers[ly_fore].refs==NULL )
+    if ( sc->layers[layer].splines!=NULL ||
+	    sc->layers[layer].refs==NULL )
 return( parent );
     ret = chunkalloc(sizeof(struct reflist));
     ret->parent = parent;
-    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	ret->ref = ref;
-	temp = ARFindBase(ref->sc,ret);
+	temp = ARFindBase(ref->sc,ret,layer);
 	if ( temp!=ret )
 return( temp );
 	if ( ref->sc->ttf_instrs_len!=0 )
@@ -648,7 +648,7 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
 	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
 
     if ( dv->active_refs==NULL )
-	dv->active_refs = ARFindBase(dv->cv->b.sc,NULL);
+	dv->active_refs = ARFindBase(dv->cv->b.sc,NULL,dv->layer);
     else {
 	struct reflist *temp;
 	while ( dv->active_refs!=NULL ) {
@@ -660,14 +660,14 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
 		if ( dv->active_refs==NULL ) {
 		    if ( dv->cv->b.sc->ttf_instrs_len!=0 )
 	break;
-		    dv->active_refs = ARFindBase(dv->cv->b.sc,NULL);
+		    dv->active_refs = ARFindBase(dv->cv->b.sc,NULL,dv->layer);
 	break;
 		} else if ( dv->active_refs->ref->sc->ttf_instrs_len!=0 )
 	break;
 		else
 	continue;
 	    }
-	    temp = ARFindBase(dv->active_refs->ref->sc,dv->active_refs);
+	    temp = ARFindBase(dv->active_refs->ref->sc,dv->active_refs,dv->layer);
 	    if ( temp!=dv->active_refs ) {
 		dv->active_refs = temp;
 	break;
@@ -809,7 +809,7 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( dv->cv->b.sc->layers[ly_fore].refs!=NULL ) {
+	if ( dv->cv->b.layerheads[dv->cv->b.drawmode]->refs!=NULL ) {
 	    ff_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
 return( true );
 	}
@@ -817,7 +817,7 @@ return( true );
 	DebuggerGetWatches(dv->dc,&n);
 	watches = gcalloc(n,sizeof(uint8));
 
-	for ( ss = dv->cv->b.sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = dv->cv->b.layerheads[dv->cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->ttfindex == 0xffff )
@@ -1431,7 +1431,7 @@ return( DVChar(dv,event));
 			SplineSet *ss;
 			SplinePoint *sp;
 			watches[j] = !watches[j];
-			for ( ss=dv->cv->b.sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+			for ( ss=dv->cv->b.layerheads[dv->cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 			    for ( sp=ss->first; sp->ttfindex<=j || sp->ttfindex==0xffff; ) {
 				if ( sp->ttfindex==j )
 				    sp->watched = watches[j];
@@ -1889,8 +1889,8 @@ static void DVCreatePoints(DebugView *dv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[4].gd.pos.y+16;
     gcd[k].gd.flags = gg_visible | (show_transformed ? gg_cb_on : 0 );
-    if ( dv->cv->b.sc->layers[ly_fore].splines==NULL &&
-	    dv->cv->b.sc->layers[ly_fore].refs!=NULL )
+    if ( dv->cv->b.layerheads[dv->cv->b.drawmode]->splines==NULL &&
+	    dv->cv->b.layerheads[dv->cv->b.drawmode]->refs!=NULL )
 	gcd[k].gd.flags |= gg_enabled;
     gcd[k].gd.cid = CID_Transform;
     gcd[k++].creator = GCheckBoxCreate;
@@ -2026,7 +2026,7 @@ void CVDebugFree(DebugView *dv) {
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
 
-	for ( ss = cv->b.sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->next==NULL )
@@ -2086,7 +2086,8 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	dv->scalex = scalex;
 	dv->scaley = scaley;
 	dv->cv = cv;
-	dv->dc = DebuggerCreate(cv->b.sc,CVLayer((CharViewBase*) cv),cv->ft_pointsizey,cv->ft_pointsizex,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
+	dv->layer = CVLayer((CharViewBase *) cv);
+	dv->dc = DebuggerCreate(cv->b.sc,dv->layer,cv->ft_pointsizey,cv->ft_pointsizex,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if ( dv->dc==NULL ) {
 	    free(dv);

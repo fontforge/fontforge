@@ -105,6 +105,7 @@ typedef struct debugview {
     uint8 initialbytes[4];
     struct reflist { RefChar *ref; struct reflist *parent; } *active_refs;
     int last_npoints;
+    int layer;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
