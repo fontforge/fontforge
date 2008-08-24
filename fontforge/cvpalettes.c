@@ -1790,6 +1790,7 @@ return( true );
 		cv->b.drawmode = dm_fore;
 		cv->lastselpt = NULL;
 
+		CVDebugFree(cv->dv);
 		SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 		FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
 		FreeType_FreeRaster(cv->raster); cv->raster = NULL;
@@ -1800,6 +1801,7 @@ return( true );
 		cv->b.layerheads[dm_back] = &cv->b.sc->layers[ly_back];
 		cv->lastselpt = NULL;
 
+		CVDebugFree(cv->dv);
 		SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 		FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
 		FreeType_FreeRaster(cv->raster); cv->raster = NULL;
@@ -1823,6 +1825,7 @@ return( true );
 		    cv->b.layerheads[dm_back] = &cv->b.sc->layers[cid];
 		    cv->lastselpt = NULL;
 
+		    CVDebugFree(cv->dv);
 		    SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 		    FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
 		    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
