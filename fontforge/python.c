@@ -2144,7 +2144,7 @@ static PyObject *PyFFContour_Round(PyFF_Contour *self, PyObject *args) {
     double factor=1;
     int i;
 
-    if ( !PyArg_ParseTuple(args,"d",&factor ) )
+    if ( !PyArg_ParseTuple(args,"|d",&factor ) )
 return( NULL );
     for ( i=0; i<self->pt_cnt; ++i ) {
 	self->points[i]->x = rint( factor*self->points[i]->x )/factor;
@@ -2976,7 +2976,7 @@ static PyObject *PyFFLayer_Round(PyFF_Layer *self, PyObject *args) {
     int i,j;
     PyFF_Contour *cntr;
 
-    if ( !PyArg_ParseTuple(args,"d",&factor ) )
+    if ( !PyArg_ParseTuple(args,"|d",&factor ) )
 return( NULL );
     for ( i=0; i<self->cntr_cnt; ++i ) {
 	cntr = self->contours[i];
