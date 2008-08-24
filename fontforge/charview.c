@@ -6331,11 +6331,11 @@ static void _CVUnlinkRef(CharView *cv) {
     int anyrefs=0;
     RefChar *rf, *next;
 
-    if ( cv->b.drawmode==dm_fore && cv->b.layerheads[dm_fore]->refs!=NULL ) {
+    if ( cv->b.layerheads[cv->b.drawmode]->refs!=NULL ) {
 	CVPreserveState(&cv->b);
-	for ( rf=cv->b.layerheads[dm_fore]->refs; rf!=NULL && !anyrefs; rf=rf->next )
+	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
 	    if ( rf->selected ) anyrefs = true;
-	for ( rf=cv->b.layerheads[dm_fore]->refs; rf!=NULL ; rf=next ) {
+	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL ; rf=next ) {
 	    next = rf->next;
 	    if ( rf->selected || !anyrefs) {
 		SCRefToSplines(cv->b.sc,rf,CVLayer((CharViewBase *) cv));
