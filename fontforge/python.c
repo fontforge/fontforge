@@ -12303,6 +12303,12 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_correctReferences(PyFF_Font *self, PyObject *args) {
+
+    FVCorrectReferences(self->fv);
+Py_RETURN( self );
+}
+
 #if 0
 static PyObject *PyFFFont_compareGlyphs(PyFF_Font *self, PyObject *args) {
     /* Compare selected glyphs against the contents of the clipboard	*/
@@ -12394,6 +12400,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "pasteInto", PyFFFont_pasteInto, METH_NOARGS, "Pastes the clipboard into the selected glyphs (merging with what's there)" },
     { "unlinkReferences", PyFFFont_unlinkReferences, METH_NOARGS, "Unlinks all references in the selected glyphs" },
     { "replaceWithReference", (PyCFunction) PyFFFont_replaceWithReference, METH_VARARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
+    { "correctReferences", (PyCFunction) PyFFFont_correctReferences, METH_NOARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
     { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},

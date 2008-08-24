@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 23-Aug-2008 -->
+  <!-- AP: Last modified: 24-Aug-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1469,7 +1469,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD colspan=3>The glyph type refers to a fontforge Glyph object. It has no
-	independant life of its own, it always lives within a font. It has all the
+	independent life of its own, it always lives within a font. It has all the
 	things you expect to be associated with a glyph: a glyph name, a unicode
 	encoding, a drawing layer, GPOS/GSUB features...
 	<P>
@@ -2179,7 +2179,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	old contents.</TD>
     </TR>
     <TR>
-      <TD colspan=3><STRONG>Note:</STRONG> Glyphs do not have an independant existance.
+      <TD colspan=3><STRONG>Note:</STRONG> Glyphs do not have an independent existence.
 	They live in fonts. You may not create them with new(), only in the context
 	of a font. See <A href="#f-createChar">font.createChar</A></TD>
     </TR>
@@ -3400,7 +3400,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE><A NAME="font-glyphs">glyphs</A></CODE></TD>
       <TD><CODE>([type])</CODE></TD>
-      <TD>Returns an interator which will return the glyphs in the font. By default
+      <TD>Returns an iterator which will return the glyphs in the font. By default
 	they will be returned in "GID" order, but if type is specified as "encoding"
 	they will be returned in encoding order. If returned in encoding order it
 	is possible that a glyph will be returned more than once if there are multiple
@@ -3754,7 +3754,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>replaceAll</CODE></TD>
       <TD><CODE>(srch,rpl[,error-bound])</CODE></TD>
-      <TD>Searches the font for all occurances of the srch contour (or layer) and
+      <TD>Searches the font for all occurences of the srch contour (or layer) and
 	replaces them with the replace contour (or layer).</TD>
     </TR>
     <TR>
@@ -3951,6 +3951,15 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>()</CODE></TD>
       <TD>Orients all contours so that external ones are clockwise and internal
 	counter-clockwise in all selected glyphs.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>correctReferences</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Checks a font for glyphs with mixed contours and references (or references
+	with transformation matrices which cannot be represented truetype (ie. scaling
+	by 2 or more)). If a mixed case is discovered fontforge will take the contours
+	out of the glyph, put them in a new glyph, and make a reference to the new
+	glyph.</TD>
     </TR>
     <TR>
       <TD><CODE>cut</CODE></TD>
