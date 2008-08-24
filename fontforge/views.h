@@ -725,6 +725,7 @@ extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
 extern GWindow BVMakeLayers(BitmapView *bv);
+extern void CVSetLayer(CharView *cv,int layer);
 extern int CVPaletteMnemonicCheck(GEvent *event);
 extern int TrueCharState(GEvent *event);
 extern void CVToolsPopup(CharView *cv, GEvent *event);

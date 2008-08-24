@@ -2887,7 +2887,9 @@ static void DummyFindProblems(CharView *cv) {
     struct problems p;
 
     memset(&p,0,sizeof(p));
-    p.fv = (FontView *) (cv->b.fv); p.cv=cv;
+    p.fv = (FontView *) (cv->b.fv);
+    p.cv=cv;
+    p.layer = CVLayer((CharViewBase *) cv);
     p.map = cv->b.fv->map;
     p.lastcharopened = cv->b.sc;
 
@@ -4585,6 +4587,8 @@ static void VWReuseCV(struct val_data *vw, SplineChar *sc) {
 	GDrawSetVisible(cv->gw,true);
 	GDrawRaise(cv->gw);
     }
+    if ( CVLayer((CharViewBase *) cv)!=vw->layer )
+	CVSetLayer(cv,vw->layer);
     vw->lastgid = sc->orig_pos;
     vw->lastcv = cv;
 

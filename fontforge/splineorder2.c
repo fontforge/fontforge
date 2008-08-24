@@ -1587,8 +1587,8 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 		    len2 = sqrt((p->prevcp.x-p->me.x)*(p->prevcp.x-p->me.x) +
 				(p->prevcp.y-p->me.y)*(p->prevcp.y-p->me.y));
 		    len2 /= len1;
-		    p->prevcp.x = len2 * (p->me.x-p->prevcp.x) + p->me.x;
-		    p->prevcp.y = len2 * (p->me.y-p->prevcp.y) + p->me.y;
+		    p->prevcp.x = rint(len2 * (p->me.x-p->prevcp.x) + p->me.x);
+		    p->prevcp.y = rint(len2 * (p->me.y-p->prevcp.y) + p->me.y);
 		} else {
 		    pp = p->prev->from;
 		    /* Find the intersection (if any) of the lines between */
@@ -1598,6 +1598,10 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 			double d1 = (p_pcp.x-p->me.x)*(pp->me.x-p->me.x) + (p_pcp.y-p->me.y)*(pp->me.y-p->me.y);
 			double d2 = (p_pcp.x-pp->me.x)*(p->me.x-pp->me.x) + (p_pcp.y-pp->me.y)*(p->me.y-pp->me.y);
 			if ( d1>=0 && d1<=len && d2>=0 && d2<=len ) {
+			    if ( rint(2*p->me.x)==2*p->me.x && rint(2*pp->me.x)==2*pp->me.x )
+				p_pcp.x = rint( p_pcp.x );
+			    if ( rint(2*p->me.y)==2*p->me.y && rint(2*pp->me.y)==2*pp->me.y )
+				p_pcp.y = rint( p_pcp.y );
 			    p->prevcp = pp->nextcp = p_pcp;
 			    SplineRefigure2(p->prev);
 			}
@@ -1637,8 +1641,8 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 		    len2 = sqrt((n->nextcp.x-n->me.x)*(n->nextcp.x-n->me.x) +
 				(n->nextcp.y-n->me.y)*(n->nextcp.y-n->me.y));
 		    len2 /= len1;
-		    n->nextcp.x = len2 * (n->me.x-n->nextcp.x) + n->me.x;
-		    n->nextcp.y = len2 * (n->me.y-n->nextcp.y) + n->me.y;
+		    n->nextcp.x = rint(len2 * (n->me.x-n->nextcp.x) + n->me.x);
+		    n->nextcp.y = rint(len2 * (n->me.y-n->nextcp.y) + n->me.y);
 		} else {
 		    nn = n->next->to;
 		    /* Find the intersection (if any) of the lines between */
@@ -1648,6 +1652,10 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 			double d1 = (n_ncp.x-n->me.x)*(nn->me.x-n->me.x) + (n_ncp.y-n->me.y)*(nn->me.y-n->me.y);
 			double d2 = (n_ncp.x-nn->me.x)*(n->me.x-nn->me.x) + (n_ncp.y-nn->me.y)*(n->me.y-nn->me.y);
 			if ( d1>=0 && d1<=len && d2>=0 && d2<=len ) {
+			    if ( rint(2*n->me.x)==2*n->me.x && rint(2*nn->me.x)==2*nn->me.x )
+				n_ncp.x = rint( n_ncp.x);
+			    if ( rint(2*n->me.y)==2*n->me.y && rint(2*nn->me.y)==2*nn->me.y )
+				n_ncp.y = rint( n_ncp.y);
 			    n->nextcp = nn->prevcp = n_ncp;
 			    SplineRefigure2(n->next);
 			}

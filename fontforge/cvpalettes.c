@@ -1839,6 +1839,28 @@ return( true );
 return( true );
 }
 
+void CVSetLayer(CharView *cv,int layer) {
+
+    if ( layer == ly_grid )
+	cv->b.drawmode = dm_grid;
+    else if (layer == ly_fore )
+	cv->b.drawmode = dm_fore;
+    else {
+	cv->b.drawmode = dm_back;
+	cv->b.layerheads[dm_back] = &cv->b.sc->layers[layer];
+    }
+    if ( cvlayers!=NULL && GDrawGetUserData(cvlayers)==cv ) {
+	if ( layer==ly_grid )
+	    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_EGrid), true );
+	else if ( layer==ly_fore )
+	    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_EFore), true );
+	else if ( layer==ly_back )
+	    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_EBack), true );
+	else
+	    GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_EBase+layer), true );
+    }
+}
+
 int CVPaletteMnemonicCheck(GEvent *event) {
     static struct strmatch { char *str; int cid; } strmatch[] = {
 /* GT: Foreground, make it short */
