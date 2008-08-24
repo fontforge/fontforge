@@ -2328,7 +2328,7 @@ void CVPaletteActivate(CharView *cv) {
     _CVPaletteActivate(cv,false);
 }
 
-void CVLayerPaletteCheck(SplineFont *sf) {
+void CV_LayerPaletteCheck(SplineFont *sf) {
     CharView *old;
 
     if ( cvlayers!=NULL ) {
