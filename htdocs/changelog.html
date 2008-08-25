@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 24-Aug-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,6 +47,31 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      25-August-2008 
+      <UL>
+	<LI>
+	  Turn off debugging if the user switches layers.
+	<LI>
+	  The truetype debugger really wanted to debug the foreground layer and not
+	  any other.
+	<LI>
+	  When validating a font, and double clicking to bring up find problems in
+	  a charview, then the layer setting of find problems was (usually) incorrect.
+	<LI>
+	  Add a command font.correctReferences() to python scripting to fixup cases
+	  of mixed outlines and references (outlines get moved into a newly created
+	  glyph and then a reference will be made to it). Also fix cases where the
+	  transformation matrix can't be expressed in truetype (scaling by 2 or more,
+	  for example).
+	<LI>
+	  Barry points out a typo introduced in the background layers patch which would
+	  cause crashes in fonts with many layers.
+	<LI>
+	  Minor improvements and bugfixes in resolving stem conflicts. Also, lists
+	  of HV stems are now built in stemdb.c, so rely on these data instead of doing
+	  a double work in autohint.c.
+      </UL>
+    <LI>
       24-August-2008
       <UL>
 	<LI>
@@ -85,6 +110,10 @@
 	  cyan, green, etc.
 	<LI>
 	  Memory problems with references, introduced recently, have been fixed.
+	<LI>
+	  I hope I'm now getting keysyms right for non-latin menu short cuts.
+	<LI>
+	  Typo in background layer patch could cause a crash in fonts with many layers.
 	<LI>
 	  Werner wants an $iscid variable to determine whether a font is a cid-keyed
 	  font or not.
