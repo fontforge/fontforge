@@ -2070,14 +2070,18 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    sc->layers[layer].fillfirst = paster->u.state.fillfirst;
 	}
 #endif
-	if (( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL || pasteinto==0 ) &&
-		sc->layers[layer].order2 &&
-		!sc->layers[layer].background &&
-		!sc->instructions_out_of_date &&
-		sc->ttf_instrs!=NULL ) {
-	    /* The normal change check doesn't respond properly to pasting a reference */
-	    SCClearInstrsOrMark(sc,layer,!*already_complained);
-	    *already_complained = true;
+	if ( sc->layers[layer].order2 &&
+		!sc->layers[layer].background ) {
+	    if ( paster->undotype==ut_statehint ) {
+		/* if they are pasting instructions, I hope they know what */
+		/*  they are doing... */
+	    } else if (( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL || pasteinto==0 ) &&
+		    !sc->instructions_out_of_date &&
+		    sc->ttf_instrs!=NULL ) {
+		/* The normal change check doesn't respond properly to pasting a reference */
+		SCClearInstrsOrMark(sc,layer,!*already_complained);
+		*already_complained = true;
+	    }
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *temp = SplinePointListCopy(paster->u.state.splines);
@@ -2113,19 +2117,24 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	/* Ignore any images, can't be in foreground level */
 	/* but might be hints */
 #endif
-	if ( paster->undotype==ut_statehint || paster->undotype==ut_statename )
+	if ( (paster->undotype==ut_statehint || paster->undotype==ut_statename ) &&
+		!sc->layers[layer].background ) {
 	    if ( !pasteinto ) {	/* Hints aren't meaningful unless we've cleared first */
 		ExtractHints(sc,paster->u.state.hints,true);
-		free(sc->ttf_instrs);
-		if ( paster->u.state.instrs_len!=0 && sc->layers[layer].order2 &&
-			InstrsSameParent(sc,paster->copied_from)) {
-		    sc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
-		    sc->ttf_instrs_len = paster->u.state.instrs_len;
-		} else {
-		    sc->ttf_instrs = NULL;
-		    sc->ttf_instrs_len = 0;
+		if ( sc->layers[layer].order2 ) {
+		    free(sc->ttf_instrs);
+		    if ( paster->u.state.instrs_len!=0 && sc->layers[layer].order2 &&
+			    InstrsSameParent(sc,paster->copied_from)) {
+			sc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
+			sc->ttf_instrs_len = paster->u.state.instrs_len;
+		    } else {
+			sc->ttf_instrs = NULL;
+			sc->ttf_instrs_len = 0;
+		    }
+		    sc->instructions_out_of_date = false;
 		}
 	    }
+	}
 	if ( paster->undotype==ut_statename ) {
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
@@ -2691,13 +2700,17 @@ return;
 	    cv->layerheads[dm_fore]->fillfirst = paster->u.state.fillfirst;
 	}
 #endif
-	if (( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL ) &&
-		cv->layerheads[cv->drawmode]->order2 &&
-		!cv->layerheads[cv->drawmode]->background &&
-		!cvsc->instructions_out_of_date &&
-		cvsc->ttf_instrs!=NULL ) {
-	    /* The normal change check doesn't respond properly to pasting a reference */
-	    SCClearInstrsOrMark(cvsc,CVLayer(cv),true);
+	if ( cv->layerheads[cv->drawmode]->order2 &&
+		!cv->layerheads[cv->drawmode]->background ) {
+	    if ( paster->undotype==ut_statehint ) {
+		/* if they are pasting instructions, I hope they know what */
+		/*  they are doing... */
+	    } else if (( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL ) &&
+		    !cvsc->instructions_out_of_date &&
+		    cvsc->ttf_instrs!=NULL ) {
+		/* The normal change check doesn't respond properly to pasting a reference */
+		SCClearInstrsOrMark(cvsc,CVLayer(cv),true);
+	    }
 	}
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
@@ -2722,16 +2735,20 @@ return;
 		cvsc->layers[ly].images = new;
 	    }
 	    SCOutOfDateBackground(cvsc);
-	} else if ( paster->undotype==ut_statehint && cv->container==NULL ) {
+	} else if ( paster->undotype==ut_statehint && cv->container==NULL &&
+		!cv->layerheads[cv->drawmode]->background ) {
 	    ExtractHints(cvsc,paster->u.state.hints,true);
-	    free(cvsc->ttf_instrs);
-	    if ( paster->u.state.instrs_len!=0 && cv->layerheads[cv->drawmode]->order2 &&
-		    InstrsSameParent(cvsc,paster->copied_from)) {
-		cvsc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
-		cvsc->ttf_instrs_len = paster->u.state.instrs_len;
-	    } else {
-		cvsc->ttf_instrs = NULL;
-		cvsc->ttf_instrs_len = 0;
+	    if ( cv->layerheads[cv->drawmode]->order2 ) {
+		free(cvsc->ttf_instrs);
+		if ( paster->u.state.instrs_len!=0 && cv->layerheads[cv->drawmode]->order2 &&
+			InstrsSameParent(cvsc,paster->copied_from)) {
+		    cvsc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
+		    cvsc->ttf_instrs_len = paster->u.state.instrs_len;
+		} else {
+		    cvsc->ttf_instrs = NULL;
+		    cvsc->ttf_instrs_len = 0;
+		}
+		cvsc->instructions_out_of_date = false;
 	    }
 	}
 	if ( paster->u.state.anchor!=NULL && !cvsc->searcherdummy )

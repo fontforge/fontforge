@@ -3156,6 +3156,8 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 	    spl->next = sc->layers[layer].splines;
 	    sc->layers[layer].splines = rf->layers[0].splines;
 	    rf->layers[0].splines = NULL;
+	    if ( sc->layers[layer].order2 && !sc->layers[layer].background )
+		SCClearInstrsOrMark(sc,layer,true);
 	}
     }
     SCRemoveDependent(sc,rf,layer);
