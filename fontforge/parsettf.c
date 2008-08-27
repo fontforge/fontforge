@@ -975,6 +975,7 @@ return( 0 );
     /* Apple says that 'typ1' is a valid code for a type1 font wrapped up in */
     /*  a truetype table structure, but gives no docs on what tables get used */
     /*  or how */ /* Turns out to be pretty simple */
+    /* typ1 is used for both type1 fonts and CID type1 fonts, I don't think a version of 'CID ' is actually used */
     if ( version==CHR('t','y','p','1') || version==CHR('C','I','D',' ')) {
 	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n") );
     } else if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
@@ -3919,6 +3920,21 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
     int i;
 
     fseek(ttf,info->typ1_start,SEEK_SET);
+/* There appear to be about 20 bytes of garbage (well, I don't know what they */
+/*  mean, so they are garbage to me) before the start of the PostScript. But */
+/*  it's not exactly 20. I've seen 22 and 24. So see if we can find "%!PS-Adobe" */
+/*  in the first few bytes of the file, and skip to there if found */
+    { char buffer[41];
+	fread(buffer,1,sizeof(buffer),ttf);
+	buffer[40] = '\0';
+	for ( i=39; i>=0; --i )
+	    if ( buffer[i]=='%' && buffer[i+1]=='!' )
+	break;
+	if ( i<0 )
+	    i = 0;
+	fseek(ttf,info->typ1_start+i,SEEK_SET);
+    }
+    
     tmp = tmpfile();
     for ( i=0; i<info->typ1_length; ++i )
 	putc(getc(ttf),tmp);

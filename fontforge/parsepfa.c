@@ -1566,7 +1566,7 @@ return;
     while ( isspace(*line)) ++line;
     endtok = NULL;
     if ( *line=='/' )
-	for ( endtok=line+1; !isspace(*endtok) && *endtok!='(' &&
+	for ( endtok=line+1; !isspace(*endtok) && *endtok!='(' && *endtok!='/' &&
 		*endtok!='{' && *endtok!='[' && *endtok!='\0'; ++endtok );
 
     if ( strstr(line,"/shareddict")!=NULL && strstr(line,"where")!=NULL ) {
