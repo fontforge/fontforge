@@ -3705,7 +3705,7 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->col_cnt = 4;
     mi->col_init = layersci;
 
-    md = gcalloc(3*(sf->layer_cnt+1),sizeof(struct matrix_data));
+    md = gcalloc(4*(sf->layer_cnt+1),sizeof(struct matrix_data));
     for ( i=j=0; i<sf->layer_cnt; ++i ) {
 	md[4*j  ].u.md_str  = copy(sf->layers[i].name);
 	md[4*j+1].u.md_ival = sf->layers[i].order2;
