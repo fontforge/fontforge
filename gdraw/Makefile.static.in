@@ -33,6 +33,11 @@ all: ../libs/libgdraw.a
 	ar cr ../libs/libgdraw.a $(libgdraw_OBJECTS)
 	$(RANLIB) ../libs/libgdraw.a
 
+%.o: %.c
+
+%.o: %.c $(srcdir)/gdrawP.h $(srcdir)/ggadgetP.h $(srcdir)/gwidgetP.h $(srcdir)/gxdrawP.h $(srcdir)/fontP.h
+	$(CC) $(CFLAGS) -c $<
+
 clean:
 	-rm -f *.o ../libs/libgdraw.a
 

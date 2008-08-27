@@ -44,6 +44,8 @@ CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DL
 	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
 
 %.lo: %.c
+
+%.lo: %.c $(srcdir)/gdrawP.h $(srcdir)/ggadgetP.h $(srcdir)/gwidgetP.h $(srcdir)/gxdrawP.h $(srcdir)/fontP.h
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 clean:
