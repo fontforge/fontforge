@@ -1378,7 +1378,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	}
     }
 
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	/* TrueType uses single points to move things around so ignore them */
 	if ( ss->first->next==NULL )
 	    /* Do Nothing */;
@@ -1406,7 +1406,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     }
 
     /* Different kind of "wrong direction" */
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]*ref->transform[3]<0 ||
 		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 	    sc->layers[layer].validation_state |= vs_flippedreferences|vs_known;
@@ -1420,7 +1420,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	sc->layers[layer].validation_state |= vs_toomanyhints|vs_known;
 
     memset(&lastpt,0,sizeof(lastpt));
-    for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
+    for ( ss=sc->layers[layer].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	for ( sp=ss->first; ; ) {
 	    /* If we're interpolating the point, it won't show up in the truetype */
 	    /*  points list and it need not be integral (often it will end in .5) */
@@ -1452,12 +1452,12 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     if ( pt_cnt>1500 )
 	sc->layers[layer].validation_state |= vs_toomanypoints|vs_known;
 
-    LayerUnAllSplines(&sc->layers[ly_fore]);
+    LayerUnAllSplines(&sc->layers[layer]);
 
     /* Only check the splines in the glyph, not those in refs */
     bound2 = (sc->parent->ascent + sc->parent->descent)/100.0;
     bound2 *= bound2;
-    for ( ss=sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[layer].splines, cnt=0; ss!=NULL; ss=ss->next ) {
 	first = NULL;
 	for ( s=ss->first->next ; s!=NULL && s!=first; s=s->to->next ) {
 	    if ( first==NULL )
@@ -1497,14 +1497,14 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	int rd, rdtest;
 
 	/* Already figured out two of these */
-	if ( sc->layers[ly_fore].splines==NULL ) {
+	if ( sc->layers[layer].splines==NULL ) {
 	    if ( pt_cnt>composit_pt_max )
 		sc->layers[layer].validation_state |= vs_maxp_toomanycomppoints|vs_known;
 	    if ( path_cnt>composit_path_max )
 		sc->layers[layer].validation_state |= vs_maxp_toomanycomppaths|vs_known;
 	}
 
-	for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
+	for ( ss=sc->layers[layer].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	    for ( sp=ss->first; ; ) {
 		++pt_cnt;
 		if ( sp->next==NULL )
@@ -1523,8 +1523,8 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	    sc->layers[layer].validation_state |= vs_maxp_instrtoolong|vs_known;
 
 	rd = 0;
-	for ( r=sc->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next, ++cnt ) {
-	    rdtest = RefDepth(r,ly_fore);
+	for ( r=sc->layers[layer].refs, cnt=0; r!=NULL; r=r->next, ++cnt ) {
+	    rdtest = RefDepth(r,layer);
 	    if ( rdtest>rd )
 		rd = rdtest;
 	}
