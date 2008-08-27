@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 24-Aug-2008 -->
+  <!-- AP: Last modified: 27-Aug-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1483,6 +1483,11 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TH colspan=2>comments</TH>
     </TR>
     <TR>
+      <TD><CODE>activeLayer</CODE></TD>
+      <TD colspan=2>Returns currently active layer in the glyph (as an integer).
+	May be set to an integer or a layer name to change the active layer.</TD>
+    </TR>
+    <TR>
       <TD><CODE>anchorPoints</CODE></TD>
       <TD colspan=2>Returns the list of anchor points in the glyph. Each anchor
 	point is a tuple of<BR>
@@ -2371,6 +2376,11 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TH>member</TH>
       <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>activeLayer</CODE></TD>
+      <TD colspan=2>Returns currently active layer in the font (as an integer).
+	May be set to an integer or a layer name to change the active layer.</TD>
     </TR>
     <TR>
       <TD><CODE>ascent</CODE></TD>

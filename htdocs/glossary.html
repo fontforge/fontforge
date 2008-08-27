@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 24-Aug-2008 -->
+  <!-- AP: Last modified: 25-Aug-2008 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -32,12 +32,59 @@
       <TD BGCOLOR=yellow><A NAME="A">A</A></TD>
       <TD><DL>
 	  <DT>
+	    <A NAME="abjad">Abjad</A>
+	  <DD>
+	    Abjad is the technical term for the type of writing system used by Semitic
+	    languages (Hebrew, Arabic, etc.), where there are glyphs for all the consonants
+	    but the reader must be prepared to guess what vowel to add between two
+	    consonants.
+	    <P>
+	    Both Hebrew and Arabic have optional vowel marks and are called "impure"
+	    abjads. Ancient Phoenician had nothing but consonants and is a "pure" abjad.
+	    <P>
+	    See Also: <A href="#alphabet">alphabet</A>, <A href="#abugida">abugida</A>,
+	    <A href="#syllabary">syllabary</A> and the relevant
+	    <A href="http://en.wikipedia.org/wiki/Abjad">Wikipedia article</A>.
+	  <DT>
+	    <A NAME="abugida">Abugida</A>
+	  <DD>
+	    An abugida is somewhere in between an <A HREF="#alphabet">alphabet</A> and
+	    a <A HREF="#syllabary">syllabary</A>. The Indic writing systems are probably
+	    the best known abugidas.
+	    <P>
+	    In most abugidas there are independant glyphs for the consonants, and each
+	    consonant is implicitly followed by a default vowel sound. All vowels other
+	    than the default will be marked by either diacritics or some other modification
+	    to the base consonant.
+	    <P>
+	    An abugida differs from a syllabary in that there is a common theme to the
+	    the images representing a syllable beginning with a given consonant (that
+	    is, the glyph for the consonant), while in a syllabary each syllable is distinct
+	    even if two start with a common consonant.
+	    <P>
+	    An abugida differs from an abjad in that vowels (other than the default)
+	    must be marked in the abugida.
+	    <P>
+	    See Also: <A href="#alphabet">alphabet</A>, <A href="#abjad">abjad</A>,
+	    <A href="#syllabary">syllabary</A> and the relevant
+	    <A href="http://en.wikipedia.org/wiki/Abugida">Wikipedia article</A>.
+	  <DT>
 	    <IMG SRC="sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right"><A NAME="advance-width">Advance
 	    Width</A>
 	  <DD>
 	    The distance between the start of this glyph and the start of the next glyph.
 	    Sometimes called the glyph's width. See also
 	    <A HREF="glossary.html#Vertical-Advance">Vertical Advance Width.</A>
+	  <DT>
+	    <A NAME="alphabet">Alphabet</A>
+	  <DD>
+	    A writing system where there are glyphs for all phonemes -- consonants and
+	    vowels alike -- and (in theory anyway) all phonemes in a word will be marked
+	    by an appropriate glyph.
+	    <P>
+	    See Also: <A href="#abjad">abjad</A>, <A href="#abugida">abugida</A>,
+	    <A href="#syllabary">syllabary</A> and the relevant
+	    <A href="http://en.wikipedia.org/wiki/Alphabet">Wikipedia article</A>.
 	  <DT>
 	    <A NAME="AAT">Apple Advanced Typography</A>
 	  <DD>
@@ -174,7 +221,8 @@
 	  <DT>
 	    <A NAME="CID-keyed-font">CID-keyed font</A>
 	  <DD>
-	    A <A HREF="#postscript">PostScript</A> font in which the glyphs
+	    A <A HREF="#postscript">PostScript</A> font in which the glyphs are index
+	    by CID and not by name.
 	  <DT>
 	    <A NAME="CJK">CJK</A>
 	  <DD>
@@ -359,6 +407,10 @@
 	    A collection of related <A HREF=#font>fonts</A>. Often including plain, italic
 	    and bold <A HREF="#style">styles</A>.
 	  <DT>
+	    FontForge
+	  <DD>
+	    This.
+	  <DT>
 	    <A NAME="FreeType" HREF="http://freetype.sf.net/">FreeType</A>
 	  <DD>
 	    A library for rasterizing fonts. Used extensively in FontForge to understand
@@ -367,8 +419,7 @@
 	  <DT>
 	    <A NAME="fractur">Fractur</A>
 	  <DD>
-	    The old black letter writing style used in Germany up until the end of world
-	    war II.<BR>
+	    The old black letter writing style used in Germany up until world war II.<BR>
 	    See also <A HREF="#gothic">gothic</A>.
 	  <DT>
 	    Fu&thorn;ark (<A NAME="Futhark">Futhark</A>)
@@ -629,12 +680,11 @@
 	    (FontForge's own term) PostScript type3 fonts and SVG fonts allow for more
 	    drawing possibilities than normal fonts. Normal fonts may only be filled
 	    with a single color inherited from the graphics environment. These two fonts
-	    may be filled with several different colors, stroked, and in the case of
-	    PostScript fonts may also draw bitmap images. FontForge can be configured
-	    to support these fonts (it does not do so by default because this takes up
-	    more memory).
+	    may be filled with several different colors, stroked, include images, have
+	    gradient fills, etc.. FontForge can be configured to support these fonts
+	    (it does not do so by default because this takes up more memory).
 	    <BLOCKQUOTE>
-	      <PRE>$ configure --with-multilayer
+	      <PRE>$ configure --with-type3
 $ make
 $ make install
 </PRE>
@@ -646,7 +696,8 @@ $ make install
 		<A HREF="multilayer.html" TARGET="_top">general information</A>
 	      <LI>
 		Setting font type with
-		<A HREF="fontinfo.html#PS-General" TARGET="_top">Element-&gt;Font Info</A>
+		<A HREF="fontinfo.html#Layers" TARGET="_top">Element-&gt;Font
+		Info-&gt;Layers</A>
 	    </UL>
 	  <DT>
 	    <A NAME="Multi-Master">Multiple Master </A>Font
@@ -759,8 +810,8 @@ $ make install
 	    PfaEdit
 	  <DD>
 	    This was the early name for FontForge. The original conception was that it
-	    would only edit type1 fonts (hence then name), it quickly metamorphosed beyond
-	    that point, but it took me three years to rename it.
+	    would only edit type1 ASCII fonts (hence then name), it quickly metamorphosed
+	    beyond that point, but it took me three years to rename it.
 	  <DT>
 	    Phantom points
 	  <DD>
@@ -768,8 +819,9 @@ $ make install
 	    specified in the contours which make up the glyph. These are called phantom
 	    points. One of these points represents the left side bearing, and the other
 	    the advance width of the glyph. Truetype instructions (hints) are allowed
-	    to move these points around just as any other points may be moved. Early
-	    versions of TrueType supplied just these two phantoms, more
+	    to move these points around just as any other points may be moved -- thus
+	    changing the left-side-bearing or the advance width. Early versions of TrueType
+	    supplied just these two phantoms, more
 	    <A HREF="http://www.microsoft.com/typography/otspec/instgly.doc">recent versions
 	    </A>also supply a phantom for the top sidebearing and a phantom for the vertical
 	    advance width.
@@ -779,6 +831,14 @@ $ make install
 	    A unit of length defined (in the US at least) to be 35/83cm (or approximately
 	    1/6th of an inch). This was used for measuring the length of lines of text
 	    (as "30 picas and 4 points long"), but not for measuring font heights.
+	    <P>
+	    In Renaissance typography, before there were points, sizes of type had
+	    <A name="type-size-names">names</A>, and "pica" was used in this context.
+	    As: "Great Canon", "Double Pica", "Great Primer", "English", "Pica", "Primer",
+	    "Small Pica", "Brevier", "Nonpareil" and "Pearl" (each name representing
+	    a progressively smaller size of type). and
+	    <A href="http://en.wikipedia.org/wiki/Alphabet">See Caslon's type specimen
+	    sheet on Wikipedia.</A>
 	  <DT>
 	    <A NAME="pica-pt">Pica</A> point
 	  <DD>
@@ -805,16 +865,17 @@ $ make install
 	    body. I believe that computer fonts tend to ignore this, so presumably european
 	    printers now set with more leading.
 	    <P>
-	    As far as I can tell, computers tend to work in pica points (but this may
-	    be because I am in the US) -- and often not even that, PostScript uses a
-	    unit of 1/72nd of an inch.
+	    As far as I can tell, computers tend to work in approximations to pica points
+	    (but this may be because I am in the US), PostScript uses a unit of 1/72nd
+	    of an inch.
 	    <P>
-	    Originally fonts were not described by point size, but by name. It was not
-	    until the 1730s Pierre Fournier that created the point system for specifying
-	    font heights. This was later improved upon by Fran&ccedil;ois Didiot (whence
-	    the name of the point). In 1878 the Chicago Type Foundry first used a point
-	    system in the US. In 1886 the US point was standardized -- the pica was defined
-	    to be 35/83cm, and the pica point defined to be 1/12th of that.
+	    Originally fonts were not described by point size, but by
+	    <A HREF="#type-size-names">name</A>. It was not until the 1730s that Pierre
+	    Fournier that created the point system for specifying font heights. This
+	    was later improved upon by Fran&ccedil;ois Didiot (whence the name of the
+	    point). In 1878 the Chicago Type Foundry first used a point system in the
+	    US. In 1886 the US point was standardized -- the pica was defined to be 35/83cm,
+	    and the pica point defined to be 1/12th of that.
 	  <DT>
 	    <A NAME="point-size">Point Size</A>
 	  <DD>
@@ -833,9 +894,9 @@ $ make install
 	    <A NAME="postScript">PostScript</A>
 	  <DD>
 	    PostScript is a page-layout language used by many printers. The language
-	    contains the specifications of several different font formats. The main manual
-	    has a section describing how <A HREF="overview.html#PT">PostScript differs
-	    from TrueType</A>.
+	    contains the specifications of several different font formats. The main
+	    (FontForge) manual has a section describing how
+	    <A HREF="overview.html#PT">PostScript differs from TrueType</A>.
 	    <UL>
 	      <LI>
 		Type 1 -- This is the old standard for PostScript fonts. Such a font generally
@@ -853,13 +914,17 @@ $ make install
 		glyphs may be encoded).
 	      <LI>
 		Type 0 -- This format is used for collecting many sub-fonts (of Type 1, 2
-		or 3) into one big font, and was used for CJK or Unicode fonts.
+		or 3) into one big font with a multi-byte encoding, and was used for CJK
+		or Unicode fonts.
 	      <LI>
 		Type 42 -- A <A HREF="#truetype">TrueType</A> font wrapped up in PostScript.
 		Sort of the opposite from OpenType.
 	      <LI>
 		CID -- This format is used for CJK fonts with large numbers of glyphs. The
-		glyphs themselves are encoded either as type1 or type2.
+		glyphs themselves are specified either as type1 or type2 glyph format. The
+		CID font itself has no encoding, just a mapping from CID (a number) to glyph.
+		An set of external CMAP files are used to provide appropriate encodings as
+		needed.
 	    </UL>
 	</DL>
       </TD>
@@ -879,7 +944,8 @@ $ make install
 	    <A NAME="Reference">Reference</A>
 	  <DD>
 	    A <A HREF="overview.html#References">reference</A> is a way of storing the
-	    outlines of one glyph in another (for example in accented glyphs).
+	    outlines of one glyph in another (for example in accented glyphs). Sometimes
+	    called a "componant".
 	  <DT>
 	    <IMG SRC="sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right"><A NAME="rsb">Right
 	    side bearing</A>
@@ -899,9 +965,9 @@ $ make install
 	  <DT>
 	    Script
 	  <DD>
-	    A <A HREF="overview.html#Scripts">script</A> is a glyph set and associated
-	    rules for putting letters together. Latin, arabic, katakana and hanja are
-	    all scripts.
+	    A <A HREF="overview.html#Scripts">script</A> is a character set and associated
+	    rules for putting characters together. Latin, arabic, katakana and hanja
+	    are all scripts.
 	  <DT>
 	    <A NAME="serif">Serif</A>
 	    <TABLE ALIGN=RIGHT>
@@ -954,6 +1020,20 @@ $ make install
 	    <A HREF="sfdformat.html">here</A>. As of 14 May 2008 the format has been
 	    registered with IANA for a MIME type:
 	    <A HREF="http://www.iana.org/assignments/media-types/application/">application/vnd.font-fontforge-sfd</A>.
+	    <P>
+	    Other people use sfd too. (Unfortunately)
+	    <UL>
+	      <LI>
+		Tops-10, on the Digital PDP-10 used sfd to mean "Sub File Directory". Tops-10
+		made a distinction between top-level (home) directories, called "user file
+		directories", and sub-directories.
+	      <LI>
+		TeX uses it to mean "Sub Font Definition" where a TeX sfd file contains
+		information on how to break a big CJK or Unicode font up into small sub-fonts,
+		each with a 1 byte encoding which TeX (or older versions of TeX) needed.
+	      <LI>
+		<A href="http://filext.com/file-extension/SFD">Others...</A>
+	    </UL>
 	  <DT>
 	    <A NAME="SFNT">SFNT</A>
 	  <DD>
@@ -1057,10 +1137,14 @@ $ make install
 	    <A NAME="syllabary">Syllabary</A>
 	  <DD>
 	    A syllabary is a phonetic writing system like an alphabet. Unlike an alphabet
-	    the sound-unit which is written is a syllable rather than a letter. In Japanese
+	    the sound-unit which is written is a syllable rather than a phoneme. In Japanese
 	    KataKana the sound "ka" is represented by one glyph. Syllabaries tend to
-	    be bigger than alphabets (KataKana requires about 60 different characters,
-	    while the Korean Hangul requires tens of thousands).
+	    be bigger than alphabets (Japanese KataKana requires about 60 different
+	    characters, while the Korean Hangul requires tens of thousands).
+	    <P>
+	    See Also: <A href="#abjad">abjad</A>, <A href="#abugida">abugida</A>,
+	    <A href="#alphabet">alphabet</A> and the relevant
+	    <A href="http://en.wikipedia.org/wiki/S yllabary">Wikipedia article</A>.
 	</DL>
       </TD>
     </TR>
@@ -1084,7 +1168,7 @@ $ make install
 	    A type of font invented by Apple and shared with MicroSoft. It specifies
 	    outlines with second degree (quadratic) <A HREF="#bezier">B&eacute;zier</A>
 	    curves, contains innovative hinting controls, and an expandable series of
-	    tables for containing whatever additional information is deemed imported
+	    tables for containing whatever additional information is deemed important
 	    to the font.
 	    <P>
 	    Apple and Adobe/MicroSoft have expanded these tables in different ways to
