@@ -3324,6 +3324,7 @@ static int ApplyAnchorPosAtPos(struct lookup_subtable *sub,struct lookup_data *d
 return( any ? pos+1 : 0 );
 	ap1->ticked = true;
 
+/* This probably doesn't work for vertical text */
 	data->str[npos].vr.yoff = data->str[pos].vr.yoff +
 		rint((ap1->me.y - ap2->me.y) * data->scale);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -3339,7 +3340,8 @@ return( any ? pos+1 : 0 );
 #endif
 	} else {
 	    data->str[npos].vr.xoff = data->str[pos].vr.xoff +
-		    rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale );
+		    rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale -
+		    data->str[pos].vr.h_adv_off);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    data->str[npos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
 			FigureDeviceTable(&ap2->xadjust,data->pixelsize);
