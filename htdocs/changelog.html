@@ -47,6 +47,27 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      28-August-2008 
+      <UL>
+	<LI>
+	  The Layers pane of Font Info randomly wrote memory when it was
+	  initialize. This could cause crashes, and who knows what weird
+	  behavior.
+	<LI>
+	  Validate spent half its time validating the foreground layer and half
+	  validating the current layer. This could cause crashes if the current
+	  layer was not the foreground.
+	<LI>
+	  Fixed a bug in parsing old style CID files. (those with type1
+	  charstrings)
+	<LI>
+	  FontForge's OpenType layout engine probably didn't do the right
+	  thing in anchor positioning of mark-to-base lookups when the base
+	  glyph had been moved by a previous GPOS lookup.
+	<LI>
+	  Still missing some unicode ranges from 5.1.
+      </UL>
+    <LI>
       25-August-2008 
       <UL>
 	<LI>
