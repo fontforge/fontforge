@@ -665,7 +665,7 @@ typedef struct generic_asm {		/* Apple State Machine */
 
 struct opentype_str {
     struct splinechar *sc;
-    struct vr vr;		/* Scaled and rounded gpos modifications */
+    struct vr vr;		/* Scaled and rounded gpos modifications (device table info included in xoff, etc. not in adjusts) */
     struct kernpair *kp;
     struct kernclass *kc;
     int16 advance_width;	/* Basic advance, modifications in vr, scaled and rounded */
