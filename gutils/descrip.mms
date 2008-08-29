@@ -7,8 +7,7 @@ libgutil_OBJECTS =divisors.obj,dynamic.obj,fsys.obj,gimage.obj,gimageread.obj\
  gimagereadxpm.obj,gimagewritebmp.obj,gimagewritegimage.obj,\
  gimagewritejpeg.obj,gimagewritepng.obj,\
  gimagewritexbm.obj,gwwintl.obj,gio.obj,giofile.obj,gioftp.obj,giohosts.obj,\
- giomime.obj,giothread.obj,giotrans.obj
-
+ giomime.obj,giothread.obj,giotrans.obj,gcol.obj
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
 	/define=("NOTHREADS=1","_NO_XKB=1","_STATIC_LIBFREETYPE=1",\
@@ -51,3 +50,4 @@ giohosts.obj : giohosts.c
 giomime.obj : giomime.c
 giothread.obj : giothread.c
 giotrans.obj : giotrans.c
+gcol.obj : gcol.c
