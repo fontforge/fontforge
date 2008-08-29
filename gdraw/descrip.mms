@@ -11,7 +11,7 @@ libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
  gmenu.obj,gprogress.obj,gpsdraw.obj,gpstxtinit.obj,gradio.obj,gresource.obj,\
  gresourceimage.obj,gsavefiledlg.obj,gscrollbar.obj,gtabset.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj,ghvbox.obj,\
- gmatrixedit.obj,gspacer.obj
+ gmatrixedit.obj,gspacer.obj,ctlvalues.obj,gcolor.obj,xkeysyms_unicode.obj
 
 libgdraw_OBJECTS1=gdrawable.obj
 
@@ -71,3 +71,6 @@ gmatrixedit.obj : gmatrixedit.c
 gspacer.obj : gspacer.c
 gdrawable.obj : gdrawable.c
 gdrawgimage.obj : gdrawgimage.c
+ctlvalues.obj : ctlvalues.c
+gcolor.obj : gcolor.c
+xkeysyms_unicode.obj : xkeysyms_unicode.c
