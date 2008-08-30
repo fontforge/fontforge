@@ -1672,13 +1672,12 @@ static void GXDrawGetPointerPosition(GWindow w, GEvent *ret) {
     ret->u.mouse.y = y;
 }
 
-static GWindow GXDrawGetPointerWindow(GWindow w) {
+static Window _GXDrawGetPointerWindow(GWindow w) {
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
     int junk;
     Window parent, child, wjunk;
     int x, y; unsigned int state;
-    void *ret;
 
     parent = gw->display->groot->w;
     forever {
@@ -1689,6 +1688,16 @@ static GWindow GXDrawGetPointerWindow(GWindow w) {
     break;
 	parent = child;
     }
+return( parent );
+}
+
+static GWindow GXDrawGetPointerWindow(GWindow w) {
+    GXWindow gw = (GXWindow) w;
+    Display *display = gw->display->display;
+    void *ret;
+    Window parent;
+
+    parent = _GXDrawGetPointerWindow(w);
     if ( (gw->w&0xfff00000) == (parent&0xfff00000)) {
 	/* It is one of our windows, so it is safe to look for it */
 	if ( XFindContext(display,parent,gw->display->mycontext,(void *) &ret)==0 )
@@ -3411,7 +3420,7 @@ static void GXDrawPostDragEvent(GWindow w,GEvent *mouse,enum event_type et) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
     GEvent e;
-    Window parent=None, child;
+    Window child, curwin;
     int x,y;
     void *vd;
     GWindow destw = NULL;
@@ -3422,55 +3431,48 @@ static void GXDrawPostDragEvent(GWindow w,GEvent *mouse,enum event_type et) {
     if ( x+y < 4 && et==et_drag )
 return;
 
-    /* Are we still within the original window? easy check without using server*/
-    if ( mouse->u.mouse.x>=0 && mouse->u.mouse.y>=0 &&
-	    mouse->u.mouse.x<gw->pos.width && mouse->u.mouse.y<gw->pos.height ) {
-	if ( gdisp->last_dd.w!=None && gdisp->last_dd.w!=gw->w )
-	    gxdrawSendDragOut(gdisp);
+    curwin = _GXDrawGetPointerWindow(w);
+
+    if ( gdisp->last_dd.w!=None && gdisp->last_dd.w!=curwin )
+	gxdrawSendDragOut(gdisp);
+
+    /* Are we still within the original window? */
+    if ( curwin == gw->w ) {
 	e.type = et;
 	x = e.u.drag_drop.x = mouse->u.mouse.x;
 	y = e.u.drag_drop.y = mouse->u.mouse.y;
 	(gw->eh)(w, &e);
     } else {
-	parent = gdisp->root; child = None;
-	XTranslateCoordinates(gdisp->display,gw->w,parent,
+	XTranslateCoordinates(gdisp->display,gw->w,curwin,
 		mouse->u.mouse.x,mouse->u.mouse.y,
 		&x,&y,&child);
-	while ( child!=None ) {
-	    Window grandp = parent; parent = child;
-	    XTranslateCoordinates(gdisp->display,grandp,parent,
-		    x,y,
-		    &x,&y,&child);
-	}
-	if ( gdisp->last_dd.w!=None && gdisp->last_dd.w!=parent )
-	    gxdrawSendDragOut(gdisp);
 
 	e.type = et;
 	e.u.drag_drop.x = x;
 	e.u.drag_drop.y = y;
-	e.native_window = (void *) parent;
+	e.native_window = (void *) curwin;
 
-	if ( (parent&0xfff00000)==(gw->w&0xfff00000) &&
-		XFindContext(gdisp->display,parent,gdisp->mycontext,(void *) &vd)==0 ) {
+	if ( (curwin&0xfff00000)==(gw->w&0xfff00000) &&
+		XFindContext(gdisp->display,curwin,gdisp->mycontext,(void *) &vd)==0 ) {
 	    destw = (GWindow) vd;
 	    /* is it one of our windows? If so use our own event mechanism */
 	    if ( destw->eh!=NULL )
 		(destw->eh)(destw,&e);
-	} else if ( parent!=gdisp->root ) {
+	} else if ( curwin!=gdisp->root ) {
 	    XEvent xe;
 	    xe.type = ClientMessage;
 	    xe.xclient.display = gdisp->display;
-	    xe.xclient.window = parent;
+	    xe.xclient.window = curwin;
 	    xe.xclient.message_type = gdisp->atoms.drag_and_drop;
 	    xe.xclient.format = 32;
 	    xe.xclient.data.l[0] = et;
 	    xe.xclient.data.l[1] = x;
 	    xe.xclient.data.l[2] = y;
-	    XSendEvent(gdisp->display,parent,False,0,&xe);
+	    XSendEvent(gdisp->display,curwin,False,0,&xe);
 	}
     }
     if ( et!=et_drop ) {
-	gdisp->last_dd.w = parent;
+	gdisp->last_dd.w = curwin;
 	gdisp->last_dd.gw = destw;
 	gdisp->last_dd.x = mouse->u.mouse.x;
 	gdisp->last_dd.y = mouse->u.mouse.y;
