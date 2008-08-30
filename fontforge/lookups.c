@@ -1854,7 +1854,7 @@ return( newclasses );
 }
 
 static OTLookup *_OTLookupCopyInto(struct sfmergecontext *mc,
-	OTLookup *from_otl, OTLookup *before);
+	OTLookup *from_otl, OTLookup *before, int do_contents);
 static OTLookup *OTLookupCopyNested(struct sfmergecontext *mc,
 	OTLookup *from_otl) {
     char *newname;
@@ -1873,7 +1873,7 @@ return( mc->lks[l].to );
     to_nested_otl = SFFindLookup(mc->sf_to,newname);
     free(newname);
     if ( to_nested_otl==NULL )
-	to_nested_otl = _OTLookupCopyInto(mc, from_otl, (OTLookup *) -1 );
+	to_nested_otl = _OTLookupCopyInto(mc, from_otl, (OTLookup *) -1, true );
 return( to_nested_otl );
 }
 
@@ -2314,28 +2314,39 @@ static void OrderNewLookup(SplineFont *into_sf,OTLookup *otl,OTLookup *before) {
 }
 
 static OTLookup *_OTLookupCopyInto(struct sfmergecontext *mc,
-	OTLookup *from_otl, OTLookup *before) {
+	OTLookup *from_otl, OTLookup *before, int do_contents) {
     OTLookup *otl;
     struct lookup_subtable *sub, *last, *from_sub;
     int scnt, l;
 
     for ( l=0; l<mc->lcnt; ++l ) {
-	if ( mc->lks[l].from == from_otl )
+	if ( mc->lks[l].from == from_otl ) {
+	    if ( mc->lks[l].old )
 return( mc->lks[l].to );
+	    else
+    break;
+	}
     }
 
     if ( l>=mc->lmax )
 	mc->lks = grealloc(mc->lks,(mc->lmax += 20)*sizeof(struct lookup_cvt));
     mc->sf_to->changed = true;
 
-    otl = chunkalloc(sizeof(OTLookup));
-    *otl = *from_otl;
-    memset(&mc->lks[l],0,sizeof(mc->lks[l]));
-    mc->lks[l].from = from_otl; mc->lks[l].to = otl; ++mc->lcnt;
-    otl->lookup_name = strconcat(mc->prefix,from_otl->lookup_name);
-    otl->features = FeatureListCopy(from_otl->features);
-    otl->next = NULL; otl->subtables = NULL;
-    OrderNewLookup(mc->sf_to,otl,before);
+    if ( l>=mc->lcnt ) {
+	otl = chunkalloc(sizeof(OTLookup));
+	*otl = *from_otl;
+	memset(&mc->lks[l],0,sizeof(mc->lks[l]));
+	mc->lks[l].from = from_otl; mc->lks[l].to = otl; ++mc->lcnt;
+	otl->lookup_name = strconcat(mc->prefix,from_otl->lookup_name);
+	otl->features = FeatureListCopy(from_otl->features);
+	otl->next = NULL; otl->subtables = NULL;
+	OrderNewLookup(mc->sf_to,otl,before);
+	if ( !do_contents )
+	    FIOTLookupCopyInto(mc->sf_to,mc->sf_from, from_otl, otl, scnt, before);
+    } else
+	otl = mc->lks[l].to;
+    if ( !do_contents )
+return( otl );
 
     last = NULL;
     scnt = 0;
@@ -2414,7 +2425,7 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
     list[0] = from_otl; list[1] = NULL;
     mc.prefix = NeedsPrefix(into_sf,from_sf,list)
 	    ? strconcat(from_sf->fontname,"-") : copy("");
-    newotl = _OTLookupCopyInto(&mc,from_otl,(OTLookup *) -2);
+    newotl = _OTLookupCopyInto(&mc,from_otl,(OTLookup *) -2,true);
     free(mc.lks);
     free(mc.prefix);
 return( newotl );
@@ -2422,7 +2433,7 @@ return( newotl );
 
 void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	OTLookup **list, OTLookup *before) {
-    int i;
+    int i, do_contents;
     struct sfmergecontext mc;
 
     memset(&mc,0,sizeof(mc));
@@ -2432,8 +2443,13 @@ void OTLookupsCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	    ? strconcat(from_sf->fontname,"-") : copy("");
     for ( i=0; list[i]!=NULL; ++i );
     mc.lks = galloc((mc.lmax=i+5)*sizeof(struct lookup_cvt));
-    for ( i=0; list[i]!=NULL; ++i )
-	(void) _OTLookupCopyInto(&mc,list[i],before);
+    /* First create all the lookups and position them in the right order */
+    /*  then create subtables (which may in turn create some new lookups */
+    /*  for contextual lookups which invoke other lookups, don't care how */
+    /*  those nested lookups are ordered) */
+    for ( do_contents=0; do_contents<2; ++do_contents )
+	for ( i=0; list[i]!=NULL; ++i )
+	    (void) _OTLookupCopyInto(&mc,list[i],before,do_contents);
     free(mc.lks);
     free(mc.prefix);
 }
@@ -4331,7 +4347,7 @@ static void NOFI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 }
 
 static void NOFI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl, OTLookup *to_otl, int scnt, OTLookup *before) {
+	OTLookup *from_otl, OTLookup *to_otl, int scnt, OTLookup *before ) {
 }
 
 static void NOFI_Destroy(SplineFont *sf) {
