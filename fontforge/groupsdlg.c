@@ -30,12 +30,28 @@
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>
+#include <math.h>
 
 
 
 /******************************************************************************/
 /******************************** Group Widget ********************************/
 /******************************************************************************/
+
+#define COLOR_CHOOSE	(-10)
+static GTextInfo std_colors[] = {
+    { (unichar_t *) N_("Select by Color"), NULL, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
+    { (unichar_t *) N_("Color|Choose..."), NULL, 0, 0, (void *) COLOR_CHOOSE, NULL, false, true, false, false, false, false, true },
+    { (unichar_t *) N_("Color|Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
+    { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
+    { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, false, true },
+    { NULL, &green_image, 0, 0, (void *) 0x00ff00, NULL, false, true },
+    { NULL, &blue_image, 0, 0, (void *) 0x0000ff, NULL, false, true },
+    { NULL, &yellow_image, 0, 0, (void *) 0xffff00, NULL, false, true },
+    { NULL, &cyan_image, 0, 0, (void *) 0x00ffff, NULL, false, true },
+    { NULL, &magenta_image, 0, 0, (void *) 0xff00ff, NULL, false, true },
+    { NULL, NULL }
+};
 
 struct groupdlg {
     unsigned int oked: 1;
@@ -52,11 +68,12 @@ struct groupdlg {
     GWindow gw,v;
     GGadget *vsb, *hsb, *cancel, *ok, *compact;
     GGadget *newsub, *delete, *line1, *gpnamelab, *gpname, *glyphslab, *glyphs;
-    GGadget *idlab, *idname, *iduni, *set, *select, *unique, *line2;
+    GGadget *idlab, *idname, *iduni, *set, *select, *unique, *colour, *line2;
     int fh, as;
     GFont *font;
     FontView *fv;
     void (*select_callback)(struct groupdlg *);
+    GTimer *showchange;
 };
 
 extern int _GScrollBar_Width;
@@ -386,6 +403,8 @@ static void GroupResize(struct groupdlg *grp,GEvent *event) {
 	GGadgetMove(grp->select,wsize.x,wsize.y+offy);
 	GGadgetGetSize(grp->unique,&wsize);
 	GGadgetMove(grp->unique,wsize.x,wsize.y+offy);
+	GGadgetGetSize(grp->colour,&wsize);
+	GGadgetMove(grp->colour,wsize.x,wsize.y+offy);
 	GGadgetGetSize(grp->line2,&wsize);
 	GGadgetMove(grp->line2,wsize.x,wsize.y+offy);
     } else {
@@ -785,6 +804,7 @@ return;
 	GGadgetSetEnabled(grp->set,false);
 	GGadgetSetEnabled(grp->select,false);
 	GGadgetSetEnabled(grp->unique,false);
+	GGadgetSetEnabled(grp->colour,false);
     } else {
 	unichar_t *glyphs = uc_copy(current->glyphs);
 	GGadgetSetTitle8(grp->gpname,current->name);
@@ -801,7 +821,26 @@ return;
 	GGadgetSetEnabled(grp->set,current->kid_cnt==0);
 	GGadgetSetEnabled(grp->select,current->kid_cnt==0);
 	GGadgetSetEnabled(grp->unique,current->parent==NULL || !current->parent->unique);
+	GGadgetSetEnabled(grp->colour,current->kid_cnt==0);
     }
+}
+
+static void GroupShowChange(struct groupdlg *grp) {
+    if ( GroupFinishOld(grp))
+	GDrawRequestExpose(grp->v,NULL,false);
+    grp->showchange = NULL;
+}
+
+static int Group_GlyphListChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct groupdlg *grp = GDrawGetUserData(GGadgetGetWindow(g));
+	const unichar_t *glyphs = _GGadgetGetTitle(g);
+	GGadgetSetEnabled(grp->newsub,*glyphs=='\0');
+	if ( grp->showchange!=NULL )
+	    GDrawCancelTimer(grp->showchange);
+	grp->showchange = GDrawRequestTimer(grp->gw,500,0,NULL);
+    }
+return( true );
 }
 
 static int Group_ToSelection(GGadget *g, GEvent *e) {
@@ -837,6 +876,15 @@ static int Group_ToSelection(GGadget *g, GEvent *e) {
 			    fv->b.selected[pos] = true;
 		    }
 		}
+	    } else if ( strncasecmp(nm,"color=#",strlen("color=#"))==0 ) {
+		Color col = strtoul(nm+strlen("color=#"),NULL,16);
+		int gid; SplineChar *sc;
+
+		for ( pos=0; pos<fv->b.map->enccount; ++pos )
+		    if ( (gid=fv->b.map->map[pos])!=-1 && 
+			    (sc = sf->glyphs[gid])!=NULL &&
+			    sc->color == col )
+			fv->b.selected[pos] = true;
 	    } else {
 		if (( pos = SFFindSlot(sf,fv->b.map,-1,nm))!=-1 ) {
 		    if ( found==-1 ) found = pos;
@@ -939,14 +987,56 @@ static int Group_FromSelection(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int Group_AddColor(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct groupdlg *grp = GDrawGetUserData(GGadgetGetWindow(g));
+	GTextInfo *ti = GGadgetGetListItemSelected(g);
+	int set=false;
+	Color xcol=0;
+
+	if ( ti==NULL )
+	    /* Can't happen */;
+	else if ( ti->userdata == (void *) COLOR_CHOOSE ) {
+	    struct hslrgb col, font_cols[6];
+	    memset(&col,0,sizeof(col));
+	    col = GWidgetColor(_("Pick a color"),&col,SFFontCols(grp->fv->b.sf,font_cols));
+	    if ( col.rgb ) {
+		xcol = (((int) rint(255.*col.r))<<16 ) |
+			    (((int) rint(255.*col.g))<<8 ) |
+			    (((int) rint(255.*col.b)) );
+		set = true;
+	    }
+	} else {
+	    xcol = (intpt) ti->userdata;
+	    set = true;
+	}
+
+	if ( set ) {
+	    char buffer[40]; unichar_t ubuf[40];
+	    sprintf(buffer," color=#%06x", xcol );
+	    uc_strcpy(ubuf,buffer);
+	    GTextFieldReplace(grp->glyphs,ubuf);
+	    if ( grp->showchange==NULL )
+		GroupShowChange(grp);
+	}
+	GGadgetSelectOneListItem(g,0);
+    }
+return( true );
+}
+
 static int Group_NewSubGroup(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct groupdlg *grp = GDrawGetUserData(GGadgetGetWindow(g));
 	Group *new_grp;
 	if ( !GroupFinishOld(grp))
 return( true );
-	if ( grp->oldsel==NULL || grp->oldsel->glyphs!=NULL )
+	GDrawRequestExpose(grp->v,NULL,false);
+	if ( grp->oldsel==NULL )
 return( true );
+	if ( grp->oldsel->glyphs!=NULL && grp->oldsel->glyphs!='\0' ) {
+	    GGadgetSetEnabled(grp->newsub,false);
+return( true );
+	}
 	grp->oldsel->kids = grealloc(grp->oldsel->kids,(++grp->oldsel->kid_cnt)*sizeof(Group *));
 	grp->oldsel->kids[grp->oldsel->kid_cnt-1] = new_grp = chunkalloc(sizeof(Group));
 	new_grp->parent = grp->oldsel;
@@ -1002,6 +1092,9 @@ return( true );
       case et_char:
 return( GroupChar(grp,event));
       break;
+      case et_timer:
+	GroupShowChange(grp);
+      break;
       case et_resize:
 	if ( event->u.resize.sized )
 	    GroupResize(grp,event);
@@ -1052,9 +1145,9 @@ void DefineGroups(FontView *fv) {
     struct groupdlg *grp;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
-    GTextInfo label[16];
-    int h, k;
+    GGadgetCreateData gcd[20];
+    GTextInfo label[19];
+    int h, k,kk;
 
     grp = gcalloc(1,sizeof(*grp));
     grp->fv = fv;
@@ -1080,7 +1173,7 @@ void DefineGroups(FontView *fv) {
     pos.height = h = GDrawPointsToPixels(NULL,482);
     grp->gw = GDrawCreateTopWindow(NULL,&pos,displaygrp_e_h,grp,&wattrs);
 
-    grp->bmargin = GDrawPointsToPixels(NULL,224)+GDrawPointsToPixels(grp->gw,_GScrollBar_Width);
+    grp->bmargin = GDrawPointsToPixels(NULL,248)+GDrawPointsToPixels(grp->gw,_GScrollBar_Width);
 
     GroupWCreate(grp,&pos);
 
@@ -1139,6 +1232,7 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.pos.width = GDrawPixelsToPoints(NULL,pos.width)-10; gcd[k].gd.pos.height = 4*13+4;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    gcd[k].gd.handle_controlevent = Group_GlyphListChanged;
     gcd[k++].creator = GTextAreaCreate;
 
     gcd[k].gd.pos.x = 5;
@@ -1192,9 +1286,20 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.popup_msg = (unichar_t *) _("Glyph names (or unicode code points) may occur at most once in this group and any of its sub-groups");
     gcd[k++].creator = GCheckBoxCreate;
 
+    for ( kk=0; kk<3; ++kk )
+	std_colors[kk].text = (unichar_t *) S_((char *) std_colors[kk].text);
+    std_colors[1].image = GGadgetImageCache("colorwheel.png");
+    std_colors[0].selected = true;
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.label = &std_colors[0];
+    gcd[k].gd.u.list = std_colors;
+    gcd[k].gd.handle_controlevent = Group_AddColor;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    gcd[k++].creator = GListButtonCreate;
+
     gcd[k].gd.pos.width = GDrawPixelsToPoints(NULL,pos.width)-20;
     gcd[k].gd.pos.x = 10;
-    gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+17;
+    gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+28;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLineCreate;
 
@@ -1232,9 +1337,10 @@ void DefineGroups(FontView *fv) {
     grp->set = gcd[10].ret;
     grp->select = gcd[11].ret;
     grp->unique = gcd[12].ret;
-    grp->line2 = gcd[13].ret;
-    grp->ok = gcd[14].ret;
-    grp->cancel = gcd[15].ret;
+    grp->colour = gcd[13].ret;
+    grp->line2 = gcd[14].ret;
+    grp->ok = gcd[15].ret;
+    grp->cancel = gcd[16].ret;
 
     GroupSBSizes(grp);
     GroupResize(grp,NULL);
@@ -1285,6 +1391,14 @@ static void MapAddGroupGlyph(EncMap *map,SplineFont *sf,char *name, int compacte
 	    gid = SFFindExistingSlot(sf,val,NULL);
 	    MapEncAddGid(map,sf,compacted,gid,val,NULL);
 	}
+    } else if ( strncasecmp(name,"color=#",strlen("color=#"))==0 ) {
+	Color col = strtoul(name+strlen("color=#"),NULL,16);
+	int gid; SplineChar *sc;
+
+	for ( gid=0; gid<sf->glyphcnt; ++gid )
+	    if ( (sc = sf->glyphs[gid])!=NULL &&
+		    sc->color == col )
+		MapEncAddGid(map,sf,compacted,gid,sc->unicodeenc,NULL);
     } else {
 	gid = SFFindExistingSlot(sf,-1,name);
 	MapEncAddGid(map,sf,compacted,gid,-1,name);
