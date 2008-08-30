@@ -6297,8 +6297,9 @@ return;
 		fv->pressed = GDrawRequestTimer(fv->v,200,100,NULL);
 	}
     } else if ( fv->drag_and_drop ) {
-	if ( event->u.mouse.x>=0 && event->u.mouse.y>=-fv->mbh-fv->infoh-4 &&
-		event->u.mouse.x<=fv->width+20 && event->u.mouse.y<fv->height ) {
+	GWindow othergw = GDrawGetPointerWindow(fv->v);
+
+	if ( othergw==fv->v || othergw==fv->gw || othergw==NULL ) {
 	    if ( !fv->has_dd_no_cursor ) {
 		fv->has_dd_no_cursor = true;
 		GDrawSetCursor(fv->v,ct_prohibition);
@@ -6308,10 +6309,10 @@ return;
 		fv->has_dd_no_cursor = false;
 		GDrawSetCursor(fv->v,ct_ddcursor);
 	    }
-	    GDrawPostDragEvent(fv->v,event,event->type==et_mouseup?et_drop:et_drag);
-	    fv->any_dd_events_sent = true;
 	}
 	if ( event->type==et_mouseup ) {
+	    GDrawPostDragEvent(fv->v,event,event->type==et_mouseup?et_drop:et_drag);
+	    fv->any_dd_events_sent = true;
 	    fv->drag_and_drop = fv->has_dd_no_cursor = false;
 	    GDrawSetCursor(fv->v,ct_mypointer);
 	    if ( !fv->any_dd_events_sent )

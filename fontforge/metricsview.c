@@ -4066,7 +4066,10 @@ return;
     free( cnames );
     if ( cnt==0 )
 return;
-    within = mv->glyphs[within].orig_index;
+    if ( within<mv->glyphcnt )
+	within = mv->glyphs[within].orig_index;
+    else
+	within = mv->clen;
 
     if ( mv->clen+cnt>=mv->cmax ) {
 	mv->cmax = mv->clen+cnt+10;
