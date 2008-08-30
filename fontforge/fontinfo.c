@@ -3975,6 +3975,7 @@ static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
 			else
 			    last->subtables = lk->all[i].subtables[j].subtable;
 			sublast = lk->all[i].subtables[j].subtable;
+			sublast->lookup = last;
 		    }
 		}
 		if ( sublast!=NULL )
@@ -7060,7 +7061,7 @@ return( true );			/* Lookups can be dropped anywhere */
     if ( lookup<0 || lookup>=lk->cnt )
 return( false );		/* Subtables must be dropped in a lookup */
 
-    if ( gfi!=othergfi || lookup!=gfi->first_sel_lookup )
+    if ( gfi!=othergfi /* || lookup!=gfi->first_sel_lookup*/ )
 return( false );		/* Can't merge subtables from one lookup to another */
 
     /* Subtables can only be dropped in a lookup with the same type */
@@ -7169,8 +7170,34 @@ return;
 			}
 			--i;
 		    }
-		} else
-		    IError("Attempt to merge subtables not permitted" );
+		} else {
+		    int old_lk = gfi->first_sel_lookup;
+		    int sel_cnt=0, k;
+		    if ( subtable<0 ) /* dropped into lookup */
+			subtable = 0;
+		    for ( i=gfi->first_sel_subtable; i<lk->all[old_lk].subtable_cnt; ++i )
+			if ( !lk->all[old_lk].subtables[i].deleted && lk->all[old_lk].subtables[i].selected )
+			    ++sel_cnt;
+		    if ( lk->all[lookup].subtable_cnt+sel_cnt >= lk->all[lookup].subtable_max )
+			lk->all[lookup].subtables = grealloc(lk->all[lookup].subtables,
+				(lk->all[lookup].subtable_max += sel_cnt+3)*sizeof(struct lksubinfo));
+		    for ( i= lk->all[lookup].subtable_cnt+sel_cnt-1; i>=subtable; --i )
+			lk->all[lookup].subtables[i] = lk->all[lookup].subtables[i-sel_cnt];
+		    k=0;
+		    for ( i=gfi->first_sel_subtable; i<lk->all[old_lk].subtable_cnt; ++i ) {
+			if ( !lk->all[old_lk].subtables[i].deleted && lk->all[old_lk].subtables[i].selected )
+			    lk->all[lookup].subtables[subtable+k++] = lk->all[old_lk].subtables[i];
+		    }
+		    lk->all[lookup].subtable_cnt += k;
+		    k=0;
+		    for ( i=gfi->first_sel_subtable; i<lk->all[old_lk].subtable_cnt; ++i ) {
+			if ( !lk->all[old_lk].subtables[i].deleted && lk->all[old_lk].subtables[i].selected )
+			    ++k;
+			else if ( k!=0 )
+			    lk->all[old_lk].subtables[i-k] = lk->all[old_lk].subtables[i];
+		    }
+		    lk->all[old_lk].subtable_cnt -= k;
+		}
 	    } else {
 		if ( gfi->first_sel_subtable == -1 ) {
 		    /* Import lookups from one font to another */
