@@ -2844,6 +2844,31 @@ return( pos );
 return( pos );
 }
 
+static int bskipmarkglyphs(int lookup_flags, struct lookup_data *data, int pos) {
+    int mc, glyph_class;
+    /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
+    /*  should ignore. Here we skip backward */
+
+    mc = (lookup_flags>>8);
+    if ( mc<0 || mc>=data->sf->mark_class_cnt )
+	mc = 0;
+    while ( pos>=0 ) {
+	glyph_class = gdefclass(data->str[pos].sc);
+	/* 1=>base, 2=>ligature, 3=>mark, 4=>component?, 0=>.notdef */
+	if ( glyph_class==3 )
+	    --pos;
+	else if ( (glyph_class==1 && (lookup_flags&pst_ignorebaseglyphs)) ||
+		(glyph_class==2 && (lookup_flags&pst_ignoreligatures)) ||
+		(glyph_class==3 && (lookup_flags&pst_ignorecombiningmarks)) ||
+		(glyph_class==3 && mc!=0 &&
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ) {
+	    --pos;
+	} else
+    break;
+    }
+return( pos );
+}
+
 static int bskipglyphs(int lookup_flags, struct lookup_data *data, int pos) {
     int mc, glyph_class;
     /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
@@ -3285,91 +3310,84 @@ return( 0 );
 
 static int ApplyAnchorPosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
     AnchorPoint *ap1, *ap2;
-    int npos;
-    int any = 0;
+    int bpos;
 
-    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next )
-	ap1->ticked = false;
+    /* Anchors do not position the base glyph, but the mark (or second glyph */
+    /*  of a cursive attachment). This means we don't apply the attachment when*/
+    /*  we meet the first glyph, but wait until we meet the second, and then */
+    /*  walk backwards */
+    /* The backwards walk is different depending on the lookup type (I think) */
+    /*  mark to base and mark to ligature lookups will skip all marks even if */
+    /*  lookup flags don't specify that */
+    /* mark to mark, and cursive attachment only skip what the lookup flags */
+    /*  tell them to skip. */
+    for ( ap2=data->str[pos].sc->anchor; ap2!=NULL ; ap2=ap2->next ) {
+	if ( ap2->anchor->subtable==sub && (ap2->type == at_mark || ap2->type == at_centry))
+    break;
+    }
+    if ( ap2==NULL ) {
+	/* This subtable is not used by this glyph ... at least this glyph is */
+	/*  neither a mark nor an entry point for this subtable */
+return( 0 );
+    }
 
-    npos = skipglyphs(sub->lookup->lookup_flags,data,pos+1);
-    /* there may be several marks which attach at different anchor classes */
-    /* in the same subtable. Ligatures may get several marks in the same */
-    /* class. Cursives have only a single match */
+    if ( sub->lookup->lookup_type == gpos_mark2base ||
+	    sub->lookup->lookup_type == gpos_mark2ligature )
+	bpos = bskipmarkglyphs(sub->lookup->lookup_flags,data,pos-1);
+    else
+	bpos = bskipglyphs(sub->lookup->lookup_flags,data,pos-1);
+    if ( bpos==-1 )
+return( 0 );		/* No match */
 
-    for ( ; npos<data->cnt &&
-		(sub->lookup->lookup_type != gpos_mark2ligature ||
-		 data->str[npos].lig_pos!=-1); ) {
-	if ( sub->lookup->lookup_type == gpos_cursive ) {
-	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-		if ( ap1->anchor->subtable==sub && ap1->type==at_cexit && !ap1->ticked ) {
-		    for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
-			if ( ap2->anchor==ap1->anchor && ap2->type==at_centry )
-		    break;
-		    }
-		    if ( ap2!=NULL )
-	    break;
-		}
-	    }
-	} else if ( sub->lookup->lookup_type == gpos_mark2ligature ) {
-	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-		if ( ap1->anchor->subtable==sub && ap1->type==at_baselig &&
-			ap1->lig_index == data->str[npos].lig_pos && !ap1->ticked ) {
-		    for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
-			if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
-		    break;
-		    }
-		    if ( ap2!=NULL )
-	    break;
-		}
-	    }
-	} else {
-	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-		if ( ap1->anchor->subtable==sub &&
-			(ap1->type==at_basechar || ap1->type==at_basemark) &&
-			!ap1->ticked ) {
-		    for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
-			if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
-		    break;
-		    }
-		    if ( ap2!=NULL )
-	    break;
-		}
-	    }
+    /* There's only going to be one mark anchor on a glyph in a given subtable*/
+    /* And cursive attachments only allow one anchor class per subtable */
+    /* in either case we have already found the only attachment site possible */
+    /*  in the current glyph */
+
+    if ( sub->lookup->lookup_type == gpos_cursive ) {
+	for ( ap1=data->str[bpos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    if ( ap1->anchor->subtable==sub && ap1->type==at_cexit )
+	break;
 	}
-	if ( ap1==NULL )
-return( any ? pos+1 : 0 );
-	ap1->ticked = true;
+    } else if ( sub->lookup->lookup_type == gpos_mark2ligature ) {
+	for ( ap1=data->str[bpos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    if ( ap1->anchor->subtable==sub && ap1->type==at_baselig &&
+		    ap1->lig_index == data->str[pos].lig_pos )
+	break;
+	}
+    } else {
+	for ( ap1=data->str[bpos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    if ( ap1->anchor->subtable==sub &&
+		    (ap1->type==at_basechar || ap1->type==at_basemark) )
+	break;
+	}
+    }
 
 /* This probably doesn't work for vertical text */
-	data->str[npos].vr.yoff = data->str[pos].vr.yoff +
-		rint((ap1->me.y - ap2->me.y) * data->scale);
+    data->str[pos].vr.yoff = data->str[bpos].vr.yoff +
+	    rint((ap1->me.y - ap2->me.y) * data->scale);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	data->str[npos].vr.yoff += FigureDeviceTable(&ap1->yadjust,data->pixelsize)-
-		    FigureDeviceTable(&ap2->yadjust,data->pixelsize);
+    data->str[pos].vr.yoff += FigureDeviceTable(&ap1->yadjust,data->pixelsize)-
+		FigureDeviceTable(&ap2->yadjust,data->pixelsize);
 #endif
-	if ( sub->lookup->lookup_flags&pst_r2l ) {
-	    data->str[npos].vr.xoff = data->str[pos].vr.xoff +
-		    rint( -(ap1->me.x - ap2->me.x)*data->scale );
+    if ( sub->lookup->lookup_flags&pst_r2l ) {
+	data->str[pos].vr.xoff = data->str[bpos].vr.xoff +
+		rint( -(ap1->me.x - ap2->me.x)*data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	    data->str[npos].vr.xoff -= FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
-			FigureDeviceTable(&ap2->xadjust,data->pixelsize);
+	data->str[pos].vr.xoff -= FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
+		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
 #endif
-	} else {
-	    data->str[npos].vr.xoff = data->str[pos].vr.xoff +
-		    rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale -
-		    data->str[pos].vr.h_adv_off);
+    } else {
+	data->str[pos].vr.xoff = data->str[bpos].vr.xoff +
+		rint( (ap1->me.x - ap2->me.x - data->str[bpos].sc->width)*data->scale -
+		data->str[bpos].vr.h_adv_off);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	    data->str[npos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
-			FigureDeviceTable(&ap2->xadjust,data->pixelsize);
+	data->str[pos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
+		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
 #endif
-	}
-
-	++any;
-	if ( sub->lookup->lookup_type == gpos_cursive )
-return( pos+1 );
-	npos = skipglyphs(sub->lookup->lookup_flags,data,npos+1);
     }
-return( any ? pos+1 : 0 );
+
+return( pos+1 );
 }
 
 static int ConditionalTagOk(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos) {
