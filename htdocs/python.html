@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 27-Aug-2008 -->
+  <!-- AP: Last modified: 5-Sep-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2153,10 +2153,13 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>useRefsMetrics</CODE></TD>
-      <TD><CODE>(ref-name)</CODE></TD>
+      <TD><CODE>(ref-name[,flag])</CODE></TD>
       <TD>Finds a reference with the given name and sets the "use_my_metrics" flag
 	on it (so this glyph will have the same advance width as the glyph the reference
-	points to).</TD>
+	points to).
+	<P>
+	If the optional flag argument is False, then the glyph will no longer have
+	its metrics bound to the reference.</TD>
     </TR>
     <TR>
       <TD><CODE>validate</CODE></TD>
