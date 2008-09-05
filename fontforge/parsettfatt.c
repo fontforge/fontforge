@@ -5154,6 +5154,12 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	    end = getushort(ttf);
 	    full = getushort(ttf);
 	    flags = getushort(ttf);
+	    if ( feof(ttf)) {
+		LogError( _("Bad glyph variant subtable of MATH table.\n") );
+		info->bad_ot = true;
+		chunkfree(gv,sizeof(*gv));
+return( NULL );
+	    }
 	    if ( justinuse==git_justinuse ) {
 		if ( gid<info->glyph_cnt )
 		    info->inuse[gid] = true;
@@ -5278,6 +5284,10 @@ return;
     }
     if ( variants!=0 )
 	ttf_math_read_variants(ttf,info,info->math_start+variants,justinuse);
+    if ( ftell(ttf)>info->g_bounds ) {
+	LogError("MATH table extends beyond table bounds");
+	info->bad_ot = true;
+    }
     info->g_bounds = 0;
 }
 
