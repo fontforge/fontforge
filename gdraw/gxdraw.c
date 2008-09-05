@@ -3737,8 +3737,10 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
     GXWindow gw = (GXWindow) w;
     if ( gd->selinfo[sel].owner!=NULL && gd->selinfo[sel].datalist != NULL) {
 	GEvent e;
+	memset(&e,0,sizeof(e));
 	e.type = et_selclear;
 	e.u.selclear.sel = sel;
+	e.native_window = (void *) (intpt) gd->selinfo[sel].owner->w;
 	if ( gd->selinfo[sel].owner->eh!=NULL )
 	    (gd->selinfo[sel].owner->eh)((GWindow) gd->selinfo[sel].owner, &e);
     }
