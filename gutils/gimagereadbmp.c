@@ -90,7 +90,7 @@ return 0;			/* Bad format */
 return( 0 );
     if ( head->compression==3 && ( head->bitsperpixel==16 || head->bitsperpixel==32 ))
 	/* Good */;
-    else if ( head->compression==0 && ( head->bitsperpixel<=8 || head->bitsperpixel==24 ))
+    else if ( head->compression==0 && ( head->bitsperpixel<=8 || head->bitsperpixel==24 || head->bitsperpixel==32 ))
 	/* Good */;
     else if ( head->compression==1 && head->bitsperpixel==8 )
 	/* Good */;
@@ -275,6 +275,18 @@ return( 0 );
 	    }
 	    for ( j=0; j<excess; ++j )
 		(void) getc(file);	/* ignore padding */
+	}
+    } else if ( head->bitsperpixel==32 && head->compression==0 ) {
+	for ( i=0; i<head->height; ++i ) {
+	    ii = i*head->width;
+	    for ( j=0; j<head->width; ++j ) {
+		int b,g,r;
+		b = getc(file);
+		g = getc(file);
+		r = getc(file);
+		(void) getc(file);	/* Ignore the alpha channel */
+		head->int32_pixels[ii+j] = COLOR_CREATE(r,g,b);
+	    }
 	}
     } else if ( head->bitsperpixel==16 ) {
 	for ( i=0; i<head->height; ++i ) {
