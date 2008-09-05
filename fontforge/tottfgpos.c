@@ -3948,18 +3948,18 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
     }
     assembly_pos = pos = (coverage_pos-2)+offset;
     for ( i=0; i<vlen; ++i ) {
-	uint32 start = ftell(mathf);
+	/*uint32 start = ftell(mathf);*/
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
 		vglyphs[i]->vert_variants,sf,pos,true);
-	if ( ftell(mathf)-start != gv_len(sf,vglyphs[i]->vert_variants))
-	    IError("v gv_len incorrect");
+	/*if ( ftell(mathf)-start != gv_len(sf,vglyphs[i]->vert_variants))*/
+	    /*IError("v gv_len incorrect");*/
     }
     for ( i=0; i<hlen; ++i ) {
-	uint32 start = ftell(mathf);
+	/*uint32 start = ftell(mathf);*/
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
 		hglyphs[i]->horiz_variants,sf,pos,false);
-	if ( ftell(mathf)-start != gv_len(sf,hglyphs[i]->horiz_variants))
-	    IError("h gv_len incorrect: %s", hglyphs[i]->name);
+	/*if ( ftell(mathf)-start != gv_len(sf,hglyphs[i]->horiz_variants))*/
+	    /*IError("h gv_len incorrect: %s", hglyphs[i]->name);*/
     }
     if ( ftell(mathf)!=assembly_pos )
 	IError("assembly tables at wrong place");
