@@ -3633,7 +3633,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected);
 		    ++cnt;
 		}
-		if ( sp->nextcpindex<0xfffe && sp!=skip ) {
+		if ( !sp->nonextcp && sp!=skip ) {
 		    if ( k )
 			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
 				sp->ttfindex==0xffff && sp->selected);
