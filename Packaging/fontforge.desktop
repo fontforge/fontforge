@@ -1,20 +1,16 @@
 [Desktop Entry]
 Name=FontForge
 Name[ru]=FontForge
-Name[zh_TW]=FontForge 字型鍛造廠
+Name[fr]=FontForge
+Name[zh_TW]=字型鍛造廠
 Comment=An outline font editor
 Comment[ru]=Редактор шрифтов
-Comment[zh_TW]=描邊字型編輯器
+Comment[fr]=Un constructeur des polices
+Comment[zh_TW]=FontForge 描邊字型編輯器
 Exec=fontforge
 Icon=fontforge.png
 Terminal=false
 Type=Application
 Categories=Application;Graphics;
 Encoding=UTF-8
-MimeType=application/vnd.font-fontforge-sfd
-MimeType=application/x-font-ttf
-MimeType=application/x-font-type1
-MimeType=application/x-font-bdf
-MimeType=application/x-font-pcf
-MimeType=application/x-font-tex
-MimeType=application/pdf
+MimeType=application/vnd.font-fontforge-sfd;application/x-font-ttf;application/x-font-type1;application/x-font-bdf;application/x-font-pcf;/x-font-tex;
