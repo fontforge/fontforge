@@ -3331,6 +3331,11 @@ static int ApplyAnchorPosAtPos(struct lookup_subtable *sub,struct lookup_data *d
 return( 0 );
     }
 
+    /* There's only going to be one mark anchor on a glyph in a given subtable*/
+    /* And cursive attachments only allow one anchor class per subtable */
+    /* in either case we have already found the only attachment site possible */
+    /*  in the current glyph */
+
     if ( sub->lookup->lookup_type == gpos_mark2base ||
 	    sub->lookup->lookup_type == gpos_mark2ligature )
 	bpos = bskipmarkglyphs(sub->lookup->lookup_flags,data,pos-1);
@@ -3339,25 +3344,20 @@ return( 0 );
     if ( bpos==-1 )
 return( 0 );		/* No match */
 
-    /* There's only going to be one mark anchor on a glyph in a given subtable*/
-    /* And cursive attachments only allow one anchor class per subtable */
-    /* in either case we have already found the only attachment site possible */
-    /*  in the current glyph */
-
     if ( sub->lookup->lookup_type == gpos_cursive ) {
 	for ( ap1=data->str[bpos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    if ( ap1->anchor->subtable==sub && ap1->type==at_cexit )
+	    if ( ap1->anchor==ap2->anchor && ap1->type==at_cexit )
 	break;
 	}
     } else if ( sub->lookup->lookup_type == gpos_mark2ligature ) {
 	for ( ap1=data->str[bpos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    if ( ap1->anchor->subtable==sub && ap1->type==at_baselig &&
+	    if ( ap1->anchor==ap2->anchor && ap1->type==at_baselig &&
 		    ap1->lig_index == data->str[pos].lig_pos )
 	break;
 	}
     } else {
 	for ( ap1=data->str[bpos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    if ( ap1->anchor->subtable==sub &&
+	    if ( ap1->anchor==ap2->anchor &&
 		    (ap1->type==at_basechar || ap1->type==at_basemark) )
 	break;
 	}
