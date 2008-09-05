@@ -1963,7 +1963,7 @@ return( 0 );
 	} else if ( *text&0x1f0000 ) {
 	    int plane = (*text>>16);
 	    unichar_t *start = text;
-	    while ( (*text>>16)==plane && text<end )
+	    while ( text<end && (*text>>16)==plane )
 		text++;
 	    /* the "encoding" we want to use is "unicodeplane-plane" which is */
 	    /* em_uplane+plane */

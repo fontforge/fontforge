@@ -384,7 +384,6 @@ void ImageListsFree(ImageList *imgs) {
 }
 
 void RefCharFree(RefChar *ref) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i;
 
     if ( ref==NULL )
@@ -392,16 +391,13 @@ return;
     for ( i=0; i<ref->layer_cnt; ++i ) {
 	SplinePointListsFree(ref->layers[i].splines);
 	ImageListsFree(ref->layers[i].images);
+#ifdef FONTFORGE_CONFIG_TYPE3
 	GradientFree(ref->layers[i].fill_brush.gradient);
 	GradientFree(ref->layers[i].stroke_pen.brush.gradient);
 	PatternFree(ref->layers[i].fill_brush.pattern);
 	PatternFree(ref->layers[i].stroke_pen.brush.pattern);
-    }
-#else
-    if ( ref==NULL )
-return;
-    SplinePointListsFree(ref->layers[0].splines);
 #endif
+    }
     free(ref->layers);
     chunkfree(ref,sizeof(RefChar));
 }
