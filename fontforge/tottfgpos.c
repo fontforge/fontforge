@@ -3795,8 +3795,10 @@ static int gv_len(SplineFont *sf, struct glyphvariants *gv) {
     int ch, cnt;
     SplineChar *sc;
 
-    if ( gv==NULL || gv->variants==NULL )
+    if ( gv==NULL || (gv->variants==NULL && gv->part_cnt==0))
 return( 0 );
+    if ( gv->variants==NULL )
+return( 4 );		/* No variants, but we've got parts to assemble */
     cnt = 0;
     for ( start=gv->variants ;; ) {
 	while ( *start==' ' ) ++start;
@@ -3906,7 +3908,7 @@ return(devtab_pos);
 static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFont *sf) {
     int i, gid, vlen, hlen;
     SplineChar *sc, **vglyphs, **hglyphs;
-    uint32 coverage_pos, coverage_table, offset, pos;
+    uint32 coverage_pos, coverage_table, offset, pos, assembly_pos;
 
     /* Figure out our glyph list (and count) */
     for ( i=vlen=hlen=0; i<at->gi.gcnt; ++i )
@@ -3944,13 +3946,23 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
 	putshort(mathf,offset);
 	offset += gv_len(sf,hglyphs[i]->horiz_variants);
     }
-    pos = (coverage_pos-2)+offset;
-    for ( i=0; i<vlen; ++i )
+    assembly_pos = pos = (coverage_pos-2)+offset;
+    for ( i=0; i<vlen; ++i ) {
+	uint32 start = ftell(mathf);
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
 		vglyphs[i]->vert_variants,sf,pos,true);
-    for ( i=0; i<hlen; ++i )
+	if ( ftell(mathf)-start != gv_len(sf,vglyphs[i]->vert_variants))
+	    IError("v gv_len incorrect");
+    }
+    for ( i=0; i<hlen; ++i ) {
+	uint32 start = ftell(mathf);
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
 		hglyphs[i]->horiz_variants,sf,pos,false);
+	if ( ftell(mathf)-start != gv_len(sf,hglyphs[i]->horiz_variants))
+	    IError("h gv_len incorrect: %s", hglyphs[i]->name);
+    }
+    if ( ftell(mathf)!=assembly_pos )
+	IError("assembly tables at wrong place");
 
     for ( i=0; i<vlen; ++i )
 	pos = ttf_math_dump_mathglyphassemblytable(mathf,
