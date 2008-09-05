@@ -1187,8 +1187,10 @@ return( NULL );
     XSaveContext(display,nw->w,gdisp->mycontext,(void *) nw);
     if ( eh!=NULL ) {
 	GEvent e;
+	memset(&e,0,sizeof(e));
 	e.type = et_create;
 	e.w = (GWindow) nw;
+	e.native_window = (void *) (intpt) nw->w;
 	(eh)((GWindow) nw,&e);
     }
 return( (GWindow) nw );
@@ -2105,6 +2107,7 @@ static void GXDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
 static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
     if ( gw->eh!=NULL ) {
 	struct gevent event;
+	memset(&event,0,sizeof(event));
 	event.type = et_expose;
 	if ( x<0 ) { wid += x; x = 0; }
 	if ( y<0 ) { hei += y; y = 0; }
@@ -2530,6 +2533,7 @@ return;
 	XClearArea(display->display,gxw->w,rect->x,rect->y,rect->width,rect->height, false );
     if ( gw->eh!=NULL ) {
 	struct gevent event;
+	memset(&event,0,sizeof(event));
 	event.type = et_expose;
 	event.u.expose.rect = *rect;
 	event.w = gw;
@@ -2699,6 +2703,7 @@ return( false );
     timer->active = true;
     for ( o = timer->owner; o!=NULL && !o->is_dying; o=o->parent );
     if ( timer->owner!=NULL && timer->owner->eh!=NULL && o==NULL ) {
+	memset(&gevent,0,sizeof(gevent));
 	gevent.type = et_timer;
 	gevent.w = timer->owner;
 	gevent.native_window = timer->owner->native_window;
@@ -2889,6 +2894,7 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
 return;
     if ( XFilterEvent(event,None))
 return;
+    memset(&gevent,0,sizeof(gevent));
     gevent.w = gw;
     gevent.native_window = (void *) event->xany.window;
     gevent.type = -1;
@@ -3394,6 +3400,7 @@ static void gxdrawSendDragOut(GXDisplay *gdisp) {
 
     if ( gdisp->last_dd.gw!=NULL ) {
 	GEvent e;
+	memset(&e,0,sizeof(e));
 	e.type = et_dragout;
 	e.u.drag_drop.x = gdisp->last_dd.rx;
 	e.u.drag_drop.y = gdisp->last_dd.ry;
@@ -3435,6 +3442,8 @@ return;
 
     if ( gdisp->last_dd.w!=None && gdisp->last_dd.w!=curwin )
 	gxdrawSendDragOut(gdisp);
+
+    memset(&e,0,sizeof(e));
 
     /* Are we still within the original window? */
     if ( curwin == gw->w ) {
