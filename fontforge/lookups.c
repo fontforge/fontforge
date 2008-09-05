@@ -3362,6 +3362,8 @@ return( 0 );		/* No match */
 	break;
 	}
     }
+    if ( ap1==NULL )
+return( 0 );		/* No match */
 
 /* This probably doesn't work for vertical text */
     data->str[pos].vr.yoff = data->str[bpos].vr.yoff +
