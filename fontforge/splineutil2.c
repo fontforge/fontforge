@@ -3451,9 +3451,9 @@ SplineFont *SplineFontEmpty(void) {
 
     sf->layer_cnt = 2;
     sf->layers = gcalloc(2,sizeof(LayerInfo));
-    sf->layers[0].name = copy("Back");
+    sf->layers[0].name = copy(_("Back"));
     sf->layers[0].background = true;
-    sf->layers[1].name = copy("Fore");
+    sf->layers[1].name = copy(_("Fore"));
     sf->layers[1].background = false;
     sf->grid.background = true;
 
