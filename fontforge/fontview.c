@@ -6311,8 +6311,10 @@ return;
 	    }
 	}
 	if ( event->type==et_mouseup ) {
-	    GDrawPostDragEvent(fv->v,event,event->type==et_mouseup?et_drop:et_drag);
-	    fv->any_dd_events_sent = true;
+	    if ( pos!=fv->pressed_pos ) {
+		GDrawPostDragEvent(fv->v,event,event->type==et_mouseup?et_drop:et_drag);
+		fv->any_dd_events_sent = true;
+	    }
 	    fv->drag_and_drop = fv->has_dd_no_cursor = false;
 	    GDrawSetCursor(fv->v,ct_mypointer);
 	    if ( !fv->any_dd_events_sent )
