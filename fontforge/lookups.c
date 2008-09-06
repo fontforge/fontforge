@@ -1460,12 +1460,12 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 		}
 	    }
 	}
+	if ( script!=NULL ) {
 /* GT: This string is used to generate a name for each OpenType lookup. */
 /* GT: The %s will be filled with the user friendly name of the feature used to invoke the lookup */
 /* GT: The second %s (if present) is the script */
 /* GT: While the %d is the index into the lookup list and is used to disambiguate it */
 /* GT: In case that is needed */
-	if ( script!=NULL ) {
 	    format = _("%s in %s lookup %d");
 	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+strlen(script)+10 );
 	    sprintf( otl->lookup_name, format, userfriendly, script, otl->lookup_index );
