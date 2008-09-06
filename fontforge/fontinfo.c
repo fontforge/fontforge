@@ -5997,7 +5997,13 @@ static int GFI_LookupAddLookup(GGadget *g, GEvent *e) {
 	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
 	struct lkdata *lk = &gfi->tables[isgpos];
 	int i,j,k,lcnt;
-	OTLookup *otl = chunkalloc(sizeof(OTLookup));
+	OTLookup *otl = chunkalloc(sizeof(OTLookup)), *test;
+
+	k = 0;
+	for ( test = isgpos ? gfi->sf->gpos_lookups : gfi->sf->gsub_lookups;
+		test!=NULL; test = test->next )
+	    ++k;
+	otl->lookup_index = k;
 
 	if ( !EditLookup(otl,isgpos,gfi->sf)) {
 	    chunkfree(otl,sizeof(OTLookup));
