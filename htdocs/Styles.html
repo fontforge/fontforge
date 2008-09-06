@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 19-Jul-2008 -->
+  <!-- AP: Last modified: 5-Sep-2008 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -726,7 +726,7 @@
   the obvious amount.<BR CLEAR=ALL>
   <H2>
     <A NAME="Smallcaps">Small Capitals</A>
-    dialog<IMG SRC="SmallcapsDlg.png" ALIGN="Right" WIDTH="472" HEIGHT="289">
+    dialog<IMG SRC="SmallcapsDlg.png" ALIGN="Right" WIDTH="471" HEIGHT="318">
   </H2>
   <P>
   This dialog allows you to create a series of small caps glyphs. As the dialog
@@ -744,6 +744,13 @@
   small caps glyph. These will be bound to the "c2sc" and "smcp" features
   respectively.
   <P>
+  OpenType supports two different variants of small caps, the normal small
+  caps, and something called petite caps. Petite caps should be smaller than
+  small caps (the example given in the opentype docs is for a font with a small
+  x-height, small caps will be bigger than the x-height and petite caps will
+  be at the x-height). Like small caps, there are two features for petite caps:
+  "c2pc" and "pcap" (capital to petite caps and lowercase to petite caps).
+  <P>
   If you turn on the <CODE>[] Create small caps variants for symbols</CODE>
   checkbox, then any selected symbols will also be converted. However most
   symbols don't have upper and lower case variants (one could argue that digits
@@ -758,8 +765,11 @@
   Often the small cap height will be a little taller than the x-height -- though
   the exact value will change from font to font -- the x-height is as good
   a default as any. If you do not like the default behavior you have all the
-  options of the <A HREF="#changeglyph">Change Glyphs </A>dialog to play
-  with.<BR CLEAR=ALL>
+  options of the <A HREF="#changeglyph">Change Glyphs </A>dialog to play with.
+  <P>
+  <FONT COLOR="Red"><STRONG>Note: </STRONG></FONT>The default sizes are the
+  same for both small caps and petite caps. If you want both features you will
+  need to change settings for at least one of them!<BR CLEAR=ALL>
   <H2>
     <A NAME="SubSuper">Subscipt</A>/Superscript
     dialog<IMG SRC="SubSuperDlg.png" WIDTH="526" HEIGHT="307" ALIGN="Right">
