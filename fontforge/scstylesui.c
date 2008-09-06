@@ -363,6 +363,8 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_Letter_Ext		1081
 #define CID_Symbol_Ext		1082
 #define CID_Symbols_Too		1083
+#define CID_SmallCaps		1084
+#define CID_PetiteCaps		1085
 
 #define CID_TabSet		1100
 
@@ -490,6 +492,7 @@ return( true );
 return( true );
 	} else if ( gc==gc_smallcaps ) {
 	    genchange.do_smallcap_symbols = GGadgetIsChecked(GWidgetGetControl(ew,CID_Symbols_Too));
+	    genchange.petite              = GGadgetIsChecked(GWidgetGetControl(ew,CID_PetiteCaps));
 	    genchange.extension_for_letters = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Letter_Ext));
 	    genchange.extension_for_symbols = GGadgetGetTitle8(GWidgetGetControl(ew,CID_Symbol_Ext));
 	    if ( *genchange.extension_for_letters=='\0' || (*genchange.extension_for_symbols=='\0' && genchange.do_smallcap_symbols )) {
@@ -676,6 +679,16 @@ return( true );
 return( true );
 }
 
+static int CG_PetiteCapsChange(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow ew = GGadgetGetWindow(g);
+	int petite = GGadgetIsChecked(GWidgetGetControl(ew,CID_PetiteCaps));
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_Letter_Ext), petite ? "pc" : "sc" );
+    }
+return( true );
+}
+
 static int CG_SmallCapSymbols(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -801,6 +814,7 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Letter_Ext),"sc");
 	    GGadgetSetTitle8(GWidgetGetControl(ew,CID_Symbol_Ext),"taboldstyle");
 	    GGadgetSetChecked(GWidgetGetControl(ew,CID_Symbols_Too),false);
+	    GGadgetSetChecked(GWidgetGetControl(ew,CID_SmallCaps),true);
 
 	    if ( ed->small->xheight!=0 && ed->small->capheight!=0 )
 		glyph_scale = ed->small->xheight/ed->small->capheight;
@@ -851,11 +865,11 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[54], boxes[20], *barray[11], *stemarray[15],
+    GGadgetCreateData gcd[56], boxes[20], *barray[11], *stemarray[15],
 	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[14], *varrays[10],
-	    *varrayhc[12], *varrayvc[12],
-	    *varray[6], *harray[6], *voarray[6], *extarray[7], *exarray[6];
-    GTextInfo label[54];
+	    *varrayhc[12], *varrayvc[12], *pcarray[4],
+	    *varray[7], *harray[6], *voarray[6], *extarray[7], *exarray[6];
+    GTextInfo label[56];
     GTabInfo aspects[5];
     int k,l,s, a;
     struct smallcaps small;
@@ -1018,6 +1032,33 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    gcd[k++].creator = GSpacerCreate;
 	    varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
 
+	    label[k].text = (unichar_t *) _("Small Caps");
+	    label[k].text_is_1byte = true;
+	    label[k].text_in_resource = true;
+	    gcd[k].gd.label = &label[k];
+	    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	    gcd[k].gd.handle_controlevent = CG_PetiteCapsChange;
+	    gcd[k].gd.cid = CID_SmallCaps;
+	    gcd[k++].creator = GRadioCreate;
+	    pcarray[0] = &gcd[k-1];
+
+	    label[k].text = (unichar_t *) _("Petite Caps");
+	    label[k].text_is_1byte = true;
+	    label[k].text_in_resource = true;
+	    gcd[k].gd.label = &label[k];
+	    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	    gcd[k].gd.flags = gg_visible | gg_enabled ;
+	    gcd[k].gd.handle_controlevent = CG_PetiteCapsChange;
+	    gcd[k].gd.cid = CID_PetiteCaps;
+	    gcd[k++].creator = GRadioCreate;
+	    pcarray[1] = &gcd[k-1]; pcarray[2] = GCD_Glue; pcarray[3] = NULL;
+
+	    boxes[2].gd.flags = gg_enabled|gg_visible;
+	    boxes[2].gd.u.boxelements = pcarray;
+	    boxes[2].creator = GHBoxCreate;
+	    varrayi[l++] = &boxes[2]; varrayi[l++] = NULL;
+
 	    label[k].text = (unichar_t *) _("Glyph Extensions");
 	    label[k].text_is_1byte = true;
 	    label[k].text_in_resource = true;
@@ -1061,10 +1102,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    exarray[0] = &gcd[k-4]; exarray[1] = &gcd[k-3]; exarray[2] = &gcd[k-2]; exarray[3] = &gcd[k-1];
 	    exarray[4] = NULL;
 
-	    boxes[2].gd.flags = gg_enabled|gg_visible;
-	    boxes[2].gd.u.boxelements = exarray;
-	    boxes[2].creator = GHBoxCreate;
-	    varrayi[l++] = &boxes[2]; varrayi[l++] = NULL;
+	    boxes[3].gd.flags = gg_enabled|gg_visible;
+	    boxes[3].gd.u.boxelements = exarray;
+	    boxes[3].creator = GHBoxCreate;
+	    varrayi[l++] = &boxes[3]; varrayi[l++] = NULL;
 
 	    label[k].text = (unichar_t *) _("Create small caps variants for symbols as well as letters");
 	    label[k].text_is_1byte = true;
@@ -1596,6 +1637,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 
 	GGadgetsCreate(gw,boxes);
 	GHVBoxSetExpandableCol(boxes[13].ret,gb_expandglue);
+	if ( boxes[2].ret!=NULL )
+	    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
 	if ( boxes[3].ret!=NULL )
 	    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
 	if ( boxes[4].ret!=NULL )
