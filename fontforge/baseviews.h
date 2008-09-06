@@ -365,6 +365,7 @@ struct genericchange {
     uint8 center_in_hor_advance;
     uint8 use_vert_mapping;
     uint8 do_smallcap_symbols;
+    uint8 petite;				/* generate petite caps rather than smallcaps */
     double vcounter_scale, vcounter_add;	/* If not using mapping */
     double v_scale;				/* If using mapping */
     struct fixed_maps {
