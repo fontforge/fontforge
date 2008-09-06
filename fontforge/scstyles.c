@@ -1981,32 +1981,40 @@ static void MakeLookups(SplineFont *sf,OTLookup **lookups,int ltn,int crl,int gr
 
 static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 	struct lookup_subtable **smcp,
-	int ltn,int crl,int grk,int symbols) {
+	int ltn,int crl,int grk,int symbols,int petite ) {
     OTLookup *test;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
     OTLookup *lc2sc[4], *lsmcp[4];
     int i;
+    uint32 ucfeat, lcfeat;
 
     memset(lc2sc,0,sizeof(lc2sc)); memset(lsmcp,0,sizeof(lsmcp));
 
+    if ( petite ) {
+	ucfeat = CHR('c','2','p','c');
+	lcfeat = CHR('p','c','a','p');
+    } else {
+	ucfeat = CHR('c','2','s','c');
+	lcfeat = CHR('s','m','c','p');
+    }
     if ( sf->cidmaster ) sf=sf->cidmaster;
     for ( test=sf->gsub_lookups; test!=NULL; test=test->next ) if ( test->lookup_type==gsub_single ) {
 	for ( fl=test->features; fl!=NULL; fl=fl->next ) {
-	    if ( fl->featuretag==CHR('c','2','s','c') || fl->featuretag==CHR('s','m','c','p')) {
+	    if ( fl->featuretag==ucfeat || fl->featuretag==lcfeat ) {
 		for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
 		    if ( sl->script==CHR('l','a','t','n')) {
-			if ( fl->featuretag==CHR('c','2','s','c') )
+			if ( fl->featuretag==ucfeat )
 			    lc2sc[0] = test;
 			else
 			    lsmcp[0] = test;
 		    } else if ( sl->script==CHR('c','y','r','l')) {
-			if ( fl->featuretag==CHR('c','2','s','c') )
+			if ( fl->featuretag==ucfeat )
 			    lc2sc[1] = test;
 			else
 			    lsmcp[1] = test;
 		    } else if ( sl->script==CHR('g','r','e','k')) {
-			if ( fl->featuretag==CHR('c','2','s','c') )
+			if ( fl->featuretag==ucfeat )
 			    lc2sc[2] = test;
 			else
 			    lsmcp[2] = test;
@@ -2016,8 +2024,8 @@ static void MakeSCLookups(SplineFont *sf,struct lookup_subtable **c2sc,
 	}
     }
 
-    MakeLookups(sf,lc2sc,ltn,crl,grk,symbols,CHR('c','2','s','c'));
-    MakeLookups(sf,lsmcp,ltn,crl,grk,symbols,CHR('s','m','c','p'));
+    MakeLookups(sf,lc2sc,ltn,crl,grk,symbols,ucfeat);
+    MakeLookups(sf,lsmcp,ltn,crl,grk,symbols,lcfeat);
 
     for ( i=0; i<4; ++i ) {
 	if ( lc2sc[i]!=NULL )
@@ -2660,7 +2668,7 @@ return;
     genchange->sf     = fv->sf;
     genchange->layer  = fv->active_layer;
 
-    MakeSCLookups(sf,c2sc,smcp,ltn,crl,grk,symbols);
+    MakeSCLookups(sf,c2sc,smcp,ltn,crl,grk,symbols,genchange->petite);
     ff_progress_start_indicator(10,_("Small Capitals"),
 	_("Building small capitals"),NULL,cnt,1);
     for ( enc=0; enc<fv->map->enccount; ++enc ) {
