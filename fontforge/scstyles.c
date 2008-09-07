@@ -3010,7 +3010,7 @@ return;
 		ref->transform[5] *= genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
 	    }
 	    if ( sc->layers[fv->active_layer].refs!=NULL )
-		SCCharChangedUpdate(sc_sc,fv->active_layer);
+		SCCharChangedUpdate(sc,fv->active_layer);
 	}
     }
     ff_progress_end_indicator();
