@@ -3621,14 +3621,14 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    ret->is_quadratic = true;
 	    cnt = 0;
 	    skip = NULL;
-	    if ( ss->first->ttfindex==0xffff ) {
+	    if ( SPInterpolate(ss->first) ) {
 		skip = ss->first->prev->from;
 		if ( k )
 		    ret->points[cnt] = PyFFPoint_CNew(skip->nextcp.x,skip->nextcp.y,false,skip->selected);
 		++cnt;
 	    }
 	    for ( sp=ss->first; ; ) {
-		if ( sp->ttfindex!=0xffff ) {
+		if ( !SPInterpolate(sp) ) {
 		    if ( k )
 			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected);
 		    ++cnt;
@@ -3636,7 +3636,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 		if ( !sp->nonextcp && sp!=skip ) {
 		    if ( k )
 			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
-				sp->ttfindex==0xffff && sp->selected);
+				sp->selected && SPInterpolate(sp));
 		    ++cnt;
 		}
 		if ( sp->next==NULL )
