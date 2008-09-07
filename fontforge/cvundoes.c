@@ -1963,7 +1963,7 @@ return( false );
 return( dontask_ret );
 }
 
-static int SCWasEmpty(SplineChar *sc, int skip_this_layer) {
+int SCWasEmpty(SplineChar *sc, int skip_this_layer) {
     int i;
 
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) if ( i!=skip_this_layer && !sc->layers[i].background ) {

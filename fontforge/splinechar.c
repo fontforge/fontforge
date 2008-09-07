@@ -430,9 +430,12 @@ void SCClearContents(SplineChar *sc,int layer) {
 
     if ( sc==NULL )
 return;
-    sc->widthset = false;
-    if ( sc->parent!=NULL && sc->width!=0 )
-	sc->width = sc->parent->ascent+sc->parent->descent;
+    if ( sc->parent!=NULL && !sc->parent->layers[layer].background &&
+	    SCWasEmpty(sc,layer)) {
+	sc->widthset = false;
+	if ( sc->parent!=NULL && sc->width!=0 )
+	    sc->width = sc->parent->ascent+sc->parent->descent;
+    }
     if ( sc->parent!=NULL && sc->parent->multilayer ) {
 	ly_first = ly_fore;
 	ly_last = sc->layer_cnt-1;

@@ -2580,6 +2580,7 @@ extern BDFChar *BDFMakeGID(BDFFont *bdf,int gid);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
 
 extern RefChar *RefCharsCopyState(SplineChar *sc,int layer);
+extern int SCWasEmpty(SplineChar *sc, int skip_this_layer);
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 extern Undoes *SCPreserveHints(SplineChar *sc,int layer);
 extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
