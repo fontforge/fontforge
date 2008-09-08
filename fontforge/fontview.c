@@ -4408,7 +4408,7 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Show _V. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Show V. Metrics...|No Shortcut"), NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("32x8 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '2' }, H_("32x8 cell window|Ctl+Shft+%"), NULL, NULL, FVMenuWSize, MID_32x8 },
-    { { (unichar_t *) N_("1_6x4 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '3' }, H_("16x4 cell window|Ctl+Shft+^"), NULL, NULL, FVMenuWSize, MID_16x4 },
+    { { (unichar_t *) N_("_16x4 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '3' }, H_("16x4 cell window|Ctl+Shft+^"), NULL, NULL, FVMenuWSize, MID_16x4 },
     { { (unichar_t *) N_("_8x2  cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '3' }, H_("8x2  cell window|Ctl+Shft+*"), NULL, NULL, FVMenuWSize, MID_8x2 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_24 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '2' }, H_("24 pixel outline|Ctl+2"), NULL, NULL, FVMenuSize, MID_24 },
