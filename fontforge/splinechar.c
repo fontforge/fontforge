@@ -430,12 +430,6 @@ void SCClearContents(SplineChar *sc,int layer) {
 
     if ( sc==NULL )
 return;
-    if ( sc->parent!=NULL && !sc->parent->layers[layer].background &&
-	    SCWasEmpty(sc,layer)) {
-	sc->widthset = false;
-	if ( sc->parent!=NULL && sc->width!=0 )
-	    sc->width = sc->parent->ascent+sc->parent->descent;
-    }
     if ( sc->parent!=NULL && sc->parent->multilayer ) {
 	ly_first = ly_fore;
 	ly_last = sc->layer_cnt-1;
@@ -443,16 +437,24 @@ return;
 	ly_first = ly_last = layer;
     for ( layer = ly_first; layer<=ly_last; ++layer )
 	SCClearLayer(sc,layer);
-    AnchorPointsFree(sc->anchor);
-    sc->anchor = NULL;
-    StemInfosFree(sc->hstem); sc->hstem = NULL;
-    StemInfosFree(sc->vstem); sc->vstem = NULL;
-    DStemInfosFree(sc->dstem); sc->dstem = NULL;
-    MinimumDistancesFree(sc->md); sc->md = NULL;
-    free(sc->ttf_instrs);
-    sc->ttf_instrs = NULL;
-    sc->ttf_instrs_len = 0;
-    SCOutOfDateBackground(sc);
+
+    if ( sc->parent!=NULL &&
+	    (sc->parent->multilayer ||
+		(!sc->parent->layers[layer].background && SCWasEmpty(sc,layer)))) {
+	sc->widthset = false;
+	if ( sc->parent!=NULL && sc->width!=0 )
+	    sc->width = sc->parent->ascent+sc->parent->descent;
+	AnchorPointsFree(sc->anchor);
+	sc->anchor = NULL;
+	StemInfosFree(sc->hstem); sc->hstem = NULL;
+	StemInfosFree(sc->vstem); sc->vstem = NULL;
+	DStemInfosFree(sc->dstem); sc->dstem = NULL;
+	MinimumDistancesFree(sc->md); sc->md = NULL;
+	free(sc->ttf_instrs);
+	sc->ttf_instrs = NULL;
+	sc->ttf_instrs_len = 0;
+	SCOutOfDateBackground(sc);
+    }
 }
 
 void SCClearAll(SplineChar *sc,int layer) {
