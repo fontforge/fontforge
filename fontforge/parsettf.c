@@ -3918,6 +3918,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
     FontDict *fd;
     FILE *tmp;
     int i;
+    SplineChar *sc;
 
     fseek(ttf,info->typ1_start,SEEK_SET);
 /* There appear to be about 20 bytes of garbage (well, I don't know what they */
@@ -3959,6 +3960,8 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
 	} else {
 	    info->chars = sf->glyphs;
 	    info->glyph_cnt = sf->glyphcnt;
+	    for ( i=sf->glyphcnt-1; i>=0; --i ) if ( (sc=sf->glyphs[i])!=NULL )
+		sc->parent = NULL;
 	    sf->glyphs = NULL;
 	    sf->glyphcnt = 0;
 	}
