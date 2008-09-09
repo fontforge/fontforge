@@ -31,6 +31,8 @@
 #include <utype.h>
 #include <math.h>
 
+static int aa_pixelsize = 150;
+
 /* The dialog should contain a lig index !!!! */
 
 typedef struct anchord {
@@ -342,6 +344,8 @@ static void AnchorD_SetSB(AnchorDlg *a) {
 
 static void AnchorD_Resize(AnchorDlg *a) {
     GRect size;
+    int i, extra;
+    int factor = a->magfactor;
 
     GDrawGetSize(a->gw,&size);
     a->full_width = size.width;
@@ -353,12 +357,6 @@ static void AnchorD_Resize(AnchorDlg *a) {
 	GGadgetMove(a->hsb,a->ctl_len+a->magfactor*a->char_size,a->sb_base);
     }
     AnchorD_SetSB(a);
-    GDrawRequestExpose(a->gw,NULL,false);
-}
-
-static void AnchorD_ChangeMag(AnchorDlg *a) {
-    int i, extra;
-    int factor = a->magfactor;
 
     for ( i=0; i<a->cnt; ++i ) {
 	if ( i==0 )
@@ -378,6 +376,11 @@ static void AnchorD_ChangeMag(AnchorDlg *a) {
     else
 	extra = (a->sb_base - (a->ymax-a->ymin)*factor)/2;
     a->baseline = a->ymax*factor + extra;
+
+    GDrawRequestExpose(a->gw,NULL,false);
+}
+
+static void AnchorD_ChangeMag(AnchorDlg *a) {
 
     AnchorD_Resize(a);
 }
@@ -824,7 +827,7 @@ static int AnchorD_DisplaySizeChanged(GGadget *g, GEvent *e) {
 	    GGadgetSetTitle(GWidgetGetControl(a->gw,CID_YCor),ubuf);
 #endif
 	    a->xoff = pixelsize*a->xoff/a->pixelsize;
-	    a->pixelsize = pixelsize;
+	    a->pixelsize = aa_pixelsize = pixelsize;
 	    AnchorD_ChangeSize(a);
 	    GDrawRequestExpose(a->gw,NULL,false);
 	}
@@ -1208,7 +1211,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     a.sc = sc;
     a.ap = ap;
     a.apos = ap->me;
-    a.pixelsize = 150;
+    a.pixelsize = aa_pixelsize;
     a.magfactor = 1;
     a.layer = layer;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1238,6 +1241,8 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     GDrawGetSize(GDrawGetRoot(NULL),&pos);
     pos.x = pos.y = 0;
     pos.height = GDrawPointsToPixels(NULL,210);
+    if ( pos.height<aa_pixelsize+40+25 )
+	pos.height = aa_pixelsize+40+25;
     pos.width -= 50;
     a.gw = gw = GDrawCreateTopWindow(NULL,&pos,anchord_e_h,&a,&wattrs);
 
