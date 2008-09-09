@@ -692,7 +692,7 @@ static void PosStemPoints( GlyphData *gd, double stem_scale, int has_dstems, int
         best = NULL; bdist = 0;
         for ( j=0; j<pd->prevcnt; j++ ) {
             tstem = pd->prevstems[j];
-            if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir ) {
+            if ( !tstem->toobig && tstem->unit.x == !x_dir && RealNear( tstem->unit.y,x_dir )) {
                 sbase = pd->prev_is_l[j] ? &tstem->left : &tstem->right;
                 dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
                 if ( best == NULL || fabs( dist ) < fabs( bdist )) {
@@ -1270,7 +1270,7 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
     PointData *pd, *lfixed=NULL, *rfixed=NULL;
     double new_hyp, new_w, des_w, dscale, hscale, vscale, cscale;
     double coord_new, min, max, min_new, max_new;
-    BasePoint l_to_r, temp;
+    BasePoint l_to_r, left, right, temp;
     DBounds stem_b;
     StemData *hvstem;
 
@@ -1343,26 +1343,44 @@ return;
     des_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
             ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
 
+    /* For italic stems we move left and right coordinates to the baseline, so
+    /* that they may well fall outside of the bounding box. We have to take care
+    /* of this situation */
+    left = stem->left; right = stem->right;
+    if ( left.x < orig_b->minx ) {
+        left.y = (( orig_b->minx - left.x ) * stem->unit.y )/stem->unit.x;
+        left.x = orig_b->minx;
+    }
+    if ( right.x < orig_b->minx ) {
+        right.y = (( orig_b->minx - right.x ) * stem->unit.y )/stem->unit.x;
+        right.x = orig_b->minx;
+    }
+    
     /* OK, now we know the desired width, so interpolate the coordinates of our
     /* left and right points to determine where our DStem would probably be
     /* placed if there were no DStem processor. We are not expecting to get an
     /* exact result here, but it still would be a good starting point */
     stem->newleft.x = InterpolateBetweenEdges( 
-        gd,stem->left.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
+        gd,left.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
     stem->newleft.y = InterpolateBetweenEdges( 
-        gd,stem->left.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
+        gd,left.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
     stem->newright.x = InterpolateBetweenEdges( 
-        gd,stem->right.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
+        gd,right.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
     stem->newright.y = InterpolateBetweenEdges( 
-        gd,stem->right.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
+        gd,right.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
 
     /* Adjust the stem unit vector according to the horizontal and vertical
     /* ratios we have previously determined */
-    stem->newunit.x = stem->unit.x * hscale;
-    stem->newunit.y = stem->unit.y * vscale;
-    new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
-    stem->newunit.x /= new_hyp;
-    stem->newunit.y /= new_hyp;
+    if ( stem->bundle != NULL && stem->bundle == gd->ibundle ) {
+        stem->newunit.x = stem->unit.x;
+        stem->newunit.y = stem->unit.y;
+    } else {
+        stem->newunit.x = stem->unit.x * hscale;
+        stem->newunit.y = stem->unit.y * vscale;
+        new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
+        stem->newunit.x /= new_hyp;
+        stem->newunit.y /= new_hyp;
+    }
 
     /* Get a possible width of the stem in the scaled glyph. We are going to
     /* adjust that width then */
