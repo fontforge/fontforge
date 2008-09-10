@@ -1082,7 +1082,7 @@ return( false );
 	    sv->edits = grealloc(sv->edits,val*2);
 	    for ( i=sv->len/2; i<val; ++i )
 		sv->edits[i] = 0;
-	    sv->comments = grealloc(sv->comments,val);
+	    sv->comments = grealloc(sv->comments,val*sizeof(char *));
 	    for ( i=sv->len/2; i<val; ++i )
 		sv->comments[i] = NULL;
 	} else {
