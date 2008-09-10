@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 21-Jul-2008 -->
+  <!-- AP: Last modified: 10-Sep-2008 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1360,9 +1360,35 @@ $ xset fp+ `pwd`
       <B><A NAME="outline-conversion">How do I convert from one outline format
       to another?</A></B>
     <DD>
-      This is easy, simply open an existing font, and then use
-      <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts </A>to generate
-      the desired output.
+      Converting from PostScript (cubic splines, otf and pfb files) to TrueType
+      (quadratic splines, ttf files) is easy, simply open an existing font, and
+      then use <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts
+      </A>to generate the desired output.
+      <P>
+      Converting from TrueType (quadratic splines, ttf files) to PostScript (cubic
+      splines, otf and pfb files) is almost as easy, The above method will work,
+      but you'll get better results if you:
+      <UL>
+	<LI>
+	  File-&gt;Open (the truetype font)
+	<LI>
+	  <A HREF="fontinfo.html#Layers" TARGET="_top">Element-&gt;Font
+	  Info-&gt;Layers</A>
+	  <UL>
+	    <LI>
+	      Check &lt;*&gt; All layers cubic
+	    <LI>
+	      [OK]
+	  </UL>
+	<LI>
+	  Edit-&gt;Select-&gt;Select All
+	<LI>
+	  <A HREF="elementmenu.html#Simplify" TARGET="_top">Element-&gt;Simplify-&gt;Simplify</A>
+	<LI>
+	  <A HREF="hintsmenu.html#AutoHint" TARGET="_top">Hints-&gt;Auto Hint</A>
+	<LI>
+	  <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts </A>
+      </UL>
     <DT>
       <B><A NAME="bitmap-conversion">How do I convert from one bitmap format to
       another?</A></B>
