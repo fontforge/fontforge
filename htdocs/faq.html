@@ -1360,17 +1360,35 @@ $ xset fp+ `pwd`
       <B><A NAME="outline-conversion">How do I convert from one outline format
       to another?</A></B>
     <DD>
-      Converting from PostScript (cubic splines, otf and pfb files) to TrueType
-      (quadratic splines, ttf files) is easy, simply open an existing font, and
-      then use <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts
-      </A>to generate the desired output.
+      The simple answer that will work if you want something quick is:
+      <OL>
+	<LI>
+	  File-&gt;Open
+	  <UL>
+	    <LI>
+	      an existing font
+	  </UL>
+	<LI>
+	  <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts </A>
+	  <UL>
+	    <LI>
+	      to generate the desired output.
+	  </UL>
+      </OL>
+      <P>
+      If you are converting from one PostScript format to another (pfb to otf,
+      for example) that's all you need to do. If you are converting between PostScript
+      and TrueType, you can improve matters if you do a little more work.
       <P>
       Converting from TrueType (quadratic splines, ttf files) to PostScript (cubic
-      splines, otf and pfb files) is almost as easy, The above method will work,
-      but you'll get better results if you:
-      <UL>
+      splines, otf and pfb files):
+      <OL>
 	<LI>
-	  File-&gt;Open (the truetype font)
+	  File-&gt;Open
+	  <UL>
+	    <LI>
+	      (the truetype font)
+	  </UL>
 	<LI>
 	  <A HREF="fontinfo.html#Layers" TARGET="_top">Element-&gt;Font
 	  Info-&gt;Layers</A>
@@ -1388,7 +1406,29 @@ $ xset fp+ `pwd`
 	  <A HREF="hintsmenu.html#AutoHint" TARGET="_top">Hints-&gt;Auto Hint</A>
 	<LI>
 	  <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts </A>
-      </UL>
+      </OL>
+      <P>
+      Converting from PostScript (cubic splines, otf and pfb files) to TrueType
+      (quadratic splines, ttf files):
+      <OL>
+	<LI>
+	  File-&gt;Open
+	<LI>
+	  <A HREF="fontinfo.html#Layers" TARGET="_top">Element-&gt;Font
+	  Info-&gt;Layers</A>
+	  <UL>
+	    <LI>
+	      Check &lt;*&gt; All layers quadratic
+	    <LI>
+	      [OK]
+	  </UL>
+	<LI>
+	  Edit-&gt;Select-&gt;Select All
+	<LI>
+	  <A HREF="hintsmenu.html#AutoInstr" TARGET="_top">Hints-&gt;AutoInstr</A>
+	<LI>
+	  <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts </A>
+      </OL>
     <DT>
       <B><A NAME="bitmap-conversion">How do I convert from one bitmap format to
       another?</A></B>
