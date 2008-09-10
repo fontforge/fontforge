@@ -941,7 +941,7 @@ return( NULL );
 		    ss = chunkalloc(sizeof(SplineSet));
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type;
-			int x,y;
+			double x,y;
 			if ( _xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
 		    continue;
 			xs = (char *) _xmlGetProp(points,(xmlChar *) "x");
