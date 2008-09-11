@@ -10245,6 +10245,11 @@ return( NULL );
     if ( tag==0xffffffff )
 return( NULL );
 
+    if ( tuple==Py_None ) {
+	SFRemoveSavedTable(tag);
+Py_RETURN(self);
+    }
+	
     if ( !PySequence_Check(tuple)) {
 	PyErr_Format(PyExc_TypeError, "Argument must be a tuple" );
 return( NULL );
