@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 5-Sep-2008 -->
+  <!-- AP: Last modified: 10-Sep-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3810,10 +3810,12 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Sets binary data of any saved table. FF will save 'fpgm', 'prep', 'cvt
 	' and 'maxp'. FF may also save tables which you explicitly request. Do not
 	expect to set binary data for tables like 'GPOS' or 'glyf' which FF will
-	generate when it creates a font... that information is not currently available.</TD>
+	generate when it creates a font... that information is not currently available.
+	<P>
+	If sequence is None, then the named table will be removed from the font.</TD>
     </TR>
     <TR>
-      <TD><CODE>validate</CODE></TD>
+      <TD><CODE>ovalidate</CODE></TD>
       <TD><CODE>([force])</CODE></TD>
       <TD>Validates the font and returns a bit mask of all errors from all glyphs
 	(as defined in the

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jul-2008 -->
+  <!-- AP: Last modified: 10-Sep-2008 -->
   <TITLE>The Hints Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -108,6 +108,8 @@
       <A HREF="#Editprep">Edit prep...</A>
     <LI>
       <A HREF="#Editcvt">Edit cvt...</A>
+    <LI>
+      <A HREF="#RmTables">Remove Instr Tables</A>
     <LI>
       <A HREF="#ClearHints">Clear Hints</A>
     <LI>
@@ -239,6 +241,13 @@
       <A HREF="ttfinstrs.html#cvt">This dialog</A> shows the initial values in
       the 'cvt ' table, and allows you to edit them. You can also add a brief comment
       to describe what each entry is used for.
+    <DT>
+      <A NAME="RmTables">Remove Instr Tables</A>
+    <DD>
+      If the font contains a 'fpgm', 'prep', 'cvt ' or 'maxp' table, then this
+      command will remove them. This should be done in conjunction with
+      <A HREF="hintsmenu.html">Hints-&gt;Clear Instructions</A>, otherwise any
+      remaining instructed glyphs will fail to work.
     <DT>
       <A NAME="ClearHints">Clear Hints</A>
     <DD>
