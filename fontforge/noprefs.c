@@ -119,7 +119,7 @@ static int cvvisible[2]={1,1}, bvvisible[3]={1,1,1};	/* in cvpalettes.c */
 static int infowindowdistance=10;		/* in cvruler.c */
 static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
-    loacal_showfilled, loacal_showtabs;
+    loacal_showfilled, loacal_showtabs, loacal_showrefnames;
 static int oldsystem=100;
 static char *oflib_username;
 static char *oflib_password;
@@ -130,20 +130,35 @@ static int ps_pointcnt=5;				/* from cvpalettes.c */
 static float star_percent=100;			/* from cvpalettes.c */
 static int debug_wins=0;			/* in cvdebug.c */
 static int gridfit_dpi=100, gridfit_depth=1;	/* in cvgridfit.c */
-static float gridfit_pointsize=12;		/* in cvgridfit.c */
+static float gridfit_pointsizex=12;		/* in cvgridfit.c */
+static float gridfit_pointsizey=12;		/* in cvgridfit.c */
+static int  gridfit_x_sameas_y=true;		/* in cvgridfit.c */
 static int default_font_filter_index=0;
 static unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 static char *script_filenames[SCRIPT_MENU_MAX];
 static char *RecentFiles[RECENT_MAX];
 static int ItalicConstrained = true;
 extern int clear_tt_instructions_when_needed;	/* cvundoes.c */
+static int default_cv_width;			/* in charview.c */
+static int default_cv_height;			/* in charview.c */
+static int mv_width;				/* in metricsview.c */
+static int mv_height;				/* in metricsview.c */
+static int bv_width;				/* in bitmapview.c */
+static int bv_height;				/* in bitmapview.c */
+static int mvshowgrid;				/* in metricsview.c */
 static int old_validate = true;
 static int old_fontlog = false;
 static int home_char = 'A';
 static int compact_font_on_open=0;
+static int oflib_automagic_preview;		/* from oflib.c */
+static int aa_pixelsize;			/* from anchorsaway.c */
+
+static int gfc_showhidden, gfc_dirplace;
+static char *gfc_bookmarks=NULL;
+static char *pixmapdir=NULL;
 
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
-	pr_file, pr_namelist };
+	pr_file, pr_namelist, pr_unicode };
 
 static struct prefs_list {
     char *name;
@@ -251,6 +266,7 @@ static struct prefs_list {
 	{ "ShowRulers", pr_bool, &loacal_showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },
 	{ "ShowCPInfo", pr_int, &loacal_showcpinfo, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowSideBearings", pr_int, &loacal_showsidebearings, NULL, NULL, '\0', NULL, 1 },
+	{ "ShowRefNames", pr_int, &loacal_showrefnames, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowPoints", pr_bool, &loacal_showpoints, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowFilled", pr_int, &loacal_showfilled, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowTabs", pr_int, &loacal_showtabs, NULL, NULL, '\0', NULL, 1 },
@@ -268,10 +284,25 @@ static struct prefs_list {
 	{ "DebugWins", pr_int, &debug_wins, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitDpi", pr_int, &gridfit_dpi, NULL, NULL, '\0', NULL, 1 },
 	{ "GridFitDepth", pr_int, &gridfit_depth, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitPointSize", pr_real, &gridfit_pointsize, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitPointSize", pr_real, &gridfit_pointsizey, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitPointSizeX", pr_real, &gridfit_pointsizex, NULL, NULL, '\0', NULL, 1 },
+	{ "GridFitSameAs", pr_int, &gridfit_x_sameas_y, NULL, NULL, '\0', NULL, 1 },
+	{ "MVShowGrid", pr_int, &mvshowgrid, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
-	{ "SeekChar", pr_int, &home_char, NULL, NULL, '\0', NULL, 1 },
+	{ "SeekChar", pr_unicode, &home_char, NULL, NULL, '\0', NULL, 1 },
 	{ "CompactOnOpen", pr_bool, &compact_font_on_open, NULL, NULL, '\0', NULL, 1 },
+	{ "PixmapDir", pr_file, &pixmapdir, NULL, NULL, 'R', NULL, 0, NULL },
+	{ "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1 },
+	{ "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1 },
+	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1 },
+	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1 },
+	{ "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultMVWidth", pr_int, &mv_width, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1 },
+	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1 },
 	NULL
 },
  *prefs_list[] = { core_list, extras, NULL };
@@ -308,7 +339,7 @@ static int NOUI_GetPrefs(char *name,Val *val) {
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
-	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_unicode ) {
 		val->type = v_int;
 		val->u.ival = *((int *) (pf->val));
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
@@ -341,7 +372,7 @@ static int NOUI_SetPrefs(char *name,Val *val1, Val *val2) {
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
-	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_unicode ) {
 		if ( (val1->type!=v_int && val1->type!=v_unicode) || val2!=NULL )
 return( -1 );
 		*((int *) (pf->val)) = val1->u.ival;
@@ -743,6 +774,11 @@ static void NOUI_LoadPrefs(void) {
 	      case pr_bool: case pr_int:
 		sscanf( pt, "%d", (int *) pl->val );
 	      break;
+	      case pr_unicode:
+		if ( sscanf( pt, "U+%x", (int *) pl->val )!=1 )
+		    if ( sscanf( pt, "u+%x", (int *) pl->val )!=1 )
+			sscanf( pt, "%x", (int *) pl->val );
+	      break;
 	      case pr_real:
 		sscanf( pt, "%f", (float *) pl->val );
 	      break;
@@ -795,6 +831,9 @@ return;
 	  break;
 	  case pr_bool: case pr_int:
 	    fprintf( p, "%s:\t%d\n", pl->name, *(int *) (pl->val) );
+	  break;
+	  case pr_unicode:
+	    fprintf( p, "%s:\tU+%04x\n", pl->name, *(int *) (pl->val) );
 	  break;
 	  case pr_real:
 	    fprintf( p, "%s:\t%g\n", pl->name, (double) *(float *) (pl->val) );
