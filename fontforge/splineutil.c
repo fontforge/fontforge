@@ -5751,6 +5751,32 @@ void TtfTablesFree(struct ttf_table *tab) {
     }
 }
 
+void SFRemoveSavedTable(SplineFont *sf, uint32 tag) {
+    struct ttf_table *tab, *prev;
+
+    for ( prev=NULL, tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; prev=tab, tab=tab->next );
+    if ( tab!=NULL ) {
+	if ( prev==NULL )
+	    sf->ttf_tables = tab->next;
+	else
+	    prev->next = tab->next;
+    } else {
+	for ( prev=NULL, tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; prev=tab, tab=tab->next );
+	if ( tab==NULL )
+return;
+	if ( prev==NULL )
+	    sf->ttf_tab_saved = tab->next;
+	else
+	    prev->next = tab->next;
+    }
+    tab->next = NULL;
+    TtfTablesFree(tab);
+    if ( !sf->changed ) {
+	sf->changed = true;
+	FVSetTitles(sf);
+    }
+}
+
 void ScriptLangListFree(struct scriptlanglist *sl) {
     struct scriptlanglist *next;
 
@@ -6094,6 +6120,7 @@ return;
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
     TtfTablesFree(sf->ttf_tables);
+    TtfTablesFree(sf->ttf_tab_saved);
     UndoesFree(sf->grid.undoes);
     UndoesFree(sf->grid.redoes);
     PSDictFree(sf->private);

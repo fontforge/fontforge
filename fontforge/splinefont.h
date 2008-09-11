@@ -2034,6 +2034,7 @@ extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,An
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
 extern void TtfTablesFree(struct ttf_table *tab);
+extern void SFRemoveSavedTable(SplineFont *sf, uint32 tag);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorClass *restrict_, AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,

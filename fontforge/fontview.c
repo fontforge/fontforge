@@ -1414,7 +1414,7 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_HintSubsPt	2513
 #define MID_AutoCounter	2514
 #define MID_DontAutoHint	2515
-#define MID_PrivateToCvt	2516
+#define MID_RmInstrTables	2516
 #define MID_Editmaxp	2517
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -2784,12 +2784,15 @@ static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 				  CHR('c','v','t',' '));
 }
 
-#if 0
-static void FVMenuPrivateToCvt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void FVMenuRmInstrTables(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    CVT_ImportPrivate(fv->b.sf);
+    TtfTablesFree(fv->b.sf->ttf_tables);
+    fv->b.sf->ttf_tables = NULL;
+    if ( !fv->b.sf->changed ) {
+	fv->b.sf->changed = true;
+	FVSetTitles(fv->b.sf);
+    }
 }
-#endif
 
 static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -3295,12 +3298,9 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoInstr: case MID_EditInstructions:
 	    mi->ti.disabled = !fv->b.sf->layers[fv->b.active_layer].order2 || anychars==-1 || multilayer;
 	  break;
-#if 0
-	  case MID_PrivateToCvt:
-	    mi->ti.disabled = !fv->b.sf->layers[fv->b.active_layer].order2 || multilayer ||
-		    fv->b.sf->private==NULL || fv->b.sf->cvt_dlg!=NULL;
+	  case MID_RmInstrTables:
+	    mi->ti.disabled = fv->b.sf->ttf_tables==NULL;
 	  break;
-#endif
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt: case MID_Editmaxp:
 	    mi->ti.disabled = !fv->b.sf->layers[fv->b.active_layer].order2 || multilayer;
 	  break;
@@ -4567,9 +4567,7 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Edit 'prep'..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'prep'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editprep },
     { { (unichar_t *) N_("Edit 'maxp'..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'maxp'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editmaxp },
     { { (unichar_t *) N_("Edit 'cvt '..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'cvt '...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editcvt },
-#if 0
-    { { (unichar_t *) N_("Private to 'cvt'"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Private to 'cvt'|No Shortcut"), NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
-#endif
+    { { (unichar_t *) N_("Remove Instr Tables"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Remove Instr Tables|No Shortcut"), NULL, NULL, FVMenuRmInstrTables, MID_RmInstrTables },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Clear Hints"), (GImage *) "hintsclearvstems.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Hints|No Shortcut"), NULL, NULL, FVMenuClearHints, MID_ClearHints },
 /*    { { (unichar_t *) N_("Clear _Width MD"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Width MD|No Shortcut"), NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },*/
