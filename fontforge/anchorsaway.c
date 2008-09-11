@@ -31,7 +31,7 @@
 #include <utype.h>
 #include <math.h>
 
-static int aa_pixelsize = 150;
+int aa_pixelsize = 150;
 
 /* The dialog should contain a lig index !!!! */
 

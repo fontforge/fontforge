@@ -148,6 +148,7 @@ extern float star_percent;			/* from cvpalettes.c */
 extern int home_char;				/* from fontview.c */
 extern int compact_font_on_open;		/* from fontview.c */
 extern int oflib_automagic_preview;		/* from oflib.c */
+extern int aa_pixelsize;			/* from anchorsaway.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -414,6 +415,7 @@ static struct prefs_list {
 	{ "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1 },
+	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
