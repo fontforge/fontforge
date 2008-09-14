@@ -37,6 +37,11 @@ static GBox menubar_box = { /* Don't initialize here */ 0 };
 static GBox menu_box = { /* Don't initialize here */ 0 };
 static FontInstance *menu_font = NULL;
 static int gmenubar_inited = false;
+#ifdef __Mac
+static int mac_menu_icons = true;
+#else
+static int mac_menu_icons = false;
+#endif
 #ifndef _Keyboard
 # define _Keyboard 0
 #endif
@@ -116,7 +121,7 @@ typedef struct gmenu {
     GIC *gic;
 } GMenu;
 
-static void shorttext(GMenuItem *gi,unichar_t *buf) {
+static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
     unichar_t *pt = buf;
     static int initted = false;
     struct { int mask; char *modifier; } mods[8] = {
@@ -144,33 +149,115 @@ static void shorttext(GMenuItem *gi,unichar_t *buf) {
 	}
 	/* It used to be that the Command key was available to X on the mac */
 	/*  but no longer. So we used to use it, but we can't now */
+	/* It's sort of available. X11->Preferences->Input->Enable Keyboard shortcuts under X11 needs to be OFF */
 	/* if ( strcmp(mods[2].modifier,"Ctl+")==0 ) */
 	    /* mods[2].modifier = keyboard!=kb_mac?"Ctl+":"Cmd+"; */
 	if ( strcmp(mods[3].modifier,"Alt+")==0 )
 	    mods[3].modifier = keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+";
     }
 
-    if ( gi->shortcut==0 ) {
+    if ( shortcut==0 ) {
 	*pt = '\0';
 return;
     }
 
     for ( i=7; i>=0 ; --i ) {
-	if ( gi->short_mask&(1<<i) ) {
+	if ( short_mask&(1<<i) ) {
 	    uc_strcpy(pt,mods[i].modifier);
 	    pt += u_strlen(pt);
 	}
     }
 
-    if ( gi->shortcut>=0xff00 && GDrawKeysyms[gi->shortcut-0xff00] ) {
-	cu_strcpy(buffer,GDrawKeysyms[gi->shortcut-0xff00]);
+    if ( shortcut>=0xff00 && GDrawKeysyms[shortcut-0xff00] ) {
+	cu_strcpy(buffer,GDrawKeysyms[shortcut-0xff00]);
 	utf82u_strcpy(pt,dgettext(GMenuGetShortcutDomain(),buffer));
     } else {
-	*pt++ = islower(gi->shortcut)?toupper(gi->shortcut):gi->shortcut;
+	*pt++ = islower(shortcut)?toupper(shortcut):shortcut;
 	*pt = '\0';
     }
 }
 
+static void shorttext(GMenuItem *gi,unichar_t *buf) {
+    _shorttext(gi->shortcut,gi->short_mask,buf);
+}
+
+static int GMenuDrawMacIcons(struct gmenu *m, Color fg, int ybase, int x, int mask ) {
+    int h = 3*(m->as/3);
+    int seg = h/3;
+
+    if ( mask&ksm_cmdmacosx ) {
+	GDrawDrawLine(m->w,x,ybase-1,x,ybase-(seg-1),fg);
+	GDrawDrawLine(m->w,x,ybase-(2*seg),x,ybase-(h-2),fg);
+	GDrawDrawLine(m->w,x+h-1,ybase-1,x+h-1,ybase-(seg-1),fg);
+	GDrawDrawLine(m->w,x+h-1,ybase-(2*seg),x+h-1,ybase-(h-2),fg);
+	GDrawDrawLine(m->w,x+1,ybase,x+seg-1,ybase,fg);
+	GDrawDrawLine(m->w,x+2*seg,ybase,x+h-2,ybase,fg);
+	GDrawDrawLine(m->w,x+1,ybase-(h-1),x+seg-1,ybase-(h-1),fg);
+	GDrawDrawLine(m->w,x+2*seg,ybase-(h-1),x+h-2,ybase-(h-1),fg);
+
+	GDrawDrawLine(m->w,x+seg,ybase-1,x+seg,ybase-(h-2),fg);
+	GDrawDrawLine(m->w,x+2*seg-1,ybase-1,x+2*seg-1,ybase-(h-2),fg);
+	GDrawDrawLine(m->w,x+1,ybase-seg,x+h-2,ybase-seg,fg);
+	GDrawDrawLine(m->w,x+1,ybase-(2*seg-1),x+h-2,ybase-(2*seg-1),fg);
+	x += h+seg-1;
+    }
+    if ( mask&ksm_control ) {
+	int half = h/2;
+	int top = h-1, midy = top-half;
+	GPoint pts[3];
+	GDrawSetLineWidth(m->w,seg-1);
+	pts[0].x = x;          pts[0].y = ybase-midy;
+	pts[1].x = x+half;     pts[1].y = ybase-top;
+	pts[2].x = x+2*half;   pts[2].y = ybase-midy;
+	GDrawDrawPoly(m->w,pts,3,fg);
+	GDrawSetLineWidth(m->w,0);
+	x += h+seg-1;
+    }
+    if ( mask&ksm_meta ) {
+	int off = (seg-1)/2;
+	GDrawSetLineWidth(m->w,seg-1);
+	GDrawDrawLine(m->w,x,ybase-off,x+seg+1,ybase-off,fg);
+	GDrawDrawLine(m->w,x+seg+1,ybase-off,x+2*seg+1,ybase-(h-off-1),fg);
+	GDrawDrawLine(m->w,x+2*seg+1,ybase-(h-off-1),x+4*seg-1,ybase-(h-off-1),fg);
+	GDrawDrawLine(m->w,x+2*seg+1,ybase-off,x+4*seg-1,ybase-off,fg);
+	GDrawSetLineWidth(m->w,0);
+	x += h+2*seg-1;
+    }
+    if ( mask&ksm_shift ) {
+	int half = h/2;
+	int top = h-1, midy = top-half;
+	GDrawDrawLine(m->w,x,ybase-midy,x+half,ybase-top,fg);
+	GDrawDrawLine(m->w,x+2*half,ybase-midy,x+half,ybase-top,fg);
+	GDrawDrawLine(m->w,x,ybase-midy,x+seg-1,ybase-midy,fg);
+	GDrawDrawLine(m->w,x+2*half,ybase-midy,x+2*half-(seg-1),ybase-midy,fg);
+	GDrawDrawLine(m->w,x+seg-1,ybase-midy,x+seg-1,ybase,fg);
+	GDrawDrawLine(m->w,x+2*half-(seg-1),ybase-midy,x+2*half-(seg-1),ybase,fg);
+	GDrawDrawLine(m->w,x+seg-1,ybase,x+2*half-(seg-1),ybase,fg);
+	x += h+seg-1;
+    }
+return( x );
+}
+
+static int GMenuMacIconsWidth(struct gmenu *m, int mask ) {
+    int h = 3*(m->as/3);
+    int seg = h/3;
+    int x=0;
+
+    if ( mask&ksm_cmdmacosx ) {
+	x += h+seg-1;
+    }
+    if ( mask&ksm_shift ) {
+	x += h+seg-1;
+    }
+    if ( mask&ksm_control ) {
+	x += h+seg-1;
+    }
+    if ( mask&ksm_meta ) {
+	x += h+2*seg-1;
+    }
+return( x );
+}
+	
 static void GMenuDrawCheckMark(struct gmenu *m, Color fg, int ybase, int r2l) {
     int as = m->as;
     int pt = GDrawPointsToPixels(m->w,1);
@@ -298,7 +385,17 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 
     if ( mi->sub!=NULL )
 	GMenuDrawArrow(m,ybase,r2l);
-    else if ( mi->shortcut!=0 ) {
+    else if ( mi->shortcut!=0 && (mi->short_mask&0xfff0)==0 && mac_menu_icons ) {
+	_shorttext(mi->shortcut,0,shortbuf);
+	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
+	if ( r2l ) {
+	    int x = GDrawDrawText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    GMenuDrawMacIcons(m,fg,ybase, x, mi->short_mask);
+	} else {
+	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, mi->short_mask);
+	    GDrawDrawText(m->w,x,ybase,shortbuf,-1,NULL,fg);
+	}
+    } else if ( mi->shortcut!=0 ) {
 	shorttext(mi,shortbuf);
 
 	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL);
@@ -792,7 +889,7 @@ static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
 	keysym = toupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( mi[i].sub==NULL && mi[i].shortcut == keysym &&
-		((ksm_shift|ksm_control|ksm_meta)&event->u.chr.state)==mi[i].short_mask )
+		((ksm_shift|ksm_menumask)&event->u.chr.state)==mi[i].short_mask )
 return( &mi[i]);
 	else if ( mi[i].sub!=NULL ) {
 	    GMenuItem *ret = GMenuSearchShortcut(mi[i].sub,event);
@@ -932,7 +1029,7 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     unichar_t keysym = event->u.chr.keysym;
 
     if ( islower(keysym)) keysym = toupper(keysym);
-    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
+    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(ksm_control|ksm_cmdmacosx))) {
 	/* Only look for mneumonics in the child */
 	while ( m->child!=NULL )
 	    m = m->child;
@@ -947,7 +1044,7 @@ return( true );
     }
 
     /* then look for shortcuts everywhere */
-    if ( event->u.chr.state&(ksm_control|ksm_meta) ||
+    if ( (event->u.chr.state&ksm_menumask) ||
 	    event->u.chr.keysym>=GK_Special ) {
 	for ( top = m; top->parent!=NULL ; top = top->parent );
 	if ( top->menubar!=NULL )
@@ -1040,8 +1137,13 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	if ( mi[i].ti.checkable ) m->hasticks = true;
 	temp = GTextInfoGetWidth(owner,&mi[i].ti,m->font);
 	if ( temp>width ) width = temp;
-	shorttext(&mi[i],buffer);
-	temp = GDrawGetTextWidth(owner,buffer,-1,NULL);
+	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xfff0)==0 && mac_menu_icons ) {
+	    _shorttext(mi[i].shortcut,0,buffer);
+	    temp = GDrawGetTextWidth(owner,buffer,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
+	} else {
+	    shorttext(&mi[i],buffer);
+	    temp = GDrawGetTextWidth(owner,buffer,-1,NULL);
+	}
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
@@ -1192,7 +1294,7 @@ return( false );
 
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
-    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
+    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(ksm_control|ksm_cmdmacosx))) {
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
 return( gmenu_key(mb->child,event));	/* this routine will do shortcuts too */
@@ -1207,7 +1309,7 @@ return( true );
     }
 
     /* then look for shortcuts everywhere */
-    if ( event->u.chr.state&(ksm_control|ksm_meta) ||
+    if ( event->u.chr.state&ksm_menumask ||
 	    event->u.chr.keysym>=GK_Special ) {
 	mi = GMenuSearchShortcut(mb->mi,event);
 	if ( mi!=NULL ) {

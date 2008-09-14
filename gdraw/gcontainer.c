@@ -422,7 +422,7 @@ static int GWidgetCheckMn(GContainerD *gd,GEvent *event) {
 
     if ( islower(keysym)) keysym = toupper(keysym);
     for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
-	if ( (event->u.chr.state&ksm_meta) && !(event->u.chr.state&ksm_control) &&
+	if ( (event->u.chr.state&ksm_meta) && !(event->u.chr.state&(ksm_control|ksm_cmdmacosx)) &&
 		gadget->mnemonic==keysym &&
 		gadget->state != gs_invisible && gadget->state != gs_disabled ) {
 	    if ( gadget->focusable ) {	/* labels may have a mnemonic */
@@ -477,7 +477,7 @@ static int _GWidget_TopLevel_Key(GWindow top, GWindow ew, GEvent *event) {
 	}
     }
     /* Check for mnemonics and shortcuts */
-    if ( event->type == et_char && ((event->u.chr.state&(ksm_control|ksm_meta)) ||
+    if ( event->type == et_char && ((event->u.chr.state&(ksm_control|ksm_meta|ksm_cmdmacosx)) ||
 	    event->u.chr.keysym>=0xff00 ) ) {
 	handled = GMenuPopupCheckKey(event);
 	if ( topd->ispalette ) {

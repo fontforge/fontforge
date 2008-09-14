@@ -610,9 +610,9 @@ void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
 	{ "Flag0x80", 0x80 },
 	{ "Opt", ksm_meta },
 	{ "Option", ksm_meta },
-	    /* Command really goes to 0x10 under 10.[45], but we map it to control */
-	{ "Command", ksm_control },
-	{ "Cmd", ksm_control },
+	    /* We used to map command to control on the mac, no longer, let it be itself */
+	{ "Command", ksm_cmdmacosx },
+	{ "Cmd", ksm_cmdmacosx },
 	{ NULL }};
     char *pt, *sh;
     int mask, temp, i;
