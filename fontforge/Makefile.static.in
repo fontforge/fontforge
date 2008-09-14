@@ -125,12 +125,12 @@ distclean cleaner: clean
 
 FontForge-MenuShortCuts.pot: *.c
 	xgettext -kH_ -oFontForge-MenuShortCuts.pot *.c ../gdraw/*.c
-	patch < potmstitle.patch
+	-patch < potmstitle.patch
 
 FontForge.pot: *.c utf8.pot
 	echo "If this doesn't work try make fontforge-old.pot instead"
 	xgettext --from-code=UTF-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../gdraw/*.c
-	patch < pottitle.patch
+	-patch < pottitle.patch
 
 # xgettext has caniptions and strips any non-ASCII characters from my strings
 # but I do occasionally want to use unicode characters (TeX, arrows, Increment)
@@ -140,4 +140,4 @@ FontForge.pot: *.c utf8.pot
 FontForge-old.pot: *.c utf8.pot
 	xgettext -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../gdraw/*.c
 	cat utf8.pot >> FontForge.pot
-	patch < pottitle.patch
+	-patch < pottitle.patch
