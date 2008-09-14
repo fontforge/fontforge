@@ -732,6 +732,26 @@ static void AddR(char *prog, char *name, char *val ) {
 }
 
 #if defined(__Mac)
+/* Read a property from the x11 properties files */
+/* At the moment we want to know if we get the command key, or if the menubar */
+/*    eats it */
+static int get_mac_x11_prop(char *keystr) {
+    CFPropertyListRef ret;
+    CFStringRef key, appID;
+    int val;
+
+    appID = CFStringCreateWithBytes(NULL,(uint8 *) "com.apple.x11",strlen("com.apple.x11"), kCFStringEncodingISOLatin1, 0);
+    key   = CFStringCreateWithBytes(NULL,(uint8 *) keystr,strlen(keystr), kCFStringEncodingISOLatin1, 0);
+    ret = CFPreferencesCopyAppValue(key,appID);
+    if ( ret==NULL )
+return( -1 );
+    if ( CFGetTypeID(ret)!=CFBooleanGetTypeID())
+return( -2 );
+    val = CFBooleanGetValue(ret);
+    CFRelease(ret);
+return( val );
+}
+
 static int uses_local_x(int argc,char **argv) {
     int i;
     char *arg;
@@ -742,7 +762,7 @@ static int uses_local_x(int argc,char **argv) {
 	    if ( arg[0]=='-' && arg[1]=='-' )
 		++arg;
 	    if ( strcmp(arg,"-display")==0 )
-return( false );		/* we use a different display */
+return( i+1<argc && strcmp(argv[i+1],":0")!=0 && strcmp(argv[i+1],":0.0")!=0? 2 : 0 );
 	    if ( strcmp(arg,"-c")==0 )
 return( false );		/* we use a script string, no x display at all */
 	    if ( strcmp(arg,"-script")==0 )
@@ -825,6 +845,9 @@ int main( int argc, char **argv ) {
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
+#if defined(__Mac)
+    int local_x;
+#endif
 
 #ifdef FONTFORGE_CONFIG_TYPE3
     fprintf( stderr, "Copyright (c) 2000-2008 by George Williams.\n Executable based on sources from %s-ML.\n",
@@ -843,7 +866,8 @@ int main( int argc, char **argv ) {
     /* Start X if they haven't already done so. Well... try anyway */
     /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
     /* (osascript depends on a libjpeg which isn't found if we look in /sw/lib first */
-    if ( uses_local_x(argc,argv) && getenv("DISPLAY")==NULL ) {
+    local_x = uses_local_x(argc,argv);
+    if ( local_x==1 && getenv("DISPLAY")==NULL ) {
 	/* Don't start X if we're just going to quit. */
 	/* if X exists, it isn't needed. If X doesn't exist it's wrong */
 	if ( !hasquit(argc,argv)) {
@@ -857,7 +881,8 @@ int main( int argc, char **argv ) {
 #endif
 	}
 	setenv("DISPLAY",":0.0",0);
-    }
+    } else if ( local_x==1 && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
+	local_x = 0;
 #endif
 
     FF_SetUiInterface(&gdraw_ui_interface);
@@ -877,9 +902,41 @@ int main( int argc, char **argv ) {
 
     GResourceSetProg(argv[0]);
 
+#if defined(__Mac)
+    /* The mac seems to default to the "C" locale, LANG and LC_MESSAGES are not*/
+    /*  defined. This means that gettext will not bother to look up any message*/
+    /*  files -- even if we have a "C" or "POSIX" entry in the locale diretory */
+    /* Now if X11 gives us the command key, I want to force a rebinding to use */
+    /*  Cmd rather than Control key -- more mac-like. But I can't do that if   */
+    /*  there is no locale. So I force a locale if there is none specified */
+    /* I force the US English locale, because that's the what the messages are */
+    /*  by default so I'm changing as little as I can. I think. */
+    /* Now the locale command will treat a LANG which is "" as undefined, but */
+    /*  gettext will not. So I don't bother to check for null strings or "C"  */
+    /*  or "POSIX". If they've mucked with the locale perhaps they know what  */
+    /*  they are doing */
+    { int did_keybindings = 0;
+    if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
+	/* Ok, we get the command key */
+	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL )
+	    setenv("LC_MESSAGES","en_US.UTF-8",0);
+	/* Can we find a set of keybindings designed for the mac with cmd key? */
+	bind_textdomain_codeset("Mac-FontForge-MenuShortCuts","UTF-8");
+	bindtextdomain("Mac-FontForge-MenuShortCuts", getLocaleDir());
+	if ( *dgettext("Mac-FontForge-MenuShortCuts","Flag0x10+")!='F' ) {
+	    GMenuSetShortcutDomain("Mac-FontForge-MenuShortCuts");
+	    did_keybindings = 1;
+	}
+    }
+    if ( !did_keybindings ) {
+	/* Nope. we can't. Fall back to the normal stuff */
+#endif
     GMenuSetShortcutDomain("FontForge-MenuShortCuts");
     bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
     bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
+#if defined(__Mac)
+    }}
+#endif
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");

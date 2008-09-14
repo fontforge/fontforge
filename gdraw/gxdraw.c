@@ -2906,8 +2906,9 @@ return;
 	gevent.u.chr.state = event->xkey.state;
 /*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
+	/* No... don't. Let the user have access to the command key as distinct from control */
 	/* I don't think it hurts to leave this enabled... */
-	if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control;
+	/* if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control; */
 /* Under 10.4 the option key generates the meta mask already */
 /*	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta; */
 /*#endif*/

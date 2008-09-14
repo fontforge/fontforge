@@ -112,9 +112,12 @@ enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
 /* Both Suse and Mac OS/X.2 now map option to 0x2000, but under 10.0 it was meta */
 /* Under 10.4 it is the meta mask again */
 	/*ksm_option=0x2000,*/
+	ksm_menumask=(ksm_control|ksm_meta|ksm_cmdmacosx|0xf0),
+
 	ksm_button1=(1<<8), ksm_button2=(1<<9), ksm_button3=(1<<10),
 	ksm_button4=(1<<11), ksm_button5=(1<<12),
-	ksm_buttons=(ksm_button1|ksm_button2|ksm_button3|ksm_button4|ksm_button5)};
+	ksm_buttons=(ksm_button1|ksm_button2|ksm_button3|ksm_button4|ksm_button5)
+	};
 enum mnemonic_focus { mf_normal, mf_tab, mf_mnemonic, mf_shortcut };
 typedef struct gevent {
     enum event_type { et_noevent = -1, et_char, et_charup,
