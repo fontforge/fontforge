@@ -385,7 +385,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 
     if ( mi->sub!=NULL )
 	GMenuDrawArrow(m,ybase,r2l);
-    else if ( mi->shortcut!=0 && (mi->short_mask&0xfff0)==0 && mac_menu_icons ) {
+    else if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
 	_shorttext(mi->shortcut,0,shortbuf);
 	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
 	if ( r2l ) {
@@ -1137,7 +1137,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	if ( mi[i].ti.checkable ) m->hasticks = true;
 	temp = GTextInfoGetWidth(owner,&mi[i].ti,m->font);
 	if ( temp>width ) width = temp;
-	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xfff0)==0 && mac_menu_icons ) {
+	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) {
 	    _shorttext(mi[i].shortcut,0,buffer);
 	    temp = GDrawGetTextWidth(owner,buffer,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
 	} else {
