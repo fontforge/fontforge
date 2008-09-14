@@ -10246,7 +10246,7 @@ return( NULL );
 return( NULL );
 
     if ( tuple==Py_None ) {
-	SFRemoveSavedTable(tag);
+	SFRemoveSavedTable(((PyFF_Font *) self)->fv->sf,tag);
 Py_RETURN(self);
     }
 	
