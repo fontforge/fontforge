@@ -2342,7 +2342,7 @@ return( mc->lks[l].to );
 	otl->next = NULL; otl->subtables = NULL;
 	OrderNewLookup(mc->sf_to,otl,before);
 	if ( !do_contents )
-	    FIOTLookupCopyInto(mc->sf_to,mc->sf_from, from_otl, otl, scnt, before);
+	    FIOTLookupCopyInto(mc->sf_to,mc->sf_from, from_otl, otl, 0, before);
     } else
 	otl = mc->lks[l].to;
     if ( !do_contents )
