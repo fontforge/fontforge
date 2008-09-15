@@ -1025,8 +1025,6 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
 		    *ipt++ = col>>16;
 		}
 	    }
- printf( "%d\n", ipt - ((uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line) );
-	    pt = ipt;			/* !!!! debug */
 	}
     } else {
 	uint32 *ipt;
@@ -2110,7 +2108,7 @@ static XImage *gdraw_1_on_1_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    bit = 0x1;
 	}
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    sbit = 0x80 >> (index&7);
 	    if ( pt[index>>3]&sbit )
 		*ipt |= bit;
@@ -2158,7 +2156,7 @@ static void gdraw_either_on_1_mag_dithered(GXDisplay *gdisp, GImage *image,int d
 	gd = 0;
 	g_d = gdisp->gg.green_dith;
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
 		index = ((index>>16)&0xff) + ((index>>8)&0xff) + (index&0xff);
@@ -2222,7 +2220,7 @@ static void gdraw_either_on_8_mag_dithered(GXDisplay *gdisp, GImage *image,int d
 	rd = gd = bd = 0;
 	r_d = gdisp->gg.red_dith; g_d = gdisp->gg.green_dith; b_d = gdisp->gg.blue_dith;
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
@@ -2315,7 +2313,7 @@ static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dw
 	else
 	    mbit = 0x1;
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
@@ -2375,7 +2373,7 @@ static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	ipt = (uint16 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
 	mpt = (uint16 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
@@ -2436,7 +2434,7 @@ static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	    mbit = 0x1;
 #endif
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
@@ -2514,7 +2512,7 @@ static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhi
 	ipt = (uint32 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
 	mpt = (uint32 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
@@ -2567,7 +2565,7 @@ static void gdraw_any_on_32a_mag(GXDisplay *gdisp, GImage *image,int dwid,int dh
 	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
 	ipt = (uint32 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*swid)/dwid;
+	    index = (j*(double) swid)/dwid;
 	    /*if ( index>=src->xend ) index = src->xend-1;*/
 	    if ( is_32bit ) {
 	    	index = ((uint32 *) pt)[index];
