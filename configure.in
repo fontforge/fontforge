@@ -698,8 +698,37 @@ dnl a pity.
 
 dnl Build a $ac_confdir/po/Makefile.in with appropriate instructions for installing all locales
 
+MACKEYS=
 if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
-   mofiles="$(cd $ac_confdir/po && ls *.po | sed -e 's#\.po#\.mo#g')"
+ if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+  mofiles="$(cd $ac_confdir/po/mackeys && ls *.po | sed -e 's#\.po#\.mo#g')"
+
+  cat </dev/null >$ac_confdir/po/mackeys/Makefile.in
+  echo 'prefix = @prefix@' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'localedir = $(prefix)/share/locale' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'INSTALL = @INSTALL@' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'INSTALL_DATA = @INSTALL_DATA@' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo "MOFILES =" $mofiles >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '.SUFFIXES:' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '.SUFFIXES: .po .mo' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'all: $(MOFILES)' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '.po.mo:' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '	msgfmt -o $@ $<' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'install:' >> $ac_confdir/po/mackeys/Makefile.in
+
+  for localefile in $mofiles; do
+    locale="${localefile%%.mo}"
+    echo '	mkdir -p $(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES'       >> $ac_confdir/po/mackeys/Makefile.in
+    echo '	$(INSTALL_DATA)' $localefile '$(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES/Mac-FontForge-MenuShortCuts.mo'       >> $ac_confdir/po/mackeys/Makefile.in
+  done
+  MACKEYS=po/mackeys/Makefile
+ fi
+ mofiles="$(cd $ac_confdir/po && ls *.po | sed -e 's#\.po#\.mo#g')"
 
  cat </dev/null >$ac_confdir/po/Makefile.in
  echo 'prefix = @prefix@' >> $ac_confdir/po/Makefile.in
@@ -713,6 +742,9 @@ if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
  echo '.SUFFIXES: .po .mo' >> $ac_confdir/po/Makefile.in
  echo '' >> $ac_confdir/po/Makefile.in
  echo 'all: $(MOFILES)' >> $ac_confdir/po/Makefile.in
+ if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+  echo '	cd mackeys ; make all'  >> $ac_confdir/po/Makefile.in
+ fi
  echo '' >> $ac_confdir/po/Makefile.in
  echo '.po.mo:' >> $ac_confdir/po/Makefile.in
  echo '	msgfmt -o $@ $<' >> $ac_confdir/po/Makefile.in
@@ -724,6 +756,9 @@ if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
     echo '	mkdir -p $(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES'       >> $ac_confdir/po/Makefile.in
     echo '	$(INSTALL_DATA)' $localefile '$(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo'       >> $ac_confdir/po/Makefile.in
   done
+ if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+  echo '	cd mackeys ; make install'  >> $ac_confdir/po/Makefile.in
+ fi
 else
  cat </dev/null >$ac_confdir/po/Makefile.in
  echo 'all:' >> $ac_confdir/po/Makefile.in
@@ -776,11 +811,12 @@ cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
 cp $ac_confdir/gutils/Makefile.dynamic.in $ac_confdir/gutils/Makefile.in
 cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
 cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY $GTFF )
+UMAP=
 if test -e umap >/dev/null 2>&1 ; then
   cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
-  AC_OUTPUT( umap/Makefile )
+  UMAP=umap/Makefile
 fi
+AC_OUTPUT( Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY $GTFF $MACKEYS $UMAP )
 
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS
