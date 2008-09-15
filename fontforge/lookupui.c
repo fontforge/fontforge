@@ -5010,8 +5010,9 @@ static void FI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
 	}
 	lk->all[i].subtable_cnt = lk->all[i].subtable_max = scnt;
 	lk->all[i].subtables = gcalloc(scnt,sizeof(struct lksubinfo));
-	for ( sub=to_otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
-	    lk->all[i].subtables[scnt].subtable = sub;
+	if ( scnt>0 )
+	    for ( sub=to_otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
+		lk->all[i].subtables[scnt].subtable = sub;
     }
 }
 
