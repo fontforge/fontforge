@@ -2888,7 +2888,7 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         /* not a real stem, but rather two (or more) separate point pairs,
         /* which occasionally happened to have nearly the same vectors and 
         /* to be positioned on the same lines */
-	if ( stem->toobig || stem->activecnt >= stem->chunk_cnt )
+	if ( stem->toobig )
     continue;
 	
         if (( stem->unit.y > -.05 && stem->unit.y < .05 ) || 
