@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 13-Feb-2008 -->
+  <!-- AP: Last modified: 16-Sep-2008 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -658,9 +658,12 @@
     <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
       <TR>
 	<TD>uint16</TD>
-	<TD>type</TD>
-	<TD>2=&gt;quadratic splines, 3=&gt;cubic splines, 1=&gt;spiros, other values
-	  not defined</TD>
+	<TD>typeflag</TD>
+	<TD>Low order byte is the type<BR>
+	  2=&gt;quadratic splines, 3=&gt;cubic splines, 1=&gt;spiros, other values
+	  not defined<BR>
+	  High order byte are the flags<BR>
+	  0x100 =&gt; foreground layer</TD>
       </TR>
       <TR>
 	<TD>uint16</TD>

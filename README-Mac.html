@@ -68,7 +68,7 @@
 You must ensure that you have the the X11 server installed on your system.
 <DL>
   <DT>
-    10.4
+    10.5, 10.4
   <DD>
     <UL>
       <LI>
@@ -105,6 +105,34 @@ You may also want to install the
 <A HREF="http://fink.sourceforge.net/">fink</A> package which includes many
 useful libraries (see the <A HREF="#Dependencies">dependencies</A> section
 below for more info on this)
+  <H4>
+    <A NAME="Configuring-X11">Configuring</A> X11
+  </H4>
+  <P>
+  <CODE>X11-&gt;Preferences-&gt;Input</CODE>
+  <P>
+  FontForge is designed to make use of a three button mouse. It is also designed
+  to make use of modifier key modes on mouse clicks (so Control left click
+  can mean something different than left click). If you have a three (or two)
+  button mouse then use it (and turn off "<CODE>Emulate three button
+  mouse</CODE>" in the X11 preferences). If you have a standard one button
+  mouse then you have the option of having the mac simulate a three button
+  mouse (for instance Option mouse click behaves like clicking the middle mouse
+  button). Unfortunately this means you can no longer use the Option key to
+  change the behavior of the left (only) button click. So either choice means
+  you lose capabilities.
+  <P>
+  Normally X11 is configured so that the Command key (cloverleaf) is bound
+  to the X11 menu bar, and not to fontforge's. When fontforge starts it checks
+  this, and if X11 gets command then fontforge configures its menubar to use
+  Control rather than command. This isn't very mac-like. If you turn <B>off</B>
+  the "<CODE>Enable keyboard shortcuts under X11</CODE>" preference item then
+  fontforge will configure its menubar to make use of Command.
+  <H4>
+    Note:
+  </H4>
+  <P>
+  On the mac, the Option key is mapped to what fontforge calls "Alt" or "Meta".
 <H3>
   <A NAME="Obtaining">Obtaining</A> one of my pre-built packages
 </H3>
@@ -115,9 +143,12 @@ file release system</A>. There's a certain amount of pother involved in using
 the file release system, but you get the file eventually.
 <P>
 I currently post builds for Mac 10.5 &amp; 10.4 (I post different builds for the
-two systems because they provide different python libraries). <STRONG>Neither of
-these builds will work on 10.3</STRONG>. If you wish a 10.3 or earlier build
-you must build from source.
+two systems because they provide different python libraries).
+<p>
+<STRONG>Neither of
+these builds will work on 10.3</STRONG>. If you wish a 10.3 you can build from
+current source or find a build from 2006. If you wish a 10.2 or earlier build
+the current sources will not work and you must delve more deeply into the past.
 <UL>
   <LI>
     If you follow the
@@ -158,11 +189,6 @@ proceed to install.
 FontForge does not conform to Apple's Human Interface Guidelines. FontForge
 never will. Don't expect it to look like a normal Mac Application. It doesn't.
 <P>
-Before you can start FontForge you must start the X11 server. You do this
-by opening the Utilities sub-folder of the Applications folder and double
--clicking on X11. This will bring up a new menu bar, and under the Applications
-menu you should find an entry for FontForge.
-<P>
   <HR>
 <H2>
   Before you build (on a <A NAME="src-mac">mac</A>)
@@ -173,7 +199,7 @@ installed on your system. This process is slightly different on OS/X 10.3
 &amp; 10.4
 <DL>
   <DT>
-    10.4
+    10.5, 10.4
   <DD>
     <UL>
       <LI>
@@ -296,14 +322,6 @@ it (do not type "$"):
 <A NAME="su">Having</A> done this you will probably want to install what
 you have built. This should be done as root:
 <BLOCKQUOTE>
-  <PRE><FONT COLOR="Gray">$ </FONT>su
-password: ******
-# make install
-</PRE>
-</BLOCKQUOTE>
-<P>
-On the mac the process is slightly different:
-<BLOCKQUOTE>
   <PRE><FONT COLOR="Gray">$ </FONT>sudo make install
 password: ******
 </PRE>
@@ -325,8 +343,9 @@ for a complete list of options. Some of the most useful are described below.
 </H4>
 <P>
 If you don't want to install X11 on your system, you can use fontforge as
-a command line tool which can execute scripts to manipulate fonts. FontForge's
-scripting language is described in detail
+a command line tool which can execute scripts to manipulate fonts. FontForge
+supports <A HREF="http://fontforge.sf.net/python.html">python scripting</A>
+and a legacy scripting language unique to ff which is described in detail
 <A HREF="http://fontforge.sf.net/scripting.html">in the section on
 scripting.</A>
 <BLOCKQUOTE>
@@ -340,6 +359,8 @@ scripting.</A>
 If you do want to edit PostScript type3 fonts, you can configure fontforge
 to give you access to more drawing modes than are generally available in
 fonts.
+<P>
+(This also lets you create more complex SVG fonts).
 <BLOCKQUOTE>
   <PRE><FONT COLOR="Gray">$ </FONT>configure --enable-type3
 </PRE>
@@ -371,12 +392,9 @@ If you want to install fontforge in a different directory (say in /usr/bin)
 If you have a copy of the cvs tree on your system then you should be able
 to type
 <BLOCKQUOTE>
-  <PRE># make install_docs
+  <PRE><FONT COLOR="Gray">$ </FONT>sudo make install_docs
 </PRE>
 </BLOCKQUOTE>
-<P>
-Again you will probably need to be root to do this install too. Use either
-"su" or "sudo" as appropriate for your system (<A HREF="#su">see above</A>).
 <H2>
   <A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)
 </H2>
@@ -384,7 +402,7 @@ Again you will probably need to be root to do this install too. Use either
 FontForge tries to avoid hard dependencies. If a library is missing then
 fontforge will (in most cases) be able to continue to run, it will just lack
 whatever functionality the library provides. So if you don't need to import
-tiff images, you don't need libtiff. If you don't need to hand SVG fonts
+tiff images, you don't need libtiff. If you don't need to handle SVG fonts
 you don't need libxml2, etc.
 <P>
 If you want to do autotracing around character images you should also download
@@ -396,15 +414,6 @@ either
     Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
     program.</A>
 </UL>
-<P>
-If you want to edit <A NAME="cidmaps">CID keyed </A>fonts you need these
-<A HREF="cidmaps.tgz">character set descriptions</A>. (These were last updated
-22-Dec-2004)
-<P>
-You might want this addition to FontForge's built in
-<A HREF="Encodings.ps.gz">character set encodings.</A> Use FontForge's
-Encoding-&gt;Load Encoding command to add these encodings to the Encoding
-Menu.
 <P>
 With the appropriate libraries, FontForge can import png, tiff, and gif images
 to act as character backgrounds for tracing purposes (FontForge can import
@@ -638,7 +647,7 @@ is available online.</A>
 Once you have downloaded the documentation tarball as described above, you
 should move to the directory containing it, and type:
 <BLOCKQUOTE>
-  <PRE><FONT COLOR="Gray">$ </FONT>su
+  <PRE><FONT COLOR="Gray">$ </FONT>sudo sh
 password: ******
 # mkdir -p /usr/local/share/doc/fontforge
 # mv fontforge_htdocs*.tgz /usr/local/share/doc/fontforge
@@ -673,7 +682,11 @@ to find documentation online.
   work. Or you
   can select the font, and invoke <CODE>File-&gt;Get Info</CODE> (in the Finder's
   menu) and use the "Open with" control to select an application.
-
+  <P>
+  On the mac the Option key is used to invoke the functionality that fontforge's
+  docs call "Alt" or "Meta". (See the section on
+  <A HREF=#Configuring-X11">X11 configuration</A> for notes
+  on three button mice and the command key).
     <HR>
   <P>
   You can also start fontforge using traditional unix methods
