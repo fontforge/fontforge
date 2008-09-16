@@ -949,7 +949,7 @@ static int PrepareDStemList( GlyphData *gd, StemData **dstems ) {
         if ( stem->toobig ||
             ( stem->unit.y > -.05 && stem->unit.y < .05 ) ||
             ( stem->unit.x > -.05 && stem->unit.x < .05 ) ||
-            stem->activecnt == 0 )
+            stem->activecnt == 0 || stem->lpcnt == 0 || stem->rpcnt == 0 )
     continue;
 
         prevlsp = prevrsp = 1e4;
@@ -1348,11 +1348,11 @@ return;
     /* of this situation */
     left = stem->left; right = stem->right;
     if ( left.x < orig_b->minx ) {
-        left.y = (( orig_b->minx - left.x ) * stem->unit.y )/stem->unit.x;
+        left.y += (( orig_b->minx - left.x ) * stem->unit.y )/stem->unit.x;
         left.x = orig_b->minx;
     }
     if ( right.x < orig_b->minx ) {
-        right.y = (( orig_b->minx - right.x ) * stem->unit.y )/stem->unit.x;
+        right.y += (( orig_b->minx - right.x ) * stem->unit.y )/stem->unit.x;
         right.x = orig_b->minx;
     }
     

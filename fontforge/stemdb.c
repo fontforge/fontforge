@@ -3239,6 +3239,25 @@ static int MergeSegments(struct segment *space, int cnt) {
 return( j );
 }
 
+static int MergeSegmentsFinal( struct segment *space, int cnt ) {
+    int i,j;
+
+    for ( i=j=0; i<cnt; ++i, ++j ) {
+        if ( i!=j )
+            space[j] = space[i];
+        while ( i+1<cnt && space[i+1].start<=space[j].end ) {
+            if ( space[i+1].end>space[j].end ) {
+                space[j].end = space[i+1].end;
+                space[j].ebase = space[i+1].ebase;
+                space[j].ecurved = space[i+1].ecurved;
+                space[j].curved = false;
+            }
+            ++i;
+        }
+    }
+return( j );
+}
+
 static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
     int i, j, pcnt=0;
     struct pointdata *pd, **pspace = gd->pspace;
@@ -3578,8 +3597,8 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 	}
     }
 
-    stem->activecnt = acnt;
     if ( acnt!=0 ) {
+        stem->activecnt = MergeSegmentsFinal( activespace,acnt );
 	stem->active = galloc(acnt*sizeof(struct segment));
 	memcpy(stem->active,activespace,acnt*sizeof(struct segment));
     }
@@ -3702,7 +3721,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         /* If a stem has straight edges, and it is wider than tall */
         /*  then it is unlikely to be a real stem */
 	width = stem->width;
-        ratio = gd->emsize/( 6 * width );
+        ratio = IsVectorHV( &stem->unit,0,true ) ? gd->emsize/( 6 * width ) : -0.33;
 	stem->toobig =  ( stem->clen + stem->clen * ratio < width );
     }
 
@@ -5093,6 +5112,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
     int i, j, k, hv, hasl, hasr, stem_cnt;
     struct pointdata *lpd, *rpd;
     double dmove;
+    DBounds bounds;
     
     /* Some checks for undesired stems which we couldn't do earlier */
     
@@ -5172,6 +5192,8 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
     gd->vbundle->l_to_r.x = 1; gd->vbundle->l_to_r.y = 0;
     
     if ( gd->has_slant && !gd->only_hv ) {
+        SplineCharFindBounds( gd->sc,&bounds );
+        
         gd->ibundle = gcalloc( 1,sizeof( struct stembundle ));
         gd->ibundle->stemlist = gcalloc( gd->stemcnt,sizeof( struct stemdata *));
         gd->ibundle->unit.x = gd->slant_unit.x; 
@@ -5198,10 +5220,10 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
             
             /* Move base point coordinates to the baseline to simplify
             /* stem ordering and positioning relatively to each other */
-            stem->left.x -= ( stem->left.y * stem->unit.x )/stem->unit.y;
-            stem->right.x -= ( stem->right.y * stem->unit.x )/stem->unit.y;
-            dmove = stem->left.y / stem->unit.y;
-            stem->left.y = stem->right.y = 0;
+            stem->left.x -= (( stem->left.y - bounds.miny ) * stem->unit.x )/stem->unit.y;
+            stem->right.x -= (( stem->right.y - bounds.miny ) * stem->unit.x )/stem->unit.y;
+            dmove = ( stem->left.y - bounds.miny ) / stem->unit.y;
+            stem->left.y = stem->right.y = bounds.miny;
             for ( j=0; j<stem->activecnt; j++ ) {
                 stem->active[j].start += dmove;
                 stem->active[j].end += dmove;
@@ -5278,6 +5300,10 @@ return;
     master->serifs[scnt].lbase = lbase;
     master->serifs[scnt].is_ball = is_ball;
     master->serif_cnt++;
+    
+    /* Mark the dependent stem as related with a bundle, although it
+    /* is not listed in that bundle itself */
+    slave->bundle = master->bundle;
 }
 
 static int IsBall( struct glyphdata *gd,
