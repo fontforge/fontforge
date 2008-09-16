@@ -6117,7 +6117,10 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->layers!=NULL ) {
 	info->layers[ly_fore] = sf->layers[ly_fore];
 	sf->layers[ly_fore].name = NULL;
-	free( sf->layers[ly_back].name );
+	if ( info->layers[ly_back].name==NULL )
+	    info->layers[ly_back].name = sf->layers[ly_back].name;
+	else
+	    free( sf->layers[ly_back].name );
 	free( sf->layers );
 	sf->layers = info->layers;
 	sf->layer_cnt = info->layer_cnt;

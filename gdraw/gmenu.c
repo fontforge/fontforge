@@ -51,7 +51,7 @@ static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
 /*  In the next X, the command key is mapped to 0x10 and Option to 0x2000 */
 /*  (again option key conversion are not done) */
 /*  In 10.3, the command key is mapped to 0x10 and Option to 0x8 */
-/*  In 10.5 the command key is mapped to 0x10 and Option to 0x2000 */
+/*  In 10.5 the command key is mapped to 0x10 and Option to 0x8 */
 /*   (and option conversions are done) */
 /*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
 /*  and the standard mac option conversions are done */
@@ -90,6 +90,7 @@ static void GMenuInit() {
 	    keyboard = strtol(keystr,NULL,10);
     }
     menu_grabs = GResourceFindBool("GMenu.Grab",menu_grabs);
+    mac_menu_icons = GResourceFindBool("GMenu.MacIcons",menu_grabs);
     gmenubar_inited = true;
     _GGroup_Init();
 }

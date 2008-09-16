@@ -132,11 +132,12 @@
 /*  a glyph_layer (includes all guides, even those listed above) */
 /* (all offsets, except those in the glyph_layer, relative to start of subtable) */
 
-/* 'PfEd' 'layr' Background layer data				 */
+/* 'PfEd' 'layr' layer data					 */
 /*  short  version number 0					 */
 /*  short  layer-count						 */
-/*  struct { short type; short offset-name; uint32 offset-to-layer-data; } */
+/*  struct { short typeflags; short offset-name; uint32 offset-to-layer-data; } */
 /*   the layer type is 2=>quadratic, 3=>PostScript, 1=>spiro	 */
+/*                     0x102=>quadratic fore, 0x103=>PS fore	 */
 /* A layer:							 */
 /*  short  count-of-ranges					 */
 /*  struct { short start-glyph, end-glyph, uint32 offset }	 */

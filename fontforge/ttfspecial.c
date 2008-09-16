@@ -418,6 +418,7 @@ static void pfed_glyph_layer(FILE *layr,Layer *layer, int do_spiro) {
 	    putc( (V_MoveTo|mod),layr);
 	    pfed_write_data(layr,sp->me.x,mod);
 	    pfed_write_data(layr,sp->me.y,mod);
+	    was_implicit = false;
 
 	    while ( sp->next!=NULL ) {
 		SplinePoint *nsp = sp->next->to;
@@ -444,12 +445,12 @@ static void pfed_glyph_layer(FILE *layr,Layer *layer, int do_spiro) {
 		    offx1 = sp->nextcp.x - base->x;
 		    offy1 = sp->nextcp.y - base->y;
 		    mod = pfed_mod_type(offx1, pfed_mod_type(offy1,V_B));
-		    if ( SPInterpolate(sp) && sp!=ss->first ) {
+		    if ( SPInterpolate(nsp) && nsp!=ss->first ) {
 			was_implicit = true;
 			if ( offx1==0 ) {
 			    putc( (V_QVImplicit|mod), layr);
 			    pfed_write_data(layr,offy1,mod);
-			} else if ( offy==0 ) {
+			} else if ( offy1==0 ) {
 			    putc( (V_QHImplicit|mod), layr);
 			    pfed_write_data(layr,offx1,mod);
 			} else {
@@ -727,7 +728,7 @@ static void PfEd_Layers(SplineFont *sf, struct PfEd_subtabs *pfed,
     /*  The background layer                           */
     /*  And the spiro representation of the foreground */
     /*  if the foreground is cubic and output is quad then the foreground */
-    /*  Any other background layers                    */
+    /*  Any other layers      		               */
     /* Check if any of these data exist                */
     uint8 has_spiro=0;
     uint8 *otherlayers;
@@ -736,20 +737,20 @@ static void PfEd_Layers(SplineFont *sf, struct PfEd_subtabs *pfed,
     FILE *layr;
 
     otherlayers = gcalloc(sf->layer_cnt,sizeof(uint8));
-    otherlayers[ly_fore] = !sf->layers[ly_fore].order2 && gi->is_ttf;
 
     /* We don't need to check in bygid order. We just want to know existance */
+    /* We don't check for refs because a reference to an empty glyph is empty too */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( (sc=sf->glyphs[i])!=NULL && sc->ttf_glyph!=-1 ) {
-	    if ( sc->layers[ly_back].splines!=NULL )
-		otherlayers[ly_back] = true;
 	    if ( pfed_has_spiros(&sc->layers[ly_fore]))
 		has_spiro = true;
-	    for ( l=ly_fore+1 ; l<sf->layer_cnt; ++l )
+	    for ( l=ly_back ; l<sf->layer_cnt; ++l )
 		if ( sc->layers[l].splines!=NULL )
 		    otherlayers[l] = true;
 	}
     }
+    otherlayers[gi->layer] = (!sf->layers[gi->layer].order2 &&  gi->is_ttf) ||
+			     ( sf->layers[gi->layer].order2 && !gi->is_ttf);
 
     for ( l=cnt=0; l<sf->layer_cnt; ++l )
 	if ( otherlayers[l] )
@@ -772,9 +773,10 @@ return;
 	putlong(layr,0);		/* Fill in later */
     }
     for ( l=0; l<sf->layer_cnt; ++l ) if ( otherlayers[l]) {
-	putshort(layr,sf->layers[l].order2?2:3);	/* Quadratic/cubic */
+	putshort(layr,(sf->layers[l].order2?2:3) |		/* Quadratic/cubic */
+		      (sf->layers[l].background?0:0x100));	/* Fore/Back */
 	putshort(layr,name_off);
-	if ( l==ly_fore ) name_off += strlen("Cubic_");
+	if ( l==ly_fore ) name_off += strlen("Old_");
 	name_off += strlen(sf->layers[l].name)+1;
 	putlong(layr,0);		/* Fill in later */
     }
@@ -783,7 +785,7 @@ return;
 	putc('\0',layr);
     }
     for ( l=0; l<sf->layer_cnt; ++l ) if ( otherlayers[l]) {
-	if ( l==ly_fore ) fputs("Cubic_",layr);
+	if ( l==ly_fore ) fputs("Old_",layr);
 	fputs(sf->layers[l].name,layr);
 	putc('\0',layr);
     }
@@ -1158,7 +1160,7 @@ return;
 	    sp = SplinePointCreate(current->me.x+offx,current->me.y+offy);
 	} else if ( v>=V_QCurveTo && v<=V_QVImplicit ) {
 	    int will_be_implicit = true;
-	    offx = offy = offx1 = offy1 = 0;
+	    offx = offy = 0; offx1 = offy1 = 1;	/* else implicit points become straight lines too soon */
 	    if ( v==V_QCurveTo ) {
 		offx = pfed_get_coord(ttf,m);
 		offy = pfed_get_coord(ttf,m);
@@ -1183,6 +1185,7 @@ return;
 	    if ( was_implicit ) {
 		current->me.x = (current->prevcp.x + current->nextcp.x)/2;
 		current->me.y = (current->prevcp.y + current->nextcp.y)/2;
+		SplineRefigure(current->prev);
 	    }
 	    was_implicit = will_be_implicit;
 	} else if ( v>=V_CurveTo && v<=V_HVCurveTo ) {
@@ -1311,7 +1314,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	last = cur;
     }
     
-    ss = ly->splines;			/* Only relevant for spiros where the live in someone else's layer */
+    ss = ly->splines;			/* Only relevant for spiros where they live in someone else's layer */
     for ( i=0; i<cc; ++i ) {
 	if ( type!=1 ) {		/* Not spiros */
 	    contours[i].ss = chunkalloc(sizeof(SplineSet));
@@ -1440,7 +1443,7 @@ static void pfed_read_layer(FILE *ttf,struct ttfinfo *info,int layer,int type, u
 static void pfed_readotherlayers(FILE *ttf,struct ttfinfo *info,uint32 base) {
     int i, l, lcnt, spiro_index, gid;
     int version;
-    struct layer_info { int type, name_off, data_off; char *name; } *layers;
+    struct layer_info { int type, name_off, data_off, sf_layer; char *name; } *layers;
     int non_spiro_cnt=0;
     SplineChar *sc;
 
@@ -1454,6 +1457,7 @@ return;			/* Bad version number */
 	layers[i].type     = getushort(ttf);
 	layers[i].name_off = getushort(ttf);
 	layers[i].data_off = getlong(ttf);
+	layers[i].sf_layer = -1;
     }
     spiro_index = -1;
     non_spiro_cnt = 0;
@@ -1465,7 +1469,7 @@ return;			/* Bad version number */
 	    if ( layers[i].type==1 && strcmp(layers[i].name,"Spiro")==0 )
 		spiro_index = i;
 	}
-	if ( layers[i].type==2 || layers[i].type==3 )
+	if ( layers[i].type==2 || layers[i].type==3 || layers[i].type==0x102 || layers[i].type==0x103 )
 	    ++non_spiro_cnt;
     }
     if ( spiro_index==-1 ) {
@@ -1478,16 +1482,28 @@ return;			/* Bad version number */
 
     if ( non_spiro_cnt!=0 ) {
 	info->layer_cnt = non_spiro_cnt+1;
-	info->layers = gcalloc(info->layer_cnt,sizeof(LayerInfo));
+	info->layers = gcalloc(info->layer_cnt+1,sizeof(LayerInfo));
+	info->layers[ly_back].background = true;
 	info->layers[ly_fore].order2 = info->to_order2;
-	l = 0;
-	for ( i=0; i<lcnt; ++i ) if ( layers[i].type==2 || layers[i].type==3 ) {
+	info->layers[ly_fore].background = false;
+	l = i = 0;
+	if ( (layers[i].type&0xff)==1 )
+	    ++i;
+	if ( layers[i].type&0x100 ) {
+	    /* first layer output is foreground, so it can't replace the background layer */
+	    ++info->layer_cnt;
+	    l = 2;
+	    info->layers[ly_back].order2 = info->to_order2;
+	}
+	for ( ; i<lcnt; ++i ) if ( (layers[i].type&0xff)==2 || (layers[i].type&0xff)==3 ) {
 	    info->layers[l].name   = layers[i].name;
 	    layers[i].name = NULL;
-	    info->layers[l].order2 = layers[i].type==2;
+	    layers[i].sf_layer = l;
+	    info->layers[l].order2 = (layers[i].type&0xff)==2;
+	    info->layers[l].background = (layers[i].type&0x100)?0:1;
 	    if ( l==0 ) l=2; else ++l;
 	}
-	if ( non_spiro_cnt>1 ) {
+	if ( info->layer_cnt!=2 ) {
 	    for ( gid = 0; gid<info->glyph_cnt; ++gid ) if ((sc=info->chars[gid])!=NULL ) {
 		sc->layers = grealloc(sc->layers,info->layer_cnt*sizeof(Layer));
 		memset(sc->layers+2,0,(info->layer_cnt-2)*sizeof(Layer));
@@ -1497,10 +1513,9 @@ return;			/* Bad version number */
     }
     if ( spiro_index!=-1 )
 	pfed_read_layer(ttf,info,ly_fore,layers[spiro_index].type,base,base+layers[spiro_index].data_off,version);
-    l = 0;
-    for ( i=0; i<lcnt; ++i ) if ( layers[i].type==2 || layers[i].type==3 ) {
-	pfed_read_layer(ttf,info,l,layers[i].type,base,base+layers[i].data_off,version);
-	if ( l==0 ) l=2; else ++l;
+    for ( i=0; i<lcnt; ++i ) if ( layers[i].sf_layer!=-1 ) {
+	pfed_read_layer(ttf,info,layers[i].sf_layer,layers[i].type&0xff,
+		base,base+layers[i].data_off,version);
     }
     for ( i=0; i<lcnt; ++i )
 	free( layers[i].name );
