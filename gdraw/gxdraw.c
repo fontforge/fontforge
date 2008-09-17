@@ -2904,11 +2904,14 @@ return;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
 	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
+#ifdef TESTXIM
+ printf( "Got key. state=%02x ", event->xkey.state );
+#endif
 /*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* No... don't. Let the user have access to the command key as distinct from control */
 	/* I don't think it hurts to leave this enabled... */
-	/* if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control; */
+/*	if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control; */
 /* Under 10.4 the option key generates the meta mask already */
 /*	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta; */
 /*#endif*/
@@ -2937,6 +2940,9 @@ return;
 		gevent.u.chr.keysym = keysym;
 		def2u_strncpy(gevent.u.chr.chars,charbuf,
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
+#ifdef TESTXIM
+ printf( "NO IM keysym=%x chars[0]=%x (pretrans %x) ", keysym, gevent.u.chr.chars[0], charbuf[0]);
+#endif
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
@@ -2957,9 +2963,15 @@ return;
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
 		if ( pt!=charbuf )
 		    free(pt);
+#ifdef TESTXIM
+ printf( "   IM keysym=%x chars[0]=%x (pretrans %x) ", keysym, gevent.u.chr.chars[0], charbuf[0]);
+#endif
 #else
-		gevent.u.chr.keysym = 0;
+		gevent.u.chr.keysym = keysym = 0;
 		gevent.u.chr.chars[0] = 0;
+#ifdef TESTXIM
+ printf( "Failed IM " );
+#endif
 #endif
 	    }
 	    /* Convert X11 keysym values to unicode */
@@ -2967,6 +2979,9 @@ return;
 		keysym -= XKeysym_Mask;
 	    else if ( keysym<=XKEYSYM_TOP && keysym>=0 )
 		keysym = gdraw_xkeysym_2_unicode[keysym];
+#ifdef TESTXIM
+ printf( "unikeysym=%x\n", keysym );
+#endif
 	    gevent.u.chr.keysym = keysym;
 	    if ( keysym==gdisp->mykey_keysym &&
 		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
