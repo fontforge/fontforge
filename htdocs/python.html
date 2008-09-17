@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 10-Sep-2008 -->
+  <!-- AP: Last modified: 17-Sep-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -357,12 +357,12 @@
 def nameGlyph(junk,glyph):
   print glyph.glyphname;
 
-fontforge.registerMenuItem(nameGlyph,None,None,"Glyph","None","Print Glyph Name");
+fontforge.registerMenuItem(nameGlyph,None,None,"Glyph",None,"Print Glyph Name");
 
 def neverEnableMe(junk,glyph):
   return False;
 
-fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph","None","SubMenu","Print Glyph Name");
+fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph",None,"SubMenu","Print Glyph Name");
 
 def importGlyph(junk,glyph,filename,toback):
   print "Import";
