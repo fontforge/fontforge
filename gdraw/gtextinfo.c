@@ -624,7 +624,7 @@ void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
     pt = strchr(sh,'|');
     if ( pt!=NULL )
 	sh = pt+1;
-    if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 )
+    if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 || strcmp(sh,"None")==0 )
 return;
 
     mask = 0;
