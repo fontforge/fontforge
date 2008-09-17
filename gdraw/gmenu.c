@@ -42,6 +42,8 @@ static int mac_menu_icons = true;
 #else
 static int mac_menu_icons = false;
 #endif
+static int mask_set=0;
+static int menumask = ksm_control|ksm_meta|ksm_shift;		/* These are the modifier masks expected in menus. Will be overridden by what's actually there */
 #ifndef _Keyboard
 # define _Keyboard 0
 #endif
@@ -890,7 +892,7 @@ static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
 	keysym = toupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( mi[i].sub==NULL && mi[i].shortcut == keysym &&
-		((ksm_shift|ksm_menumask)&event->u.chr.state)==mi[i].short_mask )
+		(menumask&event->u.chr.state)==mi[i].short_mask )
 return( &mi[i]);
 	else if ( mi[i].sub!=NULL ) {
 	    GMenuItem *ret = GMenuSearchShortcut(mi[i].sub,event);
@@ -1030,7 +1032,7 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     unichar_t keysym = event->u.chr.keysym;
 
     if ( islower(keysym)) keysym = toupper(keysym);
-    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(ksm_control|ksm_cmdmacosx))) {
+    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
 	/* Only look for mneumonics in the child */
 	while ( m->child!=NULL )
 	    m = m->child;
@@ -1045,7 +1047,7 @@ return( true );
     }
 
     /* then look for shortcuts everywhere */
-    if ( (event->u.chr.state&ksm_menumask) ||
+    if ( (event->u.chr.state&(menumask&~ksm_shift)) ||
 	    event->u.chr.keysym>=GK_Special ) {
 	for ( top = m; top->parent!=NULL ; top = top->parent );
 	if ( top->menubar!=NULL )
@@ -1295,7 +1297,7 @@ return( false );
 
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
-    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(ksm_control|ksm_cmdmacosx))) {
+    if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
 return( gmenu_key(mb->child,event));	/* this routine will do shortcuts too */
@@ -1310,7 +1312,7 @@ return( true );
     }
 
     /* then look for shortcuts everywhere */
-    if ( event->u.chr.state&ksm_menumask ||
+    if ( event->u.chr.state&(menumask&~ksm_shift) ||
 	    event->u.chr.keysym>=GK_Special ) {
 	mi = GMenuSearchShortcut(mb->mi,event);
 	if ( mi!=NULL ) {
@@ -1570,6 +1572,16 @@ static void GMenuBarFindXs(GMenuBar *mb) {
     GMenuBarTestSize(mb);
 }
 
+static void MenuMaskInit(GMenuItem *mi) {
+    int mask = GMenuItemArrayMask(mi);
+    if ( mask_set )
+	menumask |= mask;
+    else {
+	menumask = mask;
+	mask_set = true;
+    }
+}
+
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GMenuBar *mb = gcalloc(1,sizeof(GMenuBar));
 
@@ -1585,6 +1597,8 @@ GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GMenuBarFit(mb,gd);
     GMenuBarFindXs(mb);
+
+    MenuMaskInit(mb->mi);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&mb->g);
@@ -1609,6 +1623,8 @@ GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GMenuBarFit(mb,gd);
     GMenuBarFindXs(mb);
+
+    MenuMaskInit(mb->mi);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&mb->g);

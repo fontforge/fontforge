@@ -532,6 +532,7 @@ extern void GMenuItemArrayFree(GMenuItem *mi);
 extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
 extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
+extern int GMenuItemArrayMask(GMenuItem *mi);
 extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 
 extern GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def);
