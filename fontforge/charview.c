@@ -9559,7 +9559,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     /*if ( cv_auto_goto )*/		/* Chinese input method steals hot key key-strokes */
 	/* But if we don't do this, then people can't type menu short-cuts */
 	cv->gic   = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
+	GDrawSetGIC(cv->v,cv->gic,0,20);
 	cv->gwgic = GDrawCreateInputContext(cv->gw,gic_root|gic_orlesser);
+	GDrawSetGIC(cv->gw,cv->gwgic,0,20);
     GDrawSetVisible(cv->gw,true);
 
     if ( (CharView *) (sc->views)==NULL && updateflex )
