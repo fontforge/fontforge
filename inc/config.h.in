@@ -53,7 +53,6 @@
 #undef _NO_LIBJPEG
 #undef _NO_LIBTIFF
 #undef _NO_LIBSPIRO
-#undef X_HAVE_UTF8_STRING
 #undef NODYNAMIC
 #undef FREETYPE_HAS_DEBUGGER
 #undef _NO_SNPRINTF
