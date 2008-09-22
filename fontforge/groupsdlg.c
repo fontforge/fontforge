@@ -549,12 +549,17 @@ static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
     GTextInfo label[4];
     int sbsize = GDrawPointsToPixels(NULL,_GScrollBar_Width);
     GWindowAttrs wattrs;
+    static GFont *font=NULL;
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = 12;
-    rq.weight = 400;
-    grp->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(grp->gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = 12;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(grp->gw),&rq);
+	font = GResourceFindFont("Groups.Font",font);
+    }
+    grp->font = font;
     GDrawFontMetrics(grp->font,&as,&ds,&ld);
     grp->fh = as+ds; grp->as = as;
 

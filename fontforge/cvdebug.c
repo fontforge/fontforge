@@ -2068,6 +2068,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     extern int _GScrollBar_Width;
     double scalex, scaley;
     int i;
+    static GFont *monofont = NULL;
 
     scalex = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizex*cv->ft_dpi/72.0)) / (1<<6);
     scaley = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizey*cv->ft_dpi/72.0)) / (1<<6);
@@ -2202,11 +2203,15 @@ return;
 	dv->ii.v = GWidgetCreateSubWindow(dv->dv,&pos,ii_v_e_h,&dv->ii,&wattrs);
 	dv->ii.instrdata = &dv->id;
 
-	memset(&rq,0,sizeof(rq));
-	rq.family_name = monospace;
-	rq.point_size = -12;
-	rq.weight = 400;
-	dv->ii.gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
+	if ( monofont==NULL ) {
+	    memset(&rq,0,sizeof(rq));
+	    rq.family_name = monospace;
+	    rq.point_size = -12;
+	    rq.weight = 400;
+	    monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
+	    monofont = GResourceFindFont("DebugView.Font",monofont);
+	}
+	dv->ii.gfont = monofont;
 	GDrawSetFont(dv->ii.v,dv->ii.gfont);
 	GDrawFontMetrics(dv->ii.gfont,&as,&ds,&ld);
 	dv->ii.as = as+1;

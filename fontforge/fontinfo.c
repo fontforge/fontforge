@@ -7484,6 +7484,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     int ltype;
     static GBox small_blue_box;
     extern GBox _GGadget_button_box;
+    static GFont *fi_font=NULL;
 
     FontInfoInit();
 
@@ -10642,11 +10643,15 @@ return;
     OS2_UnicodeChange(GWidgetGetControl(gw,CID_UnicodeRanges),NULL);
     OS2_CodePageChange(GWidgetGetControl(gw,CID_CodePageRanges),NULL);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = sans;
-    rq.point_size = 12;
-    rq.weight = 400;
-    d->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( fi_font==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = sans;
+	rq.point_size = 12;
+	rq.weight = 400;
+	fi_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	fi_font = GResourceFindFont("FontInfo.Font",fi_font);
+    }
+    d->font = fi_font;
     GDrawFontMetrics(d->font,&as,&ds,&ld);
     d->as = as; d->fh = as+ds;
 

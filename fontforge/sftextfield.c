@@ -2148,6 +2148,7 @@ static void SFTextAreaInit() {
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.family_name = courier;
     sftextarea_font = GDrawInstanciateFont(screen_display,&rq);
+    sftextarea_font = GResourceFindFont("SFTextArea.Font",sftextarea_font);
     _GGadgetCopyDefaultBox(&sftextarea_box);
     sftextarea_box.padding = 3;
     sftextarea_box.flags = box_active_border_inner;

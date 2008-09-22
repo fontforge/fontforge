@@ -40,7 +40,6 @@ float star_percent=1.7320508;	/* Regular 6 pointed star */
 #include <utype.h>
 #include <gresource.h>
 
-extern void *font_cvt(char *val, void *def);
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;
 
@@ -58,7 +57,7 @@ static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 static int layer_height;
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-static GFont *font;
+static GFont *toolsfont=NULL, *layersfont=NULL;
 
 #define CV_TOOLS_WIDTH		53
 #define CV_TOOLS_HEIGHT		(10*27+4*12+2)
@@ -718,7 +717,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 	GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
 	GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
     }
-    GDrawSetFont(pixmap,font);
+    GDrawSetFont(pixmap,toolsfont);
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
@@ -1098,11 +1097,14 @@ return( cvtools );
 	/* Success! They've got a wacom tablet */
     }
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = -10;
-    rq.weight = 400;
-    font = GDrawInstanciateFont(NULL,&rq);
+    if ( toolsfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = -10;
+	rq.weight = 400;
+	toolsfont = GDrawInstanciateFont(NULL,&rq);
+	toolsfont = GResourceFindFont("ToolsPalette.Font",toolsfont);
+    }
 
     if ( cvvisible[1])
 	GDrawSetVisible(cvtools,true);
@@ -1474,7 +1476,6 @@ static void CVMakeLayers2(CharView *cv) {
     GGadgetCreateData gcd[25];
     GTextInfo label[25];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    GFont *font;
     FontRequest rq;
     int i;
     extern int _GScrollBar_Width;
@@ -1503,14 +1504,18 @@ return;
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = -12;
-    rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+    if ( layersfont==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = -12;
+	rq.weight = 400;
+	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
+    }
+
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
-	label[i].font = font;
-    layer2.font = font;
+	label[i].font = layersfont;
+    layer2.font = layersfont;
 
     gcd[0].gd.pos.width = GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
     gcd[0].gd.pos.x = CV_LAYERS2_WIDTH-gcd[0].gd.pos.width;
@@ -2471,7 +2476,6 @@ GWindow BVMakeLayers(BitmapView *bv) {
     GGadgetCreateData gcd[8];
     GTextInfo label[8];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
-    GFont *font;
     FontRequest rq;
     int i;
 
@@ -2497,13 +2501,16 @@ return(bvlayers);
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = -12;
-    rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(bvlayers),&rq);
+    if ( layersfont==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = -12;
+	rq.weight = 400;
+	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
+	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
+    }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
-	label[i].font = font;
+	label[i].font = layersfont;
 
 /* GT: Abbreviation for "Visible" */
     label[0].text = (unichar_t *) _("V");

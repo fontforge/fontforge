@@ -2339,6 +2339,7 @@ void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     static unichar_t kernw[] = { '-', '1', '2', '3', '4', '5', 0 };
     GWindow gw;
     char titlebuf[300];
+    static GFont *font;
 
     for ( kcd = sf->kcd; kcd!=NULL && kcd->orig!=kc; kcd = kcd->next );
     if ( kcd!=NULL ) {
@@ -2395,11 +2396,15 @@ return;
 
     kc_width = GDrawPixelsToPoints(NULL,pos.width*100/GGadgetScale(100));
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.point_size = 12;
-    rq.weight = 400;
-    rq.family_name = courier;
-    kcd->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.point_size = 12;
+	rq.weight = 400;
+	rq.family_name = courier;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GResourceFindFont("KernClass.Font",font);
+    }
+    kcd->font = font;
     GDrawFontMetrics(kcd->font,&as,&ds,&ld);
     kcd->fh = as+ds; kcd->as = as;
     GDrawSetFont(gw,kcd->font);

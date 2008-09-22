@@ -710,6 +710,7 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     int as, ds, ld;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static unichar_t n9999[] = { '9', '9', '9', '9', 0 };
+    static GFont *font = NULL;
 
     memset(&hist,0,sizeof(hist));
     hist.sf = sf;
@@ -752,11 +753,15 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     pos.height = pos.width + hist.yoff;
     hist.gw = gw = GDrawCreateTopWindow(NULL,&pos,hist_e_h,&hist,&wattrs);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = 10;
-    rq.weight = 400;
-    hist.font = GDrawInstanciateFont(NULL,&rq);
+    if ( font == NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = 10;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(NULL,&rq);
+	font = GResourceFindFont("Histogram.Font",font);
+    }
+    hist.font = font;
     GDrawFontMetrics(hist.font,&as,&ds,&ld);
     hist.fh = as+ds; hist.as = as;
 

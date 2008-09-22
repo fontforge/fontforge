@@ -1961,6 +1961,7 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     int as, ds, ld;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int i,k;
+    static GFont *mathfont = NULL, *mathbold=NULL;
 
     MathInit();
     MKDInit( &mkd, sc );
@@ -1978,13 +1979,21 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     pos.height = 400;
     mkd.gw = gw = GDrawCreateTopWindow(NULL,&pos,mkd_e_h,&mkd.cv_topright,&wattrs);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = 12;
-    rq.weight = 400;
-    mkd.plain = GDrawInstanciateFont(NULL,&rq);
-    rq.weight = 700;
-    mkd.bold = GDrawInstanciateFont(NULL,&rq);
+    if ( mathfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = 12;
+	rq.weight = 400;
+	mathfont = GDrawInstanciateFont(NULL,&rq);
+	mathfont = GResourceFindFont("Math.Font",mathfont);
+
+	GDrawDecomposeFont(mathfont, &rq);
+	rq.weight = 700;
+	mathbold = GDrawInstanciateFont(NULL,&rq);
+	mathbold = GResourceFindFont("Math.BoldFont",mathbold);
+    }
+    mkd.plain = mathfont;
+    mkd.bold = mathbold;
     GDrawFontMetrics(mkd.plain,&as,&ds,&ld);
     mkd.fh = as+ds; mkd.as = as;
 

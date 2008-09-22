@@ -1079,6 +1079,7 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int layer) {
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld,i;
     static int done=false;
+    static GFont *font=NULL;
 
     memset(&kpd,0,sizeof(kpd));
     kpd.sf = sf;
@@ -1225,11 +1226,15 @@ return;
 
     kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intpt) (gcd[1].gd.label->userdata),true,NULL);
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = -12;
-    rq.weight = 400;
-    kpd.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = -12;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GResourceFindFont("Combinations.Font",font);
+    }
+    kpd.font = font;
     GDrawFontMetrics(kpd.font,&as,&ds,&ld);
     kpd.fh = as+ds; kpd.as = as;
 

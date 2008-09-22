@@ -3860,7 +3860,7 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
     FontRequest rq;
-    GFont *font;
+    static GFont *font=NULL;
 
     CharInfoInit();
 
@@ -4820,12 +4820,15 @@ return;
 #endif
 
 	GHVBoxFitWindow(mbox[0].ret);
-	
-	memset(&rq,0,sizeof(rq));
-	rq.family_name = monospace;
-	rq.point_size = 12;
-	rq.weight = 400;
-	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);
+
+	if ( font==NULL ) {
+	    memset(&rq,0,sizeof(rq));
+	    rq.family_name = monospace;
+	    rq.point_size = 12;
+	    rq.weight = 400;
+	    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);
+	    font = GResourceFindFont("GlyphInfo.Font",font);
+	}
 	for ( i=0; i<5; ++i )
 	    GGadgetSetFont(psgcd[i][0].ret,font);
 	for ( i=0; i<2; ++i ) {
