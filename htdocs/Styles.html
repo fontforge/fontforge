@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 5-Sep-2008 -->
+  <!-- AP: Last modified: 21-Sep-2008 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -138,11 +138,11 @@
   At first glance this does not seem like much of a transformation, after all
   postscript and truetype fonts can be drawn at any pointsize. But traditionally,
   as the point-size decreases the boldness (thickness of the stems) increases
-  slightly, the counters and side bearings also change. For metal type there
-  were generally three drawings for a glyph in a given font, one for pointsizes
-  less than 10, one for pointsizes 10,11 and 12, and one for display sizes
-  (above 12). Most computer vector fonts do not show this change, while Knuth's
-  Computer Modern fonts have a continuum:
+  slightly, the counters and side bearings also change, and the overshoot
+  increases. For metal type there were generally three drawings for a glyph
+  in a given font, one for pointsizes less than 10, one for pointsizes 10,11
+  and 12, and one for display sizes (above 12). Most computer vector fonts
+  do not show this change, while Knuth's Computer Modern fonts have a continuum:
   <TABLE CELLPADDING="2">
     <CAPTION>
       Stem width, scaled by point size, made relative to 12pt
@@ -363,33 +363,38 @@
     Italic
   </H3>
   <P>
-  The Italic transformation contains at least four parts: A change in the
-  letterforms of the lowercase letters, a <A HREF="transform.html">skew</A>,
-  and a condensation and a narrowing of the vertical stems..
+  The Italic transformation contains at least five parts: A change in the
+  letterforms of the lowercase letters, a slight decrease in x-height, a
+  <A HREF="transform.html">skew</A>, and a condensation and a narrowing of
+  the vertical stems..
   <TABLE BORDER CELLPADDING="2">
     <TR>
       <TD></TD>
       <TD>Italic Angle</TD>
       <TD>Condensation</TD>
       <TD>Stem width change</TD>
+      <TD>X-Height change</TD>
     </TR>
     <TR>
       <TD>Computer Modern Text Italic</TD>
       <TD>14&#186;</TD>
       <TD>91%</TD>
       <TD>94%</TD>
+      <TD>100%</TD>
     </TR>
     <TR>
       <TD>Times New Roman</TD>
       <TD>16&#186;</TD>
       <TD>100%</TD>
       <TD>91%</TD>
+      <TD>96%</TD>
     </TR>
     <TR>
       <TD>Adobe Times</TD>
       <TD>15</TD>
       <TD>100%</TD>
       <TD>92%</TD>
+      <TD>95%</TD>
     </TR>
   </TABLE>
   <P>
@@ -568,6 +573,14 @@
       but fontforge doesn't support that because I don't find any consistency in
       behavior to emulate).
     <LI>
+      smaller x-height -- because a slanted line that reaches from baseline to
+      a given height is longer than the corresponding vertical line, it will also
+      appear (to the eye) to be slightly higher. To correct for this optical illusion,
+      the x-height of an italic font will generally be a little lower than the
+      xheight of its companion roman font. Note -- if the xheight changes, you
+      should adjust the BlueValues (and perhaps the FamilyBlues) with the
+      <A HREF="fontinfo.html#Private">Font Info dialog</A>.
+    <LI>
       more flowing -- This may be extremely
       obvious<IMG SRC="wItalic.png" WIDTH="68" HEIGHT="24">or more subtle -- in
       some fonts even the apparently straight sides of "l" will have a slight curve
@@ -591,7 +604,7 @@
   In typographic tradition serifed fonts have a paired italic font, while
   sans-serif fonts have an oblique font.
   <P>
-  <IMG SRC="ItalicDlg.png" WIDTH="404" HEIGHT="674" ALIGN="Right">The italic
+  <IMG SRC="ItalicDlg.png" WIDTH="406" HEIGHT="715" ALIGN="Right">The italic
   dialog attempts to give you control over as much of this as fontforge thinks
   it can do. The dialog displays the steps mentioned above, but backwards.
   <P>

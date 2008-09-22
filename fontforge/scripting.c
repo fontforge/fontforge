@@ -4374,6 +4374,7 @@ static void bScaleToEm(Context *c) {
 
 static ItalicInfo default_ii = {
     -13,		/* Italic angle (in degrees) */
+    .95,		/* xheight percent */
     /* horizontal squash, lsb, stemsize, countersize, rsb */
     .91, .89, .90, .91,		/* For lower case */
     .91, .93, .93, .91,		/* For upper case */
