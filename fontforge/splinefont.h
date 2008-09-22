@@ -235,6 +235,7 @@ struct simplifyinfo {
 
 typedef struct italicinfo {
     double italic_angle;
+    double xheight_percent;
     struct hsquash { double lsb_percent, stem_percent, counter_percent, rsb_percent; }
 	lc, uc, neither;
     enum { srf_flat, srf_simpleslant, srf_complexslant } secondary_serif;

@@ -2127,6 +2127,7 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
 
 static ItalicInfo last_ii = {
     -13,		/* Italic angle (in degrees) */
+    .95,		/* xheight percent */
     /* horizontal squash, lsb, stemsize, countersize, rsb */
     .91, .89, .90, .91,		/* For lower case */
     .91, .93, .93, .91,		/* For upper case */
@@ -2213,7 +2214,8 @@ return;
 #define CID_CompressStem	3002		/* for lc, 3012 for uc, 3022 for others */
 #define CID_CompressCounter	3003		/* for lc, 3013 for uc, 3023 for others */
 #define CID_CompressRSB		3004		/* for lc, 3014 for uc, 3024 for others */
-#define CID_ItalicAngle		4001
+#define CID_XHeightPercent	4001
+#define CID_ItalicAngle		4002
 
 static int Ital_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -2232,6 +2234,7 @@ static int Ital_Ok(GGadget *g, GEvent *e) {
 	    if ( err )
 return( true );
 	}
+	ii.xheight_percent = GetReal8(ew,CID_XHeightPercent,_("XHeight Percent"),&err)/100;
 	ii.italic_angle = GetReal8(ew,CID_ItalicAngle,_("Italic Angle"),&err);
 	if ( err )
 return( true );
@@ -2275,11 +2278,11 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[52], boxes[7], *forms[30], *compress[5][6], *sarray[5],
-	    *iaarray[4], *barray[10], *varray[39];
-    GTextInfo label[52];
+    GGadgetCreateData gcd[54], boxes[7], *forms[30], *compress[5][6], *sarray[5],
+	    *iaarray[3][3], *barray[10], *varray[39];
+    GTextInfo label[54];
     int k,f,r,i;
-    char lsb[3][40], stems[3][40], counters[3][40], rsb[3][40], ia[40];
+    char lsb[3][40], stems[3][40], counters[3][40], rsb[3][40], ia[40], xp[40];
 
     memset(&ed,0,sizeof(ed));
     ed.fv = fv;
@@ -2621,12 +2624,30 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     gcd[k++].creator = GSpacerCreate;
     varray[r++] = &gcd[k-1]; varray[r++] = NULL;
 
+    label[k].text = (unichar_t *) _("XHeight Percent:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k++].creator = GLabelCreate;
+    iaarray[0][0] = &gcd[k-1];
+
+    sprintf( xp, "%g", rint(last_ii.xheight_percent*100) );
+    label[k].text = (unichar_t *) xp;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.width = 50;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_XHeightPercent;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Traditionally the x-height of an italic face is slightly less\nthan the x-height of the companion roman");
+    gcd[k++].creator = GTextFieldCreate;
+    iaarray[0][1] = &gcd[k-1]; iaarray[0][2] = NULL;
+
     label[k].text = (unichar_t *) _("Italic Angle:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
     gcd[k++].creator = GLabelCreate;
-    iaarray[0] = &gcd[k-1];
+    iaarray[1][0] = &gcd[k-1];
 
     sprintf( ia, "%g", last_ii.italic_angle );
     label[k].text = (unichar_t *) ia;
@@ -2636,11 +2657,11 @@ void ItalicDlg(FontView *fv, CharView *cv) {
     gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
     gcd[k].gd.cid = CID_ItalicAngle;
     gcd[k++].creator = GTextFieldCreate;
-    iaarray[1] = &gcd[k-1]; iaarray[2] = NULL;
+    iaarray[1][1] = &gcd[k-1]; iaarray[1][2] = NULL; iaarray[2][0] = NULL;
 
     boxes[5].gd.flags = gg_enabled|gg_visible;
-    boxes[5].gd.u.boxelements = iaarray;
-    boxes[5].creator = GHBoxCreate;
+    boxes[5].gd.u.boxelements = iaarray[0];
+    boxes[5].creator = GHVBoxCreate;
     varray[r++] = &boxes[5]; varray[r++] = NULL;
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 17+31+16;

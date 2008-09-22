@@ -6518,6 +6518,55 @@ return;
     FigureGoodStems(sc->vstem);
 }
 
+static void _SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
+    int l;
+    struct position_maps pmaps[7];
+    struct fixed_maps fix;
+    DBounds b;
+    extern int no_windowing_ui;
+    int nwi = no_windowing_ui;
+
+    SplineCharLayerFindBounds(sc,layer,&b);
+    no_windowing_ui = true;		/* Turn off undoes */
+
+    l=0;
+    fix.maps = pmaps;
+    fix.maps[l].current = b.miny;
+    fix.maps[l++].desired = b.miny;
+    if ( b.miny<-xi->xheight_current/4 ) {
+	fix.maps[l].current = 0;
+	fix.maps[l++].desired = 0;
+	if ( xi->serif_height!=0 ) {
+	    fix.maps[l].current = xi->serif_height;
+	    fix.maps[l++].desired = xi->serif_height;
+	}
+    }
+    if ( xi->serif_height!=0 && b.maxy>=xi->xheight_current ) {
+	fix.maps[l].current = xi->xheight_current-xi->serif_height;
+	fix.maps[l++].desired = xi->xheight_desired-xi->serif_height;
+    }
+    if ( b.maxy>=xi->xheight_current ) {
+	fix.maps[l].current = xi->xheight_current;
+	fix.maps[l++].desired = xi->xheight_desired;
+    }
+    if ( b.maxy>=xi->xheight_desired ) {
+	fix.maps[l].current = b.maxy;
+	fix.maps[l++].desired = b.maxy;
+    } else {
+	fix.maps[l].current = b.maxy;
+	fix.maps[l++].desired = b.maxy + xi->xheight_desired - xi->xheight_current;
+    }
+    fix.cnt = l;
+    LowerCaseRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->hstem,1,&fix);
+    if ( xi->xheight_current!=0 ) {
+	double counter_len = SCFindCounterLen(sc->vstem,b.minx,b.maxx);
+	double remove_x = counter_len - xi->xheight_desired*counter_len/xi->xheight_current;
+	sc->width -= SmallCapsRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->vstem,0,remove_x,b.minx,b.maxx);
+    }
+    SplineSetRefigure(sc->layers[layer].splines);
+    no_windowing_ui = nwi;
+}
+
 static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     real skew[6], refpos[6];;
     RefChar *ref;
@@ -6577,12 +6626,20 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	    AddDiagonalItalicSerifs(sc,layer,ii);
     }
 
-#if 1 /* GWW_TEST*/			/* !!!!! debug */
     /* But small caps letters have the same stem sizes as lc so stems should be transformed like lc */
     ItalicCompress(sc,layer,letter_case==cs_lc? &ii->lc :
 			    letter_case==cs_uc? &ii->uc :
 			    letter_case==cs_smallcaps? &ii->lc :
 						&ii->neither);
+    if (( letter_case==cs_lc || letter_case==cs_smallcaps ) &&
+	    sc->layers[layer].splines!=NULL &&
+	    ii->xheight_percent>0 && ii->xheight_percent!=1.0 ) {
+	struct xheightinfo xi;
+	memset(&xi,0,sizeof(xi));
+	xi.xheight_current = ii->x_height;
+	xi.xheight_desired = ii->xheight_percent*ii->x_height;
+	_SCChangeXHeight(sc,layer,&xi);
+    }
 
     memset(skew,0,sizeof(skew));
     skew[0] = skew[3] = 1;
@@ -6596,7 +6653,7 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
 	ref->transform[4] += refpos[4];
 	SplinePointListTransform(ref->layers[0].splines,refpos,true);
     }
-#endif
+
     StemInfosFree(sc->hstem);  sc->hstem = NULL;
     StemInfosFree(sc->vstem);  sc->vstem = NULL;
     DStemInfosFree(sc->dstem); sc->dstem = NULL;
@@ -6700,23 +6757,8 @@ static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
 
     ii->tan_ia = tan(ii->italic_angle * 3.1415926535897932/180.0 );
 
-    for ( i=cnt=0, sum=0; xheight_str[i]!=0; ++i ) {
-	val = CharHeight(SFGetChar(sf,xheight_str[i],NULL),layer);
-	if ( val>0 ) {
-	    sum += val;
-	    ++cnt;
-	}
-    }
-    ii->x_height = cnt!=0 ? sum/cnt : (sf->ascent/2);
-
-    for ( i=cnt=0, sum=0; asc_height_str[i]!=0; ++i ) {
-	val = CharHeight(SFGetChar(sf,asc_height_str[i],NULL),layer);
-	if ( val>0 ) {
-	    sum += val;
-	    ++cnt;
-	}
-    }
-    ii->ascender_height = cnt!=0 ? sum/cnt : (2*sf->ascent/3);
+    ii->x_height          = StandardGlyphHeight(sf,layer,  xheight_str);
+    ii->ascender_height   = StandardGlyphHeight(sf,layer,  asc_height_str);
 
     for ( i=cnt=0, sum=0; descender_str[i]!=0; ++i ) {
 	val = CharDepth(SFGetChar(sf,descender_str[i],NULL),layer);
@@ -6846,59 +6888,15 @@ void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
 }
 
 static void SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
-    int l;
-    struct position_maps pmaps[7];
-    struct fixed_maps fix;
-    DBounds b;
     const unichar_t *alts;
-    extern int no_windowing_ui;
-    int nwi = no_windowing_ui;
 
     if ( sc->layers[layer].refs!=NULL &&
 			((alts = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true))!=NULL &&
 			 alts[1]!=0 ))
 	SCBuildComposit(sc->parent,sc,layer,true);
     else {
-	SplineCharLayerFindBounds(sc,layer,&b);
 	SCPreserveLayer(sc,layer,true);
-	no_windowing_ui = true;		/* Turn off undoes */
-
-	l=0;
-	fix.maps = pmaps;
-	fix.maps[l].current = b.miny;
-	fix.maps[l++].desired = b.miny;
-	if ( b.miny<-xi->xheight_current/4 ) {
-	    fix.maps[l].current = 0;
-	    fix.maps[l++].desired = 0;
-	    if ( xi->serif_height!=0 ) {
-		fix.maps[l].current = xi->serif_height;
-		fix.maps[l++].desired = xi->serif_height;
-	    }
-	}
-	if ( xi->serif_height!=0 && b.maxy>=xi->xheight_current ) {
-	    fix.maps[l].current = xi->xheight_current-xi->serif_height;
-	    fix.maps[l++].desired = xi->xheight_desired-xi->serif_height;
-	}
-	if ( b.maxy>=xi->xheight_current ) {
-	    fix.maps[l].current = xi->xheight_current;
-	    fix.maps[l++].desired = xi->xheight_desired;
-	}
-	if ( b.maxy>=xi->xheight_desired ) {
-	    fix.maps[l].current = b.maxy;
-	    fix.maps[l++].desired = b.maxy;
-	} else {
-	    fix.maps[l].current = b.maxy;
-	    fix.maps[l++].desired = b.maxy + xi->xheight_desired - xi->xheight_current;
-	}
-	fix.cnt = l;
-	LowerCaseRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->hstem,1,&fix);
-	if ( xi->xheight_current!=0 ) {
-	    double counter_len = SCFindCounterLen(sc->vstem,b.minx,b.maxx);
-	    double remove_x = counter_len - xi->xheight_desired*counter_len/xi->xheight_current;
-	    sc->width -= SmallCapsRemoveSpace(sc->layers[layer].splines,sc->anchor,sc->vstem,0,remove_x,b.minx,b.maxx);
-	}
-	SplineSetRefigure(sc->layers[layer].splines);
-	no_windowing_ui = nwi;
+	_SCChangeXHeight(sc,layer,xi);
 	SCCharChangedUpdate(sc,layer);
     }
 }
