@@ -728,6 +728,27 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     }
 }
 
+void FVReencode(FontViewBase *fv,Encoding *enc) {
+    EncMap *map;
+
+    if ( enc==&custom )
+	fv->map->enc = &custom;
+    else {
+	map = EncMapFromEncoding(fv->sf,enc);
+	fv->selected = grealloc(fv->selected,map->enccount);
+	memset(fv->selected,0,map->enccount);
+	EncMapFree(fv->map);
+	fv->map = map;
+    }
+    if ( fv->normal!=NULL ) {
+	EncMapFree(fv->normal);
+	fv->normal = NULL;
+    }
+    SFReplaceEncodingBDFProps(fv->sf,fv->map);
+    FVSetTitle(fv);
+    FontViewReformatOne(fv);
+}
+
 void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;

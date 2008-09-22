@@ -437,6 +437,7 @@ return;
 	ly_first = ly_last = layer;
     for ( layer = ly_first; layer<=ly_last; ++layer )
 	SCClearLayer(sc,layer);
+    --layer;
 
     if ( sc->parent!=NULL &&
 	    (sc->parent->multilayer ||

@@ -2293,7 +2293,7 @@ return;
     }
 
     /* Now force all other instances to match */
-    for ( i = 0; i<mm->instance_count; ++i ) if ( (sf=mm->instances[i])!=NULL && sf!=NULL )
+    for ( i = 0; i<mm->instance_count; ++i ) if ( (sf=mm->instances[i])!=NULL && sf!=base )
 	SFMatchGlyphs(sf,base,true);
     if ( mm->normal!=NULL )
 	SFMatchGlyphs(mm->normal,base,true);

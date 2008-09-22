@@ -282,6 +282,7 @@ extern void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6],uint8 *sel
 	enum fvtrans_flags);
 extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags );
+extern void FVReencode(FontViewBase *fv,Encoding *enc);
 extern void FVOverlap(FontViewBase *fv,enum overlap_type ot);
 extern void FVAddExtrema(FontViewBase *fv);
 extern void FVCorrectDir(FontViewBase *fv);

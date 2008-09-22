@@ -3151,27 +3151,11 @@ return( NULL );
 static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     Encoding *enc = NULL;
-    EncMap *map;
     SplineChar *sc;
 
     sc = FVFindACharInDisplay(fv);
     enc = FindOrMakeEncoding(mi->ti.userdata);
-    if ( enc==&custom )
-	fv->b.map->enc = &custom;
-    else {
-	map = EncMapFromEncoding(fv->b.sf,enc);
-	fv->b.selected = grealloc(fv->b.selected,map->enccount);
-	memset(fv->b.selected,0,map->enccount);
-	EncMapFree(fv->b.map);
-	fv->b.map = map;
-    }
-    if ( fv->b.normal!=NULL ) {
-	EncMapFree(fv->b.normal);
-	fv->b.normal = NULL;
-    }
-    SFReplaceEncodingBDFProps(fv->b.sf,fv->b.map);
-    FontViewSetTitle(fv);
-    FontViewReformatOne(&fv->b);
+    FVReencode((FontViewBase *) fv,enc);
     if ( sc!=NULL ) {
 	int enc = fv->b.map->backmap[sc->orig_pos];
 	if ( enc!=-1 )
