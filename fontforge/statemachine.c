@@ -1573,6 +1573,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     int as, ds, ld, sbsize;
     FontRequest rq;
     static unichar_t statew[] = { '1', '2', '3', '4', '5', 0 };
+    static GFont *font = NULL;
 
     smd->sf = sf;
     smd->sm = sm;
@@ -1814,11 +1815,15 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     GGadgetsCreate(smd->cw,gcd);
 
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.point_size = 12;
-    rq.weight = 400;
-    rq.family_name = courier;
-    smd->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.point_size = 12;
+	rq.weight = 400;
+	rq.family_name = courier;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GResourceFindFont("StateMachine.Font",font);
+    }
+    smd->font = font;
     GDrawFontMetrics(smd->font,&as,&ds,&ld);
     smd->fh = as+ds; smd->as = as;
     GDrawSetFont(gw,smd->font);

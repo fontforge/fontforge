@@ -4261,6 +4261,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
+    static GFont *mvfont=NULL;
 
     MetricsViewInit();
 
@@ -4316,11 +4317,15 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     mv->vsb = GScrollBarCreate(gw,&gd,mv);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = -12;
-    rq.weight = 400;
-    mv->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( mvfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = -12;
+	rq.weight = 400;
+	mvfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	mvfont = GResourceFindFont("MetricsView.Font",mvfont);
+    }
+    mv->font = mvfont;
     GDrawFontMetrics(mv->font,&as,&ds,&ld);
     mv->fh = as+ds; mv->as = as;
 

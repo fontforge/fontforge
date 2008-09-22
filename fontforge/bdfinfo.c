@@ -705,6 +705,7 @@ void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone) {
     GGadgetCreateData gcd[10];
     GTextInfo label[9];
     FontRequest rq;
+    static GFont *font = NULL;
     extern int _GScrollBar_Width;
     int sbwidth;
     static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
@@ -769,11 +770,15 @@ return;
     bd.width = pos.width; bd.height = pos.height;
     bd.value_x = GDrawPointsToPixels(bd.gw,135);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = sans;
-    rq.point_size = 10;
-    rq.weight = 400;
-    bd.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = sans;
+	rq.point_size = 10;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GResourceFindFont("BDFProperties.Font",font);
+    }
+    bd.font = font;
     {
 	int as, ds, ld;
 	GDrawFontMetrics(bd.font,&as,&ds,&ld);

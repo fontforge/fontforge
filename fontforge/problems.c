@@ -5183,6 +5183,7 @@ void SFValidationWindow(SplineFont *sf,int layer,enum fontformat format) {
     FontRequest rq;
     int as, ds, ld;
     int mask, needs_blue;
+    static GFont *valfont=NULL;
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
@@ -5252,11 +5253,15 @@ return;
     pos.height = GDrawPointsToPixels(NULL,300);
     valwin->gw = gw = GDrawCreateTopWindow(NULL,&pos,vw_e_h,valwin,&wattrs);
 
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = "Helvetica";
-    rq.point_size = 11;
-    rq.weight = 400;
-    valwin->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( valfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.utf8_family_name = "Helvetica";
+	rq.point_size = 11;
+	rq.weight = 400;
+	valfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	valfont = GResourceFindFont("Validate.Font",valfont);
+    }
+    valwin->font = valfont;
     GDrawFontMetrics(valwin->font,&as,&ds,&ld);
     valwin->fh = as+ds;
     valwin->as = as;

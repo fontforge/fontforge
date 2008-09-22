@@ -2560,6 +2560,7 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
     GGadgetCreateData gcd[5];
     GTextInfo label[4];
     int sbsize = GDrawPointsToPixels(NULL,_GScrollBar_Width);
+    static GFont *monofont=NULL, *propfont=NULL;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
@@ -2580,13 +2581,21 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
     pos.height = GDrawPointsToPixels(NULL,300);
     att->gw = GDrawCreateTopWindow(NULL,&pos,att_e_h,att,&wattrs);
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = 12;
-    rq.weight = 400;
-    att->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
-    rq.family_name = courier;		/* I want to show tabluar data sometimes */
-    att->monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+    if ( propfont==NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = 12;
+	rq.weight = 400;
+	propfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+	propfont = GResourceFindFont("ShowATT.Font",propfont);
+
+	GDrawDecomposeFont(propfont, &rq);
+	rq.family_name = courier;		/* I want to show tabluar data sometimes */
+	monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
+	monofont = GResourceFindFont("ShowATT.MonoFont",monofont);
+    }
+    att->font = propfont;
+    att->monofont = monofont;
     GDrawFontMetrics(att->font,&as,&ds,&ld);
     att->fh = as+ds; att->as = as;
 

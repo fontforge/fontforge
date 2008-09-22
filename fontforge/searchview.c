@@ -660,6 +660,7 @@ SearchView *SVCreate(FontView *fv) {
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     char fudgebuf[20];
     int k, sel_pos, efdo_pos;
+    static GFont *plainfont = NULL, *boldfont=NULL;
 
     if ( searcher!=NULL ) {
 	if ( SVAttachFV(fv,true)) {
@@ -686,13 +687,19 @@ return( NULL );
     sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,&sv->cv_srch,&wattrs);
     SVSetTitle(sv);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = 12;
-    rq.weight = 400;
-    sv->plain = GDrawInstanciateFont(NULL,&rq);
-    rq.weight = 700;
-    sv->bold = GDrawInstanciateFont(NULL,&rq);
+    if ( plainfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = 12;
+	rq.weight = 400;
+	plainfont = GDrawInstanciateFont(NULL,&rq);
+	plainfont = GResourceFindFont("SearchView.Font",plainfont);
+	GDrawDecomposeFont(plainfont, &rq);
+	rq.weight = 700;
+	boldfont = GDrawInstanciateFont(NULL,&rq);
+	boldfont = GResourceFindFont("SearchView.BoldFont",boldfont);
+    }
+    sv->plain = plainfont; sv->bold = boldfont;
     GDrawFontMetrics(sv->plain,&as,&ds,&ld);
     sv->fh = as+ds; sv->as = as;
 

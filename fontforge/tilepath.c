@@ -1050,6 +1050,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     int as, ds, ld;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int i,k;
+    static GFont *font = NULL, *bold=NULL;
 
     TPDInit( &tpd,sf );
     tpd.td = td;
@@ -1067,13 +1068,21 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     pos.height = 300;
     tpd.gw = gw = GDrawCreateTopWindow(NULL,&pos,tpd_e_h,&tpd.cv_first,&wattrs);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
-    rq.point_size = 12;
-    rq.weight = 400;
-    tpd.plain = GDrawInstanciateFont(NULL,&rq);
-    rq.weight = 700;
-    tpd.bold = GDrawInstanciateFont(NULL,&rq);
+    if ( font==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = helv;
+	rq.point_size = 12;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(NULL,&rq);
+	font = GResourceFindFont("TilePath.Font",font);
+
+	GDrawDecomposeFont(font, &rq);
+	rq.weight = 700;
+	bold = GDrawInstanciateFont(NULL,&rq);
+	bold = GResourceFindFont("TilePath.BoldFont",bold);
+    }
+    tpd.plain = font;
+    tpd.bold = bold;
     GDrawFontMetrics(tpd.plain,&as,&ds,&ld);
     tpd.fh = as+ds; tpd.as = as;
 

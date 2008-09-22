@@ -1849,6 +1849,7 @@ void OFLibBrowse(void) {
     FontRequest rq;
     int as, ds, ld;
     static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    static GFont *oflibfont=NULL;
 
     if ( active!=NULL ) {
 	GDrawSetVisible(active->gw,true);
@@ -1877,11 +1878,15 @@ return;
     pos.height = 400;
     active->gw = gw = GDrawCreateTopWindow(NULL,&pos,oflib_e_h,active,&wattrs);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = sans;
-    rq.point_size = 12;
-    rq.weight = 400;
-    active->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( oflibfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = sans;
+	rq.point_size = 12;
+	rq.weight = 400;
+	oflibfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	oflibfont = GResourceFindFont("OFLib.Font",oflibfont);
+    }
+    active->font = oflibfont;
     GDrawFontMetrics(active->font,&as,&ds,&ld);
     active->as = as; active->fh = as+ds;
 

@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <basics.h>
 #include <stdlib.h>
 #include "utype.h"
 #include "gdraw.h"
@@ -112,8 +113,10 @@ static void *font_cvt(char *val, void *def) {
     rq.point_size = 10;
     rq.weight = 400;
     rq.style = 0;
-    if ( _ggadget_default_font!=NULL )
-	GDrawDecomposeFont(_ggadget_default_font,&rq);
+    if ( def!=NULL )
+	GDrawDecomposeFont((FontInstance *)def, &rq);
+    else if ( _ggadget_default_font!=NULL )
+	GDrawDecomposeFont(_ggadget_default_font, &rq);
 
     for ( pt=val; *pt && *pt!='"'; ) {
 	for ( end=pt; *end!=' ' && *end!='\0'; ++end );
@@ -162,6 +165,14 @@ static void *font_cvt(char *val, void *def) {
     if ( fi==NULL )
 return( def );
 return( (void *) fi );
+}
+
+FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont) {
+    char *val = GResourceFindString(resourcename);
+    if ( val==NULL )
+return( deffont );
+
+return( font_cvt(val,deffont));
 }
 
 void _GGadgetCopyDefaultBox(GBox *box) {

@@ -722,6 +722,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     int as,ds,ld, lh;
     GGadgetCreateData gcd[11], *butarray[9], *harray[3], *varray[8];
     GTextInfo label[6];
+    static GFont *font=NULL;
 
     instrhelpsetup();
 
@@ -854,11 +855,15 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,ii_v_e_h,&iv->instrinfo,&wattrs);
     GDrawSetVisible(iv->instrinfo.v,true);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = monospace;
-    rq.point_size = -12;
-    rq.weight = 400;
-    iv->instrinfo.gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = monospace;
+	rq.point_size = -12;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GResourceFindFont("TTInstruction.Font",font);
+    }
+    iv->instrinfo.gfont = font;
     GDrawSetFont(iv->instrinfo.v,iv->instrinfo.gfont);
     GGadgetSetFont(iv->text,iv->instrinfo.gfont);
     GDrawFontMetrics(iv->instrinfo.gfont,&as,&ds,&ld);
@@ -1402,6 +1407,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     int numlen;
     static GBox tfbox;
     int i;
+    static GFont *font = NULL;
 
     sv->table = tab;
     sv->sf = sf;
@@ -1541,11 +1547,15 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 
-    memset(&rq,0,sizeof(rq));
-    rq.family_name = monospace;
-    rq.point_size = -12;
-    rq.weight = 400;
-    sv->gfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    if ( font==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.family_name = monospace;
+	rq.point_size = -12;
+	rq.weight = 400;
+	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+	font = GResourceFindFont("CVT.Font",font);
+    }
+    sv->gfont = NULL;
     GDrawSetFont(sv->v,sv->gfont);
     GDrawFontMetrics(sv->gfont,&as,&ds,&ld);
     sv->as = as+1;
