@@ -285,7 +285,7 @@ static SplineChar *SFMakeGlyphLike(SplineFont *sf, int gid, SplineFont *base) {
     sc->width = bsc->width; sc->widthset = true; sc->vwidth = bsc->vwidth;
     free(sc->name); sc->name = copy(bsc->name);
     sc->unicodeenc = bsc->unicodeenc;
-return( bsc );
+return( sc );
 }
 
 static char *_MMBlendChar(MMSet *mm, int gid) {
@@ -634,7 +634,7 @@ int MMReblend(FontViewBase *fv, MMSet *mm) {
     break;
 	err = MMBlendChar(mm,i);
 	if ( mm->normal->glyphs[i]!=NULL )
-	    _SCCharChangedUpdate(mm->normal->glyphs[i],fv->active_layer,-1);
+	    _SCCharChangedUpdate(mm->normal->glyphs[i],ly_fore,-1);
 	if ( err==NULL )
     continue;
 	if ( olderr==NULL ) {

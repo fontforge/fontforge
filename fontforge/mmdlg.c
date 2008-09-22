@@ -1738,6 +1738,7 @@ static void MMW_DoOK(MMW *mmw) {
     int isapple = GGadgetIsChecked(GWidgetGetControl(mmw->subwins[mmw_counts],CID_Apple));
     int defpos;
     struct psdict *oldprivate = NULL;
+    Encoding *enc = NULL;
 
     if ( !isapple ) {
 	if ( !GetWeights(mmw->gw, weights, mmw->mm, mmw->instance_count, mmw->axis_count))
@@ -1770,6 +1771,7 @@ return;
 	    if ( mmw->old->instances[j]->fv!=NULL ) {
 		fv = (FontView *) mmw->old->instances[j]->fv;
 		origname = copy(mmw->old->instances[j]->origname);
+		enc = fv->b.map->enc;
 	break;
 	    }
     }
@@ -1798,6 +1800,8 @@ return;
 	    mmw->loaded[j] = NULL;
 continue;
 	}
+	if ( enc==NULL && mmw->mm->instances[i]->fv!=NULL )
+	    enc = mmw->mm->instances[i]->fv->map->enc;
 	MMUsurpNew(mmw->mm->instances[i]);
     }
     if ( mmw->old!=NULL ) {
@@ -1942,6 +1946,9 @@ continue;
 
     if ( fv==NULL )
 	fv = (FontView *) FontViewCreate(setto->normal,false);
+    if ( enc==NULL )
+	enc = default_encoding;
+    FVReencode((FontViewBase *) fv,enc);
     mmw->done = true;
 }
 
