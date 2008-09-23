@@ -3721,7 +3721,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         /* If a stem has straight edges, and it is wider than tall */
         /*  then it is unlikely to be a real stem */
 	width = stem->width;
-        ratio = IsVectorHV( &stem->unit,0,true ) ? gd->emsize/( 6 * width ) : -0.33;
+        ratio = IsVectorHV( &stem->unit,0,true ) ? gd->emsize/( 6 * width ) : -0.25;
 	stem->toobig =  ( stem->clen + stem->clen * ratio < width );
     }
 
@@ -4651,6 +4651,14 @@ static void DumpGlyphData( struct glyphdata *gd ) {
                 stem->serifs[j].stem->right.x,stem->serifs[j].stem->right.y,
                 stem->serifs[j].is_ball,stem->serifs[j].lbase );
         }
+        if ( stem->prev_c_m != NULL ) {
+            fprintf( stderr,"\tprev counter master: l=%f r=%f\n",
+                stem->prev_c_m->left.x,stem->prev_c_m->right.x );
+        }
+        if ( stem->next_c_m != NULL ) {
+            fprintf( stderr,"\tnext counter master: l=%f r=%f\n",
+                stem->next_c_m->left.x,stem->next_c_m->right.x );
+        }
     }
     fprintf( stderr, "\n" );
 
@@ -5489,6 +5497,107 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
         AddSerifOrBall( gd,emaster,stem,!is_x,e_ball );
 }
 
+static double ActiveOverlap( struct stemdata *stem1,struct stemdata *stem2 ) {
+    int is_x, i, j = 0;
+    double base1, base2, s1, e1, s2, e2, s, e, len = 0;
+    
+    is_x = ( IsVectorHV( &stem1->unit,0,true ) == 2 );
+    base1 = ( &stem1->left.x )[is_x];
+    base2 = ( &stem2->left.x )[is_x];
+    
+    for ( i=0; i<stem1->activecnt; i++ ) {
+        s1 = base1 + stem1->active[i].start;
+        e1 = base1 + stem1->active[i].end;
+	for ( ; j<stem2->activecnt; j++ ) {
+            s2 = base2 + stem2->active[j].start;
+            e2 = base2 + stem2->active[j].end;
+            if ( s2 > e1 )
+        break;
+
+	    if ( e2 < s1 )
+	continue;
+
+	    s = s2 < s1 ? s1 : s2;
+	    e = e2 > e1 ? e1 : e2;
+	    if ( e<s )
+	continue;		/* Shouldn't happen */
+	    len += e - s;
+	}
+    }
+return( len );
+}
+
+static int StemPairsSimilar( struct stemdata *s1, struct stemdata *s2,
+    struct stemdata *ts1, struct stemdata *ts2 ) {
+    
+    int normal, reversed, ret;
+    double olen1, olen2;
+    
+    /* Stem widths in the second pair should be nearly the same as
+    /* stem widths in the first pair */
+    normal = (  ts1->width >= s1->width - dist_error_hv && 
+                ts1->width <= s1->width + dist_error_hv &&
+                ts2->width >= s2->width - dist_error_hv && 
+                ts2->width <= s2->width + dist_error_hv );
+    reversed = (ts1->width >= s2->width - dist_error_hv && 
+                ts1->width <= s2->width + dist_error_hv &&
+                ts2->width >= s1->width - dist_error_hv && 
+                ts2->width <= s1->width + dist_error_hv );
+
+    if ( !normal && !reversed )
+return( false );
+
+    if ( normal ) {
+        olen1 = ActiveOverlap( s1, ts1 );
+        olen2 = ActiveOverlap( s2, ts2 );
+        ret =   olen1 > s1->clen/3 && olen1 > ts1->clen/3 &&
+                olen2 > s2->clen/3 && olen2 > ts2->clen/3;
+    } else if ( reversed ) {
+        olen1 = ActiveOverlap( s1, ts2 );
+        olen2 = ActiveOverlap( s2, ts1 );
+        ret =   olen1 > s1->clen/3 && olen1 > ts2->clen/3 &&
+                olen2 > s2->clen/3 && olen2 > ts1->clen/3;
+    }
+return( ret );
+}
+
+static void FindCounterGroups( struct glyphdata *gd,int is_v ) {
+    struct stembundle *bundle = is_v ? gd->vbundle : gd->hbundle;
+    struct stemdata *curm, *prevm, *cur, *prev;
+    int i, j;
+    double mdist, dist;
+    
+    prevm = NULL;
+    for ( i=0; i<bundle->cnt; i++ ) {
+        curm = prev = bundle->stemlist[i];
+        if ( curm->master != NULL )
+    continue;
+        if ( prevm == NULL || curm->prev_c_m != NULL ) {
+            prevm = curm;
+    continue;
+        }
+        mdist = is_v ? curm->left.x - prevm->right.x : curm->right.y - prevm->left.y;
+        for ( j=i+1; j<bundle->cnt; j++ ) {
+            cur = bundle->stemlist[j];
+            if ( cur->master != NULL )
+        continue;
+            if ( cur->prev_c_m != NULL ) {
+                prev = cur;
+        continue;
+            }
+            
+            dist =  is_v ? cur->left.x - prev->right.x : cur->right.y - prev->left.y;
+            if ( mdist > dist - dist_error_hv && mdist < dist + dist_error_hv && 
+                StemPairsSimilar( prevm,curm,prev,cur )) {
+                prev->next_c_m = prevm;
+                cur->prev_c_m = curm;
+            }
+            prev = cur;
+        }
+        prevm = curm;
+    }
+}
+
 /* Normally we use the DetectDiagonalStems flag (set via the Preferences dialog) to determine 
 /* if diagonal stems should be generated. However, sometimes it makes sense to reduce the
 /* processing time, deliberately turning the diagonal stem detection off: in particular we
@@ -5790,6 +5899,7 @@ return( gd );
             if ( stem->toobig == 1 && IsVectorHV( &stem->unit,0,true ))
                 GetSerifData( gd,stem );
         }
+        FindCounterGroups( gd,true );
     }
 
 #if GLYPH_DATA_DEBUG
