@@ -54,6 +54,7 @@ extern int autohint_before_generate;
  * it has also impact on diagonal hints' positioning - usually positive.
  */
 #define TESTIPSTRONG 1
+#define INSTR_MORE_STRONGPTS 1
 #define INSTR_SERIFS 1
 
 /* define some often used instructions */
@@ -2037,9 +2038,11 @@ static int value_point(InstrCt *ct, int p, SplinePoint *sp, real fudge) {
     if (p == sp->ttfindex && IsAnglePoint(ct->contourends, ct->bp, sp))
 	score++;
 
+#if INSTR_MORE_STRONGPTS
     /* a crude way to distinguish stem edge from zone */
     if (fudge > (EM/EDGE_FUZZ+0.0001) && IsExtremum(!ct->xdir, sp))
 	score++;
+#endif
 
     if (IsInflectionPoint(ct->contourends, ct->bp, sp))
 	score++;
