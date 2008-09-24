@@ -2905,6 +2905,7 @@ return;
 	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
 #ifdef TESTXIM
+if ( event->type == KeyPress )
  printf( "Got key. state=%02x ", event->xkey.state );
 #endif
 /*#ifdef __Mac*/
@@ -2945,6 +2946,13 @@ return;
 #endif
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
+/* I think there's a bug in SCIM. If I leave the meta(alt/option) modifier */
+/*  bit set, then scim returns no keysym and no characters. On the other hand,*/
+/*  if I don't leave that bit set, then the default input method on the mac */
+/*  will not do the Option key transformations properly. What I pass should */
+/*  be IM independant. So I don't think I should have to do the next line */
+		event->xkey.state &= ~Mod2Mask;
+/* But I do */
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
 				charbuf, sizeof(charbuf), &keysym, &status);
 		pt = charbuf;
@@ -4396,8 +4404,22 @@ return( NULL );
 
 #ifdef X_HAVE_UTF8_STRING	/* Don't even try without this. I don't want to have to guess encodings myself... */
     /* X Input method initialization */
-    XSetLocaleModifiers("");			/* If it fails it means no */
-    gdisp->im = XOpenIM(display, NULL, NULL, NULL);	/* input method. Ok */
+    XSetLocaleModifiers("");
+    gdisp->im = XOpenIM(display, XrmGetDatabase(display),
+	    GResourceProgramName, GResourceProgramName);
+    /* The only reason this seems to fail is if XMODIFIERS contains an @im */
+    /*  which points to something that isn't running. If XMODIFIERS is not */
+    /*  defined we get some kind of built-in default method. If it doesn't */
+    /*  recognize the locale we still get something */
+    /* If it does fail, then fall back on the old fashioned stuff */
+# ifdef TESTXIM
+ if ( gdisp->im==NULL )
+  printf( "Failed to attach to input method.\n" );
+# endif
+#else
+# ifdef TESTXIM
+ printf( "FontForge does not support input methods in this configuration.\n" );
+# endif
 #endif
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
