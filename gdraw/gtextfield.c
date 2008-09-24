@@ -2945,8 +2945,9 @@ static void GCompletionCreatePopup(GCompletionField *gc) {
     }
     pos.x = pt.x; pos.y = pt.y;
 
-    gc->choice_popup = GDrawCreateTopWindow(disp,&pos,popup_eh,gc,&pattrs);
-    GDrawSetGIC(gc->choice_popup,gc->gl.gt.gic,gc->gl.gt.g.inner.x,gc->gl.gt.g.inner.y+gc->gl.gt.as);
+    gc->choice_popup = GWidgetCreateTopWindow(disp,&pos,popup_eh,gc,&pattrs);
+    GDrawSetGIC(gc->choice_popup,GWidgetCreateInputContext(gc->choice_popup,gic_overspot|gic_orlesser),
+	    gc->gl.gt.g.inner.x,gc->gl.gt.g.inner.y+gc->gl.gt.as);
     GDrawSetVisible(gc->choice_popup,true);
     /* Don't grab this one. User should be free to ignore it */
 }
