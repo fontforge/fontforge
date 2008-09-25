@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Aug-2006 -->
-  <!-- AP: Last modified: 7-Feb-2008 -->
+  <!-- AP: Last modified: 25-Sep-2008 -->
   <TITLE>User Interface Translation Notes</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -80,7 +80,7 @@
   <!--<P>
   Each source distribution I make contains the then current FontForge.pot file
   in the top level directory of the distribution. You may find a copy of the
-  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;amp;amp;amp;amp;package_id=114328">current
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;amp;amp;amp;amp;amp;package_id=114328">current
   distribution on sourceforge</A>, it will be called something like
   fontforge_full-20060817.tar.bz2.-->
   <P>
@@ -497,8 +497,17 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   <P>
   The hot key pot file is called: <TT>FontForge-MenuShortCuts.pot</TT>
   <P>
-  (It can also be obtained <A HREF="FontForge-MenuShortCuts.pot.bz2">from the
-  website</A>, or generated from the cvs tree)
+  (This can also be obtained <A HREF="FontForge-MenuShortCuts.pot.bz2">from
+  the website</A>, or generated from the cvs tree)
+  <P>
+  On the Mac, FontForge allows for two different key bindings. X11 can be
+  configured to pass the command key on to FontForge, or X11 may use the command
+  key in its own menubar. If FontForge doesn't get the command key then it
+  will do normal processing using normal keybindings. Otherwise FontForge will
+  first look for a file called Mac-FontForge-MenuShortCuts.po if this is found
+  (and if it rebinds the string "Flag0x10+" (which should become "Cmd+" --
+  or whatever is appropriate in your language)) then it will be used. Otherwise
+  it falls back to normal processing.
   <P>
   This file consists of a sequence of entries that look like:
   <BLOCKQUOTE>
@@ -529,8 +538,8 @@ msgstr ""
     <LI>
       First is the command name as it appears in the (English) menu.
     <LI>
-      Then there is the special character "|" which separates the command from
-      the hot key specification.
+      Then there is the special character "|" which separates the command name
+      from the hot key specification.
     <LI>
       Then a list of key modifiers separated by "+"
     <LI>
@@ -580,8 +589,10 @@ msgstr "Alt+Cntl+Shft+E"
   <P>
   FontForge recognizes the following standard modifiers: <CODE>Alt+, Ctl+,
   Shft+, CapsLock+, Opt+</CODE> (the last corresponds to the Option key on
-  the mac keyboard -- the mac Command key cannot be used by an X program because
-  the X11 application uses the Command key in its own menubar).
+  the mac keyboard, <CODE>Cmd+</CODE> for the mac Command key
+  <FONT COLOR="Red"><STRONG>Note: </STRONG></FONT>This can only be used by
+  an X program if the X11 application does not appropriate it -- this can be
+  configured in the X11 Preferences).
   <P>
   Some keyboards have additional modifier keys, X maps them to a flag bit in
   the keyboard state mask of the XKeyEvent. If you want to use these modifiers
@@ -670,5 +681,15 @@ msgstr "Efface"
   <P>
   Currently there are no examples of these files, and there is nothing in the
   Makefile to install them.
+  <P>
+  Creating a Mac file is similar. There is one example of this in the cvs tree
+  under <CODE>po/mackeys/en.po</CODE>. It should be the same as the default
+  key bindings except that the Control key has been replaced everywhere with
+  the Command key. You can install it
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>mv <FONT COLOR="Red">en</FONT>.mo /usr/local/share/locale/<FONT COLOR="Red">en</FONT>/LC_MESSAGES/Mac-FontForge-MenuShortCuts.mo
+</PRE>
+  </BLOCKQUOTE>
+  <P>
 </DIV>
 </BODY></HTML>
