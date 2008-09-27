@@ -1555,7 +1555,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
 	font = GResourceFindFont("CVT.Font",font);
     }
-    sv->gfont = NULL;
+    sv->gfont = font;
     GDrawSetFont(sv->v,sv->gfont);
     GDrawFontMetrics(sv->gfont,&as,&ds,&ld);
     sv->as = as+1;
