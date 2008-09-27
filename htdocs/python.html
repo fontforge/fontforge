@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 17-Sep-2008 -->
+  <!-- AP: Last modified: 26-Sep-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1773,6 +1773,29 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>addAnchorPoint</CODE></TD>
+      <TD><CODE>(anchor-class-name,<BR>
+	anchor-type,<BR>
+	x,y<BR>
+	[,ligature-index])</CODE></TD>
+      <TD>Adds an anchor point. anchor-type may be one of the strings
+	<UL>
+	  <LI>
+	    "mark"
+	  <LI>
+	    "base"
+	  <LI>
+	    "ligature"
+	  <LI>
+	    "basemark"
+	  <LI>
+	    "entry"
+	  <LI>
+	    "exit"
+	</UL>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>addExtrema</CODE></TD>
