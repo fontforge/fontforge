@@ -1764,7 +1764,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     label[10].text_is_1byte = true;
     gcd[10].gd.pos.x = 10; gcd[10].gd.pos.y = gcd[9].gd.pos.y;
     gcd[10].gd.pos.width = 140;
-    gcd[10].gd.flags = gcd[9].gd.flags;
+    gcd[10].gd.flags = gcd[9].gd.flags|gg_text_xim;
     gcd[10].gd.label = otl->lookup_name==NULL ? NULL : &label[10];
     gcd[10].gd.cid = CID_LookupName;
     gcd[10].gd.handle_controlevent = Lookup_NameChanged;
