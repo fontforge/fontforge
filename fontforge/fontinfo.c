@@ -2359,7 +2359,7 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
 	label[k].text_is_1byte = true;
     }
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = gg_visible | gg_enabled|gg_text_xim;
     gcd[k].gd.cid = CID_MCD_Name;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -2368,7 +2368,7 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+28;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the glyphs selected in the fontview");
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup|gg_text_xim;
     gcd[k].gd.handle_controlevent = MCD_FromSelection;
     gcd[k].gd.cid = CID_MCD_Set;
     gcd[k++].creator = GButtonCreate;
@@ -2615,7 +2615,7 @@ static void AskForLangName(GGadget *list,int sel) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 50; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 122;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = gg_visible | gg_enabled|gg_text_xim;
     gcd[k].gd.cid = CID_StyleName;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -2646,7 +2646,7 @@ static void AskForLangName(GGadget *list,int sel) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Style Name:");
+    wattrs.utf8_window_title = _("Style Name");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
     pos.height = GDrawPointsToPixels(NULL,2*26+45);
@@ -7650,7 +7650,7 @@ return;
     ngcd[12].creator = GRadioCreate;
 
     ngcd[13].gd.pos.x = 115; ngcd[13].gd.pos.y = ngcd[12].gd.pos.y-4; ngcd[13].gd.pos.width = 137;
-    ngcd[13].gd.flags = gg_visible | gg_enabled;
+    ngcd[13].gd.flags = gg_visible | gg_enabled|gg_text_xim;
     nlabel[13].text = (unichar_t *) (sf->defbasefilename?sf->defbasefilename:"");
     nlabel[13].text_is_1byte = true;
     ngcd[13].gd.label = &nlabel[13];
@@ -9582,7 +9582,7 @@ return;
 
     comgcd[1].gd.pos.x = 10; comgcd[1].gd.pos.y = 10;
     comgcd[1].gd.pos.width = ngcd[11].gd.pos.width; comgcd[1].gd.pos.height = 230;
-    comgcd[1].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    comgcd[1].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
     comgcd[1].gd.cid = CID_Comment;
     comlabel[1].text = (unichar_t *) sf->comments;
     comlabel[1].text_is_1byte = true;
@@ -9606,7 +9606,7 @@ return;
     floggcd[0].gd.label = &floglabel[0];
     floggcd[0].creator = GLabelCreate;
 
-    floggcd[1].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    floggcd[1].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
     floggcd[1].gd.cid = CID_FontLog;
     floglabel[1].text = (unichar_t *) sf->fontlog;
     floglabel[1].text_is_1byte = true;
