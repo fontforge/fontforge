@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 26-Sep-2008 -->
+  <!-- AP: Last modified: 29-Sep-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3589,7 +3589,14 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Returns the name of the subtable containing this anchor class.</TD>
     </TR>
     <TR>
-      <TD><CODE>importLookup</CODE></TD>
+      <TD><CODE>importBitmaps</CODE></TD>
+      <TD><CODE>(bitmap-font-file<BR>
+	[,to-background])</CODE></TD>
+      <TD>Load any bitmap strikes out of the bitmap-font-file into the current
+	font</TD>
+    </TR>
+    <TR>
+      <TD><CODE>importLookups</CODE></TD>
       <TD><CODE>(another-font,lookup-names<BR>
 	[,before-name])</CODE></TD>
       <TD>The first argument must be a FontForge Font object, the second a string
