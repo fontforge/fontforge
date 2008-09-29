@@ -10281,6 +10281,60 @@ return( NULL );
 Py_RETURN(self);
 }
 
+static PyObject *PyFFFont_importBitmaps(PyFF_Font *self,PyObject *args) {
+    char *filename;
+    char *locfilename = NULL, *ext;
+    int to_background = -1, back=false;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    int ok, format;
+
+    if ( !PyArg_ParseTuple(args,"es|i","UTF-8",&filename,
+	    &to_background) )
+return( NULL );
+    locfilename = utf82def_copy(filename);
+    free(filename);
+
+    ext = strrchr(locfilename,'.');
+    if ( ext==NULL ) {
+	int len = strlen(locfilename);
+	ext = locfilename+len-2;
+	if ( ext[0]!='p' || ext[1]!='k' ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No extension for bitmap font");
+return( NULL );
+	}
+    }
+    if ( strmatch(ext,".bdf")==0 || strmatch(ext-4,".bdf.gz")==0 )
+	format = fv_bdf;
+    else if ( strmatch(ext,".pcf")==0 || strmatch(ext-4,".pcf.gz")==0 )
+	format = fv_pcf;
+    else if ( strmatch(ext,".ttf")==0 || strmatch(ext,".otf")==0 || strmatch(ext,".otb")==0 )
+	format = fv_ttf;
+    else if ( strmatch(ext,"pk")==0 || strmatch(ext,".pk")==0 ) {
+	format = fv_pk;
+	back = true;
+    } else {
+	PyErr_Format(PyExc_EnvironmentError, "Bad extension for bitmap font");
+return( NULL );
+    }
+    if ( to_background!=-1 )
+	back = to_background;
+    if ( format==fv_bdf )
+	ok = FVImportBDF(fv,locfilename,false, back);
+    else if ( format==fv_pcf )
+	ok = FVImportBDF(fv,locfilename,2, back);
+    else if ( format==fv_ttf )
+	ok = FVImportMult(fv,locfilename, back, bf_ttf);
+    else if ( format==fv_pk )
+	ok = FVImportBDF(fv,locfilename,true, back);
+    free(locfilename);
+    if ( !ok ) {
+	PyErr_Format(PyExc_EnvironmentError, "Could not load bitmap font");
+return( NULL );
+    }
+
+Py_RETURN(self);
+}
+
 static struct flaglist compflags[] = {
     { "outlines",		  1 },
     { "outlines-exactly",	  2 },
@@ -12380,6 +12434,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "getLookupSubtableAnchorClasses", PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
     { "getLookupOfSubtable", PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
     { "getSubtableOfAnchor", PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
+    { "importBitmaps", PyFFFont_importBitmaps, METH_VARARGS, "Imports bitmap strikes from a font file."},
     { "importLookups", PyFFFont_importLookups, METH_VARARGS, "Imports a tuple of named lookups from another font."},
     { "isKerningClass", PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
     { "isVerticalKerning", PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
