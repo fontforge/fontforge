@@ -119,11 +119,11 @@ static struct library_descriptor {
     char *description;
     char *url;
     int usable;
-    struct library_descriptor *depends_on;
+    char *depends_on;
 } libs[] = {
     {
 #ifdef PYTHON_LIB_NAME
-	#PYTHON_LIB_NAME,
+	"lib" PYTHON_LIB_NAME,
 #else
 	"libpython-",		/* a bad name */
 #endif
@@ -156,14 +156,14 @@ static struct library_descriptor {
 #else
 	1,
 #endif
-	&libs[1] },
+	"libz" },
     { "libpng12", dlsymmod("png_create_read_struct"), "This is another way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
 #ifdef _NO_LIBPNG
 	0,
 #else
 	1,
 #endif
-	&libs[1] },
+	"libz" },
     { "libjpeg", dlsymmod("jpeg_CreateDecompress"), "This allows fontforge to load jpeg images.", "http://www.ijg.org/",
 #ifdef _NO_LIBPNG
 	0
@@ -217,8 +217,8 @@ static struct library_descriptor {
 };
 
 static void _dolibrary(void) {
-    int i;
-    char buffer[300];
+    int i, j;
+    char buffer[3000];
     int fail, isfreetype, hasdebugger;
     DL_CONST void *lib_handle;
 
@@ -226,18 +226,33 @@ static void _dolibrary(void) {
     for ( i=0; libs[i].libname!=NULL; ++i ) {
 	fail = false;
 	if ( libs[i].depends_on!=NULL ) {
-	    sprintf( buffer, "%s%s", libs[i].depends_on->libname, SO_EXT );
+	    for ( j=0; libs[j].libname!=NULL; ++j )
+		if ( strcmp(libs[i].depends_on,libs[j].libname)==0 )
+	    break;
+	    sprintf( buffer, "%s%s", libs[i].depends_on, SO_EXT );
 	    lib_handle = dlopen(buffer,RTLD_LAZY);
+#ifdef LIBDIR
+	    if ( lib_handle==NULL ) {
+		snprintf( buffer, sizeof(buffer), LIBDIR "/%s" SO_EXT, libs[i].depends_on );
+		lib_handle = dlopen(buffer,RTLD_LAZY);
+	    }
+#endif
 	    if ( lib_handle==NULL )
 		fail = 3;
-	    else {
-		if ( dlsymbare(lib_handle,libs[i].depends_on->entry_point)==NULL )
+	    else if ( libs[j].libname!=NULL ) {
+		if ( dlsymbare(lib_handle,libs[j].entry_point)==NULL )
 		    fail = 4;
 	    }
 	}
 	if ( !fail ) {
 	    sprintf( buffer, "%s%s", libs[i].libname, SO_EXT );
 	    lib_handle = dlopen(buffer,RTLD_LAZY);
+#ifdef LIBDIR
+	    if ( lib_handle==NULL ) {
+		snprintf( buffer, sizeof(buffer), LIBDIR "/%s" SO_EXT, libs[i].libname );
+		lib_handle = dlopen(buffer,RTLD_LAZY);
+	    }
+#endif
 	    if ( lib_handle==NULL )
 		fail = true;
 	    else {
@@ -253,8 +268,10 @@ static void _dolibrary(void) {
 		fail==0 ? "is present and appears functional on your system." :
 		fail==1 ? "is not present on your system." :
 		fail==2 ? "is present on your system but is not functional." :
-		fail==3 ? "a prerequisite library is missing." :
-			"a prerequisite library is not functional." );
+		fail==3 ? "a prerequisite library is missing: " :
+			"a prerequisite library is not functional: " );
+	if ( fail>3 && libs[i].depends_on!=NULL )
+	    fprintf( stderr, "%s.", libs[i].depends_on );
 	fprintf( stderr, "\t%s\n", libs[i].description );
 	if ( isfreetype ) {
 	    if ( hasdebugger )

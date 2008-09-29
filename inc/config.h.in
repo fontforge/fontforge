@@ -58,5 +58,6 @@
 #undef _NO_SNPRINTF
 #undef _NO_XKB
 #undef X_DISPLAY_MISSING
+#undef PYTHON_LIB_NAME
 
 #endif

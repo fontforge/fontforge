@@ -231,8 +231,7 @@ AC_ARG_ENABLE(libff,
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
 fi
-AC_SUBST(PYTHON_LIB_NAME)
-PYTHON_LIB_NAME="python$PyVersion"
+AC_DEFINE_UNQUOTED(PYTHON_LIB_NAME,"python$PyVersion")
 
 AC_ARG_ENABLE(pyextension,
   AC_HELP_STRING(--enable-pyextension, disable/enable installing libfontforge as a python extension plugin),

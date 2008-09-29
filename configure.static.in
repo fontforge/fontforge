@@ -142,8 +142,7 @@ fi
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
 else
-  AC_SUBST(PYTHON_LIB_NAME)
-  PYTHON_LIB_NAME="python$PyVersion"
+  AC_DEFINE_UNQUOTED(PYTHON_LIB_NAME,"python$PyVersion")
 fi
 ffscript="yes"
 AC_ARG_WITH(native-script,
