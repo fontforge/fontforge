@@ -35,6 +35,15 @@
 #include "stemdb.h"
 
 extern int autohint_before_generate;
+int instruct_diagonal_stems = 1,
+    instruct_serif_stems = 1,
+    instruct_ball_terminals = 1,
+    interpolate_strong = 1,
+    interpolate_more_strong = 1, /* not applicable if interpolate_strong==0 */
+
+    /* as yet unused */
+    control_counters = 1,
+    control_advance = 1; /* not applicable to glyphs with counters controlled */
 
 /* non-optimized instructions will be using a stack of depth 6, allowing
  * for easy testing whether the code leaves trash on the stack or not.
@@ -45,17 +54,6 @@ extern int autohint_before_generate;
 #else
 #define STACK_DEPTH 6
 #endif
-
-/* Experimental feature: tries to maintain relative position of some important
- * points between stems' edges, so that glyph's shape is mostly preserved
- * when strongly gridfitted. This in terms of FreeType is called 'Strong Point
- * Interpolation'. In FF it now does more or else what it should, but generates
- * large and sometimes incomplete code - it needs optimization. Please note that
- * it has also impact on diagonal hints' positioning - usually positive.
- */
-#define TESTIPSTRONG 1
-#define INSTR_MORE_STRONGPTS 1
-#define INSTR_SERIFS 1
 
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
@@ -1240,7 +1238,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0x52, //     GT
 	0x58, //     IF
 	0xb0, //       PUSHB_1
-	0x40, //         0
+	0x40, //         64
         0x38, //       SHPIX
 	0x1b, //     ELSE       
 	0x21, //       POP
@@ -1308,6 +1306,67 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0x21, //       POP
 	0x59, //     EIF
 	0x59, //   EIF
+	0x2d,  // ENDF
+
+	/* Function 15: similar to FPGM 1, but used to position a stem
+         * relatively to the previous stem preserving the counter width
+         * equal to the distance between another pair of previously positioned 
+         * stems. Thus it serves nearly the same purpose as PS counter hints.
+         * Syntax: PUSHX_6 master_counter_start_pt master_counter_end_pt
+         *         current_counter_start_pt current_counter_end_pt ppem 15 CALL;
+         */
+        0xb0, // PUSHB_1
+	0x0f, //   15
+	0x2c, // FDEF
+	0x23, //   SWAP
+	0x20, //   DUP
+        0xd6, //   MDRP[rp0,rnd,white]
+        0x20, //   DUP
+	0x2f, //   MDAP[rnd], this is needed for grayscale mode
+	0xb0, //   PUSHB_1
+	0x07, //     7
+	0x2b, //   CALL
+	0x5c, //   NOT
+	0x58, //   IF
+	0x23, //     SWAP
+	0x20, //     DUP
+	0x58, //     IF
+	0x4b, //       MPPEM
+        0x53, //       GTEQ
+	0x1b, //     ELSE
+	0x21, //       POP
+	0xb0, //       PUSHB_1
+	0x01, //         1
+        0x59, //     EIF
+	0x58, //     IF
+	0x8a, //       ROLL
+	0xb0, //       PUSHB_1
+	0x04, //         4
+	0x26, //       MINDEX
+        0x49, //       MD[grid]
+	0x23, //       SWAP
+	0x8a, //       ROLL
+	0x23, //       SWAP
+	0x20, //       DUP
+	0x8a, //       ROLL
+        0x49, //       MD[grid]
+	0x8a, //       ROLL
+	0x23, //       SWAP
+	0x61, //       SUB
+        0x38, //       SHPIX
+	0x1b, //     ELSE
+	0x21, //       POP
+	0x21, //       POP
+	0x21, //       POP
+	0x21, //       POP
+        0x59, //     EIF
+	0x1b, //   ELSE
+	0x21, //     POP
+	0x21, //     POP
+	0x21, //     POP
+	0x21, //     POP
+	0x21, //     POP
+        0x59, //   EIF
 	0x2d  // ENDF
     };
 
@@ -2027,7 +2086,7 @@ static int value_point(InstrCt *ct, int p, SplinePoint *sp, real fudge) {
     int score = 0;
     int EM = ct->gic->sf->ascent + ct->gic->sf->descent;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
-    
+
     if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p) ||
 	IsExtremum(ct->xdir, sp))
 	    score+=4;
@@ -2038,11 +2097,9 @@ static int value_point(InstrCt *ct, int p, SplinePoint *sp, real fudge) {
     if (p == sp->ttfindex && IsAnglePoint(ct->contourends, ct->bp, sp))
 	score++;
 
-#if INSTR_MORE_STRONGPTS
-    /* a crude way to distinguish stem edge from zone */
-    if (fudge > (EM/EDGE_FUZZ+0.0001) && IsExtremum(!ct->xdir, sp))
-	score++;
-#endif
+    if (interpolate_more_strong && (fudge > (EM/EDGE_FUZZ+0.0001)))
+	if (IsExtremum(!ct->xdir, sp))
+	    score++;
 
     if (IsInflectionPoint(ct->contourends, ct->bp, sp))
 	score++;
@@ -2591,7 +2648,6 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     mark_startenddones( stem, ct->xdir, !is_l );
 }
 
-#if ( TESTIPSTRONG && INSTR_SERIFS )
 static void mark_points_affected(InstrCt *ct,StemData *target,PointData *opd,int next) {
     Spline *s;
     PointData *pd, *cpd;
@@ -2620,17 +2676,13 @@ static void mark_points_affected(InstrCt *ct,StemData *target,PointData *opd,int
         pd = next ? &ct->gd->points[s->to->ptindex] : &ct->gd->points[s->from->ptindex];
     }
 }
-#endif
 
-#if INSTR_SERIFS
 static void finish_serif(StemData *slave, StemData *master, int lbase, int is_ball, InstrCt *ct)
 {
     int inner_pt, callargs[4];
-#if TESTIPSTRONG
     struct stem_chunk *chunk;
     PointData *opd;
     int i;
-#endif
 
     if (slave == NULL || master == NULL)
 return;
@@ -2659,7 +2711,9 @@ return;
     finish_edge(ct, SHP_rp2);
     mark_startenddones( slave, ct->xdir, !lbase );
     
-#if TESTIPSTRONG
+    if ( !interpolate_strong || !instruct_ball_terminals )
+return;
+
     /* Preserve points on ball terminals from being interpolated
     /* between edges by marking them as affected */
     for ( i=0; i<slave->chunk_cnt; i++ ) {
@@ -2671,7 +2725,6 @@ return;
             mark_points_affected(ct, master, opd, false);
         }
     }
-#endif
 }
 
 static void link_serifs_to_edge(InstrCt *ct, StemData *stem, int is_l) {
@@ -2699,7 +2752,9 @@ static void link_serifs_to_edge(InstrCt *ct, StemData *stem, int is_l) {
     }
     for (i=0; i<stem->serif_cnt; i++) {
         serif = &stem->serifs[i];
-        if ( serif->lbase == is_l )
+        if (serif->lbase == is_l && 
+            ((serif->is_ball && instruct_ball_terminals) ||
+            (!serif->is_ball && instruct_serif_stems)))
             finish_serif( serif->stem,stem,is_l,serif->is_ball,ct );
     }
 }
@@ -2709,10 +2764,13 @@ static void instruct_serifs(InstrCt *ct, StemData *stem) {
     struct dependent_serif *serif;
 
     if ( stem->leftidx == -1 || stem->rightidx == -1 )
-return;
+        return;
     lcnt = rcnt = 0;
     for (i=0; i<stem->serif_cnt; i++) {
         serif = &stem->serifs[i];
+        if ((serif->is_ball && !instruct_ball_terminals) ||
+            (!serif->is_ball && !instruct_serif_stems))
+                continue;
         if ( serif->lbase )
             lcnt++;
         else if ( !serif->lbase )
@@ -2724,7 +2782,6 @@ return;
     if (stem->rdone && rcnt > 0)
         link_serifs_to_edge(ct, stem, false);
 }
-#endif
 
 static void instruct_dependent(InstrCt *ct, StemData *stem) {
     int i, j, rp, rp1, rp2, stopat, callargs[4];
@@ -2825,9 +2882,9 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
             
         ct->rp0 = ct->edge.refpt;
         finish_stem(slave->stem, use_rp1, keep_old_rp0, ct);
-#if INSTR_SERIFS
-        instruct_serifs(ct, slave->stem);
-#endif
+        if ( instruct_serif_stems || instruct_ball_terminals )
+            instruct_serifs(ct, slave->stem);
+        
         instruct_dependent(ct, slave->stem);
     }
 }
@@ -2992,9 +3049,7 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
         if ( slave->blue == idx )
             ret += snap_stem_to_blue(ct, slave, blue, idx);
     }
-#if INSTR_SERIFS
-    instruct_serifs(ct, stem);
-#endif
+
     instruct_dependent(ct, stem);
     update_blue_pts(idx, ct); /* this uses only refpt: who cares?*/
     return( ret + 1 );
@@ -3099,6 +3154,29 @@ return;
     check_blue_pts(ct);
 }
 
+static int get_counters_cut_in(InstrCt *ct,  int m1, int m2, int c1, int c2) {
+    real s1, e1, s2, e2, width1, width2;
+    int i, swidth1, swidth2;
+    int EM = ct->gic->sf->ascent + ct->gic->sf->descent;
+    
+    s1 = (&ct->gd->points[m1].base.x)[!ct->xdir];
+    e1 = (&ct->gd->points[m2].base.x)[!ct->xdir];
+    s2 = (&ct->gd->points[c1].base.x)[!ct->xdir];
+    e2 = (&ct->gd->points[c2].base.x)[!ct->xdir];
+    width1 = e1 - s1; width2 = e2 - s2;
+    
+    if ( RealNear( width1, width2 ))
+        return( 0 );
+    
+    for (i=7; i<32768; i++) {
+        swidth1 = (int)rint((rint(fabs(width1)) * i * 64.0)/EM);
+        swidth2 = (int)rint((rint(fabs(width2)) * i * 64.0)/EM);
+        if ( fabs(swidth1 - swidth2) >= SNAP_THRESHOLD )
+            break;
+    }
+    return( i );
+}
+
 /******************************************************************************
  *
  * High-level functions for instructing horizontal and vertical stems.
@@ -3120,10 +3198,11 @@ return;
  *   position the hint's base rp0 relatively to the previous hint's end using
  *   MDRP with white minimum distance (fpgm function 1).
  */
-static void geninstrs(InstrCt *ct, StemData *stem, int first, int lbase) {
-    int shp_rp1, chg_rp0;
+static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
+    int shp_rp1, chg_rp0, c_m_pt1 = -1, c_m_pt2 = -1;
+    int callargs[6];
     real prev_pos = 0, cur_pos;
-
+    
     if (stem->ldone && stem->rdone)
         return;
     if ((lbase && stem->rdone) || (!lbase & stem->ldone))
@@ -3138,8 +3217,12 @@ static void geninstrs(InstrCt *ct, StemData *stem, int first, int lbase) {
 
     if (ct->rp0 < ct->gd->realcnt && ct->rp0 >= 0) 
         prev_pos = (&ct->gd->points[ct->rp0].base.x)[!ct->xdir];
-    ct->rp0 = ct->edge.refpt; /* not yet rp0. */
-    cur_pos = (&ct->gd->points[ct->rp0].base.x)[!ct->xdir];
+    cur_pos = (&ct->gd->points[ct->edge.refpt].base.x)[!ct->xdir];
+    
+    if (prev != NULL && stem->prev_c_m != NULL && prev->next_c_m != NULL ) {
+        c_m_pt1 = ct->xdir ? prev->next_c_m->rightidx : prev->next_c_m->leftidx;
+        c_m_pt2 = ct->xdir ? stem->prev_c_m->leftidx  : stem->prev_c_m->rightidx;
+    }
 
     /* Now I must place the stem's origin in respect to others... */
     /* TODO! What's really needed here is an iterative procedure that */
@@ -3147,33 +3230,44 @@ static void geninstrs(InstrCt *ct, StemData *stem, int first, int lbase) {
     /* For horizontal stems, interpolating between blues MUST be done. */
 
     if (stem->ldone || stem->rdone ) {
-	ct->pt = pushpoint(ct->pt, ct->rp0);
+	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	*(ct->pt)++ = MDAP; /* sets rp0 and rp1 */
         shp_rp1 = use_rp1;
         chg_rp0 = (ct->xdir && !lbase) || (!ct->xdir && lbase);
     }
     else if (!ct->xdir) {
-	ct->pt = pushpoint(ct->pt, ct->rp0);
+	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	*(ct->pt)++ = MDAP_rnd;
         shp_rp1 = use_rp1;
         chg_rp0 = keep_old_rp0;
     }
-    else if (first) {
-	ct->pt = pushpoint(ct->pt, ct->rp0);
+    else if (prev == NULL) {
+	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	*(ct->pt)++ = MDRP_rp0_rnd_white;
         shp_rp1 = use_rp2;
         chg_rp0 = keep_old_rp0;
     }
     else {
         if (ct->gic->fpgm_done) {
-            if ( fabs( cur_pos - prev_pos ) > ct->gic->fudge )
-                ct->pt = push2nums(ct->pt, ct->rp0, 1);
-            else
-                ct->pt = push2nums(ct->pt, ct->rp0, 11);
+            if ( c_m_pt1 != -1 && c_m_pt2 != -1 ) {
+               
+                callargs[0] = c_m_pt1;
+                callargs[1] = c_m_pt2;
+                callargs[2] = ct->rp0;
+                callargs[3] = ct->edge.refpt;
+                callargs[4] = get_counters_cut_in(ct,  c_m_pt1, c_m_pt2, ct->rp0, ct->edge.refpt);
+                callargs[5] = 15;
+                ct->pt = pushpoints(ct->pt, 6, callargs);
+                
+            } else if ( fabs( cur_pos - prev_pos ) > ct->gic->fudge ) {
+                ct->pt = push2nums(ct->pt, ct->edge.refpt, 1);
+            } else {
+                ct->pt = push2nums(ct->pt, ct->edge.refpt, 11);
+            }
 	    *(ct->pt)++ = CALL;
 	}
 	else {
-	    ct->pt = pushpoint(ct->pt, ct->rp0);
+	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
             if ( fabs( cur_pos - prev_pos ) > ct->gic->fudge )
 	        *(ct->pt)++ = MDRP_rp0_min_rnd_grey;
             else
@@ -3182,10 +3276,11 @@ static void geninstrs(InstrCt *ct, StemData *stem, int first, int lbase) {
         shp_rp1 = use_rp2;
         chg_rp0 = keep_old_rp0;
     }
+    ct->rp0 = ct->edge.refpt;
     finish_stem(stem, shp_rp1, chg_rp0, ct);
-#if INSTR_SERIFS
-    instruct_serifs(ct, stem);
-#endif
+    if ( instruct_serif_stems || instruct_ball_terminals )
+        instruct_serifs(ct, stem);
+
     instruct_dependent(ct, stem);
 }
 
@@ -3288,7 +3383,7 @@ static void HStemGeninst(InstrCt *ct) {
 	    rp1 = rpts1[i]; rp2 = rpts2[i];
             /* Reference points not found? Fall back to old method. */
 	    if (rp1==-1 || rp2==-1) {
-		geninstrs(ct, stem, false, false);
+		geninstrs(ct, stem, NULL, false);
 		continue;
             }
 
@@ -3341,9 +3436,9 @@ static void HStemGeninst(InstrCt *ct) {
 
 	    ct->rp0 = ct->edge.refpt;
 	    finish_stem(stem, use_rp1, keep_old_rp0, ct);
-#if INSTR_SERIFS
-            instruct_serifs(ct, stem);
-#endif
+            if ( instruct_serif_stems || instruct_ball_terminals )
+                instruct_serifs(ct, stem);
+
             instruct_dependent(ct, stem);
 	}
     }
@@ -3359,7 +3454,7 @@ static void HStemGeninst(InstrCt *ct) {
  */
 static void VStemGeninst(InstrCt *ct) {
     StemData *stem, *prev=NULL;
-    int i;
+    int i, has_chints = false;
 
     if (ct->rp0 != ct->ptcnt) {
 	ct->pt = pushpoint(ct->pt, ct->ptcnt);
@@ -3377,7 +3472,9 @@ static void VStemGeninst(InstrCt *ct) {
 	            *(ct->pt)++ = SRP0;
                     ct->rp0 = prev->rightidx;
                 }
-	        geninstrs(ct, stem, prev == NULL, true);
+                if ( prev != NULL && prev->next_c_m != NULL && stem->prev_c_m != NULL )
+                    has_chints = true;
+	        geninstrs(ct, stem, prev, true);
                 prev = stem;
             }
         }
@@ -3385,11 +3482,11 @@ static void VStemGeninst(InstrCt *ct) {
 
     /* instruct right sidebearing */
     if (ct->sc->width != 0) {
-        if ( ct->gic->fpgm_done ) {
+        if ( ct->gic->fpgm_done && !has_chints ) {
 	    ct->pt = push2nums(ct->pt, ct->ptcnt+1, 1);
 	    *(ct->pt)++ = CALL;
         } else {
-	    ct->pt = pushpoint(ct->pt, ct->rp0);
+	    ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
             *(ct->pt)++ = MDRP_rp0_rnd_white;
         }
 	ct->rp0 = ct->ptcnt+1;
@@ -4049,7 +4146,6 @@ return;
     ct->xdir = fv.x;
 }
 
-#if TESTIPSTRONG
 /******************************************************************************
  *
  * Strong point interpolation
@@ -4095,12 +4191,17 @@ static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgel
     return( cnt );
 }
 
+/* Experimental feature: tries to maintain relative position of some important
+ * points between stems' edges, so that glyph's shape is mostly preserved
+ * when strongly gridfitted. This in terms of FreeType is called 'Strong Point
+ * Interpolation'. In FF it now does more or else what it should, but generates
+ * large and sometimes incomplete code - it needs optimization. Please note that
+ * it has also impact on diagonal hints' positioning - usually positive.
+ */
 static void InterpolateStrongPoints(InstrCt *ct) {
     StemBundle *bundle;
     StemData *stem;
-#if INSTR_SERIFS
     struct dependent_serif *serif;
-#endif
     uint8 touchflag = ct->xdir?tf_x:tf_y;
     real fudge;
     struct stemedge edgelist[192];
@@ -4120,13 +4221,13 @@ static void InterpolateStrongPoints(InstrCt *ct) {
         
         edgecnt = AddEdge(ct, stem, ct->xdir, edgelist, edgecnt);
         edgecnt = AddEdge(ct, stem, !ct->xdir, edgelist, edgecnt);
-#if INSTR_SERIFS
-        for ( j=0; j<stem->serif_cnt; j++ ) {
-            serif = &stem->serifs[j];
-            if ( !serif->is_ball )
-                edgecnt = AddEdge(ct, serif->stem, !serif->lbase, edgelist, edgecnt);
+        if ( instruct_serif_stems ) {
+            for ( j=0; j<stem->serif_cnt; j++ ) {
+                serif = &stem->serifs[j];
+                if ( !serif->is_ball )
+                    edgecnt = AddEdge(ct, serif->stem, !serif->lbase, edgelist, edgecnt);
+            }
         }
-#endif
     }
 
     if (edgecnt < 2)
@@ -4191,7 +4292,6 @@ return;
 	}
     }
 }
-#endif /* TESTIPSTRONG */
 
 /******************************************************************************
  *
@@ -4218,7 +4318,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
         }
     }
     nbd.bluecnt = ct->gic->bluecnt;
-    ct->gd = GlyphDataBuild( ct->sc,ct->gic->layer,&nbd,true );
+    ct->gd = GlyphDataBuild( ct->sc,ct->gic->layer,&nbd,instruct_diagonal_stems );
 
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
@@ -4248,11 +4348,13 @@ static uint8 *dogeninstructions(InstrCt *ct) {
         }
     }
 
-    /* Prepare info about diagonal stems to be used during edge optimization. */
-    /* These contents need to be explicitly freed after hinting diagonals. */
-    ct->diagstems = gcalloc(ct->gd->stemcnt, sizeof(StemData *));
-    ct->diagpts = gcalloc(ct->ptcnt, sizeof(struct diagpointinfo));
-    InitDStemData(ct);
+    if ( instruct_diagonal_stems ) {
+        /* Prepare info about diagonal stems to be used during edge optimization. */
+        /* These contents need to be explicitly freed after hinting diagonals. */
+        ct->diagstems = gcalloc(ct->gd->stemcnt, sizeof(StemData *));
+        ct->diagpts = gcalloc(ct->ptcnt, sizeof(struct diagpointinfo));
+        InitDStemData(ct);
+    }
 
     /* We start from instructing horizontal features (=> movement in y) */
     /* Do this first so that the diagonal hinter will have everything moved */
@@ -4273,15 +4375,15 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* moving some points out-of their vertical stems. */
     if (ct->diagcnt > 0) DStemInfoGeninst(ct);
 
-#if TESTIPSTRONG
-    /* Adjust important points between hint edges. */
-    if (ct->xdir == false) *(ct->pt)++ = SVTCA_x;
-    ct->xdir = true;
-    InterpolateStrongPoints(ct);
-    ct->xdir = false;
-    *(ct->pt)++ = SVTCA_y;
-    InterpolateStrongPoints(ct);
-#endif
+    if ( interpolate_strong ) {
+        /* Adjust important points between hint edges. */
+        if (ct->xdir == false) *(ct->pt)++ = SVTCA_x;
+        ct->xdir = true;
+        InterpolateStrongPoints(ct);
+        ct->xdir = false;
+        *(ct->pt)++ = SVTCA_y;
+        InterpolateStrongPoints(ct);
+    }
 
     /* Interpolate untouched points */
     *(ct->pt)++ = IUP_y;
@@ -4293,8 +4395,10 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	"When processing TTF instructions (hinting) of %s", ct->sc->name
     );
 
-    free(ct->diagstems);
-    free(ct->diagpts);
+    if ( instruct_diagonal_stems ) {
+        free(ct->diagstems);
+        free(ct->diagpts);
+    }
     GlyphDataFree( ct->gd );
 
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
