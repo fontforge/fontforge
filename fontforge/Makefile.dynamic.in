@@ -57,7 +57,8 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
-ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
+ACORNOBJS = acorn2sfd.o sfd.o sfd1.o diffstubs.o namelist.o pua.o nouiutil.o \
+	mathconstants.o ttfinstrs.o stamp.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
@@ -71,7 +72,7 @@ LIBS = -rpath $(libdir) $(X_LIBS) @LINK_WITH_GDRAW@ ../libgutils.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 LIBLIBS = -rpath $(libdir) ../libgutils.la ../libgunicode.la \
     @LIBS@ $(STATIC_LIBS) -lm
-DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
+DLIBS = -rpath $(libdir) ../libgutils.la ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 
 all: @FINAL_TARGET@ @MACAPP@ sfddiff fontimage fontlint
 
