@@ -1349,8 +1349,15 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	if ( tmpy<0 )
 	    startangle = -startangle;
 	t2x = (-x1p-cxp)/rx; t2y = (-y1p-cyp)/ry;
-	delta = acos((tmpx*t2x+tmpy*t2y)/
-		sqrt((tmpx*tmpx+tmpy*tmpy)*(t2x*t2x+t2y*t2y)));
+	delta = (tmpx*t2x+tmpy*t2y)/
+		  sqrt((tmpx*tmpx+tmpy*tmpy)*(t2x*t2x+t2y*t2y));
+	/* We occasionally got rounding errors near -1 */
+	if ( delta<=-1 )
+	    delta = 3.1415926535897932;
+	else if ( delta>=1 )
+	    delta = 0;
+	else
+	    delta = acos(delta);
 	if ( tmpx*t2y-tmpy*t2x<0 )
 	    delta = -delta;
 	if ( sweep==0 && delta>0 )
