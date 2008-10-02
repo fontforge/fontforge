@@ -224,11 +224,11 @@ return( FinishSet(old,active,closed));
 }
 
 static SplineChar *ReadChar(FILE *file,struct Outlines *outline,int enc) {
-    SplineChar *sc = SplineCharCreate();
     char buffer[12];
     int flags, x, y, verb, ch;
     RefChar *r1, *r2;
     SplineFont *sf = outline->sf;
+    SplineChar *sc = SFSplineCharCreate(sf);
 
     flags = getc(file);
     if ( !(flags&(1<<3)) ) {
@@ -236,7 +236,6 @@ static SplineChar *ReadChar(FILE *file,struct Outlines *outline,int enc) {
 return( NULL );
     }
 
-    sc->parent = sf;
     sc->orig_pos = sf->glyphcnt++;
     sf->glyphs[sc->orig_pos] = sc;
     sf->map->map[enc] = sc->orig_pos;
@@ -609,27 +608,23 @@ static void FixupKerns(SplineFont *sf,struct Outlines *outline) {
     KernPair *kp;
     int em = sf->ascent+sf->descent;
     int gid1, gid2;
+    struct lookup_subtable *subtable;
 
     if ( outline->kerns==NULL )
 return;
 
-    sf->script_lang = gcalloc(2,sizeof(struct script_record *));
-    sf->script_lang[0] = gcalloc(1,sizeof(struct script_record));
-    sf->script_lang[0]->script = CHR('l','a','t','n');
-    sf->script_lang[0]->langs = gcalloc(2,sizeof(uint32));
-    sf->script_lang[0]->langs[0] = CHR('d','f','l','t');
-    sf->sli_cnt = 1;
+    subtable = SFSubTableFindOrMake(sf,
+		CHR('k','e','r','n'),CHR('l','a','t','n'), gpos_pair);
 
     for ( i=0; i<outline->metrics_n; ++i ) {
 	gid1 = sf->map->map[i];
 	for ( kern = outline->kerns[i]; kern!=NULL; kern=kern->next ) {
 	    kp = gcalloc(1,sizeof(KernPair));
 	    kp->off = em*kern->amount/1000;
+	    kp->subtable = subtable;
 	    gid2 = sf->map->map[kern->right];
 	    kp->sc = sf->glyphs[gid2];
 	    kp->next = sf->glyphs[gid1]->kerns;
-	    kp->sli = 0;
-	    kp->flags = 0;
 	    sf->glyphs[gid1]->kerns = kp;
 	}
     }
@@ -871,7 +866,7 @@ return( outline.sf );
 
 extern const char *source_modtime_str;
 
-void doversion(void) {
+void doversion(const char *useless) {
     extern const char *source_version_str;
 
     fprintf( stderr, "Copyright \251 2002 by George Williams.\n Executable based on sources from %s.\n",
@@ -910,7 +905,7 @@ int main(int argc, char **argv) {
 	    if ( strcmp(pt,"includestrokes")==0 )
 		includestrokes = true;
 	    else if ( strcmp(pt,"version")==0 )
-		doversion();
+		doversion(NULL);
 	    else if ( strlen(pt)<=4 && strncmp(pt,"help",strlen(pt))==0 )
 		dohelp();
 	    else

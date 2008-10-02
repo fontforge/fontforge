@@ -2,6 +2,7 @@
 /*  sfddiff, but which get called by it */
 
 #include "pfaeditui.h"
+#include "ttf.h"
 #include <stdarg.h>
 #include <math.h>
 #include <charset.h>
@@ -9,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
@@ -325,34 +327,28 @@ void SplineFontFree(SplineFont *sf) { }
 void BDFCharFree(BDFChar *bc) { }
 void SplineCharFree(SplineChar *sc) { }
 void SCMakeDependent(SplineChar *dependent,SplineChar *base) {}
-void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {}
-void SCGuessHHintInstancesList(SplineChar *sc) { }
-void SCGuessVHintInstancesList(SplineChar *sc) { }
+void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {}
+void SCGuessHHintInstancesList(SplineChar *sc,int layer) { }
+void SCGuessVHintInstancesList(SplineChar *sc,int layer) { }
+void SCGuessHintInstancesList(SplineChar *sc,int layer,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem,int hvforce,int dforce) { }
 int StemListAnyConflicts(StemInfo *stems) { return 0 ; }
 int getAdobeEnc(char *name) { return -1; }
 SplineChar *SFMakeChar(SplineFont *sf, EncMap *map, int enc) { return NULL; }
 GDisplay *screen_display=NULL;
 int no_windowing_ui = true;
-int FVWinInfo(struct fontview *sf,int *cc,int *rc) { return -1 ; }
 EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc) { return NULL; }
+int URLFromFile(char *url,FILE *from) { return false; }
+int PointsDiagonalable( SplineFont *sf,BasePoint **bp,BasePoint *unit ) { return false; }
+int MergeDStemInfo( SplineFont *sf,DStemInfo **ds,DStemInfo *test ) { return false; }
+int EncFromUni(int32 uni, Encoding *enc) { return( -1 ); }
+void SFOrderBitmapList(SplineFont *sf) {}
+const char *NOUI_TTFNameIds(int id) {return( NULL );}
+const char *NOUI_MSLangString(int language) { return( NULL );}
+int TTF__getcvtval(SplineFont *sf,int val) { return 0; }
+void BaseScriptFree(struct basescript *bs) {}
 
 /* ************************************************************************** */
 /* And some routines we actually do need */
-
-void IError(const char *format, ... ) {
-    va_list ap;
-    va_start(ap,format);
-    vfprintf(stderr,format,ap);
-    va_end(ap);
-}
-
-void LogError(const char *format,...) {
-    va_list ap;
-
-    va_start(ap,format);
-    vfprintf(stderr,format,ap);
-    va_end(ap);
-}
 
 int RealNear(real a,real b) {
     real d;
@@ -620,10 +616,34 @@ return( sc!=NULL &&
 }
 
 SplineFont *SplineFontEmpty(void) {
+    time_t now;
     SplineFont *sf;
+
     sf = gcalloc(1,sizeof(SplineFont));
     sf->pfminfo.fstype = -1;
-     sf->map = EncMapNew(0,0,&custom);
+    sf->top_enc = -1;
+    sf->macstyle = -1;
+    sf->desired_row_cnt = 4; sf->desired_col_cnt = 16;
+    sf->display_antialias = true;
+    sf->display_bbsized = true;
+    sf->display_size = -36;
+    sf->display_layer = ly_fore;
+    sf->pfminfo.winascent_add = sf->pfminfo.windescent_add = true;
+    sf->pfminfo.hheadascent_add = sf->pfminfo.hheaddescent_add = true;
+    sf->pfminfo.typoascent_add = sf->pfminfo.typodescent_add = true;
+    memcpy(sf->pfminfo.os2_vendor,"PfEd",4);
+    sf->for_new_glyphs = DefaultNameListForNewFonts();
+    time(&now);
+    sf->creationtime = sf->modificationtime = now;
+
+    sf->layer_cnt = 2;
+    sf->layers = gcalloc(2,sizeof(LayerInfo));
+    sf->layers[0].name = copy(_("Back"));
+    sf->layers[0].background = true;
+    sf->layers[1].name = copy(_("Fore"));
+    sf->layers[1].background = false;
+    sf->grid.background = true;
+
 return( sf );
 }
 
@@ -665,18 +685,32 @@ void LayerDefault(Layer *layer) {
 #endif
 }
 
-SplineChar *SplineCharCreate(void) {
-    SplineChar *sc = gcalloc(1,sizeof(SplineChar));
+SplineChar *SplineCharCreate(int layer_cnt) {
+    SplineChar *sc = chunkalloc(sizeof(SplineChar));
+    int i;
+
     sc->color = COLOR_DEFAULT;
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
-    sc->layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    sc->layers = gcalloc(2,sizeof(Layer));
-    LayerDefault(&sc->layers[0]);
-    LayerDefault(&sc->layers[1]);
-#endif
-return( sc );    
+    sc->layer_cnt = layer_cnt;
+    sc->layers = gcalloc(layer_cnt,sizeof(Layer));
+    for ( i=0; i<layer_cnt; ++i )
+	LayerDefault(&sc->layers[i]);
+    sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
+	    TEX_UNDEF;
+return( sc );
+}
+
+SplineChar *SFSplineCharCreate(SplineFont *sf) {
+    SplineChar *sc = SplineCharCreate(sf->layer_cnt);
+    int i;
+
+    for ( i=0; i<sf->layer_cnt; ++i ) {
+	sc->layers[i].background = sf->layers[i].background;
+	sc->layers[i].order2     = sf->layers[i].order2;
+    }
+    sc->parent = sf;
+return( sc );
 }
 
 void EncMapFree(EncMap *map) {
@@ -714,56 +748,6 @@ EncMap *EncMap1to1(int enccount) {
 	map->map[i] = map->backmap[i] = i;
     map->enc = &custom;
 return(map);
-}
-
-GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
-    GImage *gi;
-    struct _GImage *base;
-
-    if ( type<it_mono || type>it_true )
-return( NULL );
-
-    gi = gcalloc(1,sizeof(GImage));
-    base = galloc(sizeof(struct _GImage));
-    if ( gi==NULL || base==NULL ) {
-	free(gi); free(base);
-return( NULL );
-    }
-    gi->u.image = base;
-    base->image_type = type;
-    base->width = width;
-    base->height = height;
-    base->bytes_per_line = type==it_true?4*width:type==it_index?width:(width+7)/8;
-    base->data = NULL;
-    base->clut = NULL;
-    base->trans = COLOR_UNKNOWN;
-    base->data = galloc(height*base->bytes_per_line);
-    if ( base->data==NULL ) {
-	free(base);
-	free(gi);
-return( NULL );
-    }
-    if ( type==it_index ) {
-	base->clut = gcalloc(1,sizeof(GClut));
-	base->clut->trans_index = COLOR_UNKNOWN;
-    }
-return( gi );
-}
-
-int GImageGetWidth(GImage *img) {
-    if ( img->list_len==0 ) {
-return( img->u.image->width );
-    } else {
-return( img->u.images[0]->width );
-    }
-}
-
-int GImageGetHeight(GImage *img) {
-    if ( img->list_len==0 ) {
-return( img->u.image->height );
-    } else {
-return( img->u.images[0]->height );
-    }
 }
 
 void BDFClut(BDFFont *bdf, int linear_scale) {
@@ -878,24 +862,48 @@ return( 0 );
 }
 
 uint32 SCScriptFromUnicode(SplineChar *sc) {
+    char *pt;
     PST *pst;
     SplineFont *sf;
-    int i;
+    int i; unsigned uni;
+    FeatureScriptLangList *features;
 
     if ( sc==NULL )
-return( 0 );
+return( DEFAULT_SCRIPT );
 
     sf = sc->parent;
-    if ( sc->unicodeenc!=-1 )
+    if ( sc->unicodeenc!=-1 &&
+	    !(sc->unicodeenc>=0xe000 && sc->unicodeenc<0xf8ff) &&
+	    !(sc->unicodeenc>=0xf0000 && sc->unicodeenc<0x10ffff))
 return( ScriptFromUnicode( sc->unicodeenc,sf ));
+
+    pt = sc->name;
+    if ( *pt ) for ( ++pt; *pt!='\0' && *pt!='_' && *pt!='.'; ++pt );
+    if ( *pt!='\0' ) {
+	char *str = copyn(sc->name,pt-sc->name);
+	int uni = sf==NULL || sf->fv==NULL ? UniFromName(str,ui_none,&custom) :
+			    UniFromName(str,sf->uni_interp,sf->fv->map->enc);
+	free(str);
+	if ( uni!=-1 )
+return( ScriptFromUnicode( uni,sf ));
+    }
+    /* Adobe ligature uniXXXXXXXX */
+    if ( strncmp(sc->name,"uni",3)==0 && sscanf(sc->name+3,"%4x", &uni)==1 )
+return( ScriptFromUnicode( uni,sf ));
+
     if ( sf==NULL )
-return( 0 );
+return( DEFAULT_SCRIPT );
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
     for ( i=0; i<2; ++i ) {
-	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index!=0xffff ) {
-	    if ( i==1 || sf->script_lang[pst->script_lang_index][1].script==0 )
-return( sf->script_lang[pst->script_lang_index]->script );
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type == pst_lcaret )
+	continue;
+	    for ( features = pst->subtable->lookup->features; features!=NULL; features=features->next ) {
+		if ( features->scripts!=NULL )
+return( features->scripts->script );
+	    }
 	}
     }
 return( ScriptFromUnicode( sc->unicodeenc,sf ));
@@ -909,34 +917,6 @@ return( true );		/* Supplemental Multilingual Plane, RTL scripts */
 
     script = SCScriptFromUnicode(sc);
 return( script==CHR('a','r','a','b') || script==CHR('h','e','b','r') );
-}
-
-int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
-    int i;
-
-    if ( sf->cidmaster ) sf = sf->cidmaster;
-    if ( script==0 ) script=DEFAULT_SCRIPT;
-    if ( lang==0 ) lang=DEFAULT_LANG;
-    if ( sf->script_lang==NULL )
-	sf->script_lang = gcalloc(2,sizeof(struct script_record *));
-    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-	if ( sf->script_lang[i][0].script==script && sf->script_lang[i][1].script==0 &&
-		sf->script_lang[i][0].langs[0]==lang &&
-		sf->script_lang[i][0].langs[1]==0 )
-return( i );
-    }
-    sf->script_lang = grealloc(sf->script_lang,(i+2)*sizeof(struct script_record *));
-    sf->script_lang[i] = gcalloc(2,sizeof(struct script_record));
-    sf->script_lang[i][0].script = script;
-    sf->script_lang[i][0].langs = galloc(2*sizeof(uint32));
-    sf->script_lang[i][0].langs[0] = lang;
-    sf->script_lang[i][0].langs[1] = 0;
-    sf->script_lang[i+1] = NULL;
-return( i );
-}
-
-int SFFindBiggestScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang) {
-return( SFAddScriptLangIndex(sf,script,lang));
 }
 
 #if HANYANG
@@ -1094,4 +1074,316 @@ return( !sp->dontinterpolate && !sp->nonextcp && !sp->noprevcp &&
 
 int CanonicalCombiner(int uni) {
 return( uni );
+}
+
+struct compressors compressors[] = {
+    { ".gz", "gunzip", "gzip" },
+    { ".bz2", "bunzip2", "bzip2" },
+    { ".bz", "bunzip2", "bzip2" },
+    { ".Z", "gunzip", "compress" },
+/* file types which are both archived and compressed (.tgz, .zip) are handled */
+/*  by the archiver above */
+    NULL
+};
+
+#ifndef _NO_PYTHON
+char *PyFF_PickleMeToString(void *pydata) {
+return( copy( "" ));
+}
+
+void *PyFF_UnPickleMeToObjects(char *str) {
+return( NULL );
+}
+#endif
+
+static int FontViewBaseWinInfo(FontViewBase *fv, int *cc, int *rc) {
+    *cc = 16; *rc = 4;
+return( -1 );
+}
+
+struct fv_interface noui_fv = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    FontViewBaseWinInfo,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+}, *fv_interface = &noui_fv;
+
+struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name) {
+    int isgpos;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    if ( name==NULL )
+return( NULL );
+
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups ; otl!=NULL; otl=otl->next ) {
+	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
+		if ( strcmp(name,sub->subtable_name)==0 )
+return( sub );
+	    }
+	}
+    }
+return( NULL );
+}
+
+struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name) {
+    struct lookup_subtable *sub = SFFindLookupSubtable(sf,name);
+    free(name);
+return( sub );
+}
+
+OTLookup *SFFindLookup(SplineFont *sf,char *name) {
+    int isgpos;
+    OTLookup *otl;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    if ( name==NULL )
+return( NULL );
+
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups ; otl!=NULL; otl=otl->next ) {
+	    if ( strcmp(name,otl->lookup_name)==0 )
+return( otl );
+	}
+    }
+return( NULL );
+}
+
+void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag) {
+    struct scriptlanglist *sl;
+    int l;
+
+    for ( sl = fl->scripts; sl!=NULL && sl->script!=script_tag; sl=sl->next );
+    if ( sl==NULL ) {
+	sl = chunkalloc(sizeof(struct scriptlanglist));
+	sl->script = script_tag;
+	sl->next = fl->scripts;
+	fl->scripts = sl;
+    }
+    for ( l=0; l<MAX_LANG && l<sl->lang_cnt && sl->langs[l]!=lang_tag; ++l );
+    if ( l>=MAX_LANG && l<sl->lang_cnt ) {
+	while ( l<sl->lang_cnt && sl->morelangs[l-MAX_LANG]!=lang_tag )
+	    ++l;
+    }
+    if ( l>=sl->lang_cnt ) {
+	if ( l<MAX_LANG )
+	    sl->langs[l] = lang_tag;
+	else {
+	    if ( l%MAX_LANG == 0 )
+		sl->morelangs = grealloc(sl->morelangs,l*sizeof(uint32));
+		/* We've just allocated MAX_LANG-1 more than we need */
+		/*  so we don't do quite some many allocations */
+	    sl->morelangs[l-MAX_LANG] = lang_tag;
+	}
+	++sl->lang_cnt;
+    }
+}
+
+void NameOTLookup(OTLookup *otl,SplineFont *sf) {
+    char *userfriendly = NULL, *script;
+    FeatureScriptLangList *fl;
+    char *lookuptype;
+    char *format;
+    struct lookup_subtable *subtable;
+
+    if ( otl->lookup_name==NULL ) {
+	for ( fl=otl->features; fl!=NULL ; fl=fl->next ) {
+	    if ( fl->featuretag==CHR('k','e','r','n')) {
+		userfriendly = copy( "Kerning" );
+	break;
+	    } else if ( fl->featuretag==CHR('l','i','g','a') ) {
+		userfriendly = copy( "Ligatures" );
+	break;
+	    }
+	}
+	if ( userfriendly==NULL ) {
+	    if ( (otl->lookup_type&0xff)>= 0xf0 )
+		lookuptype = _("State Machine");
+	    else
+		lookuptype = S_("LookupType|Unknown");
+	    for ( fl=otl->features; fl!=NULL && !fl->ismac; fl=fl->next );
+	    if ( fl==NULL )
+		userfriendly = copy(lookuptype);
+	    else {
+		userfriendly = galloc( strlen(lookuptype) + 10);
+		sprintf( userfriendly, "%s '%c%c%c%c'", lookuptype,
+		    fl->featuretag>>24,
+		    fl->featuretag>>16,
+		    fl->featuretag>>8 ,
+		    fl->featuretag );
+	    }
+	}
+	script = NULL;
+	if ( fl==NULL ) fl = otl->features;
+	if ( fl!=NULL && fl->scripts!=NULL ) {
+	    char buf[8];
+	    struct scriptlanglist *sl, *found, *found2;
+	    uint32 script_tag = fl->scripts->script;
+	    found = found2 = NULL;
+	    for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
+		if ( sl->script == DEFAULT_SCRIPT )
+		    /* Ignore it */;
+		else {
+		    found=sl;
+	    break;
+		}
+	    }
+	    if ( found!=NULL ) {
+		script_tag = found->script;
+		if ( script_tag==CHR('l','a','t','n') )
+		    script = copy( "Latin" );
+		else {
+		    buf[0] = '\'';
+		    buf[1] = fl->scripts->script>>24;
+		    buf[2] = (fl->scripts->script>>16)&0xff;
+		    buf[3] = (fl->scripts->script>>8)&0xff;
+		    buf[4] = fl->scripts->script&0xff;
+		    buf[5] = '\'';
+		    buf[6] = 0;
+		    script = copy(buf);
+		}
+	    }
+	}
+	if ( script!=NULL ) {
+/* GT: This string is used to generate a name for each OpenType lookup. */
+/* GT: The %s will be filled with the user friendly name of the feature used to invoke the lookup */
+/* GT: The second %s (if present) is the script */
+/* GT: While the %d is the index into the lookup list and is used to disambiguate it */
+/* GT: In case that is needed */
+	    format = _("%s in %s lookup %d");
+	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+strlen(script)+10 );
+	    sprintf( otl->lookup_name, format, userfriendly, script, otl->lookup_index );
+	} else {
+	    format = _("%s lookup %d");
+	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+10 );
+	    sprintf( otl->lookup_name, format, userfriendly, otl->lookup_index );
+	}
+	free(script);
+	free(userfriendly);
+    }
+
+    if ( otl->subtables==NULL )
+	/* IError( _("Lookup with no subtables"))*/;
+    else {
+	int cnt = 0;
+	for ( subtable = otl->subtables; subtable!=NULL; subtable=subtable->next, ++cnt )
+		if ( subtable->subtable_name==NULL ) {
+	    if ( subtable==otl->subtables && subtable->next==NULL )
+/* GT: This string is used to generate a name for an OpenType lookup subtable. */
+/* GT:  %s is the lookup name */
+		format = _("%s subtable");
+	    else if ( subtable->per_glyph_pst_or_kern )
+/* GT: This string is used to generate a name for an OpenType lookup subtable. */
+/* GT:  %s is the lookup name, %d is the index of the subtable in the lookup */
+		format = _("%s per glyph data %d");
+	    else if ( subtable->kc!=NULL )
+		format = _("%s kerning class %d");
+	    else if ( subtable->fpst!=NULL )
+		format = _("%s contextual %d");
+	    else if ( subtable->anchor_classes )
+		format = _("%s anchor %d");
+	    else {
+		IError("Subtable status not filled in for %dth subtable of %s", cnt, otl->lookup_name );
+		format = "%s !!!!!!!! %d";
+	    }
+	    subtable->subtable_name = galloc( strlen(otl->lookup_name)+strlen(format)+10 );
+	    sprintf( subtable->subtable_name, format, otl->lookup_name, cnt );
+	}
+    }
+    if ( otl->lookup_type==gsub_ligature ) {
+	for ( fl=otl->features; fl!=NULL; fl=fl->next )
+	    if ( fl->featuretag==CHR('l','i','g','a') || fl->featuretag==CHR('r','l','i','g'))
+		otl->store_in_afm = true;
+    }
+}
+
+int FeatureScriptTagInFeatureScriptList(uint32 feature, uint32 script, FeatureScriptLangList *fl) {
+    struct scriptlanglist *sl;
+
+    while ( fl!=NULL ) {
+	if ( fl->featuretag == feature ) {
+	    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+		if ( sl->script == script )
+return( true );
+	    }
+	}
+	fl = fl->next;
+    }
+return( false );
+}
+
+struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,uint32 script,
+	int lookup_type ) {
+    OTLookup **base;
+    OTLookup *otl, *found=NULL;
+    int isgpos = lookup_type>=gpos_start;
+    struct lookup_subtable *sub;
+    int isnew = false;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    base = isgpos ? &sf->gpos_lookups : &sf->gsub_lookups;
+    for ( otl= *base; otl!=NULL; otl=otl->next ) {
+	if ( otl->lookup_type==lookup_type &&
+		FeatureScriptTagInFeatureScriptList(tag,script,otl->features) ) {
+	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next )
+		if ( sub->kc==NULL )
+return( sub );
+	    found = otl;
+	}
+    }
+
+    if ( found==NULL ) {
+	found = chunkalloc(sizeof(OTLookup));
+	found->lookup_type = lookup_type;
+	found->features = chunkalloc(sizeof(FeatureScriptLangList));
+	found->features->featuretag = tag;
+	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
+	found->features->scripts->script = script;
+	found->features->scripts->langs[0] = DEFAULT_LANG;
+	found->features->scripts->lang_cnt = 1;
+
+	if ( lookup_type>=gpos_start ) {
+	    found->next = sf->gpos_lookups;
+	    sf->gpos_lookups = found;
+	} else {
+	    found->next = sf->gsub_lookups;
+	    sf->gsub_lookups = found;
+	}
+	isnew = true;
+    }
+
+    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub->next = found->subtables;
+    found->subtables = sub;
+    sub->lookup = found;
+    sub->per_glyph_pst_or_kern = true;
+
+    NameOTLookup(found,sf);
+return( sub );
 }
