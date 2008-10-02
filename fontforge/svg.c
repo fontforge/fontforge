@@ -3063,8 +3063,10 @@ static void SVGParseKern(SplineFont *sf,xmlNodePtr kern,int isv) {
     xmlChar *k, *g1, *u1, *g2, *u2;
     double off;
     char *c1, *c2;
+    char *pt1, *pt2, *end1, *end2;
     SplineChar *sc1, *sc2;
-	uint32 script;
+    uint32 script;
+    struct lookup_subtable *subtable;
 
     k = _xmlGetProp(kern,(xmlChar *) "k");
     if ( k==NULL )
@@ -3097,52 +3099,53 @@ return;
 	script = SCScriptFromUnicode(sc1);
     if ( script==DEFAULT_SCRIPT && sc2!=NULL )
 	script = SCScriptFromUnicode(sc2);
-    if ( strchr(c1,' ')==NULL && strchr(c2,' ')==NULL ) {
-	KernPair *kp = chunkalloc(sizeof(KernPair));
-	kp->sc = sc2;
-	kp->off = off;
-	if ( isv ) {
-	    kp->next = sc1->vkerns;
-	    sc1->vkerns = kp;
-	} else {
-	    kp->next = sc1->kerns;
-	    sc1->kerns = kp;
+/* It is tempting to use a kern class... but it doesn't work. No guarantees */
+/*  that either of our two "classes" will ever show again. We could do the */
+/*  complex shinanigans we do in parsing feature files, but it's a lot easier */
+/*  just to make kernpairs. */
+    subtable = SFSubTableFindOrMake(sf,
+		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+		script, gpos_pair);
+    subtable->lookup->lookup_flags = ((sc1!=NULL && SCRightToLeft(sc1)) ||
+		    (sc1==NULL && sc2!=NULL && SCRightToLeft(sc2)))? pst_r2l : 0;
+    for ( pt1=c1 ; ; ) {
+	while ( *pt1==' ' ) ++pt1;
+	if ( *pt1=='\0' )
+    break;
+	end1 = strchr(pt1,' ');
+	if ( end1!=NULL ) *end1 = '\0';
+	sc1 = SFGetChar(sf,-1,pt1);
+	if ( sc1!=NULL ) for ( pt2=c2 ; ; ) {
+	    while ( *pt2==' ' ) ++pt2;
+	    if ( *pt2=='\0' )
+	break;
+	    end2 = strchr(pt2,' ');
+	    if ( end2!=NULL ) *end2 = '\0';
+	    sc2 = SFGetChar(sf,-1,pt2);
+	    if ( sc2!=NULL ) {
+		KernPair *kp = chunkalloc(sizeof(KernPair));
+		kp->sc = sc2;
+		kp->off = off;
+		if ( isv ) {
+		    kp->next = sc1->vkerns;
+		    sc1->vkerns = kp;
+		} else {
+		    kp->next = sc1->kerns;
+		    sc1->kerns = kp;
+		}
+		kp->subtable = subtable;
+	    }
+	    if ( end2==NULL )
+	break;
+	    *end2 = ' ';
+	    pt2 = end2+1;
 	}
-	free(c1); free(c2);
-	kp->subtable = SFSubTableFindOrMake(sf,
-		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
-		script, gpos_pair);
-    } else {
-	KernClass *kc = chunkalloc(sizeof(KernClass));
-	if ( isv ) {
-	    kc->next = sf->vkerns;
-	    sf->vkerns = kc;
-	} else {
-	    kc->next = sf->kerns;
-	    sf->kerns = kc;
-	}
-	kc->first_cnt = kc->second_cnt = 2;
-	kc->firsts = gcalloc(2,sizeof(char *));
-	kc->firsts[1] = c1;
-	kc->seconds = gcalloc(2,sizeof(char *));
-	kc->seconds[1] = c2;
-	kc->offsets = gcalloc(4,sizeof(int16));
-	kc->offsets[3] = off;
-	kc->subtable = SFSubTableFindOrMake(sf,
-		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
-		script, gpos_pair);
-	kc->subtable->lookup->lookup_flags = ((sc1!=NULL && SCRightToLeft(sc1)) ||
-			(sc1==NULL && sc2!=NULL && SCRightToLeft(sc2)))? pst_r2l : 0;
-	script = DEFAULT_SCRIPT;
-	if ( sc1!=NULL )
-	    script = SCScriptFromUnicode(sc1);
-	if ( script==DEFAULT_SCRIPT && sc2!=NULL )
-	    script = SCScriptFromUnicode(sc2);
-	kc->subtable = SFSubTableMake(sc1->parent,
-		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
-		script, gpos_pair);
-	kc->subtable->kc = kc;
+	if ( end1==NULL )
+    break;
+	*end1 = ' ';
+	pt1 = end1+1;
     }
+    free(c1); free(c2);
 }
 
 static SplineFont *SVGParseFont(xmlNodePtr font) {
