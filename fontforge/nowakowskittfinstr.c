@@ -40,10 +40,7 @@ int instruct_diagonal_stems = 1,
     instruct_ball_terminals = 1,
     interpolate_strong = 1,
     interpolate_more_strong = 1, /* not applicable if interpolate_strong==0 */
-
-    /* as yet unused */
-    control_counters = 1,
-    control_advance = 1; /* not applicable to glyphs with counters controlled */
+    control_counters = 0;
 
 /* non-optimized instructions will be using a stack of depth 6, allowing
  * for easy testing whether the code leaves trash on the stack or not.
@@ -2175,15 +2172,15 @@ static int StemPreferredForPoint(PointData *pd, StemData *stem,int is_next ) {
             continue;
         is_l = is_next ? pd->next_is_l[i] : pd->prev_is_l[i];
         bp = is_l ? stems[i]->left : stems[i]->right;
-        off =   ( pd->base.x - bp.x )*stem->l_to_r.x +
-                ( pd->base.y - bp.y )*stem->l_to_r.y;
-        if (off < bestoff || (off == bestoff && stems[i] == stem)) {
+        off =  fabs(( pd->base.x - bp.x )*stem->l_to_r.x +
+                    ( pd->base.y - bp.y )*stem->l_to_r.y );
+        if (off < bestoff || (RealNear(off, bestoff) && stems[i] == stem)) {
             best = i;
             bestoff = off;
         }
     }
-if (best < *stemcnt && stem == stems[best])
-    return( best );
+    if (best < *stemcnt && stem == stems[best])
+        return( best );
     
     return( -1 );
 }
@@ -2204,9 +2201,11 @@ static int has_valid_dstem( PointData *pd,int next ) {
 
 /* Initialize the InstrCt for instructing given edge. */
 static void assign_points_to_edge(InstrCt *ct, StemData *stem, int is_l, int *refidx) {
-    int i, previdx, nextidx, test_l, dint_inner = false;
+    int i, previdx, nextidx, test_l, dint_inner = false, flag;
     PointData *pd;
 
+    flag = RealNear( stem->unit.y,1 ) ? tf_x : tf_y;
+    
     for ( i=0; i<ct->gd->realcnt; i++ ) {
         pd = &ct->gd->points[i];
         previdx = StemPreferredForPoint( pd,stem,false );
@@ -2224,7 +2223,8 @@ static void assign_points_to_edge(InstrCt *ct, StemData *stem, int is_l, int *re
             }
             test_l = (nextidx != -1) ? 
                 pd->next_is_l[nextidx] : pd->prev_is_l[previdx];
-            if (test_l == is_l && !dint_inner) {
+            if (test_l == is_l && !dint_inner &&
+                !(ct->touched[pd->ttfindex] & flag) && !(ct->affected[pd->ttfindex] & flag)) {
                 ct->edge.others = (int *)grealloc(
                     ct->edge.others, (ct->edge.othercnt+1)*sizeof(int));
                 ct->edge.others[ct->edge.othercnt++] = pd->ttfindex;
@@ -3050,6 +3050,8 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
             ret += snap_stem_to_blue(ct, slave, blue, idx);
     }
 
+    if( instruct_serif_stems || instruct_ball_terminals )
+        instruct_serifs(ct, stem);
     instruct_dependent(ct, stem);
     update_blue_pts(idx, ct); /* this uses only refpt: who cares?*/
     return( ret + 1 );
@@ -3249,7 +3251,7 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
     }
     else {
         if (ct->gic->fpgm_done) {
-            if ( c_m_pt1 != -1 && c_m_pt2 != -1 ) {
+            if ( control_counters && c_m_pt1 != -1 && c_m_pt2 != -1 ) {
                
                 callargs[0] = c_m_pt1;
                 callargs[1] = c_m_pt2;
@@ -3454,7 +3456,7 @@ static void HStemGeninst(InstrCt *ct) {
  */
 static void VStemGeninst(InstrCt *ct) {
     StemData *stem, *prev=NULL;
-    int i, has_chints = false;
+    int i;
 
     if (ct->rp0 != ct->ptcnt) {
 	ct->pt = pushpoint(ct->pt, ct->ptcnt);
@@ -3472,8 +3474,6 @@ static void VStemGeninst(InstrCt *ct) {
 	            *(ct->pt)++ = SRP0;
                     ct->rp0 = prev->rightidx;
                 }
-                if ( prev != NULL && prev->next_c_m != NULL && stem->prev_c_m != NULL )
-                    has_chints = true;
 	        geninstrs(ct, stem, prev, true);
                 prev = stem;
             }
@@ -3482,7 +3482,7 @@ static void VStemGeninst(InstrCt *ct) {
 
     /* instruct right sidebearing */
     if (ct->sc->width != 0) {
-        if ( ct->gic->fpgm_done && !has_chints ) {
+        if ( ct->gic->fpgm_done && !control_counters ) {
 	    ct->pt = push2nums(ct->pt, ct->ptcnt+1, 1);
 	    *(ct->pt)++ = CALL;
         } else {
@@ -4201,7 +4201,6 @@ static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgel
 static void InterpolateStrongPoints(InstrCt *ct) {
     StemBundle *bundle;
     StemData *stem;
-    struct dependent_serif *serif;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
     real fudge;
     struct stemedge edgelist[192];
@@ -4221,13 +4220,6 @@ static void InterpolateStrongPoints(InstrCt *ct) {
         
         edgecnt = AddEdge(ct, stem, ct->xdir, edgelist, edgecnt);
         edgecnt = AddEdge(ct, stem, !ct->xdir, edgelist, edgecnt);
-        if ( instruct_serif_stems ) {
-            for ( j=0; j<stem->serif_cnt; j++ ) {
-                serif = &stem->serifs[j];
-                if ( !serif->is_ball )
-                    edgecnt = AddEdge(ct, serif->stem, !serif->lbase, edgelist, edgecnt);
-            }
-        }
     }
 
     if (edgecnt < 2)
