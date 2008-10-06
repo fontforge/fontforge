@@ -15,9 +15,6 @@
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 
-int local_encoding = e_iso8859_1;
-char *iconv_local_encoding_name = NULL;
-
 
 static int32 tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
@@ -748,6 +745,56 @@ EncMap *EncMap1to1(int enccount) {
 	map->map[i] = map->backmap[i] = i;
     map->enc = &custom;
 return(map);
+}
+
+GImage *GImageCreate(enum image_type type, int32 width, int32 height) {
+    GImage *gi;
+    struct _GImage *base;
+
+    if ( type<it_mono || type>it_true )
+return( NULL );
+
+    gi = gcalloc(1,sizeof(GImage));
+    base = galloc(sizeof(struct _GImage));
+    if ( gi==NULL || base==NULL ) {
+	free(gi); free(base);
+return( NULL );
+    }
+    gi->u.image = base;
+    base->image_type = type;
+    base->width = width;
+    base->height = height;
+    base->bytes_per_line = type==it_true?4*width:type==it_index?width:(width+7)/8;
+    base->data = NULL;
+    base->clut = NULL;
+    base->trans = COLOR_UNKNOWN;
+    base->data = galloc(height*base->bytes_per_line);
+    if ( base->data==NULL ) {
+	free(base);
+	free(gi);
+return( NULL );
+    }
+    if ( type==it_index ) {
+	base->clut = gcalloc(1,sizeof(GClut));
+	base->clut->trans_index = COLOR_UNKNOWN;
+    }
+return( gi );
+}
+
+int GImageGetWidth(GImage *img) {
+    if ( img->list_len==0 ) {
+return( img->u.image->width );
+    } else {
+return( img->u.images[0]->width );
+    }
+}
+
+int GImageGetHeight(GImage *img) {
+    if ( img->list_len==0 ) {
+return( img->u.image->height );
+    } else {
+return( img->u.images[0]->height );
+    }
 }
 
 void BDFClut(BDFFont *bdf, int linear_scale) {
