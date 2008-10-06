@@ -2546,6 +2546,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     extern int updateflex;
     int i;
     int old_layer = CVLayer((CharViewBase *) cv);
+    int was_fitted = cv->dv==NULL && cv->b.gridfit!=NULL;
 
     if ( old_layer>=sc->layer_cnt )
 	old_layer = ly_fore;		/* Can happen in type3 fonts where each glyph has a different layer cnt */
@@ -2629,6 +2630,9 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
 #endif
     }
+
+    if ( was_fitted )
+	CVGridFitChar(cv);
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
