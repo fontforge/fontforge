@@ -3333,6 +3333,7 @@ return;
     CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
     cv->active_tool = cv->showing_tool;
     cv->needsrasterize = false;
+    cv->gridfitshouldbeon = cv->show_ft_results && cv->dv==NULL && cv->b.gridfit!=NULL;
     cv->recentchange = false;
 
     SetFS(&fs,&cv->p,cv,event);
@@ -3604,6 +3605,11 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
 	SCRegenDependents(cv->b.sc,cvlayer);		/* All chars linked to this one need to get the new splines */
 	if ( updateflex && cvlayer!=ly_grid && !cv->b.layerheads[cv->b.drawmode]->background )
 	    SplineCharIsFlexible(cv->b.sc,cvlayer);
+	if ( cv->gridfitshouldbeon ) {
+	    CVGridFitChar(cv);
+	    cv->gridfitshouldbeon = false;
+	    cv->show_ft_results = true;
+	}
 	SCUpdateAll(cv->b.sc);
 	SCRegenFills(cv->b.sc);
 	for ( fv = (FontView *) (cv->b.sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) )
