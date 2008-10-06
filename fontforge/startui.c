@@ -482,7 +482,7 @@ static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
  fprintf( logfile, "OPENAPP event received.\n" ); fflush( logfile );
     if ( splash )
 	start_splash_screen();
-    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     if ( fv_list==NULL )
 	MenuOpen(NULL,NULL,NULL);
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );

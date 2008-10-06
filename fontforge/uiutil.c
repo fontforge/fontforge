@@ -341,10 +341,10 @@ return;
 #elif __Mac
     /* This seems a bit easier... Thanks to riggle */
     if ( strcmp(browser,"open")==0 ) {
-	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
-	sprintf( temp, "open \"%s\" &", fullspec );
+	char *str = "DYLD_LIBRARY_PATH=\"\"; open ";
+	temp = galloc(strlen(str) + strlen(fullspec) + 20);
+	sprintf( temp, "%s \"%s\" &", str, fullspec );
 	system(temp);
-	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
     } else {
 #elif __CygWin
     if ( browser[0]=='\0' ) {
