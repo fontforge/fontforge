@@ -76,6 +76,18 @@ return;
 	    _("The points have been changed. This may mean that the truetype instructions now refer to the wrong points and they may cause unexpected results."));
 }
 
+void SCReGridFit(SplineChar *sc,int layer) {
+    CharView *cv;
+
+    for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) if ( cv->show_ft_results ) {
+	if ( cv->show_ft_results && CVLayer((CharViewBase *) cv)==layer ) {
+	    SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+	    FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+	    CVGridFitChar(cv);
+	}
+    }
+}
+
 #define CID_PointSize	1001
 #define CID_DPI		1002
 #define CID_Debugfpgm	1004
