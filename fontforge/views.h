@@ -153,7 +153,6 @@ typedef struct charview {
     unsigned int ruler_pressed: 1;
     unsigned int ruler_pressedv: 1;
     unsigned int showrefnames: 1;
-    unsigned int gridfitshouldbeon: 1;
     int layers_off_top;
     real scale;
     GWindow gw, v;
@@ -968,6 +967,7 @@ extern void instr_scroll(struct instrinfo *ii,struct sbevent *sb);
 extern void CVGridFitChar(CharView *cv);
 extern void CVFtPpemDlg(CharView *cv,int debug);
 extern void SCDeGridFit(SplineChar *sc);
+extern void SCReGridFit(SplineChar *sc,int layer);
 
 extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
 extern void CVDebugFree(DebugView *dv);

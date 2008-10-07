@@ -3333,7 +3333,6 @@ return;
     CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
     cv->active_tool = cv->showing_tool;
     cv->needsrasterize = false;
-    cv->gridfitshouldbeon = cv->show_ft_results && cv->dv==NULL && cv->b.gridfit!=NULL;
     cv->recentchange = false;
 
     SetFS(&fs,&cv->p,cv,event);
@@ -3496,7 +3495,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	}
 	if ( changed==1 ) {
 	    instrcheck(sc,cvlayer);
-	    SCDeGridFit(sc);
+	    /*SCDeGridFit(sc);*/
 	    if ( sc->parent->onlybitmaps )
 		/* Do nothing */;
 	    else if ( sc->parent->multilayer || sc->parent->strokedfont || sc->layers[cvlayer].order2 )
@@ -3557,9 +3556,9 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 		sf->cidmaster->changed = true;
 	    FVSetTitles(sf);
 	}
-	if ( changed && layer>=0 && !sc->layers[layer].background ) {
+	if ( changed && layer>=0 && !sc->layers[layer].background && sc->layers[layer].order2 ) {
 	    instrcheck(sc,layer);
-	    SCDeGridFit(sc);
+	    SCReGridFit(sc,layer);
 	}
 	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer &&
 		changed==1 && !sc->parent->strokedfont &&
@@ -3603,13 +3602,10 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
     if ( cv->needsrasterize ) {
 	TTFPointMatches(cv->b.sc,cvlayer,true);		/* Must precede regen dependents, as this can change references */
 	SCRegenDependents(cv->b.sc,cvlayer);		/* All chars linked to this one need to get the new splines */
+	if ( cv->b.layerheads[cv->b.drawmode]->order2 )
+	    SCReGridFit(cv->b.sc,cvlayer);
 	if ( updateflex && cvlayer!=ly_grid && !cv->b.layerheads[cv->b.drawmode]->background )
 	    SplineCharIsFlexible(cv->b.sc,cvlayer);
-	if ( cv->gridfitshouldbeon ) {
-	    CVGridFitChar(cv);
-	    cv->gridfitshouldbeon = false;
-	    cv->show_ft_results = true;
-	}
 	SCUpdateAll(cv->b.sc);
 	SCRegenFills(cv->b.sc);
 	for ( fv = (FontView *) (cv->b.sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) )
