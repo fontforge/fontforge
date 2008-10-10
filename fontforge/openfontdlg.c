@@ -67,8 +67,9 @@ struct openfilefilters def_font_filters[] = {
 	   "fnt,"
 	   "pcf,"
 	   "pmf,"
-	   "*pk,"
-	   "*gf,"
+	   "[0-9]*pk,"
+/* I used to say "*gf" but that also matched xgf (xgridfit) files -- which ff can't open */
+	   "[0-9]*gf,"
 	   "pdb"
 	   "}"
 /* With any of these methods of compression */
