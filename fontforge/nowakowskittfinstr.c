@@ -2304,7 +2304,11 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
  * if init_edge() was used to collect points in a blue zone (or other narrow
  * zone).
  *
- * Optimizer keeps points used by diagonal hinter.
+ * Optimizers keep points used by diagonal hinter.
+ *
+ * optimize_strongpts() is used instead of two routines above when hinting
+ * inter-stem zones (see interpolate_strong option). It's invoked after
+ * instructing diagonal stems.
  */
 
 /* To be used with qsort() - sorts integer array in ascending order. */
@@ -2471,6 +2475,181 @@ return;
     /* remove optimized-out points from list to be instructed. */
     for(i=0; i<ct->edge.othercnt; i++)
 	if (affected[others[i]]) {
+	    ct->edge.othercnt--;
+	    for(j=i; j<ct->edge.othercnt; j++) others[j] = others[j+1];
+	    i--;
+	}
+}
+
+/* For any strong point, check whether it's position can rely on other
+ * points (if so, we don't have to instruct it explicitly).
+ * This optimization is two-pass. 'Obvious' Off-curve points are sweeped
+ * first. Some remaining off-curve points may then be sweeped in
+ * second pass.
+ */
+static void optimize_strongpts_step1(InstrCt *ct);
+static void optimize_strongpts_step2(InstrCt *ct);
+
+static void optimize_strongpts(InstrCt *ct) {
+    optimize_strongpts_step1(ct);
+    optimize_strongpts_step2(ct);
+}
+
+static void optimize_strongpts_step1(InstrCt *ct) {
+    int i, j;
+    int *others = ct->edge.others;
+    int othercnt = ct->edge.othercnt;
+    int *contourends = ct->contourends;
+    uint8 *tocull, *tocheck;
+
+    if (othercnt == 0)
+return;
+
+    tocull = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
+    tocheck = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
+    for(i=0; i<ct->edge.othercnt; i++) tocheck[ct->edge.others[i]] = 1;
+
+    /* for each point of "edge" (would be better called "zone") */
+    for(i=0; i<ct->edge.othercnt; i++)
+    {
+	int pt = others[i];
+	double pt_x = ct->bp[pt].x;
+	double pt_y = ct->bp[pt].y;
+
+	int pt_next = NextOnContour(contourends, pt);
+	double pt_next_x = ct->bp[pt_next].x;
+	double pt_next_y = ct->bp[pt_next].y;
+
+	int pt_prev = PrevOnContour(contourends, pt);
+	double pt_prev_x = ct->bp[pt_prev].x;
+	double pt_prev_y = ct->bp[pt_prev].y;
+
+	/* We sweep only off-curve points here */
+	if (ct->gd->points[pt].sp != NULL)
+    continue;
+
+	if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, pt))
+    continue;
+
+	/* Some off-curve points may 'belong' to extrema from other zone. */
+
+	if (/*tocheck[pt_next] &&*/ (ct->gd->points[pt_next].sp != NULL) &&
+	    (pt_x == pt_next_x || pt_y == pt_next_y))
+		tocull[pt] = 1;
+
+	if (/*tocheck[pt_prev] &&*/ (ct->gd->points[pt_prev].sp != NULL) &&
+	    (pt_x == pt_prev_x || pt_y == pt_prev_y))
+		tocull[pt] = 1;
+    }
+
+    /* remove optimized-out points from list to be instructed. */
+    for(i=0; i<ct->edge.othercnt; i++)
+	if (tocull[others[i]]) {
+	    ct->edge.othercnt--;
+	    for(j=i; j<ct->edge.othercnt; j++) others[j] = others[j+1];
+	    i--;
+	}
+    
+    free(tocull);
+    free(tocheck);
+}
+
+static void optimize_strongpts_step2(InstrCt *ct) {
+    int pass, i, j, forward;
+    int next_closed, prev_closed;
+    int next_pt_max, next_pt_min, prev_pt_max, prev_pt_min;
+    int next_coord_max, next_coord_min, prev_coord_max, prev_coord_min;
+    int *others = ct->edge.others;
+    int othercnt = ct->edge.othercnt;
+    int touchflag = (ct->xdir)?tf_x:tf_y;
+    int *contourends = ct->contourends;
+    uint8 *touched = ct->touched;
+    uint8 *affected = ct->affected;
+    uint8 *toinstr, *tocheck;
+
+    if (othercnt == 0)
+return;
+
+    toinstr = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
+    tocheck = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
+    for(i=0; i<ct->edge.othercnt; i++) tocheck[ct->edge.others[i]] = 1;
+
+    /* two passes... */
+    for(pass=0; pass<2; pass++)
+    {
+	/* ...for each point of "edge" (would be better called "zone") */
+	for(i=0; i<ct->edge.othercnt; i++)
+	{
+	    int pt = others[i];
+	    double pt_coord = (ct->xdir) ? ct->bp[pt].x : ct->bp[pt].y;
+
+	    /* In first pass, we sweep only off-curve points */
+	    if ((pass==0) && (ct->gd->points[pt].sp != NULL))
+	continue;
+
+	    /* check path backward and forward */
+	    for (forward=0; forward<2; forward++)
+	    {
+		int closed = 0;
+		int pt_max = pt, pt_min = pt;
+		double coord_max = pt_coord, coord_min = pt_coord;
+		int curr = forward ? NextOnContour(contourends, pt):
+				    PrevOnContour(contourends, pt);
+
+		while(curr!=pt)
+		{
+		    double coord = (ct->xdir) ? ct->bp[curr].x : ct->bp[curr].y;
+
+		    if (fabs(ct->edge.base - coord) > ct->gic->fudge)
+		break;
+
+		    if ((touched[curr] | affected[curr]) & touchflag || tocheck[curr])
+		    {
+			if (coord >= coord_max) { coord_max = coord; pt_max = curr; }
+			if (coord <= coord_min) { coord_min = coord; pt_min = curr; }
+			closed = 1;
+		    }
+
+		    if ((touched[curr] | affected[curr]) & touchflag || toinstr[curr])
+		break;
+
+		    curr = forward ? NextOnContour(contourends, curr):
+				    PrevOnContour(contourends, curr);
+		}
+
+		if (forward) {
+		    next_closed = closed;
+		    next_pt_max = pt_max;
+		    next_pt_min = pt_min;
+		    next_coord_max = coord_max;
+		    next_coord_min = coord_min;
+		}
+		else {
+		    prev_closed = closed;
+		    prev_pt_max = pt_max;
+		    prev_pt_min = pt_min;
+		    prev_coord_max = coord_max;
+		    prev_coord_min = coord_min;
+		}
+	    }
+
+	    if (prev_closed && next_closed && (
+		(prev_coord_max >= pt_coord && pt != prev_pt_max && 
+		 next_coord_min <= pt_coord && pt != next_pt_min) ||
+		(prev_coord_min <= pt_coord && pt != prev_pt_min && 
+		 next_coord_max >= pt_coord && pt != next_pt_max)))
+		    affected[pt] |= touchflag;
+	    else
+		toinstr[pt] = 1;
+	}
+    }
+
+    free(toinstr);
+    free(tocheck);
+
+    /* remove optimized-out points from list to be instructed. */
+    for(i=0; i<ct->edge.othercnt; i++)
+	if (affected[others[i]] & touchflag) {
 	    ct->edge.othercnt--;
 	    for(j=i; j<ct->edge.othercnt; j++) others[j] = others[j+1];
 	    i--;
@@ -4241,11 +4420,8 @@ return;
 	    fudge = ct->gic->fudge;
 	    ct->gic->fudge = (edgelist[i].pos-edgelist[ledge].pos)/2;
 	    init_edge(ct, (edgelist[i].pos+edgelist[ledge].pos)/2, ALL_CONTOURS);
+	    optimize_strongpts(ct); /* Special way is needed here. */
 	    ct->gic->fudge = fudge;
-
-	    /* A correct method of optimization is needed here. */
-	    /* optimize_blue(ct); */
-	    /* optimize_edge(ct); */
 
 	    if (!ct->edge.othercnt) {
 		nowrp1 = 1;
