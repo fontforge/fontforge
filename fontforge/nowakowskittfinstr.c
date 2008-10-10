@@ -356,7 +356,7 @@ return closest;
  ******************************************************************************
  **
  **  We need to initialize global instructing context before autoinstructing
- **  a glyph, because we want to be core that global hinting tables (cvt, prep,
+ **  a glyph, because we want to be sure that global hinting tables (cvt, prep,
  **  fpgm) were (or weren't) properly set up.
  **
  ******************************************************************************
@@ -777,10 +777,8 @@ return;
 }
 
 /* We'll need at least STACK_DEPTH stack levels and a twilight point (and thus
- * also a twilight zone). We also currently define ten functions in fpgm, and
- * we use two storage locations to keep some factors for normalizing widths of
- * stems that don't use 'cvt' values (in future). We must ensure this is
- * indicated in the 'maxp' table.
+ * also a twilight zone). We also currently define some functions in fpgm.
+ * We must ensure this is indicated in the 'maxp' table.
  */
 static void init_maxp(GlobalInstrCt *gic) {
     struct ttf_table *tab = SFFindTable(gic->sf, CHR('m','a','x','p'));
@@ -1017,7 +1015,8 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0x2d, // ENDF
 
 	/* Function 7: check if we are hinting in cleartype.
-	 * CAUTION! Older FreeType versions lie if asked.
+	 * CAUTION! FreeType doesn't support that, as subpixel
+	 * filtering is usually done by higher level library.
 	 * Syntax: PUSHB_1 7 CALL; leaves boolean on the stack.
 	 */
 	0xb0, // PUSHB_1
@@ -4541,7 +4540,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* Then instruct diagonal stems (=> movement in x) */
     /* This is done after vertical stems because it involves */
     /* moving some points out-of their vertical stems. */
-    if (ct->diagcnt > 0) DStemInfoGeninst(ct);
+    if (instruct_diagonal_stems && ct->diagcnt > 0) DStemInfoGeninst(ct);
 
     if ( interpolate_strong ) {
         /* Adjust important points between hint edges. */
