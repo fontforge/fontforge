@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 29-Sep-2008 -->
+  <!-- AP: Last modified: 9-Oct-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2865,9 +2865,11 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>os2_windescent_add</CODE></TD>
     </TR>
     <TR>
-      <TD><CODE>path</CODE></TD>
-      <TD colspan=2>(readonly) Returns a string (or None) containing the name of
-	the file from which the font was originally read (in this session)</TD>
+      <TD><CODE><A NAME="path">path</A></CODE></TD>
+      <TD colspan=2>(readonly) Returns a string containing the name of the file
+	from which the font was originally read (in this session), or if this is
+	a new font, returns a made up filename in the current directory named something
+	like "Untitled1.sfd". See also <A HREF="#sfd-path">sfd_path</A>.</TD>
     </TR>
     <TR>
       <TD><CODE><A NAME="font-persistent">persistent</A></CODE></TD>
@@ -3014,10 +3016,10 @@ pen = None;				# Finalize the pen. This tells FontForge
 	A <CODE>True</CODE> or non-0 value means the slot is selected.</TD>
     </TR>
     <TR>
-      <TD><CODE>sfd_path</CODE></TD>
+      <TD><CODE><A NAME="sfd-path">sfd_path</A></CODE></TD>
       <TD colspan=2>(readonly) Returns a string (or None) containing the name of
 	the sfd file associated with this font. Sometimes this will be the same as
-	path (above).</TD>
+	<A HREF="#path">path</A> (above).</TD>
     </TR>
     <TR>
       <TD><CODE>sfnt_names</CODE></TD>
