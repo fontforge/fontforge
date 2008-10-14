@@ -3224,8 +3224,10 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
     finish_stem(stem, use_rp1, keep_old_rp0, ct);
     for ( i=0; i<stem->dep_cnt; i++ ) {
         slave = stem->dependent[i].stem;
-        if ( slave->blue == idx )
+        if ( slave->blue == idx ) {
             ret += snap_stem_to_blue(ct, slave, blue, idx);
+            slave->master = NULL;
+        }
     }
 
     if( instruct_serif_stems || instruct_ball_terminals )
