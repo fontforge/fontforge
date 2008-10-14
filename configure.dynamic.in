@@ -95,7 +95,7 @@ AC_DEFUN([AC_CHECK_LIB_LA],
  ;;
 esac
 
-AC_C_BIGENDIAN
+AC_C_BIGENDIAN()
 
 AC_PROG_LIBTOOL
 
@@ -349,6 +349,37 @@ dnl linux has integer types in stdint.h, solaris, vms in inttypes.h
 
 AC_CHECK_HEADERS([stdint.h])
 
+dnl Do we have libcairo
+
+gww_hascairo="no"
+AC_ARG_WITH(cairo,
+ [  --without-cairo   Don't use libcairo],
+ [
+   if test "$withval" \!= "no" ; then
+    AC_CHECK_HEADER(fontconfig/fontconfig.h, [
+     AC_CHECK_LIB(fontconfig, FcConfigCreate, [
+      AC_CHECK_LIB(cairo, cairo_xlib_surface_create, [
+       AC_CHECK_HEADER(cairo/cairo.h, gww_hascairo="yes" )])])])
+   fi
+ ])
+if test "gww_hascairo" = "yes" ; then
+ AC_CHECK_FILE(/usr/include/cairo/cairo.h,[CFLAGS="$CFLAGS -I/usr/include/cairo/"],[
+  AC_CHECK_FILE(/usr/local/include/cairo/cairo.h,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/cairo/"],
+   gww_hascairo="no")])
+fi
+if test "gww_hascairo" = "no" ; then
+ AC_DEFINE(_NO_LIBCAIRO)
+fi
+
+AC_ARG_ENABLE(macapp,
+  [  --disable-macapp   Do not build a mac Application (only for macs)],
+  [
+    if test "$enableval" = "no" >/dev/null 2>&1 ; then
+       MACAPP=
+    fi
+  ])
+
+
 dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard search path
 
 gww_use_freetype="yes"
@@ -472,7 +503,7 @@ if test "$no_x" = "yes"; then
  GDRAW_LIB=
  exeOBJECTS=fontforge_SCRIPTOBJ
  LINK_WITH_GDRAW=
-dnl AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+ MACAPP=
 
 else
  dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
@@ -552,6 +583,9 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
+ if test "$gww_hascairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lcairo -lfontconfig"
+ fi
 fi
 
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
@@ -586,6 +620,12 @@ if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
   STATIC_LIBS="$STATIC_LIBS -lspiro"
   AC_DEFINE(_STATIC_LIBSPIRO)
  fi
+ if test "$gww_hascairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lcairo"
+  AC_DEFINE(_STATIC_LIBCAIRO)
+  STATIC_LIBS="$STATIC_LIBS -lfontconfig"
+  AC_DEFINE(_STATIC_LIBFONTCONFIG)
+ fi
 fi
 if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
     "$gww_needsstaticimages" != "yes" ; then
@@ -614,6 +654,10 @@ case "$host" in
  fi
  if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
   AC_CHECK_LIB_LA(xml2, :, [ STATIC_LIBS="$STATIC_LIBS -lxml2" ; AC_DEFINE(_STATIC_LIBXML2)])
+ fi
+ if test "$gww_hascairo" = "yes"; then
+  AC_CHECK_LIB_LA(cairo, :, [ STATIC_LIBS="$STATIC_LIBS -lcairo" ; AC_DEFINE(_STATIC_LIBCAIRO)])
+  AC_CHECK_LIB_LA(fontconfig, :, [ STATIC_LIBS="$STATIC_LIBS -lfontconfig" ; AC_DEFINE(_STATIC_LIBFONTCONFIG)])
  fi
  ;;
 esac
