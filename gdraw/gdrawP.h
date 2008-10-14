@@ -103,6 +103,7 @@ struct gwindow {
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
+    unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
 };
 
 struct ginput_context {
@@ -249,6 +250,17 @@ struct displayfuncs {
     GWindow (*startJob)(GDisplay *gdisp,void *user_data,GPrinterAttrs *attrs);
     void (*nextPage)(GWindow w);
     int (*endJob)(GWindow w,int cancel);
+
+    void (*getFontMetrics)(GWindow,GFont *,int *,int *,int *);
+
+    enum gcairo_flags (*hasCairo)(GWindow w);
+    void (*startNewPath)(GWindow w);
+    void (*moveto)(GWindow w,double x, double y);
+    void (*lineto)(GWindow w,double x, double y);
+    void (*curveto)(GWindow w, double cx1,double cy1, double cx2,double cy2, double x, double y);
+    void (*stroke)(GWindow w, Color col);
+    void (*fill)(GWindow w, Color col);
+    void (*fillAndStroke)(GWindow w, Color fillcol,Color strokecol);
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

@@ -109,6 +109,7 @@ static void *font_cvt(char *val, void *def) {
     int ret;
     unichar_t *freeme=NULL;
 
+    memset(&rq,0,sizeof(rq));
     rq.family_name = helv;
     rq.point_size = 10;
     rq.weight = 400;
@@ -283,6 +284,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 
     if ( fi==NULL ) {
 	FontRequest rq;
+	memset(&rq,0,sizeof(rq));
 	rq.family_name = helv;
 	rq.point_size = 10;
 	rq.weight = 400;
@@ -338,6 +340,7 @@ void GGadgetInit(void) {
 	GResourceFind( res, "GGadget.Popup.");
 	if ( popup_font==NULL ) {
 	    FontRequest rq;
+	    memset(&rq,0,sizeof(rq));
 	    rq.family_name = helv;
 	    rq.point_size = localeptsize();
 	    rq.weight = 400;

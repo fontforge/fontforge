@@ -1099,6 +1099,7 @@ void GWidgetCreateInsChar(void) {
 	inschr.icw = GDrawCreateTopWindow(NULL,&pos,inschr_e_h,&inschr,&wattrs);
 	GGadgetsCreate(inschr.icw,gcd);
 
+	memset(&rq,0,sizeof(rq));
 	rq.family_name = uc_copy(GResourceFindString("InsChar.Family"));
 	if ( rq.family_name==NULL )
 	    rq.family_name = helv;
