@@ -463,7 +463,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST MACAPP SED EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB STRIP ac_ct_STRIP DSYMUTIL ac_ct_DSYMUTIL NMEDIT ac_ct_NMEDIT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL FF_EXTRA_FILES PYTHON_LIB_NAME FINAL_TARGET O_EXTENSION X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB GDRAW_LIB exeOBJECTS LINK_WITH_GDRAW STATIC_LIBS WFLAGS VERSION PYINCLUDE PYDEFINES PYLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST MACAPP SED EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB STRIP ac_ct_STRIP DSYMUTIL ac_ct_DSYMUTIL NMEDIT ac_ct_NMEDIT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL FF_EXTRA_FILES FINAL_TARGET O_EXTENSION X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB GDRAW_LIB exeOBJECTS LINK_WITH_GDRAW STATIC_LIBS WFLAGS VERSION PYINCLUDE PYDEFINES PYLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1033,6 +1033,7 @@ Optional Features:
   --enable-libff          disable/enable building shared fontforge library
   --enable-pyextension    disable/enable installing libfontforge as a python
                           extension plugin
+  --disable-macapp   Do not build a mac Application (only for macs)
   --disable-freetype   Control whether we build with freetype
   --enable-type3   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
   --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)
@@ -1065,6 +1066,7 @@ Optional Packages:
   --with-python-headers   Specify the directory containing the python headers
   --with-python-lib   Specify the python shared libary
   --without-native-script   Don't include a legacy fontforge scripting interpreter
+  --without-cairo   Don't use libcairo
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
@@ -3518,7 +3520,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3521 "configure"' > conftest.$ac_ext
+  echo '#line 3523 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5019,7 +5021,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5022:" \
+echo "$as_me:5024:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6372,11 +6374,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6375: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6377: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6379: \$? = $ac_status" >&5
+   echo "$as_me:6381: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6662,11 +6664,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6665: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6667: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6669: \$? = $ac_status" >&5
+   echo "$as_me:6671: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6766,11 +6768,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6769: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6771: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:6773: \$? = $ac_status" >&5
+   echo "$as_me:6775: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9180,7 +9182,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9183 "configure"
+#line 9185 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -9280,7 +9282,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9283 "configure"
+#line 9285 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11689,11 +11691,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11692: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11694: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11696: \$? = $ac_status" >&5
+   echo "$as_me:11698: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11793,11 +11795,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11796: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11798: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11800: \$? = $ac_status" >&5
+   echo "$as_me:11802: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -13391,11 +13393,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13394: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13396: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13398: \$? = $ac_status" >&5
+   echo "$as_me:13400: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -13495,11 +13497,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13498: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13500: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13502: \$? = $ac_status" >&5
+   echo "$as_me:13504: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15724,11 +15726,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15727: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15729: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15731: \$? = $ac_status" >&5
+   echo "$as_me:15733: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16014,11 +16016,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16017: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16019: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16021: \$? = $ac_status" >&5
+   echo "$as_me:16023: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16118,11 +16120,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16121: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16123: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16125: \$? = $ac_status" >&5
+   echo "$as_me:16127: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -19477,8 +19479,10 @@ if test "$python" = "no" ; then
 _ACEOF
 
 fi
+cat >>confdefs.h <<_ACEOF
+#define PYTHON_LIB_NAME "python$PyVersion"
+_ACEOF
 
-PYTHON_LIB_NAME="python$PyVersion"
 
 # Check whether --enable-pyextension or --disable-pyextension was given.
 if test "${enable_pyextension+set}" = set; then
@@ -21825,6 +21829,370 @@ done
 
 
 
+gww_hascairo="no"
+gww_checkcairo="yes"
+
+# Check whether --with-cairo or --without-cairo was given.
+if test "${with_cairo+set}" = set; then
+  withval="$with_cairo"
+
+   if test "$withval" = "no" ; then
+     gww_checkcairo="no"
+   fi
+
+else
+  :
+fi;
+echo gww_checkcairo $gww_checkcairo
+if test "$gww_checkcairo" = "yes" ; then
+  if test "${ac_cv_header_fontconfig_fontconfig_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for fontconfig/fontconfig.h" >&5
+echo $ECHO_N "checking for fontconfig/fontconfig.h... $ECHO_C" >&6
+if test "${ac_cv_header_fontconfig_fontconfig_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_fontconfig_fontconfig_h" >&5
+echo "${ECHO_T}$ac_cv_header_fontconfig_fontconfig_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking fontconfig/fontconfig.h usability" >&5
+echo $ECHO_N "checking fontconfig/fontconfig.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <fontconfig/fontconfig.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking fontconfig/fontconfig.h presence" >&5
+echo $ECHO_N "checking fontconfig/fontconfig.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <fontconfig/fontconfig.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: fontconfig/fontconfig.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: fontconfig/fontconfig.h: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for fontconfig/fontconfig.h" >&5
+echo $ECHO_N "checking for fontconfig/fontconfig.h... $ECHO_C" >&6
+if test "${ac_cv_header_fontconfig_fontconfig_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_fontconfig_fontconfig_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_fontconfig_fontconfig_h" >&5
+echo "${ECHO_T}$ac_cv_header_fontconfig_fontconfig_h" >&6
+
+fi
+if test $ac_cv_header_fontconfig_fontconfig_h = yes; then
+
+   echo "$as_me:$LINENO: checking for FcConfigCreate in -lfontconfig" >&5
+echo $ECHO_N "checking for FcConfigCreate in -lfontconfig... $ECHO_C" >&6
+if test "${ac_cv_lib_fontconfig_FcConfigCreate+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfontconfig  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char FcConfigCreate ();
+int
+main ()
+{
+FcConfigCreate ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_fontconfig_FcConfigCreate=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_fontconfig_FcConfigCreate=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_fontconfig_FcConfigCreate" >&5
+echo "${ECHO_T}$ac_cv_lib_fontconfig_FcConfigCreate" >&6
+if test $ac_cv_lib_fontconfig_FcConfigCreate = yes; then
+
+    echo "$as_me:$LINENO: checking for cairo_xlib_surface_create in -lcairo" >&5
+echo $ECHO_N "checking for cairo_xlib_surface_create in -lcairo... $ECHO_C" >&6
+if test "${ac_cv_lib_cairo_cairo_xlib_surface_create+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcairo  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char cairo_xlib_surface_create ();
+int
+main ()
+{
+cairo_xlib_surface_create ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_cairo_cairo_xlib_surface_create=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_cairo_cairo_xlib_surface_create=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_cairo_cairo_xlib_surface_create" >&5
+echo "${ECHO_T}$ac_cv_lib_cairo_cairo_xlib_surface_create" >&6
+if test $ac_cv_lib_cairo_cairo_xlib_surface_create = yes; then
+  gww_hascairo="yes"
+fi
+
+fi
+
+fi
+
+
+fi
+if test "$gww_hascairo" = "yes" ; then
+ echo "$as_me:$LINENO: checking for /usr/include/cairo/cairo.h" >&5
+echo $ECHO_N "checking for /usr/include/cairo/cairo.h... $ECHO_C" >&6
+if test "${ac_cv_file__usr_include_cairo_cairo_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/include/cairo/cairo.h"; then
+  ac_cv_file__usr_include_cairo_cairo_h=yes
+else
+  ac_cv_file__usr_include_cairo_cairo_h=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_include_cairo_cairo_h" >&5
+echo "${ECHO_T}$ac_cv_file__usr_include_cairo_cairo_h" >&6
+if test $ac_cv_file__usr_include_cairo_cairo_h = yes; then
+  CFLAGS="$CFLAGS -I/usr/include/cairo/"
+else
+
+  echo "$as_me:$LINENO: checking for /usr/local/include/cairo/cairo.h" >&5
+echo $ECHO_N "checking for /usr/local/include/cairo/cairo.h... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_include_cairo_cairo_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/include/cairo/cairo.h"; then
+  ac_cv_file__usr_local_include_cairo_cairo_h=yes
+else
+  ac_cv_file__usr_local_include_cairo_cairo_h=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_include_cairo_cairo_h" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_include_cairo_cairo_h" >&6
+if test $ac_cv_file__usr_local_include_cairo_cairo_h = yes; then
+  CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/cairo/"
+else
+  gww_hascairo="no"
+fi
+
+fi
+
+fi
+if test "$gww_hascairo" = "no" ; then
+ echo got here too
+ cat >>confdefs.h <<\_ACEOF
+#define _NO_LIBCAIRO 1
+_ACEOF
+
+fi
+echo gww_hascairo $gww_hascairo
+
+# Check whether --enable-macapp or --disable-macapp was given.
+if test "${enable_macapp+set}" = set; then
+  enableval="$enable_macapp"
+
+    if test "$enableval" = "no" >/dev/null 2>&1 ; then
+       MACAPP=
+    fi
+
+fi;
+
+
+
 gww_use_freetype="yes"
 gww_hasbytecode="no"
 # Check whether --enable-freetype or --disable-freetype was given.
@@ -23982,6 +24350,7 @@ if test "$no_x" = "yes"; then
  GDRAW_LIB=
  exeOBJECTS=fontforge_SCRIPTOBJ
  LINK_WITH_GDRAW=
+ MACAPP=
 
 else
 
@@ -24667,6 +25036,10 @@ _ACEOF
 
 fi
 
+echo gww_hascairo $gww_hascairo
+ if test "$gww_hascairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lcairo -lfontconfig"
+ fi
 fi
 
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
@@ -24719,6 +25092,18 @@ _ACEOF
   STATIC_LIBS="$STATIC_LIBS -lspiro"
   cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBSPIRO 1
+_ACEOF
+
+ fi
+ if test "$gww_hascairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lcairo"
+  cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBCAIRO 1
+_ACEOF
+
+  STATIC_LIBS="$STATIC_LIBS -lfontconfig"
+  cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBFONTCONFIG 1
 _ACEOF
 
  fi
@@ -25507,6 +25892,202 @@ if test $ac_cv_file__usr_X11R6_lib_libxml2_la = yes; then
 else
    STATIC_LIBS="$STATIC_LIBS -lxml2" ; cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBXML2 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+ fi
+ if test "$gww_hascairo" = "yes"; then
+
+  echo "$as_me:$LINENO: checking for /lib/libcairo.la" >&5
+echo $ECHO_N "checking for /lib/libcairo.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libcairo_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libcairo.la"; then
+  ac_cv_file__lib_libcairo_la=yes
+else
+  ac_cv_file__lib_libcairo_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libcairo_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libcairo_la" >&6
+if test $ac_cv_file__lib_libcairo_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libcairo.la" >&5
+echo $ECHO_N "checking for /usr/lib/libcairo.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libcairo_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libcairo.la"; then
+  ac_cv_file__usr_lib_libcairo_la=yes
+else
+  ac_cv_file__usr_lib_libcairo_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libcairo_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libcairo_la" >&6
+if test $ac_cv_file__usr_lib_libcairo_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libcairo.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libcairo.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libcairo_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libcairo.la"; then
+  ac_cv_file__usr_local_lib_libcairo_la=yes
+else
+  ac_cv_file__usr_local_lib_libcairo_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libcairo_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libcairo_la" >&6
+if test $ac_cv_file__usr_local_lib_libcairo_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libcairo.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libcairo.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libcairo_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libcairo.la"; then
+  ac_cv_file__usr_X11R6_lib_libcairo_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libcairo_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libcairo_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libcairo_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libcairo_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lcairo" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBCAIRO 1
+_ACEOF
+
+fi
+
+fi
+
+fi
+
+fi
+
+
+
+  echo "$as_me:$LINENO: checking for /lib/libfontconfig.la" >&5
+echo $ECHO_N "checking for /lib/libfontconfig.la... $ECHO_C" >&6
+if test "${ac_cv_file__lib_libfontconfig_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/lib/libfontconfig.la"; then
+  ac_cv_file__lib_libfontconfig_la=yes
+else
+  ac_cv_file__lib_libfontconfig_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__lib_libfontconfig_la" >&5
+echo "${ECHO_T}$ac_cv_file__lib_libfontconfig_la" >&6
+if test $ac_cv_file__lib_libfontconfig_la = yes; then
+  :
+else
+
+   echo "$as_me:$LINENO: checking for /usr/lib/libfontconfig.la" >&5
+echo $ECHO_N "checking for /usr/lib/libfontconfig.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_lib_libfontconfig_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/lib/libfontconfig.la"; then
+  ac_cv_file__usr_lib_libfontconfig_la=yes
+else
+  ac_cv_file__usr_lib_libfontconfig_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_lib_libfontconfig_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_lib_libfontconfig_la" >&6
+if test $ac_cv_file__usr_lib_libfontconfig_la = yes; then
+  :
+else
+
+    echo "$as_me:$LINENO: checking for /usr/local/lib/libfontconfig.la" >&5
+echo $ECHO_N "checking for /usr/local/lib/libfontconfig.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_lib_libfontconfig_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/lib/libfontconfig.la"; then
+  ac_cv_file__usr_local_lib_libfontconfig_la=yes
+else
+  ac_cv_file__usr_local_lib_libfontconfig_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_lib_libfontconfig_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_lib_libfontconfig_la" >&6
+if test $ac_cv_file__usr_local_lib_libfontconfig_la = yes; then
+  :
+else
+
+     echo "$as_me:$LINENO: checking for /usr/X11R6/lib/libfontconfig.la" >&5
+echo $ECHO_N "checking for /usr/X11R6/lib/libfontconfig.la... $ECHO_C" >&6
+if test "${ac_cv_file__usr_X11R6_lib_libfontconfig_la+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/X11R6/lib/libfontconfig.la"; then
+  ac_cv_file__usr_X11R6_lib_libfontconfig_la=yes
+else
+  ac_cv_file__usr_X11R6_lib_libfontconfig_la=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_X11R6_lib_libfontconfig_la" >&5
+echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libfontconfig_la" >&6
+if test $ac_cv_file__usr_X11R6_lib_libfontconfig_la = yes; then
+  :
+else
+   STATIC_LIBS="$STATIC_LIBS -lfontconfig" ; cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBFONTCONFIG 1
 _ACEOF
 
 fi
@@ -26437,7 +27018,6 @@ s,@FFLAGS@,$FFLAGS,;t t
 s,@ac_ct_F77@,$ac_ct_F77,;t t
 s,@LIBTOOL@,$LIBTOOL,;t t
 s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
-s,@PYTHON_LIB_NAME@,$PYTHON_LIB_NAME,;t t
 s,@FINAL_TARGET@,$FINAL_TARGET,;t t
 s,@O_EXTENSION@,$O_EXTENSION,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
