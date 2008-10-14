@@ -70,6 +70,7 @@ static void GMenuInit() {
     char *keystr, *end;
 
     GGadgetInit();
+    memset(&rq,0,sizeof(rq));
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.weight = 700;
     menu_font = GDrawInstanciateFont(screen_display,&rq);
@@ -534,6 +535,9 @@ static void GMenuChangeSelection(struct gmenu *m, int newsel,GEvent *event) {
 
     if ( old==newsel )
 return;
+    if ( newsel==m->mcnt )
+return;
+
     if ( m->child!=NULL ) {
 	GMenuDestroy(m->child);
 	m->child = NULL;
@@ -1119,7 +1123,6 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     GWindowAttrs pattrs;
     int i, width, keywidth;
     unichar_t buffer[300];
-    FontInstance *old;
     int ds, ld, temp, lh;
     GRect screen;
 
@@ -1134,23 +1137,37 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     lh = m->fh;
     m->line_with_mouse = -1;
 
-    old = GDrawSetFont(owner,m->font);
+/* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
+/*  work, but that seems a high price to pay */
+    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_cairo;
+    pattrs.event_masks = -1;
+    pattrs.nodecoration = true;
+    pattrs.positioned = true;
+    pattrs.cursor = ct_pointer;
+    pattrs.transient = GWidgetGetTopWidget(owner);
+
+    pos.x = pos.y = 0; pos.width = pos.height = 100;
+
+    m->w = GDrawCreateTopWindow(disp,&pos,gmenu_eh,m,&pattrs);
+    m->gic = GDrawCreateInputContext(m->w,gic_root|gic_orlesser);
+
+    GDrawSetFont(m->w,m->font);
     m->hasticks = false; width = 0; keywidth = 0;
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( mi[i].ti.checkable ) m->hasticks = true;
-	temp = GTextInfoGetWidth(owner,&mi[i].ti,m->font);
+	temp = GTextInfoGetWidth(m->w,&mi[i].ti,m->font);
 	if ( temp>width ) width = temp;
 	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) {
 	    _shorttext(mi[i].shortcut,0,buffer);
-	    temp = GDrawGetTextWidth(owner,buffer,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
+	    temp = GDrawGetTextWidth(m->w,buffer,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
 	} else {
 	    shorttext(&mi[i],buffer);
-	    temp = GDrawGetTextWidth(owner,buffer,-1,NULL);
+	    temp = GDrawGetTextWidth(m->w,buffer,-1,NULL);
 	}
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
-	temp = GTextInfoGetHeight(owner,&mi[i].ti,m->font);
+	temp = GTextInfoGetHeight(m->w,&mi[i].ti,m->font);
 	if ( temp>lh ) {
 	    if ( temp>3*m->fh/2 )
 		temp = 3*m->fh/2;
@@ -1158,11 +1175,10 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	}
     }
     m->fh = lh;
-    GDrawSetFont(owner,old);
     m->mcnt = m->lcnt = i;
-    if ( keywidth!=0 ) width += keywidth + GDrawPointsToPixels(owner,8);
+    if ( keywidth!=0 ) width += keywidth + GDrawPointsToPixels(m->w,8);
     if ( m->hasticks ) {
-	int ticklen = m->as + GDrawPointsToPixels(owner,5);
+	int ticklen = m->as + GDrawPointsToPixels(m->w,5);
 	width += ticklen;
 	m->tioff += ticklen;
     }
@@ -1200,18 +1216,9 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	else
 	    pos.x = 0;
     }
+    GDrawResize(m->w,pos.width,pos.height);
+    GDrawMove(m->w,pos.x,pos.y);
 
-/* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
-/*  work, but that seems a high price to pay */
-    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient;
-    pattrs.event_masks = -1;
-    pattrs.nodecoration = true;
-    pattrs.positioned = true;
-    pattrs.cursor = ct_pointer;
-    pattrs.transient = GWidgetGetTopWidget(owner);
-
-    m->w = GDrawCreateTopWindow(disp,&pos,gmenu_eh,m,&pattrs);
-    m->gic = GDrawCreateInputContext(m->w,gic_root|gic_orlesser);
     GDrawSetVisible(m->w,true);
     if ( menu_grabs )
 	GDrawPointerGrab(m->w);

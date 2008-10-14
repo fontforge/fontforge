@@ -26,6 +26,7 @@
  */
 #ifndef X_DISPLAY_MISSING
 #include "gxdrawP.h"
+#include "gxcdrawP.h"
 
 /* On the cygwin X server masking with mono images is broken */
 #ifdef _BrokenBitmapImages
@@ -1894,6 +1895,13 @@ void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
     GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
     int depth;
 
+#ifndef _NO_LIBCAIRO
+    if ( gw->usecairo ) {
+	_GXCDraw_Image(gw,image,src,x,y);
+return;
+    }
+#endif
+
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
     depth = gdisp->pixel_size;
     if ( depth!=8 && depth!=16 && depth!=24 && depth!=32 )
@@ -1943,6 +1951,12 @@ return;
 void _GXDraw_TileImage( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
 
+#ifndef _NO_LIBCAIRO
+    if ( _w->usecairo ) {
+	_GXCDraw_TileImage((GXWindow) _w,image,src,x,y);
+return;
+    }
+#endif
     if ( src->x/base->width == (src->x+src->width-1)/base->width &&
 	    src->y/base->height == (src->y+src->height-1)/base->height ) {
 	/* Ok, the exposed area is entirely covered by one instance of the image*/
@@ -2054,6 +2068,13 @@ void _GXDraw_Glyph( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     Color fg = -1;
+
+#ifndef _NO_LIBCAIRO
+    if ( gw->usecairo ) {
+	_GXCDraw_Glyph(gw,image,src,x,y);
+return;
+    }
+#endif
 
     if ( base->image_type==it_index )
 	fg = base->clut->clut[base->clut->clut_len-1];
@@ -2603,6 +2624,12 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
     if ( magsrc->height<0 || magsrc->width<0 ||
 	    magsrc->height*(double) magsrc->width>24*1024*1024 )
 return;
+#ifndef _NO_LIBCAIRO
+    if ( gw->usecairo ) {
+	_GXCDraw_ImageMagnified(gw,image,magsrc,x,y,width,height);
+return;
+    }
+#endif
 
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
 

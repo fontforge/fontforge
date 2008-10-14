@@ -752,6 +752,64 @@ static void PSDrawFillPoly(GWindow w, GPoint *pt, int16 cnt,Color col) {
     PSDrawDoPoly(ps,pt,cnt,"fill");
 }
 
+static void PSDrawFontMetrics(GWindow w,FontInstance *fi,int *as, int *ds, int *ld) {
+    GDrawFontMetrics(fi,as,ds,ld);
+}
+
+static enum gcairo_flags PSDrawHasCairo(GWindow w) {
+return( gc_buildpath );
+}
+
+static void PSDrawPathStartNew(GWindow w) {
+    GPSWindow ps = (GPSWindow ) w;
+    fprintf( ps->output_file,"  newpath\n" );
+}
+
+static void PSDrawPathMoveTo(GWindow w,double x, double y) {
+    GPSWindow ps = (GPSWindow ) w;
+    fprintf( ps->output_file,"  %g %g moveto\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y) );
+}
+
+static void PSDrawPathLineTo(GWindow w,double x, double y) {
+    GPSWindow ps = (GPSWindow ) w;
+    fprintf( ps->output_file,"  %g %g lineto\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y) );
+}
+
+static void PSDrawPathCurveTo(GWindow w,
+		    double cx1, double cy1,
+		    double cx2, double cy2,
+		    double x, double y) {
+    GPSWindow ps = (GPSWindow ) w;
+    fprintf( ps->output_file,"  %g %g %g %g %g %g curveto\n",
+	    _GSPDraw_XPos(ps,cx1), _GSPDraw_YPos(ps,cy1),
+	    _GSPDraw_XPos(ps,cx2), _GSPDraw_YPos(ps,cy2),
+	    _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y) );
+}
+
+static void PSDrawPathStroke(GWindow w,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+    ps->ggc->fg = col;
+    PSDrawSetcol(ps);
+    fprintf( ps->output_file,"   stroke\n" );
+}
+
+static void PSDrawPathFill(GWindow w,Color col) {
+    GPSWindow ps = (GPSWindow ) w;
+    ps->ggc->fg = col;
+    PSDrawSetcol(ps);
+    fprintf( ps->output_file,"   fill\n" );
+}
+
+static void PSDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
+    GPSWindow ps = (GPSWindow ) w;
+    ps->ggc->fg = fillcol;
+    PSDrawSetcol(ps);
+    fprintf( ps->output_file,"   save fill restore " );
+    ps->ggc->fg = strokecol;
+    PSDrawSetcol(ps);
+    fprintf( ps->output_file,"   stroke\n" );
+}
+
 static void PSSetFontCol(GPSWindow ps, struct font_data *font, Color col) {
 
     ps->ggc->fg = col;
@@ -1373,7 +1431,18 @@ static struct displayfuncs psfuncs = {
 
     GPSPrinterStartJob,
     GPSPrinterNextPage,
-    GPSPrinterEndJob
+    GPSPrinterEndJob,
+
+    PSDrawFontMetrics,
+
+    PSDrawHasCairo,
+    PSDrawPathStartNew,
+    PSDrawPathMoveTo,
+    PSDrawPathLineTo,
+    PSDrawPathCurveTo,
+    PSDrawPathStroke,
+    PSDrawPathFill,
+    PSDrawPathFillAndStroke
 };
 
 GDisplay *_GPSDraw_CreateDisplay() {

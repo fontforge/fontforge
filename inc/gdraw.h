@@ -238,7 +238,8 @@ typedef struct gwindow_attrs {
 	    wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
 	    wam_isdlg=0x10000, wam_notrestricted=0x20000,
 	    wam_transient=0x40000,
-	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000 } mask;
+	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
+	    wam_cairo=0x200000 } mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */
@@ -296,6 +297,12 @@ typedef struct gdeveventmask {
 } GDevEventMask;
 
 enum gzoom_flags { gzf_pos=1, gzf_size=2 };
+    /* bit flags for the hasCairo query */
+enum gcairo_flags { gc_buildpath=1,	/* Has build path commands (postscript, cairo) */
+		    gc_alpha=2,		/* Supports alpha channels & translucent colors (cairo, pdf) */
+		    gc_groups=4,	/* Supports groups */
+		    gc_all = gc_buildpath|gc_alpha|gc_groups
+		    };
 
 typedef int (*GDrawEH)(GWindow,GEvent *);
 
@@ -381,6 +388,7 @@ extern FontRequest *GDrawDecomposeFont(GFont *fi, FontRequest *rq);
 extern enum charset GDrawFindEncoding(unichar_t *text, int32 len,
 	GFont *fi, unichar_t **next, int *ulevel);
 extern void GDrawFontMetrics(GFont *fi,int *as, int *ds, int *ld);
+extern void GDrawWindowFontMetrics(GWindow gw,GFont *fi,int *as, int *ds, int *ld);
 extern int32 GDrawGetTextPtAfterPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
 extern int32 GDrawGetTextPtBeforePos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
@@ -482,6 +490,18 @@ extern int  GPrinterEndJob(GWindow w,int cancel);
 extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDisplay *,unichar_t));
 
 extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
+
+extern enum gcairo_flags GDrawHasCairo(GWindow w);
+extern void GDrawPathStartNew(GWindow w);
+extern void GDrawPathMoveTo(GWindow w,double x, double y);
+extern void GDrawPathLineTo(GWindow w,double x, double y);
+extern void GDrawPathCurveTo(GWindow w,
+		    double cx1, double cy1,
+		    double cx2, double cy2,
+		    double x, double y);
+extern void GDrawPathStroke(GWindow w,Color col);
+extern void GDrawPathFill(GWindow w,Color col);
+extern void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
 
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);

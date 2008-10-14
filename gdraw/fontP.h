@@ -106,6 +106,7 @@ typedef struct {		/* normal 16 bit characters are two bytes */
 #endif		/* NO X */
 
 #include "gdrawP.h"
+#include "gxdrawP.h"
 #include "charset.h"
 
 struct fontabbrev {
@@ -198,6 +199,17 @@ struct font_instance {
 			        /* one final level for really bad last chances */
 			        /*  scaled fonts from the screen fall here */
     GDisplay *mapped_to;
+#ifndef _NO_LIBCAIRO
+    FcFontSet *ordered;
+    struct charset_cairofont {		/* One of these for every font in the set (nfont of them) */
+	cairo_scaled_font_t *cf;
+	FcCharSet *cs;
+    } *cscf;
+    FcPattern *pat;
+    int16 replacement_index;
+    uint16 replacement_char;
+    int pixelsize;
+#endif
 };
 
 typedef struct font_state {
@@ -214,6 +226,8 @@ typedef struct font_state {
     unsigned int use_screen_fonts: 1;
 } FState;
 
+enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
+struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
 
 extern struct fontabbrev _gdraw_fontabbrev[];
 

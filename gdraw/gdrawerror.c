@@ -136,6 +136,7 @@ return;
 
     error = GDrawCreateTopWindow(gd,&pos,e_h,NULL,&wattrs);
 
+    memset(&rq,0,sizeof(rq));
     rq.family_name = courier;
     rq.point_size = -12;
     rq.weight = 400;

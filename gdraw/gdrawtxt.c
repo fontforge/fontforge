@@ -29,6 +29,7 @@
 #include "utype.h"
 #include "gdrawP.h"
 #include "fontP.h"
+#include "gxcdrawP.h"
 #include "ustring.h"
 #include "chardata.h"
 
@@ -448,7 +449,7 @@ static FontInstance *_GDrawBuildFontInstance(GDisplay *disp, FontRequest *rq,
 	PickUnicodeFonts(disp,unifonts,fam,rq );
 
     if ( fi==NULL ) {
-	fi = galloc(sizeof(struct font_instance));
+	fi = gcalloc(1,sizeof(struct font_instance));
 	if ( fi==NULL ) {
 	    gfree(unifonts);
 return( NULL );
@@ -457,7 +458,9 @@ return( NULL );
 	    gfree(fi); gfree(unifonts);
 return( NULL );
 	}
-	fi->rq = *rq; fi->rq.family_name = NULL;
+	fi->rq = *rq;
+	fi->rq.family_name = u_copy( fi->rq.family_name );
+	fi->rq.utf8_family_name = copy( fi->rq.utf8_family_name );
 	fi->fam = fam;
 	fi->next = fam->instanciations;
 	fam->instanciations = fi;
@@ -540,7 +543,6 @@ return( fi );
 
 FontRequest *GDrawDecomposeFont(FontInstance *fi, FontRequest *rq) {
     *rq = fi->rq;
-    rq->family_name = fi->fam->family_names;
 return( rq );
 }
 /* ************************************************************************** */
@@ -1071,8 +1073,6 @@ static struct font_data *AsciiFont(FontInstance *fi) {
 return( afont );
 }
 #endif
-enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
-struct tf_arg { GTextBounds size; int width, maxwidth; unichar_t *last; char *utf8_last; int first; int dont_replace; };
 
 static int RealAsDs(struct font_data *fd,char *transbuf,int len,struct tf_arg *arg) {
     XFontStruct *info = fd->info;
@@ -1954,6 +1954,11 @@ return( 0 );
 
     if ( mods==NULL ) mods = &dummyfontmods;
 
+#ifndef _NO_LIBCAIRO
+    if ( gw->usecairo )
+return( _GXCDraw_DoText(gw,x,y,text,cnt,mods,col,drawit,arg));
+#endif
+
     while ( text<end ) {
 #ifndef UNICHAR_16
 	if ( *text>=0x1f0000 ) {
@@ -2163,6 +2168,11 @@ return( 0 );
 
     if ( mods==NULL ) mods = &dummyfontmods;
 
+#ifndef _NO_LIBCAIRO
+    if ( gw->usecairo )
+return( _GXCDraw_DoText8(gw,x,y,text,cnt,mods,col,drawit,arg));
+#endif
+
 #ifdef UNICHAR_16
     forever {
 	if ( text>=end )
@@ -2305,6 +2315,7 @@ int32 GDrawGetText8PtAfterPos(GWindow gw,char *text, int32 cnt, FontMods *mods,
 return( width );
 }
 /* End UTF8 routines */
+
 void GDrawFontMetrics(FontInstance *fi,int *as, int *ds, int *ld) {
     struct font_data *fd;
     XFontStruct *fontinfo;

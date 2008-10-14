@@ -572,6 +572,47 @@ GImage *GDrawCopyScreenToImage(GWindow w, GRect *rect) {
 return( (w->display->funcs->copyScreenToImage)(w,rect) );
 }
 
+void GDrawWindowFontMetrics(GWindow w,FontInstance *fi,int *as, int *ds, int *ld) {
+    (w->display->funcs->getFontMetrics)(w,fi,as,ds,ld);
+}
+
+
+enum gcairo_flags GDrawHasCairo(GWindow w) {
+return( (w->display->funcs->hasCairo)(w));
+}
+
+void GDrawPathStartNew(GWindow w) {
+    (w->display->funcs->startNewPath)(w);
+}
+
+void GDrawPathMoveTo(GWindow w,double x, double y) {
+    (w->display->funcs->moveto)(w,x,y);
+}
+
+void GDrawPathLineTo(GWindow w,double x, double y) {
+    (w->display->funcs->lineto)(w,x,y);
+}
+
+void GDrawPathCurveTo(GWindow w,
+		    double cx1, double cy1,
+		    double cx2, double cy2,
+		    double x, double y) {
+    (w->display->funcs->curveto)(w,cx1,cy1,cx2,cy2,x,y);
+}
+
+void GDrawPathStroke(GWindow w,Color col) {
+    (w->display->funcs->stroke)(w,col);
+}
+
+void GDrawPathFill(GWindow w,Color col) {
+    (w->display->funcs->fill)(w,col);
+}
+
+void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
+    (w->display->funcs->fillAndStroke)(w,fillcol,strokecol);
+}
+
+
 GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style) {
 return(w->display->funcs->createInputContext)(w,def_style);
 }

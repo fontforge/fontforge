@@ -213,6 +213,20 @@ static struct library_descriptor {
 	1
 #endif
     },
+    { "libfontconfig", dlsymmod("FcConfigCreate"), "This is used to find fonts for cairo.", "http://fontconfig.org/",
+#ifdef _NO_LIBCAIRO
+	0
+#else
+	1
+#endif
+	},
+    { "libcairo", dlsymmod("cairo_xlib_surface_create"), "This provides anti-aliased drawing.", "http://www.cairographics.org/",
+#ifdef _NO_LIBCAIRO
+	0,
+#else
+	1,
+#endif
+	"libfontconfig" },
     { NULL }
 };
 
@@ -494,7 +508,7 @@ static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
  fprintf( logfile, "ReOPEN event received.\n" ); fflush( logfile );
     if ( splash )
 	start_splash_screen();
-    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     if ( fv_list==NULL )
 	MenuOpen(NULL,NULL,NULL);
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
@@ -506,7 +520,7 @@ static pascal OSErr ShowPreferencesAE( const AppleEvent * theAppleEvent,
  fprintf( logfile, "PREFS event received.\n" ); fflush( logfile );
     if ( splash )
 	start_splash_screen();
-    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     DoPrefs();
  fprintf( logfile, " event processed %d.\n", noErr ); fflush( logfile );
 return( noErr );
@@ -536,7 +550,7 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
 	ViewPostscriptFont(buffer,0);
  fprintf( logfile, " file: %s\n", buffer );
     }
-    system( "DYLD_LIBRARY_PATH=""; osascript -e 'tell application \"X11\" to activate'" );
+    system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     AEDisposeDesc(&docList);
  fprintf( logfile, " event processed %d.\n", err ); fflush( logfile );
 

@@ -74,6 +74,12 @@ capable of using composite.
 #   include <X11/XKBlib.h>
 /*# include <X11/extensions/XKBgeom.h>*/
 # endif
+# ifndef _NO_LIBCAIRO
+#  include <cairo/cairo.h>
+#  include <cairo/cairo-xlib.h>
+#  include <cairo/cairo-ft.h>
+#  include <fontconfig/fontconfig.h>
+# endif
 #endif
 
 #include "gdrawP.h"
@@ -124,6 +130,7 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
+    unsigned int usecairo: 1;		/* use a cairo context */
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
@@ -135,6 +142,12 @@ typedef struct gxwindow /* :GWindow */ {
     GCursor cursor;
     Window parentissimus;
     struct gxinput_context *gic, *all;
+#ifndef _NO_LIBCAIRO
+    cairo_t *cc;
+    cairo_surface_t *cs;
+    struct gcstate cairo_state;
+    Color bg;
+#endif
 } *GXWindow;
 
 struct colstate {
