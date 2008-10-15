@@ -93,7 +93,7 @@ static void GMenuInit() {
 	    keyboard = strtol(keystr,NULL,10);
     }
     menu_grabs = GResourceFindBool("GMenu.Grab",menu_grabs);
-    mac_menu_icons = GResourceFindBool("GMenu.MacIcons",menu_grabs);
+    mac_menu_icons = GResourceFindBool("GMenu.MacIcons",mac_menu_icons);
     gmenubar_inited = true;
     _GGroup_Init();
 }
