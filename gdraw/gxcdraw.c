@@ -12,6 +12,13 @@
 #include <utype.h>
 #include "fontP.h"
 
+static int usecairo = true;
+
+void GDrawEnableCairo(int on) {
+    usecairo=on;
+    /* Obviously, if we have no library, enabling it will do nothing */
+}
+
 #ifndef _NO_LIBCAIRO
 # if (CAIRO_VERSION_MAJOR==1 && CAIRO_VERSION_MINOR<6) || (!defined(_STATIC_LIBCAIRO) && !defined(NODYNAMIC))
 static int __cairo_format_stride_for_width(cairo_format_t f,int width) {
@@ -29,6 +36,7 @@ return( 4*width );
 /* ************************************************************************** */
 /* ***************************** Cairo Library ****************************** */
 /* ************************************************************************** */
+
 # if !defined(_STATIC_LIBCAIRO) && !defined(NODYNAMIC)
 #  include <dynamic.h>
 static DL_CONST void *libcairo=NULL, *libfontconfig;
@@ -70,6 +78,8 @@ static cairo_format_t (*_cairo_image_surface_get_format)(cairo_surface_t *);
 static cairo_surface_t *(*_cairo_image_surface_create_for_data)(unsigned char *,cairo_format_t,int,int,int);
 static int (*_cairo_format_stride_for_width)(cairo_format_t,int);
 static int (*_cairo_font_options_create)(void);
+static void (*_cairo_surface_mark_dirty_rectangle)(cairo_surface_t *,double,double,double,double);
+static void (*_cairo_surface_flush)(cairo_surface_t *);
 
 static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
 static FcPattern *(*_FcPatternCreate)(void);
@@ -88,7 +98,7 @@ int _GXCDraw_hasCairo(void) {
     FcBool (*_FcInit)(void);
 
     if ( initted )
-return( hasC );
+return( hasC && usecairo );
 
     initted = true;
     libfontconfig = dlopen("libfontconfig" SO_EXT,RTLD_LAZY);
@@ -205,7 +215,12 @@ return( 0 );
 	    dlsym(libcairo,"cairo_format_stride_for_width");
     _cairo_font_options_create = (cairo_font_options_t *(*)(void))
 	    dlsym(libcairo,"cairo_font_options_create");
-    /* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
+    _cairo_surface_flush = (void (*)(cairo_surface_t *))
+	    dlsym(libcairo,"cairo_surface_flush");
+    _cairo_surface_mark_dirty_rectangle = (void (*)(cairo_surface_t *,double,double,double,double))
+	    dlsym(libcairo,"cairo_surface_mark_dirty_rectangle");
+
+/* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
     if ( _cairo_format_stride_for_width==NULL )
 	_cairo_format_stride_for_width = __cairo_format_stride_for_width;
 
@@ -213,8 +228,13 @@ return( 0 );
 	fprintf(stderr,"libcairo: Missing symbols\n" );
 return( 0 );
     }
+    if ( _cairo_scaled_font_text_extents==NULL ) {
+	fprintf(stderr,"libcairo: FontForge needs at least version 1.2\n" );
+return( 0 );
+    }
+
     hasC = true;
-return( true );
+return( usecairo );
 }
 # else
 #  define _cairo_xlib_surface_create cairo_xlib_surface_create
@@ -258,6 +278,8 @@ return( true );
 #endif
 #  define _cairo_ft_font_face_create_for_pattern cairo_ft_font_face_create_for_pattern
 #  define _cairo_font_options_create cairo_font_options_create
+#  define _cairo_surface_flush cairo_surface_flush
+#  define _cairo_surface_mark_dirty_rectangle cairo_surface_mark_dirty_rectangle
 
 #  define _FcCharSetHasChar    FcCharSetHasChar     
 #  define _FcPatternDestroy    FcPatternDestroy   
@@ -272,7 +294,10 @@ return( true );
 #  define _FcPatternCreate     FcPatternCreate
 
 int _GXCDraw_hasCairo(void) {
-return( FcInit() );
+    int initted = false, hasC;
+    if ( !initted )
+	hasC = FcInit();
+return( hasC && usecairo );
 }
 # endif
 
@@ -282,6 +307,9 @@ return( FcInit() );
 void _GXCDraw_NewWindow(GXWindow nw,Color bg) {
     GXDisplay *gdisp = nw->display;
     Display *display = gdisp->display;
+
+    if ( !usecairo || !_GXCDraw_hasCairo())
+return;
 
     nw->cs = _cairo_xlib_surface_create(display,nw->w,gdisp->visual,
 	    nw->pos.width, nw->pos.height );
@@ -311,46 +339,48 @@ void _GXCDraw_DestroyWindow(GXWindow gw) {
 /* ******************************* Cairo State ****************************** */
 /* ************************************************************************** */
 static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
-    GCState *gcs = &gw->cairo_state;
+    /*GCState *gcs = &gw->cairo_state;*/
+    Color fg = mine->fg;
 
-    if ( mine->func!=gcs->func ) {
+#if 0
+/* As far as I can tell, XOR doesn't work */
+    if ( mine->func!=gcs->func || mine->func!=df_copy ) {
 	_cairo_set_operator( gw->cc,mine->func==df_copy?CAIRO_OPERATOR_OVER:CAIRO_OPERATOR_XOR );
 	gcs->func = mine->func;
     }
-    if ( mine->fg!=gcs->fore_col /*|| mine->func!=gcs->func || mine->func==df_xor*/ ) {
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(mine->fg)/255,COLOR_GREEN(mine->fg)/255.,COLOR_BLUE(mine->fg)/255.,
-		1.0);
-	gcs->fore_col = mine->fg;
-#if 0
-	if ( mine->func==df_xor ) {
-	    vals.foreground ^= _GXDraw_GetScreenPixel(gdisp,mine->xor_base);
-	    gcs->fore_col = COLOR_UNKNOWN;
-	}
+    if ( mine->func==df_xor )
+	fg ^= mine->xor_base;
 #endif
-    }
+    if ( (fg>>24)==0 )
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+		1.0);
+    else
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+		(fg>>24)/255.);
 return( true );
 }
 
 static int GXCDrawSetline(GXWindow gw, GGC *mine) {
     GCState *gcs = &gw->cairo_state;
+    Color fg = mine->fg;
 
-    if ( mine->func!=gcs->func ) {
+#if 0
+/* As far as I can tell, XOR doesn't work */
+    if ( mine->func!=gcs->func || mine->func!=df_copy ) {
 	_cairo_set_operator( gw->cc, mine->func==df_copy?CAIRO_OPERATOR_OVER:CAIRO_OPERATOR_XOR);
 	gcs->func = mine->func;
     }
-    if ( mine->fg!=gcs->fore_col /*|| mine->func!=gcs->func || mine->func==df_xor*/ ) {
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(mine->fg)/255,COLOR_GREEN(mine->fg)/255.,COLOR_BLUE(mine->fg)/255.,
-		1.0);
-	gcs->fore_col = mine->fg;
-#if 0
-	if ( mine->func==df_xor ) {
-	    vals.foreground ^= _GXDraw_GetScreenPixel(gdisp,mine->xor_base);
-	    gcs->fore_col = COLOR_UNKNOWN;
-	}
+    if ( mine->func==df_xor )
+	fg ^= mine->xor_base;
 #endif
-    }
+    if ( (fg>>24)==0 )
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+		1.0);
+    else
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+		(fg>>24)/255.);
     if ( mine->line_width<=0 ) mine->line_width = 1;
-    if ( mine->line_width!=gcs->line_width ) {
+    if ( mine->line_width!=gcs->line_width || mine->line_width!=2 ) {
 	_cairo_set_line_width(gw->cc,mine->line_width);
 	gcs->line_width = mine->line_width;
     }
@@ -390,7 +420,7 @@ void _GXCDraw_Clear(GXWindow gw, GRect *rect) {
     }
     _cairo_new_path(gw->cc);
     _cairo_rectangle(gw->cc,r->x,r->y,r->width,r->height);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->bg)/255,COLOR_GREEN(gw->bg)/255.,COLOR_BLUE(gw->bg)/255.,
+    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->bg)/255.0,COLOR_GREEN(gw->bg)/255.0,COLOR_BLUE(gw->bg)/255.0,
 	    1.0);
     _cairo_fill(gw->cc);
 }
@@ -504,6 +534,7 @@ void _GXCDraw_FillPoly(GXWindow gw, GPoint *pts, int16 cnt) {
     _cairo_move_to(gw->cc,pts[0].x,pts[0].y);
     for ( i=1; i<cnt; ++i )
 	_cairo_line_to(gw->cc,pts[i].x,pts[i].y);
+    _cairo_close_path(gw->cc);
     _cairo_fill(gw->cc);
 }
 
@@ -512,6 +543,10 @@ void _GXCDraw_FillPoly(GXWindow gw, GPoint *pts, int16 cnt) {
 /* ************************************************************************** */
 void _GXCDraw_PathStartNew(GWindow w) {
     _cairo_new_path( ((GXWindow) w)->cc );
+}
+
+void _GXCDraw_PathClose(GWindow w) {
+    _cairo_close_path( ((GXWindow) w)->cc );
 }
 
 void _GXCDraw_PathMoveTo(GWindow w,double x, double y) {
@@ -530,13 +565,13 @@ void _GXCDraw_PathCurveTo(GWindow w,
 }
 
 void _GXCDraw_PathStroke(GWindow w,Color col) {
-    _cairo_set_source_rgba(((GXWindow) w)->cc,COLOR_RED(col)/255,COLOR_GREEN(col)/255.,COLOR_BLUE(col)/255.,
+    _cairo_set_source_rgba(((GXWindow) w)->cc,COLOR_RED(col)/255.0,COLOR_GREEN(col)/255.0,COLOR_BLUE(col)/255.0,
 	    (col>>24)/255.0);
     _cairo_stroke( ((GXWindow) w)->cc );
 }
 
 void _GXCDraw_PathFill(GWindow w,Color col) {
-    _cairo_set_source_rgba(((GXWindow) w)->cc,COLOR_RED(col)/255,COLOR_GREEN(col)/255.,COLOR_BLUE(col)/255.,
+    _cairo_set_source_rgba(((GXWindow) w)->cc,COLOR_RED(col)/255.0,COLOR_GREEN(col)/255.0,COLOR_BLUE(col)/255.0,
 	    (col>>24)/255.0);
     _cairo_fill( ((GXWindow) w)->cc );
 }
@@ -545,11 +580,11 @@ void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
     GXWindow gw = (GXWindow) w;
 
     _cairo_save(gw->cc);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(fillcol)/255,COLOR_GREEN(fillcol)/255.,COLOR_BLUE(fillcol)/255.,
+    _cairo_set_source_rgba(gw->cc,COLOR_RED(fillcol)/255.0,COLOR_GREEN(fillcol)/255.0,COLOR_BLUE(fillcol)/255.0,
 	    (fillcol>>24)/255.0);
     _cairo_fill( gw->cc );
     _cairo_restore(gw->cc);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(strokecol)/255,COLOR_GREEN(strokecol)/255.,COLOR_BLUE(strokecol)/255.,
+    _cairo_set_source_rgba(gw->cc,COLOR_RED(strokecol)/255.0,COLOR_GREEN(strokecol)/255.0,COLOR_BLUE(strokecol)/255.0,
 	    (strokecol>>24)/255.0);
     _cairo_fill( gw->cc );
 }
@@ -582,6 +617,13 @@ static int indexOfChar(GFont *font,unichar_t ch,int last_index) {
 	    def = _cairo_font_options_create();
 
 	onefont = _FcFontRenderPrepare(NULL,font->pat,font->ordered->fonts[new_index]);
+#if 0
+ { double ps, pre=-1;
+     FcPatternGetDouble(onefont,FC_PIXEL_SIZE,0,&ps);
+     FcPatternGetDouble(font->ordered->fonts[new_index],FC_PIXEL_SIZE,0,&pre);
+     printf( "Pixel size desired=%d, pre=%g, in font=%g\n", font->pixelsize, pre, ps );
+ }
+#endif
 
 	memset(&fm,0,sizeof(fm)); memset(&cm,0,sizeof(cm));
 	fm.xx = fm.yy = font->pixelsize;
@@ -764,7 +806,7 @@ return( x );
 		if ( x==0 )
 		    arg->size.lbearing = x+ct.x_bearing;
 		arg->size.rbearing = x+ct.width;
-		_cairo_scaled_font_extents(fi->cscf[index].cf,&bounds);
+		_cairo_scaled_font_extents(fi->cscf[last_index].cf,&bounds);
 		if ( arg->size.fas<bounds.ascent )
 		    arg->size.fas = bounds.ascent;
 		if ( arg->size.fds<bounds.descent )
@@ -1155,7 +1197,7 @@ void _GXCDraw_Image( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
     if ( _cairo_image_surface_get_format(is)==CAIRO_FORMAT_A1 ) {
 	/* No color info, just alpha channel */
 	Color fg = base->clut->trans_index==0 ? base->clut->clut[1] : base->clut->clut[0];
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.,COLOR_GREEN(fg)/255.,COLOR_BLUE(fg)/255.,1.0);
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,1.0);
 	_cairo_mask_surface(gw->cc,is,x,y);
     } else {
 	_cairo_set_source_surface(gw->cc,is,x,y);
@@ -1199,7 +1241,7 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
 	}
 	is = _cairo_image_surface_create_for_data(data,CAIRO_FORMAT_A8,
 		src->width,src->height,stride);
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.,COLOR_GREEN(fg)/255.,COLOR_BLUE(fg)/255.,1.0);
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,1.0);
 	_cairo_mask_surface(gw->cc,is,x,y);
 	/* I think the mask is sufficient, setting a rectangle would provide */
 	/*  a new mask? */
@@ -1232,7 +1274,7 @@ void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
     if ( _cairo_image_surface_get_format(is)==CAIRO_FORMAT_A1 ) {
 	/* No color info, just alpha channel */
 	Color fg = base->clut->trans_index==0 ? base->clut->clut[1] : base->clut->clut[0];
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.,COLOR_GREEN(fg)/255.,COLOR_BLUE(fg)/255.,1.0);
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,1.0);
 	_cairo_mask_surface(gw->cc,is,0,0);
     } else {
 	_cairo_set_source_surface(gw->cc,is,0,0);
@@ -1244,5 +1286,97 @@ void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
     _cairo_surface_destroy(is);
     free(data);
     gw->cairo_state.fore_col = COLOR_UNKNOWN;
+}
+
+/* ************************************************************************** */
+/* ******************************** Copy Area ******************************* */
+/* ************************************************************************** */
+
+void _GXCDraw_CopyArea( GXWindow from, GXWindow into, GRect *src, int32 x, int32 y) {
+
+    if ( !into->usecairo || !from->usecairo ) {
+	fprintf( stderr, "Cairo CopyArea called from something not cairo enabled\n" );
+return;
+    }
+
+    _cairo_set_source_surface(into->cc,from->cs,x-src->x,y-src->y);
+    _cairo_rectangle(into->cc,x,y,src->width,src->height);
+    _cairo_fill(into->cc);
+
+    /* Clear source and mask, in case we need to */
+    _cairo_set_source_rgba(into->cc,0,0,0,0);
+
+    into->cairo_state.fore_col = COLOR_UNKNOWN;
+}
+
+/* ************************************************************************** */
+/* **************************** Memory Buffering **************************** */
+/* ************************************************************************** */
+/* Sort of like a pixmap, except in cairo terms */
+static uint8 *data;
+static int max_size, in_use;
+static cairo_t *old_cairo;
+static cairo_surface_t *old_surface;
+
+void _GXCDraw_CairoBuffer(GWindow w,GRect *size) {
+    int width, height;
+    GXWindow gw = (GXWindow) w;
+    cairo_surface_t *mems;
+    cairo_t *cc;
+
+    if ( ++in_use>1 )
+return;
+
+    width = size->x + size->width; height = size->y+size->height;
+    if ( 4*width*height > max_size ) {
+	if ( gw->pos.width<width )
+	    width = gw->pos.width;
+	if ( gw->pos.height<height )
+	    height = gw->pos.height;
+	max_size = 4*gw->pos.width*gw->pos.height;
+	data = grealloc(data,max_size);
+    }
+    mems = _cairo_image_surface_create_for_data(data,CAIRO_FORMAT_ARGB32,
+		width, height, 4*width);
+    cc = _cairo_create(mems);
+    _cairo_new_path(cc);
+    _cairo_rectangle(cc,size->x,size->y,size->width,size->height);
+    _cairo_set_source_rgba(cc,COLOR_RED(gw->bg)/255.0,COLOR_GREEN(gw->bg)/255.0,COLOR_BLUE(gw->bg)/255.0,
+	    1.0);
+    _cairo_fill(cc);
+    old_cairo = gw->cc; old_surface = gw->cs;
+    gw->cc = cc; gw->cs = mems;
+}
+
+void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size) {
+    GXWindow gw = (GXWindow) w;
+
+    if ( --in_use>0 )
+return;
+
+    _cairo_set_source_surface(old_cairo,gw->cs,0,0);
+    _cairo_rectangle(old_cairo,size->x,size->y,size->width,size->height);
+    _cairo_fill(old_cairo);
+    _cairo_set_source_rgba(old_cairo,0,0,0,0);
+
+    _cairo_destroy(gw->cc);
+    _cairo_surface_destroy(gw->cs);
+    gw->cc = old_cairo;
+    gw->cs = old_surface;
+}
+
+/* ************************************************************************** */
+/* **************************** Synchronization ***************************** */
+/* ************************************************************************** */
+void _GXCDraw_Flush(GXWindow gw) {
+    _cairo_surface_flush(gw->cs);
+}
+
+void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height) {
+    _cairo_surface_mark_dirty_rectangle(gw->cs,x,y,width,height);
+}
+
+#else
+void GDrawEnableCairo(int on) {
 }
 #endif

@@ -95,13 +95,13 @@ static Color rastergridcol = 0xb0b0ff;
 static Color rasterdarkcol = 0x606060;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
-static Color hintlabelcol = 0x00ffff;
-static Color bluevalstipplecol = 0x8080ff;
-static Color fambluestipplecol = 0xff7070;
-static Color mdhintcol = 0xe04040;
-static Color dhintcol = 0xd0a0a0;
-static Color hhintcol = 0xa0d0a0;
-static Color vhintcol = 0xc0c0ff;
+static Color hintlabelcol = 0x00cccc;
+static Color bluevalstipplecol = 0x808080ff;	/* Translucent */
+static Color fambluestipplecol = 0x80ff7070;	/* Translucent */
+static Color mdhintcol = 0x80e04040;		/* Translucent */
+static Color dhintcol = 0x80d0a0a0;		/* Translucent */
+static Color hhintcol = 0x80a0d0a0;		/* Translucent */
+static Color vhintcol = 0x80c0c0ff;		/* Translucent */
 static Color hflexhintcol = 0x00ff00;
 static Color vflexhintcol = 0x00ff00;
 static Color conflicthintcol = 0x00ffff;
@@ -118,7 +118,7 @@ static Color backoutlinecol = 0x009800;
 static Color foreoutlinecol = 0x000000;
 static Color clippathcol = 0x0000ff;
 static Color backimagecol = 0x707070;
-static Color fillcol = 0x707070;
+static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 
 static int cvcolsinited = false;
@@ -925,7 +925,6 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 
     GDrawSetFont(pixmap,cv->small);		/* For point numbers */
     for ( spl = set; spl!=NULL; spl = spl->next ) {
-	GPointList *gpl = MakePoly(cv,spl), *cur;
 	if ( spl->contour_name!=NULL )
 	    CVDrawContourName(cv,pixmap,spl,fg);
 	if ( dopoints>0 || (dopoints==-1 && cv->showpointnumbers) ) {
@@ -951,9 +950,47 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0);
 	    }
 	}
-	for ( cur=gpl; cur!=NULL; cur=cur->next )
-	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,spl->is_clip_path ? clippathcol : fg);
-	GPLFree(gpl);
+	if ( GDrawHasCairo(pixmap) ) {
+	    Spline *first, *spline;
+	    double x,y, cx1, cy1, cx2, cy2;
+	    GDrawPathStartNew(pixmap);
+	    x =  cv->xoff + spl->first->me.x*cv->scale;
+	    y = -cv->yoff + cv->height - spl->first->me.y*cv->scale;
+	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
+	    for ( spline=spl->first->next, first=NULL; spline!=first && spline!=NULL; spline=spline->to->next ) {
+		x =  cv->xoff + spline->to->me.x*cv->scale;
+		y = -cv->yoff + cv->height - spline->to->me.y*cv->scale;
+		if ( spline->knownlinear )
+		    GDrawPathLineTo(pixmap,x+.5,y+.5);
+		else if ( spline->order2 ) {
+		    cx1 = spline->from->me.x + spline->splines[0].c/3;
+		    cy1 = spline->from->me.y + spline->splines[1].c/3;
+		    cx2 = cx1 + (spline->splines[0].b+spline->splines[0].c)/3;
+		    cy2 = cy1 + (spline->splines[1].b+spline->splines[1].c)/3;
+		    cx1 =  cv->xoff + cx1*cv->scale;
+		    cy1 = -cv->yoff + cv->height - cy1*cv->scale;
+		    cx2 =  cv->xoff + cx2*cv->scale;
+		    cy2 = -cv->yoff + cv->height - cy2*cv->scale;
+		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
+		} else {
+		    cx1 =  cv->xoff + spline->from->nextcp.x*cv->scale;
+		    cy1 = -cv->yoff + cv->height - spline->from->nextcp.y*cv->scale;
+		    cx2 =  cv->xoff + spline->to->prevcp.x*cv->scale;
+		    cy2 = -cv->yoff + cv->height - spline->to->prevcp.y*cv->scale;
+		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
+		}
+		if ( first==NULL )
+		    first = spline;
+	    }
+	    if ( spline!=NULL )
+		GDrawPathClose(pixmap);
+	    GDrawPathStroke(pixmap,(spl->is_clip_path ? clippathcol : fg)|0xff000000);
+	} else {
+	    GPointList *gpl = MakePoly(cv,spl), *cur;
+	    for ( cur=gpl; cur!=NULL; cur=cur->next )
+		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,spl->is_clip_path ? clippathcol : fg);
+	    GPLFree(gpl);
+	}
 	if (( cv->markextrema || cv->markpoi ) && dopoints && !cv->b.sc->inspiro )
 	    CVMarkInterestingLocations(cv,pixmap,spl);
     }
@@ -1984,9 +2021,23 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( cv->showhhints || cv->showvhints || cv->showdhints )
 	    CVShowHints(cv,pixmap);
 
-	if ( cv->backimgs==NULL )
+	if ( cv->backimgs==NULL && !GDrawHasCairo(cv->v))
 	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
-	if ( cv->back_img_out_of_date ) {
+	if ( GDrawHasCairo(cv->v) ) {
+	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
+		if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
+			    ((cv->showfore || cvlayer==layer) && layer>ly_back)) ) ||
+		    ( !sf->multilayer && (((cv->showfore && cvlayer==layer) && layer==ly_fore) ||
+			    (((cv->showback[layer>>5]&(1<<(layer&31))) || cvlayer==layer) && layer!=ly_fore))) ) {
+		    /* This really should be after the grids, but then it would completely*/
+		    /*  hide them. */
+		    DrawImageList(cv,cv->v,cv->b.sc->layers[layer].images);
+		}
+	    }
+	    cv->back_img_out_of_date = false;
+	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
+		CVShowHints(cv,cv->v);
+	} else if ( cv->back_img_out_of_date ) {
 	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
 	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
 		CVShowHints(cv,cv->backimgs);
@@ -2003,7 +2054,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    }
 	    cv->back_img_out_of_date = false;
 	}
-	{
+	if ( cv->backimgs!=NULL ) {
 	    GRect r;
 	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
 	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
@@ -9428,6 +9479,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     int as, ds, ld;
     extern int updateflex;
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
+    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',  '\0' };
     static unichar_t *infofamily=NULL;
     /* extern int cv_auto_goto; */
 
@@ -9509,12 +9561,12 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     if ( infofamily==NULL ) {
 	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
 	if ( infofamily==NULL )
-	    infofamily = fixed;
+	    infofamily = GDrawHasCairo(cv->v)?sans:fixed;
     }
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = infofamily;
-    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", -7);
+    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", GDrawHasCairo(cv->v)?-10:-7);
     rq.weight = 400;
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);

@@ -255,12 +255,16 @@ struct displayfuncs {
 
     enum gcairo_flags (*hasCairo)(GWindow w);
     void (*startNewPath)(GWindow w);
+    void (*closePath)(GWindow w);
     void (*moveto)(GWindow w,double x, double y);
     void (*lineto)(GWindow w,double x, double y);
     void (*curveto)(GWindow w, double cx1,double cy1, double cx2,double cy2, double x, double y);
     void (*stroke)(GWindow w, Color col);
     void (*fill)(GWindow w, Color col);
     void (*fillAndStroke)(GWindow w, Color fillcol,Color strokecol);
+
+    void (*cairoBuffer)(GWindow w,GRect *size);
+    void (*cairoUnbuffer)(GWindow w,GRect *size);
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

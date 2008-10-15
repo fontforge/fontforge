@@ -26,12 +26,12 @@
  */
 #include <stdlib.h>
 
-#include "utype.h"
 #include "gdrawP.h"
 #include "fontP.h"
 #include "gxcdrawP.h"
 #include "ustring.h"
 #include "chardata.h"
+#include "utype.h"
 
 /*#define GREEK_BUG	1*/
 

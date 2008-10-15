@@ -28,13 +28,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ustring.h>
-#include <utype.h>
 
 #include <gdraw.h>
 #include <gresource.h>
 #include <fileutil.h>
 #include "charset.h"
 #include "fontP.h"
+#include <utype.h>
 
 #include "gresourceP.h"
 
