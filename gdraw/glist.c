@@ -448,13 +448,14 @@ return(gl->ti[pos]);
 
 static int glist_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GList *gl = (GList *) g;
-    GRect old1, old2;
+    GRect old0, old1, old2;
     Color fg, dfg;
     int y, l, ymax;
 
     if ( g->state == gs_invisible )
 return( false );
 
+    GDrawPushClip(pixmap,&event->u.expose.rect,&old0);
     GDrawPushClip(pixmap,&g->r,&old1);
 
     GBoxDrawBackground(pixmap,&g->r,g->box, g->state,false);
@@ -485,6 +486,7 @@ return( false );
 	    (g->box->flags&(box_foreground_border_inner|box_foreground_border_outer|box_active_border_inner))!=0 )
 	GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
+    GDrawPopClip(pixmap,&old0);
 return( true );
 }
 

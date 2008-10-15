@@ -68,6 +68,9 @@ static void _dousage(void) {
 #if MyMemory
     printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
+#ifndef _NO_LIBCAIRO
+    printf( "\t-usecairo=yes|no  Use (or not) the cairo library for drawing\n" );
+#endif
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
@@ -1011,7 +1014,12 @@ int main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-memory")==0 )
 	    __malloc_debug(5);
 # endif
-	else if ( strcmp(pt,"-nosplash")==0 )
+	else if ( strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ) {
+	    if ( strcmp(pt,"-usecairo=no")==0 )
+		GDrawEnableCairo(false);
+	    else
+		GDrawEnableCairo(true);
+	} else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-unique")==0 )
 	    unique = 1;
@@ -1158,6 +1166,7 @@ exit( 0 );
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
+		strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
 		strcmp(pt,"-home")==0 )
 	    /* Already done, needed to be before display opened */;
 	else if ( strncmp(pt,"-psn_",5)==0 )

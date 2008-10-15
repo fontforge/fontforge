@@ -765,6 +765,11 @@ static void PSDrawPathStartNew(GWindow w) {
     fprintf( ps->output_file,"  newpath\n" );
 }
 
+static void PSDrawPathClose(GWindow w) {
+    GPSWindow ps = (GPSWindow ) w;
+    fprintf( ps->output_file,"  closepath\n" );
+}
+
 static void PSDrawPathMoveTo(GWindow w,double x, double y) {
     GPSWindow ps = (GPSWindow ) w;
     fprintf( ps->output_file,"  %g %g moveto\n", _GSPDraw_XPos(ps,x), _GSPDraw_YPos(ps,y) );
@@ -1437,12 +1442,16 @@ static struct displayfuncs psfuncs = {
 
     PSDrawHasCairo,
     PSDrawPathStartNew,
+    PSDrawPathClose,
     PSDrawPathMoveTo,
     PSDrawPathLineTo,
     PSDrawPathCurveTo,
     PSDrawPathStroke,
     PSDrawPathFill,
-    PSDrawPathFillAndStroke
+    PSDrawPathFillAndStroke,
+
+    NULL,		/* Cairobuffer */
+    NULL
 };
 
 GDisplay *_GPSDraw_CreateDisplay() {

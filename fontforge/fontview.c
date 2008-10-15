@@ -5771,8 +5771,10 @@ return;
     if ( fv->end_pos>=map->enccount || fv->pressed_pos>=map->enccount ||
 	    fv->end_pos<0 || fv->pressed_pos<0 )
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
-    if ( fv->end_pos == -1 )
+    if ( fv->end_pos == -1 ) {
+	GDrawPopClip(pixmap,&old);
 return;
+    }
 
     if ( map->remap!=NULL ) {
 	int localenc = fv->end_pos;

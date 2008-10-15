@@ -1139,7 +1139,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 
 /* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
 /*  work, but that seems a high price to pay */
-    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_cairo;
+    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient;
     pattrs.event_masks = -1;
     pattrs.nodecoration = true;
     pattrs.positioned = true;

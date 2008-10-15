@@ -585,6 +585,10 @@ void GDrawPathStartNew(GWindow w) {
     (w->display->funcs->startNewPath)(w);
 }
 
+void GDrawPathClose(GWindow w) {
+    (w->display->funcs->closePath)(w);
+}
+
 void GDrawPathMoveTo(GWindow w,double x, double y) {
     (w->display->funcs->moveto)(w,x,y);
 }
@@ -610,6 +614,14 @@ void GDrawPathFill(GWindow w,Color col) {
 
 void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
     (w->display->funcs->fillAndStroke)(w,fillcol,strokecol);
+}
+
+void GDrawCairoBuffer(GWindow w,GRect *size) {
+    (w->display->funcs->cairoBuffer)(w,size);
+}
+
+void GDrawCairoUnbuffer(GWindow w,GRect *size) {
+    (w->display->funcs->cairoUnbuffer)(w,size);
 }
 
 

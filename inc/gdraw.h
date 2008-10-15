@@ -238,8 +238,7 @@ typedef struct gwindow_attrs {
 	    wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
 	    wam_isdlg=0x10000, wam_notrestricted=0x20000,
 	    wam_transient=0x40000,
-	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
-	    wam_cairo=0x200000 } mask;
+	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000 } mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */
@@ -493,6 +492,7 @@ extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *d
 
 extern enum gcairo_flags GDrawHasCairo(GWindow w);
 extern void GDrawPathStartNew(GWindow w);
+extern void GDrawPathClose(GWindow w);
 extern void GDrawPathMoveTo(GWindow w,double x, double y);
 extern void GDrawPathLineTo(GWindow w,double x, double y);
 extern void GDrawPathCurveTo(GWindow w,
@@ -502,6 +502,9 @@ extern void GDrawPathCurveTo(GWindow w,
 extern void GDrawPathStroke(GWindow w,Color col);
 extern void GDrawPathFill(GWindow w,Color col);
 extern void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
+extern void GDrawCairoBuffer(GWindow w,GRect *size);
+extern void GDrawCairoUnbuffer(GWindow w,GRect *size);
+extern void GDrawEnableCairo(int on);
 
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);
