@@ -1375,8 +1375,4 @@ void _GXCDraw_Flush(GXWindow gw) {
 void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height) {
     _cairo_surface_mark_dirty_rectangle(gw->cs,x,y,width,height);
 }
-
-#else
-void GDrawEnableCairo(int on) {
-}
 #endif
