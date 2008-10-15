@@ -1053,9 +1053,12 @@ return( NULL );
     }
     if ( !(wattrs->mask&wam_backcol) || wattrs->background_color==COLOR_DEFAULT )
 	wattrs->background_color = gdisp->def_background;
+#ifndef _NO_LIBCAIRO
     if ( !(wattrs->mask&wam_backcol) && _GXCDraw_hasCairo())
 	/* Don't set a background color */;
-    else if ( wattrs->background_color != COLOR_UNKNOWN ) {
+    else
+#endif
+    if ( wattrs->background_color != COLOR_UNKNOWN ) {
 	attrs.background_pixel = _GXDraw_GetScreenPixel(gdisp,wattrs->background_color);
 	wmask |= CWBackPixel;
     }
@@ -2384,9 +2387,11 @@ static void GXDrawScroll(GWindow _w, GRect *rect, int32 hor, int32 vert) {
     GXDrawSendExpose(gw,0,0,gw->pos.width,gw->pos.height);
 #else
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
+#ifndef _NO_LIBCAIRO
     if ( gw->usecairo )
 	_GXCDraw_CopyArea(gw,gw,rect,rect->x+hor,rect->y+vert);
     else
+#endif
 	XCopyArea(gdisp->display,gw->w,gw->w,gdisp->gcstate[gw->ggc->bitmap_col].gc,
 		rect->x,rect->y,	rect->width,rect->height,
 		rect->x+hor,rect->y+vert);
@@ -2413,9 +2418,11 @@ static void _GXDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, in
 		x,y,1);
     } else {
 	_GXDraw_SetClipFunc(gdisp,gw->ggc);
+#ifndef _NO_LIBCAIRO
 	if ( gw->usecairo )
 	    _GXCDraw_CopyArea(pixmap,gw,src,x,y);
 	else
+#endif
 	    XCopyArea(gdisp->display,pixmap->w,gw->w,gdisp->gcstate[gw->ggc->bitmap_col].gc,
 		    src->x,src->y,	src->width,src->height,
 		    x,y);
@@ -2440,8 +2447,10 @@ static void _GXDraw_TilePixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x
 		XCopyPlane(gdisp->display,((GXWindow) pixmap)->w,gw->w,gdisp->gcstate[1].gc,
 			0,0,  pixmap->pos.width, pixmap->pos.height,
 			j,i,1);
+#ifndef _NO_LIBCAIRO
 	    } else if ( gw->usecairo ) {
 		_GXCDraw_CopyArea(pixmap,gw,&pixmap->pos,j,i);
+#endif
 	    } else {
 		XCopyArea(gdisp->display,((GXWindow) pixmap)->w,gw->w,gdisp->gcstate[0].gc,
 			0,0,  pixmap->pos.width, pixmap->pos.height,
