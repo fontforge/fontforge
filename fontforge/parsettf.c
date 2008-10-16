@@ -2183,10 +2183,10 @@ return( sc );
     }
     fseek(ttf,info->glyph_start+start,SEEK_SET);
     path_cnt = (short) getushort(ttf);
-    /* xmin = */ getushort(ttf);
+    /* xmin = */ sc->lsidebearing = getushort(ttf);
     /* ymin = */ getushort(ttf);
     /* xmax = */ getushort(ttf);
-    /* ymax = */ sc->lsidebearing = getushort(ttf);
+    /* ymax = */ /* sc->lsidebearing = */ getushort(ttf);	/* what was this for? */
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
@@ -3980,7 +3980,6 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     /*  do move the outline */
     int check_width_consistency = info->cff_start!=0 && info->glyph_start==0;
     SplineChar *sc;
-    DBounds b;
     real trans[6];
 
     memset(trans,0,sizeof(trans));
@@ -4004,9 +4003,8 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    sc->width = lastwidth;
 	    sc->widthset = true;
 	    if ( info->apply_lsb ) {
-		SplineCharFindBounds(sc,&b);
-		if ( b.minx!=lsb ) {
-		    trans[4] = lsb-b.minx;
+		if ( sc->lsidebearing!=lsb ) {
+		    trans[4] = lsb-sc->lsidebearing;
 		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
 		}
 	    }
@@ -4023,9 +4021,8 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    sc->widthset = true;
 	    if ( info->apply_lsb ) {
 		lsb = (short) getushort(ttf);
-		SplineCharFindBounds(sc,&b);
-		if ( b.minx!=lsb ) {
-		    trans[4] = lsb-b.minx;
+		if ( sc->lsidebearing!=lsb ) {
+		    trans[4] = lsb-sc->lsidebearing;
 		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
 		}
 	    }
@@ -4065,8 +4062,8 @@ return;
 
 static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
-    int lastvwidth = info->emsize, vwidth_cnt, tsb, cnt=0;
-    int32 voff=0;
+    int lastvwidth = info->emsize, vwidth_cnt, tsb/*, cnt=0*/;
+    /* int32 voff=0; */
 
     fseek(ttf,info->vhea_start+4+4,SEEK_SET);		/* skip over the version number & typo right/left */
     info->pfminfo.vlinegap = getushort(ttf);
@@ -4082,17 +4079,21 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
 	tsb = getushort(ttf);
 	if ( info->chars[i]!=NULL ) {		/* can happen in ttc files */
 	    info->chars[i]->vwidth = lastvwidth;
+#if 0	/* this used to mean something once */
+	/* At one point I stored the ymax of loading the glyph in lsidebearing*/
+	/* I've removed that as it now seems pointless */
 	    if ( info->cff_start==0 ) {
 		voff += tsb + info->chars[i]->lsidebearing /* actually maxy */;
 		++cnt;
 	    }
+#endif
 	}
     }
     if ( i==0 ) {
 	LogError( _("Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n") );
 	info->bad_metrics = true;
     }
-	
+
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( info->chars[j]!=NULL )		/* In a ttc file we may skip some */
 	    info->chars[j]->vwidth = lastvwidth;
