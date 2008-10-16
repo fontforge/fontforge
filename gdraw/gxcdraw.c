@@ -455,7 +455,7 @@ void _GXCDraw_FillRect(GXWindow gw, GRect *rect) {
     GXCDrawSetcolfunc(gw,gw->ggc);
 
     _cairo_new_path(gw->cc);
-    _cairo_rectangle(gw->cc,rect->x,rect->y,rect->width-1,rect->height-1);
+    _cairo_rectangle(gw->cc,rect->x,rect->y,rect->width,rect->height);
     _cairo_fill(gw->cc);
 }
 
@@ -565,8 +565,8 @@ void _GXCDraw_PathCurveTo(GWindow w,
 }
 
 void _GXCDraw_PathStroke(GWindow w,Color col) {
-    _cairo_set_source_rgba(((GXWindow) w)->cc,COLOR_RED(col)/255.0,COLOR_GREEN(col)/255.0,COLOR_BLUE(col)/255.0,
-	    (col>>24)/255.0);
+    w->ggc->fg = col;
+    GXCDrawSetline((GXWindow) w,w->ggc);
     _cairo_stroke( ((GXWindow) w)->cc );
 }
 
@@ -584,8 +584,8 @@ void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
 	    (fillcol>>24)/255.0);
     _cairo_fill( gw->cc );
     _cairo_restore(gw->cc);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(strokecol)/255.0,COLOR_GREEN(strokecol)/255.0,COLOR_BLUE(strokecol)/255.0,
-	    (strokecol>>24)/255.0);
+    w->ggc->fg = strokecol;
+    GXCDrawSetline(gw,gw->ggc);
     _cairo_fill( gw->cc );
 }
 
@@ -1374,5 +1374,9 @@ void _GXCDraw_Flush(GXWindow gw) {
 
 void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height) {
     _cairo_surface_mark_dirty_rectangle(gw->cs,x,y,width,height);
+}
+#else
+int _GXCDraw_hasCairo(void) {
+return(false);
 }
 #endif
