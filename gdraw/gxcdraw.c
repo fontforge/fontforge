@@ -821,11 +821,11 @@ return( x );
 		if ( x+ct.x_advance < arg->maxwidth )
 		    /* Do Nothing here */;
 		else if ( x+ct.x_advance/2 >= arg->maxwidth ) {
-		    arg->last = (unichar_t *) start;
+		    arg->utf8_last = (char *) start;
 		    arg->width = x;
 return( x );
 		} else {
-		    arg->last = (unichar_t *) pt;
+		    arg->utf8_last = (char *) pt;
 		    x += ct.x_advance;
 		    arg->width = x;
 return( x );
@@ -833,14 +833,14 @@ return( x );
 	      break;
 	      case tf_stopbefore:
 		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->last = (unichar_t *) start;
+		    arg->utf8_last = (char *) start;
 		    arg->width = x;
 return( x );
 		}
 	      break;
 	      case tf_stopafter:
 		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->last = (unichar_t *) pt;
+		    arg->utf8_last = (char *) pt;
 		    x += ct.x_advance;
 		    arg->width = x;
 return( x );
@@ -937,11 +937,11 @@ return( x );
 		if ( x+ct.x_advance < arg->maxwidth )
 		    /* Do Nothing here */;
 		else if ( x+ct.x_advance/2 >= arg->maxwidth ) {
-		    arg->utf8_last = (char *) start;
+		    arg->last = (unichar_t *) start;
 		    arg->width = x;
 return( x );
 		} else {
-		    arg->utf8_last = (char *) pt;
+		    arg->last = (unichar_t *) pt;
 		    x += ct.x_advance;
 		    arg->width = x;
 return( x );
@@ -949,14 +949,14 @@ return( x );
 	      break;
 	      case tf_stopbefore:
 		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->utf8_last = (char *) start;
+		    arg->last = (unichar_t *) start;
 		    arg->width = x;
 return( x );
 		}
 	      break;
 	      case tf_stopafter:
 		if ( x+ct.x_advance >= arg->maxwidth ) {
-		    arg->utf8_last = (char *) pt;
+		    arg->last = (unichar_t *) pt;
 		    x += ct.x_advance;
 		    arg->width = x;
 return( x );
