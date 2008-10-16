@@ -36,11 +36,11 @@
 
 extern int autohint_before_generate;
 int instruct_diagonal_stems = 1,
-    instruct_serif_stems = 0,
-    instruct_ball_terminals = 0,
+    instruct_serif_stems = 1,
+    instruct_ball_terminals = 1,
     interpolate_strong = 1,
-    interpolate_more_strong = 0, /* not applicable if interpolate_strong==0 */
-    control_counters = 1;
+    interpolate_more_strong = 1, /* not applicable if interpolate_strong==0 */
+    control_counters = 0;
 
 /* non-optimized instructions will be using a stack of depth 6, allowing
  * for easy testing whether the code leaves trash on the stack or not.
@@ -2639,12 +2639,6 @@ return;
 		    prev_coord_min = coord_min;
 		}
 	    }
-
-//	    if (pt==10){
-//	    fprintf(stderr, "%d:\n", pt);
-//	    fprintf(stderr, "\t%d %d %d\n", prev_closed, prev_pt_max, prev_pt_min);
-//	    fprintf(stderr, "\t%d %d %d\n", next_closed, next_pt_max, next_pt_min);
-//	    }
 
 	    if (prev_closed && next_closed && (
 		(prev_coord_max >= pt_coord && pt != prev_pt_max && 
