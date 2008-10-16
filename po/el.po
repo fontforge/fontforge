@@ -3607,7 +3607,7 @@ msgstr ""
 
 #: charinfo.c:5612 charinfo.c:5867
 msgid "Glyph Info..."
-msgstr ""
+msgstr "Πληροφορίες γλύφου"
 
 #: charinfo.c:5668
 msgid "No components"
@@ -3643,11 +3643,11 @@ msgstr ""
 
 #: charinfo.c:5990 charinfo.c:6242 fontinfo.c:8832
 msgid "Comment"
-msgstr ""
+msgstr "Σχόλιο"
 
 #: charinfo.c:6007 cvstroke.c:1143 cvstroke.c:1219
 msgid "Color:"
-msgstr ""
+msgstr "Χρώμα:"
 
 #: charinfo.c:6049
 #, fuzzy
@@ -3661,21 +3661,21 @@ msgstr ""
 #: charinfo.c:6051
 #, fuzzy
 msgid "Substitutions|_New..."
-msgstr "_Substitutions"
+msgstr "_Αντικαταστάσεις"
 
 #: charinfo.c:6052
 #, fuzzy
 msgid "AltSubstitutions|_New..."
-msgstr "_Substitutions"
+msgstr "_Εναλ.Αντικαταστάσεις"
 
 #: charinfo.c:6053
 #, fuzzy
 msgid "MultSubstitutions|_New..."
-msgstr "_Substitutions"
+msgstr "_Πολ. Αντικαταστάσεις"
 
 #: charinfo.c:6054
 msgid "Ligatures|_New..."
-msgstr ""
+msgstr "Πολ. Στοιχεία"
 
 #: charinfo.c:6055
 msgid "_New..."
@@ -3753,35 +3753,35 @@ msgstr ""
 
 #: charinfo.c:6279 charinfo.c:6430 showatt.c:1506
 msgid "Ligature"
-msgstr ""
+msgstr "Πολ. Στοιχείο"
 
 #: charinfo.c:6281 combinations.c:130 showatt.c:1046
 msgid "Ligatures"
-msgstr ""
+msgstr "Πολ. Στοιχεία"
 
 #: charinfo.c:6290
 msgid "Counters"
-msgstr ""
+msgstr "Μετρητές"
 
 #: charinfo.c:6316 contextchain.c:2444 cvgetinfo.c:1517 cvgetinfo.c:3054
 #: cvhints.c:579 kernclass.c:2138 kernclass.c:2424 mm.c:3795
 #: statemachine.c:3161
 msgid "< _Prev"
-msgstr ""
+msgstr "< _Προηγ"
 
 #: charinfo.c:6329 contextchain.c:2455 cvgetinfo.c:1530 cvgetinfo.c:3066
 #: cvhints.c:591 kernclass.c:2150 kernclass.c:2435 mm.c:3806
 #: statemachine.c:3172
 msgid "_Next >"
-msgstr ""
+msgstr "_Επόμ >"
 
 #: charinfo.c:6359 displayfonts.c:660 kernclass.c:2683
 msgid "_Done"
-msgstr ""
+msgstr "_Τέλος"
 
 #: charinfo.c:6431 showatt.c:1046 typofeatures.c:1088
 msgid "Simple Substitution"
-msgstr ""
+msgstr "Απλή αντικατάσταση"
 
 #: charinfo.c:6432 typofeatures.c:1088
 msgid "Alternate Substitutions"
@@ -15252,7 +15252,7 @@ msgstr ""
 #: problems.c:1931
 #, c-format
 msgid "Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"
-msgstr """Found %1$.4g, expected %2$.4g"
+msgstr "Found %1$.4g, expected %2$.4g"
 
 #: problems.c:1936
 #, c-format
@@ -15348,7 +15348,7 @@ msgstr ""
 
 #: problems.c:2605
 msgid "Find Problems..."
-msgstr ""
+msgstr "Βρες προβλήματα..."
 
 #: problems.c:2614
 msgid "Poin_ts too close"
@@ -18636,16 +18636,16 @@ msgstr "Ignore Combining Marks"
 #: unicoderange.c:50
 #, fuzzy
 msgid "Greek"
-msgstr "Cree"
+msgstr "Ελληνικά"
 
 #: unicoderange.c:51
 msgid "Greek and Coptic"
-msgstr ""
+msgstr "Ελληνικά κι κοπτικά"
 
 #: unicoderange.c:53
 #, fuzzy
 msgid "Cyrillic Supplement"
-msgstr "Change Supplement..."
+msgstr "Συμπληρωματικά κυριλλικά"
 
 #: unicoderange.c:54
 #, fuzzy
@@ -18820,7 +18820,7 @@ msgstr "Lang|Khmer"
 #: unicoderange.c:95
 #, fuzzy
 msgid "Mongolian"
-msgstr "Lang|Mongolian"
+msgstr "Μογγολικά"
 
 #: unicoderange.c:96
 #, fuzzy
@@ -18835,7 +18835,7 @@ msgstr "Tai Le"
 #: unicoderange.c:99
 #, fuzzy
 msgid "Khmer Symbols"
-msgstr "Symbol"
+msgstr "Σύμβολα Χμερ"
 
 #: unicoderange.c:100
 #, fuzzy
@@ -18872,26 +18872,26 @@ msgstr ""
 
 #: unicoderange.c:107
 msgid "Greek Extended"
-msgstr ""
+msgstr "Πολυτονικά Ελληνικά"
 
 #: unicoderange.c:108
 #, fuzzy
 msgid "Symbols"
-msgstr "Symbol"
+msgstr "Σύμβολα"
 
 #: unicoderange.c:109
 msgid "General Punctuation"
-msgstr ""
+msgstr "Σύμβολα στίξης"
 
 #: unicoderange.c:110
 #, fuzzy
 msgid "Super and Sub scripts"
-msgstr "Superscript"
+msgstr "Εκθέτες και δείκτες"
 
 #: unicoderange.c:111
 #, fuzzy
 msgid "Currency Symbols"
-msgstr "Current Subs:"
+msgstr "Νομισματικά σύμβολα"
 
 #: unicoderange.c:112
 msgid "Combining marks for Symbols"
@@ -18905,22 +18905,22 @@ msgstr "Bliss Symbolics"
 #: unicoderange.c:114
 #, fuzzy
 msgid "Number Forms"
-msgstr "Numerators"
+msgstr "Μορφές αριθμών"
 
 #: unicoderange.c:115
 #, fuzzy
 msgid "Arrows"
-msgstr "_Browse"
+msgstr "Βέλη"
 
 #: unicoderange.c:116
 #, fuzzy
 msgid "Mathematical Operators"
-msgstr "Segment Seperator"
+msgstr "Μαθηματικοί τελεστές"
 
 #: unicoderange.c:117
 #, fuzzy
 msgid "Miscellaneous Technical Symbols"
-msgstr "O Miscellaneous"
+msgstr "Διάφορα τεχνικά σύμβολα"
 
 #: unicoderange.c:118
 #, fuzzy
@@ -19126,12 +19126,12 @@ msgstr ""
 #: unicoderange.c:166
 #, fuzzy
 msgid "CJK Unified Ideographs"
-msgstr "CJK Ideographic"
+msgstr "Ενωποιημένα ιδεογραφήματα CJK"
 
 #: unicoderange.c:167
 #, fuzzy
 msgid "Yi"
-msgstr "Y"
+msgstr "Yi"
 
 #: unicoderange.c:168
 msgid "Yi Radicals"
@@ -19157,7 +19157,7 @@ msgstr "Palpa"
 #: unicoderange.c:173
 #, fuzzy
 msgid "Hangul Syllables"
-msgstr "_Build Syllables"
+msgstr "Συλλαβές Hangul"
 
 #: unicoderange.c:174
 msgid "High Surrogate"
@@ -19181,16 +19181,16 @@ msgstr ""
 
 #: unicoderange.c:179
 msgid "Private/Corporate Use"
-msgstr ""
+msgstr "Προσωπική/«εταιρική» χρήση"
 
 #: unicoderange.c:180
 #, fuzzy
 msgid "Private Use"
-msgstr "Private Key"
+msgstr "Προσωπική χρήση"
 
 #: unicoderange.c:183
 msgid "Corporate Use"
-msgstr ""
+msgstr "«Εταιρική» χρήση"
 
 #: unicoderange.c:184
 msgid "MicroSoft Symbol Area"
@@ -19214,7 +19214,7 @@ msgstr "Base Ligatures"
 #: unicoderange.c:188
 #, fuzzy
 msgid "Armenian Ligatures"
-msgstr "Ancient Ligatures"
+msgstr "Αρμενικά πολλαπλά στοιχεία"
 
 #: unicoderange.c:189
 msgid "Hebrew Ligatures/Pointed Letters"
@@ -19286,7 +19286,7 @@ msgstr "S Uncial"
 #: unicoderange.c:203
 #, fuzzy
 msgid "Not a Unicode Character"
-msgstr "Unicode C_har:"
+msgstr "Δεν είναι χαρακτήρας Unicode"
 
 #: unicoderange.c:204
 #, fuzzy
@@ -19295,7 +19295,7 @@ msgstr "Ligature Caret"
 
 #: unicoderange.c:206
 msgid "Unicode Supplementary Multilingual Plane"
-msgstr ""
+msgstr "Συμπληρωματικό πολυγλωσσικό επίπεδο του Unicode"
 
 #: unicoderange.c:207
 msgid "Supplementary Multilingual Plane"
@@ -19304,22 +19304,22 @@ msgstr ""
 #: unicoderange.c:208
 #, fuzzy
 msgid "Aegean scripts"
-msgstr "Any Script"
+msgstr "Αιγαιακές γραφές"
 
 #: unicoderange.c:209
 #, fuzzy
 msgid "Linear B Syllabary"
-msgstr "Linear B"
+msgstr "Συλλαβές Γραμμικής Β"
 
 #: unicoderange.c:210
 #, fuzzy
 msgid "Linear B Ideograms"
-msgstr "Linear B"
+msgstr "Ιδεογράμματα Γραμμικής B"
 
 #: unicoderange.c:211
 #, fuzzy
 msgid "Aegean numbers"
-msgstr "European Number"
+msgstr "Αιγαιακοί αριθμοί"
 
 #: unicoderange.c:212
 msgid "Ancient Greek Numbers"
@@ -19332,7 +19332,7 @@ msgstr ""
 #: unicoderange.c:214
 #, fuzzy
 msgid "Old Italic"
-msgstr "Italic"
+msgstr "Αρχαίες ιταλικές"
 
 #: unicoderange.c:216
 #, fuzzy
@@ -19342,7 +19342,7 @@ msgstr "Script|Ugaritic"
 #: unicoderange.c:217
 #, fuzzy
 msgid "Old Persian"
-msgstr "Cuneiform, Old Persian"
+msgstr "Σφηνοειδής γραφή, παλιά περσική"
 
 #: unicoderange.c:218
 #, fuzzy
@@ -19356,12 +19356,12 @@ msgstr ""
 #: unicoderange.c:222
 #, fuzzy
 msgid "Cypriot"
-msgstr "Cypro-Minoan"
+msgstr "Κυπρο-μινωϊκή"
 
 #: unicoderange.c:223
 #, fuzzy
 msgid "Phoenician"
-msgstr "Script|Phoenician"
+msgstr "Γραφή|Φοινικική"
 
 #: unicoderange.c:224
 #, fuzzy
@@ -19370,33 +19370,33 @@ msgstr "Khasi"
 
 #: unicoderange.c:225
 msgid "Brahmic scripts"
-msgstr ""
+msgstr "Γραφές Brahmic"
 
 #: unicoderange.c:226
 msgid "African and other syllabic scripts"
-msgstr ""
+msgstr "Αφικανικές και άλλες συλλαβικές γραφές"
 
 #: unicoderange.c:227
 msgid "Cuneiform and other Near Eastern Scripts"
-msgstr ""
+msgstr "Σφηνοειδής και άλλες γραφές Εγγύς Ανατολής"
 
 #: unicoderange.c:228
 msgid "Sumero-Akkadian Cuneiform"
-msgstr ""
+msgstr "Συυμερο-ακαδική σφηνοειδής"
 
 #: unicoderange.c:229
 #, fuzzy
 msgid "Cuneiform Numbers"
-msgstr "Cuneiform, Old Persian"
+msgstr "Σφηνοειδής, Παλιά περσική"
 
 #: unicoderange.c:230
 #, fuzzy
 msgid "Undeciphered scripts"
-msgstr "Undetermined Script"
+msgstr "Απροσδιόριστη γραφή"
 
 #: unicoderange.c:231
 msgid "North American ideographs and pictograms"
-msgstr ""
+msgstr "Ιδεογράμματα και εικονογράμματα Β. Αμερικής"
 
 #: unicoderange.c:232
 #, fuzzy
@@ -19411,7 +19411,7 @@ msgstr "Numerators"
 #: unicoderange.c:234
 #, fuzzy
 msgid "Large Asian Scripts"
-msgstr "Any Script"
+msgstr "Μεγάλες ασιατικές γραφές"
 
 #: unicoderange.c:235
 #, fuzzy
@@ -19433,7 +19433,7 @@ msgstr "Αρχαία Ελληνικά μουσικά σύμβολα"
 
 #: unicoderange.c:239
 msgid "Tai Xuan Jing Symbols"
-msgstr ""
+msgstr "Σύμβολα Tai Xuan Jing"
 
 #: unicoderange.c:240
 msgid "Chinese counting rod numerals"
@@ -19441,15 +19441,15 @@ msgstr ""
 
 #: unicoderange.c:241
 msgid "Mathematical Alphanumeric Symbols"
-msgstr ""
+msgstr "Μαθηματικά αλφαριθμητικά σύμβολα"
 
 #: unicoderange.c:243
 msgid "Unicode Supplementary Ideographic Plane"
-msgstr ""
+msgstr "Συμπληρωματικό επίπεδο ιδεογραμμάτων του Unicode"
 
 #: unicoderange.c:244
 msgid "Supplementary Ideographic Plane"
-msgstr ""
+msgstr "Συμπληρωματικό επίπεδο ιδεογραμμάτων"
 
 #: unicoderange.c:245
 msgid "CJK Unified Ideographs Extension B"
@@ -19654,7 +19654,7 @@ msgstr ""
 
 # charinfo.c, fontinfo.c
 #: charinfo.c
-msgid "ΤεΧ"
+msgid "ΤeΧ"
 msgstr ""
 
 # charview.c, savefontdlg.c
@@ -19668,7 +19668,7 @@ msgid "°"
 msgstr ""
 
 #: fontinfo.c
-msgid "ΤεΧ Base (8r)"
+msgid "ΤeΧ Base (8r)"
 msgstr ""
 
 #: fontinfo.c
@@ -19681,15 +19681,15 @@ msgstr "Γαλλικά Ακτής Ελεφαντοστού"
 
 #: fontinfo.c
 msgid "ΤεΧ Text"
-msgstr "Κείμενο ΤεΧ"
+msgstr "Κείμενο ΤeΧ"
 
 #: fontinfo.c
 msgid "ΤεΧ Math"
-msgstr "Μαθηματικά ΤεΧ"
+msgstr "Μαθηματικά ΤeΧ"
 
 #: fontinfo.c
 msgid "ΤεΧ Math Ext"
-msgstr "Επεκτεταμένα Μαθηματικά ΤεΧ"
+msgstr "Επεκτεταμένα Μαθηματικά ΤeΧ"
 
 #: fontview.c
 msgid "Replace Å"
@@ -19777,7 +19777,7 @@ msgstr "° Κατά τη φορά των δεικτών του ρολογιού"
 #. I used it because "counter clockwise" took too much space.
 #: transform.c
 msgid "° Withershins"
-msgstr ""
+msgstr "° Αντίθετα από τη φορά των δεικτών του ρολογιού"
 
 # FontForge needs to recoginze the quotes used here(“”). If you change them
 # (in the translated strings) let me know. It currently also recognizes
@@ -19861,7 +19861,7 @@ msgstr "Ο γλύφος “%s” δεν συμπεριλαμβάνεται στ�
 
 #: glyphcomp.c
 msgid "Glyph “%s” missing from %s at %d@%d\n"
-msgstr "Glyph “%s” missing from %s at %d@%d\n"
+msgstr "Ο γλύφος “%s” δεν υπάρχει στο %s από %d@%d\n"
 
 #: glyphcomp.c
 msgid "Glyph “%s” differs at %d@%d\n"
