@@ -36,11 +36,11 @@
 
 extern int autohint_before_generate;
 int instruct_diagonal_stems = 1,
-    instruct_serif_stems = 1,
-    instruct_ball_terminals = 1,
+    instruct_serif_stems = 0,
+    instruct_ball_terminals = 0,
     interpolate_strong = 1,
-    interpolate_more_strong = 1, /* not applicable if interpolate_strong==0 */
-    control_counters = 0;
+    interpolate_more_strong = 0, /* not applicable if interpolate_strong==0 */
+    control_counters = 1;
 
 /* non-optimized instructions will be using a stack of depth 6, allowing
  * for easy testing whether the code leaves trash on the stack or not.
@@ -2564,12 +2564,13 @@ static void optimize_strongpts_step2(InstrCt *ct) {
     int *contourends = ct->contourends;
     uint8 *touched = ct->touched;
     uint8 *affected = ct->affected;
-    uint8 *toinstr, *tocheck;
+    uint8 *toinstr, *tocull, *tocheck;
 
     if (othercnt == 0)
 return;
 
     toinstr = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
+    tocull = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
     tocheck = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
     for(i=0; i<ct->edge.othercnt; i++) tocheck[ct->edge.others[i]] = 1;
 
@@ -2584,6 +2585,9 @@ return;
 
 	    /* In first pass, we sweep only off-curve points */
 	    if ((pass==0) && (ct->gd->points[pt].sp != NULL))
+	continue;
+
+	    if (tocull[pt] || toinstr[pt])
 	continue;
 
 	    /* check path backward and forward */
@@ -2604,8 +2608,12 @@ return;
 
 		    if ((touched[curr] | affected[curr]) & touchflag || tocheck[curr])
 		    {
-			if (coord >= coord_max) { coord_max = coord; pt_max = curr; }
-			if (coord <= coord_min) { coord_min = coord; pt_min = curr; }
+			if (coord > coord_max) { coord_max = coord; pt_max = curr; }
+			else if ((coord == coord_max) && (curr < pt_max)) pt_max = curr;
+			
+			if (coord < coord_min) { coord_min = coord; pt_min = curr; }
+			else if ((coord == coord_min) && (curr < pt_min)) pt_min = curr;
+
 			closed = 1;
 		    }
 
@@ -2632,27 +2640,34 @@ return;
 		}
 	    }
 
+//	    if (pt==10){
+//	    fprintf(stderr, "%d:\n", pt);
+//	    fprintf(stderr, "\t%d %d %d\n", prev_closed, prev_pt_max, prev_pt_min);
+//	    fprintf(stderr, "\t%d %d %d\n", next_closed, next_pt_max, next_pt_min);
+//	    }
+
 	    if (prev_closed && next_closed && (
 		(prev_coord_max >= pt_coord && pt != prev_pt_max && 
 		 next_coord_min <= pt_coord && pt != next_pt_min) ||
 		(prev_coord_min <= pt_coord && pt != prev_pt_min && 
 		 next_coord_max >= pt_coord && pt != next_pt_max)))
-		    affected[pt] |= touchflag;
+		    tocull[pt] = 1;
 	    else
 		toinstr[pt] = 1;
 	}
     }
 
-    free(toinstr);
-    free(tocheck);
-
     /* remove optimized-out points from list to be instructed. */
     for(i=0; i<ct->edge.othercnt; i++)
-	if (affected[others[i]] & touchflag) {
+	if (tocull[others[i]]) {
 	    ct->edge.othercnt--;
 	    for(j=i; j<ct->edge.othercnt; j++) others[j] = others[j+1];
 	    i--;
 	}
+
+    free(tocheck);
+    free(toinstr);
+    free(tocull);
 }
 
 /* Finish instructing the edge. Try to hint only those points on edge that are
