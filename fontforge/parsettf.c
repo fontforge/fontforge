@@ -4022,7 +4022,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    sc->width = lastwidth;
 	    sc->widthset = true;
 	    if ( info->apply_lsb ) {
-		lsb = getushort(ttf);
+		lsb = (short) getushort(ttf);
 		SplineCharFindBounds(sc,&b);
 		if ( b.minx!=lsb ) {
 		    trans[4] = lsb-b.minx;
