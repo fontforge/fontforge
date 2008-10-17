@@ -1225,7 +1225,8 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
 	_GXCDraw_Image(gw,image,src,x,y);
     else {
 	int stride = _cairo_format_stride_for_width(CAIRO_FORMAT_A8,src->width);
-	uint8 *data = galloc(stride*src->height),
+	uint8 *basedata = galloc(stride*src->height),
+	       *data = basedata,
 		*srcd = base->data + src->y*base->bytes_per_line + src->x;
 	int factor = base->clut->clut_len==256 ? 1 :
 		     base->clut->clut_len==16 ? 17 :
@@ -1251,7 +1252,7 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
 	/* Presumably that doesn't leave the mask surface pattern lying around */
 	/* but dereferences it so we can free it */
 	_cairo_surface_destroy(is);
-	free(data);
+	free(basedata);
     }
     gw->cairo_state.fore_col = COLOR_UNKNOWN;
 }
