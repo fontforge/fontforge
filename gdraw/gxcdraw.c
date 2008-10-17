@@ -378,7 +378,7 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
 		1.0);
     else
 	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
-		(fg>>24)/255.);
+		(fg>>24)/255.0);
     if ( mine->line_width<=0 ) mine->line_width = 1;
     if ( mine->line_width!=gcs->line_width || mine->line_width!=2 ) {
 	_cairo_set_line_width(gw->cc,mine->line_width);
