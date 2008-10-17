@@ -47,7 +47,6 @@ extern struct compressors compressors[];
 int home_char='A';
 int compact_font_on_open=0;
 
-#define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
 
 #ifdef BIGICONS
@@ -76,7 +75,9 @@ static unsigned char fontview2_bits[] = {
 
 extern int _GScrollBar_Width;
 
-static int fv_fontsize = -13, fv_fs_init=0;
+static int fv_fontsize = 13, fv_fs_init=0;
+static Color fvselcol = 0xffff00;
+static Color fvchangedcol = 0x000060;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
 int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
@@ -118,12 +119,6 @@ static void FV_ToggleCharChanged(SplineChar *sc) {
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		GDrawRequestExpose(fv->v,&r,false);
-#if 0
-		GDrawSetXORBase(fv->v,bg);
-		GDrawSetXORMode(fv->v);
-		GDrawFillRect(fv->v,&r,0x000000);
-		GDrawSetCopyMode(fv->v);
-#endif
 	    }
 	}
     }
@@ -165,6 +160,172 @@ return;
     }
 }
 
+static int FeatureTrans(FontView *fv, int enc) {
+    SplineChar *sc;
+    PST *pst;
+    char *pt;
+    int gid;
+
+    if ( enc<0 || enc>=fv->b.map->enccount || (gid = fv->b.map->map[enc])==-1 )
+return( -1 );
+    if ( fv->cur_subtable==NULL )
+return( gid );
+
+    sc = fv->b.sf->glyphs[gid];
+    if ( sc==NULL )
+return( -1 );
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	if (( pst->type == pst_substitution || pst->type == pst_alternate ) &&
+		pst->subtable == fv->cur_subtable )
+    break;
+    }
+    if ( pst==NULL )
+return( -1 );
+    pt = strchr(pst->u.subs.variant,' ');
+    if ( pt!=NULL )
+	*pt = '\0';
+    gid = SFFindExistingSlot(fv->b.sf, -1, pst->u.subs.variant );
+    if ( pt!=NULL )
+	*pt = ' ';
+return( gid );
+}
+
+static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
+    GRect box, old2;
+    int feat_gid;
+    SplineChar *sc;
+    struct _GImage base;
+    GImage gi;
+    GClut clut;
+    int i,j;
+    int em = fv->b.sf->ascent+fv->b.sf->descent;
+    int yorg = fv->magnify*(fv->show->ascent);
+
+    i = index / fv->colcnt;
+    j = index - i*fv->colcnt;
+    i -= fv->rowoff;
+
+    if ( index<fv->b.map->enccount && (fv->b.selected[index] || forcebg)) {
+	box.x = j*fv->cbw+1; box.width = fv->cbw-1;
+	box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
+	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : GDrawGetDefaultBackground(NULL));
+    }
+    feat_gid = FeatureTrans(fv,index);
+    sc = feat_gid!=-1 ? fv->b.sf->glyphs[feat_gid]: NULL;
+    if ( !SCWorthOutputting(sc) ) {
+	int x = j*fv->cbw+1, xend = x+fv->cbw-2;
+	int y = i*fv->cbh+fv->lab_height+1, yend = y+fv->cbw-1;
+	GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
+	GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
+    }
+    if ( sc!=NULL ) {
+	BDFChar *bdfc;
+
+	if ( fv->show!=NULL && fv->show->piecemeal &&
+		feat_gid!=-1 &&
+		(feat_gid>=fv->show->glyphcnt || fv->show->glyphs[feat_gid]==NULL) &&
+		fv->b.sf->glyphs[feat_gid]!=NULL )
+	    BDFPieceMeal(fv->show,feat_gid);
+
+	if ( fv->show!=NULL && feat_gid!=-1 &&
+		feat_gid < fv->show->glyphcnt &&
+		fv->show->glyphs[feat_gid]==NULL &&
+		SCWorthOutputting(fv->b.sf->glyphs[feat_gid]) ) {
+	    /* If we have an outline but no bitmap for this slot */
+	    box.x = j*fv->cbw+1; box.width = fv->cbw-2;
+	    box.y = i*fv->cbh+fv->lab_height+2; box.height = box.width+1;
+	    GDrawDrawRect(pixmap,&box,0xff0000);
+	    ++box.x; ++box.y; box.width -= 2; box.height -= 2;
+	    GDrawDrawRect(pixmap,&box,0xff0000);
+/* When reencoding a font we can find times where index>=show->charcnt */
+	} else if ( fv->show!=NULL && feat_gid<fv->show->glyphcnt && feat_gid!=-1 &&
+		fv->show->glyphs[feat_gid]!=NULL ) {
+	    bdfc = fv->show->glyphs[feat_gid];
+
+	    memset(&gi,'\0',sizeof(gi));
+	    memset(&base,'\0',sizeof(base));
+	    if ( bdfc->byte_data ) {
+		gi.u.image = &base;
+		base.image_type = it_index;
+		base.clut = fv->show->clut;
+		GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
+		base.trans = -1;
+		/*base.clut->trans_index = 0;*/
+	    } else {
+		memset(&clut,'\0',sizeof(clut));
+		gi.u.image = &base;
+		base.image_type = it_mono;
+		base.clut = &clut;
+		clut.clut_len = 2;
+		clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	    }
+
+	    base.data = bdfc->bitmap;
+	    base.bytes_per_line = bdfc->bytes_per_line;
+	    base.width = bdfc->xmax-bdfc->xmin+1;
+	    base.height = bdfc->ymax-bdfc->ymin+1;
+	    box.x = j*fv->cbw; box.width = fv->cbw;
+	    box.y = i*fv->cbh+fv->lab_height+1; box.height = box.width+1;
+	    GDrawPushClip(pixmap,&box,&old2);
+	    if ( !fv->b.sf->onlybitmaps && fv->show!=fv->filled &&
+		    sc->layers[fv->b.active_layer].splines==NULL && sc->layers[fv->b.active_layer].refs==NULL &&
+		    !sc->widthset &&
+		    !(bdfc->xmax<=0 && bdfc->xmin==0 && bdfc->ymax<=0 && bdfc->ymax==0) ) {
+		/* If we have a bitmap but no outline character... */
+		GRect b;
+		b.x = box.x+1; b.y = box.y+1; b.width = box.width-2; b.height = box.height-2;
+		GDrawDrawRect(pixmap,&b,0x008000);
+		++b.x; ++b.y; b.width -= 2; b.height -= 2;
+		GDrawDrawRect(pixmap,&b,0x008000);
+	    }
+	    /* I assume that the bitmap image matches the bounding*/
+	    /*  box. In some bitmap fonts the bitmap has white space on the*/
+	    /*  right. This can throw off the centering algorithem */
+	    if ( fv->magnify>1 ) {
+		GDrawDrawImageMagnified(pixmap,&gi,NULL,
+			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
+			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
+			fv->magnify*base.width,fv->magnify*base.height);
+	    } else
+		GDrawDrawGlyph(pixmap,&gi,NULL,
+			j*fv->cbw+(fv->cbw-1-base.width)/2,
+			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
+	    if ( fv->showhmetrics ) {
+		int x1, x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
+		/* Draw advance width & horizontal origin */
+		if ( fv->showhmetrics&fvm_origin )
+		    GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+yorg-3,x0,
+			    i*fv->cbh+fv->lab_height+yorg+2,METRICS_ORIGIN);
+		x1 = x0 + fv->magnify*bdfc->width;
+		if ( fv->showhmetrics&fvm_advanceat )
+		    GDrawDrawLine(pixmap,x1,i*fv->cbh+fv->lab_height+1,x1,
+			    (i+1)*fv->cbh-1,METRICS_ADVANCE);
+		if ( fv->showhmetrics&fvm_advanceto )
+		    GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
+			    (i+1)*fv->cbh-2,METRICS_ADVANCE);
+	    }
+	    if ( fv->showvmetrics ) {
+		int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify
+			+ fv->magnify*fv->show->pixelsize/2;
+		int y0 = i*fv->cbh+fv->lab_height+yorg;
+		int yvw = y0 + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
+		if ( fv->showvmetrics&fvm_baseline )
+		    GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+1,x0,
+			    (i+1)*fv->cbh-1,METRICS_BASELINE);
+		if ( fv->showvmetrics&fvm_advanceat )
+		    GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
+			    yvw,METRICS_ADVANCE);
+		if ( fv->showvmetrics&fvm_advanceto )
+		    GDrawDrawLine(pixmap,j*fv->cbw+2,y0,j*fv->cbw+2,
+			    yvw,METRICS_ADVANCE);
+		if ( fv->showvmetrics&fvm_origin )
+		    GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,METRICS_ORIGIN);
+	    }
+	    GDrawPopClip(pixmap,&old2);
+	}
+    }
+}
+
 static void FVToggleCharSelected(FontView *fv,int enc) {
     int i, j;
 
@@ -178,15 +339,8 @@ return;
  /*  but every now and then the WM forces us to use a window size which doesn't */
  /*  fit our expectations (maximized view) and we must be prepared for half */
  /*  lines */
-    if ( i>=0 && i<=fv->rowcnt ) {
-	GRect r;
-	r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-	r.y = i*fv->cbh+fv->lab_height+1; r.height = fv->cbw;
-	GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
-	GDrawSetXORMode(fv->v);
-	GDrawFillRect(fv->v,&r,XOR_COLOR);
-	GDrawSetCopyMode(fv->v);
-    }
+    if ( i>=0 && i<=fv->rowcnt )
+	FVDrawGlyph(fv->v,fv,enc,true);
 }
 
 static void FontViewRefreshAll(SplineFont *sf) {
@@ -4809,36 +4963,6 @@ static GMenuItem2 mblist[] = {
     { NULL }
 };
 
-static int FeatureTrans(FontView *fv, int enc) {
-    SplineChar *sc;
-    PST *pst;
-    char *pt;
-    int gid;
-
-    if ( enc<0 || enc>=fv->b.map->enccount || (gid = fv->b.map->map[enc])==-1 )
-return( -1 );
-    if ( fv->cur_subtable==NULL )
-return( gid );
-
-    sc = fv->b.sf->glyphs[gid];
-    if ( sc==NULL )
-return( -1 );
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	if (( pst->type == pst_substitution || pst->type == pst_alternate ) &&
-		pst->subtable == fv->cur_subtable )
-    break;
-    }
-    if ( pst==NULL )
-return( -1 );
-    pt = strchr(pst->u.subs.variant,' ');
-    if ( pt!=NULL )
-	*pt = '\0';
-    gid = SFFindExistingSlot(fv->b.sf, -1, pst->u.subs.variant );
-    if ( pt!=NULL )
-	*pt = ' ';
-return( gid );
-}
-
 void FVRefreshChar(FontView *fv,int gid) {
     BDFChar *bdfc;
     int i, j, enc;
@@ -4867,66 +4991,15 @@ return;
 	    bdfc = BDFPieceMealCheck(fv->show,gid);
 	else
 	    bdfc = fv->show->glyphs[gid];
+	if ( bdfc==NULL )
+	    bdfc = BDFPieceMeal(fv->show,gid);
 	/* A glyph may be encoded in several places, all need updating */
 	for ( enc = 0; enc<fv->b.map->enccount; ++enc ) if ( fv->b.map->map[enc]==gid ) {
 	    i = enc / fv->colcnt;
 	    j = enc - i*fv->colcnt;
 	    i -= fv->rowoff;
-	    if ( i>=0 && i<fv->rowcnt ) {
-		struct _GImage base;
-		GImage gi;
-		GClut clut;
-		GRect old, box;
-
-		if ( bdfc==NULL )
-		    bdfc = BDFPieceMeal(fv->show,gid);
-		if ( bdfc==NULL )
-	continue;
-
-		memset(&gi,'\0',sizeof(gi));
-		memset(&base,'\0',sizeof(base));
-		if ( bdfc->byte_data ) {
-		    gi.u.image = &base;
-		    base.image_type = it_index;
-		    base.clut = fv->show->clut;
-		    GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
-		    base.trans = -1;
-		    /*base.clut->trans_index = 0;*/
-		} else {
-		    memset(&clut,'\0',sizeof(clut));
-		    gi.u.image = &base;
-		    base.image_type = it_mono;
-		    base.clut = &clut;
-		    clut.clut_len = 2;
-		    clut.clut[0] = GDrawGetDefaultBackground(NULL);
-		}
-
-		base.data = bdfc->bitmap;
-		base.bytes_per_line = bdfc->bytes_per_line;
-		base.width = bdfc->xmax-bdfc->xmin+1;
-		base.height = bdfc->ymax-bdfc->ymin+1;
-		box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-		box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
-		GDrawPushClip(fv->v,&box,&old);
-		GDrawFillRect(fv->v,&box,GDrawGetDefaultBackground(NULL));
-		if ( fv->magnify>1 ) {
-		    GDrawDrawImageMagnified(fv->v,&gi,NULL,
-			    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
-			    i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
-			    fv->magnify*base.width,fv->magnify*base.height);
-		} else
-		    GDrawDrawImage(fv->v,&gi,NULL,
-			    j*fv->cbw+(fv->cbw-1-base.width)/2,
-			    i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
-		GDrawPopClip(fv->v,&old);
-		if ( fv->b.selected[enc] ) {
-		    GDrawSetXORBase(fv->v,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v)));
-		    GDrawSetXORMode(fv->v);
-		    GDrawFillRect(fv->v,&box,XOR_COLOR);
-		    GDrawSetCopyMode(fv->v);
-		}
-		GDrawSetDither(NULL, true);
-	    }
+	    if ( i>=0 && i<fv->rowcnt )
+		FVDrawGlyph(fv->v,fv,enc,true);
 	}
     }
 }
@@ -5107,6 +5180,25 @@ return( NULL );
     rot = GImageCropAndRotate(unrot);
     GImageDestroy(unrot);
 return( rot );
+}
+
+static void GlyphImageXor(GImage *image,int fgxor) {
+    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    int i,j;
+
+    if ( base->image_type==it_mono || base->image_type==it_index ) {
+	if ( base->clut!=NULL ) {
+	    for ( i=0; i<base->clut->clut_len; ++i )
+		base->clut->clut[i] ^= fgxor;
+	}
+    } else if ( base->image_type==it_true || base->image_type==it_rgba ) {
+	uint32 *ipt = (uint32 *) (base->data);
+	for ( i=0; i<base->height; ++i ) {
+	    for ( j=0; j<base->width; ++j )
+		ipt[j] ^= fgxor;
+	    ipt = (uint32 *) (((uint8 *) ipt) + base->bytes_per_line);
+	}
+    }
 }
 
 #if 0
@@ -5359,16 +5451,15 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
 static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int i, j, width, gid;
     int changed;
-    GRect old, old2, box, r;
+    GRect old, old2, r;
     GClut clut;
     struct _GImage base;
     GImage gi;
     SplineChar dummy;
     int styles, laststyles=0;
     GImage *rotated=NULL;
-    int em = fv->b.sf->ascent+fv->b.sf->descent;
-    int yorg = fv->magnify*(fv->show->ascent);
     Color bg, def_fg;
+    int fgxor;
 
     def_fg = GDrawGetDefaultForeground(NULL);
     memset(&gi,'\0',sizeof(gi));
@@ -5402,7 +5493,6 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt && 
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
-	int feat_gid;
 	SplineChar *sc;
 	styles = 0;
 	if ( index < fv->b.map->enccount && index!=-1 ) {
@@ -5553,12 +5643,23 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		}
 	      break;
 	    }
-	    bg = COLOR_DEFAULT;
 	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 	    r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
-	    if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL ||
+	    bg = GDrawGetDefaultBackground(NULL);
+	    fgxor = 0x000000;
+	    changed = sc->changed;
+	    if ( fv->b.sf->onlybitmaps && gid<fv->show->glyphcnt )
+		changed = gid==-1 || fv->show->glyphs[gid]==NULL? false : fv->show->glyphs[gid]->changed;
+	    if ( changed ||
+		    sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL ||
 		    sc->color!=COLOR_DEFAULT ) {
-		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
+		if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL ||
+			sc->color!=COLOR_DEFAULT )
+		    bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
+		if ( sc->changed ) {
+		    fgxor = bg ^ fvchangedcol;
+		    bg = fvchangedcol;
+		}
 		GDrawFillRect(pixmap,&r,bg);
 	    }
 	    if ( (!fv->b.sf->layers[fv->b.active_layer].order2 && sc->changedsincelasthinted ) ||
@@ -5577,6 +5678,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 	    if ( rotated!=NULL ) {
 		GDrawPushClip(pixmap,&r,&old2);
+		if ( fgxor!=0 )
+		    GlyphImageXor(rotated,fgxor);
 		GDrawDrawImage(pixmap,rotated,NULL,j*fv->cbw+2,i*fv->cbh+2);
 		GDrawPopClip(pixmap,&old2);
 		GImageDestroy(rotated);
@@ -5598,7 +5701,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    width = fv->cbw-1;
 		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_as+1,utf8_buf,-1,mods,fg);
+		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_as+1,utf8_buf,-1,mods,fg^fgxor);
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
@@ -5610,130 +5713,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    width = fv->cbw-1;
 		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_as+1,buf,-1,mods,fg);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_as+1,buf,-1,mods,fg^fgxor);
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
 	    }
-	    changed = sc->changed;
-	    if ( fv->b.sf->onlybitmaps && gid<fv->show->glyphcnt )
-		changed = gid==-1 || fv->show->glyphs[gid]==NULL? false : fv->show->glyphs[gid]->changed;
-	    if ( changed ) {
-		GRect r;
-		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
-		if ( bg == COLOR_DEFAULT )
-		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
-		GDrawSetXORBase(pixmap,bg);
-		GDrawSetXORMode(pixmap);
-		GDrawFillRect(pixmap,&r,0x000000);
-		GDrawSetCopyMode(pixmap);
-	    }
 	}
-
-	feat_gid = FeatureTrans(fv,index);
-	sc = feat_gid!=-1 ? fv->b.sf->glyphs[feat_gid]: NULL;
-	if ( !SCWorthOutputting(sc) ) {
-	    int x = j*fv->cbw+1, xend = x+fv->cbw-2;
-	    int y = i*fv->cbh+fv->lab_height+1, yend = y+fv->cbw-1;
-	    GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
-	    GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
-	}
-	if ( sc!=NULL ) {
-	    BDFChar *bdfc;
-
-	    if ( fv->show!=NULL && fv->show->piecemeal &&
-		    feat_gid!=-1 &&
-		    (feat_gid>=fv->show->glyphcnt || fv->show->glyphs[feat_gid]==NULL) &&
-		    fv->b.sf->glyphs[feat_gid]!=NULL )
-		BDFPieceMeal(fv->show,feat_gid);
-
-	    if ( fv->show!=NULL && feat_gid!=-1 &&
-		    feat_gid < fv->show->glyphcnt &&
-		    fv->show->glyphs[feat_gid]==NULL &&
-		    SCWorthOutputting(fv->b.sf->glyphs[feat_gid]) ) {
-		/* If we have an outline but no bitmap for this slot */
-		box.x = j*fv->cbw+1; box.width = fv->cbw-2;
-		box.y = i*fv->cbh+fv->lab_height+2; box.height = box.width+1;
-		GDrawDrawRect(pixmap,&box,0xff0000);
-		++box.x; ++box.y; box.width -= 2; box.height -= 2;
-		GDrawDrawRect(pixmap,&box,0xff0000);
-/* When reencoding a font we can find times where index>=show->charcnt */
-	    } else if ( fv->show!=NULL && feat_gid<fv->show->glyphcnt && feat_gid!=-1 &&
-		    fv->show->glyphs[feat_gid]!=NULL ) {
-		bdfc = fv->show->glyphs[feat_gid];
-		base.data = bdfc->bitmap;
-		base.bytes_per_line = bdfc->bytes_per_line;
-		base.width = bdfc->xmax-bdfc->xmin+1;
-		base.height = bdfc->ymax-bdfc->ymin+1;
-		box.x = j*fv->cbw; box.width = fv->cbw;
-		box.y = i*fv->cbh+fv->lab_height+1; box.height = box.width+1;
-		GDrawPushClip(pixmap,&box,&old2);
-		if ( !fv->b.sf->onlybitmaps && fv->show!=fv->filled &&
-			sc->layers[fv->b.active_layer].splines==NULL && sc->layers[fv->b.active_layer].refs==NULL &&
-			!sc->widthset &&
-			!(bdfc->xmax<=0 && bdfc->xmin==0 && bdfc->ymax<=0 && bdfc->ymax==0) ) {
-		    /* If we have a bitmap but no outline character... */
-		    GRect b;
-		    b.x = box.x+1; b.y = box.y+1; b.width = box.width-2; b.height = box.height-2;
-		    GDrawDrawRect(pixmap,&b,0x008000);
-		    ++b.x; ++b.y; b.width -= 2; b.height -= 2;
-		    GDrawDrawRect(pixmap,&b,0x008000);
-		}
-		/* I assume that the bitmap image matches the bounding*/
-		/*  box. In some bitmap fonts the bitmap has white space on the*/
-		/*  right. This can throw off the centering algorithem */
-		if ( fv->magnify>1 ) {
-		    GDrawDrawImageMagnified(pixmap,&gi,NULL,
-			    j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
-			    i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
-			    fv->magnify*base.width,fv->magnify*base.height);
-		} else
-		    GDrawDrawImage(pixmap,&gi,NULL,
-			    j*fv->cbw+(fv->cbw-1-base.width)/2,
-			    i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
-		if ( fv->showhmetrics ) {
-		    int x1, x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify;
-		    /* Draw advance width & horizontal origin */
-		    if ( fv->showhmetrics&fvm_origin )
-			GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+yorg-3,x0,
-				i*fv->cbh+fv->lab_height+yorg+2,METRICS_ORIGIN);
-		    x1 = x0 + fv->magnify*bdfc->width;
-		    if ( fv->showhmetrics&fvm_advanceat )
-			GDrawDrawLine(pixmap,x1,i*fv->cbh+fv->lab_height+1,x1,
-				(i+1)*fv->cbh-1,METRICS_ADVANCE);
-		    if ( fv->showhmetrics&fvm_advanceto )
-			GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
-				(i+1)*fv->cbh-2,METRICS_ADVANCE);
-		}
-		if ( fv->showvmetrics ) {
-		    int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2- bdfc->xmin*fv->magnify
-			    + fv->magnify*fv->show->pixelsize/2;
-		    int y0 = i*fv->cbh+fv->lab_height+yorg;
-		    int yvw = y0 + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
-		    if ( fv->showvmetrics&fvm_baseline )
-			GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+1,x0,
-				(i+1)*fv->cbh-1,METRICS_BASELINE);
-		    if ( fv->showvmetrics&fvm_advanceat )
-			GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
-				yvw,METRICS_ADVANCE);
-		    if ( fv->showvmetrics&fvm_advanceto )
-			GDrawDrawLine(pixmap,j*fv->cbw+2,y0,j*fv->cbw+2,
-				yvw,METRICS_ADVANCE);
-		    if ( fv->showvmetrics&fvm_origin )
-			GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,METRICS_ORIGIN);
-		}
-		GDrawPopClip(pixmap,&old2);
-	    }
-	}
-	if ( index<fv->b.map->enccount && fv->b.selected[index] ) {
-	    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-	    box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
-	    GDrawSetXORMode(pixmap);
-	    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-	    GDrawFillRect(pixmap,&box,XOR_COLOR);
-	    GDrawSetCopyMode(pixmap);
-	}
+	FVDrawGlyph(pixmap,fv,index,false);
     }
     if ( fv->showhmetrics&fvm_baseline ) {
 	for ( i=0; i<=fv->rowcnt; ++i )
@@ -6769,8 +6755,17 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
     FontViewSetTitle(fv);
 
-    if ( !fv_fs_init )
-	fv_fontsize = -GResourceFindInt("FontView.FontSize",13);
+    if ( !fv_fs_init ) {
+	static GResStruct cvcolors[] = {
+	    { "FontSize", rt_int, &fv_fontsize },
+	    { "SelectedColor", rt_color, &fvselcol },
+	    { "ChangedColor", rt_color, &fvchangedcol },
+	    { NULL }
+	};
+	GResourceFind( cvcolors, "FontView.");
+	fv_fontsize = -fv_fontsize;
+	fv_fs_init = true;
+    }
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
