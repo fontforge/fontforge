@@ -1,7 +1,7 @@
  BODY { margin: 1em 1.5em 20em 1.5em; background: #ccc; color: #000; font: 91% serif }
  BODY#menued { margin: 0 1.5em 20em 1.5em; background: #ccc; color: #000; font: 91% serif }
- BODY#sidebar { margin: 3pt 3pt 3pt 3pt; background: #eee; color: #000}
- BODY#framed { margin: .5em 1em 4em 1em; background: #eee; color: #000}
+ BODY#sidebar { margin: 3pt 3pt 3pt 3pt; background: #ccc; color: #000}
+ BODY#framed { margin: .5em 1em 4em 1em; background: #ccc; color: #000}
  A:link { color: #333; text-decoration: underline }
  A:visited { color: #333; text-decoration: underline }
  A:hover { text-decoration: none; color: #000; background-color: #eee }
