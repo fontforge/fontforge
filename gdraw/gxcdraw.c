@@ -97,8 +97,11 @@ int _GXCDraw_hasCairo(void) {
     static int initted = false, hasC=false;
     FcBool (*_FcInit)(void);
 
+    if ( !usecairo )
+return( false );
+
     if ( initted )
-return( hasC && usecairo );
+return( hasC );
 
     initted = true;
     libfontconfig = dlopen("libfontconfig" SO_EXT,RTLD_LAZY);
@@ -234,7 +237,7 @@ return( 0 );
     }
 
     hasC = true;
-return( usecairo );
+return( true );
 }
 # else
 #  define _cairo_xlib_surface_create cairo_xlib_surface_create
@@ -295,9 +298,11 @@ return( usecairo );
 
 int _GXCDraw_hasCairo(void) {
     int initted = false, hasC;
+    if ( !usecairo )
+return( false );
     if ( !initted )
 	hasC = FcInit();
-return( hasC && usecairo );
+return( hasC );
 }
 # endif
 
