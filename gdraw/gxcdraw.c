@@ -77,7 +77,7 @@ static void (*_cairo_translate)(cairo_t *,double,double);
 static cairo_format_t (*_cairo_image_surface_get_format)(cairo_surface_t *);
 static cairo_surface_t *(*_cairo_image_surface_create_for_data)(unsigned char *,cairo_format_t,int,int,int);
 static int (*_cairo_format_stride_for_width)(cairo_format_t,int);
-static int (*_cairo_font_options_create)(void);
+static cairo_font_options_t *(*_cairo_font_options_create)(void);
 static void (*_cairo_surface_mark_dirty_rectangle)(cairo_surface_t *,double,double,double,double);
 static void (*_cairo_surface_flush)(cairo_surface_t *);
 
