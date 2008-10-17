@@ -233,7 +233,7 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum,int laye
 		rsp->ttfindex = pnum++;
 	    if ( sp->next==NULL )
 	break;
-	    if ( sp->next->to == ss->first ) {
+	    if ( sp->next!=NULL && sp->next->to == ss->first ) {
 		if ( sp->nonextcp )
 		    rsp->nextcpindex = 0xffff;
 		else if ( starts_with_cp )
@@ -246,6 +246,8 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum,int laye
 		rsp->nextcpindex = 0xffff;
 	    else
 		rsp->nextcpindex = pnum++;
+	    if ( sp->next==NULL )
+	break;
 	    sp = sp->next->to;
 	    rsp = rsp->next->to;
 	}

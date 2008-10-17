@@ -2913,7 +2913,7 @@ void RefCharFindBounds(RefChar *rf) {
 }
 
 void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {
-    SplinePointList *spl, *new;
+    SplinePointList *new, *last;
     RefChar *refs;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i,j;
@@ -3002,18 +3002,18 @@ return;
 	rf->layers[0].dofill = true;
 #endif
 	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,true);
-	if ( new!=NULL ) {
-	    for ( spl = new; spl->next!=NULL; spl = spl->next );
-	    spl->next = rf->layers[0].splines;
-	    rf->layers[0].splines = new;
-	}
+	rf->layers[0].splines = new;
+	last = NULL;
+	if ( new!=NULL )
+	    for ( last = new; last->next!=NULL; last = last->next );
 	for ( refs = rf->sc->layers[layer].refs; refs!=NULL; refs = refs->next ) {
 	    new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
-	    if ( new!=NULL ) {
-		for ( spl = new; spl->next!=NULL; spl = spl->next );
-		spl->next = rf->layers[0].splines;
+	    if ( last!=NULL )
+		last->next = new;
+	    else
 		rf->layers[0].splines = new;
-	    }
+	    if ( new!=NULL )
+		for ( last = new; last->next!=NULL; last = last->next );
 	}
     }
     RefCharFindBounds(rf);
