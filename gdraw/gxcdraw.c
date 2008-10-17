@@ -1240,7 +1240,7 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
 	    srcd += base->bytes_per_line;
 	    data += stride;
 	}
-	is = _cairo_image_surface_create_for_data(data,CAIRO_FORMAT_A8,
+	is = _cairo_image_surface_create_for_data(basedata,CAIRO_FORMAT_A8,
 		src->width,src->height,stride);
 	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,1.0);
 	_cairo_mask_surface(gw->cc,is,x,y);
