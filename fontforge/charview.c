@@ -2596,7 +2596,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     char buf[300];
     extern int updateflex;
     int i;
-    int old_layer = CVLayer((CharViewBase *) cv);
+    int old_layer = CVLayer((CharViewBase *) cv), blayer;
     int was_fitted = cv->dv==NULL && cv->b.gridfit!=NULL;
 
     if ( old_layer>=sc->layer_cnt )
@@ -2623,10 +2623,11 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->b.next = sc->views;
     sc->views = &cv->b;
     cv->b.layerheads[dm_fore] = &sc->layers[ly_fore];
+    blayer = old_layer;
     if ( old_layer==ly_grid || old_layer==ly_fore ||
 	    sc->parent->multilayer || old_layer>=sc->layer_cnt )
-	old_layer = ly_back;
-    cv->b.layerheads[dm_back] = &sc->layers[old_layer];
+	blayer = ly_back;
+    cv->b.layerheads[dm_back] = &sc->layers[blayer];
     cv->b.layerheads[dm_grid] = &sc->parent->grid;
     cv->p.sp = cv->lastselpt = NULL;
     cv->p.spiro = cv->lastselcp = NULL;
