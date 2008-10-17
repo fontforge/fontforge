@@ -49,9 +49,8 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
 
-DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
-ACORNOBJS = acorn2sfd.o sfd.o sfd1.o diffstubs.o namelist.o pua.o nouiutil.o \
-	mathconstants.o ttfinstrs.o stamp.o
+DIFFOBJS = sfddiff.o stamp.o $(fontforge_LIBOBJECTS) 
+ACORNOBJS = acorn2sfd.o stamp.o $(fontforge_LIBOBJECTS) 
 
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \

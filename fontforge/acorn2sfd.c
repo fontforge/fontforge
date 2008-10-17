@@ -66,10 +66,6 @@ static int r_getint(FILE *file) {
 return( (((((getc(file)<<8)|ch3)<<8)|ch2)<<8)|ch1 );
 }
 
-void SplinePointFree(SplinePoint *sp) {
-    free(sp);
-}
-
 static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
 	"Ligh", "Heav", "Blac", "Ultr", "Nord", "Norm", "Gras", "Stan", "Halb",
 	"Fett", "Mage", "Mitt", "Buch", NULL };
@@ -862,18 +858,6 @@ return( NULL );
     else
 	fprintf( stderr, "Created: %s\n", outline.sf->filename );
 return( outline.sf );
-}
-
-extern const char *source_modtime_str;
-
-void doversion(const char *useless) {
-    extern const char *source_version_str;
-
-    fprintf( stderr, "Copyright \251 2002 by George Williams.\n Executable based on sources from %s.\n",
-	    source_modtime_str );
-
-    printf( "acorn2sfd %s\n", source_version_str );
-exit(0);
 }
 
 static void dousage(void) {
