@@ -167,6 +167,8 @@ static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 static char *pixmapdir=NULL;
 
+static int prefs_usecairo = true;
+
 static int pointless;
 
     /* These first three must match the values in macenc.c */
@@ -260,6 +262,7 @@ static struct prefs_list {
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("AutoHint"), pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, N_("AutoHint before rasterizing") },
 	{ N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
+	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 	{ NULL }
 },
   new_list[] = {
@@ -1075,6 +1078,7 @@ static void PrefsUI_LoadPrefs(void) {
     ProcessFileChooserPrefs();
     if ( pixmapdir!=NULL )
 	GGadgetSetImageDir(pixmapdir);
+    GDrawEnableCairo( prefs_usecairo );
 }
 
 static void PrefsUI_SavePrefs(int not_if_script) {
@@ -1702,6 +1706,7 @@ return( true );
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	if ( pixmapdir!=NULL )
 	    GGadgetSetImageDir(pixmapdir);
+	GDrawEnableCairo(prefs_usecairo);
     }
 return( true );
 }
