@@ -581,6 +581,10 @@ enum gcairo_flags GDrawHasCairo(GWindow w) {
 return( (w->display->funcs->hasCairo)(w));
 }
 
+void GDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
+    (w->display->funcs->queueDrawing)(w,func,data);
+}
+
 void GDrawPathStartNew(GWindow w) {
     (w->display->funcs->startNewPath)(w);
 }
