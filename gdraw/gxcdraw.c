@@ -349,6 +349,7 @@ static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
 
 #if 0
 /* As far as I can tell, XOR doesn't work */
+/* Or perhaps it is more accurate to say that I don't understand what xor does in cairo*/
     if ( mine->func!=gcs->func || mine->func!=df_copy ) {
 	_cairo_set_operator( gw->cc,mine->func==df_copy?CAIRO_OPERATOR_OVER:CAIRO_OPERATOR_XOR );
 	gcs->func = mine->func;
@@ -371,6 +372,7 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
 
 #if 0
 /* As far as I can tell, XOR doesn't work */
+/* Or perhaps it is more accurate to say that I don't understand what xor does*/
     if ( mine->func!=gcs->func || mine->func!=df_copy ) {
 	_cairo_set_operator( gw->cc, mine->func==df_copy?CAIRO_OPERATOR_OVER:CAIRO_OPERATOR_XOR);
 	gcs->func = mine->func;
@@ -1323,6 +1325,17 @@ static uint8 *data;
 static int max_size, in_use;
 static cairo_t *old_cairo;
 static cairo_surface_t *old_surface;
+/* We can't draw with XOR in cairo. We can do all the cairo processing, copy */
+/*  cairo's data to the x window, and then do the xor drawing. But if the X */
+/*  window isn't available (if we are buffering cairo) then we must save the */
+/*  XOR drawing operations until we've popped the buffering */
+static struct queued_drawing {
+    GWindow w;
+    void *data;
+    void (*func)(GWindow,void *);
+    GRect clip;
+    struct queued_drawing *next;
+} *draw_queue = NULL;
 
 void _GXCDraw_CairoBuffer(GWindow w,GRect *size) {
     int width, height;
@@ -1356,6 +1369,7 @@ return;
 
 void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size) {
     GXWindow gw = (GXWindow) w;
+    struct queued_drawing *cur, *next;
 
     if ( --in_use>0 )
 return;
@@ -1369,8 +1383,39 @@ return;
     _cairo_surface_destroy(gw->cs);
     gw->cc = old_cairo;
     gw->cs = old_surface;
+
+    for ( cur=draw_queue; cur!=NULL; cur=next ) {
+	GRect old;
+	next = cur->next;
+	GDrawPushClip(cur->w,&cur->clip,&old);
+	(cur->func)(cur->w,cur->data);
+	GDrawPopClip(cur->w,&old);
+	free(cur);
+    }
+    draw_queue = NULL;
 }
 
+enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
+    if ( in_use )
+return( gc_all );
+    else
+return( gc_all|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
+}
+
+void _GXCDraw_QueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
+    if ( !in_use )
+	func(w,data);
+    else {
+	struct queued_drawing *q;
+	q = galloc(sizeof(struct queued_drawing ));
+	q->next = draw_queue;
+	draw_queue = q;
+	q->data = data;
+	q->w = w;
+	q->func = func;
+	q->clip = w->ggc->clip;
+    }
+}
 /* ************************************************************************** */
 /* **************************** Synchronization ***************************** */
 /* ************************************************************************** */

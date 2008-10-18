@@ -2241,9 +2241,16 @@ static void GXDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
 #ifndef _NO_LIBCAIRO
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
     if ( ((GXWindow) w)->usecairo )
-return( gc_all );
+return( _GXCDraw_CairoCapabilities( (GXWindow) w));
 
-return( 0 );
+return( gc_xor );
+}
+
+static void GXDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
+    if ( ((GXWindow) w)->usecairo )
+return( _GXCDraw_QueueDrawing( w,func,data ));
+    else
+	(func)(w,data);
 }
 
 static void GXDrawPathStartNew(GWindow w) {
@@ -2310,7 +2317,11 @@ return;
 }
 #else
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
-return( 0 );
+return( gc_xor );
+}
+
+static void GXDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
+    (func)(w,data);
 }
 
 static void GXDrawPathStartNew(GWindow w) {
@@ -4580,6 +4591,7 @@ static struct displayfuncs xfuncs = {
     GXDrawFontMetrics,
 
     GXDrawHasCairo,
+    GXDrawQueueDrawing,
     GXDrawPathStartNew,
     GXDrawPathClose,
     GXDrawPathMoveTo,

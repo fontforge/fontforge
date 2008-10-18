@@ -950,7 +950,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0);
 	    }
 	}
-	if ( GDrawHasCairo(pixmap) ) {
+	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2;
 	    GDrawPathStartNew(pixmap);
@@ -2021,9 +2021,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( cv->showhhints || cv->showvhints || cv->showdhints )
 	    CVShowHints(cv,pixmap);
 
-	if ( cv->backimgs==NULL && !GDrawHasCairo(cv->v))
+	if ( cv->backimgs==NULL && !(GDrawHasCairo(cv->v)&gc_buildpath))
 	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
-	if ( GDrawHasCairo(cv->v) ) {
+	if ( GDrawHasCairo(cv->v)&gc_buildpath ) {
 	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
 		if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
 			    ((cv->showfore || cvlayer==layer) && layer>ly_back)) ) ||
@@ -2186,16 +2186,26 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    (cv->showvmetrics || cv->showhmetrics))
 	CVSideBearings(pixmap,cv);
 
-    if ( cv->p.rubberbanding )
-	CVDrawRubberRect(pixmap,cv);
-    if ( cv->p.rubberlining )
-	CVDrawRubberLine(pixmap,cv);
     if ((( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_perspective ) ||
 		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
     if ( cv->apmine!=NULL )
 	DrawAPMatch(cv,pixmap,&clip);
+
+    if ( cv->p.rubberbanding || cv->p.rubberlining ) {
+	if ( GDrawHasCairo(pixmap)&gc_xor ) {
+	    if ( cv->p.rubberbanding )
+		CVDrawRubberRect(pixmap,cv);
+	    if ( cv->p.rubberlining )
+		CVDrawRubberLine(pixmap,cv);
+	} else {
+	    if ( cv->p.rubberbanding )
+		GDrawQueueDrawing(pixmap,(void (*)(GWindow,void *)) CVDrawRubberRect,cv);
+	    if ( cv->p.rubberlining )
+		GDrawQueueDrawing(pixmap,(void (*)(GWindow,void *)) CVDrawRubberLine,cv);
+	}
+    }
 
     GDrawPopClip(pixmap,&old);
 }
@@ -9562,12 +9572,12 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     if ( infofamily==NULL ) {
 	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
 	if ( infofamily==NULL )
-	    infofamily = GDrawHasCairo(cv->v)?sans:fixed;
+	    infofamily = (GDrawHasCairo(cv->v)&gc_alpha)?sans:fixed;
     }
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = infofamily;
-    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", GDrawHasCairo(cv->v)?-10:-7);
+    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", (GDrawHasCairo(cv->v)&gc_alpha)?-10:-7);
     rq.weight = 400;
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);
