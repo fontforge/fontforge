@@ -117,6 +117,11 @@ extern int hint_diagonal_ends;		/* in stemdb.c */
 extern int hint_diagonal_intersections;	/* in stemdb.c */
 extern int hint_bounding_boxes;		/* in stemdb.c */
 extern int detect_diagonal_stems;	/* in stemdb.c */
+extern int instruct_diagonal_stems;	/* in nowakowskittfinstr.c */
+extern int instruct_serif_stems;        /* in nowakowskittfinstr.c */
+extern int instruct_ball_terminals;	/* in nowakowskittfinstr.c */
+extern int interpolate_strong;	        /* in nowakowskittfinstr.c */
+extern int control_counters;	        /* in nowakowskittfinstr.c */
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 extern char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
@@ -338,6 +343,14 @@ static struct prefs_list {
 	{ N_("DetectDiagonalStems"), pr_bool, &detect_diagonal_stems, NULL, NULL, '\0', NULL, 0, N_("FontForge will generate diagonal stem hints, which then can be used by the AutoInstr command.") },
 	{ NULL }
 },
+ instrs_list[] = {
+	{ N_("InstructDiagonalStems"), pr_bool, &instruct_diagonal_stems, NULL, NULL, '\0', NULL, 0, N_("Generate instructions for diagonal stem hints.") },
+	{ N_("InstructSerifs"), pr_bool, &instruct_serif_stems, NULL, NULL, '\0', NULL, 0, N_("Try to detect serifs and other elements protruding from base stems and generate instructions for them.") },
+	{ N_("InstructBallTerminals"), pr_bool, &instruct_ball_terminals, NULL, NULL, '\0', NULL, 0, N_("Generate instructions for ball terminals.") },
+	{ N_("InterpolateStrongPoints"), pr_bool, &interpolate_strong, NULL, NULL, '\0', NULL, 0, N_("Interpolate between stem edges some important points, not affected by other instructions.") },
+	{ N_("CounterControl"), pr_bool, &control_counters, NULL, NULL, '\0', NULL, 0, N_("Make sure similar or equal counters remain the same in gridfitted outlines.\nEnabling this option may result in glyph advance widths being\ninconsistently scaled at some PPEMs.") },
+	{ NULL }
+},
  opentype_list[] = {
 	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
 	{ NULL }
@@ -426,8 +439,8 @@ static struct prefs_list {
 	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
 	{ NULL }
 },
- *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
- *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, oldnames, NULL };
+ *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, hidden_list, NULL },
+ *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, hidden_list, oldnames, NULL };
 
 struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {
     { N_("Generic"), 0, general_list},
@@ -442,6 +455,7 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { N_("Font Info"), 0, fontinfo_list},
     { N_("Generate"), 0, generate_list},
     { N_("PS Hints"), 1, hints_list},
+    { N_("TT Instrs"), 1, instrs_list},
     { N_("OpenType"), 1, opentype_list},
     { 0 }
  };
