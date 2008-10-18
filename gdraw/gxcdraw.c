@@ -1355,7 +1355,7 @@ return;
 	max_size = 4*gw->pos.width*gw->pos.height;
 	data = grealloc(data,max_size);
     }
-    mems = _cairo_image_surface_create_for_data(data,CAIRO_FORMAT_ARGB32,
+    mems = _cairo_image_surface_create_for_data(data,CAIRO_FORMAT_RGB24,
 		width, height, 4*width);
     cc = _cairo_create(mems);
     _cairo_new_path(cc);
