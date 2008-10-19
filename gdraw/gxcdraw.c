@@ -80,6 +80,10 @@ static int (*_cairo_format_stride_for_width)(cairo_format_t,int);
 static cairo_font_options_t *(*_cairo_font_options_create)(void);
 static void (*_cairo_surface_mark_dirty_rectangle)(cairo_surface_t *,double,double,double,double);
 static void (*_cairo_surface_flush)(cairo_surface_t *);
+static cairo_pattern_t *(*_cairo_pattern_create_for_surface)(cairo_surface_t *);
+static void (*_cairo_pattern_set_extend)(cairo_pattern_t *,cairo_extend_t);
+static void (*_cairo_pattern_destroy)(cairo_pattern_t *);
+static void (*_cairo_set_source)(cairo_t *, cairo_pattern_t *);
 
 static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
 static FcPattern *(*_FcPatternCreate)(void);
@@ -222,6 +226,14 @@ return( 0 );
 	    dlsym(libcairo,"cairo_surface_flush");
     _cairo_surface_mark_dirty_rectangle = (void (*)(cairo_surface_t *,double,double,double,double))
 	    dlsym(libcairo,"cairo_surface_mark_dirty_rectangle");
+    _cairo_pattern_create_for_surface = (cairo_pattern_t *(*)(cairo_surface_t *))
+	    dlsym(libcairo,"cairo_pattern_create_for_surface");
+    _cairo_pattern_destroy = (void (*)(cairo_pattern_t *))
+	    dlsym(libcairo,"cairo_pattern_destroy");
+    _cairo_pattern_set_extend = (void (*)(cairo_pattern_t *,cairo_extend_t))
+	    dlsym(libcairo,"cairo_pattern_set_extend");
+    _cairo_set_source = (void (*)(cairo_t *, cairo_pattern_t *))
+	    dlsym(libcairo,"cairo_set_source");
 
 /* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
     if ( _cairo_format_stride_for_width==NULL )
@@ -283,6 +295,10 @@ return( true );
 #  define _cairo_font_options_create cairo_font_options_create
 #  define _cairo_surface_flush cairo_surface_flush
 #  define _cairo_surface_mark_dirty_rectangle cairo_surface_mark_dirty_rectangle
+#  define _cairo_pattern_create_for_surface cairo_pattern_create_for_surface
+#  define _cairo_pattern_set_extend cairo_pattern_set_extend
+#  define _cairo_pattern_destroy cairo_pattern_destroy
+#  define _cairo_set_source cairo_set_source
 
 #  define _FcCharSetHasChar    FcCharSetHasChar     
 #  define _FcPatternDestroy    FcPatternDestroy   
@@ -343,10 +359,54 @@ void _GXCDraw_DestroyWindow(GXWindow gw) {
 /* ************************************************************************** */
 /* ******************************* Cairo State ****************************** */
 /* ************************************************************************** */
+static void GXCDraw_StippleMePink(GXWindow gw,int ts, Color fg) {
+    static unsigned char grey_init[8] = { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa };
+    static unsigned char fence_init[8] = { 0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
+    uint8 *spt;
+    int bit,i,j;
+    uint32 *data;
+    static uint32 space[8*8];
+    static cairo_surface_t *is = NULL;
+    static cairo_pattern_t *pat = NULL;
+
+    if ( (fg>>24)!=0xff ) {
+	int alpha = fg>>24, r = COLOR_RED(fg), g=COLOR_GREEN(fg), b=COLOR_BLUE(fg);
+	r = (alpha*r+128)/255; g = (alpha*g+128)/255; b=(alpha*b+128)/255;
+	fg = (alpha<<24) | (r<<16) | (g<<8) | b;
+    }
+
+    spt = ts==2 ? fence_init : grey_init;
+    for ( i=0; i<8; ++i ) {
+	data = space+8*i;
+	for ( j=0, bit=0x80; bit!=0; ++j, bit>>=1 ) {
+	    if ( spt[i]&bit )
+		data[j] = fg;
+	    else
+		data[j] = 0;
+	}
+    }
+    if ( is==NULL ) {
+	is = _cairo_image_surface_create_for_data((uint8 *) space,CAIRO_FORMAT_ARGB32,
+		8,8,8*4);
+	pat = _cairo_pattern_create_for_surface(is);
+	_cairo_pattern_set_extend(pat,CAIRO_EXTEND_REPEAT);
+    }
+    _cairo_set_source(gw->cc,pat);
+}
+
 static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
     /*GCState *gcs = &gw->cairo_state;*/
     Color fg = mine->fg;
 
+    if ( (fg>>24 ) == 0 )
+	fg |= 0xff000000;
+
+    if ( mine->ts != 0 ) {
+	GXCDraw_StippleMePink(gw,mine->ts,fg);
+    } else {
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+		(fg>>24)/255.);
+    }
 #if 0
 /* As far as I can tell, XOR doesn't work */
 /* Or perhaps it is more accurate to say that I don't understand what xor does in cairo*/
@@ -357,18 +417,15 @@ static int GXCDrawSetcolfunc(GXWindow gw, GGC *mine) {
     if ( mine->func==df_xor )
 	fg ^= mine->xor_base;
 #endif
-    if ( (fg>>24)==0 )
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
-		1.0);
-    else
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
-		(fg>>24)/255.);
 return( true );
 }
 
 static int GXCDrawSetline(GXWindow gw, GGC *mine) {
     GCState *gcs = &gw->cairo_state;
     Color fg = mine->fg;
+
+    if ( ( fg>>24 ) == 0 )
+	fg |= 0xff000000;
 
 #if 0
 /* As far as I can tell, XOR doesn't work */
@@ -380,12 +437,6 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
     if ( mine->func==df_xor )
 	fg ^= mine->xor_base;
 #endif
-    if ( (fg>>24)==0 )
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
-		1.0);
-    else
-	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
-		(fg>>24)/255.0);
     if ( mine->line_width<=0 ) mine->line_width = 1;
     if ( mine->line_width!=gcs->line_width || mine->line_width!=2 ) {
 	_cairo_set_line_width(gw->cc,mine->line_width);
@@ -401,6 +452,13 @@ static int GXCDrawSetline(GXWindow gw, GGC *mine) {
 	gcs->skip_len = mine->skip_len;
     }
     /* I don't use line join/cap. On a screen with small line_width they are irrelevant */
+
+    if ( mine->ts != 0 ) {
+	GXCDraw_StippleMePink(gw,mine->ts,fg);
+    } else {
+	_cairo_set_source_rgba(gw->cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+		    (fg>>24)/255.0);
+    }
 return( mine->line_width );
 }
 
