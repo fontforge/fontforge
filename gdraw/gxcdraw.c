@@ -84,6 +84,10 @@ static cairo_pattern_t *(*_cairo_pattern_create_for_surface)(cairo_surface_t *);
 static void (*_cairo_pattern_set_extend)(cairo_pattern_t *,cairo_extend_t);
 static void (*_cairo_pattern_destroy)(cairo_pattern_t *);
 static void (*_cairo_set_source)(cairo_t *, cairo_pattern_t *);
+static void (*_cairo_push_group)(cairo_t *);
+static void (*_cairo_pop_group_to_source)(cairo_t *);
+static cairo_surface_t *(*_cairo_get_group_target)(cairo_t *);
+static void (*_cairo_paint)(cairo_t *);
 
 static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
 static FcPattern *(*_FcPatternCreate)(void);
@@ -234,6 +238,14 @@ return( 0 );
 	    dlsym(libcairo,"cairo_pattern_set_extend");
     _cairo_set_source = (void (*)(cairo_t *, cairo_pattern_t *))
 	    dlsym(libcairo,"cairo_set_source");
+    _cairo_push_group = (void (*)(cairo_t *))
+	    dlsym(libcairo,"cairo_push_group");
+    _cairo_pop_group_to_source = (void (*)(cairo_t *))
+	    dlsym(libcairo,"cairo_pop_group_to_source");
+    _cairo_get_group_target = (cairo_surface_t *(*)(cairo_t *))
+	    dlsym(libcairo,"cairo_get_group_target");
+    _cairo_paint = (void (*)(cairo_t *))
+	    dlsym(libcairo,"cairo_paint");
 
 /* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
     if ( _cairo_format_stride_for_width==NULL )
@@ -299,6 +311,10 @@ return( true );
 #  define _cairo_pattern_set_extend cairo_pattern_set_extend
 #  define _cairo_pattern_destroy cairo_pattern_destroy
 #  define _cairo_set_source cairo_set_source
+#  define _cairo_push_group cairo_push_group
+#  define _cairo_pop_group_to_source cairo_pop_group_to_source
+#  define _cairo_get_group_target cairo_get_group_target
+#  define _cairo_paint cairo_paint
 
 #  define _FcCharSetHasChar    FcCharSetHasChar     
 #  define _FcPatternDestroy    FcPatternDestroy   
@@ -1378,11 +1394,13 @@ return;
 /* ************************************************************************** */
 /* **************************** Memory Buffering **************************** */
 /* ************************************************************************** */
+#if 1
 /* Sort of like a pixmap, except in cairo terms */
 static uint8 *data;
 static int max_size, in_use;
 static cairo_t *old_cairo;
 static cairo_surface_t *old_surface;
+#endif
 /* We can't draw with XOR in cairo. We can do all the cairo processing, copy */
 /*  cairo's data to the x window, and then do the xor drawing. But if the X */
 /*  window isn't available (if we are buffering cairo) then we must save the */
@@ -1396,8 +1414,11 @@ static struct queued_drawing {
 } *draw_queue = NULL;
 
 void _GXCDraw_CairoBuffer(GWindow w,GRect *size) {
-    int width, height;
     GXWindow gw = (GXWindow) w;
+#if 0
+    _cairo_push_group(gw->cc);
+#else
+    int width, height;
     cairo_surface_t *mems;
     cairo_t *cc;
 
@@ -1423,11 +1444,16 @@ return;
     _cairo_fill(cc);
     old_cairo = gw->cc; old_surface = gw->cs;
     gw->cc = cc; gw->cs = mems;
+#endif
 }
 
 void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size) {
     GXWindow gw = (GXWindow) w;
     struct queued_drawing *cur, *next;
+#if 0
+    _cairo_pop_group_to_source(gw->cc);
+    _cairo_paint(gw->cc);
+#else
 
     if ( --in_use>0 )
 return;
@@ -1441,6 +1467,7 @@ return;
     _cairo_surface_destroy(gw->cs);
     gw->cc = old_cairo;
     gw->cs = old_surface;
+#endif
 
     for ( cur=draw_queue; cur!=NULL; cur=next ) {
 	GRect old;
@@ -1454,14 +1481,23 @@ return;
 }
 
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
+#if 0
+    if ( _cairo_get_group_target(gw->cc)!=gw->cs )
+#else
     if ( in_use )
+#endif
 return( gc_all );
     else
 return( gc_all|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
 }
 
 void _GXCDraw_QueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
+#if 0
+    GXWindow gw = (GXWindow) w;
+    if ( _cairo_get_group_target(gw->cc)==gw->cs )
+#else
     if ( !in_use )
+#endif
 	func(w,data);
     else {
 	struct queued_drawing *q;
