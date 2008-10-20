@@ -378,10 +378,14 @@ static void GRadioInit() {
     _GGadgetInitDefaultBox("GRadioOff.",&radio_off_box,NULL);
     _GGadgetInitDefaultBox("GCheckBoxOn.",&checkbox_on_box,NULL);
     _GGadgetInitDefaultBox("GCheckBoxOff.",&checkbox_off_box,NULL);
-    if ( radio_on_box.depressed_background == radio_off_box.depressed_background )
+    if ( radio_on_box.depressed_background == radio_off_box.depressed_background ) {
 	radio_on_box.depressed_background = radio_on_box.active_border;
-    if ( checkbox_on_box.depressed_background == checkbox_off_box.depressed_background )
-	checkbox_on_box.depressed_background = radio_on_box.active_border;
+	radio_off_box.depressed_background = radio_off_box.main_background;
+    }
+    if ( checkbox_on_box.depressed_background == checkbox_off_box.depressed_background ) {
+	checkbox_on_box.depressed_background = checkbox_on_box.active_border;
+	checkbox_off_box.depressed_background = checkbox_off_box.main_background;
+    }
     radon = GResourceFindImage("GRadioOn.Image",NULL);
     radoff = GResourceFindImage("GRadioOff.Image",NULL);
     checkon = GResourceFindImage("GCheckBoxOn.Image",NULL);
