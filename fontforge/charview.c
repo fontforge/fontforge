@@ -4190,7 +4190,7 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,re
     }
     for ( upt=ubuf; *upt; ++upt ) {
 	GDrawDrawText(pixmap,x,y,upt,1,NULL,GDrawGetDefaultForeground(NULL));
-	y += cv->sfh;
+	y += cv->sdh;
     }
 }
 
@@ -9492,6 +9492,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',  '\0' };
     static unichar_t *infofamily=NULL;
+    GTextBounds textbounds;
     /* extern int cv_auto_goto; */
 
     if ( !cvcolsinited )
@@ -9582,6 +9583,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);
     cv->sfh = as+ds; cv->sas = as;
+    GDrawSetFont(cv->gw,cv->small);
+    GDrawGetText8Bounds(cv->gw,"0123456789",10,NULL,&textbounds);
+    cv->sdh = textbounds.as+textbounds.ds+1;
     rq.point_size = 10;
     cv->normal = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->normal,&as,&ds,&ld);
