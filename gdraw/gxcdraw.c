@@ -617,6 +617,14 @@ void _GXCDraw_FillPoly(GXWindow gw, GPoint *pts, int16 cnt) {
 	_cairo_line_to(gw->cc,pts[i].x,pts[i].y);
     _cairo_close_path(gw->cc);
     _cairo_fill(gw->cc);
+
+    _cairo_set_line_width(gw->cc,1);
+    _cairo_new_path(gw->cc);
+    _cairo_move_to(gw->cc,pts[0].x+.5,pts[0].y+.5);
+    for ( i=1; i<cnt; ++i )
+	_cairo_line_to(gw->cc,pts[i].x+.5,pts[i].y+.5);
+    _cairo_close_path(gw->cc);
+    _cairo_stroke(gw->cc);
 }
 
 /* ************************************************************************** */
