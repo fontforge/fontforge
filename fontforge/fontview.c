@@ -5808,7 +5808,7 @@ return;
     }
     if ( uni!=-1 && uni<0x110000 && _UnicodeNameAnnot!=NULL &&
 	    _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name!=NULL ) {
-	uc_strncat(ubuffer, _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name, 80);
+	utf82u_strncpy(ubuffer+u_strlen(ubuffer), _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name, 80);
     } else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
 	sprintf( buffer, "Hangul Syllable %s%s%s",
 		chosung[(uni-0xAC00)/(21*28)],
@@ -6015,11 +6015,11 @@ static void FVChar(FontView *fv,GEvent *event) {
     }
 }
 
-static void uc_annot_strncat(unichar_t *to, const char *from, int len) {
+static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
     register unichar_t ch;
 
     to += u_strlen(to);
-    while ( (ch = *(unsigned char *) from++) != '\0' && --len>=0 ) {
+    while ( (ch = utf8_ildb(&from)) != '\0' && --len>=0 ) {
 	if ( from[-2]=='\t' ) {
 	    if ( ch=='*' ) ch = 0x2022;
 	    else if ( ch=='x' ) ch = 0x2192;
@@ -6118,7 +6118,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {
 	    uc_strcat(space,"\n");
-	    uc_annot_strncat(space,_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot,left-2);
+	    utf82u_annot_strncat(space,_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot,left-2);
 	}
     }
     if ( sc->comment!=NULL ) {
