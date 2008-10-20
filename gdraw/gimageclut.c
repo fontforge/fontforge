@@ -1001,11 +1001,6 @@ return( predefn[i].name );
 
 return(NULL);
 }
-#if 0
-Color _GImage_HSB_2_RGB(double h, double s, double b) {
-return(0);
-}
-#endif
 
 Color GDrawColorBrighten(Color col, int by) {
     int r, g, b;

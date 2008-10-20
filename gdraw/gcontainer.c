@@ -260,7 +260,7 @@ return(true);
     if ( event->type == et_expose ) {
 	GRect old;
 
-	if ( GDrawHasCairo(gw) ) {	/* Cairo does things differently */
+	if ( GDrawHasCairo(gw)&gc_alpha ) {	/* Cairo does things differently */
 	    GDrawCairoBuffer(gw,&event->u.expose.rect);
 	    pixmap = gw;
 	} else {
@@ -279,7 +279,7 @@ return(true);
 		    gadget->r.y+gadget->r.height<event->u.expose.rect.y ) &&
 		    gadget->state!=gs_invisible )
 		(gadget->funcs->handle_expose)(pixmap,gadget,event);
-	if ( GDrawHasCairo(gw) ) {
+	if ( GDrawHasCairo(gw)&gc_alpha ) {
 	    GDrawCairoUnbuffer(gw,&event->u.expose.rect);
 	}else {
 	    GDrawPopClip(pixmap,&old);
