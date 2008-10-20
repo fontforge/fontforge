@@ -168,7 +168,7 @@ typedef struct charview {
     int width, height;
     int xoff, yoff;
     int mbh, infoh, rulerh;
-    int16 sas, sfh, nas, nfh;
+    int16 sas, sfh, sdh, nas, nfh;
     BasePoint info;
     SplinePoint *info_sp;
     Spline *info_spline;
