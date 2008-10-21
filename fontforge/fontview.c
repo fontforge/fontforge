@@ -249,8 +249,6 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		base.image_type = it_index;
 		base.clut = fv->show->clut;
 		GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
-		base.trans = -1;
-		/*base.clut->trans_index = 0;*/
 	    } else {
 		memset(&clut,'\0',sizeof(clut));
 		gi.u.image = &base;
@@ -259,6 +257,8 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		clut.clut_len = 2;
 		clut.clut[0] = GDrawGetDefaultBackground(NULL);
 	    }
+	    base.trans = 0;
+	    base.clut->trans_index = 0;
 
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
@@ -286,8 +286,12 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
-	    } else
+	    } else if ( GDrawHasCairo(pixmap)&gc_alpha )
 		GDrawDrawGlyph(pixmap,&gi,NULL,
+			j*fv->cbw+(fv->cbw-1-base.width)/2,
+			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
+	    else
+		GDrawDrawImage(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
 	    if ( fv->showhmetrics ) {
