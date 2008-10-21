@@ -9490,7 +9490,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     int as, ds, ld;
     extern int updateflex;
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
-    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',  '\0' };
+    static unichar_t sans[] = { 's','a','n','s',  '\0' };
     static unichar_t *infofamily=NULL;
     GTextBounds textbounds;
     /* extern int cv_auto_goto; */
