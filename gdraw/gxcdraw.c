@@ -1402,13 +1402,6 @@ return;
 /* ************************************************************************** */
 /* **************************** Memory Buffering **************************** */
 /* ************************************************************************** */
-#if 1
-/* Sort of like a pixmap, except in cairo terms */
-static uint8 *data;
-static int max_size, in_use;
-static cairo_t *old_cairo;
-static cairo_surface_t *old_surface;
-#endif
 /* We can't draw with XOR in cairo. We can do all the cairo processing, copy */
 /*  cairo's data to the x window, and then do the xor drawing. But if the X */
 /*  window isn't available (if we are buffering cairo) then we must save the */
@@ -1423,59 +1416,21 @@ static struct queued_drawing {
 
 void _GXCDraw_CairoBuffer(GWindow w,GRect *size) {
     GXWindow gw = (GXWindow) w;
-#if 0
+
     _cairo_push_group(gw->cc);
-#else
-    int width, height;
-    cairo_surface_t *mems;
-    cairo_t *cc;
-
-    if ( ++in_use>1 )
-return;
-
-    width = size->x + size->width; height = size->y+size->height;
-    if ( 4*width*height > max_size ) {
-	if ( gw->pos.width<width )
-	    width = gw->pos.width;
-	if ( gw->pos.height<height )
-	    height = gw->pos.height;
-	max_size = 4*gw->pos.width*gw->pos.height;
-	data = grealloc(data,max_size);
-    }
-    mems = _cairo_image_surface_create_for_data(data,CAIRO_FORMAT_RGB24,
-		width, height, 4*width);
-    cc = _cairo_create(mems);
-    _cairo_new_path(cc);
-    _cairo_rectangle(cc,size->x,size->y,size->width,size->height);
-    _cairo_set_source_rgba(cc,COLOR_RED(gw->bg)/255.0,COLOR_GREEN(gw->bg)/255.0,COLOR_BLUE(gw->bg)/255.0,
+    _cairo_new_path(gw->cc);
+    _cairo_rectangle(gw->cc,size->x,size->y,size->width,size->height);
+    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->bg)/255.0,COLOR_GREEN(gw->bg)/255.0,COLOR_BLUE(gw->bg)/255.0,
 	    1.0);
-    _cairo_fill(cc);
-    old_cairo = gw->cc; old_surface = gw->cs;
-    gw->cc = cc; gw->cs = mems;
-#endif
+    _cairo_fill(gw->cc);
 }
 
 void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size) {
     GXWindow gw = (GXWindow) w;
     struct queued_drawing *cur, *next;
-#if 0
+
     _cairo_pop_group_to_source(gw->cc);
     _cairo_paint(gw->cc);
-#else
-
-    if ( --in_use>0 )
-return;
-
-    _cairo_set_source_surface(old_cairo,gw->cs,0,0);
-    _cairo_rectangle(old_cairo,size->x,size->y,size->width,size->height);
-    _cairo_fill(old_cairo);
-    _cairo_set_source_rgba(old_cairo,0,0,0,0);
-
-    _cairo_destroy(gw->cc);
-    _cairo_surface_destroy(gw->cs);
-    gw->cc = old_cairo;
-    gw->cs = old_surface;
-#endif
 
     for ( cur=draw_queue; cur!=NULL; cur=next ) {
 	GRect old;
@@ -1489,23 +1444,17 @@ return;
 }
 
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
-#if 0
+
     if ( _cairo_get_group_target(gw->cc)!=gw->cs )
-#else
-    if ( in_use )
-#endif
 return( gc_all );
     else
 return( gc_all|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
 }
 
 void _GXCDraw_QueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
-#if 0
     GXWindow gw = (GXWindow) w;
+
     if ( _cairo_get_group_target(gw->cc)==gw->cs )
-#else
-    if ( !in_use )
-#endif
 	func(w,data);
     else {
 	struct queued_drawing *q;
