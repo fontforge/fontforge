@@ -1352,14 +1352,15 @@ void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
     cairo_surface_t *is;
     uint8 *data;
     GRect full;
+    double xscale = ((double) width)/base->width, yscale = ((double) height)/base->height;
 
-    full.x = full.y = 0;
-    full.width = base->width; full.height = base->height;
+    full.x = magsrc->x/xscale; full.y = magsrc->y/yscale;
+    full.width = magsrc->width/xscale; full.height = magsrc->height/yscale;
     is = GImage2Surface(image,&full,&data);
 
     _cairo_save(gw->cc);
-    _cairo_translate(gw->cc,x,y);
-    _cairo_scale(gw->cc,((double) width)/base->width,((double) height)/base->height);
+    _cairo_translate(gw->cc,x+magsrc->x,y+magsrc->y);
+    _cairo_scale(gw->cc,xscale,yscale);
 
     if ( _cairo_image_surface_get_format(is)==CAIRO_FORMAT_A1 ) {
 	/* No color info, just alpha channel */
