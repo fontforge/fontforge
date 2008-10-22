@@ -391,6 +391,7 @@ static struct prefs_list {
 	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowFilled", pr_int, &CVShows.showfilled, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowTabs", pr_int, &CVShows.showtabs, NULL, NULL, '\0', NULL, 1 },
+ 	{ "SnapOutlines", pr_int, &CVShows.snapoutlines, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowAlmostHVLines", pr_bool, &CVShows.showalmosthvlines, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowAlmostHVCurves", pr_bool, &CVShows.showalmosthvcurves, NULL, NULL, '\0', NULL, 1 },
 	{ "AlmostHVBound", pr_real, &CVShows.hvoffset, NULL, NULL, '\0', NULL, 1 },
