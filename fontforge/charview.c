@@ -83,7 +83,7 @@ static Color selectedpointcol = 0xc8c800;
 static int selectedpointwidth = 2;
 static Color extremepointcol = 0xc00080;
 static Color pointofinflectioncol = 0x008080;
-static Color almosthvcol = 0x00ff00;
+static Color almosthvcol = 0x00ff80;
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xcc00cc;
 static Color selectedcpcol = 0xffffff;
@@ -888,14 +888,14 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
 		y2 = y1 = -cv->yoff + cv->height - rint(s->from->me.y*cv->scale);
 		if ( dx<cv->hvoffset ) {
 		    if ( s->from->me.y<s->from->nextcp.y )
-			y2 += 10;
+			y2 += 15;
 		    else
-			y2 -= 10;
+			y2 -= 15;
 		} else {
 		    if ( s->from->me.x<s->from->nextcp.x )
-			x2 += 10;
+			x2 += 15;
 		    else
-			x2 -= 10;
+			x2 -= 15;
 		}
 		GDrawDrawLine(pixmap,x1,y1,x2,y2,almosthvcol);
 	    }
@@ -911,14 +911,14 @@ static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
 		y2 = y1 = -cv->yoff + cv->height - rint(s->to->me.y*cv->scale);
 		if ( dx<cv->hvoffset ) {
 		    if ( s->to->me.y<s->to->prevcp.y )
-			y2 += 10;
+			y2 += 15;
 		    else
-			y2 -= 10;
+			y2 -= 15;
 		} else {
 		    if ( s->to->me.x<s->to->prevcp.x )
-			x2 += 10;
+			x2 += 15;
 		    else
-			x2 -= 10;
+			x2 -= 15;
 		}
 		GDrawDrawLine(pixmap,x1,y1,x2,y2,almosthvcol);
 	    }
