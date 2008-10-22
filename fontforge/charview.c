@@ -73,6 +73,7 @@ struct cvshows CVShows = {
 	1,		/* show tabs containing names of former glyphs */
 	1,		/* show side bearings */
 	1,		/* show the names of references */
+ 	1,		/* snap outlines to pixel grid */
 	0,		/* show lines which are almost, but not exactly horizontal or vertical */
 	0,		/* show curves which are almost, but not exactly horizontal or vertical at the end-points */
 	3		/* number of em-units a coord difference must be less than to qualify for almost hv */
@@ -126,6 +127,13 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 
 static int cvcolsinited = false;
+
+/* floor(pt) would _not_ be more correct, as we want
+ * shapes not to cross axes multiple times while scaling.
+ */
+static double rpt(CharView *cv, double pt) {
+    return cv->snapoutlines ? rint(pt) : pt;
+}
 
 static void CVColInit( void ) {
     static GResStruct cvcolors[] = {
@@ -1036,12 +1044,12 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
 	    GDrawPathStartNew(pixmap);
-	    x =  cv->xoff + rint(spl->first->me.x*cv->scale);
-	    y = -cv->yoff + cv->height - rint(spl->first->me.y*cv->scale);
+	    x = rpt(cv,  cv->xoff + spl->first->me.x*cv->scale);
+	    y = rpt(cv, -cv->yoff + cv->height - spl->first->me.y*cv->scale);
 	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
 	    for ( spline=spl->first->next, first=NULL; spline!=first && spline!=NULL; spline=spline->to->next ) {
-		x =  cv->xoff + rint(spline->to->me.x*cv->scale);
-		y = -cv->yoff + cv->height - rint(spline->to->me.y*cv->scale);
+		x = rpt(cv,  cv->xoff + spline->to->me.x*cv->scale);
+		y = rpt(cv, -cv->yoff + cv->height - spline->to->me.y*cv->scale);
 		if ( spline->knownlinear )
 		    GDrawPathLineTo(pixmap,x+.5,y+.5);
 		else if ( spline->order2 ) {
@@ -1051,21 +1059,21 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 		    cy1 = spline->from->me.y + spline->splines[1].c/3;
 		    cx2 = cx1 + (spline->splines[0].b+spline->splines[0].c)/3;
 		    cy2 = cy1 + (spline->splines[1].b+spline->splines[1].c)/3;
-		    cx1 =  cv->xoff + cx1*cv->scale + dx;
+		    cx1 = cv->xoff + cx1*cv->scale + dx;
 		    cy1 = -cv->yoff + cv->height - cy1*cv->scale - dy;
 		    dx = rint(spline->to->me.x*cv->scale) - spline->to->me.x*cv->scale;
 		    dy = rint(spline->to->me.y*cv->scale) - spline->to->me.y*cv->scale;
-		    cx2 =  cv->xoff + cx2*cv->scale + dx;
+		    cx2 = cv->xoff + cx2*cv->scale + dx;
 		    cy2 = -cv->yoff + cv->height - cy2*cv->scale - dy;
 		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
 		} else {
 		    dx = rint(spline->from->me.x*cv->scale) - spline->from->me.x*cv->scale;
 		    dy = rint(spline->from->me.y*cv->scale) - spline->from->me.y*cv->scale;
-		    cx1 =  cv->xoff + spline->from->nextcp.x*cv->scale + dx;
+		    cx1 = cv->xoff + spline->from->nextcp.x*cv->scale + dx;
 		    cy1 = -cv->yoff + cv->height - spline->from->nextcp.y*cv->scale - dy;
 		    dx = rint(spline->to->me.x*cv->scale) - spline->to->me.x*cv->scale;
 		    dy = rint(spline->to->me.y*cv->scale) - spline->to->me.y*cv->scale;
-		    cx2 =  cv->xoff + spline->to->prevcp.x*cv->scale + dx;
+		    cx2 = cv->xoff + spline->to->prevcp.x*cv->scale + dx;
 		    cy2 = -cv->yoff + cv->height - spline->to->prevcp.y*cv->scale - dy;
 		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
 		}
@@ -4855,6 +4863,7 @@ return( true );
 #define MID_ShowAlmostHV	2046
 #define MID_ShowAlmostHVCurves	2047
 #define MID_DefineAlmost	2048
+#define MID_SnapOutlines	2049
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5383,6 +5392,14 @@ static void CVMenuShowRefNames(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     CVShows.showrefnames = cv->showrefnames = !cv->showrefnames;
+    SavePrefs(true);
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuSnapOutlines(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.snapoutlines = cv->snapoutlines = !cv->snapoutlines;
     SavePrefs(true);
     GDrawRequestExpose(cv->v,NULL,false);
 }
@@ -9421,6 +9438,8 @@ static GMenuItem2 swlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Hori_zontal Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Hori_zontal Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowHMetrics },
     { { (unichar_t *) N_("Vertical _Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Vertical Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowVMetrics },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, }},
+    { { (unichar_t *) N_("Snap Outlines to Pi_xel Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Snap Outlines to Pixel Grid|No Shortcut"), NULL, NULL, CVMenuSnapOutlines, MID_SnapOutlines },
     NULL
 };
     
@@ -9675,6 +9694,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->markextrema = CVShows.markextrema;
     cv->showsidebearings = CVShows.showsidebearings;
     cv->showrefnames = CVShows.showrefnames;
+    cv->snapoutlines = CVShows.snapoutlines;
     cv->markpoi = CVShows.markpoi;
     cv->showalmosthvlines = CVShows.showalmosthvlines;
     cv->showalmosthvcurves = CVShows.showalmosthvcurves;

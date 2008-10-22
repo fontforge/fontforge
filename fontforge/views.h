@@ -50,6 +50,7 @@ extern struct cvshows {
     int showtabs;		/* with the names of former glyphs */
     int showsidebearings;
     int showrefnames;
+    int snapoutlines;
     int showalmosthvlines;
     int showalmosthvcurves;
     int hvoffset;
@@ -156,6 +157,7 @@ typedef struct charview {
     unsigned int ruler_pressed: 1;
     unsigned int ruler_pressedv: 1;
     unsigned int showrefnames: 1;
+    unsigned int snapoutlines: 1;
     unsigned int showalmosthvlines: 1;
     unsigned int showalmosthvcurves: 1;
     int hvoffset;		/* for showalmosthvlines */
