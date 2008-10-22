@@ -72,7 +72,10 @@ struct cvshows CVShows = {
 	1,		/* show control point info when moving them */
 	1,		/* show tabs containing names of former glyphs */
 	1,		/* show side bearings */
-	1		/* show the names of references */
+	1,		/* show the names of references */
+	0,		/* show lines which are almost, but not exactly horizontal or vertical */
+	0,		/* show curves which are almost, but not exactly horizontal or vertical at the end-points */
+	3		/* number of em-units a coord difference must be less than to qualify for almost hv */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -80,6 +83,7 @@ static Color selectedpointcol = 0xc8c800;
 static int selectedpointwidth = 2;
 static Color extremepointcol = 0xc00080;
 static Color pointofinflectioncol = 0x008080;
+static Color almosthvcol = 0x00ff00;
 Color nextcpcol = 0x007090;
 Color prevcpcol = 0xcc00cc;
 static Color selectedcpcol = 0xffffff;
@@ -131,6 +135,7 @@ static void CVColInit( void ) {
 	{ "SelectedPointWidth", rt_int, &selectedpointwidth },
 	{ "ExtremePointColor", rt_color, &extremepointcol },
 	{ "PointOfInflectionColor", rt_color, &pointofinflectioncol },
+	{ "AlmostHVColor", rt_color, &almosthvcol },
 	{ "NextCPColor", rt_color, &nextcpcol },
 	{ "PrevCPColor", rt_color, &prevcpcol },
 	{ "SelectedCPColor", rt_color, &selectedcpcol },
@@ -844,6 +849,83 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
     }
 }
 
+static void CVMarkAlmostHV(CharView *cv, GWindow pixmap,
+	SplinePointList *spl) {
+    Spline *s, *first;
+    double dx, dy;
+    int x1,x2,y1,y2;
+
+    for ( s=spl->first->next, first=NULL; s!=NULL && s!=first; s=s->to->next ) {
+	if ( first==NULL ) first = s;
+
+	if ( s->islinear ) {
+	    if ( !cv->showalmosthvlines )
+    continue;
+	    if ( (dx = s->from->me.x - s->to->me.x)<0 ) dx = -dx;
+	    if ( (dy = s->from->me.y - s->to->me.y)<0 ) dy = -dy;
+	    if ( dx<=cv->hvoffset && dy<=cv->hvoffset )
+    continue;
+	    if ( dx==0 || dy==0 )
+    continue;
+	    if ( dx<cv->hvoffset || dy<cv->hvoffset ) {
+		x1 =  cv->xoff + rint(s->from->me.x*cv->scale);
+		y1 = -cv->yoff + cv->height - rint(s->from->me.y*cv->scale);
+		x2 =  cv->xoff + rint(s->to->me.x*cv->scale);
+		y2 = -cv->yoff + cv->height - rint(s->to->me.y*cv->scale);
+		GDrawDrawLine(pixmap,x1,y1,x2,y2,almosthvcol);
+	    }
+	} else {
+	    if ( !cv->showalmosthvcurves )
+    continue;
+	    if ( (dx = s->from->me.x - s->from->nextcp.x)<0 ) dx = -dx;
+	    if ( (dy = s->from->me.y - s->from->nextcp.y)<0 ) dy = -dy;
+	    if ( dx<=cv->hvoffset && dy<=cv->hvoffset )
+		/* Ignore */;
+	    else if ( dx==0 || dy==0 )
+		/* It's right */;
+	    else if ( dx<cv->hvoffset || dy<cv->hvoffset ) {
+		x2 = x1 =  cv->xoff + rint(s->from->me.x*cv->scale);
+		y2 = y1 = -cv->yoff + cv->height - rint(s->from->me.y*cv->scale);
+		if ( dx<cv->hvoffset ) {
+		    if ( s->from->me.y<s->from->nextcp.y )
+			y2 += 10;
+		    else
+			y2 -= 10;
+		} else {
+		    if ( s->from->me.x<s->from->nextcp.x )
+			x2 += 10;
+		    else
+			x2 -= 10;
+		}
+		GDrawDrawLine(pixmap,x1,y1,x2,y2,almosthvcol);
+	    }
+
+	    if ( (dx = s->to->me.x - s->to->prevcp.x)<0 ) dx = -dx;
+	    if ( (dy = s->to->me.y - s->to->prevcp.y)<0 ) dy = -dy;
+	    if ( dx<=cv->hvoffset && dy<=cv->hvoffset )
+		/* Ignore */;
+	    else if ( dx==0 || dy==0 )
+		/* It's right */;
+	    else if ( dx<cv->hvoffset || dy<cv->hvoffset ) {
+		x2 = x1 =  cv->xoff + rint(s->to->me.x*cv->scale);
+		y2 = y1 = -cv->yoff + cv->height - rint(s->to->me.y*cv->scale);
+		if ( dx<cv->hvoffset ) {
+		    if ( s->to->me.y<s->to->prevcp.y )
+			y2 += 10;
+		    else
+			y2 -= 10;
+		} else {
+		    if ( s->to->me.x<s->to->prevcp.x )
+			x2 += 10;
+		    else
+			x2 -= 10;
+		}
+		GDrawDrawLine(pixmap,x1,y1,x2,y2,almosthvcol);
+	    }
+	}
+    }
+}
+
 static void CVDrawContourName(CharView *cv, GWindow pixmap, SplinePointList *ss,
 	Color fg ) {
     SplinePoint *sp, *topright;
@@ -1001,6 +1083,8 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	}
 	if (( cv->markextrema || cv->markpoi ) && dopoints && !cv->b.sc->inspiro )
 	    CVMarkInterestingLocations(cv,pixmap,spl);
+	if ( (cv->showalmosthvlines || cv->showalmosthvcurves ) && dopoints )
+	    CVMarkAlmostHV(cv,pixmap,spl);
     }
 }
 
@@ -4768,6 +4852,9 @@ return( true );
 #define MID_ShowHMetrics	2043
 #define MID_ShowVMetrics	2044
 #define MID_ShowRefNames	2045
+#define MID_ShowAlmostHV	2046
+#define MID_ShowAlmostHVCurves	2047
+#define MID_DefineAlmost	2048
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5225,6 +5312,46 @@ static void CVMenuMarkPointsOfInflection(GWindow gw,struct gmenuitem *mi,GEvent 
     CVShows.markpoi = cv->markpoi = !cv->markpoi;
     SavePrefs(true);
     GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuShowAlmostHV(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.showalmosthvlines = cv->showalmosthvlines = !cv->showalmosthvlines;
+    SavePrefs(true);
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuShowAlmostHVCurves(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.showalmosthvcurves = cv->showalmosthvcurves = !cv->showalmosthvcurves;
+    SavePrefs(true);
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuDefineAlmost(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    char buf[20], *end;
+    int val;
+    char *ret;
+
+    sprintf(buf,"%d",cv->hvoffset );
+
+    ret = gwwv_ask_string(_("Define \"Almost Horizontal\""),buf,
+	    _("A line is \"almost\" horizontal (or vertical)\nif the coordinates are within this many em-units"));
+    if ( ret==NULL )
+return;
+    val = strtol(ret,&end,10);
+    if ( val>100 || val<=0 || *end!='\0' ) {
+	free(ret);
+	ff_post_error(_("Bad number"),_("Bad number"));
+    } else {
+	free(ret);
+	CVShows.hvoffset = cv->hvoffset = val;
+	SavePrefs(true);
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
 }
 
 static void CVMenuShowCPInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -8531,6 +8658,15 @@ static void swlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.checked = cv->markpoi;
 	    mi->ti.disabled = cv->b.sc->inspiro && hasspiro();
 	  break;
+	  case MID_ShowAlmostHV:
+	    mi->ti.checked = cv->showalmosthvlines;
+	  break;
+	  case MID_ShowAlmostHVCurves:
+	    mi->ti.checked = cv->showalmosthvcurves;
+	  break;
+	  case MID_DefineAlmost:
+	    mi->ti.disabled = !cv->showalmosthvlines && !cv->showalmosthvcurves;
+	  break;
 	  case MID_ShowCPInfo:
 	    mi->ti.checked = cv->showcpinfo;
 	  break;
@@ -9264,6 +9400,9 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("_Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
     { { (unichar_t *) N_("_Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) N_("Points of _Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
+    { { (unichar_t *) N_("Almost Horizontal/Vertical Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Almost Horizontal/Vertical Lines|No Shortcut"), NULL, NULL, CVMenuShowAlmostHV, MID_ShowAlmostHV },
+    { { (unichar_t *) N_("Almost Horizontal/Vertical Curves"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Almost Horizontal/Vertical Curves|No Shortcut"), NULL, NULL, CVMenuShowAlmostHVCurves, MID_ShowAlmostHVCurves },
+    { { (unichar_t *) N_("(Define \"Almost\")"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("(Define \"Almost\")|No Shortcut"), NULL, NULL, CVMenuDefineAlmost, MID_DefineAlmost },
     { { (unichar_t *) N_("_Side Bearings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
     { { (unichar_t *) N_("Reference Names"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Reference Names|No Shortcut"), NULL, NULL, CVMenuShowRefNames, MID_ShowRefNames },
     { { (unichar_t *) N_("_Fill"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
@@ -9537,6 +9676,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showsidebearings = CVShows.showsidebearings;
     cv->showrefnames = CVShows.showrefnames;
     cv->markpoi = CVShows.markpoi;
+    cv->showalmosthvlines = CVShows.showalmosthvlines;
+    cv->showalmosthvcurves = CVShows.showalmosthvcurves;
+    cv->hvoffset = CVShows.hvoffset;
     cv->showblues = CVShows.showblues;
     cv->showfamilyblues = CVShows.showfamilyblues;
     cv->showanchor = CVShows.showanchor;
