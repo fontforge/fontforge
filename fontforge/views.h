@@ -50,6 +50,9 @@ extern struct cvshows {
     int showtabs;		/* with the names of former glyphs */
     int showsidebearings;
     int showrefnames;
+    int showalmosthvlines;
+    int showalmosthvcurves;
+    int hvoffset;
 } CVShows;
 
 extern struct bvshows {
@@ -153,6 +156,9 @@ typedef struct charview {
     unsigned int ruler_pressed: 1;
     unsigned int ruler_pressedv: 1;
     unsigned int showrefnames: 1;
+    unsigned int showalmosthvlines: 1;
+    unsigned int showalmosthvcurves: 1;
+    int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
     real scale;
     GWindow gw, v;
