@@ -952,31 +952,39 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	}
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
-	    double x,y, cx1, cy1, cx2, cy2;
+	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
 	    GDrawPathStartNew(pixmap);
-	    x =  cv->xoff + spl->first->me.x*cv->scale;
-	    y = -cv->yoff + cv->height - spl->first->me.y*cv->scale;
+	    x =  cv->xoff + rint(spl->first->me.x*cv->scale);
+	    y = -cv->yoff + cv->height - rint(spl->first->me.y*cv->scale);
 	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
 	    for ( spline=spl->first->next, first=NULL; spline!=first && spline!=NULL; spline=spline->to->next ) {
-		x =  cv->xoff + spline->to->me.x*cv->scale;
-		y = -cv->yoff + cv->height - spline->to->me.y*cv->scale;
+		x =  cv->xoff + rint(spline->to->me.x*cv->scale);
+		y = -cv->yoff + cv->height - rint(spline->to->me.y*cv->scale);
 		if ( spline->knownlinear )
 		    GDrawPathLineTo(pixmap,x+.5,y+.5);
 		else if ( spline->order2 ) {
+		    dx = rint(spline->from->me.x*cv->scale) - spline->from->me.x*cv->scale;
+		    dy = rint(spline->from->me.y*cv->scale) - spline->from->me.y*cv->scale;
 		    cx1 = spline->from->me.x + spline->splines[0].c/3;
 		    cy1 = spline->from->me.y + spline->splines[1].c/3;
 		    cx2 = cx1 + (spline->splines[0].b+spline->splines[0].c)/3;
 		    cy2 = cy1 + (spline->splines[1].b+spline->splines[1].c)/3;
-		    cx1 =  cv->xoff + cx1*cv->scale;
-		    cy1 = -cv->yoff + cv->height - cy1*cv->scale;
-		    cx2 =  cv->xoff + cx2*cv->scale;
-		    cy2 = -cv->yoff + cv->height - cy2*cv->scale;
+		    cx1 =  cv->xoff + cx1*cv->scale + dx;
+		    cy1 = -cv->yoff + cv->height - cy1*cv->scale - dy;
+		    dx = rint(spline->to->me.x*cv->scale) - spline->to->me.x*cv->scale;
+		    dy = rint(spline->to->me.y*cv->scale) - spline->to->me.y*cv->scale;
+		    cx2 =  cv->xoff + cx2*cv->scale + dx;
+		    cy2 = -cv->yoff + cv->height - cy2*cv->scale - dy;
 		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
 		} else {
-		    cx1 =  cv->xoff + spline->from->nextcp.x*cv->scale;
-		    cy1 = -cv->yoff + cv->height - spline->from->nextcp.y*cv->scale;
-		    cx2 =  cv->xoff + spline->to->prevcp.x*cv->scale;
-		    cy2 = -cv->yoff + cv->height - spline->to->prevcp.y*cv->scale;
+		    dx = rint(spline->from->me.x*cv->scale) - spline->from->me.x*cv->scale;
+		    dy = rint(spline->from->me.y*cv->scale) - spline->from->me.y*cv->scale;
+		    cx1 =  cv->xoff + spline->from->nextcp.x*cv->scale + dx;
+		    cy1 = -cv->yoff + cv->height - spline->from->nextcp.y*cv->scale - dy;
+		    dx = rint(spline->to->me.x*cv->scale) - spline->to->me.x*cv->scale;
+		    dy = rint(spline->to->me.y*cv->scale) - spline->to->me.y*cv->scale;
+		    cx2 =  cv->xoff + spline->to->prevcp.x*cv->scale + dx;
+		    cy2 = -cv->yoff + cv->height - spline->to->prevcp.y*cv->scale - dy;
 		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
 		}
 		if ( first==NULL )
