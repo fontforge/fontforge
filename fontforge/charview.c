@@ -8737,6 +8737,18 @@ static void swlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.checked = cv->showvmetrics;
 	    mi->ti.disabled = !sf->hasvmetrics;
 	  break;
+	  case MID_SnapOutlines:
+#ifndef _NO_LIBCAIRO
+	    if ( GDrawHasCairo(cv->v)&gc_alpha ) {
+		mi->ti.checked = cv->snapoutlines;
+		mi->ti.disabled = false;
+	    } else
+#endif
+	    {
+		mi->ti.checked = true;
+		mi->ti.disabled = true;
+	    }
+	  break;
 	}
     }
 }
