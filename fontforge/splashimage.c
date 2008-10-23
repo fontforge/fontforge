@@ -18029,7 +18029,7 @@ static uint8 splashimage0_data[] = {
 	0x4c, 0x4c, 0x4c
 };
 
-static GClut splashimage0_clut = { 256, 0, 1,
+static GClut splashimage0_clut = { 256, 0, -1,
     0xffffff, 0x20202, 0x4a4a48, 0x96863a, 0xd6ae4a, 0xe6ce6a, 0x722a22, 0xcacac8, 
     0x964a2a, 0x191817, 0xf6e6be, 0x424a9e, 0x8686a6, 0xa68e42, 0x524222, 0x9eae72, 
     0x42327a, 0x62221a, 0xfe0202, 0xd6ae85, 0x6a5a32, 0xeeeede, 0xbe8e9e, 0x521212, 
@@ -18068,7 +18068,7 @@ static struct _GImage splashimage0_base = {
     15420,379,375,379,
     (uint8 *) splashimage0_data,
     &splashimage0_clut,
-    0x0
+    -1
 };
 
 GImage splashimage = { 0, &splashimage0_base };
