@@ -1161,7 +1161,7 @@ return( _cairo_image_surface_create_for_data((uint8 *) idata,type,
 	for ( i=0; i<src->height; ++i ) {
 	   for ( j=0; j<src->width; ++j ) {
 	       int index = pt[j];
-	       ito[j] = clut[index];
+	       ito[j] = clut[index] | 0xff000000;
 	   }
 	   pt += base->bytes_per_line;
 	   ito = (uint32 *) (((uint8 *) ito) +stride);
@@ -1260,13 +1260,14 @@ return( _cairo_image_surface_create_for_data((uint8 *) idata,type,
     } else {
 	Color fg = base->clut==NULL ? 0xffffff : base->clut->clut[1];
 	Color bg = base->clut==NULL ? 0x000000 : base->clut->clut[0];
+	fg |= 0xff000000; bg |= 0xff000000;
 	pt = base->data + src->y*base->bytes_per_line + (src->x>>3);
 	ito = idata;
 	for ( i=0; i<src->height; ++i ) {
 	    bit = (0x80>>(src->x&0x7));
 	    for ( j=jj=0; j<src->width; ++j ) {
 		ito[j] = (pt[jj]&bit) ? fg : bg;
-		if ( (bit>>1)==0 ) {
+		if ( (bit>>=1)==0 ) {
 		    bit = 0x80;
 		    ++jj;
 		}
