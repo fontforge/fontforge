@@ -1097,7 +1097,7 @@ static uint8 homefolder_data[] = {
 	0x1, 0x1, 0x1, 0x1
 };
 
-static GClut homefolder_clut = { 3, 1, -1,
+static GClut homefolder_clut = { 3, 1, 0,
     0xb0b0b0, 0x000000, 0xd0d0ff };
 
 static struct _GImage homefolder_base = {
@@ -1296,7 +1296,7 @@ static uint8 back0_data[] = {
 	0x7, 0x2, 0x2, 0x2, 0x0, 0x0, 0x0, 0x0
 };
 
-static GClut back0_clut = { 10, 1, -1,
+static GClut back0_clut = { 10, 1, 0,
     0xffffff, 0x34fe9c, 0x848284, 0x48284, 0xcccefc, 0x48204, 0x4fe04, 0x4363c, 
     0x242224, 0x449aa4 };
 
