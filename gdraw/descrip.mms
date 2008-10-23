@@ -13,7 +13,7 @@ libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj,ghvbox.obj,\
  gmatrixedit.obj,gspacer.obj,ctlvalues.obj,gcolor.obj,xkeysyms_unicode.obj
 
-libgdraw_OBJECTS1=gdrawable.obj
+libgdraw_OBJECTS1=gdrawable.obj,gxcdraw.obj
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
 	/define=("NOTHREADS=1","_NO_XKB=1","_STATIC_LIBFREETYPE=1",\
@@ -74,3 +74,4 @@ gdrawgimage.obj : gdrawgimage.c
 ctlvalues.obj : ctlvalues.c
 gcolor.obj : gcolor.c
 xkeysyms_unicode.obj : xkeysyms_unicode.c
+gxcdraw.obj : gxcdraw.c
