@@ -1053,11 +1053,6 @@ return( NULL );
     }
     if ( !(wattrs->mask&wam_backcol) || wattrs->background_color==COLOR_DEFAULT )
 	wattrs->background_color = gdisp->def_background;
-#ifndef _NO_LIBCAIRO
-    if ( !(wattrs->mask&wam_backcol) && _GXCDraw_hasCairo())
-	/* Don't set a background color */;
-    else
-#endif
     if ( wattrs->background_color != COLOR_UNKNOWN ) {
 	attrs.background_pixel = _GXDraw_GetScreenPixel(gdisp,wattrs->background_color);
 	wmask |= CWBackPixel;
