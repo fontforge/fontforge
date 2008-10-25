@@ -2677,7 +2677,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		if ( *pt=='\0' )
 		    *randoms[rcnt] = '\0';
 		else {
-		    len += utf8_strlen( randoms[rcnt])+1;
+		    len += utf8_strlen( randoms[rcnt])+2;
 		    foundsomething = true;
 		}
 	    }
