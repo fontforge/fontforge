@@ -44,6 +44,7 @@
 #endif
 
 int splash = 1;
+static int localsplash;
 static int unique = 0;
 static int listen_to_apple_events = false;
 
@@ -487,7 +488,7 @@ static void start_splash_screen(void){
     GDrawProcessPendingEvents(NULL);
     splasht = GDrawRequestTimer(splashw,1000,1000,NULL);
 
-    splash = false;
+    localsplash = false;
 }
 
 #if defined(__Mac)
@@ -497,7 +498,7 @@ static FILE *logfile;
 static pascal OSErr OpenApplicationAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SInt32 handlerRefcon) {
  fprintf( logfile, "OPENAPP event received.\n" ); fflush( logfile );
-    if ( splash )
+    if ( localsplash )
 	start_splash_screen();
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     if ( fv_list==NULL )
@@ -509,7 +510,7 @@ return( noErr );
 static pascal OSErr ReopenApplicationAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SInt32 handlerRefcon) {
  fprintf( logfile, "ReOPEN event received.\n" ); fflush( logfile );
-    if ( splash )
+    if ( localsplash )
 	start_splash_screen();
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     if ( fv_list==NULL )
@@ -521,7 +522,7 @@ return( noErr );
 static pascal OSErr ShowPreferencesAE( const AppleEvent * theAppleEvent,
 	AppleEvent * reply, SInt32 handlerRefcon) {
  fprintf( logfile, "PREFS event received.\n" ); fflush( logfile );
-    if ( splash )
+    if ( localsplash )
 	start_splash_screen();
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
     DoPrefs();
@@ -539,7 +540,7 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
     char	buffer[2048];
 
  fprintf( logfile, "OPEN event received.\n" ); fflush( logfile );
-    if ( splash )
+    if ( localsplash )
 	start_splash_screen();
 
     err = AEGetParamDesc(theAppleEvent, keyDirectObject,
@@ -1127,8 +1128,9 @@ exit( 0 );
     GDrawFontMetrics(splash_font,&as,&ds,&ld);
     fh = as+ds+ld;
     SplashLayout();
+    localsplash = splash;
 
-    if ( splash && !listen_to_apple_events )
+    if ( localsplash && !listen_to_apple_events )
 	start_splash_screen();
 
     autosave_timer=GDrawRequestTimer(splashw,60*1000,30*1000,NULL);
