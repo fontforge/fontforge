@@ -4351,6 +4351,11 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    memcpy(counters[cp],type1,bytes);
 		    ++cp;
 		}
+		if ( bytes!=hint_cnt/8 ) {
+		    int mask = 0xff>>(hint_cnt&7);
+		    if ( type1[bytes-1]&mask )
+			LogError( _("Hint mask (or counter mask) with too many hints in %s\n"), name );
+		}
 		type1 += bytes;
 		len -= bytes;
 	    }
