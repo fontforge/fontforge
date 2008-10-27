@@ -30,7 +30,7 @@ CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ @DEFS@
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f *.o *.lo ../libgunicode.la
+	-rm -f *.o *.lo ../libgunicode.la .libs/*
 
 distclean cleaner:
-	-rm -f *.o *.lo ../libgunicode.la Makefile
+	-rm -f *.o *.lo ../libgunicode.la .libs/* Makefile
