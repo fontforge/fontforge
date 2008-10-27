@@ -56,7 +56,7 @@ both: ../libgutils.la ../libgioftp.la
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f *.lo *.o .libs/*
+	-rm -f *.lo *.o .libs/* ../libgutils.la ../libgioftp.la
 
 distclean cleaner:
 	-rm -f *.lo *.o ../libgutils.la Makefile ../libgioftp.la .libs/*
