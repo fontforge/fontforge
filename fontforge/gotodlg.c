@@ -204,11 +204,11 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     gd.gw = gw = GDrawCreateTopWindow(NULL,&pos,goto_e_h,&gd,&wattrs);
 
     GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
-    wid = GDrawGetText8Width(gw,_("Enter the name of a glyph in the font"),-1,NULL);
+    wid = GDrawGetBiText8Width(gw,_("Enter the name of a glyph in the font"),-1,-1,NULL);
     if ( ranges!=NULL ) {
 	for ( i=0; ranges[i].text!=NULL; ++i ) {
 	    uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
-	    temp = GDrawGetTextWidth(gw,ubuf,-1,NULL);
+	    temp = GDrawGetBiTextWidth(gw,ubuf,-1,-1,NULL);
 	    if ( temp>wid )
 		wid = temp;
 	}

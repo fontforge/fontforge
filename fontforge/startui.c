@@ -686,15 +686,15 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	y = splashimage.u.image->height + as + fh/2;
 	for ( i=1; i<linecnt; ++i ) {
 	    if ( is>=lines[i-1]+1 && is<lines[i] ) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,NULL,0x000000);
+		x = 8+GDrawDrawBiText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,NULL,0x000000);
 		GDrawSetFont(gw,splash_italic);
-		GDrawDrawText(gw,x,y,is,lines[i]-is,NULL,0x000000);
+		GDrawDrawBiText(gw,x,y,is,lines[i]-is,NULL,0x000000);
 	    } else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
-		x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,NULL,0x000000);
+		x = 8+GDrawDrawBiText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,NULL,0x000000);
 		GDrawSetFont(gw,splash_font);
-		GDrawDrawText(gw,x,y,ie,lines[i]-ie,NULL,0x000000);
+		GDrawDrawBiText(gw,x,y,ie,lines[i]-ie,NULL,0x000000);
 	    } else
-		GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,NULL,0x000000);
+		GDrawDrawBiText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,NULL,0x000000);
 	    y += fh;
 	}
 	GDrawPopClip(gw,&old);

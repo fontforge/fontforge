@@ -721,7 +721,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawText(pixmap,2,i*27+j*12+10,_Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawBiText(pixmap,2,i*27+j*12+10,(unichar_t *) _Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none )
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
@@ -1223,8 +1223,8 @@ return;
 		0x808080);
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
-	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
-		    str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+	    GDrawDrawBiText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
+		    (char *) str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {

@@ -560,6 +560,11 @@ static void MouseToPos(GEvent *event,int *_l, int *_c) {
 	l = errdata.cnt-1;
 	if ( l>=0 )
 	    c = strlen(errdata.errlines[l]);
+    } else if ( (GDrawHasCairo(errdata.v)&gc_pango) && l>=0 ) {
+	int index;
+	GDrawLayoutInit(errdata.v,errdata.errlines[l],NULL);
+	GDrawLayoutXYToIndex(errdata.v,event->u.mouse.x-3,4,&index);
+	c = index;
     } else if ( l>=0 ) {
 	GDrawGetText8PtFromPos(errdata.v,errdata.errlines[l],-1,NULL,event->u.mouse.x-3,&end);
 	c = end - errdata.errlines[l];
@@ -610,6 +615,7 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 
     switch ( event->type ) {
       case et_expose:
+	  /*GDrawFillRect(gw,&event->u.expose.rect,GDrawGetDefaultBackground(NULL));*/
 	  GDrawSetFont(gw,errdata.font);
 	  for ( i=0; i<errdata.linecnt && i+errdata.offtop<errdata.cnt; ++i ) {
 	      int xs, xe;
@@ -618,20 +624,33 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 	      if ( s_l>e_l ) {
 		  s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
 	      }
+	      if ( GDrawHasCairo(gw)&gc_pango )
+		  GDrawLayoutInit(gw,errdata.errlines[i+errdata.offtop],NULL);
 	      if ( i+errdata.offtop >= s_l && i+errdata.offtop <= e_l ) {
 		  if ( i+errdata.offtop > s_l )
 		      xs = 0;
-		  else
+		  else if ( GDrawHasCairo(gw)&gc_pango ) {
+		      GRect pos;
+		      GDrawLayoutIndexToPos(gw,s_c,&pos);
+		      xs = pos.x+3;
+		  } else
 		      xs = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],s_c,NULL);
 		  if ( i+errdata.offtop < e_l )
 		      xe = 3000;
-		  else
+		  else if ( GDrawHasCairo(gw)&gc_pango ) {
+		      GRect pos;
+		      GDrawLayoutIndexToPos(gw,s_c,&pos);
+		      xe = pos.x+pos.width+3;
+		  } else
 		      xe = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],e_c,NULL);
 		  r.x = xs+3; r.width = xe-xs;
 		  r.y = i*errdata.fh; r.height = errdata.fh;
 		  GDrawFillRect(gw,&r,0xffff00);
 	      }
-	      GDrawDrawText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,0x000000);
+	      if ( GDrawHasCairo(gw)&gc_pango )
+		  GDrawLayoutDraw(gw,3,i*errdata.fh+errdata.as,0x000000);
+	      else
+		  GDrawDrawBiText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,0x000000);
 	  }
       break;
       case et_char:

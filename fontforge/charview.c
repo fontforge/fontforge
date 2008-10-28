@@ -578,7 +578,7 @@ return;
 		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff && pnum!=0xfffe ) {
 		    sprintf( buf,"%d", pnum );
-		    GDrawDrawText8(pixmap,cx,cy-6,buf,-1,NULL,nextcpcol);
+		    GDrawDrawBiText8(pixmap,cx,cy-6,buf,-1,NULL,nextcpcol);
 		}
 	    }
 	}
@@ -674,7 +674,7 @@ return;
 	    strcpy(buf,"?");
 	else
 	    sprintf( buf,"%d", sp->ttfindex );
-	GDrawDrawText8(pixmap,x,y-6,buf,-1,NULL,col);
+	GDrawDrawBiText8(pixmap,x,y-6,buf,-1,NULL,col);
     }
     if ( !onlynumber ) {
 	if ((( sp->roundx || sp->roundy ) &&
@@ -978,7 +978,7 @@ return;
 	    tr.x += 2;
 	} else if ( dy==0 ) {
 	    /* Horizontal line */
-	    tr.x = cv->width - cv->nfh - GDrawGetText8Width(pixmap,ss->contour_name,-1,NULL);
+	    tr.x = cv->width - cv->nfh - GDrawGetBiText8Width(pixmap,ss->contour_name,-1,-1,NULL);
 	} else {
 	    /* y = slope*x + off; */
 	    slope = (sp1->me.y-sp2->me.y)/(sp1->me.x-sp2->me.x);
@@ -992,16 +992,16 @@ return;
 		tr.x = xinter+2;
 		tr.y = cv->nfh;
 	    } else if ( yinter>0 && yinter<cv->height ) {
-		tr.x = cv->width - cv->nfh - GDrawGetText8Width(pixmap,ss->contour_name,-1,NULL);
+		tr.x = cv->width - cv->nfh - GDrawGetBiText8Width(pixmap,ss->contour_name,-1,-1,NULL);
 		tr.y = yinter;
 	    }
 	}
     } else {
 	tr.y -= cv->nfh/2;
-	tr.x -= GDrawGetText8Width(pixmap,ss->contour_name,-1,NULL)/2;
+	tr.x -= GDrawGetBiText8Width(pixmap,ss->contour_name,-1,-1,NULL)/2;
     }
 
-    GDrawDrawText8(pixmap,tr.x,tr.y,ss->contour_name,-1,NULL,fg);
+    GDrawDrawBiText8(pixmap,tr.x,tr.y,ss->contour_name,-1,NULL,fg);
     GDrawSetFont(pixmap,cv->small);	/* For point numbers */
 }
 
@@ -1386,13 +1386,13 @@ return;
 	if ( first>-20 && first<cv->height+20 ) {
 	    dtos( buf, blues[i]);
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawText8(pixmap,cv->width-len-5,first-3,buf,-1,NULL,hintlabelcol);
+	    GDrawDrawBiText8(pixmap,cv->width-len-5,first-3,buf,-1,NULL,hintlabelcol);
 	} else
 	    len = 0;
 	if ( other>-20 && other<cv->height+20 ) {
 	    dtos( buf, blues[i+1]-blues[i]);
 	    len2 = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawText8(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,buf,-1,NULL,hintlabelcol);
+	    GDrawDrawBiText8(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,buf,-1,NULL,hintlabelcol);
 	}
     }
 }
@@ -1463,7 +1463,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
 		dtos( buf, hint->start);
 		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-		GDrawDrawText8(pixmap,cv->width-len-5,r.y,buf,-1,NULL,hintlabelcol);
+		GDrawDrawBiText8(pixmap,cv->width-len-5,r.y,buf,-1,NULL,hintlabelcol);
 	    } else
 		len = 0;
 	    r.y = -cv->yoff + cv->height - rint((hint->start+hint->width)*cv->scale);
@@ -1476,7 +1476,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		} else
 		    dtos( buf, hint->width);
 		len2 = GDrawGetText8Width(pixmap,buf,-1,NULL);
-		GDrawDrawText8(pixmap,cv->width-len-5-len2-5,r.y,buf,-1,NULL,hintlabelcol);
+		GDrawDrawBiText8(pixmap,cv->width-len-5-len2-5,r.y,buf,-1,NULL,hintlabelcol);
 	    }
 	}
     }
@@ -1518,7 +1518,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		dtos( buf, hint->start);
 		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 		r.x += ( hint->width>0 ) ? 3 : -len-3;
-		GDrawDrawText8(pixmap,r.x,cv->sas+3,buf,-1,NULL,hintlabelcol);
+		GDrawDrawBiText8(pixmap,r.x,cv->sas+3,buf,-1,NULL,hintlabelcol);
 	    }
 	    r.x = cv->xoff + rint((hint->start+hint->width)*cv->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
@@ -1530,7 +1530,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    dtos( buf, hint->width);
 		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 		r.x += ( hint->width>0 ) ? -len-3 : 3;
-		GDrawDrawText8(pixmap,r.x,cv->sas+cv->sfh+3,buf,-1,NULL,hintlabelcol);
+		GDrawDrawBiText8(pixmap,r.x,cv->sas+cv->sfh+3,buf,-1,NULL,hintlabelcol);
 	    }
 	}
     }
@@ -1571,8 +1571,8 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 }
 
 static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
-    unichar_t namebuf[100];
     int x,y, len;
+    GRect size;
 
     x = cv->xoff + rint(ref->top.x*cv->scale);
     y = -cv->yoff + cv->height - rint(ref->top.y*cv->scale);
@@ -1580,10 +1580,14 @@ static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
     if ( x<-400 || y<-40 || x>cv->width+400 || y>cv->height )
 return;
 
-    uc_strncpy(namebuf,ref->sc->name,sizeof(namebuf)/sizeof(namebuf[0]));
-    GDrawSetFont(pixmap,cv->small);
-    len = GDrawGetTextWidth(pixmap,namebuf,-1,NULL);
-    GDrawDrawText(pixmap,x-len/2,y,namebuf,-1,NULL,fg);
+    if ( GDrawHasCairo(pixmap)&gc_pango ) {
+	GDrawLayoutInit(pixmap,ref->sc->name,cv->small);
+	GDrawLayoutExtents(pixmap,&size);
+	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
+    } else {
+	len = GDrawGetText8Width(pixmap,ref->sc->name,-1,NULL);
+	GDrawDrawBiText8(pixmap,x-len/2,y,ref->sc->name,-1,NULL,fg);
+    }
 }
 
 void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected) {
@@ -1641,11 +1645,20 @@ return;
 		name = ubuf;
 	    } else
 		name = NULL;		/* Should never happen */
-	    len = GDrawGetText8Width(pixmap,name,-1,NULL);
+	    if ( GDrawHasCairo(pixmap)&gc_pango ) {
+		GRect size;
+		GDrawLayoutInit(pixmap,name,NULL);
+		GDrawLayoutExtents(pixmap,&size);
+		len = size.width;
+	    } else
+		len = GDrawGetText8Width(pixmap,name,-1,NULL);
 	    r.x = x-len/2; r.width = len;
 	    r.y = y+7; r.height = cv->nfh;
 	    GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
-	    GDrawDrawText8(pixmap,x-len/2,y+7+cv->nas,name,-1,NULL,col);
+	    if ( GDrawHasCairo(pixmap)&gc_pango ) {
+		GDrawLayoutDraw(pixmap,x-len/2,y+7+cv->nas,col);
+	    } else
+		GDrawDrawBiText8(pixmap,x-len/2,y+7+cv->nas,name,-1,NULL,col);
 	}
     }
 }
@@ -1710,12 +1723,12 @@ static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags,
 	if ( flags&1 ) {
 	    dtos( buf, pos);
 	    GDrawSetFont(pixmap,cv->small);
-	    GDrawDrawText8(pixmap,x+5,cv->sas+3,buf,-1,NULL,metricslabelcol);
+	    GDrawDrawBiText8(pixmap,x+5,cv->sas+3,buf,-1,NULL,metricslabelcol);
 	    if ( lock!=NULL )
 		GDrawDrawImage(pixmap,lock,NULL,x+5,3+cv->sfh);
 	}
 	if ( name!=NULL )
-	    GDrawDrawText8(pixmap,x+5,cv->sas+cv->sfh*(1+lock!=NULL)+3,name,-1,NULL,metricslabelcol);
+	    GDrawDrawBiText8(pixmap,x+5,cv->sas+cv->sfh*(1+lock!=NULL)+3,name,-1,NULL,metricslabelcol);
     }
     if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
 	double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
@@ -2008,7 +2021,7 @@ return;				/* no points. no side bearings */
 	     DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
 	    dtos( buf, bounds[0]->x);
 	    x = cv->xoff + (x-cv->xoff-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-	    GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	    GDrawDrawBiText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
 	}
 
 	if ( sc->width != bounds[1]->x ) {
@@ -2023,7 +2036,7 @@ return;				/* no points. no side bearings */
 	     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,metricslabelcol);
 	    dtos( buf, sc->width-bounds[1]->x);
 	    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-	    GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	    GDrawDrawBiText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
 	}
 	if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
 	    double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
@@ -2047,7 +2060,7 @@ return;				/* no points. no side bearings */
 		     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,italiccoordcol);
 		    dtos( buf, leftmost->me.x-leftmost->me.y*t);
 		    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-		    GDrawDrawText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
+		    GDrawDrawBiText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
 		}
 		if ( rightmost!=NULL ) {
 		    x = rint(rightmost->me.x*cv->scale) + cv->xoff;
@@ -2061,7 +2074,7 @@ return;				/* no points. no side bearings */
 		     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,italiccoordcol);
 		    dtos( buf, sc->width+rightmost->me.y*t-rightmost->me.x);
 		    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-		    GDrawDrawText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
+		    GDrawDrawBiText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
 		}
 	    }
 	}
@@ -2079,7 +2092,7 @@ return;				/* no points. no side bearings */
 	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
 	dtos( buf, bounds[2]->y-sc->parent->descent);
 	y = y + (y-y2-cv->sfh)/2;
-	GDrawDrawText8(pixmap,x+4,y,buf,-1,NULL,metricslabelcol);
+	GDrawDrawBiText8(pixmap,x+4,y,buf,-1,NULL,metricslabelcol);
 
 	x = rint(bounds[3]->x*cv->scale) + cv->xoff;
 	y = cv->height-cv->yoff-rint(bounds[3]->y*cv->scale);
@@ -2092,7 +2105,7 @@ return;				/* no points. no side bearings */
 	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
 	dtos( buf, sc->vwidth-bounds[3]->y);
 	x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-	GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	GDrawDrawBiText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
     }
 }
 
@@ -2279,7 +2292,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    dtos( buf, cv->b.sc->vwidth);
 	    GDrawSetFont(pixmap,cv->small);
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
-	    GDrawDrawText8(pixmap,cv->width-len-5,y,buf,-1,NULL,metricslabelcol);
+	    GDrawDrawBiText8(pixmap,cv->width-len-5,y,buf,-1,NULL,metricslabelcol);
 	}
     }
     if ( cv->showsidebearings && cv->showfore &&
@@ -2617,7 +2630,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	text[0] = sc->unicodeenc; text[1] = 0;
 	GDrawFontMetrics(font,&as,&ds,&ld);
 	width = GDrawGetTextWidth(icon,text,1,NULL);
-	GDrawDrawText(icon,(r.width-width)/2,(r.height-as-ds)/2+as,text,1,NULL,0xffffff);
+	GDrawDrawBiText(icon,(r.width-width)/2,(r.height-as-ds)/2+as,text,1,NULL,0xffffff);
     }
 return( icon );
 }
@@ -2939,7 +2952,6 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     Color fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     char buffer[50];
-    unichar_t ubuffer[50];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
@@ -2970,16 +2982,14 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	else
 	    sprintf(buffer,"%.4g%s%.4g", (double) cv->info.x, coord_sep, (double) cv->info.y );
 	buffer[11] = '\0';
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,fg);
+	GDrawDrawBiText8(pixmap,RPT_DATA,ybase,buffer,-1,NULL,fg);
     }
     if ( cv->scale>=.25 )
 	sprintf( buffer, "%d%%", (int) (100*cv->scale));
     else
 	sprintf( buffer, "%.3g%%", (double) (100*cv->scale));
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,fg);
-    GDrawDrawText8(pixmap,LAYER_DATA,ybase,
+    GDrawDrawBiText8(pixmap,MAG_DATA,ybase,buffer,-1,NULL,fg);
+    GDrawDrawBiText8(pixmap,LAYER_DATA,ybase,
 /* GT: Guide layer, make it short */
 		cv->b.drawmode==dm_grid ?                      _("Guide") :
 /* GT: Background, make it short */
@@ -2988,7 +2998,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 								_("Fore"),
 	    -1,NULL,fg);
     if ( cv->coderange!=cr_none )
-	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
+	GDrawDrawBiText8(pixmap,CODERANGE_DATA,ybase,
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
 		cv->coderange==cr_prep ? _("'prep'") : _("Glyph"),
 	    -1,NULL,fg);
@@ -3027,8 +3037,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	else
 	    sprintf(buffer,"%.4g%s%.4g", (double) selx, coord_sep, (double) sely );
 	buffer[11] = '\0';
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,fg);
+	GDrawDrawBiText8(pixmap,SPT_DATA,ybase,buffer,-1,NULL,fg);
     } else if ( cv->widthsel && cv->info_within ) {
 	xdiff = cv->info.x-cv->p.cx;
 	ydiff = 0;
@@ -3052,16 +3061,14 @@ return;
     else
 	sprintf(buffer,"%.4g%s%.4g", (double) xdiff, coord_sep, (double) ydiff );
     buffer[11] = '\0';
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,SOF_DATA,ybase,ubuffer,-1,NULL,fg);
+    GDrawDrawBiText8(pixmap,SOF_DATA,ybase,buffer,-1,NULL,fg);
 
     sprintf( buffer, "%.1f", sqrt(xdiff*xdiff+ydiff*ydiff));
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,SDS_DATA,ybase,ubuffer,-1,NULL,fg);
+    GDrawDrawBiText8(pixmap,SDS_DATA,ybase,buffer,-1,NULL,fg);
 
-    sprintf( buffer, "%d\260", (int) rint(180*atan2(ydiff,xdiff)/3.1415926535897932));
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,SAN_DATA,ybase,ubuffer,-1,NULL,fg);
+	/* Utf-8 for degree sign */
+    sprintf( buffer, "%d\302\260", (int) rint(180*atan2(ydiff,xdiff)/3.1415926535897932));
+    GDrawDrawBiText8(pixmap,SAN_DATA,ybase,buffer,-1,NULL,fg);
 }
 
 static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
@@ -4257,30 +4264,26 @@ return( true );
 
 static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,real val, int align) {
     char buffer[40];
-    unichar_t ubuf[40];
     int len;
 
     if ( val==0 ) val=0;		/* avoid -0 */
     sprintf(buffer,format,val);
-    uc_strcpy(ubuf,buffer);
     if ( align!=0 ) {
-	len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
+	len = GDrawGetText8Width(pixmap,buffer,-1,NULL);
 	if ( align==1 )
 	    x-=len/2;
 	else
 	    x-=len;
     }
-    GDrawDrawText(pixmap,x,y,ubuf,-1,NULL,GDrawGetDefaultForeground(NULL));
+    GDrawDrawBiText8(pixmap,x,y,buffer,-1,NULL,GDrawGetDefaultForeground(NULL));
 }
 
 static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,real val, int align) {
-    char buffer[40];
-    unichar_t ubuf[40], *upt;
+    char buffer[40], *pt;
     int len;
 
     if ( val==0 ) val=0;		/* avoid -0 */
     sprintf(buffer,format,val);
-    uc_strcpy(ubuf,buffer);
     if ( align!=0 ) {
 	len = strlen(buffer)*cv->sfh;
 	if ( align==1 )
@@ -4288,8 +4291,8 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,re
 	else
 	    y-=len;
     }
-    for ( upt=ubuf; *upt; ++upt ) {
-	GDrawDrawText(pixmap,x,y,upt,1,NULL,GDrawGetDefaultForeground(NULL));
+    for ( pt=buffer; *pt; ++pt ) {
+	GDrawDrawBiText8(pixmap,x,y,pt,1,NULL,GDrawGetDefaultForeground(NULL));
 	y += cv->sdh;
     }
 }

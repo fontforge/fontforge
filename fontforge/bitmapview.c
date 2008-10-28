@@ -662,7 +662,6 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
     GRect r;
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     char buffer[50];
-    unichar_t ubuffer[50];
     int ybase = bv->mbh+10+bv->sas;
 
     GDrawSetFont(pixmap,bv->small);
@@ -672,14 +671,12 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
 
     sprintf(buffer,"%d%s%d", bv->info_x, coord_sep, bv->info_y );
     buffer[11] = '\0';
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase,ubuffer,-1,NULL,GDrawGetDefaultForeground(NULL));
+    GDrawDrawBiText8(pixmap,bv->infoh+RPT_DATA,ybase,buffer,-1,NULL,GDrawGetDefaultForeground(NULL));
 
     if ( bv->active_tool!=cvt_none ) {
 	sprintf(buffer,"%d%s%d", bv->info_x-bv->pressed_x, coord_sep, bv->info_y-bv->pressed_y );
 	buffer[11] = '\0';
-	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,ubuffer,-1,NULL,GDrawGetDefaultForeground(NULL));
+	GDrawDrawBiText8(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,buffer,-1,NULL,GDrawGetDefaultForeground(NULL));
     }
 }
 
