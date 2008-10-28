@@ -46,7 +46,8 @@ typedef struct gpswindow {
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
-    unsigned int usecairo: 1;		/* not meaningful */
+    unsigned int usecairo: 1;		/* should be 0, not meaningful */
+    unsigned int usepango: 1;		/* should be 0, not meaningful */
     FILE *init_file;			/* Postscript style guides want all */
 					/* fonts downloaded at start, but we */
 			                /* don't know what we'll need then */

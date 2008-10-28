@@ -106,7 +106,7 @@ return( l==first?1:lcnt );		/* if we can't even fit one line on, pretend it fits
     if ( height>0 ) {
 	if ( gl->fh==0 ) {
 	    int as, ds, ld;
-	    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+	    GDrawWindowFontMetrics(gl->g.base,gl->font,&as, &ds, &ld);
 	    gl->fh = as+ds;
 	    gl->as = as;
 	}
@@ -873,7 +873,7 @@ static void GListGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
 	}
 	if ( i<4 ) {
 	    int as, ds, ld;
-	    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+	    GDrawWindowFontMetrics(g->base,gl->font,&as, &ds, &ld);
 	    height += (4-i)*(as+ds);
 	}
     } else

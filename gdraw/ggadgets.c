@@ -441,7 +441,7 @@ return( true );
 	    pt = ept+1;
 	} while ( ept!=NULL && *pt!='\0' );
     }
-    GDrawFontMetrics(popup_font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(popup,popup_font,&as, &ds, &ld);
     pos.width = width+2*GDrawPointsToPixels(popup,2);
     pos.height = lines*(as+ds) + img_height + 2*GDrawPointsToPixels(popup,2);
 
@@ -479,14 +479,14 @@ return( true );
 	    y += GImageGetHeight(popup_info.img);
 	}
 	if ( pt!=NULL ) {
-	    GDrawFontMetrics(popup_font,&as, &ds, &ld);
+	    GDrawWindowFontMetrics(popup,popup_font,&as, &ds, &ld);
 	    fh = as+ds;
 	    y += as;
 	    do {
 		temp = -1;
 		if (( ept = u_strchr(pt,'\n'))!=NULL )
 		    temp = ept-pt;
-		GDrawDrawText(popup,x,y,pt,temp,NULL,popup_foreground);
+		GDrawDrawBiText(popup,x,y,pt,temp,NULL,popup_foreground);
 		y += fh;
 		pt = ept+1;
 	    } while ( ept!=NULL && *pt!='\0' );
@@ -841,13 +841,30 @@ void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
     int width;
     /*GRect clip;*/
 
-    pt = u_strchr(label,mnemonic);
-    if ( pt==NULL && isupper(mnemonic))
-	pt = u_strchr(label,tolower(mnemonic));
-    if ( pt==NULL || mnemonic=='\0' )
+    if ( mnemonic=='\0' )
 return;
-    x += GDrawGetBiTextWidth(gw,label,pt-label,-1,NULL);
-    width = GDrawGetTextWidth(gw,pt,1,NULL);
+    if ( GDrawHasCairo(gw)&gc_pango ) {
+	char *ctext = u2utf8_copy(label);
+	char *cpt = utf8_strchr(ctext,mnemonic);
+	GRect space;
+	if ( cpt==NULL && isupper(mnemonic))
+	    cpt = strchr(ctext,tolower(mnemonic));
+	if ( cpt==NULL )
+return;
+	GDrawLayoutInit(gw,ctext,NULL);
+	GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
+	free(ctext);
+	x += space.x;
+	width = space.width;
+    } else {
+	pt = u_strchr(label,mnemonic);
+	if ( pt==NULL && isupper(mnemonic))
+	    pt = u_strchr(label,tolower(mnemonic));
+	if ( pt==NULL )
+return;
+	x += GDrawGetBiTextWidth(gw,label,pt-label,-1,NULL);
+	width = GDrawGetTextWidth(gw,pt,1,NULL);
+    }
     GDrawSetLineWidth(gw,point);
     y += 2*point;
     if ( y+point-1 >= maxy )

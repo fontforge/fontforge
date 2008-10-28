@@ -1307,6 +1307,7 @@ Optional Packages:
   --without-python   Don't include a python interpreter
   --without-native-script   Don't include a legacy fontforge scripting interpreter
   --without-cairo   Don't use libcairo
+  --without-pango   Don't use libpango
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
@@ -2981,10 +2982,19 @@ MACAPP=FontForge.app/Contents/Info.plist
  gww_define_caps_for_alt="1"
 
 
- if test -d /sw/include >/dev/null ; then
+ if test "$CPPFLAGS" \!= "" >/dev/null ; then
+  # User knows best
+ elif test -d /opt/local/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+ elif test -d /sw/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -I/sw/include"
  fi
- if test -d /sw/lib >/dev/null ; then
+ if test "$LDFLAGS" \!= "" >/dev/null ; then
+  # User knows best
+ elif test -d /opt/local/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  gww_rpath="-rpath /opt/local/lib"
+ elif test -d /sw/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/sw/lib"
   gww_rpath="-rpath /sw/lib"
  fi
@@ -6773,6 +6783,92 @@ _ACEOF
 
 fi
 
+
+gww_haspango="no"
+gww_haspangocairo="no"
+gww_checkpango="yes"
+
+# Check whether --with-pango was given.
+if test "${with_pango+set}" = set; then
+  withval=$with_pango;
+   if test "$withval" = "no" ; then
+     gww_checkpango="no"
+   fi
+
+else
+  :
+fi
+
+if test "$gww_checkpango" = "yes" ; then
+  if pkg-config --libs pangoxft >& /dev/null ; then
+    { echo "$as_me:$LINENO: checking for X11/Xft/Xft.h" >&5
+echo $ECHO_N "checking for X11/Xft/Xft.h... $ECHO_C" >&6; }
+if test "${ac_cv_header_X11_Xft_Xft_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <ft2build.h>
+
+#include <X11/Xft/Xft.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_cv_header_X11_Xft_Xft_h=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_header_X11_Xft_Xft_h=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_header_X11_Xft_Xft_h" >&5
+echo "${ECHO_T}$ac_cv_header_X11_Xft_Xft_h" >&6; }
+if test $ac_cv_header_X11_Xft_Xft_h = yes; then
+  gww_haspango="yes"
+fi
+
+
+  fi
+fi
+if test "$gww_haspango" = "yes" ; then
+ CFLAGS="$CFLAGS `pkg-config --cflags pangoxft`"
+fi
+if test "$gww_haspango" = "yes" -a "$gww_hascairo" = "yes" ; then
+  if pkg-config --libs pangocairo >& /dev/null ; then
+    gww_haspangocairo="yes"
+    CFLAGS="$CFLAGS `pkg-config --cflags pangocairo`"
+  fi
+fi
+if test "$gww_haspango" = "no" ; then
+  gww_haspangocairo="no"
+  cat >>confdefs.h <<\_ACEOF
+#define _NO_LIBPANGO 1
+_ACEOF
+
+fi
+
 # Check whether --enable-macapp was given.
 if test "${enable_macapp+set}" = set; then
   enableval=$enable_macapp;
@@ -9424,6 +9520,93 @@ _ACEOF
 fi
  if test "$ac_cv_lib_intl_bind_textdomain_codeset" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lintl"
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+ fi
+ { echo "$as_me:$LINENO: checking for UnicodeNameAnnot in -luninameslist" >&5
+echo $ECHO_N "checking for UnicodeNameAnnot in -luninameslist... $ECHO_C" >&6; }
+if test "${ac_cv_lib_uninameslist_UnicodeNameAnnot+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-luninameslist  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char UnicodeNameAnnot ();
+int
+main ()
+{
+return UnicodeNameAnnot ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_uninameslist_UnicodeNameAnnot=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_uninameslist_UnicodeNameAnnot=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_uninameslist_UnicodeNameAnnot" >&5
+echo "${ECHO_T}$ac_cv_lib_uninameslist_UnicodeNameAnnot" >&6; }
+if test $ac_cv_lib_uninameslist_UnicodeNameAnnot = yes; then
+
+   STATIC_LIBS="$STATIC_LIBS -luninameslist"
+   cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBUNINAMESLIST 1
+_ACEOF
+
+else
+  cat >>confdefs.h <<\_ACEOF
+#define _NO_LIBUNINAMESLIST 1
+_ACEOF
+
+fi
+
+ if test "$gww_hascairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lcairo -lfontconfig"
+ fi
+ if test "$gww_haspango" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
  fi
 fi
 

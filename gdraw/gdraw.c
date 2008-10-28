@@ -628,6 +628,26 @@ void GDrawCairoUnbuffer(GWindow w,GRect *size) {
     (w->display->funcs->cairoUnbuffer)(w,size);
 }
 
+void GDrawLayoutInit(GWindow w, char *text, GFont *fi) {
+    (w->display->funcs->layoutInit)(w,text,fi);
+}
+
+void GDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
+    (w->display->funcs->layoutDraw)(w,x,y,fg);
+}
+
+void GDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
+    (w->display->funcs->layoutIndexToPos)(w,index,pos);
+}
+
+void GDrawLayoutXYToIndex(GWindow w, int x, int y, int *index) {
+    (w->display->funcs->layoutXYToIndex)(w,x,y,index);
+}
+
+void GDrawLayoutExtents(GWindow w, GRect *size) {
+    (w->display->funcs->layoutExtents)(w,size);
+}
+
 
 GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style) {
 return(w->display->funcs->createInputContext)(w,def_style);

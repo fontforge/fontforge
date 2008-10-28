@@ -508,7 +508,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 		r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 		r.width = gme->col_data[c].width;
 		GDrawPushClip(pixmap,&r,&old);
-		GDrawDrawText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,0x000000);
+		GDrawDrawBiText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,0x000000);
 		GDrawPopClip(pixmap,&old);
 	    }
 	    if ( c!=lastc && !gme->col_data[c].hidden)
@@ -552,7 +552,7 @@ static void GMatrixEdit_SetFont(GGadget *g,FontInstance *new) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int as, ds, ld;
     gme->font = new;
-    GDrawFontMetrics(gme->font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(g->base,gme->font,&as, &ds, &ld);
     gme->as = as;
     gme->fh = as+ds;
     GME_FixScrollBars(gme);
@@ -1374,7 +1374,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		buf[18] = '\0';
 		k = strlen(buf);
 		buf[k] = '>'; buf[k+1] = '\0';
-		GDrawDrawText8(pixmap,gme->g.inner.x+gme->col_data[0].x - gme->off_left,y,
+		GDrawDrawBiText8(pixmap,gme->g.inner.x+gme->col_data[0].x - gme->off_left,y,
 			buf,-1,NULL,0x0000ff);
 	    } else {
 		data = &gme->data[(r+gme->off_top)*gme->cols+c];
@@ -1385,9 +1385,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
 		    if ( mi!=NULL ) {
 			if ( mi->ti.text_is_1byte )
-			    GDrawDrawText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
+			    GDrawDrawBiText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
 			else
-			    GDrawDrawText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
+			    GDrawDrawBiText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
 		break;
 		    }
 		    /* Fall through into next case */
@@ -1399,7 +1399,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		}
 		if ( str!=NULL ) {
 		    pt = strchr(str,'\n');
-		    GDrawDrawText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,NULL,fg);
+		    GDrawDrawBiText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,NULL,fg);
 		    free(str);
 		}
 	    }
@@ -1682,7 +1682,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     gme->font = gmatrixedit_font;
     gme->titfont = gmatrixedit_titfont;
-    GDrawFontMetrics(gme->font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(base,gme->font,&as, &ds, &ld);
     gme->fh = as+ds;
     gme->as = as;
 

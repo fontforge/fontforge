@@ -61,6 +61,7 @@
 #undef X_DISPLAY_MISSING
 #undef PYTHON_LIB_NAME
 #undef _NO_LIBCAIRO
+#undef _NO_LIBPANGO
 #undef WORDS_BIGENDIAN
 
 #endif

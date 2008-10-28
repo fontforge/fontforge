@@ -201,7 +201,7 @@ return;
     rq.family_name = monospace;
     rq.point_size = 12;
     rq.weight = 400;
-    GDrawFontMetrics(new->font = GDrawAttachFont(root,&rq),&as,&ds,&ld);
+    GDrawWindowFontMetrics(root,new->font = GDrawAttachFont(root,&rq),&as,&ds,&ld);
 
     if ( new->line1!=NULL )
 	new->l1width = GDrawGetTextWidth(root,new->line1,-1,NULL);

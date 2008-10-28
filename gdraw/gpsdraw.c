@@ -1456,6 +1456,12 @@ static struct displayfuncs psfuncs = {
     PSDrawPathFillAndStroke,
 
     NULL,		/* Cairobuffer */
+    NULL,
+
+    NULL,		/* Pango layout */
+    NULL,
+    NULL,
+    NULL,
     NULL
 };
 

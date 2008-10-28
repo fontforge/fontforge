@@ -51,4 +51,21 @@ extern int32 _GXCDraw_DoText8(GWindow gw, int32 x, int32 y,
 extern int32 _GXCDraw_DoText(GWindow gw, int32 x, int32 y,
 	unichar_t *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
+
+#endif
+#ifndef _NO_LIBPANGO
+extern int _GXPDraw_hasPango(void);
+extern void _GXPDraw_NewWindow(GXWindow nw);
+extern int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
+	const char *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg);
+extern int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
+	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg);
+extern void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld);
+extern void _GXPDraw_LayoutInit(GWindow w, char *text, GFont *fi);
+extern void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg);
+extern void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos);
+extern void _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y, int *index);
+extern void _GXPDraw_LayoutExtents(GWindow w, GRect *size);
 #endif

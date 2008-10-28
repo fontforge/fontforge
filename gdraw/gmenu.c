@@ -393,20 +393,20 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 	_shorttext(mi->shortcut,0,shortbuf);
 	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
 	if ( r2l ) {
-	    int x = GDrawDrawText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    int x = GDrawDrawBiText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
 	    GMenuDrawMacIcons(m,fg,ybase, x, mi->short_mask);
 	} else {
 	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, mi->short_mask);
-	    GDrawDrawText(m->w,x,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawBiText(m->w,x,ybase,shortbuf,-1,NULL,fg);
 	}
     } else if ( mi->shortcut!=0 ) {
 	shorttext(mi,shortbuf);
 
 	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL);
 	if ( r2l )
-	    GDrawDrawText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawBiText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
 	else
-	    GDrawDrawText(m->w,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawBiText(m->w,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
     }
     GDrawPopClip(m->w,&old);
 return( y + h );
@@ -1132,9 +1132,6 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     m->font = font;
     m->box = &menu_box;
     m->tickoff = m->tioff = m->bp = GBoxBorderWidth(owner,m->box);
-    GDrawFontMetrics(m->font,&m->as, &ds, &ld);
-    m->fh = m->as + ds + 1;		/* I need some extra space, else mneumonic underlines look bad */
-    lh = m->fh;
     m->line_with_mouse = -1;
 
 /* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
@@ -1150,6 +1147,9 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 
     m->w = GDrawCreateTopWindow(disp,&pos,gmenu_eh,m,&pattrs);
     m->gic = GDrawCreateInputContext(m->w,gic_root|gic_orlesser);
+    GDrawWindowFontMetrics(m->w,m->font,&m->as, &ds, &ld);
+    m->fh = m->as + ds + 1;		/* I need some extra space, else mneumonic underlines look bad */
+    lh = m->fh;
 
     GDrawSetFont(m->w,m->font);
     m->hasticks = false; width = 0; keywidth = 0;
@@ -1548,7 +1548,7 @@ static void GMenuBarFit(GMenuBar *mb,GGadgetData *gd) {
     }
     if ( mb->g.r.height == 0 ) {
 	int as,ds,ld;
-	GDrawFontMetrics(mb->font,&as, &ds, &ld);
+	GDrawWindowFontMetrics(mb->g.base,mb->font,&as, &ds, &ld);
 	mb->g.r.height = as+ds+2*bp;
     }
     mb->g.inner.x = mb->g.r.x + bp;

@@ -757,7 +757,7 @@ static void InsChrExpose( GWindow pixmap, GRect *rect) {
 	else
 	    sprintf( buffer, "Page: %d", inschr.page );
 	uc_strcpy(ubuf,buffer);
-	GDrawDrawText(pixmap,GDrawPointsToPixels(pixmap,6),
+	GDrawDrawBiText(pixmap,GDrawPointsToPixels(pixmap,6),
 		GDrawPointsToPixels(pixmap,90)+inschr.sas,
 		ubuf, -1, NULL, 0x000000 );
 	GDrawPopClip(pixmap,&old);
@@ -802,7 +802,7 @@ return;
 	buf[0] = InsChrMapChar(i*16+j);
 	if ( buf[0]==0xad ) buf[0] = '-';	/* 0xad usually doesn't print */
 	width = GDrawGetTextWidth(pixmap,buf,1,NULL);
-	GDrawDrawText(pixmap,
+	GDrawDrawBiText(pixmap,
 		j*inschr.spacing+(inschr.spacing-width)/2,
 		i*inschr.spacing+inschr.ybase+inschr.as+4,
 		buf,1,NULL,0x000000);
@@ -1107,11 +1107,11 @@ void GWidgetCreateInsChar(void) {
 	rq.weight = 400;
 	rq.style = 0;
 	inschr.font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(inschr.icw),&rq);
-	GDrawFontMetrics(inschr.font,&as, &ds, &ld);
+	GDrawWindowFontMetrics(inschr.icw,inschr.font,&as, &ds, &ld);
 	inschr.as = as;
 	rq.point_size = 8;
 	inschr.smallfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(inschr.icw),&rq);
-	GDrawFontMetrics(inschr.smallfont,&as, &ds, &ld);
+	GDrawWindowFontMetrics(inschr.icw,inschr.smallfont,&as, &ds, &ld);
 	inschr.sas = as;
 
 	GDrawSetVisible(inschr.icw,true);

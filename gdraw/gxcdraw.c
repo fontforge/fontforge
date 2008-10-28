@@ -745,10 +745,8 @@ return;
 	pixel_size = -font->rq.point_size;
     }
 
-    if ( font->rq.style==fs_italic )
+    if ( font->rq.style&fs_italic )
 	_FcPatternAddInteger(pat,FC_SLANT,FC_SLANT_ITALIC);
-    else if ( font->rq.style==fs_italic )
-	_FcPatternAddInteger(pat,FC_SLANT,FC_SLANT_OBLIQUE);
     else
 	_FcPatternAddInteger(pat,FC_SLANT,FC_SLANT_ROMAN);
 
@@ -1149,6 +1147,8 @@ return( _cairo_image_surface_create_for_data((uint8 *) idata,type,
 	       if ( index==trans )
 		   ito[j] = 0x00000000;
 	       else
+		   /* In theory RGB24 images don't need the alpha channel set*/
+		   /*  but there is a bug in Cairo 1.2, and they do. */
 		   ito[j] = clut[index]|0xff000000;
 	   }
 	   pt += base->bytes_per_line;
@@ -1260,6 +1260,8 @@ return( _cairo_image_surface_create_for_data((uint8 *) idata,type,
     } else {
 	Color fg = base->clut==NULL ? 0xffffff : base->clut->clut[1];
 	Color bg = base->clut==NULL ? 0x000000 : base->clut->clut[0];
+       /* In theory RGB24 images don't need the alpha channel set*/
+       /*  but there is a bug in Cairo 1.2, and they do. */
 	fg |= 0xff000000; bg |= 0xff000000;
 	pt = base->data + src->y*base->bytes_per_line + (src->x>>3);
 	ito = idata;
@@ -1446,11 +1448,15 @@ void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size) {
 }
 
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
+    enum gcairo_flags flags = gc_all;
+
+    if ( gw->usepango )
+	flags |= gc_pango;
 
     if ( _cairo_get_group_target(gw->cc)!=gw->cs )
-return( gc_all );
+return( flags );
     else
-return( gc_all|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
+return( flags|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
 }
 
 void _GXCDraw_QueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
@@ -1484,3 +1490,566 @@ int _GXCDraw_hasCairo(void) {
 return(false);
 }
 #endif
+
+/* ************************************************************************** */
+/* ***************************** Pango Library ****************************** */
+/* ************************************************************************** */
+
+#ifndef _NO_LIBPANGO
+# if !defined(_STATIC_LIBPANGO) && !defined(NODYNAMIC)
+#  include <dynamic.h>
+static DL_CONST void *libpango=NULL, *libpangoxft, *libXft;
+static XftDraw *(*_XftDrawCreate)(Display *,Drawable,Visual *,Colormap);
+static Bool *(*_XftColorAllocValue)(Display *,Visual *,Colormap,XRenderColor *,XftColor *);
+
+static PangoFontDescription *(*_pango_font_description_new)(void);
+static void (*_pango_font_description_set_family)(PangoFontDescription *,const char *);
+static void (*_pango_font_description_set_style)(PangoFontDescription *,PangoStyle);
+static void (*_pango_font_description_set_variant)(PangoFontDescription *,PangoVariant);
+static void (*_pango_font_description_set_weight)(PangoFontDescription *,PangoWeight);
+static void (*_pango_font_description_set_stretch)(PangoFontDescription *,PangoStretch);
+static void (*_pango_font_description_set_size)(PangoFontDescription *,gint);
+static void (*_pango_font_description_set_absolute_size)(PangoFontDescription *,double);
+
+static void (*_pango_layout_set_font_description)(PangoLayout *,PangoFontDescription *);
+static void (*_pango_layout_set_text)(PangoLayout *,char *,int);
+static void (*_pango_layout_get_pixel_extents)(PangoLayout *,PangoRectangle *,PangoRectangle *);
+static PangoLayout *(*_pango_layout_new)(PangoContext *);
+static void (*_pango_layout_index_to_pos)(PangoLayout *,int,PangoRectangle *);
+static gboolean (*_pango_layout_xy_to_index)(PangoLayout *,int,int,int *,int *);
+
+static PangoLayoutIter *(*_pango_layout_get_iter)(PangoLayout *);
+static void (*_pango_layout_iter_free)(PangoLayoutIter *);
+static gboolean (*_pango_layout_iter_next_run)(PangoLayoutIter *);
+static PangoLayoutRun *(*_pango_layout_iter_get_run)(PangoLayoutIter *);
+static void (*_pango_layout_iter_get_run_extents)(PangoLayoutIter *,PangoRectangle *,PangoRectangle *);
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+static DL_CONST void *libpangocairo;
+static void (*_pango_cairo_layout_path)(cairo_t *,PangoLayout *);
+static void (*_pango_cairo_show_glyph_string)(cairo_t *,PangoFont *, PangoGlyphString *);
+static PangoContext *(*_pango_cairo_font_map_create_context)(PangoCairoFontMap *);
+static PangoFontMap *(*_pango_cairo_font_map_get_default)(void);
+static void (*_pango_cairo_context_set_resolution)(PangoContext *,double);
+# endif
+
+static PangoFont *(*_pango_font_map_load_font)(PangoFontMap *, PangoContext *, const PangoFontDescription *);
+static PangoFontMetrics *(*_pango_font_get_metrics)(PangoFont *, PangoLanguage *);
+static void (*_pango_font_metrics_unref)(PangoFontMetrics *);
+static int (*_pango_font_metrics_get_ascent)(PangoFontMetrics *);
+static int (*_pango_font_metrics_get_descent)(PangoFontMetrics *);
+
+static void (*_pango_xft_render_layout)(XftDraw *,XftColor *,PangoLayout *,int,int);
+static PangoFontMap *(*_pango_xft_get_font_map)(Display *, int);
+static PangoContext *(*_pango_xft_get_context)(Display *, int);
+static void (*_pango_xft_render)(XftDraw *, XftColor *, PangoFont *,
+				 PangoGlyphString *, gint, gint);
+static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
+	PangoLayout *layout,int x,int y);
+
+static PangoFontDescription *(*_pango_font_describe)(PangoFont *);
+static char *(*_pango_font_description_to_string)(PangoFontDescription *);
+
+static int pango_initted=false, hasP=false;
+
+int _GXPDraw_hasPango(void) {
+
+    if ( pango_initted )
+return( hasP );
+
+    pango_initted = true;
+    libpango = dlopen("libpango-1.0" SO_EXT,RTLD_LAZY);
+    if ( libpango==NULL ) {
+	fprintf(stderr,"libpango: %s\n", dlerror());
+return( 0 );
+    }
+    _pango_font_description_new = (PangoFontDescription *(*)(void))
+	    dlsym(libpango,"pango_font_description_new");
+    _pango_font_description_set_family = (void (*)(PangoFontDescription *,const char *))
+	    dlsym(libpango,"pango_font_description_set_family");
+    _pango_font_description_set_style = (void (*)(PangoFontDescription *,PangoStyle))
+	    dlsym(libpango,"pango_font_description_set_style");
+    _pango_font_description_set_variant = (void (*)(PangoFontDescription *,PangoVariant))
+	    dlsym(libpango,"pango_font_description_set_variant");
+    _pango_font_description_set_weight = (void (*)(PangoFontDescription *,PangoWeight))
+	    dlsym(libpango,"pango_font_description_set_weight");
+    _pango_font_description_set_stretch = (void (*)(PangoFontDescription *,PangoStretch))
+	    dlsym(libpango,"pango_font_description_set_stretch");
+    _pango_font_description_set_size = (void (*)(PangoFontDescription *,gint))
+	    dlsym(libpango,"pango_font_description_set_size");
+    _pango_font_description_set_absolute_size = (void (*)(PangoFontDescription *,double))
+	    dlsym(libpango,"pango_font_description_set_absolute_size");
+
+    _pango_layout_set_font_description = (void (*)(PangoLayout *,PangoFontDescription *))
+	    dlsym(libpango,"pango_layout_set_font_description");
+    _pango_layout_set_text = (void (*)(PangoLayout *,char *,int))
+	    dlsym(libpango,"pango_layout_set_text");
+    _pango_layout_get_pixel_extents = (void (*)(PangoLayout *,PangoRectangle *,PangoRectangle *))
+	    dlsym(libpango,"pango_layout_get_pixel_extents");
+    _pango_layout_new = (PangoLayout *(*)(PangoContext *))
+	    dlsym(libpango,"pango_layout_new");
+    _pango_layout_index_to_pos = (void (*)(PangoLayout *, int, PangoRectangle *))
+	    dlsym(libpango,"pango_layout_index_to_pos");
+    _pango_layout_xy_to_index = (gboolean (*)(PangoLayout *,int,int,int *,int *))
+	    dlsym(libpango,"pango_layout_xy_to_index");
+
+    _pango_font_map_load_font = (PangoFont *(*)(PangoFontMap *, PangoContext *, const PangoFontDescription *))
+	    dlsym(libpango,"pango_font_map_load_font");
+    _pango_font_get_metrics = (PangoFontMetrics *(*)(PangoFont *, PangoLanguage *))
+	    dlsym(libpango,"pango_font_get_metrics");
+    _pango_font_metrics_unref = (void (*)(PangoFontMetrics *))
+	    dlsym(libpango,"pango_font_metrics_unref");
+    _pango_font_metrics_get_ascent = (int (*)(PangoFontMetrics *))
+	    dlsym(libpango,"pango_font_metrics_get_ascent");
+    _pango_font_metrics_get_descent = (int (*)(PangoFontMetrics *))
+	    dlsym(libpango,"pango_font_metrics_get_descent");
+
+    /* Only used if we don't have pango_xft_render_layout */
+    _pango_layout_get_iter = (PangoLayoutIter *(*)(PangoLayout *))
+	    dlsym(libpango,"pango_layout_get_iter");
+    _pango_layout_iter_free = (void (*)(PangoLayoutIter *))
+	    dlsym(libpango,"pango_layout_iter_free");
+    _pango_layout_iter_next_run = (gboolean (*)(PangoLayoutIter *))
+	    dlsym(libpango,"pango_layout_iter_next_run");
+    _pango_layout_iter_get_run = (PangoLayoutRun *(*)(PangoLayoutIter *))
+	    dlsym(libpango,"pango_layout_iter_get_run_readonly");
+    if ( _pango_layout_iter_get_run==NULL )
+	_pango_layout_iter_get_run = (PangoLayoutRun *(*)(PangoLayoutIter *))
+		dlsym(libpango,"pango_layout_iter_get_run");	/* Only used if we dont have pango_layout_iter_get_run_readonly */
+    _pango_layout_iter_get_run_extents = (void (*)(PangoLayoutIter *,PangoRectangle *,PangoRectangle *))
+	    dlsym(libpango,"pango_layout_iter_get_run_extents");
+
+    libpangoxft = dlopen("libpangoxft-1.0" SO_EXT,RTLD_LAZY);
+    if ( libpangoxft==NULL ) {
+	fprintf(stderr,"libpangoxft: %s\n", dlerror());
+return( 0 );
+    }
+    _pango_xft_render_layout = (void (*)(XftDraw *,XftColor *,PangoLayout *,int,int))
+	    dlsym(libpangoxft,"pango_xft_render_layout");
+    _pango_xft_get_font_map = (PangoFontMap *(*)(Display *, int))
+	    dlsym(libpangoxft,"pango_xft_get_font_map");
+    _pango_xft_get_context = (PangoContext *(*)(Display *, int))
+	    dlsym(libpangoxft,"pango_xft_get_context");
+    if ( _pango_xft_render_layout == NULL ) {
+	_pango_xft_render = (void (*)(XftDraw *,XftColor *,PangoFont *, PangoGlyphString *, gint, gint))
+		dlsym(libpangoxft,"pango_xft_render");
+    }
+
+    if ( _pango_font_description_new==NULL || _pango_xft_render==NULL ) {
+	fprintf(stderr,"libpango: Missing symbols\n" );
+return( 0 );
+    }
+
+    libXft = dlopen("libXft" SO_EXT,RTLD_LAZY);
+    if ( libXft==NULL ) {
+	fprintf(stderr,"libXft: %s\n", dlerror());
+    } else {
+	_XftDrawCreate = (XftDraw *(*)(Display *,Drawable,Visual *,Colormap))
+		dlsym(libXft,"XftDrawCreate");
+	_XftColorAllocValue = (Bool *(*)(Display *,Visual *,Colormap,XRenderColor *,XftColor *))
+		dlsym(libXft,"XftColorAllocValue");
+	if ( _XftDrawCreate!=NULL && _XftColorAllocValue!=NULL )
+	    hasP |= 1;
+    }
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    libpangocairo = dlopen("libpangocairo-1.0" SO_EXT,RTLD_LAZY);
+    if ( libpangocairo==NULL )
+	fprintf(stderr,"libpangocairo: %s\n", dlerror());
+    else {
+	_pango_cairo_layout_path = (void (*)(cairo_t *,PangoLayout *))
+		dlsym(libpangocairo,"pango_cairo_layout_path");
+	_pango_cairo_show_glyph_string = (void (*)(cairo_t *,PangoFont *, PangoGlyphString *))
+		dlsym(libpangocairo,"pango_cairo_show_glyph_string");
+	_pango_cairo_font_map_create_context = (PangoContext *(*)(PangoCairoFontMap *))
+		dlsym(libpangocairo,"pango_cairo_font_map_create_context");
+	_pango_cairo_font_map_get_default = (PangoFontMap *(*)(void))
+		dlsym(libpangocairo,"pango_cairo_font_map_get_default");
+	_pango_cairo_context_set_resolution = (void (*)(PangoContext *,double))
+		dlsym(libpangocairo,"pango_cairo_context_set_resolution");
+	if ( _pango_cairo_show_glyph_string!=NULL && _pango_cairo_font_map_create_context!=NULL &&
+		_pango_cairo_font_map_get_default!=NULL && _GXCDraw_hasCairo())
+	    hasP |= 2;
+    }
+#endif
+
+	_pango_font_describe = (PangoFontDescription * (*)(PangoFont *))
+		dlsym(libpango,"pango_font_describe");
+	_pango_font_description_to_string = (char * (*)(PangoFontDescription *))
+		dlsym(libpango,"pango_font_description_to_string");
+return( hasP );
+}
+# else
+#  define _XftDrawCreate XftDrawCreate
+#  define _XftColorAllocValue XftColorAllocValue
+
+#  define _pango_font_description_new pango_font_description_new
+#  define _pango_font_description_set_family pango_font_description_set_family
+#  define _pango_font_description_set_style pango_font_description_set_style
+#  define _pango_font_description_set_variant pango_font_description_set_variant
+#  define _pango_font_description_set_weight pango_font_description_set_weight
+#  define _pango_font_description_set_stretch pango_font_description_set_stretch
+#  define _pango_font_description_set_size pango_font_description_set_size
+#  define _pango_font_description_set_absolute_size pango_font_description_set_absolute_size
+#  define _pango_layout_set_font_description pango_layout_set_font_description
+#  define _pango_layout_set_text pango_layout_set_text
+#  define _pango_layout_set_font_description pango_layout_set_font_description
+#  define _pango_layout_set_text pango_layout_set_text
+#  define _pango_layout_get_pixel_extents pango_layout_get_pixel_extents
+#  define _pango_layout_index_to_pos pango_layout_index_to_pos
+#  define _pango_layout_xy_to_index pango_layout_xy_to_index
+#  define _pango_font_map_load_font pango_font_map_load_font
+#  define _pango_font_get_metrics pango_font_get_metrics
+#  define _pango_font_metrics_unref pango_font_metrics_unref
+#  define _pango_font_metrics_get_ascent pango_font_metrics_get_ascent
+#  define _pango_font_metrics_get_descent pango_font_metrics_get_descent
+#  define _pango_layout_new pango_layout_new
+#  define _pango_layout_get_iter pango_layout_get_iter
+#  define _pango_layout_iter_free pango_layout_iter_free
+#  define _pango_layout_iter_next_run pango_layout_iter_next_run
+#  define _pango_layout_iter_get_run pango_layout_iter_get_run
+#  define _pango_layout_iter_get_run_extents pango_layout_iter_get_run_extents
+#  if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+#   define _pango_cairo_layout_path pango_cairo_layout_path
+#   define _pango_font_map_create_context pango_font_map_create_context
+#   define _pango_cairo_font_map_get_default pango_cairo_font_map_get_default
+#   define _pango_cairo_context_set_resolution _pango_cairo_context_set_resolution
+#  endif
+#  if PANGO_VERSION_MINOR>=8
+#   define _pango_xft_render_layout pango_xft_render_layout
+#  else
+#   define _pango_xft_render_layout my_xft_render_layout
+#  endif
+#  define _pango_xft_get_font_map pango_xft_get_font_map
+#  define _pango_xft_get_context pango_xft_get_context
+#  define _pango_xft_render pango_xft_render
+
+int _GXPDraw_hasPango(void) {
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+return( 3 );
+# else
+return( 1 );
+# endif
+}
+# endif
+
+/* ************************************************************************** */
+/* ****************************** Pango Render ****************************** */
+/* ************************************************************************** */
+
+/* This routine exists in pango 1.8, but I depend on it, and I've only got 1.2*/
+/*  as a test bed. So... */
+
+static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
+	PangoLayout *layout,int x,int y) {
+    PangoRectangle rect, r2;
+    PangoLayoutIter *iter;
+
+    iter = _pango_layout_get_iter(layout);
+    do {
+	PangoLayoutRun *run = _pango_layout_iter_get_run(iter);
+	if ( run!=NULL ) {	/* NULL runs mark end of line */
+	    _pango_layout_iter_get_run_extents(iter,&r2,&rect);
+	    _pango_xft_render(xftw,fgcol,run->item->analysis.font,run->glyphs,
+		    x+(rect.x+PANGO_SCALE/2)/PANGO_SCALE, y+(rect.y+PANGO_SCALE/2)/PANGO_SCALE);
+	    /* I doubt I'm supposed to free (or unref) the run? */
+	}
+    } while ( _pango_layout_iter_next_run(iter));
+    _pango_layout_iter_free(iter);
+}
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+/* Strangely the equivalent routine was not part of the pangocairo library */
+/* Oh there's _pango_cairo_layout_path but that's more restrictive and probably*/
+/*  less efficient */
+
+static void my_cairo_render_layout(cairo_t *cc, Color fg,
+	PangoLayout *layout,int x,int y) {
+    PangoRectangle rect, r2;
+    PangoLayoutIter *iter;
+
+    iter = _pango_layout_get_iter(layout);
+    do {
+	PangoLayoutRun *run = _pango_layout_iter_get_run(iter);
+	if ( run!=NULL ) {	/* NULL runs mark end of line */
+	    _pango_layout_iter_get_run_extents(iter,&r2,&rect);
+	    _cairo_move_to(cc,x+(rect.x+PANGO_SCALE/2)/PANGO_SCALE, y+(rect.y+PANGO_SCALE/2)/PANGO_SCALE);
+	    if ( COLOR_ALPHA(fg)==0 )
+		_cairo_set_source_rgba(cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+			1.0);
+	    else
+		_cairo_set_source_rgba(cc,COLOR_RED(fg)/255.0,COLOR_GREEN(fg)/255.0,COLOR_BLUE(fg)/255.0,
+			COLOR_ALPHA(fg)/255.);
+	    _pango_cairo_show_glyph_string(cc,run->item->analysis.font,run->glyphs);
+	}
+    } while ( _pango_layout_iter_next_run(iter));
+    _pango_layout_iter_free(iter);
+}
+#endif
+
+/* ************************************************************************** */
+/* ****************************** Pango Window ****************************** */
+/* ************************************************************************** */
+void _GXPDraw_NewWindow(GXWindow nw) {
+    GXDisplay *gdisp = nw->display;
+
+    if ( !_GXPDraw_hasPango())
+return;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( nw->usecairo ) {
+	if ( _pango_cairo_font_map_create_context==NULL )
+return;
+	/* using pango through cairo is different from using it on bare X */
+	if ( gdisp->pangoc_context==NULL ) {
+	    gdisp->pangoc_fontmap = _pango_cairo_font_map_get_default();
+	    gdisp->pangoc_context = _pango_cairo_font_map_create_context(
+		    gdisp->pangoc_fontmap);
+	    if ( _pango_cairo_context_set_resolution!=NULL )
+		_pango_cairo_context_set_resolution(gdisp->pangoc_context,
+			gdisp->res);
+	    gdisp->pangoc_layout = _pango_layout_new(gdisp->pangoc_context);
+	}
+    } else
+# endif
+    {
+	if ( gdisp->pango_context==NULL ) {
+	    gdisp->pango_fontmap = _pango_xft_get_font_map(gdisp->display,gdisp->screen);
+	    gdisp->pango_context = _pango_xft_get_context(gdisp->display,gdisp->screen);
+	    /* No obvious way to get or set the resolution of pango_xft */
+	}
+	nw->xft_w = _XftDrawCreate(gdisp->display,nw->w,gdisp->visual,gdisp->cmap);
+	if ( gdisp->pango_layout==NULL )
+	    gdisp->pango_layout = _pango_layout_new(gdisp->pango_context);
+    }
+    nw->usepango = true;
+return;
+}
+
+/* ************************************************************************** */
+/* ******************************* Pango Text ******************************* */
+/* ************************************************************************** */
+static void _GXPDraw_configfont(GFont *font) {
+    PangoFontDescription *fd;
+
+    if ( font->pango_fd!=NULL )
+return;
+    font->pango_fd = fd = _pango_font_description_new();
+
+    if ( font->rq.utf8_family_name != NULL )
+	_pango_font_description_set_family(fd,font->rq.utf8_family_name);
+    else {
+	char *temp = u2utf8_copy(font->rq.family_name);
+	_pango_font_description_set_family(fd,temp);
+	free(temp);
+    }
+    _pango_font_description_set_style(fd,(font->rq.style&fs_italic)?
+	    PANGO_STYLE_ITALIC:
+	    PANGO_STYLE_NORMAL);
+    _pango_font_description_set_variant(fd,(font->rq.style&fs_smallcaps)?
+	    PANGO_VARIANT_SMALL_CAPS:
+	    PANGO_VARIANT_NORMAL);
+    _pango_font_description_set_weight(fd,font->rq.weight);
+    _pango_font_description_set_stretch(fd,
+	    (font->rq.style&fs_condensed)?  PANGO_STRETCH_CONDENSED :
+	    (font->rq.style&fs_extended )?  PANGO_STRETCH_EXPANDED  :
+					    PANGO_STRETCH_NORMAL);
+
+    /* Pango doesn't give me any control over the resolution, so I do my */
+    /*  own conversion from points to pixels */
+    /* But then, set_absolute_size doesn't exist in some versions of the */
+    /*  library */
+    if ( _pango_font_description_set_absolute_size!=NULL ) {
+	if ( font->rq.point_size>0 )
+	    _pango_font_description_set_absolute_size(fd,
+		    GDrawPointsToPixels(NULL,font->rq.point_size));
+	else
+	    _pango_font_description_set_absolute_size(fd,-font->rq.point_size);
+    } else {
+	if ( font->rq.point_size>0 )
+	    _pango_font_description_set_size(fd,font->rq.point_size*PANGO_SCALE);
+	else
+	    _pango_font_description_set_absolute_size(fd,
+		    GDrawPixelsToPoints(NULL,-font->rq.point_size)*PANGO_SCALE);
+    }
+}
+
+int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
+	const char *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg) {
+    GXWindow gw = (GXWindow) w;
+    GXDisplay *gdisp = gw->display;
+    struct font_instance *fi = gw->ggc->fi;
+    PangoRectangle rect, ink;
+    PangoLayout *layout = gdisp->pango_layout;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo )
+	layout = gdisp->pangoc_layout;
+# endif
+    _GXPDraw_configfont(fi);
+    _pango_layout_set_font_description(layout,fi->pango_fd);
+    _pango_layout_set_text(layout,(char *) text,cnt);
+    _pango_layout_get_pixel_extents(layout,NULL,&rect);
+    if ( drawit==tf_drawit ) {
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+	if ( gw->usecairo ) {
+	    _cairo_move_to(gw->cc,x,y);
+	    gw->ggc->fg = col;
+	    GXCDrawSetcolfunc(gw,gw->ggc);
+	    _pango_cairo_layout_path(gw->cc,layout);
+	    _cairo_fill(gw->cc);
+	} else
+#endif
+	{
+	    XftColor fg;
+	    XRenderColor fgcol;
+	    fgcol.red = COLOR_RED(col)<<8; fgcol.green = COLOR_GREEN(col)<<8; fgcol.blue = COLOR_BLUE(col)<<8;
+	    if ( COLOR_ALPHA(col)!=0 )
+		fgcol.alpha = COLOR_ALPHA(col)*0x101;
+	    else
+		fgcol.alpha = 0xffff;
+	    _XftColorAllocValue(gdisp->display,gdisp->visual,gdisp->cmap,&fgcol,&fg);
+	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+	}
+    } else if ( drawit==tf_rect ) {
+	PangoLayoutIter *iter;
+	PangoLayoutRun *run;
+	PangoFontMetrics *fm;
+
+	_pango_layout_get_pixel_extents(layout,&ink,&rect);
+	arg->size.lbearing = ink.x - rect.x;
+	arg->size.rbearing = ink.x+ink.width - rect.x;
+	arg->size.width = rect.width;
+	iter = _pango_layout_get_iter(layout);
+	run = _pango_layout_iter_get_run(iter);
+	fm = _pango_font_get_metrics(run->item->analysis.font,NULL);
+	arg->size.fas = _pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
+	arg->size.fds = _pango_font_metrics_get_descent(fm)/PANGO_SCALE;
+	arg->size.as = arg->size.fas - ink.y;
+	arg->size.ds = ink.height - arg->size.fas;
+	_pango_font_metrics_unref(fm);
+	_pango_layout_iter_free(iter);
+    }
+return( rect.width );
+}
+
+int32 _GXPDraw_DoText(GWindow w, int32 x, int32 y,
+	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	enum text_funcs drawit, struct tf_arg *arg) {
+    char *temp = cnt>=0 ? u2utf8_copyn(text,cnt) : u2utf8_copy(text);
+    int width = _GXPDraw_DoText8(w,x,y,temp,-1,mods,col,drawit,arg);
+    free(temp);
+return(width);
+}
+
+void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
+    GXDisplay *gdisp = gw->display;
+    PangoFont *pfont;
+    PangoFontMetrics *fm;
+
+    _GXPDraw_configfont(fi);
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo )
+	pfont = _pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
+		fi->pango_fd;
+    else
+#endif
+	pfont = _pango_font_map_load_font(gdisp->pango_fontmap,gdisp->pango_context,
+		fi->pango_fd);
+    fm = _pango_font_get_metrics(pfont,NULL);
+    *as = _pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
+    *ds = _pango_font_metrics_get_descent(fm)/PANGO_SCALE;
+    *ld = 0;
+    _pango_font_metrics_unref(fm);
+}
+
+/* ************************************************************************** */
+/* ****************************** Pango Layout ****************************** */
+/* ************************************************************************** */
+void _GXPDraw_LayoutInit(GWindow w, char *text, GFont *fi) {
+    GXWindow gw = (GXWindow) w;
+    GXDisplay *gdisp = gw->display;
+    PangoLayout *layout = gdisp->pango_layout;
+
+    if ( fi==NULL )
+	fi = gw->ggc->fi;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo )
+	layout = gdisp->pangoc_layout;
+# endif
+    _GXPDraw_configfont(fi);
+    _pango_layout_set_font_description(layout,fi->pango_fd);
+    _pango_layout_set_text(layout,(char *) text,-1);
+}
+
+void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
+    GXWindow gw = (GXWindow) w;
+    GXDisplay *gdisp = gw->display;
+    PangoLayout *layout = gdisp->pango_layout;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo ) {
+	layout = gdisp->pangoc_layout;
+	_cairo_move_to(gw->cc,x,y);
+	gw->ggc->fg = col;
+	GXCDrawSetcolfunc(gw,gw->ggc);
+	_pango_cairo_layout_path(gw->cc,layout);
+	_cairo_fill(gw->cc);
+    } else
+#endif
+    {
+	XftColor fg;
+	XRenderColor fgcol;
+	fgcol.red = COLOR_RED(col)<<8; fgcol.green = COLOR_GREEN(col)<<8; fgcol.blue = COLOR_BLUE(col)<<8;
+	if ( COLOR_ALPHA(col)!=0 )
+	    fgcol.alpha = COLOR_ALPHA(col)*0x101;
+	else
+	    fgcol.alpha = 0xffff;
+	_XftColorAllocValue(gdisp->display,gdisp->visual,gdisp->cmap,&fgcol,&fg);
+	my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
+    }
+}
+
+void _GXPDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
+    GXWindow gw = (GXWindow) w;
+    GXDisplay *gdisp = gw->display;
+    PangoLayout *layout = gdisp->pango_layout;
+    PangoRectangle rect;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo )
+	layout = gdisp->pangoc_layout;
+# endif
+    _pango_layout_index_to_pos(layout,index,&rect);
+    pos->x = rect.x/PANGO_SCALE; pos->y = rect.y/PANGO_SCALE; pos->width = rect.width/PANGO_SCALE; pos->height = rect.height/PANGO_SCALE;
+}
+
+void _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y, int *index) {
+    GXWindow gw = (GXWindow) w;
+    GXDisplay *gdisp = gw->display;
+    PangoLayout *layout = gdisp->pango_layout;
+    int trailing;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo )
+	layout = gdisp->pangoc_layout;
+# endif
+    _pango_layout_xy_to_index(layout,x,y,index,&trailing);
+}
+
+void _GXPDraw_LayoutExtents(GWindow w, GRect *size) {
+    GXWindow gw = (GXWindow) w;
+    GXDisplay *gdisp = gw->display;
+    PangoLayout *layout = gdisp->pango_layout;
+    PangoRectangle rect;
+
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    if ( gw->usecairo )
+	layout = gdisp->pangoc_layout;
+# endif
+    _pango_layout_get_pixel_extents(layout,NULL,&rect);
+    size->x = rect.x; size->y = rect.y; size->width = rect.width; size->height = rect.height;
+}
+#endif	/* _NO_LIBPANGO */

@@ -272,7 +272,7 @@ static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
 	iheight = GImageGetScaledHeight(gl->g.base,gl->image);
     }
-    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(g->base,gl->font,&as, &ds, &ld);
     if ( gl->label!=NULL ) {
 	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
 	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
@@ -416,7 +416,7 @@ static void GCheckBoxFit(GCheckBox *gl) {
     _ggadgetFigureSize(gl->g.base,gl->onbox,&needed,false);
     gl->onoffrect = needed;
 
-    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(gl->g.base,gl->font,&as, &ds, &ld);
     GRadioGetDesiredSize(&gl->g,&outer,&inner);
     _ggadgetSetRects(&gl->g,&outer, &inner, -1, 0);
 

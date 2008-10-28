@@ -1216,8 +1216,15 @@ return( NULL );
 	(eh)((GWindow) nw,&e);
     }
 #ifndef _NO_LIBCAIRO
-    if ( _GXCDraw_hasCairo() )
+    /* Only do sub-pixel/anti-alias stuff if we've got truecolor */
+    if ( gdisp->visual->class==TrueColor && (wattrs->mask&wam_cairo) &&
+	    _GXCDraw_hasCairo() )
 	_GXCDraw_NewWindow(nw,wattrs->background_color);
+#endif
+#ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
+    /* I think we will always want to use pango, so it isn't conditional on a wam */
+    if ( gdisp->visual->class==TrueColor && _GXPDraw_hasPango() )
+	_GXPDraw_NewWindow(nw);
 #endif
 return( (GWindow) nw );
 }
@@ -1273,6 +1280,11 @@ return( NULL );
     gw->pos.x = gw->pos.y = 0;
     gw->pos.width = width; gw->pos.height = height;
     gw->w = XCreatePixmap(gw->display->display, gw->display->root, width, height, gw->display->depth);
+#ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
+    /* I think we will always want to use pango, so it isn't conditional */
+    if ( ((GXDisplay *) gdisp)->visual->class==TrueColor && _GXPDraw_hasPango() )
+	_GXPDraw_NewWindow(gw);
+#endif
 return( (GWindow) gw );
 }
 
@@ -2238,6 +2250,9 @@ static enum gcairo_flags GXDrawHasCairo(GWindow w) {
     if ( ((GXWindow) w)->usecairo )
 return( _GXCDraw_CairoCapabilities( (GXWindow) w));
 
+    if ( ((GXWindow) w)->usepango )
+return( gc_pango|gc_xor );
+
 return( gc_xor );
 }
 
@@ -2312,6 +2327,9 @@ return;
 }
 #else
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
+    if ( ((GXWindow) w)->usepango )
+return( gc_pango|gc_xor );
+
 return( gc_xor );
 }
 
@@ -2352,6 +2370,41 @@ static void GXDrawCairoBuffer(GWindow w,GRect *size) {
 static void GXDrawCairoUnbuffer(GWindow w,GRect *size) {
 }
 #endif
+
+static void GXDrawLayoutInit(GWindow w, char *text, GFont *fi) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_LayoutInit(w,text,fi);
+#endif
+}
+
+static void GXDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_LayoutDraw(w,x,y,fg);
+#endif
+}
+
+static void GXDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_LayoutIndexToPos(w,index,pos);
+#endif
+}
+
+static void GXDraw_LayoutXYToIndex(GWindow w, int x, int y, int *index) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_LayoutXYToIndex(w,x,y,index);
+#endif
+}
+
+static void GXDraw_LayoutExtents(GWindow w, GRect *size) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_LayoutExtents(w,size);
+#endif
+}
 
 static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
     if ( gw->eh!=NULL ) {
@@ -2671,14 +2724,17 @@ return;
 }
 
 static void GXDrawFontMetrics( GWindow w,GFont *fi,int *as, int *ds, int *ld) {
-#ifdef _NO_LIBCAIRO
-    GDrawFontMetrics(fi,as,ds,ld);
-#else
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
+    else
+#endif
+#ifndef _NO_LIBCAIRO
     if ( ((GXWindow) w)->usecairo )
 	_GXCDraw_FontMetrics( ((GXWindow) w),fi,as,ds,ld);
     else
-	GDrawFontMetrics(fi,as,ds,ld);
 #endif
+	GDrawFontMetrics(fi,as,ds,ld);
 }
     
 
@@ -4603,7 +4659,13 @@ static struct displayfuncs xfuncs = {
     GXDrawPathFillAndStroke,
 
     GXDrawCairoBuffer,
-    GXDrawCairoUnbuffer
+    GXDrawCairoUnbuffer,
+
+    GXDrawLayoutInit,
+    GXDraw_LayoutDraw,
+    GXDraw_LayoutIndexToPos,
+    GXDraw_LayoutXYToIndex,
+    GXDraw_LayoutExtents
 };
 
 static void GDrawInitXKB(GXDisplay *gdisp) {
