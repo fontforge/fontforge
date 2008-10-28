@@ -671,6 +671,18 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 return( utf8buf );
 }
 
+char *utf8_strchr(const char *str, int search) {
+    int ch;
+    const char *old = str;
+
+    while ( (ch = utf8_ildb(&str))!=0 ) {
+	if ( ch==search )
+return( (char *) old );
+	old = str;
+    }
+return( NULL );
+}
+
 char *latin1_2_utf8_strcpy(char *utf8buf,const char *lbuf) {
     char *pt = utf8buf;
     const unsigned char *lpt = (const unsigned char *) lbuf;

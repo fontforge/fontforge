@@ -104,6 +104,7 @@ struct gwindow {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
+    unsigned int usepango: 1;		/* draw text with pango */
 };
 
 struct ginput_context {
@@ -267,6 +268,12 @@ struct displayfuncs {
 
     void (*cairoBuffer)(GWindow w,GRect *size);
     void (*cairoUnbuffer)(GWindow w,GRect *size);
+
+    void (*layoutInit)(GWindow w, char *text, GFont *fi);
+    void (*layoutDraw)(GWindow w, int32 x, int32 y, Color fg);
+    void (*layoutIndexToPos)(GWindow w, int index, GRect *pos);
+    void (*layoutXYToIndex)(GWindow w, int x, int y, int *index);
+    void (*layoutExtents)(GWindow w, GRect *size);
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

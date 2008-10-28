@@ -43,11 +43,21 @@ case "$host" in
  gww_define_caps_for_alt="1"
 
 dnl fink puts stuff under /sw
+dnl macports puts stuff under /opt/local
 
- if test -d /sw/include >/dev/null ; then
+ if test "$CPPFLAGS" \!= "" >/dev/null ; then
+  TrustUser="yes"
+ elif test -d /opt/local/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+ elif test -d /sw/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -I/sw/include"
  fi
- if test -d /sw/lib >/dev/null ; then
+ if test "$LDFLAGS" \!= "" >/dev/null ; then
+  TrustUser="yes"
+ elif test -d /opt/local/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  gww_rpath="-rpath /opt/local/lib"
+ elif test -d /sw/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/sw/lib"
   gww_rpath="-rpath /sw/lib"
  fi
@@ -374,6 +384,37 @@ if test "$gww_hascairo" = "no" ; then
  AC_DEFINE(_NO_LIBCAIRO)
 fi
 
+dnl Do we have libpango
+
+gww_haspango="no"
+gww_haspangocairo="no"
+gww_checkpango="yes"
+AC_ARG_WITH(pango,
+ [  --without-pango   Don't use libpango],
+ [
+   if test "$withval" = "no" ; then
+     gww_checkpango="no"
+   fi
+ ], : )
+if test "$gww_checkpango" = "yes" ; then
+  if pkg-config --libs pangoxft >& /dev/null ; then
+    AC_CHECK_HEADER(X11/Xft/Xft.h, gww_haspango="yes",,[#include <ft2build.h>])
+  fi
+fi
+if test "$gww_haspango" = "yes" ; then
+ CFLAGS="$CFLAGS `pkg-config --cflags pangoxft`"
+fi
+if test "$gww_haspango" = "yes" -a "$gww_hascairo" = "yes" ; then
+  if pkg-config --libs pangocairo >& /dev/null ; then
+    gww_haspangocairo="yes"
+    CFLAGS="$CFLAGS `pkg-config --cflags pangocairo`"
+  fi
+fi
+if test "$gww_haspango" = "no" ; then
+  gww_haspangocairo="no"
+  AC_DEFINE(_NO_LIBPANGO)
+fi
+
 AC_ARG_ENABLE(macapp,
   [  --disable-macapp   Do not build a mac Application (only for macs)],
   [
@@ -547,6 +588,8 @@ AC_ARG_WITH(regular-link,
 dnl If we can't/don't want to use dynamic libraries then we must link with
 dnl the static libraries we've found
 
+   echo Got here
+
 AC_SUBST(STATIC_LIBS)
 STATIC_LIBS=
 if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
@@ -589,6 +632,12 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$gww_hascairo" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lcairo -lfontconfig"
  fi
+ if test "$gww_haspango" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+ fi
 fi
 
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
@@ -629,6 +678,13 @@ if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
   STATIC_LIBS="$STATIC_LIBS -lfontconfig"
   AC_DEFINE(_STATIC_LIBFONTCONFIG)
  fi
+ if test "$gww_haspango" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  AC_DEFINE(_STATIC_LIBPANGO)
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+ fi
 fi
 if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
     "$gww_needsstaticimages" != "yes" ; then
@@ -661,6 +717,13 @@ case "$host" in
  if test "$gww_hascairo" = "yes"; then
   AC_CHECK_LIB_LA(cairo, :, [ STATIC_LIBS="$STATIC_LIBS -lcairo" ; AC_DEFINE(_STATIC_LIBCAIRO)])
   AC_CHECK_LIB_LA(fontconfig, :, [ STATIC_LIBS="$STATIC_LIBS -lfontconfig" ; AC_DEFINE(_STATIC_LIBFONTCONFIG)])
+ fi
+ if test "$gww_haspango" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  AC_DEFINE(_STATIC_LIBPANGO)
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
  fi
  ;;
 esac

@@ -106,6 +106,7 @@ extern int utf8_strlen(const char *utf8_str); /* how many characters in the stri
 extern int utf82u_strlen(const char *utf8_str); /* how many long would this be in shorts (UCS2) */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
+extern char *utf8_strchr(const char *utf8_str, int search_char);
 
 extern unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len);
 extern unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf);

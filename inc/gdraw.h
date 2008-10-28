@@ -238,7 +238,8 @@ typedef struct gwindow_attrs {
 	    wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
 	    wam_isdlg=0x10000, wam_notrestricted=0x20000,
 	    wam_transient=0x40000,
-	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000 } mask;
+	    wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
+	    wam_cairo=0x200000 } mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */
@@ -300,6 +301,7 @@ enum gzoom_flags { gzf_pos=1, gzf_size=2 };
 enum gcairo_flags { gc_buildpath=1,	/* Has build path commands (postscript, cairo) */
 		    gc_alpha=2,		/* Supports alpha channels & translucent colors (cairo, pdf) */
 		    gc_xor=4,		/* Cairo can't do the traditional XOR drawing that X11 does */
+		    gc_pango=8,
 		    gc_all = gc_buildpath|gc_alpha
 		    };
 
@@ -401,15 +403,19 @@ extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, i
 /* Routines that handle bidirectional text */
 /* (slower than the equivalent left to right routines) */
 extern int32 GDrawDrawBiText(GWindow gw, int32 x, int32 y, unichar_t *txt, int32 cnt, FontMods *mods, Color col);
+extern int32 GDrawDrawBiText8(GWindow gw, int32 x, int32 y, char *txt, int32 cnt, FontMods *mods, Color col);
 extern int32 GDrawGetBiTextWidth(GWindow gw,unichar_t *text, int len, int32 cnt, FontMods *mods);
+extern int32 GDrawGetBiText8Width(GWindow gw,char *text, int len, int32 cnt, FontMods *mods);
 extern int32 GDrawGetBiTextPtAfterPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
 extern int32 GDrawGetBiTextPtBeforePos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
 extern int32 GDrawGetBiTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
+extern int32 GDrawGetBiTextBounds(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds);
 extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 extern int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt);
+extern int32 GDrawIsAllLeftToRight8(char *text, int32 cnt);
 extern void GDrawBiText1(GBiText *bd, const unichar_t *text, int32 cnt);
 extern void GDrawArabicForms(GBiText *bd, int32 start, int32 end);
 extern void _GDrawBiText2(GBiText *bd, int32 start, int32 end);
@@ -506,6 +512,12 @@ extern void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
 extern void GDrawCairoBuffer(GWindow w,GRect *size);
 extern void GDrawCairoUnbuffer(GWindow w,GRect *size);
 extern void GDrawEnableCairo(int on);
+
+extern void GDrawLayoutInit(GWindow w, char *text, GFont *fi);
+extern void GDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg);
+extern void GDrawLayoutIndexToPos(GWindow w, int index, GRect *pos);
+extern void GDrawLayoutXYToIndex(GWindow w, int x, int y, int *index);
+extern void GDrawLayoutExtents(GWindow w, GRect *size);
 
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);

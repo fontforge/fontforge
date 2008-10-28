@@ -84,6 +84,14 @@ capable of using composite.
 #  include <cairo/cairo-ft.h>
 #  include <fontconfig/fontconfig.h>
 # endif
+# ifndef _NO_LIBPANGO
+#  define GTimer GTimer_GTK
+#  include <ft2build.h>
+#  include <X11/Xft/Xft.h>
+#  include <pango/pango.h>
+#  include <pango/pangoxft.h>
+#  undef GTimer
+# endif
 #endif
 
 #include "gdrawP.h"
@@ -135,6 +143,7 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context */
+    unsigned int usepango: 1;		/* draw text with pango */
     unsigned int is_dlg: 1;
     unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
@@ -151,6 +160,9 @@ typedef struct gxwindow /* :GWindow */ {
     cairo_surface_t *cs;
     struct gcstate cairo_state;
     Color bg;
+#endif
+#ifndef _NO_LIBPANGO
+    XftDraw *xft_w;
 #endif
 } *GXWindow;
 
@@ -318,6 +330,16 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct xkb {
 	int opcode, event, error;
     } xkb;
+#ifndef _NO_LIBPANGO
+    PangoFontMap *pango_fontmap;
+    PangoContext *pango_context;
+    PangoLayout  *pango_layout;
+# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+    PangoFontMap *pangoc_fontmap;
+    PangoContext *pangoc_context;
+    PangoLayout  *pangoc_layout;
+# endif
+#endif
 } GXDisplay;
 
 # define Pixel32(gdisp,col) ( Pixel16(gdisp,col) | (gdisp)->cs.alpha_bits )
