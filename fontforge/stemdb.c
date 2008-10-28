@@ -4332,20 +4332,26 @@ static struct stemdata *FindOrMakeGhostStem( struct glyphdata *gd,
     struct stemdata *stem=NULL, *tstem;
     struct stem_chunk *chunk;
     BasePoint dir,left,right;
+    double min, max;
 
     dir.x = 1; dir.y = 0;
     for ( i=0; i<gd->stemcnt; ++i ) {
 	tstem = &gd->stems[i];
-        if ( tstem->blue == blue && tstem->ghost ) {
+        if ( tstem->blue == blue && tstem->ghost && tstem->width == width ) {
             stem = tstem;
     break;
         /* If the stem controlling this blue zone is not for a ghost hint,
         /* then we check if it has both left and right points, to ensure that
         /* we don't occasionally assign an additional point to a stem which
         /* has already been rejected in favor of another stem */
-	} else if ( tstem->blue == blue && !tstem->toobig &&
-            ((sp->me.y > 0 && sp->me.y <= tstem->left.y ) ||
-            ( sp->me.y <= 0 && sp->me.y >= tstem->right.y ))) {
+	} else if ( tstem->blue == blue && !tstem->ghost && !tstem->toobig ) {
+            min = ( width == 20 ) ? tstem->left.y - tstem->lmin - 2*dist_error_hv :
+                                    tstem->right.y - tstem->rmin - 2*dist_error_hv;
+            max = ( width == 20 ) ? tstem->left.y - tstem->lmax + 2*dist_error_hv :
+                                    tstem->right.y - tstem->rmax + 2*dist_error_hv;
+            
+            if ( sp->me.y <= min || sp->me.y >= max )
+    continue;
             
             hasl = false; hasr = false; j = 0;
             while ( j < tstem->chunk_cnt && ( !hasl || !hasr )) {
