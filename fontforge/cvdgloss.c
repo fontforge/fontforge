@@ -85,12 +85,10 @@ return(val);
 static void scrprintf(struct scr *scr, char *format, ... ) {
     va_list ap;
     char buffer[100];
-    unichar_t ubuffer[100];
 
     va_start(ap,format);
     vsnprintf(buffer,sizeof(buffer),format,ap);
-    uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(scr->pixmap,3,scr->y,ubuffer,-1,NULL,0);
+    GDrawDrawBiText8(scr->pixmap,3,scr->y,buffer,-1,NULL,0);
     scr->y += scr->fh;
     ++scr->lines;
 }

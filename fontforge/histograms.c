@@ -421,7 +421,6 @@ static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
     double yscale = (4*height/5.0)/(hist->h->max-0);
     int i;
     char buf[20];
-    unichar_t ubuf[20];
 
     GDrawSetLineWidth(pixmap,0);
     r.x = hist->x; r.y = hist->y;
@@ -446,18 +445,18 @@ static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
     GDrawSetFont(pixmap,hist->font);
     r.x = 10; r.y = hist->y+height+1; r.width = hist->hwidth+2*(hist->x-10); r.height = hist->fh;
     GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
-    sprintf(buf,"%d",hist->hoff); uc_strcpy(ubuf,buf);
-    GDrawDrawText(pixmap,hist->x-GDrawGetTextWidth(pixmap,ubuf,-1,NULL)/2,hist->y+height+hist->as,
-	    ubuf,-1,NULL,0x000000);
-    sprintf(buf,"%d",hist->hoff+hist->hwidth/hist->barwidth); uc_strcpy(ubuf,buf);
-    GDrawDrawText(pixmap,hist->x+hist->hwidth-GDrawGetTextWidth(pixmap,ubuf,-1,NULL)/2,hist->y+height+hist->as,
-	    ubuf,-1,NULL,0x000000);
+    sprintf(buf,"%d",hist->hoff);
+    GDrawDrawBiText8(pixmap,hist->x-GDrawGetText8Width(pixmap,buf,-1,NULL)/2,hist->y+height+hist->as,
+	    buf,-1,NULL,0x000000);
+    sprintf(buf,"%d",hist->hoff+hist->hwidth/hist->barwidth);
+    GDrawDrawBiText8(pixmap,hist->x+hist->hwidth-GDrawGetText8Width(pixmap,buf,-1,NULL)/2,hist->y+height+hist->as,
+	    buf,-1,NULL,0x000000);
 
-    sprintf(buf,"%d",hist->h->max); uc_strcpy(ubuf,buf);
-    GDrawDrawText(pixmap,hist->x-GDrawGetTextWidth(pixmap,ubuf,-1,NULL)-2,hist->y+height-rint(hist->h->max*yscale),
-	    ubuf,-1,NULL,0x000000);
-    GDrawDrawText(pixmap,hist->x+hist->hwidth+2,hist->y+height-rint(hist->h->max*yscale),
-	    ubuf,-1,NULL,0x000000);
+    sprintf(buf,"%d",hist->h->max);
+    GDrawDrawBiText8(pixmap,hist->x-GDrawGetText8Width(pixmap,buf,-1,NULL)-2,hist->y+height-rint(hist->h->max*yscale),
+	    buf,-1,NULL,0x000000);
+    GDrawDrawBiText8(pixmap,hist->x+hist->hwidth+2,hist->y+height-rint(hist->h->max*yscale),
+	    buf,-1,NULL,0x000000);
 }
 
 static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {

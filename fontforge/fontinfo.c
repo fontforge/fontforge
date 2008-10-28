@@ -5611,14 +5611,14 @@ void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh) {
 	if ( lk->all[i].deleted )
     continue;
 	++lcnt;
-	wmax = GDrawGetText8Width(gw,lk->all[i].lookup->lookup_name,-1,NULL);
+	wmax = GDrawGetBiText8Width(gw,lk->all[i].lookup->lookup_name,-1,-1,NULL);
 	if ( wmax > width ) width = wmax;
 	if ( lk->all[i].open ) {
 	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
 		if ( lk->all[i].subtables[j].deleted )
 	    continue;
 		++lcnt;
-		wmax = gfi->fh+GDrawGetText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1,NULL);
+		wmax = gfi->fh+GDrawGetBiText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1,-1,NULL);
 		if ( wmax > width ) width = wmax;
 	    }
 	}
@@ -6518,7 +6518,7 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 	    GDrawDrawLine(pixmap,r.x+2,r.y+(r.height/2), r.x+r.width-2,r.y+(r.height/2), 0x000000);
 	    if ( !lk->all[i].open )
 		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, 0x000000);
-	    GDrawDrawText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
+	    GDrawDrawBiText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
 		    lk->all[i].lookup->lookup_name,-1,NULL,0x000000);
 	}
 	++lcnt;
@@ -6534,7 +6534,7 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 		    }
 		    r.x = LK_MARGIN+2*gfi->fh-lk->off_left;
 		    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh;
-		    GDrawDrawText8(pixmap,r.x, r.y+gfi->as,
+		    GDrawDrawBiText8(pixmap,r.x, r.y+gfi->as,
 			    lk->all[i].subtables[j].subtable->subtable_name,-1,NULL,0x000000);
 		}
 		++lcnt;

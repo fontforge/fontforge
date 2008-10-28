@@ -148,9 +148,9 @@ static int _GroupSBSizes(struct groupdlg *grp, Group *group, int lpos, int depth
 
     group->lpos = lpos++;
 
-    len = 5+8*depth+ grp->as + 5 + GDrawGetText8Width(grp->v,group->name,-1,NULL);
+    len = 5+8*depth+ grp->as + 5 + GDrawGetBiText8Width(grp->v,group->name,-1,-1,NULL);
     if ( group->glyphs!=NULL )
-	len += 5 + GDrawGetText8Width(grp->v,group->glyphs,-1,NULL);
+	len += 5 + GDrawGetBiText8Width(grp->v,group->glyphs,-1,-1,NULL);
     if ( len > grp->maxl )
 	grp->maxl = len;
 
@@ -239,9 +239,9 @@ static void GroupWExpose(struct groupdlg *grp,GWindow pixmap,GRect *rect) {
 		GDrawDrawLine(pixmap,r.x+grp->as/2,r.y+2,r.x+grp->as/2,r.y+grp->as-2,
 			fg);
 	}
-	len = GDrawDrawText8(pixmap,r.x+r.width+5,y,group->name,-1,NULL,fg);
+	len = GDrawDrawBiText8(pixmap,r.x+r.width+5,y,group->name,-1,NULL,fg);
 	if ( group->glyphs )
-	    GDrawDrawText8(pixmap,r.x+r.width+5+len+5,y,group->glyphs,-1,NULL,fg);
+	    GDrawDrawBiText8(pixmap,r.x+r.width+5+len+5,y,group->glyphs,-1,NULL,fg);
 	group = GroupNext(group,&depth);
 	y += grp->fh;
 	if ( y-grp->fh>rect->y+rect->height )

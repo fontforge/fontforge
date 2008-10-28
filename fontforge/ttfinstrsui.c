@@ -360,7 +360,7 @@ static void IVBuildEdit(InstrDlg *iv) {
 static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     int low, high;
     int i,x,y;
-    char loc[8], ins[8], val[8]; unichar_t uloc[8], uins[8], uname[30];
+    char loc[8], ins[8], val[8]; unichar_t uins[8], uname[30];
     int addr_end, num_end;
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
     int indent;
@@ -405,17 +405,15 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
 	if ( ii->instrdata->in_composit ) {
-	    uc_strcpy(uname,"<instrs inherited>");
-	    GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
+	    GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,"<instrs inherited>",-1,NULL,0xff0000);
 	    y += ii->fh;
 	}
-	uc_strcpy(uname,"<no instrs>");
-	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
+	GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,"<no instrs>",-1,NULL,0xff0000);
     } else {
 	int temp_indent;
 	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
 	    temp_indent = indent;
-	    sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
+	    sprintf( loc, "%d", i );
 	    if ( ii->instrdata->bts[i]==bt_wordhi ) {
 		sprintf( ins, " %02x%02x", ii->instrdata->instrs[i], ii->instrdata->instrs[i+1]); uc_strcpy(uins,ins);
 		sprintf( val, " %d", (short) ((ii->instrdata->instrs[i]<<8) | ii->instrdata->instrs[i+1]) );
@@ -442,16 +440,24 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    }
 
 	    if ( ii->showaddr ) {
-		x = addr_end - EDGE_SPACING - GDrawGetTextWidth(pixmap,uloc,-1,NULL);
-		GDrawDrawText(pixmap,x,y+ii->as,uloc,-1,NULL,0x000000);
+		if ( GDrawHasCairo(pixmap) & gc_pango ) {
+		    GRect size;
+		    GDrawLayoutInit(pixmap,loc,NULL);
+		    GDrawLayoutExtents(pixmap,&size);
+		    x = addr_end - EDGE_SPACING - size.width;
+		    GDrawLayoutDraw(pixmap,x,y+ii->as,0x000000);
+		} else {
+		    x = addr_end - EDGE_SPACING - GDrawGetText8Width(pixmap,loc,-1,NULL);
+		    GDrawDrawBiText8(pixmap,x,y+ii->as,loc,-1,NULL,0x000000);
+		}
 		if ( ii->bpcheck && ii->bpcheck(ii,i))
 		    GDrawDrawImage(pixmap,&GIcon_Stop,NULL,EDGE_SPACING,
 			    y+(ii->fh-8)/2-5);
 	    }
 	    x = addr_end + EDGE_SPACING;
 	    if ( ii->showhex )
-		GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
-	    GDrawDrawText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,0x000000);
+		GDrawDrawBiText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
+	    GDrawDrawBiText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,0x000000);
 	    y += ii->fh;
 	}
 	if ( ii->showaddr && ii->lstopped!=-1 ) {
@@ -1232,13 +1238,13 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     for ( ; y<=high && index<sv->len/2; ++index ) {
 	sprintf( caddr, "%d", index );
 	x = sv->addrend - ADDR_SPACER - GDrawGetText8Width(pixmap,caddr,-1,NULL);
-	GDrawDrawText8(pixmap,x,y+sv->as,caddr,-1,NULL,0x000000);
+	GDrawDrawBiText8(pixmap,x,y+sv->as,caddr,-1,NULL,0x000000);
 
 	sprintf( cval, "%d", sv->edits[index] );
-	GDrawDrawText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,0x000000);
+	GDrawDrawBiText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,0x000000);
 
 	if ( sv->comments[index]!=NULL )
-	    GDrawDrawText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,0x000000);
+	    GDrawDrawBiText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,0x000000);
 	y += sv->fh;
     }
 }
@@ -1358,10 +1364,10 @@ static int sv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	r.x = r.y = 0; r.width = sv->vwidth+40; r.height = sv->fh-1;
 	GDrawFillRect(gw,&r,0x808080);
-	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetText8Width(gw,_("Index"),-1,NULL);
-	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
-	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
-	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,NULL,0xffffff);
+	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetBiText8Width(gw,_("Index"),-1,-1,NULL);
+	GDrawDrawBiText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
+	GDrawDrawBiText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
+	GDrawDrawBiText8(gw,sv->valend,sv->as,_("Comment"),-1,NULL,0xffffff);
 	
 	GDrawDrawLine(gw,0,sv->fh-1,r.width,sv->fh-1,0x000000);
 	GDrawDrawLine(gw,0,sv->vheight+sv->fh,sv->vwidth,sv->vheight+sv->fh,0x000000);

@@ -1584,7 +1584,6 @@ static void KCD_Expose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
     GRect rect, select;
     GRect clip,old1,old2;
     int len, i, j, x, y;
-    unichar_t ubuf[8];
     char buf[100];
     int32 tilen;
     GTextInfo **ti;
@@ -1627,10 +1626,9 @@ return;
 		0x808080);
 	if ( i+kcd->offtop<kcd->first_cnt ) {
 	    sprintf( buf, "%d", i+kcd->offtop );
-	    uc_strcpy(ubuf,buf);
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
-		    ubuf,-1,NULL,0xff0000);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawBiText8(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
+		    buf,-1,NULL,0xff0000);
 	}
     }
     for ( i=0 ; kcd->offleft+i<=kcd->second_cnt && (i-1)*kcd->kernw<kcd->fullwidth; ++i ) {
@@ -1638,10 +1636,9 @@ return;
 		0x808080);
 	if ( i+kcd->offleft<kcd->second_cnt ) {
 	    sprintf( buf, "%d", i+kcd->offleft );
-	    uc_strcpy(ubuf,buf);
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
-		ubuf,-1,NULL,0xff0000);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawBiText8(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
+		buf,-1,NULL,0xff0000);
 	}
     }
 
@@ -1659,10 +1656,9 @@ return;
 	continue;
 
 	    sprintf( buf, "%d", kcd->offsets[(i+kcd->offtop)*kcd->second_cnt+j+kcd->offleft] );
-	    uc_strcpy(ubuf,buf);
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
-		ubuf,-1,NULL,0x000000);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawBiText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
+		buf,-1,NULL,0x000000);
 	}
     }
 
