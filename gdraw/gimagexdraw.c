@@ -2621,15 +2621,15 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
     int depth;
     GRect temp;
 
-    if ( magsrc->height<0 || magsrc->width<0 ||
-	    magsrc->height*(double) magsrc->width>24*1024*1024 )
-return;
 #ifndef _NO_LIBCAIRO
     if ( gw->usecairo ) {
 	_GXCDraw_ImageMagnified(gw,image,magsrc,x,y,width,height);
 return;
     }
 #endif
+    if ( magsrc->height<0 || magsrc->width<0 ||
+	    magsrc->height*(double) magsrc->width>24*1024*1024 )
+return;
 
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
 
