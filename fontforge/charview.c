@@ -2119,6 +2119,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     PST *pst;
     int i, layer, rlayer, cvlayer = CVLayer((CharViewBase *) cv);
 
+ if ( !(GDrawHasCairo(pixmap)&gc_alpha) )
+  printf( "Oh dear\n" );
+
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
     clip.width = event->u.expose.rect.width/cv->scale;
@@ -2130,10 +2133,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     GDrawSetLineWidth(pixmap,0);
 
     if ( !cv->show_ft_results && cv->dv==NULL ) {
-	/* if we've got bg images (and we're showing them) then the hints live in */
-	/*  the bg image pixmap (else they get overwritten by the pixmap) */
-	if ( cv->showhhints || cv->showvhints || cv->showdhints )
-	    CVShowHints(cv,pixmap);
 
 	if ( cv->backimgs==NULL && !(GDrawHasCairo(cv->v)&gc_buildpath))
 	    cv->backimgs = GDrawCreatePixmap(GDrawGetDisplayOfWindow(cv->v),cv->width,cv->height);
@@ -2145,12 +2144,12 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 			    (((cv->showback[layer>>5]&(1<<(layer&31))) || cvlayer==layer) && layer!=ly_fore))) ) {
 		    /* This really should be after the grids, but then it would completely*/
 		    /*  hide them. */
-		    DrawImageList(cv,cv->v,cv->b.sc->layers[layer].images);
+		    DrawImageList(cv,pixmap,cv->b.sc->layers[layer].images);
 		}
 	    }
 	    cv->back_img_out_of_date = false;
 	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
-		CVShowHints(cv,cv->v);
+		CVShowHints(cv,pixmap);
 	} else if ( cv->back_img_out_of_date ) {
 	    GDrawFillRect(cv->backimgs,NULL,GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(cv->v)));
 	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
@@ -2172,6 +2171,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    GRect r;
 	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
 	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
+	} else if ( !(GDrawHasCairo(cv->v)&gc_buildpath) &&
+		( cv->showhhints || cv->showvhints || cv->showdhints )) {
+	    /* if we've got bg images (and we're showing them) then the hints live in */
+	    /*  the bg image pixmap (else they get overwritten by the pixmap) */
+	    CVShowHints(cv,pixmap);
 	}
 	if ( cv->showgrids || cv->b.drawmode==dm_grid ) {
 	    CVDrawSplineSet(cv,pixmap,cv->b.fv->sf->grid.splines,guideoutlinecol,

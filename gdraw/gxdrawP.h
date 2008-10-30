@@ -159,7 +159,6 @@ typedef struct gxwindow /* :GWindow */ {
     cairo_t *cc;
     cairo_surface_t *cs;
     struct gcstate cairo_state;
-    Color bg;
 #endif
 #ifndef _NO_LIBPANGO
     XftDraw *xft_w;
