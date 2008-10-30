@@ -76,7 +76,7 @@ static unsigned char fontview2_bits[] = {
 extern int _GScrollBar_Width;
 
 static int fv_fontsize = 13, fv_fs_init=0;
-static Color fvselcol = 0xffff00;
+static Color fvselcol = 0xffff00, fvselfgcol=0x000000;
 static Color fvchangedcol = 0x000060;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
@@ -251,15 +251,16 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		    base.clut = fv->show->clut;
 		else {
 		    int bgr=((fvselcol>>16)&0xff), bgg=((fvselcol>>8)&0xff), bgb= (fvselcol&0xff);
+		    int fgr=((fvselfgcol>>16)&0xff), fgg=((fvselfgcol>>8)&0xff), fgb= (fvselfgcol&0xff);
 		    int i;
 		    memset(&clut,'\0',sizeof(clut));
 		    base.clut = &clut;
 		    clut.clut_len = fv->show->clut->clut_len;
 		    for ( i=0; i<clut.clut_len; ++i ) {
 			clut.clut[i] =
-				COLOR_CREATE( bgr- (i*(bgr))/(clut.clut_len-1),
-						bgg- (i*(bgg))/(clut.clut_len-1),
-						bgb- (i*(bgb))/(clut.clut_len-1));
+				COLOR_CREATE( bgr + (i*(fgr-bgr))/(clut.clut_len-1),
+						bgg + (i*(fgg-bgg))/(clut.clut_len-1),
+						bgb + (i*(fgb-bgb))/(clut.clut_len-1));
 		    }
 		}
 		GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
@@ -300,11 +301,14 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 			j*fv->cbw+(fv->cbw-1-fv->magnify*base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
-	    } else if ( GDrawHasCairo(pixmap)&gc_alpha )
+	    } else if ( (GDrawHasCairo(pixmap)&gc_alpha) && base.image_type==it_index ) {
+		Color oldfg = base.clut->clut[base.clut->clut_len-1];
+		base.clut->clut[base.clut->clut_len-1] = fvselfgcol;
 		GDrawDrawGlyph(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
-	    else
+		base.clut->clut[base.clut->clut_len-1] = oldfg;
+	    } else
 		GDrawDrawImage(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
@@ -6763,6 +6767,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 	static GResStruct cvcolors[] = {
 	    { "FontSize", rt_int, &fv_fontsize },
 	    { "SelectedColor", rt_color, &fvselcol },
+	    { "SelectedFgColor", rt_color, &fvselfgcol },
 	    { "ChangedColor", rt_color, &fvchangedcol },
 	    { NULL }
 	};
