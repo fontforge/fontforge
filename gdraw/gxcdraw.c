@@ -359,7 +359,6 @@ return;
 	    nw->cs=NULL;
 	}
     }
-    nw->bg = bg;	/* Need this to emulate Clear */
 }
 
 void _GXCDraw_ResizeWindow(GXWindow gw,GRect *rect) {
@@ -501,7 +500,7 @@ void _GXCDraw_Clear(GXWindow gw, GRect *rect) {
     }
     _cairo_new_path(gw->cc);
     _cairo_rectangle(gw->cc,r->x,r->y,r->width,r->height);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->bg)/255.0,COLOR_GREEN(gw->bg)/255.0,COLOR_BLUE(gw->bg)/255.0,
+    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->ggc->bg)/255.0,COLOR_GREEN(gw->ggc->bg)/255.0,COLOR_BLUE(gw->ggc->bg)/255.0,
 	    1.0);
     _cairo_fill(gw->cc);
 }
@@ -1533,7 +1532,7 @@ void _GXCDraw_CairoBuffer(GWindow w,GRect *size) {
     _cairo_push_group(gw->cc);
     _cairo_new_path(gw->cc);
     _cairo_rectangle(gw->cc,size->x,size->y,size->width,size->height);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->bg)/255.0,COLOR_GREEN(gw->bg)/255.0,COLOR_BLUE(gw->bg)/255.0,
+    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->ggc->bg)/255.0,COLOR_GREEN(gw->ggc->bg)/255.0,COLOR_BLUE(gw->ggc->bg)/255.0,
 	    1.0);
     _cairo_fill(gw->cc);
 }

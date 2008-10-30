@@ -30,7 +30,7 @@
 
 /* Temporarily do all drawing in this widget to a pixmap rather than the window */
 /*  if events are orderly then we can share one pixmap for all windows */
-static GWindow pixmap;
+static GWindow pixmap, cairo_pixmap;
 /*  otherwise we create and destroy pixmaps */
 
 GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect) {
@@ -43,14 +43,27 @@ return( gw );
 #ifdef UsingPThreads
     this is a critical section if there are multiple pthreads
 #endif
-    if ( pixmap==NULL || pixmap->pos.width<rect->x+rect->width ||
-			 pixmap->pos.height<rect->y+rect->height ) {
-	if ( pixmap!=NULL )
-	    GDrawDestroyWindow(pixmap);
-	pixmap = GDrawCreatePixmap(gw->display,gw->pos.width,gw->pos.height);
+    if ( GDrawHasCairo(gw)&gc_alpha ) {
+	if ( cairo_pixmap==NULL || cairo_pixmap->pos.width<rect->x+rect->width ||
+			     cairo_pixmap->pos.height<rect->y+rect->height ) {
+	    if ( cairo_pixmap!=NULL )
+		GDrawDestroyWindow(cairo_pixmap);
+	    /* The 0x8000 on width is a hack to tell create pixmap to use*/
+	    /*  cairo convas */
+	    cairo_pixmap = GDrawCreatePixmap(gw->display,0x8000|gw->pos.width,gw->pos.height);
+	}
+	ours = cairo_pixmap;
+	cairo_pixmap = NULL;
+    } else {
+	if ( pixmap==NULL || pixmap->pos.width<rect->x+rect->width ||
+			     pixmap->pos.height<rect->y+rect->height ) {
+	    if ( pixmap!=NULL )
+		GDrawDestroyWindow(pixmap);
+	    pixmap = GDrawCreatePixmap(gw->display,gw->pos.width,gw->pos.height);
+	}
+	ours = pixmap;
+	pixmap = NULL;
     }
-    ours = pixmap;
-    pixmap = NULL;
 #ifdef UsingPThreads
     End critical section
 #endif
@@ -64,7 +77,7 @@ return( gw );
     }
 return( ours );
 }
-	
+
 void _GWidget_RestorePixmap(GWindow gw, GWindow ours, GRect *rect) {
     GWidgetD *gd = (GWidgetD *) (gw->widget_data);
 
@@ -75,11 +88,20 @@ return;				/* it wasn't a pixmap, all drawing was to real window */
 #ifdef UsingPThreads
     this is a critical section if there are multiple pthreads
 #endif
-    if ( pixmap!=NULL )
-	GDrawDestroyWindow(ours);
-    else {
-	pixmap = ours;
-	ours->widget_data = NULL;
+    if ( GDrawHasCairo(gw)&gc_alpha ) {
+	if ( cairo_pixmap!=NULL )
+	    GDrawDestroyWindow(ours);
+	else {
+	    cairo_pixmap = ours;
+	    ours->widget_data = NULL;
+	}
+    } else {
+	if ( pixmap!=NULL )
+	    GDrawDestroyWindow(ours);
+	else {
+	    pixmap = ours;
+	    ours->widget_data = NULL;
+	}
     }
     gd->w = gw;
 #ifdef UsingPThreads

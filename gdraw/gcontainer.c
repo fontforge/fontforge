@@ -260,15 +260,11 @@ return(true);
     if ( event->type == et_expose ) {
 	GRect old;
 
-	if ( GDrawHasCairo(gw)&gc_alpha ) {	/* Cairo does things differently */
-	    GDrawCairoBuffer(gw,&event->u.expose.rect);
-	    pixmap = gw;
-	} else {
-	    pixmap = _GWidget_GetPixmap(gw,&event->u.expose.rect);
-	    pixmap->ggc->bg = gw->ggc->bg;
-	    GDrawPushClip(pixmap,&event->u.expose.rect,&old);
-	    pixmap->user_data = gw->user_data;
-	}
+	pixmap = _GWidget_GetPixmap(gw,&event->u.expose.rect);
+	pixmap->ggc->bg = gw->ggc->bg;
+	GDrawPushClip(pixmap,&event->u.expose.rect,&old);
+	pixmap->user_data = gw->user_data;
+
 	if ( gd->e_h!=NULL ) {
 	    (gd->e_h)(pixmap,event);
 	}
@@ -279,12 +275,10 @@ return(true);
 		    gadget->r.y+gadget->r.height<event->u.expose.rect.y ) &&
 		    gadget->state!=gs_invisible )
 		(gadget->funcs->handle_expose)(pixmap,gadget,event);
-	if ( GDrawHasCairo(gw)&gc_alpha ) {
-	    GDrawCairoUnbuffer(gw,&event->u.expose.rect);
-	}else {
-	    GDrawPopClip(pixmap,&old);
-	    _GWidget_RestorePixmap(gw,pixmap,&event->u.expose.rect);
-	}
+
+	GDrawPopClip(pixmap,&old);
+	_GWidget_RestorePixmap(gw,pixmap,&event->u.expose.rect);
+
 return( true );
     } else if ( event->type >= et_mousemove && event->type <= et_crossing ) {
 	if ( topd!=NULL && topd->popupowner!=NULL ) {
