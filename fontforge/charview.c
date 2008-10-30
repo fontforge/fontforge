@@ -1677,6 +1677,7 @@ static void DrawImageList(CharView *cv,GWindow pixmap,ImageList *backimages) {
 	x = (int) (cv->xoff + rint(backimages->xoff * cv->scale));
 	y = (int) (-cv->yoff + cv->height - rint(backimages->yoff*cv->scale));
 	temp.x -= x; temp.y -= y;
+	temp.width += x; temp.height += y;
 
 	GDrawDrawImageMagnified(pixmap, backimages->image, &temp,
 		x,y,
@@ -9757,13 +9758,17 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 
     if ( infofamily==NULL ) {
 	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
+	/* FontConfig doesn't have access to all the X11 bitmap fonts */
+	/*  so the font I used to use isn't found, and a huge monster is */
+	/*  inserted instead */
 	if ( infofamily==NULL )
-	    infofamily = (GDrawHasCairo(cv->v)&gc_alpha)?sans:fixed;
+	    infofamily = (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?sans:fixed;
     }
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = infofamily;
-    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize", (GDrawHasCairo(cv->v)&gc_alpha)?-10:-7);
+    rq.point_size = GResourceFindInt("CharView.Rulers.FontSize",
+	    (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?-10:-7);
     rq.weight = 400;
     cv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->small,&as,&ds,&ld);
