@@ -1385,13 +1385,13 @@ return;
 
 	if ( first>-20 && first<cv->height+20 ) {
 	    dtos( buf, blues[i]);
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    len = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 	    GDrawDrawBiText8(pixmap,cv->width-len-5,first-3,buf,-1,NULL,hintlabelcol);
 	} else
 	    len = 0;
 	if ( other>-20 && other<cv->height+20 ) {
 	    dtos( buf, blues[i+1]-blues[i]);
-	    len2 = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    len2 = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 	    GDrawDrawBiText8(pixmap,cv->width-len-5-len2-5,other+cv->sas-3,buf,-1,NULL,hintlabelcol);
 	}
     }
@@ -1462,7 +1462,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    r.y += ( hint->width>0 ) ? -3 : cv->sas+3;
 	    if ( r.y>-20 && r.y<cv->height+20 ) {
 		dtos( buf, hint->start);
-		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+		len = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 		GDrawDrawBiText8(pixmap,cv->width-len-5,r.y,buf,-1,NULL,hintlabelcol);
 	    } else
 		len = 0;
@@ -1475,7 +1475,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    dtos(buf+2, hint->width);
 		} else
 		    dtos( buf, hint->width);
-		len2 = GDrawGetText8Width(pixmap,buf,-1,NULL);
+		len2 = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 		GDrawDrawBiText8(pixmap,cv->width-len-5-len2-5,r.y,buf,-1,NULL,hintlabelcol);
 	    }
 	}
@@ -1516,7 +1516,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 	    r.x = cv->xoff + rint(hint->start*cv->scale);
 	    if ( r.x>-60 && r.x<cv->width+20 ) {
 		dtos( buf, hint->start);
-		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+		len = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 		r.x += ( hint->width>0 ) ? 3 : -len-3;
 		GDrawDrawBiText8(pixmap,r.x,cv->sas+3,buf,-1,NULL,hintlabelcol);
 	    }
@@ -1528,7 +1528,7 @@ static void CVShowHints(CharView *cv, GWindow pixmap) {
 		    dtos(buf+2, hint->width);
 		} else
 		    dtos( buf, hint->width);
-		len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+		len = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 		r.x += ( hint->width>0 ) ? -len-3 : 3;
 		GDrawDrawBiText8(pixmap,r.x,cv->sas+cv->sfh+3,buf,-1,NULL,hintlabelcol);
 	    }
@@ -1585,7 +1585,7 @@ return;
 	GDrawLayoutExtents(pixmap,&size);
 	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
     } else {
-	len = GDrawGetText8Width(pixmap,ref->sc->name,-1,NULL);
+	len = GDrawGetBiText8Width(pixmap,ref->sc->name,-1,-1,NULL);
 	GDrawDrawBiText8(pixmap,x-len/2,y,ref->sc->name,-1,NULL,fg);
     }
 }
@@ -1651,7 +1651,7 @@ return;
 		GDrawLayoutExtents(pixmap,&size);
 		len = size.width;
 	    } else
-		len = GDrawGetText8Width(pixmap,name,-1,NULL);
+		len = GDrawGetBiText8Width(pixmap,name,-1,-1,NULL);
 	    r.x = x-len/2; r.width = len;
 	    r.y = y+7; r.height = cv->nfh;
 	    GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
@@ -2021,7 +2021,7 @@ return;				/* no points. no side bearings */
 	     DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
 	     DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
 	    dtos( buf, bounds[0]->x);
-	    x = cv->xoff + (x-cv->xoff-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	    x = cv->xoff + (x-cv->xoff-GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL))/2;
 	    GDrawDrawBiText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
 	}
 
@@ -2036,7 +2036,7 @@ return;				/* no points. no side bearings */
 	     DrawPLine(cv,pixmap,x2,y,x2-4,y-4,metricslabelcol);
 	     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,metricslabelcol);
 	    dtos( buf, sc->width-bounds[1]->x);
-	    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	    x = x + (x2-x-GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL))/2;
 	    GDrawDrawBiText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
 	}
 	if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
@@ -2060,7 +2060,7 @@ return;				/* no points. no side bearings */
 		     DrawPLine(cv,pixmap,x2,y,x2-4,y-4,italiccoordcol);
 		     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,italiccoordcol);
 		    dtos( buf, leftmost->me.x-leftmost->me.y*t);
-		    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+		    x = x + (x2-x-GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL))/2;
 		    GDrawDrawBiText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
 		}
 		if ( rightmost!=NULL ) {
@@ -2074,7 +2074,7 @@ return;				/* no points. no side bearings */
 		     DrawPLine(cv,pixmap,x2,y,x2-4,y-4,italiccoordcol);
 		     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,italiccoordcol);
 		    dtos( buf, sc->width+rightmost->me.y*t-rightmost->me.x);
-		    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+		    x = x + (x2-x-GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL))/2;
 		    GDrawDrawBiText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
 		}
 	    }
@@ -2105,7 +2105,7 @@ return;				/* no points. no side bearings */
 	 DrawPLine(cv,pixmap,x,y2,x+4,y2+4,metricslabelcol);
 	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
 	dtos( buf, sc->vwidth-bounds[3]->y);
-	x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	x = x + (x2-x-GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL))/2;
 	GDrawDrawBiText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
     }
 }
@@ -2292,7 +2292,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( y>-40 && y<cv->height+40 ) {
 	    dtos( buf, cv->b.sc->vwidth);
 	    GDrawSetFont(pixmap,cv->small);
-	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    len = GDrawGetBiText8Width(pixmap,buf,-1,-1,NULL);
 	    GDrawDrawBiText8(pixmap,cv->width-len-5,y,buf,-1,NULL,metricslabelcol);
 	}
     }
@@ -2630,7 +2630,7 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	GDrawSetFont(icon,font);
 	text[0] = sc->unicodeenc; text[1] = 0;
 	GDrawFontMetrics(font,&as,&ds,&ld);
-	width = GDrawGetTextWidth(icon,text,1,NULL);
+	width = GDrawGetBiTextWidth(icon,text,1,1,NULL);
 	GDrawDrawBiText(icon,(r.width-width)/2,(r.height-as-ds)/2+as,text,1,NULL,0xffffff);
     }
 return( icon );
@@ -4270,7 +4270,7 @@ static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,rea
     if ( val==0 ) val=0;		/* avoid -0 */
     sprintf(buffer,format,val);
     if ( align!=0 ) {
-	len = GDrawGetText8Width(pixmap,buffer,-1,NULL);
+	len = GDrawGetBiText8Width(pixmap,buffer,-1,-1,NULL);
 	if ( align==1 )
 	    x-=len/2;
 	else
@@ -9774,8 +9774,10 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     GDrawFontMetrics(cv->small,&as,&ds,&ld);
     cv->sfh = as+ds; cv->sas = as;
     GDrawSetFont(cv->gw,cv->small);
-    GDrawGetText8Bounds(cv->gw,"0123456789",10,NULL,&textbounds);
+    GDrawGetBiText8Bounds(cv->gw,"0123456789",10,NULL,&textbounds);
     cv->sdh = textbounds.as+textbounds.ds+1;
+    if ( GDrawHasCairo(cv->v)&gc_pango )
+	cv->sdh += 2;	/* Pango gives us the wrong answer */
     rq.point_size = 10;
     cv->normal = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->normal,&as,&ds,&ld);
