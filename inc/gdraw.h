@@ -402,6 +402,7 @@ extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt, Fon
 extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, int32 cnt, FontMods *mods, Color col);
 /* Routines that handle bidirectional text */
 /* (slower than the equivalent left to right routines) */
+/* will call pango if available. */
 extern int32 GDrawDrawBiText(GWindow gw, int32 x, int32 y, unichar_t *txt, int32 cnt, FontMods *mods, Color col);
 extern int32 GDrawDrawBiText8(GWindow gw, int32 x, int32 y, char *txt, int32 cnt, FontMods *mods, Color col);
 extern int32 GDrawGetBiTextWidth(GWindow gw,unichar_t *text, int len, int32 cnt, FontMods *mods);
@@ -413,6 +414,7 @@ extern int32 GDrawGetBiTextPtBeforePos(GWindow gw,unichar_t *text, int32 cnt, Fo
 extern int32 GDrawGetBiTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end);
 extern int32 GDrawGetBiTextBounds(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds);
+extern int32 GDrawGetBiText8Bounds(GWindow gw,char *text, int32 cnt, FontMods *mods, GTextBounds *bounds);
 extern int GDrawFontHasCharset(FontInstance *fi,/*enum charset*/int charset);
 extern int32 GDrawIsAllLeftToRight(unichar_t *text, int32 cnt);
 extern int32 GDrawIsAllLeftToRight8(char *text, int32 cnt);
