@@ -2983,14 +2983,14 @@ MACAPP=FontForge.app/Contents/Info.plist
 
 
  if test "$CPPFLAGS" \!= "" >/dev/null ; then
-  # User knows best
+  TrustUser="yes"
  elif test -d /opt/local/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -I/opt/local/include"
  elif test -d /sw/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -I/sw/include"
  fi
  if test "$LDFLAGS" \!= "" >/dev/null ; then
-  # User knows best
+  TrustUser="yes"
  elif test -d /opt/local/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/opt/local/lib"
   gww_rpath="-rpath /opt/local/lib"
