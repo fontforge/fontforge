@@ -269,11 +269,14 @@ struct displayfuncs {
     void (*cairoBuffer)(GWindow w,GRect *size);
     void (*cairoUnbuffer)(GWindow w,GRect *size);
 
-    void (*layoutInit)(GWindow w, char *text, GFont *fi);
+    void (*layoutInit)(GWindow w, char *text, int cnt, GFont *fi);
     void (*layoutDraw)(GWindow w, int32 x, int32 y, Color fg);
     void (*layoutIndexToPos)(GWindow w, int index, GRect *pos);
-    void (*layoutXYToIndex)(GWindow w, int x, int y, int *index);
+    int  (*layoutXYToIndex)(GWindow w, int x, int y);
     void (*layoutExtents)(GWindow w, GRect *size);
+    void (*layoutSetWidth)(GWindow w, int width);
+    int  (*layoutLineCount)(GWindow w);
+    int  (*layoutLineStart)(GWindow w,int line);
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

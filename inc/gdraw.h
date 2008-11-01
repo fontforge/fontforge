@@ -515,11 +515,14 @@ extern void GDrawCairoBuffer(GWindow w,GRect *size);
 extern void GDrawCairoUnbuffer(GWindow w,GRect *size);
 extern void GDrawEnableCairo(int on);
 
-extern void GDrawLayoutInit(GWindow w, char *text, GFont *fi);
+extern void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi);
 extern void GDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg);
 extern void GDrawLayoutIndexToPos(GWindow w, int index, GRect *pos);
-extern void GDrawLayoutXYToIndex(GWindow w, int x, int y, int *index);
+extern int  GDrawLayoutXYToIndex(GWindow w, int x, int y);
 extern void GDrawLayoutExtents(GWindow w, GRect *size);
+extern void GDrawLayoutSetWidth(GWindow w, int width);
+extern int  GDrawLayoutLineCount(GWindow w);
+extern int  GDrawLayoutLineStart(GWindow w,int line);
 
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);

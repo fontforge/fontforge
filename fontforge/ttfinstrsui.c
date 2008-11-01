@@ -442,7 +442,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    if ( ii->showaddr ) {
 		if ( GDrawHasCairo(pixmap) & gc_pango ) {
 		    GRect size;
-		    GDrawLayoutInit(pixmap,loc,NULL);
+		    GDrawLayoutInit(pixmap,loc,-1,NULL);
 		    GDrawLayoutExtents(pixmap,&size);
 		    x = addr_end - EDGE_SPACING - size.width;
 		    GDrawLayoutDraw(pixmap,x,y+ii->as,0x000000);

@@ -1354,6 +1354,10 @@ static void GXDrawDestroyWindow(GWindow w) {
     if ( gw->usecairo )
 	_GXCDraw_DestroyWindow(gw);
 #endif
+#ifndef _NO_LIBPANGO
+    if ( gw->usepango )
+	_GXPDraw_DestroyWindow(gw);
+#endif
 
     if ( gw->is_pixmap ) {
 	XFreePixmap(gw->display->display,gw->w);
@@ -2382,10 +2386,10 @@ static void GXDrawCairoUnbuffer(GWindow w,GRect *size) {
 }
 #endif
 
-static void GXDrawLayoutInit(GWindow w, char *text, GFont *fi) {
+static void GXDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
 #ifndef _NO_LIBPANGO
     if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutInit(w,text,fi);
+	_GXPDraw_LayoutInit(w,text,cnt,fi);
 #endif
 }
 
@@ -2403,11 +2407,12 @@ static void GXDraw_LayoutIndexToPos(GWindow w, int index, GRect *pos) {
 #endif
 }
 
-static void GXDraw_LayoutXYToIndex(GWindow w, int x, int y, int *index) {
+static int GXDraw_LayoutXYToIndex(GWindow w, int x, int y) {
 #ifndef _NO_LIBPANGO
     if ( ((GXWindow) w)->usepango )
-	_GXPDraw_LayoutXYToIndex(w,x,y,index);
+return( _GXPDraw_LayoutXYToIndex(w,x,y));
 #endif
+return( -1 );
 }
 
 static void GXDraw_LayoutExtents(GWindow w, GRect *size) {
@@ -2415,6 +2420,29 @@ static void GXDraw_LayoutExtents(GWindow w, GRect *size) {
     if ( ((GXWindow) w)->usepango )
 	_GXPDraw_LayoutExtents(w,size);
 #endif
+}
+
+static void GXDraw_LayoutSetWidth(GWindow w, int width) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+	_GXPDraw_LayoutSetWidth(w,width);
+#endif
+}
+
+static int GXDraw_LayoutLineCount(GWindow w) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+return( _GXPDraw_LayoutLineCount(w));
+#endif
+return( -1 );
+}
+
+static int GXDraw_LayoutLineStart(GWindow w, int l) {
+#ifndef _NO_LIBPANGO
+    if ( ((GXWindow) w)->usepango )
+return( _GXPDraw_LayoutLineStart(w, l));
+#endif
+return( -1 );
 }
 
 static void GXDrawSendExpose(GXWindow gw, int x,int y,int wid,int hei ) {
@@ -4676,7 +4704,10 @@ static struct displayfuncs xfuncs = {
     GXDraw_LayoutDraw,
     GXDraw_LayoutIndexToPos,
     GXDraw_LayoutXYToIndex,
-    GXDraw_LayoutExtents
+    GXDraw_LayoutExtents,
+    GXDraw_LayoutSetWidth,
+    GXDraw_LayoutLineCount,
+    GXDraw_LayoutLineStart
 };
 
 static void GDrawInitXKB(GXDisplay *gdisp) {
