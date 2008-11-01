@@ -1061,7 +1061,7 @@ static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
     unichar_t *upt;
 
-    if ( ( event->u.chr.state&GMenuMask()) ||
+    if ( ( event->u.chr.state&(GMenuMask()&~ksm_shift)) ||
 	    event->u.chr.chars[0]<' ' || event->u.chr.chars[0]==0x7f ) {
 	switch ( event->u.chr.keysym ) {
 	  case GK_BackSpace:
