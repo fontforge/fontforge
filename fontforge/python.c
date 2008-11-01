@@ -12434,7 +12434,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "getLookupSubtableAnchorClasses", PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
     { "getLookupOfSubtable", PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
     { "getSubtableOfAnchor", PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
-    { "importBitmaps", PyFFFont_importBitmaps, METH_VARARGS, "Imports bitmap strikes from a font file."},
+    { "importBitmaps", (PyCFunction) PyFFFont_importBitmaps, METH_VARARGS, "Imports bitmap strikes from a font file."},
     { "importLookups", PyFFFont_importLookups, METH_VARARGS, "Imports a tuple of named lookups from another font."},
     { "isKerningClass", PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
     { "isVerticalKerning", PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
