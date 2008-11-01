@@ -3092,12 +3092,10 @@ return( true );
 	    (event->u.chr.state&ksm_meta) ) {
 	MenuSaveAll(NULL,NULL,NULL);
 return( true );
-    } else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	if ( event->u.chr.state&ksm_shift ) {
-	    GFI_CancelClose(d);
-	} else
-	    MenuExit(NULL,NULL,NULL);
-return( true );
+    } else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
+	MenuExit(NULL,NULL,NULL);
+    } else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
+	GFI_CancelClose(d);
     }
 return( false );
 }

@@ -1454,12 +1454,12 @@ static int dsp_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("display.html");
 return( true );
-    } else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	if ( event->u.chr.state&ksm_shift ) {
+	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
+	    MenuExit(NULL,NULL,NULL);
+    return( false );
+	} else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
 	    PD *di = GDrawGetUserData(gw);
 	    di->pi.done = true;
-	} else
-	    MenuExit(NULL,NULL,NULL);
 	}
 return( false );
     } else if ( event->type==et_timer ) {

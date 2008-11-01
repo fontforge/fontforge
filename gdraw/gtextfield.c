@@ -1217,38 +1217,6 @@ return( 2 );
 	    GTextField_Show(gt,gt->sel_start);
 return( 2 );
 	  break;
-	  case 'A': case 'a':
-	    if ( event->u.chr.state&ksm_control ) {	/* Select All */
-		gtextfield_editcmd(&gt->g,ec_selectall);
-return( 2 );
-	    }
-	  break;
-	  case 'C': case 'c':
-	    if ( event->u.chr.state&ksm_control ) {	/* Copy */
-		gtextfield_editcmd(&gt->g,ec_copy);
-	    }
-	  break;
-	  case 'V': case 'v':
-	    if ( event->u.chr.state&ksm_control ) {	/* Paste */
-		gtextfield_editcmd(&gt->g,ec_paste);
-		GTextField_Show(gt,gt->sel_start);
-return( true );
-	    }
-	  break;
-	  case 'X': case 'x':
-	    if ( event->u.chr.state&ksm_control ) {	/* Cut */
-		gtextfield_editcmd(&gt->g,ec_cut);
-		GTextField_Show(gt,gt->sel_start);
-return( true );
-	    }
-	  break;
-	  case 'Z': case 'z':				/* Undo */
-	    if ( event->u.chr.state&ksm_control ) {
-		gtextfield_editcmd(&gt->g,ec_undo);
-		GTextField_Show(gt,gt->sel_start);
-return( true );
-	    }
-	  break;
 	  case 'D': case 'd':
 	    if ( event->u.chr.state&ksm_control ) {	/* delete word */
 		gtextfield_editcmd(&gt->g,ec_deleteword);
@@ -1284,17 +1252,33 @@ return( 3 );
 return( true );
 	    }
 	  break;
-	  case 's': case 'S':
-	    if ( !( event->u.chr.state&ksm_control ) )
-return( false );
-	    GTextFieldSave(gt,true);
+	  default:
+	    if ( GMenuIsCommand(event,H_("Select All|Ctl+A")) ) {
+		gtextfield_editcmd(&gt->g,ec_selectall);
 return( 2 );
-	  break;
-	  case 'I': case 'i':
-	    if ( !( event->u.chr.state&ksm_control ) )
-return( false );
-	    GTextFieldImport(gt);
+	    } else if ( GMenuIsCommand(event,H_("Copy|Ctl+C")) ) {
+		gtextfield_editcmd(&gt->g,ec_copy);
+	    } else if ( GMenuIsCommand(event,H_("Paste|Ctl+V")) ) {
+		gtextfield_editcmd(&gt->g,ec_paste);
+		GTextField_Show(gt,gt->sel_start);
 return( true );
+	    } else if ( GMenuIsCommand(event,H_("Cut|Ctl+X")) ) {
+		gtextfield_editcmd(&gt->g,ec_cut);
+		GTextField_Show(gt,gt->sel_start);
+return( true );
+	    } else if ( GMenuIsCommand(event,H_("Undo|Ctl+Z")) ) {
+		gtextfield_editcmd(&gt->g,ec_undo);
+		GTextField_Show(gt,gt->sel_start);
+return( true );
+	    } else if ( GMenuIsCommand(event,H_("Save|Ctl+S")) ) {
+		GTextFieldSave(gt,true);
+return( 2 );
+	    } else if ( GMenuIsCommand(event,H_("Import...|Ctl+Shft+I")) ) {
+		GTextFieldImport(gt);
+return( true );
+	    } else
+return( false );
+	  break;
 	}
     } else {
 	GTextField_Replace(gt,event->u.chr.chars);

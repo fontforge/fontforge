@@ -370,6 +370,7 @@ void GMenuBarSetItemEnabled(GGadget *g, int mid, int enabled);
 void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name);
 void GMenuSetShortcutDomain(char *domain);
 const char *GMenuGetShortcutDomain(void);
+int GMenuIsCommand(GEvent *event,char *shortcut);
 
 
 void GFileChooserPopupCheck(GGadget *g,GEvent *e);
