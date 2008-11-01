@@ -561,10 +561,8 @@ static void MouseToPos(GEvent *event,int *_l, int *_c) {
 	if ( l>=0 )
 	    c = strlen(errdata.errlines[l]);
     } else if ( (GDrawHasCairo(errdata.v)&gc_pango) && l>=0 ) {
-	int index;
-	GDrawLayoutInit(errdata.v,errdata.errlines[l],NULL);
-	GDrawLayoutXYToIndex(errdata.v,event->u.mouse.x-3,4,&index);
-	c = index;
+	GDrawLayoutInit(errdata.v,errdata.errlines[l],-1,NULL);
+	c = GDrawLayoutXYToIndex(errdata.v,event->u.mouse.x-3,4);
     } else if ( l>=0 ) {
 	GDrawGetText8PtFromPos(errdata.v,errdata.errlines[l],-1,NULL,event->u.mouse.x-3,&end);
 	c = end - errdata.errlines[l];
@@ -625,7 +623,7 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 		  s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
 	      }
 	      if ( GDrawHasCairo(gw)&gc_pango )
-		  GDrawLayoutInit(gw,errdata.errlines[i+errdata.offtop],NULL);
+		  GDrawLayoutInit(gw,errdata.errlines[i+errdata.offtop],-1,NULL);
 	      if ( i+errdata.offtop >= s_l && i+errdata.offtop <= e_l ) {
 		  if ( i+errdata.offtop > s_l )
 		      xs = 0;

@@ -628,8 +628,8 @@ void GDrawCairoUnbuffer(GWindow w,GRect *size) {
     (w->display->funcs->cairoUnbuffer)(w,size);
 }
 
-void GDrawLayoutInit(GWindow w, char *text, GFont *fi) {
-    (w->display->funcs->layoutInit)(w,text,fi);
+void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
+    (w->display->funcs->layoutInit)(w,text,cnt,fi);
 }
 
 void GDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
@@ -640,12 +640,24 @@ void GDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     (w->display->funcs->layoutIndexToPos)(w,index,pos);
 }
 
-void GDrawLayoutXYToIndex(GWindow w, int x, int y, int *index) {
-    (w->display->funcs->layoutXYToIndex)(w,x,y,index);
+int GDrawLayoutXYToIndex(GWindow w, int x, int y) {
+return( (w->display->funcs->layoutXYToIndex)(w,x,y) );
 }
 
 void GDrawLayoutExtents(GWindow w, GRect *size) {
     (w->display->funcs->layoutExtents)(w,size);
+}
+
+void GDrawLayoutSetWidth(GWindow w, int width) {
+    (w->display->funcs->layoutSetWidth)(w,width);
+}
+
+int  GDrawLayoutLineCount(GWindow w) {
+return( (w->display->funcs->layoutLineCount)(w) );
+}
+
+int  GDrawLayoutLineStart(GWindow w,int line) {
+return( (w->display->funcs->layoutLineStart)(w,line) );
 }
 
 

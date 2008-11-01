@@ -263,6 +263,7 @@ typedef struct gtextfield {
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     unsigned int completionfield: 1;
     unsigned int was_completing: 1;
+    unsigned int pango: 1;
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -283,6 +284,8 @@ typedef struct gtextfield {
     int16 xmax;
     GIC *gic;
     GTimer *numeric_scroll;
+    char *utf8_text;		/* For Pango */
+    int32 *lines8;		/* offsets in utf8_text */
 } GTextField;
 
 typedef struct glistfield {

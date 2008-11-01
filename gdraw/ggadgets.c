@@ -851,7 +851,7 @@ return;
 	    cpt = strchr(ctext,tolower(mnemonic));
 	if ( cpt==NULL )
 return;
-	GDrawLayoutInit(gw,ctext,NULL);
+	GDrawLayoutInit(gw,ctext,-1,NULL);
 	GDrawLayoutIndexToPos(gw, cpt-ctext, &space);
 	free(ctext);
 	x += space.x;

@@ -1581,7 +1581,7 @@ static void CVDrawRefName(CharView *cv,GWindow pixmap,RefChar *ref,int fg) {
 return;
 
     if ( GDrawHasCairo(pixmap)&gc_pango ) {
-	GDrawLayoutInit(pixmap,ref->sc->name,cv->small);
+	GDrawLayoutInit(pixmap,ref->sc->name,-1,cv->small);
 	GDrawLayoutExtents(pixmap,&size);
 	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
     } else {
@@ -1647,7 +1647,7 @@ return;
 		name = NULL;		/* Should never happen */
 	    if ( GDrawHasCairo(pixmap)&gc_pango ) {
 		GRect size;
-		GDrawLayoutInit(pixmap,name,NULL);
+		GDrawLayoutInit(pixmap,name,-1,NULL);
 		GDrawLayoutExtents(pixmap,&size);
 		len = size.width;
 	    } else
