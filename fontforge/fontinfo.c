@@ -3087,15 +3087,15 @@ static int GFI_Char(struct gfi_data *d,GEvent *event) {
     if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	help("fontinfo.html");
 return( true );
-    } else if ( event->u.chr.keysym=='s' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) ) {
+    } else if ( GMenuIsCommand(event,H_("Save All|Alt+Ctl+S") )) {
 	MenuSaveAll(NULL,NULL,NULL);
 return( true );
     } else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
 	MenuExit(NULL,NULL,NULL);
+return( true );
     } else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
 	GFI_CancelClose(d);
+return( true );
     }
 return( false );
 }
