@@ -2119,9 +2119,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     PST *pst;
     int i, layer, rlayer, cvlayer = CVLayer((CharViewBase *) cv);
 
- if ( !(GDrawHasCairo(pixmap)&gc_alpha) )
-  printf( "Oh dear\n" );
-
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
     clip.width = event->u.expose.rect.width/cv->scale;
