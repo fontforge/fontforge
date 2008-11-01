@@ -2308,7 +2308,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	cur->last = getushort(f);
 /* on a 1 point font... */
 	/* ascent = */ getushort(f);
-	/* descent = */ (short) getushort(f);
+	/* descent = (short) */ getushort(f);
 	/* leading = */ getushort(f);
 	/* widmax = */ getushort(f);
 	if ( (widoff = getlong(f))!=0 ) widoff += offset;
