@@ -1705,3 +1705,7 @@ return( false );
 
 return( (menumask&event->u.chr.state)==foo.short_mask && foo.shortcut == keysym );
 }
+
+int GMenuMask(void) {
+return( menumask );
+}

@@ -55,7 +55,7 @@ ACORNOBJS = acorn2sfd.o stamp.o $(fontforge_LIBOBJECTS)
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
     @CPPFLAGS@ '-DPREFIX="@prefix@"'
-CFLAGS = @CFLAGS@ $(_CFLAGS)
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
 LIBS = -L../libs $(X_LIBS) @LINK_WITH_GDRAW@ ../libs/libgutils.a \
@@ -115,7 +115,7 @@ splinerefigure.o: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 clean:
 	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint exelibstamp.c libstamp.c
-	-rm -rf FontForge.app
+	-rm -rf FontForge.app __MACOSX
 	-rm -f *.o
 	-rm -f *.lo
 	-rm -rf .libs
