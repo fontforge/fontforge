@@ -1687,3 +1687,21 @@ void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name) {
     }
 }
 
+/* Check to see if event matches the given shortcut, expressed in our standard*/
+/*  syntax and subject to gettext translation */
+int GMenuIsCommand(GEvent *event,char *shortcut) {
+    GMenuItem foo;
+    unichar_t keysym = event->u.chr.keysym;
+
+    if ( event->type!=et_char )
+return( false );
+
+    if ( keysym<GK_Special && islower(keysym))
+	keysym = toupper(keysym);
+
+    memset(&foo,0,sizeof(foo));
+    
+    GMenuItemParseShortCut(&foo,shortcut);
+
+return( (menumask&event->u.chr.state)==foo.short_mask && foo.shortcut == keysym );
+}

@@ -1929,11 +1929,11 @@ static int subccd_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("contextchain.html");
 return( true );
-	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	    if ( event->u.chr.state&ksm_shift )
+	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
+	    MenuExit(NULL,NULL,NULL);
+return( true );
+	} else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
 		CCD_Close(GDrawGetUserData(gw));
-	    else
-		MenuExit(NULL,NULL,NULL);
 return( true );
 	} else if ( event->u.chr.chars[0]=='\r' ) {
 	    CCD_SimulateDefaultButton( (struct contextchaindlg *) GDrawGetUserData(gw));
@@ -1957,11 +1957,11 @@ static int ccd_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("contextchain.html");
 return( true );
-	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	    if ( event->u.chr.state&ksm_shift )
-		CCD_Close(GDrawGetUserData(gw));
-	    else
-		MenuExit(NULL,NULL,NULL);
+	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
+	    MenuExit(NULL,NULL,NULL);
+return( true );
+	} else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
+	    CCD_Close(GDrawGetUserData(gw));
 return( true );
 	} else if ( event->u.chr.chars[0]=='\r' ) {
 	    CCD_SimulateDefaultButton( (struct contextchaindlg *) GDrawGetUserData(gw));

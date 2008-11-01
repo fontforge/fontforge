@@ -802,6 +802,10 @@ static int gc_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("math.html#GlyphConstruction");
 return( true );
+	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
+	    MenuExit(NULL,NULL,NULL);
+	} else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
+	    math->done = true;
 	}
 return( false );
     }
@@ -1091,6 +1095,10 @@ static int math_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("math.html");
 return( true );
+	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
+	    MenuExit(NULL,NULL,NULL);
+	} else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
+	    math->done = true;
 	}
 return( false );
     }
