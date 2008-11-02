@@ -5064,8 +5064,11 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 		prev->next = next;
 	    ap->next = NULL;
 	    AnchorPointsFree(ap);
-	    if ( ap->type==at_mark || ap->type==at_basechar || ap->type==at_basemark )
-		next = NULL;		/* Names only occur once, unless it's a ligature or cursive */
+	    if ( an->type == act_mark || (an->type==act_mklg && ap->type==at_mark))
+		next = NULL;	/* Only one instance of an anchor class in a glyph for mark to base anchors */
+				/*  Or for the mark glyphs of ligature classes */
+			        /*  Mark to mark & cursive will (probably) have 2 occurances */
+			        /*  and ligatures may have lots */
 	} else
 	    prev = ap;
     }
