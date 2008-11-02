@@ -390,6 +390,7 @@ dnl Do we have libpango
 gww_haspango="no"
 gww_haspangocairo="no"
 gww_checkpango="yes"
+gww_has_pkg_config="yes"
 AC_ARG_WITH(pango,
  [  --without-pango   Don't use libpango],
  [
@@ -398,8 +399,32 @@ AC_ARG_WITH(pango,
    fi
  ], : )
 if test "$gww_checkpango" = "yes" ; then
-  if pkg-config --libs pangoxft >& /dev/null ; then
+ pan_headers=""
+ pan_lib=""
+ AC_ARG_WITH(pango-headers,
+  [  --with-pango-headers=dirs   Specify the CPPFLAGS needed to compile pango],
+  [
+     if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
+	  pan_headers="$withval"
+	  CFLAGS="$CFLAGS $pan_headers"
+      fi
+   ], : )
+ AC_ARG_WITH(pango-lib,
+  [  --with-pango-lib   Specify LDFLAGS needed to link with pango],
+  [
+     if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
+	  pan_lib="$withval"
+	  LDFLAGS="$LDFLAGS $pan_libs"
+      fi
+   ], : )
+  if test "$pan_headers" != "" >& /dev/null ; then
+    gww_haspango="done"
+  elif pkg-config --libs pangoxft >& /dev/null ; then
     AC_CHECK_HEADER(X11/Xft/Xft.h, gww_haspango="yes",,[#include <ft2build.h>])
+  elif pkg-config --version >& /dev/null ; then
+    OK_Theyve_got_pkg_config="yes"
+  else
+    gww_has_pkg_config="no"
   fi
 fi
 if test "$gww_haspango" = "yes" ; then
@@ -414,6 +439,8 @@ fi
 if test "$gww_haspango" = "no" ; then
   gww_haspangocairo="no"
   AC_DEFINE(_NO_LIBPANGO)
+elif test "$gww_haspango" = "done" ; then
+ gww_haspango="yes"
 fi
 
 AC_ARG_ENABLE(macapp,
@@ -967,12 +994,34 @@ if test "$gww_has_gettext" = "no"; then
  echo " * Your system does not have the gettext package installed.  This  *"
  echo " * means that fontforge cannot localize its user interface and all *"
  echo " * messages will be in English. You might want to install libintl. *"
-  if test "$gww_ismac" = "yes"; then
- echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
- echo " * it as part of the standard fink download at:                    *"
- echo " *  http://fink.sourceforge.net/                                   *"
+ if test "$gww_ismac" = "yes"; then
+  echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
+  echo " * it as part of the standard fink download at:                    *"
+  echo " *  http://fink.sourceforge.net/                                   *"
+  echo " * of from macports:                                               *"
+  echo " *  http://www.macports.org/                                       *"
  fi
  echo " *******************************************************************"
+fi
+if test "$gww_has_pkg_config" = "no"; then
+ echo "*** Your system does not have pkg-config installed, so I can't figure out"
+ echo "*** if you have pango on your machine. If you do, set --with-pango-headers"
+ echo "*** and --with-pango-lib to specify the options needed to build with pango"
+ if test "$gww_ismac" = "yes"; then
+  echo " *** Unfortunately Mac OS/X does not ship with pango. You can find"
+  echo " *** it as part of the standard fink download at:"
+  echo " ***  http://fink.sourceforge.net/"
+  echo " *** of from macports:"
+  echo " ***  http://www.macports.org/"
+ fi
+elif test "$gww_haspango" = "no"; then
+ if test "$gww_ismac" = "yes"; then
+  echo " *** Unfortunately Mac OS/X does not ship with pango. You can find"
+  echo " *** it as part of the standard fink download at:"
+  echo " ***  http://fink.sourceforge.net/"
+  echo " *** of from macports:"
+  echo " ***  http://www.macports.org/"
+ fi
 fi
 
 dnl EOF
