@@ -124,6 +124,7 @@ static struct library_descriptor {
     char *url;
     int usable;
     char *depends_on;
+    int so_version;
 } libs[] = {
     {
 #ifdef PYTHON_LIB_NAME
@@ -135,24 +136,30 @@ static struct library_descriptor {
 	"This allows users to write python scripts in fontforge",
 	"http://www.python.org/",
 #ifdef _NO_PYTHON
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	-1
     },
     { "libspiro", dlsymmod("TaggedSpiroCPsToBezier"), "This allows you to edit with Raph Levien's spiros.", "http://libspiro.sf.net/",
 #ifdef _NO_LIBSPIRO
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	-1
     },
     { "libz", dlsymmod("deflateEnd"), "This is a prerequisite for reading png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/",
 #ifdef _NO_LIBPNG
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	1
     },
     { "libpng", dlsymmod("png_create_read_struct"), "This is one way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
 #ifdef _NO_LIBPNG
@@ -160,69 +167,83 @@ static struct library_descriptor {
 #else
 	1,
 #endif
-	"libz" },
+	"libz",
+	2 },
     { "libpng12", dlsymmod("png_create_read_struct"), "This is another way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
 #ifdef _NO_LIBPNG
 	0,
 #else
 	1,
 #endif
-	"libz" },
+	"libz",
+	0 },
     { "libjpeg", dlsymmod("jpeg_CreateDecompress"), "This allows fontforge to load jpeg images.", "http://www.ijg.org/",
 #ifdef _NO_LIBPNG
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	-1
     },
     { "libtiff", dlsymmod("TIFFOpen"), "This allows fontforge to open tiff images.", "http://www.libtiff.org/",
 #ifdef _NO_LIBTIFF
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	-1
     },
     { "libgif", dlsymmod("DGifOpenFileName"), "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm",
 #ifdef _NO_LIBUNGIF
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL, -1
     },
     { "libungif", dlsymmod("DGifOpenFileName"), "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm",
 #ifdef _NO_LIBUNGIF
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL, -1
     },
     { "libxml2", dlsymmod("xmlParseFile"), "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/",
 #ifdef _NO_LIBXML
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	2
     },
     { "libuninameslist", dlsymmod("UnicodeNameAnnot"), "This provides fontforge with the names of all (named) unicode characters", "http://libuninameslist.sf.net/",
 #ifdef _NO_LIBUNINAMESLIST
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL, -1
     },
     { "libfreetype", dlsymmod("FT_New_Memory_Face"), "This provides a better rasterizer than the one built in to fontforge", "http://freetype.sf.net/",
 #if _NO_FREETYPE || _NO_MMAP
-	0
+	0,
 #else
-	1
+	1,
 #endif
+	NULL,
+	6
     },
     { "libfontconfig", dlsymmod("FcConfigCreate"), "This is used to find fonts for cairo and pango.", "http://fontconfig.org/",
-#ifdef _NO_LIBCAIRO
-	0
+#if defined(_NO_LIBCAIRO) && defined(_NO_LIBPANGO)
+	0,
 #else
-	1
+	1,
 #endif
+	NULL, 1
 	},
     { "libcairo", dlsymmod("cairo_xlib_surface_create"), "This provides anti-aliased drawing.", "http://www.cairographics.org/",
 #ifdef _NO_LIBCAIRO
@@ -230,42 +251,48 @@ static struct library_descriptor {
 #else
 	1,
 #endif
-	"libfontconfig" },
+	"libfontconfig",
+	2 },
     { "libXft", dlsymmod("XftDrawCreate"), "This provides anti-aliased text without cairo.", "http://www.x.org/",
 #ifdef _NO_LIBPANGO
 	0,
 #else
 	1,
 #endif
-	"libfontconfig" },
+	"libfontconfig",
+	2 },
     { "libglib-2.0", dlsymmod("g_main_loop_run"), "This provides a basic class mechanism for pango.", "http://www.gtk.org/",
 #ifdef _NO_LIBPANGO
 	0,
 #else
 	1,
 #endif
-	NULL },
+	NULL,
+	0 },
     { "libpango-1.0", dlsymmod("pango_font_description_new"), "This provides support for complex scripts (Arabic, Indic, etc.).", "http://www.pango.org/",
 #ifdef _NO_LIBPANGO
 	0,
 #else
 	1,
 #endif
-	"libglib-2.0" },
+	"libglib-2.0",
+	0 },
     { "libpangoxft-1.0", dlsymmod("pango_xft_render"), "This is a layer of pango for use on X windows.", "http://www.pango.org/",
 #ifdef _NO_LIBPANGO
 	0,
 #else
 	1,
 #endif
-	"libXft" },
+	"libXft",
+	0 },
     { "libpangocairo-1.0", dlsymmod("pango_cairo_show_glyph_string"), "This is a layer of pango for use on a cairo window.", "http://www.pango.org/",
 #ifdef _NO_LIBPANGO
 	0,
 #else
 	1,
 #endif
-	"libcairo" },
+	"libcairo",
+	0 },
     { NULL }
 };
 
@@ -274,6 +301,7 @@ static void _dolibrary(void) {
     char buffer[3000];
     int fail, isfreetype, hasdebugger;
     DL_CONST void *lib_handle;
+    static char *sos[] = { SO_0_EXT, SO_1_EXT, SO_2_EXT, NULL, NULL, NULL, SO_6_EXT, NULL, NULL };
 
     fprintf( stderr, "\n" );
     for ( i=0; libs[i].libname!=NULL; ++i ) {
@@ -290,6 +318,34 @@ static void _dolibrary(void) {
 		lib_handle = dlopen(buffer,RTLD_LAZY);
 	    }
 #endif
+#ifdef __Mac
+	    if ( lib_handle==NULL ) {
+		snprintf( buffer, sizeof(buffer), "/usr/X11R6/lib/%s" SO_EXT, libs[i].depends_on );
+		lib_handle = dlopen(buffer,RTLD_LAZY);
+	    }
+#endif
+	    if ( lib_handle==NULL && libs[j].so_version>=0 ) {
+		char *so_ext;
+		if ( libs[j].so_version >= sizeof(sos)/sizeof(sos[0]) ||
+			(so_ext = sos[ libs[j].so_version ])==NULL )
+		    fprintf( stderr, "Internal mixup: so_version not supported %d\n", libs[i].so_version );
+		else {
+		    sprintf( buffer, "%s%s", libs[i].depends_on, so_ext );
+		    lib_handle = dlopen(buffer,RTLD_LAZY);
+#ifdef LIBDIR
+		    if ( lib_handle==NULL ) {
+			snprintf( buffer, sizeof(buffer), LIBDIR "/%s%s", libs[i].depends_on, so_ext );
+			lib_handle = dlopen(buffer,RTLD_LAZY);
+		    }
+#endif
+#ifdef __Mac
+		    if ( lib_handle==NULL ) {
+			snprintf( buffer, sizeof(buffer), "/usr/X11R6/lib/%s%s", libs[i].depends_on, so_ext );
+			lib_handle = dlopen(buffer,RTLD_LAZY);
+		    }
+#endif
+		}
+	    }
 	    if ( lib_handle==NULL )
 		fail = 3;
 	    else if ( libs[j].libname!=NULL ) {
@@ -306,6 +362,34 @@ static void _dolibrary(void) {
 		lib_handle = dlopen(buffer,RTLD_LAZY);
 	    }
 #endif
+#ifdef __Mac
+	    if ( lib_handle==NULL ) {
+		snprintf( buffer, sizeof(buffer), "/usr/X11R6/lib/%s" SO_EXT, libs[i].libname );
+		lib_handle = dlopen(buffer,RTLD_LAZY);
+	    }
+#endif
+	    if ( lib_handle==NULL && libs[i].so_version>=0 ) {
+		char *so_ext;
+		if ( libs[i].so_version >= sizeof(sos)/sizeof(sos[0]) ||
+			(so_ext = sos[ libs[i].so_version ])==NULL )
+		    fprintf( stderr, "Internal mixup: so_version not supported %d\n", libs[i].so_version );
+		else {
+		    sprintf( buffer, "%s%s", libs[i].libname, so_ext );
+		    lib_handle = dlopen(buffer,RTLD_LAZY);
+#ifdef LIBDIR
+		    if ( lib_handle==NULL ) {
+			snprintf( buffer, sizeof(buffer), LIBDIR "/%s%s", libs[i].libname, so_ext );
+			lib_handle = dlopen(buffer,RTLD_LAZY);
+		    }
+#endif
+#ifdef __Mac
+		    if ( lib_handle==NULL ) {
+			snprintf( buffer, sizeof(buffer), "/usr/X11R6/lib/%s%s", libs[i].libname, so_ext );
+			lib_handle = dlopen(buffer,RTLD_LAZY);
+		    }
+#endif
+		}
+	    }
 	    if ( lib_handle==NULL )
 		fail = true;
 	    else {
@@ -323,8 +407,8 @@ static void _dolibrary(void) {
 		fail==2 ? "is present on your system but is not functional." :
 		fail==3 ? "a prerequisite library is missing: " :
 			"a prerequisite library is not functional: " );
-	if ( fail>3 && libs[i].depends_on!=NULL )
-	    fprintf( stderr, "%s.", libs[i].depends_on );
+	if ( fail>=3 && libs[i].depends_on!=NULL )
+	    fprintf( stderr, "\t\t%s.\n", libs[i].depends_on );
 	fprintf( stderr, "\t%s\n", libs[i].description );
 	if ( isfreetype ) {
 	    if ( hasdebugger )

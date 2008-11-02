@@ -126,6 +126,10 @@ FT_Error (*_TT_RunIns)( TT_ExecContext );
 
 static int freetype_init_base() {
     libfreetype = dlopen("libfreetype" SO_EXT,RTLD_LAZY);
+# ifdef SO_6_EXT
+    if ( libfreetype==NULL )
+	libfreetype = dlopen("libfreetype" SO_6_EXT,RTLD_LAZY);
+# endif
     if ( libfreetype==NULL )
 return( false );
 
