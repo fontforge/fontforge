@@ -217,7 +217,7 @@ static struct library_descriptor {
 	1
 #endif
     },
-    { "libfontconfig", dlsymmod("FcConfigCreate"), "This is used to find fonts for cairo.", "http://fontconfig.org/",
+    { "libfontconfig", dlsymmod("FcConfigCreate"), "This is used to find fonts for cairo and pango.", "http://fontconfig.org/",
 #ifdef _NO_LIBCAIRO
 	0
 #else
@@ -237,7 +237,7 @@ static struct library_descriptor {
 #else
 	1,
 #endif
-	NULL },
+	"libfontconfig" },
     { "libglib-2.0", dlsymmod("g_main_loop_run"), "This provides a basic class mechanism for pango.", "http://www.gtk.org/",
 #ifdef _NO_LIBPANGO
 	0,

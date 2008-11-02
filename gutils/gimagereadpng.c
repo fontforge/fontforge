@@ -68,18 +68,30 @@ static void (*_png_read_end)(png_structp,png_infop);
 static int loadpng() {
     /* Oops someone might have libpng without libz. If we try to load libpng */
     /*  first we crash and burn horribly, so... */
-    if ( dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY)==NULL ) {
-	fprintf(stderr,"%s\n", dlerror());
+    if ( dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY)==NULL
+#ifdef SO_1_EXT
+	    && dlopen("libz" SO_1_EXT,RTLD_LAZY)==NULL
+#endif
+	    ) {
+	fprintf(stderr,"libz: %s\n", dlerror());
 return( 0 );
     }
 
 #  if !defined(_LIBPNG12)
     libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
+#    ifdef SO_2_EXT
+    if ( libpng==NULL )
+	libpng = dlopen("libpng" SO_2_EXT,RTLD_LAZY);
+#    endif
 #  else		/* After version 1.2.1 (I think) dynamic libpng is called libpng12 */
     libpng = dlopen("libpng12" SO_EXT,RTLD_LAZY);
+#    ifdef SO_0_EXT
+    if ( libpng==NULL )
+	libpng = dlopen("libpng12" SO_0_EXT,RTLD_LAZY);
+#    endif
 #  endif
     if ( libpng==NULL ) {
-	fprintf(stderr,"%s\n", dlerror());
+	fprintf(stderr,"libpng: %s\n", dlerror());
 return( 0 );
     }
     _png_create_read_struct = (png_structp (*)(char *, png_voidp, png_error_ptr, png_error_ptr)) dlsym(libpng,"png_create_read_struct");
