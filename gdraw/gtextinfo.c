@@ -719,6 +719,8 @@ return( arr );
 
 /* **************************** String Resources **************************** */
 
+/* This is obsolete now. I use gettext instead */
+
 /* A string resource file should begin with two shorts, the first containing
 the number of string resources, and the second the number of integer resources.
 (not the number of resources in the file, but the maximum resource index+1)

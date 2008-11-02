@@ -113,6 +113,10 @@ return( hasC );
 
     initted = true;
     libfontconfig = dlopen("libfontconfig" SO_EXT,RTLD_LAZY);
+#ifdef SO_1_EXT
+    if ( libfontconfig==NULL )
+	libfontconfig = dlopen("libfontconfig" SO_1_EXT,RTLD_LAZY);
+#endif
     if ( libfontconfig==NULL ) {
 	fprintf(stderr,"libfontconfig: %s\n", dlerror());
 return( 0 );
@@ -147,6 +151,10 @@ return( 0 );
 
 
     libcairo = dlopen("libcairo" SO_EXT,RTLD_LAZY);
+#ifdef SO_2_EXT
+    if ( libcairo==NULL )
+	libcairo = dlopen("libcairo" SO_2_EXT,RTLD_LAZY);
+#endif
     if ( libcairo==NULL ) {
 	fprintf(stderr,"libcairo: %s\n", dlerror());
 return( 0 );
@@ -1675,6 +1683,10 @@ return( hasP );
 
     pango_initted = true;
     libpango = dlopen("libpango-1.0" SO_EXT,RTLD_LAZY);
+#ifdef SO_0_EXT
+    if ( libpango==NULL )
+	libpango = dlopen("libpango-1.0" SO_0_EXT,RTLD_LAZY);
+#endif
     if ( libpango==NULL ) {
 	fprintf(stderr,"libpango: %s\n", dlerror());
 return( 0 );
@@ -1745,6 +1757,10 @@ return( 0 );
 		dlsym(libpango,"pango_layout_get_line");	/* Only used if we dont have pango_layout_iter_get_run_readonly */
 
     libpangoxft = dlopen("libpangoxft-1.0" SO_EXT,RTLD_LAZY);
+#ifdef SO_0_EXT
+    if ( libpangoxft==NULL )
+	libpangoxft = dlopen("libpangoxft-1.0" SO_0_EXT,RTLD_LAZY);
+#endif
     if ( libpangoxft==NULL ) {
 	fprintf(stderr,"libpangoxft: %s\n", dlerror());
 return( 0 );
@@ -1764,6 +1780,17 @@ return( 0 );
     }
 
     libXft = dlopen("libXft" SO_EXT,RTLD_LAZY);
+#ifdef SO_2_EXT
+    if ( libXft==NULL )
+	libXft = dlopen("libXft" SO_2_EXT,RTLD_LAZY);
+#endif
+    /* The mac doesn't put /usr/X11R6/lib into the default library load path. Very annoying */
+    if ( libXft==NULL )
+	libXft = dlopen("/usr/X11R6/lib/libXft" SO_EXT,RTLD_LAZY);
+#ifdef SO_2_EXT
+    if ( libXft==NULL )
+	libXft = dlopen("/usr/X11R6/lib/libXft" SO_2_EXT,RTLD_LAZY);
+#endif
     if ( libXft==NULL ) {
 	fprintf(stderr,"libXft: %s\n", dlerror());
     } else {
@@ -1779,6 +1806,10 @@ return( 0 );
 
 # if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
     libpangocairo = dlopen("libpangocairo-1.0" SO_EXT,RTLD_LAZY);
+#ifdef SO_0_EXT
+    if ( libpangocairo==NULL )
+	libpangocairo = dlopen("libpangocairo-1.0" SO_0_EXT,RTLD_LAZY);
+#endif
     if ( libpangocairo==NULL )
 	fprintf(stderr,"libpangocairo: %s\n", dlerror());
     else {

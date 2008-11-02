@@ -1141,6 +1141,10 @@ return( libxml!=NULL );
     dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY);
 
     libxml = dlopen( "libxml2" SO_EXT,RTLD_LAZY);
+# ifdef SO_2_EXT
+    if ( libxml==NULL )
+	libxml = dlopen("libxml2" SO_2_EXT,RTLD_LAZY);
+# endif
     xmltested = true;
     if ( libxml==NULL )
 return( false );
