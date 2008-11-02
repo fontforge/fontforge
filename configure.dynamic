@@ -1499,6 +1499,8 @@ Optional Packages:
   --without-native-script   Don't include a legacy fontforge scripting interpreter
   --without-cairo   Don't use libcairo
   --without-pango   Don't use libpango
+  --with-pango-headers=dirs   Specify the CPPFLAGS needed to compile pango
+  --with-pango-lib   Specify LDFLAGS needed to link with pango
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
@@ -3129,6 +3131,7 @@ if test "${with_static_imagelibs+set}" = set; then
 fi
 
 
+oldLDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
 case "$host" in
@@ -3152,19 +3155,19 @@ _ACEOF
 
  if test "$CPPFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
- elif test -d /opt/local/include >/dev/null ; then
-  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
  elif test -d /sw/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -I/sw/include"
+ elif test -d /opt/local/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
  fi
- if test "$LDFLAGS" \!= "" >/dev/null ; then
+ if test "$oldLDFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
- elif test -d /opt/local/lib >/dev/null ; then
-  LDFLAGS="$LDFLAGS -L/opt/local/lib"
-  gww_rpath="-rpath /opt/local/lib"
  elif test -d /sw/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/sw/lib"
   gww_rpath="-rpath /sw/lib"
+ elif test -d /opt/local/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  gww_rpath="-rpath /opt/local/lib"
  fi
  LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
  LIBS="-Wl,/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
@@ -4599,7 +4602,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4602 "configure"' > conftest.$ac_ext
+  echo '#line 4605 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7073,11 +7076,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7076: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7079: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7080: \$? = $ac_status" >&5
+   echo "$as_me:7083: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7363,11 +7366,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7366: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7369: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7370: \$? = $ac_status" >&5
+   echo "$as_me:7373: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7467,11 +7470,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7470: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7473: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7474: \$? = $ac_status" >&5
+   echo "$as_me:7477: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9844,7 +9847,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9847 "configure"
+#line 9850 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -9944,7 +9947,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9947 "configure"
+#line 9950 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12349,11 +12352,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12352: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12355: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12356: \$? = $ac_status" >&5
+   echo "$as_me:12359: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12453,11 +12456,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12456: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12459: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12460: \$? = $ac_status" >&5
+   echo "$as_me:12463: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14051,11 +14054,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14054: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14057: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14058: \$? = $ac_status" >&5
+   echo "$as_me:14061: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14155,11 +14158,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14158: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14161: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14162: \$? = $ac_status" >&5
+   echo "$as_me:14165: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16379,11 +16382,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16382: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16385: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16386: \$? = $ac_status" >&5
+   echo "$as_me:16389: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16669,11 +16672,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16672: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16675: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16676: \$? = $ac_status" >&5
+   echo "$as_me:16679: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16773,11 +16776,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16776: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16779: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16780: \$? = $ac_status" >&5
+   echo "$as_me:16783: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -22506,6 +22509,7 @@ fi
 gww_haspango="no"
 gww_haspangocairo="no"
 gww_checkpango="yes"
+gww_has_pkg_config="yes"
 
 # Check whether --with-pango was given.
 if test "${with_pango+set}" = set; then
@@ -22519,7 +22523,37 @@ else
 fi
 
 if test "$gww_checkpango" = "yes" ; then
-  if pkg-config --libs pangoxft >& /dev/null ; then
+ pan_headers=""
+ pan_lib=""
+
+# Check whether --with-pango-headers was given.
+if test "${with_pango_headers+set}" = set; then
+  withval=$with_pango_headers;
+     if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
+	  pan_headers="$withval"
+	  CFLAGS="$CFLAGS $pan_headers"
+      fi
+
+else
+  :
+fi
+
+
+# Check whether --with-pango-lib was given.
+if test "${with_pango_lib+set}" = set; then
+  withval=$with_pango_lib;
+     if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
+	  pan_lib="$withval"
+	  LDFLAGS="$LDFLAGS $pan_libs"
+      fi
+
+else
+  :
+fi
+
+  if test "$pan_headers" != "" >& /dev/null ; then
+    gww_haspango="done"
+  elif pkg-config --libs pangoxft >& /dev/null ; then
     { echo "$as_me:$LINENO: checking for X11/Xft/Xft.h" >&5
 echo $ECHO_N "checking for X11/Xft/Xft.h... $ECHO_C" >&6; }
 if test "${ac_cv_header_X11_Xft_Xft_h+set}" = set; then
@@ -22569,6 +22603,10 @@ if test $ac_cv_header_X11_Xft_Xft_h = yes; then
 fi
 
 
+  elif pkg-config --version >& /dev/null ; then
+    OK_Theyve_got_pkg_config="yes"
+  else
+    gww_has_pkg_config="no"
   fi
 fi
 if test "$gww_haspango" = "yes" ; then
@@ -22586,6 +22624,8 @@ if test "$gww_haspango" = "no" ; then
 #define _NO_LIBPANGO 1
 _ACEOF
 
+elif test "$gww_haspango" = "done" ; then
+ gww_haspango="yes"
 fi
 
 # Check whether --enable-macapp was given.
@@ -24933,6 +24973,127 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 
 gww_has_gettext="yes"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char bind_textdomain_codeset ();
+int
+main ()
+{
+return bind_textdomain_codeset ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBINTL  1
+_ACEOF
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+  { echo "$as_me:$LINENO: checking for bind_textdomain_codeset in -lintl" >&5
+echo $ECHO_N "checking for bind_textdomain_codeset in -lintl... $ECHO_C" >&6; }
+if test "${ac_cv_lib_intl_bind_textdomain_codeset+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lintl  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char bind_textdomain_codeset ();
+int
+main ()
+{
+return bind_textdomain_codeset ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_intl_bind_textdomain_codeset=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_intl_bind_textdomain_codeset=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_intl_bind_textdomain_codeset" >&5
+echo "${ECHO_T}$ac_cv_lib_intl_bind_textdomain_codeset" >&6; }
+if test $ac_cv_lib_intl_bind_textdomain_codeset = yes; then
+  :
+else
+  gww_has_gettext="no"
+fi
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+if test $gww_has_gettext = yes >/dev/null ; then
 
 for ac_header in libintl.h
 do
@@ -25075,128 +25236,7 @@ fi
 
 done
 
-
-
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char bind_textdomain_codeset ();
-int
-main ()
-{
-return bind_textdomain_codeset ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext &&
-       $as_test_x conftest$ac_exeext; then
-  cat >>confdefs.h <<\_ACEOF
-#define _STATIC_LIBINTL  1
-_ACEOF
-
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-
-  { echo "$as_me:$LINENO: checking for bind_textdomain_codeset in -lintl" >&5
-echo $ECHO_N "checking for bind_textdomain_codeset in -lintl... $ECHO_C" >&6; }
-if test "${ac_cv_lib_intl_bind_textdomain_codeset+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lintl  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char bind_textdomain_codeset ();
-int
-main ()
-{
-return bind_textdomain_codeset ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext &&
-       $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_intl_bind_textdomain_codeset=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_lib_intl_bind_textdomain_codeset=no
 fi
-
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_intl_bind_textdomain_codeset" >&5
-echo "${ECHO_T}$ac_cv_lib_intl_bind_textdomain_codeset" >&6; }
-if test $ac_cv_lib_intl_bind_textdomain_codeset = yes; then
-  :
-else
-  HAVE_LIBINTL_H=0
-fi
-
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
 
 gww_regular_link="no"
 
@@ -27864,11 +27904,33 @@ if test "$gww_has_gettext" = "no"; then
  echo " * Your system does not have the gettext package installed.  This  *"
  echo " * means that fontforge cannot localize its user interface and all *"
  echo " * messages will be in English. You might want to install libintl. *"
-  if test "$gww_ismac" = "yes"; then
- echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
- echo " * it as part of the standard fink download at:                    *"
- echo " *  http://fink.sourceforge.net/                                   *"
+ if test "$gww_ismac" = "yes"; then
+  echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
+  echo " * it as part of the standard fink download at:                    *"
+  echo " *  http://fink.sourceforge.net/                                   *"
+  echo " * of from macports:                                               *"
+  echo " *  http://www.macports.org/                                       *"
  fi
  echo " *******************************************************************"
+fi
+if test "$gww_has_pkg_config" = "no"; then
+ echo "*** Your system does not have pkg-config installed, so I can't figure out"
+ echo "*** if you have pango on your machine. If you do, set --with-pango-headers"
+ echo "*** and --with-pango-lib to specify the options needed to build with pango"
+ if test "$gww_ismac" = "yes"; then
+  echo " *** Unfortunately Mac OS/X does not ship with pango. You can find"
+  echo " *** it as part of the standard fink download at:"
+  echo " ***  http://fink.sourceforge.net/"
+  echo " *** of from macports:"
+  echo " ***  http://www.macports.org/"
+ fi
+elif test "$gww_haspango" = "no"; then
+ if test "$gww_ismac" = "yes"; then
+  echo " *** Unfortunately Mac OS/X does not ship with pango. You can find"
+  echo " *** it as part of the standard fink download at:"
+  echo " ***  http://fink.sourceforge.net/"
+  echo " *** of from macports:"
+  echo " ***  http://www.macports.org/"
+ fi
 fi
 
