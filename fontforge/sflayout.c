@@ -435,7 +435,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 		fl->ottext[i].fl = fl;
 		fl->ottext[i].advance_width = rint( fl->ottext[i].sc->width * scale );
 	    }
-	    if ( li->text[fl->end]=='\n' || li->text[fl->end]=='\0' )
+	    if ( fl->end!=fl->start && ( li->text[fl->end]=='\n' || li->text[fl->end]=='\0' ))
 		++pcnt;
 	}
     }
