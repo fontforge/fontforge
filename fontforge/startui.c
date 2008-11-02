@@ -231,6 +231,41 @@ static struct library_descriptor {
 	1,
 #endif
 	"libfontconfig" },
+    { "libXft", dlsymmod("XftDrawCreate"), "This provides anti-aliased text without cairo.", "http://www.x.org/",
+#ifdef _NO_LIBPANGO
+	0,
+#else
+	1,
+#endif
+	NULL },
+    { "libglib-2.0", dlsymmod("g_main_loop_run"), "This provides a basic class mechanism for pango.", "http://www.gtk.org/",
+#ifdef _NO_LIBPANGO
+	0,
+#else
+	1,
+#endif
+	NULL },
+    { "libpango-1.0", dlsymmod("pango_font_description_new"), "This provides support for complex scripts (Arabic, Indic, etc.).", "http://www.pango.org/",
+#ifdef _NO_LIBPANGO
+	0,
+#else
+	1,
+#endif
+	"libglib-2.0" },
+    { "libpangoxft-1.0", dlsymmod("pango_xft_render"), "This is a layer of pango for use on X windows.", "http://www.pango.org/",
+#ifdef _NO_LIBPANGO
+	0,
+#else
+	1,
+#endif
+	"libXft" },
+    { "libpangocairo-1.0", dlsymmod("pango_cairo_show_glyph_string"), "This is a layer of pango for use on a cairo window.", "http://www.pango.org/",
+#ifdef _NO_LIBPANGO
+	0,
+#else
+	1,
+#endif
+	"libcairo" },
     { NULL }
 };
 
