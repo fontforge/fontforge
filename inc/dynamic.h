@@ -13,6 +13,7 @@
 #   define SO_0_EXT	".0.dylib"
 #   define SO_1_EXT	".1.dylib"
 #   define SO_2_EXT	".2.dylib"
+#   define SO_6_EXT	".6.dylib"
 #   define DL_CONST	
 #   define dlopen(name,foo) gwwv_dlopen(name,foo)
 extern void *gwwv_dlopen(char *name,int flags);
@@ -23,6 +24,7 @@ extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   define SO_0_EXT	".0.dylib"
 #   define SO_1_EXT	".1.dylib"
 #   define SO_2_EXT	".2.dylib"
+#   define SO_6_EXT	".6.dylib"
 /*   man NSModule */
 #   define dlopen(name,foo) gwwv_NSAddImage(name,NSADDIMAGE_OPTION_WITH_SEARCHING|NSADDIMAGE_OPTION_RETURN_ON_ERROR)
 /*   It would have been nice if the Mac's docs had mentioned that the linker adds*/
@@ -47,6 +49,7 @@ void *libtool_laopen(const char *filename, int flags);
 # define SO_0_EXT	".so.0"
 # define SO_1_EXT	".so.1"
 # define SO_2_EXT	".so.2"
+# define SO_6_EXT	".so.6"
 #endif
 #define DL_CONST
 #  endif
