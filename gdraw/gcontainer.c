@@ -540,7 +540,12 @@ return( handled );
 	    GDrawPostEvent(&sub);
     }
     /* Escape activates the cancel button (if there is one) */
-    else if ( !handled && event->u.chr.keysym==GK_Escape && topd->gcancel!=NULL ) {
+    /*  (On the mac, Command-. has that meaning) */
+    else if ( !handled && topd->gcancel!=NULL &&
+	    (event->u.chr.keysym==GK_Escape ||
+	     ((GMenuMask()&ksm_cmdmacosx) &&
+	      (event->u.chr.state&GMenuMask())==ksm_cmdmacosx &&
+	      event->u.chr.keysym=='.'))) {
 	sub.type = et_controlevent;
 	sub.w = topd->gcancel->base;
 	sub.u.control.subtype = et_buttonactivate;
