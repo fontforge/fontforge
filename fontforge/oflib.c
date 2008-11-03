@@ -881,8 +881,8 @@ static void OFLibSortSearch(OFLibDlg *d) {
     if ( d->smax<d->all.fcnt )
 	d->show = grealloc(d->show,(d->smax = d->all.fcnt+20)*sizeof(struct ofl_font_info *));
     if ( st==st_license ) {
-	isofl = strcasecmp(search,"ofl");
-	ispd  = strcasecmp(search,"pd");
+	isofl = strcasecmp(search,"ofl")==0;
+	ispd  = strcasecmp(search,"pd")==0;
     }
     for ( i=s=0; i<d->all.fcnt ; ++i ) {
 	int include = false;
@@ -1008,6 +1008,11 @@ static void HttpThreadKill(OFLibDlg *d) {
 pthread_exit(NULL);
     }
 
+    /* Ok, we've read everything, don't need the timer any more */
+    if ( d->http_timer )
+	GDrawCancelTimer(d->http_timer);
+    d->http_timer=NULL;
+
     d->die = true;
     if ( d->http_thread ) {
 	void *status;
@@ -1018,7 +1023,7 @@ pthread_exit(NULL);
 #else
        pthread_kill(d->http_thread,SIGUSR1);	/* I want to use pthread_cancel, but that seems to send a SIG32, (only 0-31 are defined) which can't be trapped */
 #endif
-       pthread_join(d->http_thread,&status);
+	pthread_join(d->http_thread,&status);
 	pthread_mutex_destroy(&d->http_thread_can_do_stuff);
 	pthread_mutex_destroy(&d->http_thread_done);
     }
@@ -1033,6 +1038,7 @@ pthread_exit(NULL);
 
     /* Remove the notice window (if it's still around) */
     ff_post_notice(NULL,NULL);
+    
 }
 
 static void cancel_handler(int sig) {
