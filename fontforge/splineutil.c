@@ -1184,8 +1184,12 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	    slop = -.95;
 	else if ( minlen<5 )
 	    slop = -.98;
-	else
+	else if ( minlen<10 )
 	    slop = -.99;
+	else if ( minlen<20 )
+	    slop = -.995;
+	else
+	    slop = -.999;
 	if ( nclen!=0 && pclen!=0 && ncdir.x*pcdir.x+ncdir.y*pcdir.y<slop )
 	    sp->pointtype = pt_curve;
 	else if (( nclen!=0 || plen!=0 ) &&
