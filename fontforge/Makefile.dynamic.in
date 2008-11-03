@@ -95,7 +95,7 @@ fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
 	    $(@exeOBJECTS@) exelibstamp.lo ../libfontforge.la $(LIBS)
 
 FontForge.app/Contents/Info.plist: MacFontForgeApp.zip stamp.c
-	-rm -rf FontForge.app
+	-rm -rf FontForge.app __MACOSX
 	unzip MacFontForgeApp.zip
 	cp FontForge.app/Contents/Info.plist /tmp
 	( VERSION=`grep source_version_str stamp.c |sed 's/const char \*source_version_str = "//' | sed 's/";//'` ; sed s/20080725/$$VERSION/ < /tmp/Info.plist >FontForge.app/Contents/Info.plist )
