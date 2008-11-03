@@ -599,8 +599,11 @@ return;
 	    SplineCharTangentPrevCP(sp);
 	    if ( sp->prev ) SplineRefigure(sp->prev);
 	}
-    } else if ( BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
-	    ( sp->nonextcp ^ sp->noprevcp )) {
+    } else if ( (BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
+	    ( sp->nonextcp ^ sp->noprevcp )) &&
+	    ( pointtype!=pt_hvcurve ||
+		(sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
+		(sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x ) )) {
 	/* Retain the old control points */
     } else {
 	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
@@ -635,6 +638,12 @@ return;
 	    }
 	}
     }
+    /* Now in order2 splines it is possible to request combinations that are */
+    /*  mathematically impossible -- two adjacent hv points often don't work */
+    if ( pointtype==pt_hvcurve &&
+		!(sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) &&
+		!(sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x ) )
+	sp->pointtype = pt_curve;
 }
 
 void SplinePointRound(SplinePoint *sp,real factor) {

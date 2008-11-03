@@ -757,9 +757,17 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
     /* If we are going to honour the slopes of a quadratic spline, there is */
     /*  only one possibility */
     if ( order2 ) {
-	if ( from->nonextcp || to->noprevcp )
-return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
-	else if ( !IntersectLines(&nextcp,&from->nextcp,&from->me,&to->prevcp,&to->me) ) {
+	if ( from->nonextcp )
+	    from->nextcp = from->next->to->me;
+	if ( to->noprevcp )
+	    to->prevcp = to->prev->from->me;
+	from->nonextcp = to->noprevcp = false;
+	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
+	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
+
+	if ( !IntersectLines(&nextcp,&from->nextcp,&from->me,&to->prevcp,&to->me) ||
+		(nextcp.x-from->me.x)*fromunit.x + (nextcp.y-from->me.y)*fromunit.y < 0 ||
+		(nextcp.x-to->me.x)*tounit.x + (nextcp.y-to->me.y)*tounit.y < 0 ) {
 	    /* If the slopes don't intersect then use a line */
 	    /*  (or if the intersection is patently absurd) */
 	    from->nonextcp = to->noprevcp = true;
@@ -1435,10 +1443,21 @@ static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 return( tp );
 }
 
+static void SplinePointReCatagorize(SplinePoint *sp,int oldpt) {
+    SplinePointCatagorize(sp);
+    if ( sp->pointtype!=oldpt ) {
+	if ( sp->pointtype==pt_curve && oldpt==pt_hvcurve &&
+		((sp->nextcp.x == sp->me.x && sp->nextcp.y != sp->me.y ) ||
+		 (sp->nextcp.y == sp->me.y && sp->nextcp.x != sp->me.x )))
+	    sp->pointtype = pt_hvcurve;
+    }
+}
+
 void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type) {
     int tot;
     TPoint *tp;
     SplinePoint *np, oldfrom;
+    int oldfpt = from->pointtype, oldtpt = to->pointtype;
     Spline *sp;
     int order2 = from->next->order2;
 
@@ -1463,8 +1482,8 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     
     free(tp);
 
-    SplinePointCatagorize(from);
-    SplinePointCatagorize(to);
+    SplinePointReCatagorize(from,oldfpt);
+    SplinePointReCatagorize(to,oldtpt);
 }
 
 static void RemoveZeroLengthSplines(SplineSet *spl, int onlyselected, double bound) {
