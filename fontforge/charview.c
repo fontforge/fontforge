@@ -2212,23 +2212,21 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	cv->showback[0] &= ~(1<<ly_fore);
 
     for ( layer=ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( layer!=cvlayer ) {
-	if ( layer!=ly_back || (!cv->show_ft_results && cv->dv==NULL )) {
-	    if (( cv->showback[layer>>5]&(1<<(layer&31))) || layer==cvlayer ) {
-		/* Used to draw the image list here, but that's too slow. Optimization*/
-		/*  is to draw to pixmap, dump pixmap a bit earlier */
-		/* Then when we moved the fill image around, we had to deal with the */
-		/*  images before the fill... */
-		CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
-			!sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
-			false,&clip);
-		for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-		    if ( /* cv->b.drawmode==dm_back &&*/ cv->showrefnames )
-			CVDrawRefName(cv,pixmap,rf,0);
-		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,false,&clip);
-		    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
-			CVDrawBB(cv,pixmap,&rf->bb);
-		}
+	if ( cv->showback[layer>>5]&(1<<(layer&31)) ) {
+	    /* Used to draw the image list here, but that's too slow. Optimization*/
+	    /*  is to draw to pixmap, dump pixmap a bit earlier */
+	    /* Then when we moved the fill image around, we had to deal with the */
+	    /*  images before the fill... */
+	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
+		    !sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
+		    false,&clip);
+	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
+		if ( /* cv->b.drawmode==dm_back &&*/ cv->showrefnames )
+		    CVDrawRefName(cv,pixmap,rf,0);
+		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,false,&clip);
+		if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
+		    CVDrawBB(cv,pixmap,&rf->bb);
 	    }
 	}
     }
@@ -2241,10 +2239,17 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 
     CVDrawAnchorPoints(cv,pixmap);
     /* Draw the active layer last so its splines are on top. */
+    /* Note that we don't check whether the layer is visible or not, we always*/
+    /*  draw the current layer -- unless they've turned on grid fit. Then they*/
+    /*  might want to hide the active layer. */
     layer = cvlayer;
-    if ( layer>=0 ) {	/* Not the guidelines "layer" */
+    if ( layer<0 ) /* Guide lines are special */
+	CVDrawLayerSplineSet(cv,pixmap,cv->b.layerheads[cv->b.drawmode],foreoutlinecol,
+		cv->showpoints ,&clip);
+    else if ( (cv->showback[layer>>5]&(1<<(layer&31))) ||
+	    (!cv->show_ft_results && cv->dv==NULL )) {
 	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-	    if ( CVLayer((CharViewBase *) cv)==layer && cv->showrefnames )
+	    if ( cv->showrefnames )
 		CVDrawRefName(cv,pixmap,rf,0);
 	    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
 		CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
