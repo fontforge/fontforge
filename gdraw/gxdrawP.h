@@ -87,8 +87,14 @@ capable of using composite.
 # ifndef _NO_LIBPANGO
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>
-#  include <X11/Xft/Xft.h>
-#  include <pango/pango.h>
+#ifdef __VMS
+# include <Xft/Xft.h>
+typedef pid_t GPid;
+#define G_GNUC_INTERNAL
+#else
+# include <X11/Xft/Xft.h>
+#endif
+#include <pango/pango.h>
 #  undef GTimer
 # endif
 #endif
