@@ -2373,7 +2373,7 @@ void instrcheck(SplineChar *sc,int layer) {
     uint8 *instrs = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos]->ttf_instrs : sc->ttf_instrs;
 
-    if ( !sc->layers[layer].order2 )
+    if ( !sc->layers[layer].order2 || sc->layers[layer].background )
 return;
 
     if ( sc->instructions_out_of_date && no_windowing_ui && sc->anchor==NULL )
