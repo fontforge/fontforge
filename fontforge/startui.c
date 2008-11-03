@@ -297,7 +297,8 @@ static struct library_descriptor {
 };
 
 static void _dolibrary(void) {
-    int i, j;
+#ifndef __VMS
+   int i, j;
     char buffer[3000];
     int fail, isfreetype, hasdebugger;
     DL_CONST void *lib_handle;
@@ -421,6 +422,7 @@ static void _dolibrary(void) {
 	if ( !libs[i].usable )
 	    fprintf( stderr, "\tUnfortunately this version of fontforge is not configured to use this\n\t library.  You must rebuild from source.\n" );
     }
+#endif
 }
 
 static void dolibrary(void) {
