@@ -212,6 +212,9 @@ struct font_instance {
 #endif
 #ifndef _NO_LIBPANGO
     PangoFontDescription *pango_fd;
+#ifndef _NO_LIBCAIRO
+    PangoFontDescription *pangoc_fd;
+#endif
 #endif
 };
 

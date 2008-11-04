@@ -8965,7 +8965,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|Ctl+O"), NULL, NULL, MenuOpen, MID_Open },
     { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, NULL, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|Ctl+Shft+Q"), NULL, NULL, CVMenuClose, MID_Close },
-    { { (unichar_t *) N_("C_lose Tab"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close Tab|No Shortcut"), NULL, NULL, CVMenuCloseTab, MID_CloseTab },
+    { { (unichar_t *) N_("C_lose Tab"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close Tab|No Shortcut"), NULL, NULL, CVMenuCloseTab, MID_CloseTab },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Save"), (GImage *) "filesave.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Save|Ctl+S"), NULL, NULL, CVMenuSave },
     { { (unichar_t *) N_("S_ave as..."), (GImage *) "filesaveas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|Ctl+Shft+S"), NULL, NULL, CVMenuSaveAs },
@@ -9782,8 +9782,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     GDrawSetFont(cv->gw,cv->small);
     GDrawGetBiText8Bounds(cv->gw,"0123456789",10,NULL,&textbounds);
     cv->sdh = textbounds.as+textbounds.ds+1;
-    if ( GDrawHasCairo(cv->v)&gc_pango )
-	cv->sdh += 2;	/* Pango gives us the wrong answer */
     rq.point_size = 10;
     cv->normal = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);
     GDrawFontMetrics(cv->normal,&as,&ds,&ld);
