@@ -2180,7 +2180,7 @@ void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
-    fd = _GXPDraw_configfont(gdisp,fi,layout==gdisp->pango_layout);
+    fd = _GXPDraw_configfont(gdisp,fi,layout!=gdisp->pango_layout);
     _pango_layout_set_font_description(layout,fd);
     _pango_layout_set_text(layout,(char *) text,cnt);
 }
