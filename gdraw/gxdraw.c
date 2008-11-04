@@ -3261,6 +3261,7 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
     KeySym keysym; int len;
     GPoint p;
     int expecting_core = gdisp->expecting_core_event;
+    XEvent subevent;
 
     gdisp->expecting_core_event = false;
 
@@ -3456,6 +3457,22 @@ return;
 	gevent.u.expose.rect.y = event->xexpose.y;
 	gevent.u.expose.rect.width = event->xexpose.width;
 	gevent.u.expose.rect.height = event->xexpose.height;
+	/* Slurp any pending exposes and merge into one big rectangle */
+	while ( XCheckTypedWindowEvent(gdisp->display,event->xany.window,event->type,
+		&subevent)) {
+	    if ( subevent.xexpose.x+subevent.xexpose.width > gevent.u.expose.rect.x+gevent.u.expose.rect.width )
+		gevent.u.expose.rect.width = subevent.xexpose.x+subevent.xexpose.width - gevent.u.expose.rect.x;
+	    if ( subevent.xexpose.x < gevent.u.expose.rect.x ) {
+		gevent.u.expose.rect.width += gevent.u.expose.rect.x - subevent.xexpose.x;
+		gevent.u.expose.rect.x = subevent.xexpose.x;
+	    }
+	    if ( subevent.xexpose.y+subevent.xexpose.height > gevent.u.expose.rect.y+gevent.u.expose.rect.height )
+		gevent.u.expose.rect.height = subevent.xexpose.y+subevent.xexpose.height - gevent.u.expose.rect.y;
+	    if ( subevent.xexpose.y < gevent.u.expose.rect.y ) {
+		gevent.u.expose.rect.height += gevent.u.expose.rect.y - subevent.xexpose.y;
+		gevent.u.expose.rect.y = subevent.xexpose.y;
+	    }
+	}
 #ifndef _NO_LIBCAIRO
 	if ( ((GXWindow) gw)->usecairo )		/* X11 does this automatically. but cairo won't get the event */
 	    GXDrawClear(gw,&gevent.u.expose.rect);
