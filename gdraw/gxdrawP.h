@@ -87,14 +87,14 @@ capable of using composite.
 # ifndef _NO_LIBPANGO
 #  define GTimer GTimer_GTK
 #  include <ft2build.h>
-#ifdef __VMS
-# include <Xft/Xft.h>
+#  ifdef __VMS
+#   include <Xft/Xft.h>
 typedef pid_t GPid;
-#define G_GNUC_INTERNAL
-#else
-# include <X11/Xft/Xft.h>
-#endif
-#include <pango/pango.h>
+#   define G_GNUC_INTERNAL
+#  else
+#   include <X11/Xft/Xft.h>
+#  endif
+#  include <pango/pango.h>
 #  undef GTimer
 # endif
 #endif
@@ -313,6 +313,7 @@ typedef struct gxdisplay /* : GDisplay */ {
 	/* So this field lets us do it right. when the pointer is grabbed the */
 	/* events go to the grab window. It seems so simple... */
     int16 desired_depth, desired_vc, desired_cm;
+    int16 xres;				/* What X Thinks the resolution is */
     XIM im;				/* Input method for current locale */
     XFontSet def_im_fontset;
     struct inputdevices {

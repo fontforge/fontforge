@@ -4544,6 +4544,7 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     res[i].resname = "ScreenHeightPixels"; res[i].type = rt_int; res[i].val = &gdisp->groot->pos.height; ++i;
     sizetemp = WidthMMOfScreen(DefaultScreenOfDisplay(gdisp->display))/25.4;
     sizetempcm = WidthMMOfScreen(DefaultScreenOfDisplay(gdisp->display))/10;
+    gdisp->xres = gdisp->groot->pos.width/sizetemp;
     res[i].resname = "ScreenWidthInches"; res[i].type = rt_double; res[i].val = &sizetemp; ++i;
     cmpos = i;
     res[i].resname = "ScreenWidthCentimeters"; res[i].type = rt_double; res[i].val = &sizetempcm; ++i;
@@ -4555,6 +4556,11 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     res[i].resname = NULL;
     GResourceFind(res,NULL);
 
+    if ( !res[cmpos].found && !res[cmpos-1].found && rint(gdisp->groot->pos.width/sizetemp) == 75 )
+	gdisp->res = 100;	/* X seems to think that if it doesn't know */
+				/*  the screen width, then 75 dpi is a good guess */
+			        /*  Now-a-days, 100 seems better */
+    else
     if ( res[cmpos].found && sizetempcm>=1 )
 	gdisp->res = gdisp->groot->pos.width*2.54/sizetempcm;
     else if ( sizetemp>=1 )

@@ -117,6 +117,13 @@ return( hasC );
     if ( libfontconfig==NULL )
 	libfontconfig = dlopen("libfontconfig" SO_1_EXT,RTLD_LAZY);
 #endif
+    /* The mac doesn't put /usr/X11R6/lib into the default library load path. Very annoying */
+    if ( libfontconfig==NULL )
+	libfontconfig = dlopen("/usr/X11R6/lib/libfontconfig" SO_EXT,RTLD_LAZY);
+#ifdef SO_1_EXT
+    if ( libfontconfig==NULL )
+	libfontconfig = dlopen("/usr/X11R6/lib/libfontconfig" SO_1_EXT,RTLD_LAZY);
+#endif
     if ( libfontconfig==NULL ) {
 	fprintf(stderr,"libfontconfig: %s\n", dlerror());
 return( 0 );
@@ -1617,7 +1624,9 @@ return(false);
 static DL_CONST void *libpango=NULL, *libpangoxft, *libXft;
 static XftDraw *(*_XftDrawCreate)(Display *,Drawable,Visual *,Colormap);
 static void (*_XftDrawDestroy)(XftDraw *);
-static Bool *(*_XftColorAllocValue)(Display *,Visual *,Colormap,XRenderColor *,XftColor *);
+static Bool (*_XftColorAllocValue)(Display *,Visual *,Colormap,XRenderColor *,XftColor *);
+static Bool (*_XftDrawSetClipRectangles)(XftDraw *,int,int,_Xconst XRectangle *,int);
+
 
 static PangoFontDescription *(*_pango_font_description_new)(void);
 static void (*_pango_font_description_set_family)(PangoFontDescription *,const char *);
@@ -1798,8 +1807,10 @@ return( 0 );
 		dlsym(libXft,"XftDrawCreate");
 	_XftDrawDestroy = (void (*)(XftDraw *))
 		dlsym(libXft,"XftDrawDestroy");
-	_XftColorAllocValue = (Bool *(*)(Display *,Visual *,Colormap,XRenderColor *,XftColor *))
+	_XftColorAllocValue = (Bool (*)(Display *,Visual *,Colormap,XRenderColor *,XftColor *))
 		dlsym(libXft,"XftColorAllocValue");
+	_XftDrawSetClipRectangles = (Bool (*)(XftDraw *,int,int,_Xconst XRectangle *,int))
+		dlsym(libXft,"XftDrawSetClipRectangles");
 	if ( _XftDrawCreate!=NULL && _XftColorAllocValue!=NULL )
 	    hasP |= 1;
     }
@@ -1839,6 +1850,7 @@ return( hasP );
 #  define _XftDrawCreate  XftDrawCreate
 #  define _XftDrawDestroy XftDrawDestroy
 #  define _XftColorAllocValue XftColorAllocValue
+#  define _XftDrawSetClipRectangles XftDrawSetClipRectangles
 
 #  define _pango_font_description_new pango_font_description_new
 #  define _pango_font_description_set_family pango_font_description_set_family
@@ -1995,12 +2007,17 @@ void _GXPDraw_DestroyWindow(GXWindow nw) {
 /* ************************************************************************** */
 /* ******************************* Pango Text ******************************* */
 /* ************************************************************************** */
-static void _GXPDraw_configfont(GFont *font) {
+static PangoFontDescription *_GXPDraw_configfont(GXDisplay *gdisp, GFont *font,int pc) {
     PangoFontDescription *fd;
+#ifdef _NO_LIBCAIRO
+    PangoFontDescription **fdbase = &font->pango_fd;
+#else
+    PangoFontDescription **fdbase = pc ? &font->pangoc_fd : &font->pango_fd;
+#endif
 
-    if ( font->pango_fd!=NULL )
-return;
-    font->pango_fd = fd = _pango_font_description_new();
+    if ( *fdbase!=NULL )
+return( *fdbase );
+    *fdbase = fd = _pango_font_description_new();
 
     if ( font->rq.utf8_family_name != NULL )
 	_pango_font_description_set_family(fd,font->rq.utf8_family_name);
@@ -2021,23 +2038,24 @@ return;
 	    (font->rq.style&fs_extended )?  PANGO_STRETCH_EXPANDED  :
 					    PANGO_STRETCH_NORMAL);
 
-    /* Pango doesn't give me any control over the resolution, so I do my */
+    if ( font->rq.point_size<=0 )
+	GDrawIError( "Bad point size for pango" );	/* any negative (pixel) values should be converted when font opened */
+
+    /* Pango doesn't give me any control over the resolution on X, so I do my */
     /*  own conversion from points to pixels */
+    /* But under pangocairo I can set the resolution, so behavior is different*/
     /* But then, set_absolute_size doesn't exist in some versions of the */
     /*  library */
     if ( _pango_font_description_set_absolute_size!=NULL ) {
-	if ( font->rq.point_size>0 )
-	    _pango_font_description_set_absolute_size(fd,
+	_pango_font_description_set_absolute_size(fd,
 		    GDrawPointsToPixels(NULL,font->rq.point_size*PANGO_SCALE));
-	else
-	    _pango_font_description_set_absolute_size(fd,-font->rq.point_size*PANGO_SCALE);
     } else {
-	if ( font->rq.point_size>0 )
+	if ( pc )				/* pango Resolution set correctly */
 	    _pango_font_description_set_size(fd,font->rq.point_size*PANGO_SCALE);
-	else
-	    _pango_font_description_set_absolute_size(fd,
-		    GDrawPixelsToPoints(NULL,-font->rq.point_size)*PANGO_SCALE);
+	else					/* pango Resolution probably wrong */
+	    _pango_font_description_set_size(fd,(font->rq.point_size*gdisp->res+gdisp->xres/2)*PANGO_SCALE/gdisp->xres);
     }
+return( fd );
 }
 
 int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
@@ -2048,13 +2066,14 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
     struct font_instance *fi = gw->ggc->fi;
     PangoRectangle rect, ink;
     PangoLayout *layout = gdisp->pango_layout;
+    PangoFontDescription *fd;
 
 # if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
-    _GXPDraw_configfont(fi);
-    _pango_layout_set_font_description(layout,fi->pango_fd);
+    fd = _GXPDraw_configfont(gdisp,fi,layout!=gdisp->pango_layout);
+    _pango_layout_set_font_description(layout,fd);
     _pango_layout_set_text(layout,(char *) text,cnt);
     _pango_layout_get_pixel_extents(layout,NULL,&rect);
     if ( drawit==tf_drawit ) {
@@ -2070,12 +2089,18 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	{
 	    XftColor fg;
 	    XRenderColor fgcol;
+	    XRectangle clip;
 	    fgcol.red = COLOR_RED(col)<<8; fgcol.green = COLOR_GREEN(col)<<8; fgcol.blue = COLOR_BLUE(col)<<8;
 	    if ( COLOR_ALPHA(col)!=0 )
 		fgcol.alpha = COLOR_ALPHA(col)*0x101;
 	    else
 		fgcol.alpha = 0xffff;
 	    _XftColorAllocValue(gdisp->display,gdisp->visual,gdisp->cmap,&fgcol,&fg);
+	    clip.x = gw->ggc->clip.x;
+	    clip.y = gw->ggc->clip.y;
+	    clip.width = gw->ggc->clip.width;
+	    clip.height = gw->ggc->clip.height;
+	    _XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
 	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
 	}
     } else if ( drawit==tf_rect ) {
@@ -2092,8 +2117,14 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	fm = _pango_font_get_metrics(run->item->analysis.font,NULL);
 	arg->size.fas = _pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
 	arg->size.fds = _pango_font_metrics_get_descent(fm)/PANGO_SCALE;
-	arg->size.as = arg->size.fas - ink.y;
-	arg->size.ds = ink.height - arg->size.fas;
+	arg->size.as = ink.y + ink.height - arg->size.fds;
+	arg->size.ds = arg->size.fds - ink.y;
+	if ( arg->size.ds<0 ) {
+	    --arg->size.as;
+	    arg->size.ds = 0;
+	}
+	/* In the one case I've looked at fds is one pixel off from rect.y */
+	/*  I don't know what to make of that */
 	_pango_font_metrics_unref(fm);
 	_pango_layout_iter_free(iter);
     }
@@ -2114,15 +2145,18 @@ void _GXPDraw_FontMetrics(GXWindow gw,GFont *fi,int *as, int *ds, int *ld) {
     PangoFont *pfont;
     PangoFontMetrics *fm;
 
-    _GXPDraw_configfont(fi);
 # if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
-    if ( gw->usecairo )
+    if ( gw->usecairo ) {
+	_GXPDraw_configfont(gdisp,fi,true);
 	pfont = _pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
-		fi->pango_fd);
-    else
+		fi->pangoc_fd);
+    } else
 #endif
+    {
+	_GXPDraw_configfont(gdisp,fi,false);
 	pfont = _pango_font_map_load_font(gdisp->pango_fontmap,gdisp->pango_context,
 		fi->pango_fd);
+    }
     fm = _pango_font_get_metrics(pfont,NULL);
     *as = _pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
     *ds = _pango_font_metrics_get_descent(fm)/PANGO_SCALE;
@@ -2137,6 +2171,7 @@ void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
     PangoLayout *layout = gdisp->pango_layout;
+    PangoFontDescription *fd;
 
     if ( fi==NULL )
 	fi = gw->ggc->fi;
@@ -2145,8 +2180,8 @@ void _GXPDraw_LayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
-    _GXPDraw_configfont(fi);
-    _pango_layout_set_font_description(layout,fi->pango_fd);
+    fd = _GXPDraw_configfont(gdisp,fi,layout==gdisp->pango_layout);
+    _pango_layout_set_font_description(layout,fd);
     _pango_layout_set_text(layout,(char *) text,cnt);
 }
 
@@ -2165,12 +2200,18 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
     {
 	XftColor fg;
 	XRenderColor fgcol;
+	XRectangle clip;
 	fgcol.red = COLOR_RED(col)<<8; fgcol.green = COLOR_GREEN(col)<<8; fgcol.blue = COLOR_BLUE(col)<<8;
 	if ( COLOR_ALPHA(col)!=0 )
 	    fgcol.alpha = COLOR_ALPHA(col)*0x101;
 	else
 	    fgcol.alpha = 0xffff;
 	_XftColorAllocValue(gdisp->display,gdisp->visual,gdisp->cmap,&fgcol,&fg);
+	clip.x = gw->ggc->clip.x;
+	clip.y = gw->ggc->clip.y;
+	clip.width = gw->ggc->clip.width;
+	clip.height = gw->ggc->clip.height;
+	_XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
 	my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
     }
 }
