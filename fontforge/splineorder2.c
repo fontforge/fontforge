@@ -1358,6 +1358,38 @@ return;
 	    toff.y = to->me.y - (to->me.x-from->me.x)+(to->me.y-from->me.y);
 	    next = NULL;
 	}
+	if (( from->pointtype==pt_hvcurve && foff.x!=from->me.x && foff.y!=from->me.y ) ||
+		( to->pointtype==pt_hvcurve && toff.x!=to->me.x && toff.y!=to->me.y )) {
+	    if ( from->me.x == to->me.x ) {
+		if ( from->pointtype==pt_hvcurve )
+		    foff.x = from->me.x;
+		if ( to->pointtype==pt_hvcurve )
+		    toff.x = to->me.x;
+	    } else if ( from->me.y == to->me.y ) {
+		if ( from->pointtype==pt_hvcurve )
+		    foff.y = from->me.y;
+		if ( to->pointtype==pt_hvcurve )
+		    toff.y = to->me.y;
+	    } else {
+		if ( from->pointtype==pt_hvcurve && foff.x!=from->me.x && foff.y!=from->me.y ) {
+		    if ( fabs(foff.x-from->me.x) > fabs(foff.y-from->me.y) )
+			foff.y = from->me.y;
+		    else
+			foff.x = from->me.x;
+		}
+		if ( to->pointtype==pt_hvcurve && toff.x!=to->me.x && toff.y!=to->me.y ) {
+		    if ( from->pointtype==pt_hvcurve ) {
+			if ( from->me.x==foff.x )
+			    toff.y = to->me.y;
+			else
+			    toff.x = to->me.x;
+		    } else if ( fabs(toff.x-to->me.x) > fabs(toff.y-to->me.y) )
+			toff.y = to->me.y;
+		    else
+			toff.x = to->me.x;
+		}
+	    }
+	}
 	if ( IntersectLinesClip(&from->nextcp,&foff,&from->me,&toff,&to->me)) {
 	    from->nonextcp = to->noprevcp = false;
 	    to->prevcp = from->nextcp;
@@ -1479,6 +1511,17 @@ return;
 	}
     }
     SplineRefigure2(spline);
+
+    /* Now in order2 splines it is possible to request combinations that are */
+    /*  mathematically impossible -- two adjacent hv points often don't work */
+    if ( to->pointtype==pt_hvcurve &&
+		!(to->nextcp.x == to->me.x && to->nextcp.y != to->me.y ) &&
+		!(to->nextcp.y == to->me.y && to->nextcp.x != to->me.x ) )
+	to->pointtype = pt_curve;
+    if ( from->pointtype==pt_hvcurve &&
+		!(from->nextcp.x == from->me.x && from->nextcp.y != from->me.y ) &&
+		!(from->nextcp.y == from->me.y && from->nextcp.x != from->me.x ) )
+	from->pointtype = pt_curve;
 }
 
 Spline *SplineMake2(SplinePoint *from, SplinePoint *to) {

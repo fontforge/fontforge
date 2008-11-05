@@ -1135,6 +1135,7 @@ void SplineFontQuickConservativeBounds(SplineFont *sf,DBounds *b) {
 }
 
 void SplinePointCatagorize(SplinePoint *sp) {
+    int oldpointtype = sp->pointtype;
 
     sp->pointtype = pt_corner;
     if ( sp->next==NULL && sp->prev==NULL )
@@ -1196,12 +1197,15 @@ void SplinePointCatagorize(SplinePoint *sp) {
 		(nclen==0 || ncdir.x*pdir.x+ncdir.y*pdir.y<slop ) &&
 		(pclen==0 || ndir.x*pcdir.x+ndir.y*pcdir.y<slop ))
 	    sp->pointtype = pt_tangent;
-#if 0
-	if ( sp->pointtype == pt_curve &&
+
+	/* If a point started out hv, and could still be hv, them make it so */
+	/*  but don't make hv points de novo, Alexey doesn't like change */
+	/*  (this only works because hv isn't a default setting, so if it's */
+	/*   there it was done intentionally) */
+	if ( sp->pointtype == pt_curve && oldpointtype == pt_hvcurve &&
 		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
 		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
 	    sp->pointtype = pt_hvcurve;
-#endif
     }
 }
 
