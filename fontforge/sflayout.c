@@ -435,7 +435,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 		fl->ottext[i].fl = fl;
 		fl->ottext[i].advance_width = rint( fl->ottext[i].sc->width * scale );
 	    }
-	    if ( fl->end!=fl->start && ( li->text[fl->end]=='\n' || li->text[fl->end]=='\0' ))
+	    if ( (fl->next==NULL || fl->next->end!=fl->end) && ( li->text[fl->end]=='\n' || li->text[fl->end]=='\0' ))
 		++pcnt;
 	}
     }
@@ -461,7 +461,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	/* Each para may be composed of several font segments */
 	for ( fl=curp; fl!=NULL; fl=fl->next ) {
 	    len += ot_strlen( fl->ottext );
-	    if ( li->text[fl->end]=='\n' )
+	    if ( (fl->next==NULL || fl->next->end!=fl->end) && li->text[fl->end]=='\n' )
 	break;		/* End of paragraph */
 	}
 	li->paras[p].para = galloc((len+1)*sizeof( struct paras));
@@ -471,7 +471,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	    for ( i=0; fl->ottext[i].sc!=NULL; ++i )
 		li->paras[p].para[len+i] = &fl->ottext[i];
 	    len += i;
-	    if ( li->text[fl->end]=='\n' ) {
+	    if ( (fl->next==NULL || fl->next->end!=fl->end) && li->text[fl->end]=='\n' ) {
 		fl = fl->next;
 	break;		/* End of paragraph */
 	    }
@@ -1007,8 +1007,8 @@ SplineSet *LIConvertToSplines(LayoutInfo *li,double dpi,int order2) {
 		ss = SplineSetsConvertOrder(ss,order2);
 
 	    transform[0] = transform[3] = fd->pointsize*dpi/72.0/(fd->sf->ascent+fd->sf->descent);
-	    transform[4] = x + line[i]->vr.xoff;
-	    transform[5] = y - (line[i]->vr.yoff + line[i]->bsln_off);
+	    transform[4] =  x + line[i]->vr.xoff;
+	    transform[5] = -y + (line[i]->vr.yoff + line[i]->bsln_off);
 	    ss = SplinePointListTransform(ss,transform,true);
 	    if ( head==NULL )
 		head = ss;
