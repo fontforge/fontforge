@@ -622,8 +622,39 @@ return;
 	}
 	if ( pointtype==pt_hvcurve &&
 		((unitnext.x!=0 && unitnext.y!=0) ||
-		 (unitprev.x!=0 && unitprev.y!=0)) )
+		 (unitprev.x!=0 && unitprev.y!=0)) ) {
+	    BasePoint ncp, pcp, new;
+	    if ( fabs(unitnext.x)+fabs(unitprev.x)>fabs(unitnext.y)+fabs(unitprev.y) ) {
+		unitnext.y = unitprev.y = 0;
+		unitnext.x = unitnext.x>0 ? 1 : -1;
+		unitprev.x = unitprev.x>0 ? 1 : -1;
+	    } else {
+		unitnext.x = unitprev.x = 0;
+		unitnext.y = unitnext.y>0 ? 1 : -1;
+		unitprev.y = unitprev.y>0 ? 1 : -1;
+	    }
+	    ncp.x = sp->me.x + unitnext.x*nextlen;
+	    ncp.y = sp->me.y + unitnext.y*nextlen;
+	    if ( sp->next!=NULL && sp->next->order2 ) {
+		if ( IntersectLinesClip(&new,&ncp,&sp->me,&sp->next->to->prevcp,&sp->next->to->me)) {
+		    sp->nextcp = new;
+		    sp->next->to->prevcp = new;
+		} else
+		    sp->pointtype = pt_curve;
+	    } else
+		sp->nextcp = ncp;
+	    pcp.x = sp->me.x + unitprev.x*prevlen;
+	    pcp.y = sp->me.y + unitprev.y*prevlen;
+	    if ( sp->prev!=NULL && sp->prev->order2 ) {
+		if ( IntersectLinesClip(&new,&pcp,&sp->me,&sp->prev->from->nextcp,&sp->prev->from->me)) {
+		    sp->prevcp = new;
+		    sp->prev->from->nextcp = new;
+		} else
+		    sp->pointtype = pt_curve;
+	    } else
+		sp->prevcp = pcp;
 	    makedflt = true;
+	}
 	if ( makedflt ) {
 	    sp->nextcpdef = sp->prevcpdef = true;
 	    if (( sp->prev!=NULL && sp->prev->order2 ) ||
