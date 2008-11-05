@@ -204,9 +204,9 @@ return;
     GDrawWindowFontMetrics(root,new->font = GDrawAttachFont(root,&rq),&as,&ds,&ld);
 
     if ( new->line1!=NULL )
-	new->l1width = GDrawGetTextWidth(root,new->line1,-1,NULL);
+	new->l1width = GDrawGetBiTextWidth(root,new->line1,-1,-1,NULL);
     if ( new->line2!=NULL )
-	new->l2width = GDrawGetTextWidth(root,new->line2,-1,NULL);
+	new->l2width = GDrawGetBiTextWidth(root,new->line2,-1,-1,NULL);
     new->l1y = GDrawPointsToPixels(root,5) + as;
     new->l2y = new->l1y + as+ds;
     new->boxy = new->l2y + as+ds;
@@ -299,7 +299,7 @@ return;
     current->line1 = u_copy(line1);
     if ( current->line1!=NULL ) {
 	GDrawSetFont(current->gw,current->font);
-	current->l1width = GDrawGetTextWidth(current->gw,current->line1,-1,NULL);
+	current->l1width = GDrawGetBiTextWidth(current->gw,current->line1,-1,-1,NULL);
     }
     if ( current->visible )
 	GDrawRequestExpose(current->gw,NULL,false);
@@ -316,7 +316,7 @@ return;
     current->line2 = u_copy(line2);
     if ( current->line2!=NULL ) {
 	GDrawSetFont(current->gw,current->font);
-	current->l2width = GDrawGetTextWidth(current->gw,current->line2,-1,NULL);
+	current->l2width = GDrawGetBiTextWidth(current->gw,current->line2,-1,-1,NULL);
     }
     if ( current->visible )
 	GDrawRequestExpose(current->gw,NULL,false);

@@ -175,16 +175,16 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 return( 0 );
     switch ( gme->col_data[c].me_type ) {
       case me_int:
-	width = GDrawGetText8Width(gme->g.base,"1234", -1, NULL );
+	width = GDrawGetBiText8Width(gme->g.base,"1234", -1, -1, NULL );
       break;
       case me_hex: case me_addr:
-	width = GDrawGetText8Width(gme->g.base,"0xFFFF", -1, NULL );
+	width = GDrawGetBiText8Width(gme->g.base,"0xFFFF", -1, -1, NULL );
       break;
       case me_uhex:
-	width = GDrawGetText8Width(gme->g.base,"U+FFFF", -1, NULL );
+	width = GDrawGetBiText8Width(gme->g.base,"U+FFFF", -1, -1, NULL );
       break;
       case me_real:
-	width = GDrawGetText8Width(gme->g.base,"1.234567", -1, NULL );
+	width = GDrawGetBiText8Width(gme->g.base,"1.234567", -1, -1, NULL );
       break;
       case me_enum:
 	max = 0;
@@ -192,9 +192,9 @@ return( 0 );
 	    mi = FindMi(gme->col_data[c].enum_vals,gme->data[r*gme->cols+c].u.md_ival);
 	    if ( mi!=NULL ) {
 		if ( mi->ti.text_is_1byte )
-		    cur = GDrawGetText8Width(gme->g.base,(char *)mi->ti.text,-1,NULL);
+		    cur = GDrawGetBiText8Width(gme->g.base,(char *)mi->ti.text, -1,-1,NULL);
 		else
-		    cur = GDrawGetTextWidth(gme->g.base,mi->ti.text,-1,NULL);
+		    cur = GDrawGetBiTextWidth(gme->g.base,mi->ti.text, -1,-1,NULL);
 		if ( cur>max ) max = cur;
 	    }
 	}
@@ -203,13 +203,13 @@ return( 0 );
 	    GMenuItem *mi = gme->col_data[c].enum_vals;
 	    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line ; ++i ) {
 		if ( mi[i].ti.text!=NULL ) {
-		    cur = GDrawGetTextWidth(gme->g.base,mi[i].ti.text, -1, NULL );
+		    cur = GDrawGetBiTextWidth(gme->g.base,mi[i].ti.text, -1, -1, NULL );
 		    if ( cur>max ) max = cur;
 		}
 	    }
 	}
 #endif
-	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1, NULL );
+	cur = 6 * GDrawGetBiText8Width(gme->g.base,"n", 1, 1, NULL );
 	if ( max<cur )
 	    max = cur;
 	width = max;
@@ -228,12 +228,12 @@ return( 0 );
 	    if ( str==NULL )
 	continue;
 	    pt = strchr(str,'\n');
-	    cur = GDrawGetText8Width(gme->g.base,str, pt==NULL ? -1: pt-str, NULL );
+	    cur = GDrawGetBiText8Width(gme->g.base,str, -1, pt==NULL ? -1: pt-str, NULL );
 	    if ( cur>max ) max = cur;
 	    free(freeme);
 	}
-	if ( max < 10*GDrawGetText8Width(gme->g.base,"n", 1, NULL ) )
-	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1, NULL );
+	if ( max < 10*GDrawGetBiText8Width(gme->g.base,"n", 1, 1, NULL ) )
+	    width = 10*GDrawGetBiText8Width(gme->g.base,"n", 1, 1, NULL );
 	else
 	    width = max;
 	if ( gme->col_data[c].me_type==me_stringchoice ||
@@ -248,7 +248,7 @@ return( 0 );
     }
     if ( gme->col_data[c].title!=NULL ) {
 	GDrawSetFont(gme->g.base,gme->titfont);
-	cur = GDrawGetText8Width(gme->g.base,gme->col_data[c].title, -1, NULL );
+	cur = GDrawGetBiText8Width(gme->g.base,gme->col_data[c].title, -1, -1, NULL );
 	if ( cur>width ) width = cur;
     }
     GDrawSetFont(gme->g.base,old);

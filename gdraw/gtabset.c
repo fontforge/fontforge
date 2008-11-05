@@ -319,7 +319,7 @@ static void GTabSet_Remetric(GTabSet *gts) {
     gts->vert_list_width = 0;
 
     for ( i=0; i<gts->tabcnt; ++i ) {
-	gts->tabs[i].tw = GDrawGetTextWidth(gts->g.base,gts->tabs[i].name,-1,NULL);
+	gts->tabs[i].tw = GDrawGetBiTextWidth(gts->g.base,gts->tabs[i].name,-1,-1,NULL);
 	gts->tabs[i].width = gts->tabs[i].tw + 2*bp;
 	in = gts->tabs[i].nesting*ni;
 	if ( gts->tabs[i].tw+in > gts->vert_list_width )

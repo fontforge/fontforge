@@ -90,7 +90,7 @@ static int gbutton_textsize(GImageButton *gb, int *_lcnt) {
 	for ( pt = gb->label; ; ) {
 	    for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
 	    if ( pt!=start ) {
-		int w = GDrawGetTextWidth(gb->g.base,start,pt-start,NULL);
+		int w = GDrawGetBiTextWidth(gb->g.base,start,-1,pt-start,NULL);
 		if ( w>maxtextwidth ) maxtextwidth=w;
 	    }
 	    ++lcnt;
@@ -501,7 +501,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	width = gbutton_textsize((GImageButton *) gl,&lcnt);
 	if ( lcnt==1 ) {
 	    FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	    width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	    width = GDrawGetBiTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
 	    GDrawSetFont(gl->g.base,old);
 	    if ( as<bounds.as ) as = bounds.as;
 	    if ( ds<bounds.ds ) ds = bounds.ds;

@@ -275,7 +275,7 @@ static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     GDrawWindowFontMetrics(g->base,gl->font,&as, &ds, &ld);
     if ( gl->label!=NULL ) {
 	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	width = GDrawGetBiTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
 	GDrawSetFont(gl->g.base,old);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;

@@ -213,12 +213,12 @@ return( NULL );
     fh = as+ds;
     maxw = 0;
     for ( i=0; i<lb; ++i ) {
-	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	w = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	if ( w>maxw ) maxw = w;
     }
     bw = 0;
     for ( i=0; i<bcnt; ++i ) {
-	w = GDrawGetTextWidth(gw,answers[i],-1,NULL);
+	w = GDrawGetBiTextWidth(gw,answers[i],-1,-1,NULL);
 	if ( w>bw ) bw = w;
     }
     bw += GDrawPointsToPixels(gw,20);
@@ -231,7 +231,7 @@ return( NULL );
 
     gcd = gcalloc(lb+bcnt+2,sizeof(GGadgetCreateData));
     if ( lb==1 ) {
-	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[0].text,-1,-1,NULL);
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
 	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
 	gcd[0].gd.pos.height = fh;
@@ -241,7 +241,7 @@ return( NULL );
     } else for ( i=0; i<lb; ++i ) {
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
-	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	gcd[i].gd.pos.height = fh;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &qlabels[i];
@@ -709,7 +709,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     maxw = 220;
     for ( i=0; i<lb; ++i ) {
 	if ( qlabels[i].text!=NULL ) {
-	    w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	    w = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	    if ( w>maxw ) maxw = w;
 	}
     }
@@ -717,7 +717,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 
     gcd = gcalloc(lb+1+2+2+2,sizeof(GGadgetCreateData));
     if ( lb==1 ) {
-	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[0].text,-1,-1,NULL);
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
 	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
 	gcd[0].gd.pos.height = fh;
@@ -727,7 +727,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     } else for ( i=0; i<lb; ++i ) {
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
-	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	gcd[i].gd.pos.height = fh;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &qlabels[i];
@@ -958,24 +958,24 @@ return( NULL );
     fh = as+ds;
     maxw = 0;
     for ( i=0; i<lb; ++i ) {
-	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	w = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	if ( w>maxw ) maxw = w;
     }
     if ( add_text && defstr!=NULL ) {
 	extern GFont *_gtextfield_font;
 	if ( _gtextfield_font!=NULL ) {
 	    GDrawSetFont(gw,_gtextfield_font);
-	    w = GDrawGetText8Width(gw,defstr,-1,NULL);
+	    w = GDrawGetBiText8Width(gw,defstr,-1,-1,NULL);
 	    GDrawSetFont(gw,_ggadget_default_font);
 	} else
-	    w = 8*GDrawGetText8Width(gw,defstr,-1,NULL)/5;
+	    w = 8*GDrawGetBiText8Width(gw,defstr,-1,-1,NULL)/5;
 	w += GDrawPointsToPixels(gw,40);
 	if ( w >1000 ) w = 1000;
 	if ( w>maxw ) maxw = w;
     }
     bw = 0;
     for ( i=0; i<bcnt; ++i ) {
-	w = GDrawGetText8Width(gw,answers[i],-1,NULL);
+	w = GDrawGetBiText8Width(gw,answers[i],-1,-1,NULL);
 	if ( w>bw ) bw = w;
     }
     bw += GDrawPointsToPixels(gw,20);
@@ -988,7 +988,7 @@ return( NULL );
 
     gcd = gcalloc(lb+bcnt+2,sizeof(GGadgetCreateData));
     if ( lb==1 ) {
-	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[0].text,-1,-1,NULL);
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
 	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
 	gcd[0].gd.pos.height = fh;
@@ -998,7 +998,7 @@ return( NULL );
     } else for ( i=0; i<lb; ++i ) {
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
-	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	gcd[i].gd.pos.height = fh;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &qlabels[i];
@@ -1329,20 +1329,20 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     maxw = 220;
     for ( i=0; i<cnt; ++i) {
 	if ( llabels[i].text!=NULL ) {		/* lines */
-	    w = GDrawGetText8Width(gw,(char *) llabels[i].text,-1,NULL);
+	    w = GDrawGetBiText8Width(gw,(char *) llabels[i].text,-1,-1,NULL);
 	    if ( w>900 ) w = 900;
 	    if ( w>maxw ) maxw = w;
 	}
     }
     for ( i=0; i<lb; ++i ) {
-	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	w = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	if ( w>maxw ) maxw = w;
     }
     maxw += GDrawPointsToPixels(gw,20);
 
     gcd = gcalloc(lb+1+2+2+2,sizeof(GGadgetCreateData));
     if ( lb==1 ) {
-	gcd[0].gd.pos.width = GDrawGetTextWidth(gw,qlabels[0].text,-1,NULL);
+	gcd[0].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[0].text,-1,-1,NULL);
 	gcd[0].gd.pos.x = (maxw-gcd[0].gd.pos.width)/2;
 	gcd[0].gd.pos.y = GDrawPointsToPixels(gw,6);
 	gcd[0].gd.pos.height = fh;
@@ -1353,7 +1353,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     } else for ( i=0; i<lb; ++i ) {
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,8);
 	gcd[i].gd.pos.y = GDrawPointsToPixels(gw,6)+i*fh;
-	gcd[i].gd.pos.width = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	gcd[i].gd.pos.width = GDrawGetBiTextWidth(gw,qlabels[i].text,-1,-1,NULL);
 	gcd[i].gd.pos.height = fh;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &qlabels[i];
