@@ -435,7 +435,7 @@ return( true );
 	    temp = -1;
 	    if (( ept = u_strchr(pt,'\n'))!=NULL )
 		temp = ept-pt;
-	    temp = GDrawGetTextWidth(popup,pt,temp,NULL);
+	    temp = GDrawGetBiTextWidth(popup,pt,temp,temp,NULL);
 	    if ( temp>width ) width = temp;
 	    ++lines;
 	    pt = ept+1;
@@ -862,8 +862,8 @@ return;
 	    pt = u_strchr(label,tolower(mnemonic));
 	if ( pt==NULL )
 return;
-	x += GDrawGetBiTextWidth(gw,label,pt-label,-1,NULL);
-	width = GDrawGetTextWidth(gw,pt,1,NULL);
+	x += GDrawGetBiTextWidth(gw,label,pt-label,pt-label,NULL);
+	width = GDrawGetBiTextWidth(gw,pt,1,1,NULL);
     }
     GDrawSetLineWidth(gw,point);
     y += 2*point;

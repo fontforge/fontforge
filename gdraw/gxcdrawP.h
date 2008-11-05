@@ -52,7 +52,7 @@ extern int32 _GXCDraw_DoText8(GWindow gw, int32 x, int32 y,
 	const char *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
 extern int32 _GXCDraw_DoText(GWindow gw, int32 x, int32 y,
-	unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg);
 
 #endif

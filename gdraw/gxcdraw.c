@@ -956,7 +956,7 @@ return( x );
 }
 
 int32 _GXCDraw_DoText(GWindow w, int32 x, int32 y,
-	unichar_t *text, int32 cnt, FontMods *mods, Color col,
+	const unichar_t *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     GXWindow gw = (GXWindow) w;
     const unichar_t *end = text+(cnt<0?u_strlen(text):cnt);

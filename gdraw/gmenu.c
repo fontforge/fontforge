@@ -391,7 +391,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 	GMenuDrawArrow(m,ybase,r2l);
     else if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
 	_shorttext(mi->shortcut,0,shortbuf);
-	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
+	width = GDrawGetBiTextWidth(m->w,shortbuf,-1,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
 	if ( r2l ) {
 	    int x = GDrawDrawBiText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
 	    GMenuDrawMacIcons(m,fg,ybase, x, mi->short_mask);
@@ -402,7 +402,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
     } else if ( mi->shortcut!=0 ) {
 	shorttext(mi,shortbuf);
 
-	width = GDrawGetTextWidth(m->w,shortbuf,-1,NULL);
+	width = GDrawGetBiTextWidth(m->w,shortbuf,-1,-1,NULL);
 	if ( r2l )
 	    GDrawDrawBiText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
 	else
@@ -1159,10 +1159,10 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	if ( temp>width ) width = temp;
 	if ( mi[i].shortcut!=0 && (mi[i].short_mask&0xffe0)==0 && mac_menu_icons ) {
 	    _shorttext(mi[i].shortcut,0,buffer);
-	    temp = GDrawGetTextWidth(m->w,buffer,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
+	    temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL) + GMenuMacIconsWidth(m,mi[i].short_mask);
 	} else {
 	    shorttext(&mi[i],buffer);
-	    temp = GDrawGetTextWidth(m->w,buffer,-1,NULL);
+	    temp = GDrawGetBiTextWidth(m->w,buffer,-1,-1,NULL);
 	}
 	if ( temp>keywidth ) keywidth=temp;
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
@@ -1568,7 +1568,7 @@ static void GMenuBarFindXs(GMenuBar *mb) {
 	mb->xs[i+1] = mb->xs[i]+wid+GTextInfoGetWidth(mb->g.base,&mb->mi[i].ti,NULL);
 #else
     for ( i=wid=0; i<mb->mtot; ++i ) {
-	temp = GDrawGetTextWidth(mb->g.base,mb->mi[i].ti.text,-1,NULL);
+	temp = GDrawGetBiTextWidth(mb->g.base,mb->mi[i].ti.text,-1,-1,NULL);
 	if ( temp>wid ) wid = temp;
     }
     wid += GDrawPointsToPixels(mb->g.base,5);
