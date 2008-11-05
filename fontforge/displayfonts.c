@@ -710,26 +710,43 @@ return;
     GTextInfoListFree(ti);
 }
 
-static GTextInfo *FontNames(SplineFont *cur_sf) {
+static GTextInfo *FontNames(SplineFont *cur_sf, int insert_text) {
     int cnt;
     FontView *fv;
     SplineFont *sf;
     GTextInfo *ti;
+    int selected = false, any_other=-1;
 
     for ( fv=fv_list, cnt=0; fv!=NULL; fv=(FontView *) (fv->b.next) )
 	if ( (FontView *) (fv->b.nextsame)==NULL )
 	    ++cnt;
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
-    for ( fv=fv_list, cnt=0; fv!=NULL; fv=(FontView *) (fv->b.next) )
+    for ( fv=fv_list, cnt=0; fv!=NULL; fv=(FontView *) (fv->b.next) ) {
 	if ( (FontView *) (fv->b.nextsame)==NULL ) {
 	    sf = fv->b.sf;
 	    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 	    ti[cnt].text = uc_copy(sf->fontname);
 	    ti[cnt].userdata = sf;
-	    if ( sf==cur_sf )
+	    /* In the print dlg, use the current font */
+	    /* In the insert_text dlg, use anything other than the current */
+	    if ( sf==cur_sf && !insert_text ) {
 		ti[cnt].selected = true;
+		selected = true;
+	    } else if ( cur_sf!=sf && !selected && insert_text ) {
+		if ( cur_sf->new )
+		    any_other = cnt;
+		else {
+		    ti[cnt].selected = true;
+		    selected = true;
+		}
+	    }
 	    ++cnt;
 	}
+    }
+    if ( !selected && any_other!=-1 )
+	ti[any_other].selected = true;
+    else if ( !selected )
+	ti[0].selected = true;
 return( ti );
 }
 
@@ -1254,7 +1271,7 @@ static int DSP_Refresh(GGadget *g, GEvent *e) {
 	/* One thing we don't have to worry about is a font being removed */
 	/*  if that happens we just close this window. Too hard to fix up for */
 	/* But a font might be added... */
-	fn = FontNames(sel!=NULL? (SplineFont *) (sel->userdata) : di->pi.mainsf);
+	fn = FontNames(sel!=NULL? (SplineFont *) (sel->userdata) : di->pi.mainsf, di->insert_text );
 	GGadgetSetList(fontnames,GTextInfoArrayFromList(fn,NULL),false);
 	GGadgetSetEnabled(fontnames,fn[1].text!=NULL);
 	GTextInfoListFree(fn);
@@ -1561,7 +1578,7 @@ return;
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
     gcd[0].gd.pos.width = 150;
     gcd[0].gd.cid = CID_Font;
-    gcd[0].gd.u.list = FontNames(sf);
+    gcd[0].gd.u.list = FontNames(sf,active->insert_text);
     gcd[0].gd.flags = (fv_list==NULL || gcd[0].gd.u.list[1].text==NULL ) ?
 	    (gg_visible | gg_utf8_popup):
 	    (gg_visible | gg_enabled | gg_utf8_popup);
