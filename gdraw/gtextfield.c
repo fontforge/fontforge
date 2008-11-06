@@ -51,6 +51,25 @@ static void GTextFieldComplete(GTextField *gt,int from_tab);
 static int GCompletionHandleKey(GTextField *gt,GEvent *event);
 
 
+static int u2utf8_index(int pos,const char *start) {
+    const char *pt = start;
+
+    while ( --pos>=0 )
+	utf8_ildb(&pt);
+return( pt-start );
+}
+
+static int utf82u_index(int pos, const char *start) {
+    int uc = 0;
+    const char *end = start+pos;
+
+    while ( start<end ) {
+	utf8_ildb(&start);
+	++uc;
+    }
+return( uc );
+}
+
 static void GTextFieldChanged(GTextField *gt,int src) {
     GEvent e;
 
@@ -85,9 +104,7 @@ static void GTextFieldMakePassword(GTextField *gt, int start_of_change) {
 
     if ( cnt>= gt->bilen ) {
 	gt->bilen = cnt + 50;
-	free( gt->bidata.text );
-	gt->bidata.text = galloc(gt->bilen*sizeof(unichar_t));
-	start_of_change = 0;
+	gt->bidata.text = grealloc(gt->bidata.text,gt->bilen*sizeof(unichar_t));
     }
     end = gt->bidata.text+cnt;
     for ( pt = gt->bidata.text+start_of_change ; pt<end ;  )
@@ -147,6 +164,111 @@ static void GTextFieldProcessBi(GTextField *gt, int start_of_change) {
     }
 }
 
+static void GTextFieldPangoRefigureLines(GTextField *gt, int start_of_change) {
+    char *utf8_text, *pt, *ept;
+    unichar_t *upt, *uept;
+    int i, uc;
+    GRect size;
+
+    free(gt->utf8_text);
+    if ( gt->lines8==NULL ) {
+	gt->lines8 = galloc(gt->lmax*sizeof(int32));
+	gt->lines8[0] = 0;
+	gt->lines8[1] = -1;
+    }
+
+    if ( gt->password ) {
+	int cnt = u_strlen(gt->text);
+	utf8_text = galloc(cnt+1);
+	memset(utf8_text,'*',cnt);
+	utf8_text[cnt] = '\0';
+    } else
+	utf8_text = u2utf8_copy(gt->text);
+    gt->utf8_text = utf8_text;
+    GDrawLayoutInit(gt->g.base,utf8_text,-1,NULL);
+
+    if ( !gt->multi_line ) {
+	GDrawLayoutExtents(gt->g.base,&size);
+	gt->xmax = size.width;
+return;
+    }
+
+    if ( !gt->wrap ) {
+	pt = utf8_text;
+	i=0;
+	while ( ( ept = strchr(pt,'\n'))!=NULL ) {
+	    if ( i>=gt->lmax ) {
+		gt->lines8 = grealloc(gt->lines8,(gt->lmax+=10)*sizeof(int32));
+		gt->lines = grealloc(gt->lines,gt->lmax*sizeof(int32));
+	    }
+	    gt->lines8[i++] = pt-utf8_text;
+	    pt = ept+1;
+	}
+	if ( i>=gt->lmax ) {
+	    gt->lines8 = grealloc(gt->lines8,(gt->lmax+=10)*sizeof(int32));
+	    gt->lines = grealloc(gt->lines,gt->lmax*sizeof(int32));
+	}
+	gt->lines8[i++] = pt-utf8_text;
+
+	upt = gt->text;
+	i = 0;
+	while ( ( uept = u_strchr(upt,'\n'))!=NULL ) {
+	    gt->lines[i++] = upt-gt->text;
+	    pt = ept+1;
+	}
+	gt->lines[i++] = upt-gt->text;
+    } else {
+	int lcnt;
+	GDrawLayoutSetWidth(gt->g.base,gt->g.inner.width);
+	lcnt = GDrawLayoutLineCount(gt->g.base);
+	if ( lcnt+2>=gt->lmax ) {
+	    gt->lines8 = grealloc(gt->lines8,(gt->lmax=lcnt+10)*sizeof(int32));
+	    gt->lines = grealloc(gt->lines,gt->lmax*sizeof(int32));
+	}
+	pt = utf8_text; uc=0;
+	for ( i=0; i<lcnt; ++i ) {
+	    gt->lines8[i] = GDrawLayoutLineStart(gt->g.base,i);
+	    ept = utf8_text + gt->lines8[i];
+	    while ( pt<ept ) {
+		++uc;
+		utf8_ildb((const char **) &pt);
+	    }
+	    gt->lines[i] = uc;
+	}
+	if ( i==0 ) {
+	    gt->lines8[i] = strlen(utf8_text);
+	    gt->lines[i] = u_strlen(gt->text);
+	} else {
+	    gt->lines8[i] = gt->lines8[i-1] +   strlen( utf8_text + gt->lines8[i-1]);
+	    gt->lines [i] = gt->lines [i-1] + u_strlen(  gt->text + gt->lines [i-1]);
+	}
+    }
+    if ( gt->lcnt!=i ) {
+	gt->lcnt = i;
+	if ( gt->vsb!=NULL )
+	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt,
+		    gt->g.inner.height<gt->fh? 1 : gt->g.inner.height/gt->fh);
+	if ( gt->loff_top+gt->g.inner.height/gt->fh>gt->lcnt ) {
+	    gt->loff_top = gt->lcnt-gt->g.inner.height/gt->fh;
+	    if ( gt->loff_top<0 ) gt->loff_top = 0;
+	    if ( gt->vsb!=NULL )
+		GScrollBarSetPos(&gt->vsb->g,gt->loff_top);
+	}
+    }
+    if ( i>=gt->lmax )
+	gt->lines = grealloc(gt->lines,(gt->lmax+=10)*sizeof(int32));
+    gt->lines8[i] = -1;
+    gt->lines[i++] = -1;
+
+    GDrawLayoutExtents(gt->g.base,&size);
+    gt->xmax = size.width;
+
+    if ( gt->hsb!=NULL ) {
+	GScrollBarSetBounds(&gt->hsb->g,0,gt->xmax,gt->g.inner.width);
+    }
+    GDrawLayoutSetWidth(gt->g.base,-1);
+}
+
 static void GTextFieldRefigureLines(GTextField *gt, int start_of_change) {
     int i;
     unichar_t *pt, *ept, *end, *temp;
@@ -159,8 +281,13 @@ static void GTextFieldRefigureLines(GTextField *gt, int start_of_change) {
 	gt->lmax = 10;
 	gt->lcnt = 1;
 	if ( gt->vsb!=NULL )
-	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,
+	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt,
 		    gt->g.inner.height<gt->fh ? 1 : gt->g.inner.height/gt->fh);
+    }
+
+    if ( gt->pango ) {
+	GTextFieldPangoRefigureLines(gt,start_of_change);
+return;
     }
 
     if ( gt->password )
@@ -214,7 +341,7 @@ return;
     if ( gt->lcnt!=i ) {
 	gt->lcnt = i;
 	if ( gt->vsb!=NULL )
-	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,
+	    GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt,
 		    gt->g.inner.height<gt->fh? 1 : gt->g.inner.height/gt->fh);
 	if ( gt->loff_top+gt->g.inner.height/gt->fh>gt->lcnt ) {
 	    gt->loff_top = gt->lcnt-gt->g.inner.height/gt->fh;
@@ -292,7 +419,18 @@ static unichar_t *GTextFieldGetPtFromPos(GTextField *gt,int i,int xpos) {
     unichar_t *end;
 
     ll = gt->lines[i+1]==-1?-1:gt->lines[i+1]-gt->lines[i]-1;
-    if ( gt->password ) {
+    if ( gt->pango ) {
+	int index8, uc;
+	if ( gt->lines8[i+1]==-1 )
+	    GDrawLayoutInit(gt->g.base,gt->utf8_text + gt->lines8[i],-1,NULL);
+	else {
+	    GDrawLayoutInit(gt->g.base,gt->utf8_text + gt->lines8[i], gt->lines8[i+1]-gt->lines8[i], NULL);
+	}
+	index8 = GDrawLayoutXYToIndex(gt->g.base,
+		xpos-gt->g.inner.x+gt->xoff_left,0);
+	uc = utf82u_index(index8,gt->utf8_text + gt->lines8[i]);
+	end = gt->text + gt->lines[i] + uc;
+    } else if ( gt->password ) {
 	GDrawGetTextPtFromPos(gt->g.base,gt->bidata.text, -1, NULL,
 		xpos-gt->g.inner.x+gt->xoff_left, &end);
 	end = gt->text + (end-gt->bidata.text);
@@ -354,19 +492,38 @@ static int GTextField_Show(GTextField *gt, int pos) {
 
     xoff = gt->xoff_left;
     if ( gt->lines[i+1]==-1 ) ll = -1; else ll = gt->lines[i+1]-gt->lines[i]-1;
-    if ( GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],ll,NULL)< gt->g.inner.width )
-	xoff = 0;
-    else {
-	if ( gt->dobitext ) {
-	    bitext = gt->bidata.text;
-	    pos = GTextFieldBiPosFromPos(gt,i,pos);
-	} else
-	    bitext = gt->text;
-	m = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],pos-gt->lines[i],NULL);
-	if ( m < xoff )
-	    xoff = gt->nw*(m/gt->nw);
-	if ( m - xoff >= gt->g.inner.width )
-	    xoff = gt->nw * ((m-2*gt->g.inner.width/3)/gt->nw);
+    if ( gt->pango ) {
+	GRect size;
+	if ( gt->lines8[i+1]==-1 ) ll = strlen(gt->utf8_text+gt->lines[i]); else ll = gt->lines8[i+1]-gt->lines8[i]-1;
+	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines[i],ll,NULL);
+	GDrawLayoutExtents(gt->g.base,&size);
+	if ( size.width < gt->g.inner.width )
+	    xoff = 0;
+	else {
+	    int index8 = u2utf8_index(pos- gt->lines[i],gt->utf8_text + gt->lines8[i]);
+	    GDrawLayoutIndexToPos(gt->g.base,index8,&size);
+	    if ( size.x + 2*size.width < gt->g.inner.width )
+		xoff = 0;
+	    else
+		xoff = size.x - (gt->g.inner.width - size.width)/2;
+	    if ( xoff<0 )
+		xoff = 0;
+	}
+    } else {
+	if ( GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],ll,NULL)< gt->g.inner.width )
+	    xoff = 0;
+	else {
+	    if ( gt->dobitext ) {
+		bitext = gt->bidata.text;
+		pos = GTextFieldBiPosFromPos(gt,i,pos);
+	    } else
+		bitext = gt->text;
+	    m = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],pos-gt->lines[i],NULL);
+	    if ( m < xoff )
+		xoff = gt->nw*(m/gt->nw);
+	    if ( m - xoff >= gt->g.inner.width )
+		xoff = gt->nw * ((m-2*gt->g.inner.width/3)/gt->nw);
+	}
     }
 
     if ( xoff!=gt->xoff_left ) {
@@ -529,11 +686,11 @@ static int GTextFieldSelBackword(unichar_t *text,int start) {
 	/* Can't go back */;
     else if ( isalnum(ch) || ch=='_' ) {
 	int i;
-	for ( i=start-1; i>=0 && (isalnum(text[i]) || text[i]=='_') ; --i );
+	for ( i=start-1; i>=0 && ((text[i]<0x10000 && isalnum(text[i])) || text[i]=='_') ; --i );
 	start = i+1;
     } else {
 	int i;
-	for ( i=start-1; i>=0 && !isalnum(text[i]) && text[i]!='_' ; --i );
+	for ( i=start-1; i>=0 && !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' ; --i );
 	start = i+1;
     }
 return( start );
@@ -546,11 +703,11 @@ static int GTextFieldSelForeword(unichar_t *text,int end) {
 	/* Nothing */;
     else if ( isalnum(ch) || ch=='_' ) {
 	int i;
-	for ( i=end; isalnum(text[i]) || text[i]=='_' ; ++i );
+	for ( i=end; (text[i]<0x10000 && isalnum(text[i])) || text[i]=='_' ; ++i );
 	end = i;
     } else {
 	int i;
-	for ( i=end; !isalnum(text[i]) && text[i]!='_' && text[i]!='\0' ; ++i );
+	for ( i=end; !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' && text[i]!='\0' ; ++i );
 	end = i;
     }
 return( end );
@@ -569,23 +726,23 @@ static void GTextFieldSelectWord(GTextField *gt,int mid, int16 *start, int16 *en
 
     if ( ch=='\0' )
 	*start = *end = mid;
-    else if ( isspace(ch) ) {
+    else if ( (ch<0x10000 && isspace(ch)) ) {
 	int i;
-	for ( i=mid; isspace(text[i]); ++i );
+	for ( i=mid; text[i]<0x10000 && isspace(text[i]); ++i );
 	*end = i;
-	for ( i=mid-1; i>=0 && isspace(text[i]) ; --i );
+	for ( i=mid-1; i>=0 && text[i]<0x10000 && isspace(text[i]) ; --i );
 	*start = i+1;
-    } else if ( isalnum(ch) || ch=='_' ) {
+    } else if ( (ch<0x10000 && isalnum(ch)) || ch=='_' ) {
 	int i;
-	for ( i=mid; isalnum(text[i]) || text[i]=='_' ; ++i );
+	for ( i=mid; (text[i]<0x10000 && isalnum(text[i])) || text[i]=='_' ; ++i );
 	*end = i;
-	for ( i=mid-1; i>=0 && (isalnum(text[i]) || text[i]=='_') ; --i );
+	for ( i=mid-1; i>=0 && ((text[i]<0x10000 && isalnum(text[i])) || text[i]=='_') ; --i );
 	*start = i+1;
     } else {
 	int i;
-	for ( i=mid; !isalnum(text[i]) && text[i]!='_' && text[i]!='\0' ; ++i );
+	for ( i=mid; !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' && text[i]!='\0' ; ++i );
 	*end = i;
-	for ( i=mid-1; i>=0 && !isalnum(text[i]) && text[i]!='_' ; --i );
+	for ( i=mid-1; i>=0 && !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' ; --i );
 	*start = i+1;
     }
 
@@ -1130,10 +1287,24 @@ return( 2 );
 		if ( ( event->u.chr.state&ksm_shift ) && gt->sel_start==gt->sel_base )
 		    pos = gt->sel_end;
 		l = GTextFieldFindLine(gt,gt->sel_start);
-		sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
-		xpos = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL);
-		if ( l!=0 )
-		    pos = GTextFieldGetPtFromPos(gt,l-1,xpos) - gt->text;
+		if ( gt->pango ) {
+		    GRect pos_rect;
+		    int ll = gt->lines8[l+1]==-1 ? -1 : gt->lines8[l+1]-gt->lines8[l];
+		    sel = u2utf8_index(gt->sel_start-gt->lines[l],gt->utf8_text+gt->lines8[l]);
+		    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l],ll,NULL);
+		    GDrawLayoutIndexToPos(gt->g.base,sel,&pos_rect);
+		    xpos = pos_rect.x;
+		    if ( l!=0 ) {
+			GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l-1],gt->lines8[l]-gt->lines8[l-1],NULL);
+			pos = GDrawLayoutXYToIndex(gt->g.base,xpos,0);
+			pos = utf82u_index(pos,gt->utf8_text+gt->lines8[l-1]);
+		    }
+		} else {
+		    sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
+		    xpos = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL);
+		    if ( l!=0 )
+			pos = GTextFieldGetPtFromPos(gt,l-1,xpos) - gt->text;
+		}
 		if ( event->u.chr.state&ksm_shift ) {
 		    if ( pos<gt->sel_base ) {
 			gt->sel_start = pos;
@@ -1163,10 +1334,25 @@ return( 2 );
 		if ( ( event->u.chr.state&ksm_shift ) && gt->sel_start==gt->sel_base )
 		    pos = gt->sel_end;
 		l = GTextFieldFindLine(gt,gt->sel_start);
-		sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
-		xpos = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL);
-		if ( l<gt->lcnt-1 )
-		    pos = GTextFieldGetPtFromPos(gt,l+1,xpos) - gt->text;
+		if ( gt->pango ) {
+		    GRect pos_rect;
+		    int ll = gt->lines8[l+1]==-1 ? -1 : gt->lines8[l+1]-gt->lines8[l];
+		    sel = u2utf8_index(gt->sel_start-gt->lines[l],gt->utf8_text+gt->lines8[l]);
+		    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l],ll,NULL);
+		    GDrawLayoutIndexToPos(gt->g.base,sel,&pos_rect);
+		    xpos = pos_rect.x;
+		    if ( l<gt->lcnt-1 ) {
+			ll = gt->lines8[l+2]==-1 ? -1 : gt->lines8[l+2]-gt->lines8[l+1];
+			GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l+1],ll,NULL);
+			pos = GDrawLayoutXYToIndex(gt->g.base,xpos,0);
+			pos = utf82u_index(pos,gt->utf8_text+gt->lines8[l+1]);
+		    }
+		} else {
+		    sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
+		    xpos = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL);
+		    if ( l<gt->lcnt-1 )
+			pos = GTextFieldGetPtFromPos(gt,l+1,xpos) - gt->text;
+		}
 		if ( event->u.chr.state&ksm_shift ) {
 		    if ( pos<gt->sel_base ) {
 			gt->sel_start = pos;
@@ -1292,19 +1478,32 @@ return( 4 /* Do name completion */ );
 return( false );
 }
 
-static void gt_cursor_pos(GTextField *gt, int *x, int *y) {
+static void _gt_cursor_pos(GTextField *gt, int sel_start, int *x, int *y) {
     int l, sel;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
 
     *x = -1; *y= -1;
     GDrawSetFont(gt->g.base,gt->font);
-    l = GTextFieldFindLine(gt,gt->sel_start);
+    l = GTextFieldFindLine(gt,sel_start);
     if ( l<gt->loff_top || l>=gt->loff_top + ((gt->g.inner.height+gt->fh/2)/gt->fh))
 return;
     *y = (l-gt->loff_top)*gt->fh;
-    sel = GTextFieldGetOffsetFromOffset(gt,l,gt->sel_start);
-    *x = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL)-
-	    gt->xoff_left;
+    if ( gt->pango ) {
+	GRect pos_rect;
+	int ll = gt->lines8[l+1]==-1 ? -1 : gt->lines8[l+1]-gt->lines8[l];
+	sel = u2utf8_index(sel_start-gt->lines[l],gt->utf8_text+gt->lines8[l]);
+	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l],ll,NULL);
+	GDrawLayoutIndexToPos(gt->g.base,sel,&pos_rect);
+	*x = pos_rect.x;
+    } else {
+	sel = GTextFieldGetOffsetFromOffset(gt,l,sel_start);
+	*x = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL)-
+		gt->xoff_left;
+    }
+}
+
+static void gt_cursor_pos(GTextField *gt, int *x, int *y) {
+    _gt_cursor_pos(gt,gt->sel_start,x,y);
 }
 
 static void GTPositionGIC(GTextField *gt) {
@@ -1345,15 +1544,11 @@ return;
 static void GTextFieldDrawDDCursor(GTextField *gt, int pos) {
     GRect old;
     int x, y, l;
-    unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
 
     l = GTextFieldFindLine(gt,pos);
     if ( l<gt->loff_top || l>=gt->loff_top + (gt->g.inner.height/gt->fh))
 return;
-    y = (l-gt->loff_top)*gt->fh;
-    pos = GTextFieldGetOffsetFromOffset(gt,l,pos);
-    x = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],pos-gt->lines[l],NULL)-
-	    gt->xoff_left;
+    _gt_cursor_pos(gt,pos,&x,&y);
     if ( x<0 || x>=gt->g.inner.width )
 return;
 
@@ -1375,9 +1570,11 @@ return;
     gt->dd_cursor_pos = pos;
 }
 
-static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Color fg, Color sel ) {
-    GRect selr;
+static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line ) {
+    GRect selr, sofar, nextch;
     int s,e, y,llen,i,j;
+
+    /* Caller has checked to make sure selection applies to this line */
 
     y = gt->g.inner.y+(line-gt->loff_top)*gt->fh;
     selr = gt->g.inner; selr.y = y; selr.height = gt->fh;
@@ -1389,7 +1586,30 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
     e = gt->sel_end>gt->lines[line+1] && gt->lines[line+1]!=-1?gt->lines[line+1]-1:
 	    gt->sel_end;
 
-    if ( !gt->dobitext ) {
+    if ( gt->pango ) {
+	s = u2utf8_index(s-gt->lines[line],gt->utf8_text+gt->lines8[line]);
+	e = u2utf8_index(e-gt->lines[line],gt->utf8_text+gt->lines8[line]);
+	llen = gt->lines8[line+1]==-1? -1 : gt->lines8[line+1]-gt->lines8[line];
+	GDrawLayoutInit(pixmap,gt->utf8_text+gt->lines8[line],llen,NULL);
+	for ( i=s; i<e; ) {
+	    GDrawLayoutIndexToPos(pixmap,i,&sofar);
+	    for ( j=i+1; j<e; ++j ) {
+		GDrawLayoutIndexToPos(pixmap,j,&nextch);
+		if ( nextch.x != sofar.x+sofar.width )
+	    break;
+		sofar.width += nextch.width;
+	    }
+	    if ( sofar.width<0 ) {
+		selr.x = sofar.x+sofar.width + gt->g.inner.x;
+		selr.width = -sofar.width;
+	    } else {
+		selr.x = sofar.x + gt->g.inner.x;
+		selr.width = sofar.width;
+	    }
+	    GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
+	    i = j;
+	}
+    } else if ( !gt->dobitext ) {
 	unichar_t *text = gt->password ? gt->bidata.text : gt->text;
 	if ( gt->sel_start>gt->lines[line] )
 	    selr.x += GDrawGetTextWidth(pixmap,text+gt->lines[line],gt->sel_start-gt->lines[line],NULL)-
@@ -1398,10 +1618,6 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
 	    selr.width = GDrawGetTextWidth(pixmap,text+gt->lines[line],gt->sel_end-gt->lines[line],NULL)-
 		    gt->xoff_left - (selr.x-gt->g.inner.x);
 	GDrawDrawRect(pixmap,&selr,gt->g.box->active_border);
-	if ( sel!=fg ) {
-	    GDrawDrawText(pixmap,selr.x,y+gt->as,
-		    text+s,e-s,NULL, sel );
-	}
     } else {
 	/* in bidirectional text the selection can be all over the */
 	/*  place, so look for contiguous regions of text within the*/
@@ -1419,12 +1635,26 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line, Colo
 		    GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
 		else
 		    GDrawDrawRect(pixmap,&selr,gt->g.box->active_border);
-		if ( sel!=fg )
-		    GDrawDrawText(pixmap,selr.x,y+gt->as,
-			    gt->bidata.text+i,j-i,NULL, sel );
 		i = j-1;
 	    }
 	}
+    }
+}
+
+static void GTextFieldDrawLine(GWindow pixmap, GTextField *gt, int line, Color fg ) {
+    int y = gt->g.inner.y+(line-gt->loff_top)*gt->fh;
+    int ll = gt->lines[line+1]==-1 ? -1 : gt->lines[line+1]-gt->lines[line];
+
+    if ( gt->pango ) {
+	ll = gt->lines8[line+1]==-1? -1 : gt->lines8[line+1]-gt->lines8[line];
+	GDrawLayoutInit(pixmap,gt->utf8_text+gt->lines8[line],ll,NULL);
+	GDrawLayoutDraw(pixmap,gt->g.inner.x,y+gt->as,fg);
+    } else if ( !gt->dobitext ) {
+	GDrawDrawText(pixmap,gt->g.inner.x,y+gt->as,
+		gt->text+gt->lines[line],ll,NULL, fg );
+    } else {
+	GDrawDrawText(pixmap,gt->g.inner.x,y+gt->as,
+		    gt->bidata.text+gt->lines[line],ll,NULL, fg );
     }
 }
 
@@ -1432,9 +1662,8 @@ static int gtextfield_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GTextField *gt = (GTextField *) g;
     GListField *ge = (GListField *) g;
     GRect old1, old2, *r = &g->r;
-    Color fg,sel;
-    int y,ll,i, last;
-    unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
+    Color fg;
+    int ll,i, last;
     GRect unpadded_inner;
     int pad;
 
@@ -1456,42 +1685,24 @@ return( false );
     GDrawPushClip(pixmap,&unpadded_inner,&old2);
     GDrawSetFont(pixmap,gt->font);
 
-    sel = fg = g->state==gs_disabled?g->box->disabled_foreground:
+    fg = g->state==gs_disabled?g->box->disabled_foreground:
 		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    g->box->main_foreground;
     ll = 0;
     if ( (last = gt->g.inner.height/gt->fh)==0 ) last = 1;
-    for ( i=gt->loff_top; i<gt->loff_top+last && gt->lines[i]!=-1; ++i ) {
-	/* there is an odd complication in drawing each line. */
-	/* normally we draw the selection rectangle(s) and then draw the text */
-	/*  on top of that all in one go. But that doesn't work if the select */
-	/*  color is the same as the foreground color (bw displays). In that */
-	/*  case we draw the text first, draw the rectangles, and draw the text*/
-	/*  within the rectangles */
-	y = g->inner.y+(i-gt->loff_top)*gt->fh;
-	if ( !gt->multi_line )
-	    y = g->inner.y + (g->inner.height-gt->fh)/2;
-	sel = fg;
-	ll = gt->lines[i+1]==-1?-1:gt->lines[i+1]-gt->lines[i];
-	if ( gt->sel_start != gt->sel_end && gt->sel_end>gt->lines[i] &&
-		(gt->lines[i+1]==-1 || gt->sel_start<gt->lines[i+1])) {
-	    if ( g->box->active_border==fg ) {
-		sel = g->state==gs_disabled?g->box->disabled_background:
-				g->box->main_background==COLOR_DEFAULT?GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)):
-				g->box->main_background;
-		GDrawDrawText(pixmap,g->inner.x-gt->xoff_left,y+gt->as,
-			bitext+gt->lines[i],ll,NULL, fg );
-	    }
-	    GTextFieldDrawLineSel(pixmap,gt,i,fg,sel);
-	}
-	if ( sel==fg ) {
-	    if ( ll>0 )
-		if ( (*(bitext+gt->lines[i]+ll-1)=='\n' || *(bitext+gt->lines[i]+ll-1)=='\r' ))
-		    --ll;
-	    GDrawDrawText(pixmap,g->inner.x-gt->xoff_left,y+gt->as,
-		    bitext+gt->lines[i],ll,NULL, fg );
+    if ( gt->sel_start != gt->sel_end ) {
+	/* I used to have support for drawing on a bw display where the */
+	/*  selection and the foreground color were the same (black) and */
+	/*  selected text was white. No longer. */
+	/* Draw the entire selection first, then the text itself */
+	for ( i=gt->loff_top; i<gt->loff_top+last && gt->lines[i]!=-1; ++i ) {
+	    if ( gt->sel_end>gt->lines[i] &&
+		    (gt->lines[i+1]==-1 || gt->sel_start<gt->lines[i+1]))
+		GTextFieldDrawLineSel(pixmap,gt,i);
 	}
     }
+    for ( i=gt->loff_top; i<gt->loff_top+last && gt->lines[i]!=-1; ++i )
+	GTextFieldDrawLine(pixmap,gt,i,fg);
 
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
@@ -1689,7 +1900,13 @@ return( GGadgetDispatchEvent(&gt->vsb->g,event));
     if ( event->type == et_mousedown ) {
 	if ( i>=gt->lcnt )
 	    end1 = end2 = end;
-	else {
+	else if ( gt->pango ) {
+	    int end8;
+	    ll = gt->lines8[i+1]==-1?-1:gt->lines8[i+1]-gt->lines8[i]-1;
+	    GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
+	    end8 = GDrawLayoutXYToIndex(gt->g.base,event->u.mouse.x-g->inner.x+gt->xoff_left,0);
+	    end1 = end2 = gt->text + gt->lines[i] + utf82u_index(end8,gt->utf8_text+gt->lines8[i]);
+	} else {
 	    ll = gt->lines[i+1]==-1?-1:gt->lines[i+1]-gt->lines[i]-1;
 	    GDrawGetTextPtBeforePos(g->base,bitext+gt->lines[i], ll, NULL,
 		    event->u.mouse.x-g->inner.x+gt->xoff_left, &end1);
@@ -2214,12 +2431,12 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
     _ggadget_resize(g,gtwidth, gtheight);
 
     if ( gt->hsb==NULL && gt->xoff_left!=0 && !gt->multi_line &&
-	    GDrawGetTextWidth(gt->g.base,gt->text,-1,NULL)<gt->g.inner.width )
+	    GDrawGetBiTextWidth(gt->g.base,gt->text,-1,-1,NULL)<gt->g.inner.width )
 	gt->xoff_left = 0;
 
     GTextFieldRefigureLines(gt,0);
     if ( gt->vsb!=NULL ) {
-	GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,
+	GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt,
 		gt->g.inner.height<gt->fh ? 1 : gt->g.inner.height/gt->fh);
 	l = gt->loff_top;
 	if ( gt->loff_top>gt->lcnt-gt->g.inner.height/gt->fh )
@@ -2577,7 +2794,7 @@ static void GTextFieldFit(GTextField *gt) {
 	FontRequest rq;
 	int tries;
 	for ( tries = 0; tries<2; ++tries ) {
-	    width = GDrawGetTextBounds(gt->g.base,gt->text, -1, NULL, &bounds);
+	    width = GDrawGetBiTextBounds(gt->g.base,gt->text, -1, NULL, &bounds);
 	    GDrawWindowFontMetrics(gt->g.base,gt->font,&as, &ds, &ld);
 #if 0 /* Alexej doesn't like this behavior, says textfields should be */
 /*  consistent no matter what's inside them. Hmm. */
@@ -2593,7 +2810,7 @@ static void GTextFieldFit(GTextField *gt) {
 	}
 	gt->fh = as+ds;
 	gt->as = as;
-	gt->nw = GDrawGetTextWidth(gt->g.base,nstr, 1, NULL );
+	gt->nw = GDrawGetBiTextWidth(gt->g.base,nstr, 1, 1, NULL );
 	GDrawSetFont(gt->g.base,old);
     }
 
@@ -2656,6 +2873,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     _GGadget_Create(&gt->g,base,gd,data,def);
 
     gt->g.takes_input = true; gt->g.takes_keyboard = true; gt->g.focusable = true;
+    gt->pango = (GDrawHasCairo(base)&gc_pango)? 1 : 0;
     if ( gd->label!=NULL ) {
 	if ( gd->label->text_is_1byte )
 	    gt->text = /* def2u_*/ utf82u_copy((char *) gd->label->text);
@@ -2895,7 +3113,7 @@ static void GCompletionCreatePopup(GCompletionField *gc) {
 
     maxw = 0;
     for ( i=0; i<gc->ctot; ++i ) {
-	width = GDrawGetTextWidth(base,gc->choices[i],-1,NULL);
+	width = GDrawGetBiTextWidth(base,gc->choices[i],-1,-1,NULL);
 	if ( width > maxw ) maxw = width;
     }
     maxw += 2*bp;
