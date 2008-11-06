@@ -2000,8 +2000,10 @@ return;
 
 void _GXPDraw_DestroyWindow(GXWindow nw) {
     /* And why doesn't the man page mention this essential function? */
-    if ( nw->usepango && _XftDrawDestroy!=NULL )
+    if ( nw->usepango && _XftDrawDestroy!=NULL && nw->xft_w!=NULL ) {
 	_XftDrawDestroy(nw->xft_w);
+	nw->xft_w = NULL;
+    }
 }
 
 /* ************************************************************************** */
