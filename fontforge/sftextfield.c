@@ -56,7 +56,7 @@ static void SFTextAreaRefigureLines(SFTextArea *st, int start_of_change,
     if ( st->hsb!=NULL )
 	GScrollBarSetBounds(&st->hsb->g,0,st->li.xmax,st->g.inner.width);
     if ( st->vsb!=NULL && st->li.lcnt>0 )
-	GScrollBarSetBounds(&st->vsb->g,0,st->li.lineheights[st->li.lcnt-1].y,st->g.inner.height);
+	GScrollBarSetBounds(&st->vsb->g,0,st->li.lineheights[st->li.lcnt-1].y+st->li.lineheights[st->li.lcnt-1].fh,st->g.inner.height);
 }
 
 static void SFTextAreaChanged(SFTextArea *st,int src) {
@@ -95,6 +95,11 @@ static void _SFTextAreaReplace(SFTextArea *st, const unichar_t *str) {
     st->sel_start += LayoutInfoReplace(&st->li,str,st->sel_start,st->sel_end,
 	    st->g.inner.width);
     st->sel_end = st->sel_start;
+
+    if ( st->hsb!=NULL )
+	GScrollBarSetBounds(&st->hsb->g,0,st->li.xmax,st->g.inner.width);
+    if ( st->vsb!=NULL && st->li.lcnt>0 )
+	GScrollBarSetBounds(&st->vsb->g,0,st->li.lineheights[st->li.lcnt-1].y+st->li.lineheights[st->li.lcnt-1].fh,st->g.inner.height);
 }
 
 static void SFTextArea_Replace(SFTextArea *st, const unichar_t *str) {
@@ -270,7 +275,9 @@ return( x );
 static int SFTextArea_EndPage(SFTextArea *st) {
     int endpage;
 
-    for ( endpage=1; st->li.lcnt-endpage>=0 && st->li.lineheights[st->li.lcnt-1].y-st->li.lineheights[st->li.lcnt-endpage].y<=st->g.inner.height;
+    for ( endpage=1; st->li.lcnt-endpage>=0 &&
+	    st->li.lineheights[st->li.lcnt-1].y+st->li.lineheights[st->li.lcnt-1].fh
+		-st->li.lineheights[st->li.lcnt-endpage].y <= st->g.inner.height;
 	    ++endpage );
     if ( (endpage-=2) < 1 ) endpage = 1;
 return( endpage );
@@ -625,7 +632,7 @@ return( true );
 	    s = st->sel_base; st->sel_base = st->sel_oldbase; st->sel_oldbase = s;
 	    for ( i=0; i<st->li.pcnt; ++i )
 		free( st->li.paras[i].para);
-	    free(st->li.paras); st->li.paras = NULL; st->li.pcnt = 0;
+	    free(st->li.paras); st->li.paras = NULL; st->li.pcnt = 0; st->li.pmax = 0;
 	    for ( i=0; i<st->li.lcnt; ++i )
 		free( st->li.lines[i]);
 	    free( st->li.lines );
@@ -1908,7 +1915,7 @@ static void sftextarea_resize(GGadget *g, int32 width, int32 height ) {
     _ggadget_resize(g,gtwidth, gtheight);
     SFTextAreaRefigureLines(st,0,-1);
     if ( st->vsb!=NULL ) {
-	GScrollBarSetBounds(&st->vsb->g,0,st->li.lineheights[st->li.lcnt-1].y,st->g.inner.height);
+	GScrollBarSetBounds(&st->vsb->g,0,st->li.lineheights[st->li.lcnt-1].y+st->li.lineheights[st->li.lcnt-1].fh,st->g.inner.height);
 	if ( st->loff_top>=st->li.lcnt )
 	    st->loff_top = st->li.lcnt-1;
 	l = st->li.lcnt - SFTextArea_EndPage(st);
@@ -1977,7 +1984,7 @@ static int sftextarea_vscroll(GGadget *g, GEvent *event) {
     } else /* if ( sbt==et_sb_thumb || sbt==et_sb_thumbrelease ) */ {
 	for ( loff = 0; loff<st->li.lcnt && st->li.lineheights[loff].y<event->u.control.u.sb.pos; ++loff );
     }
-    for ( page=1; st->li.lcnt-page>=0 && st->li.lineheights[st->li.lcnt-1].y-st->li.lineheights[st->li.lcnt-page].y<=g->inner.height;
+    for ( page=1; st->li.lcnt-page>=0 && st->li.lineheights[st->li.lcnt-1].y+st->li.lineheights[st->li.lcnt-1].fh-st->li.lineheights[st->li.lcnt-page].y<=g->inner.height;
 	    ++page );
     --page;
     if ( loff > st->li.lcnt-page )
