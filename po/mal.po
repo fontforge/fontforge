@@ -1,0 +1,114 @@
+# (Malayalam) Malayalam User Interface strings for FontForge.
+# Copyright (C) 2008 by Hiran
+# This file is distributed under the same license as FontForge.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: FontForge VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-11-04 10:37+0100\n"
+"PO-Revision-Date: 2008-11-04 14:00+0100\n"
+"Last-Translator: Hiran \n"
+"Language-Team: Malayalam \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n>1\n"
+
+# I plucked a few strings that Hiran gave me to make this file. It is in
+# no way complete ( :-) ). I have no idea what "Plural Forms" above should
+# look like -- George
+
+#: bitmapview.c:1818 charview.c:9624 charview.c:9642 fontview.c:8136
+#: metricsview.c:2905
+msgid "_File"
+msgstr "ഫയല്‍"
+
+#: bitmapview.c:1723 bitmapview.c:1725 charview.c:8980 charview.c:8982
+#: fontview.c:6836 fontview.c:6838 metricsview.c:2476 metricsview.c:2478
+#: openfontdlg.c:689
+msgid "Font|_New"
+msgstr "പുതിയതു്"
+
+#: bitmapview.c:1726 charview.c:8983 fontview.c:6842 metricsview.c:2479
+#: ../gdraw/gtextfield.c:860
+msgid "_Open"
+msgstr "തുറക്കുക"
+
+#: fontview.c:3838
+msgid "Browse web"
+msgstr "വെബില്‍ നോക്കുക"
+
+#: bitmapview.c:1728 charview.c:8985 fontview.c:6844 metricsview.c:2481
+msgid "_Close"
+msgstr "അടയ്ക്കുക"
+
+#: bitmapview.c:1730 charview.c:8987 cvexport.c:1145 fontview.c:832
+#: fontview.c:6846 metricsview.c:2483 savefontdlg.c:2582 savefontdlg.c:3243
+#: ../gdraw/gsavefiledlg.c:239 ../gdraw/gtextfield.c:893
+msgid "_Save"
+msgstr "സംരക്ഷിക്കുക"
+
+#: fontview.c:3844
+msgid "Save A_ll"
+msgstr "എല്ലാം സംരക്ഷിക്കുക"
+
+#: bitmapview.c:1732 charview.c:8989 fontview.c:6849 metricsview.c:2485
+msgid "_Generate Fonts..."
+msgstr "ഫോണ്ട് ഉണ്ടാക്കുക"
+
+#: bitmapview.c:1733 charview.c:8990 fontview.c:6850 metricsview.c:2486
+msgid "Generate Mac _Family..."
+msgstr "മാക്കിനുള്ള ഫോണ്ട് ഉണ്ടാക്കുക"
+
+#: charview.c:8997 fontview.c:6858 metricsview.c:2490
+msgid "_Print..."
+msgstr "പ്രിന്റ് ചെയ്യുക"
+
+#: bitmapview.c:1819 charview.c:9625 charview.c:9643 contextchain.c:2311
+#: contextchain.c:2450 fontview.c:8137 metricsview.c:2906 statemachine.c:2536
+#: ttfinstrs.c:1328
+msgid "_Edit"
+msgstr "മാറ്റംവരുത്തുക"
+
+#: bitmapview.c:1749 charview.c:9037 fontview.c:6914 fontview.c:8109
+#: metricsview.c:2502 sftextfield.c:1543 ../gdraw/gtextfield.c:1016
+msgid "Cu_t"
+msgstr "മുറിക്കുക"
+
+#: bitmapview.c:1750 charview.c:9038 fontview.c:6915 fontview.c:8110
+#: metricsview.c:2503 sftextfield.c:1544 ../gdraw/gtextfield.c:1017
+msgid "_Copy"
+msgstr "പകര്‍ത്തുക"
+
+#: bitmapview.c:1751 charview.c:9044 fontview.c:6922 fontview.c:8113
+#: metricsview.c:2509 sftextfield.c:1545 ../gdraw/gtextfield.c:1018
+msgid "_Paste"
+msgstr "ഒട്ടിക്കുക"
+
+#: bitmapview.c:1752 charview.c:9045 combinations.c:997 fontview.c:6928
+#: fontview.c:8114 metricsview.c:2510
+msgid "C_lear"
+msgstr "വൃത്തിയാക്കുക"
+
+#: charview.c:9049 fontview.c:6931 metricsview.c:2511
+msgid "_Join"
+msgstr "യോജിപ്പിക്കുക"
+
+#: charview.c:9056 fontview.c:6933
+msgid "_Select"
+msgstr "തിരഞ്ഞെടുക്കുക"
+
+#: bitmapview.c:1824 charview.c:9637 charview.c:9653 fontview.c:8100
+#: fontview.c:8150 metricsview.c:2911
+msgid "_Help"
+msgstr "സഹായം"
+
+#: bitmapview.c:1821 charview.c:9562 charview.c:9632 charview.c:9650
+#: fontview.c:8144 metricsview.c:2908
+msgid "_View"
+msgstr "കാണുക"
+
+#: bitmapview.c:1741 charview.c:9005 fontview.c:6867 metricsview.c:2494
+msgid "_Quit"
+msgstr "നിര്‍ത്തുക"
