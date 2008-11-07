@@ -698,6 +698,10 @@ return;
 
 void _GButtonInit(void) {
     FontInstance *temp;
+
+    if ( gbutton_inited )
+return;
+
     _GGadgetCopyDefaultBox(&label_box);
     _GGadgetCopyDefaultBox(&_GGadget_button_box);
     _GGadget_button_box.flags = box_foreground_border_inner|box_foreground_border_outer|
@@ -735,7 +739,7 @@ static void GLabelFit(GLabel *gl) {
 static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
 
     if ( !gbutton_inited )
-	GButtonInit();
+	_GButtonInit();
     gl->g.funcs = &gbutton_funcs;
     _GGadget_Create(&gl->g,base,gd,data,def);
 
