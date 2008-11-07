@@ -27,6 +27,7 @@
 #ifndef X_DISPLAY_MISSING
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
+#include <math.h>
 
 /* On the cygwin X server masking with mono images is broken */
 #ifdef _BrokenBitmapImages
@@ -2106,505 +2107,65 @@ return;
 
 /* ******************************** Magnified ******************************* */
 
-static XImage *gdraw_1_on_1_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    uint8 *pt;
-    uint8 *ipt;
-    int bit, sbit;
-    int swid = base->width;
-    int shit = base->height;
-    XImage *xi;
+GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size) {
+    static GImage temp;
+    static struct _GImage tbase;
+    static uint8 *data;
+    static int dlen;
+    double xscale, yscale;
+    int r,c;
 
-    xi = XCreateImage(gdisp->display,gdisp->visual,1,XYBitmap,0,NULL,
-	    magsrc->width, magsrc->height,8,(magsrc->width+gdisp->bitmap_pad-1)/gdisp->bitmap_pad*(gdisp->bitmap_pad/8));
-    xi->data = galloc(xi->bytes_per_line*magsrc->height);
+    xscale = (size->width>=1) ? ((double) (src->width-1))/(size->width-1) : 1;
+    yscale = (size->height>=1) ? ((double) (src->height-1))/(size->height-1) : 1;
 
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint8 *) (xi->data + (i-magsrc->y)*xi->bytes_per_line);
-	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
-	    bit = 0x80;
-	} else {
-	    bit = 0x1;
-	}
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    sbit = 0x80 >> (index&7);
-	    if ( pt[index>>3]&sbit )
-		*ipt |= bit;
-	    else
-		*ipt &= ~bit;
+    memset(&temp,0,sizeof(temp));
+    tbase = *base;
+    temp.u.image = &tbase;
+    tbase.width = size->width; tbase.height = size->height;
+    if ( base->image_type==it_mono )
+	tbase.bytes_per_line = (size->width+7)/8;
+    else if ( base->image_type==it_index )
+	tbase.bytes_per_line = size->width;
+    else
+	tbase.bytes_per_line = 4*size->width;
+    if ( tbase.bytes_per_line*size->height )
+	data = grealloc(data,dlen = tbase.bytes_per_line*size->height );
+    tbase.data = data;
 
-	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
-		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt;}
-	    } else {
-		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt;}
+    if ( base->image_type==it_mono ) {
+	memset(data,0,tbase.height*tbase.bytes_per_line);
+	for ( r=0; r<size->height; ++r ) {
+	    int or = rint( r*yscale ) + src->y;
+	    uint8 *pt = data+r*tbase.bytes_per_line;
+	    uint8 *opt = base->data+or*base->bytes_per_line;
+	    for ( c=0; c<size->width; ++c ) {
+		int oc = c*xscale +src->x;
+		if ( opt[oc>>3] & (0x80>>(oc&7)) )
+		    pt[c>>3] |= (0x80>>(c&7));
 	    }
 	}
-    }
-return( xi );
-}
-
-static void gdraw_either_on_1_mag_dithered(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    uint8 *pt;
-    uint8 *ipt;
-    int bit;
-    struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int is_32bit = base->image_type == it_true || base->image_type == it_rgba;
-    int gd;
-    int16 *g_d;
-    /* I'm not going to deal with masks on bitmap displays */
-
-    if ( !is_32bit )
-	_GDraw_getimageclut(base,clut);
-
-    for ( i=magsrc->width-1; i>=0; --i )
-	gdisp->gg.green_dith[i] = 0;
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint8 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	if ( gdisp->gg.img->bitmap_bit_order == MSBFirst )
-	    bit = 0x80;
-	else
-	    bit = 0x1;
-	gd = 0;
-	g_d = gdisp->gg.green_dith;
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		index = ((index>>16)&0xff) + ((index>>8)&0xff) + (index&0xff);
-		gd += *g_d + index;
-	    } else {
-		index = pt[index];
-		pos = &clut[index];
-		gd += *g_d + pos->red + pos->green + pos->blue;
+    } else if ( base->image_type==it_index ) {
+	for ( r=0; r<size->height; ++r ) {
+	    int or = rint( r*yscale ) + src->y;
+	    uint8 *pt = data+r*tbase.bytes_per_line;
+	    uint8 *opt = base->data+or*base->bytes_per_line;
+	    for ( c=0; c<size->width; ++c ) {
+		int oc = c*xscale +src->x;
+		*pt++ = opt[oc];
 	    }
-	    if ( gd<3*128 ) {
-		*ipt &= ~bit;
-		*g_d++ = gd /= 2;
-	    } else {
-		*ipt |= bit;
-		*g_d++ = gd = (gd - 3*255)/2;
-	    }
-
-	    if ( gdisp->gg.img->bitmap_bit_order == MSBFirst ) {
-		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt;}
-	    } else {
-		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt;}
+	}
+    } else {
+	for ( r=0; r<size->height; ++r ) {
+	    int or = rint( r*yscale ) + src->y;
+	    uint32 *pt = (uint32 *) (data+r*tbase.bytes_per_line);
+	    uint32 *opt = (uint32 *) (base->data+or*base->bytes_per_line);
+	    for ( c=0; c<size->width; ++c ) {
+		int oc = c*xscale+src->x;
+		*pt++ = opt[oc];
 	    }
 	}
     }
-}
-
-static void gdraw_either_on_8_mag_dithered(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
-    uint8 *pt, *mpt;
-    uint8 *ipt;
-    const struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int has_alpha = base->image_type == it_rgba;
-    int is_32bit = base->image_type == it_true || base->image_type == it_rgba;
-    int rd, gd, bd;
-    int16 *r_d, *g_d, *b_d;
-#if FAST_BITS
-    int mbit;
-#endif
-
-    if ( !is_32bit )
-	_GDraw_getimageclut(base,clut);
-
-    for ( i=magsrc->width-1; i>=0; --i )
-	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint8 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
-#if FAST_BITS
-	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
-	    mbit = 0x80;
-	else
-	    mbit = 0x1;
-#endif
-	rd = gd = bd = 0;
-	r_d = gdisp->gg.red_dith; g_d = gdisp->gg.green_dith; b_d = gdisp->gg.blue_dith;
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    /*if ( index>=src->xend ) index = src->xend-1;*/
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
-#if FAST_BITS==0
-		    *mpt++ = 0xff;
-#else
-		    *mpt |= mbit;
-#endif
-		    *ipt++ = 0x00;
-	  goto incr_mbit;
-		}
-		rd += *r_d + ((index>>16)&0xff);
-		gd += *g_d + ((index>>8)&0xff);
-		bd += *b_d + (index&0xff);
-	    } else {
-		index = pt[index];
-		if ( index==trans ) {
-#if FAST_BITS==0
-		    *mpt++ = 0xff;
-#else
-		    *mpt |= mbit;
-#endif
-		    *ipt++ = 0x00;
-	  goto incr_mbit;
-		}
-		pos = &clut[index];
-		rd += *r_d + pos->red;
-		gd += *g_d + pos->green;
-		bd += *b_d + pos->blue;
-	    }
-	    if ( rd<0 ) rd=0; else if ( rd>255 ) rd = 255;
-	    if ( gd<0 ) gd=0; else if ( gd>255 ) gd = 255;
-	    if ( bd<0 ) bd=0; else if ( bd>255 ) bd = 255;
-	    pos = _GImage_GetIndexedPixel(COLOR_CREATE(rd,gd,bd),gdisp->cs.rev);
-	    *ipt++ = pos->pixel;
-	    *r_d++ = rd = (rd - pos->red)/2;
-	    *g_d++ = gd = (gd - pos->green)/2;
-	    *b_d++ = bd = (bd - pos->blue)/2;
-#if FAST_BITS==0
-	    *mpt++ = 0;
-#else
-	    *mpt &= ~mbit;
-#endif
-	  incr_mbit:
-#if FAST_BITS
-	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
-		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;}
-	    } else {
-		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;}
-	    }
-#else
-	    ;
-#endif
-	}
-    }
-}
-
-static void gdraw_any_on_8_mag_nodithered(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
-    uint8 *pt, *mpt;
-    uint8 *ipt, pixel;
-    struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int mbit;
-    int has_alpha = base->image_type == it_rgba;
-    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
-	    is_1bit = base->image_type == it_mono;
-
-    if ( !is_32bit ) {
-	_GDraw_getimageclut(base,clut);
-	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
-	    Color col;
-	    pos = &clut[i];
-	    col = (pos->red<<16)|(pos->green<<8)|pos->blue;
-	    pos->pixel = _GXDraw_GetScreenPixel(gdisp,col);
-	}
-    }
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint8 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
-	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
-	    mbit = 0x80;
-	else
-	    mbit = 0x1;
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    /*if ( index>=src->xend ) index = src->xend-1;*/
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		pixel = Pixel24(gdisp,index);
-	    } else if ( !is_1bit ) {
-		index = pt[index];
-		pixel = clut[index].pixel;
-	    } else {
-		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
-		pixel = clut[index].pixel;
-	    }
-	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
-		*mpt |= mbit;
-		*ipt++ = 0x00;
-	    } else {
-		*ipt++ = pixel;
-		*mpt &= ~mbit;
-	    }
-	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
-		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;}
-	    } else {
-		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;}
-	    }
-	}
-    }
-}
-
-static void gdraw_any_on_16_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
-    uint8 *pt;
-    uint16 *ipt, pixel;
-    struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int has_alpha = base->image_type == it_rgba;
-    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
-	    is_1bit = base->image_type == it_mono;
-    register uint16 *mpt;
-
-    if ( !is_32bit ) {
-	_GDraw_getimageclut(base,clut);
-	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
-	    Color col;
-	    pos = &clut[i];
-	    col = (pos->red<<16)|(pos->green<<8)|pos->blue;
-	    pos->pixel = Pixel16(gdisp,col);
-	    if ( gdisp->endian_mismatch )
-		pos->pixel = FixEndian16(pos->pixel);
-	}
-    }
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint16 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	mpt = (uint16 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    /*if ( index>=src->xend ) index = src->xend-1;*/
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		pixel = Pixel16(gdisp,index);
-		if ( gdisp->endian_mismatch )
-		    pixel = FixEndian16(pixel);
-	    } else if ( !is_1bit ) {
-		index = pt[index];
-		pixel = clut[index].pixel;
-	    } else {
-		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
-		pixel = clut[index].pixel;
-	    }
-	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
-		*mpt++ = 0xffff;
-		*ipt++ = 0x0000;
-	    } else {
-		*ipt++ = pixel;
-		*mpt++ = 0;
-	    }
-	}
-    }
-}
-
-static void gdraw_any_on_24_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
-    uint8 *pt, *mpt, *ipt;
-    uint32 pixel;
-    struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int has_alpha = base->image_type == it_rgba;
-    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
-	    is_1bit = base->image_type == it_mono;
-#if FAST_BITS
-    int mbit;
-#endif
-
-    if ( !is_32bit ) {
-	_GDraw_getimageclut(base,clut);
-	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
-	    pos = &clut[i];
-	    pos->pixel = Pixel24(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
-	}
-    }
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint8 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
-#if FAST_BITS
-	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
-	    mbit = 0x80;
-	else
-	    mbit = 0x1;
-#endif
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    /*if ( index>=src->xend ) index = src->xend-1;*/
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		pixel = Pixel24(gdisp,index);
-	    } else if ( !is_1bit ) {
-		index = pt[index];
-		pixel = clut[index].pixel;
-	    } else {
-		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
-		pixel = clut[index].pixel;
-	    }
-	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
-#if FAST_BITS==0
-		*mpt++ = 0xff; *mpt++ = 0xff; *mpt++ = 0xff;
-#else
-		*mpt |= mbit;
-#endif
-		*ipt++ = 0x00;
-		*ipt++ = 0x00;
-		*ipt++ = 0x00;
-	    } else {
-		if ( gdisp->gg.mask->byte_order == MSBFirst ) {
-		    *ipt++ = pixel>>16;
-		    *ipt++ = (pixel>>8)&0xff;
-		    *ipt++ = pixel&0xff;
-		} else {
-		    *ipt++ = pixel&0xff;
-		    *ipt++ = (pixel>>8)&0xff;
-		    *ipt++ = pixel>>16;
-		}
-#if FAST_BITS==0
-		*mpt++ = 0; *mpt++ = 0; *mpt++ = 0;
-#else
-		*mpt &= ~mbit;
-#endif
-	    }
-#if FAST_BITS
-	    if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst ) {
-		if (( mbit>>=1 )==0 ) {mbit=0x80; ++mpt;}
-	    } else {
-		if (( mbit<<=1 )==256 ) {mbit=0x1; ++mpt;}
-	    }
-#endif
-	}
-    }
-}
-
-static void gdraw_any_on_32_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
-    uint8 *pt;
-    uint32 *ipt, pixel;
-    struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int has_alpha = base->image_type == it_rgba;
-    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
-	    is_1bit = base->image_type == it_mono;
-    uint32 *mpt;
-
-    if ( !is_32bit ) {
-	_GDraw_getimageclut(base,clut);
-	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
-	    pos = &clut[i];
-	    pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
-	    if ( gdisp->endian_mismatch )
-		pos->pixel = FixEndian32(pos->pixel);
-	}
-    }
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	mpt = (uint32 *) (gdisp->gg.mask->data + (i-magsrc->y)*gdisp->gg.mask->bytes_per_line);
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    /*if ( index>=src->xend ) index = src->xend-1;*/
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		pixel = Pixel32(gdisp,index);
-		if ( gdisp->endian_mismatch )
-		    pixel = FixEndian32(pixel);
-	    } else if ( !is_1bit ) {
-		index = pt[index];
-		pixel = clut[index].pixel;
-	    } else {
-		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
-		pixel = clut[index].pixel;
-	    }
-	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 )) {
-		*mpt++ = 0xffffffff;
-		*ipt++ = 0x00;
-	    } else {
-		*ipt++ = pixel;
-		*mpt++ = 0;
-	    }
-	}
-    }
-}
-
-static void gdraw_any_on_32a_mag(GXDisplay *gdisp, GImage *image,int dwid,int dhit,GRect *magsrc) {
-    struct gcol clut[256];
-    int i,j; uint32 index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    int trans = base->trans;
-    uint8 *pt;
-    uint32 *ipt, pixel;
-    struct gcol *pos;
-    int swid = base->width;
-    int shit = base->height;
-    int has_alpha = base->image_type == it_rgba;
-    int is_32bit = base->image_type == it_true || base->image_type==it_rgba,
-	    is_1bit = base->image_type == it_mono;
-
-    if ( !is_32bit ) {
-	_GDraw_getimageclut(base,clut);
-	for ( i=base->clut==NULL?1:base->clut->clut_len-1; i>=0; --i ) {
-	    pos = &clut[i];
-	    pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
-	    if ( gdisp->endian_mismatch )
-		pos->pixel = FixEndian32(pos->pixel);
-	}
-    }
-
-    for ( i=magsrc->y; i<magsrc->y+magsrc->height; ++i ) {
-	pt = (uint8 *) (base->data + (i*shit/dhit)*base->bytes_per_line);
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-magsrc->y)*gdisp->gg.img->bytes_per_line);
-	for ( j=magsrc->x; j<magsrc->x+magsrc->width; ++j ) {
-	    index = (j*(double) swid)/dwid;
-	    /*if ( index>=src->xend ) index = src->xend-1;*/
-	    if ( is_32bit ) {
-	    	index = ((uint32 *) pt)[index];
-		pixel = Pixel32(gdisp,index&0xffffff) | (index&0xff000000);
-		if ( gdisp->endian_mismatch )
-		    pixel = FixEndian32(pixel);
-	    } else if ( !is_1bit ) {
-		index = pt[index];
-		pixel = clut[index].pixel;
-	    } else {
-		index = (pt[index>>3]&(1<<(7-(index&7)))) ? 1:0;
-		pixel = clut[index].pixel;
-	    }
-	    if ( (index==trans && trans!=-1) || (has_alpha && (index>>24)<0x80 ))
-		pixel &= 0x00ffffff;
-	    *ipt++ = pixel;
-	}
-    }
+return( &temp );
 }
 
 /* Given an image, magnify it so that its width/height are as specified */
@@ -2615,11 +2176,10 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    Display *display=gdisp->display;
-    Window w = gw->w;
-    GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
-    int depth;
-    GRect temp;
+    double xscale, yscale;
+    GRect full, viewable = gw->ggc->clip;
+    GImage *temp;
+    GRect src;
 
 #ifndef _NO_LIBCAIRO
     if ( gw->usecairo ) {
@@ -2627,80 +2187,37 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
 return;
     }
 #endif
-    if ( magsrc->height<0 || magsrc->width<0 ||
-	    magsrc->height*(double) magsrc->width>24*1024*1024 )
-return;
 
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
 
-    temp.x = temp.y = 0; temp.width = magsrc->width; temp.height = magsrc->height;
-
-    depth = gdisp->pixel_size;
-    if ( depth!=8 && depth!=16 && depth!=24 && depth!=32 )
-	depth = 1;
-    else if ( gw->ggc->bitmap_col )
-	depth = 1;
-
-    check_image_buffers(gdisp, magsrc->width, magsrc->height,depth==1);
-    if ( base->image_type == it_mono && depth==1 ) {
-	XImage *xi;
-	/* Mono images are easy, because all X servers (no matter what their */
-	/*  depth) support 1 bit bitmaps */
-	/* Sadly, they often do it so slowly as to be unusable... */
-	xi = gdraw_1_on_1_mag(gdisp,image,width,height,magsrc);
-	gdraw_xbitmap(gw,xi,base->clut,base->trans,
-		&temp,x+magsrc->x,y+magsrc->y);
-	XDestroyImage(xi);
-    } else {
-	switch ( depth ) {
-	  case 1:
-	  default:
-	    /* all servers can handle bitmaps, so if we don't know how to*/
-	    /*  write to a 13bit screen, we can at least give a bitmap */
-	    /* But we don't handle masks here */
-	    gdraw_either_on_1_mag_dithered(gdisp,image,width,height,magsrc);
-	    gdraw_xbitmap(gw,gdisp->gg.img,NULL,-1,
-		    &temp,x+magsrc->x,y+magsrc->y);
-  goto done;
-	  case 8:
-	    if ( gdisp->do_dithering && !gdisp->cs.is_grey && base->image_type != it_mono)
-		gdraw_either_on_8_mag_dithered(gdisp,image,width,height,magsrc);
-	    else
-		gdraw_any_on_8_mag_nodithered(gdisp,image,width,height,magsrc);
-	  break;
-	  case 16:
-	    gdraw_any_on_16_mag(gdisp,image,width,height,magsrc);
-	  break;
-	  case 24:
-	    gdraw_any_on_24_mag(gdisp,image,width,height,magsrc);
-	  break;
-	  case 32:
-	    if ( gdisp->supports_alpha_images )
-		gdraw_any_on_32a_mag(gdisp,image,width,height,magsrc);
-	    else
-		gdraw_any_on_32_mag(gdisp,image,width,height,magsrc);
-	  break;
-	}
-	display=gdisp->display;
-	w = gw->w;
-	gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
-	if ( !gdisp->supports_alpha_images && (base->trans!=COLOR_UNKNOWN || base->image_type==it_rgba )) {
-	    XSetFunction(display,gc,GXand);
-	    XSetForeground(display,gc, ~((-1)<<gdisp->pixel_size) );
-	    XSetBackground(display,gc, 0 );
-	    XPutImage(display,w,gc,gdisp->gg.mask,0,0,
-		    x+magsrc->x,y+magsrc->y,
-		    magsrc->width, magsrc->height );
-	    XSetFunction(display,gc,GXor);
-	    gdisp->gcstate[gw->ggc->bitmap_col].fore_col = COLOR_UNKNOWN;
-	}
-	XPutImage(display,w,gc,gdisp->gg.img,0,0,
-		x+magsrc->x,y+magsrc->y,
-		magsrc->width, magsrc->height );
-	XSetFunction(display,gc,GXcopy);
-	gdisp->gcstate[gw->ggc->bitmap_col].func = df_copy;
+    xscale = (base->width>=1) ? ((double) (width-1))/(base->width-1) : 1;
+    yscale = (base->height>=1) ? ((double) (height-1))/(base->height-1) : 1;
+    /* Intersect the clip rectangle with the scaled image to find the */
+    /*  portion of screen that we want to draw */
+    if ( viewable.x<x ) {
+	viewable.width -= (x-viewable.x);
+	viewable.x = x;
     }
-  done:;
+    if ( viewable.y<y ) {
+	viewable.height -= (y-viewable.y);
+	viewable.y = y;
+    }
+    if ( viewable.x+viewable.width > x+width ) viewable.width = x+width - viewable.x;
+    if ( viewable.y+viewable.height > y+height ) viewable.height = y+height - viewable.y;
+    if ( viewable.height<0 || viewable.width<0 )
+return;
+
+    /* Now find that same rectangle in the coordinates of the unscaled image */
+    /* (translation & scale) */
+    full.x = (viewable.x-x)/xscale; full.y = (viewable.y-y)/yscale;
+    full.width = viewable.width/xscale; full.height = viewable.height/yscale;
+    if ( full.x+full.width>base->width ) full.width = base->width-full.x;	/* Rounding errors */
+    if ( full.y+full.height>base->height ) full.height = base->height-full.y;	/* Rounding errors */
+		/* Rounding errors */
+
+    temp = _GImageExtract(base,&full,&viewable);
+    src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
+    _GXDraw_Image( _w, temp, &src, viewable.x, viewable.y);
 }
 
 static GImage *xi1_to_gi1(GXDisplay *gdisp,XImage *xi) {

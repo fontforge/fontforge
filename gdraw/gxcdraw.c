@@ -1376,67 +1376,6 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y) {
     gw->cairo_state.fore_col = COLOR_UNKNOWN;
 }
 
-static GImage *GImageExtract(struct _GImage *base,GRect *src,GRect *size) {
-    static GImage temp;
-    static struct _GImage tbase;
-    static uint8 *data;
-    static int dlen;
-    double xscale, yscale;
-    int r,c;
-
-    xscale = (size->width>=1) ? ((double) (src->width-1))/(size->width-1) : 1;
-    yscale = (size->height>=1) ? ((double) (src->height-1))/(size->height-1) : 1;
-
-    memset(&temp,0,sizeof(temp));
-    tbase = *base;
-    temp.u.image = &tbase;
-    tbase.width = size->width; tbase.height = size->height;
-    if ( base->image_type==it_mono )
-	tbase.bytes_per_line = (size->width+7)/8;
-    else if ( base->image_type==it_index )
-	tbase.bytes_per_line = size->width;
-    else
-	tbase.bytes_per_line = 4*size->width;
-    if ( tbase.bytes_per_line*size->height )
-	data = grealloc(data,dlen = tbase.bytes_per_line*size->height );
-    tbase.data = data;
-
-    if ( base->image_type==it_mono ) {
-	memset(data,0,tbase.height*tbase.bytes_per_line);
-	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r*yscale ) + src->y;
-	    uint8 *pt = data+r*tbase.bytes_per_line;
-	    uint8 *opt = base->data+or*base->bytes_per_line;
-	    for ( c=0; c<size->width; ++c ) {
-		int oc = c*xscale +src->x;
-		if ( opt[oc>>3] & (0x80>>(oc&7)) )
-		    pt[c>>3] |= (0x80>>(c&7));
-	    }
-	}
-    } else if ( base->image_type==it_index ) {
-	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r*yscale ) + src->y;
-	    uint8 *pt = data+r*tbase.bytes_per_line;
-	    uint8 *opt = base->data+or*base->bytes_per_line;
-	    for ( c=0; c<size->width; ++c ) {
-		int oc = c*xscale +src->x;
-		*pt++ = opt[oc];
-	    }
-	}
-    } else {
-	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r*yscale ) + src->y;
-	    uint32 *pt = (uint32 *) (data+r*tbase.bytes_per_line);
-	    uint32 *opt = (uint32 *) (base->data+or*base->bytes_per_line);
-	    for ( c=0; c<size->width; ++c ) {
-		int oc = c*xscale+src->x;
-		*pt++ = opt[oc];
-	    }
-	}
-    }
-return( &temp );
-}
-
 void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
 	int32 x, int32 y, int32 width, int32 height) {
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -1470,7 +1409,7 @@ return;
 		/* Rounding errors */
 #if 1
   {
-    GImage *temp = GImageExtract(base,&full,&viewable);
+    GImage *temp = _GImageExtract(base,&full,&viewable);
     GRect src;
     src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
     _GXCDraw_Image( gw, temp, &src, viewable.x, viewable.y);
