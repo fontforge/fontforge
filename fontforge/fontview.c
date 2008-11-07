@@ -1816,7 +1816,8 @@ return;
     for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	doit = ( SCScriptFromUnicode(sc)==tag );
 	fv->b.selected[j] = mergefunc[ merge + (fv->b.selected[j]?2:0) + doit ];
-    }
+    } else if ( merge==mt_set )
+	fv->b.selected[j] = false;
 
     GDrawRequestExpose(fv->v,NULL,false);
 }
@@ -1889,12 +1890,14 @@ return( false );
 	    }
 	    doit = (sc->unicodeenc == uni && vs<0) || alt!=NULL;
 	    fv->b.selected[j] = mergefunc[ merge + (fv->b.selected[j]?2:0) + doit ];
-	}
+	} else if ( merge==mt_set )
+	    fv->b.selected[j] = false;
     } else {
 	for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	    doit = WildMatch(ret,sc->name,false);
 	    fv->b.selected[j] = mergefunc[ merge + (fv->b.selected[j]?2:0) + doit ];
-	}
+	} else if ( merge==mt_set )
+	    fv->b.selected[j] = false;
     }
     GDrawRequestExpose(fv->v,NULL,false);
     fv->sel_index = 1;
@@ -1909,7 +1912,7 @@ static void FVMenuSelectByName(GWindow _gw,struct gmenuitem *mi,GEvent *e) {
     GGadgetCreateData gcd[8], *hvarray[12][2], *barray[8], boxes[3];
     GTextInfo label[8];
     int merge = SelMergeType(e);
-    int done,k,i;
+    int done=0,k,i;
 
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
@@ -5956,18 +5959,24 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		GDrawPopClip(pixmap,&old2);
 		GImageDestroy(rotated);
 		rotated = NULL;
+	    } else if ( use_utf8 && sc->unicodeenc!=-1 &&
+		    ((sc->unicodeenc&0xffff)==0xfffe || (sc->unicodeenc&0xffff)==0xffff ||
+		     (sc->unicodeenc>=0xd800 && sc->unicodeenc<=0xdfff))) {
+		/* These two are guaranteed "NOT A UNICODE CHARACTER" in all planes */
+		/*  The surrogates in BMP aren't valid either */
+		/*  an pango complains if we try to draw them */
+		GDrawDrawLine(pixmap,r.x,r.y,r.x+r.width-1,r.y+r.height-1,0x000000);
+		GDrawDrawLine(pixmap,r.x,r.y+r.height-1,r.x+r.width-1,r.y,0x000000);
 	    } else if ( use_utf8 ) {
 		GTextBounds size;
 		if ( styles!=laststyles ) GDrawSetFont(pixmap,FVCheckFont(fv,styles));
-		/* There's only one character, we don't want any conversions */
-		/*  on it, so we don't use bitext */
-		width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		width = GDrawGetBiText8Bounds(pixmap,utf8_buf,-1,mods,&size);
 		if ( size.lbearing==0 && size.rbearing==0 ) {
 		    utf8_buf[0] = 0xe0 | (0xfffd>>12);
 		    utf8_buf[1] = 0x80 | ((0xfffd>>6)&0x3f);
 		    utf8_buf[2] = 0x80 | (0xfffd&0x3f);
 		    utf8_buf[3] = 0;
-		    width = GDrawGetText8Bounds(pixmap,utf8_buf,-1,mods,&size);
+		    width = GDrawGetBiText8Bounds(pixmap,utf8_buf,-1,mods,&size);
 		}
 		width = size.rbearing - size.lbearing+1;
 		if ( width >= fv->cbw-1 ) {

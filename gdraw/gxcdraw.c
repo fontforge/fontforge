@@ -2120,18 +2120,24 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	} else {
 	    iter = _pango_layout_get_iter(layout);
 	    run = _pango_layout_iter_get_run(iter);
-	    fm = _pango_font_get_metrics(run->item->analysis.font,NULL);
-	    arg->size.fas = _pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
-	    arg->size.fds = _pango_font_metrics_get_descent(fm)/PANGO_SCALE;
-	    arg->size.as = ink.y + ink.height - arg->size.fds;
-	    arg->size.ds = arg->size.fds - ink.y;
-	    if ( arg->size.ds<0 ) {
-		--arg->size.as;
-		arg->size.ds = 0;
+	    if ( run==NULL ) {
+		/* Pango doesn't give us runs in a couple of other places */
+		/* surrogates, not unicode (0xfffe, 0xffff), etc. */
+		memset(&arg->size,0,sizeof(arg->size));
+	    } else {
+		fm = _pango_font_get_metrics(run->item->analysis.font,NULL);
+		arg->size.fas = _pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
+		arg->size.fds = _pango_font_metrics_get_descent(fm)/PANGO_SCALE;
+		arg->size.as = ink.y + ink.height - arg->size.fds;
+		arg->size.ds = arg->size.fds - ink.y;
+		if ( arg->size.ds<0 ) {
+		    --arg->size.as;
+		    arg->size.ds = 0;
+		}
+		/* In the one case I've looked at fds is one pixel off from rect.y */
+		/*  I don't know what to make of that */
+		_pango_font_metrics_unref(fm);
 	    }
-	    /* In the one case I've looked at fds is one pixel off from rect.y */
-	    /*  I don't know what to make of that */
-	    _pango_font_metrics_unref(fm);
 	    _pango_layout_iter_free(iter);
 	}
     }
