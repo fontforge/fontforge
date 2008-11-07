@@ -547,5 +547,6 @@ extern GWindow GListPopupCreate(GGadget *owner,void (*inform)(GGadget *,int), GT
 extern int GMenuPopupCheckKey(GEvent *event);
 extern int GMenuBarCheckKey(GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
+extern void _GButtonInit(void);
 
 extern int _ggadget_use_gettext;
