@@ -42,6 +42,7 @@ static void putl(short s, FILE *file) {
 int GImageWrite_Bmp(GImage *gi, FILE *file) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     int headersize=40, preheadersize=14;
+    int filesize, offset, imagesize;
     int bitsperpixel, clutsize, ncol;
     int row, col, i;
 
@@ -61,20 +62,23 @@ int GImageWrite_Bmp(GImage *gi, FILE *file) {
 	clutsize = 0;
 	ncol = 0;
     }
+    imagesize = ((base->bytes_per_line + 3) & ~3U) * base->height;
+    offset = preheadersize + headersize + clutsize;
+    filesize = offset + imagesize;
 
     putc('B',file);
     putc('M',file);
-    putl(0,file);				/* filesize */
+    putl(filesize,file);			/* filesize */
     myputs(0,file);				/* mbz1 */
     myputs(0,file);				/* mbz2 */
-    putl(preheadersize+headersize+clutsize,file);/* offset */
+    putl(offset,file);				/* offset */
     putl(headersize,file);			/* headersize */
     putl(base->width,file);			/* width */
     putl(base->height,file);			/* height */
     myputs(1,file);				/* planes */
     myputs(bitsperpixel,file);			/* bitsperpixel */
     putl(0,file);				/* compression */
-    putl(0,file);				/* imagesize */
+    putl(imagesize,file);			/* imagesize */
     putl(3000,file);				/* horizontal res, pixels/meter */
     putl(3000,file);				/* vertical res, pixels/meter */
     putl(ncol,file);				/* colours used */
