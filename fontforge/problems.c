@@ -4096,7 +4096,9 @@ static char *vserrornames[] = {
     NULL,		/* prep or fpgm too long */
     N_("Distance between adjacent points is too big"),
     N_("Non-integral coordinates"),
-    N_("Contains anchor points for some, but not all, classes in a subtable")
+    N_("Contains anchor points for some, but not all, classes in a subtable"),
+    N_("There is another glyph in the font with this name"),
+    N_("There is another glyph in the font with this unicode code point")
 };
 
 static char *privateerrornames[] = {
@@ -5077,7 +5079,7 @@ static int VWCheckup(struct val_data *vw) {
 	    SCValidate(sc,vw->layer,true);
 	    ++cnt;
 	}
-	if ( vw->need_to_check_with_user_on_mask &&
+	if ( sc!=NULL && vw->need_to_check_with_user_on_mask &&
 		(sc->layers[vw->layer].validation_state&vs_nonintegral )) {
 	    vw->need_to_check_with_user_on_mask = false;
 	    buts[0] = _("Erroneous"); buts[1]=_("Acceptable"); buts[2] = NULL;
@@ -5089,7 +5091,7 @@ static int VWCheckup(struct val_data *vw) {
 		vw->mask |= vs_nonintegral;
 	    }
 	}
-	if ( sc->layers[vw->layer].validation_state!=sc->layers[vw->layer].old_vs ) {
+	if ( sc!=NULL && sc->layers[vw->layer].validation_state!=sc->layers[vw->layer].old_vs ) {
 	    a_change = true;
 	    sc->layers[vw->layer].old_vs = sc->layers[vw->layer].validation_state;
 	}

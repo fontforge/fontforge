@@ -1243,11 +1243,13 @@ enum validation_state { vs_unknown = 0,
 	vs_pointstoofarapart	= 0x40000,
 	vs_nonintegral		= 0x80000,	/* This will never be interesting in a real font, but might be in an sfd file */
 	vs_missinganchor	= 0x100000,
+	vs_dupname		= 0x200000,
+	vs_dupunicode		= 0x400000,
 
-	vs_last = vs_missinganchor,
-	vs_maskps = 0x3fe | vs_pointstoofarapart | vs_missinganchor,
-	vs_maskcid = 0x1fe | vs_pointstoofarapart | vs_missinganchor,
-	vs_maskttf = 0x7e | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor,
+	vs_last = vs_dupunicode,
+	vs_maskps = 0x3fe | vs_pointstoofarapart | vs_missinganchor | vs_dupname | vs_dupunicode,
+	vs_maskcid = 0x1fe | vs_pointstoofarapart | vs_missinganchor | vs_dupname,
+	vs_maskttf = 0x7e | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor | vs_dupunicode,
 	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor
 	};
 
