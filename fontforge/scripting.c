@@ -3413,6 +3413,7 @@ static void bSetPanose(Context *c) {
 	c->curfv->sf->pfminfo.panose[c->a.vals[1].u.ival] = c->a.vals[2].u.ival;
     }
     c->curfv->sf->pfminfo.pfmset = true;
+    c->curfv->sf->pfminfo.panose_set = true;
     c->curfv->sf->changed = true;
 }
 
