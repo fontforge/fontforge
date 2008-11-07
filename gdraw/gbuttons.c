@@ -696,7 +696,7 @@ return;
     GDrawRequestExpose(g->base, &maxr, false);
 }
 
-static void GButtonInit() {
+void _GButtonInit(void) {
     FontInstance *temp;
     _GGadgetCopyDefaultBox(&label_box);
     _GGadgetCopyDefaultBox(&_GGadget_button_box);
