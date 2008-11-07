@@ -613,10 +613,10 @@ return;
 		_("There is no anchor for class %1$.30s in subtable %2$.30s"),
 		p->missinganchor_class->name,
 		p->missinganchor_class->subtable->subtable_name );
-    } else if ( explain==_("This glyph has the same unicode code point as the glyph named") ) {
-	snprintf(buf,sizeof(buf), _("%.40s"), p->glyphname );
-    } else if ( explain==_("This glyph has the same name as the glyph at encoding") ) {
-	snprintf(buf,sizeof(buf),_("%d"), p->map->backmap[p->glyphenc] );
+    } else if ( explain==_("Two glyphs share the same unicode code point.\nChange the encoding to \"Glyph Order\" and use\nEdit->Select->Wildcard with the following code point") ) {
+	snprintf(buf,sizeof(buf), _("U+%04x"), sc->unicodeenc );
+    } else if ( explain==_("Two glyphs have the same name.\nChange the encoding to \"Glyph Order\" and use\nEdit->Select->Wildcard with the following name") ) {
+	snprintf(buf,sizeof(buf), _("%.40s"), sc->name );
     } else if ( found==expected )
 	buf[0]='\0';
     else {
@@ -1930,7 +1930,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->multuni && !p->finish && strcmp(sc->name,".notdef")!=0 && sc->unicodeenc!=-1 ) {
+    if ( p->multuni && !p->finish && sc->unicodeenc!=-1 ) {
 	SplineFont *sf = sc->parent;
 	int i;
 	for ( i=0; i<sf->glyphcnt; ++i )
@@ -1938,14 +1938,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( sf->glyphs[i]->unicodeenc == sc->unicodeenc ) {
 		changed = true;
 		p->glyphname = sf->glyphs[i]->name;
-		ExplainIt(p,sc,_("This glyph has the same unicode code point as the glyph named"),0,0);
+		ExplainIt(p,sc,_("Two glyphs share the same unicode code point.\nChange the encoding to \"Glyph Order\" and use\nEdit->Select->Wildcard with the following code point"),0,0);
 		if ( p->ignorethis )
 		    p->multuni = false;
 	    }
 	}
     }
 
-    if ( p->multname && !p->finish && strcmp(sc->name,".notdef")!=0 ) {
+    if ( p->multname && !p->finish ) {
 	SplineFont *sf = sc->parent;
 	int i;
 	for ( i=0; i<sf->glyphcnt; ++i )
@@ -1953,7 +1953,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( strcmp(sf->glyphs[i]->name, sc->name)==0 ) {
 		changed = true;
 		p->glyphenc = i;
-		ExplainIt(p,sc,_("This glyph has the same name as the glyph at encoding"),0,0);
+		ExplainIt(p,sc,_("Two glyphs have the same name.\nChange the encoding to \"Glyph Order\" and use\nEdit->Select->Wildcard with the following name"),0,0);
 		if ( p->ignorethis )
 		    p->multname = false;
 	    }

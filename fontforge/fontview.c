@@ -2033,9 +2033,9 @@ static void FVMenuSelectByName(GWindow _gw,struct gmenuitem *mi,GEvent *e) {
 	GDrawProcessOneEvent(NULL);
 	if ( done==2 ) {
 	    char *str = GGadgetGetTitle8(gcd[1].ret);
-	    int merge = GGadgetIsChecked(gcd[1].ret) ? mt_set :
-			GGadgetIsChecked(gcd[2].ret) ? mt_merge :
-			GGadgetIsChecked(gcd[3].ret) ? mt_restrict :
+	    int merge = GGadgetIsChecked(gcd[2].ret) ? mt_set :
+			GGadgetIsChecked(gcd[3].ret) ? mt_merge :
+			GGadgetIsChecked(gcd[4].ret) ? mt_restrict :
 						       mt_and;
 	    int ret = FVSelectByName(fv,str,merge);
 	    free(str);
