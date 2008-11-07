@@ -1344,6 +1344,18 @@ return( ac );
 return( NULL );
 }
 
+static int UniMatch(int vs, int uni, SplineChar *sc) {
+    struct altuni *alt;
+
+    if ( sc->unicodeenc!=-1 && vs==-1 && uni == sc->unicodeenc )
+return( true );
+    for ( alt = sc->altuni; alt!=NULL; alt=alt->next )
+	if ( alt->vs==vs && alt->unienc==uni )
+return( true );
+
+return( false );
+}
+
 int SCValidate(SplineChar *sc, int layer, int force) {
     SplineSet *ss;
     Spline *s1, *s2, *s, *first;
@@ -1360,6 +1372,10 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     extern int allow_utf8_glyphnames;
     RefChar *r;
     BasePoint lastpt;
+    int gid, k;
+    SplineFont *cid, *sf;
+    SplineChar *othersc;
+    struct altuni *alt;
 
     if ( (sc->layers[layer].validation_state&vs_known) && !force )
   goto end;
@@ -1581,6 +1597,27 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	if ( rd>comp_depth_max )
 	    sc->layers[layer].validation_state |= vs_maxp_refstoodeep|vs_known;
     }
+
+    k=0;
+    cid = sc->parent;
+    if ( cid->cidmaster != NULL )
+	cid = cid->cidmaster;
+    do {
+	sf = cid->subfontcnt==0 ? cid : cid->subfonts[k];
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (othersc=sf->glyphs[gid])!=NULL ) {
+	    if ( othersc==sc )
+	continue;
+	    if ( strcmp(sc->name,othersc->name)==0 )
+		sc->layers[layer].validation_state |= vs_dupname|vs_known;
+	    if ( sc->unicodeenc!=-1 && UniMatch(-1,sc->unicodeenc,othersc) )
+		sc->layers[layer].validation_state |= vs_dupunicode|vs_known;
+	    for ( alt=sc->altuni; alt!=NULL; alt=alt->next )
+		if ( UniMatch(alt->vs,alt->unienc,othersc) )
+		    sc->layers[layer].validation_state |= vs_dupunicode|vs_known;
+	}
+	++k;
+    } while ( k<cid->subfontcnt );
+		
   end:;
     /* This test is intentionally here and should be done even if the glyph */
     /*  hasn't changed. If the lookup changed it could make the glyph invalid */
