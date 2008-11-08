@@ -167,7 +167,7 @@ static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 static char *pixmapdir=NULL;
 
-static int prefs_usecairo = true;
+static int prefs_usecairo = true, prefs_usepango=true;
 
 static int pointless;
 
@@ -264,6 +264,9 @@ static struct prefs_list {
 	{ N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
 #ifndef _NO_LIBCAIRO
 	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
+#endif
+#ifndef _NO_LIBPANGO
+	{ N_("UsePangoDrawing"), pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the pango library for text (if available)\nThis makes for prettier and handles complex scripts.\nBut it can slow things down on older machines.\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ NULL }
 },
@@ -440,6 +443,9 @@ static struct prefs_list {
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1 },
 #ifdef _NO_LIBCAIRO
 	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
+#endif
+#ifdef _NO_LIBPANGO
+	{ "UsePangoDrawing", pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ NULL }
 },
@@ -1088,6 +1094,7 @@ static void PrefsUI_LoadPrefs(void) {
     if ( pixmapdir!=NULL )
 	GGadgetSetImageDir(pixmapdir);
     GDrawEnableCairo( prefs_usecairo );
+    GDrawEnablePango( prefs_usepango );
 }
 
 static void PrefsUI_SavePrefs(int not_if_script) {
@@ -1716,6 +1723,7 @@ return( true );
 	if ( pixmapdir!=NULL )
 	    GGadgetSetImageDir(pixmapdir);
 	GDrawEnableCairo(prefs_usecairo);
+	GDrawEnablePango(prefs_usepango);
     }
 return( true );
 }
