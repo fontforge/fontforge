@@ -9599,7 +9599,7 @@ return;
     memset(&floggcd,0,sizeof(floggcd));
 
     floggcd[0].gd.flags = gg_visible | gg_enabled;
-    floglabel[0].text = (unichar_t *) _("The Font Log generally contains the history of the font");
+    floglabel[0].text = (unichar_t *) _("The FONTLOG contains some description of the \n font project, a detailed changelog, and a list of contributors");
     floglabel[0].text_is_1byte = true;
     floggcd[0].gd.label = &floglabel[0];
     floggcd[0].creator = GLabelCreate;
@@ -10434,7 +10434,7 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = combox;
 
-    aspects[i].text = (unichar_t *) _("Font Log");
+    aspects[i].text = (unichar_t *) _("FONTLOG");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = flogbox;
 

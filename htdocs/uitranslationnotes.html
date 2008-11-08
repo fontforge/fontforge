@@ -329,7 +329,7 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   Once again you <A HREF="uitranslationnotes.html#Obtaining">grab a current
   "pot" file</A> and you type:
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>msgmerge <FONT COLOR="Red">fr</FONT>.po FontForge.pot
+    <PRE><FONT COLOR="Gray">$ </FONT>msgmerge <FONT COLOR="Red">fr</FONT>.po FontForge.pot ><FONT COLOR="Red">fr</FONT>-new.po
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -385,8 +385,9 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
       </UL>
   </OL>
   <P>
-  Then make sure your locale is set properly and start fontforge. You should
-  see your translation
+  Then make sure your locale is set properly (and that your operating system
+  has the support files it needs for that locale) and start fontforge. You
+  should see your translation
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>LANG=<FONT COLOR="Red">fr_FR.UTF-8</FONT>; export LANG
 <FONT COLOR="Gray">$ </FONT>fontforge -new

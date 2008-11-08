@@ -47,7 +47,7 @@
 /*  memory. Not that big, and makes life easier */
 
 #define OFL_FONT_URL	"http://openfontlibrary.org/media/view/media/fonts"
-/* That gets the first 10. Subseqent request have "?offset=10" (or 20, 30, etc) appended */
+/* That gets the first 10. Subsequent request have "?offset=10" (or 20, 30, etc) appended */
 /* Fonts come out "most recent first" */
 
 static int fakemons[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -382,7 +382,7 @@ static void oflfiFreeContents(struct ofl_font_info *oflfi) {
     
 static int OflInfoMerge(struct ofl_state *all,struct ofl_font_info *block) {
     int i,j,k,l,tot,lastj,anymatches;
-    /* We return whether we any of the new font_infos were the same as */
+    /* We return whether any of the new font_infos were the same as */
     /* any of the old */
 
     if ( block[0].name==NULL ) {

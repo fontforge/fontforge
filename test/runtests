@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 if test "$1" = "" ; then
- echo "Please specify the location of pfaedit"
+ echo "Please specify the location of fontforge"
  exit 1
 fi
-pfaedit=`echo $1 | sed -e "s%^[^/]%$PWD/&%"`
+fontforge=`echo $1 | sed -e "s%^[^/]%$PWD/&%"`
 
 testdir=`echo $0 | sed -e 's^runtests^^'`
 if test "$testdir" \!= "" ; then
@@ -11,10 +11,20 @@ if test "$testdir" \!= "" ; then
 fi
 mkdir -p results
 
+if $fontforge -lang ff -c 'Quit(! $haspython)' >/dev/null 2>&1 ; then
+ for test in test*.py ; do
+  echo ">>>>" $test
+  if ! ( $fontforge -script $test ); then 
+   echo "!!!!" Test failed $test
+  fi
+  sh -c "rm -rf results/*"
+ done
+fi
+
 for test in test*.pe ; do
  echo ">>>>" $test
- if ! ( $pfaedit -script $test ); then 
+ if ! ( $fontforge -script $test ); then 
   echo "!!!!" Test failed $test
  fi
- sh -c "rm -f results/*"
+ sh -c "rm -rf results/*"
 done

@@ -2488,9 +2488,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="detatch_&amp;_remove_glyphs1">
+		    <widget class="GtkImageMenuItem" id="detach_&amp;_remove_glyphs1">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Detatch &amp; Remo_ve Glyphs</property>
+		      <property name="label" translatable="yes">Detach &amp; Remo_ve Glyphs</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="FontViewMenu_DetachAndRemoveGlyphs" last_modification_time="Fri, 28 Dec 2007 17:53:51 GMT"/>
 

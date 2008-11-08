@@ -86,7 +86,7 @@ static void _doscriptusage(void) {
     printf( "If no scriptfile/string is given (or if it's \"-\") FontForge will read stdin\n" );
     printf( "FontForge will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
-    printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
+    printf( "\tand bdf and pcf fonts. It will also read its own format --\n" );
     printf( "\tsfd files.\n" );
     printf( "Any arguments after the script file will be passed to it.\n");
     printf( "If the first argument is an executable filename, and that file's first\n" );

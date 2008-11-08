@@ -1064,7 +1064,7 @@ int EISameLine(EI *e, EI *n, real i, int major) {
 	     (n->splinenext==e && n->tmax==e->tmin &&
 		    n->tcur>n->tmax-.2 && e->tcur<e->tmin+.2 ) )
 return( true );
-	/* can be seperated by a horizontal/vertical line in the other direction */
+	/* can be separated by a horizontal/vertical line in the other direction */
 	if ( n->tmax==1 && e->tmin==0 && n->tcur>.8 && e->tcur<.2) {
 	    t = n;
 	    while ( (t = t->splinenext)!=e ) {
@@ -1101,7 +1101,7 @@ return( false );
 	     (n->splinenext==e && n->tmax==e->tmin &&
 		    n->tcur>n->tmax-.2 && e->tcur<e->tmin+.2 ) )
 return( n->up!=e->up );
-	/* can be seperated by a horizontal/vertical line in the other direction */
+	/* can be separated by a horizontal/vertical line in the other direction */
 	if ( n->tmax==1 && e->tmin==0 && n->tcur>.8 && e->tcur<.2) {
 	    t = n;
 	    while ( (t = t->splinenext)!=e ) {

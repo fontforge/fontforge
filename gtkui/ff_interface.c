@@ -306,7 +306,7 @@ create_FontView (void)
   GtkWidget *add_encoding_slots1;
   GtkWidget *remove_unused_slots1;
   GtkWidget *detach_glyphs1;
-  GtkWidget *detatch___remove_glyphs1;
+  GtkWidget *detach___remove_glyphs1;
   GtkWidget *image5835;
   GtkWidget *separator67;
   GtkWidget *add_encoding_name1;
@@ -1946,15 +1946,15 @@ create_FontView (void)
   gtk_widget_show (detach_glyphs1);
   gtk_container_add (GTK_CONTAINER (encoding2_menu), detach_glyphs1);
 
-  detatch___remove_glyphs1 = gtk_image_menu_item_new_with_mnemonic (_("Detatch & Remo_ve Glyphs"));
-  gtk_widget_set_name (detatch___remove_glyphs1, "detatch___remove_glyphs1");
-  gtk_widget_show (detatch___remove_glyphs1);
-  gtk_container_add (GTK_CONTAINER (encoding2_menu), detatch___remove_glyphs1);
+  detach___remove_glyphs1 = gtk_image_menu_item_new_with_mnemonic (_("Detach & Remo_ve Glyphs"));
+  gtk_widget_set_name (detach___remove_glyphs1, "detach___remove_glyphs1");
+  gtk_widget_show (detach___remove_glyphs1);
+  gtk_container_add (GTK_CONTAINER (encoding2_menu), detach___remove_glyphs1);
 
   image5835 = gtk_image_new_from_stock ("gtk-delete", GTK_ICON_SIZE_MENU);
   gtk_widget_set_name (image5835, "image5835");
   gtk_widget_show (image5835);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (detatch___remove_glyphs1), image5835);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (detach___remove_glyphs1), image5835);
 
   separator67 = gtk_menu_item_new ();
   gtk_widget_set_name (separator67, "separator67");
@@ -3090,7 +3090,7 @@ create_FontView (void)
   g_signal_connect ((gpointer) detach_glyphs1, "activate",
                     G_CALLBACK (FontViewMenu_DetachGlyphs),
                     NULL);
-  g_signal_connect ((gpointer) detatch___remove_glyphs1, "activate",
+  g_signal_connect ((gpointer) detach___remove_glyphs1, "activate",
                     G_CALLBACK (FontViewMenu_DetachAndRemoveGlyphs),
                     NULL);
   g_signal_connect ((gpointer) add_encoding_name1, "activate",
@@ -3631,7 +3631,7 @@ create_FontView (void)
   GLADE_HOOKUP_OBJECT (FontView, add_encoding_slots1, "add_encoding_slots1");
   GLADE_HOOKUP_OBJECT (FontView, remove_unused_slots1, "remove_unused_slots1");
   GLADE_HOOKUP_OBJECT (FontView, detach_glyphs1, "detach_glyphs1");
-  GLADE_HOOKUP_OBJECT (FontView, detatch___remove_glyphs1, "detatch___remove_glyphs1");
+  GLADE_HOOKUP_OBJECT (FontView, detach___remove_glyphs1, "detach___remove_glyphs1");
   GLADE_HOOKUP_OBJECT (FontView, image5835, "image5835");
   GLADE_HOOKUP_OBJECT (FontView, separator67, "separator67");
   GLADE_HOOKUP_OBJECT (FontView, add_encoding_name1, "add_encoding_name1");

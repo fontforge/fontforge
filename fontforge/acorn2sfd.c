@@ -315,7 +315,7 @@ static void ReadChunk(FILE *file,struct Outlines *outline,int chunk) {
 	offsets[i] = r_getint(file);
 
     if ( flag & (1<<7) ) {
-	/* Does this chunk have any composit characters which refer to things */
+	/* Does this chunk have any composite characters which refer to things */
 	/*  in other chunks? I don't really care so I ignore them all */
 	for ( i=0; i<((outline->nchunks+7)>>3); ++i )
 	    getc(file);

@@ -2187,7 +2187,7 @@ static char *_arabic[] = {
     "لقيت الحكمة العادلة حبا عظيما من الشعب. انسحبت من النادی فی السنة الماضية. وقعت فی الوادی فانكسرت يدی. قابلت صديقی عمرا الكاتب القدير فی السوق فقال لی انه ارسل الى الجامعة عددا من مجلته الجديدة. احتل الامير فيصل مدينة دمسق فی الحرب العالمية ودخلها راكبا على فرسه المحبوبة. ارسل عمر خالدا الى العراق ولاكن بعد مدة قصيرة وجه خالد جيشه الى سورية. قدم على دمشق واستطاع فتحها. قبل احتل عمر القدس وعقد جلستة مع حاكم القدس وقد تكلم معه عن فتح المدينة. ثم رجع عمر الى المدنة المنورة.",
     NULL
 };
-/* Renaisance English with period ligatures */
+/* Renaissance English with period ligatures */
 static char *_muchado[] = {
     " But till all graces be in one woman, one womã ſhal not com in my grace: rich ſhe ſhall be thats certain, wiſe, or ile none, vertuous, or ile neuer cheapen her.",
     NULL
