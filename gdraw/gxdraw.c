@@ -3235,9 +3235,16 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
     GPoint p;
     int expecting_core = gdisp->expecting_core_event;
     XEvent subevent;
+#ifdef TESTXIM
+ static int debug=false;
+#endif
 
     gdisp->expecting_core_event = false;
 
+#ifdef TESTXIM
+ if ( debug )
+  printf( "ET: %d\n", event->type );
+#endif
     if ( XFindContext(gdisp->display,event->xany.window,gdisp->mycontext,(void *) &ret)==0 )
 	gw = (GWindow) ret;
     if ( gw==NULL || (_GXDraw_WindowOrParentsDying((GXWindow) gw) && event->type!=DestroyNotify ))
@@ -3256,7 +3263,9 @@ return;
 	gevent.u.chr.state = event->xkey.state;
 #ifdef TESTXIM
 if ( event->type == KeyPress )
- printf( "Got key. state=%02x ", event->xkey.state );
+ printf( "Got key. state=%02x w=%x ", event->xkey.state, (int) event->xany.window);
+ if ( gw->parent!=NULL )
+  printf( "pw=%x ", (int) (((GXWindow ) (gw->parent))->w) );
 #endif
 /*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
@@ -3292,7 +3301,7 @@ return;
 		def2u_strncpy(gevent.u.chr.chars,charbuf,
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
 #ifdef TESTXIM
- printf( "NO IM keysym=%x chars[0]=%x (pretrans %x) ", keysym, gevent.u.chr.chars[0], charbuf[0]);
+ printf( "NO IM keysym=%x chars[0]=%x (pretrans %x) ", (int) keysym, gevent.u.chr.chars[0], charbuf[0]);
 #endif
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
@@ -3322,7 +3331,7 @@ return;
 		if ( pt!=charbuf )
 		    free(pt);
 #ifdef TESTXIM
- printf( "   IM keysym=%x chars[0]=%x (pretrans %x) ", keysym, gevent.u.chr.chars[0], charbuf[0]);
+ printf( "   IM keysym=%x chars[0]=%x (pretrans %x) ", (int) keysym, gevent.u.chr.chars[0], charbuf[0]);
 #endif
 #else
 		gevent.u.chr.keysym = keysym = 0;
@@ -3338,7 +3347,7 @@ return;
 	    else if ( keysym<=XKEYSYM_TOP && keysym>=0 )
 		keysym = gdraw_xkeysym_2_unicode[keysym];
 #ifdef TESTXIM
- printf( "unikeysym=%x\n", keysym );
+ printf( "unikeysym=%x\n", (int) keysym );
 #endif
 	    gevent.u.chr.keysym = keysym;
 	    if ( keysym==gdisp->mykey_keysym &&
