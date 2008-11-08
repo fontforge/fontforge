@@ -8,5 +8,15 @@ Generate("results/HansSansBold.otf");
 Print( "...Generated otf (cid)")
 Generate("results/HansSansBold.cid");
 Print( "...Generated ps cid")
+Save("results/HansSansBold.sfd");
+Print( "...Saved cid sfd")
+Save("results/HansSansBold.sfdir");
+Print( "...Saved cid sfdir")
+Close();
+Open("results/HansSansBold.sfdir");
+Print( "...Opened cid sfdir")
+Close();
+Open("results/HansSansBold.sfd");
+Print( "...Opened cid sfd")
 Close();
 Quit()

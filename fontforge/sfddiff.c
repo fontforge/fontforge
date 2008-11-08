@@ -46,13 +46,13 @@ static void dousage(void) {
     printf( "\t-ignorehints\t (differences in hints don't count)\n" );
     printf( "\t-merge out\t (merges the two, with a background copy of diffs from\n" );
     printf( "\t\t\t  font2))\n\n" );
-    printf( "For more information see:\n\thttp://pfaedit.sourceforge.net/\n" );
+    printf( "For more information see:\n\thttp://fontforge.sourceforge.net/\n" );
     printf( "Send bug reports to:\tgww@silcom.com\n" );
 exit(0);
 }
 
 static void dohelp(void) {
-    printf( "sfddiff -- compares two of pfaedit's sfd files.\n" );
+    printf( "sfddiff -- compares two of fontforge's sfd files.\n" );
     printf( " It notices what characters are present in one spline font database and not\n" );
     printf( " in the other. It notices which characters have different shapes, and which\n" );
     printf( " have different hints.\n\n" );

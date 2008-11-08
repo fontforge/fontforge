@@ -66,7 +66,7 @@ static void _dousage(void) {
     printf( "\n" );
     printf( "FontForge will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
-    printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
+    printf( "\tand bdf and pcf fonts. It will also read its own format --\n" );
     printf( "\tsfd files.\n" );
     printf( "If no fontfiles are specified (and -new is not either and there's nothing\n" );
     printf( "\tto recover) then fontforge will produce an open font dlg.\n" );

@@ -6,8 +6,10 @@ Print( "...Opened Caliban")
 SelectAll()
 AutoHint();
 Print("...AutoHinted");
-Save("results/Caslon.sfd");
+Save("results/Caliban.sfd");
 Print("...Saved As");
+Save("results/Caliban.sfdir");
+Print("...Saved As dir");
 Generate("results/Caliban.ps","bdf",-1);
 Print( "...Generated type0")
 Generate("results/Caliban.ttf","ms",2);
@@ -24,8 +26,21 @@ Generate("results/Caliban.","otb",-1);
 Print( "...Generated X11 opentype bitmap")
 Generate("results/Caliban.dfont","dfont",-1);
 Print( "...Generated dfont w/ apple bitmaps")
+SetFontOrder(2);
+ClearTable("cvt ")
+SelectAll()
+AutoInstr();
+Print("...AutoInstructed");
+Generate("results/Caliban.ttf","apple",-1);
+Print( "...Generated ttf w/ apple bitmaps (again) and instructions")
 Close();
 
+Open("results/Caliban.sfd");
+Print( "...Read sfd")
+Close();
+Open("results/Caliban.sfdir");
+Print( "...Read sfdir")
+Close();
 Open("results/Caliban.ps");
 Print( "...Read type0 (if PfaEdit didn't understand /CalibanBase that's ok)")
 Close();

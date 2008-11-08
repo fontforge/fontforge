@@ -7,7 +7,7 @@ if ( CharInfo("Kern","V")!=-246 )
     Error("Kerning information incorrect")
 endif
 if ( CharInfo("Kern","W")!=-200 )
-    Error("Kerning information incorrect")
+    Error("Kerning information incorrect2")
 endif
 Select("A.vert");
 if ( CharInfo("VKern","V.vert")!=-246 )
@@ -16,7 +16,7 @@ endif
 RemoveAllVKerns()
 Select("A.vert");
 if ( CharInfo("VKern","V.vert")!=0 )
-    Error("Initial VKerning information incorrect")
+    Error("Initial VKerning information incorrect2")
 endif
 VKernFromHKern()
 Select("A.vert");
@@ -24,7 +24,7 @@ if ( CharInfo("VKern","V.vert")!=-246 )
     Error("After VKernFromHKern VKerning information incorrect")
 endif
 if ( CharInfo("VKern","W.vert")!=-200 )
-    Error("After VKernFromHKern VKerning information incorrect")
+    Error("After VKernFromHKern VKerning information incorrect2")
 endif
 
 Generate("results/VKern.otf","",0);
@@ -34,17 +34,17 @@ if ( CharInfo("VKern","V.vert")!=-246 )
     Error("From otf VKerning information incorrect")
 endif
 if ( CharInfo("VKern","W.vert")!=-200 )
-    Error("From otf VKerning information incorrect")
+    Error("From otf VKerning information incorrect2")
 endif
 
 Generate("results/VKern.otf","",0x10);
 Open("results/VKern.otf");
 Select("A.vert");
 if ( CharInfo("VKern","V.vert")!=-246 )
-    Error("From otf VKerning information incorrect")
+    Error("From otf VKerning information incorrect3")
 endif
 if ( CharInfo("VKern","W.vert")!=-200 )
-    Error("From otf VKerning information incorrect")
+    Error("From otf VKerning information incorrect4")
 endif
 
 Generate("results/VKern.svg");
@@ -54,6 +54,6 @@ if ( CharInfo("VKern","V.vert")!=-246 )
     Error("From svg VKerning information incorrect")
 endif
 if ( CharInfo("VKern","W.vert")!=-200 )
-    Error("From svg VKerning information incorrect")
+    Error("From svg VKerning information incorrect2")
 endif
 Quit()

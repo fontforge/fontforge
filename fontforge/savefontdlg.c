@@ -874,12 +874,12 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     label[k].text = (unichar_t *) _("Output Font Log");
     label[k].text_is_1byte = true;
     gcd[k].gd.popup_msg = (unichar_t *) _(
-	"The Font Log is a text file containing pertinent information\n"
+	"The FONTLOG is a text file containing pertinent information\n"
 	"about the font including such things as its change history.\n"
 	"The SIL Open Font License highly recommends its use.\n\n"
-	"If your font contains a font log (see the Element->Font Info)\n"
-	"and you check this box, then the internal fontlog will be\n"
-	"written to the file \"fontlog.txt\" in the same directory\n"
+	"If your font contains a FONTLOG (see the Element->Font Info)\n"
+	"and you check this box, then the internal FONTLOG will be\n"
+	"written to the file \"FONTLOG.txt\" in the same directory\n"
 	"as the font itself.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_FontLog;
@@ -2611,14 +2611,14 @@ return( 0 );
 	hvarray[hvi++] = &gcd[k-1]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
 	hvarray[hvi++] = NULL;
 
-	label[k].text = (unichar_t *) _("Append a fontlog entry");
+	label[k].text = (unichar_t *) _("Append a FONTLOG entry");
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
 	gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
 	if ( old_fontlog )
 	    gcd[k].gd.flags |= gg_cb_on;
-	gcd[k].gd.popup_msg = (unichar_t *) _("The fontlog allows you to keep a log of changes made to your font.");
+	gcd[k].gd.popup_msg = (unichar_t *) _("The FONTLOG allows you to keep a log of changes made to your font.");
 	gcd[k].gd.cid = CID_AppendFontLog;
 	gcd[k].gd.handle_controlevent = GFD_ToggleFontLog;
 	gcd[k++].creator = GCheckBoxCreate;
@@ -2858,7 +2858,7 @@ return( 0 );
 	oflarray[6][2] = GCD_ColSpan; oflarray[6][3] = GCD_Glue;
 	oflarray[6][4] = NULL;
 
-	label[k].text = (unichar_t *) _("Upload FontLog");
+	label[k].text = (unichar_t *) _("Upload FONTLOG");
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.flags = gg_enabled ;

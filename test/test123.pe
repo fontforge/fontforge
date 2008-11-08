@@ -8,5 +8,17 @@ Open("results/MinionPro.otf");
 #comparing fonts exactly doesn't work because ff will remove control points
 #if it thinks they are colinear with the to end points.
 if ( CompareFonts("fonts/MinionPro-Regular.otf","/dev/null",0x1|0x8|0x20)!=0 )
-    Error("!!!! Font differed");
+    Error("!!!! Otf Font differed");
+endif
+
+Open("fonts/MinionPro-Regular.otf")
+if ( SizeOf(GetLookups("GSUB"))<=0 )
+  Error("No lookups")
+endif
+Select("uni0394"); SelectMore("uni03A9"); SelectMore("uni03BC");
+DetachAndRemoveGlyphs()
+Generate("results/MinionPro.pfb")
+Open("results/MinionPro.pfb");
+if ( CompareFonts("fonts/MinionPro-Regular.otf","/dev/null",0x1|0x20)!=0 )
+    Error("!!!! Pfb Font differed");
 endif

@@ -275,7 +275,7 @@ return(true);
     else if ( v==CHR('t','r','u','e'))
 	printf( "version='true', " );
     else if ( v==CHR('S','p','l','i')) {
-	fprintf(stderr, "This looks like one of pfaedit's spline font databases, and not a truetype font.\n" );
+	fprintf(stderr, "This looks like one of fontforge's spline font databases, and not a truetype font.\n" );
 exit ( 1 );
     } else if ( v==CHR('%','!','P','S')) {
 	fprintf(stderr, "This looks like a postscript (pfa) file, and not a truetype font.\n" );
@@ -308,7 +308,7 @@ exit(0);
 /* The one example I have of a ttc file has the file checksum set to: 0xdcd07d3e */
 /*  I don't know if that's magic or not (docs don't say), but it vaguely follows */
 /*  the same pattern as 0xb1b0afba so it might be */
-/* All the fonts used the same head table so one difficult was eased */
+/* All the fonts used the same head table so one difficulty was eased */
     printf( "File Checksum =%x (should be 0xb1b0afba), diff=%x\n",
 	    filecheck(util,0,-1), 0xb1b0afba-filecheck(util,0,-1));
 
