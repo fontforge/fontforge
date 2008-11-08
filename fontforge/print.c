@@ -2360,14 +2360,14 @@ static char *_irishjohn[] = {
     "Bhí sé ann i dtús báire in éineacht le Dia.",
     NULL
 };
-/* norwegian */
+/* Bokmål norwegian */
 static char *_norwegianjohn[] = {
     "I begynnelsen var Ordet, Ordet var hos Gud, og Ordet var Gud.",
     "Han var i begynnelsen hos Gud.",
     "Alt er blitt til ved ham; uten ham er ikke noe blitt til av alt som er til.",
     NULL
 };
-/* ?old? norwegian */
+/* Nynorsk norwegian */
 static char *_nnorwegianjohn[] = {
     "I opphavet var Ordet, og Ordet var hjå Gud, og Ordet var Gud.",
     "Han var i opphavet hjå Gud.",
@@ -2375,9 +2375,8 @@ static char *_nnorwegianjohn[] = {
 };
 /* old church slavonic */
 static char *_churchjohn[] = {
-    "Въ началѣ бѣ Слово ƶ Слово Слово къ Бг҃,",
-    "г҃ ъбѣ Слово .",
-    "в҃ Сей бѣ искони къ Б.",
+    "Въ нача́лѣ бѣ̀ сло́во и҆ сло́во бѣ̀ къ бг҃ꙋ, и҆ бг҃ъ бѣ̀ сло́во.",
+    "Се́й бѣ̀ и҆сконѝ къ бг҃ꙋ.",
     NULL
 };
 /* swedish */
@@ -2530,11 +2529,18 @@ return;
 
 static int AllChars( SplineFont *sf, const char *str) {
     int i, ch;
+    SplineChar *sc;
+    struct altuni *alt;
 
     if ( sf->subfontcnt==0 ) {
 	while ( (ch = utf8_ildb(&str))!='\0' ) {
-	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-		if ( sf->glyphs[i]->unicodeenc == ch )
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+		if ( sc->unicodeenc == ch )
+	    break;
+		for ( alt=sc->altuni ; alt!=NULL ; alt=alt->next )
+		    if ( alt->vs==-1 && alt->unienc==ch )
+		break;
+		if ( alt!=NULL )
 	    break;
 	    }
 	    if ( i==sf->glyphcnt || !SCWorthOutputting(sf->glyphs[i]) )
