@@ -2149,7 +2149,21 @@ int _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y) {
     if ( gw->usecairo )
 	layout = gdisp->pangoc_layout;
 # endif
+    /* Pango retuns the last character if x is negative, not the first */
+    if ( x<0 ) x=0;
     _pango_layout_xy_to_index(layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
+    /* If I give pango a position after the last character on a line, it */
+    /*  returns to me the first character. Strange. And annoying -- you click */
+    /*  at the end of a line and the cursor moves to the start */
+    /* Of course in right to left text an initial position is correct... */
+    if ( index+trailing==0 && x>0 ) {
+	PangoRectangle rect;
+	_pango_layout_get_pixel_extents(layout,&rect,NULL);
+	if ( x>=rect.width ) {
+	    x = rect.width-1;
+	    _pango_layout_xy_to_index(layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
+	}
+    }
 return( index+trailing );
 }
 
