@@ -581,10 +581,6 @@ enum gcairo_flags GDrawHasCairo(GWindow w) {
 return( (w->display->funcs->hasCairo)(w));
 }
 
-void GDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
-    (w->display->funcs->queueDrawing)(w,func,data);
-}
-
 void GDrawPathStartNew(GWindow w) {
     (w->display->funcs->startNewPath)(w);
 }
@@ -618,14 +614,6 @@ void GDrawPathFill(GWindow w,Color col) {
 
 void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
     (w->display->funcs->fillAndStroke)(w,fillcol,strokecol);
-}
-
-void GDrawCairoBuffer(GWindow w,GRect *size) {
-    (w->display->funcs->cairoBuffer)(w,size);
-}
-
-void GDrawCairoUnbuffer(GWindow w,GRect *size) {
-    (w->display->funcs->cairoUnbuffer)(w,size);
 }
 
 void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {

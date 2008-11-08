@@ -760,10 +760,6 @@ static enum gcairo_flags PSDrawHasCairo(GWindow w) {
 return( gc_buildpath );
 }
 
-static void PSDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
-    (func)(w,data);
-}
-
 static void PSDrawPathStartNew(GWindow w) {
     GPSWindow ps = (GPSWindow ) w;
     fprintf( ps->output_file,"  newpath\n" );
@@ -1445,7 +1441,6 @@ static struct displayfuncs psfuncs = {
     PSDrawFontMetrics,
 
     PSDrawHasCairo,
-    PSDrawQueueDrawing,
     PSDrawPathStartNew,
     PSDrawPathClose,
     PSDrawPathMoveTo,
@@ -1454,9 +1449,6 @@ static struct displayfuncs psfuncs = {
     PSDrawPathStroke,
     PSDrawPathFill,
     PSDrawPathFillAndStroke,
-
-    NULL,		/* Cairobuffer */
-    NULL,
 
     NULL,		/* Pango layout */
     NULL,

@@ -2271,13 +2271,6 @@ return( gc_pango|gc_xor );
 return( gc_xor );
 }
 
-static void GXDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
-    if ( ((GXWindow) w)->usecairo )
-return( _GXCDraw_QueueDrawing( w,func,data ));
-    else
-	(func)(w,data);
-}
-
 static void GXDrawPathStartNew(GWindow w) {
     if ( !((GXWindow) w)->usecairo )
 return;
@@ -2329,27 +2322,12 @@ return;
     _GXCDraw_PathFillAndStroke(w,fillcol,strokecol);
 }
 
-static void GXDrawCairoBuffer(GWindow w,GRect *size) {
-    if ( !((GXWindow) w)->usecairo )
-return;
-    _GXCDraw_CairoBuffer(w,size);
-}
-
-static void GXDrawCairoUnbuffer(GWindow w,GRect *size) {
-    if ( !((GXWindow) w)->usecairo )
-return;
-    _GXCDraw_CairoUnbuffer(w,size);
-}
 #else
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
     if ( ((GXWindow) w)->usepango )
 return( gc_pango|gc_xor );
 
 return( gc_xor );
-}
-
-static void GXDrawQueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
-    (func)(w,data);
 }
 
 static void GXDrawPathStartNew(GWindow w) {
@@ -2379,11 +2357,6 @@ static void GXDrawPathFill(GWindow w,Color col) {
 static void GXDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
 }
 
-static void GXDrawCairoBuffer(GWindow w,GRect *size) {
-}
-
-static void GXDrawCairoUnbuffer(GWindow w,GRect *size) {
-}
 #endif
 
 static void GXDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
@@ -4710,7 +4683,6 @@ static struct displayfuncs xfuncs = {
     GXDrawFontMetrics,
 
     GXDrawHasCairo,
-    GXDrawQueueDrawing,
     GXDrawPathStartNew,
     GXDrawPathClose,
     GXDrawPathMoveTo,
@@ -4719,9 +4691,6 @@ static struct displayfuncs xfuncs = {
     GXDrawPathStroke,
     GXDrawPathFill,
     GXDrawPathFillAndStroke,
-
-    GXDrawCairoBuffer,
-    GXDrawCairoUnbuffer,
 
     GXDrawLayoutInit,
     GXDraw_LayoutDraw,

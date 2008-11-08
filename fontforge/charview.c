@@ -2314,17 +2314,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	DrawAPMatch(cv,pixmap,&clip);
 
     if ( cv->p.rubberbanding || cv->p.rubberlining ) {
-	if ( GDrawHasCairo(pixmap)&gc_xor ) {
-	    if ( cv->p.rubberbanding )
-		CVDrawRubberRect(pixmap,cv);
-	    if ( cv->p.rubberlining )
-		CVDrawRubberLine(pixmap,cv);
-	} else {
-	    if ( cv->p.rubberbanding )
-		GDrawQueueDrawing(pixmap,(void (*)(GWindow,void *)) CVDrawRubberRect,cv);
-	    if ( cv->p.rubberlining )
-		GDrawQueueDrawing(pixmap,(void (*)(GWindow,void *)) CVDrawRubberLine,cv);
-	}
+	if ( cv->p.rubberbanding )
+	    CVDrawRubberRect(pixmap,cv);
+	if ( cv->p.rubberlining )
+	    CVDrawRubberLine(pixmap,cv);
     }
 
     GDrawPopClip(pixmap,&old);
