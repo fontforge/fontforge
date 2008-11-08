@@ -259,7 +259,7 @@ return( bs->baseline_pos[i] );
 static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
     int i;
     struct opentype_str **line = li->lines[l];
-    int as=0, ds=0;
+    int as=0, ds=0, ld=0;
     int width=0;
     if ( line[0]!=NULL ) {
 	FontData *start_fd = ((struct fontlist *) (line[0]->fl))->fd;
@@ -296,14 +296,16 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 	FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
 	BDFFont *bdf = fd->bdf;
 	int off = line[i]->bsln_off;
+	double scale = fd->pointsize*li->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
 	if ( bdf!=NULL ) {
 	    if ( as<bdf->ascent+off ) as = bdf->ascent+off;
 	    if ( ds<bdf->descent-off ) ds = bdf->descent-off;
 	} else {
-	    double scale = fd->pointsize*li->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
 	    if ( as<scale*fd->sf->ascent+off ) as = scale*fd->sf->ascent+off;
 	    if ( ds<scale*fd->sf->descent-off ) ds = scale*fd->sf->descent-off;
 	}
+	if ( fd->sf->pfminfo.pfmset && ld<scale*fd->sf->pfminfo.os2_typolinegap )
+	    ld = scale*fd->sf->pfminfo.os2_typolinegap;
 	width += line[i]->advance_width + line[i]->vr.h_adv_off;
     }
     if ( as+ds==0 ) {
@@ -315,9 +317,11 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 	    double scale = fd->pointsize*li->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
 	    if ( as<scale*fd->sf->ascent ) as = scale*fd->sf->ascent;
 	    if ( ds<scale*fd->sf->descent ) ds = scale*fd->sf->descent;
+	    if ( fd->sf->pfminfo.pfmset && ld<scale*fd->sf->pfminfo.os2_typolinegap )
+		ld = scale*fd->sf->pfminfo.os2_typolinegap;
 	}
     }
-    li->lineheights[l].fh = as+ds;
+    li->lineheights[l].fh = as+ds+ld;
     li->lineheights[l].as = as;
     li->lineheights[l].linelen = width;
     if ( l==0 )
