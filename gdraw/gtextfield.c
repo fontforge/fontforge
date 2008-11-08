@@ -474,6 +474,11 @@ static int GTextField_Show(GTextField *gt, int pos) {
     int i, ll, m, xoff, loff;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
     int refresh=false;
+    GListField *ge = (GListField *) gt;
+    int width = gt->g.inner.width;
+
+    if ( gt->listfield || gt->numericfield )
+	width = ge->fieldrect.width - 2*(gt->g.inner.x - gt->g.r.x);
 
     if ( pos < 0 ) pos = 0;
     if ( pos > u_strlen(gt->text)) pos = u_strlen(gt->text);
@@ -497,20 +502,20 @@ static int GTextField_Show(GTextField *gt, int pos) {
 	if ( gt->lines8[i+1]==-1 ) ll = strlen(gt->utf8_text+gt->lines[i]); else ll = gt->lines8[i+1]-gt->lines8[i]-1;
 	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines[i],ll,NULL);
 	GDrawLayoutExtents(gt->g.base,&size);
-	if ( size.width < gt->g.inner.width )
+	if ( size.width < width )
 	    xoff = 0;
 	else {
 	    int index8 = u2utf8_index(pos- gt->lines[i],gt->utf8_text + gt->lines8[i]);
 	    GDrawLayoutIndexToPos(gt->g.base,index8,&size);
-	    if ( size.x + 2*size.width < gt->g.inner.width )
+	    if ( size.x + 2*size.width < width )
 		xoff = 0;
 	    else
-		xoff = size.x - (gt->g.inner.width - size.width)/2;
+		xoff = size.x - (width - size.width)/2;
 	    if ( xoff<0 )
 		xoff = 0;
 	}
     } else {
-	if ( GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],ll,NULL)< gt->g.inner.width )
+	if ( GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],ll,NULL)< width )
 	    xoff = 0;
 	else {
 	    if ( gt->dobitext ) {
@@ -521,8 +526,8 @@ static int GTextField_Show(GTextField *gt, int pos) {
 	    m = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[i],pos-gt->lines[i],NULL);
 	    if ( m < xoff )
 		xoff = gt->nw*(m/gt->nw);
-	    if ( m - xoff >= gt->g.inner.width )
-		xoff = gt->nw * ((m-2*gt->g.inner.width/3)/gt->nw);
+	    if ( m - xoff >= width )
+		xoff = gt->nw * ((m-2*width/3)/gt->nw);
 	}
     }
 
@@ -1494,7 +1499,7 @@ return;
 	sel = u2utf8_index(sel_start-gt->lines[l],gt->utf8_text+gt->lines8[l]);
 	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[l],ll,NULL);
 	GDrawLayoutIndexToPos(gt->g.base,sel,&pos_rect);
-	*x = pos_rect.x;
+	*x = pos_rect.x - gt->xoff_left;
     } else {
 	sel = GTextFieldGetOffsetFromOffset(gt,l,sel_start);
 	*x = GDrawGetTextWidth(gt->g.base,bitext+gt->lines[l],sel-gt->lines[l],NULL)-
@@ -1600,10 +1605,10 @@ static void GTextFieldDrawLineSel(GWindow pixmap, GTextField *gt, int line ) {
 		sofar.width += nextch.width;
 	    }
 	    if ( sofar.width<0 ) {
-		selr.x = sofar.x+sofar.width + gt->g.inner.x;
+		selr.x = sofar.x+sofar.width + gt->g.inner.x - gt->xoff_left;
 		selr.width = -sofar.width;
 	    } else {
-		selr.x = sofar.x + gt->g.inner.x;
+		selr.x = sofar.x + gt->g.inner.x - gt->xoff_left;
 		selr.width = sofar.width;
 	    }
 	    GDrawFillRect(pixmap,&selr,gt->g.box->active_border);
@@ -1648,12 +1653,12 @@ static void GTextFieldDrawLine(GWindow pixmap, GTextField *gt, int line, Color f
     if ( gt->pango ) {
 	ll = gt->lines8[line+1]==-1? -1 : gt->lines8[line+1]-gt->lines8[line];
 	GDrawLayoutInit(pixmap,gt->utf8_text+gt->lines8[line],ll,NULL);
-	GDrawLayoutDraw(pixmap,gt->g.inner.x,y+gt->as,fg);
+	GDrawLayoutDraw(pixmap,gt->g.inner.x-gt->xoff_left,y+gt->as,fg);
     } else if ( !gt->dobitext ) {
-	GDrawDrawText(pixmap,gt->g.inner.x,y+gt->as,
+	GDrawDrawText(pixmap,gt->g.inner.x-gt->xoff_left,y+gt->as,
 		gt->text+gt->lines[line],ll,NULL, fg );
     } else {
-	GDrawDrawText(pixmap,gt->g.inner.x,y+gt->as,
+	GDrawDrawText(pixmap,gt->g.inner.x-gt->xoff_left,y+gt->as,
 		    gt->bidata.text+gt->lines[line],ll,NULL, fg );
     }
 }
