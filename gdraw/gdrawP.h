@@ -255,7 +255,6 @@ struct displayfuncs {
     void (*getFontMetrics)(GWindow,GFont *,int *,int *,int *);
 
     enum gcairo_flags (*hasCairo)(GWindow w);
-    void (*queueDrawing)(GWindow,void (*)(GWindow,void *),void *);
 
     void (*startNewPath)(GWindow w);
     void (*closePath)(GWindow w);
@@ -265,9 +264,6 @@ struct displayfuncs {
     void (*stroke)(GWindow w, Color col);
     void (*fill)(GWindow w, Color col);
     void (*fillAndStroke)(GWindow w, Color fillcol,Color strokecol);
-
-    void (*cairoBuffer)(GWindow w,GRect *size);
-    void (*cairoUnbuffer)(GWindow w,GRect *size);
 
     void (*layoutInit)(GWindow w, char *text, int cnt, GFont *fi);
     void (*layoutDraw)(GWindow w, int32 x, int32 y, Color fg);

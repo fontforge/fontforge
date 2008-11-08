@@ -28,7 +28,6 @@ extern void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
 extern void _GXCDraw_CopyArea( GXWindow from, GXWindow into, GRect *src, int32 x, int32 y);
 
 extern enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow );
-extern void _GXCDraw_QueueDrawing(GWindow w,void (*)(GWindow,void *),void *);
 extern void _GXCDraw_PathStartNew(GWindow w);
 extern void _GXCDraw_PathClose(GWindow w);
 extern void _GXCDraw_PathMoveTo(GWindow w,double x, double y);
@@ -41,8 +40,6 @@ extern void _GXCDraw_PathStroke(GWindow w,Color col);
 extern void _GXCDraw_PathFill(GWindow w,Color col);
 extern void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
 
-extern void _GXCDraw_CairoBuffer(GWindow w,GRect *size);
-extern void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size);
 extern void _GXCDraw_Flush(GXWindow gw);
 extern void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double height);
 

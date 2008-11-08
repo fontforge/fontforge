@@ -12,10 +12,15 @@
 #include <utype.h>
 #include "fontP.h"
 
-static int usecairo = true;
+static int usecairo = true, usepango=true;
 
 void GDrawEnableCairo(int on) {
     usecairo=on;
+    /* Obviously, if we have no library, enabling it will do nothing */
+}
+
+void GDrawEnablePango(int on) {
+    usepango=on;
     /* Obviously, if we have no library, enabling it will do nothing */
 }
 
@@ -1472,42 +1477,7 @@ return;
 /*  cairo's data to the x window, and then do the xor drawing. But if the X */
 /*  window isn't available (if we are buffering cairo) then we must save the */
 /*  XOR drawing operations until we've popped the buffering */
-static struct queued_drawing {
-    GWindow w;
-    void *data;
-    void (*func)(GWindow,void *);
-    GRect clip;
-    struct queued_drawing *next;
-} *draw_queue = NULL;
-
-void _GXCDraw_CairoBuffer(GWindow w,GRect *size) {
-    GXWindow gw = (GXWindow) w;
-
-    _cairo_push_group(gw->cc);
-    _cairo_new_path(gw->cc);
-    _cairo_rectangle(gw->cc,size->x,size->y,size->width,size->height);
-    _cairo_set_source_rgba(gw->cc,COLOR_RED(gw->ggc->bg)/255.0,COLOR_GREEN(gw->ggc->bg)/255.0,COLOR_BLUE(gw->ggc->bg)/255.0,
-	    1.0);
-    _cairo_fill(gw->cc);
-}
-
-void _GXCDraw_CairoUnbuffer(GWindow w,GRect *size) {
-    GXWindow gw = (GXWindow) w;
-    struct queued_drawing *cur, *next;
-
-    _cairo_pop_group_to_source(gw->cc);
-    _cairo_paint(gw->cc);
-
-    for ( cur=draw_queue; cur!=NULL; cur=next ) {
-	GRect old;
-	next = cur->next;
-	GDrawPushClip(cur->w,&cur->clip,&old);
-	(cur->func)(cur->w,cur->data);
-	GDrawPopClip(cur->w,&old);
-	free(cur);
-    }
-    draw_queue = NULL;
-}
+/* Mmm. Now we use pixmaps rather than groups and the issue isn't relevant -- I think */
 
 enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
     enum gcairo_flags flags = gc_all;
@@ -1515,27 +1485,7 @@ enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
     if ( gw->usepango )
 	flags |= gc_pango;
 
-    if ( _cairo_get_group_target(gw->cc)!=gw->cs )
-return( flags );
-    else
 return( flags|gc_xor );	/* If not buffered, we can emulate xor by having X11 do it in the X layer */
-}
-
-void _GXCDraw_QueueDrawing(GWindow w,void (*func)(GWindow,void *),void *data) {
-    GXWindow gw = (GXWindow) w;
-
-    if ( _cairo_get_group_target(gw->cc)==gw->cs )
-	func(w,data);
-    else {
-	struct queued_drawing *q;
-	q = galloc(sizeof(struct queued_drawing ));
-	q->next = draw_queue;
-	draw_queue = q;
-	q->data = data;
-	q->w = w;
-	q->func = func;
-	q->clip = w->ggc->clip;
-    }
 }
 /* ************************************************************************** */
 /* **************************** Synchronization ***************************** */
@@ -1625,6 +1575,9 @@ static char *(*_pango_font_description_to_string)(PangoFontDescription *);
 static int pango_initted=false, hasP=false;
 
 int _GXPDraw_hasPango(void) {
+
+    if ( !usepango )
+return( false );
 
     if ( pango_initted )
 return( hasP );
@@ -1836,6 +1789,10 @@ return( hasP );
 #  define _pango_xft_render pango_xft_render
 
 int _GXPDraw_hasPango(void) {
+
+    if ( !usepango )
+return( false );
+
 # if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
 return( 3 );
 # else
@@ -1904,7 +1861,7 @@ static void my_cairo_render_layout(cairo_t *cc, Color fg,
 void _GXPDraw_NewWindow(GXWindow nw) {
     GXDisplay *gdisp = nw->display;
 
-    if ( !_GXPDraw_hasPango())
+    if ( !usepango || !_GXPDraw_hasPango())
 return;
 
 # if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
