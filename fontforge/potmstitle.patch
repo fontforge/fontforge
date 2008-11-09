@@ -1,9 +1,8 @@
 --- FtForge-MenuShortCuts.pot~	2007-08-17 16:59:20.000000000 -0700
 +++ FontForge-MenuShortCuts.pot	2007-08-17 16:59:20.000000000 -0700
-@@ -1,7 +1,7 @@
+@@ -1,6 +1,7 @@
 -# SOME DESCRIPTIVE TITLE.
--# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
--# This file is distributed under the same license as the PACKAGE package.
+-# Copyright (C) YEAR Free Software Foundation, Inc.
 -# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 +# Menu shortcuts for FontForge.
 +# Copyright (C) 2000-2007 by George Williams
