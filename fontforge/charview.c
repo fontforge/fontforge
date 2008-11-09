@@ -2237,7 +2237,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( cv->template2!=NULL )
 	CVDrawTemplates(cv,pixmap,cv->template2,&clip);
 
-    CVDrawAnchorPoints(cv,pixmap);
     /* Draw the active layer last so its splines are on top. */
     /* Note that we don't check whether the layer is visible or not, we always*/
     /*  draw the current layer -- unless they've turned on grid fit. Then they*/
@@ -2310,6 +2309,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
+    CVDrawAnchorPoints(cv,pixmap);
     if ( cv->apmine!=NULL )
 	DrawAPMatch(cv,pixmap,&clip);
 
