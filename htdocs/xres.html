@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 25-Sep-2008 -->
+  <!-- AP: Last modified: 10-Nov-2008 -->
   <TITLE>X Resources</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -780,13 +780,74 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
 	</TR>
       </TABLE>
     <DT>
-      <CODE>Gdraw.GWidget.BrokenPalettes</CODE>
+      <CODE>Gdraw.GRadioOn.Image</CODE>
     <DD>
-      A boolean<BR>
-      On many window managers the palette code doesn't work (they steal focus from
-      menus, they don't track the main window properly, ...). Use this resource
-      to turn off the broken bits. The results are non-optimal, but they should
-      be functional. (this is now irrelevant to fontforge)
+      A filename of an image file.<BR>
+      Used for drawing the "On" state of a radio button. (This is drawn within
+      the <CODE>GRadioOn</CODE> box, if you intend the image to be the entire radio
+      marker you should probably make the <CODE>GRadioOn</CODE> box be a blank
+      rectangle).
+    <DT>
+      <CODE>Gdraw.GRadioOff.Image</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "Off" state of a radio button. (This is drawn within
+      the <CODE>GRadioOff</CODE> box, if you intend the image to be the full radio
+      marker you should probably make the <CODE>GRadioOff</CODE> box be a blank
+      rectangle).
+    <DT>
+      <CODE>Gdraw.GCheckBoxOn.Image</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "On" state of a check box button. (This is drawn within
+      the <CODE>GCheckBoxOn</CODE> box, if you intend the image to be the complete
+      check box marker you should probably make the <CODE>GCheckBoxOn</CODE> box
+      be a blank rectangle).
+    <DT>
+      <CODE>Gdraw.GCheckBoxOff.Image</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "Off" state of a check box button. (This is drawn within
+      the <CODE>GCheckBoxOff</CODE> box, if you intend the image to be the sole
+      check box marker you should probably make the <CODE>GCheckBoxOff</CODE> box
+      be a blank rectangle).
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.TitleFont</CODE>
+    <DD>
+      A font.<BR>
+      The font used to draw titles in a GMatrixEdit. By default this is smaller
+      and bolder than the font used for text in the matrix edit.
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.TitleBG</CODE>
+    <DD>
+      A color.<BR>
+      Background color used for the titles of a matrix edit.
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.TitleFG</CODE>
+    <DD>
+      A color.<BR>
+      Foreground color used to draw the text of the titles of a matrix edit.
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.TitleDivider</CODE>
+    <DD>
+      A color.<BR>
+      Color used to draw the divider lines in the titles of a matrix edit.
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.RuleCol</CODE>
+    <DD>
+      A color.<BR>
+      Used to draw the horizontal and vertical lines in the body of a matrix edit.
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.FrozenCol</CODE>
+    <DD>
+      A color.<BR>
+      Used to draw text in a cell which is frozen (cannot but updated by the user)
+    <DT>
+      <CODE>Gdraw.GMatrixEdit.ActiveCol</CODE>
+    <DD>
+      A color.<BR>
+      Used to draw text in the cell which is active (and used for the
+      "&lt;New&gt;" entry).
     <DT>
       ...
   </DL>
