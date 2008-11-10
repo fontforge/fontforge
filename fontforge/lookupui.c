@@ -648,8 +648,9 @@ void LookupUIInit(void) {
 return;
     done = true;
     for ( j=0; needswork[j]!=NULL; ++j ) {
-	for ( i=0; needswork[j][i].text!=NULL; ++i )
-	    needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
+	for ( i=0; needswork[j][i].text!=NULL || needswork[j][i].line; ++i )
+	    if ( needswork[j][i].text!=NULL )
+		needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
     }
     LookupInit();
 
