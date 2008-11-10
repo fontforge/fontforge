@@ -258,8 +258,10 @@ return( b->font );
 static void _gradio_move(GGadget *g, int32 x, int32 y ) {
     GRadio *b = (GRadio *) g;
     b->onoffrect.x = x+(b->onoffrect.x-g->r.x);
+    b->onoffinner.x = x+(b->onoffinner.x-g->r.x);
     _ggadget_move(g,x,y);
     b->onoffrect.y = g->r.y+(g->r.height-b->onoffrect.height)/2;
+    b->onoffinner.y = g->r.y+(g->r.height-b->onoffinner.height)/2;
 }
 
 static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
