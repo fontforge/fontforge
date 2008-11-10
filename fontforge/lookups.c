@@ -238,6 +238,9 @@ return( false );
 int ScriptInFeatureScriptList(uint32 script, FeatureScriptLangList *fl) {
     struct scriptlanglist *sl;
 
+    if ( fl==NULL )		/* No features bound to lookup? (nested?) don't restrict by script */
+return( true );
+
     while ( fl!=NULL ) {
 	for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
 	    if ( sl->script == script )
