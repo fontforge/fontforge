@@ -3083,7 +3083,7 @@ return( true );
 		r.height = gt->fh;
 		GDrawFillRect(popup,&r,owner->box->active_border);
 	    }
-	    GDrawDrawText(popup,bp,i*gt->fh+gt->as+bp,gc->choices[i],-1,NULL,fg);
+	    GDrawDrawBiText(popup,bp,i*gt->fh+gt->as+bp,gc->choices[i],-1,NULL,fg);
 	}
 	GDrawPopClip(popup,&old1);
     } else if ( event->type == et_mouseup ) {
