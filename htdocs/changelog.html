@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 25-Sep-2008 -->
+  <!-- AP: Last modified: 9-Nov-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,234 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      ??-Nov-2008
+      <UL>
+	<LI>
+	  FontForge will now use libpango and libcairo if these libraries are present.
+	  Pango provides support for drawing opentype text in any language, so it should
+	  now be possible to provide po files for the Arabic and Indic languages. Pango
+	  also draws anti-aliased text so the user interface should look nicer.
+	  <P>
+	  Cairo will draw anti-aliased lines and splines (and text as well). Cairo
+	  also supports translucent colors.
+	  <P>
+	  If you have an old release of pango then it may not be able to draw on top
+	  of cairo, in which case you won't see complex scripts drawn properly in the
+	  outline glyph view (the only view in which cairo is active).
+	  <P>
+	  Start up is slower with either Pango or Cairo active because both use fontconfig
+	  to initialize stuff and that can take time.
+	  <P>
+	  Pango and even more cairo can slow down drawing. This depends to some extent
+	  on your video card, driver, X release, etc. If you find them too slow to
+	  be useable you may turn either off in Preferences. (You may also turn them
+	  off at configure time).
+	<LI>
+	  Updated Polish, Greek and Russian translations.
+	  <P>
+	  Created a teeny tiny translation file for Malayalam.
+	<LI>
+	  If a quadratic glyph is put into spiro mode, modified, and then put back
+	  into bezier mode then it LOOKS as if it is still quadratic (there are
+	  interpolated points shown) but it is actually cubic.
+	<LI>
+	  If someone changed the button shape to round rect, then the link button in
+	  Font Info-&gt;Unicode Ranges became a blot.
+	<LI>
+	  Alexey suggests using typo-line-gap between lines in the print dialog.
+	<LI>
+	  Alexey also provides a patch to fix the old church slavonic sample text in
+	  the print dialog and a couple of other issues.
+	<LI>
+	  Patch by Kanou. SetPanose in legacy scripting did not set the panose_set
+	  bit so all changes were lost.
+	<LI>
+	  Added duplicate name and duplicate unicode to the things validate checks
+	  for.
+	<LI>
+	  Add a command to set the color of all selected glyphs.
+	<LI>
+	  Give instructions in Find Problems on how to figure out which two glyphs
+	  have the same name, or the same unicode code point.
+	<LI>
+	  Pango has caniptions if I ask it to draw one of the code points reserved
+	  for surrogates or some of the "NOT A UNICODE CHARACTER" codepoints (0xffff,
+	  etc.). So don't draw these, and mark them as unusable slots instead.
+	<LI>
+	  Redo the selection menu in the font view.
+	  <UL>
+	    <LI>
+	      If the user holds down the shift key then the selection is enlarged by any
+	      glyphs specified in the command. (logical or)
+	    <LI>
+	      If the user holds down the control key then any glyphs specified by the command
+	      are removed from the selection.
+	    <LI>
+	      If the user has both shift and control down then only glyphs currently selected
+	      and specified by the command will remain selected (logical and)
+	    <LI>
+	      Otherwise the selection is set to what is specifed by the command.
+	  </UL>
+	  <P>
+	  Add new commands to select glyphs which
+	  <UL>
+	    <LI>
+	      Contain nothing by references
+	    <LI>
+	      Contain nothing by splines
+	    <LI>
+	      Contain both splines and references (bad idea)
+	    <LI>
+	      Are whitespace (and contain neither splines nor references).
+	  </UL>
+	<LI>
+	  The print dialog had a nasty habit of crashing when asked to undo.
+	<LI>
+	  Off by one error with scrollbar would sometimes hide the last line in the
+	  print dialog.
+	<LI>
+	  Lines of text in the Insert Text Outlines dialog were drawn in the reverse
+	  order from that shown in the dialog (ie. top line on the bottom).
+	<LI>
+	  Fix a crash bug in the print dialog.
+	<LI>
+	  It used to be that if a glyph had instructions, and the background was order2,
+	  then editing the background (or any order2 background layer) would clear
+	  the instructions.
+	<LI>
+	  Peter Baker says:
+	  <BLOCKQUOTE>
+	    In both "Show Grid Fit" and the TT debugger it used to be possible to turn
+	    off the display of outlines in the foreground layer simply by unchecking
+	    "fore". Now it can no longer be done, and as a result it's become more difficult
+	    to check at a glance the overall effect of TT instructions. It would be nice
+	    to have this capability back.
+	  </BLOCKQUOTE>
+	<LI>
+	  HV points don't work well with quadratic splines. Too many cases where they
+	  just specify an impossiblility. Attempt to improve on that. Merge on quadratic
+	  splines also left much to be desired.
+	<LI>
+	  When FF starts browsing the OFLib it creates a thread which requests the
+	  new state of OFLib (ie. any fonts since last time I looked?). This thread
+	  should die after it has read all the new stuff. It did die, but then someone
+	  restarted it and the whole process repeated. Which might be ok -- we'd get
+	  a new state whenever the site changed -- except that it meant a flicker of
+	  the display every minute or so.
+	<LI>
+	  Nicolas Spalinger points out that a license search in the oflib dialog (of
+	  fontforge) finds exactly the opposite of what was asked for (searching for
+	  PD finds OFL and vice versa).
+	<LI>
+	  There exist sfds where the width of a glyph does not match that specified
+	  by use my metrics on references. So when we read these guys in, fix up the
+	  erroneous widths and complain.
+	<LI>
+	  Distributions no longer provide .so files -- unless you ask for -dev packages,
+	  and sometimes those don't exist. This means that dlopening a library doesn't
+	  work. I think that's really stupid on the distibutioner's part. What do they
+	  gain by removing the .so file? But I won't even try to change their minds.
+	  Instead try to open the appropriate foo.so.? file if we can't find foo.so
+	  (Not always, but in the more important cases).
+	<LI>
+	  When deleting a mark-to-mark anchor class, then any mark glyph which had
+	  both a base mark anchor point and a normal mark anchor point would have only
+	  one of them deleted. The other would be a sort of ghost point pointing to
+	  an anchor class that didn't exist and causing problems.
+	<LI>
+	  Jason Pagura points out that while the short cuts in menus may be changed
+	  by the user, the short cuts which appear in windows without menus may not
+	  be. So Cut/Copy/Paste in textfields always use Cntl-X/C/V rather than Cmd-X/C/V.
+	  Fix this.
+	<LI>
+	  Add a resource to let the user set the background color of selected glyphs
+	  in the fontview. Then Alexey wanted a way to set the foreground color of
+	  selected glyphs.
+	<LI>
+	  Points could be snapped to a wrong edge of a non-ghost stem controlling a
+	  blue zone.
+	<LI>
+	  Put in code to complain when a font contains a hint mask with bits set indicative
+	  of hints which have not been defined.
+	<LI>
+	  When generating random text for a font in the print dlg, FF would alocate
+	  one character to few and trample memory.
+	<LI>
+	  Prefs file was treating hvoffset as a float rather than an int.
+	<LI>
+	  Patch by Michal to allow user control over whether points are snapped to
+	  pixels in charview, or whether we get sub-pixel positioning (and fuzzy lines).
+	<LI>
+	  Markers for lines/curves which are almost, but not quite, horizontal or vertical.
+	<LI>
+	  The french translation of the Unicode Names List database changed encodings
+	  from latin1 to utf8 when they came out with version 5.0, and I didn't notice.
+	<LI>
+	  Alexej provides some new preferences for truetype hinting:
+	  <UL>
+	    <LI>
+	      InstructDiagonalStems -- Generate instructions for diagonal stem hints
+	    <LI>
+	      InstructSerifs -- Try to detect serifs and other elements protruding from
+	      base stems and generate instructions for them.
+	    <LI>
+	      InstructBallTerminals -- Generate instructions for ball terminals
+	    <LI>
+	      InterpolateStrongPoints-- Interpolate between stem edges some important points,
+	      not affected by other instructions.
+	    <LI>
+	      CounterControl -- Make sure similar or equal counters remain the same in
+	      gridfitted outlines. Enabling this option may result in glyph advance widths
+	      being inconsistently scaled at some PPEMs
+	  </UL>
+	<LI>
+	  Many problems when numbering points in glyphs with references.
+	<LI>
+	  Back in Feb, Werner gave me clear instructions on how to handle fonts where
+	  bit one of 'head'.flags was unset. I did something I thought was equivalent,
+	  but which wasn't. The result broke some glyphs in the "Vista fonts". Let's
+	  try doing what he said to do instead.
+	<LI>
+	  Autoinstructor: some fixes to strong point optimizer.
+	<LI>
+	  Old bug still exists for monospaced fonts. Glyphs were positioned at 65,000+
+	  rather than with a negative left side bearing.
+	<LI>
+	  Autoinstructor: some points didn't really need to be touched by 'strong point'
+	  interpolation.
+	<LI>
+	  Be a little more careful about TeX pk and gf files in the openfont dlg. Alexej
+	  points out that .*gf also matches .xgf.
+	<LI>
+	  It used to be that when we changed glyphs in a charview we would turn off
+	  gridfit. Now it will simply refigure gridfit info for the new glyph.
+	<LI>
+	  Make it so that moving a point around will not turn off grid fit.
+	<LI>
+	  Andy Balholm points out that Help-&gt;Help often fails on the mac because
+	  DYLD_LIBARY_PATH points to /sw/lib which often contains libjpeg.so which
+	  conflicts with apple's libjpeg.so which means oascript doesn't work to invoke
+	  things. Undefine it before trying to open the help file.
+	<LI>
+	  make acorn2sfd work again.
+	<LI>
+	  When an svg font specified kerning with more than one glyph name in glyph1
+	  or 2 then ff would create a kerning by class thing ... except it didn't do
+	  any of the checking needed to insure that we were given a valid set of glyph
+	  classes, and so generally produced garbage. Just make lots of kern pairs.
+	<LI>
+	  When processing svg arc commands (in a path) we could get rounding errors
+	  that lead to NANs. Clip the range so that doesn't happen.
+	<LI>
+	  Add font.importBitmaps to python scripting.
+	<LI>
+	  the cli argument "--library-status" was broken.
+	<LI>
+	  A couple of important textfields were not using an input context and were
+	  limited to ASCII (probably) when they should not have been. Font Comment,
+	  lookup name, etc.
+      </UL>
     <LI>
       27-Sept-2008
       <UL>

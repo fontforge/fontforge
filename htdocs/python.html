@@ -1750,8 +1750,40 @@ pen = None;				# Finalize the pen. This tells FontForge
 	    <TD>References nested more deeply than allowed in 'maxp'</TD>
 	  </TR>
 	  <TR>
-	    <TD>0x20000</TD>
-	    <TD>'fpgm' or 'prep' tables longer than allowed in 'maxp'</TD>
+	    <TD>0x40000</TD>
+	    <TD>Points too far apart. TrueType and Type2 fonts are limited to 16 bit
+	      numbers, and so adjacent points must be within 32767 em-units of each other.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x80000</TD>
+	    <TD>Points non-integral. TrueType points and control points must be integer
+	      aligned. (FontForge will round them if they aren't)</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x100000</TD>
+	    <TD>Missing anchor. According to the opentype spec, if a glyph contains an
+	      anchor point for one anchor class in a subtable, it must contain anchor points
+	      for all anchor classes in the subtable. Even it, logically, they do not apply
+	      and are unnecessary.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x200000</TD>
+	    <TD>Duplicate glyph name. Two (or more) glyphs in this font have the same
+	      name. When outputting a PostScript font only one of them will ever be seen.
+	      <P>
+	      It's a little hard to detect this in normal use, but if you change the encoding
+	      to "Glyph Order", and then use Edit-&gt;Select-&gt;Wildcard and enter the
+	      glyph name, both of them should be selected.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x200000</TD>
+	    <TD>Duplicate unicode code point. Two (or more) glyphs in this font have
+	      the code point. When outputting an sfnt (TrueType/OpenType) font only one
+	      of them will ever be seen.
+	      <P>
+	      It's a little hard to detect this in normal use, but if you change the encoding
+	      to "Glyph Order", and then use Edit-&gt;Select-&gt;Wildcard and enter the
+	      code point, both of them should be selected.</TD>
 	  </TR>
 	</TABLE>
       </TD>

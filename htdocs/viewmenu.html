@@ -37,9 +37,10 @@
 	<LI>
 	  <A href="charview.html" >Outline Glyph</A>
 	<LI>
-	  <small><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging TrueType</A></small>
+	  <SMALL><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging
+	  TrueType</A></SMALL>
 	<LI>
-	  <small><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></small>
+	  <SMALL><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></SMALL>
 	<LI>
 	  <A href="bitmapview.html" >Bitmap Glyph</A>
 	<LI>
@@ -51,7 +52,7 @@
 	<LI>
 	  <A href="fontinfo.html" >Font Information</A>
 	<LI>
-	  <small><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></small>
+	  <SMALL><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></SMALL>
 	<LI>
 	  <A href="charinfo.html" >Glyph Information</A>
 	<LI>
@@ -67,7 +68,7 @@
 	<LI>
 	  <A href="multiplemaster.html" >Multiple Master Information</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="lookups.html" >Lookups &amp; subtables</A>
 	<LI>
@@ -85,7 +86,7 @@
 	<LI>
 	  <A href="showatt.html" >Show Advanced Typography</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="problems.html" >Potential Problems dialog</A>
 	<LI>
@@ -103,7 +104,7 @@
 	<LI>
 	  <A href="generate.html#Mac" >Generate Mac Family dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="display.html" >Print &amp; Display dialog</A>
 	<LI>
@@ -111,13 +112,13 @@
 	<LI>
 	  <A href="groups.html" >Groups dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="elementmenu.html#Bitmaps">Manage Bitmap Strikes</A>
 	<LI>
 	  <A href="elementmenu.html#Regenerate">Re-Rasterize Bitmap Strikes</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="search.html" >Search &amp; Replace dialog</A>
 	<LI>
@@ -131,7 +132,7 @@
 	<LI>
 	  <A href="InsertTextDlg.html" >Insert Text dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set width dialogs</A>
 	<LI>
@@ -139,7 +140,7 @@
 	<LI>
 	  <A href="autowidth.html" >Auto Width &amp; Kern dialogs</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="hintsmenu.html#Review" >Review PS Hints dialog</A>
 	<LI>
@@ -147,7 +148,7 @@
 	<LI>
 	  <A href="ttfinstrs.html#cvt" >TrueType 'cvt ' Editor</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="selectbyatt.html" >Select by feature dialog</A>
 	<LI>
@@ -337,6 +338,12 @@
 	  <A HREF="#CpInfo">Control Point Info</A>
 	<LI>
 	  <A HREF="#Extrema">Extrema</A>
+	<LI>
+	  <A HREF="#HVLines">Almost Horizontal/Vertical Lines</A>
+	<LI>
+	  <A HREF="#HVCurves">Almost Horizontal/Vertical Curves</A>
+	<LI>
+	  <A HREF="#DefineAlmost">(Define Almost)</A>
 	<LI>
 	  <A HREF="#PoI">Points of Inflection</A>
 	<LI>
@@ -778,6 +785,20 @@
 	  you intend to convert to truetype it can be helpful to know where these difficult
 	  points lie. (the cubic-&gt;quadratic approximation routines will often add
 	  intermediate points at these points of inflection)
+	<DT>
+	  <A NAME="HVLines">Almost Horizontal/Vertical Lines</A>
+	<DD>
+	  If a line is almost, but not quite horizontal or vertical then draw the line
+	  in a different color to show visually that it should be fixed.
+	<DT>
+	  <A NAME="HVCurves">Almost Horizontal/Vertical Curves</A>
+	<DD>
+	  If a curve is almost, but not quite horizontal or vertical at one of its
+	  endpoints then draw little tick marks at the end point to indicate this.
+	<DT>
+	  <A NAME="DefineAlmost">(Define Almost)</A>
+	<DD>
+	  Define what "almost" means, as used in the above two commands.
 	<DT>
 	  Side <A NAME="Bearings">Bearings</A>
 	<DD>

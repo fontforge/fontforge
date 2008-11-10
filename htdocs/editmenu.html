@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jul-2008 -->
+  <!-- AP: Last modified: 9-Nov-2008 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -37,9 +37,10 @@
 	<LI>
 	  <A href="charview.html" >Outline Glyph</A>
 	<LI>
-	  <small><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging TrueType</A></small>
+	  <SMALL><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging
+	  TrueType</A></SMALL>
 	<LI>
-	  <small><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></small>
+	  <SMALL><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></SMALL>
 	<LI>
 	  <A href="bitmapview.html" >Bitmap Glyph</A>
 	<LI>
@@ -51,7 +52,7 @@
 	<LI>
 	  <A href="fontinfo.html" >Font Information</A>
 	<LI>
-	  <small><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></small>
+	  <SMALL><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></SMALL>
 	<LI>
 	  <A href="charinfo.html" >Glyph Information</A>
 	<LI>
@@ -67,7 +68,7 @@
 	<LI>
 	  <A href="multiplemaster.html" >Multiple Master Information</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="lookups.html" >Lookups &amp; subtables</A>
 	<LI>
@@ -85,7 +86,7 @@
 	<LI>
 	  <A href="showatt.html" >Show Advanced Typography</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="problems.html" >Potential Problems dialog</A>
 	<LI>
@@ -103,7 +104,7 @@
 	<LI>
 	  <A href="generate.html#Mac" >Generate Mac Family dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="display.html" >Print &amp; Display dialog</A>
 	<LI>
@@ -111,13 +112,13 @@
 	<LI>
 	  <A href="groups.html" >Groups dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="elementmenu.html#Bitmaps">Manage Bitmap Strikes</A>
 	<LI>
 	  <A href="elementmenu.html#Regenerate">Re-Rasterize Bitmap Strikes</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="search.html" >Search &amp; Replace dialog</A>
 	<LI>
@@ -131,7 +132,7 @@
 	<LI>
 	  <A href="InsertTextDlg.html" >Insert Text dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set width dialogs</A>
 	<LI>
@@ -139,7 +140,7 @@
 	<LI>
 	  <A href="autowidth.html" >Auto Width &amp; Kern dialogs</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="hintsmenu.html#Review" >Review PS Hints dialog</A>
 	<LI>
@@ -147,7 +148,7 @@
 	<LI>
 	  <A href="ttfinstrs.html#cvt" >TrueType 'cvt ' Editor</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="selectbyatt.html" >Select by feature dialog</A>
 	<LI>
@@ -279,11 +280,21 @@
 	<LI>
 	  <A HREF="#SelHM">Select Points Affected by Current HintMask</A>
 	<LI>
-	  <A HREF="#Color">Select Color&gt;</A>
+	  <A HREF="#Color">Select by Color</A>
 	<LI>
-	  <A HREF="#SelectName">Select By Wildcard</A>...
+	  <A HREF="#SelectName">Select by Wildcard</A>...
 	<LI>
-	  <A HREF="#SelectScript">Select By Script...</A>
+	  <A HREF="#SelectScript">Select by Script...</A>
+	<LI>
+	  <A HREF="#SelWorth">Glyphs worth outputting</A>
+	<LI>
+	  <A HREF="#SelRefs">Glyphs with only references</A>
+	<LI>
+	  <A HREF="#SelSplines">Glyphs with only Splines</A>
+	<LI>
+	  <A HREF="#SelBoth">Glyphs with both</A>
+	<LI>
+	  <A HREF="#SelWhite">Whitespace Glyphs</A>
 	<LI>
 	  <A HREF="#SelChanged">Changed Glyphs</A>
 	<LI>
@@ -645,7 +656,7 @@
 	  if a single point with a hintmask is selected, then this command selects
 	  all points affected by that hintmask.
 	<DT>
-	  Select <A NAME="Color">Color</A>&gt;
+	  Select by <A NAME="Color">Color</A>&gt;
 	<DD>
 	  Only in the font view. Displays a submenu containing a list of colors and
 	  allows you to select all glyphs which you have set to that color with the
@@ -653,17 +664,62 @@
 	  glyphs, but if you hold down the shift key the selection will be extended
 	  to the colored glyphs.
 	<DT>
-	  <A NAME="SelectName">Select By Wildcard...</A>
+	  <A NAME="SelectName">Select by Wildcard...</A>
 	<DD>
 	  Select all glyphs that match the wildcard pattern specified. A glyph may
 	  also be mapped to more than one encoding slot. Select all encoding slots
 	  that refer to the named glyph. I think this is primarily useful for detaching
 	  .notdef.
 	<DT>
-	  <A NAME="SelectScript">Select By Script...</A>
+	  <A NAME="SelectScript">Select by Script...</A>
 	<DD>
 	  Allows you to specify an OpenType script tag and then ff will select all
 	  glyphs which have that script.
+      </DL>
+      <P>
+      In the fontview, the following menu items will have slightly different meanings
+      depending on whether you are holding down the Shift of Control keys.
+      <P>
+      If you hold down neither, then the current selection is cleared, and the
+      selection is set to whatever the command specifies.
+      <P>
+      If you hold down just the Shift key, then the current selection is retained
+      and any glyphs specified by the command will be merged into that selection.
+      (a logical or operation)
+      <P>
+      If you hold down just the Control key, then any glyphs specified by the command
+      will be removed from the selection.
+      <P>
+      If you hold down both keys, then only glyphs specified in both the command
+      and the old selection will be selected. (a logical and operation)
+      <DL>
+	<DT>
+	  <A NAME="SelWorth">Glyphs worth outputting</A>
+	<DD>
+	  Generally this means that either the glyph's width has been set, or that
+	  in one of its foreground layers there is some data -- a contour or a reference.
+	<DT>
+	  <A NAME="SelRefs">with only references</A>
+	<DD>
+	  Select all glyphs which contain at least one reference (in the active layer)
+	  and no contours.
+	<DT>
+	  <A NAME="SelSplines">Glyphs with only Splines</A>
+	<DD>
+	  Select all glyphs which contain at least one contour (in the active layer)
+	  and no references.
+	<DT>
+	  <A NAME="SelBoth">Glyphs with both</A>
+	<DD>
+	  Select all glyphs in the active layer with both contours and references.
+	  This is something which cannot be expressed in a TrueType font, and fontforge
+	  has various tricks for dealing with it, but it might be something you'd like
+	  to fix up.
+	<DT>
+	  <A NAME="SelWhite">Whitespace Glyphs</A>
+	<DD>
+	  Select all glyphs which contain neither references nor contours (but which
+	  have had their widths set).
 	<DT>
 	  <A NAME="SelChanged">Changed</A>
 	<DD>
