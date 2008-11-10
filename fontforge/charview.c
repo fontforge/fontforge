@@ -1584,10 +1584,13 @@ return;
 	GDrawLayoutInit(pixmap,ref->sc->name,-1,cv->small);
 	GDrawLayoutExtents(pixmap,&size);
 	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
+	len = size.width;
     } else {
 	len = GDrawGetBiText8Width(pixmap,ref->sc->name,-1,-1,NULL);
 	GDrawDrawBiText8(pixmap,x-len/2,y,ref->sc->name,-1,NULL,fg);
     }
+    if ( ref->use_my_metrics )
+	GDrawDrawImage(pixmap,&GIcon_lock,NULL,x+len+3,y-cv->sas);
 }
 
 void DrawAnchorPoint(GWindow pixmap,int x, int y,int selected) {
