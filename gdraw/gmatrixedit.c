@@ -28,6 +28,7 @@
 #include "gkeysym.h"
 #include "ggadgetP.h"
 #include "gwidget.h"
+#include "gresource.h"
 #include <string.h>
 #include <ustring.h>
 
@@ -35,6 +36,9 @@
 
 static GBox gmatrixedit_box = { /* Don't initialize here */ 0 };
 static FontInstance *gmatrixedit_font = NULL, *gmatrixedit_titfont = NULL;
+static Color gmatrixedit_title_bg = 0x808080, gmatrixedit_title_fg = 0x000000, gmatrixedit_title_divider = 0xffffff;
+static Color gmatrixedit_rules = 0x000000;
+static Color gmatrixedit_frozencol = 0xff0000, gmatrixedit_activecol = 0x0000ff;
 static int gmatrixedit_inited = false;
 
 static void _GMatrixEdit_Init(void) {
@@ -56,7 +60,13 @@ return;
     GDrawDecomposeFont(gmatrixedit_font,&rq);
     rq.point_size = (rq.point_size>=12) ? rq.point_size-2 : rq.point_size>=10 ? rq.point_size-1 : rq.point_size;
     rq.weight = 700; 
-    gmatrixedit_titfont = GDrawInstanciateFont(screen_display,&rq);
+    gmatrixedit_titfont = GResourceFindFont("GMatrixEdit.TitleFont",GDrawInstanciateFont(screen_display,&rq));
+    gmatrixedit_title_bg = GResourceFindColor("GMatrixEdit.TitleBG",gmatrixedit_title_bg);
+    gmatrixedit_title_fg = GResourceFindColor("GMatrixEdit.TitleFG",gmatrixedit_title_fg);
+    gmatrixedit_title_divider = GResourceFindColor("GMatrixEdit.TitleDivider",gmatrixedit_title_divider);
+    gmatrixedit_rules = GResourceFindColor("GMatrixEdit.RuleCol",gmatrixedit_rules);
+    gmatrixedit_frozencol = GResourceFindColor("GMatrixEdit.FrozenCol",gmatrixedit_frozencol);
+    gmatrixedit_activecol = GResourceFindColor("GMatrixEdit.ActiveCol",gmatrixedit_activecol);
     gmatrixedit_inited = true;
 }
 
@@ -498,7 +508,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 	r.height = gme->fh;
 	r.width = gme->hsb->r.width;
 	GDrawPushClip(pixmap,&r,&older);
-	GDrawFillRect(pixmap,&r,0x808080);
+	GDrawFillRect(pixmap,&r,gmatrixedit_title_bg);
 	y = r.y + gme->as;
 	GDrawSetFont(pixmap,gme->titfont);
 	for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
@@ -508,13 +518,13 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 		r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 		r.width = gme->col_data[c].width;
 		GDrawPushClip(pixmap,&r,&old);
-		GDrawDrawBiText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,0x000000);
+		GDrawDrawBiText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,gmatrixedit_title_fg);
 		GDrawPopClip(pixmap,&old);
 	    }
 	    if ( c!=lastc && !gme->col_data[c].hidden)
 		GDrawDrawLine(pixmap,r.x+gme->col_data[c].width+gme->hpad/2,r.y,
 				     r.x+gme->col_data[c].width+gme->hpad/2,r.y+r.height,
-				     0xffffff);
+				     gmatrixedit_title_divider);
 	}
 	GDrawPopClip(pixmap,&older);
     }
@@ -1319,7 +1329,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 
     GDrawGetSize(gme->nested,&size);
 
-    GDrawDrawLine(pixmap,0,0,0,size.height,0x000000);
+    GDrawDrawLine(pixmap,0,0,0,size.height,gmatrixedit_rules);
     /* Make sure the last visible column ends at (or after) the edge */
     for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
     if ( lastc>=0 && gme->col_data[lastc].x+gme->col_data[lastc].width < size.width ) {
@@ -1331,13 +1341,13 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	GDrawDrawLine(pixmap,
 		gme->col_data[c].x+gme->col_data[c].width+gme->hpad/2-gme->off_left,0,
 		gme->col_data[c].x+gme->col_data[c].width+gme->hpad/2-gme->off_left,size.height,
-		0x000000);
-    GDrawDrawLine(pixmap,0,0,size.width,0,0x000000);
+		gmatrixedit_rules);
+    GDrawDrawLine(pixmap,0,0,size.width,0,gmatrixedit_rules);
     for ( r=gme->off_top; r<=gme->rows && (r-gme->off_top)*(gme->fh+gme->vpad)<=gme->g.inner.height; ++r )
 	GDrawDrawLine(pixmap,
 		0,         (r-gme->off_top)*(gme->fh+gme->vpad)-1,
 		size.width,(r-gme->off_top)*(gme->fh+gme->vpad)-1,
-		0x000000);
+		gmatrixedit_rules);
 
     GDrawSetFont(pixmap,gme->font);
     for ( r=event->u.expose.rect.y/(gme->fh+gme->vpad);
@@ -1375,11 +1385,13 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		k = strlen(buf);
 		buf[k] = '>'; buf[k+1] = '\0';
 		GDrawDrawBiText8(pixmap,gme->g.inner.x+gme->col_data[0].x - gme->off_left,y,
-			buf,-1,NULL,0x0000ff);
+			buf,-1,NULL,gmatrixedit_activecol);
 	    } else {
 		data = &gme->data[(r+gme->off_top)*gme->cols+c];
-		fg = gme->col_data[c].disabled ? 0x666666 :
-			data->frozen ? 0xff0000 : 0x000000;
+		fg = gme->g.state==gs_disabled?gme->g.box->disabled_foreground:
+			data->frozen ? gmatrixedit_frozencol:
+			gme->g.box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+			gme->g.box->main_foreground;
 		switch ( gme->col_data[c].me_type ) {
 		  case me_enum:
 		    mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
@@ -1797,7 +1809,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	static unichar_t nullstr[1] = { 0 };
 
 	small.main_background = small.main_foreground = COLOR_DEFAULT;
-	small.main_foreground = 0x0000ff;
+	small.main_foreground = gmatrixedit_activecol;
 	memset(&sub_gd,'\0',sizeof(sub_gd));
 	memset(&label,'\0',sizeof(label));
 
