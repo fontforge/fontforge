@@ -118,7 +118,7 @@ return( -1 );
     break;
 	}
 	if ( cmp>0 ) {
-	    bottom=test+1;
+	    bottom=++test;
 	    if ( bottom==top )
     break;
 	} else
@@ -141,7 +141,7 @@ return( -1 );
     break;
 	}
 	if ( cmp==0 ) {
-	    bottom=test+1;
+	    bottom=++test;
 	    if ( bottom==top )
     break;
 	} else
