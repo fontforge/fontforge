@@ -879,12 +879,19 @@ return( cv->b1_tool );
     }
 }
 
-static void SCCheckForSSToOptimize(SplineChar *sc, SplineSet *ss) {
+static void SCCheckForSSToOptimize(SplineChar *sc, SplineSet *ss,int order2) {
 
     for ( ; ss!=NULL ; ss = ss->next ) {
 	if ( ss->beziers_need_optimizer ) {
 	    SplineSetAddExtrema(sc,ss,ae_only_good,sc->parent->ascent+sc->parent->descent);
 	    ss->beziers_need_optimizer = false;
+	}
+	if ( order2 && ss->first->next!=NULL && !ss->first->next->order2 ) {
+	    SplineSet *temp = SSttfApprox(ss), foo;
+	    foo = *ss;
+	    ss->first = temp->first; ss->last = temp->last;
+	    temp->first = foo.first; temp->last = foo.last;
+	    SplinePointListFree(temp);
 	}
     }
 }
@@ -895,7 +902,8 @@ static void CVChangeSpiroMode(CharView *cv) {
 	cv->showing_tool = cvt_none;
 	CVClearSel(cv);
 	if ( !cv->b.sc->inspiro )
-	    SCCheckForSSToOptimize(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines);
+	    SCCheckForSSToOptimize(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,
+		    cv->b.layerheads[cv->b.drawmode]->order2);
 	GDrawRequestExpose(cvtools,NULL,false);
 	SCUpdateAll(cv->b.sc);
     } else
