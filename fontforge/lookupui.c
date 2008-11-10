@@ -3760,12 +3760,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = sub->suffix==NULL ? NULL : &label[i];
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[i].gd.popup_msg = (unichar_t *) _(
-	    "Add entries to the lookup based on this suffix.\n"
-	    "So if this is set to \"superior\" and the font\n"
-	    "contains glyphs named \"A\" and \"A.superior\" (and the\n"
-	    "lookup applies to the latin script), then FontForge will\n"
-	    "add an entry mapping \"A\" -> \"A.superior\"." );
+	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_Suffix;
 	gcd[i].creator = GTextFieldCreate;
 	h2array[1] = &gcd[i++]; h2array[2] = GCD_Glue; h2array[3] = NULL;
