@@ -72,7 +72,7 @@ static void GMenuInit() {
     GGadgetInit();
     memset(&rq,0,sizeof(rq));
     GDrawDecomposeFont(_ggadget_default_font,&rq);
-    rq.weight = 700;
+    rq.weight = 400;
     menu_font = GDrawInstanciateFont(screen_display,&rq);
     _GGadgetCopyDefaultBox(&menubar_box);
     _GGadgetCopyDefaultBox(&menu_box);
