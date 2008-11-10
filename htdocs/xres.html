@@ -36,6 +36,10 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
   then the program will look at it.
   <DL>
     <DT>
+      <CODE>fontforge.FontView.ChangedColor</CODE>
+    <DD>
+      Sets the color used to mark changed glyphs.
+    <DT>
       <CODE>fontforge.FontView.FontFamily</CODE>
     <DD>
       A list of font family names to be used in the font view to display an example
@@ -44,6 +48,14 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       <CODE>fontforge.FontView.FontSize</CODE>
     <DD>
       Pixel size of those fonts.
+    <DT>
+      <CODE>fontforge.FontView.SelectedColor</CODE>
+    <DD>
+      Sets the background color of selected glyphs.
+    <DT>
+      <CODE>fontforge.FontView.SelectedFgColor</CODE>
+    <DD>
+      Sets the foreground color of selected glyphs.
     <DT>
       <CODE>fontforge.FontView.SerifFamily</CODE>
     <DD>
@@ -121,6 +133,11 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       <CODE>fontforge.CharView.PointOfInflectionColor</CODE>
     <DD>
       Sets the color of a location which is a point of inflection.
+    <DT>
+      <CODE>fontforge.CharView.AlmostHVColor</CODE>
+    <DD>
+      Sets the color used to mark lines and curves which are almost, but not quite
+      horizontal or vertical.
     <DT>
       <CODE>fontforge.CharView.NextCPColor</CODE>
     <DD>
@@ -717,9 +734,9 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       <CODE>Gdraw.GButton...<BR>
       Gdraw.GLabel...<BR>
       Gdraw.GRadio... -- affects the text of the radio<BR>
-      GDraw.GRadioOn... -- affects the shape used (to the left of the text) of an on radio button
-      GDraw.GRadioOff... -- affects the shape used of an off radio button
-      Gdraw.GCheckBox...<BR>
+      GDraw.GRadioOn... -- affects the shape used (to the left of the text) of
+      an on radio button GDraw.GRadioOff... -- affects the shape used of an off
+      radio button Gdraw.GCheckBox...<BR>
       GDraw.GCheckBoxOn...<BR>
       GDraw.GCheckBoxOff...<BR>
       Gdraw.GTextField...<BR>

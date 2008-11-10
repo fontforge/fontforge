@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 15-Aug-2007 -->
-  <!-- AP: Last modified: 19-Jul-2008 -->
+  <!-- AP: Last modified: 9-Nov-2008 -->
   <TITLE>The font validation window</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -54,6 +54,26 @@
       to rename the glyphs before they get saved anyway).
     <LI>
       In a TrueType font, point coordinates must be integral.
+    <LI>
+      Missing anchor. According to the opentype spec, if a glyph contains an anchor
+      point for one anchor class in a subtable, it must contain anchor points for
+      all anchor classes in the subtable. Even it, logically, they do not apply
+      and are unnecessary.
+    <LI>
+      Duplicate glyph name. Two (or more) glyphs in this font have the same name.
+      When outputting a PostScript font only one of them will ever be seen.
+      <P>
+      It's a little hard to detect this in normal use, but if you change the encoding
+      to "Glyph Order", and then use Edit-&gt;Select-&gt;Wildcard and enter the
+      glyph name, both of them should be selected.
+    <LI>
+      Duplicate unicode code point. Two (or more) glyphs in this font have the
+      code point. When outputting an sfnt (TrueType/OpenType) font only one of
+      them will ever be seen.
+      <P>
+      It's a little hard to detect this in normal use, but if you change the encoding
+      to "Glyph Order", and then use Edit-&gt;Select-&gt;Wildcard and enter the
+      code point, both of them should be selected.
     <LI>
       Check that the OS/2 version number is valid.
   </UL>

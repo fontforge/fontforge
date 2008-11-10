@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Oct-2006 -->
-  <!-- AP: Last modified: 8-Jan-2008 -->
+  <!-- AP: Last modified: 9-Nov-2008 -->
   <TITLE>The history of the development of FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -90,11 +90,12 @@
   So I gave up on that.
   <P>
   Instead I set about working on an improved version of my html editor, and
-  started by writing my own Unicode based widget set for it. When the widget
-  set was usable I decided to write a small application to test it, and something
-  to display the splines of a postscript font seemed just the thing. Having
-  done that I figured I might as well allow people to edit those splines and
-  save it back. And so was born the first version of PfaEdit.
+  started by writing my own Unicode based widget set for it (this was before
+  pango was out). When the widget set was usable I decided to write a small
+  application to test it, and something to display the splines of a postscript
+  font seemed just the thing. Having done that I figured I might as well allow
+  people to edit those splines and save it back. And so was born the first
+  version of PfaEdit.
   <P>
   Somehow the html-editor never got written.
   <P>
@@ -104,7 +105,7 @@
   After a couple months of work I had something which worked, or so I thought,
   and I posted it to the web (my friend, Dan Kenan, very kindly gave me some
   space on his server, aptly named bibliofile) on 7 November of 2000. Within
-  a month I had received my first bug report, and presumably my first user.
+  a month I had received my first bug report, and presumably had my first user.
   <P>
   I continued working on PfaEdit, adding support for pfb fonts and then in
   December for truetype and bdf fonts. I learned about sourceforge and moved
@@ -288,16 +289,16 @@
   Originally this had been a separate command (called sfddiff), but if I integrated
   it into FontForge I could increase the abilities of the tests I wrote.
   <P>
-  FontForge produced some rather naive type1 and type2 fonts which did not make
-  good use of the PostScript concept of subroutines. In June of 2006 I did a
-  substantial rewrite of the type2 output code and decreased the size of my
-  output fonts considerably. My new comparison command was helpful in debugging.
-  Nonetheless I introduced a number of bugs. Which got fixed, of course. But
-  it made me leary of doing the same thing for type1 output. After all, Adobe
-  doesn't even produce type1 fonts any more, so surely I don't need to optimize
-  them. Michael Zedler said otherwise, and after great effort on his part induced
-  me (in October 2006) to make better use of subroutines in Type1 output also.
-  No bugs yet... (but it's still October of 2006).
+  FontForge produced some rather naive type1 and type2 fonts which did not
+  make good use of the PostScript concept of subroutines. In June of 2006 I
+  did a substantial rewrite of the type2 output code and decreased the size
+  of my output fonts considerably. My new comparison command was helpful in
+  debugging. Nonetheless I introduced a number of bugs. Which got fixed, of
+  course. But it made me leary of doing the same thing for type1 output. After
+  all, Adobe doesn't even produce type1 fonts any more, so surely I don't need
+  to optimize them. Michael Zedler said otherwise, and after great effort on
+  his part induced me (in October 2006) to make better use of subroutines in
+  Type1 output also. No bugs yet... (but it's still October of 2006).
   <P>
   All of FontForge's dialogs had a fixed layout. Which works fine if you've
   only got one language to support, but which looks really ugly (and worse
@@ -335,16 +336,16 @@
   any more because all the distros require booting from CD now (and my machine
   can't).
   <P>
-  In May of 2007 I went to the Libre Graphics Meeting in Montreal, and as I listened to
-  the Inkscape talk on how they handled plugins, I realized that I could do
-  that too. So I extended the python interface to support python plugins and
-  menu items. Dave Crossland, as is his wont, had many requests, and had me
-  update the old Display dialog to support all the OpenType lookups (just as
-  I'd done for the Metrics View) and then merge that into the Print dialog
-  too. Dave also felt that FontForge should be able to store a font directly
-  on the Open Font Library website. Well, they had no API for this, so I had
-  to sit down and figure out http all over again and see what bits of the user
-  API I needed to walk through.
+  In May of 2007 I went to the Libre Graphics Meeting in Montreal, and as I
+  listened to the Inkscape talk on how they handled plugins, I realized that
+  I could do that too. So I extended the python interface to support python
+  plugins and menu items. Dave Crossland, as is his wont, had many requests,
+  and had me update the old Display dialog to support all the OpenType lookups
+  (just as I'd done for the Metrics View) and then merge that into the Print
+  dialog too. Dave also felt that FontForge should be able to store a font
+  directly on the Open Font Library website. Well, they had no API for this,
+  so I had to sit down and figure out http all over again and see what bits
+  of the user API I needed to walk through.
   <P>
   In June I started working on Adobe's feature files (I could support them
   now that I was handling lookups properly), and found to my shock that
@@ -392,12 +393,13 @@
   Then about a week later Alexej Kryukov said he wanted to make the autoinstructor
   support diagonal stems, and the two of them started working together on this.
   <P>
-  At the Libre Graphics Meeting Dave demoed Raph Levien's spiro splines and encouraged
-  me to integrate them into fontforge. But Raph released under GPL and wasn't
-  willing to change, and I released under BSD and wasn't willing to change.
-  I got permision from Raph to repackage his spiro routines into a small shared
-  library (libspiro) which could be released seperately from FontForge but
-  to which FontForge could link. And we had Raph's spiros in FontForge.
+  At the Libre Graphics Meeting Dave demoed Raph Levien's spiro splines and
+  encouraged me to integrate them into fontforge. But Raph released under GPL
+  and wasn't willing to change, and I released under BSD and wasn't willing
+  to change. I got permision from Raph to repackage his spiro routines into
+  a small shared library (libspiro) which could be released seperately from
+  FontForge but to which FontForge could link. And we had Raph's spiros in
+  FontForge.
   <P>
   I realized that no only could I stick python into fontforge, but if I did
   a little more work, I could stick fontforge into python. So I wrapped up
@@ -427,7 +429,71 @@
   -- but I'd already done that.
   <P>
   And that brings us up to Jan 2008, I guess the pace of change sped up a bit
-  this year as opposed to last.
+  this year as opposed to last. 
+  <P>
+  Alexey and others complained that they wanted multiple layers of splines.
+  More than just the Foreground, Background, Guidelines layers that FontForge
+  came with. One common request was to have both a cubic (PostScript) and a
+  quadratic (TrueType) layer and be able to generate fonts from both. So in
+  March of 2008 FontForge grew multiple layer support.
+  <P>
+  Later in March I added support for the OpenType 'BASE' and Apple 'bsln' tables.
+  And to amuse myself I added the ablity to have gradient fills in Type3 (and
+  svg) fonts.
+  <P>
+  In June I was thinking of the embolden command I did the year before, and
+  realized that that was essentially the same idea as was needed for generating
+  Small Caps glyphs from Capital letters. And then some of those algorithms
+  could be used to create condensed and extended glyphs. And then I sat down
+  and wrote a generic "glyph change" dialog -- years ago I had had a "MetaFont"
+  command which was supposed to allow the user to embolden fonts for condense
+  them or ... Unfortunately my MetaFont never worked very well (And some users
+  complained that It didn't read Knuth's mf files. Sigh. No, it metamorphosed
+  fonts in its own way, not Knuth's), so it got removed. Now it was basically
+  working in a new form -- but I know better than to call it MetaFont now.
+  <P>
+  Alexey then stepped in and rewrote much of the code. I did not handle diagonal
+  stems well when creating small caps, and that was just what he was doing
+  with the autohinter. So he greatly improved the output.
+  <P>
+  I was also intregued by italics. Converting a font to italics involves so
+  many different things -- the font is slanted, compressed, serifs change,
+  letter forms change, ... I studied exisiting fonts to see what I could learn
+  and asked various real typographers. The consensis I heard from them was
+  that I could never make a good italic font from a roman one mechanically
+  and should not bother to try -- it would just lead to people making bad italic
+  fonts. Good advice, but I didn't follow it. I thought it was a neat challange.
+  And it was something Ikarus had done, so I wanted to do it too.
+  <P>
+  In July a friend of mine, who is a mac user, said she wouldn't even consider
+  looking at fontforge on her mac unless it behaved more like a mac application.
+  So I figured out how to build a mac Application, and how to respond to apple
+  events (like having someone double click on a font file, or drop a font file
+  on fontforge's icon). I figured out how to start up X so that the user didn't
+  have to. I made pretty (well, I think they are pretty) icons for font files.
+  I even changed the menus to use the command key on the mac and to show the
+  mac cloverleaf icon.
+  <P>
+  My friend still (November) has not looked at fontforge. Ah well.
+  <P>
+  Dave Crossland had hired someone to integrate cairo into fontforge. But the
+  result never got back to me. In a moment of foolish boredom I decided I could
+  do that too. So I studied cairo, and it really didn't seem that hard. But
+  it was slow -- at least on my 10 year old x86 machine which doesn't support
+  XRender. Cairo gave two things I cared about, anti-aliased splines in the
+  glyph view, and anti-aliased text everywhere. Well I needed cairo in the
+  glyph view, but pango would also provide fuzzy text and was lighter weight
+  and would also support complex scripts (which fontforge's on widget set did
+  not do). So I could turn of cairo everywhere but the glyph view but still
+  get fuzzy text from pango. And speed things up. Then Khaled Hosny suggested
+  that I implement pango. Hurumph. And I had wanted to surprise people. Oh
+  well. Implement Pango I did.
+  <P>
+  A group in Japan created the "Unofficial mingw fontforge page". A very nice
+  piece of work. It included a set of X resources which provided another, nice
+  look to the UI. A theme. And then other peole started writing themes -- and
+  started complaining about and finding old bugs in fontforge's resource reading
+  code -- it had never been exercised before I guess.
     <HR>
   <P>
   I have received many suggestions from many people, too many to enumerate
@@ -442,6 +508,7 @@
   widget set available to me (gtk and qt)</A>. I will get started working on
   converting to one and then run into some problem I can't work around easily
   and give up and go back to my own. Well in 2008 I still don't like gtk, but
-  I have the fontview working in it. A start.
+  I have the fontview working in it. A start but probably not something I will
+  continue.
 </DIV>
 </BODY></HTML>

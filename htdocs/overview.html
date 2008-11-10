@@ -38,9 +38,10 @@
 	<LI>
 	  <A href="charview.html" >Outline Glyph</A>
 	<LI>
-	  <small><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging TrueType</A></small>
+	  <SMALL><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging
+	  TrueType</A></SMALL>
 	<LI>
-	  <small><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></small>
+	  <SMALL><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></SMALL>
 	<LI>
 	  <A href="bitmapview.html" >Bitmap Glyph</A>
 	<LI>
@@ -52,7 +53,7 @@
 	<LI>
 	  <A href="fontinfo.html" >Font Information</A>
 	<LI>
-	  <small><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></small>
+	  <SMALL><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></SMALL>
 	<LI>
 	  <A href="charinfo.html" >Glyph Information</A>
 	<LI>
@@ -68,7 +69,7 @@
 	<LI>
 	  <A href="multiplemaster.html" >Multiple Master Information</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="lookups.html" >Lookups &amp; subtables</A>
 	<LI>
@@ -86,7 +87,7 @@
 	<LI>
 	  <A href="showatt.html" >Show Advanced Typography</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="problems.html" >Potential Problems dialog</A>
 	<LI>
@@ -104,7 +105,7 @@
 	<LI>
 	  <A href="generate.html#Mac" >Generate Mac Family dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="display.html" >Print &amp; Display dialog</A>
 	<LI>
@@ -112,13 +113,13 @@
 	<LI>
 	  <A href="groups.html" >Groups dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="elementmenu.html#Bitmaps">Manage Bitmap Strikes</A>
 	<LI>
 	  <A href="elementmenu.html#Regenerate">Re-Rasterize Bitmap Strikes</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="search.html" >Search &amp; Replace dialog</A>
 	<LI>
@@ -132,7 +133,7 @@
 	<LI>
 	  <A href="InsertTextDlg.html" >Insert Text dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set width dialogs</A>
 	<LI>
@@ -140,7 +141,7 @@
 	<LI>
 	  <A href="autowidth.html" >Auto Width &amp; Kern dialogs</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="hintsmenu.html#Review" >Review PS Hints dialog</A>
 	<LI>
@@ -148,7 +149,7 @@
 	<LI>
 	  <A href="ttfinstrs.html#cvt" >TrueType 'cvt ' Editor</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="selectbyatt.html" >Select by feature dialog</A>
 	<LI>
@@ -1271,79 +1272,80 @@
   <H4>
     Lookup subtables
   </H4>
-    I talk above about lookups as if they were simple things. Unfortunately
-    they aren't. Each lookup is composed of "Subtables" which actually do
-    the work.
-    <P>
-    A lookup may contain several subtables. Most contain exactly one. (If
-    a lookup contains no subtables it will do nothing).
-    <P>
-    I said there were about 15 kinds of lookup, there are even more kinds of
-    subtable. For instance a subtable which specifies glyph to glyph kerning
-    is different from one which specifies glyph class to glyph class kerning.
-    <P>
-    At first glance the subtable may seem an unnecessary complication, but
-    it turns out to be desirable for one lookup to contain several kinds
-    of sub-table data. For instance, a kerning lookup might
-    include one subtable providing glyph class kerning, and then another
-    subtable providing exceptions to that on a glyph by glyph basis.
+  <P>
+  I talk above about lookups as if they were simple things. Unfortunately they
+  aren't. Each lookup is composed of "Subtables" which actually do the work.
+  <P>
+  A lookup may contain several subtables. Most contain exactly one. (If a lookup
+  contains no subtables it will do nothing).
+  <P>
+  I said there were about 15 kinds of lookup, there are even more kinds of
+  subtable. For instance a subtable which specifies glyph to glyph kerning
+  is different from one which specifies glyph class to glyph class kerning.
+  <P>
+  At first glance the subtable may seem an unnecessary complication, but it
+  turns out to be desirable for one lookup to contain several kinds of sub-table
+  data. For instance, a kerning lookup might include one subtable providing
+  glyph class kerning, and then another subtable providing exceptions to that
+  on a glyph by glyph basis.
   <H4>
     How lookups are applied
   </H4>
-    When a word processor deals with text, it will figure out what script
-    is in use in the text. Somehow it will figure out what the language is
-    (maybe it will just assume the "DFLT" language, maybe the user told it
-    the text was in French, maybe the locale is Spanish, ...).
-    <P>
-    In any script/language some features are applied by default, while
-    others may be applied at the user's discression. So in English the "liga"
-    feature should always be applied, while the "dlig" feature should only
-    be applied if the user asked for it. (Not all programs follow this at
-    the moment, but that's the theory).
-    <P>
-    The word processor will build up a list of features that might be active.
-    Then it looks in the font and sees which of those features are available
-    for this script and language. In turn each feature is composed of lookups,
-    and all lookups in all active features will be marked as active.
-    <P>
-    Lookups will be executed in the order in which they occur in the lookup
-    list (which is also the order shown in the Font Info->Lookup pane, but
-    may be quite different from the order in which the features were listed).
-    And all active lookups will be executed.
-    <P>
-    This ordering can be important. If you have both a small-caps lookup and a
-    ligature lookup active, and the text is "fi" then the order of the
-    lookups will probably matter. If the small-caps lookup happens first
-    then the "fi" will become "<small>FI</small>" and the ligature feature
-    will not be applied. If the ligature happens first then you will see
-    an "fi" ligature for which there is probably no small-caps glyph. In
-    one case you get small-caps, in another a ligature. Probably, here,
-    you would like the small-caps lookup to happen first.
-    <P>
-    Lookup subtables make life even more interesting. When a lookup is executed
-    the subtables within that lookup are activated in turn <em>until one succeeds</em>.
-    After that no further subtables will be applied.
-    <P>
-    So in the kerning example mentioned above, you would want to put the
-    special case glyph to glyph subtable first, and then the glyph class to
-    class subtable second. When a special case combination occurs the first
-    subtable will succeed (and kern the combination) and the class subtable
-    will not be used. For combinations which aren't special cases, then the
-    first subtable will fail, and the second will be applied.
+  <P>
+  When a word processor deals with text, it will figure out what script is
+  in use in the text. Somehow it will figure out what the language is (maybe
+  it will just assume the "DFLT" language, maybe the user told it the text
+  was in French, maybe the locale is Spanish, ...).
+  <P>
+  In any script/language some features are applied by default, while others
+  may be applied at the user's discression. So in English the "liga" feature
+  should always be applied, while the "dlig" feature should only be applied
+  if the user asked for it. (Not all programs follow this at the moment, but
+  that's the theory).
+  <P>
+  The word processor will build up a list of features that might be active.
+  Then it looks in the font and sees which of those features are available
+  for this script and language. In turn each feature is composed of lookups,
+  and all lookups in all active features will be marked as active.
+  <P>
+  Lookups will be executed in the order in which they occur in the lookup list
+  (which is also the order shown in the Font Info-&gt;Lookup pane, but may
+  be quite different from the order in which the features were listed). And
+  all active lookups will be executed.
+  <P>
+  This ordering can be important. If you have both a small-caps lookup and
+  a ligature lookup active, and the text is "fi" then the order of the lookups
+  will probably matter. If the small-caps lookup happens first then the "fi"
+  will become "<SMALL>FI</SMALL>" and the ligature feature will not be applied.
+  If the ligature happens first then you will see an "fi" ligature for which
+  there is probably no small-caps glyph. In one case you get small-caps, in
+  another a ligature. Probably, here, you would like the small-caps lookup
+  to happen first.
+  <P>
+  Lookup subtables make life even more interesting. When a lookup is executed
+  the subtables within that lookup are activated in turn <EM>until one
+  succeeds</EM>. After that no further subtables will be applied.
+  <P>
+  So in the kerning example mentioned above, you would want to put the special
+  case glyph to glyph subtable first, and then the glyph class to class subtable
+  second. When a special case combination occurs the first subtable will succeed
+  (and kern the combination) and the class subtable will not be used. For
+  combinations which aren't special cases, then the first subtable will fail,
+  and the second will be applied.
   <H4>
     GPOS and GSUB
   </H4>
-    Up till now I have spoken as there were one list of lookups. That was a
-    simplification. There are two broad classes of lookup, and two lists.
-    There are those involved
-    in manipulating the glyphs themselves (glyph substitution, ligation,
-    decomposition, etc.) and those involved in positioning glyphs relative
-    to others (kerning, mark attachment, etc.).
-    <P>
-    The GSUB table contains all the glyph substitution lookups and <em>all</em>
-    of them will be processed before any positioning lookups are attempted.
-    <P>
-    The GPOS table contains all the glyph positioning lookups.
+  <P>
+  Up till now I have spoken as there were one list of lookups. That was a
+  simplification. There are two broad classes of lookup, and two lists. There
+  are those involved in manipulating the glyphs themselves (glyph substitution,
+  ligation, decomposition, etc.) and those involved in positioning glyphs relative
+  to others (kerning, mark attachment, etc.).
+  <P>
+  The GSUB table contains all the glyph substitution lookups and <EM>all</EM>
+  of them will be processed before any positioning lookups are attempted.
+  <P>
+  The GPOS table contains all the glyph positioning lookups.
   <H3>
     <A NAME="Anchors">Anchor Points and Classes</A>
   </H3>
@@ -1354,13 +1356,13 @@
   is used to join glyphs in flowing scripts (cursive) where the exit from one
   glyph joins the entry point of the next. In the second style one of the glyphs
   is the base glyph, and it will be positioned normally, the other glyph which
-  will often be a diacritic or vowel mark will be positioned so that the
-  anchor points in each glyph are coincident. Mark to ligature behaves similarly
-  to mark to base except that there may be more that one attachment point on
-  the ligature depending on which component a given mark is connected to.
-  Finally, mark to mark allows you to position two marks with respect to each
-  other (as you might need to do in vietnamese or hebrew where you may get
-  several marks for one glyph).
+  will often be a diacritic or vowel mark will be positioned so that the anchor
+  points in each glyph are coincident. Mark to ligature behaves similarly to
+  mark to base except that there may be more that one attachment point on the
+  ligature depending on which component a given mark is connected to. Finally,
+  mark to mark allows you to position two marks with respect to each other
+  (as you might need to do in vietnamese or hebrew where you may get several
+  marks for one glyph).
   <P>
   That is badly said. Consider the following two glyphs and how they are joined
   to make the final result:
@@ -1388,25 +1390,25 @@
   <P>
   That's roughly how anchor points are used. Now the mechanics.
   <P>
-  Each of the different attachment styles mentioned above (cursive, mark to base,
-  mark to ligature and mark to mark) is a different type of GPOS lookup. If
-  you want to do attachment positioning you must first create the appropriate
-  lookup (<A HREF="fontinfo.html#Lookups">Element-&gt;Font Info->Lookups->GPOS</A>,
-  then a lookup subtable, and then an anchor class within the lookup subtable.
-  An anchor class is specified by providing a name for it (in the above example
-  the class was called "Top").
+  Each of the different attachment styles mentioned above (cursive, mark to
+  base, mark to ligature and mark to mark) is a different type of GPOS lookup.
+  If you want to do attachment positioning you must first create the appropriate
+  lookup (<A HREF="fontinfo.html#Lookups">Element-&gt;Font
+  Info-&gt;Lookups-&gt;GPOS</A>, then a lookup subtable, and then an anchor
+  class within the lookup subtable. An anchor class is specified by providing
+  a name for it (in the above example the class was called "Top").
   <P>
   Cursive attachments are a little different from the other attachment types.
   Each glyph has two attachment points, an entry and an exit (instead of just
   the one shown in the mark to base example above). The text layout program
   will attach the exit point of one glyph to the entry point of the next.
   <P>
-  A glyph may contain several Anchor Points, but only one for each mark to base anchor class
-  (ligatures may have more than one for a class, and 'curs' and 'mkmk' classes
-  will usually have two). Inside a glyph may create a point with the
-  <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor command</A>. You
-  must specify an anchor class, and whether this point is in a base glyph or
-  in a mark glyph, and a location. So in the example above the anchor point
+  A glyph may contain several Anchor Points, but only one for each mark to
+  base anchor class (ligatures may have more than one for a class, and 'curs'
+  and 'mkmk' classes will usually have two). Inside a glyph may create a point
+  with the <A HREF="pointmenu.html#AddAnchor">Point-&gt;Add Anchor command</A>.
+  You must specify an anchor class, and whether this point is in a base glyph
+  or in a mark glyph, and a location. So in the example above the anchor point
   in "a" has class "Top" and is a base glyph, while the anchor point in "grave"
   also has class "Top" but is a mark glyph. There may be many base glyphs with
   an anchor point named "Top" and many mark glyphs also with "Top" anchor points.
@@ -1419,10 +1421,10 @@
   of the same class (one above each component for example). When you create
   your anchor point you may say that it is to be in a ligature, in which case
   you will also be asked for a ligature index -- a number running from 0 to
-  the number of components in the ligature -1. This allows you to position several anchor points
-  with the same class. The text layout program will place the first mark over
-  the first anchor point, the second mark over the second and so on (this is
-  a gross simplification).
+  the number of components in the ligature -1. This allows you to position
+  several anchor points with the same class. The text layout program will place
+  the first mark over the first anchor point, the second mark over the second
+  and so on (this is a gross simplification).
   <P>
   Finally you may need to position two marks based on the same anchor point,
   for example the glyph <IMG SRC="a_dieresis_macron.png" WIDTH=9 HEIGHT=14>
