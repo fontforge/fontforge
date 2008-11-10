@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 23-Jul-2008 -->
+  <!-- AP: Last modified: 10-Nov-2008 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -382,6 +382,8 @@
 	  <A HREF="viewmenu.html#CV-HMetrics">Horizontal Metrics</A>
 	<LI>
 	  <A HREF="viewmenu.html#CV-VMetrics">Vertical Metrics</A>
+	<LI>
+	  <A HREF="#SnapOutlines">Snap Outlines to pixel grid</A>
       </UL>
     <LI>
       <A HREF="#Bigger">Bigger Pixel Size</A>
@@ -882,6 +884,14 @@
 	  <A NAME="CV-VMetrics">Vertical Metrics</A>
 	<DD>
 	  Controls whether vertical metrics lines (the vertical advance line) are visible.
+	<DT>
+	  Snap Outlines to Pixel Grid
+	<DD>
+	  Cairo can draw contours with sub-pixel resolution -- which means that if
+	  a spline's end point falls somewhere between two pixels then cairo will draw
+	  a bit of the contour on both pixels this leads to an often undesirable level
+	  of fuzziness. In some sense it provides a more accurate indication of where
+	  the spline goes. This menu item can be used to turn that on and off.
       </DL>
     <DT>
       <A NAME="Bigger">Bigger</A> Pixel Size

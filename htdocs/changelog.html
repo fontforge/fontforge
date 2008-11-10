@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 9-Nov-2008 -->
+  <!-- AP: Last modified: 10-Nov-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -65,10 +65,11 @@
 	  Start up is slower with either Pango or Cairo active because both use fontconfig
 	  to initialize stuff and that can take time.
 	  <P>
-	  Pango and even more cairo can slow down drawing. This depends to some extent
-	  on your video card, driver, X release, etc. If you find them too slow to
-	  be useable you may turn either off in Preferences. (You may also turn them
-	  off at configure time).
+	  Pango and even more cairo can slow down drawing. Especially if you use X
+	  across a wire (on a display not connected to your computer). The slowdown
+	  depends to some extent on your video card, driver, X release, etc. If you
+	  find these libraries too slow to be useable you may turn either off in
+	  Preferences. (You may also turn them off at configure time).
 	<LI>
 	  Updated Polish, Greek and Russian translations.
 	  <P>
