@@ -1439,7 +1439,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[8], boxes[3], *hvarray[7][3], *barray[8];
     GTextInfo label[8], **ti;
     const unichar_t *pt;
     unichar_t *line;
@@ -1471,6 +1471,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     label[0].text = (unichar_t *) _("Sequence Number:");
     label[0].text_is_1byte = true;
@@ -1478,6 +1479,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 6;
     gcd[0].gd.flags = gg_visible | gg_enabled;
     gcd[0].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[0]; hvarray[0][1] = GCD_ColSpan; hvarray[0][2] = NULL;
 
     sprintf(cbuf,"%d",seq);
     label[1].text = (unichar_t *) cbuf;
@@ -1487,6 +1489,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     gcd[1].gd.flags = gg_visible | gg_enabled;
     gcd[1].gd.cid = 1000;
     gcd[1].creator = GTextFieldCreate;
+    hvarray[1][0] = GCD_HPad10; hvarray[1][1] = &gcd[1]; hvarray[1][2] = NULL;
 
     label[2].text = (unichar_t *) _("Lookup:");
     label[2].text_is_1byte = true;
@@ -1495,37 +1498,53 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = gcd[1].gd.pos.y+25;
     gcd[2].gd.flags = gg_visible | gg_enabled;
     gcd[2].creator = GLabelCreate;
+    hvarray[2][0] = &gcd[2]; hvarray[2][1] = GCD_ColSpan; hvarray[2][2] = NULL;
 
     gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+13;
     gcd[3].gd.pos.width = 140;
     gcd[3].gd.flags = gg_visible | gg_enabled;
     gcd[3].creator = GListButtonCreate;
+    hvarray[3][0] = GCD_HPad10; hvarray[3][1] = &gcd[3]; hvarray[3][2] = NULL;
 
-    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 130-35-3;
-    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+    gcd[4].gd.pos.width = 10; gcd[4].gd.pos.height = 10;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[4].text = (unichar_t *) _("_OK");
-    label[4].text_is_1byte = true;
-    label[4].text_in_resource = true;
-    gcd[4].gd.label = &label[4];
-    gcd[4].gd.cid = true;
-    gcd[4].creator = GButtonCreate;
+    gcd[4].creator = GSpacerCreate;
+    hvarray[4][0] = &gcd[4]; hvarray[4][1] = GCD_ColSpan; hvarray[4][2] = NULL;
 
-    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 130-35;
+    gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = 130-35-3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[5].text = (unichar_t *) _("_Cancel");
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[5].text = (unichar_t *) _("_OK");
     label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
+    gcd[5].gd.cid = true;
     gcd[5].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[5]; barray[2] = GCD_Glue;
 
-    gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
-    gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-2;
-    gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[6].creator = GGroupCreate;
+    gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[6].text = (unichar_t *) _("_Cancel");
+    label[6].text_is_1byte = true;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[6]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+
+    hvarray[5][0] = &boxes[2]; hvarray[5][1] = GCD_ColSpan; hvarray[5][2] = NULL;
+    hvarray[6][0] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
     isgpos = ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos );
     GGadgetSetList(gcd[3].ret, ti = SFLookupListFromType(ccd->sf,isgpos?gpos_start:gsub_start),false);
     for ( i=0; ti[i]->text!=NULL; ++i ) {
@@ -1534,6 +1553,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 	if ( ccd->fpst!=NULL && ti[i]->userdata == ccd->fpst->subtable->lookup )
 	    ti[i]->disabled = true;
     }
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
 
   retry:
