@@ -213,7 +213,8 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	{ "Font", rt_string, NULL, font_cvt },
 	{ NULL }
     };
-    int bt, bs, bw, pad, rr, inner, outer, active, depressed, def;
+    intpt bt, bs;
+    int bw, pad, rr, inner, outer, active, depressed, def;
     FontInstance *fi=deffont;
 
     if ( !_ggadget_inited )
