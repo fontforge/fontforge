@@ -1,13 +1,7 @@
 # Makefile for OpenVMS
-# Date : 24 July 2008
+# Date : 11 November 2008
 
-CFLAGS=/nowarn/incl=([],[-.inc])/name=(as_is,short)/define=(\
-	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
-	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1","_NO_XINPUT=1",\
-	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
-	"_NO_PYTHON=1","_NO_LIBSPIRO=1","fork=vfork",\
-        "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""",\
-	"HAVE_PTHREAD_H=1")
+CFLAGS=/nowarn/incl=([],[-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
 
 fontforge_LIBOBJECTS = asmfpst.obj,autohint.obj,autosave.obj,autotrace.obj,autowidth.obj,\
  bezctx_ff.obj,bitmapchar.obj,bitmapcontrol.obj,bvedit.obj,clipnoui.obj,crctab.obj,\
@@ -100,6 +94,15 @@ lff_vms :
 	@ LINK_/NODEB/NOSHARE/NOEXE/MAP=lff.map/FULL lff1.opt/OPT
 	@ WRITE_ SYS$OUTPUT "  analyzing lff.map ..."
 	@ @[-.plugins]ANALYZE_MAP.COM lff.map lff_vms.opt
+
+$(fontforge_LIBOBJECTS) : [-.inc]config.h
+$(fontforge_LIBOBJECTS1) : [-.inc]config.h
+$(fontforge_LIBOBJECTS2) : [-.inc]config.h
+$(fontforge_LIBOBJECTS3) : [-.inc]config.h
+$(fontforge_LIBOBJECTS4) : [-.inc]config.h
+$(fontforge_LIBOBJECTS5) : [-.inc]config.h
+$(fontforge_LIBOBJECTS6) : [-.inc]config.h
+$(fontforge_LIBOBJECTS7) : [-.inc]config.h
 
 alignment.obj : alignment.c
 autohint.obj : autohint.c
