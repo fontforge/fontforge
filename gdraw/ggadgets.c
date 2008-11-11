@@ -211,10 +211,12 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	{ "Box.BorderRight", rt_color, NULL },
 	{ "Box.BorderBottom", rt_color, NULL },
 	{ "Font", rt_string, NULL, font_cvt },
+	{ "Box.GradientBG", rt_bool, NULL },
+	{ "Box.GradientStartCol", rt_color, NULL },
 	{ NULL }
     };
     intpt bt, bs;
-    int bw, pad, rr, inner, outer, active, depressed, def;
+    int bw, pad, rr, inner, outer, active, depressed, def, grad;
     FontInstance *fi=deffont;
 
     if ( !_ggadget_inited )
@@ -231,6 +233,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
     active = box->flags & box_active_border_inner;
     depressed = box->flags & box_do_depressed_background;
     def = box->flags & box_draw_default;
+    grad = box->flags & box_gradient_bg;
 
     bordertype[0].val = &bt;
     boxtypes[0].val = &bt;
@@ -258,6 +261,8 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
     boxtypes[22].val = &box->border_darkest;
     boxtypes[23].val = &box->border_darker;
     boxtypes[24].val = &fi;
+    boxtypes[25].val = &grad;
+    boxtypes[26].val = &box->gradient_bg_end;
 
     GResourceFind( bordertype, class);
     /* for a plain box, default to all borders being the same. they must change*/
@@ -282,6 +287,8 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	box->flags |= box_do_depressed_background;
     if ( def )
 	box->flags |= box_draw_default;
+    if ( grad )
+	box->flags |= box_gradient_bg;
 
     if ( fi==NULL ) {
 	FontRequest rq;

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 10-Nov-2008 -->
+  <!-- AP: Last modified: 11-Nov-2008 -->
   <TITLE>X Resources</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -448,6 +448,11 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
     <DD>
       Sets the font used in the Validate dialog
     <DT>
+      <CODE>fontforge.View.Background</CODE>
+    <DD>
+      Sets the background color for the drawing areas of the fontview, glyph view,
+      bitmap view and metrics view.
+    <DT>
       <CODE>fontforge.Warnings.Font</CODE>
     <DD>
       Sets the font used in the Warnings dialog
@@ -674,6 +679,12 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
 	  A boolean (true, on or 1, false, off or 0)<BR>
 	  Changes the color of the background while a button is depressed.
 	<DT>
+	  <CODE>...Box.GradientBG</CODE>
+	<DD>
+	  A boolean (true, on or 1, false, off or 0)<BR>
+	  Draws a gradient from GradientStartCol (at top and bottom edge) to Background
+	  (in the center).
+	<DT>
 	  <CODE>...Box.BorderBrightest</CODE>
 	<DD>
 	  A <A HREF="#color">color</A><BR>
@@ -724,6 +735,13 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
 	<DD>
 	  A <A HREF="#color">color</A><BR>
 	  The color of a depressed background.
+	<DT>
+	  <CODE>...Box.GradientStartCol</CODE>
+	<DD>
+	  A <A HREF="#color">color</A><BR>
+	  Only meaningful if GradientBG is set. Draws a gradient of colors for the
+	  background with this color as the start point at the top and bottom edges
+	  of the gadget, and Background as the end point in the center of it.
 	<DT>
 	  <CODE>...Font</CODE>
 	<DD>
@@ -896,10 +914,7 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
 	  where aa, rr, gg, bb are hex numbers between 0x00 and 0xff<BR>
 	  (The alpha channel is only supported in cairo windows. If alpha is 0, then
 	  fontforge will treat the color as opaque because drawing a completely transparent
-	  spot color does nothing, fontforge treats alpha of 0 as if it were 0xff.
-	  Another oddity, #ffffffff (fully opaque white) has been used internally in
-	  fontforge for an undefined or unknown color. Don't use it to specify a spot
-	  color or you may see odd results, use #ffffff instead).
+	  spot color does nothing).
 	<LI>
 	  #rrrrggggbbbb<BR>
 	  where rrrr, gggg, bbbb are hex numbers between 0x0000 and 0xffff

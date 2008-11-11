@@ -43,6 +43,7 @@ static Color italicwidthcol = 0x909090;
 static Color selglyphcol = 0x909090;
 static Color kernlinecol = 0x008000;
 static Color rbearinglinecol = 0x000080;
+static Color mvbgcol;
 
 static void MVColInit( void ) {
     GResStruct mvcolors[] = {
@@ -54,6 +55,7 @@ static void MVColInit( void ) {
 	{ NULL }
     };
     GResourceFind( mvcolors, "MetricsView.");
+    mvbgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
 }
 
 static int MVSetVSb(MetricsView *mv);
@@ -4280,9 +4282,10 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->type = mv_type;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon|wam_backcol;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_mypointer;
+    wattrs.background_color = mvbgcol;
     MVWindowTitle(buf,sizeof(buf),mv);
     wattrs.utf8_window_title = buf;
     wattrs.icon = icon;
