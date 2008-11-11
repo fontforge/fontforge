@@ -34,7 +34,9 @@
 static void GListButtonDoPopup(GListButton *);
 
 GBox _GGadget_button_box = { /* Don't initialize here */ 0 };
-static GBox label_box = { /* Don't initialize here */ 0 };	
+static GBox _GGadget_defaultbutton_box = { /* Don't initialize here */ 0 };
+static GBox _GGadget_cancelbutton_box = { /* Don't initialize here */ 0 };
+static GBox label_box = { /* Don't initialize here */ 0 };
 static int shift_on_press = 0;
 static FontInstance *label_font = NULL;
 static int gbutton_inited = false;
@@ -713,6 +715,12 @@ return;
     if ( temp!=NULL )
 	label_font = temp;
     shift_on_press = GResourceFindBool("GButton.ShiftOnPress",false);
+    _GGadget_defaultbutton_box = _GGadget_button_box;
+    _GGadget_cancelbutton_box  = _GGadget_button_box;
+    _GGadget_defaultbutton_box.main_background = 0xe8e8ff;
+    _GGadget_cancelbutton_box .main_background = 0xffe8e8;
+    _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
+    _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);
     gbutton_inited = true;
 }
 
@@ -778,7 +786,10 @@ return( &gl->g );
 }
 
 GGadget *GButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GLabel *gl = _GLabelCreate(gcalloc(1,sizeof(GLabel)),base,gd,data,&_GGadget_button_box);
+    GLabel *gl = _GLabelCreate(gcalloc(1,sizeof(GLabel)),base,gd,data,
+	    gd->flags & gg_but_default ? &_GGadget_defaultbutton_box :
+	    gd->flags & gg_but_cancel ? &_GGadget_cancelbutton_box :
+	    &_GGadget_button_box);
 
     gl->g.takes_input = true; gl->g.takes_keyboard = true; gl->g.focusable = true;
 return( &gl->g );

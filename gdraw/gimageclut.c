@@ -949,20 +949,63 @@ static struct { char *name; long value; } predefn[] = {
 
 Color _GImage_ColourFName(char *name) {
     int i;
-    int r,g,b;
-    double dr,dg,db;
+    int r,g,b,a;
+    double dr,dg,db,da;
+    struct hslrgb hs;
 
     for ( i=0; predefn[i].name!=NULL; ++i )
 	if ( strmatch(name,predefn[i].name)==0 )
 return( predefn[i].value );
 
-    if ( sscanf(name,"rgb(%d,%d,%d)", &r, &g, &b )==3 ||
-	    sscanf(name,"%d %d %d", &r, &g, &b )==3 ||
+    if ( sscanf(name,"%d %d %d", &r, &g, &b )==3 ||
 	    sscanf(name,"%x %x %x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3 ||
 	    (strlen(name)==7 && sscanf(name,"#%2x%2x%2x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3) ) {
 	if ( r>255 ) r=255; else if ( r<0 ) r=0;
 	if ( g>255 ) g=255; else if ( g<0 ) g=0;
 	if ( b>255 ) b=255; else if ( b<0 ) b=0;
+return( ((long) r<<16) | (g<<8) | b );
+    } else if ( (strlen(name)==9 && sscanf(name,"#%2x%2x%2x%2x",
+	    (unsigned *) &a, (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==4) ) {
+	if ( a>255 ) a=255; else if ( a<0 ) a=0;
+	if ( r>255 ) r=255; else if ( r<0 ) r=0;
+	if ( g>255 ) g=255; else if ( g<0 ) g=0;
+	if ( b>255 ) b=255; else if ( b<0 ) b=0;
+return( ((long) a<<24) | ((long) r<<16) | (g<<8) | b );
+    } else if ( sscanf(name,"rgb(%lg,%lg,%lg)", &dr, &dg, &db)==3 ) {
+	if ( dr>1.0 ) dr=1.0; else if ( dr<0 ) dr= 0;
+	if ( dg>1.0 ) dg=1.0; else if ( dg<0 ) dg= 0;
+	if ( db>1.0 ) db=1.0; else if ( db<0 ) db= 0;
+	r = dr*255 +.5;
+	g = dg*255 +.5;
+	b = db*255 +.5;
+return( ((long) r<<16) | (g<<8) | b );
+    } else if ( sscanf(name,"argb(%lg,%lg,%lg,%lg)", &da, &dr, &dg, &db)==4 ) {
+	if ( da>1.0 ) da=1.0; else if ( da<0 ) da= 0;
+	if ( dr>1.0 ) dr=1.0; else if ( dr<0 ) dr= 0;
+	if ( dg>1.0 ) dg=1.0; else if ( dg<0 ) dg= 0;
+	if ( db>1.0 ) db=1.0; else if ( db<0 ) db= 0;
+	a = da*255 +.5;
+	r = dr*255 +.5;
+	g = dg*255 +.5;
+	b = db*255 +.5;
+return( ((long) a<<24) | ((long) r<<16) | (g<<8) | b );
+    } else if ( sscanf(name,"hsv(%lg,%lg,%lg)", &hs.h, &hs.s, &hs.v)==3 ) {
+	/* Hue is an angle in degrees. HS?2RGB does appropriate clipping */
+	if ( hs.s>1.0 ) hs.s=1.0; else if ( hs.s<0 ) hs.s= 0;
+	if ( hs.v>1.0 ) hs.v=1.0; else if ( hs.v<0 ) hs.v= 0;
+	gHSV2RGB(&hs);
+	r = hs.r*255 +.5;
+	g = hs.g*255 +.5;
+	b = hs.b*255 +.5;
+return( ((long) r<<16) | (g<<8) | b );
+    } else if ( sscanf(name,"hsl(%lg,%lg,%lg)", &hs.h, &hs.s, &hs.l)==3 ) {
+	/* Hue is an angle in degrees. HS?2RGB does appropriate clipping */
+	if ( hs.s>1.0 ) hs.s=1.0; else if ( hs.s<0 ) hs.s= 0;
+	if ( hs.l>1.0 ) hs.l=1.0; else if ( hs.l<0 ) hs.l= 0;
+	gHSL2RGB(&hs);
+	r = hs.r*255 +.5;
+	g = hs.g*255 +.5;
+	b = hs.b*255 +.5;
 return( ((long) r<<16) | (g<<8) | b );
     } else if ( (strlen(name)==4 && sscanf(name,"#%1x%1x%1x", (unsigned *) &r, (unsigned *) &g, (unsigned *) &b )==3) ) {
 	if ( r>15 ) r=15; else if ( r<0 ) r=0;
