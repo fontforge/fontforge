@@ -732,12 +732,13 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       </DL>
     <DT>
       <CODE>Gdraw.GButton...<BR>
+      Gdraw.GDefaultButton...<BR>
+      Gdraw.GCancelButton...<BR>
       Gdraw.GLabel...<BR>
       Gdraw.GRadio... -- affects the text of the radio<BR>
       GDraw.GRadioOn... -- affects the shape used (to the left of the text) of
       an on radio button <BR>
-      GDraw.GRadioOff... -- affects the shape used of an off radio button
-      <BR>
+      GDraw.GRadioOff... -- affects the shape used of an off radio button <BR>
       Gdraw.GCheckBox...<BR>
       GDraw.GCheckBoxOn...<BR>
       GDraw.GCheckBoxOff...<BR>
@@ -861,17 +862,44 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       Colors may be specified as:
       <UL>
 	<LI>
+	  rgb(r,g,b)<BR>
+	  where r,g and b are doubles between 0 and 1.0
+	<LI>
+	  argb(a,r,g,b)<BR>
+	  where a,r,g, and b are doubles between 0 and 1.0<BR>
+	  (The alpha channel is only supported in windows with cairo -- that is the
+	  glyph view. Alpha 1.0 is fully opaque, alpha 0.0 should be fully transparent,
+	  values in between are translucent. Since drawing something fully transparent
+	  has no effect, FontForge treats transparent spot colors as fully opaque).
+	<LI>
 	  rgb(r%,g%,b%)<BR>
 	  where r, g, and b are doubles between 0% and 100%
 	<LI>
+	  hsv(h,s,v)<BR>
+	  A color expressed as hue (between 0 and 360), saturation (0.0 and 1.0) and
+	  value (0.0 and 1.0)
+	<LI>
+	  hsl(h,s,l)<BR>
+	  A color expressed as hue (between 0 and 360), saturation (0.0 and 1.0) and
+	  luminosity (0.0 and 1.0)
+	<LI>
 	  r g b<BR>
-	  where r, g, and b are integers between 0 and 255
+	  where r, g, and b are decimal integers between 0 and 255
 	<LI>
 	  #rgb<BR>
 	  where r, g, and b are hex digits between 0 and 15 (0xf)
 	<LI>
 	  #rrggbb<BR>
 	  where rr, gg, bb are hex numbers between 0x00 and 0xff
+	<LI>
+	  #aarrggbb<BR>
+	  where aa, rr, gg, bb are hex numbers between 0x00 and 0xff<BR>
+	  (The alpha channel is only supported in cairo windows. If alpha is 0, then
+	  fontforge will treat the color as opaque because drawing a completely transparent
+	  spot color does nothing, fontforge treats alpha of 0 as if it were 0xff.
+	  Another oddity, #ffffffff (fully opaque white) has been used internally in
+	  fontforge for an undefined or unknown color. Don't use it to specify a spot
+	  color or you may see odd results, use #ffffff instead).
 	<LI>
 	  #rrrrggggbbbb<BR>
 	  where rrrr, gggg, bbbb are hex numbers between 0x0000 and 0xffff
