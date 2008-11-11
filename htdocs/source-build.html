@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 20-Jul-2008 -->
+  <!-- AP: Last modified: 10-Nov-2008 -->
   <TITLE>Building FontForge from source</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -289,8 +289,6 @@ CVS password:
   If you do want to edit PostScript type3 fonts, you can configure fontforge
   to give you access to more drawing modes than are generally available in
   fonts.
-  <P>
-  (This also lets you create more complex SVG fonts).
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-type3
 </PRE>
@@ -322,8 +320,6 @@ CVS password:
   FontForge has a command which lets you tile a pattern along a path. Generally
   this is disabled as it isn't what most fonts will use, but for some decorative
   fonts it can be useful.
-  <P>
-  This also enables a command to fill a region with a tile.
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-tilepath
 </PRE>
@@ -484,16 +480,24 @@ CVS password:
       Is standard on most unixes. It is part of the fink package on the mac. Handles
       UI localization.
     <LI>
-      libpython<BR>
+      <A HREF="http://www.python.org/">libpython</A><BR>
       If present when FontForge is compiled, allows the user to execute python
       scripts within fontforge (and you can configure fontforge so that fontforge's
       functionality can be imported into python -- that is fontforge both
       <I>extends</I> and <I>embeds</I> python)
     <LI>
-      libX<BR>
+      <A HREF="http://x.org/">libX</A><BR>
       Normally FontForge depends on the X11 windowing system, but if you are just
       interested in the scripting engines (with no user interface), it may be built
       on systems without X (the configure script should figure this out).
+    <LI>
+      <A HREF="http://www.cairographics.org/">libcairo</A><BR>
+      Cairo handles drawing anti-aliased splines in the outline glyph view. It
+      is dependent on libfontconfig, libXft and perhaps other libraries.
+    <LI>
+      <A HREF="http://www.pango.org/">libpango</A><BR>
+      Pango draws text for complex scripts. It depends on glib-2.0, libfontconfig,
+      libfreetype, libXft, and perhaps other libraries.
   </UL>
   <H3>
     Extra Files
