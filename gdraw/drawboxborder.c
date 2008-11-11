@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <math.h>
 #include <gdraw.h>
 #include <ggadget.h>
 #include "ggadgetP.h"
@@ -940,6 +941,56 @@ int GBoxDrawBorder(GWindow gw,GRect *pos,GBox *design,enum gadget_state state,
 return( ret );
 }
 
+static void BoxGradientRect(GWindow gw,GRect *r,Color middle,Color ends) {
+    int y,i;
+    int x = r->x, xend=r->x+r->width;
+    int half = (r->height+1)/2;
+    int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
+    int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
+    Color col;
+
+    if ( r->height==0 )
+return;
+    for ( i=0; i<=half; ++i ) {
+	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
+				(i*eg + (half-i)*mg)/half,
+			        (i*eb + (half-i)*mb)/half );
+	y = r->y + half-i;
+	GDrawDrawLine(gw,x,y,xend,y,col);
+	y = r->y + (r->height&1 ? half+i : half+i+1);
+	GDrawDrawLine(gw,x,y,xend,y,col);
+    }
+}
+
+static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color ends) {
+    int y,i;
+    int x = r->x, xend=r->x+r->width;
+    int half = (r->height+1)/2;
+    int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
+    int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
+    Color col;
+
+    if ( r->height==0 )
+return;
+    for ( i=0; i<=half; ++i ) {
+	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
+				(i*eg + (half-i)*mg)/half,
+			        (i*eb + (half-i)*mb)/half );
+	if ( half-i>=rr ) {
+	    x = r->x;
+	    xend = r->x+r->width;
+	} else {
+	    int yoff = rr-(half-i), xoff = rr-rint(sqrt((double) (rr*rr - yoff*yoff)));
+	    x = r->x + xoff;
+	    xend = r->x + r->width - 2*xoff;
+	}
+	y = r->y + half-i;
+	GDrawDrawLine(gw,x,y,xend,y,col);
+	y = r->y + (r->height&1 ? half+i : half+i+1);
+	GDrawDrawLine(gw,x,y,xend,y,col);
+    }
+}
+
 void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	enum gadget_state state, int is_default) {
     Color gbg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gw));
@@ -958,15 +1009,18 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
     else
 	ibg=mbg;
 
-    if ( (design->border_shape==bs_rect && def_off==0) || mbg==ibg ) {
+    if ( design->border_shape==bs_rect && (def_off==0 || mbg==ibg) && !(design->flags & box_gradient_bg)) {
 	GDrawFillRect(gw,pos,ibg);
     } else {
-	GDrawFillRect(gw,pos,mbg);
+	/* GDrawFillRect(gw,pos,mbg); */
 	if ( design->border_shape==bs_rect ) {
 	    GRect cur;
 	    cur = *pos;
 	    cur.x += def_off; cur.y += def_off; cur.width -= 2*def_off; cur.height -= 2*def_off;
-	    GDrawFillRect(gw,&cur,ibg);
+	    if ( design->flags & box_gradient_bg )
+		BoxGradientRect(gw,&cur,ibg,design->gradient_bg_end);
+	    else
+		GDrawFillRect(gw,&cur,ibg);
 	} else if ( design->border_shape==bs_elipse ) {
 	    GRect cur;
 	    cur = *pos; --cur.width; --cur.height;
@@ -983,8 +1037,7 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	    pts[4] = pts[0];
 	    GDrawFillPoly(gw,pts,5,ibg);
 	} else {
-	    GPoint pts[17];
-	    int rr = design->rr_radius, sine;
+	    int rr = design->rr_radius;
 
 	    if ( rr==0 )
 		rr = pos->width/2-def_off;
@@ -992,30 +1045,36 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 		rr = pos->width/2-def_off;
 	    if ( rr>pos->height/2-def_off )
 		rr = pos->height/2-def_off;
-	    sine = (int) (rr*.1339746+.5);	/* 1-sqrt(3)/2 */
 
-	    pts[0].x = pos->x+def_off;		pts[0].y = pos->y+rr+def_off;
-	    pts[1].x = pos->x+sine+def_off;	pts[1].y = pos->y+rr/2+def_off;
-	    pts[2].x = pos->x+rr/2+def_off;	pts[2].y = pos->y+sine+def_off;
-	    pts[3].x = pos->x+rr+def_off;	pts[3].y = pos->y+def_off;
+	    if ( design->flags & box_gradient_bg )
+		BoxGradientRoundRect(gw,pos,rr,ibg,design->gradient_bg_end);
+	    else {
+		GPoint pts[17];
+		int sine = (int) (rr*.1339746+.5);	/* 1-sqrt(3)/2 */
 
-	    pts[4].x = pos->x+pos->width-1-rr-def_off;		pts[4].y = pos->y+def_off;
-	    pts[5].x = pos->x+pos->width-1-rr/2-def_off;	pts[5].y = pos->y+sine+def_off;
-	    pts[6].x = pos->x+pos->width-1-sine-def_off;	pts[6].y = pos->y+rr/2+def_off;
-	    pts[7].x = pos->x+pos->width-1-def_off;		pts[7].y = pos->y+rr+def_off;
+		pts[0].x = pos->x+def_off;		pts[0].y = pos->y+rr+def_off;
+		pts[1].x = pos->x+sine+def_off;	pts[1].y = pos->y+rr/2+def_off;
+		pts[2].x = pos->x+rr/2+def_off;	pts[2].y = pos->y+sine+def_off;
+		pts[3].x = pos->x+rr+def_off;	pts[3].y = pos->y+def_off;
 
-	    pts[8].x = pos->x+pos->width-1-def_off;		pts[8].y = pos->y+pos->height-1-rr-def_off;
-	    pts[9].x = pos->x+pos->width-1-sine-def_off;	pts[9].y = pos->y+pos->height-1-rr/2-def_off;
-	    pts[10].x = pos->x+pos->width-1-rr/2-def_off;	pts[10].y = pos->y+pos->height-1-sine-def_off;
-	    pts[11].x = pos->x+pos->width-1-rr-def_off;		pts[11].y = pos->y+pos->height-1-def_off;
+		pts[4].x = pos->x+pos->width-1-rr-def_off;		pts[4].y = pos->y+def_off;
+		pts[5].x = pos->x+pos->width-1-rr/2-def_off;	pts[5].y = pos->y+sine+def_off;
+		pts[6].x = pos->x+pos->width-1-sine-def_off;	pts[6].y = pos->y+rr/2+def_off;
+		pts[7].x = pos->x+pos->width-1-def_off;		pts[7].y = pos->y+rr+def_off;
 
-	    pts[12].x = pos->x+rr+def_off;	pts[12].y = pos->y+pos->height-1-def_off;
-	    pts[13].x = pos->x+rr/2+def_off;	pts[13].y = pos->y+pos->height-1-sine-def_off;
-	    pts[14].x = pos->x+sine+def_off;	pts[14].y = pos->y+pos->height-1-rr/2-def_off;
-	    pts[15].x = pos->x+def_off;		pts[15].y = pos->y+pos->height-1-rr-def_off;
+		pts[8].x = pos->x+pos->width-1-def_off;		pts[8].y = pos->y+pos->height-1-rr-def_off;
+		pts[9].x = pos->x+pos->width-1-sine-def_off;	pts[9].y = pos->y+pos->height-1-rr/2-def_off;
+		pts[10].x = pos->x+pos->width-1-rr/2-def_off;	pts[10].y = pos->y+pos->height-1-sine-def_off;
+		pts[11].x = pos->x+pos->width-1-rr-def_off;		pts[11].y = pos->y+pos->height-1-def_off;
 
-	    pts[16] = pts[0];
-	    GDrawFillPoly(gw,pts,16,ibg);
+		pts[12].x = pos->x+rr+def_off;	pts[12].y = pos->y+pos->height-1-def_off;
+		pts[13].x = pos->x+rr/2+def_off;	pts[13].y = pos->y+pos->height-1-sine-def_off;
+		pts[14].x = pos->x+sine+def_off;	pts[14].y = pos->y+pos->height-1-rr/2-def_off;
+		pts[15].x = pos->x+def_off;		pts[15].y = pos->y+pos->height-1-rr-def_off;
+
+		pts[16] = pts[0];
+		GDrawFillPoly(gw,pts,16,ibg);
+	    }
 	}
     }
     if ( state == gs_disabled )

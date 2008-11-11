@@ -76,7 +76,7 @@ static unsigned char fontview2_bits[] = {
 extern int _GScrollBar_Width;
 
 static int fv_fontsize = 13, fv_fs_init=0;
-static Color fvselcol = 0xffff00, fvselfgcol=0x000000;
+static Color fvselcol = 0xffff00, fvselfgcol=0x000000, fvbgcol;
 static Color fvchangedcol = 0x000060;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
@@ -107,15 +107,6 @@ static void FV_ToggleCharChanged(SplineChar *sc) {
  /*  lines */
 	    if ( i>=0 && i<=fv->rowcnt ) {
 		GRect r;
-#if 0
-		Color bg;
-		if ( sc->color!=COLOR_DEFAULT )
-		    bg = sc->color;
-		else if ( sc->layers[ly_back].splines!=NULL || sc->layers[ly_back].images!=NULL )
-		    bg = 0x808080;
-		else
-		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
-#endif
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		GDrawRequestExpose(fv->v,&r,false);
@@ -208,7 +199,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
     if ( index<fv->b.map->enccount && (fv->b.selected[index] || forcebg)) {
 	box.x = j*fv->cbw+1; box.width = fv->cbw-1;
 	box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
-	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : GDrawGetDefaultBackground(NULL));
+	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : fvbgcol );
     }
     feat_gid = FeatureTrans(fv,index);
     sc = feat_gid!=-1 ? fv->b.sf->glyphs[feat_gid]: NULL;
@@ -270,7 +261,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		base.image_type = it_mono;
 		base.clut = &clut;
 		clut.clut_len = 2;
-		clut.clut[0] = fv->b.selected[index] ? fvselcol : GDrawGetDefaultBackground(NULL);
+		clut.clut[0] = fv->b.selected[index] ? fvselcol : fvbgcol ;
 	    }
 	    base.trans = 0;
 	    base.clut->trans_index = 0;
@@ -5811,13 +5802,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	base.image_type = it_mono;
 	base.clut = &clut;
 	clut.clut_len = 2;
-	clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	clut.clut[0] = fvbgcol;
     }
 
     GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawSetLineWidth(pixmap,0);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
-    GDrawFillRect(pixmap,NULL,GDrawGetDefaultBackground(NULL));
+    GDrawFillRect(pixmap,NULL,fvbgcol);
     for ( i=0; i<=fv->rowcnt; ++i ) {
 	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,def_fg);
 	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,0x808080);
@@ -5963,7 +5954,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 	    r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
-	    bg = GDrawGetDefaultBackground(NULL);
+	    bg = fvbgcol;
 	    fgxor = 0x000000;
 	    changed = sc->changed;
 	    if ( fv->b.sf->onlybitmaps && gid<fv->show->glyphcnt )
@@ -7082,15 +7073,16 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     FontViewSetTitle(fv);
 
     if ( !fv_fs_init ) {
-	static GResStruct cvcolors[] = {
+	static GResStruct fvcolors[] = {
 	    { "FontSize", rt_int, &fv_fontsize },
 	    { "SelectedColor", rt_color, &fvselcol },
 	    { "SelectedFgColor", rt_color, &fvselfgcol },
 	    { "ChangedColor", rt_color, &fvchangedcol },
 	    { NULL }
 	};
-	GResourceFind( cvcolors, "FontView.");
+	GResourceFind( fvcolors, "FontView.");
 	fv_fontsize = -fv_fontsize;
+	fvbgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
 	fv_fs_init = true;
     }
 
@@ -7115,7 +7107,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     fv->vsb = GScrollBarCreate(gw,&gd,fv);
 
-    wattrs.mask = wam_events|wam_cursor;
+    wattrs.mask = wam_events|wam_cursor|wam_backcol;
+    wattrs.background_color = fvbgcol;
     pos.x = 0; pos.y = fv->mbh+fv->infoh;
     fv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);

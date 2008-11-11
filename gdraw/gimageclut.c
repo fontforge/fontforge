@@ -952,6 +952,7 @@ Color _GImage_ColourFName(char *name) {
     int r,g,b,a;
     double dr,dg,db,da;
     struct hslrgb hs;
+    Color col;
 
     for ( i=0; predefn[i].name!=NULL; ++i )
 	if ( strmatch(name,predefn[i].name)==0 )
@@ -970,7 +971,12 @@ return( ((long) r<<16) | (g<<8) | b );
 	if ( r>255 ) r=255; else if ( r<0 ) r=0;
 	if ( g>255 ) g=255; else if ( g<0 ) g=0;
 	if ( b>255 ) b=255; else if ( b<0 ) b=0;
-return( ((long) a<<24) | ((long) r<<16) | (g<<8) | b );
+	col = ((long) a<<24) | ((long) r<<16) | (g<<8) | b;
+	if ( (col&0xfffffff0)==0xfffffff0 )
+	    col &= 0xffffff;	/* I use these colors internally for things like "Undefined" */
+			    /* but since I also treat colors with 0 alpha channel as fully */
+			    /* opaque, I can just represent this that way */
+return( col );
     } else if ( sscanf(name,"rgb(%lg,%lg,%lg)", &dr, &dg, &db)==3 ) {
 	if ( dr>1.0 ) dr=1.0; else if ( dr<0 ) dr= 0;
 	if ( dg>1.0 ) dg=1.0; else if ( dg<0 ) dg= 0;
@@ -988,7 +994,12 @@ return( ((long) r<<16) | (g<<8) | b );
 	r = dr*255 +.5;
 	g = dg*255 +.5;
 	b = db*255 +.5;
-return( ((long) a<<24) | ((long) r<<16) | (g<<8) | b );
+	col = ((long) a<<24) | ((long) r<<16) | (g<<8) | b;
+	if ( (col&0xfffffff0)==0xfffffff0 )
+	    col &= 0xffffff;	/* I use these colors internally for things like "Undefined" */
+			    /* but since I also treat colors with 0 alpha channel as fully */
+			    /* opaque, I can just represent this that way */
+return( col );
     } else if ( sscanf(name,"hsv(%lg,%lg,%lg)", &hs.h, &hs.s, &hs.v)==3 ) {
 	/* Hue is an angle in degrees. HS?2RGB does appropriate clipping */
 	if ( hs.s>1.0 ) hs.s=1.0; else if ( hs.s<0 ) hs.s= 0;

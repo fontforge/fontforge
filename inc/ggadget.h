@@ -111,7 +111,8 @@ enum box_flags {
     box_foreground_shadow_outer = 8,	/* 1 point line, bottom&right */
     box_do_depressed_background = 0x10,
     box_draw_default = 0x20,	/* if a default button draw a depressed rect around button */
-    box_generate_colors = 0x40	/* use border_brightest to compute other border cols */
+    box_generate_colors = 0x40,	/* use border_brightest to compute other border cols */
+    box_gradient_bg = 0x80
     };
 typedef struct gbox {
     unsigned char border_type;	
@@ -130,6 +131,7 @@ typedef struct gbox {
     Color disabled_foreground;
     Color active_border;
     Color depressed_background;
+    Color gradient_bg_end;
 } GBox;
 
 typedef struct ggadget GGadget;
