@@ -1,8 +1,10 @@
 # Makefile for OpenVMS
-# Date : 4 January 2008
+# Date : 11 November 2008
 
 all :
-	set def [.unicode]
+	set def [.inc]
+	mms
+	set def [-.unicode]
 	mms
 	set def [-.gdraw]
 	mms
