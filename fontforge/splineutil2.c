@@ -3961,6 +3961,12 @@ return;
 
     if ( sp->pointtype==pt_hvcurve &&
 	    !sp->nonextcp && !sp->noprevcp ) {
+	if ( sp->prev!=NULL && sp->prev->order2 ) {
+	    SplineRefigureFixup(sp->prev);
+	    SplineRefigureFixup(sp->next);
+return;
+	}
+
 	unit.x = sp->nextcp.x-sp->prevcp.x;
 	unit.y = sp->nextcp.y-sp->prevcp.y;
 	len = sqrt(unit.x*unit.x + unit.y*unit.y);

@@ -1298,18 +1298,97 @@ return;
 	SplineRefigure3(spline);
 }
 
+static int IsHV(Spline *spline, int isfrom) {
+    SplinePoint *sp;
+
+    if ( spline==NULL )
+return( false );
+
+    if ( !isfrom ) {
+	sp = spline->to;
+	if ( sp->noprevcp )
+return( false );
+	if ( sp->me.x == sp->prevcp.x )
+return( 2 );	/* Vertical */
+	else if ( sp->me.y == sp->prevcp.y )
+return( 1 );	/* Horizontal */
+	else
+return( 0 );	/* Neither */
+    } else {
+	sp = spline->from;
+	if ( sp->nonextcp )
+return( false );
+	if ( sp->me.x == sp->nextcp.x )
+return( 2 );	/* Vertical */
+	else if ( sp->me.y == sp->nextcp.y )
+return( 1 );	/* Horizontal */
+	else
+return( 0 );	/* Neither */
+    }
+}
+
 void SplineRefigureFixup(Spline *spline) {
     SplinePoint *from, *to, *prev, *next;
     BasePoint foff, toff, unit, new;
     double len;
     enum pointtype fpt, tpt;
+    int done = false;
+    extern int snaptoint;
 
     if ( !spline->order2 ) {
 	SplineRefigure3(spline);
 return;
     }
     from = spline->from; to = spline->to;
+    if ( from->pointtype==pt_hvcurve && to->pointtype==pt_hvcurve ) {
+	done = true;
+	if ( !IsHV(from->prev,0) && !IsHV(to->next,1) ) {
+	    if ( to->me.x == from->me.x ) {
+		from->nextcp.x = to->prevcp.x = to->me.x;
+		from->nextcp.y = to->prevcp.y = (from->me.y+from->me.y)/2;
+	    } else if ( to->me.y==from->me.y ) {
+		from->nextcp.y = to->prevcp.y = to->me.y;
+		from->nextcp.x = to->prevcp.x = (from->me.x+from->me.x)/2;
+	    /* Assume they are drawing clockwise */
+	    } else if (( to->me.x>from->me.x && to->me.y>=from->me.y ) ||
+			(to->me.x<from->me.x && to->me.y<=from->me.y )) {
+		from->nextcp.x = to->prevcp.x = from->me.x;
+		from->nextcp.y = to->prevcp.y = to->me.y;
+	    } else {
+		from->nextcp.x = to->prevcp.x = to->me.x;
+		from->nextcp.y = to->prevcp.y = from->me.y;
+	    }
+	} else if ( !IsHV(to->next,1)) {
+	    if ( IsHV(from->prev,0)==1 ) {
+		from->nextcp.x = to->prevcp.x = to->me.x;
+		from->nextcp.y = to->prevcp.y = from->me.y;
+	    } else {
+		from->nextcp.x = to->prevcp.x = from->me.x;
+		from->nextcp.y = to->prevcp.y = to->me.y;
+	    }
+	} else if ( !IsHV(from->prev,0)) {
+	    if ( IsHV(to->next,1)==1 ) {
+		from->nextcp.x = to->prevcp.x = from->me.x;
+		from->nextcp.y = to->prevcp.y = to->me.y;
+	    } else {
+		from->nextcp.x = to->prevcp.x = to->me.x;
+		from->nextcp.y = to->prevcp.y = from->me.y;
+	    }
+	} else {
+	    if ( IsHV(from->prev,0)==1 && IsHV(to->next,1)==2 ) {
+		from->nextcp.x = to->prevcp.x = to->me.x;
+		from->nextcp.y = to->prevcp.y = from->me.y;
+	    } else if ( IsHV(from->prev,0)==2 && IsHV(to->next,1)==1 ) {
+		from->nextcp.x = to->prevcp.x = from->me.x;
+		from->nextcp.y = to->prevcp.y = to->me.y;
+	    } else
+		done = false;
+	}
+	if ( done )
+	    to->noprevcp = from->nonextcp = false;
+    }
 
+  if ( !done ) {
     unit.x = from->nextcp.x-from->me.x;
     unit.y = from->nextcp.y-from->me.y;
     len = sqrt(unit.x*unit.x + unit.y*unit.y);
@@ -1332,7 +1411,7 @@ return;
       case pt_corner*3+pt_curve:
       case pt_tangent*3+pt_curve:
       case pt_curve*3+pt_tangent:
-	if ( from->prev!=NULL && from->pointtype==pt_tangent ) {
+	if ( from->prev!=NULL && (from->pointtype==pt_tangent || from->pointtype==pt_hvcurve)) {
 	    prev = from->prev->from;
 	    foff.x = prev->me.x;
 	    foff.y = prev->me.y;
@@ -1345,7 +1424,7 @@ return;
 	    foff.y = from->me.y + (to->me.x-from->me.x)+(to->me.y-from->me.y);
 	    prev = NULL;
 	}
-	if ( to->next!=NULL && to->pointtype==pt_tangent ) {
+	if ( to->next!=NULL && (to->pointtype==pt_tangent || to->pointtype==pt_hvcurve)) {
 	    next = to->next->to;
 	    toff.x = next->me.x;
 	    toff.y = next->me.y;
@@ -1510,13 +1589,18 @@ return;
 	    to->prevcp = to->me;
 	}
     }
+  }
+    if ( snaptoint && !from->nonextcp ) {
+	from->nextcp.x = to->prevcp.x = rint(from->nextcp.x);
+	from->nextcp.y = to->prevcp.y = rint(from->nextcp.y);
+    }
     SplineRefigure2(spline);
 
     /* Now in order2 splines it is possible to request combinations that are */
     /*  mathematically impossible -- two adjacent hv points often don't work */
     if ( to->pointtype==pt_hvcurve &&
-		!(to->nextcp.x == to->me.x && to->nextcp.y != to->me.y ) &&
-		!(to->nextcp.y == to->me.y && to->nextcp.x != to->me.x ) )
+		!(to->prevcp.x == to->me.x && to->prevcp.y != to->me.y ) &&
+		!(to->prevcp.y == to->me.y && to->prevcp.x != to->me.x ) )
 	to->pointtype = pt_curve;
     if ( from->pointtype==pt_hvcurve &&
 		!(from->nextcp.x == from->me.x && from->nextcp.y != from->me.y ) &&

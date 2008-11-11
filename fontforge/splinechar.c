@@ -608,7 +608,7 @@ return;
     } else {
 	unitnext.x = sp->nextcp.x-sp->me.x; unitnext.y = sp->nextcp.y-sp->me.y;
 	nextlen = sqrt(unitnext.x*unitnext.x + unitnext.y*unitnext.y);
-	unitprev.x = sp->me.x-sp->prevcp.x; unitprev.y = sp->me.y-sp->prevcp.y;
+	unitprev.x = sp->prevcp.x-sp->me.x; unitprev.y = sp->prevcp.y-sp->me.y;
 	prevlen = sqrt(unitprev.x*unitprev.x + unitprev.y*unitprev.y);
 	makedflt=true;
 	if ( nextlen!=0 && prevlen!=0 ) {
@@ -635,24 +635,14 @@ return;
 	    }
 	    ncp.x = sp->me.x + unitnext.x*nextlen;
 	    ncp.y = sp->me.y + unitnext.y*nextlen;
-	    if ( sp->next!=NULL && sp->next->order2 ) {
-		if ( IntersectLinesClip(&new,&ncp,&sp->me,&sp->next->to->prevcp,&sp->next->to->me)) {
-		    sp->nextcp = new;
-		    sp->next->to->prevcp = new;
-		} else
-		    sp->pointtype = pt_curve;
-	    } else
-		sp->nextcp = ncp;
+	    sp->nextcp = ncp;
+	    if ( sp->next!=NULL && sp->next->order2 )
+		sp->next->to->prevcp = ncp;
 	    pcp.x = sp->me.x + unitprev.x*prevlen;
 	    pcp.y = sp->me.y + unitprev.y*prevlen;
-	    if ( sp->prev!=NULL && sp->prev->order2 ) {
-		if ( IntersectLinesClip(&new,&pcp,&sp->me,&sp->prev->from->nextcp,&sp->prev->from->me)) {
-		    sp->prevcp = new;
-		    sp->prev->from->nextcp = new;
-		} else
-		    sp->pointtype = pt_curve;
-	    } else
-		sp->prevcp = pcp;
+	    sp->prevcp = pcp;
+	    if ( sp->prev!=NULL && sp->prev->order2 )
+		sp->prev->from->nextcp = pcp;
 	    makedflt = true;
 	}
 	if ( makedflt ) {
