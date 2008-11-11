@@ -1150,10 +1150,9 @@ void SplinePointCatagorize(SplinePoint *sp) {
     } else if ( sp->nonextcp && sp->noprevcp ) {
 	;
     } else {
-	BasePoint ndir, ncdir, pdir, pcdir;
+	BasePoint ndir, ncdir, ncunit, pdir, pcdir, pcunit;
 	double nlen, nclen, plen, pclen;
-	double slop;
-	double minlen;
+	double dot;
 
 	ncdir.x = sp->nextcp.x - sp->me.x; ncdir.y = sp->nextcp.y - sp->me.y;
 	pcdir.x = sp->prevcp.x - sp->me.x; pcdir.y = sp->prevcp.y - sp->me.y;
@@ -1168,34 +1167,24 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	pclen = sqrt(pcdir.x*pcdir.x + pcdir.y*pcdir.y);
 	nlen = sqrt(ndir.x*ndir.x + ndir.y*ndir.y);
 	plen = sqrt(pdir.x*pdir.x + pdir.y*pdir.y);
-	if ( nclen!=0 ) { ncdir.x /= nclen; ncdir.y /= nclen; }
-	if ( pclen!=0 ) { pcdir.x /= pclen; pcdir.y /= pclen; }
+	ncunit = ncdir; pcunit = pcdir;
+	if ( nclen!=0 ) { ncunit.x /= nclen; ncunit.y /= nclen; }
+	if ( pclen!=0 ) { pcunit.x /= pclen; pcunit.y /= pclen; }
 	if ( nlen!=0 ) { ndir.x /= nlen; ndir.y /= nlen; }
 	if ( plen!=0 ) { pdir.x /= plen; pdir.y /= plen; }
-	/* as the cp gets closer to the base point (being bound to integer */
-	/* coordinates in many cases) we need to be less precise in our defn */
-	/* of colinear. */
-	if ( pclen>=1 && nclen>=1 )
-	    minlen = pclen<nclen ? pclen : nclen;
-	else if ( pclen>=1 )
-	    minlen = pclen;
-	else
-	    minlen = nclen;
-	if ( minlen<2 )
-	    slop = -.95;
-	else if ( minlen<5 )
-	    slop = -.98;
-	else if ( minlen<10 )
-	    slop = -.99;
-	else if ( minlen<20 )
-	    slop = -.995;
-	else
-	    slop = -.999;
-	if ( nclen!=0 && pclen!=0 && ncdir.x*pcdir.x+ncdir.y*pcdir.y<slop )
+
+	/* find out which side has the shorter control vector. Dot that vector */
+	/*  with the normal of the unit vector on the other side. If the */
+	/*  result is less than 1 em-unit then we've got colinear control points */
+	/*  (within the resolution of the integer grid) */
+	if ( nclen!=0 && pclen!=0 &&
+		((nclen>pclen && (dot = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<1.0 && dot>-1.0 ) ||
+		 (pclen>nclen && (dot = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<1.0 && dot>-1.0 )))
 	    sp->pointtype = pt_curve;
-	else if (( nclen!=0 || plen!=0 ) &&
-		(nclen==0 || ncdir.x*pdir.x+ncdir.y*pdir.y<slop ) &&
-		(pclen==0 || ndir.x*pcdir.x+ndir.y*pcdir.y<slop ))
+	/* Dot product of control point with unit vector normal to line in */
+	/*  opposite direction should be less than an em-unit for a tangent */
+	else if (( nclen==0 && pclen!=0 && (dot = pcdir.x*ndir.y-pcdir.y*ndir.x)<1.0 && dot>-1.0 ) ||
+		( pclen==0 && nclen!=0 && (dot = ncdir.x*pdir.y-ncdir.y*pdir.x)<1.0 && dot>-1.0 ))
 	    sp->pointtype = pt_tangent;
 
 	/* If a point started out hv, and could still be hv, them make it so */
