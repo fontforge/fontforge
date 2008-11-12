@@ -78,6 +78,7 @@ struct problems {
     unsigned int toomanyhints: 1;
     unsigned int toodeeprefs: 1;
     unsigned int ptmatchrefsoutofdate: 1;
+    unsigned int multusemymetrics: 1;
     unsigned int refsbadtransformttf: 1;
     unsigned int refsbadtransformps: 1;
     unsigned int mixedcontoursrefs: 1;
@@ -131,7 +132,7 @@ static int badsubs=0, missinganchor=0, toomanypoints=0, pointsmax = 1500;
 static int multuni=0, multname=0, uninamemismatch=0;
 static int toomanyhints=0, hintsmax=96, toodeeprefs=0, refdepthmax=9;
 static int ptmatchrefsoutofdate=0, refsbadtransformttf=0, refsbadtransformps=0;
-static int mixedcontoursrefs=0;
+static int mixedcontoursrefs=0, multusemymetrics=0;
 static int stem3=0, showexactstem3=0;
 static double near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
 static double bbymax_val=0, bbymin_val=0, bbxmax_val=0, bbxmin_val=0;
@@ -202,6 +203,7 @@ static SplineFont *lastsf=NULL;
 #define CID_PointsTooFar	1057
 #define CID_BitmapWidths	1058
 #define CID_MissingAnchor	1059
+#define CID_MultUseMyMetrics	1060
 
 
 static void FixIt(struct problems *p) {
@@ -1750,6 +1752,31 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->multusemymetrics && !p->finish ) {
+	RefChar *ref, *found;
+	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
+	    ref->selected = false;
+	found = NULL;
+	for ( ref = sc->layers[p->layer].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	    if ( ref->use_my_metrics ) {
+		if ( found==NULL )
+		    found = ref;
+		else {
+		    changed = true;
+		    ref->selected = true;
+		    found->selected = true;
+		    ExplainIt(p,sc,_("Both selected references have use-my-metrics set"),0,0);
+		    ref->selected = false;
+		    found->selected = false;
+		    if ( p->ignorethis ) {
+			p->multusemymetrics = false;
+	break;
+		    }
+		}
+	    }
+	}
+    }
+
     if ( p->ptmatchrefsoutofdate && !p->finish ) {
 	RefChar *ref;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
@@ -2758,6 +2785,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
 	    CID_RefBadTransformTTF, CID_RefBadTransformPS, CID_MixedContoursRefs,
 	    CID_UniNameMisMatch, CID_BBYMax, CID_BBYMin, CID_BBXMax, CID_BBXMin,
+	    CID_MultUseMyMetrics,
 	    0 };
 	int i;
 	if ( p->fv->b.cidmaster!=NULL ) {
@@ -2814,6 +2842,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
+	multusemymetrics = p->multusemymetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUseMyMetrics));
 	refsbadtransformttf = p->refsbadtransformttf = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformTTF));
 	refsbadtransformps = p->refsbadtransformps = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformPS));
 	mixedcontoursrefs = p->mixedcontoursrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_MixedContoursRefs));
@@ -2874,6 +2903,7 @@ return( true );
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
 		p->toodeeprefs || multuni || multname || uninamemismatch ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
+		p->multusemymetrics ||
 		p->mixedcontoursrefs || p->refsbadtransformps ||
 		p->bbymax || p->bbxmax || p->bbymin || p->bbxmin ) {
 	    DoProbs(p);
@@ -2954,7 +2984,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GGadgetCreateData pboxes[6], paboxes[4], rfboxes[4], hboxes[5], aboxes[2],
 	    cboxes[2], bbboxes[2], rboxes[2], mboxes[5];
     GGadgetCreateData *parray[12], *pharray1[4], *pharray2[4], *pharray3[7],
-	    *paarray[8], *paharray[4], *rfarray[8], *rfharray[4],
+	    *paarray[8], *paharray[4], *rfarray[9], *rfharray[4],
 	    *harray[8], *hharray1[4], *hharray2[4], *hharray3[4], *aarray[6],
 	    *carray[5], *bbarray[8][4], *rarray[7], *marray[7][2],
 	    *mharray1[4], *mharray2[5], *barray[10];
@@ -3398,7 +3428,19 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[6].gd.popup_msg = (unichar_t *) _("If a glyph has been edited so that it has a different\nnumber of points now, then any references\nwhich use point matching and depended on that glyph's\npoint count will be incorrect.");
     rfgcd[6].gd.cid = CID_PtMatchRefsOutOfDate;
     rfgcd[6].creator = GCheckBoxCreate;
-    rfarray[5] = &rfgcd[6]; rfarray[6] = GCD_Glue; rfarray[7] = NULL;
+    rfarray[5] = &rfgcd[6];
+
+    rflabel[7].text = (unichar_t *) _("Multiple refs with use-my-metrics");
+    rflabel[7].text_is_1byte = true;
+    rflabel[7].text_in_resource = true;
+    rfgcd[7].gd.label = &rflabel[7];
+    rfgcd[7].gd.mnemonic = 'r';
+    rfgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( multusemymetrics ) rfgcd[7].gd.flags |= gg_cb_on;
+    rfgcd[7].gd.popup_msg = (unichar_t *) _("There may be at most one reference with the use-my-metrics bit set");
+    rfgcd[7].gd.cid = CID_MultUseMyMetrics;
+    rfgcd[7].creator = GCheckBoxCreate;
+    rfarray[6] = &rfgcd[7]; rfarray[7] = GCD_Glue; rfarray[8] = NULL;
 
     rfboxes[0].gd.flags = gg_enabled|gg_visible;
     rfboxes[0].gd.u.boxelements = rfarray;
