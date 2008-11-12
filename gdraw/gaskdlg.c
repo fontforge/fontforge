@@ -163,6 +163,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     int w, maxw, bw, bspace;
     int i, y;
     unichar_t ubuf[800];
+    extern GBox _GGadget_defaultbutton_box;
 
     GGadgetInit();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
@@ -265,9 +266,11 @@ return( NULL );
 	gcd[i+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	if ( i==def ) {
 	    gcd[i+lb].gd.flags |= gg_but_default;
-	    gcd[i+lb].gd.pos.x -= GDrawPointsToPixels(gw,3);
-	    gcd[i+lb].gd.pos.y -= GDrawPointsToPixels(gw,3);
-	    gcd[i+lb].gd.pos.width += 2*GDrawPointsToPixels(gw,3);
+	    if ( _GGadget_defaultbutton_box.flags&box_draw_default ) {
+		gcd[i+lb].gd.pos.x -= GDrawPointsToPixels(gw,3);
+		gcd[i+lb].gd.pos.y -= GDrawPointsToPixels(gw,3);
+		gcd[i+lb].gd.pos.width += 2*GDrawPointsToPixels(gw,3);
+	    }
 	}
 	if ( i==cancel )
 	    gcd[i+lb].gd.flags |= gg_but_cancel;
@@ -660,6 +663,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     int w, maxw;
     int i, y, listi;
     unichar_t ubuf[300];
+    extern GBox _GGadget_defaultbutton_box;
 
     GGadgetInit();
     GProgressPauseTimer();
@@ -775,7 +779,11 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	y += GDrawPointsToPixels(gw,30);
     }
 
-    gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
+    if ( _GGadget_defaultbutton_box.flags&box_draw_default ) {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
+    } else {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y-3;
+    }
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default | gg_pos_use0;
     gcd[i].gd.label = &blabel[0];
@@ -906,6 +914,7 @@ static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
     int i, y;
     char buf[1600];
     unichar_t *ubuf;
+    extern GBox _GGadget_defaultbutton_box;
 
     vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
     if ( screen_display==NULL ) {
@@ -1024,9 +1033,11 @@ return( NULL );
 	gcd[i+lb].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	if ( i==def ) {
 	    gcd[i+lb].gd.flags |= gg_but_default;
-	    gcd[i+lb].gd.pos.x -= GDrawPointsToPixels(gw,3);
-	    gcd[i+lb].gd.pos.y -= GDrawPointsToPixels(gw,3);
-	    gcd[i+lb].gd.pos.width += 2*GDrawPointsToPixels(gw,3);
+	    if ( _GGadget_defaultbutton_box.flags&box_draw_default ) {
+		gcd[i+lb].gd.pos.x -= GDrawPointsToPixels(gw,3);
+		gcd[i+lb].gd.pos.y -= GDrawPointsToPixels(gw,3);
+		gcd[i+lb].gd.pos.width += 2*GDrawPointsToPixels(gw,3);
+	    }
 	}
 	if ( i==cancel )
 	    gcd[i+lb].gd.flags |= gg_but_cancel;
@@ -1277,6 +1288,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     int i, y, listi;
     char buf[600];
     unichar_t *ubuf;
+    extern GBox _GGadget_defaultbutton_box;
 
     GProgressPauseTimer();
     vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
@@ -1409,7 +1421,11 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	y += GDrawPointsToPixels(gw,30);
     }
 
-    gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
+    if ( _GGadget_defaultbutton_box.flags&box_draw_default ) {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15)-3; gcd[i].gd.pos.y = y-3;
+    } else {
+	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y;
+    }
     gcd[i].gd.pos.width = -1;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels |gg_but_default | gg_pos_use0;
     gcd[i].gd.label = &blabel[0];
