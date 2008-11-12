@@ -1213,6 +1213,10 @@ return;
     free(gt->oldtext);
     gt->oldtext = gt->text;
     gt->text = uc_copy(buf);
+    if ( gt->pango ) {
+	free(gt->utf8_text);
+	gt->utf8_text = copy(buf);
+    }
     _ggadget_redraw(&gt->g);
     GTextFieldChanged(gt,-1);
 }
