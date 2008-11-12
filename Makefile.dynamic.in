@@ -49,7 +49,7 @@ clean:
 	( cd plugins ; $(MAKE) clean )
 	if test -d gtkui; then cd gtkui ; $(MAKE) clean ; fi
 	-( cd po ; rm *.mo )
-	-( cd pyhook ; for dir in * ; do if test -d $$dir ; then  rm -rf $$dir ; fi; done )
+	-( cd pyhook ; for dir in * ; do if test -d $$dir -a "$$dir" != "CVS" ; then  rm -rf $$dir ; fi; done )
 	-rm -rf .libs
 
 distclean cleaner:
@@ -60,7 +60,7 @@ distclean cleaner:
 	( cd plugins ; $(MAKE) distclean )
 	if test -d gtkui; then cd gtkui ; $(MAKE) distclean ; fi
 	-( cd po ; rm *.mo Makefile* )
-	-( cd pyhook ; rm setup.py ; for dir in * ; do if test -d $$dir ; then  rm -rf $$dir ; fi; done)
+	-( cd pyhook ; rm setup.py ; for dir in * ; do if test -d $$dir -a "$$dir" != "CVS" ; then  rm -rf $$dir ; fi; done)
 	-rm -rf .libs
 	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific inc/config.h
 
@@ -130,7 +130,7 @@ install: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_
 	sh -c "if test -d fontforge/FontForge.app >/dev/null ; then rm -rf /Applications/FontForge.app ; mv fontforge/FontForge.app /Applications ; ln -s /usr/local/bin/fontforge /Applications/FontForge.app/Contents/MacOS/FontForge ; fi"
 	sh < systemspecific
 #we don't always create a setup.py
-	-(cd pyhook ; if test -r setup.py ; then python setup.py install --prefix=$(prefix) --root=$(DESTDIR); for dir in * ; do if test -d $$dir ; then  rm -rf $$dir ; fi; done ; fi )
+	-(cd pyhook ; if test -r setup.py ; then python setup.py install --prefix=$(prefix) --root=$(DESTDIR); for dir in * ; do if test -d $$dir -a "$$dir" != "CVS" ; then  rm -rf $$dir ; fi; done ; fi )
 
 install_py: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_prog install_pycontrib
 # You may need to be root to do the install
@@ -138,7 +138,7 @@ install_py: $(DESTDIR)$(sharedir) all install_libs install_incs install_po insta
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; for dir in * ; do if test -d $$dir ; then  rm -rf $$dir ; fi; done ; fi"
 	sh -c "if test -d fontforge/FontForge.app >/dev/null ; then rm -rf /Applications/FontForge.app ; mv fontforge/FontForge.app /Applications ; ln -s /usr/local/bin/fontforge /Applications/FontForge.app/Contents/MacOS/FontForge ; fi"
 	sh < systemspecific
-	-(cd pyhook ; python setup.py bdist --formats=gztar ; cp dist/fontforge-*.tar.gz $(DESTDIR)/tmp )
+	-(cd pyhook ; python setup.py bdist --formats=gztar ; cp dist/fontforge-*.tar.gz $(DESTDIR)/tmp; for dir in * ; do if test -d $$dir -a "$$dir" != "CVS" ; then  rm -rf $$dir ; fi; done )
 
 install_gtk: fontforgegtk
 	(cd gtkui ; $(MAKE) install )
