@@ -523,8 +523,11 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     if ( gl->labeltype==2 ) {
 	GListButton *glb = (GListButton *) gl;
 	int temp;
+	int extra = GDrawPointsToPixels(gl->g.base,_GListMarkSize) +
+		    2*GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip) +
+		    GBoxBorderWidth(gl->g.base,&_GListMark_Box);
 	for ( i=0; i<glb->ltot; ++i ) {
-	    temp = GTextInfoGetWidth(gl->g.base,glb->ti[i],gl->font);
+	    temp = GTextInfoGetWidth(gl->g.base,glb->ti[i],gl->font) + extra;
 	    if ( temp>width ) width = temp;
 	    temp = GTextInfoGetHeight(gl->g.base,glb->ti[i],gl->font);
 	    if ( temp>iheight )
