@@ -1778,6 +1778,7 @@ typedef struct splinefont {
     int layer_cnt;
     int display_layer;
     struct Base *horiz_base, *vert_base;
+    int extrema_bound;			/* Splines do not count for extrema complaints when the distance between the endpoints is less than or equal to this */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */

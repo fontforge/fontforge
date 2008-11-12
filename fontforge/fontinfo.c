@@ -10312,7 +10312,6 @@ return;
 	_GButtonInit();
 	small_blue_box = _GGadget_button_box;
 	small_blue_box.border_type = bt_box;
-	small_blue_box.border_shape = bs_rect;
 	small_blue_box.border_width = 0;
 	small_blue_box.flags = box_foreground_shadow_outer;
 	small_blue_box.padding = 0;
