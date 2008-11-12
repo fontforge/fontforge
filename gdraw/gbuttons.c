@@ -740,6 +740,12 @@ return;
     _GGadget_droplist_box.border_type = _ggadget_Default_Box.border_type;
     _GGadget_droplist_box.border_width = _ggadget_Default_Box.border_width;
     _GGadget_droplist_box.border_shape = _ggadget_Default_Box.border_shape;
+    if ( _GGadget_button_box.border_type == bt_box ) {
+	_GGadget_droplist_box.border_brightest = _ggadget_Default_Box.border_brightest;
+	_GGadget_droplist_box.border_brighter = _ggadget_Default_Box.border_brighter;
+	_GGadget_droplist_box.border_darkest = _ggadget_Default_Box.border_darkest;
+	_GGadget_droplist_box.border_darker = _ggadget_Default_Box.border_darker;
+    }
 #endif
     _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
     _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);

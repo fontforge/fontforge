@@ -2259,6 +2259,10 @@ return;
     gt->sel_oldstart = gt->sel_start; gt->sel_oldend = gt->sel_end; gt->sel_oldbase = gt->sel_base;
     gt->text = u_copy(tit);		/* tit might be oldtext, so must copy before freeing */
     free(old);
+    if ( gt->pango ) {
+	free(gt->utf8_text);
+	gt->utf8_text = u2utf8_copy(gt->text);
+    }
     gt->sel_start = gt->sel_end = gt->sel_base = u_strlen(tit);
     GTextFieldRefigureLines(gt,0);
     GTextField_Show(gt,gt->sel_start);
