@@ -36,6 +36,7 @@ static void GListButtonDoPopup(GListButton *);
 GBox _GGadget_button_box = { /* Don't initialize here */ 0 };
 static GBox _GGadget_defaultbutton_box = { /* Don't initialize here */ 0 };
 static GBox _GGadget_cancelbutton_box = { /* Don't initialize here */ 0 };
+static GBox _GGadget_droplist_box = { /* Don't initialize here */ 0 };
 static GBox label_box = { /* Don't initialize here */ 0 };
 static int shift_on_press = 0;
 static FontInstance *label_font = NULL;
@@ -700,6 +701,9 @@ return;
 
 void _GButtonInit(void) {
     FontInstance *temp;
+#ifdef __Mac
+    extern GBox _ggadget_Default_Box;
+#endif
 
     if ( gbutton_inited )
 return;
@@ -708,6 +712,7 @@ return;
     _GGadgetCopyDefaultBox(&_GGadget_button_box);
 #ifdef __Mac
     _GGadget_button_box.border_type = bt_box;
+    _GGadget_button_box.border_width = 1;
     _GGadget_button_box.border_shape = bs_roundrect;
     _GGadget_button_box.flags = box_do_depressed_background;
     _GGadget_button_box.padding = 1;
@@ -722,15 +727,23 @@ return;
     if ( temp!=NULL )
 	label_font = temp;
     shift_on_press = GResourceFindBool("GButton.ShiftOnPress",false);
+    _GGadget_droplist_box = _GGadget_button_box;
     _GGadget_defaultbutton_box = _GGadget_button_box;
     _GGadget_cancelbutton_box  = _GGadget_button_box;
 #ifdef __Mac
     _GGadget_defaultbutton_box.flags |= box_gradient_bg;
     _GGadget_defaultbutton_box.main_background = 0x64a4f2;
     _GGadget_defaultbutton_box.gradient_bg_end = 0xb7ceeb;
+    _GGadget_cancelbutton_box.flags |= box_gradient_bg;
+    _GGadget_cancelbutton_box.main_background = 0xf27458;
+    _GGadget_cancelbutton_box.gradient_bg_end = 0xebb4a0;
+    _GGadget_droplist_box.border_type = _ggadget_Default_Box.border_type;
+    _GGadget_droplist_box.border_width = _ggadget_Default_Box.border_width;
+    _GGadget_droplist_box.border_shape = _ggadget_Default_Box.border_shape;
 #endif
     _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
     _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);
+    _GGadgetInitDefaultBox("GDropList.",&_GGadget_droplist_box,NULL);
     gbutton_inited = true;
 }
 
@@ -878,7 +891,7 @@ GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	}
 	gd->label = &gd->u.list[i];
     }
-    _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_button_box);
+    _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_droplist_box);
     gl->g.funcs = &glistbutton_funcs;
 return( &gl->g );
 }
