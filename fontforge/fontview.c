@@ -1077,6 +1077,28 @@ static void FVMenuValidate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFValidationWindow(fv->b.sf,fv->b.active_layer,ff_none);
 }
 
+static void FVMenuSetExtremumBound(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    char buffer[40], *end, *ret;
+    int val;
+
+    sprintf( buffer, "%d", fv->b.sf->extrema_bound<=0 ?
+	    (int) rint((fv->b.sf->ascent+fv->b.sf->descent)/100.0) :
+	    fv->b.sf->extrema_bound );
+    ret = gwwv_ask_string(_("Extremum bound..."),buffer,_("Adobe says that \"big\" splines should not have extrema.\nBut they don't define what big means.\nIf the distance between the spline's end-points is bigger than this value, then the spline is \"big\" to fontforge."));
+    val = (int) rint(strtod(ret,&end));
+    if ( *end!='\0' )
+	ff_post_error( _("Bad Number"),_("Bad Number") );
+    else {
+	fv->b.sf->extrema_bound = val;
+	if ( !fv->b.sf->changed ) {
+	    fv->b.sf->changed = true;
+	    FVSetTitles(fv->b.sf);
+	}
+    }
+    free(ret);
+}
+
 static void FVMenuEmbolden(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     EmboldenDlg(fv,NULL);
@@ -1141,9 +1163,6 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_BitmapMag	2028
 #define MID_Layers	2029
 #define MID_CharInfo	2201
-#define MID_FindProblems 2216
-#define MID_Embolden	2217
-#define MID_Condense	2218
 #define MID_Transform	2202
 #define MID_Stroke	2203
 #define MID_RmOverlap	2204
@@ -1156,6 +1175,9 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_Round	2213
 #define MID_MergeFonts	2214
 #define MID_InterpolateFonts	2215
+#define MID_FindProblems 2216
+#define MID_Embolden	2217
+#define MID_Condense	2218
 #define MID_ShowDependentRefs	2222
 #define MID_AddExtrema	2224
 #define MID_CleanupGlyph	2225
@@ -1183,6 +1205,7 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_ChangeXHeight	2250
 #define MID_ChangeGlyph	2251
 #define MID_SetColor	2252
+#define MID_SetExtremumBound	2253
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -3893,6 +3916,22 @@ static void trlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void validlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_FindProblems:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	  case MID_Validate:
+	    mi->ti.disabled = fv->b.sf->strokedfont || fv->b.sf->multilayer;
+	  break;
+        }
+    }
+}
+
 static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv), gid;
@@ -3903,12 +3942,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_CharInfo:
 	    mi->ti.disabled = anychars<0 || (gid = fv->b.map->map[anychars])==-1 ||
 		    (fv->b.cidmaster!=NULL && fv->b.sf->glyphs[gid]==NULL);
-	  break;
-	  case MID_FindProblems:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_Validate:
-	    mi->ti.disabled = fv->b.sf->strokedfont || fv->b.sf->multilayer;
 	  break;
 	  case MID_Transform:
 	    mi->ti.disabled = anychars==-1;
@@ -4325,12 +4358,19 @@ static GMenuItem2 infolist[] = {
     { NULL }
 };
 
+static GMenuItem2 validlist[] = {
+    { { (unichar_t *) N_("Find Pr_oblems..."), (GImage *) "elementfindprobs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, FVMenuFindProblems, MID_FindProblems },
+    { { (unichar_t *) N_("_Validate..."), (GImage *) "elementvalidate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Validate...|No Shortcut"), NULL, NULL, FVMenuValidate, MID_Validate },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Set E_xtremum Bound..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Set Extremum bound...|No Shortcut"), NULL, NULL, FVMenuSetExtremumBound, MID_SetExtremumBound },
+    { NULL }
+};
+
 static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Font Info..."), (GImage *) "elementfontinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) N_("_Glyph Info..."), (GImage *) "elementglyphinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Ctl+I"), NULL, NULL, FVMenuCharInfo, MID_CharInfo },
     { { (unichar_t *) N_("Other Info"), (GImage *) "elementotherinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, infolist, infolistcheck },
-    { { (unichar_t *) N_("Find Pr_oblems..."), (GImage *) "elementfindprobs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, FVMenuFindProblems, MID_FindProblems },
-    { { (unichar_t *) N_("_Validate..."), (GImage *) "elementvalidate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Validate...|No Shortcut"), NULL, NULL, FVMenuValidate, MID_Validate },
+    { { (unichar_t *) N_("_Validation"), (GImage *) "elementvalidate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, validlist, validlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Bitm_ap Strikes Available..."), (GImage *) "elementbitmapsavail.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Bitmap Strikes Available...|Ctl+Shft+B"), NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
     { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), (GImage *) "elementregenbitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Regenerate Bitmap Glyphs...|Ctl+B"), NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },

@@ -623,7 +623,7 @@ return;
 	if ( pointtype==pt_hvcurve &&
 		((unitnext.x!=0 && unitnext.y!=0) ||
 		 (unitprev.x!=0 && unitprev.y!=0)) ) {
-	    BasePoint ncp, pcp, new;
+	    BasePoint ncp, pcp;
 	    if ( fabs(unitnext.x)+fabs(unitprev.x)>fabs(unitnext.y)+fabs(unitprev.y) ) {
 		unitnext.y = unitprev.y = 0;
 		unitnext.x = unitnext.x>0 ? 1 : -1;
@@ -1509,7 +1509,9 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     LayerUnAllSplines(&sc->layers[layer]);
 
     /* Only check the splines in the glyph, not those in refs */
-    bound2 = (sc->parent->ascent + sc->parent->descent)/100.0;
+    bound2 = sc->parent->extrema_bound;
+    if ( bound2<=0 )
+	bound2 = (sc->parent->ascent + sc->parent->descent)/100.0;
     bound2 *= bound2;
     for ( ss=sc->layers[layer].splines, cnt=0; ss!=NULL; ss=ss->next ) {
 	first = NULL;
@@ -1519,16 +1521,10 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 	    if ( s->acceptableextrema )
 	continue;		/* If marked as good, don't check it */
 	    /* rough appoximation to spline's length */
-	    x = (s->from->nextcp.x-s->from->me.x);
-	    y = (s->from->nextcp.y-s->from->me.y);
+	    x = (s->to->me.x-s->from->me.x);
+	    y = (s->to->me.y-s->from->me.y);
 	    len2 = x*x + y*y;
-	    x = (s->to->prevcp.x-s->from->nextcp.x);
-	    y = (s->to->prevcp.y-s->from->nextcp.y);
-	    len2 += x*x + y*y;
-	    x = (s->to->me.x-s->to->prevcp.x);
-	    y = (s->to->me.y-s->to->prevcp.y);
-	    len2 += x*x + y*y;
-	    /* short splines (serifs) are allowed not to have points at their extrema */
+	    /* short splines (serifs) are not required to have points at their extrema */
 	    if ( len2>bound2 && Spline2DFindExtrema(s,extrema)>0 ) {
 		sc->layers[layer].validation_state |= vs_missingextrema|vs_known;
     goto break_2_loops;

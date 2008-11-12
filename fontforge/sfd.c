@@ -2135,6 +2135,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf( sfd, "DisplayLayer: %d\n", sf->display_layer );
     fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
     fprintf( sfd, "FitToEm: %d\n", sf->display_bbsized );
+    if ( sf->extrema_bound!=0 )
+	fprintf( sfd, "ExtremaBound: %d\n", sf->extrema_bound );
     {
 	int rc, cc, te;
 	if ( (te = FVWinInfo(sf->fv,&cc,&rc))!= -1 )
@@ -6173,6 +6175,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&sf->display_size);
 	} else if ( strmatch(tok,"DisplayLayer:")==0 ) {
 	    getint(sfd,&sf->display_layer);
+	} else if ( strmatch(tok,"ExtremaBound:")==0 ) {
+	    getint(sfd,&sf->extrema_bound);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
 	    getint(sfd,&sf->top_enc);
 	} else if ( strmatch(tok,"WinInfo:")==0 ) {

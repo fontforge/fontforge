@@ -1617,9 +1617,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->missingextrema && !p->finish ) {
 	SplineSet *ss;
 	Spline *s, *first;
-	double len2, bound2 = (p->sc->parent->ascent + p->sc->parent->descent)/100.0;
+	double len2, bound2 = p->sc->parent->extrema_bound;
 	double x,y;
 	extended extrema[4];
+
+	if ( bound2<=0 )
+	    bound2 = (p->sc->parent->ascent + p->sc->parent->descent)/100.0;
 
 	bound2 *= bound2;
       ae_restart:
@@ -1632,15 +1635,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( s->acceptableextrema )
 	    continue;		/* If marked as good, don't check it */
 		/* rough appoximation to spline's length */
-		x = (s->from->nextcp.x-s->from->me.x);
-		y = (s->from->nextcp.y-s->from->me.y);
+		x = (s->to->me.x-s->from->me.x);
+		y = (s->to->me.y-s->from->me.y);
 		len2 = x*x + y*y;
-		x = (s->to->prevcp.x-s->from->nextcp.x);
-		y = (s->to->prevcp.y-s->from->nextcp.y);
-		len2 += x*x + y*y;
-		x = (s->to->me.x-s->to->prevcp.x);
-		y = (s->to->me.y-s->to->prevcp.y);
-		len2 += x*x + y*y;
 		/* short splines (serifs) need not to have points at their extrema */
 		/*  But how do we define "short"? */
 		if ( len2>bound2 && Spline2DFindExtrema(s,extrema)>0 ) {
