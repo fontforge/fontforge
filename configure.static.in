@@ -28,19 +28,19 @@ dnl macports puts stuff under /opt/local
 
  if test "$CPPFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
- elif test -d /opt/local/include >/dev/null ; then
-  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
  elif test -d /sw/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -I/sw/include"
+ elif test -d /opt/local/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
  fi
  if test "$LDFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
- elif test -d /opt/local/lib >/dev/null ; then
-  LDFLAGS="$LDFLAGS -L/opt/local/lib"
-  gww_rpath="-rpath /opt/local/lib"
  elif test -d /sw/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/sw/lib"
   gww_rpath="-rpath /sw/lib"
+ elif test -d /opt/local/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  gww_rpath="-rpath /opt/local/lib"
  fi
  LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
  LIBS="/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
