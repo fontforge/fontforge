@@ -2016,6 +2016,7 @@ return;
 static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int32 end) {
     RefChar *head=NULL, *last=NULL, *cur;
     int flags=0, arg1, arg2;
+    int use_my_metrics=0;
 
     if ( ftell(ttf)>=end ) {
 	LogError( _("Empty composite %d\n"), sc->orig_pos );
@@ -2047,6 +2048,13 @@ return;
 	    arg2 = (signed char) getc(ttf);
 	}
 	cur->use_my_metrics =		 (flags & _USE_MY_METRICS) ? 1 : 0;
+	if ( cur->use_my_metrics ) {
+	    if ( use_my_metrics ) {
+		LogError( _("Use-my-metrics flag set on at least two components in glyph %d\n"), sc->orig_pos );
+		info->bad_glyph_data = true;
+	    } else
+		use_my_metrics = true;
+	}
 	cur->round_translation_to_grid = (flags & _ROUND) ? 1 : 0;
 	if ( flags & _ARGS_ARE_XY ) {
 	    /* There is some very strange stuff (half-)documented on the apple*/
