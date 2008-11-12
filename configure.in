@@ -13,6 +13,32 @@ AC_SUBST(HOST)
 AC_SUBST(MACAPP)
 HOST="$host"
 
+AC_C_CONST
+AC_PATH_XTRA
+AC_SUBST(X_11LIB)
+AC_SUBST(GDRAW_LIB)
+AC_SUBST(exeOBJECTS)
+AC_SUBST(LINK_WITH_GDRAW)
+X_11LIB=-lX11
+GDRAW_LIB=libgdraw
+exeOBJECTS=fontforge_UIOBJECTS
+LINK_WITH_GDRAW=../libgdraw.la
+if test "$no_x" = "yes"; then
+ X_11LIB=
+ GDRAW_LIB=
+ exeOBJECTS=fontforge_SCRIPTOBJ
+ LINK_WITH_GDRAW=
+ MACAPP=
+
+else
+ dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
+ dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
+ dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
+
+ AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
+ AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm ) 
+fi
+
 gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
 gww_needsstatic="no"
@@ -372,14 +398,26 @@ AC_ARG_WITH(cairo,
    fi
  ], : )
 if test "$gww_checkcairo" = "yes" ; then
+  gww_CFLAGS=$CFLAGS
+  gww_LDFLAGS=$LDFLAGS
+  CFLAGS="$CFLAGS $X_CFLAGS"
+  LDFLAGS="$LDFLAGS $X_LIBS"
   AC_CHECK_HEADER(fontconfig/fontconfig.h, [
    AC_CHECK_LIB(fontconfig, FcConfigCreate, [
     AC_CHECK_LIB(cairo, cairo_xlib_surface_create, gww_hascairo="yes" )])])
+  CFLAGS=$gww_CFLAGS
+  LDFLAGS=$gww_LDFLAGS
 fi
 if test "$gww_hascairo" = "yes" ; then
- AC_CHECK_FILE(/usr/include/cairo/cairo.h,[CFLAGS="$CFLAGS -I/usr/include/cairo/"],[
-  AC_CHECK_FILE(/usr/local/include/cairo/cairo.h,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/cairo/"],
-   gww_hascairo="no")])
+  gww_hascairo="no"
+  for gww_prefix in /usr /usr/local /sw /opt/local /usr/X11R6/
+  do
+    if test -e $gww_prefix/include/cairo/cairo.h ; then
+      CFLAGS="$CFLAGS -I$gww_prefix/include/cairo"
+      gww_hascairo="yes"
+  break
+    fi
+  done
 fi
 if test "$gww_hascairo" = "no" ; then
  AC_DEFINE(_NO_LIBCAIRO)
@@ -420,11 +458,19 @@ if test "$gww_checkpango" = "yes" ; then
   if test "$pan_headers" != "" >& /dev/null ; then
     gww_haspango="done"
   elif pkg-config --libs pangoxft >& /dev/null ; then
+    gww_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $X_CFLAGS"
     AC_CHECK_HEADER(X11/Xft/Xft.h, gww_haspango="yes",,[#include <ft2build.h>])
-  elif pkg-config --version >& /dev/null ; then
-    OK_Theyve_got_pkg_config="yes"
+    CFLAGS="$gww_CFLAGS"
   else
-    gww_has_pkg_config="no"
+    for gww_prefix in /usr /usr/local /sw /opt/local
+    do
+      if test -d $gww_prefix/include/pango-1.0/pango -a -d $gww_prefix/include/glib-2.0 -a -d $gww_prefix/lib/glib-2.0/include ; then
+        CFLAGS="$CFLAGS -I$gww_prefix/include/pango-1.0 -I$gww_prefix/include/glib-2.0 -I$gww_prefix/lib/glib-2.0/include"
+        gww_haspango="done"
+    break
+      fi
+    done
   fi
 fi
 if test "$gww_haspango" = "yes" ; then
@@ -560,32 +606,6 @@ dnl older libc's don't have snprintf
 
 AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
 
-AC_C_CONST
-AC_PATH_XTRA
-AC_SUBST(X_11LIB)
-AC_SUBST(GDRAW_LIB)
-AC_SUBST(exeOBJECTS)
-AC_SUBST(LINK_WITH_GDRAW)
-X_11LIB=-lX11
-GDRAW_LIB=libgdraw
-exeOBJECTS=fontforge_UIOBJECTS
-LINK_WITH_GDRAW=../libgdraw.la
-if test "$no_x" = "yes"; then
- X_11LIB=
- GDRAW_LIB=
- exeOBJECTS=fontforge_SCRIPTOBJ
- LINK_WITH_GDRAW=
- MACAPP=
-
-else
- dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
- dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
- dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
-
- AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
- AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm ) 
-fi
-
 AC_C_LONG_DOUBLE
 echo -n checking for long long ...
 AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
@@ -616,8 +636,6 @@ AC_ARG_WITH(regular-link,
 
 dnl If we can't/don't want to use dynamic libraries then we must link with
 dnl the static libraries we've found
-
-   echo Got here
 
 AC_SUBST(STATIC_LIBS)
 STATIC_LIBS=
