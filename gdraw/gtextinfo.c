@@ -354,10 +354,7 @@ return( bucket->image );
     bucket->filename = copy(filename);
 
     path = galloc(strlen(filename)+strlen(imagedir)+10 );
-    if ( *filename=='/' )
-	strcpy(path,filename);
-    else
-	sprintf( path,"%s/%s", imagedir, filename );
+    sprintf( path,"%s/%s", imagedir, filename );
     bucket->image = GImageRead(path);
     free(path);
     if ( bucket->image!=NULL ) {
@@ -386,7 +383,11 @@ GImage *GGadgetResourceFindImage(char *name, GImage *def) {
     if ( fname==NULL )
 return( def );
 
-    if (( ret = GGadgetImageCache(fname))==NULL )
+    if ( *fname=='/' )
+	ret = GImageRead(fname);
+    else
+	ret = GGadgetImageCache(fname);
+    if ( ret==NULL )
 	ret = def;
     free(fname);
 

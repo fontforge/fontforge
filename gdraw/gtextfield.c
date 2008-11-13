@@ -36,6 +36,7 @@
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
 static GBox gtextfield_box = { /* Don't initialize here */ 0 };
+static GBox glistfield_box = { /* Don't initialize here */ 0 };
 FontInstance *_gtextfield_font = NULL;
 static int gtextfield_inited = false;
 
@@ -1719,7 +1720,6 @@ return( false );
 
     if ( gt->listfield ) {
 	int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize);
-	GRect r;
 
 	GDrawPushClip(pixmap,&ge->buttonrect,&old1);
 
@@ -2750,6 +2750,8 @@ static void GTextFieldInit() {
     gtextfield_box.padding = 3;
     gtextfield_box.flags = box_active_border_inner;
     _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&gtextfield_box,_gtextfield_font);
+    glistfield_box = gtextfield_box;
+    _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
     gtextfield_inited = true;
 }
 
@@ -2974,7 +2976,7 @@ GGadget *GSimpleListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data
     ge->gt.listfield = true;
     if ( gd->u.list!=NULL )
 	ge->ti = GTextInfoArrayFromList(gd->u.list,&ge->ltot);
-    _GTextFieldCreate(&ge->gt,base,gd,data,&gtextfield_box);
+    _GTextFieldCreate(&ge->gt,base,gd,data,&glistfield_box);
     ge->gt.g.funcs = &glistfield_funcs;
 return( &ge->gt.g );
 }
