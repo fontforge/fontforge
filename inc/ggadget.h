@@ -490,6 +490,7 @@ GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
+GImage *GGadgetResourceFindImage(char *name, GImage *def);
 
 void GGadgetSetImageDir(char *dir);
 GImage *GGadgetImageCache(char *filename);

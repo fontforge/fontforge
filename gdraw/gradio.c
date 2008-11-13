@@ -388,10 +388,10 @@ static void GRadioInit() {
 	checkbox_on_box.depressed_background = checkbox_on_box.active_border;
 	checkbox_off_box.depressed_background = checkbox_off_box.main_background;
     }
-    radon = GResourceFindImage("GRadioOn.Image",NULL);
-    radoff = GResourceFindImage("GRadioOff.Image",NULL);
-    checkon = GResourceFindImage("GCheckBoxOn.Image",NULL);
-    checkoff = GResourceFindImage("GCheckBoxOff.Image",NULL);
+    radon = GGadgetResourceFindImage("GRadioOn.Image",NULL);
+    radoff = GGadgetResourceFindImage("GRadioOff.Image",NULL);
+    checkon = GGadgetResourceFindImage("GCheckBoxOn.Image",NULL);
+    checkoff = GGadgetResourceFindImage("GCheckBoxOff.Image",NULL);
     gradio_inited = true;
 }
 

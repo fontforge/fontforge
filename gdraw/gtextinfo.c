@@ -29,6 +29,7 @@
 #include "ggadgetP.h"
 #include "utype.h"
 #include "ustring.h"
+#include "gresource.h"
 
 int GTextInfoGetWidth(GWindow base,GTextInfo *ti,FontInstance *font) {
     int width=0;
@@ -353,7 +354,10 @@ return( bucket->image );
     bucket->filename = copy(filename);
 
     path = galloc(strlen(filename)+strlen(imagedir)+10 );
-    sprintf( path,"%s/%s", imagedir, filename );
+    if ( *filename=='/' )
+	strcpy(path,filename);
+    else
+	sprintf( path,"%s/%s", imagedir, filename );
     bucket->image = GImageRead(path);
     free(path);
     if ( bucket->image!=NULL ) {
@@ -372,6 +376,21 @@ return( bucket->image );
 	}
     }
 return( bucket->image );
+}
+
+GImage *GGadgetResourceFindImage(char *name, GImage *def) {
+    GImage *ret;
+    char *fname;
+
+    fname = GResourceFindString(name);
+    if ( fname==NULL )
+return( def );
+
+    if (( ret = GGadgetImageCache(fname))==NULL )
+	ret = def;
+    free(fname);
+
+return( ret );
 }
     
 static void GTextInfoImageLookup(GTextInfo *ti) {
