@@ -1178,7 +1178,7 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	/*  result is less than 1 em-unit then we've got colinear control points */
 	/*  (within the resolution of the integer grid) */
 	if ( nclen!=0 && pclen!=0 &&
-		((nclen>pclen && (dot = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<1.0 && dot>-1.0 ) ||
+		((nclen>=pclen && (dot = pcdir.x*ncunit.y - pcdir.y*ncunit.x)<1.0 && dot>-1.0 ) ||
 		 (pclen>nclen && (dot = ncdir.x*pcunit.y - ncdir.y*pcunit.x)<1.0 && dot>-1.0 )))
 	    sp->pointtype = pt_curve;
 	/* Dot product of control point with unit vector normal to line in */
