@@ -204,17 +204,12 @@ return( false );
 	GDrawPopClip(pixmap,&old2);
 
     if ( gb->labeltype==2 ) {
-	GRect r, old3;
 	int bp = GBoxBorderWidth(g->base,g->box);
-	r.x = g->r.x + g->r.width - marklen - spacing/2 - bp; r.width = marklen;
-	r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
-		    GDrawPointsToPixels(pixmap,3);
-	r.y = g->inner.y + (g->inner.height-r.height)/2;
-	GDrawPushClip(pixmap,&r,&old3);
-
-	GBoxDrawBackground(pixmap,&r,&_GListMark_Box, g->state,false);
-	GBoxDrawBorder(pixmap,&r,&_GListMark_Box,g->state,false);
-	GDrawPopClip(pixmap,&old3);
+	GListMarkDraw(pixmap,
+		g->r.x + g->r.width - marklen - spacing/2 - bp,
+		g->inner.y,
+		g->inner.height,
+		g->state);
     }
 
     GDrawPopClip(pixmap,&old1);

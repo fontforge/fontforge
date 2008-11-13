@@ -1727,16 +1727,11 @@ return( false );
 		g->state==gs_enabled? gs_pressedactive: g->state,false);
 	GBoxDrawBorder(pixmap,&ge->buttonrect,g->box,g->state,false);
 
-	r.width = marklen;
-	r.x = ge->buttonrect.x + (ge->buttonrect.width - marklen)/2;
-	r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
-		    GDrawPointsToPixels(pixmap,3);
-	r.y = g->inner.y + (g->inner.height-r.height)/2;
-	GDrawPushClip(pixmap,&r,&old2);
-
-	GBoxDrawBackground(pixmap,&r,&_GListMark_Box, g->state,false);
-	GBoxDrawBorder(pixmap,&r,&_GListMark_Box,g->state,false);
-	GDrawPopClip(pixmap,&old2);
+	GListMarkDraw(pixmap,
+		ge->buttonrect.x + (ge->buttonrect.width - marklen)/2,
+		g->inner.y,
+		g->inner.height,
+		g->state);
 	GDrawPopClip(pixmap,&old1);
     } else if ( gt->numericfield ) {
 	int y;

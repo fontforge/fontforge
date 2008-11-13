@@ -469,6 +469,7 @@ extern int _GListMarkSize;		/* in points, def width of popup mark in buttons */
 extern int _GGadget_Skip;		/* in points, def hor space between gadgets */
 extern int _GGadget_TextImageSkip;	/* in points, def hor space text and image */
 extern GBox _GListMark_Box, _GGroup_LineBox;
+extern GImage *_GListMark_Image;
 extern FontInstance *_ggadget_default_font;
 
 void _GWidget_AddGGadget(GWindow gw,struct ggadget *g);
@@ -548,5 +549,6 @@ extern int GMenuPopupCheckKey(GEvent *event);
 extern int GMenuBarCheckKey(GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 extern void _GButtonInit(void);
+extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
 
 extern int _ggadget_use_gettext;

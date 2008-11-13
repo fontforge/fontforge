@@ -1420,17 +1420,11 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
 		    gme->col_data[c].me_type == me_funcedit ) {
-		GRect r;
-		clip.x += clip.width + gme->mark_skip;
-		clip.width = gme->mark_size;
-		GDrawPushClip(pixmap,&clip,&old);
-		r.width = gme->mark_length;
-		r.x = clip.x + (gme->mark_size - gme->mark_length)/2;
-		r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
-			GDrawPointsToPixels(pixmap,3);
-		r.y = clip.y + (clip.height-r.height)/2;
-		GBoxDrawBorder(pixmap,&r,&_GListMark_Box,gme->g.state,false);
-		GDrawPopClip(pixmap,&old);
+		GListMarkDraw(pixmap,
+			clip.x + clip.width + gme->mark_skip + (gme->mark_size - gme->mark_length)/2,
+			clip.y,
+			clip.height,
+			gme->g.state);
 	    }
 	    if ( r+gme->off_top==gme->rows )
 return;
