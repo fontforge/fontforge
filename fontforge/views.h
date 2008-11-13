@@ -292,12 +292,13 @@ typedef struct metricsview {
     int pixelsize;
     BDFFont *bdf;		/* We can also see metric info on a bitmap font */
     BDFFont *show;		/*  Or the rasterized version of the outline font */
-    GWindow gw;
+    GWindow gw, v;
     GFont *font;
     GGadget *hsb, *vsb, *mb, *text, *script, *features, *subtable_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
     int16 xstart;
     int16 width, height, dwidth;
+    int16 vwidth, vheight;
     int16 mbh,sbh;
     int16 topend;		/* y value of the end of the region containing the text field */
     int16 displayend;		/* y value of the end of the region showing filled characters */
@@ -329,7 +330,6 @@ typedef struct metricsview {
     unsigned int antialias: 1;
     unsigned int vertical: 1;
     unsigned int type: 2;		/* enum mv_type */
-    struct aplist *pressed_apl;
     int xp, yp, ap_owner;
     BasePoint ap_start;
     int cursor;
