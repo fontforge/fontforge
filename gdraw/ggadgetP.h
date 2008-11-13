@@ -174,7 +174,7 @@ typedef struct gcheck {
     GImage *image;
     GRect onoffrect, onoffinner;
     GBox *onbox, *offbox;
-    GImage *on, *off;
+    GImage *on, *off, *ondis, *offdis;
 } GCheckBox;
 
 typedef struct gradio {
@@ -191,7 +191,7 @@ typedef struct gradio {
     GImage *image;
     GRect onoffrect, onoffinner;
     GBox *onbox, *offbox;
-    GImage *on, *off;
+    GImage *on, *off, *ondis, *offdis;
     struct gradio *post;
 } GRadio;
 

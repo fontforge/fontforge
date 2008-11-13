@@ -36,7 +36,7 @@ static GBox radio_off_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
-static GImage *radon, *radoff, *checkon, *checkoff;
+static GImage *radon, *radoff, *checkon, *checkoff, *raddison, *raddisoff, *checkdison, *checkdisoff;
 static FontInstance *checkbox_font = NULL;
 static int gradio_inited = false;
 
@@ -69,7 +69,7 @@ return;		/* Do Nothing, it's already on */
 static int gradio_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRadio *gr = (GRadio *) g;
     int x;
-    GImage *img = gr->image;
+    GImage *img = gr->image, *mark;
     GRect old1, old2, old3;
     int yoff = (g->inner.height-(gr->fh))/2;
 
@@ -88,8 +88,13 @@ return( false );
     GBoxDrawBorder(pixmap,&gr->onoffrect,gr->ison?gr->onbox:gr->offbox,
 	    gs_pressedactive,false);
     if ( (gr->ison && gr->on!=NULL) || (!gr->ison && gr->off!=NULL)) {
+	mark = NULL;
+	if ( g->state == gs_disabled )
+	    mark = gr->ison ? gr->ondis : gr->offdis;
+	if ( mark==NULL )
+	    mark = gr->ison ? gr->on : gr->off;
 	GDrawPushClip(pixmap,&gr->onoffinner,&old3);
-	GDrawDrawScaledImage(pixmap,gr->ison?gr->on:gr->off,
+	GDrawDrawScaledImage(pixmap,mark,
 		gr->onoffinner.x,gr->onoffinner.y);
 	GDrawPopClip(pixmap,&old3);
     } else if ( gr->ison && gr->onbox == &checkbox_on_box ) {
@@ -392,6 +397,10 @@ static void GRadioInit() {
     radoff = GGadgetResourceFindImage("GRadioOff.Image",NULL);
     checkon = GGadgetResourceFindImage("GCheckBoxOn.Image",NULL);
     checkoff = GGadgetResourceFindImage("GCheckBoxOff.Image",NULL);
+    raddison = GGadgetResourceFindImage("GRadioOn.DisabledImage",NULL);
+    raddisoff = GGadgetResourceFindImage("GRadioOff.DisabledImage",NULL);
+    checkdison = GGadgetResourceFindImage("GCheckBoxOn.DisabledImage",NULL);
+    checkdisoff = GGadgetResourceFindImage("GCheckBoxOff.DisabledImage",NULL);
     gradio_inited = true;
 }
 
@@ -462,11 +471,15 @@ static GCheckBox *_GCheckBoxCreate(GCheckBox *gl, struct gwindow *base, GGadgetD
 	gl->offbox = &radio_off_box;
 	gl->on = radon;
 	gl->off = radoff;
+	gl->ondis = raddison;
+	gl->offdis = raddisoff;
     } else {
 	gl->onbox = &checkbox_on_box;
 	gl->offbox = &checkbox_off_box;
 	gl->on = checkon;
 	gl->off = checkoff;
+	gl->ondis = checkdison;
+	gl->offdis = checkdisoff;
     }
     GCheckBoxFit(gl);
     _GGadget_FinalPosition(&gl->g,base,gd);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Jan-2001 -->
-  <!-- AP: Last modified: 12-Nov-2008 -->
+  <!-- AP: Last modified: 13-Nov-2008 -->
   <TITLE>X Resources</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -629,8 +629,9 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
     <DT>
       <CODE>Gdraw.GGadget...</CODE>
     <DD>
-      Every ggadget in enclosed in a box. The following information may be supplied
-      for any box:
+      Every ggadget in enclosed in a box. No gadget is actually a GGadget, but
+      every other gadget inherits (potentially with modification) from this abstract
+      class. The following information may be supplied for any box:
       <DL>
 	<DT>
 	  <CODE>...Box.BorderType</CODE>
@@ -749,21 +750,25 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
 	  Specifies the default font for a ggadget.
       </DL>
     <DT>
-      <CODE>Gdraw.GButton...<BR>
-      Gdraw.GDefaultButton...<BR>
-      Gdraw.GCancelButton...<BR>
-      Gdraw.GLabel...<BR>
-      Gdraw.GDropList...<BR>
-      Gdraw.GListMark... -- controls the shape of the mark used to show the menu
-      of a combo box.<BR>
-      Gdraw.GRadio... -- affects the text of the radio<BR>
-      GDraw.GRadioOn... -- affects the shape used (to the left of the text) of
-      an on radio button <BR>
+      <CODE>Gdraw.GButton...<IMG SRC="GButton.png" WIDTH="67" HEIGHT="28"><BR>
+      Gdraw.GDefaultButton...<IMG SRC="GDefaultButton.png" WIDTH="60" HEIGHT="26">
+      Inherits from GButton<BR>
+      Gdraw.GCancelButton...<IMG SRC="GCancelButton.png" WIDTH="61" HEIGHT="28">
+      Inherits from GButton<BR>
+      Gdraw.GLabel...<IMG SRC="GLabel.png" WIDTH="43" HEIGHT="21"><BR>
+      Gdraw.GDropList...<IMG SRC="GDropList.png" WIDTH="107" HEIGHT="30"><BR>
+      Gdraw.GListMark... <IMG SRC="GListMark.png" WIDTH="21" HEIGHT="20">controls
+      the shape of the mark used to show the menu of a combo box.<BR>
+      Gdraw.GRadio... <IMG SRC="GRadio.png" WIDTH="106" HEIGHT="25">affects the
+      text of the radio<BR>
+      GDraw.GRadioOn... -- affects the shape used (above, the diamond to the left
+      of the text) of an on radio button <BR>
       GDraw.GRadioOff... -- affects the shape used of an off radio button <BR>
       Gdraw.GCheckBox...<BR>
       GDraw.GCheckBoxOn...<BR>
       GDraw.GCheckBoxOff...<BR>
-      Gdraw.GTextField...<BR>
+      Gdraw.GTextField...<IMG SRC="GTextField.png" WIDTH="106" HEIGHT="41"><BR>
+      Gdraw.GComboBox...<IMG SRC="GComboBox.png" WIDTH="133" HEIGHT="41"><BR>
       Gdraw.GList...<BR>
       Gdraw.GScrollBar...<BR>
       Gdraw.GScrollBarThumb...<BR>

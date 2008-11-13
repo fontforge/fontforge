@@ -50,7 +50,7 @@ GBox _GListMark_Box = { /* Don't initialize here */ 0 };
 FontInstance *_ggadget_default_font = NULL;
 static FontInstance *popup_font = NULL;
 int _GListMarkSize = 12;
-GImage *_GListMark_Image = NULL;
+GImage *_GListMark_Image = NULL, *_GListMark_DisImage;
 static int _GGadget_FirstLine = 6;
 static int _GGadget_LeftMargin = 6;
 static int _GGadget_LineSkip = 3;
@@ -336,6 +336,7 @@ void GGadgetInit(void) {
 	_GGadgetInitDefaultBox("GListMark.",&_GListMark_Box,NULL);
 	_GListMarkSize = GResourceFindInt("GListMark.Width", _GListMarkSize);
 	_GListMark_Image = GGadgetResourceFindImage("GListMark.Image", NULL);
+	_GListMark_DisImage = GGadgetResourceFindImage("GListMark.DisabledImage", NULL);
 	if ( _GListMark_Image!=NULL ) {
 	    int size = GDrawPixelsToPoints(NULL,GImageGetWidth(_GListMark_Image));
 	    if ( size>_GListMarkSize )
@@ -371,7 +372,10 @@ void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state st
     GRect r, old;
     int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize);
 
-    if ( _GListMark_Image!=NULL ) {
+    if ( state == gs_disabled && _GListMark_DisImage!=NULL ) {
+	GDrawDrawScaledImage(pixmap,_GListMark_DisImage,x,
+		y + (height-GImageGetScaledHeight(pixmap,_GListMark_DisImage))/2);
+    } else if ( _GListMark_Image!=NULL ) {
 	GDrawDrawScaledImage(pixmap,_GListMark_Image,x,
 		y + (height-GImageGetScaledHeight(pixmap,_GListMark_Image))/2);
     } else {
