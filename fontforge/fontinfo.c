@@ -10312,15 +10312,15 @@ return;
 	_GButtonInit();
 	small_blue_box = _GGadget_button_box;
 	small_blue_box.border_type = bt_box;
+	small_blue_box.border_shape = bs_rect;
 	small_blue_box.border_width = 0;
 	small_blue_box.flags = box_foreground_shadow_outer;
 	small_blue_box.padding = 0;
 	small_blue_box.main_foreground = 0x0000ff;
 	small_blue_box.border_darker = small_blue_box.main_foreground;
-	small_blue_box.border_darkest = small_blue_box.border_brighter = small_blue_box.border_brightest =
-		small_blue_box.main_background == COLOR_DEFAULT ?
-			GDrawGetDefaultBackground(NULL) :
-			small_blue_box.main_background;
+	small_blue_box.border_darkest = small_blue_box.border_brighter =
+		small_blue_box.border_brightest =
+		small_blue_box.main_background = GDrawGetDefaultBackground(NULL);
     }
 
     ulabel[0].text = (unichar_t *) _(
