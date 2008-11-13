@@ -1598,11 +1598,14 @@ return prep_head;
 static void init_prep(GlobalInstrCt *gic) {
     uint8 new_prep_preamble[] =
     {
-	/* Enable dropout control */
+	/* Enable dropout control. FreeType 2.3.7 need explicit SCANTYPE. */
 	0xb8, // PUSHW_1
 	0x01, //   511
 	0xff, //   ...still that 511
 	0x85, // SCANCTRL
+	0xb0, // PUSHB_1
+	0x01, //   1
+	0x8d, // SCANTYPE
 
 	/* Measurements are taken along Y axis */
 	0x00, // SVTCA[y-axis]
@@ -1960,7 +1963,7 @@ return 0;
         in = SplineCurvature(prev, 1);
 	if (fabs(in) < CURVATURE_THRESHOLD) in = SplineCurvature(prev, 0);
 	if (fabs(in) < CURVATURE_THRESHOLD) prev = prev->from->prev;
-	if (IsAnglePoint(contourends, bp, prev->to))
+	if ((prev != NULL) && IsAnglePoint(contourends, bp, prev->to))
     break;
     }
 
@@ -1970,7 +1973,7 @@ return 0;
         out = SplineCurvature(next, 0);
 	if (fabs(out) < CURVATURE_THRESHOLD) out = SplineCurvature(next, 1);
 	if (fabs(out) < CURVATURE_THRESHOLD) next = next->to->next;
-	if (IsAnglePoint(contourends, bp, next->from))
+	if ((next != NULL) && IsAnglePoint(contourends, bp, next->from))
     break;
     }
 
