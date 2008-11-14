@@ -28,6 +28,7 @@
 #include "gxdrawP.h"
 #include "gxcdrawP.h"
 #include <math.h>
+#include <string.h>
 
 /* On the cygwin X server masking with mono images is broken */
 #ifdef _BrokenBitmapImages
