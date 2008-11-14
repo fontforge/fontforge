@@ -930,9 +930,9 @@ return( true );
 	SplineCharFindBounds(sc,&bb);
 	if ( *end && !(*end=='-' && end[1]=='\0'))
 	    GDrawBeep(NULL);
-	else if ( !mv->vertical && val!=sc->width-bb.maxx ) {
+	else if ( !mv->vertical && rint(val+bb.maxx)!=sc->width ) {
+	    int newwidth = rint(bb.maxx+val);
 	    SCPreserveWidth(sc);
-	    sc->width = rint(bb.maxx+val);
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
 	    if ( sc->width!=bb.maxx+val ) {
@@ -942,6 +942,7 @@ return( true );
 		transform[4] = sc->width-val-bb.maxx;
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	    }
+	    SCSynchronizeWidth(sc,newwidth,sc->width,NULL);
 	    SCCharChangedUpdate(sc,ly_none);
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
 	    double vw = val+(sc->parent->ascent-bb.miny);
