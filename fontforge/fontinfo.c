@@ -4988,9 +4988,9 @@ static int GFI_MoreParams(GGadget *g, GEvent *e) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData txgcd[35];
+    GGadgetCreateData txgcd[35], boxes[3], *txarray[18][3], *barray[9];
     GTextInfo txlabel[35];
-    int i,y,k;
+    int i,y,k,j;
     char **params, **popups;
     char values[20][20];
 
@@ -5025,7 +5025,7 @@ return( true );
 	memset(&txlabel,0,sizeof(txlabel));
 	memset(&txgcd,0,sizeof(txgcd));
 
-	k=0; y = 10;
+	k=j=0; y = 10;
 	for ( i=0; params[i]!=0; ++i ) {
 	    txlabel[k].text = (unichar_t *) params[i];
 	    txlabel[k].text_is_1byte = true;
@@ -5034,6 +5034,7 @@ return( true );
 	    txgcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	    txgcd[k].gd.popup_msg = (unichar_t *) popups[i];
 	    txgcd[k++].creator = GLabelCreate;
+	    txarray[j][0] = &txgcd[k-1];
 
 	    sprintf( values[i], "%g", d->texdata.params[i+7]*(double) (d->sf->ascent+d->sf->descent)/(double) (1<<20));
 	    txlabel[k].text = (unichar_t *) values[i];
@@ -5044,8 +5045,10 @@ return( true );
 	    txgcd[k].gd.flags = gg_visible | gg_enabled;
 	    txgcd[k].gd.cid = CID_TeX + i;
 	    txgcd[k++].creator = GTextFieldCreate;
+	    txarray[j][1] = &txgcd[k-1]; txarray[j++][2] = NULL;
 	    y += 26;
 	}
+	txarray[j][0] = GCD_Glue; txarray[j][1] = GCD_Glue; txarray[j++][2] = NULL;
 
 	txgcd[k].gd.pos.x = 30-3; txgcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
 	txgcd[k].gd.pos.width = -1; txgcd[k].gd.pos.height = 0;
@@ -5067,12 +5070,25 @@ return( true );
 	txgcd[k].gd.cid = false;
 	txgcd[k++].creator = GButtonCreate;
 
-	txgcd[k].gd.pos.x = 2; txgcd[k].gd.pos.y = 2;
-	txgcd[k].gd.pos.width = pos.width-4; txgcd[k].gd.pos.height = pos.height-4;
-	txgcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	txgcd[k].creator = GGroupCreate;
+	barray[0] = barray[2] = barray[3] = barray[4] = barray[6] = GCD_Glue; barray[7] = NULL;
+	barray[1] = &txgcd[k-2]; barray[5] = &txgcd[k-1];
+	txarray[j][0] = &boxes[2]; txarray[j][1] = GCD_ColSpan; txarray[j++][2] = NULL;
+	txarray[j][0] = NULL;
 
-	GGadgetsCreate(gw,txgcd);
+	memset(boxes,0,sizeof(boxes));
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = txarray[0];
+	boxes[0].creator = GHVGroupCreate;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = barray;
+	boxes[2].creator = GHBoxCreate;
+
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+	GHVBoxFitWindow(boxes[0].ret);
 	d->mpdone = false;
 	GDrawSetVisible(gw,true);
 
