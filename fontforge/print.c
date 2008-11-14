@@ -1171,8 +1171,10 @@ static void dump_pdftrailer(PI *pi) {
 static void DumpIdentCMap(PI *pi, int sfid) {
     struct sfbits *sfbit = &pi->sfbits[pi->sfid];
     SplineFont *sf = sfbit->sf;
+    SplineFont *master;
     int i, j, k, max;
 
+    master = sf->subfontcnt!=0 ? sf : sf->cidmaster;
     max = 0;
     if ( sfbit->istype42cid )
 	max = sfbit->map->enccount;
@@ -1190,7 +1192,10 @@ static void DumpIdentCMap(PI *pi, int sfid) {
     fprintf( pi->out, "%%%%DocumentNeededResources: ProcSet (CIDInit)\n" );
     fprintf( pi->out, "%%%%IncludeResource: ProcSet (CIDInit)\n" );
     fprintf( pi->out, "%%%%BeginResource: CMap (Noop)\n" );
-    fprintf( pi->out, "%%%%Title: (Noop %s %s %d)\n", sf->cidregistry, sf->ordering, sf->supplement );
+    if ( master!=NULL && master->cidregistry!=NULL )
+	fprintf( pi->out, "%%%%Title: (Noop %s %s %d)\n", master->cidregistry, master->ordering, master->supplement );
+    else
+	fprintf( pi->out, "%%%%Title: (Noop Adobe Identity 0)\n" );
     fprintf( pi->out, "%%%%EndComments\n" );
 
     fprintf( pi->out, "/CIDInit /ProcSet findresource begin\n" );
@@ -1200,9 +1205,15 @@ static void DumpIdentCMap(PI *pi, int sfid) {
     fprintf( pi->out, "begincmap\n" );
 
     fprintf( pi->out, "/CIDSystemInfo 3 dict dup begin\n" );
-    fprintf( pi->out, "  /Registry (%s) def\n", sf->cidregistry );
-    fprintf( pi->out, "  /Ordering (%s) def\n", sf->ordering );
-    fprintf( pi->out, "  /Supplement %d def\n", sf->supplement );
+    if ( master!=NULL && master->cidregistry!=NULL ) {
+	fprintf( pi->out, "  /Registry (%s) def\n", master->cidregistry );
+	fprintf( pi->out, "  /Ordering (%s) def\n", master->ordering );
+	fprintf( pi->out, "  /Supplement %d def\n", master->supplement );
+    } else {
+	fprintf( pi->out, "  /Registry (%s) def\n", "Adobe" );
+	fprintf( pi->out, "  /Ordering (%s) def\n", "Identity" );
+	fprintf( pi->out, "  /Supplement %d def\n", 0 );
+    }
     fprintf( pi->out, "end def\n" );
 
     fprintf( pi->out, "/CMapName /Noop-%d def\n", sfid );
@@ -1807,7 +1818,8 @@ static void samplestartpage(PI *pi ) {
 		    pi->pointsize*sfbit->sf->ascent/(sfbit->sf->ascent+sfbit->sf->descent) );
 	}
 	if ( sfbit->iscid )
-	    fprintf(pi->out,"%s setfont\n", sfbit->psfontname );
+	    fprintf(pi->out,"/Noop-%d [ /%s ] composefont %d scalefont setfont\n",
+		    0, sfbit->sf->fontname, pi->pointsize );
 	else
 	    fprintf(pi->out,"/%s findfont %d scalefont setfont\n", sfbit->sf->fontname,
 		    pi->pointsize);
@@ -1868,7 +1880,9 @@ static void outputotchar(PI *pi,struct opentype_str *osc,int x,int baseline) {
 	if ( (sfbit->twobyte && enc>0xffff) || (!sfbit->twobyte && enc>0xff) )
 	    fn = enc>>8;
 	if ( pi->wassfid!=sfid || fn!=pi->wasfn || fd->pointsize!=pi->wasps ) {
-	    if ( (sfbit->twobyte && enc>0xffff) || (!sfbit->twobyte && enc>0xff) )
+	    if ( sfbit->iscid )
+		putc('<',pi->out);
+	    else if ( (sfbit->twobyte && enc>0xffff) || (!sfbit->twobyte && enc>0xff) )
 		fprintf(pi->out,"/%s-%x findfont %d scalefont setfont\n  <",
 			sfbit->sf->fontname, enc>>8,
 			fd->pointsize);
