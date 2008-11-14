@@ -2143,7 +2143,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
 	/*  should be 42. The PLRM (v3) Chap 5 page 370 says the FontType should */
 	/*  11.  Ain't that just grand? */
 	fprintf( out, "  /FontType 11 def\n" );
-	fprintf( out, "  /CIDFontName (%s) def\n", sf->fontname );
+	fprintf( out, "  /CIDFontName /%s def\n", sf->fontname );
 	/* 5012 doesn't mention this, but we probably need these... */
 	fprintf( out, "  /CIDSystemInfo 3 dict dup begin\n" );
 	if ( cidmaster!=NULL ) {
