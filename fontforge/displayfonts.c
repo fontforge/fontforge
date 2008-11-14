@@ -259,7 +259,7 @@ return( ProgramExists(prog,buffer)!=NULL );
 static int PageSetup(PD *pi) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
+    GGadgetCreateData gcd[17], boxes[5], *radarray[4][5], *txtarray[3][5], *barray[9], *hvarray[5][2];
     GTextInfo label[17];
     char buf[10], pb[30];
     int pt;
@@ -298,6 +298,7 @@ static int PageSetup(PD *pi) {
     gcd[0].gd.cid = CID_lp;
     gcd[0].gd.handle_controlevent = PG_RadioSet;
     gcd[0].creator = GRadioCreate;
+    radarray[0][0] = GCD_HPad10; radarray[0][1] = &gcd[0];
 
     label[1].text = (unichar_t *) "lpr";
     label[1].text_is_1byte = true;
@@ -308,6 +309,7 @@ static int PageSetup(PD *pi) {
     gcd[1].gd.cid = CID_lpr;
     gcd[1].gd.handle_controlevent = PG_RadioSet;
     gcd[1].creator = GRadioCreate;
+    radarray[1][0] = GCD_HPad10; radarray[1][1] = &gcd[1];
 
     use_gv = false;
     label[2].text = (unichar_t *) "ghostview";
@@ -315,7 +317,7 @@ static int PageSetup(PD *pi) {
     gcd[2].gd.label = &label[2];
     gcd[2].gd.mnemonic = 'g';
     gcd[2].gd.pos.x = gcd[0].gd.pos.x+50; gcd[2].gd.pos.y = gcd[0].gd.pos.y;
-    gcd[2].gd.flags = gg_visible | gg_enabled;
+    gcd[2].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
     if ( !progexists("ghostview") ) {
 	if ( progexists("gv") ) {
 	    label[2].text = (unichar_t *) "gv";
@@ -326,6 +328,7 @@ static int PageSetup(PD *pi) {
     gcd[2].gd.cid = CID_ghostview;
     gcd[2].gd.handle_controlevent = PG_RadioSet;
     gcd[2].creator = GRadioCreate;
+    radarray[0][2] = &gcd[1]; radarray[0][3] = GCD_ColSpan; radarray[0][4] =NULL;
 
     label[3].text = (unichar_t *) _("To _File");
     label[3].text_is_1byte = true;
@@ -333,10 +336,11 @@ static int PageSetup(PD *pi) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.mnemonic = 'F';
     gcd[3].gd.pos.x = gcd[2].gd.pos.x; gcd[3].gd.pos.y = gcd[1].gd.pos.y; 
-    gcd[3].gd.flags = gg_visible | gg_enabled;
+    gcd[3].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
     gcd[3].gd.cid = CID_File;
     gcd[3].gd.handle_controlevent = PG_RadioSet;
     gcd[3].creator = GRadioCreate;
+    radarray[1][2] = &gcd[3];
 
     label[4].text = (unichar_t *) _("To P_DF File");
     label[4].text_is_1byte = true;
@@ -344,10 +348,11 @@ static int PageSetup(PD *pi) {
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'F';
     gcd[4].gd.pos.x = gcd[2].gd.pos.x+70; gcd[4].gd.pos.y = gcd[1].gd.pos.y; 
-    gcd[4].gd.flags = gg_visible | gg_enabled;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
     gcd[4].gd.cid = CID_PDFFile;
     gcd[4].gd.handle_controlevent = PG_RadioSet;
     gcd[4].creator = GRadioCreate;
+    radarray[1][3] = &gcd[4]; radarray[1][4] =NULL;
 
     label[5].text = (unichar_t *) _("_Other");
     label[5].text_is_1byte = true;
@@ -355,11 +360,12 @@ static int PageSetup(PD *pi) {
     gcd[5].gd.label = &label[5];
     gcd[5].gd.mnemonic = 'O';
     gcd[5].gd.pos.x = gcd[1].gd.pos.x; gcd[5].gd.pos.y = 22+gcd[1].gd.pos.y; 
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | gg_rad_continueold;
     gcd[5].gd.cid = CID_Other;
     gcd[5].gd.handle_controlevent = PG_RadioSet;
     gcd[5].gd.popup_msg = (unichar_t *) _("Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input.");
     gcd[5].creator = GRadioCreate;
+    radarray[2][0] = GCD_HPad10; radarray[2][1] = &gcd[5];
 
     if ( (pt=pi->pi.printtype)==pt_unknown ) pt = pt_lp;
     if ( pt==pt_pdf ) pt = 4;		/* These two are out of order */
@@ -376,6 +382,8 @@ static int PageSetup(PD *pi) {
     gcd[6].gd.flags = gg_visible | gg_enabled;
     gcd[6].gd.cid = CID_OtherCmd;
     gcd[6].creator = GTextFieldCreate;
+    radarray[2][2] = &gcd[6]; radarray[2][3] = GCD_ColSpan; radarray[2][4] =NULL;
+    radarray[3][0] = NULL;
 
     label[7].text = (unichar_t *) _("Page_Size:");
     label[7].text_is_1byte = true;
@@ -385,6 +393,7 @@ static int PageSetup(PD *pi) {
     gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 24+gcd[5].gd.pos.y+6; 
     gcd[7].gd.flags = gg_visible | gg_enabled;
     gcd[7].creator = GLabelCreate;
+    txtarray[0][0] = &gcd[7];
 
     if ( pi->pi.pagewidth==595 && pi->pi.pageheight==792 )
 	strcpy(pb,"US Letter");		/* Pick a name, this is the default case */
@@ -410,6 +419,7 @@ static int PageSetup(PD *pi) {
     gcd[8].gd.cid = CID_Pagesize;
     gcd[8].gd.u.list = pagesizes;
     gcd[8].creator = GListFieldCreate;
+    txtarray[0][1] = &gcd[8];
 
 
     label[9].text = (unichar_t *) _("_Copies:");
@@ -421,6 +431,7 @@ static int PageSetup(PD *pi) {
     gcd[9].gd.flags = gg_visible | gg_enabled;
     gcd[9].gd.cid = CID_CopiesLab;
     gcd[9].creator = GLabelCreate;
+    txtarray[0][2] = &gcd[9];
 
     sprintf(buf,"%d",pi->pi.copies);
     label[10].text = (unichar_t *) buf;
@@ -432,6 +443,7 @@ static int PageSetup(PD *pi) {
     gcd[10].gd.flags = gg_visible | gg_enabled;
     gcd[10].gd.cid = CID_Copies;
     gcd[10].creator = GTextFieldCreate;
+    txtarray[0][3] = &gcd[10]; txtarray[0][4] = NULL;
 
 
     label[11].text = (unichar_t *) _("_Printer:");
@@ -443,6 +455,7 @@ static int PageSetup(PD *pi) {
     gcd[11].gd.flags = gg_visible | gg_enabled;
     gcd[11].gd.cid = CID_PrinterLab;
     gcd[11].creator = GLabelCreate;
+    txtarray[1][0] = &gcd[11];
 
     label[12].text = (unichar_t *) pi->pi.printer;
     label[12].text_is_1byte = true;
@@ -455,6 +468,9 @@ static int PageSetup(PD *pi) {
     gcd[12].gd.cid = CID_Printer;
     gcd[12].gd.u.list = PrinterList();
     gcd[12].creator = GListFieldCreate;
+    txtarray[1][1] = &gcd[12];
+    txtarray[1][2] = GCD_ColSpan; txtarray[1][3] = GCD_Glue; txtarray[1][4] = NULL;
+    txtarray[2][0] = NULL;
 
 
     gcd[13].gd.pos.x = 30-3; gcd[13].gd.pos.y = gcd[12].gd.pos.y+36;
@@ -479,14 +495,39 @@ static int PageSetup(PD *pi) {
     gcd[14].gd.handle_controlevent = PG_Cancel;
     gcd[14].creator = GButtonCreate;
 
-    gcd[15].gd.pos.x = 2; gcd[15].gd.pos.y = 2;
-    gcd[15].gd.pos.width = pos.width-4; gcd[15].gd.pos.height = pos.height-2;
-    gcd[15].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[15].creator = GGroupCreate;
+    barray[0] = barray[2] = barray[3] = barray[4] = barray[6] = GCD_Glue; barray[7] = NULL;
+    barray[1] = &gcd[13]; barray[5] = &gcd[14];
 
-    GGadgetsCreate(pi->setup,gcd);
+    memset(boxes,0,sizeof(boxes));
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = radarray[0];
+    boxes[2].creator = GHVBoxCreate;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = txtarray[0];
+    boxes[3].creator = GHVBoxCreate;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = barray;
+    boxes[4].creator = GHBoxCreate;
+
+    hvarray[0][0] = &boxes[2]; hvarray[0][1] = NULL;
+    hvarray[1][0] = &boxes[3]; hvarray[1][1] = NULL;
+    hvarray[2][0] = GCD_Glue; hvarray[2][1] = NULL;
+    hvarray[3][0] = &boxes[4]; hvarray[3][1] = NULL;
+    hvarray[4][0] = NULL;
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(pi->setup,boxes);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
     GTextInfoListFree(gcd[12].gd.u.list);
     PG_SetEnabled(pi);
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(pi->setup,true);
     while ( !pi->pi.done )
 	GDrawProcessOneEvent(NULL);
