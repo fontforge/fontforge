@@ -1254,6 +1254,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_MoreParams		8005
 #define CID_TeXExtraSpLabel	8006
 #define CID_TeX			8007	/* through 8014 */
+#define CID_TeXBox		8030
 
 #define CID_DesignSize		8301
 #define CID_DesignBottom	8302
@@ -1268,6 +1269,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_OK			10002
 #define CID_Cancel		10003
 #define CID_MainGroup		10004
+#define CID_TopBox		10005
 
 #define CID_Lookups		11000
 #define CID_LookupTop		11001
@@ -5102,16 +5104,22 @@ return( true );
 static int GFI_TeXChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *g = GWidgetGetControl(d->gw,CID_TeXExtraSpLabel);
+	GRect size;
+
 	if ( GGadgetGetCid(g)==CID_TeXText ) {
-	    GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
+	    GGadgetSetTitle8(g,
 /* GT: Extra Space */
 		    _("Extra Sp:"));
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
 	} else {
-	    GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_TeXExtraSpLabel),
-		    _("Math Sp:"));
+	    GGadgetSetTitle8(g, _("Math Sp:"));
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),true);
 	}
+	GGadgetGetDesiredSize(g,&size,NULL);
+	GGadgetResize(g,size.width,size.height);
+	/* In Polish we need to reflow the text after changing the label */
+	GHVBoxReflow(GWidgetGetControl(d->gw,CID_TeXBox));
     }
 return( true );
 }
@@ -9770,6 +9778,7 @@ return;
 
     txbox[3].gd.flags = gg_enabled|gg_visible;
     txbox[3].gd.u.boxelements = txarray2;
+    txbox[3].gd.cid = CID_TeXBox;
     txbox[3].creator = GHVBoxCreate;
 
     txbox[4].gd.flags = gg_enabled|gg_visible;
@@ -10544,6 +10553,7 @@ return;
     mb[0].gd.pos.x = mb[0].gd.pos.y = 2;
     mb[0].gd.flags = gg_enabled|gg_visible;
     mb[0].gd.u.boxelements = marray;
+    mb[0].gd.cid = CID_TopBox;
     mb[0].creator = GHVGroupCreate;
 
     memset(&mb2,0,sizeof(mb2));
@@ -10683,19 +10693,13 @@ return;
     free(tmpcreatetime);
     free(tmpmodtime);
 
-    GHVBoxFitWindow(mb[0].ret);
-#if 0
-    if ( GTabSetGetTabLines(mgcd[0].ret)>3 ) {
-	int offset = (GTabSetGetTabLines(mgcd[0].ret)-2)*GDrawPointsToPixels(NULL,20);
-	GDrawResize(gw,pos.width,pos.height+offset);
-    }
-#endif
-
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
     GFI_AspectChange(mgcd[0].ret,NULL);
     GFI_InitMarkClasses(d);
     GGadgetSetList(GWidgetGetControl(gw,CID_StyleName),StyleNames(sf->fontstyle_name),false);
+
+    GHVBoxFitWindow(mb[0].ret);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

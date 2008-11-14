@@ -661,3 +661,7 @@ return;
     } else
 	GGadgetResize(g, outer.width-2*g->r.x, outer.height-2*g->r.y );
 }
+
+void GHVBoxReflow(GGadget *g) {
+    GHVBoxResize(g, g->r.width, g->r.height);
+}

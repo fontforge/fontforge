@@ -405,6 +405,7 @@ void GHVBoxSetExpandableCol(GGadget *g,int col);
 void GHVBoxSetExpandableRow(GGadget *g,int row);
 void GHVBoxSetPadding(GGadget *g,int hpad, int vpad);
 void GHVBoxFitWindow(GGadget *g);
+void GHVBoxReflow(GGadget *g);
 
 void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
 struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
