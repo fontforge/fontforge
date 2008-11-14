@@ -1196,9 +1196,15 @@ return( NULL );
 	if ( (wattrs->mask&wam_transient) && wattrs->transient!=NULL ) {
 	    XSetTransientForHint(display,nw->w,((GXWindow) (wattrs->transient))->w);
 	    nw->istransient = true;
+	    nw->transient_owner = ((GXWindow) (wattrs->transient))->w;
 	    nw->is_dlg = true;
 	} else if ( !nw->is_dlg )
 	    ++gdisp->top_window_count;
+	else if ( nw->is_dlg && gdisp->last_nontransient_window!=0 ) {
+	    XSetTransientForHint(display,nw->w,gdisp->last_nontransient_window);
+	    nw->transient_owner = gdisp->last_nontransient_window;
+	    nw->istransient = true;
+	}
 	nw->is_toplevel = true;
 	XChangeProperty(display,nw->w,gdisp->atoms.wm_protocols,XA_ATOM,32,
 		PropModeReplace,(unsigned char *) &gdisp->atoms.wm_del_window, 1);
@@ -3255,6 +3261,12 @@ return;
     gevent.w = gw;
     gevent.native_window = (void *) event->xany.window;
     gevent.type = -1;
+    if ( event->type==KeyPress || event->type==ButtonPress || event->type == ButtonRelease ) {
+	if ( ((GXWindow ) gw)->transient_owner!=0 )
+	    gdisp->last_nontransient_window = ((GXWindow ) gw)->transient_owner;
+	else
+	    gdisp->last_nontransient_window = ((GXWindow ) gw)->w;
+    }
     switch(event->type) {
       case KeyPress: case KeyRelease:
 	gdisp->last_event_time = event->xkey.time;

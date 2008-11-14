@@ -168,6 +168,7 @@ typedef struct gxwindow /* :GWindow */ {
 #ifndef _NO_LIBPANGO
     XftDraw *xft_w;
 #endif
+    Window transient_owner;
 } *GXWindow;
 
 struct colstate {
@@ -345,6 +346,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     PangoLayout  *pangoc_layout;
 # endif
 #endif
+    Window last_nontransient_window;
 } GXDisplay;
 
 # define Pixel32(gdisp,col) ( Pixel16(gdisp,col) | (gdisp)->cs.alpha_bits )
