@@ -385,9 +385,6 @@ your machine doesn't have them and you want them they are available from:
 	<A HREF="http://www.ijg.org/">libjpeg</A>
     </UL>
   <LI>
-    Under Mac OS/X these libraries are available from the
-    <A HREF="http://fink.sourceforge.net/">fink project</A>.
-  <LI>
     <A HREF="http://xmlsoft.org/">libxml2</A><BR>
     To parse SVG files and fonts
   <LI>
@@ -423,86 +420,34 @@ your machine doesn't have them and you want them they are available from:
     <A HREF="http://www.cygwin.com/">cygwin</A><BR>
     To build or run on a MS Windows system you need the cygwin environment and
     libraries.
+    <LI>
+      libintl<BR>
+      Is standard on most unixes. It is part of the fink package on the mac. Handles
+      UI localization.
+    <LI>
+      <A HREF="http://www.python.org/">libpython</A><BR>
+      If present when FontForge is compiled, allows the user to execute python
+      scripts within fontforge (and you can configure fontforge so that fontforge's
+      functionality can be imported into python -- that is fontforge both
+      <I>extends</I> and <I>embeds</I> python)
+    <LI>
+      <A HREF="http://x.org/">libX</A><BR>
+      Normally FontForge depends on the X11 windowing system, but if you are just
+      interested in the scripting engines (with no user interface), it may be built
+      on systems without X (the configure script should figure this out).
+    <LI>
+      <A HREF="http://www.cairographics.org/">libcairo</A><BR>
+      Cairo handles drawing anti-aliased splines in the outline glyph view. It
+      is dependent on libfontconfig, libXft and perhaps other libraries.
+    <LI>
+      <A HREF="http://www.pango.org/">libpango</A><BR>
+      Pango draws text for complex scripts. It depends on glib-2.0, libfontconfig,
+      libfreetype, libXft, and perhaps other libraries.
+  <LI>
+    Under Mac OS/X these libraries are available from the
+    <A HREF="http://fink.sourceforge.net/">fink project</A> and from
+    <A HREF="http://www.macports.org/">macports</A>.
 </UL>
-<P>
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Versions of shared libraries in my builds
-  </CAPTION>
-  <TR>
-    <TD></TD>
-    <TD>libpng</TD>
-    <TD>libtiff</TD>
-    <TD>libungif</TD>
-    <TD>libjpeg</TD>
-    <TD>libxml2</TD>
-    <TD>libuninameslist</TD>
-    <TD>freetype</TD>
-  </TR>
-  <TR>
-    <TD>i386 linux builds</TD>
-    <TD>3.1.2.2<BR>
-      =1.2.2</TD>
-    <TD>3.5<BR>
-      =20011128</TD>
-    <TD>4.1.0<BR>
-      =4</TD>
-    <TD>62.0.0<BR>
-      =62 (6b)</TD>
-    <TD>2.5.4<BR>
-      =2.5.4</TD>
-    <TD>0.0.1</TD>
-    <TD>6.3.3<BR>
-      =2.1.9</TD>
-  </TR>
-  <TR>
-    <TD>solaris builds</TD>
-    <TD>2<BR>
-      =1.0.8</TD>
-    <TD>3<BR>
-      =19970127</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>6<BR>
-      =62 (6b)</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>
-	<HR>
-    </TD>
-  </TR>
-  <TR>
-    <TD>Mac OS/X builds</TD>
-    <TD>(static)</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>(static)</TD>
-    <TD>(static)</TD>
-    <TD>2.5.0<BR>
-      =2.5.0</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>6.3.3<BR>
-      =2.1.4</TD>
-  </TR>
-  <TR>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-  </TR>
-</TABLE>
 <P>
 Normally FontForge depends on the X11 windowing system, but if you are just
 interested in the scripting engine (with no user interface), it may be built
