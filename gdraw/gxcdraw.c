@@ -1751,7 +1751,11 @@ return( hasP );
 #  define _pango_font_description_set_weight pango_font_description_set_weight
 #  define _pango_font_description_set_stretch pango_font_description_set_stretch
 #  define _pango_font_description_set_size pango_font_description_set_size
-#  define _pango_font_description_set_absolute_size pango_font_description_set_absolute_size
+#  if PANGO_VERSION_MINOR>=8
+#   define _pango_font_description_set_absolute_size pango_font_description_set_absolute_size
+#  else
+#   define no_pango_font_description_set_absolute_size
+#  endif
 #  define _pango_layout_set_font_description pango_layout_set_font_description
 #  define _pango_layout_set_text pango_layout_set_text
 #  define _pango_layout_set_font_description pango_layout_set_font_description
@@ -1773,12 +1777,16 @@ return( hasP );
 #  define _pango_layout_iter_next_run pango_layout_iter_next_run
 #  define _pango_layout_iter_get_run pango_layout_iter_get_run
 #  define _pango_layout_iter_get_run_extents pango_layout_iter_get_run_extents
+#  define GTimer GTimer_GTK
+#  include <pango/pangoxft.h>
 #  if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
+#   include <pango/pangocairo.h>
 #   define _pango_cairo_layout_path pango_cairo_layout_path
 #   define _pango_font_map_create_context pango_font_map_create_context
 #   define _pango_cairo_font_map_get_default pango_cairo_font_map_get_default
 #   define _pango_cairo_context_set_resolution _pango_cairo_context_set_resolution
 #  endif
+#  undef GTimer
 #  if PANGO_VERSION_MINOR>=8
 #   define _pango_xft_render_layout pango_xft_render_layout
 #  else
@@ -1944,10 +1952,13 @@ return( *fdbase );
     /* But under pangocairo I can set the resolution, so behavior is different*/
     /* But then, set_absolute_size doesn't exist in some versions of the */
     /*  library */
+#ifndef no_pango_font_description_set_absolute_size
     if ( _pango_font_description_set_absolute_size!=NULL ) {
 	_pango_font_description_set_absolute_size(fd,
 		    GDrawPointsToPixels(NULL,font->rq.point_size*PANGO_SCALE));
-    } else {
+    } else
+#endif
+    {
 	if ( pc )				/* pango Resolution set correctly */
 	    _pango_font_description_set_size(fd,font->rq.point_size*PANGO_SCALE);
 	else					/* pango Resolution probably wrong */
