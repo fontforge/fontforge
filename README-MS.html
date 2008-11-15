@@ -441,20 +441,8 @@ Again you will probably need to be root to do this install too. Use either
   <A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)
 </H2>
 <P>
-FontForge tries to avoid hard dependencies. If a library is missing then
-fontforge will (in most cases) be able to continue to run, it will just lack
-whatever functionality the library provides. So if you don't need to import
-tiff images, you don't need libtiff. If you don't need to hand SVG fonts
-you don't need libxml2, etc.
-<P>
-If you want to do autotracing around character images you should also download
-either
-<UL>
-  <LI>
-    Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>
-  <LI>
-    Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
-    program.</A>
+If one of the following libraries is missing then
+fontforge will not start and will not give any error message.
 </UL>
 <P>
 If you want to edit <A NAME="cidmaps">CID keyed </A>fonts you need these
@@ -473,12 +461,6 @@ read SVG fonts. With the freetype library FontForge will do a better job
 making bitmap characters for you. libuninameslist provides standard unicode
 names and annotations for unicode characters (it has been localized into
 English and French)
-<P>
-None is required for the proper compilation/execution of FontForge, if the
-libraries are not present they will not be used. (If the machine on which
-your executable was build didn't have them, then you must not only install
-the libraries, but <A HREF="#source">rebuild fontforge from source</A>) If
-your machine doesn't have them and you want them they are available from:
 <UL>
   <LI>
     Image Libraries (to allow FontForge to import images in those formats)
@@ -493,9 +475,6 @@ your machine doesn't have them and you want them they are available from:
       <LI>
 	<A HREF="http://www.ijg.org/">libjpeg</A>
     </UL>
-  <LI>
-    Under Mac OS/X these libraries are available from the
-    <A HREF="http://fink.sourceforge.net/">fink project</A>.
   <LI>
     <A HREF="http://xmlsoft.org/">libxml2</A><BR>
     To parse SVG files and fonts
@@ -532,86 +511,40 @@ your machine doesn't have them and you want them they are available from:
     <A HREF="http://www.cygwin.com/">cygwin</A><BR>
     To build or run on a MS Windows system you need the cygwin environment and
     libraries.
+    <LI>
+      libintl<BR>
+      Is standard on most unixes. It is part of the fink package on the mac. Handles
+      UI localization.
+    <LI>
+      <A HREF="http://www.python.org/">libpython</A><BR>
+      If present when FontForge is compiled, allows the user to execute python
+      scripts within fontforge (and you can configure fontforge so that fontforge's
+      functionality can be imported into python -- that is fontforge both
+      <I>extends</I> and <I>embeds</I> python)
+    <LI>
+      <A HREF="http://x.org/">libX</A><BR>
+      Normally FontForge depends on the X11 windowing system, but if you are just
+      interested in the scripting engines (with no user interface), it may be built
+      on systems without X (the configure script should figure this out).
+    <LI>
+      <A HREF="http://www.cairographics.org/">libcairo</A><BR>
+      Cairo handles drawing anti-aliased splines in the outline glyph view. It
+      is dependent on libfontconfig, libXft and perhaps other libraries.
+    <LI>
+      <A HREF="http://www.pango.org/">libpango</A><BR>
+      Pango draws text for complex scripts. It depends on glib-2.0, libfontconfig,
+      libfreetype, libXft, and perhaps other libraries.
 </UL>
 <P>
-<TABLE BORDER CELLPADDING="2">
-  <CAPTION>
-    Versions of shared libraries in my builds
-  </CAPTION>
-  <TR>
-    <TD></TD>
-    <TD>libpng</TD>
-    <TD>libtiff</TD>
-    <TD>libungif</TD>
-    <TD>libjpeg</TD>
-    <TD>libxml2</TD>
-    <TD>libuninameslist</TD>
-    <TD>freetype</TD>
-  </TR>
-  <TR>
-    <TD>i386 linux builds</TD>
-    <TD>3.1.2.2<BR>
-      =1.2.2</TD>
-    <TD>3.5<BR>
-      =20011128</TD>
-    <TD>4.1.0<BR>
-      =4</TD>
-    <TD>62.0.0<BR>
-      =62 (6b)</TD>
-    <TD>2.5.4<BR>
-      =2.5.4</TD>
-    <TD>0.0.1</TD>
-    <TD>6.3.3<BR>
-      =2.1.9</TD>
-  </TR>
-  <TR>
-    <TD>solaris builds</TD>
-    <TD>2<BR>
-      =1.0.8</TD>
-    <TD>3<BR>
-      =19970127</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>6<BR>
-      =62 (6b)</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>
-	<HR>
-    </TD>
-  </TR>
-  <TR>
-    <TD>Mac OS/X builds</TD>
-    <TD>(static)</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>(static)</TD>
-    <TD>(static)</TD>
-    <TD>2.5.0<BR>
-      =2.5.0</TD>
-    <TD>
-	<HR>
-    </TD>
-    <TD>6.3.3<BR>
-      =2.1.4</TD>
-  </TR>
-  <TR>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-    <TD></TD>
-  </TR>
-</TABLE>
+If you want to do autotracing around character images you should also download
+either
+<UL>
+  <LI>
+    Peter Selinger's <A HREF="http://potrace.sf.net/">potrace</A>
+  <LI>
+    Martin Weber's <A HREF="http://sourceforge.net/projects/autotrace/">autotrace
+    program.</A>
+<P>
 <P>
 Normally FontForge depends on the X11 windowing system, but if you are just
 interested in the scripting engine (with no user interface), it may be built
