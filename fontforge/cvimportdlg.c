@@ -184,6 +184,10 @@ static unichar_t wildimg[] = { '*', '.', '{',
 't','i','f','f',',',
 't','i','f',',',
 #endif
+#ifndef _NO_LIBJPEG
+'j','p','e','g',',',
+'j','p','g',',',
+#endif
 'x','p','m',',', 'x','b','m',',', 'b','m','p', '}', '\0' };
 static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{',
 #ifndef _NO_LIBUNGIF
