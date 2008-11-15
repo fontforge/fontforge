@@ -757,8 +757,8 @@ return( NULL );
     memset(&outline_context,'\0',sizeof(outline_context));
     /* The outline's position is expressed in 24.6 fixed numbers representing */
     /*  pixels. I want to scale it back to the original coordinate system */
-    outline_context.scalex = ftc->em/(64.0*ptsizex*dpi/72.0);
-    outline_context.scaley = ftc->em/(64.0*ptsizey*dpi/72.0);
+    outline_context.scalex = ftc->em/(64.0*rint(ptsizex*dpi/72.0));
+    outline_context.scaley = ftc->em/(64.0*rint(ptsizey*dpi/72.0));
     outline_context.orig_ref = sc->layers[ftc->layer].refs;
     outline_context.orig_cpl = sc->layers[ftc->layer].splines;
     while ( outline_context.orig_cpl==NULL && outline_context.orig_ref != NULL ) {
