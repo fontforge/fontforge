@@ -25235,6 +25235,7 @@ fi
 
 
 
+
 STATIC_LIBS=
 if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$gww_needsstatic" = "yes"; then
@@ -25346,13 +25347,13 @@ _ACEOF
 fi
 
  if test "$gww_hascairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lcairo -lfontconfig"
+  X_PRE_LIBS="$X_PRE_LIBS -lcairo -lfontconfig"
  fi
  if test "$gww_haspango" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
  fi
  if test "$gww_haspangocairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
  fi
 fi
 
@@ -25410,26 +25411,26 @@ _ACEOF
 
  fi
  if test "$gww_hascairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lcairo"
+  X_PRE_LIBS="$X_PRE_LIBS -lcairo"
   cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBCAIRO 1
 _ACEOF
 
-  STATIC_LIBS="$STATIC_LIBS -lfontconfig"
+  X_PRE_LIBS="$X_PRE_LIBS -lfontconfig"
   cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBFONTCONFIG 1
 _ACEOF
 
  fi
  if test "$gww_haspango" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
   cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBPANGO 1
 _ACEOF
 
  fi
  if test "$gww_haspangocairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
  fi
 fi
 if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
@@ -26313,7 +26314,7 @@ echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libcairo_la" >&6; }
 if test $ac_cv_file__usr_X11R6_lib_libcairo_la = yes; then
   :
 else
-   STATIC_LIBS="$STATIC_LIBS -lcairo" ; cat >>confdefs.h <<\_ACEOF
+   X_PRE_LIBS="$X_PRE_LIBS -lcairo" ; cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBCAIRO 1
 _ACEOF
 
@@ -26410,7 +26411,7 @@ echo "${ECHO_T}$ac_cv_file__usr_X11R6_lib_libfontconfig_la" >&6; }
 if test $ac_cv_file__usr_X11R6_lib_libfontconfig_la = yes; then
   :
 else
-   STATIC_LIBS="$STATIC_LIBS -lfontconfig" ; cat >>confdefs.h <<\_ACEOF
+   X_PRE_LIBS="$X_PRE_LIBS -lfontconfig" ; cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBFONTCONFIG 1
 _ACEOF
 
@@ -26425,14 +26426,14 @@ fi
 
  fi
  if test "$gww_haspango" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
   cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBPANGO 1
 _ACEOF
 
  fi
  if test "$gww_haspangocairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
  fi
  ;;
 esac
