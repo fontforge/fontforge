@@ -677,13 +677,13 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
  if test "$gww_hascairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lcairo -lfontconfig"
+  X_PRE_LIBS="$X_PRE_LIBS -lcairo -lfontconfig"
  fi
  if test "$gww_haspango" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
  fi
  if test "$gww_haspangocairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
  fi
 fi
 
@@ -720,17 +720,17 @@ if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
   AC_DEFINE(_STATIC_LIBSPIRO)
  fi
  if test "$gww_hascairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS -lcairo"
+  X_PRE_LIBS="$X_PRE_LIBS -lcairo"
   AC_DEFINE(_STATIC_LIBCAIRO)
-  STATIC_LIBS="$STATIC_LIBS -lfontconfig"
+  X_PRE_LIBS="$X_PRE_LIBS -lfontconfig"
   AC_DEFINE(_STATIC_LIBFONTCONFIG)
  fi
  if test "$gww_haspango" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
   AC_DEFINE(_STATIC_LIBPANGO)
  fi
  if test "$gww_haspangocairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
  fi
 fi
 if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
@@ -762,15 +762,15 @@ case "$host" in
   AC_CHECK_LIB_LA(xml2, :, [ STATIC_LIBS="$STATIC_LIBS -lxml2" ; AC_DEFINE(_STATIC_LIBXML2)])
  fi
  if test "$gww_hascairo" = "yes"; then
-  AC_CHECK_LIB_LA(cairo, :, [ STATIC_LIBS="$STATIC_LIBS -lcairo" ; AC_DEFINE(_STATIC_LIBCAIRO)])
-  AC_CHECK_LIB_LA(fontconfig, :, [ STATIC_LIBS="$STATIC_LIBS -lfontconfig" ; AC_DEFINE(_STATIC_LIBFONTCONFIG)])
+  AC_CHECK_LIB_LA(cairo, :, [ X_PRE_LIBS="$X_PRE_LIBS -lcairo" ; AC_DEFINE(_STATIC_LIBCAIRO)])
+  AC_CHECK_LIB_LA(fontconfig, :, [ X_PRE_LIBS="$X_PRE_LIBS -lfontconfig" ; AC_DEFINE(_STATIC_LIBFONTCONFIG)])
  fi
  if test "$gww_haspango" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangoxft` -lXft"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
   AC_DEFINE(_STATIC_LIBPANGO)
  fi
  if test "$gww_haspangocairo" = "yes"; then
-  STATIC_LIBS="$STATIC_LIBS `pkg-config --libs pangocairo`"
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
  fi
  ;;
 esac
