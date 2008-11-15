@@ -165,7 +165,6 @@ static int alwaysgenapple=false, alwaysgenopentype=false;
 
 static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
-static char *pixmapdir=NULL;
 
 static int prefs_usecairo = true, prefs_usepango=true;
 
@@ -250,6 +249,7 @@ static struct prefs_list {
     char *popup;
 } general_list[] = {
 	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
+#if 0
 	{ N_("PixmapDir"), pr_file, &pixmapdir, NULL, NULL, 'R', NULL, 0, N_(
 	    "As FontForge creates windows, it loads images for its menus\n"
 	    "from files in a standard directory. You may change this to\n"
@@ -257,6 +257,7 @@ static struct prefs_list {
 	    "(If you want no icons at all, change to an empty directory).\n"
 	    "This may not effect windows of a type that is already initialized,\n"
 	    "restarting FontForge will fix that.")},
+#endif
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
@@ -1091,8 +1092,6 @@ static void PrefsUI_LoadPrefs(void) {
     }
     LoadNamelistDir(NULL);
     ProcessFileChooserPrefs();
-    if ( pixmapdir!=NULL )
-	GGadgetSetImageDir(pixmapdir);
     GDrawEnableCairo( prefs_usecairo );
     GDrawEnablePango( prefs_usepango );
 }
@@ -1720,8 +1719,6 @@ return( true );
 	}
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
-	if ( pixmapdir!=NULL )
-	    GGadgetSetImageDir(pixmapdir);
 	GDrawEnableCairo(prefs_usecairo);
 	GDrawEnablePango(prefs_usepango);
     }

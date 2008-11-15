@@ -273,7 +273,9 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
 return( copy);
 }
 
-static char *imagedir = "fontforge-pixmaps";
+static char *imagedir = "fontforge-pixmaps";	/* This is the system pixmap directory */
+static char **imagepath;			/* May contain user directories too */
+static int imagepathlenmax = 0;
 
 struct image_bucket {
     struct image_bucket *next;
@@ -299,50 +301,125 @@ static int hash_filename(char *_pt ) {
 return( val%IC_SIZE );
 }
 
-void GGadgetSetImageDir(char *dir) {
-    int i;
+static void ImagePathDefault(void) {
+
+    if ( imagepath==NULL ) {
+	imagepath = galloc(2*sizeof(void *));
+	imagepath[0] = copy(imagedir);
+	imagepath[1] = NULL;
+	imagepathlenmax = strlen(imagedir);
+    }
+}
+
+static void ImageCacheReload(void) {
+    int i,k;
     struct image_bucket *bucket;
     char *path=NULL;
     int pathlen;
     GImage *temp, hold;
 
-    if ( dir!=NULL && strcmp(imagedir,dir)!=0 ) {
-	imagedir = copy( dir );
+    ImagePathDefault();
 
-	/* Try to reload the cache from the new directory */
-	/* If a file doesn't exist in the new dir when it did in the old then */
-	/*  retain the old copy (people may hold pointers to it) */
-	pathlen = strlen(imagedir)+270; path = galloc(pathlen);
-	for ( i=0; i<IC_SIZE; ++i ) {
-	    for ( bucket = imagecache[i]; bucket!=NULL; bucket=bucket->next ) {
-		if ( strlen(bucket->filename)+strlen(imagedir)+3 > pathlen ) {
-		    pathlen = strlen(bucket->filename)+strlen(imagedir)+20;
-		    path = grealloc(path,pathlen);
-		}
-		sprintf( path,"%s/%s", imagedir, bucket->filename );
+    /* Try to reload the cache from the new directory */
+    /* If a file doesn't exist in the new dir when it did in the old then */
+    /*  retain the old copy (people may hold pointers to it) */
+    pathlen = imagepathlenmax+270; path = galloc(pathlen);
+    for ( i=0; i<IC_SIZE; ++i ) {
+	for ( bucket = imagecache[i]; bucket!=NULL; bucket=bucket->next ) {
+	    if ( strlen(bucket->filename)+imagepathlenmax+3 > pathlen ) {
+		pathlen = strlen(bucket->filename)+imagepathlenmax+20;
+		path = grealloc(path,pathlen);
+	    }
+	    for ( k=0; imagepath[k]!=NULL; ++k ) {
+		sprintf( path,"%s/%s", imagepath[k], bucket->filename );
 		temp = GImageRead(path);
-		if ( temp!=NULL ) {
-		    if ( bucket->image==NULL )
-			bucket->image = temp;
-		    else {
-			/* Need to retain the GImage point, but update its */
-			/*  contents, and free the old stuff */
-			hold = *(bucket->image);
-			*bucket->image = *temp;
-			*temp = hold;
-			GImageDestroy(temp);
-		    }
+		if ( temp!=NULL )
+	    break;
+	    }
+	    if ( temp!=NULL ) {
+		if ( bucket->image==NULL )
+		    bucket->image = temp;
+		else {
+		    /* Need to retain the GImage point, but update its */
+		    /*  contents, and free the old stuff */
+		    hold = *(bucket->image);
+		    *bucket->image = *temp;
+		    *temp = hold;
+		    GImageDestroy(temp);
 		}
 	    }
 	}
-	free(path);
     }
+    free(path);
+}
+
+void GGadgetSetImageDir(char *dir) {
+    int k;
+
+    if ( dir!=NULL && strcmp(imagedir,dir)!=0 ) {
+	char *old = imagedir;
+	imagedir = copy( dir );
+	if ( imagepath!=NULL ) {
+	    for ( k=0; imagepath[k]!=NULL; ++k )
+		if ( strcmp(imagepath[k],old)==0 )
+	    break;
+	    if ( imagepath[k]!=NULL ) {
+		free(imagepath[k]);
+		imagepath[k] = imagedir;
+		ImageCacheReload();
+	    }
+	}
+    }
+}
+
+static char *ImagePathFigureElement(char *start, int len) {
+    if ( *start=='=' && len==1 )
+return( imagedir );
+    else if ( *start=='~' && start[1]=='/' && len>=2 && getenv("HOME")!=NULL ) {
+	int hlen = strlen(getenv("HOME"));
+	char *absname = galloc( hlen+len+8 );
+	strcpy(absname,getenv("HOME"));
+	strncpy(absname+hlen,start+1,len-1);
+	absname[hlen+len-1] = '\0';
+return( absname );
+    } else
+return( copyn(start,len));
+}
+
+#ifndef PATH_SEPARATOR
+# define PATH_SEPARATOR ':'
+#endif
+
+void GGadgetSetImagePath(char *path) {
+    int cnt, k;
+    char *pt, *end;
+
+    if ( path==NULL )
+return;
+
+    if ( imagepath!=NULL ) {
+	for ( k=0; imagepath[k]!=NULL; ++k )
+	    free( imagepath[k] );
+	free( imagepath );
+    }
+    for ( cnt=0, pt = path; (end = strchr(pt,PATH_SEPARATOR))!=NULL; ++cnt, pt = end+1 );
+    imagepath = galloc((cnt+2)*sizeof(char *));
+    for ( cnt=0, pt = path; (end = strchr(pt,PATH_SEPARATOR))!=NULL; ++cnt, pt = end+1 )
+	imagepath[cnt] = ImagePathFigureElement(pt,end-pt);
+    imagepath[cnt] = ImagePathFigureElement(pt,strlen(pt));
+    imagepath[cnt+1] = NULL;
+    imagepathlenmax = 0;
+    for ( cnt=0; imagepath[cnt]!=NULL; ++cnt )
+	if ( strlen(imagepath[cnt]) > imagepathlenmax )
+	    imagepathlenmax = strlen(imagepath[cnt]);
+    ImageCacheReload();
 }
 
 GImage *GGadgetImageCache(char *filename) {
     int index = hash_filename(filename);
     struct image_bucket *bucket;
     char *path;
+    int k;
 
     for ( bucket = imagecache[index]; bucket!=NULL; bucket = bucket->next ) {
 	if ( strcmp(bucket->filename,filename)==0 )
@@ -353,9 +430,15 @@ return( bucket->image );
     imagecache[index] = bucket;
     bucket->filename = copy(filename);
 
-    path = galloc(strlen(filename)+strlen(imagedir)+10 );
-    sprintf( path,"%s/%s", imagedir, filename );
-    bucket->image = GImageRead(path);
+    ImagePathDefault();
+
+    path = galloc(strlen(filename)+imagepathlenmax+10 );
+    for ( k=0; imagepath[k]!=NULL; ++k ) {
+	sprintf( path,"%s/%s", imagepath[k], filename );
+	bucket->image = GImageRead(path);
+	if ( bucket->image!=NULL )
+    break;
+    }
     free(path);
     if ( bucket->image!=NULL ) {
 	/* Play with the clut to make white be transparent */
@@ -385,7 +468,13 @@ return( def );
 
     if ( *fname=='/' )
 	ret = GImageRead(fname);
-    else
+    else if ( *fname=='~' && fname[1]=='/' && getenv("HOME")!=NULL ) {
+	char *absname = galloc( strlen(getenv("HOME"))+strlen(fname)+8 );
+	strcpy(absname,getenv("HOME"));
+	strcat(absname,fname+1);
+	ret = GImageRead(absname);
+	free(absname);
+    } else
 	ret = GGadgetImageCache(fname);
     if ( ret==NULL )
 	ret = def;

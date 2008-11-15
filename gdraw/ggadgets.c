@@ -327,6 +327,7 @@ void GGadgetInit(void) {
     };
     if ( !_ggadget_inited ) {
 	_ggadget_inited = true;
+	GGadgetSetImagePath(GResourceFindString("GGadget.ImagePath"));
 	_ggadget_Default_Box.main_background = GDrawGetDefaultBackground(NULL);
 	_ggadget_Default_Box.main_foreground = GDrawGetDefaultForeground(NULL);
 	_ggadget_default_font = _GGadgetInitDefaultBox("GGadget.",&_ggadget_Default_Box,NULL);
