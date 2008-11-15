@@ -494,6 +494,7 @@ GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 GImage *GGadgetResourceFindImage(char *name, GImage *def);
 
 void GGadgetSetImageDir(char *dir);
+void GGadgetSetImagePath(char *path);
 GImage *GGadgetImageCache(char *filename);
 
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
