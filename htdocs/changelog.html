@@ -65,11 +65,26 @@
 	  Start up is slower with either Pango or Cairo active because both use fontconfig
 	  to initialize stuff and that can take time.
 	  <P>
-	  Pango and even more cairo can slow down drawing. Especially if you use X
+	  Cairo, and to a lesser extent, Pango can slow down drawing. Especially if you use X
 	  across a wire (on a display not connected to your computer). The slowdown
 	  depends to some extent on your video card, driver, X release, etc. If you
 	  find these libraries too slow to be useable you may turn either off in
 	  Preferences. (You may also turn them off at configure time).
+	  <P>
+	  The first time fontforge starts with pango (I think it's pango)
+	  enabled, initialization is very slow -- several minutes -- do not
+	  be alarmed, it only happens once.
+	  <P>
+	  Pango crashes on my cygwin system, so my cygwin build does not ship
+	  with either pango or cairo.
+	  <P>
+	  The version of cairo available from fink on the mac (1.0) is too old
+	  for it to work with fontforge (which needs at least 1.2). So the mac
+	  builds do not ship with cairo.
+	  <P>
+	  The default initialization of fontconfig on the mac doesn't seem to
+	  find any fonts. You should create a ~/.fonts directory and drop into
+	  it the fonts you want to be displayed.
 	<LI>
 	  Updated Polish, Greek and Russian translations.
 	  <P>
