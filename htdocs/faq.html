@@ -968,8 +968,17 @@
       font you've got:
       <DL>
 	<DT>
-	  <STRONG>Unix &amp; X</STRONG> (<A NAME="X-Install">but</A> not KDE)
+	  <STRONG>Unix &amp; <A NAME="X-Install">X</A></STRONG>
 	<DD>
+	  <DL>
+	    <DT>
+	      Outline fonts and fontconfig
+	    <DD>
+	      Many programs now use fontconfig to find fonts (including fontforge).
+	      To install a font for fontconfig, simply copy the file into your
+	      ~/.fonts directory.
+	    <DT>Bitmap fonts, and vanilla X11 installs
+	    <DD>
 	  I'd suggest that you look at the
 	  <A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux
 	  font HOWTO file</A>, and the
@@ -1053,6 +1062,7 @@ $ xset fp+ `pwd`
 	  conventions, but once that was done it installed X fonts quite handily. I
 	  never did figure out how to get it to install ghostview fonts. (I experimented
 	  with version 0.9.2)
+	  </DL>
 	<DT>
 	  <STRONG>TeX</STRONG>
 	<DD>

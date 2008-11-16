@@ -550,15 +550,23 @@ Normally FontForge depends on the X11 windowing system, but if you are just
 interested in the scripting engine (with no user interface), it may be built
 on systems without X (the configure script should figure this out).
 <P>
-<A NAME="suggested-fonts">You</A> might also want to pull down some unicode
-bitmap fonts that fontforge uses
-<UL>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Monospace/index.html">my
-    monospace fonts</A>
-  <LI>
-    <A HREF="http://bibliofile.duhs.duke.edu/gww/fonts/Caliban/index.html">my
-    sans-serif font</A>
+  <A NAME="suggested-fonts">Once</A> upon a time, fontforge only used X11 bitmap
+  fonts, on most systems in now uses fontconfig.
+  <P>
+  There seem plenty of good unicode outline fonts, so I shan't provide any
+  suggestions. To install them you simply create a subdirectory called .fonts in
+  your home directory, and then copy the font file into that subdirectory.
+  <P>
+  In the old days there weren't
+  many bitmap fonts with good unicode coverage so I provided a list of suggested
+  fonts. That's not nearly as important now. But if fontconfig isn't available for
+  you, you might want to pull down some old unicode bitmap fonts.
+  <UL>
+    <LI>
+      <A HREF="http://khdd.net/kanou/fonts/ff/fontviewfont-en.html">Kanou's fontview
+      fonts</A>
+      <A HREF="http://khdd.net/kanou/fonts/ff/fontviewfont.html"><IMG SRC="flags/Nisshoki-Japan.png"
+	  WIDTH="39" HEIGHT="26" ALIGN="Middle"></A>
   <LI>
     <A HREF="http://czyborra.com/unifont/">The unifont</A>
   <LI>
