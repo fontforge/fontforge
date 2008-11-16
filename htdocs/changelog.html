@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Nov-2008 -->
+  <!-- AP: Last modified: 15-Nov-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,7 +47,7 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
-      ??-Nov-2008
+      15-Nov-2008
       <UL>
 	<LI>
 	  FontForge will now use libpango and libcairo if these libraries are present.
@@ -74,6 +74,75 @@
 	  Updated Polish, Greek and Russian translations.
 	  <P>
 	  Created a teeny tiny translation file for Malayalam.
+	<LI>
+	  Change the image import dlg to display jpegs by default.
+	<LI>
+	  Show gridfit omitted a round to int when displaying grid fit outlines. If
+	  you use 72dpi, then all was fine, otherwise there would be a slight difference
+	  between where the outline was and where it should have been.
+	<LI>
+	  Remove the preference item to specify a pixmap directory. Instead allow the
+	  user to specify a pixmap search path with X resources.
+	  <CODE>Gdraw.GGadgets.ImagePath</CODE>
+	<LI>
+	  Many new X resources:
+	  <UL>
+	    <LI>
+	      GComboBox.Box...
+	    <LI>
+	      GComboBoxMenu.Box...
+	    <LI>
+	      GNumericField.Box...
+	    <LI>
+	      GNumericFieldSpinner.Box...
+	    <LI>
+	      fontforge.View.Background.
+	    <LI>
+	      ...Box.GradientBG
+	    <LI>
+	      ...Box.GradientStartCol
+	  </UL>
+	<LI>
+	  All dialogs should now be marked as transient for tiling window managers
+	  (I'm told). But a few dialogs weren't even marked as dialogs.
+	<LI>
+	  Boxify the Print Setup dialog.
+	<LI>
+	  Doing a print sample of a truetype font produced bad CID output.
+	<LI>
+	  Widths of dependent glyphs where not changed by changing the rbearing of
+	  a glyph in the metrics view.
+	<LI>
+	  Force a reflow of the TeX box when the user changes from TeX Text to TeX
+	  Math. The labels change, and in polish the label gets so long it hides under
+	  the text field.
+	<LI>
+	  Boxify the TeX More Params dialog of fontinfo.
+	<LI>
+	  When a point was exactly midway between its control points, FontForge would
+	  not detect that it was a curve point after recent work. As this happens
+	  frequently in TrueType (all interpolated points) we shouldn't do that.
+	<LI>
+	  Fix some more cases where the "link" buttons in the FontInfo-&gt;UnicodeRanges
+	  and Generate Fonts dlgs looked wrong.
+	<LI>
+	  FontForge has been generating bad bounding box information for BDF fonts.
+	<LI>
+	  Adobe doesn't define how big a spline must be for the "no extrema" restriction
+	  to apply. Phillip Poll suggests that fontforge have a command that defines
+	  this on a per-font basis. Element-&gt;Validation-&gt;Set Extremum Bound.
+	<LI>
+	  More accurate catagorization of whether a point is curve or tangent.
+	<LI>
+	  Sequence/Lookup dlg of contextual lookup dlgs can be too small.
+	<LI>
+	  Michal points out some strings which are not translated.
+	<LI>
+	  Michal points out that the [Default using suffix] button in the single
+	  substitution subtable dialog didn't work if the lookup were bound to no features.
+	<LI>
+	  Add a lock icon beside a reference name if that reference has "use-my-metrics"
+	  set.
 	<LI>
 	  If a quadratic glyph is put into spiro mode, modified, and then put back
 	  into bezier mode then it LOOKS as if it is still quadratic (there are
