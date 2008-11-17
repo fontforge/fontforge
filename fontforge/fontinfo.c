@@ -5105,20 +5105,17 @@ return( true );
 static int GFI_TeXChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	GGadget *g = GWidgetGetControl(d->gw,CID_TeXExtraSpLabel);
-	GRect size;
+	GGadget *extrasp = GWidgetGetControl(d->gw,CID_TeXExtraSpLabel);
 
 	if ( GGadgetGetCid(g)==CID_TeXText ) {
-	    GGadgetSetTitle8(g,
+	    GGadgetSetTitle8(extrasp,
 /* GT: Extra Space */
 		    _("Extra Sp:"));
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),false);
 	} else {
-	    GGadgetSetTitle8(g, _("Math Sp:"));
+	    GGadgetSetTitle8(extrasp, _("Math Sp:"));
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MoreParams),true);
 	}
-	GGadgetGetDesiredSize(g,&size,NULL);
-	GGadgetResize(g,size.width,size.height);
 	/* In Polish we need to reflow the text after changing the label */
 	GHVBoxReflow(GWidgetGetControl(d->gw,CID_TeXBox));
     }
