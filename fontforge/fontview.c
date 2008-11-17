@@ -4960,7 +4960,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    else
 		sprintf( buffer, _("%d@%d pixel bitmap"),
 			bdf->pixelsize, BDFDepth(bdf) );
-	    vwlist[i].ti.text = (unichar_t *) uc_copy(buffer);
+	    vwlist[i].ti.text = (unichar_t *) utf82u_copy(buffer);
 	    vwlist[i].ti.checkable = true;
 	    vwlist[i].ti.checked = bdf==fv->show;
 	    vwlist[i].ti.userdata = bdf;
