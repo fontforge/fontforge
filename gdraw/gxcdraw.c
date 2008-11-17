@@ -1388,8 +1388,8 @@ void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
     double xscale, yscale;
     GRect viewable = gw->ggc->clip;
 
-    xscale = (base->width>=1) ? ((double) (width-1))/(base->width-1) : 1;
-    yscale = (base->height>=1) ? ((double) (height-1))/(base->height-1) : 1;
+    xscale = (base->width>=1) ? ((double) (width))/(base->width) : 1;
+    yscale = (base->height>=1) ? ((double) (height))/(base->height) : 1;
     /* Intersect the clip rectangle with the scaled image to find the */
     /*  portion of screen that we want to draw */
     if ( viewable.x<x ) {
@@ -1414,7 +1414,7 @@ return;
 		/* Rounding errors */
 #if 1
   {
-    GImage *temp = _GImageExtract(base,&full,&viewable);
+    GImage *temp = _GImageExtract(base,&full,&viewable,xscale,yscale);
     GRect src;
     src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
     _GXCDraw_Image( gw, temp, &src, viewable.x, viewable.y);

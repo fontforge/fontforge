@@ -2108,16 +2108,13 @@ return;
 
 /* ******************************** Magnified ******************************* */
 
-GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size) {
+GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
+	double xscale, double yscale) {
     static GImage temp;
     static struct _GImage tbase;
     static uint8 *data;
     static int dlen;
-    double xscale, yscale;
     int r,c;
-
-    xscale = (size->width>=1) ? ((double) (src->width-1))/(size->width-1) : 1;
-    yscale = (size->height>=1) ? ((double) (src->height-1))/(size->height-1) : 1;
 
     memset(&temp,0,sizeof(temp));
     tbase = *base;
@@ -2129,39 +2126,39 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size) {
 	tbase.bytes_per_line = size->width;
     else
 	tbase.bytes_per_line = 4*size->width;
-    if ( tbase.bytes_per_line*size->height )
+    if ( tbase.bytes_per_line*size->height>dlen )
 	data = grealloc(data,dlen = tbase.bytes_per_line*size->height );
     tbase.data = data;
 
     if ( base->image_type==it_mono ) {
 	memset(data,0,tbase.height*tbase.bytes_per_line);
 	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r*yscale ) + src->y;
+	    int or = rint( r/yscale ) + src->y;
 	    uint8 *pt = data+r*tbase.bytes_per_line;
 	    uint8 *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = c*xscale +src->x;
+		int oc = c/xscale +src->x;
 		if ( opt[oc>>3] & (0x80>>(oc&7)) )
 		    pt[c>>3] |= (0x80>>(c&7));
 	    }
 	}
     } else if ( base->image_type==it_index ) {
 	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r*yscale ) + src->y;
+	    int or = rint( r/yscale ) + src->y;
 	    uint8 *pt = data+r*tbase.bytes_per_line;
 	    uint8 *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = c*xscale +src->x;
+		int oc = c/xscale +src->x;
 		*pt++ = opt[oc];
 	    }
 	}
     } else {
 	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r*yscale ) + src->y;
+	    int or = rint( r/yscale ) + src->y;
 	    uint32 *pt = (uint32 *) (data+r*tbase.bytes_per_line);
 	    uint32 *opt = (uint32 *) (base->data+or*base->bytes_per_line);
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = c*xscale+src->x;
+		int oc = c/xscale+src->x;
 		*pt++ = opt[oc];
 	    }
 	}
@@ -2191,8 +2188,8 @@ return;
 
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
 
-    xscale = (base->width>=1) ? ((double) (width-1))/(base->width-1) : 1;
-    yscale = (base->height>=1) ? ((double) (height-1))/(base->height-1) : 1;
+    xscale = (base->width>=1) ? ((double) (width))/(base->width) : 1;
+    yscale = (base->height>=1) ? ((double) (height))/(base->height) : 1;
     /* Intersect the clip rectangle with the scaled image to find the */
     /*  portion of screen that we want to draw */
     if ( viewable.x<x ) {
@@ -2216,7 +2213,7 @@ return;
     if ( full.y+full.height>base->height ) full.height = base->height-full.y;	/* Rounding errors */
 		/* Rounding errors */
 
-    temp = _GImageExtract(base,&full,&viewable);
+    temp = _GImageExtract(base,&full,&viewable,xscale,yscale);
     src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
     _GXDraw_Image( _w, temp, &src, viewable.x, viewable.y);
 }
