@@ -527,13 +527,12 @@ English and French)
       interested in the scripting engines (with no user interface), it may be built
       on systems without X (the configure script should figure this out).
     <LI>
-      <A HREF="http://www.cairographics.org/">libcairo</A><BR>
-      Cairo handles drawing anti-aliased splines in the outline glyph view. It
-      is dependent on libfontconfig, libXft and perhaps other libraries.
+      I do not ship builds with python under cygwin because I don't want to
+      force people to download python. (You can build this yourself with
+      <CODE>./configure.static</CODE>.
     <LI>
-      <A HREF="http://www.pango.org/">libpango</A><BR>
-      Pango draws text for complex scripts. It depends on glib-2.0, libfontconfig,
-      libfreetype, libXft, and perhaps other libraries.
+      I do not ship builds with pango or cairo because I could not get them
+      to work under cygwin.
 </UL>
 <P>
 If you want to do autotracing around character images you should also download
