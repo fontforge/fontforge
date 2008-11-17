@@ -2595,7 +2595,7 @@ static void GTextFieldSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
 		    GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
 		    2*GBoxBorderWidth(gt->g.base,&_GListMark_Box) +
-		    2*GBoxBorderWidth(gt->g.base,&glistfieldmenu_box);
+		    GBoxBorderWidth(gt->g.base,&glistfieldmenu_box);
 	} else if ( gt->numericfield ) {
 	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize)/2 +
 		    GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
@@ -2623,7 +2623,7 @@ static void GTextFieldGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 	extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
 		GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
 		2*GBoxBorderWidth(gt->g.base,&_GListMark_Box) +
-		2*GBoxBorderWidth(gt->g.base,&glistfieldmenu_box);
+		GBoxBorderWidth(gt->g.base,&glistfieldmenu_box);
     } else if ( gt->numericfield ) {
 	extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize)/2 +
 		GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
@@ -2772,6 +2772,7 @@ static void GTextFieldInit() {
     glistfield_box = gtextfield_box;
     _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
     glistfieldmenu_box = glistfield_box;
+    glistfieldmenu_box.padding = 1;
     _GGadgetInitDefaultBox("GComboBoxMenu.",&glistfieldmenu_box,_gtextfield_font);
     gnumericfield_box = gtextfield_box;
     _GGadgetInitDefaultBox("GNumericField.",&gnumericfield_box,_gtextfield_font);
@@ -2892,7 +2893,7 @@ static void GTextFieldFit(GTextField *gt) {
 	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
 		    GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
 		    2*GBoxBorderWidth(gt->g.base,&_GListMark_Box)+
-		    2*GBoxBorderWidth(gt->g.base,&glistfieldmenu_box);
+		    GBoxBorderWidth(gt->g.base,&glistfieldmenu_box);
 	else {
 	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize)/2 +
 		    GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
