@@ -35,7 +35,7 @@
 
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
-static GBox gtextfield_box = { /* Don't initialize here */ 0 };
+GBox _GGadget_gtextfield_box = { /* Don't initialize here */ 0 };
 static GBox glistfield_box = { /* Don't initialize here */ 0 };
 static GBox glistfieldmenu_box = { /* Don't initialize here */ 0 };
 static GBox gnumericfield_box = { /* Don't initialize here */ 0 };
@@ -2765,16 +2765,16 @@ static void GTextFieldInit() {
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.family_name = courier;
     _gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
-    _GGadgetCopyDefaultBox(&gtextfield_box);
-    gtextfield_box.padding = 3;
-    gtextfield_box.flags = box_active_border_inner;
-    _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&gtextfield_box,_gtextfield_font);
-    glistfield_box = gtextfield_box;
+    _GGadgetCopyDefaultBox(&_GGadget_gtextfield_box);
+    _GGadget_gtextfield_box.padding = 3;
+    _GGadget_gtextfield_box.flags = box_active_border_inner;
+    _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&_GGadget_gtextfield_box,_gtextfield_font);
+    glistfield_box = _GGadget_gtextfield_box;
     _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
     glistfieldmenu_box = glistfield_box;
     glistfieldmenu_box.padding = 1;
     _GGadgetInitDefaultBox("GComboBoxMenu.",&glistfieldmenu_box,_gtextfield_font);
-    gnumericfield_box = gtextfield_box;
+    gnumericfield_box = _GGadget_gtextfield_box;
     _GGadgetInitDefaultBox("GNumericField.",&gnumericfield_box,_gtextfield_font);
     gnumericfieldspinner_box = gnumericfield_box;
     gnumericfieldspinner_box.border_type = bt_none;
@@ -2949,13 +2949,13 @@ return( gt );
 }
 
 GGadget *GTextFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GTextField *gt = _GTextFieldCreate(gcalloc(1,sizeof(GTextField)),base,gd,data,&gtextfield_box);
+    GTextField *gt = _GTextFieldCreate(gcalloc(1,sizeof(GTextField)),base,gd,data,&_GGadget_gtextfield_box);
 
 return( &gt->g );
 }
 
 GGadget *GPasswordCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GTextField *gt = _GTextFieldCreate(gcalloc(1,sizeof(GTextField)),base,gd,data,&gtextfield_box);
+    GTextField *gt = _GTextFieldCreate(gcalloc(1,sizeof(GTextField)),base,gd,data,&_GGadget_gtextfield_box);
     gt->password = true;
     GTextFieldRefigureLines(gt, 0);
 
@@ -2976,7 +2976,7 @@ GGadget *GTextCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data)
     gt->completionfield = true;
     gt->was_completing = true;
     ((GCompletionField *) gt)->completion = gd->u.completion;
-    _GTextFieldCreate(gt,base,gd,data,&gtextfield_box);
+    _GTextFieldCreate(gt,base,gd,data,&_GGadget_gtextfield_box);
     gt->accepts_tabs = ((GCompletionField *) gt)->completion != NULL;
 
 return( &gt->g );
@@ -2986,7 +2986,7 @@ GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GTextField *gt = gcalloc(1,sizeof(GTextField));
     gt->multi_line = true;
     gt->accepts_returns = true;
-    _GTextFieldCreate(gt,base,gd,data,&gtextfield_box);
+    _GTextFieldCreate(gt,base,gd,data,&_GGadget_gtextfield_box);
 
 return( &gt->g );
 }
@@ -3057,7 +3057,7 @@ GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     ge->gt.completionfield = true;
     /* ge->gt.was_completing = true; */
     ((GCompletionField *) ge)->completion = GListField_NameCompletion;
-    _GTextFieldCreate(&ge->gt,base,gd,data,&gtextfield_box);
+    _GTextFieldCreate(&ge->gt,base,gd,data,&_GGadget_gtextfield_box);
     ge->gt.g.funcs = &glistfield_funcs;
 return( &ge->gt.g );
 }

@@ -632,10 +632,14 @@ static void MVCreateFields(MetricsView *mv,int i) {
     GTextInfo label;
     static unichar_t nullstr[1] = { 0 };
     int j;
+    extern GBox _GGadget_gtextfield_box;
 
-    small.main_background = small.main_foreground = COLOR_DEFAULT;
-    small.disabled_foreground = 0x808080;
-    small.disabled_background = COLOR_DEFAULT;
+    small = _GGadget_gtextfield_box;
+    small.flags = 0;
+    small.border_type = bt_none;
+    small.border_shape = bs_rect;
+    small.border_width = 0;
+    small.padding = 0;
 
     memset(&gd,'\0',sizeof(gd));
     memset(&label,'\0',sizeof(label));
