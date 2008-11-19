@@ -404,7 +404,9 @@ if test "$gww_checkcairo" = "yes" ; then
   LDFLAGS="$LDFLAGS $X_LIBS"
   AC_CHECK_HEADER(fontconfig/fontconfig.h, [
    AC_CHECK_LIB(fontconfig, FcConfigCreate, [
-    AC_CHECK_LIB(cairo, cairo_xlib_surface_create, gww_hascairo="yes" )])])
+    AC_CHECK_LIB(cairo, cairo_set_scaled_font, gww_hascairo="yes" )])])
+#I used to check for cairo_xlib_surface_create, but that's in version 1.0 too
+# cairo_set_scaled_font is not in 1.0 (fontforge needs at least 1.2)
   CFLAGS=$gww_CFLAGS
   LDFLAGS=$gww_LDFLAGS
 fi

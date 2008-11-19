@@ -279,7 +279,7 @@ if test "$gww_checkcairo" = "yes" ; then
   LDFLAGS="$LDFLAGS $X_LIBS"
   AC_CHECK_HEADER(fontconfig/fontconfig.h, [
    AC_CHECK_LIB(fontconfig, FcConfigCreate, [
-    AC_CHECK_LIB(cairo, cairo_xlib_surface_create, gww_hascairo="yes" )])])
+    AC_CHECK_LIB(cairo, cairo_set_scaled_font, gww_hascairo="yes" )])])
   CFLAGS=$gww_CFLAGS
   LDFLAGS=$gww_LDFLAGS
 fi
