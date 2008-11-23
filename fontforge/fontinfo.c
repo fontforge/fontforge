@@ -5713,7 +5713,7 @@ return( true );
     if ( newpos!=lk->off_left ) {
 	lk->off_left = newpos;
 	GScrollBarSetPos(event->u.control.g,newpos);
-	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,true);
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
     }
 return( true );
 }
@@ -5761,7 +5761,7 @@ return( true );
 	lk->off_top = newpos;
 	GScrollBarSetPos(event->u.control.g,newpos);
 	/*GDrawScroll(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,0,diff*gfi->fh);*/
-	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,true);
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
     }
 return( true );
 }
