@@ -319,7 +319,7 @@ return( -16 );
 
 return( -10 );
 }
-    
+
 void GGadgetInit(void) {
     static GResStruct res[] = {
 	{ "Font", rt_string, NULL, font_cvt },
