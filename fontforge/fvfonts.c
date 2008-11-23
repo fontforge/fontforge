@@ -484,40 +484,53 @@ return( head );
 SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *mc) {
     SplineChar *nsc = SFSplineCharCreate(into);
     Layer *layers = nsc->layers;
-    int layer;
+    int layer, lycopy;
 
     *nsc = *sc;		/* We copy the layers just below */
-    if ( sc->layer_cnt!=into->layer_cnt )
-	layers = grealloc(layers,sc->layer_cnt*sizeof(Layer));
-    memcpy(layers,sc->layers,sc->layer_cnt*sizeof(Layer));
+    nsc->layer_cnt = into->layer_cnt;
     nsc->layers = layers;
-    for ( layer = ly_back; layer<sc->layer_cnt; ++layer ) {
+    lycopy = sc->layer_cnt>nsc->layer_cnt ? nsc->layer_cnt : sc->layer_cnt;
+    memcpy(layers,sc->layers,lycopy*sizeof(Layer));
+    if ( nsc->layer_cnt>lycopy )
+	memset(layers+lycopy,0,(nsc->layer_cnt-lycopy)*sizeof(Layer));
+    for ( layer = ly_back; layer<lycopy; ++layer ) {
 	layers[layer].splines = SplinePointListCopy(layers[layer].splines);
 	layers[layer].refs = RefCharsCopy(layers[layer].refs);
 	layers[layer].images = ImageListCopy(layers[layer].images);
 	layers[layer].undoes = NULL;
 	layers[layer].redoes = NULL;
+	if ( into->layers[layer].order2!=sc->layers[layer].order2 ) {
+	    nsc->layers[layer].order2 = into->layers[layer].order2;
+	    if ( into->layers[layer].order2 )
+		SCConvertLayerToOrder2(nsc,layer);
+	    else
+		SCConvertLayerToOrder3(nsc,layer);
+	}
     }
     nsc->parent = into;
     nsc->orig_pos = -2;
     nsc->name = copy(sc->name);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
+    nsc->dstem = DStemInfoCopy(nsc->dstem);
+    nsc->md = NULL;
+    if ( sc->countermask_cnt!=0 ) {
+	nsc->countermasks = galloc(sc->countermask_cnt*sizeof(HintMask));
+	memcpy(nsc->countermasks,sc->countermasks,sc->countermask_cnt*sizeof(HintMask));
+    }
     nsc->anchor = AnchorPointsDuplicate(nsc->anchor,nsc);
-    nsc->views = NULL;
     nsc->changed = true;
     nsc->dependents = NULL;		/* Fix up later when we know more */
-    nsc->layers[ly_fore].undoes = nsc->layers[ly_back].undoes = NULL;
-    nsc->layers[ly_fore].redoes = nsc->layers[ly_back].redoes = NULL;
     if ( nsc->ttf_instrs_len!=0 ) {
 	nsc->ttf_instrs = galloc(nsc->ttf_instrs_len);
 	memcpy(nsc->ttf_instrs,sc->ttf_instrs,nsc->ttf_instrs_len);
     }
     nsc->kerns = NULL;
+    nsc->vkerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,mc);
     nsc->altuni = AltUniCopy(nsc->altuni,into);
-    if ( into->layers[ly_fore].order2!=sc->layers[ly_fore].order2 )
-	SCConvertOrder(nsc,into->layers[ly_fore].order2);
+    nsc->charinfo = NULL;
+    nsc->views = NULL;
 return(nsc);
 }
 
