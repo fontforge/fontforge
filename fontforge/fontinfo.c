@@ -5663,7 +5663,7 @@ void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh) {
 	refresh = true;
     }
     if ( refresh )
-	GDrawRequestExpose(gw,NULL,true);
+	GDrawRequestExpose(gw,NULL,false);
 }
 
 static int LookupsHScroll(GGadget *g,GEvent *event) {
@@ -5873,7 +5873,7 @@ static int GFI_LookupOrder(GGadget *g, GEvent *e) {
 	}
     done:
 	GFI_LookupEnableButtons(gfi,isgpos);
-	GDrawRequestExpose(gw,NULL,true);
+	GDrawRequestExpose(gw,NULL,false);
     }
 return( true );
 }
@@ -5899,7 +5899,7 @@ static int GFI_LookupSort(GGadget *g, GEvent *e) {
 		}
 	    }
 	}
-	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,true);
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
 	GFI_LookupEnableButtons(gfi,isgpos);
     }
 return( true );
@@ -6874,7 +6874,7 @@ return;
 	    AALTRemoveOld(gfi->sf,lk);
 	}
 	AALTCreateNew(gfi->sf,lk);	      
-	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+0)),NULL,true);
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+0)),NULL,false);
     } else if ( mi->mid==CID_AddDFLT ) {
 	struct selection_bits sel;
 	int toall, ret, i;
@@ -7363,7 +7363,7 @@ return;
 		    }
 		}
 		GFI_LookupEnableButtons(gfi,isgpos);
-		GDrawRequestExpose(gw,NULL,true);
+		GDrawRequestExpose(gw,NULL,false);
 		if ( event->u.mouse.button==3 )
 		    LookupMenu(gfi,lk,isgpos,event);
 return;
@@ -7400,7 +7400,7 @@ return;		/* Can't open this guy */
 			    } else
 				lk->all[i].subtables[j].selected = !lk->all[i].subtables[j].selected;
 			    GFI_LookupEnableButtons(gfi,isgpos);
-			    GDrawRequestExpose(gw,NULL,true);
+			    GDrawRequestExpose(gw,NULL,false);
 			    if ( event->u.mouse.button==3 )
 				LookupMenu(gfi,lk,isgpos,event);
 			}
