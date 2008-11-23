@@ -965,10 +965,17 @@ return;
 static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color ends) {
     int y,i;
     int x = r->x, xend=r->x+r->width;
-    int half = (r->height+1)/2;
+    int half = (r->height-1)/2;
     int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
     int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
-    Color col;
+    Color col, col2;
+    
+    //stuff for midpoint algorithm for drawing circles.
+    int xoff = rr;
+    int yoff = 0;
+    int xchange = 1 - 2*rr;
+    int ychange = 1;
+    int raderr = 0;
 
     if ( r->height==0 )
 return;
@@ -976,14 +983,46 @@ return;
 	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
 				(i*eg + (half-i)*mg)/half,
 			        (i*eb + (half-i)*mb)/half );
-	if ( half-i>=rr ) {
+	if ( half-i>rr ) {
 	    x = r->x;
-	    xend = r->x+r->width;
-	} else {
-	    int yoff = rr-(half-i), xoff = rr-rint(sqrt((double) (rr*rr - yoff*yoff)));
-	    x = r->x + xoff;
-	    xend = r->x + r->width - 2*xoff;
+	    xend = r->x+r->width-1;
+	} 
+	else {
+	    if (xoff < yoff) break;
+
+	    /* Midpoint algorithm for drawing circles exploits symmetry to draw
+	     * nice circles quickly - one computed (x, y) pair suffices for
+	     * generating 8 different points. We have to do exactly the same
+	     * here, but because we're drawing gradient lines, code gets uglier.
+	     */
+
+	    int j = half - rr + xoff;
+	    col2 = COLOR_CREATE( (j*er + (half-j)*mr)/half,
+				(j*eg + (half-j)*mg)/half,
+			        (j*eb + (half-j)*mb)/half );
+
+	    x = r->x + rr - yoff;
+	    xend = r->x + r->width - (1 + rr - yoff);
+	    
+	    y = r->y + r->height - rr + xoff - 1;
+	    GDrawDrawLine(gw,x,y,xend,y,col2);
+	    y = r->y + rr - xoff;
+	    GDrawDrawLine(gw,x,y,xend,y,col2);
+
+	    x = r->x + rr - xoff;
+	    xend = r->x + r->width - (1 + rr - xoff);
+	    
+	    yoff++;
+	    raderr+=ychange;
+	    ychange+=2;
+	    
+	    if (2*raderr + xchange > 0) {
+		xoff--;
+		raderr+=xchange;
+		xchange+=2;
+	    }
 	}
+
 	y = r->y + half-i;
 	GDrawDrawLine(gw,x,y,xend,y,col);
 	y = r->y + (r->height&1 ? half+i : half+i+1);
@@ -1037,7 +1076,7 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	    pts[4] = pts[0];
 	    GDrawFillPoly(gw,pts,5,ibg);
 	} else {
-	    int rr = design->rr_radius;
+	    int rr = GDrawPointsToPixels(gw,design->rr_radius);
 
 	    if ( rr==0 )
 		rr = pos->width/2-def_off;
