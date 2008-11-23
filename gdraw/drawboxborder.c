@@ -962,6 +962,31 @@ return;
     }
 }
 
+static void BoxGradientElipse(GWindow gw,GRect *r,Color middle,Color ends) {
+    int y,i;
+    int x = r->x, xend=r->x+r->width, xoff;
+    int half = r->height/2;
+    double xhalf = r->width/2.0;
+    int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
+    int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
+    Color col;
+    double yfrac;
+
+    if ( r->height<=1 )
+return;
+    for ( i=0; i<=half; ++i ) {
+	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
+				(i*eg + (half-i)*mg)/half,
+			        (i*eb + (half-i)*mb)/half );
+	yfrac = ((double) i)/((double) half);
+	xoff = rint( xhalf - xhalf*sqrt( 1-yfrac*yfrac ));
+	y = r->y + half-i;
+	GDrawDrawLine(gw,x+xoff,y,xend-xoff,y,col);
+	y = r->y + (r->height&1 ? half+i+1 : half+i);
+	GDrawDrawLine(gw,x+xoff,y,xend-xoff,y,col);
+    }
+}
+
 static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color ends) {
     int y,i;
     int x = r->x, xend=r->x+r->width;
@@ -970,7 +995,7 @@ static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color e
     int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
     Color col, col2;
     
-    //stuff for midpoint algorithm for drawing circles.
+    /* stuff for midpoint algorithm for drawing circles. */
     int xoff = rr;
     int yoff = 0;
     int xchange = 1 - 2*rr;
@@ -1066,7 +1091,10 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	    if ( def_off ) {
 		cur.x += def_off; cur.y += def_off; cur.width -= 2*def_off; cur.height -= 2*def_off;
 	    }
-	    GDrawFillElipse(gw,&cur,ibg);
+	    if ( design->flags & box_gradient_bg )
+		BoxGradientElipse(gw,&cur,ibg,design->gradient_bg_end);
+	    else
+		GDrawFillElipse(gw,&cur,ibg);
 	} else if ( design->border_shape==bs_diamond ) {
 	    GPoint pts[5];
 	    pts[0].x = pos->x+pos->width/2;	    pts[0].y = pos->y+def_off;
