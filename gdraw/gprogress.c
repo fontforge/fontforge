@@ -28,6 +28,7 @@
 #include <gprogress.h>
 #include <ggadget.h>
 #include <gwidget.h>
+#include <gresource.h>
 #include <ustring.h>
 #include <memory.h>
 #include <sys/time.h>
@@ -53,6 +54,11 @@ typedef struct gprogress {
     GFont *font;
     struct gprogress *prev;
 } GProgress;
+
+static Color progress_background;
+static Color progress_fillcol = 0xc0c0ff;
+static GFont *progress_font = NULL;
+static int progress_init = false;
 
 static GProgress *current;
 
@@ -104,11 +110,11 @@ static void GProgressDraw(GProgress *p,GWindow pixmap,GRect *rect) {
 	amount = width * (p->stage*p->tot + p->sofar)/(p->stages*p->tot);
     if ( amount>0 ) {
 	r.width = amount;
-	GDrawFillRect(pixmap,&r,0xc0c0ff);
+	GDrawFillRect(pixmap,&r,progress_fillcol);
     } else if ( p->tot==0 ) {
 	r.width = width;
 	GDrawSetStippled(pixmap,1,0,0);
-	GDrawFillRect(pixmap,&r,0xc0c0ff);
+	GDrawFillRect(pixmap,&r,progress_fillcol);
 	GDrawSetStippled(pixmap,0,0,0);
     }
     r.width = width;
@@ -118,17 +124,28 @@ static void GProgressDraw(GProgress *p,GWindow pixmap,GRect *rect) {
 
 static int GProgressProcess(GProgress *p) {
     int width, amount;
+    int tenpt;
 
     if ( !p->visible )
 	GProgressTimeCheck();
 
-    width = p->width-GDrawPointsToPixels(p->gw,10);
+    tenpt = GDrawPointsToPixels(p->gw,10);
+    width = p->width-2*tenpt;
     if ( p->tot==0 )
 	amount = 0;
     else
 	amount = width * (p->stage*p->tot + p->sofar)/(p->stages*p->tot);
     if ( amount!=p->last_amount ) {
-	GDrawRequestExpose(p->gw,NULL,false);
+	if ( amount<p->last_amount || p->last_amount==0 )
+	    GDrawRequestExpose(p->gw,NULL,false);
+	else {
+	    GRect r;
+	    r.height = tenpt-1;
+	    r.width = amount - p->last_amount;
+	    r.x = tenpt + p->last_amount;
+	    r.y = p->boxy+1;
+	    GDrawFillRect(p->gw,&r,progress_fillcol);
+	}
 	p->last_amount = amount;
     }
     GDrawProcessPendingEvents(NULL);
@@ -189,6 +206,14 @@ void GProgressStartIndicator(
     if ( screen_display==NULL )
 return;
 
+    if ( !progress_init ) {
+	progress_background = GResourceFindColor("GProgress.Background",
+		    GDrawGetDefaultBackground(NULL));
+	progress_fillcol = GResourceFindColor("GProgress.FillColor",
+		    progress_fillcol);
+	progress_font = GResourceFindFont("GProgress.Font",NULL);
+	progress_init = true;
+    }
     new = gcalloc(1,sizeof(GProgress));
     new->line1 = u_copy(line1);
     new->line2 = u_copy(line2);
@@ -197,11 +222,14 @@ return;
     new->prev = current;
 
     root = GDrawGetRoot(NULL);
-    memset(&rq,'\0',sizeof(rq));
-    rq.family_name = monospace;
-    rq.point_size = 12;
-    rq.weight = 400;
-    GDrawWindowFontMetrics(root,new->font = GDrawAttachFont(root,&rq),&as,&ds,&ld);
+    if ( progress_font == NULL ) {
+	memset(&rq,'\0',sizeof(rq));
+	rq.family_name = monospace;
+	rq.point_size = 12;
+	rq.weight = 400;
+	progress_font = GDrawAttachFont(root,&rq);
+    }
+    GDrawWindowFontMetrics(root,new->font = progress_font,&as,&ds,&ld);
 
     if ( new->line1!=NULL )
 	new->l1width = GDrawGetBiTextWidth(root,new->line1,-1,-1,NULL);
@@ -219,7 +247,7 @@ return;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|(win_title!=NULL?wam_wtitle:0)|
-	    wam_centered|wam_restrict|wam_redirect|wam_isdlg;
+	    wam_centered|wam_restrict|wam_redirect|wam_isdlg|wam_backcol;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_watch;
     wattrs.window_title = u_copy(win_title);
@@ -228,6 +256,7 @@ return;
     wattrs.redirect_chars_to_me = true;
     wattrs.is_dlg = true;
     wattrs.redirect_from = NULL;
+    wattrs.background_color = progress_background;
     pos.x = pos.y = 0;
     new->gw = GDrawCreateTopWindow(NULL,&pos,progress_eh,new,&wattrs);
     free((void *) wattrs.window_title);
