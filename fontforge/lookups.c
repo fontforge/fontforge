@@ -1941,7 +1941,7 @@ static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
 	    r->u.class.nclasses = galloc( r->u.class.ncnt*sizeof(uint16));
 	    memcpy(r->u.class.nclasses,oldr->u.class.nclasses, r->u.class.ncnt*sizeof(uint16));
 	    r->u.class.bclasses = galloc( r->u.class.bcnt*sizeof(uint16));
-	    memcpy(r->u.class.bclasses,oldr->u.class.bclasses, r->u.class.ncnt*sizeof(uint16));
+	    memcpy(r->u.class.bclasses,oldr->u.class.bclasses, r->u.class.bcnt*sizeof(uint16));
 	    r->u.class.fclasses = galloc( r->u.class.fcnt*sizeof(uint16));
 	    memcpy(r->u.class.fclasses,oldr->u.class.fclasses, r->u.class.fcnt*sizeof(uint16));
 	  break;
