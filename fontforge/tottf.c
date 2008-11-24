@@ -1352,6 +1352,7 @@ return j;
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i;
     int fixed = gi->fixed_width;
+    int answer, answered=-1;
 
     ff_progress_change_stages(2+gi->strikecnt);
     QuickBlues(sf,gi->layer,&gi->bd);
@@ -1364,9 +1365,24 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		SplineChar *sc = sf->glyphs[i];
 		if ( SCWorthOutputting(sc) )
 		    if ( !SCPointsNumberedProperly(sc,gi->layer)) {
-			free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-			sc->ttf_instrs_len = 0;
-			SCMarkInstrDlgAsChanged(sc);
+			if ( answered==-1 && sc->ttf_instrs_len!=0 ) {
+			    char *buts[5];
+			    buts[0] = _("_Yes");
+			    buts[1] = _("Yes to _All");
+			    buts[2] = _("No _to All");
+			    buts[3] = _("_No");
+			    buts[4] = NULL;
+			    ff_progress_pause_timer();
+			    answer = ff_ask(_("Bad Point Numbering"),(const char **) buts,0,3,_("The points in %s are not numbered properly. This means that any instructions will probably move the wrong points and do the wrong thing.\nWould you like me to remove the instructions?"),sc->name);
+			    if ( answer==1 || answer==2 )
+				answered = answer;
+			} else
+			    answer=answered;
+			if ( answer==0 ) {
+			    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+			    sc->ttf_instrs_len = 0;
+			    SCMarkInstrDlgAsChanged(sc);
+			}
 			SCNumberPoints(sc,gi->layer);
 		    }
 	    }

@@ -2719,6 +2719,21 @@ return;
     GDrawRequestExpose(cv->gw,NULL,false);
 }
 
+static void CVCheckPoints(CharView *cv) {
+    if ( !SCPointsNumberedProperly(cv->b.sc,CVLayer((CharViewBase *) cv)) && cv->b.sc->ttf_instrs_len!=0 ) {
+	char *buts[3];
+	int answer;
+	buts[0] = _("_Yes");
+	buts[1] = _("_No");
+	buts[2] = NULL;
+	answer = ff_ask(_("Bad Point Numbering"),(const char **) buts,0,1,_("The points in %s are not numbered properly. This means that any instructions will probably move the wrong points and do the wrong thing.\nWould you like me to remove the instructions?"),cv->b.sc->name);
+	if ( answer==0 ) {
+	    free(cv->b.sc->ttf_instrs); cv->b.sc->ttf_instrs = NULL;
+	    cv->b.sc->ttf_instrs_len = 0;
+	}
+    }
+}
+
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
     char *title;
     char buf[300];
@@ -2765,6 +2780,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     if ( cv->b.sc->parent->rules!=NULL && cv->b.sc->compositionunit )
 	Disp_DefaultTemplate(cv);
 #endif
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 )
+	CVCheckPoints(cv);
     if ( cv->showpointnumbers || cv->show_ft_results )
 	SCNumberPoints(sc,old_layer);
     if ( cv->show_ft_results )
@@ -5301,6 +5318,7 @@ static void CVMenuNumberPoints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
       break;
       case MID_PtsTrue:
 	cv->showpointnumbers = true;
+	CVCheckPoints(cv);
       break;
       case MID_PtsPost:
 	cv->showpointnumbers = true;
