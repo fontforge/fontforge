@@ -972,9 +972,9 @@ return( false );
 	CVDebugReInit(dv->cv,true,DebuggingFpgm(dv->dc));
       break;
       default:
-	/* The isalpha check is to prevent infinite loops since CVChar can */
+	/* The window check is to prevent infinite loops since CVChar can */
 	/*  call DVChar too */
-	if ( !isalpha(event->u.chr.chars[0])) {
+	if ( event->w == dv->dv || event->w == dv->v ) {
 	    CVChar(dv->cv,event);
 return( true );
 	}
