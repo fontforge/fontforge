@@ -5768,9 +5768,9 @@ return;
 
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
-	/* The isalpha check is to prevent infinite loops since DVChar can */
+	/* The window check is to prevent infinite loops since DVChar can */
 	/*  call CVChar too */
-    if ( cv->dv!=NULL && isalpha(event->u.chr.chars[0]) && DVChar(cv->dv,event))
+    if ( cv->dv!=NULL && (event->w==cv->gw || event->w==cv->v) && DVChar(cv->dv,event))
 	/* All Done */;
     else if ( event->u.chr.keysym=='s' &&
 	    (event->u.chr.state&ksm_control) &&
