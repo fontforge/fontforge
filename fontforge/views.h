@@ -54,6 +54,7 @@ extern struct cvshows {
     int showalmosthvlines;
     int showalmosthvcurves;
     int hvoffset;
+    int checkselfintersects;	/* Not really something shown, but convenient to keep it here */
 } CVShows;
 
 extern struct bvshows {
@@ -160,6 +161,7 @@ typedef struct charview {
     unsigned int snapoutlines: 1;
     unsigned int showalmosthvlines: 1;
     unsigned int showalmosthvcurves: 1;
+    unsigned int checkselfintersects: 1;
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
     real scale;

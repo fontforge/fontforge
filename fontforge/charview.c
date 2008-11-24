@@ -76,7 +76,8 @@ struct cvshows CVShows = {
  	1,		/* snap outlines to pixel grid */
 	0,		/* show lines which are almost, but not exactly horizontal or vertical */
 	0,		/* show curves which are almost, but not exactly horizontal or vertical at the end-points */
-	3		/* number of em-units a coord difference must be less than to qualify for almost hv */
+	3,		/* number of em-units a coord difference must be less than to qualify for almost hv */
+	1		/* Check for self-intersections in the element view */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -4971,6 +4972,8 @@ return( true );
 #define MID_Italic		2250
 #define MID_ChangeXHeight	2251
 #define MID_ChangeGlyph		2252
+#define MID_CheckSelf		2253
+#define MID_GlyphSelfIntersects	2254
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -6922,6 +6925,60 @@ static void CVMenuDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMenuDir(cv,mi);
 }
 
+static void CVMenuCheckSelf(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVShows.checkselfintersects = cv->checkselfintersects = !cv->checkselfintersects;
+}
+
+static void CVMenuGlyphSelfIntersects(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    Spline *s=NULL, *s2=NULL;
+    SplineSet *ss;
+    DBounds b;
+    double off;
+
+    ss = LayerAllSplines(cv->b.layerheads[cv->b.drawmode]);
+    SplineSetIntersect(ss,&s,&s2);
+    LayerUnAllSplines(cv->b.layerheads[cv->b.drawmode]);
+
+    if ( s!=NULL || s2!=NULL ) {
+	memset(&b,0,sizeof(b));
+	if ( s!=NULL ) {
+	    b.minx = b.maxx = s->from->me.x;
+	    b.miny = b.maxy = s->from->me.y;
+	} else if ( s2!=NULL ) {
+	    b.minx = b.maxx = s2->from->me.x;
+	    b.miny = b.maxy = s2->from->me.y;
+	}
+	if ( s!=NULL ) {
+	    s->from->selected = s->to->selected = true;
+	    if ( s->to->me.x>b.maxx ) b.maxx = s->to->me.x;
+	    if ( s->to->me.x<b.minx ) b.minx = s->to->me.x;
+	    if ( s->to->me.y>b.maxy ) b.maxy = s->to->me.y;
+	    if ( s->to->me.y<b.miny ) b.miny = s->to->me.y;
+	}
+	if ( s2!=NULL ) {
+	    s2->from->selected = s2->to->selected = true;
+	    if ( s2->from->me.x>b.maxx ) b.maxx = s2->from->me.x;
+	    if ( s2->from->me.x<b.minx ) b.minx = s2->from->me.x;
+	    if ( s2->from->me.y>b.maxy ) b.maxy = s2->from->me.y;
+	    if ( s2->from->me.y<b.miny ) b.miny = s2->from->me.y;
+	    if ( s2->to->me.x>b.maxx ) b.maxx = s2->to->me.x;
+	    if ( s2->to->me.x<b.minx ) b.minx = s2->to->me.x;
+	    if ( s2->to->me.y>b.maxy ) b.maxy = s2->to->me.y;
+	    if ( s2->to->me.y<b.miny ) b.miny = s2->to->me.y;
+	}
+	off = (b.maxx-b.minx)/10;
+	if ( off==0 ) off = 1;
+	b.minx -= off; b.maxx += off;
+	off = (b.maxy-b.miny)/10;
+	if ( off==0 ) off = 1;
+	b.miny -= off; b.maxy += off;
+	_CVFit(cv,&b,false);
+    } else
+	ff_post_notice(_("No Intersections"),_("No Intersections"));
+}
+
 static int getorigin(void *d,BasePoint *base,int index) {
     CharView *cv = (CharView *) d;
 
@@ -8125,6 +8182,7 @@ static void rndlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv) {
     int anypoints = 0, splinepoints, dir = -2;
+    int self_intersects=-2;
     SplinePointList *spl;
     Spline *spline, *first;
     AnchorPoint *ap;
@@ -8144,6 +8202,17 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	if ( il->selected )
 	    badsel = true;
 #endif
+
+    if ( cv->checkselfintersects ) {
+	Spline *s, *s2;
+	SplineSet *ss;
+	ss = LayerAllSplines(cv->b.layerheads[cv->b.drawmode]);
+	self_intersects = SplineSetIntersect(ss,&s,&s2);
+	LayerUnAllSplines(cv->b.layerheads[cv->b.drawmode]);
+    }
+
+    if ( self_intersects==1 )
+	dir = -1;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
@@ -8194,16 +8263,23 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&cp);
 	    }
 	  break;
+	  case MID_CheckSelf:
+	    mi->ti.checked = cv->checkselfintersects;
+	  break;
+	  case MID_GlyphSelfIntersects:
+	    mi->ti.disabled = !cv->checkselfintersects;
+	    mi->ti.checked = self_intersects==1;
+	  break;
 	  case MID_Clockwise:
-	    mi->ti.disabled = !anypoints || dir==2;
+	    mi->ti.disabled = !anypoints || dir==2 || self_intersects==1;
 	    mi->ti.checked = dir==1;
 	  break;
 	  case MID_Counter:
-	    mi->ti.disabled = !anypoints || dir==2;
+	    mi->ti.disabled = !anypoints || dir==2 || self_intersects==1;
 	    mi->ti.checked = dir==0;
 	  break;
 	  case MID_Correct:
-	    mi->ti.disabled = !anypoints || dir==2;
+	    mi->ti.disabled = !anypoints || dir==2 || self_intersects==1;
 	  break;
 	  case MID_Stroke:
 	  case MID_RmOverlap:
@@ -9261,6 +9337,8 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Roun_d"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, rndlist, rndlistcheck, NULL, MID_Round },
     { { (unichar_t *) N_("_Order"), (GImage *) "elementorder.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, orlist, orlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Check Self-Intersection"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuCheckSelf, MID_CheckSelf },
+    { { (unichar_t *) N_("Glyph Self-Intersects"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuGlyphSelfIntersects, MID_GlyphSelfIntersects },
     { { (unichar_t *) N_("Cloc_kwise"), (GImage *) "elementclockwise.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Clockwise },
     { { (unichar_t *) N_("Cou_nter Clockwise"), (GImage *) "elementanticlock.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'n' }, H_("Counter Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Counter },
     { { (unichar_t *) N_("_Correct Direction"), (GImage *) "elementcorrectdir.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, CVMenuCorrectDir, MID_Correct },
@@ -9742,6 +9820,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showanchor = CVShows.showanchor;
     cv->showcpinfo = CVShows.showcpinfo;
     cv->showtabs = CVShows.showtabs;
+
+    cv->checkselfintersects = CVShows.checkselfintersects;
 
     cv->infoh = 13;
     cv->rulerh = 13;
