@@ -1586,30 +1586,45 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	changed |= Hint3Check(p,sc->vstem);
 
     if ( p->direction && !p->finish ) {
-	SplineSet **base, *ret;
+	SplineSet **base, *ret, *ss;
+	Spline *s, *s2;
+	Layer *layer;
 	int lastscan= -1;
+	int self_intersects;
+	
 	if ( cv!=NULL )
-	    base = &cv->b.layerheads[cv->b.drawmode]->splines;
+	    layer = cv->b.layerheads[cv->b.drawmode];
 	else
-	    base = &sc->layers[p->layer].splines;
-	while ( !p->finish && (ret=SplineSetsDetectDir(base,&lastscan))!=NULL ) {
-	    sp = ret->first;
-	    changed = true;
-	    while ( 1 ) {
-		sp->selected = true;
-		if ( sp->next==NULL )
+	    layer = &sc->layers[p->layer];
+
+	ss = LayerAllSplines(layer);
+	SplineSetIntersect(ss,&s,&s2);
+	LayerUnAllSplines(layer);
+
+	if ( self_intersects )
+	    ff_post_error(_("This glyph self-intersects"),_("This glyph self-intersects. Checking for correct direction is meaningless until that is fixed"));
+	else {
+	    base = &layer->splines;
+
+	    while ( !p->finish && (ret=SplineSetsDetectDir(base,&lastscan))!=NULL ) {
+		sp = ret->first;
+		changed = true;
+		while ( 1 ) {
+		    sp->selected = true;
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==ret->first )
+		break;
+		}
+		if ( SplinePointListIsClockwise(ret))
+		    ExplainIt(p,sc,_("This path should have been drawn in a counter-clockwise direction"),0,0);
+		else
+		    ExplainIt(p,sc,_("This path should have been drawn in a clockwise direction"),0,0);
+		if ( p->ignorethis ) {
+		    p->direction = false;
 	    break;
-		sp = sp->next->to;
-		if ( sp==ret->first )
-	    break;
-	    }
-	    if ( SplinePointListIsClockwise(ret))
-		ExplainIt(p,sc,_("This path should have been drawn in a counter-clockwise direction"),0,0);
-	    else
-		ExplainIt(p,sc,_("This path should have been drawn in a clockwise direction"),0,0);
-	    if ( p->ignorethis ) {
-		p->direction = false;
-	break;
+		}
 	    }
 	}
     }
