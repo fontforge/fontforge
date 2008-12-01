@@ -50,7 +50,7 @@ GBox _GListMark_Box = { /* Don't initialize here */ 0 };
 FontInstance *_ggadget_default_font = NULL;
 static FontInstance *popup_font = NULL;
 int _GListMarkSize = 12;
-GImage *_GListMark_Image = NULL, *_GListMark_DisImage;
+GResImage *_GListMark_Image = NULL, *_GListMark_DisImage;
 static int _GGadget_FirstLine = 6;
 static int _GGadget_LeftMargin = 6;
 static int _GGadget_LineSkip = 3;
@@ -60,6 +60,61 @@ static int _ggadget_inited=0;
 extern void GGadgetInit(void);
 static Color popup_foreground=0, popup_background=COLOR_CREATE(0xff,0xff,0xc0);
 static int popup_delay=1000, popup_lifetime=20000;
+
+static GResInfo popup_ri;
+static struct resed ggadget_re[] = {
+    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both")},
+    NULL
+};
+GResInfo ggadget_ri = {
+    &popup_ri, NULL,NULL, NULL,
+    &_ggadget_Default_Box,
+    &_ggadget_default_font,
+    NULL,
+    ggadget_re,
+    N_("GGadget"),
+    N_("This is an \"abstract\" gadget. It will never appear on the screen\nbut it is the root of ggadget tree from which all others inherit"),
+    "GGadget",
+    "Gdraw",
+    false
+};
+static struct resed popup_re[] = {
+    {N_("Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows")},
+    {N_("Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows")},
+    {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear")},
+    {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible")},
+    { NULL }};
+static GResInfo popup_ri = {
+    &listmark_ri, &ggadget_ri, NULL,NULL,
+    NULL,	/* No box */
+    &popup_font,
+    NULL,
+    popup_re,
+    N_("Popup"),
+    N_("Popup windows"),
+    "Popup",
+    "Gdraw",
+    false
+};
+static struct resed listmark_re[] = {
+    {N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark")},
+    {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)")},
+    {N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)")},
+    { NULL }};
+GResInfo listmark_ri = {
+    NULL, &ggadget_ri, NULL,NULL,
+    &_GListMark_Box,	/* No box */
+    NULL,
+    NULL,
+    listmark_re,
+    N_("List Mark"),
+    N_("This is the mark that differenciates ComboBoxes and ListButtons\n"
+	"from TextFields and normal Buttons." ),
+    "GListMark",
+    "Gdraw",
+    false
+};
+    
 
 static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
@@ -101,7 +156,7 @@ return( (void *) (intpt) ret );
 	400 10pt small-caps
     family name comes at the end, size must have "pt" after it
 */
-static void *font_cvt(char *val, void *def) {
+void *GResource_font_cvt(char *val, void *def) {
     static char *styles[] = { "normal", "italic", "oblique", "small-caps",
 	    "bold", "light", "extended", "condensed", NULL };
     FontRequest rq;
@@ -174,7 +229,7 @@ FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont) {
     if ( val==NULL )
 return( deffont );
 
-return( font_cvt(val,deffont));
+return( GResource_font_cvt(val,deffont));
 }
 
 void _GGadgetCopyDefaultBox(GBox *box) {
@@ -211,13 +266,14 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	{ "Box.BorderTop", rt_color, NULL },
 	{ "Box.BorderRight", rt_color, NULL },
 	{ "Box.BorderBottom", rt_color, NULL },
-	{ "Font", rt_string, NULL, font_cvt },
+	{ "Font", rt_string, NULL, GResource_font_cvt },
 	{ "Box.GradientBG", rt_bool, NULL },
 	{ "Box.GradientStartCol", rt_color, NULL },
+	{ "Box.ShadowOuter", rt_bool, NULL },
 	{ NULL }
     };
     intpt bt, bs;
-    int bw, pad, rr, inner, outer, active, depressed, def, grad;
+    int bw, pad, rr, inner, outer, active, depressed, def, grad, shadow;
     FontInstance *fi=deffont;
 
     if ( !_ggadget_inited )
@@ -235,6 +291,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
     depressed = box->flags & box_do_depressed_background;
     def = box->flags & box_draw_default;
     grad = box->flags & box_gradient_bg;
+    shadow = box->flags & box_gradient_bg;
 
     bordertype[0].val = &bt;
     boxtypes[0].val = &bt;
@@ -264,6 +321,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
     boxtypes[24].val = &fi;
     boxtypes[25].val = &grad;
     boxtypes[26].val = &box->gradient_bg_end;
+    boxtypes[27].val = &shadow;
 
     GResourceFind( bordertype, class);
     /* for a plain box, default to all borders being the same. they must change*/
@@ -322,7 +380,7 @@ return( -10 );
 
 void GGadgetInit(void) {
     static GResStruct res[] = {
-	{ "Font", rt_string, NULL, font_cvt },
+	{ "Font", rt_string, NULL, GResource_font_cvt },
 	{ NULL }
     };
     if ( !_ggadget_inited ) {
@@ -339,7 +397,7 @@ void GGadgetInit(void) {
 	_GListMark_Image = GGadgetResourceFindImage("GListMark.Image", NULL);
 	_GListMark_DisImage = GGadgetResourceFindImage("GListMark.DisabledImage", NULL);
 	if ( _GListMark_Image!=NULL ) {
-	    int size = GDrawPixelsToPoints(NULL,GImageGetWidth(_GListMark_Image));
+	    int size = GDrawPixelsToPoints(NULL,GImageGetWidth(_GListMark_Image->image));
 	    if ( size>_GListMarkSize )
 		_GListMarkSize=size;
 	}
@@ -374,11 +432,11 @@ void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state st
     int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize);
 
     if ( state == gs_disabled && _GListMark_DisImage!=NULL ) {
-	GDrawDrawScaledImage(pixmap,_GListMark_DisImage,x,
-		y + (height-GImageGetScaledHeight(pixmap,_GListMark_DisImage))/2);
+	GDrawDrawScaledImage(pixmap,_GListMark_DisImage->image,x,
+		y + (height-GImageGetScaledHeight(pixmap,_GListMark_DisImage->image))/2);
     } else if ( _GListMark_Image!=NULL ) {
-	GDrawDrawScaledImage(pixmap,_GListMark_Image,x,
-		y + (height-GImageGetScaledHeight(pixmap,_GListMark_Image))/2);
+	GDrawDrawScaledImage(pixmap,_GListMark_Image->image,x,
+		y + (height-GImageGetScaledHeight(pixmap,_GListMark_Image->image))/2);
     } else {
 	r.x = x; r.width = marklen;
 	r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
@@ -1286,4 +1344,11 @@ return( false );
 
 void GGadgetTakesKeyboard(GGadget *g, int takes_keyboard) {
     g->takes_keyboard = takes_keyboard;
+}
+
+GResInfo *_GGadgetRIHead(void) {
+
+    if ( !_ggadget_inited )
+	GGadgetInit();
+return( &ggadget_ri );
 }

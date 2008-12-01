@@ -43,6 +43,68 @@ static GBox gnumericfieldspinner_box = { /* Don't initialize here */ 0 };
 FontInstance *_gtextfield_font = NULL;
 static int gtextfield_inited = false;
 
+static GResInfo listfield_ri, listfieldmenu_ri, numericfield_ri, numericfieldspinner_ri;
+static GResInfo gtextfield_ri = {
+    &listfield_ri, &ggadget_ri,NULL, NULL,
+    &_GGadget_gtextfield_box,
+    &_gtextfield_font,
+    NULL,
+    NULL,
+    N_("Text Field"),
+    N_("Text Field"),
+    "GTextField",
+    "Gdraw",
+    false
+};
+static GResInfo listfield_ri = {
+    &listfieldmenu_ri, &gtextfield_ri,&listfieldmenu_ri, &listmark_ri,
+    &glistfield_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("List Field"),
+    N_("List Field (Combo Box)"),
+    "GComboBox",
+    "Gdraw",
+    false
+};
+static GResInfo listfieldmenu_ri = {
+    &numericfield_ri, &listfield_ri, &listmark_ri,NULL,
+    &glistfieldmenu_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("List Field Menu"),
+    N_("Box surrounding the ListMark in a list field (combobox)"),
+    "GComboBoxMenu",
+    "Gdraw",
+    false
+};
+static GResInfo numericfield_ri = {
+    &numericfieldspinner_ri, &gtextfield_ri,&numericfieldspinner_ri, NULL,
+    &gnumericfield_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Numeric Field"),
+    N_("Numeric Field (Spinner)"),
+    "GNumericField",
+    "Gdraw",
+    false
+};
+static GResInfo numericfieldspinner_ri = {
+    NULL, &numericfield_ri,NULL, NULL,
+    &gnumericfieldspinner_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Numeric Field Sign"),
+    N_("The box around the up/down arrows of a numeric field (spinner)"),
+    "GNumericFieldSpinner",
+    "Gdraw",
+    false
+};
+
 static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },
 	newlinestr[] = { '\n', 0 }, tabstr[] = { '\t', 0 };
 
@@ -2767,7 +2829,7 @@ static void GTextFieldInit() {
     _gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
     _GGadgetCopyDefaultBox(&_GGadget_gtextfield_box);
     _GGadget_gtextfield_box.padding = 3;
-    _GGadget_gtextfield_box.flags = box_active_border_inner;
+    /*_GGadget_gtextfield_box.flags = box_active_border_inner;*/
     _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&_GGadget_gtextfield_box,_gtextfield_font);
     glistfield_box = _GGadget_gtextfield_box;
     _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
@@ -3353,4 +3415,11 @@ void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion)
 
 void GCompletionFieldSetCompletionMode(GGadget *g,int enabled) {
     ((GTextField *) g)->was_completing = enabled;
+}
+
+GResInfo *_GTextFieldRIHead(void) {
+
+    if ( !gtextfield_inited )
+	GTextFieldInit();
+return( &gtextfield_ri );
 }

@@ -45,6 +45,13 @@ struct hslrgb {
     uint8 rgb, hsl, hsv;
 };
 
+struct hslrgba {
+    double h,s,l,v;
+    double r,g,b;
+    uint8 rgb, hsl, hsv, has_alpha;
+    double alpha;
+};
+
 typedef struct clut {
     int16 clut_len;
     unsigned int is_grey: 1;
@@ -163,6 +170,8 @@ extern void gHSL2RGB(struct hslrgb *col);
 extern void gRGB2HSV(struct hslrgb *col);
 extern void gHSV2RGB(struct hslrgb *col);
 extern void gColor2Hslrgb(struct hslrgb *col,Color from);
+extern void gColor2Hslrgba(struct hslrgba *col,Color from);
 extern Color gHslrgb2Color(struct hslrgb *col);
+extern Color gHslrgba2Color(struct hslrgba *col);
 
 #endif

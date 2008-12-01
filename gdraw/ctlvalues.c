@@ -48,8 +48,10 @@ double GetCalmReal8(GWindow gw,int cid,char *name,int *err) {
 
     txt = GGadgetGetTitle8(GWidgetGetControl(gw,cid));
     val = strtod(txt,&end);
-    if ( *txt=='-' && end==txt && txt[1]=='\0' )
+    if ( (*txt=='-' || *txt=='.') && end==txt && txt[1]=='\0' )
 	end = txt+1;
+    else if ( *txt=='-' && txt[1]=='.' && txt[2]=='\0' )
+	end = txt+2;
     if ( *end!='\0' ) {
 	GDrawBeep(NULL);
 	*err = true;

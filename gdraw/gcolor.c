@@ -148,7 +148,7 @@ static GImage blanks[2*USEFUL_MAX] = {
     { 0, &bases[11] }
 };
 /* ************************************************************************** */
-struct hslrgb recent_cols[USEFUL_MAX+1];
+struct hslrgba recent_cols[USEFUL_MAX+1];
 
 struct gcol_data {
     GImage *wheel;
@@ -157,8 +157,8 @@ struct gcol_data {
     GWindow gw;
     GWindow wheelw, gradw, colw;
     int done, pressed;
-    struct hslrgb col, origcol;
-    struct hslrgb user_cols[USEFUL_MAX+1];
+    struct hslrgba col, origcol;
+    struct hslrgba user_cols[USEFUL_MAX+1];
 };
 
 #define CID_Red		1001
@@ -169,21 +169,23 @@ struct gcol_data {
 #define CID_Saturation	1012
 #define CID_Value	1013
 
+#define CID_Alpha	1019
+
 #define CID_Wheel	1021
 #define CID_Grad	1022
 #define CID_Color	1023
 
-static int cids[] = { CID_Hue, CID_Saturation, CID_Value, CID_Red, CID_Green, CID_Blue, 0 };
-static char *labnames[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red:"), N_("Green:"), N_("Blue:") };
+static int cids[] = { CID_Hue, CID_Saturation, CID_Value, CID_Red, CID_Green, CID_Blue, CID_Alpha, 0 };
+static char *labnames[] = { N_("Hue:"), N_("Saturation:"), N_("Value:"), N_("Red:"), N_("Green:"), N_("Blue:"), N_("Opacity:") };
 
 static int GCol_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gcol_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	double *offs[6] = { &d->col.h, &d->col.s, &d->col.l, &d->col.r, &d->col.g, &d->col.b };
+	double *offs[7] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b, &d->col.alpha };
 	int err = false, i;
 	double val;
 
-	for ( i=0; i<6; ++i ) {
+	for ( i=0; i<7; ++i ) {
 	    val = GetReal8(d->gw,cids[i],_(labnames[i]),&err);
 	    if ( err )
 return( true );
@@ -216,13 +218,19 @@ return( true );
 static int GCol_TextChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	struct gcol_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	double *offs[6] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b };
+	double *offs[7] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b, &d->col.alpha };
 	int i, err = false;
 	int low, high;
 	double val;
 	char text[50];
 
-	if ( GGadgetGetCid(g)>=CID_Hue ) {
+	if ( GGadgetGetCid(g)==CID_Alpha ) {
+	    low = 3; high=7;
+	    /* Didn't actually change the rgb values, but parse them */
+	    /*  This is in case we need to clear the error flag */
+	    d->col.hsv = false;
+	    d->col.rgb = true;
+	} else if ( GGadgetGetCid(g)>=CID_Hue ) {
 	    low = 0; high=3;
 	    d->col.hsv = true;
 	    d->col.rgb = false;
@@ -249,13 +257,13 @@ static int GCol_TextChanged(GGadget *g, GEvent *e) {
 	if ( err ) {
 	    d->col.hsv = d->col.rgb = false;
 	} else if ( d->col.hsv ) {
-	    gHSV2RGB(&d->col);
+	    gHSV2RGB((struct hslrgb *) &d->col);
 	    for ( i=3; i<6; ++i ) {
 		sprintf( text, "%.2f", *offs[i]);
 		GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[i]),text);
 	    }
 	} else {
-	    gRGB2HSV(&d->col);
+	    gRGB2HSV((struct hslrgb *) &d->col);
 	    sprintf( text, "%3.0f", *offs[0]);
 	    GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[0]),text);
 	    for ( i=1; i<3; ++i ) {
@@ -271,14 +279,14 @@ return( true );
 }
 
 static void GCol_ShowTexts(struct gcol_data *d) {
-    double *offs[6] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b };
+    double *offs[7] = { &d->col.h, &d->col.s, &d->col.v, &d->col.r, &d->col.g, &d->col.b, &d->col.alpha };
     int i;
     char text[50];
 
-    gHSV2RGB(&d->col);
+    gHSV2RGB((struct hslrgb *) &d->col);
     sprintf( text, "%3.0f", *offs[0]);
     GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[0]),text);
-    for ( i=1; i<6; ++i ) {
+    for ( i=1; i<7; ++i ) {
 	sprintf( text, "%.2f", *offs[i]);
 	GGadgetSetTitle8(GWidgetGetControl(d->gw,cids[i]),text);
     }
@@ -311,7 +319,7 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
 	    (event->type==et_mousemove && d->pressed) ||
 	    event->type==et_mouseup ) {
 	Color rgb;
-	struct hslrgb temp;
+	struct hslrgba temp;
 	GDrawGetSize(d->wheelw,&size);
 	if ( event->u.mouse.y>=0 && event->u.mouse.y<size.height &&
 		event->u.mouse.x>=0 && event->u.mouse.x<size.width ) {
@@ -319,7 +327,7 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
 	    temp.r = ((rgb>>16)&0xff)/255.;
 	    temp.g = ((rgb>>8)&0xff)/255.;
 	    temp.b = ((rgb   )&0xff)/255.;
-	    gRGB2HSV(&temp);
+	    gRGB2HSV((struct hslrgb *) &temp);
 	    d->col.h = temp.h; d->col.s = temp.s;
 	    GCol_ShowTexts(d);
 	    GDrawRequestExpose(d->colw,NULL,false);
@@ -329,6 +337,8 @@ static int wheel_e_h(GWindow gw, GEvent *event) {
 	    d->pressed = true;
 	else if ( event->type == et_mouseup )
 	    d->pressed = false;
+    } else if ( event->type==et_resize ) {
+	GDrawRequestExpose(gw,NULL,false);
     } else if ( event->type == et_char ) {
 return( false );
     }
@@ -369,10 +379,41 @@ static int grad_e_h(GWindow gw, GEvent *event) {
 	    d->pressed = true;
 	else if ( event->type == et_mouseup )
 	    d->pressed = false;
+    } else if ( event->type==et_resize ) {
+	GDrawRequestExpose(gw,NULL,false);
     } else if ( event->type == et_char ) {
 return( false );
     }
 return( true );
+}
+
+static void TranslucentRect(GWindow gw,GRect *size,int col,double alpha, int h) {
+    if ( alpha==1.0 )
+	GDrawFillRect(gw,size,col);
+    else {
+	int r = COLOR_RED(col), g = COLOR_GREEN(col), b = COLOR_BLUE(col);
+	double white_bias = 255.*(1.0-alpha);
+	Color dark = (((int) rint(r*alpha))<<16) |
+		     (((int) rint(g*alpha))<<8 ) |
+		     (((int) rint(b*alpha)) );
+	Color light= (((int) rint(white_bias+r*alpha))<<16) |
+		     (((int) rint(white_bias+g*alpha))<<8 ) |
+		     (((int) rint(white_bias+b*alpha)) );
+	GRect small, old;
+	int x,y;
+	int smallh = (h+1)/2;
+
+	small.height = small.width = smallh;
+	GDrawPushClip(gw,size,&old);
+	for ( y=0; y<2; ++y ) {
+	    small.y = y*smallh;
+	    for ( x=size->x/smallh; x<=(size->x+size->width)/smallh; ++x ) {
+		small.x = x*smallh;
+		GDrawFillRect(gw,&small,((x+y)&1)?dark : light);
+	    }
+	}
+	GDrawPopClip(gw,&old);
+    }
 }
 
 static int col_e_h(GWindow gw, GEvent *event) {
@@ -387,7 +428,7 @@ static int col_e_h(GWindow gw, GEvent *event) {
 		      (((int) rint(255*d->origcol.b))    );
 	    if ( r.x+r.width>size.width/2 )
 		r.width = size.width/2-r.x;
-	    GDrawFillRect(gw,&r,col);
+	    TranslucentRect(gw,&r,col,d->origcol.alpha,size.height);
 	    r.width = event->u.expose.rect.width;
 	}
 	if ( r.x+r.width>size.width/2 ) {
@@ -397,7 +438,7 @@ static int col_e_h(GWindow gw, GEvent *event) {
 		int col = (((int) rint(255*d->col.r))<<16) |
 			  (((int) rint(255*d->col.g))<<8 ) |
 			  (((int) rint(255*d->col.b))    );
-		GDrawFillRect(gw,&r,col);
+		TranslucentRect(gw,&r,col,d->col.alpha,size.height);
 	    } else {
 		GDrawSetStippled(gw,2,0,0);
 		GDrawSetBackground(gw,0xffff00);
@@ -415,6 +456,8 @@ static int col_e_h(GWindow gw, GEvent *event) {
 	    GDrawRequestExpose(d->colw,NULL,false);
 	    GDrawRequestExpose(d->gradw,NULL,false);
 	}
+    } else if ( event->type==et_resize ) {
+	GDrawRequestExpose(gw,NULL,false);
     } else if ( event->type == et_char ) {
 return( false );
     }
@@ -423,7 +466,7 @@ return( true );
 
 static void do_popup_color(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct gcol_data *d = GDrawGetUserData(gw);
-    struct hslrgb *col = mi->ti.userdata;
+    struct hslrgba *col = mi->ti.userdata;
 
     d->col = *col;
     GCol_ShowTexts(d);
@@ -489,16 +532,16 @@ return( false );
 return( true );
 }
 
-struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb *usercols) {
+struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,struct hslrgba *usercols) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[21], boxes[6], *txarray[8][3], *wheelarray[3][3], *barray[8], *hvarray[3][3];
+    GGadgetCreateData gcd[23], boxes[6], *txarray[9][3], *wheelarray[3][3], *barray[8], *hvarray[3][3];
     GTextInfo label[21];
     struct gcol_data d;
     int k, i;
-    double *offs[6] = { &d.col.h, &d.col.s, &d.col.v, &d.col.r, &d.col.g, &d.col.b };
-    char values[6][40];
+    double *offs[7] = { &d.col.h, &d.col.s, &d.col.v, &d.col.r, &d.col.g, &d.col.b, &d.col.alpha };
+    char values[7][40];
 
     GProgressPauseTimer();
     memset(&d,0,sizeof(d));
@@ -515,22 +558,26 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
 
     if ( defcol!=NULL && (defcol->rgb || defcol->hsv || defcol->hsl ))
 	d.col = *defcol;
-    else if ( recent_cols[0].hsv )
+    else if ( recent_cols[0].hsv ) {
 	d.col = recent_cols[0];
-    else if ( usercols!=NULL && (usercols[0].rgb || usercols[0].hsv || usercols[0].hsl ))
+	d.col.has_alpha = true;
+    } else if ( usercols!=NULL && (usercols[0].rgb || usercols[0].hsv || usercols[0].hsl )) {
 	d.col = usercols[0];
-    else {
+	d.col.has_alpha = true;
+    } else {
 	d.col.rgb = true;
 	d.col.r = d.col.g = d.col.b = 1.0;
+	d.col.alpha = 1.0;
+	d.col.has_alpha = true;
     }
     if ( d.col.rgb ) {
 	if ( !d.col.hsv )
-	    gRGB2HSV(&d.col);
+	    gRGB2HSV((struct hslrgb *) &d.col);
     } else if ( d.col.hsv )
-	gHSV2RGB(&d.col);
+	gHSV2RGB((struct hslrgb *) &d.col);
     else {
-	gHSL2RGB(&d.col);
-	gRGB2HSV(&d.col);
+	gHSL2RGB((struct hslrgb *) &d.col);
+	gRGB2HSV((struct hslrgb *) &d.col);
     }
     d.origcol = d.col;
     if ( usercols!=NULL ) {
@@ -538,12 +585,12 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
 	    d.user_cols[i] = usercols[i];
 	    if ( d.user_cols[i].rgb ) {
 		if ( !d.user_cols[i].hsv )
-		    gRGB2HSV(&d.user_cols[i]);
+		    gRGB2HSV((struct hslrgb *) &d.user_cols[i]);
 	    } else if ( d.user_cols[i].hsv )
-		gHSV2RGB(&d.user_cols[i]);
+		gHSV2RGB((struct hslrgb *) &d.user_cols[i]);
 	    else {
-		gHSL2RGB(&d.user_cols[i]);
-		gRGB2HSV(&d.user_cols[i]);
+		gHSL2RGB((struct hslrgb *) &d.user_cols[i]);
+		gRGB2HSV((struct hslrgb *) &d.user_cols[i]);
 	    }
 	}
     }
@@ -554,6 +601,8 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
     memset(&boxes,0,sizeof(boxes));
 
     gcd[k].gd.pos.height = gcd[k].gd.pos.width = 150;
+    if ( d.col.has_alpha )
+	gcd[k].gd.pos.height = gcd[k].gd.pos.width = 170;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.u.drawable_e_h = wheel_e_h;
     gcd[k].gd.cid = CID_Wheel;
@@ -585,7 +634,7 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
     boxes[2].gd.u.boxelements = wheelarray[0];
     boxes[2].creator = GHVBoxCreate;
 
-    for ( i=0; i<6; ++i ) {
+    for ( i=0; i<7; ++i ) {
 	label[k].text = (unichar_t *) _(labnames[i]);
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
@@ -607,6 +656,10 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
 	gcd[k].gd.handle_controlevent = GCol_TextChanged;
 	gcd[k++].creator = i==0 ? GNumericFieldCreate : GTextFieldCreate;
 	txarray[i][1] = &gcd[k-1]; txarray[i][2] = NULL;
+    }
+    if ( !d.col.has_alpha ) {
+	gcd[k-1].gd.flags &= ~gg_visible;
+	gcd[k-2].gd.flags &= ~gg_visible;
     }
     txarray[i][0] = txarray[i][1] = GCD_Glue; txarray[i][2] = NULL;
     txarray[i+1][0] = NULL;
@@ -673,7 +726,9 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
     if ( d.col.hsv || d.col.rgb ) {
 	int j;
 	for ( j=0; j<USEFUL_MAX; ++j )
-	    if ( d.col.r==recent_cols[j].r && d.col.g==recent_cols[j].g && d.col.b==recent_cols[j].b )
+	    if ( d.col.r==recent_cols[j].r && d.col.g==recent_cols[j].g &&
+		    d.col.b==recent_cols[j].b &&
+		    (!d.col.has_alpha || d.col.alpha==recent_cols[j].alpha))
 	break;
 	if ( j==USEFUL_MAX )
 	    --j;
@@ -682,4 +737,37 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
 	recent_cols[0] = d.col;
     }
 return( d.col );
+}
+
+struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb *usercols) {
+    struct hslrgba def, users[USEFUL_MAX+1], *d, *u, temp;
+    struct hslrgb ret;
+    int i;
+    if ( usercols==NULL )
+	u = NULL;
+    else {
+	for ( i=0; i<6 && (usercols[i].rgb || usercols[i].hsv || usercols[i].hsl ); ++i ) {
+	    memcpy(&users[i],&usercols[i],sizeof(struct hslrgb));
+	    users[i].has_alpha = 0;
+	    users[i].alpha = 1.0;
+	}
+	u = users;
+    }
+
+    if ( defcol!=NULL )
+	memcpy(&def,defcol,sizeof(*defcol));
+    else if ( recent_cols[0].hsv )
+	def = recent_cols[0];
+    else if ( u!=NULL && (u[0].rgb || u[0].hsv || u[0].hsl ))
+	def = u[0];
+    else {
+	def.rgb = true;
+	def.r = def.g = def.b = 1.0;
+    }
+    def.has_alpha = false;
+    def.alpha = 1.0;
+    d = &def;
+    temp = GWidgetColorA(title,d,u);
+    memcpy(&ret,&temp,sizeof(ret));
+return( ret );
 }

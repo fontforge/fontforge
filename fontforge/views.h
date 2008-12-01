@@ -673,6 +673,7 @@ extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern FontView *FontNew(void);
 extern void _MenuWarnings(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e);
+extern void MenuXRes(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e);
@@ -916,6 +917,7 @@ extern void MV_FriendlyFeatures(GGadget *g, int pos);
 extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);
+extern void DoXRes(void);
 extern void GListAddStr(GGadget *list,unichar_t *str, void *ud);
 extern void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud);
 extern struct macname *NameGadgetsGetNames( GWindow gw );

@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "ggadget.h"
+#include "gresedit.h"
 
 struct gfuncs {
     unsigned int is_widget: 1;
@@ -118,7 +119,7 @@ typedef struct glabel {		/* or simple text, or groupbox */
     unsigned int is_cancel: 1;
     unsigned int pressed: 1;
     unsigned int within: 1;
-    unsigned int labeltype: 2;	/* 0=>label(here), 1=>imagebutton, 2=>listbutton */
+    unsigned int labeltype: 2;	/* 0=>label/button(this), 1=>imagebutton, 2=>listbutton, 3=>colorbutton */
     unsigned int shiftonpress: 1;
     FontInstance *font;
     unichar_t *label;
@@ -134,7 +135,7 @@ typedef struct gimagebutton {
     unsigned int is_cancel: 1;
     unsigned int pressed: 1;
     unsigned int within: 1;
-    unsigned int labeltype: 2;	/* 0=>label, 1=>imagebutton(here), 2=>listbutton */
+    unsigned int labeltype: 2;	/* 0=>label, 1=>imagebutton(this), 2=>listbutton */
     unsigned int shiftonpress: 1;
     FontInstance *font;
     unichar_t *label;
@@ -150,7 +151,7 @@ typedef struct glistbutton {
     unsigned int is_cancel: 1;
     unsigned int pressed: 1;
     unsigned int within: 1;
-    unsigned int labeltype: 2;	/* 0=>label, 1=>imagebutton, 2=>listbutton(here) */
+    unsigned int labeltype: 2;	/* 0=>label, 1=>imagebutton, 2=>listbutton(this) */
     unsigned int shiftonpress: 1;
     FontInstance *font;
     unichar_t *label;
@@ -159,6 +160,23 @@ typedef struct glistbutton {
     uint16 ltot;
     GWindow popup;
 } GListButton;
+
+typedef struct gcolorbutton {
+    GGadget g;
+    unsigned int fh:8;
+    unsigned int as: 8;
+    unsigned int image_precedes: 1;
+    unsigned int is_default: 1;
+    unsigned int is_cancel: 1;
+    unsigned int pressed: 1;
+    unsigned int within: 1;
+    unsigned int labeltype: 2;	/* 0=>label/button, 1=>imagebutton, 2=>listbutton, 3=>colorbutton(this) */
+    unsigned int shiftonpress: 1;
+    FontInstance *font;
+    unichar_t *label;
+    GImage *image;
+    Color col;
+} GColorButton;
 
 typedef struct gcheck {
     GGadget g;
@@ -350,7 +368,8 @@ typedef struct gtabset {
     void (*nested_expose)(GWindow pixmap, GGadget *g, GEvent *event);
     int (*nested_mouse)(GGadget *g, GEvent *event);
     int16 vert_list_width;
-    int16 as, fh;
+    int16 as, fh, offtop;
+    GGadget *vsb;
 } GTabSet;
 
 struct gdirentry;
@@ -371,6 +390,7 @@ typedef struct gfilechooser {
     GButton *bookmarks, *config;
     struct ghvbox *topbox;
     unichar_t **history;
+    unichar_t **paths;
     int hpos, hcnt, hmax;
 } GFileChooser;
 
@@ -469,7 +489,7 @@ extern int _GListMarkSize;		/* in points, def width of popup mark in buttons */
 extern int _GGadget_Skip;		/* in points, def hor space between gadgets */
 extern int _GGadget_TextImageSkip;	/* in points, def hor space text and image */
 extern GBox _GListMark_Box, _GGroup_LineBox;
-extern GImage *_GListMark_Image;
+extern GResImage *_GListMark_Image;
 extern FontInstance *_ggadget_default_font;
 
 void _GWidget_AddGGadget(GWindow gw,struct ggadget *g);
@@ -550,5 +570,10 @@ extern int GMenuBarCheckKey(GGadget *g, GEvent *event);
 extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
+extern char **_GGadget_GetImagePath(void);
 
 extern int _ggadget_use_gettext;
+
+extern GResInfo ggadget_ri, listmark_ri;
+extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
+extern GResInfo *_GRadioRIHead(void);

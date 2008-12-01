@@ -108,6 +108,8 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
 	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd);
 char *GWidgetOpenFile8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter);
+char *GWidgetOpenFileWPath8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter,char **path);
 char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,
 	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd);
@@ -155,6 +157,7 @@ int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
 	int cnt, char *buts[2], const char *question,...);
 
 extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb fontcols[6]);
+extern struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,struct hslrgba fontcols[6]);
 
 #define gwwv_choose_multiple	GWidgetChoicesBM8
 #define gwwv_choose_with_buttons	GWidgetChoicesB8
@@ -167,6 +170,7 @@ extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct
 #define gwwv_post_notice	GWidgetPostNotice8
 #define gwwv_post_notice_timeout	GWidgetPostNoticeTimeout8
 #define gwwv_open_filename(tit,def,filter,filtfunc)	GWidgetOpenFile8(tit,def,filter,NULL,filtfunc)
+#define gwwv_open_filename_with_path(tit,def,filter,filtfunc,path)	GWidgetOpenFileWPath8(tit,def,filter,NULL,filtfunc,path)
 #define gwwv_save_filename(tit,def,filter)		GWidgetSaveAsFile8(tit,def,filter,NULL,NULL)
 #define gwwv_save_filename_with_gadget(tit,def,filter,gcd)		GWidgetSaveAsFileWithGadget8(tit,def,filter,NULL,NULL,gcd)
 

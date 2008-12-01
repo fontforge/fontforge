@@ -851,6 +851,10 @@ void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e) {
     DoPrefs();
 }
 
+void MenuXRes(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    DoXRes();
+}
+
 void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e) {
     FontView *fv;
 
@@ -4170,7 +4174,7 @@ static GMenuItem2 fllist[] = {
 #if !defined(_NO_PYTHON)
     { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "python.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, FVMenuExecute },
 #elif !defined(_NO_FFSCRIPT)
-    { { (unichar_t *) N_("E_xecute Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, FVMenuExecute },
+    { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, FVMenuExecute },
 #endif
 #if !defined(_NO_FFSCRIPT)
     { { (unichar_t *) N_("Script Menu"), (GImage *) "fileexecute.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Script Menu|No Shortcut"), dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
@@ -4179,6 +4183,7 @@ static GMenuItem2 fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
 #endif
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs },
+    { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|Ctl+Q"), NULL, NULL, FVMenuExit },
     { NULL }

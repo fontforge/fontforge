@@ -36,9 +36,110 @@ static GBox radio_off_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
-static GImage *radon, *radoff, *checkon, *checkoff, *raddison, *raddisoff, *checkdison, *checkdisoff;
+static GResImage *radon, *radoff, *checkon, *checkoff, *raddison, *raddisoff, *checkdison, *checkdisoff;
 static FontInstance *checkbox_font = NULL;
 static int gradio_inited = false;
+
+static GResInfo gradio_ri, gradioon_ri, gradiooff_ri;
+static GResInfo gcheckbox_ri, gcheckboxon_ri, gcheckboxoff_ri;
+static GResInfo gradio_ri = {
+    &gradioon_ri, &ggadget_ri,&gradioon_ri, &gradiooff_ri,
+    &radio_box,
+    &checkbox_font,
+    NULL,
+    NULL,
+    N_("Radio Button"),
+    N_("Radio Button"),
+    "GRadio",
+    "Gdraw",
+    false
+};
+static struct resed gradioon_re[] = {
+    {N_("Image"), "Image", rt_image, &radon, N_("Image used instead of the Radio On Mark")},
+    {N_("Disabled Image"), "DisabledImage", rt_image, &raddison, N_("Image used instead of the Radio On Mark (when the radio is disabled)")},
+    NULL
+};
+static GResInfo gradioon_ri = {
+    &gradiooff_ri, &ggadget_ri,&gradiooff_ri, &gradio_ri,
+    &radio_on_box,
+    NULL,
+    NULL,
+    gradioon_re,
+    N_("Radio On Mark"),
+    N_("The mark showing a radio button is on (depressed, selected)"),
+    "GRadioOn",
+    "Gdraw",
+    false
+};
+static struct resed gradiooff_re[] = {
+/*
+    {N_("Image"), "Image", rt_image, &radoff, N_("Image used instead of the Radio Off Mark")},
+    {N_("Disabled Image"), "DisabledImage", rt_image, &raddisoff, N_("Image used instead of the Radio Off Mark (when the radio is disabled)")},
+*/
+    NULL
+};
+static GResInfo gradiooff_ri = {
+    &gcheckbox_ri, &ggadget_ri,&gradioon_ri, &gradio_ri,
+    &radio_off_box,
+    NULL,
+    NULL,
+    gradiooff_re,
+    N_("Radio Off Mark"),
+    N_("The mark showing a radio button is off (up, not selected)"),
+    "GRadioOff",
+    "Gdraw",
+    false
+};
+static GResInfo gcheckbox_ri = {
+    &gcheckboxon_ri, &ggadget_ri,&gcheckboxon_ri, &gcheckboxoff_ri,
+    &checkbox_box,
+    &checkbox_font,
+    NULL,
+    NULL,
+    N_("Check Box"),
+    N_("Check Box"),
+    "GCheckBox",
+    "Gdraw",
+    false
+};
+static struct resed gcheckboxon_re[] = {
+/*
+    {N_("Image"), "Image", rt_image, &checkon, N_("Image used instead of the Radio On Mark")},
+    {N_("Disabled Image"), "DisabledImage", rt_image, &checkdison, N_("Image used instead of the Radio On Mark (when the radio is disabled)")},
+*/
+    NULL
+};
+static GResInfo gcheckboxon_ri = {
+    &gcheckboxoff_ri, &ggadget_ri,&gcheckboxoff_ri, &gcheckbox_ri,
+    &checkbox_on_box,
+    NULL,
+    NULL,
+    gcheckboxon_re,
+    N_("Check Box On Mark"),
+    N_("The mark showing a checkbox is on (depressed, selected)"),
+    "GCheckBoxOn",
+    "Gdraw",
+    false
+};
+static struct resed gcheckboxoff_re[] = {
+/*
+    {N_("Image"), "Image", rt_image, &checkoff, N_("Image used instead of the Check Box Off Mark")},
+    {N_("Disabled Image"), "DisabledImage", rt_image, &checkdisoff, N_("Image used instead of the Check Box Off Mark (when the radio is disabled)")},
+*/
+    NULL
+};
+static GResInfo gcheckboxoff_ri = {
+    NULL, &ggadget_ri,&gcheckboxon_ri, &gcheckbox_ri,
+    &checkbox_off_box,
+    NULL,
+    NULL,
+    gcheckboxoff_re,
+    N_("Check Box Off Mark"),
+    N_("The mark showing a checkbox is off (up, not selected)"),
+    "GCheckBoxOff",
+    "Gdraw",
+    false
+};
 
 static void GRadioChanged(GRadio *gr) {
     GEvent e;
@@ -469,17 +570,17 @@ static GCheckBox *_GCheckBoxCreate(GCheckBox *gl, struct gwindow *base, GGadgetD
     if ( gl->isradio ) {
 	gl->onbox = &radio_on_box;
 	gl->offbox = &radio_off_box;
-	gl->on = radon;
-	gl->off = radoff;
-	gl->ondis = raddison;
-	gl->offdis = raddisoff;
+	gl->on = radon==NULL ? NULL : radon->image;
+	gl->off = radoff==NULL ? NULL : radoff->image;
+	gl->ondis = raddison==NULL ? NULL : raddison->image;
+	gl->offdis = raddisoff==NULL ? NULL : raddisoff->image;
     } else {
 	gl->onbox = &checkbox_on_box;
 	gl->offbox = &checkbox_off_box;
-	gl->on = checkon;
-	gl->off = checkoff;
-	gl->ondis = checkdison;
-	gl->offdis = checkdisoff;
+	gl->on = checkon==NULL ? NULL : checkon->image;
+	gl->off = checkoff==NULL ? NULL : checkoff->image;
+	gl->ondis = checkdison==NULL ? NULL : checkdison->image;
+	gl->offdis = checkdisoff==NULL ? NULL : checkdisoff->image;
     }
     GCheckBoxFit(gl);
     _GGadget_FinalPosition(&gl->g,base,gd);
@@ -541,4 +642,11 @@ void GGadgetSetChecked(GGadget *g, int ison) {
 
 int GGadgetIsChecked(GGadget *g) {
 return( ((GRadio *) g)->ison );
+}
+
+GResInfo *_GRadioRIHead(void) {
+
+    if ( !gradio_inited )
+	GRadioInit();
+return( &gradio_ri );
 }
