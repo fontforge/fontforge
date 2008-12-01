@@ -30,21 +30,108 @@
 #include "ustring.h"
 #include "gkeysym.h"
 #include "gresource.h"
+#include "gwidget.h"
 
 static void GListButtonDoPopup(GListButton *);
 
 GBox _GGadget_button_box = { /* Don't initialize here */ 0 };
 GBox _GGadget_defaultbutton_box = { /* Don't initialize here */ 0 };
 static GBox _GGadget_cancelbutton_box = { /* Don't initialize here */ 0 };
+static GBox _GGadget_colorbutton_box = { /* Don't initialize here */ 0 };
 static GBox _GGadget_droplist_box = { /* Don't initialize here */ 0 };
 static GBox label_box = { /* Don't initialize here */ 0 };
 static int shift_on_press = 0;
 static FontInstance *label_font = NULL;
 static int gbutton_inited = false;
+#define COLOR_BUTTON_BOX_LEN	10
+
+static GResInfo gcancel_ri, gdefault_ri, gbutton_ri, gdroplist_ri, gcolor_ri;
+static GResInfo glabel_ri = {
+    &gbutton_ri, &ggadget_ri,NULL, NULL,
+    &label_box,
+    &label_font,
+    NULL,
+    NULL,
+    N_("Label"),
+    N_("Text Labels"),
+    "GLabel",
+    "Gdraw",
+    false
+};
+static GResInfo gbutton_ri = {
+    &gdefault_ri, &ggadget_ri,&gdefault_ri, &gcancel_ri,
+    &_GGadget_button_box,
+    &label_font,
+    NULL,
+    NULL,
+    N_("Button"),
+    N_("Buttons"),
+    "GButton",
+    "Gdraw",
+    true
+};
+static GResInfo gdefault_ri = {
+    &gcancel_ri, &gbutton_ri,&gcancel_ri,NULL,
+    &_GGadget_defaultbutton_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Default Button"),
+    N_("Default Buttons"),
+    "GDefaultButton",
+    "Gdraw",
+    true
+};
+static GResInfo gcancel_ri = {
+    &gcolor_ri, &gbutton_ri,&gdefault_ri,NULL,
+    &_GGadget_cancelbutton_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Cancel Button"),
+    N_("Cancel Buttons"),
+    "GCancelButton",
+    "Gdraw",
+    true
+};
+static GResInfo gcolor_ri = {
+    &gdroplist_ri, &gbutton_ri,NULL,NULL,
+    &_GGadget_droplist_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Color Button"),
+    N_("Color Button"),
+    "GColorButton",
+    "Gdraw",
+    true
+};
+static GResInfo gdroplist_ri = {
+    NULL, &gbutton_ri,&listmark_ri,NULL,
+    &_GGadget_droplist_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Drop List Button"),
+    N_("Drop List Button"),
+    "GDropList",
+    "Gdraw",
+    true
+};
 
 static void GButtonInvoked(GButton *b,GEvent *ev) {
     GEvent e;
 
+    if ( b->labeltype==3 ) {
+	struct hslrgba hsl;
+	gColor2Hslrgba(&hsl,((GColorButton *) b)->col);
+	hsl = GWidgetColorA(_("Pick a color"),&hsl,NULL);
+	if ( hsl.rgb ) {
+	    ((GColorButton *) b)->col = gHslrgba2Color(&hsl);
+	    GGadgetRedraw(&b->g);
+	} else
+return;
+    }
     e.type = et_controlevent;
     e.w = b->g.base;
     e.u.control.subtype = et_buttonactivate;
@@ -120,6 +207,7 @@ static int gbutton_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRect unpadded_inner;
     int pad, lcnt, maxtextwidth;
     unichar_t *pt, *start;
+    int cbbl=0;
 
     if ( g->state == gs_invisible )
 return( false );
@@ -163,10 +251,26 @@ return( false );
 	}
 	if ( gb->label!=NULL )
 	    width += maxtextwidth;
+	if ( gb->labeltype==3 ) {
+	    cbbl = GDrawPointsToPixels(NULL,COLOR_BUTTON_BOX_LEN);
+	    width += cbbl + spacing;
+	}
 	if ( width<=g->inner.width )
 	    x += ( g->inner.width-width )/2;
 	else
 	    x += (g->inner.y-g->r.y);
+    }
+    if ( gb->labeltype==3 ) {
+	GRect r;
+	r.x = x+1; r.y = g->inner.y+1;
+	r.width = cbbl-2;
+	if ( img!=NULL )
+	    r.height = GImageGetScaledHeight(pixmap,img)-2;
+	else
+	    r.height = gb->fh-2;
+	GDrawFillRect(pixmap,&r,((GColorButton *) gb)->col);
+	GDrawDrawRect(pixmap,&r,0x000000);
+	x += cbbl + spacing;
     }
     if ( gb->image_precedes && img!=NULL ) {
 	GDrawDrawScaledImage(pixmap,img,x,g->inner.y + off);
@@ -477,6 +581,10 @@ static int GButtonGetDesiredWidth(GLabel *gl) {
     if ( width!=0 && iwidth!=0 )
 	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
     width += iwidth;
+
+    if ( gl->labeltype==3 )
+	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip) +
+		GDrawPointsToPixels(gl->g.base,COLOR_BUTTON_BOX_LEN);
 return( width );
 }
 
@@ -508,6 +616,14 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	    fh = gl->fh*lcnt;
     } else
 	fh = as+ds;
+
+    if ( gl->labeltype==3 ) {
+	if ( width!=0 )
+	    width += GDrawPointsToPixels(NULL,COLOR_BUTTON_BOX_LEN) +
+		    GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
+	else
+	    width = GDrawPointsToPixels(NULL,COLOR_BUTTON_BOX_LEN);
+    }
 
     if ( width!=0 && iwidth!=0 )
 	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
@@ -725,6 +841,14 @@ return;
     if ( temp!=NULL )
 	label_font = temp;
     shift_on_press = GResourceFindBool("GButton.ShiftOnPress",false);
+#ifdef __Mac
+    if ( _GGadget_button_box.border_type == bt_box ) {
+	_GGadget_droplist_box.border_brightest = _ggadget_Default_Box.border_brightest;
+	_GGadget_droplist_box.border_brighter = _ggadget_Default_Box.border_brighter;
+	_GGadget_droplist_box.border_darkest = _ggadget_Default_Box.border_darkest;
+	_GGadget_droplist_box.border_darker = _ggadget_Default_Box.border_darker;
+    }
+#endif
     _GGadget_droplist_box = _GGadget_button_box;
     _GGadget_defaultbutton_box = _GGadget_button_box;
     _GGadget_cancelbutton_box  = _GGadget_button_box;
@@ -738,16 +862,12 @@ return;
     _GGadget_droplist_box.border_type = _ggadget_Default_Box.border_type;
     _GGadget_droplist_box.border_width = _ggadget_Default_Box.border_width;
     _GGadget_droplist_box.border_shape = _ggadget_Default_Box.border_shape;
-    if ( _GGadget_button_box.border_type == bt_box ) {
-	_GGadget_droplist_box.border_brightest = _ggadget_Default_Box.border_brightest;
-	_GGadget_droplist_box.border_brighter = _ggadget_Default_Box.border_brighter;
-	_GGadget_droplist_box.border_darkest = _ggadget_Default_Box.border_darkest;
-	_GGadget_droplist_box.border_darker = _ggadget_Default_Box.border_darker;
-    }
 #endif
+    _GGadget_colorbutton_box  = _GGadget_button_box;
     _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
     _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);
     _GGadgetInitDefaultBox("GDropList.",&_GGadget_droplist_box,NULL);
+    _GGadgetInitDefaultBox("GColorButton.",&_GGadget_colorbutton_box,NULL);
     gbutton_inited = true;
 }
 
@@ -762,13 +882,13 @@ static void GLabelFit(GLabel *gl) {
     }
 
     GDrawWindowFontMetrics(gl->g.base,gl->font,&as, &ds, &ld);
+    gl->as = as;
+    gl->fh = as+ds;
+
     GButtonGetDesiredSize(&gl->g,&outer, &inner);
     _ggadgetSetRects(&gl->g,&outer, &inner, 0, 0);
     if ( gl->g.takes_input )
 	GButtonSetInner((GButton *) gl);
-
-    gl->as = as;
-    gl->fh = as+ds;
 }
 
 static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
@@ -836,6 +956,37 @@ GGadget *GImageButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 return( &gl->g );
 }
 
+GGadget *GColorButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GColorButton *gl;
+    static GTextInfo ti;
+    Color col = gd->u.col;
+
+    if ( ti.image==NULL && ti.text==NULL ) {
+	ti.image = GGadgetImageCache("colorwheel.png");
+	if ( ti.image==NULL ) {
+	    ti.text = (unichar_t *) _("Color");
+	    ti.text_is_1byte = true;
+	}
+    }
+    gd->label = &ti;
+    gl = gcalloc(1,sizeof(GColorButton));
+    gl->labeltype = 3;
+    gl = (GColorButton *) _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_colorbutton_box);
+    gl->g.takes_input = true;
+    gl->col = col;
+return( &gl->g );
+}
+
+void GColorButtonSetColor(GGadget *g, Color col) {
+    GColorButton *gb = (GColorButton *) g;
+    gb->col = col;
+    GGadgetRedraw(g);
+}
+
+Color GColorButtonGetColor(GGadget *g) {
+return( ((GColorButton *) g)->col );
+}
+
 static void GListButtonSelected(GGadget *g, int i) {
     GListButton *gl = (GListButton *) g;
     GEvent e;
@@ -898,4 +1049,9 @@ GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_droplist_box);
     gl->g.funcs = &glistbutton_funcs;
 return( &gl->g );
+}
+
+GResInfo *_GButtonRIHead(void) {
+    _GButtonInit();
+return( &glabel_ri );
 }

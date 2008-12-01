@@ -162,10 +162,42 @@ return( (((int) rint(255.*col->r))<<16 ) |
 		    (((int) rint(255.*col->b)) ) );
 }
 
+Color gHslrgba2Color(struct hslrgba *col) {
+    if ( !col->rgb ) {
+	if ( col->hsv )
+	    gHSV2RGB((struct hslrgb *) col);
+	else if ( col->hsl )
+	    gHSL2RGB((struct hslrgb *) col);
+	else
+return( COLOR_UNKNOWN );
+    }
+    if ( !col->has_alpha || col->alpha==1.0 )
+return( (((int) rint(255.*col->r))<<16 ) |
+		    (((int) rint(255.*col->g))<<8 ) |
+		    (((int) rint(255.*col->b)) ) );
+    else
+return( (((int) rint(255.*col->alpha))<<24 ) |
+		    (((int) rint(255.*col->r))<<16) |
+		    (((int) rint(255.*col->g))<<8 ) |
+		    (((int) rint(255.*col->b)) ) );
+}
+
 void gColor2Hslrgb(struct hslrgb *col,Color from) {
     col->rgb = true;
     col->r = ((from>>16)&0xff)/255.0;
     col->g = ((from>>8 )&0xff)/255.0;
     col->b = ((from    )&0xff)/255.0;
     col->hsl = col->hsv = false;
+}
+
+void gColor2Hslrgba(struct hslrgba *col,Color from) {
+    col->rgb = true;
+    col->alpha = ((from>>24)&0xff)/255.0;
+    col->r = ((from>>16)&0xff)/255.0;
+    col->g = ((from>>8 )&0xff)/255.0;
+    col->b = ((from    )&0xff)/255.0;
+    col->hsl = col->hsv = false;
+    col->has_alpha = col->alpha!=0;
+    if ( !col->has_alpha )
+	col->alpha = 1.0;
 }

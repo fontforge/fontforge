@@ -80,9 +80,9 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( true );
 }
 
-unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
+static unichar_t *GWidgetOpenFileWPath(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,
-	GFileChooserFilterType filter) {
+	GFileChooserFilterType filter, char **path) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -186,6 +186,7 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
     GFileChooserSetFilterText(gcd[0].ret,initial_filter);
     GFileChooserSetFilterFunc(gcd[0].ret,filter);
     GFileChooserSetMimetypes(gcd[0].ret,mimetypes);
+    GFileChooserSetPaths(gcd[0].ret,path);
     GGadgetSetTitle(gcd[0].ret,defaultfile);
 
     memset(&d,'\0',sizeof(d));
@@ -203,9 +204,15 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
 return(d.ret);
 }
 
-char *GWidgetOpenFile8(const char *title, const char *defaultfile,
-	const char *initial_filter, char **mimetypes,
+unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
+	const unichar_t *initial_filter, unichar_t **mimetypes,
 	GFileChooserFilterType filter) {
+return( GWidgetOpenFileWPath(title,defaultfile,initial_filter,mimetypes,filter,NULL));
+}
+
+char *GWidgetOpenFileWPath8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,
+	GFileChooserFilterType filter, char **path) {
     unichar_t *tit=NULL, *def=NULL, *filt=NULL, **mimes=NULL, *ret;
     char *utf8_ret;
     int i;
@@ -214,6 +221,8 @@ char *GWidgetOpenFile8(const char *title, const char *defaultfile,
 	tit = utf82u_copy(title);
     if ( defaultfile!=NULL )
 	def = utf82u_copy(defaultfile);
+    else if ( path!=NULL && path[0]!=NULL )
+	def = utf82u_copy(path[0]);
     if ( initial_filter!=NULL )
 	filt = utf82u_copy(initial_filter);
     if ( mimetypes!=NULL ) {
@@ -223,7 +232,7 @@ char *GWidgetOpenFile8(const char *title, const char *defaultfile,
 	    mimes[i] = utf82u_copy(mimetypes[i]);
 	mimes[i] = NULL;
     }
-    ret = GWidgetOpenFile(tit,def,filt,mimes,filter);
+    ret = GWidgetOpenFileWPath(tit,def,filt,mimes,filter,path);
     if ( mimes!=NULL ) {
 	for ( i=0; mimes[i]!=NULL; ++i )
 	    free(mimes[i]);
@@ -233,4 +242,10 @@ char *GWidgetOpenFile8(const char *title, const char *defaultfile,
     utf8_ret = u2utf8_copy(ret);
     free(ret);
 return( utf8_ret );
+}
+
+char *GWidgetOpenFile8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,
+	GFileChooserFilterType filter) {
+return( GWidgetOpenFileWPath8(title,defaultfile,initial_filter,mimetypes,filter,NULL));
 }

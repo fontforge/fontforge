@@ -953,6 +953,22 @@ static void GFCBookmark(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	GFileChooserScanDir(gfc,bookmarks[mi->mid]);
 }
 
+static void GFCPath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GFileChooser *gfc = (GFileChooser *) (mi->ti.userdata);
+    char *home;
+
+    if ( *gfc->paths[mi->mid]=='~' && gfc->paths[mi->mid][1]=='/' &&
+	    (home = getenv("HOME"))!=NULL ) {
+	unichar_t *space;
+	space = galloc((strlen(home)+u_strlen(bookmarks[mi->mid])+2)*sizeof(unichar_t));
+	uc_strcpy(space,home);
+	u_strcat(space,gfc->paths[mi->mid]+1);
+	GFileChooserScanDir(gfc,space);
+	free(space);
+    } else
+	GFileChooserScanDir(gfc,gfc->paths[mi->mid]);
+}
+
 static GMenuItem gfcbookmarkmenu[] = {
     { { (unichar_t *) N_("Directory|Back"), &_GIcon_backarrow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCBack },
     { { (unichar_t *) N_("Directory|Forward"), &_GIcon_forwardarrow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, GFCForward },
@@ -968,7 +984,7 @@ static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
 	GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
 	GMenuItem *mi;
-	int i, bcnt, mcnt;
+	int i, bcnt, mcnt, pcnt;
 	GEvent fake;
 	GRect pos;
 
@@ -982,6 +998,11 @@ static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
 	bcnt = 0;
 	if ( bookmarks!=NULL )
 	    for ( ; bookmarks[bcnt]!=NULL; ++bcnt );
+	if ( gfc->paths!=NULL ) {
+	    for ( pcnt=0; gfc->paths[pcnt]!=NULL; ++pcnt );
+	    if ( pcnt!=0 && bcnt!=0 ) ++pcnt;
+	    bcnt += pcnt;
+	}
 	mi = gcalloc((mcnt+bcnt+1),sizeof(GMenuItem));
 	for ( mcnt=0; gfcbookmarkmenu[mcnt].ti.text!=NULL || gfcbookmarkmenu[mcnt].ti.line; ++mcnt ) {
 	    mi[mcnt] = gfcbookmarkmenu[mcnt];
@@ -995,6 +1016,21 @@ static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
 	if ( bookmarks==NULL )
 	    mi[4].ti.disabled = true;		/* can't remove bookmarks, already none */
 	else {
+	    if ( gfc->paths!=NULL ) {
+		for ( bcnt=0; gfc->paths[bcnt]!=NULL; ++bcnt ) {
+		    mi[mcnt+bcnt].ti.text = u_copy(gfc->paths[bcnt]);
+		    mi[mcnt+bcnt].ti.fg = mi[mcnt+bcnt].ti.bg = COLOR_DEFAULT;
+		    mi[mcnt+bcnt].ti.userdata = gfc;
+		    mi[mcnt+bcnt].mid = bcnt;
+		    mi[mcnt+bcnt].invoke = GFCPath;
+		}
+		mcnt+=bcnt;
+		if ( bookmarks!=NULL && bookmarks[0]!=NULL ) {
+		    mi[mcnt].ti.line = true;
+		    mi[mcnt].ti.fg = mi[mcnt+bcnt].ti.bg = COLOR_DEFAULT;
+		    ++mcnt;
+		}
+	    }
 	    for ( bcnt=0; bookmarks[bcnt]!=NULL; ++bcnt ) {
 		mi[mcnt+bcnt].ti.text = u_copy(bookmarks[bcnt]);
 		mi[mcnt+bcnt].ti.fg = mi[mcnt+bcnt].ti.bg = COLOR_DEFAULT;
@@ -1235,6 +1271,11 @@ static void GFileChooser_destroy(GGadget *g) {
     GGadgetDestroy(&gfc->bookmarks->g);
     GGadgetDestroy(&gfc->config->g);
 #endif
+    if ( gfc->paths!=NULL ) {
+	for ( i=0; gfc->paths[i]!=NULL; ++i )
+	    free(gfc->paths[i]);
+	free(gfc->paths);
+    }
     free(gfc->wildcard);
     free(gfc->lastname);
     if ( gfc->mimetypes ) {
@@ -1688,3 +1729,25 @@ void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *)) {
     prefs_changed = p_c;
     prefs_changed_data = data;
 }
+
+void GFileChooserSetPaths(GGadget *g,char **path) {
+    unichar_t **dirs = NULL;
+    int dcnt;
+    GFileChooser *gfc = (GFileChooser *) g;
+
+    if ( gfc->paths!=NULL ) {
+	for ( dcnt=0; gfc->paths[dcnt]!=NULL; ++dcnt )
+	    free( gfc->paths[dcnt] );
+	free(gfc->paths);
+	gfc->paths = NULL;
+    }
+    if ( path==NULL || path[0]==NULL )
+return;
+
+    for ( dcnt=0; path[dcnt]!=NULL; ++dcnt );
+    gfc->paths = dirs = galloc((dcnt+1)*sizeof(unichar_t *));
+    for ( dcnt=0; path[dcnt]!=NULL; ++dcnt )
+	dirs[dcnt] = utf82u_copy(path[dcnt]);
+    dirs[dcnt] = NULL;
+}
+    

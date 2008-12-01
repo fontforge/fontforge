@@ -279,7 +279,7 @@ static int imagepathlenmax = 0;
 
 struct image_bucket {
     struct image_bucket *next;
-    char *filename;
+    char *filename, *absname;
     GImage *image;
 };
 
@@ -309,6 +309,11 @@ static void ImagePathDefault(void) {
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagedir);
     }
+}
+
+char **_GGadget_GetImagePath(void) {
+    ImagePathDefault();
+return( imagepath );
 }
 
 static void ImageCacheReload(void) {
@@ -347,6 +352,8 @@ static void ImageCacheReload(void) {
 		    *temp = hold;
 		    GImageDestroy(temp);
 		}
+		free( bucket->absname );
+		bucket->absname = copy( path );
 	    }
 	}
     }
@@ -415,15 +422,17 @@ return;
     ImageCacheReload();
 }
 
-GImage *GGadgetImageCache(char *filename) {
+static GImage *_GGadgetImageCache(char *filename, char **foundname) {
     int index = hash_filename(filename);
     struct image_bucket *bucket;
     char *path;
     int k;
 
     for ( bucket = imagecache[index]; bucket!=NULL; bucket = bucket->next ) {
-	if ( strcmp(bucket->filename,filename)==0 )
+	if ( strcmp(bucket->filename,filename)==0 ) {
+	    if ( foundname!=NULL ) *foundname = copy( bucket->absname );
 return( bucket->image );
+	}
     }
     bucket = galloc(sizeof(struct image_bucket));
     bucket->next = imagecache[index];
@@ -436,8 +445,10 @@ return( bucket->image );
     for ( k=0; imagepath[k]!=NULL; ++k ) {
 	sprintf( path,"%s/%s", imagepath[k], filename );
 	bucket->image = GImageRead(path);
-	if ( bucket->image!=NULL )
+	if ( bucket->image!=NULL ) {
+	    bucket->absname = copy(path);
     break;
+	}
     }
     free(path);
     if ( bucket->image!=NULL ) {
@@ -455,16 +466,28 @@ return( bucket->image );
 	    }
 	}
     }
+    if ( foundname!=NULL )
+	*foundname = copy( bucket->absname );
 return( bucket->image );
 }
 
-GImage *GGadgetResourceFindImage(char *name, GImage *def) {
+GImage *GGadgetImageCache(char *filename) {
+return( _GGadgetImageCache(filename,NULL));
+}
+
+GResImage *GGadgetResourceFindImage(char *name, GImage *def) {
     GImage *ret;
     char *fname;
+    GResImage *ri;
 
     fname = GResourceFindString(name);
+    if ( fname==NULL && def==NULL )
+return( NULL );
+    ri = gcalloc(1,sizeof(GResImage));
+    ri->filename = fname;
+    ri->image = def;
     if ( fname==NULL )
-return( def );
+return( ri );
 
     if ( *fname=='/' )
 	ret = GImageRead(fname);
@@ -473,14 +496,23 @@ return( def );
 	strcpy(absname,getenv("HOME"));
 	strcat(absname,fname+1);
 	ret = GImageRead(absname);
-	free(absname);
+	free(fname);
+	ri->filename = fname = absname;
+    } else {
+	char *absname;
+	ret = _GGadgetImageCache(fname,&absname);
+	if ( ret ) {
+	    free(fname);
+	    ri->filename = fname = absname;
+	}
+    }
+    if ( ret!=NULL ) {
+	ri->filename = NULL;
+	free(fname);
     } else
-	ret = GGadgetImageCache(fname);
-    if ( ret==NULL )
-	ret = def;
-    free(fname);
+	ri->image = ret;
 
-return( ret );
+return( ri );
 }
     
 static void GTextInfoImageLookup(GTextInfo *ti) {

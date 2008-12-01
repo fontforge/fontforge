@@ -160,6 +160,7 @@ typedef struct ggadgetdata {
 	struct matrixinit *matrix;
 	GDrawEH drawable_e_h;	/* Drawable event handler */
 	GTextCompletionHandler completion;
+	Color col;
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
@@ -287,6 +288,7 @@ extern void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,
 	const int *ires);
 unichar_t *GStringFileGetResource(char *filename, int index,unichar_t *mnemonic);
 extern void GResourceUseGetText(void);
+extern void *GResource_font_cvt(char *val, void *def);
 extern FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont);
 
 void GGadgetDestroy(GGadget *g);
@@ -340,6 +342,9 @@ int32 GGadgetGetFirstListSelectedItem(GGadget *g);
 void GGadgetScrollListToPos(GGadget *g,int32 pos);
 void GGadgetScrollListToText(GGadget *g,const unichar_t *lab,int32 sel);
 void GGadgetSetListOrderer(GGadget *g,int (*orderer)(const void *, const void *));
+
+void GColorButtonSetColor(GGadget *g, Color col);
+Color GColorButtonGetColor(GGadget *g);
 
 void GGadgetSetChecked(GGadget *g, int ison);
 int GGadgetIsChecked(GGadget *g);
@@ -398,6 +403,7 @@ int GFileChooserGetShowHidden(void);
 void GFileChooserSetDirectoryPlacement(int dp);
 int GFileChooserGetDirectoryPlacement(void);
 void GFileChooserSetBookmarks(unichar_t **b);
+void GFileChooserSetPaths(GGadget *g, char **path);
 unichar_t **GFileChooserGetBookmarks(void);
 void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *));
 
@@ -464,6 +470,7 @@ GGadget *GLabelCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GImageButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GColorButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GRadioCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GCheckBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
@@ -491,7 +498,11 @@ GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
-GImage *GGadgetResourceFindImage(char *name, GImage *def);
+typedef struct gresimage {
+    GImage *image;
+    char *filename;
+} GResImage;
+GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 
 void GGadgetSetImageDir(char *dir);
 void GGadgetSetImagePath(char *path);

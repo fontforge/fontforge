@@ -152,7 +152,7 @@ return( false );
     if ( gts->vertical ) {
 	x = g->r.x + GBoxBorderWidth(pixmap,g->box) + 3;
 	y = g->r.y + GBoxBorderWidth(pixmap,g->box) + 3;
-	for ( i=0; i<gts->tabcnt; ++i ) {
+	for ( i=gts->offtop; i<gts->tabcnt; ++i ) {
 	    fg = gts->tabs[i].disabled?gts->g.box->disabled_foreground:gts->g.box->main_foreground;
 	    if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
 	    if ( i==gts->sel ) {
@@ -169,6 +169,8 @@ return( false );
 	GDrawDrawLine(pixmap,x-6+gts->vert_list_width,g->r.y + GBoxBorderWidth(pixmap,g->box),
 			     x-6+gts->vert_list_width,g->r.y + g->r.height -GBoxBorderWidth(pixmap,g->box),
 			     fg);
+	if ( gts->vsb != NULL )
+	    gts->vsb->funcs->handle_expose(pixmap,gts->vsb,event);
     } else {
 	gts->haslarrow = gts->hasrarrow = false;
 	if ( gts->scrolled ) {
@@ -324,6 +326,13 @@ static void GTabSet_Remetric(GTabSet *gts) {
 	in = gts->tabs[i].nesting*ni;
 	if ( gts->tabs[i].tw+in > gts->vert_list_width )
 	    gts->vert_list_width = gts->tabs[i].tw+in;
+    }
+    if ( gts->vsb ) {
+	gts->vert_list_width += gts->vsb->r.width;
+	if ( gts->g.inner.height>26 ) {
+	    int bp = GBoxBorderWidth(gts->g.base,gts->g.box);
+	    GScrollBarSetBounds(gts->vsb,0,gts->tabcnt,(gts->g.r.height-2*bp-6)/gts->fh);
+	}
     }
     gts->vert_list_width += 8;
 
@@ -553,6 +562,11 @@ static void _gtabset_move(GGadget *g, int32 x, int32 y ) {
     for ( i=0; i<gts->tabcnt; ++i ) if ( gts->tabs[i].w!=NULL )
 	GDrawMove(gts->tabs[i].w,nx,ny);
     _ggadget_move(g,x,y);
+    if ( gts->vsb!=NULL ) {
+	int bp = GBoxBorderWidth(gts->g.base,gts->g.box);
+	GGadgetMove(gts->vsb,g->r.x +bp+ gts->vert_list_width - gts->vsb->r.width,
+		    gts->g.r.y+bp);
+    }
 }
 
 static void _gtabset_resize(GGadget *g, int32 width, int32 height ) {
@@ -562,6 +576,21 @@ static void _gtabset_resize(GGadget *g, int32 width, int32 height ) {
     _ggadget_resize(g,width,height);
     for ( i=0; i<gts->tabcnt; ++i ) if ( gts->tabs[i].w!=NULL )
 	GDrawResize(gts->tabs[i].w,g->inner.width,g->inner.height);
+    if ( gts->vsb!=NULL ) {
+	int off = gts->offtop;
+	int bp = GBoxBorderWidth(gts->g.base,gts->g.box);
+	GGadgetResize(gts->vsb,gts->vsb->r.width, gts->g.r.height-2*bp);
+	GScrollBarSetBounds(gts->vsb,0,gts->tabcnt,(gts->g.r.height-2*bp-6)/gts->fh);
+	if ( gts->offtop + (gts->g.r.height-2*bp-6)/gts->fh > gts->tabcnt )
+	    off = gts->tabcnt - (gts->g.r.height-2*bp-6)/gts->fh;
+	if ( off<0 )
+	    off = 0;
+	if ( off!=gts->offtop ) {
+	    gts->offtop = off;
+	    GScrollBarSetPos(gts->vsb, off );
+	    GGadgetRedraw(&gts->g);
+	}
+    }
 }
 
 static void _gtabset_setvisible(GGadget *g,int visible) {
@@ -572,6 +601,8 @@ static void _gtabset_setvisible(GGadget *g,int visible) {
     i = gts->sel;
     if ( gts->tabs[gts->sel].w!=NULL )
 	GDrawSetVisible(gts->tabs[gts->sel].w, visible);
+    if ( gts->vsb!=NULL )
+	GGadgetSetVisible(gts->vsb,visible);
 }
 
 static int gtabset_FillsWindow(GGadget *g) {
@@ -599,8 +630,12 @@ static void gtabset_GetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	    if ( test.height>nested.height ) nested.height = test.height;
 	}
     }
-    if ( gts->vertical && gts->rcnt*gts->fh+10 > nested.height )
-	nested.height = gts->tabcnt*gts->fh+10;
+    if ( gts->vertical ) {
+	if ( gts->vsb==NULL && gts->rcnt*gts->fh+10 > nested.height )
+	    nested.height = gts->tabcnt*gts->fh+10;
+	else if ( gts->vsb!=NULL && 2*gts->vsb->r.width + 20 > nested.height )
+	    nested.height = 2*gts->vsb->r.width + 20;	/* Minimum size for scrollbar arrows, vaguely */
+    }
 
     if ( g->desired_width>=0 ) nested.width = g->desired_width - 2*bp;
     if ( g->desired_height>=0 ) nested.height = g->desired_height - 2*bp;
@@ -685,6 +720,39 @@ static int sendtoparent_eh(GWindow gw, GEvent *event) {
 return( true );
 }
 
+static int gtabset_vscroll(GGadget *g, GEvent *event) {
+    enum sb sbt = event->u.control.u.sb.type;
+    GTabSet *gts = (GTabSet *) (g->data);
+    int loff = gts->offtop;
+    int page = (g->inner.height-6)/gts->fh- ((g->inner.height-6)/gts->fh>2?1:0);
+
+    if ( sbt==et_sb_top )
+	loff = 0;
+    else if ( sbt==et_sb_bottom ) {
+	loff = gts->tabcnt - (gts->g.inner.height-6)/gts->fh;
+    } else if ( sbt==et_sb_up ) {
+	--loff;
+    } else if ( sbt==et_sb_down ) {
+	++loff;
+    } else if ( sbt==et_sb_uppage ) {
+	loff -= page;
+    } else if ( sbt==et_sb_downpage ) {
+	loff += page;
+    } else /* if ( sbt==et_sb_thumb || sbt==et_sb_thumbrelease ) */ {
+	loff = event->u.control.u.sb.pos;
+    }
+    if ( loff + (gts->g.inner.height-6)/gts->fh > gts->tabcnt )
+	loff = gts->tabcnt - (gts->g.inner.height-6)/gts->fh;
+    if ( loff<0 )
+	loff = 0;
+    if ( loff!=gts->offtop ) {
+	gts->offtop = loff;
+	GScrollBarSetPos(gts->vsb, loff );
+	GGadgetRedraw(&gts->g);
+    }
+return( true );
+}
+
 GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GTabSet *gts = gcalloc(1,sizeof(GTabSet));
     int i, bp;
@@ -737,6 +805,17 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gd->flags&gg_tabset_fill1line ) gts->fill1line = true;
     if ( gd->flags&gg_tabset_vert ) gts->vertical = true;
     gts->offset_per_row = GDrawPointsToPixels(base,2);
+    if ( gts->vertical && gts->scrolled ) {
+	GGadgetData gd;
+	memset(&gd,'\0',sizeof(gd));
+	gd.pos.y = gts->g.r.y; gd.pos.height = gts->g.inner.height;
+	gd.pos.width = GDrawPointsToPixels(gts->g.base,_GScrollBar_Width);
+	gd.pos.x = gts->g.inner.x;
+	gd.flags = (gts->g.state==gs_invisible?0:gg_visible)|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+	gd.handle_controlevent = gtabset_vscroll;
+	gts->vsb = GScrollBarCreate(gts->g.base,&gd,gts);
+	gts->vsb->contained = true;
+    }
     GTabSet_Remetric(gts);
     _GGadget_FinalPosition(&gts->g,base,gd);
 
@@ -751,6 +830,12 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     }
     if ( gts->rcnt==1 ) {
 	gts->g.inner.y += bp; gts->g.inner.height -= bp;
+    }
+    if ( gts->vsb!=NULL ) {
+	GGadgetMove(gts->vsb, gts->g.r.x + bp + gts->vert_list_width - gts->vsb->r.width, gts->g.r.y + bp);
+	GGadgetResize(gts->vsb, gts->vsb->r.width, gts->g.r.height-2*bp);
+	if ( gts->g.inner.height>26 )
+	    GScrollBarSetBounds(gts->vsb,0,gts->tabcnt,(gts->g.r.height-2*bp-6)/gts->fh);
     }
 
     if ( gd->flags&gg_tabset_nowindow ) gts->nowindow = true;

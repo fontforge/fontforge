@@ -30,6 +30,7 @@
 #include <charset.h>
 #include <gfile.h>
 #include <gresource.h>
+#include <gresedit.h>
 #include <ustring.h>
 #include <gkeysym.h>
 
@@ -2359,3 +2360,13 @@ struct prefs_interface gdraw_prefs_interface = {
     PrefsUI_getFontForgeShareDir,
     PrefsUI_SetDefaults
 };
+
+static void change_res_filename(const char *newname) {
+    free(xdefs_filename);
+    xdefs_filename = copy( newname );
+    SavePrefs(true);
+}
+
+void DoXRes(void) {
+    GResEdit(NULL,xdefs_filename,change_res_filename);
+}
