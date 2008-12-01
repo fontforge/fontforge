@@ -20,7 +20,7 @@ libgdraw_OBJECTS =  choosericons.o ctlvalues.o drawboxborder.o \
  gimagewriteeps.o gdrawgimage.o \
  gimagexdraw.o gkeysym.o glist.o \
  gmenu.o gprogress.o gpsdraw.o gpstxtinit.o gradio.o gresource.o \
- gresourceimage.o gsavefiledlg.o gscrollbar.o gtabset.o \
+ gresourceimage.o gresedit.o gsavefiledlg.o gscrollbar.o gtabset.o \
  gtextfield.o gtextinfo.o gwidgets.o gxdraw.o gxcdraw.o \
  ghvbox.o gmatrixedit.o gdrawable.o gspacer.o xkeysyms_unicode.o
 
