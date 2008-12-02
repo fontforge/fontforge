@@ -32,7 +32,7 @@ libgdraw_OBJECTS =  choosericons.lo ctlvalues.lo drawboxborder.lo \
  gmenu.lo gprogress.lo gpsdraw.lo gpstxtinit.lo gradio.lo gresource.lo \
  gresourceimage.lo gresedit.lo gsavefiledlg.lo gscrollbar.lo gtabset.lo \
  gtextfield.lo gtextinfo.lo gwidgets.lo gxdraw.lo gxcdraw.lo \
- ghvbox.lo gmatrixedit.lo gdrawable.lo gresedit.lo gspacer.lo xkeysyms_unicode.lo
+ ghvbox.lo gmatrixedit.lo gdrawable.lo gspacer.lo xkeysyms_unicode.lo
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
