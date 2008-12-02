@@ -44,11 +44,27 @@ FontInstance *_gtextfield_font = NULL;
 static int gtextfield_inited = false;
 
 static GResInfo listfield_ri, listfieldmenu_ri, numericfield_ri, numericfieldspinner_ri;
+static GTextInfo text_lab[] = {
+	{ (unichar_t *) "Disabled", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+static GTextInfo list_choices[] = {
+	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	NULL
+    };
+static GGadgetCreateData text_gcd[] = {
+	{GTextFieldCreate, {{0,0,70},NULL,0,0,0,0,0,&text_lab[0],NULL,gg_visible}},
+	{GTextFieldCreate, {{0,0,70},NULL,0,0,0,0,0,&text_lab[1],NULL,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *tarray[] = { GCD_Glue, &text_gcd[0], GCD_Glue, &text_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData textbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tarray,gg_visible|gg_enabled}};
 static GResInfo gtextfield_ri = {
     &listfield_ri, &ggadget_ri,NULL, NULL,
     &_GGadget_gtextfield_box,
     &_gtextfield_font,
-    NULL,
+    &textbox,
     NULL,
     N_("Text Field"),
     N_("Text Field"),
@@ -56,11 +72,18 @@ static GResInfo gtextfield_ri = {
     "Gdraw",
     false
 };
+static GGadgetCreateData textlist_gcd[] = {
+	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[0],list_choices,gg_visible}},
+	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[1],list_choices,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *tlarray[] = { GCD_Glue, &textlist_gcd[0], GCD_Glue, &textlist_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData textlistbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tlarray,gg_visible|gg_enabled}};
 static GResInfo listfield_ri = {
     &listfieldmenu_ri, &gtextfield_ri,&listfieldmenu_ri, &listmark_ri,
     &glistfield_box,
     NULL,
-    NULL,
+    &textlistbox,
     NULL,
     N_("List Field"),
     N_("List Field (Combo Box)"),
@@ -72,7 +95,7 @@ static GResInfo listfieldmenu_ri = {
     &numericfield_ri, &listfield_ri, &listmark_ri,NULL,
     &glistfieldmenu_box,
     NULL,
-    NULL,
+    &textlistbox,
     NULL,
     N_("List Field Menu"),
     N_("Box surrounding the ListMark in a list field (combobox)"),
@@ -80,11 +103,18 @@ static GResInfo listfieldmenu_ri = {
     "Gdraw",
     false
 };
+static GGadgetCreateData num_gcd[] = {
+	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible}},
+	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *narray[] = { GCD_Glue, &num_gcd[0], GCD_Glue, &num_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData numbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) narray,gg_visible|gg_enabled}};
 static GResInfo numericfield_ri = {
     &numericfieldspinner_ri, &gtextfield_ri,&numericfieldspinner_ri, NULL,
     &gnumericfield_box,
     NULL,
-    NULL,
+    &numbox,
     NULL,
     N_("Numeric Field"),
     N_("Numeric Field (Spinner)"),
@@ -96,7 +126,7 @@ static GResInfo numericfieldspinner_ri = {
     NULL, &numericfield_ri,NULL, NULL,
     &gnumericfieldspinner_box,
     NULL,
-    NULL,
+    &numbox,
     NULL,
     N_("Numeric Field Sign"),
     N_("The box around the up/down arrows of a numeric field (spinner)"),

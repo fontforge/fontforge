@@ -7149,6 +7149,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     gd.pos.y = fv->mbh+fv->infoh; gd.pos.height = pos.height;
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gd.pos.x = pos.width;
+    gd.u.sbinit = NULL;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     fv->vsb = GScrollBarCreate(gw,&gd,fv);
 

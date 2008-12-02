@@ -576,4 +576,6 @@ extern int _ggadget_use_gettext;
 
 extern GResInfo ggadget_ri, listmark_ri;
 extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
-extern GResInfo *_GRadioRIHead(void);
+extern GResInfo *_GRadioRIHead(void), *_GScrollBarRIHead(void), *_GLineRIHead(void);
+extern GResInfo *_GMenuRIHead(void), *_GTabSetRIHead(void), *_GHVBoxRIHead(void);
+extern GResInfo *_GMatrixEditRIHead(void);

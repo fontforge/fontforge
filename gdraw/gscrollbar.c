@@ -35,6 +35,41 @@ int _GScrollBar_Width = 13;			/* in points */
 int _GScrollBar_StartTime=300, _GScrollBar_RepeatTime=200;
 static int gscrollbar_inited = false;
 
+static GGadget *GScrollBarCreateInitialized(struct gwindow *base, GGadgetData *gd,void *data);
+static struct scrollbarinit sbinit = { 0, 40, 20, 10 };
+static GGadgetCreateData scrollbar_gcd[] = {
+	{GScrollBarCreateInitialized, {{0,0,100,13},NULL,0,0,0,0,0,NULL,(GTextInfo *) &sbinit,gg_visible}},
+	{GScrollBarCreateInitialized, {{0,0,100,13},NULL,0,0,0,0,0,NULL,(GTextInfo *) &sbinit,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *sarray[] = { GCD_Glue, &scrollbar_gcd[0], GCD_Glue, &scrollbar_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData scrollbarbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) sarray,gg_visible|gg_enabled}};
+static GResInfo gthumb_ri;
+static GResInfo gscrollbar_ri = {
+    &gthumb_ri, &ggadget_ri,&gthumb_ri, NULL,
+    &scrollbar_box,
+    NULL,
+    &scrollbarbox,
+    NULL,
+    N_("ScrollBar"),
+    N_("Scroll Bar"),
+    "GScrollBar",
+    "Gdraw",
+    false
+};
+static GResInfo gthumb_ri = {
+    NULL, &ggadget_ri,&gscrollbar_ri, NULL,
+    &thumb_box,
+    NULL,
+    &scrollbarbox,
+    NULL,
+    N_("SB Thumb"),
+    N_("Scroll Bar Thumb"),
+    "GScrollBarThumb",
+    "Gdraw",
+    true
+};
+
 static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32 pos) {
     GEvent e;
     int active_len;
@@ -477,14 +512,31 @@ static GScrollBar *_GScrollBarCreate(GScrollBar *gsb, struct gwindow *base, GGad
     gsb->thumbbox = &thumb_box;
 
     GScrollBarFit(gsb);
+    if ( gd->u.sbinit!=NULL )
+	GScrollBarSetMustShow(&gsb->g,
+		gd->u.sbinit->sb_min,
+		gd->u.sbinit->sb_max,
+		gd->u.sbinit->sb_pagesize,
+		gd->u.sbinit->sb_pos);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gsb->g);
 return( gsb );
 }
 
-GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+static GGadget *GScrollBarCreateInitialized(struct gwindow *base, GGadgetData *gd,void *data) {
     GScrollBar *gsb = _GScrollBarCreate(gcalloc(1,sizeof(GScrollBar)),base,gd,data,&scrollbar_box);
+
+return( &gsb->g );
+}
+
+GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GScrollBar *gsb;
+    struct scrollbarinit *hold = gd->u.sbinit;
+
+    gd->u.sbinit = NULL;
+    gsb = _GScrollBarCreate(gcalloc(1,sizeof(GScrollBar)),base,gd,data,&scrollbar_box);
+    gd->u.sbinit = hold;
 
 return( &gsb->g );
 }
@@ -545,4 +597,10 @@ void GScrollBarGetBounds(GGadget *g, int32 *sb_min, int32 *sb_max, int32 *sb_pag
     *sb_min = gsb->sb_min;
     *sb_max = gsb->sb_max;
     *sb_pagesize = gsb->sb_pagesize;
+}
+
+GResInfo *_GScrollBarRIHead(void) {
+    if ( !gscrollbar_inited )
+	GScrollBarInit();
+return( &gscrollbar_ri );
 }
