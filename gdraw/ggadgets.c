@@ -101,11 +101,24 @@ static struct resed listmark_re[] = {
     {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)")},
     {N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)")},
     { NULL }};
+static GTextInfo list_choices[] = {
+	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	NULL
+    };
+static GGadgetCreateData droplist_gcd[] = {
+	{GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
+	{GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData droplistbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) dlarray,gg_visible|gg_enabled}};
 GResInfo listmark_ri = {
     NULL, &ggadget_ri, NULL,NULL,
     &_GListMark_Box,	/* No box */
     NULL,
-    NULL,
+    &droplistbox,
     listmark_re,
     N_("List Mark"),
     N_("This is the mark that differenciates ComboBoxes and ListButtons\n"

@@ -42,11 +42,21 @@ static int gradio_inited = false;
 
 static GResInfo gradio_ri, gradioon_ri, gradiooff_ri;
 static GResInfo gcheckbox_ri, gcheckboxon_ri, gcheckboxoff_ri;
+static GTextInfo radio_lab[] = {
+	{ (unichar_t *) "Disabled Radio", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Enabled Radio" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+static GGadgetCreateData radio_gcd[] = {
+	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[0],NULL,gg_visible}},
+	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[1],NULL,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *rarray[] = { GCD_Glue, &radio_gcd[0], GCD_Glue, &radio_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData radiobox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) rarray,gg_visible|gg_enabled}};
 static GResInfo gradio_ri = {
     &gradioon_ri, &ggadget_ri,&gradioon_ri, &gradiooff_ri,
     &radio_box,
     &checkbox_font,
-    NULL,
+    &radiobox,
     NULL,
     N_("Radio Button"),
     N_("Radio Button"),
@@ -63,7 +73,7 @@ static GResInfo gradioon_ri = {
     &gradiooff_ri, &ggadget_ri,&gradiooff_ri, &gradio_ri,
     &radio_on_box,
     NULL,
-    NULL,
+    &radiobox,
     gradioon_re,
     N_("Radio On Mark"),
     N_("The mark showing a radio button is on (depressed, selected)"),
@@ -82,7 +92,7 @@ static GResInfo gradiooff_ri = {
     &gcheckbox_ri, &ggadget_ri,&gradioon_ri, &gradio_ri,
     &radio_off_box,
     NULL,
-    NULL,
+    &radiobox,
     gradiooff_re,
     N_("Radio Off Mark"),
     N_("The mark showing a radio button is off (up, not selected)"),
@@ -90,11 +100,21 @@ static GResInfo gradiooff_ri = {
     "Gdraw",
     false
 };
+static GTextInfo checkbox_lab[] = {
+	{ (unichar_t *) "Disabled Radio", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Enabled Radio" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+static GGadgetCreateData checkbox_gcd[] = {
+	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[0],NULL,gg_visible}},
+	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *carray[] = { GCD_Glue, &checkbox_gcd[0], GCD_Glue, &checkbox_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData checkboxbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) carray,gg_visible|gg_enabled}};
 static GResInfo gcheckbox_ri = {
     &gcheckboxon_ri, &ggadget_ri,&gcheckboxon_ri, &gcheckboxoff_ri,
     &checkbox_box,
     &checkbox_font,
-    NULL,
+    &checkboxbox,
     NULL,
     N_("Check Box"),
     N_("Check Box"),
@@ -113,7 +133,7 @@ static GResInfo gcheckboxon_ri = {
     &gcheckboxoff_ri, &ggadget_ri,&gcheckboxoff_ri, &gcheckbox_ri,
     &checkbox_on_box,
     NULL,
-    NULL,
+    &checkboxbox,
     gcheckboxon_re,
     N_("Check Box On Mark"),
     N_("The mark showing a checkbox is on (depressed, selected)"),
@@ -132,7 +152,7 @@ static GResInfo gcheckboxoff_ri = {
     NULL, &ggadget_ri,&gcheckboxon_ri, &gcheckbox_ri,
     &checkbox_off_box,
     NULL,
-    NULL,
+    &checkboxbox,
     gcheckboxoff_re,
     N_("Check Box Off Mark"),
     N_("The mark showing a checkbox is off (up, not selected)"),

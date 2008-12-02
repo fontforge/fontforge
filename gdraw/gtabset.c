@@ -35,6 +35,18 @@ static GBox gtabset_box = { /* Don't initialize here */ 0 };
 static FontInstance *gtabset_font = NULL;
 static int gtabset_inited = false;
 
+static GResInfo gtabset_ri = {
+    NULL, &ggadget_ri, NULL, NULL,
+    &gtabset_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("TabSet"),
+    N_("Tab Set"),
+    "GTabSet",
+    "Gdraw",
+    false
+};
 #define NEST_INDENT	4
 
 static void GTabSetInit() {
@@ -952,4 +964,10 @@ void GTabSetRemoveTabByName(GGadget *g, char *name) {
     }
 
     free(uname);
+}
+
+GResInfo *_GTabSetRIHead(void) {
+    if ( !gtabset_inited )
+	GTabSetInit();
+return( &gtabset_ri );
 }

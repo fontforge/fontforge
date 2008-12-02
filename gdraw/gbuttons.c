@@ -58,11 +58,21 @@ static GResInfo glabel_ri = {
     "Gdraw",
     false
 };
+static GTextInfo button_lab[] = {
+	{ (unichar_t *) "Disabled Button", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Enabled Button" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+static GGadgetCreateData button_gcd[] = {
+	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible}},
+	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *barray[] = { GCD_Glue, &button_gcd[0], GCD_Glue, &button_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData buttonbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) barray,gg_visible|gg_enabled}};
 static GResInfo gbutton_ri = {
     &gdefault_ri, &ggadget_ri,&gdefault_ri, &gcancel_ri,
     &_GGadget_button_box,
     &label_font,
-    NULL,
+    &buttonbox,
     NULL,
     N_("Button"),
     N_("Buttons"),
@@ -70,11 +80,18 @@ static GResInfo gbutton_ri = {
     "Gdraw",
     true
 };
+static GGadgetCreateData def_gcd[] = {
+	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible|gg_but_default}},
+	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled|gg_but_default}}
+    };
+static GGadgetCreateData *darray[] = { GCD_Glue, &def_gcd[0], GCD_Glue, &def_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData defbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) darray,gg_visible|gg_enabled}};
 static GResInfo gdefault_ri = {
     &gcancel_ri, &gbutton_ri,&gcancel_ri,NULL,
     &_GGadget_defaultbutton_box,
     NULL,
-    NULL,
+    &defbox,
     NULL,
     N_("Default Button"),
     N_("Default Buttons"),
@@ -82,11 +99,18 @@ static GResInfo gdefault_ri = {
     "Gdraw",
     true
 };
+static GGadgetCreateData cancel_gcd[] = {
+	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible|gg_but_cancel}},
+	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled|gg_but_cancel}}
+    };
+static GGadgetCreateData *carray[] = { GCD_Glue, &cancel_gcd[0], GCD_Glue, &cancel_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData cancelbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) carray,gg_visible|gg_enabled}};
 static GResInfo gcancel_ri = {
     &gcolor_ri, &gbutton_ri,&gdefault_ri,NULL,
     &_GGadget_cancelbutton_box,
     NULL,
-    NULL,
+    &cancelbox,
     NULL,
     N_("Cancel Button"),
     N_("Cancel Buttons"),
@@ -94,11 +118,18 @@ static GResInfo gcancel_ri = {
     "Gdraw",
     true
 };
+static GGadgetCreateData color_gcd[] = {
+	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible}},
+	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *colarray[] = { GCD_Glue, &color_gcd[0], GCD_Glue, &color_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData colorbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) colarray,gg_visible|gg_enabled}};
 static GResInfo gcolor_ri = {
     &gdroplist_ri, &gbutton_ri,NULL,NULL,
     &_GGadget_droplist_box,
     NULL,
-    NULL,
+    &colorbox,
     NULL,
     N_("Color Button"),
     N_("Color Button"),
@@ -106,11 +137,24 @@ static GResInfo gcolor_ri = {
     "Gdraw",
     true
 };
+static GTextInfo list_choices[] = {
+	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	NULL
+    };
+static GGadgetCreateData droplist_gcd[] = {
+	{GListButtonCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
+	{GListButtonCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData droplistbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) dlarray,gg_visible|gg_enabled}};
 static GResInfo gdroplist_ri = {
     NULL, &gbutton_ri,&listmark_ri,NULL,
     &_GGadget_droplist_box,
     NULL,
-    NULL,
+    &droplistbox,
     NULL,
     N_("Drop List Button"),
     N_("Drop List Button"),

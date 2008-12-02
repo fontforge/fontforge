@@ -58,6 +58,35 @@ static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
 /*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
 /*  and the standard mac option conversions are done */
 
+static GResInfo gmenu_ri;
+static GResInfo gmenubar_ri = {
+    &gmenu_ri, &ggadget_ri,&gmenu_ri, NULL,
+    &menubar_box,
+    &menu_font,
+    NULL,
+    NULL,
+    N_("Menu Bar"),
+    N_("Menu Bar"),
+    "GMenuBar",
+    "Gdraw",
+    false
+};
+static struct resed menu_re[] = {
+    {N_("MacIcons"), "MacIcons", rt_bool, &mac_menu_icons, N_("Whether to use mac-like icons to indicate modifiers (for instance ^ for Control)\nor to use an abreviation (for instance \"Cnt-\")")},
+    { NULL }};
+static GResInfo gmenu_ri = {
+    NULL, &ggadget_ri,&gmenubar_ri, NULL,
+    &menu_box,
+    &menu_font,
+    NULL,
+    menu_re,
+    N_("Menu"),
+    N_("Menu"),
+    "GMenu",
+    "Gdraw",
+    false
+};
+
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
 static struct gmenu *GMenuCreateSubMenu(struct gmenu *parent,GMenuItem *mi,int disable);
 static struct gmenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi, int disabled);
@@ -1708,4 +1737,10 @@ return( (menumask&event->u.chr.state)==foo.short_mask && foo.shortcut == keysym 
 
 int GMenuMask(void) {
 return( menumask );
+}
+
+GResInfo *_GMenuRIHead(void) {
+    if ( !gmenubar_inited )
+	GMenuInit();
+return( &gmenubar_ri );
 }

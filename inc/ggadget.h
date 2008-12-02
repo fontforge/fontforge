@@ -138,6 +138,7 @@ typedef struct ggadget GGadget;
 typedef struct ggadget *GGadgetSet;
 
 enum sb_type { sb_upline, sb_downline, sb_uppage, sb_downpage, sb_track, sb_trackrelease };
+struct scrollbarinit { int32 sb_min, sb_max, sb_pagesize, sb_pos; };
 
 typedef int (*GGadgetHandler)(GGadget *,GEvent *);
 typedef unichar_t **(*GTextCompletionHandler)(GGadget *,int from_tab);
@@ -160,6 +161,7 @@ typedef struct ggadgetdata {
 	struct matrixinit *matrix;
 	GDrawEH drawable_e_h;	/* Drawable event handler */
 	GTextCompletionHandler completion;
+	struct scrollbarinit *sbinit;
 	Color col;
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,

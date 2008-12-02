@@ -41,6 +41,28 @@ static Color gmatrixedit_rules = 0x000000;
 static Color gmatrixedit_frozencol = 0xff0000, gmatrixedit_activecol = 0x0000ff;
 static int gmatrixedit_inited = false;
 
+static struct resed gmatrixedit_re[] = {
+    {N_("Title Background"), "TitleBG", rt_color, &gmatrixedit_title_bg, N_("Background color of column headers at the top of a matrix edit")},
+    {N_("Title Text Color"), "TitleFG", rt_color, &gmatrixedit_title_fg, N_("Text color of column headers at the top of a matrix edit")},
+    {N_("Title Divider Color"), "TitleDivider", rt_color, &gmatrixedit_title_divider, N_("Color of column dividers in the title section of a matrix edit")},
+    {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit")},
+    {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit")},
+    {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit")},
+    NULL
+};
+static GResInfo gmatrixedit_ri = {
+    NULL, &ggadget_ri, NULL,NULL,
+    NULL,	/* No box */
+    &gmatrixedit_font,
+    NULL,
+    gmatrixedit_re,
+    N_("Matrix Edit"),
+    N_("Matrix Edit (sort of like a spreadsheet)"),
+    "GMatrixEdit",
+    "Gdraw",
+    false
+};
+
 static void _GMatrixEdit_Init(void) {
     FontRequest rq;
 
@@ -2117,4 +2139,10 @@ void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r)
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
     gme->predelete = predelete;
+}
+
+GResInfo *_GMatrixEditRIHead(void) {
+
+    _GMatrixEdit_Init();
+return( &gmatrixedit_ri );
 }

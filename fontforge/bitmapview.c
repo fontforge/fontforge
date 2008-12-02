@@ -2030,6 +2030,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     gd.pos.width = sbsize = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gd.pos.height = pos.height-bv->mbh-bv->infoh - sbsize;
     gd.pos.x = pos.width-sbsize;
+    gd.u.sbinit = NULL;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     bv->vsb = GScrollBarCreate(gw,&gd,bv);
 

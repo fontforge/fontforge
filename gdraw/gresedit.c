@@ -85,6 +85,81 @@ static void GRE_Reflow(GRE *gre,GResInfo *res) {
     GRE_RefreshAll(gre);
 }
 
+static void GRE_FigureInheritance( GRE *gre, GResInfo *parent, int cid_off_inh,
+	int cid_off_data, int is_font, void *whatever,
+	void (*do_something)(GRE *gre, int child_index, int cid_off_data, void *whatever)) {
+    /* Look through the gadget tree for gadgets which inherit from parent */
+    /*  (which just changed) then check if this child ggadget actually does */
+    /*  inherit this field. If it does, set the field to the new value, and */
+    /*  look for any grandchildren which inherit from the child, and so forth */
+    GResInfo *child;
+    int i;
+
+    for ( i=0; (child = gre->tofree[i].res)!=NULL; ++i ) {
+	if ( child->inherits_from==parent &&
+		(( is_font && child->font!=NULL ) ||
+		 ( !is_font && child->boxdata!=NULL)) ) {
+	     /* Fonts may have a different cid offset depending on wether */
+	     /* The ResInfo has a box or not */
+	    if (( is_font && GGadgetIsChecked(GWidgetGetControl(gre->gw,gre->tofree[i].fontcid-2)) ) ||
+		    ( !is_font && GGadgetIsChecked(GWidgetGetControl(gre->gw,gre->tofree[i].startcid+cid_off_inh)) )) {
+		(do_something)(gre,i,cid_off_data,whatever);
+		GRE_FigureInheritance(gre,child,cid_off_inh,cid_off_data,is_font,whatever,do_something);
+	    }
+	}
+    }
+}
+
+static void inherit_color_change(GRE *gre, int childindex, int cid_off,
+	void *whatever) {
+    GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
+    Color col = (Color) (intpt) whatever;
+
+    GColorButtonSetColor(g,col);
+    *((Color *) GGadgetGetUserData(g)) = col;
+}
+
+static void inherit_list_change(GRE *gre, int childindex, int cid_off,
+	void *whatever) {
+    GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
+    int sel = (intpt) whatever;
+
+    GGadgetSelectOneListItem(g,sel);
+    *((uint8 *) GGadgetGetUserData(g)) = sel;
+}
+
+static void inherit_byte_change(GRE *gre, int childindex, int cid_off,
+	void *whatever) {
+    GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
+    int val = (intpt) whatever;
+    char buf[20];
+
+    sprintf( buf, "%d", val );
+    GGadgetSetTitle8(g,buf);
+    *((uint8 *) GGadgetGetUserData(g)) = val;
+}
+
+static void inherit_flag_change(GRE *gre, int childindex, int cid_off,
+	void *whatever) {
+    GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
+    int on = (intpt) whatever;
+    int flag = (intpt) GGadgetGetUserData(g);
+    GResInfo *res = gre->tofree[childindex].res;
+
+    if ( on )
+	res->inherits_from->boxdata->flags |= flag;
+    else
+	res->inherits_from->boxdata->flags &= ~flag;
+}
+
+static void inherit_font_change(GRE *gre, int childindex, int cid_off,
+	void *whatever) {
+    GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].fontcid);
+    const unichar_t *fontdesc = (const unichar_t *) whatever;
+
+    GGadgetSetTitle(g,fontdesc);
+}
+
 static int GRE_InheritColChange(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -99,8 +174,11 @@ static int GRE_InheritColChange(GGadget *g, GEvent *e) {
 	    int offset = ((char *) GGadgetGetUserData(g)) - ((char *) (res->boxdata));
 	    Color col = *((Color *) (((char *) (res->inherits_from->boxdata))+offset));
 	    if ( col!= *(Color *) GGadgetGetUserData(g) ) {
+		int cid_off = cid - gre->tofree[index].startcid;
 		GColorButtonSetColor(g,col);
 		*((Color *) GGadgetGetUserData(g)) = col;
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+			(void *) (intpt) col, inherit_color_change);
 		GRE_RefreshAll(gre);
 	    }
 	}
@@ -122,8 +200,11 @@ static int GRE_InheritListChange(GGadget *g, GEvent *e) {
 	    int offset = ((char *) GGadgetGetUserData(g)) - ((char *) (res->boxdata));
 	    int sel = *((uint8 *) (((char *) (res->inherits_from->boxdata))+offset));
 	    if ( sel != *(uint8 *) GGadgetGetUserData(g) ) {
+		int cid_off = cid - gre->tofree[index].startcid;
 		GGadgetSelectOneListItem(g,sel);
 		*((uint8 *) GGadgetGetUserData(g)) = sel;
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+			(void *) (intpt) sel, inherit_list_change);
 		GRE_Reflow(gre,res);
 	    }
 	}
@@ -131,7 +212,7 @@ static int GRE_InheritListChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int GRE_InheritTextChange(GGadget *g, GEvent *e) {
+static int GRE_InheritByteChange(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
@@ -145,10 +226,13 @@ static int GRE_InheritTextChange(GGadget *g, GEvent *e) {
 	    int offset = ((char *) GGadgetGetUserData(g)) - ((char *) (res->boxdata));
 	    int val = *((uint8 *) (((char *) (res->inherits_from->boxdata))+offset));
 	    if ( val != *(uint8 *) GGadgetGetUserData(g) ) {
+		int cid_off = cid - gre->tofree[index].startcid;
 		char buf[20];
 		sprintf( buf, "%d", val );
 		GGadgetSetTitle8(g,buf);
 		*((uint8 *) GGadgetGetUserData(g)) = val;
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+			(void *) (intpt) val, inherit_byte_change);
 		GRE_Reflow(gre,res);
 	    }
 	}
@@ -168,13 +252,41 @@ static int GRE_InheritFlagChange(GGadget *g, GEvent *e) {
 	    GResInfo *res = gre->tofree[index].res;
 	    int flag = (intpt) GGadgetGetUserData(g);
 	    if ( (res->boxdata->flags&flag) != (res->inherits_from->boxdata->flags&flag)) {
-		GGadgetSetChecked(g,
-			(res->inherits_from->boxdata->flags&flag)?1:0);
-		if ( res->inherits_from->boxdata->flags&flag )
+		int cid_off = cid - gre->tofree[index].startcid;
+		int on = (res->inherits_from->boxdata->flags&flag)?1:0 ;
+		GGadgetSetChecked(g,on);
+		if ( on )
 		    res->boxdata->flags |= flag;
 		else
 		    res->boxdata->flags &= ~flag;
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+			(void *) (intpt) on, inherit_flag_change);
 		GRE_Reflow(gre,res);
+	    }
+	}
+    }
+return( true );
+}
+
+static int GRE_InheritFontChange(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
+	int cid = GGadgetGetCid(g), on = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(gre->gw,cid+1),!on);
+	g = GWidgetGetControl(gre->gw,cid+2);
+	GGadgetSetEnabled(g,!on);
+	if ( on ) {
+	    int index = GTabSetGetSel(gre->tabset);
+	    GResInfo *res = gre->tofree[index].res;
+	    int pi;
+	    for ( pi=0; gre->tofree[pi].res!=NULL && gre->tofree[pi].res!=res->inherits_from; ++pi );
+	    if ( gre->tofree[pi].res!=NULL ) {
+		const unichar_t *fontdesc = _GGadgetGetTitle(GWidgetGetControl(gre->gw,gre->tofree[pi].fontcid));
+		int cid_off = cid - gre->tofree[index].startcid;
+		GGadgetSetTitle(g,fontdesc);
+		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
+			(void *) fontdesc, inherit_font_change);
 	    }
 	}
     }
@@ -187,10 +299,14 @@ static int GRE_FlagChanged(GGadget *g, GEvent *e) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
 	int index = GTabSetGetSel(gre->tabset);
 	GResInfo *res = gre->tofree[index].res;
-	if ( GGadgetIsChecked(g))
+	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
+	int on;
+	if ( (on = GGadgetIsChecked(g)) )
 	    res->boxdata->flags |= (int) (intpt) GGadgetIsChecked(g);
 	else
 	    res->boxdata->flags |= ~(int) (intpt) GGadgetIsChecked(g);
+	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,false,
+		(void *) (intpt) on, inherit_flag_change);
 	GRE_Reflow(gre,res);
     }
 return( true );
@@ -202,7 +318,12 @@ static int GRE_ListChanged(GGadget *g, GEvent *e) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
 	int index = GTabSetGetSel(gre->tabset);
 	GResInfo *res = gre->tofree[index].res;
-	*((uint8 *) GGadgetGetUserData(g)) = GGadgetGetFirstListSelectedItem(g);
+	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
+	int sel = GGadgetGetFirstListSelectedItem(g);
+
+	*((uint8 *) GGadgetGetUserData(g)) = sel;
+	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,false,
+		(void *) (intpt) sel, inherit_list_change);
 	GRE_Reflow(gre,res);
     }
 return( true );
@@ -225,7 +346,10 @@ static int GRE_ByteChanged(GGadget *g, GEvent *e) {
 	int index = GTabSetGetSel(gre->tabset);
 	GResInfo *res = gre->tofree[index].res;
 	if ( *end=='\0' && val>=0 && val<=255 ) {
+	    int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
 	    *((uint8 *) GGadgetGetUserData(g)) = val;
+	    GRE_FigureInheritance(gre,res,cid_off-2,cid_off,false,
+		    (void *) (intpt) val, inherit_byte_change);
 	    GRE_Reflow(gre,res);
 	}
     }
@@ -261,9 +385,16 @@ return( true );
 
 static int GRE_ColorChanged(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
-	*((Color *) GGadgetGetUserData(g)) = GColorButtonGetColor(g);
+	int index = GTabSetGetSel(gre->tabset);
+	GResInfo *res = gre->tofree[index].res;
+	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
+	Color col = GColorButtonGetColor(g);
+
+	*((Color *) GGadgetGetUserData(g)) = col;
+	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,false,
+		(void *) (intpt) col, inherit_color_change);
 	GRE_RefreshAll(gre);
     }
 return( true );
@@ -272,7 +403,14 @@ return( true );
 static int GRE_FontChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	/*GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));*/
+	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
+	int index = GTabSetGetSel(gre->tabset);
+	GResInfo *res = gre->tofree[index].res;
+	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
+	const unichar_t *fontdesc = _GGadgetGetTitle(g);
+
+	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,true,
+		(void *) fontdesc, inherit_font_change);
     }
 return( true );
 }
@@ -1461,7 +1599,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
-	    gcd[k].gd.handle_controlevent = GRE_InheritTextChange;
+	    gcd[k].gd.handle_controlevent = GRE_InheritByteChange;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].carray[l][0] = &gcd[k-1];
 
@@ -1500,7 +1638,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
-	    gcd[k].gd.handle_controlevent = GRE_InheritTextChange;
+	    gcd[k].gd.handle_controlevent = GRE_InheritByteChange;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].carray[l][4] = &gcd[k-1];
 
@@ -1541,7 +1679,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
-	    gcd[k].gd.handle_controlevent = GRE_InheritTextChange;
+	    gcd[k].gd.handle_controlevent = GRE_InheritByteChange;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].carray[l][0] = &gcd[k-1];
 
@@ -1617,7 +1755,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 	    gcd[k].gd.popup_msg = (unichar_t *) _("Inherits for same field in parent");
 	    gcd[k].gd.cid = ++cid;
-	    gcd[k].gd.handle_controlevent = GRE_InheritTextChange;
+	    gcd[k].gd.handle_controlevent = GRE_InheritFontChange;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].fontarray[0] = &gcd[k-1];
 
@@ -1717,7 +1855,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled;
-		    gcd[k++].creator = GCheckBoxCreate;
+		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
 		    tofree[i].extradefs[l] = galloc(20);
@@ -1740,7 +1878,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled;
-		    gcd[k++].creator = GCheckBoxCreate;
+		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
 		    tofree[i].extradefs[l] = galloc(40);
@@ -1762,8 +1900,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled;
-		    gcd[k++].creator = GCheckBoxCreate;
+		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
+
 		    gcd[k].gd.u.col = extras->orig.ival;
 		    gcd[k].gd.flags = gg_visible|gg_enabled;
 		    gcd[k].gd.cid = extras->cid = ++cid;
@@ -1973,6 +2112,18 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	re_end->next = _GRadioRIHead();
 	for ( re_end = _GRadioRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GTextFieldRIHead();
+	for ( re_end = _GTextFieldRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GScrollBarRIHead();
+	for ( re_end = _GScrollBarRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GLineRIHead();
+	for ( re_end = _GLineRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GHVBoxRIHead();
+	for ( re_end = _GHVBoxRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GMenuRIHead();
+	for ( re_end = _GMenuRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GMatrixEditRIHead();
+	for ( re_end = _GMatrixEditRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GTabSetRIHead();
     }
     if ( additional!=NULL ) {
 	for ( re_end=additional; re_end->next!=NULL; re_end = re_end->next );
