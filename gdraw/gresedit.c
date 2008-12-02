@@ -26,9 +26,11 @@
  */
 #include <ggadget.h>
 #include "ggadgetP.h"
+#include "../gdraw/gdrawP.h"		/* Need resolution of screen */
 #include <gwidget.h>
 #include <gresedit.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ustring.h>
 
 typedef struct greseditdlg {
@@ -651,8 +653,8 @@ return( true );
 		GGadget *g = GWidgetGetControl(gre->gw,extras->cid);
 		switch ( extras->type ) {
 		  case rt_bool:
-		    fprintf( output, "%s.%s.%s: %s\n",
-			    res->progname, res->resname, extras->resname,
+		    fprintf( output, "%s.%s%s%s: %s\n",
+			    res->progname, res->resname, *res->resname=='\0'?"":".",extras->resname,
 			    GGadgetIsChecked(g)?"True":"False");
 		  break;
 		  case rt_int: {
@@ -662,8 +664,8 @@ return( true );
 		    if ( *end!='\0' )
 			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
 				res->resname, extras->name );
-		    fprintf( output, "%s.%s.%s: %s\n",
-			    res->progname, res->resname, extras->resname,
+		    fprintf( output, "%s.%s%s%s: %s\n",
+			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    ival );
 		    free(ival);
 		  } break;
@@ -674,14 +676,14 @@ return( true );
 		    if ( *end!='\0' )
 			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
 				res->resname, extras->name );
-		    fprintf( output, "%s.%s.%s: %s\n",
-			    res->progname, res->resname, extras->resname,
+		    fprintf( output, "%s.%s%s%s: %s\n",
+			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    dval );
 		    free(dval);
 		  } break;
 		  case rt_color:
-		    fprintf( output, "%s.%s.%s: #%06x\n",
-			    res->progname, res->resname, extras->resname,
+		    fprintf( output, "%s.%s%s%s: #%06x\n",
+			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    GColorButtonGetColor(g) );
 		  break;
 		  case rt_image: {
@@ -691,22 +693,22 @@ return( true );
 			int i;
 			for ( i=0; paths[i]!=NULL; ++i ) {
 			    if ( strncmp(paths[i],ri->filename,strlen(paths[i]))==0 ) {
-				fprintf( output, "%s.%s.%s: %s\n",
-					res->progname, res->resname, extras->resname,
+				fprintf( output, "%s.%s%s%s: %s\n",
+					res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 					ri->filename+strlen(paths[i]) );
 			break;
 			    }
 			}
 			if ( paths[i]==NULL )
-			    fprintf( output, "%s.%s.%s: %s\n",
-				    res->progname, res->resname, extras->resname,
+			    fprintf( output, "%s.%s%s%s: %s\n",
+				    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 				    ri->filename );
 		    }
 		  } break;
 		  case rt_string: {
 		    char *sval = GGadgetGetTitle8( g );
-		    fprintf( output, "%s.%s.%s: %s\n",
-			    res->progname, res->resname, extras->resname,
+		    fprintf( output, "%s.%s%s%s: %s\n",
+			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    sval );
 		    free(sval);
 		  } break;
@@ -2100,12 +2102,51 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
     free( panes );
 }
 
+static double _GDraw_Width_cm, _GDraw_Width_Inches;
+static Color _GDraw_fg, _GDraw_bg;
+static struct resed gdrawcm_re[] = {
+    {N_("Default Background"), "Background", rt_color, &_GDraw_bg, N_("Default background color for windows")},
+    {N_("Default Foreground"), "Foreground", rt_color, &_GDraw_fg, N_("Default foreground color for windows")},
+    {N_("Screen Width in Centimeters"), "ScreenWidthCentimeters", rt_double, &_GDraw_Width_cm, N_("Physical screen width, measured in centimeters\nFor this to take effect you must save the resource data (press the [Save] button)\nand restart fontforge")},
+    NULL
+};
+static struct resed gdrawin_re[] = {
+    {N_("Default Background"), "Background", rt_color, &_GDraw_bg, N_("Default background color for windows")},
+    {N_("Default Foreground"), "Foreground", rt_color, &_GDraw_fg, N_("Default foreground color for windows")},
+    {N_("Screen Width in Inches"), "ScreenWidthInches", rt_double, &_GDraw_Width_Inches, N_("Physical screen width, measured in inches\nFor this to take effect you must save the resource data (press the [Save] button)\nand restart fontforge")},
+    NULL
+};
+static GResInfo gdraw_ri = {
+    NULL, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    gdrawcm_re,
+    N_("GDraw"),
+    N_("General facts about the windowing system"),
+    "",
+    "Gdraw",
+    false
+};
+
 void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *)) {
     GResInfo *re_end;
     static int initted = false;
 
     if ( !initted ) {
 	initted = true;
+	_GDraw_Width_Inches = screen_display->groot->pos.width / (double) screen_display->res;
+	_GDraw_Width_cm = _GDraw_Width_Inches * 2.54;
+	_GDraw_bg = GDrawGetDefaultBackground(NULL);
+	_GDraw_fg = GDrawGetDefaultForeground(NULL);
+	if ( getenv("LC_MESSAGES")!=NULL ) {
+	    if ( strstr(getenv("LC_MESSAGES"),"_US")!=NULL )
+		gdraw_ri.extras = gdrawin_re;
+	} else if ( getenv("LANG")!=NULL ) {
+	    if ( strstr(getenv("LANG"),"_US")!=NULL )
+		gdraw_ri.extras = gdrawin_re;
+	}
+	gdraw_ri.next = _GGadgetRIHead();
 	for ( re_end = _GGadgetRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GButtonRIHead();
 	for ( re_end = _GButtonRIHead(); re_end->next!=NULL; re_end = re_end->next );
@@ -2127,9 +2168,9 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
     }
     if ( additional!=NULL ) {
 	for ( re_end=additional; re_end->next!=NULL; re_end = re_end->next );
-	re_end->next = _GGadgetRIHead();
+	re_end->next = &gdraw_ri;
     } else {
-	additional = _GGadgetRIHead();
+	additional = &gdraw_ri;
 	re_end = NULL;
     }
     GResEditDlg(additional,def_res_file,change_res_filename);
