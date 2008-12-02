@@ -187,7 +187,7 @@ return( NULL );
     /* If we have many questions in quick succession the dlg will jump around*/
     /*  as it tracks the cursor (which moves to the buttons). That's not good*/
     /*  So I don't do undercursor here */
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg;
     if ( restrict_input )
 	wattrs.mask |= wam_restrict;
     else 
@@ -196,6 +196,7 @@ return( NULL );
 	wattrs.mask |= wam_centered;
     else
 	wattrs.mask |= wam_undercursor;
+    wattrs.is_dlg = true;
     wattrs.not_restricted = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.event_masks = ~(1<<et_charup);
@@ -686,7 +687,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     /* If we have many questions in quick succession the dlg will jump around*/
     /*  as it tracks the cursor (which moves to the buttons). That's not good*/
     /*  So I don't do undercursor here */
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_isdlg;
     if ( restrict_input )
 	wattrs.mask |= wam_restrict;
     else 
@@ -695,6 +696,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
 	wattrs.mask |= wam_centered;
     else
 	wattrs.mask |= wam_undercursor;
+    wattrs.is_dlg = true;
     wattrs.not_restricted = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.event_masks = ~(1<<et_charup);
@@ -940,7 +942,7 @@ return( NULL );
     /* If we have many questions in quick succession the dlg will jump around*/
     /*  as it tracks the cursor (which moves to the buttons). That's not good*/
     /*  So I don't do undercursor here */
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_isdlg;
     if ( restrict_input )
 	wattrs.mask |= wam_restrict;
     else 
@@ -951,6 +953,7 @@ return( NULL );
 	wattrs.mask |= wam_undercursor;
     wattrs.not_restricted = true;
     wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = true;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.undercursor = 1;
     wattrs.centered = 2;
@@ -1313,7 +1316,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     /* If we have many questions in quick succession the dlg will jump around*/
     /*  as it tracks the cursor (which moves to the buttons). That's not good*/
     /*  So I don't do undercursor here */
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_isdlg;
     if ( restrict_input )
 	wattrs.mask |= wam_restrict;
     else 
@@ -1324,6 +1327,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	wattrs.mask |= wam_undercursor;
     wattrs.not_restricted = true;
     wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = true;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.undercursor = 1;
     wattrs.centered = 2;
