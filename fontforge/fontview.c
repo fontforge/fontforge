@@ -29,6 +29,7 @@
 #include "psfont.h"
 #include <gfile.h>
 #include <gio.h>
+#include <gresedit.h>
 #include <ustring.h>
 #include <gkeysym.h>
 #include <utype.h>
@@ -46,6 +47,17 @@ extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern struct compressors compressors[];
 int home_char='A';
 int compact_font_on_open=0;
+
+static char *special_fontnames[] = {
+	"times,serif,caslon,clearlyu,unifont",
+	"script,formalscript,clearlyu,unifont",
+	"fraktur,clearlyu,unifont",
+	"doublestruck,clearlyu,unifont",
+	"helvetica,caliban,sansserif,sans,clearlyu,unifont",
+	"courier,monospace,caslon,clearlyu,unifont",
+	NULL
+    };
+static char *standard_fontnames = "fontview,courier,monospace,clearlyu,unifont";
 
 #define	FV_LAB_HEIGHT	15
 
@@ -75,8 +87,9 @@ static unsigned char fontview2_bits[] = {
 
 extern int _GScrollBar_Width;
 
-static int fv_fontsize = 13, fv_fs_init=0;
-static Color fvselcol = 0xffff00, fvselfgcol=0x000000, fvbgcol;
+static int fv_fontsize = 11, fv_fs_init=0;
+static Color fvselcol = 0xffff00, fvselfgcol=0x000000;
+Color view_bgcol;
 static Color fvchangedcol = 0x000060;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
@@ -199,7 +212,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
     if ( index<fv->b.map->enccount && (fv->b.selected[index] || forcebg)) {
 	box.x = j*fv->cbw+1; box.width = fv->cbw-1;
 	box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
-	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : fvbgcol );
+	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : view_bgcol );
     }
     feat_gid = FeatureTrans(fv,index);
     sc = feat_gid!=-1 ? fv->b.sf->glyphs[feat_gid]: NULL;
@@ -261,7 +274,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		base.image_type = it_mono;
 		base.clut = &clut;
 		clut.clut_len = 2;
-		clut.clut[0] = fv->b.selected[index] ? fvselcol : fvbgcol ;
+		clut.clut[0] = fv->b.selected[index] ? fvselcol : view_bgcol ;
 	    }
 	    base.trans = 0;
 	    base.clut->trans_index = 0;
@@ -5769,30 +5782,13 @@ static GFont *FVCheckFont(FontView *fv,int type) {
     FontRequest rq;
     int family = type>>2;
     char *fontnames;
-    unichar_t *ufontnames;
-
-    static char *resourcenames[] = { "FontView.SerifFamily", "FontView.ScriptFamily",
-	    "FontView.FrakturFamily", "FontView.DoubleStruckFamily",
-	    "FontView.SansFamily", "FontView.MonoFamily", NULL };
-    static char *defaultfontnames[] = {
-	    "times,serif,caslon,clearlyu,unifont",
-	    "script,formalscript,clearlyu,unifont",
-	    "fraktur,clearlyu,unifont",
-	    "doublestruck,clearlyu,unifont",
-	    "helvetica,caliban,sansserif,sans,clearlyu,unifont",
-	    "courier,monospace,caslon,clearlyu,unifont",
-	    NULL
-	};
 
     if ( fv->fontset[type]==NULL ) {
-	fontnames = GResourceFindString(resourcenames[family]);
-	if ( fontnames==NULL )
-	    fontnames = defaultfontnames[family];
-	ufontnames = uc_copy(fontnames);
+	fontnames = special_fontnames[family];
 
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = ufontnames;
-	rq.point_size = -13;
+	rq.utf8_family_name = fontnames;
+	rq.point_size = fv_fontsize;
 	rq.weight = (type&_uni_bold) ? 700:400;
 	rq.style = (type&_uni_italic) ? fs_italic : 0;
 	fv->fontset[type] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(fv->v),&rq);
@@ -5847,13 +5843,13 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	base.image_type = it_mono;
 	base.clut = &clut;
 	clut.clut_len = 2;
-	clut.clut[0] = fvbgcol;
+	clut.clut[0] = view_bgcol;
     }
 
     GDrawSetFont(pixmap,fv->fontset[0]);
     GDrawSetLineWidth(pixmap,0);
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
-    GDrawFillRect(pixmap,NULL,fvbgcol);
+    GDrawFillRect(pixmap,NULL,view_bgcol);
     for ( i=0; i<=fv->rowcnt; ++i ) {
 	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,def_fg);
 	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,0x808080);
@@ -5999,7 +5995,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    }
 	    r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 	    r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
-	    bg = fvbgcol;
+	    bg = view_bgcol;
 	    fgxor = 0x000000;
 	    changed = sc->changed;
 	    if ( fv->b.sf->onlybitmaps && gid<fv->show->glyphcnt )
@@ -7082,9 +7078,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     GGadgetData gd;
     GRect gsize;
     FontRequest rq;
-    /* sadly, clearlyu is too big for the space I've got */
-    static unichar_t monospace[] = { 'f','o','n','t','v','i','e','w',',','c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    static unichar_t *fontnames=NULL;
     static GWindow icon = NULL;
     static int nexty=0;
     GRect size;
@@ -7123,11 +7116,17 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 	    { "SelectedColor", rt_color, &fvselcol },
 	    { "SelectedFgColor", rt_color, &fvselfgcol },
 	    { "ChangedColor", rt_color, &fvchangedcol },
-	    { NULL }
-	};
+	    { "SerifFamily", rt_string, &special_fontnames[0] },
+	    { "ScriptFamily", rt_string, &special_fontnames[1] },
+	    { "FrakturFamily", rt_string, &special_fontnames[2] },
+	    { "DoubleStruckFamily", rt_string, &special_fontnames[3] },
+	    { "SansFamily", rt_string, &special_fontnames[4] },
+	    { "MonoFamily", rt_string, &special_fontnames[5] },
+	    { "FontFamily", rt_string, &standard_fontnames },
+	    { NULL }};
+
 	GResourceFind( fvcolors, "FontView.");
-	fv_fontsize = -fv_fontsize;
-	fvbgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
+	view_bgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
 	fv_fs_init = true;
     }
 
@@ -7143,8 +7142,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);
     fv->mbh = gsize.height;
-    fv->infoh = 1-fv_fontsize;
-    fv->lab_height = FV_LAB_HEIGHT-13-fv_fontsize;
+    fv->infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
+    fv->lab_height = FV_LAB_HEIGHT-13+GDrawPointsToPixels(NULL,fv_fontsize);
 
     gd.pos.y = fv->mbh+fv->infoh; gd.pos.height = pos.height;
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
@@ -7154,7 +7153,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->vsb = GScrollBarCreate(gw,&gd,fv);
 
     wattrs.mask = wam_events|wam_cursor|wam_backcol;
-    wattrs.background_color = fvbgcol;
+    wattrs.background_color = view_bgcol;
     pos.x = 0; pos.y = fv->mbh+fv->infoh;
     fv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
@@ -7164,15 +7163,10 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     GDrawSetGIC(fv->v,fv->gic,0,20);
     GDrawSetGIC(fv->gw,fv->gic,0,20);
 
-    if ( fontnames==NULL ) {
-	fontnames = uc_copy(GResourceFindString("FontView.FontFamily"));
-	if ( fontnames==NULL )
-	    fontnames = monospace;
-    }
     fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
-    rq.family_name = fontnames;
-    rq.point_size = fv_fontsize;
+    rq.utf8_family_name = standard_fontnames;
+    rq.point_size = -13;
     rq.weight = 400;
     fv->fontset[0] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->fontset[0]);
@@ -7356,4 +7350,49 @@ struct fv_interface gdraw_fv_interface = {
     (void (*)(FontViewBase *,int )) FVScrollToChar,
     (void (*)(FontViewBase *,int )) FV_ChangeGID,
     SF_CloseAllInstrs
+};
+
+extern GResInfo metricsview_ri;
+static struct resed view_re[] = {
+    {N_("Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views")},
+    NULL
+};
+static GResInfo view_ri = {
+    &metricsview_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    view_re,
+    N_("View"),
+    N_("This is an abstract class which defines common features of the\nFontView, CharView, BitmapView and MetricsView"),
+    "View",
+    "fontforge",
+    false
+};
+
+static struct resed fontview_re[] = {
+    {N_("Selected BG Color"), "SelectedColor", rt_color, &fvselcol, N_("Color used to draw the background of selected glyphs")},
+    {N_("Selected FG Color"), "SelectedFgColor", rt_color, &fvselfgcol, N_("Color used to draw the foreground of selected glyphs")},
+    {N_("Changed Color"), "ChangedColor", rt_color, &fvchangedcol, N_("Color used to mark a changed glyph")},
+    {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information in the fontview.")},
+    {N_("Font Family"), "FontFamily", rt_string, &standard_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs")},
+    {N_("Serif Family"), "SerifFamily", rt_string, &special_fontnames[0], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a serif font")},
+    {N_("Script Family"), "ScriptFamily", rt_string, &special_fontnames[1], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a script font")},
+    {N_("Fraktur Family"), "FrakturFamily", rt_string, &special_fontnames[2], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a fractur font")},
+    {N_("Double Struck Family"), "DoubleStruckFamily", rt_string, &special_fontnames[3], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a double struck font")},
+    {N_("Sans-Serif Family"), "SansFamily", rt_string, &special_fontnames[4], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a sans-serif font")},
+    {N_("Monospace Family"), "MonoFamily", rt_string, &special_fontnames[5], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a monospace font")},
+    NULL
+};
+GResInfo fontview_ri = {
+    &view_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    fontview_re,
+    N_("FontView"),
+    N_("This is the main fontforge window displaying a font"),
+    "FontView",
+    "fontforge",
+    false
 };
