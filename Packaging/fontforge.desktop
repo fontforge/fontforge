@@ -13,4 +13,4 @@ Terminal=false
 Type=Application
 Categories=Application;Graphics;
 Encoding=UTF-8
-MimeType=application/vnd.font-fontforge-sfd;application/x-font-ttf;application/x-font-type1;application/x-font-bdf;application/x-font-pcf;/x-font-tex;
+MimeType=application/vnd.font-fontforge-sfd;application/x-font-ttf;application/x-font-otf;application/x-font-type1;application/x-font-bdf;application/x-font-pcf;application/x-font-tex;
