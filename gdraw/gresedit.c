@@ -193,7 +193,8 @@ static void inherit_font_change(GRE *gre, int childindex, int cid_off,
     GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].fontcid);
     struct inherit_font_data *ifd = (struct inherit_font_data *) whatever;
 
-    *(gre->tofree[childindex].res->font) = ifd->font;
+    if ( ifd->font!=NULL )
+	*(gre->tofree[childindex].res->font) = ifd->font;
     GGadgetSetTitle8(g,ifd->spec);
 }
 
@@ -454,8 +455,21 @@ return( true );
 }
 
 static int GRE_FontChanged(GGadget *g, GEvent *e) {
+    struct inherit_font_data ifd;
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
+	int index = GTabSetGetSel(gre->tabset);
+	GResInfo *res = gre->tofree[index].res;
+	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
+	char *fontdesc = GGadgetGetTitle8(g);
+	ifd.spec = fontdesc;
+	ifd.font = NULL;
+
+	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,true,
+		(void *) &ifd, inherit_font_change);
+	free(fontdesc);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
 	    !e->u.control.u.tf_focus.gained_focus ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( gre->tabset!=NULL ) {
@@ -468,7 +482,6 @@ static int GRE_FontChanged(GGadget *g, GEvent *e) {
 	    if ( new==NULL )
 		gwwv_post_error(_("Bad font"),_("Bad font specification"));
 	    else {
-		struct inherit_font_data ifd;
 		ifd.spec = fontdesc;
 		ifd.font = new;
 
@@ -483,21 +496,25 @@ static int GRE_FontChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void GRE_ParseFont(GGadget *g) {
+    char *fontdesc = GGadgetGetTitle8(g);
+    GFont *new = GResource_font_cvt(fontdesc,NULL);
+
+    if ( new==NULL )
+	gwwv_post_error(_("Bad font"),_("Bad font specification"));
+    else {
+	*((GFont **) GGadgetGetUserData(g)) = new;
+    }
+    free(fontdesc);
+}
+
 static int GRE_ExtraFontChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
 	    !e->u.control.u.tf_focus.gained_focus ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( gre->tabset!=NULL ) {
-	    char *fontdesc = GGadgetGetTitle8(g);
-	    GFont *new = GResource_font_cvt(fontdesc,NULL);
-
-	    if ( new==NULL )
-		gwwv_post_error(_("Bad font"),_("Bad font specification"));
-	    else {
-		*((GFont **) GGadgetGetUserData(g)) = new;
-	    }
-	    free(fontdesc);
+	    GRE_ParseFont(g);
 	}
     }
 return( true );
@@ -513,7 +530,7 @@ return( true );
 
 static int GRE_ImageChanged(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	/* GRE *gre = GDrawGetUserData(GGadgetGetWindow(g)); */
 	GResImage **ri = GGadgetGetUserData(g);
 	char *new;
@@ -832,7 +849,15 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 	/* Handle fonts, strings and images */
 	for ( i=0; gre->tofree[i].res!=NULL; ++i ) {
 	    GResInfo *res = gre->tofree[i].res;
+	    if ( res->font!=NULL ) {
+		/* We try to do this as we go along, but we wait for a focus */
+		/*  out event to parse changes. Now if the last thing they were*/
+		/*  doing was editing the font, then we might not get a focus */
+		/*  out. So parse things here, just in case */
+		GRE_ParseFont(GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
+	    }
 	    if ( res->extras!=NULL ) {
+		
 		for ( extras = res->extras; extras->name!=NULL; extras++ ) {
 		    switch ( extras->type ) {
 		      case rt_bool:
@@ -840,8 +865,10 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		      case rt_color:
 		      case rt_double:
 		      case rt_image:
-		      case rt_font:
 			/* These should have been set as we went along */
+		      break;
+		      case rt_font:
+			GRE_ParseFont(GWidgetGetControl(gre->gw,extras->cid));
 		      break;
 		      case rt_string:
 		      {
@@ -2298,3 +2325,21 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	re_end->next = NULL;
 }
     
+void GResEditFind( struct resed *resed, char *prefix) {
+    int i;
+    GResStruct *info;
+
+    for ( i=0; resed[i].name!=NULL; ++i );
+
+    info = gcalloc(i+1,sizeof(GResStruct));
+    for ( i=0; resed[i].name!=NULL; ++i ) {
+	info[i].resname = resed[i].resname;
+	info[i].type = resed[i].type;
+	info[i].val = resed[i].val;
+	info[i].cvt = resed[i].cvt;
+    }
+    GResourceFind(info,prefix);
+    for ( i=0; resed[i].name!=NULL; ++i )
+	resed[i].found = info[i].found;
+    free(info);
+}

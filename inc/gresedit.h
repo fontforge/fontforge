@@ -33,6 +33,17 @@
 
 enum res_type2 { rt_image = rt_string+1, rt_font };
 
+struct resed {
+    char *name, *resname;
+    enum res_type type;
+    void *val;
+    char *popup;
+    void *(*cvt)(char *,void *);
+    union { int ival; double dval; char *sval; GFont *fontval; } orig;
+    int cid;
+    int found;
+};
+
 typedef struct gresinfo {
     struct gresinfo *next;
     struct gresinfo *inherits_from;
@@ -40,7 +51,7 @@ typedef struct gresinfo {
     GBox *boxdata;
     GFont **font;
     GGadgetCreateData *examples;
-    struct resed { char *name, *resname; enum res_type type; void *val; char *popup; union { int ival; double dval; char *sval; GFont *fontval; } orig; int cid; } *extras;
+    struct resed *extras;
     char *name;
     char *initialcomment;
     char *resname;
@@ -50,4 +61,5 @@ typedef struct gresinfo {
 } GResInfo;
 
 extern void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *));
+extern void GResEditFind( struct resed *resed, char *prefix);
 #endif /* _GRESEDIT_H */

@@ -31,6 +31,7 @@
 #include <ustring.h>
 #include <utype.h>
 #include <gresource.h>
+#include <gresedit.h>
 extern int _GScrollBar_Width;
 #include <gkeysym.h>
 #ifdef HAVE_IEEEFP_H
@@ -94,11 +95,11 @@ Color widthcol = 0x000000;
 static Color widthselcol = 0x00ff00;
 static Color widthgridfitcol = 0x009800;
 static Color lcaretcol = 0x909040;
-static Color rastercol = 0xa0a0a0;
-static Color rasternewcol = 0x909090;
-static Color rasteroldcol = 0xc0c0c0;
-static Color rastergridcol = 0xb0b0ff;
-static Color rasterdarkcol = 0x606060;
+static Color rastercol = 0xffa0a0a0;		/* Translucent */
+static Color rasternewcol = 0xff909090;
+static Color rasteroldcol = 0xffc0c0c0;
+static Color rastergridcol = 0xffb0b0ff;
+static Color rasterdarkcol = 0xff606060;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
 static Color hintlabelcol = 0x00cccc;
@@ -128,6 +129,59 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 
 static int cvcolsinited = false;
+static struct resed charview_re[] = {
+    { N_("Point Color"), "PointColor", rt_color, &pointcol, N_("The color of an on-curve point") },
+    { N_("First Point Color"), "FirstPointColor", rt_color, &firstpointcol, N_("The color of the point which is the start of a contour") },
+    { N_("Selected Point Color"), "SelectedPointColor", rt_color, &selectedpointcol, N_("The color of a selected point") },
+    { N_("Selected Point Width"), "SelectedPointWidth", rt_int, &selectedpointwidth, N_("The width of the line used to draw selected points") },
+    { N_("Extrema Point Color"), "ExtremePointColor", rt_color, &extremepointcol, N_("The color used to draw points at extrema (if that mode is active)") },
+    { N_("Point of Inflection Color"), "PointOfInflectionColor", rt_color, &pointofinflectioncol, N_("The color used to draw points of inflection (if that mode is active)") },
+    { N_("Almost H/V Color"), "AlmostHVColor", rt_color, &almosthvcol, N_("The color used to draw markers for splines which are almost, but not quite horizontal or vertical at their end-points") },
+    { N_("Next CP Color"), "NextCPColor", rt_color, &nextcpcol, N_("The color used to draw the \"next\" control point of an on-curve point") },
+    { N_("Prev CP Color"), "PrevCPColor", rt_color, &prevcpcol, N_("The color used to draw the \"previous\" control point of an on-curve point") },
+    { N_("Selected CP Color"), "SelectedCPColor", rt_color, &selectedcpcol, N_("The color used to draw a selected control point of an on-curve point") },
+    { N_("Coordinate Line Color"), "CoordinateLineColor", rt_color, &coordcol },
+    { N_("Italic Coord. Color"), "ItalicCoordColor", rt_color, &italiccoordcol },
+    { N_("Raster Color"), "RasterColor", rt_color, &rastercol, N_("The color of grid-fit (and other) raster blocks") },
+    { N_("Raster New Color"), "RasterNewColor", rt_color, &rasternewcol, N_("The color of a raster blocks which has just been turned on (in the debugger when an instruction moves a point)") },
+    { N_("Raster Old Color"), "RasterOldColor", rt_color, &rasteroldcol, N_("The color of a raster blocks which has just been turned off (in the debugger when an instruction moves a point)") },
+    { N_("Raster Grid Color"), "RasterGridColor", rt_color, &rastergridcol },
+    { N_("Raster Dark Color"), "RasterDarkColor", rt_color, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
+    { N_("Metrics Label Color"), "MetricsLabelColor", rt_color, &metricslabelcol },
+    { N_("Hint Label Color"), "HintLabelColor", rt_color, &hintlabelcol },
+    { N_("Blue Values Color"), "BlueValuesStippledColor", rt_color, &bluevalstipplecol, N_("The color used to mark blue zones in the blue values entry of the private dictionary") },
+    { N_("Family Blue Color"), "FamilyBlueStippledColor", rt_color, &fambluestipplecol, N_("The color used to mark blue zones in the family blues entry of the private dictionary") },
+    { N_("Diagonal Hint Color"), "DHintColor", rt_color, &dhintcol, N_("The color used to draw diagonal hints") },
+    { N_("Horiz. Hint Color"), "HHintColor", rt_color, &hhintcol, N_("The color used to draw horizontal hints") },
+    { N_("Vert. Hint Color"), "VHintColor", rt_color, &vhintcol, N_("The color used to draw vertical hints") },
+    { N_("HFlex Hint Color"), "HFlexHintColor", rt_color, &hflexhintcol },
+    { N_("VFlex Hint Color"), "VFlexHintColor", rt_color, &vflexhintcol },
+    { N_("Conflict Hint Color"), "ConflictHintColor", rt_color, &conflicthintcol, N_("The color used to draw a hint which conflicts with another") },
+    { N_("HHint Active Color"), "HHintActiveColor", rt_color, &hhintactivecol, N_("The color used to draw the active horizontal hint which the Review Hints dialog is examining") },
+    { N_("VHint Active Color"), "VHintActiveColor", rt_color, &vhintactivecol, N_("The color used to draw the active vertical hint which the Review Hints dialog is examining") },
+    { NULL }
+};
+
+static struct resed charview2_re[] = {
+    { N_("Width Color"), "WidthColor", rt_color, &widthcol, N_("The color of the line marking the advance width") },
+    { N_("Selected Width Color"), "WidthSelColor", rt_color, &widthselcol, N_("The color of the line marking the advance width when it is selected") },
+    { N_("Grid Fit Width Color"), "GridFitWidthColor", rt_color, &widthgridfitcol, N_("The color of the line marking the grid-fit advance width")  },
+    { N_("Ligature Caret Color"), "LigatureCaretColor", rt_color, &lcaretcol, N_("The color of the line(s) marking ligature carets") },
+    { N_("Anchor Color"), "AnchorColor", rt_color, &anchorcol, N_("The color of anchor stars") },
+    { N_("Anchored Line Color"), "AnchoredOutlineColor", rt_color, &anchoredoutlinecol, N_("The color of another glyph drawn in the current view to show where it would be placed by an anchor lookup") },
+    { N_("Template Color"), "TemplateOutlineColor", rt_color, &templateoutlinecol },
+    { N_("Old Outline Color"), "OldOutlineColor", rt_color, &oldoutlinecol },
+    { N_("Original Color"), "TransformOriginColor", rt_color, &transformorigincol },
+    { N_("Guide Layer Color"), "GuideOutlineColor", rt_color, &guideoutlinecol },
+    { N_("Grid Fit Color"), "GridFitOutlineColor", rt_color, &gridfitoutlinecol, N_("The color of grid-fit outlines") },
+    { N_("Inactive Layer Color"), "BackgroundOutlineColor", rt_color, &backoutlinecol, N_("The color of outlines in inactive layers") },
+    { N_("Active Layer Color"), "ForegroundOutlineColor", rt_color, &foreoutlinecol, N_("The color of outlines in the active layer") },
+    { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path") },
+    { N_("Background Image Color"), "BackgroundImageColor", rt_color, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut") },
+    { N_("Fill Color"), "FillColor", rt_color, &fillcol, N_("The color used to fill the outline if that mode is active") },
+    { N_("Trace Color"), "TraceColor", rt_color, &tracecol },
+    { NULL }
+};
 
 /* floor(pt) would _not_ be more correct, as we want
  * shapes not to cross axes multiple times while scaling.
@@ -137,57 +191,8 @@ static double rpt(CharView *cv, double pt) {
 }
 
 void CVColInit( void ) {
-    static GResStruct cvcolors[] = {
-	{ "PointColor", rt_color, &pointcol },
-	{ "FirstPointColor", rt_color, &firstpointcol },
-	{ "SelectedPointColor", rt_color, &selectedpointcol },
-	{ "SelectedPointWidth", rt_int, &selectedpointwidth },
-	{ "ExtremePointColor", rt_color, &extremepointcol },
-	{ "PointOfInflectionColor", rt_color, &pointofinflectioncol },
-	{ "AlmostHVColor", rt_color, &almosthvcol },
-	{ "NextCPColor", rt_color, &nextcpcol },
-	{ "PrevCPColor", rt_color, &prevcpcol },
-	{ "SelectedCPColor", rt_color, &selectedcpcol },
-	{ "CoordinateLineColor", rt_color, &coordcol },
-	{ "WidthColor", rt_color, &widthcol },
-	{ "WidthSelColor", rt_color, &widthselcol },
-	{ "GridFitWidthColor", rt_color, &widthgridfitcol },
-	{ "LigatureCaretColor", rt_color, &lcaretcol },
-	{ "RasterColor", rt_color, &rastercol },
-	{ "RasterNewColor", rt_color, &rasternewcol },
-	{ "RasterOldColor", rt_color, &rasteroldcol },
-	{ "RasterGridColor", rt_color, &rastergridcol },
-	{ "RasterDarkColor", rt_color, &rasterdarkcol },
-	{ "ItalicCoordColor", rt_color, &italiccoordcol },
-	{ "MetricsLabelColor", rt_color, &metricslabelcol },
-	{ "HintLabelColor", rt_color, &hintlabelcol },
-	{ "BlueValuesStippledColor", rt_color, &bluevalstipplecol },
-	{ "FamilyBlueStippledColor", rt_color, &fambluestipplecol },
-	{ "MDHintColor", rt_color, &mdhintcol },
-	{ "DHintColor", rt_color, &dhintcol },
-	{ "HHintColor", rt_color, &hhintcol },
-	{ "VHintColor", rt_color, &vhintcol },
-	{ "HFlexHintColor", rt_color, &hflexhintcol },
-	{ "VFlexHintColor", rt_color, &vflexhintcol },
-	{ "ConflictHintColor", rt_color, &conflicthintcol },
-	{ "HHintActiveColor", rt_color, &hhintactivecol },
-	{ "VHintActiveColor", rt_color, &vhintactivecol },
-	{ "AnchorColor", rt_color, &anchorcol },
-	{ "AnchoredOutlineColor", rt_color, &anchoredoutlinecol },
-	{ "TemplateOutlineColor", rt_color, &templateoutlinecol },
-	{ "OldOutlineColor", rt_color, &oldoutlinecol },
-	{ "TransformOriginColor", rt_color, &transformorigincol },
-	{ "GuideOutlineColor", rt_color, &guideoutlinecol },
-	{ "GridFitOutlineColor", rt_color, &gridfitoutlinecol },
-	{ "BackgroundOutlineColor", rt_color, &backoutlinecol },
-	{ "ForegroundOutlineColor", rt_color, &foreoutlinecol },
-	{ "ClipPathColor", rt_color, &clippathcol },
-	{ "BackgroundImageColor", rt_color, &backimagecol },
-	{ "FillColor", rt_color, &fillcol },
-	{ "TraceColor", rt_color, &tracecol },
-	{ NULL }
-    };
-    GResourceFind( cvcolors, "CharView.");
+    GResEditFind( charview_re, "CharView.");
+    GResEditFind( charview2_re, "CharView.");
     cvcolsinited = true;
 }
 
@@ -10534,4 +10539,30 @@ struct cv_interface gdraw_cv_interface = {
     (void (*)(CharViewBase *,int)) _CV_CharChangedUpdate,
     UI_CVGlyphRenameFixup,
     CV_LayerPaletteCheck
+};
+
+extern GResInfo metricsview_ri;
+GResInfo charview2_ri = {
+    &metricsview_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    charview2_re,
+    N_("Outline View 2"),
+    N_("This window displays a single outline glyph (more data)"),
+    "CharView",
+    "fontforge",
+    false
+};
+GResInfo charview_ri = {
+    &charview2_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    charview_re,
+    N_("Outline View"),
+    N_("This window displays a single outline glyph"),
+    "CharView",
+    "fontforge",
+    false
 };

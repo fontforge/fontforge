@@ -7069,6 +7069,21 @@ static void FontViewInit(void) {
     mbDoGetText(fvpopupmenu);
 }
 
+static struct resed fontview_re[] = {
+    {N_("Selected BG Color"), "SelectedColor", rt_color, &fvselcol, N_("Color used to draw the background of selected glyphs")},
+    {N_("Selected FG Color"), "SelectedFgColor", rt_color, &fvselfgcol, N_("Color used to draw the foreground of selected glyphs")},
+    {N_("Changed Color"), "ChangedColor", rt_color, &fvchangedcol, N_("Color used to mark a changed glyph")},
+    {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information in the fontview.")},
+    {N_("Font Family"), "FontFamily", rt_string, &standard_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs")},
+    {N_("Serif Family"), "SerifFamily", rt_string, &special_fontnames[0], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a serif font")},
+    {N_("Script Family"), "ScriptFamily", rt_string, &special_fontnames[1], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a script font")},
+    {N_("Fraktur Family"), "FrakturFamily", rt_string, &special_fontnames[2], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a fractur font")},
+    {N_("Double Struck Family"), "DoubleStruckFamily", rt_string, &special_fontnames[3], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a double struck font")},
+    {N_("Sans-Serif Family"), "SansFamily", rt_string, &special_fontnames[4], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a sans-serif font")},
+    {N_("Monospace Family"), "MonoFamily", rt_string, &special_fontnames[5], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a monospace font")},
+    NULL
+};
+
 static FontView *FontView_Create(SplineFont *sf, int hide) {
     FontView *fv = (FontView *) __FontViewCreate(sf);
     static int done = false;
@@ -7111,21 +7126,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     FontViewSetTitle(fv);
 
     if ( !fv_fs_init ) {
-	static GResStruct fvcolors[] = {
-	    { "FontSize", rt_int, &fv_fontsize },
-	    { "SelectedColor", rt_color, &fvselcol },
-	    { "SelectedFgColor", rt_color, &fvselfgcol },
-	    { "ChangedColor", rt_color, &fvchangedcol },
-	    { "SerifFamily", rt_string, &special_fontnames[0] },
-	    { "ScriptFamily", rt_string, &special_fontnames[1] },
-	    { "FrakturFamily", rt_string, &special_fontnames[2] },
-	    { "DoubleStruckFamily", rt_string, &special_fontnames[3] },
-	    { "SansFamily", rt_string, &special_fontnames[4] },
-	    { "MonoFamily", rt_string, &special_fontnames[5] },
-	    { "FontFamily", rt_string, &standard_fontnames },
-	    { NULL }};
-
-	GResourceFind( fvcolors, "FontView.");
+	GResEditFind( fontview_re, "FontView.");
 	view_bgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
 	fv_fs_init = true;
     }
@@ -7352,13 +7353,13 @@ struct fv_interface gdraw_fv_interface = {
     SF_CloseAllInstrs
 };
 
-extern GResInfo metricsview_ri;
+extern GResInfo charview_ri;
 static struct resed view_re[] = {
     {N_("Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views")},
     NULL
 };
 static GResInfo view_ri = {
-    &metricsview_ri, NULL,NULL, NULL,
+    &charview_ri, NULL,NULL, NULL,
     NULL,
     NULL,
     NULL,
@@ -7370,20 +7371,6 @@ static GResInfo view_ri = {
     false
 };
 
-static struct resed fontview_re[] = {
-    {N_("Selected BG Color"), "SelectedColor", rt_color, &fvselcol, N_("Color used to draw the background of selected glyphs")},
-    {N_("Selected FG Color"), "SelectedFgColor", rt_color, &fvselfgcol, N_("Color used to draw the foreground of selected glyphs")},
-    {N_("Changed Color"), "ChangedColor", rt_color, &fvchangedcol, N_("Color used to mark a changed glyph")},
-    {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information in the fontview.")},
-    {N_("Font Family"), "FontFamily", rt_string, &standard_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs")},
-    {N_("Serif Family"), "SerifFamily", rt_string, &special_fontnames[0], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a serif font")},
-    {N_("Script Family"), "ScriptFamily", rt_string, &special_fontnames[1], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a script font")},
-    {N_("Fraktur Family"), "FrakturFamily", rt_string, &special_fontnames[2], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a fractur font")},
-    {N_("Double Struck Family"), "DoubleStruckFamily", rt_string, &special_fontnames[3], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a double struck font")},
-    {N_("Sans-Serif Family"), "SansFamily", rt_string, &special_fontnames[4], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a sans-serif font")},
-    {N_("Monospace Family"), "MonoFamily", rt_string, &special_fontnames[5], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a monospace font")},
-    NULL
-};
 GResInfo fontview_ri = {
     &view_ri, NULL,NULL, NULL,
     NULL,
