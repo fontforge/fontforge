@@ -1101,4 +1101,8 @@ extern void DisplayGroups(struct fontview *fv);
 extern struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical);
 
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
+
+extern Color view_bgcol;	/* Background color for views */
+extern void MVColInit(void);
+extern void CVColInit( void );
 #endif	/* _VIEWS_H */

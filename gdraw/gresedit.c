@@ -78,6 +78,38 @@ static void GRE_RefreshAll(GRE *gre) {
     GDrawRequestExpose(GTabSetGetSubwindow(gre->tabset,GTabSetGetSel(gre->tabset)),NULL,false);
 }
 
+static char *GFontSpec2String(GFont *font) {
+    int len;
+    char *fontname;
+    FontRequest rq;
+
+    if ( font==NULL )
+return( copy(""));
+
+    GDrawDecomposeFont(font,&rq);
+    if ( rq.family_name!=NULL )
+	len = 4*u_strlen(rq.family_name);
+    else
+	len = strlen(rq.utf8_family_name);
+    len += 6 /* point size */ + 1 +
+	    5 /* weight */ + 1 +
+	    10 /* style */;
+    fontname = galloc(len);
+    if ( rq.family_name!=NULL ) {
+	char *utf8_name = u2utf8_copy(rq.family_name);
+	sprintf( fontname, "%d %s%dpt %s", rq.weight,
+	    rq.style&1 ? "italic " : "",
+	    rq.point_size,
+	    utf8_name );
+	free(utf8_name );
+    } else
+	sprintf( fontname, "%d %s%dpt %s", rq.weight,
+	    rq.style&1 ? "italic " : "",
+	    rq.point_size,
+	    rq.utf8_family_name );
+return( fontname );
+}
+
 static void GRE_Reflow(GRE *gre,GResInfo *res) {
     if ( res->examples!=NULL &&
 	    ( res->examples->creator==GHBoxCreate ||
@@ -154,12 +186,15 @@ static void inherit_flag_change(GRE *gre, int childindex, int cid_off,
 	res->inherits_from->boxdata->flags &= ~flag;
 }
 
+struct inherit_font_data { char *spec; GFont *font; };
+
 static void inherit_font_change(GRE *gre, int childindex, int cid_off,
 	void *whatever) {
     GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].fontcid);
-    const unichar_t *fontdesc = (const unichar_t *) whatever;
+    struct inherit_font_data *ifd = (struct inherit_font_data *) whatever;
 
-    GGadgetSetTitle(g,fontdesc);
+    *(gre->tofree[childindex].res->font) = ifd->font;
+    GGadgetSetTitle8(g,ifd->spec);
 }
 
 static int GRE_InheritColChange(GGadget *g, GEvent *e) {
@@ -284,11 +319,17 @@ static int GRE_InheritFontChange(GGadget *g, GEvent *e) {
 	    int pi;
 	    for ( pi=0; gre->tofree[pi].res!=NULL && gre->tofree[pi].res!=res->inherits_from; ++pi );
 	    if ( gre->tofree[pi].res!=NULL ) {
-		const unichar_t *fontdesc = _GGadgetGetTitle(GWidgetGetControl(gre->gw,gre->tofree[pi].fontcid));
+		struct inherit_font_data ifd;
 		int cid_off = cid - gre->tofree[index].startcid;
-		GGadgetSetTitle(g,fontdesc);
+
+		ifd.spec = GGadgetGetTitle8(GWidgetGetControl(gre->gw,gre->tofree[pi].fontcid));
+		ifd.font = *gre->tofree[pi].res->font;
+		*res->font = ifd.font;
+ 
+		GGadgetSetTitle8(g,ifd.spec);
 		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,false,
-			(void *) fontdesc, inherit_font_change);
+			(void *) &ifd, inherit_font_change);
+		free( ifd.spec );
 	    }
 	}
     }
@@ -402,17 +443,62 @@ static int GRE_ColorChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GRE_ExtraColorChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	Color col = GColorButtonGetColor(g);
+
+	*((Color *) GGadgetGetUserData(g)) = col;
+    }
+return( true );
+}
+
 static int GRE_FontChanged(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
+	    !e->u.control.u.tf_focus.gained_focus ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
-	int index = GTabSetGetSel(gre->tabset);
-	GResInfo *res = gre->tofree[index].res;
-	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
-	const unichar_t *fontdesc = _GGadgetGetTitle(g);
+	if ( gre->tabset!=NULL ) {
+	    int index = GTabSetGetSel(gre->tabset);
+	    GResInfo *res = gre->tofree[index].res;
+	    int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
+	    char *fontdesc = GGadgetGetTitle8(g);
+	    GFont *new = GResource_font_cvt(fontdesc,NULL);
 
-	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,true,
-		(void *) fontdesc, inherit_font_change);
+	    if ( new==NULL )
+		gwwv_post_error(_("Bad font"),_("Bad font specification"));
+	    else {
+		struct inherit_font_data ifd;
+		ifd.spec = fontdesc;
+		ifd.font = new;
+
+		*((GFont **) GGadgetGetUserData(g)) = new;
+		GRE_FigureInheritance(gre,res,cid_off-2,cid_off,true,
+			(void *) &ifd, inherit_font_change);
+		GRE_Reflow(gre,res);
+	    }
+	    free(fontdesc);
+	}
+    }
+return( true );
+}
+
+static int GRE_ExtraFontChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
+	    !e->u.control.u.tf_focus.gained_focus ) {
+	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( gre->tabset!=NULL ) {
+	    char *fontdesc = GGadgetGetTitle8(g);
+	    GFont *new = GResource_font_cvt(fontdesc,NULL);
+
+	    if ( new==NULL )
+		gwwv_post_error(_("Bad font"),_("Bad font specification"));
+	    else {
+		*((GFont **) GGadgetGetUserData(g)) = new;
+	    }
+	    free(fontdesc);
+	}
     }
 return( true );
 }
@@ -483,6 +569,9 @@ static void GRE_DoCancel(GRE *gre) {
 		  break;
 		  case rt_double:
 		    *(int *) (extras->val) = extras->orig.dval;
+		  break;
+		  case rt_font:
+		    *(GFont **) (extras->val) = extras->orig.fontval;
 		  break;
 		  case rt_image:
 		    _ri = extras->val;
@@ -585,7 +674,7 @@ static int GRE_Save(GGadget *g, GEvent *e) {
 	    gcd[0].creator = GCheckBoxCreate;
 	    gcdp = gcd;
 	}
-	
+
 	filename = gwwv_save_filename_with_gadget(_("Save Resource file as..."),gre->def_res_file,NULL,gcdp);
 	if ( filename==NULL )
 return( true );
@@ -686,6 +775,14 @@ return( true );
 			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    GColorButtonGetColor(g) );
 		  break;
+		  case rt_font: {
+		    char *fontdesc = GGadgetGetTitle8(g);
+		    if ( *fontdesc!='\0' )
+			fprintf( output, "%s.%s%s%s: %s\n",
+				res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
+				fontdesc );
+		    free(fontdesc);
+		  } break;
 		  case rt_image: {
 		    GResImage *ri = *((GResImage **) (extras->val));
 		    if ( ri!=NULL ) {	/* No image if ri==NULL */
@@ -735,11 +832,6 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 	/* Handle fonts, strings and images */
 	for ( i=0; gre->tofree[i].res!=NULL; ++i ) {
 	    GResInfo *res = gre->tofree[i].res;
-	    if ( res->font!=NULL ) {
-		char *spec = GGadgetGetTitle8(GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
-		res->font = GResource_font_cvt(spec,res->font);
-		free(spec);
-	    }
 	    if ( res->extras!=NULL ) {
 		for ( extras = res->extras; extras->name!=NULL; extras++ ) {
 		    switch ( extras->type ) {
@@ -747,10 +839,11 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		      case rt_int:
 		      case rt_color:
 		      case rt_double:
+		      case rt_image:
+		      case rt_font:
 			/* These should have been set as we went along */
 		      break;
 		      case rt_string:
-		      case rt_image:
 		      {
 			char *spec = GGadgetGetTitle8(GWidgetGetControl(gre->gw,extras->cid));
 			free( *(char **) (extras->val) );
@@ -1727,29 +1820,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	}
 
 	if ( res->font!=NULL ) {
-	    int len;
-	    FontRequest rq;
-	    GDrawDecomposeFont(*res->font,&rq);
-	    if ( rq.family_name!=NULL )
-		len = 4*u_strlen(rq.family_name);
-	    else
-		len = strlen(rq.utf8_family_name);
-	    len += 6 /* point size */ + 1 +
-		    5 /* weight */ + 1 +
-		    10 /* style */;
-	    tofree[i].fontname = galloc(len);
-	    if ( rq.family_name!=NULL ) {
-		char *utf8_name = u2utf8_copy(rq.family_name);
-		sprintf( tofree[i].fontname, "%d %s%dpt %s", rq.weight,
-		    rq.style&1 ? "italic " : "",
-		    rq.point_size,
-		    utf8_name );
-		free(utf8_name );
-	    } else
-		sprintf( tofree[i].fontname, "%d %s%dpt %s", rq.weight,
-		    rq.style&1 ? "italic " : "",
-		    rq.point_size,
-		    rq.utf8_family_name );
+	    tofree[i].fontname = GFontSpec2String( *res->font );
 
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
@@ -1775,7 +1846,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
 	    gcd[k].gd.cid = tofree[i].fontcid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_FontChanged;
-	    gcd[k].data = &res->boxdata->active_border;
+	    gcd[k].data = res->font;
 	    gcd[k++].creator = GTextFieldCreate;
 	    tofree[i].fontarray[2] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1840,9 +1911,11 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 		    if ( extras->orig.ival )
 			gcd[k].gd.flags |= gg_cb_on;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.handle_controlevent = GRE_BoolChanged;
@@ -1856,7 +1929,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -1866,7 +1941,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.pos.width = 60;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.handle_controlevent = GRE_IntChanged;
@@ -1879,7 +1956,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -1888,7 +1967,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) tofree[i].extradefs[l];
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_DoubleChanged;
@@ -1901,15 +1982,19 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
 		    gcd[k].gd.u.col = extras->orig.ival;
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
-		    gcd[k].gd.handle_controlevent = GRE_ColorChanged;
+		    gcd[k].gd.handle_controlevent = GRE_ExtraColorChanged;
 		    gcd[k++].creator = GColorButtonCreate;
 		    tofree[i].earray[hl][base+1] = &gcd[k-1];
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
@@ -1919,7 +2004,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -1928,10 +2015,39 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 			lab[k].text_is_1byte = true;
 			gcd[k].gd.label = &lab[k];
 		    }
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_StringChanged;
+		    gcd[k++].creator = GTextFieldCreate;
+		    tofree[i].earray[hl][base+1] = &gcd[k-1];
+		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
+		  break;
+		  case rt_font:
+		    extras->orig.fontval = *(GFont **) (extras->val);
+		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text_is_1byte = true;
+		    gcd[k].gd.label = &lab[k];
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+		    gcd[k++].creator = GLabelCreate;
+		    tofree[i].earray[hl][base] = &gcd[k-1];
+
+		    if ( extras->orig.fontval != NULL ) {
+			tofree[i].extradefs[l] = GFontSpec2String( extras->orig.fontval );
+			lab[k].text = (unichar_t *) tofree[i].extradefs[l];
+			lab[k].text_is_1byte = true;
+			gcd[k].gd.label = &lab[k];
+		    }
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+		    gcd[k].data = extras->val;
+		    gcd[k].gd.cid = extras->cid = ++cid;
+		    gcd[k].gd.handle_controlevent = GRE_ExtraFontChanged;
 		    gcd[k++].creator = GTextFieldCreate;
 		    tofree[i].earray[hl][base+1] = &gcd[k-1];
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
@@ -1942,7 +2058,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
@@ -1953,7 +2071,9 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 			lab[k].text = (unichar_t *) "? ...";
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
-		    gcd[k].gd.flags = gg_visible|gg_enabled;
+		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
+		    if ( extras->popup!=NULL )
+			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].gd.handle_controlevent = GRE_ImageChanged;
@@ -2092,8 +2212,6 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	if ( res->extras!=NULL ) {
 	    for ( l=0, extras = res->extras ; extras->name!=NULL; ++extras, ++l ) {
 		free( tofree[i].extradefs[l]);
-		if ( extras->type == rt_image )
-		    free( extras->orig.sval );
 	    }
 	}
 	free(tofree[i].extradefs);
@@ -2154,6 +2272,8 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	for ( re_end = _GRadioRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GTextFieldRIHead();
 	for ( re_end = _GTextFieldRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GListRIHead();
+	for ( re_end = _GListRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GScrollBarRIHead();
 	for ( re_end = _GScrollBarRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GLineRIHead();

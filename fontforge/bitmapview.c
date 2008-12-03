@@ -31,6 +31,7 @@
 #include <math.h>
 #include <locale.h>
 #include <gresource.h>
+#include <gresedit.h>
 
 int bv_width = 270, bv_height=250;
 
@@ -38,7 +39,6 @@ extern int _GScrollBar_Width;
 extern struct lconv localeinfo;
 extern char *coord_sep;
 struct bvshows BVShows = { 1, 1, 1, 0 };
-static Color bvbgcol;
 
 #define RPT_BASE	3		/* Place to draw the pointer icon */
 #define RPT_DATA	24		/* x,y text after above */
@@ -367,7 +367,7 @@ static void BVDrawSelection(BitmapView *bv,void *pixmap) {
     GRect pixel, rect;
     BDFFloat *sel = bv->bc->selection;
     GClut *clut = bv->bdf->clut;
-    Color bg = bvbgcol;
+    Color bg = view_bgcol;
     int i,j;
 
     pixel.width = pixel.height = bv->scale+1;
@@ -617,7 +617,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,widthcol);
     }
     if ( bv->showoutline ) {
-	Color col = (bvbgcol<0x808080)
+	Color col = (view_bgcol<0x808080)
 		? (bv->bc->byte_data ? 0x008800 : 0x004400 )
 		: (bv->bc->byte_data ? 0x00ff00 : 0x00ff00 );
 	memset(&cvtemp,'\0',sizeof(cvtemp));
@@ -1954,7 +1954,6 @@ return;
     mb2DoGetText(mblist);
     for ( i=0; BVFlipNames[i]!=NULL ; ++i )
 	BVFlipNames[i] = S_(BVFlipNames[i]);
-    bvbgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
 }
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
@@ -2059,7 +2058,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     pos.y = bv->mbh+bv->infoh; pos.height -= bv->mbh + sbsize + bv->infoh;
     pos.x = 0; pos.width -= sbsize;
     wattrs.mask = wam_events|wam_cursor|wam_backcol;
-    wattrs.background_color = bvbgcol;
+    wattrs.background_color = view_bgcol;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_pencil;
     bv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,bv,&wattrs);

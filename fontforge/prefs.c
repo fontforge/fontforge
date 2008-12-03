@@ -2368,5 +2368,8 @@ static void change_res_filename(const char *newname) {
 }
 
 void DoXRes(void) {
-    GResEdit(NULL,xdefs_filename,change_res_filename);
+    extern GResInfo fontview_ri;
+
+    MVColInit();
+    GResEdit(&fontview_ri,xdefs_filename,change_res_filename);
 }

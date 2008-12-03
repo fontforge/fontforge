@@ -48,6 +48,7 @@ static struct resed gmatrixedit_re[] = {
     {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit")},
     {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit")},
     {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit")},
+    {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit")},
     NULL
 };
 static GResInfo gmatrixedit_ri = {

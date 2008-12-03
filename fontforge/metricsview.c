@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #include <gkeysym.h>
 #include <gresource.h>
+#include <gresedit.h>
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>
@@ -43,9 +44,8 @@ static Color italicwidthcol = 0x909090;
 static Color selglyphcol = 0x909090;
 static Color kernlinecol = 0x008000;
 static Color rbearinglinecol = 0x000080;
-static Color mvbgcol;
 
-static void MVColInit( void ) {
+void MVColInit( void ) {
     GResStruct mvcolors[] = {
 	{ "AdvanceWidthColor", rt_color, &widthcol },
 	{ "ItalicAdvanceColor", rt_color, &italicwidthcol },
@@ -55,7 +55,6 @@ static void MVColInit( void ) {
 	{ NULL }
     };
     GResourceFind( mvcolors, "MetricsView.");
-    mvbgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
 }
 
 static int MVSetVSb(MetricsView *mv);
@@ -4348,7 +4347,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     pos.y = mv->topend+2; pos.height = mv->displayend - mv->topend - 2;
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_backcol;
-    wattrs.background_color = mvbgcol;
+    wattrs.background_color = view_bgcol;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     mv->v = GWidgetCreateSubWindow(mv->gw,&pos,mv_v_e_h,mv,&wattrs);
@@ -4419,4 +4418,25 @@ struct mv_interface gdraw_mv_interface = {
     MV_Glyph,
     MV_ReKern,
     MV_CloseAll
+};
+
+static struct resed metricsview_re[] = {
+    {N_("Advance Width Col"), "AdvanceWidthColor", rt_color, &widthcol, N_("Color used to draw the advance width line of a glyph")},
+    {N_("Italic Advance Col"), "ItalicAdvanceColor", rt_color, &widthcol, N_("Color used to draw the italic advance width line of a glyph")},
+    {N_("Kern Line Color"), "KernLineColor", rt_color, &kernlinecol, N_("Color used to draw the kerning line")},
+    {N_("Side Bearing Color"), "SideBearingLineColor", rt_color, &rbearinglinecol, N_("Color used to draw the left side bearing")},
+    {N_("Selected Glyph Col"), "SelectedGlyphColor", rt_color, &selglyphcol, N_("Color used to mark the selected glyph")},
+    NULL
+};
+GResInfo metricsview_ri = {
+    NULL, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    metricsview_re,
+    N_("MetricsView"),
+    N_("This window displays metrics information about a font"),
+    "MetricsView",
+    "fontforge",
+    false
 };
