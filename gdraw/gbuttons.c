@@ -306,14 +306,18 @@ return( false );
     }
     if ( gb->labeltype==3 ) {
 	GRect r;
+	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
+			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+			g->box->main_foreground;
 	r.x = x+1; r.y = g->inner.y+1;
 	r.width = cbbl-2;
 	if ( img!=NULL )
 	    r.height = GImageGetScaledHeight(pixmap,img)-2;
 	else
 	    r.height = gb->fh-2;
-	GDrawFillRect(pixmap,&r,((GColorButton *) gb)->col);
-	GDrawDrawRect(pixmap,&r,0x000000);
+	if ( ((GColorButton *) gb)->col!=COLOR_TRANSPARENT )
+	    GDrawFillRect(pixmap,&r,((GColorButton *) gb)->col);
+	GDrawDrawRect(pixmap,&r,fg);
 	x += cbbl + spacing;
     }
     if ( gb->image_precedes && img!=NULL ) {

@@ -2849,13 +2849,13 @@ struct gfuncs glistfield_funcs = {
 };
 
 static void GTextFieldInit() {
-    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
     FontRequest rq;
 
     memset(&rq,0,sizeof(rq));
     GGadgetInit();
     GDrawDecomposeFont(_ggadget_default_font,&rq);
-    rq.family_name = courier;
+    rq.family_name = NULL;
+    rq.utf8_family_name = "courier,monospace,clearlyu,unifont";
     _gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
     _GGadgetCopyDefaultBox(&_GGadget_gtextfield_box);
     _GGadget_gtextfield_box.padding = 3;

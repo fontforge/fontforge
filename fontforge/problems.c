@@ -5027,7 +5027,6 @@ static void VWDrawWindow(GWindow pixmap,struct val_data *vw, GEvent *e) {
     GRect old, r;
 
     GDrawPushClip(pixmap,&e->u.expose.rect,&old);
-    GDrawFillRect(pixmap,&e->u.expose.rect,GDrawGetDefaultBackground(NULL));
     GDrawSetFont(pixmap,vw->font);
     gid = VW_FindLine(vw,vw->loff_top, &skips);
     if ( gid==-1 ) {

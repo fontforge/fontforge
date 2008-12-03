@@ -895,7 +895,7 @@ return( NULL );
     GGadgetSetTitle8(GWidgetGetControl(gw,CID_Find),_("Find"));
     sv->showsfindnext = false;
     GDrawRequestTimer(gw,1000,1000,NULL);
-    sv->button_height = GDrawPointsToPixels(gw,88);
+    sv->button_height = GDrawPointsToPixels(gw,100);
     GDrawResize(gw,650,400);		/* Force a resize event */
 
     GDrawSetVisible(sv->gw,true);
