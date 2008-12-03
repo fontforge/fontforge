@@ -31,7 +31,7 @@
 #include "gresource.h"
 #include "ggadget.h"
 
-enum res_type2 { rt_image = rt_string+1 };
+enum res_type2 { rt_image = rt_string+1, rt_font };
 
 typedef struct gresinfo {
     struct gresinfo *next;
@@ -40,7 +40,7 @@ typedef struct gresinfo {
     GBox *boxdata;
     GFont **font;
     GGadgetCreateData *examples;
-    struct resed { char *name, *resname; enum res_type type; void *val; char *popup; union { int ival; double dval; char *sval; } orig; int cid; } *extras;
+    struct resed { char *name, *resname; enum res_type type; void *val; char *popup; union { int ival; double dval; char *sval; GFont *fontval; } orig; int cid; } *extras;
     char *name;
     char *initialcomment;
     char *resname;

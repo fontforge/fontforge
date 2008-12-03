@@ -126,7 +126,6 @@ static Color clippathcol = 0x0000ff;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
-static Color cvbgcol = 0x008000;
 
 static int cvcolsinited = false;
 
@@ -137,7 +136,7 @@ static double rpt(CharView *cv, double pt) {
     return cv->snapoutlines ? rint(pt) : pt;
 }
 
-static void CVColInit( void ) {
+void CVColInit( void ) {
     static GResStruct cvcolors[] = {
 	{ "PointColor", rt_color, &pointcol },
 	{ "FirstPointColor", rt_color, &firstpointcol },
@@ -189,7 +188,6 @@ static void CVColInit( void ) {
 	{ NULL }
     };
     GResourceFind( cvcolors, "CharView.");
-    cvbgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
     cvcolsinited = true;
 }
 
@@ -239,7 +237,7 @@ return;
     GDrawSetDashedLine(pixmap,2,2,0);
     GDrawSetLineWidth(pixmap,0);
     GDrawSetXORMode(pixmap);
-    GDrawSetXORBase(pixmap,cvbgcol);
+    GDrawSetXORBase(pixmap,view_bgcol);
     GDrawDrawRect(pixmap,&r,oldoutlinecol);
     GDrawSetCopyMode(pixmap);
     GDrawSetDashedLine(pixmap,0,0,0);
@@ -1107,7 +1105,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 
     if ( ml && layer->dostroke ) {
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
-		layer->stroke_pen.brush.col!=cvbgcol )
+		layer->stroke_pen.brush.col!=view_bgcol )
 	    fg = layer->stroke_pen.brush.col;
 #if 0
 	if ( layer->stroke_pen.width!=WIDTH_INHERITED )
@@ -1116,7 +1114,7 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
     }
     if ( ml && layer->dofill ) {
 	if ( layer->fill_brush.col!=COLOR_INHERITED &&
-		layer->fill_brush.col!=cvbgcol )
+		layer->fill_brush.col!=view_bgcol )
 	    fg = layer->fill_brush.col;
     }
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
@@ -1660,7 +1658,7 @@ return;
 		len = GDrawGetBiText8Width(pixmap,name,-1,-1,NULL);
 	    r.x = x-len/2; r.width = len;
 	    r.y = y+7; r.height = cv->nfh;
-	    GDrawFillRect(pixmap,&r,cvbgcol );
+	    GDrawFillRect(pixmap,&r,view_bgcol );
 	    if ( GDrawHasCairo(pixmap)&gc_pango ) {
 		GDrawLayoutDraw(pixmap,x-len/2,y+7+cv->nas,col);
 	    } else
@@ -1786,7 +1784,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 	if ( cv->raster!=NULL ) {
 	    if ( cv->raster->num_greys>2 ) {
 		int rb, gb, bb, rd, gd, bd;
-		clut[0] = cvbgcol ;
+		clut[0] = view_bgcol ;
 		rb = COLOR_RED(clut[0]); gb = COLOR_GREEN(clut[0]); bb = COLOR_BLUE(clut[0]);
 		rd = COLOR_RED(rasterdarkcol)-rb;
 		gd = COLOR_GREEN(rasterdarkcol)-gb;
@@ -2154,7 +2152,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
 		CVShowHints(cv,pixmap);
 	} else if ( cv->back_img_out_of_date ) {
-	    GDrawFillRect(cv->backimgs,NULL,cvbgcol);
+	    GDrawFillRect(cv->backimgs,NULL,view_bgcol);
 	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
 		CVShowHints(cv,cv->backimgs);
 	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
@@ -2388,7 +2386,7 @@ return;
 	if ( clut_len!=cv->gi.u.image->clut->clut_len ) {
 	    GClut *clut = cv->gi.u.image->clut;
 	    int i;
-	    Color bg = cvbgcol;
+	    Color bg = view_bgcol;
 	    for ( i=0; i<clut_len; ++i ) {
 		int r,g,b;
 		r = ((bg>>16)&0xff)*(clut_len-1-i) + ((fillcol>>16)&0xff)*i;
@@ -9850,7 +9848,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     }
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_cairo|wam_backcol;
-    wattrs.background_color = cvbgcol;
+    wattrs.background_color = view_bgcol;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     cv->v = GWidgetCreateSubWindow(cv->gw,&pos,v_e_h,cv,&wattrs);
@@ -9890,7 +9888,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->gi.u.image->clut = gcalloc(1,sizeof(GClut));
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
-    cv->gi.u.image->clut->clut[0] = cvbgcol;
+    cv->gi.u.image->clut->clut[0] = view_bgcol;
     cv->gi.u.image->clut->clut[1] = fillcol;
     cv->b1_tool = cvt_pointer; cv->cb1_tool = cvt_pointer;
     cv->b2_tool = cvt_magnify; cv->cb2_tool = cvt_ruler;

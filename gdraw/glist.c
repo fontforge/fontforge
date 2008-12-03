@@ -947,6 +947,32 @@ static GBox list_box = { /* Don't initialize here */ 0 };
 static FontInstance *list_font = NULL;
 static int glist_inited = false;
 
+static GTextInfo list_choices[] = {
+	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	NULL
+    };
+static GGadgetCreateData list_gcd[] = {
+	{GListCreate, {{0},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
+	{GListCreate, {{0},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible|gg_enabled}}
+    };
+static GGadgetCreateData *tarray[] = { GCD_Glue, &list_gcd[0], GCD_Glue, &list_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData listhvbox =
+	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tarray,gg_visible|gg_enabled}};
+static GResInfo glist_ri = {
+    NULL, &ggadget_ri,NULL, NULL,
+    &list_box,
+    &list_font,
+    &listhvbox,
+    NULL,
+    N_("List"),
+    N_("List"),
+    "GList",
+    "Gdraw",
+    false
+};
+
 static void GListInit() {
     _GGadgetCopyDefaultBox(&list_box);
     list_box.flags = box_foreground_border_outer;
@@ -1159,4 +1185,11 @@ void GListSetSBAlwaysVisible(GGadget *g,int always) {
 
 void GListSetPopupCallback(GGadget *g,void (*callback)(GGadget *,int)) {
     ((GList *) g)->popup_callback = callback;
+}
+
+GResInfo *_GListRIHead(void) {
+
+    if ( !glist_inited )
+	GListInit();
+return( &glist_ri );
 }
