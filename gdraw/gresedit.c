@@ -873,7 +873,8 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		      case rt_string:
 		      {
 			char *spec = GGadgetGetTitle8(GWidgetGetControl(gre->gw,extras->cid));
-			free( *(char **) (extras->val) );
+			/* We can't free the old value, because sometimes it is a */
+			/*  static string, not something allocated */
 			if ( *spec=='\0' ) { free( spec ); spec=NULL; }
 			*(char **) (extras->val) = spec;
 		      } break;
@@ -917,14 +918,13 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
     gre.change_res_filename = change_res_filename;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.is_dlg = true;
-    wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("X Resource Editor");
-    pos.x = pos.y = 0;
+    pos.x = pos.y = 10;
     pos.width = pos.height = 100;
     gre.gw = gw = GDrawCreateTopWindow(NULL,&pos,gre_e_h,&gre,&wattrs);
 
@@ -2311,6 +2311,8 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	for ( re_end = _GMenuRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GMatrixEditRIHead();
 	for ( re_end = _GMatrixEditRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GDrawableRIHead();
+	for ( re_end = _GDrawableRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GTabSetRIHead();
     }
     if ( additional!=NULL ) {

@@ -35,6 +35,19 @@ static GBox gdrawable_box = { /* Don't initialize here */ 0 };
 static FontInstance *gdrawable_font = NULL;
 static int gdrawable_inited = false;
 
+static GResInfo gdrawable_ri = {
+    NULL, &ggadget_ri, NULL,NULL,
+    &gdrawable_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Drawing Area"),
+    N_("A canvas (sub-window) wrapped up in a gadget, for drawing"),
+    "GDrawable",
+    "Gdraw",
+    false
+};
+
 static void GDrawableInit() {
 
     GGadgetInit();
@@ -52,9 +65,10 @@ static int gdrawable_expose(GWindow pixmap, GGadget *g, GEvent *event) {
 return( false );
 
     GDrawPushClip(pixmap,&g->r,&old);
-
+#if 0
     GBoxDrawBackground(pixmap,&g->r,g->box,
 	    g->state==gs_enabled? gs_pressedactive: g->state,false);
+#endif
     GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);
 
     GDrawPopClip(pixmap,&old);
@@ -206,10 +220,6 @@ GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GRect r;
     GWindowAttrs childattrs;
 
-    memset(&childattrs,0,sizeof(childattrs));
-    childattrs.mask = wam_events;
-    childattrs.event_masks = -1;
-
     if ( !gdrawable_inited )
 	GDrawableInit();
     gdr->g.funcs = &gdrawable_funcs;
@@ -237,6 +247,11 @@ GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gdr->g.desired_height = gdr->g.r.height;
     gdr->e_h = gd->u.drawable_e_h;
 
+    memset(&childattrs,0,sizeof(childattrs));
+    childattrs.mask = wam_events|wam_backcol;
+    childattrs.event_masks = -1;
+    childattrs.background_color = gdr->g.box->main_background;
+
     if ( !(gd->flags&gg_tabset_nowindow) ) {
 	gdr->gw = GWidgetCreateSubWindow(base,&gdr->g.inner,drawable_e_h,GDrawGetUserData(base),&childattrs);
 	if ( gd->flags&gg_visible )
@@ -252,4 +267,11 @@ return( &gdr->g );
 GWindow GDrawableGetWindow(GGadget *g) {
     GDrawable *gd = (GDrawable *) g;
 return( gd->gw );
+}
+
+GResInfo *_GDrawableRIHead(void) {
+
+    if ( !gdrawable_inited )
+	GDrawableInit();
+return( &gdrawable_ri );
 }

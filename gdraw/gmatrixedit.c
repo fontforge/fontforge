@@ -53,7 +53,7 @@ static struct resed gmatrixedit_re[] = {
 };
 static GResInfo gmatrixedit_ri = {
     NULL, &ggadget_ri, NULL,NULL,
-    NULL,	/* No box */
+    &gmatrixedit_box,
     &gmatrixedit_font,
     NULL,
     gmatrixedit_re,
@@ -526,6 +526,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRect r, old, older;
     int c, y, lastc;
 
+    GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);
     if ( gme->has_titles ) {
 	r = gme->g.inner;
 	r.height = gme->fh;
@@ -1791,9 +1792,13 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->del->contained = true;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor;
+    if ( gme->g.box->main_background!=COLOR_TRANSPARENT )
+	wattrs.mask = wam_events|wam_cursor|wam_backcol;
+    else
+	wattrs.mask = wam_events|wam_cursor;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
+    wattrs.background_color = gme->g.box->main_background;
     pos = gme->g.inner;
     pos.width -= sbwidth;
     pos.height -= sbwidth + gme->del->inner.height+DEL_SPACE;

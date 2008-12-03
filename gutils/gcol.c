@@ -175,6 +175,8 @@ return( COLOR_UNKNOWN );
 return( (((int) rint(255.*col->r))<<16 ) |
 		    (((int) rint(255.*col->g))<<8 ) |
 		    (((int) rint(255.*col->b)) ) );
+    else if ( col->alpha==0.0 )
+return( COLOR_TRANSPARENT );
     else
 return( (((int) rint(255.*col->alpha))<<24 ) |
 		    (((int) rint(255.*col->r))<<16) |
@@ -191,13 +193,18 @@ void gColor2Hslrgb(struct hslrgb *col,Color from) {
 }
 
 void gColor2Hslrgba(struct hslrgba *col,Color from) {
+    if ( from == COLOR_TRANSPARENT ) {
+	memset(col,0,sizeof(*col));
+	col->has_alpha = 1;
+    } else {
+	col->alpha = ((from>>24)&0xff)/255.0;
+	col->r = ((from>>16)&0xff)/255.0;
+	col->g = ((from>>8 )&0xff)/255.0;
+	col->b = ((from    )&0xff)/255.0;
+	col->hsl = col->hsv = false;
+	col->has_alpha = col->alpha!=0;
+	if ( !col->has_alpha )
+	    col->alpha = 1.0;
+    }
     col->rgb = true;
-    col->alpha = ((from>>24)&0xff)/255.0;
-    col->r = ((from>>16)&0xff)/255.0;
-    col->g = ((from>>8 )&0xff)/255.0;
-    col->b = ((from    )&0xff)/255.0;
-    col->hsl = col->hsv = false;
-    col->has_alpha = col->alpha!=0;
-    if ( !col->has_alpha )
-	col->alpha = 1.0;
 }
