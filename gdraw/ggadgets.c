@@ -97,9 +97,9 @@ static GResInfo popup_ri = {
     false
 };
 static struct resed listmark_re[] = {
-    {N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark")},
     {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)")},
     {N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)")},
+    {N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark")},
     { NULL }};
 static GTextInfo list_choices[] = {
 	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },

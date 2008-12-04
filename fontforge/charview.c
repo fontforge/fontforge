@@ -142,11 +142,6 @@ static struct resed charview_re[] = {
     { N_("Selected CP Color"), "SelectedCPColor", rt_color, &selectedcpcol, N_("The color used to draw a selected control point of an on-curve point") },
     { N_("Coordinate Line Color"), "CoordinateLineColor", rt_color, &coordcol },
     { N_("Italic Coord. Color"), "ItalicCoordColor", rt_color, &italiccoordcol },
-    { N_("Raster Color"), "RasterColor", rt_color, &rastercol, N_("The color of grid-fit (and other) raster blocks") },
-    { N_("Raster New Color"), "RasterNewColor", rt_color, &rasternewcol, N_("The color of a raster blocks which has just been turned on (in the debugger when an instruction moves a point)") },
-    { N_("Raster Old Color"), "RasterOldColor", rt_color, &rasteroldcol, N_("The color of a raster blocks which has just been turned off (in the debugger when an instruction moves a point)") },
-    { N_("Raster Grid Color"), "RasterGridColor", rt_color, &rastergridcol },
-    { N_("Raster Dark Color"), "RasterDarkColor", rt_color, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
     { N_("Metrics Label Color"), "MetricsLabelColor", rt_color, &metricslabelcol },
     { N_("Hint Label Color"), "HintLabelColor", rt_color, &hintlabelcol },
     { N_("Blue Values Color"), "BlueValuesStippledColor", rt_color, &bluevalstipplecol, N_("The color used to mark blue zones in the blue values entry of the private dictionary") },
@@ -180,6 +175,11 @@ static struct resed charview2_re[] = {
     { N_("Background Image Color"), "BackgroundImageColor", rt_color, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut") },
     { N_("Fill Color"), "FillColor", rt_color, &fillcol, N_("The color used to fill the outline if that mode is active") },
     { N_("Trace Color"), "TraceColor", rt_color, &tracecol },
+    { N_("Raster Color"), "RasterColor", rt_color, &rastercol, N_("The color of grid-fit (and other) raster blocks") },
+    { N_("Raster New Color"), "RasterNewColor", rt_color, &rasternewcol, N_("The color of a raster blocks which has just been turned on (in the debugger when an instruction moves a point)") },
+    { N_("Raster Old Color"), "RasterOldColor", rt_color, &rasteroldcol, N_("The color of a raster blocks which has just been turned off (in the debugger when an instruction moves a point)") },
+    { N_("Raster Grid Color"), "RasterGridColor", rt_color, &rastergridcol },
+    { N_("Raster Dark Color"), "RasterDarkColor", rt_color, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
     { NULL }
 };
 

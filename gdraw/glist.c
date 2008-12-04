@@ -954,8 +954,8 @@ static GTextInfo list_choices[] = {
 	NULL
     };
 static GGadgetCreateData list_gcd[] = {
-	{GListCreate, {{0},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
-	{GListCreate, {{0},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible|gg_enabled}}
+	{GListCreate, {{0,0,0,36},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
+	{GListCreate, {{0,0,0,36},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible|gg_enabled}}
     };
 static GGadgetCreateData *tarray[] = { GCD_Glue, &list_gcd[0], GCD_Glue, &list_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData listhvbox =
@@ -1188,8 +1188,12 @@ void GListSetPopupCallback(GGadget *g,void (*callback)(GGadget *,int)) {
 }
 
 GResInfo *_GListRIHead(void) {
+    int as,ds,ld;
 
     if ( !glist_inited )
 	GListInit();
+    /* bp = GBoxBorderWidth(GDrawGetRoot(NULL),&list_box);*/	/* This gives bizarre values */
+    GDrawFontMetrics(list_font,&as, &ds, &ld);	/* I don't have a window yet... */
+    list_gcd[0].gd.pos.height = list_gcd[1].gd.pos.height = 2*(as+ds)+4;
 return( &glist_ri );
 }

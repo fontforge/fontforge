@@ -31,7 +31,7 @@
 #include "gresource.h"
 #include "ggadget.h"
 
-enum res_type2 { rt_image = rt_string+1, rt_font };
+enum res_type2 { rt_stringlong = rt_string+1, rt_image, rt_font };
 
 struct resed {
     char *name, *resname;
