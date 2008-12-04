@@ -1967,7 +1967,6 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     GTabInfo aspects[3], corners[5];
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int i,k;
     static GFont *mathfont = NULL, *mathbold=NULL;
 
@@ -1989,7 +1988,7 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
 
     if ( mathfont==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	mathfont = GDrawInstanciateFont(NULL,&rq);

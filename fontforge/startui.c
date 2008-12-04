@@ -997,7 +997,6 @@ int main( int argc, char **argv ) {
     GWindowAttrs wattrs;
     char *display = NULL;
     FontRequest rq;
-    static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
@@ -1236,7 +1235,7 @@ exit( 0 );
     }
 
     memset(&rq,0,sizeof(rq));
-    rq.family_name = times;
+    rq.utf8_family_name = SERIF_UI_FAMILIES;
     rq.point_size = 12;
     rq.weight = 400;
     splash_font = GDrawInstanciateFont(NULL,&rq);

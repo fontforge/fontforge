@@ -7491,8 +7491,6 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     int i,j,k,g, psrow;
     int mcs;
     char title[130];
-    /* static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };*/
-    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
     int as, ds, ld;
     char **nlnames;
@@ -10671,7 +10669,7 @@ return;
 
     if ( fi_font==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = sans;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	fi_font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);

@@ -699,7 +699,6 @@ return( true );
 }
 
 static void CreateErrorWindow(void) {
-    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     GWindowAttrs wattrs;
     FontRequest rq;
     GRect pos,size;
@@ -709,7 +708,7 @@ static void CreateErrorWindow(void) {
     extern int _GScrollBar_Width;
 
     memset(&rq,0,sizeof(rq));
-    rq.family_name = sans;
+    rq.utf8_family_name = SANS_UI_FAMILIES;
     rq.point_size = 10;
     rq.weight = 400;
     errdata.font = GDrawInstanciateFont(NULL,&rq);

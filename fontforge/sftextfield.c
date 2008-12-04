@@ -2148,12 +2148,11 @@ struct gfuncs sftextarea_funcs = {
 };
 
 static void SFTextAreaInit() {
-    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
     FontRequest rq;
 
     GGadgetInit();
     GDrawDecomposeFont(_ggadget_default_font,&rq);
-    rq.family_name = courier;
+    rq.utf8_family_name = MONO_UI_FAMILIES;
     sftextarea_font = GDrawInstanciateFont(screen_display,&rq);
     sftextarea_font = GResourceFindFont("SFTextArea.Font",sftextarea_font);
     _GGadgetCopyDefaultBox(&sftextarea_box);

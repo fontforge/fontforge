@@ -167,8 +167,6 @@ static GTextInfo std_colors[] = {
     { NULL, NULL }
 };
 
-static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-
 static char *newstrings[] = { N_("New Positioning"), N_("New Pair Position"),
 	N_("New Substitution Variant"),
 	N_("New Alternate List"), N_("New Multiple List"), N_("New Ligature"), NULL };
@@ -4822,7 +4820,7 @@ return;
 
 	if ( font==NULL ) {
 	    memset(&rq,0,sizeof(rq));
-	    rq.family_name = monospace;
+	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = 12;
 	    rq.weight = 400;
 	    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);

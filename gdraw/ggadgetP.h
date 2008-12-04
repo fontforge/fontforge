@@ -578,4 +578,8 @@ extern GResInfo ggadget_ri, listmark_ri;
 extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
 extern GResInfo *_GRadioRIHead(void), *_GScrollBarRIHead(void), *_GLineRIHead(void);
 extern GResInfo *_GMenuRIHead(void), *_GTabSetRIHead(void), *_GHVBoxRIHead(void);
-extern GResInfo *_GListRIHead(void), *_GMatrixEditRIHead(void);
+extern GResInfo *_GListRIHead(void), *_GMatrixEditRIHead(void), *_GDrawableRIHead(void);
+
+#define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont"
+#define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont"
+#define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont"

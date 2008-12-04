@@ -1854,7 +1854,6 @@ void OFLibBrowse(void) {
     int j,k,l,fontlistl;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static GFont *oflibfont=NULL;
 
     if ( active!=NULL ) {
@@ -1886,7 +1885,7 @@ return;
 
     if ( oflibfont==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = sans;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	oflibfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);

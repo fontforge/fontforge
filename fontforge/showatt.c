@@ -2554,8 +2554,6 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
     GRect pos;
     GWindowAttrs wattrs;
     FontRequest rq;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
     int as, ds, ld;
     GGadgetCreateData gcd[5];
     GTextInfo label[4];
@@ -2583,14 +2581,14 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
 
     if ( propfont==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	propfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
 	propfont = GResourceFindFont("ShowATT.Font",propfont);
 
 	GDrawDecomposeFont(propfont, &rq);
-	rq.family_name = courier;		/* I want to show tabluar data sometimes */
+	rq.utf8_family_name = MONO_UI_FAMILIES;	/* I want to show tabluar data sometimes */
 	monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(att->gw),&rq);
 	monofont = GResourceFindFont("ShowATT.MonoFont",monofont);
     }
