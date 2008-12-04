@@ -63,6 +63,18 @@ static GResInfo gmatrixedit_ri = {
     "Gdraw",
     false
 };
+static GResInfo gmatrixedit2_ri = {
+    NULL, &ggadget_ri, &gmatrixedit_ri,NULL,
+    NULL,
+    NULL,
+    NULL,
+    gmatrixedit_re,
+    N_("Matrix Edit Continued"),
+    N_("Matrix Edit (sort of like a spreadsheet)"),
+    "GMatrixEdit",
+    "Gdraw",
+    false
+};
 
 static void _GMatrixEdit_Init(void) {
     FontRequest rq;
@@ -2148,7 +2160,15 @@ void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r)
 }
 
 GResInfo *_GMatrixEditRIHead(void) {
+    GRect size;
 
     _GMatrixEdit_Init();
+    GDrawGetSize(GDrawGetRoot(NULL),&size);
+    if ( size.height<900 ) {
+	gmatrixedit_ri.next = &gmatrixedit2_ri;
+	gmatrixedit_ri.extras = NULL;
+	gmatrixedit_ri.seealso1 = &gmatrixedit2_ri;
+    }
+    
 return( &gmatrixedit_ri );
 }

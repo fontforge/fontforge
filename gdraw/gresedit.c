@@ -615,7 +615,7 @@ static void GRE_DoCancel(GRE *gre) {
 			}
 		    }
 		  break;
-		  case rt_string:
+		  case rt_string: case rt_stringlong:
 		    /* These don't change dynamically */
 		    /* Nothing to revert here */
 		  break;
@@ -819,7 +819,7 @@ return( true );
 				    ri->filename );
 		    }
 		  } break;
-		  case rt_string: {
+		  case rt_string: case rt_stringlong: {
 		    char *sval = GGadgetGetTitle8( g );
 		    fprintf( output, "%s.%s%s%s: %s\n",
 			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
@@ -870,7 +870,7 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		      case rt_font:
 			GRE_ParseFont(GWidgetGetControl(gre->gw,extras->cid));
 		      break;
-		      case rt_string:
+		      case rt_string: case rt_stringlong:
 		      {
 			char *spec = GGadgetGetTitle8(GWidgetGetControl(gre->gw,extras->cid));
 			/* We can't free the old value, because sometimes it is a */
@@ -1930,8 +1930,17 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	}
 
 	if ( res->extras!=NULL ) {
+	    int hl=-1, base=3;
 	    for ( l=0, extras = res->extras ; extras->name!=NULL; ++extras, ++l ) {
-		int hl = l/2, base= (l&1) ? 3 : 0;
+		if ( base==3 ) {
+		    base=0;
+		    ++hl;
+		} else
+		    base=3;
+		if ( base==3 ) {
+		    tofree[i].earray[hl][6] = GCD_Glue;
+		    tofree[i].earray[hl][7] = NULL;
+		}
 		switch ( extras->type ) {
 		  case rt_bool:
 		    extras->orig.ival = *(int *) (extras->val);
@@ -2026,6 +2035,16 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    tofree[i].earray[hl][base+1] = &gcd[k-1];
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
 		  break;
+		  case rt_stringlong:
+		    if ( base==3 ) {
+			tofree[i].earray[hl][3] = GCD_Glue;
+			tofree[i].earray[hl][4] = GCD_Glue;
+			tofree[i].earray[hl][5] = GCD_Glue;
+			tofree[i].earray[hl][6] = GCD_Glue;
+			tofree[i].earray[hl][7] = NULL;
+			base=0; ++hl;
+		    }
+		  /* Fall through */
 		  case rt_string:
 		    extras->orig.sval = *(char **) (extras->val);
 		    lab[k].text = (unichar_t *) _(extras->name);
@@ -2051,8 +2070,23 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    gcd[k++].creator = GTextFieldCreate;
 		    tofree[i].earray[hl][base+1] = &gcd[k-1];
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
+		    if ( extras->type==rt_stringlong ) {
+			tofree[i].earray[hl][3] = GCD_ColSpan;
+			tofree[i].earray[hl][4] = GCD_ColSpan;
+			tofree[i].earray[hl][5] = GCD_ColSpan;
+			tofree[i].earray[hl][6] = GCD_ColSpan;
+			base=3;
+		    }
 		  break;
 		  case rt_font:
+		    if ( base==3 ) {
+			tofree[i].earray[hl][3] = GCD_Glue;
+			tofree[i].earray[hl][4] = GCD_Glue;
+			tofree[i].earray[hl][5] = GCD_Glue;
+			tofree[i].earray[hl][6] = GCD_Glue;
+			tofree[i].earray[hl][7] = NULL;
+			base=0; ++hl;
+		    }
 		    extras->orig.fontval = *(GFont **) (extras->val);
 		    lab[k].text = (unichar_t *) _(extras->name);
 		    lab[k].text_is_1byte = true;
@@ -2078,6 +2112,13 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    gcd[k++].creator = GTextFieldCreate;
 		    tofree[i].earray[hl][base+1] = &gcd[k-1];
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
+
+		    /* Font names (with potentially many families) tend to be long */
+		    tofree[i].earray[hl][3] = GCD_ColSpan;
+		    tofree[i].earray[hl][4] = GCD_ColSpan;
+		    tofree[i].earray[hl][5] = GCD_ColSpan;
+		    tofree[i].earray[hl][6] = GCD_ColSpan;
+		    base=3;
 		  break;
 		  case rt_image: {
 		    GResImage *ri = *(GResImage **) (extras->val);
@@ -2109,20 +2150,15 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
 		  } break;
 		}
-		if ( base==3 ) {
-		    tofree[i].earray[hl][base+3] = GCD_Glue;
-		    tofree[i].earray[hl][base+4] = NULL;
-		}
 	    }
-	    if ( l&1 ) {
-		int hl = l/2;
+	    if ( base==0 ) {
 		tofree[i].earray[hl][3] = GCD_Glue;
 		tofree[i].earray[hl][4] = GCD_Glue;
 		tofree[i].earray[hl][5] = GCD_Glue;
 		tofree[i].earray[hl][6] = GCD_Glue;
 		tofree[i].earray[hl][7] = NULL;
 	    }
-	    tofree[i].earray[(l+2)/2][0] = NULL;
+	    tofree[i].earray[hl+1][0] = NULL;
 	    tofree[i].extrabox.gd.flags = gg_visible|gg_enabled;
 	    tofree[i].extrabox.gd.u.boxelements = tofree[i].earray[0];
 	    tofree[i].extrabox.creator = GHVBoxCreate;
@@ -2337,8 +2373,14 @@ void GResEditFind( struct resed *resed, char *prefix) {
     for ( i=0; resed[i].name!=NULL; ++i ) {
 	info[i].resname = resed[i].resname;
 	info[i].type = resed[i].type;
+	if ( info[i].type==rt_stringlong )
+	    info[i].type = rt_string;
 	info[i].val = resed[i].val;
 	info[i].cvt = resed[i].cvt;
+	if ( info[i].type==rt_font ) {
+	    info[i].type = rt_string;
+	    info[i].cvt = GResource_font_cvt;
+	}
     }
     GResourceFind(info,prefix);
     for ( i=0; resed[i].name!=NULL; ++i )
