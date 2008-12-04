@@ -1115,33 +1115,8 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 
 	    if ( design->flags & box_gradient_bg )
 		BoxGradientRoundRect(gw,pos,rr,ibg,design->gradient_bg_end);
-	    else {
-		GPoint pts[17];
-		int sine = (int) (rr*.1339746+.5);	/* 1-sqrt(3)/2 */
-
-		pts[0].x = pos->x+def_off;		pts[0].y = pos->y+rr+def_off;
-		pts[1].x = pos->x+sine+def_off;	pts[1].y = pos->y+rr/2+def_off;
-		pts[2].x = pos->x+rr/2+def_off;	pts[2].y = pos->y+sine+def_off;
-		pts[3].x = pos->x+rr+def_off;	pts[3].y = pos->y+def_off;
-
-		pts[4].x = pos->x+pos->width-1-rr-def_off;		pts[4].y = pos->y+def_off;
-		pts[5].x = pos->x+pos->width-1-rr/2-def_off;	pts[5].y = pos->y+sine+def_off;
-		pts[6].x = pos->x+pos->width-1-sine-def_off;	pts[6].y = pos->y+rr/2+def_off;
-		pts[7].x = pos->x+pos->width-1-def_off;		pts[7].y = pos->y+rr+def_off;
-
-		pts[8].x = pos->x+pos->width-1-def_off;		pts[8].y = pos->y+pos->height-1-rr-def_off;
-		pts[9].x = pos->x+pos->width-1-sine-def_off;	pts[9].y = pos->y+pos->height-1-rr/2-def_off;
-		pts[10].x = pos->x+pos->width-1-rr/2-def_off;	pts[10].y = pos->y+pos->height-1-sine-def_off;
-		pts[11].x = pos->x+pos->width-1-rr-def_off;		pts[11].y = pos->y+pos->height-1-def_off;
-
-		pts[12].x = pos->x+rr+def_off;	pts[12].y = pos->y+pos->height-1-def_off;
-		pts[13].x = pos->x+rr/2+def_off;	pts[13].y = pos->y+pos->height-1-sine-def_off;
-		pts[14].x = pos->x+sine+def_off;	pts[14].y = pos->y+pos->height-1-rr/2-def_off;
-		pts[15].x = pos->x+def_off;		pts[15].y = pos->y+pos->height-1-rr-def_off;
-
-		pts[16] = pts[0];
-		GDrawFillPoly(gw,pts,16,ibg);
-	    }
+	    else
+		BoxGradientRoundRect(gw,pos,rr,ibg,ibg);
 	}
     }
     if ( state == gs_disabled )
