@@ -7005,16 +7005,43 @@ return( false );
 return( true );
 }
 
+static void TransRef(RefChar *ref,real transform[6], enum fvtrans_flags flags) {
+    int j;
+    real t[6];
+
+    for ( j=0; j<ref->layer_cnt; ++j )
+	SplinePointListTransform(ref->layers[j].splines,transform,true);
+    t[0] = ref->transform[0]*transform[0] +
+		ref->transform[1]*transform[2];
+    t[1] = ref->transform[0]*transform[1] +
+		ref->transform[1]*transform[3];
+    t[2] = ref->transform[2]*transform[0] +
+		ref->transform[3]*transform[2];
+    t[3] = ref->transform[2]*transform[1] +
+		ref->transform[3]*transform[3];
+    t[4] = ref->transform[4]*transform[0] +
+		ref->transform[5]*transform[2] +
+		transform[4];
+    t[5] = ref->transform[4]*transform[1] +
+		ref->transform[5]*transform[3] +
+		transform[5];
+    if ( flags&fvt_round_to_int ) {
+	t[4] = rint( t[4] );
+	t[5] = rint( t[5] );
+    }
+    memcpy(ref->transform,t,sizeof(t));
+    RefCharFindBounds(ref);
+}
+
 void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     int anysel = cv->p.transany;
     RefChar *refs;
     ImageList *img;
-    real t[6];
     AnchorPoint *ap;
     KernPair *kp;
     PST *pst;
-    int j;
     Layer *ly = cv->b.layerheads[cv->b.drawmode];
+    int l, cvlayer;
 
     if ( cv->b.sc->inspiro && hasspiro() )
 	SplinePointListSpiroTransform(ly->splines,transform,!anysel);
@@ -7026,36 +7053,14 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	ImageListTransform(ly->images,transform);
 	SCOutOfDateBackground(cv->b.sc);
     }
-    if ( cv->b.drawmode==dm_fore ) {
-	for ( refs = ly->refs; refs!=NULL; refs=refs->next )
-	    if ( refs->selected || !anysel ) {
-		for ( j=0; j<refs->layer_cnt; ++j )
-		    SplinePointListTransform(refs->layers[j].splines,transform,true);
-		t[0] = refs->transform[0]*transform[0] +
-			    refs->transform[1]*transform[2];
-		t[1] = refs->transform[0]*transform[1] +
-			    refs->transform[1]*transform[3];
-		t[2] = refs->transform[2]*transform[0] +
-			    refs->transform[3]*transform[2];
-		t[3] = refs->transform[2]*transform[1] +
-			    refs->transform[3]*transform[3];
-		t[4] = refs->transform[4]*transform[0] +
-			    refs->transform[5]*transform[2] +
-			    transform[4];
-		t[5] = refs->transform[4]*transform[1] +
-			    refs->transform[5]*transform[3] +
-			    transform[5];
-		if ( flags&fvt_round_to_int ) {
-		    t[4] = rint( t[4] );
-		    t[5] = rint( t[5] );
-		}
-		memcpy(refs->transform,t,sizeof(t));
-		RefCharFindBounds(refs);
-	    }
-	if ( cv->showanchor ) {
-	    for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel )
-		ApTransform(ap,transform);
-	}
+    for ( refs = ly->refs; refs!=NULL; refs=refs->next )
+	if ( refs->selected || !anysel )
+	    TransRef(refs,transform,flags);
+    if ( cv->showanchor ) {
+	for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected || !anysel )
+	    ApTransform(ap,transform);
+    }
+    if ( !anysel ) {
 	if ( flags & fvt_scalepstpos ) {
 	    for ( kp=cv->b.sc->kerns; kp!=NULL; kp=kp->next )
 		kp->off = rint(kp->off*transform[0]);
@@ -7082,20 +7087,25 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    SCUndoSetLBearingChange(cv->b.sc,(int) rint(transform[4]));
 	    SCSynchronizeLBearing(cv->b.sc,transform[4],CVLayer((CharViewBase *) cv));
 	}
-	if ( !(flags&fvt_dontmovewidth) && (cv->widthsel || !anysel))
-	    if ( transform[0]>0 && transform[3]>0 && transform[1]==0 &&
-		    transform[2]==0 && transform[4]!=0 )
-		SCSynchronizeWidth(cv->b.sc,cv->b.sc->width*transform[0]+transform[4],cv->b.sc->width,NULL);
-	if ( !(flags&fvt_dontmovewidth) && (cv->vwidthsel || !anysel))
-	    if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
-		    transform[2]==0 && transform[5]!=0 )
-		cv->b.sc->vwidth+=transform[5];
-	if ( (flags&fvt_dobackground) && !anysel ) {
-	    SCPreserveBackground(cv->b.sc);
-	    for ( img = cv->b.sc->layers[ly_back].images; img!=NULL; img=img->next )
+    }
+    if ( !(flags&fvt_dontmovewidth) && (cv->widthsel || !anysel))
+	if ( transform[0]>0 && transform[3]>0 && transform[1]==0 &&
+		transform[2]==0 && transform[4]!=0 )
+	    SCSynchronizeWidth(cv->b.sc,cv->b.sc->width*transform[0]+transform[4],cv->b.sc->width,NULL);
+    if ( !(flags&fvt_dontmovewidth) && (cv->vwidthsel || !anysel))
+	if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
+		transform[2]==0 && transform[5]!=0 )
+	    cv->b.sc->vwidth+=transform[5];
+    if ( (flags&fvt_alllayers) && !anysel ) {
+	/* SCPreserveBackground(cv->b.sc); */ /* done by caller */
+	cvlayer = CVLayer( (CharViewBase *) cv );
+	for ( l=0; l<cv->b.sc->layer_cnt; ++l ) if ( l!=cvlayer ) {
+	    for ( img = cv->b.sc->layers[l].images; img!=NULL; img=img->next )
 		BackgroundImageTransform(cv->b.sc, img, transform);
-	    SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,
+	    SplinePointListTransform(cv->b.sc->layers[l].splines,
 		    transform,true);
+	    for ( refs=cv->b.sc->layers[l].refs; refs!=NULL; refs=refs->next )
+		TransRef(refs,transform,flags);
 	}
     }
 }
@@ -7103,12 +7113,13 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
 	enum fvtrans_flags flags) {
     CharView *cv = (CharView *) d;
-    int anya;
+    int anya, l, cvlayer = CVLayer((CharViewBase *) cv);
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
     CVPreserveStateHints(&cv->b);
-    if ( cv->b.drawmode==dm_fore && (flags&fvt_dobackground) )
-	SCPreserveBackground(cv->b.sc);
+    if ( flags&fvt_alllayers )
+	for ( l=0; l<cv->b.sc->layer_cnt; ++l ) if ( l!=cvlayer )
+	    SCPreserveLayer(cv->b.sc,l,false);
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(&cv->b);
 }

@@ -579,7 +579,10 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    FVTrans(fv,mm->instances[j]->glyphs[sc->orig_pos],transform,sel,flags);
     }
 
-    if ( fv->sf->multilayer )
+    if ( flags&fvt_alllayers ) {
+	for ( i=0; i<sc->layer_cnt; ++i )
+	    SCPreserveLayer(sc,i,fv->active_layer==i);
+    } else if ( fv->sf->multilayer )
 	SCPreserveState(sc,true);
     else
 	SCPreserveLayer(sc,fv->active_layer,true);
@@ -623,7 +626,10 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
-    if ( sc->parent->multilayer ) {
+    if ( flags&fvt_alllayers ) {
+	first = 0;
+	last = sc->layer_cnt-1;
+    } else if ( sc->parent->multilayer ) {
 	first = ly_fore;
 	last = sc->layer_cnt-1;
     } else
@@ -650,14 +656,6 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	/* Not sure which is worse */
 	/* Barry thinks rounding them is a bad idea. */
 	SCRound2Int(sc,fv->active_layer,1.0);
-    }
-    if ( flags&fvt_dobackground ) {
-	if ( !sc->parent->multilayer ) {
-	    for ( i=0; i<sc->layer_cnt; ++i ) if ( fv->active_layer!=i ) {
-		SCPreserveLayer(sc,i,false);
-		SCTransLayer(fv,sc,flags,i,transform,sel);
-	    }
-	}
     }
     SCCharChangedUpdate(sc,fv->active_layer);
 }

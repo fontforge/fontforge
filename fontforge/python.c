@@ -4834,7 +4834,7 @@ return( -1 );
     trans[0] = trans[3] = 1.0;
     trans[4] = val - b.minx;
     if ( trans[4]!=0 )
-	FVTrans(sc->parent->fv,sc,trans,NULL,fvt_dobackground);
+	FVTrans(sc->parent->fv,sc,trans,NULL,fvt_alllayers);
 return( 0 );
 }
 
@@ -6368,7 +6368,7 @@ return( NULL );
     flags = FlagsFromTuple(flagO,trans_flags);
     if ( flags==0x80000000 )
 return( NULL );
-    flags |= fvt_dobackground;
+    flags |= fvt_alllayers;
     for ( i=0; i<6; ++i )
 	t[i] = m[i];
     FVTrans(sc->parent->fv,sc,t,NULL,flags);

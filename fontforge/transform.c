@@ -40,7 +40,7 @@ typedef struct transdata {
 } TransData;
 
 #define CID_Origin		3001
-#define CID_DoBackground	3002
+#define CID_AllLayers		3002
 #define CID_Round2Int		3003
 #define CID_DoKerns		3004
 #define CID_DoSimplePos		3005
@@ -107,7 +107,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];
     double angle, angle2;
     int i, index, err;
-    int dobackground = false, round_2_int = false, dokerns = false, dokp=false;
+    int alllayers = false, round_2_int = false, dokerns = false, dokp=false;
     int dogrid = false, dowidth = false;
     BasePoint base;
     int origin, bvpos=0;
@@ -122,8 +122,8 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	base.x = base.y = 0;
 
 	origin = GGadgetGetFirstListSelectedItem( GWidgetGetControl(td->gw,CID_Origin));
-	if ( GWidgetGetControl(td->gw,CID_DoBackground)!=NULL )
-	    dobackground = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoBackground));
+	if ( GWidgetGetControl(td->gw,CID_AllLayers)!=NULL )
+	    alllayers = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_AllLayers));
 	if ( GWidgetGetControl(td->gw,CID_DoGrid)!=NULL )
 	    dogrid = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoGrid));
 	if ( GWidgetGetControl(td->gw,CID_DoWidth)!=NULL )
@@ -247,7 +247,7 @@ return(true);
 	    warned = true;
 	}
 	(td->transfunc)(td->userdata,transform,origin,bvts,
-		(dobackground?fvt_dobackground:0)|
+		(alllayers?fvt_alllayers:0)|
 		(dogrid?fvt_dogrid:0)|
 		 (dowidth?0:fvt_dontmovewidth)|
 		 (round_2_int?fvt_round_to_int:0)|
@@ -647,11 +647,11 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
 	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
 	    gcd[gci].gd.flags = (enableback&1) ? (gg_visible | gg_enabled) : gg_visible;
-	    label[gci].text = (unichar_t *) _("Transform _Background Too");
+	    label[gci].text = (unichar_t *) _("Transform _All Layers");
 	    label[gci].text_is_1byte = true;
 	    label[gci].text_in_resource = true;
 	    gcd[gci].gd.label = &label[gci];
-	    gcd[gci].gd.cid = CID_DoBackground;
+	    gcd[gci].gd.cid = CID_AllLayers;
 	    gcd[gci++].creator = GCheckBoxCreate;
 	    array[ai++] = &gcd[gci-1]; array[ai++] = NULL;
 	    y += 16;
@@ -766,10 +766,10 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     }
     gw = td.gw;
 
-    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoBackground), enableback&1);
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_AllLayers), enableback&1);
     GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoGrid), enableback&1);
     if ( !(enableback&1) ) {
-	GGadgetSetChecked( GWidgetGetControl(gw,CID_DoBackground), false );
+	GGadgetSetChecked( GWidgetGetControl(gw,CID_AllLayers), false );
 	GGadgetSetChecked( GWidgetGetControl(gw,CID_DoGrid), false );
     }
     orig = GWidgetGetControl(gw,CID_Origin);
