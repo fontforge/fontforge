@@ -2626,12 +2626,11 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     } else if ( sc->unicodeenc!=-1 ) {
 	FontRequest rq;
 	GFont *font;
-	static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
 	unichar_t text[2];
 	int as, ds, ld, width;
 
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = times;
+	rq.utf8_family_name = SERIF_UI_FAMILIES;
 	rq.point_size = 24;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(NULL,&rq);
@@ -2997,7 +2996,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GDrawFillRect(pixmap,&r,bg);
     r.x = MAG_DATA; r.width = 60;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = LAYER_DATA; r.width = 60;
+    r.x = LAYER_DATA; r.width = 90;
     GDrawFillRect(pixmap,&r,bg);
     r.x = CODERANGE_DATA; r.width = 60;
     GDrawFillRect(pixmap,&r,bg);
@@ -9786,9 +9785,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     FontRequest rq;
     int as, ds, ld;
     extern int updateflex;
-    static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
-    static unichar_t sans[] = { 's','a','n','s',  '\0' };
-    static unichar_t *infofamily=NULL;
+    static char *infofamily=NULL;
     GTextBounds textbounds;
     /* extern int cv_auto_goto; */
 
@@ -9875,16 +9872,16 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     }
 
     if ( infofamily==NULL ) {
-	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
+	infofamily = copy(GResourceFindString("CharView.InfoFamily"));
 	/* FontConfig doesn't have access to all the X11 bitmap fonts */
 	/*  so the font I used to use isn't found, and a huge monster is */
 	/*  inserted instead */
 	if ( infofamily==NULL )
-	    infofamily = (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?sans:fixed;
+	    infofamily = (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?SANS_UI_FAMILIES:FIXED_UI_FAMILIES;
     }
 
     memset(&rq,0,sizeof(rq));
-    rq.family_name = infofamily;
+    rq.utf8_family_name = infofamily;
     rq.point_size = GResourceFindInt("CharView.Rulers.FontSize",
 	    (GDrawHasCairo(cv->v)&(gc_alpha|gc_pango))?-10:-7);
     rq.weight = 400;

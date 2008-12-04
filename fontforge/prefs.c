@@ -1783,7 +1783,6 @@ void DoPrefs(void) {
     static unichar_t nullstr[] = { 0 };
     struct prefs_list *pl;
     char *tempstr;
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
     GFont *font;
 
@@ -2274,7 +2273,7 @@ void DoPrefs(void) {
 	GHVBoxSetExpandableRow(boxes[2*k].ret,gb_expandglue);
     
     memset(&rq,0,sizeof(rq));
-    rq.family_name = monospace;
+    rq.utf8_family_name = MONO_UI_FAMILIES;
     rq.point_size = 12;
     rq.weight = 400;
     font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);

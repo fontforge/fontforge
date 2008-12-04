@@ -1048,7 +1048,6 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     GTextInfo label[24];
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int i,k;
     static GFont *font = NULL, *bold=NULL;
 
@@ -1070,7 +1069,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
 
     if ( font==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(NULL,&rq);

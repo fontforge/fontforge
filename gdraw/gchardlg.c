@@ -34,6 +34,7 @@
 #include <charset.h>
 #include <chardata.h>
 #include <gresource.h>
+#include "ggadgetP.h"		/* For the font family names */
 #if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
 #  include <dynamic.h>
 #endif
@@ -1060,7 +1061,6 @@ void GWidgetCreateInsChar(void) {
     int i;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'u','n','i','f','o','n','t',',', 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a', ',', 'c','a','l','i','b','a','n',',','c', 'l', 'e', 'a', 'r', 'l', 'y', 'u', ',', 'c', 'a', 's', 'l', 'o', 'n',',','u','n','i','f','o','n','t',  '\0' };
     static int inited= false;
 
     if ( !inited ) {
@@ -1100,9 +1100,9 @@ void GWidgetCreateInsChar(void) {
 	GGadgetsCreate(inschr.icw,gcd);
 
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = uc_copy(GResourceFindString("InsChar.Family"));
-	if ( rq.family_name==NULL )
-	    rq.family_name = helv;
+	rq.utf8_family_name = copy(GResourceFindString("InsChar.Family"));
+	if ( rq.utf8_family_name==NULL )
+	    rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = /*15*/12;
 	rq.weight = 400;
 	rq.style = 0;

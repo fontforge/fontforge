@@ -543,7 +543,6 @@ return( true );
 
 static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
     FontRequest rq;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld;
     GGadgetCreateData gcd[5];
     GTextInfo label[4];
@@ -553,7 +552,7 @@ static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
 
     if ( font==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(grp->gw),&rq);

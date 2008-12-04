@@ -707,7 +707,6 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     char binsize[20], barwidth[20], *primary, *secondary;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static unichar_t n9999[] = { '9', '9', '9', '9', 0 };
     static GFont *font = NULL;
 
@@ -754,7 +753,7 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
 
     if ( font == NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 10;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(NULL,&rq);

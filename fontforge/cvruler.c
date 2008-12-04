@@ -268,7 +268,6 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GWindowAttrs wattrs;
     GRect pos;
     FontRequest rq;
-    static unichar_t fixed[] = { 'f','i','x','e','d', ',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld;
 
     if ( cv->ruler_w==NULL ) {
@@ -284,7 +283,7 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 
 	if ( rvfont==NULL ) {
 	    memset(&rq,0,sizeof(rq));
-	    rq.family_name = fixed;
+	    rq.utf8_family_name = FIXED_UI_FAMILIES;
 	    rq.point_size = -12;
 	    rq.weight = 400;
 	    rvfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->ruler_w),&rq);
@@ -484,7 +483,6 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
     GWindowAttrs wattrs;
     GRect pos;
     FontRequest rq;
-    static unichar_t fixed[] = { 'f','i','x','e','d', ',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld;
     SplinePoint *sp;
 
@@ -501,7 +499,7 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
 
 	if ( rvfont==NULL ) {
 	    memset(&rq,0,sizeof(rq));
-	    rq.family_name = fixed;
+	    rq.utf8_family_name = FIXED_UI_FAMILIES;
 	    rq.point_size = -12;
 	    rq.weight = 400;
 	    rvfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->ruler_w),&rq);

@@ -2055,7 +2055,6 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     GRect pos, size;
     TT_ExecContext exc;
     FontRequest rq;
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld;
     GGadgetCreateData gcd[9];
     GTextInfo label[9];
@@ -2199,7 +2198,7 @@ return;
 
 	if ( monofont==NULL ) {
 	    memset(&rq,0,sizeof(rq));
-	    rq.family_name = monospace;
+	    rq.utf8_family_name = MONO_UI_FAMILIES;
 	    rq.point_size = -12;
 	    rq.weight = 400;
 	    monofont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cv->gw),&rq);

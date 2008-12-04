@@ -1970,8 +1970,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     GTextInfo ti;
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
-    static unichar_t *infofamily = NULL;
+    static char *infofamily = NULL;
 
     BitmapViewInit();
 
@@ -2076,13 +2075,16 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     /*bv->layers = BVMakeLayers(bv);*/
 
     if ( infofamily==NULL ) {	/* Yes, let's use the same resource name */
-	infofamily = uc_copy(GResourceFindString("CharView.InfoFamily"));
+	infofamily = copy(GResourceFindString("CharView.InfoFamily"));
+	/* FontConfig doesn't have access to all the X11 bitmap fonts */
+	/*  so the font I used to use isn't found, and a huge monster is */
+	/*  inserted instead */
 	if ( infofamily==NULL )
-	    infofamily = fixed;
+	    infofamily = (GDrawHasCairo(bv->v)&(gc_alpha|gc_pango))?SANS_UI_FAMILIES:FIXED_UI_FAMILIES;
     }
 
     memset(&rq,0,sizeof(rq));
-    rq.family_name = infofamily;
+    rq.utf8_family_name = infofamily;
     rq.point_size = -7;
     rq.weight = 400;
     bv->small = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);

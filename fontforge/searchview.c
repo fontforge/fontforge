@@ -657,7 +657,6 @@ SearchView *SVCreate(FontView *fv) {
     GTextInfo label[14];
     FontRequest rq;
     int as, ds, ld;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     char fudgebuf[20];
     int k, sel_pos, efdo_pos;
     static GFont *plainfont = NULL, *boldfont=NULL;
@@ -689,7 +688,7 @@ return( NULL );
 
     if ( plainfont==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	plainfont = GDrawInstanciateFont(NULL,&rq);

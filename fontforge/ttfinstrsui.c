@@ -724,7 +724,6 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     GWindow gw;
     GWindowAttrs wattrs;
     FontRequest rq;
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, lh;
     GGadgetCreateData gcd[11], *butarray[9], *harray[3], *varray[8];
     GTextInfo label[6];
@@ -863,7 +862,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
 
     if ( font==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = monospace;
+	rq.utf8_family_name = MONO_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
@@ -1404,7 +1403,6 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     GWindow gw;
     GWindowAttrs wattrs;
     FontRequest rq;
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, lh;
     GGadgetCreateData gcd[9], *butarray[8], *harray[4], *harray2[3], *varray[7];
     GTextInfo label[5], lab;
@@ -1555,7 +1553,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     if ( font==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = monospace;
+	rq.utf8_family_name = MONO_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);

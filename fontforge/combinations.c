@@ -1076,7 +1076,6 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int layer) {
     GGadgetCreateData gcd[9], boxes[6], *hvarray[3][3], *harray[3], *barray[10], *varray[5];
     GTextInfo label[9];
     FontRequest rq;
-    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int as, ds, ld,i;
     static int done=false;
     static GFont *font=NULL;
@@ -1228,7 +1227,7 @@ return;
 
     if ( font==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);

@@ -134,9 +134,6 @@ static GTimer *popup_timer, *popup_vanish_timer;
 static int popup_visible = false;
 static GRect popup_within;
 
-static unichar_t courier[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-
 static int match(char **list, char *val) {
     int i;
 
@@ -176,10 +173,10 @@ void *GResource_font_cvt(char *val, void *def) {
     FontInstance *fi;
     char *pt, *end, ch;
     int ret;
-    unichar_t *freeme=NULL;
+    char *freeme=NULL;
 
     memset(&rq,0,sizeof(rq));
-    rq.family_name = helv;
+    rq.utf8_family_name = SANS_UI_FAMILIES;
     rq.point_size = 10;
     rq.weight = 400;
     rq.style = 0;
@@ -226,11 +223,12 @@ void *GResource_font_cvt(char *val, void *def) {
     }
 
     if ( *pt!='\0' )
-	rq.family_name = freeme = uc_copy(pt);
+	rq.utf8_family_name = freeme = copy(pt);
 		
     fi = GDrawInstanciateFont(screen_display,&rq);
-    if ( rq.family_name!=courier )
-	free( freeme );
+
+    if ( freeme!=NULL )
+	free(freeme);
 
     if ( fi==NULL )
 return( def );
@@ -365,7 +363,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
     if ( fi==NULL ) {
 	FontRequest rq;
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = 10;
 	rq.weight = 400;
 	rq.style = 0;
@@ -429,7 +427,7 @@ void GGadgetInit(void) {
 	if ( popup_font==NULL ) {
 	    FontRequest rq;
 	    memset(&rq,0,sizeof(rq));
-	    rq.family_name = helv;
+	    rq.utf8_family_name = SANS_UI_FAMILIES;
 	    rq.point_size = localeptsize();
 	    rq.weight = 400;
 	    rq.style = 0;

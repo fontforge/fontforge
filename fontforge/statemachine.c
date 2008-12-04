@@ -1566,7 +1566,6 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     int k, vk;
     int blen = GIntGetResource(_NUM_Buttonsize);
     const int space = 7;
-    static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
     int as, ds, ld, sbsize;
     FontRequest rq;
     static unichar_t statew[] = { '1', '2', '3', '4', '5', 0 };
@@ -1816,7 +1815,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	memset(&rq,'\0',sizeof(rq));
 	rq.point_size = 12;
 	rq.weight = 400;
-	rq.family_name = courier;
+	rq.utf8_family_name = MONO_UI_FAMILIES;
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
 	font = GResourceFindFont("StateMachine.Font",font);
     }

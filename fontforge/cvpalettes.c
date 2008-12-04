@@ -56,7 +56,6 @@ int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 static int layer_height;
 
-static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *toolsfont=NULL, *layersfont=NULL;
 
 #define CV_TOOLS_WIDTH		53
@@ -1107,7 +1106,7 @@ return( cvtools );
 
     if ( toolsfont==NULL ) {
 	memset(&rq,0,sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -10;
 	rq.weight = 400;
 	toolsfont = GDrawInstanciateFont(NULL,&rq);
@@ -1514,7 +1513,7 @@ return;
 
     if ( layersfont==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
 	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);
@@ -2511,7 +2510,7 @@ return(bvlayers);
 
     if ( layersfont==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
-	rq.family_name = helv;
+	rq.utf8_family_name = SANS_UI_FAMILIES;
 	rq.point_size = -12;
 	rq.weight = 400;
 	layersfont = GDrawInstanciateFont(GDrawGetDisplayOfWindow(cvlayers2),&rq);

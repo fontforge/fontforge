@@ -2855,7 +2855,7 @@ static void GTextFieldInit() {
     GGadgetInit();
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.family_name = NULL;
-    rq.utf8_family_name = "courier,monospace,clearlyu,unifont";
+    rq.utf8_family_name = MONO_UI_FAMILIES;
     _gtextfield_font = GDrawInstanciateFont(screen_display,&rq);
     _GGadgetCopyDefaultBox(&_GGadget_gtextfield_box);
     _GGadget_gtextfield_box.padding = 3;

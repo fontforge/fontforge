@@ -49,15 +49,15 @@ int home_char='A';
 int compact_font_on_open=0;
 
 static char *special_fontnames[] = {
-	"times,serif,caslon,clearlyu,unifont",
-	"script,formalscript,clearlyu,unifont",
-	"fraktur,clearlyu,unifont",
-	"doublestruck,clearlyu,unifont",
-	"helvetica,caliban,sansserif,sans,clearlyu,unifont",
-	"courier,monospace,caslon,clearlyu,unifont",
+	SERIF_UI_FAMILIES,
+	"script,formalscript,serif",
+	"fraktur,serif",
+	"doublestruck,serif",
+	SANS_UI_FAMILIES,
+	MONO_UI_FAMILIES,
 	NULL
     };
-static char *standard_fontnames = "fontview,courier,monospace,clearlyu,unifont";
+static char *standard_fontnames = "fontview, MONO_UI_FAMILIES";
 
 #define	FV_LAB_HEIGHT	15
 

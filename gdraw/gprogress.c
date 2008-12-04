@@ -32,6 +32,7 @@
 #include <ustring.h>
 #include <memory.h>
 #include <sys/time.h>
+#include "ggadgetP.h"		/* For the font family names */
 
 typedef struct gprogress {
     struct timeval start_time;	/* Don't pop up unless we're after this */
@@ -192,7 +193,6 @@ void GProgressStartIndicator(
     int tot,			/* Number of sub-entities in the operation */
     int stages			/* Number of stages, each processing tot sub-entities */
 ) {
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     GProgress *new;
     FontRequest rq;
     GWindowAttrs wattrs;
@@ -224,7 +224,7 @@ return;
     root = GDrawGetRoot(NULL);
     if ( progress_font == NULL ) {
 	memset(&rq,'\0',sizeof(rq));
-	rq.family_name = monospace;
+	rq.utf8_family_name = MONO_UI_FAMILIES;
 	rq.point_size = 12;
 	rq.weight = 400;
 	progress_font = GDrawAttachFont(root,&rq);
