@@ -146,7 +146,8 @@ return;
 	else if ( metrics==NULL && !isprobablybase )
     continue;
 	if ( dlist->sc->width==oldwidth &&
-		(flagfv==NULL || !flagfv->selected[flagfv->map->backmap[dlist->sc->orig_pos]])) {
+		(metrics!=NULL || flagfv==NULL ||
+		    !flagfv->selected[flagfv->map->backmap[dlist->sc->orig_pos]])) {
 	    SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,flagfv);
 	    if ( !dlist->sc->changed ) {
 		dlist->sc->changed = true;
