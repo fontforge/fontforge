@@ -557,7 +557,7 @@ return( false );
     sf->ascent = as; sf->descent = des;
 
     FVTransFunc(sf->fv,transform,0,&bvts,
-	    fvt_dobackground|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid);
+	    fvt_alllayers|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid);
     free(sf->fv->selected);
     sf->fv->selected = oldselected;
 
