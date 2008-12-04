@@ -57,7 +57,7 @@ static char *special_fontnames[] = {
 	MONO_UI_FAMILIES,
 	NULL
     };
-static char *standard_fontnames = "fontview, MONO_UI_FAMILIES";
+static char *standard_fontnames = "fontview," MONO_UI_FAMILIES;
 
 #define	FV_LAB_HEIGHT	15
 
