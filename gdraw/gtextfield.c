@@ -186,6 +186,14 @@ static void GTextFieldChanged(GTextField *gt,int src) {
 static void GTextFieldFocusChanged(GTextField *gt,int gained) {
     GEvent e;
 
+    if ( (gt->g.box->flags & box_active_border_inner) &&
+	    ( gt->g.state==gs_enabled || gt->g.state==gs_active )) {
+	int state = gained?gs_active:gs_enabled;
+	if ( state!=gt->g.state ) {
+	    gt->g.state = state;
+	    GGadgetRedraw((GGadget *) gt);
+	}
+    }
     e.type = et_controlevent;
     e.w = gt->g.base;
     e.u.control.subtype = et_textfocuschanged;

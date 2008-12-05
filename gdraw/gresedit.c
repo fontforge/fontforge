@@ -181,9 +181,10 @@ static void inherit_flag_change(GRE *gre, int childindex, int cid_off,
     GResInfo *res = gre->tofree[childindex].res;
 
     if ( on )
-	res->inherits_from->boxdata->flags |= flag;
+	res->boxdata->flags |= flag;
     else
-	res->inherits_from->boxdata->flags &= ~flag;
+	res->boxdata->flags &= ~flag;
+    GGadgetSetChecked(g,on);
 }
 
 struct inherit_font_data { char *spec; GFont *font; };
@@ -339,17 +340,17 @@ return( true );
 
 static int GRE_FlagChanged(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
 	int index = GTabSetGetSel(gre->tabset);
 	GResInfo *res = gre->tofree[index].res;
 	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
 	int on;
 	if ( (on = GGadgetIsChecked(g)) )
-	    res->boxdata->flags |= (int) (intpt) GGadgetIsChecked(g);
+	    res->boxdata->flags |= (int) (intpt) GGadgetGetUserData(g);
 	else
-	    res->boxdata->flags |= ~(int) (intpt) GGadgetIsChecked(g);
-	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,false,
+	    res->boxdata->flags &= ~(int) (intpt) GGadgetGetUserData(g);
+	GRE_FigureInheritance(gre,res,cid_off-1,cid_off,false,
 		(void *) (intpt) on, inherit_flag_change);
 	GRE_Reflow(gre,res);
     }
@@ -375,7 +376,7 @@ return( true );
 
 static int GRE_BoolChanged(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	*((int *) GGadgetGetUserData(g)) = GGadgetIsChecked(g);
     }
 return( true );
@@ -396,6 +397,7 @@ static int GRE_ByteChanged(GGadget *g, GEvent *e) {
 		    (void *) (intpt) val, inherit_byte_change);
 	    GRE_Reflow(gre,res);
 	}
+	free(txt);
     }
 return( true );
 }
@@ -412,6 +414,7 @@ static int GRE_IntChanged(GGadget *g, GEvent *e) {
 	    *((int *) GGadgetGetUserData(g)) = val;
 	    GRE_Reflow(gre,res);
 	}
+	free(txt);
     }
 return( true );
 }
@@ -423,6 +426,7 @@ static int GRE_DoubleChanged(GGadget *g, GEvent *e) {
 	double val = strtod(txt,&end);
 	if ( *end=='\0' )
 	    *((double *) GGadgetGetUserData(g)) = val;
+	free(txt);
     }
 return( true );
 }
@@ -952,7 +956,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	small_blue_box.border_darker = small_blue_box.main_foreground;
 	small_blue_box.border_darkest = small_blue_box.border_brighter =
 		small_blue_box.border_brightest =
-		small_blue_box.main_background = GDrawGetDefaultBackground(NULL);
+		small_blue_box.main_background = small_blue_box.main_background;
     }
 
     for ( res=all, cnt=0; res!=NULL; res=res->next, ++cnt );
