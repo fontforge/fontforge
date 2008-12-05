@@ -487,7 +487,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     int layer, lycopy;
 
     *nsc = *sc;		/* We copy the layers just below */
-    nsc->layer_cnt = into->layer_cnt;
+    nsc->layer_cnt = into==NULL?2:into->layer_cnt;
     nsc->layers = layers;
     lycopy = sc->layer_cnt>nsc->layer_cnt ? nsc->layer_cnt : sc->layer_cnt;
     memcpy(layers,sc->layers,lycopy*sizeof(Layer));
@@ -499,13 +499,17 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 	layers[layer].images = ImageListCopy(layers[layer].images);
 	layers[layer].undoes = NULL;
 	layers[layer].redoes = NULL;
-	if ( into->layers[layer].order2!=sc->layers[layer].order2 ) {
-	    nsc->layers[layer].order2 = into->layers[layer].order2;
-	    if ( into->layers[layer].order2 )
-		SCConvertLayerToOrder2(nsc,layer);
-	    else
-		SCConvertLayerToOrder3(nsc,layer);
-	}
+	if ( into!=NULL ) {
+	    if ( into->layers[layer].order2!=sc->layers[layer].order2 ) {
+		nsc->layers[layer].order2 = into->layers[layer].order2;
+		if ( into->layers[layer].order2 )
+		    SCConvertLayerToOrder2(nsc,layer);
+		else
+		    SCConvertLayerToOrder3(nsc,layer);
+	    }
+	} else
+	    /* Happens in Apple's gvar (MM) fonts */
+	    nsc->layers[layer].order2 = sc->layers[layer].order2;
     }
     nsc->parent = into;
     nsc->orig_pos = -2;
