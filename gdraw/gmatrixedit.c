@@ -61,7 +61,9 @@ static GResInfo gmatrixedit_ri = {
     N_("Matrix Edit (sort of like a spreadsheet)"),
     "GMatrixEdit",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_width|omf_border_shape|omf_padding|
+	omf_main_background|omf_disabled_background
 };
 static GResInfo gmatrixedit2_ri = {
     NULL, &ggadget_ri, &gmatrixedit_ri,NULL,
@@ -86,7 +88,7 @@ return;
     gmatrixedit_box.border_width = 0;
     gmatrixedit_box.border_shape = bs_rect;
     gmatrixedit_box.padding = 0;
-    gmatrixedit_box.flags = 0;
+    /*gmatrixedit_box.flags = 0;*/
     gmatrixedit_box.main_background = COLOR_TRANSPARENT;
     gmatrixedit_box.disabled_background = COLOR_TRANSPARENT;
     GDrawDecomposeFont(_ggadget_default_font,&rq);
@@ -2160,11 +2162,11 @@ void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r)
 }
 
 GResInfo *_GMatrixEditRIHead(void) {
-    GRect size;
+    /* GRect size; */
 
     _GMatrixEdit_Init();
-    GDrawGetSize(GDrawGetRoot(NULL),&size);
-    if ( size.height<900 ) {
+    /* GDrawGetSize(GDrawGetRoot(NULL),&size);*/
+    if ( true /* size.height<900*/ ) {
 	gmatrixedit_ri.next = &gmatrixedit2_ri;
 	gmatrixedit_ri.extras = NULL;
 	gmatrixedit_ri.seealso1 = &gmatrixedit2_ri;

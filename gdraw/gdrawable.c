@@ -45,7 +45,8 @@ static GResInfo gdrawable_ri = {
     N_("A canvas (sub-window) wrapped up in a gadget, for drawing"),
     "GDrawable",
     "Gdraw",
-    false
+    false,
+    omf_border_width|omf_padding|omf_border_type
 };
 
 static void GDrawableInit() {

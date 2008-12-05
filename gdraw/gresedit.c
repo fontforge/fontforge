@@ -582,6 +582,7 @@ static void GRE_DoCancel(GRE *gre) {
 		  case rt_bool:
 		  case rt_int:
 		  case rt_color:
+		  case rt_coloralpha:
 		    *(int *) (extras->val) = extras->orig.ival;
 		  break;
 		  case rt_double:
@@ -705,7 +706,8 @@ return( true );
 	    int cid = gre->tofree[i].startcid;
 	    if ( res->boxdata!=NULL ) {
 		for ( j=0; flagnames[j]!=NULL; ++j ) {
-		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))) {
+		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid)) ||
+			    (res->override_mask&(1<<j)) ) {
 			fprintf( output, "%s.%s.Box.%s: %s\n",
 				res->progname, res->resname, flagnames[j],
 			        GGadgetIsChecked( GWidgetGetControl(gre->gw,cid+1))?"True" : "False" );
@@ -713,21 +715,24 @@ return( true );
 		    cid += 2;
 		}
 		for ( j=0; colornames[j]!=NULL; ++j ) {
-		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))) {
+		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+			    || (res->override_mask&(1<<(j+16))) ) {
 			fprintf( output, "%s.%s.Box.%s: #%06x\n",
 				res->progname, res->resname, colornames[j],
 			        GColorButtonGetColor( GWidgetGetControl(gre->gw,cid+2)) );
 		    }
 		    cid += 3;
 		}
-		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))) {
+		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+			|| (res->override_mask&omf_border_type) ) {
 		    fprintf( output, "%s.%s.Box.BorderType: %s\n",
 			    res->progname, res->resname,
 			    types[ GGadgetGetFirstListSelectedItem(
 				     GWidgetGetControl(gre->gw,cid+2)) ] );
 		}
 		cid += 3;
-		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))) {
+		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+			|| (res->override_mask&omf_border_shape) ) {
 		    fprintf( output, "%s.%s.Box.BorderShape: %s\n",
 			    res->progname, res->resname,
 			    shapes[ GGadgetGetFirstListSelectedItem(
@@ -735,7 +740,8 @@ return( true );
 		}
 		cid += 3;
 		for ( j=0; intnames[j]!=NULL; ++j ) {
-		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))) {
+		    if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,cid))
+			    || (res->override_mask&(1<<(j+10))) ) {
 			char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,cid+2));
 			char *end;
 			int val = strtol(ival,&end,10);
@@ -750,10 +756,13 @@ return( true );
 		}
 	    }
 	    if ( res->font!=NULL ) {
-		char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
-		fprintf( output, "%s.%s.Font: %s\n",
-			res->progname, res->resname, ival );
-		free(ival);
+		if ( !GGadgetIsChecked( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid-1))
+			|| (res->override_mask&omf_font) ) {
+		    char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,gre->tofree[i].fontcid));
+		    fprintf( output, "%s.%s.Font: %s\n",
+			    res->progname, res->resname, ival );
+		    free(ival);
+		}
 	    }
 	    if ( res->extras!=NULL ) for ( extras=res->extras; extras->name!=NULL; ++extras ) {
 		GGadget *g = GWidgetGetControl(gre->gw,extras->cid);
@@ -788,6 +797,7 @@ return( true );
 		    free(dval);
 		  } break;
 		  case rt_color:
+		  case rt_coloralpha:
 		    fprintf( output, "%s.%s%s%s: #%06x\n",
 			    res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
 			    GColorButtonGetColor(g) );
@@ -863,6 +873,7 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		      case rt_bool:
 		      case rt_int:
 		      case rt_color:
+		      case rt_coloralpha:
 		      case rt_double:
 		      case rt_image:
 			/* These should have been set as we went along */
@@ -992,7 +1003,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
-	    gcd[k++].creator = GCheckBoxCreate;
+	    gcd[k++].creator = GLabelCreate;
 	    tofree[i].iarray[0] = &gcd[k-1];
 
 	    lab[k].text = (unichar_t *) _(res->inherits_from->name);
@@ -2013,6 +2024,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    tofree[i].earray[hl][base+1] = &gcd[k-1];
 		    tofree[i].earray[hl][base+2] = GCD_ColSpan;
 		  break;
+		  case rt_coloralpha:
 		  case rt_color:
 		    extras->orig.ival = *(int *) (extras->val);
 		    lab[k].text = (unichar_t *) _(extras->name);
@@ -2025,6 +2037,8 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
 		    gcd[k].gd.u.col = extras->orig.ival;
+		    if ( (extras->orig.ival&0xff000000)==0 && extras->type==rt_coloralpha )
+			gcd[k].gd.u.col |= 0xfe000000;
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 		    if ( extras->popup!=NULL )
 			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
@@ -2260,7 +2274,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	}
     }
 
-    GHVBoxFitWindow(topbox[0].ret);
+    GHVBoxFitWindowCentered(topbox[0].ret);
     GDrawSetVisible(gw,true);
     
     while ( !gre.done )
@@ -2375,6 +2389,8 @@ void GResEditFind( struct resed *resed, char *prefix) {
 	info[i].type = resed[i].type;
 	if ( info[i].type==rt_stringlong )
 	    info[i].type = rt_string;
+	else if ( info[i].type==rt_coloralpha )
+	    info[i].type = rt_color;
 	info[i].val = resed[i].val;
 	info[i].cvt = resed[i].cvt;
 	if ( info[i].type==rt_font ) {

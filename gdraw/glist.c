@@ -970,12 +970,13 @@ static GResInfo glist_ri = {
     N_("List"),
     "GList",
     "Gdraw",
-    false
+    false,
+    box_foreground_border_outer
 };
 
 static void GListInit() {
     _GGadgetCopyDefaultBox(&list_box);
-    list_box.flags = box_foreground_border_outer;
+    list_box.flags |= box_foreground_border_outer;
     list_font = _GGadgetInitDefaultBox("GList.",&list_box,NULL);
     glist_inited = true;
 }

@@ -45,7 +45,8 @@ static GResInfo gtabset_ri = {
     N_("Tab Set"),
     "GTabSet",
     "Gdraw",
-    false
+    false,
+    omf_border_width|omf_border_shape
 };
 #define NEST_INDENT	4
 
@@ -54,7 +55,7 @@ static void GTabSetInit() {
     GGadgetInit();
     _GGadgetCopyDefaultBox(&gtabset_box);
     gtabset_box.border_width = 1; gtabset_box.border_shape = bs_rect;
-    gtabset_box.flags = 0;
+    /*gtabset_box.flags = 0;*/
     gtabset_font = _GGadgetInitDefaultBox("GTabSet.",&gtabset_box,NULL);
     gtabset_inited = true;
 }
@@ -451,7 +452,7 @@ return( true );
 return( false );
 	else if ( gts->vertical ) {
 	    int y = g->r.y + GBoxBorderWidth(g->base,g->box) + 5;
-	    sel = (event->u.mouse.y-y)/gts->fh;
+	    sel = (event->u.mouse.y-y)/gts->fh + gts->offtop;
 	    if ( sel<0 || sel>=gts->tabcnt )
 return(false);
 	} else if ( gts->scrolled ) {
