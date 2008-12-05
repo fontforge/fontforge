@@ -69,12 +69,16 @@ static GGadgetCreateData button_gcd[] = {
 static GGadgetCreateData *barray[] = { GCD_Glue, &button_gcd[0], GCD_Glue, &button_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData buttonbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) barray,gg_visible|gg_enabled}};
+static struct resed gbutton_re[] = {
+    {N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("Background color of column headers at the top of a matrix edit")},
+    NULL
+};
 static GResInfo gbutton_ri = {
     &gdefault_ri, &ggadget_ri,&gdefault_ri, &gcancel_ri,
     &_GGadget_button_box,
     &label_font,
     &buttonbox,
-    NULL,
+    gbutton_re,
     N_("Button"),
     N_("Buttons"),
     "GButton",
@@ -145,7 +149,7 @@ static GGadgetCreateData colorbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) colarray,gg_visible|gg_enabled}};
 static GResInfo gcolor_ri = {
     &gdroplist_ri, &gbutton_ri,NULL,NULL,
-    &_GGadget_droplist_box,
+    &_GGadget_colorbutton_box,
     NULL,
     &colorbox,
     NULL,

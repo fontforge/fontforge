@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 25-Sep-2008 -->
+  <!-- AP: Last modified: 5-Dec-2008 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -26,6 +26,24 @@
   <A HREF="#Q">Q</A> - <A HREF="#R">R</A> - <A HREF="#S">S</A> - <A HREF="#T">T
   </A>- <A HREF="#U">U </A>- <A HREF="#V">V </A>- <A HREF="#W">W</A> -
   <A HREF="#X">X </A>- <A HREF="#Y">Y</A> - <A HREF="#Z">Z </A>-
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;
+	&nbsp; &nbsp; &nbsp;</TD>
+      <TD><BLOCKQUOTE ID="lit">
+	  `The time has come,' the Walrus said,<BR>
+	  `To talk of may things:<BR>
+	  Of shoes&#151; and ships&#151; and sealing-wax&#151;<BR>
+	  Of cabbages&#151; and kings&#151;<BR>
+	  And why the sea is boiling hot&#151;<BR>
+	  And whether pigs have wings.'
+	  <P ALIGN=RIGHT>
+	  <SMALL>The Walrus and the Carpenter<BR>
+	  Lewis Carroll</SMALL>
+	</BLOCKQUOTE>
+      </TD>
+    </TR>
+  </TABLE>
   <P>
   <TABLE CELLPAD=0 CELLSPACE=0>
     <TR VALIGN=TOP>
@@ -140,6 +158,30 @@
 	    B&eacute;zier curves are described in detail in the
 	    <A HREF="bezier.html">B&eacute;zier section of the main manual.</A>
 	  <DT>
+	    <A NAME="Bidi">Bidi</A>
+	  <DD>
+	    <TABLE ALIGN="Right">
+	      <TR>
+		<TD><BLOCKQUOTE ID="lit">
+		    He looked thoughtful and grave- but the orders he gave<BR>
+		    Were enough to bewilder the crew.<BR>
+		    When he cried `Steer to starboard, but keep her head larboard!'<BR>
+		    What on earth was the helmsman to do?
+		    <P ALIGN=RIGHT>
+		    <SMALL>The Hunting of the Snark<BR>
+		    Lewis Carroll</SMALL>
+		  </BLOCKQUOTE>
+		</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+	    Bi-Directional text. That is a section of text which contains both left-to-right
+	    and right-to-left scripts. English text quoting Arabic, for example. Things
+	    get even more complex with nested quotations. The
+	    <A HREF="#Unicode">Unicode</A> standard contains an algorithm for laying
+	    out Bidi text. See also:
+	    <A HREF="glossary.html#Boustrophedon">Boustrophedon</A>.
+	  <DT>
 	    <A NAME="black-letter">Black letter</A>
 	  <DD>
 	    Any of various type families based on medieval handwriting.<BR>
@@ -147,8 +189,8 @@
 	  <DT>
 	    <A NAME="BMP">BMP</A> (Basic Multilingual Plane)
 	  <DD>
-	    The first 65536 code points of Unicode. These contain most of the ordinary
-	    characters in the modern world. See Also
+	    The first 65536 code points of <A HREF="#Unicode">Unicode</A>. These contain
+	    most of the ordinary characters in the modern world. See Also
 	    <UL>
 	      <LI>
 		<A HREF="#SMP">SMP</A> -- Supplementary Multilingual Plane (0x10000-0x1FFFF)
@@ -167,7 +209,8 @@
 	  <DT>
 	    <A NAME="Bopomofo">Bopomofo</A>
 	  <DD>
-	    A (modern~1911) Chinese (Mandarin) alphabet used to provide phonetic
+	    A (modern~1911) Chinese (Mandarin)
+	    <A HREF="glossary.html#alphabet">alphabet</A> used to provide phonetic
 	    transliteration of Han ideographs in dictionaries.
 	  <DT>
 	    <IMG SRC="boustrophedon.png" WIDTH="86" HEIGHT="54" ALIGN="Right"><A NAME="Boustrophedon">Boustrophedon</A>
@@ -176,7 +219,9 @@
 	    right to left writing directions. Early alphabets (Old Canaanite, and the
 	    very early greek writings (and, surprisingly,
 	    <A HREF="#Futhark">fu&thorn;ark</A>)) used this. Often the right to left
-	    glyphs would be mirrors of the left to right ones.
+	    glyphs would be mirrors of the left to right ones. As far as I know, no modern
+	    writing system uses this method (nor does OpenType have any support for it).
+	    See Also <A HREF="#Bidi">Bidi</A>.
 	</DL>
       </TD>
     </TR>
@@ -347,7 +392,7 @@
 	    draw a line from the pixel to infinity (in any direction) then count the
 	    number of times contours cross this line. If that number is odd then fill
 	    the point, if it is even then do not fill the point. This method is used
-	    by postscript rasterizers after level 2.0 of PostScript. See Also
+	    for fonts by postscript rasterizers after level 2.0 of PostScript. See Also
 	    <A HREF="#Non-Zero">Non-Zero Winding Number Fill</A>.
 	  <DT>
 	    <A NAME="extended">Extended</A>
@@ -477,10 +522,10 @@
 	  <DT>
 	    Graphite tables
 	  <DD>
-	    <A HREF="http://scripts.sil.org/RenderingGraphite">Graphite</A>
-	    is an extension to TrueType which embeds several tables into a font containing
-	    rules for contextual shaping, ligatures, reordering, split glyphs,
-	    bidirectionality, stacking diacritics, complex positioning, etc.
+	    <A HREF="http://scripts.sil.org/RenderingGraphite">Graphite</A> is an extension
+	    to TrueType which embeds several tables into a font containing rules for
+	    contextual shaping, ligatures, reordering, split glyphs, bidirectionality,
+	    stacking diacritics, complex positioning, etc.
 	    <P>
 	    This sounds rather like OpenType -- except that OpenType depends on the text
 	    layout routines knowing a lot about the glyphs involved. This means that
@@ -740,8 +785,8 @@ $ make install
 	    and count the number of times contours cross this line. If the contour crosses
 	    the line in a clockwise direction add 1, of the contour crosses in a counter
 	    clockwise direction subtract one. If the result is non-zero then fill the
-	    pixel. If it is zero leave it blank. This method is used by truetype and
-	    older (before version 2) postscript rasterizers.<BR>
+	    pixel. If it is zero leave it blank. This method is used for rasterizing
+	    fonts by truetype and older (before version 2) postscript.<BR>
 	    See Also <A HREF="#Even-Odd">Even-Odd Fill Rule</A>
 	</DL>
       </TD>
@@ -826,13 +871,13 @@ $ make install
 	    PfaEdit
 	  <DD>
 	    This was the early name for FontForge. The original conception was that it
-	    would only edit type1 ASCII fonts (hence then name), it quickly metamorphosed
+	    would only edit type1 ASCII fonts (hence the name), it quickly metamorphosed
 	    beyond that point, but it took me three years to rename it.
 	  <DT>
 	    Phantom points
 	  <DD>
 	    In a truetype font there are a few points added to each glyph which are not
-	    specified in the contours which make up the glyph. These are called phantom
+	    specified by the contours that make up the glyph. These are called phantom
 	    points. One of these points represents the left side bearing, and the other
 	    the advance width of the glyph. Truetype instructions (hints) are allowed
 	    to move these points around just as any other points may be moved -- thus
@@ -919,15 +964,17 @@ $ make install
 		has the extension .pfb (or .pfa). A type 1 font is limited to a one byte
 		encoding (ie. only 256 glyphs may be encoded).
 	      <LI>
-		Type 2 -- This is the format used within <A HREF="#opentype">OpenType</A>
+		Type 2/CFF -- This is the format used within <A HREF="#opentype">OpenType</A>
 		fonts. It is almost the same as Type 1, but has a few extensions and a more
-		compact format.
+		compact format. It is usually inside a CFF wrapper, which is usually inside
+		an OpenType font. The CFF font format again only allows a 1 byte encoding,
+		but the OpenType wrapper extends this to provide more complex encoding types.
 	      <LI>
 		Type 3 -- This format allows full postscript within the font, but it means
 		that no <A HREF="#hints">hints</A> are allowed, so these fonts will not look
-		as nice at small point-sizes. Also most rasterizers are incapable of dealing
-		with them. A type 3 font is limited to a one byte encoding (ie. only 256
-		glyphs may be encoded).
+		as nice at small point-sizes. Also most (screen) rasterizers are incapable
+		of dealing with them. A type 3 font is limited to a one byte encoding (ie.
+		only 256 glyphs may be encoded).
 	      <LI>
 		Type 0 -- This format is used for collecting many sub-fonts (of Type 1, 2
 		or 3) into one big font with a multi-byte encoding, and was used for CJK
@@ -1091,7 +1138,8 @@ $ make install
 	  <DD>
 	    A curved line segment. See the <A HREF="overview.html#intro">section in the
 	    manual on splines</A>. The splines used in FontForge are all second or third
-	    order <A HREF="#bezier">B&eacute;zier</A> splines (quadratic or cubic).
+	    order <A HREF="#bezier">B&eacute;zier</A> splines (quadratic or cubic), and
+	    <A HREF="http://www.levien.com/">Raph Levien's</A> clothoid splines.
 	  <DT>
 	    SSP
 	  <DD>
@@ -1111,8 +1159,8 @@ $ make install
 	    A state machine is like a very simple little program, they are used on the
 	    mac for performing contextual substitutions and kerning. The
 	    <A HREF="statemachine.html" TARGET="_top">state machine dialog </A>is reachable
-	    from <A HREF="fontinfo.html#Mac-SM" TARGET="_top">Element-&gt;Font
-	    Info-&gt;Mac State Machine</A>
+	    from <A HREF="fontinfo.html#Lookups" TARGET="_top">Element-&gt;Font
+	    Info-&gt;Lookups</A>
 	    <P>
 	    The "state machine" consists of a table of states, each state in turn consists
 	    of a series of potential transitions (to the same or different states) depending
