@@ -5539,14 +5539,19 @@ return( sc );
 }
 
 SplineChar *SFSplineCharCreate(SplineFont *sf) {
-    SplineChar *sc = SplineCharCreate(sf->layer_cnt);
+    SplineChar *sc = SplineCharCreate(sf==NULL?2:sf->layer_cnt);
     int i;
 
-    for ( i=0; i<sf->layer_cnt; ++i ) {
-	sc->layers[i].background = sf->layers[i].background;
-	sc->layers[i].order2     = sf->layers[i].order2;
+    if ( sf==NULL ) {
+	sc->layers[ly_back].background = true;
+	sc->layers[ly_fore].background = false;
+    } else {
+	for ( i=0; i<sf->layer_cnt; ++i ) {
+	    sc->layers[i].background = sf->layers[i].background;
+	    sc->layers[i].order2     = sf->layers[i].order2;
+	}
+	sc->parent = sf;
     }
-    sc->parent = sf;
 return( sc );
 }
 
