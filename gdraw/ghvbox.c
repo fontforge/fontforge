@@ -49,7 +49,8 @@ GResInfo ghvgroupbox_ri = {
     N_("A box drawn around other gadgets"),
     "GHVGroupBox",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_shape|omf_padding|omf_main_background|omf_disabled_background
 };
 
 static void _GHVBox_Init(void) {
@@ -63,7 +64,7 @@ return;
     hvgroup_box.border_shape = hvbox_box.border_shape = bs_rect;
     hvgroup_box.padding = 2;
     hvbox_box.padding = 0;
-    hvgroup_box.flags = hvbox_box.flags = 0;
+    /*hvgroup_box.flags = hvbox_box.flags = 0;*/
     hvgroup_box.main_background = COLOR_TRANSPARENT;
     hvgroup_box.disabled_background = COLOR_TRANSPARENT;
     _GGadgetInitDefaultBox("GHVBox.",&hvbox_box,NULL);
@@ -648,7 +649,7 @@ GGadget *GHVGroupCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 return( &gb->g );
 }
 
-void GHVBoxFitWindow(GGadget *g) {
+static void _GHVBoxFitWindow(GGadget *g, int center) {
     GRect outer, cur, screen;
 
     if ( !GGadgetFillsWindow(g)) {
@@ -673,6 +674,20 @@ return;
 	GDrawProcessPendingEvents(GDrawGetDisplayOfWindow(g->base));
     } else
 	GGadgetResize(g, outer.width-2*g->r.x, outer.height-2*g->r.y );
+    if ( center ) {
+	GDrawMove(g->base,(screen.width-outer.width)/2,(screen.height-outer.height)/2);
+	/* I don't think this one matters as much, but try a little */
+	GDrawSync(GDrawGetDisplayOfWindow(g->base));
+	GDrawProcessPendingEvents(GDrawGetDisplayOfWindow(g->base));
+    }
+}
+
+void GHVBoxFitWindow(GGadget *g) {
+    _GHVBoxFitWindow(g,false);
+}
+
+void GHVBoxFitWindowCentered(GGadget *g) {
+    _GHVBoxFitWindow(g,true);
 }
 
 void GHVBoxReflow(GGadget *g) {

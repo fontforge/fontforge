@@ -70,7 +70,8 @@ static GResInfo gtextfield_ri = {
     N_("Text Field"),
     "GTextField",
     "Gdraw",
-    false
+    false,
+    omf_font|omf_padding
 };
 static GGadgetCreateData textlist_gcd[] = {
 	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[0],list_choices,gg_visible}},
@@ -101,7 +102,8 @@ static GResInfo listfieldmenu_ri = {
     N_("Box surrounding the ListMark in a list field (combobox)"),
     "GComboBoxMenu",
     "Gdraw",
-    false
+    false,
+    omf_padding
 };
 static GGadgetCreateData num_gcd[] = {
 	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible}},
@@ -132,7 +134,8 @@ static GResInfo numericfieldspinner_ri = {
     N_("The box around the up/down arrows of a numeric field (spinner)"),
     "GNumericFieldSpinner",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_width|omf_padding
 };
 
 static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },

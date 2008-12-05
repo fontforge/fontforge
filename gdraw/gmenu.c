@@ -69,7 +69,8 @@ static GResInfo gmenubar_ri = {
     N_("Menu Bar"),
     "GMenuBar",
     "Gdraw",
-    false
+    false,
+    omf_border_shape|omf_border_width|box_foreground_border_outer
 };
 static struct resed menu_re[] = {
     {N_("MacIcons"), "MacIcons", rt_bool, &mac_menu_icons, N_("Whether to use mac-like icons to indicate modifiers (for instance ^ for Control)\nor to use an abreviation (for instance \"Cnt-\")")},
@@ -84,7 +85,8 @@ static GResInfo gmenu_ri = {
     N_("Menu"),
     "GMenu",
     "Gdraw",
-    false
+    false,
+    omf_border_shape|omf_padding|box_foreground_border_outer    
 };
 
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
@@ -108,8 +110,8 @@ static void GMenuInit() {
     menubar_box.border_shape = menu_box.border_shape = bs_rect;
     menubar_box.border_width = 0;
     menu_box.padding = 1;
-    menubar_box.flags = box_foreground_border_outer;
-    menu_box.flags = box_foreground_border_outer;
+    menubar_box.flags |= box_foreground_border_outer;
+    menu_box.flags |= box_foreground_border_outer;
     menu_font = _GGadgetInitDefaultBox("GMenuBar.",&menubar_box,menu_font);
     menu_font = _GGadgetInitDefaultBox("GMenu.",&menu_box,menu_font);
     keystr = GResourceFindString("Keyboard");

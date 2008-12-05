@@ -56,7 +56,8 @@ static GResInfo glabel_ri = {
     N_("Text Labels"),
     "GLabel",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_width|omf_padding
 };
 static GTextInfo button_lab[] = {
 	{ (unichar_t *) "Disabled Button", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -78,7 +79,14 @@ static GResInfo gbutton_ri = {
     N_("Buttons"),
     "GButton",
     "Gdraw",
-    true
+    true,
+#ifdef __Mac
+    box_do_depressed_background|omf_border_type|omf_border_width|
+	    omf_border_shape|omf_padding
+#else
+    box_foreground_border_inner|box_foreground_border_outer|
+	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default
+#endif
 };
 static GGadgetCreateData def_gcd[] = {
 	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible|gg_but_default}},
@@ -97,7 +105,12 @@ static GResInfo gdefault_ri = {
     N_("Default Buttons"),
     "GDefaultButton",
     "Gdraw",
-    true
+    true,
+#ifdef __Mac
+    box_gradient_bg|omf_main_background|omf_gradient_bg_end
+#else
+    0
+#endif
 };
 static GGadgetCreateData cancel_gcd[] = {
 	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible|gg_but_cancel}},
@@ -116,7 +129,12 @@ static GResInfo gcancel_ri = {
     N_("Cancel Buttons"),
     "GCancelButton",
     "Gdraw",
-    true
+    true,
+#ifdef __Mac
+    box_gradient_bg|omf_main_background|omf_gradient_bg_end
+#else
+    0
+#endif
 };
 static GGadgetCreateData color_gcd[] = {
 	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible}},
@@ -160,7 +178,12 @@ static GResInfo gdroplist_ri = {
     N_("Drop List Button"),
     "GDropList",
     "Gdraw",
-    true
+    true,
+#ifdef __Mac
+    omf_border_type|omf_border_width|omf_border_shape
+#else
+    0
+#endif
 };
 
 static void GButtonInvoked(GButton *b,GEvent *ev) {
@@ -876,27 +899,19 @@ return;
     _GGadget_button_box.border_type = bt_box;
     _GGadget_button_box.border_width = 1;
     _GGadget_button_box.border_shape = bs_roundrect;
-    _GGadget_button_box.flags = box_do_depressed_background;
+    _GGadget_button_box.flags |= box_do_depressed_background;
     _GGadget_button_box.padding = 1;
 #else
-    _GGadget_button_box.flags = box_foreground_border_inner|box_foreground_border_outer|
+    _GGadget_button_box.flags |= box_foreground_border_inner|box_foreground_border_outer|
 	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default;
 #endif
     label_box.border_type = bt_none;
-    label_box.border_width = label_box.padding = label_box.flags = 0;
+    label_box.border_width = label_box.padding = /*label_box.flags =*/ 0;
     label_font = _GGadgetInitDefaultBox("GButton.",&_GGadget_button_box,NULL);
     temp = _GGadgetInitDefaultBox("GLabel.",&label_box,NULL);
     if ( temp!=NULL )
 	label_font = temp;
     shift_on_press = GResourceFindBool("GButton.ShiftOnPress",false);
-#ifdef __Mac
-    if ( _GGadget_button_box.border_type == bt_box ) {
-	_GGadget_droplist_box.border_brightest = _ggadget_Default_Box.border_brightest;
-	_GGadget_droplist_box.border_brighter = _ggadget_Default_Box.border_brighter;
-	_GGadget_droplist_box.border_darkest = _ggadget_Default_Box.border_darkest;
-	_GGadget_droplist_box.border_darker = _ggadget_Default_Box.border_darker;
-    }
-#endif
     _GGadget_droplist_box = _GGadget_button_box;
     _GGadget_defaultbutton_box = _GGadget_button_box;
     _GGadget_cancelbutton_box  = _GGadget_button_box;

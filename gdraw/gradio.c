@@ -62,7 +62,8 @@ static GResInfo gradio_ri = {
     N_("Radio Button"),
     "GRadio",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_padding
 };
 static struct resed gradioon_re[] = {
     {N_("Image"), "Image", rt_image, &radon, N_("Image used instead of the Radio On Mark")},
@@ -79,7 +80,8 @@ static GResInfo gradioon_ri = {
     N_("The mark showing a radio button is on (depressed, selected)"),
     "GRadioOn",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static struct resed gradiooff_re[] = {
 /*
@@ -98,7 +100,8 @@ static GResInfo gradiooff_ri = {
     N_("The mark showing a radio button is off (up, not selected)"),
     "GRadioOff",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static GTextInfo checkbox_lab[] = {
 	{ (unichar_t *) "Disabled Radio", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -120,7 +123,8 @@ static GResInfo gcheckbox_ri = {
     N_("Check Box"),
     "GCheckBox",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_padding
 };
 static struct resed gcheckboxon_re[] = {
 /*
@@ -139,7 +143,8 @@ static GResInfo gcheckboxon_ri = {
     N_("The mark showing a checkbox is on (depressed, selected)"),
     "GCheckBoxOn",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static struct resed gcheckboxoff_re[] = {
 /*
@@ -158,7 +163,8 @@ static GResInfo gcheckboxoff_ri = {
     N_("The mark showing a checkbox is off (up, not selected)"),
     "GCheckBoxOff",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_shape|box_do_depressed_background
 };
 
 static void GRadioChanged(GRadio *gr) {
@@ -487,19 +493,18 @@ static void GRadioInit() {
     _GGadgetCopyDefaultBox(&checkbox_box);
     _GGadgetCopyDefaultBox(&checkbox_on_box);
     _GGadgetCopyDefaultBox(&checkbox_off_box);
+    radio_box.padding = 0;
     radio_box.border_type = bt_none;
     radio_on_box.border_type = bt_raised;
     radio_off_box.border_type = bt_lowered;
     radio_on_box.border_shape = radio_off_box.border_shape = bs_diamond;
-    radio_box.padding = 0;
-    /*radio_box.flags = box_active_border_inner;*/
-    radio_on_box.flags = radio_off_box.flags = box_do_depressed_background;
+    radio_on_box.flags = radio_off_box.flags |= box_do_depressed_background;
+
+    checkbox_box.padding = 0;
     checkbox_box.border_type = bt_none;
     checkbox_on_box.border_type = bt_raised;
     checkbox_off_box.border_type = bt_lowered;
-    checkbox_box.padding = 0;
-    /*checkbox_box.flags = box_active_border_inner;*/
-    checkbox_on_box.flags = checkbox_off_box.flags = box_do_depressed_background;
+    checkbox_on_box.flags = checkbox_off_box.flags |= box_do_depressed_background;
     checkbox_font = _GGadgetInitDefaultBox("GRadio.",&radio_box,NULL);
     checkbox_font = _GGadgetInitDefaultBox("GCheckBox.",&checkbox_box,checkbox_font);
     _GGadgetInitDefaultBox("GRadioOn.",&radio_on_box,NULL);

@@ -55,7 +55,9 @@ static GResInfo gscrollbar_ri = {
     N_("Scroll Bar"),
     "GScrollBar",
     "Gdraw",
-    false
+    false,
+    box_foreground_border_outer|omf_border_type|omf_border_width|
+	omf_padding|omf_main_background
 };
 static GResInfo gthumb_ri = {
     NULL, &ggadget_ri,&gscrollbar_ri, NULL,
@@ -67,7 +69,8 @@ static GResInfo gthumb_ri = {
     N_("Scroll Bar Thumb"),
     "GScrollBarThumb",
     "Gdraw",
-    true
+    true,
+    omf_main_background|omf_border_width|omf_padding
 };
 
 static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32 pos) {
@@ -453,7 +456,7 @@ static void GScrollBarInit() {
     scrollbar_box.border_type = bt_lowered;
     scrollbar_box.border_width = 1;
     scrollbar_box.padding = 0;
-    scrollbar_box.flags = box_foreground_border_outer;
+    scrollbar_box.flags |= box_foreground_border_outer;
     scrollbar_box.main_background = GDrawColorBrighten(scrollbar_box.main_background, 0x10);
     thumb_box.main_background = GDrawColorDarken(thumb_box.main_background,0x8);
     thumb_box.border_width = 1;

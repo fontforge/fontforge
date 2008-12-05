@@ -85,7 +85,7 @@ static struct resed popup_re[] = {
     {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible")},
     { NULL }};
 static GResInfo popup_ri = {
-    &listmark_ri, &ggadget_ri, NULL,NULL,
+    &listmark_ri, NULL, NULL,NULL,
     NULL,	/* No box */
     &popup_font,
     NULL,
@@ -125,7 +125,8 @@ GResInfo listmark_ri = {
 	"from TextFields and normal Buttons." ),
     "GListMark",
     "Gdraw",
-    false
+    false,
+    omf_border_width|omf_padding
 };
     
 
@@ -402,7 +403,7 @@ void GGadgetInit(void) {
 	_ggadget_default_font = _GGadgetInitDefaultBox("GGadget.",&_ggadget_Default_Box,NULL);
 	_GGadgetCopyDefaultBox(&_GListMark_Box);
 	_GListMark_Box.border_width = _GListMark_Box.padding = 1;
-	_GListMark_Box.flags = 0;
+	/*_GListMark_Box.flags = 0;*/
 	_GGadgetInitDefaultBox("GListMark.",&_GListMark_Box,NULL);
 	_GListMarkSize = GResourceFindInt("GListMark.Width", _GListMarkSize);
 	_GListMark_Image = GGadgetResourceFindImage("GListMark.Image", NULL);

@@ -47,7 +47,8 @@ GResInfo gline_ri = {
     N_("A separator line drawn across a dialog or in a menu"),
     "GLine",
     "Gdraw",
-    false
+    false,
+    omf_border_type|omf_border_shape|omf_padding
 };
 
 void _GGroup_Init(void) {
@@ -58,7 +59,7 @@ return;
     group_box.border_type = _GGroup_LineBox.border_type = bt_engraved;
     group_box.border_shape = _GGroup_LineBox.border_shape = bs_rect;
     group_box.padding = _GGroup_LineBox.padding = 0;
-    group_box.flags = _GGroup_LineBox.flags = 0;
+    /*group_box.flags = _GGroup_LineBox.flags = 0;*/
     group_box.main_background = COLOR_TRANSPARENT;
     group_box.disabled_background = COLOR_TRANSPARENT;
     _GGadgetInitDefaultBox("GLine.",&_GGroup_LineBox,NULL);

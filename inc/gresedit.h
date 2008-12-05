@@ -31,7 +31,7 @@
 #include "gresource.h"
 #include "ggadget.h"
 
-enum res_type2 { rt_stringlong = rt_string+1, rt_image, rt_font };
+enum res_type2 { rt_stringlong = rt_string+1, rt_coloralpha, rt_image, rt_font };
 
 struct resed {
     char *name, *resname;
@@ -57,8 +57,33 @@ typedef struct gresinfo {
     char *resname;
     char *progname;
     uint8 is_button;		/* Activate default button border flag */
+    uint32 override_mask;
+    GBox *overrides;
     GBox orig_state;
 } GResInfo;
+
+enum override_mask_flags {
+    /* First 8 flags are the enum box_flags */
+    omf_border_type	= 0x100,
+    omf_border_shape	= 0x200,
+    omf_border_width	= 0x400,
+    omf_padding		= 0x800,
+    omf_rr_radius	= 0x1000,
+
+    omf_main_foreground		= 0x10000,
+    omf_disabled_foreground	= 0x20000,
+    omf_main_background		= 0x40000,
+    omf_disabled_background	= 0x80000,
+    omf_depressed_background	= 0x100000,
+    omf_gradient_bg_end		= 0x200000,
+    omf_border_brightest	= 0x400000,
+    omf_border_brighter		= 0x800000,
+    omf_border_darkest		= 0x1000000,
+    omf_border_darker		= 0x2000000,
+    omf_active_border		= 0x4000000,
+
+    omf_font			= 0x80000000
+};
 
 extern void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *));
 extern void GResEditFind( struct resed *resed, char *prefix);
