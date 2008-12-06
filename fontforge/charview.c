@@ -191,6 +191,8 @@ static double rpt(CharView *cv, double pt) {
 }
 
 void CVColInit( void ) {
+    if ( cvcolsinited )
+return;
     GResEditFind( charview_re, "CharView.");
     GResEditFind( charview2_re, "CharView.");
     cvcolsinited = true;
