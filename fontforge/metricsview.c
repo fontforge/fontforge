@@ -46,6 +46,7 @@ static Color kernlinecol = 0x008000;
 static Color rbearinglinecol = 0x000080;
 
 void MVColInit( void ) {
+    static int cinit=false;
     GResStruct mvcolors[] = {
 	{ "AdvanceWidthColor", rt_color, &widthcol },
 	{ "ItalicAdvanceColor", rt_color, &italicwidthcol },
@@ -54,7 +55,10 @@ void MVColInit( void ) {
 	{ "SideBearingLineColor", rt_color, &rbearinglinecol },
 	{ NULL }
     };
-    GResourceFind( mvcolors, "MetricsView.");
+    if ( !cinit ) {
+	GResourceFind( mvcolors, "MetricsView.");
+	cinit = true;
+    }
 }
 
 static int MVSetVSb(MetricsView *mv);
@@ -4428,8 +4432,9 @@ static struct resed metricsview_re[] = {
     {N_("Selected Glyph Col"), "SelectedGlyphColor", rt_color, &selglyphcol, N_("Color used to mark the selected glyph")},
     NULL
 };
+extern GResInfo view_ri;
 GResInfo metricsview_ri = {
-    NULL, NULL,NULL, NULL,
+    &view_ri, NULL,NULL, NULL,
     NULL,
     NULL,
     NULL,
