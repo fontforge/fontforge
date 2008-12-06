@@ -535,10 +535,11 @@ return( true );
 static int GRE_ImageChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	/* GRE *gre = GDrawGetUserData(GGadgetGetWindow(g)); */
+	GRE *gre = GDrawGetUserData(GGadgetGetWindow(g));
 	GResImage **ri = GGadgetGetUserData(g);
 	char *new;
 	GImage *newi;
+	GRect size;
 	new = gwwv_open_filename_with_path("Find Image",
 		(*ri)==NULL?NULL: (*ri)->filename,
 		"*.{png,jpeg,jpg,tiff,bmp,xbm}",NULL,
@@ -549,24 +550,22 @@ return( true );
 	if ( newi==NULL ) {
 	    gwwv_post_error(_("Could not open image"),_("Could not open %s"), new );
 	    free( new );
-	}
-	if ( *ri==NULL ) {
+	} else if ( *ri==NULL ) {
 	    *ri = gcalloc(1,sizeof(GResImage));
 	    (*ri)->filename = new;
 	    (*ri)->image = newi;
-	    ((GButton *) g)->image = newi;
 	    GGadgetSetTitle8(g,"...");
 	} else {
-	    GImage hold;
 	    free( (*ri)->filename );
 	    (*ri)->filename = new;
-	    /* Need to retain the GImage point, but update its */
-	    /*  contents, and free the old stuff */
-	    hold = *((*ri)->image);
-	    *(*ri)->image = *newi;
-	    *newi = hold;
-	    GImageDestroy(newi);
+	    if ( !_GGadget_ImageInCache((*ri)->image ) )
+		GImageDestroy((*ri)->image);
+	    (*ri)->image = newi;
 	}
+	((GButton *) g)->image = newi;
+	GGadgetGetDesiredSize(g,&size,NULL);
+	GGadgetResize(g,size.width,size.height);
+	GRE_RefreshAll(gre);
     }
 return( true );
 }
@@ -601,19 +600,19 @@ static void GRE_DoCancel(GRE *gre) {
 		    if ( extras->orig.sval==NULL ) {
 			if ( ri!=NULL ) {
 			    free(ri->filename);
-			    GImageDestroy(ri->image);
+			    if ( ri->image!=NULL )
+				GImageDestroy(ri->image);
 			    free(ri);
 			    *_ri = NULL;
 			}
 		    } else {
 			if ( strcmp(extras->orig.sval,ri->filename)!=0 ) {
-			    GImage *temp, hold;
+			    GImage *temp;
 			    temp = GImageRead(extras->orig.sval);
 			    if ( temp!=NULL ) {
-				hold = *(ri->image);
-				*ri->image = *temp;
-				*temp = hold;
-				GImageDestroy(temp);
+				if ( !_GGadget_ImageInCache(ri->image ) )
+				    GImageDestroy(ri->image);
+				ri->image = temp;
 			        free(ri->filename);
 			        ri->filename = copy(extras->orig.sval);
 			    }

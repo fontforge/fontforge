@@ -316,6 +316,18 @@ char **_GGadget_GetImagePath(void) {
 return( imagepath );
 }
 
+int _GGadget_ImageInCache(GImage *image) {
+    int i;
+    struct image_bucket *bucket;
+
+    for ( i=0; i<IC_SIZE; ++i ) {
+	for ( bucket=imagecache[i]; bucket!=NULL; bucket=bucket->next )
+	    if ( bucket->image==image )
+return( true );
+    }
+return( false );
+}
+
 static void ImageCacheReload(void) {
     int i,k;
     struct image_bucket *bucket;
@@ -506,7 +518,7 @@ return( ri );
 	    ri->filename = fname = absname;
 	}
     }
-    if ( ret!=NULL ) {
+    if ( ret==NULL ) {
 	ri->filename = NULL;
 	free(fname);
     } else

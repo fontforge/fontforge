@@ -192,7 +192,7 @@ typedef struct gcheck {
     GImage *image;
     GRect onoffrect, onoffinner;
     GBox *onbox, *offbox;
-    GImage *on, *off, *ondis, *offdis;
+    GResImage *on, *off, *ondis, *offdis;
 } GCheckBox;
 
 typedef struct gradio {
@@ -209,7 +209,7 @@ typedef struct gradio {
     GImage *image;
     GRect onoffrect, onoffinner;
     GBox *onbox, *offbox;
-    GImage *on, *off, *ondis, *offdis;
+    GResImage *on, *off, *ondis, *offdis;
     struct gradio *post;
 } GRadio;
 
@@ -571,6 +571,7 @@ extern void _GButton_SetDefault(GGadget *g,int32 is_default);
 extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
 extern char **_GGadget_GetImagePath(void);
+extern int _GGadget_ImageInCache(GImage *image);
 
 extern int _ggadget_use_gettext;
 

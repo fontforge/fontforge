@@ -43,13 +43,17 @@ static int gradio_inited = false;
 static GResInfo gradio_ri, gradioon_ri, gradiooff_ri;
 static GResInfo gcheckbox_ri, gcheckboxon_ri, gcheckboxoff_ri;
 static GTextInfo radio_lab[] = {
-	{ (unichar_t *) "Disabled Radio", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled Radio" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+	{ (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+	{ (unichar_t *) "Enabled 2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
 static GGadgetCreateData radio_gcd[] = {
 	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[0],NULL,gg_visible}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[1],NULL,gg_visible|gg_enabled}}
+	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[1],NULL,gg_visible|gg_cb_on}},
+	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[2],NULL,gg_visible|gg_enabled}},
+	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[3],NULL,gg_visible|gg_enabled|gg_cb_on}}
     };
-static GGadgetCreateData *rarray[] = { GCD_Glue, &radio_gcd[0], GCD_Glue, &radio_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData *rarray[] = { GCD_Glue, &radio_gcd[0], GCD_Glue, &radio_gcd[1], GCD_Glue, &radio_gcd[2], GCD_Glue, &radio_gcd[3], GCD_Glue, NULL, NULL };
 static GGadgetCreateData radiobox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) rarray,gg_visible|gg_enabled}};
 static GResInfo gradio_ri = {
@@ -104,13 +108,15 @@ static GResInfo gradiooff_ri = {
     omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static GTextInfo checkbox_lab[] = {
-	{ (unichar_t *) "Disabled Radio", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled Radio" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+	{ (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
 static GGadgetCreateData checkbox_gcd[] = {
 	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[0],NULL,gg_visible}},
+	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_cb_on}},
 	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_enabled}}
     };
-static GGadgetCreateData *carray[] = { GCD_Glue, &checkbox_gcd[0], GCD_Glue, &checkbox_gcd[1], GCD_Glue, NULL, NULL };
+static GGadgetCreateData *carray[] = { GCD_Glue, &checkbox_gcd[0], GCD_Glue, &checkbox_gcd[1], GCD_Glue, &checkbox_gcd[2], GCD_Glue, NULL, NULL };
 static GGadgetCreateData checkboxbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) carray,gg_visible|gg_enabled}};
 static GResInfo gcheckbox_ri = {
@@ -196,7 +202,8 @@ return;		/* Do Nothing, it's already on */
 static int gradio_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRadio *gr = (GRadio *) g;
     int x;
-    GImage *img = gr->image, *mark;
+    GImage *img = gr->image;
+    GResImage *mark;
     GRect old1, old2, old3;
     int yoff = (g->inner.height-(gr->fh))/2;
 
@@ -214,14 +221,17 @@ return( false );
 	    gs_pressedactive,false);
     GBoxDrawBorder(pixmap,&gr->onoffrect,gr->ison?gr->onbox:gr->offbox,
 	    gs_pressedactive,false);
-    if ( (gr->ison && gr->on!=NULL) || (!gr->ison && gr->off!=NULL)) {
+
+    mark = NULL;
+    if ( g->state == gs_disabled )
+	mark = gr->ison ? gr->ondis : gr->offdis;
+    if ( mark==NULL || mark->image==NULL )
+	mark = gr->ison ? gr->on : gr->off;
+    if ( mark!=NULL && mark->image==NULL )
 	mark = NULL;
-	if ( g->state == gs_disabled )
-	    mark = gr->ison ? gr->ondis : gr->offdis;
-	if ( mark==NULL )
-	    mark = gr->ison ? gr->on : gr->off;
+    if ( mark!=NULL ) {
 	GDrawPushClip(pixmap,&gr->onoffinner,&old3);
-	GDrawDrawScaledImage(pixmap,mark,
+	GDrawDrawScaledImage(pixmap,mark->image,
 		gr->onoffinner.x,gr->onoffinner.y);
 	GDrawPopClip(pixmap,&old3);
     } else if ( gr->ison && gr->onbox == &checkbox_on_box ) {
@@ -538,15 +548,15 @@ static void GCheckBoxFit(GCheckBox *gl) {
     needed.x = needed.y = 0;
     needed.width = needed.height = 1;
     if ( gl->on!=NULL ) {
-	if (( iwidth = GImageGetScaledWidth(gl->g.base,gl->on))>needed.width )
+	if (( iwidth = GImageGetScaledWidth(gl->g.base,gl->on->image))>needed.width )
 	    needed.width = iwidth;
-	if (( iheight = GImageGetScaledHeight(gl->g.base,gl->on))>needed.height )
+	if (( iheight = GImageGetScaledHeight(gl->g.base,gl->on->image))>needed.height )
 	    needed.height = iheight;
     }
     if ( gl->off!=NULL ) {
-	if (( iwidth = GImageGetScaledWidth(gl->g.base,gl->off))>needed.width )
+	if (( iwidth = GImageGetScaledWidth(gl->g.base,gl->off->image))>needed.width )
 	    needed.width = iwidth;
-	if (( iheight = GImageGetScaledHeight(gl->g.base,gl->off))>needed.height )
+	if (( iheight = GImageGetScaledHeight(gl->g.base,gl->off->image))>needed.height )
 	    needed.height = iheight;
     }
     gl->onoffinner = needed;
@@ -595,17 +605,17 @@ static GCheckBox *_GCheckBoxCreate(GCheckBox *gl, struct gwindow *base, GGadgetD
     if ( gl->isradio ) {
 	gl->onbox = &radio_on_box;
 	gl->offbox = &radio_off_box;
-	gl->on = radon==NULL ? NULL : radon->image;
-	gl->off = radoff==NULL ? NULL : radoff->image;
-	gl->ondis = raddison==NULL ? NULL : raddison->image;
-	gl->offdis = raddisoff==NULL ? NULL : raddisoff->image;
+	gl->on = radon;
+	gl->off = radoff;
+	gl->ondis = raddison;
+	gl->offdis = raddisoff;
     } else {
 	gl->onbox = &checkbox_on_box;
 	gl->offbox = &checkbox_off_box;
-	gl->on = checkon==NULL ? NULL : checkon->image;
-	gl->off = checkoff==NULL ? NULL : checkoff->image;
-	gl->ondis = checkdison==NULL ? NULL : checkdison->image;
-	gl->offdis = checkdisoff==NULL ? NULL : checkdisoff->image;
+	gl->on = checkon;
+	gl->off = checkoff;
+	gl->ondis = checkdison;
+	gl->offdis = checkdisoff;
     }
     GCheckBoxFit(gl);
     _GGadget_FinalPosition(&gl->g,base,gd);
