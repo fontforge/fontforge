@@ -73,7 +73,7 @@ struct openfilefilters def_font_filters[] = {
 	   "pdb"
 	   "}"
 /* With any of these methods of compression */
-	     "{.gz,.Z,.bz2,}",
+	     "{.gz,.Z,.bz2,.lzma,}",
 	N_("Outline Fonts"), "*.{"
 	   "pfa,"
 	   "pfb,"
@@ -99,7 +99,7 @@ struct openfilefilters def_font_filters[] = {
 	   "mf,"
 	   "ik"
 	   "}"
-	     "{.gz,.Z,.bz2,}",
+	     "{.gz,.Z,.bz2,.lzma,}",
 	N_("Bitmap Fonts"), "*.{"
 	   "bdf,"
 	   "otb,"
@@ -113,20 +113,20 @@ struct openfilefilters def_font_filters[] = {
 	   "*gf,"
 	   "pdb"
 	   "}"
-	     "{.gz,.Z,.bz2,}",
+	     "{.gz,.Z,.bz2,.lzma,}",
 	NU_("ΤεΧ Bitmap Fonts"), "*{pk,gf}",
-	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,}",
-	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,}",
-	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,}",
-	N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,}",
-	N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,}",
-	N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,}",
+	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,.lzma,}",
+	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,.lzma,}",
+	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}",
+	N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}",
+	N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}",
+	N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}",
 #ifndef _NO_LIBXML
-	 N_("SVG"), "*.svg{.gz,.Z,.bz2,}",
+	 N_("SVG"), "*.svg{.gz,.Z,.bz2,.lzma,}",
 #endif
-	 N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,}",
+	 N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,.lzma,}",
 	 N_("Backup SFD"), "*.sfd~",
-	 N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,}",
+	 N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,.lzma,}",
 	 "-", NULL,
 	 N_("Archives"), "*.{zip,tgz,tbz,tbz2,tar.gz,tar.bz,tar.bz2,tar}",
 	 N_("All Files"), "*",

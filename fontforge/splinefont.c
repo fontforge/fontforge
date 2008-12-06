@@ -617,6 +617,7 @@ struct archivers archivers[] = {
     { ".tbz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".tbz", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".zip", "unzip", "zip", "-l", "", "", ars_zip },
+    /* { ".tar.lzma", ? } */
     NULL
 };
 
@@ -841,6 +842,7 @@ struct compressors compressors[] = {
     { ".bz2", "bunzip2", "bzip2" },
     { ".bz", "bunzip2", "bzip2" },
     { ".Z", "gunzip", "compress" },
+    { ".lzma", "unlzma", "lzma" },
 /* file types which are both archived and compressed (.tgz, .zip) are handled */
 /*  by the archiver above */
     NULL
