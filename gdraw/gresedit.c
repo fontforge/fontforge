@@ -2327,6 +2327,12 @@ static GResInfo gdraw_ri = {
     false
 };
 
+static int refresh_eh(GWindow cover,GEvent *event) {
+    if ( event->type==et_expose )
+	GDrawDestroyWindow(cover);
+return( true );
+}
+    
 void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *)) {
     GResInfo *re_end;
     static int initted = false;
@@ -2378,6 +2384,26 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
     GResEditDlg(additional,def_res_file,change_res_filename);
     if ( re_end!=NULL )
 	re_end->next = NULL;
+
+    /* Now create a window which covers the entire screen, and then destroy it*/
+    /*  point is to force a refresh on all our windows (it'll refresh everyone's*/
+    /*  else windows too, but oh well */
+    {
+	GWindowAttrs wattrs;
+	GWindow root = GDrawGetRoot(screen_display);
+	GRect screen;
+	static GWindow gw;
+
+	GDrawGetSize(root,&screen);
+	wattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_bordwidth|wam_backcol;
+	wattrs.event_masks = -1;
+	wattrs.nodecoration = true;
+	wattrs.positioned = true;
+	wattrs.border_width = 0;
+	wattrs.background_color = COLOR_UNKNOWN;
+	gw = GDrawCreateTopWindow(screen_display,&screen,refresh_eh,&gw,&wattrs);
+	GDrawSetVisible(gw,true);
+    }
 }
     
 void GResEditFind( struct resed *resed, char *prefix) {
