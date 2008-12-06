@@ -4549,6 +4549,14 @@ return;
 
     if ( justinuse==git_justinuse || !ask_user_for_cmap || (i = PickCMap(cmap_encs,usable_encs,def))==-1 )
 	i = def;
+
+    if ( i==-1 ) {
+	if ( justinuse==git_normal )
+	    LogError( _("Could not find a usable encoding table" ));
+	free(cmap_encs);
+return;
+    }
+
     info->platform = cmap_encs[i].platform;
     info->specific = cmap_encs[i].specific;
 
