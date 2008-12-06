@@ -1027,7 +1027,7 @@ static int GFileChooserBookmarks(GGadget *g, GEvent *e) {
 		mcnt+=bcnt;
 		if ( bookmarks!=NULL && bookmarks[0]!=NULL ) {
 		    mi[mcnt].ti.line = true;
-		    mi[mcnt].ti.fg = mi[mcnt+bcnt].ti.bg = COLOR_DEFAULT;
+		    mi[mcnt].ti.fg = mi[mcnt].ti.bg = COLOR_DEFAULT;
 		    ++mcnt;
 		}
 	    }
