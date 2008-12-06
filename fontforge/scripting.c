@@ -2805,6 +2805,35 @@ static void bSelectWorthOutputting(Context *c) {
     }
 }
 
+static void bSelectGlyphsBoth(Context *c) {
+    FontViewBase *fv = c->curfv;
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int layer = fv->active_layer;
+    int add = 0;
+
+    if ( c->a.argc!=1 && c->a.argc!=2 )
+	ScriptError( c, "Too many arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument" );
+	add = c->a.vals[1].u.ival;
+    }
+
+    if ( add ) {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] |= ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    } else {
+	for ( i=0; i< map->enccount; ++i )
+	    fv->selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		sf->glyphs[gid]->layers[layer].refs!=NULL &&
+		sf->glyphs[gid]->layers[layer].splines!=NULL );
+    }
+}
+
 static void bSelectByATT(Context *c) {
     ScriptError(c,"This scripting function no longer works. It has been replace by SelectByPosSub");
 }
@@ -7875,6 +7904,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectChanged", bSelectChanged },
     { "SelectHintingNeeded", bSelectHintingNeeded },
     { "SelectWorthOutputting", bSelectWorthOutputting },
+    { "SelectGlyphsBoth", bSelectGlyphsBoth },
     { "SelectByATT", bSelectByATT },
     { "SelectByPosSub", bSelectByPosSub },
     { "SelectByColor", bSelectByColor },
