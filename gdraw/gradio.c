@@ -133,10 +133,8 @@ static GResInfo gcheckbox_ri = {
     omf_border_type|omf_padding
 };
 static struct resed gcheckboxon_re[] = {
-/*
     {N_("Image"), "Image", rt_image, &checkon, N_("Image used instead of the Radio On Mark")},
     {N_("Disabled Image"), "DisabledImage", rt_image, &checkdison, N_("Image used instead of the Radio On Mark (when the radio is disabled)")},
-*/
     NULL
 };
 static GResInfo gcheckboxon_ri = {
@@ -153,10 +151,8 @@ static GResInfo gcheckboxon_ri = {
     omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static struct resed gcheckboxoff_re[] = {
-/*
     {N_("Image"), "Image", rt_image, &checkoff, N_("Image used instead of the Check Box Off Mark")},
     {N_("Disabled Image"), "DisabledImage", rt_image, &checkdisoff, N_("Image used instead of the Check Box Off Mark (when the radio is disabled)")},
-*/
     NULL
 };
 static GResInfo gcheckboxoff_ri = {
