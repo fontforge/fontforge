@@ -1,14 +1,14 @@
 # (British) English User Interface strings for FontForge.
 # Copyright (C) 2000-2006 by George Williams
 # This file is distributed under the same license as the FontForge package.
-# George Williams, <pfaedit@users.sourceforge.net>, 2006.
+# George Williams, <pfaedit@users.sourceforge.net>, 2008.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 20060507\n"
+"Project-Id-Version: 20981207\n"
 "POT-Creation-Date: 2006-05-07 20:02-0700\n"
-"PO-Revision-Date: 2006-05-07 20:02-0700\n"
+"PO-Revision-Date: 2098-12-07 05:39-0800\n"
 "Last-Translator: George Williams, <pfaedit@users.sourceforge.net>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -16,62 +16,573 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n!=1\n"
 
-#: autotrace.c:434 autotrace.c:435 autotrace.c:682 autotrace.c:683
+#: autotrace.c:426 autotrace.c:427 autotrace.c:630 autotrace.c:631
 msgid "Additional arguments for autotrace program:"
-msgstr "Additional arguments for autotrace programme:"
+msgstr "Additional arguements for autotrace program:"
 
-#: autotrace.c:455 autotrace.c:523 autotrace.c:707
-msgid ""
-"Can't find autotrace program (set AUTOTRACE environment variable) or "
-"download from:\n"
-"  http://sf.net/projects/autotrace/"
-msgstr ""
-"Can't find autotrace programme (set AUTOTRACE environment variable) or "
-"download from:\n"
-"  http://sf.net/projects/autotrace/"
+#: basedlg.c:808
+msgid "Mathematical centerline"
+msgstr "Mathematical centreline"
 
-#: autotrace.c:702
-msgid ""
-"Can't find mf program -- metafont (set MF environment variable) or download "
-"from:\n"
-"  http://www.tug.org/\n"
-"  http://www.ctan.org/\n"
-"It's part of the TeX distribution"
-msgstr ""
-"Can't find mf programme -- metafont (set MF environment variable) or download "
-"from:\n"
-"  http://www.tug.org/\n"
-"  http://www.ctan.org/\n"
-"It's part of the TeX distribution"
+#: charinfo.c:3477 cvstroke.c:2259 fontview.c:1882 fontview.c:2292
+#: groupsdlg.c:1006
+msgid "Pick a color"
+msgstr "Pick a colour"
 
-#. CCW means counter clockwise
-#: bitmapview.c
-msgid "Rotate _90° CCW"
-msgstr "Rotate _90° ACW"
-
-#: charinfo.c:5695 cvstroke.c:1143 cvstroke.c:1219
+#: charinfo.c:4071 cvstroke.c:2340 cvstroke.c:2535
 msgid "Color:"
 msgstr "Colour:"
 
-#: cvgetinfo.c:968
+#: charinfo.c:4116
+msgid ""
+"Don't display columns of 0s.\n"
+"The OpenType lookup allows for up to 8 kinds\n"
+"of data, but almost all kerning lookups will use just one.\n"
+"Omitting the others makes the behavior clearer."
+msgstr ""
+"Don't display columns of 0s.\n"
+"The OpenType lookup allows for up to 8 kinds\n"
+"of data, but almost all kerning lookups will use just one.\n"
+"Omitting the others makes the behaviour clearer."
+
+#: charinfo.c:4356
+msgid ""
+"Brings up a dialog which gives fine control over\n"
+"horizontal positioning of subscripts and superscripts\n"
+"depending on their vertical positioning."
+msgstr ""
+"Brings up a dialogue which gives fine control over\n"
+"horizontal positioning of subscripts and superscripts\n"
+"depending on their vertical positioning."
+
+#: charview.c:133
+msgid "Point Color"
+msgstr "Point Colour"
+
+#: charview.c:133
+msgid "The color of an on-curve point"
+msgstr "The colour of an on-curve point"
+
+#: charview.c:134
+msgid "First Point Color"
+msgstr "First Point Colour"
+
+#: charview.c:134
+msgid "The color of the point which is the start of a contour"
+msgstr "The colour of the point which is the start of a contour"
+
+#: charview.c:135
+msgid "Selected Point Color"
+msgstr "Selected Point Colour"
+
+#: charview.c:135
+msgid "The color of a selected point"
+msgstr "The colour of a selected point"
+
+#: charview.c:137
+msgid "Extrema Point Color"
+msgstr "Extrema Point Colour"
+
+#: charview.c:137
+msgid "The color used to draw points at extrema (if that mode is active)"
+msgstr "The colour used to draw points at extrema (if that mode is active)"
+
+#: charview.c:138
+msgid "Point of Inflection Color"
+msgstr "Point of Inflection Colour"
+
+#: charview.c:138
+msgid "The color used to draw points of inflection (if that mode is active)"
+msgstr "The colour used to draw points of inflection (if that mode is active)"
+
+#: charview.c:139
+msgid "Almost H/V Color"
+msgstr "Almost H/V Colour"
+
+#: charview.c:139
+msgid ""
+"The color used to draw markers for splines which are almost, but not quite "
+"horizontal or vertical at their end-points"
+msgstr ""
+"The colour used to draw markers for splines which are almost, but not quite "
+"horizontal or vertical at their end-points"
+
+#: charview.c:140
+msgid "Next CP Color"
+msgstr "Next CP Colour"
+
+#: charview.c:140
+msgid "The color used to draw the \"next\" control point of an on-curve point"
+msgstr "The colour used to draw the \"next\" control point of an on-curve point"
+
+#: charview.c:141
+msgid "Prev CP Color"
+msgstr "Prev CP Colour"
+
+#: charview.c:141
+msgid ""
+"The color used to draw the \"previous\" control point of an on-curve point"
+msgstr ""
+"The colour used to draw the \"previous\" control point of an on-curve point"
+
+#: charview.c:142
+msgid "Selected CP Color"
+msgstr "Selected CP Colour"
+
+#: charview.c:142
+msgid "The color used to draw a selected control point of an on-curve point"
+msgstr "The colour used to draw a selected control point of an on-curve point"
+
+#: charview.c:143
+msgid "Coordinate Line Color"
+msgstr "Coordinate Line Colour"
+
+#: charview.c:144
+msgid "Italic Coord. Color"
+msgstr "Italic Coord. Colour"
+
+#: charview.c:145
+msgid "Metrics Label Color"
+msgstr "Metrics Label Colour"
+
+#: charview.c:146
+msgid "Hint Label Color"
+msgstr "Hint Label Colour"
+
+#: charview.c:147
+msgid "Blue Values Color"
+msgstr "Blue Values Colour"
+
+#: charview.c:147
+msgid ""
+"The color used to mark blue zones in the blue values entry of the private "
+"dictionary"
+msgstr ""
+"The colour used to mark blue zones in the blue values entry of the private "
+"dictionary"
+
+#: charview.c:148
+msgid "Family Blue Color"
+msgstr "Family Blue Colour"
+
+#: charview.c:148
+msgid ""
+"The color used to mark blue zones in the family blues entry of the private "
+"dictionary"
+msgstr ""
+"The colour used to mark blue zones in the family blues entry of the private "
+"dictionary"
+
+#: charview.c:149
+msgid "Diagonal Hint Color"
+msgstr "Diagonal Hint Colour"
+
+#: charview.c:149
+msgid "The color used to draw diagonal hints"
+msgstr "The colour used to draw diagonal hints"
+
+#: charview.c:150
+msgid "Horiz. Hint Color"
+msgstr "Horiz. Hint Colour"
+
+#: charview.c:150
+msgid "The color used to draw horizontal hints"
+msgstr "The colour used to draw horizontal hints"
+
+#: charview.c:151
+msgid "Vert. Hint Color"
+msgstr "Vert. Hint Colour"
+
+#: charview.c:151
+msgid "The color used to draw vertical hints"
+msgstr "The colour used to draw vertical hints"
+
+#: charview.c:152
+msgid "HFlex Hint Color"
+msgstr "HFlex Hint Colour"
+
+#: charview.c:153
+msgid "VFlex Hint Color"
+msgstr "VFlex Hint Colour"
+
+#: charview.c:154
+msgid "Conflict Hint Color"
+msgstr "Conflict Hint Colour"
+
+#: charview.c:154
+msgid "The color used to draw a hint which conflicts with another"
+msgstr "The colour used to draw a hint which conflicts with another"
+
+#: charview.c:155
+msgid "HHint Active Color"
+msgstr "HHint Active Colour"
+
+#: charview.c:155
+msgid ""
+"The color used to draw the active horizontal hint which the Review Hints "
+"dialog is examining"
+msgstr ""
+"The colour used to draw the active horizontal hint which the Review Hints "
+"dialogue is examining"
+
+#: charview.c:156
+msgid "VHint Active Color"
+msgstr "VHint Active Colour"
+
+#: charview.c:156
+msgid ""
+"The color used to draw the active vertical hint which the Review Hints "
+"dialog is examining"
+msgstr ""
+"The colour used to draw the active vertical hint which the Review Hints "
+"dialogue is examining"
+
+#: charview.c:161
+msgid "Width Color"
+msgstr "Width Colour"
+
+#: charview.c:161
+msgid "The color of the line marking the advance width"
+msgstr "The colour of the line marking the advance width"
+
+#: charview.c:162
+msgid "Selected Width Color"
+msgstr "Selected Width Colour"
+
+#: charview.c:162
+msgid "The color of the line marking the advance width when it is selected"
+msgstr "The colour of the line marking the advance width when it is selected"
+
+#: charview.c:163
+msgid "Grid Fit Width Color"
+msgstr "Grid Fit Width Colour"
+
+#: charview.c:163
+msgid "The color of the line marking the grid-fit advance width"
+msgstr "The colour of the line marking the grid-fit advance width"
+
+#: charview.c:164
+msgid "Ligature Caret Color"
+msgstr "Ligature Caret Colour"
+
+#: charview.c:164
+msgid "The color of the line(s) marking ligature carets"
+msgstr "The colour of the line(s) marking ligature carets"
+
+#: charview.c:165
+msgid "Anchor Color"
+msgstr "Anchor Colour"
+
+#: charview.c:165
+msgid "The color of anchor stars"
+msgstr "The colour of anchor stars"
+
+#: charview.c:166
+msgid "Anchored Line Color"
+msgstr "Anchored Line Colour"
+
+#: charview.c:166
+msgid ""
+"The color of another glyph drawn in the current view to show where it would "
+"be placed by an anchor lookup"
+msgstr ""
+"The colour of another glyph drawn in the current view to show where it would "
+"be placed by an anchor lookup"
+
+#: charview.c:167
+msgid "Template Color"
+msgstr "Template Colour"
+
+#: charview.c:168
+msgid "Old Outline Color"
+msgstr "Old Outline Colour"
+
+#: charview.c:169
+msgid "Original Color"
+msgstr "Original Colour"
+
+#: charview.c:170
+msgid "Guide Layer Color"
+msgstr "Guide Layer Colour"
+
+#: charview.c:171
+msgid "Grid Fit Color"
+msgstr "Grid Fit Colour"
+
+#: charview.c:171
+msgid "The color of grid-fit outlines"
+msgstr "The colour of grid-fit outlines"
+
+#: charview.c:172
+msgid "Inactive Layer Color"
+msgstr "Inactive Layer Colour"
+
+#: charview.c:172
+msgid "The color of outlines in inactive layers"
+msgstr "The colour of outlines in inactive layers"
+
+#: charview.c:173
+msgid "Active Layer Color"
+msgstr "Active Layer Colour"
+
+#: charview.c:173
+msgid "The color of outlines in the active layer"
+msgstr "The colour of outlines in the active layer"
+
+#: charview.c:174
+msgid "Clip Path Color"
+msgstr "Clip Path Colour"
+
+#: charview.c:174
+msgid "The color of the clip path"
+msgstr "The colour of the clip path"
+
+#: charview.c:175
+msgid "Background Image Color"
+msgstr "Background Image Colour"
+
+#: charview.c:175
+msgid ""
+"The color used to draw bitmap (single bit) images which do not specify a clut"
+msgstr ""
+"The colour used to draw bitmap (single bit) images which do not specify a clut"
+
+#: charview.c:176
+msgid "Fill Color"
+msgstr "Fill Colour"
+
+#: charview.c:176
+msgid "The color used to fill the outline if that mode is active"
+msgstr "The colour used to fill the outline if that mode is active"
+
+#: charview.c:177
+msgid "Trace Color"
+msgstr "Trace Colour"
+
+#: charview.c:178
+msgid "Raster Color"
+msgstr "Raster Colour"
+
+#: charview.c:178
+msgid "The color of grid-fit (and other) raster blocks"
+msgstr "The colour of grid-fit (and other) raster blocks"
+
+#: charview.c:179
+msgid "Raster New Color"
+msgstr "Raster New Colour"
+
+#: charview.c:179
+msgid ""
+"The color of raster blocks which have just been turned on (in the debugger "
+"when an instruction moves a point)"
+msgstr ""
+"The colour of raster blocks which have just been turned on (in the debugger "
+"when an instruction moves a point)"
+
+#: charview.c:180
+msgid "Raster Old Color"
+msgstr "Raster Old Colour"
+
+#: charview.c:180
+msgid ""
+"The color of raster blocks which have just been turned off (in the debugger "
+"when an instruction moves a point)"
+msgstr ""
+"The colour of raster blocks which have just been turned off (in the debugger "
+"when an instruction moves a point)"
+
+#: charview.c:181
+msgid "Raster Grid Color"
+msgstr "Raster Grid Colour"
+
+#: charview.c:182
+msgid "Raster Dark Color"
+msgstr "Raster Dark Colour"
+
+#: charview.c:182
+msgid ""
+"When debugging in grey-scale this is the color of a raster block which is "
+"fully convered"
+msgstr ""
+"When debugging in grey-scale this is the colour of a raster block which is "
+"fully convered"
+
+#: charview.c:9164
+msgid "Center Bet_ween Control Points"
+msgstr "Centre Bet_ween Control Points"
+
+#: charview.c:9440 fontview.c:5102 fontview.c:5324 metricsview.c:3255
+msgid "_Center in Width"
+msgstr "_Centre in Width"
+
+#: cvgetinfo.c:975
+msgid ""
+"You are deleting the last anchor point in this character.\n"
+"Doing so will cause this dialog to close, is that what you want?"
+msgstr ""
+"You are deleting the last anchor point in this character.\n"
+"Doing so will cause this dialogue to close, is that what you want?"
+
+#: cvgetinfo.c:1105
 msgid "This index is much larger than the closest neighbor"
 msgstr "This index is much larger than the closest neighbour"
 
-#: cvimages.c:205
-msgid ""
-"Certain programs use pens with white ink as erasers\n"
-"If you select (blacken) this checkbox, FontForge will\n"
-"attempt to simulate that."
-msgstr ""
-"Certain programmes use pens with white ink as erasers\n"
-"If you select (blacken) this checkbox, FontForge will\n"
-"attempt to simulate that."
+#: cvimages.c:1040
+msgid "Bad template, unrecognized format"
+msgstr "Bad template, unrecognised format"
 
-#: cvstroke.c:955 cvstroke.c:957
+#: cvpalettes.c:500
+msgid "Center Out"
+msgstr "Centre Out"
+
+#: cvstroke.c:570 cvstroke.c:2898
+msgid "_Miter"
+msgstr "_Mitre"
+
+#: cvstroke.c:1068
+#, c-format
+msgid "Bad color on line %d, must be between 000000 and ffffff."
+msgstr "Bad colour on line %d, must be between 000000 and ffffff."
+
+#: cvstroke.c:1257
+msgid "Color"
+msgstr "Colour"
+
+#: cvstroke.c:1349
+msgid ""
+"  A linear gradient is represented by a line drawn\n"
+"from its start point to its end point.\n"
+"  A radial gradient is represented by a line drawn\n"
+"from its center whose length is the ultimate radius.\n"
+"If there is a single additional point, that point\n"
+"represents the gradient's focus, if omitted the focus\n"
+"is the same as the radius."
+msgstr ""
+"  A linear gradient is represented by a line drawn\n"
+"from its start point to its end point.\n"
+"  A radial gradient is represented by a line drawn\n"
+"from its centre whose length is the ultimate radius.\n"
+"If there is a single additional point, that point\n"
+"represents the gradient's focus, if omitted the focus\n"
+"is the same as the radius."
+
+#: cvstroke.c:1368
+msgid ""
+"The gradient will be a linear gradient,\n"
+"With the color change happening along\n"
+"the line drawn in the view"
+msgstr ""
+"The gradient will be a linear gradient,\n"
+"With the colour change happening along\n"
+"the line drawn in the view"
+
+#: cvstroke.c:1381
+msgid ""
+"The gradient will be a radial gradient,\n"
+"With the color change happening in circles\n"
+"starting at the focus (if specified) and\n"
+"extending outward until it reaches the\n"
+"specified radius."
+msgstr ""
+"The gradient will be a radial gradient,\n"
+"With the colour change happening in circles\n"
+"starting at the focus (if specified) and\n"
+"extending outward until it reaches the\n"
+"specified radius."
+
+#: cvstroke.c:1407
+msgid ""
+"Beyond the endpoints, the gradient takes on the color at the end-points\n"
+"This does not work for PostScript linear gradients"
+msgstr ""
+"Beyond the endpoints, the gradient takes on the colour at the end-points\n"
+"This does not work for PostScript linear gradients"
+
+#: cvstroke.c:1442
+msgid ""
+"Specify the color (& opacity) at stop points\n"
+"along the line drawn above. The offset is a\n"
+"percentage of the distance from the start to\n"
+"the end of the line. The color is a 6 (hex)\n"
+"digit number expressing an RGB color."
+msgstr ""
+"Specify the colour (& opacity) at stop points\n"
+"along the line drawn above. The offset is a\n"
+"percentage of the distance from the start to\n"
+"the end of the line. The colour is a 6 (hex)\n"
+"digit number expressing an RGB colour."
+
+#: cvstroke.c:2115
 msgid "Bad Color"
 msgstr "Bad Colour"
 
-#: fontinfo.c:6702
+#: displayfonts.c:366
+msgid ""
+"Any other command with all its arguments.\n"
+"The command must expect to deal with a postscript\n"
+"file which it will find by reading its standard input."
+msgstr ""
+"Any other command with all its arguements.\n"
+"The command must expect to deal with a postscript\n"
+"file which it will find by reading its standard input."
+
+#: displayfonts.c:2116
+msgid "Centered"
+msgstr "Centred"
+
+#: fontinfo.c:339
+msgid "Normal/Off-Center"
+msgstr "Normal/Off-Centre"
+
+#: fontinfo.c:346
+msgid "Oblique/Off-Center"
+msgstr "Oblique/Off-Centre"
+
+#: fontinfo.c:631 oflib.c:700
+msgid "License"
+msgstr "Licence"
+
+#: fontinfo.c:632
+msgid "License URL"
+msgstr "Licence URL"
+
+#: fontinfo.c:3561
+msgid ""
+"You should read the OFL and its FAQ \n"
+"at http://scripts.sil.org/OFL.\n"
+"If you are not very familiar with English,\n"
+"please check if there is a translation of the \n"
+"FAQ or an unofficial translation of the license \n"
+"in your mother tongue or preferred language. \n"
+"\n"
+"Fontforge does not know about your email or URL,\n"
+"you will need to add them manually. \n"
+"Please fill in the copyright notice in the license\n"
+"header along with any Reserved Font Name(s).\n"
+"If you are branching from an existing font make sure\n"
+"you have the right to do so and remember to add your\n"
+"additional copyright notice along with any Reserved Font Name(s).\n"
+msgstr ""
+"You should read the OFL and its FAQ \n"
+"at http://scripts.sil.org/OFL.\n"
+"If you are not very familiar with English,\n"
+"please check if there is a translation of the \n"
+"FAQ or an unofficial translation of the licence \n"
+"in your mother tongue or preferred language. \n"
+"\n"
+"Fontforge does not know about your email or URL,\n"
+"you will need to add them manually. \n"
+"Please fill in the copyright notice in the licence\n"
+"header along with any Reserved Font Name(s).\n"
+"If you are branching from an existing font make sure\n"
+"you have the right to do so and remember to add your\n"
+"additional copyright notice along with any Reserved Font Name(s).\n"
+
+#: fontinfo.c:7732
+msgid "(Adobe now considers XUID/UniqueID unnecessary)"
+msgstr "(Adobe now consider XUID/UniqueID unnecessary)"
+
+#: fontinfo.c:8100
 msgid ""
 "Allow editing of multiple colors and shades, fills and strokes.\n"
 "Multi layered fonts can only be output as type3 or svg fonts."
@@ -79,11 +590,11 @@ msgstr ""
 "Allow editing of multiple colours and shades, fills and strokes.\n"
 "Multi layered fonts can only be output as type3 or svg fonts."
 
-#: fontinfo.c:6744
-msgid "(Adobe now considers XUID/UniqueID unnecessary)"
-msgstr "(Adobe now consider XUID/UniqueID unnecessary)"
+#: fontinfo.c:8306
+msgid "Histogram Dialog"
+msgstr "Histogram Dialogue"
 
-#: fontinfo.c:6921
+#: fontinfo.c:8408
 msgid ""
 "Can this font be embedded in a downloadable (pdf)\n"
 "document, and if so, what behaviors are permitted on\n"
@@ -93,56 +604,517 @@ msgstr ""
 "document, and if so, what behaviours are permitted on\n"
 "both the document and the font."
 
-#: fontview.c:2529
-msgid "Select Color"
-msgstr "Select Colour"
-
-#: fontview.c:6298
-msgid "_Select by Color"
-msgstr "_Select by Colour"
-
-#: parsettf.c:2122
+#: fontinfo.c:9552
 msgid ""
-"FontForge does not support type2 programs embedded in CFF dict indices.\n"
+"The SIL Open Font License (OFL) is designed for free/libre/open font "
+"projects.\n"
+"Most other FLOSS licenses are designed for conventional software and are "
+"problematic for fonts.\n"
+"The OFL is a community-approved license and is well-suited for releasing "
+"fonts to be freely \n"
+"used, studied, copied, modified, embedded, merged and distributed while "
+"maintaining artistic integrity.\n"
+"You are encouraged you to use it if you can.\n"
+"\n"
+"For more details about the OFL - and the corresponding FAQ - see http://"
+"scripts.sil.org/OFL \n"
+"\n"
+"Simply press this button to add the OFL metadata to your font.\n"
+"\n"
 msgstr ""
-"FontForge does not support type2 programmes embedded in CFF dict indices.\n"
+"The SIL Open Font Licence (OFL) is designed for free/libre/open font "
+"projects.\n"
+"Most other FLOSS licences are designed for conventional software and are "
+"problematic for fonts.\n"
+"The OFL is a community-approved licence and is well-suited for releasing "
+"fonts to be freely \n"
+"used, studied, copied, modified, embedded, merged and distributed while "
+"maintaining artistic integrity.\n"
+"You are encouraged you to use it if you can.\n"
+"\n"
+"For more details about the OFL - and the corresponding FAQ - see http://"
+"scripts.sil.org/OFL \n"
+"\n"
+"Simply press this button to add the OFL metadata to your font.\n"
+"\n"
 
-#: prefs.c:1822
-msgid "Prefs|App|to alter that behavior you may set an environment"
-msgstr "Prefs|App|to alter that behaviour you may set an environment"
+#: fontinfo.c:9571
+msgid ""
+"\n"
+"Click here to go to http://scripts.sil.org/OFL \n"
+"to get all the details about the Open Font License \n"
+"and to read the corresponding FAQ. \n"
+"\n"
+msgstr ""
+"\n"
+"Click here to go to http://scripts.sil.org/OFL \n"
+"to get all the details about the Open Font Licence \n"
+"and to read the corresponding FAQ. \n"
+"\n"
 
-#: prefs.c:288
+#: fontview.c:4233
+msgid "Select by _Color"
+msgstr "Select by _Colour"
+
+#: fontview.c:4375
+msgid "Set _Color"
+msgstr "Set _Colour"
+
+#: fontview.c:5299
+msgid "_License..."
+msgstr "_Licence..."
+
+#: fontview.c:7073
+msgid "Selected BG Color"
+msgstr "Selected BG Colour"
+
+#: fontview.c:7073
+msgid "Color used to draw the background of selected glyphs"
+msgstr "Colour used to draw the background of selected glyphs"
+
+#: fontview.c:7074
+msgid "Selected FG Color"
+msgstr "Selected FG Colour"
+
+#: fontview.c:7074
+msgid "Color used to draw the foreground of selected glyphs"
+msgstr "Colour used to draw the foreground of selected glyphs"
+
+#: fontview.c:7075
+msgid "Changed Color"
+msgstr "Changed Colour"
+
+#: fontview.c:7075
+msgid "Color used to mark a changed glyph"
+msgstr "Colour used to mark a changed glyph"
+
+#: fontview.c:7358
+msgid "Background color for the drawing area of all views"
+msgstr "Background colour for the drawing area of all views"
+
+#: groupsdlg.c:43
+msgid "Select by Color"
+msgstr "Select by Colour"
+
+#: lookups.c:61
+msgid "Centered CJK Punctuation"
+msgstr "Centred CJK Punctuation"
+
+#: lookupui.c:3690
+msgid ""
+"Don't display columns of 0s.\n"
+"The OpenType lookup allows for up to 8 kinds\n"
+"of data, but almost all lookups will use just one or two.\n"
+"Omitting the others makes the behavior clearer."
+msgstr ""
+"Don't display columns of 0s.\n"
+"The OpenType lookup allows for up to 8 kinds\n"
+"of data, but almost all lookups will use just one or two.\n"
+"Omitting the others makes the behaviour clearer."
+
+#: metricsview.c:4637
+msgid "Color used to draw the advance width line of a glyph"
+msgstr "Colour used to draw the advance width line of a glyph"
+
+#: metricsview.c:4638
+msgid "Color used to draw the italic advance width line of a glyph"
+msgstr "Colour used to draw the italic advance width line of a glyph"
+
+#: metricsview.c:4639
+msgid "Kern Line Color"
+msgstr "Kern Line Colour"
+
+#: metricsview.c:4639
+msgid "Color used to draw the kerning line"
+msgstr "Colour used to draw the kerning line"
+
+#: metricsview.c:4640
+msgid "Side Bearing Color"
+msgstr "Side Bearing Colour"
+
+#: metricsview.c:4640
+msgid "Color used to draw the left side bearing"
+msgstr "Colour used to draw the left side bearing"
+
+#: metricsview.c:4641
+msgid "Color used to mark the selected glyph"
+msgstr "Colour used to mark the selected glyph"
+
+#: nonlineartransui.c:205 nonlineartransui.c:212 transform.c:86
+msgid "Center of Selection"
+msgstr "Centre of Selection"
+
+#: nonlineartransui.c:517 nonlineartransui.c:526
+msgid ""
+"This is the approximate location of the vanishing point.\n"
+"It does not include the offset induced by \"Center of selection\"\n"
+"nor \"Last Press\"."
+msgstr ""
+"This is the approximate location of the vanishing point.\n"
+"It does not include the offset induced by \"Centre of selection\"\n"
+"nor \"Last Press\"."
+
+#: noprefs.c:193 prefs.c:314
+msgid ""
+"Instructions in a TrueType font refer to\n"
+"points by number, so if you edit a glyph\n"
+"in such a way that some points have different\n"
+"numbers (add points, remove them, etc.) then\n"
+"the instructions will be applied to the wrong\n"
+"points with disasterous results.\n"
+"  Normally FontForge will remove the instructions\n"
+"if it detects that the points have been renumbered\n"
+"in order to avoid the above problem. You may turn\n"
+"this behavior off -- but be careful!"
+msgstr ""
+"Instructions in a TrueType font refer to\n"
+"points by number, so if you edit a glyph\n"
+"in such a way that some points have different\n"
+"numbers (add points, remove them, etc.) then\n"
+"the instructions will be applied to the wrong\n"
+"points with disasterous results.\n"
+"  Normally FontForge will remove the instructions\n"
+"if it detects that the points have been renumbered\n"
+"in order to avoid the above problem. You may turn\n"
+"this behaviour off -- but be careful!"
+
+#: noprefs.c:196 prefs.c:320
+msgid "AccentCenterLowest"
+msgstr "AccentCentreLowest"
+
+#: noprefs.c:196 prefs.c:320 prefs.c:458
+msgid ""
+"When placing grave and acute accents above letters, should\n"
+"FontForge center them based on their full width, or\n"
+"should it just center based on the lowest point\n"
+"of the accent."
+msgstr ""
+"When placing grave and acute accents above letters, should\n"
+"FontForge centre them based on their full width, or\n"
+"should it just centre based on the lowest point\n"
+"of the accent."
+
+#: noprefs.c:197 prefs.c:321
+msgid "CharCenterHighest"
+msgstr "CharCentreHighest"
+
+#: noprefs.c:197 prefs.c:321
+msgid ""
+"When centering an accent over a glyph, should the accent\n"
+"be centered on the highest point(s) of the glyph,\n"
+"or the middle of the glyph?"
+msgstr ""
+"When centreing an accent over a glyph, should the accent\n"
+"be centred on the highest point(s) of the glyph,\n"
+"or the middle of the glyph?"
+
+#: noprefs.c:200 prefs.c:327
 msgid ""
 "Extra arguments for configuring the autotrace program\n"
 "(either autotrace or potrace)"
 msgstr ""
-"Extra arguments for configuring the autotrace programme\n"
+"Extra arguements for configuring the autotrace program\n"
 "(either autotrace or potrace)"
 
-#: prefs.c:290
-msgid ""
-"Commands to pass to mf (metafont) program, the filename will follow these"
-msgstr ""
-"Commands to pass to mf (metafont) programme, the filename will follow these"
+#: noprefs.c:201 prefs.c:328
+msgid "Ask the user for autotrace arguments each time autotrace is invoked"
+msgstr "Ask the user for autotrace arguements each time autotrace is invoked"
 
-#: savefontdlg.c:892
+#: noprefs.c:209 prefs.c:339
+msgid "RecognizePUANames"
+msgstr "RecognisePUANames"
+
+#: noprefs.c:209 prefs.c:339
+msgid ""
+"Once upon a time, Adobe assigned PUA (public use area) encodings\n"
+"for many stylistic variants of characters (small caps, old style\n"
+"numerals, etc.). Adobe no longer believes this to be a good idea,\n"
+"and recommends that these encodings be ignored.\n"
+"\n"
+" The assignments were originally made because most applications\n"
+"could not handle OpenType features for accessing variants. Adobe\n"
+"now believes that all apps that matter can now do so. Applications\n"
+"like Word and OpenOffice still can't handle these features, so\n"
+" fontforge's default behavior is to ignore Adobe's current\n"
+"recommendations.\n"
+"\n"
+"Note: This does not affect figuring out unicode from the font's encoding,\n"
+"it just controls determining unicode from a name."
+msgstr ""
+"Once upon a time, Adobe assigned PUA (public use area) encodings\n"
+"for many stylistic variants of characters (small caps, old style\n"
+"numerals, etc.). Adobe no longer believes this to be a good idea,\n"
+"and recommends that these encodings be ignored.\n"
+"\n"
+" The assignments were originally made because most applications\n"
+"could not handle OpenType features for accessing variants. Adobe\n"
+"now believes that all apps that matter can now do so. Applications\n"
+"like Word and OpenOffice still can't handle these features, so\n"
+" fontforge's default behaviour is to ignore Adobe's current\n"
+"recommendations.\n"
+"\n"
+"Note: This does not affect figuring out unicode from the font's encoding,\n"
+"it just controls determining unicode from a name."
+
+#: parsettf.c:902
+msgid "electronic end user license table"
+msgstr "electronic end user licence table"
+
+#: parsettf.c:2973
+msgid "No argument to operator\n"
+msgstr "No arguement to operator\n"
+
+#: parsettf.c:3140
+#, c-format
+msgid "No argument to operator %d in private dict\n"
+msgstr "No arguement to operator %d in private dict\n"
+
+#: prefs.c:459
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the Apple checkbox in the\n"
+"File->Generate Font dialog.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and OpenType are set, both formats are generated"
+msgstr ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the Apple checkbox in the\n"
+"File->Generate Font dialogue.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and OpenType are set, both formats are generated"
+
+#: prefs.c:460
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the OpenType checkbox in the\n"
+"File->Generate Font dialog.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and Apple are set, both formats are generated"
+msgstr ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the OpenType checkbox in the\n"
+"File->Generate Font dialogue.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and Apple are set, both formats are generated"
+
+#: prefs.c:2151
+msgid "Prefs_App|to alter that behavior you may set an environment"
+msgstr "to alter that behaviour you may set an environment"
+ironment"
+
+#: prefs.c:2153
+msgid "Prefs_App|FontForge recognizes BROWSER, MF and AUTOTRACE."
+msgstr "FontForge recognises BROWSER, MF and AUTOTRACE."
+TOTRACE."
+
+#: psread.c:1165
+msgid ""
+"Fourth argument of imagemask must be a 6-element transformation matrix.\n"
+msgstr ""
+"Fourth arguement of imagemask must be a 6-element transformation matrix.\n"
+
+#: psread.c:1170
+msgid "Third argument of imagemask must be a boolean.\n"
+msgstr "Third arguement of imagemask must be a boolean.\n"
+
+#: psread.c:1176
+msgid "First and second arguments of imagemask must be integers.\n"
+msgstr "First and second arguements of imagemask must be integers.\n"
+
+#: psread.c:1185
+msgid ""
+"Width or height arguments to imagemask contain invalid values\n"
+"(either negative or they require more data than provided).\n"
+msgstr ""
+"Width or height arguements to imagemask contain invalid values\n"
+"(either negative or they require more data than provided).\n"
+
+#: psread.c:4053
+#, c-format
+msgid ""
+"Multiple master subroutine called with the wrong number of arguments in %s.\n"
+msgstr ""
+"Multiple master subroutine called with the wrong number of arguements in %s.\n"
+
+#: savefontdlg.c:814
 msgid "Save Colors"
 msgstr "Save Colours"
 
-#: savefontdlg.c:894
+#: savefontdlg.c:816
 msgid "Save glyph colors in the PfEd table"
 msgstr "Save glyph colours in the PfEd table"
 
-#: savefontdlg.c:2933
+#: savefontdlg.c:877
+msgid ""
+"The FONTLOG is a text file containing pertinent information\n"
+"about the font including such things as its change history.\n"
+"The SIL Open Font License highly recommends its use.\n"
+"\n"
+"If your font contains a FONTLOG (see the Element->Font Info)\n"
+"and you check this box, then the internal FONTLOG will be\n"
+"written to the file \"FONTLOG.txt\" in the same directory\n"
+"as the font itself."
+msgstr ""
+"The FONTLOG is a text file containing pertinent information\n"
+"about the font including such things as its change history.\n"
+"The SIL Open Font Licence highly recommends its use.\n"
+"\n"
+"If your font contains a FONTLOG (see the Element->Font Info)\n"
+"and you check this box, then the internal FONTLOG will be\n"
+"written to the file \"FONTLOG.txt\" in the same directory\n"
+"as the font itself."
+
+#: savefontdlg.c:1417
+#, c-format
+msgid ""
+"The convention is that PostScript fonts should have an Em-Size of 1000. But "
+"this font has a size of %d. This is not an error, but you might consider "
+"altering the Em-Size with the Element->Font Info->General dialog.\n"
+"Do you wish to continue to generate your font in spite of this?"
+msgstr ""
+"The convention is that PostScript fonts should have an Em-Size of 1000. But "
+"this font has a size of %d. This is not an error, but you might consider "
+"altering the Em-Size with the Element->Font Info->General dialogue.\n"
+"Do you wish to continue to generate your font in spite of this?"
+
+#: savefontdlg.c:1434
+#, c-format
+msgid ""
+"The convention is that TrueType fonts should have an Em-Size which is a "
+"power of 2. But this font has a size of %d. This is not an error, but you "
+"might consider altering the Em-Size with the Element->Font Info->General "
+"dialog.\n"
+"Do you wish to continue to generate your font in spite of this?"
+msgstr ""
+"The convention is that TrueType fonts should have an Em-Size which is a "
+"power of 2. But this font has a size of %d. This is not an error, but you "
+"might consider altering the Em-Size with the Element->Font Info->General "
+"dialogue.\n"
+"Do you wish to continue to generate your font in spite of this?"
+
+#: savefontdlg.c:2358
 msgid "Allows you to select optional behavior when generating the font"
 msgstr "Allows you to select optional behaviour when generating the font"
 
-#: svg.c:1769
+#: savefontdlg.c:2642
+msgid ""
+"Once you have a final version of your font\n"
+"and if your font is licensed under the Open\n"
+"Font License, then you might consider uploading\n"
+"it to the Open Font Library. This is a website\n"
+"of Free/Libre fonts.\n"
+"\n"
+"You must have previously registered with OFLib\n"
+"and have a valid username/password there.\n"
+"\n"
+"Obviously you must be connected to the internet\n"
+"for this to work."
+msgstr ""
+"Once you have a final version of your font\n"
+"and if your font is licenced under the Open\n"
+"Font Licence, then you might consider uploading\n"
+"it to the Open Font Library. This is a website\n"
+"of Free/Libre fonts.\n"
+"\n"
+"You must have previously registered with OFLib\n"
+"and have a valid username/password there.\n"
+"\n"
+"Obviously you must be connected to the internet\n"
+"for this to work."
+
+#: savefontdlg.c:2824
+msgid "License:"
+msgstr "Licence:"
+
+#: savefontdlg.c:2839
+msgid ""
+"The SIL Open Font License\n"
+"Please see http://scripts.sil.org/OFL"
+msgstr ""
+"The SIL Open Font Licence\n"
+"Please see http://scripts.sil.org/OFL"
+
+#: savefontdlg.c:2853
+msgid "Upload License"
+msgstr "Upload Licence"
+
+#: savefontdlg.c:2859
+msgid "Upload the license (as found in the list of truetype names)"
+msgstr "Upload the licence (as found in the list of truetype names)"
+
+#: scstylesui.c:1274
+msgid "Retain current advance width, center glyph within that width"
+msgstr "Retain current advance width, centre glyph within that width"
+
+#: searchview.c:524
+#, c-format
+msgid ""
+"The %1$s in the search dialog contains a reference to %2$.20hs which does "
+"not exist in the new font.\n"
+"Should I remove the reference?"
+msgstr ""
+"The %1$s in the search dialogue contains a reference to %2$.20hs which does "
+"not exist in the new font.\n"
+"Should I remove the reference?"
+
+#: splinefont.c:1217
+msgid ""
+"This font is marked with an FSType of 2 (Restricted\n"
+"License). That means it is not editable without the\n"
+"permission of the legal owner.\n"
+"\n"
+"Do you have such permission?"
+msgstr ""
+"This font is marked with an FSType of 2 (Restricted\n"
+"Licence). That means it is not editable without the\n"
+"permission of the legal owner.\n"
+"\n"
+"Do you have such permission?"
+
+#: svg.c:2344
+#, c-format
+msgid "Bad hex color spec: %s\n"
+msgstr "Bad hex colour spec: %s\n"
+
+#: svg.c:2356
+#, c-format
+msgid "Bad RGB color spec: %s\n"
+msgstr "Bad RGB colour spec: %s\n"
+
+#: svg.c:2376
 #, c-format
 msgid "Failed to parse color %s\n"
 msgstr "Failed to parse colour %s\n"
 
-#: uiutil.c:136
-#, c-format
-msgid "Failed to find program \"%s\"\n"
-msgstr "Failed to find programme \"%s\"\n"
+#: tilepath.c:1143
+msgid "The tiles should be centered on the path"
+msgstr "The tiles should be centred on the path"
+
+#: ttfspecial.c:1032
+msgid "Bad glyph range specified in color subtable of PfEd table\n"
+msgstr "Bad glyph range specified in colour subtable of PfEd table\n"
+
+#. CCW means counter clockwise
+#: bitmapview.c
+msgid "Rotate _90° CCW"
+msgstr "Rotate _90° ACW"
