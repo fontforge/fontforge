@@ -2143,15 +2143,15 @@ void DoPrefs(void) {
 /* GT: See the long comment at "Property|New" */
 /* GT: This and the next few strings show a limitation of my widget set which */
 /* GT: cannot handle multi-line text labels. These strings should be concatenated */
-/* GT: (after striping off "Prefs|App|") together, translated, and then broken up */
+/* GT: (after striping off "Prefs_App|") together, translated, and then broken up */
 /* GT: to fit the dialog. There is an extra blank line, not used in English, */
 /* GT: into which your text may extend if needed. */
-		N_("Prefs|App|Normally FontForge will find applications by searching for"),
-		N_("Prefs|App|them in your PATH environment variable, if you want"),
-		N_("Prefs|App|to alter that behavior you may set an environment"),
-		N_("Prefs|App|variable giving the full path spec of the application."),
-		N_("Prefs|App|FontForge recognizes BROWSER, MF and AUTOTRACE."),
-		N_("Prefs|App| "), /* A blank line */
+		N_("Prefs_App|Normally FontForge will find applications by searching for"),
+		N_("Prefs_App|them in your PATH environment variable, if you want"),
+		N_("Prefs_App|to alter that behavior you may set an environment"),
+		N_("Prefs_App|variable giving the full path spec of the application."),
+		N_("Prefs_App|FontForge recognizes BROWSER, MF and AUTOTRACE."),
+		N_("Prefs_App| "), /* A blank line */
 		NULL };
 	    y += 8;
 	    for ( i=0; text[i]!=0; ++i ) {

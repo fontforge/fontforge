@@ -1029,7 +1029,7 @@ return;			/* Bad version number */
 	end = getushort(ttf);
 	col = getlong(ttf);
 	if ( start>end || end>info->glyph_cnt )
-	    LogError( _("Bad glyph range specified in colour subtable of PfEd table\n") );
+	    LogError( _("Bad glyph range specified in color subtable of PfEd table\n") );
 	else {
 	    for ( j=start; j<=end; ++j )
 		info->chars[j]->color = col;

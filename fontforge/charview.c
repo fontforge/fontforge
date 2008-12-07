@@ -176,8 +176,8 @@ static struct resed charview2_re[] = {
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active") },
     { N_("Trace Color"), "TraceColor", rt_color, &tracecol },
     { N_("Raster Color"), "RasterColor", rt_coloralpha, &rastercol, N_("The color of grid-fit (and other) raster blocks") },
-    { N_("Raster New Color"), "RasterNewColor", rt_coloralpha, &rasternewcol, N_("The color of a raster blocks which has just been turned on (in the debugger when an instruction moves a point)") },
-    { N_("Raster Old Color"), "RasterOldColor", rt_coloralpha, &rasteroldcol, N_("The color of a raster blocks which has just been turned off (in the debugger when an instruction moves a point)") },
+    { N_("Raster New Color"), "RasterNewColor", rt_coloralpha, &rasternewcol, N_("The color of raster blocks which have just been turned on (in the debugger when an instruction moves a point)") },
+    { N_("Raster Old Color"), "RasterOldColor", rt_coloralpha, &rasteroldcol, N_("The color of raster blocks which have just been turned off (in the debugger when an instruction moves a point)") },
     { N_("Raster Grid Color"), "RasterGridColor", rt_coloralpha, &rastergridcol },
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
     { NULL }
