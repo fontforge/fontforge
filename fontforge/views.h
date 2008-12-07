@@ -291,7 +291,10 @@ enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 typedef struct metricsview {
     struct fontview *fv;
     SplineFont *sf;
-    int pixelsize;
+    int pixelsize;		/* If the user has manually requested a pixelsize */
+				/*  then rasterize at that size no matter how large */
+			        /*  the font is zoomed. For non-user requesed sizes */
+			        /*  this is the pixelsize * zoom-factor */
     BDFFont *bdf;		/* We can also see metric info on a bitmap font */
     BDFFont *show;		/*  Or the rasterized version of the outline font */
     GWindow gw, v;
@@ -332,6 +335,7 @@ typedef struct metricsview {
     unsigned int antialias: 1;
     unsigned int vertical: 1;
     unsigned int type: 2;		/* enum mv_type */
+    unsigned int pixelsize_set_by_window;
     int xp, yp, ap_owner;
     BasePoint ap_start;
     int cursor;

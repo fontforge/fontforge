@@ -1721,7 +1721,7 @@ static void FVSelectByScript(FontView *fv,int merge) {
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Select by Script");
-    wattrs.is_dlg = false;
+    wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
     pos.height = 100;
