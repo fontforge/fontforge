@@ -920,12 +920,10 @@ msgstr ""
 #: prefs.c:2151
 msgid "Prefs_App|to alter that behavior you may set an environment"
 msgstr "to alter that behaviour you may set an environment"
-ironment"
 
 #: prefs.c:2153
 msgid "Prefs_App|FontForge recognizes BROWSER, MF and AUTOTRACE."
 msgstr "FontForge recognises BROWSER, MF and AUTOTRACE."
-TOTRACE."
 
 #: psread.c:1165
 msgid ""
