@@ -3241,21 +3241,15 @@ static void dispatchEvent(GXDisplay *gdisp, XEvent *event) {
     GPoint p;
     int expecting_core = gdisp->expecting_core_event;
     XEvent subevent;
-#ifdef TESTXIM
- static int debug=false;
-#endif
+
+    if ( XFilterEvent(event,None))	/* Make sure this happens before anything else */
+return;
 
     gdisp->expecting_core_event = false;
 
-#ifdef TESTXIM
- if ( debug )
-  printf( "ET: %d\n", event->type );
-#endif
     if ( XFindContext(gdisp->display,event->xany.window,gdisp->mycontext,(void *) &ret)==0 )
 	gw = (GWindow) ret;
     if ( gw==NULL || (_GXDraw_WindowOrParentsDying((GXWindow) gw) && event->type!=DestroyNotify ))
-return;
-    if ( XFilterEvent(event,None))
 return;
     memset(&gevent,0,sizeof(gevent));
     gevent.w = gw;
@@ -3273,12 +3267,6 @@ return;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
 	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
-#ifdef TESTXIM
-if ( event->type == KeyPress )
- printf( "Got key. state=%02x w=%x ", event->xkey.state, (int) event->xany.window);
- if ( gw->parent!=NULL )
-  printf( "pw=%x ", (int) (((GXWindow ) (gw->parent))->w) );
-#endif
 /*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* No... don't. Let the user have access to the command key as distinct from control */
@@ -3312,9 +3300,6 @@ return;
 		gevent.u.chr.keysym = keysym;
 		def2u_strncpy(gevent.u.chr.chars,charbuf,
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
-#ifdef TESTXIM
- printf( "NO IM keysym=%x chars[0]=%x (pretrans %x) ", (int) keysym, gevent.u.chr.chars[0], charbuf[0]);
-#endif
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
 /* I think there's a bug in SCIM. If I leave the meta(alt/option) modifier */
@@ -3342,15 +3327,9 @@ return;
 			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
 		if ( pt!=charbuf )
 		    free(pt);
-#ifdef TESTXIM
- printf( "   IM keysym=%x chars[0]=%x (pretrans %x) ", (int) keysym, gevent.u.chr.chars[0], charbuf[0]);
-#endif
 #else
 		gevent.u.chr.keysym = keysym = 0;
 		gevent.u.chr.chars[0] = 0;
-#ifdef TESTXIM
- printf( "Failed IM " );
-#endif
 #endif
 	    }
 	    /* Convert X11 keysym values to unicode */
@@ -3358,9 +3337,6 @@ return;
 		keysym -= XKeysym_Mask;
 	    else if ( keysym<=XKEYSYM_TOP && keysym>=0 )
 		keysym = gdraw_xkeysym_2_unicode[keysym];
-#ifdef TESTXIM
- printf( "unikeysym=%x\n", (int) keysym );
-#endif
 	    gevent.u.chr.keysym = keysym;
 	    if ( keysym==gdisp->mykey_keysym &&
 		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
@@ -4835,14 +4811,6 @@ return( NULL );
     /*  defined we get some kind of built-in default method. If it doesn't */
     /*  recognize the locale we still get something */
     /* If it does fail, then fall back on the old fashioned stuff */
-# ifdef TESTXIM
- if ( gdisp->im==NULL )
-  printf( "Failed to attach to input method.\n" );
-# endif
-#else
-# ifdef TESTXIM
- printf( "FontForge does not support input methods in this configuration.\n" );
-# endif
 #endif
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
