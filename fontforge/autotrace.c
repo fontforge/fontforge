@@ -121,7 +121,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		}
 	    } else {
 		for ( test = new; test!=NULL; test=test->next ) {
-		    clockwise = SplinePointListIsClockwise(test);
+		    clockwise = SplinePointListIsClockwise(test)==1;
 		    /* colors may get rounded a little as we convert from RGB to */
 		    /*  a postscript color and back. */
 		    if ( COLOR_RED(ent->u.splines.fill.col)>=bgr-2 && COLOR_RED(ent->u.splines.fill.col)<=bgr+2 &&
@@ -132,7 +132,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		    } else {
 			if ( !clockwise )
 			    SplineSetReverse(test);
-			clockwise = SplinePointListIsClockwise(test);
+			clockwise = SplinePointListIsClockwise(test)==1;
 		    }
 		    last = test;
 		}
@@ -153,7 +153,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 	    fudge = (bb.maxx-bb.minx)/64;
 	for ( last=head, prev=NULL; last!=NULL; last=next ) {
 	    next = last->next;
-	    if ( !SplinePointListIsClockwise(last)) {
+	    if ( SplinePointListIsClockwise(last)==0 ) {
 		last->next = NULL;
 		SplineSetFindBounds(last,&sbb);
 		last->next = next;

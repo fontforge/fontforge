@@ -429,7 +429,7 @@ static void IkarusAddContour(SplineChar *sc,int npts,BasePoint *bps,
 	last=last->next->to;
     }
 
-    cw = SplinePointListIsClockwise(spl);
+    cw = SplinePointListIsClockwise(spl)==1;
     if ( ((nesting&1) && cw) || (!(nesting&1) && !cw) )
 	SplineSetReverse(spl);
 }

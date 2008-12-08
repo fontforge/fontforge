@@ -1590,7 +1590,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	Spline *s, *s2;
 	Layer *layer;
 	int lastscan= -1;
-	int self_intersects;
+	int self_intersects, dir;
 	
 	if ( cv!=NULL )
 	    layer = cv->b.layerheads[cv->b.drawmode];
@@ -1598,7 +1598,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    layer = &sc->layers[p->layer];
 
 	ss = LayerAllSplines(layer);
-	SplineSetIntersect(ss,&s,&s2);
+	self_intersects = SplineSetIntersect(ss,&s,&s2);
 	LayerUnAllSplines(layer);
 
 	if ( self_intersects )
@@ -1617,7 +1617,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    if ( sp==ret->first )
 		break;
 		}
-		if ( SplinePointListIsClockwise(ret))
+		dir = SplinePointListIsClockwise(ret);
+		if ( dir==-1 )
+		    ExplainIt(p,sc,_("This path probably intersects itself (though I could not find that when\n I checked for intersections), look closely at the corners"),0,0);
+		else if ( dir==1 )
 		    ExplainIt(p,sc,_("This path should have been drawn in a counter-clockwise direction"),0,0);
 		else
 		    ExplainIt(p,sc,_("This path should have been drawn in a clockwise direction"),0,0);

@@ -337,7 +337,7 @@ return;
 	cv->b.layerheads[cv->b.drawmode]->splines = SplinePointListRemoveSelected(cv->b.sc,
 		cv->b.layerheads[cv->b.drawmode]->splines);
     } else if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ) {
-	if ( !SplinePointListIsClockwise(cv->active_shape))
+	if ( SplinePointListIsClockwise(cv->active_shape)==0 )
 	    SplineSetReverse(cv->active_shape);
 	if ( snaptoint ) {
 	    for ( sp= cv->active_shape->first; ; ) {

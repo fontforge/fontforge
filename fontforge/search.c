@@ -921,7 +921,7 @@ static int HeuristiclyBadMatch(SplineChar *sc,SearchData *s) {
     contour_cnt=0;
     for ( spl=sc->layers[layer].splines, i=0; spl!=NULL; spl=spl->next, ++i ) {
 	if ( !(s->matched_ss&(1<<i))) {
-	    if ( SplinePointListIsClockwise(spl) )
+	    if ( SplinePointListIsClockwise(spl)==1 )
 return( false );
 	    ++contour_cnt;
 	}

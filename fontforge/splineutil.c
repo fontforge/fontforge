@@ -4492,7 +4492,7 @@ int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2) {
 			if ( spline->to->next!=spline2 && spline->from->prev!=spline2 )
 			    found = true;
 			else for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
-			    if ( (t1s[i]<.9 && t1s[i]>.1) || (t2s[i]<.9 && t2s[i]>.1)) {
+			    if ( (t1s[i]<.99 && t1s[i]>.01) || (t2s[i]<.99 && t2s[i]>.01)) {
 				found = true;
 			break;
 			    }
