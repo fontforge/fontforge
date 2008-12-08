@@ -183,7 +183,12 @@ return( 1 );
 	    if ( strncmp(linebuffers[i],"msgid",5)==0 )
 	break;
 	if ( i==l ) {
-	    fprintf( stderr, "Didn't understand: %s\n", linebuffers[0] );
+	    for ( i=0; i<l; ++i )
+		if ( linebuffers[l-1][0]!='#' )
+	    break;
+	    if ( i!=l )
+		fprintf( stderr, "Didn't understand: %s\n", linebuffers[0] );
+		/* But comments are ok */
     continue;
 	}
 	start = i;
@@ -211,6 +216,7 @@ return( 1 );
 		    qpt[j] = pt[j];
 		    ++j;
 		} while ( pt[j]!='\0' );
+		qpt[j] = '\0';
 	    }
 	}
 	for ( i=start; i<end; ++i ) {
