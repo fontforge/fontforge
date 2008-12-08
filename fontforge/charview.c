@@ -6910,9 +6910,9 @@ static void _CVMenuDir(CharView *cv,struct gmenuitem *mi) {
 		if ( first == NULL ) first = spline;
 	    }
 	}
-	if ( splinepoints && spl->first==spl->last && spl->first->next!=NULL ) {
+	if ( splinepoints && spl->first->prev!=NULL ) {
 	    dir = SplinePointListIsClockwise(spl);
-	    if ( (mi->mid==MID_Clockwise && !dir) || (mi->mid==MID_Counter && dir)) {
+	    if ( (mi->mid==MID_Clockwise && dir==0) || (mi->mid==MID_Counter && dir==1)) {
 		if ( !needsrefresh )
 		    CVPreserveState(&cv->b);
 		SplineSetReverse(spl);
@@ -8257,8 +8257,12 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		    dir = -1;
 	    } else if ( dir==-2 )
 		dir = SplinePointListIsClockwise(spl);
+		if ( dir==-1 )
+		    self_intersects = 1;	/* Sometimes the clockwise test finds intersections the main routine can't */
 	    else {
 		int subdir = SplinePointListIsClockwise(spl);
+		if ( subdir==-1 )
+		    self_intersects = 1;
 		if ( subdir!=dir )
 		    dir = -1;
 	    }

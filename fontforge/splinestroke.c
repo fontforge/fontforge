@@ -1538,7 +1538,7 @@ return( ssplus );
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
 	/* My routine gets screwed up by counter-clockwise triangles */
-	if ( !SplinePointListIsClockwise(spl)) {
+	if ( SplinePointListIsClockwise(spl)==0 ) {
 	    reversed = true;
 	    SplineSetReverse(spl);
 	}
