@@ -2910,7 +2910,7 @@ static void dump_script_table(FILE *g___,struct scriptset *ss,struct ginfo *ginf
 	    putshort(g___,req_index);	/* index of required feature, if any */
 	    putshort(g___,ss->langsys[lcnt].fc - (req_index!=-1));
 					/* count of non-required features */
-	    for ( j=0; j<ss->langsys[lcnt].fc; ++j ) if ( j!=req_index )
+	    for ( j=0; j<ss->langsys[lcnt].fc; ++j ) if (ss->langsys[lcnt].feature_id[j]!=req_index )
 		putshort(g___,ss->langsys[lcnt].feature_id[j]);
 	}
     }
