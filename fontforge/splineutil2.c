@@ -4521,16 +4521,19 @@ return( -1 );
 		}
 		if ( pr->up!=e->up ) {
 		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
-return( -1 );
-		break;
+/* return( -1 );*/	/* This is an erroneous condition... but I don't think*/
+			/*  it can actually happen with a single contour. I */
+			/*  think it is more likely this means a rounding error*/
+			/*  and a problem in my algorithm */
+			fprintf( stderr, "SplinePointListIsClockwise: Found error\n" );
 		    }
 		    winding += (e->up?1:-1);
 		} else if ( EISameLine(pr,e,i+el.low,1) )
 		    /* This just continues the line and doesn't change count */;
 		else {
 		    if ( (winding<=0 && !e->up) || (winding>0 && e->up )) {
-return( -1 );
-		break;
+			fprintf( stderr, "SplinePointListIsClockwise: Found error\n" );
+/*return( -1 );*/
 		    }
 		    winding += (e->up?1:-1);
 		}
