@@ -862,6 +862,21 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 	/* Handle fonts, strings and images */
 	for ( i=0; gre->tofree[i].res!=NULL; ++i ) {
 	    GResInfo *res = gre->tofree[i].res;
+	    if ( res->boxdata!=NULL ) {
+		static char *names[] = { N_("Border Width"), N_("Padding"), N_("Radius"), NULL };
+		int j;
+		for ( j=0; j<3; ++j ) {
+		    char *sval = GGadgetGetTitle8(GWidgetGetControl(gre->gw,gre->tofree[i].btcid+6+3*j));
+		    char *end;
+		    int val = strtol(sval,&end,10);
+		    free(sval);
+		    if ( *end!='\0' || val<0 || val>255 ) {
+			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s must be between 0 and 255"),
+				res->resname, _(names[j]) );
+return( true );
+		    }
+		}
+	    }
 	    if ( res->font!=NULL ) {
 		/* We try to do this as we go along, but we wait for a focus */
 		/*  out event to parse changes. Now if the last thing they were*/
@@ -873,11 +888,35 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		
 		for ( extras = res->extras; extras->name!=NULL; extras++ ) {
 		    switch ( extras->type ) {
+		      case rt_int: {
+			/* Has already been parsed and set -- unless there were */
+			/*  an error. We need to complain about that */
+			char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,extras->cid) );
+			char *end;
+			(void) strtol(ival,&end,10);
+			free(ival);
+			if ( *end!='\0' ) {
+			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
+				    res->resname, extras->name );
+return( true );
+			}
+		      } break;
+		      case rt_double: {
+			/* Has already been parsed and set -- unless there were */
+			/*  an error. We need to complain about that */
+			char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,extras->cid) );
+			char *end;
+			(void) strtod(ival,&end);
+			free(ival);
+			if ( *end!='\0' ) {
+			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
+				    res->resname, extras->name );
+return( true );
+			}
+		      } break;
 		      case rt_bool:
-		      case rt_int:
 		      case rt_color:
 		      case rt_coloralpha:
-		      case rt_double:
 		      case rt_image:
 			/* These should have been set as we went along */
 		      break;
