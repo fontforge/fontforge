@@ -1200,7 +1200,7 @@ return( NULL );
 	    nw->is_dlg = true;
 	} else if ( !nw->is_dlg )
 	    ++gdisp->top_window_count;
-	else if ( nw->is_dlg && gdisp->last_nontransient_window!=0 ) {
+	else if ( nw->restrict_input_to_me && gdisp->last_nontransient_window!=0 ) {
 	    XSetTransientForHint(display,nw->w,gdisp->last_nontransient_window);
 	    nw->transient_owner = gdisp->last_nontransient_window;
 	    nw->istransient = true;

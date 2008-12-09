@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 9-Oct-2008 -->
+  <!-- AP: Last modified: 8-Dec-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -915,7 +915,9 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     <TR>
       <TD><CODE><A name="#cnt-isClockwise">isClockwise</A></CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Returns whether the contour is drawn in a clockwise direction.</TD>
+      <TD>Returns whether the contour is drawn in a clockwise direction. A return
+	value of -1 indicates that no consistant direction could be found (the contour
+	self-intersects).</TD>
     </TR>
     <TR>
       <TD><CODE>reverseDirection</CODE></TD>
