@@ -4486,6 +4486,7 @@ int SplinePointListIsClockwise(const SplineSet *spl) {
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
 	LogError( _("Warning: Unreasonably big splines. They will be ignored.\n") );
+	((SplineSet *) spl)->next = next;
 return( -1 );
     }
     el.major = 1;
@@ -4511,8 +4512,10 @@ return( -1 );
 		++cw_cnt;
 	    else
 		++ccw_cnt;
-	    if ( cw_cnt!=0 && ccw_cnt!=0 )
+	    if ( cw_cnt!=0 && ccw_cnt!=0 ) {
+		((SplineSet *) spl)->next = next;
 return( -1 );
+	    }
 	    winding = apt->up?1:-1;
 	    for ( pr=apt, e=apt->aenext; e!=NULL && winding!=0; pr=e, e=e->aenext ) {
 		if ( EISkipExtremum(e,i+el.low,1)) {
@@ -4543,6 +4546,8 @@ return( -1 );
     free(el.ordered);
     free(el.ends);
     ElFreeEI(&el);
+    ((SplineSet *) spl)->next = next;
+
     if ( cw_cnt!=0 )
 return( true );
     else if ( ccw_cnt!=0 )
