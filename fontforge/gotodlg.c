@@ -175,12 +175,10 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
+    GGadgetCreateData gcd[9], boxes[3], *hvarray[5][2], *barray[10];
     GTextInfo label[9];
     static GotoData gd;
     GTextInfo *ranges = NULL;
-    int i, wid, temp;
-    unichar_t ubuf[100];
 
     if ( !map->enc->only_1byte )
 	ranges = AvailableRanges(sf,map);
@@ -203,32 +201,17 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     pos.height = GDrawPointsToPixels(NULL,90);
     gd.gw = gw = GDrawCreateTopWindow(NULL,&pos,goto_e_h,&gd,&wattrs);
 
-    GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
-    wid = GDrawGetBiText8Width(gw,_("Enter the name of a glyph in the font"),-1,-1,NULL);
-    if ( ranges!=NULL ) {
-	for ( i=0; ranges[i].text!=NULL; ++i ) {
-	    uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
-	    temp = GDrawGetBiTextWidth(gw,ubuf,-1,-1,NULL);
-	    if ( temp>wid )
-		wid = temp;
-	}
-    }
-    if ( pos.width<wid+20 ) {
-	pos.width = wid+20;
-	GDrawResize(gw,pos.width,pos.height);
-    }
-
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     label[0].text = (unichar_t *) _("Enter the name of a glyph in the font");
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[0]; hvarray[0][1] = NULL;
 
-    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 17;  gcd[1].gd.pos.width = GDrawPixelsToPoints(NULL,wid);
     gcd[1].gd.flags = gg_enabled|gg_visible|gg_text_xim;
     gcd[1].gd.cid = CID_Name;
     if ( ranges==NULL )
@@ -237,9 +220,9 @@ int GotoChar(SplineFont *sf,EncMap *map) {
 	gcd[1].gd.u.list = ranges;
 	gcd[1].creator = GListFieldCreate;
     }
+    hvarray[1][0] = &gcd[1]; hvarray[1][1] = NULL;
+    hvarray[2][0] = GCD_Glue; hvarray[2][1] = NULL;
 
-    gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
-    gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[2].text = (unichar_t *) _("_OK");
     label[2].text_is_1byte = true;
@@ -247,9 +230,8 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     gcd[2].gd.label = &label[2];
     gcd[2].gd.handle_controlevent = Goto_OK;
     gcd[2].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[2]; barray[2] = GCD_Glue; barray[3] = GCD_Glue;
 
-    gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
-    gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[3].text = (unichar_t *) _("_Cancel");
     label[3].text_is_1byte = true;
@@ -257,15 +239,25 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.handle_controlevent = Goto_Cancel;
     gcd[3].creator = GButtonCreate;
+    barray[4] = GCD_Glue; barray[5] = &gcd[3]; barray[6] = GCD_Glue; barray[7] = NULL;
 
-    gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
-    gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-2;
-    gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[4].creator = GGroupCreate;
+    boxes[2].gd.flags = gg_visible | gg_enabled;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+    hvarray[3][0] = &boxes[2]; hvarray[3][1] = NULL;
+    hvarray[4][0] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_visible | gg_enabled;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
     GCompletionFieldSetCompletion(gcd[1].ret,GotoCompletion);
     GCompletionFieldSetCompletionMode(gcd[1].ret,true);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
     while ( !gd.done )
 	GDrawProcessOneEvent(NULL);
