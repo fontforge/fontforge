@@ -4596,13 +4596,13 @@ return;
 	enc = dcmap[dc].enc;
 	encoff = dcmap[dc].offset;
 
+	mod = 0;
+	if ( dcmap[dc].platform==3 && (dcmap[dc].specific>=2 && dcmap[dc].specific<=6 ))
+	    mod = dcmap[dc].specific;
+	else if ( dcmap[dc].platform==1 && (dcmap[dc].specific==2 ||dcmap[dc].specific==1||dcmap[dc].specific==3||dcmap[dc].specific==25))
+	    mod = dcmap[dc].specific==1?2:dcmap[dc].specific==2?4:dcmap[dc].specific==3?5:3;		/* convert to ms specific */
 	if ( dc==0 && justinuse==git_normal ) {
 	    interp = interp_from_encoding(enc,ui_none);
-	    mod = 0;
-	    if ( dcmap[dc].platform==3 && (dcmap[dc].specific>=2 && dcmap[dc].specific<=6 ))
-		mod = dcmap[dc].specific;
-	    else if ( dcmap[dc].platform==1 && (dcmap[dc].specific==2 ||dcmap[dc].specific==1||dcmap[dc].specific==3||dcmap[dc].specific==25))
-		mod = dcmap[dc].specific==1?2:dcmap[dc].specific==2?4:dcmap[dc].specific==3?5:3;		/* convert to ms specific */
 	    info->map = map = EncMapNew(enc->char_cnt,info->glyph_cnt,enc);
 	    info->uni_interp = interp;
 	}
