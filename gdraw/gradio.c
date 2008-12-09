@@ -88,10 +88,8 @@ static GResInfo gradioon_ri = {
     omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static struct resed gradiooff_re[] = {
-/*
     {N_("Image"), "Image", rt_image, &radoff, N_("Image used instead of the Radio Off Mark")},
     {N_("Disabled Image"), "DisabledImage", rt_image, &raddisoff, N_("Image used instead of the Radio Off Mark (when the radio is disabled)")},
-*/
     NULL
 };
 static GResInfo gradiooff_ri = {
