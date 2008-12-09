@@ -23962,9 +23962,9 @@ fi
 echo "${ECHO_T}$ac_cv_lib_fontconfig_FcConfigCreate" >&6; }
 if test $ac_cv_lib_fontconfig_FcConfigCreate = yes; then
 
-    { echo "$as_me:$LINENO: checking for cairo_xlib_surface_create in -lcairo" >&5
-echo $ECHO_N "checking for cairo_xlib_surface_create in -lcairo... $ECHO_C" >&6; }
-if test "${ac_cv_lib_cairo_cairo_xlib_surface_create+set}" = set; then
+    { echo "$as_me:$LINENO: checking for cairo_set_scaled_font in -lcairo" >&5
+echo $ECHO_N "checking for cairo_set_scaled_font in -lcairo... $ECHO_C" >&6; }
+if test "${ac_cv_lib_cairo_cairo_set_scaled_font+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -23982,11 +23982,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char cairo_xlib_surface_create ();
+char cairo_set_scaled_font ();
 int
 main ()
 {
-return cairo_xlib_surface_create ();
+return cairo_set_scaled_font ();
   ;
   return 0;
 }
@@ -24009,21 +24009,21 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest$ac_exeext &&
        $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_cairo_cairo_xlib_surface_create=yes
+  ac_cv_lib_cairo_cairo_set_scaled_font=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_cairo_cairo_xlib_surface_create=no
+	ac_cv_lib_cairo_cairo_set_scaled_font=no
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_cairo_cairo_xlib_surface_create" >&5
-echo "${ECHO_T}$ac_cv_lib_cairo_cairo_xlib_surface_create" >&6; }
-if test $ac_cv_lib_cairo_cairo_xlib_surface_create = yes; then
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_cairo_cairo_set_scaled_font" >&5
+echo "${ECHO_T}$ac_cv_lib_cairo_cairo_set_scaled_font" >&6; }
+if test $ac_cv_lib_cairo_cairo_set_scaled_font = yes; then
   gww_hascairo="yes"
 fi
 
@@ -24032,6 +24032,8 @@ fi
 fi
 
 
+#I used to check for cairo_xlib_surface_create, but that's in version 1.0 too
+# cairo_set_scaled_font is not in 1.0 (fontforge needs at least 1.2)
   CFLAGS=$gww_CFLAGS
   LDFLAGS=$gww_LDFLAGS
 fi

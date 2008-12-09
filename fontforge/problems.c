@@ -2251,8 +2251,9 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     d.tag = tag;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_centered|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_centered|wam_restrict|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
+    wattrs.is_dlg = 1;
     wattrs.restrict_input_to_me = 1;
     wattrs.centered = 1;
     wattrs.cursor = ct_pointer;
@@ -3032,7 +3033,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     }
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;

@@ -442,9 +442,10 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     nd.all = all;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Setting");
@@ -798,9 +799,10 @@ static char *AskSetting(struct macsetting *changing,struct macsetting *all,
     sd.all = all;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Setting");
@@ -1098,9 +1100,10 @@ static char *AskFeature(MacFeat *changing,MacFeat *all,GGadget *list, int index)
     fd.all = all;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Feature");
