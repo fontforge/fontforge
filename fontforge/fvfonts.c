@@ -706,21 +706,28 @@ return( test->sc );
 return( NULL );
 }
 
+static int SCUniMatch(SplineChar *sc,int unienc) {
+    struct altuni *alt;
+
+    if ( sc->unicodeenc==unienc )
+return( true );
+    for ( alt=sc->altuni; alt!=NULL; alt=alt->next )
+	if ( alt->unienc==unienc )
+return( true );
+
+return( false );
+}
+
 /* Find the position in the glyph list where this code point/name is found. */
 /*  Returns -1 else on error */
 int SFFindGID(SplineFont *sf, int unienc, const char *name ) {
-    struct altuni *altuni;
     int gid;
     SplineChar *sc;
 
     if ( unienc!=-1 ) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
-	    if ( sf->glyphs[gid]->unicodeenc == unienc )
+	    if ( SCUniMatch(sf->glyphs[gid],unienc) )
 return( gid );
-	    for ( altuni = sf->glyphs[gid]->altuni; altuni!=NULL; altuni=altuni->next ) {
-		if ( altuni->unienc == unienc && altuni->vs==-1 && altuni->fid==0 )
-return( gid );
-	    }
 	}
     }
     if ( name!=NULL ) {
@@ -748,13 +755,14 @@ int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
 	/* All done */;
     else if ( (map->enc->is_custom || map->enc->is_compact ||
 	    map->enc->is_original) && unienc!=-1 ) {
+	/* Just on the off-chance that it is unicode after all */
 	if ( unienc<map->enccount && map->map[unienc]!=-1 &&
 		sf->glyphs[map->map[unienc]]!=NULL &&
 		sf->glyphs[map->map[unienc]]->unicodeenc==unienc )
 	    index = unienc;
 	else for ( index = map->enccount-1; index>=0; --index ) {
 	    if ( (pos = map->map[index])!=-1 && sf->glyphs[pos]!=NULL &&
-		    sf->glyphs[pos]->unicodeenc==unienc )
+			SCUniMatch(sf->glyphs[pos],unienc) )
 	break;
 	}
     } else if ( unienc!=-1 &&
@@ -766,7 +774,7 @@ int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
 	if ( index<0 || index>=map->enccount ) {
 	    for ( index=map->enc->char_cnt; index<map->enccount; ++index )
 		if ( (pos = map->map[index])!=-1 && sf->glyphs[pos]!=NULL &&
-			sf->glyphs[pos]->unicodeenc==unienc )
+			SCUniMatch(sf->glyphs[pos],unienc) )
 	    break;
 	    if ( index>=map->enccount )
 		index = -1;
