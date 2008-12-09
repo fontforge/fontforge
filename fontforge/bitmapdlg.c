@@ -518,12 +518,6 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     }
     varray[k++] = GCD_Glue; varray[k++] = NULL;
 
-    gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
-    gcd[j].gd.pos.width = pos.width-4;
-    gcd[j].gd.pos.height = pos.height-4;
-    gcd[j].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-    gcd[j++].creator = GGroupCreate;
-
     gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = 252-32-3;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
     gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;

@@ -268,7 +268,7 @@ enum psstrokeflags Ps_StrokeFlagsDlg(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11];
+    GGadgetCreateData gcd[11], boxes[4], *hvarray[7][2], *barray[10];
     GTextInfo label[11];
     int done = false;
     int k, rm_k, he_k, cd_k;
@@ -291,46 +291,23 @@ return( oldflags );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     k = 0;
 /* GT: The following strings should be concatenated together, the result */
 /* GT: translated, and then broken into lines by hand. I'm sure it would */
 /* GT: be better to specify this all as one string, but my widgets won't support */
 /* GT: that */
-    label[k].text = (unichar_t *) _("FontForge has some bugs in its remove overlap");
+    label[k].text = (unichar_t *) _("FontForge has some bugs in its remove overlap\n"
+				    "function which may cause you problems, so\n"
+				    "I give you the option of turning it off.\n"
+				    "Leave it on if possible though, it is useful.");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
-
-    label[k].text = (unichar_t *) _("function which may cause you problems, so");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-
-    label[k].text = (unichar_t *) _("I give you the option of turning it off.");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-
-    label[k].text = (unichar_t *) _("Leave it on if possible though, it is useful.");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-
-    label[k].text = (unichar_t *) "";
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[k-1]; hvarray[0][1] = NULL;
 
     cd_k = k;
     label[k].text = (unichar_t *) _("_Correct Direction");
@@ -340,6 +317,7 @@ return( oldflags );
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
     gcd[k].gd.flags = gg_enabled | gg_visible | (oldflags&sf_correctdir?gg_cb_on:0);
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray[1][0] = &gcd[k-1]; hvarray[1][1] = NULL;
 
     rm_k = k;
     label[k].text = (unichar_t *) _("Cleanup Self Intersect");
@@ -350,6 +328,7 @@ return( oldflags );
 	    (oldflags&sf_removeoverlap?gg_cb_on:0);
     gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray[2][0] = &gcd[k-1]; hvarray[2][1] = NULL;
 
     he_k = k;
     label[k].text = (unichar_t *) _("Handle Erasers");
@@ -360,9 +339,10 @@ return( oldflags );
 	    (oldflags&sf_handle_eraser?gg_cb_on:0);
     gcd[k].gd.popup_msg = (unichar_t *) _("Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, FontForge will\nattempt to simulate that.");
     gcd[k++].creator = GCheckBoxCreate;
+    hvarray[3][0] = &gcd[k-1]; hvarray[3][1] = NULL;
+    hvarray[4][0] = GCD_Glue; hvarray[4][1] = NULL;
 
     gcd[k].gd.pos.x = (PSSF_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[k].gd.pos.y = PSSF_Height-34;
-    gcd[k].gd.pos.width = -1;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _("_OK");
     label[k].text_is_1byte = true;
@@ -370,13 +350,24 @@ return( oldflags );
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = PSSF_OK;
     gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue; barray[3] = NULL;
 
-    gcd[k].gd.pos.x = 1; gcd[k].gd.pos.y = 1;
-    gcd[k].gd.pos.width = PSSF_Width-2; gcd[k].gd.pos.height = PSSF_Height-2;
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GGroupCreate;
+    boxes[2].gd.flags = gg_enabled | gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+    hvarray[5][0] = &boxes[2]; hvarray[5][1] = NULL;
+    hvarray[6][0] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled | gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+
     GDrawSetVisible(gw,true);
 
     while ( !done )

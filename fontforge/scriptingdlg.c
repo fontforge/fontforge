@@ -198,6 +198,7 @@ return( false );
 	/* Above palettes */
 	GDrawRaise(gw);
     } else if ( event->type == et_resize ) {
+#if 0
 	GRect newsize, gpos;
 	int space;
 	GDrawGetSize(gw,&newsize);
@@ -222,6 +223,7 @@ return( false );
 	space = sd->oldh - gpos.y;
 	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),gpos.x,newsize.height-space);
 	sd->oldh = newsize.height;
+#endif
 	GDrawRequestExpose(gw,NULL,false);
     }
 return( true );
@@ -231,11 +233,11 @@ void ScriptDlg(FontView *fv,CharView *cv) {
     GRect pos;
     static GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
+    GGadgetCreateData gcd[12], boxes[5], *rarray[4], *barray[4][8], *hvarray[4][2];
     GTextInfo label[12];
     struct sd_data sd;
     FontView *list;
-    int i;
+    int i,l;
 
     memset(&sd,0,sizeof(sd));
     sd.fv = fv;
@@ -256,15 +258,17 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
 	gw = GDrawCreateTopWindow(NULL,&pos,sd_e_h,&sd,&wattrs);
 
+	memset(&boxes,0,sizeof(boxes));
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	i = 0;
+	i = l = 0;
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 10;
 	gcd[i].gd.pos.width = SD_Width-20; gcd[i].gd.pos.height = SD_Height-54;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
 	gcd[i].gd.cid = CID_Script;
 	gcd[i++].creator = GTextAreaCreate;
+	hvarray[l][0] = &gcd[i-1]; hvarray[l++][1] = NULL;
 
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	gcd[i-1].gd.pos.height -= 24;
@@ -278,6 +282,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = SD_LangChanged;
 	gcd[i++].creator = GRadioCreate;
+	rarray[0] = &gcd[i-1];
 
 	gcd[i].gd.pos.x = 70; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
 	gcd[i].gd.flags = gg_visible | gg_enabled;	/* disabled if cv!=NULL later */
@@ -288,10 +293,19 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.handle_controlevent = SD_LangChanged;
 	gcd[i++].creator = GRadioCreate;
+	rarray[1] = &gcd[i-1]; rarray[2] = GCD_Glue; rarray[3] = NULL;
+
+	boxes[2].gd.flags = gg_enabled | gg_visible;
+	boxes[2].gd.u.boxelements = rarray;
+	boxes[2].creator = GHBoxCreate;
+	hvarray[l][0] = &boxes[2]; hvarray[l++][1] = NULL;
 #endif
 
+	barray[0][0] = barray[1][0] = barray[0][6] = barray[1][6] = GCD_Glue;
+	barray[0][2] = barray[1][2] = barray[0][4] = barray[1][4] = GCD_Glue;
+	barray[0][1] = barray[0][5] = GCD_RowSpan;
+	barray[0][7] = barray[1][7] = barray[2][0] = NULL;
 	gcd[i].gd.pos.x = 25-3; gcd[i].gd.pos.y = SD_Height-32-3;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[i].text = (unichar_t *) _("_OK");
 	label[i].text_is_1byte = true;
@@ -301,14 +315,10 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i].gd.handle_controlevent = SD_OK;
 	gcd[i].gd.cid = CID_OK;
 	gcd[i++].creator = GButtonCreate;
+	barray[1][1] = &gcd[i-1];
 
 	gcd[i].gd.pos.x = -25; gcd[i].gd.pos.y = SD_Height-32;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-#if defined(_NO_FFSCRIPT)
-	gcd[i].gd.flags = gg_enabled | gg_but_cancel;
-#else
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-#endif
 	label[i].text = (unichar_t *) _("_Cancel");
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
@@ -317,9 +327,9 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i].gd.handle_controlevent = SD_Cancel;
 	gcd[i].gd.cid = CID_Cancel;
 	gcd[i++].creator = GButtonCreate;
+	barray[1][5] = &gcd[i-1];
 
 	gcd[i].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[i].gd.pos.y = SD_Height-40;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	label[i].text = (unichar_t *) _("C_all...");
 	label[i].text_is_1byte = true;
@@ -329,14 +339,36 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i].gd.handle_controlevent = SD_Call;
 	gcd[i].gd.cid = CID_Call;
 	gcd[i++].creator = GButtonCreate;
+	barray[0][3] = &gcd[i-1];
 
-	gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
-	gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
-	gcd[i].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[i].gd.cid = CID_Box;
-	gcd[i++].creator = GGroupCreate;
+#if !defined(_NO_FFSCRIPT)
+	gcd[i].gd.pos.width = gcd[i].gd.pos.height = 5;
+	gcd[i].gd.flags = gg_visible | gg_enabled;
+	gcd[i++].creator = GSpacerCreate;
+	barray[1][3] = &gcd[i-1];
+#else
+	barray[1][3] = GCD_RowSpan;
+#endif
 
-	GGadgetsCreate(gw,gcd);
+	barray[3][0] = NULL;
+
+	boxes[3].gd.flags = gg_enabled | gg_visible;
+	boxes[3].gd.u.boxelements = barray[0];
+	boxes[3].creator = GHVBoxCreate;
+	hvarray[l][0] = &boxes[3]; hvarray[l++][1] = NULL;
+	hvarray[l][0] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled | gg_visible;
+	boxes[0].gd.u.boxelements = hvarray[0];
+	boxes[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(gw,boxes);
+	if ( boxes[2].ret!=NULL )
+	    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+	GHVBoxSetExpandableRow(boxes[0].ret,0);
+	GHVBoxFitWindow(boxes[0].ret);
     }
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_FF),cv==NULL);

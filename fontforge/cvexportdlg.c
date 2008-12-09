@@ -90,7 +90,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[8], boxes[5], *hvarray[7][4], *barray[10];
     GTextInfo label[8];
     struct sizebits sb;
 
@@ -112,6 +112,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     label[0].text = (unichar_t *) _("Pixel size:");
     label[0].text_is_1byte = true;
@@ -119,6 +120,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[0].gd.pos.x = 8; gcd[0].gd.pos.y = 8+6; 
     gcd[0].gd.flags = gg_enabled|gg_visible;
     gcd[0].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[0];
 
     gcd[1].gd.pos.x = 70; gcd[1].gd.pos.y = 8;  gcd[1].gd.pos.width = 65;
     label[1].text = (unichar_t *) (last==NULL ? "100" : last);
@@ -126,7 +128,8 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[1].gd.label = &label[1];
     gcd[1].gd.flags = gg_enabled|gg_visible;
     gcd[1].gd.cid = CID_Size;
-    gcd[1].creator = GTextFieldCreate;
+    gcd[1].creator = GNumericFieldCreate;
+    hvarray[0][1] = &gcd[1]; hvarray[0][2] = GCD_Glue; hvarray[0][3] = NULL;
 
     label[2].text = (unichar_t *) _("Bits/Pixel:");
     label[2].text_is_1byte = true;
@@ -134,6 +137,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[2].gd.pos.x = 8; gcd[2].gd.pos.y = 38+6; 
     gcd[2].gd.flags = gg_enabled|gg_visible;
     gcd[2].creator = GLabelCreate;
+    hvarray[1][0] = &gcd[2];
 
     gcd[3].gd.pos.x = 70; gcd[3].gd.pos.y = 38;  gcd[3].gd.pos.width = 65;
     label[3].text = (unichar_t *) (last_bits==NULL? "1" : last_bits);
@@ -141,7 +145,9 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[3].gd.label = &label[3];
     gcd[3].gd.flags = gg_enabled|gg_visible;
     gcd[3].gd.cid = CID_Bits;
-    gcd[3].creator = GTextFieldCreate;
+    gcd[3].creator = GNumericFieldCreate;
+    hvarray[1][1] = &gcd[3]; hvarray[1][2] = GCD_Glue; hvarray[1][3] = NULL;
+    hvarray[2][0] = hvarray[2][1] = hvarray[2][2] = GCD_Glue; hvarray[2][3] = NULL;
 
     gcd[4].gd.pos.x = 10-3; gcd[4].gd.pos.y = 38+30-3;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
@@ -153,6 +159,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[4].gd.label = &label[4];
     gcd[4].gd.handle_controlevent = SB_OK;
     gcd[4].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[4]; barray[2] = barray[3] = barray[4] = barray[5] = GCD_Glue;
 
     gcd[5].gd.pos.x = -10; gcd[5].gd.pos.y = 38+30;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
@@ -164,13 +171,24 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     gcd[5].gd.mnemonic = 'C';
     gcd[5].gd.handle_controlevent = SB_Cancel;
     gcd[5].creator = GButtonCreate;
+    barray[5] = &gcd[5]; barray[6] = GCD_Glue; barray[7] = NULL;
 
-    gcd[6].gd.pos.x = 2; gcd[6].gd.pos.y = 2;
-    gcd[6].gd.pos.width = pos.width-4; gcd[6].gd.pos.height = pos.height-2;
-    gcd[6].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[6].creator = GGroupCreate;
+    boxes[2].gd.flags = gg_enabled | gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+    hvarray[3][0] = &boxes[2]; hvarray[3][1] = GCD_ColSpan; hvarray[3][2] = GCD_Glue; hvarray[3][3] = NULL;
+    hvarray[4][0] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled | gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Size));
     GTextFieldSelect(GWidgetGetControl(gw,CID_Size),0,-1);
 

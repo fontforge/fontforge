@@ -53,7 +53,7 @@ struct contextchaindlg {
 #define CID_Cancel	101
 #define CID_Next	102
 #define CID_Prev	103
-#define CID_Group	104
+#define CID_SubSize	104
 
 #define CID_ByGlyph	200
 #define CID_ByClass	201
@@ -1508,7 +1508,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     hvarray[3][0] = GCD_HPad10; hvarray[3][1] = &gcd[3]; hvarray[3][2] = NULL;
 
     gcd[4].gd.pos.width = 10; gcd[4].gd.pos.height = 10;
-    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    gcd[4].gd.flags = gg_visible | gg_enabled;
     gcd[4].creator = GSpacerCreate;
     hvarray[4][0] = &gcd[4]; hvarray[4][1] = GCD_ColSpan; hvarray[4][2] = NULL;
 
@@ -1990,21 +1990,22 @@ return( true );
 	}
 return( false );
     } else if ( event->type==et_resize ) {
-	int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize)), i;
+	/* int blen = GDrawPointsToPixels(NULL,GIntGetResource(_NUM_Buttonsize)),*/
+	int i;
 	GRect wsize, csize;
 	struct contextchaindlg *ccd = GDrawGetUserData(gw);
 	GGadget *g;
 
+	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_SubSize),&wsize);
+
+	GDrawResize(ccd->formats,wsize.width,wsize.height);
+	GDrawResize(ccd->coverage,wsize.width,wsize.height);
+	GDrawResize(ccd->glist,wsize.width,wsize.height);
+	GDrawResize(ccd->glyphs,wsize.width,wsize.height);
+	GDrawResize(ccd->cselect,wsize.width,wsize.height);
+	GDrawResize(ccd->class,wsize.width,wsize.height);
+
 	GDrawGetSize(ccd->gw,&wsize);
-	GGadgetResize(GWidgetGetControl(ccd->gw,CID_Group),wsize.width-4,wsize.height-4);
-	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_OK),&csize);
-	GGadgetMove(GWidgetGetControl(ccd->gw,CID_OK),csize.x,wsize.height-ccd->canceldrop);
-	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Next),&csize);
-	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Next),csize.x,wsize.height-ccd->canceldrop);
-	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Prev),&csize);
-	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Prev),csize.x,wsize.height-ccd->canceldrop);
-	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_Cancel),&csize);
-	GGadgetMove(GWidgetGetControl(ccd->gw,CID_Cancel),wsize.width-blen-20,wsize.height-ccd->canceldrop);
 
 	GGadgetGetSize(GWidgetGetControl(ccd->gw,CID_MatchType),&csize);
 	GGadgetResize(GWidgetGetControl(ccd->gw,CID_MatchType),wsize.width-GDrawPointsToPixels(NULL,10),csize.height);
@@ -2035,13 +2036,6 @@ return( false );
 	    GGadgetGetSize(g,&csize);
 	    GGadgetResize(g,wsize.width-GDrawPointsToPixels(NULL,25),csize.height);
 	}
-
-	GDrawResize(ccd->formats,wsize.width-8,wsize.height-ccd->subheightdiff);
-	GDrawResize(ccd->coverage,wsize.width-8,wsize.height-ccd->subheightdiff);
-	GDrawResize(ccd->glist,wsize.width-8,wsize.height-ccd->subheightdiff);
-	GDrawResize(ccd->glyphs,wsize.width-8,wsize.height-ccd->subheightdiff);
-	GDrawResize(ccd->cselect,wsize.width-8,wsize.height-ccd->subheightdiff);
-	GDrawResize(ccd->class,wsize.width-8,wsize.height-ccd->subheightdiff);
 
 	GDrawRequestExpose(ccd->gw,NULL,false);
 	GDrawRequestExpose(ccd->aw==aw_formats ? ccd->formats :
@@ -2314,7 +2308,7 @@ static void CCD_AddReplacements(GGadgetCreateData *gcd, GTextInfo *label,
 struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi, unichar_t *newname) {
     struct contextchaindlg *ccd;
-    int i,j,k, space;
+    int i,j,k;
     static char *titles[2][5] = {
 	{ N_("Edit Contextual Position"), N_("Edit Contextual Substitution"),
 	    N_("Edit Chaining Position"), N_("Edit Chaining Substitution"),
@@ -2332,22 +2326,9 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	clgcd[10];
     GTextInfo gllabel[8], flabel[3], glabel[3][14], clabel[3][18], cslabel[6],
 	cllabel[10];
-    GGadgetCreateData bgcd[6], rgcd[15];
-    GTextInfo blabel[4], rlabel[15];
+    GGadgetCreateData bgcd[6], rgcd[15], boxes[3], *barray[10], *hvarray[4][2];
+    GTextInfo blabel[5], rlabel[15];
     struct fpst_rule *r=NULL;
-    int blen = GIntGetResource(_NUM_Buttonsize)*100/GGadgetScale(100);
-    char *text[] = {
-/* GT: The following strings should be concatenated together, the result */
-/* GT: translated, and then broken into lines by hand. I'm sure it would */
-/* GT: be better to specify this all as one string, but my widgets won't support */
-/* GT: that */
-	    N_("OpenType Contextual or Chaining subtables may be in one"),
-	    N_(" of three formats. The context may be specified either"),
-	    N_(" as a string of specific glyphs, a string of glyph classes,"), N_(" or a string of coverage tables."),
-	    N_("In the first format you must specify a string of glyph-names."), N_(" In the second format you must specify a string of class numbers."),
-	    N_(" In the third format you must specify a string each element"), N_("  of which may contain several glyph-names."),
-	    N_("For chaining subtables you may also specify backtrack and"),
-	    N_(" lookahead lists."), 0 };
     FPST *tempfpst;
 
     ccd = chunkalloc(sizeof(struct contextchaindlg));
@@ -2379,101 +2360,123 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 
     memset(&blabel,0,sizeof(blabel));
     memset(&bgcd,0,sizeof(bgcd));
+    memset(&boxes,0,sizeof(boxes));
 
     ccd->canceldrop = GDrawPointsToPixels(NULL,30);
-    bgcd[0].gd.pos.x = 20; bgcd[0].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-33;
-    bgcd[0].gd.pos.width = -1; bgcd[0].gd.pos.height = 0;
-    bgcd[0].gd.flags = gg_visible | gg_enabled;
-    blabel[0].text = (unichar_t *) _("_OK");
-    blabel[0].text_is_1byte = true;
-    blabel[0].text_in_resource = true;
-    bgcd[0].gd.label = &blabel[0];
-    bgcd[0].gd.cid = CID_OK;
-    bgcd[0].gd.handle_controlevent = CCD_OK;
-    bgcd[0].creator = GButtonCreate;
+    bgcd[0].gd.pos = subpos;
+    bgcd[0].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    bgcd[0].gd.cid = CID_SubSize;
+    bgcd[0].creator = GSpacerCreate;
+    hvarray[0][0] = &bgcd[0]; hvarray[0][1] = NULL;
 
-    space = (CCD_WIDTH-4*blen-40)/3;
-    bgcd[1].gd.pos.x = bgcd[0].gd.pos.x+blen+space; bgcd[1].gd.pos.y = bgcd[0].gd.pos.y;
-    bgcd[1].gd.pos.width = -1; bgcd[1].gd.pos.height = 0;
-    bgcd[1].gd.flags = gg_visible;
-    blabel[1].text = (unichar_t *) _("< _Prev");
+    bgcd[1].gd.flags = gg_visible | gg_enabled;
+    blabel[1].text = (unichar_t *) _("_OK");
     blabel[1].text_is_1byte = true;
     blabel[1].text_in_resource = true;
     bgcd[1].gd.label = &blabel[1];
-    bgcd[1].gd.handle_controlevent = CCD_Prev;
-    bgcd[1].gd.cid = CID_Prev;
+    bgcd[1].gd.cid = CID_OK;
+    bgcd[1].gd.handle_controlevent = CCD_OK;
     bgcd[1].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &bgcd[1];
 
-    bgcd[2].gd.pos.x = bgcd[1].gd.pos.x+blen+space; bgcd[2].gd.pos.y = bgcd[1].gd.pos.y;
-    bgcd[2].gd.pos.width = -1; bgcd[2].gd.pos.height = 0;
     bgcd[2].gd.flags = gg_visible;
-    blabel[2].text = (unichar_t *) _("_Next >");
+    blabel[2].text = (unichar_t *) _("< _Prev");
     blabel[2].text_is_1byte = true;
     blabel[2].text_in_resource = true;
     bgcd[2].gd.label = &blabel[2];
-    bgcd[2].gd.handle_controlevent = CCD_Next;
-    bgcd[2].gd.cid = CID_Next;
+    bgcd[2].gd.handle_controlevent = CCD_Prev;
+    bgcd[2].gd.cid = CID_Prev;
     bgcd[2].creator = GButtonCreate;
+    barray[2] = GCD_Glue; barray[3] = &bgcd[2];
 
-    bgcd[3].gd.pos.x = -20; bgcd[3].gd.pos.y = bgcd[1].gd.pos.y;
-    bgcd[3].gd.pos.width = -1; bgcd[3].gd.pos.height = 0;
-    bgcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    blabel[3].text = (unichar_t *) _("_Cancel");
+    bgcd[3].gd.flags = gg_visible;
+    blabel[3].text = (unichar_t *) _("_Next >");
     blabel[3].text_is_1byte = true;
     blabel[3].text_in_resource = true;
     bgcd[3].gd.label = &blabel[3];
-    bgcd[3].gd.handle_controlevent = CCD_Cancel;
-    bgcd[3].gd.cid = CID_Cancel;
+    bgcd[3].gd.handle_controlevent = CCD_Next;
+    bgcd[3].gd.cid = CID_Next;
     bgcd[3].creator = GButtonCreate;
+    barray[4] = GCD_Glue; barray[5] = &bgcd[3];
 
-    bgcd[4].gd.pos.x = 2; bgcd[4].gd.pos.y = 2;
-    bgcd[4].gd.pos.width = pos.width-4; bgcd[4].gd.pos.height = pos.height-4;
-    bgcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    bgcd[4].gd.cid = CID_Group;
-    bgcd[4].creator = GGroupCreate;
+    bgcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    blabel[4].text = (unichar_t *) _("_Cancel");
+    blabel[4].text_is_1byte = true;
+    blabel[4].text_in_resource = true;
+    bgcd[4].gd.label = &blabel[4];
+    bgcd[4].gd.handle_controlevent = CCD_Cancel;
+    bgcd[4].gd.cid = CID_Cancel;
+    bgcd[4].creator = GButtonCreate;
+    barray[6] = GCD_Glue; barray[7] = &bgcd[4]; barray[8] = GCD_Glue; barray[9] = NULL;
+
+    boxes[2].gd.flags = gg_enabled | gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+    hvarray[1][0] = &boxes[2]; hvarray[1][1] = hvarray[2][0] = NULL; 
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled | gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
 
     if ( fpst->type == pst_reversesub ) {
-	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible;
+	bgcd[2].gd.flags = bgcd[3].gd.flags = gg_visible;
 	ccd->aw = aw_coverage;
     } else if ( ccd->isnew || fpst->rule_cnt==0) {
 	fpst->format = pst_class;
-	bgcd[0].gd.flags = gg_visible;
-	bgcd[2].gd.flags = gg_visible | gg_enabled;
+	bgcd[1].gd.flags = gg_visible;
+	bgcd[3].gd.flags = gg_visible | gg_enabled;
 	ccd->aw = aw_formats;
     } else if ( fpst->format==pst_coverage ) {
-	bgcd[1].gd.flags = gg_visible | gg_enabled; bgcd[2].gd.flags = gg_visible;
+	bgcd[2].gd.flags = gg_visible | gg_enabled;
+	bgcd[3].gd.flags = gg_visible;
 	ccd->aw = aw_coverage;	/* flags are different from those of reversesub above */
     } else if ( fpst->format==pst_class ) {
-	bgcd[1].gd.flags = gg_visible | gg_enabled; bgcd[2].gd.flags = gg_visible;
+	bgcd[2].gd.flags = gg_visible | gg_enabled;
+	bgcd[3].gd.flags = gg_visible;
 	ccd->aw = aw_class;
     } else {
-	bgcd[1].gd.flags = gg_visible | gg_enabled; bgcd[2].gd.flags = gg_visible;
+	bgcd[2].gd.flags = gg_visible | gg_enabled;
+	bgcd[3].gd.flags = gg_visible;
 	ccd->aw = aw_glist;
     }
-    
-    GGadgetsCreate(gw,bgcd);
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    /*GHVBoxFitWindow(boxes[0].ret);*/
 
     wattrs.mask = wam_events;
     ccd->formats = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
     memset(&rlabel,0,sizeof(rlabel));
     memset(&rgcd,0,sizeof(rgcd));
 
-    for ( i=0; text[i]!=0; ++i ) {
-	rgcd[i].gd.pos.x = 5; rgcd[i].gd.pos.y = 5+i*13;
-	rgcd[i].gd.flags = gg_visible | gg_enabled;
-	rlabel[i].text = (unichar_t *) _(text[i]);
-	rlabel[i].text_is_1byte = true;
-	rgcd[i].gd.label = &rlabel[i];
-	rgcd[i].creator = GLabelCreate;
-    }
+    i = 0;
+    rgcd[i].gd.pos.x = 5; rgcd[i].gd.pos.y = 5+i*13;
+    rgcd[i].gd.flags = gg_visible | gg_enabled;
+    rlabel[i].text = (unichar_t *) _(
+	    "OpenType Contextual or Chaining subtables may be in one\n"
+	    " of three formats. The context may be specified either\n"
+	    " as a string of specific glyphs, a string of glyph classes\n"
+	    " or a string of coverage tables\n"
+	    "In the first format you must specify a string of glyph-names\n"
+	    " In the second format you must specify a string of class numbers\n"
+	    " In the third format you must specify a string each element\n"
+	    "  of which may contain several glyph-names\n"
+	    "For chaining subtables you may also specify backtrack and\n"
+	    " lookahead lists.");
+    rlabel[i].text_is_1byte = true;
+    rgcd[i].gd.label = &rlabel[i];
+    rgcd[i++].creator = GLabelCreate;
+    hvarray[0][0] = &rgcd[i-1]; hvarray[0][1] = NULL;
 
-    rgcd[i].gd.pos.x = 50; rgcd[i].gd.pos.y = rgcd[i-1].gd.pos.y+20;
     rgcd[i].gd.flags = gg_visible | gg_enabled | (fpst->format==pst_glyphs ? gg_cb_on : 0 );
     rlabel[i].text = (unichar_t *) _("By Glyphs");
     rlabel[i].text_is_1byte = true;
     rgcd[i].gd.label = &rlabel[i];
     rgcd[i].gd.cid = CID_ByGlyph;
     rgcd[i++].creator = GRadioCreate;
+    barray[0] = GCD_HPad10; barray[1] = &rgcd[i-1];
 
     rgcd[i].gd.pos.x = rgcd[i-1].gd.pos.x; rgcd[i].gd.pos.y = rgcd[i-1].gd.pos.y+16;
     rgcd[i].gd.flags = gg_visible | gg_enabled | (fpst->format==pst_class ? gg_cb_on : 0 );
@@ -2482,6 +2485,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     rgcd[i].gd.label = &rlabel[i];
     rgcd[i].gd.cid = CID_ByClass;
     rgcd[i++].creator = GRadioCreate;
+    barray[2] = &rgcd[i-1];
 
     rgcd[i].gd.pos.x = rgcd[i-1].gd.pos.x; rgcd[i].gd.pos.y = rgcd[i-1].gd.pos.y+16;
     rgcd[i].gd.flags = gg_visible | gg_enabled | (fpst->format!=pst_glyphs && fpst->format!=pst_class ? gg_cb_on : 0 );
@@ -2490,7 +2494,24 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     rgcd[i].gd.label = &rlabel[i];
     rgcd[i].gd.cid = CID_ByCoverage;
     rgcd[i].creator = GRadioCreate;
-    GGadgetsCreate(ccd->formats,rgcd);
+    barray[3] = &rgcd[i]; barray[4] = GCD_Glue; barray[5] = NULL;
+
+    memset(boxes,0,sizeof(boxes));
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+    hvarray[1][0] = &boxes[2]; hvarray[1][1] = NULL;
+    hvarray[2][0] = GCD_Glue; hvarray[2][1] = NULL; hvarray[3][0] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(ccd->formats,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
 
 
     ccd->glyphs = GWidgetCreateSubWindow(ccd->gw,&subpos,subccd_e_h,ccd,&wattrs);
