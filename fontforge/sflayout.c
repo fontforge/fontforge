@@ -840,9 +840,9 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
     if ( ret->bdf!=NULL )
 	/* Already done */;
     else if ( ret->fonttype==sftf_pfaedit )
-	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,pixelsize,ret->antialias?pf_antialias:0,NULL);
+	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,ret->pointsize,li->dpi,ret->antialias?pf_antialias:0,NULL);
     else if ( ret->fonttype==sftf_nohints )
-	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,pixelsize,
+	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,ret->pointsize,li->dpi,
 		(ret->antialias?pf_antialias:0)|pf_ft_nohints,NULL);
     else {
 	for ( test=li->generated; test!=NULL; test=test->next )
@@ -871,7 +871,7 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
 	    }
 return( ret );
 	}
-	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,pixelsize,ret->antialias,ftc);
+	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,ret->pointsize,li->dpi,ret->antialias,ftc);
     }
     if ( freeold ) {
 	if ( depends_on && old!=NULL )

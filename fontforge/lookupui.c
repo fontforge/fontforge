@@ -2911,7 +2911,7 @@ return;		/* The names specified weren't in the font */
 return;		/* Couldn't parse the numeric kerning info */
 
     if ( pstkd->display==NULL )
-	pstkd->display = SplineFontPieceMeal(pstkd->sf,pstkd->def_layer,pstkd->pixelsize,pf_antialias,NULL);
+	pstkd->display = SplineFontPieceMeal(pstkd->sf,pstkd->def_layer,pstkd->pixelsize,72,pf_antialias,NULL);
     bc1 = BDFPieceMealCheck(pstkd->display,sc1->orig_pos);
     bc2 = BDFPieceMealCheck(pstkd->display,sc2->orig_pos);
 

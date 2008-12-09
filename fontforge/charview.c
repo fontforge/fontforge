@@ -2372,12 +2372,12 @@ static void CVRegenFill(CharView *cv) {
 	/*  do a mono fill */
 	if ( use_freetype_to_rasterize_fv && hasFreeType()) {
 	    cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,layer,
-		size, 1);
+		size,72, 1);
 	    if ( cv->filled==NULL && size<2000 ) {
 		/* There are some glyphs which freetype won't rasterize in */
 		/* mono mode, but will in grey scale. Don't ask me why */
 		cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,
-		    layer, size, 4);
+		    layer, size, 72, 4);
 		clut_len = 16;
 	    }
 	}

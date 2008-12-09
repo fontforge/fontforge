@@ -2506,7 +2506,7 @@ static BDFChar *Rasterize(SplineChar *sc,int def_layer) {
 
     freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,def_layer);
     if ( freetypecontext!=NULL ) {
-	ret = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kern_popup_size,8);
+	ret = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kern_popup_size,72,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
 	ret = SplineCharAntiAlias(sc,def_layer,kern_popup_size,4);

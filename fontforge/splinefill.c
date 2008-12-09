@@ -1805,10 +1805,17 @@ return( NULL );
 return(NULL);
     if ( bdf->freetype_context )
 	bdf->glyphs[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
-		sc->orig_pos,bdf->truesize,bdf->clut?8:1);
-    else if ( bdf->unhinted_freetype )
+		sc->orig_pos,bdf->ptsize,bdf->dpi,bdf->clut?8:1);
+    else if ( bdf->recontext_freetype ) {
+	void *ft_context = FreeTypeFontContext(bdf->sf,sc,NULL,bdf->layer);
+	if ( ft_context!=NULL ) {
+	    bdf->glyphs[index] = SplineCharFreeTypeRasterize(ft_context,
+		    sc->orig_pos,bdf->ptsize,bdf->dpi,bdf->clut?8:1);
+	    FreeTypeFreeContext(ft_context);
+	}
+    } else if ( bdf->unhinted_freetype )
 	bdf->glyphs[index] = SplineCharFreeTypeRasterizeNoHints(sc,
-		bdf->layer,bdf->truesize,bdf->clut?4:1);
+		bdf->layer,bdf->ptsize,bdf->dpi,bdf->clut?4:1);
     else
 	bdf->glyphs[index] = NULL;
     if ( bdf->glyphs[index]==NULL ) {
@@ -1834,9 +1841,11 @@ return(BDFPieceMeal(bdf,index));
 
 /* Piecemeal fonts are used as the display font in the fontview, metricsview and other places*/
 /*  as such they are simple fonts (ie. we only display the current cid subfont) */
-BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int pixelsize,int flags,void *ftc) {
+BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize,int dpi,
+	int flags,void *ftc) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
     real scale;
+    int pixelsize = (int) rint( (ptsize*dpi)/72.0 );
     int truesize = pixelsize;
 
     if ( flags&pf_bbsized ) {
@@ -1857,23 +1866,29 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int pixelsize,int flags,vo
 	scale = pixelsize/ (real) (bb.maxy-bb.miny);
 	bdf->ascent = rint(bb.maxy*scale);
 	truesize = rint( (sf->ascent+sf->descent)*scale );
+	if ( pixelsize!=0 )
+	    ptsize = rint( ptsize*(double) truesize/pixelsize );
     } else {
 	scale = pixelsize / (real) (sf->ascent+sf->descent);
 	bdf->ascent = rint(sf->ascent*scale);
     }
     if ( flags&pf_ft_nohints )
 	bdf->unhinted_freetype = true;
+    else if ( flags&pf_ft_recontext )
+	bdf->recontext_freetype = true;
 
     bdf->sf = sf;
     bdf->layer = layer;
     bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
     bdf->pixelsize = pixelsize;
+    bdf->truesize = truesize;
+    bdf->ptsize = ptsize;
+    bdf->dpi = dpi;
     bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));
     bdf->descent = pixelsize-bdf->ascent;
     bdf->piecemeal = true;
     bdf->bbsized = (flags&pf_bbsized)?1:0;
     bdf->res = -1;
-    bdf->truesize = truesize;
     bdf->freetype_context = ftc;
     if ( ftc && (flags&pf_antialias) )
 	BDFClut(bdf,16);

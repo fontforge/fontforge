@@ -53,7 +53,7 @@ return;
     scale = pixelsize/(double) (sc->parent->ascent+sc->parent->descent);
 
     depth = 4;
-    bdfc = SplineCharFreeTypeRasterizeNoHints(sc,layer,pixelsize,4);
+    bdfc = SplineCharFreeTypeRasterizeNoHints(sc,layer,pixelsize,72,4);
     if ( bdfc==NULL )
 	bdfc = SplineCharAntiAlias(sc,pixelsize,layer,4);
     if ( bdfc==NULL )
@@ -509,7 +509,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
 	    bdfc = SplineCharRasterize(sc,layer,pixelsize);
 	else {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,1);
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,72,1);
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeBitmap(bdfc);
@@ -544,7 +544,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
 	    bdfc = SplineCharAntiAlias(sc,pixelsize,layer,(1<<(bitsperpixel/2)));
 	else {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,bitsperpixel);
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,72,bitsperpixel);
 	    FreeTypeFreeContext(freetypecontext);
 	}
 	BCRegularizeGreymap(bdfc);

@@ -714,7 +714,7 @@ return;
     if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_FreeType)) )
 	freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,kcd->layer);
     if ( freetypecontext ) {
-	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kcd->pixelsize,8);
+	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kcd->pixelsize,72,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);

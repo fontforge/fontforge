@@ -183,9 +183,9 @@ return;
 	if ( sizes[i]!=0 ) {
 	    bdfc = NULL;
 	    if ( freetypecontext )
-		bdfc = SplineCharFreeTypeRasterize(freetypecontext,gid,bdf->pixelsize,BDFDepth(bdf));
+		bdfc = SplineCharFreeTypeRasterize(freetypecontext,gid,bdf->pixelsize,72,BDFDepth(bdf));
 	    else if ( usefreetype )
-		bdfc = SplineCharFreeTypeRasterizeNoHints(sf->glyphs[gid],layer,bdf->pixelsize,BDFDepth(bdf));
+		bdfc = SplineCharFreeTypeRasterizeNoHints(sf->glyphs[gid],layer,bdf->pixelsize,72,BDFDepth(bdf));
 	    if ( bdfc==NULL ) {
 		if ( autohint_before_rasterize && 
 			sf->glyphs[gid]->changedsincelasthinted &&

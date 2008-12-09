@@ -61,7 +61,7 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsi
 return( NULL );
 }
 
-BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,int pixelsize,int depth) {
+BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,int ptsize,int dpi,int depth) {
 return( NULL );
 }
 
@@ -79,7 +79,7 @@ return( NULL );
 }
 
 BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
-	int pixelsize,int depth) {
+	int ptsize,int dpi,int depth) {
 return( NULL );
 }
 #else
@@ -508,15 +508,16 @@ return( bdfc );
 }
 
 BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
-	int pixelsize,int depth) {
+	int ptsize, int dpi,int depth) {
     FTC *ftc = freetypecontext;
     BDFChar *bdfc;
     SplineChar *sc;
     FT_GlyphSlot slot;
+    int pixelsize = (int) rint( (ptsize*dpi)/72.0 );
 
     if ( ftc->glyph_indeces[gid]==-1 )
  goto fail;
-    if ( _FT_Set_Pixel_Sizes(ftc->face,0,pixelsize))
+    if ( _FT_Set_Char_Size(ftc->face,(int) (ptsize*64),(int) (ptsize*64), dpi, dpi))
  goto fail;
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[gid],
 	    depth==1?(FT_LOAD_RENDER|FT_LOAD_MONOCHROME):FT_LOAD_RENDER))
@@ -558,7 +559,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 		/* If we could not allocate an ftc for this subfont, the revert to*/
 		/*  our own rasterizer */
 		if ( subftc!=NULL )
-		    bdf->glyphs[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,depth);
+		    bdf->glyphs[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,72,depth);
 		else if ( depth==1 )
 		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],ftc->layer,pixelsize);
 		else
@@ -1053,14 +1054,14 @@ static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *bru
 #endif
 
 BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
-	int pixelsize,int depth) {
+	int ptsize, int dpi,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap, temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i;
 #endif
     int cmax, pmax;
-    real rscale = pixelsize/(double) (sc->parent->ascent+sc->parent->descent);
+    real rscale = (ptsize*dpi)/72.0/(double) (sc->parent->ascent+sc->parent->descent);
     real scale = rscale*(1<<6);
     BDFChar *bdfc;
     int err = 0;
@@ -1214,7 +1215,8 @@ return( NULL );
     free(outline.contours);
     bdfc = NULL;
     if ( !err ) {
-	bdfc = BdfCFromBitmap(&bitmap, (((int) b.minx)+0x20)>>6, (((int) b.maxy)+0x20)>>6, pixelsize, depth, sc);
+	bdfc = BdfCFromBitmap(&bitmap, (((int) b.minx)+0x20)>>6, (((int) b.maxy)+0x20)>>6,
+		(int) rint( (ptsize*dpi)/72.0 ), depth, sc);
     }
     free( bitmap.buffer );
 return( bdfc );
@@ -1237,7 +1239,7 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsi
 	}
 	for ( i=0; i<subsf->glyphcnt; ++i )
 	    if ( SCWorthOutputting(subsf->glyphs[i] ) ) {
-		bdf->glyphs[i] = SplineCharFreeTypeRasterizeNoHints(subsf->glyphs[i],layer,pixelsize,depth);
+		bdf->glyphs[i] = SplineCharFreeTypeRasterizeNoHints(subsf->glyphs[i],layer,pixelsize,72,depth);
 		if ( bdf->glyphs[i]!=NULL )
 		    /* Done */;
 		else if ( depth==1 )

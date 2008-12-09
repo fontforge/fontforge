@@ -313,7 +313,7 @@ static BDFChar *APRasterize(void *freetypecontext, SplineChar *sc,int layer, int
     BDFChar *bdfc;
 
     if ( freetypecontext ) {
-	bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,8);
+	bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,72,8);
     } else
 	bdfc = SplineCharAntiAlias(sc,layer,pixelsize,4);
 
