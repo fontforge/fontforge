@@ -324,7 +324,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9];
+    GGadgetCreateData gcd[9], boxes[5], *rarray[5], *narray[5], *barray[10], *hvarray[7][2];
     GTextInfo label[9];
     struct rcd rcd;
     char buffer[20];
@@ -349,6 +349,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
 	label[0].text = (unichar_t *) _("Coordinate along which to space");
 	label[0].text_is_1byte = true;
@@ -356,6 +357,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 6; 
 	gcd[0].gd.flags = gg_enabled|gg_visible;
 	gcd[0].creator = GLabelCreate;
+	hvarray[0][0] = &gcd[0]; hvarray[0][1] = NULL;
 
 	label[1].text = (unichar_t *) _("_X");
 	label[1].text_is_1byte = true;
@@ -365,6 +367,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GRadioCreate;
 	gcd[1].gd.cid = CID_X;
+	rarray[0] = GCD_HPad10; rarray[1] = &gcd[1];
 
 	label[2].text = (unichar_t *) _("_Y");
 	label[2].text_is_1byte = true;
@@ -374,6 +377,13 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].gd.cid = CID_Y;
 	gcd[2].creator = GRadioCreate;
+	rarray[2] = &gcd[2];
+	rarray[3] = GCD_Glue; rarray[4] = NULL;
+
+	boxes[2].gd.flags = gg_enabled | gg_visible;
+	boxes[2].gd.u.boxelements = rarray;
+	boxes[2].creator = GHBoxCreate;
+	hvarray[1][0] = &boxes[2]; hvarray[1][1] = NULL;
 
 	if ( b->maxx-b->minx > b->maxy-b->miny )
 	    gcd[1].gd.flags |= gg_cb_on;
@@ -387,6 +397,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = gcd[1].gd.pos.y+16; 
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].creator = GLabelCreate;
+	hvarray[2][0] = &gcd[3]; hvarray[2][1] = NULL;
 
 	sprintf( buffer, "%g", lastsize );
 	label[4].text = (unichar_t *) buffer;
@@ -395,10 +406,15 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[4].gd.pos.x = gcd[1].gd.pos.x; gcd[4].gd.pos.y = gcd[3].gd.pos.y+14;  gcd[4].gd.pos.width = 40;
 	gcd[4].gd.flags = gg_enabled|gg_visible;
 	gcd[4].gd.cid = CID_Size;
-	gcd[4].creator = GTextFieldCreate;
+	gcd[4].creator = GNumericFieldCreate;
+	narray[0] = GCD_HPad10; narray[1] = &gcd[4]; narray[2] = GCD_Glue; narray[3] = NULL;
+
+	boxes[3].gd.flags = gg_enabled | gg_visible;
+	boxes[3].gd.u.boxelements = narray;
+	boxes[3].creator = GHBoxCreate;
+	hvarray[3][0] = &boxes[3]; hvarray[3][1] = NULL;
 
 	gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = gcd[4].gd.pos.y+35-3;
-	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
 	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[5].text = (unichar_t *) _("_OK");
 	label[5].text_is_1byte = true;
@@ -407,9 +423,9 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.handle_controlevent = RC_OK;
 	gcd[5].creator = GButtonCreate;
+	barray[0] = GCD_Glue; barray[1] = &gcd[5]; barray[2] = barray[3] = barray[4] = barray[5] = GCD_Glue;
 
 	gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
-	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[6].text = (unichar_t *) _("_Cancel");
 	label[6].text_is_1byte = true;
@@ -418,13 +434,26 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	gcd[6].gd.mnemonic = 'C';
 	gcd[6].gd.handle_controlevent = RC_Cancel;
 	gcd[6].creator = GButtonCreate;
+	barray[5] = &gcd[6]; barray[6] = GCD_Glue; barray[7] = NULL;
 
-	gcd[7].gd.pos.x = 2; gcd[7].gd.pos.y = 2;
-	gcd[7].gd.pos.width = pos.width-4; gcd[7].gd.pos.height = pos.height-2;
-	gcd[7].gd.flags = gg_enabled|gg_visible| gg_pos_in_pixels;
-	gcd[7].creator = GGroupCreate;
+	boxes[4].gd.flags = gg_enabled | gg_visible;
+	boxes[4].gd.u.boxelements = barray;
+	boxes[4].creator = GHBoxCreate;
+	hvarray[4][0] = GCD_Glue; hvarray[4][1] = NULL;
+	hvarray[5][0] = &boxes[4]; hvarray[5][1] = NULL;
+	hvarray[6][0] = NULL;
 
-	GGadgetsCreate(gw,gcd);
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled | gg_visible;
+	boxes[0].gd.u.boxelements = hvarray[0];
+	boxes[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+	GHVBoxFitWindow(boxes[0].ret);
 
     GTextFieldSelect(GWidgetGetControl(gw,CID_Size),0,-1);
 

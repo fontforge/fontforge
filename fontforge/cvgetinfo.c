@@ -2593,7 +2593,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GWindow root;
     GRect screensize;
     GPoint pt;
-    int j, defxpos, nextstarty, groupj, k, l;
+    int j, defxpos, nextstarty, k, l;
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -2720,7 +2720,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	varray[k++] = &pb[3];
 
 	l = 0;
-	groupj = j;
 	label[j].text = (unichar_t *) _("Prev CP:");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
@@ -2821,18 +2820,12 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	 hvarray1[l++] = NULL;
 	++j;
 
+	pb[4].gd.pos.x = pb[4].gd.pos.y = 2;
 	pb[4].gd.flags = gg_enabled|gg_visible;
 	pb[4].gd.u.boxelements = hvarray1;
 	pb[4].creator = GHVGroupCreate;
 	varray[k++] = &pb[4];
 
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[groupj].gd.pos.y-5;
-	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 84;
-	gcd[j].gd.flags = gg_enabled | gg_visible;
-	gcd[j].creator = GGroupCreate;
-	++j;
-
-	groupj = j;
 	l = 0;
 	nextstarty = gcd[j-2].gd.pos.y+28;
 	label[j].text = (unichar_t *) _("Next CP:");
@@ -2944,16 +2937,11 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	hvarray2[l++] = NULL;
 	++j;
 
+	pb[5].gd.pos.x = pb[5].gd.pos.y = 2;
 	pb[5].gd.flags = gg_enabled|gg_visible;
 	pb[5].gd.u.boxelements = hvarray2;
 	pb[5].creator = GHVGroupCreate;
 	varray[k++] = &pb[5];
-
-	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = nextstarty-5;
-	gcd[j].gd.pos.width = PI_Width-20; gcd[j].gd.pos.height = 84;
-	gcd[j].gd.flags = gg_enabled | gg_visible;
-	gcd[j].creator = GGroupCreate;
-	++j;
 	gi.normal_end = j;
 
 	gi.interp_start = j;
@@ -3208,12 +3196,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	mgcd[j].gd.mnemonic = 'C';
 	mgcd[j].gd.handle_controlevent = PI_Cancel;
 	mgcd[j].creator = GButtonCreate;
-	++j;
-
-	mgcd[j].gd.pos.x = 2; mgcd[j].gd.pos.y = 2;
-	mgcd[j].gd.pos.width = pos.width-4; mgcd[j].gd.pos.height = pos.height-4;
-	mgcd[j].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	mgcd[j].creator = GGroupCreate;
 	++j;
 
 	marray[0] = &mgcd[0]; marray[1] = NULL;
@@ -3636,7 +3618,6 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
 	++j;
 
 	gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = PI_Height-33;
-	gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
 	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[j].text = (unichar_t *) _("_Cancel");
 	label[j].text_is_1byte = true;

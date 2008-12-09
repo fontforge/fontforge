@@ -2480,7 +2480,7 @@ return( true );
 GWindow BVMakeLayers(BitmapView *bv) {
     GRect r;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
+    GGadgetCreateData gcd[8], boxes[2], *hvarray[5][3];
     GTextInfo label[8];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     FontRequest rq;
@@ -2507,6 +2507,7 @@ return(bvlayers);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     if ( layersfont==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
@@ -2528,55 +2529,62 @@ return(bvlayers);
     gcd[0].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[0].creator = GLabelCreate;
 
-    gcd[1].gd.pos.x = 1; gcd[1].gd.pos.y = 1;
-    gcd[1].gd.pos.width = r.width-2; gcd[1].gd.pos.height = r.height-1;
-    gcd[1].gd.flags = gg_enabled | gg_visible|gg_pos_in_pixels;
-    gcd[1].creator = GGroupCreate;
+    label[1].text = (unichar_t *) "Layer";
+    label[1].text_is_1byte = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.pos.x = 23; gcd[1].gd.pos.y = 5; 
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[1].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[1].creator = GLabelCreate;
+    hvarray[0][0] = &gcd[0]; hvarray[0][1] = &gcd[1]; hvarray[0][2] = NULL;
 
-    label[2].text = (unichar_t *) "Layer";
+    gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 21; 
+    gcd[2].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
+    gcd[2].gd.cid = CID_VFore;
+    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
+    gcd[2].gd.box = &radio_box;
+    gcd[2].creator = GCheckBoxCreate;
+    label[2].text = (unichar_t *) _("Bitmap");
     label[2].text_is_1byte = true;
     gcd[2].gd.label = &label[2];
-    gcd[2].gd.pos.x = 23; gcd[2].gd.pos.y = 5; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
-    gcd[2].creator = GLabelCreate;
+    hvarray[1][0] = &gcd[2]; hvarray[1][1] = GCD_ColSpan; hvarray[1][2] = NULL;
 
-    gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 21; 
+    gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 37; 
     gcd[3].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[3].gd.cid = CID_VFore;
+    gcd[3].gd.cid = CID_VBack;
     gcd[3].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[3].gd.box = &radio_box;
     gcd[3].creator = GCheckBoxCreate;
-    label[3].text = (unichar_t *) _("Bitmap");
+    label[3].text = (unichar_t *) _("Outline");
     label[3].text_is_1byte = true;
     gcd[3].gd.label = &label[3];
+    hvarray[2][0] = &gcd[3]; hvarray[2][1] = GCD_ColSpan; hvarray[2][2] = NULL;
 
-    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 37; 
+    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = 53; 
     gcd[4].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[4].gd.cid = CID_VBack;
+    gcd[4].gd.cid = CID_VGrid;
     gcd[4].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
     gcd[4].gd.box = &radio_box;
     gcd[4].creator = GCheckBoxCreate;
-    label[4].text = (unichar_t *) _("Outline");
+    label[4].text = (unichar_t *) _("_Guide");
     label[4].text_is_1byte = true;
+    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
+    hvarray[3][0] = &gcd[4]; hvarray[3][1] = GCD_ColSpan; hvarray[3][2] = NULL;
+    hvarray[4][0] = NULL;
 
-    gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = 53; 
-    gcd[5].gd.flags = gg_enabled|gg_visible|gg_dontcopybox|gg_pos_in_pixels|gg_utf8_popup;
-    gcd[5].gd.cid = CID_VGrid;
-    gcd[5].gd.popup_msg = (unichar_t *) _("Is Layer Visible?");
-    gcd[5].gd.box = &radio_box;
-    gcd[5].creator = GCheckBoxCreate;
-    label[5].text = (unichar_t *) _("_Guide");
-    label[5].text_is_1byte = true;
-    label[5].text_in_resource = true;
-    gcd[5].gd.label = &label[5];
+    if ( bv->showfore ) gcd[2].gd.flags |= gg_cb_on;
+    if ( bv->showoutline ) gcd[3].gd.flags |= gg_cb_on;
+    if ( bv->showgrid ) gcd[4].gd.flags |= gg_cb_on;
 
-    if ( bv->showfore ) gcd[3].gd.flags |= gg_cb_on;
-    if ( bv->showoutline ) gcd[4].gd.flags |= gg_cb_on;
-    if ( bv->showgrid ) gcd[5].gd.flags |= gg_cb_on;
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
 
-    GGadgetsCreate(bvlayers,gcd);
+    GGadgetsCreate(bvlayers,boxes);
+    GHVBoxFitWindow(boxes[0].ret);
+
     if ( bvvisible[0] )
 	GDrawSetVisible(bvlayers,true);
 return( bvlayers );
