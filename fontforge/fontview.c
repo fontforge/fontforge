@@ -2698,7 +2698,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	FontViewReformatOne(&fv->b);
 	FVSetTitle(&fv->b);
     }
-    newbdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
+    newbdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -3041,7 +3041,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( fvs==NULL )
 	break;
 	    old = fvs->filled;
-	    new = SplineFontPieceMeal(fvs->b.sf,fv->b.active_layer,dspsize,
+	    new = SplineFontPieceMeal(fvs->b.sf,fv->b.active_layer,dspsize,72,
 		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !fvs->b.sf->strokedfont && !fvs->b.sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -3074,7 +3074,7 @@ static void FV_LayerChanged( FontView *fv ) {
     fv->user_requested_magnify = -1;
 
     old = fv->filled;
-    new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
+    new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 	(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 	    (use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	NULL);
@@ -6887,7 +6887,7 @@ return;
 	GDrawSetCursor(fv->v,ct_watch);
 	old = fv->filled;
 				/* In CID fonts fv->b.sf may not be same as sf */
-	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
+	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -6907,7 +6907,8 @@ return;
     }
     for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
 	BDFFontFree(mvs->show);
-	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->pixelsize,mvs->antialias?pf_antialias:0,NULL);
+	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->ptsize,mvs->dpi,
+		mvs->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	GDrawRequestExpose(mvs->gw,NULL,false);
     }
 }
@@ -7176,7 +7177,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->lab_as = as;
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
-    bdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,sf->display_size<0?-sf->display_size:default_fv_font_size,
+    bdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,sf->display_size<0?-sf->display_size:default_fv_font_size,72,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 	    NULL);

@@ -185,7 +185,6 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 static void MVSubExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
     GRect old, *clip;
     int x,y,ybase, width,height, i;
-    SplineFont *sf = mv->sf;
     BDFChar *bdfc;
     struct _GImage base;
     GImage gi;
@@ -205,10 +204,7 @@ static void MVSubExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 return;
     }
 
-    ybase = ((mv->pixelsize/(mv->pixelsize_set_by_window ? mv_scales[mv->scale_index] : 1.0)
-	    * sf->ascent / (sf->ascent+sf->descent))) * iscale - mv->yoff;
-    if ( mv->pixelsize*iscale < mv->vheight-2 )
-	ybase += (mv->vheight-6 - mv->pixelsize*iscale)/2;
+    ybase = mv->ybaseline - mv->yoff;
 
     if ( mv->showgrid )
 	GDrawDrawLine(pixmap,0,ybase,mv->dwidth,ybase,widthcol);
@@ -860,7 +856,8 @@ return;
 	mv->show = NULL;
     } else if ( bdf==NULL ) {
 	BDFFontFree(mv->show);
-	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
+		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
     }
     mv->bdf = bdf;
     MVRemetric(mv);
@@ -1144,9 +1141,10 @@ static void MVToggleVertical(MetricsView *mv) {
 	size *= mv_scales[mv->scale_index];
 	if ( mv->pixelsize != size ) {
 	    mv->pixelsize = size;
+	    mv->dpi = 72;
 	    if ( mv->bdf==NULL ) {
 		BDFFontFree(mv->show);
-		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?pf_antialias:0,NULL);
 	    }
 	    MVRemetric(mv);
 	}
@@ -1216,8 +1214,8 @@ static void MVSetSb(MetricsView *mv) {
 }
 
 static int MVSetVSb(MetricsView *mv) {
-    int max, min, i, ret, ybase, yoff;
-    double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
+    int max, min, ret, yoff;
+    int fudge;
 
     if ( mv->displayend==0 )
 return(0);		/* Setting the scroll bar is premature */
@@ -1226,27 +1224,19 @@ return(0);		/* Setting the scroll bar is premature */
 	min = max = 0;
 	if ( mv->glyphcnt!=0 )
 	    max = mv->perchar[mv->glyphcnt-1].dy + mv->perchar[mv->glyphcnt-1].dheight;
+	fudge = 10;
     } else {
 	SplineFont *sf = mv->sf;
-	ybase = ((mv->pixelsize/(mv->pixelsize_set_by_window ? mv_scales[mv->scale_index] : 1.0)
-		* sf->ascent / (sf->ascent+sf->descent))) * iscale - mv->yoff;
-	if ( mv->pixelsize*iscale < mv->vheight-2 )
-	    ybase += (mv->vheight-6 - mv->pixelsize*iscale)/2;
-	min = -ybase;
-	max = mv->displayend-mv->topend-ybase;
-	for ( i=0; i<mv->glyphcnt; ++i ) {
-	    BDFChar *bdfc = mv->bdf==NULL ? BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
-				mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
-	    if ( bdfc!=NULL ) {
-		if ( min>-bdfc->ymax ) min = -bdfc->ymax*iscale;
-		if ( max<-bdfc->ymin ) max = -bdfc->ymin*iscale;
-	    }
-	}
-	min += ybase;
-	max += ybase;
+	int pixels = mv->pixelsize_set_by_window ? mv->vheight : mv->pixelsize;
+	fudge = pixels/4;
+	min = -(pixels*sf->descent)/(sf->ascent+sf->descent);
+	max = pixels + min;
+	min *= mv_scales[mv->scale_index];
+	max *= mv_scales[mv->scale_index];
     }
-    min -= 10;
-    max += 10;
+    mv->ybaseline = max;
+    max += fudge*mv_scales[mv->scale_index] + mv->vheight;
+    min -= fudge*mv_scales[mv->scale_index];
     GScrollBarSetBounds(mv->vsb,min,max,mv->vheight);
     yoff = mv->yoff;
     if ( yoff+mv->vheight > max )
@@ -1821,7 +1811,10 @@ return( true );
 #define MID_InsertCharB	2025
 #define MID_InsertCharA	2026
 #define MID_Layers	2027
-#define MID_PixelSize	2028
+#define MID_PointSize	2028
+#define MID_Bigger	2029
+#define MID_Smaller	2030
+#define MID_SizeWindow	2031
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_Transform	2202
@@ -2508,7 +2501,7 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	mv->pixelsize = mv_scales[mv->scale_index]*(mv->vheight - 2);
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
-	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?pf_antialias:0,NULL);
 	}
     }
     MVReKern(mv);
@@ -2638,7 +2631,8 @@ static void MVMenuAA(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     mv_antialias = mv->antialias = !mv->antialias;
     BDFFontFree(mv->show);
-    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
+		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
     GDrawRequestExpose(mv->v,NULL,false);
 }
 
@@ -2687,8 +2681,7 @@ static void MVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-#define CID_WindowSize	1001
-#define CID_UserSize	1002
+#define CID_DPI		1002
 #define CID_Size	1003
 
 struct pxsz {
@@ -2702,24 +2695,26 @@ static int PXSZ_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct pxsz *pxsz = GDrawGetUserData(GGadgetGetWindow(g));
 	MetricsView *mv = pxsz->mv;
-	int size, err=0;
+	int ptsize, dpi, err=0;
 
-	if ( GGadgetIsChecked(GWidgetGetControl(pxsz->gw,CID_WindowSize))) {
-	    mv->pixelsize_set_by_window = true;
-	    size = mv_scales[mv->scale_index]*(mv->vheight - 2);
-	} else {
-	    size = GetInt8( pxsz->gw, CID_Size, _("Pixel Size"), &err );
-	    if ( err )
+	ptsize = GetInt8( pxsz->gw, CID_Size, _("Point Size"), &err );
+	dpi = GetInt8( pxsz->gw, CID_DPI, _("DPI"), &err );
+	if ( err )
 return(true);
-	    mv->pixelsize_set_by_window = false;
+	if ( ptsize<3 || ptsize>300 || dpi<10 || dpi > 2000 ) {
+	    ff_post_error(_("Number out of range"),_("Number out of range"));
+return( true );
 	}
-	if ( size!=mv->pixelsize ) {
-	    if ( mv->bdf==NULL )
-		BDFFontFree(mv->show);
-	    mv->bdf = NULL;
-	    mv->pixelsize = size;
-	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
-	}
+	mv->pixelsize_set_by_window = false;
+	mv->ptsize = ptsize;
+	mv->dpi = dpi;
+	mv->pixelsize = rint( (ptsize*dpi)/72.0 );
+	if ( mv->bdf==NULL )
+	    BDFFontFree(mv->show);
+	mv->bdf = NULL;
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
+		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+
 	MVReKern(mv);
 	MVSetVSb(mv);
 	pxsz->done = 2;
@@ -2749,7 +2744,7 @@ return( false );
 return( true );
 }
 
-static void MVMenuPixelSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
+static void MVMenuPointSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(mgw);
     struct pxsz pxsz;
     GRect pos;
@@ -2759,7 +2754,7 @@ static void MVMenuPixelSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
     GTextInfo label[7];
     int i,k;
     double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
-    char buffer[20];
+    char buffer[20], dbuffer[20];
 
     memset(&pxsz,0,sizeof(pxsz));
     pxsz.mv = mv;
@@ -2783,30 +2778,37 @@ static void MVMenuPixelSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
 
     k = i = 0;
 
-    label[k].text = (unichar_t *) _("Pixel size set by window size");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible|gg_enabled ;
-    /*gcd[k].gd.handle_controlevent = SS_ScriptChanged;*/
-    gcd[k].gd.cid = CID_WindowSize;
-    gcd[k++].creator = GRadioCreate;
-    hvarray[i][0] = &gcd[k-1]; hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
-
-    label[k].text = (unichar_t *) _("Pixel size set by user:");
+    label[k].text = (unichar_t *) _("Point Size:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_cb_on ;
-    gcd[k].gd.cid = CID_UserSize;
     /*gcd[k].gd.handle_controlevent = SS_ScriptChanged;*/
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1];
 
-    sprintf( buffer, "%d", (int) rint( mv->pixelsize/iscale ));
+    sprintf( buffer, "%d", (int) rint( mv->ptsize/iscale ));
     label[k].text = (unichar_t *) buffer;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled;
     gcd[k].gd.cid = CID_Size;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("DPI:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_cb_on ;
+    /*gcd[k].gd.handle_controlevent = SS_ScriptChanged;*/
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][0] = &gcd[k-1];
+
+    sprintf( dbuffer, "%d", mv->dpi );
+    label[k].text = (unichar_t *) dbuffer;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled;
+    gcd[k].gd.cid = CID_DPI;
     gcd[k++].creator = GTextFieldCreate;
     hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
 
@@ -2853,12 +2855,47 @@ static void MVMenuPixelSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
     GDrawDestroyWindow(gw);
 }
 
+static void MVMenuSizeWindow(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(mgw);
+    mv->pixelsize_set_by_window = true;
+    mv->pixelsize = mv_scales[mv->scale_index]*(mv->vheight - 2);
+    mv->dpi = 72;
+    mv->ptsize = mv->pixelsize;
+    if ( mv->bdf==NULL ) {
+	BDFFontFree(mv->show);
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?pf_antialias:0,NULL);
+    }
+    MVReKern(mv);
+    MVSetVSb(mv);
+}
+
+static void MVMenuChangePointSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(mgw);
+
+    if ( mv->pixelsize_set_by_window )
+return;
+    if ( mi->mid==MID_Bigger )
+	++(mv->ptsize);
+    else
+	--(mv->ptsize);
+    mv->pixelsize = rint( (mv->ptsize*mv->dpi)/72.0 );
+    if ( mv->bdf==NULL )
+	BDFFontFree(mv->show);
+    mv->bdf = NULL;
+    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
+	    mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
+
+    MVReKern(mv);
+    MVSetVSb(mv);
+}
+
 static void MVMenuChangeLayer(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
     mv->layer = mi->mid;
     BDFFontFree(mv->show);
-    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
+		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
     MVRemetric(mv);
     GDrawRequestExpose(mv->v,NULL,false);
 }
@@ -3209,12 +3246,16 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Show _Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, NULL, gdlist, gdlistcheck, MVMenuShowGrid, MID_ShowGrid },
-    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anti Alias|Ctl+5"), NULL, NULL, MVMenuAA, MID_AntiAlias },
+    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anti Alias|Ctl+="), NULL, NULL, MVMenuAA, MID_AntiAlias },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Vertical"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical|No Shortcut"), NULL, NULL, MVMenuVertical, MID_Vertical },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Size set from _Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Size set from Window|No Shortcut"), NULL, NULL, MVMenuSizeWindow, MID_SizeWindow },
+    { { (unichar_t *) N_("Set Point _Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Set Point Size|No Shortcut"), NULL, NULL, MVMenuPointSize, MID_PointSize },
+    { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|Ctl+Shft++"), NULL, NULL, MVMenuChangePointSize, MID_Bigger },
+    { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|Ctl+-"), NULL, NULL, MVMenuChangePointSize, MID_Smaller },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Outline|No Shortcut"), NULL, NULL, MVMenuShowBitmap, MID_Outline },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Set Pixel Size|No Shortcut"), NULL, NULL, MVMenuPixelSize, MID_PixelSize },
     { NULL },			/* Some extra room to show bitmaps */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -3409,6 +3450,14 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    vwlist[i].ti.checked = mv->antialias;
 	    vwlist[i].ti.disabled = mv->bdf!=NULL;
 	  break;
+	  case MID_SizeWindow:
+	    vwlist[i].ti.disabled = mv->pixelsize_set_by_window;
+	    vwlist[i].ti.checked = mv->pixelsize_set_by_window;
+	  break;
+	  case MID_Bigger:
+	  case MID_Smaller:
+	    vwlist[i].ti.disabled = mv->pixelsize_set_by_window;
+	  break;
 	  case MID_ReplaceChar:
 	  case MID_FindInFontView:
 	  case MID_Next:
@@ -3432,11 +3481,8 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	vwlist[i].ti.text = NULL;
     }
 
-    sprintf( buffer, _("Set _Pixel Size (%d)..."), mv->pixelsize );
-    vwlist[base].ti.text = (unichar_t *) copy(buffer);
-
     if ( mv->sf->bitmaps!=NULL ) {
-	for ( bdf = mv->sf->bitmaps, i=base+1;
+	for ( bdf = mv->sf->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )
@@ -3522,10 +3568,12 @@ return;
     if ( mv->dwidth-20<size )
 	size = mv->dwidth-20;
     if ( mv->pixelsize_set_by_window ) {
-	mv->pixelsize = mv_scales[mv->scale_index]*size;
+	mv->ptsize = mv->pixelsize = mv_scales[mv->scale_index]*size;
+	mv->dpi = 72;
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
-	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
+		    mv->antialias?pf_antialias:0,NULL);
 	}
     }
 
@@ -3847,10 +3895,7 @@ static void MVSubMouse(MetricsView *mv,GEvent *event) {
 return;
     }
 
-    ybase = ((mv->pixelsize/(mv->pixelsize_set_by_window ? mv_scales[mv->scale_index] : 1.0)
-	    * mv->sf->ascent / (mv->sf->ascent+mv->sf->descent))) * iscale - mv->yoff;
-    if ( mv->pixelsize*iscale < mv->vheight-2 )
-	ybase += (mv->vheight-6 - mv->pixelsize*iscale)/2;
+    ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	x = mv->perchar[i].dx + mv->perchar[i].xoff;
@@ -4438,6 +4483,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->layer = fv->b.active_layer;
     mv->type = mv_type;
     mv->pixelsize_set_by_window = true;
+    mv->dpi = 72; 
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;

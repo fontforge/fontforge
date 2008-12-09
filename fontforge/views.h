@@ -346,6 +346,8 @@ typedef struct metricsview {
     int layer;
     int fake_unicode_base;
     GIC *gwgic;
+    int ptsize, dpi;
+    int ybaseline;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };

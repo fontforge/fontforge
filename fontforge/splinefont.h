@@ -880,6 +880,7 @@ typedef struct bdffont {
     unsigned int bbsized: 1;
     unsigned int ticked: 1;
     unsigned int unhinted_freetype: 1;
+    unsigned int recontext_freetype: 1;
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
@@ -889,6 +890,7 @@ typedef struct bdffont {
     int16 prop_cnt;
     int16 prop_max;		/* only used within bdfinfo dlg */
     BDFProperties *props;
+    uint16 ptsize, dpi;		/* for piecemeal fonts */
 } BDFFont;
 
 #define HntMax	96		/* PS says at most 96 hints */
@@ -2210,8 +2212,8 @@ extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
 extern BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index);
-enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4 };
-extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int pixelsize,int flags,void *freetype_context);
+enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4, pf_ft_recontext=8 };
+extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize, int dpi,int flags,void *freetype_context);
 extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
@@ -2714,14 +2716,14 @@ extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewb
 extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,int layer);
 extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
 extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
-	int pixelsize,int depth);
+	int ptsize, int dpi,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
 extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
 	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc, int depth);
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsizey, real ptsizex, int dpi,int depth);
 extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
-	int pixelsize,int depth);
+	int ptsize, int dpi,int depth);
 extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,
 	int pixelsize,int depth);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);

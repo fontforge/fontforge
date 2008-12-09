@@ -743,7 +743,7 @@ static int KP_ChangeSize(GGadget *g, GEvent *e) {
 	BDFFont *temp;
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
-	temp = SplineFontPieceMeal(kpd->sf,kpd->layer,newsize,true,NULL);
+	temp = SplineFontPieceMeal(kpd->sf,kpd->layer,newsize,72,true,NULL);
 	BDFFontFree(kpd->bdf);
 	kpd->bdf = temp;
 	KP_Resize(kpd);
@@ -1223,7 +1223,7 @@ return;
     GGadgetGetSize(gcd[3].ret,&pos);
     kpd.header_height = pos.y+pos.height+4;
 
-    kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intpt) (gcd[1].gd.label->userdata),true,NULL);
+    kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intpt) (gcd[1].gd.label->userdata),72,true,NULL);
 
     if ( font==NULL ) {
 	memset(&rq,'\0',sizeof(rq));

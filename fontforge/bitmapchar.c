@@ -912,7 +912,7 @@ return( NULL );
 	    void *freetype_context = FreeTypeFontContext(sf,sc,NULL,ly_fore);
 	    if ( freetype_context != NULL ) {
 		bc = SplineCharFreeTypeRasterize(freetype_context,
-			sc->orig_pos,bdf->pixelsize,bdf->clut?8:1);
+			sc->orig_pos,bdf->pixelsize,72,bdf->clut?8:1);
 		FreeTypeFreeContext(freetype_context);
 	    }
 	}

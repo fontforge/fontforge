@@ -875,7 +875,7 @@ static int BVRecalc(GGadget *g, GEvent *e) {
 	BCFlattenFloat(bv->bc);
 	freetypecontext = FreeTypeFontContext(bv->bc->sc->parent,bv->bc->sc,NULL,ly_fore);
 	if ( freetypecontext!=NULL ) {
-	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,bv->bc->sc->orig_pos,bv->bdf->pixelsize,BDFDepth(bv->bdf));
+	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,bv->bc->sc->orig_pos,bv->bdf->pixelsize,72,BDFDepth(bv->bdf));
 	    FreeTypeFreeContext(freetypecontext);
 	} else
 	    bdfc = SplineCharAntiAlias(bv->bc->sc,ly_fore,bv->bdf->pixelsize,(1<<(BDFDepth(bv->bdf)/2)));
