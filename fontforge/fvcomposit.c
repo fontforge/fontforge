@@ -2717,6 +2717,9 @@ static void SCSetReasonableLBearing(SplineChar *sc,SplineChar *base,int layer) {
     RefChar *ref;
     real transform[6];
 
+    /* Hmm. Panov doesn't think this should happen */
+return;
+
     SplineCharLayerFindBounds(sc,layer,&full);
     SplineCharLayerFindBounds(base,layer,&b);
 
