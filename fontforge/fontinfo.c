@@ -874,8 +874,8 @@ static GTextInfo splineorder[] = {
     { (unichar_t *) N_("Quadratic"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo layertype[] = {
-    { (unichar_t *) N_("Foreground"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
-    { (unichar_t *) N_("Background"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Layer|Foreground"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Layer|Background"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static void Layers_BackgroundEnable(GGadget *g,GMenuItem *mi, int r, int c);
 static struct col_init layersci[5] = {
