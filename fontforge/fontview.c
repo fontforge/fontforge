@@ -4887,7 +4887,7 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 static GMenuItem2 lylist[] = {
-    { { (unichar_t *) N_("Foreground"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 1, 1, 0, 0, 1, 1, 0, '\0' }, NULL, NULL, NULL, FVMenuChangeLayer, ly_fore },
+    { { (unichar_t *) N_("Layer|Foreground"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 1, 1, 0, 0, 1, 1, 0, '\0' }, NULL, NULL, NULL, FVMenuChangeLayer, ly_fore },
     NULL
 };
 
@@ -7357,7 +7357,7 @@ struct fv_interface gdraw_fv_interface = {
 
 extern GResInfo charview_ri;
 static struct resed view_re[] = {
-    {N_("Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views")},
+    {N_("Color|Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views")},
     NULL
 };
 GResInfo view_ri = {
