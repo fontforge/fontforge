@@ -36,22 +36,22 @@
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
 /* A diagonal corner is like the bottom of circumflex. Should we add a horizontal stem? */
-int hint_diagonal_ends = 0,
-    hint_diagonal_intersections = 0,
-    hint_bounding_boxes = 1,
-    detect_diagonal_stems = 0;
+int     hint_diagonal_ends = 0,
+        hint_diagonal_intersections = 0,
+        hint_bounding_boxes = 1,
+        detect_diagonal_stems = 0;
 
-static const double slope_error = .05;
-    /* If the dot vector of a slope and the normal of another slope is less */
-    /*  than this error, then we say they are close enough to be colinear */
+float   stem_slope_error = .05061454830783555773, /*  2.9 degrees */
+        stub_slope_error = .317649923862967983;   /* 18.2 degrees */
+
 static double dist_error_hv = 3.5;
 static double dist_error_diag = 5.5;
-    /* It's easy to get horizontal/vertical lines aligned properly */
-    /* it is more difficult to get diagonal ones done */
-    /* The "A" glyph in Apple's Times.dfont(Roman) is off by 6 in one spot */
+/* It's easy to get horizontal/vertical lines aligned properly */
+/* it is more difficult to get diagonal ones done */
+/* The "A" glyph in Apple's Times.dfont(Roman) is off by 6 in one spot */
 static double dist_error_curve = 22;
-    /* The maximum possible distance between the edge of an active zone for
-    /* a curved spline segment and the actual spline */
+/* The maximum possible distance between the edge of an active zone for
+/* a curved spline segment and the spline itself */
 
 struct st {
     Spline *s;
@@ -67,69 +67,64 @@ return 1;
 return strtod( str, &end );
 }
 
-static int IsVectorHV( BasePoint *vec,double fudge,int check_zero ) {
-    if ( check_zero ) {
-        if ( vec->x >= -fudge && vec->x <= fudge )
+static int IsUnitHV( BasePoint *unit,int strict ) {
+    double angle = atan2( unit->y,unit->x );
+    double deviation = ( strict ) ? stem_slope_error : stub_slope_error;
+    
+    if ( fabs( angle ) >= PI/2 - deviation && fabs( angle ) <= PI/2 + deviation )
 return( 2 );
-        else if ( vec->y >= -fudge && vec->y <= fudge )
+    else if ( fabs( angle ) <= deviation || fabs( angle ) >= PI - deviation )
 return( 1 );
-    } else {
-        if ( vec->x >= 1-fudge || vec->x <= -1+fudge )
-return( 1 );
-        else if ( vec->y >= 1-fudge || vec->y <= -1+fudge )
-return( 2 );
-    }
+
 return( 0 );
 }
 
-static int VectorCloserToHV( BasePoint *vec1,BasePoint *vec2 ) {
-    double temp, d;
-    BasePoint u1, u2;
+static int UnitCloserToHV( BasePoint *u1,BasePoint *u2 ) {
+    double adiff1, adiff2;
     
-    u1.x = fabs( vec1->x ); u1.y = fabs( vec1->y );
-    u2.x = fabs( vec2->x ); u2.y = fabs( vec2->y );
-    if ( u1.y > u1.x ) {
-        temp = u1.y; u1.y = u1.x; u1.x = temp;
-    }
-    if ( u2.y > u2.x ) {
-        temp = u2.y; u2.y = u2.x; u2.x = temp;
-    }
-    d = ( u1.x * u2.y ) - ( u1.y * u2.x );
-    if ( d > 0 )
+    adiff1 = fabs( atan2( u1->y,u1->x ));
+    adiff2 = fabs( atan2( u2->y,u2->x ));
+    
+    if ( adiff1 > PI*.25 && adiff1 < PI*.75 )
+        adiff1 = fabs( adiff1 - PI*.5 );
+    else if ( adiff1 >= PI*.75 )
+        adiff1 = PI - adiff1;
+
+    if ( adiff2 > PI*.25 && adiff2 < PI*.75 )
+        adiff2 = fabs( adiff2 - PI*.5 );
+    else if ( adiff1 >= PI*.75 )
+        adiff2 = PI - adiff2;
+
+    if ( adiff1 < adiff2 )
 return( 1 );
-    else if ( d < 0 )
+    else if ( adiff1 > adiff2 )
 return( -1 );
     else
 return( 0 );
 }
 
+static double GetUnitAngle( BasePoint *u1,BasePoint *u2 ) {
+    double dx, dy;
+
+    dy = u1->x*u2->y - u1->y*u2->x;
+    dx = u1->x*u2->x + u1->y*u2->y;
+return( atan2( dy,dx ));
+}
+
 static int UnitsOrthogonal( BasePoint *u1,BasePoint *u2,int strict ) {
-    double dot;
+    double angle, deviation = ( strict ) ? stem_slope_error : stub_slope_error;
     
-    if ( strict ) {
-        dot = u1->x*u2->x + u1->y*u2->y;
-return( dot>-.05 && dot < .05 );
-    } else {
-        dot = u1->x*u2->y - u1->y*u2->x;
-return( dot>.95 || dot < -.95 );
-    }
+    angle = GetUnitAngle( u1,u2 );
+    
+return( fabs( angle ) >= PI/2 - deviation && fabs( angle ) <= PI/2 + deviation );
 }
 
 int UnitsParallel( BasePoint *u1,BasePoint *u2,int strict ) {
-    double dot;
+    double angle, deviation = ( strict ) ? stem_slope_error : stub_slope_error;
     
-    if ( strict ) {
-        dot = u1->x*u2->y - u1->y*u2->x;
-        switch( strict ) {
-        case 2:
-return( dot == 0 );
-        default:
-return( dot>-.05 && dot < .05 );
-        }
-    } else {
-        dot = u1->x*u2->x + u1->y*u2->y;
-return( dot>.95 || dot < -.95 );
-    }
+    angle = GetUnitAngle( u1,u2 );
+    
+return( fabs( angle ) <= deviation || fabs( angle ) >= PI - deviation );
 }
 
 static int IsInflectionPoint( struct glyphdata *gd,struct pointdata *pd ) {
@@ -187,7 +182,7 @@ static int SplineFigureOpticalSlope(Spline *s,int start_at_from,BasePoint *dir) 
     double dx, dy, ax, ay, d, a;
 
     /* The vector is already nearly vertical/horizontal, no need to modify*/
-    if ( IsVectorHV( dir,slope_error,true ))
+    if ( IsUnitHV( dir,true ))
 return( false );
     
     if ( start_at_from ) {
@@ -224,8 +219,7 @@ return( false );
 	t += incr;
     }
 
-    off = dir->x*normal.x + dir->y*normal.y;
-    if ( off<slope_error ) {
+    if ( UnitsParallel( dir,&normal,true )) {
 	/* prefer the direction which is closer to horizontal/vertical */
 	if ( (dx=dir->x)<0 ) dx = -dx;
 	if ( (dy=dir->y)<0 ) dy = -dy;
@@ -246,6 +240,7 @@ static int IsSplinePeak( struct glyphdata *gd,struct pointdata *pd,int outer,int
 static void PointInit( struct glyphdata *gd,SplinePoint *sp, SplineSet *ss ) {
     struct pointdata *pd, *prevpd=NULL, *nextpd=NULL;
     double len, same;
+    int hv;
 
     if ( sp->ptindex >= gd->pcnt )
 return;
@@ -301,9 +296,10 @@ return;
 	pd->nextunit.y /= len;
 	if ( sp->next!=NULL && !sp->next->knownlinear )
 	    SplineFigureOpticalSlope(sp->next,true,&pd->nextunit);
-	if ( IsVectorHV( &pd->nextunit,slope_error,true ) == 2 ) {
+        hv = IsUnitHV( &pd->nextunit,true );
+	if ( hv == 2 ) {
 	    pd->nextunit.x = 0; pd->nextunit.y = pd->nextunit.y>0 ? 1 : -1;
-	} else if ( IsVectorHV( &pd->nextunit,slope_error,true ) == 1 ) {
+	} else if ( hv == 1 ) {
 	    pd->nextunit.y = 0; pd->nextunit.x = pd->nextunit.x>0 ? 1 : -1;
 	}
 	if ( pd->nextunit.y==0 ) pd->next_hor = true;
@@ -339,9 +335,10 @@ return;
 	pd->prevunit.y /= len;
 	if ( sp->prev!=NULL && !sp->prev->knownlinear )
 	    SplineFigureOpticalSlope(sp->prev,false,&pd->prevunit);
-	if ( pd->prevunit.x<slope_error && pd->prevunit.x>-slope_error ) {
+        hv = IsUnitHV( &pd->prevunit,true );
+	if ( hv == 2 ) {
 	    pd->prevunit.x = 0; pd->prevunit.y = pd->prevunit.y>0 ? 1 : -1;
-	} else if ( pd->prevunit.y<slope_error && pd->prevunit.y>-slope_error ) {
+	} else if ( hv == 1 ) {
 	    pd->prevunit.y = 0; pd->prevunit.x = pd->prevunit.x>0 ? 1 : -1;
 	}
 	if ( pd->prevunit.y==0 ) pd->prev_hor = true;
@@ -513,6 +510,29 @@ int IsStemAssignedToPoint( struct pointdata *pd,struct stemdata *stem,int is_nex
     for ( i=0; i<stemcnt; i++ ) {
         if ( stems[i] == stem )
 return( i );
+    }
+return( -1 );
+}
+
+static int GetValidPointDataIndex( struct glyphdata *gd,SplinePoint *sp,
+    struct stemdata *stem ) {
+    
+    struct pointdata *tpd;
+    
+    if ( sp == NULL )
+return( -1 );
+    if ( sp->ttfindex < gd->realcnt )
+return( sp->ttfindex );
+    if ( !sp->nonextcp && sp->nextcpindex < gd->realcnt ) {
+        tpd = &gd->points[sp->nextcpindex];
+        if ( IsStemAssignedToPoint( tpd,stem,false ) != -1 )
+return( sp->nextcpindex );
+    }
+    if ( !sp->noprevcp && sp->prev != NULL && 
+        sp->prev->from->nextcpindex < gd->realcnt ) {
+        tpd = &gd->points[sp->prev->from->nextcpindex];
+        if ( IsStemAssignedToPoint( tpd,stem,true ) != -1 )
+return( sp->prev->from->nextcpindex );
     }
 return( -1 );
 }
@@ -908,7 +928,7 @@ static int FindMatchingEdge( struct glyphdata *gd, struct pointdata *pd,
     SplinePoint end1, end2;
     double *other_t = is_next==2 ? &pd->both_e_t : is_next ? pd->next_e_t : pd->prev_e_t;
     double *dist = is_next ? pd->next_dist : pd->prev_dist;
-    double dot, t ;
+    double t ;
     Spline *s;
     int cnt;
 
@@ -932,14 +952,13 @@ return( FindMatchingHVEdge(gd,pd,is_next,edges,other_t,dist));
     /* than along the normal for the point's next/previous unit. This allows
     /* us e. g. to detect serifs in italic fonts */
     if ( gd->has_slant ) {
-        dot = dir->x * gd->slant_unit.y - dir->y * gd->slant_unit.x;
-        if ( dot < slope_error && dot > -slope_error ) {
+        if ( UnitsParallel( dir,&gd->slant_unit,true )) {
             vert.x = 0; vert.y = 1;
             dir = &vert;
         }
     }
 
-    if ( s==NULL || ( gd->only_hv && !IsVectorHV( dir,slope_error,false )))
+    if ( s==NULL || ( gd->only_hv && !IsUnitHV( dir,false )))
 return( 0 );
 
     diff.x = s->to->me.x-s->from->me.x; diff.y = s->to->me.y-s->from->me.y;
@@ -994,7 +1013,7 @@ static int IsCorrectSide( struct glyphdata *gd,struct pointdata *pd,
     double t, test;
     struct monotonic **space, *m;
     
-    hv = IsVectorHV( dir,0,true );
+    hv = IsUnitHV( dir,true );
     if (( hv == 2 && pd->x_corner ) || ( hv == 1 && pd->y_corner ))
 return( CornerCorrectSide( pd,( hv == 2 ),is_l ));
 
@@ -1039,14 +1058,14 @@ static struct linedata *BuildLine(struct glyphdata *gd,struct pointdata *pd,int 
     int i;
     BasePoint *dir, *base, *start, *end;
     struct pointdata **pspace = gd->pspace, *pd2;
-    int pcnt=0, is_l;
+    int pcnt=0, is_l, hv;
     double dist_error;
     struct linedata *line;
-    double n_s_err, p_s_err, off, firstoff, lastoff, lmin=0, lmax=0;
+    double off, firstoff, lastoff, lmin=0, lmax=0;
     
     dir = is_next ? &pd->nextunit : &pd->prevunit;
     is_l = IsCorrectSide( gd,pd,is_next,true,dir );
-    dist_error = ( IsVectorHV( dir,slope_error,true )) ? dist_error_hv : dist_error_diag ;	/* Diagonals are harder to align */
+    dist_error = ( IsUnitHV( dir,true )) ? dist_error_hv : dist_error_diag ;	/* Diagonals are harder to align */
     if ( dir->x==0 && dir->y==0 )
 return( NULL );
     base = &pd->sp->me;
@@ -1059,11 +1078,10 @@ return( NULL );
     continue;
         if ( off < 0 && off < lmin ) lmin = off;
         else if ( off > 0 && off > lmax ) lmax = off;
-	n_s_err = dir->x*pd2->nextunit.y - dir->y*pd2->nextunit.x;
-	p_s_err = dir->x*pd2->prevunit.y - dir->y*pd2->prevunit.x;
-	if (((n_s_err<slope_error && n_s_err>-slope_error && pd2->nextline==NULL ) &&
+
+	if ((( UnitsParallel( dir,&pd2->nextunit,true ) && pd2->nextline==NULL ) &&
             IsCorrectSide( gd,pd2,true,is_l,dir )) ||
-            ((p_s_err<slope_error && p_s_err>-slope_error && pd2->prevline==NULL ) &&
+            (( UnitsParallel( dir,&pd2->prevunit,true ) && pd2->prevline==NULL ) &&
             IsCorrectSide( gd,pd2,false,is_l,dir )))
 	    pspace[pcnt++] = pd2;
     }
@@ -1097,14 +1115,12 @@ return( NULL );
         if ( pd->colinear ) pd->nextline = line;
     }
     for ( i=0; i<pcnt; ++i ) {
-	n_s_err = dir->x*pspace[i]->nextunit.y - dir->y*pspace[i]->nextunit.x;
-	p_s_err = dir->x*pspace[i]->prevunit.y - dir->y*pspace[i]->prevunit.x;
-	if ( n_s_err<slope_error && n_s_err>-slope_error && pspace[i]->nextline==NULL ) {
+	if ( UnitsParallel( dir,&pspace[i]->nextunit,true ) && pspace[i]->nextline==NULL ) {
 	    pspace[i]->nextline = line;
 	    if ( pspace[i]->colinear )
 		pspace[i]->prevline = line;
         }
-	if ( p_s_err<slope_error && p_s_err>-slope_error && pspace[i]->prevline==NULL ) {
+	if ( UnitsParallel( dir,&pspace[i]->prevunit,true ) && pspace[i]->prevline==NULL ) {
 	    pspace[i]->prevline = line;
 	    if ( pspace[i]->colinear )
 		pspace[i]->nextline = line;
@@ -1121,9 +1137,10 @@ return( NULL );
     line->length = sqrt( pow( line->unit.x,2 ) + pow( line->unit.y,2 ));
     line->unit.x /= line->length;
     line->unit.y /= line->length;
-    if ( line->unit.x < slope_error && line->unit.x > -slope_error ) {
+    hv = IsUnitHV( &line->unit,true );
+    if ( hv == 2 ) {
 	line->unit.x = 0; line->unit.y = 1;
-    } else if ( line->unit.y < slope_error && line->unit.y > -slope_error ) {
+    } else if ( hv == 1 ) {
 	line->unit.x = 1; line->unit.y = 0;
     } else if ( gd->has_slant && UnitsParallel( &line->unit,&gd->slant_unit,true )) {
         firstoff =  ( start->x - base->x )*gd->slant_unit.y - 
@@ -1151,7 +1168,7 @@ static BasePoint MiddleUnit( BasePoint *unit1, BasePoint *unit2 ) {
     ret.x /= hyp;
     ret.y /= hyp;
     
-    hv = IsVectorHV( &ret,slope_error,true );
+    hv = IsUnitHV( &ret,true );
     if ( hv ) {
         ret.x = ( hv == 1 ) ? 1 : 0;
         ret.y = ( hv == 1 ) ? 0 : 1;
@@ -1163,7 +1180,8 @@ static uint8 IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1,
     struct pointdata *pd1, struct pointdata *pd2, int is_next1, int is_next2 ) {
     int i;
     int exc=0;
-    double dist, off, ext, err, norm1, norm2, opp;
+    double dist, off, ext, norm1, norm2, opp, angle;
+    double mid_err = ( stem_slope_error + stub_slope_error )/2;
     SplinePoint *sp1, *sp2, *nsp;
     BasePoint hvdir, *dir2, *odir1, *odir2;
     struct pointdata *npd;
@@ -1175,14 +1193,14 @@ static uint8 IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1,
     hvdir.y = ( int ) rint( dir1->y );
     
     line = is_next2 ? pd2->nextline : pd2->prevline;
-    if ( !IsVectorHV( dir2,slope_error,true ) && line != NULL )
+    if ( !IsUnitHV( dir2,true ) && line != NULL )
         dir2 = &line->unit;
 
     odir1 = ( is_next1 ) ? &pd1->prevunit : &pd1->nextunit;
     odir2 = ( is_next2 ) ? &pd2->prevunit : &pd2->nextunit;
     
-    err = fabs( dir2->x*dir1->y - dir2->y*dir1->x );
-    if ( err > 6*slope_error )
+    angle = fabs( GetUnitAngle( dir1,dir2 ));
+    if ( angle > stub_slope_error*1.5 && angle < PI - stub_slope_error*1.5 )
 return( 0 );
 
     /* First check if it is a slightly slanted line or a curve which joins
@@ -1199,15 +1217,15 @@ return( 0 );
     /* of out going-to-be stem should point in the same direction. So
     /* the following value should be positive */
     opp = dir1->x * dir2->x + dir1->y * dir2->y;
-    if (err < 3*slope_error && 
+    if (( angle <= mid_err || angle >= PI - mid_err ) && 
         opp > 0 && norm1 < 0 && norm2 < 0 && UnitsParallel( odir1,odir2,true ) && 
         ( UnitsOrthogonal( dir1,odir1,false ) || UnitsOrthogonal( dir2,odir1,false )))
 return( 2 );
-    if (err < 3*slope_error &&
+    if (( angle <= mid_err || angle >= PI - mid_err ) &&
         opp > 0 && (( norm1 < 0 && pd1->colinear &&
-        IsVectorHV( dir1,0,true ) && UnitsOrthogonal( dir1,odir2,false )) ||
+        IsUnitHV( dir1,true ) && UnitsOrthogonal( dir1,odir2,false )) ||
         ( norm2 < 0 && pd2->colinear &&
-        IsVectorHV( dir2,0,true ) && UnitsOrthogonal( dir2,odir1,false ))))
+        IsUnitHV( dir2,true ) && UnitsOrthogonal( dir2,odir1,false ))))
 return( 4 );
     
     /* Now check if our 2 points form a serif termination or a feature stub
@@ -1263,7 +1281,7 @@ return( 0 );
 /* stems (even if their angle is actually very close to vertical) the opposite
 /* direction is also possible. Sometimes we "normalize" such stems converting
 /* them to vertical. In such a case we have to swap their edges too.  */
-static void SwapEdges( struct stemdata *stem ) {
+static void SwapEdges( struct glyphdata *gd,struct stemdata *stem ) {
     BasePoint tpos;
     struct pointdata *tpd;
     struct linedata *tl;
@@ -1292,6 +1310,7 @@ static void SwapEdges( struct stemdata *stem ) {
                 if ( tpd->prevstems[j] == stem )
                     tpd->prev_is_l[j] = true;
         }
+
         tpd = chunk->r;
         if ( tpd != NULL ) {
             for ( j=0; j<tpd->nextcnt; j++ )
@@ -1300,6 +1319,20 @@ static void SwapEdges( struct stemdata *stem ) {
             for ( j=0; j<tpd->prevcnt; j++ )
                 if ( tpd->prevstems[j] == stem )
                     tpd->prev_is_l[j] = false;
+        }
+    }
+    
+    /* In case of a quadratic contour invert assignments to stem sides
+    /* also for off-curve points */
+    if ( gd->order2 ) {
+        for ( i=0; i<gd->realcnt; i++ ) if ( gd->points[i].sp == NULL ) {
+            tpd = &gd->points[i];
+            for ( j=0; j<tpd->nextcnt; j++ )
+                if ( tpd->nextstems[j] == stem )
+                    tpd->next_is_l[j] = !tpd->next_is_l[j];
+            for ( j=0; j<tpd->prevcnt; j++ )
+                if ( tpd->prevstems[j] == stem )
+                    tpd->prev_is_l[j] = !tpd->prev_is_l[j];
         }
     }
 }
@@ -1348,11 +1381,11 @@ static int LineFitsHV( struct linedata *line ) {
     struct pointdata *pd;
     
     cnt = line->pcnt;
-    hv = IsVectorHV( &line->unit,0,true );
+    hv = IsUnitHV( &line->unit,true );
     if ( hv )
 return( true );
 
-    hv = IsVectorHV( &line->unit,slope_error,false );
+    hv = IsUnitHV( &line->unit,false );
     if ( !hv )
 return( false );
     
@@ -1376,7 +1409,7 @@ static int OnStem( struct stemdata *stem,BasePoint *test,int left ) {
     double max=0, min=0;
 
     /* Diagonals are harder to align */
-    dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
+    dist_error = IsUnitHV( dir,true ) ? dist_error_hv : dist_error_diag;
     if ( !stem->positioned ) dist_error = dist_error * 2;
     if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
     if ( left ) {
@@ -1400,8 +1433,8 @@ static int BothOnStem( struct stemdata *stem,BasePoint *test1,BasePoint *test2,
     int hv, hv_strict;
     double lmax=0, lmin=0, rmax=0, rmin=0;
     
-    hv = ( force_hv ) ? IsVectorHV( &dir,slope_error,false ) : IsVectorHV( &dir,0,true );
-    hv_strict = ( force_hv ) ? IsVectorHV( &dir,0,true ) : hv;
+    hv = ( force_hv ) ? IsUnitHV( &dir,false ) : IsUnitHV( &dir,true );
+    hv_strict = ( force_hv ) ? IsUnitHV( &dir,true ) : hv;
     if ( force_hv ) {
         if ( force_hv != hv )
 return( false );
@@ -1458,7 +1491,7 @@ static int RecalcStemOffsets( struct stemdata *stem,BasePoint *dir,int left,int 
     
     if ( !left && !right )
 return( false );
-    err = ( IsVectorHV( dir,0,true )) ? dist_error_hv : dist_error_diag;
+    err = ( IsUnitHV( dir,true )) ? dist_error_hv : dist_error_diag;
 
     if ( stem->chunk_cnt > 1 ) for ( i=0; i<stem->chunk_cnt; i++ ) {
         chunk = &stem->chunks[i];
@@ -1525,7 +1558,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
 
     if ( cheat || stem->positioned ) is_potential2 = false;
     /* Diagonals are harder to align */
-    dist_error = IsVectorHV( dir,0,true ) ? 2*dist_error_hv : 2*dist_error_diag;
+    dist_error = IsUnitHV( dir,true ) ? 2*dist_error_hv : 2*dist_error_diag;
     if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
     max = stem->lmax;
     min = stem->lmin;
@@ -1596,7 +1629,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
         if ( is_next1==1 || is_next1==2 || pd1->colinear ) {
             AssignStemToPoint( pd1,stem,true,true );
             /* For quadratic layers assign the stem not only to
-            /* spline points, but for their control points as well
+            /* spline points, but to their control points as well
             /* (this may be important for TTF instructions */
             if ( gd->order2 && !pd1->sp->nonextcp && pd1->sp->nextcpindex < gd->realcnt ) {
                 cpidx = pd1->sp->nextcpindex;
@@ -1653,7 +1686,6 @@ static struct stemdata *FindStem( struct glyphdata *gd,struct pointdata *pd,
     int i, cove, test_left, hv, stemcnt;
     struct stemdata *stem;
     SplinePoint *match;
-    double err;
     BasePoint newdir;
 
     match = pd2->sp;
@@ -1680,8 +1712,8 @@ return( stem );
         /* be excluded from the following tests */
         if ( stem->ghost || stem->bbox )
     continue;
-	err = stem->unit.x*dir->y - stem->unit.y*dir->x;
-	if ( err<slope_error && err>-slope_error &&
+
+	if ( UnitsParallel( &stem->unit,dir,true ) &&
             BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false,true,cove )) {
  return( stem );
         }
@@ -1691,8 +1723,8 @@ return( stem );
         stem = &gd->stems[i];
         if ( stem->ghost || stem->bbox )
     continue;
-	err = stem->unit.x*dir->y - stem->unit.y*dir->x;
-	if ( err<slope_error && err>-slope_error &&
+
+	if ( UnitsParallel( &stem->unit,dir,true ) &&
             BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false,false,cove )) {
 return( stem );
         }
@@ -1700,7 +1732,7 @@ return( stem );
     if ( de )
 return( NULL );
     
-    hv = IsVectorHV( dir,slope_error,false );
+    hv = IsUnitHV( dir,false );
     if ( !hv )
 return( NULL );
 
@@ -1712,7 +1744,7 @@ return( NULL );
             newdir.x = ( hv == 2 ) ? 0 : 1;
             newdir.y = ( hv == 2 ) ? 1 : 0;
             if ( hv == 2 && stem->unit.y < 0 )
-                SwapEdges( stem );
+                SwapEdges( gd,stem );
             if ( stem->unit.x != newdir.x )
                 SetStemUnit( stem,newdir );
 return( stem );
@@ -1770,15 +1802,15 @@ static int ParallelToDir( struct pointdata *pd,int checknext,BasePoint *dir,
     
     BasePoint n, o, *base = &basesp->me;
     SplinePoint *sp;
-    double err;
+    double angle, mid_err = ( stem_slope_error + stub_slope_error )/2;
 
     sp = pd->sp;
     n = ( checknext ) ? pd->nextunit : pd->prevunit;
 
-    err = fabs( n.x*dir->y - n.y*dir->x );
-    if (( !is_stub && err > slope_error ) ||
-        ( is_stub & 1 && err > 6*slope_error ) ||
-        ( is_stub & 6 && err > 3*slope_error ))
+    angle = fabs( GetUnitAngle( dir,&n ));
+    if (( !is_stub && angle > stem_slope_error && angle < PI - stem_slope_error ) ||
+        ( is_stub & 1 && angle > stub_slope_error*1.5 && angle < PI - stub_slope_error*1.5 ) ||
+        ( is_stub & 6 && angle > mid_err && angle < PI - mid_err ))
 return( false );
 
     /* Now sp must be on the same side of the spline as opposite */
@@ -1822,7 +1854,7 @@ static struct stemdata *FindOrMakeHVStem( struct glyphdata *gd,
     
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-	if ( IsVectorHV( &stem->unit,slope_error,true ) &&
+	if ( IsUnitHV( &stem->unit,true ) &&
             ( pd2 != NULL && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false,false,cove )))
     break;
     }
@@ -1864,7 +1896,7 @@ return( false );
 
     dir1 = ( is_next ) ? &pd1->nextunit : &pd1->prevunit;
     dir2 = ( is_next ) ? &pd2->prevunit : &pd2->nextunit;
-    if ( IsVectorHV( dir1,slope_error,true ))	/* Must be diagonal */
+    if ( IsUnitHV( dir1,true ))	/* Must be diagonal */
 return( false );
     prevsp1 = ( is_next ) ? pd1->sp->next->to : pd1->sp->prev->from;
     prevsp2 = ( is_next ) ? pd2->sp->prev->from : pd2->sp->next->to;
@@ -1904,7 +1936,7 @@ static struct stemdata *TestStem( struct glyphdata *gd,struct pointdata *pd,
     struct stemdata *stem, *destem;
     struct stem_chunk *chunk;
     struct linedata *otherline;
-    double width, err;
+    double width;
     struct linedata *line, *line2;
     BasePoint *mdir, middle;
     int de=false, hv, l_changed;
@@ -1922,23 +1954,22 @@ return( NULL );		/* Don't want a stem between two splines that intersect */
     line = is_next ? pd->nextline : pd->prevline;
     mdir = is_next2 ? &pd2->nextunit : &pd2->prevunit;
     line2 = is_next2 ? pd2->nextline : pd2->prevline;
-    if ( !IsVectorHV( mdir,0,true ) && line2 != NULL )
+    if ( !IsUnitHV( mdir,true ) && line2 != NULL )
         mdir = &line2->unit;
     if ( mdir->x==0 && mdir->y==0 )
 return( NULL );         /* cannot determine the opposite point's direction */
 
-    err = mdir->x*dir->y - mdir->y*dir->x;
-    if (( err>slope_error || err<-slope_error ) && !is_stub )
+    if ( !UnitsParallel( mdir,dir,true ) && !is_stub )
 return( NULL );         /* Cannot make a stem if edges are not parallel (unless it is a serif) */
     
-    if ( is_stub & 1 && !IsVectorHV( dir,slope_error,true )) {
+    if ( is_stub & 1 && !IsUnitHV( dir,true )) {
         /* For serifs we prefer the vector which is closer to horizontal/vertical */
         middle = MiddleUnit( dir,mdir );
-        if ( VectorCloserToHV( &middle,dir ) == 1  && VectorCloserToHV( &middle,mdir ) == 1 )
+        if ( UnitCloserToHV( &middle,dir ) == 1  && UnitCloserToHV( &middle,mdir ) == 1 )
             dir = &middle;
-        else if ( VectorCloserToHV( mdir,dir ) == 1 )
+        else if ( UnitCloserToHV( mdir,dir ) == 1 )
             dir = mdir;
-        if ( !IsVectorHV( dir,slope_error,true ) && 
+        if ( !IsUnitHV( dir,true ) && 
             ( hint_diagonal_ends || require_existing )) 
 	    de = IsDiagonalEnd( gd,pd,pd2,is_next,require_existing );
     }
@@ -1958,7 +1989,7 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
         }
 
         if ( chunk != NULL && gd->linecnt > 0 ) {
-            hv = IsVectorHV( &stem->unit,0,true );
+            hv = IsUnitHV( &stem->unit,true );
             /* For HV stems allow assigning a line to a stem edge only
             /* if that line also has an exactly HV vector */
             if ( line != NULL && (( !hv &&
@@ -2054,7 +2085,6 @@ return( t1 );
 static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
     struct stemdata *stem,BasePoint *dir,int is_next ) {
     int i, ret=0, allowleft, allowright, hv, corner;
-    double err;
     struct stemdata *tstem;
     
     for ( i=0; i<gd->stemcnt; ++i ) {
@@ -2063,11 +2093,10 @@ static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
     continue;
         allowleft = ( !tstem->ghost || tstem->width == 20 );
         allowright = ( !tstem->ghost || tstem->width == 21 );
-        hv = IsVectorHV( &tstem->unit,0,true );
+        hv = IsUnitHV( &tstem->unit,true );
         corner = (( pd->x_corner && hv == 2 ) || ( pd->y_corner && hv == 1 ));
-        err = tstem->unit.x*dir->y - tstem->unit.y*dir->x;
 
-        if (( err<slope_error && err>-slope_error ) || tstem->ghost || corner ) {
+        if ( UnitsParallel( &tstem->unit,dir,true ) || tstem->ghost || corner ) {
             if ( OnStem( tstem,&pd->sp->me,true ) && allowleft ) {
 	        if ( IsCorrectSide( gd,pd,is_next,true,&tstem->unit )) {
                     AddToStem( gd,tstem,pd,NULL,is_next,false,false );
@@ -2088,7 +2117,7 @@ static struct stemdata *HalfStem( struct glyphdata *gd,struct pointdata *pd,
     BasePoint *dir,Spline *other,double other_t,int is_next,int eidx ) {
     /* Find the spot on other where the slope is the same as dir */
     double t1;
-    double width, err;
+    double width;
     BasePoint match;
     struct stemdata *stem = NULL, *tstem;
     struct pointdata *pd2 = NULL, *tpd;
@@ -2144,8 +2173,7 @@ return( NULL );		/* Zero width stems aren't interesting */
     }
     for ( i=0; i<gd->stemcnt; ++i ) {
         tstem = &gd->stems[i];
-        err = tstem->unit.x*dir->y - tstem->unit.y*dir->x;
-        if ( err<slope_error && err>-slope_error && 
+        if ( UnitsParallel( &tstem->unit,dir,true ) && 
             BothOnStem( tstem,&pd->base,&match,false,false,false )) {
 	    stem = tstem;
     break;
@@ -2292,7 +2320,7 @@ static int BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
     frompd = &gd->points[frompt->ptindex];
     
     line = is_next ? pd->nextline : pd->prevline;
-    if ( !IsVectorHV( dir,0,true ) && line != NULL)
+    if ( !IsUnitHV( dir,true ) && line != NULL)
         dir = &line->unit;
 
     if ( other==NULL )
@@ -2388,9 +2416,9 @@ static void AssignLinePointsToStems( struct glyphdata *gd ) {
     
     for ( i=0; i<gd->stemcnt; ++i ) if ( !gd->stems[i].toobig ) {
 	stem = &gd->stems[i];
-        stem_hv = IsVectorHV( &stem->unit,0,true );
+        stem_hv = IsUnitHV( &stem->unit,true );
         needs_hv = ( stem_hv || ( stem->chunk_cnt == 1 && 
-            stem->chunks[0].stub && IsVectorHV( &stem->unit,slope_error,false )));
+            stem->chunks[0].stub && IsUnitHV( &stem->unit,false )));
         
         if ( stem->leftline != NULL ) {
             line = stem->leftline;
@@ -2759,7 +2787,7 @@ static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
     /* - The common side of two stems is a straight line formed by two points
     /*   and the opposite point can be projected to line segment between those
     /*   two points. */
-    if ( IsVectorHV( &stem->unit,slope_error,true ) && !sbase->knownlinear ) {
+    if ( IsUnitHV( &stem->unit,true ) && !sbase->knownlinear ) {
         is_x = (int) rint( stem->unit.y );
         peak1 = ( is_x ) ? base->x_extr : base->y_extr;
         peak2 = ( is_x ) ? opp->x_extr  : opp->y_extr;
@@ -2887,7 +2915,7 @@ static int StemIsActiveAt( struct glyphdata *gd,struct stemdata *stem,double ste
     pos.x = stem->left.x + stempos*stem->unit.x;
     pos.y = stem->left.y + stempos*stem->unit.y;
 
-    if ( IsVectorHV( &stem->unit,0,true )) {
+    if ( IsUnitHV( &stem->unit,true )) {
 	which = stem->unit.x==0;
 	MonotonicFindAt(gd->ms,which,((real *) &pos.x)[which],space = gd->space);
 	test = ((real *) &pos.x)[!which];
@@ -2956,7 +2984,7 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     SplinePoint *sp, *nsp;
     struct pointdata *npd;
 
-    err = ( IsVectorHV( &stem->unit,0,true )) ? dist_error_hv : dist_error_diag;
+    err = ( IsUnitHV( &stem->unit,true )) ? dist_error_hv : dist_error_diag;
     width = stem->width;
     ratio = gd->emsize/( 6 * width );
     if ( err > width/2) err = width/2;
@@ -3057,7 +3085,7 @@ static int AdjustForImperfectSlopeMatch( SplinePoint *sp,BasePoint *pos,
     BasePoint *base;
     
     base = ( is_l ) ? &stem->left : &stem->right;
-    err = ( IsVectorHV( &stem->unit,0,true )) ? dist_error_hv : dist_error_diag;
+    err = ( IsUnitHV( &stem->unit,true )) ? dist_error_hv : dist_error_diag;
     min = ( is_l ) ? stem->lmax - 2*err : stem->rmax - 2*err;
     max = ( is_l ) ? stem->lmin + 2*err : stem->rmin + 2*err;
     
@@ -3168,7 +3196,7 @@ return( cnt );
     space[cnt].scurved = scurved;
     space[cnt].ecurved = ecurved;
     
-    hv = IsVectorHV( &stem->unit,0,true );
+    hv = IsUnitHV( &stem->unit,true );
     if ( hv ) {
         /* For vertical/horizontal stems we assign a special meaning to
         /* the 'curved' field. It will be non-zero if the key point of
@@ -3673,8 +3701,9 @@ return( false );
 /* or vertical, if they have just one chunk. This should be done before calculating
 /* active zones, as they are calculated against each stem's unit vector */
 static void GDNormalizeStubs( struct glyphdata *gd ) {
-    int i, hv;
+    int i, j, hv;
     struct stemdata *stem;
+    struct stem_chunk *chunk;
     BasePoint newdir;
     
     for ( i=0; i<gd->stemcnt; ++i ) {
@@ -3682,15 +3711,24 @@ static void GDNormalizeStubs( struct glyphdata *gd ) {
         if ( stem->positioned )
     continue;
         
-        if ( !IsVectorHV( &stem->unit,0,true )) {
-            hv = IsVectorHV( &stem->unit,slope_error,false );
+        if ( !IsUnitHV( &stem->unit,true )) {
+            hv = IsUnitHV( &stem->unit,false );
             if ( hv && StemFitsHV( stem,( hv == 1 ),3 )) {
                 if ( hv == 2 && stem->unit.y < 0 )
-                    SwapEdges( stem );
+                    SwapEdges( gd,stem );
 
                 newdir.x = fabs( rint( stem->unit.x ));
                 newdir.y = fabs( rint( stem->unit.y ));
                 SetStemUnit( stem,newdir );
+                
+                for ( j=0; j<stem->chunk_cnt && stem->leftidx == -1 && stem->rightidx == -1; j++ ) {
+                    chunk = &stem->chunks[j];
+                    
+                    if ( stem->leftidx == -1 && chunk->l != NULL )
+                        stem->leftidx = GetValidPointDataIndex( gd,chunk->l->sp,stem );
+                    if ( stem->rightidx == -1 && chunk->r != NULL )
+                        stem->rightidx = GetValidPointDataIndex( gd,chunk->r->sp,stem );
+                }
             }
         }
     }
@@ -3721,7 +3759,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         /* If a stem has straight edges, and it is wider than tall */
         /*  then it is unlikely to be a real stem */
 	width = stem->width;
-        ratio = IsVectorHV( &stem->unit,0,true ) ? gd->emsize/( 6 * width ) : -0.25;
+        ratio = IsUnitHV( &stem->unit,true ) ? gd->emsize/( 6 * width ) : -0.25;
 	stem->toobig =  ( stem->clen + stem->clen * ratio < width );
     }
 
@@ -3734,7 +3772,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	stem = &gd->stems[i];
 	width = stem->width;
 
-        if ( IsVectorHV( &stem->unit,0,true ) && stem->activecnt == 1 && 
+        if ( IsUnitHV( &stem->unit,true ) && stem->activecnt == 1 && 
             stem->active[0].curved && width/2 > dist_error_curve ) {
             
             for ( j=0; j<gd->stemcnt; ++j) {
@@ -3768,9 +3806,9 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
             /* vertical. But we can't check this using the stem unit, as it may have
             /* already beeen reset to HV. So we use the units of this stem's base points
             /* instead. */
-            if ( IsVectorHV( slunit,0,true ) && IsVectorHV( srunit,0,true ))
+            if ( IsUnitHV( slunit,true ) && IsUnitHV( srunit,true ))
     continue;
-            if ( VectorCloserToHV( srunit,slunit ) > 0 ) sunit = srunit;
+            if ( UnitCloserToHV( srunit,slunit ) > 0 ) sunit = srunit;
             else sunit = slunit;
             
             lpd = chunk->l; lsp = lpd->sp; lstems = tstems = NULL;
@@ -3828,7 +3866,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
             if ( lstems != NULL && rstems !=NULL ) {
                 for ( j=0; j<ls_cnt && !stem->toobig; j++ ) {
                     for ( k=0; k<rs_cnt && !stem->toobig; k++ ) {
-                        if ( lstems[j] == rstems[k] && IsVectorHV( &lstems[j]->unit,0,true )) {
+                        if ( lstems[j] == rstems[k] && IsUnitHV( &lstems[j]->unit,true )) {
                             stem->toobig = true;
                         }
                     }
@@ -3860,7 +3898,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-        if ( IsVectorHV( &stem->unit,0,true ))
+        if ( IsUnitHV( &stem->unit,true ))
     continue;
 
         /* If a diagonal stem doesn't have at least 2 points assigned to
@@ -3897,7 +3935,7 @@ return( false );
     
     for ( i=0; i<stemcnt; i++ ) {
         tstem = ( is_next ) ? pd->nextstems[i] : pd->prevstems[i];
-        if ( !IsVectorHV( &tstem->unit,0,true ) &&
+        if ( !IsUnitHV( &tstem->unit,true ) &&
             tstem->lpcnt >= 2 && tstem->rpcnt >=2 )
 return( true );
     }
@@ -4056,29 +4094,6 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
     }
 }
 
-static int GetValidPointDataIndex( struct glyphdata *gd,SplinePoint *sp,
-    struct stemdata *stem ) {
-    
-    struct pointdata *tpd;
-    
-    if ( sp == NULL )
-return( -1 );
-    if ( sp->ttfindex < gd->realcnt )
-return( sp->ttfindex );
-    if ( !sp->nonextcp && sp->nextcpindex < gd->realcnt ) {
-        tpd = &gd->points[sp->nextcpindex];
-        if ( IsStemAssignedToPoint( tpd,stem,false ) != -1 )
-return( sp->nextcpindex );
-    }
-    if ( !sp->noprevcp && sp->prev != NULL && 
-        sp->prev->from->nextcpindex < gd->realcnt ) {
-        tpd = &gd->points[sp->prev->from->nextcpindex];
-        if ( IsStemAssignedToPoint( tpd,stem,true ) != -1 )
-return( sp->prev->from->nextcpindex );
-    }
-return( -1 );
-}
-
 static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     int i;
     int is_x, lval, rval, val, lset, rset, best;
@@ -4088,7 +4103,7 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     struct stem_chunk *chunk;
     
     /* First sort the stem chunks by their coordinates */
-    if ( IsVectorHV( &stem->unit,0,true )) {
+    if ( IsUnitHV( &stem->unit,true )) {
         qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
         is_x = (int) rint( stem->unit.y );
 
@@ -4286,7 +4301,7 @@ static void CheckForBoundingBoxHints( struct glyphdata *gd ) {
 
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-        hv = IsVectorHV( &stem->unit,slope_error,true );
+        hv = IsUnitHV( &stem->unit,true );
         if ( !hv )
     continue;
 	if ( stem->toobig ) {
@@ -4505,7 +4520,7 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
     /* I misunderstood. Both of these were top-zones */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-        if ( IsVectorHV( &stem->unit,0,true ) != 1)
+        if ( IsUnitHV( &stem->unit,true ) != 1)
     continue;
         
 	leftfound = rightfound = -1;
@@ -4533,14 +4548,14 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
         has_h = false;
         for ( j=0; j<gd->points[i].prevcnt; j++ ) {
             stem = gd->points[i].prevstems[j];
-            if ( !stem->toobig && IsVectorHV( &stem->unit,0,true ) == 1 ) {
+            if ( !stem->toobig && IsUnitHV( &stem->unit,true ) == 1 ) {
                 has_h = true;
         break;
             }
         }
         for ( j=0; j<gd->points[i].nextcnt; j++ ) {
             stem = gd->points[i].nextstems[j];
-            if ( !stem->toobig && IsVectorHV( &stem->unit,0,true ) == 1 ) {
+            if ( !stem->toobig && IsUnitHV( &stem->unit,true ) == 1 ) {
                 has_h = true;
         break;
             }
@@ -4877,7 +4892,7 @@ return( false );
 static int PreferEndDep( struct stemdata *stem,
     struct stemdata *smaster,struct stemdata *emaster,char s_type,char e_type ) {
     
-    int hv = IsVectorHV( &stem->unit,0,true );
+    int hv = IsUnitHV( &stem->unit,true );
     double sdist, edist;
     
     if ( !hv )
@@ -5137,7 +5152,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
         stem = &gd->stems[i];
         hasl = false; hasr = false;
         
-        if ( IsVectorHV( &stem->unit,0,true ) && 
+        if ( IsUnitHV( &stem->unit,true ) && 
             !stem->toobig && !stem->ghost && !stem->positioned ) {
 	    for ( j=0; j<stem->chunk_cnt && ( !hasl || !hasr ); ++j ) {
 		if ( stem->chunks[j].l!=NULL && !stem->chunks[j].lpotential ) 
@@ -5154,9 +5169,9 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
     /* other, narrower HV stems */
     for ( i=0; i<gd->stemcnt; ++i ) {
         stem = &gd->stems[i];
-        hv = IsVectorHV( &stem->unit,0,true );
+        hv = IsUnitHV( &stem->unit,true );
 
-        if ( IsVectorHV( &stem->unit,0,true )) {
+        if ( IsUnitHV( &stem->unit,true )) {
             hasl = hasr = false;
 	    for ( j=0; j<stem->chunk_cnt; ++j ) {
                 lpd = stem->chunks[j].l;
@@ -5168,7 +5183,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
                             lpd->nextstems[k] : lpd->prevstems[k];
                         if ( tstem != stem && 
                             tstem->toobig <= stem->toobig && tstem->positioned >= stem->positioned &&
-                            tstem->width < stem->width && hv == IsVectorHV( &tstem->unit,0,true )) {
+                            tstem->width < stem->width && hv == IsUnitHV( &tstem->unit,true )) {
                             hasl = true;
                     break;
                         }
@@ -5181,7 +5196,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
                             rpd->nextstems[k] : rpd->prevstems[k];
                         if ( tstem != stem && 
                             tstem->toobig <= stem->toobig && tstem->positioned >= stem->positioned &&
-                            tstem->width < stem->width && hv == IsVectorHV( &tstem->unit,0,true )) {
+                            tstem->width < stem->width && hv == IsUnitHV( &tstem->unit,true )) {
                             hasr = true;
                     break;
                         }
@@ -5220,7 +5235,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
         stem = &gd->stems[i];
         if ( stem->toobig > maxtoobig )
     continue;
-        hv = IsVectorHV( &stem->unit,0,true );
+        hv = IsUnitHV( &stem->unit,true );
         
         if ( hv == 1 ) {
             gd->hbundle->stemlist[(gd->hbundle->cnt)++] = stem;
@@ -5333,7 +5348,7 @@ static int IsBall( struct glyphdata *gd,
     if ( pd == NULL || ( pd->x_extr != 1 && pd->y_extr != 1 ))
 return( false );
 
-    is_x = ( IsVectorHV( &master->unit,0,true ) == 1 );
+    is_x = ( IsUnitHV( &master->unit,true ) == 1 );
     lbp = ( lbase ) ? &master->left : &pd->base;
     rbp = ( lbase ) ? &pd->base : &master->right;
     min = ( is_x ) ? rbp->y : lbp->x;
@@ -5401,7 +5416,7 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
     struct stembundle *bundle;
     double start, end, tstart, tend, smend, emstart;
     
-    is_x = ( IsVectorHV( &stem->unit,0,true ) == 1 );
+    is_x = ( IsUnitHV( &stem->unit,true ) == 1 );
     bundle = ( is_x ) ? gd->hbundle : gd->vbundle;
     start = ( is_x ) ? stem->right.y : stem->left.x;
     end = ( is_x ) ? stem->left.y : stem->right.x;
@@ -5507,7 +5522,7 @@ static double ActiveOverlap( struct stemdata *stem1,struct stemdata *stem2 ) {
     int is_x, i, j = 0;
     double base1, base2, s1, e1, s2, e2, s, e, len = 0;
     
-    is_x = ( IsVectorHV( &stem1->unit,0,true ) == 2 );
+    is_x = ( IsUnitHV( &stem1->unit,true ) == 2 );
     base1 = ( &stem1->left.x )[is_x];
     base2 = ( &stem2->left.x )[is_x];
     
@@ -5826,12 +5841,12 @@ return( gd );
         if ( use_existing && ( pd->x_corner || pd->y_corner )) {
             has_h = has_v = false;
             for ( j=0; j<pd->prevcnt && (( pd->x_corner && !has_v ) || ( pd->y_corner && !has_h )); j++ ) {
-                hv = IsVectorHV( &pd->prevstems[j]->unit,0,true );
+                hv = IsUnitHV( &pd->prevstems[j]->unit,true );
                 if ( hv == 1 ) has_h = true;
                 else if ( hv == 2 ) has_v = true;
             }
             for ( j=0; j<pd->nextcnt && (( pd->x_corner && !has_v ) || ( pd->y_corner && !has_h )); j++ ) {
-                hv = IsVectorHV( &pd->nextstems[j]->unit,0,true );
+                hv = IsUnitHV( &pd->nextstems[j]->unit,true );
                 if ( hv == 1 ) has_h = true;
                 else if ( hv == 2 ) has_v = true;
             }
@@ -5902,7 +5917,7 @@ return( gd );
     if ( use_existing ) {
         for ( i=0; i<gd->stemcnt; ++i ) {
             stem = &gd->stems[i];
-            if ( stem->toobig == 1 && IsVectorHV( &stem->unit,0,true ))
+            if ( stem->toobig == 1 && IsUnitHV( &stem->unit,true ))
                 GetSerifData( gd,stem );
         }
         FindCounterGroups( gd,true );
