@@ -648,7 +648,7 @@ static int GBoxRoundRectBorder(GWindow gw,GRect *pos,GBox *design,
     if (( bt==bt_engraved || bt==bt_embossed ) && bw<2 )
 	bt = bt_box;
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
@@ -739,7 +739,7 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
 	bt = bt_box;
     FigureBorderCols(design,cols);
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
