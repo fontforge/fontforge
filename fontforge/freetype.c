@@ -474,7 +474,8 @@ static void BCTruncateToDepth(BDFChar *bdfc,int depth) {
 }
 
 static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
-	int bitmap_top, int pixelsize, int depth, SplineChar *sc) {
+	int bitmap_top, int pixelsize, int depth, SplineChar *sc,
+	FT_Glyph_Metrics *metrics) {
     BDFChar *bdfc;
 
     bdfc = chunkalloc(sizeof(BDFChar));
@@ -493,6 +494,10 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
 	bdfc->width = rint(sc->width*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->vwidth = rint(sc->vwidth*pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
 	bdfc->orig_pos = sc->orig_pos;
+    }
+    if ( metrics!=NULL ) {
+	bdfc->width = rint( metrics->horiAdvance/64.0 );
+	bdfc->vwidth = rint( metrics->vertAdvance/64.0 );
     }
     bdfc->bytes_per_line = bitmap->pitch;
     if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
@@ -526,7 +531,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
     slot = ftc->face->glyph;
     sc = ftc->sf->glyphs[gid];
     bdfc = BdfCFromBitmap(&slot->bitmap, slot->bitmap_left, slot->bitmap_top,
-	    pixelsize, depth, sc);
+	    pixelsize, depth, sc, &slot->metrics);
 return( bdfc );
 
  fail:
@@ -1216,7 +1221,7 @@ return( NULL );
     bdfc = NULL;
     if ( !err ) {
 	bdfc = BdfCFromBitmap(&bitmap, (((int) b.minx)+0x20)>>6, (((int) b.maxy)+0x20)>>6,
-		(int) rint( (ptsize*dpi)/72.0 ), depth, sc);
+		(int) rint( (ptsize*dpi)/72.0 ), depth, sc, NULL);
     }
     free( bitmap.buffer );
 return( bdfc );

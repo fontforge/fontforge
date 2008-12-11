@@ -437,7 +437,11 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	    scale = fl->fd->pointsize*li->dpi / (72.0*(fl->fd->sf->ascent+fl->fd->sf->descent));
 	    for ( i=0; fl->ottext[i].sc!=NULL; ++i ) {
 		fl->ottext[i].fl = fl;
-		fl->ottext[i].advance_width = rint( fl->ottext[i].sc->width * scale );
+		if ( fl->fd->bdf!=NULL ) {
+		    /* tt instructions might change the advance width fromt he expected value */
+		    fl->ottext[i].advance_width = BDFPieceMealCheck(fl->fd->bdf,fl->ottext[i].sc->orig_pos )->width;
+		} else
+		    fl->ottext[i].advance_width = rint( fl->ottext[i].sc->width * scale );
 	    }
 	    if ( (fl->next==NULL || fl->next->end!=fl->end) && ( li->text[fl->end]=='\n' || li->text[fl->end]=='\0' ))
 		++pcnt;

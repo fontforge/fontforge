@@ -1144,7 +1144,7 @@ static void MVToggleVertical(MetricsView *mv) {
 	    mv->dpi = 72;
 	    if ( mv->bdf==NULL ) {
 		BDFFontFree(mv->show);
-		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?pf_antialias:0,NULL);
+		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	    }
 	    MVRemetric(mv);
 	}
@@ -2501,7 +2501,7 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	mv->pixelsize = mv_scales[mv->scale_index]*(mv->vheight - 2);
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
-	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?pf_antialias:0,NULL);
+	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	}
     }
     MVReKern(mv);
@@ -2863,7 +2863,7 @@ static void MVMenuSizeWindow(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
     mv->ptsize = mv->pixelsize;
     if ( mv->bdf==NULL ) {
 	BDFFontFree(mv->show);
-	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?pf_antialias:0,NULL);
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
     }
     MVReKern(mv);
     MVSetVSb(mv);
@@ -3573,7 +3573,7 @@ return;
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
 	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
-		    mv->antialias?pf_antialias:0,NULL);
+		    mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	}
     }
 
