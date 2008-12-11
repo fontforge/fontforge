@@ -423,7 +423,7 @@ static int GBoxRectBorder(GWindow gw,GRect *pos,GBox *design,
     if (( bt==bt_engraved || bt==bt_embossed ) && bw<2 )
 	bt = bt_box;
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
@@ -508,7 +508,7 @@ int GBoxDrawHLine(GWindow gw,GRect *pos,GBox *design) {
     if (( bt==bt_engraved || bt==bt_embossed ) && bw<2 )
 	bt = bt_box;
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
@@ -568,7 +568,7 @@ int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design) {
     if (( bt==bt_engraved || bt==bt_embossed ) && bw<2 )
 	bt = bt_box;
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
@@ -660,6 +660,8 @@ static int GBoxRoundRectBorder(GWindow gw,GRect *pos,GBox *design,
 	bw &= ~1;
 	if ( !(bw&2 ) )
 	    bw -= 2;
+	if ( bw<=0 )
+	    bw = 2;
 	GDrawSetLineWidth(gw,bw/2);
 	DrawRoundRects(gw,pos,inset+bw/4,rr,cols[0],cols[1],cols[2],cols[3]);
 	DrawRoundRects(gw,pos,inset+bw/2+bw/4,rr,cols[2],cols[3],cols[0],cols[1]);
@@ -757,6 +759,8 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
 	bw &= ~1;
 	if ( !(bw&2 ) )
 	    bw -= 2;
+	if ( bw<=0 )
+	    bw = 2;
 	GDrawSetLineWidth(gw,bw/2);
 	cur = *pos;
 	cur.x += inset+bw/4; cur.y += inset+bw/4;
@@ -858,7 +862,7 @@ static int GBoxDiamondBorder(GWindow gw,GRect *pos,GBox *design,
 	bt = bt_box;
     FigureBorderCols(design,cols);
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
@@ -1207,7 +1211,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
     if (( bt==bt_engraved || bt==bt_embossed ) && bw<2 )
 	bt = bt_box;
 
-    switch ( bt ) {
+    if ( bw!=0 ) switch ( bt ) {
       case bt_none:
       break;
       case bt_box: case bt_raised: case bt_lowered:
@@ -1219,6 +1223,8 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 	bw &= ~1;
 	if ( !(bw&2 ) )
 	    bw -= 2;
+	if ( bw<=0 )
+	    bw = 2;
 	GDrawSetLineWidth(pixmap,bw/2);
 	DrawRoundTab(pixmap,&r,inset+bw/4,rr,cols[0],cols[1],cols[2],cols[3]);
 	DrawRoundTab(pixmap,&r,inset+bw/2+bw/4,rr,cols[2],cols[3],cols[0],cols[1]);
