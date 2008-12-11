@@ -3206,7 +3206,7 @@ static void GXDrawPointerGrab(GWindow gw) {
 static GWindow InputRedirection(struct inputRedirect *input,GWindow gw) {
     GWindow ret;
 
-    if ( input==NULL )
+    if ( input==NULL || input->cur_dlg->is_dying )
 return( NULL );
     if ( gw->is_toplevel && ((GXWindow) gw)->not_restricted )
 return( NULL );			/* Popup windows (menus, pulldown lists) count as part of their effective parents */
