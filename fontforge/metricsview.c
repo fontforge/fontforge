@@ -152,7 +152,7 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 		    scale = BDFDepth(mv->show);
 		base.image_type = it_index;
 		clut.clut_len = 1<<scale;
-		bg = default_background;
+		bg = view_bgcol;
 		fg = ( mv->perchar[i].selected ) ? selglyphcol : 0x000000;
 		for ( l=0; l<(1<<scale); ++l )
 		    clut.clut[l] =
@@ -246,7 +246,7 @@ return;
 	x += rint( iscale * bdfc->xmin );
 	if ( mv->perchar[i].selected )
 	    x += mv->activeoff;
-	y = ybase - rint( iscale * bdfc->ymax ) - mv->perchar[i].yoff;
+	y = ybase - rint( iscale * bdfc->ymax ) - (iscale-1) - mv->perchar[i].yoff;
 	width = bdfc->xmax-bdfc->xmin+1; height = bdfc->ymax-bdfc->ymin+1;
 	if ( !mv->right_to_left && clip->x+clip->width<x )
     break;
@@ -266,13 +266,14 @@ return;
 		int lscale = 3000/mv->pixelsize, l;
 		Color fg, bg;
 		int scale;
-		if ( lscale>4 ) lscale = 4; else if ( lscale==3 ) lscale= 2;
-		if ( mv->bdf!=NULL && mv->bdf->clut!=NULL )
+		if ( mv->bdf!=NULL )
 		    lscale = BDFDepth(mv->bdf);
+		else
+		    lscale = BDFDepth(mv->show);
 		base.image_type = it_index;
-		scale = lscale*lscale;
+		scale = lscale==8?256:lscale==4?16:4;
 		clut.clut_len = scale;
-		bg = default_background;
+		bg = view_bgcol;
 		fg = ( mv->perchar[i].selected ) ? selglyphcol : 0x000000;
 		for ( l=0; l<scale; ++l )
 		    clut.clut[l] =
@@ -2629,7 +2630,9 @@ static void MVMenuShowGrid(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuAA(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
     mv_antialias = mv->antialias = !mv->antialias;
+    mv->bdf = NULL;
     BDFFontFree(mv->show);
     mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->ptsize,mv->dpi,
 		mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
@@ -2676,6 +2679,10 @@ static void MVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( mv->bdf!=bdf ) {
 	mv->pixelsize_set_by_window = bdf==NULL;
+	if ( bdf!=NULL ) {
+	    mv->pixelsize = mv->ptsize = bdf->pixelsize;
+	    mv->dpi = 72;
+	}
 	MVChangeDisplayFont(mv,bdf);
 	GDrawRequestExpose(mv->v,NULL,false);
     }
