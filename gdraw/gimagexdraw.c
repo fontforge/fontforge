@@ -2130,35 +2130,38 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
 	data = grealloc(data,dlen = tbase.bytes_per_line*size->height );
     tbase.data = data;
 
+    /* I used to use rint(x). Now I use floor(x). For normal images rint */
+    /*  might be better, but for text we need floor */
+
     if ( base->image_type==it_mono ) {
 	memset(data,0,tbase.height*tbase.bytes_per_line);
 	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r/yscale ) + src->y;
+	    int or = ((int) floor( r/yscale )) + src->y;
 	    uint8 *pt = data+r*tbase.bytes_per_line;
 	    uint8 *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = c/xscale +src->x;
+		int oc = ((int) floor( c/xscale)) +src->x;
 		if ( opt[oc>>3] & (0x80>>(oc&7)) )
 		    pt[c>>3] |= (0x80>>(c&7));
 	    }
 	}
     } else if ( base->image_type==it_index ) {
 	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r/yscale ) + src->y;
+	    int or = floor( r/yscale ) + src->y;
 	    uint8 *pt = data+r*tbase.bytes_per_line;
 	    uint8 *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = c/xscale +src->x;
+		int oc = ((int) floor( c/xscale)) +src->x;
 		*pt++ = opt[oc];
 	    }
 	}
     } else {
 	for ( r=0; r<size->height; ++r ) {
-	    int or = rint( r/yscale ) + src->y;
+	    int or = floor( r/yscale ) + src->y;
 	    uint32 *pt = (uint32 *) (data+r*tbase.bytes_per_line);
 	    uint32 *opt = (uint32 *) (base->data+or*base->bytes_per_line);
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = c/xscale+src->x;
+		int oc = ((int) floor( c/xscale)) +src->x;
 		*pt++ = opt[oc];
 	    }
 	}
