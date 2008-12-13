@@ -1031,7 +1031,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 
 	j=k=l=0;
 	if ( res->initialcomment!=NULL ) {
-	    lab[k].text = (unichar_t *) _(res->initialcomment);
+	    lab[k].text = (unichar_t *) S_(res->initialcomment);
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
@@ -1048,7 +1048,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k++].creator = GLabelCreate;
 	    tofree[i].iarray[0] = &gcd[k-1];
 
-	    lab[k].text = (unichar_t *) _(res->inherits_from->name);
+	    lab[k].text = (unichar_t *) S_(res->inherits_from->name);
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
 	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_dontcopybox;
@@ -1952,7 +1952,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k++].creator = GLabelCreate;
 	    tofree[i].saarray[0] = &gcd[k-1];
 
-	    lab[k].text = (unichar_t *) _(res->seealso1->name);
+	    lab[k].text = (unichar_t *) S_(res->seealso1->name);
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
 	    gcd[k].gd.flags = gg_visible|gg_enabled|gg_dontcopybox;
@@ -1963,7 +1963,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].saarray[1] = &gcd[k-1];
 
 	    if ( res->seealso2!=NULL ) {
-		lab[k].text = (unichar_t *) _(res->seealso2->name);
+		lab[k].text = (unichar_t *) S_(res->seealso2->name);
 		lab[k].text_is_1byte = true;
 		gcd[k].gd.label = &lab[k];
 		gcd[k].gd.flags = gg_visible|gg_enabled|gg_dontcopybox;
@@ -1997,7 +1997,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		switch ( extras->type ) {
 		  case rt_bool:
 		    extras->orig.ival = *(int *) (extras->val);
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2015,7 +2015,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		  break;
 		  case rt_int:
 		    extras->orig.ival = *(int *) (extras->val);
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2032,7 +2032,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
 		    if ( extras->popup!=NULL )
-			gcd[k].gd.popup_msg = (unichar_t *) _(extras->popup);
+			gcd[k].gd.popup_msg = (unichar_t *) S_(extras->popup);
 		    gcd[k].gd.cid = extras->cid = ++cid;
 		    gcd[k].data = extras->val;
 		    gcd[k].gd.handle_controlevent = GRE_IntChanged;
@@ -2042,7 +2042,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		  break;
 		  case rt_double:
 		    extras->orig.dval = *(double *) (extras->val);
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2069,7 +2069,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		  case rt_coloralpha:
 		  case rt_color:
 		    extras->orig.ival = *(int *) (extras->val);
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2103,7 +2103,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		  /* Fall through */
 		  case rt_string:
 		    extras->orig.sval = *(char **) (extras->val);
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2144,7 +2144,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 			base=0; ++hl;
 		    }
 		    extras->orig.fontval = *(GFont **) (extras->val);
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2179,7 +2179,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		  case rt_image: {
 		    GResImage *ri = *(GResImage **) (extras->val);
 		    extras->orig.sval = copy( ri==NULL ? NULL : ri->filename );
-		    lab[k].text = (unichar_t *) _(extras->name);
+		    lab[k].text = (unichar_t *) S_(extras->name);
 		    lab[k].text_is_1byte = true;
 		    gcd[k].gd.label = &lab[k];
 		    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup;
@@ -2225,7 +2225,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	tofree[i].mainbox[0].gd.flags = gg_visible|gg_enabled;
 	tofree[i].mainbox[0].gd.u.boxelements = tofree[i].marray;
 	tofree[i].mainbox[0].creator = GVBoxCreate;
-	panes[i].text = (unichar_t *) _(res->name);
+	panes[i].text = (unichar_t *) S_(res->name);
 	panes[i].text_is_1byte = true;
 	panes[i].gcd = &tofree[i].mainbox[0];
 	for ( parent=res; parent!=NULL; parent=parent->inherits_from, ++panes[i].nesting );
