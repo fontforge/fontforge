@@ -960,11 +960,11 @@ return( true );
 	    SCPreserveWidth(sc);
 	    /* Width is an integer. Adjust the lbearing so that the rbearing */
 	    /*  remains what was just typed in */
-	    if ( sc->width!=bb.maxx+val ) {
+	    if ( newwidth!=bb.maxx+val ) {
 		real transform[6];
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
-		transform[4] = sc->width-val-bb.maxx;
+		transform[4] = newwidth-val-bb.maxx;
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
 	    }
 	    SCSynchronizeWidth(sc,newwidth,sc->width,NULL);
