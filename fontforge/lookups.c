@@ -4330,7 +4330,7 @@ return( kc->offsets[kwpos1*kc->second_cnt+scpos2] );
 return( 0 );
 }
 
-int KCFindName(char *name, char **classnames, int cnt ) {
+int KCFindName(char *name, char **classnames, int cnt, int class0meansAll ) {
     int i;
     char *pt, *end, ch;
 
@@ -4351,15 +4351,17 @@ return( i );
 	break;
 	}
     }
-return( 0 );
+    /* If class 0 is specified, then we didn't find anything. If class 0 is */
+    /*  unspecified then it means "anything" so we found something */
+return( classnames[0]!=NULL || !class0meansAll ? -1 : 0 );
 }
 
 int KCFindIndex(KernClass *kc,char *name1, char *name2) {
     int f,l;
 
-    f = KCFindName(name1,kc->firsts,kc->first_cnt);
-    l = KCFindName(name2,kc->seconds,kc->second_cnt);
-    if ( (f!=0 || kc->firsts[0]!=NULL) && l!=0 )
+    f = KCFindName(name1,kc->firsts,kc->first_cnt,false);
+    l = KCFindName(name2,kc->seconds,kc->second_cnt,true);
+    if ( f!=-1 && l!=-1 )
 return( f*kc->second_cnt+l );
 
 return( -1 );
