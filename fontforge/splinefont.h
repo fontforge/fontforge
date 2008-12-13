@@ -670,6 +670,9 @@ struct opentype_str {
     struct kernpair *kp;
     struct kernclass *kc;
     int16 advance_width;	/* Basic advance, modifications in vr, scaled and rounded */
+	/* Er... not actually set by ApplyLookups, but somewhere the caller */
+	/*  can stash info. (Extract width from hinted bdf if possible, tt */
+	/*  instructions can change it from the expected value) */
     int16 kc_index;
     int16 lig_pos;		/* when skipping marks to form a ligature keep track of what ligature element a mark was attached to */
     int16 context_pos;		/* When doing a contextual match remember which glyphs are used, and where in the match they occur. Skipped glyphs have -1 */
@@ -2927,7 +2930,7 @@ extern void AddNewAALTFeatures(SplineFont *sf);
 
 extern void SplinePointRound(SplinePoint *,real);
 
-extern int KCFindName(char *name, char **classnames, int cnt );
+extern int KCFindName(char *name, char **classnames, int cnt, int class0meansAll );
 extern int KCFindIndex(KernClass *kc,char *name1, char *name2);
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
