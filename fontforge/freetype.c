@@ -347,6 +347,7 @@ return( NULL );
 	}
 
 	old = sf->glyphs;
+	notdefpos = SFFindNotdef(sf,-2);	/* Do this early */
 	if ( sc!=NULL || selected!=NULL ) {
 	    /* Build up a font consisting of those characters we actually use */
 	    new = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
@@ -364,7 +365,7 @@ return( NULL );
 		AddIf(sf,new,old,'x',layer);
 		AddIf(sf,new,old,'o',layer);
 	    }
-	    if ((notdefpos = SFFindNotdef(sf,-2))!=-1 )
+	    if ( notdefpos!=-1 )
 		TransitiveClosureAdd(new,old,sf->glyphs[notdefpos],layer);
 		/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
 	    sf->glyphs = new;
@@ -407,7 +408,6 @@ return( NULL );
 	    ftc->glyph_indeces = galloc(sf->glyphcnt*sizeof(int));
 	    memset(ftc->glyph_indeces,-1,sf->glyphcnt*sizeof(int));
 	    cnt = 1;
-	    notdefpos = SFFindNotdef(sf,-2);
 	    if ( notdefpos!=-1 )
 		ftc->glyph_indeces[notdefpos] = 0;
 	    if ( ff==ff_pfa || ff==ff_pfb ) {
@@ -516,7 +516,6 @@ static BDFChar *BDFCReClut(BDFChar *bdfc) {
     /* Made for something with a bit depth of 4, but we use 8 here */
     char *pt, *end;
 
-fprintf( stderr, "Freetype failed me\n" );		/* Debug */
     if ( bdfc==NULL )
 return( NULL );
     pt = bdfc->bitmap;
