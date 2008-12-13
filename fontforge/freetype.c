@@ -512,6 +512,20 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
 return( bdfc );
 }
 
+static BDFChar *BDFCReClut(BDFChar *bdfc) {
+    /* Made for something with a bit depth of 4, but we use 8 here */
+    char *pt, *end;
+
+fprintf( stderr, "Freetype failed me\n" );		/* Debug */
+    if ( bdfc==NULL )
+return( NULL );
+    pt = bdfc->bitmap;
+    end = pt + bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
+    while ( pt<end )
+	*pt++ *= 17;
+return( bdfc );
+}
+
 BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int ptsize, int dpi,int depth) {
     FTC *ftc = freetypecontext;
@@ -538,7 +552,7 @@ return( bdfc );
     if ( depth==1 )
 return( SplineCharRasterize(ftc->sf->glyphs[gid],ftc->layer,pixelsize) );
     else
-return( SplineCharAntiAlias(ftc->sf->glyphs[gid],ftc->layer,pixelsize,4));
+return( BDFCReClut(SplineCharAntiAlias(ftc->sf->glyphs[gid],ftc->layer,pixelsize,4)));
 }
 
 BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
