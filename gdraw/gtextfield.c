@@ -3269,7 +3269,7 @@ static void GCompletionCreatePopup(GCompletionField *gc) {
 	pos.width = gc->gl.gt.g.r.width;
 
     pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|
-	    wam_transient/*|wam_bordwidth|wam_bordcol*/;
+	    wam_transient|wam_verytransient/*|wam_bordwidth|wam_bordcol*/;
     pattrs.event_masks = -1;
     pattrs.nodecoration = true;
     pattrs.positioned = true;

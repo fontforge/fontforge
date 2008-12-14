@@ -156,6 +156,7 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
     unsigned int redirect_chars_to_me: 1;/* ditto, we get any input outside of us */
     unsigned int istransient: 1;	/* has transient for hint set */
+    unsigned int isverytransient: 1;
     GWindow redirect_from;		/* only redirect input from this window and its children */
     GCursor cursor;
     Window parentissimus;
