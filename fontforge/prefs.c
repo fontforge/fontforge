@@ -1070,7 +1070,13 @@ static void PrefsUI_LoadPrefs(void) {
 			sscanf( pt, "%x", (int *) pl->val );
 	      break;
 	      case pr_real:
-		sscanf( pt, "%f", (float *) pl->val );
+	        { char *end;
+		    *((float *) pl->val) = strtod(pt,&end);
+		    if (( *end==',' || *end=='.' ) ) {
+			*end = (*end=='.')?',':'.';
+			*((float *) pl->val) = strtod(pt,NULL);
+		    }
+		}
 	      break;
 	      case pr_string: case pr_file:
 		if ( *pt=='\0' ) pt=NULL;
