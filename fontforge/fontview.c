@@ -2344,11 +2344,11 @@ return( true );
 }
 
 static void FVDoTransform(FontView *fv) {
-    int flags=0x3;
+    enum transdlg_flags flags=tdf_enableback|tdf_enablekerns;
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     if ( FVAllSelected(fv))
-	flags = 0x7;
+	flags=tdf_enableback|tdf_enablekerns|tdf_defaultkerns;
     TransformDlgCreate(fv,FVTransFunc,getorigin,flags,cvt_none);
 }
 

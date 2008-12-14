@@ -36,6 +36,7 @@ typedef struct transdata {
     void (*transfunc)(void *,real trans[6],int otype,BVTFunc *,enum fvtrans_flags);
     int  (*getorigin)(void *,BasePoint *bp,int otype);
     GWindow gw;
+    int applied;
     int done;
 } TransData;
 
@@ -46,6 +47,7 @@ typedef struct transdata {
 #define CID_DoSimplePos		3005
 #define CID_DoGrid		3006
 #define CID_DoWidth		3007
+#define CID_Apply		3008
 
 #define CID_Type	1001
 #define CID_XMove	1002
@@ -113,6 +115,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
     int origin, bvpos=0;
     BVTFunc bvts[TCnt+1];
     static int warned = false;
+    int isapply = GGadgetGetCid(g) == CID_Apply;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	TransData *td = GDrawGetUserData(GGadgetGetWindow(g));
@@ -135,6 +138,8 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	if ( GWidgetGetControl(td->gw,CID_DoKerns)!=NULL )
 	    dokerns = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_DoKerns));
 	round_2_int = GGadgetIsChecked(GWidgetGetControl(td->gw,CID_Round2Int));
+	if ( isapply )
+	    alllayers = dogrid = dokp = dokerns = false;
 	if ( td->getorigin!=NULL ) {
 	    (td->getorigin)(td->userdata,&base,origin );
 	    transform[4] = -base.x;
@@ -252,8 +257,10 @@ return(true);
 		 (dowidth?0:fvt_dontmovewidth)|
 		 (round_2_int?fvt_round_to_int:0)|
 		 (dokp?fvt_scalepstpos:0)|
-		 (dokerns?fvt_scalekernclasses:0));
-	td->done = true;
+		 (dokerns?fvt_scalekernclasses:0)|
+		 (isapply?fvt_justapply:0));
+	td->done = !isapply;
+	td->applied = isapply;
     }
 return( true );
 }
@@ -261,6 +268,8 @@ return( true );
 static int Trans_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	TransData *td = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( td->applied )
+	    (td->transfunc)(td->userdata,NULL,0,NULL,fvt_revert);
 	td->done = true;
     }
 return( true );
@@ -565,13 +574,13 @@ return( gcd+22 );
 }
 
 void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
-	int (*getorigin)(void *,BasePoint *,int), int enableback,
+	int (*getorigin)(void *,BasePoint *,int), enum transdlg_flags flags,
 	enum cvtools cvt) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11+TCnt*25], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+8)+4], *buttons[9], *origarray[4];
-    GTextInfo label[8+TCnt*24];
+    GGadgetCreateData gcd[12+TCnt*25], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+8)+4], *buttons[12], *origarray[4];
+    GTextInfo label[9+TCnt*24];
     static TransData td;
     int i, y, gci, subai, ai;
     int32 len;
@@ -646,7 +655,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	y = TBlock_Top+TCnt*TBlock_Height+4;
 
 	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
-	    gcd[gci].gd.flags = (enableback&1) ? (gg_visible | gg_enabled) : gg_visible;
+	    gcd[gci].gd.flags = (flags&tdf_enableback) ? (gg_visible | gg_enabled) : gg_visible;
 	    label[gci].text = (unichar_t *) _("Transform _All Layers");
 	    label[gci].text_is_1byte = true;
 	    label[gci].text_in_resource = true;
@@ -657,7 +666,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    y += 16;
 
 	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
-	    gcd[gci].gd.flags = (enableback&1) ? (gg_visible | gg_enabled) : gg_visible;
+	    gcd[gci].gd.flags = (flags&tdf_enableback) ? (gg_visible | gg_enabled) : gg_visible;
 	    label[gci].text = (unichar_t *) _("Transform _Guide Layer Too");
 	    label[gci].text_is_1byte = true;
 	    label[gci].text_in_resource = true;
@@ -668,7 +677,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    y += 16;
 
 	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
-	    gcd[gci].gd.flags = (enableback&1) ? (gg_visible | gg_enabled | gg_cb_on) : gg_visible;
+	    gcd[gci].gd.flags = (flags&tdf_enableback) ? (gg_visible | gg_enabled | gg_cb_on) : gg_visible;
 	    label[gci].text = (unichar_t *) _("Transform _Width Too");
 	    label[gci].text_is_1byte = true;
 	    label[gci].text_in_resource = true;
@@ -679,8 +688,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	    y += 16;
 
 	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
-	    gcd[gci].gd.flags = gg_visible | (enableback&2 ? gg_enabled : 0) |
-		    (enableback&4 ? gg_cb_on : 0);
+	    gcd[gci].gd.flags = gg_visible | (flags&tdf_enablekerns ? gg_enabled : 0) |
+		    (flags&tdf_defaultkerns ? gg_cb_on : 0);
 	    label[gci].text = (unichar_t *) _("Transform kerning _classes too");
 	    label[gci].text_is_1byte = true;
 	    label[gci].text_in_resource = true;
@@ -692,8 +701,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 
 	    gcd[gci].gd.pos.x = 10; gcd[gci].gd.pos.y = y;
 	    gcd[gci].gd.flags = gg_visible |
-		    (enableback&1 ? gg_enabled : 0) |
-		    (enableback&2 ? gg_cb_on : 0);
+		    (flags&tdf_enableback ? gg_enabled : 0) |
+		    (flags&tdf_enablekerns ? gg_cb_on : 0);
 	    label[gci].text = (unichar_t *) _("Transform simple positioning features & _kern pairs");
 	    label[gci].text_is_1byte = true;
 	    label[gci].text_in_resource = true;
@@ -717,7 +726,6 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	array[ai++] = GCD_Glue; array[ai++] = NULL;
 
 	gcd[gci].gd.pos.x = 30-3; gcd[gci].gd.pos.y = y;
-	gcd[gci].gd.pos.width = -1; gcd[gci].gd.pos.height = 0;
 	gcd[gci].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[gci].text = (unichar_t *) _("_OK");
 	label[gci].text_is_1byte = true;
@@ -728,8 +736,17 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[gci++].creator = GButtonCreate;
 	buttons[0] = GCD_Glue; buttons[1] = &gcd[gci-1]; buttons[2] = GCD_Glue; buttons[3] = GCD_Glue;
 
+	gcd[gci].gd.flags = gg_visible | gg_enabled;
+	label[gci].text = (unichar_t *) _("_Apply");
+	label[gci].text_is_1byte = true;
+	label[gci].text_in_resource = true;
+	gcd[gci].gd.label = &label[gci];
+	gcd[gci].gd.handle_controlevent = Trans_OK;
+	gcd[gci].gd.cid = CID_Apply;
+	gcd[gci++].creator = GButtonCreate;
+	buttons[4] = GCD_Glue; buttons[5] = &gcd[gci-1]; buttons[6] = GCD_Glue;
+
 	gcd[gci].gd.pos.x = -30; gcd[gci].gd.pos.y = gcd[gci-1].gd.pos.y+3;
-	gcd[gci].gd.pos.width = -1; gcd[gci].gd.pos.height = 0;
 	gcd[gci].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[gci].text = (unichar_t *) _("_Cancel");
 	label[gci].text_is_1byte = true;
@@ -738,8 +755,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[gci].gd.mnemonic = 'C';
 	gcd[gci].gd.handle_controlevent = Trans_Cancel;
 	gcd[gci++].creator = GButtonCreate;
-	buttons[4] = GCD_Glue; buttons[5] = GCD_Glue; buttons[6] = &gcd[gci-1]; buttons[7] = GCD_Glue;
-	buttons[8] = NULL;
+	buttons[7] = GCD_Glue; buttons[8] = &gcd[gci-1]; buttons[9] = GCD_Glue;
+	buttons[10] = NULL;
 
 	boxes[2].gd.flags = gg_enabled|gg_visible;
 	boxes[2].gd.u.boxelements = buttons;
@@ -766,12 +783,20 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     }
     gw = td.gw;
 
-    GGadgetSetEnabled( GWidgetGetControl(gw,CID_AllLayers), enableback&1);
-    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoGrid), enableback&1);
-    if ( !(enableback&1) ) {
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_AllLayers), flags&tdf_enableback);
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoGrid), flags&tdf_enableback);
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoSimplePos), flags&tdf_enableback);
+    GGadgetSetEnabled( GWidgetGetControl(gw,CID_DoKerns), flags&tdf_enablekerns);
+    GGadgetSetVisible( GWidgetGetControl(gw,CID_Apply), flags&tdf_addapply);
+    if ( !(flags&tdf_enableback) ) {
 	GGadgetSetChecked( GWidgetGetControl(gw,CID_AllLayers), false );
 	GGadgetSetChecked( GWidgetGetControl(gw,CID_DoGrid), false );
     }
+    GGadgetSetChecked( GWidgetGetControl(gw,CID_DoKerns),
+	    !(flags&tdf_enablekerns)?false:(flags&tdf_defaultkerns)?true:false );
+    /* Yes, this is set differently from the previous, that's intended */
+    GGadgetSetChecked( GWidgetGetControl(gw,CID_DoSimplePos),
+	    !(flags&tdf_enableback)?false:(flags&tdf_enablekerns)?true:false );
     orig = GWidgetGetControl(gw,CID_Origin);
     GGadgetSetEnabled( orig, getorigin!=NULL );
     ti = GGadgetGetList(orig,&len);

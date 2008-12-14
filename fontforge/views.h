@@ -778,8 +778,10 @@ extern int BVPalettesWidth(void);
 
 extern void CVDoTransform(CharView *cv, enum cvtools cvt );
 extern void CVTransFunc(CharView *cv,real transform[6],enum fvtrans_flags);
+enum transdlg_flags { tdf_enableback=0x1, tdf_enablekerns=0x2,
+	tdf_defaultkerns=0x4, tdf_addapply=0x8 };
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
-	int (*getorigin)(void *,BasePoint *,int), int enableback,
+	int (*getorigin)(void *,BasePoint *,int), enum transdlg_flags flags,
 	enum cvtools cvt);
 extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern int SimplifyDlg(SplineFont *sf,struct simplifyinfo *smpl);

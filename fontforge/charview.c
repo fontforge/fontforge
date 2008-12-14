@@ -7116,19 +7116,28 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CharView *cv = (CharView *) d;
     int anya, l, cvlayer = CVLayer((CharViewBase *) cv);
 
+    if ( cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+	CVDoUndo(&cv->b);
+    if ( flags&fvt_revert )
+return;
+
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
-    CVPreserveStateHints(&cv->b);
-    if ( flags&fvt_alllayers )
-	for ( l=0; l<cv->b.sc->layer_cnt; ++l ) if ( l!=cvlayer )
-	    SCPreserveLayer(cv->b.sc,l,false);
+    if ( flags&fvt_justapply )
+	CVPreserveTState(&cv->b);
+    else {
+	CVPreserveStateHints(&cv->b);
+	if ( flags&fvt_alllayers )
+	    for ( l=0; l<cv->b.sc->layer_cnt; ++l ) if ( l!=cvlayer )
+		SCPreserveLayer(cv->b.sc,l,false);
+    }
     CVTransFunc(cv,transform,flags);
     CVCharChangedUpdate(&cv->b);
 }
 
 void CVDoTransform(CharView *cv, enum cvtools cvt ) {
     int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
-    TransformDlgCreate(cv,transfunc,getorigin,!anysel && cv->b.drawmode==dm_fore,
-	cvt);
+    TransformDlgCreate(cv,transfunc,getorigin,!anysel?(tdf_enableback|tdf_addapply):tdf_addapply,
+	    cvt);
 }
 
 static void CVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
