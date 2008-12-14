@@ -869,12 +869,13 @@ static int GRE_OK(GGadget *g, GEvent *e) {
 		    char *sval = GGadgetGetTitle8(GWidgetGetControl(gre->gw,gre->tofree[i].btcid+6+3*j));
 		    char *end;
 		    int val = strtol(sval,&end,10);
-		    free(sval);
 		    if ( *end!='\0' || val<0 || val>255 ) {
 			gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s must be between 0 and 255"),
 				res->resname, _(names[j]) );
+			free(sval);
 return( true );
 		    }
+		    free(sval);
 		}
 	    }
 	    if ( res->font!=NULL ) {
@@ -894,12 +895,13 @@ return( true );
 			char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,extras->cid) );
 			char *end;
 			(void) strtol(ival,&end,10);
-			free(ival);
 			if ( *end!='\0' ) {
 			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
 				    res->resname, extras->name );
+			    free(ival);
 return( true );
 			}
+			free(ival);
 		      } break;
 		      case rt_double: {
 			/* Has already been parsed and set -- unless there were */
@@ -907,12 +909,13 @@ return( true );
 			char *ival = GGadgetGetTitle8( GWidgetGetControl(gre->gw,extras->cid) );
 			char *end;
 			(void) strtod(ival,&end);
-			free(ival);
 			if ( *end!='\0' ) {
 			    gwwv_post_error(_("Bad Number"), _("Bad numeric value for %s.%s"),
 				    res->resname, extras->name );
+			    free(ival);
 return( true );
 			}
+			free(ival);
 		      } break;
 		      case rt_bool:
 		      case rt_color:
