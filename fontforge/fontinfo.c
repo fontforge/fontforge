@@ -10717,7 +10717,7 @@ void FontInfoDestroy(SplineFont *sf) {
 
 void FontInfoInit(void) {
     static int done = false;
-    int i, j;
+    int i, j, k;
     static GTextInfo *needswork[] = {
 	macstyles, widthclass, weightclass, fstype, pfmfamily, ibmfamily,
 	panfamily, panserifs, panweight, panprop, pancontrast, panstrokevar,
@@ -10740,14 +10740,19 @@ return;
     }
     for ( j=0; needswork2[j]!=NULL; ++j ) {
 	for ( i=0; needswork2[j][i]!=NULL; ++i )
-	    needswork2[j][i] = _(needswork2[j][i]);
+	    needswork2[j][i] = S_(needswork2[j][i]);
     }
 
     for ( j=0; needswork3[j]!=NULL; ++j ) {
-	for ( i=0; needswork3[j][i].title!=NULL; ++i )
+	for ( i=0; needswork3[j][i].title!=NULL; ++i ) {
 	    needswork3[j][i].title = S_(needswork3[j][i].title);
+	    if ( needswork3[j][i].enum_vals!=NULL ) {
+		for ( k=0; needswork3[j][i].enum_vals[k].text!=NULL; ++k )
+		    needswork3[j][i].enum_vals[k].text = (unichar_t *) S_((char *) needswork3[j][i].enum_vals[k].text);
+	    }
+	}
     }
-
+ 
     LookupUIInit();
     LookupInit();
 }
