@@ -1205,6 +1205,7 @@ return( NULL );
 	    nw->transient_owner = gdisp->last_nontransient_window;
 	    nw->istransient = true;
 	}
+	nw->isverytransient = (wattrs->mask&wam_verytransient)?1:0;
 	nw->is_toplevel = true;
 	XChangeProperty(display,nw->w,gdisp->atoms.wm_protocols,XA_ATOM,32,
 		PropModeReplace,(unsigned char *) &gdisp->atoms.wm_del_window, 1);
@@ -3256,7 +3257,7 @@ return;
     gevent.native_window = (void *) event->xany.window;
     gevent.type = -1;
     if ( event->type==KeyPress || event->type==ButtonPress || event->type == ButtonRelease ) {
-	if ( ((GXWindow ) gw)->transient_owner!=0 )
+	if ( ((GXWindow ) gw)->transient_owner!=0 && ((GXWindow ) gw)->isverytransient )
 	    gdisp->last_nontransient_window = ((GXWindow ) gw)->transient_owner;
 	else
 	    gdisp->last_nontransient_window = ((GXWindow ) gw)->w;

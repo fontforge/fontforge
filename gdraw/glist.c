@@ -1144,7 +1144,7 @@ return(NULL);
     GDrawPointerUngrab(disp);
     GDrawGetPointerPosition(owner->base,&e);
 
-    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient;
+    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_verytransient;
     pattrs.event_masks = -1;
     pattrs.nodecoration = true;
     pattrs.positioned = true;
