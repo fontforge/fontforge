@@ -79,8 +79,8 @@ GResInfo ggadget_ri = {
     false
 };
 static struct resed popup_re[] = {
-    {N_("Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows")},
-    {N_("Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows")},
+    {N_("Color|Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows")},
+    {N_("Color|Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows")},
     {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear")},
     {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible")},
     { NULL }};
