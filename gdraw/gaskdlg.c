@@ -167,6 +167,7 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     unichar_t ubuf[800];
     extern GBox _GGadget_defaultbutton_box;
 
+    memset(d,0,sizeof(*d));
     GGadgetInit();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     if ( screen_display==NULL ) {
@@ -670,6 +671,7 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     unichar_t ubuf[300];
     extern GBox _GGadget_defaultbutton_box;
 
+    memset(d,0,sizeof(*d));
     GGadgetInit();
     GProgressPauseTimer();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
