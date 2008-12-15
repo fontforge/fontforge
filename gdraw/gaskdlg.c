@@ -167,7 +167,8 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     unichar_t ubuf[800];
     extern GBox _GGadget_defaultbutton_box;
 
-    memset(d,0,sizeof(*d));
+    if ( d!=NULL )
+	memset(d,0,sizeof(*d));
     GGadgetInit();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     if ( screen_display==NULL ) {
@@ -296,7 +297,6 @@ return( NULL );
     GDrawResize(gw,pos.width,pos.height);
     GWidgetHidePalettes();
     if ( d!=NULL ) {
-	memset(d,'\0',sizeof(*d));
 	d->ret  = cancel;
 	d->bcnt = bcnt;
     }
@@ -851,7 +851,6 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     GDrawResize(gw,pos.width,pos.height);
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
-    memset(d,'\0',sizeof(d));
     d->ret = -1;
     d->size_diff = pos.height - gcd[listi].gd.pos.height;
     free(llabels);
@@ -959,6 +958,8 @@ static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
     unichar_t *ubuf;
     extern GBox _GGadget_defaultbutton_box;
 
+    if ( d!=NULL )
+	memset(d,0,sizeof(*d));
     vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
     if ( screen_display==NULL ) {
 	fprintf(stderr, "%s\n", buf );
@@ -1121,7 +1122,6 @@ return( NULL );
 
     GWidgetHidePalettes();
     if ( d!=NULL ) {
-	memset(d,'\0',sizeof(*d));
 	d->ret  = cancel;
 	d->bcnt = bcnt;
     }
@@ -1357,6 +1357,7 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     unichar_t *ubuf;
     extern GBox _GGadget_defaultbutton_box;
 
+    memset(d,0,sizeof(*d));
     GProgressPauseTimer();
     vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);
     ubuf = utf82u_copy(buf);
@@ -1559,7 +1560,6 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 #endif
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
-    memset(d,'\0',sizeof(d));
     d->ret = -1;
     d->size_diff = pos.height - gcd[listi].gd.pos.height;
     free(llabels);
