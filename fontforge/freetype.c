@@ -514,7 +514,7 @@ return( bdfc );
 
 static BDFChar *BDFCReClut(BDFChar *bdfc) {
     /* Made for something with a bit depth of 4, but we use 8 here */
-    char *pt, *end;
+    uint8 *pt, *end;
 
     if ( bdfc==NULL )
 return( NULL );

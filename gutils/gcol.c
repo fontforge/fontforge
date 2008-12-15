@@ -26,6 +26,7 @@
  */
 #include <gimage.h>
 #include <math.h>
+#include <string.h>
 
 void gRGB2HSL(struct hslrgb *col) {
     double mx, mn;
