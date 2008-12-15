@@ -376,7 +376,7 @@ return( SS_DiffContourCount|SS_NoMatch );
 	    diff += delta;
 	    if ( (diff<bestdiff || bestdiff == -1 ) &&
 		    /* Only match closed contours with closed, open with open */
-		    (ss1->first==ss1->last) == (ss2->first==ss2->last)) {
+		    (ss1->first->prev==NULL) == (ss2->first->prev==NULL)) {
 		bestdiff = diff;
 		bestss = s2s;
 		bestcnt = cnt2;

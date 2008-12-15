@@ -4469,7 +4469,7 @@ return( ret );
 int SplinePointListIsClockwise(const SplineSet *spl) {
     EIList el;
     EI *active=NULL, *apt, *pr, *e;
-    int i, winding,change,waschange;
+    int i, winding,change,waschange, cnt;
     SplineChar dummy;
     SplineSet *next;
     Layer layers[2];
@@ -4495,7 +4495,8 @@ return( -1 );
     waschange = false;
     for ( i=0; i<el.cnt ; ++i ) {
 	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
-	if ( el.ordered[i]!=NULL || el.ends[i] ) {
+	for ( apt=active, cnt=0; apt!=NULL; apt = apt->aenext , ++cnt );
+	if ( el.ordered[i]!=NULL || el.ends[i] || cnt&1 ) {
 	    waschange = change;
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
 	}

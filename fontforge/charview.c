@@ -6947,6 +6947,7 @@ static void CVMenuGlyphSelfIntersects(GWindow gw,struct gmenuitem *mi,GEvent *e)
 
     if ( s!=NULL || s2!=NULL ) {
 	memset(&b,0,sizeof(b));
+	CVClearSel(cv);
 	if ( s!=NULL ) {
 	    b.minx = b.maxx = s->from->me.x;
 	    b.miny = b.maxy = s->from->me.y;

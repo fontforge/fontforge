@@ -4013,10 +4013,20 @@ static void IterateSolve(const Spline1D *sp,extended ts[3]) {
 	ts[j] = -1;
 }
 
-static extended ISolveWithin(const Spline1D *sp,extended val,extended tlow, extended thigh) {
+static extended ISolveWithin(const Spline *spline,int major,
+	extended val,extended tlow, extended thigh) {
     Spline1D temp;
     extended ts[3];
+    const Spline1D *sp = &spline->splines[major];
     int i;
+
+    /* Calculation for t=1 can yield rounding errors. Insist on the endpoints */
+    /*  (the Spline1D is not a perfectly accurate description of the spline,  */
+    /*   but the control points are right -- at least that's my defn.) */
+    if ( tlow==0 && val==(&spline->from->me.x)[major] )
+return( 0 );
+    if ( thigh==1.0 && val==(&spline->to->me.x)[major] )
+return( 1.0 );
 
     temp = *sp;
     temp.d -= val;
@@ -4077,7 +4087,7 @@ static int ICBinarySearch(int cnt,BasePoint *foundpos,extended *foundt1,extended
 	t1 = (t1low+t1high)/2;
 	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;
-	t2 = ISolveWithin(&s2->splines[major],m,t2low,t2high);
+	t2 = ISolveWithin(s2,major,m,t2low,t2high);
 	if ( t2==-1 )
 return( cnt );
 
@@ -4120,10 +4130,10 @@ return( 0 );
 	major = 1;
     other = 1-major;
 
-    t1max = ISolveWithin(&s1->splines[major],(&max.x)[major],lowt1,hight1);
-    t1min = ISolveWithin(&s1->splines[major],(&min.x)[major],lowt1,hight1);
-    t2max = ISolveWithin(&s2->splines[major],(&max.x)[major],lowt2,hight2);
-    t2min = ISolveWithin(&s2->splines[major],(&min.x)[major],lowt2,hight2);
+    t1max = ISolveWithin(s1,major,(&max.x)[major],lowt1,hight1);
+    t1min = ISolveWithin(s1,major,(&min.x)[major],lowt1,hight1);
+    t2max = ISolveWithin(s2,major,(&max.x)[major],lowt2,hight2);
+    t2min = ISolveWithin(s2,major,(&min.x)[major],lowt2,hight2);
     if ( t1max==-1 || t1min==-1 || t2max==-1 || t1min==-1 )
 return( 0 );
     t1diff = (t1max-t1min)/64.0;
@@ -4131,9 +4141,13 @@ return( 0 );
 return( 0 );
 
     t1 = t1min; t2 = t2min;
-    o1o = ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
+    o1o = t1==0   ? (&s1->from->me.x)[other] :
+	  t1==1.0 ? (&s1->to->me.x)[other] :
+	    ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
 		    s1->splines[other].c)*t1+s1->splines[other].d;
-    o2o = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
+    o2o = t2==0   ? (&s2->from->me.x)[other] :
+	  t2==1.0 ? (&s2->to->me.x)[other] :
+	    ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
 		    s2->splines[other].c)*t2+s2->splines[other].d;
     if ( o1o==o2o )
 	cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt);
@@ -4143,16 +4157,22 @@ return( 0 );
 	t1 += t1diff;
 	if (( t1max>t1min && t1>t1max ) || (t1max<t1min && t1<t1max) || cnt>3 )
     break;
-	m = ((s1->splines[major].a*t1+s1->splines[major].b)*t1+
+	m =   t1==0   ? (&s1->from->me.x)[other] :
+	      t1==1.0 ? (&s1->to->me.x)[other] :
+		((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;
 	oldt2 = t2;
-	t2 = ISolveWithin(&s2->splines[major],m,lowt2,hight2);
+	t2 = ISolveWithin(s2,major,m,lowt2,hight2);
 	if ( t2==-1 )
     continue;
 
-	o1n = ((s1->splines[other].a*t1+s1->splines[other].b)*t1+
+	o1n = t1==0   ? (&s1->from->me.x)[other] :
+	      t1==1.0 ? (&s1->to->me.x)[other] :
+		((s1->splines[other].a*t1+s1->splines[other].b)*t1+
 			s1->splines[other].c)*t1+s1->splines[other].d;
-	o2n = ((s2->splines[other].a*t2+s2->splines[other].b)*t2+
+	o2n = t2==0   ? (&s2->from->me.x)[other] :
+	      t2==1.0 ? (&s2->to->me.x)[other] :
+		((s2->splines[other].a*t2+s2->splines[other].b)*t2+
 			s2->splines[other].c)*t2+s2->splines[other].d;
 	if ( o1n==o2n )
 	    cnt = ICAddInter(cnt,foundpos,foundt1,foundt2,s1,s2,t1,t2,maxcnt);
@@ -4492,7 +4512,7 @@ int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2) {
 			if ( spline->to->next!=spline2 && spline->from->prev!=spline2 )
 			    found = true;
 			else for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
-			    if ( (t1s[i]<.99 && t1s[i]>.01) || (t2s[i]<.99 && t2s[i]>.01)) {
+			    if ( (t1s[i]<.999 && t1s[i]>.001) || (t2s[i]<.999 && t2s[i]>.001)) {
 				found = true;
 			break;
 			    }
