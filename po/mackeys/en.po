@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2008-11-14 20:06-0800\n"
+"POT-Creation-Date: 2008-12-15 07:34-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,1447 +25,1463 @@ msgstr ""
 
 
 
-#: bitmapview.c:1801 charview.c:8926 fontview.c:5246 metricsview.c:2719
+#: bitmapview.c:1801 charview.c:9048 fontview.c:5265 metricsview.c:2967
 msgid "New Outline Window|Ctl+H"
 msgstr "Cmd+H"
 
-#: bitmapview.c:1802 charview.c:8927 fontview.c:5247 metricsview.c:2720
+#: bitmapview.c:1802 charview.c:9049 fontview.c:5266 metricsview.c:2968
 msgid "New Bitmap Window|Ctl+J"
 msgstr "Cmd+J"
 
-#: bitmapview.c:1803 charview.c:8928 fontview.c:5248 metricsview.c:2721
+#: bitmapview.c:1803 charview.c:9050 fontview.c:5267 metricsview.c:2969
 msgid "New Metrics Window|Ctl+K"
 msgstr "Cmd+K"
 
-#: bitmapview.c:1805 charview.c:8930 fontview.c:5250 metricsview.c:2723
+#: bitmapview.c:1805 charview.c:9052 fontview.c:5269 metricsview.c:2971
 msgid "Warnings|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1836 charview.c:8962 fontview.c:4147 metricsview.c:2758
+#: bitmapview.c:1836 charview.c:9084 fontview.c:4165 metricsview.c:3006
 msgid "New|Ctl+N"
 msgstr "Cmd+N"
 
-#: bitmapview.c:1837 charview.c:8963 fontview.c:4151 metricsview.c:2759
+#: bitmapview.c:1837 charview.c:9085 fontview.c:4169 metricsview.c:3007
 msgid "Open|Ctl+O"
 msgstr "Cmd+O"
 
-#: bitmapview.c:1839 charinfo.c:3821 charview.c:8965 contextchain.c:1955
-#: contextchain.c:1983 displayfonts.c:1518 fontinfo.c:3099 fontview.c:4154
-#: kernclass.c:1839 kernclass.c:1868 math.c:807 math.c:1100 metricsview.c:2761
+#: bitmapview.c:1839 charinfo.c:3819 charview.c:9087 contextchain.c:1956
+#: contextchain.c:1984 displayfonts.c:1519 fontinfo.c:3099 fontview.c:4172
+#: kernclass.c:1839 kernclass.c:1868 math.c:807 math.c:1101 metricsview.c:3009
 #: mmdlg.c:957
 msgid "Close|Ctl+Shft+Q"
 msgstr "Cmd+Shft+Q"
 
-#: bitmapview.c:1841 charview.c:8968 fontview.c:4156 metricsview.c:2763
-#: ../gdraw/gtextfield.c:1472
+#: bitmapview.c:1841 charview.c:9090 fontview.c:4174 metricsview.c:3011
+#: ../gdraw/gtextfield.c:1575
 msgid "Save|Ctl+S"
 msgstr "Cmd+S"
 
-#: bitmapview.c:1842 charview.c:8969 fontview.c:4157 metricsview.c:2764
+#: bitmapview.c:1842 charview.c:9091 fontview.c:4175 metricsview.c:3012
 msgid "Save as...|Ctl+Shft+S"
 msgstr "Cmd+Shft+S"
 
-#: bitmapview.c:1843 charview.c:8970 fontview.c:4159 metricsview.c:2765
+#: bitmapview.c:1843 charview.c:9092 fontview.c:4177 metricsview.c:3013
 msgid "Generate Fonts...|Ctl+Shft+G"
 msgstr "Cmd+Shft+G"
 
-#: bitmapview.c:1844 charview.c:8971 fontview.c:4160 metricsview.c:2766
+#: bitmapview.c:1844 charview.c:9093 fontview.c:4178 metricsview.c:3014
 msgid "Generate Mac Family...|Alt+Ctl+G"
 msgstr "Alt+Cmd+G"
 
-#: bitmapview.c:1845 charview.c:8972
+#: bitmapview.c:1845 charview.c:9094
 msgid "Export...|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1847 charview.c:8974 fontview.c:4162
-#: ../gdraw/gtextfield.c:1475
+#: bitmapview.c:1847 charview.c:9096 fontview.c:4180
+#: ../gdraw/gtextfield.c:1578
 msgid "Import...|Ctl+Shft+I"
 msgstr "Cmd+Shft+I"
 
-#: bitmapview.c:1848 charview.c:8975 fontview.c:4164
+#: bitmapview.c:1848 charview.c:9097 fontview.c:4182
 msgid "Revert File|Ctl+Shft+R"
 msgstr "Cmd+Shft+R"
 
-#: bitmapview.c:1850 charview.c:8984 fontview.c:4181 metricsview.c:2772
+#: bitmapview.c:1850 charview.c:9106 fontview.c:4199 metricsview.c:3020
 msgid "Preferences...|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1852 charinfo.c:3819 charview.c:8986 contextchain.c:1952
-#: contextchain.c:1980 displayfonts.c:1515 fontinfo.c:3096 fontview.c:4183
-#: kernclass.c:1836 kernclass.c:1865 math.c:805 math.c:1098 metricsview.c:2774
+#: bitmapview.c:1851 charview.c:9107 fontview.c:4200 metricsview.c:3021
+msgid "X Resource Editor...|No Shortcut"
+msgstr "No Shortcut"
+
+#: bitmapview.c:1853 charinfo.c:3817 charview.c:9109 contextchain.c:1953
+#: contextchain.c:1981 displayfonts.c:1516 fontinfo.c:3096 fontview.c:4202
+#: kernclass.c:1836 kernclass.c:1865 math.c:805 math.c:1099 metricsview.c:3023
 #: mmdlg.c:954
 msgid "Quit|Ctl+Q"
 msgstr "Cmd+Q"
 
-#: bitmapview.c:1857 charview.c:9015 fontview.c:4236 metricsview.c:2779
-#: ../gdraw/gtextfield.c:1468
+#: bitmapview.c:1858 charview.c:9138 fontview.c:4255 metricsview.c:3028
+#: ../gdraw/gtextfield.c:1571
 msgid "Undo|Ctl+Z"
 msgstr "Cmd+Z"
 
-#: bitmapview.c:1858 charview.c:9016 fontview.c:4237 metricsview.c:2780
+#: bitmapview.c:1859 charview.c:9139 fontview.c:4256 metricsview.c:3029
 msgid "Redo|Ctl+Y"
 msgstr "Cmd+Y"
 
-#: bitmapview.c:1860 charview.c:9018 fontview.c:4239 metricsview.c:2782
-#: ../gdraw/gtextfield.c:1464
+#: bitmapview.c:1861 charview.c:9141 fontview.c:4258 metricsview.c:3031
+#: ../gdraw/gtextfield.c:1567
 msgid "Cut|Ctl+X"
 msgstr "Cmd+X"
 
-#: bitmapview.c:1861 charview.c:9019 fontview.c:4240 metricsview.c:2783
-#: ../gdraw/gtextfield.c:1458
+#: bitmapview.c:1862 charview.c:9142 fontview.c:4259 metricsview.c:3032
+#: ../gdraw/gtextfield.c:1561
 msgid "Copy|Ctl+C"
 msgstr "Cmd+C"
 
-#: bitmapview.c:1862 charview.c:9025 fontview.c:4247 metricsview.c:2789
-#: ../gdraw/gtextfield.c:1460
+#: bitmapview.c:1863 charview.c:9148 fontview.c:4266 metricsview.c:3038
+#: ../gdraw/gtextfield.c:1563
 msgid "Paste|Ctl+V"
 msgstr "Cmd+V"
 
-#: bitmapview.c:1863 charview.c:9026
+#: bitmapview.c:1864 charview.c:9149
 msgid "Clear|Delete"
 msgstr "Delete"
 
-#: bitmapview.c:1865 charview.c:8991 fontview.c:4211 metricsview.c:2793
-#: ../gdraw/gtextfield.c:1455
+#: bitmapview.c:1866 charview.c:9114 fontview.c:4230 metricsview.c:3042
+#: ../gdraw/gtextfield.c:1558
 msgid "Select All|Ctl+A"
 msgstr "Cmd+A"
 
-#: bitmapview.c:1867 charview.c:9039 fontview.c:4268
+#: bitmapview.c:1868 charview.c:9162 fontview.c:4287
 msgid "Remove Undoes|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1872
+#: bitmapview.c:1873
 msgid "Flip Horizontally|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1873
+#: bitmapview.c:1874
 msgid "Flip Vertically|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1874
+#: bitmapview.c:1875
 msgid "Rotate 90 CW|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1875
+#: bitmapview.c:1876
 msgid "Rotate 90 CCW|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1876
+#: bitmapview.c:1877
 msgid "Rotate 180|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1877
+#: bitmapview.c:1878
 msgid "Skew...|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1882 charview.c:9220 fontview.c:4370 metricsview.c:2850
+#: bitmapview.c:1883 charview.c:9343 fontview.c:4389 metricsview.c:3099
 msgid "Font Info...|Ctl+Shft+F"
 msgstr "Cmd+Shft+F"
 
-#: bitmapview.c:1883 fontview.c:4371 metricsview.c:2851
+#: bitmapview.c:1884 fontview.c:4390 metricsview.c:3100
 msgid "Glyph Info...|Ctl+I"
 msgstr "Cmd+I"
 
-#: bitmapview.c:1884 fontview.c:4352
+#: bitmapview.c:1885 fontview.c:4371
 msgid "BDF Info...|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1886 fontview.c:4375 metricsview.c:2855
+#: bitmapview.c:1887 fontview.c:4394 metricsview.c:3104
 msgid "Bitmap Strikes Available...|Ctl+Shft+B"
 msgstr "Cmd+Shft+B"
 
-#: bitmapview.c:1887 charview.c:9227 fontview.c:4376 metricsview.c:2856
+#: bitmapview.c:1888 charview.c:9350 fontview.c:4395 metricsview.c:3105
 msgid "Regenerate Bitmap Glyphs...|Ctl+B"
 msgstr "Cmd+B"
 
-#: bitmapview.c:1888
+#: bitmapview.c:1889
 msgid "Remove This Glyph|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1895 charview.c:9343
+#: bitmapview.c:1896 charview.c:9468
 msgid "Tools|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1896 charview.c:9344
+#: bitmapview.c:1897 charview.c:9469
 msgid "Layers|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1897
+#: bitmapview.c:1898
 msgid "Shades|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1899 charview.c:9346
+#: bitmapview.c:1900 charview.c:9471
 msgid "Docked Palettes|No Shortcut"
 msgstr "No Shortcut"
 
-#: bitmapview.c:1904 charview.c:9467
+#: bitmapview.c:1905 charview.c:9592
 msgid "Fit|Ctl+F"
 msgstr "Cmd+F"
 
-#: bitmapview.c:1905 charview.c:9468 metricsview.c:2990
+#: bitmapview.c:1906 charview.c:9593 metricsview.c:3239
 msgid "Zoom out|Alt+Ctl+-"
 msgstr "Alt+Cmd+-"
 
-#: bitmapview.c:1906 charview.c:9469 metricsview.c:2991
+#: bitmapview.c:1907 charview.c:9594 metricsview.c:3240
 msgid "Zoom in|Alt+Ctl+Shft++"
 msgstr "Alt+Cmd+Shft++"
 
-#: bitmapview.c:1908 charview.c:9475 fontview.c:4896 metricsview.c:2996
+#: bitmapview.c:1909 charview.c:9600 fontview.c:4915 metricsview.c:3245
 msgid "Next Glyph|Ctl+]"
 msgstr "Cmd+]"
 
-#: bitmapview.c:1909 charview.c:9476 fontview.c:4897 metricsview.c:2997
+#: bitmapview.c:1910 charview.c:9601 fontview.c:4916 metricsview.c:3246
 msgid "Prev Glyph|Ctl+["
 msgstr "Cmd+["
 
-#: bitmapview.c:1910 charview.c:9477 fontview.c:4898 metricsview.c:2998
+#: bitmapview.c:1911 charview.c:9602 fontview.c:4917 metricsview.c:3247
 msgid "Next Defined Glyph|Alt+Ctl+]"
 msgstr "Alt+Cmd+]"
 
-#: bitmapview.c:1911 charview.c:9478 fontview.c:4899 metricsview.c:2999
+#: bitmapview.c:1912 charview.c:9603 fontview.c:4918 metricsview.c:3248
 msgid "Prev Defined Glyph|Alt+Ctl+["
 msgstr "Alt+Cmd+["
 
-#: bitmapview.c:1912 charview.c:9480 fontview.c:4900
+#: bitmapview.c:1913 charview.c:9605 fontview.c:4919
 msgid "Goto|Ctl+Shft+>"
 msgstr "Cmd+Shft+>"
 
-#: bitmapview.c:1913 charview.c:9481 metricsview.c:3000
+#: bitmapview.c:1914 charview.c:9606 metricsview.c:3249
 msgid "Find In Font View|Ctl+Shft+<"
 msgstr "Cmd+Shft+<"
 
-#: bitmapview.c:1915
+#: bitmapview.c:1916
 msgid "Bigger Pixel Size|Ctl+Shft++"
 msgstr "Cmd+Shft++"
 
-#: bitmapview.c:1916
+#: bitmapview.c:1917
 msgid "Smaller Pixel Size|Ctl+-"
 msgstr "Cmd+-"
 
-#: bitmapview.c:1923 charview.c:9330 fontview.c:5086
+#: bitmapview.c:1924 charview.c:9455 fontview.c:5105
 msgid "Set Width...|Ctl+Shft+L"
 msgstr "Cmd+Shft+L"
 
-#: bitmapview.c:1924
+#: bitmapview.c:1925
 msgid "Set Vertical Width...|Ctl+Shft+L"
 msgstr "Cmd+Shft+L"
 
-#: charview.c:8966
+#: charview.c:9088
 msgid "Close Tab|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:8976 fontview.c:4166
+#: charview.c:9098 fontview.c:4184
 msgid "Revert Glyph|Alt+Ctl+R"
 msgstr "Alt+Cmd+R"
 
-#: charview.c:8978 fontview.c:4168 metricsview.c:2770
+#: charview.c:9100 fontview.c:4186 metricsview.c:3018
 msgid "Print...|Ctl+P"
 msgstr "Cmd+P"
 
-#: charview.c:8981 fontview.c:4171 fontview.c:4173
+#: charview.c:9103 fontview.c:4189 fontview.c:4191
 msgid "Execute Script...|Ctl+."
 msgstr "Cmd+."
 
-#: charview.c:8992 fontview.c:4212
+#: charview.c:9115 fontview.c:4231
 msgid "Invert Selection|Ctl+Escape"
 msgstr "Cmd+Escape"
 
-#: charview.c:8993 fontview.c:4213
+#: charview.c:9116 fontview.c:4232
 msgid "Deselect All|Escape"
 msgstr "Escape"
 
-#: charview.c:8995
+#: charview.c:9118
 msgid "First Point|Ctl+."
 msgstr "Cmd+."
 
-#: charview.c:8996
+#: charview.c:9119
 msgid "First Point, Next Contour|Alt+Ctl+."
 msgstr "Alt+Cmd+."
 
-#: charview.c:8997
+#: charview.c:9120
 msgid "Next Point|Ctl+Shft+}"
 msgstr "Cmd+Shft+}"
 
-#: charview.c:8998
+#: charview.c:9121
 msgid "Prev Point|Ctl+Shft+{"
 msgstr "Cmd+Shft+{"
 
-#: charview.c:8999
+#: charview.c:9122
 msgid "Next Control Point|Ctl+;"
 msgstr "Cmd+;"
 
-#: charview.c:9000
+#: charview.c:9123
 msgid "Prev Control Point|Ctl+Shft+:"
 msgstr "Cmd+Shft+:"
 
-#: charview.c:9001
+#: charview.c:9124
 msgid "Points on Selected Contours|Alt+Ctl+,"
 msgstr "Alt+Cmd+,"
 
-#: charview.c:9002
+#: charview.c:9125
 msgid "Point At|Ctl+,"
 msgstr "Cmd+,"
 
-#: charview.c:9004
+#: charview.c:9127
 msgid "Select All Points & Refs|Alt+Ctl+A"
 msgstr "Alt+Cmd+A"
 
-#: charview.c:9005
+#: charview.c:9128
 msgid "Select Open Contours|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9006
+#: charview.c:9129
 msgid "Select Anchors|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9007
+#: charview.c:9130
 msgid "Width|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9008
+#: charview.c:9131
 msgid "VWidth|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9010
+#: charview.c:9133
 msgid "Select Points Affected by HM|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9020 fontview.c:4241 metricsview.c:2784
+#: charview.c:9143 fontview.c:4260 metricsview.c:3033
 msgid "Copy Reference|Ctl+G"
 msgstr "Cmd+G"
 
-#: charview.c:9021 fontview.c:4242
+#: charview.c:9144 fontview.c:4261
 msgid "Copy Lookup Data|Alt+Ctl+C"
 msgstr "Alt+Cmd+C"
 
-#: charview.c:9022 fontview.c:4243 metricsview.c:2785
+#: charview.c:9145 fontview.c:4262 metricsview.c:3034
 msgid "Copy Width|Ctl+W"
 msgstr "Cmd+W"
 
-#: charview.c:9023 fontview.c:4245 metricsview.c:2787
+#: charview.c:9146 fontview.c:4264 metricsview.c:3036
 msgid "Copy LBearing|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9024 fontview.c:4246 metricsview.c:2788
+#: charview.c:9147 fontview.c:4265 metricsview.c:3037
 msgid "Copy RBearing|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9027 fontview.c:4254
+#: charview.c:9150 fontview.c:4273
 msgid "Clear Background|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9028
+#: charview.c:9151
 msgid "Merge|Ctl+M"
 msgstr "Cmd+M"
 
-#: charview.c:9030 fontview.c:4257 metricsview.c:2791
+#: charview.c:9153 fontview.c:4276 metricsview.c:3040
 msgid "Join|Ctl+Shft+J"
 msgstr "Cmd+Shft+J"
 
-#: charview.c:9031 fontview.c:4255
+#: charview.c:9154 fontview.c:4274
 msgid "Copy Fg To Bg|Ctl+Shft+C"
 msgstr "Cmd+Shft+C"
 
-#: charview.c:9032
+#: charview.c:9155
 msgid "Copy Layer To Layer...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9033
+#: charview.c:9156
 msgid "Copy Grid Fit|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9037 fontview.c:4264 metricsview.c:2795
+#: charview.c:9160 fontview.c:4283 metricsview.c:3044
 msgid "Unlink Reference|Ctl+U"
 msgstr "Cmd+U"
 
-#: charview.c:9044
+#: charview.c:9167
 msgid "Curve|Ctl+2"
 msgstr "Cmd+2"
 
-#: charview.c:9045
+#: charview.c:9168
 msgid "HVCurve|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9046 charview.c:9073
+#: charview.c:9169 charview.c:9196
 msgid "Corner|Ctl+3"
 msgstr "Cmd+3"
 
-#: charview.c:9047
+#: charview.c:9170
 msgid "Tangent|Ctl+4"
 msgstr "Cmd+4"
 
-#: charview.c:9050 charview.c:9078
+#: charview.c:9173 charview.c:9201
 msgid "Make First|Ctl+1"
 msgstr "Cmd+1"
 
-#: charview.c:9052
+#: charview.c:9175
 msgid "Can Be Interpolated|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9053
+#: charview.c:9176
 msgid "Can't Be Interpolated|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9054
+#: charview.c:9177
 msgid "Center Between Control Points|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9056 charview.c:9080
+#: charview.c:9179 charview.c:9203
 msgid "Add Anchor|Ctl+0"
 msgstr "Cmd+0"
 
-#: charview.c:9058
+#: charview.c:9181
 msgid "Acceptable Extrema|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9060
+#: charview.c:9183
 msgid "Make Line|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9061
+#: charview.c:9184
 msgid "Make Arc|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9062
+#: charview.c:9185
 msgid "Insert Point On Spline At...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9063 charview.c:9082
+#: charview.c:9186 charview.c:9205
 msgid "Name Contour|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9065
+#: charview.c:9188
 msgid "Make Clip Path|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9071
+#: charview.c:9194
 msgid "G4 Curve|Ctl+2"
 msgstr "Cmd+2"
 
-#: charview.c:9072
+#: charview.c:9195
 msgid "G2 Curve|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9074
+#: charview.c:9197
 msgid "Prev Constraint|Ctl+4"
 msgstr "Cmd+4"
 
-#: charview.c:9075
+#: charview.c:9198
 msgid "Next Constraint|Ctl+5"
 msgstr "Cmd+5"
 
-#: charview.c:9088
+#: charview.c:9211
 msgid "Average Points|Ctl+Shft+@"
 msgstr "Cmd+Shft+@"
 
-#: charview.c:9089
+#: charview.c:9212
 msgid "Space Points|Ctl+Shft+#"
 msgstr "Cmd+Shft+#"
 
-#: charview.c:9090
+#: charview.c:9213
 msgid "Space Regions...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9092
+#: charview.c:9215
 msgid "Make Parallel...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9097 fontview.c:4273 metricsview.c:2800
+#: charview.c:9220 fontview.c:4292 metricsview.c:3049
 msgid "Simplify|Ctl+Shft+M"
 msgstr "Cmd+Shft+M"
 
-#: charview.c:9098 fontview.c:4274 metricsview.c:2801
+#: charview.c:9221 fontview.c:4293 metricsview.c:3050
 msgid "Simplify More...|Alt+Ctl+Shft+M"
 msgstr "Alt+Cmd+Shft+M"
 
-#: charview.c:9099 fontview.c:4275 metricsview.c:2802
+#: charview.c:9222 fontview.c:4294 metricsview.c:3051
 msgid "Cleanup Glyph|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9100 fontview.c:4276
+#: charview.c:9223 fontview.c:4295
 msgid "Canonical Start Point|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9101 fontview.c:4277
+#: charview.c:9224 fontview.c:4296
 msgid "Canonical Contours|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9129
+#: charview.c:9252
 msgid "First|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9130
+#: charview.c:9253
 msgid "Earlier|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9131
+#: charview.c:9254
 msgid "Later|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9132
+#: charview.c:9255
 msgid "Last|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9171 fontview.c:4282 metricsview.c:2807
+#: charview.c:9294 fontview.c:4301 metricsview.c:3056
 msgid "Remove Overlap|Ctl+Shft+O"
 msgstr "Cmd+Shft+O"
 
-#: charview.c:9172 fontview.c:4283 metricsview.c:2808
+#: charview.c:9295 fontview.c:4302 metricsview.c:3057
 msgid "Intersect|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9173
+#: charview.c:9296
 msgid "Exclude|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9174 fontview.c:4284 metricsview.c:2809
+#: charview.c:9297 fontview.c:4303 metricsview.c:3058
 msgid "Find Intersections|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9179 fontview.c:4289
+#: charview.c:9302 fontview.c:4308
 msgid "Change Weight...|Ctl+Shft+!"
 msgstr "Cmd+Shft+!"
 
-#: charview.c:9180 fontview.c:4290
+#: charview.c:9303 fontview.c:4309
 msgid "Italic...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9181 fontview.c:4291
+#: charview.c:9304 fontview.c:4310
 msgid "Oblique...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9182 fontview.c:4292
+#: charview.c:9305 fontview.c:4311
 msgid "Condense...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9183 fontview.c:4293
+#: charview.c:9306 fontview.c:4312
 msgid "Change XHeight...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9184 fontview.c:4294
+#: charview.c:9307 fontview.c:4313
 msgid "Change Glyph...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9186 fontview.c:4299 metricsview.c:2814
+#: charview.c:9309 fontview.c:4318 metricsview.c:3063
 msgid "Inline|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9187 fontview.c:4300 metricsview.c:2815 metricsview.c:3011
+#: charview.c:9310 fontview.c:4319 metricsview.c:3064 metricsview.c:3265
 msgid "Outline|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9188 fontview.c:4301 metricsview.c:2816
+#: charview.c:9311 fontview.c:4320 metricsview.c:3065
 msgid "Shadow|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9189 fontview.c:4302 metricsview.c:2817
+#: charview.c:9312 fontview.c:4321 metricsview.c:3066
 msgid "Wireframe|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9194 fontview.c:4307 metricsview.c:2822
+#: charview.c:9317 fontview.c:4326 metricsview.c:3071
 msgid "Build Accented Glyph|Ctl+Shft+A"
 msgstr "Cmd+Shft+A"
 
-#: charview.c:9195 fontview.c:4308 metricsview.c:2823
+#: charview.c:9318 fontview.c:4327 metricsview.c:3072
 msgid "Build Composite Glyph|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9200 fontview.c:4318
+#: charview.c:9323 fontview.c:4337
 msgid "References...|Alt+Ctl+I"
 msgstr "Alt+Cmd+I"
 
-#: charview.c:9201 fontview.c:4319
+#: charview.c:9324 fontview.c:4338
 msgid "Substitutions...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9206 fontview.c:4324 metricsview.c:2858
+#: charview.c:9329 fontview.c:4343 metricsview.c:3107
 msgid "Transform...|Ctl+\\"
 msgstr "Cmd+\\"
 
-#: charview.c:9207 fontview.c:4325
+#: charview.c:9330 fontview.c:4344
 msgid "Point of View Projection...|Ctl+Shft+<"
 msgstr "Cmd+Shft+<"
 
-#: charview.c:9208 fontview.c:4326
+#: charview.c:9331 fontview.c:4345
 msgid "Non Linear Transform...|Ctl+Shft+|"
 msgstr ""
 
-#: charview.c:9213 fontview.c:4331 metricsview.c:2866
+#: charview.c:9336 fontview.c:4350 metricsview.c:3115
 msgid "To Int|Ctl+Shft+_"
 msgstr "Cmd+Shft+_"
 
-#: charview.c:9214 fontview.c:4332
+#: charview.c:9337 fontview.c:4351
 msgid "To Hundredths|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9215 fontview.c:4333
+#: charview.c:9338 fontview.c:4352
 msgid "Cluster|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9221
+#: charview.c:9344
 msgid "Glyph Info...|Alt+Ctl+Shft+I"
 msgstr "Alt+Cmd+Shft+I"
 
-#: charview.c:9222
+#: charview.c:9345
 msgid "Get Info...|Ctl+I"
 msgstr "Cmd+I"
 
-#: charview.c:9224 fontview.c:4362 metricsview.c:2853
+#: charview.c:9347 fontview.c:4381 metricsview.c:3102
 msgid "Find Problems...|Ctl+E"
 msgstr "Cmd+E"
 
-#: charview.c:9226
+#: charview.c:9349
 msgid "Bitmap strikes Available...|Ctl+Shft+B"
 msgstr "Cmd+Shft+B"
 
-#: charview.c:9228 fontview.c:4377
+#: charview.c:9351 fontview.c:4396
 msgid "Remove Bitmap Glyphs...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9231
+#: charview.c:9354
 msgid "Transformations|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9232 fontview.c:4381 metricsview.c:2859
+#: charview.c:9355 fontview.c:4400 metricsview.c:3108
 msgid "Expand Stroke...|Ctl+Shft+E"
 msgstr "Cmd+Shft+E"
 
-#: charview.c:9234 fontview.c:4383 metricsview.c:2861
+#: charview.c:9357 fontview.c:4402 metricsview.c:3110
 msgid "Tile Path...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9235 fontview.c:4384
+#: charview.c:9358 fontview.c:4403
 msgid "Tile Pattern...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9239 fontview.c:4388 metricsview.c:2865
+#: charview.c:9362 fontview.c:4407 metricsview.c:3114
 msgid "Add Extrema|Ctl+Shft+X"
 msgstr "Cmd+Shft+X"
 
-#: charview.c:9240 fontview.c:4390 metricsview.c:2868
+#: charview.c:9363 fontview.c:4409 metricsview.c:3117
 msgid "Autotrace|Ctl+Shft+T"
 msgstr "Cmd+Shft+T"
 
-#: charview.c:9246
+#: charview.c:9369 charview.c:9370 charview.c:9371
 msgid "Clockwise|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9247
+#: charview.c:9372
 msgid "Counter Clockwise|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9248 fontview.c:4392 metricsview.c:2870
+#: charview.c:9373 fontview.c:4411 metricsview.c:3119
 msgid "Correct Direction|Ctl+Shft+D"
 msgstr "Cmd+Shft+D"
 
-#: charview.c:9250
+#: charview.c:9375
 msgid "Insert Text Outlines|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9254 fontview.c:4399
+#: charview.c:9379 fontview.c:4418
 msgid "Compare Layers...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9259 fontview.c:5062
+#: charview.c:9384 fontview.c:5081
 msgid "AutoHint|Ctl+Shft+H"
 msgstr "Cmd+Shft+H"
 
-#: charview.c:9260 fontview.c:5063
+#: charview.c:9385 fontview.c:5082
 msgid "Hint Substitution Pts|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9261 fontview.c:5064
+#: charview.c:9386 fontview.c:5083
 msgid "Auto Counter Hint|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9262 fontview.c:5065
+#: charview.c:9387 fontview.c:5084
 msgid "Don't AutoHint|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9264 fontview.c:5067
+#: charview.c:9389 fontview.c:5086
 msgid "AutoInstr|Ctl+T"
 msgstr "Cmd+T"
 
-#: charview.c:9265 fontview.c:5068
+#: charview.c:9390 fontview.c:5087
 msgid "Edit Instructions...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9266
+#: charview.c:9391
 msgid "Debug...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9268
+#: charview.c:9393
 msgid "Clear HStem|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9269
+#: charview.c:9394
 msgid "Clear VStem|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9270
+#: charview.c:9395
 msgid "Clear DStem|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9271 fontview.c:5077
+#: charview.c:9396 fontview.c:5096
 msgid "Clear Instructions|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9273
+#: charview.c:9398
 msgid "Add HHint|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9274
+#: charview.c:9399
 msgid "Add VHint|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9275
+#: charview.c:9400
 msgid "Add DHint|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9276
+#: charview.c:9401
 msgid "Create HHint...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9277
+#: charview.c:9402
 msgid "Create VHint...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9279
+#: charview.c:9404
 msgid "Review Hints...|Alt+Ctl+H"
 msgstr "Alt+Cmd+H"
 
-#: charview.c:9328 fontview.c:5084 metricsview.c:3049
+#: charview.c:9453 fontview.c:5103 metricsview.c:3303
 msgid "Center in Width|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9329 fontview.c:5085 metricsview.c:3050
+#: charview.c:9454 fontview.c:5104 metricsview.c:3304
 msgid "Thirds in Width|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9331 fontview.c:5087
+#: charview.c:9456 fontview.c:5106
 msgid "Set LBearing...|Ctl+L"
 msgstr "Cmd+L"
 
-#: charview.c:9332 fontview.c:5088
+#: charview.c:9457 fontview.c:5107
 msgid "Set RBearing...|Ctl+R"
 msgstr "Cmd+R"
 
-#: charview.c:9334 fontview.c:5090
+#: charview.c:9459 fontview.c:5109
 msgid "Set Vertical Advance...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9336
+#: charview.c:9461
 msgid "Remove Kern Pairs|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9337
+#: charview.c:9462
 msgid "Remove VKern Pairs|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9338 fontview.c:5096 metricsview.c:3057
+#: charview.c:9463 fontview.c:5115 metricsview.c:3311
 msgid "Kern Pair Closeup...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9351
+#: charview.c:9476
 msgid "Detach|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9410 fontview.c:4420 metricsview.c:2893
+#: charview.c:9535 fontview.c:4439 metricsview.c:3142
 msgid "Kern Pairs|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9411 fontview.c:4421 metricsview.c:2894
+#: charview.c:9536 fontview.c:4440 metricsview.c:3143
 msgid "Anchored Pairs|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9414 fontview.c:4422 metricsview.c:2895
+#: charview.c:9539 fontview.c:4441 metricsview.c:3144
 msgid "Ligatures|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9419 charview.c:9509
+#: charview.c:9544 charview.c:9634
 msgid "None|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9420
+#: charview.c:9545
 msgid "TrueType|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9421
+#: charview.c:9546
 msgid "PostScript|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9422
+#: charview.c:9547
 msgid "SVG|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9427
+#: charview.c:9552
 msgid "Show Grid Fit...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9428
+#: charview.c:9553 metricsview.c:3262
 msgid "Bigger Point Size|Ctl+Shft++"
 msgstr "Cmd+Shft++"
 
-#: charview.c:9429
+#: charview.c:9554 metricsview.c:3263
 msgid "Smaller Point Size|Ctl+-"
 msgstr "Cmd+-"
 
-#: charview.c:9430
+#: charview.c:9555
 msgid "Grid Fit Anti Alias|Ctl+="
 msgstr "Cmd+="
 
-#: charview.c:9431
+#: charview.c:9556
 msgid "Grid Fit Off|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9436
+#: charview.c:9561
 msgid "Points|Ctl+D"
 msgstr "Cmd+D"
 
-#: charview.c:9437
+#: charview.c:9562
 msgid "Control Point Info|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9438
+#: charview.c:9563
 msgid "Extrema|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9439
+#: charview.c:9564
 msgid "Points of Inflection|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9440
+#: charview.c:9565
 msgid "Almost Horizontal/Vertical Lines|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9441
+#: charview.c:9566
 msgid "Almost Horizontal/Vertical Curves|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9442
+#: charview.c:9567
 msgid "(Define \"Almost\")|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9443
+#: charview.c:9568
 msgid "Side Bearings|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9444
+#: charview.c:9569
 msgid "Reference Names|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9445
+#: charview.c:9570
 msgid "Fill|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9448
+#: charview.c:9573
 msgid "Glyph Tabs|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9449
+#: charview.c:9574
 msgid "Rulers|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9451
+#: charview.c:9576
 msgid "Horizontal Hints|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9452
+#: charview.c:9577
 msgid "Vertical Hints|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9453
+#: charview.c:9578
 msgid "Diagonal Hints|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9454 fontview.c:5057
+#: charview.c:9579 fontview.c:5076
 msgid "BlueValues|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9455
+#: charview.c:9580
 msgid "Family Blues|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9457
+#: charview.c:9582
 msgid "Anchors|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9459
+#: charview.c:9584
 msgid "Hori_zontal Metric Lines|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9460
+#: charview.c:9585
 msgid "Vertical Metric Lines|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9462
+#: charview.c:9587
 msgid "Snap Outlines to Pixel Grid|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9472
+#: charview.c:9597
 msgid "Display Compositions...|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9479
+#: charview.c:9604
 msgid "Former Glyph|Ctl+Shft+<"
 msgstr "Cmd+Shft+<"
 
-#: charview.c:9508 fontview.c:4404 metricsview.c:2877
+#: charview.c:9633 fontview.c:4423 metricsview.c:3126
 msgid "All|No Shortcut"
 msgstr "No Shortcut"
 
-#: charview.c:9577
+#: charview.c:9702
 msgid "MM Reblend|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontinfo.c:3093 fontview.c:4158
+#: fontinfo.c:3093 fontview.c:4176
 msgid "Save All|Alt+Ctl+S"
 msgstr "Alt+Cmd+S"
 
-#: fontview.c:4055
+#: fontview.c:4073
 msgid "New Composition...|Ctl+Shft+N"
 msgstr "Cmd+Shft+N"
 
-#: fontview.c:4056
+#: fontview.c:4074
 msgid "Modify Composition...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4058
+#: fontview.c:4076
 msgid "Build Syllables|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4163
+#: fontview.c:4181
 msgid "Merge Kern Info...|Alt+Ctl+Shft+K"
 msgstr "Alt+Cmd+Shft+K"
 
-#: fontview.c:4165
+#: fontview.c:4183
 msgid "Revert To Backup|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4176
+#: fontview.c:4194
 msgid "Script Menu|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4188
+#: fontview.c:4207
 msgid "All Fonts|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4189
+#: fontview.c:4208
 msgid "Displayed Font|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4191
+#: fontview.c:4210
 msgid "Glyph Metadata|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4193
+#: fontview.c:4212
 msgid "TrueType Instructions|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4198 fontview.c:4338
+#: fontview.c:4217 fontview.c:4357
 msgid "Color Choose|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4199 fontview.c:4339
+#: fontview.c:4218 fontview.c:4358
 msgid "Default|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4215
+#: fontview.c:4234
 msgid "Select by Color|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4216
+#: fontview.c:4235
 msgid "Select by Wildcard...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4217
+#: fontview.c:4236
 msgid "Select by Script...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4219
+#: fontview.c:4238
 msgid "Glyphs Worth Outputting|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4220
+#: fontview.c:4239
 msgid "Glyphs with only References|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4221
+#: fontview.c:4240
 msgid "Glyphs with only Splines|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4222
+#: fontview.c:4241
 msgid "Glyphs with both|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4223
+#: fontview.c:4242
 msgid "Whitespace Glyphs|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4224
+#: fontview.c:4243
 msgid "Changed Glyphs|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4225
+#: fontview.c:4244
 msgid "Hinting Needed|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4226
+#: fontview.c:4245
 msgid "Autohintable|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4231
+#: fontview.c:4250
 msgid "Select By Lookup Subtable...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4244 metricsview.c:2786
+#: fontview.c:4263 metricsview.c:3035
 msgid "Copy VWidth|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4248
+#: fontview.c:4267
 msgid "Paste Into|Ctl+Shft+V"
 msgstr "Cmd+Shft+V"
 
-#: fontview.c:4250
+#: fontview.c:4269
 msgid "Paste After|Alt+Ctl+Shft+V"
 msgstr "Alt+Cmd+Shft+V"
 
-#: fontview.c:4252
+#: fontview.c:4271
 msgid "Same Glyph As|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4253 metricsview.c:2790
+#: fontview.c:4272 metricsview.c:3039
 msgid "Clear|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4256
+#: fontview.c:4275
 msgid "Copy Layer To Layer|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4260
+#: fontview.c:4279
 msgid "Find / Replace...|Alt+Ctl+F"
 msgstr "Alt+Cmd+F"
 
-#: fontview.c:4261
+#: fontview.c:4280
 msgid "Replace with Reference|Alt+Ctl+Shft+F"
 msgstr "Alt+Cmd+Shft+F"
 
-#: fontview.c:4262
+#: fontview.c:4281
 msgid "Correct References|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4296
+#: fontview.c:4315
 msgid "Add Small Caps...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4297
+#: fontview.c:4316
 msgid "Add Subscripts/Superscripts...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4309
+#: fontview.c:4328
 msgid "Build Duplicate Glyph|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4351
+#: fontview.c:4370
 msgid "MATH Info...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4353
+#: fontview.c:4372
 msgid "Horizontal Baselines...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4354
+#: fontview.c:4373
 msgid "Vertical Baselines...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4356
+#: fontview.c:4375
 msgid "Mass Glyph Rename...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4357
+#: fontview.c:4376
 msgid "Set Color|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4363
+#: fontview.c:4382
 msgid "Validate...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4365
+#: fontview.c:4384
 msgid "Set Extremum bound...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4396
+#: fontview.c:4415
 msgid "Merge Fonts...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4397
+#: fontview.c:4416
 msgid "Interpolate Fonts...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4398
+#: fontview.c:4417
 msgid "Compare Fonts...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4465
+#: fontview.c:4484
 msgid "Glyph Image|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4466
+#: fontview.c:4485
 msgid "Name|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4467
+#: fontview.c:4486
 msgid "Unicode|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4468
+#: fontview.c:4487
 msgid "Encoding Hex|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4797
+#: fontview.c:4816
 msgid "Reencode|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4798
+#: fontview.c:4817
 msgid "Compact|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4799
+#: fontview.c:4818
 msgid "Force Encoding|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4801
+#: fontview.c:4820
 msgid "Add Encoding Slots...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4802
+#: fontview.c:4821
 msgid "Remove Unused Slots|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4803
+#: fontview.c:4822
 msgid "Detach Glyphs|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4804
+#: fontview.c:4823
 msgid "Detach & Remove Glyphs...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4806
+#: fontview.c:4825
 msgid "Add Encoding Name...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4807
+#: fontview.c:4826
 msgid "Load Encoding...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4808
+#: fontview.c:4827
 msgid "Make From Font...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4809
+#: fontview.c:4828
 msgid "Remove Encoding...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4811
+#: fontview.c:4830
 msgid "Display By Groups...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4812
+#: fontview.c:4831
 msgid "Define Groups...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4814
+#: fontview.c:4833
 msgid "Save Namelist of Font...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4815
+#: fontview.c:4834
 msgid "Load Namelist...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4816
+#: fontview.c:4835
 msgid "Rename Glyphs...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4817
+#: fontview.c:4836
 msgid "Create Named Glyphs...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4904
+#: fontview.c:4923
 msgid "Show ATT|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4905
+#: fontview.c:4924
 msgid "Display Substitutions...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4910
+#: fontview.c:4929
 msgid "Show H. Metrics...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4911
+#: fontview.c:4930
 msgid "Show V. Metrics...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:4913
+#: fontview.c:4932
 msgid "32x8 cell window|Ctl+Shft+%"
 msgstr "Cmd+Shft+%"
 
-#: fontview.c:4914
+#: fontview.c:4933
 msgid "16x4 cell window|Ctl+Shft+^"
 msgstr "Cmd+Shft+^"
 
-#: fontview.c:4915
+#: fontview.c:4934
 msgid "8x2  cell window|Ctl+Shft+*"
 msgstr "Cmd+Shft+*"
 
-#: fontview.c:4917
+#: fontview.c:4936
 msgid "24 pixel outline|Ctl+2"
 msgstr "Cmd+2"
 
-#: fontview.c:4918
+#: fontview.c:4937
 msgid "36 pixel outline|Ctl+3"
 msgstr "Cmd+3"
 
-#: fontview.c:4919
+#: fontview.c:4938
 msgid "48 pixel outline|Ctl+4"
 msgstr "Cmd+4"
 
-#: fontview.c:4920
+#: fontview.c:4939
 msgid "72 pixel outline|Ctl+7"
 msgstr "Cmd+7"
 
-#: fontview.c:4921
+#: fontview.c:4940
 msgid "96 pixel outline|Ctl+9"
 msgstr "Cmd+9"
 
-#: fontview.c:4922 metricsview.c:3007
+#: fontview.c:4941
 msgid "Anti Alias|Ctl+5"
 msgstr "Cmd+5"
 
-#: fontview.c:4923
+#: fontview.c:4942
 msgid "Fit to em|Ctl+6"
 msgstr "Cmd+6"
 
-#: fontview.c:4925
+#: fontview.c:4944
 msgid "Bitmap Magnification...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5055
+#: fontview.c:5074
 msgid "HStem|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5056
+#: fontview.c:5075
 msgid "VStem|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5069
+#: fontview.c:5088
 msgid "Edit 'fpgm'...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5070
+#: fontview.c:5089
 msgid "Edit 'prep'...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5071
+#: fontview.c:5090
 msgid "Edit 'maxp'...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5072
+#: fontview.c:5091
 msgid "Edit 'cvt '...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5073
+#: fontview.c:5092
 msgid "Remove Instr Tables|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5075
+#: fontview.c:5094
 msgid "Clear Hints|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5092
+#: fontview.c:5111
 msgid "Auto Width...|Ctl+Shft+W"
 msgstr "Cmd+Shft+W"
 
-#: fontview.c:5093
+#: fontview.c:5112
 msgid "Auto Kern...|Ctl+Shft+K"
 msgstr "Cmd+Shft+K"
 
-#: fontview.c:5094 metricsview.c:3054
+#: fontview.c:5113 metricsview.c:3308
 msgid "Kern By Classes...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5095
+#: fontview.c:5114
 msgid "Remove All Kern Pairs|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5098 metricsview.c:3055
+#: fontview.c:5117 metricsview.c:3309
 msgid "VKern By Classes...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5099 metricsview.c:3056
+#: fontview.c:5118 metricsview.c:3310
 msgid "VKern From HKern|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5100
+#: fontview.c:5119
 msgid "Remove All VKern Pairs|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5105
+#: fontview.c:5124
 msgid "Convert to CID|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5106
+#: fontview.c:5125
 msgid "Convert By CMap|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5108
+#: fontview.c:5127
 msgid "Flatten|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5109
+#: fontview.c:5128
 msgid "FlattenByCMap|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5111
+#: fontview.c:5130
 msgid "Insert Font...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5112
+#: fontview.c:5131
 msgid "Insert Blank|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5113
+#: fontview.c:5132
 msgid "Remove Font|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5115
+#: fontview.c:5134
 msgid "Change Supplement...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5116
+#: fontview.c:5135
 msgid "CID Font Info...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5183
+#: fontview.c:5202
 msgid "Create MM...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5184
+#: fontview.c:5203
 msgid "MM Validity Check|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5185
+#: fontview.c:5204
 msgid "MM Info...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5186
+#: fontview.c:5205
 msgid "Blend to New Font...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5187
+#: fontview.c:5206
 msgid "MM Change Default Weights...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5277
+#: fontview.c:5296
 msgid "Help|F1"
 msgstr "F1"
 
-#: fontview.c:5278
+#: fontview.c:5297
 msgid "Overview|Shft+F1"
 msgstr "Shft+F1"
 
-#: fontview.c:5279
+#: fontview.c:5298
 msgid "Index|Ctl+F1"
 msgstr "Cmd+F1"
 
-#: fontview.c:5280
+#: fontview.c:5299
 msgid "About...|No Shortcut"
 msgstr "No Shortcut"
 
-#: fontview.c:5281
+#: fontview.c:5300
 msgid "License...|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2768
+#: metricsview.c:3016
 msgid "Merge Kern Info...|Ctl+Shft+K"
 msgstr "Cmd+Shft+K"
 
-#: metricsview.c:2852
+#: metricsview.c:3101
 msgid "Show Dependent|Alt+Ctl+I"
 msgstr "Alt+Cmd+I"
 
-#: metricsview.c:2961
+#: metricsview.c:3210
 msgid "Show Grid|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2962
+#: metricsview.c:3211
 msgid "Partial Grid|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2963
+#: metricsview.c:3212
 msgid "Hide Grid when Moving|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2964
+#: metricsview.c:3213
 msgid "Hide Grid|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2993
+#: metricsview.c:3242
 msgid "Insert Glyph After...|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2994
+#: metricsview.c:3243
 msgid "Insert Glyph Before...|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:2995
+#: metricsview.c:3244
 msgid "Replace Glyph...|Ctl+G"
 msgstr "Cmd+G"
 
-#: metricsview.c:3009
+#: metricsview.c:3256
+msgid "Anti Alias|Ctl+="
+msgstr "Cmd+="
+
+#: metricsview.c:3258
 msgid "Vertical|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:3024
+#: metricsview.c:3260
+msgid "Size set from Window|No Shortcut"
+msgstr "No Shortcut"
+
+#: metricsview.c:3261
+msgid "Set Point Size|No Shortcut"
+msgstr "No Shortcut"
+
+#: metricsview.c:3278
 msgid "Kerning only|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:3025
+#: metricsview.c:3279
 msgid "Advance Width Only|No Shortcut"
 msgstr "No Shortcut"
 
-#: metricsview.c:3026
+#: metricsview.c:3280
 msgid "Both|No Shortcut"
 msgstr "No Shortcut"
 
-#: startui.c:1082 ../gdraw/gmenu.c:136
+#: startui.c:1081 ../gdraw/gmenu.c:167
 msgid "Flag0x10+"
 msgstr "Cmd+"
 
-#: ../gdraw/gmenu.c:132
+#: ../gdraw/gmenu.c:163
 msgid "Shft+"
 msgstr "Shft+"
 
-#: ../gdraw/gmenu.c:133
+#: ../gdraw/gmenu.c:164
 msgid "CapsLk+"
 msgstr "CapsLk+"
 
-#: ../gdraw/gmenu.c:134
+#: ../gdraw/gmenu.c:165
 msgid "Ctl+"
 msgstr "Ctl+"
 
-#: ../gdraw/gmenu.c:135
+#: ../gdraw/gmenu.c:166
 msgid "Alt+"
 msgstr "Alt+"
 
-#: ../gdraw/gmenu.c:137
+#: ../gdraw/gmenu.c:168
 msgid "Flag0x20+"
 msgstr "Flag0x20+"
 
-#: ../gdraw/gmenu.c:138
+#: ../gdraw/gmenu.c:169
 msgid "Flag0x40+"
 msgstr "Flag0x40+"
 
-#: ../gdraw/gmenu.c:139
+#: ../gdraw/gmenu.c:170
 msgid "Flag0x80+"
 msgstr "Flag0x80+"
