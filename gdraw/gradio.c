@@ -630,12 +630,22 @@ GGadget *GRadioCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GGadget *gr;
 
     gl->isradio = true;
+    gl->radiogroup = gd->u.radiogroup;
     _GCheckBoxCreate((GCheckBox *) gl,base,gd,data,&radio_box);
 
     gl->post = gl;
     if ( gd->flags & gg_rad_startnew )
 	/* Done */;
     else if ( gl->g.prev!=NULL && gl->g.prev->funcs==&gradio_funcs &&
+	    gl->radiogroup!=0 ) {
+	for ( gr=gl->g.prev; gr!=NULL; gr = gr->prev ) {
+	    if ( gr->funcs==&gradio_funcs && ((GRadio *) gr)->radiogroup == gl->radiogroup ) {
+		gl->post = ((GRadio *) gr)->post;
+		((GRadio *) gr)->post = gl;
+	break;
+	    }
+	}
+    } else if ( gl->g.prev!=NULL && gl->g.prev->funcs==&gradio_funcs &&
 	    ((GRadio *) (gl->g.prev))->isradio ) {
 	gl->post = ((GRadio *) (gl->g.prev))->post;
 	((GRadio *) (gl->g.prev))->post = gl;
