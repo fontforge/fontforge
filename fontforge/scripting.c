@@ -7252,6 +7252,113 @@ static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
     }
 }
 
+static void FigureProfile(Context *c,SplineChar *sc,int pos,int xextrema) {
+#define MAXSECT 100
+  SplineSet *spl;
+  Spline *s, *first;
+  extended ts[3];
+  int oth = !xextrema, i, j = 0, l, m;
+  double *val = NULL, temp;
+  RefChar *r;
+
+  spl = sc->layers[ly_fore].splines;
+  while ( spl!=NULL ) {
+    first = NULL;
+    for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+      if ( first==NULL ) first = s;
+      if (( xextrema &&
+            pos > s->from->me.y && pos > s->from->nextcp.y &&
+            pos > s->to->me.y && pos > s->to->prevcp.y ) ||
+            ( xextrema &&
+            pos < s->from->me.y && pos < s->from->nextcp.y &&
+            pos < s->to->me.y && pos < s->to->prevcp.y ) ||
+            ( !xextrema &&
+            pos > s->from->me.x && pos > s->from->nextcp.x &&
+            pos > s->to->me.x && pos > s->to->prevcp.x ) ||
+            ( !xextrema &&
+            pos < s->from->me.x && pos < s->from->nextcp.x &&
+            pos < s->to->me.x && pos < s->to->prevcp.x ))
+        continue;	/* can't intersect spline */
+      if ( SplineSolveFull(&s->splines[xextrema],pos,ts)==-1 )
+        continue;	/* didn't intersect */
+      for ( i=0; i<3 && ts[i]!=-1; ++i ) {
+        temp = ((s->splines[oth].a*ts[i]+s->splines[oth].b)*ts[i]+
+            s->splines[oth].c)*ts[i] + s->splines[oth].d;
+        for (m=0; m<j; m++)
+          if (temp == val[m])
+            goto skip1;
+        val = (double *) grealloc (val, (j + 1)*sizeof(double));
+        val[j] = temp;
+        if ( j >= MAXSECT ) goto maxsect_reached;
+        j++;
+skip1:
+        ;
+      }
+    }
+    spl = spl->next;
+  }
+  for ( r = sc->layers[ly_fore].refs; r!=NULL; r=r->next ){
+    for ( l=0; l<r->layer_cnt; ++l ){
+      spl = r->layers[l].splines;
+      while ( spl!=NULL ) {
+        first = NULL;
+        for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
+          if ( first==NULL ) first = s;
+          if (( xextrema &&
+                pos > s->from->me.y && pos > s->from->nextcp.y &&
+                pos > s->to->me.y && pos > s->to->prevcp.y ) ||
+                ( xextrema &&
+                pos < s->from->me.y && pos < s->from->nextcp.y &&
+                pos < s->to->me.y && pos < s->to->prevcp.y ) ||
+                ( !xextrema &&
+                pos > s->from->me.x && pos > s->from->nextcp.x &&
+                pos > s->to->me.x && pos > s->to->prevcp.x ) ||
+                ( !xextrema &&
+                pos < s->from->me.x && pos < s->from->nextcp.x &&
+                pos < s->to->me.x && pos < s->to->prevcp.x ))
+            continue;	/* can't intersect spline */
+          if ( SplineSolveFull(&s->splines[xextrema],pos,ts)==-1 )
+            continue;	/* didn't intersect */
+          for ( i=0; i<3 && ts[i]!=-1; ++i ) {
+            temp = ((s->splines[oth].a*ts[i]+s->splines[oth].b)*ts[i]+
+                s->splines[oth].c)*ts[i] + s->splines[oth].d;
+            for (m=0; m<j; m++)
+              if (temp == val[m])
+                goto skip2;
+            val = (double *) grealloc (val, (j + 1)*sizeof(double));
+            val[j] = temp;
+            if ( j >= MAXSECT ) goto maxsect_reached;
+            j++;
+skip2:
+            ;
+          }
+        }
+        spl = spl->next;
+      }
+    }
+  }
+maxsect_reached:
+/* Sort the array */
+  for(i=0; i<j; i++)
+   for(l=i+1; l<j; l++)
+    if(val[i]>val[l]){
+      temp = val[l];
+      val[l] = val[i];
+      val[i] = temp;
+    }
+    
+  c->return_val.type = v_arrfree;
+  c->return_val.u.aval = galloc(sizeof(Array));
+  c->return_val.u.aval->argc = j;
+  c->return_val.u.aval->vals = galloc(j*sizeof(Val));
+  for (i = 0; i < j; i++){
+    c->return_val.u.aval->vals[i].type = v_real;
+    c->return_val.u.aval->vals[i].u.fval = val[i];
+  }
+  if (val)
+    free(val);
+}
+
 static void bCharInfo(Context *c) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
@@ -7283,6 +7390,13 @@ static void bCharInfo(Context *c) {
 	    if ( c->a.vals[2].type!=v_int )
 		ScriptError( c, "Bad type for argument");
 	    FigureExtrema(c,sc,c->a.vals[2].u.ival,*c->a.vals[1].u.sval=='x' || *c->a.vals[1].u.sval=='X');
+return;
+	}
+	else if ( strmatch( c->a.vals[1].u.sval,"XProfile")==0 ||
+		strmatch( c->a.vals[1].u.sval,"YProfile")==0 ) {
+	    if ( c->a.vals[2].type!=v_int )
+		ScriptError( c, "Bad type for argument");
+	    FigureProfile(c,sc,c->a.vals[2].u.ival,*c->a.vals[1].u.sval=='x' || *c->a.vals[1].u.sval=='X');
 return;
 	}
 	ch2 = ParseCharIdent(c,&c->a.vals[2],true);
