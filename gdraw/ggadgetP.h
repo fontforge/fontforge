@@ -211,6 +211,7 @@ typedef struct gradio {
     GBox *onbox, *offbox;
     GResImage *on, *off, *ondis, *offdis;
     struct gradio *post;
+    int radiogroup;
 } GRadio;
 
 typedef struct gscrollbar {		/* and slider */

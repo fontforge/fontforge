@@ -579,7 +579,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12+TCnt*25], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+8)+4], *buttons[12], *origarray[4];
+    GGadgetCreateData gcd[12+TCnt*25], boxes[4], *subarray[TCnt*27], *array[2*(TCnt+8)+4], *buttons[13], *origarray[4];
     GTextInfo label[9+TCnt*24];
     static TransData td;
     int i, y, gci, subai, ai;
@@ -744,7 +744,7 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[gci].gd.handle_controlevent = Trans_OK;
 	gcd[gci].gd.cid = CID_Apply;
 	gcd[gci++].creator = GButtonCreate;
-	buttons[4] = GCD_Glue; buttons[5] = &gcd[gci-1]; buttons[6] = GCD_Glue;
+	buttons[4] = GCD_Glue; buttons[5] = &gcd[gci-1]; buttons[6] = GCD_Glue; buttons[7] = GCD_Glue;
 
 	gcd[gci].gd.pos.x = -30; gcd[gci].gd.pos.y = gcd[gci-1].gd.pos.y+3;
 	gcd[gci].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -755,8 +755,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	gcd[gci].gd.mnemonic = 'C';
 	gcd[gci].gd.handle_controlevent = Trans_Cancel;
 	gcd[gci++].creator = GButtonCreate;
-	buttons[7] = GCD_Glue; buttons[8] = &gcd[gci-1]; buttons[9] = GCD_Glue;
-	buttons[10] = NULL;
+	buttons[8] = GCD_Glue; buttons[9] = &gcd[gci-1]; buttons[10] = GCD_Glue;
+	buttons[11] = NULL;
 
 	boxes[2].gd.flags = gg_enabled|gg_visible;
 	boxes[2].gd.u.boxelements = buttons;

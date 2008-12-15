@@ -163,6 +163,7 @@ typedef struct ggadgetdata {
 	GTextCompletionHandler completion;
 	struct scrollbarinit *sbinit;
 	Color col;
+	int radiogroup;
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
