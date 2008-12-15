@@ -5567,7 +5567,7 @@ return;
 	if ( values!=NULL )
 	    ap_def = values[i];
 	bs->def_baseline = mapping[ap_def];
-	bs->baseline_pos = galloc(base->baseline_cnt*sizeof(int16));
+	bs->baseline_pos = galloc((base->baseline_cnt<5?5:base->baseline_cnt)*sizeof(int16));
 	for ( i=0; i<5; ++i ) if ( i!=1 )
 	    bs->baseline_pos[mapping[i]] = offsets[i] - offsets[ap_def];
 	bs->next = base->scripts;
