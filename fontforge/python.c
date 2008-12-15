@@ -7860,7 +7860,7 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 		PyFF_Glyph_set_temporary((PyFF_Glyph *)glyph, tempdict,  NULL);
 	    }
 	    
-	    matched = Py_BuildValue(dictfmt,
+	    matched = Py_BuildValue((char *) dictfmt,
 		    "findMatchedRefs", di->sv->matched_refs,
 		    "findMatchedContours", di->sv->matched_ss,
 		    "findMatchedContoursStart", di->sv->matched_ss_start

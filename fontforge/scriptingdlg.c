@@ -233,7 +233,10 @@ void ScriptDlg(FontView *fv,CharView *cv) {
     GRect pos;
     static GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[5], *rarray[4], *barray[4][8], *hvarray[4][2];
+    GGadgetCreateData gcd[12], boxes[5], *barray[4][8], *hvarray[4][2];
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+    GGadgetCreateData *rarray[4];
+#endif
     GTextInfo label[12];
     struct sd_data sd;
     FontView *list;
