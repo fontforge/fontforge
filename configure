@@ -21709,6 +21709,8 @@ else
   FreeType2_IncRoot=
 fi
 
+ ft_flags=`freetype-config --cflags`
+ CFLAGS="$CFLAGS $ft_flags"
 fi
 
 if test "$FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
