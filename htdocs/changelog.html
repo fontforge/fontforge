@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 17-Nov-2008 -->
+  <!-- AP: Last modified: 15-Dec-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,115 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      15-Dec-2008
+      <UL>
+	<LI>
+	  Add an <A href="resedit.html">X resource editor</A>. 
+	<LI>
+	  Patch by "JustFillBug" to exend python scripting by making the find interator
+	  become a find/replace iterator.
+	<LI>
+	  Patch by Taco to fix a memory problem reading bad baseline data.
+	<LI>
+	  Patch from Andrey PANOV to extend GlyphInfo (legacy scripting) by adding
+	  "XProfile" and "YProfile" options.
+	<LI>
+	  Add an [Apply] button to the transform and expand stroke dialogs in the outline
+	  view. (Request from Andrey).
+	<LI>
+	  Make ff parse preference files independent of the decimal point local in
+	  which they were written (that is -- accept either "." or "," in floating
+	  numbers).
+	<LI>
+	  If a Cubic layer had a notdef glyph, then sometimes, rasterizing using freetype
+	  would fail (not a freetype problem, I didn't set things up right).
+	<LI>
+	  Fix one more problems with points being snapped to a wrong stem side (it
+	  was still possible in case of off-curve points).
+	<LI>
+	  Metrics View and Display dlg weren't showing grid fit metrics properly. Several
+	  bugs.
+	<LI>
+	  FF used to shift glyphs left if "build accented" created something with a
+	  large enough negative left side bearing (ie. generally when centering a large
+	  accent over an "I"). Panov doesn't like this.
+	<LI>
+	  Make the metrics view be more like the display dlg in that you can specify
+	  a point-size/dpi to view stuff. Fix Display dlg so that it passes freetype
+	  a point size/dpi combination rather than the (almost) equivalent pixelsize.
+	<LI>
+	  Change so that only modal dialogs are marked transient. Make sure everybody
+	  is marked as a dlg.
+	<LI>
+	  FF got confused by format 4 cmaps which weren't unicode.
+	<LI>
+	  Goto dlg would not test altunis when looking for a unicode code point.
+	<LI>
+	  If a langsys table had a required feature, then ff would drop one feature
+	  from the list of features. This omitted feature should have been the required
+	  one (which is marked specially), but wasn't always.
+	<LI>
+	  In my eternal vigilence against rounding errors I failed to report some
+	  intersections which were very close to the end points.
+	<LI>
+	  Change the contour direction tester so that instead of looking at the first
+	  part of the contour it sees, make it check the whole thing, so if there are
+	  self-intersections we will get inconsistent results. Change everyone who
+	  looks at the direction tester to be prepared for an error return.
+	<LI>
+	  In the glyph view, add the option to check for self-intersections before
+	  calculating whether a contour is clockwise or anti-. However, this check
+	  can be extremely slow for complex glyphs (those with lots of splines) so
+	  include an option to turn it off.
+	<LI>
+	  Add the extension ".lzma" to the list of compression styles that ff is prepared
+	  to deal with.
+	<LI>
+	  patch by Taco for sfnts with no understandable encoding.
+	<LI>
+	  Patch by Panov to add a new scritping command SelectGlyphsBoth.
+	<LI>
+	  loading Apple gvar fonts broken.
+	<LI>
+	  Redo all the default font family names we ask for. For example "Helvetica"
+	  is provided by X11 bitmaps, but not be fontconfig. So make our names work
+	  with both.
+	<LI>
+	  Back before supporting multiple layers, the transform dlg had an entry "Transform
+	  Background too", that should be changed to "Transform all layers".
+	<LI>
+	  When doing a "Scale Emsize", glyphs containing references with UseMyMetrics
+	  set were not set to the correct width if the refered glyph occured later
+	  in the encoding.
+	<LI>
+	  Change the definition of FontView.FontSize. Used to be in pixels. Make it
+	  be in points.
+	<LI>
+	  We could get into infinite recursion when CVChar and DVChar each passed non-latin
+	  characters to the other in hopes the other could handle it. Neither could.
+	  They kept calling deeper and deeper.
+	<LI>
+	  Add some more checks for badly numbered glyphs.
+	<LI>
+	  Memory problems with merge:
+	  <UL>
+	    <LI>
+	      Counter masks
+	    <LI>
+	      Diagonal stems
+	    <LI>
+	      Mismatch layers
+	  </UL>
+	<LI>
+	  Memory bug when copying contextual chaining lookups.
+	<LI>
+	  Scrolling the GPOS/GSUB lookups panes for font info cause lots of nasty
+	  flickering.
+	<LI>
+	  The text fields in the metrics view (right, left bearings, width, kern, etc)
+	  drew black text on top of a black selection. It wasn't legible.
+      </UL>
     <LI>
       17-Nov-2008
       <UL>

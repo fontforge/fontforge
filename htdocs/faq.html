@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 15-Nov-2008 -->
+  <!-- AP: Last modified: 12-Dec-2008 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -401,12 +401,25 @@
     <DT>
       <A NAME="write"><B>Why did I write it?</B></A>
     <DD>
+      <TABLE Align="Right">
+	<TR>
+	  <TD><BLOCKQUOTE ID="lit">
+	      Why not?
+	      <P ALIGN=RIGHT>
+	      <SMALL>The Phantom Tollbooth<BR>
+	      Juster</SMALL>
+	    </BLOCKQUOTE>
+	  </TD>
+	</TR>
+      </TABLE>
       <UL>
 	<LI>
 	  Because it was fun
 	<LI>
 	  Because MacroMedia stopped development on Fontographer, and Fontographer
 	  was lacking features that I wanted.
+	<LI>
+	  To learn
       </UL>
       <P>
       For a more complete description see the
@@ -974,94 +987,94 @@
 	    <DT>
 	      Outline fonts and fontconfig
 	    <DD>
-	      Many programs now use fontconfig to find fonts (including fontforge).
-	      To install a font for fontconfig, simply copy the file into your
-	      ~/.fonts directory.
-	    <DT>Bitmap fonts, and vanilla X11 installs
+	      Many programs now use fontconfig to find fonts (including fontforge). To
+	      install a font for fontconfig, simply copy the file into your ~/.fonts directory.
+	    <DT>
+	      Bitmap fonts, and vanilla X11 installs
 	    <DD>
-	  I'd suggest that you look at the
-	  <A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux
-	  font HOWTO file</A>, and the
-	  <A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
-	  deuglification HOWTO</A> as good starting points. But I'll run over the
-	  highlights
-	  <P>
-	  Essentially you designate one (or several) directories as a "font directory".
-	  You move your fonts to that directory. You build up certain data structures
-	  that X needs, and you tell X to include this directory in your font path.
-	  Sadly different versions of X and the X font server use slightly different
-	  conventions. You may need to alter these procedures a bit.
-	  <P>
-	  For example, if you want to install a <EM>bdf font </EM>called frabnuts-13.bdf
-	  then you might:
-	  <BLOCKQUOTE>
-	    <PRE>$ mkdir my_fonts
+	      I'd suggest that you look at the
+	      <A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/Font-HOWTO.html">linux
+	      font HOWTO file</A>, and the
+	      <A TARGET="_top" HREF="http://www.linuxdoc.org/HOWTO/mini/FDU/">font
+	      deuglification HOWTO</A> as good starting points. But I'll run over the
+	      highlights
+	      <P>
+	      Essentially you designate one (or several) directories as a "font directory".
+	      You move your fonts to that directory. You build up certain data structures
+	      that X needs, and you tell X to include this directory in your font path.
+	      Sadly different versions of X and the X font server use slightly different
+	      conventions. You may need to alter these procedures a bit.
+	      <P>
+	      For example, if you want to install a <EM>bdf font </EM>called frabnuts-13.bdf
+	      then you might:
+	      <BLOCKQUOTE>
+		<PRE>$ mkdir my_fonts
 $ mv frabnuts-13.bdf my_fonts
 $ cd my_fonts
 $ bdftopcf frabnuts-13.bdf &gt;frabnuts-13.pcf
 $ mkfontdir
 $ xset fp+ `pwd`
 </PRE>
-	  </BLOCKQUOTE>
-	  <P>
-	  and your fonts should be installed. After that, whenever you start X you
-	  need to remind it of where your fonts live, so you should add<BR>
-	  <CODE>&nbsp; &nbsp; $ xset fp+ /home/me/my_fonts</CODE><BR>
-	  to your .xsession (or equivalent).
-	  <P>
-	  If you want to install <EM>postscript fonts</EM><BR>
-	  You should generate them as postscript binary (.pfb) files, then move both
-	  the .pfb and the .afm file into (one of) your font directory(ies) and run
-	  <A TARGET="_top" HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
-	  in it.<BR>
-	  type1inst will probably complain that your font doesn't have a foundry and
-	  will probably get the encoding wrong. You can either:
-	  <UL>
-	    <LI>
-	      Ignore it and nothing bad will happen
-	    <LI>
-	      Manually edit fonts.scale after running type1inst to fix these entries
-	    <LI>
-	      Make your font's Copyright be reasonable, and then edit type1inst and add
-	      your foundry (directions for this are in type1inst itself)
-	  </UL>
-	  <P>
-	  If you want to install <EM>truetype fonts</EM><BR>
-	  You move the .ttf file into your font directory and run mkttfdir and
-	  mkfontdir.<BR>
-	  (<A TARGET="_top" HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
-	  has a small problem with fonts created by FontForge, it will almost invariably
-	  complain that it doesn't recognize the foundry. You can safely ignore this,
-	  but if it bothers you then add a line to ttmkfdir.c at 936<BR>
-	  <CODE> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { "PFED", "FontForge"
-	  },</CODE>
-	  <P>
-	  Some versions of X (ie, those shipped by redhat) rely on the x font server
-	  to do font work rather than the X server itself. You may need to use chkfontpath
-	  to add your new directory to the font server's font path (rather than xset
-	  fp).<BR>
-	  You may also need to insure that the font directory (and all its parent
-	  directories) are readable to world. (the font server runs as a non-privileged
-	  user)
-	  <P>
-	  I haven't seen anything that says X supports <EM>opentype</EM> fonts yet,
-	  but since freetype does (and I think X's rasterizer uses freetype) then X
-	  might support them too. Installing them will require manual editing of
-	  fonts.scale though (mkttfdir uses freetype1 which doesn't support otf files).
-	  <P>
-	  That sounds really confusing. I apologize, I'm not a good writer and there
-	  are too many choices in configuring X...
-	<DT>
-	  <STRONG>KDE</STRONG>
-	<DD>
-	  (I don't know KDE very well, so take my experience with a grain of salt)
-	  Under KDE there is a tool called
-	  <A TARGET="_top" HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A>
-	  which is supposed to do all the configuration work for you. I was only able
-	  to get it to work as root and had to reconfigure my system to follow its
-	  conventions, but once that was done it installed X fonts quite handily. I
-	  never did figure out how to get it to install ghostview fonts. (I experimented
-	  with version 0.9.2)
+	      </BLOCKQUOTE>
+	      <P>
+	      and your fonts should be installed. After that, whenever you start X you
+	      need to remind it of where your fonts live, so you should add<BR>
+	      <CODE>&nbsp; &nbsp; $ xset fp+ /home/me/my_fonts</CODE><BR>
+	      to your .xsession (or equivalent).
+	      <P>
+	      If you want to install <EM>postscript fonts</EM><BR>
+	      You should generate them as postscript binary (.pfb) files, then move both
+	      the .pfb and the .afm file into (one of) your font directory(ies) and run
+	      <A TARGET="_top" HREF="http://rpmfind.net/linux/rpm2html/search.php?query=type1inst">type1inst</A>
+	      in it.<BR>
+	      type1inst will probably complain that your font doesn't have a foundry and
+	      will probably get the encoding wrong. You can either:
+	      <UL>
+		<LI>
+		  Ignore it and nothing bad will happen
+		<LI>
+		  Manually edit fonts.scale after running type1inst to fix these entries
+		<LI>
+		  Make your font's Copyright be reasonable, and then edit type1inst and add
+		  your foundry (directions for this are in type1inst itself)
+	      </UL>
+	      <P>
+	      If you want to install <EM>truetype fonts</EM><BR>
+	      You move the .ttf file into your font directory and run mkttfdir and
+	      mkfontdir.<BR>
+	      (<A TARGET="_top" HREF="http://rpmfind.net/linux/rpm2html/search.php?query=mkttfdir">mkttfdir</A>
+	      has a small problem with fonts created by FontForge, it will almost invariably
+	      complain that it doesn't recognize the foundry. You can safely ignore this,
+	      but if it bothers you then add a line to ttmkfdir.c at 936<BR>
+	      <CODE> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { "PFED", "FontForge"
+	      },</CODE>
+	      <P>
+	      Some versions of X (ie, those shipped by redhat) rely on the x font server
+	      to do font work rather than the X server itself. You may need to use chkfontpath
+	      to add your new directory to the font server's font path (rather than xset
+	      fp).<BR>
+	      You may also need to insure that the font directory (and all its parent
+	      directories) are readable to world. (the font server runs as a non-privileged
+	      user)
+	      <P>
+	      I haven't seen anything that says X supports <EM>opentype</EM> fonts yet,
+	      but since freetype does (and I think X's rasterizer uses freetype) then X
+	      might support them too. Installing them will require manual editing of
+	      fonts.scale though (mkttfdir uses freetype1 which doesn't support otf files).
+	      <P>
+	      That sounds really confusing. I apologize, I'm not a good writer and there
+	      are too many choices in configuring X...
+	    <DT>
+	      <STRONG>KDE</STRONG>
+	    <DD>
+	      (I don't know KDE very well, so take my experience with a grain of salt)
+	      Under KDE there is a tool called
+	      <A TARGET="_top" HREF="http://www.cpdrummond.uklinux.net/kfontinst/">kfontinst</A>
+	      which is supposed to do all the configuration work for you. I was only able
+	      to get it to work as root and had to reconfigure my system to follow its
+	      conventions, but once that was done it installed X fonts quite handily. I
+	      never did figure out how to get it to install ghostview fonts. (I experimented
+	      with version 0.9.2)
 	  </DL>
 	<DT>
 	  <STRONG>TeX</STRONG>

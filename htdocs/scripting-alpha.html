@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 5-Dec-2008 -->
+  <!-- AP: Last modified: 15-Dec-2008 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1422,7 +1422,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    <B><A NAME="GlyphInfo">GlyphInfo</A></B>(str)<BR>
 	    GlyphInfo("Kern",glyph-spec)<BR>
 	    GlyphInfo("VKern",glyph-spec)<BR>
-	    GlyphInfo(str,script,lang,tag)
+	    GlyphInfo(str,script,lang,tag)<BR>
+	    GlyphInfo(str,position)
 	  <DD>
 	    There must be exactly one glyph selected in the font, and this returns
 	    information on it. The information returned depends on str with the obvious
@@ -1540,6 +1541,14 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	      <LI>
 		"RefTransform" returns an array of arrays. The bottom most arrays are 6 element
 		(real) transformation matrices which are applied to their respective glyphs.
+	      <LI>
+		"XProfile" takes an integer as its second argument and returns an array of
+		intersection points between the foreground layer and a line y=&lt;the second
+		argument&gt;. The array is sorted.
+	      <LI>
+		"YProfile" takes an integer as its second argument and returns an array of
+		intersection points between the foreground layer and a line x=&lt;the second
+		argument&gt;. The array is sorted.
 	    </UL>
 	    <P>
 	    Examples:
