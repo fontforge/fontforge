@@ -7123,7 +7123,7 @@ return;
 
     cv->p.transany = CVAnySel(cv,NULL,NULL,NULL,&anya);
     if ( flags&fvt_justapply )
-	CVPreserveTState(&cv->b);
+	CVPreserveTState(cv);
     else {
 	CVPreserveStateHints(&cv->b);
 	if ( flags&fvt_alllayers )

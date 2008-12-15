@@ -2048,7 +2048,7 @@ return( head );
 
 #include "baseviews.h"
 
-void FVStrokeItScript(void *_fv, StrokeInfo *si) {
+void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
     FontViewBase *fv = _fv;
     int layer = fv->active_layer;
     SplineSet *temp;
