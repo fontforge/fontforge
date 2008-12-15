@@ -654,7 +654,7 @@ return( true );
 
 static int TogglePrefs(GGadget *g, GEvent *e) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	*((int *) GGadgetGetUserData(g)) = GGadgetIsChecked(g);
     }
 return( true );
