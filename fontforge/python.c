@@ -12304,7 +12304,7 @@ static PyObject *PyFFFont_Stroke(PyFF_Font *self, PyObject *args) {
     if ( Stroke_Parse(&si,args)==-1 )
 return( NULL );
 
-    FVStrokeItScript(self->fv, &si);
+    FVStrokeItScript(self->fv, &si,false);
 Py_RETURN( self );
 }
 

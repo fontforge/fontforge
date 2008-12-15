@@ -39,7 +39,7 @@ typedef struct strokedlg {
     CharView *cv;
     FontView *fv;
     SplineFont *sf;
-    void (*strokeit)(void *,StrokeInfo *);
+    void (*strokeit)(void *,StrokeInfo *,int);
     StrokeInfo *si;
     GRect r1, r2;
     int up[2];
@@ -84,12 +84,18 @@ typedef struct strokedlg {
 #define CID_Apply	1042
 #define CID_TopBox	1043
 
-static void CVStrokeIt(void *_cv, StrokeInfo *si) {
+static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
     CharView *cv = _cv;
     int anypoints;
     SplineSet *spl, *prev, *head=NULL, *last=NULL, *cur, *snext;
 
-    CVPreserveState(&cv->b);
+    if ( cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+	CVDoUndo(&cv->b);
+
+    if ( justapply )
+	CVPreserveTState(cv);
+    else
+	CVPreserveState(&cv->b);
     if ( CVAnySel(cv,&anypoints,NULL,NULL,NULL) && anypoints ) {
 	prev = NULL;
 	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = snext ) {
@@ -124,7 +130,7 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     CVCharChangedUpdate(&cv->b);
 }
 
-static void SCStrokeIt(void *_sc, StrokeInfo *si) {
+static void SCStrokeIt(void *_sc, StrokeInfo *si, int justapply) {
     SplineChar *sc = _sc;
     SplineSet *temp;
 
@@ -139,6 +145,7 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
     StrokeInfo *si, strokeinfo;
     int err;
     real r2;
+    int isapply = GGadgetGetCid(g) == CID_Apply;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow sw = GGadgetGetWindow(g);
@@ -223,8 +230,8 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	if ( sd->strokeit!=NULL )
-	    (sd->strokeit)(sd->cv,si);
-	sd->done = true;
+	    (sd->strokeit)(sd->cv,si,isapply);
+	sd->done = !isapply;
     }
 return( true );
 }
@@ -232,6 +239,8 @@ return( true );
 static int Stroke_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	StrokeDlg *sd = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( sd->strokeit==CVStrokeIt && sd->cv->b.layerheads[sd->cv->b.drawmode]->undoes->undotype==ut_tstate )
+	    CVDoUndo(&sd->cv->b);
 	sd->done = true;
     }
 return( true );
@@ -389,7 +398,7 @@ return( true );
 #define SD_Height	335
 #define FH_Height	(SD_Height+75)
 
-static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeInfo *si) {
+static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),StrokeInfo *si) {
     static StrokeDlg strokedlg;
     StrokeDlg *sd, freehand_dlg;
     GRect pos;
@@ -811,7 +820,6 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	label[gcdoff].text_in_resource = true;
 	gcd[gcdoff].gd.label = &label[gcdoff];
 	gcd[gcdoff].gd.handle_controlevent = Stroke_OK;
-	gcd[gcdoff].gd.cid = CID_Apply;
 	gcd[gcdoff++].creator = GButtonCreate;
 	buttons[0] = GCD_Glue; buttons[1] = &gcd[gcdoff-1]; buttons[2] = GCD_Glue; buttons[3] = GCD_Glue;
 
@@ -869,7 +877,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 		GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Stroke))?si_std:
 		GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Elipse))?si_elipse:
 		si_centerline);
-	GGadgetSetVisible( GWidgetGetControl(sd->gw,CID_Apply),cv!=NULL );
+	GGadgetSetVisible( GWidgetGetControl(sd->gw,CID_Apply),strokeit==CVStrokeIt );
     } else {
 	StrokeSetup(sd,def->stroke_type);
 	GGadgetSetVisible( GWidgetGetControl(sd->gw,CID_Apply),false );

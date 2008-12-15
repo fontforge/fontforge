@@ -325,7 +325,7 @@ extern void TransDStemHints(DStemInfo *ds,real xmul, real xoff, real ymul, real 
 extern void VrTrans(struct vr *vr,real transform[6]);
 extern int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr);
 extern void FVPointOfView(FontViewBase *fv,struct pov_data *);
-extern void FVStrokeItScript(void *fv, StrokeInfo *si);
+extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
 extern void FVOutline(struct fontviewbase *fv, real width);
 extern void FVInline(struct fontviewbase *fv, real width, real inset);
 extern void FVShadow(struct fontviewbase *fv,real angle, real outline_width,

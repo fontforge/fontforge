@@ -4669,7 +4669,7 @@ static void bExpandStroke(Context *c) {
         if ( c->a.vals[6].u.ival&4 )
             si.removeoverlapifneeded = true;
     }
-    FVStrokeItScript(c->curfv, &si);
+    FVStrokeItScript(c->curfv, &si, false);
 }
 
 static void bOutline(Context *c) {
