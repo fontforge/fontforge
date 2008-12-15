@@ -315,6 +315,8 @@ FreeType2_IncRoot=
 if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
  FreeType2_IncRoot=`freetype-config --prefix`
  AC_CHECK_FILE($FreeType2_IncRoot/include/freetype2,CFLAGS="$CFLAGS -I$FreeType2_IncRoot/include/freetype2/",FreeType2_IncRoot=)
+ ft_flags=`freetype-config --cflags`
+ CFLAGS="$CFLAGS $ft_flags"
 fi
 
 if test "$FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
