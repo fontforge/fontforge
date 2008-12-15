@@ -3455,9 +3455,21 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE><A NAME="font-find">find</A></CODE></TD>
-      <TD><CODE>(contour[,error-bound])</CODE></TD>
+      <TD><CODE>(contour[,error-bound,search_flags])</CODE></TD>
       <TD>Searches the font for all glyphs containing the contour (or layer) and
-	returns an iterator which returns those glyphs.</TD>
+	  returns an iterator which returns those glyphs.<P>
+	  error-bound: defaults to 0.01.<BR>
+	  search_flags: tuple of the strings: reverse, flips, rotate, scale.<P>
+
+	  When found, the glyph.temporary is set to a dict of:
+	  <pre>
+	  {
+	   "findMatchedRefs": matched_refs_bit_map,
+	   "findMatchedContours": matched_contours_bit_map,
+	   "findMatchedContoursStart": matched_contours_start_bit_map,
+	  }
+	  </pre>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>findEncodingSlot</CODE></TD>

@@ -530,8 +530,8 @@ static void SVBuildTrans(SearchData *s,real transform[6]) {
 	transform[0] = -1;
     if ( s->matched_flip&2 )
 	transform[3] = -1;
-    transform[0] *= s->matched_scale;
-    transform[3] *= s->matched_scale;
+    transform[0] /= s->matched_scale;
+    transform[3] /= s->matched_scale;
     transform[1] = -transform[0]*s->matched_si;
     transform[0] *= s->matched_co;
     transform[2] = transform[3]*s->matched_si;
@@ -1324,10 +1324,10 @@ SearchData *SDFromContour( FontViewBase *fv, SplineSet *find, double fudge, int 
     sv->fudge_percent = .001;
     sv->fudge = fudge;
 
-    sv->tryreverse = (flags&sv_reverse);
-    sv->tryflips = (flags&sv_flips);
-    sv->tryrotate = (flags&sv_rotate);
-    sv->tryscale = (flags&sv_scale);
+    sv->tryreverse = (flags&sv_reverse) != 0;
+    sv->tryflips = (flags&sv_flips) != 0;
+    sv->tryrotate = (flags&sv_rotate) != 0;
+    sv->tryscale = (flags&sv_scale) != 0;
 
     sv->sc_srch.layers[ly_fore].splines = find;
     sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;

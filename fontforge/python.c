@@ -7844,8 +7844,33 @@ static void fontiter_dealloc(fontiterobject *di) {
 static PyObject *fontiter_iternextkey(fontiterobject *di) {
     if ( di->sv!=NULL ) {
 	SplineChar *sc = SDFindNext(di->sv);
-	if ( sc!=NULL )
-return( PySC_From_SC_I( sc ) );
+	if ( sc!=NULL ) {
+#ifdef _HAS_LONGLONG
+	    const char *dictfmt = "{sKsKsK}";
+#else
+	    const char *dictfmt = "{sksksk}"
+#endif
+	    PyObject *glyph, *tempdict;
+	    PyObject *matched;
+	    glyph = PySC_From_SC_I( sc );
+	    /* Fill matched result into the glyph.temporary atribute. */
+	    tempdict = PyFF_Glyph_get_temporary((PyFF_Glyph *)glyph, NULL);
+	    if (tempdict == NULL || !PyDict_Check(tempdict)) {
+		tempdict = PyDict_New();
+		PyFF_Glyph_set_temporary((PyFF_Glyph *)glyph, tempdict,  NULL);
+	    }
+	    
+	    matched = Py_BuildValue(dictfmt,
+		    "findMatchedRefs", di->sv->matched_refs,
+		    "findMatchedContours", di->sv->matched_ss,
+		    "findMatchedContoursStart", di->sv->matched_ss_start
+		    );
+	    PyDict_Update(tempdict, matched);
+	    Py_DECREF(tempdict);
+	    Py_DECREF(matched);
+
+return( glyph );
+	}
     } else switch ( di->byselection ) {
       case 0: {
 	SplineFont *sf = di->sf;
@@ -11372,13 +11397,24 @@ return( NULL );
 return( Py_BuildValue( "i", FVReplaceAll(fv,srch_ss,rpl_ss,err,sv_reverse|sv_flips)));
 }
 
+struct flaglist find_flags[] = {
+    {"reverse", sv_reverse},
+    {"flips", sv_flips},
+    {"rotate", sv_rotate},
+    {"scale", sv_scale},
+    {"endpoints", sv_endpoints},
+    NULL,
+};
+
 static PyObject *PyFFFont_find(PyObject *self, PyObject *args) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PyObject *srch;
     SplineSet *srch_ss;
+    PyObject *pyflags = NULL;
+    int flags = 0;
     double err = .01;
 
-    if ( !PyArg_ParseTuple(args,"O|d", &srch, &err ))
+    if ( !PyArg_ParseTuple(args,"O|dO", &srch, &err, &pyflags))
 return( NULL );
 
     if ( PyType_IsSubtype(&PyFF_LayerType,srch->ob_type) ) {
@@ -11389,9 +11425,13 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( NULL );
     }
+    if (pyflags) 
+	flags = FlagsFromTuple(pyflags, find_flags);
+    else
+	flags = sv_reverse|sv_flips;
 
     /* srch_ss will be freed when the iterator dies */
-return( fontiter_New( self,false,SDFromContour(fv,srch_ss,err,sv_reverse|sv_flips)) );
+return( fontiter_New( self,false,SDFromContour(fv,srch_ss,err,flags)) );
 }
 
 static PyObject *PyFFFont_glyphs(PyObject *self, PyObject *args) {
