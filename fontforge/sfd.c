@@ -4931,19 +4931,19 @@ static void SFDFixupRefs(SplineFont *sf) {
 			refs->unicode_enc = refs->sc->unicodeenc;
 			refs->adobe_enc = getAdobeEnc(refs->sc->name);
 			rprev = refs;
+			if ( refs->use_my_metrics ) {
+			    if ( sc->width != refs->sc->width ) {
+				LogError("Bad sfd file. Glyph %s has width %d even though it should be\n  bound to the width of %s which is %d.\n",
+					sc->name, sc->width, refs->sc->name, refs->sc->width );
+				sc->width = refs->sc->width;
+			    }
+			}
 		    } else {
 			RefCharFree(refs);
 			if ( rprev!=NULL )
 			    rprev->next = rnext;
 			else
 			    sc->layers[layer].refs = rnext;
-		    }
-		    if ( refs->use_my_metrics ) {
-			if ( sc->width != refs->sc->width ) {
-			    LogError("Bad sfd file. Glyph %s has width %d even though it should be\n  bound to the width of %s which is %d.\n",
-				    sc->name, sc->width, refs->sc->name, refs->sc->width );
-			    sc->width = refs->sc->width;
-			}
 		    }
 		}
 	    }
