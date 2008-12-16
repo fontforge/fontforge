@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 8-May-2006 -->
-  <!-- AP: Last modified: 14-Sep-2007 -->
+  <!-- AP: Last modified: 16-Dec-2008 -->
   <TITLE>Uninstalling</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -20,34 +20,41 @@
     <PRE>$ su
 password:
 $ rm -rf /usr/local/bin/{fontforge,sfddiff,fontimage,fontlint} \
-/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist,libspiro,libfontforge,libgutils,libgioftp}* \
 /usr/local/lib/pkgconfig/fontforge.pc \
-/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/man/man1/{fontforge,sfddiff,fontimage,fontlint}.1 \
 /usr/local/share/doc/fontforge \
-/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+/usr/local/share/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo \
+/usr/local/include/fontforge
 </PRE>
   </BLOCKQUOTE>
   <P>
   or if you are on a mac:
   <BLOCKQUOTE>
     <PRE>$ sudo rm -rf /usr/local/bin/{fontforge,sfddiff,fontimage,fontlint} \
-/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist,libspiro,libfontforge,libgutils,libgioftp}* \
 /usr/local/lib/pkgconfig/fontforge.pc \
-/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/man/man1/{fontforge,sfddiff,fontimage,fontlint}.1 \
 /usr/local/share/doc/fontforge \
-/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+/usr/local/share/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo \
+/usr/local/include/fontforge \
+/Applications/FontForge.app
 password:
 </PRE>
   </BLOCKQUOTE>
   <P>
   or if you are on cygwin:
   <BLOCKQUOTE>
-    <PRE>$ rm -rf /usr/local/bin/{fontforge,sfddiff,fontimage,fontlint}* \
-/usr/local/lib/{libgdraw,libgunicode,libuninameslist}* \
+    <PRE>$ rm -rf /usr/local/bin/{fontforge,sfddiff,fontimage,fontlint} \
+/usr/local/lib/{libgdraw,libgunicode,libuninameslist,libspiro,libfontforge,libgutils,libgioftp}* \
 /usr/local/lib/pkgconfig/fontforge.pc \
-/usr/local/man/man1/{fontforge,sfddiff}.1 \
+/usr/local/man/man1/{fontforge,sfddiff,fontimage,fontlint}.1 \
 /usr/local/share/doc/fontforge \
-/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo
+/usr/local/share/fontforge \
+/usr/local/share/locale/*/LC_MESSAGES/FontForge.mo \
+/usr/local/include/fontforge
 </PRE>
   </BLOCKQUOTE>
   <P>
