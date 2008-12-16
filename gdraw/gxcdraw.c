@@ -1782,9 +1782,10 @@ return( hasP );
 #  if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
 #   include <pango/pangocairo.h>
 #   define _pango_cairo_layout_path pango_cairo_layout_path
-#   define _pango_font_map_create_context pango_font_map_create_context
+#   define _pango_cairo_font_map_create_context pango_cairo_font_map_create_context
 #   define _pango_cairo_font_map_get_default pango_cairo_font_map_get_default
-#   define _pango_cairo_context_set_resolution _pango_cairo_context_set_resolution
+#   define _pango_cairo_context_set_resolution pango_cairo_context_set_resolution
+#   define _pango_cairo_show_glyph_string pango_cairo_show_glyph_string
 #  endif
 #  undef GTimer
 #  if PANGO_VERSION_MINOR>=8
