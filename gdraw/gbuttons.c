@@ -41,7 +41,7 @@ static GBox _GGadget_colorbutton_box = { /* Don't initialize here */ 0 };
 static GBox _GGadget_droplist_box = { /* Don't initialize here */ 0 };
 static GBox label_box = { /* Don't initialize here */ 0 };
 static int shift_on_press = 0;
-static FontInstance *label_font = NULL;
+static FontInstance *label_font = NULL, *button_font = NULL;
 static int gbutton_inited = false;
 #define COLOR_BUTTON_BOX_LEN	10
 
@@ -76,7 +76,7 @@ static struct resed gbutton_re[] = {
 static GResInfo gbutton_ri = {
     &gdefault_ri, &ggadget_ri,&gdefault_ri, &gcancel_ri,
     &_GGadget_button_box,
-    &label_font,
+    &button_font,
     &buttonbox,
     gbutton_re,
     N_("Button"),
@@ -889,7 +889,6 @@ return;
 }
 
 void _GButtonInit(void) {
-    FontInstance *temp;
 #ifdef __Mac
     extern GBox _ggadget_Default_Box;
 #endif
@@ -911,10 +910,8 @@ return;
 #endif
     label_box.border_type = bt_none;
     label_box.border_width = label_box.padding = /*label_box.flags =*/ 0;
-    label_font = _GGadgetInitDefaultBox("GButton.",&_GGadget_button_box,NULL);
-    temp = _GGadgetInitDefaultBox("GLabel.",&label_box,NULL);
-    if ( temp!=NULL )
-	label_font = temp;
+    button_font = _GGadgetInitDefaultBox("GButton.",&_GGadget_button_box,NULL);
+    label_font = _GGadgetInitDefaultBox("GLabel.",&label_box,button_font);
     shift_on_press = GResourceFindBool("GButton.ShiftOnPress",false);
     _GGadget_droplist_box = _GGadget_button_box;
     _GGadget_defaultbutton_box = _GGadget_button_box;
@@ -969,7 +966,7 @@ static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,v
 	_GWidget_SetDefaultButton(&gl->g);
     if (( gl->is_cancel = gd->flags&gg_but_cancel?1:0 ))
 	_GWidget_SetCancelButton(&gl->g);
-    gl->font = label_font;
+    gl->font = def==&label_box ? label_font : button_font;
     if ( gd->label!=NULL ) {
 	gl->image_precedes = gd->label->image_precedes;
 	if ( gd->label->font!=NULL )
