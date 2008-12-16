@@ -35,7 +35,7 @@
 
 static GBox menubar_box = { /* Don't initialize here */ 0 };
 static GBox menu_box = { /* Don't initialize here */ 0 };
-static FontInstance *menu_font = NULL;
+static FontInstance *menu_font = NULL, *menubar_font = NULL;
 static int gmenubar_inited = false;
 #ifdef __Mac
 static int mac_menu_icons = true;
@@ -62,7 +62,7 @@ static GResInfo gmenu_ri;
 static GResInfo gmenubar_ri = {
     &gmenu_ri, &ggadget_ri,&gmenu_ri, NULL,
     &menubar_box,
-    &menu_font,
+    &menubar_font,
     NULL,
     NULL,
     N_("Menu Bar"),
@@ -104,7 +104,7 @@ static void GMenuInit() {
     memset(&rq,0,sizeof(rq));
     GDrawDecomposeFont(_ggadget_default_font,&rq);
     rq.weight = 400;
-    menu_font = GDrawInstanciateFont(screen_display,&rq);
+    menu_font = menubar_font = GDrawInstanciateFont(screen_display,&rq);
     _GGadgetCopyDefaultBox(&menubar_box);
     _GGadgetCopyDefaultBox(&menu_box);
     menubar_box.border_shape = menu_box.border_shape = bs_rect;
@@ -112,8 +112,8 @@ static void GMenuInit() {
     menu_box.padding = 1;
     menubar_box.flags |= box_foreground_border_outer;
     menu_box.flags |= box_foreground_border_outer;
-    menu_font = _GGadgetInitDefaultBox("GMenuBar.",&menubar_box,menu_font);
-    menu_font = _GGadgetInitDefaultBox("GMenu.",&menu_box,menu_font);
+    menubar_font = _GGadgetInitDefaultBox("GMenuBar.",&menubar_box,menubar_font);
+    menu_font = _GGadgetInitDefaultBox("GMenu.",&menu_box,menubar_font);
     keystr = GResourceFindString("Keyboard");
     if ( keystr!=NULL ) {
 	if ( strmatch(keystr,"mac")==0 ) keyboard = kb_mac;
@@ -1631,7 +1631,7 @@ GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     mb->mi = GMenuItemArrayCopy(gd->u.menu,&mb->mtot);
     mb->xs = galloc((mb->mtot+1)*sizeof(uint16));
     mb->entry_with_mouse = -1;
-    mb->font = menu_font;
+    mb->font = menubar_font;
 
     GMenuBarFit(mb,gd);
     GMenuBarFindXs(mb);
@@ -1657,7 +1657,7 @@ GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     mb->mi = GMenuItem2ArrayCopy(gd->u.menu2,&mb->mtot);
     mb->xs = galloc((mb->mtot+1)*sizeof(uint16));
     mb->entry_with_mouse = -1;
-    mb->font = menu_font;
+    mb->font = menubar_font;
 
     GMenuBarFit(mb,gd);
     GMenuBarFindXs(mb);
