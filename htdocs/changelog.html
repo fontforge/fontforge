@@ -52,6 +52,11 @@
 	<LI>
 	  Add an <A href="resedit.html">X resource editor</A>. 
 	<LI>
+	  Make the metrics view be more like the display dlg in that you can specify
+	  a point-size/dpi to view stuff (also include increment/decrement pointsize).
+	  Fix Display dlg so that it passes freetype a point size/dpi combination
+	  rather than the (almost) equivalent pixelsize.
+	<LI>
 	  Patch by "JustFillBug" to exend python scripting by making the find interator
 	  become a find/replace iterator.
 	<LI>
@@ -79,10 +84,6 @@
 	  FF used to shift glyphs left if "build accented" created something with a
 	  large enough negative left side bearing (ie. generally when centering a large
 	  accent over an "I"). Panov doesn't like this.
-	<LI>
-	  Make the metrics view be more like the display dlg in that you can specify
-	  a point-size/dpi to view stuff. Fix Display dlg so that it passes freetype
-	  a point size/dpi combination rather than the (almost) equivalent pixelsize.
 	<LI>
 	  Change so that only modal dialogs are marked transient. Make sure everybody
 	  is marked as a dlg.
@@ -115,11 +116,11 @@
 	<LI>
 	  Patch by Panov to add a new scritping command SelectGlyphsBoth.
 	<LI>
-	  loading Apple gvar fonts broken.
+	  loading of Apple gvar fonts broken.
 	<LI>
 	  Redo all the default font family names we ask for. For example "Helvetica"
-	  is provided by X11 bitmaps, but not be fontconfig. So make our names work
-	  with both.
+	  is provided by X11 bitmaps, but not by fontconfig. Now provide a set of
+	  names for each family grouping which will work with either font provider.
 	<LI>
 	  Back before supporting multiple layers, the transform dlg had an entry "Transform
 	  Background too", that should be changed to "Transform all layers".
