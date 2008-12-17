@@ -6555,13 +6555,13 @@ static void bAddPosSub(Context *c) {
     } else {
 	if (c->a.argc!=3 )
 	    ScriptError( c, "Wrong number of arguments");
-	if ( sub->lookup->lookup_type>=gsub_single )
+	if ( sub->lookup->lookup_type==gsub_single )
 	    temp.type = pst_substitution;
-	else if ( sub->lookup->lookup_type>=gsub_alternate )
+	else if ( sub->lookup->lookup_type==gsub_alternate )
 	    temp.type = pst_alternate;
-	else if ( sub->lookup->lookup_type>=gsub_multiple )
+	else if ( sub->lookup->lookup_type==gsub_multiple )
 	    temp.type = pst_multiple;
-	else if ( sub->lookup->lookup_type>=gsub_ligature )
+	else if ( sub->lookup->lookup_type==gsub_ligature )
 	    temp.type = pst_ligature;
 	else
 	    ScriptErrorString(c,"Unexpected lookup type", sub->lookup->lookup_name);
