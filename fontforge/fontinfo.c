@@ -841,7 +841,7 @@ static GTextInfo codepagenames[] = {
 static char *TN_DefaultName(GGadget *g, int r, int c);
 static void TN_StrIDEnable(GGadget *g,GMenuItem *mi, int r, int c);
 static void TN_LangEnable(GGadget *g,GMenuItem *mi, int r, int c);
-static struct col_init ci[3] = {
+static struct col_init ci[] = {
     { me_enum, NULL, mslanguages, TN_LangEnable, N_("Language") },
     { me_enum, NULL, ttfnameids, TN_StrIDEnable, N_("String ID") },
     { me_func, TN_DefaultName, NULL, NULL, N_("String") }
@@ -862,7 +862,7 @@ static GTextInfo gfsymsmooth[] = {
     { (unichar_t *) N_("No Grid Fit w/ Sym-Smooth"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) N_("Grid Fit w/ Sym-Smooth"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
-static struct col_init gaspci[5] = {
+static struct col_init gaspci[] = {
     { me_int , NULL, NULL, NULL, N_("Gasp|Pixels Per EM") },
     { me_enum, NULL, gridfit, NULL, N_("Gasp|Grid Fit") },
     { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") },
@@ -878,11 +878,11 @@ static GTextInfo layertype[] = {
     { (unichar_t *) N_("Layer|Background"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static void Layers_BackgroundEnable(GGadget *g,GMenuItem *mi, int r, int c);
-static struct col_init layersci[5] = {
+static struct col_init layersci[] = {
     { me_string, NULL, NULL, NULL, N_("Layer Name") },
     { me_enum  , NULL, splineorder, NULL, N_("Curve Type") },
     { me_enum  , NULL, layertype, Layers_BackgroundEnable, N_("Type") },
-    { me_int   , NULL, NULL, NULL, N_("Orig layer") },
+    { me_int   , NULL, NULL, NULL, N_("Orig layer") }
     };
 
 struct langstyle { int lang; const char *str; };
@@ -10729,7 +10729,13 @@ void FontInfoInit(void) {
     static char **needswork2[] = { texparams, texpopups,
 	mathparams, mathpopups, extparams, extpopups,
     NULL };
-    static struct col_init *needswork3[] = { ci, gaspci, layersci, NULL };
+    static struct {
+	int size;
+	struct col_init *ci;
+    } needswork3[] = {{ sizeof(ci)/sizeof(ci[0]), ci},
+			{ sizeof(gaspci)/sizeof(gaspci[0]), gaspci },
+			{ sizeof(layersci)/sizeof(layersci[0]), layersci },
+			{ 0 }};
 
     if ( done )
 return;
@@ -10743,12 +10749,12 @@ return;
 	    needswork2[j][i] = S_(needswork2[j][i]);
     }
 
-    for ( j=0; needswork3[j]!=NULL; ++j ) {
-	for ( i=0; needswork3[j][i].title!=NULL; ++i ) {
-	    needswork3[j][i].title = S_(needswork3[j][i].title);
-	    if ( needswork3[j][i].enum_vals!=NULL ) {
-		for ( k=0; needswork3[j][i].enum_vals[k].text!=NULL; ++k )
-		    needswork3[j][i].enum_vals[k].text = (unichar_t *) S_((char *) needswork3[j][i].enum_vals[k].text);
+    for ( j=0; needswork3[j].ci!=NULL; ++j ) {
+	for ( i=0; i<needswork3[j].size; ++i ) {
+	    needswork3[j].ci[i].title = S_(needswork3[j].ci[i].title);
+	    if ( needswork3[j].ci[i].enum_vals!=NULL ) {
+		for ( k=0; needswork3[j].ci[i].enum_vals[k].text!=NULL; ++k )
+		    needswork3[j].ci[i].enum_vals[k].text = (unichar_t *) S_((char *) needswork3[j].ci[i].enum_vals[k].text);
 	    }
 	}
     }
