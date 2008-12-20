@@ -2214,7 +2214,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawGridRaster(cv,pixmap,&clip);
     }
 
-    if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL && cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+    if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL &&
+	    cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
 	DrawOldState(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->undoes, &clip);
 
     if ( cv->showfore )
@@ -7117,7 +7118,8 @@ static void transfunc(void *d,real transform[6],int otype,BVTFunc *bvts,
     CharView *cv = (CharView *) d;
     int anya, l, cvlayer = CVLayer((CharViewBase *) cv);
 
-    if ( cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+    if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL &&
+	    cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
 	CVDoUndo(&cv->b);
     if ( flags&fvt_revert )
 return;
