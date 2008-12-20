@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <stdio.h>
 #include "ustring.h"
 #include "fileutil.h"
@@ -31,6 +32,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <unistd.h>
+
+#ifdef _WIN32
+#define MKDIR(A,B) mkdir(A)
+#else
+#define MKDIR(A,B) mkdir(A,B)
+#endif
 
 static char dirname_[1024];
 
@@ -183,9 +190,11 @@ return( false );
 }
 
 int GFileIsDir(const char *file) {
-    char buffer[1000];
-    sprintf(buffer,"%s/.",file);
-return( access(buffer,0)==0 );
+  struct stat info;
+  if ( stat(file, &info)==-1 )
+return 0;     
+  else
+return( S_ISDIR(info.st_mode) );
 }
 
 int GFileExists(const char *file) {
@@ -213,7 +222,7 @@ return( access(file,04)==0 );
 }
 
 int GFileMkDir(char *name) {
-return( mkdir(name,0755));
+return( MKDIR(name,0755));
 }
 
 int GFileRmDir(char *name) {
@@ -418,27 +427,27 @@ return( false );
 
 int u_GFileIsDir(const unichar_t *file) {
     char buffer[1024];
-    cu_strcpy(buffer,file);
+    u2def_strcpy(buffer,file);
     strcat(buffer,"/.");
 return( access(buffer,0)==0 );
 }
 
 int u_GFileExists(const unichar_t *file) {
     char buffer[1024];
-    cu_strcpy(buffer,file);
+    u2def_strcpy(buffer,file);
 return( access(buffer,0)==0 );
 }
 
 int u_GFileModifyable(const unichar_t *file) {
     char buffer[1024];
-    cu_strcpy(buffer,file);
+    u2def_strcpy(buffer,file);
 return( access(buffer,02)==0 );
 }
 
 int u_GFileModifyableDir(const unichar_t *file) {
     char buffer[1024], *pt;
 
-    cu_strcpy(buffer,file);
+    u2def_strcpy(buffer,file);
     pt = strrchr(buffer,'/');
     if ( pt==NULL )
 	strcpy(buffer,".");
@@ -449,24 +458,24 @@ return( GFileModifyable(buffer));
 
 int u_GFileReadable(unichar_t *file) {
     char buffer[1024];
-    cu_strcpy(buffer,file);
+    u2def_strcpy(buffer,file);
 return( access(buffer,04)==0 );
 }
 
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
-    cu_strcpy(buffer,name);
-return( mkdir(buffer,0755));
+    u2def_strcpy(buffer,name);
+return( MKDIR(buffer,0755));
 }
 
 int u_GFileRmDir(unichar_t *name) {
     char buffer[1024];
-    cu_strcpy(buffer,name);
+    u2def_strcpy(buffer,name);
 return(rmdir(buffer));
 }
 
 int u_GFileUnlink(unichar_t *name) {
     char buffer[1024];
-    cu_strcpy(buffer,name);
+    u2def_strcpy(buffer,name);
 return(unlink(buffer));
 }
