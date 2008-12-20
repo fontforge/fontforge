@@ -1989,11 +1989,15 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
     if ( drawit==tf_drawit ) {
 # if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
 	if ( gw->usecairo ) {
-	    _cairo_move_to(gw->cc,x,y);
+	    layout = gdisp->pangoc_layout;
+	    my_cairo_render_layout(gw->cc,col,layout,x,y);
+#if 0
+	    _cairo_move_to(gw->cc,x,y - fi->ascent);
 	    gw->ggc->fg = col;
 	    GXCDrawSetcolfunc(gw,gw->ggc);
 	    _pango_cairo_layout_path(gw->cc,layout);
 	    _cairo_fill(gw->cc);
+#endif
 	} else
 #endif
 	{
@@ -2115,7 +2119,6 @@ void _GXPDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color col) {
     if ( gw->usecairo ) {
 	layout = gdisp->pangoc_layout;
 	my_cairo_render_layout(gw->cc,col,layout,x,y);
-	_cairo_fill(gw->cc);
     } else
 #endif
     {
