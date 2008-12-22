@@ -33,9 +33,10 @@
 /* Preallocate an error dialog so that we can pop it up if things go really bad*/
 /*  ie. if memory gets munched somehow */
 
+#define ERR_LINE_MAX	20
 static GWindow error;
 static struct errinfo {
-    unichar_t *lines[8];
+    unichar_t *lines[ERR_LINE_MAX];
     unsigned int dismissed: 1;
     int width;
     enum err_type { et_info, et_warn, et_error, et_fatal } err_type;
@@ -49,12 +50,12 @@ static int e_h(GWindow gw, GEvent *event) {
 
     if ( event->type == et_expose ) {
 	max_len = 0;
-	for ( line = 0; line<8 && errinfo.lines[line]!=NULL; ++line ) {
+	for ( line = 0; line<ERR_LINE_MAX && errinfo.lines[line]!=NULL; ++line ) {
 	    len = GDrawGetTextWidth(gw,errinfo.lines[line],-1,NULL);
 	    if ( len>max_len ) max_len = len;
 	}
 	x = (errinfo.width-max_len)/2;
-	for ( line = 0; line<8 && errinfo.lines[line]!=NULL; ++line )
+	for ( line = 0; line<ERR_LINE_MAX && errinfo.lines[line]!=NULL; ++line )
 	    GDrawDrawText(gw,x, 10+10+15*line, errinfo.lines[line],-1,NULL,0x000000);
 
 	x = (errinfo.width-(len = GDrawGetTextWidth(gw,ok,2,NULL)))/2;
@@ -84,13 +85,13 @@ static void RunError() {
 }
 
 static void ProcessText(unichar_t *ubuf,char *buf, enum err_type et) {
-    int max_len = 40;
+    int max_len = 60, len;
     char *pt, *ept, *last_space;
     unichar_t *ue = ubuf;
     int line=0;
 
     pt = buf;
-    for ( line=0; line<8 && *pt; ++line ) {
+    for ( line=0; line<ERR_LINE_MAX && *pt; ++line ) {
 	last_space = NULL;
 	for ( ept = pt; *ept!='\n' && *ept!='\0' && ept-pt<max_len; ++ept )
 	    if ( *ept==' ' )
@@ -102,17 +103,31 @@ static void ProcessText(unichar_t *ubuf,char *buf, enum err_type et) {
 	if ( *ept=='\n' || *ept==' ' ) ++ept;
 	pt = ept;
     }
-    for ( ; line<8 ; ++line )
+    for ( ; line<ERR_LINE_MAX ; ++line )
 	errinfo.lines[line] = NULL;
     errinfo.err_type = et;
+
+    max_len = 0;
+    for ( line = 0; line<ERR_LINE_MAX && errinfo.lines[line]!=NULL; ++line ) {
+	len = GDrawGetTextWidth(error,errinfo.lines[line],-1,NULL);
+	if ( len>max_len ) max_len = len;
+    }
+    errinfo.width = max_len+30;
+    GDrawResize(error,max_len+30,15*line+50);
 }
 
 void _GDraw_InitError(GDisplay *gd) {
     GRect screen, pos;
     static unichar_t title[]= { 'E', 'r', 'r', 'o', 'r', '\0' };
     static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', '\0' };
+    static GDisplay *static_gd;
     GWindowAttrs wattrs;
     FontRequest rq;
+
+    if ( gd!=NULL )
+	static_gd = gd;
+    else
+	screen_display = gd = static_gd;
 
     if ( error != NULL )
 return;
