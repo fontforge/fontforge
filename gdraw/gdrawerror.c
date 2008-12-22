@@ -117,7 +117,7 @@ void _GDraw_InitError(GDisplay *gd) {
     if ( error != NULL )
 return;
     GDrawGetSize(GDrawGetRoot(gd),&screen);
-    
+
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_positioned|wam_cursor|wam_wtitle|wam_backcol|
 	    wam_restrict|wam_redirect|wam_isdlg;
@@ -153,6 +153,7 @@ void GDrawIError(const char *fmt,...) {
     vsprintf(buf+strlen(buf), fmt, ap);
     va_end(ap);
     fprintf( stderr, "%s\n", buf );
+    _GDraw_InitError(NULL);
     if ( error!=NULL ) {
 	ProcessText(ubuf,buf,et_error);
 	RunError();
@@ -166,6 +167,7 @@ void GDrawError(const char *fmt,...) {
     va_start(ap, fmt);
     vsprintf(buf, fmt, ap);
     va_end(ap);
+    _GDraw_InitError(NULL);
     if ( error==NULL )
 	fprintf( stderr, "%s\n", buf );
     else {
