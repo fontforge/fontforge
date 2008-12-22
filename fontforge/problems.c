@@ -1640,7 +1640,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	extended extrema[4];
 
 	if ( bound2<=0 )
-	    bound2 = (p->sc->parent->ascent + p->sc->parent->descent)/100.0;
+	    bound2 = (p->sc->parent->ascent + p->sc->parent->descent)/32.0;
 
 	bound2 *= bound2;
       ae_restart:

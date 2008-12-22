@@ -3128,12 +3128,150 @@ void SplineCharAddPointsOfInflection(SplineChar *sc, SplineSet *head) {
 }
 #endif
 
+int SpIsExtremum(SplinePoint *sp) {
+    BasePoint *ncp, *pcp;
+    if ( sp->next==NULL || sp->prev==NULL )
+return( true );
+    if ( !sp->nonextcp )
+	ncp = &sp->nextcp;
+    else if ( !sp->next->to->noprevcp )
+	ncp = &sp->next->to->prevcp;
+    else
+	ncp = &sp->next->to->me;
+    if ( !sp->noprevcp )
+	pcp = &sp->prevcp;
+    else if ( !sp->prev->to->nonextcp )
+	pcp = &sp->prev->to->nextcp;
+    else
+	pcp = &sp->prev->to->me;
+    if (( ncp->x<sp->me.x && pcp->x<sp->me.x ) ||
+	    (ncp->x>sp->me.x && pcp->x>sp->me.x ) ||
+	( ncp->y<sp->me.y && pcp->y<sp->me.y ) ||
+	    (ncp->y>sp->me.y && pcp->y>sp->me.y ) )
+return( true );
+
+return( false );
+}
+
+/* An extremum is very close to the end-point. So close that we don't want */
+/*  to add a new point. Instead try moving the control points around */
+/*  Two options: */
+/*    o  make the slope at the end point horizontal/vertical */
+/*    o  retain the slope at the other end-point, but move its cp closer to it*/
+static int ForceEndPointExtrema(Spline *s,int isto) {
+    SplinePoint *end;
+    BasePoint *cp, to;
+    bigreal t[2], d, xdiff, ydiff;
+    int p, isy, i;
+
+    if ( isto ) {
+	end = s->to; cp = &end->prevcp;
+    } else {
+	end = s->from; cp = &end->nextcp;
+    }
+    if ( (xdiff = cp->x - end->me.x)<0 ) xdiff = -xdiff;
+    if ( (ydiff = cp->y - end->me.y)<0 ) ydiff = -ydiff;
+    to = *cp;
+    /* To get here we know that the extremum is extremely close to the end */
+    /*  point, and adjusting the slope at the end-point may be all we need */
+    /*  to do. We won't need to adjust it by much, because it is so close. */
+
+    if ( xdiff<ydiff/10.0 && xdiff>0 ) {
+	to.x = end->me.x;
+	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
+	SPAdjustControl(end,cp,&to,s->order2);
+return( true );	/* We changed the slope */
+    } else if ( ydiff<xdiff/10 && ydiff>0 ) {
+	to.y = end->me.y;
+	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
+	SPAdjustControl(end,cp,&to,s->order2);
+return( true );	/* We changed the slope */
+    }
+
+    if ( s->order2 )
+return( false );		/* Can't do much with this. I hope this can't happen */
+
+    for ( isy=0; isy<2; ++isy ) {
+	p = 0;
+	if ( s->splines[isy].a!=0 ) {
+	    d = 4*s->splines[isy].b*s->splines[isy].b-4*3*s->splines[isy].a*s->splines[isy].c;
+	    if ( d>0 ) {
+		d = sqrt(d);
+		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],(-2*s->splines[isy].b+d)/(2*3*s->splines[isy].a));
+		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],(-2*s->splines[isy].b-d)/(2*3*s->splines[isy].a));
+	    }
+	} else if ( s->splines[isy].b!=0 ) {
+	    t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],-s->splines[isy].c/(2*s->splines[isy].b));
+	}
+	for ( i=0; i<p; ++i ) {
+	    if ( t[i]>0 && t[i]<.05 && !isto ) {
+		/* force this to 0 so the extremum is at the end point, */
+		/*  then guess what the to->prev control point must be for */
+		/*  that to work */
+		end = s->to; cp = &end->prevcp;
+		xdiff = .99 * (cp->x - end->me.x);
+		ydiff = .99 * (cp->y - end->me.y);
+		cp->x = end->me.x + xdiff;
+		cp->y = end->me.y + ydiff;
+		SplineRefigure(s);
+return( false );
+	    } else if ( t[i]<1.0 && t[i]>.95 && isto ) {
+		end = s->from; cp = &end->nextcp;
+		xdiff = .99 * (cp->x - end->me.x);
+		ydiff = .99 * (cp->y - end->me.y);
+		cp->x = end->me.x + xdiff;
+		cp->y = end->me.y + ydiff;
+		SplineRefigure(s);
+return( false );
+	    }
+	}
+    }
+
+return( -1 );		/* Didn't do anything */
+}
+
+int Spline1DCantExtremeX(const Spline *s) {
+    /* Sometimes we get rounding errors when converting from control points */
+    /*  to spline coordinates. These rounding errors can give us false */
+    /*  extrema. So do a sanity check to make sure it is possible to get */
+    /*  any extrema before actually looking for them */
+
+    if ( s->from->me.x>=s->from->nextcp.x &&
+	    s->from->nextcp.x>=s->to->prevcp.x &&
+	    s->to->prevcp.x>=s->to->me.x )
+return( true );
+    if ( s->from->me.x<=s->from->nextcp.x &&
+	    s->from->nextcp.x<=s->to->prevcp.x &&
+	    s->to->prevcp.x<=s->to->me.x )
+return( true );
+
+return( false );
+}
+
+int Spline1DCantExtremeY(const Spline *s) {
+    /* Sometimes we get rounding errors when converting from control points */
+    /*  to spline coordinates. These rounding errors can give us false */
+    /*  extrema. So do a sanity check to make sure it is possible to get */
+    /*  any extrema before actually looking for them */
+
+    if ( s->from->me.y>=s->from->nextcp.y &&
+	    s->from->nextcp.y>=s->to->prevcp.y &&
+	    s->to->prevcp.y>=s->to->me.y )
+return( true );
+    if ( s->from->me.y<=s->from->nextcp.y &&
+	    s->from->nextcp.y<=s->to->prevcp.y &&
+	    s->to->prevcp.y<=s->to->me.y )
+return( true );
+
+return( false );
+}
+
 Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	DBounds *b) {
     /* First find the extrema, if any */
     bigreal t[4], min;
     uint8 rmfrom[4], rmto[4];
-    int p, i,j, p_s, mini;
+    int p, i,j, p_s, mini, restart, forced;
     SplinePoint *sp;
     real len;
 
@@ -3156,8 +3294,12 @@ Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	if ( s->knownlinear )
 return(s);
 	p = 0;
-	if ( s->splines[0].a!=0 ) {
-	    double d = 4*s->splines[0].b*s->splines[0].b-4*3*s->splines[0].a*s->splines[0].c;
+	if ( Spline1DCantExtremeX(s) ) {
+	    /* If the control points are at the end-points then this (1D) spline is */
+	    /*  basically a line. But rounding errors can give us very faint extrema */
+	    /*  if we look for them */
+	} else if ( s->splines[0].a!=0 ) {
+	    bigreal d = 4*s->splines[0].b*s->splines[0].b-4*3*s->splines[0].a*s->splines[0].c;
 	    if ( d>0 ) {
 		d = sqrt(d);
 		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[0],(-2*s->splines[0].b+d)/(2*3*s->splines[0].a));
@@ -3180,8 +3322,8 @@ return(s);
 				( y-s->from->me.y<10*offsetbound && y-s->from->me.y>-10*offsetbound );
 		int close_to = ( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound) &&
 				( y-s->to->me.y<10*offsetbound && y-s->to->me.y>-10*offsetbound );
-		int remove_from = close_from  && GoodCurve(s->from,true);
-		int remove_to = close_to  && GoodCurve(s->to,false);
+		int remove_from = close_from  && GoodCurve(s->from,true) && !SpIsExtremum(s->from);
+		int remove_to = close_to  && GoodCurve(s->to,false) && !SpIsExtremum(s->to);
 		if (( x>b->minx && x<b->maxx  && len<lenbound ) ||
 			(close_from && !remove_from) || (close_to && !remove_to) ) {
 		    --p;
@@ -3196,8 +3338,12 @@ return(s);
 	}
 
 	p_s = p;
-	if ( s->splines[1].a!=0 ) {
-	    double d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
+	if ( Spline1DCantExtremeY(s) ) {
+	    /* If the control points are at the end-points then this (1D) spline is */
+	    /*  basically a line. But rounding errors can give us very faint extrema */
+	    /*  if we look for them */
+	} else if ( s->splines[1].a!=0 ) {
+	    bigreal d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
 	    if ( d>0 ) {
 		d = sqrt(d);
 		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[1],(-2*s->splines[1].b+d)/(2*3*s->splines[1].a));
@@ -3213,8 +3359,8 @@ return(s);
 			( x-s->from->me.x<offsetbound && x-s->from->me.x>-offsetbound);
 		int close_to = ( y-s->to->me.y<offsetbound && y-s->to->me.y>-offsetbound ) &&
 			( x-s->to->me.x<offsetbound && x-s->to->me.x>-offsetbound);
-		int remove_from = close_from  && GoodCurve(s->from,true);
-		int remove_to = close_to  && GoodCurve(s->to,false);
+		int remove_from = close_from  && GoodCurve(s->from,true) && !SpIsExtremum(s->from);
+		int remove_to = close_to  && GoodCurve(s->to,false) && !SpIsExtremum(s->to);
 		if (( y>b->miny && y<b->maxy && len<lenbound ) ||
 			(close_from && !remove_from) || (close_to && !remove_to) ) {
 		    --p;
@@ -3231,25 +3377,37 @@ return(s);
 	/* Throw out any t values which are not between 0 and 1 */
 	/*  (we do a little fudging near the endpoints so we don't get confused */
 	/*   by rounding errors) */
+	restart = false;
 	for ( i=0; i<p; ++i ) {
 	    if ( t[i]>0 && t[i]<.05 ) {
 		BasePoint test;
 		/* Expand strong gets very confused on zero-length splines so */
 		/*  don't let that happen */
-		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
-		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
-		if ( test.x== s->from->me.x && test.y==s->from->me.y )
-		    t[i] = 0;		/* Throw it out */
+		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d - s->from->me.x;
+		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d - s->from->me.y;
+		if ( test.x*test.x + test.y*test.y<1e-7 ) {
+		    if ( (forced = ForceEndPointExtrema(s,0))>=0 ) {
+			if ( forced && s->from->prev!=NULL )
+			    SplineAddExtrema(s->from->prev,always,lenbound,offsetbound,b);
+			restart = true;
+	break;
+		    }
+		}
 	    }
 	    if ( t[i]<1 && t[i]>.95 ) {
 		BasePoint test;
-		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
-		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
-		if ( test.x== s->to->me.x && test.y==s->to->me.y )
-		    t[i] = 1.0;		/* Throw it out */
+		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d - s->to->me.x;
+		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d - s->to->me.y;
+		if ( test.x*test.x + test.y*test.y < 1e-7 ) {
+		    if ( ForceEndPointExtrema(s,1)>=0 ) {
+			/* don't need to fix up next, because splinesetaddextrema will do that soon */
+			restart = true;
+	break;
+		    }
+		}
 	    }
 		
-	    if ( t[i]<.0001 || t[i]>.9999 ) {
+	    if ( t[i]<=0 || t[i]>=1.0 ) {
 		--p;
 		for ( j=i; j<p; ++j ) {
 		    t[j] = t[j+1];
@@ -3259,6 +3417,8 @@ return(s);
 		--i;
 	    }
 	}
+	if ( restart )
+    continue;
 
 	if ( p==0 )
 return(s);
@@ -4035,6 +4195,128 @@ return;
 	    sp->prevcp.y += -dot*unitn.x;
 	    SplineRefigure(sp->prev);
 	}
+    }
+}
+
+void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2) {
+    BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
+    int refig = false, otherchanged = false;
+
+    if ( sp->ttfindex==0xffff && order2 ) {
+	/* If the point itself is implied, then it's the control points that */
+	/*  are fixed. Moving a CP should move the implied point so that it */
+	/*  continues to be in the right place */
+	sp->me.x = (to->x+othercp->x)/2;
+	sp->me.y = (to->y+othercp->y)/2;
+	*cp = *to;
+	refig = true;
+    } else if ( sp->pointtype==pt_corner ) {
+	*cp = *to;
+    } else if ( sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve ) {
+	if ( sp->pointtype==pt_hvcurve ) {
+	    BasePoint diff;
+	    diff.x = to->x - sp->me.x;
+	    diff.y = to->y - sp->me.y;
+	    BP_HVForce(&diff);
+	    cp->x = sp->me.x + diff.x;
+	    cp->y = sp->me.y + diff.y;
+	} else {
+	    *cp = *to;
+	}
+	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) &&
+		(!order2 ||
+		 (cp==&sp->nextcp && sp->next!=NULL && sp->next->to->ttfindex==0xffff) ||
+		 (cp==&sp->prevcp && sp->prev!=NULL && sp->prev->from->ttfindex==0xffff)) ) {
+	    double len1, len2;
+	    len1 = sqrt((cp->x-sp->me.x)*(cp->x-sp->me.x) +
+			(cp->y-sp->me.y)*(cp->y-sp->me.y));
+	    len2 = sqrt((othercp->x-sp->me.x)*(othercp->x-sp->me.x) +
+			(othercp->y-sp->me.y)*(othercp->y-sp->me.y));
+	    len2 /= len1;
+	    othercp->x = len2 * (sp->me.x-cp->x) + sp->me.x;
+	    othercp->y = len2 * (sp->me.y-cp->y) + sp->me.y;
+	    otherchanged = true;
+	    if ( sp->next!=NULL && othercp==&sp->nextcp ) {
+		if ( order2 ) sp->next->to->prevcp = *othercp;
+		SplineRefigure(sp->next);
+	    } else if ( sp->prev!=NULL && othercp==&sp->prevcp ) {
+		if ( order2 ) sp->prev->from->nextcp = *othercp;
+		SplineRefigure(sp->prev);
+	    }
+	}
+	if ( cp==&sp->nextcp ) sp->prevcpdef = false;
+	else sp->nextcpdef = false;
+    } else {
+	BasePoint *bp;
+	if ( cp==&sp->prevcp && sp->next!=NULL )
+	    bp = &sp->next->to->me;
+	else if ( cp==&sp->nextcp && sp->prev!=NULL )
+	    bp = &sp->prev->from->me;
+	else
+	    bp = NULL;
+	if ( bp!=NULL ) {
+	    real angle = atan2(bp->y-sp->me.y,bp->x-sp->me.x);
+	    real len = sqrt((bp->x-sp->me.x)*(bp->x-sp->me.x) + (bp->y-sp->me.y)*(bp->y-sp->me.y));
+	    real dotprod =
+		    ((to->x-sp->me.x)*(bp->x-sp->me.x) +
+		     (to->y-sp->me.y)*(bp->y-sp->me.y));
+	    if ( len!=0 ) {
+		dotprod /= len;
+		if ( dotprod>0 ) dotprod = 0;
+		cp->x = sp->me.x + dotprod*cos(angle);
+		cp->y = sp->me.y + dotprod*sin(angle);
+	    }
+	}
+    }
+
+    if ( order2 ) {
+	if ( (cp==&sp->nextcp || otherchanged) && sp->next!=NULL ) {
+	    SplinePoint *osp = sp->next->to;
+	    if ( osp->ttfindex==0xffff ) {
+		osp->prevcp = sp->nextcp;
+		osp->me.x = (osp->prevcp.x+osp->nextcp.x)/2;
+		osp->me.y = (osp->prevcp.y+osp->nextcp.y)/2;
+		SplineRefigure(osp->next);
+	    }
+	}
+	if ( (cp==&sp->prevcp || otherchanged) && sp->prev!=NULL ) {
+	    SplinePoint *osp = sp->prev->from;
+	    if ( osp->ttfindex==0xffff ) {
+		osp->nextcp = sp->prevcp;
+		osp->me.x = (osp->prevcp.x+osp->nextcp.x)/2;
+		osp->me.y = (osp->prevcp.y+osp->nextcp.y)/2;
+		SplineRefigure(osp->prev);
+	    }
+	}
+    }
+
+    if ( cp->x==sp->me.x && cp->y==sp->me.y ) {
+	if ( cp==&sp->nextcp ) sp->nonextcp = true;
+	else sp->noprevcp = true;
+    }  else {
+	if ( cp==&sp->nextcp ) sp->nonextcp = false;
+	else sp->noprevcp = false;
+    }
+    if ( cp==&sp->nextcp ) sp->nextcpdef = false;
+    else sp->prevcpdef = false;
+
+    if ( sp->next!=NULL && cp==&sp->nextcp ) {
+	if ( order2 && !sp->nonextcp ) {
+	    sp->next->to->prevcp = *cp;
+	    sp->next->to->noprevcp = false;
+	}
+	SplineRefigureFixup(sp->next);
+    }
+    if ( sp->prev!=NULL && cp==&sp->prevcp ) {
+	if ( order2 && !sp->noprevcp ) {
+	    sp->prev->from->nextcp = *cp;
+	    sp->prev->from->nonextcp = false;
+	}
+	SplineRefigureFixup(sp->prev);
+    }
+    if ( refig ) {
+	SplineRefigure(sp->prev);
+	SplineRefigure(sp->next);
     }
 }
 
