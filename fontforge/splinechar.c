@@ -1512,7 +1512,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     /* Only check the splines in the glyph, not those in refs */
     bound2 = sc->parent->extrema_bound;
     if ( bound2<=0 )
-	bound2 = (sc->parent->ascent + sc->parent->descent)/100.0;
+	bound2 = (sc->parent->ascent + sc->parent->descent)/32.0;
     bound2 *= bound2;
     for ( ss=sc->layers[layer].splines, cnt=0; ss!=NULL; ss=ss->next ) {
 	first = NULL;
