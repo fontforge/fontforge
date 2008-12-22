@@ -1,3 +1,17 @@
+Notes for VMS created on 22 December 2008
+      -removed the "porting library", since it seems to be corrupt for new
+       versions of the CRTL. Now VMS-file names are not translated to
+       "unix-style" and vice versa. Only "unix-style is alolowed for the
+       moment. To force CRTL routines to return "unix-style" filenames one
+       has to define DECC$FILENAME_UNIX_REPORT to ENABLE, before running
+       fontforge.
+       i.e.
+          $ define DECC$FILENAME_UNIX_REPORT ENABLE
+	  $ fontforge
+	  $ deass DECC$FILENAME_UNIX_REPORT
+
+
+
 Notes for VMS created on 17 November 2005
 
 Compilation :

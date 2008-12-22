@@ -1098,8 +1098,12 @@ char *getPfaEditDir(char *buffer) {
 
     if ( dir==NULL )
 return( NULL );
-    sprintf(buffer,"%s/.FontForge", dir);
-    free(dir);
+#ifdef __VMS
+   sprintf(buffer,"%s/_FontForge", dir);
+#else
+   sprintf(buffer,"%s/.FontForge", dir);
+#endif
+   free(dir);
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );

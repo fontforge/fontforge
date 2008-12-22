@@ -27,9 +27,6 @@
 #ifndef _BASICS_H
 #define _BASICS_H
 
-#ifdef VMS		/* these three lines from Jacob Jansen, Open VMS port */
-# include <vms_jackets.h>
-#endif
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
