@@ -70,12 +70,20 @@ return( editdir );
     dir=gethomedir();
     if ( dir==NULL )
 return( NULL );
-    sprintf(buffer,"%s/.FontForge", dir);
-    /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
+#ifdef __VMS
+   sprintf(buffer,"%s/_FontForge", dir);
+#else
+   sprintf(buffer,"%s/.FontForge", dir);
+#endif
+   /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
     /*  if there is a .PfaEdit, then rename it to .FontForge */
     if ( access(buffer,F_OK)==-1 ) {
-	snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
-	if ( access(olddir,F_OK)==0 )
+#ifdef __VMS
+       snprintf(olddir,sizeof(olddir),"%s/_PfaEdit", dir);
+#else
+       snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
+#endif
+       if ( access(olddir,F_OK)==0 )
 	    rename(olddir,buffer);
     }
     free(dir);

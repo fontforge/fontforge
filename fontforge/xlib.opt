@@ -10,4 +10,3 @@ sys$library:intl/lib
 sys$library:iconv/lib
 sys$library:decw$xlibshr.exe/share
 sys$library:decw$xextlibshr.exe/share
-sys$share:vms_jackets.exe/share

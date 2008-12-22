@@ -24,9 +24,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef VMS		/* these three lines from Jacob Jansen, Open VMS port */
-# include <vms_jackets.h>
-#endif
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
