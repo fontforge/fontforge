@@ -2348,6 +2348,9 @@ extern void CanonicalContours(SplineChar *sc,int layer);
 extern void SplineSetJoinCpFixup(SplinePoint *sp);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
+extern int SpIsExtremum(SplinePoint *sp);
+extern int Spline1DCantExtremeX(const Spline *s);
+extern int Spline1DCantExtremeY(const Spline *s);
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
 	real offsetbound,DBounds *b);
 extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
@@ -2374,6 +2377,7 @@ extern void SplineCharDefaultPrevCP(SplinePoint *base);
 extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharTangentNextCP(SplinePoint *sp);
 extern void SplineCharTangentPrevCP(SplinePoint *sp);
+extern void SPAdjustControl(SplinePoint *sp,BasePoint *cp, BasePoint *to,int order2);
 extern void SPHVCurveForce(SplinePoint *sp);
 extern void SPSmoothJoint(SplinePoint *sp);
 extern int PointListIsSelected(SplinePointList *spl);

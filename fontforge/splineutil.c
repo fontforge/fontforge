@@ -3599,7 +3599,7 @@ double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
 return( temp.dval );
 	else
 return( u1.dval );
-    } else if ( slopem1<slope && slopem1<=slope ) {
+    } else if ( slopem1<slope && slopem1<=slope1 ) {
 	 /* Ok, things got better when we subtracted 1. */
 	 /*  Do they improve further if we subtract 1 more? */
 	temp = um1;
@@ -3738,8 +3738,17 @@ int Spline2DFindExtrema(const Spline *sp, extended extrema[4] ) {
     int i,j;
     BasePoint last, cur, mid;
 
-    SplineFindExtrema(&sp->splines[0],&extrema[0],&extrema[1]);
-    SplineFindExtrema(&sp->splines[1],&extrema[2],&extrema[3]);
+    /* If the control points are at the end-points then this (1D) spline is */
+    /*  basically a line. But rounding errors can give us very faint extrema */
+    /*  if we look for them */
+    if ( !Spline1DCantExtremeX(sp) )
+	SplineFindExtrema(&sp->splines[0],&extrema[0],&extrema[1]);
+    else
+	extrema[0] = extrema[1] = -1;
+    if ( !Spline1DCantExtremeY(sp) )
+	SplineFindExtrema(&sp->splines[1],&extrema[2],&extrema[3]);
+    else
+	extrema[2] = extrema[3] = -1;
 
     for ( i=0; i<3; ++i ) for ( j=i+1; j<4; ++j ) {
 	if ( (extrema[i]==-1 && extrema[j]!=-1) || (extrema[i]>extrema[j] && extrema[j]!=-1) ) {
@@ -3766,10 +3775,18 @@ int Spline2DFindExtrema(const Spline *sp, extended extrema[4] ) {
 	mid.x = (last.x+cur.x)/2; mid.y = (last.y+cur.y)/2;
 	if ( (mid.x==last.x || mid.x==cur.x) &&
 		(mid.y==last.y || mid.y==cur.y)) {
-	    for ( j=i+1; j<3; ++j )
-		extrema[j] = extrema[j+1]; 
+	    for ( j=i; j<3; ++j )
+		extrema[j] = extrema[j+1];
+	    extrema[3] = -1;
+	    --i;
 	} else
 	    last = cur;
+    }
+    if ( extrema[0]!=-1 ) {
+	mid.x = (last.x+sp->to->me.x)/2; mid.y = (last.y+sp->to->me.y)/2;
+	if ( (mid.x==last.x || mid.x==cur.x) &&
+		(mid.y==last.y || mid.y==cur.y))
+	    extrema[i-1] = -1;
     }
     for ( i=0; i<4 && extrema[i]!=-1; ++i );
     if ( i!=0 ) {

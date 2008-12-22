@@ -539,9 +539,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     char buf[12];
     int isfake;
 
-    if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
-	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
-	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y)) )
+    if ( cv->markextrema && SpIsExtremum(sp) )
 	 col = extremepointcol;
     if ( sp->selected )
 	 col = selectedpointcol;

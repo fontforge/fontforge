@@ -808,8 +808,10 @@ void FVAddExtrema(FontViewBase *fv) {
 	    last = sc->layer_cnt-1;
 	} else
 	    first = last = fv->active_layer;
-	for ( layer = first; layer<=last; ++layer )
+	for ( layer = first; layer<=last; ++layer ) {
+	    SCPreserveLayer(sc,layer,false);
 	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,emsize);
+	}
 	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())
     break;
