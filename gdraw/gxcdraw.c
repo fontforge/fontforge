@@ -65,14 +65,17 @@ return;		/* Not 10.5.* or we've got the Xorg distribution */
     fprintf( stderr, " simply create the file \"/usr/X11R6/bin/Xnest\" and\n" );
     fprintf( stderr, " fontforge will shut up.\n" );
     GDrawError(
-	"You appear to have a version of X11 with a bug in it.\n" 
-	" This bug will cause fontforge to crash if it attempts\n" 
-	" to use the pango or cairo libraries. FontForge will\n" 
-	" not attempt to use these libraries.\n\n" 
-	"You can install a fix by going to <Apple>->Software Update\n" 
-	" and selecting \"Mac OS X Update Combined\".\n\n" 
-	"If you believe you do have the correct software, then\n" 
-	" simply create the file \"/usr/X11R6/bin/Xnest\" and\n" 
+	"You appear to have a version of X11 with a bug in it."
+	" This bug will cause fontforge to crash if it attempts"
+	" to use the pango or cairo libraries. FontForge will"
+	" not attempt to use these libraries.\n\n"
+	"You can install a fix by going to <Apple>->Software Update"
+	" and selecting \"Mac OS X Update Combined\".\n\n"
+	"If you don't want to see this message at startup, go to"
+	" File->Preferences->Generic and turn off both"
+	" UseCairo and UsePango.\n\n"
+	"If you believe you do have the correct software, then"
+	" simply create the file \"/usr/X11R6/bin/Xnest\" and"
 	" fontforge will shut up.\n"
     );
 #endif
