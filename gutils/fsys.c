@@ -427,27 +427,27 @@ return( false );
 
 int u_GFileIsDir(const unichar_t *file) {
     char buffer[1024];
-    u2def_strcpy(buffer,file);
+    u2def_strncpy(buffer,file,sizeof(buffer));
     strcat(buffer,"/.");
 return( access(buffer,0)==0 );
 }
 
 int u_GFileExists(const unichar_t *file) {
     char buffer[1024];
-    u2def_strcpy(buffer,file);
+    u2def_strncpy(buffer,file,sizeof(buffer));
 return( access(buffer,0)==0 );
 }
 
 int u_GFileModifyable(const unichar_t *file) {
     char buffer[1024];
-    u2def_strcpy(buffer,file);
+    u2def_strncpy(buffer,file,sizeof(buffer));
 return( access(buffer,02)==0 );
 }
 
 int u_GFileModifyableDir(const unichar_t *file) {
     char buffer[1024], *pt;
 
-    u2def_strcpy(buffer,file);
+    u2def_strncpy(buffer,file,sizeof(buffer));
     pt = strrchr(buffer,'/');
     if ( pt==NULL )
 	strcpy(buffer,".");
@@ -458,24 +458,24 @@ return( GFileModifyable(buffer));
 
 int u_GFileReadable(unichar_t *file) {
     char buffer[1024];
-    u2def_strcpy(buffer,file);
+    u2def_strncpy(buffer,file,sizeof(buffer));
 return( access(buffer,04)==0 );
 }
 
 int u_GFileMkDir(unichar_t *name) {
     char buffer[1024];
-    u2def_strcpy(buffer,name);
+    u2def_strncpy(buffer,name,sizeof(buffer));
 return( MKDIR(buffer,0755));
 }
 
 int u_GFileRmDir(unichar_t *name) {
     char buffer[1024];
-    u2def_strcpy(buffer,name);
+    u2def_strncpy(buffer,name,sizeof(buffer));
 return(rmdir(buffer));
 }
 
 int u_GFileUnlink(unichar_t *name) {
     char buffer[1024];
-    u2def_strcpy(buffer,name);
+    u2def_strncpy(buffer,name,sizeof(buffer));
 return(unlink(buffer));
 }
