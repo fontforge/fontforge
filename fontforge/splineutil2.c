@@ -4764,6 +4764,7 @@ int SplinePointListIsClockwise(const SplineSet *spl) {
     dummy.layers = layers;
     dummy.layer_cnt = 2;
     dummy.layers[ly_fore].splines = (SplineSet *) spl;
+    dummy.name = "Clockwise Test";
     next = spl->next; ((SplineSet *) spl)->next = NULL;
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
