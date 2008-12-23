@@ -129,6 +129,9 @@ void _GDraw_InitError(GDisplay *gd) {
     else
 	screen_display = gd = static_gd;
 
+    if ( gd==NULL )
+return;
+
     if ( error != NULL )
 return;
     GDrawGetSize(GDrawGetRoot(gd),&screen);
