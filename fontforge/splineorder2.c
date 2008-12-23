@@ -341,7 +341,7 @@ return( start );
 
     dt = (tmax-tmin)/ddim;
     forceit = false;
- force_end:
+/* force_end: */
     unforceable = false;
     for ( t=tmax; t>tmin+dt/128; t-= dt ) {		/* dt/128 is a hack to avoid rounding errors */
 	x = ((ps->splines[0].a*t+ps->splines[0].b)*t+ps->splines[0].c)*t+ps->splines[0].d;
@@ -372,10 +372,12 @@ return( start );
 	    unforceable = true;
 	/* Make the quadratic spline from (xmin,ymin) through (cx,cy) to (x,y)*/
 	if ( forceit || buildtestquads(&ttf,xmin,ymin,cx,cy,x,y,tmin,t,err,ps,&bb)) {
+#if 0
 	    if ( !forceit && !unforceable && (rend.x-x)*(rend.x-x)+(rend.y-y)*(rend.y-y)<4*4 ) {
 		forceit = true;
  goto force_end;
 	    }
+#endif
 	    sp = MakeQuadSpline(start,&ttf,x,y,t,ps->to);
 	    forceit = false;
 	    if ( t==tmax )
@@ -589,7 +591,7 @@ return( qcnt+1 );
     }
 
     for ( ptcnt=0; ptcnt<10; ++ptcnt ) {
-	if ( ptcnt>1 && distance/(ptcnt*ptcnt)<100 )
+	if ( ptcnt>1 && distance/(ptcnt*ptcnt)<16 )
 return( -1 );			/* Points too close for a good approx */
 	q = qcnt;
 	data2[ptcnt+1].bp = end;
