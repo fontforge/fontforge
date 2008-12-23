@@ -35,7 +35,7 @@ libgutils_OBJECTS = divisors.lo fsys.lo gcol.lo gimage.lo gimagereadbmp.lo \
  gio.lo giofile.lo giohosts.lo giomime.lo giothread.lo giotrans.lo
 libgioftp_OBJECTS = gioftp.lo
 
-Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
 
 both: ../libgutils.la ../libgioftp.la

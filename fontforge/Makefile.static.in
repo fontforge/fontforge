@@ -52,7 +52,7 @@ fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
 DIFFOBJS = sfddiff.o stamp.o $(fontforge_LIBOBJECTS) 
 ACORNOBJS = acorn2sfd.o stamp.o $(fontforge_LIBOBJECTS) 
 
-_CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
+_CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
     @CPPFLAGS@ '-DPREFIX="@prefix@"'
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)

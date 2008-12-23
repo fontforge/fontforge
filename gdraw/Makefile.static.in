@@ -24,7 +24,7 @@ libgdraw_OBJECTS =  choosericons.o ctlvalues.o drawboxborder.o \
  gtextfield.o gtextinfo.o gwidgets.o gxdraw.o gxcdraw.o \
  ghvbox.o gmatrixedit.o gdrawable.o gspacer.o xkeysyms_unicode.o
 
-Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
 
 all: ../libs/libgdraw.a
