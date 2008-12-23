@@ -437,7 +437,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	    scale = fl->fd->pointsize*li->dpi / (72.0*(fl->fd->sf->ascent+fl->fd->sf->descent));
 	    for ( i=0; fl->ottext[i].sc!=NULL; ++i ) {
 		fl->ottext[i].fl = fl;
-		if ( fl->fd->bdf!=NULL ) {
+		if ( fl->fd->bdf!=NULL && fl->ottext[i].sc->orig_pos!=-1 ) {
 		    /* tt instructions might change the advance width fromt he expected value */
 		    fl->ottext[i].advance_width = BDFPieceMealCheck(fl->fd->bdf,fl->ottext[i].sc->orig_pos )->width;
 		} else
