@@ -27,7 +27,7 @@ ffgtk_OBJECTS = fontview.o startgtk.o uiutil.o cursors.o windowmenu.o prefs.o \
 gtk_widget_OBJECTS = gwwvmenubar.o gwwvask.o gwwvprogress.o
 glade_OBJECTS = ff_interface.o support.o
 
-_CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I$(top_srcdir) @WFLAGS@ $(X_CFLAGS) \
+_CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I$(top_srcdir) @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
     @CPPFLAGS@ '-DPREFIX="@prefix@"'
 CFLAGS = @CFLAGS@ $(_CFLAGS) `pkg-config --cflags gtk+-2.0`

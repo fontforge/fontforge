@@ -14,7 +14,7 @@ LIBTOOL = @LIBTOOL@
 INSTALL = @INSTALL@
 CC = @CC@
 
-_CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. -I$(top_srcdir)/fontforge \
+_CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. -I$(top_srcdir)/fontforge \
     @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
     @CPPFLAGS@ '-DPREFIX="@prefix@"'

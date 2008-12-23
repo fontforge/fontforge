@@ -59,7 +59,7 @@ fontforge_SCRIPTOBJ = startnoui.o stamp.o
 DIFFOBJS = sfddiff.o stamp.o
 ACORNOBJS = acorn2sfd.o stamp.o
 
-_CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
+_CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
     @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
     @CPPFLAGS@ '-DPREFIX="@prefix@"'
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
