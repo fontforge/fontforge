@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Dec-2008 -->
+  <!-- AP: Last modified: 24-Dec-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,15 +47,65 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      24-Dec-2008
+      <UL>
+	<LI>
+	  <TABLE BGCOLOR="#ffff00">
+	    <TR>
+	      <TD>Apple appears to have shipped a buggy version of X11 with 10.5. The problem
+		appears fixed in 10.5.6 (It may have been fixed earlier, but I don't have
+		a machine on which I can test that).
+		<P>
+		The problem only affects fontforge it if uses pango or cairo.
+		<P>
+		This release of fontforge tries to check for a buggy system, and if it thinks
+		it is running on one, then it will refuse to use Pango and Cairo.
+		<P>
+		The problem does not affect Mac 10.4.* 
+		  <HR>
+		You may upgrade from 10.5 to 10.5.6 by going to the Apple Menu and selecting
+		the "Software Update" menu item, and then the "Mac OS X Update Combined".
+		<P>
+		You probably need to install X11 <STRONG>before</STRONG> you upgrade the
+		Operating System.</TD>
+	    </TR>
+	  </TABLE>
+	<LI>
+	  Fix more memory problems in Merge Fonts.
+	<LI>
+	  If a font were missing a .notdef glyph. If the user tried to display a font
+	  sample of text which included a character not in the font. Then (after the
+	  recent patches for grid-fit metrics in Print dlg) fontforge would crash.
+	<LI>
+	  Fix a bug in old cubic to quadratic conversion.
+	<LI>
+	  Lots of changes to extrema code.
+	  <OL>
+	    <LI>
+	      Find problems and add extrema had different defn of "short" splines (ones
+	      which could have extrema) so we'd get conflicting behavior.
+	    <LI>
+	      FontView add extrema couldn't be undone.
+	    <LI>
+	      Many improvements in the algorithm. Too worried of rounding errors before.
+	  </OL>
+	<LI>
+	  Initializing the font info dialog crashed on the mac when -O2 was specified
+	  during configure (the default situation).
+	<LI>
+	  After adding an Apply button the Transform dlg would crash if invoked in
+	  a glyph with no undoes.
+      </UL>
+    <LI>
       15-Dec-2008
       <UL>
 	<LI>
-	  Add an <A href="resedit.html">X resource editor</A>. 
+	  Add an <A href="resedit.html">X resource editor</A>.
 	<LI>
 	  Make the metrics view be more like the display dlg in that you can specify
 	  a point-size/dpi to view stuff (also include increment/decrement pointsize).
-	  Fix Display dlg so that it passes freetype a point size/dpi combination
-	  rather than the (almost) equivalent pixelsize.
+	  Fix Display dlg so that it passes freetype a point size/dpi combination rather
+	  than the (almost) equivalent pixelsize.
 	<LI>
 	  Patch by "JustFillBug" to exend python scripting by making the find interator
 	  become a find/replace iterator.
@@ -119,8 +169,8 @@
 	  loading of Apple gvar fonts broken.
 	<LI>
 	  Redo all the default font family names we ask for. For example "Helvetica"
-	  is provided by X11 bitmaps, but not by fontconfig. Now provide a set of
-	  names for each family grouping which will work with either font provider.
+	  is provided by X11 bitmaps, but not by fontconfig. Now provide a set of names
+	  for each family grouping which will work with either font provider.
 	<LI>
 	  Back before supporting multiple layers, the transform dlg had an entry "Transform
 	  Background too", that should be changed to "Transform all layers".
