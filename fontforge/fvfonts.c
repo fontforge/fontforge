@@ -81,7 +81,7 @@ return( NULL );
     if ( mc->lks[l].to!=NULL )
 return( mc->lks[l].to );
 
-    mc->lks[l].to = newotl = chunkalloc(sizeof(struct lookup_subtable));
+    mc->lks[l].to = newotl = chunkalloc(sizeof(OTLookup));
     newotl->lookup_name = strconcat(mc->prefix,otl->lookup_name);
     newotl->lookup_type = otl->lookup_type;
     newotl->lookup_flags = otl->lookup_flags;
