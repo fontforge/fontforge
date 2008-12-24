@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 15-Sep-2008 -->
+  <!-- AP: Last modified: 24-Dec-2008 -->
   <TITLE>FontForge install procedures for macintosh</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -71,9 +71,28 @@
 	<LI>
 	  Keep pressing <CODE>Continue</CODE>
 	<LI>
-	  (I have been told that if you have already installed the developer's tools
-	  (XCode or whatever) then part of X11 will be on your system but you still
-	  need to instal the X11User package)
+	  (If you want to build from source you should also install the Xcode packages).
+	<LI>
+	  <TABLE BGCOLOR="#ffff00">
+	    <TR>
+	      <TD>Apple appears to have shipped a buggy version of X11 with 10.5. The problem
+		appears fixed in 10.5.6 (It may have been fixed earlier, but I don't have
+		a machine on which I can test that).
+		<P>
+		The problem only affects fontforge it if uses pango or cairo.
+		<P>
+		This release of fontforge tries to check for a buggy system, and if it thinks
+		it is running on one, then it will refuse to use Pango and Cairo.
+		<P>
+		The problem does not affect Mac 10.4.* 
+		  <HR>
+		You may upgrade from 10.5 to 10.5.6 by going to the Apple Menu and selecting
+		the "Software Update" menu item, and then the "Mac OS X Update Combined".
+		<P>
+		You probably need to install X11 <STRONG>before</STRONG> you upgrade the
+		Operating System.</TD>
+	    </TR>
+	  </TABLE>
       </UL>
     <DT>
       10.3
@@ -89,14 +108,14 @@
   <P>
   You may also want to install the
   <A HREF="http://fink.sourceforge.net/">fink</A> or
-  <a href="http://www.macports.org/">macports</a> packages which includes many
+  <A href="http://www.macports.org/">macports</A> packages which includes many
   useful libraries (see the
   <A HREF="source-build.html#Dependencies">dependencies</A> section below for
   more info on this)
-  <p>
+  <P>
   I've made a quick and dirty package which contains exactly what fontforge
   needs and placed it on
-  <A href="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=302003&amp;release_id=645772">sourceforge</a>.
+  <A href="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=302003&amp;release_id=645772">sourceforge</A>.
   <H5>
     <A NAME="Configuring-X11">Configuring</A> X11
   </H5>
@@ -139,8 +158,8 @@
   <P>
   <STRONG>Neither of these builds will work on 10.3</STRONG>. If you wish a
   10.3 build you can <A HREF="source-build.html">build from current source</A>,
-  or download a build from 2006. If you wish a 10.2 or earlier build the
-  current sources will not work and you must delve more deeply into the past.
+  or download a build from 2006. If you wish a 10.2 or earlier build the current
+  sources will not work and you must delve more deeply into the past.
   <UL>
     <LI>
       If you follow the
