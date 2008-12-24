@@ -333,9 +333,9 @@ if test "$gww_checkpango" = "yes" ; then
 	  LDFLAGS="$LDFLAGS $pan_libs"
       fi
    ], : )
-  if test "$pan_headers" != "" >& /dev/null ; then
+  if test "$pan_headers" != "" > /dev/null 2>&1 ; then
     gww_haspango="done"
-  elif pkg-config --libs pangoxft >& /dev/null ; then
+  elif pkg-config --libs pangoxft > /dev/null 2>&1 ; then
     AC_CHECK_HEADER(X11/Xft/Xft.h, gww_haspango="yes",,[#include <ft2build.h>])
   else
     for gww_prefix in /usr /usr/local /sw /opt/local /usr/X11R6/
@@ -352,7 +352,7 @@ if test "$gww_haspango" = "yes" ; then
  CFLAGS="$CFLAGS `pkg-config --cflags pangoxft`"
 fi
 if test "$gww_haspango" = "yes" -a "$gww_hascairo" = "yes" ; then
-  if pkg-config --libs pangocairo >& /dev/null ; then
+  if pkg-config --libs pangocairo > /dev/null 2>&1 ; then
     gww_haspangocairo="yes"
     CFLAGS="$CFLAGS `pkg-config --cflags pangocairo`"
   fi

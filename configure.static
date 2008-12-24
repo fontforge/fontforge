@@ -8432,9 +8432,9 @@ else
   :
 fi
 
-  if test "$pan_headers" != "" >& /dev/null ; then
+  if test "$pan_headers" != "" > /dev/null 2>&1 ; then
     gww_haspango="done"
-  elif pkg-config --libs pangoxft >& /dev/null ; then
+  elif pkg-config --libs pangoxft > /dev/null 2>&1 ; then
     { echo "$as_me:$LINENO: checking for X11/Xft/Xft.h" >&5
 echo $ECHO_N "checking for X11/Xft/Xft.h... $ECHO_C" >&6; }
 if test "${ac_cv_header_X11_Xft_Xft_h+set}" = set; then
@@ -8499,7 +8499,7 @@ if test "$gww_haspango" = "yes" ; then
  CFLAGS="$CFLAGS `pkg-config --cflags pangoxft`"
 fi
 if test "$gww_haspango" = "yes" -a "$gww_hascairo" = "yes" ; then
-  if pkg-config --libs pangocairo >& /dev/null ; then
+  if pkg-config --libs pangocairo > /dev/null 2>&1 ; then
     gww_haspangocairo="yes"
     CFLAGS="$CFLAGS `pkg-config --cflags pangocairo`"
   fi
