@@ -300,6 +300,8 @@ typedef struct metricsview {
     BasePoint ap_start;
     int cursor;
     int scale_index;
+    int layer;
+    int ptsize, dpi;
     struct lookup_subtable *cur_subtable;
     /*GTextInfo *scriptlangs;*/
 } MetricsView;

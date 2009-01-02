@@ -48,6 +48,7 @@ static void _dousage(void) {
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
     printf( "\t-recover none|auto|clean (control error recovery)\n" );
+    printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf' table\n\t\t\t of a truetype collection)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
@@ -100,7 +101,7 @@ static struct library_descriptor {
 } libs[] = {
     {
 #ifdef PYTHON_LIB_NAME
-	#PYTHON_LIB_NAME,
+	"lib" PYTHON_LIB_NAME,
 #else
 	"libpython-",		/* a bad name */
 #endif
@@ -384,6 +385,7 @@ static int ParseArgs( gpointer data ) {
     int recover = args->recover;
     int any, i;
     int next_recent = 0;
+    int openflags = 0;
 
     /* Wait until the UI has started, otherwise people who don't have consoles*/
     /*  open won't get our error messages, and it's an important one */
@@ -413,7 +415,7 @@ static int ParseArgs( gpointer data ) {
 #endif
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
-		if ( ViewPostscriptFont(RecentFiles[next_recent++]))
+		if ( ViewPostscriptFont(RecentFiles[next_recent++],openflags))
 		    any = 1;
 	} else if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
@@ -422,6 +424,8 @@ static int ParseArgs( gpointer data ) {
 	else if ( strcmp(pt,"-recover")==0 && i<argc-1 )
 	    ++i; /* As above, this is already done, but this one takes an */
 	         /*  argument, so skip that too */
+	else if ( strcmp(pt,"-allglyphs")==0 )
+		openflags |= of_all_glyphs_in_ttc;
 	else {
 	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
@@ -431,14 +435,14 @@ static int ParseArgs( gpointer data ) {
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
 		    free(fname);
-		    if ( ViewPostscriptFont(buffer) )
+		    if ( ViewPostscriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
 			free(fname);
-			if ( ViewPostscriptFont(buffer) )
+			if ( ViewPostscriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
 			free(fname);
@@ -449,12 +453,12 @@ static int ParseArgs( gpointer data ) {
 			}
 			fname = GetPostscriptFontName(buffer,false);
 			if ( fname!=NULL )
-			    ViewPostscriptFont(fname);
+			    ViewPostscriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
 			free(fname);
 		    }
 		}
-	    } else if ( ViewPostscriptFont(buffer)!=0 )
+	    } else if ( ViewPostscriptFont(buffer,openflags)!=0 )
 		any = 1;
 	}
     }

@@ -180,8 +180,9 @@ void FVMarkHintsOutOfDate(SplineChar *sc) {
     int i, j;
     int pos;
     FontView *fv;
+    int l = sc->layer_cnt;
 
-    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->parent->order2 )
+    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->parent->layers[l].order2 )
 return;
     for ( fv = (FontView *) sc->parent->fv; fv!=NULL; fv=(FontView *) fv->b.nextsame ) {
 	if ( fv->b.sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
@@ -983,7 +984,7 @@ return;
 	    if ( fpt!=NULL ) *fpt = '\0';
 	    full = galloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
-	    ViewPostscriptFont(full);
+	    ViewPostscriptFont(full,0);
 	    file = fpt+2;
 	    free(full);
 	} while ( fpt!=NULL );
@@ -1355,7 +1356,8 @@ void FontViewMenu_SelectUnhintedGlyphs(GtkMenuItem *menuitem, gpointer user_data
     int i, gid;
     EncMap *map = fv->b.map;
     SplineFont *sf = fv->b.sf;
-    int order2 = sf->order2;
+    int l = sf->layer_cnt;
+    int order2 = sf->layers[l].order2;
 
     for ( i=0; i< map->enccount; ++i )
 	fv->b.selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
@@ -1896,7 +1898,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	FontViewReformatOne(&fv->b);
 	FVSetTitle( (FontViewBase *) &fv->b);
     }
-    newbdf = SplineFontPieceMeal(fv->b.sf,fv->filled->pixelsize,
+    newbdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -2152,7 +2154,7 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
 	    if ( fvs==NULL )
 	break;
 	    old = fvs->filled;
-	    new = SplineFontPieceMeal(fvs->b.sf,dspsize,
+	    new = SplineFontPieceMeal(fvs->b.sf,fv->b.active_layer,dspsize,72,
 		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !fvs->b.sf->strokedfont && !fvs->b.sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -2367,8 +2369,10 @@ void FontViewMenu_EditTable(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 void FontViewMenu_PrivateToCvt(GtkMenuItem *menuitem, gpointer user_data) {
+#if 0
     FontView *fv = FV_From_MI(menuitem);
     CVT_ImportPrivate(fv->b.sf);
+#endif
 }
 
 void FontViewMenu_ClearInstrs(GtkMenuItem *menuitem, gpointer user_data) {
@@ -3245,10 +3249,10 @@ void FontViewMenu_ActivateBuild(GtkMenuItem *menuitem, gpointer user_data) {
 	sc = fv->b.sf->glyphs[gid];
 	if ( sc==NULL )
 	    sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,i);
-	if ( SFIsSomethingBuildable(fv->b.sf,sc,true)) {
+	if ( SFIsSomethingBuildable(fv->b.sf,sc,fv->b.active_layer,true)) {
 	    anybuildableaccents = anybuildable = true;
     break;
-	} else if ( SFIsSomethingBuildable(fv->b.sf,sc,false))
+	} else if ( SFIsSomethingBuildable(fv->b.sf,sc,fv->b.active_layer,false))
 	    anybuildable = true;
     }
 
@@ -3311,7 +3315,7 @@ void FontViewMenu_ActivateElement(GtkMenuItem *menuitem, gpointer user_data) {
 		sc = fv->b.sf->glyphs[gid];
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,i);
-	    if ( SFIsSomethingBuildable(fv->b.sf,sc,false)) {
+	    if ( SFIsSomethingBuildable(fv->b.sf,sc,fv->b.active_layer,false)) {
 		anybuildable = true;
 	break;
 	    }
@@ -3352,39 +3356,40 @@ void FontViewMenu_ActivateHints(GtkMenuItem *menuitem, gpointer user_data) {
     int anychars = FVAnyCharSelected(fv);
     int anygid = anychars<0 ? -1 : fv->b.map->map[anychars];
     int multilayer = fv->b.sf->multilayer;
+    int l = fv->b.sf->layer_cnt;
 
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "autohint1" ),
 	    anygid!=-1 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "hint_subsitution_pts1" ),
-	    !fv->b.sf->order2 && anygid!=-1 && !multilayer );
+	    !fv->b.sf->layers[l].order2 && anygid!=-1 && !multilayer );
     if ( fv->b.sf->mm!=NULL && fv->b.sf->mm->apple )
 	gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "hint_subsitution_pts1" ),
 		false);
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "auto_counter_hint1" ),
-	    !fv->b.sf->order2 && anygid!=-1 && !multilayer );
+	    !fv->b.sf->layers[l].order2 && anygid!=-1 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "dont_autohint1" ),
-	    !fv->b.sf->order2 && anygid!=-1 && !multilayer );
+	    !fv->b.sf->layers[l].order2 && anygid!=-1 && !multilayer );
 
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "autoinstr1" ),
-	    fv->b.sf->order2 && anygid!=-1 && !multilayer );
+	    fv->b.sf->layers[l].order2 && anygid!=-1 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "edit_instructions1" ),
-	    fv->b.sf->order2 && anygid>=0 && !multilayer );
+	    fv->b.sf->layers[l].order2 && anygid>=0 && !multilayer );
 
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "edit_fpgm1" ),
-	    fv->b.sf->order2 && !multilayer );
+	    fv->b.sf->layers[l].order2 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "edit_prep1" ),
-	    fv->b.sf->order2 && !multilayer );
+	    fv->b.sf->layers[l].order2 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "edit_cvt_1" ),
-	    fv->b.sf->order2 && !multilayer );
+	    fv->b.sf->layers[l].order2 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "edit_maxp1" ),
-	    fv->b.sf->order2 && !multilayer );
+	    fv->b.sf->layers[l].order2 && !multilayer );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "private_to_cvt_1" ),
-	    fv->b.sf->order2 && !multilayer );
+	    fv->b.sf->layers[l].order2 && !multilayer );
 
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "clear_hints1" ),
 	    anygid!=-1 );
     gtk_widget_set_sensitive(lookup_widget( GTK_WIDGET(menuitem), "clear_instructions1" ),
-	    fv->b.sf->order2 && anygid!=-1 );
+	    fv->b.sf->layers[l].order2 && anygid!=-1 );
 }
 
 /* Builds up a menu containing all the anchor classes */
@@ -3794,7 +3799,7 @@ return( base_sc );
 	    if ( feat_sc!=NULL )
 return( feat_sc );
 	}
-	feat_sc = SplineCharCreate();
+	feat_sc = SFSplineCharCreate(sf);
 	feat_sc->parent = sf;
 	feat_sc->unicodeenc = uni;
 	if ( uni!=-1 ) {
@@ -4051,13 +4056,14 @@ gboolean FontViewView_Expose(GtkWidget *widget, GdkEventExpose *event, gpointer 
     int styles, laststyles=0;
     GdkPixbuf *rotated=NULL;
     int em = fv->b.sf->ascent+fv->b.sf->descent;
-    int yorg = fv->magnify*(fv->show->ascent-fv->b.sf->vertical_origin*fv->show->pixelsize/em);
+    int yorg = fv->magnify*(fv->show->ascent);
     GdkRectangle r, full, box;
     GdkGCValues values;
     GdkGC *gc = fv->gc;
     GdkColor col, *gdk_def_fg = &widget->style->fg[widget->state];
     Color bg, def_fg = COLOR_CREATE( (gdk_def_fg->red>>8), (gdk_def_fg->green>>8), (gdk_def_fg->blue>>8));
     uint32 clut[256];
+    int l = fv->b.sf->layer_cnt;
 
     full.x = full.y = 0; full.width = full.height = 5000;
     gdk_gc_get_values(gc,&values);
@@ -4229,13 +4235,13 @@ gboolean FontViewView_Expose(GtkWidget *widget, GdkEventExpose *event, gpointer 
 			r.x,r.y, r.width,r.height);
 		gdk_gc_set_values(gc,&values, GDK_GC_FOREGROUND );
 	    }
-	    if ( (!fv->b.sf->order2 && sc->changedsincelasthinted ) ||
-		     ( fv->b.sf->order2 && sc->layers[ly_fore].splines!=NULL &&
+	    if ( (!fv->b.sf->layers[l].order2 && sc->changedsincelasthinted ) ||
+		     ( fv->b.sf->layers[l].order2 && sc->layers[ly_fore].splines!=NULL &&
 			sc->ttf_instrs_len<=0 ) ||
-		     ( fv->b.sf->order2 && sc->instructions_out_of_date ) ) {
+		     ( fv->b.sf->layers[l].order2 && sc->instructions_out_of_date ) ) {
 		GdkColor hintcol;
 		memset(&hintcol,0,sizeof(hintcol));
-		if ( fv->b.sf->order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 ) {
+		if ( fv->b.sf->layers[l].order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 ) {
 		    hintcol.red  = 0xffff;
 		    hintcol.pixel = 0xff0000;
 		} else {
@@ -5140,7 +5146,7 @@ return;
     break;
 	old = fv->filled;
 				/* In CID fonts fv->b.sf may not be same as sf */
-	new = SplineFontPieceMeal(fv->b.sf,fv->filled->pixelsize,
+	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -5171,7 +5177,8 @@ return;
     }
     for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
 	BDFFontFree(mvs->show);
-	mvs->show = SplineFontPieceMeal(sf,mvs->pixelsize,mvs->antialias?pf_antialias:0,NULL);
+	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->ptsize,mvs->dpi,
+                mvs->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	gtk_widget_queue_draw(mvs->gw);
     }
 }
@@ -5311,7 +5318,7 @@ static FontView *FontView_Create(SplineFont *sf) {
 	fv->filled = ((FontView *) fv->b.nextsame)->filled;
 	bdf = ((FontView *) fv->b.nextsame)->show;
     } else {
-	bdf = SplineFontPieceMeal(fv->b.sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
+	bdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,sf->display_size<0?-sf->display_size:default_fv_font_size,72,
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
