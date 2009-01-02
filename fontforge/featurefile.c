@@ -969,7 +969,7 @@ static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
 			    for ( j=0; j<=ligmax; ++j ) {
 				putc(' ',out );
 			        for ( l=0; l<lcnt; ++l ) {
-				    if ( lig[l].ap->lig_index==ligmax ) {
+				    if ( lig[l].ap->lig_index==j ) {
 					dump_anchorpoint(out,lig[l].ap);
 				break;
 				    }
