@@ -2050,3 +2050,6 @@ msgstr "als Hintergrund"
 msgid "Tools"
 msgstr "Werkzeuge"
 
+#: fontview.c:497
+msgid "_Don't Save"
+msgstr "_Nicht sichern"
