@@ -79,15 +79,30 @@ You must ensure that you have the the X11 server installed on your system.
 	Keep clicking <CODE>Continue</CODE> until you get to the pane "Custom Install
 	on "Macintosh HD""
       <LI>
-	Press the arrow beside "Applications so you get a list of them.
+	Press the arrow beside "Applications" so you get a list of them.
       <LI>
 	Select X11
       <LI>
 	Keep pressing <CODE>Continue</CODE>
       <LI>
-	(I have been told that if you have already installed the developer's
-	tools (XCode or whatever) then part of X11 will be on your system
-	but you still need to instal the X11User package)
+	<TABLE BGCOLOR="#ffff00"><TR><TD>
+	Apple appears to have shipped a buggy version of X11 with 10.5. The problem
+	appears fixed in 10.5.6 (It may have been fixed earlier, but I don't have
+	a machine on which I can test).
+	<P>
+	The problem only affects fontforge it if uses pango or cairo.
+	<P>
+	This release of fontforge tries to check for a buggy system, and if it
+	thinks it is running on one, then it will refuse to use Pango and Cairo.
+	<P>
+	The problem does not affect Mac 10.4.*
+	<HR>
+	You may upgrade from 10.5 to 10.5.6 by going to the Apple Menu and selecting
+	the "Software Update" menu item, and then the "Mac OS X Update Combined".
+	<P>
+	You probably need to install X11 <STRONG>before</STRONG> you upgrade the
+	Operating System.
+	</TD></TR></TABLE>
     </UL>
   <DT>
     10.3
@@ -129,6 +144,29 @@ below for more info on this)
   Control rather than command. This isn't very mac-like. If you turn <B>off</B>
   the "<CODE>Enable keyboard shortcuts under X11</CODE>" preference item then
   fontforge will configure its menubar to make use of Command.
+  <P>
+  If type the following into a terminal (or xterm) window
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>cat >~/.fonts.conf
+&lt;?xml version="1.0"?>
+&lt;!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+&lt;!-- /etc/fonts/fonts.conf file to configure system font access -->
+&lt;fontconfig>
+
+&lt;!-- Font directory list -->
+&lt;!-- Add to system list -->
+
+        &lt;dir>/System/Library/Fonts&lt;/dir>
+        &lt;dir>/Library/Fonts&lt;/dir>
+        &lt;dir>~/Library/Fonts&lt;/dir>
+
+&lt;/fontconfig>
+<b>^D</b>
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  then fontforge's UI will be able to use the fonts Apple supplies with the mac.
+  (You don't type the "$", and ^D means hold down the control key and press "D").
   <H4>
     Note:
   </H4>
