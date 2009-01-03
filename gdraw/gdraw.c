@@ -232,6 +232,10 @@ char *GDrawGetWindowTitle8(GWindow w) {
 return( (w->display->funcs->getWindowTitle8)(w) );
 }
 
+void GDrawSetTransientFor(GWindow transient, GWindow owner) {
+    (transient->display->funcs->setTransientFor)(transient,owner);
+}
+
 void GDrawSetCursor(GWindow w, GCursor ct) {
     (w->display->funcs->setCursor)(w,ct);
 }

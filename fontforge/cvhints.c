@@ -624,8 +624,10 @@ void CVReviewHints(CharView *cv) {
 	GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandglue);
 	GHVBoxFitWindow(boxes[0].ret);
-    } else
+    } else {
 	gw = hd.gw;
+	GDrawSetTransientFor(gw,(GWindow) -1);
+    }
     if ( cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL )
 	hd.active = NULL;
     else if ( cv->b.sc->hstem!=NULL && cv->b.sc->vstem!=NULL ) {
@@ -871,6 +873,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	sprintf( buffer, "%g", (double) (ishstem ? cv->p.cy : cv->p.cx) );
 	uc_strcpy(ubuf,buffer);
 	GGadgetSetTitle(GWidgetGetControl(gw,CID_Base),ubuf);
+	GDrawSetTransientFor(gw,(GWindow) -1);
     }
     GGadgetSetTitle8(GWidgetGetControl(gw,CID_Label),
 	    ishstem ? _("Create Horizontal Stem Hint") :
