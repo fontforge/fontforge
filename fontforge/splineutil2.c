@@ -3130,24 +3130,42 @@ void SplineCharAddPointsOfInflection(SplineChar *sc, SplineSet *head) {
 
 int SpIsExtremum(SplinePoint *sp) {
     BasePoint *ncp, *pcp;
+    BasePoint *nncp, *ppcp;
     if ( sp->next==NULL || sp->prev==NULL )
 return( true );
-    if ( !sp->nonextcp )
+    nncp = &sp->next->to->me;
+    if ( !sp->nonextcp ) {
 	ncp = &sp->nextcp;
-    else if ( !sp->next->to->noprevcp )
+	if ( !sp->next->to->noprevcp )
+	    nncp = &sp->next->to->prevcp;
+    } else if ( !sp->next->to->noprevcp )
 	ncp = &sp->next->to->prevcp;
     else
-	ncp = &sp->next->to->me;
-    if ( !sp->noprevcp )
+	ncp = nncp;
+    ppcp = &sp->prev->from->me;
+    if ( !sp->noprevcp ) {
 	pcp = &sp->prevcp;
-    else if ( !sp->prev->to->nonextcp )
-	pcp = &sp->prev->to->nextcp;
+	if ( !sp->prev->from->nonextcp )
+	    ppcp = &sp->prev->from->nextcp;
+    } else if ( !sp->prev->from->nonextcp )
+	pcp = &sp->prev->from->nextcp;
     else
-	pcp = &sp->prev->to->me;
-    if (( ncp->x<sp->me.x && pcp->x<sp->me.x ) ||
-	    (ncp->x>sp->me.x && pcp->x>sp->me.x ) ||
-	( ncp->y<sp->me.y && pcp->y<sp->me.y ) ||
-	    (ncp->y>sp->me.y && pcp->y>sp->me.y ) )
+	pcp = ppcp;
+    if ((( ncp->x<sp->me.x || (ncp->x==sp->me.x && nncp->x<sp->me.x)) &&
+		(pcp->x<sp->me.x || (pcp->x==sp->me.x && ppcp->x<sp->me.x))) ||
+	    ((ncp->x>sp->me.x || (ncp->x==sp->me.x && nncp->x>sp->me.x)) &&
+		(pcp->x>sp->me.x || (pcp->x==sp->me.x && ppcp->x>sp->me.x))) ||
+	(( ncp->y<sp->me.y || (ncp->y==sp->me.y && nncp->y<sp->me.y)) &&
+		(pcp->y<sp->me.y || (pcp->y==sp->me.y && ppcp->y<sp->me.y))) ||
+	    ((ncp->y>sp->me.y || (ncp->y==sp->me.y && nncp->y>sp->me.y)) &&
+		(pcp->y>sp->me.y || (pcp->y==sp->me.y && ppcp->y>sp->me.y))))
+return( true );
+
+    /* These aren't true points of extrema, but they probably should be treated */
+    /*  as if they were */
+    if ( !sp->nonextcp && !sp->noprevcp &&
+	    ((sp->me.x==sp->nextcp.x && sp->me.x==sp->prevcp.x) ||
+	     (sp->me.y==sp->nextcp.y && sp->me.y==sp->prevcp.y)) )
 return( true );
 
 return( false );
