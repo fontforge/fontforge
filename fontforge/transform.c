@@ -780,7 +780,8 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	}
 	GGadgetSelectOneListItem( GWidgetGetControl(gw,CID_Type), 1);
 	GWidgetToDesiredSize(gw);
-    }
+    } else
+	GDrawSetTransientFor(td.gw,(GWindow) -1);
     gw = td.gw;
 
     GGadgetSetEnabled( GWidgetGetControl(gw,CID_AllLayers), flags&tdf_enableback);

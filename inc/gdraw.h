@@ -354,6 +354,7 @@ extern void GDrawSetWindowTitles(GWindow w, const unichar_t *title, const unicha
 extern void GDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit);
 extern unichar_t *GDrawGetWindowTitle(GWindow w);
 extern char *GDrawGetWindowTitle8(GWindow w);
+extern void GDrawSetTransientFor(GWindow transient,GWindow owner);
 extern void GDrawSetCursor(GWindow w, GCursor ct);
 extern GCursor GDrawGetCursor(GWindow w);
 extern GWindow GDrawGetRedirectWindow(GDisplay *gd);

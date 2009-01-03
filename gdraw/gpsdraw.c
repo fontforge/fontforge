@@ -144,6 +144,10 @@ static void PSDrawSetWindowTitles8(GWindow w, const char *title, const char *ico
     /* Not meaningful */
 }
 
+static void PSDrawSetTransientFor(GWindow transient, GWindow owner) {
+    /* Not meaningful */
+}
+
 static void PSDrawGetPointerPosition(GWindow w, GEvent *ret) {
     /* Not meaningful */
 
@@ -1366,6 +1370,7 @@ static struct displayfuncs psfuncs = {
     PSDrawSetWindowTitles8,
     PSDrawGetWindowTitle,
     PSDrawGetWindowTitle8,
+    PSDrawSetTransientFor,
     PSDrawGetPointerPosition,
     PSDrawGetPointerWindow,
     PSDrawSetCursor,

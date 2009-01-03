@@ -1660,6 +1660,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	if ( err )
 	    ed.scale = 1;
 	GDrawSetUserData(last_dlg[gc],&ed);
+	GDrawSetTransientFor(last_dlg[gc],(GWindow) -1);
     }
     GDrawSetVisible(gw,true);
 

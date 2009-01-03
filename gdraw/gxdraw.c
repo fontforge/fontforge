@@ -1702,6 +1702,23 @@ static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *ico
     gfree(itit); gfree(ipt);
 }
 
+static void GXDrawSetTransientFor(GWindow transient, GWindow owner) {
+    GXWindow gw = (GXWindow) transient;
+    GXDisplay *gdisp = gw->display;
+    Display *display = gdisp->display;
+    Window ow;
+
+    if ( owner==(GWindow) -1 )
+	ow = gdisp->last_nontransient_window;
+    else if ( owner==NULL )
+	ow = 0;
+    else
+	ow = ((GXWindow) owner)->w;
+    XSetTransientForHint(display,gw->w, ow );
+    gw->transient_owner = ow;
+    gw->istransient = ow!=0;
+}
+
 static void GXDrawSetCursor(GWindow w, GCursor ct) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
@@ -4606,6 +4623,7 @@ static struct displayfuncs xfuncs = {
     GXDrawSetWindowTitles8,
     GXDrawGetWindowTitle,
     GXDrawGetWindowTitle8,
+    GXDrawSetTransientFor,
     GXDrawGetPointerPosition,
     GXDrawGetPointerWindow,
     GXDrawSetCursor,
