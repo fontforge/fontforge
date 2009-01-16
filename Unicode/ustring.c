@@ -739,7 +739,7 @@ char *u2utf8_copy(const unichar_t *ubuf) {
 return( NULL );
 
     len = u_strlen(ubuf);
-    utf8buf = galloc((len+1)*3);
+    utf8buf = galloc((len+1)*4);
 return( u2utf8_strcpy(utf8buf,ubuf));
 }
 
@@ -750,7 +750,7 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
     if ( ubuf==NULL )
 return( NULL );
 
-    utf8buf = pt = galloc((len+1)*3);
+    utf8buf = pt = galloc((len+1)*4);
     for ( i=0; i<len && *ubuf!='\0'; ++i )
 	pt = utf8_idpb(pt, *ubuf++);
     *pt = '\0';
