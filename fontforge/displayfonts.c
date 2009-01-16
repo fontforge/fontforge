@@ -329,7 +329,7 @@ static int PageSetup(PD *pi) {
     gcd[2].gd.cid = CID_ghostview;
     gcd[2].gd.handle_controlevent = PG_RadioSet;
     gcd[2].creator = GRadioCreate;
-    radarray[0][2] = &gcd[1]; radarray[0][3] = GCD_ColSpan; radarray[0][4] =NULL;
+    radarray[0][2] = &gcd[2]; radarray[0][3] = GCD_ColSpan; radarray[0][4] =NULL;
 
     label[3].text = (unichar_t *) _("To _File");
     label[3].text_is_1byte = true;
