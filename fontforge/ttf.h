@@ -298,6 +298,9 @@ struct ttfinfo {
     unsigned int bad_sfnt_header: 1;
     Layer guidelines;
     struct Base *horiz_base, *vert_base;
+
+    int advanceWidthMax;
+    int fbb[4];		/* x,yMin x,yMax*/
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };

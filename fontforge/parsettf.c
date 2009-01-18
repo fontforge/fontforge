@@ -1256,8 +1256,10 @@ static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     info->ascent = .8*info->emsize;
     info->descent = info->emsize-info->ascent;
 
-    for ( i=0; i<12; ++i )
+    for ( i=0; i<8; ++i )
 	getushort(ttf);
+    for ( i=0; i<4; ++i )
+	info->fbb[i] = (short) getushort(ttf);
     info->macstyle = getushort(ttf);
     for ( i=0; i<2; ++i )
 	getushort(ttf);
@@ -1283,7 +1285,8 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.hhead_ascent = getushort(ttf);
     info->pfminfo.hhead_descent = (short) getushort(ttf);
     info->pfminfo.hheadascent_add = info->pfminfo.hheaddescent_add = false;
-    info->pfminfo.linegap = getushort(ttf);
+    info->pfminfo.linegap = (short) getushort(ttf);
+    info->advanceWidthMax = getushort(ttf);
     info->pfminfo.hheadset = true;
     /*info->ascent = info->pfminfo.hhead_ascent;*/
 
@@ -1920,7 +1923,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 return( head );
 }
 
-static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int path_cnt) {
+static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, int path_cnt, int gbb[4]) {
     uint16 *endpt = galloc((path_cnt+1)*sizeof(uint16));
     uint8 *instructions;
     char *flags;
@@ -1981,6 +1984,10 @@ return;
 	else
 	    pts[i].x = last_pos + (short) getushort(ttf);
 	last_pos = pts[i].x;
+	if ( (last_pos<gbb[0] || last_pos>gbb[2]) && ( flags[i]&_On_Curve )) {
+	    LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
+	    info->bad_glyph_data = true;
+	}
     }
 
     last_pos = 0;
@@ -1995,6 +2002,10 @@ return;
 	else
 	    pts[i].y = last_pos + (short) getushort(ttf);
 	last_pos = pts[i].y;
+	if (( last_pos<gbb[1] || last_pos>gbb[3]) && ( flags[i]&_On_Curve ) ) {
+	    LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
+	    info->bad_glyph_data = true;
+	}
     }
 
     sc->layers[ly_fore].splines = ttfbuildcontours(path_cnt,endpt,flags,pts,info->to_order2);
@@ -2166,6 +2177,7 @@ return;
 static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int gid) {
     int path_cnt;
     SplineChar *sc = SplineCharCreate(2);
+    int gbb[4];
 
     sc->unicodeenc = -1;
     sc->vwidth = info->emsize;
@@ -2191,14 +2203,22 @@ return( sc );
     }
     fseek(ttf,info->glyph_start+start,SEEK_SET);
     path_cnt = (short) getushort(ttf);
-    /* xmin = */ sc->lsidebearing = getushort(ttf);
-    /* ymin = */ getushort(ttf);
-    /* xmax = */ getushort(ttf);
-    /* ymax = */ /* sc->lsidebearing = */ getushort(ttf);	/* what was this for? */
+    gbb[0] = sc->lsidebearing = (short) getushort(ttf);
+    gbb[1] = (short) getushort(ttf);
+    gbb[2] = (short) getushort(ttf);
+    gbb[3] = (short) getushort(ttf);
+    if ( info->head_start!=0 && ( gbb[0]<info->fbb[0] || gbb[1]<info->fbb[1] ||
+				  gbb[2]>info->fbb[2] || gbb[3]>info->fbb[3])) {
+	LogError(_("Glyph bounding box data excedes font bounding box data for GID %d\n"), gid );
+	info->bad_glyph_data = true;
+    }
     if ( path_cnt>=0 )
-	readttfsimpleglyph(ttf,info,sc,path_cnt);
+	readttfsimpleglyph(ttf,info,sc,path_cnt,gbb);
     else
 	readttfcompositglyph(ttf,info,sc,info->glyph_start+end);
+	/* I don't check that composite glyphs fit in the bounding box */
+	/* because the components may not have been read in yet */
+	/* I'll check against the font bb later, if validation mode */
     if ( start>end ) {
 	LogError(_("Bad glyph (%d), disordered 'loca' table (start comes after end)\n"), gid );
 	info->bad_glyph_data = true;
@@ -3978,7 +3998,7 @@ return( true );
     }
 return( false );
 }
-    
+
 static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int lastwidth = info->emsize, lsb;
@@ -3998,6 +4018,14 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	lastwidth = getushort(ttf);
 	lsb = (short) getushort(ttf);
 	if ( (sc = info->chars[i])!=NULL ) {	/* can happen in ttc files */
+	    if ( lastwidth>info->advanceWidthMax && info->hhea_start!=0 ) {
+		if ( info->fontname!=NULL && sc->name!=NULL )
+		    LogError("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n",
+			    info->fontname, sc->name, lastwidth, info->advanceWidthMax );
+		else
+		    LogError("In GID %d the advance width (%d) is greatert than the stated maximum (%d)\n",
+			    i, lastwidth, info->advanceWidthMax );
+	    }
 	    if ( check_width_consistency && sc->width!=lastwidth ) {
 		if ( info->fontname!=NULL && sc->name!=NULL )
 		    LogError("In %s, in glyph %s, 'CFF ' advance width (%d) and\n  'hmtx' width (%d) do not match. (Subsequent mismatches will not be reported)\n",
@@ -5981,7 +6009,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineChar *sc;
     struct ttf_table *last[2], *tab, *next;
 
-    
     sf = SplineFontEmpty();
     sf->display_size = -default_fv_font_size;
     sf->display_antialias = default_fv_antialias;
@@ -6204,6 +6231,26 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     }
     SFRelativeWinAsDs(sf);
     free(info->savetab);
+
+    if ( info->openflags & of_fontlint ) {
+	k=0;
+	do {
+	    _sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
+	    for ( i=0; i<sf->glyphcnt; ++i ) {
+		if ( (sc = _sf->glyphs[i])!=NULL ) {
+		    DBounds b;
+		    SplineCharQuickBounds(sc,&b);
+		    if ( b.minx < info->fbb[0] || b.miny < info->fbb[1] ||
+			    b.maxx > info->fbb[2] || b.maxy > info->fbb[3] ) {
+			LogError(_("A point in %s is outside the font bounding box data in %s\n"), sc->name );
+			info->bad_glyph_data = true;
+		    }
+		}
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
+    }
+
     sf->loadvalidation_state =
 	    (info->bad_ps_fontname	?lvs_bad_ps_fontname:0) |
 	    (info->bad_glyph_data	?lvs_bad_glyph_table:0) |
