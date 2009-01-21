@@ -866,7 +866,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[56], boxes[20], *barray[11], *stemarray[15],
-	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[14], *varrays[10],
+	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[16], *varrays[10],
 	    *varrayhc[12], *varrayvc[12], *pcarray[4],
 	    *varray[7], *harray[6], *voarray[6], *extarray[7], *exarray[6];
     GTextInfo label[56];
