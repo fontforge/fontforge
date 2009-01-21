@@ -2782,7 +2782,7 @@ return( _GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
 #endif
     if ( len==-1 || len==cnt || ( ret = GDrawIsAllLeftToRight(text,cnt))==1 ) {
 	memset(&arg,'\0',sizeof(arg));
-return( _GDraw_DoText(gw,0,0,(unichar_t *) text,len,mods,0,tf_width,&arg));
+return( _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_width,&arg));
     }
 return( _GDraw_DoBiWidth(gw,text,len,cnt,mods,tf_width,ret));
 }
