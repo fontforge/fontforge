@@ -301,6 +301,7 @@ struct ttfinfo {
 
     int advanceWidthMax;
     int fbb[4];		/* x,yMin x,yMax*/
+    int isFixedPitch;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
