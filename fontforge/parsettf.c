@@ -5123,7 +5123,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	info->upos = (short) getushort(ttf);
 	info->uwidth = (short) getushort(ttf);
 	info->upos += info->uwidth/2;		/* 'post' defn of this field is different from FontInfo defn and I didn't notice */
-	/* fixedpitch = */ getlong(ttf);
+	info->isFixedPitch = getlong(ttf);
 	/* mem1 = */ getlong(ttf);
 	/* mem2 = */ getlong(ttf);
 	/* mem3 = */ getlong(ttf);
@@ -6242,9 +6242,12 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 		    SplineCharQuickBounds(sc,&b);
 		    if ( b.minx < info->fbb[0] || b.miny < info->fbb[1] ||
 			    b.maxx > info->fbb[2] || b.maxy > info->fbb[3] ) {
-			LogError(_("A point in %s is outside the font bounding box data in %s\n"), sc->name );
+			LogError(_("A point in %s is outside the font bounding box data.\n"), sc->name );
 			info->bad_glyph_data = true;
 		    }
+		    if ( info->isFixedPitch && i>2 && sc->width!=info->advanceWidthMax )
+			LogError(_("The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"),
+				sc->name, sc->width, info->advanceWidthMax );
 		}
 	    }
 	    ++k;
