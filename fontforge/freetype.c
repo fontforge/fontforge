@@ -368,6 +368,22 @@ return( NULL );
 	    if ( notdefpos!=-1 )
 		TransitiveClosureAdd(new,old,sf->glyphs[notdefpos],layer);
 		/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
+	    /* Nifty bug. We might want to autohint some of the glyphs */
+	    /* now that's going to cause various things to be remetricked */
+	    /* like the metricsview, which may expect the full glyph set */
+	    /* available, and will crash if that is not the case */
+	    /* So if anything needs autohinting, do it now */
+	    if ( (ff==ff_pfb || ff==ff_pfa || ff==ff_otf || ff==ff_otfcid ) &&
+		    autohint_before_generate ) {
+		SplineChar *sc;
+		BlueData bd;
+		QuickBlues(sf,layer,&bd);
+		for ( i=0; i<sf->glyphcnt; ++i ) {
+		    if ( (sc=new[i])!=NULL && sc->changedsincelasthinted &&
+			    !sc->manualhints )
+			SplineCharAutoHint(sc,layer,&bd);
+		}
+	    }
 	    sf->glyphs = new;
 	}
 	sf->internal_temp = true;
