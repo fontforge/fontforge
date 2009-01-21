@@ -2786,6 +2786,7 @@ return;
 			    else
 				rlast->next = r;
 			    rlast = r;
+			    sc_sc->width = rsc->width;
 			}
 		    }
 		    SCCharChangedUpdate(sc_sc,fv->active_layer);
