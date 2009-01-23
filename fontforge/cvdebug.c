@@ -46,6 +46,9 @@ return( false );
 
 void CVDebugPointPopup(CharView *cv) {
 }
+
+void CVDebugAddPointTouches(CharView *cv,char *buf,int pnum) {
+}
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -416,15 +419,15 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	    if ( show_grid )
 		sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
-			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+			r->tags[i]&FT_Curve_Tag_Touch_X?'X':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'Y':' ',
 			(double) (me.x/dv->scalex/64.0), (double) (me.y/dv->scaley/64.0) );
 	    else if ( show_raw )
 		sprintf(buffer, "%3d: %c%c%c %d,%d", i,
-			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'X':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'Y':' ',
 			(int) pts[i].x, (int) pts[i].y );
 	    else
 		sprintf(buffer, "%3d: %c%c%c %g,%g", i,
-			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'X':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'Y':' ',
 			(double) me.x, (double) me.y );
 	    if ( y>0 )
 		GDrawDrawBiText8(pixmap,3+19,y,buffer,-1,NULL,0);
@@ -2233,6 +2236,27 @@ return;
 	else
 	    DVDefaultRaster(dv);
     }
+}
+
+void CVDebugAddPointTouches(CharView *cv,char *buf,int pnum) {
+    DebugView *dv = cv->dv;
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    TT_GlyphZoneRec *r;
+    FT_Vector *pts;
+    char *pt;
+
+    if ( exc==NULL )
+return;
+    r = &exc->pts;
+    pts = r->cur;
+    if ( pnum<0 || pnum>=r->n_points )
+return;
+    pt = buf+strlen(buf);
+    if ( r->tags[pnum]&FT_Curve_Tag_Touch_X )
+	*pt++ = 'X';
+    if ( r->tags[pnum]&FT_Curve_Tag_Touch_Y )
+	*pt++ = 'Y';
+    *pt = '\0';
 }
 
 void CVDebugPointPopup(CharView *cv) {
