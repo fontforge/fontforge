@@ -898,6 +898,7 @@ extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 extern void CVDebugPointPopup(CharView *cv);
+extern void CVDebugAddPointTouches(CharView *cv,char *buf,int pnum);
 
 extern int GotoChar(SplineFont *sf,EncMap *map);
 
