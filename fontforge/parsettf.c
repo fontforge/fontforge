@@ -1290,7 +1290,7 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.hheadset = true;
     /*info->ascent = info->pfminfo.hhead_ascent;*/
 
-    for ( i=0; i<12; ++i )
+    for ( i=0; i<11; ++i )
 	getushort(ttf);
     info->width_cnt = getushort(ttf);
 }
