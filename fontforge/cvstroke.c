@@ -89,7 +89,8 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si, int justapply) {
     int anypoints;
     SplineSet *spl, *prev, *head=NULL, *last=NULL, *cur, *snext;
 
-    if ( cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
+    if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL &&
+	    cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
 	CVDoUndo(&cv->b);
 
     if ( justapply )
