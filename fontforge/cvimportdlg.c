@@ -60,6 +60,7 @@ return;
     fclose(plate);
 }
 
+#ifndef _NO_LIBXML
 static void ImportSVG(CharView *cv,char *path) {
     SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
 }
@@ -67,6 +68,7 @@ static void ImportSVG(CharView *cv,char *path) {
 static void ImportGlif(CharView *cv,char *path) {
     SCImportGlif(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
 }
+#endif
 
 static void ImportFig(CharView *cv,char *path) {
     SCImportFig(cv->b.sc,CVLayer((CharViewBase *) cv),path,false);

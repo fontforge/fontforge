@@ -580,7 +580,7 @@ return( NULL );
 return( NULL );
 }
 
-#if _NO_LIBXML
+#ifndef _NO_LIBXML
 int HasUFO(void) {
 return( false );
 }
