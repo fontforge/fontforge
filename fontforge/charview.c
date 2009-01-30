@@ -531,7 +531,7 @@ static void DrawTangentPoint(GWindow pixmap, int x, int y,
 }
 
 static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
-	SplineSet *spl, int onlynumber, int show_touches) {
+	SplineSet *spl, int onlynumber, int truetype_markup) {
     GRect r;
     int x, y, cx, cy;
     Color col = sp==spl->first ? firstpointcol : pointcol, subcol;
@@ -574,6 +574,18 @@ return;
 		r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
 		GDrawFillRect(pixmap,&r, nextcpcol);
 		subcol = selectedcpcol;
+	    } else if ( truetype_markup ) {
+		if ( sp->flexy ) {
+		    /* cp is about to be moved (or changed in some other way) */
+		    r.x = cx-3; r.y = cy-3; r.width = r.height = 7;
+		    GDrawFillRect(pixmap,&r, selectedpointcol);
+		}
+		if ( sp->flexx ) {
+		    /* cp is a reference point */
+		    r.x = cx-5; r.y = cy-5;
+		    r.width = r.height = 11;
+		    GDrawDrawElipse(pixmap,&r,selectedpointcol );
+		}
 	    }
 	    if ( !onlynumber ) {
 		GDrawDrawLine(pixmap,x,y,cx,cy, nextcpcol);
@@ -584,8 +596,6 @@ return;
 		pnum = sp->nextcpindex;
 		if ( pnum!=0xffff && pnum!=0xfffe ) {
 		    sprintf( buf,"%d", pnum );
-		    if ( show_touches )
-			CVDebugAddPointTouches(cv,buf,pnum);
 		    GDrawDrawBiText8(pixmap,cx,cy-6,buf,-1,NULL,nextcpcol);
 		}
 	    }
@@ -682,12 +692,14 @@ return;
 	    strcpy(buf,"?");
 	else {
 	    sprintf( buf,"%d", sp->ttfindex );
-	    if ( show_touches )
-		CVDebugAddPointTouches(cv,buf,sp->ttfindex);
 	}
 	GDrawDrawBiText8(pixmap,x,y-6,buf,-1,NULL,col);
     }
-    if ( !onlynumber ) {
+    if ( truetype_markup && sp->roundx ) {
+	r.x = x-5; r.y = y-5;
+	r.width = r.height = 11;
+	GDrawDrawElipse(pixmap,&r,selectedpointcol);
+    } else if ( !onlynumber && !truetype_markup ) {
 	if ((( sp->roundx || sp->roundy ) &&
 		 (((cv->showrounds&1) && cv->scale>=.3) || (cv->showrounds&2))) ||
 		(sp->watched && cv->dv!=NULL) ||
@@ -1020,7 +1032,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
     Spline *spline, *first;
     SplinePointList *spl;
-    int show_touches = set==cv->b.gridfit && cv->dv!=NULL;
+    int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
 
     if ( cv->inactive )
 	dopoints = false;
@@ -1045,11 +1057,11 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 		}
 	    } else {
 		for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0,show_touches);
+		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0,truetype_markup);
 		    if ( first==NULL ) first = spline;
 		}
 		if ( spline==NULL )
-		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0,show_touches);
+		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0,truetype_markup);
 	    }
 	}
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {

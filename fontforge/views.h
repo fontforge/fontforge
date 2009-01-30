@@ -898,7 +898,6 @@ extern void CVMouseMoveShape(CharView *cv);
 extern void CVMouseUpShape(CharView *cv);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 extern void CVDebugPointPopup(CharView *cv);
-extern void CVDebugAddPointTouches(CharView *cv,char *buf,int pnum);
 
 extern int GotoChar(SplineFont *sf,EncMap *map);
 
@@ -1038,6 +1037,7 @@ extern SplineChar *FVMakeChar(FontView *fv,int i);
 extern void CVPointOfView(CharView *cv,struct pov_data *);
 
 extern void DVCreateGloss(DebugView *dv);
+extern void DVMarkPts(DebugView *dv,SplineSet *ss);
 extern int CVXPos(DebugView *dv,int offset,int width);
 
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
