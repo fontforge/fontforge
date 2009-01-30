@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2008 by George Williams and Alexey Kryukov */
+/* Copyright (C) 2005-2009 by George Williams and Alexey Kryukov */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:

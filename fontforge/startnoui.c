@@ -1,4 +1,4 @@
-/* Copyright (C) 2007,2008 by George Williams */
+/* Copyright (C) 2007-2009 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -111,10 +111,10 @@ int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    fprintf( stderr, "Copyright (c) 2000-2008 by George Williams.\n Executable based on sources from %s-ML.\n",
+    fprintf( stderr, "Copyright (c) 2000-2009 by George Williams.\n Executable based on sources from %s-ML.\n",
 	    source_modtime_str );
 #else
-    fprintf( stderr, "Copyright (c) 2000-2008 by George Williams.\n Executable based on sources from %s.\n",
+    fprintf( stderr, "Copyright (c) 2000-2009 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
 #endif
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
