@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2008 by George Williams */
+/* Copyright (C) 2005-2009 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -130,10 +130,11 @@ return( dlopen( ret,flags ));
 return( dlopen(filename,flags) );	/* This will almost certainly fail, but it will provide an error for dlerror() */
 }
 #elif defined( __Mac )
+    /* The mac now has normal dlopen routines */
+#elif defined( __Mac )
 #  include <dynamic.h>
 #  include <stdio.h>
 #  include <string.h>
-    /* The mac now has normal dlopen routines */
 
 void *gwwv_dlopen(char *name,int flags) {
 #undef dlopen
