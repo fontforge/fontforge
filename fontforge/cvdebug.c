@@ -714,6 +714,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	cv->oldraster = cv->raster;
 	SplinePointListsFree(cv->b.gridfit);
 	cv->b.gridfit = SplineSetsFromPoints(&exc->pts,dv->scalex,dv->scaley,dv->active_refs);
+	DVMarkPts(dv,cv->b.gridfit);
 	cv->raster = DebuggerCurrentRaster(exc,cv->ft_depth);
 	if ( show_transformed && !show_raw && cv->raster!=NULL ) {
 	    BasePoint me;
@@ -2236,27 +2237,6 @@ return;
 	else
 	    DVDefaultRaster(dv);
     }
-}
-
-void CVDebugAddPointTouches(CharView *cv,char *buf,int pnum) {
-    DebugView *dv = cv->dv;
-    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
-    TT_GlyphZoneRec *r;
-    FT_Vector *pts;
-    char *pt;
-
-    if ( exc==NULL )
-return;
-    r = &exc->pts;
-    pts = r->cur;
-    if ( pnum<0 || pnum>=r->n_points )
-return;
-    pt = buf+strlen(buf);
-    if ( r->tags[pnum]&FT_Curve_Tag_Touch_X )
-	*pt++ = 'X';
-    if ( r->tags[pnum]&FT_Curve_Tag_Touch_Y )
-	*pt++ = 'Y';
-    *pt = '\0';
 }
 
 void CVDebugPointPopup(CharView *cv) {

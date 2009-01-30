@@ -477,6 +477,7 @@ return(1);
 	    scrprintf(&scr," (in zone from zp1: %s)", exc->GS.gep1?"Normal":"Twilight" );
 	}
 	scrprintf(&scr, "Pops: %d (contour index)", exc->stack[exc->top-1]);
+	scrprintf(&scr," (in zone from zp2: %s)", exc->GS.gep2?"Normal":"Twilight" );
 	scrfree(&scr,exc);
 	scrproj(&scr,exc);
       break;
@@ -1226,7 +1227,368 @@ void DVCreateGloss(DebugView *dv) {
 
     GDrawSetVisible(dv->gloss,true);
 }
+
+/* ************************************************************************** */
+/*  Variant of the gloss window: Mark the points to show what the next        */
+/*  instruction will do to them. (Change (usually move) them, or use them     */
+/*  or ignore them                                                            */
+/* ************************************************************************** */
+
+static SplinePoint *FindPoint(SplineSet *ss,int ptnum) {
+    SplineSet *spl;
+    SplinePoint *sp;
+
+    for ( spl=ss; spl!=NULL ; spl=spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    if ( sp->ttfindex==ptnum || sp->nextcpindex==ptnum )
+return( sp );
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+return( NULL );
+}
+
+static void SetBasisPoint(SplineSet *ss, int ptnum) {
+    SplinePoint *sp = FindPoint(ss,ptnum);
+    if ( sp==NULL )
+return;
+    /* A roundx point or flexx nextcp means this is the reference */
+    /*  point, etc. */
+    if ( sp->ttfindex==ptnum )
+	sp->roundx = true;
+    else
+	sp->flexx = true;
+}
+
+static void SetChangingPoint(SplineSet *ss, int ptnum) {
+    SplinePoint *sp = FindPoint(ss,ptnum);
+    if ( sp==NULL )
+return;
+    /* I reuse these flags. A "selected" point is one which will be */
+    /*  moved by the instruction. A "flexy"ed point means its nextcp */
+    /*  will be moved by the next instruction */
+    if ( sp->ttfindex==ptnum )
+	sp->selected = true;
+    else
+	sp->flexy = true;
+}
+
+void DVMarkPts(DebugView *dv,SplineSet *ss) {
+    TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+    long changing_point, basis_point;
+    int i,cnt,top;
+    int operator;
+    SplineSet *spl;
+    SplinePoint *sp;
+
+    for ( spl=ss; spl!=NULL ; spl=spl->next ) {
+	for ( sp = spl->first; ; ) {
+	    sp->selected = false;
+	    sp->roundx = sp->roundy = false;
+	    sp->flexx = sp->flexy = false;
+	    /* I reuse these flags. A "selected" point is one which will be */
+	    /*  moved by the instruction. A "flexy"ed point means its nextcp */
+	    /*  will be moved by the next instruction */
+	    /* A roundx point or flexx nextcp means this is the reference */
+	    /*  point, etc. */
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
+    if ( exc==NULL )
+return;		/* Not running */
+    if ( exc->IP>=exc->codeSize || exc->code==NULL )
+return;		/* At end */
+
+    operator = ((uint8 *) exc->code)[exc->IP];
+    changing_point = -1;
+    basis_point = -1;
+
+    if ( operator>=0xc0 && operator <= 0xdf ) {
+        /* MDRP */
+	if ( exc->GS.gep1 )	/* No good way to mark twilight points, so only mark normal ones */
+	    changing_point = exc->stack[exc->top-1];
+	if ( exc->GS.gep0 )
+	    basis_point = exc->GS.rp0;
+    } else if ( operator>=0xe0 && operator <= 0xff ) {
+        /* MIRP */
+	if ( exc->GS.gep1 )	/* No good way to mark twilight points, so only mark normal ones */
+	    changing_point = exc->stack[exc->top-2];
+	if ( exc->GS.gep0 )
+	    basis_point = exc->GS.rp0;
+    } else if ( operator>=0xb0 && operator <= 0xbf ) {
+	/* Push */
+    } else switch ( operator ) {
+      case 0xf:
+        /* Moves point to intersection of two lines */
+	if ( exc->GS.gep2 )	/* No good way to mark twilight points, so only mark normal ones */
+	    changing_point = exc->stack[exc->top-5];
+	if ( exc->GS.gep0 ) {
+	    SetBasisPoint(ss,exc->stack[exc->top-4]);
+	    SetBasisPoint(ss,exc->stack[exc->top-3]);
+	}
+	if ( exc->GS.gep1 ) {
+	    SetBasisPoint(ss,exc->stack[exc->top-2]);
+	    SetBasisPoint(ss,exc->stack[exc->top-1]);
+	}
+      break;
+      case 0x10: case 0x11: case 0x12:
+	/* Set Reference Point ? */
+	basis_point = exc->stack[exc->top-1];
+      break;
+      case 0x27:
+	/* Align Points */
+	if ( exc->GS.gep0 )
+	    SetChangingPoint(ss,exc->stack[exc->top-1]);
+	if ( exc->GS.gep1 )
+	    SetChangingPoint(ss,exc->stack[exc->top-2]);
+      break;
+      case 0x28:
+	/* Untouch point */
+	if ( exc->GS.gep0 )
+	    changing_point = exc->stack[exc->top-1];
+      break;
+      case 0x2E:
+	/* Touch point */
+	if ( exc->GS.gep0 )
+	    changing_point = exc->stack[exc->top-1];
+      break;
+      case 0x2F:
+	/* Round and Touch point */
+	if ( exc->GS.gep0 )
+	    changing_point = exc->stack[exc->top-1];
+      break;
+      case 0x30:
+	/* Interpolate Untouched Points in y */
+	if ( exc->GS.gep2 ) {
+	    TT_GlyphZoneRec *r = &exc->pts;
+	    for ( spl=ss; spl!=NULL ; spl=spl->next ) {
+		for ( sp = spl->first; ; ) {
+		    if ( sp->ttfindex<r->n_points &&
+			    !(r->tags[sp->ttfindex]&FT_Curve_Tag_Touch_Y) )
+			sp->selected = true;
+		    if ( sp->nextcpindex<r->n_points &&
+			    !(r->tags[sp->nextcpindex]&FT_Curve_Tag_Touch_Y) )
+			sp->flexy = true;
+		    /* I reuse these flags. A "selected" point is one which will be */
+		    /*  moved by the instruction. A "flexy"ed point means its nextcp */
+		    /*  will be moved by the next instruction */
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
+	    }
+	}
+      break;
+      case 0x31:
+	/* Interpolate Untouched Points in x */
+	if ( exc->GS.gep2 ) {
+	    TT_GlyphZoneRec *r = &exc->pts;
+	    for ( spl=ss; spl!=NULL ; spl=spl->next ) {
+		for ( sp = spl->first; ; ) {
+		    if ( sp->ttfindex<r->n_points &&
+			    !(r->tags[sp->ttfindex]&FT_Curve_Tag_Touch_X) )
+			sp->selected = true;
+		    if ( sp->nextcpindex<r->n_points &&
+			    !(r->tags[sp->nextcpindex]&FT_Curve_Tag_Touch_X) )
+			sp->flexy = true;
+		    /* I reuse these flags. A "selected" point is one which will be */
+		    /*  moved by the instruction. A "flexy"ed point means its nextcp */
+		    /*  will be moved by the next instruction */
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
+	    }
+	}
+      break;
+      case 0x32: case 0x33:
+        /* Shift point by amount ref point shifted */
+	if ( operator==0x33 ) {
+	    if ( exc->GS.gep0 )
+		basis_point = exc->GS.rp1;
+	} else {
+	    if ( exc->GS.gep1 )
+		basis_point = exc->GS.rp2;
+	}
+	if ( exc->GS.gep2 )
+	    for ( i=1; i<=exc->GS.loop && i<exc->top; ++i ) {
+		SetChangingPoint(ss,exc->stack[exc->top-i]);
+	    }
+      break;
+      case 0x34: case 0x35:
+        /* Shift contour by amount ref point shifted */
+	if ( operator==0x35 ) {
+	    if ( exc->GS.gep0 )
+		basis_point = exc->stack[exc->GS.rp1];
+	} else {
+	    if ( exc->GS.gep1 )
+		basis_point = exc->stack[exc->GS.rp2];
+	}
+	if ( exc->GS.gep2 ) {
+	    for ( spl=ss, i=exc->stack[exc->top-1]; i>0 && spl!=NULL; --i, spl=spl->next );
+	    if ( spl!=NULL ) {
+		for ( sp = spl->first; ; ) {
+		    if ( sp->ttfindex<0xfff0 )
+			sp->selected = true;
+		    if ( sp->nextcpindex<0xfff0 )
+			sp->flexy = true;
+		    /* I reuse these flags. A "selected" point is one which will be */
+		    /*  moved by the instruction. A "flexy"ed point means its nextcp */
+		    /*  will be moved by the next instruction */
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
+	    }
+	}
+      break;
+      case 0x36: case 0x37:
+	if ( operator==0x37 ) {
+	    if ( exc->GS.gep0 )
+		basis_point = exc->stack[exc->GS.rp1];
+	} else {
+	    if ( exc->GS.gep1 )
+		basis_point = exc->stack[exc->GS.rp2];
+	}
+	if ( exc->stack[exc->top-1] ) {
+	    for ( spl=ss; spl!=NULL; spl=spl->next ) {
+		for ( sp = spl->first; ; ) {
+		    if ( sp->ttfindex<0xfff0 )
+			sp->selected = true;
+		    if ( sp->nextcpindex<0xfff0 )
+			sp->flexy = true;
+		    /* I reuse these flags. A "selected" point is one which will be */
+		    /*  moved by the instruction. A "flexy"ed point means its nextcp */
+		    /*  will be moved by the next instruction */
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
+	    }
+	}
+      break;
+      case 0x38:
+        /* Shift point by pixel amount */
+	if ( exc->GS.gep2 ) {
+	    for ( i=2; i<=exc->GS.loop+1 && i<exc->top; ++i )
+		SetChangingPoint(ss,exc->stack[exc->top-i]);
+	}
+      break;
+      case 0x39:
+	/* Interpolated Point */
+	if ( exc->GS.gep0 )
+	    SetBasisPoint(ss,exc->GS.rp1);
+	if ( exc->GS.gep1 )
+	    SetBasisPoint(ss,exc->GS.rp2);
+	if ( exc->GS.gep2 ) {
+	    for ( i=1; i<=exc->GS.loop+1 && i<exc->top; ++i )
+		SetChangingPoint(ss,exc->stack[exc->top-i]);
+	}
+      break;
+      case 0x3A: case 0x3B:
+	/* MIAP Move Stack Indirect Relative Point */
+	if ( exc->GS.gep1 )
+	    changing_point = exc->stack[exc->top-2];
+	if ( exc->GS.gep0 )
+	    basis_point = exc->GS.rp0;
+      break;
+      case 0x3C:
+	/* Align to Reference Point */
+	if ( exc->GS.gep0 )
+		basis_point = exc->GS.rp0;
+	if ( exc->GS.gep1 )
+	    for ( i=1; i<=exc->GS.loop && i<exc->top; ++i ) {
+		SetChangingPoint(ss,exc->stack[exc->top-i]);
+	    }
+      break;
+      case 0x3E: case 0x3F:
+	/* MIAP Move Indirect Absolute Point */
+	if ( exc->GS.gep0 )
+	    changing_point = exc->stack[exc->top-2];
+      break;
+      case 0x46: case 0x47:
+	/* Get current/original point coord projected on projection vector */
+	if ( exc->GS.gep2 )
+	    basis_point = exc->stack[exc->top-1];
+      break;
+      case 0x48:
+	/* Sets coordinate from stack using proj & free vectors */
+	if ( exc->GS.gep2 )
+	    changing_point = exc->stack[exc->top-2];
+      break;
+      case 0x49: case 0x4A:
+	/* Measure Distance */
+	if ( exc->GS.gep0 )
+	    SetBasisPoint( ss, exc->stack[exc->top-1] );
+	if ( exc->GS.gep1 )
+	    SetBasisPoint( ss, exc->stack[exc->top-2] );
+      break;
+      case 0x5D: case 0x71: case 0x72:
+      case 0x73: case 0x74: case 0x75:
+        /* Delta Point */
+	cnt = exc->stack[exc->top-1];
+	for ( i=0; i<cnt; ++i ) {
+	    if ( 2*i+3 > exc->top )
+	break;
+	    if ( exc->GS.gep0 )
+		SetChangingPoint(ss, exc->stack[exc->top-2-2*i]);
+	}
+      break;
+      case 0x80:
+	/* Flip Points */
+	if ( exc->GS.gep0 )
+	    for ( i=1; i<=exc->GS.loop && i<exc->top; ++i ) {
+		SetChangingPoint(ss,exc->stack[exc->top-i]);
+	    }
+      break;
+      case 0x81: case 0x82:
+	i = exc->stack[exc->top-1];
+	top = exc->stack[exc->top-2];
+	if ( exc->GS.gep0 )
+	    for ( ; i<=top; ++i ) {
+		SetChangingPoint(ss,exc->stack[exc->top-i]);
+	    }
+      break;
+      case 0x06: case 0x07:
+      case 0x08: case 0x09:
+      case 0x86: case 0x87:
+        /* Sets vector from line */
+	if ( exc->GS.gep1 )
+	    SetBasisPoint(ss,exc->stack[exc->top-2]);
+	if ( exc->GS.gep2 )
+	    SetBasisPoint(ss,exc->stack[exc->top-1]);
+      break;
+      default:
+	/* Many instructions don't refer to points */
+      break;
+    }
+    if ( changing_point!=-1 )
+	SetChangingPoint(ss,changing_point);
+    if ( basis_point!=-1 )
+	SetBasisPoint(ss,basis_point);
+}
+
 #else
 void DVCreateGloss(DebugView *dv) {
+}
+
+void DVMarkPts(DebugView *dv,SplineSet *ss) {
 }
 #endif /* Has Debugger */
