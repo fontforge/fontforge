@@ -4053,7 +4053,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 
     if ( layer!=ly_back && zones->wants_hints &&
 	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {
-	_SplineCharAutoHint(sc,layer,&zones->bd,NULL,false);
+	_SplineCharAutoHint(sc,layer==ly_all?ly_fore:layer,&zones->bd,NULL,false);
     }
 
     adjust_counters = zones->counter_type==ct_retain ||
