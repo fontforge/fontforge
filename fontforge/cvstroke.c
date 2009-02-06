@@ -240,7 +240,8 @@ return( true );
 static int Stroke_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	StrokeDlg *sd = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( sd->strokeit==CVStrokeIt && sd->cv->b.layerheads[sd->cv->b.drawmode]->undoes->undotype==ut_tstate )
+	if ( sd->strokeit==CVStrokeIt && sd->cv->b.layerheads[sd->cv->b.drawmode]->undoes!=NULL &&
+		sd->cv->b.layerheads[sd->cv->b.drawmode]->undoes->undotype==ut_tstate )
 	    CVDoUndo(&sd->cv->b);
 	sd->done = true;
     }
