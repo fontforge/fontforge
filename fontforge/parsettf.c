@@ -4021,7 +4021,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    if ( lastwidth>info->advanceWidthMax && info->hhea_start!=0 ) {
 		if ( info->fontname!=NULL && sc->name!=NULL )
 		    LogError("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n",
-			    info->fontname, sc->name, lastwidth, info->advanceWidthMax );
+			    info->fontname, lastwidth, sc->name, info->advanceWidthMax );
 		else
 		    LogError("In GID %d the advance width (%d) is greatert than the stated maximum (%d)\n",
 			    i, lastwidth, info->advanceWidthMax );
