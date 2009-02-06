@@ -629,13 +629,18 @@ static void dumpghstruct(struct glyphinfo *gi,struct glyphhead *gh) {
 }
 
 static void ttfdumpmetrics(SplineChar *sc,struct glyphinfo *gi,DBounds *b) {
+    int width=sc->width;
+    int vwidth=sc->vwidth;
+
+    if ( width<0 ) width=0;
+    if ( vwidth<0 ) vwidth=0;
 
     if ( sc->ttf_glyph<=gi->lasthwidth )
-	putshort(gi->hmtx,sc->width);
+	putshort(gi->hmtx,width);
     putshort(gi->hmtx,b->minx);
     if ( sc->parent->hasvmetrics ) {
 	if ( sc->ttf_glyph<=gi->lastvwidth )
-	    putshort(gi->vmtx,sc->vwidth);
+	    putshort(gi->vmtx,vwidth);
 	putshort(gi->vmtx,/*sc->parent->vertical_origin-*/b->maxy);
     }
     if ( sc->ttf_glyph==gi->lasthwidth )
