@@ -265,7 +265,7 @@ struct unicoderange unicoderange[] = {
     { N_("Unicode Supplementary Special-purpose Plane"), 0xe0000, 0xeffff, -1 },
     { N_("Supplementary Special-purpose Plane"), 0xe0000, 0xeffff, -1, 2 },
     { N_("Tag characters"), 0xe0000, 0xe007f, -1, true },
-    { N_("Variation Selectors"), 0xe0110, 0xe01ff, -1, true },
+    { N_("Variation Selectors B"), 0xe0110, 0xe01ff, -1, true },
 /* End of SSP */
     { N_("Supplementary Private Use Area-A"), 0xf0000, 0xfffff, -1, 2 },
     { N_("Supplementary Private Use Area-B"), 0x100000, 0x10ffff, -1, 2 },
