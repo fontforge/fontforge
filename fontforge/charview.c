@@ -2337,7 +2337,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
-    CVDrawAnchorPoints(cv,pixmap);
+    if ( cv->dv==NULL || (cv->showback[ly_fore>>5]&(1<<(ly_fore&31))) )
+	CVDrawAnchorPoints(cv,pixmap);
     if ( cv->apmine!=NULL )
 	DrawAPMatch(cv,pixmap,&clip);
 
