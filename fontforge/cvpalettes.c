@@ -141,6 +141,8 @@ static void SaveOffsets(GWindow main, GWindow palette, GPoint *off) {
 	GDrawGetSize(palette,&pr);
 	off->x = pr.x-mr.x;
 	off->y = pr.y-mr.y;
+	if ( off->x<0 ) off->x = 0;
+	if ( off->y<0 ) off->y = 0;
 #if 0
  printf( "%s is offset (%d,%d)\n", palette==cvtools?"CVTools":
      palette==cvlayers?"CVLayers":palette==bvtools?"BVTools":
