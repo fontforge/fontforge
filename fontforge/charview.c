@@ -78,7 +78,8 @@ struct cvshows CVShows = {
 	0,		/* show lines which are almost, but not exactly horizontal or vertical */
 	0,		/* show curves which are almost, but not exactly horizontal or vertical at the end-points */
 	3,		/* number of em-units a coord difference must be less than to qualify for almost hv */
-	1		/* Check for self-intersections in the element view */
+	1,		/* Check for self-intersections in the element view */
+	1		/* In tt debugging, mark changed rasters differently */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -1846,13 +1847,20 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 			else
 			    or = cv->oldraster->bitmap[i*cv->oldraster->bytes_per_row+j];
 		    }
-		    if ( r || or ) {
+		    if ( r || ( or && cv->showdebugchanges)) {
 			pixel.x = jj*xgrid_spacing*cv->scale + cv->xoff+1;
 			pixel.y = cv->height-cv->yoff - rint(ii*ygrid_spacing*cv->scale);
-			if ( cv->raster->num_greys<=2 )
-			    GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
-			else
-			    GDrawFillRect(pixmap,&pixel,(r-or>-16 && r-or<16) ? clut[r] : (clut[r]&0x00ff00) );
+			if ( cv->showdebugchanges ) {
+			    if ( cv->raster->num_greys<=2 )
+				GDrawFillRect(pixmap,&pixel,(r && or) ? rastercol : r ? rasternewcol : rasteroldcol );
+			    else
+				GDrawFillRect(pixmap,&pixel,(r-or>-16 && r-or<16) ? clut[r] : (clut[r]&0x00ff00) );
+			} else {
+			    if ( cv->raster->num_greys<=2 )
+				GDrawFillRect(pixmap,&pixel, rastercol );
+			    else
+				GDrawFillRect(pixmap,&pixel, clut[r] );
+			}
 		    }
 		}
 	    }
@@ -4912,6 +4920,7 @@ return( true );
 #define MID_ShowAlmostHVCurves	2047
 #define MID_DefineAlmost	2048
 #define MID_SnapOutlines	2049
+#define MID_ShowDebugChanges	2050
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5487,6 +5496,9 @@ static void CVMenuShowHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
       break;
       case MID_ShowVMetrics:
 	CVShows.showvmetrics = cv->showvmetrics = !cv->showvmetrics;
+      break;
+      case MID_ShowDebugChanges:
+	CVShows.showdebugchanges = cv->showdebugchanges = !cv->showdebugchanges;
       break;
       default:
         IError("Unexpected call to CVMenuShowHints");
@@ -8887,6 +8899,9 @@ static void swlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.checked = cv->showvmetrics;
 	    mi->ti.disabled = !sf->hasvmetrics;
 	  break;
+	  case MID_ShowDebugChanges:
+	    mi->ti.checked = cv->showdebugchanges;
+	  break;
 	  case MID_SnapOutlines:
 #ifndef _NO_LIBCAIRO
 	    if ( GDrawHasCairo(cv->v)&gc_alpha ) {
@@ -9601,6 +9616,8 @@ static GMenuItem2 swlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("_Anchors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Anchors|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowAnchors },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, }},
+    { { (unichar_t *) N_("Debug Raster Cha_nges"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Debug Raster Changes|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowDebugChanges },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Hori_zontal Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Hori_zontal Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowHMetrics },
     { { (unichar_t *) N_("Vertical _Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Vertical Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, }},
@@ -9869,6 +9886,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showtabs = CVShows.showtabs;
 
     cv->checkselfintersects = CVShows.checkselfintersects;
+
+    cv->showdebugchanges = CVShows.showdebugchanges;
 
     cv->infoh = 13;
     cv->rulerh = 13;

@@ -55,6 +55,7 @@ extern struct cvshows {
     int showalmosthvcurves;
     int hvoffset;
     int checkselfintersects;	/* Not really something shown, but convenient to keep it here */
+    int showdebugchanges;	/* Changes the way changing rasters are displayed in tt debug mode */
 } CVShows;
 
 extern struct bvshows {
@@ -162,6 +163,7 @@ typedef struct charview {
     unsigned int showalmosthvlines: 1;
     unsigned int showalmosthvcurves: 1;
     unsigned int checkselfintersects: 1;
+    unsigned int showdebugchanges: 1;
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
     real scale;

@@ -401,6 +401,7 @@ static struct prefs_list {
 	{ "ShowAlmostHVCurves", pr_bool, &CVShows.showalmosthvcurves, NULL, NULL, '\0', NULL, 1 },
 	{ "AlmostHVBound", pr_int, &CVShows.hvoffset, NULL, NULL, '\0', NULL, 1 },
 	{ "CheckSelfIntersects", pr_bool, &CVShows.checkselfintersects, NULL, NULL, '\0', NULL, 1 },
+	{ "ShowDebugChanges", pr_bool, &CVShows.showdebugchanges, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
