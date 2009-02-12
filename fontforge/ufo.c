@@ -47,14 +47,19 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 
-/* The UFO (Unified Font Object) format, http://just.letterror.com/ltrwiki/UnifiedFontObject */
+/* The UFO (Unified Font Object) format, http://unifiedfontobject.org/ */
+/* Obsolete: http://just.letterror.com/ltrwiki/UnifiedFontObject */
 /* is a directory containing a bunch of (mac style) property lists and another*/
 /* directory containing glif files (and contents.plist). */
 
 /* Property lists contain one <dict> element which contains <key> elements */
 /*  each followed by an <integer>, <real>, <true/>, <false/> or <string> element, */
 /*  or another <dict> */
+
+/* UFO format 2.0 includes an adobe feature file "feature.fea" and slightly */
+/*  different/more tags in fontinfo.plist */
 
 static char *buildname(char *basedir,char *sub) {
     char *fname = galloc(strlen(basedir)+strlen(sub)+2);
@@ -331,6 +336,30 @@ static int PListOutputTrailer(FILE *plist) {
 return( ret );
 }
 
+static void PListOutputInteger(FILE *plist, char *key, int value) {
+    fprintf( plist, "\t<key>%s</key>\n", key );
+    fprintf( plist, "\t<integer>%d</integer>\n", value );
+}
+
+static void PListOutputReal(FILE *plist, char *key, double value) {
+    fprintf( plist, "\t<key>%s</key>\n", key );
+    fprintf( plist, "\t<real>%g</real>\n", value );
+}
+
+static void PListOutputBoolean(FILE *plist, char *key, int value) {
+    fprintf( plist, "\t<key>%s</key>\n", key );
+    fprintf( plist, value ? "\t<true/>\n" : "\t<false/>\n" );
+}
+
+static void PListOutputDate(FILE *plist, char *key, time_t timestamp) {
+    struct tm *tm = gmtime(&timestamp);
+
+    fprintf( plist, "\t<key>%s</key>\n", key );
+    fprintf( plist, "\t<date>%4d/%2d/%2d %02d:%02d:%02d</date>\n",
+	    tm->tm_year+1900, tm->tm_mon,
+	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
+}
+
 static void PListOutputString(FILE *plist, char *key, char *value) {
     if ( value==NULL ) value = "";
     fprintf( plist, "\t<key>%s</key>\n", key );
@@ -347,50 +376,227 @@ static void PListOutputString(FILE *plist, char *key, char *value) {
     fprintf(plist, "</string>\n" );
 }
 
-static void PListOutputInteger(FILE *plist, char *key, int value) {
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<integer>%d</integer>\n", value );
+static void PListOutputNameString(FILE *plist, char *key, SplineFont *sf, int strid) {
+    char *value=NULL, *nonenglish=NULL;
+    struct ttflangname *nm;
+
+    for ( nm=sf->names; nm!=NULL; nm=nm->next ) {
+	if ( nm->names[strid]!=NULL ) {
+	    nonenglish = nm->names[strid];
+	    if ( nm->lang == 0x409 ) {
+		value = nm->names[strid];
+    break;
+	    }
+	}
+    }
+    if ( value==NULL )
+	value=nonenglish;
+    if ( value!=NULL )
+	PListOutputString(plist,key,value);
 }
 
-static void PListOutputReal(FILE *plist, char *key, double value) {
+static void PListOutputIntArray(FILE *plist, char *key, char *entries, int len) {
+    int i;
+
     fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, "\t<real>%g</real>\n", value );
+    fprintf( plist, "\t<array>\n" );
+    for ( i=0; i<len; ++i )
+	fprintf( plist, "\t\t<integer>%d</integer>\n", entries[i] );
+    fprintf( plist, "\t</array>\n" );
 }
 
-#if 0
-static void PListOutputBoolean(FILE *plist, char *key, int value) {
-    fprintf( plist, "\t<key>%s</key>\n", key );
-    fprintf( plist, value ? "\t<true/>\n" : "\t<false/>\n" );
+static void PListOutputPrivateArray(FILE *plist, char *key, struct psdict *private) {
+    char *value;
+    int skipping;
+
+    if ( private==NULL )
+return;
+    value = PSDictHasEntry(private,key);
+    if ( value==NULL )
+return;
+
+    while ( *value==' ' || *value=='[' ) ++value;
+
+    fprintf( plist, "\t<key>postscript%s</key>\n", key );
+    fprintf( plist, "\t<array>\n" );
+    forever {
+	fprintf( plist, "\t\t<integer>" );
+	skipping=0;
+	while ( *value!=']' && *value!='\0' && *value!=' ' ) {
+	    if ( *value=='.' || skipping ) {
+		skipping=true;
+		++value;
+	    } else
+		fputc(*value++,plist);
+	}
+	fprintf( plist, "</integer>\n" );
+	while ( *value==' ' ) ++value;
+	if ( *value==']' || *value=='\0' )
+    break;
+    }
+    fprintf( plist, "\t</array>\n" );
 }
-#endif
+
+static void PListOutputPrivateThing(FILE *plist, char *key, struct psdict *private, char *type) {
+    char *value;
+
+    if ( private==NULL )
+return;
+    value = PSDictHasEntry(private,key);
+    if ( value==NULL )
+return;
+
+    while ( *value==' ' || *value=='[' ) ++value;
+
+    fprintf( plist, "\t<key>postscript%s</key>\n", key );
+    fprintf( plist, "\t<%s>%s</%s>\n", type, value, type );
+}
 
 static int UFOOutputMetaInfo(char *basedir,SplineFont *sf) {
     FILE *plist = PListCreate( basedir, "metainfo.plist" );
 
     if ( plist==NULL )
 return( false );
-    PListOutputString(plist,"creator","FontForge");
+    PListOutputString(plist,"creator","net.SourceForge.FontForge");
+#ifdef Version_1
     PListOutputInteger(plist,"formatVersion",1);
+#else
+    PListOutputInteger(plist,"formatVersion",2);
+#endif
 return( PListOutputTrailer(plist));
 }
 
 static int UFOOutputFontInfo(char *basedir,SplineFont *sf, int layer) {
     FILE *plist = PListCreate( basedir, "fontinfo.plist" );
+    DBounds bb;
 
     if ( plist==NULL )
 return( false );
+/* Same keys in both formats */
     PListOutputString(plist,"familyName",sf->familyname);
-    /* FontForge does not maintain a stylename except possibly in the ttfnames section where there are many different languages of it */
-    PListOutputString(plist,"fullName",sf->fullname);
-    PListOutputString(plist,"fontName",sf->fontname);
-    /* FontForge does not maintain a menuname except possibly in the ttfnames section where there are many different languages of it */
-    PListOutputString(plist,"weightName",sf->weight);
+    PListOutputString(plist,"styleName",SFGetModifiers(sf));
     PListOutputString(plist,"copyright",sf->copyright);
+    PListOutputNameString(plist,"trademark",sf,ttf_trademark);
     PListOutputInteger(plist,"unitsPerEm",sf->ascent+sf->descent);
     PListOutputInteger(plist,"ascender",sf->ascent);
     PListOutputInteger(plist,"descender",-sf->descent);
     PListOutputReal(plist,"italicAngle",sf->italicangle);
-    PListOutputString(plist,"curveType",sf->layers[layer].order2 ? "Quadratic" : "Cubic");
+#ifdef Version_1
+    PListOutputString(plist,"fullName",sf->fullname);
+    PListOutputString(plist,"fontName",sf->fontname);
+    /* FontForge does not maintain a menuname except possibly in the ttfnames section where there are many different languages of it */
+    PListOutputString(plist,"weightName",sf->weight);
+    /* No longer in the spec. Was it ever? Did I get this wrong? */
+    /* PListOutputString(plist,"curveType",sf->layers[layer].order2 ? "Quadratic" : "Cubic");*/
+#else
+    PListOutputString(plist,"note",sf->comments);
+    PListOutputDate(plist,"openTypeHeadCreated",sf->creationtime);
+    SplineFontFindBounds(sf,&bb);
+    if ( sf->pfminfo.hheadset ) {
+	if ( sf->pfminfo.hheadascent_add )
+	    PListOutputInteger(plist,"openTypeHheaAscender",bb.maxy+sf->pfminfo.hhead_ascent);
+	else
+	    PListOutputInteger(plist,"openTypeHheaAscender",sf->pfminfo.hhead_ascent);
+	if ( sf->pfminfo.hheaddescent_add )
+	    PListOutputInteger(plist,"openTypeHheaDescender",bb.miny+sf->pfminfo.hhead_descent);
+	else
+	    PListOutputInteger(plist,"openTypeHheaDescender",sf->pfminfo.hhead_descent);
+	PListOutputInteger(plist,"openTypeHheaLineGap",sf->pfminfo.linegap);
+    }
+    PListOutputNameString(plist,"openTypeNameDesigner",sf,ttf_designer);
+    PListOutputNameString(plist,"openTypeNameDesignerURL",sf,ttf_designerurl);
+    PListOutputNameString(plist,"openTypeNameManufacturer",sf,ttf_manufacturer);
+    PListOutputNameString(plist,"openTypeNameManufacturerURL",sf,ttf_venderurl);
+    PListOutputNameString(plist,"openTypeNameLicense",sf,ttf_license);
+    PListOutputNameString(plist,"openTypeNameLicenseURL",sf,ttf_licenseurl);
+    PListOutputNameString(plist,"openTypeNameVersion",sf,ttf_version);
+    PListOutputNameString(plist,"openTypeNameUniqueID",sf,ttf_uniqueid);
+    PListOutputNameString(plist,"openTypeNameDescription",sf,ttf_descriptor);
+    PListOutputNameString(plist,"openTypeNamePreferedFamilyName",sf,ttf_preffamilyname);
+    PListOutputNameString(plist,"openTypeNamePreferedSubfamilyName",sf,ttf_prefmodifiers);
+    PListOutputNameString(plist,"openTypeNameCompatibleFullName",sf,ttf_compatfull);
+    PListOutputNameString(plist,"openTypeNameSampleText",sf,ttf_sampletext);
+    PListOutputNameString(plist,"openTypeWWSFamilyName",sf,ttf_wwsfamily);
+    PListOutputNameString(plist,"openTypeWWSSubfamilyName",sf,ttf_wwssubfamily);
+    if ( sf->pfminfo.panose_set )
+	PListOutputIntArray(plist,"openTypeOS2Panose",sf->pfminfo.panose,10);
+    if ( sf->pfminfo.pfmset ) {
+	char vendor[8], fc[2];
+	PListOutputInteger(plist,"openTypeOS2WidthClass",sf->pfminfo.width);
+	PListOutputInteger(plist,"openTypeOS2WeightClass",sf->pfminfo.weight);
+	memcpy(vendor,sf->pfminfo.os2_vendor,4);
+	vendor[4] = 0;
+	PListOutputString(plist,"openTypeOS2VendorID",vendor);
+	fc[0] = sf->pfminfo.os2_family_class>>8; fc[1] = sf->pfminfo.os2_family_class&0xff;
+	PListOutputIntArray(plist,"openTypeOS2FamilyClass",fc,2);
+	{
+	    int fscnt,i;
+	    char fstype[16];
+	    for ( i=fscnt=0; i<16; ++i )
+		if ( sf->pfminfo.fstype&(1<<i) )
+		    fstype[fscnt++] = i;
+	    if ( fscnt!=0 )
+		PListOutputIntArray(plist,"openTypeOS2Type",fstype,fscnt);
+	}
+	if ( sf->pfminfo.typoascent_add )
+	    PListOutputInteger(plist,"openTypeOS2TypoAscender",sf->ascent+sf->pfminfo.os2_typoascent);
+	else
+	    PListOutputInteger(plist,"openTypeOS2TypoAscender",sf->pfminfo.os2_typoascent);
+	if ( sf->pfminfo.typodescent_add )
+	    PListOutputInteger(plist,"openTypeOS2TypoDescender",sf->descent+sf->pfminfo.os2_typodescent);
+	else
+	    PListOutputInteger(plist,"openTypeOS2TypoDescender",sf->pfminfo.os2_typodescent);
+	PListOutputInteger(plist,"openTypeOS2TypoLineGap",sf->pfminfo.os2_typolinegap);
+	if ( sf->pfminfo.winascent_add )
+	    PListOutputInteger(plist,"openTypeOS2WinAscender",bb.maxy+sf->pfminfo.os2_winascent);
+	else
+	    PListOutputInteger(plist,"openTypeOS2WinAscender",sf->pfminfo.os2_winascent);
+	if ( sf->pfminfo.windescent_add )
+	    PListOutputInteger(plist,"openTypeOS2WinDescender",bb.miny+sf->pfminfo.os2_windescent);
+	else
+	    PListOutputInteger(plist,"openTypeOS2WinDescender",sf->pfminfo.os2_windescent);
+    }
+    if ( sf->pfminfo.subsuper_set ) {
+	PListOutputInteger(plist,"openTypeOS2SubscriptXSize",sf->pfminfo.os2_subxsize);
+	PListOutputInteger(plist,"openTypeOS2SubscriptYSize",sf->pfminfo.os2_subysize);
+	PListOutputInteger(plist,"openTypeOS2SubscriptXOffset",sf->pfminfo.os2_subxoff);
+	PListOutputInteger(plist,"openTypeOS2SubscriptYOffset",sf->pfminfo.os2_subyoff);
+	PListOutputInteger(plist,"openTypeOS2SuperscriptXSize",sf->pfminfo.os2_supxsize);
+	PListOutputInteger(plist,"openTypeOS2SuperscriptYSize",sf->pfminfo.os2_supysize);
+	PListOutputInteger(plist,"openTypeOS2SuperscriptXOffset",sf->pfminfo.os2_supxoff);
+	PListOutputInteger(plist,"openTypeOS2SuperscriptYOffset",sf->pfminfo.os2_supyoff);
+	PListOutputInteger(plist,"openTypeOS2StrikeoutSize",sf->pfminfo.os2_strikeysize);
+	PListOutputInteger(plist,"openTypeOS2StrikeoutPosition",sf->pfminfo.os2_strikeypos);
+    }
+    if ( sf->pfminfo.vheadset )
+	PListOutputInteger(plist,"openTypeVheaTypoLineGap",sf->pfminfo.vlinegap);
+    PListOutputString(plist,"postscriptFontName",sf->fontname);
+    PListOutputString(plist,"postscriptFullName",sf->fullname);
+    PListOutputString(plist,"postscriptWeightName",sf->weight);
+    /* Spec defines a "postscriptSlantAngle" but I don't think postscript does*/
+    /* PS does define an italicAngle, but presumably that's the general italic*/
+    /* angle we output earlier */
+    /* UniqueID is obsolete */
+    PListOutputInteger(plist,"postscriptUnderlineThickness",sf->uwidth);
+    PListOutputInteger(plist,"postscriptUnderlinePosition",sf->upos);
+    if ( sf->private!=NULL ) {
+	char *pt;
+	PListOutputPrivateArray(plist, "BlueValues", sf->private);
+	PListOutputPrivateArray(plist, "OtherBlues", sf->private);
+	PListOutputPrivateArray(plist, "FamilyBlues", sf->private);
+	PListOutputPrivateArray(plist, "FamilyOtherBlues", sf->private);
+	PListOutputPrivateArray(plist, "StemSnapH", sf->private);
+	PListOutputPrivateArray(plist, "StemSnapV", sf->private);
+	PListOutputPrivateThing(plist, "BlueFuzz", sf->private, "integer");
+	PListOutputPrivateThing(plist, "BlueShift", sf->private, "integer");
+	PListOutputPrivateThing(plist, "BlueScale", sf->private, "real");
+	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL &&
+		strstr(pt,"true")!=NULL )
+	    PListOutputBoolean(plist, "postscriptForceBold", true );
+    }
+    if ( sf->fondname!=NULL )
+    PListOutputString(plist,"macintoshFONDName",sf->fondname);
+#endif
 return( PListOutputTrailer(plist));
 }
 
@@ -465,6 +671,22 @@ return( PListOutputTrailer(plist));
 return( true );
 }
 
+#ifndef Version_1
+static int UFOOutputFeatures(char *basedir,SplineFont *sf) {
+    char *fname = buildname(basedir,"feature.fea");
+    FILE *feats = fopen( fname, "w" );
+    int err;
+
+    free(fname);
+    if ( feats==NULL )
+return( false );
+    FeatDumpFontLookups(feats,sf);
+    err = ferror(feats);
+    fclose(feats);
+return( !err );
+}
+#endif
+
 int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
 	EncMap *map,int layer) {
     char *foo = galloc( strlen(basedir) +20 ), *glyphdir, *gfname;
@@ -487,6 +709,9 @@ int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
     err |= !UFOOutputKerning(basedir,sf);
     err |= !UFOOutputVKerning(basedir,sf);
     err |= !UFOOutputLib(basedir,sf);
+#ifndef Version_1
+    err |= !UFOOutputFeatures(basedir,sf);
+#endif
 
     if ( err )
 return( false );
@@ -1413,6 +1638,12 @@ return( NULL );
     SFSetOrder(sf,sf->layers[ly_fore].order2);
 
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
+
+    /* Might as well check for feature files even if version 1 */
+    temp = buildname(basedir,"feature.fea");
+    if ( GFileExists(temp))
+	SFApplyFeatureFilename(sf,temp);
+    free(temp);
 
 #ifndef _NO_PYTHON
     temp = buildname(basedir,"lib.plist");
