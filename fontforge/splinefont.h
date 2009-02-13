@@ -911,8 +911,8 @@ typedef struct splinepoint {
     unsigned int selected:1;	/* for UI */
     unsigned int pointtype:2;
     unsigned int isintersection: 1;
-    unsigned int flexy: 1;
-    unsigned int flexx: 1;
+    unsigned int flexy: 1;	/* When "freetype_markup" is on in charview.c:DrawPoint */
+    unsigned int flexx: 1;	/* flexy means select nextcp, and flexx means draw circle around nextcp */
     unsigned int roundx: 1;	/* For true type hinting */
     unsigned int roundy: 1;	/* For true type hinting */
     unsigned int dontinterpolate: 1;	/* in ttf, don't imply point by interpolating between cps */
