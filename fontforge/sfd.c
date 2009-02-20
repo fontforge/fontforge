@@ -1758,8 +1758,12 @@ static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
     BDFRefChar *ref;
 
     ff_progress_next_stage();
-    fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
-	    bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry?bdf->foundry:"" );
+    if (bdf->foundry)
+        fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
+                 bdf->ascent, bdf->descent, BDFDepth(bdf), bdf->foundry );
+    else
+        fprintf( sfd, "BitmapFont: %d %d %d %d %d\n", bdf->pixelsize, bdf->glyphcnt,
+                 bdf->ascent, bdf->descent, BDFDepth(bdf) );
     if ( bdf->prop_cnt>0 ) {
 	fprintf( sfd, "BDFStartProperties: %d\n", bdf->prop_cnt );
 	for ( i=0; i<bdf->prop_cnt; ++i ) {
