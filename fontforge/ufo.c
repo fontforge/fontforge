@@ -1119,8 +1119,12 @@ return( NULL );
 	char *pt = strrchr(glifname,'/');
 	name = copy(pt+1);
 	for ( pt=cpt=name; *cpt!='\0'; ++cpt ) {
+	    if ( *cpt=='@' )		/* VMS doesn't let me have two "." in a filename so I use @ instead when a "." is called for */
+		*cpt = '.';
 	    if ( *cpt!='_' )
 		*pt++ = *cpt;
+	    else if ( islower(*name))
+		*name = toupper(*name);
 	}
 	*pt = '\0';
     } else if ( name==NULL )
