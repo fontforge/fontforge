@@ -5759,6 +5759,28 @@ static void bClearPrivateEntry(Context *c) {
 	PSDictRemoveEntry( c->curfv->sf->private,c->a.vals[1].u.sval);
 }
 
+static void bPrivateGuess(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    char *key;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad argument type" );
+
+    key = forceASCIIcopy(c,c->a.vals[1].u.sval);
+    if ( sf->private==NULL ) {
+	sf->private = gcalloc(1,sizeof(struct psdict));
+/* Is it required? bChangePrivateEntry() has it while PyFFPrivate_Guess() has not.
+	sf->private->cnt = 10;
+	sf->private->keys = gcalloc(10,sizeof(char *));
+	sf->private->values = gcalloc(10,sizeof(char *));
+ */
+    }
+    SFPrivateGuess(sf,c->curfv->active_layer,sf->private,key,true);
+    free(key);
+}
+
 static void bChangePrivateEntry(Context *c) {
     SplineFont *sf = c->curfv->sf;
     char *key, *val;
@@ -8154,6 +8176,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetCharCounterMask", bSetCharCounterMask },
     { "ReplaceCharCounterMasks", bReplaceCharCounterMasks },
     { "ClearPrivateEntry", bClearPrivateEntry },
+    { "PrivateGuess", bPrivateGuess },
     { "ChangePrivateEntry", bChangePrivateEntry },
     { "HasPrivateEntry", bHasPrivateEntry },
     { "GetPrivateEntry", bGetPrivateEntry },
