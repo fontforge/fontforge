@@ -131,7 +131,6 @@ return( dlopen(filename,flags) );	/* This will almost certainly fail, but it wil
 }
 #elif defined( __Mac )
     /* The mac now has normal dlopen routines */
-#elif defined( __Mac )
 #  include <dynamic.h>
 #  include <stdio.h>
 #  include <string.h>
@@ -146,6 +145,14 @@ return( lib );
 
     temp = galloc( strlen("/sw/lib/") + strlen(name) +1 );
     strcpy(temp,"/sw/lib/");
+    strcat(temp,name);
+    lib = dlopen(temp,flags);
+    free(temp);
+    if ( lib!=NULL && lib!=(void *) -1 )
+return( lib );
+
+    temp = galloc( strlen("/opt/local/lib/") + strlen(name) +1 );
+    strcpy(temp,"/opt/local/lib/");
     strcat(temp,name);
     lib = dlopen(temp,flags);
     free(temp);
