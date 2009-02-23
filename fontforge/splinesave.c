@@ -2217,7 +2217,8 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	    if ( cid==0 && notdef_subfont==-1 && i==cidmaster->subfontcnt-1 )
 		gi.gb[0].sc = &dummynotdef;
 	    else if ( SCWorthOutputting(sf->glyphs[cid]) &&
-		    strcmp(sf->glyphs[cid]->name,".notdef")!=0)	/* We've already added .notdef */
+		    ((i==notdef_subfont && cid==0 ) ||
+		     strcmp(sf->glyphs[cid]->name,".notdef")!=0))	/* We've already added .notdef */
 		gi.gb[cid].sc = sf->glyphs[cid];
 	    if ( gi.gb[cid].sc!=NULL )
 		cidbytes->fdind[cid] = i;
