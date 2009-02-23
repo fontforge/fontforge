@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 15-Dec-2008 -->
+  <!-- AP: Last modified: 23-Feb-2009 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2174,6 +2174,12 @@ SetLBearing(lbearing)
 	    The third and fourth arguments should specify the page width and height
 	    respectively. Units are in 1/72 inches (almost points), so 8.5x11" paper
 	    is 612,792 and A4 paper is (about) 595,842.
+	  <DT>
+	    PrivateGuess(key)
+	  <DD>
+	    key should be a string containing the name of a standard thing in the PS
+	    Private dictionary that fontforge can guess a value for. "BlueValues" for
+	    example.
 	</DL>
       </TD>
     </TR>
