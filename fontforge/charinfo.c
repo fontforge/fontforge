@@ -3907,7 +3907,7 @@ return;
 	memset(&ubox,0,sizeof(ubox));
 	memset(&ulabel,0,sizeof(ulabel));
 
-	ulabel[0].text = (unichar_t *) _("U_nicode Name:");
+	ulabel[0].text = (unichar_t *) _("Glyph _Name:");
 	ulabel[0].text_is_1byte = true;
 	ulabel[0].text_in_resource = true;
 	ugcd[0].gd.label = &ulabel[0];
