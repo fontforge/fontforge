@@ -48,6 +48,10 @@ int FreeTypeAtLeast(int major, int minor, int patch) {
 return( 0 );
 }
 
+char *FreeTypeStringVersion(void) {
+return( "" );
+}
+
 void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer, enum fontformat ff,int flags, void *share) {
 return( NULL );
@@ -253,6 +257,19 @@ return( true );
 
 return( false );
 }
+
+char *FreeTypeStringVersion(void) {
+    int ma, mi, pa;
+    static char buffer[60];
+
+    if ( !hasFreeType())
+return( "" );
+    if ( _FT_Library_Version==NULL )
+return( "FreeType 2.1.3 (or older)" );	/* older than 2.1.4, but don't know how old */
+    _FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
+    sprintf( buffer, "FreeType %d.%d.%d", ma, mi, pa );
+return( buffer );
+}
 # elif FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=4)))
 int FreeTypeAtLeast(int major, int minor, int patch) {
     int ma, mi, pa;
@@ -265,9 +282,28 @@ return( true );
 
 return( false );
 }
+
+char *FreeTypeStringVersion(void) {
+    int ma, mi, pa;
+    static char buffer[60];
+
+    if ( !hasFreeType())
+return( "" );
+    _FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
+    sprintf( buffer, "FreeType %d.%d.%d", ma, mi, pa );
+return( buffer );
+}
 # else 
 int FreeTypeAtLeast(int major, int minor, int patch) {
 return( 0 );		/* older than 2.1.4, but don't know how old */
+}
+
+char *FreeTypeStringVersion(void) {
+
+    if ( !hasFreeType())
+return( "" );
+
+return( "FreeType 2.1.3 (or older)" );	/* older than 2.1.4, but don't know how old */
 }
 # endif
 

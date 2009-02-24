@@ -3026,7 +3026,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GDrawFillRect(pixmap,&r,bg);
     r.x = LAYER_DATA; r.width = 90;
     GDrawFillRect(pixmap,&r,bg);
-    r.x = CODERANGE_DATA; r.width = 60;
+    r.x = CODERANGE_DATA; r.width = 200;
     GDrawFillRect(pixmap,&r,bg);
 
     if ( cv->info_within ) {
@@ -3050,11 +3050,14 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 /* GT: Foreground, make it short */
 								_("Fore"),
 	    -1,NULL,fg);
-    if ( cv->coderange!=cr_none )
+    if ( cv->coderange!=cr_none ) {
 	GDrawDrawBiText8(pixmap,CODERANGE_DATA,ybase,
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
 		cv->coderange==cr_prep ? _("'prep'") : _("Glyph"),
 	    -1,NULL,fg);
+	GDrawDrawBiText8(pixmap,CODERANGE_DATA+40,ybase,
+		FreeTypeStringVersion(), -1,NULL,fg);
+    }
     sp = NULL; cp = NULL;
     if ( cv->b.sc->inspiro && hasspiro())
 	cp = cv->p.spiro!=NULL ? cv->p.spiro : cv->lastselcp;
