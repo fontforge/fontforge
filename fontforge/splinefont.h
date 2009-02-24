@@ -2717,6 +2717,7 @@ extern int hasFreeType(void);
 extern int hasFreeTypeDebugger(void);
 extern int hasFreeTypeByteCode(void);
 extern int FreeTypeAtLeast(int major, int minor, int patch);
+extern char *FreeTypeStringVersion(void);
 extern void doneFreeType(void);
 extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,
 	int layer, enum fontformat ff,int flags,void *shared_ftc);
