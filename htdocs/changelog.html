@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 24-Dec-2008 -->
+  <!-- AP: Last modified: 24-Feb-2009 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,82 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      24-Feb-2009
+      <UL>
+	<LI>
+	  Support for UFO version 2.
+	<LI>
+	  If a CID font contained a ".notdef" glyph, then when FF generated a Type1
+	  CID font resource from it, FF would omit the .notdef glyph.
+	<LI>
+	  Patch from Panov to allow legacy scripting to guess values for the private
+	  dictionary. PrivateGuess(key).
+	<LI>
+	  Werner wants to know what version of freetype ff is using. So the debug window
+	  now shows this on the info line (I presume that's where it is most important).
+	<LI>
+	  Andreas Neustifter provided a FontForge icon with a transparent background
+	  (or the mac).
+	<LI>
+	  In TrueType debugging Werner originally asked to mark pixels which changed
+	  state. (So there were four states: on and still on, just recently turned
+	  on, just recently turned off, always off). Now he'd like to see exactly the
+	  current state.
+	<LI>
+	  People complain that under window managers that try to behave like MS Windows,
+	  the palettes slowly walk off the screen. This patch should (almost) fix that.
+	  A palette may start to walk off but each time it does, it will be brought
+	  back close to the zero point.
+	<LI>
+	  Pango doesn't like a utf8 string which consists solely of a variation selector.
+	  So don't draw them.
+	<LI>
+	  Werner doesn't want to see anchor points when debugging.
+	<LI>
+	  Change weight from the fontview usually crashed.
+	<LI>
+	  In the past if someone had a glyph with a negative advance width, FF would
+	  output a large postive number to the 'hmtx' table, instead output 0.
+	<LI>
+	  Yet another undo problem caused by the [Apply] button in the expand stroke
+	  dlg. This one on cancelling the dlg.
+	<LI>
+	  Werner wants to see what points the current instruction is going to move,
+	  so when debugging highlight these points. Also draw circles around the points
+	  which are used as reference points.
+	<LI>
+	  FF needed libxml to compile.
+	<LI>
+	  If there were no undoes in a glyph then Expand Stroke would crash.
+	<LI>
+	  Werner suggests adding a check that advance widths are all less than
+	  hhea.advanceWidthMax
+	<LI>
+	  Ah. Werner wants ff to tell him when an isFixedPitch font has a glyph with
+	  an andvance width which differs from advanceWidthMax.
+	<LI>
+	  Add a check that glyphs are within the font's bounding box too.
+	<LI>
+	  When creating a metrics view with many glyphs, one of which needed to be
+	  autohinted, then ff might crash.
+	<LI>
+	  Width was not set when building some small-caps glyphs out of references.
+	<LI>
+	  When I boxified Page Setup a typo meant that one radio button occurred twice
+	  and another got lost. Resulting in -- a crash.
+	<LI>
+	  Some dialogs don't get destroyed after they are finished with. Instead they
+	  hang around, invisible, containing state information that becomes relevant
+	  next time they appear. They need to be able to change their transient_for
+	  hints, since they may pop up with a new owner window.
+	<LI>
+	  Points of extrema weren't being marked correctly in the glyph view.
+	<LI>
+	  Mark to ligature anchor points not output properly to feature files.
+	<LI>
+	  Another member problem in merge fonts.
+      </UL>
     <LI>
       24-Dec-2008
       <UL>
