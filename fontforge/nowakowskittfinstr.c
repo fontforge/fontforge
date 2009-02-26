@@ -3728,7 +3728,7 @@ return( ret );
 
 static int SetDStemKeyPoint( InstrCt *ct,StemData *stem,PointData *pd,int aindex ) {
     
-    int nextidx, prev, is_start, nsidx, psidx;
+    int nextidx, previdx, prev, is_start, nsidx, psidx;
     PointData *ncpd, *pcpd, *best;
     real prevdot;
 
@@ -3738,8 +3738,9 @@ return( false );
     is_start = ( aindex == 0 || aindex == 2 );
     if ( pd->ttfindex >= ct->gd->realcnt ) {
         nextidx = pd->sp->nextcpindex;
+        previdx = pd->sp->prev->from->nextcpindex;
         ncpd = &ct->gd->points[nextidx];
-        pcpd = &ct->gd->points[nextidx-1];
+        pcpd = &ct->gd->points[previdx];
         psidx = IsStemAssignedToPoint( pcpd,stem,true );
         nsidx = IsStemAssignedToPoint( ncpd,stem,false );
         
