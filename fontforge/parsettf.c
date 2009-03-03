@@ -1777,21 +1777,6 @@ static void FigureControls(SplinePoint *from, SplinePoint *to, BasePoint *cp,
 
     if ( is_order2 ) {
 	from->nextcp = to->prevcp = *cp;
-	if ( cp->x==to->me.x && cp->y==to->me.y ) {
-	    /* I would lose track of the proper location of this cp if I left */
-	    /* it here (would end up with from->nonextcp, which would mean I'd*/
-	    /* use from->me rather than to->me in tottf.c:SSAddPoints. So we  */
-	    /* distort it a little */
-	    BasePoint off;
-	    double len;
-	    off.x = from->me.x-to->me.x; off.y = from->me.y-to->me.y;
-	    len = sqrt(off.x*off.x+off.y*off.y);
-	    if ( len>3 ) {
-		/* move the cp slightly toward from, but on the line between the two */
-		from->nextcp.x = (to->prevcp.x += rint(off.x/len));
-		from->nextcp.y = (to->prevcp.y += rint(off.y/len));
-	    }
-	}
     } else {
 	d = from->me.x;
 	c = 2*cp->x - 2*from->me.x;
@@ -1806,9 +1791,9 @@ static void FigureControls(SplinePoint *from, SplinePoint *to, BasePoint *cp,
 	to->prevcp.y = from->nextcp.y + (c+b)/3;
     }
 
-    if ( from->me.x!=from->nextcp.x || from->me.y!=from->nextcp.y )
+    if ( from->me.x!=from->nextcp.x || from->me.y!=from->nextcp.y || from->nextcpindex<0xfffe )
 	from->nonextcp = false;
-    if ( to->me.x!=to->prevcp.x || to->me.y!=to->prevcp.y )
+    if ( to->me.x!=to->prevcp.x || to->me.y!=to->prevcp.y || from->nextcpindex<0xfffe )
 	to->noprevcp = false;
     if ( is_order2 && (to->noprevcp || from->nonextcp)) {
 	to->noprevcp = from->nonextcp = true;
