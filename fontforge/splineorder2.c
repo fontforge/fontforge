@@ -1220,8 +1220,8 @@ void SplineRefigure2(Spline *spline) {
 	old = *spline;
 
     if ( from->nonextcp || to->noprevcp ||
-	    ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y ) ||
-	    ( to->prevcp.x==to->me.x && to->prevcp.y == to->me.y )) {
+	    ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y && from->nextcpindex>=0xfffe ) ||
+	    ( to->prevcp.x==to->me.x && to->prevcp.y == to->me.y && from->nextcpindex>=0xfffe )) {
 	from->nonextcp = to->noprevcp = true;
 	from->nextcp = from->me;
 	to->prevcp = to->me;
