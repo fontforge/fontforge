@@ -52,6 +52,7 @@ static void extpart_finishedit(GGadget *g, int r, int c, int wasnew);
 static void italic_finishedit(GGadget *g, int r, int c, int wasnew);
 static void topaccent_finishedit(GGadget *g, int r, int c, int wasnew);
 static void mathkern_finishedit(GGadget *g, int r, int c, int wasnew);
+static void mathkern_initrow(GGadget *g, int r);
 
 static GTextInfo truefalse[] = {
     { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -109,7 +110,7 @@ struct matrixinit mis[] = {
     { sizeof(exten_shape_ci)/sizeof(struct col_init)-1, exten_shape_ci, 0, NULL, NULL, NULL, NULL },
     { sizeof(italic_cor_ci)/sizeof(struct col_init)-1, italic_cor_ci, 0, NULL, NULL, NULL, italic_finishedit },
     { sizeof(top_accent_ci)/sizeof(struct col_init)-1, top_accent_ci, 0, NULL, NULL, NULL, topaccent_finishedit },
-    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, NULL, NULL, mathkern_finishedit },
+    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, mathkern_initrow, NULL, mathkern_finishedit },
     { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
     { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
     { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
@@ -713,7 +714,18 @@ return;
     GGadgetRedraw(g);
 }
 
+static void mathkern_initrow(GGadget *g, int r) {
+    int rows;
+    struct matrix_data *stuff;
+    int cols;
+
+    cols = GMatrixEditGetColCnt(g);
+    stuff = GMatrixEditGet(g, &rows);
+    stuff[r*cols+1].u.md_str = copy(_("Change"));
+};
+
 static void mathkern_finishedit(GGadget *g, int r, int c, int wasnew) {
+#if 0
     int rows;
     struct matrix_data *stuff;
     MathDlg *math;
@@ -722,16 +734,18 @@ static void mathkern_finishedit(GGadget *g, int r, int c, int wasnew) {
 
     if ( c!=0 || !wasnew )
 return;
+
     /* Popup up a dlg if they added a glyph */
+    /* But a common thing is for us to get here because the user clicked on */
+    /*  the button to pop up the dlg. */
     math = GDrawGetUserData(GGadgetGetWindow(g));
-    stuff = GMatrixEditGet(g, &rows);
-    cols = GMatrixEditGetColCnt(g);
     if ( stuff[r*cols+0].u.md_str==NULL )
 return;
     sc = SFGetChar(math->sf,-1,stuff[r*cols+0].u.md_str);
     if ( sc==NULL )
 return;
     MathKernDialog(sc,math->def_layer);
+#endif
 }
 
 static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
