@@ -1402,7 +1402,19 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    if ( gme->col_data[c].x + gme->col_data[c].width < gme->off_left )
 	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
-	    if ( gme->col_data[c].disabled && gme->g.box->disabled_background!=COLOR_TRANSPARENT )
+	    if ( gme->col_data[c].me_type==me_button ) {
+		extern GBox _GGadget_button_box;
+		int temp;
+		clip.height += 2;
+		GBoxDrawBackground(pixmap,&clip,gme->g.box,
+			gme->col_data[c].disabled ? gs_disabled : gs_enabled, false);
+		GBoxDrawBorder(pixmap,&clip,&_GGadget_button_box,
+			gme->col_data[c].disabled ? gs_disabled : gs_enabled, false);
+		clip.height -= 2;
+		temp = GBoxBorderWidth(pixmap,&_GGadget_button_box)+2;
+		clip.x += temp;
+		clip.width -= temp;
+	    } else if ( gme->col_data[c].disabled && gme->g.box->disabled_background!=COLOR_TRANSPARENT )
 		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
@@ -1444,6 +1456,8 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		  default:
 		    kludge = gme->edit_active; gme->edit_active = false;
 		    str = MD_Text(gme,r+gme->off_top,c);
+		    if ( str==NULL && gme->col_data[c].me_type==me_button )
+			str = "...";
 		    gme->edit_active = kludge;
 		  break;
 		}
