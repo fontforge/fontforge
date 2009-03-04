@@ -35,6 +35,7 @@
 #define DEL_SPACE	6
 
 static GBox gmatrixedit_box = { /* Don't initialize here */ 0 };
+static GBox gmatrixedit_button_box = { /* Don't initialize here */ 0 };
 static FontInstance *gmatrixedit_font = NULL, *gmatrixedit_titfont = NULL;
 static Color gmatrixedit_title_bg = 0x808080, gmatrixedit_title_fg = 0x000000, gmatrixedit_title_divider = 0xffffff;
 static Color gmatrixedit_rules = 0x000000;
@@ -105,6 +106,13 @@ return;
     gmatrixedit_frozencol = GResourceFindColor("GMatrixEdit.FrozenCol",gmatrixedit_frozencol);
     gmatrixedit_activecol = GResourceFindColor("GMatrixEdit.ActiveCol",gmatrixedit_activecol);
     gmatrixedit_inited = true;
+
+    _GGadgetCopyDefaultBox(&gmatrixedit_button_box);
+    gmatrixedit_button_box.border_width = 1;
+    gmatrixedit_button_box.flags |= box_foreground_border_inner;
+    gmatrixedit_button_box.main_background = gmatrixedit_box.main_background;
+    gmatrixedit_button_box.disabled_background = gmatrixedit_box.disabled_background;
+    _GGadgetInitDefaultBox("GMatrixEditButton.",&gmatrixedit_button_box,NULL);
 }
 
 static void MatrixDataFree(GMatrixEdit *gme) {
@@ -1251,8 +1259,7 @@ return;
 	GDrawBeep(NULL);
     } else if ( gme->col_data[c].me_type==me_enum ) {
 	GME_Choices(gme,event,r,c);
-    } else if ( gme->col_data[c].me_type==me_button &&
-	    event->type==et_mousedown ) {
+    } else if ( gme->col_data[c].me_type==me_button ) {
 	char *ret = (gme->col_data[c].func)(&gme->g,r,c);
 	if ( ret!=NULL ) {
 	    /* I don't bother validating it because I expect the function to */
@@ -1403,15 +1410,14 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
 	    if ( gme->col_data[c].me_type==me_button ) {
-		extern GBox _GGadget_button_box;
 		int temp;
 		clip.height += 2;
-		GBoxDrawBackground(pixmap,&clip,gme->g.box,
+		GBoxDrawBackground(pixmap,&clip,&gmatrixedit_button_box,
 			gme->col_data[c].disabled ? gs_disabled : gs_enabled, false);
-		GBoxDrawBorder(pixmap,&clip,&_GGadget_button_box,
+		GBoxDrawBorder(pixmap,&clip,&gmatrixedit_button_box,
 			gme->col_data[c].disabled ? gs_disabled : gs_enabled, false);
 		clip.height -= 2;
-		temp = GBoxBorderWidth(pixmap,&_GGadget_button_box)+2;
+		temp = GBoxBorderWidth(pixmap,&gmatrixedit_button_box)+2;
 		clip.x += temp;
 		clip.width -= temp;
 	    } else if ( gme->col_data[c].disabled && gme->g.box->disabled_background!=COLOR_TRANSPARENT )
