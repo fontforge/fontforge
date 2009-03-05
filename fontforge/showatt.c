@@ -55,6 +55,9 @@ struct node {
 	OTLookup *otl;
 	struct lookup_subtable *sub;
 	struct baselangextent *langs;
+	Justify *jscript;
+	struct jstf_lang *jlang;
+	OTLookup **otll;
     } u;
     int lpos;
 };
@@ -1125,6 +1128,154 @@ static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
     node->cnt = i;
 }
 
+static void BuildLookupList(struct node *node,struct att_dlg *att) {
+    OTLookup **otll = node->u.otll;
+    int i;
+    struct node *lookupnodes;
+
+    for ( i=0; otll[i]!=NULL; ++i );
+    lookupnodes = gcalloc(i+1,sizeof(struct node));
+    for ( i=0; otll[i]!=NULL; ++i ) {
+	lookupnodes[i].label = copy(otll[i]->lookup_name);
+	lookupnodes[i].parent = node;
+	lookupnodes[i].build = BuildGSUBlookups;
+	lookupnodes[i].u.otl = otll[i];
+    }
+
+    node->children = lookupnodes;
+    node->cnt = i;
+}
+
+static void BuildJSTFPrio(struct node *node, struct node *parent, OTLookup **otll,
+	char *label_if_some, char *label_if_none ) {
+
+    node->parent = parent;
+    if ( otll==NULL || otll[0]==NULL ) {
+	node->label = copy(label_if_none);
+	node->children_checked = true;
+	node->cnt = 0;
+    } else {
+	node->label = copy(label_if_some);
+	node->build = BuildLookupList;
+	node->u.otll = otll;
+    }
+}
+
+static void BuildJSTFlang(struct node *node,struct att_dlg *att) {
+    struct jstf_lang *jlang = node->u.jlang;
+    int i;
+    struct node *prionodes, *kids;
+    char buf[120];
+
+    prionodes = gcalloc(jlang->cnt+1,sizeof(struct node));
+    for ( i=0; i<jlang->cnt; ++i ) {
+	kids = gcalloc(7,sizeof(struct node));
+	BuildJSTFPrio(&kids[0],&prionodes[i],jlang->prios[i].enableExtend,_("Lookups Enabled for Expansion"), _("No Lookups Enabled for Expansion"));
+	BuildJSTFPrio(&kids[1],&prionodes[i],jlang->prios[i].disableExtend,_("Lookups Disabled for Expansion"), _("No Lookups Disabled for Expansion"));
+	BuildJSTFPrio(&kids[2],&prionodes[i],jlang->prios[i].maxExtend,_("Lookups Limiting Expansion"), _("No Lookups Limiting Expansion"));
+	BuildJSTFPrio(&kids[3],&prionodes[i],jlang->prios[i].enableShrink,_("Lookups Enabled for Shrinkage"), _("No Lookups Enabled for Shrinkage"));
+	BuildJSTFPrio(&kids[4],&prionodes[i],jlang->prios[i].disableShrink,_("Lookups Disabled for Shrinkage"), _("No Lookups Disabled for Shrinkage"));
+	BuildJSTFPrio(&kids[5],&prionodes[i],jlang->prios[i].maxShrink,_("Lookups Limiting Shrinkage"), _("No Lookups Limiting Shrinkage"));
+	sprintf( buf, _("Priority: %d"), i );
+	prionodes[i].label = copy(buf);
+	prionodes[i].parent = node;
+	prionodes[i].children_checked = true;
+	prionodes[i].children = kids;
+	prionodes[i].cnt = 6;
+    }
+
+    node->children = prionodes;
+    node->cnt = i;
+}
+
+static void BuildJSTFscript(struct node *node,struct att_dlg *att) {
+    SplineFont *sf = att->sf;
+    Justify *jscript = node->u.jscript;
+    int lang_max;
+    int i,j, ch;
+    struct node *langnodes, *extenders=NULL;
+    extern GTextInfo languages[];
+    char buf[100];
+    struct jstf_lang *jlang;
+    char *start, *end;
+    int gc;
+    SplineChar *sc;
+
+    for ( jlang=jscript->langs, lang_max=0; jlang!=NULL; jlang=jlang->next, ++lang_max );
+    langnodes = gcalloc(lang_max+2,sizeof(struct node));
+    gc =0;
+    if ( jscript->extenders!=NULL ) {
+	for ( start= jscript->extenders; ; ) {
+	    for ( ; *start==',' || *start==' '; ++start );
+	    for ( end=start ; *end!='\0' && *end!=',' && *end!=' '; ++end );
+	    if ( start==end )
+	break;
+	    ++gc;
+	    if ( *end=='\0' )
+	break;
+	    start = end;
+	}
+	extenders = gcalloc(gc+1,sizeof(struct node));
+	gc=0;
+	for ( start= jscript->extenders; ; ) {
+	    for ( ; *start==',' || *start==' '; ++start );
+	    for ( end=start ; *end!='\0' && *end!=',' && *end!=' '; ++end );
+	    if ( start==end )
+	break;
+	    ch = *end; *end='\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *end = ch;
+	    if ( sc!=NULL ) {
+		extenders[gc].label = copy(sc->name);
+		extenders[gc].parent = &langnodes[0];
+		extenders[gc].children_checked = true;
+		extenders[gc].u.sc = sc;
+		++gc;
+	    }
+	    if ( *end=='\0' )
+	break;
+	    start = end;
+	}
+    }
+    if ( gc==0 ) {
+	free(extenders);
+	extenders=NULL;
+	langnodes[0].label = copy(_("No Extender Glyphs"));
+	langnodes[0].parent = node;
+	langnodes[0].children_checked = true;
+    } else {
+	langnodes[0].label = copy(_("Extender Glyphs"));
+	langnodes[0].parent = node;
+	langnodes[0].children_checked = true;
+	langnodes[0].children = extenders;
+	langnodes[0].cnt = gc;
+    }
+	    
+    for ( jlang=jscript->langs, i=1; jlang!=NULL; jlang=jlang->next, ++i ) {
+	langnodes[i].tag = jlang->lang;
+	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) (intpt) languages[j].userdata; ++j );
+	buf[0] = '\'';
+	buf[1] = langnodes[i].tag>>24;
+	buf[2] = (langnodes[i].tag>>16)&0xff;
+	buf[3] = (langnodes[i].tag>>8)&0xff;
+	buf[4] = langnodes[i].tag&0xff;
+	buf[5] = '\'';
+	buf[6] = ' ';
+	if ( languages[j].text!=NULL ) {
+	    strcpy(buf+7,S_((char *) languages[j].text));
+	    strcat(buf," ");
+	} else
+	    buf[7]='\0';
+	strcat(buf,_("Language"));
+	langnodes[i].label = copy(buf);
+	langnodes[i].build = BuildJSTFlang;
+	langnodes[i].parent = node;
+	langnodes[i].u.jlang = jlang;
+    }
+    node->children = langnodes;
+    node->cnt = i;
+}
+
 static void BuildMClass(struct node *node,struct att_dlg *att) {
     SplineFont *_sf = att->sf;
     struct node *glyphs;
@@ -1664,7 +1815,7 @@ static void BuildMorxTable(struct node *node,struct att_dlg *att) {
 	}
     }
 }
-    
+
 static void BuildTable(struct node *node,struct att_dlg *att) {
     SplineFont *_sf = att->sf;
     int script_max;
@@ -1713,9 +1864,48 @@ return;
     node->cnt = i;
 }
 
+static void BuildJSTFTable(struct node *node,struct att_dlg *att) {
+    SplineFont *_sf = att->sf;
+    int sub_cnt,i,j;
+    Justify *jscript;
+    struct node *scriptnodes;
+    char buf[120];
+    extern GTextInfo scripts[];
+
+    for ( sub_cnt=0, jscript=_sf->justify; jscript!=NULL; jscript=jscript->next, ++sub_cnt );
+    scriptnodes = gcalloc(sub_cnt+1,sizeof(struct node));
+    for ( i=0, jscript=_sf->justify; jscript!=NULL; jscript=jscript->next, ++i ) {
+	scriptnodes[i].tag = jscript->script;
+	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) (intpt) scripts[j].userdata; ++j );
+	buf[0] = '\'';
+	buf[1] = scriptnodes[i].tag>>24;
+	buf[2] = (scriptnodes[i].tag>>16)&0xff;
+	buf[3] = (scriptnodes[i].tag>>8)&0xff;
+	buf[4] = scriptnodes[i].tag&0xff;
+	buf[5] = '\'';
+	buf[6] = ' ';
+	if ( scripts[j].text!=NULL ) {
+	    strcpy(buf+7,S_((char*) scripts[j].text));
+	    strcat(buf," ");
+	} else
+	    buf[7]='\0';
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Script", ignore "writing system|" */
+/* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
+/* GT: and the cursive handwriting style. Here we mean the general writing system. */
+	strcat(buf,S_("writing system|Script"));
+	scriptnodes[i].label = copy(buf);
+	scriptnodes[i].build = BuildJSTFscript;
+	scriptnodes[i].parent = node;
+	scriptnodes[i].u.jscript = jscript;
+    }
+    node->children = scriptnodes;
+    node->cnt = i;
+}
+
 static void BuildTop(struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
-    int hasgsub=0, hasgpos=0, hasgdef=0, hasbase=0;
+    int hasgsub=0, hasgpos=0, hasgdef=0, hasbase=0, hasjstf=0;
     int hasmorx=0, haskern=0, hasvkern=0, haslcar=0, hasprop=0, hasopbd=0, hasbsln=0;
     int haskc=0, hasvkc=0;
     int feat, set;
@@ -1791,19 +1981,20 @@ static void BuildTop(struct att_dlg *att) {
 	hasgdef = true;
     hasbase = ( _sf->horiz_base!=NULL || _sf->vert_base!=NULL );
     hasbsln = ( _sf->horiz_base!=NULL && _sf->horiz_base->baseline_cnt!=0 );
+    hasjstf = ( _sf->justify!=NULL );
 
-    if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop+hasbase==0 ) {
+    if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop+hasbase+hasjstf==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
 	tables[0].label = copy(_("No Advanced Typography"));
     } else {
-	tables = gcalloc((hasgsub||hasgpos||hasgdef||hasbase)+
+	tables = gcalloc((hasgsub||hasgpos||hasgdef||hasbase||hasjstf)+
 	    (hasmorx||haskern||haslcar||hasopbd||hasprop||hasbsln)+1,sizeof(struct node));
 	i=0;
-	if ( hasgsub || hasgpos || hasgdef || hasbase ) {
+	if ( hasgsub || hasgpos || hasgdef || hasbase || hasjstf ) {
 	    tables[i].label = copy(_("OpenType Tables"));
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasgsub+hasgpos+hasgdef+hasbase+1,sizeof(struct node));
-	    tables[i].cnt = hasgsub + hasgpos + hasgdef + hasbase;
+	    tables[i].children = gcalloc(hasgsub+hasgpos+hasgdef+hasbase+hasjstf+1,sizeof(struct node));
+	    tables[i].cnt = hasgsub + hasgpos + hasgdef + hasbase + hasjstf;
 	    if ( hasbase ) {
 		int sub_cnt= (sf->horiz_base!=NULL) + (sf->vert_base!=NULL), j=0;
 		tables[i].children[0].label = copy(_("'BASE' Baseline Table"));
@@ -1850,6 +2041,13 @@ static void BuildTop(struct att_dlg *att) {
 		tables[i].children[hasgdef+hasgpos+hasbase].tag = CHR('G','S','U','B');
 		tables[i].children[hasgdef+hasgpos+hasbase].build = BuildTable;
 		tables[i].children[hasgdef+hasgpos+hasbase].parent = &tables[i];
+	    }
+	    if ( hasjstf ) {
+		int k = hasgdef+hasgpos+hasbase+hasgsub;
+		tables[i].children[k].label = copy(_("'JSTF' Justification Table"));
+		tables[i].children[k].tag = CHR('J','S','T','F');
+		tables[i].children[k].parent = &tables[i];
+		tables[i].children[k].build = BuildJSTFTable;
 	    }
 	    ++i;
 	}
