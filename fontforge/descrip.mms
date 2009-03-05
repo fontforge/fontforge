@@ -40,7 +40,7 @@ fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj
  searchview.obj,sftextfield.obj,showatt.obj,simplifydlg.obj,splashimage.obj,stamp.obj,\
  startui.obj,statemachine.obj,tilepath.obj,transform.obj,ttfinstrsui.obj,uiutil.obj,\
  windowmenu.obj,oflib.obj
-fontforge_UIOBJECTS1=unicoderange.obj
+fontforge_UIOBJECTS1=unicoderange.obj,justifydlg.obj
 
 fontforge.exe : $(fontforge_UIOBJECTS) $(fontforge_UIOBJECTS1) lff.opt xlib.opt\
 	[-.libs]libfontforge.exe [-.libs]LIBGDRAW.olb
@@ -215,6 +215,7 @@ plugins.obj : plugins.c
 startui.obj : startui.c
 bdfinfo.obj : bdfinfo.c
 glyphcomp.obj : glyphcomp.c
+justifydlg.obj : justifydlg.c
 unicoderange.obj : unicoderange.c
 ufo.obj : ufo.c
 ofl.obj : ofl.c
