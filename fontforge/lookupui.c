@@ -67,6 +67,35 @@ GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type ) {
 return( ti );
 }
 
+GTextInfo *SFLookupArrayFromMask(SplineFont *sf, int mask ) {
+    int k, cnt;
+    OTLookup *otl;
+    GTextInfo *ti;
+    int isgpos;
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	for ( isgpos = 0; isgpos<2; ++isgpos ) {
+	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups ; otl!=NULL; otl=otl->next ) {
+		int lmask = isgpos ? (gpos_single_mask<<(otl->lookup_type-gpos_single))
+				   : (gsub_single_mask<<(otl->lookup_type-gsub_single));
+		if ( mask==0 || (mask&lmask)) {
+		    if ( k ) {
+			ti[cnt].userdata = (void *) otl;
+			ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
+			ti[cnt].text_is_1byte = true;
+			ti[cnt].text = (unichar_t *) copy(otl->lookup_name);
+		    }
+		    ++cnt;
+		}
+	    }
+	}
+	if ( !k )
+	    ti = gcalloc(cnt+2,sizeof(GTextInfo ));
+    }
+return( ti );
+}
+
 /* ************************************************************************** */
 /* ********************** Lookup dialog and subdialogs ********************** */
 /* ************************************************************************** */

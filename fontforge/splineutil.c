@@ -1031,6 +1031,34 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     }
 }
 
+void SplineCharLayerQuickBounds(SplineChar *sc,int layer,DBounds *bounds) {
+    RefChar *ref;
+    DBounds temp;
+
+    if ( sc->parent!=NULL && sc->parent->multilayer ) {
+	SplineCharQuickBounds(sc,bounds);
+return;
+    }
+
+    /* a char with no splines (ie. a space) must have an lbearing of 0 */
+    bounds->minx = bounds->maxx = 0;
+    bounds->miny = bounds->maxy = 0;
+
+    SplineSetQuickBounds(sc->layers[layer].splines,bounds);
+    
+    for ( ref = sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
+	SplineSetQuickBounds(ref->layers[0].splines,&temp);
+	if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
+	    *bounds = temp;
+	else if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
+	    if ( temp.minx < bounds->minx ) bounds->minx = temp.minx;
+	    if ( temp.miny < bounds->miny ) bounds->miny = temp.miny;
+	    if ( temp.maxx > bounds->maxx ) bounds->maxx = temp.maxx;
+	    if ( temp.maxy > bounds->maxy ) bounds->maxy = temp.maxy;
+	}
+    }
+}
+
 void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
     SplinePoint *sp;
 
@@ -6125,6 +6153,80 @@ return;
     chunkfree(base,sizeof(struct Base));
 }
 
+static OTLookup **OTLListCopy(OTLookup **str) {
+    OTLookup **ret;
+    int i;
+
+    if ( str == NULL )
+return( NULL );
+    for ( i=0 ; str[i]!=NULL; ++i );
+    ret = galloc((i+1)*sizeof( OTLookup *));
+    for ( i=0 ; str[i]!=NULL; ++i )
+	ret[i] = str[i];
+    ret[i] = NULL;
+return( ret );
+}
+    
+struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl) {
+    struct jstf_lang *head=NULL, *last=NULL, *cur;
+    int i;
+
+    while ( jl!=NULL ) {
+	cur = chunkalloc(sizeof(*cur));
+	cur->lang = jl->lang;
+	cur->cnt = jl->cnt;
+	cur->prios = gcalloc(cur->cnt,sizeof(struct jstf_prio));
+	for ( i=0; i<cur->cnt; ++i ) {
+	    cur->prios[i].enableShrink = OTLListCopy( jl->prios[i].enableShrink );
+	    cur->prios[i].disableShrink = OTLListCopy( jl->prios[i].disableShrink );
+	    cur->prios[i].maxShrink = OTLListCopy( jl->prios[i].maxShrink );
+	    cur->prios[i].enableExtend = OTLListCopy( jl->prios[i].enableExtend );
+	    cur->prios[i].disableExtend = OTLListCopy( jl->prios[i].disableExtend );
+	    cur->prios[i].maxExtend = OTLListCopy( jl->prios[i].maxExtend );
+	}
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	jl = jl->next;
+    }
+return( head );
+}
+
+void JstfLangFree(struct jstf_lang *jl) {
+    struct jstf_lang *next;
+    int i;
+
+    while ( jl!=NULL ) {
+	next = jl->next;
+	for ( i=0; i<jl->cnt; ++i ) {
+	    struct jstf_prio *jp = &jl->prios[i];
+	    free(jp->enableShrink);
+	    free(jp->disableShrink);
+	    free(jp->maxShrink);
+	    free(jp->enableExtend);
+	    free(jp->disableExtend);
+	    free(jp->maxExtend);
+	}
+	free(jl->prios);
+	chunkfree(jl,sizeof(*jl));
+	jl = next;
+    }
+}
+
+void JustifyFree(Justify *just) {
+    Justify *next;
+
+    while ( just!=NULL ) {
+	next = just->next;
+	free(just->extenders);
+	JstfLangFree(just->langs);
+	chunkfree(just,sizeof(*just));
+	just = next;
+    }
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -6187,6 +6289,7 @@ return;
 #endif
     BaseFree(sf->horiz_base);
     BaseFree(sf->vert_base);
+    JustifyFree(sf->justify);
     free(sf);
 }
 

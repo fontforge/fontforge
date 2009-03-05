@@ -448,6 +448,9 @@ typedef struct otlookup {
     unsigned int def_lang_checked: 1;
     unsigned int def_lang_found: 1;
     unsigned int ticked: 1;
+    unsigned int in_gpos: 1;
+    unsigned int in_jstf: 1;
+    unsigned int only_jstf: 1;
     int16 subcnt;		/* Actual number of subtables we will output */
 				/* Some of our subtables may contain no data */
 			        /* Some may be too big and need to be broken up.*/
@@ -663,6 +666,29 @@ typedef struct generic_asm {		/* Apple State Machine */
 	0x4000	don't advance to next glyph
 	0x3fff	value offset
 */
+
+struct jstf_prio {
+    OTLookup **enableShrink;	/* Points to an array of lookups (GSUB or GPOS)*/
+    OTLookup **disableShrink;	/* NULL terminated */
+    OTLookup **maxShrink;	/* Array of GPOS like lookups */
+    OTLookup **enableExtend;
+    OTLookup **disableExtend;
+    OTLookup **maxExtend;
+};
+
+struct jstf_lang {
+    uint32 lang;
+    struct jstf_lang *next;
+    int cnt;
+    struct jstf_prio *prios;
+};
+
+typedef struct jstf_script {
+    uint32 script;
+    struct jstf_script *next;
+    char *extenders;		/* list of glyph names */
+    struct jstf_lang *langs;
+} Justify;
 
 struct opentype_str {
     struct splinechar *sc;
@@ -1783,6 +1809,7 @@ typedef struct splinefont {
     int layer_cnt;
     int display_layer;
     struct Base *horiz_base, *vert_base;
+    Justify *justify;
     int extrema_bound;			/* Splines do not count for extrema complaints when the distance between the endpoints is less than or equal to this */
 } SplineFont;
 
@@ -2139,6 +2166,9 @@ extern void BaseLangFree(struct baselangextent *extent);
 extern void BaseScriptFree(struct basescript *bs);
 extern void BaseFree(struct Base *base);
 extern void SplineFontFree(SplineFont *sf);
+extern struct jstf_lang *JstfLangsCopy(struct jstf_lang *jl);
+extern void JstfLangFree(struct jstf_lang *jl);
+extern void JustifyFree(Justify *just);
 extern void MATHFree(struct MATH *math);
 extern struct MATH *MathTableNew(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
@@ -2158,6 +2188,7 @@ extern void SplineFontLayerFindBounds(SplineFont *sf,int layer,DBounds *bounds);
 extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
 extern void CIDLayerFindBounds(SplineFont *sf,int layer,DBounds *bounds);
 extern void SplineSetQuickBounds(SplineSet *ss,DBounds *b);
+extern void SplineCharLayerQuickBounds(SplineChar *sc,int layer,DBounds *bounds);
 extern void SplineCharQuickBounds(SplineChar *sc, DBounds *b);
 extern void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b);
 extern void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b);
