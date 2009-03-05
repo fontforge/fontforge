@@ -1463,7 +1463,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    kludge = gme->edit_active; gme->edit_active = false;
 		    str = MD_Text(gme,r+gme->off_top,c);
 		    if ( str==NULL && gme->col_data[c].me_type==me_button )
-			str = "...";
+			str = copy("...");
 		    gme->edit_active = kludge;
 		  break;
 		}
