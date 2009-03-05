@@ -2270,6 +2270,12 @@ static void FVMenuBaseVert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFBaseSort(sf);
 }
 
+static void FVMenuJustify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *sf = fv->b.cidmaster == NULL ? fv->b.sf : fv->b.cidmaster;
+    JustifyDlg(sf);
+}
+
 static void FVMenuMassRename(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVMassGlyphRename(fv);
@@ -4371,6 +4377,7 @@ static GMenuItem2 infolist[] = {
     { { (unichar_t *) N_("_BDF Info..."), (GImage *) "elementbdfinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
     { { (unichar_t *) N_("_Horizontal Baselines..."), (GImage *) "elementhbaselines.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Horizontal Baselines...|No Shortcut"), NULL, NULL, FVMenuBaseHoriz },
     { { (unichar_t *) N_("_Vertical Baselines..."), (GImage *) "elementvbaselines.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical Baselines...|No Shortcut"), NULL, NULL, FVMenuBaseVert },
+    { { (unichar_t *) N_("_Justification..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Justification...|No Shortcut"), NULL, NULL, FVMenuJustify },
     { { (unichar_t *) N_("Show _Dependent"), (GImage *) "elementshowdep.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, delist, delistcheck },
     { { (unichar_t *) N_("Mass Glyph _Rename..."), (GImage *) "elementrenameglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Mass Glyph Rename...|No Shortcut"), NULL, NULL, FVMenuMassRename, MID_MassRename },
     { { (unichar_t *) N_("Set _Color"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Set Color|No Shortcut"), scollist, NULL, NULL, MID_SetColor },

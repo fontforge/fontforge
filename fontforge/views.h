@@ -1062,6 +1062,7 @@ struct subtable_data {
 };
 
 extern GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type );
+extern GTextInfo *SFLookupArrayFromMask(SplineFont *sf, int lookup_mask );
 extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
 extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
 extern struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd, int def_layer );
@@ -1110,6 +1111,8 @@ extern void DefineGroups(struct fontview *fv);
 extern void DisplayGroups(struct fontview *fv);
 
 extern struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical);
+extern void JustifyDlg(SplineFont *sf);
+extern char *GlyphListDlg(SplineFont *sf, char *glyphstr);
 
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 
