@@ -153,17 +153,21 @@ static int JSTF_Glyph_OK(GGadget *g, GEvent *e) {
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(gld->gw,CID_Glyphs), &rows);
 	char *ret;
 
-	len = 0;
-	for ( i=0; i<rows; ++i )
-	    len += strlen(strings[1*i+0].u.md_str) +1;
-	gld->ret = ret = galloc(len+1);
-	for ( i=0; i<rows; ++i ) {
-	    strcpy(ret,strings[1*i+0].u.md_str);
-	    strcat(ret," ");
-	    ret += strlen(ret);
+	if ( rows==0 )
+	    gld->ret = NULL;
+	else {
+	    len = 0;
+	    for ( i=0; i<rows; ++i )
+		len += strlen(strings[1*i+0].u.md_str) +1;
+	    gld->ret = ret = galloc(len+1);
+	    for ( i=0; i<rows; ++i ) {
+		strcpy(ret,strings[1*i+0].u.md_str);
+		strcat(ret," ");
+		ret += strlen(ret);
+	    }
+	    if ( ret>gld->ret && ret[-1] == ' ' )
+		ret[-1] = '\0';
 	}
-	if ( ret>gld->ret && ret[-1] == ' ' )
-	    ret[-1] = '\0';
 	gld->done = true;
     }
 return( true );
@@ -318,7 +322,7 @@ static void LookupMatrixInit(struct matrixinit *mi,char *lookupstr,
     mi->col_cnt = 1;
     mi->col_init = lookup_ci;
 
-    lookup_ci[0].enum_vals = SFLookupArrayFromMask(sf,col==3 || col==6 ? (gpos_single|gpos_pair) : 0 );
+    lookup_ci[0].enum_vals = SFLookupArrayFromMask(sf,col==3 || col==6 ? (gpos_single_mask|gpos_pair_mask) : 0 );
 
     md = NULL;
     for ( k=0; k<2; ++k ) {
@@ -328,7 +332,7 @@ static void LookupMatrixInit(struct matrixinit *mi,char *lookupstr,
 	    if ( k ) {
 		for ( j=0; (temp=(char *) (lookup_ci[0].enum_vals[j].text))!=NULL; ++j )
 		    if ( strlen(temp)==end-start && strncmp(temp,start,end-start)==0 ) {
-			md[1*cnt++ + 0].u.md_ival = lookup_ci[0].enum_vals[j].userdata;
+			md[1*cnt++ + 0].u.md_ival = (intpt) lookup_ci[0].enum_vals[j].userdata;
 		break;
 		    }
 	    } else
@@ -351,22 +355,26 @@ static int JSTF_Lookup_OK(GGadget *g, GEvent *e) {
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(gld->gw,CID_Lookups), &rows);
 	char *ret;
 
-	len = 0;
-	for ( i=0; i<rows; ++i ) {
-	    OTLookup *otl = (OTLookup *) strings[1*i+0].u.md_ival;
-	    len += strlen(otl->lookup_name) +2;
+	if ( rows==0 )
+	    gld->ret = NULL;
+	else {
+	    len = 0;
+	    for ( i=0; i<rows; ++i ) {
+		OTLookup *otl = (OTLookup *) strings[1*i+0].u.md_ival;
+		len += strlen(otl->lookup_name) +2;
+	    }
+	    gld->ret = ret = galloc(len+1);
+	    for ( i=0; i<rows; ++i ) {
+		OTLookup *otl = (OTLookup *) strings[1*i+0].u.md_ival;
+		strcpy(ret,otl->lookup_name);
+		strcat(ret,", ");
+		ret += strlen(ret);
+	    }
+	    if ( ret>gld->ret && ret[-1] == ' ' )
+		*--ret = '\0';
+	    if ( ret>gld->ret && ret[-1] == ',' )
+		*--ret = '\0';
 	}
-	gld->ret = ret = galloc(len+1);
-	for ( i=0; i<rows; ++i ) {
-	    OTLookup *otl = (OTLookup *) strings[1*i+0].u.md_ival;
-	    strcpy(ret,otl->lookup_name);
-	    strcat(ret,", ");
-	    ret += strlen(ret);
-	}
-	if ( ret>gld->ret && ret[-1] == ' ' )
-	    *--ret = '\0';
-	if ( ret>gld->ret && ret[-1] == ',' )
-	    *--ret = '\0';
 	gld->done = true;
     }
 return( true );
@@ -566,6 +574,7 @@ return( NULL );
 
     ret = galloc( (cnt+2)*sizeof(OTLookup *));
     pt = str;
+    cnt = 0;
     while ( (ept = strchr(pt,','))!=NULL ) {
 	*ept = '\0';
 	ret[cnt] = SFFindLookup(sf,pt);
@@ -637,9 +646,9 @@ static int JSTF_Language_OK(GGadget *g, GEvent *e) {
 	int cols = GMatrixEditGetColCnt(GWidgetGetControl(jd->lgw,CID_Languages));
 	struct jstf_lang *head=NULL, *last=NULL, *cur;
 
-	for ( i=0; i<rows; ++i ) if ( !(strings[i*cols+0].u.md_ival&0x80) ) {
+	for ( i=0; i<rows; ++i ) if ( !(strings[i*cols+0].u.md_str[0]&0x80) ) {
 	    for ( j=i, cnt=0; j<rows; ++j )
-		if ( strings[j*cols+0].u.md_ival == strings[i*cols+0].u.md_ival )
+		if ( strcmp(strings[j*cols+0].u.md_str, strings[i*cols+0].u.md_str)==0 )
 		    ++cnt;
 	    cur = chunkalloc(sizeof(struct jstf_lang));
 	    if ( head==NULL )
@@ -651,13 +660,13 @@ static int JSTF_Language_OK(GGadget *g, GEvent *e) {
 	    cur->cnt  = cnt;
 	    cur->prios=gcalloc(cnt,sizeof(struct jstf_prio));
 	    for ( j=i, cnt=0; j<rows; ++j ) {
-		if ( strings[j*cols+0].u.md_ival == strings[i*cols+0].u.md_ival ) {
-		    cur->prios[cnt].enableExtend = Str2OTLList(jd->sf,strings[i*cols+1].u.md_str );
-		    cur->prios[cnt].disableExtend = Str2OTLList(jd->sf,strings[i*cols+2].u.md_str );
-		    cur->prios[cnt].maxExtend = Str2OTLList(jd->sf,strings[i*cols+3].u.md_str );
-		    cur->prios[cnt].enableShrink = Str2OTLList(jd->sf,strings[i*cols+4].u.md_str );
-		    cur->prios[cnt].disableShrink = Str2OTLList(jd->sf,strings[i*cols+5].u.md_str );
-		    cur->prios[cnt].maxShrink = Str2OTLList(jd->sf,strings[i*cols+6].u.md_str );
+		if ( strcmp(strings[j*cols+0].u.md_str, strings[i*cols+0].u.md_str)==0 ) {
+		    cur->prios[cnt].enableExtend = Str2OTLList(jd->sf,strings[j*cols+1].u.md_str );
+		    cur->prios[cnt].disableExtend = Str2OTLList(jd->sf,strings[j*cols+2].u.md_str );
+		    cur->prios[cnt].maxExtend = Str2OTLList(jd->sf,strings[j*cols+3].u.md_str );
+		    cur->prios[cnt].enableShrink = Str2OTLList(jd->sf,strings[j*cols+4].u.md_str );
+		    cur->prios[cnt].disableShrink = Str2OTLList(jd->sf,strings[j*cols+5].u.md_str );
+		    cur->prios[cnt].maxShrink = Str2OTLList(jd->sf,strings[j*cols+6].u.md_str );
 		    if ( cur->prios[cnt].enableExtend == (OTLookup **) -1 ||
 			    cur->prios[cnt].disableExtend == (OTLookup **) -1 ||
 			    cur->prios[cnt].maxExtend == (OTLookup **) -1 ||
@@ -666,15 +675,15 @@ static int JSTF_Language_OK(GGadget *g, GEvent *e) {
 			    cur->prios[cnt].maxShrink == (OTLookup **) -1 ) {
 			JstfLangFree(head);
 			for ( k=0; k<rows; ++k )
-			    strings[k*cols+0].u.md_ival &= ~0x80;
+			    strings[k*cols+0].u.md_str[0] &= ~0x80;
 return( true );
 		    }
 		    ++cnt;
 		}
 	    }
-	    for ( j=rows; j>=i; --j )
-		if ( strings[j*cols+0].u.md_ival == strings[i*cols+0].u.md_ival )
-		    strings[j*cols+0].u.md_ival |= 0x80;
+	    for ( j=rows-1; j>=i; --j )
+		if ( strcmp(strings[j*cols+0].u.md_str, strings[i*cols+0].u.md_str)==0 )
+		    strings[j*cols+0].u.md_str[0] |= 0x80;
 	}
 	JstfLangFree( *jd->here );
 	*jd->here = head;
@@ -721,6 +730,9 @@ static char *JSTF_Langs(GGadget *g, int r, int c) {
     GTextInfo label[4];
     struct matrixinit mi;
 
+    jd->ldone = false;
+    jd->here = (struct jstf_lang **) &strings[cols*r+3].u.md_addr;
+
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -734,13 +746,11 @@ static char *JSTF_Langs(GGadget *g, int r, int c) {
     pos.height = GDrawPointsToPixels(NULL,375);
     jd->lgw = gw = GDrawCreateTopWindow(NULL,&pos,langs_e_h,jd,&wattrs);
 
-    jd->here = (struct jstf_lang **) &strings[cols*r+3].u.md_addr;
-    JLanguageMatrixInit(&mi,strings[cols*r+3].u.md_addr);
-
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
     memset(&label,0,sizeof(label));
     k=j=0;
+    JLanguageMatrixInit(&mi,*jd->here);
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[1].gd.pos.y+14;
     gcd[k].gd.pos.width = 900;
     gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
@@ -855,7 +865,7 @@ static int JSTF_Script_OK(GGadget *g, GEvent *e) {
 	for ( i=0; i<rows; ++i ) {
 	    cur = chunkalloc(sizeof(Justify));
 	    cur->script = Str2Tag(strings[cols*i+0].u.md_str);
-	    cur->extenders = strings[cols*i+1].u.md_str;
+	    cur->extenders = copy(strings[cols*i+1].u.md_str);
 	    cur->langs = strings[cols*i+3].u.md_addr;
 	    if ( head==NULL )
 		head = cur;
@@ -876,7 +886,6 @@ static void Jstf_Cancel(Jstf_Dlg *jd) {
     struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(jd->gw,CID_Scripts), &rows);
 
     for ( i=0; i<rows; ++i ) {
-	free(strings[cols*i+1].u.md_str);
 	JstfLangFree(strings[cols*i+3].u.md_addr);
     }
     jd->done = true;
