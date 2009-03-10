@@ -271,7 +271,11 @@ return;
 
     fprintf( out, "<anchor %g %g", rint(ap->me.x), rint(ap->me.y) );
     if ( ap->has_ttf_pt )
+#ifdef OLD_FEAT
 	fprintf( out, " %d", ap->ttf_pt_index );
+#else
+	fprintf( out, " contourpoint %d", ap->ttf_pt_index );
+#endif
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     else if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	putc(' ',out);
@@ -1801,7 +1805,9 @@ struct parseState {
 	tk_include_dflt, tk_language, tk_languagesystem, tk_lookup,
 	tk_lookupflag, tk_mark, tk_nameid, tk_NULL, tk_parameters, tk_position,
 	tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
-	tk_table, tk_useExtension
+	tk_table, tk_useExtension,
+/* Additional keywords in the 2008 draft */
+	tk_anchorDef, tk_valueRecordDef, tk_contourpoint
     } type;
     uint32 tag;
     int could_be_tag;
@@ -1818,6 +1824,8 @@ struct parseState {
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
     struct glyphclasses { char *classname, *glyphs; struct glyphclasses *next; } *classes;
+    struct namedanchor { char *name; AnchorPoint *ap; struct namedanchor *next; } *namedAnchors;
+    struct namedvalue { char *name; struct vr *vr; struct namedvalue *next; } *namedValueRs;
     struct feat_item *sofar;
     int base;			/* normally numbers are base 10, but in the case of languages in stringids, they can be octal or hex */
     OTLookup *created, *last;	/* Ordered, but not sorted into GSUB, GPOS yet */
@@ -1871,6 +1879,10 @@ static struct keywords {
     { "pos", tk_position },
     { "enum", tk_enumerate },
     { "anon", tk_anonymous },
+/* Additional keywords in the 2008 draft */
+    { "anchorDef", tk_anchorDef },
+    { "valueRecordDef", tk_valueRecordDef },
+    { "contourpoint", tk_contourpoint },
     NULL
 };
 
@@ -2754,21 +2766,36 @@ return;
 
 static AnchorPoint *fea_ParseAnchor(struct parseState *tok) {
     AnchorPoint *ap = NULL;
+    struct namedanchor *nap;
 
-    if ( tok->type==tk_anchor ) {
+    if ( tok->type==tk_anchor || tok->type==tk_anchorDef ) {
 	fea_ParseTok(tok);
 	if ( tok->type==tk_NULL )
 	    ap = NULL;
-	else if ( tok->type==tk_int ) {
+	else if ( tok->type==tk_name ) {
+	    for ( nap=tok->namedAnchors; nap!=NULL; nap=nap->next ) {
+		if ( strcmp(nap->name,tok->tokbuf)==0 ) {
+		    ap = AnchorPointsCopy(nap->ap);
+	    break;
+		}
+	    }
+	    if ( nap==NULL ) {
+		LogError(_("\"%s\" is not the name of a known named anchor on line %d of %s."),
+			tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		++tok->err_count;
+	    }
+	} else if ( tok->type==tk_int ) {
 	    ap = chunkalloc(sizeof(AnchorPoint));
 	    ap->me.x = tok->value;
 	    fea_TokenMustBe(tok,tk_int,'\0');
 	    ap->me.y = tok->value;
 	    fea_ParseTok(tok);
+	    if ( tok->type == tk_contourpoint )
+		fea_TokenMustBe(tok,tk_int,' ');
 	    if ( tok->type==tk_int ) {
 		ap->ttf_pt_index = tok->value;
 		ap->has_ttf_pt = true;
-		fea_TokenMustBe(tok,tk_char,'>');
+		fea_ParseTok(tok);
 	    } else if ( tok->type==tk_char && tok->tokbuf[0]=='<' ) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 		fea_ParseDeviceTable(tok,&ap->xadjust);
@@ -2779,10 +2806,7 @@ static AnchorPoint *fea_ParseAnchor(struct parseState *tok) {
 		fea_TokenMustBe(tok,tk_char,'<');
 		fea_ParseDeviceTable(tok);
 #endif
-		fea_TokenMustBe(tok,tk_char,'>');
-	    } else if ( tok->type!=tk_char || tok->tokbuf[0]!='>' ) {
-		LogError(_("Expected '>' in anchor on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		++tok->err_count;
+		fea_ParseTok(tok);
 	    }
 	} else {
 	    LogError(_("Expected integer in anchor on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -2793,6 +2817,44 @@ static AnchorPoint *fea_ParseAnchor(struct parseState *tok) {
 	++tok->err_count;
     }
 return( ap );
+}
+
+static AnchorPoint *fea_ParseAnchorClosed(struct parseState *tok) {
+    int ecnt = tok->err_count;
+    AnchorPoint *ap = fea_ParseAnchor(tok);
+    if ( tok->err_count==ecnt && ( tok->type!=tk_char || tok->tokbuf[0]!='>' )) {
+	LogError(_("Expected '>' in anchor on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+    }
+return( ap );
+}
+
+static void fea_ParseAnchorDef(struct parseState *tok) {
+    AnchorPoint *ap;
+    struct namedanchor *nap;
+
+    ap = fea_ParseAnchor(tok);
+    if ( tok->type!=tk_name ) {
+	LogError(_("Expected name in anchor definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+	fea_skip_to_semi(tok);
+return;
+    }
+    for ( nap=tok->namedAnchors; nap!=NULL; nap=nap->next )
+	if ( strcmp(nap->name,tok->tokbuf)==0 )
+    break;
+    if ( nap!=NULL ) {
+	LogError(_("Attempt to redefine anchor definition of \"%s\" on line %d of %s"),
+		tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+    } else {
+	nap = chunkalloc(sizeof(struct namedanchor));
+	nap->next = tok->namedAnchors;
+	tok->namedAnchors = nap;
+	nap->name = copy(tok->tokbuf);
+    }
+    nap->ap = ap;
+
+    fea_end_statement(tok);
 }
 
 static int fea_findLookup(struct parseState *tok,char *name ) {
@@ -2814,45 +2876,39 @@ return( true );
 return( false );
 }
 
-static void fea_ParseBroket(struct parseState *tok,struct markedglyphs *last) {
-    /* We've read the open broket. Might find: value record, anchor, lookup */
-    /* (lookups are my extension) */
-    struct vr *vr;
+static struct vr *ValueRecordCopy(struct vr *ovr) {
+    struct vr *nvr;
 
-    fea_ParseTok(tok);
-    if ( tok->type==tk_lookup ) {
-	fea_TokenMustBe(tok,tk_name,'\0');
-	if ( last->mark_count==0 ) {
-	    LogError(_("Lookups may only be specified after marked glyphs on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+    nvr = chunkalloc(sizeof(*nvr));
+    memcpy(nvr,ovr,sizeof(struct vr));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    nvr->adjust = ValDevTabCopy(ovr->adjust);
+#endif
+return( nvr );
+}
+	
+static struct vr *fea_ParseValueRecord(struct parseState *tok) {
+    struct vr *vr=NULL;
+    struct namedvalue *nvr;
+
+    if ( tok->type==tk_name ) {
+	for ( nvr=tok->namedValueRs; nvr!=NULL; nvr=nvr->next ) {
+	    if ( strcmp(nvr->name,tok->tokbuf)==0 ) {
+		vr = ValueRecordCopy(nvr->vr);
+	break;
+	    }
+	}
+	if ( nvr==NULL ) {
+	    LogError(_("\"%s\" is not the name of a known named value record on line %d of %s."),
+		    tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
 	}
-	if ( !fea_findLookup(tok,tok->tokbuf) ) {
-	    LogError(_("Lookups must be defined before being used on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    ++tok->err_count;
-	} else
-	    last->lookupname = copy(tok->tokbuf);
-	fea_TokenMustBe(tok,tk_char,'>');
-    } else if ( tok->type==tk_anchor ) {
-	last->anchors = grealloc(last->anchors,(++last->ap_cnt)*sizeof(AnchorPoint *));
-	last->anchors[last->ap_cnt-1] = fea_ParseAnchor(tok);
-    } else if ( tok->type==tk_NULL ) {
-	/* NULL value record. Adobe documents it and doesn't implement it */
-	/* Not sure what it's good for */
-	fea_TokenMustBe(tok,tk_char,'>');
+	fea_ParseTok(tok);
     } else if ( tok->type==tk_int ) {
-	last->vr = vr = chunkalloc(sizeof( struct vr ));
+	vr = chunkalloc(sizeof( struct vr ));
 	vr->xoff = tok->value;
 	fea_ParseTok(tok);
-	if ( tok->type==tk_char && tok->tokbuf[0]=='>' ) {
-	    if ( tok->in_vkrn )
-		vr->v_adv_off = vr->xoff;
-	    else
-		vr->h_adv_off = vr->xoff;
-	    vr->xoff = 0;
-	} else if ( tok->type!=tk_int ) {
-	    LogError(_("Expected integer in value record on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    ++tok->err_count;
-	} else {
+	if ( tok->type==tk_int ) {
 	    vr->yoff = tok->value;
 	    fea_TokenMustBe(tok,tk_int,'\0');
 	    vr->h_adv_off = tok->value;
@@ -2878,12 +2934,84 @@ static void fea_ParseBroket(struct parseState *tok,struct markedglyphs *last) {
 		fea_TokenMustBe(tok,tk_char,'<');
 		fea_ParseDeviceTable(tok);
 #endif
-		fea_TokenMustBe(tok,tk_char,'>');
-	    } else if ( tok->type!=tk_char || tok->tokbuf[0]!='>' ) {
-		LogError(_("Expected '>' in value record on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		++tok->err_count;
+		fea_ParseTok(tok);
 	    }
+	} else if ( tok->type==tk_char && tok->tokbuf[0]=='>' ) {
+	    if ( tok->in_vkrn )
+		vr->v_adv_off = vr->xoff;
+	    else
+		vr->h_adv_off = vr->xoff;
+	    vr->xoff = 0;
 	}
+    } else {
+	LogError(_("Unexpected token in value record on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+    }
+return( vr );
+}
+
+static void fea_ParseValueRecordDef(struct parseState *tok) {
+    struct vr *vr;
+    struct namedvalue *nvr;
+
+    fea_ParseTok(tok);
+    vr = fea_ParseValueRecord(tok);
+    if ( tok->type!=tk_name ) {
+	LogError(_("Expected name in value record definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+	fea_skip_to_semi(tok);
+return;
+    }
+    for ( nvr=tok->namedValueRs; nvr!=NULL; nvr=nvr->next )
+	if ( strcmp(nvr->name,tok->tokbuf)==0 )
+    break;
+    if ( nvr!=NULL ) {
+	LogError(_("Attempt to redefine value record definition of \"%s\" on line %d of %s"),
+		tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+    } else {
+	nvr = chunkalloc(sizeof(struct namedanchor));
+	nvr->next = tok->namedValueRs;
+	tok->namedValueRs = nvr;
+	nvr->name = copy(tok->tokbuf);
+    }
+    nvr->vr = vr;
+
+    fea_end_statement(tok);
+}
+
+static void fea_ParseBroket(struct parseState *tok,struct markedglyphs *last) {
+    /* We've read the open broket. Might find: value record, anchor, lookup */
+    /* (lookups are my extension) */
+
+    fea_ParseTok(tok);
+    if ( tok->type==tk_lookup ) {
+	fea_TokenMustBe(tok,tk_name,'\0');
+	if ( last->mark_count==0 ) {
+	    LogError(_("Lookups may only be specified after marked glyphs on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+	}
+	if ( !fea_findLookup(tok,tok->tokbuf) ) {
+	    LogError(_("Lookups must be defined before being used on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+	} else
+	    last->lookupname = copy(tok->tokbuf);
+	fea_TokenMustBe(tok,tk_char,'>');
+    } else if ( tok->type==tk_anchor ) {
+	last->anchors = grealloc(last->anchors,(++last->ap_cnt)*sizeof(AnchorPoint *));
+	last->anchors[last->ap_cnt-1] = fea_ParseAnchorClosed(tok);
+    } else if ( tok->type==tk_NULL ) {
+	/* NULL value record. Adobe documents it and doesn't implement it */
+	/* Not sure what it's good for */
+	fea_TokenMustBe(tok,tk_char,'>');
+    } else if ( tok->type==tk_int || tok->type==tk_name ) {
+	last->vr = fea_ParseValueRecord(tok);
+	if ( tok->type!=tk_char || tok->tokbuf[0]!='>' ) {
+	    LogError(_("Expected '>' in value record on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+	}
+    } else {
+	LogError(_("Unexpected token in value record on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
     }
 }
 
@@ -3511,7 +3639,7 @@ return;
 
     fea_TokenMustBe(tok,tk_char,'<');
     fea_TokenMustBe(tok,tk_anchor,'\0');
-    ap = fea_ParseAnchor(tok);
+    ap = fea_ParseAnchorClosed(tok);
     ap->type = at_mark;
     fea_end_statement(tok);
 
@@ -3758,6 +3886,12 @@ static int fea_LookupSwitch(struct parseState *tok) {
     switch ( tok->type ) {
       case tk_class:
 	fea_ParseGlyphClassDef(tok);
+      break;
+      case tk_anchorDef:
+	fea_ParseAnchorDef(tok);
+      break;
+      case tk_valueRecordDef:
+	fea_ParseValueRecordDef(tok);
       break;
       case tk_lookupflag:
 	fea_ParseLookupFlags(tok);
@@ -4627,6 +4761,12 @@ static void fea_ParseFeatureFile(struct parseState *tok) {
 	switch ( tok->type ) {
 	  case tk_class:
 	    fea_ParseGlyphClassDef(tok);
+	  break;
+	  case tk_anchorDef:
+	    fea_ParseAnchorDef(tok);
+	  break;
+	  case tk_valueRecordDef:
+	    fea_ParseValueRecordDef(tok);
 	  break;
 	  case tk_lookup:
 	    fea_ParseLookupDef(tok,false);
