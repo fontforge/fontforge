@@ -41,12 +41,28 @@
 #include <ustring.h>
 
 /* Adobe's opentype feature file */
+/* Which suffers incompatible changes according to Adobe's whim */
+/* Currently trying to support the version of december 2008. For the previous */
+/*  version (March 2006), #define OLD_FEAT */
 
 /* ************************************************************************** */
 /* ******************************* Output feat ****************************** */
 /* ************************************************************************** */
 
 /* Do GPOS and GSUB features have to share the same feature statement? */
+
+static void dump_ascii(FILE *out, char *name) {
+    /* Strip out any characters which don't fit in a name token */
+    while ( *name ) {
+	if ( *name==' ' )
+	    putc('_',out);
+	else if ( *name&0x80 )
+	    /* Skip */;
+	else if ( isalnum(*name) || *name=='.' || *name=='_' )
+	    putc(*name,out);
+	++name;
+    }
+}
 
 static void dump_glyphname(FILE *out, SplineChar *sc) {
     if ( sc->parent->cidmaster!=NULL )
@@ -272,7 +288,7 @@ return;
     fprintf( out, "<anchor %g %g", rint(ap->me.x), rint(ap->me.y) );
     if ( ap->has_ttf_pt )
 #ifdef OLD_FEAT
-	fprintf( out, " %d", ap->ttf_pt_index );
+	fprintf( out, " <contourpoint %d>", ap->ttf_pt_index );
 #else
 	fprintf( out, " contourpoint %d", ap->ttf_pt_index );
 #endif
@@ -1139,7 +1155,11 @@ return;					/* No support for apple "lookups" */
     number_subtables(sf);
 
     fprintf( out, "\nlookup %s {\n", lookupname(otl) );
+#ifdef OLD_FEAT
     if ( otl->lookup_flags==0 || otl->lookup_flags>15 )
+#else
+    if ( otl->lookup_flags==0 || (otl->lookup_flags&0xf0)!=0 )
+#endif
 	fprintf( out, "  lookupflag %d;\n", otl->lookup_flags );
     else {
 	fprintf( out, "  lookupflag" );
@@ -1151,6 +1171,17 @@ return;					/* No support for apple "lookups" */
 		first = false;
 	    fprintf( out, " %s", flagnames[i] );
 	}
+#ifndef OLD_FEAT
+	if ( (otl->lookup_flags&0xff00)!=0 ) {
+	    int index = otl->lookup_flags>>8;
+	    if ( index<sf->mark_class_cnt ) {
+		if ( !first )
+		    putc(',',out);
+		fprintf( out, " MarkAttachmentType @" );
+		dump_ascii( out, sf->mark_class_names[index]);
+	    }
+	}
+#endif
 	putc(';',out);
 	putc('\n',out);
     }
@@ -1349,8 +1380,19 @@ static void dump_gdef(FILE *out,SplineFont *sf) {
 	glyphs[lcnt].sc = NULL;
     }
 
-    if ( !needsclass && lcnt==0 /* && sf->mark_class_cnt==0*/ )
+    if ( !needsclass && lcnt==0 && sf->mark_class_cnt==0 )
 return;					/* No anchor positioning, no ligature carets */
+
+#ifndef OLD_FEAT
+    if ( sf->mark_class_cnt!=0 ) {
+	fprintf( out, "#Mark attachment classes (defined in GDEF, used in lookupflags)\n" );
+	for ( i=1; i<sf->mark_class_cnt; ++i ) {
+	    putc('@',out);
+	    dump_ascii( out, sf->mark_class_names[i]);
+	    fprintf( out, " = [ %s ];\n", sf->mark_classes[i] );
+	}
+    }
+#endif
 
     if ( needsclass ) {
 	int len;
@@ -1807,7 +1849,8 @@ struct parseState {
 	tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
 	tk_table, tk_useExtension,
 /* Additional keywords in the 2008 draft */
-	tk_anchorDef, tk_valueRecordDef, tk_contourpoint
+	tk_anchorDef, tk_valueRecordDef, tk_contourpoint,
+	tk_MarkAttachmentType, tk_UseMarkFilteringSet
     } type;
     uint32 tag;
     int could_be_tag;
@@ -1830,6 +1873,8 @@ struct parseState {
     int base;			/* normally numbers are base 10, but in the case of languages in stringids, they can be octal or hex */
     OTLookup *created, *last;	/* Ordered, but not sorted into GSUB, GPOS yet */
     AnchorClass *accreated;
+    int gm_cnt, gm_max, gm_pos;
+    struct gdef_mark { char *name; int index; struct glyphclasses *gc; } *gdef_mark;
 };
 
 static struct keywords {
@@ -1883,6 +1928,8 @@ static struct keywords {
     { "anchorDef", tk_anchorDef },
     { "valueRecordDef", tk_valueRecordDef },
     { "contourpoint", tk_contourpoint },
+    { "MarkAttachmentType", tk_MarkAttachmentType },
+    { "UseMarkFilteringSet", tk_UseMarkFilteringSet },
     NULL
 };
 
@@ -2548,6 +2595,45 @@ static char *fea_ParseGlyphClassGuarded(struct parseState *tok) {
 return( ret );
 }
 
+static int fea_ParseMarkAttachClass(struct parseState *tok) {
+    int i;
+    struct glyphclasses *gc;
+    SplineFont *sf = tok->sf;
+
+    for ( i=0; i<tok->gm_cnt; ++i ) {
+	if ( strcmp(tok->tokbuf,tok->gdef_mark[i].name)==0 )
+return( i<<8 );
+    }
+    for ( gc=tok->classes; gc!=NULL; gc=gc->next ) {
+	if ( strcmp(tok->tokbuf,gc->classname)==0 )
+    break;
+    }
+    if ( gc==NULL ) {
+	LogError(_("\"%s\" is not the name of a known glyph class on line %d of %s."),
+		tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+return( 0 );
+    }
+    if ( tok->gm_cnt>=tok->gm_max ) {
+	tok->gdef_mark = grealloc(tok->gdef_mark,(tok->gm_max+=30)*sizeof(struct gdef_mark));
+	if ( tok->gm_pos==0 )
+	    tok->gm_pos = sf->mark_class_cnt==0 ? 1 : sf->mark_class_cnt;
+    }
+    tok->gdef_mark[tok->gm_cnt].name = copy(tok->tokbuf);
+    tok->gdef_mark[tok->gm_cnt].gc   = gc;
+    /* see if the mark class is already in the font? */
+    for ( i=sf->mark_class_cnt-1; i>0; --i ) {
+	if ( strcmp(sf->mark_class_names[i],tok->tokbuf+1)==0 ||
+		strcmp(sf->mark_classes[i],gc->glyphs)==0 )
+    break;
+    }
+    if ( i!=0 )
+	tok->gdef_mark[tok->gm_cnt].index = i;
+    else
+	tok->gdef_mark[tok->gm_cnt].index = tok->gm_pos++;
+return( tok->gdef_mark[tok->gm_cnt++].index << 8 );
+}
+
 static void fea_ParseLookupFlags(struct parseState *tok) {
     int val = 0;
     struct feat_item *item;
@@ -2558,7 +2644,8 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 	fea_end_statement(tok);
     } else {
 	while ( tok->type==tk_RightToLeft || tok->type==tk_IgnoreBaseGlyphs ||
-		tok->type==tk_IgnoreMarks || tok->type==tk_IgnoreLigatures ) {
+		tok->type==tk_IgnoreMarks || tok->type==tk_IgnoreLigatures ||
+		tok->type==tk_MarkAttachmentType || tok->type==tk_UseMarkFilteringSet ) {
 	    if ( tok->type == tk_RightToLeft )
 		val |= pst_r2l;
 	    else if ( tok->type == tk_IgnoreBaseGlyphs )
@@ -2567,6 +2654,11 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 		val |= pst_ignorecombiningmarks;
 	    else if ( tok->type == tk_IgnoreLigatures )
 		val |= pst_ignoreligatures;
+	    else {
+		/* I do not currently distinguish between MarkAttachment and MarkFiltering */
+		fea_TokenMustBe(tok,tk_class,'\0');
+		val |= fea_ParseMarkAttachClass(tok);
+	    }
 	    fea_ParseTok(tok);
 	    if ( tok->type == tk_char && tok->tokbuf[0]==';' )
 	break;
@@ -2792,20 +2884,30 @@ static AnchorPoint *fea_ParseAnchor(struct parseState *tok) {
 	    fea_ParseTok(tok);
 	    if ( tok->type == tk_contourpoint )
 		fea_TokenMustBe(tok,tk_int,' ');
+	    /* FF had a bug and produced anchor points with x y c instead of x y <contourpoint c> */
 	    if ( tok->type==tk_int ) {
 		ap->ttf_pt_index = tok->value;
 		ap->has_ttf_pt = true;
 		fea_ParseTok(tok);
 	    } else if ( tok->type==tk_char && tok->tokbuf[0]=='<' ) {
+		fea_ParseTok(tok);
+		if ( tok->type == tk_contourpoint ) {
+		    fea_TokenMustBe(tok,tk_int,' ');
+		    ap->ttf_pt_index = tok->value;
+		    ap->has_ttf_pt = true;
+		    fea_TokenMustBe(tok,tk_int,'>');
+		} else {
+		    fea_UnParseTok(tok);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-		fea_ParseDeviceTable(tok,&ap->xadjust);
-		fea_TokenMustBe(tok,tk_char,'<');
-		fea_ParseDeviceTable(tok,&ap->yadjust);
+		    fea_ParseDeviceTable(tok,&ap->xadjust);
+		    fea_TokenMustBe(tok,tk_char,'<');
+		    fea_ParseDeviceTable(tok,&ap->yadjust);
 #else
-		fea_ParseDeviceTable(tok);
-		fea_TokenMustBe(tok,tk_char,'<');
-		fea_ParseDeviceTable(tok);
+		    fea_ParseDeviceTable(tok);
+		    fea_TokenMustBe(tok,tk_char,'<');
+		    fea_ParseDeviceTable(tok);
 #endif
+		}
 		fea_ParseTok(tok);
 	    }
 	} else {
@@ -5842,6 +5944,18 @@ static void fea_NameLookups(struct parseState *tok) {
 	sf->anchor = ac;
     }
 
+    /* attach any new gdef mark classes */
+    if ( tok->gm_pos>sf->mark_class_cnt ) {
+	int i;
+	sf->mark_classes = grealloc(sf->mark_classes,tok->gm_pos*sizeof(char *));
+	sf->mark_class_names = grealloc(sf->mark_class_names,tok->gm_pos*sizeof(char *));
+	for ( i=0; i<tok->gm_cnt; ++i ) if ( tok->gdef_mark[i].index>=sf->mark_class_cnt ) {
+	    int index = tok->gdef_mark[i].index;
+	    sf->mark_class_names[index] = copy(tok->gdef_mark[i].name+1);
+	    sf->mark_classes[index]     = copy(tok->gdef_mark[i].gc->glyphs);
+	}
+    }
+
     sf->changed = true;
     FVSetTitles(sf);
     FVRefreshAll(sf);
@@ -5850,6 +5964,9 @@ static void fea_NameLookups(struct parseState *tok) {
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
+    struct namedanchor *nap, *napnext;
+    struct namedvalue *nvr, *nvrnext;
+    int i;
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -5873,6 +5990,19 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
 	free(gc->classname); free(gc->glyphs);
 	chunkfree(gc,sizeof(struct glyphclasses));
     }
+    for ( nap = tok.namedAnchors; nap!=NULL; nap=napnext ) {
+	napnext = nap->next;
+	free(nap->name); AnchorPointsFree(nap->ap);
+	chunkfree(nap,sizeof(*nap));
+    }
+    for ( nvr = tok.namedValueRs; nvr!=NULL; nvr=nvrnext ) {
+	nvrnext = nvr->next;
+	free(nvr->name); chunkfree(nvr->vr,sizeof(struct vr));
+	chunkfree(nvr,sizeof(*nvr));
+    }
+    for ( i=1; i<tok.gm_cnt; ++i )
+	free(tok.gdef_mark[i].name);
+    free(tok.gdef_mark);
 }
 
 void SFApplyFeatureFilename(SplineFont *sf,char *filename) {
