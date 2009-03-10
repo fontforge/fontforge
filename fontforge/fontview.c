@@ -918,8 +918,8 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
-    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,fea}";
-    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont,fea}";
+    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,feature,feat,fea}";
+    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont,feature,feat,fea}";
 #else
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
