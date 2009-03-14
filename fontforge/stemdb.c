@@ -4898,6 +4898,9 @@ return( false );
     /* Stems associated with blue zones always preferred to any other stems */
     if ( stem1->blue >=0 && stem2->blue < 0 )
 return( false );
+    /* Don't attempt to handle together stems, linked to different zones */
+    if ( stem1->blue >=0 && stem2->blue >= 0 && stem1->blue != stem2->blue )
+return( false );
     /* If both stems are associated with a blue zone, but one of them is for
     /* a ghost hint, then that stem is preferred */
     if ( stem1->ghost && !stem2->ghost )
@@ -5212,8 +5215,12 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
 		    for ( k=0; k<stem_cnt; k++ ) {
 			tstem = ( stem->chunks[j].lnext ) ? 
 			    lpd->nextstems[k] : lpd->prevstems[k];
+			/* Used to test tstem->toobig <= stem->toobig, but got into troubles with
+			/* a weird terminal stem preventing a ball terminal from being properly detected,
+			/* because both the stems initially have toobig == 1.
+			/* See the "f" from Heuristica-Italic */
 			if ( tstem != stem && 
-			    tstem->toobig <= stem->toobig && tstem->positioned >= stem->positioned &&
+			    !tstem->toobig && tstem->positioned >= stem->positioned &&
 			    tstem->width < stem->width && hv == IsUnitHV( &tstem->unit,true )) {
 			    hasl = true;
 		    break;
@@ -5226,7 +5233,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
 			tstem = ( stem->chunks[j].rnext ) ? 
 			    rpd->nextstems[k] : rpd->prevstems[k];
 			if ( tstem != stem && 
-			    tstem->toobig <= stem->toobig && tstem->positioned >= stem->positioned &&
+			    !tstem->toobig && tstem->positioned >= stem->positioned &&
 			    tstem->width < stem->width && hv == IsUnitHV( &tstem->unit,true )) {
 			    hasr = true;
 		    break;
@@ -5378,6 +5385,7 @@ static int IsBall( struct glyphdata *gd,
     
     if ( pd == NULL || ( pd->x_extr != 1 && pd->y_extr != 1 ))
 return( false );
+fprintf(stderr,"testing %d against l=%f,%f r=%f,%f\n",pd->ttfindex,master->left.x,master->left.y,master->right.x,master->right.y);
 
     is_x = ( IsUnitHV( &master->unit,true ) == 1 );
     lbp = ( lbase ) ? &master->left : &pd->base;
@@ -5465,7 +5473,7 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
 	    stem_cnt = ( snext ) ? spd->nextcnt : spd->prevcnt;
 	    for ( j=0; j<stem_cnt; j++ ) {
 		tstem = ( snext ) ? spd->nextstems[j] : spd->prevstems[j];
-		if (tstem->unit.x == stem->unit.x && tstem->unit.y == stem->unit.y &&
+		if (RealNear( tstem->unit.x,stem->unit.x ) && RealNear( tstem->unit.y,stem->unit.y ) &&
 		    !tstem->toobig ) {
 		    chunk->is_ball = e_ball = IsBall( gd,epd,tstem,!is_x );
 		    if ( e_ball ) {
