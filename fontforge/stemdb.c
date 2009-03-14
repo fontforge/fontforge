@@ -5385,7 +5385,6 @@ static int IsBall( struct glyphdata *gd,
     
     if ( pd == NULL || ( pd->x_extr != 1 && pd->y_extr != 1 ))
 return( false );
-fprintf(stderr,"testing %d against l=%f,%f r=%f,%f\n",pd->ttfindex,master->left.x,master->left.y,master->right.x,master->right.y);
 
     is_x = ( IsUnitHV( &master->unit,true ) == 1 );
     lbp = ( lbase ) ? &master->left : &pd->base;
