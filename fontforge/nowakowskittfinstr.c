@@ -81,6 +81,7 @@ int instruct_diagonal_stems = 1,
 #define SROUND                  (0x76)
 #define FLIPPT                  (0x80)
 #define MDRP_grey               (0xc0)
+#define MDRP_min_black          (0xc9)
 #define MDRP_min_white          (0xca)
 #define MDRP_min_rnd_black      (0xcd)
 #define MDRP_rp0_rnd_white      (0xd6)
@@ -804,7 +805,7 @@ static void init_maxp(GlobalInstrCt *gic) {
 
     if (gic->fpgm_done && zones<2) zones=2;
     if (gic->fpgm_done && twpts<1) twpts=1;
-    if (gic->fpgm_done && fdefs<16) fdefs=16;
+    if (gic->fpgm_done && fdefs<20) fdefs=20;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -1362,7 +1363,123 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0x21, //     POP
 	0x21, //     POP
 	0x21, //     POP
-        0x59, //   EIF
+	0x59, //   EIF
+	0x2d, // ENDF
+
+	/* Function 16: Same as FPGM 1, but calls FPGM 18 rather than FPGM 12
+	 * and thus takes 3 arguments.
+	 * Syntax: PUSHX_3 ref_point point 16 CALL 
+	 */
+	0xb0, // PUSHB_1
+	0x10, //   16
+	0x2c, // FDEF
+	0x20, //   DUP
+	0xda, //   MDRP[rp0,min,white]
+	0xb0, //   PUSHB_1
+	0x12, //     18
+	0x2b, //   CALL
+	0x2d, // ENDF
+
+	/* Function 17: Same as FPGM 11, but calls FPGM 18 rather than FPGM 12
+	 * and thus takes 3 arguments.
+	 * Syntax: PUSHX_3 ref_point point 17 CALL 
+	 */
+	0xb0, // PUSHB_1
+	0x11, //   17
+	0x2c, // FDEF
+	0x20, //   DUP
+	0xd2, //   MDRP[rp0,white]
+	0xb0, //   PUSHB_1
+	0x12, //     18
+	0x2b, //   CALL
+	0x2d, // ENDF
+
+	/* Function 18: this is a special version of FPGM 12, used when the counter
+	 * control is enabled but doesn't directly affect the stem which is going to
+	 * be positioned. Unlike FPGM 12, it doesn't just attempt to position a point
+	 * closely enough to its original coordinate, but also checks if the previous
+	 * stem has already been shifted relatively to its "ideal" position FPGM 12 would
+	 * determine. If so, then the desired point position is corrected relatively to
+	 * the current placement of the previous stem. 
+	 * Syntax: PUSHX_3 ref_point point 18 CALL 
+	 */
+	0xb0, // PUSHB_1
+	0x12, //   18
+	0x2c, // FDEF
+	0x20, //   DUP
+	0x2f, //   MDAP[rnd], this is needed for grayscale mode
+	0xb0, //   PUSHB_1
+	0x07, //     7
+	0x2b, //   CALL
+	0x5c, //   NOT
+	0x58, //   IF
+	0x20, //     DUP
+	0x20, //     DUP
+	0x47, //     GC[cur]
+	0x23, //     SWAP
+	0x46, //     GC[orig]
+	0x61, //     SUB
+	0x6a, //     ROUND[white]
+	0x8a, //     ROLL
+	0x20, //     DUP
+	0x47, //     GC[cur]
+	0x23, //     SWAP
+	0x46, //     GC[orig]
+	0x23, //     SWAP
+	0x61, //     SUB
+	0x6a, //     ROUND[white]
+	0x60, //     ADD
+	0x20, //     DUP
+	0x58, //     IF
+	0x20, //       DUP
+	0x64, //       ABS
+	0x62, //       DIV
+	0x38, //       SHPIX
+	0x1b, //     ELSE
+	0x21, //       POP
+	0x21, //       POP
+	0x59, //     EIF
+	0x1b, //   ELSE
+	0x21, //     POP
+	0x21, //     POP
+	0x59, //   EIF
+	0x2d, // ENDF
+
+	/* Function 19: used to align a point relatively to a diagonal line,
+	 * specified by two other points. First we check if the point going
+	 * to be positioned doesn't deviate too far from the line in the original
+	 * outline. If the deviation is small enough to neglect it, we use ALIGNRP
+	 * to position the point, otherwise MDRP is used instead. We can't just
+	 * always use MDRP, because this command may produce wrong results at
+	 * small PPEMs, if the original and gridfitted coordinates of the line end
+	 * points specify slightly different unit vectors.
+	 * Syntax: point diag_start_point diag_end_point 19 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x13, //   19
+	0x2c, // FDEF
+	0x20, //   DUP
+	0x8a, //   ROLL
+	0x20, //   DUP
+	0x8a, //   ROLL
+	0x87, //   SDPVTL[orthogonal]
+	0x20, //   DUP
+	0xb0, //   PUSHB_1
+	0x03, //     4
+	0x25, //   CINDEX
+	0x4a, //   MD[orig]
+	0x64, //   ABS 
+	0x23, //   SWAP
+	0x8a, //   ROLL
+	0x07, //   SPVTL[orthogonal]
+	0xb0, //   PUSHB_1
+	0x20, //     32
+	0x50, //   LT
+	0x58, //   IF
+	0x3c, //     ALIGNRP
+	0x1b, //   ELSE
+	0xc0, //     MDRP[grey]
+	0x59, //   EIF
 	0x2d  // ENDF
     };
 
@@ -2812,8 +2929,18 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     }
 
     init_stem_edge(ct, stem, !is_l);
-    if (ct->edge.refpt == -1)
+    if (ct->edge.refpt == -1) {
+        /* We have skipped the right edge to start instructing this stem from
+        /* left. But its left edge appears to have no points to be instructed.
+        /* So return to the right edge and instruct it before exiting */
+        if ( reverse && !basedone ) {
+            init_stem_edge(ct, stem, is_l);
+            ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
+            finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
+            mark_startenddones(stem, ct->xdir, is_l );
+        }
         return;
+    }
     maintain_black_dist(ct, width, ct->edge.refpt, chg_rp0);
 
     if ( reverse ) {
@@ -3057,7 +3184,9 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
             }
             else {
                 ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	        *(ct->pt)++ = DUP;
 	        *(ct->pt)++ = MDRP_rp0_rnd_white;
+	        *(ct->pt)++ = SRP1;
             }
         }
         else if (slave->dep_type == 'a' &&
@@ -3267,7 +3396,7 @@ static void snap_to_blues(InstrCt *ct) {
     if (bluecnt == 0)
 return;
 
-    /* Fill the processing queue - baseline goes first, then botton zones */
+    /* Fill the processing queue - baseline goes first, then bottom zones */
     /* sorted by base in ascending order, then top zones sorted in descending */
     /* order. I assume the blues are sorted in ascending order first. */
     for (i=0; (i < bluecnt) && (blues[i].base < 0); i++);
@@ -3453,6 +3582,12 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
                 callargs[5] = 15;
                 ct->pt = pushpoints(ct->pt, 6, callargs);
                 
+            } else if ( control_counters && prev != NULL && prev->leftidx != -1 && prev->rightidx != -1 ) {
+                callargs[0] = ct->xdir ? prev->leftidx : prev->rightidx;
+                callargs[1] = ct->edge.refpt;
+                callargs[2] = ( cur_pos - prev_pos ) > ct->gic->fudge ? 16 : 17;
+                ct->pt = pushpoints(ct->pt, 3, callargs);
+
             } else if ( fabs( cur_pos - prev_pos ) > ct->gic->fudge ) {
                 ct->pt = push2nums(ct->pt, ct->edge.refpt, 1);
             } else {
@@ -3728,14 +3863,24 @@ return( ret );
 
 static int SetDStemKeyPoint( InstrCt *ct,StemData *stem,PointData *pd,int aindex ) {
     
-    int nextidx, previdx, prev, is_start, nsidx, psidx;
-    PointData *ncpd, *pcpd, *best;
-    real prevdot;
+    int nextidx, previdx, cpidx, prev_outer, next_outer, is_start;
+    int nsidx, psidx, sidx;
+    PointData *ncpd, *pcpd, *cpd, *best = NULL;
+    real prevdot, nextdot, cpdist;
 
     if ( pd == NULL )
 return( false );
 
-    is_start = ( aindex == 0 || aindex == 2 );
+    is_start =  ( aindex == 0 || aindex == 2 );
+    prevdot  =  ( pd->prevunit.x * stem->unit.x ) +
+                ( pd->prevunit.y * stem->unit.y );
+    nextdot  =  ( pd->nextunit.x * stem->unit.x ) +
+                ( pd->nextunit.y * stem->unit.y );
+    prev_outer = IsStemAssignedToPoint( pd,stem,false ) != -1 && 
+                (( is_start && prevdot < 0 ) || ( !is_start && prevdot > 0 ));
+    next_outer = IsStemAssignedToPoint( pd,stem,true  ) != -1 && 
+                (( is_start && nextdot < 0 ) || ( !is_start && nextdot > 0 ));
+
     if ( pd->ttfindex >= ct->gd->realcnt ) {
         nextidx = pd->sp->nextcpindex;
         previdx = pd->sp->prev->from->nextcpindex;
@@ -3747,16 +3892,25 @@ return( false );
         if ( psidx == -1 && nsidx == -1 )
 return( false );
         
-        prevdot =   ( pd->prevunit.x * stem->unit.x ) +
-                    ( pd->prevunit.y * stem->unit.y );
-        prev = (( is_start && prevdot < 0 ) || ( !is_start && prevdot > 0 ));
         if ( psidx > -1 && nsidx > -1 )
-            best = ( prev ) ? pcpd : ncpd;
+            best = ( prev_outer ) ? pcpd : ncpd;
         else
             best = ( psidx > -1 ) ? pcpd : ncpd;
         
+    } else if (( !pd->sp->nonextcp && next_outer ) || ( !pd->sp->noprevcp && prev_outer )) {
+        cpidx = ( prev_outer ) ? pd->sp->prev->from->nextcpindex : pd->sp->nextcpindex;
+        cpd = &ct->gd->points[cpidx];
+        sidx = IsStemAssignedToPoint( cpd,stem,prev_outer );
+        
+        if ( sidx != -1 ) {
+            cpdist = fabs(( pd->base.x - cpd->base.x ) * stem->unit.x +
+            	          ( pd->base.y - cpd->base.y ) * stem->unit.y );
+            if ( cpdist > stem->clen/2 ) best = cpd;
+        }
+        if ( best == NULL ) best = pd;
     } else
         best = pd;
+
     stem->keypts[aindex] = best;
 return( true );
 }
@@ -3920,7 +4074,7 @@ return( 0 );
 /* (i. e. has not yet been touched) and set freedom vector to that
 /* direction in case it has not already been set */
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
-    uint8 *touched,DiagPointInfo *diagpts,PointData *lp1,PointData *lp2,BasePoint *fv ) {
+    uint8 *touched,DiagPointInfo *diagpts,PointData *lp1,PointData *lp2,BasePoint *fv,int pvset ) {
 
     int i, pushpts[2];
     PointData *start=NULL, *end=NULL;
@@ -3952,13 +4106,13 @@ return( true );
     } else if ( (touched[pnum] & tf_x) && !(touched[pnum] & tf_d) && !(touched[pnum] & tf_y)) {
         if (!( fv->x == 0 && fv->y == 1 )) {
             fv->x = 0; fv->y = 1;
-            *(*instrs)++ = 0x04;   /*SFVTCA[y]*/
+            *(*instrs)++ = 0x04;       /*SFVTCA[y]*/
         }
 return( true );
 
     } else if ( (touched[pnum] & tf_y) && !(touched[pnum] & tf_d) && !(touched[pnum] & tf_x)) {
         if (!( fv->x == 1 && fv->y == 0 )) {
-            *(*instrs)++ = 0x05;   /*SFVTCA[x]*/
+            *(*instrs)++ = 0x05;       /*SFVTCA[x]*/
             fv->x = 1; fv->y = 0;
         }
 return ( true );
@@ -3967,7 +4121,12 @@ return ( true );
         if ( !UnitsParallel( fv,&newfv,true )) {
             fv->x = newfv.x; fv->y = newfv.y;
 
-            *(*instrs)++ = 0x0E;       /*SFVTPV*/
+            if ( pvset )
+                *(*instrs)++ = 0x0E;   /*SFVTPV*/
+            else {
+                *instrs = push2points( *instrs,lp1->ttfindex,lp2->ttfindex );
+                *(*instrs)++ = 0x09;   /*SFVTL[orthog]*/
+            }
         }
 return( true );
     }
@@ -4007,7 +4166,7 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
         v1 = stem->keypts[2]; v2 = stem->keypts[3];
     }
 
-    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,v1,v2,fv )) {
+    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,v1,v2,fv,true )) {
         if ( refpt == -1 ) {
             if (( fv->x == 1 && !( touched[pt] & tf_x )) || 
                 ( fv->y == 1 && !( touched[pt] & tf_y ))) {
@@ -4043,6 +4202,62 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
 return( instrs );
 }
 
+static int DStemHasSnappableCorners ( InstrCt *ct,StemData *stem,PointData *pd1,PointData *pd2 ) {
+    uint8 *touched = ct->touched;
+
+    /* We should be dealing with oncurve points */
+    if ( pd1->sp == NULL || pd2->sp == NULL )
+return( false );
+    
+    /* points should immediately follow each other */
+    if (pd1->sp->next->to->ttfindex != pd2->sp->ttfindex && 
+        pd1->sp->prev->from->ttfindex != pd2->sp->ttfindex )
+return( false );
+    
+    /* points should not be lined up vertically or horizontally */
+    if (fabs( pd1->base.x - pd2->base.x ) <= ct->gic->fudge ||
+        fabs( pd1->base.y - pd2->base.y ) <= ct->gic->fudge )
+return( false );
+
+    if ((   pd1->x_corner && !( touched[pd1->ttfindex] & tf_y ) &&
+            pd2->y_corner && !( touched[pd2->ttfindex] & tf_x )) ||
+        (   pd1->y_corner && !( touched[pd1->ttfindex] & tf_x ) &&
+            pd2->x_corner && !( touched[pd2->ttfindex] & tf_y )))
+return( true );
+
+return( false );
+}
+
+static uint8 *SnapDStemCorners ( InstrCt *ct,StemData *stem,PointData *pd1,PointData *pd2,BasePoint *fv ) {
+    uint8 *instrs, *touched;
+    int xbase, ybase;
+
+    instrs = ct->pt;
+    touched = ct->touched;
+    
+    if ( pd1->x_corner && pd2->y_corner ) {
+        xbase = pd1->ttfindex; ybase = pd2->ttfindex;
+    } else {
+        xbase = pd2->ttfindex; ybase = pd1->ttfindex;
+    }
+
+    if ( !RealNear( fv->x,1 ) || !RealNear( fv->y,0 ))
+        *(ct->pt)++ = SVTCA_x;
+    ct->pt = push2points( ct->pt,ybase,xbase );
+    *(ct->pt)++ = touched[xbase] & tf_x ? MDAP : MDAP_rnd;
+    *(ct->pt)++ = MDRP_min_black;
+    *(ct->pt)++ = SVTCA_y;
+    ct->pt = push2points( ct->pt,xbase,ybase );
+    *(ct->pt)++ = touched[ybase] & tf_y ? MDAP : MDAP_rnd;
+    *(ct->pt)++ = MDRP_min_black;
+    
+    touched[xbase] |= ( tf_x | tf_y );
+    touched[ybase] |= ( tf_x | tf_y );
+    fv->x = 0; fv->y = 1;
+
+return( instrs );
+}
+
 /* A basic algorithm for hinting diagonal stems:
 /* -- iterate through diagonal stems, ordered from left to right;
 /* -- for each stem, find the most touched point, to start from,
@@ -4059,7 +4274,7 @@ return( instrs );
 /* line's starting point without special exceptions. */
 static uint8 *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
     int startnum, a1, a2, b1, b2, ptcnt, firstedge, cvt;
-    int x_ldup, y_ldup, x_edup, y_edup;
+    int x_ldup, y_ldup, x_edup, y_edup, dsc1, dsc2;
     PointData *v1, *v2;
     uint8 *touched;
     int pushpts[2];
@@ -4070,50 +4285,70 @@ return( ct->pt );
     ptcnt = ct->ptcnt;
     touched = ct->touched;
 
-    startnum = FindDiagStartPoint( ds,touched );
-    a1 = ds->keypts[startnum]->ttfindex;
-    if (( startnum == 0 ) || ( startnum == 1 )) {
-        firstedge = true;
-        v1 = ds->keypts[0]; v2 = ds->keypts[1];
-        a2 = ( startnum == 1 ) ? ds->keypts[0]->ttfindex : ds->keypts[1]->ttfindex;
-        b1 = ( startnum == 1 ) ? ds->keypts[3]->ttfindex : ds->keypts[2]->ttfindex; 
-        b2 = ( startnum == 1 ) ? ds->keypts[2]->ttfindex : ds->keypts[3]->ttfindex;
-    } else {
-        firstedge = false;
-        v1 = ds->keypts[2]; v2 = ds->keypts[3];
-        a2 = ( startnum == 3 ) ? ds->keypts[2]->ttfindex : ds->keypts[3]->ttfindex;
-        b1 = ( startnum == 3 ) ? ds->keypts[1]->ttfindex : ds->keypts[0]->ttfindex; 
-        b2 = ( startnum == 3 ) ? ds->keypts[0]->ttfindex : ds->keypts[1]->ttfindex;
+    dsc1 = DStemHasSnappableCorners( ct,ds,ds->keypts[0],ds->keypts[2] );
+    dsc2 = DStemHasSnappableCorners( ct,ds,ds->keypts[1],ds->keypts[3] );
+    
+    if ( dsc1 || dsc2 ) {
+        ct->pt = pushF26Dot6( ct->pt,.59662 );
+        *(ct->pt)++ = SMD;
+
+        if ( dsc1 )
+            SnapDStemCorners( ct,ds,ds->keypts[0],ds->keypts[2],fv );
+        if ( dsc2 )
+            SnapDStemCorners( ct,ds,ds->keypts[1],ds->keypts[3],fv );
+
+        ct->pt = pushF26Dot6( ct->pt,DIAG_MIN_DISTANCE );
+        *(ct->pt)++ = SMD;
     }
-    pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
-    ct->pt = pushpoints( ct->pt,2,pushpts );
-    *(ct->pt)++ = 0x87;       /*SDPVTL [orthogonal] */
+    
+    if ( !dsc1 || !dsc2 ) {
+        startnum = FindDiagStartPoint( ds,touched );
+        a1 = ds->keypts[startnum]->ttfindex;
+        if (( startnum == 0 ) || ( startnum == 1 )) {
+            firstedge = true;
+            v1 = ds->keypts[0]; v2 = ds->keypts[1];
+            a2 = ( startnum == 1 ) ? ds->keypts[0]->ttfindex : ds->keypts[1]->ttfindex;
+            b1 = ( startnum == 1 ) ? ds->keypts[3]->ttfindex : ds->keypts[2]->ttfindex; 
+            b2 = ( startnum == 1 ) ? ds->keypts[2]->ttfindex : ds->keypts[3]->ttfindex;
+        } else {
+            firstedge = false;
+            v1 = ds->keypts[2]; v2 = ds->keypts[3];
+            a2 = ( startnum == 3 ) ? ds->keypts[2]->ttfindex : ds->keypts[3]->ttfindex;
+            b1 = ( startnum == 3 ) ? ds->keypts[1]->ttfindex : ds->keypts[0]->ttfindex; 
+            b2 = ( startnum == 3 ) ? ds->keypts[0]->ttfindex : ds->keypts[1]->ttfindex;
+        }
 
-    /* Always put the calculated stem width into the CVT table, unless it is
-    /* already there. This approach would be wrong for vertical or horizontal
-    /* stems, but for diagonales it is just unlikely that we can find an
-    /* acceptable predefined value in StemSnapH or StemSnapV */
-    cvt = TTF_getcvtval( ct->gic->sf,ds->width );
-    x_ldup =( touched[a1] & tf_x && touched[a2] & tf_x ) ||
-            ( touched[b1] & tf_x && touched[b2] & tf_x );
-    y_ldup =( touched[a1] & tf_y && touched[a2] & tf_y ) ||
-            ( touched[b1] & tf_y && touched[b2] & tf_y );
-    x_edup =( touched[a1] & tf_x && touched[b1] & tf_x ) ||
-            ( touched[a2] & tf_x && touched[b2] & tf_x );
-    y_edup =( touched[a1] & tf_y && touched[b1] & tf_y ) ||
-            ( touched[a2] & tf_y && touched[b2] & tf_y );
+        /* Always put the calculated stem width into the CVT table, unless it is
+        /* already there. This approach would be wrong for vertical or horizontal
+        /* stems, but for diagonales it is just unlikely that we can find an
+        /* acceptable predefined value in StemSnapH or StemSnapV */
+        cvt = TTF_getcvtval( ct->gic->sf,ds->width );
 
-    if (( x_ldup && !y_edup ) || ( y_ldup && !x_edup)) {
+        pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
+        ct->pt = pushpoints( ct->pt,2,pushpts );
+        *(ct->pt)++ = 0x87;    /*SDPVTL [orthogonal] */
+    
+        x_ldup =( touched[a1] & tf_x && touched[a2] & tf_x ) ||
+                ( touched[b1] & tf_x && touched[b2] & tf_x );
+        y_ldup =( touched[a1] & tf_y && touched[a2] & tf_y ) ||
+                ( touched[b1] & tf_y && touched[b2] & tf_y );
+        x_edup =( touched[a1] & tf_x && touched[b1] & tf_x ) ||
+                ( touched[a2] & tf_x && touched[b2] & tf_x );
+        y_edup =( touched[a1] & tf_y && touched[b1] & tf_y ) ||
+                ( touched[a2] & tf_y && touched[b2] & tf_y );
+
+        if (( x_ldup && !y_edup ) || ( y_ldup && !x_edup)) {
         
-        ct->pt = FixDStemPoint ( ct,ds,a1,-1,firstedge,-1,fv );
-        ct->pt = FixDStemPoint ( ct,ds,b2,-1,firstedge,-1,fv );
-        ct->pt = FixDStemPoint ( ct,ds,b1,a1,firstedge,cvt,fv );
-        ct->pt = FixDStemPoint ( ct,ds,a2,b2,firstedge,cvt,fv );
-    } else {
-        ct->pt = FixDStemPoint ( ct,ds,a1,-1,firstedge,-1,fv );
-        ct->pt = FixDStemPoint ( ct,ds,a2,a1,firstedge,-1,fv );
-        ct->pt = FixDStemPoint ( ct,ds,b1,a1,firstedge,cvt,fv );
-        ct->pt = FixDStemPoint ( ct,ds,b2,b1,firstedge,-1,fv );
+            ct->pt = FixDStemPoint ( ct,ds,a1,-1,firstedge,-1,fv );
+            ct->pt = FixDStemPoint ( ct,ds,b2,-1,firstedge,-1,fv );
+            ct->pt = FixDStemPoint ( ct,ds,b1,a1,firstedge,cvt,fv );
+            ct->pt = FixDStemPoint ( ct,ds,a2,b2,firstedge,cvt,fv );
+        } else {
+            ct->pt = FixDStemPoint ( ct,ds,a1,-1,firstedge,-1,fv );
+            ct->pt = FixDStemPoint ( ct,ds,a2,a1,firstedge,-1,fv );
+            ct->pt = FixDStemPoint ( ct,ds,b1,a1,firstedge,cvt,fv );
+            ct->pt = FixDStemPoint ( ct,ds,b2,b1,firstedge,-1,fv );
+        }
     }
 
     ds->ldone = ds->rdone = true;
@@ -4126,7 +4361,7 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
     uint8 *instrs, *touched;
     BasePoint newpv;
     int ptcnt;
-    int pushpts[3];
+    int pushpts[4];
 
     touched = ct->touched;
     instrs = ct->pt;
@@ -4134,48 +4369,95 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,true );
 
-    if ( !UnitsParallel( pv,&newpv,true )) {
+    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,line->pd1,line->pd2,fv,false )) {
+        if ( ct->rp0 != line->pd1->ttfindex ) {
+            instrs = pushpoint( instrs,line->pd1->ttfindex );
+            *instrs++ = SRP0;
+            ct->rp0 = line->pd1->ttfindex;
+        }
+        if ( ct->gic->fpgm_done ) {
+            pv->x = newpv.x; pv->y = newpv.y;
+            
+            pushpts[0] = pd->ttfindex;
+            pushpts[1] = line->pd1->ttfindex;
+            pushpts[2] = line->pd2->ttfindex;
+            pushpts[3] = 19;
+            instrs = pushpoints( instrs,4,pushpts );
+            *instrs++ = CALL;
+        } else {
+            if ( !UnitsParallel( pv,&newpv,true )) {
+                pv->x = newpv.x; pv->y = newpv.y;
+
+                pushpts[0] = line->pd1->ttfindex; pushpts[1] = line->pd2->ttfindex;
+                instrs = pushpoints( instrs,2,pushpts );
+                *instrs++ = 0x07;         /*SPVTL[orthogonal]*/
+            }
+
+            instrs = pushpoint( instrs,pd->ttfindex );
+            *instrs++ = MDRP_grey;
+        }
+    }
+return( instrs );
+}
+
+/* If a point has to be positioned just relatively to the diagonal
+/* line (no intersections, no need to maintain other directions),
+/* then we can interpolate it along that line. This usually produces
+/* better results for things like a Danish slashed "O". */
+static uint8 *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
+    PointData *pd,InstrCt *ct,BasePoint *fv,BasePoint *pv,int *rp1,int *rp2 ) {
+
+    uint8 *instrs, *touched;
+    BasePoint newpv;
+    int ptcnt;
+    int pushpts[3];
+
+    touched = ct->touched;
+    instrs = ct->pt;
+    ptcnt = ct->ptcnt;
+    
+    if ( diagpts[pd->ttfindex].count != 1 || touched[pd->ttfindex] & ( tf_x|tf_y|tf_d )) {
+        touched[pd->ttfindex] |= tf_d;
+return( instrs );
+    }
+
+    newpv = GetVector( &line->pd1->base,&line->pd2->base,false );
+
+    if ( !UnitsParallel( pv,&newpv,false ) || 
+        *rp1 != line->pd1->ttfindex || *rp2 != line->pd1->ttfindex ) {
+        
+        pushpts[0] = pd->ttfindex;
+        pushpts[1] = line->pd1->ttfindex;
+        pushpts[2] = line->pd2->ttfindex;
+        instrs = pushpoints( instrs,3,pushpts );
+    } else
+        instrs = pushpoint ( instrs,pd->ttfindex );
+    if ( !UnitsParallel( pv,&newpv,false )) {
         pv->x = newpv.x; pv->y = newpv.y;
 
-        pushpts[0] = line->pd1->ttfindex; pushpts[1] = line->pd2->ttfindex;
-        instrs = pushpoints( instrs,2,pushpts );
-        *instrs++ = 0x07;         /*SPVTL[orthogonal]*/
+        if ( *rp1 != line->pd1->ttfindex || *rp2 != line->pd1->ttfindex ) {
+            *instrs++ = DUP;
+            *instrs++ = 0x8a; /* ROLL */
+            *instrs++ = DUP;
+            *instrs++ = 0x8a; /* ROLL */
+            *instrs++ = 0x23; /* SWAP */
+        }
+        *instrs++ = 0x06; /* SPVTL[parallel] */
     }
 
-    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,line->pd1,line->pd2,fv )) {
-        if ( ct->rp0 != line->pd1->ttfindex ) {
-            ct->rp0 = line->pd1->ttfindex;
-            pushpts[0] = pd->ttfindex; pushpts[1] = line->pd1->ttfindex;
-            instrs = pushpoints( instrs,2,pushpts );
-            *instrs++ = SRP0;
-        } else {
-            instrs = pushpoint( instrs,pd->ttfindex );
-        }
-        *instrs++ = MDRP_grey;
-
-        /* If a point has to be positioned just relatively to the diagonal
-           line (no intersections, no need to maintain other directions),
-           then we can interpolate it along that line. This usually produces
-           better results for things like Danish slashed "O". */
-        if ( !( touched[pd->ttfindex] & ( tf_x|tf_y|tf_d )) &&
-            !( diagpts[pd->ttfindex].count > 1 )) {
-            if ( *rp1 != line->pd1->ttfindex || *rp2 != line->pd2->ttfindex) {
-                *rp1 = line->pd1->ttfindex;
-                *rp2 = line->pd2->ttfindex;
-
-                pushpts[0] = pd->ttfindex;
-                pushpts[1] = line->pd2->ttfindex;
-                pushpts[2] = line->pd1->ttfindex;
-                instrs = pushpoints( instrs,3,pushpts );
-
-                *instrs++ = SRP1;
-                *instrs++ = SRP2;
-            } else {
-                instrs = pushpoint( instrs,pd->ttfindex );
-            }
-            *instrs++ = IP;
-        }
+    if ( !UnitsParallel( fv,&newpv,false )) {
+        *instrs++ = 0x0E; /* SFVTPV */
+        fv->x = newpv.x; fv->y = newpv.y;
     }
+    if ( *rp1 != line->pd1->ttfindex || *rp2 != line->pd1->ttfindex ) {
+        *rp1 = line->pd1->ttfindex;
+        *rp2 = line->pd1->ttfindex;
+        
+        *instrs++ = SRP1;
+        *instrs++ = SRP2;
+    }
+    *instrs++ = IP;
+    touched[pd->ttfindex] |= tf_d;
 return( instrs );
 }
 
@@ -4190,8 +4472,9 @@ static uint8 *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
     int i, j, ptcnt, rp1=-1, rp2=-1;
     uint8 *touched;
     BasePoint pv;
-    PointData *curpd;
+    PointData *curpd, *npd, *ppd;
     DiagPointInfo *diagpts;
+    StemData *ds;
 
     touched = ct->touched;
     ptcnt = ct->gd->realcnt;
@@ -4207,8 +4490,50 @@ static uint8 *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
                     ct->pt = FixPointOnLine( diagpts,&diagpts[i].line[j],
                         curpd,ct,fv,&pv,&rp1,&rp2 );
 
-                    touched[i] |= tf_d;
+                    /* Not yet set touched[i]: will use this flag in the
+                    /* next cycle to identify points to be interpolated */
                     diagpts[i].line[j].done = ( true );
+                }
+            }
+        }
+    }
+    /* Second pass to interpolate points lying on diagonal lines (but not
+    /* starting/ending stem points) along those lines. This operation, unlike
+    /* moving points to diagonals, requires vectors to be set parallel to lines,
+    /* and this is the reason for which it is done in a separate cycle */
+    for ( i=0; i<ct->diagcnt; i++ ) {
+        ds = ct->diagstems[i];
+        if ( ds->ldone ) {
+            for ( j=0; j<ds->chunk_cnt; j++ ) if (( curpd = ds->chunks[j].l ) != NULL ) {
+                if ( curpd->ttfindex < ct->ptcnt ) {
+                    ct->pt = InterpolateAlongDiag ( diagpts,&diagpts[curpd->ttfindex].line[0],
+                                curpd,ct,fv,&pv,&rp1,&rp2 );
+                } else {
+                    ppd = &ct->gd->points[curpd->sp->prev->from->nextcpindex];
+                    npd = &ct->gd->points[curpd->sp->nextcpindex];
+                    if ( IsStemAssignedToPoint(ppd, ds, true) != -1 )
+                        ct->pt = InterpolateAlongDiag ( diagpts,&diagpts[ppd->ttfindex].line[0],
+                            ppd,ct,fv,&pv,&rp1,&rp2 );
+                    if ( IsStemAssignedToPoint(npd, ds, false) != -1 )
+                        ct->pt = InterpolateAlongDiag ( diagpts,&diagpts[npd->ttfindex].line[0],
+                            npd,ct,fv,&pv,&rp1,&rp2 );
+                }
+            }
+        }
+        if ( ds->rdone ) {
+            for ( j=0; j<ds->chunk_cnt; j++ ) if (( curpd = ds->chunks[j].r ) != NULL ) {
+                if ( curpd->ttfindex < ct->ptcnt ) {
+                    ct->pt = InterpolateAlongDiag ( diagpts,&diagpts[curpd->ttfindex].line[0],
+                                curpd,ct,fv,&pv,&rp1,&rp2 );
+                } else {
+                    ppd = &ct->gd->points[curpd->sp->prev->from->nextcpindex];
+                    npd = &ct->gd->points[curpd->sp->nextcpindex];
+                    if ( IsStemAssignedToPoint(ppd, ds, true) != -1 )
+                        ct->pt = InterpolateAlongDiag ( diagpts,&diagpts[ppd->ttfindex].line[0],
+                            ppd,ct,fv,&pv,&rp1,&rp2 );
+                    if ( IsStemAssignedToPoint(npd, ds, false) != -1 )
+                        ct->pt = InterpolateAlongDiag ( diagpts,&diagpts[npd->ttfindex].line[0],
+                            npd,ct,fv,&pv,&rp1,&rp2 );
                 }
             }
         }
