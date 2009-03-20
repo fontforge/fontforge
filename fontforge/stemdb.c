@@ -92,7 +92,7 @@ static int UnitCloserToHV( BasePoint *u1,BasePoint *u2 ) {
 
     if ( adiff2 > PI*.25 && adiff2 < PI*.75 )
 	adiff2 = fabs( adiff2 - PI*.5 );
-    else if ( adiff1 >= PI*.75 )
+    else if ( adiff2 >= PI*.75 )
 	adiff2 = PI - adiff2;
 
     if ( adiff1 < adiff2 )
@@ -1038,13 +1038,18 @@ return( CornerCorrectSide( pd,( hv == 2 ),is_l ));
 	cnt = MonotonicOrder( gd->sspace,&myline,gd->stspace );
 	eo = -1;
 	is_x = fabs( dir->y ) > fabs( dir->x );
-	i = ( is_x ) ? cnt-1 : 0; 
+	/* If a diagonal stem is more vertical than horizontal, then our
+	/* virtual line will go from left to right. It will first intersect
+	/* the left side of the stem, if the stem also points north-east.
+	/* In any other case the virtual line will first intersect the right
+	/* side. */
+	i = ( is_x && dir->y > 0 ) ? 0 : cnt-1; 
 	while ( i >= 0 && i <= cnt-1 ) {
 	    eo = ( eo != 1 ) ? 1 : 0;
 	    if ( gd->stspace[i].s == sbase )
 	break;
-	    if ( is_x ) i--;
-	    else i++;
+	    if ( is_x && dir->y > 0 ) i++;
+	    else i--;
 	}
 	ret = ( is_l == eo );
     }
@@ -5476,6 +5481,7 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
 		    !tstem->toobig ) {
 		    chunk->is_ball = e_ball = IsBall( gd,epd,tstem,!is_x );
 		    if ( e_ball ) {
+			chunk->ball_m = tstem;
 			emaster = tstem;
 			emstart = ( is_x ) ? tstem->right.y : tstem->left.x;
 		    }
@@ -5492,6 +5498,7 @@ static void GetSerifData( struct glyphdata *gd,struct stemdata *stem ) {
 		    !tstem->toobig ) {
 		    chunk->is_ball = s_ball = IsBall( gd,spd,tstem,is_x );
 		    if ( s_ball ) {
+			chunk->ball_m = tstem;
 			smaster = tstem;
 			smend = ( is_x ) ? tstem->left.y : tstem->right.x;
 		    }

@@ -140,6 +140,7 @@ typedef struct stemdata {
 	uint8 stub;
 	uint8 stemcheat;	/* It's not a real stem, but it's something we'd like PostScript to hint for us */
         uint8 is_ball;          /* Specifies if this chunk marks the opposite sides of a ball terminal (useful for TTF instructions) */
+        struct stemdata *ball_m;
         int l_e_idx, r_e_idx;   /* Which of the opposed edges assigned to the left and right points corresponds to this chunk */
     } *chunks;
     int activecnt;
