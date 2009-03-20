@@ -2989,8 +2989,17 @@ static void mark_points_affected(InstrCt *ct,StemData *target,PointData *opd,int
             if (value_point(ct, cpd->ttfindex, pd->sp, ct->gd->emsize))
                 ct->affected[cpd->ttfindex] |= ct->xdir?tf_x:tf_y;
         }
-        s =  next ? pd->sp->next : pd->sp->prev;;
+        s =  next ? pd->sp->next : pd->sp->prev;
         pd = next ? &ct->gd->points[s->to->ptindex] : &ct->gd->points[s->from->ptindex];
+        if ( pd == opd ) {
+            IError( "The ball terminal with a key point at %.3f,%.3f\n"
+                    "appears to be incorrectly linked to the %s stem\n"
+                    "<%.3f, %.3f>",
+                    pd->base.x,pd->base.y,
+                    ct->xdir?"vertical":"horizontal",
+                    ct->xdir?target->left.x:target->right.y,target->width );
+            break;
+        }
     }
 }
 
@@ -3038,8 +3047,8 @@ return;
         opd = lbase ? chunk->r : chunk->l;
         
         if (chunk->is_ball && opd != NULL) {
-            mark_points_affected(ct, master, opd, true);
-            mark_points_affected(ct, master, opd, false);
+            mark_points_affected(ct, chunk->ball_m, opd, true);
+            mark_points_affected(ct, chunk->ball_m, opd, false);
         }
     }
 }
@@ -3685,12 +3694,17 @@ static void HStemGeninst(InstrCt *ct) {
              * stems, since usually positioning relatively to the "master"
              * stem is more important than positioning relatively to blues
              * in such cases.
+             * Exception: nested stems marked for interpolation should be
+             * positioned by interpolating between the edges of the nesting
+             * stem.
              */
             if (rp1!=-1 && rp2!=-1 && stem->master != NULL)
                 for (j=0; j<stem->master->dep_cnt; j++) {
                     if (stem->master->dependent[j].stem == stem &&
-                        stem->master->dependent[j].dep_type == 'i') {
-	                stem->master = NULL;
+                        stem->master->dependent[j].dep_type == 'i' &&
+                        (stem->master->left.y <= stem->left.y ||
+                        stem->master->right.y >= stem->right.y)) {
+                        stem->master = NULL;
                         break;
                     }
                 }
