@@ -1719,6 +1719,54 @@ static void SFDDumpBase(FILE *sfd,char *keyword,struct Base *base) {
     }
 }
 
+static void SFDDumpJSTFLookups(FILE *sfd,char *keyword, OTLookup **list ) {
+    int i;
+
+    if ( list==NULL || list[0]==NULL )
+return;
+
+    fprintf( sfd, "%s ", keyword );
+    for ( i=0; list[i]!=NULL; ++i ) {
+	SFDDumpUTF7Str(sfd,list[i]->lookup_name);
+	putc(' ',sfd);
+    }
+    putc('\n',sfd);
+}
+	
+static void SFDDumpJustify(FILE *sfd,SplineFont *sf) {
+    Justify *jscript;
+    struct jstf_lang *jlang;
+    int i;
+
+    for ( jscript = sf->justify; jscript!=NULL; jscript=jscript->next ) {
+	fprintf( sfd, "Justify: '%c%c%c%c'\n",
+		jscript->script>>24,
+		jscript->script>>16,
+		jscript->script>>8,
+		jscript->script);
+	if ( jscript->extenders!=NULL )
+	    fprintf( sfd, "JstfExtender: %s\n", jscript->extenders );
+	for ( jlang = jscript->langs; jlang!=NULL; jlang = jlang->next ) {
+	    fprintf( sfd, "JstfLang: '%c%c%c%c' %d\n",
+		jlang->lang>>24,
+		jlang->lang>>16,
+		jlang->lang>>8,
+		jlang->lang, jlang->cnt );
+	    for ( i=0; i<jlang->cnt; ++i ) {
+		fprintf( sfd, "JstfPrio:\n" );
+		SFDDumpJSTFLookups(sfd,"JstfEnableShrink:", jlang->prios[i].enableShrink );
+		SFDDumpJSTFLookups(sfd,"JstfDisableShrink:", jlang->prios[i].disableShrink );
+		SFDDumpJSTFLookups(sfd,"JstfMaxShrink:", jlang->prios[i].maxShrink );
+		SFDDumpJSTFLookups(sfd,"JstfEnableExtend:", jlang->prios[i].enableExtend );
+		SFDDumpJSTFLookups(sfd,"JstfDisableExtend:", jlang->prios[i].disableExtend );
+		SFDDumpJSTFLookups(sfd,"JstfMaxExtend:", jlang->prios[i].maxExtend );
+	    }
+	}
+    }
+    if ( sf->justify!=NULL )
+	fprintf( sfd, "EndJustify\n" );
+}
+
 static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	int todir, char *dirname) {
     int i, j, realcnt;
@@ -2081,6 +2129,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf( sfd, "EndASM\n" );
     }
     SFDDumpMacFeat(sfd,sf->features);
+    SFDDumpJustify(sfd,sf);
     for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
 	SFDDumpTtfTable(sfd,tab,sf);
     for ( tab = sf->ttf_tab_saved; tab!=NULL ; tab = tab->next )
@@ -5972,6 +6021,113 @@ static struct Base *SFDParseBase(FILE *sfd) {
 return( base );
 }
 
+static OTLookup **SFDLookupList(FILE *sfd,SplineFont *sf) {
+    int ch;
+    OTLookup *space[100], **buf=space, *otl, **ret;
+    int lcnt=0, lmax=100;
+    char *name;
+
+    forever {
+	while ( (ch=nlgetc(sfd))==' ' );
+	if ( ch=='\n' || ch==EOF )
+    break;
+	ungetc(ch,sfd);
+	name = SFDReadUTF7Str(sfd);
+	otl = SFFindLookup(sf,name);
+	free(name);
+	if ( otl!=NULL ) {
+	    if ( lcnt>lmax ) {
+		if ( buf==space ) {
+		    buf = galloc((lmax=lcnt+50)*sizeof(OTLookup *));
+		    memcpy(buf,space,sizeof(space));
+		} else
+		    buf = grealloc(buf,(lmax+=50)*sizeof(OTLookup *));
+	    }
+	    buf[lcnt++] = otl;
+	}
+    }
+    if ( lcnt==0 )
+return( NULL );
+
+    ret = galloc((lcnt+1)*sizeof(OTLookup *));
+    memcpy(ret,buf,lcnt*sizeof(OTLookup *));
+    ret[lcnt] = NULL;
+return( ret );
+}
+
+static void SFDParseJustify(FILE *sfd, SplineFont *sf, char *tok) {
+    Justify *last=NULL, *cur;
+    struct jstf_lang *jlang, *llast;
+    int p,ch;
+
+    while ( strcmp(tok,"Justify:")==0 ) {
+	cur = chunkalloc(sizeof(Justify));
+	if ( last==NULL )
+	    sf->justify = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	llast = jlang = NULL;
+	cur->script = gettag(sfd);
+	while ( getname(sfd,tok)>0 ) {
+	    if ( strcmp(tok,"Justify:")==0 || strcmp(tok,"EndJustify")==0 )
+	break;
+	    if ( strcmp(tok,"JstfExtender:")==0 ) {
+		while ( (ch=nlgetc(sfd))==' ' );
+		ungetc(ch,sfd);
+		geteol(sfd,tok);
+		cur->extenders = copy(tok);
+	    } else if ( strcmp(tok,"JstfLang:")==0 ) {
+		jlang = chunkalloc(sizeof(struct jstf_lang));
+		if ( llast==NULL )
+		    cur->langs = jlang;
+		else
+		    llast->next = jlang;
+		llast = jlang;
+		jlang->lang = gettag(sfd);
+		p = -1;
+		getint(sfd,&jlang->cnt);
+		if ( jlang->cnt!=0 )
+		    jlang->prios = gcalloc(jlang->cnt,sizeof(struct jstf_prio));
+	    } else if ( strcmp(tok,"JstfPrio:")==0 ) {
+		if ( jlang!=NULL ) {
+		    ++p;
+		    if ( p>= jlang->cnt ) {
+			jlang->prios = grealloc(jlang->prios,(p+1)*sizeof(struct jstf_prio));
+			memset(jlang->prios+jlang->cnt,0,(p+1-jlang->cnt)*sizeof(struct jstf_prio));
+			jlang->cnt = p+1;
+		    }
+		}
+	    } else if ( strcmp(tok,"JstfEnableShrink:" )==0 ) {
+		if ( p<0 ) p=0;
+		if ( jlang!=NULL && p<jlang->cnt )
+		    jlang->prios[p].enableShrink = SFDLookupList(sfd,sf);
+	    } else if ( strcmp(tok,"JstfDisableShrink:" )==0 ) {
+		if ( p<0 ) p=0;
+		if ( jlang!=NULL && p<jlang->cnt )
+		    jlang->prios[p].disableShrink = SFDLookupList(sfd,sf);
+	    } else if ( strcmp(tok,"JstfMaxShrink:" )==0 ) {
+		if ( p<0 ) p=0;
+		if ( jlang!=NULL && p<jlang->cnt )
+		    jlang->prios[p].maxShrink = SFDLookupList(sfd,sf);
+	    } else if ( strcmp(tok,"JstfEnableExtend:" )==0 ) {
+		if ( p<0 ) p=0;
+		if ( jlang!=NULL && p<jlang->cnt )
+		    jlang->prios[p].enableExtend = SFDLookupList(sfd,sf);
+	    } else if ( strcmp(tok,"JstfDisableExtend:" )==0 ) {
+		if ( p<0 ) p=0;
+		if ( jlang!=NULL && p<jlang->cnt )
+		    jlang->prios[p].disableExtend = SFDLookupList(sfd,sf);
+	    } else if ( strcmp(tok,"JstfMaxExtend:" )==0 ) {
+		if ( p<0 ) p=0;
+		if ( jlang!=NULL && p<jlang->cnt )
+		    jlang->prios[p].maxExtend = SFDLookupList(sfd,sf);
+	    } else
+		geteol(sfd,tok);
+	}
+    }
+}
+
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	int fromdir, char *dirname, float sfdversion) {
     SplineFont *sf;
@@ -6267,6 +6423,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->hasvmetrics = true;
+	} else if ( strmatch(tok,"Justify:")==0 ) {
+	    SFDParseJustify(sfd,sf,tok);
 	} else if ( strmatch(tok,"BaseHoriz:")==0 ) {
 	    sf->horiz_base = SFDParseBase(sfd);
 	    last_base = sf->horiz_base;

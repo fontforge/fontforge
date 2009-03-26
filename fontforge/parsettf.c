@@ -1055,6 +1055,10 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('h','m','t','x'):
 	    info->hmetrics_start = offset;
 	  break;
+	  case CHR('J','S','T','F'):
+	    info->jstf_start = offset;
+	    info->jstf_length = length;
+	  break;
 	  case CHR('k','e','r','n'):
 	    info->kern_start = offset;
 	  break;
@@ -5553,6 +5557,8 @@ return( 0 );
 	readttfgpossub(ttf,info,false);
     if ( info->morx_start!=0 || info->mort_start!=0 )
 	readttfmort(ttf,info);
+    if ( info->jstf_start!=0 )
+	readttfjstf(ttf,info);
 
     if ( info->pfed_start!=0 )
 	pfed_read(ttf,info);
@@ -6139,6 +6145,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->grid = info->guidelines;
     sf->horiz_base = info->horiz_base;
     sf->vert_base = info->vert_base;
+    sf->justify = info->justify;
     for ( bdf = info->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	bdf->sf = sf;
     }

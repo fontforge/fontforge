@@ -1052,7 +1052,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	IError("max glyph count wrong in ttf output");
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
-    SplineCharLayerFindBounds(sc,gi->layer,&bb);
+    SplineCharLayerQuickBounds(sc,gi->layer,&bb);
     gh.numContours = -1;
     gh.xmin = floor(bb.minx); gh.ymin = floor(bb.miny);
     gh.xmax = ceil(bb.maxx); gh.ymax = ceil(bb.maxy);
@@ -1179,13 +1179,7 @@ return;
     }
     origptcnt = ptcnt;
 
-    SplineCharLayerFindBounds(sc,gi->layer,&bb);
-	/* MicroSoft's font validator has a bug. It only looks at the points */
-	/*  when calculating the bounding box, and complains when I look at */
-	/*  the splines for internal extrema. I presume it does this because */
-	/*  all the extrema are supposed to be points (and it complains about */
-	/*  that error too), but it would lead to rasterization problems if */
-	/*  we did what they want */
+    SplineCharLayerQuickBounds(sc,gi->layer,&bb);
     gh.numContours = contourcnt;
     gh.xmin = floor(bb.minx); gh.ymin = floor(bb.miny);
     gh.xmax = ceil(bb.maxx); gh.ymax = ceil(bb.maxy);
@@ -5364,6 +5358,7 @@ return( false );
 	    otf_dumpgpos(at,sf);
 	    otf_dumpgsub(at,sf);
 	    otf_dumpgdef(at,sf);
+	    otf_dumpjstf(at,sf);
 	    otf_dumpbase(at,sf);
 	    otf_dump_math(at,sf);	/* Not strictly OpenType yet */
 	    if ( at->gi.flags & ttf_flag_dummyDSIG )
@@ -5497,6 +5492,12 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('G','S','U','B');
 	at->tabdir.tabs[i].data = at->gsub;
 	at->tabdir.tabs[i++].length = at->gsublen;
+    }
+
+    if ( at->jstf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('J','S','T','F');
+	at->tabdir.tabs[i].data = at->jstf;
+	at->tabdir.tabs[i++].length = at->jstflen;
     }
 
     if ( at->os2f!=NULL ) {

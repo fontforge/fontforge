@@ -692,6 +692,23 @@ return( NULL );
 return( glyphs );
 }
 
+static void TickLookupKids(OTLookup *otl) {
+    struct lookup_subtable *sub;
+    int i,j;
+
+    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	if ( sub->fpst!=NULL ) {
+	    for ( i=0; i<sub->fpst->rule_cnt; ++i ) {
+		struct fpst_rule *rule = &sub->fpst->rules[i];
+		for ( j=0; j<rule->lookup_cnt; ++j ) {
+		    if ( rule->lookups[j].lookup!=NULL )
+			rule->lookups[j].lookup->in_gpos = true;
+		}
+	    }
+	}
+    }
+}
+
 void SFFindUnusedLookups(SplineFont *sf) {
     OTLookup *test;
     struct lookup_subtable *sub;
@@ -701,8 +718,10 @@ void SFFindUnusedLookups(SplineFont *sf) {
     SplineChar *sc;
     KernPair *kp;
     PST *pst;
-    int k,gid,isv;
+    int i,k,gid,isv;
     SplineFont *_sf = sf;
+    Justify *jscripts;
+    struct jstf_lang *jlangs;
 
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
 
@@ -792,6 +811,47 @@ void SFFindUnusedLookups(SplineFont *sf) {
 	    }
 	}
     }
+
+    /* I store JSTF max lookups in the gpos list because they have the same */
+    /*  format. But now I need to tease them out and learn which lookups are */
+    /*  used in GPOS and which in JSTF (and conceivably which get duplicated */
+    /*  and placed in both) */
+    for ( test = sf->gpos_lookups; test!=NULL; test = test->next ) {
+	test->only_jstf = test->in_jstf = test->in_gpos = false;
+	if ( test->features!=NULL )
+	    test->in_gpos = true;
+    }
+    for ( jscripts = sf->justify; jscripts!=NULL; jscripts=jscripts->next ) {
+	for ( jlangs=jscripts->langs; jlangs!=NULL; jlangs=jlangs->next ) {
+	    for ( i=0; i<jlangs->cnt; ++i ) {
+		struct jstf_prio *prio = &jlangs->prios[i];
+		if ( prio->enableShrink!=NULL )
+		    for ( k=0; prio->enableShrink[k]!=NULL; ++k )
+			prio->enableShrink[k]->in_gpos = true;
+		if ( prio->disableShrink!=NULL )
+		    for ( k=0; prio->disableShrink[k]!=NULL; ++k )
+			prio->disableShrink[k]->in_gpos = true;
+		if ( prio->enableExtend!=NULL )
+		    for ( k=0; prio->enableExtend[k]!=NULL; ++k )
+			prio->enableExtend[k]->in_gpos = true;
+		if ( prio->disableExtend!=NULL )
+		    for ( k=0; prio->disableExtend[k]!=NULL; ++k )
+			prio->disableExtend[k]->in_gpos = true;
+		if ( prio->maxShrink!=NULL )
+		    for ( k=0; prio->maxShrink[k]!=NULL; ++k )
+			prio->maxShrink[k]->in_jstf = true;
+		if ( prio->maxExtend!=NULL )
+		    for ( k=0; prio->maxExtend[k]!=NULL; ++k )
+			prio->maxExtend[k]->in_jstf = true;
+	    }
+	}
+    }
+    for ( test = sf->gpos_lookups; test!=NULL; test = test->next ) {
+	if ( test->in_gpos && (test->lookup_type==gpos_context || test->lookup_type==gpos_contextchain))
+	    TickLookupKids(test);
+    }
+    for ( test = sf->gpos_lookups; test!=NULL; test = test->next )
+	test->only_jstf = test->in_jstf && !test->in_gpos;
 }
 
 void SFFindClearUnusedLookupBits(SplineFont *sf) {
@@ -824,6 +884,47 @@ static void SFRemoveAnchorPointsOfAC(SplineFont *sf,AnchorClass *ac) {
 		    prev->next = next;
 		ap->next = NULL;
 		AnchorPointsFree(ap);
+	    }
+	}
+    }
+}
+
+static OTLookup **RemoveFromList(OTLookup **list, OTLookup *dying) {
+    int i,j;
+
+    if ( list==NULL )
+return( NULL );
+    for ( i=0; list[i]!=NULL; ++i ) {
+	if ( list[i]==dying ) {
+	    for ( j=i+1; ; ++j ) {
+		list[j-1] = list[j];
+		if ( list[j]==NULL )
+	    break;
+	    }
+	}
+    }
+    if ( list[0]==NULL ) {
+	free(list);
+return( NULL );
+    }
+return( list );
+}
+
+static void RemoveJSTFReferences(SplineFont *sf,OTLookup *dying) {
+    Justify *jscript;
+    struct jstf_lang *jlang;
+    int i;
+
+    for ( jscript = sf->justify; jscript!=NULL; jscript=jscript->next ) {
+	for ( jlang=jscript->langs; jlang!=NULL; jlang=jlang->next ) {
+	    for ( i=0; i<jlang->cnt; ++i ) {
+		struct jstf_prio *prio = &jlang->prios[i];
+		prio->enableShrink = RemoveFromList(prio->enableShrink,dying);
+		prio->disableShrink = RemoveFromList(prio->disableShrink,dying);
+		prio->enableExtend = RemoveFromList(prio->enableExtend,dying);
+		prio->disableExtend = RemoveFromList(prio->disableExtend,dying);
+		prio->maxShrink = RemoveFromList(prio->maxShrink,dying);
+		prio->maxExtend = RemoveFromList(prio->maxExtend,dying);
 	    }
 	}
     }
@@ -1063,6 +1164,7 @@ void SFRemoveLookup(SplineFont *sf,OTLookup *otl) {
 	sf->gsub_lookups = otl->next;
 
     RemoveNestedReferences(sf,isgpos,otl);
+    RemoveJSTFReferences(sf,otl);
 
     otl->next = NULL;
     OTLookupFree(otl);

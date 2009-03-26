@@ -2398,7 +2398,8 @@ static struct lookup *readttflookups(FILE *ttf,int32 pos, struct ttfinfo *info, 
     struct lookup_subtable *st;
 
     if ( pos>=info->g_bounds ) {
-	LogError(_("Attempt to read lookup data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	LogError(_("Attempt to read lookup data beyond end of %s table"),
+		isgpos==2? "JSTF" : isgpos ? "GPOS" : "GSUB" );
 	info->bad_ot = true;
 return( NULL );
     }
@@ -2419,7 +2420,8 @@ return( NULL );
 	lookups[i].offset = getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
 	if ( pos+lookups[i].offset>=info->g_bounds ) {
-	    LogError(_("Attempt to read lookup data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
+	    LogError(_("Attempt to read lookup data beyond end of %s table"),
+		    isgpos==2? "JSTF" : isgpos ? "GPOS" : "GSUB" );
 	    info->bad_ot = true;
 return( NULL );
 	}
@@ -2438,7 +2440,7 @@ return( NULL );
 	else
 	    last->next = otlookup;
 	last = otlookup;
-	otlookup->lookup_type = (isgpos<<8) | lookups[i].type;
+	otlookup->lookup_type = ((isgpos>0)<<8) | lookups[i].type;
 	otlookup->lookup_flags = lookups[i].flags;
 	otlookup->lookup_index = i;
 	if ( feof(ttf) ) {
@@ -2453,7 +2455,18 @@ return( NULL );
 	    otlookup->subtables = st;
 	}
     }
-    if ( isgpos )
+    if ( isgpos==2 ) {
+	OTLookup *end;
+	/* Add any JSTF lookups to the end of the GPOS list. they have the */
+	/*  same format, we'll treat them as GPOS internally, and separate */
+	/*  them out when we generate the new font */
+	if ( info->gpos_lookups==NULL )
+	    info->gpos_lookups = info->cur_lookups;
+	else {
+	    for ( end=info->gpos_lookups; end->next!=NULL; end = end->next );
+	    end->next = info->cur_lookups;
+	}
+    } else if ( isgpos )
 	info->gpos_lookups = info->cur_lookups;
     else
 	info->gsub_lookups = info->cur_lookups;
@@ -2584,7 +2597,7 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
 	info->bad_ot = true;
       break;
     }
-    if ( ftell(ttf)>info->gpos_start+info->gpos_length ) {
+    if ( ftell(ttf)>info->g_bounds ) {
 	LogError( _("Subtable extends beyond end of GPOS table\n") );
 	info->bad_ot = true;
     }
@@ -2670,7 +2683,7 @@ static void gposLookupSwitch(FILE *ttf, int st,
 	info->bad_ot = true;
       break;
     }
-    if ( ftell(ttf)>info->gpos_start+info->gpos_length ) {
+    if ( ftell(ttf)>info->g_bounds ) {
 	LogError( _("Subtable extends beyond end of GPOS table\n") );
 	info->bad_ot = true;
     }
@@ -5573,4 +5586,339 @@ return;
 	bs->next = base->scripts;
 	base->scripts = bs;
     }
+}
+
+static char *jstf_read_extenders(FILE *ttf,uint32 spos,int extendOff,
+	struct ttfinfo *info) {
+    uint16 *glyphs;
+    int cnt, i;
+    char *ret;
+
+    if ( extendOff==0 )
+return( NULL );
+    if ( spos+extendOff+2>info->g_bounds ) {
+	LogError( _("JSTF table is too long.\n") );
+	info->bad_ot = true;
+return( NULL );
+    }
+
+    fseek(ttf,spos+extendOff,SEEK_SET);
+    cnt = getushort(ttf);
+    if ( spos+extendOff+2+2*cnt>info->g_bounds || cnt<0 ) {
+	LogError( _("JSTF table is too long.\n") );
+	info->bad_ot = true;
+return( NULL );
+    }
+    if ( cnt==0 )
+return( NULL );
+    glyphs = galloc(cnt*sizeof(uint16));
+    for ( i=0; i<cnt; ++i )
+	glyphs[i] = getushort(ttf);
+    glyphs[i] = 0xffff;
+    ret = GlyphsToNames(info,glyphs,false);
+    free(glyphs);
+return( ret );
+}
+
+static OTLookup *findLookupByIndex(OTLookup *lookups,int index) {
+
+    while ( index>0 ) {
+	if ( lookups==NULL )
+return( NULL );
+	lookups = lookups->next;
+	--index;
+    }
+return( lookups );
+}
+
+static OTLookup **jstf_subpos(FILE *ttf,uint32 base,int Sub,int Pos,
+	struct ttfinfo *info) {
+    int scnt=0, pcnt=0;
+    OTLookup **ret;
+    int i;
+
+    if ( Sub>0 ) {
+	fseek(ttf,base+Sub,SEEK_SET);
+	scnt = getushort(ttf);
+	if ( base+Sub+2+scnt*sizeof(int16)>info->g_bounds || scnt<0 ) {
+	    LogError( _("JSTF table is too long.\n") );
+	    info->bad_ot = true;
+return( NULL );
+	}
+    }
+    if ( Pos>0 ) {
+	fseek(ttf,base+Pos,SEEK_SET);
+	pcnt = getushort(ttf);
+	if ( base+Pos+2+pcnt*sizeof(int16)>info->g_bounds || pcnt<0 ) {
+	    LogError( _("JSTF table is too long.\n") );
+	    info->bad_ot = true;
+return( NULL );
+	}
+    }
+    if ( scnt==0 && pcnt==0 )
+return( NULL );
+
+    ret = galloc((scnt+pcnt+1)*sizeof(OTLookup *));
+    if ( Sub>0 ) {
+	fseek(ttf,base+Sub+2,SEEK_SET);
+	for ( i=0; i<scnt; ++i ) {
+	    int index = getushort(ttf);
+	    if ( index<0 ) {
+		LogError( _("JSTF table is too long.\n") );
+		info->bad_ot = true;
+return( NULL );
+	    }
+	    ret[i] = findLookupByIndex(info->gsub_lookups,index);
+	    if ( ret[i]==NULL ) {
+		LogError( _("Lookup index (%d) out of bounds in GSUB from JSTF table.\n"), index );
+		info->bad_ot = true;
+return( NULL );
+	    }
+	}
+	ret[i] = NULL;
+    }
+    if ( Pos>0 ) {
+	fseek(ttf,base+Pos+2,SEEK_SET);
+	for ( i=0; i<pcnt; ++i ) {
+	    int index = getushort(ttf);
+	    if ( index<0 ) {
+		LogError( _("JSTF table is too long.\n") );
+		info->bad_ot = true;
+return( NULL );
+	    }
+	    ret[i+scnt] = findLookupByIndex(info->gpos_lookups,index);
+	    if ( ret[i+scnt]==NULL ) {
+		LogError( _("Lookup index (%d) out of bounds in GPOS from JSTF table.\n"), index );
+		info->bad_ot = true;
+return( NULL );
+	    }
+	}
+	ret[i+scnt] = NULL;
+    }
+return( ret );
+}
+
+static void NameOTJSTFLookup(OTLookup *otl,struct ttfinfo *info) {
+    char buffer[300], *format;
+    struct lookup_subtable *subtable;
+    int cnt;
+
+    if ( info->jstf_isShrink )
+/* GT: This string is used to generate a name for an OpenType lookup. */
+/* GT:  the %c%c... is the language followed by the script (OT tags) */
+	snprintf(buffer,sizeof(buffer), _("JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"),
+		info->jstf_prio, info->jstf_lcnt++,
+		info->jstf_lang>>24,
+		 info->jstf_lang>>16,
+		 info->jstf_lang>>8,
+		 info->jstf_lang,
+		info->jstf_script>>24,
+		 info->jstf_script>>16,
+		 info->jstf_script>>8,
+		 info->jstf_script );
+     else
+	snprintf(buffer,sizeof(buffer), _("JSTF extension max at priority %d #%d for %c%c%c%c in %c%c%c%c"),
+		info->jstf_prio, info->jstf_lcnt++,
+		info->jstf_lang>>24,
+		 info->jstf_lang>>16,
+		 info->jstf_lang>>8,
+		 info->jstf_lang,
+		info->jstf_script>>24,
+		 info->jstf_script>>16,
+		 info->jstf_script>>8,
+		 info->jstf_script );
+    otl->lookup_name = copy(buffer);
+
+    cnt = 0;
+    for ( subtable = otl->subtables; subtable!=NULL; subtable=subtable->next, ++cnt ) {
+	if ( subtable->subtable_name==NULL ) {
+	    if ( subtable==otl->subtables && subtable->next==NULL )
+		format = _("%s subtable");
+	    else
+		format = _("%s subtable %d");
+	    snprintf(buffer,sizeof(buffer),format,otl->lookup_name,cnt );
+	    subtable->subtable_name=copy(buffer);
+	}
+    }
+}
+
+static OTLookup **jstf_processlookups(FILE *ttf,uint32 base,int lookup_off,
+	struct ttfinfo *info) {
+    OTLookup **ret;
+    struct lookup *lookups, *l;
+    struct lookup_subtable *subtable;
+    int cnt,k;
+    int32 st;
+
+    if ( lookup_off==0 )
+return( NULL );
+    lookups = readttflookups(ttf,base+lookup_off,info,2);
+
+    if ( lookups==NULL )
+return( NULL );
+
+    for ( l = lookups, cnt=0; l->offset!=0; ++l, ++cnt ) {
+	for ( k=0, subtable=l->otlookup->subtables; k<l->subtabcnt; ++k, subtable=subtable->next ) {
+	    st = l->subtab_offsets[k];
+	    fseek(ttf,st,SEEK_SET);
+	    gposLookupSwitch(ttf,st,info,l,subtable,lookups);
+	}
+    }
+    ret = galloc((cnt+1)*sizeof(OTLookup*));
+
+    for ( l=lookups, cnt=0; l->offset!=0; ++l, ++cnt ) {
+	NameOTJSTFLookup(l->otlookup,info);
+	ret[cnt] = l->otlookup;
+    }
+    ret[cnt] = NULL;
+    LookupsFree(lookups);
+return( ret );
+}
+
+static struct jstf_lang *jstf_lang(FILE *ttf,uint32 base,
+	int off, uint32 tag, struct ttfinfo *info) {
+    int cnt,i;
+    struct jstf_lang *ret;
+
+    if ( off<=0 )
+return( NULL );
+    if ( base+off+2>info->g_bounds ) {
+	LogError( _("JSTF table is too long.\n") );
+	info->bad_ot = true;
+return( NULL );
+    }
+    fseek(ttf,base+off,SEEK_SET);
+    cnt = getushort(ttf);
+    if ( base+off+2+2*cnt>info->g_bounds || cnt<0 ) {
+	LogError( _("JSTF table is too long.\n") );
+	info->bad_ot = true;
+return( NULL );
+    }
+    if ( cnt==0 )
+return( NULL );
+
+    ret = chunkalloc(sizeof(struct jstf_lang));
+    ret->lang = info->jstf_lang = tag;
+    ret->cnt = cnt;
+    ret->prios = gcalloc(cnt,sizeof(struct jstf_prio));
+    for ( i=0; i<cnt; ++i )
+	ret->prios[i].maxExtend = (void *) getushort(ttf);
+    for ( i=0; i<cnt; ++i ) {
+	int enSub, disSub, enPos, disPos, maxShrink, maxExtend;
+	int enSub2, disSub2, enPos2, disPos2;
+	uint32 pbase = base+off+(intpt) ret->prios[i].maxExtend;
+	fseek(ttf,pbase,SEEK_SET);
+	info->jstf_prio = i;
+	enSub = getushort(ttf);
+	disSub = getushort(ttf);
+	enPos = getushort(ttf);
+	disPos = getushort(ttf);
+	maxShrink = getushort(ttf);
+	enSub2 = getushort(ttf);
+	disSub2 = getushort(ttf);
+	enPos2 = getushort(ttf);
+	disPos2 = getushort(ttf);
+	maxExtend = getushort(ttf);
+	ret->prios[i].enableShrink = jstf_subpos(ttf,pbase,enSub,enPos, info);
+	ret->prios[i].disableShrink = jstf_subpos(ttf,pbase,disSub,disPos, info);
+	ret->prios[i].enableExtend = jstf_subpos(ttf,pbase,enSub2,enPos2, info);
+	ret->prios[i].disableExtend = jstf_subpos(ttf,pbase,disSub2,disPos2, info);
+
+	info->jstf_isShrink = true;
+	ret->prios[i].maxShrink = jstf_processlookups(ttf,pbase,maxShrink, info);
+	info->jstf_isShrink = false;
+	ret->prios[i].maxExtend = jstf_processlookups(ttf,pbase,maxExtend, info);
+    }
+return( ret );
+}
+
+void readttfjstf(FILE *ttf,struct ttfinfo *info) {
+    int version;
+    int scnt, lcnt, lmax;
+    int i,j;
+    struct tagoff { uint32 tag; int offset; } *soff, *loff;
+    Justify *last=NULL, *cur;
+    struct jstf_lang *llast, *lcur;
+    int extendOff, defOff;
+    
+    if ( info->jstf_start==0 )
+return;
+    fseek(ttf,info->jstf_start,SEEK_SET);
+    info->g_bounds = info->jstf_start + info->jstf_length;
+
+    version = getlong(ttf);
+    if ( version!=0x00010000 )
+return;
+    scnt = getushort(ttf);
+    if ( scnt<0 || scnt>1000 ) {
+	LogError( _("Unlikely script count (%d), I suspect the JSTF-\n table is garbage, I'm giving up on it.\n"), scnt );
+	info->bad_ot = true;
+return;
+    }
+    soff = galloc(scnt*sizeof(struct tagoff));
+
+    for ( i=0; i<scnt; ++i ) {
+	soff[i].tag    = getlong(ttf);
+	soff[i].offset = getushort(ttf);
+	if ( soff[i].offset<0 ) {
+	    LogError( _("End of file found in JSTF table.\n") );
+	    info->bad_ot = true;
+return;
+	}
+    }
+    if ( ftell(ttf)>info->g_bounds ) {
+	LogError( _("JSTF table is too long.\n") );
+	info->bad_ot = true;
+return;
+    }
+    lmax = 0; loff = NULL;
+    for ( i=0; i<scnt; ++i ) {
+	fseek(ttf,info->jstf_start+soff[i].offset,SEEK_SET);
+	extendOff = getushort(ttf);
+	defOff = getushort(ttf);
+	lcnt = getushort(ttf);
+	if ( info->jstf_start+soff[i].offset > info->g_bounds-6-6*lcnt || lcnt<0 ) {
+	    LogError( _("JSTF table is too long.\n") );
+	    info->bad_ot = true;
+return;
+	}
+
+	if ( lcnt>lmax )
+	    loff = grealloc(loff,(lmax=lcnt)*sizeof(struct tagoff));
+	for ( j=0; j<lcnt; ++j ) {
+	    loff[j].tag    = getlong(ttf);
+	    loff[j].offset = getushort(ttf);
+	    if ( loff[j].offset<0 ) {
+		LogError( _("End of file found in JSTF table.\n") );
+		info->bad_ot = true;
+return;
+	    }
+	}
+
+	cur = chunkalloc(sizeof(Justify));
+	cur->script = info->jstf_script = soff[i].tag;
+	if ( last==NULL )
+	    info->justify = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	cur->extenders = jstf_read_extenders(ttf,info->jstf_start+soff[i].offset,extendOff, info);
+	llast = NULL;
+	if ( defOff!=0 )
+	    llast = cur->langs = jstf_lang(ttf,info->jstf_start+soff[i].offset,defOff,DEFAULT_LANG, info);
+	for ( j=0; j<lcnt; ++j ) {
+	    lcur = jstf_lang(ttf,info->jstf_start+soff[i].offset,
+		    loff[j].offset, loff[j].tag, info);
+	    if ( lcur!=NULL ) {
+		if ( llast==NULL )
+		    cur->langs = lcur;
+		else
+		    llast->next = lcur;
+		llast = lcur;
+	    }
+	}
+    }
+
+    free(loff);
+    free(soff);
 }
