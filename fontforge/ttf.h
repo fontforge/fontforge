@@ -164,6 +164,9 @@ struct ttfinfo {
     uint32 hhea_start;
 		/* hmtx */
     uint32 hmetrics_start;
+		/* JSTF */
+    uint32 jstf_start;
+    uint32 jstf_length;
 		/* kern */
     uint32 kern_start;
 		/* loca */
@@ -298,10 +301,15 @@ struct ttfinfo {
     unsigned int bad_sfnt_header: 1;
     Layer guidelines;
     struct Base *horiz_base, *vert_base;
+    Justify *justify;
 
     int advanceWidthMax;
     int fbb[4];		/* x,yMin x,yMax*/
     int isFixedPitch;
+
+    uint32 jstf_script;
+    uint32 jstf_lang;
+    int16 jstf_isShrink, jstf_prio, jstf_lcnt;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
@@ -599,6 +607,8 @@ struct alltabs {
     int mathlen;
     FILE *base;
     int baselen;
+    FILE *jstf;
+    int jstflen;
     FILE *cvtf;
     int cvtlen;
     FILE *fpgmf;		/* Copied from an original ttf file and dumped out. Never generated */
@@ -749,6 +759,7 @@ extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpbase(struct alltabs *at, SplineFont *sf);
+extern void otf_dumpjstf(struct alltabs *at, SplineFont *sf);
 extern void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf);
 extern int gdefclass(SplineChar *sc);
 
@@ -847,6 +858,7 @@ extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
 extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
 extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
 extern void readttfbase(FILE *ttf,struct ttfinfo *info);
+extern void readttfjstf(FILE *ttf,struct ttfinfo *info);
 
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);

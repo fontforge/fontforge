@@ -2559,6 +2559,81 @@ return( false );
 return( true );		    
 }
 
+static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
+	struct alltabs *at) {
+    struct lookup_subtable *sub;
+
+    otl->lookup_offset = ftell(lfile);
+    for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
+	sub->extra_subtables = NULL;
+	if ( sub->unused )
+	    sub->subtable_offset = -1;
+	else {
+	    sub->subtable_offset = ftell(lfile);
+	    switch ( otl->lookup_type ) {
+	    /* GPOS lookup types */
+	      case gpos_single:
+		dumpGPOSsimplepos(lfile,sf,sub);
+	      break;
+
+	      case gpos_pair:
+		if ( at->os2.maxContext<2 )
+		    at->os2.maxContext = 2;
+		if ( sub->kc!=NULL )
+		    dumpgposkernclass(lfile,sf,sub,at);
+		else
+		    dumpGPOSpairpos(lfile,sf,sub);
+	      break;
+
+	      case gpos_cursive:
+		dumpgposCursiveAttach(lfile,sf,sub,&at->gi);
+	      break;
+
+	      case gpos_mark2base:
+	      case gpos_mark2ligature:
+	      case gpos_mark2mark:
+		AnchorsAway(lfile,sf,sub,&at->gi);
+	      break;
+
+	      case gpos_contextchain:
+	      case gpos_context:
+		dumpg___ContextChain(lfile,sf,sub,at);
+	      break;
+
+	    /* GSUB lookup types */
+	      case gsub_single:
+		dumpGSUBsimplesubs(lfile,sf,sub);
+	      break;
+
+	      case gsub_multiple:
+	      case gsub_alternate:
+		dumpGSUBmultiplesubs(lfile,sf,sub);
+	      break;
+
+	      case gsub_ligature:
+		dumpGSUBligdata(lfile,sf,sub,at);
+	      break;
+
+	      case gsub_contextchain:
+	      case gsub_context:
+	      case gsub_reversecchain:
+		dumpg___ContextChain(lfile,sf,sub,at);
+	      break;
+	    }
+	    if ( ftell(lfile)-sub->subtable_offset==0 ) {
+		IError( "Lookup sub table, %s in %s, contains no data.\n",
+			sub->subtable_name, sub->lookup->lookup_name );
+		sub->unused = true;
+		sub->subtable_offset = -1;
+	    } else if ( sub->extra_subtables==NULL &&
+		    ftell(lfile)-sub->subtable_offset>65535 )
+		IError( "Lookup sub table, %s in %s, is too big. Will not be useable.\n",
+			sub->subtable_name, sub->lookup->lookup_name );
+	}
+    }
+    otl->lookup_length = ftell(lfile)-otl->lookup_offset;
+}
+
 static FILE *G___figureLookups(SplineFont *sf,int is_gpos,
 	struct alltabs *at) {
     OTLookup *otl;
@@ -2573,82 +2648,14 @@ static FILE *G___figureLookups(SplineFont *sf,int is_gpos,
 
     index = 0;
     for ( otl=all; otl!=NULL; otl=otl->next ) {
-	if ( otl->unused || OnlyMac(otl,all))
+	if ( otl->unused || OnlyMac(otl,all) || otl->only_jstf )
 	    otl->lookup_index = -1;
 	else
 	    otl->lookup_index = index++;
     }
     for ( otl=all; otl!=NULL; otl=otl->next ) {
 	if ( otl->lookup_index!=-1 ) {
-	    otl->lookup_offset = ftell(lfile);
-	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
-		sub->extra_subtables = NULL;
-		if ( sub->unused )
-		    sub->subtable_offset = -1;
-		else {
-		    sub->subtable_offset = ftell(lfile);
-		    switch ( otl->lookup_type ) {
-		    /* GPOS lookup types */
-		      case gpos_single:
-			dumpGPOSsimplepos(lfile,sf,sub);
-		      break;
-
-		      case gpos_pair:
-			if ( at->os2.maxContext<2 )
-			    at->os2.maxContext = 2;
-			if ( sub->kc!=NULL )
-			    dumpgposkernclass(lfile,sf,sub,at);
-			else
-			    dumpGPOSpairpos(lfile,sf,sub);
-		      break;
-
-		      case gpos_cursive:
-			dumpgposCursiveAttach(lfile,sf,sub,&at->gi);
-		      break;
-
-		      case gpos_mark2base:
-		      case gpos_mark2ligature:
-		      case gpos_mark2mark:
-			AnchorsAway(lfile,sf,sub,&at->gi);
-		      break;
-
-		      case gpos_contextchain:
-		      case gpos_context:
-			dumpg___ContextChain(lfile,sf,sub,at);
-		      break;
-
-		    /* GSUB lookup types */
-		      case gsub_single:
-			dumpGSUBsimplesubs(lfile,sf,sub);
-		      break;
-
-		      case gsub_multiple:
-		      case gsub_alternate:
-			dumpGSUBmultiplesubs(lfile,sf,sub);
-		      break;
-
-		      case gsub_ligature:
-			dumpGSUBligdata(lfile,sf,sub,at);
-		      break;
-
-		      case gsub_contextchain:
-		      case gsub_context:
-		      case gsub_reversecchain:
-			dumpg___ContextChain(lfile,sf,sub,at);
-		      break;
-		    }
-		    if ( ftell(lfile)-sub->subtable_offset==0 ) {
-			IError( "Lookup sub table, %s in %s, contains no data.\n",
-				sub->subtable_name, sub->lookup->lookup_name );
-			sub->unused = true;
-			sub->subtable_offset = -1;
-		    } else if ( sub->extra_subtables==NULL &&
-			    ftell(lfile)-sub->subtable_offset>65535 )
-			IError( "Lookup sub table, %s in %s, is too big. Will not be useable.\n",
-				sub->subtable_name, sub->lookup->lookup_name );
-		}
-	    }
-	    otl->lookup_length = ftell(lfile)-otl->lookup_offset;
+	    otf_dumpALookup(lfile, otl, sf, at );
 	}
     }
     if ( is_gpos )
@@ -4325,6 +4332,343 @@ return;
 	putc('\0',basef);
     if ( ftell(basef)&2 )
 	putshort(basef,0);
+}
+
+static int jscriptsort(const void *_s1,const void *_s2) {
+    const Justify * const * __s1 = (const Justify * const *) _s1;
+    const Justify * const * __s2 = (const Justify * const *) _s2;
+    const Justify *s1 = *__s1;
+    const Justify *s2 = *__s2;
+
+    if ( s1->script>s2->script )
+return( 1 );
+    else if ( s1->script<s2->script )
+return( -1 );
+    else
+return( 0 );
+}
+
+static int jlangsort(const void *_s1,const void *_s2) {
+    const struct jstf_lang * const * __s1 = (const struct jstf_lang * const *) _s1;
+    const struct jstf_lang * const * __s2 = (const struct jstf_lang * const *) _s2;
+    const struct jstf_lang *s1 = *__s1;
+    const struct jstf_lang *s2 = *__s2;
+
+    if ( s1->lang==s2->lang )
+return( 0 );
+
+    if ( s1->lang==DEFAULT_LANG )
+return( -1 );
+    if ( s2->lang==DEFAULT_LANG )
+return( 1 );
+
+    if ( s1->lang>s2->lang )
+return( 1 );
+    else
+return( -1 );
+}
+
+static int lookup_order(const void *_s1,const void *_s2) {
+    const OTLookup * const * __s1 = (const OTLookup * const *) _s1;
+    const OTLookup * const * __s2 = (const OTLookup * const *) _s2;
+    const OTLookup *s1 = *__s1;
+    const OTLookup *s2 = *__s2;
+
+    if ( s1->lookup_index>s2->lookup_index )
+return( 1 );
+    else if ( s1->lookup_index<s2->lookup_index )
+return( -1 );
+    else
+return( 0 );
+}
+
+static void SFJstfSort(SplineFont *sf) {
+    /* scripts must be ordered */
+    /* languages must be ordered within scripts */
+    /* lookup lists must be ordered */
+    Justify *jscript, **scripts;
+    int i,cnt,lmax;
+    struct jstf_lang **langs;
+
+    for ( cnt=0, jscript= sf->justify; jscript!=NULL; ++cnt, jscript=jscript->next );
+    if ( cnt>1 ) {
+	scripts = galloc(cnt*sizeof(Justify *));
+	for ( i=0, jscript= sf->justify; jscript!=NULL; ++i, jscript=jscript->next )
+	    scripts[i] = jscript;
+	qsort(scripts,cnt,sizeof(Justify *),jscriptsort);
+	for ( i=1; i<cnt; ++i )
+	    scripts[i-1]->next = scripts[i];
+	scripts[cnt-1]->next = NULL;
+	sf->justify = scripts[0];
+	free(scripts);
+    }
+
+    langs = NULL; lmax=0;
+    for ( jscript= sf->justify; jscript!=NULL; jscript=jscript->next ) {
+	struct jstf_lang *jlang;
+	for ( cnt=0, jlang=jscript->langs; jlang!=NULL; ++cnt, jlang=jlang->next );
+	if ( cnt>1 ) {
+	    if ( cnt>lmax )
+		langs = grealloc(langs,(lmax=cnt+10)*sizeof(struct jstf_lang *));
+	    for ( i=0, jlang=jscript->langs; jlang!=NULL; ++i, jlang=jlang->next )
+		langs[i] = jlang;
+	    qsort(langs,cnt,sizeof(Justify *),jlangsort);
+	    for ( i=1; i<cnt; ++i )
+		langs[i-1]->next = langs[i];
+	    langs[cnt-1]->next = NULL;
+	    jscript->langs = langs[0];
+	}
+    }
+    free(langs);
+
+    /* don't bother to sort the lookup lists yet. We need to separate them into*/
+    /* GPOS/GSUB first, might as well do it all at once later */
+}
+
+static void jstf_SplitTables(OTLookup **mixed,OTLookup ***_SUB,OTLookup ***_POS) {
+    /* (later is now, see comment above) */
+    /* mixed contains both gsub and gpos lookups. put them into their own */
+    /* lists, and then sort them */
+    int cnt, s, p;
+    OTLookup **SUB, **POS;
+
+    if ( mixed==NULL || mixed[0]==NULL ) {
+	*_SUB = NULL;
+	*_POS = NULL;
+return;
+    }
+
+    for ( cnt=0; mixed[cnt]!=NULL; ++cnt);
+    SUB = galloc((cnt+1)*sizeof(OTLookup *));
+    POS = galloc((cnt+1)*sizeof(OTLookup *));
+    for ( cnt=s=p=0; mixed[cnt]!=NULL; ++cnt) {
+	if ( mixed[cnt]->lookup_index==-1 )		/* Not actually used */
+    continue;
+	if ( mixed[cnt]->lookup_type>=gpos_start )
+	    POS[p++] = mixed[cnt];
+	else
+	    SUB[s++] = mixed[cnt];
+    }
+    POS[p] = SUB[s] = NULL;
+
+    if ( p>1 )
+	qsort(POS,p,sizeof(OTLookup *),lookup_order);
+    if ( s>1 )
+	qsort(SUB,s,sizeof(OTLookup *),lookup_order);
+    if ( p==0 ) {
+	free(POS);
+	POS=NULL;
+    }
+    if ( s==0 ) {
+	free(SUB);
+	SUB=NULL;
+    }
+    *_SUB = SUB;
+    *_POS = POS;
+}
+
+static uint32 jstf_dumplklist(FILE *jstf,OTLookup **PS,uint32 base) {
+    uint32 here;
+    int i;
+
+    if ( PS==NULL )
+return( 0 );
+
+    here = ftell(jstf);
+    for ( i=0; PS[i]!=NULL; ++i );
+    putshort(jstf,i);			/* Lookup cnt */
+    for ( i=0; PS[i]!=NULL; ++i )
+	putshort( jstf, PS[i]->lookup_index );
+    free(PS);
+return( here - base );
+}
+
+static uint32 jstf_dumpmaxlookups(FILE *jstf,SplineFont *sf,struct alltabs *at,
+	OTLookup **maxes,uint32 base) {
+    uint32 here, lbase;
+    int cnt,i;
+    int scnt, j;
+    struct lookup_subtable *sub;
+
+    if ( maxes==NULL )
+return( 0 );
+
+    for ( cnt=i=0; maxes[i]!=NULL; ++i )
+	if ( !maxes[i]->unused )
+	    ++cnt;
+    if ( cnt==0 )
+return( 0 );
+
+    here = ftell(jstf);
+
+    putshort( jstf,cnt );
+    for ( i=0; maxes[i]!=NULL; ++i ) if ( !maxes[i]->unused )
+	putshort( jstf,0 );
+    for ( cnt=i=0; maxes[i]!=NULL; ++i ) if ( !maxes[i]->unused ) {
+	lbase = ftell(jstf);
+	fseek(jstf,here+2+2*cnt,SEEK_SET);
+	putshort(jstf,lbase-here);
+	fseek(jstf,lbase,SEEK_SET);
+
+	putshort(jstf,maxes[i]->lookup_type - gpos_start );
+	putshort(jstf,maxes[i]->lookup_flags);
+
+	for ( scnt=0, sub=maxes[i]->subtables; sub!=NULL; sub=sub->next )
+	    if ( !sub->unused )
+		++scnt;
+	putshort( jstf,scnt );
+	for ( j=0; j<scnt; ++j )
+	    putshort( jstf,0 );
+
+	otf_dumpALookup(jstf, maxes[i], sf, at);
+	fseek(jstf,lbase+6,SEEK_SET);
+	for ( sub=maxes[i]->subtables; sub!=NULL; sub=sub->next )
+	    if ( !sub->unused )
+		putshort(jstf,sub->subtable_offset-lbase);
+	++cnt;
+    }
+
+return( here - base );
+}
+
+void otf_dumpjstf(struct alltabs *at, SplineFont *sf) {
+    FILE *jstf;
+    int i, cnt, lcnt, offset;
+    uint32 here, base;
+    Justify *jscript;
+    struct jstf_lang *jlang;
+
+    if ( sf->justify==NULL )
+return;
+
+    SFJstfSort(sf);
+    for ( jscript=sf->justify, cnt=0; jscript!=NULL; jscript=jscript->next, ++cnt );
+
+    at->jstf = jstf = tmpfile();
+
+    putlong(jstf,  0x00010000 );		/* Version 1 */
+    putshort(jstf, cnt );			/* script count */
+    for ( jscript=sf->justify; jscript!=NULL; jscript=jscript->next ) {
+	putlong(jstf, jscript->script);
+	putshort(jstf, 0);			/* Come back to this later */
+    }
+    for ( jscript=sf->justify, cnt=0; jscript!=NULL; jscript=jscript->next, ++cnt ) {
+	base = ftell(jstf);
+	if ( base>0xffff )
+	    ff_post_error(_("Failure"),_("Offset in JSTF table is too big. The resultant font will not work."));
+	fseek(jstf, 6+6*cnt+4,SEEK_SET);
+	putshort(jstf,base);
+	fseek(jstf, base, SEEK_SET);
+
+	putshort(jstf,0);		/* extender glyphs */
+	putshort(jstf,0);		/* default lang */
+	for ( jlang=jscript->langs, lcnt=0; jlang!=NULL; jlang=jlang->next, ++lcnt );
+	if ( lcnt>0 && jscript->langs->lang==DEFAULT_LANG )
+	    --lcnt;
+	putshort(jstf,lcnt);		/* count of non-default languages */
+	jlang = jscript->langs;
+	if ( jlang!=NULL && jlang->lang==DEFAULT_LANG )
+	    jlang=jlang->next;
+	for ( ; jlang!=NULL; jlang=jlang->next ) {
+	    putlong(jstf, jlang->lang);
+	    putshort(jstf, 0);			/* Come back to this later */
+	}
+
+	if ( jscript->extenders!=NULL ) {
+	    SplineChar **glyphs;
+	    int gcnt,g;
+
+	    here = ftell(jstf);
+	    fseek(jstf,base,SEEK_SET);
+	    putshort(jstf,here-base);
+	    fseek(jstf,here,SEEK_SET);
+
+	    glyphs = OrderedGlyphsFromNames(sf,jscript->extenders);
+	    if ( glyphs==NULL )
+		gcnt=0;
+	    else
+		for ( gcnt=0; glyphs[gcnt]!=NULL; ++gcnt);
+	    putshort(jstf,gcnt);
+	    for ( g=0; g<gcnt; ++g )
+		putshort(jstf,glyphs[g]->ttf_glyph);
+	    free(glyphs);
+	}
+
+	offset=0;
+	for ( jlang=jscript->langs, lcnt=0; jlang!=NULL; jlang=jlang->next, ++lcnt ) {
+	    here = ftell(jstf);
+	    if ( jlang->lang==DEFAULT_LANG ) {
+		fseek(jstf,base+2,SEEK_SET);
+		offset = -6;
+	    } else
+		fseek(jstf,base+offset+10+lcnt*6,SEEK_SET);
+	    putshort(jstf,here-base);
+	    fseek(jstf,here,SEEK_SET);
+
+	    putshort(jstf,jlang->cnt);
+	    for ( i=0; i<jlang->cnt; ++i )
+		putshort(jstf,0);
+	    for ( i=0; i<jlang->cnt; ++i ) {
+		OTLookup **enSUB, **enPOS, **disSUB, **disPOS;
+		uint32 enSUBoff, enPOSoff, disSUBoff, disPOSoff, maxOff;
+		uint32 pbase;
+		pbase = ftell(jstf);
+		fseek(jstf,here+2+i*2,SEEK_SET);
+		putshort(jstf,pbase-here);
+		fseek(jstf,pbase,SEEK_SET);
+
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+		putshort(jstf,0);
+
+		jstf_SplitTables(jlang->prios[i].enableShrink,&enSUB,&enPOS);
+		jstf_SplitTables(jlang->prios[i].disableShrink,&disSUB,&disPOS);
+		enSUBoff = jstf_dumplklist(jstf,enSUB,  pbase);
+		disSUBoff = jstf_dumplklist(jstf,disSUB,pbase);
+		enPOSoff = jstf_dumplklist(jstf,enPOS,  pbase);
+		disPOSoff = jstf_dumplklist(jstf,disPOS,pbase);
+		maxOff = jstf_dumpmaxlookups(jstf,sf,at,jlang->prios[i].maxShrink,pbase);
+
+		fseek(jstf,pbase,SEEK_SET);
+		putshort(jstf,enSUBoff);
+		putshort(jstf,disSUBoff);
+		putshort(jstf,enPOSoff);
+		putshort(jstf,disPOSoff);
+		putshort(jstf,maxOff);
+
+		fseek(jstf,0,SEEK_END);
+		jstf_SplitTables(jlang->prios[i].enableExtend,&enSUB,&enPOS);
+		jstf_SplitTables(jlang->prios[i].disableExtend,&disSUB,&disPOS);
+		enSUBoff = jstf_dumplklist(jstf,enSUB,  pbase);
+		disSUBoff = jstf_dumplklist(jstf,disSUB,pbase);
+		enPOSoff = jstf_dumplklist(jstf,enPOS,  pbase);
+		disPOSoff = jstf_dumplklist(jstf,disPOS,pbase);
+		maxOff = jstf_dumpmaxlookups(jstf,sf,at,jlang->prios[i].maxExtend,pbase);
+
+		fseek(jstf,pbase+10,SEEK_SET);
+		putshort(jstf,enSUBoff);
+		putshort(jstf,disSUBoff);
+		putshort(jstf,enPOSoff);
+		putshort(jstf,disPOSoff);
+		putshort(jstf,maxOff);
+		fseek(jstf,0,SEEK_END);
+	    }
+	}
+    }
+
+    fseek(jstf,0,SEEK_END);
+    at->jstflen = ftell(jstf);
+    if ( ftell(jstf)&1 )
+	putc('\0',jstf);
+    if ( ftell(jstf)&2 )
+	putshort(jstf,0);
 }
 
 void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf) {
