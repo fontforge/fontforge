@@ -205,6 +205,7 @@ static int seqlookuplen(struct fpst_rule *r) {
     int i, len=0;
     char buf[20];
 
+    ++len;
     for ( i=0; i<r->lookup_cnt; ++i ) {
 	sprintf( buf," %d \"\",", r->lookups[i].seq );
 	len += strlen(buf) + utf8_strlen( r->lookups[i].lookup->lookup_name );
@@ -2571,7 +2572,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 		CCD_WIDTH-20,i==0 ? CCD_HEIGHT-250 : CCD_HEIGHT-150);
 
 	if ( i==0 ) {
-	    if ( ccd->fpst->format!=pst_reversecoverage )
+	    if ( ccd->fpst->type!=pst_reversesub )
 		CCD_AddSeqLookup(&cgcd[i][k],&clabel[i][k],100,cgcd[0][k-1].gd.pos.y+40,
 			CCD_WIDTH-20,4*13+10);
 	    else {

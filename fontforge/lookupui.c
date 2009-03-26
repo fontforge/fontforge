@@ -4194,6 +4194,8 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 		lookup_type == gsub_reversecchain ? pst_reversesub :
 		lookup_type == gpos_context ? pst_contextpos :
 		 pst_chainpos;
+	if ( lookup_type == gsub_reversecchain )
+	    sub->fpst->format = pst_reversecoverage;
 	sub->fpst->subtable = sub;
 	sub->fpst->next = sf->possub;
 	sf->possub = sub->fpst;
