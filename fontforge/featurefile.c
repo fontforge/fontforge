@@ -4503,6 +4503,8 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
     fpst->rules = r = gcalloc(1,sizeof(struct fpst_rule));
     if ( is_ignore )
 	mmax = 0;
+    if ( !is_pos && lookup_cnt==0 && mmax>1 )
+	mmax = 1;
     r->lookup_cnt = mmax;
     r->lookups = gcalloc(mmax,sizeof(struct seqlookup));
     for ( i=0; i<mmax; ++i )
