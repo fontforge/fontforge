@@ -264,6 +264,7 @@ extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
+extern void BCCopyReference(BDFChar *bc,int pixelsize,int depth);
 extern void PasteToBC(BDFChar *bc,int pixelsize,int depth);
 extern void FVCopyWidth(FontViewBase *fv,enum undotype ut);
 extern void FVCopyAnchors(FontViewBase *fv);
@@ -430,12 +431,15 @@ extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv );
 extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff);
 extern void skewselect(BVTFunc *bvtf,real t);
-extern void BCExpandBitmapToEmBox(BDFChar *bc, int xmin, int ymin, int xmax, int ymax);
 
 extern BDFFloat *BDFFloatCreate(BDFChar *bc,int xmin,int xmax,int ymin,int ymax, int clear);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
 extern BDFFloat *BDFFloatConvert(BDFFloat *sel,int newdepth, int olddepth);
 extern void BDFFloatFree(BDFFloat *sel);
+
+extern void BCMergeReferences(BDFChar *base,BDFChar *cur,int8 xoff,int8 yoff);
+extern BDFChar *BDFGetMergedChar(BDFChar *bc) ;
+extern void BCUnlinkThisReference(struct fontviewbase *fv,BDFChar *bc);
 
 extern int CVLayer(CharViewBase *cv);
 extern Undoes *CVPreserveStateHints(CharViewBase *cv);

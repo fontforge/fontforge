@@ -2772,6 +2772,8 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     if ( file==NULL )
 	LogError( _("Can't open %s\n"), filename );
     else {
+    	for ( i=0; i<font->glyphcnt; i++ ) if ( font->glyphs[i] != NULL )
+    	    BCPrepareForOutput( font->glyphs[i],true );
 	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map,NULL,ly_fore);
 
 	cnt = 0;
@@ -2800,6 +2802,8 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
 	ret = ferror(file)==0;
 	if ( fclose(file)!=0 )
 	    ret = false;
+    	for ( i=0; i<font->glyphcnt; i++ ) if ( font->glyphs[i] != NULL )
+    	    BCRestoreAfterOutput( font->glyphs[i] );
     }
 return( ret );
 }

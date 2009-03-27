@@ -2756,7 +2756,7 @@ return;
 		if ( achar==NULL )
 		    achar = sc_sc;
 		if ( SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
-		    SCBuildComposit(sf,sc_sc,fv->active_layer,true);
+		    SCBuildComposit(sf,sc_sc,fv->active_layer,NULL,true);
 		if ( sc_sc->layers[fv->active_layer].refs==NULL ) {
 		    RefChar *rlast = NULL;
 		    for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
@@ -2986,7 +2986,7 @@ return;
 	    /*  than I'm going to do here... */
 	    if ( sc->layers[fv->active_layer].splines==NULL &&
 		    SFGetAlternate(sf,sc->unicodeenc,sc,false)!=NULL ) 
-		SCBuildComposit(sf,sc_sc,fv->active_layer,true);
+		SCBuildComposit(sf,sc_sc,fv->active_layer,NULL,true);
 	    if ( sc_sc->layers[fv->active_layer].refs==NULL ) {
 		RefChar *rlast = NULL;
 		for ( ref=sc->layers[fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
@@ -6894,7 +6894,7 @@ static void SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
     if ( sc->layers[layer].refs!=NULL &&
 			((alts = SFGetAlternate(sc->parent,sc->unicodeenc,sc,true))!=NULL &&
 			 alts[1]!=0 ))
-	SCBuildComposit(sc->parent,sc,layer,true);
+	SCBuildComposit(sc->parent,sc,layer,NULL,true);
     else {
 	SCPreserveLayer(sc,layer,true);
 	_SCChangeXHeight(sc,layer,xi);

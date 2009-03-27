@@ -952,12 +952,21 @@ return( BDFMakeGID(bdf,map->map[enc]));
 }
 
 void BCClearAll(BDFChar *bc) {
+    BDFRefChar *head,*cur;
+    
     if ( bc==NULL )
 return;
+    for ( head = bc->refs; head != NULL; ) {
+	cur = head; head = head->next; free( cur );
+    }
+    bc->refs = NULL;
+    
     BCPreserveState(bc);
     BCFlattenFloat(bc);
     memset(bc->bitmap,'\0',bc->bytes_per_line*(bc->ymax-bc->ymin+1));
     BCCompressBitmap(bc);
+    bc->xmin = 0; bc->xmax = 0;
+    bc->ymin = 0; bc->ymax = 0;
     BCCharChangedUpdate(bc);
 }
 

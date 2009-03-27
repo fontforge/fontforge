@@ -222,6 +222,87 @@ return;
     }
 }
 
+static int BDFRefCharsMatch(BDFRefChar *urefs,BDFRefChar *crefs) {
+    /* I assume they are in the same order */
+    while ( urefs!=NULL && crefs!=NULL ) {
+	if ( urefs->bdfc != crefs->bdfc ||
+		urefs->xoff != crefs->xoff ||
+		urefs->yoff != crefs->yoff )
+return( false );
+	urefs = urefs->next;
+	crefs = crefs->next;
+    }
+    if ( urefs==NULL && crefs==NULL )
+return( true );
+
+return( false );
+}
+
+static BDFRefChar *BDFRefCharInList( BDFRefChar *search,BDFRefChar *list ) {
+    while ( list!=NULL ) {
+	if ( search->bdfc == list->bdfc &&
+		search->xoff == list->xoff &&
+		search->yoff == list->yoff )
+return( list );
+	list = list->next;
+    }
+return( NULL );
+}
+
+static void FixupBDFRefChars( BDFChar *bc,BDFRefChar *urefs ) {
+    BDFRefChar *crefs, *cend, *cprev, *unext, *cnext;
+
+    crefs = bc->refs;
+    cprev = NULL;
+    while ( crefs!=NULL && urefs!=NULL ) {
+	if ( urefs->bdfc == crefs->bdfc &&
+		urefs->xoff == crefs->xoff &&
+		urefs->yoff == crefs->yoff ) {
+	    unext = urefs->next;
+	    crefs->selected = urefs->selected;
+	    free( urefs );
+	    urefs = unext;
+	    cprev = crefs;
+	    crefs = crefs->next;
+	} else if (( cend = BDFRefCharInList( urefs,crefs->next )) != NULL ) {
+	    /* if the undo refchar matches something further down the char's */
+	    /*  ref list, then that means we need to delete everything on the */
+	    /*  char's list between the two */
+	    while ( crefs != cend ) {
+		cnext = crefs->next;
+		BCRemoveDependent( bc,crefs );
+		crefs = cnext;
+	    }
+	} else { /* urefs isn't on the list. Add it here */
+	    unext = urefs->next;
+	    urefs->next = crefs;
+	    if ( cprev==NULL )
+		bc->refs = urefs;
+	    else
+		cprev->next = urefs;
+	    cprev = urefs;
+	    BCMakeDependent( bc,urefs->bdfc );
+	    urefs = unext;
+	}
+    }
+    if ( crefs!=NULL ) {
+	while ( crefs!=NULL ) {
+	    cnext = crefs->next;
+	    BCRemoveDependent( bc,crefs );
+	    crefs = cnext;
+	}
+    } else if ( urefs!=NULL ) {
+	if ( cprev==NULL )
+	    bc->refs = urefs;
+	else
+	    cprev->next = urefs;
+	while ( urefs!=NULL ) {
+	    BCMakeDependent( bc,urefs->bdfc );
+	    urefs = urefs->next;
+	}
+    }
+}
+
 static void FixupImages(SplineChar *sc,ImageList *uimgs,int layer) {
     ImageList *cimgs = layer==-1 ? sc->parent->grid.images : sc->layers[layer].images,
 	    *cend, *cprev, *unext, *cnext;
@@ -377,6 +458,7 @@ static void ExtractHints(SplineChar *sc,void *hints,int docopy) {
 
 void UndoesFree(Undoes *undo) {
     Undoes *unext;
+    BDFRefChar *head, *next;
 
     while ( undo!=NULL ) {
 	unext = undo->next;
@@ -406,6 +488,9 @@ void UndoesFree(Undoes *undo) {
 #endif
 	  break;
 	  case ut_bitmap:
+	    for ( head=undo->u.bmpstate.refs; head != NULL; ) {
+		next = head->next; free( head ); head = next;
+	    }
 	    free(undo->u.bmpstate.bitmap);
 	    BDFFloatFree(undo->u.bmpstate.selection);
 	  break;
@@ -701,8 +786,9 @@ return(NULL);
 return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
 
-Undoes *BCPreserveState(BDFChar *bc) {
+Undoes *BCPreserveState( BDFChar *bc ) {
     Undoes *undo;
+    BDFRefChar *head, *ref, *prev = NULL;
 
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
@@ -719,6 +805,15 @@ return(NULL);
     undo->u.bmpstate.bitmap = bmpcopy(bc->bitmap,bc->bytes_per_line,
 	    bc->ymax-bc->ymin+1);
     undo->u.bmpstate.selection = BDFFloatCopy(bc->selection);
+    for ( head=bc->refs; head!=NULL; head=head->next ) {
+	ref = gcalloc( 1,sizeof( BDFRefChar ));
+	memcpy( ref,head,sizeof( BDFRefChar ));
+	if ( prev == NULL )
+	    undo->u.bmpstate.refs = ref;
+	else
+	    prev->next = ref;
+	prev = ref;
+    }
 return( AddUndo(undo,&bc->undoes,&bc->redoes));
 }
 
@@ -937,12 +1032,13 @@ void CVRemoveTopUndo(CharViewBase *cv) {
 }
 
 static void BCUndoAct(BDFChar *bc,Undoes *undo) {
+    uint8 *b;
+    int temp;
+    BDFFloat *sel;
+    BDFRefChar *ref, *head, *prev = NULL, *uhead = NULL;
 
     switch ( undo->undotype ) {
       case ut_bitmap: {
-	uint8 *b;
-	int temp;
-	BDFFloat *sel;
 	temp = bc->width; bc->width = undo->u.bmpstate.width; undo->u.bmpstate.width = temp;
 	temp = bc->xmin; bc->xmin = undo->u.bmpstate.xmin; undo->u.bmpstate.xmin = temp;
 	temp = bc->xmax; bc->xmax = undo->u.bmpstate.xmax; undo->u.bmpstate.xmax = temp;
@@ -951,6 +1047,20 @@ static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 	temp = bc->bytes_per_line; bc->bytes_per_line = undo->u.bmpstate.bytes_per_line; undo->u.bmpstate.bytes_per_line = temp;
 	b = bc->bitmap; bc->bitmap = undo->u.bmpstate.bitmap; undo->u.bmpstate.bitmap = b;
 	sel = bc->selection; bc->selection = undo->u.bmpstate.selection; undo->u.bmpstate.selection = sel;
+
+	if ( !BDFRefCharsMatch( undo->u.bmpstate.refs,bc->refs )) {
+	    for ( head=bc->refs; head!=NULL; head=head->next ) {
+		ref = gcalloc( 1,sizeof( BDFRefChar ));
+		memcpy( ref,head,sizeof( BDFRefChar ));
+		if ( prev != NULL )
+		    prev->next = ref;
+		else
+		    uhead = ref;
+		prev = ref;
+	    }
+	    FixupBDFRefChars( bc,undo->u.bmpstate.refs );
+	    undo->u.bmpstate.refs = uhead;
+	}
       } break;
       default:
 	IError( "Unknown undo type in BCUndoAct: %d", undo->undotype );
@@ -991,6 +1101,7 @@ return;
 static Undoes copybuffer;
 
 void CopyBufferFree(void) {
+    BDFRefChar *brhead, *brnext;
 
     switch( copybuffer.undotype ) {
       case ut_hints:
@@ -1013,6 +1124,14 @@ void CopyBufferFree(void) {
       break;
       case ut_bitmapsel:
 	BDFFloatFree(copybuffer.u.bmpstate.selection);
+      break;
+      case ut_bitmap:
+	for ( brhead=copybuffer.u.bmpstate.refs; brhead!=NULL; brhead = brnext ) {
+	    brnext = brhead->next;
+	    free( brhead );
+	}
+	if ( copybuffer.u.bmpstate.bitmap != NULL )
+	    free( copybuffer.u.bmpstate.bitmap );
       break;
       case ut_multiple: case ut_layers:
 	UndoesFree( copybuffer.u.multiple.mult );
@@ -1403,7 +1522,7 @@ int CopyContainsBitmap(void) {
     if ( cur->undotype==ut_composit )
 return( cur->u.composit.bitmaps!=NULL );
 
-return( cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
+return( cur->undotype==ut_bitmap || cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
 }
 
 RefChar *CopyContainsRef(SplineFont *sf) {
@@ -1742,6 +1861,18 @@ int SCDependsOnSC(SplineChar *parent, SplineChar *child) {
 return( true );
     for ( ref=parent->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( SCDependsOnSC(ref->sc,child))
+return( true );
+    }
+return( false );
+}
+
+static int BCRefersToBC( BDFChar *parent, BDFChar *child ) {
+    BDFRefChar *head;
+    
+    if ( parent==child )
+return( true );
+    for ( head=child->refs; head!=NULL; head=head->next ) {
+	if ( BCRefersToBC( parent,head->bdfc ))
 return( true );
     }
 return( false );
@@ -2920,47 +3051,96 @@ return( NULL );
 return( NULL );
 }
 
-void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
-
-    CopyBufferFreeGrab();
-
-    memset(&copybuffer,'\0',sizeof(copybuffer));
-    copybuffer.undotype = ut_bitmapsel;
-    if ( bc->selection!=NULL )
-	copybuffer.u.bmpstate.selection = BDFFloatCopy(bc->selection);
-    else
-	copybuffer.u.bmpstate.selection = BDFFloatCreate(bc,bc->xmin,bc->xmax,
-		bc->ymin,bc->ymax, false);
-    copybuffer.u.bmpstate.pixelsize = pixelsize;
-    copybuffer.u.bmpstate.depth = depth;
-}
-
-static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
+static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth, enum fvcopy_type full) {
     Undoes *cur;
+    BDFRefChar *ref, *head;
 
     cur = chunkalloc(sizeof(Undoes));
+    memset(&cur->u.bmpstate,'\0',sizeof( BDFChar ));
     if ( bc==NULL )
 	cur->undotype = ut_noop;
     else {
 	BCCompressBitmap(bc);
 	cur->undotype = ut_bitmap;
 	cur->u.bmpstate.width = bc->width;
-	cur->u.bmpstate.xmin = bc->xmin;
-	cur->u.bmpstate.xmax = bc->xmax;
-	cur->u.bmpstate.ymin = bc->ymin;
-	cur->u.bmpstate.ymax = bc->ymax;
-	cur->u.bmpstate.bytes_per_line = bc->bytes_per_line;
-	cur->u.bmpstate.bitmap = bmpcopy(bc->bitmap,bc->bytes_per_line,
+	if ( full==ct_fullcopy || full == ct_unlinkrefs ) {
+	    cur->u.bmpstate.xmin = bc->xmin;
+	    cur->u.bmpstate.xmax = bc->xmax;
+	    cur->u.bmpstate.ymin = bc->ymin;
+	    cur->u.bmpstate.ymax = bc->ymax;
+	    cur->u.bmpstate.bytes_per_line = bc->bytes_per_line;
+	    cur->u.bmpstate.bitmap = bmpcopy(bc->bitmap,bc->bytes_per_line,
 		bc->ymax-bc->ymin+1);
-	cur->u.bmpstate.selection = BDFFloatCopy(bc->selection);
+	    cur->u.bmpstate.selection = BDFFloatCopy(bc->selection);
+	    
+	    for ( head = bc->refs; head != NULL; head = head->next ) {
+		ref = gcalloc( 1,sizeof( BDFRefChar ));
+		memcpy( ref,head,sizeof( BDFRefChar ));
+		ref->next = cur->u.bmpstate.refs;
+		cur->u.bmpstate.refs = ref;
+	    }
+	} else {		/* Or just make a reference */
+	    cur->u.bmpstate.bytes_per_line = 1;
+	    cur->u.bmpstate.bitmap = gcalloc(1,sizeof(uint8));
+
+	    ref = gcalloc(1,sizeof(BDFRefChar));
+	    ref->bdfc = bc;
+	    ref->xoff = 0; ref->yoff = 0;
+	    cur->u.bmpstate.refs = ref;
+	}
     }
     cur->u.bmpstate.pixelsize = pixelsize;
     cur->u.bmpstate.depth = depth;
 return( cur );
 }
 
+void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
+    int has_selected_refs = false;
+    BDFRefChar *head, *ref;
+
+    CopyBufferFreeGrab();
+
+    memset(&copybuffer,'\0',sizeof(copybuffer));
+    if ( bc->selection!=NULL ) {
+	copybuffer.undotype = ut_bitmapsel;
+	copybuffer.u.bmpstate.selection = BDFFloatCopy(bc->selection);
+    } else {
+	for ( head=bc->refs; head!=NULL; head=head->next ) if ( head->selected ) {
+	    has_selected_refs = true;
+	    ref = gcalloc( 1,sizeof( BDFRefChar ));
+	    memcpy( ref,head,sizeof( BDFRefChar ));
+	    ref->next = copybuffer.u.bmpstate.refs;
+	    copybuffer.u.bmpstate.refs = ref;
+	}
+	if ( has_selected_refs ) {
+	    copybuffer.undotype = ut_bitmap;
+	    copybuffer.u.bmpstate.width = bc->width;
+	    copybuffer.u.bmpstate.bytes_per_line = 1;
+	    copybuffer.u.bmpstate.bitmap = gcalloc(1,sizeof(uint8));
+	    copybuffer.u.bmpstate.selection = NULL;
+	} else {
+	    copybuffer.undotype = ut_bitmapsel;
+	    copybuffer.u.bmpstate.selection = BDFFloatCreate(bc,bc->xmin,bc->xmax,
+		bc->ymin,bc->ymax, false);
+	}
+    }
+    copybuffer.u.bmpstate.pixelsize = pixelsize;
+    copybuffer.u.bmpstate.depth = depth;
+}
+
+void BCCopyReference(BDFChar *bc,int pixelsize,int depth) {
+    Undoes *tmp;
+
+    CopyBufferFreeGrab();
+    tmp = BCCopyAll( bc,pixelsize,depth,ct_reference );
+
+    memcpy( &copybuffer,tmp,sizeof( Undoes ));
+    chunkfree( tmp,sizeof( Undoes ));
+    XClipCheckEps();
+}
+
 static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int clearfirst) {
-    BDFFloat temp;
+    BDFRefChar *head, *cur;
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -2976,16 +3156,28 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
       case ut_bitmap:
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
-	memset(bc->bitmap,0,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	temp.xmin = paster->u.bmpstate.xmin; temp.xmax = paster->u.bmpstate.xmax;
-	temp.ymin = paster->u.bmpstate.ymin; temp.ymax = paster->u.bmpstate.ymax;
-	temp.bytes_per_line = paster->u.bmpstate.bytes_per_line; temp.byte_data = depth!=1;
-	temp.bitmap = paster->u.bmpstate.bitmap;
-	bc->selection = BDFFloatConvert(&temp,depth,paster->u.bmpstate.depth);
-	BCFlattenFloat(bc);
+	if ( clearfirst ) {
+	    for ( head = bc->refs; head != NULL; ) {
+		cur = head; head = head->next; free( cur );
+	    }
+	    bc->refs = NULL;
+	    memset(bc->bitmap,0,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	    bc->width = paster->u.bmpstate.width;
+	}
+	BCPasteInto(bc,&paster->u.bmpstate,0,0, false, false);
+	for ( head = paster->u.bmpstate.refs; head != NULL; head = head->next ) {
+	    if ( BCRefersToBC( bc,head->bdfc )) {
+		ff_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
+	    } else {
+		cur = gcalloc( 1,sizeof( BDFRefChar ));
+		memcpy( cur,head,sizeof( BDFRefChar ));
+		cur->next = bc->refs; bc->refs = cur;
+		BCMakeDependent( bc,head->bdfc );
+	    }
+	}
+
 	BCCompressBitmap(bc);
 	bc->selection = BDFFloatConvert(paster->u.bmpstate.selection,depth,paster->u.bmpstate.depth);
-	bc->width = paster->u.bmpstate.width;
 	BCCharChangedUpdate(bc);
       break;
       case ut_composit:
@@ -3001,9 +3193,9 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
 	    Undoes *b;
 	    for ( b = paster->u.composit.bitmaps;
 		    b!=NULL && b->u.bmpstate.pixelsize!=pixelsize;
-		    b = b->next );
+		    b = b->next ) ;
 	    if ( b!=NULL )
-		_PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst);
+		_PasteToBC(bc,pixelsize,depth,b,clearfirst);
 	}
       break;
       case ut_multiple:
@@ -3109,13 +3301,13 @@ void FVCopy(FontViewBase *fv, enum fvcopy_type fullcopy) {
 	if (( onlycopydisplayed && fv->active_bitmap==NULL ) || fullcopy==ct_lookups ) {
 	    cur = SCCopyAll(sc,fv->active_layer,fullcopy);
 	} else if ( onlycopydisplayed ) {
-	    cur = BCCopyAll(gid==-1?NULL:fv->active_bitmap->glyphs[gid],fv->active_bitmap->pixelsize,BDFDepth(fv->active_bitmap));
+	    cur = BCCopyAll(gid==-1?NULL:fv->active_bitmap->glyphs[gid],fv->active_bitmap->pixelsize,BDFDepth(fv->active_bitmap),fullcopy);
 	} else {
 	    state = SCCopyAll(sc,fv->active_layer,fullcopy);
 	    bhead = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 		BDFChar *bdfc = gid==-1 || gid>=bdf->glyphcnt? NULL : bdf->glyphs[gid];
-		bcur = BCCopyAll(bdfc,bdf->pixelsize,BDFDepth(bdf));
+		bcur = BCCopyAll(bdfc,bdf->pixelsize,BDFDepth(bdf),fullcopy);
 		if ( bhead==NULL )
 		    bhead = bcur;
 		else
@@ -3162,12 +3354,12 @@ void MVCopyChar(FontViewBase *fv, BDFFont *mvbdf, SplineChar *sc, enum fvcopy_ty
     if (( onlycopydisplayed && mvbdf==NULL ) || fullcopy == ct_lookups ) {
 	cur = SCCopyAll(sc,fv->active_layer,fullcopy);
     } else if ( onlycopydisplayed ) {
-	cur = BCCopyAll(BDFMakeGID(mvbdf,sc->orig_pos),mvbdf->pixelsize,BDFDepth(mvbdf));
+	cur = BCCopyAll(BDFMakeGID(mvbdf,sc->orig_pos),mvbdf->pixelsize,BDFDepth(mvbdf),fullcopy);
     } else {
 	state = SCCopyAll(sc,fv->active_layer,fullcopy);
 	bhead = NULL;
 	for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	    bcur = BCCopyAll(BDFMakeGID(bdf,sc->orig_pos),bdf->pixelsize,BDFDepth(bdf));
+	    bcur = BCCopyAll(BDFMakeGID(bdf,sc->orig_pos),bdf->pixelsize,BDFDepth(bdf),fullcopy);
 	    if ( bhead==NULL )
 		bhead = bcur;
 	    else

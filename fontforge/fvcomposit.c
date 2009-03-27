@@ -116,6 +116,8 @@ static const unichar_t accents[][4] = {
     { 0xffff }
 };
 
+static int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit);
+
 int CanonicalCombiner(int uni) {
     /* Translate spacing accents to combiners */
     int j,k;
@@ -1224,7 +1226,7 @@ int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc,int layer
     int invert = false;
 
     if ( unicodeenc==0x131 || unicodeenc==0x0237 || unicodeenc==0xf6be )
-return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,false,false));
+return( SCMakeDotless(sf,SFGetOrMakeChar(sf,unicodeenc,NULL),layer,NULL,false,false));
 
     if ( sc!=NULL && (dot = strchr(sc->name,'.'))!=NULL ) {
 	/* agrave.sc should be built from a.sc and grave or grave.sc */
@@ -1341,7 +1343,7 @@ return( !onlyaccents );
     if ( SFIsCompositBuildable(sf,unicodeenc,sc,layer))
 return( !onlyaccents || hascomposing(sf,sc->unicodeenc,sc) );
 
-    if ( !onlyaccents && SCMakeDotless(sf,sc,layer,false,false))
+    if ( !onlyaccents && SCMakeDotless(sf,sc,layer,NULL,false,false))
 return( true );
 
 return( SFIsRotatable(sf,sc,layer));
@@ -1627,27 +1629,6 @@ void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff) {
     _SCAddRef(sc,rsc,layer,transform);
 }
 
-static void BCClearAndCopy(BDFFont *bdf,int togid,int fromgid) {
-    BDFChar *bc, *rbc;
-
-    bc = BDFMakeGID(bdf,togid);
-    BCPreserveState(bc);
-    BCFlattenFloat(bc);
-    BCCompressBitmap(bc);
-    if ( bdf->glyphs[fromgid]!=NULL ) {
-	rbc = bdf->glyphs[fromgid];
-	free(bc->bitmap);
-	bc->xmin = rbc->xmin;
-	bc->xmax = rbc->xmax;
-	bc->ymin = rbc->ymin;
-	bc->ymax = rbc->ymax;
-	bc->bytes_per_line = rbc->bytes_per_line;
-	bc->width = rbc->width;
-	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-	memcpy(bc->bitmap,rbc->bitmap,bc->bytes_per_line*(bc->ymax-bc->ymin+1));
-    }
-}
-
 static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
     BDFChar *bc, *rbc;
 
@@ -1670,6 +1651,16 @@ static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
     }
 }
 
+static void BCAddReference( BDFChar *bc,BDFChar *rbc,int gid,int xoff,int yoff ) {
+    BDFRefChar *bcref;
+
+    bcref = gcalloc( 1,sizeof( BDFRefChar ));
+    bcref->bdfc = rbc; bcref->gid = gid;
+    bcref->xoff = xoff; bcref->yoff = yoff;
+    bcref->next = bc->refs; bc->refs = bcref;
+    BCMakeDependent( bc,rbc );
+}
+
 static int BCFindGap(BDFChar *bc) {
     int i,y;
 
@@ -1685,9 +1676,9 @@ return( y );
 return( bc->ymax );
 }
 
-static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int layer,int ch, int copybmp) {
+static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int layer,int ch, BDFFont *bdf,int disp_only) {
     SplineChar *rsc;
-    BDFFont *bdf;
+    BDFChar *bc;
     char *dot;
     char buffer[200], namebuf[200];
 
@@ -1724,14 +1715,32 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int layer,int ch, i
     }
     if ( rsc==NULL )
 return( 0 );
-    sc->width = rsc->width;
-    if ( copybmp ) {
+    if ( bdf == NULL || !disp_only ) {
+	sc->width = rsc->width;
+	if ( ch!=' ' )			/* Some accents are built by combining with space. Don't. The reference won't be displayed or selectable but will be there and might cause confusion... */
+	    SCAddRef(sc,rsc,layer,0,0);	/* should be after the call to MakeChar */
+    }
+    if ( !disp_only ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    BCClearAndCopy(bdf,sc->orig_pos,rsc->orig_pos);
+	    if ( bdf->glyphs[rsc->orig_pos] != NULL ) {
+		if (( bc = bdf->glyphs[sc->orig_pos] ) == NULL ) {
+		    bc = BDFMakeGID(bdf,sc->orig_pos);
+		    BCClearAll( bc );
+		}
+		if ( ch!=' ' )
+		    BCAddReference( bc,bdf->glyphs[rsc->orig_pos],rsc->orig_pos,0,0 );
+	    }
+	}
+    } else if ( bdf != NULL ) {
+	if ( bdf->glyphs[rsc->orig_pos] != NULL ) {
+	    if (( bc = bdf->glyphs[sc->orig_pos] ) == NULL ) {
+		bc = BDFMakeGID(bdf,sc->orig_pos);
+		BCClearAll( bc );
+	    }
+	    if ( ch!=' ' )
+		BCAddReference( bc,bdf->glyphs[rsc->orig_pos],rsc->orig_pos,0,0 );
 	}
     }
-    if ( ch!=' ' )		/* Some accents are built by combining with space. Don't. The reference won't be displayed or selectable but will be there and might cause confusion... */
-	SCAddRef(sc,rsc,layer,0,0);	/* should be after the call to MakeChar */
 return( 1 );
 }
 
@@ -1948,16 +1957,62 @@ return( ap1->anchor );
 return( NULL );
 }
 
+static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech, int italicoff, int pos, real em ) {
+    BDFChar *bc, *rbc;
+    int ixoff, iyoff, ispacing;
+    IBounds ibb, irb;
+    
+    if (( rbc = bdf->glyphs[rgid] ) != NULL && ( bc = bdf->glyphs[gid] ) != NULL ) {
+	if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
+	BCFlattenFloat(rbc);
+	BCCompressBitmap(rbc);
+	BDFCharQuickBounds( bc,&ibb,0,0,false,true );
+	BDFCharQuickBounds( rbc,&irb,0,0,false,true );
+
+	if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
+	    iyoff = ibb.maxy - irb.maxy;
+	else if ( pos&____ABOVE )
+	    iyoff = ibb.maxy + ispacing - irb.miny;
+	else if ( pos&____BELOW ) {
+	    iyoff = ibb.miny - irb.maxy;
+	    if ( !( pos&____TOUCHING) )
+		iyoff -= ispacing;
+	} else if ( pos&____OVERSTRIKE )
+	    iyoff = ibb.miny - irb.miny + ((ibb.maxy-ibb.miny)-(irb.maxy-irb.miny))/2;
+	else
+	    iyoff = ibb.miny - irb.miny;
+	if ( isupper(basech) && ch==0x342)
+	    ixoff = ibb.minx - irb.minx;
+	else if ( pos&____LEFT )
+	    ixoff = ibb.minx - ispacing - irb.maxx;
+	else if ( pos&____RIGHT ) {
+	    ixoff = ibb.maxx - irb.minx + ispacing/2;
+	    if ( !( pos&____TOUCHING) )
+		ixoff += ispacing;
+	} else {
+	    if ( pos&____CENTERLEFT )
+		ixoff = ibb.minx + (ibb.maxx-ibb.minx)/2 - irb.maxx;
+	    else if ( pos&____LEFTEDGE )
+		ixoff = ibb.minx - irb.minx;
+	    else if ( pos&____CENTERRIGHT )
+		ixoff = ibb.minx + (ibb.maxx-ibb.minx)/2 - irb.minx;
+	    else if ( pos&____RIGHTEDGE )
+		ixoff = ibb.maxx - irb.maxx;
+	    else
+		ixoff = ibb.minx - irb.minx + ((ibb.maxx-ibb.minx)-(irb.maxx-irb.minx))/2;
+	}
+	ixoff += rint( italicoff*bdf->pixelsize/em );
+	BCAddReference( bc,rbc,rgid,ixoff,iyoff );
+    }
+}
+
 static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
-	int layer, int ch,
-	SplineChar *rsc, int copybmp, real ia, int basech, int invert, int pos ) {
+	int layer, int ch, BDFFont *bdf, int disp_only,
+	SplineChar *rsc, real ia, int basech, int invert, int pos ) {
     real transform[6];
     DBounds bb, rbb, bbb;
     real xoff, yoff;
     real spacing = (sf->ascent+sf->descent)*accent_offset/100;
-    BDFChar *bc, *rbc;
-    int ixoff, iyoff, ispacing;
-    BDFFont *bdf;
     real ybase, italicoff;
     const unichar_t *temp;
     int baserch = basech;
@@ -2186,154 +2241,143 @@ return;
     }	/* Anchor points */
     transform[4] = xoff;
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
-    _SCAddRef(sc,rsc,layer,transform);
-    if ( pos!=-1 && (pos&____RIGHT) )
-	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
-    if ( pos!=-1 && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
-	TurnOffUseMyMetrics(sc);
 
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->glyphs[rsc->orig_pos]!=NULL && bdf->glyphs[sc->orig_pos]!=NULL ) {
-		if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
-		rbc = bdf->glyphs[rsc->orig_pos];
-		BCFlattenFloat(rbc);
-		BCCompressBitmap(rbc);
-		bc = bdf->glyphs[sc->orig_pos];
-		BCCompressBitmap(bc);
-		if ( (pos&____ABOVE) && (pos&(____LEFT|____RIGHT)) )
-		    iyoff = bc->ymax - rbc->ymax;
-		else if ( pos&____ABOVE )
-		    iyoff = bc->ymax + ispacing - rbc->ymin;
-		else if ( pos&____BELOW ) {
-		    iyoff = bc->ymin - rbc->ymax;
-		    if ( !( pos&____TOUCHING) )
-			iyoff -= ispacing;
-		} else if ( pos&____OVERSTRIKE )
-		    iyoff = bc->ymin - rbc->ymin + ((bc->ymax-bc->ymin)-(rbc->ymax-rbc->ymin))/2;
-		else
-		    iyoff = bc->ymin - rbc->ymin;
-		if ( isupper(basech) && ch==0x342)
-		    ixoff = bc->xmin -  rbc->xmin;
-		else if ( pos&____LEFT )
-		    ixoff = bc->xmin - ispacing - rbc->xmax;
-		else if ( pos&____RIGHT ) {
-		    ixoff = bc->xmax - rbc->xmin + ispacing/2;
-		    if ( !( pos&____TOUCHING) )
-			ixoff += ispacing;
-		} else {
-		    if ( pos&____CENTERLEFT )
-			ixoff = bc->xmin + (bc->xmax-bc->xmin)/2 - rbc->xmax;
-		    else if ( pos&____LEFTEDGE )
-			ixoff = bc->xmin - rbc->xmin;
-		    else if ( pos&____CENTERRIGHT )
-			ixoff = bc->xmin + (bc->xmax-bc->xmin)/2 - rbc->xmin;
-		    else if ( pos&____RIGHTEDGE )
-			ixoff = bc->xmax - rbc->xmax;
-		    else
-			ixoff = bc->xmin - rbc->xmin + ((bc->xmax-bc->xmin)-(rbc->xmax-rbc->xmin))/2;
-		}
-		ixoff += rint(italicoff*bdf->pixelsize/(real) (sf->ascent+sf->descent));
-		BCPasteInto(bc,rbc,ixoff,iyoff, invert, false);
-	    }
-	}
+    if ( bdf == NULL || !disp_only ) {
+	_SCAddRef(sc,rsc,layer,transform);
+	if ( pos!=-1 && (pos&____RIGHT) )
+	    SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
+	if ( pos!=-1 && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
+	    TurnOffUseMyMetrics(sc);
     }
+    if ( !disp_only ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( bdf->glyphs[rsc->orig_pos] != NULL )
+		_BCCenterAccent( bdf,sc->orig_pos,rsc->orig_pos,ch,basech,italicoff,pos,sf->ascent+sf->descent );
+	}
+    } else if ( bdf != NULL && bdf->glyphs[rsc->orig_pos] != NULL )
+	_BCCenterAccent( bdf,sc->orig_pos,rsc->orig_pos,ch,basech,italicoff,pos,sf->ascent+sf->descent );
 }
 
 static void SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
-	int layer, int ch, int copybmp,
+	int layer, int ch, BDFFont *bdf,int disp_only,
 	real ia, int basech, char *dot ) {
     int invert = false;
     SplineChar *rsc = GetGoodAccentGlyph(sf,ch,basech,&invert,ia,dot,sc);
 
-    _SCCenterAccent(sc,basersc,sf,layer,ch,rsc,copybmp,ia,basech,invert,-1);
+    _SCCenterAccent(sc,basersc,sf,layer,ch,bdf,disp_only,rsc,ia,basech,invert,-1);
 }
 
-static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int layer, int ch,
-	int copybmp, char *dot) {
-    SplineChar *rsc = SFGetChar(sf,ch,NULL);
-    BDFFont *bdf;
+static void _BCPutRefAfter( BDFFont *bdf,int gid,int rgid,int normal,int under ) {
     BDFChar *bc, *rbc;
-    int full = sc->unicodeenc, normal = false, under = false/*, stationary=false*/;
-    DBounds bb, rbb;
-    real spacing = (sf->ascent+sf->descent)*accent_offset/100;
     int ispacing;
-    char buffer[300], namebuf[300];
 
-    if ( dot!=NULL && rsc!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s%s", rsc->name, dot );
-	rsc = SFGetChar(sf,-1,buffer);
-    } else if ( dot!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s%s",
-		(char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
-		dot);
-	rsc = SFGetChar(sf,-1,buffer);
-    }
-
-    if ( full<0x1100 || full>0x11ff ) {
-	SCAddRef(sc,rsc,layer,sc->width,0);
-	sc->width += rsc->width;
-	normal = true;
-  /* these two jamo (same consonant really) ride underneath (except sometimes) */
-  /* So should the jungsong */
-    } else if (( ch==0x110b && (full!=0x1135 && full!=0x1147 && full!=0x114d)) ||
-		(ch==0x11bc && full!=0x11ee) ||
-		full==0x1182 || full==0x1183 || full==0x1187 || (full==0x118b && ch==0x1173) ||
-		full==0x118d || full==0x1193 || (full>=0x1195 && full<=0x1197) ||
-		full==0x119d || full==0x11a0 ) {
-	SplineCharQuickBounds(sc,&bb);
-	SplineCharQuickBounds(rsc,&rbb);
-	SCAddRef(sc,rsc,layer,(bb.maxx+bb.minx)/2-(rbb.maxx+rbb.minx)/2,bb.miny-spacing-rbb.maxy);
-	under = true;
+    if ( bdf->glyphs[rgid]!=NULL && bdf->glyphs[gid]!=NULL ) {
+	rbc = bdf->glyphs[rgid];
+	bc = bdf->glyphs[gid];
+	BCFlattenFloat(rbc);
+	BCCompressBitmap(rbc);
+	BCCompressBitmap(bc);
+	if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
+	if ( normal ) {
+	    BCAddReference( bc,rbc,rgid,bc->width,0 );
+	    bc->width += rbc->width;
+	} else if ( under ) {
+	    BCAddReference( bc,rbc,rgid,
+		    (bc->xmax+rbc->xmin-rbc->xmax-rbc->xmin)/2,
+		    bc->ymin-ispacing-rbc->ymax );
 #if 0
-  /* And in these jungsung there is no movement at all (the jamo don't interact) */
-    } else if (( full>=0x116a && full<=0x116c ) || (full>=0x116f && full<=0x1171) ||
-	    full==0x1174 || (full>=0x1176 && full<=0x1181) || (full>=0x1184 && full<=0x1186) ||
-	    (full>=0x1188 && full<=0x118c) || (full>=0x118e && full<=0x1192) ||
-	    full==0x1194 || (full>=0x119a && full<=0x119c) || full==0x119f ||
-	    full==0x11a1 ) {
-	SCAddRef(sc,rsc,layer,0,0);
-	stationary = true;
+	} else if ( stationary ) {
+	    BCAddReference( bc,rbc,rsc->orig_pos,0,0 );
 #endif
-    } else {	/* Jamo should snuggle right up to one another, and ignore the width */
-	SplineCharQuickBounds(sc,&bb);
-	SplineCharQuickBounds(rsc,&rbb);
-	SCAddRef(sc,rsc,layer,bb.maxx+spacing-rbb.minx,0);
-    }
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( bdf->glyphs[rsc->orig_pos]!=NULL && bdf->glyphs[sc->orig_pos]!=NULL ) {
-		rbc = bdf->glyphs[rsc->orig_pos];
-		bc = bdf->glyphs[sc->orig_pos];
-		BCFlattenFloat(rbc);
-		BCCompressBitmap(rbc);
-		BCCompressBitmap(bc);
-		if ( (ispacing = (bdf->pixelsize*accent_offset+50)/100)<=1 ) ispacing = 2;
-		if ( normal ) {
-		    BCPasteInto(bc,rbc,bc->width,0,false, false);
-		    bc->width += rbc->width;
-		} else if ( under ) {
-		    BCPasteInto(bc,rbc,(bc->xmax+rbc->xmin-rbc->xmax-rbc->xmin)/2,
-			    bc->ymin-ispacing-rbc->ymax,false, false);
-#if 0
-		} else if ( stationary ) {
-		    BCPasteInto(bc,rbc,0,0,false, false);
-#endif
-		} else {
-		    BCPasteInto(bc,rbc,bc->xmax-ispacing-rbc->xmin,0,false, false);
-		}
-	    }
+	} else {
+	    BCAddReference( bc,rbc,rgid,bc->xmax-ispacing-rbc->xmin,0 );
 	}
     }
 }
 
-static void DoSpaces(SplineFont *sf,SplineChar *sc,int layer, int copybmp) {
+static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int layer, int ch,
+	BDFFont *bdf,int disp_only, char *dot) {
+    SplineChar *rsc = SFGetChar(sf,ch,NULL);
+    int full = sc->unicodeenc, normal = false, under = false/*, stationary=false*/;
+    DBounds bb, rbb;
+    real spacing = (sf->ascent+sf->descent)*accent_offset/100;
+    char buffer[300], namebuf[300];
+
+    if ( bdf == NULL || !disp_only ) {
+	if ( dot!=NULL && rsc!=NULL ) {
+	    snprintf(buffer,sizeof(buffer),"%s%s", rsc->name, dot );
+	    rsc = SFGetChar(sf,-1,buffer);
+	} else if ( dot!=NULL ) {
+	    snprintf(buffer,sizeof(buffer),"%s%s",
+		    (char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
+		    dot);
+	    rsc = SFGetChar(sf,-1,buffer);
+	}
+
+	if ( full<0x1100 || full>0x11ff ) {
+	    SCAddRef(sc,rsc,layer,sc->width,0);
+	    sc->width += rsc->width;
+	    normal = true;
+    /* these two jamo (same consonant really) ride underneath (except sometimes) */
+    /* So should the jungsong */
+	} else if (( ch==0x110b && (full!=0x1135 && full!=0x1147 && full!=0x114d)) ||
+		    (ch==0x11bc && full!=0x11ee) ||
+		    full==0x1182 || full==0x1183 || full==0x1187 || (full==0x118b && ch==0x1173) ||
+		    full==0x118d || full==0x1193 || (full>=0x1195 && full<=0x1197) ||
+		    full==0x119d || full==0x11a0 ) {
+	    SplineCharQuickBounds(sc,&bb);
+	    SplineCharQuickBounds(rsc,&rbb);
+	    SCAddRef(sc,rsc,layer,(bb.maxx+bb.minx)/2-(rbb.maxx+rbb.minx)/2,bb.miny-spacing-rbb.maxy);
+	    under = true;
+#if 0
+    /* And in these jungsung there is no movement at all (the jamo don't interact) */
+	} else if (( full>=0x116a && full<=0x116c ) || (full>=0x116f && full<=0x1171) ||
+		full==0x1174 || (full>=0x1176 && full<=0x1181) || (full>=0x1184 && full<=0x1186) ||
+		(full>=0x1188 && full<=0x118c) || (full>=0x118e && full<=0x1192) ||
+		full==0x1194 || (full>=0x119a && full<=0x119c) || full==0x119f ||
+		full==0x11a1 ) {
+	    SCAddRef(sc,rsc,layer,0,0);
+	    stationary = true;
+#endif
+	} else {	/* Jamo should snuggle right up to one another, and ignore the width */
+	    SplineCharQuickBounds(sc,&bb);
+	    SplineCharQuickBounds(rsc,&rbb);
+	    SCAddRef(sc,rsc,layer,bb.maxx+spacing-rbb.minx,0);
+	}
+    }
+    if ( !disp_only ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    _BCPutRefAfter( bdf,sc->orig_pos,rsc->orig_pos,normal,under );
+	}
+    } else if ( bdf != NULL )
+	_BCPutRefAfter( bdf,sc->orig_pos,rsc->orig_pos,normal,under );
+}
+
+static void BCMakeSpace(BDFFont *bdf, int gid, int width, int em) {
+    BDFChar *bc;
+
+    if ( (bc = bdf->glyphs[gid])==NULL ) {
+	BDFMakeGID( bdf,gid );
+    } else {
+	BCPreserveState(bc);
+	BCFlattenFloat(bc);
+	BCCompressBitmap(bc);
+	free(bc->bitmap);
+	bc->xmin = 0;
+	bc->xmax = 1;
+	bc->ymin = 0;
+	bc->ymax = 1;
+	bc->bytes_per_line = 1;
+	bc->width = rint(width*bdf->pixelsize/(real) em);
+	bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(char));
+    }
+}
+
+static void DoSpaces(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int disp_only) {
     int width;
     int uni = sc->unicodeenc;
     int em = sf->ascent+sf->descent;
     SplineChar *tempsc;
-    BDFChar *bc;
-    BDFFont *bdf;
 
     if ( iszerowidth(uni))
 	width = 0;
@@ -2379,32 +2423,20 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int layer, int copybmp) {
       break;
     }
 
-    sc->width = width;
-    sc->widthset = true;
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( (bc = bdf->glyphs[sc->orig_pos])==NULL ) {
-		BDFMakeGID(bdf,sc->orig_pos);
-	    } else {
-		BCPreserveState(bc);
-		BCFlattenFloat(bc);
-		BCCompressBitmap(bc);
-		free(bc->bitmap);
-		bc->xmin = 0;
-		bc->xmax = 1;
-		bc->ymin = 0;
-		bc->ymax = 1;
-		bc->bytes_per_line = 1;
-		bc->width = rint(width*bdf->pixelsize/(real) em);
-		bc->bitmap = gcalloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(char));
-	    }
-	}
+    if ( !disp_only || bdf == NULL ) {
+	sc->width = width;
+	sc->widthset = true;
+	SCCharChangedUpdate(sc,ly_none);
     }
-    SCCharChangedUpdate(sc,ly_none);
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
-		BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
+
+    if ( !disp_only ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    BCMakeSpace( bdf,sc->orig_pos,width,em );
+	    BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
+	}
+    } else if ( bdf != NULL ) {
+	BCMakeSpace( bdf,sc->orig_pos,width,em );
+	BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
     }
 }
 
@@ -2420,13 +2452,33 @@ static SplinePoint *MakeSP(real x, real y, SplinePoint *last,int order2) {
 return( new );
 }
 
-static void DoRules(SplineFont *sf,SplineChar *sc,int layer,int copybmp) {
+static void BCMakeRule(BDFFont *bdf, int gid, int layer) {
+    BDFChar *bc, *tempbc;
+
+    if ( (bc = bdf->glyphs[gid])==NULL ) {
+	BDFMakeGID(bdf,gid);
+    } else {
+	BCPreserveState(bc);
+	BCFlattenFloat(bc);
+	BCCompressBitmap(bc);
+	free(bc->bitmap);
+	tempbc = SplineCharRasterize(bc->sc,layer,bdf->pixelsize);
+	bc->xmin = tempbc->xmin;
+	bc->xmax = tempbc->xmax;
+	bc->ymin = tempbc->ymin;
+	bc->ymax = tempbc->ymax;
+	bc->bytes_per_line = tempbc->bytes_per_line;
+	bc->width = tempbc->width;
+	bc->bitmap = tempbc->bitmap;
+	free(tempbc);
+    }
+}
+
+static void DoRules(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int disp_only) {
     int width;
     int uni = sc->unicodeenc;
     int em = sf->ascent+sf->descent;
     SplineChar *tempsc;
-    BDFChar *bc, *tempbc;
-    BDFFont *bdf;
     DBounds b;
     real lbearing, rbearing, height, ypos;
     SplinePoint *first, *sp;
@@ -2473,46 +2525,42 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int layer,int copybmp) {
 	lbearing = b.minx;
 	ypos = b.miny;
     }
-    first = sp = MakeSP(lbearing,ypos,NULL,sc->layers[layer].order2);
-    sp = MakeSP(lbearing,ypos+height,sp,sc->layers[layer].order2);
-    sp = MakeSP(width-rbearing,ypos+height,sp,sc->layers[layer].order2);
-    sp = MakeSP(width-rbearing,ypos,sp,sc->layers[layer].order2);
-    SplineMake(sp,first,sc->layers[layer].order2);
-    sc->layers[layer].splines = chunkalloc(sizeof(SplinePointList));
-    sc->layers[layer].splines->first = sc->layers[layer].splines->last = first;
-    sc->width = width;
-    sc->widthset = true;
-
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( (bc = bdf->glyphs[sc->orig_pos])==NULL ) {
-		BDFMakeGID(bdf,sc->orig_pos);
-	    } else {
-		BCPreserveState(bc);
-		BCFlattenFloat(bc);
-		BCCompressBitmap(bc);
-		free(bc->bitmap);
-		tempbc = SplineCharRasterize(sc,layer,bdf->pixelsize);
-		bc->xmin = tempbc->xmin;
-		bc->xmax = tempbc->xmax;
-		bc->ymin = tempbc->ymin;
-		bc->ymax = tempbc->ymax;
-		bc->bytes_per_line = tempbc->bytes_per_line;
-		bc->width = tempbc->width;
-		bc->bitmap = tempbc->bitmap;
-		free(tempbc);
-	    }
-	}
+    if ( bdf == NULL || !disp_only ) {
+	first = sp = MakeSP(lbearing,ypos,NULL,sc->layers[layer].order2);
+	sp = MakeSP(lbearing,ypos+height,sp,sc->layers[layer].order2);
+	sp = MakeSP(width-rbearing,ypos+height,sp,sc->layers[layer].order2);
+	sp = MakeSP(width-rbearing,ypos,sp,sc->layers[layer].order2);
+	SplineMake(sp,first,sc->layers[layer].order2);
+	sc->layers[layer].splines = chunkalloc(sizeof(SplinePointList));
+	sc->layers[layer].splines->first = sc->layers[layer].splines->last = first;
+	sc->width = width;
+	sc->widthset = true;
+	SCCharChangedUpdate(sc,layer);
     }
-    SCCharChangedUpdate(sc,layer);
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
-		BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
+
+    if ( !disp_only ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    BCMakeRule( bdf,sc->orig_pos,layer );
+	    BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
+	}
+    } else if ( bdf != NULL ) {
+	BCMakeRule( bdf,sc->orig_pos,layer );
+	BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
     }
 }
 
-static void DoRotation(SplineFont *sf,SplineChar *sc,int layer,int copybmp) {
+static void BCDoRotation(BDFFont *bdf, int gid) {
+    BDFChar *from, *to;
+
+    if ( gid>=bdf->glyphcnt || gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL )
+return;
+    from = bdf->glyphs[gid];
+    to = BDFMakeGID(bdf,gid);
+    BCRotateCharForVert(to,from,bdf);
+    BCCharChangedUpdate(to);
+}
+
+static void DoRotation(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int disp_only) {
     /* In when laying CJK characters vertically and intermixed latin (greek,etc) */
     /*  characters need to be rotated. Adobe's cid tables call for some */
     /*  pre-rotated characters, so we might as well be prepared to deal with */
@@ -2522,7 +2570,6 @@ static void DoRotation(SplineFont *sf,SplineChar *sc,int layer,int copybmp) {
     real transform[6];
     SplineSet *last, *temp;
     RefChar *ref;
-    BDFFont *bdf;
     char *end;
     int j,cid;
 
@@ -2565,43 +2612,41 @@ return;
 	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,cid)]->glyphs[cid];
     }
 
-    transform[0] = transform[3] = 0;
-    transform[1] = -1; transform[2] = 1;
-    transform[4] = scbase->parent->descent; transform[5] = /*scbase->parent->vertical_origin*/ scbase->parent->ascent;
+    if ( bdf == NULL || !disp_only ) {
+	transform[0] = transform[3] = 0;
+	transform[1] = -1; transform[2] = 1;
+	transform[4] = scbase->parent->descent; transform[5] = /*scbase->parent->vertical_origin*/ scbase->parent->ascent;
 
-    sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(scbase->layers[layer].splines),
-	    transform, true );
-    if ( sc->layers[layer].splines==NULL ) last = NULL;
-    else for ( last = sc->layers[layer].splines; last->next!=NULL; last = last->next );
+	sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(scbase->layers[layer].splines),
+		transform, true );
+	if ( sc->layers[layer].splines==NULL ) last = NULL;
+	else for ( last = sc->layers[layer].splines; last->next!=NULL; last = last->next );
 
-    for ( ref = scbase->layers[layer].refs; ref!=NULL; ref=ref->next ) {
-	temp = SplinePointListTransform(SplinePointListCopy(ref->layers[0].splines),
-	    transform, true );
-	if ( last==NULL )
-	    sc->layers[layer].splines = temp;
-	else
-	    last->next = temp;
-	if ( temp!=NULL )
-	    for ( last=temp; last->next!=NULL; last=last->next );
-    }
-    sc->width = sc->parent->ascent+sc->parent->descent;
-    SCCharChangedUpdate(sc,layer);
-    if ( copybmp ) {
-	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    BDFChar *from, *to;
-	    if ( scbase->orig_pos>=bdf->glyphcnt || sc->orig_pos>=bdf->glyphcnt ||
-		    bdf->glyphs[scbase->orig_pos]==NULL )
-	continue;
-	    from = bdf->glyphs[scbase->orig_pos];
-	    to = BDFMakeGID(bdf,sc->orig_pos);
-	    BCRotateCharForVert(to,from,bdf);
-	    BCCharChangedUpdate(to);
+	for ( ref = scbase->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+	    temp = SplinePointListTransform(SplinePointListCopy(ref->layers[0].splines),
+		transform, true );
+	    if ( last==NULL )
+		sc->layers[layer].splines = temp;
+	    else
+		last->next = temp;
+	    if ( temp!=NULL )
+		for ( last=temp; last->next!=NULL; last=last->next );
 	}
+	sc->width = sc->parent->ascent+sc->parent->descent;
+	SCCharChangedUpdate(sc,layer);
+    }
+
+    if ( !disp_only ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    BCDoRotation( bdf,sc->orig_pos );
+	}
+    } else if ( bdf != NULL ) {
+	BCDoRotation( bdf,sc->orig_pos );
     }
 }
 
 static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
-	int layer, const unichar_t *start,int copybmp) {
+	int layer, const unichar_t *start,BDFFont *bdf,int disp_only) {
     int cnt = u_strlen(start);
     int ret, ch, alt_ch;
     const unichar_t *pt;
@@ -2613,7 +2658,7 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	if ( alt_ch!=0 && haschar(sf,alt_ch,NULL))
 	    ch = alt_ch;
     }
-    if ( SCMakeBaseReference(sc,sf,layer,ch,copybmp) ) {
+    if ( SCMakeBaseReference(sc,sf,layer,ch,bdf,disp_only) ) {
 	for ( --pt; pt>=start; --pt ) {
 	    ch = *pt;
 	    if ( ch>=0x621 && ch<=0x6ff ) {
@@ -2624,57 +2669,57 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 		if ( alt_ch!=0 && haschar(sf,alt_ch,NULL))
 		    ch = alt_ch;
 	    }
-	    SCPutRefAfter(sc,sf,layer,ch,copybmp,NULL);
+	    SCPutRefAfter(sc,sf,layer,ch,bdf,disp_only,NULL);
 	}
 	ret = true;
     }
 return( ret );
 }
 
-static void SCBuildHangul(SplineFont *sf,SplineChar *sc, int layer, const unichar_t *pt, int copybmp) {
+static void SCBuildHangul(SplineFont *sf,SplineChar *sc, int layer, const unichar_t *pt,
+	BDFFont *bdf, int disp_only) {
     SplineChar *rsc;
     int first = true;
-    BDFFont *bdf;
 
     sc->width = 0;
     while ( *pt ) {
 	rsc = SFGetChar(sf,*pt++,NULL);
 	if ( rsc!=NULL ) {
-	    SCAddRef(sc,rsc,layer,0,0);
-	    if ( rsc->width>sc->width ) sc->width = rsc->width;
-	    if ( copybmp ) {
+	    if ( bdf == NULL || !disp_only ) {
+		SCAddRef(sc,rsc,layer,0,0);
+		if ( rsc->width>sc->width ) sc->width = rsc->width;
+	    }
+	    if ( !disp_only ) {
 		for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 		    if ( first )
-			BCClearAndCopy(bdf,sc->orig_pos,rsc->orig_pos);
-		    else if ( bdf->glyphs[rsc->orig_pos]!=NULL )
-			BCPasteInto(BDFMakeGID(bdf,sc->orig_pos),bdf->glyphs[rsc->orig_pos],
-				0,0, false, false);
+			BCClearAll(bdf->glyphs[sc->orig_pos]);
+		    BCAddReference( BDFMakeGID(bdf,sc->orig_pos),bdf->glyphs[rsc->orig_pos],
+			rsc->orig_pos,0,0 );
 		}
+	    } else if ( bdf != NULL ) {
+		if ( first )
+		    BCClearAll(bdf->glyphs[sc->orig_pos]);
+		BCAddReference( BDFMakeGID(bdf,sc->orig_pos),bdf->glyphs[rsc->orig_pos],
+		    rsc->orig_pos,0,0 );
 	    }
 	    first = false;
 	}
     }
 }
 
-int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit) {
+static int _SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int doit) {
     SplineChar *sc, *xsc;
     BlueData bd;
     SplineSet *head=NULL, *last=NULL, *test, *cur, *next;
     DBounds b;
-    BDFFont *bdf;
-    BDFChar *bc;
 
-    if ( dotless==NULL )
-return( 0 );
-    if ( dotless->unicodeenc!=0x131 && dotless->unicodeenc!=0xf6be && dotless->unicodeenc!=0x237 )
-return( 0 );
     sc = SFGetChar(sf,dotless->unicodeenc==0x131?'i':'j',NULL);
     xsc = SFGetChar(sf,'x',NULL);
     if ( sc==NULL || sc->layers[layer].splines==NULL || sc->layers[layer].refs!=NULL || xsc==NULL )
-return( 0 );
+return( false );
     QuickBlues(sf,layer,&bd);
     if ( bd.xheight==0 )
-return( 0 );
+return(false );
     for ( test=sc->layers[layer].splines; test!=NULL; test=test->next ) {
 	next = test->next; test->next = NULL;
 	SplineSetQuickBounds(test,&b);
@@ -2691,22 +2736,46 @@ return( true );
 	}
     }
     if ( head==NULL )
-return( 0 );
+return( false );
 
     SCPreserveLayer(dotless,layer,true);
     SplinePointListsFree(dotless->layers[layer].splines);
     dotless->layers[layer].splines = NULL;
-    SCRemoveDependents(dotless);
+    SCRemoveLayerDependents(dotless,layer);
     dotless->width = sc->width;
     dotless->layers[layer].splines = head;
     SCCharChangedUpdate(dotless,layer);
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+return( true );
+}
+
+int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit) {
+    SplineChar *sc;
+    BDFChar *bc;
+    int ret;
+
+    if ( dotless==NULL )
+return( ret );
+	if ( dotless->unicodeenc!=0x131 && dotless->unicodeenc!=0xf6be && dotless->unicodeenc!=0x237 )
+return( ret );
+    sc = SFGetChar(sf,dotless->unicodeenc==0x131?'i':'j',NULL);
+    if ( sc==NULL )
+return( ret );
+    if ( bdf==NULL || !disp_only )
+	ret = _SCMakeDotless( sf,dotless,layer,doit );
+
+    if ( !disp_only ) {
+	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if (( bc = bdf->glyphs[sc->orig_pos])!=NULL ) {
+		BCClearAndCopyBelow(bdf,dotless->orig_pos,sc->orig_pos,BCFindGap(bc));
+	    }
+	}
+    } else if ( bdf != NULL ) {
 	if (( bc = bdf->glyphs[sc->orig_pos])!=NULL ) {
 	    BCClearAndCopyBelow(bdf,dotless->orig_pos,sc->orig_pos,BCFindGap(bc));
 	}
     }
 	    
-return( true );
+return( ret );
 }
 
 static void SCSetReasonableLBearing(SplineChar *sc,SplineChar *base,int layer) {
@@ -2744,9 +2813,8 @@ return;
     SCSynchronizeWidth(sc,sc->width + xoff,sc->width,NULL);
 }
 
-void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, int copybmp) {
+void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only ) {
     const unichar_t *pt, *apt; unichar_t ch;
-    BDFFont *bdf;
     real ia;
     char *dot;
     /* This does not handle arabic ligatures at all. It would need to reverse */
@@ -2754,23 +2822,33 @@ void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, int copybmp) {
 
     if ( !SFIsSomethingBuildable(sf,sc,layer,false))
 return;
-    SCPreserveLayer(sc,layer,true);
-    SplinePointListsFree(sc->layers[layer].splines);
-    sc->layers[layer].splines = NULL;
-    SCRemoveDependents(sc);
-    sc->width = 0;
+    if ( !disp_only || bdf == NULL ) {
+	SCPreserveLayer(sc,layer,true);
+	SplinePointListsFree(sc->layers[layer].splines);
+	sc->layers[layer].splines = NULL;
+	SCRemoveLayerDependents(sc,layer);
+	sc->width = 0;
+    }
+    if ( !disp_only ) {
+	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
+		BCClearAll( bdf->glyphs[sc->orig_pos] );
+    } else if ( bdf!=NULL) {
+	if ( bdf->glyphs[sc->orig_pos]!=NULL )
+	    BCClearAll( bdf->glyphs[sc->orig_pos] );
+    }
 
     if ( iszerowidth(sc->unicodeenc) || (sc->unicodeenc>=0x2000 && sc->unicodeenc<=0x200f )) {
-	DoSpaces(sf,sc,layer,copybmp);
+	DoSpaces( sf,sc,layer,bdf,disp_only );
 return;
     } else if ( sc->unicodeenc>=0x2010 && sc->unicodeenc<=0x2015 ) {
-	DoRules(sf,sc,layer,copybmp);
+	DoRules( sf,sc,layer,bdf,disp_only );
 return;
     } else if ( SFIsRotatable(sf,sc,layer) ) {
-	DoRotation(sf,sc,layer,copybmp);
+	DoRotation( sf,sc,layer,bdf,disp_only );
 return;
     } else if ( sc->unicodeenc==0x131 || sc->unicodeenc==0x237 || sc->unicodeenc==0xf6be ) {
-	SCMakeDotless(sf, sc, layer, copybmp, true);
+	SCMakeDotless( sf,sc,layer,bdf,disp_only,true );
 return;
     }
 
@@ -2795,12 +2873,12 @@ return;
 	}
     }
     if ( sc->unicodeenc>=0xac00 && sc->unicodeenc<=0xd7a3 )
-	SCBuildHangul(sf,sc,layer,pt-1,copybmp);
+	SCBuildHangul(sf,sc,layer,pt-1,bdf,disp_only);
     else if ( isrighttoleft(ch) && !iscombining(*pt)) {
-	SCMakeRightToLeftLig(sc,sf,layer,pt-1,copybmp);
+	SCMakeRightToLeftLig(sc,sf,layer,pt-1,bdf,disp_only);
     } else {
 	RefChar *base;
-	if ( !SCMakeBaseReference(sc,sf,layer,ch,copybmp) )
+	if ( !SCMakeBaseReference(sc,sf,layer,ch,bdf,disp_only) )
 return;
 	base = sc->layers[layer].refs;
 	if ( base==NULL )
@@ -2811,10 +2889,10 @@ return;
 	    base->use_my_metrics = true;
 	while ( iscombining(*pt) || (ch=='L' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
-	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,copybmp,ia, ch, dot);
+	    SCCenterAccent(sc,base!=NULL?base->sc:NULL,sf,layer,*pt++,bdf,disp_only,ia,ch,dot);
 	while ( *pt ) {
 	    if ( base!=NULL ) base->use_my_metrics = false;
-	    SCPutRefAfter(sc,sf,layer,*pt++,copybmp,dot);
+	    SCPutRefAfter(sc,sf,layer,*pt++,bdf,disp_only,dot);
 	}
 	/* All along we assumed the base glyph didn't move. This makes       */
 	/* positioning easier. But if we add accents to the left we now want */
@@ -2822,19 +2900,20 @@ return;
 	if ( base!=NULL )
 	    SCSetReasonableLBearing(sc,base->sc,layer);
     }
-    SCCharChangedUpdate(sc,layer);
-    if ( copybmp ) {
+    if ( !disp_only || bdf == NULL )
+	SCCharChangedUpdate(sc,layer);
+    if ( !disp_only ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->glyphs[sc->orig_pos]!=NULL )
 		BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
-    }
+    } else if ( bdf != NULL && bdf->glyphs[sc->orig_pos]!=NULL )
+	BCCharChangedUpdate(bdf->glyphs[sc->orig_pos]);
 return;
 }
 
 int SCAppendAccent(SplineChar *sc,int layer,char *glyph_name, int uni,int pos) {
     SplineFont *sf = sc->parent;
     double ia;
-    int copybmp = true;
     int basech;
     RefChar *ref, *last=NULL;
     int invert = false;
@@ -2883,6 +2962,6 @@ return( 2 );
 	}
     }
 
-    _SCCenterAccent(sc,last->sc,sf,layer,uni,asc,copybmp,ia,basech,invert,pos);
+    _SCCenterAccent(sc,last->sc,sf,layer,uni,NULL,false,asc,ia,basech,invert,pos);
 return( 0 );
 }

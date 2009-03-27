@@ -326,6 +326,7 @@ return;
 	    BDFFloatFree(bc->selection);
 	} else {
 	    b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
+	    memset( bc,'\0',sizeof( BDFChar ));
 	    bc->sc = sf->glyphs[gid];
 	    bc->orig_pos = gid;
 	}
@@ -729,6 +730,7 @@ static BDFChar *SFGrowTo(SplineFont *sf,BDFFont *b, int cc, EncMap *map) {
 	BDFFloatFree(bc->selection);
     } else {
 	b->glyphs[gid] = bc = chunkalloc(sizeof(BDFChar));
+	memset( bc,'\0',sizeof( BDFChar ));
 	bc->sc = sf->glyphs[gid];
 	bc->orig_pos = gid;
     }
@@ -1784,6 +1786,7 @@ return( false );
     b->glyphs = gcalloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
 	BDFChar *bc = b->glyphs[i] = chunkalloc(sizeof(BDFChar));
+	memset( bc,'\0',sizeof( BDFChar ));
 	bc->xmin = metrics[i].lsb;
 	bc->xmax = metrics[i].rsb-1;
 	if ( metrics[i].rsb==0 ) bc->xmax = 0;
@@ -2481,6 +2484,7 @@ return;			/* No images */
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	bdf->glyphs[i] = bdfc = chunkalloc(sizeof(BDFChar));
+	memset( bdfc,'\0',sizeof( BDFChar ));
 	bdfc->sc = sc;
 	bdfc->orig_pos = i;
 	bdfc->depth = 1;

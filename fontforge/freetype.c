@@ -552,6 +552,7 @@ static BDFChar *BdfCFromBitmap(FT_Bitmap *bitmap, int bitmap_left,
 	bdfc->vwidth = rint( metrics->vertAdvance/64.0 );
     }
     bdfc->bytes_per_line = bitmap->pitch;
+    bdfc->refs = NULL; bdfc->dependents = NULL;
     if ( bdfc->bytes_per_line==0 ) bdfc->bytes_per_line = 1;
     bdfc->bitmap = galloc((bdfc->ymax-bdfc->ymin+1)*bdfc->bytes_per_line);
     if ( bitmap->rows==0 || bitmap->width==0 )

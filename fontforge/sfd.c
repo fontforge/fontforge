@@ -1513,6 +1513,8 @@ static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
 	int todir, char *dirname) {
     int i;
     int err = false;
+    BDFChar *bc;
+    BDFRefChar *ref;
 
     ff_progress_next_stage();
     fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
@@ -1552,6 +1554,13 @@ static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
 		SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i],newgids);
 	}
 	ff_progress_next();
+    }
+    for ( i=0; i<bdf->glyphcnt; ++i ) if (( bc = bdf->glyphs[i] ) != NULL ) {
+    	for ( ref=bc->refs; ref!=NULL; ref=ref->next )
+	    fprintf(sfd, "BDFRefChar: %d %d %d %d %c\n",
+		newgids!=NULL ? newgids[bc->orig_pos] : bc->orig_pos,
+		newgids!=NULL ? newgids[ref->bdfc->orig_pos] : ref->bdfc->orig_pos,
+		ref->xoff,ref->yoff,ref->selected?'S':'N' );    	    
     }
     fprintf( sfd, "EndBitmapFont\n" );
 return( err );
@@ -4733,6 +4742,7 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     int ch;
 
     bfc = chunkalloc(sizeof(BDFChar));
+    memset( bfc,'\0',sizeof( BDFChar ));
     map = bdf->sf->map;
     
     if ( getint(sfd,&orig)!=1 || orig<0 )
@@ -4810,6 +4820,58 @@ return( 0 );
 return( 1 );
 }
 
+static int SFDGetBitmapReference(FILE *sfd,BDFFont *bdf) {
+    BDFChar *bc;
+    BDFRefChar *ref, *head;
+    int gid, rgid, xoff, yoff;
+    char ch;
+    
+    /* 'BDFRefChar:' elements should not occur in the file before the corresponding 
+    /* 'BDFChar:'. However it is possible that the glyphs they refer to are not yet
+    /* available. So we will find them later */
+    if ( getint(sfd,&gid)!=1 || gid<=0 || gid >= bdf->glyphcnt || ( bc = bdf->glyphs[gid] ) == NULL )
+return( 0 );
+    if ( getint(sfd,&rgid)!=1 || rgid<0 )
+return( 0 );
+    if ( getint(sfd,&xoff)!=1 )
+return( 0 );
+    if ( getint(sfd,&yoff)!=1 )
+return( 0 );
+    while ( isspace( ch=nlgetc( sfd )) && ch!='\r' && ch!='\n' );
+
+    ref = gcalloc( 1,sizeof( BDFRefChar ));
+    ref->gid = rgid; ref->xoff = xoff, ref->yoff = yoff;
+    if ( ch == 'S' ) ref->selected = true;
+    for ( head = bc->refs; head != NULL && head->next!=NULL; head = head->next );
+    if ( head == NULL ) bc->refs = ref;
+    else head->next = ref;
+return( 1 );
+}
+
+static void SFDFixupBitmapRefs( BDFFont *bdf ) {
+    BDFChar *bc, *rbc;
+    BDFRefChar *head, *next, *prev;
+    int i;
+    
+    for ( i=0; i<bdf->glyphcnt; i++ ) if (( bc = bdf->glyphs[i] ) != NULL ) {
+	prev = NULL;
+	for ( head = bc->refs; head != NULL; head = next ) {
+	    next = head->next;
+	    if (( rbc = bdf->glyphs[head->gid] ) != NULL ) {
+		head->bdfc = rbc;
+		BCMakeDependent( bc,rbc );
+		prev = head;
+	    } else {
+		LogError("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)",
+		    bc->orig_pos, bdf->pixelsize, head->gid );
+		if ( prev == NULL ) bc->refs = next;
+		else prev->next = next;
+	    }
+	}
+    }
+    
+}
+
 static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) {
     BDFFont *bdf, *prev;
     char tok[200];
@@ -4861,6 +4923,8 @@ return( 0 );
 	    getint(sfd,&bdf->res);
 	else if ( strcmp(tok,"BDFChar:")==0 )
 	    SFDGetBitmapChar(sfd,bdf);
+	else if ( strcmp(tok,"BDFRefChar:")==0 )
+	    SFDGetBitmapReference(sfd,bdf);
 	else if ( strcmp(tok,"EndBitmapFont")==0 )
     break;
     }
@@ -4891,7 +4955,7 @@ return( 0 );
 	    }
 	}
     }
-	
+    SFDFixupBitmapRefs( bdf );
 return( 1 );
 }
 

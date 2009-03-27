@@ -338,6 +338,7 @@ return( false );
 	}
 
 	bdf->glyphs[gid] = bdfc = chunkalloc(sizeof(BDFChar));
+	memset( bdfc,'\0',sizeof( BDFChar ));
 	bdfc->xmin = 0;
 	bdfc->xmax = charinfo[i].width-1;
 	bdfc->ymin = fntheader.ascent-fntheader.height;
@@ -471,10 +472,13 @@ static int _FntFontDump(FILE *file,BDFFont *font, EncMap *map, int res) {
     struct pfminfo pfminfo;
     int complained=false;
     int gid;
+    BDFChar *bdfc;
 
     if ( font->clut!=NULL )
 return( false );
 
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = font->glyphs[gid] ) != NULL )
+	BCPrepareForOutput( bdfc,true );
     avgwid = widbytes = maxwid = maxy = last = cnt = 0;
     miny = first = 999999;
     samewid = -1;
@@ -641,6 +645,8 @@ return( false );
     fseek(file,namelocpos,SEEK_SET);
     lputlong(file,namepos);
     fseek(file,endpos,SEEK_SET);
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = font->glyphs[gid] ) != NULL )
+	BCRestoreAfterOutput( bdfc );
 return( true );
 }
 

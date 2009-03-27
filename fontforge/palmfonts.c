@@ -141,6 +141,7 @@ return;
 	    int i,j, bits, bite, bit;
 
 	    bdfc = chunkalloc(sizeof(BDFChar));
+	    memset( bdfc,'\0',sizeof( BDFChar ));
 	    bdfc->xmin = 0;
 	    bdfc->xmax = density*(fn->chars[index+1].start-fn->chars[index].start)/72-1;
 	    bdfc->ymin = -bdf->descent;
@@ -457,6 +458,7 @@ static int ValidMetrics(BDFFont *test,BDFFont *base,EncMap *map,int den) {
     /* All advance widths must be den*base->advance_width */
     int i, gid;
     int warned=false, wwarned = false;
+    IBounds ib;
 
     if ( test==NULL )
 return( true );
@@ -470,11 +472,12 @@ return( true );
 		    test->pixelsize,base->pixelsize, i);
 return( false );
 	}
+	/* Can't just use the glyph's max/min properties at this point, as some glyphs may contain
+	/* references, in which case those properties would be mostly irrelevant */
+	BDFCharQuickBounds( test->glyphs[gid],&ib,0,0,false,true );
 	if ( !warned &&
-		(test->glyphs[gid]->xmin<0 ||
-		 test->glyphs[gid]->xmax>test->glyphs[gid]->width ||
-		 test->glyphs[gid]->ymax>=test->ascent ||
-		 test->glyphs[gid]->ymin<-test->descent)) {
+		(ib.minx<0 || ib.maxx>test->glyphs[gid]->width ||
+		 ib.maxy>=test->ascent || ib.miny<-test->descent)) {
 	    ff_post_notice(_("Bad Metrics"),_("In font %1$d the glyph %2$.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
 	    warned = true;
@@ -516,9 +519,12 @@ static uint16 *BDF2Image(struct FontTag *fn, BDFFont *bdf, int **offsets,
     int i,j, gid;
     uint16 *image;
     int den;
+    BDFChar *bdfc;
 
     if ( bdf==NULL )
 return( NULL );
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = bdf->glyphs[gid] ) != NULL )
+	BCPrepareForOutput( bdfc,true );
 
     den = bdf->pixelsize/fn->fRectHeight;
 
@@ -577,6 +583,8 @@ return( NULL );
     }
     if ( offsets!=NULL )
 	(*offsets)[i+1-fn->firstChar] = rbits;
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = bdf->glyphs[gid] ) != NULL )
+	BCRestoreAfterOutput( bdfc );
 return( image );    
 }
 
@@ -657,6 +665,8 @@ return( false );
 	}
     }
     notdefpos = SFFindNotdef(sf,-2);
+    if ( notdefpos > base->glyphcnt || base->glyphs[notdefpos] == NULL )
+	notdefpos = -1;
 	    
     file = MakeFewRecordPdb(filename,fontcnt);
     if ( file==NULL )
