@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Feb-2002 -->
-  <!-- AP: Last modified: 6-Jun-2008 -->
+  <!-- AP: Last modified: 27-Mar-2009 -->
   <TITLE>Building Accented and other Composite Characters</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -100,22 +100,23 @@
   So for each selected glyph in the font view (or for the current glyph in
   the outline view), and if all the base glyphs and accents needed by the glyph
   have already been created then this command will delete anything that is
-  currently in the foreground and put a reference to the base glyph and another
-  reference to the accent glyph into the foreground. So if the current glyph
-  were "&Agrave;" then a reference to "A" would be added to it, and a reference
-  to "`" would be centered above the "A". <BR>
+  in the current layerand put a reference to the base glyph and another reference
+  to the accent glyph into the foreground. So if the current glyph were "&Agrave;"
+  then a reference to "A" would be added to it, and a reference to "`" would
+  be centered above the "A". <BR>
   If <A HREF="editmenu.html#From">Copy From</A> is set to All Fonts then any
-  bitmaps will have a similar process done (even in the outline glyph view).
+  bitmaps will have a similar process done -- that is to say, bitmap references
+  will be created (even in the outline glyph view).
   <P>
   Choosing accents can be a slightly tricky process. Unicode says that accented
-  letters should be built out of the accents in the range 0x300-0x340, but
-  this does not work too well in postscript. A Type1 font works better if the
-  accented glyph is in the Adobe Standard Encoding, which means either using
-  accents around 0x2d0 or ascii glyphs. FontForge will first attempt to find
-  an accent around 0x2d0, then in ascii and finally in the 0x300-0x340 range.
-  Even worse, Unicode unifies the greek and latin accents, so for greek letters
-  FontForge will look for accents around 0x1fbd (FontForge will also require
-  the presence of the double accents like 0x1fdd).
+  letters are logically built out of the accents in the range 0x300-0x340,
+  but this does not work too well in postscript. A Type1 font works better
+  if the accented glyph is in the Adobe Standard Encoding, which means either
+  using accents around 0x2d0 or ascii glyphs. FontForge will first attempt
+  to find an accent around 0x2d0, then in ascii and finally in the 0x300-0x340
+  range. Even worse, Unicode unifies the greek and latin accents, so for greek
+  letters FontForge will look for accents around 0x1fbd (FontForge will also
+  require the presence of the double accents like 0x1fdd).
   <P>
   Some of Adobe's fonts have accents designed for use over upper case letters
   (the nomal accents are designed for lower case), and accents designed for

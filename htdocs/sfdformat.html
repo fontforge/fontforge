@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 27-Mar-2009 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -30,7 +30,7 @@
   </TABLE>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often out of date. I thought it was
-  a correct on 22 Aug 2008.</STRONG></FONT> A
+  a correct on 12 Nov 2008.</STRONG></FONT> A
   <A HREF="sfdchangelog.html">changelog</A> file is available. Even if out
   of date it should be helpful, but if you really need to know the current
   format look at
@@ -108,7 +108,7 @@ Weight: Medium
 Copyright: Copyright (C) 1995-2000 by George Williams
 Comments: This is a funny font.
 UComments: "This is a funny font."
-FontLog: "Created Jan 2008"
+FontLog: "Create Jan 2008"
 Version: 001.000
 ItalicAngle: 0
 UnderlinePosition: -133
@@ -137,6 +137,7 @@ CreationTime: 1151539072
 ModificationTime: 11516487392
 GaspTable 3 8 2 16 1 65535 3
 DEI: 91125
+ExtremaBound: 30
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -247,6 +248,13 @@ CIDVersion: 1.2
     <DD>
       It's too hard to explain, see the minutes of the CalTech OddHack committee
       from 15 Jan 1980. You can safely ignore it.
+    <DT>
+      ExtremaBound
+    <DD>
+      Adobe says that short splines are allowed to have internal extrema, but that
+      big splines are not. But they don't define "big". This allows the user to
+      specify that number. Splines where the distance between end-points is longer
+      than this number will be checked for extrema.
   </DL>
   <P>
   Some fonts will have some TrueType information in them too (look at the
@@ -865,8 +873,9 @@ EndChar
   appear inside the SplineSet list after each contour. It is quite possible
   that some contours will have spiros and that others may not.
   <P>
-  The following is the lower case 'a' glyph from Raph's <a href="http://www.levien.com/type/myfonts/inconsolata.html">Inconsolata font</a>, converted
-  into an sfd file.
+  The following is the lower case 'a' glyph from Raph's
+  <A href="http://www.levien.com/type/myfonts/inconsolata.html">Inconsolata
+  font</A>, converted into an sfd file.
   <BLOCKQUOTE>
     <PRE>Fore
 SplineSet
@@ -1420,6 +1429,8 @@ BDFChar: 32 3 0 0 0 0
 z
 BDFChar: 3 33 3 0 1 0 9
 ^d(.M5X7S"!'gMa
+BDFRefChar: 302 488 7 1 N
+BDFRefChar: 302 58 0 0 N
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -1442,13 +1453,19 @@ BDFChar: 3 33 3 0 1 0 9
   of the font.
   <P>
   This is followed by a list of bitmap characters, the bitmap character line
-  contains the following numbers: the original position, the encoding (local),
-  the width, the minimum x value, the minimum y value, the maximum x value
-  and the maximum y value. If the bitmap font has vertical metrics there will
-  also be a vwidth. This is followed by another set of binary data encoded
-  as above. There will be (ymax-ymin+1)* ((xmax-xmin)/(8/depth)+1) (unencoded)
-  bytes, there is no color table here (the high order bit comes first in the
-  image, set bits should be colored black, clear bits transparent).
+  contains the following numbers: the original position (glyph ID), the encoding
+  (local), the width, the minimum x value, the minimum y value, the maximum
+  x value and the maximum y value. If the bitmap font has vertical metrics
+  there will also be a vwidth. This is followed by another set of binary data
+  encoded as above. There will be (ymax-ymin+1)* ((xmax-xmin)/(8/depth)+1)
+  (unencoded) bytes, there is no color table here (the high order bit comes
+  first in the image, set bits should be colored black, clear bits transparent).
+  <P>
+  If there are any bitmap glyphs with bitmap references then these will appear
+  near the end of the bitmap strike. Each <CODE>BDFRefChar</CODE> line defines
+  a reference, the first number is the glyph ID of the composite glyph, the
+  second the glyph ID of the referred glyph, and the last two the horizontal
+  and vertical translation of the reference in the composite glyph.
   <P>
   A bitmap font is ended by:
   <BLOCKQUOTE>
