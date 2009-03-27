@@ -30,7 +30,7 @@
   </TABLE>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often out of date. I thought it was
-  a correct on 12 Nov 2008.</STRONG></FONT> A
+  a correct on 27 Mar 2009.</STRONG></FONT> A
   <A HREF="sfdchangelog.html">changelog</A> file is available. Even if out
   of date it should be helpful, but if you really need to know the current
   format look at
@@ -433,6 +433,51 @@ BaseScript: 'latn' 2  1405 -288 0 { 'dflt' -576 1913} { 'ENG ' -576 1482} { 'VIT
   are configured with respect to the default one. Language specific information
   appears inside {} pairs. (feature specific information would be in {} pairs
   inside the language specific curly braces).
+  <P>
+  If your font has any JSTF (justification) data
+  <BLOCKQUOTE>
+    <PRE>Justify: 'arab'
+JstfExtender: afii57440 afii5739
+Justify: 'latn'
+JstfLang: 'dflt' 5
+JstfPrio:
+JstfMaxShrink: "JSTF shrinkage max at priority 0 #0 for dflt in latn"  
+JstfMaxExtend: "JSTF extension max at priority 0 #1 for dflt in latn"  
+JstfPrio:
+JstfEnableShrink: "'mark' Mark Positioning in Latin lookup 5"  "'kern' Horizontal Kerning in Latin lookup 6"  "'kern' Horizontal Kerning in Cyrillic lookup 7"  
+JstfPrio:
+JstfEnableShrink: "'liga' Standard Ligatures in Latin lookup 10"  "'alig' Ancient Ligatures in Latin lookup 11"  "'liga' Standard Ligatures in Latin lookup 12"  
+JstfDisableExtend: "'liga' Standard Ligatures in Latin lookup 10"  "'alig' Ancient Ligatures in Latin lookup 11"  "'liga' Standard Ligatures in Latin lookup 12"  
+JstfPrio:
+JstfMaxShrink: "JSTF shrinkage max at priority 3 #2 for dflt in latn"  
+JstfMaxExtend: "JSTF extension max at priority 3 #3 for dflt in latn"  
+JstfPrio:
+JstfMaxShrink: "JSTF shrinkage max at priority 4 #4 for dflt in latn"  
+JstfMaxExtend: "JSTF extension max at priority 4 #5 for dflt in latn"  
+Justify: 'cyrl'
+JstfLang: 'dflt' 1
+JstfPrio:
+JstfMaxShrink: "JSTF shrinkage max at priority 0 #6 for dflt in cyrl"  
+JstfMaxExtend: "JSTF extension max at priority 0 #7 for dflt in cyrl"  
+EndJustify
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  A block of justification information begins with a <CODE>Justify:</CODE>
+  keyword and is followed by a script tag. There may be several
+  <CODE>Justify:</CODE>s if information is provided for several scripts, the
+  final block must be terminated with a <CODE>EndJustify</CODE> keyword.
+  <P>
+  Within a block extender glyphs (kashidas) may be specified with a
+  <CODE>JstfExtender:</CODE> keyword followed by a list of glyph names.
+  <P>
+  Each language within the script is started by a <CODE>JstfLang:</CODE> keyword
+  and is followed by a language tag and a count of the number of priority levels.
+  <P>
+  Each priority level is started with a <CODE>JstfPrio:</CODE> keyword, after
+  which you may find any of the keywords <CODE>JstfEnableShrink, JstfDisableShrink,
+  JstfMaxShrink, JstfEnableExtend, JstfDisableExtend, JstfMaxExtend</CODE>
+  each of which is followed by a list of lookup names.
   <P>
   If the font contains ttf hinting, then the file may contain truetype tables,
   these may be stored in several formats depending on the table. For containting
