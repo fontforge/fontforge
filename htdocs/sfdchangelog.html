@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Mar-2009 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 27-Mar-2009 -->
   <TITLE>Change log for FontForge's sfd format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -17,6 +17,25 @@
   changes over time as fontforge supports more things. I have only recently
   started keeping track of these changes, so older changes are not listed here.
   <UL>
+    <LI>
+      15-Mar-2009
+      <UL>
+	<LI>
+	  Add a BDFRefChar keyword to support bitmap references (Alexey Kryukov)
+      </UL>
+    <LI>
+      5-Mar-2009
+      <UL>
+	<LI>
+	  Add support for the JSTF table in sfd.
+      </UL>
+    <LI>
+      12-Nov-2008
+      <UL>
+	<LI>
+	  Add a field to the font: ExtremaBound. Any spline where the distance between
+	  its end points is less than or equal to this will not be checked for extrema.
+      </UL>
     <LI>
       22-Aug-2008
       <UL>
