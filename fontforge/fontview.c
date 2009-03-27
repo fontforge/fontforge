@@ -244,7 +244,12 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 /* When reencoding a font we can find times where index>=show->charcnt */
 	} else if ( fv->show!=NULL && feat_gid<fv->show->glyphcnt && feat_gid!=-1 &&
 		fv->show->glyphs[feat_gid]!=NULL ) {
-	    bdfc = fv->show->glyphs[feat_gid];
+	    /* If fontview is set to display an embedded bitmap font (not a temporary font,
+	    /* rasterized specially for this purpose), then we can't use it directly, as bitmap
+	    /* glyphs may contain selections and references. So create a temporary copy of
+	    /* the glyph merging all such elements into a single bitmap */
+	    bdfc = fv->show->piecemeal ? 
+		fv->show->glyphs[feat_gid] : BDFGetMergedChar( fv->show->glyphs[feat_gid] );
 
 	    memset(&gi,'\0',sizeof(gi));
 	    memset(&base,'\0',sizeof(base));
@@ -275,6 +280,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		base.clut = &clut;
 		clut.clut_len = 2;
 		clut.clut[0] = fv->b.selected[index] ? fvselcol : view_bgcol ;
+		clut.clut[1] = fv->b.selected[index] ? fvselfgcol : 0 ;
 	    }
 	    base.trans = 0;
 	    base.clut->trans_index = 0;
@@ -348,6 +354,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		    GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,METRICS_ORIGIN);
 	    }
 	    GDrawPopClip(pixmap,&old2);
+	    if ( !fv->show->piecemeal ) BDFCharFree( bdfc );
 	}
     }
 }
@@ -1038,6 +1045,7 @@ static void FVMenuOpenBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
     SplineChar *sc;
+    fprintf(stderr,"open bmp\n");
 
     if ( fv->b.cidmaster==NULL ? (fv->b.sf->bitmaps==NULL) : (fv->b.cidmaster->bitmaps==NULL) )
 return;
@@ -3084,8 +3092,9 @@ static void FV_LayerChanged( FontView *fv ) {
 	(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 	    (use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	NULL);
-    FVChangeDisplayFont(fv,new);
     fv->filled = new;
+    FVChangeDisplayFont(fv,new);
+    fv->b.sf->display_size = -fv->filled->pixelsize;
     BDFFontFree(old);
 }
 
@@ -6885,7 +6894,7 @@ return;
 }
 
 static void FontView_ReformatAll(SplineFont *sf) {
-    BDFFont *new, *old;
+    BDFFont *new, *old, *bdf;
     FontView *fv;
     MetricsView *mvs;
     extern int use_freetype_to_rasterize_fv;
@@ -6904,6 +6913,12 @@ return;
 	fv->filled = new;
 	if ( fv->show==old )
 	    fv->show = new;
+	else {
+	    for ( bdf=sf->bitmaps; bdf != NULL &&
+		( bdf->pixelsize != fv->show->pixelsize || BDFDepth( bdf ) != BDFDepth( fv->show )); bdf=bdf->next );
+	    if ( bdf != NULL ) fv->show = bdf;
+	    else fv->show = new;
+	}
 	BDFFontFree(old);
 	fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
 	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);

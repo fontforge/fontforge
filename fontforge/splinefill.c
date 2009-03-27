@@ -1546,6 +1546,7 @@ return( NULL );
     }
 
     bdfc = chunkalloc(sizeof(BDFChar));
+    memset( bdfc,'\0',sizeof( BDFChar ));
     bdfc->sc = sc;
     bdfc->xmin = rint(es.omin);
     bdfc->ymin = es.mmin;
@@ -1898,8 +1899,13 @@ return( bdf );
 }
 
 void BDFCharFree(BDFChar *bdfc) {
+    BDFRefChar *head, *cur;
+    
     if ( bdfc==NULL )
 return;
+    for ( head = bdfc->refs; head != NULL; ) {
+	cur = head; head = head->next; free( cur );
+    }
     free(bdfc->bitmap);
     chunkfree(bdfc,sizeof(BDFChar));
 }

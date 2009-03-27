@@ -359,6 +359,10 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     int i, k, width, kernMax=1, descentMax=bdf->descent-1, rectMax=1, widMax=3;
     uint32 rlenpos = ftell(res), end, owloc, owpos;
     int gid;
+    BDFChar *bdfc;
+
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = bdf->glyphs[gid] ) != NULL )
+	BCPrepareForOutput( bdfc,true );
 
     for ( i=width=0; i<256 && i<map->enccount; ++i ) {
 	if ( (gid = map->map[i])!=-1 && gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL ) {
@@ -409,6 +413,9 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     lbearings[0] = widths[0] = 0;
     lbearings['\r'] = widths['\r'] = 0;
     lbearings['\t'] = 0; widths['\t'] = 6;
+
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = bdf->glyphs[gid] ) != NULL )
+	BCRestoreAfterOutput( bdfc );
 
     /* We've finished the bitmap conversion, now save it... */
     putlong(res,0);		/* Length, to be filled in later */
@@ -2409,6 +2416,7 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf,i
     int i,j, bits, bite, bit;
 
     bdfc = chunkalloc(sizeof(BDFChar));
+    memset( bdfc,'\0',sizeof( BDFChar ));
     bdfc->xmin = (font->offsetWidths[index]>>8)+font->kernMax;
     bdfc->xmax = bdfc->xmin + font->locs[index+1]-font->locs[index]-1;
     if ( bdfc->xmax<bdfc->xmin )

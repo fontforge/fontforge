@@ -1983,13 +1983,44 @@ EncMap *CompactEncMap(EncMap *map, SplineFont *sf) {
 return( map );
 }
 
-void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags) {
+static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
+    BDFRefChar *brhead, *brprev=NULL, *brnext;
+
+    for ( ; undo!=NULL; undo=undo->next ) {
+	switch ( undo->undotype ) {
+	  case ut_bitmap:
+	    for ( brhead=undo->u.bmpstate.refs; brhead != NULL; brhead=brnext ) {
+		brnext = brhead->next;
+		if ( brhead->bdfc == bc ) {
+		    BCPasteInto( &undo->u.bmpstate,bc,brhead->xoff,brhead->yoff,false,false );
+		    if ( brprev == NULL )
+			undo->u.bmpstate.refs = brnext;
+		    else
+			brprev->next = brnext;
+		    free( brhead );
+		} else
+		    brprev = brhead;
+	    }
+	  break;
+	  case ut_multiple:
+	    BCProtectUndoes( undo->u.multiple.mult,bc );
+	  break;
+	  case ut_composit:
+	    BCProtectUndoes( undo->u.composit.bitmaps,bc );
+	  break;
+	}
+    }
+}
+
+void SFRemoveGlyph( SplineFont *sf,SplineChar *sc, int *flags ) {
     struct splinecharlist *dep, *dnext;
-    RefChar *refs, *rnext;
+    struct bdfcharlist *bdep, *bdnext;
+    RefChar *rf, *refs, *rnext;
+    BDFRefChar *bref, *brnext, *brprev;
     KernPair *kp, *kprev;
     int i;
     BDFFont *bdf;
-    BDFChar *bfc;
+    BDFChar *bfc, *dbc;
     int layer;
 
     if ( sc==NULL )
@@ -2001,7 +2032,6 @@ return;
     /* Turn any references to this glyph into inline copies of it */
     for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
 	SplineChar *dsc = dep->sc;
-	RefChar *rf, *rnext;
 	dnext = dep->next;
 	/* May be more than one reference to us, colon has two refs to period */
 	/*  but only one dlist entry */
@@ -2040,6 +2070,41 @@ return;
 
     for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	if ( sc->orig_pos<bdf->glyphcnt && (bfc = bdf->glyphs[sc->orig_pos])!= NULL ) {
+	    /* Turn any references to this glyph into inline copies of it */
+	    for ( bdep=bfc->dependents; bdep!=NULL; bdep=bdnext ) {
+		dbc = bdep->bc;
+		bdnext = bdep->next;
+		brprev = NULL;
+		/* May be more than one reference to us, colon has two refs to period */
+		/*  but only one dlist entry */
+		for ( bref = dbc->refs; bref!=NULL; bref=brnext ) {
+		    brnext = bref->next;
+		    if ( bref->bdfc==bfc ) {
+			BCPasteInto( dbc,bref->bdfc,bref->xoff,bref->yoff,false,false );
+			if ( brprev == NULL ) dbc->refs = brnext;
+			else brprev->next = brnext;
+			free( bref );
+		    } else
+			brprev = bref;
+		}
+	    }
+	    /* Suppose we have deleted a reference from a composite glyph and than
+	    /* going to remove the previously referenced glyph from the font. The
+	    /* void reference still remains in the undoes stack, so that executing Undo/Redo
+	    /* on the first glyph may lead to unpredictable effects. It is also 
+	    /* impossible to detect such problematic undoes checking just our
+	    /* going-to-be-deleted glyph's dependents, because the composite character
+	    /* no longer contains the problematic reference and so is not listed
+	    /* in the dependents. Thus the only solution seems to be checking
+	    /* every single glyph in the font. */
+	    for ( i=0; i<bdf->glyphcnt; i++ ) if (( dbc = bdf->glyphs[i] ) != NULL ) {
+		BCProtectUndoes( dbc->undoes,bfc );
+		BCProtectUndoes( dbc->redoes,bfc );
+	    }
+	    for ( bref=bfc->refs; refs!=NULL; bref = brnext ) {
+		brnext = bref->next;
+		BCRemoveDependent( bfc,bref );
+	    }
 	    bdf->glyphs[sc->orig_pos] = NULL;
 	    BDFCharFree(bfc);
 	}

@@ -740,6 +740,43 @@ typedef struct macfeat {
     } *settings;
 } MacFeat;
 
+typedef struct refbdfc {
+    unsigned int checked: 1;
+    unsigned int selected: 1;
+    int8 xoff;
+    int8 yoff;
+    uint16 gid;
+    struct refbdfc *next;
+    struct bdfchar *bdfc;
+} BDFRefChar;
+
+typedef struct bdfchar {
+    struct splinechar *sc;
+    int16 xmin,xmax,ymin,ymax;
+    int16 width;
+    int16 bytes_per_line;
+    uint8 *bitmap;
+    struct refbdfc *refs;
+    int orig_pos;
+    int16 pixelsize;                    /* for undoes */
+    struct bitmapview *views;
+    struct undoes *undoes;
+    struct undoes *redoes;
+    unsigned int changed: 1;
+    unsigned int byte_data: 1;	/* for anti-aliased chars entries are grey-scale bytes not bw bits */
+    unsigned int widthgroup: 1;	/* for ttf bitmap output */
+    unsigned int isreference: 1;	/* for ttf bitmap input, */
+    unsigned int ticked: 1;
+    uint8 depth;			/* for ttf bitmap output */
+    uint16 vwidth;
+    BDFFloat *selection;
+    BDFFloat *backup;
+    struct bdfcharlist {
+	struct bdfchar *bc;
+	struct bdfcharlist *next;
+    } *dependents;
+} BDFChar;
+
 typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
@@ -777,15 +814,7 @@ typedef struct undoes {
 	int width;	/* used by both ut_width and ut_vwidth */
 	int lbearing;	/* used by ut_lbearing */
 	int rbearing;	/* used by ut_rbearing */
-	struct {
-	    int16 width;	/* width should be controled by postscript, but people don't like that */
-	    int16 xmin,xmax,ymin,ymax;
-	    int16 bytes_per_line;
-	    int16 pixelsize;
-	    int16 depth;
-	    uint8 *bitmap;
-	    BDFFloat *selection;
-	} bmpstate;
+	BDFChar bmpstate;
 	struct {		/* copy contains an outline state and a set of bitmap states */
 	    struct undoes *state;
 	    struct undoes *bitmaps;
@@ -804,26 +833,6 @@ typedef struct undoes {
     } u;
     struct splinefont *copied_from;
 } Undoes;
-
-typedef struct bdfchar {
-    struct splinechar *sc;
-    int16 xmin,xmax,ymin,ymax;
-    int16 width;
-    int16 bytes_per_line;
-    uint8 *bitmap;
-    int orig_pos;
-    struct bitmapview *views;
-    Undoes *undoes;
-    Undoes *redoes;
-    unsigned int changed: 1;
-    unsigned int byte_data: 1;		/* for anti-aliased chars entries are grey-scale bytes not bw bits */
-    unsigned int widthgroup: 1;		/* for ttf bitmap output */
-    unsigned int isreference: 1;	/* for ttf bitmap input, */
-    unsigned int ticked: 1;
-    uint8 depth;			/* for ttf bitmap output */
-    uint16 vwidth;
-    BDFFloat *selection;
-} BDFChar;
 
 typedef struct enc {
     char *enc_name;
@@ -2249,6 +2258,12 @@ extern BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index);
 enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4, pf_ft_recontext=8 };
 extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int ptsize, int dpi,int flags,void *freetype_context);
 extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
+extern int BDFCharQuickBounds(BDFChar *bc,IBounds *bb,int8 xoff,int8 yoff,int use_backup,int first);
+extern void BCPrepareForOutput(BDFChar *bc,int mergeall);
+extern void BCRestoreAfterOutput(BDFChar *bc);
+extern void BCMakeDependent(BDFChar *dependent,BDFChar *base);
+extern void BCRemoveDependent(BDFChar *dependent,BDFRefChar *rf);
+extern void BCExpandBitmapToEmBox(BDFChar *bc, int xmin, int ymin, int xmax, int ymax);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
 extern void BDFPropsFree(BDFFont *bdf);
@@ -2643,8 +2658,8 @@ extern int isaccent(int uni);
 extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc, int layer);
 extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int onlyaccents);
 extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);
-extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit);
-extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, int copybmp);
+/*extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit);*/
+extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bmp, int disp_only);
 extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,int pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 

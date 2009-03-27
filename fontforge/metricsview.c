@@ -121,7 +121,7 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	}
 	y += mv->perchar[i].yoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
-				mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
+				BDFGetMergedChar( mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos]);
 	if ( bdfc==NULL )
     continue;
 	y += as-rint(iscale * bdfc->ymax);
@@ -172,6 +172,7 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 			(int) rint((width*mv_scales[mv->scale_index])),
 			(int) rint((height*mv_scales[mv->scale_index])));
 	}
+	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL &&  MVShowGrid(mv) && mv->type==mv_kernwidth ) {
 	y = mv->perchar[si].dy-mv->yoff;
@@ -240,7 +241,7 @@ return;
 	else
 	    x += mv->perchar[i].xoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
-				mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
+				BDFGetMergedChar( mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos]);
 	if ( bdfc==NULL )
     continue;
 	x += rint( iscale * bdfc->xmin );
@@ -293,6 +294,7 @@ return;
 			(int) rint((width*mv_scales[mv->scale_index])),
 			(int) rint((height*mv_scales[mv->scale_index])));
 	}
+	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL && MVShowGrid(mv) && mv->type==mv_kernwidth ) {
 	x = mv->perchar[si].dx-mv->xoff;
@@ -2439,7 +2441,7 @@ static void _MVMenuBuildAccent(MetricsView *mv,int onlyaccents) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	if ( SFIsSomethingBuildable(mv->sf,sc,mv->layer,onlyaccents) )
-	    SCBuildComposit(mv->sf,sc,mv->layer,!onlycopydisplayed);
+	    SCBuildComposit(mv->sf,sc,mv->layer,NULL,onlycopydisplayed);
     }
 }
 

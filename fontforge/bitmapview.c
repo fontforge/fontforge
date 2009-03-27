@@ -137,6 +137,7 @@ static void BC_CharChangedUpdate(BDFChar *bc) {
     BitmapView *bv;
     int waschanged = bc->changed;
     FontView *fv;
+    struct bdfcharlist *dlist;
 
     bc->changed = true;
     for ( bv = bc->views; bv!=NULL; bv=bv->next ) {
@@ -154,6 +155,8 @@ static void BC_CharChangedUpdate(BDFChar *bc) {
 		FVToggleCharChanged(fv->b.sf->glyphs[bc->orig_pos]);
 	}
     }
+    for ( dlist=bc->dependents; dlist!=NULL; dlist=dlist->next )
+	BC_CharChangedUpdate(dlist->bc);
 }
 
 static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
@@ -229,6 +232,7 @@ static void BVHScroll(BitmapView *bv,struct sbevent *sb);
 static void BVVScroll(BitmapView *bv,struct sbevent *sb);
 
 void BVChar(BitmapView *bv, GEvent *event ) {
+    BDFRefChar *head;
 
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
@@ -292,9 +296,17 @@ return;
 	    if ( bv->bc->selection==NULL ) {
 		bv->bc->xmin += xoff;  bv->bc->xmax += xoff;
 		bv->bc->ymin += yoff;  bv->bc->ymax += yoff;
+		for ( head=bv->bc->refs; head!=NULL; head=head->next ) {
+		    if ( head->selected ) {
+			head->xoff += xoff;
+			head->yoff += yoff;
+		    }
+		}
 	    } else {
-		bv->bc->selection->xmin += xoff;  bv->bc->selection->xmax += xoff;
-		bv->bc->selection->ymin += yoff;  bv->bc->selection->ymax += yoff;
+		bv->bc->selection->xmin += xoff;
+		bv->bc->selection->xmax += xoff;
+		bv->bc->selection->ymin += yoff;
+		bv->bc->selection->ymax += yoff;
 	    }
 	    BCCharChangedUpdate(bv->bc);
 	}
@@ -361,6 +373,48 @@ static void BVDrawTempPoint(BitmapView *bv,int x, int y,void *pixmap) {
     GDrawSetStippled(pixmap,1, 0,0);
     GDrawFillRect(pixmap,&pixel,0x909000);
     GDrawSetStippled(pixmap,0, 0,0);
+}
+
+static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap, 
+	uint8 selected, int8 xoff, int8 yoff) {
+    int i, j;
+    int isblack, lw, rw, tw, bw;
+    int tx, ty;
+    Color outcolor = selected ? 0x606000 : 0x606060;
+
+    for ( i=bc->ymax-bc->ymin; i>=0; --i ) {
+	for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
+	    tx = bv->xoff + (bc->xmin + xoff +j)*bv->scale;
+	    ty = bv->height-bv->yoff - (bc->ymax + yoff - i)*bv->scale;
+	    
+	    isblack = ( !bc->byte_data &&
+		( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))))) ||
+		( bc->byte_data && bc->bitmap[i*bc->bytes_per_line+j] != 0 );
+	    if ( !isblack )
+	continue;
+	    lw = ( j == 0 || ( !bc->byte_data &&
+		!( bc->bitmap[i*bc->bytes_per_line+((j-1)>>3)] & (1<<(7-((j-1)&7))))) ||
+		( bc->byte_data && bc->bitmap[i*bc->bytes_per_line+j-1] == 0 ));
+	    rw = ( j == bc->xmax-bc->xmin || ( !bc->byte_data &&
+		!( bc->bitmap[i*bc->bytes_per_line+((j+1)>>3)] & (1<<(7-((j+1)&7))))) ||
+		( bc->byte_data && bc->bitmap[i*bc->bytes_per_line+j+1] == 0 ));
+	    tw = ( i == bc->ymax-bc->ymin || ( !bc->byte_data &&
+		!( bc->bitmap[(i+1)*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))))) ||
+		( bc->byte_data && bc->bitmap[(i+1)*bc->bytes_per_line+j] == 0 ));
+	    bw = ( i == 0 || ( !bc->byte_data &&
+		!( bc->bitmap[(i-1)*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))))) ||
+		( bc->byte_data && bc->bitmap[(i-1)*bc->bytes_per_line+j] == 0 ));
+	    
+	    if ( lw )
+		GDrawDrawLine(pixmap,tx+1,ty, tx+1,ty-bv->scale,outcolor);
+	    if ( rw )
+		GDrawDrawLine(pixmap,tx+bv->scale-1,ty, tx+bv->scale-1,ty-bv->scale,outcolor);
+	    if ( tw )
+		GDrawDrawLine(pixmap,tx,ty-1, tx+bv->scale,ty-1,outcolor);
+	    if ( bw )
+		GDrawDrawLine(pixmap,tx,ty-bv->scale+1, tx+bv->scale,ty-bv->scale+1,outcolor);
+	}
+    }
 }
 
 static void BVDrawSelection(BitmapView *bv,void *pixmap) {
@@ -555,14 +609,92 @@ void BCGeneralFunction(BitmapView *bv,
     }
 }
 
+static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) {
+    int x,y, len;
+    GRect size;
+    char *refinfo;
+    IBounds bb;
+
+    refinfo = galloc(strlen(ref->bdfc->sc->name) +  30);
+    sprintf(refinfo,"%s XOff: %d YOff: %d", ref->bdfc->sc->name, ref->xoff, ref->yoff);
+    
+    bb.minx = ref->bdfc->xmin + ref->xoff;
+    bb.maxx = ref->bdfc->xmax + ref->xoff;
+    bb.miny = ref->bdfc->ymin + ref->yoff;
+    bb.maxy = ref->bdfc->ymax + ref->yoff;
+    BDFCharQuickBounds(ref->bdfc,&bb,ref->xoff,ref->yoff,false,true);
+    x = bv->xoff + (bb.minx)*bv->scale;
+    y = bv->height - bv->yoff - (bb.maxy + 1)*bv->scale;
+    y -= 5;
+    if ( x<-400 || y<-40 || x>bv->width+400 || y>bv->height )
+return;
+
+    if ( GDrawHasCairo(pixmap)&gc_pango ) {
+	GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
+	GDrawLayoutExtents(pixmap,&size);
+	GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
+	len = size.width;
+    } else {
+	GDrawSetFont(pixmap,bv->small);
+	len = GDrawGetBiText8Width(pixmap,refinfo,-1,-1,NULL);
+	GDrawDrawBiText8(pixmap,x-len/2,y,refinfo,-1,NULL,fg);
+    }
+    free(refinfo);
+}
+
+static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixel,
+	uint8 is_ref, uint8 selected, int8 xoff, int8 yoff) {
+    int i, j;
+    int color = 0x808080;
+    BDFFont *bdf = bv->bdf;
+    BDFRefChar *cur;
+
+    if ( is_ref && !selected  )
+	GDrawSetStippled(pixmap,1, 0,0);
+    for ( i=bc->ymax-bc->ymin; i>=0; --i ) {
+	for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
+	    pixel->x = bv->xoff + (bc->xmin + xoff +j)*bv->scale;
+	    pixel->y = bv->height-bv->yoff - (bc->ymax + yoff - i + 1)*bv->scale;
+	    if ( bdf->clut==NULL ) {
+		if ( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) ) {
+		    GDrawFillRect(pixmap,pixel,color);
+		    if ( selected ) {
+			GDrawSetStippled(pixmap,2, 0,0);
+			GDrawFillRect(pixmap,pixel,0x909000);
+			GDrawSetStippled(pixmap,0, 0,0);
+		    }
+		}
+	    } else {
+		int index = bc->bitmap[i*bc->bytes_per_line+j];
+		if ( index!=0 ) {
+		    GDrawFillRect(pixmap,pixel,bdf->clut->clut[index]);
+		    if ( selected ) {
+			GDrawSetStippled(pixmap,2, 0,0);
+			GDrawFillRect(pixmap,pixel,0x909000);
+			GDrawSetStippled(pixmap,0, 0,0);
+		    }
+		}
+	    }
+	}
+    }
+    if ( is_ref ) {
+	GDrawSetStippled(pixmap,0, 0,0);
+	BVDrawRefBorder( bv,bc,pixmap,selected,xoff,yoff );
+    }
+    for ( cur=bc->refs; cur!=NULL; cur=cur->next ) if ( cur->bdfc != NULL ) {
+	BVDrawGlyph( bv,cur->bdfc,pixmap,pixel,true,(cur->selected | selected),
+	    xoff+cur->xoff,yoff+cur->yoff );
+    }
+}
+
 static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     CharView cvtemp;
     GRect old;
     DRect clip;
-    int i,j;
+    int i;
     GRect pixel;
     BDFChar *bc = bv->bc;
-    BDFFont *bdf = bv->bdf;
+    BDFRefChar *bref;
     RefChar *refs;
     extern Color widthcol;
 
@@ -572,26 +704,15 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	/* fore ground is a misnomer. it's what we're interested in but we */
 	/*  actually need to draw it first, otherwise it obscures everything */
 	pixel.width = pixel.height = bv->scale+1;
-	for ( i=bc->ymax-bc->ymin; i>=0; --i ) {
-	    for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
-		pixel.x = bv->xoff + (bc->xmin+j)*bv->scale;
-		pixel.y = bv->height-bv->yoff-(bc->ymax-i+1)*bv->scale;
-		if ( bdf->clut==NULL ) {
-		    if ( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))) )
-			GDrawFillRect(pixmap,&pixel,0x808080);
-		} else {
-		    int index = bc->bitmap[i*bc->bytes_per_line+j];
-		    if ( index!=0 )
-			GDrawFillRect(pixmap,&pixel,bdf->clut->clut[index]);
-		}
-	    }
-	}
+	BVDrawGlyph( bv,bc,pixmap,&pixel,false,false,0,0 );
+	
 	if ( bv->active_tool!=bvt_none ) {
 	    /* This does nothing for many tools, but for lines, rects and circles */
 	    /*  it draws temporary points */
 	    BCGeneralFunction(bv,BVDrawTempPoint,pixmap);
 	}
-	if ( bv->bc->selection )
+	/* Selected references are handled in BVDrawGlyph() */
+	if ( bv->bc->selection ) 
 	    BVDrawSelection(bv,pixmap);
     }
     if ( bv->showgrid ) {
@@ -615,6 +736,11 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	if ( bv->bdf->sf->hasvmetrics )
 	    GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,
 		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,widthcol);
+    }
+    if ( bv->showfore ) {
+	/* Reference names are drawn after grid (otherwise some characters may get unreadable */
+	for ( bref=bc->refs; bref!=NULL; bref=bref->next )
+	    BVDrawRefName( bv,pixmap,bref,0 );
     }
     if ( bv->showoutline ) {
 	Color col = (view_bgcol<0x808080)
@@ -686,7 +812,7 @@ static void BVMainExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     GImage gi;
     struct _GImage base;
     GClut clut;
-    BDFChar *bdfc = bv->bc;
+    BDFChar *bdfc = BDFGetMergedChar( bv->bc );
 
     temp = event->u.expose.rect;
     if ( temp.y+temp.height < bv->mbh )
@@ -742,6 +868,7 @@ return;
     LogoExpose(pixmap,event,&r,dm_fore);
 
     GDrawPopClip(pixmap,&old);
+    BDFCharFree( bdfc );
 }
 
 static void BVShowInfo(BitmapView *bv) {
@@ -940,6 +1067,31 @@ int BVColor(BitmapView *bv) {
 return ( (bv->color+div/2)/div );
 }
 
+static int IsReferenceTouched(BitmapView *bv, BDFRefChar *ref, int x, int y){
+    BDFRefChar *head;
+    BDFChar *rbc;
+    int nx, ny;
+
+    if ( ref == NULL )
+return( false );
+
+    rbc = ref->bdfc;
+    ny = rbc->ymax - y + ref->yoff;
+    nx = x - rbc->xmin - ref->xoff;
+    if (nx>=0 && nx<=( rbc->xmax - rbc->xmin ) && 
+	ny>=0 && ny<=( rbc->ymax - rbc->ymin ) &&
+	(( rbc->byte_data && rbc->bitmap[ny*rbc->bytes_per_line+nx] != 0 ) ||
+	(( !rbc->byte_data && 
+	    rbc->bitmap[ny*rbc->bytes_per_line + (nx>>3)] & (1<<(7 - (nx&7)))))))
+return( true );
+
+    for ( head = rbc->refs; head != NULL; head = head->next ) {
+	if ( IsReferenceTouched( bv,head,x,y))
+return( true );
+    }
+return( false );
+}
+
 static void BVMouseDown(BitmapView *bv, GEvent *event) {
     int x = floor( (event->u.mouse.x-bv->xoff)/ (real) bv->scale);
     int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (real) bv->scale);
@@ -947,6 +1099,7 @@ static void BVMouseDown(BitmapView *bv, GEvent *event) {
     BDFChar *bc = bv->bc;
     BDFFloat *sel;
     int color_under_cursor;
+    BDFRefChar *refsel = NULL, *head;
 
     if ( event->u.mouse.button==2 && event->u.mouse.device!=NULL &&
 	    strcmp(event->u.mouse.device,"stylus")==0 )
@@ -972,6 +1125,10 @@ return;
     BVPaletteColorUnderChange(bv,color_under_cursor);
     bv->event_x = event->u.mouse.x; bv->event_y = event->u.mouse.y;
     bv->recentchange = false;
+    for ( head = bc->refs; head != NULL; head = head->next ) {
+	if ( IsReferenceTouched( bv,head,x,y ))
+	    refsel = head;
+    }
     switch ( bv->active_tool ) {
       case bvt_eyedropper:
 	bv->color = color_under_cursor;
@@ -986,8 +1143,8 @@ return;
 		ny>=0 && ny<=bc->ymax-bc->ymin ) {
 	    int nx = x-bc->xmin;
 	    if ( bc->bitmap[ny*bc->bytes_per_line + (nx>>3)] &
-		    (1<<(7-(nx&7))) )
-		bv->clearing = true;
+		(1<<(7-(nx&7))) )
+	    bv->clearing = true;
 	}
 	BCPreserveState(bc);
 	BCFlattenFloat(bc);
@@ -1001,7 +1158,16 @@ return;
 	BCCharChangedUpdate(bc);
       break;
       case bvt_pointer:
-	if ( (sel = bc->selection)!=NULL ) {
+	if ( !( event->u.mouse.state&ksm_shift )) {
+	    for ( head = bc->refs; head != NULL; head=head->next )
+		head->selected = false;
+	}
+	if ( refsel != NULL ) {
+	    BCFlattenFloat(bc);
+	    refsel->selected = ( event->u.mouse.state&ksm_shift ) ?
+		!(refsel->selected) : true;
+	    GDrawSetCursor(bv->v,ct_shift);
+	} else if ( (sel = bc->selection)!=NULL ) {
 	    if ( x<sel->xmin || x>sel->xmax || y<sel->ymin || y>sel->ymax )
 		BCFlattenFloat(bc);
 	    else {
@@ -1036,7 +1202,8 @@ static void BVMouseMove(BitmapView *bv, GEvent *event) {
     int newx, newy;
     int fh = bv->bdf->ascent+bv->bdf->descent;
     BDFChar *bc = bv->bc;
-    int color_under_cursor, ny;
+    int color_under_cursor, ny, has_selected_refs = false;
+    BDFRefChar *head;
 
     bv->info_x = x; bv->info_y = y;
     ny = bc->ymax-y;
@@ -1090,21 +1257,40 @@ return;			/* Not pressed */
 	    bc->xmax += x-bv->pressed_x;
 	    bc->ymin += y-bv->pressed_y;
 	    bc->ymax += y-bv->pressed_y;
+
+	    for ( head=bc->refs; head!=NULL; head=head->next ) {
+		if ( head->selected ) {
+		    head->xoff += x-bv->pressed_x;
+		    head->yoff += y-bv->pressed_y;
+		}
+	    }
 	    BCCharChangedUpdate(bc);
 	    bv->pressed_x = x; bv->pressed_y = y;
 	}
       break;
       case bvt_pointer:
-	if ( bc->selection!=NULL ) {
+	for ( head=bc->refs; head!=NULL && !has_selected_refs; head=head->next ) {
+	    if ( head->selected ) has_selected_refs = true;
+	}
+	if ( bc->selection!=NULL || has_selected_refs ) {
 	    if ( x!=bv->pressed_x || y!=bv->pressed_y ) {
 		if ( !bv->recentchange ) {
 		    BCPreserveState(bc);
 		    bv->recentchange = true;
 		}
-		bc->selection->xmin += x-bv->pressed_x;
-		bc->selection->xmax += x-bv->pressed_x;
-		bc->selection->ymin += y-bv->pressed_y;
-		bc->selection->ymax += y-bv->pressed_y;
+		if ( has_selected_refs ) {
+		    for ( head=bc->refs; head!=NULL; head=head->next ) {
+			if ( head->selected ) {
+			    head->xoff += x-bv->pressed_x;
+			    head->yoff += y-bv->pressed_y;
+			}
+		    }
+		} else if ( bc->selection != NULL ) {
+		    bc->selection->xmin += x-bv->pressed_x;
+		    bc->selection->xmax += x-bv->pressed_x;
+		    bc->selection->ymin += y-bv->pressed_y;
+		    bc->selection->ymax += y-bv->pressed_y;
+		}
 		BCCharChangedUpdate(bc);
 		bv->pressed_x = x; bv->pressed_y = y;
 	    }
@@ -1130,17 +1316,24 @@ static void BVMagnify(BitmapView *bv, int midx, int midy, int bigger);
 static void BVMouseUp(BitmapView *bv, GEvent *event) {
     int x = floor( (event->u.mouse.x-bv->xoff)/ (real) bv->scale);
     int y = floor( (bv->height-event->u.mouse.y-bv->yoff)/ (real) bv->scale);
+    BDFRefChar *refsel = NULL, *head;
 
     BVMouseMove(bv,event);
+    for ( head = bv->bc->refs; head != NULL; head = head->next ) {
+	if ( IsReferenceTouched( bv,head,x,y ))
+	    refsel = head;
+    }
     switch ( bv->active_tool ) {
       case bvt_magnify: case bvt_minify:
 	BVMagnify(bv,x,y,bv->active_tool==bvt_magnify?1:-1);
       break;
       case bvt_line: case bvt_rect: case bvt_filledrect:
       case bvt_elipse: case bvt_filledelipse:
-	BCGeneralFunction(bv,BVSetPoint,NULL);
-	bv->active_tool = bvt_none;
-	BCCharChangedUpdate(bv->bc);
+	if ( refsel == NULL ) {
+	    BCGeneralFunction(bv,BVSetPoint,NULL);
+	    bv->active_tool = bvt_none;
+	    BCCharChangedUpdate(bv->bc);
+	}
       break;
       case bvt_pointer:
 	if ( bv->bc->selection!=NULL ) {
@@ -1150,6 +1343,10 @@ static void BVMouseUp(BitmapView *bv, GEvent *event) {
 		BCFlattenFloat(bv->bc);
 		BCCharChangedUpdate(bv->bc);
 	    }
+	} else if ( refsel ) {
+	    GDrawSetCursor(bv->v,ct_mypointer);
+	    bv->active_tool = bvt_none;
+	    BCCharChangedUpdate(bv->bc);
 	} else {
 	    int dx,dy;
 	    if ( (dx = event->u.mouse.x-bv->event_x)<0 ) dx = -dx;
@@ -1281,7 +1478,7 @@ return( GGadgetDispatchEvent(bv->vsb,event));
 	BVPaletteActivate(bv);
       break;
       case et_mousemove:
-        enc = BVCurEnc(bv);
+	enc = BVCurEnc(bv);
 	SCPreparePopup(bv->gw,bv->bc->sc,bv->fv->b.map->remap,enc,
 		UniFromEnc(enc,bv->fv->b.map->enc));
       break;
@@ -1309,6 +1506,8 @@ return( true );
 #define MID_Paste	2103
 #define MID_Clear	2104
 #define MID_SelAll	2106
+#define MID_CopyRef	2107
+#define MID_UnlinkRef	2108
 #define MID_Undo	2109
 #define MID_Redo	2110
 #define MID_RemoveUndoes 2111
@@ -1574,6 +1773,32 @@ return;
     BCDoRedo(bv->bc);
 }
 
+static void _BVUnlinkRef(BitmapView *bv) {
+    int anyrefs = false;
+    BDFRefChar *ref, *next, *prev = NULL;
+
+    if ( bv->bc->refs!=NULL ) {
+	BCPreserveState(bv->bc);
+	for ( ref=bv->bc->refs; ref!=NULL && !anyrefs; ref=ref->next )
+	    if ( ref->selected ) anyrefs = true;
+	for ( ref=bv->bc->refs; ref!=NULL ; ref=next ) {
+	    next = ref->next;
+	    if ( ref->selected || !anyrefs) {
+		BCPasteInto( bv->bc,ref->bdfc,ref->xoff,ref->yoff,false,false );
+		BCMergeReferences( bv->bc,ref->bdfc,ref->xoff,ref->yoff );
+		BCRemoveDependent( bv->bc,ref );
+	    } else
+		prev = ref;
+	}
+	BCCharChangedUpdate(bv->bc);
+    }
+}
+
+static void BVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    _BVUnlinkRef(bv);
+}
+
 static void BVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     UndoesFree(bv->bc->undoes); bv->bc->undoes = NULL;
@@ -1585,12 +1810,34 @@ static void BVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BCCopySelected(bv->bc,bv->bdf->pixelsize,BDFDepth(bv->bdf));
 }
 
+static void BVCopyRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    BCCopyReference(bv->bc,bv->bdf->pixelsize,BDFDepth(bv->bdf));
+}
+
 static void BVDoClear(BitmapView *bv) {
-    if ( bv->bc->selection!=NULL ) {
-	BCPreserveState(bv->bc);
-	BDFFloatFree(bv->bc->selection);
+    BDFRefChar *head, *next;
+    BDFChar *bc = bv->bc;
+    int refs_changed = false;
+    
+    for ( head=bc->refs; head!=NULL; head=next ) {
+	next = head->next;
+	if ( head->selected ) {
+	    if ( !refs_changed ) {
+		BCPreserveState( bc );
+		refs_changed = true;
+	    }
+	    BCRemoveDependent( bc,head );
+	}
+    }
+    
+    if ( bc->selection!=NULL ) {
+	BCPreserveState( bc );
+	BDFFloatFree( bc->selection );
 	bv->bc->selection = NULL;
-	BCCharChangedUpdate(bv->bc);
+	BCCharChangedUpdate( bc );
+    } else if ( refs_changed ) {
+	BCCharChangedUpdate( bc );
     }
 }
 
@@ -1607,8 +1854,6 @@ static void BVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void BVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    if ( bv->bc->selection==NULL )
-return;
     BVCopy(gw,mi,e);
     BVDoClear(bv);
 }
@@ -1730,6 +1975,9 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_RemoveUndoes:
 	    mi->ti.disabled = bv->bc->redoes==NULL && bv->bc->undoes==NULL;
+	  break;
+	  case MID_UnlinkRef:
+	    mi->ti.disabled = bv->bc->refs==NULL;
 	  break;
 	}
     }
@@ -1860,12 +2108,15 @@ static GMenuItem2 edlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Cu_t"), (GImage *) "editcut.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, BVCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), (GImage *) "editcopy.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, BVCopy, MID_Copy },
+    { { (unichar_t *) N_("C_opy Reference"), (GImage *) "editcopyref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Reference|Ctl+G"), NULL, NULL, BVCopyRef, MID_CopyRef },
     { { (unichar_t *) N_("_Paste"), (GImage *) "editpaste.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Paste|Ctl+V"), NULL, NULL, BVPaste, MID_Paste },
     { { (unichar_t *) N_("C_lear"), (GImage *) "editclear.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Clear|Delete"), NULL, NULL, BVClear, MID_Clear },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Select _All"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Select All|Ctl+A"), NULL, NULL, BVSelectAll, MID_SelAll },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Remo_ve Undoes"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, BVRemoveUndoes, MID_RemoveUndoes },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|Ctl+U"), NULL, NULL, BVUnlinkRef, MID_UnlinkRef },
     { NULL }
 };
 
@@ -2060,14 +2311,14 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     wattrs.mask = wam_events|wam_cursor|wam_backcol;
     wattrs.background_color = view_bgcol;
     wattrs.event_masks = -1;
-    wattrs.cursor = ct_pencil;
+    wattrs.cursor = ( bc->refs == NULL ) ? ct_pencil : ct_pointer;
     bv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,bv,&wattrs);
 
     bv->height = pos.height; bv->width = pos.width;
-    bv->b1_tool = bvt_pencil; bv->cb1_tool = bvt_pointer;
+    bv->b1_tool = ( bc->refs == NULL ) ? bvt_pencil : bvt_pointer; bv->cb1_tool = bvt_pointer;
     bv->b2_tool = bvt_magnify; bv->cb2_tool = bvt_shift;
     bv->s1_tool = bv->s2_tool = bv->er_tool = bvt_pointer;
-    bv->showing_tool = bvt_pencil;
+    bv->showing_tool = ( bc->refs == NULL ) ? bvt_pencil : bvt_pointer;
     bv->pressed_tool = bv->pressed_display = bv->active_tool = bvt_none;
 
     /*GWidgetHidePalettes();*/

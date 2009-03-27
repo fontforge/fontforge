@@ -42,16 +42,50 @@ static FontViewBase *fv_list=NULL;
 extern int onlycopydisplayed;
 float joinsnap=0;
 
-static int UnselectedDependents(FontViewBase *fv, SplineChar *sc) {
+static int SCUnselectedDependents(FontViewBase *fv, SplineChar *sc) {
     struct splinecharlist *dep;
+
+    if ( sc == NULL )
+return( false );
 
     for ( dep=sc->dependents; dep!=NULL; dep=dep->next ) {
 	if ( !fv->selected[fv->map->backmap[dep->sc->orig_pos]] )
 return( true );
-	if ( UnselectedDependents(fv,dep->sc))
+	if ( SCUnselectedDependents(fv,dep->sc))
 return( true );
     }
 return( false );
+}
+
+static int BCUnselectedDependents(FontViewBase *fv, BDFChar *bc) {
+    struct bdfcharlist *dep;
+    
+    if ( bc == NULL )
+return( false );
+
+    for ( dep=bc->dependents; dep!=NULL; dep=dep->next ) {
+	if ( !fv->selected[fv->map->backmap[dep->bc->orig_pos]] )
+return( true );
+	if ( BCUnselectedDependents(fv,dep->bc))
+return( true );
+    }
+return( false );
+}
+
+static int UnselectedDependents(FontViewBase *fv,int gid) {
+    int ret = false;
+    BDFFont *bdf;
+
+    if ( onlycopydisplayed && fv->active_bitmap == NULL ) {
+	ret = SCUnselectedDependents( fv,fv->sf->glyphs[gid] );
+    } else if ( onlycopydisplayed ) {
+	ret = BCUnselectedDependents( fv,fv->active_bitmap->glyphs[gid] );
+    } else {
+	ret = SCUnselectedDependents( fv,fv->sf->glyphs[gid] );
+	for ( bdf=fv->sf->cidmaster?fv->sf->cidmaster->bitmaps:fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+	    ret |= BCUnselectedDependents( fv,bdf->glyphs[gid] );
+    }
+return( ret );
 }
 
 void FVClear(FontViewBase *fv) {
@@ -63,34 +97,37 @@ void FVClear(FontViewBase *fv) {
     /* refstate==0 => ask, refstate==1 => clearall, refstate==-1 => skip all */
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 ) {
-	if ( !onlycopydisplayed || fv->active_bitmap==NULL ) {
-	    /* If we are messing with the outline character, check for dependencies */
-	    if ( refstate<=0 && fv->sf->glyphs[gid]!=NULL &&
-		    fv->sf->glyphs[gid]->dependents!=NULL ) {
-		unsel = UnselectedDependents(fv,fv->sf->glyphs[gid]);
-		if ( refstate==-2 && unsel ) {
-		    UnlinkThisReference(fv,fv->sf->glyphs[gid],fv->active_layer);
-		} else if ( unsel ) {
-		    if ( refstate<0 )
+	/* If we are messing with the outline character, check for dependencies */
+	if ( refstate<=0 && ( unsel = UnselectedDependents( fv,gid ))) {
+	    if ( refstate==0 ) {
+		buts[0] = _("_Yes");
+		buts[1] = _("Yes to _All");
+		buts[2] = _("_Unlink All");
+		buts[3] = _("No _to All");
+		buts[4] = _("_No");
+		buts[5] = NULL;
+		yes = ff_ask(_("Bad Reference"),(const char **) buts,2,4,_("You are attempting to clear %.30s which is referred to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
+		if ( yes==1 )
+		    refstate = 1;
+		else if ( yes==2 )
+		    refstate = -2;
+		else if ( yes==3 )
+		    refstate = -1;
+		else if ( yes==4 )
     continue;
-		    buts[0] = _("_Yes");
-		    buts[1] = _("Yes to _All");
-		    buts[2] = _("_Unlink All");
-		    buts[3] = _("No _to All");
-		    buts[4] = _("_No");
-		    buts[5] = NULL;
-		    yes = ff_ask(_("Bad Reference"),(const char **) buts,2,4,_("You are attempting to clear %.30s which is referred to by\nanother character. Are you sure you want to clear it?"),fv->sf->glyphs[gid]->name);
-		    if ( yes==1 )
-			refstate = 1;
-		    else if ( yes==2 ) {
-			UnlinkThisReference(fv,fv->sf->glyphs[gid],fv->active_layer);
-			refstate = -2;
-		    } else if ( yes==3 )
-			refstate = -1;
-		    if ( yes>=3 )
-    continue;
-		}
 	    }
+	    if ( refstate==-2 ) {
+		if ( onlycopydisplayed && fv->active_bitmap == NULL )
+		    UnlinkThisReference( fv,fv->sf->glyphs[gid],fv->active_layer );
+		else if ( onlycopydisplayed && fv->active_bitmap != NULL )
+		    BCUnlinkThisReference( fv,fv->active_bitmap->glyphs[gid] );
+		else {
+		    UnlinkThisReference(fv,fv->sf->glyphs[gid],fv->active_layer);
+		    for ( bdf=fv->sf->cidmaster?fv->sf->cidmaster->bitmaps:fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
+			BCUnlinkThisReference( fv,fv->active_bitmap->glyphs[gid] );
+		}
+	    } else if ( refstate == -1 )
+    continue;
 	}
 
 	if ( onlycopydisplayed && fv->active_bitmap==NULL ) {
@@ -99,7 +136,7 @@ void FVClear(FontViewBase *fv) {
 	    BCClearAll(fv->active_bitmap->glyphs[gid]);
 	} else {
 	    SCClearAll(fv->sf->glyphs[gid],fv->active_layer);
-	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
+	    for ( bdf=fv->sf->cidmaster?fv->sf->cidmaster->bitmaps:fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 		BCClearAll(bdf->glyphs[gid]);
 	}
     }
@@ -131,23 +168,43 @@ void FVUnlinkRef(FontViewBase *fv) {
     int i,layer, first, last, gid;
     SplineChar *sc;
     RefChar *rf, *next;
+    BDFFont *bdf;
+    BDFChar *bdfc;
+    BDFRefChar *head, *cur;
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
-	    (gid = fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
-	     sc->layers[fv->active_layer].refs!=NULL ) {
-	SCPreserveLayer(sc,fv->active_layer,false);
-	if ( sc->parent->multilayer ) {
-	    first = ly_fore;
-	    last = sc->layer_cnt-1;
-	} else
-	    first = last = fv->active_layer;
-	for ( layer=first; layer<=last; ++layer ) {
-	    for ( rf=sc->layers[layer].refs; rf!=NULL ; rf=next ) {
-		next = rf->next;
-		SCRefToSplines(sc,rf,layer);
+	    (gid = fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL) {
+	if (( fv->active_bitmap==NULL || !onlycopydisplayed ) && 
+		sc->layers[fv->active_layer].refs!=NULL) {
+	    SCPreserveLayer(sc,fv->active_layer,false);
+	    if ( sc->parent->multilayer ) {
+		first = ly_fore;
+		last = sc->layer_cnt-1;
+	    } else
+		first = last = fv->active_layer;
+	    for ( layer=first; layer<=last; ++layer ) {
+		for ( rf=sc->layers[layer].refs; rf!=NULL ; rf=next ) {
+		    next = rf->next;
+		    SCRefToSplines(sc,rf,layer);
+		}
+	    }
+	    SCCharChangedUpdate( sc,fv->active_layer );
+	}
+
+	for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	    if ( bdf != fv->active_bitmap && onlycopydisplayed )
+	continue;
+	
+	    bdfc = gid==-1 || gid>=bdf->glyphcnt? NULL : bdf->glyphs[gid];
+	    if ( bdfc != NULL && bdfc->refs != NULL ) {
+		BCMergeReferences( bdfc,bdfc,0,0 );
+		for ( head = bdfc->refs; head != NULL; ) {
+		    cur = head; head = cur->next; free( cur );
+		}
+		bdfc->refs = NULL;
+		BCCharChangedUpdate(bdfc);
 	    }
 	}
-	SCCharChangedUpdate(sc,fv->active_layer);
     }
 }
 
@@ -155,27 +212,39 @@ void FVUndo(FontViewBase *fv) {
     int i,j,layer,first,last, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
+    BDFFont *bdf;
+    BDFChar *bdfc;
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
-	    SplineChar *sc = fv->sf->glyphs[gid];
-	    if ( sc->parent->multilayer ) {
-		first = ly_fore;
-		last = sc->layer_cnt-1;
-	    } else
-		first = last = fv->active_layer;
-	    for ( layer=first; layer<=last; ++layer ) {
-		if ( sc->layers[layer].undoes!=NULL ) {
-		    SCDoUndo(sc,layer);
-		    if ( was_blended ) {
-			for ( j=0; j<mm->instance_count; ++j )
-			    SCDoUndo(mm->instances[j]->glyphs[gid],layer);
+	    if ( fv->active_bitmap==NULL || !onlycopydisplayed ) {
+		SplineChar *sc = fv->sf->glyphs[gid];
+		if ( sc->parent->multilayer ) {
+		    first = ly_fore;
+		    last = sc->layer_cnt-1;
+		} else
+		    first = last = fv->active_layer;
+		for ( layer=first; layer<=last; ++layer ) {
+		    if ( sc->layers[layer].undoes!=NULL ) {
+			SCDoUndo(sc,layer);
+			if ( was_blended ) {
+			    for ( j=0; j<mm->instance_count; ++j )
+				SCDoUndo(mm->instances[j]->glyphs[gid],layer);
+			}
 		    }
 		}
+		sc->ticked = true;
 	    }
-	    sc->ticked = true;
+	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		if ( bdf != fv->active_bitmap && onlycopydisplayed )
+	    continue;
+	    
+	    	bdfc = bdf->glyphs[gid];
+	    	if ( bdfc != NULL && bdfc->undoes != NULL )
+	    	    BCDoUndo( bdfc );
+	    }
 	}
 }
 
@@ -183,27 +252,39 @@ void FVRedo(FontViewBase *fv) {
     int i,j,layer,first,last, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
+    BDFFont *bdf;
+    BDFChar *bdfc;
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
-	    SplineChar *sc = fv->sf->glyphs[gid];
-	    if ( sc->parent->multilayer ) {
-		first = ly_fore;
-		last = sc->layer_cnt-1;
-	    } else
-		first = last = fv->active_layer;
-	    for ( layer=first; layer<=last; ++layer ) {
-		if ( sc->layers[layer].redoes!=NULL ) {
-		    SCDoRedo(sc,layer);
-		    if ( was_blended ) {
-			for ( j=0; j<mm->instance_count; ++j )
-			    SCDoRedo(mm->instances[j]->glyphs[gid],layer);
+	    if ( fv->active_bitmap==NULL || !onlycopydisplayed ) {
+		SplineChar *sc = fv->sf->glyphs[gid];
+		if ( sc->parent->multilayer ) {
+		    first = ly_fore;
+		    last = sc->layer_cnt-1;
+		} else
+		    first = last = fv->active_layer;
+		for ( layer=first; layer<=last; ++layer ) {
+		    if ( sc->layers[layer].redoes!=NULL ) {
+			SCDoRedo(sc,layer);
+			if ( was_blended ) {
+			    for ( j=0; j<mm->instance_count; ++j )
+				SCDoRedo(mm->instances[j]->glyphs[gid],layer);
+			}
 		    }
 		}
+		sc->ticked = true;
 	    }
-	    sc->ticked = true;
+	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+		if ( bdf != fv->active_bitmap && onlycopydisplayed )
+	    continue;
+	    
+	    	bdfc = bdf->glyphs[gid];
+	    	if ( bdfc != NULL && bdfc->redoes != NULL )
+	    	    BCDoRedo( bdfc );
+	    }
 	}
 }
 
@@ -1329,7 +1410,7 @@ void FVBuildAccent(FontViewBase *fv,int onlyaccents) {
 	if ( SFIsSomethingBuildable(fv->sf,sc,fv->active_layer,onlyaccents) ) {
 	    sc = SFMakeChar(fv->sf,fv->map,i);
 	    sc->ticked = true;
-	    SCBuildComposit(fv->sf,sc,fv->active_layer,!onlycopydisplayed);
+	    SCBuildComposit(fv->sf,sc,fv->active_layer,fv->active_bitmap,onlycopydisplayed);
 	}
 	if ( !ff_progress_next())
     break;

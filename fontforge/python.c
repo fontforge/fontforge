@@ -5464,7 +5464,7 @@ static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
     int layer = ((PyFF_Glyph *) self)->layer;
 
     if ( SFIsSomethingBuildable(sc->parent,sc,layer,false) )
-	SCBuildComposit(sc->parent,sc,layer,true);
+	SCBuildComposit(sc->parent,sc,layer,NULL,true);
 
 Py_RETURN( self );
 }

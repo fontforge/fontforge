@@ -77,7 +77,7 @@ return( x );
     gid = sc->orig_pos;
     if ( gid!=-1 && fd->bdf->glyphs[gid]==NULL )
 	BDFPieceMeal(fd->bdf,gid);
-    if ( gid==-1 || (bdfc=fd->bdf->glyphs[gid])==NULL ) {
+    if ( gid==-1 || fd->bdf->glyphs[gid]==NULL ) {
 	if ( col!=-1 ) {
 	    GRect r;
 	    r.x = x+1; r.width= osc->advance_width-2;
@@ -86,6 +86,8 @@ return( x );
 	}
 	x += fd->bdf->ascent/2;
     } else {
+	bdfc = fd->fonttype==sftf_bitmap ? 
+	    BDFGetMergedChar( fd->bdf->glyphs[gid] ) : fd->bdf->glyphs[gid];
 	if ( col!=-1 ) {
 	    if ( !fd->antialias )
 		fd->clut.clut[1] = col;		/* Only works for bitmaps */
@@ -101,6 +103,7 @@ return( x );
 	    fd->base.clut->trans_index = -1;
 	}
 	x += bdfc->width;
+	if ( fd->fonttype==sftf_bitmap ) BDFCharFree( bdfc );
     }
 return( x );
 }

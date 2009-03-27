@@ -307,10 +307,29 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     }
 }
 
+static int BCHasOutputtableBitmap( BDFChar *bc ) {
+    int i;
+    
+    for ( i=0; i<bc->bytes_per_line * ( bc->ymax - bc->ymin + 1 ); i++ ) {
+	if ( bc->bitmap[i] != 0 )
+return( true );	
+    }
+return( false );	
+}
+
 void BCExpandBitmapToEmBox(BDFChar *bc, int xmin, int ymin, int xmax, int ymax) {
     /* Expand a bitmap so it will always contain 0..width, ascent..descent */
-    BCExpandBitmap(bc,xmin,ymin);
-    BCExpandBitmap(bc,xmax,ymax);
+    
+    if ( !BCHasOutputtableBitmap( bc )) {
+	free( bc->bitmap );
+	bc->bytes_per_line = xmax - xmin + 1;
+	bc->xmin = xmin; bc->xmax = xmax;
+	bc->ymin = ymin; bc->ymax = ymax;
+	bc->bitmap = gcalloc(( ymax - ymin + 1) * bc->bytes_per_line, sizeof( uint8 ));
+    } else {
+	BCExpandBitmap(bc,xmin,ymin);
+	BCExpandBitmap(bc,xmax,ymax);
+    }
 }
 
 void BCSetPoint(BDFChar *bc, int x, int y, int color ) {
@@ -457,8 +476,7 @@ void BCFlattenFloat(BDFChar *bc ) {
     uint8 *bpt, *spt;
 
     if ( sel!=NULL ) {
-	BCExpandBitmap(bc,sel->xmin,sel->ymin);
-	BCExpandBitmap(bc,sel->xmax,sel->ymax);
+	BCExpandBitmapToEmBox( bc,sel->xmin,sel->ymin,sel->xmax,sel->ymax );
 	if ( bc->byte_data ) {
 	    for ( y=sel->ymin; y<=sel->ymax; ++y ) {
 		bpt = bc->bitmap + (bc->ymax-y)*bc->bytes_per_line;
@@ -484,23 +502,28 @@ void BCFlattenFloat(BDFChar *bc ) {
 }
 
 void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo) {
-    int x,y;
+    int x, y, bx, rx;
     uint8 *bpt, *rpt;
 
     x = 0;
-    BCExpandBitmap(bc,rbc->xmin+ixoff,rbc->ymin+iyoff);
-    BCExpandBitmap(bc,rbc->xmax+ixoff,rbc->ymax+iyoff);
+    BCExpandBitmapToEmBox( bc,rbc->xmin+ixoff,rbc->ymin+iyoff,rbc->xmax+ixoff,rbc->ymax+iyoff );
     for ( y=rbc->ymin; y<=rbc->ymax; ++y ) {
 	bpt = bc->bitmap + (bc->ymax-(y+iyoff))*bc->bytes_per_line;
 	if ( invert )
 	    rpt = rbc->bitmap + y*rbc->bytes_per_line;
 	else
 	    rpt = rbc->bitmap + (rbc->ymax-y)*rbc->bytes_per_line;
-	if ( bc->byte_data )
-	    memcpy(bpt+x+ixoff-bc->xmin,rpt,rbc->xmax-rbc->xmin+1);
-	else {
+	if ( bc->byte_data ) {
 	    for ( x=rbc->xmin; x<=rbc->xmax; ++x ) {
-		int bx = x+ixoff-bc->xmin, rx = x-rbc->xmin;
+		bx = x+ixoff-bc->xmin; rx = x-rbc->xmin;
+		if ( rpt[rx] != 0 )
+		    bpt[bx] |= rpt[rx];
+		else if ( cleartoo )
+		    bpt[bx] &= rpt[rx];
+	    }
+	} else {
+	    for ( x=rbc->xmin; x<=rbc->xmax; ++x ) {
+		bx = x+ixoff-bc->xmin; rx = x-rbc->xmin;
 		if ( rpt[rx>>3]&(1<<(7-(rx&7))) )
 		    bpt[bx>>3] |= (1<<(7-(bx&7)));
 		else if ( cleartoo )
@@ -509,6 +532,68 @@ void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int c
 	}
     }
     BCCompressBitmap(bc);
+}
+
+void BCMergeReferences(BDFChar *base,BDFChar *cur,int8 xoff,int8 yoff) {
+    BDFRefChar *head;
+
+    for ( head=cur->refs; head!=NULL; head=head->next ) {
+	BCPasteInto( base,head->bdfc,xoff+head->xoff,yoff+head->yoff,false,false );
+	BCMergeReferences( base,head->bdfc,xoff+head->xoff,yoff+head->yoff );
+    }
+}
+
+BDFChar *BDFGetMergedChar( BDFChar *bc ) {
+    BDFChar *ret;
+    
+    if ( bc == NULL )
+return( NULL );
+    ret = chunkalloc( sizeof( BDFChar ));
+    memcpy( ret,bc,sizeof( BDFChar ));
+    ret->bitmap = gcalloc(ret->bytes_per_line*(ret->ymax-ret->ymin+1),sizeof(uint8));
+    memcpy( ret->bitmap,bc->bitmap,ret->bytes_per_line*(ret->ymax-ret->ymin+1));
+    
+    BCMergeReferences( ret,bc,0,0 );
+    ret->refs = NULL;
+    if ( bc->selection != NULL ) {
+	ret->selection = BDFFloatConvert(bc->selection,bc->depth,bc->depth);
+	BCFlattenFloat( ret );
+	BCCompressBitmap( ret );
+    }
+return( ret );
+}
+
+int BDFCharQuickBounds( BDFChar *bc,IBounds *bb,int8 xoff,int8 yoff,int use_backup,int first ) {
+    int bmp_width, has_bitmap = false;
+    int xmin, xmax, ymin, ymax;
+    BDFRefChar *head;
+    
+    if ( use_backup && bc->backup != NULL ) {
+	xmin = bc->backup->xmin; xmax = bc->backup->xmax;
+	ymin = bc->backup->ymin; ymax = bc->backup->ymax;
+    } else {
+	xmin = bc->xmin; xmax = bc->xmax;
+	ymin = bc->ymin; ymax = bc->ymax;
+    }
+    bmp_width = xmax - xmin + 1;
+    has_bitmap = BCHasOutputtableBitmap( bc );
+
+    if ( has_bitmap && first ) {
+	bb->minx = xmin + xoff; bb->maxx = xmax + xoff;
+	bb->miny = ymin + yoff; bb->maxy = ymax + yoff;
+    } else if ( has_bitmap ) {
+	if ( xmin + xoff < bb->minx ) bb->minx = xmin + xoff;
+	if ( xmax + xoff > bb->maxx ) bb->maxx = xmax + xoff;
+	if ( ymin + yoff < bb->miny ) bb->miny = ymin + yoff;
+	if ( ymax + yoff > bb->maxy ) bb->maxy = ymax + yoff;
+    } else if ( first )
+	memset(bb,0,sizeof(*bb));
+
+    for ( head=bc->refs; head!=NULL; head=head->next ) {
+	first = BDFCharQuickBounds( head->bdfc,bb,head->xoff+xoff,head->yoff+yoff,
+	    has_bitmap || use_backup,first && !has_bitmap );
+    }
+return( first && !has_bitmap );
 }
 
 void BDFCharFindBounds(BDFChar *bc,IBounds *bb) {
@@ -547,8 +632,154 @@ void BDFCharFindBounds(BDFChar *bc,IBounds *bb) {
 	    }
 	}
     }
+    first = BDFCharQuickBounds( bc,bb,0,0,false,first );
     if ( first )
 	memset(bb,0,sizeof(*bb));
+}
+
+/* Prepare a bitmap glyph for dumping to a font file. This function deals
+/* mainly with composite glyphs, and either converts them to normal bitmaps
+/* or regularizes for output. The current glyph state is preserved and can
+/* be restored later */
+void BCPrepareForOutput( BDFChar *bc,int mergeall ) {
+    int bmp_has_image = false, bmp_width;
+    int i;
+    IBounds ib;
+
+    bmp_width = ( bc->ymax - bc->ymin + 1 );
+    bc->ticked = false;
+    if ( bc->refs != NULL ) {
+	/* Preserve the current glyph bitmap with all related values, unless we
+	/* have already done this when detecting width groups for TTF output */
+	if ( bc->backup == NULL ) {
+	    bc->backup = galloc( sizeof( BDFFloat ));
+	    bc->backup->bytes_per_line = bc->bytes_per_line;
+	    bc->backup->xmin = bc->xmin; bc->backup->xmax = bc->xmax;
+	    bc->backup->ymin = bc->ymin; bc->backup->ymax = bc->ymax;
+	    bc->backup->bitmap = gcalloc( bc->bytes_per_line * bmp_width,sizeof( uint8 ));
+	    memcpy( bc->backup->bitmap,bc->bitmap,bc->bytes_per_line * bmp_width );
+	}
+
+	for ( i=0; i<bc->bytes_per_line * bmp_width && !bmp_has_image; i++ ) {
+	    if ( bc->bitmap[i] != 0 ) bmp_has_image = true;
+	}
+
+	if ( mergeall || bmp_has_image ) {
+	    /* Can't output glyphs which contain both bitmaps and references. So
+	    /* we merge references into a single bitmap either if the glyph's
+	    /* bitmap already has something worth outputting, or if the font format
+	    /* doesn't support references at all (in which case 'mergeall' should
+	    /* be true) */
+	    /* If the glyph is going to be output in a width group (EBDT format 5),
+	    /* then unlinking references will compress the bitmap to the actual image
+	    /* size. So preserve the original values and restore them after merging */
+	    if ( bc->widthgroup ) {
+		ib.minx = bc->xmin; ib.maxx = bc->xmax;
+		ib.miny = bc->ymin; ib.maxy = bc->ymax;
+	    }
+	    BCMergeReferences( bc,bc,0,0 );
+	    if ( bc->widthgroup )
+		BCExpandBitmapToEmBox( bc,ib.minx,ib.miny,ib.maxx,ib.maxy );
+	} else {
+	    /* Otherwise we are going to output a composite glyph. Note that bounding box
+	    /* values have different meaning in our program context (there they denote
+	    /* the bitmap size and position and thus are mostly irrelevant for a glyph were
+	    /* only references are present) and in the EBDT table. In the later case they
+	    /* are used to specify the overall glyph metrics. So we calculate those values
+	    /* just for TTF output and then immediately reset them back to zeros. */
+	    BDFCharQuickBounds( bc,&ib,0,0,false,true );
+	    bc->xmin = ib.minx; bc->xmax = ib.maxx;
+	    bc->ymin = ib.miny; bc->ymax = ib.maxy;
+	    bc->ticked = true;
+	}
+    } else if ( !bc->widthgroup )
+	BCCompressBitmap( bc );
+}
+
+void BCRestoreAfterOutput( BDFChar *bc ) {
+    bc->ticked = false;
+    if ( bc->backup != NULL ) {
+	bc->bytes_per_line = bc->backup->bytes_per_line;
+	bc->xmin = bc->backup->xmin; bc->xmax = bc->backup->xmax;
+	bc->ymin = bc->backup->ymin; bc->ymax = bc->backup->ymax;
+
+	free( bc->bitmap );
+	bc->bitmap = bc->backup->bitmap;
+	free( bc->backup );
+	bc->backup = NULL;
+    }
+}
+
+void BCMakeDependent( BDFChar *dependent,BDFChar *base ) {
+    struct bdfcharlist *dlist;
+
+    for ( dlist=base->dependents; dlist!=NULL && dlist->bc!=dependent; dlist = dlist->next );
+    if ( dlist==NULL ) {
+	dlist = chunkalloc( sizeof( struct bdfcharlist ));
+	dlist->bc = dependent;
+	dlist->next = base->dependents;
+	base->dependents = dlist;
+    }
+}
+
+void BCRemoveDependent( BDFChar *dependent,BDFRefChar *ref ) {
+    struct bdfcharlist *dlist, *pd;
+    BDFRefChar *prev;
+
+    if ( dependent->refs==ref )
+	dependent->refs = ref->next;
+    else {
+	for ( prev = dependent->refs; prev->next!=ref; prev=prev->next );
+	prev->next = ref->next;
+    }
+    /* Check for multiple dependencies (colon has two refs to period) */
+    /*  if there are none, then remove dependent from ref->sc's dependents list */
+    for ( prev = dependent->refs; prev!=NULL && (prev==ref || prev->bdfc!=ref->bdfc); prev = prev->next );
+    if ( prev==NULL ) {
+	dlist = ref->bdfc->dependents;
+	if ( dlist==NULL )
+	    /* Do nothing */;
+	else if ( dlist->bc == dependent ) {
+	    ref->bdfc->dependents = dlist->next;
+	} else {
+	    for ( pd=dlist, dlist = pd->next; dlist!=NULL && dlist->bc!=dependent; pd=dlist, dlist = pd->next );
+	    if ( dlist!=NULL )
+		pd->next = dlist->next;
+	}
+	chunkfree( dlist,sizeof( struct bdfcharlist ));
+    }
+    free( ref );
+}
+
+void BCUnlinkThisReference( struct fontviewbase *fv,BDFChar *bc ) {
+    struct bdfcharlist *dep, *dnext;
+    BDFChar *bsc;
+    BDFRefChar *ref, *rnext, *rprev = NULL;
+
+    if ( bc==NULL )
+return;
+
+    for ( dep=bc->dependents; dep!=NULL; dep=dnext ) {
+	dnext = dep->next;
+	if ( fv==NULL || !fv->selected[fv->map->backmap[dep->bc->orig_pos]]) {
+	    bsc = dep->bc;
+	    /* May be more than one reference to us, colon has two refs to period */
+	    /*  but only one dlist entry */
+	    for ( ref = bsc->refs; ref!=NULL; ref=rnext ) {
+		rnext = ref->next;
+		if ( ref->bdfc == bc ) {
+		    BCPasteInto( bsc,bc,ref->xoff,ref->yoff,0,0 );
+		    if ( rprev == NULL )
+			bsc->refs = rnext;
+		    else
+			rprev->next = rnext;
+		    free( ref );
+		    BCCharChangedUpdate( bsc );
+		} else
+		    rprev = ref;
+	    }
+	}
+    }
 }
 
 static BDFChar *BCScale(BDFChar *old,int from, int to) {
@@ -577,6 +808,8 @@ return( NULL );
     new->bytes_per_line = (new->xmax-new->xmin)/8+1;
     new->bitmap = gcalloc((new->ymax-new->ymin+1)*new->bytes_per_line,sizeof(char));
     new->orig_pos = old->orig_pos;
+    new->refs = old->refs;
+    new->dependents = old->dependents;
 
     scale = from/dto;
     scale *= scale;
@@ -648,6 +881,8 @@ return( NULL );
 	new->byte_data = true;
     }
     new->orig_pos = old->orig_pos;
+    new->refs = old->refs;
+    new->dependents = old->dependents;
 
     scale = from/dto;
     scale *= scale;

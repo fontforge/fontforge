@@ -8066,7 +8066,7 @@ static void CVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	/* It's ok */;
     else if ( !SFIsSomethingBuildable(cv->b.fv->sf,cv->b.sc,layer,true) )
 return;
-    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,!onlycopydisplayed);
+    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,NULL,onlycopydisplayed);
 }
 
 static void CVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -8078,7 +8078,7 @@ static void CVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	/* It's ok */;
     else if ( !SFIsCompositBuildable(cv->b.fv->sf,cv->b.sc->unicodeenc,cv->b.sc,layer) )
 return;
-    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,!onlycopydisplayed);
+    SCBuildComposit(cv->b.fv->sf,cv->b.sc,layer,NULL,onlycopydisplayed);
 }
 
 static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {

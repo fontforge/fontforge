@@ -3099,6 +3099,7 @@ void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer) {
 void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer) {
     struct splinecharlist *dlist, *pd;
     RefChar *prev;
+    int i;
 
     if ( dependent->layers[layer].refs==rf )
 	dependent->layers[layer].refs = rf->next;
@@ -3107,8 +3108,11 @@ void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer) {
 	prev->next = rf->next;
     }
     /* Check for multiple dependencies (colon has two refs to period) */
+    /* Also check other layers (they may include references to the same glyph as well */
     /*  if there are none, then remove dependent from ref->sc's dependents list */
-    for ( prev = dependent->layers[ly_fore].refs; prev!=NULL && (prev==rf || prev->sc!=rf->sc); prev = prev->next );
+    for ( i=0; i<dependent->layer_cnt; i++ ) {
+	for ( prev = dependent->layers[i].refs; prev!=NULL && (prev==rf || prev->sc!=rf->sc); prev = prev->next );
+    }
     if ( prev==NULL ) {
 	dlist = rf->sc->dependents;
 	if ( dlist==NULL )

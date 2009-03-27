@@ -48,17 +48,6 @@ struct bigmetrics {
     int vbearingX, vbearingY, vadvance;	/* Small metrics doesn't use this row */
 };
 
-struct bdfcharlist {
-    BDFChar *bc;
-    struct bdfcharlist *next;
-};
-
-struct refbdfc {
-    uint16 gid;
-    int8 xoff;		/* of top left corner */
-    int8 yoff;
-};
-
 /* ************************************************************************** */
 /* *********************** Input --- Reading Bitmaps ************************ */
 /* ************************************************************************** */
@@ -67,6 +56,7 @@ static void ttfreadbmfglyph(FILE *ttf,struct ttfinfo *info,
 	int32 offset, int32 len, struct bigmetrics *metrics, int imageformat,
 	int gid, BDFFont *bdf) {
     BDFChar *bdfc;
+    BDFRefChar *ref, *prev = NULL;
     struct bigmetrics big;
     int i,j,ch,l,p, num;
 
@@ -131,8 +121,12 @@ return;
 return;
     }
     bdfc = chunkalloc(sizeof(BDFChar));
-    if ( info->chars!=NULL && gid<info->glyph_cnt ) {
-	if ( info->chars[gid]==NULL ) {
+    if ( info->chars!=NULL ) {
+	if ( gid>=info->glyph_cnt || info->chars[gid]==NULL ) {
+	    if ( gid>=info->glyph_cnt ) {
+	        info->glyph_cnt = gid+1;
+	        info->chars = grealloc(info->chars,info->glyph_cnt*sizeof(SplineChar *));
+	    }
 	    info->chars[gid] = SplineCharCreate(2);
 	    info->chars[gid]->orig_pos = gid;
 	    info->chars[gid]->unicodeenc = -1;
@@ -156,6 +150,9 @@ return;
     bdfc->xmax = bdfc->xmin+metrics->width-1;
     bdfc->ymax = metrics->hbearingY-1;
     bdfc->ymin = bdfc->ymax-metrics->height+1;
+    bdfc->refs = NULL;
+    bdfc->dependents = NULL;
+    if ( imageformat == 5 ) bdfc->widthgroup = true;
     if ( bdf->clut==NULL ) {
 	bdfc->bytes_per_line = (metrics->width+7)/8;
 	bdfc->depth = 1;
@@ -169,16 +166,20 @@ return;
 
     if ( imageformat==8 || imageformat==9 ) {
 	/* composite */
-	struct refbdfc *refs;
 	num = getushort(ttf);
-	bdfc->bitmap = (uint8 *) (refs = gcalloc(num+1,sizeof(struct refbdfc)));
-	refs[num].gid = 0xffff;
+	bdfc->bitmap = gcalloc( 1,sizeof( uint8 ));
+	bdfc->bytes_per_line = 1;
 	for ( i=0; i<num; ++i ) {
-	    refs[i].gid = getushort(ttf);
-	    refs[i].xoff = (int8) getc(ttf);
-	    refs[i].yoff = (int8) getc(ttf);
+	    ref = gcalloc( 1,sizeof( BDFRefChar ));
+	    ref->gid = getushort(ttf);
+	    ref->xoff = (int8) getc(ttf);
+	    ref->yoff = (int8) getc(ttf);
+	    if ( prev == NULL )
+		bdfc->refs = ref;
+	    else
+		prev->next = ref;
+	    prev = ref;
 	}
-	bdfc->isreference = true;
     } else if ( imageformat==1 || imageformat==6 ) {
 	/* each row is byte aligned */
 	if ( bdf->clut==NULL || bdf->clut->clut_len==256 ) {
@@ -247,44 +248,76 @@ return;
 }
 
 static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *info) {
-    BDFChar *me = bdf->glyphs[gid];
-    struct refbdfc *refs = (struct refbdfc *) (me->bitmap);
-    int i;
+    BDFChar *me = bdf->glyphs[gid], *bdfc;
+    BDFRefChar *head, *prev = NULL, *next;
 
-    me->bitmap = gcalloc((me->ymax-me->ymin+1)*me->bytes_per_line,sizeof(uint8));
-    me->isreference = false;
-    for ( i=0; refs[i].gid!=0xffff; ++i ) {
-	int rgid = refs[i].gid;
-	BDFChar *bdfc = rgid<bdf->glyphcnt ? bdf->glyphs[rgid] : NULL;
-	if ( bdfc!=NULL ) {
-	    if ( bdfc->isreference )
-		BdfCRefFixup(bdf,rgid, warned, info);
-	    BCPasteInto(me,bdfc,refs[i].xoff,refs[i].yoff, false, false);
+    for ( head=me->refs; head!=NULL; head=next ) {
+	bdfc = head->gid < bdf->glyphcnt ? bdf->glyphs[head->gid] : NULL;
+	next = head->next;
+	if ( bdfc != NULL ) {
+	    head->bdfc = bdfc;
+	    BCMakeDependent( me,bdfc );
+	    prev = head;
 	} else if ( !*warned ) {
 	    /* Glyphs aren't named yet */
 	    LogError("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)",
-		    gid, bdf->pixelsize, rgid );
+		    gid, bdf->pixelsize, head->gid );
 	    info->bad_embedded_bitmap = true;
 	    *warned = true;
+	    /* Remove bad reference from the list */
+	    if ( prev == NULL )
+		me->refs = head->next;
+	    else
+		prev->next = head->next;
+	    free( head );
 	}
+	/* According to the TTF spec, the xOffset and yOffset values specify
+	/* the top-left corner position of the component in the composite.
+	/* In our program it is more convenient to manipulate values specified
+	/* relatively to the original position of the reference's parent glyph.
+	/* So we have to perform this conversion each time we read or write 
+	/* an embedded TTF bitmap. */
+	head->xoff = head->xoff - bdfc->xmin + me->xmin;
+	head->yoff = me->ymax - bdfc->ymax - head->yoff;
     }
-    BCCompressBitmap(me);
-    free(refs);
 }
 
 static void BdfRefFixup(BDFFont *bdf, struct ttfinfo *info) {
     int i;
     int warned = false;
+    BDFChar *bc;
 
+    /* Associate each reference with its parent glyph and recalculate
+    /* x and y offsets */
     for ( i=0; i<bdf->glyphcnt; ++i )
-	if ( bdf->glyphs[i]!=NULL && bdf->glyphs[i]->isreference )
-	    BdfCRefFixup(bdf,i, &warned, info);
+	if ( bdf->glyphs[i]!=NULL && bdf->glyphs[i]->refs != NULL )
+	    BdfCRefFixup( bdf,i,&warned,info );
+
+    /* When offsets are recalculated, reset the composite glyph bounding
+    /* box to zero values */
+    /* For glyphs which were stored in subtables format 5 compress bitmaps
+    /* to the image size (we could not do this before recalculating reference
+    /* offsets) */
+    for ( i=0; i<bdf->glyphcnt; ++i ) if (( bc = bdf->glyphs[i] ) != NULL ) {
+	if ( bc->refs != NULL ) {
+	    bdf->glyphs[i]->xmin = 0; bdf->glyphs[i]->xmax = 0;
+	    bdf->glyphs[i]->ymin = 0; bdf->glyphs[i]->ymax = 0;
+	} else if ( bc->widthgroup ) {
+	    BCCompressBitmap( bc );
+	    bc->widthgroup = false;
+	}
+    }
 }
 
 static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
     /* for gulim (and doubtless others) bitmap references do not match */
     /*  outline glyph references and there are a bunch of extra glyphs */
     /*  at the end of the list that we can now get rid of	       */
+    /* As bitmap references are directly supported now, we no longer   */
+    /*  can ignore the extra glyphs in Gulim, and instead create       */
+    /*  a faked spline char for each of them. Thus the situation where */
+    /*  info->glyph_cnt is less than bdf->glyphcnt is no longer        */
+    /*  possible.                                                      */
     /* For cid keyed fonts we want to order things by cid rather than  */
     /*  by gid so we may also need to move things around	       */
     int i, cnt;
@@ -759,15 +792,17 @@ static int32 ttfdumpf1_6bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
 return( pos );
 }
 
-static int32 ttfdumpf2_7bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
+static int32 ttfdumpf2_7bchar(FILE *bdat, BDFChar *bc, BDFFont *bdf,int do_metrics) {
     /* format 2 character dump. small metrics, bit aligned data */
     int32 pos = ftell(bdat);
     int r,c,ch,bit,sh;
 
-    if ( bdf->sf->hasvmetrics )
-	ttfdumpbigmetrics(bdat,bc);
-    else
-	ttfdumpsmallmetrics(bdat,bc);
+    if ( do_metrics ) {
+	if ( bdf->sf->hasvmetrics )
+	    ttfdumpbigmetrics(bdat,bc);
+	else
+	    ttfdumpsmallmetrics(bdat,bc);
+    }
 
     /* dump image */
     ch = 0; bit = 0x80; sh=7;
@@ -799,84 +834,28 @@ static int32 ttfdumpf2_7bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
 return( pos );
 }
 
-struct mymets {
-    int ymin, ymax;
-    int xmin, xmax;
-    int width;			/* xmax-xmin+1 */
-};
-
-static int32 ttfdumpf5bchar(FILE *bdat, BDFChar *bc, struct mymets *mets,BDFFont *bdf) {
-    /* format 5 character dump. no metrics, bit aligned data */
-    /* now it may be that some of the character we are dumping have bitmaps */
-    /*  that are a little smaller than the size specified in mymets. But that's*/
-    /*  ok, we just pad them out with null bits */
+static int32 ttfdumpf8_9bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
+    /* format 8 character dump. small metrics, component data */
     int32 pos = ftell(bdat);
-    int r,c,ch,bit, sh;
-    int depth = BDFDepth(bdf);
+    int numc = 0;
+    BDFRefChar *head;
 
-    /* dump image */
-    ch = 0; bit = 0x80; sh = 7;
-    for ( r=bc->ymax+1; r<=mets->ymax; ++r ) {
-	for ( c=0; c<mets->width; ++c ) {
-	    bit >>= depth;
-	    sh -= depth;
-	    if ( bit==0 ) {
-		putc(ch,bdat);
-		ch = 0;
-		sh = 7; bit = 0x80;
-	    }
-	}
+    if ( bdf->sf->hasvmetrics )
+	ttfdumpbigmetrics(bdat,bc);
+    else {
+	ttfdumpsmallmetrics(bdat,bc);
+	putc( 0,bdat );
     }
-    for ( r=0; r<=bc->ymax-bc->ymin; ++r ) {
-	for ( c = mets->xmin; c<bc->xmin; ++c ) {
-	    bit >>= depth;
-	    sh -= depth;
-	    if ( bit==0 ) {
-		putc(ch,bdat);
-		ch = 0;
-		sh = 7; bit = 0x80;
-	    }
-	}
-	for ( c = 0; c<=bc->xmax-bc->xmin; ++c ) {
-	    if ( depth==1 ) {
-		if ( bc->bitmap[r*bc->bytes_per_line+(c>>3)] & (1<<(7-(c&7))) )
-		    ch |= bit;
-	    } else if ( depth==8 )
-		ch = bc->bitmap[r*bc->bytes_per_line+c];
-	    else if ( depth==2 )
-		ch |= (bc->bitmap[r*bc->bytes_per_line+c]<<(sh-1));
-	    else if ( depth==4 )
-		ch |= (bc->bitmap[r*bc->bytes_per_line+c]<<(sh-3));
-	    bit >>= depth;
-	    sh -= depth;
-	    if ( bit==0 ) {
-		putc(ch,bdat);
-		ch = 0;
-		sh = 7; bit = 0x80;
-	    }
-	}
-	for ( c = bc->xmax+1; c<=mets->xmax; ++c ) {
-	    bit >>= depth;
-	    sh -= depth;
-	    if ( bit==0 ) {
-		putc(ch,bdat);
-		ch = 0;
-		sh = 7; bit = 0x80;
-	    }
-	}
+
+    /* dump component data */
+    for ( head = bc->refs; head!=NULL; head=head->next )
+	numc++;
+    putshort( bdat,numc );
+    for ( head = bc->refs; head!=NULL; head=head->next ) {
+	putshort( bdat,head->bdfc->sc->ttf_glyph );
+	putc( head->bdfc->xmin - bc->xmin + head->xoff,bdat );
+	putc( bc->ymax - head->bdfc->ymax - head->yoff,bdat );
     }
-    for ( r=bc->ymin-1; r>=mets->ymin; --r ) {
-	for ( c=0; c<mets->width; ++c ) {
-	    bit >>= depth;
-	    if ( bit==0 ) {
-		putc(ch,bdat);
-		ch = 0;
-		bit = 0x80;
-	    }
-	}
-    }
-    if ( bit!=0x80 )
-	putc(ch,bdat);
 return( pos );
 }
 
@@ -967,16 +946,81 @@ static void FillLineMetrics(struct bitmapSizeTable *size,BDFFont *bdf) {
     size->vert.widthMax = bdf->pixelsize;
 }
 
+static int HasOutputtableBitmap( BDFChar *bc ) {
+    int i;
+    
+    for ( i=0; i<bc->bytes_per_line * ( bc->ymax - bc->ymin + 1 ); i++ ) {
+	if ( bc->bitmap[i] != 0 )
+return( true );	
+    }
+return( false );	
+}
+
+static void BCPreserveAndExpand( BDFChar *bc,IBounds *ib ) {
+    int bmp_width = ( bc->ymax - bc->ymin + 1 );
+    
+    bc->backup = gcalloc( 1,sizeof( BDFFloat ));
+    bc->backup->bytes_per_line = bc->bytes_per_line;
+    bc->backup->xmin = bc->xmin; bc->backup->xmax = bc->xmax;
+    bc->backup->ymin = bc->ymin; bc->backup->ymax = bc->ymax;
+    bc->backup->bitmap = gcalloc( bc->bytes_per_line * bmp_width,sizeof( uint8 ));
+    memcpy( bc->backup->bitmap,bc->bitmap,bc->bytes_per_line * bmp_width );
+    
+    BCExpandBitmapToEmBox( bc,ib->minx,ib->miny,ib->maxx,ib->maxy );
+}
+
+static void DetectWidthGroups( struct glyphinfo *gi,BDFFont *bdf,int apple ) {
+    BDFChar *bc, *bc2;
+    IBounds ib, ib2;
+    int i, j, cnt, final;
+    
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && bdf->glyphs[gi->bygid[i]]!=NULL )
+	bdf->glyphs[gi->bygid[i]]->widthgroup = false;
+
+    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
+	BDFCharQuickBounds( bc,&ib,0,0,true,true );
+	if (( apple || HasOutputtableBitmap( bc ) || bc->refs == NULL ) &&
+		ib.minx >= 0 && ib.maxx <= bc->width &&
+		ib.maxy < bdf->ascent && ib.miny >= -bdf->descent ) {
+	    cnt = 1;
+	    for ( j=i+1; j<gi->gcnt; ++j ) if ( gi->bygid[j]!=-1 && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
+		BDFCharQuickBounds( bc2,&ib2,0,0,true,true );
+		if (( !apple && !HasOutputtableBitmap( bc2 ) && bc2->refs != NULL ) ||
+			ib2.minx < 0 || ib2.maxx > bc->width || ib2.miny < -bdf->descent ||
+			ib2.maxy >= bdf->ascent ||
+			bc2->width != bc->width || bc2->vwidth != bc->vwidth ||
+			bc2->sc->ttf_glyph != bc->sc->ttf_glyph+cnt )
+	    break;
+		if ( ib2.maxx > ib.maxx ) ib.maxx = ib2.maxx;
+		if ( ib2.minx < ib.minx ) ib.minx = ib2.minx;
+		if ( ib2.maxy > ib.maxy ) ib.maxy = ib2.maxy;
+		if ( ib2.miny < ib.miny ) ib.miny = ib2.miny;
+		++cnt;
+		final = j;
+	    }
+	    if ( cnt>20 ) {		/* We must have at least, oh, 20 glyphs with the same metrics */
+		bc->widthgroup = true;
+		BCPreserveAndExpand( bc,&ib );
+		for ( j=i+1; j<=final; ++j ) if ( gi->bygid[j] != -1 && ( bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
+		    bc2->widthgroup = true;
+		    BCPreserveAndExpand( bc2,&ib );
+		}
+		i = j-1;
+	    }
+	}
+    }
+}
+
 static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
 	BDFFont *bdf, struct bdfcharlist *defs, struct glyphinfo *gi) {
     struct bitmapSizeTable *size = gcalloc(1,sizeof(struct bitmapSizeTable));
     struct indexarray *cur, *last=NULL, *head=NULL;
     int i,j, final,cnt;
     FILE *subtables = tmpfile();
-    struct mymets met;
-    int32 pos = ftell(bloc), startofsubtables, base;
+    int32 pos = ftell(bloc), startofsubtables, base, stlen;
     BDFChar *bc, *bc2;
-    int depth = BDFDepth(bdf);
+    int depth = BDFDepth(bdf), format, mwidth, mheight;
+    struct bdfcharlist *def;
 
     for ( i=0; i<gi->gcnt && gi->bygid[i]<bdf->glyphcnt &&
 	    (gi->bygid[i]==-1 || bdf->glyphs[gi->bygid[i]]==NULL); ++i );
@@ -986,63 +1030,28 @@ static struct bitmapSizeTable *ttfdumpstrikelocs(FILE *bloc,FILE *bdat,
 	IError("No characters to output in strikes");
 return(NULL);
     }
+
     size->flags = 0x01;		/* horizontal */
     size->bitdepth = depth;
     size->ppemX = size->ppemY = bdf->ascent+bdf->descent;
     size->endGlyph = bdf->glyphs[gi->bygid[j]]->sc->ttf_glyph;
     size->startGlyph = bdf->glyphs[gi->bygid[i]]->sc->ttf_glyph;
     size->subtableoffset = pos;
+
+    for ( def = defs; def != NULL; def = def->next ) {
+	if ( defs->bc->sc->ttf_glyph < size->startGlyph )
+	    size->startGlyph = defs->bc->sc->ttf_glyph;
+    }
     FillLineMetrics(size,bdf);
 
-    /* First figure out sequences of characters which all have about the same metrics */
-    /* then we dump out the subtables (to temp file) */
+    /* first we dump out the subtables (to temp file) */
     /* then we dump out the indexsubtablearray (to bloc) */
     /* then we copy the subtables from the temp file to bloc */
 
-    for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && bdf->glyphs[gi->bygid[i]]!=NULL ) {
-	bdf->glyphs[gi->bygid[i]]->widthgroup = false;
-	BCCompressBitmap(bdf->glyphs[gi->bygid[i]]);
-    }
-    for ( i=0; i<gi->gcnt; ++i ) {
-	if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL &&
-		bc->xmin>=0 && bc->xmax<=bc->width &&
-		bc->ymax<bdf->ascent && bc->ymin>=-bdf->descent ) {
-	    cnt = 1;
-	    for ( j=i+1; j<gi->gcnt; ++j ) {
-		if ( gi->bygid[j]!=-1 && (bc2=bdf->glyphs[gi->bygid[j]])!=NULL &&
-			(bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
-			bc2->ymax>=bdf->ascent ||
-			bc2->width!=bc->width || bc2->vwidth!=bc->vwidth ||
-			bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt ))
-	    break;
-		++cnt;
-	    }
-	    if ( cnt>20 ) {		/* We must have at least, oh, 20 glyphs with the same metrics */
-		bc->widthgroup = true;
-		/*cnt = 1;*/
-		for ( j=i+1; j<gi->gcnt; ++j ) {
-		    if ( gi->bygid[j]==-1 )
-		continue;
-		    else if ( (bc2=bdf->glyphs[gi->bygid[j]])==NULL )
-		break;
-		    else if (bc2->xmin<0 || bc2->xmax>bc->width || bc2->ymin<-bdf->descent ||
-			     bc2->ymax>=bdf->ascent || bc2->width!=bc->width ||
-			     bc2->sc->ttf_glyph!=bc->sc->ttf_glyph+cnt )
-		break;
-		    else {
-			/*++cnt;*/
-			bc2->widthgroup = true;
-		    }
-		}
-		i = j-1;
-	    }
-	}
-    }
-
-    /* Now the pointers */
+    /* the pointers */
     for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && (bc=bdf->glyphs[gi->bygid[i]])!=NULL ) {
 	int wasdef = false;
-	if ( defs!=NULL && defs->bc->sc->ttf_glyph<gi->bygid[i] ) {
+	if ( defs!=NULL && defs->bc->sc->ttf_glyph < bc->sc->ttf_glyph ) {
 	    --i;
 	    bc = defs->bc;
 	    defs = defs->next;
@@ -1067,6 +1076,8 @@ return(NULL);
 		else if ( bc2->widthgroup!=bc->widthgroup ||
 			(bc->widthgroup && (bc->width!=bc2->width || bc->vwidth!=bc2->vwidth)) )
 	    break;
+		else if ( bc->ticked != bc2->ticked )
+	    break;
 		else {
 		    ++cnt;
 		    final = j;
@@ -1077,55 +1088,58 @@ return(NULL);
 
 	if ( !bc->widthgroup ) {
 	    putshort(subtables,1);	/* index format, 4byte offset, no metrics here */
-	    if ( bdf->sf->hasvmetrics && depth!=8 )
-		putshort(subtables,7);	/* data format, big metrics, bit aligned */
+	    if ( bdf->sf->hasvmetrics && bc->ticked )
+		format = 9;		/* data format, big metrics, component data */
+	    else if ( bdf->sf->hasvmetrics && depth!=8 )
+		format = 7;		/* data format, big metrics, bit aligned */
 	    else if ( bdf->sf->hasvmetrics )
-		putshort(subtables,6);	/* data format, big metrics, byte aligned */
+		format = 6;		/* data format, big metrics, byte aligned */
+	    else if ( bc->ticked )
+		format = 8;		/* data format, short metrics, component data */
 	    else if ( depth!=8 )
-		putshort(subtables,2);	/* data format, short metrics, bit aligned */
+		format = 2;		/* data format, short metrics, bit aligned */
 	    else
-		putshort(subtables,1);	/* data format, short metrics, byte aligned */
+		format = 1;		/* data format, short metrics, byte aligned */
+	    putshort( subtables,format );
 	    base = ftell(bdat);
-	    putlong(subtables,base);	/* start of glyphs in bdat */
-	    if ( depth!=8 )
-		putlong(subtables,ttfdumpf2_7bchar(bdat,bc,bdf)-base);
+	    putlong( subtables,base );	/* start of glyphs in bdat */
+	    if ( bc->ticked )
+		stlen = ttfdumpf8_9bchar(bdat,bc,bdf)-base;
+	    else if ( depth!=8 )
+		stlen = ttfdumpf2_7bchar(bdat,bc,bdf,true)-base;
 	    else
-		putlong(subtables,ttfdumpf1_6bchar(bdat,bc,bdf)-base);
+		stlen = ttfdumpf1_6bchar(bdat,bc,bdf)-base;
+	    putlong( subtables,stlen );
 	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
-		if ( depth!=8 )
-		    putlong(subtables,ttfdumpf2_7bchar(bdat,bc2,bdf)-base);
+		if ( bc2->ticked )
+		    stlen = ttfdumpf8_9bchar(bdat,bc2,bdf)-base;
+		else if ( depth!=8 )
+		    stlen = ttfdumpf2_7bchar(bdat,bc2,bdf,true)-base;
 		else
-		    putlong(subtables,ttfdumpf1_6bchar(bdat,bc2,bdf)-base);
+		    stlen = ttfdumpf1_6bchar(bdat,bc2,bdf)-base;
+		putlong( subtables,stlen );
 	    }
-	    putlong(subtables,ftell(bdat)-base);	/* Length of last entry */
+	    putlong( subtables,ftell(bdat)-base );	/* Length of last entry */
 	} else {
-	    met.xmin = bc->xmin; met.xmax = bc->xmax; met.ymin = bc->ymin; met.ymax = bc->ymax;
-	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
-		if ( bc2->xmax>met.xmax ) met.xmax = bc2->xmax;
-		if ( bc2->xmin<met.xmin ) met.xmin = bc2->xmin;
-		if ( bc2->ymax>met.ymax ) met.ymax = bc2->ymax;
-		if ( bc2->ymin<met.ymin ) met.ymin = bc2->ymin;
-	    }
-	    met.width = (met.xmax-met.xmin+1);
-
+	    mwidth = bc->xmax - bc->xmin + 1;
+	    mheight = bc->ymax - bc->ymin + 1;
 	    putshort(subtables,2);	/* index format, big metrics, all glyphs same size */
 	    putshort(subtables,5);	/* data format, bit aligned no metrics */
 	    putlong(subtables,ftell(bdat));	/* start of glyphs in bdat */
-	    putlong(subtables,(met.width*(met.ymax-met.ymin+1)*depth+7)/8);
+	    putlong(subtables,( mwidth * (bc->ymax - bc->ymin + 1)*depth + 7)/8);
 					/* glyph size (in bytes) */
 	    /* big metrics */
-	    putc(met.ymax-met.ymin+1,subtables);	/* image height */
-	    putc(met.width,subtables);			/* image width */
-	    putc(met.xmin,subtables);			/* horiBearingX */
-	    putc(met.ymax+1,subtables);			/* horiBearingY */
+	    putc(mheight,subtables);			/* image height */
+	    putc(mwidth,subtables);			/* image width */
+	    putc(bc->xmin,subtables);			/* horiBearingX */
+	    putc(bc->ymax+1,subtables);			/* horiBearingY */
 	    putc(bc->width,subtables);			/* advance width */
 	    putc(-bc->width/2,subtables);		/* vertBearingX */
 	    putc(0,subtables);				/* vertBearingY */
 	    putc(bc->vwidth,subtables);			/* advance height */
-	    ttfdumpf5bchar(bdat,bc,&met,bdf);
-	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL ) {
-		ttfdumpf5bchar(bdat,bc2,&met,bdf);
-	    }
+	    ttfdumpf2_7bchar(bdat,bc,bdf,false);
+	    for ( j=i+1; j<=final ; ++j ) if ( (bc2=bdf->glyphs[gi->bygid[j]])!=NULL )
+		ttfdumpf2_7bchar(bdat,bc2,bdf,false);
 	}
 	i = final;
     }
@@ -1169,10 +1183,11 @@ static void dumpbitmapSizeTable(FILE *bloc,struct bitmapSizeTable *size) {
 }
 
 void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
-    int i;
+    int i, j;
     static struct bitmapSizeTable space;
     struct bitmapSizeTable *head=NULL, *cur, *last;
     BDFFont *bdf;
+    BDFChar *bc;
     struct bdfcharlist *bl;
 
     at->bdat = tmpfile();
@@ -1205,9 +1220,22 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
+
+	/* Used to detect glyphs which can be placed into width groups (EBDT format 5)
+	/* immediately during the output process. But using this format means most glyph
+	/* bounding boxes are expanded to larger values than the actual bitmap size,
+	/* and we need to know these new bounding box values in order to be able to
+	/* correctly calculate reference placement in composite glyphs */
+	DetectWidthGroups( &at->gi,bdf,at->applebitmaps );
+	/* Apple doesn't support composite bitmaps ( EBDT formats 8 and 9) */
+	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j]!=-1 && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+	    BCPrepareForOutput( bc,at->applebitmaps );
 	bl = BDFAddDefaultGlyphs(bdf, at->format);
 	cur = ttfdumpstrikelocs(at->bloc,at->bdat,bdf,bl,&at->gi);
 	BDFCleanupDefaultGlyphs(bdf);
+	for ( j=0; j < at->gi.gcnt; ++j ) if ( at->gi.bygid[j]!=-1 && ( bc = bdf->glyphs[at->gi.bygid[j]] ) != NULL )
+	    BCRestoreAfterOutput( bc );
+
 	if ( cur==NULL )
     continue;
 	if ( head==NULL )

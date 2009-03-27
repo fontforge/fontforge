@@ -416,12 +416,15 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     char buffer[300];
     FILE *file;
-    int i, enc;
+    int i, enc, gid;
     int ret = 0;
     char *encodingname = EncodingName(map->enc);
     int dups=0;
     struct metric_defaults defs;
+    BDFChar *bdfc;
 
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = font->glyphs[gid] ) != NULL )
+	BCPrepareForOutput( bdfc,true );
     if ( filename==NULL ) {
 	sprintf(buffer,"%s-%s.%d.bdf", font->sf->fontname, encodingname, font->pixelsize );
 	filename = buffer;
@@ -432,7 +435,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     else {
 	BDFDumpHeader(file,font,map,res,&defs);
 	for ( i=0; i<map->enccount; ++i ) {
-	    int gid = map->map[i];
+	    gid = map->map[i];
 	    if ( gid!=-1 && !IsntBDFChar(font->glyphs[gid])) {
 		enc = i;
 		if ( i>=map->enc->char_cnt )	/* The map's enccount may contain "unencoded" glyphs */
@@ -447,5 +450,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	    ret = 1;
 	fclose(file);
     }
+    for ( i=0; i<map->enccount; i++ ) if (( gid=map->map[i])!=-1 && ( bdfc = font->glyphs[gid] ) != NULL )
+	BCRestoreAfterOutput( bdfc );
 return( ret );
 }
