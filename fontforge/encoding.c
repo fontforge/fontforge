@@ -965,7 +965,6 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	}
 	fclose(f);
     }
-    free(file);
 return( ret );
 }
 
@@ -1073,8 +1072,11 @@ return( maybe );
     }
 
     free(maybefile);
-    if ( file!=NULL )
-return( LoadMapFromFile(file,registry,ordering,supplement));
+    if ( file!=NULL ) {
+	map = LoadMapFromFile(file,registry,ordering,supplement);
+	free(file);
+return( map );
+    }
 
 return( MakeDummyMap(registry,ordering,supplement));
 }

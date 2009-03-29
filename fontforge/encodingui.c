@@ -426,8 +426,10 @@ struct cidmap *AskUserForCIDMap(void) {
 	    /* No map */;
 	else if ( filename==NULL )
 	    map = FindCidMap(reg,ord,supplement,NULL);
-	else
+	else {
 	    map = LoadMapFromFile(filename,reg,ord,supplement);
+	    free(filename);
+	}
 	if ( ret!=0 && reg!=block.maps[ret-1] )
 	    free(reg);
 	/*free(filename);*/	/* Freed by loadmap */
