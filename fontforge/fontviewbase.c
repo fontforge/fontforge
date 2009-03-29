@@ -635,7 +635,7 @@ static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, rea
 	}
 	RefCharFindBounds(refs);
     }
-    for ( img = sc->layers[ly_back].images; img!=NULL; img=img->next )
+    for ( img = sc->layers[i].images; img!=NULL; img=img->next )
 	BackgroundImageTransform(sc, img, transform);
 }
 
