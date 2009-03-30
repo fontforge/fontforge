@@ -1576,7 +1576,8 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
 		( test->y - stem->left.y )*dir->x;
 	if (( !stem->ghost &&
 	    ( off < ( max - dist_error ) || off > ( min + dist_error ))) ||
-	    ( stem->ghost && stem->width == 21 )) {
+	    ( RealNear( stem->unit.x, 1) && stem->ghost && stem->width == 21 ) ||
+	    ( RealNear( stem->unit.x,0 ) && stem->ghost && stem->width == 20 )) {
 	    pd = pd1; pd1 = pd2; pd2 = pd;
 	    in = is_next1; is_next1 = is_next2; is_next2 = in;
 	    ip = is_potential1; is_potential1 = is_potential2; is_potential2 = ip;
@@ -1848,14 +1849,15 @@ return( len );
 
 static struct stemdata *FindOrMakeHVStem( struct glyphdata *gd,
     struct pointdata *pd,struct pointdata *pd2,int is_h,int require_existing ) {
-    int i,cove;
+    int i,cove = false;
     struct stemdata *stem;
     BasePoint dir;
 
     dir.x = ( is_h ) ? 1 : 0;
     dir.y = ( is_h ) ? 0 : 1;
-    cove =  ( dir.x == 0 && pd->x_extr + pd2->x_extr == 3 ) || 
-	    ( dir.y == 0 && pd->y_extr + pd2->y_extr == 3 );
+    if ( pd2 != NULL )
+	cove =  ( dir.x == 0 && pd->x_extr + pd2->x_extr == 3 ) || 
+		( dir.y == 0 && pd->y_extr + pd2->y_extr == 3 );
     
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
@@ -4624,6 +4626,90 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
     }
 }
 
+static void MarkDStemCorner( struct glyphdata *gd,struct pointdata *pd ) {
+    int x_dir = pd->x_corner;
+    int hv, is_l, i, peak, has_stem = false;
+    struct stemdata *stem;
+    BasePoint left,right,unit;
+    
+    for ( i=0; i<pd->prevcnt && !has_stem; i++ ) {
+	stem = pd->prevstems[i];
+	if ( !stem->toobig && (
+	    ( x_dir && ( hv = IsUnitHV( &stem->unit,true ) == 1 )) ||
+	    ( !x_dir && hv == 2 )))
+	    has_stem = true;
+    }
+    for ( i=0; i<pd->nextcnt && !has_stem; i++ ) {
+	stem = pd->nextstems[i];
+	if ( !stem->toobig && (
+	    ( x_dir && ( hv = IsUnitHV( &stem->unit,true ) == 1 )) ||
+	    ( !x_dir && hv == 2 )))
+	    has_stem = true;
+    }
+    if ( has_stem )
+return;
+    
+    peak = IsSplinePeak( gd,pd,x_dir,x_dir,2 );
+    unit.x = !x_dir; unit.y = x_dir;
+    
+    if ( peak > 0 ) {
+	left.x = x_dir ? pd->sp->me.x + 21 : pd->sp->me.x;
+	right.x = x_dir ? pd->sp->me.x : pd->sp->me.x;
+	left.y = x_dir ? pd->sp->me.y : pd->sp->me.y;
+	right.y = x_dir ? pd->sp->me.y : pd->sp->me.y - 20;
+	
+    } else if ( peak < 0 ) {
+	left.x = x_dir ? pd->sp->me.x : pd->sp->me.x;
+	right.x = x_dir ? pd->sp->me.x - 20 : pd->sp->me.x;
+	left.y = x_dir ? pd->sp->me.y : pd->sp->me.y + 21;
+	right.y = x_dir ? pd->sp->me.y : pd->sp->me.y;
+    }
+    is_l = IsCorrectSide( gd,pd,true,true,&unit );
+    for ( i=0; i<gd->stemcnt; i++ ) {
+	stem = &gd->stems[i];
+	if (!stem->toobig && UnitsParallel( &unit,&stem->unit,true ) && 
+	    OnStem( stem,&pd->sp->me,is_l ))
+    break;
+    }
+    if ( i == gd->stemcnt ) {
+	stem = NewStem( gd,&unit,&left,&right );
+	stem->ghost = 2;
+    }
+    AddToStem( gd,stem,pd,NULL,2,false,false );
+}
+
+static void MarkDStemCorners( struct glyphdata *gd ) {
+    struct stemdata *stem;
+    struct stem_chunk *schunk, *echunk;
+    int i;
+    
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+	if ( stem->toobig || IsUnitHV( &stem->unit,true ))
+    continue;
+        
+	schunk = &stem->chunks[0];
+	echunk = &stem->chunks[stem->chunk_cnt - 1];
+	
+	if ( schunk->l != NULL && schunk->r != NULL && 
+	    fabs( schunk->l->base.x - schunk->r->base.x ) > dist_error_hv &&
+            fabs( schunk->l->base.y - schunk->r->base.y ) > dist_error_hv && (
+	    ( schunk->l->x_corner == 1 && schunk->r->y_corner == 1 ) ||
+	    ( schunk->l->y_corner == 1 && schunk->r->x_corner == 1 ))) {
+	    MarkDStemCorner( gd,schunk->l );
+	    MarkDStemCorner( gd,schunk->r );
+	}
+	if ( echunk->l != NULL && echunk->r != NULL &&
+	    fabs( echunk->l->base.x - echunk->r->base.x ) > dist_error_hv &&
+            fabs( echunk->l->base.y - echunk->r->base.y ) > dist_error_hv && (
+	    ( echunk->l->x_corner == 1 && echunk->r->y_corner == 1 ) ||
+	    ( echunk->l->y_corner == 1 && echunk->r->x_corner == 1 ))) {
+	    MarkDStemCorner( gd,echunk->l );
+	    MarkDStemCorner( gd,echunk->r );
+	}
+    }
+}
+
 #if GLYPH_DATA_DEBUG
 static void DumpGlyphData( struct glyphdata *gd ) {
     int i, j;
@@ -5957,6 +6043,8 @@ return( gd );
     if ( hint_bounding_boxes )
 	CheckForBoundingBoxHints( gd );
     CheckForGhostHints( gd );
+    if ( use_existing )
+        MarkDStemCorners( gd );
 
     GDBundleStems( gd,0,use_existing );
     if ( use_existing ) {
