@@ -2914,7 +2914,7 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     is_l = (fabs(hleft - ct->edge.base) < fabs(hright - ct->edge.base));
     basedone = ( is_l && stem->ldone ) || ( !is_l && stem->rdone );
     oppdone = ( is_l && stem->rdone ) || ( !is_l && stem->ldone );
-    reverse = ( ct->xdir && !is_l && !stem->ldone );
+    reverse = ( ct->xdir && !is_l && !stem->ldone && !stem->ghost );
     width = stem->width;
 
     if ( !reverse && !basedone ) {
@@ -3636,7 +3636,7 @@ static void HStemGeninst(InstrCt *ct) {
     int bluecnt = ct->gic->bluecnt;
     BasePoint *bp = ct->bp;
     StemData *stem;
-    int i, j, rp1, rp2, opp;
+    int i, j, rp1, rp2, opp, bpt, ept;
     double hbase, hend;
     int mdrp_end, mdrp_base, ip_base, *rpts1, *rpts2;
     int callargs[5];
@@ -3662,8 +3662,6 @@ static void HStemGeninst(InstrCt *ct) {
 	if (!stem->ldone && !stem->rdone)
 	{
 	    /* Set up upper edge (hend) and lower edge (hbase). */
-	    if (stem->ghost && (stem->width == 21 || stem->width == 20))
-	        continue; //not supported yet
 	    hbase = stem->right.y;
 	    hend = stem->left.y;
 
@@ -3718,8 +3716,6 @@ static void HStemGeninst(InstrCt *ct) {
             continue;
 	if (!stem->ldone && !stem->rdone)
 	{
-	    if (stem->ghost && (stem->width == 21 || stem->width == 20))
-	        continue; //not supported yet
 	    hbase = stem->right.y;
 	    hend = stem->left.y;
             
@@ -3730,9 +3726,23 @@ static void HStemGeninst(InstrCt *ct) {
 		continue;
             }
 
+	    bpt = ept = -1;
+	    if ( !stem->ghost || stem->width == 21 ) {
+	        init_stem_edge(ct, stem, false);
+	        bpt = ct->edge.refpt;
+	    }
+	    if ( !stem->ghost || stem->width == 20 ) {
+	        init_stem_edge(ct, stem, true);
+	        ept = ct->edge.refpt;
+	    }
+	    if ( bpt == -1 && ept == -1 )
+	        continue;
+	    
 	    /* Align the stem relatively to rp0 and rp1. */
-	    mdrp_end = fabs(bp[rp2].y - hbase) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
-	    mdrp_base = fabs(bp[rp1].y - hend) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
+	    mdrp_end = ept != -1 &&
+	        fabs(bp[rp2].y - hbase) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
+	    mdrp_base = bpt != -1 && 
+	        fabs(bp[rp1].y - hend) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
 
 	    if (mdrp_end || mdrp_base) {
 		if (mdrp_end) init_stem_edge(ct, stem, true);
@@ -3748,10 +3758,32 @@ static void HStemGeninst(InstrCt *ct) {
 		*(ct->pt)++ = MDRP_grey;
 		*(ct->pt)++ = MDAP_rnd;
 	    }
+	    else if ( bpt == -1 || ept == -1 ) {
+	        ip_base = ( ept == -1 );
+	        init_stem_edge(ct, stem, !ip_base);
+		if ( ct->gic->fpgm_done ) {
+                    callargs[0] = ct->edge.refpt;
+		    callargs[1] = rp1;
+		    callargs[2] = rp2;
+		    callargs[3] = 8;
+		    ct->pt = pushnums(ct->pt, 4, callargs);
+		    *(ct->pt)++ = CALL;
+		}
+		else {
+                    callargs[0] = ct->edge.refpt;
+		    callargs[1] = rp1;
+		    callargs[2] = rp2;
+		    ct->pt = pushnums(ct->pt, 3, callargs);
+                    *(ct->pt)++ = SRP2;
+                    *(ct->pt)++ = SRP1;
+                    *(ct->pt)++ = DUP;
+                    *(ct->pt)++ = IP;
+                    *(ct->pt)++ = MDAP_rnd;
+		}
+	    }
 	    else {
 		ip_base = fabs(bp[rp2].y - hend) < fabs(bp[rp1].y - hbase);
-                init_stem_edge(ct, stem, ip_base);
-                opp = ct->edge.refpt;
+                opp = ip_base ? ept : bpt;
                 init_stem_edge(ct, stem, !ip_base);
 
 		if (ct->edge.refpt == -1) continue;
@@ -4073,12 +4105,15 @@ return( i );
     }
 
     for ( i=0; i<4; ++i ) {
-        if ( touched[stem->keypts[i]->ttfindex] & tf_y )
+        if (( stem->unit.x > stem->unit.y &&
+                touched[stem->keypts[i]->ttfindex] & tf_y ) ||
+            ( stem->unit.y > stem->unit.x &&
+                touched[stem->keypts[i]->ttfindex] & tf_x ))
 return( i );
     }
 
     for ( i=0; i<4; ++i ) {
-        if ( touched[stem->keypts[i]->ttfindex] & tf_x )
+        if ( touched[stem->keypts[i]->ttfindex] & ( tf_x | tf_y ))
 return( i );
     }
 return( 0 );
@@ -4088,12 +4123,13 @@ return( 0 );
 /* (i. e. has not yet been touched) and set freedom vector to that
 /* direction in case it has not already been set */
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
-    uint8 *touched,DiagPointInfo *diagpts,PointData *lp1,PointData *lp2,BasePoint *fv,int pvset ) {
+    uint8 *touched,DiagPointInfo *diagpts,PointData *lp1,PointData *lp2,BasePoint *fv ) {
 
     int i, pushpts[2];
     PointData *start=NULL, *end=NULL;
-    BasePoint newfv;
+    BasePoint newfv, sunit;
 
+    sunit = GetVector( &lp1->base,&lp2->base,false );
     if (( touched[pnum] & tf_d ) && !( touched[pnum] & tf_x ) && !( touched[pnum] & tf_y )) {
         for ( i=0 ; i<diagpts[pnum].count ; i++) {
             if ( diagpts[pnum].line[i].done ) {
@@ -4117,30 +4153,19 @@ return( false );
 
 return( true );
 
-    } else if ( (touched[pnum] & tf_x) && !(touched[pnum] & tf_d) && !(touched[pnum] & tf_y)) {
+    } else if ( (touched[pnum] & tf_x || sunit.x > sunit.y ) && 
+            !(touched[pnum] & tf_d) && !(touched[pnum] & tf_y)) {
         if (!( fv->x == 0 && fv->y == 1 )) {
             fv->x = 0; fv->y = 1;
             *(*instrs)++ = 0x04;       /*SFVTCA[y]*/
         }
 return( true );
 
-    } else if ( (touched[pnum] & tf_y) && !(touched[pnum] & tf_d) && !(touched[pnum] & tf_x)) {
+    } else if ( (touched[pnum] & tf_y || sunit.y > sunit.x ) &&
+            !(touched[pnum] & tf_d) && !(touched[pnum] & tf_x)) {
         if (!( fv->x == 1 && fv->y == 0 )) {
             *(*instrs)++ = 0x05;       /*SFVTCA[x]*/
             fv->x = 1; fv->y = 0;
-        }
-return ( true );
-    } else if ( !(touched[pnum] & (tf_x|tf_y|tf_d))) {
-        newfv = GetVector( &lp1->base,&lp2->base,true );
-        if ( !UnitsParallel( fv,&newfv,true )) {
-            fv->x = newfv.x; fv->y = newfv.y;
-
-            if ( pvset )
-                *(*instrs)++ = 0x0E;   /*SFVTPV*/
-            else {
-                *instrs = push2points( *instrs,lp1->ttfindex,lp2->ttfindex );
-                *(*instrs)++ = 0x09;   /*SFVTL[orthog]*/
-            }
         }
 return( true );
     }
@@ -4154,7 +4179,7 @@ static int MarkLineFinished( int pnum,int startnum,int endnum,DiagPointInfo *dia
         if (( diagpts[pnum].line[i].pd1->ttfindex == startnum ) &&
             ( diagpts[pnum].line[i].pd2->ttfindex == endnum )) {
 
-            diagpts[pnum].line[i].done = true;
+            diagpts[pnum].line[i].done = 2;
 return( true );
         }
     }
@@ -4180,7 +4205,7 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
         v1 = stem->keypts[2]; v2 = stem->keypts[3];
     }
 
-    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,v1,v2,fv,true )) {
+    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,v1,v2,fv )) {
         if ( refpt == -1 ) {
             if (( fv->x == 1 && !( touched[pt] & tf_x )) || 
                 ( fv->y == 1 && !( touched[pt] & tf_y ))) {
@@ -4223,20 +4248,15 @@ static int DStemHasSnappableCorners ( InstrCt *ct,StemData *stem,PointData *pd1,
     if ( pd1->sp == NULL || pd2->sp == NULL )
 return( false );
     
-    /* points should immediately follow each other */
-    if (pd1->sp->next->to->ttfindex != pd2->sp->ttfindex && 
-        pd1->sp->prev->from->ttfindex != pd2->sp->ttfindex )
-return( false );
-    
     /* points should not be lined up vertically or horizontally */
     if (fabs( pd1->base.x - pd2->base.x ) <= ct->gic->fudge ||
         fabs( pd1->base.y - pd2->base.y ) <= ct->gic->fudge )
 return( false );
 
-    if ((   pd1->x_corner && !( touched[pd1->ttfindex] & tf_y ) &&
-            pd2->y_corner && !( touched[pd2->ttfindex] & tf_x )) ||
-        (   pd1->y_corner && !( touched[pd1->ttfindex] & tf_x ) &&
-            pd2->x_corner && !( touched[pd2->ttfindex] & tf_y )))
+    if ((   pd1->x_corner == 1 && !( touched[pd1->ttfindex] & tf_y ) &&
+            pd2->y_corner == 1 && !( touched[pd2->ttfindex] & tf_x )) ||
+        (   pd1->y_corner == 1 && !( touched[pd1->ttfindex] & tf_x ) &&
+            pd2->x_corner == 1 && !( touched[pd2->ttfindex] & tf_y )))
 return( true );
 
 return( false );
@@ -4255,8 +4275,7 @@ static uint8 *SnapDStemCorners ( InstrCt *ct,StemData *stem,PointData *pd1,Point
         xbase = pd2->ttfindex; ybase = pd1->ttfindex;
     }
 
-    if ( !RealNear( fv->x,1 ) || !RealNear( fv->y,0 ))
-        *(ct->pt)++ = SVTCA_x;
+    *(ct->pt)++ = SVTCA_x;
     ct->pt = push2points( ct->pt,ybase,xbase );
     *(ct->pt)++ = touched[xbase] & tf_x ? MDAP : MDAP_rnd;
     *(ct->pt)++ = MDRP_min_black;
@@ -4383,7 +4402,7 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,true );
 
-    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,line->pd1,line->pd2,fv,false )) {
+    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,line->pd1,line->pd2,fv )) {
         if ( ct->rp0 != line->pd1->ttfindex ) {
             instrs = pushpoint( instrs,line->pd1->ttfindex );
             *instrs++ = SRP0;
@@ -4430,10 +4449,9 @@ static uint8 *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
     instrs = ct->pt;
     ptcnt = ct->ptcnt;
     
-    if ( diagpts[pd->ttfindex].count != 1 || touched[pd->ttfindex] & ( tf_x|tf_y|tf_d )) {
-        touched[pd->ttfindex] |= tf_d;
+    if (diagpts[pd->ttfindex].count != 1 || touched[pd->ttfindex] & ( tf_x|tf_y ) ||
+        diagpts[pd->ttfindex].line[0].done > 1 )
 return( instrs );
-    }
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,false );
 
@@ -4446,7 +4464,8 @@ return( instrs );
         instrs = pushpoints( instrs,3,pushpts );
     } else
         instrs = pushpoint ( instrs,pd->ttfindex );
-    if ( !UnitsParallel( pv,&newpv,false )) {
+
+    if ( !UnitsParallel( pv,&newpv,true )) {
         pv->x = newpv.x; pv->y = newpv.y;
 
         if ( *rp1 != line->pd1->ttfindex || *rp2 != line->pd1->ttfindex ) {
@@ -4459,7 +4478,7 @@ return( instrs );
         *instrs++ = 0x06; /* SPVTL[parallel] */
     }
 
-    if ( !UnitsParallel( fv,&newpv,false )) {
+    if ( !UnitsParallel( fv,&newpv,true )) {
         *instrs++ = 0x0E; /* SFVTPV */
         fv->x = newpv.x; fv->y = newpv.y;
     }
@@ -4472,6 +4491,7 @@ return( instrs );
     }
     *instrs++ = IP;
     touched[pd->ttfindex] |= tf_d;
+    diagpts[pd->ttfindex].line[0].done = 2;
 return( instrs );
 }
 
@@ -4504,9 +4524,8 @@ static uint8 *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
                     ct->pt = FixPointOnLine( diagpts,&diagpts[i].line[j],
                         curpd,ct,fv,&pv,&rp1,&rp2 );
 
-                    /* Not yet set touched[i]: will use this flag in the
-                    /* next cycle to identify points to be interpolated */
-                    diagpts[i].line[j].done = ( true );
+                    diagpts[i].line[j].done = true;
+                    touched[i] |= tf_d;
                 }
             }
         }
