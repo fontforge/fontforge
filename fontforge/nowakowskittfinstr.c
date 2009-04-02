@@ -2080,7 +2080,7 @@ return 0;
         in = SplineCurvature(prev, 1);
 	if (fabs(in) < CURVATURE_THRESHOLD) in = SplineCurvature(prev, 0);
 	if (fabs(in) < CURVATURE_THRESHOLD) prev = prev->from->prev;
-	if ((prev != NULL) && IsAnglePoint(contourends, bp, prev->to))
+	if ((prev != NULL && IsAnglePoint(contourends, bp, prev->to)) || (prev == sp->prev))
     break;
     }
 
@@ -2090,7 +2090,7 @@ return 0;
         out = SplineCurvature(next, 0);
 	if (fabs(out) < CURVATURE_THRESHOLD) out = SplineCurvature(next, 1);
 	if (fabs(out) < CURVATURE_THRESHOLD) next = next->to->next;
-	if ((next != NULL) && IsAnglePoint(contourends, bp, next->from))
+	if ((next != NULL && IsAnglePoint(contourends, bp, next->from)) || (next == sp->next))
     break;
     }
 
