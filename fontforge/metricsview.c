@@ -4475,6 +4475,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     int i,j,cnt;
     int as,ds,ld;
     static GFont *mvfont=NULL;
+    SplineFont *master = fv->b.sf->cidmaster ? fv->b.sf->cidmaster : fv->b.sf;
 
     MetricsViewInit();
 
@@ -4487,8 +4488,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->showgrid = mvshowgrid;
     mv->antialias = mv_antialias;
     mv->scale_index = SCALE_INDEX_NORMAL;
-    mv->next = fv->b.sf->metrics;
-    fv->b.sf->metrics = mv;
+    mv->next = master->metrics;
+    master->metrics = mv;
     mv->layer = fv->b.active_layer;
     mv->type = mv_type;
     mv->pixelsize_set_by_window = true;
@@ -4599,6 +4600,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = MV_SubtableChanged;
     gd.label = NULL;
+    gd.u.list = NULL;
     mv->subtable_list = GListButtonCreate(gw,&gd,mv);
     MVSetSubtables(mv);
 
