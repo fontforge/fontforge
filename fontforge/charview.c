@@ -8614,8 +8614,13 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_AutoInstr:
 	  case MID_EditInstructions:
+	    mi->ti.disabled = multilayer ||
+		!cv->b.layerheads[cv->b.drawmode]->order2;
+	  break;
 	  case MID_Debug:
-	    mi->ti.disabled = multilayer || !cv->b.layerheads[cv->b.drawmode]->order2;
+	    mi->ti.disabled = multilayer ||
+		!cv->b.layerheads[cv->b.drawmode]->order2 ||
+		!hasFreeTypeDebugger();
 	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->b.sc->ttf_instrs_len==0;
