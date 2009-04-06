@@ -180,17 +180,6 @@ void doneFreeType(void) {
     ff_ft_context = NULL;
 }
 
-int hasFreeTypeDebugger(void) {
-    if ( !hasFreeType())
-return( false );
-#if FREETYPE_HAS_DEBUGGER
-    if ( _FT_Set_Debug_Hook!=NULL && _TT_RunIns!=NULL )
-return( true );
-#endif
-
-return( false );
-}
-
 int hasFreeTypeByteCode(void) {
     static int complained = 0;
 
@@ -241,6 +230,17 @@ return( false );
 return( found );
     }
 #endif
+}
+
+int hasFreeTypeDebugger(void) {
+    if ( !hasFreeTypeByteCode())
+return( false );
+#if FREETYPE_HAS_DEBUGGER
+    if ( _FT_Set_Debug_Hook!=NULL && _TT_RunIns!=NULL )
+return( true );
+#endif
+
+return( false );
 }
 
 # if !defined(_STATIC_LIBFREETYPE) && !defined(NODYNAMIC)
