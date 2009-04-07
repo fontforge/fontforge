@@ -209,7 +209,7 @@ return;
 }
 
 static int FVRegenBitmaps(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
-    FontViewBase *fv = bd->fv;
+    FontViewBase *fv = bd->fv, *selfv = bd->which==bd_all ? NULL : fv;
     SplineFont *sf = bd->sf, *subsf, *bdfsf = sf->cidmaster!=NULL ? sf->cidmaster : sf;
     int i,j;
     BDFFont *bdf;
@@ -227,7 +227,7 @@ return( false );
     }
     if ( bd->which==bd_current && bd->sc!=NULL ) {
 	if ( usefreetype )
-	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc, fv,bd->layer);
+	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc, selfv,bd->layer);
 	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->orig_pos,freetypecontext,usefreetype,bd->layer);
 	if ( freetypecontext )
 	    FreeTypeFreeContext(freetypecontext);
@@ -238,7 +238,7 @@ return( false );
 		for ( i=0; i<subsf->glyphcnt; ++i ) {
 		    if ( SCWorthOutputting(subsf->glyphs[i])) {
 			if ( usefreetype && freetypecontext==NULL )
-			    freetypecontext = FreeTypeFontContext(subsf,NULL, fv, bd->layer);
+			    freetypecontext = FreeTypeFontContext(subsf,NULL, selfv, bd->layer);
 			ReplaceBDFC(subsf,sizes,i,freetypecontext,usefreetype, bd->layer);
 		    }
 		}
@@ -250,7 +250,7 @@ return( false );
 	    for ( i=0; i<fv->map->enccount; ++i ) {
 		if ( fv->selected[i] || bd->which == bd_all ) {
 		    if ( usefreetype && freetypecontext==NULL )
-			freetypecontext = FreeTypeFontContext(sf,NULL, fv, bd->layer);
+			freetypecontext = FreeTypeFontContext(sf,NULL, selfv, bd->layer);
 		    ReplaceBDFC(sf,sizes,fv->map->map[i],freetypecontext,usefreetype, bd->layer);
 		}
 	    }
