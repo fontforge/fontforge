@@ -216,7 +216,8 @@
     <TR>
       <TD><CODE>preloadCidmap</CODE></TD>
       <TD><CODE>(filename,registry,order,supplement)</CODE></TD>
-      <TD>Loads a fontforge cidmap file (first three args are strings, last is an integer)</TD>
+      <TD>Loads a fontforge cidmap file (first three args are strings, last is
+	an integer)</TD>
     </TR>
     <TR>
       <TD><CODE><A name="printSetup">printSetup</A></CODE></TD>
@@ -2497,7 +2498,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 	font (or -1 if this is not a cid-keyed font).
 	<P>
 	May be set to an index (an integer) or a subfont fontname (a string) to change
-	the current subfont.</TD>
+	the current subfont. (To find the name of the current subfont, simply use
+	.fontname).</TD>
     </TR>
     <TR>
       <TD><CODE>cidsubfontcnt</CODE></TD>
@@ -2559,7 +2561,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>fontname</CODE></TD>
-      <TD colspan=2>PostScript font name</TD>
+      <TD colspan=2>PostScript font name<BR>
+	Note that in a CID keyed font this will be the name of the current subfont.
+	Use cidfontname for the name of the font as a whole.</TD>
     </TR>
     <TR>
       <TD><CODE>fullname</CODE></TD>
@@ -3361,6 +3365,40 @@ pen = None;				# Finalize the pen. This tells FontForge
 	alternate substutions available for each glyph.</TD>
     </TR>
     <TR>
+      <TD><CODE>cidConvertByCMap</CODE></TD>
+      <TD><CODE>(cmap-filename)</CODE></TD>
+      <TD>Converts a normal font into a CID-keyed font with one subfont using
+	<P>
+	the CMAP to determine the mapping.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidConvertTo</CODE></TD>
+      <TD><CODE>(registry,ordering,supplement)</CODE></TD>
+      <TD>Converts a normal font into a CID-keyed font with one subfont.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidFlatten</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Converts a CID font into a normal font (glyphs will be in CID order).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidFlattenByCMap</CODE></TD>
+      <TD><CODE>(cmap-filename)</CODE></TD>
+      <TD>Converts a CID font into a normal font using the encoding specified in
+	the CMAP file.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidInsertBlankSubFont</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Adds a new (blank) sub-font into a cid-keyed font and changes the current
+	sub-font to be it.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidRemoveSubFont</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Removes the current subfont from a cid-keyed font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>close</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Frees memory for the current font.
@@ -3457,18 +3495,20 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE><A NAME="font-find">find</A></CODE></TD>
       <TD><CODE>(contour[,error-bound,search_flags])</CODE></TD>
       <TD>Searches the font for all glyphs containing the contour (or layer) and
-	  returns an iterator which returns those glyphs.<P>
-	  error-bound: defaults to 0.01.<BR>
-	  search_flags: tuple of the strings: reverse, flips, rotate, scale.<P>
-
-	  When found, the glyph.temporary is set to a dict of:
-	  <pre>
+	returns an iterator which returns those glyphs.
+	<P>
+	error-bound: defaults to 0.01.<BR>
+	search_flags: tuple of the strings: reverse, flips, rotate, scale.
+	<P>
+	When found, the glyph.temporary is set to a dict of:
+	<PRE>
 	  {
 	   "findMatchedRefs": matched_refs_bit_map,
 	   "findMatchedContours": matched_contours_bit_map,
 	   "findMatchedContoursStart": matched_contours_start_bit_map,
 	  }
-	  </pre>
+	  
+</PRE>
       </TD>
     </TR>
     <TR>
