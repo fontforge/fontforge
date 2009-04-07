@@ -10434,6 +10434,140 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_cidConvertTo(PyFF_Font *self,PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *sf = fv->sf;
+    struct cidmap *map;
+    char *registry, *ordering;
+    int supplement;
+
+    if ( sf->cidmaster!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"This font is already a CID keyed font." );
+return( NULL );
+    }
+    if ( !PyArg_ParseTuple(args,"ssi", &registry, &ordering, &supplement ))
+return( NULL );
+    map = FindCidMap( registry, ordering, supplement, sf);
+    if ( map == NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"No cidmap matching given ROS (%s-%s-%d)",
+		registry, ordering, supplement );
+return( NULL );
+    }
+    MakeCIDMaster(sf, fv->map, false, NULL, map);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_cidConvertByCmap(PyFF_Font *self,PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *sf = fv->sf;
+    char *locfilename;
+
+    if ( sf->cidmaster!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"This font is already a CID keyed font." );
+return( NULL );
+    }
+    if ( !PyArg_ParseTuple(args,"s", &locfilename ))
+return( NULL );
+    MakeCIDMaster(sf, fv->map, true, locfilename, NULL);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_cidFlatten(PyFF_Font *self,PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+
+    if ( sf->cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
+return( NULL );
+    }
+    
+    SFFlatten(sf->cidmaster);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_cidFlattenByCMap(PyFF_Font *self,PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *locfilename;
+
+    if ( sf->cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
+return( NULL );
+    }
+    
+    if ( !PyArg_ParseTuple(args,"s", &locfilename ))
+return( NULL );
+    
+    if ( !SFFlattenByCMap(sf,locfilename)) {
+	PyErr_Format(PyExc_EnvironmentError,"Can't find (or can't parse) cmap file: %s", locfilename);
+return( NULL );
+    }
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_cidInsertBlankSubFont(PyFF_Font *self,PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *cidmaster = fv->cidmaster, *sf;
+    struct cidmap *map;
+
+    if ( cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
+return( NULL );
+    }
+    if ( cidmaster->subfontcnt>=255 ) {
+	PyErr_Format(PyExc_EnvironmentError,"You may have at most 255 subfonts in a CID keyed font." );
+return( NULL );
+    }
+
+    map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
+    sf = SplineFontBlank(MaxCID(map));
+    sf->glyphcnt = sf->glyphmax;
+    sf->cidmaster = cidmaster;
+    sf->display_antialias = fv->sf->display_antialias;
+    sf->display_bbsized = fv->sf->display_bbsized;
+    sf->display_size = fv->sf->display_size;
+    sf->private = gcalloc(1,sizeof(struct psdict));
+    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    FVInsertInCID(fv,sf);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_cidRemoveSubFont(PyFF_Font *self,PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv, *fvs;
+    SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
+    int i;
+
+    if ( cidmaster==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError,"This font is not a CID keyed font." );
+return( NULL );
+    }
+    if ( cidmaster->subfontcnt<=1 ) {
+	PyErr_Format(PyExc_EnvironmentError,"You must have at least 1 subfont in a CID keyed font." );
+return( NULL );
+    }
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	SCCloseAllViews(sf->glyphs[i]);
+    }
+    MVDestroyAll(sf);
+
+    for ( i=0; i<cidmaster->subfontcnt; ++i )
+	if ( cidmaster->subfonts[i]==sf )
+    break;
+    replace = i==0?cidmaster->subfonts[1]:cidmaster->subfonts[i-1];
+    while ( i<cidmaster->subfontcnt-1 ) {
+	cidmaster->subfonts[i] = cidmaster->subfonts[i+1];
+	++i;
+    }
+    --cidmaster->subfontcnt;
+
+    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	if ( fvs->sf==sf )
+	    CIDSetEncMap( fvs,replace);
+    }
+    FontViewReformatAll(sf);
+    SplineFontFree(sf);
+Py_RETURN( self );
+}
+
 static struct lookup_subtable *addLookupSubtable(SplineFont *sf, char *lookup,
 	char *new_subtable, char *after_str) {
     OTLookup *otl;
@@ -12462,6 +12596,12 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "createChar", PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },
     { "createInterpolatedGlyph", PyFFFont_CreateInterpolatedGlyph, METH_VARARGS, "Creates (and returns) a new glyph interpolated between the two arguments." },
     { "createMappedChar", PyFFFont_CreateMappedChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
+    { "cidConvertTo", (PyCFunction) PyFFFont_cidConvertTo, METH_VARARGS, "Turns a normal font into a CID keyed font with one subfont." },
+    { "cidConvertByCmap", (PyCFunction) PyFFFont_cidConvertByCmap, METH_VARARGS, "Turns a normal font into a CID keyed font with one subfont, using the CMAP file to specify the CID ordering." },
+    { "cidFlatten", (PyCFunction) PyFFFont_cidFlatten, METH_NOARGS, "Turns a cid-keyed font into a normal font, using the CID ordering as an encoding" },
+    { "cidFlattenByCMap", (PyCFunction) PyFFFont_cidFlattenByCMap, METH_VARARGS, "Turns a cid-keyed font into a normal font, using the mapping specified in the CMAP file." },
+    { "cidInsertBlankSubFont", (PyCFunction) PyFFFont_cidInsertBlankSubFont, METH_NOARGS, "Adds a new subfont, a blank one, to the CID keyed font, and changes the current subfont to be the new one." },
+    { "cidRemoveSubFont", (PyCFunction) PyFFFont_cidRemoveSubFont, METH_NOARGS, "Removes the current subfont from a CID keyed font." },
     { "getTableData", PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
     { "setTableData", PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},
     { "addLookup", PyFFFont_addLookup, METH_VARARGS, "Add a new lookup"},
