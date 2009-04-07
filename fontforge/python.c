@@ -9972,7 +9972,10 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"cidversion",
 	 (getter)PyFF_Font_get_cidversion, (setter)PyFF_Font_set_cidversion,
 	 "CID Version", NULL},
-    {"iscid",
+    {"iscid",		/* This should be is_cid, but due to an early misprint I now include both */
+	 (getter)PyFF_Font_get_is_cid, (setter)PyFF_cant_set,
+	 "Whether the font is a cid-keyed font. (readonly)", NULL},
+    {"is_cid",
 	 (getter)PyFF_Font_get_is_cid, (setter)PyFF_cant_set,
 	 "Whether the font is a cid-keyed font. (readonly)", NULL},
     {"italicangle",
