@@ -1045,7 +1045,6 @@ static void FVMenuOpenBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i;
     SplineChar *sc;
-    fprintf(stderr,"open bmp\n");
 
     if ( fv->b.cidmaster==NULL ? (fv->b.sf->bitmaps==NULL) : (fv->b.cidmaster->bitmaps==NULL) )
 return;
