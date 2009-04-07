@@ -1543,7 +1543,7 @@ return( -1 );
 }
 
 static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, struct cmap *cmap) {
-    SplineChar *sc;
+    SplineChar *sc, *GID0=NULL;
     int i,max=0, anyextras=0;
 
     cidmaster->cidregistry = cmap->registry; cmap->registry = NULL;
@@ -1557,11 +1557,18 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, 
 	    sc->orig_pos = -1;
 	else {
 	    sc->orig_pos = Enc2CMap(cmap,oldmap->backmap[i]);
-	    if ( sc->orig_pos==0 ) sc->orig_pos = -1;
+	    if ( sc->orig_pos==0 ) {
+		if ( GID0==NULL )
+		    GID0 = sc;
+		else
+		    sc->orig_pos = -1;
+	    }
 	}
 	if ( sc->orig_pos>max ) max = sc->orig_pos;
 	else if ( sc->orig_pos==-1 ) ++anyextras;
     }
+    if ( GID0!=NULL )
+	GID0->orig_pos = ++max;
 
     if ( anyextras ) {
 	char *buttons[3];
@@ -1577,7 +1584,7 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, 
 	    max += anyextras;
 	}
     }
-    SFApplyOrdering(sf, max);
+    SFApplyOrdering(sf, max+1);
 }
 
 /* If we change the ascent/descent of a sub font then consider changing the */
