@@ -2335,6 +2335,10 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
     BasePoint unit;
     double len, minlen = (sc->parent->ascent+sc->parent->descent)/20.0;
     double diff, xoff, yoff, len2;
+    int order2=false;
+
+    if ( ss->first->next!=NULL && ss->first->next->order2 )
+	order2 = true;
 
     for ( s = ss->first->next; s!=NULL && s!=first; s=s->to->next ) {
 	if ( first==NULL ) first = s;
@@ -2355,6 +2359,8 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			xoff = diff*unit.y; yoff = -diff*unit.x;
 			sp->me.x -= xoff; sp->me.y -= yoff;
 			sp->prevcp.x -= xoff; sp->prevcp.y -= yoff;
+			if ( order2 && sp->prev!=NULL && !sp->noprevcp )
+			    sp->prev->from->nextcp = sp->prevcp;
 			sp->nextcp = sp->me; sp->nonextcp = true;
 			if ( sp->next==first ) first = NULL;
 			SplineFree(sp->next);
@@ -2391,6 +2397,8 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
 			xoff = diff*unit.y; yoff = -diff*unit.x;
 			sp->me.x -= xoff; sp->me.y -= yoff;
 			sp->nextcp.x -= xoff; sp->nextcp.y -= yoff;
+			if ( order2 && sp->next!=NULL && !sp->nonextcp )
+			    sp->next->to->prevcp = sp->nextcp;
 			sp->prevcp = sp->me; sp->noprevcp = true;
 			if ( sp->prev==first ) first = NULL;
 			SplineFree(sp->prev);
