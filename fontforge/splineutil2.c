@@ -2238,17 +2238,23 @@ void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err) {
 	if ( s->knownlinear ) {
 	    if ( s->to->me.x-s->from->me.x<err && s->to->me.x-s->from->me.x>-err ) {
 		s->to->nextcp.x += (s->from->me.x-s->to->me.x);
+		if ( s->order2 && s->to->next!=NULL )
+		    s->to->next->to->prevcp.x = s->to->nextcp.x;
 		s->to->me.x = s->from->me.x;
 		s->to->prevcp = s->to->me;
 		s->from->nextcp = s->from->me;
+		s->from->nonextcp = s->to->noprevcp = true;
 		SplineRefigure(s);
 		if ( s->to->next != NULL )
 		    SplineRefigure(s->to->next);
 	    } else if ( s->to->me.y-s->from->me.y<err && s->to->me.y-s->from->me.y>-err ) {
 		s->to->nextcp.y += (s->from->me.y-s->to->me.y);
+		if ( s->order2 && s->to->next!=NULL )
+		    s->to->next->to->prevcp.y = s->to->nextcp.y;
 		s->to->me.y = s->from->me.y;
 		s->to->prevcp = s->to->me;
 		s->from->nextcp = s->from->me;
+		s->from->nonextcp = s->to->noprevcp = true;
 		SplineRefigure(s);
 		if ( s->to->next != NULL )
 		    SplineRefigure(s->to->next);
