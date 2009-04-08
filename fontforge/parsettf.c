@@ -1974,8 +1974,13 @@ return;
 	    pts[i].x = last_pos + (short) getushort(ttf);
 	last_pos = pts[i].x;
 	if ( (last_pos<gbb[0] || last_pos>gbb[2]) && ( flags[i]&_On_Curve )) {
-	    LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
-	    info->bad_glyph_data = true;
+	    if ( !info->gbbcomplain || (info->openflags&of_fontlint)) {
+		LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
+		info->bad_glyph_data = true;
+		if ( !(info->openflags&of_fontlint) )
+		    LogError("  Subsequent errors will not be reported.\n" );
+		info->gbbcomplain = true;
+	    }
 	}
     }
 
