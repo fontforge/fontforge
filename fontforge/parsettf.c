@@ -1992,8 +1992,13 @@ return;
 	    pts[i].y = last_pos + (short) getushort(ttf);
 	last_pos = pts[i].y;
 	if (( last_pos<gbb[1] || last_pos>gbb[3]) && ( flags[i]&_On_Curve ) ) {
-	    LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
-	    info->bad_glyph_data = true;
+	    if ( !info->gbbcomplain || (info->openflags&of_fontlint)) {
+		LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
+		info->bad_glyph_data = true;
+		if ( !(info->openflags&of_fontlint) )
+		    LogError("  Subsequent errors will not be reported.\n" );
+		info->gbbcomplain = true;
+	    }
 	}
     }
 
@@ -2198,8 +2203,13 @@ return( sc );
     gbb[3] = (short) getushort(ttf);
     if ( info->head_start!=0 && ( gbb[0]<info->fbb[0] || gbb[1]<info->fbb[1] ||
 				  gbb[2]>info->fbb[2] || gbb[3]>info->fbb[3])) {
-	LogError(_("Glyph bounding box data excedes font bounding box data for GID %d\n"), gid );
-	info->bad_glyph_data = true;
+	if ( !info->bbcomplain || (info->openflags&of_fontlint)) {
+	    LogError(_("Glyph bounding box data excedes font bounding box data for GID %d\n"), gid );
+	    info->bad_glyph_data = true;
+	    if ( !(info->openflags&of_fontlint) )
+		LogError("  Subsequent errors will not be reported.\n" );
+	    info->bbcomplain = true;
+	}
     }
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt,gbb);
@@ -4008,12 +4018,17 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	lsb = (short) getushort(ttf);
 	if ( (sc = info->chars[i])!=NULL ) {	/* can happen in ttc files */
 	    if ( lastwidth>info->advanceWidthMax && info->hhea_start!=0 ) {
-		if ( info->fontname!=NULL && sc->name!=NULL )
-		    LogError("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n",
-			    info->fontname, lastwidth, sc->name, info->advanceWidthMax );
-		else
-		    LogError("In GID %d the advance width (%d) is greatert than the stated maximum (%d)\n",
-			    i, lastwidth, info->advanceWidthMax );
+		if ( !info->wdthcomplain || (info->openflags&of_fontlint)) {
+		    if ( info->fontname!=NULL && sc->name!=NULL )
+			LogError("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n",
+				info->fontname, lastwidth, sc->name, info->advanceWidthMax );
+		    else
+			LogError("In GID %d the advance width (%d) is greatert than the stated maximum (%d)\n",
+				i, lastwidth, info->advanceWidthMax );
+		    if ( !(info->openflags&of_fontlint) )
+			LogError("  Subsequent errors will not be reported.\n" );
+		    info->wdthcomplain = true;
+		}
 	    }
 	    if ( check_width_consistency && sc->width!=lastwidth ) {
 		if ( info->fontname!=NULL && sc->name!=NULL )

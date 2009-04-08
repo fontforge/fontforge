@@ -227,6 +227,9 @@ struct ttfinfo {
     unsigned int onlystrikes: 1;	/* Only read in the bitmaps, not the outlines */
     unsigned int onlyonestrike: 1;	/* Only read in one bitmap (strike) */
     unsigned int barecff: 1;		/* pay attention to the encoding in the cff file, we won't have a cmap */
+    unsigned int wdthcomplain: 1;	/* We've complained about advance widths exceding the max */
+    unsigned int bbcomplain: 1;		/* We've complained about glyphs being outside the bounding box */
+    unsigned int gbbcomplain: 1;	/* We've complained about points being outside the bounding box */
 
     int platform, specific;		/* values of the encoding we chose to use */
 
