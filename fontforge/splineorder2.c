@@ -188,13 +188,28 @@ return( end );
 
 static int buildtestquads(Spline *ttf,real xmin,real ymin,real cx,real cy,
 	real x,real y,real tmin,real t,real err,Spline *ps, DBounds *psbb) {
-    real fudge;
+    real fudge, normal, para;
+    BasePoint segdir, cpdir;
 
     /* test the control points are reasonable */
     fudge = (psbb->maxx-psbb->minx) + (psbb->maxy-psbb->miny);
     if ( cx<psbb->minx-fudge || cx>psbb->maxx+fudge )
 return( false );
     if ( cy<psbb->miny-fudge || cy>psbb->maxy+fudge )
+return( false );
+
+    segdir.x = x-xmin; segdir.y = y-ymin;
+    cpdir.x = cx-xmin; cpdir.y = cy-ymin;
+    para = segdir.x*cpdir.x + segdir.y*cpdir.y;
+    if ( (normal = segdir.x*cpdir.y - segdir.y*cpdir.x)<0 )
+	normal=-normal;
+    if ( para<0 && -para >4*normal )
+return( false );
+    cpdir.x = x-cx; cpdir.y = y-cy;
+    para = segdir.x*cpdir.x + segdir.y*cpdir.y;
+    if ( (normal = segdir.x*cpdir.y - segdir.y*cpdir.x)<0 )
+	normal=-normal;
+    if ( para<0 && -para >4*normal )
 return( false );
 
     ttf->splines[0].d = xmin;
