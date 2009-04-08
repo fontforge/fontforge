@@ -3171,6 +3171,21 @@ return( true );
 return( false );
 }
 
+static void MoveCPIn(SplinePoint *sp,BasePoint *cp) {
+    bigreal xdiff, ydiff, off;
+
+    for ( off=1.0/128.; off<=1; off*=2.0 ) {
+	xdiff = off * (cp->x - sp->me.x);
+	ydiff = off * (cp->y - sp->me.y);
+	if ( (cp->x != sp->me.x + xdiff || xdiff==0 ) &&
+	     (cp->y != sp->me.y + ydiff || ydiff==0 )) {
+	    cp->x = sp->me.x + xdiff;
+	    cp->y = sp->me.y + ydiff;
+return;
+	}
+    }
+}
+
 /* An extremum is very close to the end-point. So close that we don't want */
 /*  to add a new point. Instead try moving the control points around */
 /*  Two options: */
@@ -3207,7 +3222,7 @@ return( true );	/* We changed the slope */
     }
 
     if ( s->order2 )
-return( false );		/* Can't do much with this. I hope this can't happen */
+return( -1 );		/* Can't do much with this. I hope this can't happen */
 
     for ( isy=0; isy<2; ++isy ) {
 	p = 0;
@@ -3222,23 +3237,13 @@ return( false );		/* Can't do much with this. I hope this can't happen */
 	    t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],-s->splines[isy].c/(2*s->splines[isy].b));
 	}
 	for ( i=0; i<p; ++i ) {
-	    if ( t[i]>0 && t[i]<.05 && !isto ) {
-		/* force this to 0 so the extremum is at the end point, */
+	    if (( t[i]>0 && t[i]<.05 && !isto ) ||
+		    ( t[i]<1.0 && t[i]>.95 && isto )) {
+		/* force this to 0 or 1 so the extremum is at the end point, */
 		/*  then guess what the to->prev control point must be for */
 		/*  that to work */
-		end = s->to; cp = &end->prevcp;
-		xdiff = .99 * (cp->x - end->me.x);
-		ydiff = .99 * (cp->y - end->me.y);
-		cp->x = end->me.x + xdiff;
-		cp->y = end->me.y + ydiff;
-		SplineRefigure(s);
-return( false );
-	    } else if ( t[i]<1.0 && t[i]>.95 && isto ) {
-		end = s->from; cp = &end->nextcp;
-		xdiff = .99 * (cp->x - end->me.x);
-		ydiff = .99 * (cp->y - end->me.y);
-		cp->x = end->me.x + xdiff;
-		cp->y = end->me.y + ydiff;
+		MoveCPIn(s->from,&s->from->nextcp);
+		MoveCPIn(s->to,&s->to->prevcp);
 		SplineRefigure(s);
 return( false );
 	    }
