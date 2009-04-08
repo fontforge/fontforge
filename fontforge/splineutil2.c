@@ -2442,6 +2442,9 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
     double len, len2, para, norm, tn;
     int changed=false, found;
 
+    if ( ss->first->next!=NULL && ss->first->next->order2 )
+return( false );
+
     for ( sp = ss->first; ; ) {
 	if (( !sp->nonextcp && !sp->noprevcp && sp->pointtype==pt_corner ) ||
 		((sp->pointtype==pt_corner || sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve) &&
