@@ -49,9 +49,12 @@
 /* In section 4.d we are told that MarkAttachmentType/UseMarkFilteringSet */
 /*  both take <glyph class name>s, yet in 9.b we are told they take */
 /*  <mark class name>s */
+/*   Read Roberts says that either will be accepted */
 /* In 6.e a NULL anchor is defined by <anchorNULL>, shouldn't this be */
 /*  <anchor NULL>? In that same example the NULL anchor is not followed by */
 /*  a mark keyword and class, is this correct syntax? */
+/*   Read Roberts says <anchorNULL> is a typo, but that not having a mark class*/
+/*   is correct */
 /* 2.e.vi The syntax for contourpoints has changed. In v1.6 it was */
 /*  "<contourpoint 2>", but in v1.8 it is "contourpoint 2". Yet this change */
 /*  is not mentioned in the v1.8 changelog, was it intentional? */
