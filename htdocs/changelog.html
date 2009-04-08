@@ -47,6 +47,141 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      8-Apr-2009
+      <UL>
+	<LI>
+	  Extensive patch by Alexey Kryukov to support composites (references) in bitmap
+	  fonts.
+	  <UL>
+	    <LI>
+	      Copy/Paste bitmap references
+	    <LI>
+	      Output into sfnts
+	    <LI>
+	      sfd extension
+	    <LI>
+	      Fix them up so that bitmap formats which don't support them have them unlinked
+	  </UL>
+	<LI>
+	  Support for the JSTF table (sfd extension), new dialog
+	  <CODE>Element-&gt;Other Info-&gt;Justification</CODE>.
+	<LI>
+	  Add a set of new python functions for manipulating CID keyed fonts:
+	  <UL>
+	    <LI>
+	      cidConvertTo(registry,ordering,supplement)
+	    <LI>
+	      cidConvertByCmap(filename)
+	    <LI>
+	      cidFlatten()
+	    <LI>
+	      cidFlattenByCmap(filename)
+	    <LI>
+	      cidInsertBlankSubFont()
+	    <LI>
+	      cidRemoveSubFont()
+	  </UL>
+	<LI>
+	  Add support for reading/writing version 1.8 of Adobe's feature file format
+	  (while, I hope, retaining the ability to read version 1.6). Fix a number
+	  of bugs in parsing feature files.
+	  <P>
+	  FontForge now supports the 'BASE' table (in feature files).
+	  <P>
+	  The new format is considerably better than the old and can now be used to
+	  express almost all of OpenType.
+	  <P>
+	  Changes:
+	  <UL>
+	    <LI>
+	      ability to name anchors and value records and use them later.
+	    <LI>
+	      contourpoints used to be expressed as "<contourpoint 2>" and are now expressed
+	      as "contourpoint 2" (no brokets). Adobe does not mention this in the changelog.
+	      [Incompatible change]
+	    <LI>
+	      It is now possible to specify a GDEF mark attachment class in the lookupflags
+	      statement.
+	    <LI>
+	      The syntax for mark to base/ligature/mark lookups is completely different.
+	      [Incompatible change]
+	    <LI>
+	      The syntax for contextual lookups has been extended to allow them to reference
+	      lookups by name. [FontForge has always done this. When I suggested to Adobe
+	      that they follow suit they said they would not. They have now followed suit
+	      but have used an incompatible syntax to accomplish the same ends. So this
+	      is an Incompatible change for FontForge]
+	    <LI>
+	      The syntax for contextual lookups has been extended to allow for the new
+	      mark lookups.
+	    <LI>
+	      It is now possible to specify a reverse chaining substitution lookup.
+	    <LI>
+	      It is now possible to specify descriptive names for the ss00-ss99 features.
+	      FontForge doesn't support this but will parse and ignore it
+	  </UL>
+	<LI>
+	  Last release Werner asked me to put in checks for glyphs that exceded various
+	  limits in the font (glyphs outside the bounding box, glyphs with advance
+	  widths bigger than the max, etc.) The problem is that erroneous fonts often
+	  have thousands of these errors, so only report once -- unless they turn on
+	  fontlint.
+	<LI>
+	  Fix several problems with simplifying quadratic splines.
+	<LI>
+	  Could still get control points pointing diametrically opposite their desired
+	  position when converting cubics to quadratics (happened when we could not
+	  find a good solution by subdividing the spline and had to try another approach).
+	<LI>
+	  AddExtrema could go into an infinite loop.
+	<LI>
+	  Barry points out that when converting something to a CID font through a CMAP
+	  the last glyph in the encoding will be lost.
+	<LI>
+	  Some inconsistancies in ff python docs and reality.
+	<LI>
+	  The regen bitmaps dlg sometimes did not use freetype for all glyphs.
+	<LI>
+	  Metrics view had problems with cid fonts.
+	<LI>
+	  FontForge was supposed to check that the compile time (include file) freetype
+	  library version number matched the installed version number. But it didn't.
+	  Only matters in the debugger, but is important there.
+	<LI>
+	  Autoinstructor: fixed a hang reported by Andrey V. Panov.
+	<LI>
+	  Autoinstructor: patch from Alexey:
+	  <UL>
+	    <LI>
+	      More tweaking to diagonal stems.
+	    <LI>
+	      Added support to horizontal ghost hints not tied to blue zones and vertical
+	      ghost hints.
+	  </UL>
+	<LI>
+	  Barry points out a free which is sometimes inappropriate.
+	<LI>
+	  The transform function from the fontview (and python) would transform images
+	  in the background layer multiple times -- once for each selected layer.
+	<LI>
+	  Autoinstructor: patch from Alexey:
+	  <UL>
+	    <LI>
+	      Fix an issue reported by Andrey V. Panov (counter control again).
+	    <LI>
+	      One type of dependent stems were positioned with wrong method; resulting
+	      in serifs pushed beyond their blue zones and other quirks.
+	  </UL>
+	<LI>
+	  Fix a crash bug in the math kern dlg.
+	<LI>
+	  If a tt control point were on top of an on-curve point, then ff would ignore
+	  it. So when I read things in I moved it, slightly. But that didn't work,
+	  because the instructions would do the wrong thing with it, and if it were
+	  part of an interpolated sequence that info would be garbled. So only swallow
+	  control points if they don't have a nextcpindex.
+      </UL>
+    <LI>
       24-Feb-2009
       <UL>
 	<LI>
