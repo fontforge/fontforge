@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 8-Dec-2008 -->
+  <!-- AP: Last modified: 7-Apr-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2722,15 +2722,18 @@ pen = None;				# Finalize the pen. This tells FontForge
 	or not.
 	<P>
 	You may remove a layer with <CODE>del font.layers["unneeded
-	layer"]</CODE><BR>
+	layer"]</CODE>;<BR>
 	You may add a new layer with <CODE>font.layers.add("layer-name",is_quadratic[,
-	is_background])</CODE><BR>
+	is_background])</CODE>;<BR>
 	You may change a layer's name with <CODE>font.layers["layer"].name =
-	"new-name"</CODE><BR>
+	"new-name"</CODE>;<BR>
 	You may change the type of splines in a layer with
-	<CODE>font.layers["layer"].is_quadratic = TRUE</CODE><BR>
+	<CODE>font.layers["layer"].is_quadratic = True</CODE>;<BR>
 	You may change whether it is a background layer by
-	<CODE>font.layers["layer"].is_background = TRUE</CODE></TD>
+	<CODE>font.layers["layer"].is_background = True</CODE>;
+	<P>
+	Note: The layers that live in the font are different from layers that live
+	in a glyph. These objects do not have the Layer type documented earlier.</TD>
     </TR>
     <TR>
       <TD><CODE>loadState</CODE></TD>
@@ -3365,7 +3368,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	alternate substutions available for each glyph.</TD>
     </TR>
     <TR>
-      <TD><CODE>cidConvertByCMap</CODE></TD>
+      <TD><CODE>cidConvertByCmap</CODE></TD>
       <TD><CODE>(cmap-filename)</CODE></TD>
       <TD>Converts a normal font into a CID-keyed font with one subfont using
 	<P>
