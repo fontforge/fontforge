@@ -1574,7 +1574,7 @@ return;
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
 	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ||
 		_xmlStrcmp(kid->name,(const xmlChar *) "real")==0 ) {
-	    char *valName = _xmlNodeListGetString(doc,kid->children,true);
+	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
 	    if ( pt+1+strlen(valName)<end ) {
 		if ( pt!=space+1 )
 		    *pt++=' ';
@@ -1602,7 +1602,7 @@ return;
     i=0;
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
 	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
-	    char *valName = _xmlNodeListGetString(doc,kid->children,true);
+	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
 	    if ( i<cnt )
 		array[i] = strtol(valName,NULL,10);
 	    free(valName);
@@ -1618,7 +1618,7 @@ static long UFOGetBits(xmlDocPtr doc,xmlNodePtr value) {
 return( 0 );
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
 	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
-	    char *valName = _xmlNodeListGetString(doc,kid->children,true);
+	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
 	    mask |= 1<<strtol(valName,NULL,10);
 	    free(valName);
 	}
@@ -1802,11 +1802,11 @@ return( NULL );
 		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "UnderlinePosition")==0 )
 		    sf->upos = strtol((char *) valname,&end,10);
 		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueFuzz")==0 )
-		    UFOAddPrivate(sf,"BlueFuzz",valname);
+		    UFOAddPrivate(sf,"BlueFuzz",(char *) valname);
 		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueScale")==0 )
-		    UFOAddPrivate(sf,"BlueScale",valname);
+		    UFOAddPrivate(sf,"BlueScale",(char *) valname);
 		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueShift")==0 )
-		    UFOAddPrivate(sf,"BlueShift",valname);
+		    UFOAddPrivate(sf,"BlueShift",(char *) valname);
 		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "BlueValues")==0 )
 		    UFOAddPrivateArray(sf,"BlueValues",doc,value);
 		else if ( _xmlStrcmp(keyname+10,(xmlChar *) "OtherBlues")==0 )

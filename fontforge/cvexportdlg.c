@@ -247,10 +247,11 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PDF"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Raph's plate"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 6, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 7, 0, 0, 0, 0, 0, 0, 0, 1 },
+#define BITMAP_FORMAT_START	6
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) BITMAP_FORMAT_START, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) BITMAP_FORMAT_START+1, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 8, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) BITMAP_FORMAT_START+2, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 static int last_format = 0;
@@ -262,7 +263,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     temp = cu_copy(path);
     last_format = format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
     if ( d->bc )
-	last_format += 5;
+	last_format += BITMAP_FORMAT_START;
     if ( d->bc!=NULL )
 	good = BCExportXBM(temp,d->bc,format);
     else if ( format==0 )
@@ -278,7 +279,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else if ( format==5 )
 	good = ExportPlate(temp,d->sc,d->layer);
     else if ( format<fv_pythonbase )
-	good = ExportXBM(temp,d->sc,d->layer,format-5);
+	good = ExportXBM(temp,d->sc,d->layer,format-BITMAP_FORMAT_START);
 #ifndef _NO_PYTHON
     else if ( format>=fv_pythonbase )
 	PyFF_SCExport(d->sc,format-fv_pythonbase,temp,d->layer);
