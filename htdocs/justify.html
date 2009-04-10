@@ -39,8 +39,8 @@ can be justified.<BR clear=all>
 <A NAME="language-dlg"><IMG SRC="JustifyLangDlg.png" WIDTH="922" HEIGHT="269"></A>
 <P>
 Each priority level consists of two parts, a series of behaviors for when
-the line is too long (and needs to be shrunken) and another series for when
-the line is too long (and needs to be extended). Each of these, in turn consists
+the line is too long (and needs to be make smaller) and another series for when
+the line is too short (and needs to be extended). Each of these, in turn consists
 of a set of lookups (in either GPOS or GSUB) to turn on, a set of lookups
 to turn off, and finally a special lookup which specifies the maximum amount
 the advance width of a glyph can change.
@@ -63,13 +63,13 @@ At a higher priority level there might be a set of lookups which adjust the
 advance width of every glyph.
 <P>
 In theory you could use a kerning lookup to specify the maximum width adjustment
-allowed between any two glyphs. (The OpenType spec says that any GPOS lookup
+allowed between any two glyphs. (The OpenType spec actually says that <em>any</em> GPOS lookup
 could be used, except for contextual ones (which makes one wonder if contextual
 chaining lookups are permitted), no semantics are provided for these other
-lookup types and it is hard to imagine what they might do).
+lookup types and it is hard to imagine what they might do, so I'm ignoring them).
 <P>
 These maximum lookups look like GPOS lookups, but are stored in the JSTF
-table. FontForge will display them in the GPOS lookup list and will output
-them into the appropriate table.
+table. FontForge will display them in the GPOS lookup list but will output
+them the JSTF table when appropriate.
 <P>
 </BODY></HTML>
