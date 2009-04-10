@@ -669,23 +669,42 @@ return;
 }
 
 void SplinePointRound(SplinePoint *sp,real factor) {
+    BasePoint noff, poff;
 
-    sp->nextcp.x = rint(sp->nextcp.x*factor)/factor;
-    sp->nextcp.y = rint(sp->nextcp.y*factor)/factor;
-    if ( sp->next!=NULL && sp->next->order2 )
-	sp->next->to->prevcp = sp->nextcp;
-    sp->prevcp.x = rint(sp->prevcp.x*factor)/factor;
-    sp->prevcp.y = rint(sp->prevcp.y*factor)/factor;
-    if ( sp->prev!=NULL && sp->prev->order2 )
-	sp->prev->from->nextcp = sp->prevcp;
     if ( sp->prev!=NULL && sp->next!=NULL && sp->next->order2 &&
 	    sp->ttfindex == 0xffff ) {
+	/* For interpolated points we want to round the controls */
+	/* and then interpolated based on that */
+	sp->nextcp.x = rint(sp->nextcp.x*factor)/factor;
+	sp->nextcp.y = rint(sp->nextcp.y*factor)/factor;
+	sp->prevcp.x = rint(sp->prevcp.x*factor)/factor;
+	sp->prevcp.y = rint(sp->prevcp.y*factor)/factor;
 	sp->me.x = (sp->nextcp.x + sp->prevcp.x)/2;
 	sp->me.y = (sp->nextcp.y + sp->prevcp.y)/2;
     } else {
+	/* For normal points we want to round the distance of the controls */
+	/*  from the base */
+	noff.x = rint((sp->nextcp.x - sp->me.x)*factor)/factor;
+	noff.y = rint((sp->nextcp.y - sp->me.y)*factor)/factor;
+	poff.x = rint((sp->prevcp.x - sp->me.x)*factor)/factor;
+	poff.y = rint((sp->prevcp.y - sp->me.y)*factor)/factor;
+
 	sp->me.x = rint(sp->me.x*factor)/factor;
 	sp->me.y = rint(sp->me.y*factor)/factor;
+
+	sp->nextcp.x = sp->me.x + noff.x;
+	sp->nextcp.y = sp->me.y + noff.y;
+	sp->prevcp.x = sp->me.x + poff.x;
+	sp->prevcp.y = sp->me.y + poff.y;
     }
+    if ( sp->next!=NULL && sp->next->order2 )
+	sp->next->to->prevcp = sp->nextcp;
+    if ( sp->prev!=NULL && sp->prev->order2 )
+	sp->prev->from->nextcp = sp->prevcp;
+    if ( sp->nextcp.x==sp->me.x && sp->nextcp.y==sp->me.y )
+	sp->nonextcp = true;
+    if ( sp->prevcp.x==sp->me.x && sp->prevcp.y==sp->me.y )
+	sp->noprevcp = true;
 }
 
 static void SpiroRound2Int(spiro_cp *cp,real factor) {
