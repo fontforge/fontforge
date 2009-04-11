@@ -2136,32 +2136,32 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
     if ( base->image_type==it_mono ) {
 	memset(data,0,tbase.height*tbase.bytes_per_line);
 	for ( r=0; r<size->height; ++r ) {
-	    int or = ((int) floor( r/yscale )) + src->y;
+	    int or = ((int) floor( (r+size->y)/yscale ));
 	    uint8 *pt = data+r*tbase.bytes_per_line;
 	    uint8 *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = ((int) floor( c/xscale)) +src->x;
+		int oc = ((int) floor( (c+size->x)/xscale));
 		if ( opt[oc>>3] & (0x80>>(oc&7)) )
 		    pt[c>>3] |= (0x80>>(c&7));
 	    }
 	}
     } else if ( base->image_type==it_index ) {
 	for ( r=0; r<size->height; ++r ) {
-	    int or = floor( r/yscale ) + src->y;
+	    int or = ((int) floor( (r+size->y)/yscale ));
 	    uint8 *pt = data+r*tbase.bytes_per_line;
 	    uint8 *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = ((int) floor( c/xscale)) +src->x;
+		int oc = ((int) floor( (c+size->x)/xscale));
 		*pt++ = opt[oc];
 	    }
 	}
     } else {
 	for ( r=0; r<size->height; ++r ) {
-	    int or = floor( r/yscale ) + src->y;
+	    int or = ((int) floor( (r+size->y)/yscale ));
 	    uint32 *pt = (uint32 *) (data+r*tbase.bytes_per_line);
 	    uint32 *opt = (uint32 *) (base->data+or*base->bytes_per_line);
 	    for ( c=0; c<size->width; ++c ) {
-		int oc = ((int) floor( c/xscale)) +src->x;
+		int oc = ((int) floor( (c+size->x)/xscale));
 		*pt++ = opt[oc];
 	    }
 	}
@@ -2178,7 +2178,7 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     double xscale, yscale;
-    GRect full, viewable = gw->ggc->clip;
+    GRect full, viewable;
     GImage *temp;
     GRect src;
 
@@ -2190,6 +2190,11 @@ return;
 #endif
 
     _GXDraw_SetClipFunc(gdisp,gw->ggc);
+    viewable = gw->ggc->clip;
+    if ( viewable.width > gw->pos.width-viewable.x )
+	viewable.width = gw->pos.width-viewable.x;
+    if ( viewable.height > gw->pos.height-viewable.y )
+	viewable.height = gw->pos.height-viewable.y;
 
     xscale = (base->width>=1) ? ((double) (width))/(base->width) : 1;
     yscale = (base->height>=1) ? ((double) (height))/(base->height) : 1;
@@ -2210,7 +2215,8 @@ return;
 
     /* Now find that same rectangle in the coordinates of the unscaled image */
     /* (translation & scale) */
-    full.x = (viewable.x-x)/xscale; full.y = (viewable.y-y)/yscale;
+    viewable.x -= x; viewable.y -= y;
+    full.x = viewable.x/xscale; full.y = viewable.y/yscale;
     full.width = viewable.width/xscale; full.height = viewable.height/yscale;
     if ( full.x+full.width>base->width ) full.width = base->width-full.x;	/* Rounding errors */
     if ( full.y+full.height>base->height ) full.height = base->height-full.y;	/* Rounding errors */
@@ -2218,7 +2224,7 @@ return;
 
     temp = _GImageExtract(base,&full,&viewable,xscale,yscale);
     src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
-    _GXDraw_Image( _w, temp, &src, viewable.x, viewable.y);
+    _GXDraw_Image( _w, temp, &src, x+viewable.x, y+viewable.y);
 }
 
 static GImage *xi1_to_gi1(GXDisplay *gdisp,XImage *xi) {
