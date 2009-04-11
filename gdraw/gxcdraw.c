@@ -1454,7 +1454,13 @@ void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     GRect full;
     double xscale, yscale;
-    GRect viewable = gw->ggc->clip;
+    GRect viewable;
+
+    viewable = gw->ggc->clip;
+    if ( viewable.width > gw->pos.width-viewable.x )
+	viewable.width = gw->pos.width-viewable.x;
+    if ( viewable.height > gw->pos.height-viewable.y )
+	viewable.height = gw->pos.height-viewable.y;
 
     xscale = (base->width>=1) ? ((double) (width))/(base->width) : 1;
     yscale = (base->height>=1) ? ((double) (height))/(base->height) : 1;
@@ -1475,7 +1481,8 @@ return;
 
     /* Now find that same rectangle in the coordinates of the unscaled image */
     /* (translation & scale) */
-    full.x = (viewable.x-x)/xscale; full.y = (viewable.y-y)/yscale;
+    viewable.x -= x; viewable.y -= y;
+    full.x = viewable.x/xscale; full.y = viewable.y/yscale;
     full.width = viewable.width/xscale; full.height = viewable.height/yscale;
     if ( full.x+full.width>base->width ) full.width = base->width-full.x;	/* Rounding errors */
     if ( full.y+full.height>base->height ) full.height = base->height-full.y;	/* Rounding errors */
@@ -1485,7 +1492,7 @@ return;
     GImage *temp = _GImageExtract(base,&full,&viewable,xscale,yscale);
     GRect src;
     src.x = src.y = 0; src.width = viewable.width; src.height = viewable.height;
-    _GXCDraw_Image( gw, temp, &src, viewable.x, viewable.y);
+    _GXCDraw_Image( gw, temp, &src, x+viewable.x, y+viewable.y);
   }
 #else
   {
