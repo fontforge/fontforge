@@ -983,11 +983,13 @@ return( false );
 int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
     int i, mv=0;
-    int isnotdef, samename=false;
+    int isnotdef, samename=false, sameuni=false;
     struct altuni *alt;
 
     for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
-    if ( (sc->unicodeenc == unienc || alt!=NULL ) && strcmp(name,sc->name)==0 ) {
+    if ( unienc==sc->unicodeenc || alt!=NULL )
+	sameuni=true;
+    if ( sameuni && strcmp(name,sc->name)==0 ) {
 	samename = true;	/* No change, it must be good */
     }
     if ( alt!=NULL || !samename ) {
@@ -1043,10 +1045,10 @@ return( false );
 	GlyphHashFree(sf);
     }
     sf->changed = true;
-    if ( unienc>=0xe000 && unienc<=0xf8ff )
-	/* Ok to name things in the private use area */;
-    else if ( samename )
+    if ( samename )
 	/* Ok to name it itself */;
+    else if ( sameuni && ( unienc>=0xe000 && unienc<=0xf8ff ))
+	/* Ok to name things in the private use area */;
     else {
 	FontViewBase *fvs;
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
