@@ -2420,7 +2420,7 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
     sf->map = map;
     if ( bdf==(BDFFont *) -1 )
 	/* Do Nothing: User cancelled a load of a duplicate pixelsize */;
-    else if ( toback )
+    else if ( toback && bdf!=NULL )
 	SFAddToBackground(sf,bdf);
     else
 	sf->changed = false;
