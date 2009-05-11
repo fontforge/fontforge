@@ -3530,8 +3530,11 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 		    for ( m=0; m<2; ++m ) {
 			len = 0;
 			for ( l=0; data[l]!=NULL; ++l ) {
-			    if ( l==0 || l==1 ) {
-				sprintf( buffer, data[l], tm->tm_year+1900, author, reservedname );
+			    if ( l==0 ) {
+				sprintf( buffer, data[l], tm->tm_year+1900, author );
+			        bpt = buffer;
+			    } else if ( l==1 ) {
+				sprintf( buffer, data[l], reservedname );
 			        bpt = buffer;
 			    } else
 				bpt = data[l];
