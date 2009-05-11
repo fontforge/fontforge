@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 7-Apr-2009 -->
+  <!-- AP: Last modified: 11-May-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3368,7 +3368,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	alternate substutions available for each glyph.</TD>
     </TR>
     <TR>
-      <TD><CODE>cidConvertByCmap</CODE></TD>
+      <TD><CODE>cidConvertByCMap</CODE></TD>
       <TD><CODE>(cmap-filename)</CODE></TD>
       <TD>Converts a normal font into a CID-keyed font with one subfont using
 	<P>
@@ -3846,6 +3846,16 @@ pen = None;				# Finalize the pen. This tells FontForge
 	<P>
 	If output is to a file (see <A href="#printSetup">printSetup</A>) then the
 	last argument specifies a file name in which to store output.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>randomText</CODE></TD>
+      <TD><CODE>(script[,lang])</CODE></TD>
+      <TD>Returns a random text sample using the letter frequencies of the specified
+	script (and optionally language). Both script and language should be expressed
+	as strings containing OpenType Script and Language tags. "dflt" is a reasonable
+	language tag. If the language is not specified, one will be chosen at random.
+	If ff has no frequency information for the script/language specified it will
+	use the letters in the script with equal frequencies.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="f-regenBitmaps">regenBitmaps</A></CODE></TD>

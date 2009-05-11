@@ -12063,6 +12063,25 @@ return( NULL );
 Py_RETURN(self);
 }
 
+static PyObject *PyFFFont_randomText(PyObject *self, PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    char *script=NULL, *lang=NULL, *txt;
+    uint32 stag, ltag=0;
+    PyObject *ret;
+
+    if ( !PyArg_ParseTuple(args,"s|s",&script, &lang ))
+return( NULL );
+    stag = StrToTag(script,NULL);
+    if ( lang!=NULL ) {
+	ltag = StrToTag(lang,NULL);
+	txt = RandomParaFromScriptLang(stag,ltag,fv->sf,NULL);
+    } else
+	txt = RandomParaFromScript(stag,&ltag,fv->sf);
+    ret = Py_BuildValue("s",txt);
+    free(txt);
+return( ret );
+}
+
 static PyObject *PyFFFont_clear(PyObject *self, PyObject *args) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVClear(fv);
@@ -12627,6 +12646,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "mergeLookups", PyFFFont_mergeLookups, METH_VARARGS, "Merges two lookups" },
     { "mergeLookupSubtables", PyFFFont_mergeLookupSubtables, METH_VARARGS, "Merges two lookup subtables" },
     { "printSample", PyFFFont_print, METH_VARARGS, "Produces a font sample printout" },
+    { "randomText", PyFFFont_randomText, METH_VARARGS, "Produces a string with random text generated from the font using letter frequencies for the specified script and language"},
     { "regenBitmaps", (PyCFunction) PyFFFont_regenBitmaps, METH_VARARGS, "Rerasterize the bitmap fonts specified in the argument tuple" },
     { "removeAnchorClass", PyFFFont_removeAnchorClass, METH_VARARGS, "Removes the named anchor class" },
     { "removeGlyph", PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
