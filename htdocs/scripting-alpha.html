@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 23-Feb-2009 -->
+  <!-- AP: Last modified: 11-May-2009 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1277,6 +1277,13 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	  <DD>
 	    Generates an adobe feature file for the current font. If a lookup name is
 	    specified, then only data for that lookup will be output.
+	  <DT>
+	    <A NAME="GetAnchorPoints">G</A>etAnchorPoints()
+	  <DD>
+	    Return an array of arrays, one sub-array for each anchor point in the currently
+	    selected glyph. The sub-arrays contain: the AnchorClass name, the type name
+	    of the point (mark, base, ligature, basemark, entry, exit), the x and y
+	    coordinates, and (for ligatures) the ligature component index.
 	  <DT>
 	    <A NAME="GetCvtAt">G</A>etCvtAt(index)
 	  <DD>
