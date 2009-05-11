@@ -3566,13 +3566,11 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    "FAQ or an unofficial translation of the license \n"
 	    "in your mother tongue or preferred language. \n"
 	    "\n"
-	    "Fontforge does not know about your email or URL,\n"
-	    "you will need to add them manually. \n"
 	    "Please fill in the copyright notice in the license\n"
 	    "header along with any Reserved Font Name(s).\n"
 	    "If you are branching from an existing font make sure\n"
 	    "you have the right to do so and remember to add your\n"
-	    "additional copyright notice along with any Reserved Font Name(s).\n" ));
+	    "additional notice with any Reserved Font Name(s).\n" ));
     }
 return( true );
 }
