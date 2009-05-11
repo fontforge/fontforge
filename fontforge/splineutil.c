@@ -6930,3 +6930,82 @@ return( true );
     }
 return( false );
 }
+
+int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wmax, int major ) {
+    /* if major==0 then find y values when x between z1, z2 */
+    /* if major==1 then find x values when y between z1, z2 */
+    double w0= 1e23, w1= -1e23;
+    int any=0;
+    Spline *s, *first;
+    Spline1D *ws, *zs;
+    extended ts[3];
+    double w, z;
+    int i;
+    int other = !major;
+
+    if ( z1>z2 ) {
+	double temp = z1;
+	z1 = z2;
+	z2 = temp;
+    }
+
+    while ( ss!=NULL ) {
+	first = NULL;
+	for ( s=ss->first->next; s!=first; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    ws = &s->splines[other];
+	    zs = &s->splines[major];
+	    if ( major ) {
+		if ( s->from->me.y<z1 && s->from->nextcp.y<z1 && s->to->prevcp.y<z1 && s->to->me.y<z1 )
+	continue;
+		else if ( s->from->me.y>z2 && s->from->nextcp.y>z2 && s->to->prevcp.y>z2 && s->to->me.y>z2 )
+	continue;
+	    } else {
+		if ( s->from->me.x<z1 && s->from->nextcp.x<z1 && s->to->prevcp.x<z1 && s->to->me.x<z1 )
+	continue;
+		else if ( s->from->me.x>z2 && s->from->nextcp.x>z2 && s->to->prevcp.x>z2 && s->to->me.x>z2 )
+	continue;
+	    }
+	    if ( SplineSolveFull(zs,z1,ts)) {
+		for ( i=0; i<2 && ts[i]!=-1; ++i ) {
+		    w = ((ws->a*ts[i]+ws->b)*ts[i]+ws->c)*ts[i]+ws->d;
+		    if ( w<w0 ) w0=w;
+		    if ( w>w1 ) w1=w;
+		    any = true;
+		}
+	    }
+	    if ( SplineSolveFull(zs,z2,ts)) {
+		for ( i=0; i<2 && ts[i]!=-1; ++i ) {
+		    w = ((ws->a*ts[i]+ws->b)*ts[i]+ws->c)*ts[i]+ws->d;
+		    if ( w<w0 ) w0=w;
+		    if ( w>w1 ) w1=w;
+		    any = true;
+		}
+	    }
+	    ts[0]=0; ts[1]=1.0;
+	    for ( i=0; i<2; ++i ) {
+		w = ((ws->a*ts[i]+ws->b)*ts[i]+ws->c)*ts[i]+ws->d;
+		z = ((zs->a*ts[i]+zs->b)*ts[i]+zs->c)*ts[i]+zs->d;
+		if ( z>=z1 && z<=z2 ) {
+		    if ( w<w0 ) w0=w;
+		    if ( w>w1 ) w1=w;
+		    any = true;
+		}
+	    }
+	    SplineFindExtrema(ws,&ts[0],&ts[1]);
+	    for ( i=0; i<2 && ts[i]!=-1; ++i ) {
+		w = ((ws->a*ts[i]+ws->b)*ts[i]+ws->c)*ts[i]+ws->d;
+		z = ((zs->a*ts[i]+zs->b)*ts[i]+zs->c)*ts[i]+zs->d;
+		if ( z>=z1 && z<=z2 ) {
+		    if ( w<w0 ) w0=w;
+		    if ( w>w1 ) w1=w;
+		    any = true;
+		}
+	    }
+	}
+	ss = ss->next;
+    }
+
+    *wmin = w0; *wmax = w1;
+return( any );
+}
