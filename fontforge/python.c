@@ -2016,6 +2016,52 @@ return( NULL );
 return( Py_BuildValue("i",ret ) );
 }
 
+static PyObject *PyFFContour_xBoundsAtY(PyFF_Contour *self, PyObject *args) {
+    SplineSet *ss;
+    double y1, y2=6.023e23;
+    double xmin, xmax;
+    int ret;
+
+    if ( !PyArg_ParseTuple(args,"d|d", &y1, &y2 ))
+return( NULL );
+
+    ss = SSFromContour(self,NULL);
+    if ( ss==NULL )
+Py_RETURN_NONE;
+
+    if ( y2>1e23 )
+	y2 = y1;
+    ret = SSBoundsWithin(ss,y1,y2,&xmin,&xmax,1);
+    SplinePointListFree(ss);
+    if ( !ret )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("(dd)",xmin, xmax ) );
+}
+
+static PyObject *PyFFContour_yBoundsAtX(PyFF_Contour *self, PyObject *args) {
+    SplineSet *ss;
+    double x1, x2=6.023e23;
+    double ymin, ymax;
+    int ret;
+
+    if ( !PyArg_ParseTuple(args,"d|d", &x1, &x2 ))
+return( NULL );
+
+    ss = SSFromContour(self,NULL);
+    if ( ss==NULL )
+Py_RETURN_NONE;
+
+    if ( x2>1e23 )
+	x2 = x1;
+    ret = SSBoundsWithin(ss,x1,x2,&ymin,&ymax,0);
+    SplinePointListFree(ss);
+    if ( !ret )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("(dd)",ymin, ymax ) );
+}
+
 static PyObject *PyFFContour_Merge(PyFF_Contour *self, PyObject *args) {
     SplineSet *ss;
     int i, pos;
@@ -2450,6 +2496,10 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "Reverse a closed contour so that the second point on it is the penultimate and vice versa." },
     {"isClockwise", (PyCFunction)PyFFContour_IsClockwise, METH_NOARGS,
 	     "Determine if a contour is oriented in a clockwise direction. If the contour intersects itself the results are indeterminate." },
+    {"xBoundsAtY", (PyCFunction)PyFFContour_xBoundsAtY, METH_VARARGS,
+	     "The minimum and maximum values of x attained for a given y, or returns None" },
+    {"yBoundsAtX", (PyCFunction)PyFFContour_yBoundsAtX, METH_VARARGS,
+	     "The minimum and maximum values of y attained for a given x, or returns None" },
     {"merge", (PyCFunction)PyFFContour_Merge, METH_VARARGS,
 	     "Removes the specified on-curve point leaving the contour otherwise intact" },
     {"selfIntersects", (PyCFunction)PyFFContour_selfIntersects, METH_NOARGS,
@@ -3316,6 +3366,52 @@ return( Py_BuildValue("(dddd)", 0.0,0.0,0.0,0.0 ));
 return( Py_BuildValue("(dddd)", xmin,ymin, xmax,ymax ));
 }
 
+static PyObject *PyFFLayer_xBoundsAtY(PyFF_Layer *self, PyObject *args) {
+    SplineSet *ss;
+    double y1, y2=6.023e23;
+    int ret;
+    double xmin, xmax;
+
+    if ( !PyArg_ParseTuple(args,"d|d", &y1, &y2 ))
+return( NULL );
+
+    ss = SSFromLayer((PyFF_Layer *) self);
+    if ( ss==NULL )
+Py_RETURN_NONE;
+
+    if ( y2>1e23 )
+	y2 = y1;
+    ret = SSBoundsWithin(ss,y1,y2,&xmin,&xmax,1);
+    SplinePointListsFree(ss);
+    if ( !ret )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("(dd)",xmin, xmax ) );
+}
+
+static PyObject *PyFFLayer_yBoundsAtX(PyFF_Layer *self, PyObject *args) {
+    SplineSet *ss;
+    double x1, x2=6.023e23;
+    int ret;
+    double ymin, ymax;
+
+    if ( !PyArg_ParseTuple(args,"d|d", &x1, &x2 ))
+return( NULL );
+
+    ss = SSFromLayer((PyFF_Layer *) self);
+    if ( ss==NULL )
+Py_RETURN_NONE;
+
+    if ( x2>1e23 )
+	x2 = x1;
+    ret = SSBoundsWithin(ss,x1,x2,&ymin,&ymax,0);
+    SplinePointListsFree(ss);
+    if ( !ret )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("(dd)",ymin, ymax ) );
+}
+
 static PyObject *PyFFLayer_draw(PyFF_Layer *self, PyObject *args) {
     int i;
 
@@ -3343,6 +3439,10 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Creates a new layer by interpolating between this one and the one in the first argument" },
     {"boundingBox", (PyCFunction)PyFFLayer_BoundingBox, METH_NOARGS,
 	     "Finds a bounding box for the layer (xmin,ymin,xmax,ymax)" },
+    {"xBoundsAtY", (PyCFunction)PyFFLayer_xBoundsAtY, METH_VARARGS,
+	     "The minimum and maximum values of x attained for a given y, or returns None" },
+    {"yBoundsAtX", (PyCFunction)PyFFLayer_yBoundsAtX, METH_VARARGS,
+	     "The minimum and maximum values of y attained for a given x, or returns None" },
     {"correctDirection", (PyCFunction)PyFFLayer_Correct, METH_NOARGS,
 	     "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     {"export", (PyCFunction)PyFFLayer_export, METH_VARARGS,

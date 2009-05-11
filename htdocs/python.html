@@ -928,6 +928,22 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	<A href="#l-correctDirection">layer.correctDirection</A>.</TD>
     </TR>
     <TR>
+      <TD><CODE>xBoundsAtY</CODE></TD>
+      <TD><CODE>(ybottom[,ytop])</CODE></TD>
+      <TD>Finds the minimum and maximum x positions attained by the contour when
+	y is between ybottom and ytop (if ytop is not specified it is assumed the
+	same as ybottom). If the contour does not have any y values in the specified
+	range then ff will return None.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>yBoundsAtX</CODE></TD>
+      <TD><CODE>(xleft[,xright])</CODE></TD>
+      <TD>Finds the minimum and maximum y positions attained by the contour when
+	x is between xleft and xright (if xright is not specified it is assumed the
+	same as xleft). If the contour does not have any x values in the specified
+	range then ff will return None.</TD>
+    </TR>
+    <TR>
       <TD>&nbsp;</TD>
       <TH colspan=2>Contour manipulation</TH>
     </TR>
@@ -1334,6 +1350,22 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) into
 	which the layer fits. It is not guaranteed to be the smallest such rectangle,
 	but it will often be.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>xBoundsAtY</CODE></TD>
+      <TD><CODE>(ybottom[,ytop])</CODE></TD>
+      <TD>Finds the minimum and maximum x positions attained by the contour when
+	y is between ybottom and ytop (if ytop is not specified it is assumed the
+	same as ybottom). If the layer does not have any y values in the specified
+	range then ff will return None.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>yBoundsAtX</CODE></TD>
+      <TD><CODE>(xleft[,xright])</CODE></TD>
+      <TD>Finds the minimum and maximum y positions attained by the contour when
+	x is between xleft and xright (if xright is not specified it is assumed the
+	same as xleft). If the layer does not have any x values in the specified
+	range then ff will return None.</TD>
     </TR>
     <TR>
       <TD><CODE>draw</CODE></TD>
