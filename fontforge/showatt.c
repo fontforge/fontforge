@@ -245,11 +245,15 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
 	} else {
 	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt );
 	    node->children = gcalloc(cnt+1,sizeof(struct node));
+	    node->cnt = cnt;
 	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt ) {
 		node->children[cnt].u.sc = entryexit[cnt];
 		node->children[cnt].label = copy(entryexit[cnt]->name);
 		node->children[cnt].parent = node;
-		for ( ent=ext=NULL, ap=entryexit[cnt]->anchor; ap!=NULL; ap=ap->next ) {
+	    }
+	    qsort(node->children,node->cnt,sizeof(struct node), node_alphabetize);
+	    for ( cnt=0; entryexit[cnt]!=NULL; ++cnt ) {
+		for ( ent=ext=NULL, ap = node->children[cnt].u.sc->anchor; ap!=NULL; ap=ap->next ) {
 		    if ( ap->anchor==ac ) {
 			if ( ap->type == at_centry )
 			    ent = ap;
@@ -257,7 +261,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
 			    ent = ap;
 		    }
 		}
-		node->children[cnt].cnt = 1+(ent!=NULL)+(ext!=NULL);
+		node->children[cnt].cnt = (ent!=NULL)+(ext!=NULL);
 		node->children[cnt].children = gcalloc((1+(ent!=NULL)+(ext!=NULL)),sizeof(struct node));
 		i = 0;
 		if ( ent!=NULL ) {
@@ -275,7 +279,6 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
 		    ++i;
 		}
 	    }
-	    qsort(node->children,node->cnt,sizeof(struct node), node_alphabetize);
 	}
 	free(entryexit);
     } else {
