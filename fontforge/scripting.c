@@ -7546,6 +7546,58 @@ return;
     }
 }
 
+struct flaglist { char *name; int flag; };
+
+static struct flaglist ap_types[] = {
+    { "mark", at_mark },
+    { "base", at_basechar },
+    { "ligature", at_baselig },
+    { "basemark", at_basemark },
+    { "entry", at_centry },
+    { "exit", at_cexit },
+    { "baselig", at_baselig },
+    NULL };
+
+static void bGetAnchorPoints(Context *c) {
+    SplineChar *sc;
+    AnchorPoint *ap;
+    int cnt;
+    Array *ret, *temp;
+
+    sc = GetOneSelChar(c);
+
+    for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt ) 
+        ;
+    ret = galloc(sizeof(Array));
+    ret->argc = cnt;
+    ret->vals = gcalloc(cnt,sizeof(Val));
+    for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt ) {
+	ret->vals[cnt].type = v_arr;
+	ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
+	if ( ap->type == at_baselig ) {
+	    temp->argc = 5;
+	    temp->vals = gcalloc(6,sizeof(Val));
+	    temp->vals[4].type = v_int;
+	    temp->vals[4].u.ival = ap->lig_index;
+	}
+	else {
+	    temp->argc = 4;
+	    temp->vals = gcalloc(5,sizeof(Val));
+	}
+	temp->vals[0].type = v_str;
+	temp->vals[0].u.sval = copy(ap->anchor->name);
+	temp->vals[1].type = v_str;
+	temp->vals[1].u.sval = copy(ap_types[ap->type].name);
+	temp->vals[2].type = v_real;
+	temp->vals[2].u.fval = ap->me.x;
+	temp->vals[3].type = v_real;
+	temp->vals[3].u.fval = ap->me.y;
+    }
+
+    c->return_val.type = v_arrfree;
+    c->return_val.u.aval = ret;
+}
+
 static void bGetPosSub(Context *c) {
     SplineFont *sf = c->curfv->sf, *sf_sl = sf;
     EncMap *map = c->curfv->map;
@@ -8220,6 +8272,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "WorthOutputting", bWorthOutputting },
     { "CharInfo", bCharInfo },
     { "GlyphInfo", bCharInfo },
+    { "GetAnchorPoints", bGetAnchorPoints },
     { "GetPosSub", bGetPosSub },
     { "SetGlyphTeX", bSetGlyphTeX },
     { "CompareGlyphs", bCompareGlyphs },
