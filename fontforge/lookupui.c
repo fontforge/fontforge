@@ -700,6 +700,7 @@ return;
 #define CID_LookupAfm		1008
 #define CID_OK			1009
 #define CID_Cancel		1010
+#define CID_Lookup_ProcessSet	1011
 
 #define CID_FeatureScripts	1020
 #define CID_ShowAnchors		1021
@@ -1404,6 +1405,27 @@ static GTextInfo *SFMarkClassList(SplineFont *sf,int class) {
 return( ti );
 }
 
+static GTextInfo *SFMarkSetList(SplineFont *sf,int set) {
+    int i;
+    GTextInfo *ti;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
+
+    i = sf->mark_set_cnt;
+    ti = gcalloc(i+4,sizeof( GTextInfo ));
+    ti[0].text = utf82u_copy( _("All"));
+    ti[0].userdata = (void *) (intpt) -1;
+    ti[0].selected = set==-1;
+    for ( i=0; i<sf->mark_set_cnt; ++i ) {
+	ti[i+1].text = (unichar_t *) copy(sf->mark_set_names[i]);
+	ti[i+1].userdata = (void *) (intpt) i;
+	ti[i+1].text_is_1byte = true;
+	if ( i==set ) ti[i+1].selected = true;
+    }
+return( ti );
+}
+
 static int MaskFromLookupType(int lookup_type ) {
     switch ( lookup_type ) {
       case gsub_single: case gsub_multiple: case gsub_alternate:
@@ -1569,6 +1591,9 @@ return(true);
 	if ( GGadgetIsChecked(GWidgetGetControl(ld->gw,CID_Lookup_IgnLig)) ) flags |= pst_ignoreligatures;
 	if ( GGadgetIsChecked(GWidgetGetControl(ld->gw,CID_Lookup_IgnMark)) ) flags |= pst_ignorecombiningmarks;
 	flags |= ((intpt) GGadgetGetListItemSelected(GWidgetGetControl(ld->gw,CID_Lookup_ProcessMark))->userdata)<<8;
+	set = ((intpt) GGadgetGetListItemSelected(GWidgetGetControl(ld->gw,CID_Lookup_ProcessSet))->userdata);
+	if ( set!=-1 )
+	    flags |= pst_usemarkfilteringset | (set<<16);
 
 	if ( !ld->isgpos )
 	    afm = GGadgetIsChecked( GWidgetGetControl(ld->gw,CID_LookupAfm ));
@@ -1627,10 +1652,10 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14], boxes[7];
-    GGadgetCreateData *harray1[4], *varray[14], *flagharray[4], *flagarray[12],
+    GGadgetCreateData gcd[16], boxes[7];
+    GGadgetCreateData *harray1[4], *varray[14], *flaghvarray[10], *flagarray[12],
 	*harray2[4], *harray3[8];
-    GTextInfo label[14];
+    GTextInfo label[16];
     struct lookup_dlg ld;
     struct matrixinit mi;
     int class, i, k, vpos;
@@ -1757,7 +1782,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+16; 
 	gcd[7].gd.flags = sf->mark_class_cnt<=1 ? gg_visible : (gg_enabled|gg_visible);
 	gcd[7].creator = GLabelCreate;
-	flagharray[0] = &gcd[7];
+	flaghvarray[0] = &gcd[7];
 
 	gcd[8].gd.pos.x = 10; gcd[8].gd.pos.y = gcd[7].gd.pos.y;
 	gcd[8].gd.pos.width = 140;
@@ -1768,11 +1793,30 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	gcd[8].gd.label = &gcd[8].gd.u.list[class];
 	gcd[8].gd.cid = CID_Lookup_ProcessMark;
 	gcd[8].creator = GListButtonCreate;
-	flagharray[1] = &gcd[8]; flagharray[2] = GCD_Glue; flagharray[3] = NULL;
+	flaghvarray[1] = &gcd[8]; flaghvarray[2] = GCD_Glue; flaghvarray[3] = NULL;
+
+/* GT: Mark is a noun here and Set is also a noun. */
+	label[9].text = (unichar_t *) _("Mark Set:");
+	label[9].text_is_1byte = true;
+	gcd[9].gd.label = &label[9];
+	gcd[9].gd.flags = sf->mark_set_cnt<=1 ? gg_visible : (gg_enabled|gg_visible);
+	gcd[9].creator = GLabelCreate;
+	flaghvarray[4] = &gcd[9];
+
+	gcd[10].gd.pos.width = 140;
+	gcd[10].gd.flags = gcd[9].gd.flags;
+	class = (otl->lookup_flags>>16) & 0xffff;
+	if ( !(otl->lookup_flags&pst_usemarkfilteringset) || class >= sf->mark_set_cnt )
+	    class = -1;
+	gcd[10].gd.u.list = SFMarkSetList(sf,class);
+	gcd[10].gd.label = &gcd[8].gd.u.list[class+1];
+	gcd[10].gd.cid = CID_Lookup_ProcessSet;
+	gcd[10].creator = GListButtonCreate;
+	flaghvarray[5] = &gcd[10]; flaghvarray[6] = GCD_Glue; flaghvarray[7] = NULL; flaghvarray[8] = NULL;
 
 	boxes[1].gd.flags = gg_enabled|gg_visible;
-	boxes[1].gd.u.boxelements = flagharray;
-	boxes[1].creator = GHBoxCreate;
+	boxes[1].gd.u.boxelements = flaghvarray;
+	boxes[1].creator = GHVBoxCreate;
 
 	flagarray[8] = &boxes[1]; flagarray[9] = NULL; flagarray[10] = NULL;
 
@@ -1782,24 +1826,24 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	boxes[2].creator = GHVGroupCreate;
     varray[4] = &boxes[2]; varray[5] = NULL;
 
-    label[9].text = (unichar_t *) _("Lookup Name:");
-    label[9].text_is_1byte = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.pos.x = 5; gcd[9].gd.pos.y = gcd[8].gd.pos.y+16; 
-    gcd[9].gd.flags = gg_enabled|gg_visible;
-    gcd[9].creator = GLabelCreate;
-    harray2[0] = &gcd[9];
+    label[11].text = (unichar_t *) _("Lookup Name:");
+    label[11].text_is_1byte = true;
+    gcd[11].gd.label = &label[11];
+    gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = gcd[8].gd.pos.y+16; 
+    gcd[11].gd.flags = gg_enabled|gg_visible;
+    gcd[11].creator = GLabelCreate;
+    harray2[0] = &gcd[11];
 
-    label[10].text = (unichar_t *) otl->lookup_name;
-    label[10].text_is_1byte = true;
-    gcd[10].gd.pos.x = 10; gcd[10].gd.pos.y = gcd[9].gd.pos.y;
-    gcd[10].gd.pos.width = 140;
-    gcd[10].gd.flags = gcd[9].gd.flags|gg_text_xim;
-    gcd[10].gd.label = otl->lookup_name==NULL ? NULL : &label[10];
-    gcd[10].gd.cid = CID_LookupName;
-    gcd[10].gd.handle_controlevent = Lookup_NameChanged;
-    gcd[10].creator = GTextFieldCreate;
-    harray2[1] = &gcd[10]; harray2[2] = NULL;
+    label[12].text = (unichar_t *) otl->lookup_name;
+    label[12].text_is_1byte = true;
+    gcd[12].gd.pos.x = 10; gcd[12].gd.pos.y = gcd[11].gd.pos.y;
+    gcd[12].gd.pos.width = 140;
+    gcd[12].gd.flags = gcd[11].gd.flags|gg_text_xim;
+    gcd[12].gd.label = otl->lookup_name==NULL ? NULL : &label[12];
+    gcd[12].gd.cid = CID_LookupName;
+    gcd[12].gd.handle_controlevent = Lookup_NameChanged;
+    gcd[12].creator = GTextFieldCreate;
+    harray2[1] = &gcd[12]; harray2[2] = NULL;
     if ( otl->lookup_name!=NULL && *otl->lookup_name!='\0' )
 	ld.name_has_been_set = true;
 
@@ -1808,19 +1852,19 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     boxes[3].creator = GHBoxCreate;
     varray[6] = &boxes[3]; varray[7] = NULL;
 
-    k = 11; vpos = 8;
+    k = 13; vpos = 8;
     if ( !isgpos ) {
-	gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = gcd[5].gd.pos.y+15;
-	gcd[11].gd.flags = otl->lookup_type!=gsub_ligature ? gg_visible :
+	gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = gcd[5].gd.pos.y+15;
+	gcd[13].gd.flags = otl->lookup_type!=gsub_ligature ? gg_visible :
 		otl->store_in_afm ? (gg_visible | gg_enabled | gg_cb_on) :
 		(gg_visible | gg_enabled);
-	label[11].text = (unichar_t *) _("Store ligature data in AFM files");
-	label[11].text_is_1byte = true;
-	gcd[11].gd.label = &label[11];
-	gcd[11].gd.cid = CID_LookupAfm;
-	gcd[11].creator = GCheckBoxCreate;
-	varray[8] = &gcd[11]; varray[9] = NULL;
-	k = 12; vpos = 10;
+	label[13].text = (unichar_t *) _("Store ligature data in AFM files");
+	label[13].text_is_1byte = true;
+	gcd[13].gd.label = &label[13];
+	gcd[13].gd.cid = CID_LookupAfm;
+	gcd[13].creator = GCheckBoxCreate;
+	varray[8] = &gcd[13]; varray[9] = NULL;
+	k = 14; vpos = 10;
     }
 
     gcd[k].gd.pos.x = 30-3; 
@@ -1862,6 +1906,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     GGadgetsCreate(gw,boxes+5);
 
     GTextInfoListFree(gcd[8].gd.u.list);
+    GTextInfoListFree(gcd[10].gd.u.list);
 
     for ( i=0; i<mi.initial_row_cnt; ++i ) {
 	free( mi.matrix_data[2*i+0].u.md_str );

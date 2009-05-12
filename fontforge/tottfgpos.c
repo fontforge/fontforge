@@ -3167,6 +3167,8 @@ return( NULL );
 	}
 	otf->subcnt = scnt;
 	offset += 6+2*scnt;		/* 6 bytes header +2 per lookup */
+	if ( otf->lookup_flags & pst_usemarkfilteringset )
+	    offset += 2;		/* For mark filtering set, if used */
     }
     offset -= 2+2*cnt;
     /* now the lookup tables */
@@ -3194,6 +3196,10 @@ return( NULL );
 	    /*  pointers, but FigureExtension will adjust for that */
 	}
 	offset -= 6+2*otf->subcnt;
+	if ( otf->lookup_flags & pst_usemarkfilteringset ) {
+	    putshort(g___,otf->lookup_flags>>16);
+	    offset -= 2;
+	}
     }
 
     buf = galloc(8096);
@@ -3439,15 +3445,19 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
 	glyphs = galloc((lcnt+1)*sizeof(SplineChar *));
 	glyphs[lcnt] = NULL;
     }
-    if ( !needsclass && lcnt==0 && sf->mark_class_cnt==0 )
+    if ( !needsclass && lcnt==0 && sf->mark_class_cnt==0 && sf->mark_set_cnt==0 )
 return;					/* No anchor positioning, no ligature carets */
 
     at->gdef = tmpfile();
-    putlong(at->gdef,0x00010000);		/* Version */
-    putshort(at->gdef, needsclass ? 12 : 0 );	/* glyph class defn table */
+    if ( sf->mark_set_cnt==0 )
+	putlong(at->gdef,0x00010000);		/* Version */
+    else
+	putlong(at->gdef,0x00010002);		/* Version with mark sets */
+    putshort(at->gdef, needsclass ? 14 : 0 );	/* glyph class defn table */
     putshort(at->gdef, 0 );			/* attachment list table */
     putshort(at->gdef, 0 );			/* ligature caret table (come back and fix up later) */
     putshort(at->gdef, 0 );			/* mark attachment class table */
+    putshort(at->gdef, 0 );			/* mark attachment set table only meaningful if version is 0x10002, but doesn't hurt to output always*/
 
 	/* Glyph class subtable */
     if ( needsclass ) {
@@ -3536,6 +3546,28 @@ return;					/* No anchor positioning, no ligature carets */
 	fseek(at->gdef,0,SEEK_END);
 	DumpClass(at->gdef,mclasses,at->maxp.numGlyphs);
 	free(mclasses);
+    }
+
+	/* Mark Attachment Class Subtable */
+    if ( sf->mark_set_cnt>0 ) {
+	pos = ftell(at->gdef);
+	fseek(at->gdef,12,SEEK_SET);		/* location of mark attach table offset */
+	putshort(at->gdef,pos);
+	fseek(at->gdef,0,SEEK_END);
+	putshort(at->gdef,1);			/* Version number */
+	putshort(at->gdef,sf->mark_set_cnt);
+	pos = ftell(at->gdef);
+	for ( i=0; i<sf->mark_set_cnt; ++i )
+	    putlong(at->gdef,0);
+	for ( i=0; i<sf->mark_set_cnt; ++i ) {
+	    int here = ftell(at->gdef);
+	    fseek(at->gdef,pos+4*i,SEEK_SET);
+	    putlong(at->gdef,here);
+	    fseek(at->gdef,0,SEEK_END);
+	    glyphs = OrderedGlyphsFromNames(sf,sf->mark_sets[i]);
+	    dumpcoveragetable(at->gdef,glyphs);
+	    free(glyphs);
+	}
     }
 
     at->gdeflen = ftell(at->gdef);
@@ -4519,6 +4551,8 @@ return( 0 );
 	putshort( jstf,scnt );
 	for ( j=0; j<scnt; ++j )
 	    putshort( jstf,0 );
+	/* I don't think extension lookups get a MarkAttachmentType, I guess */
+	/*  that inherits from the parent? */
 
 	otf_dumpALookup(jstf, maxes[i], sf, at);
 	fseek(jstf,lbase+6,SEEK_SET);

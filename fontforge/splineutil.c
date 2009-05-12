@@ -6287,6 +6287,7 @@ return;
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
+    MarkClassFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);	/* Leak! We don't free sets[0] */
     free( sf->gasp );
 #if defined(_NO_PYTHON)
     free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */

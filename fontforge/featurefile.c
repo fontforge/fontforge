@@ -144,22 +144,27 @@ static void dump_glyphnamelist(FILE *out, SplineFont *sf, char *names) {
     }
 }
 
-static int MarkNeeded(uint8 *needed,OTLookup *otl) {
-    int index = otl->lookup_flags>>8;
+static int MarkNeeded(uint8 *needed,uint8 *setsneeded,OTLookup *otl) {
+    int index = (otl->lookup_flags>>8)&0xff;
+    int sindex = (otl->lookup_flags>>16)&0xffff;
     int any = false;
     struct lookup_subtable *sub;
     int i,l;
 
     if ( index!=0 ) {
-	any = true;
+	any |= 1;
 	needed[index] = true;
+    }
+    if ( otl->lookup_flags&pst_usemarkfilteringset ) {
+	any |= 2;
+	setsneeded[sindex] = true;
     }
     for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
 	if ( sub->fpst!=NULL ) {
 	    for ( i=sub->fpst->rule_cnt-1; i>=0; --i ) {
 		struct fpst_rule *r = &sub->fpst->rules[i];
 		for ( l=0; l<r->lookup_cnt; ++l )
-		    any |= MarkNeeded(needed,r->lookups[l].lookup);
+		    any |= MarkNeeded(needed,setsneeded,r->lookups[l].lookup);
 	    }
 	}
     }
@@ -168,27 +173,34 @@ return( any );
     
 static void gdef_markclasscheck(FILE *out,SplineFont *sf,OTLookup *otl) {
     uint8 *needed;
+    uint8 *setsneeded;
     int any = false;
     int gpos;
 
-    if ( sf->mark_class_cnt==0 )
+    if ( sf->mark_class_cnt==0 && sf->mark_set_cnt==0 )
 return;
 
     needed = gcalloc(sf->mark_class_cnt,1);
+    setsneeded = gcalloc(sf->mark_set_cnt,1);
     if ( otl!=NULL ) {
-	any = MarkNeeded(needed,otl);
+	any = MarkNeeded(needed,setsneeded,otl);
     } else {
 	for ( gpos=0; gpos<2; ++gpos ) {
 	    for ( otl=gpos?sf->gpos_lookups:sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
-		int index = otl->lookup_flags>>8;
+		int index = (otl->lookup_flags>>8)&0xff;
+		int sindex = (otl->lookup_flags>>16)&0xffff;
 		if ( index!=0 ) {
-		    any = true;
+		    any |= 1;
 		    needed[index] = true;
+		}
+		if ( otl->lookup_flags&pst_usemarkfilteringset ) {
+		    any |= 2;
+		    setsneeded[sindex] = true;
 		}
 	    }
 	}
     }
-    if ( any ) {
+    if ( any&1 ) {
 	int i;
 	fprintf( out, "# GDEF Mark Attachment Classes\n" );
 	for ( i=1; i<sf->mark_class_cnt; ++i ) if ( needed[i] ) {
@@ -201,7 +213,21 @@ return;
 	}
 	fprintf( out,"\n" );
     }
+    if ( any&2 ) {
+	int i;
+	fprintf( out, "# GDEF Mark Attachment Sets\n" );
+	for ( i=0; i<sf->mark_set_cnt; ++i ) if ( setsneeded[i] ) {
+	    putc( '@',out );
+	    dump_ascii( out, sf->mark_set_names[i]);
+	    putc( '=',out );
+	    putc( '[',out );
+	    dump_glyphnamelist(out,sf,sf->mark_sets[i]);
+	    fprintf( out, "];\n" );
+	}
+	fprintf( out,"\n" );
+    }
     free(needed);
+    free(setsneeded);
 }
 
 static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
@@ -1447,7 +1473,7 @@ return;					/* No support for apple "lookups" */
 #ifdef FF_V1_6
     if ( otl->lookup_flags==0 || otl->lookup_flags>15 )
 #else
-    if ( otl->lookup_flags==0 || (otl->lookup_flags&0xf0)!=0 )
+    if ( otl->lookup_flags==0 || (otl->lookup_flags&0xe0)!=0 )
 #endif
 	fprintf( out, "  lookupflag %d;\n", otl->lookup_flags );
     else {
@@ -1462,12 +1488,21 @@ return;					/* No support for apple "lookups" */
 	}
 #ifndef FF_V1_6
 	if ( (otl->lookup_flags&0xff00)!=0 ) {
-	    int index = otl->lookup_flags>>8;
+	    int index = (otl->lookup_flags>>8)&0xff;
 	    if ( index<sf->mark_class_cnt ) {
 		if ( !first )
 		    putc(',',out);
 		fprintf( out, " MarkAttachmentType @" );
 		dump_ascii( out, sf->mark_class_names[index]);
+	    }
+	}
+	if ( (otl->lookup_flags&0xffff0000)!=0 ) {
+	    int index = (otl->lookup_flags>>16)&0xffff;
+	    if ( index<sf->mark_set_cnt ) {
+		if ( !first )
+		    putc(',',out);
+		fprintf( out, " UseMarkFilteringSet @" );
+		dump_ascii( out, sf->mark_set_names[index]);
 	    }
 	}
 #endif
@@ -2055,7 +2090,7 @@ struct feat_item {
 		/* For kerning by class we'll generate an invalid pst with the class as the "paired" field */
 	FPST *fpst;
 	AnchorPoint *ap;
-	int lookupflags;
+	int lookupflags;		/* Low order: traditional flags, High order: markset index */
 	struct scriptlanglist *sl;	/* Default langsyses for features/langsys */
 	int exclude_dflt;		/* for lang tags */
 	struct nameid *names;		/* size params */
@@ -2256,8 +2291,8 @@ struct parseState {
     int base;			/* normally numbers are base 10, but in the case of languages in stringids, they can be octal or hex */
     OTLookup *created, *last;	/* Ordered, but not sorted into GSUB, GPOS yet */
     AnchorClass *accreated;
-    int gm_cnt, gm_max, gm_pos;
-    struct gdef_mark { char *name; int index; char *glyphs; } *gdef_mark;
+    int gm_cnt[2], gm_max[2], gm_pos[2];
+    struct gdef_mark { char *name; int index; char *glyphs; } *gdef_mark[2];
     /* GPOS mark classes may have multiple definitions each added a glyph class and anchor, these are linked under "same" */
     struct gpos_mark {
 	char *name;
@@ -3046,36 +3081,53 @@ static char *fea_ParseGlyphClassGuarded(struct parseState *tok) {
 return( ret );
 }
 
-static int fea_ParseMarkAttachClass(struct parseState *tok) {
+static int fea_ParseMarkAttachClass(struct parseState *tok, int is_set) {
     int i;
     SplineFont *sf = tok->sf;
     char *glyphs;
 
-    for ( i=0; i<tok->gm_cnt; ++i ) {
-	if ( strcmp(tok->tokbuf,tok->gdef_mark[i].name)==0 )
-return( tok->gdef_mark[i].index << 8 );
+    for ( i=0; i<tok->gm_cnt[is_set]; ++i ) {
+	if ( strcmp(tok->tokbuf,tok->gdef_mark[is_set][i].name)==0 )
+return( tok->gdef_mark[is_set][i].index << 8 );
     }
     glyphs = fea_lookup_class_complain(tok,tok->tokbuf);
     if ( glyphs==NULL )
 return( 0 );
-    if ( tok->gm_cnt>=tok->gm_max ) {
-	tok->gdef_mark = grealloc(tok->gdef_mark,(tok->gm_max+=30)*sizeof(struct gdef_mark));
-	if ( tok->gm_pos==0 )
-	    tok->gm_pos = sf->mark_class_cnt==0 ? 1 : sf->mark_class_cnt;
+    if ( tok->gm_cnt[is_set]>=tok->gm_max[is_set] ) {
+	tok->gdef_mark[is_set] = grealloc(tok->gdef_mark[is_set],(tok->gm_max[is_set]+=30)*sizeof(struct gdef_mark));
+	if ( tok->gm_pos[is_set]==0 ) {
+	    memset(&tok->gdef_mark[is_set][0],0,sizeof(tok->gdef_mark[is_set][0]));
+	    if ( is_set )
+		tok->gm_pos[is_set] = sf->mark_set_cnt;
+	    else
+		tok->gm_pos[is_set] = sf->mark_class_cnt==0 ? 1 : sf->mark_class_cnt;
+	}
     }
-    tok->gdef_mark[tok->gm_cnt].name   = copy(tok->tokbuf);
-    tok->gdef_mark[tok->gm_cnt].glyphs = glyphs;
+    tok->gdef_mark[is_set][tok->gm_cnt[is_set]].name   = copy(tok->tokbuf);
+    tok->gdef_mark[is_set][tok->gm_cnt[is_set]].glyphs = glyphs;
     /* see if the mark class is already in the font? */
-    for ( i=sf->mark_class_cnt-1; i>0; --i ) {
-	if ( strcmp(sf->mark_class_names[i],tok->tokbuf+1)==0 ||
-		strcmp(sf->mark_classes[i],glyphs)==0 )
-    break;
+    if ( is_set ) {
+	for ( i=sf->mark_class_cnt-1; i>=0; --i ) {
+	    if ( strcmp(sf->mark_set_names[i],tok->tokbuf+1)==0 ||
+		    strcmp(sf->mark_sets[i],glyphs)==0 )
+	break;
+	}
+    } else {
+	for ( i=sf->mark_class_cnt-1; i>0; --i ) {
+	    if ( strcmp(sf->mark_class_names[i],tok->tokbuf+1)==0 ||
+		    strcmp(sf->mark_classes[i],glyphs)==0 )
+	break;
+	}
+	if ( i==0 ) i=-1;
     }
-    if ( i>0 )
-	tok->gdef_mark[tok->gm_cnt].index = i;
+    if ( i>=0 )
+	tok->gdef_mark[is_set][tok->gm_cnt[is_set]].index = i;
     else
-	tok->gdef_mark[tok->gm_cnt].index = tok->gm_pos++;
-return( tok->gdef_mark[tok->gm_cnt++].index << 8 );
+	tok->gdef_mark[is_set][tok->gm_cnt[is_set]].index = tok->gm_pos[is_set]++;
+    if ( is_set )
+return( (tok->gdef_mark[is_set][tok->gm_cnt[is_set]++].index << 16) | pst_usemarkfilteringset );
+    else
+return( tok->gdef_mark[is_set][tok->gm_cnt[is_set]++].index << 8 );
 }
 
 static void fea_ParseLookupFlags(struct parseState *tok) {
@@ -3099,9 +3151,8 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 	    else if ( tok->type == tk_IgnoreLigatures )
 		val |= pst_ignoreligatures;
 	    else {
-		/* I do not currently distinguish between MarkAttachment and MarkFiltering */
 		fea_TokenMustBe(tok,tk_class,'\0');
-		val |= fea_ParseMarkAttachClass(tok);
+		val |= fea_ParseMarkAttachClass(tok,tok->type == tk_UseMarkFilteringSet);
 	    }
 	    fea_ParseTok(tok);
 	    if ( tok->type == tk_char && tok->tokbuf[0]==';' )
@@ -7269,16 +7320,27 @@ static void fea_NameLookups(struct parseState *tok) {
     }
 
     /* attach any new gdef mark classes */
-    if ( tok->gm_pos>sf->mark_class_cnt ) {
+    if ( tok->gm_pos[0]>sf->mark_class_cnt ) {
 	int i;
-	sf->mark_classes = grealloc(sf->mark_classes,tok->gm_pos*sizeof(char *));
-	sf->mark_class_names = grealloc(sf->mark_class_names,tok->gm_pos*sizeof(char *));
-	for ( i=0; i<tok->gm_cnt; ++i ) if ( tok->gdef_mark[i].index>=sf->mark_class_cnt ) {
-	    int index = tok->gdef_mark[i].index;
-	    sf->mark_class_names[index] = copy(tok->gdef_mark[i].name+1);
-	    sf->mark_classes[index]     = copy(tok->gdef_mark[i].glyphs);
+	sf->mark_classes = grealloc(sf->mark_classes,tok->gm_pos[0]*sizeof(char *));
+	sf->mark_class_names = grealloc(sf->mark_class_names,tok->gm_pos[0]*sizeof(char *));
+	for ( i=0; i<tok->gm_cnt[0]; ++i ) if ( tok->gdef_mark[0][i].index>=sf->mark_class_cnt ) {
+	    int index = tok->gdef_mark[0][i].index;
+	    sf->mark_class_names[index] = copy(tok->gdef_mark[0][i].name+1);
+	    sf->mark_classes[index]     = copy(tok->gdef_mark[0][i].glyphs);
 	}
-	sf->mark_class_cnt = tok->gm_pos;
+	sf->mark_class_cnt = tok->gm_pos[0];
+    }
+    if ( tok->gm_pos[1]>sf->mark_set_cnt ) {
+	int i;
+	sf->mark_sets = grealloc(sf->mark_sets,tok->gm_pos[1]*sizeof(char *));
+	sf->mark_set_names = grealloc(sf->mark_set_names,tok->gm_pos[1]*sizeof(char *));
+	for ( i=0; i<tok->gm_cnt[1]; ++i ) if ( tok->gdef_mark[1][i].index>=sf->mark_set_cnt ) {
+	    int index = tok->gdef_mark[1][i].index;
+	    sf->mark_set_names[index] = copy(tok->gdef_mark[1][i].name+1);
+	    sf->mark_sets[index]      = copy(tok->gdef_mark[1][i].glyphs);
+	}
+	sf->mark_set_cnt = tok->gm_pos[1];
     }
 
     sf->changed = true;
@@ -7291,7 +7353,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
     struct namedvalue *nvr, *nvrnext;
-    int i;
+    int i,j;
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -7325,11 +7387,13 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
 	free(nvr->name); chunkfree(nvr->vr,sizeof(struct vr));
 	chunkfree(nvr,sizeof(*nvr));
     }
-    for ( i=1; i<tok.gm_cnt; ++i ) {
-	free(tok.gdef_mark[i].name);
-	free(tok.gdef_mark[i].glyphs);
+    for ( j=0; j<2; ++j ) {
+	for ( i=0; i<tok.gm_cnt[j]; ++i ) {
+	    free(tok.gdef_mark[j][i].name);
+	    free(tok.gdef_mark[j][i].glyphs);
+	}
+	free(tok.gdef_mark[j]);
     }
-    free(tok.gdef_mark);
 }
 
 void SFApplyFeatureFilename(SplineFont *sf,char *filename) {
