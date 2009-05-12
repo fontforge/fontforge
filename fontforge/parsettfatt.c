@@ -197,8 +197,7 @@ struct feature {
 
 struct lookup {
     uint16 type;
-    uint16 flags;
-    /* uint16 lookup; */	/* ???? can't imagine what this is*/
+    uint32 flags;	/* low order 16 bits: traditional flags, high order: mark filtering set index if pst_usemarkfilteringset */
     uint32 offset;
     int subtabcnt;
     int32 *subtab_offsets;
@@ -2432,6 +2431,8 @@ return( NULL );
 	lookups[i].subtab_offsets = galloc(lookups[i].subtabcnt*sizeof(int32));
 	for ( j=0; j<lookups[i].subtabcnt; ++j )
 	    lookups[i].subtab_offsets[j] = pos+lookups[i].offset+getushort(ttf);
+	if ( lookups[i].flags&pst_usemarkfilteringset )
+	    lookups[i].flags |= (getushort(ttf)<<16);
 
 	lookups[i].otlookup = otlookup = chunkalloc(sizeof(OTLookup));
 	otlookup->lookup_index = i;
@@ -2835,21 +2836,25 @@ void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
 }
 
 void readttfgdef(FILE *ttf,struct ttfinfo *info) {
-    int lclo, gclass, mac;
+    int lclo, gclass, mac, mas=0;
     int coverage, cnt, i,j, format;
+    int version;
     uint16 *glyphs, *lc_offsets, *offsets;
     uint32 caret_base;
     PST *pst;
     SplineChar *sc;
 
     fseek(ttf,info->gdef_start,SEEK_SET);
-    if ( getlong(ttf)!=0x00010000 )
+    version = getlong(ttf);
+    if ( version!=0x00010000 && version != 0x00010002 )
 return;
     info->g_bounds = info->gdef_start + info->gdef_length;
     gclass = getushort(ttf);
     /* attach list = */ getushort(ttf);
     lclo = getushort(ttf);		/* ligature caret list */
-    mac = getushort(ttf);		/* mark attach class */ 
+    mac = getushort(ttf);		/* mark attach class */
+    if ( version==0x00010002 )
+	mas = getushort(ttf);
 
     if ( gclass!=0 ) {
 	uint16 *gclasses = getClassDefTable(ttf,info->gdef_start+gclass, info);
@@ -2871,6 +2876,32 @@ return;
 	    sprintf( info->mark_class_names[i], format_spec, i );
 	}
 	free(mclasses);
+    }
+    if ( mas!=0 ) {
+	const char *format_spec = _("MarkSet-%d");
+	fseek(ttf,info->gdef_start+mas,SEEK_SET);
+	if ( getushort(ttf)==1 ) {	/* Version number of Mark GLyph Sets Table */
+	    uint32 *offsets;
+	    uint16 *glyphs;
+	    info->mark_set_cnt = getushort(ttf);
+	    offsets = galloc(info->mark_set_cnt*sizeof(uint32));
+	    for ( i=0; i<info->mark_set_cnt; ++i )
+		offsets[i]=getlong(ttf);
+	    info->mark_sets = galloc(info->mark_set_cnt*sizeof(char *));
+	    info->mark_set_names = galloc(info->mark_set_cnt*sizeof(char *));
+	    info->mark_set_names[0] = NULL;
+	    for ( i=0; i<info->mark_set_cnt; ++i ) {
+		info->mark_set_names[i] = galloc((strlen(format_spec)+10));
+		sprintf( info->mark_set_names[i], format_spec, i );
+		if ( offsets[i]!=0 ) {
+		    glyphs = getCoverageTable(ttf,info->gdef_start+mas+offsets[i],info);
+		    info->mark_sets[i] = GlyphsToNames(info,glyphs,true);
+		    free(glyphs);
+		} else
+		    info->mark_sets[i] = NULL;		/* Should not happen */
+	    }
+	    free(offsets);
+	}
     }
 
     if ( lclo!=0 ) {

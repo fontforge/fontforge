@@ -278,6 +278,9 @@ struct ttfinfo {
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
     char **mark_class_names;		/* used within ff (utf8) */
+    int mark_set_cnt;
+    char **mark_sets;			/* glyph name list */
+    char **mark_set_names;		/* used within ff (utf8) */
     uint8 warned_morx_out_of_bounds_glyph;
     int badgid_cnt, badgid_max;		/* Used when parsing apple morx tables*/
     SplineChar **badgids;		/* which use out of range glyph IDs as temporary flags */

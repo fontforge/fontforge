@@ -2925,7 +2925,7 @@ static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data
 }
 
 static int skipglyphs(int lookup_flags, struct lookup_data *data, int pos) {
-    int mc, glyph_class;
+    int mc, glyph_class, ms;
     /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
     /*  should ignore */
 
@@ -2934,6 +2934,9 @@ return( pos );
     mc = (lookup_flags>>8);
     if ( mc<0 || mc>=data->sf->mark_class_cnt )
 	mc = 0;
+    ms = lookup_flags>>16;
+    if ( !(lookup_flags&pst_usemarkfilteringset) || ms>=data->sf->mark_set_cnt )
+	ms = -1;
     while ( pos<data->cnt ) {
 	glyph_class = gdefclass(data->str[pos].sc);
 	/* 1=>base, 2=>ligature, 3=>mark, 4=>component?, 0=>.notdef */
@@ -2941,7 +2944,9 @@ return( pos );
 		(glyph_class==2 && (lookup_flags&pst_ignoreligatures)) ||
 		(glyph_class==3 && (lookup_flags&pst_ignorecombiningmarks)) ||
 		(glyph_class==3 && mc!=0 &&
-			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ) {
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ||
+		(ms>=0 &&
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_sets[ms])) ) {
 	    ++pos;
 	} else
     break;
@@ -2950,13 +2955,16 @@ return( pos );
 }
 
 static int bskipmarkglyphs(int lookup_flags, struct lookup_data *data, int pos) {
-    int mc, glyph_class;
+    int mc, glyph_class, ms;
     /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
     /*  should ignore. Here we skip backward */
 
     mc = (lookup_flags>>8);
     if ( mc<0 || mc>=data->sf->mark_class_cnt )
 	mc = 0;
+    ms = lookup_flags>>16;
+    if ( !(lookup_flags&pst_usemarkfilteringset) || ms>=data->sf->mark_set_cnt )
+	ms = -1;
     while ( pos>=0 ) {
 	glyph_class = gdefclass(data->str[pos].sc);
 	/* 1=>base, 2=>ligature, 3=>mark, 4=>component?, 0=>.notdef */
@@ -2966,7 +2974,9 @@ static int bskipmarkglyphs(int lookup_flags, struct lookup_data *data, int pos) 
 		(glyph_class==2 && (lookup_flags&pst_ignoreligatures)) ||
 		(glyph_class==3 && (lookup_flags&pst_ignorecombiningmarks)) ||
 		(glyph_class==3 && mc!=0 &&
-			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ) {
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ||
+		(ms>=0 &&
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_sets[ms])) ) {
 	    --pos;
 	} else
     break;
@@ -2975,7 +2985,7 @@ return( pos );
 }
 
 static int bskipglyphs(int lookup_flags, struct lookup_data *data, int pos) {
-    int mc, glyph_class;
+    int mc, glyph_class, ms;
     /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
     /*  should ignore. Here we skip backward */
 
@@ -2984,6 +2994,9 @@ return( pos );
     mc = (lookup_flags>>8);
     if ( mc<0 || mc>=data->sf->mark_class_cnt )
 	mc = 0;
+    ms = lookup_flags>>16;
+    if ( !(lookup_flags&pst_usemarkfilteringset) || ms>=data->sf->mark_set_cnt )
+	ms = -1;
     while ( pos>=0 ) {
 	glyph_class = gdefclass(data->str[pos].sc);
 	/* 1=>base, 2=>ligature, 3=>mark, 4=>component?, 0=>.notdef */
@@ -2991,7 +3004,9 @@ return( pos );
 		(glyph_class==2 && (lookup_flags&pst_ignoreligatures)) ||
 		(glyph_class==3 && (lookup_flags&pst_ignorecombiningmarks)) ||
 		(glyph_class==3 && mc!=0 &&
-			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ) {
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ||
+		(ms>=0 &&
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_sets[ms])) ) {
 	    --pos;
 	} else
     break;

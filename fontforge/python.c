@@ -11147,6 +11147,10 @@ return( lookup_flags[i].flag );
 	if ( strcmp(sf->mark_class_names[i],str)==0 )
 return( i<<8 );
 
+    for ( i=0; i<sf->mark_set_cnt; ++i )
+	if ( strcmp(sf->mark_set_names[i],str)==0 )
+return( (i<<16) | pst_usemarkfilteringset );
+
     PyErr_Format(PyExc_ValueError, "Unknown lookup flag %s", str );
 return( -1 );
 }
@@ -11480,13 +11484,15 @@ return( NULL );
     type = lookup_types[i].name;
 
     cnt = ( otl->lookup_flags&0xff00 )!=0;
-    for ( i=0; i<4; ++i )
+    for ( i=0; i<5; ++i )
 	if ( otl->lookup_flags&(1<<i) )
 	    ++cnt;
     flags_tuple = PyTuple_New(cnt);
     cnt = 0;
     if ( otl->lookup_flags&0xff00 )
 	PyTuple_SetItem(flags_tuple,cnt++,Py_BuildValue("s",sf->mark_class_names[ (otl->lookup_flags&0xff00)>>8 ]));
+    if ( otl->lookup_flags&pst_usemarkfilteringset )
+	PyTuple_SetItem(flags_tuple,cnt++,Py_BuildValue("s",sf->mark_set_names[ (otl->lookup_flags>>16)&0xffff ]));
     for ( i=0; i<4; ++i )
 	if ( otl->lookup_flags&(1<<i) )
 	    PyTuple_SetItem(flags_tuple,cnt++,Py_BuildValue("s",lookup_flags[i].name));

@@ -44,6 +44,7 @@ typedef struct markclassdlg {
     GGadget *list;
     int which;
     struct markclassdlg *next;
+    int isset;
 } MarkClassDlg;
 
 GTextInfo emsizes[] = {
@@ -1248,6 +1249,10 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_MarkNew		7102
 #define CID_MarkEdit		7103
 
+#define CID_MarkSets		7201
+#define CID_MarkSetNew		7202
+#define CID_MarkSetEdit		7203
+
 #define CID_TeXText		8001
 #define CID_TeXMathSym		8002
 #define CID_TeXMathExt		8003
@@ -2053,6 +2058,7 @@ static void GFI_CancelClose(struct gfi_data *d) {
     MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(
 	    d->gw,CID_Features))));
     MarkClassFree(d->mark_class_cnt,d->mark_classes,d->mark_class_names);
+    MarkClassFree(d->mark_set_cnt,d->mark_sets,d->mark_set_names);
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	struct lkdata *lk = &d->tables[isgpos];
 	for ( i=0; i<lk->cnt; ++i ) {
@@ -2080,6 +2086,21 @@ return( NULL );
     for ( cnt=1; cnt<sf->mark_class_cnt; ++cnt ) {
 	ti[cnt-1].text = uc_copy(sf->mark_class_names[cnt]);
 	ti[cnt-1].fg = ti[cnt-1].bg = COLOR_DEFAULT;
+    }
+return( ti );
+}
+
+static GTextInfo *MarkSetsList(SplineFont *sf) {
+    int cnt;
+    GTextInfo *ti;
+
+    if ( sf->mark_set_cnt==0 )
+return( NULL );
+
+    ti = gcalloc(sf->mark_set_cnt+1,sizeof(GTextInfo));
+    for ( cnt=0; cnt<sf->mark_set_cnt; ++cnt ) {
+	ti[cnt].text = uc_copy(sf->mark_set_names[cnt]);
+	ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
     }
 return( ti );
 }
@@ -2162,29 +2183,41 @@ static int MCD_OK(GGadget *g, GEvent *e) {
 	d = mcd->d;
 
 	if ( !CCD_NameListCheck(d->sf,glyphs,true,_("Bad Class")) ||
-		MCD_InvalidClassList(glyphs,d->mark_classes,d->mark_class_names,
-			d->mark_class_cnt,mcd->which )) {
+		(!mcd->isset && MCD_InvalidClassList(glyphs,d->mark_classes,d->mark_class_names,
+			d->mark_class_cnt,mcd->which ))) {
 	    free(newname); free(glyphs);
 return( true );
 	}
 
 	if ( mcd->which==-1 ) {		/* New */
-	    
-	    if ( d->mark_class_cnt==0 ) {
-		d->mark_class_cnt = 2;		/* Class 0 is magic */
-		d->mark_classes = gcalloc(2,sizeof(char *));
-		d->mark_class_names = gcalloc(2,sizeof(unichar_t *));
+	    if ( mcd->isset ) {
+		++d->mark_set_cnt;
+		d->mark_sets = grealloc(d->mark_sets,d->mark_set_cnt*sizeof(char*));
+		d->mark_set_names = grealloc(d->mark_set_names,d->mark_set_cnt*sizeof(unichar_t*));
+		d->mark_sets[d->mark_set_cnt-1] = copy(glyphs);
+		d->mark_set_names[d->mark_set_cnt-1] = copy(newname);
 	    } else {
-		++d->mark_class_cnt;
-		d->mark_classes = grealloc(d->mark_classes,d->mark_class_cnt*sizeof(char*));
-		d->mark_class_names = grealloc(d->mark_class_names,d->mark_class_cnt*sizeof(unichar_t*));
+		if ( d->mark_class_cnt==0 ) {
+		    d->mark_class_cnt = 2;		/* Class 0 is magic */
+		    d->mark_classes = gcalloc(2,sizeof(char *));
+		    d->mark_class_names = gcalloc(2,sizeof(unichar_t *));
+		} else {
+		    ++d->mark_class_cnt;
+		    d->mark_classes = grealloc(d->mark_classes,d->mark_class_cnt*sizeof(char*));
+		    d->mark_class_names = grealloc(d->mark_class_names,d->mark_class_cnt*sizeof(unichar_t*));
+		}
+		d->mark_classes[d->mark_class_cnt-1] = copy(glyphs);
+		d->mark_class_names[d->mark_class_cnt-1] = copy(newname);
 	    }
-	    d->mark_classes[d->mark_class_cnt-1] = copy(glyphs);
-	    d->mark_class_names[d->mark_class_cnt-1] = copy(newname);
 	    GListAppendLine8(mcd->list,newname,false);
 	} else {
-	    free(d->mark_classes[mcd->which]); d->mark_classes[mcd->which] = copy(glyphs);
-	    free(d->mark_class_names[mcd->which]); d->mark_class_names[mcd->which] = copy(newname);
+	    if ( mcd->isset ) {
+		free(d->mark_sets[mcd->which]); d->mark_sets[mcd->which] = copy(glyphs);
+		free(d->mark_set_names[mcd->which]); d->mark_set_names[mcd->which] = copy(newname);
+	    } else {
+		free(d->mark_classes[mcd->which]); d->mark_classes[mcd->which] = copy(glyphs);
+		free(d->mark_class_names[mcd->which]); d->mark_class_names[mcd->which] = copy(newname);
+	    }
 	    GListChangeLine8(mcd->list,mcd->which,newname);
 	}
 	MCD_Close(mcd);
@@ -2317,7 +2350,7 @@ return( false );
 return( true );
 }
 
-static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
+static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which, int isset) {
     MarkClassDlg *mcd;
     GWindow gw;
     GRect pos;
@@ -2334,13 +2367,14 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
     mcd = gcalloc(1,sizeof(MarkClassDlg));
     mcd->d = d; mcd->list = list; mcd->which = which;
     mcd->next = d->mcd; d->mcd = mcd;
+    mcd->isset = isset;
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Mark Classes");
+    wattrs.utf8_window_title = isset ? _("Mark Sets") : _("Mark Classes");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,MCD_Width));
@@ -2349,7 +2383,7 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
 
     k = 0;
 
-    label[k].text = (unichar_t *) _("Class Name:");
+    label[k].text = (unichar_t *) (isset ? _("Set Name:") : _("Class Name:"));
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
@@ -2358,7 +2392,7 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
 
     if ( which!=-1 ) {
 	gcd[k].gd.label = &label[k];
-	label[k].text = (unichar_t *) d->mark_class_names[which];
+	label[k].text = (unichar_t *) (isset ? d->mark_set_names[which] : d->mark_class_names[which]);
 	label[k].text_is_1byte = true;
     }
     gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
@@ -2388,7 +2422,7 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
 
     if ( which!=-1 ) {
 	gcd[k].gd.label = &label[k];
-	label[k].text = freeme = uc_copy(d->mark_classes[which]);
+	label[k].text = freeme = uc_copy(isset ? d->mark_sets[which] : d->mark_classes[which]);
     }
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.pos.width = MCD_Width-20; gcd[k].gd.pos.height = 8*13+4;
@@ -2432,7 +2466,7 @@ static int GFI_MarkNew(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	CreateMarkClassDlg(d, GWidgetGetControl(GGadgetGetWindow(g),CID_MarkClasses), -1);
+	CreateMarkClassDlg(d, GWidgetGetControl(GGadgetGetWindow(g),CID_MarkClasses), -1, false);
     }
 return( true );
 }
@@ -2444,9 +2478,9 @@ static int GFI_MarkEdit(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_MarkClasses);
-	if ( (i = GGadgetGetFirstListSelectedItem(list))==-1 && i+1 < d->mark_class_cnt )
+	if ( (i = GGadgetGetFirstListSelectedItem(list))==-1 && i-1 >= d->mark_class_cnt )
 return( true );
-	CreateMarkClassDlg(d, list, i+1);
+	CreateMarkClassDlg(d, list, i+1, false);
     }
 return( true );
 }
@@ -2459,6 +2493,42 @@ static int GFI_MarkSelChanged(GGadget *g, GEvent *e) {
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	e->u.control.subtype = et_buttonactivate;
 	GFI_MarkEdit(g,e);
+    }
+return( true );
+}
+
+
+static int GFI_MarkSetNew(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	CreateMarkClassDlg(d, GWidgetGetControl(GGadgetGetWindow(g),CID_MarkSets), -1, true);
+    }
+return( true );
+}
+
+static int GFI_MarkSetEdit(GGadget *g, GEvent *e) {
+    int i;
+    GGadget *list;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	list = GWidgetGetControl(GGadgetGetWindow(g),CID_MarkSets);
+	if ( (i = GGadgetGetFirstListSelectedItem(list))==-1 && i >= d->mark_set_cnt )
+return( true );
+	CreateMarkClassDlg(d, list, i, true);
+    }
+return( true );
+}
+
+static int GFI_MarkSetSelChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	int sel = GGadgetGetFirstListSelectedItem(g);
+	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_MarkSetEdit),sel!=-1);
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
+	e->u.control.subtype = et_buttonactivate;
+	GFI_MarkSetEdit(g,e);
     }
 return( true );
 }
@@ -4586,6 +4656,11 @@ return(true);
 	sf->mark_classes = d->mark_classes;
 	sf->mark_class_names = d->mark_class_names;
 
+	MarkClassFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
+	sf->mark_set_cnt = d->mark_set_cnt;
+	sf->mark_sets = d->mark_sets;
+	sf->mark_set_names = d->mark_set_names;
+
 	GFI_Close(d);
 
 	SFReplaceFontnameBDFProps(sf);
@@ -5319,6 +5394,17 @@ static void GFI_InitMarkClasses(struct gfi_data *d) {
 	for ( i=1; i<d->mark_class_cnt; ++i ) {
 	    d->mark_classes[i] = copy(sf->mark_classes[i]);
 	    d->mark_class_names[i] = copy(sf->mark_class_names[i]);
+	}
+    }
+
+    d->mark_set_cnt = sf->mark_set_cnt;
+    if ( d->mark_set_cnt!=0 ) {
+	d->mark_sets = galloc(d->mark_set_cnt*sizeof(char *));
+	d->mark_set_names = galloc(d->mark_set_cnt*sizeof(unichar_t *));
+	d->mark_sets[0] = NULL; d->mark_set_names[0] = NULL;
+	for ( i=1; i<d->mark_set_cnt; ++i ) {
+	    d->mark_sets[i] = copy(sf->mark_sets[i]);
+	    d->mark_set_names[i] = copy(sf->mark_set_names[i]);
 	}
     }
 }
@@ -7460,17 +7546,18 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
-	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20];
+	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[3], dbox[2], flogbox[2],
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
-	    lkbox[7], cbox[6], lbox[8];
+	    lkbox[7], cbox[6], lbox[8], msbox[3];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
 	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
-	*mkarray[6], *mkarray2[4], *txarray[5], *txarray2[30],
+	*mkarray[6], *mkarray2[4], *msarray[6], *msarray2[4],
+	*txarray[5], *txarray2[30],
 	*txarray3[6], *txarray4[6], *uarray[5], *darray[10],
 	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
@@ -7482,7 +7569,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
-	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20];
+	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -9697,6 +9784,63 @@ return;
     mkbox[2].gd.u.boxelements = mkarray2;
     mkbox[2].creator = GHBoxCreate;
 /******************************************************************************/
+    memset(&mslabel,0,sizeof(mslabel));
+    memset(&msgcd,0,sizeof(msgcd));
+
+    mslabel[0].text = (unichar_t *) _(
+	"These are not Anchor Classes. For them see the \"Lookups\" pane.\n"
+	"(Mark Sets, like Mark Classes can control when lookups are active,\n"
+	" they do NOT position glyphs.)");
+    mslabel[0].text_is_1byte = true;
+    msgcd[0].gd.label = &mslabel[0];
+    msgcd[0].gd.flags = gg_visible | gg_enabled;
+    msgcd[0].creator = GLabelCreate;
+
+    msgcd[1].gd.pos.x = 10; msgcd[1].gd.pos.y = 10;
+    msgcd[1].gd.pos.width = ngcd[15].gd.pos.width; msgcd[1].gd.pos.height = 200;
+    msgcd[1].gd.flags = gg_visible | gg_enabled;
+    msgcd[1].gd.cid = CID_MarkSets;
+    msgcd[1].gd.u.list = MarkSetsList(sf);
+    msgcd[1].gd.handle_controlevent = GFI_MarkSetSelChanged;
+    msgcd[1].creator = GListCreate;
+
+    msgcd[2].gd.pos.x = 10; msgcd[2].gd.pos.y = msgcd[1].gd.pos.y+msgcd[1].gd.pos.height+4;
+    msgcd[2].gd.pos.width = -1;
+    msgcd[2].gd.flags = gg_visible | gg_enabled;
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "_New...", ignore "Mark|" */
+    mslabel[2].text = (unichar_t *) S_("Mark|_New...");
+    mslabel[2].text_is_1byte = true;
+    mslabel[2].text_in_resource = true;
+    msgcd[2].gd.label = &mslabel[2];
+    msgcd[2].gd.cid = CID_MarkSetNew;
+    msgcd[2].gd.handle_controlevent = GFI_MarkSetNew;
+    msgcd[2].creator = GButtonCreate;
+
+    msgcd[3].gd.pos.x = -10; msgcd[3].gd.pos.y = msgcd[2].gd.pos.y;
+    msgcd[3].gd.pos.width = -1;
+    msgcd[3].gd.flags = gg_visible;
+    mslabel[3].text = (unichar_t *) _("_Edit...");
+    mslabel[3].text_is_1byte = true;
+    mslabel[3].text_in_resource = true;
+    msgcd[3].gd.label = &mslabel[3];
+    msgcd[3].gd.cid = CID_MarkSetEdit;
+    msgcd[3].gd.handle_controlevent = GFI_MarkSetEdit;
+    msgcd[3].creator = GButtonCreate;
+
+    msarray[0] = &msgcd[0]; msarray[1] = &msgcd[1]; 
+      msarray[2] = &msbox[2]; msarray[3] = NULL;
+    msarray2[0] = &msgcd[2]; msarray2[1] = GCD_Glue; msarray2[2] = &msgcd[3];
+     msarray2[3] = NULL;
+    memset(msbox,0,sizeof(msbox));
+    msbox[0].gd.flags = gg_enabled|gg_visible;
+    msbox[0].gd.u.boxelements = msarray;
+    msbox[0].creator = GVBoxCreate;
+
+    msbox[2].gd.flags = gg_enabled|gg_visible;
+    msbox[2].gd.u.boxelements = msarray2;
+    msbox[2].creator = GHBoxCreate;
+/******************************************************************************/
     memset(&txlabel,0,sizeof(txlabel));
     memset(&txgcd,0,sizeof(txgcd));
 
@@ -10465,6 +10609,11 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mkbox;
 
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
+    aspects[i].text = (unichar_t *) _("Mark Sets");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = msbox;
+
 /* GT: OpenType GPOS/GSUB lookups */
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) S_("OpenType|Lookups");
@@ -10621,6 +10770,9 @@ return;
 
     GHVBoxSetExpandableRow(mkbox[0].ret,1);
     GHVBoxSetExpandableCol(mkbox[2].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(msbox[0].ret,1);
+    GHVBoxSetExpandableCol(msbox[2].ret,gb_expandglue);
 
     GHVBoxSetExpandableRow(txbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(txbox[2].ret,gb_expandglue);

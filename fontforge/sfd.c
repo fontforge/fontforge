@@ -1975,6 +1975,18 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		fprintf( sfd, "0 \n" );
 	}
     }
+    if ( sf->mark_set_cnt!=0 ) {
+	fprintf( sfd, "MarkAttachSets: %d\n", sf->mark_set_cnt );
+	for ( i=0; i<sf->mark_set_cnt; ++i ) {	/* Set 0 is used */
+	    SFDDumpUTF7Str(sfd, sf->mark_set_names[i]);
+	    if ( sf->mark_sets[i]!=NULL )
+		fprintf( sfd, "%d %s\n", (int) strlen(sf->mark_sets[i]),
+			sf->mark_sets[i] );
+	    else
+		fprintf( sfd, "0 \n" );
+	}
+    }
+
     fprintf( sfd, "DEI: 91125\n" );
     for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
@@ -6641,6 +6653,20 @@ exit(1);
 		sf->mark_classes[i] = galloc(temp+1); sf->mark_classes[i][temp] = '\0';
 		nlgetc(sfd);	/* skip space */
 		fread(sf->mark_classes[i],1,temp,sfd);
+	    }
+	} else if ( strmatch(tok,"MarkAttachSets:")==0 ) {
+	    getint(sfd,&sf->mark_set_cnt);
+	    sf->mark_sets = galloc(sf->mark_set_cnt*sizeof(char *));
+	    sf->mark_set_names = galloc(sf->mark_set_cnt*sizeof(char *));
+	    sf->mark_sets[0] = NULL; sf->mark_set_names[0] = NULL;
+	    for ( i=0; i<sf->mark_set_cnt; ++i ) {	/* Set 0 is used */
+		int temp;
+		while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
+		sf->mark_set_names[i] = SFDReadUTF7Str(sfd);
+		getint(sfd,&temp);
+		sf->mark_sets[i] = galloc(temp+1); sf->mark_sets[i][temp] = '\0';
+		nlgetc(sfd);	/* skip space */
+		fread(sf->mark_sets[i],1,temp,sfd);
 	    }
 	} else if ( strmatch(tok,"KernClass2:")==0 || strmatch(tok,"VKernClass2:")==0 ||
 		strmatch(tok,"KernClass:")==0 || strmatch(tok,"VKernClass:")==0 ) {

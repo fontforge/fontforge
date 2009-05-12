@@ -575,6 +575,11 @@ struct gfi_data {		/* FontInfo */
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
     char **mark_class_names;		/* used within ff */
+/* For GDEF Mark Attachment Sets -- used in lookup flags */
+/* Here, class 0 is USED */
+    int mark_set_cnt;
+    char **mark_sets;			/* glyph name list */
+    char **mark_set_names;		/* used within ff */
     struct markclassdlg *mcd;
     GFont *font;
     int as, fh;

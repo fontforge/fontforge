@@ -404,12 +404,12 @@ typedef struct featurescriptlanglist {
 } FeatureScriptLangList;
 
 enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
-	pst_ignorecombiningmarks=8 };
+	pst_ignorecombiningmarks=8, pst_usemarkfilteringset=0x10 };
 
 typedef struct otlookup {
     struct otlookup *next;
     enum otlookup_type lookup_type;
-    uint16 lookup_flags;
+    uint32 lookup_flags;		/* Low order: traditional flags, High order: markset index, only meaningful if pst_usemarkfilteringset set */
     char *lookup_name;
     FeatureScriptLangList *features;
     struct lookup_subtable {
@@ -1790,6 +1790,11 @@ typedef struct splinefont {
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
     char **mark_class_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
+/* For GDEF Mark Attachment Sets -- used in lookup flags */
+/* but here, set 0 is meaningful, since pst_usemarkfilteringset tells us */
+    int mark_set_cnt;
+    char **mark_sets;			/* glyph name list */
+    char **mark_set_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
 #ifdef _HAS_LONGLONG
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
@@ -2323,6 +2328,7 @@ extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended t
 extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought_y, real err);
 extern int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]);
 extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
+extern int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wmax, int major );
 
 SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);
 SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount);
