@@ -1850,12 +1850,25 @@ return;
     fprintf( out, "} BASE;\n\n" );
 }
 
+static void UniOut(FILE *out,char *name ) {
+    int ch;
+
+    while ( (ch = utf8_ildb((const char **) &name))!=0 ) {
+	if ( ch<' ' || ch>='\177' || ch=='\\' || ch=='"' )
+	    fprintf( out, "\\%04x", ch );
+	else
+	    putc(ch,out);
+    }
+}
+
 static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     int isgpos;
     int i,l,s, subl;
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
+    struct otffeatname *fn;
+    struct otfname *on;
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
@@ -1872,6 +1885,16 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		fprintf( out, "\nfeature %s%c%c%c%c {\n",
 			feats[i]==CHR('m','a','r','k') ? "\\" : "",
 			feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
+		if ( feats[i]>=CHR('s','s','0','1') &&  feats[i]<=CHR('s','s','2','0') &&
+			(fn = findotffeatname(feats[i],sf))!=NULL ) {
+		    fprintf( out, "  featureNames {\n" );
+		    for ( on = fn->names; on!=NULL; on=on->next ) {
+			fprintf( out, "    name 3 1 0x%x \"", on->lang );
+			UniOut(out,on->name );
+			fprintf( out, "\";\n" );
+		    }
+		    fprintf( out, "  }\n" );
+		}
 		if ( feats[i]==CHR('s','i','z','e') ) {
 		    struct otfname *nm;
 		    fprintf( out, "  parameters %.1f", sf->design_size/10.0 );

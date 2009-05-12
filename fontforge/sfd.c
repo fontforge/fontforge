@@ -1622,6 +1622,21 @@ return;
     putc('\n',sfd);
 }
 
+static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
+    struct otffeatname *fn;
+    struct otfname *on;
+
+    for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+	fprintf( sfd, "OtfFeatName: '%c%c%c%c' ",
+		fn->tag>>24, fn->tag>>16, fn->tag>>8, fn->tag );
+	for ( on=fn->names; on!=NULL; on=on->next ) {
+	    fprintf( sfd, " %d ", on->lang );
+	    SFDDumpUTF7Str(sfd, on->name);
+	}
+    }
+    putc('\n',sfd);
+}
+
 static void putstring(FILE *sfd, char *header, char *body) {
     fprintf( sfd, "%s", header );
     while ( *body ) {
@@ -2161,6 +2176,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpGasp(sfd,sf);
     if ( sf->design_size!=0 )
 	SFDDumpDesignSize(sfd,sf);
+    if ( sf->feat_names!=NULL )
+	SFDDumpOtfFeatNames(sfd,sf);
     if ( sf->MATH!=NULL ) {
 	struct MATH *math = sf->MATH;
 	for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
@@ -5263,6 +5280,28 @@ static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
     }
 }
 
+static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
+    int ch;
+    struct otfname *cur;
+    struct otffeatname *fn;
+
+    fn = chunkalloc(sizeof(struct otffeatname));
+    fn->tag = gettag(sfd);
+    forever {
+	while ( (ch=nlgetc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( !isdigit(ch))
+    break;
+	cur = chunkalloc(sizeof(struct otfname));
+	cur->next = fn->names;
+	fn->names = cur;
+	getsint(sfd,(int16 *) &cur->lang);
+	cur->name = SFDReadUTF7Str(sfd);
+    }
+    fn->next = sf->feat_names;
+    sf->feat_names = fn;
+}
+
 static Encoding *SFDGetEncoding(FILE *sfd, char *tok, SplineFont *sf) {
     Encoding *enc = NULL;
     int encname;
@@ -6304,6 +6343,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    SFDGetGasp(sfd,sf);
 	} else if ( strmatch(tok,"DesignSize:")==0 ) {
 	    SFDGetDesignSize(sfd,sf);
+	} else if ( strmatch(tok,"OtfFeatName:")==0 ) {
+	    SFDGetOtfFeatName(sfd,sf);
 	} else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.weight);
 	    sf->pfminfo.pfmset = true;

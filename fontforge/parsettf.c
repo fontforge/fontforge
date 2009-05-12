@@ -6042,6 +6042,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->design_range_top = info->design_range_top;
     sf->fontstyle_id = info->fontstyle_id;
     sf->fontstyle_name = info->fontstyle_name;
+    sf->feat_names = info->feat_names;
 
     sf->gasp_cnt = info->gasp_cnt;
     sf->gasp = info->gasp;

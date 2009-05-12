@@ -640,6 +640,30 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("WWS Family"), NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("WWS Subfamily"), NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static GTextInfo otfssfeattags[] = {
+/* These should not be translated. They are tags */
+    { (unichar_t *) "ss01", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','1'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss02", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','2'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss03", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','3'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss04", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','4'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss05", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','5'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss06", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','6'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss07", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','7'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss08", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','8'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss09", NULL, 0, 0, (void *) (intpt) CHR('s','s','0','9'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss10", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','0'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss11", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','1'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss12", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','2'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss13", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','3'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss14", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','4'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss15", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','5'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss16", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','6'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss17", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','7'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss18", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','8'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss19", NULL, 0, 0, (void *) (intpt) CHR('s','s','1','9'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) "ss20", NULL, 0, 0, (void *) (intpt) CHR('s','s','2','0'), NULL, 0, 0, 0, 0, 1, 0, 1},
+    { NULL }};
+/* Put styles (docs call it subfamily) first because it is most likely to change */
 static GTextInfo unicoderangenames[] = {
     { (unichar_t *) N_("Basic Latin"),				NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) N_("Latin-1 Supplement"),			NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -846,6 +870,11 @@ static struct col_init ci[] = {
     { me_enum, NULL, mslanguages, TN_LangEnable, N_("Language") },
     { me_enum, NULL, ttfnameids, TN_StrIDEnable, N_("String ID") },
     { me_func, TN_DefaultName, NULL, NULL, N_("String") }
+    };
+static struct col_init ssci[] = {
+    { me_enum, NULL, mslanguages, NULL, N_("Language") },
+    { me_enum, NULL, otfssfeattags, NULL, N_("Feature Tags") },
+    { me_string, NULL, NULL, NULL, N_("Friendly Name") }
     };
 static GTextInfo gridfit[] = {
     { (unichar_t *) N_("No Grid Fit"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
@@ -1237,6 +1266,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_TNames		5005
 
 #define CID_Language		5006	/* Used by AskForLangNames */
+
+#define CID_SSNames		5050
 
 #define CID_Gasp		5100
 #define CID_GaspVersion		5101
@@ -3647,6 +3678,32 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+
+static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
+    SplineFont *sf = d->sf;
+    struct matrix_data *md;
+    struct otffeatname *fn;
+    struct otfname *on;
+    int cnt;
+
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 3;
+    mi->col_init = ssci;
+
+    for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+	for ( on=fn->names; on!=NULL; on=on->next, ++cnt );
+    }
+    md = gcalloc(3*(cnt+10),sizeof(struct matrix_data));
+    for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+	for ( on=fn->names; on!=NULL; on=on->next, ++cnt ) {
+	    md[3*cnt  ].u.md_ival = on->lang;
+	    md[3*cnt+1].u.md_ival = fn->tag;
+	    md[3*cnt+2].u.md_str = copy(on->name);
+	}
+    }
+    mi->matrix_data = md;
+    mi->initial_row_cnt = cnt;
+}
 	
 static int Gasp_Default(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -4011,6 +4068,70 @@ static void StoreTTFNames(struct gfi_data *d) {
 	tln->names[strings[3*i+1].u.md_ival] = copy(strings[3*i+2].u.md_str );
     }
     TTF_PSDupsDefault(sf);
+}
+
+static int SSNameValidate(struct gfi_data *d) {
+    GGadget *edit = GWidgetGetControl(d->gw,CID_SSNames);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(edit, &rows);
+    int i, j, k;
+
+    for ( i=0; i<rows; ++i ) {
+	if ( strings[3*i+2].u.md_str == NULL )
+    continue;
+	for ( j=i+1; j<rows; ++j ) {
+	    if ( strings[3*j+2].u.md_str == NULL )
+	continue;
+	    if ( strings[3*i  ].u.md_ival == strings[3*j  ].u.md_ival &&
+		    strings[3*i+1].u.md_ival == strings[3*j+1].u.md_ival ) {
+		uint32 tag = strings[3*i+1].u.md_ival;
+		for ( k=0; mslanguages[k].text!=NULL &&
+			((intpt) mslanguages[k].userdata)!=strings[3*i].u.md_ival; ++k );
+		if ( mslanguages[k].text==NULL ) k=0;
+		ff_post_error(_("Duplicate StyleSet Name"),_("The feature '%c%c%c%c' is named twice in language %s\n%.80s\n%.80s"),
+			tag>>24, tag>>16, tag>>8, tag,
+			mslanguages[k].text,
+			strings[3*i+2].u.md_str,
+			strings[3*j+2].u.md_str
+			);
+return( false );
+	    }
+	}
+    }
+return( true );
+}
+
+static void StoreSSNames(struct gfi_data *d) {
+    GGadget *edit = GWidgetGetControl(d->gw,CID_SSNames);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(edit, &rows);
+    int i;
+    uint32 tag, lang;
+    struct otffeatname *fn;
+    struct otfname *on;
+    SplineFont *sf = d->sf;
+
+    OtfFeatNameListFree(sf->feat_names);
+    sf->feat_names = NULL;
+
+    for ( i=0; i<rows; ++i ) {
+	if ( strings[3*i+2].u.md_str == NULL )
+    continue;
+	tag = strings[3*i+1].u.md_ival;
+	lang = strings[3*i].u.md_ival;
+	for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+	if ( fn==NULL ) {
+	    fn = chunkalloc(sizeof(*fn));
+	    fn->tag = tag;
+	    fn->next = sf->feat_names;
+	    sf->feat_names = fn;
+	}
+	on = chunkalloc(sizeof(*on));
+	on->next = fn->names;
+	fn->names = on;
+	on->lang = lang;
+	on->name = copy(strings[3*i+2].u.md_str );
+    }
 }
 
 static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
@@ -4403,6 +4524,8 @@ return( true );
 	    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set,\nbut there are names in this namelist which use characters outside\nthat range."));
 return(true);
 	}
+	if ( !SSNameValidate(d))
+return( true );
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( strokedfont!=sf->strokedfont || multilayer!=sf->multilayer ) {
 	    if ( sf->strokedfont && multilayer )
@@ -4549,6 +4672,7 @@ return(true);
 	}
 	if ( d->names_set )
 	    StoreTTFNames(d);
+	StoreSSNames(d);
 	if ( d->ttf_set ) {
 	    sf->os2_version = os2version;
 	    sf->use_typo_metrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_UseTypoMetrics));
@@ -7541,17 +7665,17 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[23], vaspects[6], lkaspects[3];
+    GTabInfo aspects[25], vaspects[6], lkaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
-	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7];
+	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[3], dbox[2], flogbox[2],
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
-	    lkbox[7], cbox[6], lbox[8], msbox[3];
+	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
@@ -7564,12 +7688,14 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4],
-	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4];
+	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4],
+	*ssvarray[4];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
-	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7];
+	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7],
+	ssnlabel[7];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -7586,7 +7712,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     unichar_t *tmpcreatetime, *tmpmodtime;
     time_t t;
     const struct tm *tm;
-    struct matrixinit mi, gaspmi, layersmi;
+    struct matrixinit mi, gaspmi, layersmi, ssmi;
     int ltype;
     static GBox small_blue_box;
     extern GBox _GGadget_button_box;
@@ -9677,6 +9803,38 @@ return;
     tnboxes[3].gd.u.boxelements = tnharray2;
     tnboxes[3].creator = GHBoxCreate;
 /******************************************************************************/
+    memset(&ssnlabel,0,sizeof(ssnlabel));
+    memset(&ssngcd,0,sizeof(ssngcd));
+    memset(&ssboxes,0,sizeof(ssboxes));
+
+    SSMatrixInit(&ssmi,d);
+
+    ssngcd[0].gd.flags = gg_visible | gg_enabled;
+    ssnlabel[0].text = (unichar_t *) _("The OpenType Style Set features ('ss01'-'ss20') may\n"
+				      "be assigned human readable names here.");
+    ssnlabel[0].text_is_1byte = true;
+    ssngcd[0].gd.label = &ssnlabel[0];
+    ssngcd[0].creator = GLabelCreate;
+    ssvarray[0] = &ssngcd[0];
+
+    ssngcd[1].gd.pos.width = 300; ssngcd[1].gd.pos.height = 200;
+    ssngcd[1].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    ssngcd[1].gd.cid = CID_SSNames;
+    ssngcd[1].gd.u.matrix = &ssmi;
+    ssngcd[1].gd.popup_msg = (unichar_t *) _(
+	"To create a new name, left click on the <New> button, and select a locale.\n"
+	"To change the locale, left click on it.\n"
+	"To change the feature, left click on it.\n"
+	"To change the text, left click in it and then type.\n"
+	);
+    ssngcd[1].data = d;
+    ssngcd[1].creator = GMatrixEditCreate;
+    ssvarray[1] = &ssngcd[1]; ssvarray[2] = NULL;
+
+    ssboxes[0].gd.flags = gg_enabled|gg_visible;
+    ssboxes[0].gd.u.boxelements = ssvarray;
+    ssboxes[0].creator = GVBoxCreate;
+/******************************************************************************/
     memset(&comlabel,0,sizeof(comlabel));
     memset(&comgcd,0,sizeof(comgcd));
 
@@ -10581,6 +10739,11 @@ return;
     aspects[i++].gcd = tnboxes;
 
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
+    aspects[i].text = (unichar_t *) _("StyleSet Names");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = ssboxes;
+
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Grid Fitting");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = gaspboxes;
@@ -10791,6 +10954,8 @@ return;
     GHVBoxSetExpandableRow(tnboxes[0].ret,1);
     GHVBoxSetExpandableCol(tnboxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(tnboxes[3].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(ssboxes[0].ret,1);
 
     GHVBoxSetExpandableRow(mcbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(mcbox[0].ret,1);

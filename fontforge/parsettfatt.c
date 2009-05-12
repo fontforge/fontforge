@@ -2264,6 +2264,45 @@ return;
 #endif
 }
 
+static void readttffeatnameparameters(FILE *ttf,int32 pos,uint32 tag,
+	struct ttfinfo *info) {
+    int version, nid;
+    struct otffeatname *fn;
+    uint32 here;
+
+    here = ftell(ttf);
+    fseek(ttf,pos,SEEK_SET);
+    version = getushort(ttf);	/* Minor version #, currently (2009) 0 */
+    nid = getushort(ttf);
+    fseek(ttf,here,SEEK_SET);
+
+    if ( version>=10 || nid<256 || nid>32767 ) {
+	if ( nid<256 || nid>32767 )
+	    LogError(_("The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"),
+		    tag>>24, tag>>16, tag>>8, tag );
+	else
+	    LogError(_("The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"),
+		    tag>>24, tag>>16, tag>>8, tag, version );
+	info->bad_ot = true;
+return;
+    }
+    for ( fn=info->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+    if ( fn!=NULL ) {
+	if ( fn->nid == nid )
+return;
+	LogError(_("There are multiple name ids naming the '%c%c%c%c' feature\n this is technically legitimate, but fontforge can't handle it.\n"),
+		tag>>24, tag>>16, tag>>8, tag );
+return;
+    }
+
+    fn = chunkalloc( sizeof(*fn) );
+    fn->tag = tag;
+    fn->nid = nid;
+    fn->next = info->feat_names;
+    info->feat_names = fn;
+    fn->names = FindAllLangEntries(ttf,info,nid);
+}
+
 static struct scripts *readttfscripts(FILE *ttf,int32 pos, struct ttfinfo *info, int isgpos) {
     int i,j,k,cnt;
     int deflang, lcnt;
@@ -2373,9 +2412,14 @@ return( NULL );
 	}
 	fseek(ttf,pos+features[i].offset,SEEK_SET);
 	parameters = getushort(ttf);
-	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 && !feof(ttf))
+	if ( features[i].tag==CHR('s','i','z','e') && parameters!=0 && !feof(ttf)) {
 	    readttfsizeparameters(ttf,pos+parameters,
 		    pos+parameters+features[i].offset,info);
+	} else if ( features[i].tag>=CHR('s','s','0','1') && features[i].tag<=CHR('s','s','2','0') &&
+		parameters!=0 && !feof(ttf)) {
+	    readttffeatnameparameters(ttf,pos+parameters+features[i].offset,
+		    features[i].tag,info);
+	}
 	features[i].lcnt = getushort(ttf);
 	if ( feof(ttf) ) {
 	    LogError(_("End of file when reading features in %s table"), isgpos ? "GPOS" : "GSUB" );

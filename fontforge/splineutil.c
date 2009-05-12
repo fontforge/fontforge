@@ -6027,6 +6027,16 @@ void OtfNameListFree(struct otfname *on) {
     }
 }
 
+void OtfFeatNameListFree(struct otffeatname *fn) {
+    struct otffeatname *fn_next;
+
+    for ( ; fn!=NULL; fn = fn_next ) {
+	fn_next = fn->next;
+	OtfNameListFree(fn->names);
+	chunkfree(fn,sizeof(*fn));
+    }
+}
+
 EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
     EncMap *map = chunkalloc(sizeof(EncMap));
     
@@ -6297,6 +6307,7 @@ return;
     FPSTFree(sf->possub);
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
+    OtfFeatNameListFree(sf->feat_names);
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
     MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
     free( sf->gasp );
