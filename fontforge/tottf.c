@@ -3966,6 +3966,7 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     struct other_names *on, *onn;
     NamTab nt;
     struct otfname *otfn;
+    struct otffeatname *fn;
 
     memset(&nt,0,sizeof(nt));
     nt.encoding_name = at->map->enc;
@@ -4021,6 +4022,11 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     if ( at->fontstyle_name_strid!=0 && sf->fontstyle_name!=NULL ) {
 	for ( otfn = sf->fontstyle_name; otfn!=NULL; otfn = otfn->next )
 	    AddEncodedName(&nt,otfn->name,otfn->lang,at->fontstyle_name_strid);
+    }
+    /* As do some other features now */
+    for ( fn = sf->feat_names; fn!=NULL; fn=fn->next ) {
+	for ( otfn = fn->names; otfn!=NULL; otfn = otfn->next )
+	    AddEncodedName(&nt,otfn->name,otfn->lang,fn->nid);
     }
 
     qsort(nt.entries,nt.cur,sizeof(NameEntry),compare_entry);

@@ -718,10 +718,18 @@ struct macname {
 
 /* Wow, the GPOS 'size' feature stores a string in the name table just as mac */
 /*  features do */
+/* And now (OTF 1.6) GSUB 'ss01'-'ss20' do too */
 struct otfname {
     struct otfname *next;
     uint16 lang;	/* windows language code */
     char *name;		/* utf8 */
+};
+
+struct otffeatname {
+    uint32 tag;			/* Feature tag */
+    struct otfname *names;
+    struct otffeatname *next;
+    uint16 nid;			/* temporary value */
 };
 
 typedef struct macfeat {
@@ -1784,6 +1792,7 @@ typedef struct splinefont {
     uint16 fontstyle_id;
     struct otfname *fontstyle_name;
     uint16 design_range_bottom, design_range_top;
+    struct otffeatname *feat_names;
     real strokewidth;
 /* For GDEF Mark Attachment Class -- used in lookup flags */
 /* As usual, class 0 is unused */
@@ -2186,6 +2195,8 @@ extern void JustifyFree(Justify *just);
 extern void MATHFree(struct MATH *math);
 extern struct MATH *MathTableNew(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
+extern void OtfFeatNameListFree(struct otffeatname *fn);
+extern struct otffeatname *findotffeatname(uint32 tag,SplineFont *sf);
 extern void MarkSetFree(int cnt,char **classes,char **names);
 extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);

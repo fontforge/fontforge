@@ -316,6 +316,7 @@ struct ttfinfo {
     uint32 jstf_script;
     uint32 jstf_lang;
     int16 jstf_isShrink, jstf_prio, jstf_lcnt;
+    struct otffeatname *feat_names;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };

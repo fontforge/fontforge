@@ -2721,6 +2721,7 @@ struct ginfo {
 	int lcnt;
 	OTLookup **lookups;
 	int feature_id;		/* Initially consecutive, but may be rearranged by sorting */
+	uint32 name_param_ptr;
     } *feat_lookups;
     int sc;
     struct scriptset {
@@ -3011,6 +3012,13 @@ return( NULL );
 return( efile );
 }
 
+struct otffeatname *findotffeatname(uint32 tag,SplineFont *sf) {
+    struct otffeatname *fn;
+
+    for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+return( fn );
+}
+
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     /* Dump out either a gpos or a gsub table. gpos handles kerns, gsub ligs */
     /*  we assume that SFFindUnusedLookups has been called */
@@ -3022,6 +3030,10 @@ static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
     OTLookup *otf, *all;
     struct lookup_subtable *sub;
     char *buf;
+    struct otffeatname *fn;
+
+    for ( fn=sf->feat_names; fn!=NULL; fn=fn->next )
+	fn->nid = 0;
 
     FindFeatures(sf,is_gpos,&ginfo);
     if ( ginfo.sc==0 )
@@ -3097,8 +3109,11 @@ return( NULL );
     /* for each feature, one feature table */
     size_params_ptr = 0;
     for ( i=0; i<ginfo.fcnt; ++i ) {
+	ginfo.feat_lookups[i].name_param_ptr = 0;
 	if ( ginfo.feat_lookups[i].tag==CHR('s','i','z','e') )
 	    size_params_ptr = ftell(g___);
+	else if ( ginfo.feat_lookups[i].tag>=CHR('s','s','0','1') && ginfo.feat_lookups[i].tag<=CHR('s','s','2','0'))
+	    ginfo.feat_lookups[i].name_param_ptr = ftell(g___);
 	putshort(g___,0);			/* No feature params (we'll come back for 'size') */
 	putshort(g___,ginfo.feat_lookups[i].lcnt);/* this many lookups */
 	for ( j=0; j<ginfo.feat_lookups[i].lcnt; ++j )
@@ -3114,6 +3129,8 @@ return( NULL );
 	/*  this has been fixed. FF used to do what Adobe did. Many programs */
 	/*  expect broken sizes tables now. Therefore allow the user to chose */
 	/*  which kind to output */
+	/* Well don't give the user the choice any more, but retain the old */
+	/*  code, just in case... */
 #if 0
 	putshort(g___,size_params_loc-((at->gi.flags&ttf_flag_brokensize)?feature_list_table_start:size_params_ptr));
 #else
@@ -3133,6 +3150,19 @@ return( NULL );
 	    putshort(g___,0);
 	    putshort(g___,0);
 	    putshort(g___,0);
+	}
+    }
+    for ( i=0; i<ginfo.fcnt; ++i ) {
+	if ( ginfo.feat_lookups[i].name_param_ptr!=0 &&
+		(fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
+	    if ( fn->nid==0 )
+		fn->nid = at->next_strid++;
+	    uint32 name_param_loc = ftell(g___);
+	    fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
+	    putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
+	    fseek(g___,name_param_loc,SEEK_SET);
+	    putshort(g___,0);		/* Minor version number */
+	    putshort(g___,fn->nid);
 	}
     }
     /* And that should finish all the features */
