@@ -4656,7 +4656,7 @@ return(true);
 	sf->mark_classes = d->mark_classes;
 	sf->mark_class_names = d->mark_class_names;
 
-	MarkClassFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
+	MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
 	sf->mark_set_cnt = d->mark_set_cnt;
 	sf->mark_sets = d->mark_sets;
 	sf->mark_set_names = d->mark_set_names;
@@ -5402,7 +5402,7 @@ static void GFI_InitMarkClasses(struct gfi_data *d) {
 	d->mark_sets = galloc(d->mark_set_cnt*sizeof(char *));
 	d->mark_set_names = galloc(d->mark_set_cnt*sizeof(unichar_t *));
 	d->mark_sets[0] = NULL; d->mark_set_names[0] = NULL;
-	for ( i=1; i<d->mark_set_cnt; ++i ) {
+	for ( i=0; i<d->mark_set_cnt; ++i ) {
 	    d->mark_sets[i] = copy(sf->mark_sets[i]);
 	    d->mark_set_names[i] = copy(sf->mark_set_names[i]);
 	}

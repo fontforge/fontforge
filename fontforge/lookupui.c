@@ -1776,7 +1776,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 
 /* GT: Process is a verb here and Mark is a noun. */
 /* GT: Marks of the given mark class are to be processed */
-	label[7].text = (unichar_t *) _("Process Marks:");
+	label[7].text = (unichar_t *) _("Mark Class:");
 	label[7].text_is_1byte = true;
 	gcd[7].gd.label = &label[7];
 	gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = gcd[6].gd.pos.y+16; 
@@ -1799,7 +1799,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	label[9].text = (unichar_t *) _("Mark Set:");
 	label[9].text_is_1byte = true;
 	gcd[9].gd.label = &label[9];
-	gcd[9].gd.flags = sf->mark_set_cnt<=1 ? gg_visible : (gg_enabled|gg_visible);
+	gcd[9].gd.flags = sf->mark_set_cnt<1 ? gg_visible : (gg_enabled|gg_visible);
 	gcd[9].creator = GLabelCreate;
 	flaghvarray[4] = &gcd[9];
 
@@ -1809,7 +1809,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
 	if ( !(otl->lookup_flags&pst_usemarkfilteringset) || class >= sf->mark_set_cnt )
 	    class = -1;
 	gcd[10].gd.u.list = SFMarkSetList(sf,class);
-	gcd[10].gd.label = &gcd[8].gd.u.list[class+1];
+	gcd[10].gd.label = &gcd[10].gd.u.list[class+1];
 	gcd[10].gd.cid = CID_Lookup_ProcessSet;
 	gcd[10].creator = GListButtonCreate;
 	flaghvarray[5] = &gcd[10]; flaghvarray[6] = GCD_Glue; flaghvarray[7] = NULL; flaghvarray[8] = NULL;

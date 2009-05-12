@@ -3556,13 +3556,12 @@ return;					/* No anchor positioning, no ligature carets */
 	fseek(at->gdef,0,SEEK_END);
 	putshort(at->gdef,1);			/* Version number */
 	putshort(at->gdef,sf->mark_set_cnt);
-	pos = ftell(at->gdef);
 	for ( i=0; i<sf->mark_set_cnt; ++i )
 	    putlong(at->gdef,0);
 	for ( i=0; i<sf->mark_set_cnt; ++i ) {
 	    int here = ftell(at->gdef);
-	    fseek(at->gdef,pos+4*i,SEEK_SET);
-	    putlong(at->gdef,here);
+	    fseek(at->gdef,pos+4+4*i,SEEK_SET);
+	    putlong(at->gdef,here-pos);
 	    fseek(at->gdef,0,SEEK_END);
 	    glyphs = OrderedGlyphsFromNames(sf,sf->mark_sets[i]);
 	    dumpcoveragetable(at->gdef,glyphs);

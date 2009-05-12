@@ -6110,6 +6110,17 @@ void MarkClassFree(int cnt,char **classes,char **names) {
     free( names );
 }
 
+void MarkSetFree(int cnt,char **classes,char **names) {
+    int i;
+
+    for ( i=0; i<cnt; ++i ) {
+	free( classes[i] );
+	free( names[i] );
+    }
+    free( classes );
+    free( names );
+}
+
 struct baselangextent *BaseLangCopy(struct baselangextent *extent) {
     struct baselangextent *head, *last, *cur;
 
@@ -6287,7 +6298,7 @@ return;
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
-    MarkClassFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);	/* Leak! We don't free sets[0] */
+    MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
     free( sf->gasp );
 #if defined(_NO_PYTHON)
     free( sf->python_persistent );	/* It's a string of pickled data which we leave as a string */
