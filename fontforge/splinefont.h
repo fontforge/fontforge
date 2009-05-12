@@ -2186,6 +2186,7 @@ extern void JustifyFree(Justify *just);
 extern void MATHFree(struct MATH *math);
 extern struct MATH *MathTableNew(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
+extern void MarkSetFree(int cnt,char **classes,char **names);
 extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);

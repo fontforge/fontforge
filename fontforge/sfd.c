@@ -6658,7 +6658,6 @@ exit(1);
 	    getint(sfd,&sf->mark_set_cnt);
 	    sf->mark_sets = galloc(sf->mark_set_cnt*sizeof(char *));
 	    sf->mark_set_names = galloc(sf->mark_set_cnt*sizeof(char *));
-	    sf->mark_sets[0] = NULL; sf->mark_set_names[0] = NULL;
 	    for ( i=0; i<sf->mark_set_cnt; ++i ) {	/* Set 0 is used */
 		int temp;
 		while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);

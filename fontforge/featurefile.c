@@ -1496,7 +1496,7 @@ return;					/* No support for apple "lookups" */
 		dump_ascii( out, sf->mark_class_names[index]);
 	    }
 	}
-	if ( (otl->lookup_flags&0xffff0000)!=0 ) {
+	if ( otl->lookup_flags&pst_usemarkfilteringset ) {
 	    int index = (otl->lookup_flags>>16)&0xffff;
 	    if ( index<sf->mark_set_cnt ) {
 		if ( !first )
@@ -3151,8 +3151,9 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 	    else if ( tok->type == tk_IgnoreLigatures )
 		val |= pst_ignoreligatures;
 	    else {
+		int is_set = tok->type == tk_UseMarkFilteringSet;
 		fea_TokenMustBe(tok,tk_class,'\0');
-		val |= fea_ParseMarkAttachClass(tok,tok->type == tk_UseMarkFilteringSet);
+		val |= fea_ParseMarkAttachClass(tok,is_set);
 	    }
 	    fea_ParseTok(tok);
 	    if ( tok->type == tk_char && tok->tokbuf[0]==';' )
