@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 13-May-2009 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -37,9 +37,10 @@
 	<LI>
 	  <A href="charview.html" >Outline Glyph</A>
 	<LI>
-	  <small><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging TrueType</A></small>
+	  <SMALL><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging
+	  TrueType</A></SMALL>
 	<LI>
-	  <small><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></small>
+	  <SMALL><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></SMALL>
 	<LI>
 	  <A href="bitmapview.html" >Bitmap Glyph</A>
       </UL>
@@ -49,7 +50,7 @@
 	<LI>
 	  <A href="fontinfo.html" >Font Information</A>
 	<LI>
-	  <small><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></small>
+	  <SMALL><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></SMALL>
 	<LI>
 	  <A href="charinfo.html" >Glyph Information</A>
 	<LI>
@@ -67,7 +68,7 @@
 	<LI>
 	  <A href="multiplemaster.html" >Multiple Master Information</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="lookups.html" >Lookups &amp; subtables</A>
 	<LI>
@@ -85,7 +86,7 @@
 	<LI>
 	  <A href="showatt.html" >Show Advanced Typography</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="problems.html" >Potential Problems dialog</A>
 	<LI>
@@ -103,7 +104,7 @@
 	<LI>
 	  <A href="generate.html#Mac" >Generate Mac Family dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="display.html" >Print &amp; Display dialog</A>
 	<LI>
@@ -111,13 +112,13 @@
 	<LI>
 	  <A href="groups.html" >Groups dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="elementmenu.html#Bitmaps">Manage Bitmap Strikes</A>
 	<LI>
 	  <A href="elementmenu.html#Regenerate">Re-Rasterize Bitmap Strikes</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="search.html" >Search &amp; Replace dialog</A>
 	<LI>
@@ -131,7 +132,7 @@
 	<LI>
 	  <A href="InsertTextDlg.html" >Insert Text dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set width dialogs</A>
 	<LI>
@@ -139,7 +140,7 @@
 	<LI>
 	  <A href="autowidth.html" >Auto Width &amp; Kern dialogs</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="hintsmenu.html#Review" >Review PS Hints dialog</A>
 	<LI>
@@ -147,7 +148,7 @@
 	<LI>
 	  <A href="ttfinstrs.html#cvt" >TrueType 'cvt ' Editor</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="selectbyatt.html" >Select by feature dialog</A>
 	<LI>
@@ -198,7 +199,7 @@
     Font Info
   </H1>
   <P>
-  <IMG SRC="fontinfo.png" WIDTH="602" HEIGHT="534" ALIGN="Right">
+  <IMG SRC="fontinfo.png" WIDTH="614" HEIGHT="548" ALIGN="Right">
   <P>
   The Font Info dialog is available from all views. It allows you to name your
   font and various other useful bits of information. In a
@@ -235,6 +236,8 @@
     <LI>
       <A HREF="fontinfo.html#TTF-Names">TTF Names</A>
     <LI>
+      <A HREF="#SSNames">StyleSet Names</A>
+    <LI>
       <A HREF="#gasp">Grid Fit</A>
     <LI>
       <A HREF="fontinfo.html#TeX">TeX</A>
@@ -246,6 +249,10 @@
       <A HREF="#FontLog">FONTLOG</A>
     <LI>
       <A HREF="#MarkClass">Mark Classes</A>
+      <UL>
+	<LI>
+	  <A HREF="#MarkSets">Mark Sets</A>
+      </UL>
     <LI>
       <A HREF="#Lookups">Lookups</A>
     <LI>
@@ -800,6 +807,16 @@
   <P>
   These names are only meaningful for TrueType and OpenType fonts.
   <H2>
+    <A NAME="SSNames"><IMG SRC="fontinfo-ssnames.png" WIDTH="614" HEIGHT="374"
+	ALIGN="Right">StyleSet Names</A>
+  </H2>
+  <P>
+  The OpenType features 'ss01'-'ss20' are magic, and you are allowed to provide
+  more interesting names for them than the default "Style Set 01"... This table
+  allows you to assign names, in various languages to the various features.
+  It is very similar to, though less complicated than, the previous
+  pane.<BR CLEAR=ALL>
+  <H2>
     <IMG SRC="fontinfo-gasp.png" WIDTH="540" HEIGHT="314" ALIGN="Right"><A NAME="gasp">Grid
     Fit ('gasp' table)</A>
   </H2>
@@ -918,24 +935,45 @@
   </H2>
   <P>
   This has the same interface as the Comment above. The FONTLOG is an idea
-  stolen from the Open Font License. It is description of the font and
-  a log of changes made to it over time and includes some more information about the font as well (see the <A HREF="http://scripts.sil.org/OFL-FAQ_web"> OFL FAQ)</A>. This pane allows you to store this information within the font itself where it won't get lost.
+  stolen from the Open Font License. It is description of the font and a log
+  of changes made to it over time and includes some more information about
+  the font as well (see the <A HREF="http://scripts.sil.org/OFL-FAQ_web"> OFL
+  FAQ)</A>. This pane allows you to store this information within the font
+  itself where it won't get lost.
   <P>
   <BR Clear=ALL>
   <H2>
-    <A NAME="MarkClass">Mark Classes</A>
+    <A NAME="MarkClass">Mark Classes</A> &amp; <A NAME="MarkSets">Mark Sets</A>
   </H2>
   <P>
-  <IMG SRC="fontinfo-markclasses.png" WIDTH="376" HEIGHT="636" ALIGN="Right"
+  <IMG SRC="fontinfo-markclasses.png" WIDTH="614" HEIGHT="392" ALIGN="Right"
       ALT="Font Info Mark Classes"> The various marks in your font may be divided
-  into classes. As far as I know the only real use for this is to handle indic
-  rearrangement and allow ligatures to be formed which skip over certain glyphs.
-  Each class of marks should be named and that name may be used in the
-  <A HREF="charinfo.html">Element-&gt;Glyph Info</A>-&gt;Ligature-&gt;New dialog
-  to specify which marks should be considered in forming this ligature and
-  which should be ignored.
+  into classes or sets. As I write (spring 2009) there is essentially no support
+  for mark sets, but that will change (Both Adobe and MicroSoft say their next
+  releases will support it).
   <P>
-  From here you may add new classes, or edit old ones.
+  The idea behind both is similar: In many lookups it is important to be able
+  to ignore some mark glyphs, but not others. For example when forming an arabic
+  ligature, the vowel marks are (usually) irrelevant to the ligature and you
+  would want to ignore all marks. In situations where you are positioning marks
+  on a base glyph you might in one case, want to ignore all marks that position
+  on top of the glyph while paying attention to those underneath it. And then
+  in another lookup, the reverse might be true.
+  <P>
+  At any rate, in some cases it is important to be able to categorize marks.
+  Both classes and sets let you do this. In the example right, latin marks
+  have been divided into those above the glyph and those below.
+  <P>
+  A glyph may appear in at most one class, while it may appear in many sets.
+  So when implemented, sets will be more versatile. On the other hand classes
+  can be stored more compactly in the font file (a slight advantage).
+  <P>
+  Once you have created your classes (or sets, or both) you may use them in
+  the <A HREF="lookups.html#Add-Lookup">Add Lookup </A>dialog from the
+  <A HREF="fontinfo.html#Lookups">Lookup</A> pane.
+  <P>
+  The Mark Set pane looks almost exactly like the Mark Class pane, and functions
+  similarly. From these panes you may add new classes, or edit old ones.
   <P>
   <IMG SRC="markclass.png" ALIGN="Left" WIDTH="351" HEIGHT="323">The dialog
   for creating a new (or modifying an old) mark class allows you to give that

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 27-Mar-2009 -->
+  <!-- AP: Last modified: 13-May-2009 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -30,7 +30,7 @@
   </TABLE>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often out of date. I thought it was
-  a correct on 27 Mar 2009.</STRONG></FONT> A
+  a correct on 12 May 2009.</STRONG></FONT> A
   <A HREF="sfdchangelog.html">changelog</A> file is available. Even if out
   of date it should be helpful, but if you really need to know the current
   format look at
@@ -363,7 +363,10 @@ Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizont
   followed by a lookup type, and flags, and the save-in-afm flag. Then within
   curly braces is a list of all subtable names in this lookup. Then within
   backets a list of all features each followed (within parens) by a list of
-  all scripts each followed (within brockets) by a list of all languages.
+  all scripts each followed (within brockets) by a list of all languages. (the
+  lookup flags field is now a 32 bit number, the low order 16 bits being the
+  traditional flags, and the high order being the mark attachment set index,
+  if any).
   <P>
   The order in which lookups are applied is the order listed here. The order
   in which subtables are applied is the order listed here.
@@ -416,6 +419,25 @@ Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizont
 -145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
 </PRE>
   </BLOCKQUOTE>
+  <P>
+  If your font has GDEF Mark attachement classes or sets these look like
+  <BLOCKQUOTE>
+    <PRE>MarkAttachClasses: 2
+"ABClass" 3 A B
+MarkAttachSets: 2
+"ABSet" 3 A B
+"ASet" 1 A
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  In the example above there are (sort of) 2 mark attachment classes, but class
+  0 is always empty and isn't listed. So there's really one class. It is named
+  (the name is a FontForge thing, not exported to opentype) "ABClass", is 3
+  characters long and is "A B".
+  <P>
+  Similarly, there are 2 mark attachment sets. Here set 0 is used, and must
+  be specified. Set 0 is called "ABSet" is 3 characters long and is "A B",
+  while set 1 is called "ASet", is 1 character long and is "A".
   <P>
   If your font has any baseline data
   <BLOCKQUOTE>
@@ -548,6 +570,16 @@ NPUSHB
 LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
 </PRE>
   </BLOCKQUOTE>
+  <P>
+  With version 1.6 of OpenType, you are allowed to provide name table entries
+  for the feature names 'ss01' - 'ss20'. These look like:
+  <BLOCKQUOTE>
+    <PRE>OtfFeatName: 'ss01'  1036 "Riable"  1033 "Risible"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Which binds feature 'ss01' to the name "Riable" in French (language 1036)
+  and to "Risible" in English (language 1033).
   <P>
   If your font has any anchor classes:
   <BLOCKQUOTE>
