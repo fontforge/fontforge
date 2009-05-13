@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 12-Mar-2007 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 13-May-2009 -->
   <TITLE>Manipulating OpenType Lookups</TITLE>
 </HEAD>
 <BODY>
@@ -66,7 +66,7 @@ On the other hand if you put the pairs in one lookup, and the kerning class
 in another lookup, then both would be applied. And the resultant motion would
 be the sum of the two.
 <P>
-<IMG SRC="lookup-metadata.png" WIDTH="439" HEIGHT="427" ALIGN="Left">The
+<IMG SRC="lookup-metadata.png" WIDTH="439" HEIGHT="455" ALIGN="Left">The
 <CODE>[<A NAME="Add-Lookup">Add Lookup</A>]</CODE> and <CODE>[Edit
 Metadata]</CODE> buttons will bring up a dialog that allows you to control
 the attributes of the lookup. Every lookup has a lookup type (here "Single
@@ -169,12 +169,20 @@ press on the rectangle to get a friendlier dialog (see
 <A HREF="#scripts-dlg">below</A>).
 <P>
 Every lookup is associated with a set of flags which control its behavior.
-The "Process Marks" field is only active if there are
-<A HREF="fontinfo.html#MarkClass">Mark Classes </A>defined.
+The "Mark Class:" field is only active if there are
+<A HREF="fontinfo.html#MarkClass">Mark Classes </A>defined, and the "Mark
+Set:" field is active if there are <A HREF="fontinfo.html#MarkSet">Mark Sets
+</A>defined. Mark classes and sets are very similar, with mark sets being
+the newer (largely unsupported as I write in spring 2009) but more versatile
+of the two. These provide an extension of the Ignore Marks flag -- if you
+specify a mark class (or set) then all marks will be ignored except those
+in the class (or set).
 <P>
 Every lookup must be named. You may assign the name as you wish -- except
 that it must not be blank and must be unique. No two lookups may have the
-same name.
+same name. (If you intend to use feature files, then lookup names should
+be: less than 31 characters, composed of ASCII alphanumerics, underscores
+and periods -- no spaces).
 <P>
 For ligatures you have the option of specifying whether you want these ligatures
 output in an afm file.
