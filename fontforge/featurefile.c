@@ -1893,7 +1893,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 			UniOut(out,on->name );
 			fprintf( out, "\";\n" );
 		    }
-		    fprintf( out, "  }\n" );
+		    fprintf( out, "  };\n" );
 		}
 		if ( feats[i]==CHR('s','i','z','e') ) {
 		    struct otfname *nm;
@@ -2095,7 +2095,7 @@ enum feat_type { ft_lookup_start, ft_lookup_end, ft_feat_start, ft_feat_end,
     ft_table, ft_names, ft_gdefclasses, ft_lcaret, ft_tablekeys,
     ft_sizeparams,
     ft_subtable, ft_script, ft_lang, ft_lookupflags, ft_langsys,
-    ft_pst, ft_pstclass, ft_fpst, ft_ap, ft_lookup_ref };
+    ft_pst, ft_pstclass, ft_fpst, ft_ap, ft_lookup_ref, ft_featname };
 struct feat_item {
     uint16 /* enum feat_type */ type;
     uint8 ticked;
@@ -2119,6 +2119,7 @@ struct feat_item {
 	struct nameid *names;		/* size params */
 	struct tablevalues *tvals;
 	int16 *lcaret;
+	struct otffeatname *featnames;
     } u2;
     char *mark_class;			/* v1.6 For mark to base-ligature-mark, names of all marks which attach to this anchor */
     struct gpos_mark *mclass;		/* v1.8 similar to above */
@@ -5459,6 +5460,48 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
 return( feat );
 }
 
+static void NameIdFree(struct nameid *);
+
+static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
+    struct otffeatname *cur;
+    struct otfname *head=NULL, *string;
+    struct nameid *temp;
+    struct feat_item *item;
+    /* name [<string attibute>] string; */
+
+    forever {
+	fea_ParseTok(tok);
+	if ( tok->type != tk_name && strcmp(tok->tokbuf,"name")!=0 )	/* "name" is only a keyword here */
+    break;
+	temp = fea_ParseNameId(tok,-1);
+	if ( temp!=NULL ) {
+	    if ( temp->platform==3 && temp->specific==1 ) {
+		string = chunkalloc(sizeof(*string));
+		string->lang = temp->language;
+		string->name = temp->utf8_str;
+		string->next = head;
+		head = string;
+		chunkfree(temp,sizeof(*temp));
+	    } else
+		NameIdFree(temp);
+	}
+    }
+
+    if ( head!=NULL ) {
+	item = chunkalloc(sizeof(struct feat_item));
+	item->type = ft_featname;
+	item->next = tok->sofar;
+	tok->sofar = item;
+	item->u2.featnames = cur = chunkalloc(sizeof(*cur));
+	cur->tag = tag;
+	cur->names = head;
+    }
+    if ( tok->type!=tk_char || tok->tokbuf[0]!='}' ) {
+	LogError(_("Expected closing curly brace on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+    }
+}
+
 static void fea_ParseFeatureDef(struct parseState *tok) {
     uint32 feat_tag;
     struct feat_item *item, *size_item = NULL;
@@ -5560,7 +5603,7 @@ return;
 	      case tk_featureNames:
 	        /* I don't handle these yet, so ignore 'em */
 		fea_TokenMustBe(tok,tk_char,'{');
-		fea_skip_to_close_curly(tok);
+		fea_ParseFeatureNames(tok,feat_tag);
 		fea_end_statement(tok);
 	      break;
 	      case tk_parameters:
@@ -6080,6 +6123,9 @@ static void fea_featitemFree(struct feat_item *item) {
 	  break;
 	  case ft_names:
 	    NameIdFree( item->u2.names );
+	  break;
+	  case ft_featname:
+	    OtfFeatNameListFree( item->u2.featnames );
 	  break;
 	  case ft_gdefclasses:
 	    for ( i=0; i<4; ++i )
@@ -7108,6 +7154,7 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
     OTLookup *otl;
     int saw_script = false;
     enum otlookup_type ltype;
+    struct otffeatname *fn;
 
     feat_data->u2.sl = NULL;
 
@@ -7213,6 +7260,20 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 		for ( f=start; f!=NULL && f->ticked; f=f->next );
 	    otl = fea_ApplyLookupList(tok,start,lookup_flags);
 	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
+    continue;
+	  case ft_featname:
+	    for ( fn = tok->sf->feat_names; fn!=NULL && fn->tag!=f->u2.featnames->tag; fn=fn->next );
+	    if ( fn!=NULL ) {
+		OtfNameListFree(fn->names);
+		fn->names = f->u2.featnames->names;
+		chunkfree(f->u2.featnames,sizeof(struct otffeatname));
+		f->u2.featnames = NULL;
+	    } else {
+		f->u2.featnames->next = tok->sf->feat_names;
+		tok->sf->feat_names = f->u2.featnames;
+		f->u2.featnames = NULL;
+	    }
+	    f = f->next;
     continue;
 	  default:
 	    IError("Unexpected feature item in feature definition %d", f->type );
