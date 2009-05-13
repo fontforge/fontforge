@@ -11053,6 +11053,7 @@ void FontInfoInit(void) {
     } needswork3[] = {{ sizeof(ci)/sizeof(ci[0]), ci},
 			{ sizeof(gaspci)/sizeof(gaspci[0]), gaspci },
 			{ sizeof(layersci)/sizeof(layersci[0]), layersci },
+			{ sizeof(ssci)/sizeof(ssci[0]), ssci },
 			{ 0 }};
 
     if ( done )
