@@ -2657,7 +2657,7 @@ return( 0 );
     len = ftell(binary);
     sprintf( buffer, "(Binary) %ld StartData ", len );
     fprintf( out, "%%%%BeginData: %ld Binary Bytes\n", (long) (len+strlen(buffer)));
-    fprintf( out, buffer );
+    fputs( buffer, out );
 
     fseek(binary,0,SEEK_SET);
     while ( (len=fread(buffer,1,sizeof(buffer),binary))>0 )
