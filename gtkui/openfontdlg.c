@@ -25,8 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgegtk.h"
-# include <fontforge/gfile.h>
-# include <fontforge/ustring.h>
+# include <gfile.h>
+# include <ustring.h>
 # include <gtk/gtk.h>
 # include <gdk/gdkkeysyms.h>
 # include "gwwvask.h"

@@ -27,7 +27,7 @@
 /*			 Python Interface to FontForge GTK+		      */
 
 #ifdef HAVE_CONFIG_H
-# include <fontforge/config.h>
+# include <config.h>
 #endif
 
 #ifndef _NO_PYTHON
@@ -37,7 +37,7 @@
 #include "fontforgegtk.h"
 #include <fontforge/ttf.h>
 #include <fontforge/plugins.h>
-#include <fontforge/ustring.h>
+#include <ustring.h>
 #include <fontforge/scripting.h>
 #include <fontforge/scriptfuncs.h>
 #include <math.h>

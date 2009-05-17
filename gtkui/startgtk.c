@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgegtk.h"
-#include <fontforge/gfile.h>
+#include <gfile.h>
 #include <fontforge/libffstamp.h>
 #include <time.h>
 #include <sys/time.h>

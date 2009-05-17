@@ -27,9 +27,9 @@
 #include "fontforgegtk.h"
 #include <fontforge/groups.h>
 #include <fontforge/plugins.h>
-#include <fontforge/charset.h>
-#include <fontforge/gfile.h>
-#include <fontforge/ustring.h>
+#include <charset.h>
+#include <gfile.h>
+#include <ustring.h>
 #include <gdk/gdkkeysyms.h>
 
 #include <sys/types.h>

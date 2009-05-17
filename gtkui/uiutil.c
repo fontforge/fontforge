@@ -25,11 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgegtk.h"
-#include <fontforge/gfile.h>
+#include <gfile.h>
 #include <stdarg.h>
 #include <unistd.h>
-#include <fontforge/utype.h>
-#include <fontforge/ustring.h>
+#include <utype.h>
+#include <ustring.h>
 
 #if __CygWin
 #include <unistd.h>
