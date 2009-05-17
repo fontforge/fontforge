@@ -27,9 +27,9 @@
 #include "fontforgegtk.h"
 #include <fontforge/groups.h>
 #include <fontforge/psfont.h>
-#include <fontforge/gfile.h>
-#include <fontforge/utype.h>
-#include <fontforge/ustring.h>
+#include <gfile.h>
+#include <utype.h>
+#include <ustring.h>
 #include <glib.h>
 #include <math.h>
 #include <unistd.h>
@@ -2177,6 +2177,24 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
 		fv->b.cidmaster->subfonts[i]->display_size = -dspsize;
 	}
     }
+}
+
+static void FV_LayerChanged( FontView *fv ) {
+    extern int use_freetype_to_rasterize_fv;
+    BDFFont *new, *old;
+
+    fv->magnify = 1;
+    fv->user_requested_magnify = -1;
+
+    old = fv->filled;
+    new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
+	(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
+	    (use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
+	NULL);
+    fv->filled = new;
+    FVChangeDisplayFont(fv,new);
+    fv->b.sf->display_size = -fv->filled->pixelsize;
+    BDFFontFree(old);
 }
 
 void FontViewMenu_BitmapMagnification(GtkMenuItem *menuitem, gpointer user_data) {
@@ -5268,7 +5286,7 @@ return( fv );
 static void FontViewInit(void) {
 }
 
-static FontView *FontView_Create(SplineFont *sf) {
+static FontView *FontView_Create(SplineFont *sf, int hide) {
     FontView *fv = __FontViewCreate(sf);
     static int done = false;
     PangoContext *context;
@@ -5384,7 +5402,7 @@ return( fv );
 }
 
 FontView *FontNew(void) {
-return( FontView_Create(SplineFontNew()));
+return( FontView_Create(SplineFontNew(), false));
 }
 
 static void FontView_Free(FontView *fv) {
@@ -5516,7 +5534,7 @@ static void FontView_Close(FontView *fv) {
 
 
 struct fv_interface gtk_fv_interface = {
-    (FontViewBase *(*)(SplineFont *)) FontView_Create,
+    (FontViewBase *(*)(SplineFont *, int)) FontView_Create,
     (FontViewBase *(*)(SplineFont *)) __FontViewCreate,
     (void (*)(FontViewBase *)) FontView_Close,
     (void (*)(FontViewBase *)) FontView_Free,
@@ -5525,6 +5543,7 @@ struct fv_interface gtk_fv_interface = {
     FontViewRefreshAll,
     (void (*)(FontViewBase *)) FontView_ReformatOne,
     FontView_ReformatAll,
+    (void (*)(FontViewBase *)) FV_LayerChanged,
     FV_ToggleCharChanged,
     (int  (*)(FontViewBase *, int *, int *)) FontViewWinInfo,
     FontIsActive,
@@ -5538,6 +5557,7 @@ struct fv_interface gtk_fv_interface = {
     FV_ReattachCVs,
     (void (*)(FontViewBase *)) FVDeselectAll,
     (void (*)(FontViewBase *,int )) FVScrollToGID,
+    (void (*)(FontViewBase *,int )) FVScrollToChar,
     (void (*)(FontViewBase *,int )) FV_ChangeGID,
     SF_CloseAllInstrs
 };

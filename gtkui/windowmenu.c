@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 # include "fontforgegtk.h"
-# include <fontforge/gfile.h>
+# include <gfile.h>
 # include <fontforge/splinefont.h>
 
 static void WindowSelect(GtkMenuItem *menuitem, gpointer user_data) {
