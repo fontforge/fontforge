@@ -146,15 +146,14 @@ static gboolean gwwv_file_pattern_matcher(const GtkFileFilterInfo *info,
 return( gwwv_wild_match(pattern, info->filename, TRUE));
 }
 
-static void find_fonts_callback(GtkFileChooser *dialog, gpointer tooltip) {
-    GtkTooltips *tooltips = (GtkTooltips *) tooltip;
+static void find_fonts_callback(GtkFileChooser *dialog) {
     GSList *files = gtk_file_chooser_get_filenames(dialog);
     GSList *test;
     int len, cnt, i;
     char ***fonts, *pt, *text;
 
     if ( files==NULL || (cnt = g_slist_length(files))==0 )
-	gtk_tooltips_set_tip(tooltips,GTK_WIDGET(dialog),"","");
+	gtk_widget_set_tooltip_text(GTK_WIDGET(dialog),"");
     else {
 	fonts = gcalloc(cnt,sizeof(char **));
 	cnt = len = 0;
@@ -196,9 +195,9 @@ static void find_fonts_callback(GtkFileChooser *dialog, gpointer tooltip) {
 	    *pt = '\0';
 	free(fonts);
 	if ( *text=='\0' )
-	    gtk_tooltips_set_tip( tooltips, GTK_WIDGET(dialog), "???", NULL );
+	    gtk_widget_set_tooltip_text(GTK_WIDGET(dialog), "???");
 	else {
-	    gtk_tooltips_set_tip( tooltips, GTK_WIDGET(dialog), text, NULL );
+	    gtk_widget_set_tooltip_text(GTK_WIDGET(dialog), text);
 	}
 	free(text);
     }
@@ -240,7 +239,6 @@ char *FVOpenFont(const char *title, const char *def_name, int mult ) {
     char *filename = NULL;
     GtkFileFilter *filter, *standard, *first;
     int ans, i,k;
-    GtkTooltips *tips;
 
     if ( mult )
 	dialog = gtk_file_chooser_dialog_new (title,
@@ -304,9 +302,9 @@ char *FVOpenFont(const char *title, const char *def_name, int mult ) {
     if ( RecentFiles[0]!=NULL ) {
     }
 
-    g_signal_connect (G_OBJECT(dialog), "selection-changed",
-                    G_CALLBACK (find_fonts_callback),
-                    (tips = gtk_tooltips_new()) );
+    g_signal_connect(G_OBJECT (dialog), "selection-changed",
+                     G_CALLBACK (find_fonts_callback),
+		     NULL);
 
     filename = NULL;
     ans = gtk_dialog_run (GTK_DIALOG (dialog));
@@ -317,6 +315,5 @@ char *FVOpenFont(const char *title, const char *def_name, int mult ) {
 	FontNew();		/* And return NULL */
 
     gtk_widget_destroy (dialog);
-    g_object_unref( G_OBJECT(tips));
 return( filename );
 }
