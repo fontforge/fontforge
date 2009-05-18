@@ -124,7 +124,7 @@ void FVClear(FontViewBase *fv) {
 		else {
 		    UnlinkThisReference(fv,fv->sf->glyphs[gid],fv->active_layer);
 		    for ( bdf=fv->sf->cidmaster?fv->sf->cidmaster->bitmaps:fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-			BCUnlinkThisReference( fv,fv->active_bitmap->glyphs[gid] );
+			BCUnlinkThisReference( fv,bdf->glyphs[gid] );
 		}
 	    } else if ( refstate == -1 )
     continue;
