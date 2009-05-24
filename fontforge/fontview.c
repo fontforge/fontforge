@@ -1110,6 +1110,8 @@ static void FVMenuSetExtremumBound(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    (int) rint((fv->b.sf->ascent+fv->b.sf->descent)/100.0) :
 	    fv->b.sf->extrema_bound );
     ret = gwwv_ask_string(_("Extremum bound..."),buffer,_("Adobe says that \"big\" splines should not have extrema.\nBut they don't define what big means.\nIf the distance between the spline's end-points is bigger than this value, then the spline is \"big\" to fontforge."));
+    if ( ret==NULL )
+return;
     val = (int) rint(strtod(ret,&end));
     if ( *end!='\0' )
 	ff_post_error( _("Bad Number"),_("Bad Number") );
