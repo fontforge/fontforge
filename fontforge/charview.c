@@ -5061,6 +5061,7 @@ return( true );
 #define MID_RemoveVKerns	2607
 #define MID_KPCloseup	2608
 #define MID_AnchorsAway	2609
+#define MID_SetBearings	2610
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
@@ -8659,7 +8660,7 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AnchorsAway:
 	    mi->ti.disabled = cv->b.sc->anchor==NULL;
 	  break;
-	  case MID_SetWidth: case MID_SetLBearing: case MID_SetRBearing:
+	  case MID_SetWidth: case MID_SetLBearing: case MID_SetRBearing: case MID_SetBearings:
 	    mi->ti.disabled = r!=NULL;
 	  break;
 	}
@@ -9036,6 +9037,7 @@ return;
     CVSetWidth(cv,mi->mid==MID_SetWidth?wt_width:
 		  mi->mid==MID_SetLBearing?wt_lbearing:
 		  mi->mid==MID_SetRBearing?wt_rbearing:
+		  mi->mid==MID_SetBearings?wt_bearings:
 		  wt_vwidth);
 }
 
@@ -9498,6 +9500,7 @@ static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("Set _Width..."), (GImage *) "metricssetwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|Ctl+Shft+L"), NULL, NULL, CVMenuSetWidth, MID_SetWidth },
     { { (unichar_t *) N_("Set _LBearing..."), (GImage *) "metricssetlbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|Ctl+L"), NULL, NULL, CVMenuSetWidth, MID_SetLBearing },
     { { (unichar_t *) N_("Set _RBearing..."), (GImage *) "metricssetrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|Ctl+R"), NULL, NULL, CVMenuSetWidth, MID_SetRBearing },
+    { { (unichar_t *) N_("Set Both Bearings..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set Both Bearings...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetBearings },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Set _Vertical Advance..."), (GImage *) "metricssetvwidth.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Set Vertical Advance...|No Shortcut"), NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},

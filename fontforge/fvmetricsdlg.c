@@ -41,9 +41,10 @@ typedef struct createwidthdlg {
 #define CID_IncrVal	1012
 #define CID_ScaleVal	1013
 
-static char *rb1[] = { N_("Set Width To:"), N_("Set LBearing To:"), N_("Set RBearing To:"), N_("Set Vert. Advance To:") };
-static char *rb2[] = { N_("Increment Width By:"), N_("Increment LBearing By:"), N_("Increment RBearing By:"), N_("Increment V. Adv. By:") };
-static char *rb3[] = { N_("Scale Width By:"), N_("Scale LBearing By:"), N_("Scale RBearing By:"), N_("Scale VAdvance By:") };
+static char *rb1[] = { N_("Set Width To:"), N_("Set LBearing To:"), N_("Set RBearing To:"), N_("Set Bearings To:"), N_("Set Vert. Advance To:") };
+static char *rb2[] = { N_("Increment Width By:"), N_("Increment LBearing By:"), N_("Increment RBearing By:"), N_("Increment Bearings By:"), N_("Increment V. Adv. By:") };
+static char *rb3[] = { N_("Scale Width By:"), N_("Scale LBearing By:"), N_("Scale RBearing By:"), N_("Scale Bearings By:"), N_("Scale VAdvance By:") };
+static char *info[] = { N_("Left Side Bearing does not change."), N_("Advance Width does not change."), N_("Left Side Bearing does not change."), N_("ThisSpaceIntentionallyLeftBlank|"), N_("Top Bearing does not change.") };
 
 static int CW_OK(GGadget *g, GEvent *e) {
 
@@ -119,11 +120,11 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	enum widthtype wtype, char *def) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[11], boxes[2], topbox[2], *hvs[13], *varray[8], *buttons[6];
+    GGadgetCreateData gcd[11], boxes[2], topbox[2], *hvs[17], *varray[8], *buttons[6];
     GTextInfo label[11];
     static CreateWidthDlg cwd;
     static GWindow winds[3];
-    static char *title[] = { N_("Set Width..."), N_("Set LBearing..."), N_("Set RBearing..."), N_("Set Vertical Advance...") };
+    static char *title[] = { N_("Set Width..."), N_("Set LBearing..."), N_("Set RBearing..."), N_("Set Both Side Bearings..."), N_("Set Vertical Advance...") };
 
     cwd.wd.done = false;
     cwd.wd._fv = _fv;
@@ -141,8 +142,8 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	wattrs.utf8_window_title = _(title[wtype]);
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,210));
-	pos.height = GDrawPointsToPixels(NULL,120);
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,180));
+	pos.height = GDrawPointsToPixels(NULL,100);
 	cwd.gw = winds[wtype] = GDrawCreateTopWindow(NULL,&pos,cwd_e_h,&cwd,&wattrs);
 
 	memset(&label,0,sizeof(label));
@@ -151,7 +152,6 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[0].text = (unichar_t *) _(rb1[wtype]);
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[0].gd.cid = CID_Set;
 	gcd[0].gd.handle_controlevent = CW_RadioChange;
@@ -161,7 +161,6 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[1].text = (unichar_t *) _(rb2[wtype]);
 	label[1].text_is_1byte = true;
 	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32; 
 	gcd[1].gd.flags = gg_enabled|gg_visible|gg_rad_continueold ;
 	gcd[1].gd.cid = CID_Incr;
 	gcd[1].gd.handle_controlevent = CW_RadioChange;
@@ -171,7 +170,6 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[2].text = (unichar_t *) _(rb3[wtype]);
 	label[2].text_is_1byte = true;
 	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 59; 
 	gcd[2].gd.flags = gg_enabled|gg_visible|gg_rad_continueold ;
 	gcd[2].gd.cid = CID_Scale;
 	gcd[2].gd.handle_controlevent = CW_RadioChange;
@@ -181,7 +179,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[3].text = (unichar_t *) def;
 	label[3].text_is_1byte = true;
 	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 131; gcd[3].gd.pos.y = 5;  gcd[3].gd.pos.width = 60;
+	gcd[3].gd.pos.width = 60;
 	gcd[3].gd.flags = gg_enabled|gg_visible;
 	gcd[3].gd.cid = CID_SetVal;
 	gcd[3].gd.handle_controlevent = CW_FocusChange;
@@ -191,7 +189,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[4].text = (unichar_t *) "0";
 	label[4].text_is_1byte = true;
 	gcd[4].gd.label = &label[4];
-	gcd[4].gd.pos.x = 131; gcd[4].gd.pos.y = 32;  gcd[4].gd.pos.width = 60;
+	gcd[4].gd.pos.width = 60;
 	gcd[4].gd.flags = gg_enabled|gg_visible;
 	gcd[4].gd.cid = CID_IncrVal;
 	gcd[4].gd.handle_controlevent = CW_FocusChange;
@@ -201,15 +199,13 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	label[5].text = (unichar_t *) "100";
 	label[5].text_is_1byte = true;
 	gcd[5].gd.label = &label[5];
-	gcd[5].gd.pos.x = 131; gcd[5].gd.pos.y = 59;  gcd[5].gd.pos.width = 60;
+	gcd[5].gd.pos.width = 60;
 	gcd[5].gd.flags = gg_enabled|gg_visible;
 	gcd[5].gd.cid = CID_ScaleVal;
 	gcd[5].gd.handle_controlevent = CW_FocusChange;
 	gcd[5].data = (void *) CID_Scale;
 	gcd[5].creator = GTextFieldCreate;
 
-	gcd[6].gd.pos.x = 20-3; gcd[6].gd.pos.y = 120-32-3;
-	gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
 	gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[6].text = (unichar_t *) _("_OK");
 	label[6].text_is_1byte = true;
@@ -219,8 +215,6 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[6].gd.handle_controlevent = CW_OK;
 	gcd[6].creator = GButtonCreate;
 
-	gcd[7].gd.pos.x = -20; gcd[7].gd.pos.y = 120-32;
-	gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
 	gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
 	label[7].text = (unichar_t *) _("_Cancel");
 	label[7].text_is_1byte = true;
@@ -230,23 +224,24 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
 	gcd[7].gd.handle_controlevent = CW_Cancel;
 	gcd[7].creator = GButtonCreate;
 
-	gcd[8].gd.pos.x = 2; gcd[8].gd.pos.y = 2;
-	gcd[8].gd.pos.width = pos.width-4;
-	gcd[8].gd.pos.height = pos.height-4;
-	gcd[8].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
-	gcd[8].creator = GGroupCreate;
+	label[8].text = (unichar_t *) S_(info[wtype]);
+	label[8].text_is_1byte = true;
+	gcd[8].gd.label = &label[8];
+	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 59; 
+	gcd[8].gd.flags = gg_enabled|gg_visible ;
+	gcd[8].creator = GLabelCreate;
 
 	label[9].text = (unichar_t *) "%";
 	label[9].text_is_1byte = true;
 	gcd[9].gd.label = &label[9];
-	gcd[9].gd.pos.x = 194; gcd[9].gd.pos.y = 59+6;
 	gcd[9].gd.flags = gg_enabled|gg_visible;
 	gcd[9].creator = GLabelCreate;
 
 	hvs[0] = &gcd[0]; hvs[1] = &gcd[3]; hvs[2] = GCD_Glue; hvs[3] = NULL;
 	hvs[4] = &gcd[1]; hvs[5] = &gcd[4]; hvs[6] = GCD_Glue; hvs[7] = NULL;
 	hvs[8] = &gcd[2]; hvs[9] = &gcd[5]; hvs[10] = &gcd[9]; hvs[11] = NULL;
-	hvs[12] = NULL;
+	hvs[12] = &gcd[8]; hvs[13] = GCD_ColSpan; hvs[14] = GCD_Glue; hvs[15] = NULL;
+	hvs[16] = NULL;
 
 	buttons[0] = buttons[2] = buttons[4] = GCD_Glue; buttons[5] = NULL;
 	buttons[1] = &gcd[6]; buttons[3] = &gcd[7];
@@ -303,8 +298,10 @@ static void BCDefWidthVal(char *buf,BDFChar *bc, FontView *fv, enum widthtype wt
 	BDFCharFindBounds(bc,&bb);
 	if ( wtype==wt_lbearing )
 	    sprintf( buf, "%d", bb.minx );
-	else
+	else if ( wtype==wt_rbearing )
 	    sprintf( buf, "%d", bc->width-bb.maxx-1 );
+	else
+	    sprintf( buf, "%d", rint( (bc->width-bb.maxx-1 + bb.minx)/2 ));
     }
 }
 
@@ -319,8 +316,10 @@ static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
 	SplineCharFindBounds(sc,&bb);
 	if ( wtype==wt_lbearing )
 	    sprintf( buf, "%.4g", (double) bb.minx );
-	else
+	else if ( wtype==wt_rbearing )
 	    sprintf( buf, "%.4g", sc->width-(double) bb.maxx );
+	else
+	    sprintf( buf, "%.4g", rint( (sc->width-(double) bb.maxx + (double) bb.minx)/2 ) );
     }
 }
 
