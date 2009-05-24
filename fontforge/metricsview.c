@@ -400,6 +400,8 @@ static void MVSetFeatures(MetricsView *mv) {
     uint32 *stds;
     const unichar_t *pt = _GGadgetGetTitle(mv->script);
 
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+
     script = DEFAULT_SCRIPT;
     lang = DEFAULT_LANG;
     if ( u_strlen(pt)>=4 )
@@ -722,6 +724,7 @@ static void MVRemetric(MetricsView *mv) {
     BDFChar *bdfc;
     double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
     double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
+    SplineFont *sf;
 
     anysc = goodsc = NULL; goodpos = -1;
     for ( i=0; mv->chars[i]; ++i ) {
@@ -768,7 +771,9 @@ static void MVRemetric(MetricsView *mv) {
 	    feats[cnt++] = (intpt) ti[i]->userdata;
 
     free(mv->glyphs);
-    mv->glyphs = ApplyTickedFeatures(mv->sf,feats,script, lang, mv->pixelsize, mv->chars);
+    sf = mv->sf;
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    mv->glyphs = ApplyTickedFeatures(sf,feats,script, lang, mv->pixelsize, mv->chars);
     free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
@@ -1764,13 +1769,16 @@ static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 	int i;
 	KernPair *kp;
 	struct lookup_subtable *sub;
+	SplineFont *sf = mv->sf;
+
+	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
 	if ( ti[len-1]->selected ) {/* New lookup subtable */
 	    struct subtable_data sd;
 	    memset(&sd,0,sizeof(sd));
 	    sd.flags = (mv->vertical ? sdf_verticalkern : sdf_horizontalkern ) |
 		    sdf_kernpair | sdf_dontedit;
-	    sub = SFNewLookupSubtableOfType(mv->sf,gpos_pair,&sd,mv->layer);
+	    sub = SFNewLookupSubtableOfType(sf,gpos_pair,&sd,mv->layer);
 	    if ( sub==NULL )
 return( true );
 	    mv->cur_subtable = sub;
@@ -4318,6 +4326,7 @@ return( true );
 
 static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineFont *sf;
 
     switch ( event->type ) {
       case et_selclear:
@@ -4360,14 +4369,16 @@ return( GGadgetDispatchEvent(mv->vsb,event));
 	MVMenuClose(gw,NULL,NULL);
       break;
       case et_destroy:
-	if ( mv->sf->metrics==mv )
-	    mv->sf->metrics = mv->next;
+	sf = mv->sf;
+	if ( sf->cidmaster ) sf = sf->cidmaster;
+	if ( sf->metrics==mv )
+	    sf->metrics = mv->next;
 	else {
 	    MetricsView *n;
-	    for ( n=mv->sf->metrics; n->next!=mv; n=n->next );
+	    for ( n=sf->metrics; n->next!=mv; n=n->next );
 	    n->next = mv->next;
 	}
-	KCLD_MvDetach(mv->sf->kcld,mv);
+	KCLD_MvDetach(sf->kcld,mv);
 	MetricsViewFree(mv);
       break;
       case et_focus:
