@@ -5686,7 +5686,7 @@ return( NULL );
     }
     if ( cnt==0 )
 return( NULL );
-    glyphs = galloc(cnt*sizeof(uint16));
+    glyphs = galloc((cnt+1)*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	glyphs[i] = getushort(ttf);
     glyphs[i] = 0xffff;
