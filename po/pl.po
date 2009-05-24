@@ -1,6 +1,6 @@
 # translation of FontForge.po
 # (Polish) Polish User Interface strings for FontForge.
-# Copyright (C) 2006-2008 Michał Nowakowski
+# Copyright (C) 2006-2009 Michał Nowakowski
 # Please contact fontforge-devel list to share any corrections.
 # This file is distributed under the same license as the FontForge package.
 #
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge 20080828\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-05-14 15:05+0200\n"
-"PO-Revision-Date: 2008-09-18 11:07+0200\n"
+"POT-Creation-Date: 2009-05-21 15:21+0200\n"
+"PO-Revision-Date: 2009-05-24 15:01+0200\n"
 "Last-Translator: Michal Nowakowski\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -121,7 +121,7 @@ msgstr "Nie można zrównoleglić"
 
 #: alignment.c:677
 msgid "These two lines share a common endpoint, I can't make them parallel"
-msgstr "Te dwie linie mają wspólny punkt końcowy, nie mogę uczynić ich równoległymi"
+msgstr "Te dwie linie mają wspólny punkt końcowy, nie można uczynić ich równoległymi"
 
 #: anchorsaway.c:181
 msgid "Exits"
@@ -203,7 +203,7 @@ msgstr "Korekty muszą się mieścić w zakresie [-128...127] (powinny być mnie
 
 #: anchorsaway.c:1019
 msgid "Provide a glyph name"
-msgstr "Podaj nazwę glifu"
+msgstr "Proszę podać nazwę glifu"
 
 #: anchorsaway.c:1019
 msgid "Please identify a glyph by name, and FontForge will add an anchor to that glyph."
@@ -499,7 +499,7 @@ msgstr "Szerokość automatyczna"
 
 #: autowidthdlg.c:409
 msgid "Enter two glyph ranges to be adjusted."
-msgstr "Podaj zakresy glifów do dopasowania."
+msgstr "Proszę podać zakresy glifów do dopasowania."
 
 #: autowidthdlg.c:417
 msgid "Glyphs on Left"
@@ -1274,7 +1274,7 @@ msgstr "Wybierz hinty między którymi ma zostać utrzymane światło"
 
 #: charinfo.c:505 charinfo.c:3928
 msgid "Unicode _Value:"
-msgstr "_Wartość unikodowa:"
+msgstr "_Numer unikodo_wy:"
 
 #: charinfo.c:530 charinfo.c:928 charinfo.c:938 charview.c:2757 contextchain.c:615
 #: contextchain.c:770 contextchain.c:1665 cvgetinfo.c:974 cvpalettes.c:1267
@@ -2563,7 +2563,7 @@ msgstr ""
 #: charview.c:2856 charview.c:2858 charview.c:10012 charview.c:10014 cvpalettes.c:912
 #: cvpalettes.c:914
 msgid "You may not use spiros"
-msgstr "Nie da się użyć trybu Spiro"
+msgstr "Nie można użyć trybu Spiro"
 
 #: charview.c:2856 charview.c:10012
 msgid ""
@@ -3595,7 +3595,7 @@ msgstr "Sortuj wg:"
 
 #: contextchain.c:96
 msgid "None"
-msgstr ""
+msgstr "Żadna"
 
 #: contextchain.c:97
 msgid "0-9"
@@ -3615,11 +3615,11 @@ msgstr "Litery nadrzędne"
 
 #: contextchain.c:101
 msgid "Glyphs in Script(s)"
-msgstr "Glifu pism(a)"
+msgstr "Glify pism(a)"
 
 #: contextchain.c:102
 msgid "Added"
-msgstr ""
+msgstr "Dodana"
 
 #: contextchain.c:608 contextchain.c:617 contextchain.c:649 contextchain.c:774
 #: fontinfo.c:2195 fontinfo.c:2216 kernclass.c:265 statemachine.c:927
@@ -3711,7 +3711,7 @@ msgstr "Błędny numer klasy glifów następujących"
 
 #: contextchain.c:793 contextchain.c:864 contextchain.c:1735
 msgid "No Sequence/Lookups"
-msgstr ""
+msgstr "Brak numerów/tablic"
 
 #: contextchain.c:795 contextchain.c:866 contextchain.c:1737
 msgid "There are no entries in the Sequence/Lookup List, was this intentional?"
@@ -3781,7 +3781,7 @@ msgstr "Brakuje reguł"
 
 #: contextchain.c:1671 contextchain.c:1684
 msgid " There must be at least one contextual rule"
-msgstr " Nalezy podać przynajmniej jdeną regułę kontekstową"
+msgstr " Należy podać przynajmniej jdeną regułę kontekstową"
 
 #: contextchain.c:1717 contextchain.c:1722
 msgid "Bad Coverage Table"
@@ -4009,7 +4009,7 @@ msgstr "<nic>"
 
 #: cvdebug.c:811
 msgid "No Watch Points"
-msgstr "Nie pilnuję punktów"
+msgstr "Brak pilnowanych punktów"
 
 #: cvdebug.c:811
 msgid "Watch Points not supported in glyphs with references"
@@ -5184,7 +5184,7 @@ msgstr "Narzędzia"
 
 #: cvpalettes.c:1287
 msgid "Cannot Be Undone"
-msgstr "Nie da się cofnąć!"
+msgstr "Nie będzie można cofnąć"
 
 #: cvpalettes.c:1287
 msgid "This operation cannot be undone, do it anyway?"
@@ -5470,7 +5470,7 @@ msgid ""
 "to set the pressure end-point"
 msgstr ""
 "Naciśnij wewnątrz tego kwadratu używając narzędzia wacom\n"
-"czułego na siłę nacisku, aby ustalić graniczną siłę nacisku."
+"czułego na siłę nacisku, aby ustalić wartość graniczną siły."
 
 #: cvstroke.c:443
 msgid "Expand Stroke"
@@ -10436,7 +10436,7 @@ msgstr ""
 
 #: fontinfo.c:4343
 msgid "Deleting a layer cannot be UNDONE!"
-msgstr "Nie da się cofnąć usunięcia!"
+msgstr "Nie będzie można cofnąć usunięcia!"
 
 #: fontinfo.c:4344
 msgid ""
@@ -10460,7 +10460,7 @@ msgstr ""
 
 #: fontinfo.c:4352
 msgid "Remoing instructions cannot be UNDONE!"
-msgstr "Nie da się cofnąć usunięcia!"
+msgstr "Nie będzie można cofnąć usunięcia!"
 
 #: fontinfo.c:4353
 msgid ""
@@ -10921,7 +10921,7 @@ msgstr "Wykonaj"
 
 #: fontinfo.c:6404
 msgid "Cannot be Undone"
-msgstr "Nie da się cofnąć"
+msgstr "Nie będzie można cofnąć"
 
 #: fontinfo.c:6404
 msgid ""
@@ -11235,7 +11235,7 @@ msgid ""
 "All glyphs are stroked at the following width"
 msgstr ""
 "Glify mają być rysowane kreską, a nie na podstawie obrysów.\n"
-"Grubość kreski nalezy podać w polu obok."
+"Grubość kreski należy podać w polu obok."
 
 #: fontinfo.c:8342
 msgid "  Stroke _Width:"
@@ -11808,7 +11808,7 @@ msgid ""
 "Lower bound is exclusive, upper bound is inclusive."
 msgstr ""
 "Zakres rozmiaru w punktach w jakich należy stosować font.\n"
-"Dolne ograniczenie nie nalezy do zakresu; górne należy."
+"Dolne ograniczenie nie należy do zakresu; górne należy."
 
 #: fontinfo.c:10132
 msgid "_Bottom:"
@@ -12190,7 +12190,7 @@ msgstr "Pokaż podstawienie..."
 
 #: fontview.c:2806
 msgid "Pick a substitution to display in the window."
-msgstr ""
+msgstr "Proszę wskazać podstawienie do wyświetlenia w oknie."
 
 #: fontview.c:2939
 msgid "Show H. Metrics"
@@ -12264,12 +12264,12 @@ msgstr "Czy na pewno usunąć podfont %1$.40s z fontu CID %2$.40s?"
 
 #: fontview.c:3626
 msgid "Change Supplement..."
-msgstr "Zmień suplement..."
+msgstr "Zmiana suplementu..."
 
 #: fontview.c:3626
 #, c-format
 msgid "Please specify a new supplement for %.20s-%.20s"
-msgstr "Podaj nowy suplement dla %.20s-%.20s"
+msgstr "Proszę podać nowy suplement dla %.20s-%.20s"
 
 #: fontview.c:4087
 msgid "_New Composition..."
@@ -12546,7 +12546,7 @@ msgstr "Dodaj nazwę kodowania..."
 #: fontview.c:4601
 msgid ""
 "Please provide the name of an encoding in the iconv database which you want in the menu."
-msgstr "Proszę podac nazwę z bazy iconv kodowania które ma zostać dodane do menu."
+msgstr "Proszę podać nazwę z bazy iconv kodowania które ma zostać dodane do menu."
 
 #: fontview.c:4606
 msgid "Invalid Encoding"
@@ -13283,8 +13283,8 @@ msgid ""
 "the merger."
 msgstr ""
 "Aby móc połączyć dwa fonty CID, oba muszą mieć takie samo Registry i Ordering. Font, do "
-"którego dołączane są dane, musi mieć wersję kodowania (suplement) niestarszą, niż font, "
-"z którego dane są dołączane, i przynajmniej tyle samo podfontów."
+"którego dołączane są dane, musi mieć wersję kodowania (suplement) nie starszą, niż "
+"font, z którego dane są dołączane, i przynajmniej tyle samo podfontów."
 
 #: fvfonts.c:1265
 #, c-format
@@ -13425,7 +13425,7 @@ msgstr ""
 
 #: fvimportbdf.c:1855
 msgid "What is the pixel size of the font in this file?"
-msgstr ""
+msgstr "Jaka jest rozmiar pikselowy tego fontu?"
 
 #: fvimportbdf.c:1876
 msgid "Duplicate pixelsize"
@@ -13593,7 +13593,7 @@ msgstr "Różnice w glifie „%s”\n"
 #: glyphcomp.c:1028
 #, c-format
 msgid "Glyph “%s” refers to %s with a different truetype point matching scheme\n"
-msgstr ""
+msgstr "Glif „%s” odwołując się do „%s” stosuje inne przystawanie punktów.\n"
 
 #: glyphcomp.c:1040 glyphcomp.c:1055
 #, c-format
@@ -13625,7 +13625,7 @@ msgstr "Kreska w glifie „%s” różni się (warstwa %d).\n"
 msgid ""
 "Glyph “%s” contains a reference which has different truetype point match "
 "specifications\n"
-msgstr ""
+msgstr "Glif „%s” zawiera odwołanie o różniących się schematach przystawania punktów.\n"
 
 #: glyphcomp.c:1130
 #, c-format
@@ -13645,7 +13645,7 @@ msgstr "Liczba konurów w glifie „%s” różni się.\n"
 #: glyphcomp.c:1145
 #, c-format
 msgid "Open/Closed contour mismatch in glyph “%s”\n"
-msgstr ""
+msgstr "Ciągłość konturów w glifie „%s” różni się.\n"
 
 #: glyphcomp.c:1147
 #, c-format
@@ -13826,6 +13826,8 @@ msgid ""
 "“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart "
 "by point matching\n"
 msgstr ""
+"Glif „%s” w „%s” zawiera kotwicę (%g, %g) klasy „%s” o różniących się schematach "
+"przystawania punktów.\n"
 
 #: glyphcomp.c:2037
 #, c-format
@@ -13850,17 +13852,17 @@ msgstr "Glif „%s” w %s nie zawiera podstawienia prostego przez %s.\n"
 #: glyphcomp.c:2080
 #, c-format
 msgid "The kerning class subtable %s in %s fails to match %s in %s\n"
-msgstr ""
+msgstr "Podtablica kerningu z użyciem klas „%s” w „%s” nie pasuje do „%s” w „%s”.\n"
 
 #: glyphcomp.c:2087
 #, c-format
 msgid "The context/chaining subtable %s in %s fails to match %s in %s\n"
-msgstr ""
+msgstr "Podtablica kontekstowa/łancuchowa „%s” w „%s” nie pasuje do „%s” w „%s”.\n"
 
 #: glyphcomp.c:2094
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
-msgstr ""
+msgstr "Niemożliwe było porównanie podtablicy „%s” w „%s” z podtablicą „%s” w „%s”.\n"
 
 #: glyphcomp.c:2156
 #, c-format
@@ -13904,12 +13906,14 @@ msgstr "Nie znaleziono glifu: „%.70s”"
 
 #: gotodlg.c:208
 msgid "Enter the name of a glyph in the font"
-msgstr "Podaj nazwę glifu w foncie:"
+msgstr "Nazwa glifu w foncie:"
 
 #: groups.c:249
 #, c-format
 msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
 msgstr ""
+"Na końcu pliku grup zostały nieprzetworzone znaki (ostatnim przetworzonym wierszem był %"
+"d).\n"
 
 #: groupsdlg.c:43
 msgid "Select by Color"
@@ -13968,7 +13972,7 @@ msgstr "Glify:"
 
 #: groupsdlg.c:1245
 msgid "Identify by"
-msgstr ""
+msgstr "Identyfikacja"
 
 #: groupsdlg.c:1248 groupsdlg.c:1256 groupsdlg.c:1264
 msgid ""
@@ -13978,6 +13982,11 @@ msgid ""
 "Typing \"U+0041\" identifies a glyph by code point.\n"
 "When loading glyphs from the selection you must specify which format is desired."
 msgstr ""
+"Glify mogą być identyfikowane na podstawie nazw albo numerów unikodowych.\n"
+"Ustala się to, wpisując tu odpowiednie rzeczy.\n"
+"Wpisanie nazwy, np. „A”, spowoduje identyfikację na podstawie nazwy.\n"
+"Wpisanie numeru, np. „U+0041”, spowoduje identyfikację na podstawie numeru.\n"
+"Ładując glify z zaznaczenia, wybiera się jeden sposób dla wszystkich."
 
 #: groupsdlg.c:1252 oflib.c:698 oflib.c:1931 openfontdlg.c:265
 msgid "Name"
@@ -13992,6 +14001,8 @@ msgid ""
 "Glyph names (or unicode code points) may occur at most once in this group and any of "
 "its sub-groups"
 msgstr ""
+"Nazwy glifów (lub numery unikodowe) każdy może wystąpić w grupie i podgrupach najwyżej "
+"raz."
 
 #: groupsdlg.c:1454
 msgid "Group"
@@ -14009,6 +14020,8 @@ msgid ""
 "None of the glyphs in the current font match any names or code points in the selected "
 "groups"
 msgstr ""
+"Numer unikodowy ani nazwa żadnego z glifów w zaznaczonych w bieżącym foncie nie zostały "
+"wymienione w żadnej ze wskazanych grup."
 
 #: groupsdlg.c:1532
 msgid "Display By Groups"
@@ -14554,7 +14567,7 @@ msgstr "Edytuj..."
 #. GT: Select the class containing the glyph named in the following text field
 #: kernclass.c:2057
 msgid "Select Glyph Class:"
-msgstr "Wybierz klasę glifów:"
+msgstr "Klasa glifów:"
 
 #: kernclass.c:2063 kernclass.c:2070
 msgid "Select the class containing the named glyph"
@@ -17269,7 +17282,7 @@ msgstr "Bezimienna tablica"
 
 #: lookupui.c:1523
 msgid "You must name the lookup."
-msgstr "Musisz nazwać tablicę funkcji zecerskich"
+msgstr "Tablicę funkcji zecerskich musi mieć nazwę."
 
 #: lookupui.c:1530 lookupui.c:1536
 msgid "Bad feature tag"
@@ -17405,7 +17418,7 @@ msgstr ""
 
 #: lookupui.c:2076
 msgid "Remove Anchor Class?"
-msgstr "Usunąc klasę kotwic?"
+msgstr "Usunąć klasę kotwic?"
 
 #: lookupui.c:2076
 #, c-format
@@ -18213,7 +18226,7 @@ msgid ""
 "White space to be left between math formulae\n"
 "to ensure proper line spacing."
 msgstr ""
-"Światło, jakie nalezy zostawić między wzorami\n"
+"Światło, jakie należy zostawić między wzorami\n"
 "matematycznymi, aby zapewnić prawidłowe interlinie."
 
 #: mathconstants.c:51
@@ -19795,8 +19808,8 @@ msgid ""
 "numbering actually starts with 0) is for counter hints.\n"
 "The subroutines should not be enclosed in a [ ] pair."
 msgstr ""
-"Jeśli chcesz zastąpić Adobowską tablicę OtherSubrs fontów Type1 swoją\n"
-"własną, podaj tu plik zawierający do 14 funkcji w postscripcie. Każda funkcja\n"
+"W celu zastąpienia Adobowskej tablicy OtherSubrs fontów Type1 własną,\n"
+"należy podać tu plik zawierający do 14 funkcji w postscripcie. Każda funkcja\n"
 "musi być poprzedzona linią zaczynającą się od „%%%%” (dowolny tekst przed\n"
 "pierwszym „%%%%” traktowany jest jako komentarz). Pierwsze trzy funkcje\n"
 "są do hintów „flex”, następna do podstawiania hintów (ta jest WYMAGANA),\n"
@@ -20333,8 +20346,8 @@ msgstr ""
 "Microsoft w sierpniu 2006 zmodyfikował zasady traktowania pism indyjskich\n"
 "w swoim oprogramowaniu i w związku z tym stworzył nowe tagi OpenType\n"
 "(ich nazwy kończą się dwójką) w celu uniknięcia kłopotów ze starymi wersjami.\n"
-"Jeśli pracujesz według nowej specyfikacji, ustaw tą opcję. Jeśli nie masz nic\n"
-"wspólnego z pismami indyjskimi, ta opcja Cię nie dotyczy."
+"Jeśli pracujesz według nowej specyfikacji, ustaw tą opcję. Użytkownicy nie\n"
+"mający nic wspólnego z pismami indyjskimi mogą się tą opcją nie przejmować."
 
 #: noprefs.c:242 prefs.c:258
 msgid "ResourceFile"
@@ -20459,7 +20472,7 @@ msgstr "Wyświetlaj linijki w oknie widoku obrysu."
 
 #: nowakowskittfinstr.c:744
 msgid "Can't insert 'cvt'"
-msgstr "Nie da się wstawić „cvt”"
+msgstr "Nie udało się ustawić „cvt”"
 
 #: nowakowskittfinstr.c:745
 msgid ""
@@ -20475,7 +20488,7 @@ msgstr ""
 
 #: nowakowskittfinstr.c:1515
 msgid "Can't insert 'fpgm'"
-msgstr "Nie da się wstawić „fpgm”"
+msgstr "Nie udało się ustawić „fpgm”"
 
 #: nowakowskittfinstr.c:1516
 msgid ""
@@ -20493,7 +20506,7 @@ msgstr ""
 
 #: nowakowskittfinstr.c:1822
 msgid "Can't insert 'prep'"
-msgstr "Nie da się wstawić „prep”"
+msgstr "Nie udało się ustawić „prep”"
 
 #: nowakowskittfinstr.c:1823
 msgid ""
@@ -20508,7 +20521,7 @@ msgstr ""
 #: nowakowskittfinstr.c:4964 nowakowskittfinstr.c:4977 ttfinstrsui.c:907
 #: ttfinstrsui.c:920
 msgid "Can't instruct this glyph"
-msgstr "Nie moge instruować tego glifu"
+msgstr "Nie udało się poinstruować glifu"
 
 #: nowakowskittfinstr.c:4965 ttfinstrsui.c:908
 #, c-format
@@ -20610,7 +20623,7 @@ msgstr "Tag(i)"
 
 #: oflib.c:1880
 msgid "Browse the Open Font Library"
-msgstr "Przeglądaj Open Font Library (Bibliotekę Otwartych Fontów)"
+msgstr "Przeglądarka Open Font Library (Biblioteki Otwartych Fontów)"
 
 #: oflib.c:1903
 msgid "Sort by:"
@@ -20706,7 +20719,7 @@ msgstr "Wszystkie pliki"
 
 #: openfontdlg.c:182
 msgid "Edit Filter List"
-msgstr "Edytuj listę filtrów"
+msgstr "Edycja listy filtrów"
 
 #: openfontdlg.c:266
 msgid "Filter"
@@ -20714,7 +20727,7 @@ msgstr "Filtr"
 
 #: openfontdlg.c:332
 msgid "Edit Font Filters"
-msgstr "Edytuj listę filtrów"
+msgstr "Edycja listy filtrów"
 
 #: openfontdlg.c:390
 msgid "Filter|New"
@@ -21817,7 +21830,7 @@ msgstr "Wnętrze FreeType"
 
 #: parsettf.c:4470 parsettf.c:4471
 msgid "Pick a CMap subtable"
-msgstr "Wybierz podtablicę CMap"
+msgstr "Proszę wybrać podtablicę CMap"
 
 #: parsettf.c:4531
 msgid "Could not find any valid encoding tables"
@@ -21883,7 +21896,7 @@ msgid ""
 "FontForge will rename it.\n"
 msgstr ""
 "Glif %d ma nazwę „.notdef”, FontForge zmieni mu nazwę,\n"
-" bo tylko glf 0 ma prawo się tak nazywać.\n"
+" bo tylko gilf 0 ma prawo się tak nazywać.\n"
 
 #: parsettf.c:5342
 msgid "Invalid point match. Point would be after this reference.\n"
@@ -22073,7 +22086,7 @@ msgstr "Błędna para kerningowa: numery glifów %d i %d powinny być mniejsze n
 #: parsettfatt.c:724
 #, c-format
 msgid "Cursive-%d"
-msgstr ""
+msgstr "ZłączePisane-%d"
 
 #: parsettfatt.c:780
 msgid "Bad mark table.\n"
@@ -22780,7 +22793,7 @@ msgstr "Hintuj elementy ukośne"
 
 #: prefs.c:363
 msgid "Generate instructions for diagonal stem hints."
-msgstr "Generuj instrukcje dla wskazanych elementów ukośnych."
+msgstr "Generowanie instrukcji dla wskazanych elementów ukośnych."
 
 #: prefs.c:364
 msgid "InstructSerifs"
@@ -22791,7 +22804,7 @@ msgid ""
 "Try to detect serifs and other elements protruding from base stems and generate "
 "instructions for them."
 msgstr ""
-"Generuj instrukcje dla szeryfów i innych elementów\n"
+"Generowanie instrukcji dla szeryfów i innych elementów\n"
 "wystających z kresek pionowych i poziomych."
 
 #: prefs.c:365
@@ -22800,7 +22813,7 @@ msgstr "Hintuj ziarna"
 
 #: prefs.c:365
 msgid "Generate instructions for ball terminals."
-msgstr "Generuj instrukcje ttf dla kulistych zakończeń kresek (tzw. ziaren)."
+msgstr "Generowanie instrukcji dla kulistych zakończeń kresek (tzw. ziaren)."
 
 #: prefs.c:366 prefs.c:1524
 msgid "InterpolateStrongPoints"
@@ -22811,7 +22824,7 @@ msgid ""
 "Interpolate between stem edges some important points, not affected by other "
 "instructions."
 msgstr ""
-"Postaraj się zachować względne położenie pewnych ważnych punktów\n"
+"Zachowanie względnego położenia pewnych ważnych punktów\n"
 "(narożnych, przegięć, ekstremów) między elementami pohintowanymi."
 
 #: prefs.c:367 prefs.c:1543
@@ -22832,7 +22845,7 @@ msgid ""
 "Enabling this option may result in glyph advance widths being\n"
 "inconsistently scaled at some PPEMs."
 msgstr ""
-"Postaraj się zachować względne rozmiary podobnej wielkości świateł wewnątrz\n"
+"Zachowabie względnych rozmiarów podobnej wielkości świateł wewnątrz\n"
 "glifu podczas wyświetlania w małych wielkościach. Włączenie tej opcji może\n"
 "spowodować, że szerokości glifów będą się skalować niezupełnie liniowo."
 
@@ -23579,7 +23592,7 @@ msgstr "Brakujące nazwy glifów"
 
 #: problems.c:2278
 msgid " refers to a missing glyph"
-msgstr "odwołuje się do nieistniejącego glifu"
+msgstr " odwołuje się do nieistniejącego glifu"
 
 #: problems.c:2292
 msgid "Replace With:"
@@ -25999,7 +26012,7 @@ msgid ""
 "then provide the pathspec here."
 msgstr ""
 "Jeśli obraz podglądu został już przygotowany,\n"
-"tu można podać ściezkę do niego."
+"tu można podać ścieżkę do niego."
 
 #: savefontdlg.c:2944
 msgid "Not Safe for Work"
@@ -27872,7 +27885,7 @@ msgstr "Sprawdzanie..."
 
 #: splinechar.c:2402
 msgid "You changed the point numbering"
-msgstr "Zmieniono numerację punktów"
+msgstr "Numeracja punktów uległa zmianie"
 
 #: splinechar.c:2403
 #, c-format
@@ -27928,7 +27941,7 @@ msgstr "Który element z archiwym otworzyć?"
 
 #: splinefont.c:751
 msgid "There are multiple files in this archive, pick one"
-msgstr "W tym archiwum jest wiele plików, proszę jakiś wybrać"
+msgstr "W tym archiwum jest wiele plików, proszę wybrać któryś"
 
 #: splinefont.c:990
 msgid "Loading font from "
@@ -27989,8 +28002,7 @@ msgid ""
 "before Remove Overlap will improve matters."
 msgstr ""
 "W glif %.40s przecinają się przeciwnie skierowane kontury – przecięcie nie zostanie "
-"usunięte. Często da się to poprawić przed usuwaniem przecięć (Element -> Skieruj "
-"poprawnie)."
+"usunięte. Często można to wcześniej poprawić (Element -> Skieruj poprawnie)."
 
 #: splinesave.c:2280
 #, c-format
@@ -29870,7 +29882,7 @@ msgid ""
 "which have both"
 msgstr ""
 "Odstęp (w punktach typograficznych) jaki należy pozostawić między obrazkiem a tekstem, "
-"jeśli znajda się razem w jednym gadżecie."
+"jeśli znajdą się razem w jednym gadżecie."
 
 #: ../gdraw/ggadgets.c:75
 msgid "GGadget"
@@ -30595,10 +30607,3 @@ msgstr "130"
 
 #~ msgid " refers to a missing lookup tag"
 #~ msgstr "odwołuje się do nieistniejącego tagu"
-
-#~ msgid ""
-#~ "Check whether a contextual subtitution/positioning item refers to a tag which is not "
-#~ "defined in the font"
-#~ msgstr ""
-#~ "Pozwala sprawdzić czy żadne podstawienie/pozycjonowanie kontekstowe nie używa tagu "
-#~ "nieistniejącego w foncie."
