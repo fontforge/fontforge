@@ -104,6 +104,53 @@ return;
 	    SCPreserveWidth(sc);
 	    SCSynchronizeWidth(sc,width,sc->width,fv);
 	}
+    } else if ( wd->wtype == wt_bearings ) {
+	transform[0] = transform[3] = 1.0;
+	transform[1] = transform[2] = transform[5] = 0;
+	bvts[1].func = bvt_none;
+	bvts[0].func = bvt_transmove; bvts[0].y = 0;
+	if ( bc==NULL ) {
+	    SplineCharFindBounds(sc,&bb);
+	    if ( wd->type==st_set ) {
+		transform[4] = wd->setto-bb.minx;
+		width = bb.maxx-bb.minx + 2*wd->setto;
+	    } else if ( wd->type == st_incr ) {
+		transform[4] = wd->increment;
+		width += 2*wd->increment;
+	    } else {
+		transform[4] = bb.minx*wd->scale/100 - bb.minx;
+		width = bb.maxx-bb.minx +
+			(bb.minx + (sc->width-bb.maxx))*wd->scale/100;
+	    }
+	} else {
+	    double scale = (fv->sf->ascent+fv->sf->descent)/(double) (fv->active_bitmap->pixelsize);
+	    BDFCharFindBounds(bc,&ib);
+	    ++ib.maxx;
+	    if ( wd->type==st_set ) {
+		transform[4] = wd->setto-ib.minx;
+		width = (ib.maxx-ib.minx + 2*wd->setto);
+	    } else if ( wd->type == st_incr ) {
+		transform[4] = wd->increment;
+		width += 2*wd->increment;
+	    } else {
+		transform[4] = ib.minx*wd->scale/100 - ib.minx;
+		width = ib.maxx-ib.minx +
+			(ib.minx + (bc->width-ib.maxx))*wd->scale/100;
+	    }
+	    transform[4] *= scale;
+	    width = rint(width*scale);
+	}
+	if ( width!=sc->width ) {
+	    SCPreserveWidth(sc);
+	    SCSynchronizeWidth(sc,width,sc->width,fv);
+	}
+	if ( transform[4]!=0 ) {
+	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+	    bvts[0].x = transform[4];
+	    for ( bdf = fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next ) if ( bdf->glyphs[sc->orig_pos]!=NULL )
+		BCTrans(bdf,bdf->glyphs[sc->orig_pos],bvts,fv);
+	}
+return;
     } else {
 	if ( wd->type==st_set )
 	    width = wd->setto;

@@ -29,7 +29,7 @@
 
 #include "splinefont.h"
 
-enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
+enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_bearings, wt_vwidth };
 
 enum fvtrans_flags { fvt_alllayers=1, fvt_round_to_int=2,
 	fvt_dontsetwidth=4, fvt_dontmovewidth=8, fvt_scalekernclasses=0x10,
