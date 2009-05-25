@@ -1505,6 +1505,9 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		last->next = cur;
 	    last = cur;
 	    cur->first = cur->last = sp;
+	    /* If you omit a command after a moveto then it defaults to lineto */
+	    if ( type=='m' ) type='l';
+	    else type = 'L';
 	} else if ( type=='z' || type=='Z' ) {
 	    if ( cur!=NULL && cur->last!=cur->first ) {
 		if ( RealNear(cur->last->me.x,cur->first->me.x) &&
