@@ -155,6 +155,7 @@ extern int home_char;				/* from fontview.c */
 extern int compact_font_on_open;		/* from fontview.c */
 extern int oflib_automagic_preview;		/* from oflib.c */
 extern int aa_pixelsize;			/* from anchorsaway.c */
+extern enum cvt_tools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool; /* cvpalettes.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -451,6 +452,10 @@ static struct prefs_list {
 #ifdef _NO_LIBPANGO
 	{ "UsePangoDrawing", pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
+	{ "CV_B1Tool", pr_int, (int *) &cv_b1_tool, NULL, NULL, '\0', NULL, 1 },
+	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1 },
+	{ "CV_B2Tool", pr_int, (int *) &cv_b2_tool, NULL, NULL, '\0', NULL, 1 },
+	{ "CV_CB2Tool", pr_int, (int *) &cv_cb2_tool, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {

@@ -9851,6 +9851,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     static char *infofamily=NULL;
     GTextBounds textbounds;
     /* extern int cv_auto_goto; */
+    extern enum cvt_tools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool;
 
     if ( !cvcolsinited )
 	CVColInit();
@@ -9969,8 +9970,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->gi.u.image->clut->clut_len = 2;
     cv->gi.u.image->clut->clut[0] = view_bgcol;
     cv->gi.u.image->clut->clut[1] = fillcol;
-    cv->b1_tool = cvt_pointer; cv->cb1_tool = cvt_pointer;
-    cv->b2_tool = cvt_magnify; cv->cb2_tool = cvt_ruler;
+    cv->b1_tool = cv_b1_tool; cv->cb1_tool = cv_cb1_tool;
+    cv->b2_tool = cv_b2_tool; cv->cb2_tool = cv_cb2_tool;
     cv->s1_tool = cvt_freehand; cv->s2_tool = cvt_pen;
     cv->er_tool = cvt_knife;
     cv->showing_tool = cvt_pointer;
