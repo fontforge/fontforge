@@ -56,6 +56,9 @@ int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 static int layer_height;
 
+enum cvtools cv_b1_tool = cvt_pointer, cv_cb1_tool = cvt_pointer,
+	     cv_b2_tool = cvt_magnify, cv_cb2_tool = cvt_ruler;
+
 static GFont *toolsfont=NULL, *layersfont=NULL;
 
 #define CV_TOOLS_WIDTH		53
@@ -1010,14 +1013,15 @@ return;			/* Not available in order2 spline mode */
 		else
 		    cv->s1_tool = pos;
 	    } else if ( cv->had_control && event->u.mouse.button==2 )
-		cv->cb2_tool = pos;
+		cv->cb2_tool = cv_cb2_tool = pos;
 	    else if ( event->u.mouse.button==2 )
-		cv->b2_tool = pos;
+		cv->b2_tool = cv_b2_tool = pos;
 	    else if ( cv->had_control ) {
-		cv->cb1_tool = pos;
+		cv->cb1_tool = cv_cb1_tool = pos;
 	    } else {
-		cv->b1_tool = pos;
+		cv->b1_tool = cv_b1_tool = pos;
 	    }
+	    SavePrefs(true);
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
 	}
 	GDrawRequestExpose(cvtools,NULL,false);
@@ -2092,12 +2096,12 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 	CVChangeSpiroMode(cv);
     } else if ( cv->had_control ) {
 	if ( cv->cb1_tool!=pos ) {
-	    cv->cb1_tool = pos;
+	    cv->cb1_tool = cv_cb1_tool = pos;
 	    GDrawRequestExpose(cvtools,NULL,false);
 	}
     } else {
 	if ( cv->b1_tool!=pos ) {
-	    cv->b1_tool = pos;
+	    cv->b1_tool = cv_b1_tool = pos;
 	    GDrawRequestExpose(cvtools,NULL,false);
 	}
     }
