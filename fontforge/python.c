@@ -11609,6 +11609,24 @@ return( Py_BuildValue("s", ac->subtable->subtable_name ));
 return( NULL );
 }
 
+static PyObject *PyFFFont_saveNamelist(PyObject *self, PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    char *filename;
+    FILE *file;
+
+    if ( !PyArg_ParseTuple(args,"s", &filename ))
+return( NULL );
+
+    file = fopen(filename,"w");
+    if ( file==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Could not open %s for writing.", filename );
+return(NULL);
+    }
+    FVB_MakeNamelist(fv, file);
+    fclose(file);
+Py_RETURN_NONE;
+}
+
 static PyObject *PyFFFont_replaceAll(PyObject *self, PyObject *args) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PyObject *srch, *rpl;
@@ -12758,6 +12776,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "removeGlyph", PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
     { "removeLookup", PyFFFont_removeLookup, METH_VARARGS, "Removes the named lookup" },
     { "removeLookupSubtable", PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
+    { "saveNamelist", PyFFFont_saveNamelist, METH_VARARGS, "Saves the namelist of the current font." },
     { "replaceAll", PyFFFont_replaceAll, METH_VARARGS, "Searches for a pattern in the font and replaces it with another everywhere it was found" },
     { "find", PyFFFont_find, METH_VARARGS, "Searches for a pattern in the font and returns an iterator which produces glyphs with that pattern" },
     { "glyphs", PyFFFont_glyphs, METH_VARARGS, "Returns an iterator over all glyphs" },

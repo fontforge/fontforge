@@ -4624,39 +4624,11 @@ static void FVMenuRemoveEncoding(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     RemoveEncoding();
 }
 
-static int isuniname(char *name) {
-    int i;
-    if ( name[0]!='u' || name[1]!='n' || name[2]!='i' )
-return( false );
-    for ( i=3; i<7; ++i )
-	if ( name[i]<'0' || (name[i]>'9' && name[i]<'A') || name[i]>'F' )
-return( false );
-    if ( name[7]!='\0' )
-return( false );
-
-return( true );
-}
-
-static int isuname(char *name) {
-    int i;
-    if ( name[0]!='u' )
-return( false );
-    for ( i=1; i<5; ++i )
-	if ( name[i]<'0' || (name[i]>'9' && name[i]<'A') || name[i]>'F' )
-return( false );
-    if ( name[5]!='\0' )
-return( false );
-
-return( true );
-}
-
 static void FVMenuMakeNamelist(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     char buffer[1025];
     char *filename, *temp;
     FILE *file;
-    SplineChar *sc;
-    int i;
 
     snprintf(buffer, sizeof(buffer),"%s/%s.nam", getPfaEditDir(buffer), fv->b.sf->fontname );
     temp = def2utf8_copy(buffer);
@@ -4672,12 +4644,7 @@ return;
 	free(filename);
 return;
     }
-    for ( i=0; i<fv->b.sf->glyphcnt; ++i ) {
-	if ( (sc = fv->b.sf->glyphs[i])!=NULL && sc->unicodeenc!=-1 ) {
-	    if ( !isuniname(sc->name) && !isuname(sc->name ) )
-		fprintf( file, "0x%04X %s\n", sc->unicodeenc, sc->name );
-	}
-    }
+    FVB_MakeNamelist((FontViewBase *) fv, file);
     fclose(file);
 }
 
