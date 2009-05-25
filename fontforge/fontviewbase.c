@@ -1813,6 +1813,44 @@ void FVRevertGlyph(FontViewBase *fv) {
     }
 }
 
+static int isuniname(char *name) {
+    int i;
+    if ( name[0]!='u' || name[1]!='n' || name[2]!='i' )
+return( false );
+    for ( i=3; i<7; ++i )
+	if ( name[i]<'0' || (name[i]>'9' && name[i]<'A') || name[i]>'F' )
+return( false );
+    if ( name[7]!='\0' )
+return( false );
+
+return( true );
+}
+
+static int isuname(char *name) {
+    int i;
+    if ( name[0]!='u' )
+return( false );
+    for ( i=1; i<5; ++i )
+	if ( name[i]<'0' || (name[i]>'9' && name[i]<'A') || name[i]>'F' )
+return( false );
+    if ( name[5]!='\0' )
+return( false );
+
+return( true );
+}
+
+void FVB_MakeNamelist(FontViewBase *fv, FILE *file) {
+    SplineChar *sc;
+    int i;
+
+    for ( i=0; i<fv->sf->glyphcnt; ++i ) {
+	if ( (sc = fv->sf->glyphs[i])!=NULL && sc->unicodeenc!=-1 ) {
+	    if ( !isuniname(sc->name) && !isuname(sc->name ) )
+		fprintf( file, "0x%04X %s\n", sc->unicodeenc, sc->name );
+	}
+    }
+}
+
 /*                             FV Interface                                   */
 
 static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
