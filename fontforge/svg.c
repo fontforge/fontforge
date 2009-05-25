@@ -1116,6 +1116,7 @@ return( NULL );
 #endif
 #define _xmlStrcmp		xmlStrcmp
 #define _xmlGetProp		xmlGetProp
+#define _xmlGetNsProp		xmlGetNsProp
 
 static int libxml_init_base() {
 return( true );
@@ -1131,6 +1132,7 @@ static void (*_xmlFreeDoc)(xmlDocPtr doc);
 static void (*_xmlFree)(void *);
 static int (*_xmlStrcmp)(const xmlChar *,const xmlChar *);
 static xmlChar *(*_xmlGetProp)(xmlNodePtr,const xmlChar *);
+static xmlChar *(*_xmlGetNsProp)(xmlNodePtr,const xmlChar *,const xmlChar *);
 
 static int libxml_init_base() {
     static int xmltested = false;
@@ -1164,6 +1166,7 @@ return( false );
     }
     _xmlStrcmp = (int (*)(const xmlChar *,const xmlChar *)) dlsym(libxml,"xmlStrcmp");
     _xmlGetProp = (xmlChar *(*)(xmlNodePtr,const xmlChar *)) dlsym(libxml,"xmlGetProp");
+    _xmlGetNsProp = (xmlChar *(*)(xmlNodePtr,const xmlChar *,const xmlChar *)) dlsym(libxml,"xmlGetNsProp");
     if ( _xmlParseFile==NULL || _xmlDocGetRootElement==NULL || _xmlFree==NULL ) {
 	libxml = NULL;
 return( false );
@@ -1679,6 +1682,119 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	}
 	path = (xmlChar *) skipcomma(end);
     }
+return( head );
+}
+
+static SplineSet *SVGAddSpiros(xmlChar *path, SplineSet *base) {
+    BasePoint current;
+    SplineSet *cur = NULL;
+    int type = 'M';
+    char *end;
+    spiro_cp cp;
+
+    current.x = current.y = 0;
+
+    while ( *path ) {
+	while ( *path==' ' ) ++path;
+	while ( isalpha(*path))
+	    type = *path++;
+	if ( *path=='\0' && type!='z' && type!='Z' )
+    break;
+	if ( type=='m' || type=='M' ) {
+	    if ( cur==NULL )
+		cur = base;
+	    else
+		cur = cur->next;
+	    if ( cur==NULL )
+    break;
+	    cur->spiros = galloc((cur->spiro_max=10)*sizeof(spiro_cp));
+	    cp.x = strtod((char *) path,&end);
+	    end = skipcomma(end);
+	    cp.y = strtod(end,&end);
+	    if ( type=='m' ) {
+		cp.x += current.x; cp.y += current.y;
+	    }
+	    cp.ty = SPIRO_OPEN_CONTOUR;
+	    cur->spiros[0] = cp;
+	    ++(cur->spiro_cnt);
+	    current.x = cp.x; current.y = cp.y;
+	    /* If you omit a command after a moveto then it defaults to lineto */
+	    if ( type=='m' ) type='l';
+	    else type = 'L';
+	} else if ( type=='z' || type=='Z' ) {
+	    if ( cur!=NULL && cur->spiros!=NULL && cur->spiros[0].ty == SPIRO_OPEN_CONTOUR ) {
+		if ( RealNear(cur->spiros[0].x,cur->spiros[cur->spiro_cnt-1].x) &&
+			RealNear(cur->spiros[0].y,cur->spiros[cur->spiro_cnt-1].y) ) {
+		    cur->spiros[0].ty = SPIRO_G4;
+		} else
+		    cur->spiros[0].ty = SPIRO_CORNER;
+		if ( cur->spiro_cnt>=cur->spiro_max )
+		    cur->spiros = grealloc(cur->spiros,(cur->spiro_max++)*sizeof(spiro_cp));
+		cp.x = current.x; cp.y = current.y; cp.ty = SPIRO_END;
+		cur->spiros[cur->spiro_cnt++] = cp;
+		current.x = cur->spiros[0].x; current.y = cur->spiros[0].y;
+	    }
+	    type = ' ';
+	    end = (char *) path;
+	} else {
+	    cp.x = strtod((char *) path,&end);
+	    end = skipcomma(end);
+	    cp.y = strtod(end,&end);
+	    if ( islower(type) ) {
+		cp.x += current.x; cp.y += current.y;
+	    }
+	    switch ( type ) {
+	      case 'l': case'L':
+	        cp.ty = SPIRO_CORNER;
+		if ( cur->spiro_cnt!=1 )
+		    cur->spiros[cur->spiro_cnt-1].ty = SPIRO_CORNER;
+	      break;
+	      case 'c': case'C':
+	        cp.ty = SPIRO_G4;
+	      break;
+	      default:
+		LogError( _("Unknown type '%c' found in path specification\n"), type );
+	      break;
+	    }
+	    if ( cur->spiro_cnt>=cur->spiro_max )
+		cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=10)*sizeof(spiro_cp));
+	    cur->spiros[cur->spiro_cnt++] = cp;
+	    current.x = cp.x; current.y = cp.y;
+	}
+	path = (xmlChar *) skipcomma(end);
+    }
+return( base );
+}
+
+static SplineSet *SVGParseExtendedPath(xmlNodePtr svg, xmlNodePtr top) {
+    /* Inkscape exends paths by allowing a sprio representation */
+    /* But their representation looks nothing like spiros and I can't guess at it */
+    xmlChar *outline/*, *effect, *spirooutline*/;
+    SplineSet *head = NULL;
+
+    outline = _xmlGetProp(svg,(xmlChar *) "d");
+    if ( outline!=NULL ) {
+	head = SVGParsePath(outline);
+	_xmlFree(outline);
+    }
+#if 0
+    effect = _xmlGetProp(svg,(xmlChar *) "path-effect"/*, (xmlChar *) "inkscape:"*/);
+    spirooutline = _xmlGetProp(svg,(xmlChar *) "original-d"/*, (xmlChar *) "inkscape:"*/);
+    if ( effect!=NULL && spirooutline!=NULL && *effect=='#' ) {
+	xmlNodePtr effect_type = XmlFindID(top,effect+1);
+	xmlChar *type = NULL;
+	if ( effect_type!=NULL &&
+		(type=_xmlGetProp(effect_type,"effect"))!=NULL &&
+		_xmlStrcmp(type,(xmlChar *) "spiro")==0 )
+	    SVGAddSpiros(spirooutline,head);
+	if ( type!=NULL )
+	    _xmlFree(type);
+    }
+    if ( effect!=NULL )
+	_xmlFree(effect);
+    if ( spirooutline!=NULL )
+	_xmlFree(spirooutline);
+#endif
 return( head );
 }
 
@@ -2720,11 +2836,7 @@ return( NULL );
     /* basic shapes */
     head = NULL;
     if ( _xmlStrcmp(svg->name,(xmlChar *) "path")==0 ) {
-	name = _xmlGetProp(svg,(xmlChar *) "d");
-	if ( name!=NULL ) {
-	    head = SVGParsePath(name);
-	    _xmlFree(name);
-	}
+	head = SVGParseExtendedPath(svg,top);
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "rect")==0 ) {
 	head = SVGParseRect(svg);		/* x,y,width,height,rx,ry */
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "circle")==0 ) {
@@ -2812,7 +2924,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 
     path = _xmlGetProp(glyph,(xmlChar *) "d");
     if ( path!=NULL ) {
-	sc->layers[ly_fore].splines = SVGParsePath(path);
+	sc->layers[ly_fore].splines = SVGParseExtendedPath(glyph,glyph);
 	_xmlFree(path);
     } else {
 	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
