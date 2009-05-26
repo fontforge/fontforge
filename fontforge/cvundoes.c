@@ -35,6 +35,7 @@ extern char *coord_sep;
 int onlycopydisplayed = 0;
 int copymetadata = 0;
 int copyttfinstr = 0;
+int export_clipboard = 1;
 
 /* ********************************* Undoes ********************************* */
 
@@ -1147,7 +1148,7 @@ void CopyBufferFree(void) {
 
 static void CopyBufferFreeGrab(void) {
     CopyBufferFree();
-    if ( FontViewFirst()!=NULL && !no_windowing_ui )
+    if ( FontViewFirst()!=NULL && !no_windowing_ui && export_clipboard )
 	ClipboardGrab();
 }
 
