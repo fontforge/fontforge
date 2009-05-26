@@ -124,8 +124,15 @@ return;
     if ( info->chars!=NULL ) {
 	if ( gid>=info->glyph_cnt || info->chars[gid]==NULL ) {
 	    if ( gid>=info->glyph_cnt ) {
+		int i;
+	        info->chars = grealloc(info->chars,(gid+1)*sizeof(SplineChar *));
+		for ( i=info->glyph_cnt; i<gid; ++i ) {
+		    info->chars[i] = SplineCharCreate(2);
+		    info->chars[i]->orig_pos = gid;
+		    info->chars[i]->unicodeenc = -1;
+		    info->chars[i]->width = info->chars[i]->vwidth = info->emsize;
+		}
 	        info->glyph_cnt = gid+1;
-	        info->chars = grealloc(info->chars,info->glyph_cnt*sizeof(SplineChar *));
 	    }
 	    info->chars[gid] = SplineCharCreate(2);
 	    info->chars[gid]->orig_pos = gid;
