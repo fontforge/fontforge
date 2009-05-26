@@ -9851,7 +9851,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     static char *infofamily=NULL;
     GTextBounds textbounds;
     /* extern int cv_auto_goto; */
-    extern enum cvt_tools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool;
+    extern enum cvtools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool;
 
     if ( !cvcolsinited )
 	CVColInit();

@@ -155,7 +155,7 @@ extern int home_char;				/* from fontview.c */
 extern int compact_font_on_open;		/* from fontview.c */
 extern int oflib_automagic_preview;		/* from oflib.c */
 extern int aa_pixelsize;			/* from anchorsaway.c */
-extern enum cvt_tools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool; /* cvpalettes.c */
+extern enum cvtools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool; /* cvpalettes.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
