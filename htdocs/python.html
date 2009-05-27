@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 24-May-2009 -->
+  <!-- AP: Last modified: 27-May-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2492,6 +2492,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	for that).</TD>
     </TR>
     <TR>
+      <TD><CODE>capHeight</CODE></TD>
+      <TD colspan=2>(readonly) Computes the Cap Height (the height of capital letters
+	such as "E"). A negative number indicates the value could not be computed
+	(the font might have no capital letters because it was lower case only, or
+	didn't include glyphs for a script with capital letters).</TD>
+    </TR>
+    <TR>
       <TD><CODE>changed</CODE></TD>
       <TD colspan=2>Bit indicating whether the font has been modified. This is
 	(should be) maintained automatically, but you may set it if you wish.</TD>
@@ -3189,6 +3196,13 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>weight</CODE></TD>
       <TD colspan=2>PostScript font weight string</TD>
+    </TR>
+    <TR>
+      <TD><CODE>xHeight</CODE></TD>
+      <TD colspan=2>(readonly) Computes the X Height (the height of lower case
+	letters such as "x"). A negative number indicates the value could not be
+	computed (the font might have no lower case letters because it was upper
+	case only, or didn't include glyphs for a script with lower case letters).</TD>
     </TR>
     <TR>
       <TH colspan=3>Iterator Protocol</TH>

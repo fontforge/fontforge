@@ -1092,7 +1092,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
     DBounds b;
     real width;
     int i, j, cnt, max;
-    int caph, xh, ash, dsh;
+    double caph, xh, ash, dsh;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     int ismm = ( formattype==ff_mma || formattype==ff_mmb );
     time_t now;
@@ -1108,7 +1108,11 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 	    if ( sf->subfonts[i]->glyphcnt>max )
 		max = sf->subfonts[i]->glyphcnt;
     }
-    caph = xh = ash = dsh = 0; cnt = 0;
+    caph = SFCapHeight(sf,layer,true);
+    xh   = SFXHeight(sf,layer,true);
+    ash  = SFAscender(sf,layer,true);
+    dsh  = SFDescender(sf,layer,true);
+    cnt = 0;
     for ( i=0; i<max; ++i ) {
 	sc = NULL;
 	if ( iscid ) {
@@ -1120,28 +1124,6 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 	} else
 	    sc = sf->glyphs[i];
 	if ( sc!=NULL ) {
-	    if ( sc->unicodeenc=='I' || sc->unicodeenc=='x' ||
-		    sc->unicodeenc=='p' || sc->unicodeenc=='l' ||
-		    sc->unicodeenc==0x399 || sc->unicodeenc==0x3c7 ||
-		    sc->unicodeenc==0x3c1 ||
-		    sc->unicodeenc==0x406 || sc->unicodeenc==0x445 ||
-		    sc->unicodeenc==0x440 ) {
-		SplineCharLayerFindBounds(sc,layer,&b);
-		if ( sc->unicodeenc=='I' )
-		    caph = b.maxy;
-		else if ( caph==0 && (sc->unicodeenc==0x399 || sc->unicodeenc==0x406))
-		    caph = b.maxy;
-		else if ( sc->unicodeenc=='x' )
-		    xh = b.maxy;
-		else if ( xh==0 && (sc->unicodeenc==0x3c7 || sc->unicodeenc==0x445))
-		    xh = b.maxy;
-		else if ( sc->unicodeenc=='l' )	/* can't find a good equivalent in greek/cyrillic */
-		    ash = b.maxy;
-		else if ( sc->unicodeenc=='p' )
-		    dsh = b.miny;
-		else if ( dsh==0 && (sc->unicodeenc==0x3c1 || sc->unicodeenc==0x440))
-		    dsh = b.miny;
-	    }
 	    if ( SCWorthOutputting(sc) || (iscid && i==0 && sc!=NULL)) 
 		++cnt;
 	}
@@ -1199,14 +1181,14 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
     fprintf( afm, "FontBBox %d %d %d %d\n",
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
-    if ( caph!=0 )
-	fprintf( afm, "CapHeight %d\n", caph*1000/em );
-    if ( xh!=0 )
-	fprintf( afm, "XHeight %d\n", xh*1000/em );
-    if ( ash!=0 )
-	fprintf( afm, "Ascender %d\n", ash*1000/em );
-    if ( dsh!=0 )
-	fprintf( afm, "Descender %d\n", dsh*1000/em );
+    if ( caph!=-1e23 )
+	fprintf( afm, "CapHeight %d\n", (int) rint(caph*1000/em) );
+    if ( xh!=-1e23 )
+	fprintf( afm, "XHeight %d\n", (int) rint(xh*1000/em) );
+    if ( ash!=-1e23 )
+	fprintf( afm, "Ascender %d\n", (int) rint(ash*1000/em) );
+    if ( dsh!=1e23 )
+	fprintf( afm, "Descender %d\n", (int) rint(dsh*1000/em) );
 }
 
 struct cc_data {

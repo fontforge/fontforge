@@ -3454,11 +3454,12 @@ docs are wrong.
     }
 
     if ( os2->version>=2 ) {
-	BlueData bd;
+	double xh, caph;
 
-	QuickBlues(sf,at->gi.layer,&bd);	/* This handles cid fonts properly */
-	os2->xHeight = (bd.xheight >= 0.0 ? bd.xheight : 0);
-	os2->capHeight = (bd.caph >= 0.0 ? bd.caph : 0);
+	xh   = SFXHeight  (sf,at->gi.layer,true);
+	caph = SFCapHeight(sf,at->gi.layer,true);
+	os2->xHeight = (xh >= 0.0 ? xh : 0);
+	os2->capHeight = (caph >= 0.0 ? caph : 0);
 	os2->defChar = 0;
 	if ( format==ff_otf || format==ff_otfcid )
 	    os2->defChar = ' ';

@@ -3141,4 +3141,9 @@ extern void SCClearInstrsOrMark(SplineChar *sc, int layer, int complain);
 extern void instrcheck(SplineChar *sc,int layer);
 extern void TTFPointMatches(SplineChar *sc,int layer,int top);
 
+extern double SFCapHeight(SplineFont *sf, int layer, int return_error);
+extern double SFXHeight(SplineFont *sf, int layer, int return_error);
+extern double SFAscender(SplineFont *sf, int layer, int return_error);
+extern double SFDescender(SplineFont *sf, int layer, int return_error);
+
 #endif
