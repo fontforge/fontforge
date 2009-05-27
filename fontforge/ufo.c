@@ -472,6 +472,7 @@ return( PListOutputTrailer(plist));
 static int UFOOutputFontInfo(char *basedir,SplineFont *sf, int layer) {
     FILE *plist = PListCreate( basedir, "fontinfo.plist" );
     DBounds bb;
+    double test;
 
     if ( plist==NULL )
 return( false );
@@ -481,6 +482,12 @@ return( false );
     PListOutputString(plist,"copyright",sf->copyright);
     PListOutputNameString(plist,"trademark",sf,ttf_trademark);
     PListOutputInteger(plist,"unitsPerEm",sf->ascent+sf->descent);
+    test = SFXHeight(sf,layer,true);
+    if ( test>0 )
+	PListOutputInteger(plist,"xHeight",(int) rint(test));
+    test = SFCapHeight(sf,layer,true);
+    if ( test>0 )
+	PListOutputInteger(plist,"capHeight",(int) rint(test));
     PListOutputInteger(plist,"ascender",sf->ascent);
     PListOutputInteger(plist,"descender",-sf->descent);
     PListOutputReal(plist,"italicAngle",sf->italicangle);

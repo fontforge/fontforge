@@ -36,15 +36,10 @@ static unichar_t lc_stem_str[] = { 'l', 'l', 'l', 'm', 'f', 't', 0x438, 0x43D,
 	0x43f, 0x448, 0x3b9, 0 };
 static unichar_t uc_stem_str[] = { 'I', 'L', 'T', 'H', 0x3a0, 0x397, 0x399,
 	0x406, 0x418, 0x41d, 0x41f, 0x422, 0x428, 0 };
-static unichar_t xheight_str[] = { 'x', 'u', 'v', 'w', 'y', 'z', 0x3b9, 0x3ba,
-	0x3bc, 0x3c0, 0x3c7, 0x438, 0x43f, 0x43d, 0x442, 0x448, 0 };
-static unichar_t asc_height_str[] = { 'b', 'd', 'k', 'l', 0 };
-static unichar_t capheight_str[] = { 'X', 'I', 'L', 'U', 'V', 'W', 0x397,
-	0x399, 0x3a0, 0x3a4, 0x406, 0x408, 0x418, 0x41d, 0x41f, 0x422, 0 };
-static unichar_t descender_str[] = { 'p', 'q', 0x3b7, 0x3c1, 0x440, 0x444, 0 };
 static unichar_t lc_botserif_str[] = { 'i', 'k', 'l', 'm', 'f', 0x433, 0x43a,
 	0x43f, 0x442, 0x3c0, 0x3ba, 0 };
 static unichar_t lc_topserif_str[] = { 'k', 'l', 'm', 0x444, 0x3b9, 0 };
+static unichar_t descender_str[] = { 'p', 'q', 0x3b7, 0x3c1, 0x440, 0x444, 0 };
 
 static void SSCPValidate(SplineSet *ss) {
     SplinePoint *sp, *nsp;
@@ -1834,70 +1829,6 @@ return( -1 );
 return( width );
 }
 
-static double CharHeight(SplineChar *sc, int layer) {
-    DBounds b;
-
-    if ( sc==NULL )
-return( 0 );
-
-    SplineCharLayerFindBounds(sc,layer,&b);
-return( b.maxy );
-}
-
-static double CharDepth(SplineChar *sc, int layer) {
-    DBounds b;
-
-    if ( sc==NULL )
-return( 0 );
-
-    SplineCharLayerFindBounds(sc,layer,&b);
-return( b.miny );
-}
-
-static double StandardGlyphHeight(SplineFont *sf,int layer,unichar_t *str) {
-    int i,cnt;
-    double sum,height, bestheight, bestdiff, val, diff;
-    int useit;
-    char *blues, *end;
-
-    for ( i=cnt=0, sum=0; str[i]!=0; ++i ) {
-	val = CharHeight(SFGetChar(sf,str[i],NULL),layer);
-	if ( val>0 ) {
-	    sum += val;
-	    ++cnt;
-	}
-    }
-    if ( cnt==0 )
-return( 0 );
-    height = sum / cnt;
-
-    /* Do we have a BlueValues entry? */
-    /* If so, snap height to the closest alignment zone (bottom of the zone) */
-    if ( sf->private!=NULL && (blues = PSDictHasEntry(sf->private,"BlueValues"))!=NULL ) {
-	while ( *blues==' ' || *blues=='[' ) ++blues;
-	/* Must get at least this close, else we'll just use what we found */
-	bestheight = height; bestdiff = (sf->ascent+sf->descent)/100.0;
-	useit = true;
-	while ( *blues!='\0' && *blues!=']' ) {
-	    val = strtod(blues,&end);
-	    if ( blues==end )
-	break;
-	    blues = end;
-	    while ( *blues==' ' ) ++blues;
-	    if ( useit ) {
-		if ( (diff = val-height)<0 ) diff = -diff;
-		if ( diff<bestdiff ) {
-		    bestheight = val;
-		    bestdiff = diff;
-		}
-	    }
-	    useit = !useit;	/* Only interested in every other BV entry */
-	}
-	height = bestheight;
-    }
-return( height );
-}
-
 void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 	int layer ) {
 
@@ -1916,8 +1847,8 @@ void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 	small->stem_factor = small->lc_stem_width / small->uc_stem_width;
     small->v_stem_factor = small->stem_factor;
 
-    small->xheight   = StandardGlyphHeight(sf,layer,  xheight_str);
-    small->capheight = StandardGlyphHeight(sf,layer,capheight_str);
+    small->xheight   = SFXHeight  (sf,layer,false);
+    small->capheight = SFCapHeight(sf,layer,false);
     small->scheight  = small->xheight;
     if ( small->capheight>0 )
 	small->vscale = small->scheight / small->capheight;
@@ -6754,21 +6685,13 @@ return( 0 );
 
 static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
     int i,cnt;
-    double sum, val;
+    double val;
 
     ii->tan_ia = tan(ii->italic_angle * 3.1415926535897932/180.0 );
 
-    ii->x_height          = StandardGlyphHeight(sf,layer,  xheight_str);
-    ii->ascender_height   = StandardGlyphHeight(sf,layer,  asc_height_str);
-
-    for ( i=cnt=0, sum=0; descender_str[i]!=0; ++i ) {
-	val = CharDepth(SFGetChar(sf,descender_str[i],NULL),layer);
-	if ( val<0 ) {
-	    sum += val;
-	    ++cnt;
-	}
-    }
-    ii->pq_depth = cnt!=0 ? sum/cnt : -(sf->descent/2);
+    ii->x_height          = SFXHeight  (sf,layer,false);
+    ii->ascender_height   = SFAscender (sf,layer,false);
+    ii->pq_depth          = SFDescender(sf,layer,false);
 
     for ( i=cnt=0; lc_botserif_str[i]!=0; ++i ) {
 	val = SerifExtent(SFGetChar(sf,lc_botserif_str[i],NULL),layer,true);
@@ -6859,7 +6782,7 @@ void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
     struct widths { double width, total; } widths[MW];
 
     memset(xi,0,sizeof(*xi));
-    xi->xheight_current = StandardGlyphHeight(sf,layer,  xheight_str);
+    xi->xheight_current = SFXHeight(sf,layer,false);
     sum = 0;
     for ( i=cnt=0; lc_botserif_str[i]!=0; ++i ) {
 	val = SCSerifHeight(SFGetChar(sf,lc_botserif_str[i],NULL),layer);

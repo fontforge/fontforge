@@ -9957,6 +9957,18 @@ static int PyFF_Font_set_maxp_zones(PyFF_Font *self,PyObject *value,void *closur
 return( PyFF_Font_SetMaxpValue(self,value,"Zones"));
 }
 
+static PyObject *PyFF_Font_get_xHeight(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    double val = SFXHeight(sf,self->fv->active_layer,true);
+return( Py_BuildValue("d",val));
+}
+
+static PyObject *PyFF_Font_get_capHeight(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    double val = SFCapHeight(sf,self->fv->active_layer,true);
+return( Py_BuildValue("d",val));
+}
+
 static PyGetSetDef PyFF_Font_getset[] = {
     {"userdata",
 	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
@@ -10096,6 +10108,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"descent",
 	 (getter)PyFF_Font_get_descent, (setter)PyFF_Font_set_descent,
 	 "Font Descent", NULL},
+    {"xHeight",
+	 (getter)PyFF_Font_get_xHeight, (setter)PyFF_cant_set,
+	 "X Height of font (negative number means could not be computed (ie. no lowercase glyphs))", NULL},
+    {"capHeight",
+	 (getter)PyFF_Font_get_capHeight, (setter)PyFF_cant_set,
+	 "Cap Height of font (negative number means could not be computed (ie. no uppercase glyphs))", NULL},
     {"em",
 	 (getter)PyFF_Font_get_em, (setter)PyFF_Font_set_em,
 	 "Em size", NULL},

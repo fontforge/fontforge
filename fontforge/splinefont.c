@@ -1457,6 +1457,314 @@ return( true );
 return( false );
 }
 
+enum flatness { mt_flat, mt_round, mt_pointy, mt_unknown };
+
+static double SPLMaxHeight(SplineSet *spl, enum flatness *isflat) {
+    enum flatness f = mt_unknown;
+    double max = -1.0e23;
+    Spline *s, *first;
+    extended ts[2];
+    int i;
+
+    for ( ; spl!=NULL; spl=spl->next ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=first && s!=NULL; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if ( s->from->me.y >= max ||
+		    s->to->me.y >= max ||
+		    s->from->nextcp.y > max ||
+		    s->to->prevcp.y > max ) {
+		if ( !s->knownlinear ) {
+		    if ( s->from->me.y > max ) {
+			f = mt_round;
+			max = s->from->me.y;
+		    }
+		    if ( s->to->me.y > max ) {
+			f = mt_round;
+			max = s->to->me.y;
+		    }
+		    SplineFindExtrema(&s->splines[1],&ts[0],&ts[1]);
+		    for ( i=0; i<2; ++i ) if ( ts[i]!=-1 ) {
+			double y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
+			if ( y>max ) {
+			    f = mt_round;
+			    max = y;
+			}
+		    }
+		} else if ( s->from->me.y == s->to->me.y ) {
+		    if ( s->from->me.y >= max ) {
+			max = s->from->me.y;
+			f = mt_flat;
+		    }
+		} else {
+		    if ( s->from->me.y > max ) {
+			f = mt_pointy;
+			max = s->from->me.y;
+		    }
+		    if ( s->to->me.y > max ) {
+			f = mt_pointy;
+			max = s->to->me.y;
+		    }
+		}
+	    }
+	}
+    }
+    *isflat = f;
+return( max );
+}
+
+static double SCMaxHeight(SplineChar *sc, int layer, enum flatness *isflat) {
+    /* Find the max height of this layer of the glyph. Also find whether that */
+    /* max is flat (as in "z", curved as in "o" or pointy as in "A") */
+    enum flatness f = mt_unknown, curf;
+    double max = -1.0e23, test;
+    RefChar *r;
+
+    max = SPLMaxHeight(sc->layers[layer].splines,&curf);
+    f = curf;
+    for ( r = sc->layers[layer].refs; r!=NULL; r=r->next ) {
+	test = SPLMaxHeight(r->layers[0].splines,&curf);
+	if ( test>max || (test==max && curf==mt_flat)) {
+	    max = test;
+	    f = curf;
+	}
+    }
+    *isflat = f;
+return( max );
+}
+
+static double SPLMinHeight(SplineSet *spl, enum flatness *isflat) {
+    enum flatness f = mt_unknown;
+    double min = 1.0e23;
+    Spline *s, *first;
+    extended ts[2];
+    int i;
+
+    for ( ; spl!=NULL; spl=spl->next ) {
+	first = NULL;
+	for ( s = spl->first->next; s!=first && s!=NULL; s=s->to->next ) {
+	    if ( first==NULL ) first = s;
+	    if ( s->from->me.y <= min ||
+		    s->to->me.y <= min ||
+		    s->from->nextcp.y < min ||
+		    s->to->prevcp.y < min ) {
+		if ( !s->knownlinear ) {
+		    if ( s->from->me.y < min ) {
+			f = mt_round;
+			min = s->from->me.y;
+		    }
+		    if ( s->to->me.y < min ) {
+			f = mt_round;
+			min = s->to->me.y;
+		    }
+		    SplineFindExtrema(&s->splines[1],&ts[0],&ts[1]);
+		    for ( i=0; i<2; ++i ) if ( ts[i]!=-1 ) {
+			double y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
+			if ( y<min ) {
+			    f = mt_round;
+			    min = y;
+			}
+		    }
+		} else if ( s->from->me.y == s->to->me.y ) {
+		    if ( s->from->me.y <= min ) {
+			min = s->from->me.y;
+			f = mt_flat;
+		    }
+		} else {
+		    if ( s->from->me.y < min ) {
+			f = mt_pointy;
+			min = s->from->me.y;
+		    }
+		    if ( s->to->me.y < min ) {
+			f = mt_pointy;
+			min = s->to->me.y;
+		    }
+		}
+	    }
+	}
+    }
+    *isflat = f;
+return( min );
+}
+
+static double SCMinHeight(SplineChar *sc, int layer, enum flatness *isflat) {
+    /* Find the min height of this layer of the glyph. Also find whether that */
+    /* min is flat (as in "z", curved as in "o" or pointy as in "A") */
+    enum flatness f = mt_unknown, curf;
+    double min = 1.0e23, test;
+    RefChar *r;
+
+    min = SPLMinHeight(sc->layers[layer].splines,&curf);
+    f = curf;
+    for ( r = sc->layers[layer].refs; r!=NULL; r=r->next ) {
+	test = SPLMinHeight(r->layers[0].splines,&curf);
+	if ( test<min || (test==min && curf==mt_flat)) {
+	    min = test;
+	    f = curf;
+	}
+    }
+    *isflat = f;
+return( min );
+}
+
+#define RANGE	0x40ffffff
+
+struct dimcnt { double pos; int cnt; };
+
+static int dclist_insert( struct dimcnt *arr, int cnt, double val ) {
+    int i;
+
+    for ( i=0; i<cnt; ++i ) {
+	if ( arr[i].pos == val ) {
+	    ++arr[i].cnt;
+return( cnt );
+	}
+    }
+    arr[i].pos = val;
+    arr[i].cnt = 1;
+return( i+1 );
+}
+
+static double SFStandardHeight(SplineFont *sf, int layer, int do_max, unichar_t *list) {
+    struct dimcnt flats[200], curves[200];
+    double test;
+    enum flatness curf;
+    int fcnt=0, ccnt=0, cnt, tot, i, useit;
+    unichar_t ch, top;
+    double result, bestheight, bestdiff, diff, val;
+    char *blues, *end;
+
+    while ( *list ) {
+	ch = top = *list;
+	if ( list[1]==RANGE && list[2]!=0 ) {
+	    list += 2;
+	    top = *list;
+	}
+	for ( ; ch<=top; ++ch ) {
+	    SplineChar *sc = SFGetChar(sf,ch,NULL);
+	    if ( sc!=NULL ) {
+		if ( do_max )
+		    test = SCMaxHeight(sc, layer, &curf );
+		else
+		    test = SCMinHeight(sc, layer, &curf );
+		if ( curf==mt_flat )
+		    fcnt = dclist_insert(flats, fcnt, test);
+		else if ( curf!=mt_unknown )
+		    ccnt = dclist_insert(curves, ccnt, test);
+	    }
+	}
+	++list;
+    }
+
+    /* All flat surfaces at tops of glyphs are at the same level */
+    if ( fcnt==1 )
+	result = flats[0].pos;
+    else if ( fcnt>1 ) {
+	cnt = 0;
+	for ( i=0; i<fcnt; ++i ) {
+	    if ( flats[i].cnt>cnt )
+		cnt = flats[i].cnt;
+	}
+	test = 0;
+	tot = 0;
+	/* find the mode. If multiple values have the same high count, average them */
+	for ( i=0; i<fcnt; ++i ) {
+	    if ( flats[i].cnt==cnt ) {
+		test += flats[i].pos;
+		++tot;
+	    }
+	}
+	result = test/tot;
+    } else if ( ccnt==0 )
+return( -1e23 );		/* We didn't find any glyphs */
+    else {
+	/* Italic fonts will often have no flat surfaces for x-height just wavies */
+	test = 0;
+	tot = 0;
+	/* find the mean */
+	for ( i=0; i<ccnt; ++i ) {
+	    test += curves[i].pos;
+	    tot += curves[i].cnt;
+	}
+	result = test/tot;
+    }
+
+    /* Do we have a BlueValues entry? */
+    /* If so, snap height to the closest alignment zone (bottom of the zone) */
+    if ( sf->private!=NULL && (blues = PSDictHasEntry(sf->private,do_max ? "BlueValues" : "OtherBlues"))!=NULL ) {
+	while ( *blues==' ' || *blues=='[' ) ++blues;
+	/* Must get at least this close, else we'll just use what we found */
+	bestheight = result; bestdiff = (sf->ascent+sf->descent)/100.0;
+	useit = true;
+	while ( *blues!='\0' && *blues!=']' ) {
+	    val = strtod(blues,&end);
+	    if ( blues==end )
+	break;
+	    blues = end;
+	    while ( *blues==' ' ) ++blues;
+	    if ( useit ) {
+		if ( (diff = val-result)<0 ) diff = -diff;
+		if ( diff<bestdiff ) {
+		    bestheight = val;
+		    bestdiff = diff;
+		}
+	    }
+	    useit = !useit;	/* Only interested in every other BV entry */
+	}
+	result = bestheight;
+    }
+return( result );
+}
+
+static unichar_t capheight_str[] = { 'A', RANGE, 'Z',
+    0x391, RANGE, 0x3a9,
+    0x402, 0x404, 0x405, 0x406, 0x408, RANGE, 0x40b, 0x40f, RANGE, 0x418, 0x41a, 0x42f,
+    0 };
+static unichar_t xheight_str[] = { 'a', 'c', 'e', 'g', 'm', 'n', 'o', 'p', 'q', 'r', 's', 'u', 'v', 'w', 'x', 'y', 'z', 0x131,
+    0x3b3, 0x3b9, 0x3ba, 0x3bc, 0x3bd, 0x3c0, 0x3c3, 0x3c4, 0x3c5, 0x3c7, 0x3c8, 0x3c9,
+    0x432, 0x433, 0x438, 0x43a, RANGE, 0x43f, 0x442, 0x443, 0x445, 0x44c,0x44f, 0x459, 0x45a,
+    0 };
+static unichar_t ascender_str[] = { 'b','d','f','h','k','l',
+    0x3b3, 0x3b4, 0x3b6, 0x3b8,
+    0x444, 0x452,
+    0 };
+static unichar_t descender_str[] = { 'g','j','p','q','y',
+    0x3b2, 0x3b3, 0x3c7, 0x3c8,
+    0x434, 0x440, 0x443, 0x444, 0x452, 0x458,
+    0 };
+
+double SFCapHeight(SplineFont *sf, int layer, int return_error) {
+    double result = SFStandardHeight(sf,layer,true,capheight_str);
+
+    if ( result==-1e23 && !return_error )
+	result = (8*sf->ascent)/10;
+return( result );
+}
+
+double SFXHeight(SplineFont *sf, int layer, int return_error) {
+    double result = SFStandardHeight(sf,layer,true,xheight_str);
+
+    if ( result==-1e23 && !return_error )
+	result = (6*sf->ascent)/10;
+return( result );
+}
+
+double SFAscender(SplineFont *sf, int layer, int return_error) {
+    double result = SFStandardHeight(sf,layer,true,ascender_str);
+
+    if ( result==-1e23 && !return_error )
+	result = (81*sf->ascent)/100;
+return( result );
+}
+
+double SFDescender(SplineFont *sf, int layer, int return_error) {
+    double result = SFStandardHeight(sf,layer,false,descender_str);
+
+    if ( result==1e23 && !return_error )
+	result = -sf->descent/2;
+return( result );
+}
+
 static void arraystring(char *buffer,real *array,int cnt) {
     int i, ei;
 
