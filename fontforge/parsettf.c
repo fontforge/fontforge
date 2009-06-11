@@ -462,10 +462,12 @@ return( NULL );
 	    *pt = 0;
 	} else if ( enc->tounicode!=NULL ) {
 	    size_t inlen = len+1, outlen = sizeof(unichar_t)*(len+1);
-	    char *cstr = galloc(inlen);
+	    char *cstr = galloc(inlen), *cpt;
 	    ICONV_CONST char *in = cstr;
 	    char *out;
-	    str = galloc(outlen+2);
+	    for ( cpt=cstr, i=0; i<len; ++i )
+		*cpt++ = getc(ttf);
+	    str = galloc(outlen+sizeof(unichar_t));
 	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
