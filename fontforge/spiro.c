@@ -136,7 +136,7 @@ return( NULL );
 	}
 	ss = bezctx_ff_close(bc);
 
-	if ( spiros[0].ty=='{' )
+	if ( (spiros[0].ty&0x7f)=='{' )
 	    spiros[n-1].ty = lastty;
     }
     ss->spiros = spiros;
