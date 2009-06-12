@@ -4293,6 +4293,8 @@ return;
 	    }
 	    sub->kc->subtable = sub;
 	    sub->kc->first_cnt = sub->kc->second_cnt = 1;
+	    sub->kc->firsts = gcalloc(1,sizeof(char *));
+	    sub->kc->seconds = gcalloc(1,sizeof(char *));
 	    sub->kc->offsets = gcalloc(1,sizeof(int16));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    sub->kc->adjusts = gcalloc(1,sizeof(DeviceTable));
