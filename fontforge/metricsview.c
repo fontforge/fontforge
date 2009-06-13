@@ -3612,6 +3612,7 @@ return;
     mv->vheight = mv->displayend-mv->topend-2;
     GDrawResize(mv->v,mv->vwidth, mv->vheight);
     MVRemetric(mv);
+    GDrawRequestExpose(mv->gw,NULL,true);
     GDrawRequestExpose(mv->v,NULL,true);
 }
 
