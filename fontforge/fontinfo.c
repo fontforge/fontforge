@@ -3704,7 +3704,7 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
 }
-	
+
 static int Gasp_Default(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -3714,7 +3714,7 @@ static int Gasp_Default(GGadget *g, GEvent *e) {
 
 	if ( !SFHasInstructions(d->sf)) {
 	    rows = 1;
-	    gasp = gcalloc(5,sizeof(struct matrix_data));
+	    gasp = gcalloc(rows*5,sizeof(struct matrix_data));
 	    gasp[0].u.md_ival = 65535;
 	    gasp[1].u.md_ival = 0;	/* no grid fit (we have no instructions, we can't grid fit) */
 	    gasp[2].u.md_ival = 1;	/* do anti-alias */
@@ -3722,7 +3722,7 @@ static int Gasp_Default(GGadget *g, GEvent *e) {
 	    gasp[4].u.md_ival = 0;	/* do no grid fit w/ sym smooth */
 	} else {
 	    rows = 3;
-	    gasp = gcalloc(5,sizeof(struct matrix_data));
+	    gasp = gcalloc(rows*5,sizeof(struct matrix_data));
 	    gasp[0].u.md_ival = 8;     gasp[1].u.md_ival = 0; gasp[2].u.md_ival = 1;
 		    gasp[3].u.md_ival = 0; gasp[4].u.md_ival = 0;
 	    gasp[5].u.md_ival = 16;    gasp[6].u.md_ival = 1; gasp[7].u.md_ival = 0;
