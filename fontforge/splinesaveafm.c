@@ -1749,6 +1749,9 @@ void SFLigatureCleanup(SplineFont *sf) {
     struct splinecharlist *scl, *sclnext;
     int j;
 
+    if (sf->internal_temp)
+return;
+
     for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL ) {
 	for ( l = sf->glyphs[j]->ligofme; l!=NULL; l = next ) {
 	    next = l->next;
@@ -1915,6 +1918,9 @@ void SFKernCleanup(SplineFont *sf,int isv) {
     int i;
     KernPair *kp, *p, *n;
     OTLookup *otl, *otlp, *otln;
+
+    if (sf->internal_temp)
+return;
 
     if ( (!isv && sf->kerns==NULL) || (isv && sf->vkerns==NULL) )	/* can't have gotten messed up */
 return;

@@ -371,7 +371,7 @@ return;
 	for ( i=0; i<mm->instance_count; ++i )
 	    ttf_dumpsfkerns(at, mm->instances[i], i, version);
     }
-    if ( must_use_old_style && !sf->internal_temp)
+    if ( must_use_old_style )
 	SFKernCleanup(sf,false);
 
     at->kernlen = ftell(at->kern);
