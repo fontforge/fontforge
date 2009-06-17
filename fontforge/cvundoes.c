@@ -1416,13 +1416,6 @@ return( copy(""));
     rewind(svg);
     fread(ret,1,*len,svg);
     fclose(svg);
-    /* !!!! Debug */
-	svg = fopen("foo.svg","w");
-	if ( svg!=NULL ) {
-	    fwrite(ret,1,*len,svg);
-	    fclose(svg);
-	}
-    /* !!!! end debug */
 return( ret );
 }
 #endif
