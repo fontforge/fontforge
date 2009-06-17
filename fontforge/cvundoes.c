@@ -1240,6 +1240,52 @@ return( head );
 }
 
 #ifndef _NO_LIBXML
+static int FFClipToSC(SplineChar *dummy,Undoes *cur) {
+    int lcnt;
+
+    if ( cur==NULL )
+return( false );
+
+    dummy->name = "dummy";
+    if ( cur->undotype!=ut_layers )
+	dummy->parent = cur->copied_from;
+    else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
+	dummy->parent = cur->u.multiple.mult->copied_from;
+    if ( dummy->parent==NULL )
+	dummy->parent = FontViewFirst()->sf;		/* Might not be right, but we need something */
+    dummy->width = cur->u.state.width;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( cur->undotype==ut_layers ) {
+	Undoes *ulayer;
+	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
+	dummy->layer_cnt = lcnt+1;
+	if ( lcnt!=1 )
+	    dummy->layers = gcalloc((lcnt+1),sizeof(Layer));
+	for ( ulayer = cur->u.multiple.mult, lcnt=1; ulayer!=NULL; ulayer=ulayer->next, ++lcnt) {
+	    if ( ulayer->undotype==ut_state || ulayer->undotype==ut_statehint ) {
+		dummy->layers[lcnt].fill_brush = ulayer->u.state.fill_brush;
+		dummy->layers[lcnt].stroke_pen = ulayer->u.state.stroke_pen;
+		dummy->layers[lcnt].dofill = ulayer->u.state.dofill;
+		dummy->layers[lcnt].dostroke = ulayer->u.state.dostroke;
+		dummy->layers[lcnt].splines = ulayer->u.state.splines;
+		dummy->layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,dummy,ly_fore);
+	    }
+	}
+    } else
+#endif
+    {
+#ifdef FONTFORGE_CONFIG_TYPE3
+	dummy->layers[ly_fore].fill_brush = cur->u.state.fill_brush;
+	dummy->layers[ly_fore].stroke_pen = cur->u.state.stroke_pen;
+	dummy->layers[ly_fore].dofill = cur->u.state.dofill;
+	dummy->layers[ly_fore].dostroke = cur->u.state.dostroke;
+#endif
+	dummy->layers[ly_fore].splines = cur->u.state.splines;
+	dummy->layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,dummy,ly_fore);
+    }
+return( true );
+}
+
 static void *copybuffer2svg(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
@@ -1265,49 +1311,9 @@ static void *copybuffer2svg(void *_copybuffer,int32 *len) {
 	}
     }
     out:
-    if ( cur==NULL || FontViewFirst()==NULL ) {
+    if ( FontViewFirst()==NULL || cur==NULL ) {
 	*len=0;
 return( copy(""));
-    }
-
-    memset(&dummy,0,sizeof(dummy));
-    dummy.layers = layers;
-    dummy.layer_cnt = 2;
-    dummy.name = "dummy";
-    if ( cur->undotype!=ut_layers )
-	dummy.parent = cur->copied_from;
-    else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
-	dummy.parent = cur->u.multiple.mult->copied_from;
-    if ( dummy.parent==NULL )
-	dummy.parent = FontViewFirst()->sf;		/* Might not be right, but we need something */
-#ifdef FONTFORGE_CONFIG_TYPE3
-    if ( cur->undotype==ut_layers ) {
-	Undoes *ulayer;
-	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
-	dummy.layer_cnt = lcnt+1;
-	if ( lcnt!=1 )
-	    dummy.layers = gcalloc((lcnt+1),sizeof(Layer));
-	for ( ulayer = cur->u.multiple.mult, lcnt=1; ulayer!=NULL; ulayer=ulayer->next, ++lcnt) {
-	    if ( ulayer->undotype==ut_state || ulayer->undotype==ut_statehint ) {
-		dummy.layers[lcnt].fill_brush = ulayer->u.state.fill_brush;
-		dummy.layers[lcnt].stroke_pen = ulayer->u.state.stroke_pen;
-		dummy.layers[lcnt].dofill = ulayer->u.state.dofill;
-		dummy.layers[lcnt].dostroke = ulayer->u.state.dostroke;
-		dummy.layers[lcnt].splines = ulayer->u.state.splines;
-		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy,ly_fore);
-	    }
-	}
-    } else
-#endif
-    {
-#ifdef FONTFORGE_CONFIG_TYPE3
-	dummy.layers[ly_fore].fill_brush = cur->u.state.fill_brush;
-	dummy.layers[ly_fore].stroke_pen = cur->u.state.stroke_pen;
-	dummy.layers[ly_fore].dofill = cur->u.state.dofill;
-	dummy.layers[ly_fore].dostroke = cur->u.state.dostroke;
-#endif
-	dummy.layers[ly_fore].splines = cur->u.state.splines;
-	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy,ly_fore);
     }
 
     svg = tmpfile();
@@ -1316,11 +1322,19 @@ return( copy(""));
 return( copy(""));
     }
 
+    memset(&dummy,0,sizeof(dummy));
+    dummy.layers = layers;
+    dummy.layer_cnt = 2;
+
+    if ( !FFClipToSC(&dummy,cur) ) {
+	fclose(svg);
+	*len=0;
+return( copy(""));
+    }
+
     old_order2 = dummy.parent->layers[ly_fore].order2;
     dummy.parent->layers[ly_fore].order2 = cur->was_order2;
     dummy.layers[ly_fore].order2 = cur->was_order2;
-    /* Don't bother to generate a preview here, that can take too long and */
-    /*  cause the paster to time out */
     _ExportSVG(svg,&dummy,ly_fore);
     dummy.parent->layers[ly_fore].order2 = old_order2;
 
@@ -1335,6 +1349,80 @@ return( copy(""));
     rewind(svg);
     fread(ret,1,*len,svg);
     fclose(svg);
+return( ret );
+}
+
+/* When a selection contains multiple glyphs, save them into an svg font */
+static void *copybuffer2svgmult(void *_copybuffer,int32 *len) {
+    Undoes *cur = &copybuffer, *c, *c2;
+    SplineFont *sf;
+    int cnt,i;
+    char *ret;
+    Layer *ly;
+    SplineChar *sc=NULL;
+    int old_order2, o2=false;
+    FILE *svg;
+
+    if ( cur->undotype!=ut_multiple || !CopyContainsVectors() || FontViewFirst()==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+
+    svg = tmpfile();
+    if ( svg==NULL ) {
+	*len=0;
+return( copy(""));
+    }
+
+    cur = cur->u.multiple.mult;
+    for ( cnt=0, c=cur; c!=NULL; c=c->next, ++cnt );
+
+    sf = SplineFontBlank(cnt);
+    sf->glyphcnt = cnt;
+    for ( i=0, c=cur; c!=NULL; c=c->next, ++i ) {
+	sf->glyphs[i] = sc = SFSplineCharCreate(sf);
+	sc->orig_pos = i;
+	ly = sc->layers;
+	if ( (c2 = c)->undotype==ut_composit )
+	    c2 = c2->u.composit.state;
+	FFClipToSC(sc,c2);
+	if ( ly!=sc->layers )
+	    free(ly);
+	o2 = c2->was_order2;
+    }
+
+    if ( sc!=NULL ) {
+	old_order2 = sc->parent->layers[ly_fore].order2;
+	sc->parent->layers[ly_fore].order2 = o2;
+	sc->layers[ly_fore].order2 = o2;
+	sf->ascent = sc->parent->ascent;
+	sf->descent = sc->parent->descent;
+    }
+    _WriteSVGFont(svg,sf,ff_svg,0,NULL,ly_fore);
+    if ( sc!=NULL )
+	sc->parent->layers[ly_fore].order2 = old_order2;
+
+    for ( i=0, c=cur; c!=NULL; c=c->next, ++i ) {
+	sc = sf->glyphs[i];
+	sc->layers[ly_fore].splines=NULL;
+	sc->layers[ly_fore].refs=NULL;
+	sc->name = NULL;
+    }
+    SplineFontFree(sf);
+
+    fseek(svg,0,SEEK_END);
+    *len = ftell(svg);
+    ret = galloc(*len);
+    rewind(svg);
+    fread(ret,1,*len,svg);
+    fclose(svg);
+    /* !!!! Debug */
+	svg = fopen("foo.svg","w");
+	if ( svg!=NULL ) {
+	    fwrite(ret,1,*len,svg);
+	    fclose(svg);
+	}
+    /* !!!! end debug */
 return( ret );
 }
 #endif
@@ -1448,6 +1536,11 @@ return;
     while ( cur ) {
 	switch ( cur->undotype ) {
 	  case ut_multiple:
+#ifndef _NO_LIBXML
+	    if ( CopyContainsVectors())
+		ClipboardAddDataType("application/x-font-svg",&copybuffer,0,sizeof(char),
+			copybuffer2svgmult,noop);
+#endif
 	    cur = cur->u.multiple.mult;
 	  break;
 	  case ut_composit:
@@ -1524,6 +1617,17 @@ int CopyContainsBitmap(void) {
 return( cur->u.composit.bitmaps!=NULL );
 
 return( cur->undotype==ut_bitmap || cur->undotype==ut_bitmapsel || cur->undotype==ut_noop );
+}
+
+int CopyContainsVectors(void) {
+    Undoes *cur = &copybuffer;
+    if ( cur->undotype==ut_multiple )
+	cur = cur->u.multiple.mult;
+    if ( cur->undotype==ut_composit )
+return( cur->u.composit.state!=NULL );
+
+return( cur->undotype==ut_state || cur->undotype==ut_statehint ||
+	cur->undotype==ut_statename || cur->undotype==ut_layers );
 }
 
 RefChar *CopyContainsRef(SplineFont *sf) {
@@ -1990,6 +2094,47 @@ return;
     }
     free(paste);
 }
+
+#ifndef _NO_LIBXML
+static void XClipFontToFFClip(void) {
+    int32 len;
+    int i;
+    char *paste;
+    SplineFont *sf;
+    SplineChar *sc;
+    Undoes *head=NULL, *last=NULL, *cur;
+
+    paste = ClipboardRequest("application/x-font-svg",&len);
+    if ( paste==NULL )
+return;
+    sf = SFReadSVGMem(paste,0);
+    if ( sf==NULL )
+return;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	if ( strcmp(sc->name,".notdef")==0 )
+    continue;
+	cur = SCCopyAll(sc,ly_fore,ct_fullcopy);
+	if ( cur!=NULL ) {
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+    }
+
+    SplineFontFree(sf);
+    free(paste);
+
+    if ( head==NULL )
+return;
+
+    CopyBufferFree();
+    copybuffer.undotype = ut_multiple;
+    copybuffer.u.multiple.mult = head;
+    copybuffer.copied_from = NULL;
+}
+#endif
 
 static double PasteFigureScale(SplineFont *newsf,SplineFont *oldsf) {
 
@@ -3459,6 +3604,11 @@ return;
 	if ( list==NULL )
 return;
     }
+
+#ifndef _NO_LIBXML
+    if ( copybuffer.undotype == ut_none && ClipboardHasType("application/x-font-svg"))
+	XClipFontToFFClip();
+#endif
 
     if ( copybuffer.undotype == ut_none ) {
 	j = -1;

@@ -995,6 +995,17 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     setlocale(LC_NUMERIC,oldloc);
 }
 
+int _WriteSVGFont(FILE *file,SplineFont *sf,enum fontformat format,int flags,
+	EncMap *map,int layer) {
+    int ret;
+
+    svg_sfdump(file,sf,layer);
+    ret = true;
+    if ( ferror(file))
+	ret = false;
+return( ret );
+}
+
 int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
 	EncMap *map,int layer) {
     FILE *file;
@@ -1268,9 +1279,11 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
     names[cnt] = NULL;
 
     choice = -1;
-    pt = strrchr(filename,'/');
+    pt = NULL;
+    if ( filename!=NULL )
+	pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
-    if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+    if ( pt!=NULL && (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
 	char *find = copy(lparen+1);
 	pt = strchr(find,')');
 	if ( pt!=NULL ) *pt='\0';
@@ -3617,33 +3630,11 @@ void SFSetOrder(SplineFont *sf,int order2) {
     }
 }
 
-SplineFont *SFReadSVG(char *filename, int flags) {
+static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {
     xmlNodePtr *fonts, font;
-    xmlDocPtr doc;
     SplineFont *sf;
-    char *temp=filename, *pt, *lparen;
     char *oldloc;
     char *chosenname = NULL;
-
-    if ( !libxml_init_base()) {
-	LogError( _("Can't find libxml2.\n") );
-return( NULL );
-    }
-
-    pt = strrchr(filename,'/');
-    if ( pt==NULL ) pt = filename;
-    if ( (lparen=strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
-	temp = copy(filename);
-	pt = temp + (lparen-filename);
-	*pt = '\0';
-    }
-
-    doc = _xmlParseFile(temp);
-    if ( temp!=filename ) free(temp);
-    if ( doc==NULL ) {
-	/* Can I get an error message from libxml? */
-return( NULL );
-    }
 
     fonts = FindSVGFontNodes(doc);
     if ( fonts==NULL || fonts[0]==NULL ) {
@@ -3679,6 +3670,48 @@ return( NULL );
 	}
     }
 return( sf );
+}
+
+SplineFont *SFReadSVG(char *filename, int flags) {
+    xmlDocPtr doc;
+    char *temp=filename, *pt, *lparen;
+
+    if ( !libxml_init_base()) {
+	LogError( _("Can't find libxml2.\n") );
+return( NULL );
+    }
+
+    pt = strrchr(filename,'/');
+    if ( pt==NULL ) pt = filename;
+    if ( (lparen=strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	temp = copy(filename);
+	pt = temp + (lparen-filename);
+	*pt = '\0';
+    }
+
+    doc = _xmlParseFile(temp);
+    if ( temp!=filename ) free(temp);
+    if ( doc==NULL ) {
+	/* Can I get an error message from libxml? */
+return( NULL );
+    }
+return( _SFReadSVG(doc,filename));
+}
+
+SplineFont *SFReadSVGMem(char *data, int flags) {
+    xmlDocPtr doc;
+
+    if ( !libxml_init_base()) {
+	LogError( _("Can't find libxml2.\n") );
+return( NULL );
+    }
+
+    doc = _xmlParseMemory(data,strlen(data));
+    if ( doc==NULL ) {
+	/* Can I get an error message from libxml? */
+return( NULL );
+    }
+return( _SFReadSVG(doc,NULL));
 }
 
 char **NamesReadSVG(char *filename) {

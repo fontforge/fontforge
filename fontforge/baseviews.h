@@ -252,6 +252,7 @@ enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 extern enum undotype CopyUndoType(void);
 extern int CopyContainsSomething(void);
 extern int CopyContainsBitmap(void);
+extern int CopyContainsVectors(void);
 extern const Undoes *CopyBufferGet(void);
 extern RefChar *CopyContainsRef(SplineFont *);
 extern char **CopyGetPosSubData(enum possub_type *type,SplineFont **copied_from,
