@@ -2018,6 +2018,7 @@ extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat form
 	enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern long mactime(void);
 extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
+extern int _WriteSVGFont(FILE *file,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern int WriteUFOFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern void SfListFree(struct sflist *sfs);
 extern void TTF_PSDupsDefault(SplineFont *sf);
@@ -2613,6 +2614,7 @@ extern SplineFont *_SFReadTTF(FILE *ttf,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
 extern SplineFont *SFReadTTF(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
+extern SplineFont *SFReadSVGMem(char *data,int flags);
 extern SplineFont *SFReadUFO(char *filename,int flags);
 extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *CFFParse(char *filename);
