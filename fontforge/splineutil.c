@@ -987,7 +987,8 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     ImageList *img;
 #endif
 
-    memset(b,0,sizeof(*b));
+    b->minx = b->miny = 1e10;
+    b->maxx = b->maxy = -1e10;
     first = last = ly_fore;
     if ( sc->parent!=NULL && sc->parent->multilayer )
 	last = sc->layer_cnt-1;
@@ -1029,6 +1030,8 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 	b->minx -= sw; b->miny -= sw;
 	b->maxx += sw; b->maxy += sw;
     }
+    if ( b->minx>1e9 )
+	memset(b,0,sizeof(*b));
 }
 
 void SplineCharLayerQuickBounds(SplineChar *sc,int layer,DBounds *bounds) {
@@ -1040,9 +1043,8 @@ void SplineCharLayerQuickBounds(SplineChar *sc,int layer,DBounds *bounds) {
 return;
     }
 
-    /* a char with no splines (ie. a space) must have an lbearing of 0 */
-    bounds->minx = bounds->maxx = 0;
-    bounds->miny = bounds->maxy = 0;
+    bounds->minx = bounds->miny = 1e10;
+    bounds->maxx = bounds->maxy = -1e10;
 
     SplineSetQuickBounds(sc->layers[layer].splines,bounds);
     
@@ -1057,6 +1059,9 @@ return;
 	    if ( temp.maxy > bounds->maxy ) bounds->maxy = temp.maxy;
 	}
     }
+    /* a char with no splines (ie. a space) must have an lbearing of 0 */
+    if ( bounds->minx>1e9 )
+	memset(bounds,0,sizeof(*bounds));
 }
 
 void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
@@ -4208,8 +4213,8 @@ return( 0 );
 	t1 += t1diff;
 	if (( t1max>t1min && t1>t1max ) || (t1max<t1min && t1<t1max) || cnt>3 )
     break;
-	m =   t1==0   ? (&s1->from->me.x)[other] :
-	      t1==1.0 ? (&s1->to->me.x)[other] :
+	m =   t1==0   ? (&s1->from->me.x)[major] :
+	      t1==1.0 ? (&s1->to->me.x)[major] :
 		((s1->splines[major].a*t1+s1->splines[major].b)*t1+
 			s1->splines[major].c)*t1+s1->splines[major].d;
 	oldt2 = t2;
