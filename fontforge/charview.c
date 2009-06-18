@@ -4323,7 +4323,7 @@ static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,rea
     int len;
 
     if ( val==0 ) val=0;		/* avoid -0 */
-    sprintf(buffer,format,val);
+    sprintf(buffer,format,(double)val); /* formats are given as for doubles */
     if ( align!=0 ) {
 	len = GDrawGetBiText8Width(pixmap,buffer,-1,-1,NULL);
 	if ( align==1 )
@@ -4339,7 +4339,7 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,re
     int len;
 
     if ( val==0 ) val=0;		/* avoid -0 */
-    sprintf(buffer,format,val);
+    sprintf(buffer,format,(double)val); /* formats are given as for doubles */
     if ( align!=0 ) {
 	len = strlen(buffer)*cv->sfh;
 	if ( align==1 )
