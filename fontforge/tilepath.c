@@ -1285,7 +1285,7 @@ static void TDFree(struct tiledata *td) {
     int i;
 
     for ( i=0 ; i<4; ++i )
-	SplinePointListFree( last_tiles[0]);
+	SplinePointListFree( last_tiles[i]);
 
     last_tiles[0] = td->firsttile;
     last_tiles[1] = td->basetile;
