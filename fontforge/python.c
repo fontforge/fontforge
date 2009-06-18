@@ -3002,6 +3002,28 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFLayer_NLTransform(PyFF_Layer *self, PyObject *args) {
+    char *xexpr, *yexpr;
+    SplineSet *ss;
+
+    if ( !PyArg_ParseTuple(args,"ss", &xexpr, &yexpr ) )
+return( NULL );
+
+    ss = SSFromLayer(self);
+    if ( ss==NULL )
+Py_RETURN( self );
+
+    if ( !SSNLTrans(ss,xexpr,yexpr) ) {
+	PyErr_Format(PyExc_TypeError, "Unparseable expression.");
+	SplinePointListsFree(ss);
+return( NULL );
+    }
+
+    LayerFromSS(ss,self);
+    SplinePointListsFree(ss);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFLayer_pickleReducer(PyFF_Layer *self, PyObject *args) {
     PyObject *reductionTuple, *argTuple;
     int i;
@@ -3429,6 +3451,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Returns whether this layer intersects itself" },
     {"transform", (PyCFunction)PyFFLayer_Transform, METH_VARARGS,
 	     "Transform a layer by a 6 element matrix." },
+    { "nltransform", (PyCFunction)PyFFLayer_NLTransform, METH_VARARGS,
+	    "Transform a glyph by two non-linear expressions (one for x, one for y)." },
     {"addExtrema", (PyCFunction)PyFFLayer_AddExtrema, METH_VARARGS,
 	     "Add Extrema to a layer" },
     {"round", (PyCFunction)PyFFLayer_Round, METH_VARARGS,
@@ -6475,6 +6499,19 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFGlyph_NLTransform(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    char *xexpr, *yexpr;
+
+    if ( !PyArg_ParseTuple(args,"ss", &xexpr, &yexpr ) )
+return( NULL );
+    if ( !SCNLTrans(sc,((PyFF_Glyph *) self)->layer,xexpr,yexpr) ) {
+	PyErr_Format(PyExc_TypeError, "Unparseable expression.");
+return( NULL );
+    }
+Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
     SplineChar *sc = self->sc;
@@ -6661,6 +6698,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "simplify", (PyCFunction)PyFFGlyph_Simplify, METH_VARARGS, "Simplifies a glyph" },
     { "stroke", (PyCFunction)PyFFGlyph_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
     { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
+    { "nltransform", (PyCFunction)PyFFGlyph_NLTransform, METH_VARARGS, "Transform a glyph by two non-linear expressions (one for x, one for y)." },
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     { "unlinkThisGlyph", PyFFGlyph_unlinkThisGlyph, METH_NOARGS, "Unlink all references to the current glyph in any other glyph in the font."},
     { "useRefsMetrics", PyFFGlyph_useRefsMetrics, METH_VARARGS, "Search the references of the current layer of the glyph and set the named reference's \"useMyMetrics\" flag."},
@@ -12572,6 +12610,19 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_NLTransform(PyFF_Layer *self, PyObject *args) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    char *xexpr, *yexpr;
+
+    if ( !PyArg_ParseTuple(args,"ss", &xexpr, &yexpr ) )
+return( NULL );
+    if ( !SFNLTrans(fv,xexpr,yexpr) ) {
+	PyErr_Format(PyExc_TypeError, "Unparseable expression.");
+return( NULL );
+    }
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_Simplify(PyFF_Font *self, PyObject *args) {
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
     FontViewBase *fv = self->fv;
@@ -12830,7 +12881,8 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "round", (PyCFunction)PyFFFont_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
     { "simplify", (PyCFunction)PyFFFont_Simplify, METH_VARARGS, "Simplifies a glyph" },
     { "stroke", (PyCFunction)PyFFFont_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
-    { "transform", (PyCFunction)PyFFFont_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
+    { "transform", (PyCFunction)PyFFFont_Transform, METH_VARARGS, "Transform a font by a 6 element matrix." },
+    { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
     { "validate", PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
     NULL

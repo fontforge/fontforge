@@ -326,6 +326,8 @@ extern void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2
 extern void TransDStemHints(DStemInfo *ds,real xmul, real xoff, real ymul, real yoff, int round_to_int );
 extern void VrTrans(struct vr *vr,real transform[6]);
 extern int SFNLTrans(FontViewBase *fv,char *x_expr,char *y_expr);
+extern int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr);
+extern int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr);
 extern void FVPointOfView(FontViewBase *fv,struct pov_data *);
 extern void FVStrokeItScript(void *fv, StrokeInfo *si,int pointless);
 extern void FVOutline(struct fontviewbase *fv, real width);
