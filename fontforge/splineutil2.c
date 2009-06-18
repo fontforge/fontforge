@@ -2339,7 +2339,7 @@ static void SPLForceLines(SplineChar *sc,SplineSet *ss,double bump_size) {
     SplinePoint *sp;
     int any;
     BasePoint unit;
-    double len, minlen = (sc->parent->ascent+sc->parent->descent)/20.0;
+    double len, minlen = sc==NULL ? 50.0 : (sc->parent->ascent+sc->parent->descent)/20.0;
     double diff, xoff, yoff, len2;
     int order2=false;
 
@@ -4715,6 +4715,7 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     int lastscan = *_lastscan;
     SplineChar dummy;
     Layer layers[2];
+    int cnt;
 
     base = *_base;
 
@@ -4739,7 +4740,8 @@ return( NULL );
 	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
 	if ( i<=lastscan )
     continue;
-	if ( el.ordered[i]!=NULL || el.ends[i] ) {
+	for ( apt=active, cnt=0; apt!=NULL; apt = apt->aenext , ++cnt );
+	if ( el.ordered[i]!=NULL || el.ends[i] || cnt&1 ) {
 	    waschange = change;
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
 	}
