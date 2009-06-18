@@ -601,7 +601,7 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
     ss->last = last;
 }
 
-static void SCNLTrans(SplineChar *sc,struct context *c,int layer) {
+static void _SCNLTrans(SplineChar *sc,struct context *c,int layer) {
     SplineSet *ss;
     RefChar *ref;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -659,7 +659,7 @@ void _SFNLTrans(FontViewBase *fv,struct context *c) {
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
 		(sc = fv->sf->glyphs[gid])!=NULL && !sc->ticked ) {
-	    SCNLTrans(sc,c,fv->active_layer);
+	    _SCNLTrans(sc,c,fv->active_layer);
 	    sc->ticked = true;
 	}
     for ( i=0; i<fv->map->enccount; ++i )
@@ -686,6 +686,45 @@ return( false );
     }
 
     _SFNLTrans(fv,&c);
+
+    nlt_exprfree(c.x_expr);
+    nlt_exprfree(c.y_expr);
+return( true );
+}
+
+int SSNLTrans(SplineSet *ss,char *x_expr,char *y_expr) {
+    struct context c;
+
+    memset(&c,0,sizeof(c));
+    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
+return( false );
+    if ( (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL ) {
+	nlt_exprfree(c.x_expr);
+return( false );
+    }
+
+    while ( ss!=NULL ) {
+	SplineSetNLTrans(ss,&c,false);
+	ss = ss->next;
+    }
+
+    nlt_exprfree(c.x_expr);
+    nlt_exprfree(c.y_expr);
+return( true );
+}
+
+int SCNLTrans(SplineChar *sc, int layer,char *x_expr,char *y_expr) {
+    struct context c;
+
+    memset(&c,0,sizeof(c));
+    if ( (c.x_expr = nlt_parseexpr(&c,x_expr))==NULL )
+return( false );
+    if ( (c.y_expr = nlt_parseexpr(&c,y_expr))==NULL ) {
+	nlt_exprfree(c.x_expr);
+return( false );
+    }
+
+    _SCNLTrans(sc,&c,layer);
 
     nlt_exprfree(c.x_expr);
     nlt_exprfree(c.y_expr);

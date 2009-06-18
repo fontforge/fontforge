@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 27-May-2009 -->
+  <!-- AP: Last modified: 17-Jun-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1345,6 +1345,15 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD>Transforms the layer by the matrix</TD>
     </TR>
     <TR>
+      <TD><CODE>nltransform</CODE></TD>
+      <TD><CODE>(xexpr,yexpr)</CODE></TD>
+      <TD>xexpr and yexpr are strings specifying non-linear transformations that
+	will be applied to all points in the layer (with xexpr being applied to x
+	values, and yexpr to y values, of course). The syntax for the expressions
+	is explained in the <A HREF="transform.html#Non-Linear">non-linear transform
+	dialog</A>.</TD>
+    </TR>
+    <TR>
       <TD><CODE>boundingBox</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) into
@@ -2228,6 +2237,15 @@ pen = None;				# Finalize the pen. This tells FontForge
 	    round -- Round to int after the transformation is done.
 	</UL>
       </TD>
+    </TR>
+    <TR>
+      <TD><CODE>nltransform</CODE></TD>
+      <TD><CODE>(xexpr,yexpr)</CODE></TD>
+      <TD>xexpr and yexpr are strings specifying non-linear transformations that
+	will be applied to all points in the current layer (with xexpr being applied
+	to x values, and yexpr to y values, of course). The syntax for the expressions
+	is explained in the <A HREF="transform.html#Non-Linear">non-linear transform
+	dialog</A>.</TD>
     </TR>
     <TR>
       <TD><CODE>unlinkRef</CODE></TD>
@@ -4297,6 +4315,15 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>transform</CODE></TD>
       <TD><CODE>(matrix)</CODE></TD>
       <TD>Transforms all selected glyphs by the matrix.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>nltransform</CODE></TD>
+      <TD><CODE>(xexpr,yexpr)</CODE></TD>
+      <TD>xexpr and yexpr are strings specifying non-linear transformations that
+	will be applied to all points in the selected glyphs of the font (with xexpr
+	being applied to x values, and yexpr to y values, of course). The syntax
+	for the expressions is explained in the
+	<A HREF="transform.html#Non-Linear">non-linear transform dialog</A>.</TD>
     </TR>
     <TR>
       <TD><CODE>unlinkReferences</CODE></TD>
