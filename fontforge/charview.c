@@ -7192,6 +7192,7 @@ return;
 
 static void CVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    cv->lastselpt = NULL; cv->lastselcp = NULL;
     NonLinearDlg(NULL,cv);
 }
 

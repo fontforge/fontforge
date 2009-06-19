@@ -59,6 +59,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     char *expstr;
 
     memset(&d,'\0',sizeof(d));
+    memset(&c,'\0',sizeof(c));
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
