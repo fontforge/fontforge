@@ -499,21 +499,52 @@ return( val );
 }
 
 static void NLTransPoint(SplinePoint *sp,struct context *c) {
+    BasePoint old, off, delta;
+    int fixup = true;
+
+    old = sp->me;
 
     if ( c->pov_func!=NULL ) {
 	(c->pov_func)(&sp->me,c->pov);
-	(c->pov_func)(&sp->prevcp,c->pov);
-	(c->pov_func)(&sp->nextcp,c->pov);
+	if (( sp->next!=NULL && sp->next->order2 ) || (sp->prev!=NULL && sp->prev->order2 )) {
+	    (c->pov_func)(&sp->prevcp,c->pov);
+	    (c->pov_func)(&sp->nextcp,c->pov);
+	    fixup = false;
+	} else {
+	    off.x = old.x+1; off.y = old.y+1;
+	    (c->pov_func)(&off,c->pov);
+	    delta.x = off.x - sp->me.x;
+	    delta.y = off.y - sp->me.y;
+	}
     } else {
 	c->x = sp->me.x; c->y = sp->me.y;
 	sp->me.x = NL_expr(c,c->x_expr);
 	sp->me.y = NL_expr(c,c->y_expr);
-	c->x = sp->prevcp.x; c->y = sp->prevcp.y;
-	sp->prevcp.x = NL_expr(c,c->x_expr);
-	sp->prevcp.y = NL_expr(c,c->y_expr);
-	c->x = sp->nextcp.x; c->y = sp->nextcp.y;
-	sp->nextcp.x = NL_expr(c,c->x_expr);
-	sp->nextcp.y = NL_expr(c,c->y_expr);
+	if (( sp->next!=NULL && sp->next->order2 ) || (sp->prev!=NULL && sp->prev->order2 )) {
+	    c->x = sp->prevcp.x; c->y = sp->prevcp.y;
+	    sp->prevcp.x = NL_expr(c,c->x_expr);
+	    sp->prevcp.y = NL_expr(c,c->y_expr);
+	    c->x = sp->nextcp.x; c->y = sp->nextcp.y;
+	    sp->nextcp.x = NL_expr(c,c->x_expr);
+	    sp->nextcp.y = NL_expr(c,c->y_expr);
+	    fixup = false;
+	} else {
+	    /* The slope is important, the control points are a way of expressing */
+	    /*  the slope. With a linear transform, transforming the cp would */
+	    /*  give us the correct transformation of the slope. Not so here */
+	    /*  Instead we want to figure out the transform around sp->me, and */
+	    /*  apply that to the slope. Pretend it is linear */
+	    ++c->x; ++c->y;
+	    delta.x = NL_expr(c,c->x_expr) - sp->me.x;
+	    delta.y = NL_expr(c,c->y_expr) - sp->me.y;
+	}
+    }
+    if ( fixup ) {
+	/* A one unit change in x is transformed into delta.x */
+	sp->prevcp.x = (sp->prevcp.x-old.x)*delta.x + sp->me.x;
+	sp->prevcp.y = (sp->prevcp.y-old.y)*delta.y + sp->me.y;
+	sp->nextcp.x = (sp->nextcp.x-old.x)*delta.x + sp->me.x;
+	sp->nextcp.y = (sp->nextcp.y-old.y)*delta.y + sp->me.y;
     }
 }
 
@@ -545,9 +576,9 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 	    next = chunkalloc(sizeof(SplinePoint));
 	    *next = *sp;
 	    next->hintmask = NULL;
-	    next->next = next->prev = NULL;
 	    if ( everything || next->selected )
 		NLTransPoint(next,c);
+	    next->next = next->prev = NULL;
 	    if ( everything || (next->selected && last->selected) ) {
 		xsp = &sp->prev->splines[0]; ysp = &sp->prev->splines[1];
 		for ( i=0; i<20; ++i ) {
@@ -566,7 +597,12 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 			mids[i].x = temp.x; mids[i].y = temp.y;
 		    }
 		}
-		ApproximateSplineFromPoints(last,next,mids,20,false);
+		if ( sp->prev->order2 )	/* Can't be order2 */
+		    ApproximateSplineFromPoints(last,next,mids,20,true);
+		else
+		    /* We transformed the slopes carefully, and I hope correctly */
+		    /* This should give smoother joins that the above function */
+		    ApproximateSplineFromPointsSlopes(last,next,mids,20,false);
 	    } else
 		SplineMake3(last,next);
 	    last = next;
@@ -875,7 +911,8 @@ return;
 
     vanish.x_vanish = x_vanish;
     vanish.y_vanish = y_vanish;
-    memset(&c,0,sizeof(c)); c.pov = &vanish; c.pov_func = VanishingTrans;
+    memset(&c,0,sizeof(c));
+    c.pov = &vanish; c.pov_func = VanishingTrans;
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	SplineSetNLTrans(spl,&c,false);
     }
