@@ -1394,13 +1394,13 @@ static void CI_BoundsToMargin(CharInfo *ci) {
     if ( err )
 return;
     SplineCharFindBounds(ci->sc,&b);
-    sprintf( buffer, "%g", b.minx-margin );
+    sprintf( buffer, "%g", (double)(b.minx-margin) );
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinX),buffer);
-    sprintf( buffer, "%g", b.miny-margin );
+    sprintf( buffer, "%g", (double)(b.miny-margin) );
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinY),buffer);
-    sprintf( buffer, "%g", b.maxx+margin );
+    sprintf( buffer, "%g", (double)(b.maxx+margin) );
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxX),buffer);
-    sprintf( buffer, "%g", b.maxy+margin );
+    sprintf( buffer, "%g", (double)(b.maxy+margin) );
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
 }
 
@@ -3740,18 +3740,18 @@ static void CIFillup(CharInfo *ci) {
 
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin),margined);
 	if ( margined ) {
-	    sprintf( buffer, "%g", sc->tile_margin );
+	    sprintf( buffer, "%g", (double) sc->tile_margin );
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileMargin),buffer);
 	    CI_BoundsToMargin(ci);
 	} else {
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileMargin),"0");
-	    sprintf( buffer, "%g", sc->tile_bounds.minx );
+	    sprintf( buffer, "%g", (double) sc->tile_bounds.minx );
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinX),buffer);
-	    sprintf( buffer, "%g", sc->tile_bounds.miny );
+	    sprintf( buffer, "%g", (double) sc->tile_bounds.miny );
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinY),buffer);
-	    sprintf( buffer, "%g", sc->tile_bounds.maxx );
+	    sprintf( buffer, "%g", (double) sc->tile_bounds.maxx );
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxX),buffer);
-	    sprintf( buffer, "%g", sc->tile_bounds.maxy );
+	    sprintf( buffer, "%g", (double) sc->tile_bounds.maxy );
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
 	}
     }
