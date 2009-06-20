@@ -368,11 +368,15 @@ static void MarkTranslationRefs(SplineFont *sf,int layer) {
 /* ********************** Type1 PostScript CharStrings ********************** */
 /* ************************************************************************** */
 
-static real myround( real pos, int round ) {
+static bigreal myround( bigreal pos, int round ) {
     if ( round )
 return( rint( pos ));
+#if 0
+    else if ( RealWithin(rint(pos*1000),pos*1000,.01) )
+return( rint( pos*1000. )/1000. );
+#endif
     else
-return( rint( pos*100. )/100. );
+return( rint( pos*1024. )/1024. );
 }
 
 static void AddNumber(GrowBuf *gb, real pos, int round) {
@@ -383,14 +387,36 @@ static void AddNumber(GrowBuf *gb, real pos, int round) {
     if ( gb->pt+8>=gb->end )
 	GrowBuffer(gb);
 
-    pos = rint(100*pos)/100;
-
-    if ( !round && pos!=floor(pos)) {
-	pos *= 100;
-	dodiv = true;
+    if ( !round && pos!=floor(pos) ) {
+#if 0
+	if ( RealWithin(rint(pos*1000),pos*1000,.01) ) {
+	    if ( RealWithin(rint(pos*100),pos*100,.01) ) {
+		pos *= 100;
+		dodiv = 100;
+	    } else {
+		pos *= 1000;
+		dodiv = 1000;
+	    }
+	} else
+#endif
+	{
+	    if ( rint(pos*64)/64 == pos ) {
+		pos *= 64;
+		dodiv = 64;
+	    } else {
+		pos *= 1024;
+		dodiv = 1024;
+	    }
+	}
     }
+    pos = rint(pos);
+    if ( dodiv>0 && floor(pos)/dodiv == floor(pos/dodiv) ) {
+	pos = rint(pos/dodiv);
+	dodiv = 0;
+    }
+    val = pos;
     str = gb->pt;
-    val = rint(pos);
+
     if ( pos>=-107 && pos<=107 )
 	*str++ = val+139;
     else if ( pos>=108 && pos<=1131 ) {
@@ -410,7 +436,13 @@ static void AddNumber(GrowBuf *gb, real pos, int round) {
 	*str++ = val&0xff;
     }
     if ( dodiv ) {
-	*str++ = 100+139;	/* 100 */
+	if ( dodiv<107 )
+	    *str++ = dodiv+139;
+	else {
+	    dodiv -= 108;
+	    *str++ = (dodiv>>8)+247;
+	    *str++ = dodiv&0xff;
+	}
 	*str++ = 12;		/* div (byte1) */
 	*str++ = 12;		/* div (byte2) */
     }
@@ -421,7 +453,7 @@ static void AddNumber(GrowBuf *gb, real pos, int round) {
 /*  which must all be added, and then a call made to the appropriate blend routine */
 /* This is complicated because all the data may not fit on the stack so we */
 /*  may need to make multiple calls */
-static void AddData(GrowBuf *gb, real data[MmMax][6], int instances, int num_coords,
+static void AddData(GrowBuf *gb, bigreal data[MmMax][6], int instances, int num_coords,
 	int round) {
     int allsame = true, alls[6];
     int i,j, chunk,min,max,subr;
@@ -478,7 +510,7 @@ int CvtPsStem3(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round) {
     StemInfo *h1, *h2, *h3;
     StemInfo _h1, _h2, _h3;
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
     int i;
     real off;
 
@@ -544,7 +576,7 @@ return( true );
 static void CvtPsHints(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round, int iscjk, real *offsets ) {
     StemInfo *hs[MmMax];
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
     int i;
     real off;
 
@@ -580,7 +612,7 @@ return;
 static void CvtPsMasked(GrowBuf *gb,SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round, uint8 mask[12] ) {
     StemInfo *hs[MmMax];
-    real data[MmMax][6], off;
+    bigreal data[MmMax][6], off;
     int i;
 
     for ( i=0; i<instance_count; ++i )
@@ -801,11 +833,11 @@ return;						/* the subroutine currently */
 	StartNextSubroutine(gb,hdb);
 }
 
-static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,int instance_count,
+static void _moveto(GrowBuf *gb,DBasePoint *current,BasePoint *to,int instance_count,
 	int line, int round, struct hintdb *hdb) {
     BasePoint temp[MmMax];
     int i, samex, samey;
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
 
     if ( gb->pt+18 >= gb->end )
 	GrowBuffer(gb);
@@ -830,11 +862,15 @@ static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,int instance_co
 	    data[i][0] = to[i].y-current[i].y;
 	AddData(gb,data,instance_count,1,round);
 	*(gb->pt)++ = line ? 7 : 4;		/* v move/line to */
+	for ( i=0; i<instance_count; ++i )
+	    current[i].y += data[i][0];
     } else if ( samey ) {
 	for ( i=0; i<instance_count; ++i )
 	    data[i][0] = to[i].x-current[i].x;
 	AddData(gb,data,instance_count,1,round);
 	*(gb->pt)++ = line ? 6 : 22;		/* h move/line to */
+	for ( i=0; i<instance_count; ++i )
+	    current[i].x += data[i][0];
     } else {
 	for ( i=0; i<instance_count; ++i ) {
 	    data[i][0] = to[i].x-current[i].x;
@@ -842,14 +878,16 @@ static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,int instance_co
 	}
 	AddData(gb,data,instance_count,2,round);
 	*(gb->pt)++ = line ? 5 : 21;		/* r move/line to */
+	for ( i=0; i<instance_count; ++i ) {
+	    current[i].x += data[i][0];
+	    current[i].y += data[i][1];
+	}
     }
-    for ( i=0; i<instance_count; ++i )
-	current[i] = to[i];
     if ( !line )
 	StartNextSubroutine(gb,hdb);
 }
 
-static void moveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],
+static void moveto(GrowBuf *gb,DBasePoint *current,Spline *splines[MmMax],
 	int instance_count, int line, int round, struct hintdb *hdb) {
     BasePoint to[MmMax];
     int i;
@@ -861,7 +899,7 @@ static void moveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],
     _moveto(gb,current,to,instance_count,line,round,hdb);
 }
 
-static void splmoveto(GrowBuf *gb,BasePoint *current,SplineSet *spl[MmMax],
+static void splmoveto(GrowBuf *gb,DBasePoint *current,SplineSet *spl[MmMax],
 	int instance_count, int line, int round, struct hintdb *hdb) {
     BasePoint to[MmMax];
     int i;
@@ -898,7 +936,7 @@ static int AnyRefs(SplineChar *sc,int layer) {
 return( sc->layers[layer].refs!=NULL );
 }
 
-static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint rpos[MmMax],
+static void refmoveto(GrowBuf *gb,DBasePoint *current,BasePoint rpos[MmMax],
 	int instance_count, int line, int round, struct hintdb *hdb, RefChar *refs[MmMax]) {
     BasePoint to[MmMax];
     int i;
@@ -914,10 +952,10 @@ static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint rpos[MmMax],
     _moveto(gb,current,to,instance_count,line,round,hdb);
 }
 
-static void curveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],int instance_count,
+static void curveto(GrowBuf *gb,DBasePoint *current,Spline *splines[MmMax],int instance_count,
 	int round, struct hintdb *hdb) {
     BasePoint temp1[MmMax], temp2[MmMax], temp3[MmMax], *c0[MmMax], *c1[MmMax], *s1[MmMax];
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
     int i, op, opcnt;
     int vh, hv;
 
@@ -952,6 +990,10 @@ static void curveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],int in
 	}
 	op = 30;		/* vhcurveto */
 	opcnt = 4;
+	for ( i=0; i<instance_count; ++i ) {
+	    current[i].x += data[i][1]+data[i][3];
+	    current[i].y += data[i][0]+data[i][2];
+	}
     } else if ( hv ) {
 	for ( i=0; i<instance_count; ++i ) {
 	    data[i][0] = c0[i]->x-current[i].x;
@@ -961,6 +1003,10 @@ static void curveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],int in
 	}
 	op = 31;		/* hvcurveto */
 	opcnt = 4;
+	for ( i=0; i<instance_count; ++i ) {
+	    current[i].x += data[i][0]+data[i][2];
+	    current[i].y += data[i][1]+data[i][3];
+	}
     } else {
 	for ( i=0; i<instance_count; ++i ) {
 	    data[i][0] = c0[i]->x-current[i].x;
@@ -972,14 +1018,15 @@ static void curveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],int in
 	}
 	op = 8;		/* rrcurveto */
 	opcnt=6;
+	for ( i=0; i<instance_count; ++i ) {
+	    current[i].x += data[i][0]+data[i][2]+data[i][4];
+	    current[i].y += data[i][1]+data[i][3]+data[i][5];
+	}
     }
     AddData(gb,data,instance_count,opcnt,false);
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
     *(gb->pt)++ = op;
-
-    for ( i=0; i<instance_count; ++i )
-	current[i] = *s1[i];
 }
 
 static int SplinesAreFlexible(Spline *splines[MmMax], int instance_count) {
@@ -996,14 +1043,14 @@ return( false );
 return( true );
 }
 
-static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
+static void flexto(GrowBuf *gb,DBasePoint current[MmMax],Spline *pspline[MmMax],
 	int instance_count,int round, struct hintdb *hdb) {
     BasePoint *c0, *c1, *mid, *end=NULL;
     Spline *nspline;
     BasePoint offsets[MmMax][8];
     int i,j;
     BasePoint temp1, temp2, temp3, temp;
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
 
     for ( j=0; j<instance_count; ++j ) {
 	c0 = &pspline[j]->from->nextcp;
@@ -1048,7 +1095,8 @@ static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
 	offsets[j][5].x = c1->x-c0->x;		offsets[j][5].y = c1->y-c0->y;
 	offsets[j][6].x = end->x-c1->x;		offsets[j][6].y = end->y-c1->y;
 	offsets[j][7].x = end->x;		offsets[j][7].y = end->y;
-	current[j] = *end;
+	current[j].x = end->x;
+	current[j].y = end->y;
     }
 
     if ( hdb!=NULL )
@@ -1082,11 +1130,12 @@ static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
     *(gb->pt)++ = 0+139;		/* 0 */
     *(gb->pt)++ = 10;			/* callsubr */
 
-    *current = *end;
+    current->x = end->x;
+    current->y = end->y;
 }
 
 static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instance_count,
-	BasePoint current[MmMax],
+	DBasePoint current[MmMax],
 	int round, struct hintdb *hdb, int is_order2, int stroked ) {
     Spline *spline[MmMax], *first;
     SplinePointList temp[MmMax], *freeme=NULL;
@@ -1243,7 +1292,7 @@ static int IsSeacable(GrowBuf *gb, SplineChar *scs[MmMax],
     RefChar space, t1, t2;
     DBounds b;
     int i, j, swap;
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
 
     for ( j=0 ; j<instance_count; ++j )
 	if ( !IsPSSeacable(scs[j],layer))
@@ -1308,9 +1357,9 @@ return( false );
     }
 
     SplineCharFindBounds(r1->sc,&b);
-    r1->sc->lsidebearing = round?rint(b.minx):b.minx;
+    r1->sc->lsidebearing = myround(b.minx,round);
     SplineCharFindBounds(r2->sc,&b);
-    r2->sc->lsidebearing = round?rint(b.minx):b.minx;
+    r2->sc->lsidebearing = myround(b.minx,round);
 
     if ( (r1->sc->width!=scs[0]->width || r1->sc->lsidebearing!=scs[0]->lsidebearing) &&
 	 r2->sc->width==scs[0]->width && r2->sc->lsidebearing==scs[0]->lsidebearing &&
@@ -1384,7 +1433,7 @@ return( false );
 
 static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	struct hintdb *hdb, RefChar *r[MmMax], BasePoint trans[MmMax],
-	BasePoint current[MmMax],
+	DBasePoint current[MmMax],
 	struct pschars *subrs, int round, int iscjk, int layer) {
     BasePoint *bpt;
     BasePoint rtrans[MmMax], rpos[MmMax];
@@ -1448,7 +1497,7 @@ static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 
 static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 	struct hintdb *hdb, BasePoint *trans, struct pschars *subrs,
-	BasePoint current[MmMax], int flags, int iscjk,
+	DBasePoint current[MmMax], int flags, int iscjk,
 	int instance_count, int layer ) {
     BasePoint subtrans[MmMax];
     SplineChar *rscs[MmMax];
@@ -1517,7 +1566,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	GlyphInfo *gi) {
     DBounds b;
     GrowBuf gb;
-    BasePoint current[MmMax];
+    DBasePoint current[MmMax];
     unsigned char *ret;
     struct hintdb hintdb, *hdb=NULL;
     StemInfo *oldh[MmMax], *oldv[MmMax];
@@ -1525,7 +1574,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     BasePoint trans[MmMax];
     int instance_count, i;
     SplineChar *scs[MmMax];
-    real data[MmMax][6];
+    bigreal data[MmMax][6];
     MMSet *mm = sc->parent->mm;
     HintMask *hm[MmMax];
     int fixuphm = false;
@@ -1569,8 +1618,8 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     memset(current,'\0',sizeof(current));
     for ( i=0; i<instance_count; ++i ) {
 	SplineCharFindBounds(scs[i],&b);
-	scs[i]->lsidebearing = current[i].x = round?rint(b.minx):b.minx;
-	data[i][0] = b.minx;
+	scs[i]->lsidebearing = current[i].x = myround(b.minx,round);
+	data[i][0] = current[i].x;
 	data[i][1] = scs[i]->width;
     }
     AddData(&gb,data,instance_count,2,round);
