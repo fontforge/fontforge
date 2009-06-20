@@ -1787,6 +1787,16 @@ return( SplineFontRasterize(_sf,layer,pixelsize,true));
 return( bdf );
 }
 
+static void ByteMult(BDFChar *bc,int factor) {
+    /* Internal rasterizer uses bit depth 4, but font expects 8. Correct by multiplying each byte by 17 */
+    uint8 *pt, *end;
+
+    pt = bc->bitmap;
+    end = pt + bc->bytes_per_line*(bc->ymax-bc->ymin+1);
+    while ( pt<end )
+	*pt++ *= factor;
+}
+
 BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
     SplineChar *sc;
 
@@ -1820,9 +1830,11 @@ return(NULL);
     else
 	bdf->glyphs[index] = NULL;
     if ( bdf->glyphs[index]==NULL ) {
-	if ( bdf->clut )
+	if ( bdf->clut ) {
 	    bdf->glyphs[index] = SplineCharAntiAlias(sc,bdf->layer,bdf->truesize,4);
-	else
+	    if ( bdf->freetype_context!=NULL || bdf->recontext_freetype || bdf->unhinted_freetype )
+		ByteMult(bdf->glyphs[index],17);	/* Internal rasterizer uses bit depth 4, but font expects 8. Correct by multiplying each byte by 17 */
+	} else
 	    bdf->glyphs[index] = SplineCharRasterize(sc,bdf->layer,bdf->truesize);
     }
 return( bdf->glyphs[index] );
