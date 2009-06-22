@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 17-Jun-2009 -->
+  <!-- AP: Last modified: 22-Jun-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2588,7 +2588,10 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>cvt</CODE></TD>
       <TD colspan=2>Returns a sequence object containing the font's cvt table.
 	Changes made to this object will be made to the font (this is a reference
-	not a copy).</TD>
+	not a copy).<BR>
+	The object has one additional method cvt.find(value[,low,high]) which finds
+	the index of value in the cvt table (or -1 if not found). If low and high
+	are specified then the index will be between [low,high).</TD>
     </TR>
     <TR>
       <TD><CODE>descent</CODE></TD>
