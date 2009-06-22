@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 24-Feb-2009 -->
+  <!-- AP: Last modified: 22-Jun-2009 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,219 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      22-June-2009
+      <UL>
+	<LI>
+	  Apple seems to have broken the X11 clipboard around 10.5.7. Or so other people
+	  tell me. I can't reproduce the issue on my 10.5.7 system.
+	  <P>
+	  I hope I have worked around this by adding a preference item<BR>
+	  &nbsp;
+	  &nbsp;File-&gt;Preferences-&gt;Generic-&gt;ExportClipboard<BR/>
+	  Turn this <STRONG>Off</STRONG> if the clipboard doesn't seem to work.
+	  <P>
+	  Peter Baker says that a solution is to go into X11 Preferences, click on
+	  the "Input" tab, and uncheck "Enable key equivalents under X11".
+	  <P>
+	  Possibly downloading a new set of developer tools will fix it:
+	  <PRE>  http://developer.apple.com/Tools/
+    (then log in, (or become a member &amp; log in, it's free))
+  Click on Downloads
+  In the "Downloads" side bar, click on "Developer Tools"
+  Download and Install 3.1.3
+</PRE>
+	<LI>
+	  Add support for friendly names attached to style set features (New in OTF
+	  1.6).
+	<LI>
+	  Add support for Mark Sets (New in OTF 1.6)
+	<LI>
+	  Serhij Dubyk has provided a Ukrainian UI.
+	<LI>
+	  Alexandre Prokoudine has updated the Russian UI.
+	<LI>
+	  Various patches from Michal fixing some out of bound array references.
+	<LI>
+	  Added a cvt.find method to the python cvt object which returns the index
+	  in the cvt table of a given value (or -1 if not found).
+	<LI>
+	  Two issues:
+	  <UL>
+	    <LI>
+	      Apple has changed the name of the preference file for X11. Annoying. Pointless.
+	    <LI>
+	      Apple (or xorg) has changed the default setting of DISPLAY.
+	  </UL>
+	  <P>
+	  Together these meant that ff did not use appropriate command keys in the
+	  menus.<BR/>
+	  I wish Apple wouldn't do pointless changes.
+	<LI>
+	  When faced with non-integral coordinates ff would sometimes introduce rounding
+	  errors so the start and end of a contour were slightly different in type1
+	  output. I think this is now fixed...
+	<LI>
+	  Fix some problems with the non-linear transform dlg.
+	<LI>
+	  Add a nltransform method (non-linear transform) to python font, glyph and
+	  layer.
+	<LI>
+	  python simplify could crash.
+	<LI>
+	  Patch by Michal to fix problem when compiled with long doubles.
+	<LI>
+	  If used twice, tilepath would screw up memory.
+	<LI>
+	  Someone wants a Reverse contour direction command (in addition to correct
+	  contour direction).
+	<LI>
+	  The code used to check bounding boxes in otf fonts had a bug which caused
+	  it to report a minimum value of 0 when the min value was positive. This meant
+	  we got erroneous reports of points outside the font's bounding box in fontlint.
+	<LI>
+	  The code used to check spline intersections had a typo which occasionally
+	  caused erroneous intersections to be reported.
+	<LI>
+	  fontlint said bad 'glyf' table when it meant bad glyph data in CFF table.
+	<LI>
+	  If a font had multiple glyphs in the ff clipboard, and we sent that clipboard
+	  through X11 (rather than just using the internal clip) then only one glyph
+	  would come out on the other side. Provide a mechanism for specifying multiple
+	  glyphs in the X clipboard too.
+	<LI>
+	  Refined fix to 'kern pair loss' problem, reported by Louis Simard. There
+	  probably was also a similar 'ligature loss' problem.
+	<LI>
+	  Fixed buffer overrun when filling GASP with default values.
+	<LI>
+	  Enlarging Metrics window made the feature pane and kerning values grid illegible.
+	<LI>
+	  Fixed a bug reported by Louis Simard:<BR>
+	  'Build composite glyph' was enabled in wrong situations and crashed.
+	<LI>
+	  when saving an sfd after adding a new "kerning by classes" subtable and
+	  cancelling its edit dialog.
+	<LI>
+	  FF crashes just after closing an open spiro contour (by dragging its first
+	  point over the last one, and then a bit further).
+	<LI>
+	  When reading strings from the name table, certain platform/specific settings
+	  would cause ff to:
+	  <OL>
+	    <LI>
+	      read the wrong string
+	    <LI>
+	      screw up memory.
+	  </OL>
+	<LI>
+	  Consolidate various mechanisms for finding the xHeight/capHeight of a font.
+	  Look for flat lines at the top of appropriate glyphs and then snap to the
+	  closest bluevalue. If no flat lines, then try curves.
+	<LI>
+	  Output Cap/X Height into UFO.
+	<LI>
+	  Add new python commands
+	  <UL>
+	    <LI>
+	      font.capHeight
+	    <LI>
+	      font.xHeight
+	  </UL>
+	<LI>
+	  Was outputting dates within &lt;date&gt; but should be in &lt;string&gt;
+	  when generating UFO files.
+	<LI>
+	  A font with erroneous GSUB tables (referring to non-existant glyphs) and
+	  an incomplete set of glyphs (caused by having bitmaps for glyphs without
+	  outlines) caused ff to crash.
+	<LI>
+	  In svg paths, if you omit a command after a 'moveto' then it defaults to
+	  a lineto, not another moveto.
+	<LI>
+	  Add a python font.saveNamelist(filename) command.
+	<LI>
+	  Jakub Steiner thinks it would be a good idea if the tool bindings of mouse
+	  clicks in the glyph editor were sticky across invocations.
+	<LI>
+	  Werner finds a place where the new jstf code was corrupting memory.
+	<LI>
+	  Cancelling Element-&gt;Validation-&gt;Set Extremum Bound caused a crash.
+	<LI>
+	  When closing a metrics view associated with a CID keyed font, ff would crash.
+	<LI>
+	  Someone wanted to be able to set both the left and right side bearings at
+	  the same time.
+	<LI>
+	  Patch by Alexey to unlink bitmap code.
+	<LI>
+	  Barry points out it would be better to use fputs when I use fprintf.
+	<LI>
+	  If the user didn't have freetype, then the anti-aliased metrics view was
+	  faint.
+	<LI>
+	  Oops, could write but not read styleset names from a feature file.
+	<LI>
+	  Show Att didn't display cursive anchor positioning anchor classes properly.
+	<LI>
+	  Panov wants a python function to determine the extent in the x direction
+	  of a contour when y is fix. That is, the minimum and maximum values x can
+	  attain for a given y. And vice versa.
+	  <P>
+	  Extend this a little so the user can specify a range of y values (return
+	  the extent in x when y is between ybottom and ytop).
+	  <P>
+	  <UL>
+	    <LI>
+	      contour.xBoundsAtY(ybottom[,ytop])
+	    <LI>
+	      contour.yBoundsAtX(xleft[,xright])
+	    <LI>
+	      layer.xBoundsAtY(ybottom[,ytop])
+	    <LI>
+	      layer.yBoundsAtX(xleft[,xright])
+	  </UL>
+	  <P>
+	  And that appears not to be what he wants anyway. Oh well.
+	<LI>
+	  Dave wants a python function to return a random text string.
+	  <UL>
+	    <LI>
+	      font.randomText(script[,lang])
+	  </UL>
+	<LI>
+	  If ff opened a bad bitmap font file and tried to place it in a font's background
+	  layer, ff would crash.
+	<LI>
+	  Adjusting the Previous Control Point from the Get Info (point) window of
+	  an HVCurve point had very odd effects.
+	<LI>
+	  Ubuntu now checks that if you use "%3$s" in a sprintf format string you must
+	  also use "%1$" and "%2$".
+	<LI>
+	  Patch by Nicolas Spalinger improving OFL tooltip.
+	<LI>
+	  Patch by Andrey Panov to add GetAnchorPoints to legacy scripting.
+	<LI>
+	  Widhaya Trisarnwadhana points out that the mnemonic _N is bound to two items
+	  in the View menu of outline glyphs.
+	<LI>
+	  I let people assign any name to glyphs in the private use area without destroying
+	  the encoding. But due to a bug, if you changed the glyph's encoding to the
+	  PUA it fell into that code and would not change the font's encoding either.
+	<LI>
+	  If a point had control points which were less than 1 em-unit from it, then
+	  FF would sometimes think it was a curve point when it wasn't. That's probably
+	  still true, but some of the more egregious cases have been fixed.
+	<LI>
+	  Panov suggests that for cubic points, when we round them we should not round
+	  the locations of the controls but should round the distance from the on-curve
+	  point. Things are a bit trickier for quadratic controls. If the on-curve
+	  point is interpolated, then obviously the controls should be rounded and
+	  not the on-curve point.
+	<LI>
+	  Exporting bitmap formats chose the wrong format.
+      </UL>
     <LI>
       8-Apr-2009
       <UL>
@@ -96,9 +309,9 @@
 	    <LI>
 	      ability to name anchors and value records and use them later.
 	    <LI>
-	      contourpoints used to be expressed as "<contourpoint 2>" and are now expressed
-	      as "contourpoint 2" (no brokets). Adobe does not mention this in the changelog.
-	      [Incompatible change]
+	      contourpoints used to be expressed as "&lt;contourpoint 2&gt;" and are now
+	      expressed as "contourpoint 2" (no brokets). Adobe does not mention this in
+	      the changelog. [Incompatible change]
 	    <LI>
 	      It is now possible to specify a GDEF mark attachment class in the lookupflags
 	      statement.
