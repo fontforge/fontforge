@@ -6980,6 +6980,27 @@ static PySequenceMethods PyFFCvt_Sequence = {
     PyFFCvt_InPlaceConcat	/* inplace_concat */
 };
 
+static PyObject *PyFFCvt_find(PyObject *self, PyObject *args) {
+    PyFF_Cvt *c = (PyFF_Cvt *) self;
+    struct ttf_table *cvt = c->cvt;
+    int i, val, low=0, high=cvt->len/2;
+
+    if ( !PyArg_ParseTuple(args,"i|ii", &val, &low, &high ) )
+return( NULL );
+    if ( low<0 ) low=0;
+    if ( high>cvt->len/2 ) high = cvt->len/2;
+    for ( i=low; i<high; ++i )
+	if ( memushort(cvt->data,cvt->len,2*i)==val )
+return( Py_BuildValue("i", i ));
+
+return( Py_BuildValue("i", -1 ));
+}
+
+static PyMethodDef PyFFCvt_methods[] = {
+    { "find", PyFFCvt_find, METH_VARARGS, "Finds the index in the cvt table of the specified value" },
+    NULL
+};
+
 static PyTypeObject PyFF_CvtType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
@@ -7010,7 +7031,7 @@ static PyTypeObject PyFF_CvtType = {
     0,		               /* tp_weaklistoffset */
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
-    0,			       /* tp_methods */
+    &PyFFCvt_methods,	       /* tp_methods */
     0,			       /* tp_members */
     0,			       /* tp_getset */
     0,                         /* tp_base */
