@@ -906,6 +906,12 @@ static int get_mac_x11_prop(char *keystr) {
     appID = CFStringCreateWithBytes(NULL,(uint8 *) "com.apple.x11",strlen("com.apple.x11"), kCFStringEncodingISOLatin1, 0);
     key   = CFStringCreateWithBytes(NULL,(uint8 *) keystr,strlen(keystr), kCFStringEncodingISOLatin1, 0);
     ret = CFPreferencesCopyAppValue(key,appID);
+    if ( ret==NULL ) {
+	/* Sigh. Apple uses a different preference file under 10.5.6 I really */
+	/*  wish they'd stop making stupid, unnecessary changes */
+	appID = CFStringCreateWithBytes(NULL,(uint8 *) "org.x.X11",strlen("org.x.X11"), kCFStringEncodingISOLatin1, 0);
+	ret = CFPreferencesCopyAppValue(key,appID);
+    }
     if ( ret==NULL )
 return( -1 );
     if ( CFGetTypeID(ret)!=CFBooleanGetTypeID())
@@ -1043,7 +1049,8 @@ int main( int argc, char **argv ) {
 #endif
 	}
 	setenv("DISPLAY",":0.0",0);
-    } else if ( local_x==1 && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
+    } else if ( local_x==1 && *getenv("DISPLAY")!='/' && strcmp(getenv("DISPLAY"),":0.0")!=0 && strcmp(getenv("DISPLAY"),":0")!=0 )
+	/* 10.5.7 uses a named socket or something "/tmp/launch-01ftWX:0" */
 	local_x = 0;
 #endif
 
