@@ -162,7 +162,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[1] = &gcd[k-1];
@@ -172,7 +171,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[3] = &gcd[k-1];
@@ -182,7 +180,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[5] = &gcd[k-1];
@@ -191,7 +188,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) c_factor;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_C_Factor;
@@ -202,7 +198,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[7] = &gcd[k-1];
@@ -211,7 +206,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) c_add;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_C_Add;
@@ -223,7 +217,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[10] = &gcd[k-1];
@@ -232,7 +225,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) sb_factor;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_SB_Factor;
@@ -243,7 +235,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[12] = &gcd[k-1];
@@ -252,7 +243,6 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) sb_add;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_SB_Add;
@@ -927,7 +917,6 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    label[k].text_is_1byte = true;
 	    label[k].text_in_resource = true;
 	    gcd[k].gd.label = &label[k];
-	    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	    gcd[k].gd.flags = gg_enabled | gg_visible;
 	    gcd[k++].creator = GLabelCreate;
 	    varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
@@ -1022,7 +1011,6 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    label[k].text_is_1byte = true;
 	    label[k].text_in_resource = true;
 	    gcd[k].gd.label = &label[k];
-	    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	    gcd[k].gd.flags = gg_enabled | gg_visible;
 	    gcd[k++].creator = GLabelCreate;
 	    varrayi[l++] = &gcd[k-1]; varrayi[l++] = NULL;
@@ -1804,7 +1792,6 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     hvarray[0][0] = &gcd[k-1];
@@ -1813,7 +1800,6 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     label[k].text = (unichar_t *) emb_width;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k].gd.cid = CID_EmBdWidth;

@@ -4969,7 +4969,6 @@ return;
 	label[i].text = (unichar_t *) _("Select Glyphs in lookup subtable");
 	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i++].creator = GLabelCreate;
 	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
