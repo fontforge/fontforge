@@ -387,7 +387,7 @@ void CVReviewHints(CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17], *harray1[5], *harray2[6], *harray3[6], *harray4[6],
+    GGadgetCreateData gcd[17], *harray1[6], *harray2[6], *harray3[6], *harray4[6],
 	*varray[6][2], boxes[7], *barray[5][6];
     GTextInfo label[17];
     static ReviewHintData hd;

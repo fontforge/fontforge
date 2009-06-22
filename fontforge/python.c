@@ -8300,8 +8300,10 @@ static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self,void *closure) {
 	    PyTuple_SetItem(tuple,cnt++,sfntnametuple(0x409,i,nm));
     }
     for ( names = sf->names; names!=NULL; names=names->next ) if ( names!=english ) {
-	if ( names->names[i]!=NULL )
-	    PyTuple_SetItem(tuple,cnt++,sfntnametuple(names->lang,i,names->names[i]));
+	for ( i=0; i<ttf_namemax; ++i ) {
+	    if ( names->names[i]!=NULL )
+		PyTuple_SetItem(tuple,cnt++,sfntnametuple(names->lang,i,names->names[i]));
+	}
     }
 
     for ( i=0; i<ttf_namemax; ++i )
