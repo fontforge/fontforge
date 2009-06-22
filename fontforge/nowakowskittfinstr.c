@@ -143,7 +143,7 @@ return( addpoint(instrs,isword,stem));
 #define push2points(a, b, c) pushpointstem(a, b, c)
 #define push2nums(a, b, c) pushpointstem(a, b, c)
 
-/* Push a bunch of point numbers (or other numbers) ont the stack.
+/* Push a bunch of point numbers (or other numbers) onto the stack.
  * TODO!
  * Possible strategies:
  *   - push point by point (poor space efficiency)
@@ -161,8 +161,8 @@ static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
 
     if (ptcnt > 255 && !isword) {
         instrs = pushpoints(instrs, 255, pts);
-	ptcnt-=255;
-	pts+=255;
+        ptcnt-=255;
+        pts+=255;
     }
 
     instrs = pushheader(instrs,isword,ptcnt);
@@ -173,19 +173,19 @@ return( instrs );
 #define pushnums(a, b, c) pushpoints(a, b, c)
 
 /* As we don't have "push F26dot6" command in truetype instructions,
-   we need to do this by hand. As we can explicitly push only 16-bit
-   quantities, we need to push a F26dot6 value in halves, shift left
-   the more significant half and add halves.
-
-   There are no checks for overflow!
+ * we need to do this by hand. As we can explicitly push only 16-bit
+ * quantities, we need to push a F26dot6 value in halves, shift left
+ * the more significant half and add halves.
+ *
+ * There are no checks for overflow!
  */
 static uint8 *pushF26Dot6(uint8 *instrs, double num) {
     unsigned int a, elems[3];
     int negative=0;
 
     if (num < 0) {
-	negative=1;
-	num*=-1.0;
+        negative=1;
+        num*=-1.0;
     }
 
     num *= 64;
@@ -196,9 +196,9 @@ static uint8 *pushF26Dot6(uint8 *instrs, double num) {
 
     if (elems[1]) {
         instrs = pushpoints(instrs, 3, elems);
-	*instrs++ = DUP;
+        *instrs++ = DUP;
         *instrs++ = MUL;
-	*instrs++ = MUL;
+        *instrs++ = MUL;
         *instrs++ = ADD;
     }
     else instrs = pushpoint(instrs, elems[0]);
@@ -208,15 +208,17 @@ static uint8 *pushF26Dot6(uint8 *instrs, double num) {
 return( instrs );
 }
 
-/* Push a EF2Dot14. No checks for overflow!
+#if 0
+/* Push an EF2Dot14. No checks for overflow!
+ * Not yet used, but may be needed in future.
  */
 static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
     unsigned int a;
     int negative=0;
 
     if (num < 0) {
-	negative=1;
-	num*=-1.0;
+        negative=1;
+        num*=-1.0;
     }
 
     num *= 16384;
@@ -226,6 +228,7 @@ static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
 
 return( instrs );
 }
+#endif
 
 /* An apparatus for instructing sets of points with given truetype command.
  * The command must pop exactly 1 element from the stack and mustn't push any.
@@ -302,11 +305,11 @@ return( i );
 return( i );
 }
 
+/* by default sign is unimportant in the cvt
+ * For some instructions anyway, but not for MIAP so this routine has
+ *  been broken in two.
+ */
 int TTF_getcvtval(SplineFont *sf,int val) {
-
-    /* by default sign is unimportant in the cvt */
-    /* For some instructions anyway, but not for MIAP so this routine has */
-    /*  been broken in two. */
     if ( val<0 ) val = -val;
 return( TTF__getcvtval(sf,val));
 }
@@ -670,6 +673,7 @@ static void GICImportStems(int xdir, GlobalInstrCt *gic) {
  */
 static void init_cvt(GlobalInstrCt *gic) {
     int i, cvtindex, cvtsize;
+    struct ttf_table *tab;
     uint8 *cvt;
 
     cvtsize = 1;
@@ -719,7 +723,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     /* Try to implant the new cvt table */
     gic->cvt_done = 0;
 
-    struct ttf_table *tab = SFFindTable(gic->sf, CHR('c','v','t',' '));
+    tab = SFFindTable(gic->sf, CHR('c','v','t',' '));
 
     if ( tab==NULL ) {
 	tab = chunkalloc(sizeof(struct ttf_table));
@@ -826,219 +830,219 @@ static void init_maxp(GlobalInstrCt *gic) {
 static void init_fpgm(GlobalInstrCt *gic) {
     uint8 new_fpgm[] =
     {
-	/* Function 0: position a point within a blue zone (given via cvt).
-	 * Note: in case of successful init of 'cvt' and 'prep' this function
-	 * could be much simpler.
-	 * Syntax: PUSHB_3 point cvt_of_blue 0 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x00, //   0
-	0x2c, // FDEF
-	0xb0, //   PUSHB_1
-	0x00, //     0
-	0x13, //   SZP0
-	0x4b, //   MPPEM
-	0xb0, //   PUSHB_1 - under this ppem blues will be specially rounded
-	GetBlueScale(gic->sf),
-	0x50, //   LT
-	0x58, //   IF
-	0xb0, //     PUSHB_0
-	0x4a, //       74
-	0x76, //     SROUND - round blues a bit up to grid
-	0x59, //   EIF
-	0xb0, //   PUSHB_1
-	0x00, //     0
-	0x23, //   SWAP
-	0x3f, //   MIAP[rnd] - blue zone positioned here
-	0x18, //   RTG - round state for overshoots in monochrome mode
-	0xb0, //   PUSHB_1
-	0x06, //     6
-	0x2b, //   CALL
-	0x58, //   IF
-	0x3d, //     RTDG - round state for overshoots in antialiased mode
-	0x59, //   EIF
-	0x4b, //   MPPEM
-	0xb0, //   PUSHB_1 - under following ppem overshoots will be suppressed
-	GetBlueScale(gic->sf),
-	0x50, //   LT
-	0x58, //   IF
-	0x7d, //   RDTG - suppress overshoots
-	0x59, //   EIF
-	0x20, //   DUP
-	0xd4, //   MDRP[rp0,rnd,grey]
-	0xb0, //   PUSHB_1
-	0x01, //     1
-	0x13, //   SZP0
-	0x2e, //   MDAP[no-rnd]
-	0x18, //   RTG
-	0x2d, // ENDF
+        /* Function 0: position a point within a blue zone (given via cvt).
+         * Note: in case of successful init of 'cvt' and 'prep' this function
+         * could be much simpler.
+         * Syntax: PUSHB_3 point cvt_of_blue 0 CALL
+         */
+        0xb0, // PUSHB_1
+        0x00, //   0
+        0x2c, // FDEF
+        0xb0, //   PUSHB_1
+        0x00, //     0
+        0x13, //   SZP0
+        0x4b, //   MPPEM
+        0xb0, //   PUSHB_1 - under this ppem blues will be specially rounded
+        GetBlueScale(gic->sf),
+        0x50, //   LT
+        0x58, //   IF
+        0xb0, //     PUSHB_0
+        0x4a, //       74
+        0x76, //     SROUND - round blues a bit up to grid
+        0x59, //   EIF
+        0xb0, //   PUSHB_1
+        0x00, //     0
+        0x23, //   SWAP
+        0x3f, //   MIAP[rnd] - blue zone positioned here
+        0x18, //   RTG - round state for overshoots in monochrome mode
+        0xb0, //   PUSHB_1
+        0x06, //     6
+        0x2b, //   CALL
+        0x58, //   IF
+        0x3d, //     RTDG - round state for overshoots in antialiased mode
+        0x59, //   EIF
+        0x4b, //   MPPEM
+        0xb0, //   PUSHB_1 - under following ppem overshoots will be suppressed
+        GetBlueScale(gic->sf),
+        0x50, //   LT
+        0x58, //   IF
+        0x7d, //   RDTG - suppress overshoots
+        0x59, //   EIF
+        0x20, //   DUP
+        0xd4, //   MDRP[rp0,rnd,grey]
+        0xb0, //   PUSHB_1
+        0x01, //     1
+        0x13, //   SZP0
+        0x2e, //   MDAP[no-rnd]
+        0x18, //   RTG
+        0x2d, // ENDF
 
-	/* Function 1: Place given point relatively to previous, maintaining the
+        /* Function 1: Place given point relatively to previous, maintaining the
          * minimum distance. Then call FPGM 12 to check if the point's gridfitted 
          * position is too far from its original position, and correct it, if necessary.
-	 * Syntax: PUSB_2 point 1 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x01, //   1
-	0x2c, // FDEF
-	0x20, //   DUP
-	0xda, //   MDRP[rp0,min,white]
-	0xb0, //   PUSHB_1
-	0x0c, //     12
-	0x2b, //   CALL
-	0x2d, // ENDF
+         * Syntax: PUSB_2 point 1 CALL
+         */
+        0xb0, // PUSHB_1
+        0x01, //   1
+        0x2c, // FDEF
+        0x20, //   DUP
+        0xda, //   MDRP[rp0,min,white]
+        0xb0, //   PUSHB_1
+        0x0c, //     12
+        0x2b, //   CALL
+        0x2d, // ENDF
 
-	/* Function 2: Below given ppem, substitute the width with cvt entry.
-	 * Leave the resulting width on the stack. Used as the first step in
-	 * normalizing cvt stems, see normalize_stem().
-	 * Syntax: PUSHX_3 width cvt_index ppem 2 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x02, //   2
-	0x2c, // FDEF
-	0x4b, //   MPPEM
-	0x52, //   GT
-	0x58, //   IF
-	0x45, //     RCVT
-	0x23, //     SWAP
-	0x59, //   EIF
-	0x21, //   POP
-	0x2d, // ENDF
+        /* Function 2: Below given ppem, substitute the width with cvt entry.
+         * Leave the resulting width on the stack. Used as the first step in
+         * normalizing cvt stems, see normalize_stem().
+         * Syntax: PUSHX_3 width cvt_index ppem 2 CALL
+         */
+        0xb0, // PUSHB_1
+        0x02, //   2
+        0x2c, // FDEF
+        0x4b, //   MPPEM
+        0x52, //   GT
+        0x58, //   IF
+        0x45, //     RCVT
+        0x23, //     SWAP
+        0x59, //   EIF
+        0x21, //   POP
+        0x2d, // ENDF
 
-	/* Function 3: round a stack element as a black distance, respecting
-	 * minimum distance of 1px. This is used for rounding stems after width
-	 * normalization. Often preceeded with SROUND, so finally sets RTG.
-	 * Leaves the rounded width on the stack.
-	 * Syntax: PUSHX_2 width_to_be_rounded 3 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x03, //   3
-	0x2c, // FDEF
-	0x69, //   ROUND[black]
-	0x18, //   RTG
-	0x20, //   DUP
-	0xb0, //   PUSHB_1
-	0x40, //     64, that's one pixel as F26Dot6
-	0x50, //   LT
-	0x58, //   IF
-	0x21, //     POP
-	0xb0, //     PUSHB_1
-	0x40, //       64
-	0x59, //   EIF
-	0x2d, // ENDF
+        /* Function 3: round a stack element as a black distance, respecting
+         * minimum distance of 1px. This is used for rounding stems after width
+         * normalization. Often preceeded with SROUND, so finally sets RTG.
+         * Leaves the rounded width on the stack.
+         * Syntax: PUSHX_2 width_to_be_rounded 3 CALL
+         */
+        0xb0, // PUSHB_1
+        0x03, //   3
+        0x2c, // FDEF
+        0x69, //   ROUND[black]
+        0x18, //   RTG
+        0x20, //   DUP
+        0xb0, //   PUSHB_1
+        0x40, //     64, that's one pixel as F26Dot6
+        0x50, //   LT
+        0x58, //   IF
+        0x21, //     POP
+        0xb0, //     PUSHB_1
+        0x40, //       64
+        0x59, //   EIF
+        0x2d, // ENDF
 
-	/* Function 4: Position the second edge of a stem that is not normally
-	 * regularized via cvt (but we snap it to cvt width below given ppem).
-	 * Vertical stems need special round state when not snapped to cvt
-	 * (basically, they are shortened by 0.25px before being rounded).
-	 * Syntax: PUSHX_5 pt cvt_index chg_rp0 ppem 4 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x04, //   4
-	0x2c, // FDEF
-	0xb0, //   PUSHB_1
-	0x06, //     6
-	0x2b, //   CALL
-	0x58, //   IF
-	0x21, //     POP
-	0x23, //     SWAP
-	0x21, //     POP
-	0x7a, //     ROFF
-	0x58, //     IF
-	0xdd, //       MDRP[rp0,min,rnd,black]
-	0x1b, //     ELSE
-	0xcd, //       MDRP[min,rnd,black]
-	0x59, //     EIF
-	0x1b, //   ELSE
-	0x4b, //     MPPEM
-	0x52, //     GT
-	0x58, //     IF
-	0x58, //       IF
-	0xfd, //         MIRP[rp0,min,rnd,black]
-	0x1b, //       ELSE
-	0xed, //         MIRP[min,rnd,black]
-	0x59, //       EIF
-	0x1b, //     ELSE
-	0x23, //       SWAP
-	0x21, //       POP
-	0xb0, //       PUSHB_1
-	0x05, //         5
-	0x2b, //       CALL
-	0x58, //       IF
-	0xb0, //         PUSHB_1
-	0x46, //           70
-	0x76, //         SROUND
-	0x59, //       EIF
-	0x58, //       IF
-	0xdd, //         MDRP[rp0,min,rnd,black]
-	0x1b, //       ELSE
-	0xcd, //         MDRP[min,rnd,black]
-	0x59, //       EIF
-	0x59, //     EIF
-	0x59, //   EIF
-	0x18, //   RTG
-	0x2d, // ENDF
+        /* Function 4: Position the second edge of a stem that is not normally
+         * regularized via cvt (but we snap it to cvt width below given ppem).
+         * Vertical stems need special round state when not snapped to cvt
+         * (basically, they are shortened by 0.25px before being rounded).
+         * Syntax: PUSHX_5 pt cvt_index chg_rp0 ppem 4 CALL
+         */
+        0xb0, // PUSHB_1
+        0x04, //   4
+        0x2c, // FDEF
+        0xb0, //   PUSHB_1
+        0x06, //     6
+        0x2b, //   CALL
+        0x58, //   IF
+        0x21, //     POP
+        0x23, //     SWAP
+        0x21, //     POP
+        0x7a, //     ROFF
+        0x58, //     IF
+        0xdd, //       MDRP[rp0,min,rnd,black]
+        0x1b, //     ELSE
+        0xcd, //       MDRP[min,rnd,black]
+        0x59, //     EIF
+        0x1b, //   ELSE
+        0x4b, //     MPPEM
+        0x52, //     GT
+        0x58, //     IF
+        0x58, //       IF
+        0xfd, //         MIRP[rp0,min,rnd,black]
+        0x1b, //       ELSE
+        0xed, //         MIRP[min,rnd,black]
+        0x59, //       EIF
+        0x1b, //     ELSE
+        0x23, //       SWAP
+        0x21, //       POP
+        0xb0, //       PUSHB_1
+        0x05, //         5
+        0x2b, //       CALL
+        0x58, //       IF
+        0xb0, //         PUSHB_1
+        0x46, //           70
+        0x76, //         SROUND
+        0x59, //       EIF
+        0x58, //       IF
+        0xdd, //         MDRP[rp0,min,rnd,black]
+        0x1b, //       ELSE
+        0xcd, //         MDRP[min,rnd,black]
+        0x59, //       EIF
+        0x59, //     EIF
+        0x59, //   EIF
+        0x18, //   RTG
+        0x2d, // ENDF
 
-	/* Function 5: determine if we are hinting vertically. The function
-	 * is crude and it's use is limited to conditions set by SVTCA[].
-	 * Syntax: PUSHB_1 5 CALL; leaves boolean on the stack.
-	 */
-	0xb0, // PUSHB_1
-	0x05, //   5
-	0x2c, // FDEF
-	0x0d, //   GFV
-	0x5c, //   NOT
-	0x5a, //   AND
-	0x2d, // ENDF
+        /* Function 5: determine if we are hinting vertically. The function
+         * is crude and it's use is limited to conditions set by SVTCA[].
+         * Syntax: PUSHB_1 5 CALL; leaves boolean on the stack.
+         */
+        0xb0, // PUSHB_1
+        0x05, //   5
+        0x2c, // FDEF
+        0x0d, //   GFV
+        0x5c, //   NOT
+        0x5a, //   AND
+        0x2d, // ENDF
 
-	/* Function 6: check if we are hinting in grayscale.
-	 * CAUTION! Older FreeType versions lie if asked.
-	 * Syntax: PUSHB_1 6 CALL; leaves boolean on the stack.
-	 */
-	0xb0, // PUSHB_1
-	0x06, //   6
-	0x2c, // FDEF
-	0xb1, //   PUSHB_2
-	0x22, //     34
-	0x01, //     1
-	0x88, //   GETINFO
-	0x50, //   LT
-	0x58, //   IF
-	0xb0, //     PUSHB_1
-	0x20, //       32
-	0x88, //     GETINFO
-	0x5c, //     NOT
-	0x5c, //     NOT
-	0x1b, //   ELSE
-	0xb0, //     PUSHB_1
-	0x00, //       0
-	0x59, //   EIF
-	0x2d, // ENDF
+        /* Function 6: check if we are hinting in grayscale.
+         * CAUTION! Older FreeType versions lie if asked.
+         * Syntax: PUSHB_1 6 CALL; leaves boolean on the stack.
+         */
+        0xb0, // PUSHB_1
+        0x06, //   6
+        0x2c, // FDEF
+        0xb1, //   PUSHB_2
+        0x22, //     34
+        0x01, //     1
+        0x88, //   GETINFO
+        0x50, //   LT
+        0x58, //   IF
+        0xb0, //     PUSHB_1
+        0x20, //       32
+        0x88, //     GETINFO
+        0x5c, //     NOT
+        0x5c, //     NOT
+        0x1b, //   ELSE
+        0xb0, //     PUSHB_1
+        0x00, //       0
+        0x59, //   EIF
+        0x2d, // ENDF
 
-	/* Function 7: check if we are hinting in cleartype.
-	 * CAUTION! FreeType doesn't support that, as subpixel
-	 * filtering is usually done by higher level library.
-	 * Syntax: PUSHB_1 7 CALL; leaves boolean on the stack.
-	 */
-	0xb0, // PUSHB_1
-	0x07, //   7
-	0x2c, // FDEF
-	0xb1, //   PUSHB_2
-	0x24, //     36
-	0x01, //     1
-	0x88, //   GETINFO
-	0x50, //   LT
-	0x58, //   IF
-	0xb0, //     PUSHB_1
-	0x40, //       64
-	0x88, //     GETINFO
-	0x5c, //     NOT
-	0x5c, //     NOT
-	0x1b, //   ELSE
-	0xb0, //     PUSHB_1
-	0x00, //       0
-	0x59, //   EIF
-	0x2d, // ENDF
+        /* Function 7: check if we are hinting in cleartype.
+         * CAUTION! FreeType doesn't support that, as subpixel
+         * filtering is usually done by higher level library.
+         * Syntax: PUSHB_1 7 CALL; leaves boolean on the stack.
+         */
+        0xb0, // PUSHB_1
+        0x07, //   7
+        0x2c, // FDEF
+        0xb1, //   PUSHB_2
+        0x24, //     36
+        0x01, //     1
+        0x88, //   GETINFO
+        0x50, //   LT
+        0x58, //   IF
+        0xb0, //     PUSHB_1
+        0x40, //       64
+        0x88, //     GETINFO
+        0x5c, //     NOT
+        0x5c, //     NOT
+        0x1b, //   ELSE
+        0xb0, //     PUSHB_1
+        0x00, //       0
+        0x59, //   EIF
+        0x2d, // ENDF
 
         /* Function 8: Interpolate a point between
          * two other points and snap it to the grid.
@@ -1058,68 +1062,68 @@ static void init_fpgm(GlobalInstrCt *gic) {
          * edge of the base stem when rounding down to grid, but ensure
          * that its distance from the reference point is larger than
          * the base stem width at least to a specified amount of pixels.
-	 * Syntax: PUSHX_3 min_dist inner_pt outer_pt CALL;
-	 */
+         * Syntax: PUSHX_3 min_dist inner_pt outer_pt CALL;
+         */
         0xb0, // PUSHB_1
         0x09, //   9    
         0x2c, // FDEF
-	0x20, //   DUP
-	0x7d, //   RDTG
-	0xb0, //   PUSHB_1
-	0x06, //     6
-	0x2b, //   CALL
-	0x58, //   IF
-	0xc4, //     MDRP[min,grey]
-	0x1b, //   ELSE
-	0xcd, //     MDRP[min,rnd,black]
-	0x59, //   EIF
-	0x20, //   DUP
-	0xb0, //   PUSHB_1
-	0x03, //     3
+        0x20, //   DUP
+        0x7d, //   RDTG
+        0xb0, //   PUSHB_1
+        0x06, //     6
+        0x2b, //   CALL
+        0x58, //   IF
+        0xc4, //     MDRP[min,grey]
+        0x1b, //   ELSE
+        0xcd, //     MDRP[min,rnd,black]
+        0x59, //   EIF
+        0x20, //   DUP
+        0xb0, //   PUSHB_1
+        0x03, //     3
         0x25, //   CINDEX
         0x49, //   MD[grid]
-	0x23, //   SWAP
-	0x20, //   DUP
-	0xb0, //   PUSHB_1
-	0x04, //     4
+        0x23, //   SWAP
+        0x20, //   DUP
+        0xb0, //   PUSHB_1
+        0x04, //     4
         0x26, //   MINDEX
         0x4a, //   MD[orig]
-	0xb0, //   PUSHB_1
-	0x00, //     0
-	0x50, //   LT
-	0x58, //   IF
-	0x8a, //     ROLL
-	0x65, //     NEG
-	0x8a, //     ROLL
+        0xb0, //   PUSHB_1
+        0x00, //     0
+        0x50, //   LT
+        0x58, //   IF
+        0x8a, //     ROLL
+        0x65, //     NEG
+        0x8a, //     ROLL
         0x61, //     SUB
-	0x20, //     DUP
-	0xb0, //     PUSHB_1
-	0x00, //       0
-	0x50, //     LT
-	0x58, //     IF
+        0x20, //     DUP
+        0xb0, //     PUSHB_1
+        0x00, //       0
+        0x50, //     LT
+        0x58, //     IF
         0x38, //       SHPIX
-	0x1b, //     ELSE
-	0x21, //       POP
-	0x21, //       POP
-	0x59, //     EIF
-	0x1b, //   ELSE
-	0x8a, //     ROLL
-	0x8a, //     ROLL
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x21, //       POP
+        0x59, //     EIF
+        0x1b, //   ELSE
+        0x8a, //     ROLL
+        0x8a, //     ROLL
         0x61, //     SUB
-	0x20, //     DUP
-	0xb0, //     PUSHB_1
-	0x00, //       0
-	0x52, //     GT
-	0x58, //     IF
+        0x20, //     DUP
+        0xb0, //     PUSHB_1
+        0x00, //       0
+        0x52, //     GT
+        0x58, //     IF
         0x38, //       SHPIX
-	0x1b, //     ELSE
-	0x21, //       POP
-	0x21, //       POP
-	0x59, //     EIF
-	0x59, //   EIF
-	0x18, //   RTG
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x21, //       POP
+        0x59, //     EIF
+        0x59, //   EIF
+        0x18, //   RTG
         0x2d, // ENDF
-        
+
         /* Function 10: depending from the hinting mode (grayscale or mono) set
          * rp0 either to pt1 or to pt2. This is used to link serif-like elements
          * either to the opposite side of the base stem or to the same side (i. e.
@@ -1127,52 +1131,52 @@ static void init_fpgm(GlobalInstrCt *gic) {
          * Syntax: PUSHX_3 pt2 pt1 10 CALL 
          */
         0xb0, // PUSHB_1
-        0x0a, //   10    
+        0x0a, //   10
         0x2c, // FDEF
-	0xb0, //   PUSHB_1
-	0x06, //     6
-	0x2b, //   CALL
-	0x58, //   IF
-	0x21, //     POP
-	0x10, //     SRP0
-	0x1b, //   ELSE
-	0x10, //     SRP0
-	0x21, //     POP
-	0x59, //   EIF
+        0xb0, //   PUSHB_1
+        0x06, //     6
+        0x2b, //   CALL
+        0x58, //   IF
+        0x21, //     POP
+        0x10, //     SRP0
+        0x1b, //   ELSE
+        0x10, //     SRP0
+        0x21, //     POP
+        0x59, //   EIF
         0x2d, // ENDF
 
-	/* Function 11: similar to FPGM 1, but places a point without
+        /* Function 11: similar to FPGM 1, but places a point without
          * maintaining the minimum distance.
-	 * Syntax: PUSHX_2 point 11 CALL 
+         * Syntax: PUSHX_2 point 11 CALL 
          */
-	0xb0, // PUSHB_1
-	0x0b, //   11
-	0x2c, // FDEF
+        0xb0, // PUSHB_1
+        0x0b, //   11
+        0x2c, // FDEF
         0x20, //   DUP
-	0xd2, //   MDRP[rp0,white]
-	0xb0, //   PUSHB_1
-	0x0c, //     12
-	0x2b, //   CALL
-	0x2d, // ENDF
+        0xd2, //   MDRP[rp0,white]
+        0xb0, //   PUSHB_1
+        0x0c, //     12
+        0x2b, //   CALL
+        0x2d, // ENDF
 
-	/* Function 12: Check if the gridfitted position of the point is too far 
+        /* Function 12: Check if the gridfitted position of the point is too far 
          * from its original position, and shift it, if necessary. The function is 
          * used to place vertical stems, it assures almost linear advance width 
          * to PPEM scaling. Shift amount is capped to at most 1 px to prevent some
-	 * weird artifacts at very small ppems. In cleartype mode, no shift
-	 * is made at all.
-	 * Syntax: PUSHX_2 point 12 CALL 
+         * weird artifacts at very small ppems. In cleartype mode, no shift
+         * is made at all.
+         * Syntax: PUSHX_2 point 12 CALL 
          */
-	0xb0, // PUSHB_1
-	0x0c, //   12
-	0x2c, // FDEF
+        0xb0, // PUSHB_1
+        0x0c, //   12
+        0x2c, // FDEF
         0x20, //   DUP
-	0x2f, //   MDAP[rnd], this is needed for grayscale mode
-	0xb0, //   PUSHB_1
-	0x07, //     7
-	0x2b, //   CALL
-	0x5c, //   NOT
-	0x58, //   IF
+        0x2f, //   MDAP[rnd], this is needed for grayscale mode
+        0xb0, //   PUSHB_1
+        0x07, //     7
+        0x2b, //   CALL
+        0x5c, //   NOT
+        0x58, //   IF
         0x20, //     DUP
         0x20, //     DUP
         0x47, //     GC[cur]
@@ -1183,129 +1187,129 @@ static void init_fpgm(GlobalInstrCt *gic) {
         0x20, //     DUP
         0x58, //     IF
         0x20, //       DUP
-	0x64, //       ABS
-	0x62, //       DIV
+        0x64, //       ABS
+        0x62, //       DIV
         0x38, //       SHPIX
-	0x1b, //     ELSE
-	0x21, //       POP
-	0x21, //       POP
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x21, //       POP
         0x59, //     EIF
-	0x1b, //   ELSE
-	0x21, //     POP
+        0x1b, //   ELSE
+        0x21, //     POP
         0x59, //   EIF
-	0x2d, // ENDF
+        0x2d, // ENDF
 
-	/* Function 13: Interpolate a HStem edge's reference point between two other points 
+        /* Function 13: Interpolate a HStem edge's reference point between two other points 
          * and snap it to the grid. Then compare its new position with the ungridfitted
          * position of the second edge. If the gridfitted point belongs to the bottom edge
          * and now it is positioned above the top edge's original coordinate, then shift it
          * one pixel down; similarly, if the interpolation resulted in positioning the top
          * edge below the original coordinate of the bottom edge, shift it one pixel up.
-	 * Syntax: PUSHX_6 other_edge_refpt pt_to_ip rp1 rp2 13 CALL 
+         * Syntax: PUSHX_6 other_edge_refpt pt_to_ip rp1 rp2 13 CALL 
          */
-	0xb0, // PUSHB_1
-	0x0d, //   13
-	0x2c, // FDEF
-	0x12, //   SRP2
-	0x11, //   SRP1
-	0x20, //   DUP
-	0x20, //   DUP
-	0x39, //   IP
-	0x2f, //   MDAP[rnd]
-	0x20, //   DUP
-	0x8a, //   ROLL
-	0x20, //   DUP
+        0xb0, // PUSHB_1
+        0x0d, //   13
+        0x2c, // FDEF
+        0x12, //   SRP2
+        0x11, //   SRP1
+        0x20, //   DUP
+        0x20, //   DUP
+        0x39, //   IP
+        0x2f, //   MDAP[rnd]
+        0x20, //   DUP
+        0x8a, //   ROLL
+        0x20, //   DUP
         0x47, //   GC[orig]
-	0x8a, //   ROLL
+        0x8a, //   ROLL
         0x46, //   GC[cur]
         0x61, //   SUB
-	0x23, //   SWAP
-	0x8a, //   ROLL
-	0x20, //   DUP
-	0x8a, //   ROLL
-	0x23, //   SWAP
+        0x23, //   SWAP
+        0x8a, //   ROLL
+        0x20, //   DUP
+        0x8a, //   ROLL
+        0x23, //   SWAP
         0x4A, //   MD[orig]
-	0xb0, //   PUSHB_1
-	0x00, //     0
-	0x50, //   LT
-	0x58, //   IF
-	0x23, //     SWAP
-	0xb0, //     PUSHB_1
-	0x00, //       0
-	0x52, //     GT
-	0x58, //     IF
-	0xb0, //       PUSHB_1
-	0x40, //         64
+        0xb0, //   PUSHB_1
+        0x00, //     0
+        0x50, //   LT
+        0x58, //   IF
+        0x23, //     SWAP
+        0xb0, //     PUSHB_1
+        0x00, //       0
+        0x52, //     GT
+        0x58, //     IF
+        0xb0, //       PUSHB_1
+        0x40, //         64
         0x38, //       SHPIX
-	0x1b, //     ELSE       
-	0x21, //       POP
-	0x59, //     EIF
-	0x1b, //   ELSE
-	0x23, //     SWAP
-	0xb0, //     PUSHB_1
-	0x00, //       0
-	0x50, //     LT
-	0x58, //     IF
-	0xb0, //       PUSHB_1
-	0x40, //         64
-	0x65, //       NEG
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x59, //     EIF
+        0x1b, //   ELSE
+        0x23, //     SWAP
+        0xb0, //     PUSHB_1
+        0x00, //       0
+        0x50, //     LT
+        0x58, //     IF
+        0xb0, //       PUSHB_1
+        0x40, //         64
+        0x65, //       NEG
         0x38, //       SHPIX
-	0x1b, //     ELSE       
-	0x21, //       POP
-	0x59, //     EIF
-	0x59, //   EIF
-	0x2d, // ENDF
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x59, //     EIF
+        0x59, //   EIF
+        0x2d, // ENDF
 
-	/* Function 14: Link two points using MDRP without maintaining
+        /* Function 14: Link two points using MDRP without maintaining
          * the minimum distance. In antialiased mode use rounding to
          * double grid for this operation, otherwise ensure there is no
          * distance between those two points below the given PPEM (i. e.
          * points are aligned). The function is used for linking nested
          * stems to each other, and guarantees their relative positioning
          * is preserved in the gridfitted outline.
-	 * Syntax: PUSHX_4 ppem ref_pt base_pt 14 CALL;
-	 */
-	0xb0, // PUSHB_1
-	0x0e, //   14
-	0x2c, // FDEF
-	0xb0, //   PUSHB_1
-	0x06, //     6
-	0x2b, //   CALL
-	0x58, //   IF
-	0x3d, //     RTDG
+         * Syntax: PUSHX_4 ppem ref_pt base_pt 14 CALL;
+         */
+        0xb0, // PUSHB_1
+        0x0e, //   14
+        0x2c, // FDEF
+        0xb0, //   PUSHB_1
+        0x06, //     6
+        0x2b, //   CALL
+        0x58, //   IF
+        0x3d, //     RTDG
         0xd6, //     MDRP[rp0,rnd,white]
-	0x18, //     RTG
-	0x21, //     POP
-	0x21, //     POP
-	0x1b, //   ELSE       
-	0x20, //     DUP
+        0x18, //     RTG
+        0x21, //     POP
+        0x21, //     POP
+        0x1b, //   ELSE
+        0x20, //     DUP
         0xd6, //     MDRP[rp0,rnd,white]
-	0x8a, //     ROLL
-	0x4b, //     MPPEM
-	0x52, //     GT
-	0x58, //     IF
-	0x20, //       DUP
-	0x8a, //       ROLL
-	0x23, //       SWAP
+        0x8a, //     ROLL
+        0x4b, //     MPPEM
+        0x52, //     GT
+        0x58, //     IF
+        0x20, //       DUP
+        0x8a, //       ROLL
+        0x23, //       SWAP
         0x49, //       MD[grid]
-	0x20, //       DUP
-	0xb0, //       PUSHB_1
-	0x00, //         0
+        0x20, //       DUP
+        0xb0, //       PUSHB_1
+        0x00, //         0
         0x55, //       NEQ
-	0x58, //       IF
+        0x58, //       IF
         0x38, //         SHPIX
-	0x1b, //       ELSE       
-	0x21, //         POP
-	0x21, //         POP
-	0x59, //       EIF
-	0x1b, //     ELSE       
-	0x21, //       POP
-	0x21, //       POP
-	0x59, //     EIF
-	0x59, //   EIF
-	0x2d,  // ENDF
+        0x1b, //       ELSE
+        0x21, //         POP
+        0x21, //         POP
+        0x59, //       EIF
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x21, //       POP
+        0x59, //     EIF
+        0x59, //   EIF
+        0x2d,  // ENDF
 
-	/* Function 15: similar to FPGM 1, but used to position a stem
+        /* Function 15: similar to FPGM 1, but used to position a stem
          * relatively to the previous stem preserving the counter width
          * equal to the distance between another pair of previously positioned 
          * stems. Thus it serves nearly the same purpose as PS counter hints.
@@ -1313,215 +1317,215 @@ static void init_fpgm(GlobalInstrCt *gic) {
          *         current_counter_start_pt current_counter_end_pt ppem 15 CALL;
          */
         0xb0, // PUSHB_1
-	0x0f, //   15
-	0x2c, // FDEF
-	0x23, //   SWAP
-	0x20, //   DUP
+        0x0f, //   15
+        0x2c, // FDEF
+        0x23, //   SWAP
+        0x20, //   DUP
         0xd6, //   MDRP[rp0,rnd,white]
         0x20, //   DUP
-	0x2f, //   MDAP[rnd], this is needed for grayscale mode
-	0xb0, //   PUSHB_1
-	0x07, //     7
-	0x2b, //   CALL
-	0x5c, //   NOT
-	0x58, //   IF
-	0x23, //     SWAP
-	0x20, //     DUP
-	0x58, //     IF
-	0x4b, //       MPPEM
+        0x2f, //   MDAP[rnd], this is needed for grayscale mode
+        0xb0, //   PUSHB_1
+        0x07, //     7
+        0x2b, //   CALL
+        0x5c, //   NOT
+        0x58, //   IF
+        0x23, //     SWAP
+        0x20, //     DUP
+        0x58, //     IF
+        0x4b, //       MPPEM
         0x53, //       GTEQ
-	0x1b, //     ELSE
-	0x21, //       POP
-	0xb0, //       PUSHB_1
-	0x01, //         1
+        0x1b, //     ELSE
+        0x21, //       POP
+        0xb0, //       PUSHB_1
+        0x01, //         1
         0x59, //     EIF
-	0x58, //     IF
-	0x8a, //       ROLL
-	0xb0, //       PUSHB_1
-	0x04, //         4
-	0x26, //       MINDEX
+        0x58, //     IF
+        0x8a, //       ROLL
+        0xb0, //       PUSHB_1
+        0x04, //         4
+        0x26, //       MINDEX
         0x49, //       MD[grid]
-	0x23, //       SWAP
-	0x8a, //       ROLL
-	0x23, //       SWAP
-	0x20, //       DUP
-	0x8a, //       ROLL
+        0x23, //       SWAP
+        0x8a, //       ROLL
+        0x23, //       SWAP
+        0x20, //       DUP
+        0x8a, //       ROLL
         0x49, //       MD[grid]
-	0x8a, //       ROLL
-	0x23, //       SWAP
-	0x61, //       SUB
+        0x8a, //       ROLL
+        0x23, //       SWAP
+        0x61, //       SUB
         0x38, //       SHPIX
-	0x1b, //     ELSE
-	0x21, //       POP
-	0x21, //       POP
-	0x21, //       POP
-	0x21, //       POP
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x21, //       POP
+        0x21, //       POP
+        0x21, //       POP
         0x59, //     EIF
-	0x1b, //   ELSE
-	0x21, //     POP
-	0x21, //     POP
-	0x21, //     POP
-	0x21, //     POP
-	0x21, //     POP
-	0x59, //   EIF
-	0x2d, // ENDF
+        0x1b, //   ELSE
+        0x21, //     POP
+        0x21, //     POP
+        0x21, //     POP
+        0x21, //     POP
+        0x21, //     POP
+        0x59, //   EIF
+        0x2d, // ENDF
 
-	/* Function 16: Same as FPGM 1, but calls FPGM 18 rather than FPGM 12
-	 * and thus takes 3 arguments.
-	 * Syntax: PUSHX_3 ref_point point 16 CALL 
-	 */
-	0xb0, // PUSHB_1
-	0x10, //   16
-	0x2c, // FDEF
-	0x20, //   DUP
-	0xda, //   MDRP[rp0,min,white]
-	0xb0, //   PUSHB_1
-	0x12, //     18
-	0x2b, //   CALL
-	0x2d, // ENDF
+        /* Function 16: Same as FPGM 1, but calls FPGM 18 rather than FPGM 12
+         * and thus takes 3 arguments.
+         * Syntax: PUSHX_3 ref_point point 16 CALL 
+         */
+        0xb0, // PUSHB_1
+        0x10, //   16
+        0x2c, // FDEF
+        0x20, //   DUP
+        0xda, //   MDRP[rp0,min,white]
+        0xb0, //   PUSHB_1
+        0x12, //     18
+        0x2b, //   CALL
+        0x2d, // ENDF
 
-	/* Function 17: Same as FPGM 11, but calls FPGM 18 rather than FPGM 12
-	 * and thus takes 3 arguments.
-	 * Syntax: PUSHX_3 ref_point point 17 CALL 
-	 */
-	0xb0, // PUSHB_1
-	0x11, //   17
-	0x2c, // FDEF
-	0x20, //   DUP
-	0xd2, //   MDRP[rp0,white]
-	0xb0, //   PUSHB_1
-	0x12, //     18
-	0x2b, //   CALL
-	0x2d, // ENDF
+        /* Function 17: Same as FPGM 11, but calls FPGM 18 rather than FPGM 12
+         * and thus takes 3 arguments.
+         * Syntax: PUSHX_3 ref_point point 17 CALL 
+         */
+        0xb0, // PUSHB_1
+        0x11, //   17
+        0x2c, // FDEF
+        0x20, //   DUP
+        0xd2, //   MDRP[rp0,white]
+        0xb0, //   PUSHB_1
+        0x12, //     18
+        0x2b, //   CALL
+        0x2d, // ENDF
 
-	/* Function 18: this is a special version of FPGM 12, used when the counter
-	 * control is enabled but doesn't directly affect the stem which is going to
-	 * be positioned. Unlike FPGM 12, it doesn't just attempt to position a point
-	 * closely enough to its original coordinate, but also checks if the previous
-	 * stem has already been shifted relatively to its "ideal" position FPGM 12 would
-	 * determine. If so, then the desired point position is corrected relatively to
-	 * the current placement of the previous stem. 
-	 * Syntax: PUSHX_3 ref_point point 18 CALL 
-	 */
-	0xb0, // PUSHB_1
-	0x12, //   18
-	0x2c, // FDEF
-	0x20, //   DUP
-	0x2f, //   MDAP[rnd], this is needed for grayscale mode
-	0xb0, //   PUSHB_1
-	0x07, //     7
-	0x2b, //   CALL
-	0x5c, //   NOT
-	0x58, //   IF
-	0x20, //     DUP
-	0x20, //     DUP
-	0x47, //     GC[cur]
-	0x23, //     SWAP
-	0x46, //     GC[orig]
-	0x61, //     SUB
-	0x6a, //     ROUND[white]
-	0x8a, //     ROLL
-	0x20, //     DUP
-	0x47, //     GC[cur]
-	0x23, //     SWAP
-	0x46, //     GC[orig]
-	0x23, //     SWAP
-	0x61, //     SUB
-	0x6a, //     ROUND[white]
-	0x60, //     ADD
-	0x20, //     DUP
-	0x58, //     IF
-	0x20, //       DUP
-	0x64, //       ABS
-	0x62, //       DIV
-	0x38, //       SHPIX
-	0x1b, //     ELSE
-	0x21, //       POP
-	0x21, //       POP
-	0x59, //     EIF
-	0x1b, //   ELSE
-	0x21, //     POP
-	0x21, //     POP
-	0x59, //   EIF
-	0x2d, // ENDF
+        /* Function 18: this is a special version of FPGM 12, used when the counter
+         * control is enabled but doesn't directly affect the stem which is going to
+         * be positioned. Unlike FPGM 12, it doesn't just attempt to position a point
+         * closely enough to its original coordinate, but also checks if the previous
+         * stem has already been shifted relatively to its "ideal" position FPGM 12 would
+         * determine. If so, then the desired point position is corrected relatively to
+         * the current placement of the previous stem. 
+         * Syntax: PUSHX_3 ref_point point 18 CALL 
+         */
+        0xb0, // PUSHB_1
+        0x12, //   18
+        0x2c, // FDEF
+        0x20, //   DUP
+        0x2f, //   MDAP[rnd], this is needed for grayscale mode
+        0xb0, //   PUSHB_1
+        0x07, //     7
+        0x2b, //   CALL
+        0x5c, //   NOT
+        0x58, //   IF
+        0x20, //     DUP
+        0x20, //     DUP
+        0x47, //     GC[cur]
+        0x23, //     SWAP
+        0x46, //     GC[orig]
+        0x61, //     SUB
+        0x6a, //     ROUND[white]
+        0x8a, //     ROLL
+        0x20, //     DUP
+        0x47, //     GC[cur]
+        0x23, //     SWAP
+        0x46, //     GC[orig]
+        0x23, //     SWAP
+        0x61, //     SUB
+        0x6a, //     ROUND[white]
+        0x60, //     ADD
+        0x20, //     DUP
+        0x58, //     IF
+        0x20, //       DUP
+        0x64, //       ABS
+        0x62, //       DIV
+        0x38, //       SHPIX
+        0x1b, //     ELSE
+        0x21, //       POP
+        0x21, //       POP
+        0x59, //     EIF
+        0x1b, //   ELSE
+        0x21, //     POP
+        0x21, //     POP
+        0x59, //   EIF
+        0x2d, // ENDF
 
-	/* Function 19: used to align a point relatively to a diagonal line,
-	 * specified by two other points. First we check if the point going
-	 * to be positioned doesn't deviate too far from the line in the original
-	 * outline. If the deviation is small enough to neglect it, we use ALIGNRP
-	 * to position the point, otherwise MDRP is used instead. We can't just
-	 * always use MDRP, because this command may produce wrong results at
-	 * small PPEMs, if the original and gridfitted coordinates of the line end
-	 * points specify slightly different unit vectors.
-	 * Syntax: point diag_start_point diag_end_point 19 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x13, //   19
-	0x2c, // FDEF
-	0x20, //   DUP
-	0x8a, //   ROLL
-	0x20, //   DUP
-	0x8a, //   ROLL
-	0x87, //   SDPVTL[orthogonal]
-	0x20, //   DUP
-	0xb0, //   PUSHB_1
-	0x03, //     4
-	0x25, //   CINDEX
-	0x4a, //   MD[orig]
-	0x64, //   ABS 
-	0x23, //   SWAP
-	0x8a, //   ROLL
-	0x07, //   SPVTL[orthogonal]
-	0xb0, //   PUSHB_1
-	0x20, //     32
-	0x50, //   LT
-	0x58, //   IF
-	0x3c, //     ALIGNRP
-	0x1b, //   ELSE
-	0xc0, //     MDRP[grey]
-	0x59, //   EIF
-	0x2d  // ENDF
+        /* Function 19: used to align a point relatively to a diagonal line,
+         * specified by two other points. First we check if the point going
+         * to be positioned doesn't deviate too far from the line in the original
+         * outline. If the deviation is small enough to neglect it, we use ALIGNRP
+         * to position the point, otherwise MDRP is used instead. We can't just
+         * always use MDRP, because this command may produce wrong results at
+         * small PPEMs, if the original and gridfitted coordinates of the line end
+         * points specify slightly different unit vectors.
+         * Syntax: point diag_start_point diag_end_point 19 CALL
+         */
+        0xb0, // PUSHB_1
+        0x13, //   19
+        0x2c, // FDEF
+        0x20, //   DUP
+        0x8a, //   ROLL
+        0x20, //   DUP
+        0x8a, //   ROLL
+        0x87, //   SDPVTL[orthogonal]
+        0x20, //   DUP
+        0xb0, //   PUSHB_1
+        0x03, //     4
+        0x25, //   CINDEX
+        0x4a, //   MD[orig]
+        0x64, //   ABS 
+        0x23, //   SWAP
+        0x8a, //   ROLL
+        0x07, //   SPVTL[orthogonal]
+        0xb0, //   PUSHB_1
+        0x20, //     32
+        0x50, //   LT
+        0x58, //   IF
+        0x3c, //     ALIGNRP
+        0x1b, //   ELSE
+        0xc0, //     MDRP[grey]
+        0x59, //   EIF
+        0x2d  // ENDF
     };
 
     struct ttf_table *tab = SFFindTable(gic->sf, CHR('f','p','g','m'));
 
     if ( tab==NULL ) {
-	/* We have to create such table. */
-	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = gic->sf->ttf_tables;
-	gic->sf->ttf_tables = tab;
-	tab->tag = CHR('f','p','g','m');
-	tab->len = 0;
+        /* We have to create such table. */
+        tab = chunkalloc(sizeof(struct ttf_table));
+        tab->next = gic->sf->ttf_tables;
+        gic->sf->ttf_tables = tab;
+        tab->tag = CHR('f','p','g','m');
+        tab->len = 0;
     }
 
     if (tab->len==0 ||
         (tab->len < sizeof(new_fpgm) && !memcmp(tab->data, new_fpgm, tab->len)))
     {
-	/* We can safely update font program. */
-	tab->len = tab->maxlen = sizeof(new_fpgm);
-	tab->data = grealloc(tab->data, sizeof(new_fpgm));
-	memmove(tab->data, new_fpgm, sizeof(new_fpgm));
+        /* We can safely update font program. */
+        tab->len = tab->maxlen = sizeof(new_fpgm);
+        tab->data = grealloc(tab->data, sizeof(new_fpgm));
+        memmove(tab->data, new_fpgm, sizeof(new_fpgm));
         gic->fpgm_done = 1;
     }
     else {
-	/* there already is a font program. */
-	gic->fpgm_done = 0;
-	if (tab->len >= sizeof(new_fpgm))
-	    if (!memcmp(tab->data, new_fpgm, sizeof(new_fpgm)))
-		gic->fpgm_done = 1;  /* it's ours. */
+        /* there already is a font program. */
+        gic->fpgm_done = 0;
+        if (tab->len >= sizeof(new_fpgm))
+            if (!memcmp(tab->data, new_fpgm, sizeof(new_fpgm)))
+                gic->fpgm_done = 1;  /* it's ours. */
 
-	/* Log warning message. */
-	if (!gic->fpgm_done)
-	    ff_post_error(_("Can't insert 'fpgm'"),
-		_("There exists a 'fpgm' code that seems incompatible with "
-		  "FontForge's. Instructions generated will be of lower "
-		  "quality. If legacy hinting is to be scrapped, it is "
-		  "suggested to clear the `fpgm` and repeat autoinstructing. "
-		  "It will be then possible to append user's code to "
-		  "FontForge's 'fpgm', but due to possible future updates, "
-		  "it is extremely advised to use high numbers for user's "
-		  "functions."
-	    ));
+        /* Log warning message. */
+        if (!gic->fpgm_done)
+            ff_post_error(_("Can't insert 'fpgm'"),
+                _("There exists a 'fpgm' code that seems incompatible with "
+                  "FontForge's. Instructions generated will be of lower "
+                  "quality. If legacy hinting is to be scrapped, it is "
+                  "suggested to clear the `fpgm` and repeat autoinstructing. "
+                  "It will be then possible to append user's code to "
+                  "FontForge's 'fpgm', but due to possible future updates, "
+                  "it is extremely advised to use high numbers for user's "
+                  "functions."
+            ));
     }
 }
 
@@ -1715,50 +1719,50 @@ return prep_head;
 static void init_prep(GlobalInstrCt *gic) {
     uint8 new_prep_preamble[] =
     {
-	/* Enable dropout control. FreeType 2.3.7 need explicit SCANTYPE. */
-	0xb8, // PUSHW_1
-	0x01, //   511
-	0xff, //   ...still that 511
-	0x85, // SCANCTRL
-	0xb0, // PUSHB_1
-	0x01, //   1
-	0x8d, // SCANTYPE
+        /* Enable dropout control. FreeType 2.3.7 need explicit SCANTYPE. */
+        0xb8, // PUSHW_1
+        0x01, //   511
+        0xff, //   ...still that 511
+        0x85, // SCANCTRL
+        0xb0, // PUSHB_1
+        0x01, //   1
+        0x8d, // SCANTYPE
 
-	/* Measurements are taken along Y axis */
-	0x00, // SVTCA[y-axis]
+        /* Measurements are taken along Y axis */
+        0x00, // SVTCA[y-axis]
 
         /* Turn hinting off at very small pixel sizes */
-	0x4b, // MPPEM
-	0xb0, // PUSHB_1
-	0x08, //   8 - hinting threshold - should be configurable
-	0x50, // LT
-	0x58, // IF
-	0xb1, //   PUSHB_2
-	0x01, //     1
-	0x01, //     1
-	0x8e, //   INSTCTRL
-	0x59, // EIF
+        0x4b, // MPPEM
+        0xb0, // PUSHB_1
+        0x08, //   8 - hinting threshold - should be configurable
+        0x50, // LT
+        0x58, // IF
+        0xb1, //   PUSHB_2
+        0x01, //     1
+        0x01, //     1
+        0x8e, //   INSTCTRL
+        0x59, // EIF
 
-	/* Determine the cvt cut-in used */
-	0xb1, // PUSHB_2
-	0x46, //   70/64 = about 1.094 pixel (that's our default setting)
-	0x06, //   6
-	0x2b, // CALL
-	0x58, // IF
-	0x21, //   POP
-	0xb0, //   PUSHB_1
-	0x10, //     16/64 = 0.25 pixel (very low cut-in for grayscale mode)
-	0x59, // EIF
-	0x4b, // MPPEM
-	0xb0, // PUSHB_1
-	0x14, //   20 PPEM - a threshold below which we'll use larger CVT cut-in
-	0x52, // GT
-	0x58, // IF
-	0x21, //   POP
-	0xb0, //   PUSHB_1
-	0x80, //     128/64 = 2 pixels (extreme regularization for small ppems)
-	0x59, // EIF
-	0x1d  // SCVTCI
+        /* Determine the cvt cut-in used */
+        0xb1, // PUSHB_2
+        0x46, //   70/64 = about 1.094 pixel (that's our default setting)
+        0x06, //   6
+        0x2b, // CALL
+        0x58, // IF
+        0x21, //   POP
+        0xb0, //   PUSHB_1
+        0x10, //     16/64 = 0.25 pixel (very low cut-in for grayscale mode)
+        0x59, // EIF
+        0x4b, // MPPEM
+        0xb0, // PUSHB_1
+        0x14, //   20 PPEM - a threshold below which we'll use larger CVT cut-in
+        0x52, // GT
+        0x58, // IF
+        0x21, //   POP
+        0xb0, //   PUSHB_1
+        0x80, //     128/64 = 2 pixels (extreme regularization for small ppems)
+        0x59, // EIF
+        0x1d  // SCVTCI
     };
 
     int preplen = sizeof(new_prep_preamble);
@@ -1768,7 +1772,7 @@ static void init_prep(GlobalInstrCt *gic) {
 
     if (gic->cvt_done) {
         prepmaxlen += 48 + 38*(gic->stemsnaphcnt + gic->stemsnapvcnt);
-	prepmaxlen += 14*(gic->bluecnt);
+        prepmaxlen += 14*(gic->bluecnt);
     }
 
     new_prep = gcalloc(prepmaxlen, sizeof(uint8));
@@ -1776,38 +1780,38 @@ static void init_prep(GlobalInstrCt *gic) {
     prep_head = new_prep + preplen;
 
     if (gic->cvt_done && gic->fpgm_done) {
-	/* Apply family blues. */
-	prep_head = use_family_blues(prep_head, gic);
+        /* Apply family blues. */
+        prep_head = use_family_blues(prep_head, gic);
 
         /* Normalize stems (only in monochrome mode) */
         prep_head = pushnum(prep_head, 6);
-	*prep_head++ = CALL;
-	*prep_head++ = 0x5c; // NOT
-	*prep_head++ = 0x58; // IF
+        *prep_head++ = CALL;
+        *prep_head++ = 0x5c; // NOT
+        *prep_head++ = 0x58; // IF
         prep_head = normalize_stems(prep_head, 0, gic);
         prep_head = normalize_stems(prep_head, 1, gic);
-	*prep_head++ = 0x59; // EIF
+        *prep_head++ = 0x59; // EIF
         preplen = prep_head - new_prep;
     }
 
     tab = SFFindTable(gic->sf, CHR('p','r','e','p'));
 
     if ( tab==NULL ) {
-	/* We have to create such table. */
-	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = gic->sf->ttf_tables;
-	gic->sf->ttf_tables = tab;
-	tab->tag = CHR('p','r','e','p');
-	tab->len = 0;
+        /* We have to create such table. */
+        tab = chunkalloc(sizeof(struct ttf_table));
+        tab->next = gic->sf->ttf_tables;
+        gic->sf->ttf_tables = tab;
+        tab->tag = CHR('p','r','e','p');
+        tab->len = 0;
     }
 
     if (tab->len==0 ||
         (tab->len < preplen && !memcmp(tab->data, new_prep, tab->len)))
     {
-	/* We can safely update cvt program. */
-	tab->len = tab->maxlen = preplen;
-	tab->data = grealloc(tab->data, preplen);
-	memmove(tab->data, new_prep, preplen);
+        /* We can safely update cvt program. */
+        tab->len = tab->maxlen = preplen;
+        tab->data = grealloc(tab->data, preplen);
+        memmove(tab->data, new_prep, preplen);
         gic->prep_done = 1;
     }
     else {
@@ -2195,9 +2199,9 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
  *
  ******************************************************************************/
 
-/* The following operations have been separated from search_edge(),
-/* because sometimes it is important to be able to determine, if the
-/* given point is about to be gridfitted or interpolated */
+/* The following operations have been separated from search_edge(),  */
+/* because sometimes it is important to be able to determine, if the */
+/* given point is about to be gridfitted or interpolated             */
 static int value_point(InstrCt *ct, int p, SplinePoint *sp, real fudge) {
     int score = 0;
     int EM = ct->gic->sf->ascent + ct->gic->sf->descent;
@@ -2284,8 +2288,8 @@ static int StemPreferredForPoint(PointData *pd, StemData *stem,int is_next ) {
     bestoff = 1e4;
     for ( i=0; i<*stemcnt; i++ ) {
         /* Ghost hints are always assigned to both sides of a point, no matter
-        /* what the next/previous spline direction is. So we need an additional
-        /* check for stem unit parallelity */
+         * what the next/previous spline direction is. So we need an additional
+         * check for stem unit parallelity */
         if (stems[i]->toobig > stem->toobig || 
             stems[i]->unit.x != stem->unit.x || stems[i]->unit.y != stem->unit.y)
             continue;
@@ -2324,7 +2328,7 @@ static void assign_points_to_edge(InstrCt *ct, StemData *stem, int is_l, int *re
     PointData *pd;
 
     flag = RealNear( stem->unit.y,1 ) ? tf_x : tf_y;
-    
+
     for ( i=0; i<ct->gd->realcnt; i++ ) {
         pd = &ct->gd->points[i];
         previdx = StemPreferredForPoint( pd,stem,false );
@@ -2332,11 +2336,11 @@ static void assign_points_to_edge(InstrCt *ct, StemData *stem, int is_l, int *re
         if (!pd->ticked && (previdx != -1 || nextidx != -1)) {
             pd->ticked = true;
             /* Don't attempt to position inner points at diagonal intersections:
-            /* our diagonal stem hinter will handle them better */
+             * our diagonal stem hinter will handle them better */
             if ( ct->diagcnt > 0 && (
                 ( stem->unit.y == 1 && pd->x_corner == 2 ) || 
                 ( stem->unit.x == 1 && pd->y_corner == 2 ))) {
-                
+
                 dint_inner= has_valid_dstem( pd,true ) != -1 &&
                             has_valid_dstem( pd,false ) != -1;
             }
@@ -2358,12 +2362,12 @@ static void init_stem_edge(InstrCt *ct, StemData *stem, int is_l) {
     struct dependent_stem *slave;
     PointData *rpd = NULL;
     int i, *refidx = NULL;
-    
+
     left = ( stem->unit.x == 0 ) ? stem->left.x : stem->left.y;
     right = ( stem->unit.x == 0 ) ? stem->right.x : stem->right.y;
     base = ( is_l ) ? left : right;
     other = ( is_l ) ? right : left;
-    
+
     ct->edge.base = base;
     ct->edge.refpt = -1;
     ct->edge.refscore = 0;
@@ -2375,7 +2379,7 @@ static void init_stem_edge(InstrCt *ct, StemData *stem, int is_l) {
         rpd = &ct->gd->points[*refidx];
 
     /* Don't attempt to position inner points at diagonal intersections:
-    /* our diagonal stem hinter will handle them better */
+     * our diagonal stem hinter will handle them better */
     if ( rpd != NULL && ct->diagcnt > 0 && (
         ( stem->unit.y == 1 && rpd->x_corner == 2 ) || 
         ( stem->unit.x == 1 && rpd->y_corner == 2 )) &&
@@ -2443,11 +2447,11 @@ static int findoffs(const int *elems, int elemcnt, int val) {
 }
 
 /* In given ct, others[segstart...segend] form a continuous segment on an edge
-   parallel to one of coordinate axes. If there are no diagonal hints, we can
-   instruct just one point of a segment, preferring refpt if included, and
-   preferring on-curve points ovef off-curve. Otherwise we must instruct all
-   points used by diagonal hinter along with refpt if included. We mark points
-   that are not to be instructed as 'affected'.
+ * parallel to one of coordinate axes. If there are no diagonal hints, we can
+ * instruct just one point of a segment, preferring refpt if included, and
+ * preferring on-curve points ovef off-curve. Otherwise we must instruct all
+ * points used by diagonal hinter along with refpt if included. We mark points
+ * that are not to be instructed as 'affected'.
  */
 static void optimize_segment(int segstart, int segend, InstrCt *ct) {
     int i, local_refpt=-1;
@@ -2668,7 +2672,7 @@ return;
 	    for(j=i; j<ct->edge.othercnt; j++) others[j] = others[j+1];
 	    i--;
 	}
-    
+
     free(tocull);
     free(tocheck);
 }
@@ -2931,8 +2935,8 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     init_stem_edge(ct, stem, !is_l);
     if (ct->edge.refpt == -1) {
         /* We have skipped the right edge to start instructing this stem from
-        /* left. But its left edge appears to have no points to be instructed.
-        /* So return to the right edge and instruct it before exiting */
+         * left. But its left edge appears to have no points to be instructed.
+         * So return to the right edge and instruct it before exiting */
         if ( reverse && !basedone ) {
             init_stem_edge(ct, stem, is_l);
             ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
@@ -2946,8 +2950,8 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     if ( reverse ) {
         is_l = !is_l;
         ct->rp0 = ct->edge.refpt;
-	ct->pt = pushpoint(ct->pt, ct->rp0);
-	*(ct->pt)++ = MDAP_rnd;
+        ct->pt = pushpoint(ct->pt, ct->rp0);
+        *(ct->pt)++ = MDAP_rnd;
         ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
         finish_edge(ct, SHP_rp1);
         mark_startenddones( stem, ct->xdir, is_l );
@@ -2969,7 +2973,7 @@ static void mark_points_affected(InstrCt *ct,StemData *target,PointData *opd,int
     Spline *s;
     PointData *pd, *cpd;
     int cpidx;
-    
+
     s  = next ? opd->sp->next : opd->sp->prev;
     pd = next ? &ct->gd->points[s->to->ptindex] : &ct->gd->points[s->from->ptindex];
     while (IsStemAssignedToPoint(pd, target, !next) == -1) {
@@ -3013,7 +3017,7 @@ static void finish_serif(StemData *slave, StemData *master, int lbase, int is_ba
     if (slave == NULL || master == NULL)
 return;
     inner_pt = ( lbase ) ? master->rightidx : master->leftidx;
-    
+
     init_stem_edge(ct, slave, !lbase);
     if (ct->edge.refpt == -1)
 return;
@@ -3036,16 +3040,16 @@ return;
     ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, SHP_rp2);
     mark_startenddones( slave, ct->xdir, !lbase );
-    
+
     if ( !interpolate_strong || !instruct_ball_terminals )
 return;
 
     /* Preserve points on ball terminals from being interpolated
-    /* between edges by marking them as affected */
+     * between edges by marking them as affected */
     for ( i=0; i<slave->chunk_cnt; i++ ) {
         chunk = &slave->chunks[i];
         opd = lbase ? chunk->r : chunk->l;
-        
+
         if (chunk->is_ball && opd != NULL) {
             mark_points_affected(ct, chunk->ball_m, opd, true);
             mark_points_affected(ct, chunk->ball_m, opd, false);
@@ -3059,7 +3063,7 @@ static void link_serifs_to_edge(InstrCt *ct, StemData *stem, int is_l) {
 
     /* We use an FPGM function to set rp0, and thus the exact value
      * is not known at the compilation time. So it is safer to reset
-     * ct->rp0 to -1 
+     * ct->rp0 to -1
      */
     if ( ct->gic->fpgm_done ) {
         ct->rp0 = -1;
@@ -3072,7 +3076,7 @@ static void link_serifs_to_edge(InstrCt *ct, StemData *stem, int is_l) {
         init_stem_edge(ct, stem, !is_l);
         if ( ct->rp0 != ct->edge.refpt ) {
             ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	    *(ct->pt)++ = SRP0;
+            *(ct->pt)++ = SRP0;
             ct->rp0 = ct->edge.refpt;
         }
     }
@@ -3120,10 +3124,10 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
         slave = &stem->dependent[i];
         if (slave->stem->master == NULL)
             continue;
-        
+
         init_stem_edge(ct, slave->stem, slave->lbase);
         if (ct->edge.refpt == -1) continue;
-    
+
         if (slave->dep_type == 'i' && stem->ldone && stem->rdone) {
             rp1 = ct->xdir ? stem->leftidx : stem->rightidx;
             rp2 = ct->xdir ? stem->rightidx : stem->leftidx;
@@ -3145,14 +3149,14 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
         } 
         else if (slave->dep_type == 'm' &&
             ((slave->lbase && stem->ldone) || (!slave->lbase && stem->rdone))) {
-            
+
             rp = slave->lbase ? stem->leftidx : stem->rightidx;
             if ( rp != ct->rp0 ) {
                 ct->pt = pushpoint(ct->pt, rp);
 	        *(ct->pt)++ = SRP0;
                 ct->rp0 = rp;
             }
-            
+
             /* It is possible that at certain PPEMs both the master and slave stems are
              * regularized, say, to 1 pixel, but the difference between their positions
              * is rounded to 1 pixel too. Thus one stem is shifted relatively to another,
@@ -3164,7 +3168,7 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
                 ( &stem->right.x)[!ct->xdir] >= (&slave->stem->right.x)[!ct->xdir] ) ||
                 ((&stem->left.x)[!ct->xdir] >= (&slave->stem->left.x)[!ct->xdir] &&
                 ( &stem->right.x)[!ct->xdir] <= (&slave->stem->right.x)[!ct->xdir] ))) {
-                
+
                 std_master = CVTSeekStem(ct->xdir, ct->gic, stem->width, true);
                 std_slave  = CVTSeekStem(ct->xdir, ct->gic, slave->stem->width, true);
                 if ( std_master == NULL ) {
@@ -3175,7 +3179,7 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
                     build_cvt_stem(ct, slave->stem->width, &norm_slave);
                     std_slave = &norm_slave;
                 }
-                
+
                 stopat = 32768;
                 for (j=7; j<=stopat; j++) {
 	            w_master = compute_stem_width(ct->xdir, std_master, ct->gd->emsize, j);
@@ -3207,12 +3211,12 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
         }
         else
             continue;
-            
+
         ct->rp0 = ct->edge.refpt;
         finish_stem(slave->stem, use_rp1, keep_old_rp0, ct);
         if ( instruct_serif_stems || instruct_ball_terminals )
             instruct_serifs(ct, slave->stem);
-        
+
         instruct_dependent(ct, slave->stem);
     }
 }
@@ -3317,7 +3321,7 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
     real base, advance, tmp;
     real fuzz = GetBlueFuzz(ct->gic->sf);
     StemData *slave;
-    
+
     /* Which edge to start at? */
     /* Starting at the other would usually be wrong. */
     if (blue->overshoot < blue->base && ( !stem->ghost || stem->width == 21 ))
@@ -3350,8 +3354,8 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
     if (ct->edge.refpt == -1) {
         for ( i=0; i<stem->dep_cnt; i++ ) {
             slave = stem->dependent[i].stem;
-            /* A hack which allows single-edge hints to tie features 
-            /* to remote blue zones. */
+            /* A hack which allows single-edge hints to tie features
+             * to remote blue zones. */
             if ( stem->ghost ) slave->blue = idx;
             if ( slave->blue == idx )
                 ret += snap_stem_to_blue(ct, slave, blue, idx);
@@ -3645,7 +3649,7 @@ static void HStemGeninst(InstrCt *ct) {
         return;
     rpts1 = gcalloc(ct->gd->hbundle->cnt, sizeof(int));
     rpts2 = gcalloc(ct->gd->hbundle->cnt, sizeof(int));
-    
+
     /* Interpolating between blues is splitted to two stages: first
      * we determine which stems can be interpolated and which cannot
      * and store the numbers of reference points, and then (in the
@@ -3841,7 +3845,7 @@ static void VStemGeninst(InstrCt *ct) {
         for ( i=0; i<ct->gd->vbundle->cnt; i++ ) {
             stem = ct->gd->vbundle->stemlist[i];
 	    if ((!stem->ldone || !stem->rdone) && stem->master == NULL) {
-                
+
                 if (prev != NULL && prev->rightidx != -1 && ct->rp0 != prev->rightidx) {
                     ct->pt = pushpoint(ct->pt, prev->rightidx);
 	            *(ct->pt)++ = SRP0;
@@ -3889,10 +3893,11 @@ return( 0 );
 }
 
 /* Takes a line defined by two points and returns a vector decribed as a
-/* pair of x and y values, such that the value (x2 + y2) is equal to 1.
-/* Note that the BasePoint structure is used to store the vector, although
-/* it is not a point itself. This is just because that structure has "x"
-/* and "y" fields which can be used for our purpose. */
+ * pair of x and y values, such that the value (x2 + y2) is equal to 1.
+ * Note that the BasePoint structure is used to store the vector, although
+ * it is not a point itself. This is just because that structure has "x"
+ * and "y" fields which can be used for our purpose.
+ */
 static BasePoint GetVector ( BasePoint *top,BasePoint *bottom,int orth ) {
     real catx, caty, hyp, temp;
     BasePoint ret;
@@ -3908,7 +3913,7 @@ return( ret );
 }
 
 static int SetDStemKeyPoint( InstrCt *ct,StemData *stem,PointData *pd,int aindex ) {
-    
+
     int nextidx, previdx, cpidx, prev_outer, next_outer, is_start;
     int nsidx, psidx, sidx;
     PointData *ncpd, *pcpd, *cpd, *best = NULL;
@@ -3934,20 +3939,20 @@ return( false );
         pcpd = &ct->gd->points[previdx];
         psidx = IsStemAssignedToPoint( pcpd,stem,true );
         nsidx = IsStemAssignedToPoint( ncpd,stem,false );
-        
+
         if ( psidx == -1 && nsidx == -1 )
 return( false );
-        
+
         if ( psidx > -1 && nsidx > -1 )
             best = ( prev_outer ) ? pcpd : ncpd;
         else
             best = ( psidx > -1 ) ? pcpd : ncpd;
-        
+
     } else if (( !pd->sp->nonextcp && next_outer ) || ( !pd->sp->noprevcp && prev_outer )) {
         cpidx = ( prev_outer ) ? pd->sp->prev->from->nextcpindex : pd->sp->nextcpindex;
         cpd = &ct->gd->points[cpidx];
         sidx = IsStemAssignedToPoint( cpd,stem,prev_outer );
-        
+
         if ( sidx != -1 ) {
             cpdist = fabs(( pd->base.x - cpd->base.x ) * stem->unit.x +
             	          ( pd->base.y - cpd->base.y ) * stem->unit.y );
@@ -3982,11 +3987,12 @@ return;
 }
 
 /* Convert the existing diagonal stem layout to glyph data, containing
-/* information about points assigned to each stem. Then run on stem chunks
-/* and associate with each point the line it should be aligned by. Note that
-/* we have to do this on a relatively early stage, as it may be important
-/* to know, if the given point is subject to the subsequent diagonale hinting,
-/* before any actual processing of diagonal stems is started.*/
+ * information about points assigned to each stem. Then run on stem chunks
+ * and associate with each point the line it should be aligned by. Note that
+ * we have to do this on a relatively early stage, as it may be important
+ * to know, if the given point is subject to the subsequent diagonale hinting,
+ * before any actual processing of diagonal stems is started.
+ */
 static void InitDStemData( InstrCt *ct ) {
     DiagPointInfo *diagpts = ct->diagpts;
     int i, j, idx, previdx, nextidx, num1, num2, psidx, nsidx, is_l, cnt=0;
@@ -4036,13 +4042,13 @@ static void InitDStemData( InstrCt *ct ) {
         }
 
         /* Swap "left" and "right" sides for vectors pointing north-east,
-        /* so that the "left" side is always determined along the x axis
-        /* rather than relatively to the vector direction */
+         * so that the "left" side is always determined along the x axis
+         * rather than relatively to the vector direction */
         num1 = ( stem->unit.y > 0 ) ? 0 : 2;
         num2 = ( stem->unit.y > 0 ) ? 2 : 0;
         if (!SetDStemKeyPoint( ct,stem,ls,num1 ) || !SetDStemKeyPoint( ct,stem,rs,num2 ))
     continue;
-        
+
         num1 = ( stem->unit.y > 0 ) ? 1 : 3;
         num2 = ( stem->unit.y > 0 ) ? 3 : 1;
         if (!SetDStemKeyPoint( ct,stem,le,num1 ) || !SetDStemKeyPoint( ct,stem,re,num2 ))
@@ -4058,7 +4064,7 @@ static void InitDStemData( InstrCt *ct ) {
                 if ( !tpd->ticked && diagpts[idx].count < 2 && ( 
                     ( psidx = IsStemAssignedToPoint( tpd,stem,false )) > -1 ||
                     ( nsidx = IsStemAssignedToPoint( tpd,stem,true )) > -1)) {
-                    
+
                     is_l = ( nsidx > -1 ) ? tpd->next_is_l[nsidx] : tpd->prev_is_l[psidx];
                     if ( stem->unit.y < 0 ) is_l = !is_l;
                     AssignLineToPoint( diagpts,stem,idx,is_l );
@@ -4071,7 +4077,7 @@ static void InitDStemData( InstrCt *ct ) {
                 npd = &gd->points[nextidx];
                 if (!ppd->ticked && diagpts[previdx].count < 2 &&
                     ( nsidx = IsStemAssignedToPoint( ppd,stem,true )) > -1 ) {
-                    
+
                     is_l = ppd->next_is_l[nsidx];
                     if ( stem->unit.y < 0 ) is_l = !is_l;
                     AssignLineToPoint( diagpts,stem,previdx,is_l );
@@ -4079,7 +4085,7 @@ static void InitDStemData( InstrCt *ct ) {
                 }
                 if (!npd->ticked && diagpts[nextidx].count < 2 &&
                     ( psidx = IsStemAssignedToPoint( npd,stem,false )) > -1 ) {
-                    
+
                     is_l = npd->prev_is_l[psidx];
                     if ( stem->unit.y < 0 ) is_l = !is_l;
                     AssignLineToPoint( diagpts,stem,nextidx,is_l );
@@ -4094,7 +4100,8 @@ static void InitDStemData( InstrCt *ct ) {
 }
 
 /* Usually we have to start doing each diagonal stem from the point which
-/* is most touched in any directions. */
+ * is most touched in any directions.
+ */
 static int FindDiagStartPoint( StemData *stem, uint8 *touched ) {
     int i;
 
@@ -4120,8 +4127,9 @@ return( 0 );
 }
 
 /* Check the directions at which the given point still can be moved
-/* (i. e. has not yet been touched) and set freedom vector to that
-/* direction in case it has not already been set */
+ * (i. e. has not yet been touched) and set freedom vector to that
+ * direction in case it has not already been set.
+ */
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
     uint8 *touched,DiagPointInfo *diagpts,PointData *lp1,PointData *lp2,BasePoint *fv ) {
 
@@ -4188,17 +4196,17 @@ return( false );
 
 static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
     int pt,int refpt,int firstedge,int cvt,BasePoint *fv ) {
-    
+
     PointData *v1, *v2;
     uint8 *instrs, *touched;
     int ptcnt;
     DiagPointInfo *diagpts;
-    
+
     diagpts = ct->diagpts;
     ptcnt = ct->gd->realcnt;
     touched = ct->touched;
     instrs = ct->pt;
-    
+
     if ( firstedge ) {
         v1 = stem->keypts[0]; v2 = stem->keypts[1];
     } else {
@@ -4209,7 +4217,7 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
         if ( refpt == -1 ) {
             if (( fv->x == 1 && !( touched[pt] & tf_x )) || 
                 ( fv->y == 1 && !( touched[pt] & tf_y ))) {
-                
+
                 instrs = pushpoint( instrs,pt );
                 *instrs++ = MDAP;
             } else {
@@ -4223,7 +4231,7 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
                 *instrs++ = SRP0;
                 ct->rp0 = refpt;
             }
-            
+
             if ( cvt < 0 ) {
                 instrs = pushpoint( instrs,pt );
                 *instrs++ = MDRP_grey;
@@ -4247,7 +4255,7 @@ static int DStemHasSnappableCorners ( InstrCt *ct,StemData *stem,PointData *pd1,
     /* We should be dealing with oncurve points */
     if ( pd1->sp == NULL || pd2->sp == NULL )
 return( false );
-    
+
     /* points should not be lined up vertically or horizontally */
     if (fabs( pd1->base.x - pd2->base.x ) <= ct->gic->fudge ||
         fabs( pd1->base.y - pd2->base.y ) <= ct->gic->fudge )
@@ -4268,7 +4276,7 @@ static uint8 *SnapDStemCorners ( InstrCt *ct,StemData *stem,PointData *pd1,Point
 
     instrs = ct->pt;
     touched = ct->touched;
-    
+
     if ( pd1->x_corner && pd2->y_corner ) {
         xbase = pd1->ttfindex; ybase = pd2->ttfindex;
     } else {
@@ -4283,7 +4291,7 @@ static uint8 *SnapDStemCorners ( InstrCt *ct,StemData *stem,PointData *pd1,Point
     ct->pt = push2points( ct->pt,xbase,ybase );
     *(ct->pt)++ = touched[ybase] & tf_y ? MDAP : MDAP_rnd;
     *(ct->pt)++ = MDRP_min_black;
-    
+
     touched[xbase] |= ( tf_x | tf_y );
     touched[ybase] |= ( tf_x | tf_y );
     fv->x = 0; fv->y = 1;
@@ -4292,19 +4300,20 @@ return( instrs );
 }
 
 /* A basic algorithm for hinting diagonal stems:
-/* -- iterate through diagonal stems, ordered from left to right;
-/* -- for each stem, find the most touched point, to start from,
-/*    and fix that point. TODO: the positioning should be done
-/*    relatively to points already touched by x or y;
-/* -- position the second point on the same edge, using dual projection
-/*    vector;
-/* -- link to the second edge and repeat the same operation.
-/*
-/* For each point we first determine a direction at which it still can
-/* be moved. If a point has already been positioned relatively to another
-/* diagonal line, then we move it along that diagonale. Thus this algorithm
-/* can handle things like "V" where one line's ending point is another
-/* line's starting point without special exceptions. */
+ * -- iterate through diagonal stems, ordered from left to right;
+ * -- for each stem, find the most touched point, to start from,
+ *    and fix that point. TODO: the positioning should be done
+ *    relatively to points already touched by x or y;
+ * -- position the second point on the same edge, using dual projection
+ *    vector;
+ * -- link to the second edge and repeat the same operation.
+ *
+ * For each point we first determine a direction at which it still can
+ * be moved. If a point has already been positioned relatively to another
+ * diagonal line, then we move it along that diagonale. Thus this algorithm
+ * can handle things like "V" where one line's ending point is another
+ * line's starting point without special exceptions.
+ */
 static uint8 *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
     int startnum, a1, a2, b1, b2, ptcnt, firstedge, cvt;
     int x_ldup, y_ldup, x_edup, y_edup, dsc1, dsc2;
@@ -4320,7 +4329,7 @@ return( ct->pt );
 
     dsc1 = DStemHasSnappableCorners( ct,ds,ds->keypts[0],ds->keypts[2] );
     dsc2 = DStemHasSnappableCorners( ct,ds,ds->keypts[1],ds->keypts[3] );
-    
+
     if ( dsc1 || dsc2 ) {
         ct->pt = pushF26Dot6( ct->pt,.59662 );
         *(ct->pt)++ = SMD;
@@ -4333,7 +4342,7 @@ return( ct->pt );
         ct->pt = pushF26Dot6( ct->pt,DIAG_MIN_DISTANCE );
         *(ct->pt)++ = SMD;
     }
-    
+
     if ( !dsc1 || !dsc2 ) {
         startnum = FindDiagStartPoint( ds,touched );
         a1 = ds->keypts[startnum]->ttfindex;
@@ -4352,15 +4361,16 @@ return( ct->pt );
         }
 
         /* Always put the calculated stem width into the CVT table, unless it is
-        /* already there. This approach would be wrong for vertical or horizontal
-        /* stems, but for diagonales it is just unlikely that we can find an
-        /* acceptable predefined value in StemSnapH or StemSnapV */
+         * already there. This approach would be wrong for vertical or horizontal
+         * stems, but for diagonales it is just unlikely that we can find an
+         * acceptable predefined value in StemSnapH or StemSnapV
+         */
         cvt = TTF_getcvtval( ct->gic->sf,ds->width );
 
         pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
         ct->pt = pushpoints( ct->pt,2,pushpts );
         *(ct->pt)++ = 0x87;    /*SDPVTL [orthogonal] */
-    
+
         x_ldup =( touched[a1] & tf_x && touched[a2] & tf_x ) ||
                 ( touched[b1] & tf_x && touched[b2] & tf_x );
         y_ldup =( touched[a1] & tf_y && touched[a2] & tf_y ) ||
@@ -4371,7 +4381,7 @@ return( ct->pt );
                 ( touched[a2] & tf_y && touched[b2] & tf_y );
 
         if (( x_ldup && !y_edup ) || ( y_ldup && !x_edup)) {
-        
+
             ct->pt = FixDStemPoint ( ct,ds,a1,-1,firstedge,-1,fv );
             ct->pt = FixDStemPoint ( ct,ds,b2,-1,firstedge,-1,fv );
             ct->pt = FixDStemPoint ( ct,ds,b1,a1,firstedge,cvt,fv );
@@ -4410,7 +4420,7 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
         }
         if ( ct->gic->fpgm_done ) {
             pv->x = newpv.x; pv->y = newpv.y;
-            
+
             pushpts[0] = pd->ttfindex;
             pushpts[1] = line->pd1->ttfindex;
             pushpts[2] = line->pd2->ttfindex;
@@ -4434,9 +4444,10 @@ return( instrs );
 }
 
 /* If a point has to be positioned just relatively to the diagonal
-/* line (no intersections, no need to maintain other directions),
-/* then we can interpolate it along that line. This usually produces
-/* better results for things like a Danish slashed "O". */
+ * line (no intersections, no need to maintain other directions),
+ * then we can interpolate it along that line. This usually produces
+ * better results for things like a Danish slashed "O".
+ */
 static uint8 *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
     PointData *pd,InstrCt *ct,BasePoint *fv,BasePoint *pv,int *rp1,int *rp2 ) {
 
@@ -4448,7 +4459,7 @@ static uint8 *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
     touched = ct->touched;
     instrs = ct->pt;
     ptcnt = ct->ptcnt;
-    
+
     if (diagpts[pd->ttfindex].count != 1 || touched[pd->ttfindex] & ( tf_x|tf_y ) ||
         diagpts[pd->ttfindex].line[0].done > 1 )
 return( instrs );
@@ -4457,7 +4468,7 @@ return( instrs );
 
     if ( !UnitsParallel( pv,&newpv,false ) || 
         *rp1 != line->pd1->ttfindex || *rp2 != line->pd1->ttfindex ) {
-        
+
         pushpts[0] = pd->ttfindex;
         pushpts[1] = line->pd1->ttfindex;
         pushpts[2] = line->pd2->ttfindex;
@@ -4485,7 +4496,7 @@ return( instrs );
     if ( *rp1 != line->pd1->ttfindex || *rp2 != line->pd1->ttfindex ) {
         *rp1 = line->pd1->ttfindex;
         *rp2 = line->pd1->ttfindex;
-        
+
         *instrs++ = SRP1;
         *instrs++ = SRP2;
     }
@@ -4496,11 +4507,12 @@ return( instrs );
 }
 
 /* When all stem edges have already been positioned, run through other
-/* points which are known to be related with some diagonales and position
-/* them too. This may include both intersections and points which just
-/* lie on a diagonal line. This function does not care about starting/ending
-/* points of stems, unless they should be additionally positioned relatively
-/* to another stem. Thus is can handle things like "X" or "K". */
+ * points which are known to be related with some diagonales and position
+ * them too. This may include both intersections and points which just
+ * lie on a diagonal line. This function does not care about starting/ending
+ * points of stems, unless they should be additionally positioned relatively
+ * to another stem. Thus is can handle things like "X" or "K".
+ */
 static uint8 *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
 
     int i, j, ptcnt, rp1=-1, rp2=-1;
@@ -4530,10 +4542,12 @@ static uint8 *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
             }
         }
     }
+
     /* Second pass to interpolate points lying on diagonal lines (but not
-    /* starting/ending stem points) along those lines. This operation, unlike
-    /* moving points to diagonals, requires vectors to be set parallel to lines,
-    /* and this is the reason for which it is done in a separate cycle */
+     * starting/ending stem points) along those lines. This operation, unlike
+     * moving points to diagonals, requires vectors to be set parallel to lines,
+     * and this is the reason for which it is done in a separate cycle
+     */
     for ( i=0; i<ct->diagcnt; i++ ) {
         ds = ct->diagstems[i];
         if ( ds->ldone ) {
@@ -4576,18 +4590,18 @@ return( ct->pt );
 
 static void TouchControlPoint( InstrCt *ct,PointData *pd, 
     int next,int *tobefixedy,int *tobefixedx,int *numx,int *numy ) {
-    
+
     int idx, cpidx;
     PointData *cpd;
     uint8 *touched = ct->touched;
-    
+
     idx = pd->ttfindex;
     cpidx = next ? pd->sp->nextcpindex : pd->sp->prev->from->nextcpindex;
     cpd = &ct->gd->points[cpidx];
 
     if ( has_valid_dstem( cpd, !next ) != -1 ) {
         /* if this control point is used to describe an implied spline
-        /* point, then it is instructed as if it was an oncurve point */
+         * point, then it is instructed as if it was an oncurve point */
         if ( idx == 0xffff && touched[cpidx] & tf_d ) {
             if (!( touched[cpidx] & tf_y )) {
                 tobefixedy[(*numy)++] = cpidx;
@@ -4598,8 +4612,8 @@ static void TouchControlPoint( InstrCt *ct,PointData *pd,
                 tobefixedx[(*numx)++] = cpidx;
                 touched[cpidx] |= tf_x;
             }
-        /* otherwise we just mark it as affected to prevent undesired 
-        /* interpolations */
+        /* otherwise we just mark it as affected to prevent undesired
+         * interpolations */
         } else if ( idx < ct->gd->realcnt && touched[idx] & tf_d ) {
             ct->affected[cpidx] |= tf_x;
             ct->affected[cpidx] |= tf_y;
@@ -4608,8 +4622,8 @@ static void TouchControlPoint( InstrCt *ct,PointData *pd,
 }
 
 /* Finally explicitly touch all affected points by X and Y (unless they
-/* have already been), so that subsequent IUP's can't distort our
-/* stems. */
+ * have already been), so that subsequent IUP's can't distort our stems.
+ */
 static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
 
     int i, ptcnt, numx=0, numy=0, idx;
@@ -4625,7 +4639,7 @@ static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
 
     tobefixedy = gcalloc( ptcnt,sizeof( int ));
     tobefixedx = gcalloc( ptcnt,sizeof( int ));
-    
+
     /* Ensure that the projection vector is no longer set to a diagonal line */
     if ( fv->x == 1 && fv->y == 0 )
         *instrs++ = 0x03;       /* SPVTCA[x] */
@@ -4636,7 +4650,7 @@ static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
         pd = &ct->gd->points[i];
         if (( has_valid_dstem( pd,false )) != -1 ||
             ( has_valid_dstem( pd,true )) != -1 ) {
-            
+
             idx = pd->ttfindex;
             if ( idx < ct->gd->realcnt && touched[idx] & tf_d ) {
                 if (!( touched[idx] & tf_y )) {
@@ -4655,7 +4669,7 @@ static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
                 TouchControlPoint( ct,pd,true,tobefixedy,tobefixedx,&numx,&numy );
         }
     }
-    
+
     if ( numy>0 ) {
         if ( !(fv->x == 0 && fv->y == 1) ) *instrs++ = SVTCA_y;
         instrs = instructpoints ( instrs,numy,tobefixedy,MDAP );
@@ -4665,7 +4679,7 @@ static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
         if ( !(fv->x == 1 && fv->y == 0) || numy > 0 ) *instrs++ = SVTCA_x;
         instrs = instructpoints ( instrs,numx,tobefixedx,MDAP );
     }
-    
+
     if ( numx == 0 && numy == 0 ) *instrs++ = SVTCA_x;
 
     free( tobefixedy );
@@ -4724,7 +4738,7 @@ static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgel
 
     if (!stem->ghost || 
         (is_l && stem->width == 20) || (!is_l && stem->width == 21)) {
-        
+
         coord  = is_l ?
             ((real *) &stem->left.x)[!ct->xdir] : ((real *) &stem->right.x)[!ct->xdir];
         refidx = is_l ? stem->leftidx : stem->rightidx;
@@ -4768,7 +4782,7 @@ static void InterpolateStrongPoints(InstrCt *ct) {
     /* List all stem edges. List only active edges for ghost hints. */
     for(i=0; i<bundle->cnt; i++) {
         stem = bundle->stemlist[i];
-        
+
         edgecnt = AddEdge(ct, stem, ct->xdir, edgelist, edgecnt);
         edgecnt = AddEdge(ct, stem, !ct->xdir, edgelist, edgecnt);
     }
@@ -4846,8 +4860,9 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     BlueData nbd;
 
     /* Fill a temporary BlueData structure basing on the data stored in the global
-    /* instruction context. This is needed for GlyphDataBuild(), as it accepts
-    /* blue data only in this format */
+     * instruction context. This is needed for GlyphDataBuild(), as it accepts
+     * blue data only in this format
+     */
     for ( i=0; i<ct->gic->bluecnt; i++ ) {
         if ( ct->gic->blues[i].base < ct->gic->blues[i].overshoot ) {
             nbd.blues[i][0] = ct->gic->blues[i].base;
@@ -4860,11 +4875,12 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     nbd.bluecnt = ct->gic->bluecnt;
     ct->gd = GlyphDataBuild( ct->sc,ct->gic->layer,&nbd,instruct_diagonal_stems );
 
-    /* Maximum instruction length is 6 bytes for each point in each dimension */
-    /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
-    /* Diagonal take more space because we need to set the orientation on */
-    /*  each stem, and worry about intersections, etc. */
-    /*  That should be an over-estimate */
+    /* Maximum instruction length is 6 bytes for each point in each dimension
+     *  2 extra bytes to finish up. And one byte to switch from x to y axis
+     * Diagonal take more space because we need to set the orientation on
+     *  each stem, and worry about intersections, etc.
+     *  That should be an over-estimate
+     */
     max=2;
     if ( ct->gd->hbundle!=NULL ) max += ct->ptcnt*8;
     if ( ct->gd->vbundle!=NULL ) max += ct->ptcnt*8+4;
@@ -4896,10 +4912,11 @@ static uint8 *dogeninstructions(InstrCt *ct) {
         InitDStemData(ct);
     }
 
-    /* We start from instructing horizontal features (=> movement in y) */
-    /* Do this first so that the diagonal hinter will have everything moved */
-    /* properly when it sets the projection vector */
-    /* Even if we aren't doing the diagonals, we do the blues. */
+    /* We start from instructing horizontal features (=> movement in y)
+     * Do this first so that the diagonal hinter will have everything moved
+     * properly when it sets the projection vector
+     * Even if we aren't doing the diagonals, we do the blues.
+     */
     ct->xdir = false;
     *(ct->pt)++ = SVTCA_y;
     snap_to_blues(ct);
@@ -4910,9 +4927,10 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     *(ct->pt)++ = SVTCA_x;
     VStemGeninst(ct);
 
-    /* Then instruct diagonal stems (=> movement in x) */
-    /* This is done after vertical stems because it involves */
-    /* moving some points out-of their vertical stems. */
+    /* Then instruct diagonal stems (=> movement in x)
+     * This is done after vertical stems because it involves
+     * moving some points out-of their vertical stems.
+     */
     if (instruct_diagonal_stems && ct->diagcnt > 0) DStemInfoGeninst(ct);
 
     if ( interpolate_strong ) {
