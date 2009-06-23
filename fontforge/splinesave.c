@@ -1004,8 +1004,8 @@ static void curveto(GrowBuf *gb,DBasePoint *current,Spline *splines[MmMax],int i
 	op = 31;		/* hvcurveto */
 	opcnt = 4;
 	for ( i=0; i<instance_count; ++i ) {
-	    current[i].x += data[i][0]+data[i][2];
-	    current[i].y += data[i][1]+data[i][3];
+	    current[i].x += data[i][0]+data[i][1];
+	    current[i].y += data[i][2]+data[i][3];
 	}
     } else {
 	for ( i=0; i<instance_count; ++i ) {
