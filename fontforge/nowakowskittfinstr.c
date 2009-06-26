@@ -35,6 +35,7 @@
 #include "stemdb.h"
 
 extern int autohint_before_generate;
+
 int instruct_diagonal_stems = 1,
     instruct_serif_stems = 1,
     instruct_ball_terminals = 1,
@@ -59,9 +60,9 @@ int instruct_diagonal_stems = 1,
 #define SRP1                    (0x11)
 #define SRP2                    (0x12)
 #define SZP0                    (0x13)
-#define SLOOP			(0x17)
+#define SLOOP                   (0x17)
 #define RTG                     (0x18)
-#define SMD			(0x1a)
+#define SMD                     (0x1a)
 #define DUP                     (0x20)
 #define DEPTH                   (0x24)
 #define CALL                    (0x2b)
@@ -72,7 +73,7 @@ int instruct_diagonal_stems = 1,
 #define SHP_rp2                 (0x32)
 #define SHP_rp1                 (0x33)
 #define SHPIX                   (0x38)
-#define IP			(0x39)
+#define IP                      (0x39)
 #define ALIGNRP                 (0x3c)
 #define MIAP_rnd                (0x3f)
 #define ADD                     (0x60)
@@ -95,14 +96,19 @@ int instruct_diagonal_stems = 1,
 
 /******************************************************************************
  *
- * Low-lewel routines to add data to bytecode instruction stream.
+ * Low-level routines to add data for PUSHes to bytecode instruction stream.
+ * pushheader() adds PUSH preamble, then repeating addpoint() adds items.
+ *
+ * Numbers larger than 65535 are not dupported (according to TrueType spec,
+ * there can't be more points in a glyph, simple or compound).
+ * Negative numbers aren't supported, either.
  *
  ******************************************************************************/
 
 static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
     if ( isword ) {
 	if ( tot>8 ) {
-	    *instrs++ = 0x41;		/* N(next byte) Push words */
+	    *instrs++ = 0x41;		/* N(next word) Push words */
 	    *instrs++ = tot;
 	} else
 	    *instrs++ = 0xb8+(tot-1);	/* Push Words */
@@ -1946,21 +1952,21 @@ typedef struct instrct {
     uint8 *affected;      /* touchflags; almost touched, but optimized out */
 
     GlyphData *gd;
-    
+
     /* stuff for hinting diagonals */
     int diagcnt;
     StemData **diagstems;
     DiagPointInfo *diagpts; /* indexed by ttf point index */
 
-    /* stuff for hinting edges (for stems and blues): */
+    /* stuff for hinting edges (stems, blues, strong point interpolation). */
     int xdir;             /* direction flag: x=true, y=false */
     int cdir;             /* is current contour outer? - blues need this */
     struct __edge {
-	real base;        /* where the edge is */
-	int refpt;        /* best ref. point for an edge, ttf index, -1 if none */
-	int refscore;     /* its quality, for searching better one, 0 if none */
-	int othercnt;     /* count of other points to instruct for this edge */
-	int *others;      /* their ttf indices, optimize_edge() is advised */
+        real base;        /* where the edge is */
+        int refpt;        /* best ref. point for an edge, ttf index, -1 if none */
+        int refscore;     /* its quality, for searching better one; 0 if none */
+        int othercnt;     /* count of other points to instruct for this edge */
+        int *others;      /* their ttf indices, optimize_edge() is advised */
     } edge;
 
     /* Some variables for tracking graphics state */
@@ -2607,8 +2613,11 @@ return;
 /* For any strong point, check whether it's position can rely on other
  * points (if so, we don't have to instruct it explicitly).
  * This optimization is two-pass. 'Obvious' Off-curve points are sweeped
- * first. Some remaining off-curve points may then be sweeped in
- * second pass.
+ * first. Some remaining unneeded points (off- and on-curve) may then be
+ * optimized out in second pass.
+ *
+ * TODO! This optimizer could be even more aggressive - it currently
+ * skips some features too small or unexposed to benefit from hinting.
  */
 static void optimize_strongpts_step1(InstrCt *ct);
 static void optimize_strongpts_step2(InstrCt *ct);
@@ -2701,7 +2710,7 @@ return;
     /* two passes... */
     for(pass=0; pass<2; pass++)
     {
-	/* ...for each point of "edge" (would be better called "zone") */
+	/* ...for each point of "edge" (would be better called "zone" here) */
 	for(i=0; i<ct->edge.othercnt; i++)
 	{
 	    int pt = others[i];
@@ -3146,7 +3155,7 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
 	        *(ct->pt)++ = IP;
 	        *(ct->pt)++ = MDAP_rnd;
             }
-        } 
+        }
         else if (slave->dep_type == 'm' &&
             ((slave->lbase && stem->ldone) || (!slave->lbase && stem->rdone))) {
 
@@ -3239,8 +3248,9 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
  * autoinstructor will seek for other interesting features, so there is no need
  * to hint them explicitly.
  *
- * TODO! We have to check whether we have to instruct hints that overlaps with
- * those affected by blues.
+ * TODO! We currently instruct hints dependent on those controlled by blues.
+ * This may be not always corrrect (e.g. if a dependent hint is itself
+ * controlled by blue zone - possibly even different). Research needed.
  *
  * Important notes:
  *
@@ -3255,7 +3265,7 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
  * Using MIAP (single cvt, relying on cut-in) instead of twilight points
  * causes overshoots to appear/disappear inconsistently at small pixel sizes.
  * This flickering is disastrous to soft, wavy horizontal lines. We could use
- * any glyph's point at needed height, but we'r not certain we'll find any.
+ * any glyph's point at needed height, but we're not certain we'll find any.
  *
  * The inner (leftwards) contours aren't snapped to the blue zone.
  * This could have created weird artifacts. Of course this will fail for
@@ -3308,11 +3318,11 @@ static void check_blue_pts(InstrCt *ct) {
 
     for (i=0; i<bluecnt; i++)
         if (blues[i].lowest != -1)
-	    for (j=0; j<bluecnt; j++)
-		if (i != j && blues[j].lowest != -1 && SegmentsOverlap(
-			bp[blues[i].lowest].y, bp[blues[i].highest].y,
-			bp[blues[j].lowest].y, bp[blues[j].highest].y))
-		    fixup_blue_pts(blues+i, blues+j);
+            for (j=0; j<bluecnt; j++)
+                if (i != j && blues[j].lowest != -1 && SegmentsOverlap(
+                        bp[blues[i].lowest].y, bp[blues[i].highest].y,
+                        bp[blues[j].lowest].y, bp[blues[j].highest].y))
+                    fixup_blue_pts(blues+i, blues+j);
 }
 
 static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx) {
@@ -3331,9 +3341,9 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
         advance = stem->left.y;
     }
     else {
-	is_l = true;
+        is_l = true;
         base = stem->left.y;
-	advance = stem->right.y;
+        advance = stem->right.y;
     }
 
     /* This is intended as a fallback if the base edge wasn't within
@@ -3343,14 +3353,14 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
         !SegmentsOverlap(base+fuzz, base-fuzz, blue->base, blue->overshoot) &&
         SegmentsOverlap(advance+fuzz, advance-fuzz, blue->base, blue->overshoot))
     {
-	tmp = base;
-	base = advance;
-	advance = tmp;
+        tmp = base;
+        base = advance;
+        advance = tmp;
         is_l = !is_l;
     }
 
     /* instruct the stem */
-    init_stem_edge(ct, stem, is_l); /* stems don't care */
+    init_stem_edge(ct, stem, is_l);
     if (ct->edge.refpt == -1) {
         for ( i=0; i<stem->dep_cnt; i++ ) {
             slave = stem->dependent[i].stem;
@@ -3367,12 +3377,12 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
     callargs[1] = blue->cvtindex;
 
     if (ct->gic->fpgm_done) {
-	ct->pt = pushpoints(ct->pt, 3, callargs);
-	*(ct->pt)++ = CALL;
+        ct->pt = pushpoints(ct->pt, 3, callargs);
+        *(ct->pt)++ = CALL;
     }
     else {
-	ct->pt = pushpoints(ct->pt, 2, callargs);
-	*(ct->pt)++ = MIAP_rnd;
+        ct->pt = pushpoints(ct->pt, 2, callargs);
+        *(ct->pt)++ = MIAP_rnd;
     }
 
     finish_stem(stem, use_rp1, keep_old_rp0, ct);
@@ -3387,7 +3397,7 @@ static int snap_stem_to_blue(InstrCt *ct,StemData *stem, BlueZone *blue, int idx
     if( instruct_serif_stems || instruct_ball_terminals )
         instruct_serifs(ct, stem);
     instruct_dependent(ct, stem);
-    update_blue_pts(idx, ct); /* this uses only refpt: who cares?*/
+    update_blue_pts(idx, ct); /* this uses only refpt: who cares? */
     return( ret + 1 );
 }
 
@@ -3563,7 +3573,7 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
     /* Now I must place the stem's origin in respect to others... */
     /* TODO! What's really needed here is an iterative procedure that */
     /* would preserve counters and widths, like in freetype2. */
-    /* For horizontal stems, interpolating between blues MUST be done. */
+    /* For horizontal stems, interpolating between blues is being be done. */
 
     if (stem->ldone || stem->rdone ) {
 	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
@@ -3586,7 +3596,7 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
     else {
         if (ct->gic->fpgm_done) {
             if ( control_counters && c_m_pt1 != -1 && c_m_pt2 != -1 ) {
-               
+
                 callargs[0] = c_m_pt1;
                 callargs[1] = c_m_pt2;
                 callargs[2] = ct->rp0;
@@ -3594,7 +3604,7 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
                 callargs[4] = get_counters_cut_in(ct,  c_m_pt1, c_m_pt2, ct->rp0, ct->edge.refpt);
                 callargs[5] = 15;
                 ct->pt = pushpoints(ct->pt, 6, callargs);
-                
+
             } else if ( control_counters && prev != NULL && prev->leftidx != -1 && prev->rightidx != -1 ) {
                 callargs[0] = ct->xdir ? prev->leftidx : prev->rightidx;
                 callargs[1] = ct->edge.refpt;
@@ -3633,7 +3643,6 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
  *
  * TODO! CJK hinting will probably need different function (HStemGeninstCJK?)
  * TODO! Instruct top and bottom bearings for fonts which have them.
- * TODO! Support for ghost hints not tied to any alignment zone.
  */
 static void HStemGeninst(InstrCt *ct) {
     BlueZone *blues = ct->gic->blues;
@@ -3741,7 +3750,7 @@ static void HStemGeninst(InstrCt *ct) {
 	    }
 	    if ( bpt == -1 && ept == -1 )
 	        continue;
-	    
+
 	    /* Align the stem relatively to rp0 and rp1. */
 	    mdrp_end = ept != -1 &&
 	        fabs(bp[rp2].y - hbase) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
@@ -3829,7 +3838,6 @@ static void HStemGeninst(InstrCt *ct) {
  * High-level function for instructing vertical stems.
  *
  * TODO! CJK hinting may need different function (VStemGeninstCJK?)
- * TODO! Support for vertical ghost hints.
  */
 static void VStemGeninst(InstrCt *ct) {
     StemData *stem, *prev=NULL;
@@ -3860,13 +3868,13 @@ static void VStemGeninst(InstrCt *ct) {
     /* instruct right sidebearing */
     if (ct->sc->width != 0) {
         if ( ct->gic->fpgm_done && !control_counters ) {
-	    ct->pt = push2nums(ct->pt, ct->ptcnt+1, 1);
-	    *(ct->pt)++ = CALL;
+            ct->pt = push2nums(ct->pt, ct->ptcnt+1, 1);
+            *(ct->pt)++ = CALL;
         } else {
-	    ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
+            ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
             *(ct->pt)++ = MDRP_rp0_rnd_white;
         }
-	ct->rp0 = ct->ptcnt+1;
+        ct->rp0 = ct->ptcnt+1;
     }
 }
 
@@ -4715,8 +4723,9 @@ return;
  *
  * Strong point interpolation
  *
- * TODO! Optimization.
+ * TODO! Better optimization, if possible.
  * TODO! It could be faster.
+ * TODO! leftmost and righmost bounds, if not already controlled by stems.
  *
  ******************************************************************************/
 
@@ -4756,12 +4765,12 @@ static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgel
     return( cnt );
 }
 
-/* Experimental feature: tries to maintain relative position of some important
+/* Optional feature: tries to maintain relative position of some important
  * points between stems' edges, so that glyph's shape is mostly preserved
  * when strongly gridfitted. This in terms of FreeType is called 'Strong Point
- * Interpolation'. In FF it now does more or else what it should, but generates
- * large and sometimes incomplete code - it needs optimization. Please note that
- * it has also impact on diagonal hints' positioning - usually positive.
+ * Interpolation'. It now does more or else what it should, but generates large
+ * and sometimes incomplete code - see 'todos' above, and optimize_strongpts().
+ * Note: it would affect diagonals if done before instructing them.
  */
 static void InterpolateStrongPoints(InstrCt *ct) {
     StemBundle *bundle;
@@ -4837,13 +4846,13 @@ return;
 							  ct->edge.others, IP);
 		for (j=0; j<ct->edge.othercnt; j++)
 		    ct->touched[ct->edge.others[j]] |= touchflag;
-	    }
+            }
 
-	    if (ct->edge.othercnt) {
+            if (ct->edge.othercnt) {
                 free(ct->edge.others);
                 ct->edge.othercnt = 0;
             }
-	}
+        }
     }
 }
 
