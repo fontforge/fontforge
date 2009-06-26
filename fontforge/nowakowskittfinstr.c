@@ -3526,7 +3526,7 @@ static int get_counters_cut_in(InstrCt *ct,  int m1, int m2, int c1, int c2) {
 /******************************************************************************
  *
  * High-level functions for instructing horizontal and vertical stems.
- * Both will use 'geninstrs' for positioning single stems.
+ * Both use 'geninstrs' for positioning single stems.
  *
  ******************************************************************************/
 
@@ -3548,7 +3548,7 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
     int shp_rp1, chg_rp0, c_m_pt1 = -1, c_m_pt2 = -1;
     int callargs[6];
     real prev_pos = 0, cur_pos;
-    
+
     if (stem->ldone && stem->rdone)
         return;
     if ((lbase && stem->rdone) || (!lbase & stem->ldone))
@@ -3564,39 +3564,38 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
     if (ct->rp0 < ct->gd->realcnt && ct->rp0 >= 0) 
         prev_pos = (&ct->gd->points[ct->rp0].base.x)[!ct->xdir];
     cur_pos = (&ct->gd->points[ct->edge.refpt].base.x)[!ct->xdir];
-    
+
     if (prev != NULL && stem->prev_c_m != NULL && prev->next_c_m != NULL ) {
         c_m_pt1 = ct->xdir ? prev->next_c_m->rightidx : prev->next_c_m->leftidx;
         c_m_pt2 = ct->xdir ? stem->prev_c_m->leftidx  : stem->prev_c_m->rightidx;
     }
 
-    /* Now I must place the stem's origin in respect to others... */
+    /* Now the stem's origin must be placed in respect to others... */
     /* TODO! What's really needed here is an iterative procedure that */
     /* would preserve counters and widths, like in freetype2. */
     /* For horizontal stems, interpolating between blues is being be done. */
 
     if (stem->ldone || stem->rdone ) {
-	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	*(ct->pt)++ = MDAP; /* sets rp0 and rp1 */
+        ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+        *(ct->pt)++ = MDAP; /* sets rp0 and rp1 */
         shp_rp1 = use_rp1;
         chg_rp0 = (ct->xdir && !lbase) || (!ct->xdir && lbase);
     }
-    else if (!ct->xdir) {
-	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	*(ct->pt)++ = MDAP_rnd;
+    else if (!ct->xdir) { /* horizontal stem */
+        ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+        *(ct->pt)++ = MDAP_rnd;
         shp_rp1 = use_rp1;
         chg_rp0 = keep_old_rp0;
     }
-    else if (prev == NULL) {
-	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	*(ct->pt)++ = MDRP_rp0_rnd_white;
+    else if (prev == NULL) { /* first vertical stem */
+        ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+        *(ct->pt)++ = MDRP_rp0_rnd_white;
         shp_rp1 = use_rp2;
         chg_rp0 = keep_old_rp0;
     }
     else {
         if (ct->gic->fpgm_done) {
             if ( control_counters && c_m_pt1 != -1 && c_m_pt2 != -1 ) {
-
                 callargs[0] = c_m_pt1;
                 callargs[1] = c_m_pt2;
                 callargs[2] = ct->rp0;
@@ -3616,16 +3615,22 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
             } else {
                 ct->pt = push2nums(ct->pt, ct->edge.refpt, 11);
             }
-	    *(ct->pt)++ = CALL;
-	}
-	else {
-	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+            *(ct->pt)++ = CALL;
+        }
+        else {
+            ct->pt = pushpoint(ct->pt, ct->edge.refpt);
             if ( fabs( cur_pos - prev_pos ) > ct->gic->fudge )
-	        *(ct->pt)++ = MDRP_rp0_min_rnd_grey;
+                *(ct->pt)++ = MDRP_rp0_min_rnd_grey;
             else
-	        *(ct->pt)++ = MDRP_rp0_rnd_white;
-	}
+                *(ct->pt)++ = MDRP_rp0_rnd_white;
+        }
         shp_rp1 = use_rp2;
+
+        /* Don't switch rp0 to the second edge. Thus, relative distance
+         * to the next stem is be larger, and errors are hopefully lesser.
+         * TODO! This is disputable.
+         * TODO! For the last vstem, we probably want to switch rp0 anyway.
+         */
         chg_rp0 = keep_old_rp0;
     }
     ct->rp0 = ct->edge.refpt;
@@ -3844,22 +3849,22 @@ static void VStemGeninst(InstrCt *ct) {
     int i;
 
     if (ct->rp0 != ct->ptcnt) {
-	ct->pt = pushpoint(ct->pt, ct->ptcnt);
-	*(ct->pt)++ = MDAP_rnd;
-	ct->rp0 = ct->ptcnt;
+        ct->pt = pushpoint(ct->pt, ct->ptcnt);
+        *(ct->pt)++ = MDAP_rnd;
+        ct->rp0 = ct->ptcnt;
     }
 
     if ( ct->gd->vbundle != NULL ) {
         for ( i=0; i<ct->gd->vbundle->cnt; i++ ) {
             stem = ct->gd->vbundle->stemlist[i];
-	    if ((!stem->ldone || !stem->rdone) && stem->master == NULL) {
+            if ((!stem->ldone || !stem->rdone) && stem->master == NULL) {
 
                 if (prev != NULL && prev->rightidx != -1 && ct->rp0 != prev->rightidx) {
                     ct->pt = pushpoint(ct->pt, prev->rightidx);
-	            *(ct->pt)++ = SRP0;
+                    *(ct->pt)++ = SRP0;
                     ct->rp0 = prev->rightidx;
                 }
-	        geninstrs(ct, stem, prev, true);
+                geninstrs(ct, stem, prev, true);
                 prev = stem;
             }
         }
@@ -3871,6 +3876,13 @@ static void VStemGeninst(InstrCt *ct) {
             ct->pt = push2nums(ct->pt, ct->ptcnt+1, 1);
             *(ct->pt)++ = CALL;
         } else {
+            /* select rp0 at the right edge of last stem - geninstrs() didn't. */
+            /* TODO! after some time, move this to geninstrs(), to save space. */
+            if (prev != NULL && prev->rightidx != -1 && ct->rp0 != prev->rightidx) {
+                ct->pt = pushpoint(ct->pt, prev->rightidx);
+                *(ct->pt)++ = SRP0;
+                ct->rp0 = prev->rightidx;
+            }
             ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
             *(ct->pt)++ = MDRP_rp0_rnd_white;
         }
