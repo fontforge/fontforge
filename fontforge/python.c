@@ -11820,13 +11820,42 @@ return( NULL );
 	/* Hmmm. We don't set the filename, nor the save_to_dir bit */
 	free(locfilename);
     } else {
-	if ( fv->sf->filename==NULL ) {
-	    PyErr_Format(PyExc_TypeError, "This font has no associated sfd file yet, you must specify a filename" );
-return( NULL );
+	char *freeme = NULL;
+	if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
+	    filename = fv->cidmaster->filename;
+	else if ( fv->sf->mm!=NULL && fv->sf->mm->normal->filename!=NULL )
+	    filename = fv->sf->mm->normal->filename;
+	else if ( fv->sf->filename!=NULL )
+	    filename = fv->sf->filename;
+	else {
+	    SplineFont *sf = fv->cidmaster?fv->cidmaster:
+		    fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
+	    char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
+	    char *freeme = galloc((strlen(fn)+10));
+	    strcpy(freeme,fn);
+	    if ( sf->defbasefilename!=NULL )
+		/* Don't add a default suffix, they've already told us what name to use */;
+	    else if ( fv->cidmaster!=NULL )
+		strcat(freeme,"CID");
+	    else if ( sf->mm==NULL )
+		;
+	    else if ( sf->mm->apple )
+		strcat(freeme,"Var");
+	    else
+		strcat(freeme,"MM");
+	    strcat(freeme,".sfd");
 	}
-	if ( !SFDWriteBak(fv->sf,fv->map,fv->normal) ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Save failed");
+	if ( freeme==NULL ) {
+	    if ( !SFDWriteBak(fv->sf,fv->map,fv->normal) ) {
+		PyErr_Format(PyExc_EnvironmentError, "Save failed");
 return( NULL );
+	    }
+	} else {
+	    if ( !SFDWrite(freeme,fv->sf,fv->map,fv->normal,s2d)) {
+		PyErr_Format(PyExc_EnvironmentError, "Save As failed");
+return( NULL );
+	    }
+	    free(freeme);
 	}
     }
 Py_RETURN( self );
