@@ -37,6 +37,11 @@ static void DoChar(SplineChar *sc,CreateWidthData *wd, FontViewBase *fv,
     int width=0;
     BVTFunc bvts[2];
     BDFFont *bdf;
+    RefChar *r = HasUseMyMetrics(sc,fv->active_layer);
+
+    /* Can't change the horizontal or vertical advance if there's a "use my metrics" bit set */
+    if ( r!=NULL && wd->wtype != wt_lbearing )
+return;
 
     if ( wd->wtype == wt_width ) {
 	if ( wd->type==st_set )
