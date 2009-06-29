@@ -422,10 +422,11 @@ static int GWidgetCheckMn(GContainerD *gd,GEvent *event) {
     GGadget *gadget, *last;
     struct gwidgetdata *widget;
     unichar_t keysym = event->u.chr.keysym;
+    int mask = GMenuMask() & (ksm_control|ksm_cmdmacosx);
 
     if ( islower(keysym)) keysym = toupper(keysym);
     for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
-	if ( (event->u.chr.state&ksm_meta) && !(event->u.chr.state&(ksm_control|ksm_cmdmacosx)) &&
+	if ( (event->u.chr.state&ksm_meta) && !(event->u.chr.state&mask) &&
 		gadget->mnemonic==keysym &&
 		gadget->state != gs_invisible && gadget->state != gs_disabled ) {
 	    if ( gadget->focusable ) {	/* labels may have a mnemonic */
