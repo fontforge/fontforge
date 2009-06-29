@@ -1246,6 +1246,8 @@ static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
 	uint32 base, int type) {
     int i, ch;
 
+    fseek(ttf,base,SEEK_SET);
+
     for ( i=0; ; ) {
 	ch = getc(ttf);
 	if ( ch!=SPIRO_OPEN_CONTOUR && ch!=SPIRO_CORNER && ch!=SPIRO_G4 &&
@@ -1288,11 +1290,11 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
     RefChar *last, *cur;
 
     fseek(ttf,base,SEEK_SET);
-    cc = getushort(ttf);
+    cc = getushort(ttf);		/* Contours */
     rc = 0;
     if ( version==1 )
-	rc = getushort(ttf);
-    ic = getushort(ttf);
+	rc = getushort(ttf);		/* References */
+    ic = getushort(ttf);		/* Images */
     contours = galloc(cc*sizeof(struct contours));
     for ( i=0; i<cc; ++i ) {
 	contours[i].data_off = getushort(ttf);
@@ -1304,6 +1306,10 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	for ( j=0; j<6; ++j )
 	    cur->transform[j] = getlong(ttf)/32768.0;
 	gid = getushort(ttf);
+	if ( gid>=info->glyph_cnt ) {
+	    LogError("Bad glyph reference in layer info.\n");
+    break;
+	}
 	cur->sc = info->chars[gid];
 	cur->orig_pos = gid;
 	cur->unicode_enc = cur->sc->unicodeenc;
@@ -1398,6 +1404,8 @@ static void pfed_redo_refs(SplineChar *sc,int layer) {
 
     sc->ticked = true;
     for ( refs=sc->layers[layer].refs; refs!=NULL; refs=refs->next ) {
+	if ( layer==1 && refs->sc==NULL )	/* If main layer has spiros attached, then we'll get here. Any refs will come from the main ttf reading routines and won't be fixed up yet */
+    continue;
 	if ( !refs->sc->ticked )
 	    pfed_redo_refs(refs->sc,layer);
 	SCReinstanciateRefChar(sc,refs,layer);
