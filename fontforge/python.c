@@ -11813,15 +11813,21 @@ return( NULL );
 	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
 	    s2d = true;
 #endif
-	if ( !SFDWrite(locfilename,fv->sf,fv->map,fv->normal,s2d))
+	if ( !SFDWrite(locfilename,fv->sf,fv->map,fv->normal,s2d)) {
 	    PyErr_Format(PyExc_EnvironmentError, "Save As failed");
+return( NULL );
+	}
 	/* Hmmm. We don't set the filename, nor the save_to_dir bit */
 	free(locfilename);
     } else {
-	if ( fv->sf->filename==NULL )
+	if ( fv->sf->filename==NULL ) {
 	    PyErr_Format(PyExc_TypeError, "This font has no associated sfd file yet, you must specify a filename" );
-	if ( !SFDWriteBak(fv->sf,fv->map,fv->normal) )
+return( NULL );
+	}
+	if ( !SFDWriteBak(fv->sf,fv->map,fv->normal) ) {
 	    PyErr_Format(PyExc_EnvironmentError, "Save failed");
+return( NULL );
+	}
     }
 Py_RETURN( self );
 }
