@@ -636,8 +636,7 @@ GGadget *GRadioCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gl->post = gl;
     if ( gd->flags & gg_rad_startnew )
 	/* Done */;
-    else if ( gl->g.prev!=NULL && gl->g.prev->funcs==&gradio_funcs &&
-	    gl->radiogroup!=0 ) {
+    else if ( gl->g.prev!=NULL && gl->radiogroup!=0 ) {
 	for ( gr=gl->g.prev; gr!=NULL; gr = gr->prev ) {
 	    if ( gr->funcs==&gradio_funcs && ((GRadio *) gr)->radiogroup == gl->radiogroup ) {
 		gl->post = ((GRadio *) gr)->post;
