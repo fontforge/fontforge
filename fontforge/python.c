@@ -7031,7 +7031,7 @@ static PyTypeObject PyFF_CvtType = {
     0,		               /* tp_weaklistoffset */
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
-    &PyFFCvt_methods,	       /* tp_methods */
+    PyFFCvt_methods,	       /* tp_methods */
     0,			       /* tp_members */
     0,			       /* tp_getset */
     0,                         /* tp_base */
