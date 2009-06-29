@@ -6990,7 +6990,7 @@ return( NULL );
     if ( low<0 ) low=0;
     if ( high>cvt->len/2 ) high = cvt->len/2;
     for ( i=low; i<high; ++i )
-	if ( memushort(cvt->data,cvt->len,2*i)==val )
+	if ( (short) memushort(cvt->data,cvt->len,2*i)==val )
 return( Py_BuildValue("i", i ));
 
 return( Py_BuildValue("i", -1 ));
