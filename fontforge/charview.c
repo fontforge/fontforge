@@ -6295,6 +6295,7 @@ static void CVDoClear(CharView *cv) {
     ImageList *prev, *imgs, *next;
     RefChar *refs, *rnext;
     int layer = CVLayer((CharViewBase *) cv);
+    int anyimages;
 
     CVPreserveState(&cv->b);
     if ( cv->b.drawmode==dm_fore )
@@ -6321,6 +6322,7 @@ static void CVDoClear(CharView *cv) {
 		aprev = ap;
 	}
     }
+    anyimages = false;
     for ( prev = NULL, imgs=cv->b.layerheads[cv->b.drawmode]->images; imgs!=NULL; imgs = next ) {
 	next = imgs->next;
 	if ( !imgs->selected )
@@ -6332,8 +6334,11 @@ static void CVDoClear(CharView *cv) {
 		prev->next = next;
 	    chunkfree(imgs,sizeof(ImageList));
 	    /* garbage collection of images????!!!! */
+	    anyimages = true;
 	}
     }
+    if ( anyimages )
+	SCOutOfDateBackground(cv->b.sc);
     if ( cv->lastselpt!=NULL || cv->p.sp!=NULL || cv->p.spiro!=NULL || cv->lastselcp!=NULL ) {
 	cv->lastselpt = NULL; cv->p.sp = NULL;
 	cv->p.spiro = cv->lastselcp = NULL;
