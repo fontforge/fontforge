@@ -953,7 +953,7 @@ static void BoxGradientRect(GWindow gw,GRect *r,Color middle,Color ends) {
     int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
     Color col;
 
-    if ( r->height==0 )
+    if ( r->height<=0 )
 return;
     for ( i=0; i<=half; ++i ) {
 	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
