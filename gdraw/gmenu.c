@@ -919,10 +919,14 @@ return( keysym );
 }
 #endif
 
-static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
+static GMenuItem *GMenuSearchShortcut(GWindow gw, GMenuItem *mi, GEvent *event) {
     int i;
     unichar_t keysym = event->u.chr.keysym;
 
+#if 1
+    if (mi->moveto != NULL)
+        (mi->moveto)(gw,mi,event);
+#endif
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
@@ -930,7 +934,11 @@ static GMenuItem *GMenuSearchShortcut(GMenuItem *mi, GEvent *event) {
 		(menumask&event->u.chr.state)==mi[i].short_mask )
 return( &mi[i]);
 	else if ( mi[i].sub!=NULL ) {
-	    GMenuItem *ret = GMenuSearchShortcut(mi[i].sub,event);
+	    if (mi[i].moveto != NULL)
+		(mi[i].moveto)(gw,&(mi[i]),event);
+	    if (mi[i].sub==NULL) /* sometimes subitems may be now gone */
+	continue;
+	    GMenuItem *ret = GMenuSearchShortcut(gw,mi[i].sub,event);
 	    if ( ret!=NULL )
 return( ret );
 	}
@@ -1086,9 +1094,9 @@ return( true );
 	    event->u.chr.keysym>=GK_Special ) {
 	for ( top = m; top->parent!=NULL ; top = top->parent );
 	if ( top->menubar!=NULL )
-	    mi = GMenuSearchShortcut(top->menubar->mi,event);
+	    mi = GMenuSearchShortcut(top->w,top->menubar->mi,event);
 	else
-	    mi = GMenuSearchShortcut(top->mi,event);
+	    mi = GMenuSearchShortcut(top->w,top->mi,event);
 	if ( mi!=NULL ) {
 	    if ( mi->ti.checkable )
 		mi->ti.checked = !mi->ti.checked;
@@ -1352,11 +1360,11 @@ return( true );
     /* then look for shortcuts everywhere */
     if ( event->u.chr.state&(menumask&~ksm_shift) ||
 	    event->u.chr.keysym>=GK_Special ) {
-	mi = GMenuSearchShortcut(mb->mi,event);
+	mi = GMenuSearchShortcut(mb->g.base,mb->mi,event);
 	if ( mi!=NULL ) {
-	    if ( mi->ti.checkable )
+	    if ( mi->ti.checkable && !mi->ti.disabled )
 		mi->ti.checked = !mi->ti.checked;
-	    if ( mi->invoke!=NULL )
+	    if ( mi->invoke!=NULL && !mi->ti.disabled )
 		(mi->invoke)(mb->g.base,mi,NULL);
 	    if ( mb->child != NULL )
 		GMenuDestroy(mb->child);
