@@ -338,6 +338,7 @@ typedef struct gmenubar {
     struct gmenu *child;
     unsigned int pressed: 1;
     unsigned int initial_press: 1;
+    unsigned int any_unmasked_shortcuts: 1;
     FontInstance *font;
     GMenuItem fake[2];		/* Used if not enough room for menu... */
 } GMenuBar;
@@ -558,6 +559,7 @@ extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
 extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
 extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 extern int GMenuItemArrayMask(GMenuItem *mi);
+extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
 extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 
 extern GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def);

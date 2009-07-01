@@ -382,6 +382,7 @@ void GMenuSetShortcutDomain(char *domain);
 const char *GMenuGetShortcutDomain(void);
 int GMenuIsCommand(GEvent *event,char *shortcut);
 int GMenuMask(void);
+int GMenuAnyUnmaskedShortcuts(GGadget *mb1, GGadget *mb2);
 
 
 void GFileChooserPopupCheck(GGadget *g,GEvent *e);
