@@ -49,7 +49,7 @@ CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DL
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f *.lo *.o .libs/* ../libgdraw.la
+	-rm -rf *.lo *.o .libs/* .libs ../libgdraw.la
 
 distclean cleaner:
-	-rm -f *.lo *.o ../libgdraw.la .libs/* Makefile
+	-rm -rf *.lo *.o ../libgdraw.la .libs/* .libs Makefile
