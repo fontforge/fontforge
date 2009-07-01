@@ -734,6 +734,21 @@ int GMenuItemArrayMask(GMenuItem *mi) {
 return( mask );
 }
 
+int GMenuItemArrayAnyUnmasked(GMenuItem *mi) {
+    int i;
+
+    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
+	if ( mi[i].sub!=NULL ) {
+	    if ( GMenuItemArrayAnyUnmasked(mi[i].sub) )
+return( true );
+	} else {
+	    if ( mi[i].short_mask==0 && mi[i].shortcut!=0 )
+return( true );
+	}
+    }
+return( false );
+}
+
 void GMenuItem2ArrayFree(GMenuItem2 *mi) {
     int i;
 
@@ -818,8 +833,11 @@ return;
     }
     if ( i==0x100 ) {
 	if ( mask==0 ) {
-	    fprintf( stderr, "No modifiers in short cut: %s\n", shortcut );
-return;
+	    static int first = true;
+	    if ( first ) {
+		fprintf( stderr, "Warning: No modifiers in short cut: %s\n", shortcut );
+		first = false;
+	    }
 	}
 	mi->shortcut = utf8_ildb((const char **) &sh);
 	if ( *sh!='\0' ) {

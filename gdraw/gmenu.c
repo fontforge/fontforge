@@ -138,6 +138,7 @@ typedef struct gmenu {
     unsigned int disabled: 1;
     unsigned int dying: 1;
     unsigned int hidden: 1;
+    unsigned int any_unmasked_shortcuts: 1;		/* Only set for popup menus. Else info in menubar */
     int bp;
     int tickoff, tioff, rightedge;
     int width, height;
@@ -1308,6 +1309,7 @@ GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
     p.y = event->u.mouse.y;
     GDrawTranslateCoordinates(owner,GDrawGetRoot(GDrawGetDisplayOfWindow(owner)),&p);
     m = _GMenu_Create(owner,GMenuItemArrayCopy(mi,NULL),&p,0,0,menu_font,false);
+    m->any_unmasked_shortcuts = GMenuItemArrayAnyUnmasked(m->mi);
     GDrawPointerUngrab(GDrawGetDisplayOfWindow(owner));
     GDrawPointerGrab(m->w);
     GDrawGetPointerPosition(m->w,&e);
@@ -1359,7 +1361,8 @@ return( true );
 
     /* then look for shortcuts everywhere */
     if ( event->u.chr.state&(menumask&~ksm_shift) ||
-	    event->u.chr.keysym>=GK_Special ) {
+	    event->u.chr.keysym>=GK_Special ||
+	    mb->any_unmasked_shortcuts ) {
 	mi = GMenuSearchShortcut(mb->g.base,mb->mi,event);
 	if ( mi!=NULL ) {
 	    if ( mi->ti.checkable && !mi->ti.disabled )
@@ -1645,6 +1648,7 @@ GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GMenuBarFindXs(mb);
 
     MenuMaskInit(mb->mi);
+    mb->any_unmasked_shortcuts = GMenuItemArrayAnyUnmasked(mb->mi);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&mb->g);
@@ -1671,6 +1675,7 @@ GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GMenuBarFindXs(mb);
 
     MenuMaskInit(mb->mi);
+    mb->any_unmasked_shortcuts = GMenuItemArrayAnyUnmasked(mb->mi);
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&mb->g);
@@ -1753,4 +1758,18 @@ GResInfo *_GMenuRIHead(void) {
     if ( !gmenubar_inited )
 	GMenuInit();
 return( &gmenubar_ri );
+}
+
+int GMenuAnyUnmaskedShortcuts(GGadget *mb1, GGadget *mb2) {
+
+    if ( most_recent_popup_menu!=NULL && most_recent_popup_menu->any_unmasked_shortcuts )
+return( true );
+
+    if ( mb1!=NULL && ((GMenuBar *) mb1)->any_unmasked_shortcuts )
+return( true );
+
+    if ( mb2!=NULL && ((GMenuBar *) mb2)->any_unmasked_shortcuts )
+return( true );
+
+return( false );
 }
