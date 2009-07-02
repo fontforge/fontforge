@@ -47,6 +47,7 @@ extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern struct compressors compressors[];
 int home_char='A';
 int compact_font_on_open=0;
+int navigation_mask = 0;		/* Initialized in startui.c */
 
 static char *special_fontnames[] = {
 	SERIF_UI_FAMILIES,
@@ -6185,6 +6186,7 @@ return;
 
 static void FVChar(FontView *fv,GEvent *event) {
     int i,pos, cnt, gid;
+    extern int navigation_mask;
 
 #if MyMemory
     if ( event->u.chr.keysym == GK_F2 ) {
@@ -6345,15 +6347,16 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    }
 	    ++cnt;
 	}
-    } else if ( event->u.chr.chars[0]<=' ' || event->u.chr.chars[1]!='\0' ) {
-	/* Do Nothing */;
-    } else {
+    } else if ( (event->u.chr.state&~(ksm_shift|ksm_capslock))==navigation_mask &&
+	    event->type == et_char &&
+	    event->u.chr.keysym!=0 &&
+	    (event->u.chr.keysym<GK_Special || event->u.chr.keysym>=0x10000)) {
 	SplineFont *sf = fv->b.sf;
-	int enc = EncFromUni(event->u.chr.chars[0],fv->b.map->enc);
+	int enc = EncFromUni(event->u.chr.keysym,fv->b.map->enc);
 	if ( enc==-1 ) {
 	    for ( i=0; i<sf->glyphcnt; ++i ) {
 		if ( sf->glyphs[i]!=NULL )
-		    if ( sf->glyphs[i]->unicodeenc==event->u.chr.chars[0] )
+		    if ( sf->glyphs[i]->unicodeenc==event->u.chr.keysym )
 	    break;
 	    }
 	    if ( i!=-1 )

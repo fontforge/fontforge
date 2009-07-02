@@ -742,7 +742,7 @@ int GMenuItemArrayAnyUnmasked(GMenuItem *mi) {
 	    if ( GMenuItemArrayAnyUnmasked(mi[i].sub) )
 return( true );
 	} else {
-	    if ( mi[i].short_mask==0 && mi[i].shortcut!=0 )
+	    if ( (mi[i].short_mask&~ksm_shift)==0 && mi[i].shortcut!=0 )
 return( true );
 	}
     }
@@ -771,30 +771,82 @@ const char *GMenuGetShortcutDomain(void) {
 return(shortcut_domain);
 }
 
+static struct { char *modifier; int mask; char *alt; } modifiers[] = {
+    { "Ctl+", ksm_control },
+    { "Control+", ksm_control },
+    { "Shft+", ksm_shift },
+    { "Shift+", ksm_shift },
+    { "CapsLk+", ksm_capslock },
+    { "CapsLock+", ksm_capslock },
+    { "Meta+", ksm_meta },
+    { "Alt+", ksm_meta },
+    { "Flag0x01+", 0x01 },
+    { "Flag0x02+", 0x02 },
+    { "Flag0x04+", 0x04 },
+    { "Flag0x08+", 0x08 },
+    { "Flag0x10+", 0x10 },
+    { "Flag0x20+", 0x20 },
+    { "Flag0x40+", 0x40 },
+    { "Flag0x80+", 0x80 },
+    { "Opt+", ksm_meta },
+    { "Option+", ksm_meta },
+	/* We used to map command to control on the mac, no longer, let it be itself */
+    { "Command+", ksm_cmdmacosx },
+    { "Cmd+", ksm_cmdmacosx },
+    { NULL }};
+    /* Windows flag key=Super (keysym ffeb/ffec) key maps to 0x40 on my machine */
+
+static void initmods(void) {
+    if ( modifiers[0].alt==NULL ) {
+	int i;
+	for ( i=0; modifiers[i].modifier!=NULL; ++i )
+	    modifiers[i].alt = dgettext(shortcut_domain,modifiers[i].modifier);
+    }
+}
+
+int GMenuItemParseMask(char *shortcut) {
+    char *pt, *sh;
+    int mask, temp, i;
+
+    sh = dgettext(shortcut_domain,shortcut);
+    pt = strchr(sh,'|');
+    if ( pt!=NULL )
+	sh = pt+1;
+    if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 || strcmp(sh,"None")==0 )
+return(0);
+
+    initmods();
+
+    mask = 0;
+    forever {
+	pt = strchr(sh,'+');
+	if ( pt==sh || *sh=='\0' )
+return( mask );
+	if ( pt==NULL )
+	    pt = sh+strlen(sh);
+	for ( i=0; modifiers[i].modifier!=NULL; ++i ) {
+	    if ( strncasecmp(sh,modifiers[i].modifier,pt-sh)==0 )
+	break;
+	}
+	if ( modifiers[i].modifier==NULL ) {
+	    for ( i=0; modifiers[i].alt!=NULL; ++i ) {
+		if ( strncasecmp(sh,modifiers[i].alt,pt-sh)==0 )
+	    break;
+	    }
+	}
+	if ( modifiers[i].modifier!=NULL )
+	    mask |= modifiers[i].mask;
+	else if ( sscanf( sh, "0x%x", &temp)==1 )
+	    mask |= temp;
+	else {
+	    fprintf( stderr, "Could not parse short cut: %s\n", shortcut );
+return(0);
+	}
+	sh = pt+1;
+    }
+}
+
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
-    static struct { char *modifier; int mask; } modifiers[] = {
-	{ "Ctl", ksm_control },
-	{ "Control", ksm_control },
-	{ "Shft", ksm_shift },
-	{ "Shift", ksm_shift },
-	{ "CapsLk", ksm_capslock },
-	{ "CapsLock", ksm_capslock },
-	{ "Meta", ksm_meta },
-	{ "Alt", ksm_meta },
-	{ "Flag0x01", 0x01 },
-	{ "Flag0x02", 0x02 },
-	{ "Flag0x04", 0x04 },
-	{ "Flag0x08", 0x08 },
-	{ "Flag0x10", 0x10 },
-	{ "Flag0x20", 0x20 },
-	{ "Flag0x40", 0x40 },
-	{ "Flag0x80", 0x80 },
-	{ "Opt", ksm_meta },
-	{ "Option", ksm_meta },
-	    /* We used to map command to control on the mac, no longer, let it be itself */
-	{ "Command", ksm_cmdmacosx },
-	{ "Cmd", ksm_cmdmacosx },
-	{ NULL }};
     char *pt, *sh;
     int mask, temp, i;
 
@@ -808,11 +860,19 @@ void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
     if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 || strcmp(sh,"None")==0 )
 return;
 
+    initmods();
+
     mask = 0;
     while ( (pt=strchr(sh,'+'))!=NULL && pt!=sh ) {	/* A '+' can also occur as the short cut char itself */
 	for ( i=0; modifiers[i].modifier!=NULL; ++i ) {
 	    if ( strncasecmp(sh,modifiers[i].modifier,pt-sh)==0 )
 	break;
+	}
+	if ( modifiers[i].modifier==NULL ) {
+	    for ( i=0; modifiers[i].alt!=NULL; ++i ) {
+		if ( strncasecmp(sh,modifiers[i].alt,pt-sh)==0 )
+	    break;
+	    }
 	}
 	if ( modifiers[i].modifier!=NULL )
 	    mask |= modifiers[i].mask;

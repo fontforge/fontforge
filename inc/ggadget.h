@@ -522,4 +522,6 @@ extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
 extern int GetUnicodeChar8(GWindow gw,int cid,char *namer,int *err);
 extern void GGadgetProtest8(char *labelr);
 
+extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
+extern int GMenuItemParseMask(char *shortcut);
 #endif

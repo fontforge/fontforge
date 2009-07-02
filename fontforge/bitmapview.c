@@ -233,6 +233,7 @@ static void BVVScroll(BitmapView *bv,struct sbevent *sb);
 
 void BVChar(BitmapView *bv, GEvent *event ) {
     BDFRefChar *head;
+    extern int navigation_mask;
 
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
@@ -310,15 +311,16 @@ return;
 	    }
 	    BCCharChangedUpdate(bv->bc);
 	}
-    } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
+    } else if ( (event->u.chr.state&~(ksm_shift|ksm_capslock))==navigation_mask &&
 	    event->type == et_char &&
-	    event->u.chr.chars[0]!='\0' && event->u.chr.chars[1]=='\0' ) {
+	    event->u.chr.keysym!=0 &&
+	    (event->u.chr.keysym<GK_Special || event->u.chr.keysym>=0x10000)) {
 	SplineFont *sf = bv->bc->sc->parent;
 	int i;
 	EncMap *map = bv->fv->b.map;
 	extern int cv_auto_goto;
 	if ( cv_auto_goto ) {
-	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
+	    i = SFFindSlot(sf,map,event->u.chr.keysym,NULL);
 	    if ( i!=-1 )
 		BVChangeChar(bv,i,false);
 	}
