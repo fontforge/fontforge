@@ -5782,6 +5782,7 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount, arrowAccelFactor;
+    extern int navigation_mask;
 
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
@@ -5927,17 +5928,16 @@ return;
 	CVVScroll(cv,&sb);
     } else if ( event->u.chr.keysym == GK_Home ) {
 	CVFit(cv);
-    } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
+    } else if ( (event->u.chr.state&~(ksm_shift|ksm_capslock))==navigation_mask &&
 	    event->type == et_char &&
-	    cv->b.container==NULL &&
-	    cv->dv==NULL &&
-	    event->u.chr.chars[0]>=' ' && event->u.chr.chars[1]=='\0' ) {
+	    event->u.chr.keysym!=0 &&
+	    (event->u.chr.keysym<GK_Special || event->u.chr.keysym>=0x10000)) {
 	SplineFont *sf = cv->b.sc->parent;
 	int i;
 	EncMap *map = cv->b.fv->map;
 	extern int cv_auto_goto;
 	if ( cv_auto_goto ) {
-	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
+	    i = SFFindSlot(sf,map,event->u.chr.keysym,NULL);
 	    if ( i!=-1 )
 		CVChangeChar(cv,i);
 	}

@@ -998,6 +998,12 @@ return( false );
 }
 #endif
 
+static void GrokNavigationMask(void) {
+    extern int navigation_mask;
+
+    navigation_mask = GMenuItemParseMask(H_("NavigationMask|None"));
+}
+
 int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
@@ -1127,6 +1133,7 @@ int main( int argc, char **argv ) {
 	    (strcasecmp(load_prefs,"Always")!=0 &&	/* Already loaded */
 	     strcasecmp(load_prefs,"Never")!=0 ))
 	LoadPrefs();
+    GrokNavigationMask();
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];
 	if ( pt[0]=='-' && pt[1]=='-' )
