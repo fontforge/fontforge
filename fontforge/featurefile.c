@@ -2935,9 +2935,9 @@ return(sc);
 
     if ( sc!=NULL || strcmp(name,"NULL")==0 )
 return( sc );
-    enc = SFFindSlot(sf,sf->fv->map,-1,name);
+    enc = SFFindSlot(sf,sf->fv==NULL ? sf->map : sf->fv->map,-1,name);
     if ( enc!=-1 ) {
-	sc = SFMakeChar(sf,sf->fv->map,enc);
+	sc = SFMakeChar(sf,sf->fv==NULL ? sf->map : sf->fv->map,enc);
 	if ( sc!=NULL ) {
 	    sc->widthset = true;
 	    free(sc->name);
