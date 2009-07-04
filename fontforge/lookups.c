@@ -379,7 +379,7 @@ uint32 *SFLangsInScript(SplineFont *sf,int gpos,uint32 script) {
     for ( g=0; g<2; ++g ) {
 	if (( gpos==0 && g==1 ) || ( gpos==1 && g==0 ))
     continue;
-	for ( test = gpos ? sf->gpos_lookups : sf->gsub_lookups; test!=NULL; test = test->next ) {
+	for ( test = g ? sf->gpos_lookups : sf->gsub_lookups; test!=NULL; test = test->next ) {
 	    if ( test->unused )
 	continue;
 	    for ( fl=test->features; fl!=NULL; fl=fl->next ) {
