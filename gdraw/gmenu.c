@@ -1342,6 +1342,8 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
 
     if ( g==NULL )
 return( false );
+    if ( keysym==0 )
+return( false );
 
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
