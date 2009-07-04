@@ -10213,6 +10213,7 @@ return;
     done = true;
 
     mb2DoGetText(mblist);
+    mb2DoGetText(spiroptlist);
     for ( i=0; mblist_nomm[i].ti.text!=NULL; ++i )
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
 }
