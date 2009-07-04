@@ -346,6 +346,12 @@ return;
 		if ( sp==cv->active_shape->first )
 	    break;
 	    }
+	    for ( sp= cv->active_shape->first; ; ) {
+		SplineRefigure(sp->next);
+		sp = sp->next->to;
+		if ( sp==cv->active_shape->first )
+	    break;
+	    }
 	}
     }
     if ( cv->b.sc->inspiro && hasspiro()) {
