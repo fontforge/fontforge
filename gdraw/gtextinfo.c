@@ -809,6 +809,11 @@ int GMenuItemParseMask(char *shortcut) {
     int mask, temp, i;
 
     sh = dgettext(shortcut_domain,shortcut);
+    if ( sh==shortcut && strlen(shortcut)>2 && shortcut[2]=='*' ) {
+	sh = dgettext(shortcut_domain,shortcut+3);
+	if ( sh==shortcut+3 )
+	    sh = shortcut;
+    }
     pt = strchr(sh,'|');
     if ( pt!=NULL )
 	sh = pt+1;
@@ -854,6 +859,14 @@ void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
     mi->shortcut = '\0';
 
     sh = dgettext(shortcut_domain,shortcut);
+    /* shortcut might be "Open|Ctl+O" meaning the Open menu item is bound to ^O */
+    /*  or "CV*Open|Ctl+O" meaning that in the charview the Open menu item ...*/
+    /*  but if CV*Open|Ctl+O isn't found then check simple "Open|Ctl+O" as a default */
+    if ( sh==shortcut && strlen(shortcut)>2 && shortcut[2]=='*' ) {
+	sh = dgettext(shortcut_domain,shortcut+3);
+	if ( sh==shortcut+3 )
+	    sh = shortcut;
+    }
     pt = strchr(sh,'|');
     if ( pt!=NULL )
 	sh = pt+1;
