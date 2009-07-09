@@ -318,6 +318,7 @@ int  GGadgetIsDefault(GGadget *g);
 
 void GGadgetSetTitle(GGadget *g,const unichar_t *title);
 void GGadgetSetTitle8(GGadget *g,const char *title);
+void GGadgetSetTitle8WithMn(GGadget *g,const char *title);
 const unichar_t *_GGadgetGetTitle(GGadget *g);	/* Do not free!!! */
 unichar_t *GGadgetGetTitle(GGadget *g);		/* Free the return */
 char *GGadgetGetTitle8(GGadget *g);		/* Free the return (utf8) */
