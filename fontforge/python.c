@@ -11831,7 +11831,7 @@ return( NULL );
 	    SplineFont *sf = fv->cidmaster?fv->cidmaster:
 		    fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	    char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
-	    char *freeme = galloc((strlen(fn)+10));
+	    freeme = galloc((strlen(fn)+10));
 	    strcpy(freeme,fn);
 	    if ( sf->defbasefilename!=NULL )
 		/* Don't add a default suffix, they've already told us what name to use */;
