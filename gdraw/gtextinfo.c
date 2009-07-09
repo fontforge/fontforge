@@ -793,6 +793,8 @@ static struct { char *modifier; int mask; char *alt; } modifiers[] = {
 	/* We used to map command to control on the mac, no longer, let it be itself */
     { "Command+", ksm_cmdmacosx },
     { "Cmd+", ksm_cmdmacosx },
+    { "NumLk+", ksm_cmdmacosx },		/* This is unfortunate. Numlock should be ignored, Command should not */
+    { "NumLock+", ksm_cmdmacosx },
     { NULL }};
     /* Windows flag key=Super (keysym ffeb/ffec) key maps to 0x40 on my machine */
 

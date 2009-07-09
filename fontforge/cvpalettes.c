@@ -1662,6 +1662,7 @@ static void CVLCheckLayerCount(CharView *cv) {
     GTextInfo label[3];
     GRect size, inner;
     int maxwidth, y;
+    char namebuf[40];
 
     /* First figure out if we need to create any new widgets */
     if ( sc->layer_cnt > layers_max ) {
@@ -1674,7 +1675,11 @@ static void CVLCheckLayerCount(CharView *cv) {
 	    gcd[0].creator = GCheckBoxCreate;
 
 	    if ( i < sc->parent->layer_cnt ) {	/* Happens when viewing a Type3 sfd file from a non-type3 fontforge */
-		label[1].text = (unichar_t *) sc->parent->layers[i].name;
+		if ( i<9 && strlen(sc->parent->layers[i].name)<30 ) {
+		    sprintf(namebuf, "%s (_%d)", sc->parent->layers[i].name, i+1);
+		    label[1].text = (unichar_t *) namebuf;
+		} else
+		    label[1].text = (unichar_t *) sc->parent->layers[i].name;
 		label[1].text_is_1byte = true;
 		gcd[1].gd.label = &label[1];
 	    }
@@ -1700,7 +1705,11 @@ static void CVLCheckLayerCount(CharView *cv) {
 	GGadget *e = GWidgetGetControl(cvlayers,CID_EBase+i);
 	GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+i);
 	if ( i<sc->layer_cnt ) {
-	    GGadgetSetTitle8(e,sc->parent->layers[i].name);
+	    if ( i>=2 && i<9 && strlen(sc->parent->layers[i].name)<30 ) {
+		sprintf(namebuf, "%s (_%d)", sc->parent->layers[i].name, i+1);
+		GGadgetSetTitle8WithMn(e,namebuf);
+	    } else
+		GGadgetSetTitle8(e,sc->parent->layers[i].name);
 	    GGadgetGetDesiredVisibleSize(e,&size,&inner);
 	    GGadgetResize(e,size.width,size.height);
 	    if ( size.width>maxwidth ) maxwidth = size.width;
@@ -1906,6 +1915,21 @@ return( false );
 #ifdef FONTFORGE_CONFIG_TYPE3
     cv = GDrawGetUserData(cvtools);
 #endif
+
+    if ( isdigit(event->u.chr.keysym) ) {
+	int off = event->u.chr.keysym - '0';
+
+	g = GWidgetGetControl(cvlayers, CID_EBase+off-1);
+	if ( g!=NULL && !GGadgetIsChecked(g)) {
+	    GGadgetSetChecked(g,true);
+	    fake.type = et_controlevent;
+	    fake.w = cvlayers;
+	    fake.u.control.subtype = et_radiochanged;
+	    fake.u.control.g = g;
+	    cvlayers_e_h(cvlayers,&fake);
+return( true );
+	}
+    }
 
     for ( i=0; strmatch[i].str!=0 ; ++i ) {
 	for ( foo = _(strmatch[i].str); (ch=utf8_ildb((const char **) &foo))!=0; )
