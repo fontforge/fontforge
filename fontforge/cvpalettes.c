@@ -1675,7 +1675,8 @@ static void CVLCheckLayerCount(CharView *cv) {
 	    gcd[0].creator = GCheckBoxCreate;
 
 	    if ( i < sc->parent->layer_cnt ) {	/* Happens when viewing a Type3 sfd file from a non-type3 fontforge */
-		if ( i<9 && strlen(sc->parent->layers[i].name)<30 ) {
+		char *hasmn = strchr(sc->parent->layers[i].name,'_');
+		if ( hasmn==NULL && i>=2 && i<9 && strlen(sc->parent->layers[i].name)<30 ) {
 		    sprintf(namebuf, "%s (_%d)", sc->parent->layers[i].name, i+1);
 		    label[1].text = (unichar_t *) namebuf;
 		} else
@@ -1705,10 +1706,13 @@ static void CVLCheckLayerCount(CharView *cv) {
 	GGadget *e = GWidgetGetControl(cvlayers,CID_EBase+i);
 	GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+i);
 	if ( i<sc->layer_cnt ) {
-	    if ( i>=2 && i<9 && strlen(sc->parent->layers[i].name)<30 ) {
+	    char *hasmn = strchr(sc->parent->layers[i].name,'_');
+	    if ( hasmn==NULL && i>=2 && i<9 && strlen(sc->parent->layers[i].name)<30 ) {
 		sprintf(namebuf, "%s (_%d)", sc->parent->layers[i].name, i+1);
 		GGadgetSetTitle8WithMn(e,namebuf);
-	    } else
+	    } else if ( hasmn )
+		GGadgetSetTitle8WithMn(e,sc->parent->layers[i].name);
+	    else
 		GGadgetSetTitle8(e,sc->parent->layers[i].name);
 	    GGadgetGetDesiredVisibleSize(e,&size,&inner);
 	    GGadgetResize(e,size.width,size.height);
@@ -1902,25 +1906,23 @@ int CVPaletteMnemonicCheck(GEvent *event) {
 	{ 0 }
     };
     unichar_t mn, mnc;
-    int i, ch;
+    int j, i, ch;
     char *foo;
     GEvent fake;
     GGadget *g;
-#ifdef FONTFORGE_CONFIG_TYPE3
     CharView *cv;
-#endif
+    SplineFont *parent;
 
     if ( cvtools==NULL )
 return( false );
-#ifdef FONTFORGE_CONFIG_TYPE3
     cv = GDrawGetUserData(cvtools);
-#endif
+    parent = cv->b.sc->parent;
 
     if ( isdigit(event->u.chr.keysym) ) {
 	int off = event->u.chr.keysym - '0';
 
 	g = GWidgetGetControl(cvlayers, CID_EBase+off-1);
-	if ( g!=NULL && !GGadgetIsChecked(g)) {
+	if ( off-1<parent->layer_cnt && g!=NULL && !GGadgetIsChecked(g)) {
 	    GGadgetSetChecked(g,true);
 	    fake.type = et_controlevent;
 	    fake.w = cvlayers;
@@ -1931,45 +1933,48 @@ return( true );
 	}
     }
 
-    for ( i=0; strmatch[i].str!=0 ; ++i ) {
-	for ( foo = _(strmatch[i].str); (ch=utf8_ildb((const char **) &foo))!=0; )
+    for ( j=0; j<2; ++j ) {
+	for ( i=0; j==0 ? i<parent->layer_cnt : strmatch[i].str!=NULL; ++i ) {
+	    for ( foo = j==0 ? parent->layers[i].name : _(strmatch[i].str);
+		    (ch=utf8_ildb((const char **) &foo))!=0; )
+		if ( ch=='_' )
+	    break;
 	    if ( ch=='_' )
-	break;
-	if ( ch=='_' )
-	    mnc = utf8_ildb((const char **) &foo);
-	else
-	    mnc = 0;
-	mn = mnc;
-	if ( islower(mn)) mnc = toupper(mn);
-	else if ( isupper(mn)) mnc = tolower(mn);
-	if ( event->u.chr.chars[0]==mn || event->u.chr.chars[0]==mnc ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    if ( cv->b.sc->parent->multilayer ) {
-		fake.type = et_mousedown;
-		fake.w = cvlayers;
-		fake.u.mouse.x = 40;
-		if ( strmatch[i].cid==CID_EGrid ) {
-		    fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12;
-		} else if ( strmatch[i].cid==CID_EBack ) {
-		    fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+CV_LAYERS2_LINE_HEIGHT;
-		} else {
-		    fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+2*CV_LAYERS2_LINE_HEIGHT;
-		}
-		cvlayers2_e_h(cvlayers2,&fake);
-	    } else
-#endif
-	    {
-		g = GWidgetGetControl(cvlayers, strmatch[i].cid);
-		if ( !GGadgetIsChecked(g)) {
-		    GGadgetSetChecked(g,true);
-		    fake.type = et_controlevent;
+		mnc = utf8_ildb((const char **) &foo);
+	    else
+		mnc = 0;
+	    mn = mnc;
+	    if ( islower(mn)) mnc = toupper(mn);
+	    else if ( isupper(mn)) mnc = tolower(mn);
+	    if ( event->u.chr.chars[0]==mn || event->u.chr.chars[0]==mnc ) {
+    #ifdef FONTFORGE_CONFIG_TYPE3
+		if ( cv->b.sc->parent->multilayer ) {
+		    fake.type = et_mousedown;
 		    fake.w = cvlayers;
-		    fake.u.control.subtype = et_radiochanged;
-		    fake.u.control.g = g;
-		    cvlayers_e_h(cvlayers,&fake);
+		    fake.u.mouse.x = 40;
+		    if ( strmatch[i].cid==CID_EGrid ) {
+			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12;
+		    } else if ( strmatch[i].cid==CID_EBack ) {
+			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+CV_LAYERS2_LINE_HEIGHT;
+		    } else {
+			fake.u.mouse.y = CV_LAYERS2_HEADER_HEIGHT+12+2*CV_LAYERS2_LINE_HEIGHT;
+		    }
+		    cvlayers2_e_h(cvlayers2,&fake);
+		} else
+    #endif
+		{
+		    g = GWidgetGetControl(cvlayers, j==0 ? CID_EBase+i : strmatch[i].cid);
+		    if ( g!=NULL && !GGadgetIsChecked(g)) {
+			GGadgetSetChecked(g,true);
+			fake.type = et_controlevent;
+			fake.w = cvlayers;
+			fake.u.control.subtype = et_radiochanged;
+			fake.u.control.g = g;
+			cvlayers_e_h(cvlayers,&fake);
+		    }
 		}
+    return( true );
 	    }
-return( true );
 	}
     }
 return( false );
