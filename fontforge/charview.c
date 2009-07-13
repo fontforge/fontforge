@@ -107,6 +107,7 @@ static Color rasternewcol = 0xff909090;
 static Color rasteroldcol = 0xffc0c0c0;
 static Color rastergridcol = 0xffb0b0ff;
 static Color rasterdarkcol = 0xff606060;
+static Color deltagridcol = 0xcc0000;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
 static Color hintlabelcol = 0x00cccc;
@@ -187,6 +188,7 @@ static struct resed charview2_re[] = {
     { N_("Raster Old Color"), "RasterOldColor", rt_coloralpha, &rasteroldcol, N_("The color of raster blocks which have just been turned off (in the debugger when an instruction moves a point)") },
     { N_("Raster Grid Color"), "RasterGridColor", rt_coloralpha, &rastergridcol },
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
+    { N_("Raster Dark Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notible grid pixel when suggesting deltas.") },
     { NULL }
 };
 
@@ -696,7 +698,7 @@ return;
     GDrawSetLineWidth(pixmap,0);
     if ( (cv->showpointnumbers || cv->show_ft_results || cv->dv ) && sp->ttfindex!=0xffff ) {
 	if ( sp->ttfindex==0xfffe )
-	    strcpy(buf,"?");
+	    strcpy(buf,"??");
 	else {
 	    sprintf( buf,"%d", sp->ttfindex );
 	}
@@ -1888,6 +1890,23 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 		    GDrawDrawLine(pixmap,x-2,y,x+2,y,rastergridcol);
 		    GDrawDrawLine(pixmap,x,y-2,x,y+2,rastergridcol);
 		}
+	}
+	if ( cv->qg!=NULL ) {
+	    pixel.x = cv->note_x*xgrid_spacing*cv->scale + cv->xoff;
+	    pixel.y = cv->height-cv->yoff - rint(cv->note_y*ygrid_spacing*cv->scale)
+		- pixel.height;
+	    if ( pixel.height>=20 )
+		GDrawSetLineWidth(pixmap,3);
+	    else if ( pixel.height>10 )
+		GDrawSetLineWidth(pixmap,2);
+	    GDrawDrawRect(pixmap,&pixel,deltagridcol);
+	    GDrawSetLineWidth(pixmap,0);
+	    {
+		int x = (cv->note_x+.5)*xgrid_spacing*cv->scale + cv->xoff;
+		int y = cv->height-cv->yoff - rint((cv->note_y+.5)*ygrid_spacing*cv->scale);
+		GDrawDrawLine(pixmap,x-2,y,x+2,y,deltagridcol);
+		GDrawDrawLine(pixmap,x,y-2,x,y+2,deltagridcol);
+	    }
 	}
     }
     if ( cv->showback[0]&1 ) {
@@ -10188,6 +10207,8 @@ return( cv );
 void CharViewFree(CharView *cv) {
     int i;
 
+    if ( cv->qg != NULL )
+	QGRmCharView(cv->qg,cv);
     BDFCharFree(cv->filled);
     if ( cv->ruler_w ) {
 	GDrawDestroyWindow(cv->ruler_w);

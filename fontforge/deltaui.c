@@ -29,6 +29,7 @@
 #include <chardata.h>
 #include <utype.h>
 #include <gkeysym.h>
+#include <math.h>
 #include "delta.h"
 
 /* Suggestions for where delta instructions might be wanted */
@@ -171,6 +172,7 @@ void DeltaSuggestionDlg(FontView *fv,CharView *cv) {
     QGData *data;
     int failed = false;
     int k, r;
+    FontView *savefv;
 
     if ( !hasFreeType() ) {
 	ff_post_error(_("No FreeType"),_("You must install the freetype library before using this command."));
@@ -189,12 +191,16 @@ return;
     data->cv = cv;
     if ( cv!=NULL ) {
 	data->sc = cv->b.sc;
+	savefv = (FontView *) cv->b.fv;
 	data->layer = CVLayer((CharViewBase *) cv);
 	if ( !data->sc->parent->layers[data->layer].order2 )
 	    failed = true;
 	if ( !failed && data->sc->ttf_instrs_len==0 )
 	    ff_post_notice(_("No Instructions"),_("This glyph has no instructions. Adding instructions (a DELTA) may change its rasterization significantly."));
+	cv->qg = data;
+	cv->note_x = cv->note_y = 32766;
     } else {
+	savefv = fv;
 	data->layer = fv->b.active_layer;
 	if ( !fv->b.sf->layers[data->layer].order2 )
 	    failed = true;
@@ -202,8 +208,11 @@ return;
     if ( failed ) {
 	ff_post_error(_("Not quadratic"),_("This must be a truetype layer."));
 	free(data);
+	if ( cv!=NULL )
+	    cv->qg = NULL;
 return;
     }
+    savefv->qg = data;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -363,8 +372,21 @@ return;
     while ( !data->done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+    if ( data->cv!=NULL )
+	data->cv->qg = NULL;
+    if ( savefv->qg == data )
+	savefv->qg = NULL;
 }
 
+void QGRmCharView(QGData *qg,CharView *cv) {
+    if ( qg->cv==cv )
+	qg->cv = NULL;
+}
+
+void QGRmFontView(QGData *qg,FontView *fv) {
+    qg->done = true;
+    fv->qg = NULL;
+}
 /* ************************************************************************** */
 /* ************************************************************************** */
 
@@ -844,6 +866,35 @@ return;
 	    QG_Remetric(qg);
 	    GDrawRequestExpose(qg->v,NULL,false);
 return;
+	} else {
+	    QuestionableGrid *q = &where.parent->first[where.offset];
+	    CharView *cv;
+	    if ( qg->inprocess )
+return;
+	    cv = qg->cv;
+	    if ( cv==NULL && qg->fv!=NULL ) {
+		qg->inprocess = true;
+		cv = qg->cv = CharViewCreate(q->sc,(FontView *) (qg->fv),qg->fv->map->backmap[q->sc->orig_pos]);
+		if ( qg->layer == ly_fore ) {
+		    cv->b.drawmode = dm_fore;
+		} else {
+		    cv->b.layerheads[dm_back] = &qg->sc->layers[qg->layer];
+		    cv->b.drawmode = dm_back;
+		}
+		cv->qg = qg;
+		qg->inprocess = false;
+	    } else if ( qg->cv==NULL )
+return;
+	    else if ( qg->cv->b.sc != q->sc ) {
+		CVChangeSC(qg->cv,q->sc);
+	    }
+	    cv->ft_pointsizex = cv->ft_pointsizey = q->size;
+	    cv->ft_ppemy = cv->ft_ppemx = rint(q->size*qg->dpi/72.0);
+	    cv->ft_dpi = qg->dpi;
+	    cv->ft_depth = qg->depth;
+	    cv->note_x = q->x; cv->note_y = q->y;
+	    cv->show_ft_results = true; cv->showgrids = true;
+	    CVGridFitChar(cv);
 	}
     }
 }
@@ -1004,7 +1055,7 @@ static void StartDeltaDisplay(QGData *qg) {
     GGadgetsCreate(gw,boxes);
     qg->vsb = gcd[5].ret;
     qg->v = GDrawableGetWindow(gcd[4].ret);
-    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableRow(boxes[0].ret,1);
     GHVBoxSetExpandableCol(boxes[2].ret,0);
     GHVBoxSetPadding(boxes[2].ret,0,0);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);

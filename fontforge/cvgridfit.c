@@ -137,11 +137,7 @@ return(true);
 	    CVDebugReInit(cv,true,last_fpgm);
 	else {
 	    cv->show_ft_results = true;
-	    if ( cv->show_ft_results )
-		CVGridFitChar(cv);
-	    else {
-		GDrawRequestExpose(cv->v,NULL,false);
-	    }
+	    CVGridFitChar(cv);
 	}
 	CVLayersSet(cv);
 	fsd->done = true;
