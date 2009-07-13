@@ -1119,6 +1119,9 @@ extern struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical)
 extern void JustifyDlg(SplineFont *sf);
 extern char *GlyphListDlg(SplineFont *sf, char *glyphstr);
 
+extern void DeltaSuggestionDlg(FontView *fv,CharView *cv);
+
+
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 
 extern Color view_bgcol;	/* Background color for views */

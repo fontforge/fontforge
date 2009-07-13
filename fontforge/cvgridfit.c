@@ -29,7 +29,7 @@
 #include <gkeysym.h>
 #include <math.h>
 
-int gridfit_dpi=72, gridfit_depth=2; float gridfit_pointsizey=12, gridfit_pointsizex=12;
+int gridfit_dpi=72, gridfit_depth=1; float gridfit_pointsizey=12, gridfit_pointsizex=12;
 int gridfit_x_sameas_y = true;
 
 static int last_fpgm = false;
@@ -67,7 +67,7 @@ return;
 	    cv->ft_pointsizey, cv->ft_pointsizex, cv->ft_dpi, cv->ft_depth );
     cv->b.gridfit = FreeType_GridFitChar(single_glyph_context,cv->b.sc->orig_pos,
 	    cv->ft_pointsizey, cv->ft_pointsizex, cv->ft_dpi, &cv->b.ft_gridfitwidth,
-	    cv->b.sc, cv->ft_depth );
+	    cv->b.sc, cv->ft_depth, true );
 
     FreeTypeFreeContext(single_glyph_context);
     GDrawRequestExpose(cv->v,NULL,false);
@@ -115,8 +115,8 @@ static int FtPpem_OK(GGadget *g, GEvent *e) {
 	    ptsizex = ptsize;
 	else
 	    ptsizex = GetReal8(fsd->gw,CID_PointSizeX,_("Pointsize X"),&err);
-	_dpi = GetInt8(fsd->gw,CID_DPI,_("D_PI:"),&err);
-	_depth = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_BW)) ? 2 : 8;
+	_dpi = GetInt8(fsd->gw,CID_DPI,_("DPI"),&err);
+	_depth = GGadgetIsChecked(GWidgetGetControl(fsd->gw,CID_BW)) ? 1 : 8;
 	if ( err )
 return(true);
 
@@ -334,7 +334,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = 14+31; 
-    gcd[k].gd.flags = gridfit_depth==2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[k].gd.flags = gridfit_depth==1 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
     gcd[k].gd.cid = CID_BW;
     gcd[k++].creator = GRadioCreate;
     varray[r][0] = &gcd[k-1]; varray[r][1] = GCD_HPad10;
@@ -344,7 +344,7 @@ void CVFtPpemDlg(CharView *cv,int debug) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[9].gd.pos.y; 
-    gcd[k].gd.flags = gridfit_depth!=2 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
+    gcd[k].gd.flags = gridfit_depth!=1 ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
     gcd[k++].creator = GRadioCreate;
     varray[r][2] = &gcd[k-1]; varray[r++][3] = NULL;
 

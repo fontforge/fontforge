@@ -39,7 +39,7 @@ fontforge_LIBOBJECTS = asmfpst.$O autohint.$O autosave.$O autotrace.$O autowidth
  splinesaveafm.$O splinesave.$O splinestroke.$O splineutil2.$O splineutil.$O \
  start.$O stemdb.$O svg.$O tottfaat.$O tottfgpos.$O tottf.$O \
  tottfvar.$O ttfinstrs.$O ttfspecial.$O ufo.$O unicoderange.$O utils.$O \
- winfonts.$O zapfnomen.$O groups.$O langfreq.$O
+ winfonts.$O zapfnomen.$O groups.$O langfreq.$O ftdelta.$O
 fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
  bdfinfo.o bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o \
  combinations.o contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o \
@@ -53,7 +53,7 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
  openfontdlg.o prefs.o problems.o pythonui.o savefontdlg.o scriptingdlg.o \
  scstylesui.o searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o \
  stamp.o startui.o statemachine.o tilepath.o transform.o ttfinstrsui.o \
- uiutil.o windowmenu.o justifydlg.o
+ uiutil.o windowmenu.o justifydlg.o deltaui.o
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 
 DIFFOBJS = sfddiff.o stamp.o
