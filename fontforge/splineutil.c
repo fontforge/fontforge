@@ -7037,3 +7037,191 @@ int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wma
     *wmin = w0; *wmax = w1;
 return( any );
 }
+
+static bigreal FindZero5(bigreal w[7],bigreal tlow, bigreal thigh) {
+    /* Somewhere between tlow and thigh there is a value of t where w(t)==0 */
+    /*  It is conceiveable that there might be 3 such ts if there are some high frequency effects */
+    /*  but I ignore that for now */
+    bigreal t, test;
+    int bot_negative;
+
+    t = tlow;
+    test = ((((w[5]*t+w[4])*t+w[3])*t+w[2])*t+w[1])*t + w[0];
+    bot_negative = test<0;
+
+    forever {
+	t = (thigh+tlow)/2;
+	if ( thigh==t || tlow==t )
+return( t );		/* close as we can get */
+	test = ((((w[5]*t+w[4])*t+w[3])*t+w[2])*t+w[1])*t + w[0];
+	if ( test==0 )
+return( t );
+	if ( bot_negative ) {
+	    if ( test<0 )
+		tlow = t;
+	    else
+		thigh = t;
+	} else {
+	    if ( test<0 )
+		thigh = t;
+	    else
+		tlow = t;
+	}
+    }
+}
+
+static bigreal FindZero3(bigreal w[7],bigreal tlow, bigreal thigh) {
+    /* Somewhere between tlow and thigh there is a value of t where w(t)==0 */
+    /*  It is conceiveable that there might be 3 such ts if there are some high frequency effects */
+    /*  but I ignore that for now */
+    bigreal t, test;
+    int bot_negative;
+
+    t = tlow;
+    test = ((w[3]*t+w[2])*t+w[1])*t + w[0];
+    bot_negative = test<0;
+
+    forever {
+	t = (thigh+tlow)/2;
+	if ( thigh==t || tlow==t )
+return( t );		/* close as we can get */
+	test = ((w[3]*t+w[2])*t+w[1])*t + w[0];
+	if ( test==0 )
+return( t );
+	if ( bot_negative ) {
+	    if ( test<0 )
+		tlow = t;
+	    else
+		thigh = t;
+	} else {
+	    if ( test<0 )
+		thigh = t;
+	    else
+		tlow = t;
+	}
+    }
+}
+
+bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p) {
+    /* So to find the minimum distance we want the sqrt( (sx(t)-px)^2 + (sy(t)-py)^2 ) */
+    /*  Same minima as (sx(t)-px)^2 + (sy(t)-py)^2, which is easier to deal with */
+    bigreal w[7];
+    Spline1D *x = &s->splines[0], *y = &s->splines[1];
+    bigreal off[2], best;
+
+    off[0] = (x->d-p->x); off[1] = (y->d-p->y);
+
+    w[6] = (x->a*x->a) + (y->a*y->a);
+    w[5] = 2*(x->a*x->b + y->a*y->b);
+    w[4] = (x->b*x->b) + 2*(x->a*x->c) + (y->b*y->b) + 2*(y->a*y->c);
+    w[3] = 2* (x->b*x->c + x->a*off[0] + y->b*y->c + y->a*off[1]);
+    w[2] = (x->c*x->c) + 2*(x->b*off[0]) + (y->c*y->c) + 2*y->b*off[1];
+    w[1] = 2*(x->c*off[0] + y->c*off[1]);
+    w[0] = off[0]*off[0] + off[1]*off[1];
+
+    /* Take derivative */
+    w[0] = w[1];
+    w[1] = 2*w[2];
+    w[2] = 3*w[3];
+    w[3] = 4*w[4];
+    w[4] = 5*w[5];
+    w[5] = 6*w[6];
+    w[6] = 0;
+
+    if ( w[5]!=0 ) {
+	bigreal tzeros[8], t, incr, test, lasttest, zerot;
+	int i, zcnt=0;
+	/* Well, we've got a 5th degree poly and no way to play cute tricks. */
+	/* brute force it */
+	incr = 1.0/1024;
+	lasttest = w[0];
+	for ( t = incr; t<=1.0; t += incr ) {
+	    test = ((((w[5]*t+w[4])*t+w[3])*t+w[2])*t+w[1])*t + w[0];
+	    if ( test==0 )
+		tzeros[zcnt++] = t;
+	    else {
+		if ( lasttest!=0 && (test>0) != (lasttest>0) ) {
+		    zerot = FindZero5(w,t-incr,t);
+		    if ( zerot>0 )
+			tzeros[zcnt++] = zerot;
+		}
+	    }
+	    lasttest = test;
+	}
+	best = off[0]*off[0] + off[1]*off[1];		/* t==0 */
+	test = (x->a+x->b+x->c+off[0])*(x->a+x->b+x->c+off[0]) +
+		(y->a+y->b+y->c+off[1])*(y->a+y->b+y->c+off[1]); 	/* t==1 */
+	if ( best>test ) best = test;
+	for ( i=0; i<zcnt; ++i ) {
+	    bigreal tx, ty;
+	    tx = ((x->a*tzeros[i]+x->b)*tzeros[i]+x->c)*tzeros[i] + off[0];
+	    ty = ((y->a*tzeros[i]+y->b)*tzeros[i]+y->c)*tzeros[i] + off[1];
+	    test = tx*tx + ty*ty;
+	    if ( best>test ) best = test;
+	}
+return( sqrt(best));
+    } else if ( w[4]==0 && w[3]!=0 ) {
+	/* Started with a quadratic -- now, find 0s of a cubic */
+	/* We could find the extrema, so we have a bunch of monotonics */
+	/* Or we could brute force it as above */
+	bigreal tzeros[8], test, zerot;
+	bigreal quad[3], disc, e[5], t1, t2;
+	int i, zcnt=0, ecnt;
+
+	quad[2] = 3*w[3]; quad[1] = 2*w[2]; quad[0] = w[1];
+	disc = (-quad[1]*quad[1] - 4*quad[2]*quad[0]);
+	e[0] = 0;
+	if ( disc<0 ) {
+	    e[1] = 1.0;
+	    ecnt = 2;
+	} else
+	    disc = sqrt(disc);
+	t1 = (-w[1] - disc) / (2*w[2]);
+	t2 = (-w[1] + disc) / (2*w[2]);
+	if ( t1>t2 ) {
+	    bigreal temp = t1;
+	    t1 = t2;
+	    t2 = temp;
+	}
+	ecnt=1;
+	if ( t1>0 && t1<1 )
+	    e[ecnt++] = t1;
+	if ( t2>0 && t2<1 && t1!=t2 )
+	    e[ecnt++] = t2;
+	e[ecnt++] = 1.0;
+	for ( i=1; i<ecnt; ++i ) {
+	    zerot = FindZero3(w,e[i-1],e[i]);
+	    if ( zerot>0 )
+		tzeros[zcnt++] = zerot;
+	}
+	best = off[0]*off[0] + off[1]*off[1];		/* t==0 */
+	test = (x->b+x->c+off[0])*(x->b+x->c+off[0]) +
+		(y->b+y->c+off[1])*(y->b+y->c+off[1]); 	/* t==1 */
+	if ( best>test ) best = test;
+	for ( i=0; i<zcnt; ++i ) {
+	    bigreal tx, ty;
+	    tx = (x->b*tzeros[i]+x->c)*tzeros[i] + off[0];
+	    ty = (y->b*tzeros[i]+y->c)*tzeros[i] + off[1];
+	    test = tx*tx + ty*ty;
+	    if ( best>test ) best = test;
+	}
+return( sqrt(best));
+    } else if ( w[2]==0 && w[1]!=0 ) {
+	/* Started with a line */
+	bigreal t = -w[0]/w[1], test, best;
+	best = off[0]*off[0] + off[1]*off[1];		/* t==0 */
+	test = (x->c+off[0])*(x->c+off[0]) + (y->c+off[1])*(y->c+off[1]); 	/* t==1 */
+	if ( best>test ) best = test;
+	if ( t>0 && t<1 ) {
+	    test = (x->c*t+off[0])*(x->c*t+off[0]) + (y->c*t+off[1])*(y->c*t+off[1]);
+	    if ( best>test ) best = test;
+	}
+return(sqrt(best));
+    } else if ( w[4]!=0 && w[3]!=0 && w[2]!=0 && w[1]!=0 ) {
+	IError( "Impossible condition in SplineMinDistanceToPoint");
+    } else {
+	/* It's a point, minimum distance is the only distance */
+return( sqrt(off[0]*off[0] + off[1]*off[1]) );
+    }
+return( -1 );
+}

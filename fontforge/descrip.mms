@@ -25,7 +25,7 @@ fontforge_LIBOBJECTS6=start.obj,stemdb.obj,svg.obj,tottfaat.obj,tottfgpos.obj,to
  tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,utils.obj,\
  winfonts.obj,zapfnomen.obj,groups.obj,langfreq.obj
 
-fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj
+fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj,ftdelta.obj
 
 fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj,\
  bdfinfo.obj,bitmapdlg.obj,bitmapview.obj,charinfo.obj,charview.obj,clipui.obj,\
@@ -39,7 +39,7 @@ fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj
  prefs.obj,problems.obj,pythonui.obj,savefontdlg.obj,scriptingdlg.obj,scstylesui.obj,\
  searchview.obj,sftextfield.obj,showatt.obj,simplifydlg.obj,splashimage.obj,stamp.obj,\
  startui.obj,statemachine.obj,tilepath.obj,transform.obj,ttfinstrsui.obj,uiutil.obj,\
- windowmenu.obj,oflib.obj
+ windowmenu.obj,oflib.obj,deltaui.obj
 fontforge_UIOBJECTS1=unicoderange.obj,justifydlg.obj
 
 fontforge.exe : $(fontforge_UIOBJECTS) $(fontforge_UIOBJECTS1) lff.opt xlib.opt\

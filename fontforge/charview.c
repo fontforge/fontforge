@@ -5055,6 +5055,7 @@ return( true );
 #define MID_HintSubsPt	2415
 #define MID_AutoCounter	2416
 #define MID_DontAutoHint	2417
+#define MID_Deltas	2418
 #define MID_Tools	2501
 #define MID_Layers	2502
 #define MID_DockPalettes	2503
@@ -5588,7 +5589,7 @@ return;
 	}
 
 	if ( mi->mid==MID_GridFitAA )
-	    cv->ft_depth = cv->ft_depth==8 ? 2 : 8;
+	    cv->ft_depth = cv->ft_depth==8 ? 1 : 8;
 	cv->ft_ppemx = rint(cv->ft_pointsizex*cv->ft_dpi/72.0);
 	cv->ft_ppemy = rint(cv->ft_pointsizey*cv->ft_dpi/72.0);
 	CVGridFitChar(cv);
@@ -5608,6 +5609,14 @@ static void CVMenuDebug(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !hasFreeTypeDebugger())
 return;
     CVFtPpemDlg(cv,true);
+}
+
+static void CVMenuDeltas(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeTypeDebugger())
+return;
+    DeltaSuggestionDlg(NULL,cv);
 }
 
 static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -8657,6 +8666,11 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		!cv->b.layerheads[cv->b.drawmode]->order2 ||
 		!hasFreeTypeDebugger();
 	  break;
+	  case MID_Deltas:
+	    mi->ti.disabled = multilayer ||
+		!cv->b.layerheads[cv->b.drawmode]->order2 ||
+		!hasFreeTypeDebugger();
+	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->b.sc->ttf_instrs_len==0;
 	  break;
@@ -9476,6 +9490,7 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Auto_Instr"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("AutoInstr|Ctl+T"), NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
     { { (unichar_t *) N_("_Edit Instructions..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Edit Instructions...|No Shortcut"), NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) N_("_Debug..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Debug...|No Shortcut"), NULL, NULL, CVMenuDebug, MID_Debug },
+    { { (unichar_t *) N_("S_uggest Deltas..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Suggest Deltas|No Shortcut"), NULL, NULL, CVMenuDeltas, MID_Deltas },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Clear HStem"), (GImage *) "hintsclearhstems.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear HStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { (unichar_t *) N_("Clear _VStem"), (GImage *) "hintsclearvstems.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Clear VStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearVStem },

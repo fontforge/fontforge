@@ -2342,6 +2342,7 @@ extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended s
 extern int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]);
 extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
 extern int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wmax, int major );
+extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);
 
 SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);
 SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount);
@@ -2793,7 +2794,8 @@ extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int ptsize, int dpi,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
 extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc, int depth);
+	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width,
+	SplineChar *sc, int depth, int scaled);
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsizey, real ptsizex, int dpi,int depth);
 extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,

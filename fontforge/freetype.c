@@ -78,7 +78,8 @@ return( NULL );
 }
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc, int depth) {
+	int enc, real ptsizey, real ptsizex, int dpi, uint16 *width,
+	SplineChar *sc, int depth, int scaled) {
 return( NULL );
 }
 
@@ -803,7 +804,8 @@ static FT_Outline_Funcs outlinefuncs = {
 };
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context, int enc,
-	real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc, int depth) {
+	real ptsizey, real ptsizex, int dpi, uint16 *width, SplineChar *sc,
+	int depth, int scaled) {
     FT_GlyphSlot slot;
     FTC *ftc = (FTC *) single_glyph_context;
     struct ft_context outline_context;
@@ -822,15 +824,21 @@ return( NULL );
 return( NULL );	/* Error Return */
 
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
-	depth==2 ? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
+	depth==1 ? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
 return( NULL );
 
     slot = ftc->face->glyph;
     memset(&outline_context,'\0',sizeof(outline_context));
-    /* The outline's position is expressed in 24.6 fixed numbers representing */
-    /*  pixels. I want to scale it back to the original coordinate system */
-    outline_context.scalex = ftc->em/(64.0*rint(ptsizex*dpi/72.0));
-    outline_context.scaley = ftc->em/(64.0*rint(ptsizey*dpi/72.0));
+    if ( scaled ) {
+	/* The outline's position is expressed in 24.6 fixed numbers representing */
+	/*  pixels. I want to scale it back to the original coordinate system */
+	outline_context.scalex = ftc->em/(64.0*rint(ptsizex*dpi/72.0));
+	outline_context.scaley = ftc->em/(64.0*rint(ptsizey*dpi/72.0));
+    } else {
+	/* leave as pixels */
+	outline_context.scalex = 1.0/64.0;
+	outline_context.scaley = 1.0/64.0;
+    }
     outline_context.orig_ref = sc->layers[ftc->layer].refs;
     outline_context.orig_cpl = sc->layers[ftc->layer].splines;
     while ( outline_context.orig_cpl==NULL && outline_context.orig_ref != NULL ) {
@@ -864,11 +872,11 @@ return( NULL );
 return( NULL );	/* Error Return */
 
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
-	depth==2? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
+	depth==1? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
 return( NULL );
 
     slot = ((FT_Face) (ftc->face))->glyph;
-    if ( _FT_Render_Glyph(slot,depth==2 ? ft_render_mode_mono :ft_render_mode_normal ))
+    if ( _FT_Render_Glyph(slot,depth==1 ? ft_render_mode_mono :ft_render_mode_normal ))
 return( NULL );
 
     if ( slot->bitmap.pixel_mode!=ft_pixel_mode_mono &&

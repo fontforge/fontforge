@@ -31,7 +31,7 @@ fontforge_LIBOBJECTS = asmfpst.o autohint.o autosave.o autotrace.o autowidth.o \
  splinesaveafm.o splinesave.o splinestroke.o splineutil2.o splineutil.o \
  start.o stemdb.o svg.o tottfaat.o tottfgpos.o tottf.o \
  tottfvar.o ttfinstrs.o ttfspecial.o ufo.o unicoderange.o utils.o \
- winfonts.o zapfnomen.o groups.o langfreq.o
+ winfonts.o zapfnomen.o groups.o langfreq.o ftdelta.o
 fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
  bdfinfo.o bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o \
  combinations.o contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o \
@@ -45,7 +45,7 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
  openfontdlg.o prefs.o problems.o pythonui.o savefontdlg.o scriptingdlg.o \
  scstylesui.o searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o \
  startui.o stamp.o statemachine.o tilepath.o transform.o ttfinstrsui.o \
- uiutil.o windowmenu.o justifydlg.o
+ uiutil.o windowmenu.o justifydlg.o deltaui.o
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
 
