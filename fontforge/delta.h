@@ -80,6 +80,8 @@ typedef struct qg_data {
     enum info_sort { is_glyph_size_pt, is_glyph_pt_size, is_size_glyph_pt } info_sort;
 
     struct qgnode list;
+
+    uint8 inprocess;
 } QGData;
 
 extern void TopFindQuestionablePoints(struct qg_data *data);

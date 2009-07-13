@@ -6971,6 +6971,8 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	fv_list = fv;
       break;
       case et_destroy:
+	if ( fv->qg!=NULL )
+	    QGRmFontView(fv->qg,fv);
 	if ( fv_list==fv )
 	    fv_list = (FontView *) (fv->b.next);
 	else {

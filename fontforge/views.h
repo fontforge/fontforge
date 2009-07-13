@@ -244,6 +244,8 @@ typedef struct charview {
     AnchorPoint *apmine, *apmatch;
     SplineChar *apsc;
     int guide_pos;
+    struct qg_data *qg;
+    int16 note_x, note_y;
 } CharView;
 
 typedef struct bitmapview {
@@ -393,6 +395,7 @@ typedef struct fontview {
     SplineChar *sc_near_top;
     int sel_index;
     struct lookup_subtable *cur_subtable;
+    struct qg_data *qg;
 } FontView;
 
 typedef struct findsel {
@@ -1120,6 +1123,8 @@ extern void JustifyDlg(SplineFont *sf);
 extern char *GlyphListDlg(SplineFont *sf, char *glyphstr);
 
 extern void DeltaSuggestionDlg(FontView *fv,CharView *cv);
+extern void QGRmFontView(struct qg_data *qg,FontView *fv);
+extern void QGRmCharView(struct qg_data *qg,CharView *cv);
 
 
 extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
