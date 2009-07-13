@@ -42,7 +42,7 @@
 #define CID_Cancel	106
 #define CID_Top		107
 
-static double delta_within = .05;
+static double delta_within = .01;
 static char *delta_sizes=NULL;
 static int delta_dpi = 100;
 static int delta_depth = 1;
@@ -127,7 +127,7 @@ return( true );
 
 	if ( qg->cur >= qg->max )
 	    qg->qg = grealloc(qg->qg,(qg->max += 1) * sizeof(QuestionableGrid));
-	memset(&qg->qg+qg->cur,0,sizeof(QuestionableGrid));
+	memset(qg->qg+qg->cur,0,sizeof(QuestionableGrid));
 	GDrawSetVisible(qg->gw,false);
 	StartDeltaDisplay(qg);
 	qg->done = true;
@@ -384,6 +384,162 @@ static GTextInfo glyphsorts[] = {
     NULL
 };
 
+static int QG_VScroll(GGadget *g, GEvent *e) {
+    QGData *qg = GDrawGetUserData(GGadgetGetWindow(g));
+    int newpos = qg->loff_top;
+
+    switch( e->u.control.u.sb.type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= 9*qg->vlcnt/10;
+      break;
+      case et_sb_up:
+        newpos -= qg->vlcnt/15;
+      break;
+      case et_sb_down:
+        newpos += qg->vlcnt/15;
+      break;
+      case et_sb_downpage:
+        newpos += 9*qg->vlcnt/10;
+      break;
+      case et_sb_bottom:
+        newpos = 0;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = e->u.control.u.sb.pos;
+      break;
+      case et_sb_halfup:
+        newpos -= qg->vlcnt/30;
+      break;
+      case et_sb_halfdown:
+        newpos += qg->vlcnt/30;
+      break;
+    }
+    if ( newpos + qg->vlcnt > qg->lcnt )
+	newpos = qg->lcnt-qg->vlcnt;
+    if ( newpos<0 )
+	newpos = 0;
+    if ( qg->loff_top!=newpos ) {
+	qg->loff_top = newpos;
+	GScrollBarSetPos(qg->vsb,newpos);
+	GDrawRequestExpose(qg->v,NULL,false);
+    }
+return( true );
+}
+
+static void QG_SetSb(QGData *qg) {
+    if ( qg->loff_top + qg->vlcnt > qg->lcnt )
+	qg->loff_top = qg->lcnt-qg->vlcnt;
+    if ( qg->loff_top<0 )
+	qg->loff_top = 0;
+    GScrollBarSetBounds(qg->vsb,0,qg->lcnt,qg->vlcnt);
+    GScrollBarSetPos(qg->vsb,qg->loff_top);
+}
+
+static int QG_Count(struct qgnode *parent) {
+    int l, cnt=0;
+
+    if ( !parent->open )
+return( 0 );
+    if ( parent->kids==NULL )
+return( parent->qg_cnt );
+
+    for ( l=0; l<parent->kid_cnt; ++l ) {
+	parent->kids[l].tot_under = QG_Count(&parent->kids[l]);
+	cnt += 1 + parent->kids[l].tot_under;
+    }
+return( cnt );
+}
+	
+static void QG_Remetric(QGData *qg) {
+    qg->lcnt = QG_Count(&qg->list);
+    QG_SetSb(qg);
+}
+
+struct navigate {
+    struct qgnode *parent;
+    int offset;			/* offset of -1 means the qgnode */
+};
+
+static void QG_FindLine(struct qgnode *parent, int l,struct navigate *where) {
+    int k;
+
+    if ( parent->kids == NULL ) {
+	if ( l<parent->qg_cnt ) {
+	    where->parent = parent;
+	    where->offset = l;
+	} else {
+	    where->parent = NULL;
+	    where->offset = -1;
+	}
+return;
+    }
+    for ( k=0; k<parent->kid_cnt; ++k ) {
+	if ( l==0 ) {
+	    where->parent = &parent->kids[k];
+	    where->offset = -1;
+return;
+	}
+	--l;
+	if ( parent->kids[k].open ) {
+	    if ( l<parent->kids[k].tot_under ) {
+		QG_FindLine(&parent->kids[k],l,where);
+return;
+	    } else
+		l -= parent->kids[k].tot_under;
+	}
+    }
+    where->parent = NULL;
+    where->offset = -1;
+}
+
+static void QG_NextLine(struct navigate *where) {
+    int k;
+
+    if ( where->parent==NULL )
+return;
+    if ( where->offset!=-1 && where->offset+1<where->parent->qg_cnt ) {
+	++where->offset;
+return;
+    }
+    if ( where->parent->open && where->offset==-1 ) {
+	if ( where->parent->kids==NULL ) {
+	    where->offset = 0;
+return;
+	} else {
+	    where->parent = &where->parent->kids[0];
+	    where->offset = -1;
+return;
+	}
+    }
+    forever {
+	if ( where->parent->parent==NULL ) {
+	    where->parent = NULL;
+	    where->offset = -1;
+return;
+	}
+	k = where->parent - where->parent->parent->kids;
+	if ( k+1< where->parent->parent->kid_cnt ) {
+	    ++where->parent;
+	    where->offset = -1;
+return;
+	}
+	where->parent = where->parent->parent;
+    }
+}
+
+static void qgnodeFree(struct qgnode *parent) {
+    int i;
+
+    for ( i=0; i<parent->kid_cnt; ++i )
+	qgnodeFree(&parent->kids[i]);
+    free(parent->kids);
+    free(parent->name);
+}
+
 static const QGData *kludge;
 
 static int qg_sorter(const void *pt1, const void *pt2) {
@@ -424,8 +580,123 @@ return( t2 );
 return( t3 );
 }
 
+static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
+    int cnt, l, lstart;
+    int size;
+    SplineChar *sc;
+    int pt;
+    char buffer[200];
+
+    switch ( qg->info_sort ) {
+      case is_glyph_size_pt:	/* size */
+	size = -1;
+	cnt = 0;
+	for ( l=0; l<parent->qg_cnt; ++l ) {
+	    if ( size!=parent->first[l].size ) {
+		++cnt;
+		size = parent->first[l].size;
+	    }
+	}
+	parent->kid_cnt = cnt;
+	parent->kids = gcalloc(cnt,sizeof(struct qgnode));
+	cnt = 0;
+	lstart = 0; size=-1;
+	for ( l=0; l<parent->qg_cnt; ++l ) {
+	    if ( size!=parent->first[l].size && size!=-1 ) {
+		sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+		parent->kids[cnt].name = copy(buffer);
+		parent->kids[cnt].parent = parent;
+		parent->kids[cnt].first = &parent->first[lstart];
+		parent->kids[cnt].qg_cnt = l-lstart;
+		++cnt;
+		lstart = l;
+		size = parent->first[l].size;
+	    } else if ( size!=parent->first[l].size )
+		size = parent->first[l].size;
+	}
+	if ( size!=-1 ) {
+	    sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+	    parent->kids[cnt].name = copy(buffer);
+	    parent->kids[cnt].parent = parent;
+	    parent->kids[cnt].first = &parent->first[lstart];
+	    parent->kids[cnt].qg_cnt = l-lstart;
+	}
+      break;
+      case is_glyph_pt_size:	/* pt */
+	pt = -1;
+	cnt = 0;
+	for ( l=0; l<parent->qg_cnt; ++l ) {
+	    if ( pt!=parent->first[l].nearestpt ) {
+		++cnt;
+		pt = parent->first[l].nearestpt;
+	    }
+	}
+	parent->kid_cnt = cnt;
+	parent->kids = gcalloc(cnt,sizeof(struct qgnode));
+	cnt = 0;
+	lstart = 0; pt=-1;
+	for ( l=0; l<parent->qg_cnt; ++l ) {
+	    if ( pt!=parent->first[l].nearestpt && pt!=-1 ) {
+		sprintf( buffer, "Point: %d (%d)", pt, l-lstart );
+		parent->kids[cnt].name = copy(buffer);
+		parent->kids[cnt].parent = parent;
+		parent->kids[cnt].first = &parent->first[lstart];
+		parent->kids[cnt].qg_cnt = l-lstart;
+		++cnt;
+		lstart = l;
+		pt = parent->first[l].nearestpt;
+	    } else if ( pt!=parent->first[l].nearestpt )
+		pt = parent->first[l].nearestpt;
+	}
+	if ( pt!=-1 ) {
+	    sprintf( buffer, "Point: %d (%d)", pt, l-lstart );
+	    parent->kids[cnt].name = copy(buffer);
+	    parent->kids[cnt].parent = parent;
+	    parent->kids[cnt].first = &parent->first[lstart];
+	    parent->kids[cnt].qg_cnt = l-lstart;
+	}
+      break;
+      case is_size_glyph_pt:	/* glyph */
+	sc = NULL;
+	cnt = 0;
+	for ( l=0; l<parent->qg_cnt; ++l ) {
+	    if ( sc!=parent->first[l].sc ) {
+		++cnt;
+		sc = parent->first[l].sc;
+	    }
+	}
+	parent->kid_cnt = cnt;
+	parent->kids = gcalloc(cnt,sizeof(struct qgnode));
+	cnt = 0;
+	lstart = 0;
+	sc = NULL;
+	for ( l=0; l<parent->qg_cnt; ++l ) {
+	    if ( sc!=parent->first[l].sc && sc!=NULL ) {
+		sprintf( buffer, "\"%.40s\" (%d)", sc->name, l-lstart );
+		parent->kids[cnt].name = copy(buffer);
+		parent->kids[cnt].parent = parent;
+		parent->kids[cnt].first = &parent->first[lstart];
+		parent->kids[cnt].qg_cnt = l-lstart;
+		++cnt;
+		lstart = l;
+		sc = parent->first[l].sc;
+	    } else if ( sc!=parent->first[l].sc )
+		sc = parent->first[l].sc;
+	}
+	if ( sc!=NULL ) {
+	    sprintf( buffer, "\"%.40s\" (%d)", sc->name, l-lstart );
+	    parent->kids[cnt].name = copy(buffer);
+	    parent->kids[cnt].parent = parent;
+	    parent->kids[cnt].first = &parent->first[lstart];
+	    parent->kids[cnt].qg_cnt = l-lstart;
+	}
+      break;
+    }
+}
+
 static void QGDoSort(QGData *qg) {
-    int pos;
+    int pos, l, k, cnt, lstart;
+    char buffer[200];
 
     pos = GGadgetGetFirstListSelectedItem(GWidgetGetControl(qg->gw,CID_Sort));
     qg->info_sort = (intpt) sorts[pos].userdata;
@@ -435,6 +706,83 @@ static void QGDoSort(QGData *qg) {
 
     kludge = qg;
     qsort(qg->qg,qg->cur,sizeof(QuestionableGrid),qg_sorter);
+
+    qgnodeFree(&qg->list);
+    memset(&qg->list,0,sizeof(struct qgnode));
+    qg->list.open = true;
+    qg->list.first = qg->qg;
+    if ( qg->info_sort == is_glyph_size_pt || qg->info_sort == is_glyph_pt_size ) {
+	SplineChar *sc = NULL;
+	cnt = 0;
+	for ( l=0; l<qg->cur; ++l ) {
+	    if ( sc!=qg->qg[l].sc ) {
+		++cnt;
+		sc = qg->qg[l].sc;
+	    }
+	}
+	qg->list.kid_cnt = cnt;
+	qg->list.kids = gcalloc(cnt,sizeof(struct qgnode));
+	cnt = 0;
+	lstart = 0; sc=NULL;
+	for ( l=0; l<qg->cur; ++l ) {
+	    if ( sc!=qg->qg[l].sc && sc!=NULL ) {
+		sprintf( buffer, "\"%.40s\" (%d)", sc->name, l-lstart );
+		qg->list.kids[cnt].name = copy(buffer);
+		qg->list.kids[cnt].parent = &qg->list;
+		qg->list.kids[cnt].first = &qg->qg[lstart];
+		qg->list.kids[cnt].qg_cnt = l-lstart;
+		++cnt;
+		lstart = l;
+		sc = qg->qg[l].sc;
+	    } else if ( sc!=qg->qg[l].sc )
+		sc = qg->qg[l].sc;
+	}
+	if ( sc!=NULL ) {
+	    sprintf( buffer, "\"%.40s\" (%d)", sc->name, l-lstart );
+	    qg->list.kids[cnt].name = copy(buffer);
+	    qg->list.kids[cnt].parent = &qg->list;
+	    qg->list.kids[cnt].first = &qg->qg[lstart];
+	    qg->list.kids[cnt].qg_cnt = l-lstart;
+	}
+    } else {
+	int size = -1;
+	cnt = 0;
+	for ( l=0; l<qg->cur; ++l ) {
+	    if ( size!=qg->qg[l].size ) {
+		++cnt;
+		size = qg->qg[l].size;
+	    }
+	}
+	qg->list.kid_cnt = cnt;
+	qg->list.kids = gcalloc(cnt,sizeof(struct qgnode));
+	cnt = 0;
+	lstart = 0; size=-1;
+	for ( l=0; l<qg->cur; ++l ) {
+	    if ( size!=qg->qg[l].size && size!=-1 ) {
+		sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+		qg->list.kids[cnt].name = copy(buffer);
+		qg->list.kids[cnt].parent = &qg->list;
+		qg->list.kids[cnt].first = &qg->qg[lstart];
+		qg->list.kids[cnt].qg_cnt = l-lstart;
+		++cnt;
+		lstart = l;
+		size = qg->qg[l].size;
+	    } else if ( size!=qg->qg[l].size )
+		size = qg->qg[l].size;
+	}
+	if ( size!=-1 ) {
+	    sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+	    qg->list.kids[cnt].name = copy(buffer);
+	    qg->list.kids[cnt].parent = &qg->list;
+	    qg->list.kids[cnt].first = &qg->qg[lstart];
+	    qg->list.kids[cnt].qg_cnt = l-lstart;
+	}
+    }
+    if ( qg->list.kid_cnt==1 )
+	qg->list.kids[0].open = true;
+    for ( k=0; k<qg->list.kid_cnt; ++k )
+	QGSecondLevel(qg,&qg->list.kids[k]);
+    QG_Remetric(qg);
 }
 
 static int QGSorter(GGadget *g, GEvent *e) {
@@ -447,77 +795,57 @@ return( true );
 }
 
 static void QGDrawWindow(GWindow pixmap, QGData *qg, GEvent *e) {
-    int l, y;
+    int l, y, depth;
     char buffer[200];
-    GRect old;
+    GRect old, r;
+    struct navigate where;
+    struct qgnode *parent;
 
     GDrawPushClip(pixmap,&e->u.expose.rect,&old);
+    r.width = r.height = qg->as;
     y = qg->as;
-    for ( l=0; l<qg->vlcnt && l+qg->loff_top<qg->cur; ++l ) {
-	QuestionableGrid *q = &qg->qg[l+qg->loff_top];
-	sprintf( buffer, "\"%.40s\" size=%d point=%d (%d,%d) distance=%g",
-		q->sc->name, q->size, q->nearestpt, q->x, q->y, q->distance );
-	GDrawDrawBiText8(pixmap,2,y,buffer,-1,NULL, 0x000000);
+    memset(&where,0,sizeof(where));
+    QG_FindLine(&qg->list,qg->loff_top,&where);
+
+    for ( l=0; l<qg->vlcnt && where.parent!=NULL; ++l ) {
+	for ( parent=where.parent, depth= -2; parent!=NULL; parent=parent->parent, ++depth );
+	if ( where.offset==-1 ) {
+	    r.x = 2+depth*qg->fh;   r.y = y-qg->as+1;
+	    GDrawDrawRect(pixmap,&r,0x000000);
+	    GDrawDrawLine(pixmap,r.x+2,r.y+qg->as/2,r.x+qg->as-2,r.y+qg->as/2,
+		    0x000000);
+	    if ( !where.parent->open )
+		GDrawDrawLine(pixmap,r.x+qg->as/2,r.y+2,r.x+qg->as/2,r.y+qg->as-2,
+			0x000000);
+	    GDrawDrawBiText8(pixmap,r.x+qg->fh,y,where.parent->name,-1,NULL, 0x000000);
+	} else {
+	    QuestionableGrid *q = &where.parent->first[where.offset];
+	    sprintf( buffer, "\"%.40s\" size=%d point=%d (%d,%d) distance=%g",
+		    q->sc->name, q->size, q->nearestpt, q->x, q->y, q->distance );
+	    GDrawDrawBiText8(pixmap,2+(depth+1)*qg->fh,y,buffer,-1,NULL, 0x000000);
+	}
 	y += qg->fh;
+	QG_NextLine(&where);
     }
+    GDrawPopClip(pixmap,&old);
 }
 
 static void QGMouse( QGData *qg, GEvent *e) {
-}
+    int l = qg->loff_top + e->u.mouse.y/qg->fh;
+    struct navigate where;
 
-static int QG_VScroll(GGadget *g, GEvent *e) {
-    QGData *qg = GDrawGetUserData(GGadgetGetWindow(g));
-    int newpos = qg->loff_top;
-
-    switch( e->u.control.u.sb.type ) {
-      case et_sb_top:
-        newpos = 0;
-      break;
-      case et_sb_uppage:
-        newpos -= 9*qg->vlcnt/10;
-      break;
-      case et_sb_up:
-        newpos -= qg->vlcnt/15;
-      break;
-      case et_sb_down:
-        newpos += qg->vlcnt/15;
-      break;
-      case et_sb_downpage:
-        newpos += 9*qg->vlcnt/10;
-      break;
-      case et_sb_bottom:
-        newpos = 0;
-      break;
-      case et_sb_thumb:
-      case et_sb_thumbrelease:
-        newpos = e->u.control.u.sb.pos;
-      break;
-      case et_sb_halfup:
-        newpos -= qg->vlcnt/30;
-      break;
-      case et_sb_halfdown:
-        newpos += qg->vlcnt/30;
-      break;
+    if ( e->type == et_mousedown ) {
+	memset(&where,0,sizeof(where));
+	QG_FindLine(&qg->list,l,&where);
+	if ( where.parent==NULL )
+return;
+	if ( where.offset==-1 ) {
+	    where.parent->open = !where.parent->open;
+	    QG_Remetric(qg);
+	    GDrawRequestExpose(qg->v,NULL,false);
+return;
+	}
     }
-    if ( newpos + qg->vlcnt > qg->cur )
-	newpos = qg->cur-qg->vlcnt;
-    if ( newpos<0 )
-	newpos = 0;
-    if ( qg->loff_top!=newpos ) {
-	qg->loff_top = newpos;
-	GScrollBarSetPos(qg->vsb,newpos);
-	GDrawRequestExpose(qg->v,NULL,false);
-    }
-return( true );
-}
-
-static void QG_SetSb(QGData *qg) {
-    if ( qg->loff_top + qg->vlcnt > qg->cur )
-	qg->loff_top = qg->cur-qg->vlcnt;
-    if ( qg->loff_top<0 )
-	qg->loff_top = 0;
-    GScrollBarSetBounds(qg->vsb,0,qg->cur,qg->vlcnt);
-    GScrollBarSetPos(qg->vsb,qg->loff_top);
 }
 	
 static int qgv_e_h(GWindow gw, GEvent *event) {
@@ -615,7 +943,7 @@ static void StartDeltaDisplay(QGData *qg) {
     gcd[k++].creator = GLabelCreate;
 
     sorts[0].selected = true; sorts[1].selected = sorts[2].selected = false;
-    sorts[2].disabled = qg->sc!=NULL;
+    sorts[2].disabled = qg->fv==NULL;
     gcd[k].gd.u.list = sorts;
     gcd[k].gd.cid = CID_Sort;
     gcd[k].gd.flags = gg_enabled|gg_visible;
@@ -633,7 +961,7 @@ static void StartDeltaDisplay(QGData *qg) {
     gcd[k].gd.cid = CID_GlyphSort;
     gcd[k].gd.handle_controlevent = QGSorter;
     gcd[k++].creator = GListButtonCreate;
-    if ( qg->sc!=NULL )
+    if ( qg->fv==NULL )
 	gcd[k-1].gd.flags = gcd[k-2].gd.flags = gg_enabled;
     harray2[0] = &gcd[k-4]; harray2[1] = &gcd[k-3]; harray2[2] = &gcd[k-2]; harray2[3] = &gcd[k-1]; harray2[4] = NULL;
 
@@ -689,5 +1017,6 @@ static void StartDeltaDisplay(QGData *qg) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 
+    qgnodeFree(&qg->list);
     qg->gw = oldgw;
 }

@@ -36,6 +36,14 @@ typedef struct {
     double distance;
 } QuestionableGrid;
 
+struct qgnode {
+    QuestionableGrid *first;
+    struct qgnode *kids, *parent;
+    int kid_cnt, qg_cnt, tot_under;
+    uint8 open;
+    char *name;
+};
+
 typedef struct qg_data {
     /* Set by dlg */
     FontViewBase *fv;
@@ -64,12 +72,14 @@ typedef struct qg_data {
     struct font_instance *font;
     int fh,as;
     int vlcnt;			/* # physical lines in "v" window */
+    int lcnt;			/* # logical lines currently open */
     int loff_top;
     struct ggadget *vsb;
     struct gwindow *v;
     enum glyph_sort { gs_unicode, gs_alpha, gs_gid } glyph_sort;
     enum info_sort { is_glyph_size_pt, is_glyph_pt_size, is_size_glyph_pt } info_sort;
 
+    struct qgnode list;
 } QGData;
 
 extern void TopFindQuestionablePoints(struct qg_data *data);
