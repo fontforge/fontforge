@@ -857,6 +857,8 @@ static void dump_contextpstclass(FILE *out,SplineFont *sf,
     for ( i=0; i<r->u.class.bcnt; ++i )
 	fprintf( out, "@cc%d_back_%d ", sub->subtable_offset, r->u.class.bclasses[i] );
     for ( i=0; i<r->u.class.ncnt; ++i ) {
+	if ( i==0 && fpst->nclass[r->u.class.nclasses[i]]==NULL )
+    continue;
 	fprintf( out, "@cc%d_match_%d", sub->subtable_offset, r->u.class.nclasses[i] );
 	if ( in_ignore )
 	    putc( '\'',out );
