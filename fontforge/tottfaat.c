@@ -176,6 +176,7 @@ static void ttf_dumpsfkerns(struct alltabs *at, SplineFont *sf, int tupleIndex, 
     int tupleMask = tupleIndex==-1 ? 0 : 0x2000;
     int b, bmax;
     int *breaks;
+    int winfail=0;
 
     if ( CountKerns(at,sf,&kcnt)==0 )
 return;
@@ -230,6 +231,12 @@ return;
 			    offsets[j] = kp->off;
 			    ++m;
 			}
+			/* check if a pair will cause problems on Windows */
+			/* If the glyph is outside BMP, so either unicode >0xffff */
+			/*  or -1. Cast to unsigned catches both */
+			if( (unsigned)(sf->glyphs[gid]->unicodeenc)>0xFFFF ||
+				(unsigned)(sf->glyphs[glnum[j]]->unicodeenc)>0xFFFF )
+			    winfail++;
 		    }
 		    for ( j=0; j<m; ++j ) {
 			putshort(at->kern,gid);
@@ -244,6 +251,13 @@ return;
 	}
     }
     free(kcnt.hbreaks); free(kcnt.vbreaks);
+
+    if( winfail > 0 )
+	ff_post_error(_("Kerning is likely to fail on Windows"),_(
+		"On Windows many apps will have problems with this font's "
+		"kerning, because because %d of its glyph kern pairs cannot "
+		"be mapped to unicode-BMP kern pairs"),
+	    winfail);
 
     if ( at->applemode ) for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) if ( LookupHasDefault(kc->subtable->lookup) ) {
