@@ -878,14 +878,14 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
 
     for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) {
 	for ( i=1; i<kc->first_cnt; ++i ) for ( j=1; j<kc->second_cnt; ++j ) {
-	    if ( kc->offsets[i*kc->first_cnt+j]!=0 &&
+	    if ( kc->offsets[i*kc->second_cnt+j]!=0 &&
 		    *kc->firsts[i]!='\0' && *kc->seconds[j]!='\0' ) {
 		fprintf( file, isv ? "    <vkern g1=\"" : "    <hkern g1=\"" );
 		fputkerns( file, kc->firsts[i]);
 		fprintf( file, "\"\n\tg2=\"" );
 		fputkerns( file, kc->seconds[j]);
 		fprintf( file, "\"\n\tk=\"%d\" />\n",
-			-kc->offsets[i*kc->first_cnt+j]);
+			-kc->offsets[i*kc->second_cnt+j]);
 	    }
 	}
     }
