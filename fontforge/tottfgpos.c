@@ -2648,7 +2648,7 @@ static FILE *G___figureLookups(SplineFont *sf,int is_gpos,
 
     index = 0;
     for ( otl=all; otl!=NULL; otl=otl->next ) {
-	if ( otl->unused || OnlyMac(otl,all) || otl->only_jstf )
+	if ( otl->unused || OnlyMac(otl,all) || otl->only_jstf || otl->temporary_kern )
 	    otl->lookup_index = -1;
 	else
 	    otl->lookup_index = index++;
