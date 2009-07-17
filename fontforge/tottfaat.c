@@ -234,8 +234,8 @@ return;
 			/* check if a pair will cause problems on Windows */
 			/* If the glyph is outside BMP, so either unicode >0xffff */
 			/*  or -1. Cast to unsigned catches both */
-			if( (unsigned)(sf->glyphs[gid]->unicodeenc)>0xFFFF ||
-				(unsigned)(sf->glyphs[glnum[j]]->unicodeenc)>0xFFFF )
+			if( (unsigned)(sf->glyphs[at->gi.bygid[gid]]->unicodeenc)>0xFFFF ||
+				(unsigned)(sf->glyphs[at->gi.bygid[glnum[j]]]->unicodeenc)>0xFFFF )
 			    winfail++;
 		    }
 		    for ( j=0; j<m; ++j ) {
