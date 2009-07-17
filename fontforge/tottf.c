@@ -5359,7 +5359,7 @@ return( false );
     redomaxp(at,format);
     ttf_fftm_dump(sf,at);
 
-    if ( format!=ff_type42 && format!=ff_type42cid ) {
+    if ( format!=ff_type42 && format!=ff_type42cid && !sf->internal_temp ) {
 	if ( at->opentypemode ) {
 	    SFFindUnusedLookups(sf);
 	    otf_dumpgpos(at,sf);
