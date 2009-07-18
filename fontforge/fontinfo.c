@@ -893,7 +893,7 @@ static GTextInfo gfsymsmooth[] = {
     { (unichar_t *) N_("Grid Fit w/ Sym-Smooth"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static struct col_init gaspci[] = {
-    { me_int , NULL, NULL, NULL, N_("Gasp|Pixels Per EM") },
+    { me_int , NULL, NULL, NULL, N_("Gasp|For Pixels Per EM <= Value") },
     { me_enum, NULL, gridfit, NULL, N_("Gasp|Grid Fit") },
     { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") },
     { me_enum, NULL, symsmooth, NULL, N_("Gasp|Symmetric Smoothing") },
