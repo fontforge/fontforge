@@ -1073,9 +1073,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    i = ff_none;
 	}
     }
-    if ( i==ff_ptype3 && map->enc->has_2byte )
-	i = ff_ptype0;
-    else if ( i==ff_ttfdfont && strmatch(end-strlen(".otf.dfont"),".otf.dfont")==0 )
+    if ( i==ff_ttfdfont && strmatch(end-strlen(".otf.dfont"),".otf.dfont")==0 )
 	i = ff_otfdfont;
     if ( sf->cidmaster!=NULL ) {
 	if ( i==ff_otf ) i = ff_otfcid;
