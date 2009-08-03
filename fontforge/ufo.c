@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
+#include "ffpython.h"
 
 /* The UFO (Unified Font Object) format, http://unifiedfontobject.org/ */
 /* Obsolete: http://just.letterror.com/ltrwiki/UnifiedFontObject */
@@ -140,9 +141,9 @@ static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
 	    for ( i=0; i<len; ++i ) {
 		PyObject *item = PySequence_GetItem(items,i);
 		key = PyTuple_GetItem(item,0);
-		if ( !PyString_Check(key))		/* Keys need not be strings */
+		if ( !PyBytes_Check(key))		/* Keys need not be strings */
 	    continue;
-		str = PyString_AsString(key);
+		str = PyBytes_AsString(key);
 		if ( strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL )	/* Already done */
 	    continue;
 		value = PyTuple_GetItem(item,1);
@@ -181,8 +182,8 @@ return( false );
 static void DumpPyObject( FILE *file, PyObject *value ) {
     if ( PyMapping_Check(value))
 	DumpPythonLib(file,value,NULL);
-    else if ( PyString_Check(value)) {		/* Must precede the sequence check */
-	char *str = PyString_AsString(value);
+    else if ( PyBytes_Check(value)) {		/* Must precede the sequence check */
+	char *str = PyBytes_AsString(value);
 	fprintf( file, "      <string>%s</string>\n", str );
     } else if ( value==Py_True )
 	fprintf( file, "      <true/>\n" );
