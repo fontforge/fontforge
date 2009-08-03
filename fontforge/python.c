@@ -12269,7 +12269,7 @@ return( NULL );
 return( NULL );
     }
 
-    sc = SplineCharInterpolate(((PyFF_Glyph *) from)->sc,((PyFF_Glyph *) to)->sc,by);
+    sc = SplineCharInterpolate(((PyFF_Glyph *) from)->sc,((PyFF_Glyph *) to)->sc,by, sf);
     if ( sc==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Interpolation failed");
 return( NULL );

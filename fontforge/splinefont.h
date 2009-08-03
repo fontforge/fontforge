@@ -1687,7 +1687,7 @@ typedef struct splinefont {
     unsigned int save_to_dir: 1;		/* Loaded from an sfdir collection rather than a simple sfd file */
     unsigned int head_optimized_for_cleartype: 1;/* Bit in the 'head' flags field, if unset "East Asian fonts in the Windows Presentation Framework (Avalon) will not be hinted" */
     unsigned int ticked: 1;
-    unsigned int internal_temp: 1;		/* Internal temporary font to be passed to freetype for rasterizing. Don't complain about oddities */
+    unsigned int internal_temp: 1;		/* Internal temporary font to be passed to freetype for rasterizing. Don't complain about oddities. Don't generate GPOS/GSUB tables, etc. */
     unsigned int complained_about_spiros: 1;
     unsigned int use_xuid: 1;			/* Adobe has deprecated these two */
     unsigned int use_uniqueid: 1;		/* fields. Mostly we don't want to use them */
@@ -2345,7 +2345,7 @@ extern int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, doub
 extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);
 
 SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);
-SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount);
+SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount, SplineFont *newfont);
 extern SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount, Encoding *enc);
 
 double SFSerifHeight(SplineFont *sf);

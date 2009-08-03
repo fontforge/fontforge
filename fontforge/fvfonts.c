@@ -1502,12 +1502,14 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
 }
 #endif
 
-SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount) {
+SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other,
+	real amount, SplineFont *newfont) {
     SplineChar *sc;
+    int i;
 
     if ( base==NULL || other==NULL )
 return( NULL );
-    sc = SFSplineCharCreate(base->parent);
+    sc = SFSplineCharCreate(newfont);
     sc->unicodeenc = base->unicodeenc;
     sc->changed = true;
     sc->views = NULL;
@@ -1523,7 +1525,7 @@ return( NULL );
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( base->parent->multilayer && other->parent->multilayer ) {
-	int lc = base->layer_cnt,i;
+	int lc = base->layer_cnt;
 	if ( lc!=other->layer_cnt ) {
 	    LogError( "Different numbers of layers in %s\n", base->name );
 	    if ( other->layer_cnt<lc ) lc = other->layer_cnt;
@@ -1538,8 +1540,12 @@ return( NULL );
     } else
 #endif
     {
-	sc->layers[ly_fore].splines = SplineSetsInterpolate(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
-	sc->layers[ly_fore].refs = InterpRefs(base->layers[ly_fore].refs,other->layers[ly_fore].refs,amount,sc);
+	for ( i=0; i<sc->layer_cnt; ++i ) {
+	    if ( i>=base->layer_cnt || i>= other->layer_cnt )
+	break;
+	    sc->layers[i].splines = SplineSetsInterpolate(base->layers[i].splines,other->layers[i].splines,amount,sc);
+	    sc->layers[i].refs = InterpRefs(base->layers[i].refs,other->layers[i].refs,amount,sc);
+	}
     }
     sc->changedsincelasthinted = true;
     sc->widthset = base->widthset;
@@ -1550,7 +1556,7 @@ return( sc );
 static void _SplineCharInterpolate(SplineFont *new, int orig_pos, SplineChar *base, SplineChar *other, real amount) {
     SplineChar *sc;
 
-    sc = SplineCharInterpolate(base,other,amount);
+    sc = SplineCharInterpolate(base,other,amount,new);
     if ( sc==NULL )
 return;
     sc->orig_pos = orig_pos;
@@ -1586,7 +1592,7 @@ static void InterpFixupRefChars(SplineFont *sf) {
 SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
 	Encoding *enc) {
     SplineFont *new;
-    int i, index;
+    int i, index, lc;
 
     if ( base==other ) {
 	ff_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
@@ -1604,6 +1610,23 @@ return( NULL );
     new = SplineFontBlank(base->glyphcnt);
     new->ascent = base->ascent + amount*(other->ascent-base->ascent);
     new->descent = base->descent + amount*(other->descent-base->descent);
+    if ( (lc=base->layer_cnt)>other->layer_cnt )
+	lc = other->layer_cnt;
+    if ( lc!=new->layer_cnt ) {
+	new->layer_cnt = lc;
+	new->layers = grealloc(new->layers,lc*sizeof(LayerInfo));
+	if ( lc>2 )
+	    memset(new->layers+2,0,(lc-2)*sizeof(LayerInfo));
+	for ( i=2; i<lc; ++i ) {
+	    new->layers[i].name = copy(base->layers[i].name);
+	    new->layers[i].background = base->layers[i].background;
+	    new->layers[i].order2 = base->layers[i].order2;
+	}
+    }
+    for ( i=0; i<2; ++i ) {
+	new->layers[i].background = base->layers[i].background;
+	new->layers[i].order2 = base->layers[i].order2;
+    }
     for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
 	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
 	if ( index!=-1 && other->glyphs[index]!=NULL ) {
