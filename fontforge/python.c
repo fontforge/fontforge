@@ -6814,6 +6814,82 @@ return( PyString_FromFormat( "<cvt table for font %s>", self->sf->fontname ));
 }
 
 /* ************************************************************************** */
+/* Cvt iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+    PyObject_HEAD
+    int pos;
+    PyFF_Cvt *cvt;
+} cvtiterobject;
+static PyTypeObject PyFF_CvtIterType;
+
+static PyObject *cvtiter_new(PyObject *cvt) {
+    cvtiterobject *ci;
+    ci = PyObject_New(cvtiterobject, &PyFF_CvtIterType);
+    if (ci == NULL)
+return NULL;
+    ci->cvt = ((PyFF_Cvt *) cvt);
+    Py_INCREF(cvt);
+    ci->pos = 0;
+return (PyObject *)ci;
+}
+
+static void cvtiter_dealloc(cvtiterobject *ci) {
+    Py_XDECREF(ci->cvt);
+    PyObject_Del(ci);
+}
+
+static PyObject *cvtiter_iternext(cvtiterobject *ci) {
+    PyFF_Cvt *cvt = ci->cvt;
+    PyObject *entry;
+
+    if ( cvt == NULL || cvt->cvt==NULL )
+return NULL;
+
+    if ( ci->pos<cvt->cvt->len/2 ) {
+	entry = (cvt->ob_type->tp_as_sequence->sq_item)((PyObject *) cvt,ci->pos++);
+return( entry );
+    }
+
+return NULL;
+}
+
+static PyTypeObject PyFF_CvtIterType = {
+	PyObject_HEAD_INIT(NULL)
+	0,					/* ob_size */
+	"cvtiter",				/* tp_name */
+	sizeof(cvtiterobject),			/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)cvtiter_dealloc,		/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)cvtiter_iternext,		/* tp_iternext */
+	0,					/* tp_methods */
+	0,
+};
+
+/* ************************************************************************** */
 /* Cvt sequence */
 /* ************************************************************************** */
 
@@ -7073,7 +7149,7 @@ static PyTypeObject PyFF_CvtType = {
     0,				/* tp_clear */
     0,		               /* tp_richcompare */
     0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
+    cvtiter_new,	       /* tp_iter */
     0,		               /* tp_iternext */
     PyFFCvt_methods,	       /* tp_methods */
     0,			       /* tp_members */
@@ -13383,13 +13459,13 @@ static void initPyFontForge(void) {
 	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
 	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
 	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
-	    &PyFF_ContourIterType, &PyFF_LayerIterType,
+	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
 	    NULL };
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
-	    "contouriter", "layeriter",
+	    "contouriter", "layeriter", "cvtiter",
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
 	    NULL };
