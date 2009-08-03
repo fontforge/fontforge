@@ -43,7 +43,7 @@
 #define CID_Cancel	106
 #define CID_Top		107
 
-static double delta_within = .01;
+static double delta_within = .02;
 static char *delta_sizes=NULL;
 static int delta_dpi = 100;
 static int delta_depth = 1;
