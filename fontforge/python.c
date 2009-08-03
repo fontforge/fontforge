@@ -6983,7 +6983,12 @@ static PySequenceMethods PyFFCvt_Sequence = {
 static PyObject *PyFFCvt_find(PyObject *self, PyObject *args) {
     PyFF_Cvt *c = (PyFF_Cvt *) self;
     struct ttf_table *cvt = c->cvt;
-    int i, val, low=0, high=cvt->len/2;
+    int i, val, low=0, high;
+
+    if ( cvt==NULL )
+return( Py_BuildValue("i", -1 ));
+
+    high=cvt->len/2;
 
     if ( !PyArg_ParseTuple(args,"i|ii", &val, &low, &high ) )
 return( NULL );
