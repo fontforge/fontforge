@@ -6873,7 +6873,7 @@ static PyObject *PyFFCvt_Index( PyObject *self, int pos ) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
 return( NULL );
     }
-return( Py_BuildValue("i",memushort(c->cvt->data,c->cvt->len,pos*sizeof(uint16))) );
+return( Py_BuildValue("i",(short)memushort(c->cvt->data,c->cvt->len,pos*sizeof(uint16))) );
 }
 
 static int PyFFCvt_IndexAssign( PyObject *self, int pos, PyObject *value ) {
