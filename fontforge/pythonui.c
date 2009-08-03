@@ -225,12 +225,12 @@ static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
     if ( PyTuple_GetItem(args,4)==Py_None )
 	shortcut_str = NULL;
     else
-	shortcut_str = PyString_AsString(PyTuple_GetItem(args,4));
+	shortcut_str = PyBytes_AsString(PyTuple_GetItem(args,4));
 
     for ( i=5; i<cnt; ++i ) {
-	PyObject *submenu_utf8 = PyString_AsEncodedObject(PyTuple_GetItem(args,i),
+	PyObject *submenu_utf8 = PyBytes_AsEncodedObject(PyTuple_GetItem(args,i),
 		"UTF-8",NULL);
-	unichar_t *submenuu = utf82u_copy( PyString_AsString(submenu_utf8) );
+	unichar_t *submenuu = utf82u_copy( PyBytes_AsString(submenu_utf8) );
 	Py_DECREF(submenu_utf8);
 
 	j = 0;
@@ -300,12 +300,12 @@ return( NULL );
 return( NULL );
 	}
 	if ( PyTuple_GetItem(args,4)!=Py_None ) {
-	    char *shortcut_str = PyString_AsString(PyTuple_GetItem(args,4));
+	    char *shortcut_str = PyBytes_AsString(PyTuple_GetItem(args,4));
 	    if ( shortcut_str==NULL )
 return( NULL );
 	}
 	for ( i=5; i<cnt; ++i ) {
-	    utf8_name = PyString_AsEncodedObject(PyTuple_GetItem(args,i),
+	    utf8_name = PyBytes_AsEncodedObject(PyTuple_GetItem(args,i),
 			"UTF-8",NULL);
 	    if ( utf8_name==NULL )
 return( NULL );
