@@ -5331,7 +5331,7 @@ static struct flaglist ap_types[] = {
     { "baselig", at_baselig },
     NULL };
 
-static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,void *closure) {
+static PyObject *_PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,int withsel) {
     SplineChar *sc = self->sc;
     AnchorPoint *ap;
     int cnt;
@@ -5340,28 +5340,62 @@ static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,void *closure) {
     for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt );
     tuple = PyTuple_New(cnt);
     for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt ) {
-	if ( ap->type == at_baselig )
-	    PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssddi)", ap->anchor->name,
-		    ap_types[ap->type].name, ap->me.x, ap->me.y, ap->lig_index ));
-	else
-	    PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssdd)", ap->anchor->name,
-		    ap_types[ap->type].name, ap->me.x, ap->me.y ));
+	if ( !withsel ) {
+	    if ( ap->type == at_baselig )
+		PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssddi)", ap->anchor->name,
+			ap_types[ap->type].name, ap->me.x, ap->me.y, ap->lig_index ));
+	    else
+		PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssdd)", ap->anchor->name,
+			ap_types[ap->type].name, ap->me.x, ap->me.y ));
+	} else {
+	    if ( ap->type == at_baselig )
+		PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssddOi)", ap->anchor->name,
+			ap_types[ap->type].name, ap->me.x, ap->me.y,
+			ap->selected?Py_True:Py_False, ap->lig_index ));
+	    else
+		PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssddO)", ap->anchor->name,
+			ap_types[ap->type].name, ap->me.x, ap->me.y,
+			ap->selected?Py_True:Py_False));
+	}
     }
 
 return( tuple );
 }
 
+static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,void *closure) {
+return( _PyFF_Glyph_get_anchorPoints(self,false));
+}
+
+static PyObject *PyFF_Glyph_get_anchorPointsWithSel(PyFF_Glyph *self,void *closure) {
+return( _PyFF_Glyph_get_anchorPoints(self,true));
+}
+
 static AnchorPoint *APFromTuple(SplineChar *sc,PyObject *tuple) {
     char *ac_name, *type;
     double x, y;
-    int lig_index=-1;
+    int lig_index=-1, selected=false;
     AnchorPoint *ap;
     AnchorClass *ac;
     SplineFont *sf = sc->parent;
     int aptype;
+    int len, hassel=false;
 
-    if ( !PyArg_ParseTuple(tuple, "ssdd|i", &ac_name, &type, &x, &y, &lig_index ))
+    len = PyTuple_Size(tuple);
+    if ( len==5 ) {
+	PyObject *o = PyTuple_GetItem(tuple,4);
+	if ( PyBool_Check(o))
+	    hassel = true;
+    } else if ( len==6 )
+	hassel = true;
+
+    if ( hassel ) {
+	if ( !PyArg_ParseTuple(tuple, "ssdd|ii", &ac_name, &type, &x, &y,
+		&selected, &lig_index ))
 return( NULL );
+    } else {
+	if ( !PyArg_ParseTuple(tuple, "ssdd|i", &ac_name, &type, &x, &y, &lig_index ))
+return( NULL );
+    }
     aptype = FlagsFromString(type,ap_types);
     if ( aptype==0x80000000 )
 return( NULL );
@@ -5412,6 +5446,7 @@ return( NULL );
     ap->type = aptype;
     ap->me.x = x;
     ap->me.y = y;
+    ap->selected = selected;
     if ( aptype==at_baselig )
 	ap->lig_index = lig_index;
 return( ap );
@@ -5485,7 +5520,11 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 	 "The layer in the glyph which is currently active", NULL},
     {"anchorPoints",
 	 (getter)PyFF_Glyph_get_anchorPoints, (setter)PyFF_Glyph_set_anchorPoints,
-	 "glyph name", NULL},
+	 "a tuple of all anchor points in the glyph", NULL},
+/* There is no set_anchorPointsWithSel because we don't need it. We set the selection if we find it */
+    {"anchorPointsWithSel",
+	 (getter)PyFF_Glyph_get_anchorPointsWithSel, (setter)PyFF_Glyph_set_anchorPoints,
+	 "a tuple of all anchor points in the glyph (with selection indication)", NULL},
     {"glyphname",
 	 (getter)PyFF_Glyph_get_glyphname, (setter)PyFF_Glyph_set_glyphname,
 	 "glyph name", NULL},

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 22-Jun-2009 -->
+  <!-- AP: Last modified: 3-Aug-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1538,6 +1538,31 @@ pen = None;				# Finalize the pen. This tells FontForge
 	<CODE>(anchor-class-name, type, x,y [,ligature-index])</CODE><BR>
 	The first two are strings, the next two doubles, and the last (which is only
 	present if type=="ligature") is an integer. Type may be
+	<UL>
+	  <LI>
+	    mark
+	  <LI>
+	    base
+	  <LI>
+	    ligature
+	  <LI>
+	    basemark
+	  <LI>
+	    entry
+	  <LI>
+	    exit
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>anchorPointsWithSel</CODE></TD>
+      <TD colspan=2>Same as the above, except also includes whether the anchor
+	point is selected in the UI. Returns a tuple of all anchor points in the
+	glyph. Each anchor point is a tuple of<BR>
+	<CODE>(anchor-class-name, type, x,y, selected [,ligature-index])</CODE><BR>
+	The first two are strings, the next two doubles, then a boolean, and the
+	last (which is only present if type=="ligature") is an integer. Type may
+	be
 	<UL>
 	  <LI>
 	    mark
