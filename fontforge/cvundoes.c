@@ -609,14 +609,15 @@ return(NULL);
 return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
 
-Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
+/* This routine allows for undoes in scripting -- under controlled conditions */
+Undoes *_SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
     Undoes *undo;
+
+    if ( maxundoes==0 )
+return(NULL);
 
     if ( layer==ly_grid )
 	layer = ly_fore;
-
-    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
-return(NULL);
 
     undo = chunkalloc(sizeof(Undoes));
 
@@ -654,6 +655,15 @@ return(NULL);
     undo->copied_from = sc->parent;
 return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
+
+/* This routine does not allow for undoes in scripting */
+Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
+
+    if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
+return(NULL);
+return( _SCPreserveLayer(sc,layer,dohints));
+}
+
 
 Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 #ifdef FONTFORGE_CONFIG_TYPE3

@@ -2139,6 +2139,15 @@ pen = None;				# Finalize the pen. This tells FontForge
 	has had its width set.</TD>
     </TR>
     <TR>
+      <TD><CODE>preserveLayerAsUndo</CODE></TD>
+      <TD><CODE>([layer,dohints])</CODE></TD>
+      <TD>Normally undo handling is turned off during python scripting. If you
+	wish you may tell fontforge to preserve the current state of a layer so that
+	whatever you do later can be undone by the user. You may omit the layer parameter
+	(in which case the currently active layer will be used). You may also request
+	that hints be preserved (they are not, by default).</TD>
+    </TR>
+    <TR>
       <TD><CODE><A name="g-removeOverlap">removeOverlap</A></CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Removes overlapping areas. See also <A href="#g-intersect">intersect</A>
