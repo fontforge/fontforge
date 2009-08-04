@@ -2926,6 +2926,7 @@ return( copy( sc->name ));
 
 static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
     SplineFont *sf = tok->sf;
+    EncMap *map = sf->fv==NULL ? sf->map : sf->fv->map;
     SplineChar *sc = SFGetChar(sf,-1,name);
     int enc, gid;
 
@@ -2937,9 +2938,9 @@ return(sc);
 
     if ( sc!=NULL || strcmp(name,"NULL")==0 )
 return( sc );
-    enc = SFFindSlot(sf,sf->fv==NULL ? sf->map : sf->fv->map,-1,name);
+    enc = SFFindSlot(sf,map,-1,name);
     if ( enc!=-1 ) {
-	sc = SFMakeChar(sf,sf->fv==NULL ? sf->map : sf->fv->map,enc);
+	sc = SFMakeChar(sf,map,enc);
 	if ( sc!=NULL ) {
 	    sc->widthset = true;
 	    free(sc->name);
@@ -2953,6 +2954,17 @@ return( sc );
 return( sc );
     }
 
+/* Not in the encoding, so add it */
+#if 1
+    enc = map->enccount;
+    sc = SFMakeChar(sf,map,enc);
+    if ( sc!=NULL ) {
+	sc->widthset = true;
+	free(sc->name);
+	sc->name = copy(name);
+	sc->unicodeenc = UniFromName(name,ui_none,&custom);
+    }
+#else
 /* Don't encode it (not in current encoding), just add it, so we needn't */
 /*  mess with maps or selections */
     SFExpandGlyphCount(sf,sf->glyphcnt+1);
@@ -2965,6 +2977,7 @@ return( sc );
     sc->widthset = true;		/* So we don't lose the glyph */
     sc->orig_pos = sf->glyphcnt-1;
     sf->glyphs[sc->orig_pos] = sc;
+#endif
 return( sc );
 }
 
