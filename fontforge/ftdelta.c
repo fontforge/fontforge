@@ -38,6 +38,11 @@ static int NearestPt(Spline *s,BasePoint *bp) {
 	offy = s->from->me.y-bp->y;
 	distance = offx*offx + offy*offy;
 	pt = s->from->ttfindex;
+    } else if ( s->from->prev!=NULL && s->from->prev->from->nextcpindex!=0xffff ) {
+	offx = s->from->prev->from->nextcp.x-bp->x;
+	offy = s->from->prev->from->nextcp.y-bp->y;
+	distance = offx*offx + offy*offy;
+	pt = s->from->prev->from->nextcpindex;
     }
     if ( s->to->ttfindex!=0xffff ) {
 	offx = s->to->me.x-bp->x;
@@ -46,6 +51,14 @@ static int NearestPt(Spline *s,BasePoint *bp) {
 	if ( test<distance ) {
 	    distance=test;
 	    pt = s->to->ttfindex;
+	}
+    } else if ( s->to->next!=NULL && s->to->nextcpindex!=0xffff ) {
+	offx = s->to->nextcp.x-bp->x;
+	offy = s->to->nextcp.y-bp->y;
+	test = offx*offx + offy*offy;
+	if ( test<distance ) {
+	    distance=test;
+	    pt = s->to->nextcpindex;
 	}
     }
     if ( s->from->nextcpindex!=0xffff ) {
