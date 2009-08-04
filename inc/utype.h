@@ -1,6 +1,38 @@
 #ifndef _UTYPE_H
 #define _UTYPE_H
 
+#include <ctype.h>		/* Include here so we can control it. If a system header includes it later bad things happen */
+#ifdef tolower
+# undef tolower
+#endif
+#ifdef toupper
+# undef toupper
+#endif
+#ifdef islower
+# undef islower
+#endif
+#ifdef isupper
+# undef isupper
+#endif
+#ifdef isalpha
+# undef isalpha
+#endif
+#ifdef isdigit
+# undef isdigit
+#endif
+#ifdef isalnum
+# undef isalnum
+#endif
+#ifdef isspace
+# undef isspace
+#endif
+#ifdef ispunct
+# undef ispunct
+#endif
+#ifdef ishexdigit
+# undef ishexdigit
+#endif
+
 #define ____L	0x1
 #define ____U	0x2
 #define ____TITLE	0x4

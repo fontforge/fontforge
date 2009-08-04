@@ -556,6 +556,40 @@ static void dump() {
 
     fprintf( header, "#ifndef _UTYPE_H\n" );
     fprintf( header, "#define _UTYPE_H\n\n" );
+
+
+    fprintf( header, "#include <ctype.h>\t\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
+    fprintf( header, "#ifdef tolower\n" );
+    fprintf( header, "# undef tolower\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef toupper\n" );
+    fprintf( header, "# undef toupper\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef islower\n" );
+    fprintf( header, "# undef islower\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef isupper\n" );
+    fprintf( header, "# undef isupper\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef isalpha\n" );
+    fprintf( header, "# undef isalpha\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef isdigit\n" );
+    fprintf( header, "# undef isdigit\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef isalnum\n" );
+    fprintf( header, "# undef isalnum\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef isspace\n" );
+    fprintf( header, "# undef isspace\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef ispunct\n" );
+    fprintf( header, "# undef ispunct\n" );
+    fprintf( header, "#endif\n" );
+    fprintf( header, "#ifdef ishexdigit\n" );
+    fprintf( header, "# undef ishexdigit\n" );
+    fprintf( header, "#endif\n\n" );
+
     fprintf( header, "#define ____L	0x%0x\n", _LOWER );
     fprintf( header, "#define ____U	0x%0x\n", _UPPER );
     fprintf( header, "#define ____TITLE	0x%0x\n", _TITLE );
