@@ -3678,6 +3678,10 @@ static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     sc = FVFindACharInDisplay(fv);
     enc = FindOrMakeEncoding(mi->ti.userdata);
+    if ( enc==NULL ) {
+	IError("Known encoding could not be found");
+return;
+    }
     FVReencode((FontViewBase *) fv,enc);
     if ( sc!=NULL ) {
 	int enc = fv->b.map->backmap[sc->orig_pos];
@@ -3692,6 +3696,10 @@ static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int oldcnt = fv->b.map->enccount;
 
     enc = FindOrMakeEncoding(mi->ti.userdata);
+    if ( enc==NULL ) {
+	IError("Known encoding could not be found");
+return;
+    }
     SFForceEncoding(fv->b.sf,fv->b.map,enc);
     if ( oldcnt < fv->b.map->enccount ) {
 	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
