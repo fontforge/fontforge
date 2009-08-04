@@ -29,6 +29,7 @@
 #include <chardata.h>
 #include <utype.h>
 #include <gkeysym.h>
+#include <gimage.h>
 #include <math.h>
 #include "delta.h"
 
@@ -401,7 +402,7 @@ static GTextInfo sorts[] = {
 };
 static GTextInfo glyphsorts[] = {
     { (unichar_t *) N_("Unicode"), NULL, 0, 0, (void *) gs_unicode, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Alphabetic"), NULL, 0, 0, (void *) gs_alpha, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sort|Alphabetic"), NULL, 0, 0, (void *) gs_alpha, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Glyph Order"), NULL, 0, 0, (void *) gs_gid, NULL, 0, 0, 0, 0, 0, 0, 1},
     NULL
 };
@@ -475,8 +476,12 @@ return( parent->qg_cnt );
     }
 return( cnt );
 }
-	
+
 static void QG_Remetric(QGData *qg) {
+    GRect size;
+
+    GDrawGetSize(qg->v,&size);
+    qg->vlcnt = size.height/qg->fh;
     qg->lcnt = QG_Count(&qg->list);
     QG_SetSb(qg);
 }
@@ -625,7 +630,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 	lstart = 0; size=-1;
 	for ( l=0; l<parent->qg_cnt; ++l ) {
 	    if ( size!=parent->first[l].size && size!=-1 ) {
-		sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+		sprintf( buffer, _("Size: %d (%d)"), size, l-lstart );
 		parent->kids[cnt].name = copy(buffer);
 		parent->kids[cnt].parent = parent;
 		parent->kids[cnt].first = &parent->first[lstart];
@@ -637,7 +642,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 		size = parent->first[l].size;
 	}
 	if ( size!=-1 ) {
-	    sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+	    sprintf( buffer, _("Size: %d (%d)"), size, l-lstart );
 	    parent->kids[cnt].name = copy(buffer);
 	    parent->kids[cnt].parent = parent;
 	    parent->kids[cnt].first = &parent->first[lstart];
@@ -659,7 +664,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 	lstart = 0; pt=-1;
 	for ( l=0; l<parent->qg_cnt; ++l ) {
 	    if ( pt!=parent->first[l].nearestpt && pt!=-1 ) {
-		sprintf( buffer, "Point: %d (%d)", pt, l-lstart );
+		sprintf( buffer, _("Point: %d (%d)"), pt, l-lstart );
 		parent->kids[cnt].name = copy(buffer);
 		parent->kids[cnt].parent = parent;
 		parent->kids[cnt].first = &parent->first[lstart];
@@ -671,7 +676,7 @@ static void QGSecondLevel(QGData *qg, struct qgnode *parent) {
 		pt = parent->first[l].nearestpt;
 	}
 	if ( pt!=-1 ) {
-	    sprintf( buffer, "Point: %d (%d)", pt, l-lstart );
+	    sprintf( buffer, _("Point: %d (%d)"), pt, l-lstart );
 	    parent->kids[cnt].name = copy(buffer);
 	    parent->kids[cnt].parent = parent;
 	    parent->kids[cnt].first = &parent->first[lstart];
@@ -781,7 +786,7 @@ static void QGDoSort(QGData *qg) {
 	lstart = 0; size=-1;
 	for ( l=0; l<qg->cur; ++l ) {
 	    if ( size!=qg->qg[l].size && size!=-1 ) {
-		sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+		sprintf( buffer, _("Size: %d (%d)"), size, l-lstart );
 		qg->list.kids[cnt].name = copy(buffer);
 		qg->list.kids[cnt].parent = &qg->list;
 		qg->list.kids[cnt].first = &qg->qg[lstart];
@@ -793,7 +798,7 @@ static void QGDoSort(QGData *qg) {
 		size = qg->qg[l].size;
 	}
 	if ( size!=-1 ) {
-	    sprintf( buffer, "Size: %d (%d)", size, l-lstart );
+	    sprintf( buffer, _("Size: %d (%d)"), size, l-lstart );
 	    qg->list.kids[cnt].name = copy(buffer);
 	    qg->list.kids[cnt].parent = &qg->list;
 	    qg->list.kids[cnt].first = &qg->qg[lstart];
@@ -842,7 +847,7 @@ static void QGDrawWindow(GWindow pixmap, QGData *qg, GEvent *e) {
 	    GDrawDrawBiText8(pixmap,r.x+qg->fh,y,where.parent->name,-1,NULL, 0x000000);
 	} else {
 	    QuestionableGrid *q = &where.parent->first[where.offset];
-	    sprintf( buffer, "\"%.40s\" size=%d point=%d (%d,%d) distance=%g",
+	    sprintf( buffer, _("\"%.40s\" size=%d point=%d (%d,%d) distance=%g"),
 		    q->sc->name, q->size, q->nearestpt, q->x, q->y, q->distance );
 	    GDrawDrawBiText8(pixmap,2+(depth+1)*qg->fh,y,buffer,-1,NULL, 0x000000);
 	}
@@ -856,7 +861,7 @@ static void QGMouse( QGData *qg, GEvent *e) {
     int l = qg->loff_top + e->u.mouse.y/qg->fh;
     struct navigate where;
 
-    if ( e->type == et_mousedown ) {
+    if ( (e->type == et_mousedown) && (e->u.mouse.button==1)) {
 	memset(&where,0,sizeof(where));
 	QG_FindLine(&qg->list,l,&where);
 	if ( where.parent==NULL )
@@ -898,7 +903,7 @@ return;
 	}
     }
 }
-	
+
 static int qgv_e_h(GWindow gw, GEvent *event) {
     QGData *qg = (QGData *) GDrawGetUserData(gw);
 
@@ -909,7 +914,7 @@ static int qgv_e_h(GWindow gw, GEvent *event) {
       case et_mouseup:
       case et_mousedown:
       case et_mousemove:
-	QGMouse(qg,event);
+        QGMouse(qg,event);
       break;
       case et_char:
 return( false );
@@ -951,10 +956,20 @@ static void StartDeltaDisplay(QGData *qg) {
     GGadgetCreateData gcd[8], boxes[5], *harray[4], *harray2[5], *butarray[8],
 	    *varray[4];
     GTextInfo label[8];
-    int k;
+    int i, k;
     FontRequest rq;
     int as, ds, ld;
     static GFont *valfont=NULL;
+    static int sorts_translated = 0;
+
+    if (!sorts_translated)
+    {
+        for (i=0; i<sizeof(sorts)/sizeof(sorts[0]); i++)
+            sorts[i].text = (unichar_t *) _((char *) sorts[i].text);
+        for (i=0; i<sizeof(glyphsorts)/sizeof(glyphsorts[0]); i++)
+            glyphsorts[i].text = (unichar_t *) _((char *) glyphsorts[i].text);
+        sorts_translated=1;
+    }
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg;
