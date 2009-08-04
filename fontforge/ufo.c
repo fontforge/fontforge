@@ -48,7 +48,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "ffpython.h"
+#ifndef _NO_PYTHON
+# include "ffpython.h"
+#endif
 
 /* The UFO (Unified Font Object) format, http://unifiedfontobject.org/ */
 /* Obsolete: http://just.letterror.com/ltrwiki/UnifiedFontObject */
