@@ -2666,6 +2666,7 @@ extern int SCWasEmpty(SplineChar *sc, int skip_this_layer);
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 extern Undoes *SCPreserveHints(SplineChar *sc,int layer);
 extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
+extern Undoes *_SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
 extern Undoes *SFPreserveGuide(SplineFont *sf);

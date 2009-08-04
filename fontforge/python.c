@@ -6678,6 +6678,15 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFGlyph_preserveLayer(PyFF_Glyph *self, PyObject *args) {
+    int layer = self->layer, dohints=false;
+
+    if ( !PyArg_ParseTuple(args,"|ii", &layer, &dohints ) )
+return( NULL );
+    _SCPreserveLayer(self->sc,layer,dohints);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *args) {
     DBounds bb;
 
@@ -6741,6 +6750,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     { "unlinkThisGlyph", PyFFGlyph_unlinkThisGlyph, METH_NOARGS, "Unlink all references to the current glyph in any other glyph in the font."},
     { "useRefsMetrics", PyFFGlyph_useRefsMetrics, METH_VARARGS, "Search the references of the current layer of the glyph and set the named reference's \"useMyMetrics\" flag."},
+    { "preserveLayerAsUndo", (PyCFunction)PyFFGlyph_preserveLayer, METH_VARARGS, "Preserves the current layer -- as it now is -- in an undo"},
     NULL
 };
 /* ************************************************************************** */
