@@ -480,8 +480,8 @@ GTextInfo encodingtypes[] = {
     { (unichar_t *) N_("Johab (Korean)"), NULL, 0, 0, (void *) "johab", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("GB 2312 (Simp. Chinese)"), NULL, 0, 0, (void *) "gb2312", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("EUC GB 2312 (Chinese)"), NULL, 0, 0, (void *) "gb2312pk", NULL, 0, 0, 0, 0, 0, 0, 1},
-#ifdef FONTFORGE_CONFIG_GB12345
-    { (unichar_t *) N_("EUC-GB12345"), NULL, 0, 0, (void *) "GB12345-EUC", NULL, 0, 0, 0, 0, 0, 0, 1, 0},
+#if 0 /* defined( FONTFORGE_CONFIG_GB12345 ) -- Why was this here? It goes on the enclist */
+    { (unichar_t *) N_("EUC-GB12345"), NULL, 0, 0, (void *) "EUC-GB12345", NULL, 0, 0, 0, 0, 0, 0, 1, 0},
 #endif
     { (unichar_t *) N_("Big5 (Trad. Chinese)"), NULL, 0, 0, (void *) "big5", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Big5 HKSCS (Trad. Chinese)"), NULL, 0, 0, (void *) "big5hkscs", NULL, 0, 0, 0, 0, 0, 0, 1},
