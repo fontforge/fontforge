@@ -4955,6 +4955,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     int pos;
     SplineFont *sf = fv->b.sf;
+    SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;
     EncMap *map = fv->b.map;
     OTLookup *otl;
 
@@ -4966,8 +4967,8 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 
     vwlist[base-1].ti.disabled = true;
-    if ( sf->bitmaps!=NULL ) {
-	for ( bdf = sf->bitmaps, i=base;
+    if ( master->bitmaps!=NULL ) {
+	for ( bdf = master->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
 	    if ( BDFDepth(bdf)==1 )

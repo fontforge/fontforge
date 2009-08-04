@@ -1225,7 +1225,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     ImageList *img;
     KernPair *kp;
     PST *pst;
-    int i, v;
+    int i, v, enc;
     struct altuni *altuni;
 
     if ( AllAscii(sc->name))
@@ -1235,9 +1235,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	SFDDumpUTF7Str(sfd,sc->name );
 	putc('\n',sfd);
     }
-    if ( map->backmap[sc->orig_pos]>=map->enccount ) {
-	IError("Bad reverse encoding");
-	map->backmap[sc->orig_pos] = -1;
+    if ( (enc = map->backmap[sc->orig_pos])>=map->enccount ) {
+	if ( sc->parent->cidmaster==NULL )
+	    IError("Bad reverse encoding");
+	enc = -1;
     }
     if ( sc->unicodeenc!=-1 &&
 	    ((map->enc->is_unicodebmp && sc->unicodeenc<0x10000) ||
@@ -1247,7 +1248,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	fprintf(sfd, "Encoding: %d %d %d\n", sc->unicodeenc, sc->unicodeenc,
 		newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     else
-	fprintf(sfd, "Encoding: %d %d %d\n", (int) map->backmap[sc->orig_pos], sc->unicodeenc,
+	fprintf(sfd, "Encoding: %d %d %d\n", (int) enc, sc->unicodeenc,
 		newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     if ( sc->altuni ) {
 	fprintf( sfd, "AltUni2:" );

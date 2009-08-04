@@ -451,7 +451,8 @@ return( NULL );
 	    memset(ftc->glyph_indeces,-1,max*sizeof(int));
 	    for ( i=0; i<max; ++i ) {
 		for ( k=0; k<sf->subfontcnt; ++k ) {
-		    if ( SCWorthOutputting(sf->subfonts[k]->glyphs[i]) ) {
+		    if ( i<sf->subfonts[k]->glyphcnt &&
+			    SCWorthOutputting(sf->subfonts[k]->glyphs[i]) ) {
 			ftc->glyph_indeces[i] = sf->subfonts[k]->glyphs[i]->ttf_glyph;
 		break;
 		    }
@@ -766,6 +767,7 @@ static int FT_ConicTo(FT_Vector *_cp, FT_Vector *to,void *user) {
 	    sp->nextcpindex = context->orig_sp->nextcpindex;
 	}
     }
+    if ( sp->ttfindex==0xfffe ) sp->ttfindex = 0xffff;
 return( 0 );
 }
 
