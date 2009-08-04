@@ -461,7 +461,7 @@ static int gmenu_expose(struct gmenu *m, GEvent *event) {
 	    ++i ) {
 	if ( i==m->offtop && m->offtop!=0 )
 	    GMenuDrawUpArrow(m, m->bp+m->as);
-	else if ( m->lcnt!=m->mcnt && i==m->lcnt+m->offtop-1 ) {
+	else if ( m->lcnt!=m->mcnt && i==m->lcnt+m->offtop-1 && i!=m->mcnt-1 ) {
 	    GMenuDrawDownArrow(m, m->bp+(i-m->offtop)*m->fh+m->as);
     break;	/* Otherwise we get bits of the line after the last */
 	} else
@@ -653,8 +653,10 @@ return( true );
     p.x = event->u.mouse.x; p.y = event->u.mouse.y;
 
     for ( testm=m; testm->child!=NULL; testm = testm->child );
-    if ( testm->scrollit )
-	GDrawCancelTimer(testm->scrollit); testm->scrollit = NULL;
+    if ( testm->scrollit && testm!=m ) {
+	GDrawCancelTimer(testm->scrollit);
+	testm->scrollit = NULL;
+    }
     for ( ; testm!=NULL; testm=testm->parent )
 	if ( GDrawEventInWindow(testm->w,event) )
     break;
@@ -692,15 +694,19 @@ return( true );
 	    event->type == et_mousedown ) {
 	int l = (event->u.mouse.y-m->bp)/m->fh;
 	int i = l + m->offtop;
-	if ( event->u.mouse.y<m->bp && event->type==et_mousedown )
+	if ( m->scrollit!=NULL )
+	    ;
+	else if ( event->u.mouse.y<m->bp && event->type==et_mousedown )
 	    GMenuDismissAll(m);
 	else if ( l==0 && m->offtop!=0 ) {
 	    GMenuChangeSelection(m,-1,event);
-	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime/2,_GScrollBar_RepeatTime/2,m);
+	    if ( m->scrollit==NULL )
+		m->scrollit = GDrawRequestTimer(m->w,1,_GScrollBar_RepeatTime,m);
 	    m->scrollup = true;
 	} else if ( l>=m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) {
 	    GMenuChangeSelection(m,-1,event);
-	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime/2,_GScrollBar_RepeatTime/2,m);
+	    if ( m->scrollit==NULL )
+		m->scrollit = GDrawRequestTimer(m->w,1,_GScrollBar_RepeatTime,m);
 	    m->scrollup = false;
 	} else if ( event->type == et_mousedown && m->child!=NULL &&
 		i == m->line_with_mouse ) {
@@ -716,7 +722,10 @@ return( true );
 #if 0
  printf("\nActivate menu\n");
 #endif
-	if ( event->u.mouse.y>=m->bp && event->u.mouse.x>=0 &&
+	if ( m->scrollit!=NULL ) {
+	    GDrawCancelTimer(m->scrollit);
+	    m->scrollit = NULL;
+	} else if ( event->u.mouse.y>=m->bp && event->u.mouse.x>=0 &&
 		event->u.mouse.y<m->height-m->bp &&
 		event->u.mouse.x < m->width &&
 		!MParentInitialPress(m)) {
@@ -745,19 +754,27 @@ return( true );
 
 static int gmenu_timer(struct gmenu *m, GEvent *event) {
     if ( m->scrollup ) {
+	if ( m->offtop==0 )
+return(true);
 	if ( --m->offtop<0 ) m->offtop = 0;
+#if 0			/* If we were to put this in, then someone who was clicking through the menu to scroll it would find that his last click would both scroll and then invoke */
 	if ( m->offtop == 0 ) {
 	    GDrawCancelTimer(m->scrollit);
 	    m->scrollit = NULL;
 	}
+#endif
     } else {
+	if ( m->offtop == m->mcnt-m->lcnt )
+return( true );
 	++m->offtop;
 	if ( m->offtop + m->lcnt > m->mcnt )
 	    m->offtop = m->mcnt-m->lcnt;
+#if 0
 	if ( m->offtop == m->mcnt-m->lcnt ) {
 	    GDrawCancelTimer(m->scrollit);
 	    m->scrollit = NULL;
 	}
+#endif
     }
     GDrawRequestExpose(m->w, NULL, false);
 return( true );
@@ -1226,17 +1243,21 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     m->rightedge = m->width - m->bp;
     m->height = pos.height = i*m->fh + 2*m->bp;
     GDrawGetSize(GDrawGetRoot(disp),&screen);
-    if ( pos.height > screen.height ) {
-	m->lcnt = (screen.height-2*m->bp)/m->fh;
+
+/* On the mac, the menu bar takes up the top twenty pixels or so of screen */
+/*  so never put a menu that high */
+#define MAC_MENUBAR	20
+    if ( pos.height > screen.height-MAC_MENUBAR-m->fh ) {
+	m->lcnt = (screen.height-MAC_MENUBAR-m->fh-2*m->bp)/m->fh;
 	pos.height = m->lcnt*m->fh + 2*m->bp;
     }
 
     pos.x = where->x; pos.y = where->y;
-    if ( pos.y + pos.height > screen.height ) {
-	if ( where->y+aheight-pos.height >= 0 )
+    if ( pos.y + pos.height > screen.height-MAC_MENUBAR ) {
+	if ( where->y+aheight-pos.height >= MAC_MENUBAR )
 	    pos.y = where->y+aheight-pos.height;
 	else {
-	    pos.y = 0;
+	    pos.y = MAC_MENUBAR;
 	    /* Ok, it's going to overlap the press point if we got here */
 	    /*  let's see if we can shift it left/right a bit so it won't */
 	    if ( awidth<0 )
