@@ -1095,9 +1095,9 @@ return( true );
 	    event->u.chr.keysym>=GK_Special ) {
 	for ( top = m; top->parent!=NULL ; top = top->parent );
 	if ( top->menubar!=NULL )
-	    mi = GMenuSearchShortcut(top->w,top->menubar->mi,event);
+	    mi = GMenuSearchShortcut(top->owner,top->menubar->mi,event);
 	else
-	    mi = GMenuSearchShortcut(top->w,top->mi,event);
+	    mi = GMenuSearchShortcut(top->owner,top->mi,event);
 	if ( mi!=NULL ) {
 	    if ( mi->ti.checkable )
 		mi->ti.checked = !mi->ti.checked;
