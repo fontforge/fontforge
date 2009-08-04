@@ -2902,12 +2902,12 @@ static void CVChangeChar(CharView *cv, int i ) {
 	    if ( i<sf->glyphcnt && sf->glyphs[i]!=NULL )
 	break;
 	}
-	if ( cidmaster->subfonts[k] == sf )
-	    /* Oh, ok. well we've already set it */;
-	else if ( k!=cidmaster->subfontcnt ) {
-	    sf = cidmaster->subfonts[k];
-	    gid = ( i>=sf->glyphcnt ) ? -2 : i;
-	    /* can't create a new glyph this way */
+	if ( k!=cidmaster->subfontcnt ) {
+	    if ( cidmaster->subfonts[k] != sf ) {
+		sf = cidmaster->subfonts[k];
+		gid = ( i>=sf->glyphcnt ) ? -2 : i;
+		/* can't create a new glyph this way */
+	    }
 	}
     }
     if ( gid == -2 )
