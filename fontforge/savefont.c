@@ -47,14 +47,14 @@ int oldbitmapstate = 0;
 char *savefont_extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
-	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
+	".ttf", ".ttf", ".suit", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg", ".ufo", NULL };
 char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap", ".dfont", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #else
 char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
-	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
+	".ttf", ".ttf", ".ttf.bin", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
 	".otf.dfont", ".svg",
 #if VMS
 /* this is a directory format, and under vms directories must end in .dir */
@@ -1256,7 +1256,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    flags = old_ttf_flags;
 	else
 	    flags = old_otf_flags;
-	ret = WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map,layer);
+	ret = WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,layer);
     } else {
 	ret = !_DoSave(sf,filename,sizes,res,map,subfontdefinition,layer);
     }

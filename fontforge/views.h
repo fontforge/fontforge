@@ -591,6 +591,7 @@ struct gfi_data {		/* FontInfo */
     int first_sel_lookup, first_sel_subtable;
 };
 
+enum genfam { gf_none, gf_macfamily, gf_ttc };
 
 extern void FVMarkHintsOutOfDate(SplineChar *sc);
 extern void FVRefreshChar(FontView *fv,int gid);

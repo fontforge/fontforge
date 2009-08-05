@@ -164,6 +164,7 @@ static GTextInfo formattypes[] = {
 #else
     { (unichar_t *) N_("TrueType (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
 #endif
+    { (unichar_t *) N_("TrueType (TTC)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("TrueType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("OpenType (CFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("OpenType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
@@ -481,7 +482,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     else if ( which==0 )	/* Postscript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
     else if ( (fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
-	     fs==ff_otfciddfont || d->family || (fs==ff_none && bf==bf_sfnt_dfont)))
+	     fs==ff_otfciddfont || d->family==gf_macfamily || (fs==ff_none && bf==bf_sfnt_dfont)))
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
     else
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),(flags&ttf_flag_otmode));
@@ -1373,7 +1374,7 @@ return;
 return;
     }
 
-    if ( !d->family )
+    if ( d->family==gf_none )
 	layer = (intpt) GGadgetGetListItemSelected(GWidgetGetControl(d->gw,CID_Layers))->userdata;
 
     temp = u2def_copy(path);
@@ -1554,7 +1555,7 @@ return;
 	    former = SFTemporaryRenameGlyphsToNamelist(d->sf,rename_to);
     }
 
-    if ( !d->family ) {
+    if ( d->family==gf_none ) {
 	char *wernersfdname = NULL;
 	char *old_fontlog_contents;
 	int res = -1;
@@ -1589,8 +1590,10 @@ return;
 	} else
 	    free( old_fontlog_contents );
 	free(wernersfdname);
-    } else
-	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map,layer);
+    } else if ( d->family == gf_macfamily )
+	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,layer);
+    else
+	err = !WriteTTC(temp,sfs,oldformatstate,oldbitmapstate,flags,layer,0);
 
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
@@ -2176,7 +2179,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	    bitmaptypes[i].text = (unichar_t *) _((char *) bitmaptypes[i].text);
     }
 
-    if ( family ) {
+    if ( family==gf_macfamily ) {
 	old_otf_flags |= ttf_flag_applemode;
 	old_ttf_flags |= ttf_flag_applemode;
 	old_otf_flags &=~ttf_flag_otmode;
@@ -2197,8 +2200,13 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	memset(familysfs[0],0,sizeof(familysfs[0]));
 	familysfs[0][0] = sf;
 	fondcnt = 1;
-	for ( fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) )
-	    if ( fv->b.sf!=sf && strcmp(fv->b.sf->familyname,sf->familyname)==0 ) {
+	for ( fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) ) {
+	    if ( fv->b.sf==sf )
+	continue;
+	    if ( family==gf_ttc ) {
+		fc = fondcnt;
+		psstyle = 0;
+	    } else if ( family==gf_macfamily && strcmp(fv->b.sf->familyname,sf->familyname)==0 ) {
 		MacStyleCode(fv->b.sf,&psstyle);
 		if ( fv->b.sf->fondname==NULL ) {
 		    fc = 0;
@@ -2234,37 +2242,32 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 			}
 		    }
 		}
-		if ( fc==fondcnt ) {
-		    /* Create a new fond containing just this font */
-		    if ( fondcnt>=fondmax )
-			familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
-		    memset(familysfs[fondcnt],0,sizeof(SFArray));
-		    familysfs[fondcnt++][psstyle] = fv->b.sf;
-		}
 	    }
-	for ( fc=0; fc<fondcnt; ++fc ) for ( i=0; i<48; ++i ) {
-	    if ( familysfs[fc][i]!=NULL ) {
-		++familycnt;
-#if 0
-		if ( familysfs[fc][i]->encoding_name!=map->enc )
-		    badenc = fv->b.sf;
-#endif
+	    if ( fc==fondcnt ) {
+		/* Create a new fond containing just this font */
+		if ( fondcnt>=fondmax )
+		    familysfs = grealloc(familysfs,(fondmax+=10)*sizeof(SFArray));
+		memset(familysfs[fondcnt],0,sizeof(SFArray));
+		familysfs[fondcnt++][psstyle] = fv->b.sf;
 	    }
 	}
-	if ( MacStyleCode(sf,NULL)!=0 || familycnt<=1 || sf->multilayer ) {
-	    ff_post_error(_("Bad Mac Family"),_("To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."));
+	if ( family==gf_macfamily ) {
+	    for ( fc=0; fc<fondcnt; ++fc ) for ( i=0; i<48; ++i ) {
+		if ( familysfs[fc][i]!=NULL ) {
+		    ++familycnt;
+		}
+	    }
+	    if ( MacStyleCode(sf,NULL)!=0 || familycnt<=1 || sf->multilayer ) {
+		ff_post_error(_("Bad Mac Family"),_("To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."));
 return( 0 );
-	} else if ( dup ) {
-	    MacStyleCode(dup,&psstyle);
-	    ff_post_error(_("Bad Mac Family"),_("There are two open fonts with the current family name and the same style. %.30s and %.30s"),
-		dup->fontname, familysfs[dupfc][dupstyle]->fontname);
-return( 0 );
-#if 0
-	} else if ( badenc ) {
-	    ff_post_error(_("Bad Mac Family"),_("The font %1$.30s has a different encoding than that of %2$.30s"),
-		badenc->fontname, sf->fontname );
-return( 0 );
-#endif
+	    } else if ( dup ) {
+		MacStyleCode(dup,&psstyle);
+		ff_post_error(_("Bad Mac Family"),_("There are two open fonts with the current family name and the same style. %.30s and %.30s"),
+		    dup->fontname, familysfs[dupfc][dupstyle]->fontname);
+    return( 0 );
+	    }
+	} else {
+	    familycnt = fondcnt;
 	}
     }
 
@@ -2392,6 +2395,8 @@ return( 0 );
 	ofs = ff_otfcid;
     else if ( !formattypes[ff_mmb].disabled && ofs!=ff_mma )
 	ofs = ff_mmb;
+    if ( ofs==ff_ttc )
+	ofs = ff_ttf;
     if ( sf->onlybitmaps )
 	ofs = ff_none;
     if ( sf->multilayer ) {
@@ -2427,7 +2432,8 @@ return( 0 );
 	if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfmacbin || ofs==ff_ttfdfont )
 	    ofs = ff_otf;
     }
-    if ( family ) {
+    formattypes[ff_ttc].disabled = true;
+    if ( family == gf_macfamily ) {
 	if ( ofs==ff_pfa || ofs==ff_pfb || ofs==ff_multiple || ofs==ff_ptype3 ||
 		ofs==ff_ptype0 || ofs==ff_mma || ofs==ff_mmb )
 	    ofs = ff_pfbmacbin;
@@ -2437,6 +2443,8 @@ return( 0 );
 	    ofs = ff_ttfmacbin;
 	else if ( ofs==ff_otf || ofs==ff_cff )
 	    ofs = ff_otfdfont;
+	else if ( ofs==ff_ufo || ofs==ff_ttc )
+	    ofs = ff_ttfdfont;
 	formattypes[ff_pfa].disabled = true;
 	formattypes[ff_pfb].disabled = true;
 	formattypes[ff_mma].disabled = true;
@@ -2454,6 +2462,11 @@ return( 0 );
 	formattypes[ff_cffcid].disabled = true;
 	formattypes[ff_svg].disabled = true;
 	formattypes[ff_ufo].disabled = true;
+    } else if ( family == gf_ttc ) {
+	for ( i=0; i<=ff_none; ++i )
+	    formattypes[i].disabled = true;
+	formattypes[ff_ttc].disabled = false;
+	ofs = ff_ttc;
     }
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;
@@ -2476,7 +2489,7 @@ return( 0 );
     }
     hvarray[2] = &gcd[8]; hvarray[3] = NULL;
     old = oldbitmapstate;
-    if ( family ) {
+    if ( family==gf_macfamily ) {
 	if ( old==bf_bdf || old==bf_fon || old==bf_fnt || old==bf_sfnt_ms ||
 		old==bf_otb || old==bf_palm || old==bf_ptype3 ) {
 	    if ( ofs==ff_otfdfont || ofs==ff_otfciddfont || ofs==ff_ttfdfont )
@@ -2489,6 +2502,12 @@ return( 0 );
 	bitmaptypes[bf_bdf].disabled = true;
 	bitmaptypes[bf_fon].disabled = true;
 	bitmaptypes[bf_fnt].disabled = true;
+    } else if ( family==gf_ttc ) {
+	for ( i=0; i<bf_none; ++i )
+	    bitmaptypes[i].disabled = true;
+	bitmaptypes[bf_ttf].disabled = false;
+	if ( old!=bf_none )
+	    old = bf_ttf;
     }
     temp = sf->cidmaster ? sf->cidmaster : sf;
     if ( temp->bitmaps==NULL ) {

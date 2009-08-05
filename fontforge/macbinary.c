@@ -1790,7 +1790,7 @@ return( ret );
 */
 
 int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags, EncMap *map,int layer) {
+	enum bitmapformat bf,int flags, int layer) {
     FILE *res;
     int ret = 1, r, i;
     struct resourcetype resources[4];
