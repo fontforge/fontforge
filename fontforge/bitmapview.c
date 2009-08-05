@@ -1559,7 +1559,12 @@ static void BVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuGenerateFamily(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    _FVMenuGenerate(bv->fv,true);
+    _FVMenuGenerate(bv->fv,gf_macfamily);
+}
+
+static void BVMenuGenerateTTC(GWindow gw,struct gmenuitem *mi,GEvent *g) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    _FVMenuGenerate(bv->fv,gf_ttc);
 }
 
 static void BVMenuExport(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -2092,6 +2097,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("S_ave as..."), (GImage *) "filesaveas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|Ctl+Shft+S"), NULL, NULL, BVMenuSaveAs },
     { { (unichar_t *) N_("_Generate Fonts..."), (GImage *) "filegenerate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Generate Fonts...|Ctl+Shft+G"), NULL, NULL, BVMenuGenerate },
     { { (unichar_t *) N_("Generate Mac _Family..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|Alt+Ctl+G"), NULL, NULL, BVMenuGenerateFamily },
+    { { (unichar_t *) N_("Generate TTC..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate TTC...|No Shortcut"), NULL, NULL, BVMenuGenerateTTC },
     { { (unichar_t *) N_("Expor_t..."), (GImage *) "fileexport.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Export...|No Shortcut"), NULL, NULL, BVMenuExport },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Import..."), (GImage *) "fileimport.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Import...|Ctl+Shft+I"), NULL, NULL, BVMenuImport },

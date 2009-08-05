@@ -1927,7 +1927,12 @@ static void MVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuGenerateFamily(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    _FVMenuGenerate(mv->fv,true);
+    _FVMenuGenerate(mv->fv,gf_macfamily);
+}
+
+static void MVMenuGenerateTTC(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    _FVMenuGenerate(mv->fv,gf_ttc);
 }
 
 static void MVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3022,6 +3027,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("S_ave as..."), (GImage *) "filesaveas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|Ctl+Shft+S"), NULL, NULL, MVMenuSaveAs },
     { { (unichar_t *) N_("_Generate Fonts..."), (GImage *) "filegenerate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Generate Fonts...|Ctl+Shft+G"), NULL, NULL, MVMenuGenerate },
     { { (unichar_t *) N_("Generate Mac _Family..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|Alt+Ctl+G"), NULL, NULL, MVMenuGenerateFamily },
+    { { (unichar_t *) N_("Generate TTC..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate TTC...|No Shortcut"), NULL, NULL, MVMenuGenerateTTC },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Merge Feature Info..."), (GImage *) "filemergefeature.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Kern Info...|Ctl+Shft+K"), NULL, NULL, MVMenuMergeKern },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},

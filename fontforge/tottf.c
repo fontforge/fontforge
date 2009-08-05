@@ -6224,3 +6224,115 @@ return( 0 );
 
 return( 1 );
 }
+
+static void CopySFNTAndFixup(FILE *ttc,FILE *ttf) {
+    /* ttf contains a truetype file which we want to copy into ttc */
+    /* Mostly this is just a dump copy, but the offset table at the */
+    /* start of the file must be adjusted to reflect the absolute */
+    /* locations of the tables in the ttc */
+    int offset = ftell(ttc);
+    int val, table_cnt, i;
+
+    fseek(ttf,0,SEEK_SET);
+    val = getlong(ttf);
+    putlong(ttc,val);			/* sfnt version */
+    table_cnt = getushort(ttf);
+    putshort(ttc,table_cnt);
+    val = getushort(ttf);
+    putshort(ttc,val);
+    val = getushort(ttf);
+    putshort(ttc,val);
+    val = getushort(ttf);
+    putshort(ttc,val);
+
+    for ( i=0; i<table_cnt; ++i ) {
+	val = getlong(ttf);
+	putlong(ttc,val);			/* tag */
+	val = getlong(ttf);
+	putlong(ttc,val);			/* checkSum */
+	val = getlong(ttf);
+	putlong(ttc,val+offset);		/* offset */
+	val = getlong(ttf);
+	putlong(ttc,val);			/* length */
+    }
+
+    while ( (val=getc(ttf))!=EOF )
+	putc(val,ttc);
+
+    fclose(ttf);
+
+    if ( ftell(ttc)&1 )
+	putc('\0',ttc);
+    if ( ftell(ttc)&2 )
+	putshort(ttc,0);
+}
+
+int WriteTTC(char *filename,struct sflist *sfs,enum fontformat format,
+	enum bitmapformat bf,int flags, int layer, int ttcflags) {
+    struct sflist *sfitem, *sfi2;
+    int ret=0;
+    FILE *ttc;
+    int cnt, offset;
+
+    if ( strstr(filename,"://")!=NULL ) {
+	if (( ttc = tmpfile())==NULL )
+return( 0 );
+    } else {
+	if (( ttc=fopen(filename,"wb+"))==NULL )
+return( 0 );
+    }
+
+    /* Create a trivial ttc where each font is its own entity and there */
+    /*  are no common tables */
+    /* Generate all the fonts (don't generate DSIGs, there's one DSIG for */
+    /*  the ttc as a whole) */
+    for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
+	sfitem->tempttf = tmpfile();
+	if ( sfitem->tempttf==NULL )
+	    ret=0;
+	else
+	    ret = _WriteTTFFont(sfitem->tempttf,sfitem->sf,ff_ttf,sfitem->sizes,
+		    bf,flags&~ttf_flag_dummyDSIG,sfitem->map,layer);
+	if ( !ret ) {
+	    for ( sfi2=sfs; sfi2!=NULL; sfi2 = sfi2->next )
+		if ( sfi2->tempttf!=NULL )
+		    fclose(sfi2->tempttf );
+	    fclose(ttc);
+return( true );
+	}
+	fseek(sfitem->tempttf,0,SEEK_END);
+	sfitem->len = ftell(sfitem->tempttf);
+    }
+
+    putlong(ttc,CHR('t','t','c','f'));
+    if ( flags&ttf_flag_dummyDSIG ) {
+	putlong(ttc,0x00020000);
+	offset = 4*(3+cnt+4);
+    } else {
+	putlong(ttc,0x00010000);
+	offset = 4*(3+cnt);
+    }
+    putlong(ttc,cnt);
+    for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
+	putlong(ttc,offset);
+	offset += ((sfitem->len+3)>>2)<<2;		/* Align on 4 byte boundary */
+    }
+    if ( flags&ttf_flag_dummyDSIG ) {
+	putlong(ttc,CHR('D','S','I','G'));
+	putlong(ttc,8);				/* Length of dummy DSIG table */
+	putlong(ttc,0x00000001);		/* Standard DSIG version */
+	putlong(ttc,0);				/* No Signatures, no flags */
+    }
+    for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next )
+	CopySFNTAndFixup(ttc,sfitem->tempttf);
+    if ( ftell(ttc)!=offset )
+	IError("Miscalculated offsets in ttc");
+
+    if ( strstr(filename,"://")!=NULL && ret )
+	ret = URLFromFile(filename,ttc);
+    if ( ferror(ttc))
+	ret = false;
+    if ( fclose(ttc)==-1 )
+	ret = false;
+return( ret );
+}

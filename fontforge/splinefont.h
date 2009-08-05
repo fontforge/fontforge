@@ -1882,6 +1882,7 @@ struct sflist {
     EncMap *map;
     struct sflist *next;
     char **former_names;
+    int len;
 };
 
     /* Used for drawing text with mark to base anchors */
@@ -1971,7 +1972,7 @@ extern void CIDMasterAsDes(SplineFont *sf);
 enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
-	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
+	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttc, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_none };
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
@@ -2015,7 +2016,9 @@ extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,
 	int is_dfont,EncMap *enc);
 extern int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *enc);
 extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags,EncMap *enc,int layer);
+	enum bitmapformat bf,int flags,int layer);
+extern int WriteTTC(char *filename,struct sflist *sfs,enum fontformat format,
+	enum bitmapformat bf,int flags,int layer,int ttcflags);
 extern long mactime(void);
 extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern int _WriteSVGFont(FILE *file,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
