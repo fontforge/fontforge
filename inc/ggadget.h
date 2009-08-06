@@ -525,4 +525,6 @@ extern void GGadgetProtest8(char *labelr);
 
 extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 extern int GMenuItemParseMask(char *shortcut);
+
+extern int GGadgetUndoMacEnglishOptionCombinations(GEvent *event);
 #endif

@@ -1355,6 +1355,115 @@ return( gmenu_key(most_recent_popup_menu,event));
 }
 
 /* ************************************************************************** */
+
+int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
+    int keysym = event->u.chr.keysym;
+
+    switch ( keysym ) {
+      case 0xba:
+	keysym = '0';
+      break;
+      case 0xa1:
+	keysym = '1';
+      break;
+      case 0x2122:
+	keysym = '2';
+      break;
+      case 0xa3:
+	keysym = '3';
+      break;
+      case 0xa2:
+	keysym = '4';
+      break;
+      case 0x221e:
+	keysym = '5';
+      break;
+      case 0xa7:
+	keysym = '6';
+      break;
+      case 0xb6:
+	keysym = '7';
+      break;
+      case 0x2022:
+	keysym = '8';
+      break;
+      case 0xaa:
+	keysym = '9';
+      break;
+      case 0xe5:
+	keysym = 'a';
+      break;
+      case 0x222b:
+	keysym = 'b';
+      break;
+      case 0xe7:
+	keysym = 'c';
+      break;
+      case 0x2202:
+	keysym = 'd';
+      break;
+      /* e is a modifier */
+      case 0x192:
+	keysym = 'f';
+      break;
+      case 0xa9:
+	keysym = 'g';
+      break;
+      case 0x2d9:
+	keysym = 'h';
+      break;
+      /* i is a modifier */
+      case 0x2206:
+	keysym = 'j';
+      break;
+      case 0x2da:
+	keysym = 'k';
+      break;
+      case 0xac:
+	keysym = 'l';
+      break;
+      case 0xb5:
+	keysym = 'm';
+      break;
+      /* n is a modifier */
+      case 0xf8:
+	keysym = 'o';
+      break;
+      case 0x3c0:
+	keysym = 'p';
+      break;
+      case 0x153:
+	keysym = 'q';
+      break;
+      case 0xae:
+	keysym = 'r';
+      break;
+      case 0x2020:
+	keysym = 's';
+      break;
+      case 0xee:
+	keysym = 't';
+      break;
+      /* u is a modifier */
+      case 0x221a:
+	keysym = 'v';
+      break;
+      case 0x2211:
+	keysym = 'w';
+      break;
+      case 0x2248:
+	keysym = 'x';
+      break;
+      case 0xa5:
+	keysym = 'y';
+      break;
+      case 0x3a9:
+	keysym = 'z';
+      break;
+    }
+return( keysym );
+}
+
 int GMenuBarCheckKey(GGadget *g, GEvent *event) {
     int i;
     GMenuBar *mb = (GMenuBar *) g;
@@ -1365,6 +1474,11 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
 return( false );
     if ( keysym==0 )
 return( false );
+
+    if ( (menumask&ksm_cmdmacosx) && keysym>0x7f &&
+	    (event->u.chr.state&ksm_meta) &&
+	    !(event->u.chr.state&menumask&(ksm_control|ksm_cmdmacosx)) )
+	keysym = GGadgetUndoMacEnglishOptionCombinations(event);
 
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
