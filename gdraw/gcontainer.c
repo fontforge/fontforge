@@ -424,6 +424,10 @@ static int GWidgetCheckMn(GContainerD *gd,GEvent *event) {
     unichar_t keysym = event->u.chr.keysym;
     int mask = GMenuMask() & (ksm_control|ksm_cmdmacosx);
 
+    if ( (mask&ksm_cmdmacosx) && keysym>0x7f &&
+	    (event->u.chr.state&ksm_meta) && !(event->u.chr.state&mask) )
+	keysym = GGadgetUndoMacEnglishOptionCombinations(event);
+
     if ( islower(keysym)) keysym = toupper(keysym);
     for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
 	if ( (event->u.chr.state&ksm_meta) && !(event->u.chr.state&mask) &&
