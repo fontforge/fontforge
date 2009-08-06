@@ -1157,6 +1157,9 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     SplineChar *isc = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos] : sc;
 
+#if 0
+    /* This must have been an error on my part, can't just remove points */
+    /* they might be matched to anchors or something */
 /* I haven't seen this documented, but ttf rasterizers are unhappy with a */
 /*  glyph that consists of a single point. Glyphs containing two single points*/
 /*  are ok, glyphs with a single point and anything else are ok, glyphs with */
@@ -1169,6 +1172,7 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 	dumpspace(sc,gi);
 return;
     }
+#endif
 
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
@@ -1179,7 +1183,7 @@ return;
     }
     origptcnt = ptcnt;
 
-    SplineCharLayerQuickBounds(sc,gi->layer,&bb);
+    SplineSetQuickBounds(ttfss,&bb);
     gh.numContours = contourcnt;
     gh.xmin = floor(bb.minx); gh.ymin = floor(bb.miny);
     gh.xmax = ceil(bb.maxx); gh.ymax = ceil(bb.maxy);
