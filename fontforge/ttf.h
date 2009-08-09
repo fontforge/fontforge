@@ -61,6 +61,8 @@ struct variations {
 				/* Varied kern classes */
     } *tuples;
 };
+
+enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
 	
 struct ttfinfo {
     int emsize;			/* ascent + descent? from the head table */
@@ -317,9 +319,8 @@ struct ttfinfo {
     uint32 jstf_lang;
     int16 jstf_isShrink, jstf_prio, jstf_lcnt;
     struct otffeatname *feat_names;
+    enum gsub_inusetype justinuse;
 };
-
-enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
 
 #define MAX_TAB	48
 struct tabdir {
@@ -558,6 +559,7 @@ struct glyphinfo {
     unsigned int onlybitmaps: 1;
     unsigned int has_instrs: 1;
     unsigned int is_ttf: 1;
+    unsigned int ttc_composite_font: 1;
     SplineFont *sf;
     int32 *pointcounts;
     int *bygid;			/* glyph list */
@@ -856,6 +858,7 @@ extern void GuessNamesFromMATH(FILE *ttf,struct ttfinfo *info);
 extern void readmacfeaturemap(FILE *ttf,struct ttfinfo *info);
 extern void readttfkerns(FILE *ttf,struct ttfinfo *info);
 extern void readttfmort(FILE *ttf,struct ttfinfo *info);
+extern void readttfmort_glyphsused(FILE *ttf,struct ttfinfo *info);
 extern void readttfopbd(FILE *ttf,struct ttfinfo *info);
 extern void readttflcar(FILE *ttf,struct ttfinfo *info);
 extern void readttfprop(FILE *ttf,struct ttfinfo *info);

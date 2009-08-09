@@ -856,8 +856,6 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     if ( gh.ymax>sf->ascent ) gh.ymax = sf->ascent;
     dumpghstruct(gi,&gh);
 
-    stemcvt = TTF_getcvtval(gi->sf,stem);
-
     bp[0].x = stem;		bp[0].y = 0;
     bp[1].x = stem;		bp[1].y = gh.ymax;
     bp[2].x = gh.xmax;		bp[2].y = gh.ymax;
@@ -868,67 +866,74 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     bp[6].x = gh.xmax-stem;	bp[6].y = gh.ymax-stem;
     bp[7].x = 2*stem;		bp[7].y = gh.ymax-stem;
 
-    instrs[0] = 0xb1;			/* Pushb, 2byte */
-    instrs[1] = 1;			/* Point 1 */
-    instrs[2] = 0;			/* Point 0 */
-    instrs[3] = 0x2f;			/* MDAP, rounded (pt0) */
-    instrs[4] = 0x3c;			/* ALIGNRP, (pt1 same pos as pt0)*/
-    instrs[5] = 0xb2;			/* Pushb, 3byte */
-    instrs[6] = 7;			/* Point 7 */
-    instrs[7] = 4;			/* Point 4 */
-    instrs[8] = stemcvt;		/* CVT entry for our stem width */
-    instrs[9] = 0xe0+0x0d;		/* MIRP, don't set rp0, minimum, rounded, black */
-    instrs[10] = 0x32;			/* SHP[rp2] (pt7 same pos as pt4) */
-    instrs[11] = 0xb1;			/* Pushb, 2byte */
-    instrs[12] = 6;			/* Point 6 */
-    instrs[13] = 5;			/* Point 5 */
-    instrs[14] = 0xc0+0x1c;		/* MDRP, set rp0, minimum, rounded, grey */
-    instrs[15] = 0x3c;			/* ALIGNRP, (pt6 same pos as pt5)*/
-    instrs[16] = 0xb2;			/* Pushb, 3byte */
-    instrs[17] = 3;			/* Point 3 */
-    instrs[18] = 2;			/* Point 2 */
-    instrs[19] = stemcvt;		/* CVT entry for our stem width */
-    instrs[20] = 0xe0+0x0d;		/* MIRP, dont set rp0, minimum, rounded, black */
-    instrs[21] = 0x32;			/* SHP[rp2] (pt3 same pos as pt2) */
+    if ( !gi->ttc_composite_font ) {
+	stemcvt = TTF_getcvtval(gi->sf,stem);
 
-    instrs[22] = 0x00;			/* SVTCA, y axis */
+	instrs[0] = 0xb1;		/* Pushb, 2byte */
+	instrs[1] = 1;			/* Point 1 */
+	instrs[2] = 0;			/* Point 0 */
+	instrs[3] = 0x2f;		/* MDAP, rounded (pt0) */
+	instrs[4] = 0x3c;		/* ALIGNRP, (pt1 same pos as pt0)*/
+	instrs[5] = 0xb2;		/* Pushb, 3byte */
+	instrs[6] = 7;			/* Point 7 */
+	instrs[7] = 4;			/* Point 4 */
+	instrs[8] = stemcvt;		/* CVT entry for our stem width */
+	instrs[9] = 0xe0+0x0d;		/* MIRP, don't set rp0, minimum, rounded, black */
+	instrs[10] = 0x32;		/* SHP[rp2] (pt7 same pos as pt4) */
+	instrs[11] = 0xb1;		/* Pushb, 2byte */
+	instrs[12] = 6;			/* Point 6 */
+	instrs[13] = 5;			/* Point 5 */
+	instrs[14] = 0xc0+0x1c;		/* MDRP, set rp0, minimum, rounded, grey */
+	instrs[15] = 0x3c;		/* ALIGNRP, (pt6 same pos as pt5)*/
+	instrs[16] = 0xb2;		/* Pushb, 3byte */
+	instrs[17] = 3;			/* Point 3 */
+	instrs[18] = 2;			/* Point 2 */
+	instrs[19] = stemcvt;		/* CVT entry for our stem width */
+	instrs[20] = 0xe0+0x0d;		/* MIRP, dont set rp0, minimum, rounded, black */
+	instrs[21] = 0x32;		/* SHP[rp2] (pt3 same pos as pt2) */
 
-    instrs[23] = 0xb1;			/* Pushb, 2byte */
-    instrs[24] = 3;			/* Point 3 */
-    instrs[25] = 0;			/* Point 0 */
-    instrs[26] = 0x2f;			/* MDAP, rounded */
-    instrs[27] = 0x3c;			/* ALIGNRP, (pt3 same height as pt0)*/
-    instrs[28] = 0xb2;			/* Pushb, 3byte */
-    instrs[29] = 5;			/* Point 5 */
-    instrs[30] = 4;			/* Point 4 */
-    instrs[31] = stemcvt;		/* CVT entry for our stem width */
-    instrs[32] = 0xe0+0x0d;		/* MIRP, don't set rp0, minimum, rounded, black */
-    instrs[33] = 0x32;			/* SHP[rp2] (pt5 same height as pt4) */
-    instrs[34] = 0xb2;			/* Pushb, 3byte */
-    instrs[35] = 7;			/* Point 7 */
-    instrs[36] = 6;			/* Point 6 */
-    instrs[37] = TTF_getcvtval(gi->sf,bp[6].y);	/* CVT entry for top height */
-    instrs[38] = 0xe0+0x1c;		/* MIRP, set rp0, minimum, rounded, grey */
-    instrs[39] = 0x3c;			/* ALIGNRP (pt7 same height as pt6) */
-    instrs[40] = 0xb2;			/* Pushb, 3byte */
-    instrs[41] = 1;			/* Point 1 */
-    instrs[42] = 2;			/* Point 2 */
-    instrs[43] = stemcvt;		/* CVT entry for our stem width */
-    instrs[44] = 0xe0+0x0d;		/* MIRP, dont set rp0, minimum, rounded, black */
-    instrs[45] = 0x32;			/* SHP[rp2] (pt1 same height as pt2) */
+	instrs[22] = 0x00;		/* SVTCA, y axis */
+
+	instrs[23] = 0xb1;		/* Pushb, 2byte */
+	instrs[24] = 3;			/* Point 3 */
+	instrs[25] = 0;			/* Point 0 */
+	instrs[26] = 0x2f;		/* MDAP, rounded */
+	instrs[27] = 0x3c;		/* ALIGNRP, (pt3 same height as pt0)*/
+	instrs[28] = 0xb2;		/* Pushb, 3byte */
+	instrs[29] = 5;			/* Point 5 */
+	instrs[30] = 4;			/* Point 4 */
+	instrs[31] = stemcvt;		/* CVT entry for our stem width */
+	instrs[32] = 0xe0+0x0d;		/* MIRP, don't set rp0, minimum, rounded, black */
+	instrs[33] = 0x32;		/* SHP[rp2] (pt5 same height as pt4) */
+	instrs[34] = 0xb2;		/* Pushb, 3byte */
+	instrs[35] = 7;			/* Point 7 */
+	instrs[36] = 6;			/* Point 6 */
+	instrs[37] = TTF_getcvtval(gi->sf,bp[6].y);	/* CVT entry for top height */
+	instrs[38] = 0xe0+0x1c;		/* MIRP, set rp0, minimum, rounded, grey */
+	instrs[39] = 0x3c;		/* ALIGNRP (pt7 same height as pt6) */
+	instrs[40] = 0xb2;		/* Pushb, 3byte */
+	instrs[41] = 1;			/* Point 1 */
+	instrs[42] = 2;			/* Point 2 */
+	instrs[43] = stemcvt;		/* CVT entry for our stem width */
+	instrs[44] = 0xe0+0x0d;		/* MIRP, dont set rp0, minimum, rounded, black */
+	instrs[45] = 0x32;		/* SHP[rp2] (pt1 same height as pt2) */
 
 	/* We've touched all points in all dimensions */
 	/* Don't need any IUP */
+    }
 
 	/* end contours array */
     putshort(gi->glyphs,4-1);
     putshort(gi->glyphs,8-1);
 	/* instruction length&instructions */
-    dumpinstrs(gi,instrs,46);
+    if ( !gi->ttc_composite_font )
+	dumpinstrs(gi,instrs,46);
+    else
+	dumpinstrs(gi,NULL,0);
 
     dumppointarrays(gi,bp,NULL,8);
 
-    if ( fixedwidth==-1 )
+    if ( fixedwidth<=0 )
 	putshort(gi->hmtx,gh.xmax + 2*stem);
     else
 	putshort(gi->hmtx,fixedwidth);
@@ -940,7 +945,7 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
 }
 
 static void dumpblankglyph(struct glyphinfo *gi,SplineFont *sf,int fixedwidth) {
-    int advance = gi->next_glyph==1?0:fixedwidth==-1?(sf->ascent+sf->descent)/3:
+    int advance = gi->next_glyph==1?0:fixedwidth<=0?(sf->ascent+sf->descent)/3:
 	    fixedwidth;
     /* For reasons quite obscure to me, glyph 1 has an advance width of 0 */
     /* even in a mono-spaced font like CourierNew.ttf */
@@ -1254,8 +1259,6 @@ static void AssignNotdefNull(SplineFont *sf,int *bygid, int iscff) {
     /* The first three glyphs are magic, glyph 0 is .notdef */
     /*  glyph 1 is .null and glyph 2 is nonmarking return */
     /*  We may generate them automagically */
-
-    bygid[0] = bygid[1] = bygid[2] = -1;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	if ( bygid[0]== -1 && strcmp(sf->glyphs[i]->name,".notdef")==0 ) {
 	    sf->glyphs[i]->ttf_glyph = 0;
@@ -1402,13 +1405,13 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	gi->vmtx = tmpfile();
     FigureFullMetricsEnd(sf,gi,true);
 
-    if ( fixed!=-1 ) {
+    if ( fixed>0 ) {
 	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;
     }
     for ( i=0; i<gi->gcnt; ++i ) {
 	if ( i==0 ) {
-	    if ( gi->bygid[0]!=-1 && (fixed==-1 || sf->glyphs[gi->bygid[0]]->width==fixed))
+	    if ( gi->bygid[0]!=-1 && (fixed<=0 || sf->glyphs[gi->bygid[0]]->width==fixed))
 		dumpglyph(sf->glyphs[gi->bygid[0]],gi);
 	    else
 		dumpmissingglyph(sf,gi,fixed);
@@ -2088,7 +2091,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
     dumpsid(cfff,at,sf->familyname,3);
     dumpsid(cfff,at,sf->weight,4);
-    if ( at->gi.fixed_width!=-1 ) dumpintoper(cfff,1,(12<<8)|1);
+    if ( at->gi.fixed_width>0 ) dumpintoper(cfff,1,(12<<8)|1);
     if ( sf->italicangle!=0 ) dumpdbloper(cfff,sf->italicangle,(12<<8)|2);
     if ( sf->upos!=-100 ) dumpdbloper(cfff,sf->upos,(12<<8)|3);
     if ( sf->uwidth!=50 ) dumpdbloper(cfff,sf->uwidth,(12<<8)|4);
@@ -2413,7 +2416,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     if ( dovmetrics )
 	at->gi.vmtx = tmpfile();
     FigureFullMetricsEnd(sf,&at->gi,bitmaps);	/* Bitmap fonts use ttf convention of 3 magic glyphs */
-    if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width==-1 )) {
+    if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width<=0 )) {
 	putshort(at->gi.hmtx,sf->glyphs[at->gi.bygid[0]]->width);
 	SplineCharLayerFindBounds(sf->glyphs[at->gi.bygid[0]],at->gi.layer,&b);
 	putshort(at->gi.hmtx,b.minx);
@@ -2422,7 +2425,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	    putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.miny);
 	}
     } else {
-	putshort(at->gi.hmtx,width==-1?(sf->ascent+sf->descent)/2:width);
+	putshort(at->gi.hmtx,width<=0?(sf->ascent+sf->descent)/2:width);
 	putshort(at->gi.hmtx,0);
 	if ( dovmetrics ) {
 	    putshort(at->gi.vmtx,sf->ascent+sf->descent);
@@ -2431,7 +2434,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     }
     cnt = 1;
     if ( bitmaps ) {
-	if ( width==-1 ) width = (sf->ascent+sf->descent)/3;
+	if ( width<=0 ) width = (sf->ascent+sf->descent)/3;
 	putshort(at->gi.hmtx,width);
 	putshort(at->gi.hmtx,0);
 	if ( dovmetrics ) {
@@ -2725,6 +2728,17 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     int i, lr, rl, indic_rearrange, arabic;
     ASM *sm;
 
+    if ( at->gi.xmin==15000 ) at->gi.xmin = 0;
+    if ( at->gi.ymin==15000 ) at->gi.ymin = 0;
+    if ( bsizes!=NULL && format==ff_none ) {
+	if (  sf->ascent >at->gi.ymax ) at->gi.ymax =  sf->ascent;
+	if ( -sf->descent<at->gi.ymin ) at->gi.ymin = -sf->descent;
+    }
+    head->xmin = at->gi.xmin;
+    head->ymin = at->gi.ymin;
+    head->xmax = at->gi.xmax;
+    head->ymax = at->gi.ymax;
+
     lr = rl = arabic = 0;
     for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
@@ -2792,6 +2806,8 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     head->macstyle = MacStyleCode(sf,NULL);
     head->lowestreadable = 8;
     head->locais32 = 1;
+    if ( at->gi.glyph_len<0x20000 )
+	head->locais32 = 0;
 
     /* I assume we've always got some neutrals (spaces, punctuation) */
     if ( lr && rl )
@@ -2807,6 +2823,7 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     time(&now);		/* seconds since 1970, need to convert to seconds since 1904 */
     cvt_unix_to_1904(now,head->modtime);
     memcpy(head->createtime,head->modtime,sizeof(head->modtime));
+
 }
 
 static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at, SplineFont *sf) {
@@ -2856,7 +2873,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     vhead->descender = xmin-off;
     vhead->linegap = sf->pfminfo.linegap;
 
-    at->isfixed = at->gi.fixed_width!=-1;
+    at->isfixed = at->gi.fixed_width>0;
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
     hhead->minrsb = rbearing;
@@ -5215,62 +5232,7 @@ return( -1 );
 return( 0 );
 }
 
-static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags) {
-    int i, j, aborted, ebdtpos, eblcpos, offset;
-    BDFFont *bdf;
-    struct ttf_table *tab;
-
-   if ( strmatch(at->map->enc->enc_name,"symbol")==0 && format==ff_ttf )
-  	format = ff_ttfsym;
-
-    tab = SFFindTable(sf,CHR('c','v','t',' '));
-    if ( tab!=NULL ) {
-	at->oldcvt = tab;
-	at->oldcvtlen = tab->len;
-    }
-
-    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
-
-    at->gi.xmin = at->gi.ymin = 15000;
-    at->gi.sf = sf;
-    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont && bf!=bf_otb && bf!=bf_sfnt_ms )
-	bsizes = NULL;
-    if ( bsizes!=NULL ) {
-	for ( i=j=0; bsizes[i]!=0; ++i ) {
-	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
-	    if ( bdf!=NULL )
-		bsizes[j++] = bsizes[i];
-	    else
-		ff_post_error(_("Missing bitmap strike"), _("The font database does not contain a bitmap of size %d and depth %d"), bsizes[i]&0xffff, bsizes[i]>>16 );
-	}
-	bsizes[j] = 0;
-	for ( i=0; bsizes[i]!=0; ++i );
-	at->gi.strikecnt = i;
-	if ( i==0 ) bsizes=NULL;
-    }
-
-    if ( sf->subfonts!=NULL ) {
-	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
-    } else if ( format!=ff_none )
-	AssignTTFGlyph(&at->gi,sf,at->map,format==ff_otf);
-    else {
-	if ( bsizes==NULL ) {
-	    ff_post_error(_("No bitmap strikes"), _("No bitmap strikes"));
-	    AbortTTF(at,sf);
-return( false );
-	}
-	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
-    }
-    if ( at->gi.gcnt>=65535 ) {
-	/* You might think we could use GID 65535, but it is used as a "No Glyph" */
-	/*  mark in many places (cmap tables, mac substitutions to delete a glyph */
-	ff_post_error(_("Too many glyphs"), _("The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."),
-		at->gi.gcnt );
-	AbortTTF(at,sf);
-return( false );
-    }
-	
+static void ATmaxpInit(struct alltabs *at,SplineFont *sf, enum fontformat format) {
 
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
@@ -5286,137 +5248,58 @@ return( false );
     else
 	MaxpFromTable(at,sf);
     at->gi.maxp = &at->maxp;
-    if ( format==ff_otf )
-	aborted = !dumptype2glyphs(sf,at);
-    else if ( format==ff_otfcid )
-	aborted = !dumpcidglyphs(sf,at);
-    else if ( format==ff_none && at->applebitmaps ) {
-	aborted = !dumpcffhmtx(at,sf,true);	/* There is no 'hmtx' table for apple bitmap only fonts */
-		/* But we need some of the side effects of this */
-    } else if ( format==ff_none && at->otbbitmaps ) {
-	aborted = !dumpcffhmtx(at,sf,true);
-	dumpnoglyphs(sf,&at->gi);
-    } else if ( format==ff_none && at->msbitmaps ) {
-	aborted = !dumpglyphs(sf,&at->gi);
-    } else {
-#if 0
-	/* I think the footnote I thought relevant actually refered to */
-	/*  something else */
-	struct ttf_table *tab;
-	/* There's a typo in Adobe's docs, and the instructions in these tables*/
-	/*  need to be included in the max glyph instruction length */
-	if ( (tab = SFFindTable(sf,CHR('f','p','g','m'))) != NULL ) {
-	    at->maxp.maxglyphInstr = tab->len;
-	    at->gi.has_instrs = true;
-	}
-	if ( (tab = SFFindTable(sf,CHR('p','r','e','p'))) != NULL ) {
-	    if ( at->maxp.maxglyphInstr < tab->len )
-		at->maxp.maxglyphInstr = tab->len;
-	    at->gi.has_instrs = true;
-	}
-#endif
-	at->gi.has_instrs = (SFFindTable(sf,CHR('f','p','g','m')) != NULL ||
-		SFFindTable(sf,CHR('p','r','e','p')) != NULL);
-	/* if format==ff_none the following will put out lots of space glyphs */
-	aborted = !dumpglyphs(sf,&at->gi);
-    }
-    if ( format!=ff_type42 && format!=ff_type42cid ) {
-	if ( bsizes!=NULL && !aborted )
-	    ttfdumpbitmap(sf,at,bsizes);
-	if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
-	    ttfdumpbitmapscaling(sf,at,bsizes);
-    }
-    if ( !aborted && format>=ff_ttf && format<=ff_ttfdfont )	/* No hdmx table for cff or bitmap only fonts. Apple doesn't even want a hmtx, and otbitmap doesn't expect one */
-	ttfdumphdmx(sf,at,bsizes);
-    if ( aborted ) {
-	AbortTTF(at,sf);
-return( false );
-    }
+}
 
-    if ( at->gi.xmin==15000 ) at->gi.xmin = 0;
-    if ( at->gi.ymin==15000 ) at->gi.ymin = 0;
-    if ( bsizes!=NULL && format==ff_none ) {
-	if (  sf->ascent >at->gi.ymax ) at->gi.ymax =  sf->ascent;
-	if ( -sf->descent<at->gi.ymin ) at->gi.ymin = -sf->descent;
-    }
-    at->head.xmin = at->gi.xmin;
-    at->head.ymin = at->gi.ymin;
-    at->head.xmax = at->gi.xmax;
-    at->head.ymax = at->gi.ymax;
+static void initATTables(struct alltabs *at, SplineFont *sf,
+	enum fontformat format, int flags) {
 
-    sethead(&at->head,sf,at,format,bsizes);
-    sethhead(&at->hhead,&at->vhead,at,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
-    if ( at->gi.glyph_len<0x20000 )
-	at->head.locais32 = 0;
-    if ( format==ff_none && at->otbbitmaps )
-	dummyloca(at);
-    else if ( format!=ff_otf && format!=ff_otfcid && bf!=bf_sfnt_dfont &&
-	    (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
-	redoloca(at);
-    redohead(at);
-    if ( format!=ff_none || !at->applemode )	/* No 'hhea' table for apple bitmap-only fonts */
-	redohhead(at,false);
-    if ( sf->hasvmetrics ) {
-	redohhead(at,true);
+    if ( at->opentypemode ) {
+	SFFindUnusedLookups(sf);
+	otf_dumpgpos(at,sf);
+	otf_dumpgsub(at,sf);
+	otf_dumpgdef(at,sf);
+	otf_dumpjstf(at,sf);
+	otf_dumpbase(at,sf);
+	otf_dump_math(at,sf);	/* Not strictly OpenType yet */
+	if ( at->gi.flags & ttf_flag_dummyDSIG )
+	    otf_dump_dummydsig(at,sf);
     }
-    redomaxp(at,format);
-    ttf_fftm_dump(sf,at);
-
-    if ( format!=ff_type42 && format!=ff_type42cid && !sf->internal_temp ) {
-	if ( at->opentypemode ) {
+    if ( at->dovariations )
+	ttf_dumpvariations(at,sf);
+    if ( at->applemode ) {
+	if ( !at->opentypemode )
 	    SFFindUnusedLookups(sf);
-	    otf_dumpgpos(at,sf);
-	    otf_dumpgsub(at,sf);
-	    otf_dumpgdef(at,sf);
-	    otf_dumpjstf(at,sf);
-	    otf_dumpbase(at,sf);
-	    otf_dump_math(at,sf);	/* Not strictly OpenType yet */
-	    if ( at->gi.flags & ttf_flag_dummyDSIG )
-		otf_dump_dummydsig(at,sf);
-	}
-	if ( at->dovariations )
-	    ttf_dumpvariations(at,sf);
-	if ( at->applemode ) {
-	    if ( !at->opentypemode )
-		SFFindUnusedLookups(sf);
-	    ttf_dumpkerns(at,sf);
-	    aat_dumplcar(at,sf);
-	    aat_dumpmorx(at,sf);		/* Sets the feat table too */
-	    aat_dumpopbd(at,sf);
-	    aat_dumpprop(at,sf);
-	    aat_dumpbsln(at,sf);
-	}
-	if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) )
-	    ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
-    
-	dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
-						/* GPOS 'size' can also create names */
-	redoos2(at);
+	ttf_dumpkerns(at,sf);
+	aat_dumplcar(at,sf);
+	aat_dumpmorx(at,sf);		/* Sets the feat table too */
+	aat_dumpopbd(at,sf);
+	aat_dumpprop(at,sf);
+	aat_dumpbsln(at,sf);
     }
-    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
-	if (( sf->gasp_cnt!=0 || !SFHasInstructions(sf))
-		&& format!=ff_type42 && format!=ff_type42cid )
-	    dumpgasp(at, sf);
-	at->fpgmf = dumpstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen);
-	at->prepf = dumpstoredtable(sf,CHR('p','r','e','p'),&at->preplen);
-	at->cvtf = dumpstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen);
-    }
-    for ( tab=sf->ttf_tab_saved; tab!=NULL; tab=tab->next )
-	tab->temp = dumpsavedtable(tab);
-    if ( format!=ff_type42 && format!=ff_type42cid ) {
-	dumppost(at,sf,format);
-	dumpcmap(at,sf,format);
+    if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) )
+	ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
 
-	pfed_dump(at,sf);
-	tex_dump(at,sf);
-    }
-    if ( sf->subfonts!=NULL ) {
-	free(sf->glyphs); sf->glyphs = NULL;
-	sf->glyphcnt = sf->glyphmax = 0;
-    }
-    free( at->gi.bygid );
-    at->gi.gcnt = 0;
+    dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
+					    /* GPOS 'size' can also create names */
+    redoos2(at);
+}
+
+static struct taboff *findtabindir(struct tabdir *td, uint32 tag ) {
+    int i;
+
+    for ( i=0; i<td->numtab; ++i )
+	if ( td->tabs[i].tag == tag )
+return( &td->tabs[i] );
+
+return( NULL );
+}
+
+static void buildtablestructures(struct alltabs *at, SplineFont *sf,
+	enum fontformat format) {
+    int i;
+    int ebdtpos, eblcpos;
+    struct ttf_table *tab;
 
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.version = CHR('O','T','T','O');
@@ -5749,6 +5632,159 @@ return( false );
     at->tabdir.searchRange = (i<16?8:i<32?16:i<64?32:64)*16;
     at->tabdir.entrySel = (i<16?3:i<32?4:i<64?5:6);
     at->tabdir.rangeShift = at->tabdir.numtab*16-at->tabdir.searchRange;
+}
+
+static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
+	int32 *bsizes, enum bitmapformat bf,int flags) {
+    int i, j, aborted, offset;
+    BDFFont *bdf;
+    struct ttf_table *tab;
+
+   if ( strmatch(at->map->enc->enc_name,"symbol")==0 && format==ff_ttf )
+  	format = ff_ttfsym;
+
+    tab = SFFindTable(sf,CHR('c','v','t',' '));
+    if ( tab!=NULL ) {
+	at->oldcvt = tab;
+	at->oldcvtlen = tab->len;
+    }
+
+    SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
+
+    at->gi.xmin = at->gi.ymin = 15000;
+    at->gi.sf = sf;
+    if ( bf!=bf_ttf && bf!=bf_sfnt_dfont && bf!=bf_otb && bf!=bf_sfnt_ms )
+	bsizes = NULL;
+    if ( bsizes!=NULL ) {
+	for ( i=j=0; bsizes[i]!=0; ++i ) {
+	    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(bsizes[i]&0xffff) || BDFDepth(bdf)!=(bsizes[i]>>16)); bdf=bdf->next );
+	    if ( bdf!=NULL )
+		bsizes[j++] = bsizes[i];
+	    else
+		ff_post_error(_("Missing bitmap strike"), _("The font database does not contain a bitmap of size %d and depth %d"), bsizes[i]&0xffff, bsizes[i]>>16 );
+	}
+	bsizes[j] = 0;
+	for ( i=0; bsizes[i]!=0; ++i );
+	at->gi.strikecnt = i;
+	if ( i==0 ) bsizes=NULL;
+    }
+
+    if ( sf->subfonts!=NULL ) {
+	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
+    } else if ( format!=ff_none )
+	AssignTTFGlyph(&at->gi,sf,at->map,format==ff_otf);
+    else {
+	if ( bsizes==NULL ) {
+	    ff_post_error(_("No bitmap strikes"), _("No bitmap strikes"));
+	    AbortTTF(at,sf);
+return( false );
+	}
+	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
+    }
+    if ( at->gi.gcnt>=65535 ) {
+	/* You might think we could use GID 65535, but it is used as a "No Glyph" */
+	/*  mark in many places (cmap tables, mac substitutions to delete a glyph */
+	ff_post_error(_("Too many glyphs"), _("The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."),
+		at->gi.gcnt );
+	AbortTTF(at,sf);
+return( false );
+    }
+	
+
+    ATmaxpInit(at,sf,format);
+    if ( format==ff_otf )
+	aborted = !dumptype2glyphs(sf,at);
+    else if ( format==ff_otfcid )
+	aborted = !dumpcidglyphs(sf,at);
+    else if ( format==ff_none && at->applebitmaps ) {
+	aborted = !dumpcffhmtx(at,sf,true);	/* There is no 'hmtx' table for apple bitmap only fonts */
+		/* But we need some of the side effects of this */
+    } else if ( format==ff_none && at->otbbitmaps ) {
+	aborted = !dumpcffhmtx(at,sf,true);
+	dumpnoglyphs(sf,&at->gi);
+    } else if ( format==ff_none && at->msbitmaps ) {
+	aborted = !dumpglyphs(sf,&at->gi);
+    } else {
+#if 0
+	/* I think the footnote I thought relevant actually refered to */
+	/*  something else */
+	struct ttf_table *tab;
+	/* There's a typo in Adobe's docs, and the instructions in these tables*/
+	/*  need to be included in the max glyph instruction length */
+	if ( (tab = SFFindTable(sf,CHR('f','p','g','m'))) != NULL ) {
+	    at->maxp.maxglyphInstr = tab->len;
+	    at->gi.has_instrs = true;
+	}
+	if ( (tab = SFFindTable(sf,CHR('p','r','e','p'))) != NULL ) {
+	    if ( at->maxp.maxglyphInstr < tab->len )
+		at->maxp.maxglyphInstr = tab->len;
+	    at->gi.has_instrs = true;
+	}
+#endif
+#if 0		/* Never use this info */
+	at->gi.has_instrs = (SFFindTable(sf,CHR('f','p','g','m')) != NULL ||
+		SFFindTable(sf,CHR('p','r','e','p')) != NULL);
+#endif
+	/* if format==ff_none the following will put out lots of space glyphs */
+	aborted = !dumpglyphs(sf,&at->gi);
+    }
+    if ( format!=ff_type42 && format!=ff_type42cid ) {
+	if ( bsizes!=NULL && !aborted )
+	    ttfdumpbitmap(sf,at,bsizes);
+	if ( bsizes!=NULL && format==ff_none && at->msbitmaps )
+	    ttfdumpbitmapscaling(sf,at,bsizes);
+    }
+    if ( !aborted && format>=ff_ttf && format<=ff_ttfdfont )	/* No hdmx table for cff or bitmap only fonts. Apple doesn't even want a hmtx, and otbitmap doesn't expect one */
+	ttfdumphdmx(sf,at,bsizes);
+    if ( aborted ) {
+	AbortTTF(at,sf);
+return( false );
+    }
+
+    sethead(&at->head,sf,at,format,bsizes);
+    sethhead(&at->hhead,&at->vhead,at,sf);
+    if ( format==ff_none && at->otbbitmaps )
+	dummyloca(at);
+    else if ( format!=ff_otf && format!=ff_otfcid && bf!=bf_sfnt_dfont &&
+	    (format!=ff_none || (bsizes!=NULL && !at->applemode && at->opentypemode)) )
+	redoloca(at);
+    redohead(at);
+    if ( format!=ff_none || !at->applemode )	/* No 'hhea' table for apple bitmap-only fonts */
+	redohhead(at,false);
+    if ( sf->hasvmetrics ) {
+	redohhead(at,true);
+    }
+    ttf_fftm_dump(sf,at);
+
+    if ( format!=ff_type42 && format!=ff_type42cid && !sf->internal_temp ) {
+	initATTables(at, sf, format, flags);
+    }
+    redomaxp(at,format);
+    if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
+	if (( sf->gasp_cnt!=0 || !SFHasInstructions(sf))
+		&& format!=ff_type42 && format!=ff_type42cid )
+	    dumpgasp(at, sf);
+	at->fpgmf = dumpstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen);
+	at->prepf = dumpstoredtable(sf,CHR('p','r','e','p'),&at->preplen);
+	at->cvtf = dumpstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen);
+    }
+    for ( tab=sf->ttf_tab_saved; tab!=NULL; tab=tab->next )
+	tab->temp = dumpsavedtable(tab);
+    if ( format!=ff_type42 && format!=ff_type42cid ) {
+	dumppost(at,sf,format);
+	dumpcmap(at,sf,format);
+
+	pfed_dump(at,sf);
+	tex_dump(at,sf);
+    }
+    if ( sf->subfonts!=NULL ) {
+	free(sf->glyphs); sf->glyphs = NULL;
+	sf->glyphcnt = sf->glyphmax = 0;
+    }
+    free( at->gi.bygid );
+    at->gi.gcnt = 0;
+
+    buildtablestructures(at,sf,format);
     for ( i=0; i<at->tabdir.numtab; ++i ) {
 	struct taboff *tab = &at->tabdir.tabs[i];
 	at->tabdir.ordered[i] = tab;
@@ -5985,6 +6021,42 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
 return( !at->error );
 }
 
+static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int layer,
+	enum fontformat format, enum bitmapformat bf,int *bsizes) {
+
+    at->gi.flags = flags;
+    at->gi.layer = layer;
+    at->gi.is_ttf = format == ff_ttf || format==ff_ttfsym || format==ff_ttfmacbin || format==ff_ttfdfont;
+    at->gi.sf = sf;
+    at->applemode = (flags&ttf_flag_applemode)?1:0;
+    at->opentypemode = (flags&ttf_flag_otmode)?1:0;
+    at->msbitmaps = bsizes!=NULL && at->opentypemode;
+    at->applebitmaps = bsizes!=NULL && at->applemode;
+    at->gi.onlybitmaps = format==ff_none;
+
+    if ( bf==bf_sfnt_dfont ) { at->msbitmaps = false; at->applebitmaps=true; at->opentypemode=false; at->gi.onlybitmaps=true;}
+    if ( bf==bf_sfnt_ms ) { at->msbitmaps = true; at->applebitmaps=false; at->applemode=false; at->gi.onlybitmaps=true;}
+    if ( bf==bf_otb ) { at->otbbitmaps = true; at->applebitmaps=at->msbitmaps=false; at->applemode=false; at->gi.onlybitmaps=true;}
+
+    if ( bsizes!=NULL && !at->applebitmaps && !at->otbbitmaps && !at->msbitmaps )
+	at->msbitmaps = true;		/* They asked for bitmaps, but no bitmap type selected */
+    at->gi.bsizes = bsizes;
+    at->gi.fixed_width = CIDOneWidth(sf);
+    at->isotf = format==ff_otf || format==ff_otfcid;
+    at->format = format;
+    at->next_strid = 256;
+    if ( at->applemode && sf->mm!=NULL && sf->mm->apple &&
+	    (format==ff_ttf || format==ff_ttfsym ||  format==ff_ttfmacbin ||
+			format==ff_ttfdfont) &&
+	    MMValid(sf->mm,false)) {
+	at->dovariations = true;
+	at->gi.dovariations = true;
+	sf = sf->mm->normal;
+    }
+    at->sf = sf;
+    at->map = map;
+}
+
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
@@ -6027,36 +6099,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	sf->glyphs[i]->ttf_glyph = -1;
 
     memset(&at,'\0',sizeof(struct alltabs));
-    at.gi.flags = flags;
-    at.gi.layer = layer;
-    at.gi.is_ttf = format == ff_ttf || format==ff_ttfsym || format==ff_ttfmacbin || format==ff_ttfdfont;
-    at.applemode = (flags&ttf_flag_applemode)?1:0;
-    at.opentypemode = (flags&ttf_flag_otmode)?1:0;
-    at.msbitmaps = bsizes!=NULL && at.opentypemode;
-    at.applebitmaps = bsizes!=NULL && at.applemode;
-    at.gi.onlybitmaps = format==ff_none;
-
-    if ( bf==bf_sfnt_dfont ) { at.msbitmaps = false; at.applebitmaps=true; at.opentypemode=false; at.gi.onlybitmaps=true;}
-    if ( bf==bf_sfnt_ms ) { at.msbitmaps = true; at.applebitmaps=false; at.applemode=false; at.gi.onlybitmaps=true;}
-    if ( bf==bf_otb ) { at.otbbitmaps = true; at.applebitmaps=at.msbitmaps=false; at.applemode=false; at.gi.onlybitmaps=true;}
-
-    if ( bsizes!=NULL && !at.applebitmaps && !at.otbbitmaps && !at.msbitmaps )
-	at.msbitmaps = true;		/* They asked for bitmaps, but no bitmap type selected */
-    at.gi.bsizes = bsizes;
-    at.gi.fixed_width = CIDOneWidth(sf);
-    at.isotf = format==ff_otf || format==ff_otfcid;
-    at.format = format;
-    at.next_strid = 256;
-    if ( at.applemode && sf->mm!=NULL && sf->mm->apple &&
-	    (format==ff_ttf || format==ff_ttfsym ||  format==ff_ttfmacbin ||
-			format==ff_ttfdfont) &&
-	    MMValid(sf->mm,false)) {
-	at.dovariations = true;
-	at.gi.dovariations = true;
-	sf = sf->mm->normal;
-    }
-    at.sf = sf;
-    at.map = map;
+    ATinit(&at,sf,map,flags,layer,format,bf,bsizes);
 
     if ( format==ff_cff || format==ff_cffcid ) {
 	dumpcff(&at,sf,format,ttf);
@@ -6103,6 +6146,10 @@ return( 0 );
 return( 0 );
 return( ret );
 }
+
+/* ************************************************************************** */
+/* ****************************** Type42 stuff ****************************** */
+/* ************************************************************************** */
 
 struct hexout {
     FILE *type42;
@@ -6203,20 +6250,9 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	sf->glyphs[i]->ttf_glyph = -1;
 
     memset(&at,'\0',sizeof(struct alltabs));
-    at.gi.flags = flags;
+    ATinit(&at,sf,map,flags,layer,format,bf_none,NULL);
     at.applemode = false;
     at.opentypemode = false;
-    at.msbitmaps = false;
-    at.otbbitmaps = false;
-    at.gi.onlybitmaps = false;
-    at.gi.bsizes = NULL;
-    at.gi.fixed_width = CIDOneWidth(sf);
-    at.gi.layer = layer;
-    at.isotf = false;
-    at.format = format;
-    at.next_strid = 256;
-    at.sf = sf;
-    at.map = map;
 
     if ( initTables(&at,sf,format,NULL,bf_none,flags))
 	dumptype42(type42,&at,format);
@@ -6227,6 +6263,557 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 return( 0 );
 
 return( 1 );
+}
+
+/* ************************************************************************** */
+/* ******************************* TTC stuff ******************************** */
+/* ************************************************************************** */
+
+typedef struct splinecharlist *UHash[65536];
+typedef struct splinecharlist *NHash[257];
+
+static unsigned int hashname(char *name) {
+    unsigned int hash = 0;
+
+    while ( *name ) {
+	unsigned int extra = (hash>>27);
+	hash<<=5;
+	hash += *name&0x1f;
+	hash ^= extra;
+	++name;
+    }
+return( hash % 257 );
+}
+
+static int glyphmatches(SplineChar *sc,SplineChar *sc2,int layer) {
+    RefChar *r, *r2;
+    SplineSet *ss, *ss2;
+    SplinePoint *sp, *sp2;
+
+    if ( sc->width!=sc2->width )
+return( false );
+    if ( sc->ttf_instrs_len != sc2->ttf_instrs_len )
+return( false );
+    if ( sc->ttf_instrs_len!=0 && memcmp(sc->ttf_instrs,sc2->ttf_instrs,sc->ttf_instrs_len)!=0 )
+return( false );
+
+    for ( r=sc->layers[layer].refs, r2=sc2->layers[layer].refs;
+	    r!=NULL && r2!=NULL;
+	    r = r->next, r2 = r2->next ) {
+	if ( r->transform[0] != r2->transform[0] ||
+		r->transform[1] != r2->transform[1] ||
+		r->transform[2] != r2->transform[2] ||
+		r->transform[3] != r2->transform[3] ||
+		r->transform[4] != r2->transform[4] ||
+		r->transform[5] != r2->transform[5] )
+return( false );
+	if ( r->sc->unicodeenc!=r2->sc->unicodeenc )
+return( false );
+	if ( r->sc->unicodeenc==-1 && strcmp(r->sc->name,r2->sc->name)!=0 )
+return( false );
+    }
+    if ( r!=NULL || r2!=NULL )
+return( false );
+
+    for ( ss=sc->layers[layer].splines, ss2=sc2->layers[layer].splines;
+	    ss!=NULL && ss2!=NULL;
+	    ss = ss->next, ss2 = ss2->next ) {
+	for ( sp=ss->first, sp2=ss2->first; sp!=NULL && sp2!=NULL; ) {
+	    if ( sp->me.x != sp2->me.x ||
+		    sp->me.y != sp2->me.y ||
+		    sp->nextcp.x != sp2->nextcp.x ||
+		    sp->nextcp.y != sp2->nextcp.y ||
+		    sp->prevcp.x != sp2->prevcp.x ||
+		    sp->prevcp.y != sp2->prevcp.y )
+return( false );
+	    sp = sp->next->to; sp2 = sp2->next->to;
+	    if ( sp==ss->first ) {
+		if ( sp2==ss2->first )
+	break;
+return( false );
+	    } else if ( sp2==ss2->first )
+return( false );
+	}
+	if (( sp==NULL && sp2!=NULL ) || ( sp!=NULL && sp2==NULL ))
+return( false );
+    }
+    if ( ss==NULL && ss2==NULL )
+return( true );
+
+return( false );
+}
+
+static SplineChar *hashglyphfound(SplineChar *sc,UHash *uhash,NHash *nhash,int layer) {
+    int hash;
+    struct splinecharlist *test;
+    struct altuni *alt;
+
+    /* the unicodeenc might be unset and we might still have altunis if the */
+    /*  glyph is controlled by a variant selector */
+    if ( sc->unicodeenc==-1 && sc->altuni==NULL ) {
+	hash = hashname(sc->name);
+	for ( test=(*nhash)[hash]; test!=NULL; test=test->next )
+	    if ( strcmp(test->sc->name,sc->name)==0 && glyphmatches(sc,test->sc,layer))
+return( test->sc );
+    } else if ( sc->unicodeenc!=-1 ) {
+	hash = sc->unicodeenc&0xffff;
+	for ( test=(*uhash)[hash]; test!=NULL; test=test->next )
+	    if ( glyphmatches(sc,test->sc,layer))
+return( test->sc );
+    }
+    for ( alt=sc->altuni; alt!=NULL; alt=alt->next ) {
+	hash = alt->unienc&0xffff;
+	for ( test=(*uhash)[hash]; test!=NULL; test=test->next )
+	    if ( glyphmatches(sc,test->sc,layer))
+return( test->sc );
+    }
+return( NULL );
+}
+
+static void hashglyphadd(SplineChar *sc,UHash *uhash,NHash *nhash) {
+    int hash;
+    struct splinecharlist *test;
+    struct altuni *alt;
+
+    if ( sc->unicodeenc==-1 && sc->altuni==NULL ) {
+	hash = hashname(sc->name);
+	test = chunkalloc(sizeof(struct splinecharlist));
+	test->sc = sc;
+	test->next = (*nhash)[hash];
+	(*nhash)[hash] = test;
+    } else if ( sc->unicodeenc!=-1 ) {
+	hash = sc->unicodeenc&0xffff;
+	test = chunkalloc(sizeof(struct splinecharlist));
+	test->sc = sc;
+	test->next = (*uhash)[hash];
+	(*uhash)[hash] = test;
+    }
+    for ( alt=sc->altuni; alt!=NULL; alt=alt->next ) {
+	hash = alt->unienc&0xffff;
+	test = chunkalloc(sizeof(struct splinecharlist));
+	test->sc = sc;
+	test->next = (*uhash)[hash];
+	(*uhash)[hash] = test;
+    }
+}
+
+static struct alltabs *ttc_prep(struct sflist *sfs,
+	enum bitmapformat bf,int flags, int layer, int ttcflags,
+	SplineFont *dummysf) {
+    struct alltabs *ret;
+    int fcnt, cnt, gcnt=3;
+    struct sflist *sfitem;
+    int emsize = -1;
+    UHash *uhash;		/* hash glyphs by unicode */
+    NHash *nhash;		/* hash glyphs by name if no unicode */
+    int anyvmetrics = false;
+    int *bygid;
+    SplineFont *sf;
+    SplineChar *sc, *test;
+    int i;
+    enum fontformat format = ff_ttf;
+
+    for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
+	sf = sfitem->sf;
+	/* to share the same 'head' table all must be the same emsize */
+	if ( emsize==-1 )
+	    emsize = sf->ascent + sf->descent;
+	else if ( emsize != sf->ascent + sf->descent )
+return( NULL );
+	if ( sf->hasvmetrics ) anyvmetrics = true;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL )
+	    sc->ttf_glyph = -1;
+	gcnt += sf->glyphcnt;
+    }
+    if ( cnt==0 )
+return( NULL );
+    fcnt = cnt;
+
+    uhash = gcalloc(1,sizeof(UHash));
+    nhash = gcalloc(1,sizeof(NHash));
+
+    *dummysf = *sfs->sf;
+    dummysf->glyphmax = gcnt;
+    dummysf->glyphs = gcalloc(gcnt,sizeof(SplineChar *));
+    dummysf->glyphcnt = 0;
+    dummysf->hasvmetrics = anyvmetrics;
+
+    bygid = galloc((gcnt+3)*sizeof(int));
+    memset(bygid,0xff, (gcnt+3)*sizeof(int));
+    for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
+	AssignNotdefNull(sfitem->sf,bygid,false);
+	if ( bygid[0]!=-1 && dummysf->glyphs[0]==NULL ) {
+	    dummysf->glyphs[0] = sf->glyphs[bygid[0]];
+	    bygid[0]=0;
+	}
+	if ( bygid[1]!=-1 && dummysf->glyphs[1]==NULL ) {
+	    dummysf->glyphs[1] = sf->glyphs[bygid[1]];
+	    bygid[1]=1;
+	}
+	if ( bygid[2]!=-1 && dummysf->glyphs[2]==NULL ) {
+	    dummysf->glyphs[2] = sf->glyphs[bygid[2]];
+	    bygid[2]=2;
+	}
+	if ( bygid[0]!=-1 && bygid[1]!=-1 && bygid[2]!=-1 )
+    break;
+    }
+    dummysf->glyphcnt = 3;
+
+    ret = gcalloc(fcnt+2,sizeof(struct alltabs));
+    ATinit(&ret[fcnt],dummysf,NULL,flags&~ttf_flag_dummyDSIG,
+	    layer,ff_ttf,bf,NULL);
+    ret[fcnt].gi.ttc_composite_font = true;
+    ATmaxpInit(&ret[fcnt],dummysf,format);
+
+    for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
+	sf = sfitem->sf;
+	ATinit(&ret[cnt],sf,sfitem->map,flags&~ttf_flag_dummyDSIG,
+		layer,format,bf,sfitem->sizes);
+	ret[cnt].gi.bygid = galloc((gcnt+3)*sizeof(int));
+	memset(ret[cnt].gi.bygid,-1,(gcnt+3)*sizeof(int));
+	for ( i=0; i<sf->glyphcnt; ++i ) {
+	    if ( SCWorthOutputting(sc = sf->glyphs[i]) && sc->ttf_glyph==-1 ) {
+		if ( strcmp(sc->name,".notdef")==0 )
+		    sc->ttf_glyph = bygid[0];
+		else if ( strcmp(sf->glyphs[i]->name,".null")==0 ||
+			 strcmp(sf->glyphs[i]->name,"uni0000")==0 ||
+			 (i==1 && strcmp(sf->glyphs[1]->name,"glyph1")==0) )
+		    sc->ttf_glyph = bygid[1];
+		else if ( strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
+			 strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
+			 (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0))
+		    sc->ttf_glyph = bygid[2];
+		else {
+		    test = hashglyphfound(sc,uhash,nhash,layer);
+		    if ( test!=NULL )
+			sc->ttf_glyph = test->ttf_glyph;
+		    else {
+			sc->ttf_glyph = dummysf->glyphcnt++;
+			bygid[sc->ttf_glyph] = sc->ttf_glyph;
+			dummysf->glyphs[sc->ttf_glyph] = sc;
+			hashglyphadd(sc,uhash,nhash);
+		    }
+		}
+		if ( sc->ttf_glyph!=-1 ) {
+		    ret[cnt].gi.bygid[sc->ttf_glyph] = i;
+		    if ( sc->ttf_glyph>ret[cnt].gi.gcnt )
+			ret[cnt].gi.gcnt = sc->ttf_glyph;
+		}
+	    }
+	}
+
+	MaxpFromTable(&ret[cnt],sf);
+
+	if ( ret[cnt].maxp.maxZones > ret[fcnt].maxp.maxZones )
+	    ret[fcnt].maxp.maxZones = ret[cnt].maxp.maxZones;
+	if ( ret[cnt].maxp.maxTwilightPts > ret[fcnt].maxp.maxTwilightPts )
+	    ret[fcnt].maxp.maxTwilightPts = ret[cnt].maxp.maxTwilightPts;
+	if ( ret[cnt].maxp.maxStorage > ret[fcnt].maxp.maxStorage )
+	    ret[fcnt].maxp.maxStorage = ret[cnt].maxp.maxStorage;
+	if ( ret[cnt].maxp.maxFDEFs > ret[fcnt].maxp.maxFDEFs )
+	    ret[fcnt].maxp.maxFDEFs = ret[cnt].maxp.maxFDEFs;
+	if ( ret[cnt].maxp.maxIDEFs > ret[fcnt].maxp.maxIDEFs )
+	    ret[fcnt].maxp.maxIDEFs = ret[cnt].maxp.maxIDEFs;
+	if ( ret[cnt].maxp.maxStack > ret[fcnt].maxp.maxStack )
+	    ret[fcnt].maxp.maxStack = ret[cnt].maxp.maxStack;
+    }
+    free(uhash);
+    free(nhash);
+
+    if ( dummysf->glyphcnt>=0xffff ) {
+	free(dummysf->glyphs);
+	free(bygid);
+	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )
+	    free(ret[cnt].gi.bygid);
+	free(ret);
+return( NULL );
+    }
+
+    ret[fcnt].gi.bygid = bygid;
+    ret[fcnt].gi.gcnt = ret[fcnt].maxp.numGlyphs = dummysf->glyphcnt;
+    if ( !dumpglyphs(dummysf,&ret[cnt].gi) ) {
+	free(dummysf->glyphs);
+	free(bygid);
+	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )
+	    free(ret[cnt].gi.bygid);
+	free(ret);
+return( NULL );
+    }
+    sethhead(&ret[fcnt].hhead,&ret[fcnt].vhead,&ret[fcnt],dummysf);
+    for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )
+	ret[cnt].maxp = ret[fcnt].maxp;
+
+    redoloca(&ret[fcnt]);
+    redohhead(&ret[fcnt],false);
+    if ( dummysf->hasvmetrics )
+	redohhead(&ret[fcnt],true);
+    ttf_fftm_dump(dummysf,&ret[fcnt]);
+    sethead(&ret[fcnt].head,dummysf,&ret[fcnt],format,NULL);	/* Just to get a timestamp for all other heads */
+
+    free(dummysf->glyphs);
+    free(bygid);
+
+return( ret );
+}
+
+static FILE *checkdupstoredtable(SplineFont *sf,uint32 tag,int *len,
+	struct alltabs *all, int me) {
+    int i;
+    struct ttf_table *tab = SFFindTable(sf,tag), *test;
+
+    if ( tab==NULL ) {
+	*len = 0;
+return( NULL );
+    }
+    for ( i=0; i<me; ++i ) {
+	test = SFFindTable(all[i].sf,tag);
+	if ( test!=NULL && test->len==tab->len &&
+		memcmp(test->data,tab->data,tab->len)==0 ) {
+	    *len = i;
+return( (FILE *) (intpt) -1 );
+	}
+    }
+return( dumpstoredtable(sf,tag,len));
+}
+
+static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
+	enum fontformat format, int flags ) {
+    struct alltabs *at = &all[me];
+    struct alltabs *main = &all[mainpos];
+    SplineFont *sf = at->sf;
+    struct ttf_table *tab;
+
+    at->gi.xmin = main->gi.xmin; at->gi.xmax = main->gi.xmax;
+    at->gi.ymin = main->gi.ymin; at->gi.ymax = main->gi.ymax;
+    sethead(&at->head,sf,at,format,NULL);
+    memcpy(at->head.modtime,main->head.modtime,sizeof(at->head.modtime));
+    memcpy(at->head.createtime,at->head.modtime,sizeof(at->head.modtime));
+    initATTables(at, sf, format, flags);	/* also name and OS/2 */
+
+    if ( sf->gasp_cnt!=0 || !SFHasInstructions(sf) )
+	dumpgasp(at, sf);
+    at->fpgmf = checkdupstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen, all, me);
+    at->prepf = checkdupstoredtable(sf,CHR('p','r','e','p'),&at->preplen, all, me);
+    at->cvtf = checkdupstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen, all, me);
+
+    for ( tab=sf->ttf_tab_saved; tab!=NULL; tab=tab->next )
+	tab->temp = dumpsavedtable(tab);
+    dumppost(at,sf,format);
+    dumpcmap(at,sf,format);
+    redohead(at);
+
+    pfed_dump(at,sf);
+    tex_dump(at,sf);
+
+    /* These tables are always to be shared and are found in the extra structure */
+    /*  called main */
+    at->loca = (void *) (intpt) -1; at->localen = mainpos;
+    at->gi.glyphs = (void *) (intpt) -1; at->gi.glyph_len = mainpos;
+    at->fftmf = (void *) (intpt) -1; at->fftmlen = mainpos;
+    at->hheadf = (void *) (intpt) -1; at->hheadlen = mainpos;
+    at->gi.hmtx = (void *) (intpt) -1; at->gi.hmtxlen = mainpos;
+    at->maxpf = (void *) (intpt) -1; at->maxplen = mainpos;
+    if ( all[mainpos].vheadf!=NULL ) {
+	at->vheadf = (void *) (intpt) -1; at->vheadlen = mainpos;
+	at->gi.vmtx = (void *) (intpt) -1; at->gi.vmtxlen = mainpos;
+    }
+
+    free(at->gi.bygid);
+}
+
+static int tablefilematch(struct taboff *tab,FILE *ttc,struct alltabs *all,int pos) {
+    int i;
+    struct taboff *test;
+    int ch1, ch2, len;
+
+    /* See if this table (which lives in its own file) matches any tables */
+    /*  with the same tag in an earlier font */
+
+    for ( i=0; i<pos; ++i ) {
+	test = findtabindir(&all[i].tabdir,tab->tag);
+	if ( test==NULL || test->data==(void *) (intpt) -1 ||
+		test->length!=tab->length )
+    continue;
+	rewind(tab->data);
+	fseek(ttc,test->offset,SEEK_SET);
+	for ( len=0; len<tab->length && (ch1=getc(tab->data))!=EOF && (ch2=getc(ttc))!=EOF; ++len ) {
+	    if ( ch1!=ch2 )
+	break;
+	}
+	if ( len==tab->length ) {
+	    rewind(tab->data);
+	    fseek(ttc,0,SEEK_END);
+return( i );
+	}
+    }
+    rewind(tab->data);
+    fseek(ttc,0,SEEK_END);
+return( -1 );
+}
+
+static void ttc_dump(FILE *ttc,struct alltabs *all,
+	int flags, enum ttc_flags ttc_flags ) {
+    int i,j,cnt,tot,ch,dup;
+    int offset, startoffset;
+    struct taboff *tab;
+    enum fontformat format = ff_ttf;
+
+    for ( cnt=0; all[cnt].sf!=NULL; ++cnt );
+    --cnt;			/* Last one is dummysf */
+
+    putlong(ttc,CHR('t','t','c','f'));
+    if ( flags&ttf_flag_dummyDSIG ) {
+	putlong(ttc,0x00020000);
+	startoffset = 4*(3+cnt+4);
+    } else {
+	putlong(ttc,0x00010000);
+	startoffset = 4*(3+cnt);
+    }
+    putlong(ttc,cnt);
+    offset = startoffset;
+    for ( i=0; i<cnt; ++i ) {
+	putlong(ttc,offset);			/* Pointer to font header */
+	offset += (8+16*MAX_TAB);		/* Explained below */
+    }
+    if ( flags&ttf_flag_dummyDSIG ) {
+	putlong(ttc,CHR('D','S','I','G'));
+	putlong(ttc,8);				/* Length of dummy DSIG table */
+	putlong(ttc,0x00000001);		/* Standard DSIG version */
+	putlong(ttc,0);				/* No Signatures, no flags */
+    }
+
+    /* Now a font header contains 8 bytes of header and 16 bytes/table */
+    /* Reserve space for cnt fonts. Don't know how many tables they'll */
+    /*  have, so reserve MAX_TAB */
+    tot = cnt*(8+16*MAX_TAB);
+    for ( i=0; i<tot; ++i )
+	putc('\0', ttc);
+
+    buildtablestructures(&all[cnt],all[cnt].sf,ff_ttf);
+    /* Output some of the smaller tables now, near the head of the file */
+    /* I have my doubts about this being a significant savings... but */
+    /* it doesn't hurt */
+    tab = findtabindir(&all[cnt].tabdir,CHR('h','h','e','a'));
+    tab->offset = ftell(ttc);
+    tab->checksum = filecheck(tab->data);
+    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	all[cnt].error = true;
+    tab = findtabindir(&all[cnt].tabdir,CHR('v','h','e','a'));
+    if ( tab!=NULL ) {
+	tab->offset = ftell(ttc);
+	tab->checksum = filecheck(tab->data);
+	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	    all[cnt].error = true;
+    }
+    tab = findtabindir(&all[cnt].tabdir,CHR('m','a','x','p'));
+    tab->offset = ftell(ttc);
+    for ( i=0; i<64; ++i )		/* maxp table is 64 bytes, fill in later */
+	putc('\0', ttc);
+    tab = findtabindir(&all[cnt].tabdir,CHR('F','F','T','M'));
+    tab->offset = ftell(ttc);
+    tab->checksum = filecheck(tab->data);
+    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	all[cnt].error = true;
+
+    for ( i=0; i<cnt; ++i ) {
+	/* Now generate all tables unique to this font */
+	ttc_perfonttables(all, i, cnt, format, all[i].gi.flags );
+	buildtablestructures(&all[i],all[i].sf,ff_ttf);
+	/* Check for any tables which match those of a previous font */
+	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
+	    if ( all[i].tabdir.tabs[j].data!=(void *) (intpt) -1 &&
+		    (dup = tablefilematch(&all[i].tabdir.tabs[j],ttc,all,i))!=-1 ) {
+		fclose(all[i].tabdir.tabs[j].data);
+		all[i].tabdir.tabs[j].data = (void *) (intpt) -1;
+		all[i].tabdir.tabs[j].length = dup;
+	    }
+	}
+	
+	/* And now dump those tables into the file. I don't see how I could */
+	/*  order them meaningfully */
+	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
+	    if ( all[i].tabdir.tabs[j].data!=(void *) (intpt) -1 ) {
+		all[i].tabdir.tabs[j].offset = ftell(ttc);
+		all[i].tabdir.tabs[j].checksum = filecheck(all[i].tabdir.tabs[j].data);
+		if ( !ttfcopyfile(ttc,all[i].tabdir.tabs[j].data, all[i].tabdir.tabs[j].offset,Tag2String(all[i].tabdir.tabs[j].tag)))
+		    all[cnt].error = true;
+	    }
+	}
+    }
+
+    /* Now dump the big shared tables */
+    tab = findtabindir(&all[cnt].tabdir,CHR('h','m','t','x'));
+    tab->offset = ftell(ttc);
+    tab->checksum = filecheck(tab->data);
+    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	all[cnt].error = true;
+    tab = findtabindir(&all[cnt].tabdir,CHR('v','m','t','x'));
+    if ( tab!=NULL ) {
+	tab->offset = ftell(ttc);
+	tab->checksum = filecheck(tab->data);
+	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	    all[cnt].error = true;
+    }
+    tab = findtabindir(&all[cnt].tabdir,CHR('l','o','c','a'));
+    tab->offset = ftell(ttc);
+    tab->checksum = filecheck(tab->data);
+    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	all[cnt].error = true;
+    tab = findtabindir(&all[cnt].tabdir,CHR('g','l','y','f'));
+    tab->offset = ftell(ttc);
+    tab->checksum = filecheck(tab->data);
+    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	all[cnt].error = true;
+
+    /* Do maxp last, in case generating other tables changed it */
+    redomaxp(&all[cnt],format);
+    tab = findtabindir(&all[cnt].tabdir,CHR('m','a','x','p'));
+    fseek(ttc,tab->offset,SEEK_SET);
+    tab->checksum = filecheck(all[cnt].maxpf);
+    tab->length = all[cnt].maxplen;
+    rewind(all[cnt].maxpf);
+    while ( (ch=getc(all[cnt].maxpf))!=EOF )
+	putc(ch,ttc);
+
+    /* Now output the font headers */
+    for ( offset=startoffset, i=0; i<cnt; ++i, offset += (8+16*MAX_TAB)) {
+	struct alltabs *at = &all[i];
+	/* Find the location of any shared tables */
+	for ( j=0; j<at->tabdir.numtab; ++j ) {
+	    struct taboff *curtab = &at->tabdir.tabs[j];
+	    if ( curtab->data == (void *) (intpt) -1 ) {
+		tab = findtabindir(&all[curtab->length].tabdir,curtab->tag);
+		if ( tab==NULL ) {
+		    IError("Failed to find tab");
+		    curtab->length = 0;
+		    curtab->offset = 0;
+		    curtab->checksum = 0;
+		} else {
+		    curtab->offset = tab->offset;
+		    curtab->length = tab->length;
+		    curtab->checksum = tab->checksum;
+		}
+	    }
+	}
+	fseek(ttc,offset,SEEK_SET);
+
+	/* Put in alphabetic order */
+	for ( j=0; j<at->tabdir.numtab; ++j )
+	    at->tabdir.alpha[j] = &at->tabdir.tabs[j];
+	qsort(at->tabdir.alpha,at->tabdir.numtab,sizeof(struct taboff *),tagcomp);
+
+	putlong(ttc,at->tabdir.version);
+	putshort(ttc,at->tabdir.numtab);
+	putshort(ttc,at->tabdir.searchRange);
+	putshort(ttc,at->tabdir.entrySel);
+	putshort(ttc,at->tabdir.rangeShift);
+	for ( j=0; j<at->tabdir.numtab; ++j ) {
+	    putlong(ttc,at->tabdir.alpha[j]->tag);
+	    putlong(ttc,at->tabdir.alpha[j]->checksum);
+	    putlong(ttc,at->tabdir.alpha[j]->offset);
+	    putlong(ttc,at->tabdir.alpha[j]->length);
+	}
+    }
 }
 
 static void CopySFNTAndFixup(FILE *ttc,FILE *ttf) {
@@ -6272,11 +6859,14 @@ static void CopySFNTAndFixup(FILE *ttc,FILE *ttf) {
 }
 
 int WriteTTC(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags, int layer, int ttcflags) {
+	enum bitmapformat bf,int flags, int layer, enum ttc_flags ttcflags) {
     struct sflist *sfitem, *sfi2;
-    int ret=0;
+    int ok=1;
     FILE *ttc;
     int cnt, offset;
+    int dobruteforce;
+    struct alltabs *ret;
+    SplineFont dummysf;
 
     if ( strstr(filename,"://")!=NULL ) {
 	if (( ttc = tmpfile())==NULL )
@@ -6286,57 +6876,69 @@ return( 0 );
 return( 0 );
     }
 
-    /* Create a trivial ttc where each font is its own entity and there */
-    /*  are no common tables */
-    /* Generate all the fonts (don't generate DSIGs, there's one DSIG for */
-    /*  the ttc as a whole) */
-    for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
-	sfitem->tempttf = tmpfile();
-	if ( sfitem->tempttf==NULL )
-	    ret=0;
+    dobruteforce = true;
+    if ( (ttcflags & ttc_flag_trymerge) && bf==bf_none ) {
+	dobruteforce = false;
+	ret = ttc_prep(sfs,bf,flags,layer,ttcflags,&dummysf);
+	if ( ret==NULL )
+	    dobruteforce = true;
 	else
-	    ret = _WriteTTFFont(sfitem->tempttf,sfitem->sf,ff_ttf,sfitem->sizes,
-		    bf,flags&~ttf_flag_dummyDSIG,sfitem->map,layer);
-	if ( !ret ) {
-	    for ( sfi2=sfs; sfi2!=NULL; sfi2 = sfi2->next )
-		if ( sfi2->tempttf!=NULL )
-		    fclose(sfi2->tempttf );
-	    fclose(ttc);
+	    ttc_dump(ttc,ret,flags,ttcflags);
+	free(ret);
+    }
+    if ( dobruteforce ) {
+	/* Create a trivial ttc where each font is its own entity and there */
+	/*  are no common tables */
+	/* Generate all the fonts (don't generate DSIGs, there's one DSIG for */
+	/*  the ttc as a whole) */
+	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
+	    sfitem->tempttf = tmpfile();
+	    if ( sfitem->tempttf==NULL )
+		ok=0;
+	    else
+		ok = _WriteTTFFont(sfitem->tempttf,sfitem->sf,ff_ttf,sfitem->sizes,
+			bf,flags&~ttf_flag_dummyDSIG,sfitem->map,layer);
+	    if ( !ok ) {
+		for ( sfi2=sfs; sfi2!=NULL; sfi2 = sfi2->next )
+		    if ( sfi2->tempttf!=NULL )
+			fclose(sfi2->tempttf );
+		fclose(ttc);
 return( true );
+	    }
+	    fseek(sfitem->tempttf,0,SEEK_END);
+	    sfitem->len = ftell(sfitem->tempttf);
 	}
-	fseek(sfitem->tempttf,0,SEEK_END);
-	sfitem->len = ftell(sfitem->tempttf);
-    }
 
-    putlong(ttc,CHR('t','t','c','f'));
-    if ( flags&ttf_flag_dummyDSIG ) {
-	putlong(ttc,0x00020000);
-	offset = 4*(3+cnt+4);
-    } else {
-	putlong(ttc,0x00010000);
-	offset = 4*(3+cnt);
-    }
-    putlong(ttc,cnt);
-    for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
-	putlong(ttc,offset);
-	offset += ((sfitem->len+3)>>2)<<2;		/* Align on 4 byte boundary */
-    }
-    if ( flags&ttf_flag_dummyDSIG ) {
-	putlong(ttc,CHR('D','S','I','G'));
-	putlong(ttc,8);				/* Length of dummy DSIG table */
-	putlong(ttc,0x00000001);		/* Standard DSIG version */
-	putlong(ttc,0);				/* No Signatures, no flags */
-    }
-    for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next )
-	CopySFNTAndFixup(ttc,sfitem->tempttf);
-    if ( ftell(ttc)!=offset )
-	IError("Miscalculated offsets in ttc");
+	putlong(ttc,CHR('t','t','c','f'));
+	if ( flags&ttf_flag_dummyDSIG ) {
+	    putlong(ttc,0x00020000);
+	    offset = 4*(3+cnt+4);
+	} else {
+	    putlong(ttc,0x00010000);
+	    offset = 4*(3+cnt);
+	}
+	putlong(ttc,cnt);
+	for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
+	    putlong(ttc,offset);
+	    offset += ((sfitem->len+3)>>2)<<2;		/* Align on 4 byte boundary */
+	}
+	if ( flags&ttf_flag_dummyDSIG ) {
+	    putlong(ttc,CHR('D','S','I','G'));
+	    putlong(ttc,8);			/* Length of dummy DSIG table */
+	    putlong(ttc,0x00000001);		/* Standard DSIG version */
+	    putlong(ttc,0);			/* No Signatures, no flags */
+	}
+	for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next )
+	    CopySFNTAndFixup(ttc,sfitem->tempttf);
+	if ( ftell(ttc)!=offset )
+	    IError("Miscalculated offsets in ttc");
+    } else
 
-    if ( strstr(filename,"://")!=NULL && ret )
-	ret = URLFromFile(filename,ttc);
+    if ( strstr(filename,"://")!=NULL && ok )
+	ok = URLFromFile(filename,ttc);
     if ( ferror(ttc))
-	ret = false;
+	ok = false;
     if ( fclose(ttc)==-1 )
-	ret = false;
-return( ret );
+	ok = false;
+return( ok );
 }

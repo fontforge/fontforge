@@ -1910,6 +1910,7 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_symbol=0x4000,
 		    ttf_flag_dummyDSIG=0x8000
 		};
+enum ttc_flags { ttc_flag_trymerge=0x1 };
 enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4,
 	of_fontlint=8, of_hidewindow=0x10 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
@@ -2018,7 +2019,7 @@ extern int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *
 extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
 	enum bitmapformat bf,int flags,int layer);
 extern int WriteTTC(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags,int layer,int ttcflags);
+	enum bitmapformat bf,int flags,int layer,enum ttc_flags ttcflags);
 extern long mactime(void);
 extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern int _WriteSVGFont(FILE *file,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);

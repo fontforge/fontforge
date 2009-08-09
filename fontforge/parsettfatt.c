@@ -3456,6 +3456,8 @@ static void TTF_SetMortSubs(struct ttfinfo *info, int gnum, int gsubs) {
 return;
 
     if ( gnum<0 || gnum>=info->glyph_cnt ) {
+	if ( info->justinuse != git_normal )
+return;
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
 	    LogError( _("Glyph out of bounds in 'mort'/'morx' table %d\n"), gnum );
 	    info->bad_gx = true;
@@ -3466,14 +3468,21 @@ return;
 	sc = info->chars[gnum];
     ssc = NULL;
     if ( gsubs<0 || (gsubs>=info->glyph_cnt && gsubs!=0xffff)) {
+	if ( info->justinuse != git_normal )
+return;
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
 	    LogError( _("Substitute glyph out of bounds in 'mort'/'morx' table %d\n"), gsubs );
 	    info->bad_gx = true;
 	    info->warned_morx_out_of_bounds_glyph = true;
 	}
 	ssc = CreateBadGid(info,gsubs);
-    } else if ( gsubs!=0xffff )
+    } else if ( gsubs!=0xffff ) {
+	if ( info->justinuse == git_justinuse ) {
+	    info->inuse[gsubs] = true;
+return;
+	}
 	ssc=info->chars[gsubs];
+    }
     if ( sc==NULL || (gsubs!=0xffff && ssc==NULL) )
 return;
 
@@ -3589,7 +3598,10 @@ return;
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,lig_offset);
-	    if ( lig_glyph>=sm->info->glyph_cnt ) {
+	    if ( lig_glyph>=sm->info->glyph_cnt ||
+		    (info->justinuse != git_justinuse && sm->info->chars[lig_glyph]==NULL )) {
+		if ( info->justinuse != git_normal )
+return;
 		LogError( _("Attempt to make a ligature for glyph %d out of "),
 			lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
@@ -3597,22 +3609,24 @@ return;
 		LogError("\n");
 		info->bad_gx = true;
 	    } else {
-		char *comp;
-		for ( len=0, j=lcp; j<sm->lcp; ++j )
-		    if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
-			    sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL )
-			len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
-		comp = galloc(len+1);
-		*comp = '\0';
-		for ( j=lcp; j<sm->lcp; ++j ) {
-		    if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
-			    sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL ) {
-			if ( *comp!='\0' )
-			    strcat(comp," ");
-			strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		if ( info->justinuse == git_justinuse )
+		    info->inuse[lig_glyph] = true;
+		else {
+		    char *comp;
+		    for ( len=0, j=lcp; j<sm->lcp; ++j )
+			if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
+				sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL )
+			    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		    comp = galloc(len+1);
+		    *comp = '\0';
+		    for ( j=lcp; j<sm->lcp; ++j ) {
+			if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
+				sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL ) {
+			    if ( *comp!='\0' )
+				strcat(comp," ");
+			    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+			}
 		    }
-		}
-		if ( lig_glyph<sm->info->glyph_cnt && sm->info->chars[lig_glyph]!=NULL ) {
 		    for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature && pst->subtable==sm->info->mort_subs_lookup->subtables &&
 				strcmp(comp,pst->u.lig.components)==0 )
@@ -3634,9 +3648,6 @@ return;
 			sm->info->chars[lig_glyph]->possub = pst;
 		    } else
 			free(comp);
-		} else {
-		    LogError( _("Bad font: Ligature glyph %d is missing\n"), lig_glyph );
-		    info->bad_gx = true;
 		}
 	    }
 	} else
@@ -3710,7 +3721,10 @@ return;
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,sm->ligOff+2*lig_offset);
-	    if ( lig_glyph>=sm->info->glyph_cnt || sm->info->chars[lig_glyph]==NULL ) {
+	    if ( lig_glyph>=sm->info->glyph_cnt ||
+		    (info->justinuse != git_justinuse && sm->info->chars[lig_glyph]==NULL )) {
+		if ( info->justinuse != git_normal )
+return;
 		LogError( _("Attempt to make a ligature for (non-existent) glyph %d out of "),
 			lig_glyph );
 		info->bad_gx = true;
@@ -3719,36 +3733,40 @@ return;
 		LogError("\n");
 	    } else {
 		char *comp;
-		for ( len=0, j=lcp; j<sm->lcp; ++j )
-		    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
-		comp = galloc(len);
-		*comp = '\0';
-		for ( j=lcp; j<sm->lcp; ++j ) {
-		    if ( *comp!='\0' )
-			strcat(comp," ");
-		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		if ( info->justinuse == git_justinuse )
+		    info->inuse[lig_glyph] = true;
+		else {
+		    for ( len=0, j=lcp; j<sm->lcp; ++j )
+			len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		    comp = galloc(len);
+		    *comp = '\0';
+		    for ( j=lcp; j<sm->lcp; ++j ) {
+			if ( *comp!='\0' )
+			    strcat(comp," ");
+			strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
+		    }
+		    for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
+			if ( pst->type==pst_ligature && pst->subtable==sm->info->mort_subs_lookup->subtables &&
+				strcmp(comp,pst->u.lig.components)==0 )
+		    break;
+		    /* There are cases where there will be multiple entries for */
+		    /*  the same lig. ie. if we have "ff" and "ffl" then there */
+		    /*  will be multiple entries for "ff" */
+		    if ( pst == NULL ) {
+			pst = chunkalloc(sizeof(PST));
+			pst->type = pst_ligature;
+			pst->subtable = sm->info->mort_subs_lookup->subtables;
+			if ( sm->info->mort_subs_lookup->features!=NULL )
+			    FListsAppendScriptLang(sm->info->mort_subs_lookup->features,
+				    SCScriptFromUnicode(sm->info->chars[lig_glyph]),
+				    DEFAULT_LANG);
+			pst->u.lig.components = comp;
+			pst->u.lig.lig = sm->info->chars[lig_glyph];
+			pst->next = sm->info->chars[lig_glyph]->possub;
+			sm->info->chars[lig_glyph]->possub = pst;
+		    } else
+			free(comp);
 		}
-		for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
-		    if ( pst->type==pst_ligature && pst->subtable==sm->info->mort_subs_lookup->subtables &&
-			    strcmp(comp,pst->u.lig.components)==0 )
-		break;
-		/* There are cases where there will be multiple entries for */
-		/*  the same lig. ie. if we have "ff" and "ffl" then there */
-		/*  will be multiple entries for "ff" */
-		if ( pst == NULL ) {
-		    pst = chunkalloc(sizeof(PST));
-		    pst->type = pst_ligature;
-		    pst->subtable = sm->info->mort_subs_lookup->subtables;
-		    if ( sm->info->mort_subs_lookup->features!=NULL )
-			FListsAppendScriptLang(sm->info->mort_subs_lookup->features,
-				SCScriptFromUnicode(sm->info->chars[lig_glyph]),
-				DEFAULT_LANG);
-		    pst->u.lig.components = comp;
-		    pst->u.lig.lig = sm->info->chars[lig_glyph];
-		    pst->next = sm->info->chars[lig_glyph]->possub;
-		    sm->info->chars[lig_glyph]->possub = pst;
-		} else
-		    free(comp);
 	    }
 	} else
 	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset,info);
@@ -4494,7 +4512,8 @@ return( false );
 static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
 	int featureSetting);
 
-static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ismorx) {
+static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base,
+	int ismorx) {
     uint32 chain_len, nfeatures, nsubtables, default_flags;
     uint32 enable_flags, disable_flags, flags;
     int featureType, featureSetting;
@@ -4523,7 +4542,7 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
 	disable_flags = getlong(ttf);
 	if ( feof(ttf))
 return( chain_len );
-	if ( enable_flags & default_flags )
+	if ( info->justinuse == git_normal && ( enable_flags & default_flags ))
 	    FeatMarkAsEnabled(info,featureType,featureSetting);
 	tag = MacFeatureToOTTag(featureType,featureSetting);
 	if ( enable_flags!=0 && k<32 ) {
@@ -4582,46 +4601,55 @@ return( chain_len );
 		/* Skip it */;
 	    else switch( coverage&0xff ) {
 	      case 0:	/* Indic rearangement */
-		readttf_mortx_asm(ttf,info,ismorx,length,asm_indic,0,
-			coverage,NULL);
+		if ( info->justinuse == git_normal )
+		    readttf_mortx_asm(ttf,info,ismorx,length,asm_indic,0,
+			    coverage,NULL);
 	      break;
 	      case 1:	/* contextual glyph substitution */
-		readttf_mortx_asm(ttf,info,ismorx,length,asm_context,2,
-			coverage,NULL);
+		if ( info->justinuse == git_normal )
+		    readttf_mortx_asm(ttf,info,ismorx,length,asm_context,2,
+			    coverage,NULL);
 	      break;
 	      case 2:	/* ligature substitution */
 		/* Apple's ligature state machines are too weird to be */
 		/*  represented easily, but I can parse them into a set */
 		/*  of ligatures -- assuming they are unconditional */
-		info->mort_subs_lookup = NewMacLookup(info,false);
-		info->mort_subs_lookup->lookup_type = gsub_ligature;
-		if ( !tmf[j].ismac ) {
-		    info->mort_subs_lookup->features->next = chunkalloc(sizeof(FeatureScriptLangList));
-		    info->mort_subs_lookup->features->next->featuretag = tmf[j].tag;
-		    info->mort_subs_lookup->features->next->ismac = false;
+		if ( info->justinuse == git_normal ) {
+		    info->mort_subs_lookup = NewMacLookup(info,false);
+		    info->mort_subs_lookup->lookup_type = gsub_ligature;
+		    if ( !tmf[j].ismac ) {
+			info->mort_subs_lookup->features->next = chunkalloc(sizeof(FeatureScriptLangList));
+			info->mort_subs_lookup->features->next->featuretag = tmf[j].tag;
+			info->mort_subs_lookup->features->next->ismac = false;
+		    }
+		    info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 		}
-		info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 		readttf_mortx_lig(ttf,info,ismorx,here,length);
-		InfoNameOTLookup(info->mort_subs_lookup,info);
+		if ( info->justinuse == git_normal )
+		    InfoNameOTLookup(info->mort_subs_lookup,info);
 		/* We can give the lookup a better name after we've made a */
 		/*  guess at what scripts it involves => substitutions first */
 	      break;
 	      case 4:	/* non-contextual glyph substitutions */
-		info->mort_subs_lookup = NewMacLookup(info,false);
-		info->mort_subs_lookup->lookup_type = gsub_single;
-		if ( !tmf[j].ismac ) {
-		    info->mort_subs_lookup->features->next = chunkalloc(sizeof(FeatureScriptLangList));
-		    info->mort_subs_lookup->features->next->featuretag = tmf[j].tag;
-		    info->mort_subs_lookup->features->next->ismac = false;
+		if ( info->justinuse == git_normal ) {
+		    info->mort_subs_lookup = NewMacLookup(info,false);
+		    info->mort_subs_lookup->lookup_type = gsub_single;
+		    if ( !tmf[j].ismac ) {
+			info->mort_subs_lookup->features->next = chunkalloc(sizeof(FeatureScriptLangList));
+			info->mort_subs_lookup->features->next->featuretag = tmf[j].tag;
+			info->mort_subs_lookup->features->next->ismac = false;
+		    }
+		    info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 		}
-		info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 		readttf_applelookup(ttf,info,
 			mort_apply_values,mort_apply_value,NULL,NULL,true);
-		InfoNameOTLookup(info->mort_subs_lookup,info);
+		if ( info->justinuse == git_normal )
+		    InfoNameOTLookup(info->mort_subs_lookup,info);
 	      break;
 	      case 5:	/* contextual glyph insertion */
-		readttf_mortx_asm(ttf,info,ismorx,length,asm_insert,2,
-			coverage,NULL);
+		if ( info->justinuse == git_normal )
+		    readttf_mortx_asm(ttf,info,ismorx,length,asm_insert,2,
+			    coverage,NULL);
 	      break;
 	    }
 	}
@@ -4631,7 +4659,7 @@ return( chain_len );
 return( chain_len );
 }
 
-void readttfmort(FILE *ttf,struct ttfinfo *info) {
+static void _readttfmort(FILE *ttf,struct ttfinfo *info) {
     uint32 base = info->morx_start!=0 ? info->morx_start : info->mort_start;
     uint32 here, len;
     int ismorx;
@@ -4673,6 +4701,17 @@ return;
 	info->glyph_cnt += info->badgid_cnt;
 	free(info->badgids);
     }
+}
+
+void readttfmort(FILE *ttf,struct ttfinfo *info) {
+    info->justinuse = git_normal;
+    _readttfmort(ttf,info);
+}
+
+void readttfmort_glyphsused(FILE *ttf,struct ttfinfo *info) {
+    info->justinuse = git_justinuse;
+    _readttfmort(ttf,info);
+    info->justinuse = git_normal;
 }
 
 /* Apple's docs imply that kerning info is always provided left to right, even*/
