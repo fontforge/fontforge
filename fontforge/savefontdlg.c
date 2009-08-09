@@ -46,6 +46,7 @@ int old_fontlog=false;
 
 static int nfnt_warned = false, post_warned = false;
 
+#define CID_MergeTables	100
 #define CID_Family	2000
 
 #define CID_OFLibUpload	300
@@ -1592,8 +1593,10 @@ return;
 	free(wernersfdname);
     } else if ( d->family == gf_macfamily )
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,layer);
-    else
-	err = !WriteTTC(temp,sfs,oldformatstate,oldbitmapstate,flags,layer,0);
+    else {
+	int ttcflags = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MergeTables))?ttc_flag_trymerge:0 ;
+	err = !WriteTTC(temp,sfs,oldformatstate,oldbitmapstate,flags,layer,ttcflags);
+    }
 
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
@@ -2139,7 +2142,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19+2*48+4], *varray[13], *hvarray[46], *famarray[3*50+1],
+    GGadgetCreateData gcd[19+2*48+5], *varray[13], *hvarray[46], *famarray[3*51+1],
 	    *harray[10], boxes[9], *oflarray[11][5], *oflibinfo[8], *parray[3][4], *p2array[5];
     GTextInfo label[18+2*48+4];
     struct gfc_data d;
@@ -3051,6 +3054,31 @@ return( 0 );
 	gcd[k].gd.flags = gg_visible | gg_enabled ;
 	gcd[k++].creator = GLineCreate;
 	famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
+	if ( family == gf_ttc ) {
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup ;
+	    label[k].text = (unichar_t *) _("Merge tables across fonts");
+	    label[k].text_is_1byte = true;
+	    gcd[k].gd.label = &label[k];
+	    gcd[k].gd.cid = CID_MergeTables;
+	    gcd[k].gd.popup_msg = (unichar_t *) copy(_(
+		"FontForge can generate two styles of ttc file.\n"
+		"In the first each font is a separate entity\n"
+		"with no connection to other fonts. In the second\n"
+		"FontForge will attempt to use the same glyph table\n"
+		"for all fonts, merging duplicate glyphs. It will\n"
+		"also attempt to use the same space for tables in\n"
+		"different fonts which are bit by bit the same.\n\n"
+		"FontForge isn't always able to perform a merge, in\n"
+		"which case it falls back on generating independant\n"
+		"fonts within the ttc.\n"
+		" FontForge cannot merge if:\n"
+		"  * The fonts have different em-sizes\n"
+		"  * Bitmaps are involved\n"
+		"  * The merged glyf table has more than 65534 glyphs\n\n"
+		"(Merging will take longer)" ));
+	    gcd[k++].creator = GCheckBoxCreate;
+	    famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
+	}
 	famarray[f++] = NULL;
 
 	free(familysfs);

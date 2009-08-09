@@ -2270,8 +2270,8 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	    readttfgsubUsed(ttf,info);
 	if ( info->math_start!=0 )
 	    otf_read_math_used(ttf,info);
-	/* I don't bother to read the morx table because mac doesn't */
-	/*  support ttc files */
+	if ( info->morx_start!=0 || info->mort_start!=0 )
+	    readttfmort_glyphsused(ttf,info);
 	anyread = true;
 	while ( anyread ) {
 	    anyread = false;
