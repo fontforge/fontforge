@@ -3740,6 +3740,27 @@ pen = None;				# Finalize the pen. This tells FontForge
 	See also <A href="#font-save">save()</A>.</TD>
     </TR>
     <TR>
+      <TD><CODE>generateTtc</A></CODE></TD>
+      <TD><CODE>(filename,others,<BR>
+	&nbsp;[flags=,<BR>
+	&nbsp;ttcflags=,
+	&nbsp;namelist=,<BR>
+	&nbsp;layer=])</CODE></TD>
+      <TD>Generates a truetype collection file containing the current font and
+      all others listed -- the <CODE>others</CODE> argument may be <Code>None</Code>,
+      a font, or a tuple (or list) of fonts.
+	<P>
+	Flags are as above,
+	<P>
+	Ttcflags is a tuple consisting of the following
+	<DL>
+	  <DT>
+	    merge
+	  <DD>
+	    Try and share tables and glyphs among the various fonts.
+	</DL>
+    </TR>
+    <TR>
       <TD><CODE>generateFeatureFile</CODE></TD>
       <TD><CODE>(filename[,lookup-name])</CODE></TD>
       <TD>Generates an adobe feature file for the current font. If a lookup-name

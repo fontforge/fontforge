@@ -12008,6 +12008,8 @@ Py_RETURN( self );
 /* filename, bitmaptype,flags,resolution,mult-sfd-file,namelist */
 static char *gen_keywords[] = { "filename", "bitmap_type", "flags", "bitmap_resolution",
 	"subfont_directory", "namelist", "layer", NULL };
+static char *genttc_keywords[] = { "filename", "others", "bitmap_type", "flags",
+	"ttcflags", "namelist", "layer", NULL };
 struct flaglist gen_flags[] = {
     { "afm", 0x0001 },
     { "pfm", 0x0002 },
@@ -12033,6 +12035,10 @@ struct flaglist gen_flags[] = {
     { "no-hints", 0x80000 },
     { "round", 0x200000 },
     { "composites-in-afm", 0x400000 },
+    NULL
+};
+struct flaglist genttc_flags[] = {
+    { "merge", ttc_flag_trymerge },
     NULL
 };
 
@@ -12097,6 +12103,139 @@ return( NULL );
 return( NULL );
     }
     free(locfilename);
+Py_RETURN( self );
+}
+
+static struct sflist *makesflist(PyObject *item,enum bitmapformat bf) {
+    struct sflist *ret = chunkalloc(sizeof( struct sflist ));
+    ret->sf  = ((PyFF_Font *) item)->fv->sf;
+    ret->map = ((PyFF_Font *) item)->fv->map;
+    if ( bf==bf_ttf ) {
+	int cnt;
+	BDFFont *bdf;
+	for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt );
+	if ( cnt!=0 ) {
+	    ret->sizes = galloc((cnt+1)*sizeof(int32));
+	    ret->sizes[cnt] = 0;
+	    for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt ) {
+		if ( bdf->clut==NULL )
+		    ret->sizes[cnt] = bdf->pixelsize;
+		else
+		    ret->sizes[cnt] = (BDFDepth(bdf)<<16) | bdf->pixelsize;
+	    }
+	}
+    }
+return( ret );
+}
+
+static PyObject *PyFFFont_GenerateTTC(PyObject *self, PyObject *args, PyObject *keywds) {
+    char *filename;
+    char *locfilename = NULL;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    PyObject *flags=NULL, *ttcflags=NULL, *others=NULL;
+    int iflags = -1;
+    int ittcflags = 0;
+    char *bitmaptype="", *namelist=NULL;
+    NameList *rename_to = NULL;
+    int layer = fv->active_layer;
+    char *layer_str=NULL;
+    struct sflist *head, *last, *cur;
+    enum bitmapformat bf = bf_none;
+
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOsi", genttc_keywords,
+	    "UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
+	    &namelist, &layer) ) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "esO|sOOss", gen_keywords,
+		"UTF-8",&filename, &others, &bitmaptype, &flags, &ttcflags,
+		&namelist, &layer_str) )
+return( NULL );
+	layer = SFFindLayerIndexByName(fv->sf,layer_str);
+	if ( layer<0 )
+return( NULL );
+    }
+    if ( layer<0 || layer>=fv->sf->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+return( NULL );
+    }
+    if ( flags!=NULL ) {
+	iflags = FlagsFromTuple(flags,gen_flags);
+	if ( iflags==0x80000000 ) {
+	    PyErr_Format(PyExc_TypeError, "Unknown flag");
+return( NULL );
+	}
+	/* Legacy screw ups mean that opentype & apple bits don't mean what */
+	/*  I want them to. Python users should not see that, but fix it up */
+	/*  here */
+	if ( (iflags&0x80) && (iflags&0x10) )	/* Both */
+	    iflags &= ~0x10;
+	else if ( (iflags&0x80) && !(iflags&0x10)) /* Just opentype */
+	    iflags &= ~0x80;
+	else if ( !(iflags&0x80) && (iflags&0x10)) /* Just apple */
+	    /* This one's set already */;
+	else
+	    iflags |= 0x90;
+    }
+    if ( ttcflags!=NULL ) {
+	ittcflags = FlagsFromTuple(ttcflags,genttc_flags);
+	if ( ittcflags==0x80000000 ) {
+	    PyErr_Format(PyExc_TypeError, "Unknown ttc flag");
+return( NULL );
+	}
+    }
+    if ( bitmaptype!=NULL && *bitmaptype!='\0' ) {
+	if ( strcasecmp(bitmaptype,"ttf")==0 )
+	    bf = bf_ttf;
+	else {
+	    PyErr_Format(PyExc_TypeError, "Unknown bitmap format");
+return( NULL );
+	}
+    }	
+    if ( namelist!=NULL ) {
+	rename_to = NameListByName(namelist);
+	if ( rename_to==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "Unknown namelist");
+return( NULL );
+	}
+    }
+
+    head = last = makesflist(self,bf);
+    if ( others==Py_None )
+	/* Silly to have a ttc with just one font, but ok */;
+    else if ( PyType_IsSubtype(&PyFF_FontType,others->ob_type) ) {
+	cur = makesflist(others,bf);
+	last->next = cur;
+	last = cur;
+    } else if ( PySequence_Check(others)) {
+	int i, subcnt = PySequence_Size(others);
+	for ( i=0; i<subcnt; ++i ) {
+	    PyObject *item = PyTuple_GetItem(others,i);
+	    if ( PyType_IsSubtype(&PyFF_FontType,item->ob_type) ) {
+		cur = makesflist(item,bf);
+		last->next = cur;
+		last = cur;
+	    } else {
+		PyErr_Format(PyExc_TypeError, "Second argument must be either a font or a list of fonts");
+return( NULL );
+	    }
+	}
+    } else {
+	PyErr_Format(PyExc_TypeError, "Second argument must be either a font or a list of fonts");
+return( NULL );
+    }
+
+    locfilename = utf82def_copy(filename);
+    free(filename);
+    if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
+	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
+return( NULL );
+    }
+    free(locfilename);
+    for ( cur=head; cur!=NULL; cur=head ) {
+	head = cur->next;
+	free(cur->sizes);
+	chunkfree(cur,sizeof(struct sflist));
+    }
 Py_RETURN( self );
 }
 
@@ -12988,6 +13127,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "compareFonts", (PyCFunction) PyFFFont_compareFonts, METH_VARARGS, "Compares two fonts and stores the result into a file"},
     { "save", PyFFFont_Save, METH_VARARGS, "Save the current font to a sfd file" },
     { "generate", (PyCFunction) PyFFFont_Generate, METH_VARARGS | METH_KEYWORDS, "Save the current font to a standard font file" },
+    { "generateTtc", (PyCFunction) PyFFFont_GenerateTTC, METH_VARARGS | METH_KEYWORDS, "Save the current font and some others into a truetype collection file" },
     { "generateFeatureFile", (PyCFunction) PyFFFont_GenerateFeature, METH_VARARGS, "Creates an adobe feature file containing all features and lookups" },
     { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
     { "mergeFeature", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },

@@ -6940,5 +6940,7 @@ return( true );
 	ok = false;
     if ( fclose(ttc)==-1 )
 	ok = false;
+    if ( !ok )
+	LogError(_("Something went wrong"));
 return( ok );
 }
