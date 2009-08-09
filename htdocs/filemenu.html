@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 5-Dec-2008 -->
+  <!-- AP: Last modified: 9-Aug-2009 -->
   <TITLE>The File Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -226,6 +226,8 @@
     <LI>
       <A HREF="#GenerateMac">Generate Mac Family...</A>
     <LI>
+      <A HREF="#GenerateTTC">Generate TTC...</A>
+    <LI>
       <A HREF="#Revert">Revert</A>
     <LI>
       <A HREF="#RevertBackup">Revert To Backup</A>
@@ -386,10 +388,17 @@
     <DD>
       This is only available if there are multiple fonts open in the same family,
       and if the current font is the "Plain" style of that family. It generates
-      a mac FOND structure containing references to all family members, NFNT, sfnt,
-      and POST resources for all selected faces. It brings up a
-      <A HREF="generate.html">dlg</A> very similar to the Generate fonts dialog,
-      but one that includes a list of all potential faces for family members.
+      a mac FOND structure containing references to all family members, sfnt, and
+      POST resources for all selected faces. It brings up a
+      <A HREF="generate.html#Mac-Family">dlg</A> very similar to the Generate fonts
+      dialog, but one that includes a list of all potential faces for family members.
+    <DT>
+      <A NAME="GenerateTTC">Generate</A> TTC...
+    <DD>
+      This is only available if there are multiple fonts open (they need not be
+      the same family). It opens a <A HREF="generate.html#GenerateTTC">dialog</A>
+      similar to the above listing all open fonts. You select which fonts go into
+      the ttc file and how they should be stored.
     <DT>
       <A NAME="Revert">Revert</A>
     <DD>
