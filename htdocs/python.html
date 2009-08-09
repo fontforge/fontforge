@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 3-Aug-2009 -->
+  <!-- AP: Last modified: 9-Aug-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3611,7 +3611,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	   "findMatchedContours": matched_contours_bit_map,
 	   "findMatchedContoursStart": matched_contours_start_bit_map,
 	  }
-	  
+
 </PRE>
       </TD>
     </TR>
@@ -3740,15 +3740,14 @@ pen = None;				# Finalize the pen. This tells FontForge
 	See also <A href="#font-save">save()</A>.</TD>
     </TR>
     <TR>
-      <TD><CODE>generateTtc</A></CODE></TD>
+      <TD><CODE>generateTtc</CODE></TD>
       <TD><CODE>(filename,others,<BR>
 	&nbsp;[flags=,<BR>
-	&nbsp;ttcflags=,
-	&nbsp;namelist=,<BR>
+	&nbsp;ttcflags=, &nbsp;namelist=,<BR>
 	&nbsp;layer=])</CODE></TD>
       <TD>Generates a truetype collection file containing the current font and
-      all others listed -- the <CODE>others</CODE> argument may be <Code>None</Code>,
-      a font, or a tuple (or list) of fonts.
+	all others listed -- the <CODE>others</CODE> argument may be
+	<CODE>None</CODE>, a font, or a tuple (or list) of fonts.
 	<P>
 	Flags are as above,
 	<P>
@@ -3759,6 +3758,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <DD>
 	    Try and share tables and glyphs among the various fonts.
 	</DL>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>generateFeatureFile</CODE></TD>
