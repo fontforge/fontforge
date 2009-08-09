@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 19-Jul-2008 -->
+  <!-- AP: Last modified: 9-Aug-2009 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -347,7 +347,7 @@
   </H3>
   <P>
   It is possible to upload a font to the Open Font Library, please see
-  <A HREF="oflib.html#Uploading">that section </A>for more information.
+  <A HREF="oflib.html#Uploading">that section </A>for more information. 
     <HR>
   <H2>
     Generate <A NAME="Mac-Family">Mac</A> Family
@@ -370,8 +370,53 @@
   in some cases you may wish to override this by setting the
   <A HREF="fontinfo.html#Mac-Style">mac style </A>directly in fontinfo.
   <P>
+  As of Mac OS/X 10.6 Apple appears to be deprecating this format and moving
+  toward <A HREF="#GenerateTTC">TTC files (see below</A>).
+  <P>
   For information on creating mac font families beyond the capabilities of
   this dialog look at the <A HREF="faq.html#How-family">FAQ</A>.
+  <P>
+  <BR Clear=All>
+    <HR>
+  <H2>
+    <A NAME="GenerateTTC">Generate TTC</A>
+  </H2>
+  <P>
+  <IMG SRC="GenerateTTC.png" ALIGN="Right">A TrueType Collection file can contain
+  many fonts. They need not be all in the same family (though, of course, they
+  can be).
+  <P>
+  The dialog lists all open fonts, you may choose any of them to go into the
+  ttc file. No especial magic is needed to bind fonts into one family (at least
+  I hope not).
+  <P>
+  Traditionally ttc files have been used to contain variants of large CJK fonts
+  (where most of the CJK glyphs remain the same across fonts with a few glyphs
+  (often the latin letters) changing). The format allows glyphs to be shared
+  across fonts, which can result in considerable space savings in some collections
+  -- but this can also take time.
+  <P>
+  On the mac, however, ttc files are generally used to contain a font family
+  where there is very little (often no) overlap of glyphs between fonts.
+  <P>
+  FontForge can produce two kinds of ttc files, the first (<CODE>[*] Merge
+  tables across fonts</CODE>) will try to use a single merged
+  'glyf'/'hmtx'/'hhea'/'vmtx'/'vhea' tables for all fonts (and will try to
+  share other tables if that is possible). The second, with merge tables turned
+  off, will dump individual fonts into the collection with no attempt to optimize.
+  <P>
+  FontForge is not always able to produce merged tables ... this process will
+  fail if:
+  <UL>
+    <LI>
+      The selected fonts have different emsizes
+    <LI>
+      Bitmaps are to be included in the collection
+    <LI>
+      More that 65534 glyphs would be needed in the merged table
+    <LI>
+      (or something else goes wrong)
+  </UL>
   <P>
   <BR Clear=All>
     <HR>
