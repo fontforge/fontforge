@@ -1933,7 +1933,7 @@ static void bGenerateFamily(Context *c) {
     free(t); free(locfilename);
     for ( cur=sfs; cur!=NULL; cur=sfs ) {
 	sfs = cur->next;
-	free(cur->sizes);
+	/* free(cur->sizes); */		/* Done inside GenerateScript */
 	chunkfree(cur,sizeof(struct sflist));
     }
 }
