@@ -1179,6 +1179,10 @@ return;
     }
 #endif
 
+    if ( gi->next_glyph!=sc->ttf_glyph )
+	IError("Glyph count wrong in ttf output");
+    if ( gi->next_glyph>=gi->maxp->numGlyphs )
+	IError("max glyph count wrong in ttf output");
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
     ttfss = SCttfApprox(sc,gi->layer);
@@ -6443,15 +6447,15 @@ return( NULL );
     for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
 	AssignNotdefNull(sfitem->sf,bygid,false);
 	if ( bygid[0]!=-1 && dummysf->glyphs[0]==NULL ) {
-	    dummysf->glyphs[0] = sf->glyphs[bygid[0]];
+	    dummysf->glyphs[0] = sfitem->sf->glyphs[bygid[0]];
 	    bygid[0]=0;
 	}
 	if ( bygid[1]!=-1 && dummysf->glyphs[1]==NULL ) {
-	    dummysf->glyphs[1] = sf->glyphs[bygid[1]];
+	    dummysf->glyphs[1] = sfitem->sf->glyphs[bygid[1]];
 	    bygid[1]=1;
 	}
 	if ( bygid[2]!=-1 && dummysf->glyphs[2]==NULL ) {
-	    dummysf->glyphs[2] = sf->glyphs[bygid[2]];
+	    dummysf->glyphs[2] = sfitem->sf->glyphs[bygid[2]];
 	    bygid[2]=2;
 	}
 	if ( bygid[0]!=-1 && bygid[1]!=-1 && bygid[2]!=-1 )
