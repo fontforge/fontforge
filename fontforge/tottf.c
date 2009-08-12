@@ -1162,22 +1162,16 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
     SplineChar *isc = sc->ttf_instrs==NULL && sc->parent->mm!=NULL && sc->parent->mm->apple ?
 		sc->parent->mm->normal->glyphs[sc->orig_pos] : sc;
 
-#if 0
     /* This must have been an error on my part, can't just remove points */
     /* they might be matched to anchors or something */
 /* I haven't seen this documented, but ttf rasterizers are unhappy with a */
 /*  glyph that consists of a single point. Glyphs containing two single points*/
 /*  are ok, glyphs with a single point and anything else are ok, glyphs with */
 /*  a line are ok. But a single point is not ok. Dunno why */
-    if (( sc->layers[gi->layer].splines==NULL && sc->layers[gi->layer].refs==NULL ) ||
-	    ( sc->layers[gi->layer].refs==NULL &&
-	     (sc->layers[gi->layer].splines->first->next==NULL ||
-	      sc->layers[gi->layer].splines->first->next->to == sc->layers[gi->layer].splines->first) &&
-	     sc->layers[gi->layer].splines->next==NULL) ) {
+    if ( sc->layers[gi->layer].splines==NULL && sc->layers[gi->layer].refs==NULL ) {
 	dumpspace(sc,gi);
 return;
     }
-#endif
 
     if ( gi->next_glyph!=sc->ttf_glyph )
 	IError("Glyph count wrong in ttf output");
@@ -6533,6 +6527,7 @@ return( NULL );
 return( NULL );
     }
 
+    ret[fcnt].gi.fixed_width = CIDOneWidth(sf);
     ret[fcnt].gi.bygid = bygid;
     ret[fcnt].gi.gcnt = ret[fcnt].maxp.numGlyphs = dummysf->glyphcnt;
     if ( !dumpglyphs(dummysf,&ret[cnt].gi) ) {
