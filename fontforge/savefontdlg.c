@@ -47,6 +47,7 @@ int old_fontlog=false;
 static int nfnt_warned = false, post_warned = false;
 
 #define CID_MergeTables	100
+#define CID_TTC_CFF	101
 #define CID_Family	2000
 
 #define CID_OFLibUpload	300
@@ -1352,7 +1353,9 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     extern NameList *force_names_when_saving;
     int notdef_pos = SFFindNotdef(d->sf,-1);
     int layer = ly_fore;
+    int likecff;
     char *buts[3];
+
     buts[0] = _("_Yes");
     buts[1] = _("_No");
     buts[2] = NULL;
@@ -1414,7 +1417,13 @@ return;
 return;
     }
 
-    if ( oldformatstate<=ff_cffcid || (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
+    likecff = 0;
+    if ( oldformatstate==ff_ttc ) {
+	likecff = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TTC_CFF));
+    }
+
+    if ( likecff || oldformatstate<=ff_cffcid ||
+	    (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
 	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),
 		    d->sf->ascent+d->sf->descent)==1 )
@@ -1426,7 +1435,8 @@ return;
 return;
 	    psfnlenwarned = true;
 	}
-    } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg  && oldformatstate!=ff_ufo ) {
+    } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg &&
+	    oldformatstate!=ff_ufo ) {
 	int val = d->sf->ascent+d->sf->descent;
 	int bit;
 	for ( bit=0x800000; bit!=0; bit>>=1 )
@@ -1594,7 +1604,9 @@ return;
     } else if ( d->family == gf_macfamily )
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,layer);
     else {
-	int ttcflags = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MergeTables))?ttc_flag_trymerge:0 ;
+	int ttcflags =
+	    (GGadgetIsChecked(GWidgetGetControl(d->gw,CID_MergeTables))?ttc_flag_trymerge:0) |
+	    (GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TTC_CFF))?ttc_flag_cff:0);
 	err = !WriteTTC(temp,sfs,oldformatstate,oldbitmapstate,flags,layer,ttcflags);
     }
 
@@ -2142,9 +2154,9 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19+2*48+5], *varray[13], *hvarray[46], *famarray[3*51+1],
+    GGadgetCreateData gcd[20+2*48+5], *varray[13], *hvarray[46], *famarray[3*52+1],
 	    *harray[10], boxes[9], *oflarray[11][5], *oflibinfo[8], *parray[3][4], *p2array[5];
-    GTextInfo label[18+2*48+4];
+    GTextInfo label[20+2*48+4];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int hvi, i, j, k, f, old, ofs, y, fc, dupfc, dupstyle, rk, vk;
@@ -3076,6 +3088,16 @@ return( 0 );
 		"  * Bitmaps are involved\n"
 		"  * The merged glyf table has more than 65534 glyphs\n\n"
 		"(Merging will take longer)" ));
+	    gcd[k++].creator = GCheckBoxCreate;
+	    famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
+
+	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
+	    label[k].text = (unichar_t *) _("As CFF fonts");
+	    label[k].text_is_1byte = true;
+	    gcd[k].gd.label = &label[k];
+	    gcd[k].gd.cid = CID_TTC_CFF;
+	    gcd[k].gd.popup_msg = (unichar_t *) copy(_(
+		"Put CFF fonts into the ttc rather than TTF.\n These seem to work on the mac and linux\n but are documented not to work on Windows." ));
 	    gcd[k++].creator = GCheckBoxCreate;
 	    famarray[f++] = &gcd[k-1]; famarray[f++] = GCD_ColSpan; famarray[f++] = NULL;
 	}

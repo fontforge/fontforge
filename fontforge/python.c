@@ -12039,6 +12039,7 @@ struct flaglist gen_flags[] = {
 };
 struct flaglist genttc_flags[] = {
     { "merge", ttc_flag_trymerge },
+    { "cff", ttc_flag_cff },
     NULL
 };
 
