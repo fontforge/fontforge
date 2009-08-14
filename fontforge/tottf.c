@@ -2055,6 +2055,8 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	dumpintoper(private,1,(12<<8)|14);
     if ( (pt=PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+17);
+    else if ( map==NULL )
+	/* Do Nothing */;
     else if ( map->enc->is_japanese ||
 	      map->enc->is_korean ||
 	      map->enc->is_tradchinese ||
@@ -4101,7 +4103,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	putshort(at->post,at->maxp.numGlyphs);
 
 	shouldbe = 0;
-	for ( i=0, pos=0; i<at->gi.gcnt; ++i ) {
+	for ( i=0, pos=0; i<at->maxp.numGlyphs; ++i ) {
 	    if ( at->gi.bygid[i]!=-1 && sf->glyphs[at->gi.bygid[i]]!=NULL ) {
 		SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
 		while ( i>shouldbe ) {
@@ -4138,7 +4140,7 @@ static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format)
 	    fseek(at->post,0,SEEK_END);
 	}
 	if ( pos!=0 ) {
-	    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	    for ( i=0; i<at->maxp.numGlyphs; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 		SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
 		if ( strcmp(sc->name,".notdef")==0 )
 		    /* Do Nothing */;
@@ -6395,7 +6397,7 @@ static void hashglyphadd(SplineChar *sc,UHash *uhash,NHash *nhash) {
     }
 }
 
-static struct alltabs *ttc_prep(struct sflist *sfs,
+static struct alltabs *ttc_prep(struct sflist *sfs, enum fontformat format,
 	enum bitmapformat bf,int flags, int layer, int ttcflags,
 	SplineFont *dummysf) {
     struct alltabs *ret;
@@ -6408,8 +6410,7 @@ static struct alltabs *ttc_prep(struct sflist *sfs,
     int *bygid;
     SplineFont *sf;
     SplineChar *sc, *test;
-    int i;
-    enum fontformat format = ff_ttf;
+    int i, aborted;
 
     for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
 	sf = sfitem->sf;
@@ -6444,22 +6445,27 @@ return( NULL );
 	    dummysf->glyphs[0] = sfitem->sf->glyphs[bygid[0]];
 	    bygid[0]=0;
 	}
-	if ( bygid[1]!=-1 && dummysf->glyphs[1]==NULL ) {
-	    dummysf->glyphs[1] = sfitem->sf->glyphs[bygid[1]];
-	    bygid[1]=1;
-	}
-	if ( bygid[2]!=-1 && dummysf->glyphs[2]==NULL ) {
-	    dummysf->glyphs[2] = sfitem->sf->glyphs[bygid[2]];
-	    bygid[2]=2;
-	}
-	if ( bygid[0]!=-1 && bygid[1]!=-1 && bygid[2]!=-1 )
+	if ( format==ff_ttf ) {
+	    if ( bygid[1]!=-1 && dummysf->glyphs[1]==NULL ) {
+		dummysf->glyphs[1] = sfitem->sf->glyphs[bygid[1]];
+		bygid[1]=1;
+	    }
+	    if ( bygid[2]!=-1 && dummysf->glyphs[2]==NULL ) {
+		dummysf->glyphs[2] = sfitem->sf->glyphs[bygid[2]];
+		bygid[2]=2;
+	    }
+	    if ( bygid[0]!=-1 && bygid[1]!=-1 && bygid[2]!=-1 )
     break;
+	} else {
+	    if ( bygid[0]!=-1 )
+    break;
+	}
     }
-    dummysf->glyphcnt = 3;
+    dummysf->glyphcnt = format==ff_ttf ? 3 : 1;
 
     ret = gcalloc(fcnt+2,sizeof(struct alltabs));
-    ATinit(&ret[fcnt],dummysf,NULL,flags&~ttf_flag_dummyDSIG,
-	    layer,ff_ttf,bf,NULL);
+    ATinit(&ret[fcnt],dummysf,sfs->map,flags&~ttf_flag_dummyDSIG,
+	    layer,format,bf,NULL);
     ret[fcnt].gi.ttc_composite_font = true;
     ATmaxpInit(&ret[fcnt],dummysf,format);
 
@@ -6473,13 +6479,15 @@ return( NULL );
 	    if ( SCWorthOutputting(sc = sf->glyphs[i]) && sc->ttf_glyph==-1 ) {
 		if ( strcmp(sc->name,".notdef")==0 )
 		    sc->ttf_glyph = bygid[0];
-		else if ( strcmp(sf->glyphs[i]->name,".null")==0 ||
-			 strcmp(sf->glyphs[i]->name,"uni0000")==0 ||
-			 (i==1 && strcmp(sf->glyphs[1]->name,"glyph1")==0) )
+		else if ( format==ff_ttf &&
+			 (strcmp(sf->glyphs[i]->name,".null")==0 ||
+			  strcmp(sf->glyphs[i]->name,"uni0000")==0 ||
+			  (i==1 && strcmp(sf->glyphs[1]->name,"glyph1")==0)) )
 		    sc->ttf_glyph = bygid[1];
-		else if ( strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
-			 strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
-			 (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0))
+		else if ( format==ff_ttf &&
+			 (strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
+			  strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
+			  (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0)))
 		    sc->ttf_glyph = bygid[2];
 		else {
 		    test = hashglyphfound(sc,uhash,nhash,layer);
@@ -6498,6 +6506,8 @@ return( NULL );
 			ret[cnt].gi.gcnt = sc->ttf_glyph;
 		}
 	    }
+	    if ( sc!=NULL )
+		sc->lsidebearing = 0x7fff;
 	}
 
 	MaxpFromTable(&ret[cnt],sf);
@@ -6530,7 +6540,11 @@ return( NULL );
     ret[fcnt].gi.fixed_width = CIDOneWidth(sf);
     ret[fcnt].gi.bygid = bygid;
     ret[fcnt].gi.gcnt = ret[fcnt].maxp.numGlyphs = dummysf->glyphcnt;
-    if ( !dumpglyphs(dummysf,&ret[cnt].gi) ) {
+    if ( format==ff_ttf )
+	aborted = !dumpglyphs(dummysf,&ret[cnt].gi);
+    else
+	aborted = !dumptype2glyphs(dummysf,&ret[cnt]);
+    if ( aborted ) {
 	free(dummysf->glyphs);
 	free(bygid);
 	for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )
@@ -6542,12 +6556,15 @@ return( NULL );
     for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt )
 	ret[cnt].maxp = ret[fcnt].maxp;
 
-    redoloca(&ret[fcnt]);
+    /* Just to get a timestamp for all other heads */
+    /*  and to figure out whether 'loca' is 4byte or 2 */
+    sethead(&ret[fcnt].head,dummysf,&ret[fcnt],format,NULL);
+    if ( format==ff_ttf )
+	redoloca(&ret[fcnt]);
     redohhead(&ret[fcnt],false);
     if ( dummysf->hasvmetrics )
 	redohhead(&ret[fcnt],true);
     ttf_fftm_dump(dummysf,&ret[fcnt]);
-    sethead(&ret[fcnt].head,dummysf,&ret[fcnt],format,NULL);	/* Just to get a timestamp for all other heads */
 
     free(dummysf->glyphs);
     free(bygid);
@@ -6584,16 +6601,20 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 
     at->gi.xmin = main->gi.xmin; at->gi.xmax = main->gi.xmax;
     at->gi.ymin = main->gi.ymin; at->gi.ymax = main->gi.ymax;
+    at->gi.glyph_len = main->gi.glyph_len;
+    at->gi.gcnt = main->maxp.numGlyphs;
     sethead(&at->head,sf,at,format,NULL);
     memcpy(at->head.modtime,main->head.modtime,sizeof(at->head.modtime));
     memcpy(at->head.createtime,at->head.modtime,sizeof(at->head.modtime));
     initATTables(at, sf, format, flags);	/* also name and OS/2 */
 
-    if ( sf->gasp_cnt!=0 || !SFHasInstructions(sf) )
-	dumpgasp(at, sf);
-    at->fpgmf = checkdupstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen, all, me);
-    at->prepf = checkdupstoredtable(sf,CHR('p','r','e','p'),&at->preplen, all, me);
-    at->cvtf = checkdupstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen, all, me);
+    if ( format==ff_ttf ) {
+	if ( sf->gasp_cnt!=0 || !SFHasInstructions(sf) )
+	    dumpgasp(at, sf);
+	at->fpgmf = checkdupstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen, all, me);
+	at->prepf = checkdupstoredtable(sf,CHR('p','r','e','p'),&at->preplen, all, me);
+	at->cvtf = checkdupstoredtable(sf,CHR('c','v','t',' '),&at->cvtlen, all, me);
+    }
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL; tab=tab->next )
 	tab->temp = dumpsavedtable(tab);
@@ -6606,8 +6627,12 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 
     /* These tables are always to be shared and are found in the extra structure */
     /*  called main */
-    at->loca = (void *) (intpt) -1; at->localen = mainpos;
-    at->gi.glyphs = (void *) (intpt) -1; at->gi.glyph_len = mainpos;
+    if ( format==ff_ttf ) {
+	at->loca = (void *) (intpt) -1; at->localen = mainpos;
+	at->gi.glyphs = (void *) (intpt) -1; at->gi.glyph_len = mainpos;
+    } else {
+	at->cfff = (void *) (intpt) -1; at->cfflen = mainpos;
+    }
     at->fftmf = (void *) (intpt) -1; at->fftmlen = mainpos;
     at->hheadf = (void *) (intpt) -1; at->hheadlen = mainpos;
     at->gi.hmtx = (void *) (intpt) -1; at->gi.hmtxlen = mainpos;
@@ -6650,12 +6675,11 @@ return( i );
 return( -1 );
 }
 
-static void ttc_dump(FILE *ttc,struct alltabs *all,
+static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	int flags, enum ttc_flags ttc_flags ) {
     int i,j,cnt,tot,ch,dup;
     int offset, startoffset;
     struct taboff *tab;
-    enum fontformat format = ff_ttf;
 
     for ( cnt=0; all[cnt].sf!=NULL; ++cnt );
     --cnt;			/* Last one is dummysf */
@@ -6688,7 +6712,9 @@ static void ttc_dump(FILE *ttc,struct alltabs *all,
     for ( i=0; i<tot; ++i )
 	putc('\0', ttc);
 
-    buildtablestructures(&all[cnt],all[cnt].sf,ff_ttf);
+    /* Build, but don't output. This is so we can lookup tables by tag later */
+    buildtablestructures(&all[cnt],all[cnt].sf,format);
+
     /* Output some of the smaller tables now, near the head of the file */
     /* I have my doubts about this being a significant savings... but */
     /* it doesn't hurt */
@@ -6717,7 +6743,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all,
     for ( i=0; i<cnt; ++i ) {
 	/* Now generate all tables unique to this font */
 	ttc_perfonttables(all, i, cnt, format, all[i].gi.flags );
-	buildtablestructures(&all[i],all[i].sf,ff_ttf);
+	buildtablestructures(&all[i],all[i].sf,format);
 	/* Check for any tables which match those of a previous font */
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
 	    if ( all[i].tabdir.tabs[j].data!=(void *) (intpt) -1 &&
@@ -6753,16 +6779,24 @@ static void ttc_dump(FILE *ttc,struct alltabs *all,
 	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	    all[cnt].error = true;
     }
-    tab = findtabindir(&all[cnt].tabdir,CHR('l','o','c','a'));
-    tab->offset = ftell(ttc);
-    tab->checksum = filecheck(tab->data);
-    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
-	all[cnt].error = true;
-    tab = findtabindir(&all[cnt].tabdir,CHR('g','l','y','f'));
-    tab->offset = ftell(ttc);
-    tab->checksum = filecheck(tab->data);
-    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
-	all[cnt].error = true;
+    if ( format==ff_ttf ) {
+	tab = findtabindir(&all[cnt].tabdir,CHR('l','o','c','a'));
+	tab->offset = ftell(ttc);
+	tab->checksum = filecheck(tab->data);
+	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	    all[cnt].error = true;
+	tab = findtabindir(&all[cnt].tabdir,CHR('g','l','y','f'));
+	tab->offset = ftell(ttc);
+	tab->checksum = filecheck(tab->data);
+	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	    all[cnt].error = true;
+    } else {
+	tab = findtabindir(&all[cnt].tabdir,CHR('C','F','F',' '));
+	tab->offset = ftell(ttc);
+	tab->checksum = filecheck(tab->data);
+	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
+	    all[cnt].error = true;
+    }
 
     /* Do maxp last, in case generating other tables changed it */
     redomaxp(&all[cnt],format);
@@ -6875,14 +6909,16 @@ return( 0 );
 return( 0 );
     }
 
+    format = (ttcflags & ttc_flag_cff) ? ff_otf : ff_ttf;
+
     dobruteforce = true;
     if ( (ttcflags & ttc_flag_trymerge) && bf==bf_none ) {
 	dobruteforce = false;
-	ret = ttc_prep(sfs,bf,flags,layer,ttcflags,&dummysf);
+	ret = ttc_prep(sfs,format,bf,flags,layer,ttcflags,&dummysf);
 	if ( ret==NULL )
 	    dobruteforce = true;
 	else
-	    ttc_dump(ttc,ret,flags,ttcflags);
+	    ttc_dump(ttc,ret,format,flags,ttcflags);
 	free(ret);
     }
     if ( dobruteforce ) {
@@ -6895,7 +6931,7 @@ return( 0 );
 	    if ( sfitem->tempttf==NULL )
 		ok=0;
 	    else
-		ok = _WriteTTFFont(sfitem->tempttf,sfitem->sf,ff_ttf,sfitem->sizes,
+		ok = _WriteTTFFont(sfitem->tempttf,sfitem->sf,format,sfitem->sizes,
 			bf,flags&~ttf_flag_dummyDSIG,sfitem->map,layer);
 	    if ( !ok ) {
 		for ( sfi2=sfs; sfi2!=NULL; sfi2 = sfi2->next )
