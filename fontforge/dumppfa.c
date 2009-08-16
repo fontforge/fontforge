@@ -350,6 +350,22 @@ return( dict->values[i] );
 return( NULL );
 }
 
+int PSDictSame(struct psdict *dict1, struct psdict *dict2) {
+    int i;
+
+    if ( (dict1==NULL || dict1->cnt==0) && (dict2==NULL || dict2->cnt==0))
+return( true );
+    if ( dict1==NULL || dict2==NULL || dict1->cnt!=dict2->cnt )
+return( false );
+
+    for ( i=0; i<dict1->cnt; ++i ) {
+	char *val = PSDictHasEntry(dict2,dict1->keys[i]);
+	if ( val==NULL || strcmp(val,dict1->values[i])!=0 )
+return( false );
+    }
+return( true );
+}
+
 int PSDictRemoveEntry(struct psdict *dict, char *key) {
     int i;
 
