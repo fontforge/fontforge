@@ -2739,6 +2739,7 @@ extern void PSDictFree(struct psdict *chrs);
 extern struct psdict *PSDictCopy(struct psdict *dict);
 extern int PSDictFindEntry(struct psdict *dict, char *key);
 extern char *PSDictHasEntry(struct psdict *dict, char *key);
+extern int PSDictSame(struct psdict *dict1, struct psdict *dict2);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,

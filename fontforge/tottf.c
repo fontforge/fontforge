@@ -6419,6 +6419,8 @@ static struct alltabs *ttc_prep(struct sflist *sfs, enum fontformat format,
 	    emsize = sf->ascent + sf->descent;
 	else if ( emsize != sf->ascent + sf->descent )
 return( NULL );
+	if ( format==ff_otf && !PSDictSame(sf->private,sfs->sf->private))
+return( NULL );
 	if ( sf->hasvmetrics ) anyvmetrics = true;
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL )
 	    sc->ttf_glyph = -1;
