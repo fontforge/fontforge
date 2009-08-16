@@ -17,6 +17,7 @@ typedef unsigned char uint8;
 
 static int verbose = false;
 static int max_lig_nest = 10000;
+static int just_headers = false;
 
 struct dup {
     int glyph;
@@ -6700,6 +6701,8 @@ static void readit(FILE *ttf, FILE *util) {
 	}
 return;
     }
+    if ( just_headers )
+return;
 
     if ( info.fftm_start!=0 )
 	readttfFFTM(ttf,util,&info);
@@ -6794,6 +6797,8 @@ int main(int argc, char **argv) {
 	    if ( *pt=='-' ) ++pt;
 	    if ( strcmp(pt,"v")==0 || strcmp(pt,"verbose")==0 )
 		verbose = true;
+	    if ( strcmp(pt,"h")==0 || strcmp(pt,"headers")==0 )
+		just_headers = true;
 	    else {
 		fprintf( stderr, "%s [-verbose] ttf-file\n", argv[0]);
 		exit(1);
@@ -6815,7 +6820,7 @@ return( 1 );
 	}
     }
     if ( filename==NULL ) {
-	fprintf( stderr, "%s [-verbose] ttf-file\n", argv[0]);
+	fprintf( stderr, "%s [-verbose] [-headers] ttf-file\n", argv[0]);
 	exit(1);
     }
 return( 0 );
