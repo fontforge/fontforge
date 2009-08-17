@@ -249,7 +249,7 @@ static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info);
 
 static int readttfheader(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int i;
-    int tag, checksum, offset, length, sr, es, rs; uint32 v;
+    int tag, checksum, offset, length, sr, es, rs, cs; uint32 v;
     int e_sr, e_es, e_rs;
     double version;
 
@@ -318,9 +318,10 @@ exit(0);
 	checksum = getlong(ttf);
 	offset = getlong(ttf);
 	length = getlong(ttf);
- printf( "%c%c%c%c checksum=%x actual=%x diff=%x offset=%d len=%d\n",
+	cs = filecheck(util,offset,length);
+ printf( "%c%c%c%c checksum=%08x actual=%08x diff=%x offset=%d len=%d\n",
 	     tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff,
-	     checksum, filecheck(util,offset,length), checksum-filecheck(util,offset,length),
+	     checksum, cs, checksum^cs,
 	     offset, length );
 	switch ( tag ) {
 	  case CHR('B','A','S','E'):
@@ -2149,9 +2150,11 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	/* (no names, they're in the cff section) */
     } else if ( format==0x00020000 ) {
 	gc = getushort(ttf);
+	if ( gc!=info->glyph_cnt )
+	    fprintf( stderr, "!!!! Post table glyph count does not match that in 'maxp'\n" );
 	indexes = calloc(65536,sizeof(uint16));
 	glyphs = calloc(gc,sizeof(uint16));
-	names = calloc(gc,sizeof(char *));
+	names = calloc(gc<info->glyph_cnt?info->glyph_cnt:gc,sizeof(char *));
 	/* the index table is backwards from the way I want to use it */
 	extras = 0;
 	for ( i=0; i<gc; ++i ) {
