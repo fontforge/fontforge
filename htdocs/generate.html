@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 9-Aug-2009 -->
+  <!-- AP: Last modified: 16-Aug-2009 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -382,9 +382,9 @@
     <A NAME="GenerateTTC">Generate TTC</A>
   </H2>
   <P>
-  <IMG SRC="GenerateTTC.png" ALIGN="Right">A TrueType Collection file can contain
-  many fonts. They need not be all in the same family (though, of course, they
-  can be).
+  <IMG SRC="GenerateTTC.png" ALIGN="Right" WIDTH="423" HEIGHT="641">A TrueType
+  Collection file can contain many fonts. They need not be all in the same
+  family (though, of course, they can be).
   <P>
   The dialog lists all open fonts, you may choose any of them to go into the
   ttc file. No especial magic is needed to bind fonts into one family (at least
@@ -405,6 +405,10 @@
   share other tables if that is possible). The second, with merge tables turned
   off, will dump individual fonts into the collection with no attempt to optimize.
   <P>
+  FontForge can also produce ttc files which use the CFF font format. The OpenType
+  documentation claims this will not work, but it does seem to on both the
+  Mac and unix/linux.
+  <P>
   FontForge is not always able to produce merged tables ... this process will
   fail if:
   <UL>
@@ -414,6 +418,8 @@
       Bitmaps are to be included in the collection
     <LI>
       More that 65534 glyphs would be needed in the merged table
+    <LI>
+      If you select the CFF format then the private dictionaries must match.
     <LI>
       (or something else goes wrong)
   </UL>
