@@ -5919,11 +5919,12 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
 	    at->error = true;
     }
 
-    checksum = filecheck(ttf);
-    checksum = 0xb1b0afba-checksum;
-    if ( head_index!=-1 )
+    if ( head_index!=-1 ) {
+	checksum = filecheck(ttf);
+	checksum = 0xb1b0afba-checksum;
 	fseek(ttf,at->tabdir.alpha[head_index]->offset+2*sizeof(int32),SEEK_SET);
-    putlong(ttf,checksum);
+	putlong(ttf,checksum);
+    }
 
     /* ttfcopyfile closed all the files (except ttf) */
 }
@@ -6620,7 +6621,20 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL; tab=tab->next )
 	tab->temp = dumpsavedtable(tab);
-    dumppost(at,sf,format);
+    {
+	/* post table is expected to have names for every glyph (or none) even*/
+	/*  those not used in this font. */
+	int cnt = sf->glyphcnt;
+	SplineChar **g = sf->glyphs;
+	int *bygid = at->gi.bygid;
+	sf->glyphcnt = main->sf->glyphcnt;
+	sf->glyphs = main->sf->glyphs;
+	at->gi.bygid = main->gi.bygid;
+	dumppost(at,sf,format);
+	sf->glyphcnt = cnt;
+	sf->glyphs = g;
+	at->gi.bygid = bygid;
+    }
     dumpcmap(at,sf,format);
     redohead(at);
 
@@ -6848,6 +6862,15 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	    putlong(ttc,at->tabdir.alpha[j]->offset);
 	    putlong(ttc,at->tabdir.alpha[j]->length);
 	}
+    }
+
+    tab = findtabindir(&all[0].tabdir,CHR('h','e','a','d'));
+    if ( tab!=NULL ) {
+	int checksum;
+	checksum = filecheck(ttc);
+	checksum = 0xb1b0afba-checksum;
+	fseek(ttc,tab->offset+2*sizeof(int32),SEEK_SET);
+	putlong(ttc,checksum);
     }
 }
 
