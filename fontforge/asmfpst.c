@@ -694,7 +694,7 @@ return( NULL );
     next = gcalloc(1<<match_len,sizeof(int));
     temp = galloc((1<<match_len)*sizeof(SplineChar **));
 
-    for ( i=0; i<gtot; ++i ) if ( sf->glyphs[i]!=NULL ) {
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	sf->glyphs[i]->lsidebearing = 0;
 	sf->glyphs[i]->ticked = false;
     }
