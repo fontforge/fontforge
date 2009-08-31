@@ -12134,7 +12134,8 @@ static PyObject *PyFFFont_GenerateTTC(PyObject *self, PyObject *args, PyObject *
     char *locfilename = NULL;
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PyObject *flags=NULL, *ttcflags=NULL, *others=NULL;
-    int iflags = -1;
+    extern int old_sfnt_flags;
+    int iflags = old_sfnt_flags;
     int ittcflags = 0;
     char *bitmaptype="", *namelist=NULL;
     NameList *rename_to = NULL;

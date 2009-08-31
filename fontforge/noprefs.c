@@ -67,9 +67,9 @@ extern int prefer_cjk_encodings;	/* in parsettf */
 extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern int oldformatstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
-extern int old_ttf_flags;		/* in savefontdlg.c */
-extern int old_ps_flags;		/* in savefontdlg.c */
-extern int old_otf_flags;		/* in savefontdlg.c */
+static int old_ttf_flags=0, old_otf_flags=0;
+extern int old_sfnt_flags;		/* in savefont.c */
+extern int old_ps_flags;		/* in savefont.c */
 extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
 extern int mf_ask;			/* in autotrace.c */
@@ -225,9 +225,8 @@ static struct prefs_list {
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1 },
 	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultSFNTflags", pr_int, &old_sfnt_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
@@ -303,6 +302,8 @@ static struct prefs_list {
 	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1 },
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },
 	NULL
 },
  *prefs_list[] = { core_list, extras, NULL };
@@ -803,8 +804,7 @@ static void NOUI_LoadPrefs(void) {
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	
     if ( glyph_2_name_map ) {
-	old_ttf_flags |= ttf_flag_glyphmap;
-	old_otf_flags |= ttf_flag_glyphmap;
+	old_sfnt_flags |= ttf_flag_glyphmap;
     }
     LoadNamelistDir(NULL);
 }
