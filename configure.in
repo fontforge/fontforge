@@ -621,7 +621,7 @@ dnl and not all libintls have that. So check for it instead.
 dnl sometimes it lives in libc so we can't dlopen it
 
 gww_has_gettext="yes"
-AC_LINK_IFELSE([AC_LANG_CALL([],[bind_textdomain_codeset])], AC_DEFINE( _STATIC_LIBINTL ) , [
+AC_LINK_IFELSE([AC_LANG_CALL([],[bind_textdomain_codeset])], AC_DEFINE(_STATIC_LIBINTL) , [
   AC_CHECK_LIB(intl, bind_textdomain_codeset,: ,gww_has_gettext="no" )])
 if test $gww_has_gettext = yes >/dev/null ; then
  AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
