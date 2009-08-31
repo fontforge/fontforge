@@ -3,8 +3,9 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(fontforge/pfaedit.h)
 AC_PROG_CC
 AC_PROG_INSTALL
-AC_DISABLE_SHARED
-AC_ENABLE_STATIC
+dnl AC_DISABLE_SHARED
+dnl AC_ENABLE_STATIC
+
 AC_PROG_RANLIB
 
 AC_CANONICAL_HOST
@@ -472,7 +473,7 @@ dnl mac's don't have gettext, people have to use fink to install it
 gww_has_gettext="yes"
 AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
 
-AC_LINK_IFELSE([AC_LANG_CALL([],[bind_textdomain_codeset])], AC_DEFINE( _STATIC_LIBINTL ) , [
+AC_LINK_IFELSE([AC_LANG_CALL([],[bind_textdomain_codeset])], AC_DEFINE(_STATIC_LIBINTL) , [
   AC_CHECK_LIB(intl, bind_textdomain_codeset,: ,HAVE_LIBINTL_H=0 )])
 
 dnl If we can't/don't want to use dynamic libraries then we must link with
