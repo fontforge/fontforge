@@ -28,6 +28,7 @@
 #include "fontforgevw.h"
 #include "ustring.h"
 #include <utype.h>
+#include "namehash.h"
 
 int recognizePUA = false;
 NameList *force_names_when_opening=NULL;
@@ -54,21 +55,6 @@ NameList *namelist_for_new_fonts = &agl;
 static int psnamesinited=false;
 #define HASH_SIZE	257
 struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[HASH_SIZE];
-
-static int hashname(const char *_name) {
-    const unsigned char *name = (const unsigned char *) _name;
-    int hash=0;
-
-    while ( *name ) {
-	if ( *name<=' ' )
-    break;
-	hash = (hash<<3)|((hash>>29)&0x7);
-	hash ^= *name++-(' '+1);
-    }
-    hash ^= (hash>>16);
-    hash &= 0xffff;
-return( hash%HASH_SIZE );
-}
 
 static void psaddbucket(const char *name, int uni) {
     int hash = hashname(name);
@@ -776,22 +762,197 @@ return( buffer );
     }
 }
 
-void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
-    int gid;
-    char buffer[40]; const char *name;
+static void BuildHash(struct glyphnamehash *hash,SplineFont *sf,char **oldnames) {
+    int gid, hv;
     SplineChar *sc;
+    struct glyphnamebucket *new;
 
-    if ( new==NULL )
-return;
-
-    for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new);
-	if ( name!=sc->name ) {
-	    free(sc->name);
-	    sc->name = copy(name);
+    memset(hash,0,sizeof(*hash));
+    for ( gid = 0; gid<sf->glyphcnt; ++gid ) {
+	if ( (sc=sf->glyphs[gid])!=NULL && oldnames[gid]!=NULL ) {
+	    new = chunkalloc(sizeof(struct glyphnamebucket));
+	    new->sc = sf->glyphs[gid];
+	    hv = hashname(oldnames[gid]);
+	    new->next = hash->table[hv];
+	    new->name = oldnames[gid];
+	    hash->table[hv] = new;
 	}
     }
-    sf->for_new_glyphs = new;
+}
+
+static SplineChar *HashFind(struct glyphnamehash *hash,const char *name) {
+    struct glyphnamebucket *test;
+
+    for ( test=hash->table[hashname(name)]; test!=NULL; test = test->next )
+	if ( strcmp(test->name,name)==0 )
+return( test->sc );
+
+return( NULL );
+}
+
+struct bits {
+    char *start, *end;
+    SplineChar *rpl;
+};
+
+static char *DoReplacements(struct bits *bits,int bc,char **_src,char *start) {
+    int offset = start - *_src;
+    int diff, i, off, allsmall=1, len;
+    char *ret, *last, *last_orig;
+
+    for ( diff=i=0; i<bc; ++i ) {
+	off = strlen(bits[i].rpl->name) - (bits[i].end-bits[i].start);
+	diff += off;
+	if ( diff>0 )
+	    allsmall = 0;
+    }
+    if ( allsmall ) {
+	diff = 0;
+	for ( i=0; i<bc; ++i ) {
+	    len = strlen(bits[i].rpl->name);
+	    memcpy(bits[i].start+diff,bits[i].rpl->name,len);
+	    if ( len<(bits[i].end-bits[i].start) )
+		strcpy(bits[i].start+len+diff,bits[i].end+diff);
+	    diff += len - (bits[i].end-bits[i].start);
+	}
+    } else {
+	int totlen = strlen(*_src);
+	last = ret = galloc(totlen + diff + 1);
+	last_orig = *_src;
+	for ( i=0; i<bc; ++i ) {
+	    if ( last_orig<bits[i].start ) {
+		memcpy( last,last_orig,bits[i].start-last_orig);
+		last += bits[i].start-last_orig;
+	    }
+	    strcpy(last,bits[i].rpl->name);
+	    last += strlen(bits[i].rpl->name);
+	    last_orig = bits[i].end;
+	}
+	strcpy(last,last_orig);
+	free(*_src);
+	*_src = ret;
+    }
+
+return( *_src + offset + diff );
+}
+
+static void ReplaceByHash(char **_src,struct glyphnamehash *hash) {
+    struct bits bits[40];
+    int bc,ch;
+    char *start, *end;
+
+    start = *_src;
+    if ( start==NULL )
+return;
+    while ( *start==' ' ) ++start;
+
+    bc = 0;
+    for ( ; *start; start=end ) {
+	if ( bc>=40 ) {
+	    start = DoReplacements(bits,bc,_src,start);
+	    bc=0;
+	}
+	for ( end=start; *end!='\0' && *end!=' '; ++end );
+	ch = *end; *end='\0';
+	bits[bc].start = start;
+	bits[bc].end   = end;
+	bits[bc].rpl   = HashFind(hash,start);
+	if ( bits[bc].rpl!=NULL )
+	    ++bc;
+	*end = ch;
+	while ( *end==' ' ) ++end;
+    }
+    if ( bc!=0 )
+	(void) DoReplacements(bits,bc,_src,start);
+}
+
+static void SFRenameLookupsByHash(SplineFont *sf,struct glyphnamehash *hash) {
+    int gid, i,j,h;
+    SplineChar *sc, *rpl;
+    PST *pst;
+    FPST *fpst;
+    ASM *sm;
+    struct glyphvariants *gv;
+    KernClass *kc;
+
+    for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	    switch ( pst->type ) {
+	      case pst_pair: case pst_substitution:
+		rpl = HashFind(hash,pst->u.subs.variant);	/* variant is at same location as paired */
+		if ( rpl!=NULL ) {
+		    free( pst->u.subs.variant );
+		    pst->u.subs.variant = copy(rpl->name);
+		}
+	      break;
+	      case pst_alternate: case pst_multiple: case pst_ligature:
+		ReplaceByHash(&pst->u.mult.components,hash);
+	      break;
+	      default:
+		/* position and lcaret don't need anything */
+	      break;
+	    }
+	}
+	for ( h=0; h<2; ++h ) {
+	    gv = h ? sc->horiz_variants:sc->vert_variants;
+	    if ( gv==NULL )
+	continue;
+	    ReplaceByHash(&gv->variants,hash);
+	    for ( i=0; i<gv->part_cnt; ++i ) {
+		struct gv_part *part = &gv->parts[i];
+		ReplaceByHash(&part->component,hash);
+	    }
+	}
+    }
+
+    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
+	switch ( fpst->format ) {
+	  case pst_glyphs:
+	    for ( i=0; i<fpst->rule_cnt; ++i ) {
+		struct fpst_rule *r= &fpst->rules[i];
+		ReplaceByHash(&r->u.glyph.names,hash);
+		ReplaceByHash(&r->u.glyph.back,hash);
+		ReplaceByHash(&r->u.glyph.fore,hash);
+	    }
+	  break;
+	  case pst_class:
+	    for ( i=0; i<fpst->nccnt; ++i )
+		ReplaceByHash(&fpst->nclass[i],hash);
+	    for ( i=0; i<fpst->bccnt; ++i )
+		ReplaceByHash(&fpst->bclass[i],hash);
+	    for ( i=0; i<fpst->fccnt; ++i )
+		ReplaceByHash(&fpst->fclass[i],hash);
+	  break;
+	  case pst_coverage:
+	  case pst_reversecoverage:
+	    for ( i=0; i<fpst->rule_cnt; ++i ) {
+		struct fpst_rule *r= &fpst->rules[i];
+		for ( j=0; j<r->u.coverage.ncnt; ++j )
+		    ReplaceByHash(&r->u.coverage.ncovers[j],hash);
+		for ( j=0; j<r->u.coverage.bcnt; ++j )
+		    ReplaceByHash(&r->u.coverage.bcovers[j],hash);
+		for ( j=0; j<r->u.coverage.fcnt; ++j )
+		    ReplaceByHash(&r->u.coverage.fcovers[j],hash);
+		if ( fpst->format == pst_reversecoverage )
+		    ReplaceByHash(&r->u.rcoverage.replacements,hash);
+	    }
+	  break;
+	}
+    }
+
+    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) {
+	for ( i=0; i<sm->class_cnt; ++i )
+	    ReplaceByHash(&sm->classes[i],hash);
+    }
+
+    for ( h=0; h<2; ++h ) {
+	for ( kc = h ? sf->kerns:sf->vkerns; kc!=NULL; kc=kc->next ) {
+	    for ( i=0; i<kc->first_cnt; ++i )
+		ReplaceByHash(&kc->firsts[i],hash);
+	    for ( i=0; i<kc->second_cnt; ++i )
+		ReplaceByHash(&kc->seconds[i],hash);
+	}
+    }
 }
 
 char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
@@ -799,6 +960,7 @@ char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
     char buffer[40]; const char *name;
     SplineChar *sc;
     char **ret;
+    struct glyphnamehash hash;
 
     if ( new==NULL )
 return( NULL );
@@ -811,20 +973,46 @@ return( NULL );
 	    sc->name = copy(name);
 	}
     }
+
+    BuildHash(&hash,sf,ret);
+    SFRenameLookupsByHash(sf,&hash);
+    __GlyphHashFree(&hash);
 return( ret );
 }
 
 void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former) {
     int gid;
     SplineChar *sc;
+    struct glyphnamehash hash;
 
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( former[gid]!=NULL ) {
-	    free(sc->name);
+	    char *old = sc->name;
 	    sc->name = former[gid];
+	    former[gid] = old;
 	}
     }
+    BuildHash(&hash,sf,former);
+    SFRenameLookupsByHash(sf,&hash);
+    __GlyphHashFree(&hash);
+    for ( gid = 0; gid<sf->glyphcnt; ++gid )
+	free(former[gid]);
     free(former);
+}
+
+void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new) {
+    char **ret;
+    int gid;
+
+    if ( new==NULL )
+return;
+
+    ret = SFTemporaryRenameGlyphsToNamelist(sf,new);
+    for ( gid = 0; gid<sf->glyphcnt; ++gid )
+	free(ret[gid]);
+    free(ret);
+
+    sf->for_new_glyphs = new;
 }
 /* ************************************************************************** */
 static const char *agl_sans_p0_b0[] = {
