@@ -29,6 +29,7 @@
 #include "utype.h"
 #include "gfile.h"
 #include "chardata.h"
+#include "namehash.h"
 
 RefChar *RefCharsCopy(RefChar *ref) {
     RefChar *rhead=NULL, *last=NULL, *cur;
@@ -599,47 +600,25 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
     }
 }
 
-#define GN_HSIZE	257
-
-struct glyphnamebucket {
-    SplineChar *sc;
-    struct glyphnamebucket *next;
-};
-
-struct glyphnamehash {
-    struct glyphnamebucket *table[GN_HSIZE];
-};
-
-#ifndef __GNUC__
-# define __inline__
-#endif
-
-static __inline__ int hashname(const char *pt) {
-    int val = 0;
-
-    while ( *pt ) {
-	val = (val<<3)|((val>>29)&0x7);
-	val ^= (unsigned char)(*pt-'!');
-	pt++;
-    }
-    val ^= (val>>16);
-    val &= 0xffff;
-    val %= GN_HSIZE;
-return( val );
-}
-
-static void _GlyphHashFree(SplineFont *sf) {
+void __GlyphHashFree(struct glyphnamehash *hash) {
     struct glyphnamebucket *test, *next;
     int i;
 
-    if ( sf->glyphnames==NULL )
+    if ( hash==NULL )
 return;
     for ( i=0; i<GN_HSIZE; ++i ) {
-	for ( test = sf->glyphnames->table[i]; test!=NULL; test = next ) {
+	for ( test = hash->table[i]; test!=NULL; test = next ) {
 	    next = test->next;
 	    chunkfree(test,sizeof(struct glyphnamebucket));
 	}
     }
+}
+
+static void _GlyphHashFree(SplineFont *sf) {
+
+    if ( sf->glyphnames==NULL )
+return;
+    __GlyphHashFree(sf->glyphnames);
     free(sf->glyphnames);
     sf->glyphnames = NULL;
 }
