@@ -2820,7 +2820,8 @@ extern NameList *DefaultNameListForNewFonts(void);
 extern NameList *NameListByName(char *name);
 extern NameList *LoadNamelist(char *filename);
 extern void LoadNamelistDir(char *dir);
-extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,NameList *new);
+extern const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,
+	NameList *new, char **sofar);
 extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
 extern char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
 extern void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former);

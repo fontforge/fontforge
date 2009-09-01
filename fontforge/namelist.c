@@ -690,8 +690,9 @@ return;
     closedir(diro);
 }
 /* ************************************************************************** */
-const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,NameList *new) {
-    int i, up, ub, uc, ch;
+const char *RenameGlyphToNamelist(char *buffer, SplineChar *sc,NameList *old,
+	NameList *new, char **sofar) {
+    int i, up, ub, uc, ch, gid;
     char space[80];		/* glyph names are supposed to be less<=31 chars */
     char tempbuf[32];
     char *pt, *start, *opt, *oend; const char *newsubname;
@@ -734,9 +735,19 @@ return( sc->name );
 	    ch = *pt;
 	    *pt = '\0';
 	    tempsc = SFGetChar(sc->parent,-1,start);
-	    if ( tempsc==NULL )
+	    newsubname = NULL;
+	    if ( tempsc!=NULL )
+		newsubname = RenameGlyphToNamelist(tempbuf,tempsc,old,new,sofar);
+	    else if ( sofar!=NULL ) {
+		for ( gid=sc->parent->glyphcnt-1; gid>=0; --gid ) if ( sofar[gid]!=NULL ) {
+		    if ( strcmp(sofar[gid],start)==0 )
+		break;
+		}
+		if ( gid!=-1 )
+		    newsubname = sc->parent->glyphs[gid]->name;
+	    }
+	    if ( newsubname==NULL )
 return( sc->name );
-	    newsubname = RenameGlyphToNamelist(tempbuf,tempsc,old,new);
 	    while ( opt<oend && *newsubname )
 		*opt++ = *newsubname++;
 	    if ( *newsubname )
@@ -746,6 +757,7 @@ return( sc->name );
 return( buffer );
 	    } else if ( ch=='.' ) {
 		/* don't attempt to translate anything after a '.' just copy that litterally */
+		*pt = ch;
 		while ( opt<oend && *pt )
 		    *opt++ = *pt++;
 		if ( *pt )
@@ -967,7 +979,7 @@ return( NULL );
 
     ret = gcalloc(sf->glyphcnt,sizeof(char *));
     for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new);
+	name = RenameGlyphToNamelist(buffer,sc,sf->for_new_glyphs,new,ret);
 	if ( name!=sc->name ) {
 	    ret[gid] = sc->name;
 	    sc->name = copy(name);
