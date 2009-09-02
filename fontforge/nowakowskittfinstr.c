@@ -214,9 +214,7 @@ static uint8 *pushF26Dot6(uint8 *instrs, double num) {
 return( instrs );
 }
 
-#if 0
 /* Push an EF2Dot14. No checks for overflow!
- * Not yet used, but may be needed in future.
  */
 static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
     unsigned int a;
@@ -234,7 +232,6 @@ static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
 
 return( instrs );
 }
-#endif
 
 /* An apparatus for instructing sets of points with given truetype command.
  * The command must pop exactly 1 element from the stack and mustn't push any.
@@ -3956,12 +3953,14 @@ static int SetDStemKeyPoint( InstrCt *ct,StemData *stem,PointData *pd,int aindex
 
     int nextidx, previdx, cpidx, prev_outer, next_outer, is_start;
     int nsidx, psidx, sidx;
+    uint8 flag;
     PointData *ncpd, *pcpd, *cpd, *best = NULL;
     real prevdot, nextdot, cpdist;
 
     if ( pd == NULL )
 return( false );
 
+    flag = fabs( stem->unit.y ) > fabs( stem->unit.x ) ? tf_y : tf_x;
     is_start =  ( aindex == 0 || aindex == 2 );
     prevdot  =  ( pd->prevunit.x * stem->unit.x ) +
                 ( pd->prevunit.y * stem->unit.y );
@@ -3996,7 +3995,10 @@ return( false );
         if ( sidx != -1 ) {
             cpdist = fabs(( pd->base.x - cpd->base.x ) * stem->unit.x +
             	          ( pd->base.y - cpd->base.y ) * stem->unit.y );
-            if ( cpdist > stem->clen/2 ) best = cpd;
+            if (( cpdist > stem->clen/2 ) ||
+                (!(ct->touched[pd->ttfindex] & flag) && !(ct->affected[pd->ttfindex] & flag) &&
+                ( ct->touched[cpd->ttfindex] & flag || ct->affected[cpd->ttfindex] & flag )))
+                best = cpd;
         }
         if ( best == NULL ) best = pd;
     } else
@@ -4171,13 +4173,12 @@ return( 0 );
  * direction in case it has not already been set.
  */
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
-    uint8 *touched,DiagPointInfo *diagpts,PointData *lp1,PointData *lp2,BasePoint *fv ) {
+    uint8 *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset ) {
 
     int i, pushpts[2];
     PointData *start=NULL, *end=NULL;
-    BasePoint newfv, sunit;
+    BasePoint newfv;
 
-    sunit = GetVector( &lp1->base,&lp2->base,false );
     if (( touched[pnum] & tf_d ) && !( touched[pnum] & tf_x ) && !( touched[pnum] & tf_y )) {
         for ( i=0 ; i<diagpts[pnum].count ; i++) {
             if ( diagpts[pnum].line[i].done ) {
@@ -4201,19 +4202,30 @@ return( false );
 
 return( true );
 
-    } else if ( (touched[pnum] & tf_x || sunit.x > sunit.y ) && 
-            !(touched[pnum] & tf_d) && !(touched[pnum] & tf_y)) {
-        if (!( fv->x == 0 && fv->y == 1 )) {
+    } else if ( touched[pnum] & tf_x && !(touched[pnum] & tf_d) && !(touched[pnum] & tf_y)) {
+        if (!( RealNear( fv->x,0 ) && RealNear( fv->y,1 ))) {
+            *(*instrs)++ = 0x04;       /*SFVTCA[y-axis]*/
             fv->x = 0; fv->y = 1;
-            *(*instrs)++ = 0x04;       /*SFVTCA[y]*/
         }
 return( true );
 
-    } else if ( (touched[pnum] & tf_y || sunit.y > sunit.x ) &&
-            !(touched[pnum] & tf_d) && !(touched[pnum] & tf_x)) {
-        if (!( fv->x == 1 && fv->y == 0 )) {
-            *(*instrs)++ = 0x05;       /*SFVTCA[x]*/
+    } else if ( touched[pnum] & tf_y && !(touched[pnum] & tf_d) && !(touched[pnum] & tf_x)) {
+        if (!( RealNear( fv->x,1 ) && RealNear( fv->y,0 ))) {
+            *(*instrs)++ = 0x05;       /*SFVTCA[x-axis]*/
             fv->x = 1; fv->y = 0;
+        }
+return( true );
+    } else if ( !(touched[pnum] & (tf_x|tf_y|tf_d))) {
+        if ( !UnitsParallel( fv,norm,true )) {
+            fv->x = norm->x; fv->y = norm->y;
+
+            if ( pvset )
+                *(*instrs)++ = 0x0E;   /*SFVTPV*/
+            else {
+                *instrs = pushEF2Dot14( *instrs,norm->x );
+                *instrs = pushEF2Dot14( *instrs,norm->y );
+                *(*instrs)++ = 0x0B;   /* SFVFS */
+            }
         }
 return( true );
     }
@@ -4253,7 +4265,7 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
         v1 = stem->keypts[2]; v2 = stem->keypts[3];
     }
 
-    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,v1,v2,fv )) {
+    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,&stem->l_to_r,fv,true )) {
         if ( refpt == -1 ) {
             if (( fv->x == 1 && !( touched[pt] & tf_x )) || 
                 ( fv->y == 1 && !( touched[pt] & tf_y ))) {
@@ -4408,9 +4420,10 @@ return( ct->pt );
         cvt = TTF_getcvtval( ct->gic->sf,ds->width );
 
         pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
-        ct->pt = pushpoints( ct->pt,2,pushpts );
-        *(ct->pt)++ = 0x87;    /*SDPVTL [orthogonal] */
-
+        ct->pt = pushEF2Dot14( ct->pt,ds->l_to_r.x );
+        ct->pt = pushEF2Dot14( ct->pt,ds->l_to_r.y );
+        *(ct->pt)++ = 0x0A;    /* SPVFS */
+    
         x_ldup =( touched[a1] & tf_x && touched[a2] & tf_x ) ||
                 ( touched[b1] & tf_x && touched[b2] & tf_x );
         y_ldup =( touched[a1] & tf_y && touched[a2] & tf_y ) ||
@@ -4452,7 +4465,7 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,true );
 
-    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,line->pd1,line->pd2,fv )) {
+    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,&newpv,fv,false )) {
         if ( ct->rp0 != line->pd1->ttfindex ) {
             instrs = pushpoint( instrs,line->pd1->ttfindex );
             *instrs++ = SRP0;
