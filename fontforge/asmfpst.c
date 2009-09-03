@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2003-2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
@@ -1003,6 +1002,7 @@ ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered) {
     }
 	/* This is a temporary value. It should be replaced if we plan to */
 	/*  retain this state machine */
-    sm->subtable = fpst->subtable;
+    if ( sm!=NULL )
+	sm->subtable = fpst->subtable;
 return( sm );
 }
