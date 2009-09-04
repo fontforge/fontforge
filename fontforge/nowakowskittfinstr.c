@@ -1934,20 +1934,25 @@ typedef struct instrct {
        initialized before instructing particular glyph. */
     GlobalInstrCt *gic;
 
+    /* Here things for this particular glyph start. */
     SplineChar *sc;
     SplineSet *ss;
-    int ptcnt;            /* number of points in this glyph */
-    int *contourends;     /* points ending their contours. null-terminated. */
 
     /* instructions */
     uint8 *instrs;        /* the beginning of the instructions */
     uint8 *pt;            /* the current position in the instructions */
 
+    /* properties indexed by contour number */
+    int *contourends;     /* points ending their contours. Null-terminated. */
+    uint8 *clockwise;     /* is given contour clockwise? */
+
     /* properties, indexed by ttf point index. Some could be compressed. */
+    int ptcnt;            /* number of points in this glyph */
     BasePoint *bp;        /* point coordinates */
     uint8 *touched;       /* touchflags; points explicitly instructed */
     uint8 *affected;      /* touchflags; almost touched, but optimized out */
 
+    /* data from stem detector */
     GlyphData *gd;
 
     /* stuff for hinting diagonals */
@@ -2144,12 +2149,12 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
     SplineSet *ss = ct->ss;
     SplinePoint *sp;
     uint8 *done;
-    int p;
+    int c, p;
 
     done = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
 
-    for ( ; ss!=NULL; ss=ss->next ) {
-        ct->cdir = SplinePointListIsClockwise(ss);
+    for ( c=0; ss!=NULL; ss=ss->next, ++c ) {
+        ct->cdir = ct->clockwise[c];
 
         if (((contour_direction == EXTERNAL_CONTOURS) && !ct->cdir) ||
             ((contour_direction == INTERNAL_CONTOURS) && ct->cdir)) continue;
@@ -5026,6 +5031,7 @@ void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
     int cnt, contourcnt;
     BasePoint *bp;
     int *contourends;
+    uint8 *clockwise;
     uint8 *touched;
     uint8 *affected;
     SplineSet *ss;
@@ -5088,15 +5094,18 @@ return;
     cnt = SSTtfNumberPoints(sc->layers[gic->layer].splines);
 
     contourends = galloc((contourcnt+1)*sizeof(int));
+    clockwise = gcalloc(contourcnt,1);
     bp = galloc(cnt*sizeof(BasePoint));
     touched = gcalloc(cnt,1);
     affected = gcalloc(cnt,1);
+
     contourcnt = cnt = 0;
     for ( ss=sc->layers[gic->layer].splines; ss!=NULL; ss=ss->next ) {
-	touched[cnt] |= tf_startcontour;
-	cnt = SSAddPoints(ss,cnt,bp,NULL);
-	touched[cnt-1] |= tf_endcontour;
-	contourends[contourcnt++] = cnt-1;
+        touched[cnt] |= tf_startcontour;
+        cnt = SSAddPoints(ss,cnt,bp,NULL);
+        touched[cnt-1] |= tf_endcontour;
+        contourends[contourcnt] = cnt-1;
+        clockwise[contourcnt++] = SplinePointListIsClockwise(ss);
     }
     contourends[contourcnt] = 0;
 
@@ -5111,6 +5120,7 @@ return;
     ct.pt = NULL;
     ct.ptcnt = cnt;
     ct.contourends = contourends;
+    ct.clockwise = clockwise;
     ct.bp = bp;
     ct.touched = touched;
     ct.affected = affected;
@@ -5125,7 +5135,9 @@ return;
     free(affected);
     free(bp);
     free(contourends);
+    free(clockwise);
 
     SCMarkInstrDlgAsChanged(sc);
     SCHintsChanged(sc);
 }
+/* próbuję przyspieszyć strong point interpolation */
