@@ -7523,7 +7523,7 @@ return( false );
     buts[2] = _("_Skip for now");
     buts[3] = _("Forget _to All"); buts[4] = _("_Forget about it");
     buts[5] = NULL;
-    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,"You appear to have an old editing session on %s.\nWould you like to recover it?", pt );
+    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,_("You appear to have an old editing session on %s.\nWould you like to recover it?"), pt );
     switch ( ret ) {
       case 0:
 return( true );
