@@ -1672,15 +1672,15 @@ static PyObject *PyFFContour_Slice( PyObject *self, Py_ssize_t start, Py_ssize_t
     PyFF_Contour *ret;
     int len, i;
 
-    if ( start<0 || end <0 || end>=cont->pt_cnt || start>=cont->pt_cnt ) {
+    if ( start<0 || end<0 || end>cont->pt_cnt || start>cont->pt_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
 return( NULL );
     }
 
-    if ( end<start )
-	len = end + (cont->pt_cnt-1 - start) + 1;
+    if ( end<start ) 
+	len = end - start + cont->pt_cnt;
     else
-	len = end-start + 1;
+	len = end - start;
 
     ret = (PyFF_Contour *)PyFF_ContourType.tp_alloc(&PyFF_ContourType, 0);
     ret->is_quadratic = cont->is_quadratic;
@@ -1691,10 +1691,10 @@ return( NULL );
     if ( end<start ) {
 	for ( i=start; i<cont->pt_cnt; ++i )
 	    ret->points[i-start] = cont->points[i];
-	for ( i=0; i<=end; ++i )
+	for ( i=0; i<end; ++i )
 	    ret->points[(cont->pt_cnt-start)+i] = cont->points[i];
     } else {
-	for ( i=start; i<=end; ++i )
+	for ( i=start; i<end; ++i )
 	    ret->points[i-start] = cont->points[i];
     }
     for ( i=0; i<ret->pt_cnt; ++i )
@@ -1713,27 +1713,27 @@ return( -1 );
     if ( end<start ) {
 	PyErr_Format(PyExc_ValueError, "Slice specification out of order" );
 return( -1 );
-    } else if ( start<0 || end>=self->pt_cnt ) {
+    } else if ( start<0 || end>self->pt_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
 return( -1 );
     }
 
-    diff = rpl->pt_cnt - ( end-start+1 );
-    for ( i=start; i<=end; ++i )
+    diff = rpl->pt_cnt - ( end-start );
+    for ( i=start; i<end; ++i )
 	Py_DECREF(self->points[i]);
     if ( diff>0 ) {
 	if ( self->pt_cnt+diff >= self->pt_max ) {
 	    self->pt_max = self->pt_cnt + diff;
 	    self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max);
 	}
-	for ( i=self->pt_cnt-1; i>end; --i )
+	for ( i=self->pt_cnt-1; i>=end; --i )
 	    self->points[i+diff] = self->points[i];
     } else if ( diff<0 ) {
-	for ( i=end+1; i<self->pt_cnt; ++i )
+	for ( i=end; i<self->pt_cnt; ++i )
 	    self->points[i+diff] = self->points[i];
     }
     self->pt_cnt += diff;
-    for ( i=0; i<=rpl->pt_cnt; ++i ) {
+    for ( i=0; i<rpl->pt_cnt; ++i ) {
 	self->points[i+start] = rpl->points[i];
 	Py_INCREF(rpl->points[i]);
     }
