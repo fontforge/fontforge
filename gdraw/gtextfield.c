@@ -321,7 +321,7 @@ return;
 	i = 0;
 	while ( ( uept = u_strchr(upt,'\n'))!=NULL ) {
 	    gt->lines[i++] = upt-gt->text;
-	    pt = ept+1;
+	    upt = uept+1;
 	}
 	gt->lines[i++] = upt-gt->text;
     } else {
