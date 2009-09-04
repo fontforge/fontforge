@@ -119,17 +119,20 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
     int i = -1;
     char *end;
     struct psbucket *buck;
+    int _recognizePUA = recognizePUA;
 
     if ( strncmp(name,"uni",3)==0 ) {
 	i = strtol(name+3,&end,16);
 	if ( *end || end-name!=7 )	/* uniXXXXXXXX means a ligature of uniXXXX and uniXXXX */
 	    i = -1;
+	_recognizePUA = true;
     } else if ( (name[0]=='U' || name[0]=='u') && name[1]=='+' &&
 	    (strlen(name)==6 || strlen(name)==7)) {
 	/* Unifont uses this convention */
 	i = strtol(name+2,&end,16);
 	if ( *end )
 	    i = -1;
+	_recognizePUA = true;
     } else if ( name[0]=='u' && strlen(name)>=5 ) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
@@ -145,6 +148,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	    break;
 		}
 	}
+	_recognizePUA = true;
     } else if ( name[0]!='\0' && name[1]=='\0' )
 	i = ((unsigned char *) name)[0];
     if ( i==-1 ) {
@@ -156,7 +160,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	if ( buck!=NULL )
 	    i = buck->uni;
     }
-    if ( !recognizePUA && i>=0xe000 && i<=0xf8ff )
+    if ( !_recognizePUA && i>=0xe000 && i<=0xf8ff )
 	i = -1;
 return( i );
 }
