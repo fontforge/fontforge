@@ -7111,7 +7111,7 @@ static struct resed fontview_re[] = {
     {N_("Selected BG Color"), "SelectedColor", rt_color, &fvselcol, N_("Color used to draw the background of selected glyphs")},
     {N_("Selected FG Color"), "SelectedFgColor", rt_color, &fvselfgcol, N_("Color used to draw the foreground of selected glyphs")},
     {N_("Changed Color"), "ChangedColor", rt_color, &fvchangedcol, N_("Color used to mark a changed glyph")},
-    {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information in the fontview.")},
+    {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information and glyph labels in the fontview.")},
     {N_("Font Family"), "FontFamily", rt_stringlong, &standard_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs")},
     {N_("Serif Family"), "SerifFamily", rt_stringlong, &special_fontnames[0], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a serif font")},
     {N_("Script Family"), "ScriptFamily", rt_stringlong, &special_fontnames[1], N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs\nfor characters in the unicode math region which are specified to be in a script font")},
@@ -7205,7 +7205,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
     rq.utf8_family_name = standard_fontnames;
-    rq.point_size = -13;
+    rq.point_size = fv_fontsize;
     rq.weight = 400;
     fv->fontset[0] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->fontset[0]);
