@@ -1293,12 +1293,13 @@ enum validation_state { vs_unknown = 0,
 	vs_missinganchor	= 0x100000,
 	vs_dupname		= 0x200000,
 	vs_dupunicode		= 0x400000,
+	vs_overlappedhints	= 0x800000,
 
-	vs_last = vs_dupunicode,
-	vs_maskps = 0x3fe | vs_pointstoofarapart | vs_missinganchor | vs_dupname | vs_dupunicode,
-	vs_maskcid = 0x1fe | vs_pointstoofarapart | vs_missinganchor | vs_dupname,
+	vs_last = vs_overlappedhints,
+	vs_maskps = 0x3fe | vs_pointstoofarapart | vs_missinganchor | vs_dupname | vs_dupunicode | vs_overlappedhints,
+	vs_maskcid = 0x1fe | vs_pointstoofarapart | vs_missinganchor | vs_dupname | vs_overlappedhints,
 	vs_maskttf = 0x7e | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor | vs_dupunicode,
-	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor
+	vs_maskfindproblems = 0x1be | vs_pointstoofarapart | vs_nonintegral | vs_missinganchor | vs_overlappedhints
 	};
 
 typedef struct splinechar {
@@ -3114,6 +3115,7 @@ extern struct math_constants_descriptor {
 } math_constants_descriptor[];
 
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
+extern StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm);
 extern char *VSErrorsFromMask(int mask,int private_mask);
 extern int SCValidate(SplineChar *sc, int layer, int force);
 extern AnchorClass *SCValidateAnchors(SplineChar *sc);

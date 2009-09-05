@@ -1368,6 +1368,51 @@ return( true );
 return( false );
 }
 
+StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm) {
+    int hi1, hi2, hcnt=0;
+    StemInfo *h1, *h2;
+    int v;
+
+    for ( v=0; v<2; ++v ) {
+	if ( v==0 ) {
+	    h1 = sc->hstem;
+	    hi1 = 0;
+	} else {
+	    h1 = sc->vstem;
+	    hi1 = hcnt;
+	}
+	for ( ; h1!=NULL && hi1<HntMax; ++hi1, h1=h1->next ) {
+	    if ( hm==NULL || ((*hm)[(hi1>>3)] & (0x80>>(hi1&7))) ) {
+		for ( hi2=hi1+1, h2=h1->next; h2!=NULL && hi2<HntMax; ++hi2, h2=h2->next ) {
+		    if ( hm==NULL || ((*hm)[(hi2>>3)] & (0x80>>(hi2&7))) ) {
+			real start1, end1, start2, end2;
+			if ( h1->width>0 ) {
+			    start1 = h1->start;
+			    end1 = start1+h1->width;
+			} else {
+			    end1 = h1->start;
+			    start1 = start1+h1->width;
+			}
+			if ( h2->width>0 ) {
+			    start2 = h2->start;
+			    end2 = start2+h2->width;
+			} else {
+			    end2 = h2->start;
+			    start2 = start2+h2->width;
+			}
+			if ( end1<start2 || start1>end2 )
+			    /* No overlap */;
+			else
+return( h1 );
+		    }
+		}
+	    }
+	}
+	hcnt = hi1;
+    }
+return( NULL );
+}
+
 int SCValidate(SplineChar *sc, int layer, int force) {
     SplineSet *ss;
     Spline *s1, *s2, *s, *first;
@@ -1494,6 +1539,29 @@ int SCValidate(SplineChar *sc, int layer, int force) {
     for ( h=sc->vstem       ; h!=NULL; h=h->next, ++cnt );
     if ( cnt>=96 )
 	sc->layers[layer].validation_state |= vs_toomanyhints|vs_known;
+
+    if ( sc->layers[layer].splines!=NULL ) {
+	int anyhm=0;
+	h=NULL;
+	for ( ss=sc->layers[layer].splines; ss!=NULL && h==NULL; ss=ss->next ) {
+	    sp = ss->first;
+	    do {
+		if ( sp->hintmask!=NULL ) {
+		    anyhm = true;
+		    h = SCHintOverlapInMask(sc,sp->hintmask);
+		    if ( h!=NULL )
+	    break;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+	    } while ( sp!=ss->first );
+	}
+	if ( !anyhm )
+	    h = SCHintOverlapInMask(sc,NULL);
+	if ( h!=NULL )
+	    sc->layers[layer].validation_state |= vs_overlappedhints|vs_known;
+    }
 
     memset(&lastpt,0,sizeof(lastpt));
     for ( ss=sc->layers[layer].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {

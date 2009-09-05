@@ -86,6 +86,7 @@ struct problems {
     unsigned int bbymin: 1;
     unsigned int bbxmax: 1;
     unsigned int bbxmin: 1;
+    unsigned int overlappedhints: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -129,7 +130,7 @@ static int cidblank=0, cidmultiple=0, advancewidth=0, vadvancewidth=0;
 static int bbymax=0, bbymin=0, bbxmax=0, bbxmin=0;
 static int irrelevantcp=0, missingglyph=0, missingscriptinfeature=0;
 static int badsubs=0, missinganchor=0, toomanypoints=0, pointsmax = 1500;
-static int multuni=0, multname=0, uninamemismatch=0;
+static int multuni=0, multname=0, uninamemismatch=0, overlappedhints=0;
 static int toomanyhints=0, hintsmax=96, toodeeprefs=0, refdepthmax=9;
 static int ptmatchrefsoutofdate=0, refsbadtransformttf=0, refsbadtransformps=0;
 static int mixedcontoursrefs=0, multusemymetrics=0;
@@ -204,6 +205,7 @@ static SplineFont *lastsf=NULL;
 #define CID_BitmapWidths	1058
 #define CID_MissingAnchor	1059
 #define CID_MultUseMyMetrics	1060
+#define CID_OverlappedHints	1061
 
 
 static void FixIt(struct problems *p) {
@@ -735,6 +737,19 @@ static int missinghint(StemInfo *base, StemInfo *findme) {
     while ( base!=NULL && base!=findme )
 	base = base->next;
 return( base==NULL );
+}
+
+static int missingschint(StemInfo *findme, SplineChar *sc) {
+    StemInfo *base;
+
+    for ( base = sc->hstem; base!=NULL; base=base->next )
+	if ( base==findme )
+return( false );		/* Hasn't been deleted */
+    for ( base = sc->vstem; base!=NULL; base=base->next )
+	if ( base==findme )
+return( false );
+
+return( true );
 }
 
 static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
@@ -1545,6 +1560,51 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    } while ( sp!=test->first && !p->finish );
 	    if ( !p->ptnearhint )
 	break;
+	}
+    }
+
+    if ( p->overlappedhints && !p->finish && !cur->order2 && spl!=NULL ) {
+	int anyhm=0;
+	for ( test=spl; test!=NULL && !p->finish && p->overlappedhints; test=test->next ) {
+	    sp = test->first;
+	    do {
+		if ( sp->hintmask!=NULL ) {
+		    anyhm = true;
+		    h = SCHintOverlapInMask(sc,sp->hintmask);
+		    if ( h!=NULL ) {
+			sp->selected = true;
+			h->active = true;
+			changed = true;
+			ExplainIt(p,sc,_("The hint mask of the selected point contains overlapping hints"),0,0);
+			if ( p->ignorethis )
+			    p->overlappedhints = false;
+			if ( missing(p,test,sp))
+  goto restart;
+			if ( missingschint(h,sc))
+  goto restart;
+			h->active = false;
+			sp->selected = false;
+			if ( !p->overlappedhints )
+	    break;
+		    }
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->overlappedhints )
+	break;
+	}
+	if ( p->overlappedhints && !anyhm ) {
+	    h = SCHintOverlapInMask(sc,NULL);
+	    if ( h!=NULL ) {
+		h->active = true;
+		changed = true;
+		ExplainIt(p,sc,_("There are no hint masks in this layer but there are overlapping hints."),0,0);
+		if ( missingschint(h,sc))
+  goto restart;
+		h->active = false;
+	    }
 	}
     }
 
@@ -2801,7 +2861,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
 	    CID_RefBadTransformTTF, CID_RefBadTransformPS, CID_MixedContoursRefs,
 	    CID_UniNameMisMatch, CID_BBYMax, CID_BBYMin, CID_BBXMax, CID_BBXMin,
-	    CID_MultUseMyMetrics,
+	    CID_MultUseMyMetrics, CID_OverlappedHints,
 	    0 };
 	int i;
 	if ( p->fv->b.cidmaster!=NULL ) {
@@ -2857,6 +2917,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
+	overlappedhints = p->overlappedhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_OverlappedHints));
 	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
 	multusemymetrics = p->multusemymetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUseMyMetrics));
 	refsbadtransformttf = p->refsbadtransformttf = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformTTF));
@@ -2919,7 +2980,7 @@ return( true );
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
 		p->toodeeprefs || multuni || multname || uninamemismatch ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
-		p->multusemymetrics ||
+		p->multusemymetrics || p->overlappedhints ||
 		p->mixedcontoursrefs || p->refsbadtransformps ||
 		p->bbymax || p->bbxmax || p->bbymin || p->bbxmin ) {
 	    DoProbs(p);
@@ -2949,6 +3010,7 @@ static void DummyFindProblems(CharView *cv) {
     p.pointstoofar = true;
     p.nonintegral = true;
     p.missinganchor = true;
+    p.overlappedhints = true;
 
     p.pointsmax = 1500;
     p.hintsmax = 96;
@@ -2995,13 +3057,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[15], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[7], rfgcd[9];
+    GGadgetCreateData pgcd[15], pagcd[8], hgcd[10], rgcd[10], cgcd[5], mgcd[11], agcd[7], rfgcd[9];
     GGadgetCreateData bbgcd[14];
     GGadgetCreateData pboxes[6], paboxes[4], rfboxes[4], hboxes[5], aboxes[2],
 	    cboxes[2], bbboxes[2], rboxes[2], mboxes[5];
     GGadgetCreateData *parray[12], *pharray1[4], *pharray2[4], *pharray3[7],
 	    *paarray[8], *paharray[4], *rfarray[9], *rfharray[4],
-	    *harray[8], *hharray1[4], *hharray2[4], *hharray3[4], *aarray[6],
+	    *harray[9], *hharray1[4], *hharray2[4], *hharray3[4], *aarray[6],
 	    *carray[5], *bbarray[8][4], *rarray[7], *marray[7][2],
 	    *mharray1[4], *mharray2[5], *barray[10];
     GTextInfo plabel[15], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[7], rflabel[9];
@@ -3585,7 +3647,20 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hboxes[4].gd.flags = gg_enabled|gg_visible;
     hboxes[4].gd.u.boxelements = hharray3;
     hboxes[4].creator = GHBoxCreate;
-    harray[5] = &hboxes[4]; harray[6] = GCD_Glue; harray[7] = NULL;
+    harray[5] = &hboxes[4];
+
+    hlabel[8].text = (unichar_t *) _("_Overlapped hints");
+    hlabel[8].text_is_1byte = true;
+    hlabel[8].text_in_resource = true;
+    hgcd[8].gd.label = &hlabel[8];
+    hgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( overlappedhints ) hgcd[8].gd.flags |= gg_cb_on;
+    hgcd[8].gd.popup_msg = (unichar_t *) _("Either a glyph should have no overlapping hints,\nor a glyph with hint masks should have no overlapping\nhints within a hint mask.");
+    hgcd[8].gd.cid = CID_OverlappedHints;
+    hgcd[8].creator = GCheckBoxCreate;
+    harray[6] = &hgcd[8];
+
+    harray[7] = GCD_Glue; harray[8] = NULL;
 
     hboxes[0].gd.flags = gg_enabled|gg_visible;
     hboxes[0].gd.u.boxelements = harray;
@@ -4156,7 +4231,8 @@ static char *vserrornames[] = {
     N_("Non-integral coordinates"),
     N_("Contains anchor points for some, but not all, classes in a subtable"),
     N_("There is another glyph in the font with this name"),
-    N_("There is another glyph in the font with this unicode code point")
+    N_("There is another glyph in the font with this unicode code point"),
+    N_("Glyph contains overlapped hints (in the same hintmask)")
 };
 
 static char *privateerrornames[] = {
