@@ -3353,25 +3353,33 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
+	  case MID_Cut: case MID_Copy:
+#if 0	/* Copy/Cut should always be enabled so textfields will get the event */
+	    mi->ti.disabled = i==-1;
+#endif
+	  break;
 	  case MID_Join:
-	  case MID_Copy: case MID_CopyRef: case MID_CopyWidth:
+	  case MID_CopyRef: case MID_CopyWidth:
 	  case MID_CopyLBearing: case MID_CopyRBearing:
-	  case MID_Cut: case MID_Clear:
+	  case MID_Clear:
 	    mi->ti.disabled = i==-1;
 	  break;
 	  case MID_CopyVWidth:
 	    mi->ti.disabled = i==-1 || !mv->sf->hasvmetrics;
 	  break;
+#if 0	/* Undo/Redo should always be enabled so textfields will get the event */
 	  case MID_Undo:
 	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].undoes==NULL;
 	  break;
 	  case MID_Redo:
 	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].redoes==NULL;
 	  break;
+#endif
 	  case MID_UnlinkRef:
 	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].refs==NULL;
 	  break;
 	  case MID_Paste:
+#if 0	/* Paste should always be enabled so textfields will get the event */
 	    mi->ti.disabled = i==-1 ||
 		(!CopyContainsSomething() &&
 #ifndef _NO_LIBPNG
@@ -3383,6 +3391,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/ps") &&
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps"));
+#endif
 	  break;
 	}
     }
