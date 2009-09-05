@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 16-Aug-2009 -->
+  <!-- AP: Last modified: 5-Sep-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1845,7 +1845,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	      glyph name, both of them should be selected.</TD>
 	  </TR>
 	  <TR>
-	    <TD>0x200000</TD>
+	    <TD>0x400000</TD>
 	    <TD>Duplicate unicode code point. Two (or more) glyphs in this font have
 	      the code point. When outputting an sfnt (TrueType/OpenType) font only one
 	      of them will ever be seen.
@@ -1853,6 +1853,11 @@ pen = None;				# Finalize the pen. This tells FontForge
 	      It's a little hard to detect this in normal use, but if you change the encoding
 	      to "Glyph Order", and then use Edit-&gt;Select-&gt;Wildcard and enter the
 	      code point, both of them should be selected.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x800000</TD>
+	    <TD>Overlapped hints. Either the glyph has no hint masks and there are overlapped
+	      hints, or a hint mask specifies two overlapping hints.</TD>
 	  </TR>
 	</TABLE>
       </TD>
@@ -4079,7 +4084,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	If sequence is None, then the named table will be removed from the font.</TD>
     </TR>
     <TR>
-      <TD><CODE>ovalidate</CODE></TD>
+      <TD><CODE>validate</CODE></TD>
       <TD><CODE>([force])</CODE></TD>
       <TD>Validates the font and returns a bit mask of all errors from all glyphs
 	(as defined in the
