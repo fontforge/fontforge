@@ -84,6 +84,15 @@ while ( $argc > 1 )
       Print( "  A glyph uses at least one, but not all, anchor classes in a subtable" )
       Print( "   (I'm not absolutely sure this is an error)" )
     endif
+    if ( mask & 0x200000 )
+      Print( "  Two glyphs have the same name." )
+    endif
+    if ( mask & 0x400000 )
+      Print( "  Two glyphs have the unicode." )
+    endif
+    if ( mask & 0x800000 )
+      Print( "  Overlapping hints in a glyph." )
+    endif
 
     mask = $loadState;
     if ( mask & 0x01 )
