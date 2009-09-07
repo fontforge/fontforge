@@ -777,10 +777,16 @@ return;
 /* We'll need at least STACK_DEPTH stack levels and a twilight point (and thus
  * also a twilight zone). We also currently define some functions in fpgm.
  * We must ensure this is indicated in the 'maxp' table.
+ *
+ * We also need two storage cells. As we now use SPVFS to set projection
+ * vector for diagonal hinting, we have to adjust values taken by SPVFS,
+ * so that diagonals look cleanly in all aspect ratios. Adjustments are
+ * not trivial to compute, so we do this once (in prep) and 
+ * storage[0] and storege[1]
  */
 static void init_maxp(GlobalInstrCt *gic) {
     struct ttf_table *tab = SFFindTable(gic->sf, CHR('m','a','x','p'));
-    uint16 zones, twpts, fdefs, stack;
+    uint16 zones, twpts, store, fdefs, stack;
 
     if ( tab==NULL ) {
         tab = chunkalloc(sizeof(struct ttf_table));
@@ -797,16 +803,19 @@ static void init_maxp(GlobalInstrCt *gic) {
 
     zones = memushort(tab->data, 32,  7*sizeof(uint16));
     twpts = memushort(tab->data, 32,  8*sizeof(uint16));
+    store = memushort(tab->data, 32,  9*sizeof(uint16));
     fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
     stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
     if (gic->fpgm_done && zones<2) zones=2;
     if (gic->fpgm_done && twpts<1) twpts=1;
-    if (gic->fpgm_done && fdefs<20) fdefs=20;
+    if (gic->fpgm_done && gic->prep_done && store<2) store=2;
+    if (gic->fpgm_done && fdefs<22) fdefs=22;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
+    memputshort(tab->data, 9*sizeof(uint16), store);
     memputshort(tab->data,10*sizeof(uint16), fdefs);
     memputshort(tab->data,12*sizeof(uint16), stack);
 }
@@ -1058,7 +1067,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
          * Syntax: PUSHX_3 min_dist inner_pt outer_pt CALL;
          */
         0xb0, // PUSHB_1
-        0x09, //   9    
+        0x09, //   9
         0x2c, // FDEF
         0x20, //   DUP
         0x7d, //   RDTG
@@ -1477,6 +1486,112 @@ static void init_fpgm(GlobalInstrCt *gic) {
         0x1b, //   ELSE
         0xc0, //     MDRP[grey]
         0x59, //   EIF
+        0x2d, // ENDF
+
+        /* Function 20: compute adjustments for X and Y components of projection
+         * vector, for aspect ratios different than 1:1, and store them
+         * in storage[0] and storage[1] respectively.
+         * Syntax: 20 CALL (use it only ONCE, from PREP table).
+         */
+        0xb0, // PUSHB_1
+        0x14, //   20
+        0x2c, // FDEF
+        0xb3, //   PUSHB_4 (we normally need no adjustments)
+        0x00, //     0
+        0x40, //     1.0 (F26Dot6)
+        0x01, //     1
+        0x40, //     1.0 (F26Dot6)
+        0x42, //   WS
+        0x42, //   WS 
+        0x01, //   SVTCA[x-axis]
+        0x4b, //   MPPEM
+        0xb8, //   PUSHW_1
+        0x10, //     4096
+        0x00, //     ...still that 4096
+        0x63, //   MUL (so we have PPEM along X casted to F26Dot6)
+        0x00, //   SVTCA[y-axis]
+        0x4b, //   MPPEM
+        0xb8, //   PUSHW_1
+        0x10, //     4096
+        0x00, //     ...still that 4096
+        0x63, //   MUL (so we have PPEM along Y casted to F26Dot6)
+        0x20, //   DUP
+        0x8a, //   ROLL
+        0x20, //   DUP
+        0x8a, //   ROLL
+        0x55, //   NEQ
+        0x58, //   IF (if PPEM along X != PPEM along Y)
+        0x20, //     DUP
+        0x8a, //     ROLL
+        0x20, //     DUP
+        0x8a, //     ROLL
+        0x52, //     GT
+        0x58, //     IF (if PPEM along X < PPEM along Y)
+        0x23, //       SWAP
+        0x62, //       DIV
+        0x20, //       DUP
+        0xb0, //       PUSHB_1
+        0x00, //         0
+        0x23, //       SWAP
+        0x42, //       WS
+        0x1b, //     ELSE (if PPEM along X > PPEM along Y)
+        0x62, //       DIV
+        0x20, //       DUP
+        0xb0, //       PUSHB_1
+        0x01, //         1
+        0x23, //       SWAP
+        0x42, //       WS
+        0x59, //     EIF
+        0x20, //     DUP [A LOOP STARTS HERE]
+        0xb0, //     PUSHB_1
+        0x40, //       1.0 (F26Dot6)
+        0x52, //     GT
+        0x58, //     IF (bigger adjustment is greater than 1.0 => needs fixing)
+        0xb2, //       PUSHB_3
+        0x00, //         0
+        0x20, //         0.5 (F26Dot6)
+        0x00, //         0
+        0x43, //       RS
+        0x63, //       MUL
+        0x42, //       WS (we halved adjustment for X)
+        0xb2, //       PUSHB_3
+        0x01, //         1
+        0x20, //         0.5 (F26Dot6)
+        0x01, //         1
+        0x43, //       RS
+        0x63, //       MUL
+        0x42, //       WS (we halved adjustment for Y)
+        0xb0, //       PUSHB_1
+        0x20, //         0.5 (F26Dot6)
+        0x63, //       MUL (we halved the bigger adjustment)
+        0xb0, //       PUSHB_1
+        0x19, //         25
+        0x65, //       NEG
+        0x1c, //       JMPR (go back to the start of the loop)
+        0x59, //     EIF
+        0x1b, //   ELSE (if PPEM along X == PPEM along Y)
+        0x21, //     POP
+        0x21, //     POP
+        0x59, //   EIF
+        0x2d, // ENDF
+
+        /* Function 21: call it before SFVFS or SPVFS, so that the vector
+         * passed is aspect-ratio corrected.
+         * Syntax: x y 21 CALL
+         */
+        0xb0, // PUSHB_1
+        0x15, //   21
+        0x2c, // FDEF
+        0xb0, //   PUSHB_1
+        0x01, //     1
+        0x43, //   RS
+        0x63, //   MUL
+        0x23, //   SWAP
+        0xb0, //   PUSHB_1
+        0x00, //     0
+        0x43, //   RS
+        0x63, //   MUL
+        0x23, //   SWAP
         0x2d  // ENDF
     };
 
@@ -1768,6 +1883,9 @@ static void init_prep(GlobalInstrCt *gic) {
         prepmaxlen += 14*(gic->bluecnt);
     }
 
+    if (gic->fpgm_done)
+        prepmaxlen += 3;
+
     new_prep = gcalloc(prepmaxlen, sizeof(uint8));
     memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
     prep_head = new_prep + preplen;
@@ -1784,8 +1902,15 @@ static void init_prep(GlobalInstrCt *gic) {
         prep_head = normalize_stems(prep_head, 0, gic);
         prep_head = normalize_stems(prep_head, 1, gic);
         *prep_head++ = 0x59; // EIF
-        preplen = prep_head - new_prep;
     }
+
+    /* compute adjustments for projection vector */
+    if (gic->fpgm_done) {
+        prep_head = pushnum(prep_head, 20);
+        *prep_head++ = CALL;
+    }
+
+    preplen = prep_head - new_prep;
 
     tab = SFFindTable(gic->sf, CHR('p','r','e','p'));
 
@@ -2091,9 +2216,9 @@ return 0;
     in = 0;
     while (prev != NULL && fabs(in) < CURVATURE_THRESHOLD) {
         in = SplineCurvature(prev, 1);
-	if (fabs(in) < CURVATURE_THRESHOLD) in = SplineCurvature(prev, 0);
-	if (fabs(in) < CURVATURE_THRESHOLD) prev = prev->from->prev;
-	if ((prev != NULL && IsAnglePoint(contourends, bp, prev->to)) || (prev == sp->prev))
+        if (fabs(in) < CURVATURE_THRESHOLD) in = SplineCurvature(prev, 0);
+        if (fabs(in) < CURVATURE_THRESHOLD) prev = prev->from->prev;
+        if ((prev != NULL && IsAnglePoint(contourends, bp, prev->to)) || (prev == sp->prev))
     break;
     }
 
@@ -2101,9 +2226,9 @@ return 0;
     out = 0;
     while (next != NULL && fabs(out) < CURVATURE_THRESHOLD) {
         out = SplineCurvature(next, 0);
-	if (fabs(out) < CURVATURE_THRESHOLD) out = SplineCurvature(next, 1);
-	if (fabs(out) < CURVATURE_THRESHOLD) next = next->to->next;
-	if ((next != NULL && IsAnglePoint(contourends, bp, next->from)) || (next == sp->next))
+        if (fabs(out) < CURVATURE_THRESHOLD) out = SplineCurvature(next, 1);
+        if (fabs(out) < CURVATURE_THRESHOLD) next = next->to->next;
+        if ((next != NULL && IsAnglePoint(contourends, bp, next->from)) || (next == sp->next))
     break;
     }
 
@@ -2251,7 +2376,6 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     real fudge = ct->gic->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
     real refcoord, coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
-
 
     if (fabs(coord - ct->edge.base) <= fudge)
     {
@@ -4170,7 +4294,7 @@ return( 0 );
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
     uint8 *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset ) {
 
-    int i, pushpts[2];
+    int i, pushpts[3];
     PointData *start=NULL, *end=NULL;
     BasePoint newfv;
 
@@ -4217,8 +4341,12 @@ return( true );
             if ( pvset )
                 *(*instrs)++ = 0x0E;   /*SFVTPV*/
             else {
-                *instrs = push2nums( *instrs, EF2Dot14(norm->x), EF2Dot14(norm->y) );
-                *(*instrs)++ = 0x0B;   /* SFVFS */
+                pushpts[0] = EF2Dot14(norm->x);
+                pushpts[1] = EF2Dot14(norm->y);
+                pushpts[2] = 21;
+                *instrs = pushpoints( *instrs,3,pushpts );
+                *(*instrs)++ = CALL; /* aspect-ratio correction */
+                *(*instrs)++ = 0x0b; /* SFVFS */
             }
         }
 return( true );
@@ -4365,7 +4493,7 @@ static uint8 *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
     int x_ldup, y_ldup, x_edup, y_edup, dsc1, dsc2;
     PointData *v1, *v2;
     uint8 *touched;
-    int pushpts[2];
+    int pushpts[3];
 
     if ( ds->ldone && ds->rdone )
 return( ct->pt );
@@ -4413,9 +4541,14 @@ return( ct->pt );
          */
         cvt = TTF_getcvtval( ct->gic->sf,ds->width );
 
-        pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
-        ct->pt = push2nums( ct->pt, EF2Dot14(ds->l_to_r.x), EF2Dot14(ds->l_to_r.y) );
+        pushpts[0] = EF2Dot14(ds->l_to_r.x);
+        pushpts[1] = EF2Dot14(ds->l_to_r.y);
+        pushpts[2] = 21;
+        ct->pt = pushnums( ct->pt, 3, pushpts );
+        *(ct->pt)++ = CALL;    /* Aspect ratio correction */
         *(ct->pt)++ = 0x0A;    /* SPVFS */
+
+        pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
 
         x_ldup =( touched[a1] & tf_x && touched[a2] & tf_x ) ||
                 ( touched[b1] & tf_x && touched[b2] & tf_x );
@@ -5127,3 +5260,4 @@ return;
     SCMarkInstrDlgAsChanged(sc);
     SCHintsChanged(sc);
 }
+/* Na wypadeg gdyby SFVFS wymagał jednak poprawnego kierunku dla aspest ratio innych niż 1 */
