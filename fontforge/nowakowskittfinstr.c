@@ -133,14 +133,14 @@ return( instrs );
 }
 
 static uint8 *pushpoint(uint8 *instrs,int pt) {
-    instrs = pushheader(instrs,pt>255,1);
-return( addpoint(instrs,pt>255,pt));
+    instrs = pushheader(instrs,(pt>255)||(pt<0),1);
+return( addpoint(instrs,(pt>255)||(pt<0),pt));
 }
 
 #define pushnum(a, b) pushpoint(a, b)
 
 static uint8 *pushpointstem(uint8 *instrs, int pt, int stem) {
-    int isword = pt>255 || stem>255;
+    int isword = pt>255 || stem>255 || pt<0 || stem<0;
     instrs = pushheader(instrs,isword,2);
     instrs = addpoint(instrs,isword,pt);
 return( addpoint(instrs,isword,stem));
@@ -159,7 +159,7 @@ return( addpoint(instrs,isword,stem));
  */
 static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
     int i, isword = 0;
-    for (i=0; i<ptcnt; i++) if (pts[i]>255) isword=1;
+    for (i=0; i<ptcnt; i++) if (pts[i]>255 || pts[i]<0) isword=1;
 
     /* It's an error to push more than STACK_DEPTH points. */
     if (ptcnt > STACK_DEPTH)
@@ -214,23 +214,13 @@ static uint8 *pushF26Dot6(uint8 *instrs, double num) {
 return( instrs );
 }
 
-/* Push an EF2Dot14. No checks for overflow!
+/* Compute an EF2Dot14 representation of a floating point number.
+ * The number must be in range [-2.0 ... 1.0+(2^14-1)/(2^14) = 1.99993896...]
+ *
+ * There are no checks for overflow!
  */
-static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
-    unsigned int a;
-    int negative=0;
-
-    if (num < 0) {
-        negative=1;
-        num*=-1.0;
-    }
-
-    num *= 16384;
-    a = rint(num);
-    instrs = pushpoint(instrs, a);
-    if (negative) *instrs++ = NEG;
-
-return( instrs );
+static int EF2Dot14(double num) {
+return( rint(num*16384) );
 }
 
 /* An apparatus for instructing sets of points with given truetype command.
@@ -4227,8 +4217,7 @@ return( true );
             if ( pvset )
                 *(*instrs)++ = 0x0E;   /*SFVTPV*/
             else {
-                *instrs = pushEF2Dot14( *instrs,norm->x );
-                *instrs = pushEF2Dot14( *instrs,norm->y );
+                *instrs = push2nums( *instrs, EF2Dot14(norm->x), EF2Dot14(norm->y) );
                 *(*instrs)++ = 0x0B;   /* SFVFS */
             }
         }
@@ -4425,10 +4414,9 @@ return( ct->pt );
         cvt = TTF_getcvtval( ct->gic->sf,ds->width );
 
         pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
-        ct->pt = pushEF2Dot14( ct->pt,ds->l_to_r.x );
-        ct->pt = pushEF2Dot14( ct->pt,ds->l_to_r.y );
+        ct->pt = push2nums( ct->pt, EF2Dot14(ds->l_to_r.x), EF2Dot14(ds->l_to_r.y) );
         *(ct->pt)++ = 0x0A;    /* SPVFS */
-    
+
         x_ldup =( touched[a1] & tf_x && touched[a2] & tf_x ) ||
                 ( touched[b1] & tf_x && touched[b2] & tf_x );
         y_ldup =( touched[a1] & tf_y && touched[a2] & tf_y ) ||
@@ -4774,7 +4762,6 @@ return;
  * Strong point interpolation
  *
  * TODO! Better optimization, if possible.
- * TODO! It could be faster.
  * TODO! leftmost and righmost bounds, if not already controlled by stems.
  *
  ******************************************************************************/
@@ -5140,4 +5127,3 @@ return;
     SCMarkInstrDlgAsChanged(sc);
     SCHintsChanged(sc);
 }
-/* próbuję przyspieszyć strong point interpolation */
