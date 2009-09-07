@@ -781,8 +781,8 @@ return;
  * We also need two storage cells. As we now use SPVFS to set projection
  * vector for diagonal hinting, we have to adjust values taken by SPVFS,
  * so that diagonals look cleanly in all aspect ratios. Adjustments are
- * not trivial to compute, so we do this once (in prep) and 
- * storage[0] and storege[1]
+ * not trivial to compute, so we do this once (in prep) and store them
+ * in storage[0] (for X direction) and storage[1] (for Y direction).
  */
 static void init_maxp(GlobalInstrCt *gic) {
     struct ttf_table *tab = SFFindTable(gic->sf, CHR('m','a','x','p'));
@@ -5260,4 +5260,3 @@ return;
     SCMarkInstrDlgAsChanged(sc);
     SCHintsChanged(sc);
 }
-/* Na wypadeg gdyby SFVFS wymagał jednak poprawnego kierunku dla aspest ratio innych niż 1 */
