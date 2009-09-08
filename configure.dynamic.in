@@ -71,21 +71,26 @@ case "$host" in
 
 dnl fink puts stuff under /sw
 dnl macports puts stuff under /opt/local
+dnl but when macport/fink overwrite a standard lib, I still want the standard
+dnl  library to be found (otherwise only portable to machines with macports/fink)
 
  if test "$CPPFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
  elif test -d /sw/include >/dev/null ; then
-  CPPFLAGS="$CPPFLAGS -I/sw/include"
+  CPPFLAGS="$CPPFLAGS -idirafter /sw/include"
  elif test -d /opt/local/include >/dev/null ; then
-  CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+  CPPFLAGS="$CPPFLAGS -idirafter /opt/local/include"
  fi
+ rmlibs=""
  if test "$oldLDFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
  elif test -d /sw/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/sw/lib"
+  rmlibs="-L/sw/lib"
   gww_rpath="-rpath /sw/lib"
  elif test -d /opt/local/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  rmlibs="-L/opt/local/lib"
   gww_rpath="-rpath /opt/local/lib"
  fi
  LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
@@ -177,7 +182,10 @@ AC_SUBST(FF_EXTRA_FILES)
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 if test "$gww_uselessiconv" = "no" ; then
- AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
+# on some systems "iconv()" lives in libc. On others it lives in libiconv
+#  on older systems "libiconv()" lives in libiconv
+ AC_SEARCH_LIBS(iconv, iconv,,
+   AC_SEARCH_LIBS(libiconv, iconv,,gww_uselessiconv="yes"))
 fi
 
 python="yes"
@@ -403,7 +411,7 @@ if test "$gww_checkcairo" = "yes" ; then
   gww_CFLAGS=$CFLAGS
   gww_LDFLAGS=$LDFLAGS
   CFLAGS="$CFLAGS $X_CFLAGS"
-  LDFLAGS="$LDFLAGS $X_LIBS"
+  LDFLAGS="$X_LIBS $LDFLAGS"
   AC_CHECK_HEADER(fontconfig/fontconfig.h, [
    AC_CHECK_LIB(fontconfig, FcConfigCreate, [
     AC_CHECK_LIB(cairo, cairo_set_scaled_font, gww_hascairo="yes" )])])
@@ -518,7 +526,7 @@ AC_ARG_ENABLE(freetype,
 if test "$gww_use_freetype" != "no" >/dev/null 2>&1 ; then
  AC_CHECK_LIB(freetype, FT_New_Memory_Face, : , [
   gww_save_LDFLAGS="$LDFLAGS"
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/usr/X11/lib"
   dnl Avoid configure's cache.
 
   unset ac_cv_lib_freetype_FT_New_Memory_Face
@@ -633,6 +641,7 @@ AC_ARG_WITH(regular-link,
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	gww_regular_link="yes"
+	rmlibs=""
 	AC_DEFINE(NODYNAMIC)
 	gww_rpath=""
     fi
@@ -963,6 +972,10 @@ fi
 GTFF=
 if test -e gtkui/Makefile.in -a \( -e /usr/include/gtk-2.0/gtk/gtk.h -o -e /sw/include/gtk-2.0/gtk/gtk.h \) ; then
   GTFF=gtkui/Makefile
+fi
+
+if test "$rmlibs" != "" ; then
+  LDFLAGS=`echo $LDFLAGS | sed -e "s/$rmlibs//"`
 fi
 
 

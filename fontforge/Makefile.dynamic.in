@@ -65,8 +65,8 @@ _CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
 
 #I used to include -L/usr/lib explicitly after static_libs. Not sure why. Should be implied & breaks 64bit compiles
-LDFLAGS = @LDFLAGS@
-LIBS = -rpath $(libdir) $(X_LIBS) @LINK_WITH_GDRAW@ ../libgutils.la \
+LDFLAGS = $(X_LIBS) @LDFLAGS@
+LIBS = -rpath $(libdir) @LINK_WITH_GDRAW@ ../libgutils.la \
     ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 LIBLIBS = -rpath $(libdir) ../libgutils.la ../libgunicode.la \
@@ -86,7 +86,7 @@ fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
 ../libfontforge.la: $(@exeOBJECTS@)  $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
 	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c libstamp.c
-	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) @LDFLAGS@ \
+	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) $(LDFLAGS) \
 	    -o ../libfontforge.la $(fontforge_LIBOBJECTS) libstamp.lo $(LIBLIBS) \
 	    -rpath $(libdir) -version-info $(FF_VERSION):$(FF_REVISION):$(FF_AGE)
 	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < exelibstamp.pre > exelibstamp.c
