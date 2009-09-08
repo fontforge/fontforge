@@ -6032,6 +6032,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->onlybitmaps = info->onlystrikes;
     sf->layers[ly_fore].order2 = info->to_order2;
     sf->layers[ly_back].order2 = info->to_order2;
+    sf->grid.order2 = info->to_order2;
     sf->comments = info->fontcomments;
     sf->fontlog = info->fontlog;
     sf->cvt_names = info->cvt_names;
