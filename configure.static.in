@@ -132,7 +132,10 @@ AC_SUBST(FF_EXTRA_FILES)
 AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc
 AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
 if test "$gww_uselessiconv" = "no" ; then
- AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
+# on some systems "iconv()" lives in libc. On others it lives in libiconv
+#  on older systems "libiconv()" lives in libiconv
+ AC_SEARCH_LIBS(iconv, iconv,,
+   AC_SEARCH_LIBS(libiconv, iconv,,gww_uselessiconv="yes"))
 fi
 
 python="yes"
