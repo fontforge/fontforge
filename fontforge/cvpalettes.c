@@ -242,7 +242,6 @@ GMenuItem2 cvtoollist[] = {
     { { (unichar_t *) N_("Flip"), (GImage *) "toolsflip.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Flip|No Shortcut"), NULL, NULL, CVMenuTool, cvt_flip },
     { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
     { { (unichar_t *) N_("Ske_w"), (GImage *) "toolsskew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Skew|No Shortcut"), NULL, NULL, CVMenuTool, cvt_skew },
-    { { (unichar_t *) N_("Rotate"), (GImage *) "toolsrotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_rotate },
     { { (unichar_t *) N_("_3D Rotate"), (GImage *) "tools3drotate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("3D Rotate|No Shortcut"), NULL, NULL, CVMenuTool, cvt_3d_rotate },
     { { (unichar_t *) N_("Perspecti_ve"), (GImage *) "toolsperspective.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Perspective|No Shortcut"), NULL, NULL, CVMenuTool, cvt_perspective },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},

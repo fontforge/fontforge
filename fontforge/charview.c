@@ -188,7 +188,7 @@ static struct resed charview2_re[] = {
     { N_("Raster Old Color"), "RasterOldColor", rt_coloralpha, &rasteroldcol, N_("The color of raster blocks which have just been turned off (in the debugger when an instruction moves a point)") },
     { N_("Raster Grid Color"), "RasterGridColor", rt_coloralpha, &rastergridcol },
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
-    { N_("Raster Dark Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notible grid pixel when suggesting deltas.") },
+    { N_("Delta Grid Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notible grid pixel when suggesting deltas.") },
     { NULL }
 };
 
@@ -8677,7 +8677,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AutoHint:
-	    mi->ti.disabled = multilayer;
+	    mi->ti.disabled = (CVLayer((CharViewBase *) cv) == -1) || multilayer;
 	  break;
 	  case MID_HintSubsPt:
 	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->order2 || multilayer;
@@ -8692,7 +8692,8 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoInstr:
 	  case MID_EditInstructions:
 	    mi->ti.disabled = multilayer ||
-		!cv->b.layerheads[cv->b.drawmode]->order2;
+		!cv->b.layerheads[cv->b.drawmode]->order2 ||
+		(CVLayer((CharViewBase *) cv) == -1);
 	  break;
 	  case MID_Debug:
 	    mi->ti.disabled = multilayer ||

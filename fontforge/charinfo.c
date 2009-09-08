@@ -5065,7 +5065,7 @@ void CharInfoInit(void) {
     static int done = 0;
     int i, j;
     static char **cnames[] = { newstrings, NULL };
-    static struct col_init *col_inits[] = { extensionpart,
+    static struct col_init *col_inits[] = { extensionpart, altuniinfo,
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	devtabci,
 #endif
