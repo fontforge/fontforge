@@ -462,6 +462,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	    label[0].text_in_resource = true;
 	    gcd[0].gd.label = &label[0];
 	    gcd[0].gd.flags = gg_enabled | gg_visible | (def->stroke_type==si_centerline ? gg_cb_on : 0 );
+	    gcd[0].gd.u.radiogroup = 1;
 	    gcd[0].gd.cid = CID_CenterLine;
 	    gcd[0].gd.handle_controlevent = Stroke_CenterLine;
 	    gcd[0].creator = GRadioCreate;
