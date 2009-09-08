@@ -1568,6 +1568,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
         0x19, //         25
         0x65, //       NEG
         0x1c, //       JMPR (go back to the start of the loop)
+        0x21, //       POP
         0x59, //     EIF
         0x1b, //   ELSE (if PPEM along X == PPEM along Y)
         0x21, //     POP
