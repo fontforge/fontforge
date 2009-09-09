@@ -47,6 +47,8 @@
 # include <langinfo.h>
 #endif
 
+#define RAD2DEG	(180/3.1415926535897932)
+
 extern int splash;
 extern int adjustwidth;
 extern int adjustlbearing;
@@ -118,11 +120,13 @@ extern int hint_diagonal_ends;		/* in stemdb.c */
 extern int hint_diagonal_intersections;	/* in stemdb.c */
 extern int hint_bounding_boxes;		/* in stemdb.c */
 extern int detect_diagonal_stems;	/* in stemdb.c */
+extern float stem_slope_error;		/* in stemdb.c */
+extern float stub_slope_error;		/* in stemdb.c */
 extern int instruct_diagonal_stems;	/* in nowakowskittfinstr.c */
-extern int instruct_serif_stems;        /* in nowakowskittfinstr.c */
+extern int instruct_serif_stems;		/* in nowakowskittfinstr.c */
 extern int instruct_ball_terminals;	/* in nowakowskittfinstr.c */
-extern int interpolate_strong;	        /* in nowakowskittfinstr.c */
-extern int control_counters;	        /* in nowakowskittfinstr.c */
+extern int interpolate_strong;		/* in nowakowskittfinstr.c */
+extern int control_counters;		/* in nowakowskittfinstr.c */
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 extern char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
@@ -233,7 +237,7 @@ return( false );
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
-	pr_file, pr_namelist, pr_unicode };
+	pr_file, pr_namelist, pr_unicode, pr_angle };
 struct enums { char *name; int value; };
 
 struct enums fvsize_enums[] = { {NULL} };
@@ -350,6 +354,8 @@ static struct prefs_list {
 	{ NULL }
 },
  hints_list[] = {
+	{ N_("StandardSlopeError"), pr_angle, &stem_slope_error, NULL, NULL, '\0', NULL, 0, N_("The maximum slope difference which still allows to consider two points \"parallel\".\nEnlarge this to make the autohinter more tolerable to small devations from straight lines when detecting stem edges.") },
+	{ N_("SerifSlopeError"), pr_angle, &stub_slope_error, NULL, NULL, '\0', NULL, 0, N_("Same as above, but for terminals of small features (e. g. serifs), which can deviate more significantly from the horizontal or vertical direction.") },
 	{ N_("HintBoundingBoxes"), pr_bool, &hint_bounding_boxes, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints to describe the bounding boxes of suitable glyphs.") },
 	{ N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },
 	{ N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
@@ -603,9 +609,11 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
 	    } else if ( pf->type == pr_namelist ) {
 		val->type = v_str;
 		val->u.sval = copy( (*((NameList **) (pf->val)))->title );
-	    } else if ( pf->type == pr_real ) {
+	    } else if ( pf->type == pr_real || pf->type == pr_angle ) {
 		val->type = v_real;
 		val->u.fval = *((float *) (pf->val));
+		if ( pf->type == pr_angle )
+		    val->u.fval *= RAD2DEG;
 	    } else
 return( false );
 
@@ -643,13 +651,15 @@ static int PrefsUI_SetPrefs(char *name,Val *val1, Val *val2) {
 		if ( (val1->type!=v_int && val1->type!=v_unicode) || val2!=NULL )
 return( -1 );
 		*((int *) (pf->val)) = val1->u.ival;
-	    } else if ( pf->type == pr_real ) {
+	    } else if ( pf->type == pr_real || pf->type == pr_angle ) {
 		if ( val1->type==v_real && val2==NULL )
 		    *((float *) (pf->val)) = val1->u.fval;
 		else if ( val1->type!=v_int || (val2!=NULL && val2->type!=v_int ))
 return( -1 );
 		else
 		    *((float *) (pf->val)) = (val2==NULL ? val1->u.ival : val1->u.ival / (double) val2->u.ival);
+		if ( pf->type == pr_angle )
+		    *((float *) (pf->val)) /= RAD2DEG;
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
 		if ( val1->type!=v_str || val2!=NULL )
 return( -1 );
@@ -1076,14 +1086,16 @@ static void PrefsUI_LoadPrefs(void) {
 		    if ( sscanf( pt, "u+%x", (int *) pl->val )!=1 )
 			sscanf( pt, "%x", (int *) pl->val );
 	      break;
-	      case pr_real:
-	        { char *end;
+	      case pr_real: case pr_angle:
+		{ char *end;
 		    *((float *) pl->val) = strtod(pt,&end);
 		    if (( *end==',' || *end=='.' ) ) {
 			*end = (*end=='.')?',':'.';
 			*((float *) pl->val) = strtod(pt,NULL);
 		    }
 		}
+		if ( pl->type == pr_angle )
+		    *(float *) pl->val /= RAD2DEG;
 	      break;
 	      case pr_string: case pr_file:
 		if ( *pt=='\0' ) pt=NULL;
@@ -1156,6 +1168,9 @@ return;
 		fprintf( p, "%s:\t%s\n", pl->name, temp );
 	    if ( (pl->val)==NULL )
 		free(temp);
+	  break;
+	  case pr_angle:
+	    fprintf( p, "%s:\t%g\n", pl->name, ((double) *(float *) pl->val) * RAD2DEG );
 	  break;
 	}
     }
@@ -1592,6 +1607,7 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
     int32 len;
     int maxl, t;
     char *str;
+    real dangle;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
@@ -1626,6 +1642,12 @@ return( true );
 		GetInt8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	    } else if ( pl->type==pr_real ) {
 		GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+	    } else if ( pl->type==pr_angle ) {
+		dangle = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+		if ( dangle > 90 || dangle < 0 ) {
+		    GGadgetProtest8(pl->name);
+		    err = true;
+		}
 	    } else if ( pl->type==pr_unicode ) {
 		GetUnicodeChar8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	    }
@@ -1684,6 +1706,9 @@ return( true );
 		    (pl->set)(cret);
 		    free(cret);
 		}
+	      break;
+	      case pr_angle:
+	        *((float *) (pl->val)) = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err)/RAD2DEG;
 	      break;
 	    }
 	}
@@ -1809,6 +1834,7 @@ void DoPrefs(void) {
 	    gcnt[k] += 2;
 	    if ( visible_prefs_list[k].pl[i].type==pr_bool ) ++gcnt[k];
 	    else if ( visible_prefs_list[k].pl[i].type==pr_file ) ++gcnt[k];
+	    else if ( visible_prefs_list[k].pl[i].type==pr_angle ) ++gcnt[k];
 	    ++line;
 	}
 	if ( visible_prefs_list[k].pl == args_list ) {
@@ -2148,6 +2174,21 @@ void DoPrefs(void) {
 		if ( pl->val==NULL )
 		    free(tempstr);
 	      break;
+	      case pr_angle:
+		sprintf(buf,"%g", *((float *) pl->val) * RAD2DEG);
+		plabel[gc].text = (unichar_t *) copy( buf );
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		plabel[gc].text = (unichar_t *) U_("°");
+		plabel[gc].text_is_1byte = true;
+		pgcd[gc].gd.label = &plabel[gc];
+		pgcd[gc].gd.pos.x = pgcd[gc-1].gd.pos.x+gcd[gc-1].gd.pos.width+2; pgcd[gc].gd.pos.y = pgcd[gc-1].gd.pos.y; 
+		pgcd[gc].gd.flags = gg_enabled|gg_visible;
+		pgcd[gc++].creator = GLabelCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue;
+		y += 26;
+	      break;
 	    }
 	    ++line;
 	    hvarray[si++] = NULL;
@@ -2320,9 +2361,9 @@ void DoPrefs(void) {
 	  case pr_namelist:
 	    free(gcd[gc+1].gd.u.list);
 	  break;
-	  case pr_string: case pr_file: case pr_int: case pr_real: case pr_unicode:
+	  case pr_string: case pr_file: case pr_int: case pr_real: case pr_unicode: case pr_angle:
 	    free(plabels[k][gc+1].text);
-	    if ( pl->type==pr_file )
+	    if ( pl->type==pr_file || pl->type==pr_angle )
 		++gc;
 	  break;
 	}
