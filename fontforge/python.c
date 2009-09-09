@@ -13254,6 +13254,40 @@ return( NULL );
 return( PySC_From_SC_I(sc));
 }
 
+static int PyFF_FontContains( PyObject *self, PyObject *index ) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc = NULL;
+
+    if ( PyBytes_Check(index)) {
+	char *name = PyBytes_AsString(index);
+	sc = SFGetChar(sf,-1,name);
+    } else if ( PyInt_Check(index)) {
+	int pos = PyInt_AsLong(index), gid;
+	if ( pos<0 || pos>=fv->map->enccount ) {
+return( 0 );
+	}
+	gid = fv->map->map[pos];
+	sc = gid==-1 ? NULL : sf->glyphs[gid];
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be an integer or a string" );
+return( -1 );
+    }
+return( sc!=NULL );
+}
+
+static PySequenceMethods PyFF_FontSequence = {
+    PyFF_FontLength,		/* length */
+    NULL,			/* concat */
+    NULL,			/* repeat */
+    NULL,			/* subscript */
+    NULL,			/* slice */
+    NULL,			/* subscript assign */
+    NULL,			/* slice assign */
+    PyFF_FontContains,		/* contains */
+    NULL			/* inplace_concat */
+};
+
 static PyMappingMethods PyFF_FontMapping = {
     PyFF_FontLength,		/* length */
     PyFF_FontIndex,		/* subscript */
@@ -13276,7 +13310,7 @@ static PyTypeObject PyFF_FontType = {
     0,                         /*tp_compare*/
     0,                         /*tp_repr*/
     0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
+    &PyFF_FontSequence,        /*tp_as_sequence*/
     &PyFF_FontMapping,         /*tp_as_mapping*/
     0,                         /*tp_hash */
     0,                         /*tp_call*/
