@@ -4079,6 +4079,13 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
 	    free( dummy.names[i]);
     free( nt.entries );
     free( at->feat_name );
+
+    if ( at->namelen>5*1024 && !sf->internal_temp )
+	LogError( _("Windows has decided that fonts with 'name' tables bigger than 5K are\n"
+		    "insecure and will refuse to load them. Don't ask me why they believe this.\n"
+		    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
+		    at->namelen);
+    
 }
 
 static void dumppost(struct alltabs *at, SplineFont *sf, enum fontformat format) {
@@ -5281,7 +5288,7 @@ static void initATTables(struct alltabs *at, SplineFont *sf,
 	ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
 
     dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
-					    /* GPOS 'size' can also create names */
+					    /* GPOS 'size' can also create names (so must be after that too) */
     redoos2(at);
 }
 
@@ -6866,6 +6873,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 
     tab = findtabindir(&all[0].tabdir,CHR('h','e','a','d'));
     if ( tab!=NULL ) {
+	/* As far as I can tell the file checksum is ignored */
 	int checksum;
 	checksum = filecheck(ttc);
 	checksum = 0xb1b0afba-checksum;

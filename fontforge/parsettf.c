@@ -1076,6 +1076,11 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('n','a','m','e'):
 	    info->copyright_start = offset;
+	    if ( length>5*1024 && ( info->openflags & of_fontlint ))
+		LogError( _("Windows has decided that fonts with 'name' tables bigger than 5K are\n"
+		            "insecure and will refuse to load them. Don't ask me why they believe this.\n"
+			    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
+			    length);
 	  break;
 	  case CHR('p','o','s','t'):
 	    info->postscript_start = offset;
