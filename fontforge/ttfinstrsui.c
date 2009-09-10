@@ -42,12 +42,11 @@ static unsigned char ttf_bits[] = {
    0xc0, 0x06, 0x40, 0x04, 0xc0, 0x07, 0x00, 0x00};
 GWindow ttf_icon = NULL;
 
-static unichar_t *instrhelppopup[256];
+static char *instrhelppopup[256];
 
 static void ihaddr(int bottom,int top,char *msg) {
-    unichar_t *um = uc_copy(msg);
     while ( bottom<=top )
-	instrhelppopup[bottom++] = um;
+        instrhelppopup[bottom++] = msg;
 }
 
 static void ihadd(int p,char *msg) {
@@ -57,128 +56,128 @@ static void ihadd(int p,char *msg) {
 static void instrhelpsetup(void) {
     if ( instrhelppopup[0]!=NULL )
 return;
-    ihadd(0x7f,"Adjust Angle\nObsolete instruction\nPops one value");
-    ihadd(0x64,"ABSolute Value\nReplaces top of stack with its abs");
-    ihadd(0x60,"ADD\nPops two 26.6 fixed numbers from stack\nadds them, pushes result");
-    ihadd(0x27,"ALIGN PoinTS\nAligns (&pops) the two points which are on the stack\nby moving along freedom vector to the average of their\npositions on projection vector");
-    ihadd(0x3c,"ALIGN to Reference Point\nPops as many points as specified in loop counter\nAligns points with RP0 by moving each\nalong freedom vector until distance to\nRP0 on projection vector is 0");
-    ihadd(0x5a,"logical AND\nPops two values, ands them, pushes result");
-    ihadd(0x2b,"CALL function\nPops a value, calls the function represented by it");
-    ihadd(0x67,"CEILING\nPops one 26.6 value, rounds upward to an int\npushes result");
-    ihadd(0x25,"Copy INDEXed element to stack\nPops an index & copies stack\nelement[index] to top of stack");
-    ihadd(0x22,"CLEAR\nPops all elements on stack");
-    ihadd(0x4f,"DEBUG call\nPops a value and executes a debugging interpreter\n(if available)");
-    ihadd(0x73,"DELTA exception C1\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the pixel amount");
-    ihadd(0x74,"DELTA exception C2\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the amount");
-    ihadd(0x75,"DELTA exception C3\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the amount");
-    ihadd(0x5D,"DELTA exception P1\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount");
-    ihadd(0x71,"DELTA exception P2\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount");
-    ihadd(0x72,"DELTA exception P3\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount");
-    ihadd(0x24,"DEPTH of stack\nPushes the number of elements on the stack");
-    ihadd(0x62,"DIVide\nPops two 26.6 numbers, divides them, pushes result");
-    ihadd(0x20,"DUPlicate top stack element\nPushes the top stack element again");
-    ihadd(0x59,"End IF\nEnds and IF or IF-ELSE sequence");
-    ihadd(0x1b,"ELSE clause\nStart of Else clause of preceding IF");
-    ihadd(0x2d,"END Function definition");
-    ihadd(0x54,"EQual\nPops two values, tests for equality, pushes result(0/1)");
-    ihadd(0x57,"EVEN\nPops one value, rounds it and tests if it is even(0/1)");
-    ihadd(0x2C,"Function DEFinition\nPops a value (n) and starts the nth\nfunction definition");
-    ihadd(0x4e,"set the auto FLIP boolean to OFF");
-    ihadd(0x4d,"set the auto FLIP boolean to ON");
-    ihadd(0x80,"FLIP PoinT\nPops as many points as specified in loop counter\nFlips whether each point is on/off curve");
-    ihadd(0x82,"FLIP RanGe OFF\nPops two point numbers\nsets all points between to be off curve points");
-    ihadd(0x81,"FLIP RanGe ON\nPops two point numbers\nsets all points between to be on curve points");
-    ihadd(0x66,"FLOOR\nPops a value, rounds to lowest int, pushes result");
-    ihaddr(0x46,0x47,"Get Coordinate[a] projected onto projection vector\n 0=>use current pos\n 1=>use original pos\nPops one point, pushes the coordinate of\nthe point along projection vector");
-    ihadd(0x88,"GET INFOrmation\nPops information type, pushes result");
-    ihadd(0x0d,"Get Freedom Vector\nDecomposes freedom vector, pushes its\ntwo coordinates onto stack as 2.14");
-    ihadd(0x0c,"Get Projection Vector\nDecomposes projection vector, pushes its\ntwo coordinates onto stack as 2.14");
-    ihadd(0x52,"Greater Than\nPops two values, pushes (0/1) if bottom el > top");
-    ihadd(0x53,"Greater Than or EQual\nPops two values, pushes (0/1) if bottom el >= top");
-    ihadd(0x89,"Instruction DEFinition\nPops a value which becomes the opcode\nand begins definition of new instruction");
-    ihadd(0x58,"IF test\nPops an integer,\nif 0 (false) next instruction is ELSE or EIF\nif non-0 execution continues normally\n(unless there's an ELSE)");
-    ihadd(0x8e,"INSTRuction execution ConTRoL\nPops a selector and value\nSets a state variable");
-    ihadd(0x39,"Interpolate Point\nPops as many points as specified in loop counter\nInterpolates each point to preserve original status\nwith respect to RP1 and RP2");
-    ihadd(0x0f,"moves point to InterSECTion of two lines\nPops start,end start,end points of two lines\nand a point to move. Point is moved to\nintersection");
-    ihaddr(0x30,0x31,"Interpolate Untouched Points[a]\n 0=> interpolate in y direction\n 1=> x direction");
-    ihadd(0x1c,"JuMP Relative\nPops offset (in bytes) to move the instruction pointer");
-    ihadd(0x79,"Jump Relative On False\nPops a boolean and an offset\nChanges instruction pointer by offset bytes\nif boolean is false");
-    ihadd(0x78,"Jump Relative On True\nPops a boolean and an offset\nChanges instruction pointer by offset bytes\nif boolean is true");
-    ihadd(0x2a,"LOOP and CALL function\nPops a function number & count\nCalls function count times");
-    ihadd(0x50,"Less Than\nPops two values, pushes (0/1) if bottom el < top");
-    ihadd(0x51,"Less Than or EQual\nPops two values, pushes (0/1) if bottom el <= top");
-    ihadd(0x8b,"MAXimum of top two stack entries\nPops two values, pushes the maximum back");
-    ihaddr(0x49,0x4a,"Measure Distance[a]\n 0=>distance with current positions\n 1=>distance with original positions\nPops two point numbers, pushes distance between them");
-    ihaddr(0x2e,0x2f,"Move Direct Absolute Point[a]\n 0=>do not round\n 1=>round\nPops a point number, touches that point\nand perhaps rounds it to the grid along\nthe projection vector. Sets rp0&rp1 to the point");
-    ihaddr(0xc0,0xdf,"Move Direct Relative Point[abcde]\n a=0=>don't set rp0\n a=1=>set rp0 to p\n b=0=>do not keep distance more than minimum\n b=1=>keep distance at least minimum\n c=0 do not round\n c=1 round\n de=0 => grey distance\n de=1 => black distance\n de=2 => white distance\nPops a point moves it so that it maintains\nits original distance to the rp0. Sets\nrp1 to rp0, rp2 to point, sometimes rp0 to point");
-    ihaddr(0x3e,0x3f,"Move Indirect Absolute Point[a]\n 0=>do not round, don't use cvt cutin\n 1=>round\nPops a point number & a cvt entry,\ntouches the point and moves it to the coord\nspecified in the cvt (along the projection vector).\nSets rp0&rp1 to the point");
-    ihadd(0x8c,"Minimum of top two stack entries\nPops two values, pushes the minimum back");
-    ihadd(0x26,"Move INDEXed element to stack\nPops an index & moves stack\nelement[index] to top of stack\n(removing it from where it was)");
-    ihaddr(0xe0,0xff,"Move Indirect Relative Point[abcde]\n a=0=>don't set rp0\n a=1=>set rp0 to p\n b=0=>do not keep distance more than minimum\n b=1=>keep distance at least minimum\n c=0 do not round nor use cvt cutin\n c=1 round & use cvt cutin\n de=0 => grey distance\n de=1 => black distance\n de=2 => white distance\nPops a cvt index and a point moves it so that it\nis cvt[index] from rp0. Sets\nrp1 to rp0, rp2 to point, sometimes rp0 to point");
-    ihadd(0x4b,"Measure Pixels Per EM\nPushs the pixels per em (for current rasterization)");
-    ihadd(0x4c,"Measure Point Size\nPushes the current point size");
-    ihaddr(0x3a,0x3b,"Move Stack Indirect Relative Point[a]\n 0=>do not set rp0\n 1=>set rp0 to point\nPops a 26.6 distance and a point\nMoves point so it is distance from rp0");
-    ihadd(0x63,"MULtiply\nPops two 26.6 numbers, multiplies them, pushes result");
-    ihadd(0x65,"NEGate\nNegates the top of the stack");
-    ihadd(0x55,"Not EQual\nPops two values, tests for inequality, pushes result(0/1)");
-    ihadd(0x5c,"logical NOT\nPops a number, if 0 pushes 1, else pushes 0");
-    ihadd(0x40,"N PUSH Bytes\nReads an (unsigned) count byte from the\ninstruction stream, then reads and pushes\nthat many unsigned bytes");
-    ihadd(0x41,"N PUSH Words\nReads an (unsigned) count byte from the\ninstruction stream, then reads and pushes\nthat many signed 2byte words");
-    ihaddr(0x6c,0x6f,"No ROUNDing of value[ab]\n ab=0 => grey distance\n ab=1 => black distance\n ab=2 => white distance\nPops a coordinate (26.6), changes it (without\nrounding) to compensate for engine effects\npushes it back" );
-    ihadd(0x56,"ODD\nPops one value, rounds it and tests if it is odd(0/1)");
-    ihadd(0x5b,"logical OR\nPops two values, ors them, pushes result");
-    ihadd(0x21,"POP top stack element");
-    ihaddr(0xb0,0xb7,"PUSH Byte[abc]\n abc is the number-1 of bytes to push\nReads abc+1 unsigned bytes from\nthe instruction stream and pushes them");
-    ihaddr(0xb8,0xbf,"PUSH Word[abc]\n abc is the number-1 of words to push\nReads abc+1 signed words from\nthe instruction stream and pushes them");
-    ihadd(0x45,"Read Control Value Table entry\nPops an index to the CVT and\npushes it in 26.6 format");
-    ihadd(0x7d,"Round Down To Grid\n\nSets round state to the obvious");
-    ihadd(0x7a,"Round OFF\nSets round state so that no rounding occurs\nbut engine compensation does");
-    ihadd(0x8a,"ROLL the top three stack elements");
-    ihaddr(0x68,0x6b,"ROUND value[ab]\n ab=0 => grey distance\n ab=1 => black distance\n ab=2 => white distance\nRounds a coordinate (26.6) at top of stack\nand compensates for engine effects" );
-    ihadd(0x43,"Read Store\nPops an index into store array\nPushes value at that index");
-    ihadd(0x3d,"Round To Double Grid\nSets the round state (round to closest .5/int)");
-    ihadd(0x18,"Round To Grid\nSets the round state");
-    ihadd(0x19,"Round To Half Grid\nSets the round state (round to closest .5 not int)");
-    ihadd(0x7c,"Round Up To Grid\nSets the round state");
-    ihadd(0x77,"Super 45\260 ROUND\nToo complicated. Look it up");
-    ihadd(0x7e,"Set ANGle Weight\nPops an int, and sets the angle\nweight state variable to it\nObsolete");
-    ihadd(0x85,"SCAN conversion ConTRoL\nPops a number which sets the\ndropout control mode");
-    ihadd(0x8d,"SCANTYPE\nPops number which sets which scan\nconversion rules to use");
-    ihadd(0x48,"Sets Coordinate From Stack using projection & freedom vectors\nPops a coordinate 26.6 and a point\nMoves point to given coordinate");
-    ihadd(0x1d,"Sets Control Value Table Cut-In\nPops 26.6 from stack, sets cvt cutin");
-    ihadd(0x5e,"Set Delta Base\nPops value sets delta base");
-    ihaddr(0x86,0x87,"Set Dual Projection Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets a second projection vector based on original\npositions of points");
-    ihadd(0x5F,"Set Delta Shift\nPops a new value for delta shift");
-    ihadd(0x0b,"Set Freedom Vector From Stack\npops 2 2.14 values (x,y) from stack\nmust be a unit vector");
-    ihaddr(0x04,0x05,"Set Freedom Vector To Coordinate Axis[a]\n 0=>y axis\n 1=>x axis\n" );
-    ihaddr(0x08,0x09,"Set Fredom Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets the freedom vector" );
-    ihadd(0x0e,"Set Freedom Vector To Projection Vector");
-    ihaddr(0x34,0x35,"SHift Contour using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops number of contour to be shifted\nShifts the entire contour by the amount\nreference point was shifted");
-    ihaddr(0x32,0x33,"SHift Point using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops as many points as specified by the loop count\nShifts each by the amount the reference\npoint was shifted");
-    ihadd(0x38,"SHift point by a PIXel amount\nPops an amount (26.6) and as many points\nas the loop counter specifies\neach point is shifted along the FREEDOM vector");
-    ihaddr(0x36,0x37,"SHift Zone using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops the zone to be shifted\nShifts all points in zone by the amount\nthe reference point was shifted");
-    ihadd(0x17,"Set LOOP variable\nPops the new value for the loop counter\nDefaults to 1 after each use");
-    ihadd(0x1a,"Set Minimum Distance\nPops a 26.6 value from stack to be new minimum distance");
-    ihadd(0x0a,"Set Projection Vector From Stack\npops 2 2.14 values (x,y) from stack\nmust be a unit vector");
-    ihaddr(0x02,0x03,"Set Projection Vector To Coordinate Axis[a]\n 0=>y axis\n 1=>x axis\n" );
-    ihaddr(0x06,0x07,"Set Projection Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets the projection vector" );
-    ihadd(0x76,"Super ROUND\nToo complicated. Look it up");
-    ihadd(0x10,"Set Reference Point 0\nPops a point which becomes the new rp0");
-    ihadd(0x11,"Set Reference Point 1\nPops a point which becomes the new rp1");
-    ihadd(0x12,"Set Reference Point 2\nPops a point which becomes the new rp2");
-    ihadd(0x1f,"Set Single Width\nPops value for single width value (FUnit)");
-    ihadd(0x1e,"Set Single Width Cut-In\nPops value for single width cut-in value (26.6)");
-    ihadd(0x61,"SUBtract\nPops two 26.6 fixed numbers from stack\nsubtracts them, pushes result");
-    ihaddr(0x00,0x01,"Set freedom & projection Vectors To Coordinate Axis[a]\n 0=>both to y axis\n 1=>both to x axis\n" );
-    ihadd(0x23,"SWAP top two elements on stack");
-    ihadd(0x13,"Set Zone Pointer 0\nPops the zone number into zp0");
-    ihadd(0x14,"Set Zone Pointer 1\nPops the zone number into zp1");
-    ihadd(0x15,"Set Zone Pointer 2\nPops the zone number into zp2");
-    ihadd(0x16,"Set Zone PointerS\nPops the zone number into zp0,zp1 and zp2");
-    ihadd(0x29,"UnTouch Point\nPops a point number and marks it untouched");
-    ihadd(0x70,"Write Control Value Table in Funits\nPops a number(Funits) and a\nCVT index and writes the number to cvt[index]");
-    ihadd(0x44,"Write Control Value Table in Pixel units\nPops a number(26.6) and a\nCVT index and writes the number to cvt[index]");
-    ihadd(0x42,"Write Store\nPops a value and an index and writes the value to storage[index]");
+    ihadd(0x7f,N_("Adjust Angle\nObsolete instruction\nPops one value"));
+    ihadd(0x64,N_("ABSolute Value\nReplaces top of stack with its abs"));
+    ihadd(0x60,N_("ADD\nPops two 26.6 fixed numbers from stack\nadds them, pushes result"));
+    ihadd(0x27,N_("ALIGN PoinTS\nAligns (&pops) the two points which are on the stack\nby moving along freedom vector to the average of their\npositions on projection vector"));
+    ihadd(0x3c,N_("ALIGN to Reference Point\nPops as many points as specified in loop counter\nAligns points with RP0 by moving each\nalong freedom vector until distance to\nRP0 on projection vector is 0"));
+    ihadd(0x5a,N_("logical AND\nPops two values, ands them, pushes result"));
+    ihadd(0x2b,N_("CALL function\nPops a value, calls the function represented by it"));
+    ihadd(0x67,N_("CEILING\nPops one 26.6 value, rounds upward to an int\npushes result"));
+    ihadd(0x25,N_("Copy INDEXed element to stack\nPops an index & copies stack\nelement[index] to top of stack"));
+    ihadd(0x22,N_("CLEAR\nPops all elements on stack"));
+    ihadd(0x4f,N_("DEBUG call\nPops a value and executes a debugging interpreter\n(if available)"));
+    ihadd(0x73,N_("DELTA exception C1\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the pixel amount"));
+    ihadd(0x74,N_("DELTA exception C2\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the amount"));
+    ihadd(0x75,N_("DELTA exception C3\nPops a value n & then n exception specifications & cvt entries\nchanges each cvt entry at a given size by the amount"));
+    ihadd(0x5D,N_("DELTA exception P1\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount"));
+    ihadd(0x71,N_("DELTA exception P2\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount"));
+    ihadd(0x72,N_("DELTA exception P3\nPops a value n & then n exception specifications & points\nmoves each point at a given size by the amount"));
+    ihadd(0x24,N_("DEPTH of stack\nPushes the number of elements on the stack"));
+    ihadd(0x62,N_("DIVide\nPops two 26.6 numbers, divides them, pushes result"));
+    ihadd(0x20,N_("DUPlicate top stack element\nPushes the top stack element again"));
+    ihadd(0x59,N_("End IF\nEnds and IF or IF-ELSE sequence"));
+    ihadd(0x1b,N_("ELSE clause\nStart of Else clause of preceding IF"));
+    ihadd(0x2d,N_("END Function definition"));
+    ihadd(0x54,N_("EQual\nPops two values, tests for equality, pushes result(0/1)"));
+    ihadd(0x57,N_("EVEN\nPops one value, rounds it and tests if it is even(0/1)"));
+    ihadd(0x2C,N_("Function DEFinition\nPops a value (n) and starts the nth\nfunction definition"));
+    ihadd(0x4e,N_("set the auto FLIP boolean to OFF"));
+    ihadd(0x4d,N_("set the auto FLIP boolean to ON"));
+    ihadd(0x80,N_("FLIP PoinT\nPops as many points as specified in loop counter\nFlips whether each point is on/off curve"));
+    ihadd(0x82,N_("FLIP RanGe OFF\nPops two point numbers\nsets all points between to be off curve points"));
+    ihadd(0x81,N_("FLIP RanGe ON\nPops two point numbers\nsets all points between to be on curve points"));
+    ihadd(0x66,N_("FLOOR\nPops a value, rounds to lowest int, pushes result"));
+    ihaddr(0x46,0x47,N_("Get Coordinate[a] projected onto projection vector\n 0=>use current pos\n 1=>use original pos\nPops one point, pushes the coordinate of\nthe point along projection vector"));
+    ihadd(0x88,N_("GET INFOrmation\nPops information type, pushes result"));
+    ihadd(0x0d,N_("Get Freedom Vector\nDecomposes freedom vector, pushes its\ntwo coordinates onto stack as 2.14"));
+    ihadd(0x0c,N_("Get Projection Vector\nDecomposes projection vector, pushes its\ntwo coordinates onto stack as 2.14"));
+    ihadd(0x52,N_("Greater Than\nPops two values, pushes (0/1) if bottom el > top"));
+    ihadd(0x53,N_("Greater Than or EQual\nPops two values, pushes (0/1) if bottom el >= top"));
+    ihadd(0x89,N_("Instruction DEFinition\nPops a value which becomes the opcode\nand begins definition of new instruction"));
+    ihadd(0x58,N_("IF test\nPops an integer,\nif 0 (false) next instruction is ELSE or EIF\nif non-0 execution continues normally\n(unless there's an ELSE)"));
+    ihadd(0x8e,N_("INSTRuction execution ConTRoL\nPops a selector and value\nSets a state variable"));
+    ihadd(0x39,N_("Interpolate Point\nPops as many points as specified in loop counter\nInterpolates each point to preserve original status\nwith respect to RP1 and RP2"));
+    ihadd(0x0f,N_("moves point to InterSECTion of two lines\nPops start,end start,end points of two lines\nand a point to move. Point is moved to\nintersection"));
+    ihaddr(0x30,0x31,N_("Interpolate Untouched Points[a]\n 0=> interpolate in y direction\n 1=> x direction"));
+    ihadd(0x1c,N_("JuMP Relative\nPops offset (in bytes) to move the instruction pointer"));
+    ihadd(0x79,N_("Jump Relative On False\nPops a boolean and an offset\nChanges instruction pointer by offset bytes\nif boolean is false"));
+    ihadd(0x78,N_("Jump Relative On True\nPops a boolean and an offset\nChanges instruction pointer by offset bytes\nif boolean is true"));
+    ihadd(0x2a,N_("LOOP and CALL function\nPops a function number & count\nCalls function count times"));
+    ihadd(0x50,N_("Less Than\nPops two values, pushes (0/1) if bottom el < top"));
+    ihadd(0x51,N_("Less Than or EQual\nPops two values, pushes (0/1) if bottom el <= top"));
+    ihadd(0x8b,N_("MAXimum of top two stack entries\nPops two values, pushes the maximum back"));
+    ihaddr(0x49,0x4a,N_("Measure Distance[a]\n 0=>distance with current positions\n 1=>distance with original positions\nPops two point numbers, pushes distance between them"));
+    ihaddr(0x2e,0x2f,N_("Move Direct Absolute Point[a]\n 0=>do not round\n 1=>round\nPops a point number, touches that point\nand perhaps rounds it to the grid along\nthe projection vector. Sets rp0&rp1 to the point"));
+    ihaddr(0xc0,0xdf,N_("Move Direct Relative Point[abcde]\n a=0=>don't set rp0\n a=1=>set rp0 to p\n b=0=>do not keep distance more than minimum\n b=1=>keep distance at least minimum\n c=0 do not round\n c=1 round\n de=0 => grey distance\n de=1 => black distance\n de=2 => white distance\nPops a point moves it so that it maintains\nits original distance to the rp0. Sets\nrp1 to rp0, rp2 to point, sometimes rp0 to point"));
+    ihaddr(0x3e,0x3f,N_("Move Indirect Absolute Point[a]\n 0=>do not round, don't use cvt cutin\n 1=>round\nPops a point number & a cvt entry,\ntouches the point and moves it to the coord\nspecified in the cvt (along the projection vector).\nSets rp0&rp1 to the point"));
+    ihadd(0x8c,N_("Minimum of top two stack entries\nPops two values, pushes the minimum back"));
+    ihadd(0x26,N_("Move INDEXed element to stack\nPops an index & moves stack\nelement[index] to top of stack\n(removing it from where it was)"));
+    ihaddr(0xe0,0xff,N_("Move Indirect Relative Point[abcde]\n a=0=>don't set rp0\n a=1=>set rp0 to p\n b=0=>do not keep distance more than minimum\n b=1=>keep distance at least minimum\n c=0 do not round nor use cvt cutin\n c=1 round & use cvt cutin\n de=0 => grey distance\n de=1 => black distance\n de=2 => white distance\nPops a cvt index and a point moves it so that it\nis cvt[index] from rp0. Sets\nrp1 to rp0, rp2 to point, sometimes rp0 to point"));
+    ihadd(0x4b,N_("Measure Pixels Per EM\nPushs the pixels per em (for current rasterization)"));
+    ihadd(0x4c,N_("Measure Point Size\nPushes the current point size"));
+    ihaddr(0x3a,0x3b,N_("Move Stack Indirect Relative Point[a]\n 0=>do not set rp0\n 1=>set rp0 to point\nPops a 26.6 distance and a point\nMoves point so it is distance from rp0"));
+    ihadd(0x63,N_("MULtiply\nPops two 26.6 numbers, multiplies them, pushes result"));
+    ihadd(0x65,N_("NEGate\nNegates the top of the stack"));
+    ihadd(0x55,N_("Not EQual\nPops two values, tests for inequality, pushes result(0/1)"));
+    ihadd(0x5c,N_("logical NOT\nPops a number, if 0 pushes 1, else pushes 0"));
+    ihadd(0x40,N_("N PUSH Bytes\nReads an (unsigned) count byte from the\ninstruction stream, then reads and pushes\nthat many unsigned bytes"));
+    ihadd(0x41,N_("N PUSH Words\nReads an (unsigned) count byte from the\ninstruction stream, then reads and pushes\nthat many signed 2byte words"));
+    ihaddr(0x6c,0x6f,N_("No ROUNDing of value[ab]\n ab=0 => grey distance\n ab=1 => black distance\n ab=2 => white distance\nPops a coordinate (26.6), changes it (without\nrounding) to compensate for engine effects\npushes it back"));
+    ihadd(0x56,N_("ODD\nPops one value, rounds it and tests if it is odd(0/1)"));
+    ihadd(0x5b,N_("logical OR\nPops two values, ors them, pushes result"));
+    ihadd(0x21,N_("POP top stack element"));
+    ihaddr(0xb0,0xb7,N_("PUSH Byte[abc]\n abc is the number-1 of bytes to push\nReads abc+1 unsigned bytes from\nthe instruction stream and pushes them"));
+    ihaddr(0xb8,0xbf,N_("PUSH Word[abc]\n abc is the number-1 of words to push\nReads abc+1 signed words from\nthe instruction stream and pushes them"));
+    ihadd(0x45,N_("Read Control Value Table entry\nPops an index to the CVT and\npushes it in 26.6 format"));
+    ihadd(0x7d,N_("Round Down To Grid\n\nSets round state to the obvious"));
+    ihadd(0x7a,N_("Round OFF\nSets round state so that no rounding occurs\nbut engine compensation does"));
+    ihadd(0x8a,N_("ROLL the top three stack elements"));
+    ihaddr(0x68,0x6b,N_("ROUND value[ab]\n ab=0 => grey distance\n ab=1 => black distance\n ab=2 => white distance\nRounds a coordinate (26.6) at top of stack\nand compensates for engine effects"));
+    ihadd(0x43,N_("Read Store\nPops an index into store array\nPushes value at that index"));
+    ihadd(0x3d,N_("Round To Double Grid\nSets the round state (round to closest .5/int)"));
+    ihadd(0x18,N_("Round To Grid\nSets the round state"));
+    ihadd(0x19,N_("Round To Half Grid\nSets the round state (round to closest .5 not int)"));
+    ihadd(0x7c,N_("Round Up To Grid\nSets the round state"));
+    ihadd(0x77,N_("Super 45\260 ROUND\nToo complicated. Look it up"));
+    ihadd(0x7e,N_("Set ANGle Weight\nPops an int, and sets the angle\nweight state variable to it\nObsolete"));
+    ihadd(0x85,N_("SCAN conversion ConTRoL\nPops a number which sets the\ndropout control mode"));
+    ihadd(0x8d,N_("SCANTYPE\nPops number which sets which scan\nconversion rules to use"));
+    ihadd(0x48,N_("Sets Coordinate From Stack using projection & freedom vectors\nPops a coordinate 26.6 and a point\nMoves point to given coordinate"));
+    ihadd(0x1d,N_("Sets Control Value Table Cut-In\nPops 26.6 from stack, sets cvt cutin"));
+    ihadd(0x5e,N_("Set Delta Base\nPops value sets delta base"));
+    ihaddr(0x86,0x87,N_("Set Dual Projection Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets a second projection vector based on original\npositions of points"));
+    ihadd(0x5F,N_("Set Delta Shift\nPops a new value for delta shift"));
+    ihadd(0x0b,N_("Set Freedom Vector From Stack\npops 2 2.14 values (x,y) from stack\nmust be a unit vector"));
+    ihaddr(0x04,0x05,N_("Set Freedom Vector To Coordinate Axis[a]\n 0=>y axis\n 1=>x axis\n"));
+    ihaddr(0x08,0x09,N_("Set Fredom Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets the freedom vector"));
+    ihadd(0x0e,N_("Set Freedom Vector To Projection Vector"));
+    ihaddr(0x34,0x35,N_("SHift Contour using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops number of contour to be shifted\nShifts the entire contour by the amount\nreference point was shifted"));
+    ihaddr(0x32,0x33,N_("SHift Point using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops as many points as specified by the loop count\nShifts each by the amount the reference\npoint was shifted"));
+    ihadd(0x38,N_("SHift point by a PIXel amount\nPops an amount (26.6) and as many points\nas the loop counter specifies\neach point is shifted along the FREEDOM vector"));
+    ihaddr(0x36,0x37,N_("SHift Zone using reference point[a]\n 0=>uses rp2 in zp1\n 1=>uses rp1 in zp0\nPops the zone to be shifted\nShifts all points in zone by the amount\nthe reference point was shifted"));
+    ihadd(0x17,N_("Set LOOP variable\nPops the new value for the loop counter\nDefaults to 1 after each use"));
+    ihadd(0x1a,N_("Set Minimum Distance\nPops a 26.6 value from stack to be new minimum distance"));
+    ihadd(0x0a,N_("Set Projection Vector From Stack\npops 2 2.14 values (x,y) from stack\nmust be a unit vector"));
+    ihaddr(0x02,0x03,N_("Set Projection Vector To Coordinate Axis[a]\n 0=>y axis\n 1=>x axis\n" ));
+    ihaddr(0x06,0x07,N_("Set Projection Vector To Line[a]\n 0 => parallel to line\n 1=>orthogonal to line\nPops two points used to establish the line\nSets the projection vector" ));
+    ihadd(0x76,N_("Super ROUND\nToo complicated. Look it up"));
+    ihadd(0x10,N_("Set Reference Point 0\nPops a point which becomes the new rp0"));
+    ihadd(0x11,N_("Set Reference Point 1\nPops a point which becomes the new rp1"));
+    ihadd(0x12,N_("Set Reference Point 2\nPops a point which becomes the new rp2"));
+    ihadd(0x1f,N_("Set Single Width\nPops value for single width value (FUnit)"));
+    ihadd(0x1e,N_("Set Single Width Cut-In\nPops value for single width cut-in value (26.6)"));
+    ihadd(0x61,N_("SUBtract\nPops two 26.6 fixed numbers from stack\nsubtracts them, pushes result"));
+    ihaddr(0x00,0x01,N_("Set freedom & projection Vectors To Coordinate Axis[a]\n 0=>both to y axis\n 1=>both to x axis\n" ));
+    ihadd(0x23,N_("SWAP top two elements on stack"));
+    ihadd(0x13,N_("Set Zone Pointer 0\nPops the zone number into zp0"));
+    ihadd(0x14,N_("Set Zone Pointer 1\nPops the zone number into zp1"));
+    ihadd(0x15,N_("Set Zone Pointer 2\nPops the zone number into zp2"));
+    ihadd(0x16,N_("Set Zone PointerS\nPops the zone number into zp0,zp1 and zp2"));
+    ihadd(0x29,N_("UnTouch Point\nPops a point number and marks it untouched"));
+    ihadd(0x70,N_("Write Control Value Table in Funits\nPops a number(Funits) and a\nCVT index and writes the number to cvt[index]"));
+    ihadd(0x44,N_("Write Control Value Table in Pixel units\nPops a number(26.6) and a\nCVT index and writes the number to cvt[index]"));
+    ihadd(0x42,N_("Write Store\nPops a value and an index and writes the value to storage[index]"));
 }
 
 typedef struct instrdlg /* : InstrBase */{
@@ -405,10 +404,10 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
 	if ( ii->instrdata->in_composit ) {
-	    GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,"<instrs inherited>",-1,NULL,0xff0000);
+	    GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,NULL,0xff0000);
 	    y += ii->fh;
 	}
-	GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,"<no instrs>",-1,NULL,0xff0000);
+	GDrawDrawBiText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,NULL,0xff0000);
     } else {
 	int temp_indent;
 	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
@@ -424,7 +423,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 		sprintf( val, " %d", ii->instrdata->instrs[i]);
 		uc_strcpy(uname,val);
 	    } else if ( ii->instrdata->bts[i]==bt_impliedreturn ) {
-		uc_strcpy(uname,"<return>");
+		uc_strcpy(uname,_("<return>"));
 		uins[0] = '\0';
 	    } else {
 		int instr = ii->instrdata->instrs[i];
@@ -487,8 +486,7 @@ static void instr_mousedown(struct instrinfo *ii,int pos) {
 
 static void instr_mousemove(struct instrinfo *ii,int pos) {
     int i,y;
-    static unichar_t buffer[1025];
-    const unichar_t *msg;
+    char *msg;
 
     if ( ii->mousedown ) {
 	instr_mousedown(ii,pos);
@@ -506,30 +504,23 @@ return;
     }
     switch ( ii->instrdata->bts[i] ) {
       case bt_wordhi: case bt_wordlo:
-	uc_strcpy(buffer,"A short to be pushed on the stack");
-	msg = buffer;
+	msg = _("A short to be pushed on the stack");
       break;
       case bt_cnt:
-	uc_strcpy(buffer,"A count specifying how many bytes/shorts\nshould be pushed on the stack");
-	msg = buffer;
+	msg = _("A count specifying how many bytes/shorts\nshould be pushed on the stack");
       break;
       case bt_byte:
-	uc_strcpy(buffer,"An unsigned byte to be pushed on the stack");
-	msg = buffer;
+	msg = _("An unsigned byte to be pushed on the stack");
       break;
       case bt_instr:
-	msg = instrhelppopup[ii->instrdata->instrs[i]];
-	if ( msg==NULL ) {
-	    uc_strcpy(buffer,"???");
-	    msg = buffer;
-	}
+	msg = _(instrhelppopup[ii->instrdata->instrs[i]]);
+	if ( msg==NULL ) msg = "???";
       break;
       default:
-	uc_strcpy(buffer,"???");
-	msg = buffer;
+	msg = "???";
       break;
     }
-    GGadgetPreparePopup(GDrawGetParentWindow(ii->v),msg);
+    GGadgetPreparePopup8(GDrawGetParentWindow(ii->v),msg);
 }
 
 void instr_scroll(struct instrinfo *ii,struct sbevent *sb) {
