@@ -513,6 +513,32 @@ return( NULL );
 return( ret );
 }
 
+static PyObject *PyFF_NameFromUnicode(PyObject *self, PyObject *args) {
+    char buffer[400], *nlist = NULL;
+    int uniinterp, uni;
+    NameList *for_new_glyphs;
+    PyObject *ret;
+
+    if ( !PyArg_ParseTuple(args, "i|s", &uni, &nlist) )
+return( NULL );
+
+    if ( nlist != NULL ) {
+	uniinterp = ui_none;
+	for_new_glyphs = NameListByName( nlist );
+	if ( for_new_glyphs == NULL )
+	    PyErr_Format(PyExc_EnvironmentError, "Unknown namelist: %s", nlist);
+    } else if (fv_active_in_ui == NULL) {
+	uniinterp = ui_none;
+	for_new_glyphs = NameListByName("AGL with PUA");
+    } else {
+	uniinterp = fv_active_in_ui->sf->uni_interp;
+	for_new_glyphs = fv_active_in_ui->sf->for_new_glyphs;
+    }
+
+    ret = Py_BuildValue("s", StdGlyphName(buffer,uni,uniinterp,for_new_glyphs));
+return( ret );
+}
+
 static PyObject *PyFF_Version(PyObject *self, PyObject *args) {
     char buffer[20];
 
@@ -13412,6 +13438,7 @@ static PyMethodDef FontForge_methods[] = {
     { "loadPluginDir", PyFF_LoadPluginDir, METH_VARARGS, "Load a directory of FontForge plugin files" },
     { "preloadCidmap", PyFF_PreloadCidmap, METH_VARARGS, "Load a cidmap file" },
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
+    { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "fonts", PyFF_FontTuple, METH_NOARGS, "Returns a tuple of all loaded fonts" },
     { "fontsInFile", PyFF_FontsInFile, METH_VARARGS, "Returns a tuple containing the names of any fonts in an external file"},

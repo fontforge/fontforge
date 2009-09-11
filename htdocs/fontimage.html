@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2006 -->
-  <!-- AP: Last modified: 26-Oct-2006 -->
+  <!-- AP: Last modified: 11-Sep-2009 -->
   <TITLE>fontimage -- generate a font thumbnail image</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -15,7 +15,7 @@
   </H1>
   <P>
   <CODE>fontimage [--o outfile] [--width num] [--height num] [--pixelsize num]
-  [--text string] [--version] [--help] fontfile</CODE>
+  [--fontname] [--text string] [--version] [--help] fontfile</CODE>
   <P>
   <EM>Fontimage</EM> produces a thumbnail image of a font (which may be in
   any format <A HREF="overview.html">fontforge</A> can read).
@@ -51,6 +51,10 @@
       times. Each specification applies to any --text arguments which occur after
       it.
     <DT>
+      --fontname
+    <DD>
+      Include the fontname as a line of text.
+    <DT>
       --text string
     <DD>
       Specifies a string to be displayed. The string <EM>must</EM> be in UTF-8.
@@ -66,86 +70,83 @@
     See Also
   </H3>
   <P>
-  <A HREF="overview.html">FontForge</A>
-<HR>
- <H3>
-   Example
- </H3>
- <FORM action="/cgi-bin/fontimage-cgi" method="post" accept-charset="UTF-8"
-     enctype="multipart/form-data" target="fontimage-window">
-    <P>Font:
-    <SELECT name="font">
-	<OPTION value="AmbrosiaBold.sfd.bz2">Ambrosia Bold</OPTION>
-	<OPTION value="AmbrosiaItalic.sfd.bz2">Ambrosia Italic</OPTION>
-	<OPTION value="AmbrosiaOutline.sfd.bz2">Ambrosia Outline</OPTION>
-	<OPTION value="Ambrosia.sfd.bz2">Ambrosia</OPTION>
-	<OPTION value="AndradeSwash.sfd.bz2">Andrade Swash</OPTION>
-	<OPTION value="Baldur.sfd.bz2">Baldur</OPTION>
-	<OPTION value="Bastarda.sfd.bz2">Bastarda</OPTION>
-	<OPTION value="Bocklin.sfd.bz2">Bocklin</OPTION>
-	<OPTION value="Caliban.sfd.gz">Caliban</OPTION>
-	<OPTION value="Caprice.sfd.bz2">Caprice</OPTION>
-	<OPTION value="Carmen.sfd.bz2">Carmen</OPTION>
-	<OPTION value="Caslon-Black.sfd.gz">Caslon Black</OPTION>
-	<OPTION value="CaslonItalic.sfd.gz">Caslon Italic</OPTION>
-	<OPTION value="CaslonRoman.sfd.gz" selected>Caslon Roman</OPTION>
-	<OPTION value="CaslonBold.sfd.gz">Caslon Bold</OPTION>
-	<OPTION value="Crystal.sfd.bz2">Crystal</OPTION>
-	<OPTION value="CupolaBoldItalic.sfd.bz2">Cupola BoldItalic</OPTION>
-	<OPTION value="CupolaBold.sfd.bz2">Cupola Bold</OPTION>
-	<OPTION value="CupolaItalic.sfd.bz2">Cupola Italic</OPTION>
-	<OPTION value="Cupola.sfd.bz2">Cupola</OPTION>
-	<OPTION value="CupolaSmallCaps.sfd.bz2">Cupola SmallCaps</OPTION>
-	<OPTION value="Decorative.sfd.bz2">Decorative</OPTION>
-	<OPTION value="DufreneType3.sfd.bz2">Dufrene Type3</OPTION>
-	<OPTION value="EddaFilled.sfd.bz2">Edda Filled</OPTION>
-	<OPTION value="EddaNarrow.sfd.bz2">Edda Narrow</OPTION>
-	<OPTION value="EddaOutline.sfd.bz2">Edda Outline</OPTION>
-	<OPTION value="ExtravagantCapitals.sfd.bz2">Extravagant Capitals</OPTION>
-	<OPTION value="FantasieArtistique.sfd.bz2">Fantasie Artistique</OPTION>
-	<OPTION value="Flash.sfd.bz2">Flash</OPTION>
-	<OPTION value="FloralCaps.sfd.bz2">Floral Caps</OPTION>
-	<OPTION value="FormalScriptBold.sfd.bz2">Formal Script Bold</OPTION>
-	<OPTION value="FormalScript.sfd.bz2">Formal Script</OPTION>
-	<OPTION value="Fractur.sfd.bz2">Fractur</OPTION>
-	<OPTION value="GothicBamboo.sfd.bz2">Gothic Bamboo</OPTION>
-	<OPTION value="HohenzollernInitials.sfd.bz2">Hohenzollern Initials</OPTION>
-	<OPTION value="HumanisticCursive.sfd.bz2">Humanistic Cursive</OPTION>
-	<OPTION value="Humanistic.sfd.bz2">Humanistic</OPTION>
-	<OPTION value="ItalicHand.sfd.bz2">Italic Hand</OPTION>
-	<OPTION value="LombardicMix.sfd.bz2">Lombardic Mix</OPTION>
-	<OPTION value="Lombardic.sfd.bz2">Lombardic</OPTION>
-	<OPTION value="Mirage.sfd.bz2">Mirage</OPTION>
-	<OPTION value="Monopol.sfd.bz2">Monopol</OPTION>
-	<OPTION value="MonospaceBold.sfd.gz">Monospace Bold</OPTION>
-	<OPTION value="MonospaceOblique.sfd.gz">Monospace Oblique</OPTION>
-	<OPTION value="MonospaceRegular.sfd.gz">Monospace Regular</OPTION>
-	<OPTION value="Morris-Initials.sfd.bz2">Morris Initials</OPTION>
-	<OPTION value="Parisian.sfd.bz2">Parisian</OPTION>
-	<OPTION value="Peignot.sfd.bz2">Peignot</OPTION>
-	<OPTION value="PicadillyBizarre.sfd.bz2">Picadilly Bizarre</OPTION>
-	<OPTION value="Picadilly.sfd.bz2">Picadilly</OPTION>
-	<OPTION value="RingletBlack.sfd.bz2">Ringlet Black</OPTION>
-	<OPTION value="Ringlet.sfd.bz2">Ringlet</OPTION>
-	<OPTION value="RomanUncialModern.sfd.bz2">Roman Uncial Modern</OPTION>
-	<OPTION value="Rotunda.sfd.bz2">Rotunda</OPTION>
-	<OPTION value="SquareCaps.sfd.bz2">Square Caps</OPTION>
-	<OPTION value="TexturaModern.sfd.bz2">Textura Modern</OPTION>
-	<OPTION value="UncialAnimals.sfd.bz2">Uncial Animals</OPTION>
-	<OPTION value="Versal.sfd.bz2">Versal</OPTION>
-    </SELECT>
-    Point size: <INPUT type="text" value="24" size="4" name="size">
-    DPI: <INPUT type="text" value="100" size="4" name="dpi"><BR>
-    Text: <SMALL>(If you leave this blank, fontimage will generate some default text showing all scripts in the font)</SMALL><BR>
+  <A HREF="overview.html">FontForge</A> 
+    <HR>
+  <H3>
+    Example
+  </H3>
+  <FORM action="/cgi-bin/fontimage-cgi" method="post" accept-charset="UTF-8"
+  enctype="multipart/form-data" target="fontimage-window">
+    Font: 
+    <SELECT name="font"> 
+    <OPTION value="AmbrosiaBold.sfd.bz2">Ambrosia Bold
+    <OPTION value="AmbrosiaItalic.sfd.bz2">Ambrosia Italic
+    <OPTION value="AmbrosiaOutline.sfd.bz2">Ambrosia Outline
+    <OPTION value="Ambrosia.sfd.bz2">Ambrosia
+    <OPTION value="AndradeSwash.sfd.bz2">Andrade Swash
+    <OPTION value="Baldur.sfd.bz2">Baldur 
+    <OPTION value="Bastarda.sfd.bz2">Bastarda
+    <OPTION value="Bocklin.sfd.bz2">Bocklin 
+    <OPTION value="Caliban.sfd.gz">Caliban 
+    <OPTION value="Caprice.sfd.bz2">Caprice 
+    <OPTION value="Carmen.sfd.bz2">Carmen
+    <OPTION value="Caslon-Black.sfd.gz">Caslon Black
+    <OPTION value="CaslonItalic.sfd.gz">Caslon Italic
+    <OPTION value="CaslonRoman.sfd.gz" selected>Caslon Roman
+    <OPTION value="CaslonBold.sfd.gz">Caslon Bold
+    <OPTION value="Crystal.sfd.bz2">Crystal
+    <OPTION value="CupolaBoldItalic.sfd.bz2">Cupola BoldItalic
+    <OPTION value="CupolaBold.sfd.bz2">Cupola Bold
+    <OPTION value="CupolaItalic.sfd.bz2">Cupola Italic
+    <OPTION value="Cupola.sfd.bz2">Cupola
+    <OPTION value="CupolaSmallCaps.sfd.bz2">Cupola SmallCaps
+    <OPTION value="Decorative.sfd.bz2">Decorative
+    <OPTION value="DufreneType3.sfd.bz2">Dufrene Type3
+    <OPTION value="EddaFilled.sfd.bz2">Edda Filled
+    <OPTION value="EddaNarrow.sfd.bz2">Edda Narrow
+    <OPTION value="EddaOutline.sfd.bz2">Edda Outline
+    <OPTION value="ExtravagantCapitals.sfd.bz2">Extravagant Capitals
+    <OPTION value="FantasieArtistique.sfd.bz2">Fantasie Artistique
+    <OPTION value="Flash.sfd.bz2">Flash 
+    <OPTION value="FloralCaps.sfd.bz2">Floral Caps
+    <OPTION value="FormalScriptBold.sfd.bz2">Formal Script Bold
+    <OPTION value="FormalScript.sfd.bz2">Formal Script
+    <OPTION value="Fractur.sfd.bz2">Fractur
+    <OPTION value="GothicBamboo.sfd.bz2">Gothic Bamboo
+    <OPTION value="HohenzollernInitials.sfd.bz2">Hohenzollern Initials
+    <OPTION value="HumanisticCursive.sfd.bz2">Humanistic Cursive
+    <OPTION value="Humanistic.sfd.bz2">Humanistic
+    <OPTION value="ItalicHand.sfd.bz2">Italic Hand
+    <OPTION value="LombardicMix.sfd.bz2">Lombardic Mix
+    <OPTION value="Lombardic.sfd.bz2">Lombardic
+    <OPTION value="Mirage.sfd.bz2">Mirage 
+    <OPTION value="Monopol.sfd.bz2">Monopol
+    <OPTION value="MonospaceBold.sfd.gz">Monospace Bold
+    <OPTION value="MonospaceOblique.sfd.gz">Monospace Oblique
+    <OPTION value="MonospaceRegular.sfd.gz">Monospace Regular
+    <OPTION value="Morris-Initials.sfd.bz2">Morris Initials
+    <OPTION value="Parisian.sfd.bz2">Parisian
+    <OPTION value="Peignot.sfd.bz2">Peignot
+    <OPTION value="PicadillyBizarre.sfd.bz2">Picadilly Bizarre
+    <OPTION value="Picadilly.sfd.bz2">Picadilly
+    <OPTION value="RingletBlack.sfd.bz2">Ringlet Black
+    <OPTION value="Ringlet.sfd.bz2">Ringlet
+    <OPTION value="RomanUncialModern.sfd.bz2">Roman Uncial Modern
+    <OPTION value="Rotunda.sfd.bz2">Rotunda
+    <OPTION value="SquareCaps.sfd.bz2">Square Caps
+    <OPTION value="TexturaModern.sfd.bz2">Textura Modern
+    <OPTION value="UncialAnimals.sfd.bz2">Uncial Animals
+    <OPTION value="Versal.sfd.bz2">Versal </SELECT> Point size:
+    <INPUT type="text" value="24" size="4" name="size"> DPI:
+    <INPUT type="text" value="100" size="4" name="dpi"><BR>
+    Text: <SMALL>(If you leave this blank, fontimage will generate some default
+    text showing all scripts in the font)</SMALL><BR>
     <TEXTAREA name="text" cols=80 rows=8></TEXTAREA><BR>
     <INPUT type="submit" value="Display">
-    </P>
- </FORM>
- <P>
-    <IFRAME name="fontimage-window"
-	SRC="http://fontforge.sf.net/cgi-bin/fontimage-cgi?size=24&dpi=100&font=CaslonRoman.sfd.gz"
-	WIDTH="100%" HEIGHT=500>
-    IFrame doesn't work in your browser. Try pressing the [Display] button
-    </IFRAME>
+  </FORM>
+  <P>
+  <IFRAME name="fontimage-window" SRC="http://fontforge.sf.net/cgi-bin/fontimage-cgi?size=24&dpi=100&font=CaslonRoman.sfd.gz"
+  WIDTH="100%" HEIGHT=500> IFrame doesn't work in your browser. Try pressing
+  the [Display] button </IFRAME>
 </DIV>
 </BODY></HTML>
