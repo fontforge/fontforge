@@ -1629,8 +1629,8 @@ return;
     if ( type==-1 ) {
 	ch = getc(file);
 	while ( ch!=EOF ) {
-	    while ( isspace(ch)) ch=getc(file);
-	    for ( pt = buffer; ch!=EOF && !isspace(ch) ; ch=getc(file))
+	    while ( isspace(ch) && ch<0x80 ) ch=getc(file);
+	    for ( pt = buffer; ch!=EOF && !(isspace(ch) && ch<0x80) ; ch=getc(file))
 		if ( pt<buffer+sizeof(buffer)-2)
 		    *pt++=ch;
 	    *pt = '\0';
