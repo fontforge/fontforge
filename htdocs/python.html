@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 5-Sep-2009 -->
+  <!-- AP: Last modified: 11-Sep-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1069,7 +1069,7 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD><CODE>draw</CODE></TD>
       <TD><CODE>(pen)</CODE></TD>
       <TD>Draw the contour to the
-	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
+	<A href="http://www.robofab.org/objects/pen.html">pen argument.</A></TD>
     </TR>
     <TR>
       <TH colspan=3>Pickling Methods</TH>
@@ -1379,8 +1379,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     <TR>
       <TD><CODE>draw</CODE></TD>
       <TD><CODE>(pen)</CODE></TD>
-      <TD>Draw the layer to the
-	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
+      <TD>Draw the layer to the <A href="http://www.robofab.org/objects/pen.html">pen
+	argument.</A></TD>
     </TR>
     <TR>
       <TH colspan=3>Pickling Methods</TH>
@@ -1399,8 +1399,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </CAPTION>
     <TR>
       <TD colspan=3>This implements the
-	<A href="http://just.letterror.com/ltrwiki/PenProtocol">Pen Protocol</A>
-	to draw into a FontForge glyph. You create a glyphPen with the
+	<A href="http://www.robofab.org/objects/pen.html">Pen Protocol</A> to draw
+	into a FontForge glyph. You create a glyphPen with the
 	<A href="#glyph-glyphPen">glyphPen</A> attribute of a glyph. You then draw
 	into it with the operators below.
 	<BLOCKQUOTE>
@@ -1640,6 +1640,16 @@ pen = None;				# Finalize the pen. This tells FontForge
 	a tuple of starting locations and widths.</TD>
     </TR>
     <TR>
+      <TD><CODE>isExtendedShape</CODE></TD>
+      <TD colspan=2>A boolean containing the MATH "is extended shape" field.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>italicCorrection</CODE></TD>
+      <TD colspan=2>The glyph's italic correction field. Used by both TeX and MATH.
+	The special value of -32768 (0x8000) means the value is unspecified (An
+	unspecified value will not go into the output tables, a value of 0 will)</TD>
+    </TR>
+    <TR>
       <TD><CODE>layer_cnt</CODE></TD>
       <TD colspan=2>The number of layers in this glyph. (Cannot be set)</TD>
     </TR>
@@ -1701,11 +1711,21 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>texheight</CODE></TD>
-      <TD colspan=2>The Tex height</TD>
+      <TD colspan=2>The Tex height. The special value of -32768 (0x8000) means
+	the field is unspecified (An unspecified value will not go into the output
+	tables, a value of 0 will)</TD>
     </TR>
     <TR>
       <TD><CODE>texdepth</CODE></TD>
-      <TD colspan=2>The Tex depth</TD>
+      <TD colspan=2>The Tex depth. The special value of -32768 (0x8000) means the
+	field is unspecified (An unspecified value will not go into the output tables,
+	a value of 0 will)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>topaccent</CODE></TD>
+      <TD colspan=2>The glyph's top accent position field. Used by MATH. The special
+	value of -32768 (0x8000) means the field is unspecified (An unspecified value
+	will not go into the output tables, a value of 0 will)</TD>
     </TR>
     <TR>
       <TD><CODE>ttinstrs</CODE></TD>
@@ -2323,7 +2343,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>draw</CODE></TD>
       <TD><CODE>(pen)</CODE></TD>
       <TD>Draw the glyph's outline to the
-	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
+	<A href="http://www.robofab.org/objects/pen.html">pen argument.</A></TD>
     </TR>
     <TR>
       <TD><CODE><A name="glyph-glyphPen">glyphPen</A></CODE></TD>
