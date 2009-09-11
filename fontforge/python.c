@@ -4899,6 +4899,55 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_italiccorrection(PyFF_Glyph *self,void *closure) {
+
+return( Py_BuildValue("i", self->sc->italic_correction ));
+}
+
+static int PyFF_Glyph_set_italiccorrection(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    self->sc->italic_correction = val;
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_topaccent(PyFF_Glyph *self,void *closure) {
+
+return( Py_BuildValue("i", self->sc->top_accent_horiz ));
+}
+
+static int PyFF_Glyph_set_topaccent(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    self->sc->top_accent_horiz = val;
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_isextendedshape(PyFF_Glyph *self,void *closure) {
+    PyObject *ret;
+
+    ret = self->sc->is_extended_shape ? Py_True : Py_False;
+    Py_INCREF( ret );
+return( ret );
+}
+
+static int PyFF_Glyph_set_isextendedshape(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    self->sc->is_extended_shape = val!=0;
+return( 0 );
+}
+
+
 static PyObject *PyFF_Glyph_get_unlinkRmOvrlpSave(PyFF_Glyph *self,void *closure) {
 
 return( Py_BuildValue("i", self->sc->unlink_rm_ovrlp_save_undo ));
@@ -5564,6 +5613,12 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"glyphclass",
 	 (getter)PyFF_Glyph_get_glyphclass, (setter)PyFF_Glyph_set_glyphclass,
 	 "glyph class", NULL},
+    {"italicCorrection",
+	 (getter)PyFF_Glyph_get_italiccorrection, (setter)PyFF_Glyph_set_italiccorrection,
+	 "Math & TeX italic correction", NULL},
+    {"isExtendedShape",
+	 (getter)PyFF_Glyph_get_isextendedshape, (setter)PyFF_Glyph_set_isextendedshape,
+	 "Math \"is extended shape\" field", NULL},
     {"script",
 	 (getter)PyFF_Glyph_get_script, (setter)PyFF_cant_set,
 	 "The OpenType script containing this glyph (readonly)", NULL},
@@ -5573,6 +5628,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"texdepth",
 	 (getter)PyFF_Glyph_get_texdepth, (setter)PyFF_Glyph_set_texdepth,
 	 "TeX glyph depth", NULL},
+    {"topaccent",
+	 (getter)PyFF_Glyph_get_topaccent, (setter)PyFF_Glyph_set_topaccent,
+	 "Math top accent horizontal position", NULL},
     {"ttinstrs",
 	 (getter)PyFF_Glyph_get_ttfinstrs, (setter)PyFF_Glyph_set_ttfinstrs,
 	 "TrueType Instructions for this glyph", NULL},
