@@ -16,7 +16,7 @@ while ( $argc > 1 )
       Print("Warning: Multiple font files have been given. Only the last will be used." )
     endif
     foundfont = 1
-    Open($1)
+    Open($1,1)
   else
     temp = $1
     if ( Strsub(temp,1,2)=='-' )
@@ -38,6 +38,8 @@ while ( $argc > 1 )
         Print("Multiple output files given; only the last will be used")
       endif
       outfile = $1
+    elseif ( temp=="-fontname" )
+      lines = lines + [ pixelsize, 0 ]
     elseif ( temp=="-text" && $argc>2 )
       shift
       lines = lines + [ pixelsize, $1 ]
@@ -45,7 +47,7 @@ while ( $argc > 1 )
       Print( "Version 1.0" )
 return(0)
     else
-      Print( "fontimage: [--version] [--width num] [--height num] [--pixelsize num] [--text str] [-o outputfilename] fontfile" )
+      Print( "fontimage: [--version] [--width num] [--height num] [--pixelsize num] [--fontname] [--text str] [-o outputfilename] fontfile" )
       Print( " Produces an image containing representative glyphs of the font" )
       Print( " --width num  Specifies the number of pixels wide to make the" )
       Print( "    output image. If this is omitted (or specified as -1) then" )
@@ -53,6 +55,7 @@ return(0)
       Print( " --height num Specifies the number of pixels high to make the" )
       Print( "    output image. If this is omitted (or specified as -1) then" )
       Print( "    the image will be made as high as it needs to be." )
+      Print( " --fontname   Include the fontname as a line of text." )
       Print( " --text str   Specifies a line of text to be printed on the image." )
       Print( "    This may be specified multiple times to get multiple lines." )
       Print( "    If this is omitted fontimage will chose a default set of strings" )
@@ -79,6 +82,14 @@ if ( SizeOf(lines)==0 )
 # I used to have the script generate default lines, but have moved that logic
 # into fontforge
   lines = [ pixelsize ];
+else
+  i=1;
+  while ( i<SizeOf(lines))
+    if ( TypeOf(lines[i])=="Integer" && lines[i]==0 )
+      lines[i] = $fontname;
+    endif
+    i=i+2;
+  endloop
 endif
 
 if ( outfile=="" )
