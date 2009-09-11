@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 22-Jun-2009 -->
+  <!-- AP: Last modified: 11-Sep-2009 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,273 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      11-Sept-2009
+      <UL>
+	<LI>
+	  FontForge will now generate ttc files. It has two options:
+	  <UL>
+	    <LI>
+	      share a common glyf table (not always possible)
+	    <LI>
+	      Use CFF output.
+	  </UL>
+	  <P>
+	  There is also a python command font.generateTtc()
+	<LI>
+	  Patch by Alexey to add a NameFromUnicode function to both native and python
+	  scripting.
+	<LI>
+	  Drag &amp; dropping a glyph into the metrics view didn't mark the end of
+	  string properly so cruft left over could be displayed.
+	<LI>
+	  In CharView Element-&gt;Join and Element-&gt;Correct Direction were turned
+	  off when they should not have been.
+	<LI>
+	  Patch by Khaled to add some feature names to my list and extend the lookup
+	  type to which others apply.
+	<LI>
+	  new python fields:
+	  <UL>
+	    <LI>
+	      glyph.topaccent
+	    <LI>
+	      glyph.italicCorrection
+	    <LI>
+	      glyph.isExtendedShape
+	  </UL>
+	<LI>
+	  Khaled provides a patch. 'Top Accent Pos' value in Glyph Info -&gt; TeX &amp;
+	  Math was not being retained when user pressed OK.
+	<LI>
+	  Alexey points out that wordlists in the metrics view really assumed ASCII
+	  letters and didn't handle utf8 well.
+	<LI>
+	  Patch by Michal to render more strings translateable.
+	<LI>
+	  See if I can speed up execution of "&lt;glyphname&gt; in &lt;font&gt;"
+	<LI>
+	  Patch by Alexey K to add two preference items which control features of the
+	  autohintor/instructor.
+	<LI>
+	  Dave Crossland tells me that some security patch to windows considers fonts
+	  with a 'name' table bigger than 5K to be insecure (Don't ask me why they
+	  think this) and windows will refuse to load any such fonts. This means Windows
+	  won't load any font with the Open Font License in the 'name' table. This
+	  patch adds three checks:
+	  <OL>
+	    <LI>
+	      When generating a font it will let the user know if the name table is too
+	      big.
+	    <LI>
+	      When loading a font in validation mode it will warn if the name table is
+	      too big.
+	    <LI>
+	      Font Info will make a rough approximation to the size of the name table (an
+	      approximation which will always be too small) and warn if this approximation
+	      is bigger than 5K
+	  </OL>
+	<LI>
+	  When opening a ttf file the guideline psuedo-layer was cubic not quadratic.
+	<LI>
+	  Patch by Michal:
+	  <UL>
+	    <LI>
+	      Duplicate "Raster Dark Color" in xresources editor.<BR/>
+	      "Delta Grid Color" was really meant the second time
+	    <LI>
+	      Duplicate charview-&gt;point-&gt;tools-&gt;rotate menu item.
+	    <LI>
+	      In charview palettes, it was impossible to unset "don't stroke" in freehand
+	    <LI>
+	      Charview-&gt;hinting-&gt;autohint and Charview-&gt;hinting-&gt;autoinstr
+	      were not<BR/>
+	      disabled if guide were the active layer. This resulted in segfaults
+	    <LI>
+	      In GlyphInfo-&gt;Unicode, "variant selector" matrix had headers untranslated.
+	  </UL>
+	<LI>
+	  Autoinstructor: added aspect-ratio correction for new diagonal code.
+	<LI>
+	  Autoinstructor: pushes EF2Dot14 values in a more compact manner.
+	<LI>
+	  In the metricsview Cut/Copy/Paste/Undo/Redo menu commands all apply to the
+	  textfields as well as the glyphs. So don't disable them. It used not to matter
+	  because disabling didn't affect the shortcuts, but it does now.
+	<LI>
+	  <CODE>File-&gt;X Resource Editor...-&gt;FontView-&gt;Font Size</CODE> was
+	  supposed to allow the user to set the size of the glyph labels in the fontview.
+	  It didn't. Fixed.
+	<LI>
+	  Add a new problem (Find Problems) and a new validation state indicative of
+	  whether a glyph (or hint mask) has overlapping hints.
+	<LI>
+	  Patch by Alexandre Prokoudine to make an error message translatable.
+	<LI>
+	  Patch by Stephen Hartke to make contour splicing (in fontforge's python module)
+	  work the way splicing normally does in python.
+	<LI>
+	  Back in the dark ages adobe provide a set of encodings for the PUA. For instance
+	  A.small was encoded into PUA. Nowadays it is thought better to leave A.small
+	  unencoded. But if a modern font contained an A.small glyph FontForge would
+	  think it should be encoded into the PUA. So I added a preference item to
+	  turn off adobe's obsolete names.
+	  <P>
+	  Sadly the preference item wasn't very smart and turned off names like uE001
+	  as well. Fix that.
+	<LI>
+	  Autoinstructor: made much faster by caching SplinePointListIsClockwise()
+	  results.
+	<LI>
+	  Problem when converting an OpenType contextual subtable to an Apple state
+	  machine.
+	<LI>
+	  If an old-style kerning table kerns glyphs which are outside unicode BMP
+	  then windows has problems. Someone provide a patch to check for this. Sadly
+	  the patch had a bug which could cause crashes.
+	<LI>
+	  Autoinstructor: patch from Alexey to fix artifacts caused by diagonal hints
+	  at small and medium PPEMs. Code now sets projection vector from the stack,
+	  because that's more accurate than using dual projection vector, so some font
+	  validators may give warnings due to aspect-ratio-dependent nature of SPVFS.
+	<LI>
+	  Autoinstructor: Alexey pointed out that inaccurate strong points interpolation
+	  caused assymetry of implied perpendicular extremas.
+	<LI>
+	  I was intended to translate espace_espace_i to space_space_i and espace.small
+	  to space.small but that didn't work.
+	<LI>
+	  When renaming a font to a new namelist I only renamed glyphs, but not the
+	  places where glyph names ocurred in lookups or math variants.
+	<LI>
+	  I used to have a separate set of default Generate [Option] flags for ttf
+	  and otf. There's no real need for that, and it's probably a bit confusing,
+	  and it makes life hard with ttc files.
+	<LI>
+	  Typo in code for converting an OpenType contextual sub to an apple state
+	  machine.
+	<LI>
+	  Hunh. If we configured with gb12345 then that encoding appeared twice in
+	  the encoding list and the first occurance was broken. Remove the broken
+	  occurance.
+	<LI>
+	  Barry complains that when a feature file creates glyphs which aren't in the
+	  encoding then those glyphs aren't visible (until you reencode, of course).
+	  This causes confusion. I think the solution is simply to encode the new glyphs.
+	<LI>
+	  Patch by Michal. Some of the strings for the new delta suggestor were not
+	  marked for translation (also resizing the window didn't reset the scrollbar
+	  properly).
+	<LI>
+	  Add a new python method glyph.preserveLayerAsUndo() to add an undo to the
+	  undo list which will restore the layer to its current state.
+	<LI>
+	  embedded bitmaps in CID keyed fonts didn't work.
+	<LI>
+	  Interpolate fonts would screw up internals if the first font had a layer
+	  count which wasn't 2. This would almost certainly cause a crash later.
+	<LI>
+	  Hunh. Python creates an iterator for my cvt type which doesn't work. So create
+	  a real one.
+	<LI>
+	  Barry wanted a selection field in python glyph.anchorPoints so create a new
+	  routine glyph.anchorPointsWithSel()
+	<LI>
+	  Patch from Peter, python cvt[i] returned an unsigned value.
+	<LI>
+	  Python cvt.find function crashed if there were no cvt table.
+	<LI>
+	  Werner suggests that .02 is a better default value for delta checking than
+	  .01.
+	<LI>
+	  When generating a type3 font from a script, ff would convert to type0 if
+	  it had a two byte encoding.
+	<LI>
+	  Werner keeps asking for a clearer header in the GASP part of fontinfo.
+	<LI>
+	  When generating a temporary font for rasterization purposes, don't output
+	  GPOS GSUB, or any AAT tables.
+	<LI>
+	  Patch by Herbert Duerr. With traditional 'kern' tables, windows has problems
+	  with kerning glyphs which do not have BMP encodings. So produce a warning
+	  in this case.
+	<LI>
+	  SVG kerning produced garbage. Two typos. Patch by Simo Kinnunen.
+	<LI>
+	  Bug in feature file (and hence UFO) output. When outputing a contextual
+	  class-based lookup ff would crash if class 0 was unused.
+	<LI>
+	  Werner requests a command to check when a spline gets very close to the center
+	  of a pixel as this might be a candidate for a delta instruction. That is:
+	  Grid fit many glyphs at many pixel sizes and see which splines come close
+	  to which pixel centers. This is a functional but ugly implementation.
+	<LI>
+	  Add mnemonics for the first 10 layers (Guide is _0, Back _1, Fore _2, &lt;user
+	  layer 1&gt; _3, ...). Guide, Back and Fore already had mnemonics... Now they
+	  have two.
+	<LI>
+	  You can rebind the charview menus separately from the others.
+	  <P>
+	  If you have an entry like:
+	  <BLOCKQUOTE>
+	    <PRE>&nbsp; msgid "CV*Open|Ctl+O"
+ &nbsp;msgstr "Super+O"
+</PRE>
+	  </BLOCKQUOTE>
+	  <P>
+	  then that will rebind Open in the charview and nowhere else.
+	  <P>
+	  Note that the string "CV*Open|Ctl+O" will not appear in the pot file, you
+	  must add it manually if you want to do this (that's because I don't want
+	  people to do this).
+	  <P>
+	  If you have a rebinding for
+	  <BLOCKQUOTE>
+	    <PRE>&nbsp; msgid "Open|Ctl+O"
+</PRE>
+	  </BLOCKQUOTE>
+	  <P>
+	  and no entry for "CV*Open|Ctl+O" (ie. the common case) then all menus (including
+	  the charview) will follow the standard rebinding.
+	<LI>
+	  When listing all languages used in a script, ff would only look at gpos.
+	<LI>
+	  When creating an ellipse or rectangle, ff would round the points to be integers
+	  -- but it would not refigure the splines after doing that (so the spline
+	  polynomials do not actually reach their endpoints causing peculiar errors).
+	<LI>
+	  When reading a featurefile from a ufo there is no associated fv yet, but
+	  there is an associated map. Use the map instead of fv-&gt;map when checking
+	  encodings.
+	<LI>
+	  FF was not translating the spiro point menu in charview.
+	<LI>
+	  Add a mechanism so user can specify a modifier mask to be applied to characters
+	  for navigation. Used to be that user typed "a" and the glyph for "a" was
+	  selected in the fontview (or the charview shifted to show "a"). No modifier
+	  was used. Now I've added "NavigationMask|None" to the pot file for hotkeys.
+	  If left as "None" then there will continue to be no modifier. If changed
+	  to something like "Super" then the super key must be used.
+	<LI>
+	  Set Width (Set Right Bearing, etc.) from the fontview would change the width
+	  of a glyph even if it were composite with a "use my metrics" reference.
+	<LI>
+	  If cairo was turned off, and a glyph had background images, then deleting
+	  those images (Cut or Clear) in the charview did not update the display. (That's
+	  a simplification, but is what it looked like).
+	<LI>
+	  In python font.save(), if the script does not specify a filename, and the
+	  font isn't associated with an sfd file, then generate the same name as used
+	  in SaveAs by default.
+	<LI>
+	  FF can save spiro info into an sfnt. Unfortunately FF didn't read it back
+	  in properly.
+	<LI>
+	  Autoinstructor: patch from Alexey to fix a bug reported by Andrey V. Panov:
+	  - sometives the last vertical stem protruded beyond the advance width.
+	<LI>
+	  Various patches from Michal. Array bounds out of bound kind of thing.
+      </UL>
     <LI>
       22-June-2009
       <UL>
@@ -262,12 +529,18 @@
 	  Exporting bitmap formats chose the wrong format.
       </UL>
       <TABLE BGCOLOR="#8080ff" ALIGN="center" WIDTH="80%">
-      <TR><TD>I wish to thank Michal Nowakowski for fixing my bugs these last
-      few months. I no longer have as much time for FontForge as I have in the
-      past, and my attention to the project is spotty.
-      <p>Currently I am training to run a <a href="http://www.seattlerunningcompany.com/WR50/">50 mile race</a> (~80K) to celebrate my
-      50th birthday this year. I've already run a <a href="http://georgeruns.wordpress.com/2009/06/06/50-at-50-not-quite/">50K race</a> as preparation.
-      </TD></TR></TABLE>
+	<TR>
+	  <TD>I wish to thank Michal Nowakowski for fixing my bugs these last few months.
+	    I no longer have as much time for FontForge as I have in the past, and my
+	    attention to the project is spotty.
+	    <P>
+	    Currently I am training to run a
+	    <A href="http://www.seattlerunningcompany.com/WR50/">50 mile race</A> (~80K)
+	    to celebrate my 50th birthday this year. I've already run a
+	    <A href="http://georgeruns.wordpress.com/2009/06/06/50-at-50-not-quite/">50K
+	    race</A> as preparation.</TD>
+	</TR>
+      </TABLE>
     <LI>
       8-Apr-2009
       <UL>
