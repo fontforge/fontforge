@@ -86,7 +86,7 @@ else
   i=1;
   while ( i<SizeOf(lines))
     if ( TypeOf(lines[i])=="Integer" && lines[i]==0 )
-      lines[i] = $fontname;
+      lines[i] = " " + $fontname + " ";
     endif
     i=i+2;
   endloop
