@@ -1316,6 +1316,7 @@ return( false );
 	ci->sc->tex_height = tex_height;
 	ci->sc->tex_depth  = tex_depth;
 	ci->sc->italic_correction = italic;
+	ci->sc->top_accent_horiz = topaccent;
 	ci->sc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	ci->sc->italic_adjusts = DeviceTableParse(ci->sc->italic_adjusts,italicdevtab);
