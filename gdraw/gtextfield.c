@@ -953,10 +953,12 @@ static int gtextfield_editcmd(GGadget *g,enum editor_commands cmd) {
 return( true );
       case ec_clear:
 	GTextField_Replace(gt,nullstr);
+	_ggadget_redraw(g);
 return( true );
       case ec_cut:
 	GTextFieldGrabSelection(gt,sn_clipboard);
 	GTextField_Replace(gt,nullstr);
+	_ggadget_redraw(g);
       break;
       case ec_copy:
 	GTextFieldGrabSelection(gt,sn_clipboard);
@@ -989,11 +991,13 @@ return( true );			/* but probably best to return success */
 		gt->sel_start = GTextFieldSelBackword(gt->text,gt->sel_start);
 	}
 	GTextField_Replace(gt,nullstr);
+	_ggadget_redraw(g);
       break;
       case ec_deleteword:
         if ( gt->sel_start==gt->sel_end && gt->sel_start!=0 )
 	    GTextFieldSelectWord(gt,gt->sel_start,&gt->sel_start,&gt->sel_end);
 	GTextField_Replace(gt,nullstr);
+	_ggadget_redraw(g);
       break;
       default:
 return( false );
