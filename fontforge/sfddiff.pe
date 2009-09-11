@@ -63,8 +63,8 @@ if ( $argc!=3 || $1=="--usage" || $1=="-usage" )
 return(0)
 endif
 
-Open($2)
-Open($1)
+Open($2,1)
+Open($1,1)
 CompareFonts($2,"-",flags)
 if ( outfile!="" )
   Save(outfile)

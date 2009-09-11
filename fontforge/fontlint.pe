@@ -10,7 +10,7 @@ return( 1 );
 endif
 
 while ( $argc > 1 )
-  Open( $1, 8 )
+  Open( $1, 9 )		/* Open even if fstype objects, turn on validation */
   mask = Validate()
   blues = $privateState
   if ( $order==2 )
