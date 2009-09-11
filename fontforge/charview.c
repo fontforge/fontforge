@@ -6653,7 +6653,7 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Join:
-	    mi->ti.disabled = !anypoints;
+	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->splines==NULL;
 	  break;
 	  case MID_Merge:
 	    mi->ti.disabled = !anypoints;
@@ -8416,7 +8416,8 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.checked = dir==0;
 	  break;
 	  case MID_Correct:
-	    mi->ti.disabled = !anypoints || dir==2 || self_intersects==1;
+	    mi->ti.disabled = (cv->b.layerheads[cv->b.drawmode]->splines==NULL && cv->b.layerheads[cv->b.drawmode]->refs==NULL) ||
+		    dir==2 || self_intersects==1;
 	  break;
 	  case MID_ReverseDir:
 	    mi->ti.disabled = !anypoints;
