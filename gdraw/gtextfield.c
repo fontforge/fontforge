@@ -966,6 +966,7 @@ return( true );
       case ec_paste:
 	GTextFieldPaste(gt,sn_clipboard);
 	GTextField_Show(gt,gt->sel_start);
+	_ggadget_redraw(g);
       break;
       case ec_undo:
 	if ( gt->oldtext!=NULL ) {
@@ -977,6 +978,7 @@ return( true );
 	    s = gt->sel_base; gt->sel_base = gt->sel_oldbase; gt->sel_oldbase = s;
 	    GTextFieldRefigureLines(gt, 0);
 	    GTextField_Show(gt,gt->sel_end);
+	    _ggadget_redraw(g);
 	}
       break;
       case ec_redo:		/* Hmm. not sure */ /* we don't do anything */
