@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 12-Dec-2008 -->
+  <!-- AP: Last modified: 11-Sep-2009 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -97,8 +97,7 @@
     <LI>
       <A HREF="#em-units">How big will my glyph be? (What are em-units?)</A>
     <LI>
-      <A HREF="#license" TARGET="faq">What's a good license to use on an open source
-      font?</A>
+      <A HREF="#license">What's a good license to use on an open source font?</A>
   </UL>
   <H2>
     Using FontForge &amp; Installing fonts on various systems
@@ -151,6 +150,8 @@
     <LI>
       <A HREF="#DSIG">I have a truetype font with opentype tables, but windows
       displays the "TT" (truetype) icon and not the "O" icon. Why?</A>
+    <LI>
+      <A HREF="#names">What do all the different font names mean?</A>
   </UL>
   <H2>
     Font Conversions
@@ -236,7 +237,7 @@
       <A HREF="#mensis">How do I set a particular bit in the OS/2 table (or any
       other)?</A>
     <LI>
-      What's an sfd file?
+      <A href="#sfd">What's an sfd file?</A>
       <UL>
 	<LI>
 	  <A HREF="#excessive-memory">Why are they so big?</A>
@@ -1136,6 +1137,10 @@ $ xset fp+ `pwd`
       and then use windows drag and drop to install the font. (Windows appears
       to do magic when it moves the font into that directory).
       <P>
+      Recently (2009) a windows security patch decided that fonts with a 'name'
+      table bigger than 5K were insecure and refused to install them. Frequently
+      this is caused by having the full text of a license included in the font.
+      <P>
       I am told that fonts produced by old versions of FontForge will not install
       on Windows 2000 (and XP) systems.
       <P>
@@ -1239,70 +1244,84 @@ $ xset fp+ `pwd`
       <B><A NAME="How-family">How do I create a mac font family? (How do I get
       the mac to group my fonts so that the italic and bold styles work)?</A></B>
     <DD>
-      For the Style menu in most mac applications to work on your fonts, you must
-      create a font family. You do this with the
-      <A TARGET="_top" HREF="filemenu.html#GenerateMac">File-&gt;Generate Mac
-      Family</A> command.
-      <P>
-      All the fonts in a family must have the same Family name (See the
-      <A TARGET="_top" HREF="fontinfo.html">font info</A> dialog). Font Families
-      are handled rather differently under Carbon (the old font handling mechanism
-      used in OS 9) and under ATSUI (on OS/X).
-      <P>
-      Under Carbon, the font family is limited by the design of the Mac 'FOND'
-      resource, which reflects the computer font technology of the early 1980s.
-      Modern computer fonts often have variants that can't be expressed in it.
-      FONDs support any combination (except one containing both Extend and Condense)
-      of the following styles:
-      <UL>
-	<LI>
-	  Bold
-	<LI>
-	  Italic
-	<LI>
-	  Condense
-	<LI>
-	  Extend
-	<LI>
-	  Underline
-	<LI>
-	  Shadow
-	<LI>
-	  Outline
-      </UL>
-      <P>
-      Mac FONDS do not support "Black", "DemiBold", "Light", "Thin" or
-      "Extra-Condensed" variants.
-      <P>
-      Under ATSUI, on the other hand, a family seems to consist of all fonts in
-      a given resources file which have the same FamilyName.
-      <P>
-      In order that a family be useful under both systems, Apple appears to place
-      several FONDs inside such a font file. Each FOND contains a sub-family of
-      related fonts. The 'FOND's appear to be distributed as follows:
-      <P>
-      Suppose you have a family of fonts with the following styles:<BR>
-      Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic, Oblique, Light,
-      Light-Italic, Black<BR>
-      Then you should create a font family with the styles that the FOND does support,
-      which in this case would be<BR>
-      Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic<BR>
-      For each of these use
-      <A HREF="fontinfo.html#FONDName" TARGET="_top">Element-&gt;Font
-      Info-&gt;Mac</A> to set the FondName field to the font's family name.
-      <P>
-      Change the fondname of the other styles, so that the Oblique style has Oblique
-      in the fond name, the two Light styles have Light in the fond name, and so
-      on. Set the <A HREF="fontinfo.html#Mac-Style" TARGET="_top">Mac Style</A>
-      on the "Light" variant of the font to be Regular (everything unselected)
-      and set the style of the "Light-Italic" variant to be "Italic" -- that is,
-      forget about the "Light", the FOND can't handle it, that's why we moved it
-      into its own FOND.
-      <P>
-      Having done this setup, the <A HREF="filemenu.html#GenerateMac">Generate
-      Mac Family </A>command should be able to put all the fonts into appropriate
-      FONDs, and then place all the FONDs into one file, which the Mac should interpret
-      correctly.
+      I am told that in 10.6 the prefered method of grouping fonts is to use ttc
+      files, prior to 10.6 ttc files didn't work (well) and the prefered method
+      was to produce mac font families.
+      <DL>
+	<DT>
+	  Snow Leopard (10.6) and after
+	<DD>
+	  First open all the fonts that make up your family in fontforge.<BR/>
+	  Then choose <CODE>File-&gt;Generate TTC</CODE><BR/>
+	  This should be simpler than the old method.
+	<DT>
+	  Leopard (10.5) and before
+	<DD>
+	  For the Style menu in most mac applications to work on your fonts, you must
+	  create a font family. You do this with the
+	  <A TARGET="_top" HREF="filemenu.html#GenerateMac">File-&gt;Generate Mac
+	  Family</A> command.
+	  <P>
+	  All the fonts in a family must have the same Family name (See the
+	  <A TARGET="_top" HREF="fontinfo.html">font info</A> dialog). Font Families
+	  are handled rather differently under Carbon (the old font handling mechanism
+	  used in OS 9) and under ATSUI (on OS/X).
+	  <P>
+	  Under Carbon, the font family is limited by the design of the Mac 'FOND'
+	  resource, which reflects the computer font technology of the early 1980s.
+	  Modern computer fonts often have variants that can't be expressed in it.
+	  FONDs support any combination (except one containing both Extend and Condense)
+	  of the following styles:
+	  <UL>
+	    <LI>
+	      Bold
+	    <LI>
+	      Italic
+	    <LI>
+	      Condense
+	    <LI>
+	      Extend
+	    <LI>
+	      Underline
+	    <LI>
+	      Shadow
+	    <LI>
+	      Outline
+	  </UL>
+	  <P>
+	  Mac FONDS do not support "Black", "DemiBold", "Light", "Thin" or
+	  "Extra-Condensed" variants.
+	  <P>
+	  Under ATSUI, on the other hand, a family seems to consist of all fonts in
+	  a given resources file which have the same FamilyName.
+	  <P>
+	  In order that a family be useful under both systems, Apple appears to place
+	  several FONDs inside such a font file. Each FOND contains a sub-family of
+	  related fonts. The 'FOND's appear to be distributed as follows:
+	  <P>
+	  Suppose you have a family of fonts with the following styles:<BR>
+	  Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic, Oblique, Light,
+	  Light-Italic, Black<BR>
+	  Then you should create a font family with the styles that the FOND does support,
+	  which in this case would be<BR>
+	  Regular, Bold, Italic, Bold-Italic, Condense, Condense-Italic<BR>
+	  For each of these use
+	  <A HREF="fontinfo.html#FONDName" TARGET="_top">Element-&gt;Font
+	  Info-&gt;Mac</A> to set the FondName field to the font's family name.
+	  <P>
+	  Change the fondname of the other styles, so that the Oblique style has Oblique
+	  in the fond name, the two Light styles have Light in the fond name, and so
+	  on. Set the <A HREF="fontinfo.html#Mac-Style" TARGET="_top">Mac Style</A>
+	  on the "Light" variant of the font to be Regular (everything unselected)
+	  and set the style of the "Light-Italic" variant to be "Italic" -- that is,
+	  forget about the "Light", the FOND can't handle it, that's why we moved it
+	  into its own FOND.
+	  <P>
+	  Having done this setup, the <A HREF="filemenu.html#GenerateMac">Generate
+	  Mac Family </A>command should be able to put all the fonts into appropriate
+	  FONDs, and then place all the FONDs into one file, which the Mac should interpret
+	  correctly.
+      </DL>
     <DT>
       <B><A NAME="Mac-ATM">Why doesn't ATM work on my (mac) fonts?</A></B>
     <DD>
@@ -1590,8 +1609,10 @@ $ xset fp+ `pwd`
       <A NAME="sfd"><B>What's an sfd file?</B></A>
     <DD>
       This is FontForge's own format. It a text file, which means it is large but
-      readable to a human. It only uses ASCII characters which means it should
-      not be distorted by old mail programs if sent around the internet.
+      readable to a human (OK, by a determined human). It only uses ASCII characters
+      which means it should not be distorted by old mail programs if sent around
+      the internet (it's a registered MIME type
+      <CODE>application/vnd.font-fontforge-sfd</CODE>).<BR/>
       <A HREF="sfdformat.html" TARGET="_top">An overview of the format.</A>
     <DT>
       <A NAME="background"><B>FontForge's grey background distresses me. How do
@@ -2148,6 +2169,115 @@ Gdraw.ScreenWidthCentimeters: 37.3
       However, it is possible to <A HREF="generate.html#Options" TARGET="_top">ask
       FontForge to create a 'DSIG' table </A>which contains no signatures. That
       seems enough to make windows happy.
+    <DT>
+      <A NAME="names"><B>What do all the different font names mean?</B></A>
+    <DD>
+      When <CODE>Element-&gt;Font Info</CODE>opens it shows a Names pane with several
+      different fields. Why are there so many and what do they all mean?
+      <P>
+      The Names pane contains names used in PostScript fonts. There is also a
+      <CODE>TTF Names</CODE> pane which contains a similar set of names used in
+      sfnts (an sfnt is a font file format which includes truetype, opentype, and
+      a number of more obscure font formats).
+      <P>
+      A font may be PostScript wrapped in an sfnt. In this case it can have both
+      a set of PostScript names, and a set of sfnt (ttf) names. Those names could
+      be different (that's usually not a good idea, but they <EM>could</EM> be).
+      <P>
+      The "name for humans" is the name traditionally associated with a font. It
+      might be something like "ITC New Century Schoolbook Italic #4". It's a string
+      which applications can use to display when they want humans to know what
+      the font is.
+      <P>
+      The fontname exists because PostScript is a programming language and this
+      is the name used to identify the font <EM>within PostScript</EM>. It has
+      restrictions on the characters which may be in the name (no spaces is the
+      biggest. but it also can't look like a number, no parentheses, etc.) and
+      on the length of the name. It might look like "ITCNewCenturySchoolbook-Italic".
+      <P>
+      The family name is the name of a family of related fonts. In the above example
+      "ITC New Century Schoolbook" would probably be the family name.
+      <P>
+      "Base Filename" isn't really a name associated with the font itself. It's
+      just there to make your life easier when using fontforge. When you generate
+      a font, ff will pick a default filename for you (you can always change it,
+      of course, but it is handy if the default name is the one you want to use).
+      <P>
+      Normally the default name will be just the fontname with an extension added
+      (ITCNewCenturySchoolbook-Italic.ttf). But sometimes people want a different
+      name for the default, perhaps just NewCentSchlBk-Ital.ttf. This lets you
+      do than.
+      <P>
+      So it controls the default FILENAME for the file containing the font, and
+      does not directly relate to anything in the font itself.
+      <P>
+      The weight string is something like "Bold", "Black", "Thin", etc. It does
+      not include other stylistic variations (you would not put Italic or Condensed
+      here).
+      <P>
+      The copyright string should be self-explanatory. 
+	<HR width="50%">
+      In addition to the "Names" pane of Font Info, there is also a TTF Names pane.
+      <P>
+      In many ways this is a duplicate of the Names pane but with some differences.
+      It is used to specify names for sfnts.
+      <P>
+      Here you have
+      <UL>
+	<LI>
+	  Family<BR/>
+	  This corresponds to the PostScript Family
+	<LI>
+	  SubFamily<BR/>
+	  Vaguely like the weight field, but takes all stylistic varients not just
+	  weight.<BR/>
+	  This might be "Bold", "Italic", "Bold Italic", "SemiBold", "Condensed",
+	  ...<BR/>
+	  Whatever is appropriate for your font.
+	<LI>
+	  Fullname<BR/>
+	  This corresponds to the "Name for humans"
+	<LI>
+	  Copyright
+      </UL>
+      <P>
+      Generally FontForge will set all these fields appropriately (ie. same as
+      in the Names pane). If you don't like the name ff chooses you can disassociate
+      it from the PS name by right clicking on the entry and choosing from the
+      popup menu. 
+	<HR width="50%">
+      Further complicating things, there are fields
+      <UL>
+	<LI>
+	  WWS Family
+	<LI>
+	  WWS SubFamily
+      </UL>
+      <P>
+      I don't really understand why these are needed, but MicroSoft thinks they
+      are. As far as I can tell they should (in most cases) be the same as Family
+      and SubFamily above, and should therefore be omitted. 
+	<HR width="50%">
+      CID fontname should be ignored unless you are building a CID keyed font (which
+      usually means you are working on a CJK font). 
+	<HR width="50%">
+      Compatible Fullname<BR/>
+      Is another name I don't see the need for. I think it should be the same as
+      Fullname, and should be omitted. 
+	<HR width="50%">
+      TTF Names may be specified in more than one language and writing system.
+      The entry which is translated most frequently is SubFamily. So for an Italic
+      font, you would have an English entry "Italic", and perhaps
+      <UL>
+	<LI>
+	  French, Italique
+	<LI>
+	  German, Kursiv
+	<LI>
+	  Dutch, Cursief
+      </UL>
+      <P>
+      etc.
     <DT>
       <A NAME="mingliu"><B>I looked at kaiu.ttf or mingliu.ttf and the outlines
       looked nothing like the correct glyphs. What's wrong?</B></A>
