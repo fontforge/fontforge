@@ -4293,7 +4293,7 @@ return( 0 );
  * direction in case it has not already been set.
  */
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
-    uint8 *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset ) {
+    uint8 *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset,int fpgm_ok ) {
 
     int i, pushpts[3];
     PointData *start=NULL, *end=NULL;
@@ -4344,9 +4344,13 @@ return( true );
             else {
                 pushpts[0] = EF2Dot14(norm->x);
                 pushpts[1] = EF2Dot14(norm->y);
-                pushpts[2] = 21;
-                *instrs = pushpoints( *instrs,3,pushpts );
-                *(*instrs)++ = CALL; /* aspect-ratio correction */
+                if ( fpgm_ok ) {
+                    pushpts[2] = 21;
+                    *instrs = pushpoints( *instrs,3,pushpts );
+                    *(*instrs)++ = CALL; /* aspect-ratio correction */
+                } else
+                    *instrs = pushpoints( *instrs,2,pushpts );
+
                 *(*instrs)++ = 0x0b; /* SFVFS */
             }
         }
@@ -4388,7 +4392,8 @@ static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
         v1 = stem->keypts[2]; v2 = stem->keypts[3];
     }
 
-    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,&stem->l_to_r,fv,true )) {
+    if ( SetFreedomVector( &instrs,pt,ptcnt,touched,diagpts,&stem->l_to_r,fv,true,
+            ct->gic->fpgm_done && ct->gic->prep_done )) {
         if ( refpt == -1 ) {
             if (( fv->x == 1 && !( touched[pt] & tf_x )) || 
                 ( fv->y == 1 && !( touched[pt] & tf_y ))) {
@@ -4544,9 +4549,12 @@ return( ct->pt );
 
         pushpts[0] = EF2Dot14(ds->l_to_r.x);
         pushpts[1] = EF2Dot14(ds->l_to_r.y);
-        pushpts[2] = 21;
-        ct->pt = pushnums( ct->pt, 3, pushpts );
-        *(ct->pt)++ = CALL;    /* Aspect ratio correction */
+        if ( ct->gic->fpgm_done && ct->gic->prep_done ) {
+            pushpts[2] = 21;
+            ct->pt = pushnums( ct->pt, 3, pushpts );
+            *(ct->pt)++ = CALL;    /* Aspect ratio correction */
+        } else
+            ct->pt = pushnums( ct->pt, 2, pushpts );
         *(ct->pt)++ = 0x0A;    /* SPVFS */
 
         pushpts[0] = v1->ttfindex; pushpts[1] = v2->ttfindex;
@@ -4592,7 +4600,8 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,true );
 
-    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,&newpv,fv,false )) {
+    if ( SetFreedomVector( &instrs,pd->ttfindex,ptcnt,touched,diagpts,&newpv,fv,false,
+            ct->gic->fpgm_done && ct->gic->prep_done )) {
         if ( ct->rp0 != line->pd1->ttfindex ) {
             instrs = pushpoint( instrs,line->pd1->ttfindex );
             *instrs++ = SRP0;
