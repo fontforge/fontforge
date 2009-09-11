@@ -1036,6 +1036,35 @@ static void bUnicodeFromName(Context *c) {
     c->return_val.u.ival = UniFromName(c->a.vals[1].u.sval,ui_none,&custom);
 }
 
+static void bNameFromUnicode(Context *c) {
+    char buffer[400];
+    int uniinterp;
+    NameList *for_new_glyphs;
+    
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode )
+	ScriptError( c, "Bad type for argument" );
+    else if ( c->a.argc==3 && c->a.vals[2].type!=v_str )
+	ScriptError( c, "Bad type for argument" );
+
+    if ( c->a.argc==3 ) {
+	uniinterp = ui_none;
+	for_new_glyphs = NameListByName(c->a.vals[2].u.sval);
+	if ( for_new_glyphs == NULL )
+	    ScriptErrorString( c, "Could not find namelist", c->a.vals[2].u.sval);
+    } else if (c->curfv == NULL) {
+	uniinterp = ui_none;
+	for_new_glyphs = NameListByName("AGL with PUA");
+    } else {
+	uniinterp = c->curfv->sf->uni_interp;
+	for_new_glyphs = c->curfv->sf->for_new_glyphs;
+    }
+    
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy(StdGlyphName(buffer,c->a.vals[1].u.ival,uniinterp,for_new_glyphs));
+}
+
 static void bChr(Context *c) {
     char buf[2];
     char *temp;
@@ -7998,6 +8027,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "ReadOtherSubrsFile", bReadOtherSubrsFile, 1 },
     { "GetEnv", bGetEnv, 1 },
     { "UnicodeFromName", bUnicodeFromName, 1 },
+    { "NameFromUnicode", bNameFromUnicode, 1 },
     { "Chr", bChr, 1 },
     { "Ord", bOrd, 1 },
     { "Real", bReal, 1 },
