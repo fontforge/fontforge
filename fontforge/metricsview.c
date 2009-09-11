@@ -727,7 +727,7 @@ static void MVRemetric(MetricsView *mv) {
     SplineFont *sf;
 
     anysc = goodsc = NULL; goodpos = -1;
-    for ( i=0; mv->chars[i]; ++i ) {
+    for ( i=0; mv->chars[i] && i<mv->clen; ++i ) {
 	if ( anysc==NULL ) anysc = mv->chars[i];
 	if ( SCScriptFromUnicode(mv->chars[i])!=DEFAULT_SCRIPT ) {
 	    goodsc = mv->chars[i];
@@ -4282,7 +4282,7 @@ return;
     else
 	within = mv->clen;
 
-    if ( mv->clen+cnt>=mv->cmax ) {
+    if ( mv->clen+cnt+1>=mv->cmax ) {
 	mv->cmax = mv->clen+cnt+10;
 	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
     }
@@ -4290,7 +4290,7 @@ return;
     newtext = galloc((mv->clen+cnt+1)*sizeof(unichar_t));
     u_strcpy(newtext,oldtext);
     newtext[mv->clen+cnt]='\0';
-    for ( i=mv->clen+cnt-1; i>=within+cnt; --i ) {
+    for ( i=mv->clen+cnt; i>=within+cnt; --i ) {
 	newtext[i] = newtext[i-cnt];
 	mv->chars[i] = mv->chars[i-cnt];
     }
