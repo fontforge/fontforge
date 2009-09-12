@@ -535,7 +535,7 @@ static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
 	free(an);
     }
     for ( ; i<4; ++i ) {
-	axisnames[i] = _(axistablab[i]);
+	axisnames[i] = copy(_(axistablab[i]));
 	axisval[i][0] = '\0';
     }
 
