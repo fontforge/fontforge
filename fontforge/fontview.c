@@ -6385,7 +6385,7 @@ static void FVChar(FontView *fv,GEvent *event) {
     } else if ( (event->u.chr.state&((GMenuMask()|navigation_mask)&~(ksm_shift|ksm_capslock)))==navigation_mask &&
 	    event->type == et_char &&
 	    event->u.chr.keysym!=0 &&
-	    (event->u.chr.keysym<GK_Special || event->u.chr.keysym>=0x10000)) {
+	    (event->u.chr.keysym<GK_Special/* || event->u.chr.keysym>=0x10000*/)) {
 	SplineFont *sf = fv->b.sf;
 	int enc = EncFromUni(event->u.chr.keysym,fv->b.map->enc);
 	if ( enc==-1 ) {
