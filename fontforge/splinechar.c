@@ -903,6 +903,19 @@ void AltUniAdd(SplineChar *sc,int uni) {
     }
 }
 
+void AltUniAdd_DontCheckDups(SplineChar *sc,int uni) {
+    struct altuni *altuni;
+
+    if ( sc!=NULL && uni!=-1 && uni!=sc->unicodeenc ) {
+	altuni = chunkalloc(sizeof(struct altuni));
+	altuni->next = sc->altuni;
+	sc->altuni = altuni;
+	altuni->unienc = uni;
+	altuni->vs = -1;
+	altuni->fid = 0;
+    }
+}
+
 void SCOrderAP(SplineChar *sc) {
     int lc=0, cnt=0, out=false, i,j;
     AnchorPoint *ap, **array;

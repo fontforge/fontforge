@@ -5628,7 +5628,7 @@ void AltUniFigure(SplineFont *sf,EncMap *map) {
     if ( map->enc!=&custom ) {
 	for ( i=0; i<map->enccount; ++i ) if ( (gid = map->map[i])!=-1 ) {
 	    int uni = UniFromEnc(i,map->enc);
-	    AltUniAdd(sf->glyphs[gid],uni);
+	    AltUniAdd_DontCheckDups(sf->glyphs[gid],uni);
 	}
     }
 }
