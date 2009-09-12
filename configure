@@ -4601,6 +4601,8 @@ if test "${with_static_imagelibs+set}" = set; then :
 fi
 
 
+oldCPPFLAGS="$CPPFLAGS"
+gww_extraincludes=""
 oldLDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
@@ -4615,14 +4617,19 @@ case "$host" in
 
  MACAPP=FontForge.app/Contents/Info.plist
  gww_define_caps_for_alt="1"
+ if test "$no_x" = "yes"; then
+  MACAPP=""
+ fi
 
 
  if test "$CPPFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
  elif test -d /sw/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -idirafter /sw/include"
+  gww_extraincludes="/sw/include"
  elif test -d /opt/local/include >/dev/null ; then
   CPPFLAGS="$CPPFLAGS -idirafter /opt/local/include"
+  gww_extraincludes="/opt/local/include";
  fi
  rmlibs=""
  if test "$oldLDFLAGS" \!= "" >/dev/null ; then
@@ -5666,7 +5673,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5669 "configure"' > conftest.$ac_ext
+  echo '#line 5676 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7693,11 +7700,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7696: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7703: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7700: \$? = $ac_status" >&5
+   echo "$as_me:7707: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7983,11 +7990,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7986: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7993: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7990: \$? = $ac_status" >&5
+   echo "$as_me:7997: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8087,11 +8094,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8090: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8097: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8094: \$? = $ac_status" >&5
+   echo "$as_me:8101: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10125,7 +10132,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 10128 "configure"
+#line 10135 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10225,7 +10232,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 10228 "configure"
+#line 10235 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12570,11 +12577,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12573: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12580: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12577: \$? = $ac_status" >&5
+   echo "$as_me:12584: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12674,11 +12681,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12677: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12684: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12681: \$? = $ac_status" >&5
+   echo "$as_me:12688: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14272,11 +14279,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14275: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14282: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14279: \$? = $ac_status" >&5
+   echo "$as_me:14286: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14376,11 +14383,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14379: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14386: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14383: \$? = $ac_status" >&5
+   echo "$as_me:14390: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16554,11 +16561,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16557: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16564: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16561: \$? = $ac_status" >&5
+   echo "$as_me:16568: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16844,11 +16851,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16847: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16854: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16851: \$? = $ac_status" >&5
+   echo "$as_me:16858: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16948,11 +16955,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16951: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16958: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16955: \$? = $ac_status" >&5
+   echo "$as_me:16962: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -21543,6 +21550,10 @@ if test "${with_regular_link+set}" = set; then :
 	$as_echo "#define NODYNAMIC 1" >>confdefs.h
 
 	gww_rpath=""
+	if test "$gww_extraincludes" != "" ; then
+	 CPPFLAGS=`echo $CPPFLAGS | sed -e "s%-idirafter $gww_extraincludes%%"`
+	 CPPFLAGS="$CPPFLAGS -I$gww_extraincludes"
+	fi
     fi
 
 else
@@ -22822,7 +22833,7 @@ if test -e gtkui/Makefile.in -a \( -e /usr/include/gtk-2.0/gtk/gtk.h -o -e /sw/i
 fi
 
 if test "$rmlibs" != "" ; then
-  LDFLAGS=`echo $LDFLAGS | sed -e "s/$rmlibs//"`
+  LDFLAGS=`echo $LDFLAGS | sed -e "s%$rmlibs%%"`
 fi
 
 
