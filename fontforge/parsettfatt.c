@@ -443,7 +443,8 @@ static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 	struct lookup *l, struct lookup_subtable *subtable, struct valuerecord *vr1,struct valuerecord *vr2,
 	uint32 base,FILE *ttf) {
     
-    if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
+    if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt &&
+	    info->chars[glyph1]!=NULL && info->chars[glyph2]!=NULL ) {
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_pair;
 	pos->subtable = subtable;
@@ -956,7 +957,7 @@ return;
 	free(vr);
 return;
     }
-    for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+    for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_position;
 	pos->subtable = subtable;
@@ -1828,7 +1829,8 @@ return;
 		info->bad_ot = true;
 		which = 0;
 	    }
-	    if ( info->chars[which]!=NULL ) {	/* Might be in a ttc file */
+	    if ( info->chars[which]!=NULL && info->chars[glyphs[i]]!=NULL ) {
+			/* Might be in a ttc file */
 		PST *pos = chunkalloc(sizeof(PST));
 		pos->type = pst_substitution;
 		pos->subtable = subtable;
@@ -2051,26 +2053,31 @@ return;
 		    }
 		}
 	    } else if ( info->chars[lig]!=NULL ) {
+		int err=false;
 		for ( k=len=0; k<cc; ++k )
 		    if ( lig_glyphs[k]<info->glyph_cnt &&
 			    info->chars[lig_glyphs[k]]!=NULL )
 			len += strlen(info->chars[lig_glyphs[k]]->name)+1;
-		liga = chunkalloc(sizeof(PST));
-		liga->type = pst_ligature;
-		liga->subtable = subtable;
-		liga->next = info->chars[lig]->possub;
-		info->chars[lig]->possub = liga;
-		liga->u.lig.lig = info->chars[lig];
-		liga->u.lig.components = pt = galloc(len);
-		for ( k=0; k<cc; ++k ) {
-		    if ( lig_glyphs[k]<info->glyph_cnt &&
-			    info->chars[lig_glyphs[k]]!=NULL ) {
-			strcpy(pt,info->chars[lig_glyphs[k]]->name);
-			pt += strlen(pt);
-			*pt++ = ' ';
+		    else
+			err = true;
+		if ( !err ) {
+		    liga = chunkalloc(sizeof(PST));
+		    liga->type = pst_ligature;
+		    liga->subtable = subtable;
+		    liga->next = info->chars[lig]->possub;
+		    info->chars[lig]->possub = liga;
+		    liga->u.lig.lig = info->chars[lig];
+		    liga->u.lig.components = pt = galloc(len);
+		    for ( k=0; k<cc; ++k ) {
+			if ( lig_glyphs[k]<info->glyph_cnt &&
+				info->chars[lig_glyphs[k]]!=NULL ) {
+			    strcpy(pt,info->chars[lig_glyphs[k]]->name);
+			    pt += strlen(pt);
+			    *pt++ = ' ';
+			}
 		    }
+		    pt[-1] = '\0';
 		}
-		pt[-1] = '\0';
 	    }
 	    free(lig_glyphs);
 	}
@@ -2961,9 +2968,8 @@ return;
 	glyphs = getCoverageTable(ttf,lclo+coverage,info);
 	if ( glyphs==NULL )
 return;
-	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[glyphs[i]])!=NULL ) {
 	    fseek(ttf,lclo+lc_offsets[i],SEEK_SET);
-	    sc = info->chars[glyphs[i]];
 	    for ( pst=sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
 	    if ( pst==NULL ) {
 		pst = chunkalloc(sizeof(PST));
@@ -3212,6 +3218,8 @@ return;
     if ( prop&0x1000 ) {	/* Mirror */
 	offset = (prop<<20)>>28;
 	if ( gnum+offset>=0 && gnum+offset<info->glyph_cnt &&
+		info->chars[gnum]!=NULL &&
+		info->chars[gnum+offset]!=NULL &&
 		info->chars[gnum+offset]->name!=NULL ) {
 	    pst = chunkalloc(sizeof(PST));
 	    pst->type = pst_substitution;
@@ -3598,8 +3606,7 @@ return;
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,lig_offset);
-	    if ( lig_glyph>=sm->info->glyph_cnt ||
-		    (info->justinuse != git_justinuse && sm->info->chars[lig_glyph]==NULL )) {
+	    if ( lig_glyph>=sm->info->glyph_cnt ) {
 		if ( info->justinuse != git_normal )
 return;
 		LogError( _("Attempt to make a ligature for glyph %d out of "),
@@ -3608,15 +3615,20 @@ return;
 		    LogError("%d ",sm->lig_comp_glyphs[j]);
 		LogError("\n");
 		info->bad_gx = true;
+	    } else if ( info->justinuse == git_justinuse ) {
+		info->inuse[lig_glyph] = true;
+	    } else if ( sm->info->chars[lig_glyph]==NULL ) {
+		/* Do Nothing, ttc file probably */
 	    } else {
-		if ( info->justinuse == git_justinuse )
-		    info->inuse[lig_glyph] = true;
-		else {
-		    char *comp;
-		    for ( len=0, j=lcp; j<sm->lcp; ++j )
-			if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
-				sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL )
-			    len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		char *comp;
+		int err=false;
+		for ( len=0, j=lcp; j<sm->lcp; ++j )
+		    if ( sm->lig_comp_glyphs[j]<sm->info->glyph_cnt &&
+			    sm->info->chars[sm->lig_comp_glyphs[j]]!=NULL )
+			len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		    else
+			err = true;
+		if ( sm->info->chars[lig_glyph]!=NULL && !err ) {
 		    comp = galloc(len+1);
 		    *comp = '\0';
 		    for ( j=lcp; j<sm->lcp; ++j ) {
@@ -3721,8 +3733,7 @@ return;
     break;
 	    }
 	    lig_glyph = memushort(sm->data,sm->length,sm->ligOff+2*lig_offset);
-	    if ( lig_glyph>=sm->info->glyph_cnt ||
-		    (info->justinuse != git_justinuse && sm->info->chars[lig_glyph]==NULL )) {
+	    if ( lig_glyph>=sm->info->glyph_cnt ) {
 		if ( info->justinuse != git_normal )
 return;
 		LogError( _("Attempt to make a ligature for (non-existent) glyph %d out of "),
@@ -3731,13 +3742,21 @@ return;
 		for ( j=lcp; j<sm->lcp; ++j )
 		    LogError("%d ",sm->lig_comp_glyphs[j]);
 		LogError("\n");
+	    } else if ( info->justinuse == git_justinuse ) {
+		info->inuse[lig_glyph] = true;
+	    } else if ( sm->info->chars[lig_glyph]==NULL ) {
+		/* Nothing to do */
 	    } else {
 		char *comp;
-		if ( info->justinuse == git_justinuse )
-		    info->inuse[lig_glyph] = true;
-		else {
-		    for ( len=0, j=lcp; j<sm->lcp; ++j )
+		int err=false;
+		for ( len=0, j=lcp; j<sm->lcp; ++j ) {
+		    if ( sm->lig_comp_glyphs[j]>=sm->info->glyph_cnt ||
+			    sm->info->chars[ sm->lig_comp_glyphs[j]]==NULL )
+			err = true;
+		    else
 			len += strlen(sm->info->chars[sm->lig_comp_glyphs[j]]->name)+1;
+		}
+		if ( !err ) {
 		    comp = galloc(len);
 		    *comp = '\0';
 		    for ( j=lcp; j<sm->lcp; ++j ) {
