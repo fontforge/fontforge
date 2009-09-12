@@ -32,8 +32,13 @@
 #ifdef HAVE_ICONV_H
 # include <iconv.h>
 /* libiconv.h defines iconv as taking a const pointer for inbuf. iconv doesn't*/
+/* OH, JOY! A new version of libiconv does not use the const! Even better, the man page says it does */
 # ifdef _LIBICONV_VERSION
-#  define ICONV_CONST	const
+#  if _LIBICONV_VERSION >= 0x10B
+#   define ICONV_CONST
+#  else
+#   define ICONV_CONST	const
+#  endif
 # else
 #  define ICONV_CONST
 # endif

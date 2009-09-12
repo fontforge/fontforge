@@ -1698,6 +1698,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 return( head );
 }
 
+#if 0
 static SplineSet *SVGAddSpiros(xmlChar *path, SplineSet *base) {
     BasePoint current;
     SplineSet *cur = NULL;
@@ -1778,6 +1779,7 @@ static SplineSet *SVGAddSpiros(xmlChar *path, SplineSet *base) {
     }
 return( base );
 }
+#endif
 
 static SplineSet *SVGParseExtendedPath(xmlNodePtr svg, xmlNodePtr top) {
     /* Inkscape exends paths by allowing a sprio representation */

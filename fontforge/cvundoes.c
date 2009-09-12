@@ -1251,7 +1251,9 @@ return( head );
 
 #ifndef _NO_LIBXML
 static int FFClipToSC(SplineChar *dummy,Undoes *cur) {
+#ifdef FONTFORGE_CONFIG_TYPE3
     int lcnt;
+#endif
 
     if ( cur==NULL )
 return( false );

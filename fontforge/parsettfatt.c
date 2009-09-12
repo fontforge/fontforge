@@ -5916,7 +5916,7 @@ return( NULL );
     ret->cnt = cnt;
     ret->prios = gcalloc(cnt,sizeof(struct jstf_prio));
     for ( i=0; i<cnt; ++i )
-	ret->prios[i].maxExtend = (void *) getushort(ttf);
+	ret->prios[i].maxExtend = (void *) (intpt) getushort(ttf);
     for ( i=0; i<cnt; ++i ) {
 	int enSub, disSub, enPos, disPos, maxShrink, maxExtend;
 	int enSub2, disSub2, enPos2, disPos2;
