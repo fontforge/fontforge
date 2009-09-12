@@ -5979,7 +5979,7 @@ return;
     } else if ( (event->u.chr.state&((GMenuMask()|navigation_mask)&~(ksm_shift|ksm_capslock)))==navigation_mask &&
 	    event->type == et_char &&
 	    event->u.chr.keysym!=0 &&
-	    (event->u.chr.keysym<GK_Special || event->u.chr.keysym>=0x10000)) {
+	    (event->u.chr.keysym<GK_Special /*|| event->u.chr.keysym>=0x10000*/)) {
 	SplineFont *sf = cv->b.sc->parent;
 	int i;
 	EncMap *map = cv->b.fv->map;

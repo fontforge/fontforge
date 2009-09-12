@@ -301,7 +301,7 @@ static void BCDefWidthVal(char *buf,BDFChar *bc, FontView *fv, enum widthtype wt
 	else if ( wtype==wt_rbearing )
 	    sprintf( buf, "%d", bc->width-bb.maxx-1 );
 	else
-	    sprintf( buf, "%d", rint( (bc->width-bb.maxx-1 + bb.minx)/2 ));
+	    sprintf( buf, "%d", (int) rint( (bc->width-bb.maxx-1 + bb.minx)/2 ));
     }
 }
 

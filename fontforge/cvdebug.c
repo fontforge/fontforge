@@ -46,9 +46,6 @@ return( false );
 
 void CVDebugPointPopup(CharView *cv) {
 }
-
-void CVDebugAddPointTouches(CharView *cv,char *buf,int pnum) {
-}
 #else
 #include <ft2build.h>
 #include FT_FREETYPE_H
