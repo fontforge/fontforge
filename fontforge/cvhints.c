@@ -40,7 +40,8 @@
 #define CID_Overlap	1010
 #define CID_Count	1011
 #define CID_MovePoints	1012
-#define CID_TopBox	1013
+#define CID_RegenHM	1013
+#define CID_TopBox	1014
 
 typedef struct reviewhintdata {
     unsigned int done: 1;
@@ -253,29 +254,38 @@ return( true );
 return( true );
 }
 
+static void Do_OKRegen(ReviewHintData *hd) {
+    SplineChar *sc = hd->cv->b.sc;
+    StemInfo *curh = sc->hstem, *curv = sc->vstem;
+    int do_regen = GGadgetIsChecked(GWidgetGetControl(hd->gw,CID_RegenHM));
+
+    /* We go backwards here, but not for long. The point is to go back to */
+    /*  the original hint state so we can preserve it, now that we know we*/
+    /*  are going to modify it */
+    sc->hstem = hd->oldh; sc->vstem = hd->oldv;
+    SCPreserveHints(sc,CVLayer((CharViewBase *) hd->cv));
+    sc->hstem = curh; sc->vstem = curv;
+
+    StemInfosFree(hd->oldh);
+    StemInfosFree(hd->oldv);
+    if ( hd->lastactive!=NULL )
+	hd->lastactive->active = false;
+    if ( hd->changed ) {
+	SCClearHintMasks(hd->cv->b.sc,CVLayer((CharViewBase *) (hd->cv)),true);
+	if ( do_regen )
+	    SCFigureHintMasks(hd->cv->b.sc,CVLayer((CharViewBase *) (hd->cv)));
+    }
+    /* Everything else got done as we went along... */
+    SCOutOfDateBackground(hd->cv->b.sc);
+    SCUpdateAll(hd->cv->b.sc);
+    SCHintsChanged(hd->cv->b.sc);
+    hd->done = true;
+}
+
 static int RH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	SplineChar *sc = hd->cv->b.sc;
-	StemInfo *curh = sc->hstem, *curv = sc->vstem;
-	/* We go backwards here, but not for long. The point is to go back to */
-	/*  the original hint state so we can preserve it, now that we know we*/
-	/*  are going to modify it */
-	sc->hstem = hd->oldh; sc->vstem = hd->oldv;
-	SCPreserveHints(sc,CVLayer((CharViewBase *) hd->cv));
-	sc->hstem = curh; sc->vstem = curv;
-
-	StemInfosFree(hd->oldh);
-	StemInfosFree(hd->oldv);
-	if ( hd->lastactive!=NULL )
-	    hd->lastactive->active = false;
-	if ( hd->changed )
-	    SCClearHintMasks(hd->cv->b.sc,CVLayer((CharViewBase *) (hd->cv)),true);
-	/* Everything else got done as we went along... */
-	SCOutOfDateBackground(hd->cv->b.sc);
-	SCUpdateAll(hd->cv->b.sc);
-	SCHintsChanged(hd->cv->b.sc);
-	hd->done = true;
+	Do_OKRegen(hd);
     }
 return( true );
 }
@@ -387,10 +397,11 @@ void CVReviewHints(CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17], *harray1[6], *harray2[6], *harray3[6], *harray4[6],
-	*varray[6][2], boxes[7], *barray[5][6];
-    GTextInfo label[17];
+    GGadgetCreateData gcd[18], *harray1[6], *harray2[6], *harray3[6], *harray4[6],
+	*varray[7][2], boxes[8], *barray[6][6];
+    GTextInfo label[18];
     static ReviewHintData hd;
+    int k;
 
     hd.done = false;
     hd.cv = cv;
@@ -413,173 +424,162 @@ void CVReviewHints(CharView *cv) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&boxes,0,sizeof(boxes));
 
-	label[0].text = (unichar_t *) _("_Base:");
-	label[0].text_is_1byte = true;
-	label[0].text_in_resource = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 14+17+5+3; 
-	gcd[0].gd.flags = gg_enabled|gg_visible;
-	gcd[0].creator = GLabelCreate;
-	harray1[0] = &gcd[0];
+	k=0;
 
-	gcd[1].gd.pos.x = 37; gcd[1].gd.pos.y = gcd[0].gd.pos.y-3;  gcd[1].gd.pos.width = 40;
-	gcd[1].gd.flags = gg_enabled|gg_visible;
-	gcd[1].gd.cid = CID_Base;
-	gcd[1].gd.handle_controlevent = RH_TextChanged;
-	gcd[1].creator = GTextFieldCreate;
-	harray1[1] = &gcd[1];
-	
+	label[k].text = (unichar_t *) _("_HStem");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[k].gd.cid = CID_HStem;
+	gcd[k].gd.handle_controlevent = RH_HVStem;
+	gcd[k].creator = GRadioCreate;
+	harray2[0] = &gcd[k++];
 
-	label[2].text = (unichar_t *) _("_Size:");
-	label[2].text_is_1byte = true;
-	label[2].text_in_resource = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 90; gcd[2].gd.pos.y = gcd[0].gd.pos.y; 
-	gcd[2].gd.flags = gg_enabled|gg_visible;
-	gcd[2].creator = GLabelCreate;
-	harray1[2] = &gcd[2];
+	label[k].text = (unichar_t *) _("_VStem");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_VStem;
+	gcd[k].gd.handle_controlevent = RH_HVStem;
+	gcd[k].creator = GRadioCreate;
+	harray2[1] = &gcd[k++];
 
-	gcd[3].gd.pos.x = 120; gcd[3].gd.pos.y = gcd[1].gd.pos.y;  gcd[3].gd.pos.width = 40;
-	gcd[3].gd.flags = gg_enabled|gg_visible;
-	gcd[3].gd.cid = CID_Width;
-	gcd[3].gd.handle_controlevent = RH_TextChanged;
-	gcd[3].creator = GTextFieldCreate;
-	harray1[3] = &gcd[3]; harray1[4] = GCD_Glue; harray1[5] = NULL;
+	label[k].text = (unichar_t *) "999/999 hstem3";
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Count;
+	gcd[k].creator = GLabelCreate;
+	harray2[2] = GCD_HPad10; harray2[3] = &gcd[k++]; harray2[4] = GCD_Glue; harray2[5] = NULL;
 
-	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 14+17+37+14+60;
-	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _("_OK");
-	label[4].text_is_1byte = true;
-	label[4].text_in_resource = true;
-	gcd[4].gd.mnemonic = 'O';
-	gcd[4].gd.label = &label[4];
-	gcd[4].gd.handle_controlevent = RH_OK;
-	gcd[4].creator = GButtonCreate;
-	barray[3][0] = GCD_Glue; barray[3][1] = &gcd[4]; barray[3][2] = GCD_Glue;
+	label[k].text = (unichar_t *) _("_Move Points");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[k].gd.cid = CID_MovePoints;
+	gcd[k].gd.popup_msg = (unichar_t *) _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
+	gcd[k].creator = GCheckBoxCreate;
+	harray3[0] = &gcd[k++]; harray3[1] = GCD_Glue; harray3[2] = NULL;
 
-	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
-	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _("_Cancel");
-	label[5].text_is_1byte = true;
-	label[5].text_in_resource = true;
-	gcd[5].gd.label = &label[5];
-	gcd[5].gd.mnemonic = 'C';
-	gcd[5].gd.handle_controlevent = RH_Cancel;
-	gcd[5].creator = GButtonCreate;
-	barray[3][3] = &gcd[5]; barray[3][4] = GCD_Glue; barray[3][5] = NULL;
+	label[k].text = (unichar_t *) _("_Base:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 14+17+5+3; 
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].creator = GLabelCreate;
+	harray1[0] = &gcd[k++];
 
-	label[6].text = (unichar_t *) _("_HStem");
-	label[6].text_is_1byte = true;
-	label[6].text_in_resource = true;
-	gcd[6].gd.label = &label[6];
-	gcd[6].gd.pos.x = 3; gcd[6].gd.pos.y = 2; 
-	gcd[6].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	gcd[6].gd.cid = CID_HStem;
-	gcd[6].gd.handle_controlevent = RH_HVStem;
-	gcd[6].creator = GRadioCreate;
-	harray2[0] = &gcd[6];
+	gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Base;
+	gcd[k].gd.handle_controlevent = RH_TextChanged;
+	gcd[k].creator = GTextFieldCreate;
+	harray1[1] = &gcd[k++];
 
-	label[7].text = (unichar_t *) _("_VStem");
-	label[7].text_is_1byte = true;
-	label[7].text_in_resource = true;
-	gcd[7].gd.label = &label[7];
-	gcd[7].gd.pos.x = 60; gcd[7].gd.pos.y = 2; 
-	gcd[7].gd.flags = gg_enabled|gg_visible;
-	gcd[7].gd.cid = CID_VStem;
-	gcd[7].gd.handle_controlevent = RH_HVStem;
-	gcd[7].creator = GRadioCreate;
-	harray2[1] = &gcd[7];
+	label[k].text = (unichar_t *) _("_Size:");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].creator = GLabelCreate;
+	harray1[2] = &gcd[k++];
 
-	gcd[8].gd.pos.x = 5; gcd[8].gd.pos.y = 14+17+31+14+30;
-	gcd[8].gd.pos.width = 170-10;
-	gcd[8].gd.flags = gg_enabled|gg_visible;
-	gcd[8].creator = GLineCreate;
-	barray[1][0] = GCD_Glue; barray[1][1] = &gcd[8]; barray[1][2] = barray[1][3] = GCD_ColSpan; barray[1][4] = GCD_Glue; barray[1][5] = NULL;
+	gcd[k].gd.pos.width = 40;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].gd.cid = CID_Width;
+	gcd[k].gd.handle_controlevent = RH_TextChanged;
+	gcd[k].creator = GTextFieldCreate;
+	harray1[3] = &gcd[k++]; harray1[4] = GCD_Glue; harray1[5] = NULL;
 
-	gcd[9].gd.pos.x = 20; gcd[9].gd.pos.y = 14+17+14+33;
-	gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
-	gcd[9].gd.flags = gg_visible | gg_enabled;
-	label[9].text = (unichar_t *) _("Cr_eate");
-	label[9].text_is_1byte = true;
-	label[9].text_in_resource = true;
-	gcd[9].gd.mnemonic = 'e';
-	gcd[9].gd.label = &label[9];
-	gcd[9].gd.cid = CID_Add;
-	gcd[9].gd.handle_controlevent = RH_Add;
-	gcd[9].creator = GButtonCreate;
-	barray[0][0] = GCD_Glue; barray[0][1] = &gcd[9]; barray[0][2] = GCD_Glue;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	label[k].text = (unichar_t *) "Overlaps another hint";
+	label[k].text_is_1byte = true;
+	label[k].fg = 0xff0000; label[k].bg = COLOR_DEFAULT;	/* Doesn't work, needs to be in box */
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Overlap;
+	gcd[k].creator = GLabelCreate;
+	harray4[0] = GCD_Glue; harray4[1] = &gcd[k++]; harray4[2] = GCD_Glue; harray4[3] = NULL;
 
-	gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = gcd[9].gd.pos.y;
-	gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
-	gcd[10].gd.flags = gg_visible | gg_enabled;
-	label[10].text = (unichar_t *) _("Re_move");
-	label[10].text_is_1byte = true;
-	label[10].text_in_resource = true;
-	gcd[10].gd.label = &label[10];
-	gcd[10].gd.mnemonic = 'R';
-	gcd[10].gd.cid = CID_Remove;
-	gcd[10].gd.handle_controlevent = RH_Remove;
-	gcd[10].creator = GButtonCreate;
-	barray[0][3] = &gcd[10]; barray[0][4] = GCD_Glue; barray[0][5] = NULL;
 
-	gcd[11].gd.pos.x = 20; gcd[11].gd.pos.y = 14+17+37+14+30;
-	gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
-	gcd[11].gd.flags = gg_visible | gg_enabled;
-	label[11].text = (unichar_t *) _("< _Prev");
-	label[11].text_is_1byte = true;
-	label[11].text_in_resource = true;
-	gcd[11].gd.mnemonic = 'P';
-	gcd[11].gd.label = &label[11];
-	gcd[11].gd.cid = CID_Prev;
-	gcd[11].gd.handle_controlevent = RH_NextPrev;
-	gcd[11].creator = GButtonCreate;
-	barray[2][0] = GCD_Glue; barray[2][1] = &gcd[11]; barray[2][2] = GCD_Glue;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	label[k].text = (unichar_t *) _("Cr_eate");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Add;
+	gcd[k].gd.handle_controlevent = RH_Add;
+	gcd[k].creator = GButtonCreate;
+	barray[0][0] = GCD_Glue; barray[0][1] = &gcd[k++]; barray[0][2] = GCD_Glue;
 
-	gcd[12].gd.pos.x = -20; gcd[12].gd.pos.y = 14+17+37+14+30;
-	gcd[12].gd.pos.width = -1; gcd[12].gd.pos.height = 0;
-	gcd[12].gd.flags = gg_visible | gg_enabled;
-	label[12].text = (unichar_t *) _("_Next >");
-	label[12].text_is_1byte = true;
-	label[12].text_in_resource = true;
-	gcd[12].gd.label = &label[12];
-	gcd[12].gd.mnemonic = 'N';
-	gcd[12].gd.cid = CID_Next;
-	gcd[12].gd.handle_controlevent = RH_NextPrev;
-	gcd[12].creator = GButtonCreate;
-	barray[2][3] = &gcd[12]; barray[2][4] = GCD_Glue; barray[2][5] = NULL;
-	barray[4][0] = NULL;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	label[k].text = (unichar_t *) _("Re_move");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Remove;
+	gcd[k].gd.handle_controlevent = RH_Remove;
+	gcd[k].creator = GButtonCreate;
+	barray[0][3] = &gcd[k++]; barray[0][4] = GCD_Glue; barray[0][5] = NULL;
 
-	gcd[13].gd.pos.x = 66; gcd[13].gd.pos.y = 14+17+30;
-	gcd[13].gd.flags = gg_visible | gg_enabled;
-	label[13].text = (unichar_t *) "Overlap";
-	label[13].text_is_1byte = true;
-	label[13].fg = 0xff0000; label[13].bg = COLOR_DEFAULT;	/* Doesn't work, needs to be in box */
-	gcd[13].gd.label = &label[13];
-	gcd[13].gd.cid = CID_Overlap;
-	gcd[13].creator = GLabelCreate;
-	harray4[0] = GCD_Glue; harray4[1] = &gcd[13]; harray4[2] = GCD_Glue; harray4[3] = NULL;
+	gcd[k].gd.pos.width = 170-10;
+	gcd[k].gd.flags = gg_enabled|gg_visible;
+	gcd[k].creator = GLineCreate;
+	barray[1][0] = GCD_Glue; barray[1][1] = &gcd[k++]; barray[1][2] = barray[1][3] = GCD_ColSpan; barray[1][4] = GCD_Glue; barray[1][5] = NULL;
 
-	label[14].text = (unichar_t *) "999/999 hstem3";
-	label[14].text_is_1byte = true;
-	gcd[14].gd.label = &label[14];
-	gcd[14].gd.pos.x = 115; gcd[14].gd.pos.y = 2+3; 
-	gcd[14].gd.flags = gg_enabled|gg_visible;
-	gcd[14].gd.cid = CID_Count;
-	gcd[14].creator = GLabelCreate;
-	harray2[2] = GCD_HPad10; harray2[3] = &gcd[14]; harray2[4] = GCD_Glue; harray2[5] = NULL;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	label[k].text = (unichar_t *) _("< _Prev");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Prev;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Previous Hint.");
+	gcd[k].gd.handle_controlevent = RH_NextPrev;
+	gcd[k].creator = GButtonCreate;
+	barray[2][0] = GCD_Glue; barray[2][1] = &gcd[k++]; barray[2][2] = GCD_Glue;
 
-	label[15].text = (unichar_t *) _("_Move Points");
-	label[15].text_is_1byte = true;
-	label[15].text_in_resource = true;
-	gcd[15].gd.label = &label[15];
-	gcd[15].gd.pos.x = 3; gcd[15].gd.pos.y = 12+5+3; 
-	gcd[15].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	gcd[15].gd.cid = CID_MovePoints;
-	gcd[15].gd.popup_msg = (unichar_t *) _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
-	gcd[15].creator = GCheckBoxCreate;
-	harray3[0] = &gcd[15]; harray3[1] = GCD_Glue; harray3[2] = NULL;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	label[k].text = (unichar_t *) _("_Next >");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_Next;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Next Hint.");
+	gcd[k].gd.handle_controlevent = RH_NextPrev;
+	gcd[k].creator = GButtonCreate;
+	barray[2][3] = &gcd[k++]; barray[2][4] = GCD_Glue; barray[2][5] = NULL;
+
+	label[k].text = (unichar_t *) _("Regenerate Hint Substitution Points");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	gcd[k].gd.cid = CID_RegenHM;
+	gcd[k].gd.popup_msg = (unichar_t *) _("If you have made any changes to the hints,\nthen in addition to changing the glyph's hints\nrefigure it's hint masks and substitution points.");
+	gcd[k].creator = GCheckBoxCreate;
+	barray[3][0] = &gcd[k++]; barray[3][1] = barray[3][2] = barray[3][3] = barray[3][4] = GCD_ColSpan; barray[3][5] = NULL;
+
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	label[k].text = (unichar_t *) _("_OK");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = RH_OK;
+	gcd[k].creator = GButtonCreate;
+	barray[4][0] = GCD_Glue; barray[4][1] = &gcd[k++]; barray[4][2] = GCD_Glue;
+
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[k].text = (unichar_t *) _("_Cancel");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.handle_controlevent = RH_Cancel;
+	gcd[k].creator = GButtonCreate;
+	barray[4][3] = &gcd[k++]; barray[4][4] = GCD_Glue; barray[4][5] = NULL;
+	barray[5][0] = NULL;
 
 	boxes[2].gd.flags = gg_enabled|gg_visible;
 	boxes[2].gd.u.boxelements = harray2;
