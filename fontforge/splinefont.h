@@ -2154,6 +2154,7 @@ extern void AltUniFree(struct altuni *altuni);
 extern void AltUniFigure(SplineFont *sf,EncMap *map);
 extern void AltUniRemove(SplineChar *sc,int uni);
 extern void AltUniAdd(SplineChar *sc,int uni);
+extern void AltUniAdd_DontCheckDups(SplineChar *sc,int uni);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern void LayerDefault(Layer *);
 extern SplineChar *SplineCharCreate(int layer_cnt);
