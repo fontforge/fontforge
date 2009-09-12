@@ -535,7 +535,7 @@ static int GCDFillupMacWeights(GGadgetCreateData *gcd, GTextInfo *label, int k,
 	free(an);
     }
     for ( ; i<4; ++i ) {
-	axisnames[i] = copy(_(axistablab[i]));
+	axisnames[i] = _(axistablab[i]);
 	axisval[i][0] = '\0';
     }
 
@@ -561,7 +561,7 @@ return( k );
 void MMChangeBlend(MMSet *mm,FontView *fv,int tonew) {
     char buffer[MmMax*20], *pt;
     unichar_t ubuf[MmMax*20];
-    int i, k;
+    int i, k, j, def_name;
     struct mmcb mmcb;
     GRect pos;
     GWindow gw;
@@ -713,6 +713,16 @@ return;
 	memset(defcoords,0,sizeof(defcoords));
 	for ( i=0; i<mm->axis_count; ++i )
 	    defcoords[i] = mm->axismaps[i].def;
+	def_name = -1;
+	for ( i=0; i<mm->named_instance_count; ++i ) {
+	    for ( j=0; j<mm->axis_count; ++j )
+		if ( !RealNear(mm->named_instances[i].coords[j],defcoords[j]))
+	    break;
+	    if ( j==mm->axis_count ) {
+		def_name = i;
+	break;
+	    }
+	}
 
 	k=0;
 	k = GCDFillupMacWeights(gcd,label,k,axisnames,axisval,defcoords,
@@ -723,6 +733,8 @@ return;
 	if ( mm->named_instance_count==0 )
 	    gcd[k].gd.flags = 0;
 	gcd[k].gd.u.list = MMCB_KnownValues(mm);
+	if ( def_name!=-1 )
+	    gcd[k].gd.u.list[def_name+1].selected = true;
 	gcd[k].gd.cid = CID_Knowns;
 	gcd[k].gd.handle_controlevent = MMCB_PickedKnown;
 	gcd[k++].creator = GListButtonCreate;
