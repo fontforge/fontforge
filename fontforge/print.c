@@ -1866,8 +1866,8 @@ static void outputotchar(PI *pi,struct opentype_str *osc,int x,int baseline) {
 	    pi->wassfid = sfid; pi->wasfn = fn; pi->wasps = fd->pointsize;
 	}
 	fprintf(pi->out, "%g %g Td ",
-		(double) (x+osc->vr.xoff-pi->lastx)*pi->scale,
-		(double) (baseline+osc->vr.yoff+osc->bsln_off-pi->lasty)*pi->scale );
+		(double) ((x+osc->vr.xoff-pi->lastx)*pi->scale),
+		(double) ((baseline+osc->vr.yoff+osc->bsln_off-pi->lasty)*pi->scale) );
 	pi->lastx = x+osc->vr.xoff; pi->lasty = baseline+osc->vr.yoff+osc->bsln_off;
 	putc('<',pi->out);
 	outputchar(pi,sfid,sc);
@@ -1875,8 +1875,8 @@ static void outputotchar(PI *pi,struct opentype_str *osc,int x,int baseline) {
     } else {
 	int fn = 0;
 	fprintf(pi->out, "%g %g moveto ",
-		(double) (x+osc->vr.xoff)*pi->scale,
-		(double) (baseline+osc->vr.yoff+osc->bsln_off)*pi->scale );
+		(double) ((x+osc->vr.xoff)*pi->scale),
+		(double) ((baseline+osc->vr.yoff+osc->bsln_off)*pi->scale) );
 	if ( (sfbit->twobyte && enc>0xffff) || (!sfbit->twobyte && enc>0xff) )
 	    fn = enc>>8;
 	if ( pi->wassfid!=sfid || fn!=pi->wasfn || fd->pointsize!=pi->wasps ) {
