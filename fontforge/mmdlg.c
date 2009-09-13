@@ -286,7 +286,7 @@ return;
     free(deltas);
 }
 
-static void MakeAppleBlend(MMSet *mm,real *blends,real *normalized) {
+static void MakeAppleBlend(FontView *fv,MMSet *mm,real *blends,real *normalized) {
     SplineFont *base = mm->normal;
     SplineFont *sf = _MMNewFont(mm,-2,base->familyname,normalized);
     int i;
@@ -327,6 +327,8 @@ static void MakeAppleBlend(MMSet *mm,real *blends,real *normalized) {
     /* Nor is it clear whether the kerning info is a delta or not */
 
     sf->changed = true;
+    EncMapFree(sf->map);
+    sf->map = EncMapFromEncoding(sf,fv->b.map->enc);
     FontViewCreate(sf,false);
 }
 
@@ -475,7 +477,7 @@ return( true );
 	    }
 	    blends[k] = factor;
 	}
-	MakeAppleBlend(mm,blends,newcoords);
+	MakeAppleBlend(mmcb->fv,mm,blends,newcoords);
 	mmcb->done = true;
     }
 return( true );
