@@ -2503,10 +2503,9 @@ static void MVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFShowKernPairs(mv->sf,NULL,mi->ti.userdata,mv->layer);
 }
 
-static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+static void _MVMenuScale( MetricsView *mv, int mid ) {
 
-    if ( mi->mid==MID_ZoomIn ) {
+    if ( mid==MID_ZoomIn ) {
 	if ( --mv->scale_index<0 ) mv->scale_index = 0;
     } else {
 	if ( ++mv->scale_index >= sizeof(mv_scales)/sizeof(mv_scales[0]) )
@@ -2522,6 +2521,11 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
     MVReKern(mv);
     MVSetVSb(mv);
+}
+
+static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    _MVMenuScale(mv,mi->mid);
 }
 
 static void MVMenuInsertChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4327,7 +4331,15 @@ static int mv_v_e_h(GWindow gw, GEvent *event) {
       case et_mouseup: case et_mousemove: case et_mousedown:
 	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 		(event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
 return( GGadgetDispatchEvent(mv->vsb,event));
+	    if ( event->type==et_mousedown ) {
+		if ( event->u.mouse.button==4 )
+		    _MVMenuScale(mv,MID_ZoomIn);
+		else if ( event->u.mouse.button==5 )
+		    _MVMenuScale(mv,MID_ZoomOut);
+	    }
+return( true );
 	}
 	if ( mv->gwgic!=NULL && event->type==et_mousedown)
 	    GDrawSetGIC(mv->gw,mv->gwgic,0,20);
