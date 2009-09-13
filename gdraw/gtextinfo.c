@@ -302,12 +302,15 @@ return( val%IC_SIZE );
 }
 
 static void ImagePathDefault(void) {
+    extern char *_GGadget_ImagePath;
 
     if ( imagepath==NULL ) {
 	imagepath = galloc(2*sizeof(void *));
 	imagepath[0] = copy(imagedir);
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagedir);
+	free(_GGadget_ImagePath);
+	_GGadget_ImagePath = copy(imagedir);
     }
 }
 
@@ -374,6 +377,7 @@ static void ImageCacheReload(void) {
 
 void GGadgetSetImageDir(char *dir) {
     int k;
+    extern char *_GGadget_ImagePath;
 
     if ( dir!=NULL && strcmp(imagedir,dir)!=0 ) {
 	char *old = imagedir;
@@ -387,6 +391,8 @@ void GGadgetSetImageDir(char *dir) {
 		imagepath[k] = imagedir;
 		ImageCacheReload();
 	    }
+	    free(_GGadget_ImagePath);
+	    _GGadget_ImagePath = copy(imagedir);
 	}
     }
 }
