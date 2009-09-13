@@ -1444,7 +1444,11 @@ return( true );
 #else
     int ret;
     FSRef ref, parentref;
+#if __LP64__
     FSIORefNum macfile;
+#else
+    short macfile;
+#endif
     char *buf, *dirname, *pt, *fname;
     HFSUniStr255 resforkname;
     FSCatalogInfo info;
