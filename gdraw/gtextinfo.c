@@ -412,9 +412,11 @@ return( copyn(start,len));
 void GGadgetSetImagePath(char *path) {
     int cnt, k;
     char *pt, *end;
+    extern char *_GGadget_ImagePath;
 
     if ( path==NULL )
 return;
+    free( _GGadget_ImagePath );
 
     if ( imagepath!=NULL ) {
 	for ( k=0; imagepath[k]!=NULL; ++k )
@@ -432,6 +434,7 @@ return;
 	if ( strlen(imagepath[cnt]) > imagepathlenmax )
 	    imagepathlenmax = strlen(imagepath[cnt]);
     ImageCacheReload();
+    _GGadget_ImagePath = copy(path);
 }
 
 static GImage *_GGadgetImageCache(char *filename, char **foundname) {

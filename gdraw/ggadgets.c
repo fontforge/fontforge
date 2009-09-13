@@ -56,6 +56,7 @@ static int _GGadget_LeftMargin = 6;
 static int _GGadget_LineSkip = 3;
 int _GGadget_Skip = 6;
 int _GGadget_TextImageSkip = 4;
+char *_GGadget_ImagePath = NULL;
 static int _ggadget_inited=0;
 extern void GGadgetInit(void);
 static Color popup_foreground=0, popup_background=COLOR_CREATE(0xff,0xff,0xc0);
@@ -64,6 +65,7 @@ static int popup_delay=1000, popup_lifetime=20000;
 static GResInfo popup_ri;
 static struct resed ggadget_re[] = {
     {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both")},
+    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePath, N_("List of directories to search for images, separated by colons")},
     NULL
 };
 GResInfo ggadget_ri = {
