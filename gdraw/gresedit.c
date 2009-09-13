@@ -2378,6 +2378,8 @@ return( true );
 void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *)) {
     GResInfo *re_end;
     static int initted = false;
+    char *oldimagepath;
+    extern char *_GGadget_ImagePath;
 
     if ( !initted ) {
 	initted = true;
@@ -2423,7 +2425,17 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	additional = &gdraw_ri;
 	re_end = NULL;
     }
+    oldimagepath = copy( _GGadget_ImagePath );
     GResEditDlg(additional,def_res_file,change_res_filename);
+    if (( oldimagepath!=NULL && _GGadget_ImagePath==NULL ) ||
+	    ( oldimagepath==NULL && _GGadget_ImagePath!=NULL ) ||
+	    ( oldimagepath!=NULL && _GGadget_ImagePath!=NULL &&
+		    strcmp(oldimagepath,_GGadget_ImagePath)!=0 )) {
+	char *new = _GGadget_ImagePath;
+	_GGadget_ImagePath = oldimagepath;
+	GGadgetSetImagePath(new);
+    } else
+	free( oldimagepath );
     if ( re_end!=NULL )
 	re_end->next = NULL;
 
