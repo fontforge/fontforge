@@ -541,13 +541,13 @@ static void GCheckBoxFit(GCheckBox *gl) {
 
     needed.x = needed.y = 0;
     needed.width = needed.height = 1;
-    if ( gl->on!=NULL ) {
+    if ( gl->on!=NULL && gl->on->image!=NULL ) {
 	if (( iwidth = GImageGetScaledWidth(gl->g.base,gl->on->image))>needed.width )
 	    needed.width = iwidth;
 	if (( iheight = GImageGetScaledHeight(gl->g.base,gl->on->image))>needed.height )
 	    needed.height = iheight;
     }
-    if ( gl->off!=NULL ) {
+    if ( gl->off!=NULL && gl->off->image!=NULL ) {
 	if (( iwidth = GImageGetScaledWidth(gl->g.base,gl->off->image))>needed.width )
 	    needed.width = iwidth;
 	if (( iheight = GImageGetScaledHeight(gl->g.base,gl->off->image))>needed.height )

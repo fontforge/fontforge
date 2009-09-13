@@ -449,7 +449,7 @@ static GImage *_GGadgetImageCache(char *filename, char **foundname) {
 return( bucket->image );
 	}
     }
-    bucket = galloc(sizeof(struct image_bucket));
+    bucket = gcalloc(1,sizeof(struct image_bucket));
     bucket->next = imagecache[index];
     imagecache[index] = bucket;
     bucket->filename = copy(filename);
@@ -481,7 +481,7 @@ return( bucket->image );
 	    }
 	}
     }
-    if ( foundname!=NULL )
+    if ( foundname!=NULL && bucket->image!=NULL )
 	*foundname = copy( bucket->absname );
 return( bucket->image );
 }
