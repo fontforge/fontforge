@@ -2788,10 +2788,10 @@ static void MVMenuPointSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = false;
+    wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Set Pixel Size");
+    wattrs.utf8_window_title = _("Set Point Size");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
@@ -2803,9 +2803,9 @@ static void MVMenuPointSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
     label[k].text = (unichar_t *) _("Point Size:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_cb_on ;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
     /*gcd[k].gd.handle_controlevent = SS_ScriptChanged;*/
-    gcd[k++].creator = GRadioCreate;
+    gcd[k++].creator = GLabelCreate;
     hvarray[i][0] = &gcd[k-1];
 
     sprintf( buffer, "%d", (int) rint( mv->ptsize/iscale ));
@@ -2820,9 +2820,9 @@ static void MVMenuPointSize(GWindow mgw,struct gmenuitem *mi,GEvent *e) {
     label[k].text = (unichar_t *) _("DPI:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_cb_on ;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
     /*gcd[k].gd.handle_controlevent = SS_ScriptChanged;*/
-    gcd[k++].creator = GRadioCreate;
+    gcd[k++].creator = GLabelCreate;
     hvarray[i][0] = &gcd[k-1];
 
     sprintf( dbuffer, "%d", mv->dpi );
