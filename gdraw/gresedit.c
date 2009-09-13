@@ -820,9 +820,11 @@ return( true );
 			int i;
 			for ( i=0; paths[i]!=NULL; ++i ) {
 			    if ( strncmp(paths[i],ri->filename,strlen(paths[i]))==0 ) {
+				char *pt = ri->filename+strlen(paths[i]);
+			        while ( *pt=='/' ) ++pt;
 				fprintf( output, "%s.%s%s%s: %s\n",
 					res->progname, res->resname, *res->resname=='\0'?"":".", extras->resname,
-					ri->filename+strlen(paths[i]) );
+					pt );
 			break;
 			    }
 			}
@@ -2191,7 +2193,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		    gcd[k++].creator = GLabelCreate;
 		    tofree[i].earray[hl][base] = &gcd[k-1];
 
-		    if ( ri != NULL ) {
+		    if ( ri != NULL && ri->image!=NULL ) {
 			lab[k].text = (unichar_t *) "...";
 			lab[k].image = ri->image;
 		    } else
