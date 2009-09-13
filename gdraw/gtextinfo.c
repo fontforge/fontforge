@@ -310,7 +310,7 @@ static void ImagePathDefault(void) {
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagedir);
 	free(_GGadget_ImagePath);
-	_GGadget_ImagePath = copy(imagedir);
+	_GGadget_ImagePath = copy("=");
     }
 }
 
@@ -392,7 +392,7 @@ void GGadgetSetImageDir(char *dir) {
 		ImageCacheReload();
 	    }
 	    free(_GGadget_ImagePath);
-	    _GGadget_ImagePath = copy(imagedir);
+	    _GGadget_ImagePath = copy("=");
 	}
     }
 }
