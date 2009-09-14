@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 11-Sep-2009 -->
+  <!-- AP: Last modified: 14-Sep-2009 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -60,29 +60,38 @@
 	  <P>
 	  There is also a python command font.generateTtc()
 	<LI>
-Barry points out that some fields in OS/2 were set incorrectly if the font were a cff.
+	  Barry points out that some fields in OS/2 were set incorrectly if the font
+	  were a cff.
 	<LI>
-in winfonts.c under 64 bit mode, the sizeof(FARPROC16) is 8 rather than 4 and this screws up the font dump. We'd already fixed it for FARPROC, but FARPROC16 escaped. Thanks to Alexey.
+	  in winfonts.c under 64 bit mode, the sizeof(FARPROC16) is 8 rather than 4
+	  and this screws up the font dump. We'd already fixed it for FARPROC, but
+	  FARPROC16 escaped. Thanks to Alexey.
 	<LI>
-Several fixes to the resource editor.
+	  Several fixes to the resource editor.
 	<LI>
-Alexey suggests that Control + Mouse wheel should Zoom the metrics window just as it does the glyph view.
+	  Alexey suggests that Control + Mouse wheel should Zoom the metrics window
+	  just as it does the glyph view.
 	<LI>
-Fix a couple of problems with the Set Point Size dlg of the metrics view.
+	  Fix a couple of problems with the Set Point Size dlg of the metrics view.
 	<LI>
-Blending a new Apple MM instance left us in a font with no encoding.
+	  Blending a new Apple MM instance left us in a font with no encoding.
 	<LI>
- The pulldown list in the apple version of the MM dlg did not get set to the correct default value.
+	  The pulldown list in the apple version of the MM dlg did not get set to the
+	  correct default value.
 	<LI>
-Attempt to free something that should not have been freed in MM dlg.
+	  Attempt to free something that should not have been freed in MM dlg.
 	<LI>
-Loading LastResort.ttf was extremely slow because some glyphs had hundreds of thousands of altunis and whenever we added a new one we went all through that list to check for duplicates. When parsing a standard encoding there won't be any duplicates.
+	  Loading LastResort.ttf was extremely slow because some glyphs had hundreds
+	  of thousands of altunis and whenever we added a new one we went all through
+	  that list to check for duplicates. When parsing a standard encoding there
+	  won't be any duplicates.
 	<LI>
-More problems reading apple tables from ttc files. Some crashes, etc.
+	  More problems reading apple tables from ttc files. Some crashes, etc.
 	<LI>
-Barry wants to have review hints regenerate substitution points and hint masks.
+	  Barry wants to have review hints regenerate substitution points and hint
+	  masks.
 	<LI>
-Clean up some minor issues which show up on Mac 10.6
+	  Clean up some minor issues which show up on Mac 10.6
 	<LI>
 	  Patch by Alexey to add a NameFromUnicode function to both native and python
 	  scripting.
