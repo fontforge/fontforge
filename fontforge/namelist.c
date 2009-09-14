@@ -148,7 +148,8 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	    break;
 		}
 	}
-	_recognizePUA = true;
+	if ( i!=-1 )
+	    _recognizePUA = true;
     } else if ( name[0]!='\0' && name[1]=='\0' )
 	i = ((unsigned char *) name)[0];
     if ( i==-1 ) {
