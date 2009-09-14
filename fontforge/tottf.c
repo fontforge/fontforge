@@ -6486,34 +6486,36 @@ return( NULL );
 	ret[cnt].gi.bygid = galloc((gcnt+3)*sizeof(int));
 	memset(ret[cnt].gi.bygid,-1,(gcnt+3)*sizeof(int));
 	for ( i=0; i<sf->glyphcnt; ++i ) {
-	    if ( SCWorthOutputting(sc = sf->glyphs[i]) && sc->ttf_glyph==-1 ) {
-		if ( strcmp(sc->name,".notdef")==0 )
-		    sc->ttf_glyph = bygid[0];
-		else if ( format==ff_ttf &&
-			 (strcmp(sf->glyphs[i]->name,".null")==0 ||
-			  strcmp(sf->glyphs[i]->name,"uni0000")==0 ||
-			  (i==1 && strcmp(sf->glyphs[1]->name,"glyph1")==0)) )
-		    sc->ttf_glyph = bygid[1];
-		else if ( format==ff_ttf &&
-			 (strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
-			  strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
-			  (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0)))
-		    sc->ttf_glyph = bygid[2];
-		else {
-		    test = hashglyphfound(sc,uhash,nhash,layer);
-		    if ( test!=NULL )
-			sc->ttf_glyph = test->ttf_glyph;
+	    if ( SCWorthOutputting(sc = sf->glyphs[i])) {
+		if ( sc->ttf_glyph==-1 ) {
+		    if ( strcmp(sc->name,".notdef")==0 )
+			sc->ttf_glyph = bygid[0];
+		    else if ( format==ff_ttf &&
+			     (strcmp(sf->glyphs[i]->name,".null")==0 ||
+			      strcmp(sf->glyphs[i]->name,"uni0000")==0 ||
+			      (i==1 && strcmp(sf->glyphs[1]->name,"glyph1")==0)) )
+			sc->ttf_glyph = bygid[1];
+		    else if ( format==ff_ttf &&
+			     (strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
+			      strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
+			      (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0)))
+			sc->ttf_glyph = bygid[2];
 		    else {
-			sc->ttf_glyph = dummysf->glyphcnt++;
-			bygid[sc->ttf_glyph] = sc->ttf_glyph;
-			dummysf->glyphs[sc->ttf_glyph] = sc;
-			hashglyphadd(sc,uhash,nhash);
+			test = hashglyphfound(sc,uhash,nhash,layer);
+			if ( test!=NULL )
+			    sc->ttf_glyph = test->ttf_glyph;
+			else {
+			    sc->ttf_glyph = dummysf->glyphcnt++;
+			    bygid[sc->ttf_glyph] = sc->ttf_glyph;
+			    dummysf->glyphs[sc->ttf_glyph] = sc;
+			    hashglyphadd(sc,uhash,nhash);
+			}
 		    }
 		}
 		if ( sc->ttf_glyph!=-1 ) {
 		    ret[cnt].gi.bygid[sc->ttf_glyph] = i;
-		    if ( sc->ttf_glyph>ret[cnt].gi.gcnt )
-			ret[cnt].gi.gcnt = sc->ttf_glyph;
+		    if ( sc->ttf_glyph>=ret[cnt].gi.gcnt )
+			ret[cnt].gi.gcnt = sc->ttf_glyph+1;
 		}
 	    }
 	    if ( sc!=NULL )
