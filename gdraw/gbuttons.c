@@ -896,6 +896,7 @@ void _GButtonInit(void) {
     if ( gbutton_inited )
 return;
 
+    GGadgetInit();
     _GGadgetCopyDefaultBox(&label_box);
     _GGadgetCopyDefaultBox(&_GGadget_button_box);
 #ifdef __Mac
