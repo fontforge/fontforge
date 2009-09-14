@@ -680,14 +680,15 @@ typedef int32		LONG;
 #if 0
 #define CALLBACK	__stdcall
 typedef INT		(CALLBACK *FARPROC)();
+typedef LRESULT		(CALLBACK *FARPROC16)();
 #else
 #define CALLBACK
 typedef int32		FARPROC;	/* Pointers screw up the alignment on 64 bit machines */
+typedef int32		FARPROC16;	/* ditto */
 #endif
 typedef unsigned short	HANDLE16;
 typedef int32		LONG_PTR;	/* originally "long", but that won't work on 64 bit machines */
 typedef LONG_PTR        LRESULT;
-typedef LRESULT (CALLBACK *FARPROC16)();
 
 typedef struct
 {
