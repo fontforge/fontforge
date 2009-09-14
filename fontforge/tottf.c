@@ -3363,7 +3363,7 @@ docs are wrong.
 	    /* sc->ttf_glyph>2 is to skip the first few truetype glyphs but */
 	    /*  that doesn't work for cff files which only have .notdef to ignore */
 	    if ( ( format>=ff_ttf && format<=ff_otfdfont && sc->ttf_glyph>2) ||
-		    !(( format>=ff_ttf && format<=ff_otfdfont ) && sc->ttf_glyph>0) ) {
+		    ( format>=ff_ttf && format<=ff_otfdfont && sc->ttf_glyph>0) ) {
 		if ( sc->unicodeenc<=0xffff ) {
 		    if ( sc->unicodeenc<first ) first = sc->unicodeenc;
 		    if ( sc->unicodeenc>last ) last = sc->unicodeenc;
