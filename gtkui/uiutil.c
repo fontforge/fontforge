@@ -589,6 +589,7 @@ struct ui_interface gtk_ui_interface = {
     gwwv_choose,
     gwwv_choose_multiple,
     gwwv_ask_string,
+    gwwv_ask_string,			/* Should be gwwv_ask_password !!!!! */
     gwwv_open_filename,
     gwwv_saveas_filename,
 
