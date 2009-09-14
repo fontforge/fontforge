@@ -203,7 +203,7 @@ static void InsertSubMenus(PyObject *args,struct python_menu_shell *mn, int is_c
 	    break;
 	    }
 	}
-	if ( mn->menu==NULL || mn->menu[i].name==NULL ) {
+	if ( mn->menu==NULL || mn->menu[j].name==NULL ) {
 	    if ( mn->cnt<=mn->max )
 		mn->menu = grealloc(mn->menu,((mn->max+=5)+1)*sizeof(struct python_menu_info));
 	    memset(mn->menu+j,0,2*sizeof(struct python_menu_info));

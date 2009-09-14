@@ -91,9 +91,9 @@ extern struct cvshows CVShows;
 extern int infowindowdistance;		/* in cvruler.c */
 extern int oldformatstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
-extern int old_ttf_flags;		/* in savefontdlg.c */
+extern int oldbitmapstate;		/* in savefontdlg.c */
+static int old_ttf_flags=0, old_otf_flags=0;
 extern int old_ps_flags;		/* in savefontdlg.c */
-extern int old_otf_flags;		/* in savefontdlg.c */
 extern int old_validate;		/* in savefontdlg.c */
 extern int old_fontlog;			/* in savefontdlg.c */
 extern char *oflib_username;		/* in savefontdlg.c */
@@ -350,9 +350,8 @@ static struct prefs_list {
 	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1 },
 	{ "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1 },
 	{ "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultSFNTflags", pr_int, &old_sfnt_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
 	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
 	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
@@ -382,6 +381,8 @@ static struct prefs_list {
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the Apple checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
 	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
+	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
@@ -410,8 +411,8 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
     int i,j;
 
     /* Support for obsolete preferences */
-    alwaysgenapple=(old_ttf_flags&ttf_flag_applemode)?1:0;
-    alwaysgenopentype=(old_ttf_flags&ttf_flag_otmode)?1:0;
+    alwaysgenapple=(old_sfnt_flags&ttf_flag_applemode)?1:0;
+    alwaysgenopentype=(old_sfnt_flags&ttf_flag_otmode)?1:0;
     
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
@@ -445,19 +446,17 @@ return( false );
 
 static void CheckObsoletePrefs(void) {
     if ( alwaysgenapple==false ) {
-	old_ttf_flags &= ~ttf_flag_applemode;
-	old_otf_flags &= ~ttf_flag_applemode;
+	old_sfnt_flags &= ~ttf_flag_applemode;
     } else if ( alwaysgenapple==true ) {
-	old_ttf_flags |= ttf_flag_applemode;
-	old_otf_flags |= ttf_flag_applemode;
+	old_sfnt_flags |= ttf_flag_applemode;
     }
     if ( alwaysgenopentype==false ) {
-	old_ttf_flags &= ~ttf_flag_otmode;
-	old_otf_flags &= ~ttf_flag_otmode;
+	old_sfnt_flags &= ~ttf_flag_otmode;
     } else if ( alwaysgenopentype==true ) {
-	old_ttf_flags |= ttf_flag_otmode;
-	old_otf_flags |= ttf_flag_otmode;
+	old_sfnt_flags |= ttf_flag_otmode;
     }
+    if ( old_ttf_flags!=0 )
+	old_sfnt_flags = old_ttf_flags | old_otf_flags;
 }
 
 static int PrefsUI_SetPrefs(char *name,Val *val1, Val *val2) {
@@ -906,8 +905,7 @@ static void PrefsUI_LoadPrefs(void) {
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	
     if ( glyph_2_name_map ) {
-	old_ttf_flags |= ttf_flag_glyphmap;
-	old_otf_flags |= ttf_flag_glyphmap;
+	old_sfnt_flags |= ttf_flag_glyphmap;
     }
     LoadNamelistDir(NULL);
 }
