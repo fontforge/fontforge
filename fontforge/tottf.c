@@ -6578,9 +6578,6 @@ return( NULL );
 	redohhead(&ret[fcnt],true);
     ttf_fftm_dump(dummysf,&ret[fcnt]);
 
-    free(dummysf->glyphs);
-    free(bygid);
-
 return( ret );
 }
 
@@ -6632,7 +6629,11 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 	tab->temp = dumpsavedtable(tab);
     {
 	/* post table is expected to have names for every glyph (or none) even*/
-	/*  those not used in this font. */
+	/*  those not used in this font. Now it might seem we could just share*/
+	/*  the post table, but it also contains a few font specific things   */
+	/*  (italic angle, etc.) so dump one for each font and hope that we'll*/
+	/*  be able to coalesce them later when we check if any tables are the*/
+	/*  same across fonts */
 	int cnt = sf->glyphcnt;
 	SplineChar **g = sf->glyphs;
 	int *bygid = at->gi.bygid;
@@ -6790,6 +6791,9 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	    }
 	}
     }
+
+    free(all[cnt].sf->glyphs);
+    free(all[cnt].gi.bygid);
 
     /* Now dump the big shared tables */
     tab = findtabindir(&all[cnt].tabdir,CHR('h','m','t','x'));
