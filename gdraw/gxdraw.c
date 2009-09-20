@@ -3291,7 +3291,8 @@ return;
 	/* I don't think it hurts to leave this enabled... */
 /*	if ( (event->xkey.state&ksm_cmdmacosx) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_control; */
 /* Under 10.4 the option key generates the meta mask already */
-/*	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta; */
+/* Under 10.6 it does not (change may have happened in 10.5.8) */
+	if ( (event->xkey.state&ksm_option) && gdisp->macosx_cmd ) gevent.u.chr.state |= ksm_meta;
 /*#endif*/
 	gevent.u.chr.x = event->xkey.x;
 	gevent.u.chr.y = event->xkey.y;

@@ -111,7 +111,8 @@ enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
 	ksm_hyper=0x80,
 /* Both Suse and Mac OS/X.2 now map option to 0x2000, but under 10.0 it was meta */
 /* Under 10.4 it is the meta mask again */
-	/*ksm_option=0x2000,*/
+/* Under 10.6 it is 0x2000 again. I wish they'd be consistent */
+	ksm_option=0x2000,	/* sometimes */
 	ksm_menumask=(ksm_control|ksm_meta|ksm_cmdmacosx|0xf0),
 
 	ksm_button1=(1<<8), ksm_button2=(1<<9), ksm_button3=(1<<10),
