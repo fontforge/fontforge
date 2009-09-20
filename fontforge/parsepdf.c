@@ -47,6 +47,8 @@ struct pdfcontext {
     int ocnt;
     long *fonts;
     char **fontnames;		/* theoretically in utf-8 */
+    long *cmaps;
+    int *cmap_from_cid;
     int fcnt;
     enum openflags openflags;
     int encrypted;
@@ -173,8 +175,10 @@ return( ret );
 	    ret[cnt] = -2;
 	}
 	for ( i=start; i<start+num; ++i ) {
-	    if ( fscanf(pdf,"%ld %d %c", &offset, &gennum, &f )!=3 )
+	    if ( fscanf(pdf,"%ld %d %c", &offset, &gennum, &f )!=3 ) {
+		free(gen);
 return( ret );
+	    }
 	    if ( f=='f' ) {
 		if ( gennum > gen[i] ) {
 		    ret[i] = -1;
@@ -185,12 +189,16 @@ return( ret );
 		    ret[i] = offset;
 		    gen[i] = gennum;
 		}
-	    } else
+	    } else {
+		free(gen);
 return( ret );
+		}
 	}
 	if ( fscanf(pdf, "%d %d", &start, &num )!=2 )
-	    if ( !seektrailer(pdf, &start, &num, pc))
+	    if ( !seektrailer(pdf, &start, &num, pc)) {
+	    free(gen);
 return( ret );
+	}
     }
 }
 
@@ -373,13 +381,101 @@ static int hex(int ch1, int ch2) {
 return( val );
 }
 
+static int pdf_getprotectedtok(FILE *stream, char *tokbuf) {
+    char *pt=tokbuf, *end = tokbuf+100-2; int ch;
+
+    while ( isspace(ch = getc(stream)) );
+    while ( ch!=EOF && !isspace(ch) && ch!='[' && ch!=']' && ch!='{' && ch!='}' && ch!='<' && ch!='>' ) {
+	if ( pt<end ) *pt++ = ch;
+	ch = getc(stream);
+    }
+    if ( pt==tokbuf && ch!=EOF )
+	*pt++ = ch;
+    else
+	ungetc(ch,stream);
+    *pt='\0';
+return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+}
+
+static int pdf_skip_brackets(FILE *stream, char *tokbuf) {
+    int ch, ret;
+    
+    while ( isspace(ch = getc(stream)) );
+    if (ch != '<')
+return 0;
+
+    ret = pdf_getprotectedtok(stream, tokbuf);
+    ch = getc(stream);
+
+return ret && ch == '>';
+}
+
+static int pdf_getdescendantfont(struct pdfcontext *pc, int num) {
+    FILE *pdf = pc->pdf;
+    char *pt;
+    int nnum;
+    
+    fseek(pdf,pc->objs[num],SEEK_SET);
+    pdf_skipobjectheader(pc);
+    if ( pdf_readdict(pc) ) {
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL && strcmp(pt,"/Font")==0 &&
+		PSDictHasEntry(&pc->pdfdict,"FontDescriptor")!=NULL &&
+		(pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL ) {
+return( pc->objs[num] );
+	}
+    }
+    if ( (pt = pdf_getdictvalue(pc)) != NULL && sscanf(pt,"%d",&nnum) && nnum > 0 && nnum < pc->ocnt )
+return( pdf_getdescendantfont(pc, nnum) );
+
+return( -1 );
+}
+
 static int pdf_findfonts(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
-    int i, k=0;
-    char *pt, *tpt;
+    int i, j, k=0, dnum, cnum;
+    char *pt, *tpt, *cmap, *desc;
 
     pc->fonts = galloc(pc->ocnt*sizeof(long));
+    pc->cmaps = galloc(pc->ocnt*sizeof(long));
+    pc->cmap_from_cid = gcalloc(pc->ocnt,sizeof(int));
+    memset(pc->cmaps,-1,sizeof(long));
     pc->fontnames = galloc(pc->ocnt*sizeof(char *));
+    /* First look for CID-keyed fonts with a pointer to a ToUnicode CMap */
+    for ( i=1; i<pc->ocnt; ++i ) if ( pc->objs[i]!=-1 ) {	/* Object 0 is always unused */
+	fseek(pdf,pc->objs[i],SEEK_SET);
+	pdf_skipobjectheader(pc);
+	if ( pdf_readdict(pc) ) {
+	    if ((pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL && strcmp(pt,"/Font")==0 &&
+		    (pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type0")==0 &&
+		    (cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL &&
+		    (desc=PSDictHasEntry(&pc->pdfdict,"DescendantFonts"))!=NULL &&
+		    (pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL) {
+	    
+		if (*cmap == '[') cmap++;
+		if (*desc == '[') desc++;
+		sscanf(cmap, "%d", &cnum);
+		sscanf(desc, "%d", &dnum);
+		if ( *pt=='/' || *pt=='(' )
+		    ++pt;
+		tpt = copy(pt);
+		
+		dnum = pdf_getdescendantfont( pc,dnum );
+		if ( dnum > 0 ) {
+		    pc->fonts[k] = dnum;
+		    pc->cmaps[k] = pc->objs[cnum];
+		    pc->fontnames[k] = tpt;
+		    /* Store a flag indicating this particular CMap comes from a CID-keyed
+		    /* font. We can't determine this later just by examining sf->subfontcnt,
+		    /* as FF flattens TTF CID fonts at the time they are loaded, so that
+		    /* they no longer look as CID-keyed fonts */
+		    pc->cmap_from_cid[k] = 1;
+		    k++;
+		}
+	    }
+	}
+    }
+
+    /* List other fonts, skipping those detected at the first pass */
     for ( i=1; i<pc->ocnt; ++i ) if ( pc->objs[i]!=-1 ) {	/* Object 0 is always unused */
 	fseek(pdf,pc->objs[i],SEEK_SET);
 	pdf_skipobjectheader(pc);
@@ -390,6 +486,16 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    ((pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL ||
 		    /* Type3 fonts are named by "Name" rather than BaseFont */
 			(pt=PSDictHasEntry(&pc->pdfdict,"Name"))!=NULL) ) {
+		
+		for (j=0; j<k && pc->fonts[j] != pc->objs[i]; j++);
+		if (j < k )
+    continue;
+		    
+		if ((cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL) {
+		    if (*cmap == '[') cmap++;
+		    sscanf(cmap, "%d", &cnum);
+		    pc->cmaps[k] = pc->objs[cnum];
+		}
 		pc->fonts[k] = pc->objs[i];
 		if ( *pt=='/' || *pt=='(' )
 		    ++pt;
@@ -632,7 +738,7 @@ return ret;
 	do {
 	    strm.avail_out = Z_CHUNK;
 	    strm.next_out = (uint8 *) out;
-            ret = _inflate(&strm, Z_NO_FLUSH);
+	    ret = _inflate(&strm, Z_NO_FLUSH);
 	    if ( ret==Z_NEED_DICT || ret==Z_DATA_ERROR || ret==Z_MEM_ERROR ) {
 		(void)_inflateEnd(&strm);
 		LogError( _("Flate decompression failed.\n") );
@@ -1359,6 +1465,160 @@ return( ec.splines );
 /* ****************************** End graphics ****************************** */
 /* ************************************************************************** */
 
+static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni, int gid, int cmap_from_cid, int cur) {
+    int i, ndups, pos;
+    char suffix[8], *name, *nname, buffer[400];
+    SplineFont *sf = basesf->subfontcnt > 0 ? basesf->subfonts[0] : basesf;
+    struct altuni *altuni, *prev;
+    SplineChar *sc;
+
+    name = copy(StdGlyphName(buffer,uvals[0],sf->uni_interp,sf->for_new_glyphs));
+    name = grealloc(name,strlen(name)+8);
+    for (i = 1; i<nuni; i++) {
+	nname = copy(StdGlyphName(buffer,uvals[i],sf->uni_interp,sf->for_new_glyphs));
+	name = grealloc(name,strlen(name)+strlen(nname)+10);
+	strcat(name, "_");
+	strcat(name, nname);
+	free(nname);
+    }
+    ndups = 0;
+    for (i=0; i < cur; i++) {
+	if (mappings[i] == mappings[cur]) ndups++;
+    }
+    if (ndups) {
+	sprintf(suffix, ".alt%d", ndups);
+	strcat(name, suffix);
+    }
+    
+    /* embedded TTF fonts may contain a 8-bit cmap table, denoted as platform ID 1 format 0
+    /* (Apple). In fact this mapping has nothing to do both with Unicode and Apple, and rather
+    /* stores a custom order used to refer to glyphs from this particular PDF.
+    /* If such a mapping is present, then GIDs used in the ToUnicode Cmap array will correspond
+    /* to "Unicode" values it specifies rather than to the real order in which the glyphs are
+    /* stored in the file */
+    pos = cmap_from_cid || sf->map == NULL ? gid : sf->map->map[gid];
+    sc = sf->glyphs[pos];
+    
+    if (pos >= 0 && pos < sf->glyphcnt && (sc->unicodeenc != uvals[0] || nuni > 1)) {
+	/* Sometimes FF instead of assigning proper Unicode values to TTF glyphs keeps
+	/* them encoded to the same codepoint, but creates for each glyph an alternate 
+	/* encoding, corresponding to the position this glyph has in the font's encoding
+	/* map. As we are going to reencode the glyph anyway, we should remove those weird
+	/* AltUni's first */
+	if (!cmap_from_cid) {
+	    for ( altuni = sc->altuni, prev = NULL; altuni!=NULL; prev = altuni, altuni = altuni->next ) {
+		if ( altuni->vs == -1 && altuni->unienc == gid)
+	    break;
+	    }
+	    if ( altuni ) {
+		if ( prev==NULL )
+		    sc->altuni = altuni->next;
+		else
+		    prev->next = altuni->next;
+		altuni->next = NULL;
+		AltUniFree(altuni);
+	    }
+	}
+	free(sc->name);
+	sc->name = name;
+	sc->unicodeenc = UniFromName(name,sf->uni_interp,&custom);
+    }
+}
+
+static void pdf_getcmap(struct pdfcontext *pc, SplineFont *basesf, int font_num) {
+    FILE *file;
+    int i, j, gid, start, end, uni, cur=0, nuni, nhex, nchars, lo, *uvals;
+    long *mappings;
+    char tok[200], *ccval, prevtok[200];
+    SplineFont *sf = basesf->subfontcnt > 0 ? basesf->subfonts[0] : basesf;
+
+    fseek(pc->pdf,pc->cmaps[font_num],SEEK_SET);
+    pdf_skipobjectheader(pc);
+    if ( !pdf_readdict(pc) )
+return;
+    file = pdf_defilterstream(pc);
+    if ( file==NULL )
+return;
+    rewind(file);
+    
+    mappings = gcalloc(sf->glyphcnt,sizeof(long));
+    while ( pdf_getprotectedtok(file,tok) >= 0 ) {
+	if ( strcmp(tok,"beginbfchar") == 0 && sscanf(prevtok,"%d",&nchars)) {
+	    for (i=0; i<nchars; i++) {
+		if (pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&gid) &&
+		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&mappings[cur])) {
+		    
+		    /* Values we store in the 'mappings' array are just unique identifiers,
+		    /* so they should not necessarily correspond to any valid Unicode codepoints.
+		    /* In order to get the real Unicode value mapped to a glyph we should parse the
+		    /* hex string once again, dividing it into hex quartets */
+		    nhex = (strlen(tok))/4;
+		    nuni = 1;
+		    uvals = gcalloc(nhex,sizeof(int));
+		    sscanf(tok,"%4x", &uvals[0]);
+		    ccval = tok + 4;
+		    /* If a single glyph is mapped to a sequence of Unicode characters, then the
+		    /* CMap mapping will contain two or more hex quartets. However a pair of such
+		    /* quartets may also represent a single Unicode character encoded with
+		    /* a surrogate pair */
+		    for (j = 1; j<nhex && strlen(ccval) >= 4; j++) {
+			sscanf(ccval,"%4x", &lo);
+			if (uvals[nuni-1] >= 0xD800 && uvals[nuni-1] <= 0xDBFF && lo >= 0xDC00 && lo <= 0xDFFF )
+			    uvals[nuni-1] = 0x10000 + (uvals[nuni-1] - 0xD800) * 0x400 + (lo - 0xDC00);
+			else
+			    uvals[nuni++] = lo;
+			ccval += 4;
+		    }
+		    add_mapping(basesf, mappings, uvals, nuni, gid, pc->cmap_from_cid[font_num], cur);
+		    free(uvals);
+		    cur++;
+		} else
+  goto fail;
+	    }
+	    if ( pdf_getprotectedtok(file,tok) <= 0 || strcmp(tok,"endbfchar") != 0 )
+  goto fail;
+	} else if ( strcmp(tok,"beginbfrange") == 0 && sscanf(prevtok,"%d",&nchars)) {
+	    for (i=0; i<nchars; i++) {
+		if (pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&start) &&
+		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&end) &&
+		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&mappings[cur])) {
+
+		    uvals = gcalloc(1,sizeof(int));
+		    sscanf(tok,"%4x", &uni);
+		    /* For CMap values defining a character range we assume they should always
+		    /* correspond to a single Unicode character (either a BMP character or a surrogate pair) */
+		    if (strlen(tok) >= 8) {
+			sscanf(tok+4,"%4x", &lo);
+			if (uni >= 0xD800 && uni <= 0xDBFF && lo >= 0xDC00 && lo <= 0xDFFF )
+			    uni = 0x10000 + (uni - 0xD800) * 0x400 + (lo - 0xDC00);
+		    }
+
+		    for (gid=start; gid<=end; gid++) {
+			mappings[cur] = uvals[0] = uni++;
+			add_mapping(basesf, mappings, uvals, 1, gid, pc->cmap_from_cid[font_num], cur);
+			cur++;
+		    }
+		    free(uvals);
+		} else
+  goto fail;
+	    }
+	    if ( pdf_getprotectedtok(file,tok) <= 0 || strcmp(tok,"endbfrange") != 0 )
+  goto fail;
+	} else
+	    memcpy(prevtok,tok,200);
+    }
+    fclose(file);
+    /* If this is not a cid font, then regenerate the font encoding (so that it is no
+    /* longer identified as MacRoman) */
+    if ( sf->map != NULL && basesf == sf ) {
+	EncMapFree( sf->map );
+	sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Original"));
+    }
+return;
+  fail:
+    LogError( _("Syntax errors while parsing ToUnicode CMap") );
+}
+
 static int pdf_getcharprocs(struct pdfcontext *pc,char *charprocs) {
     int cp = strtol(charprocs,NULL,10);
     FILE *temp, *pdf = pc->pdf;
@@ -1524,6 +1784,10 @@ return( NULL );
 	sf = _CFFParse(file,len,pc->fontnames[font_num]);
     }
     fclose(file);
+    /* Don't attempt to parse CMaps for Type 1 fonts: they already have glyph names
+    /* which are usually more meaningful */
+    if (pc->cmaps[font_num] != -1 && type > 1)
+	pdf_getcmap(pc, sf, font_num);
 return( sf );
 
   fail:
@@ -1535,11 +1799,15 @@ static void pcFree(struct pdfcontext *pc) {
     int i;
 
     PSDictClear(&pc->pdfdict);
+    free(pc->pdfdict.keys);
+    free(pc->pdfdict.values);
     free(pc->objs);
     for ( i=0; i<pc->fcnt; ++i )
 	free(pc->fontnames[i]);
     free(pc->fontnames);
     free(pc->fonts);
+    free(pc->cmaps);
+    free(pc->cmap_from_cid);
     free(pc->pages);
     free(pc->tokbuf);
 }
