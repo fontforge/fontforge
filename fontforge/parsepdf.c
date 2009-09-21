@@ -42,12 +42,14 @@ struct pdfcontext {
     char *tokbuf;
     int tblen;
     FILE *pdf;
+    FILE *compressed;
     struct psdict pdfdict;
     long *objs;
+    long *subindex;
     int ocnt;
-    long *fonts;
+    long *fontobjs;
     char **fontnames;		/* theoretically in utf-8 */
-    long *cmaps;
+    long *cmapobjs;
     int *cmap_from_cid;
     int fcnt;
     enum openflags openflags;
@@ -150,20 +152,38 @@ return( false );
 return( true );
 }
 
+static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref);
+
 static long *FindObjects(struct pdfcontext *pc) {
     FILE *pdf = pc->pdf;
     long xrefpos = FindXRef(pdf);
     long *ret=NULL;
     int *gen=NULL;
-    int cnt = 0, i, start, num;
+    int cnt = 0, i, start, num, ch;
     long offset; int gennum; char f;
 
     if ( xrefpos == -1 )
 return( NULL );
     fseek(pdf, xrefpos,SEEK_SET );
 
-    if ( fscanf(pdf, "xref %d %d", &start, &num )!=2 )
-return( ret );
+    if ( fscanf(pdf, "xref %d %d", &start, &num )!=2 ) {
+	int foo, bar;
+	fseek(pdf, xrefpos,SEEK_SET );
+	if ( fscanf(pdf, "%d %d", &foo, &bar )!=2 )
+return( NULL );
+	while ( isspace(ch=getc(pdf)));
+	if ( ch!='o' )
+return( NULL );
+	if ( getc(pdf)!='b' )
+return( NULL );
+	if ( getc(pdf)!='j' )
+return( NULL );
+	if ( !isspace(getc(pdf)) )
+return( NULL );
+
+return( FindObjectsFromXREFObject(pc,xrefpos));
+    }
+
     forever {
 	if ( start+num>cnt ) {
 	    ret = grealloc(ret,(start+num+1)*sizeof(long));
@@ -212,7 +232,7 @@ return( ch );
 }
 
 static void pdf_skipwhitespace(struct pdfcontext *pc) {
-    FILE *pdf = pc->pdf;
+    FILE *pdf =  pc->compressed ? pc->compressed : pc->pdf;
     int ch;
 
     forever {
@@ -226,7 +246,7 @@ static void pdf_skipwhitespace(struct pdfcontext *pc) {
 }
 
 static char *pdf_getname(struct pdfcontext *pc) {
-    FILE *pdf = pc->pdf;
+    FILE *pdf = pc->compressed ? pc->compressed : pc->pdf;
     int ch;
     char *pt = pc->tokbuf, *end = pc->tokbuf+pc->tblen;
 
@@ -253,7 +273,7 @@ return( pc->tokbuf );
 }
 
 static char *pdf_getdictvalue(struct pdfcontext *pc) {
-    FILE *pdf = pc->pdf;
+    FILE *pdf = pc->compressed ? pc->compressed : pc->pdf;
     int ch;
     char *pt = pc->tokbuf, *end = pc->tokbuf+pc->tblen;
     int dnest=0, anest=0, strnest;
@@ -327,7 +347,7 @@ static void PSDictClear(struct psdict *dict) {
 }
 
 static int pdf_readdict(struct pdfcontext *pc) {
-    FILE *pdf = pc->pdf;
+    FILE *pdf = pc->compressed ? pc->compressed : pc->pdf;
     char *key, *value;
     int ch;
 
@@ -341,8 +361,13 @@ return( false );
 
     forever {
 	key = copy(pdf_getname(pc));
-	if ( key==NULL )
+	if ( key==NULL ) {
+	    if ( pc->compressed!=NULL ) {	/* We've read the whole object*/
+		fclose(pc->compressed);		/* so close the compressed */
+		pc->compressed = NULL;		/* stream in which it lives */
+	    }
 return( true );
+	}
 	value = copy(pdf_getdictvalue(pc));
 	if ( value==NULL || strcmp(value,"null")==0 )
 	    free(key);
@@ -410,18 +435,78 @@ return 0;
 return ret && ch == '>';
 }
 
+static FILE *pdf_defilterstream(struct pdfcontext *pc);
+static int pdf_getinteger(char *pt,struct pdfcontext *pc);
+
+static int pdf_findobject(struct pdfcontext *pc, int num) {
+    int first_offset, n, i, o, offset, container;
+    FILE *data;
+    char *pt;
+
+    if ( pc->compressed!=NULL ) {
+	fclose( pc->compressed );
+	pc->compressed = NULL;
+    }
+    if ( num<0 || num>=pc->ocnt )
+return( false );
+    if ( pc->subindex==NULL || pc->subindex[num]==-1 ) {
+	if ( pc->objs[num]==-1 )
+return( false );
+	fseek(pc->pdf,pc->objs[num],SEEK_SET);
+	pdf_skipobjectheader(pc);
+return( true );
+    } else {
+	container = pc->objs[num];
+	while ( container!=-1 ) {
+	    if ( pc->subindex[container]!=-1 ) {
+		LogError(_("Compressed object container is itself a compressed object"));
+return( false );
+	    }
+	    fseek(pc->pdf,pc->objs[container],SEEK_SET);
+	    pdf_skipobjectheader(pc);
+	    if ( !pdf_readdict(pc) )
+return( false );
+	    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))==NULL || strcmp(pt,"/ObjStm")!=0 )
+return( false );
+	    if ( (pt=PSDictHasEntry(&pc->pdfdict,"N"))==NULL )
+return( false );
+	    n = pdf_getinteger(pt,pc);
+	    if ( (pt=PSDictHasEntry(&pc->pdfdict,"First"))==NULL )
+return( false );
+	    first_offset = pdf_getinteger(pt,pc);
+	    container = -1;
+	    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Extends"))!=NULL )
+		container = strtol(pt,NULL,0);
+	    data = pdf_defilterstream(pc);
+	    if ( data==NULL )
+return( false );
+	    rewind(data);
+	    for ( i=0; i<n; ++i ) {
+		fscanf( data, "%d %d", &o, &offset );
+		if ( o==num )
+	    break;
+	    }
+	    if ( i<n ) {
+		fseek( data, first_offset+offset, SEEK_SET );
+		pc->compressed = data;
+return( true );
+	    }
+	    fclose(data);
+	}
+	/* Not found in any extents */
+return( false );
+    }
+}
+
 static int pdf_getdescendantfont(struct pdfcontext *pc, int num) {
-    FILE *pdf = pc->pdf;
     char *pt;
     int nnum;
-    
-    fseek(pdf,pc->objs[num],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( pdf_readdict(pc) ) {
+
+    if ( pdf_findobject(pc,num) && pdf_readdict(pc) ) {
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL && strcmp(pt,"/Font")==0 &&
 		PSDictHasEntry(&pc->pdfdict,"FontDescriptor")!=NULL &&
 		(pt=PSDictHasEntry(&pc->pdfdict,"BaseFont"))!=NULL ) {
-return( pc->objs[num] );
+return( num );
 	}
     }
     if ( (pt = pdf_getdictvalue(pc)) != NULL && sscanf(pt,"%d",&nnum) && nnum > 0 && nnum < pc->ocnt )
@@ -431,20 +516,17 @@ return( -1 );
 }
 
 static int pdf_findfonts(struct pdfcontext *pc) {
-    FILE *pdf = pc->pdf;
     int i, j, k=0, dnum, cnum;
     char *pt, *tpt, *cmap, *desc;
 
-    pc->fonts = galloc(pc->ocnt*sizeof(long));
-    pc->cmaps = galloc(pc->ocnt*sizeof(long));
+    pc->fontobjs = galloc(pc->ocnt*sizeof(long));
+    pc->cmapobjs = galloc(pc->ocnt*sizeof(long));
     pc->cmap_from_cid = gcalloc(pc->ocnt,sizeof(int));
-    memset(pc->cmaps,-1,sizeof(long));
+    memset(pc->cmapobjs,-1,sizeof(long));
     pc->fontnames = galloc(pc->ocnt*sizeof(char *));
     /* First look for CID-keyed fonts with a pointer to a ToUnicode CMap */
     for ( i=1; i<pc->ocnt; ++i ) if ( pc->objs[i]!=-1 ) {	/* Object 0 is always unused */
-	fseek(pdf,pc->objs[i],SEEK_SET);
-	pdf_skipobjectheader(pc);
-	if ( pdf_readdict(pc) ) {
+	if ( pdf_findobject(pc,i) && pdf_readdict(pc) ) {
 	    if ((pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL && strcmp(pt,"/Font")==0 &&
 		    (pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type0")==0 &&
 		    (cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL &&
@@ -461,8 +543,8 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		
 		dnum = pdf_getdescendantfont( pc,dnum );
 		if ( dnum > 0 ) {
-		    pc->fonts[k] = dnum;
-		    pc->cmaps[k] = pc->objs[cnum];
+		    pc->fontobjs[k] = dnum;
+		    pc->cmapobjs[k] = cnum;
 		    pc->fontnames[k] = tpt;
 		    /* Store a flag indicating this particular CMap comes from a CID-keyed
 		    /* font. We can't determine this later just by examining sf->subfontcnt,
@@ -477,9 +559,7 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 
     /* List other fonts, skipping those detected at the first pass */
     for ( i=1; i<pc->ocnt; ++i ) if ( pc->objs[i]!=-1 ) {	/* Object 0 is always unused */
-	fseek(pdf,pc->objs[i],SEEK_SET);
-	pdf_skipobjectheader(pc);
-	if ( pdf_readdict(pc) ) {
+	if ( pdf_findobject(pc,i) && pdf_readdict(pc) ) {
 	    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL && strcmp(pt,"/Font")==0 &&
 		    (PSDictHasEntry(&pc->pdfdict,"FontDescriptor")!=NULL ||
 		     ((pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type3")==0)) &&
@@ -487,16 +567,16 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    /* Type3 fonts are named by "Name" rather than BaseFont */
 			(pt=PSDictHasEntry(&pc->pdfdict,"Name"))!=NULL) ) {
 		
-		for (j=0; j<k && pc->fonts[j] != pc->objs[i]; j++);
+		for (j=0; j<k && pc->fontobjs[j] != i; j++);
 		if (j < k )
     continue;
 		    
 		if ((cmap=PSDictHasEntry(&pc->pdfdict,"ToUnicode"))!=NULL) {
 		    if (*cmap == '[') cmap++;
 		    sscanf(cmap, "%d", &cnum);
-		    pc->cmaps[k] = pc->objs[cnum];
+		    pc->cmapobjs[k] = cnum;
 		}
-		pc->fonts[k] = pc->objs[i];
+		pc->fontobjs[k] = i;
 		if ( *pt=='/' || *pt=='(' )
 		    ++pt;
 		pc->fontnames[k++] = tpt = copy(pt);
@@ -518,6 +598,7 @@ return( k>0 );
 static int pdf_getinteger(char *pt,struct pdfcontext *pc) {
     int val,ret;
     long here;
+    FILE *pdf;
 
     if ( pt==NULL )
 return( 0 );
@@ -527,9 +608,14 @@ return( val );
     if ( val<0 || val>=pc->ocnt || pc->objs[val]==-1 )
 return( 0 );
     here = ftell(pc->pdf);
-    fseek(pc->pdf,pc->objs[val],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    ret = fscanf(pc->pdf,"%d",&val);
+    if ( !pdf_findobject(pc,val))
+return( 0 );
+    pdf = pc->compressed ? pc->compressed : pc->pdf;
+    ret = fscanf(pdf,"%d",&val);
+    if ( pc->compressed ) {
+	fclose(pc->compressed );
+	pc->compressed = NULL;
+    }
     fseek(pc->pdf,here,SEEK_SET);
     if ( ret!=1 )
 return( 0 );
@@ -538,12 +624,9 @@ return( val );
 
 static void pdf_addpages(struct pdfcontext *pc, int obj) {
     /* Object is either a page or a page catalog */
-    FILE *pdf = pc->pdf;
     char *pt, *end;
 
-    fseek(pdf,pc->objs[obj],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( pdf_readdict(pc) ) {
+    if ( pdf_findobject(pc,obj) && pdf_readdict(pc) ) {
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL ) {
 	    if ( strcmp(pt,"/Page")==0 ) {
 		pc->pages[pc->pcnt++] = obj;
@@ -783,6 +866,10 @@ static FILE *pdf_defilterstream(struct pdfcontext *pc) {
     int i,length,ch;
     char *pt, *end;
 
+    if ( pc->compressed!=NULL ) {
+	LogError( _("A pdf stream object may not be a compressed object"));
+return( NULL );
+    }
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"Length"))==NULL ) {
 	LogError( _("A pdf stream object is missing a Length attribute"));
 return( NULL );
@@ -833,6 +920,118 @@ return( res );
 }
 /* ************************************************************************** */
 /* ****************************** End filters ******************************* */
+/* ************************************************************************** */
+
+/* ************************************************************************** */
+/* ****************************** xref streams ****************************** */
+/* ************************************************************************** */
+static long getuvalue(FILE *f,int len) {
+    long val;
+    int ch, i;
+
+    val = 0;
+    for ( i=0; i<len; ++i ) {
+	ch = getc(f);
+	val = (val<<8) | ch;
+    }
+return( val );
+}
+
+static long *FindObjectsFromXREFObject(struct pdfcontext *pc, long prev_xref) {
+    char *pt;
+    long *ret=NULL;
+    int *gen=NULL;
+    int cnt = 0, i, start, num;
+    int bar;
+    int typewidth, offwidth, genwidth;
+    long type, offset, gennum;
+    FILE *xref_stream, *pdf = pc->pdf;
+
+    while ( prev_xref!=-1 ) {
+	fseek(pdf,prev_xref,SEEK_SET);
+	pdf_skipobjectheader(pc);
+	if ( !pdf_readdict(pc))
+return( NULL );
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))==NULL || strcmp(pt,"/XRef")!=0 )
+return( NULL );
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Size"))==NULL )
+return( NULL );
+	else {
+	    start = 0;
+	    num = pdf_getinteger(pt,pc);
+	}
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Index"))!=NULL ) {
+	    if ( sscanf(pt,"[%d %d]", &start, &num )!=2 )
+return( NULL );
+	}
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"W"))==NULL )
+return( NULL );
+	else {
+	    if ( sscanf(pt,"[%d %d %d]", &typewidth, &offwidth, &genwidth )!=3 )
+return( NULL );
+	}
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Encrypt"))!=NULL ) {
+	    if ( sscanf( pt, "%d %d", &pc->enc_dict, &bar )==2 )
+		pc->encrypted = true;
+	}
+	if ( pc->root == 0 && (pt=PSDictHasEntry(&pc->pdfdict,"Root"))!=NULL ) {
+	    fscanf( pdf, "%d %d", &pc->root, &bar );
+	}
+	prev_xref = -1;
+	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Prev"))!=NULL ) {
+	    prev_xref = strtol(pt,NULL,0);
+	}
+	/* I ignore Info */
+
+	if ( start+num>cnt ) {
+	    ret = grealloc(ret,(start+num+1)*sizeof(long));
+	    memset(ret+cnt,-1,sizeof(long)*(start+num-cnt));
+	    pc->subindex = grealloc(pc->subindex,(start+num+1)*sizeof(long));
+	    memset(pc->subindex+cnt,-1,sizeof(long)*(start+num-cnt));
+	    gen = grealloc(gen,(start+num)*sizeof(int));
+	    memset(gen+cnt,-1,sizeof(int)*(start+num-cnt));
+	    cnt = start+num;
+	    pc->ocnt = cnt;
+	    ret[cnt] = -2;
+	}
+	/* Now gather the cross references from their stream */
+	xref_stream = pdf_defilterstream(pc);
+	if ( xref_stream==NULL )
+return( NULL );
+	rewind(xref_stream);
+	for ( i=start; i<start+num; ++i ) {
+	    type   = getuvalue(xref_stream,typewidth);
+	    offset = getuvalue(xref_stream,offwidth);
+	    gennum = getuvalue(xref_stream,genwidth);
+	    if ( feof(xref_stream)) {
+		fclose(xref_stream);
+return( NULL );
+	    }
+	    if ( type==0 ) {
+		if ( gennum > gen[i] ) {
+		    ret[i] = -1;
+		    gen[i] = gennum;
+		}
+	    } else if ( type==1 ) {
+		if ( gennum > gen[i] ) {
+		    ret[i] = offset;
+		    gen[i] = gennum;
+		}
+	    } else if ( type==2 ) {
+		if ( 0 > gen[i] ) {
+		    ret[i] = offset;	/* containing object # */
+		    pc->subindex[i] = gennum;
+		    gen[i] = 0;
+		}
+	    }
+	}
+	fclose(xref_stream);
+    }
+    free( gen );
+return( ret );
+}
+/* ************************************************************************** */
+/* **************************** End xref streams **************************** */
 /* ************************************************************************** */
 
 /* ************************************************************************** */
@@ -1388,9 +1587,7 @@ static SplineChar *pdf_InterpretSC(struct pdfcontext *pc,char *glyphname,
 
     if ( gn<=0 || gn>=pc->ocnt || pc->objs[gn]==-1 )
   goto fail;
-    fseek(pc->pdf,pc->objs[gn],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) )
+    if ( pdf_findobject(pc,gn) && !pdf_readdict(pc) )
   goto fail;
     glyph_stream = pdf_defilterstream(pc);
     if ( glyph_stream==NULL )
@@ -1427,9 +1624,7 @@ static Entity *pdf_InterpretEntity(struct pdfcontext *pc,int page_num) {
     char *pt;
     int content;
 
-    fseek(pc->pdf,pc->objs[pc->pages[page_num]],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) ) {
+    if ( !pdf_findobject(pc,pc->pages[page_num]) || !pdf_readdict(pc) ) {
 	LogError( _("Syntax error while parsing pdf graphics"));
 return( NULL );
     }
@@ -1438,9 +1633,7 @@ return( NULL );
 	LogError( _("Syntax error while parsing pdf graphics: Page with no Contents"));
 return( NULL );
     }
-    fseek(pc->pdf,pc->objs[content],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) ) {
+    if ( !pdf_findobject(pc,content) || !pdf_readdict(pc) ) {
 	LogError( _("Syntax error while parsing pdf graphics"));
 return( NULL );
     }
@@ -1532,9 +1725,7 @@ static void pdf_getcmap(struct pdfcontext *pc, SplineFont *basesf, int font_num)
     char tok[200], *ccval, prevtok[200];
     SplineFont *sf = basesf->subfontcnt > 0 ? basesf->subfonts[0] : basesf;
 
-    fseek(pc->pdf,pc->cmaps[font_num],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) )
+    if ( !pdf_findobject(pc,pc->cmapobjs[font_num]) || !pdf_readdict(pc) )
 return;
     file = pdf_defilterstream(pc);
     if ( file==NULL )
@@ -1626,10 +1817,8 @@ static int pdf_getcharprocs(struct pdfcontext *pc,char *charprocs) {
 
     /* An indirect reference? */
     if ( cp!=0 ) {
-	if ( cp<0 || cp>=pc->ocnt || pc->objs[cp]==-1 )
+	if ( !pdf_findobject(pc,cp) )
 return( false );
-	fseek(pdf,pc->objs[cp],SEEK_SET);
-	pdf_skipobjectheader(pc);
 return( pdf_readdict(pc));
     }
     temp = tmpfile();
@@ -1727,9 +1916,7 @@ static SplineFont *pdf_loadfont(struct pdfcontext *pc,int font_num) {
     FILE *file;
     SplineFont *sf;
 
-    fseek(pc->pdf,pc->fonts[font_num],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) )
+    if ( !pdf_findobject(pc,pc->fontobjs[font_num]) || !pdf_readdict(pc) )
 return( NULL );
 
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type3")==0 )
@@ -1738,12 +1925,8 @@ return( pdf_loadtype3(pc));
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"FontDescriptor"))==NULL )
   goto fail;
     fd = strtol(pt,NULL,10);
-    if ( fd<=0 || fd>=pc->ocnt || pc->objs[fd]==-1 )
-  goto fail;
 
-    fseek(pc->pdf,pc->objs[fd],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) )
+    if ( !pdf_findobject(pc,fd) || !pdf_readdict(pc) )
   goto fail;
 
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"FontFile"))!=NULL )
@@ -1757,12 +1940,7 @@ return( pdf_loadtype3(pc));
 return( NULL );
     }
     ff = strtol(pt,NULL,10);
-    if ( ff<=0 || ff>=pc->ocnt || pc->objs[ff]==-1 )
-  goto fail;
-
-    fseek(pc->pdf,pc->objs[ff],SEEK_SET);
-    pdf_skipobjectheader(pc);
-    if ( !pdf_readdict(pc) )
+    if ( !pdf_findobject(pc,ff) || !pdf_readdict(pc) )
   goto fail;
     file = pdf_defilterstream(pc);
     if ( file==NULL )
@@ -1786,7 +1964,7 @@ return( NULL );
     fclose(file);
     /* Don't attempt to parse CMaps for Type 1 fonts: they already have glyph names
     /* which are usually more meaningful */
-    if (pc->cmaps[font_num] != -1 && type > 1)
+    if (pc->cmapobjs[font_num] != -1 && type > 1)
 	pdf_getcmap(pc, sf, font_num);
 return( sf );
 
@@ -1805,8 +1983,8 @@ static void pcFree(struct pdfcontext *pc) {
     for ( i=0; i<pc->fcnt; ++i )
 	free(pc->fontnames[i]);
     free(pc->fontnames);
-    free(pc->fonts);
-    free(pc->cmaps);
+    free(pc->fontobjs);
+    free(pc->cmapobjs);
     free(pc->cmap_from_cid);
     free(pc->pages);
     free(pc->tokbuf);
