@@ -126,10 +126,10 @@ acorn2sfd: $(ACORNOBJS)
 # disasterous effects. This file may not be compiled with the optimizer.
 # On the other hand we do need CPPFLAGS to get the right includes...
 splinerefigure.o: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
+	$(CC) -g -c -o splinerefigure.o @CFLAGS_NOOPT@ $(_CFLAGS) $(srcdir)/splinerefigure.c
 
 splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
-	$(LIBTOOL) --mode=compile $(CC) -g -c -o splinerefigure.lo $(_CFLAGS) $(srcdir)/splinerefigure.c
+	$(LIBTOOL) --mode=compile $(CC) -g -c -o splinerefigure.lo @CFLAGS_NOOPT@ $(_CFLAGS) $(srcdir)/splinerefigure.c
 
 %.o: %.c
 
