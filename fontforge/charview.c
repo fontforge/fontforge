@@ -8344,9 +8344,6 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	LayerUnAllSplines(cv->b.layerheads[cv->b.drawmode]);
     }
 
-    if ( self_intersects==1 )
-	dir = -1;
-
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
@@ -8408,11 +8405,11 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.checked = self_intersects==1;
 	  break;
 	  case MID_Clockwise:
-	    mi->ti.disabled = !anypoints || dir==2 || self_intersects==1;
+	    mi->ti.disabled = !anypoints || dir==2 || dir<0;
 	    mi->ti.checked = dir==1;
 	  break;
 	  case MID_Counter:
-	    mi->ti.disabled = !anypoints || dir==2 || self_intersects==1;
+	    mi->ti.disabled = !anypoints || dir==2 || dir<0;
 	    mi->ti.checked = dir==0;
 	  break;
 	  case MID_Correct:
