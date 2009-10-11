@@ -1244,6 +1244,9 @@ return( 4 );
     /*   along that vector is not larger than the stem width;
     /* - none of the intermediate points is parallel to the vector direction
     /*   (otherwise we should have checked against that point instead)*/
+    if ( !UnitsParallel( dir1,&hvdir,false ))
+return( 0 );
+    
     dist = ( sp1->me.x - sp2->me.x ) * dir1->y -
 	   ( sp1->me.y - sp2->me.y ) * dir1->x;
     nsp = sp1;
@@ -3408,27 +3411,27 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 	}
     }
 #if GLYPH_DATA_DEBUG
-    fprintf( stderr, "Active zones for stem l=%f,%f r=%f,%f dir=%f,%f:\n",
+    fprintf( stderr, "Active zones for stem l=%.2f,%.2f r=%.2f,%.2f dir=%.2f,%.2f:\n",
 	stem->left.x,stem->left.y,stem->right.x,stem->right.y,stem->unit.x,stem->unit.y );
     for ( i=0; i<lcnt; i++ ) {
 	fprintf( stderr, "\tleft space curved=%d\n",lspace[i].curved );
-	fprintf( stderr, "\t\tstart=%f,base=%f,curved=%d\n",
+	fprintf( stderr, "\t\tstart=%.2f,base=%.2f,curved=%d\n",
 	    lspace[i].start,lspace[i].sbase,lspace[i].scurved );
-	fprintf( stderr, "\t\tend=%f,base=%f,curved=%d\n",
+	fprintf( stderr, "\t\tend=%.2f,base=%.2f,curved=%d\n",
 	    lspace[i].end,lspace[i].ebase,lspace[i].ecurved );
     }
     for ( i=0; i<rcnt; i++ ) {
 	fprintf( stderr, "\tright space curved=%d\n",rspace[i].curved );
-	fprintf( stderr, "\t\tstart=%f,base=%f,curved=%d\n",
+	fprintf( stderr, "\t\tstart=%.2f,base=%.2f,curved=%d\n",
 	    rspace[i].start,rspace[i].sbase,rspace[i].scurved );
-	fprintf( stderr, "\t\tend=%f,base=%f,curved=%d\n",
+	fprintf( stderr, "\t\tend=%.2f,base=%.2f,curved=%d\n",
 	    rspace[i].end,rspace[i].ebase,rspace[i].ecurved );
     }
     for ( i=0; i<bcnt; i++ ) {
 	fprintf( stderr, "\tboth space\n" );
-	fprintf( stderr, "\t\tstart=%f,base=%f,curved=%d\n",
+	fprintf( stderr, "\t\tstart=%.2f,base=%.2f,curved=%d\n",
 	    bothspace[i].start,bothspace[i].sbase,bothspace[i].scurved );
-	fprintf( stderr, "\t\tend=%f,base=%f,curved=%d\n",
+	fprintf( stderr, "\t\tend=%.2f,base=%.2f,curved=%d\n",
 	    bothspace[i].end,bothspace[i].ebase,bothspace[i].ecurved );
     }
     fprintf( stderr,"\n" );
@@ -4721,10 +4724,10 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 	fprintf( stderr, "\nDumping line data for %s\n",gd->sc->name );
     for ( i=0; i<gd->linecnt; ++i ) {
 	line = &gd->lines[i];
-	fprintf( stderr, "line vector=%f,%f base=%f,%f length=%f\n", 
+	fprintf( stderr, "line vector=%.4f,%.4f base=%.2f,%.2f length=%.4f\n", 
 	    line->unit.x,line->unit.y,line->online.x,line->online.y,line->length );
 	for( j=0; j<line->pcnt;++j ) {
-	    fprintf( stderr, "\tpoint num=%d, x=%f, y=%f, prev=%d, next=%d\n",
+	    fprintf( stderr, "\tpoint num=%d, x=%.2f, y=%.2f, prev=%d, next=%d\n",
 		line->points[j]->sp->ttfindex, line->points[j]->sp->me.x,
 		line->points[j]->sp->me.y, 
 		line->points[j]->prevline==line, line->points[j]->nextline==line );
@@ -4736,7 +4739,7 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 	fprintf( stderr, "\nDumping stem data for %s\n",gd->sc->name );
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-	fprintf( stderr, "stem l=%f,%f idx=%d r=%f,%f idx=%d vector=%f,%f\n\twidth=%f chunk_cnt=%d len=%f clen=%f ghost=%d blue=%d toobig=%d\n\tlmin=%f,lmax=%f,rmin=%f,rmax=%f,lpcnt=%d,rpcnt=%d\n",
+	fprintf( stderr, "stem l=%.2f,%.2f idx=%d r=%.2f,%.2f idx=%d vector=%.4f,%.4f\n\twidth=%.2f chunk_cnt=%d len=%.4f clen=%.4f ghost=%d blue=%d toobig=%d\n\tlmin=%.2f,lmax=%.2f,rmin=%.2f,rmax=%.2f,lpcnt=%d,rpcnt=%d\n",
 	    stem->left.x,stem->left.y,stem->leftidx,
 	    stem->right.x,stem->right.y,stem->rightidx,
 	    stem->unit.x,stem->unit.y,stem->width,
@@ -4745,14 +4748,14 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 	for ( j=0; j<stem->chunk_cnt; ++j ) {
 	    chunk = &stem->chunks[j];
 	    if ( chunk->l!=NULL && chunk->r!=NULL )
-		fprintf (stderr, "\tchunk l=%f,%f potential=%d r=%f,%f potential=%d stub=%d\n",
+		fprintf (stderr, "\tchunk l=%.2f,%.2f potential=%d r=%.2f,%.2f potential=%d stub=%d\n",
 		    chunk->l->sp->me.x, chunk->l->sp->me.y, chunk->lpotential,
 		    chunk->r->sp->me.x, chunk->r->sp->me.y, chunk->rpotential, chunk->stub );
 	    else if ( chunk->l!=NULL )
-		fprintf (stderr, "\tchunk l=%f,%f potential=%d\n",
+		fprintf (stderr, "\tchunk l=%.2f,%.2f potential=%d\n",
 		    chunk->l->sp->me.x, chunk->l->sp->me.y, chunk->lpotential);
 	    else if ( chunk->r!=NULL )
-		fprintf (stderr, "\tchunk r=%f,%f potential=%d\n",
+		fprintf (stderr, "\tchunk r=%.2f,%.2f potential=%d\n",
 		    chunk->r->sp->me.x, chunk->r->sp->me.y, chunk->rpotential);
 	}
 	fprintf( stderr, "\n" );
@@ -4762,16 +4765,16 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 	fprintf( stderr, "\nDumping HV stem bundles for %s\n",gd->sc->name );
     if ( gd->hbundle != NULL ) for ( i=0; i<gd->hbundle->cnt; i++ ) {
 	stem = gd->hbundle->stemlist[i];
-	fprintf( stderr, "H stem l=%f,%f r=%f,%f slave=%d\n",
+	fprintf( stderr, "H stem l=%.2f,%.2f r=%.2f,%.2f slave=%d\n",
 	    stem->left.x,stem->left.y,stem->right.x,stem->right.y,stem->master!=NULL );
 	if ( stem->dep_cnt > 0 ) for ( j=0; j<stem->dep_cnt; j++ ) {
-	    fprintf( stderr, "\tslave l=%f,%f r=%f,%f mode=%c left=%d\n",
+	    fprintf( stderr, "\tslave l=%.2f,%.2f r=%.2f,%.2f mode=%c left=%d\n",
 		stem->dependent[j].stem->left.x,stem->dependent[j].stem->left.y,
 		stem->dependent[j].stem->right.x,stem->dependent[j].stem->right.y,
 		stem->dependent[j].dep_type,stem->dependent[j].lbase );
 	}
 	if ( stem->serif_cnt > 0 ) for ( j=0; j<stem->serif_cnt; j++ ) {
-	    fprintf( stderr, "\tserif l=%f,%f r=%f,%f ball=%d left=%d\n",
+	    fprintf( stderr, "\tserif l=%.2f,%.2f r=%.2f,%.2f ball=%d left=%d\n",
 		stem->serifs[j].stem->left.x,stem->serifs[j].stem->left.y,
 		stem->serifs[j].stem->right.x,stem->serifs[j].stem->right.y,
 		stem->serifs[j].is_ball,stem->serifs[j].lbase );
@@ -4780,26 +4783,26 @@ static void DumpGlyphData( struct glyphdata *gd ) {
     fprintf( stderr, "\n" );
     if ( gd->vbundle != NULL ) for ( i=0; i<gd->vbundle->cnt; i++ ) {
 	stem = gd->vbundle->stemlist[i];
-	fprintf( stderr, "V stem l=%f,%f r=%f,%f slave=%d\n",
+	fprintf( stderr, "V stem l=%.2f,%.2f r=%.2f,%.2f slave=%d\n",
 	    stem->left.x,stem->left.y,stem->right.x,stem->right.y,stem->master!=NULL );
 	if ( stem->dep_cnt > 0 ) for ( j=0; j<stem->dep_cnt; j++ ) {
-	    fprintf( stderr, "\tslave l=%f,%f r=%f,%f mode=%c left=%d\n",
+	    fprintf( stderr, "\tslave l=%.2f,%.2f r=%.2f,%.2f mode=%c left=%d\n",
 		stem->dependent[j].stem->left.x,stem->dependent[j].stem->left.y,
 		stem->dependent[j].stem->right.x,stem->dependent[j].stem->right.y,
 		stem->dependent[j].dep_type,stem->dependent[j].lbase );
 	}
 	if ( stem->serif_cnt > 0 ) for ( j=0; j<stem->serif_cnt; j++ ) {
-	    fprintf( stderr, "\tserif l=%f,%f r=%f,%f ball=%d left=%d\n",
+	    fprintf( stderr, "\tserif l=%.2f,%.2f r=%.2f,%.2f ball=%d left=%d\n",
 		stem->serifs[j].stem->left.x,stem->serifs[j].stem->left.y,
 		stem->serifs[j].stem->right.x,stem->serifs[j].stem->right.y,
 		stem->serifs[j].is_ball,stem->serifs[j].lbase );
 	}
 	if ( stem->prev_c_m != NULL ) {
-	    fprintf( stderr,"\tprev counter master: l=%f r=%f\n",
+	    fprintf( stderr,"\tprev counter master: l=%.2f r=%.2f\n",
 		stem->prev_c_m->left.x,stem->prev_c_m->right.x );
 	}
 	if ( stem->next_c_m != NULL ) {
-	    fprintf( stderr,"\tnext counter master: l=%f r=%f\n",
+	    fprintf( stderr,"\tnext counter master: l=%.2f r=%.2f\n",
 		stem->next_c_m->left.x,stem->next_c_m->right.x );
 	}
     }
@@ -4807,16 +4810,16 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 
     if ( gd->ibundle != NULL ) for ( i=0; i<gd->ibundle->cnt; i++ ) {
 	stem = gd->ibundle->stemlist[i];
-	fprintf( stderr, "I stem l=%f,%f r=%f,%f slave=%d\n",
+	fprintf( stderr, "I stem l=%.2f,%.2f r=%.2f,%.2f slave=%d\n",
 	    stem->left.x,stem->left.y,stem->right.x,stem->right.y,stem->master!=NULL );
 	if ( stem->dep_cnt > 0 ) for ( j=0; j<stem->dep_cnt; j++ ) {
-	    fprintf( stderr, "\tslave l=%f,%f r=%f,%f mode=%c left=%d\n",
+	    fprintf( stderr, "\tslave l=%.2f,%.2f r=%.2f,%.2f mode=%c left=%d\n",
 		stem->dependent[j].stem->left.x,stem->dependent[j].stem->left.y,
 		stem->dependent[j].stem->right.x,stem->dependent[j].stem->right.y,
 		stem->dependent[j].dep_type,stem->dependent[j].lbase );
 	}
 	if ( stem->serif_cnt > 0 ) for ( j=0; j<stem->serif_cnt; j++ ) {
-	    fprintf( stderr, "\tserif l=%f,%f r=%f,%f ball=%d left=%d\n",
+	    fprintf( stderr, "\tserif l=%.2f,%.2f r=%.2f,%.2f ball=%d left=%d\n",
 		stem->serifs[j].stem->left.x,stem->serifs[j].stem->left.y,
 		stem->serifs[j].stem->right.x,stem->serifs[j].stem->right.y,
 		stem->serifs[j].is_ball,stem->serifs[j].lbase );
