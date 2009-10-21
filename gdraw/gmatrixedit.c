@@ -398,6 +398,8 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 	for ( i=0; gme->buttonlist[i]!=NULL; ++i )
 	    if ( gme->buttonlist[i] && gme->buttonlist[i]->state!=gs_invisible )
 		butwidth += gme->buttonlist[i]->r.width+5;
+    if ( butwidth > width )
+	width = butwidth;
 
     if ( g->desired_width>2*bp )
 	width = g->desired_width-2*bp;
@@ -451,7 +453,7 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
 				 gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE/2));
     } else {
 	int y = gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE/2);
-	int x = gme->g.inner.x + subwidth-5;
+	int x = gme->g.inner.x + width-5;
 	GGadgetMove(gme->del,gme->g.inner.x + 5, y);
 	if ( gme->up && gme->up->state!=gs_invisible ) {
 	    x -= gme->down->r.width;

@@ -574,4 +574,21 @@ extern void FVRevertGlyph(FontViewBase *fv);
 extern int   MMReblend(FontViewBase *fv, MMSet *mm);
 extern FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],int tonew );
 extern void FVB_MakeNamelist(FontViewBase *fv, FILE *file);
+
+extern void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
+	int chunk_height, int loop_cnt);
+extern void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
+	int chunk_height );
+extern void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
+	struct lookup_subtable *into,
+	int from_closest_approach, int separation,int min_kern,
+	int chunk_height,
+	void (*addkp)(void *data,SplineChar *left,SplineChar *r,int off),
+	void *data);
+extern void AutoKernNewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
+	int lcnt, int rcnt,
+	void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data,
+	int from_closest_approach, int separation,int min_kern,
+	int chunk_height);
+
 #endif

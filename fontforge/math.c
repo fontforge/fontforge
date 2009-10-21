@@ -570,7 +570,7 @@ static GImage *_MATHVar_GetImage(const void *_math) {
     struct matrix_data *old = GMatrixEditGet(varlist,&rows);
     SplineChar *sc = SFGetChar(math->sf,-1, old[cols*math->popup_r].u.md_str);
     static OTLookup dummyl = { NULL, gsub_multiple };
-    static struct lookup_subtable dummys = { NULL, NULL, &dummyl };
+    static struct lookup_subtable dummys = { NULL, NULL, 0,0, &dummyl };
 
 return( PST_GetImage(varlist,math->sf,math->def_layer,&dummys,math->popup_r,sc) );
 }

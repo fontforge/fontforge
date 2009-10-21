@@ -1950,6 +1950,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		    putc(')',sfd);
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
+		if ( otl->lookup_type==gpos_pair && (sub->separation!=0 || sub->kerning_by_touch))
+		    fprintf(sfd,"[%d,%d,%d]", sub->separation, sub->minkern, sub->kerning_by_touch );
 		putc(' ',sfd);
 	    }
 	    fprintf( sfd, "} [" );
@@ -2225,6 +2227,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     fprintf( sfd, "FitToEm: %d\n", sf->display_bbsized );
     if ( sf->extrema_bound!=0 )
 	fprintf( sfd, "ExtremaBound: %d\n", sf->extrema_bound );
+    if ( sf->width_separation!=0 )
+	fprintf( sfd, "WidthSeparation: %d\n", sf->width_separation );
     {
 	int rc, cc, te;
 	if ( (te = FVWinInfo(sf->fv,&cc,&rc))!= -1 )
@@ -5942,8 +5946,19 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 		    ch = nlgetc(sfd);
 		    sub->vertical_kerning = (ch=='1');
 		    nlgetc(sfd);	/* slurp final paren */
-		} else
+		    ch=nlgetc(sfd);
+		}
+		if ( ch=='[' ) {
+		    getsint(sfd,&sub->separation);
+		    nlgetc(sfd);	/* slurp comma */
+		    getsint(sfd,&sub->minkern);
+		    nlgetc(sfd);	/* slurp comma */
+		    ch = nlgetc(sfd);
+		    sub->kerning_by_touch = (ch=='1');
+		    nlgetc(sfd);	/* slurp final paren */
+		} else {
 		    ungetc(ch,sfd);
+		}
 		sub->per_glyph_pst_or_kern = true;
 	      break;
 	      case gpos_cursive: case gpos_mark2base: case gpos_mark2ligature: case gpos_mark2mark:
@@ -6451,6 +6466,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&sf->display_layer);
 	} else if ( strmatch(tok,"ExtremaBound:")==0 ) {
 	    getint(sfd,&sf->extrema_bound);
+	} else if ( strmatch(tok,"WidthSeparation:")==0 ) {
+	    getint(sfd,&sf->width_separation);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
 	    getint(sfd,&sf->top_enc);
 	} else if ( strmatch(tok,"WinInfo:")==0 ) {

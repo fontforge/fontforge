@@ -158,6 +158,8 @@ return( mc->subs[s].to );
     newsub->lookup = MCConvertLookup(mc,sub->lookup);
     newsub->anchor_classes = sub->anchor_classes;
     newsub->per_glyph_pst_or_kern = sub->per_glyph_pst_or_kern;
+    newsub->separation = sub->separation;
+    newsub->minkern = sub->minkern;
 return( newsub );
 }
 

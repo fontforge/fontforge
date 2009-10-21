@@ -58,14 +58,16 @@ typedef struct kernclassdlg {
     int magfactor;
     int top;
     int downpos, down, within, orig_kern;
-/* For the kern pair dlg */
-    int done;
     SplineFont *sf;
     int layer;
+    int first_class_new, r2l;
+/* For the kern pair dlg */
+    int done;
     SplineChar *sc1, *sc2;
     int isv, iskernpair;
     SplineChar *scf, *scs;
     struct kernclassdlg *next;
+    
 } KernClassDlg;
 
 typedef struct kernclasslistdlg {
@@ -117,6 +119,10 @@ typedef struct kernclasslistdlg {
 #define CID_FreeType	1038
 #define CID_Magnifications	1039
 #define CID_ClearDevice	1040
+
+#define CID_Separation	2008
+#define CID_MinKern	2009
+#define CID_Touched	2010
 
 extern int _GScrollBar_Width;
 
@@ -249,6 +255,64 @@ static int isEverythingElse(unichar_t *text) {
 return( ret==0 );
 }
 
+static void KCD_AddOffset(void *data,int left_index,int right_index, int kern) {
+    KernClassDlg *kcd = data;
+
+    if ( kcd->first_class_new && !kcd->r2l ) {
+	left_index = kcd->first_cnt-1;
+	kcd->offsets[left_index*kcd->second_cnt+right_index] = kern;
+    } else if ( kcd->first_class_new ) {
+	right_index = kcd->first_cnt-1;
+	kcd->offsets[right_index*kcd->second_cnt+left_index] = kern;
+    } else if ( !kcd->r2l ) {
+	right_index = kcd->second_cnt-1;
+	kcd->offsets[left_index*kcd->second_cnt+right_index] = kern;
+    } else {
+	left_index = kcd->second_cnt-1;
+	kcd->offsets[right_index*kcd->second_cnt+left_index] = kern;
+    }
+}
+
+static void KCD_AutoKernNewClass(KernClassDlg *kcd,char *classnames,int is_first) {
+    char *space[1], **lefts, **rights, **others;
+    int lcnt, rcnt; int32 ocnt;
+    GGadget *otherlist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?100:0));
+    GTextInfo **otherti = GGadgetGetList(otherlist,&ocnt);
+    int err, touch=0, separation=0, minkern=0;
+    int r2l, i;
+
+    err = false;
+    touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
+    separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
+    minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
+    if ( err )
+return;
+
+    space[0] = classnames;
+    others = galloc((ocnt+1)*sizeof(char *));
+    for ( i=0; i<ocnt; ++i ) {
+	if ( i==0 && isEverythingElse(otherti[0]->text))
+	    others[i] = copy("");
+	else
+	    others[i] = u2utf8_copy(otherti[i]->text);
+    }
+    kcd->first_class_new = is_first;
+    kcd->r2l = r2l = (kcd->subtable->lookup->lookup_flags & pst_r2l)?1:0;
+
+    if ( (is_first && !r2l) || (!is_first && r2l) ) {
+	lefts = space; lcnt = 1;
+	rights = others; rcnt = ocnt;
+    } else {
+	lefts = others; lcnt = ocnt;
+	rights = space; rcnt=1;
+    }
+    AutoKernNewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
+	    KCD_AddOffset, kcd, touch, separation, minkern, 0);
+    for ( i=0; i<ocnt; ++i )
+	free(others[i]);
+    free(others);
+}
+
 static int KCD_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -285,6 +349,7 @@ return( true );
 			0, kcd->second_cnt*sizeof(DeviceTable));
 #endif
 		++kcd->first_cnt;
+		KCD_AutoKernNewClass(kcd,ret,true);
 	    } else {
 		int16 *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(int16));
 		for ( i=0; i<kcd->first_cnt; ++i ) {
@@ -307,6 +372,7 @@ return( true );
 		}
 #endif
 		++kcd->second_cnt;
+		KCD_AutoKernNewClass(kcd,ret,false);
 	    }
 	    KCD_SBReset(kcd);
 	}
@@ -1118,6 +1184,7 @@ static int KC_OK(GGadget *g, GEvent *e) {
 	int i;
 	int32 len;
 	GTextInfo **ti;
+	int err, touch=0, separation=0, minkern=0;
 
 	sf = kcd->sf;
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
@@ -1127,6 +1194,17 @@ static int KC_OK(GGadget *g, GEvent *e) {
 return( KCD_Next(g,e));
 	else if ( GDrawIsVisible(kcd->kw))
 return( KCD_Next2(g,e));
+
+	err = false;
+	touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
+	separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
+	minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
+	if ( err )
+return( true );
+
+	kc->subtable->separation = separation;
+	kc->subtable->minkern = minkern;
+	kc->subtable->kerning_by_touch = touch;
 
 	kc = kcd->orig;
 	for ( i=1; i<kc->first_cnt; ++i )
@@ -2322,19 +2400,20 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
 void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     GRect pos, subpos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[46], classbox, hvbox, buttonbox, mainbox[2];
+    GGadgetCreateData gcd[51], sepbox, classbox, hvbox, buttonbox, mainbox[2];
     GGadgetCreateData selbox, *selarray[7], pane2[2];
     GGadgetCreateData *harray1[17], *harray2[17], *varray1[5], *varray2[5];
-    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[15], *harrayclasses[6];
-    GTextInfo label[46];
+    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[17], *h4array[8], *harrayclasses[6];
+    GTextInfo label[51];
     KernClassDlg *kcd;
-    int i, kc_width, vi, y, k;
+    int i, j, kc_width, vi, y, k;
     int as, ds, ld, sbsize;
     FontRequest rq;
     static unichar_t kernw[] = { '-', '1', '2', '3', '4', '5', 0 };
     GWindow gw;
     char titlebuf[300];
     static GFont *font;
+    char sepbuf[40], mkbuf[40];
 
     for ( kcd = sf->kcd; kcd!=NULL && kcd->orig!=kc; kcd = kcd->next );
     if ( kcd!=NULL ) {
@@ -2407,7 +2486,14 @@ return;
     kcd->kernh = kcd->fh+3;
     kcd->kernw = GDrawGetTextWidth(gw,kernw,-1,NULL)+3;
 
-    i = 0;
+    if ( kc->subtable->separation==0 ) {
+	kc->subtable->separation = sf->width_separation;
+	if ( sf->width_separation==0 )
+	    kc->subtable->separation = 15*(sf->ascent+sf->descent)/100;
+	kc->subtable->minkern = kc->subtable->separation/10;
+    }
+
+    i = j = 0;
     snprintf( titlebuf, sizeof(titlebuf), _("Lookup Subtable: %s"), kc->subtable->subtable_name );
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5;
     gcd[i].gd.flags = gg_visible | gg_enabled;
@@ -2415,13 +2501,88 @@ return;
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i++].creator = GLabelCreate;
-    varray[0] = &gcd[i-1]; varray[1] = NULL;
+    varray[j++] = &gcd[i-1]; varray[j++] = NULL;
+
+	label[i].text = (unichar_t *) _("_Default Separation:");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "Add entries to the lookup trying to make the optical\n"
+	    "separation between all pairs of glyphs equal to this\n"
+	    "value." );
+	gcd[i].creator = GLabelCreate;
+	h4array[0] = &gcd[i++];
+
+	sprintf( sepbuf, "%d", kc->subtable->separation );
+	label[i].text = (unichar_t *) sepbuf;
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.width = 50;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
+	gcd[i].gd.cid = CID_Separation;
+	gcd[i].creator = GTextFieldCreate;
+	h4array[1] = &gcd[i++];
+
+	label[i].text = (unichar_t *) _("_Min Kern:");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "Any computed kerning change whose absolute value is less\n"
+	    "that this will be ignored.\n" );
+	gcd[i].creator = GLabelCreate;
+	h4array[2] = &gcd[i++];
+
+	sprintf( mkbuf, "%d", kc->subtable->minkern );
+	label[i].text = (unichar_t *) mkbuf;
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.width = 50;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
+	gcd[i].gd.cid = CID_MinKern;
+	gcd[i].creator = GTextFieldCreate;
+	h4array[3] = &gcd[i++];
+
+	label[i].text = (unichar_t *) _("_Touching");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	if ( kc->subtable->kerning_by_touch )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "Normally kerning is based on achieving a constant (optical)\n"
+	    "separation between glyphs, but occasionally it is desireable\n"
+	    "to have a kerning table where the kerning is based on the\n"
+	    "closest approach between two glyphs (So if the desired separ-\n"
+	    "ation is 0 then the glyphs will actually be touching.");
+	gcd[i].gd.cid = CID_Touched;
+	gcd[i].creator = GCheckBoxCreate;
+	h4array[4] = &gcd[i++];
+
+	h4array[5] = GCD_Glue; h4array[6] = NULL;
+
+	memset(&sepbox,0,sizeof(sepbox));
+	sepbox.gd.flags = gg_enabled|gg_visible;
+	sepbox.gd.u.boxelements = h4array;
+	sepbox.creator = GHBoxCreate;
+	varray[j++] = &sepbox; varray[j++] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+17);
     gcd[i].gd.pos.width = pos.width-20;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[i++].creator = GLineCreate;
-    varray[2] = &gcd[i-1]; varray[3] = NULL;
+    varray[j++] = &gcd[i-1]; varray[j++] = NULL;
 
     y = gcd[i-2].gd.pos.y+23;
     i = AddClassList(gcd,label,i,0,5,y,(kc_width-20)/2,harray1,varray1);
@@ -2437,13 +2598,13 @@ return;
     classbox.gd.flags = gg_enabled|gg_visible;
     classbox.gd.u.boxelements = harrayclasses;
     classbox.creator = GHBoxCreate;
-    varray[4] = &classbox; varray[5] = NULL;
+    varray[j++] = &classbox; varray[j++] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+27);
     gcd[i].gd.pos.width = pos.width-20;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[i++].creator = GLineCreate;
-    varray[6] = &gcd[i-1]; varray[7] = NULL;
+    varray[j++] = &gcd[i-1]; varray[j++] = NULL;
 
     kcd->canceldrop = GDrawPointsToPixels(gw,KC_CANCELDROP);
     kcd->sbdrop = kcd->canceldrop+GDrawPointsToPixels(gw,7);
@@ -2481,7 +2642,7 @@ return;
     hvbox.gd.flags = gg_enabled|gg_visible;
     hvbox.gd.u.boxelements = hvarray;
     hvbox.creator = GHVBoxCreate;
-    varray[8] = &hvbox; varray[9] = NULL;
+    varray[j++] = &hvbox; varray[j++] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+24+3;
     gcd[i].gd.pos.width = -1;
@@ -2511,7 +2672,7 @@ return;
     buttonbox.gd.flags = gg_enabled|gg_visible;
     buttonbox.gd.u.boxelements = buttonarray;
     buttonbox.creator = GHBoxCreate;
-    varray[10] = &buttonbox; varray[11] = NULL; varray[12] = NULL;
+    varray[j++] = &buttonbox; varray[j++] = NULL; varray[j++] = NULL;
 
     mainbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
     mainbox[0].gd.flags = gg_enabled|gg_visible;

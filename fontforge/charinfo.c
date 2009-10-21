@@ -2242,14 +2242,15 @@ return;
     }
 }
 
-void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r) {
+void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub,
+	struct matrix_data *possub, int col_cnt, int r, int layer) {
     FeatureScriptLangList *fl;
     int lookup_type = sub->lookup->lookup_type;
     SplineChar *alt;
     char buffer[8];
-    DBounds bb;
     int i;
     static uint32 form_tags[] = { CHR('i','n','i','t'), CHR('m','e','d','i'), CHR('f','i','n','a'), CHR('i','s','o','l'), 0 };
+    real loff, roff;
 
     if ( lookup_type == gsub_single && sub->suffix != NULL ) {
 	alt = SuffixCheck(sc,sub->suffix);
@@ -2264,16 +2265,16 @@ return;
 	    /* These too features are designed to crop off the left and right */
 	    /*  side bearings respectively */
 	    if ( fl->featuretag == CHR('l','f','b','d') ) {
-		SplineCharFindBounds(sc,&bb);
+		GuessOpticalOffset(sc,layer,&loff,&roff,0);
 		/* Adjust horixontal positioning and horizontal advance by */
 		/*  the left side bearing */
-		possub[r*col_cnt+SIM_DX].u.md_ival = -bb.minx;
-		possub[r*col_cnt+SIM_DX_ADV].u.md_ival = -bb.minx;
+		possub[r*col_cnt+SIM_DX].u.md_ival = -loff;
+		possub[r*col_cnt+SIM_DX_ADV].u.md_ival = -loff;
 return;
 	    } else if ( fl->featuretag == CHR('r','t','b','d') ) {
-		SplineCharFindBounds(sc,&bb);
+		GuessOpticalOffset(sc,layer,&loff,&roff,0);
 		/* Adjust horizontal advance by right side bearing */
-		possub[r*col_cnt+SIM_DX_ADV].u.md_ival = bb.maxx-sc->width;
+		possub[r*col_cnt+SIM_DX_ADV].u.md_ival = -roff;
 return;
 	    }
 	} else if ( lookup_type == gsub_single ) {
@@ -2354,7 +2355,8 @@ return;
     cols = GMatrixEditGetColCnt(g);
     if ( possub[r*cols+0].u.md_ival!=0 ) {
 	if ( wasnew )
-	    SCSubtableDefaultSubsCheck(ci->sc,(struct lookup_subtable *) possub[r*cols+0].u.md_ival, possub, cols, r);
+	    SCSubtableDefaultSubsCheck(ci->sc,(struct lookup_subtable *) possub[r*cols+0].u.md_ival, possub,
+		    cols, r, CVLayer((CharViewBase *) (ci->cv)) );
 return;
     }
     /* They asked to create a new subtable */
@@ -2368,7 +2370,7 @@ return;
 	GMatrixEditSetColumnChoices(g,0,ti);
 	GTextInfoListFree(ti);
 	if ( wasnew )
-	    SCSubtableDefaultSubsCheck(ci->sc,sub, possub, cols, r);
+	    SCSubtableDefaultSubsCheck(ci->sc,sub, possub, cols, r, CVLayer((CharViewBase *) (ci->cv)));
     } else if ( ci->old_sub!=NULL ) {
 	/* Restore old value */
 	possub[r*cols+0].u.md_ival = (intpt) ci->old_sub;
