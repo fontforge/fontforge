@@ -1943,7 +1943,7 @@ return( NULL );
     }
     SortInsertLookup(sf, newotl);
 return( newotl );
-}    
+}
 
 /* ************************************************************************** */
 /* ***************************** Anchor Subtable **************************** */
@@ -1958,6 +1958,12 @@ typedef struct anchorclassdlg {
     BDFFont *display;
     int done;
     int popup_r;
+    GCursor cursor_current;
+    /* Used during autokern */
+    int rows_at_start;
+    int rows,cols;		/* Total rows, columns allocated */
+    int next_row;
+    struct matrix_data *psts;
 } AnchorClassDlg, PSTKernDlg;
 #define CID_Anchors	2001
 
@@ -1968,6 +1974,9 @@ typedef struct anchorclassdlg {
 #define CID_BaseChar	2005
 #define CID_Suffix	2006
 #define CID_AllSame	2007
+#define CID_Separation	2008
+#define CID_MinKern	2009
+#define CID_Touched	2010
 
 #define CID_KernDisplay		2022
 #define CID_PixelSize		2023
@@ -2475,7 +2484,23 @@ return;
 }
 
 static void PSTKD_FinishSuffixedEdit(GGadget *g, int row, int col, int wasnew);
+static void PSTKD_FinishBoundsEdit(GGadget *g, int row, int col, int wasnew);
+static void PSTKD_FinishKernEdit(GGadget *g, int row, int col, int wasnew);
 static void PSTKD_InitSameAsRow(GGadget *g, int row);
+
+static int is_boundsFeat( struct lookup_subtable *sub) {
+    FeatureScriptLangList *features = sub->lookup->features, *testf;
+
+    if ( sub->lookup->lookup_type == gpos_single ) {
+	for ( testf=features; testf!=NULL; testf=testf->next ) {
+	    if ( testf->featuretag==CHR('l','f','b','d'))
+return( 1 );
+	    else if ( testf->featuretag==CHR('r','t','b','d'))
+return( -1 );
+	}
+    }
+return( 0 );
+}
 
 static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_subtable *sub, PSTKernDlg *pstkd) {
     int cnt;
@@ -2714,14 +2739,18 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
     mi->matrix_data = md;
     if ( lookup_type==gsub_single )
 	mi->finishedit = PSTKD_FinishSuffixedEdit;
-    else if ( lookup_type==gpos_single )
+    else if ( lookup_type==gpos_single ) {
 	mi->initrow = PSTKD_InitSameAsRow;
+	if ( is_boundsFeat(sub))
+	    mi->finishedit = PSTKD_FinishBoundsEdit;
+    } else if ( lookup_type==gpos_pair && !sub->vertical_kerning )
+	mi->finishedit = PSTKD_FinishKernEdit;
 }
 
 static void PSTKD_FinishSuffixedEdit(GGadget *g, int row, int col, int wasnew) {
     PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
     int rows, cols = GMatrixEditGetColCnt(g);
-    struct matrix_data *psts = GMatrixEditGet(g,&rows);
+    struct matrix_data *psts = _GMatrixEditGet(g,&rows);
     char *suffix = GGadgetGetTitle8(GWidgetGetControl(pstkd->gw,CID_Suffix));
     SplineChar *alt, *sc;
 
@@ -2735,6 +2764,115 @@ return;
     alt = SuffixCheck(sc,suffix);
     if ( alt!=NULL )
 	psts[row*cols+1].u.md_str = copy(alt->name);
+}
+
+static void PSTKD_FinishBoundsEdit(GGadget *g, int row, int col, int wasnew) {
+    PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *psts = _GMatrixEditGet(g,&rows);
+    int is_bounds = is_boundsFeat(pstkd->sub);
+    SplineChar *sc;
+    real loff, roff;
+
+    if ( col!=0 || !wasnew || psts[row*cols+0].u.md_str==NULL )
+return;
+    if ( is_bounds==0 )
+return;
+    sc = SFGetChar(pstkd->sf,-1,psts[row*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+
+    GuessOpticalOffset(sc,pstkd->def_layer,&loff,&roff,0);
+    if ( is_bounds>0 ) {
+	psts[row*cols+SIM_DX].u.md_ival = -loff;
+	psts[row*cols+SIM_DX_ADV].u.md_ival = -loff;
+    } else
+	psts[row*cols+SIM_DX_ADV].u.md_ival = -roff;
+}
+
+static void PSTKD_AddKP(void *data,SplineChar *left, SplineChar *right, int off) {
+    PSTKernDlg *pstkd = data;
+    struct matrix_data *psts = pstkd->psts;
+    int cols = pstkd->cols;
+    int i;
+    SplineChar *first=left, *second=right;
+
+    if ( pstkd->sub->lookup->lookup_flags & pst_r2l ) {
+	first = right;
+	second = left;
+    }
+
+    for ( i=0; i<pstkd->rows_at_start; ++i ) {
+	/* If the user has already got this combination in the lookup */
+	/*  then don't add a new guess, and don't override the old */
+	if ( psts[i*cols+0].u.md_str!=NULL && psts[i*cols+1].u.md_str!=NULL &&
+	    strcmp(psts[i*cols+0].u.md_str,first->name)==0 &&
+	    strcmp(psts[i*cols+1].u.md_str,second->name)==0 )
+return;
+    }
+
+    i = pstkd->next_row++;
+    if ( i >= pstkd->rows )
+	pstkd->psts = psts = grealloc(psts,(pstkd->rows += 100)*cols*sizeof(struct matrix_data));
+    memset(psts+i*cols,0,cols*sizeof(struct matrix_data));
+    psts[i*cols+0].u.md_str = copy(first->name);
+    psts[i*cols+1].u.md_str = copy(second->name);
+    if ( pstkd->sub->lookup->lookup_flags & pst_r2l )
+	psts[i*cols+PAIR_DX_ADV2].u.md_ival = off;
+    /* else if ( pstkd->sub->vertical_kerning ) */	/* We don't do vertical stuff */
+    else
+	psts[i*cols+PAIR_DX_ADV1].u.md_ival = off;
+    if ( strcmp(psts[0+0].u.md_str,"T")!=0 )
+	second = left;
+}
+
+static void PSTKD_FinishKernEdit(GGadget *g, int row, int col, int wasnew) {
+    PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *psts = _GMatrixEditGet(g,&rows);
+    SplineChar *sc1, *sc2;
+    SplineChar *lefts[2], *rights[2];
+    int err, touch, separation;
+
+    if ( col>1 || psts[row*cols+0].u.md_str==NULL ||
+	    psts[row*cols+1].u.md_str==NULL ||
+	    psts[row*cols+PAIR_DX1].u.md_ival!=0 ||
+	    psts[row*cols+PAIR_DX_ADV1].u.md_ival!=0 ||
+	    psts[row*cols+PAIR_DY_ADV1].u.md_ival!=0 ||
+	    psts[row*cols+PAIR_DX_ADV2].u.md_ival!=0 )
+return;
+    sc1 = SFGetChar(pstkd->sf,-1,psts[row*cols+0].u.md_str);
+    sc2 = SFGetChar(pstkd->sf,-1,psts[row*cols+1].u.md_str);
+    if ( sc1==NULL || sc2==NULL )
+return;
+    lefts[1] = rights[1] = NULL;
+    if ( pstkd->sub->lookup->lookup_flags & pst_r2l ) {
+	lefts[0] = sc2;
+	rights[0] = sc1;
+    } else {
+	lefts[0] = sc1;
+	rights[0] = sc2;
+    }
+
+    err = false;
+    touch = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_Touched));
+    separation = GetInt8(pstkd->gw,CID_Separation,_("Separation"),&err);
+    if ( err )
+return;
+
+    pstkd->cols = GMatrixEditGetColCnt(g);
+    pstkd->psts = psts;
+    pstkd->rows_at_start = 0;
+    pstkd->next_row = row;
+    pstkd->rows = rows;
+
+    AutoKern2(pstkd->sf,pstkd->def_layer,lefts,rights,pstkd->sub,
+	    touch,separation,0,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
+	    PSTKD_AddKP,pstkd);
+    if ( pstkd->psts != psts )
+	IError("AutoKern added too many pairs, was only supposed to add one");
+    else
+	GGadgetRedraw(g);
 }
 
 static void PSTKD_InitSameAsRow(GGadget *g, int row) {
@@ -3027,6 +3165,8 @@ static void PSTKern_Mouse(PSTKernDlg *pstkd,GEvent *event) {
     double scale = pstkd->pixelsize/(double) (pstkd->sf->ascent+pstkd->sf->descent);
     int diff, col;
     char buffer[20];
+    GCursor ct = ct_mypointer;
+    GRect size;
 
     if ( (r = GMatrixEditGetActiveRow(pstk))==-1 )
 return;		/* No kerning pair is active */
@@ -3059,6 +3199,17 @@ return;		/* No kerning pair is active */
 	GGadgetRedraw(GWidgetGetControl(pstkd->gw,CID_KernDisplay));
 	if ( event->type == et_mouseup )
 	    pstkd->down = false;
+    } else if ( event->type == et_mousemove ) {
+	SplineChar *sc1 = SFGetChar(pstkd->sf,-1,old[r*cols+0].u.md_str);
+	if (sc1!=NULL ) {
+	    GDrawGetSize(event->w,&size);
+	    if ( col==PAIR_DX_ADV1 && event->u.mouse.x-size.width/10 > sc1->width*scale )
+		ct = ct_kerning;
+	}
+    }
+    if ( ct!=pstkd->cursor_current ) {
+	GDrawSetCursor(event->w,ct);
+	pstkd->cursor_current = ct;
     }
 }
 
@@ -3098,7 +3249,7 @@ static struct matrix_data *MDCopy(struct matrix_data *old,int rows,int cols) {
     memcpy(md,old,rows*cols*sizeof(struct matrix_data));
     for ( r=0; r<rows; ++r ) {
 	md[r*cols+0].u.md_str = copy(md[r*cols+0].u.md_str);
-	if ( cols==2 /* subs, lig, alt, etc. */ || cols==10 /* kerning */ )
+	if ( cols==2 /* subs, lig, alt, etc. */ || cols>=10 /* kerning */ )
 	    md[r*cols+1].u.md_str = copy(md[r*cols+1].u.md_str);
     }
 return( md );
@@ -3162,6 +3313,7 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
     EncMap *map = fv->b.map;
     GGadget *gallsame = GWidgetGetControl(pstkd->gw,CID_AllSame);
     int allsame = false;
+    FeatureScriptLangList *features = pstkd->sub->lookup->features;
 
     if ( gallsame!=NULL )
 	allsame = GGadgetIsChecked(gallsame);
@@ -3174,7 +3326,7 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) {
 	    if ( SCReasonable(sc = sf->glyphs[gid]) &&
 		    (pt==pt_selected || ScriptInFeatureScriptList(SCScriptFromUnicode(sc),
-			    pstkd->sub->lookup->features)) &&
+			    features)) &&
 		    (pt!=pt_selected || (gid<fv->b.sf->glyphcnt &&
 			    (enc = map->backmap[gid])!=-1 &&
 			    fv->b.selected[enc])) &&
@@ -3208,7 +3360,7 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
 		    psts[pos*cols+SIM_DX_ADV].u.md_ival = psts[0+SIM_DX_ADV].u.md_ival;
 		    psts[pos*cols+SIM_DY_ADV].u.md_ival = psts[0+SIM_DY_ADV].u.md_ival;
 		} else if ( pstkd->sub->lookup->lookup_type!=gpos_pair )
-		    SCSubtableDefaultSubsCheck(sc,pstkd->sub,psts,cols,pos);
+		    SCSubtableDefaultSubsCheck(sc,pstkd->sub,psts,cols,pos,pstkd->def_layer);
 	    }
 	}
 	++k;
@@ -3285,6 +3437,133 @@ static int PSTKD_PopulateSelected(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int PSTKD_DoAutoKern(PSTKernDlg *pstkd,SplineChar **glyphlist) {
+    int err, touch, separation, minkern;
+
+    err = false;
+    touch = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_Touched));
+    separation = GetInt8(pstkd->gw,CID_Separation,_("Separation"),&err);
+    minkern = GetInt8(pstkd->gw,CID_MinKern,_("Min Kern"),&err);
+    if ( err )
+return( false );
+    AutoKern2(pstkd->sf,pstkd->def_layer,glyphlist,glyphlist,pstkd->sub,
+	    touch,separation,minkern,0,
+	    PSTKD_AddKP,pstkd);
+return( true );
+}
+
+static int PSTKD_AutoKern(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *pstk = GWidgetGetControl(pstkd->gw,CID_PSTList);
+	int rows, cols = GMatrixEditGetColCnt(pstk);
+	struct matrix_data *old = GMatrixEditGet(pstk,&rows);
+	SplineFont *sf = pstkd->sf;
+	int i,gid,cnt;
+	SplineChar **list, *sc;
+	FeatureScriptLangList *features = pstkd->sub->lookup->features, *testf;
+	struct scriptlanglist *scripts;
+	uint32 *scripttags;
+
+	pstkd->cols = GMatrixEditGetColCnt(pstk);
+	pstkd->psts = MDCopy(old,rows,cols);
+	pstkd->rows_at_start = pstkd->rows = pstkd->next_row = rows;
+
+	for ( testf=features,cnt=0; testf!=NULL; testf=testf->next ) {
+	    for ( scripts=testf->scripts; scripts!=NULL; scripts=scripts->next )
+		++cnt;
+	}
+	if ( cnt==0 ) {
+	    ff_post_error(_("No scripts"),_("There are no scripts bound to features bound to this lookup. So nothing happens." ));
+return(true);
+	}
+	scripttags = galloc((cnt+1)*sizeof(uint32));
+	for ( testf=features,cnt=0; testf!=NULL; testf=testf->next ) {
+	    for ( scripts=testf->scripts; scripts!=NULL; scripts=scripts->next ) {
+		for ( i=0; i<cnt; ++i )
+		    if ( scripttags[i]==scripts->script )
+		break;
+		if ( i==cnt )
+		    scripttags[cnt++] = scripts->script;
+	    }
+	}
+	scripttags[cnt] = 0;
+
+	list = galloc((sf->glyphcnt+1)*sizeof(SplineChar *));
+	for ( i=0; scripttags[i]!=0; ++i ) {
+	    uint32 script = scripttags[i];
+
+	    for ( cnt=gid=0; gid<sf->glyphcnt; ++gid ) {
+		if ( (sc = sf->glyphs[gid])!=NULL &&
+			SCWorthOutputting(sc) &&
+			SCScriptFromUnicode(sc)==script )
+		    list[cnt++] = sc;
+	    }
+	    list[cnt] = NULL;
+	    PSTKD_DoAutoKern(pstkd,list);
+	}
+	free(list);
+	free(scripttags);
+	if ( pstkd->next_row<pstkd->rows )
+	    pstkd->psts = grealloc(pstkd->psts,pstkd->rows*cols*sizeof(struct matrix_data));
+	PSTKD_DoSort(pstkd,pstkd->psts,pstkd->next_row,cols);
+	GMatrixEditSet(pstk,pstkd->psts,pstkd->next_row,false);
+	GGadgetRedraw(pstk);
+    }
+return( true );
+}
+
+static int PSTKD_AutoKernSelected(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *pstk = GWidgetGetControl(pstkd->gw,CID_PSTList);
+	int rows, cols = GMatrixEditGetColCnt(pstk);
+	struct matrix_data *old = GMatrixEditGet(pstk,&rows);
+	SplineFont *sf = pstkd->sf;
+	FontViewBase *fv = sf->fv;
+	int enc,gid,cnt;
+	SplineChar **list, *sc;
+
+	pstkd->cols = GMatrixEditGetColCnt(pstk);
+	pstkd->psts = MDCopy(old,rows,cols);
+	pstkd->rows_at_start = pstkd->rows = pstkd->next_row = rows;
+
+	for ( enc=0,cnt=0; enc<fv->map->enccount; ++enc ) {
+	    if ( fv->selected[enc] && (gid=fv->map->map[enc])!=-1 &&
+		    SCWorthOutputting(sc = sf->glyphs[gid]))
+		++cnt;
+	}
+	list = galloc((cnt+1)*sizeof(SplineChar *));
+	for ( enc=0,cnt=0; enc<fv->map->enccount; ++enc ) {
+	    if ( fv->selected[enc] && (gid=fv->map->map[enc])!=-1 &&
+		    SCWorthOutputting(sc = sf->glyphs[gid]))
+		list[cnt++] = sc;
+	}
+	list[cnt] = NULL;
+	PSTKD_DoAutoKern(pstkd,list);
+	free(list);
+	if ( pstkd->next_row<pstkd->rows )
+	    pstkd->psts = grealloc(pstkd->psts,pstkd->rows*cols*sizeof(struct matrix_data));
+	PSTKD_DoSort(pstkd,pstkd->psts,pstkd->next_row,cols);
+	GMatrixEditSet(pstk,pstkd->psts,pstkd->next_row,false);
+	GGadgetRedraw(pstk);
+    }
+return( true );
+}
+
+static int PSTKD_RemoveAll(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *pstk = GWidgetGetControl(pstkd->gw,CID_PSTList);
+	int cols = GMatrixEditGetColCnt(pstk);
+	struct matrix_data *psts=NULL;
+
+	psts = gcalloc(cols,sizeof(struct matrix_data));
+	GMatrixEditSet(pstk,psts,0,false);
+    }
+return( true );
+}
+
 static int PSTKD_RemoveEmpty(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -3337,6 +3616,7 @@ static int PSTKD_Ok(GGadget *g, GEvent *e) {
 	char *buts[3];
 	KernPair *kp, *kpprev, *kpnext;
 	PST *pst, *pstprev, *pstnext;
+	int err, touch=0, separation=0, minkern=0;
 	int _t = lookup_type == gpos_single ? pst_position
 		: lookup_type == gpos_pair ? pst_pair
 		: lookup_type == gsub_single ? pst_substitution
@@ -3345,6 +3625,16 @@ static int PSTKD_Ok(GGadget *g, GEvent *e) {
 		:                            pst_ligature;
 
 	/* First check for errors */
+	if ( lookup_type==gpos_pair ) {
+	    /* bad metadata */
+	    err = false;
+	    touch = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_Touched));
+	    separation = GetInt8(pstkd->gw,CID_Separation,_("Separation"),&err);
+	    minkern = GetInt8(pstkd->gw,CID_MinKern,_("Min Kern"),&err);
+	    if ( err )
+return( true );
+	}
+
 	    /* Glyph names that aren't in the font */
 	for ( r=0; r<rows; ++r ) {
 	    if ( SFGetChar(pstkd->sf,-1,psts[r*cols+0].u.md_str)==NULL ) {
@@ -3525,6 +3815,11 @@ return( true );
 	    ++k;
 	} while ( k<pstkd->sf->subfontcnt );
 	PSTKD_SetSuffix(pstkd);
+	if ( lookup_type==gpos_pair ) {
+	    pstkd->sub->separation = separation;
+	    pstkd->sub->minkern = minkern;
+	    pstkd->sub->kerning_by_touch = touch;
+	}
 	pstkd->done = true;
     }
 return( true );
@@ -3665,11 +3960,20 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     GWindowAttrs wattrs;
     char title[300];
     struct matrixinit mi;
-    GGadgetCreateData gcd[15], buttongcd[4], box[5];
-    GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[16];
-    GTextInfo label[15], buttonlabel[4];
+    GGadgetCreateData gcd[21], buttongcd[6], box[6];
+    GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[18], *h4array[8];
+    GTextInfo label[21], buttonlabel[6];
     int i,k,mi_pos, mi_k;
+    enum otlookup_type lookup_type = sub->lookup->lookup_type;
+    char sepbuf[40], mkbuf[40];
 
+    if ( sub->separation==0 ) {
+	sub->separation = sf->width_separation;
+	if ( sf->width_separation==0 )
+	    sub->separation = 15*(sf->ascent+sf->descent)/100;
+	sub->minkern = sub->separation/10;
+    }
+	    
     memset(&pstkd,0,sizeof(pstkd));
     pstkd.sf = sf;
     pstkd.def_layer = def_layer;
@@ -3779,24 +4083,44 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     varray[k++] = &gcd[i++]; varray[k++] = NULL;
 
     buttonlabel[0].text = (unichar_t *) _("_Populate");
+    if ( lookup_type==gpos_pair )
+	buttonlabel[0].text = (unichar_t *) _("Auto_Kern");
     buttonlabel[0].text_is_1byte = true;
     buttonlabel[0].text_in_resource = true;
     buttongcd[0].gd.label = &buttonlabel[0];
     buttongcd[0].gd.pos.x = 5; buttongcd[0].gd.pos.y = 5+4;
-    buttongcd[0].gd.flags = sub->lookup->features==NULL ? gg_visible|gg_utf8_popup :
-	    gg_enabled|gg_visible|gg_utf8_popup;
-    buttongcd[0].gd.popup_msg = (unichar_t *) _("Add entries for all glyphs in the scripts to which this lookup applies.\nWhen FontForge can find a default value it will add that too.");
-    buttongcd[0].gd.handle_controlevent = PSTKD_Populate;
+    buttongcd[0].gd.flags =
+	    sub->lookup->features==NULL || sub->vertical_kerning ?
+	     gg_visible|gg_utf8_popup :
+	     gg_enabled|gg_visible|gg_utf8_popup;
+    if ( lookup_type==gpos_pair ) {
+	buttongcd[0].gd.popup_msg = (unichar_t *) _("For each script to which this lookup applies, look at all pairs of\n"
+						    "glyphs in that script and try to guess a reasonable kerning value\n"
+			                            "for that pair.");
+	buttongcd[0].gd.handle_controlevent = PSTKD_AutoKern;
+    } else {
+	buttongcd[0].gd.popup_msg = (unichar_t *) _("Add entries for all glyphs in the scripts to which this lookup applies.\nWhen FontForge can find a default value it will add that too.");
+	buttongcd[0].gd.handle_controlevent = PSTKD_Populate;
+    }
     buttongcd[0].creator = GButtonCreate;
 
     buttonlabel[1].text = (unichar_t *) _("_Add Selected");
+    if ( lookup_type==gpos_pair )
+	buttonlabel[1].text = (unichar_t *) _("_AutoKern Selected");
     buttonlabel[1].text_is_1byte = true;
     buttonlabel[1].text_in_resource = true;
     buttongcd[1].gd.label = &buttonlabel[1];
     buttongcd[1].gd.pos.x = 5; buttongcd[1].gd.pos.y = 5+4;
     buttongcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    buttongcd[0].gd.popup_msg = (unichar_t *) _("Add entries for all selected glyphs.");
-    buttongcd[1].gd.handle_controlevent = PSTKD_PopulateSelected;
+    if ( lookup_type==gpos_pair ) {
+	if ( sub->vertical_kerning )
+	    buttongcd[1].gd.flags = gg_visible|gg_utf8_popup;
+	buttongcd[1].gd.popup_msg = (unichar_t *) _("Add kerning info between all pairs of selected glyphs" );
+	buttongcd[1].gd.handle_controlevent = PSTKD_AutoKernSelected;
+    } else {
+	buttongcd[1].gd.popup_msg = (unichar_t *) _("Add entries for all selected glyphs.");
+	buttongcd[1].gd.handle_controlevent = PSTKD_PopulateSelected;
+    }
     buttongcd[1].creator = GButtonCreate;
 
     buttonlabel[2].text = (unichar_t *) _("_Remove Empty");
@@ -3812,6 +4136,16 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 		_("Remove all \"empty\" entries -- those with no replacement glyphs"));
     buttongcd[2].gd.handle_controlevent = PSTKD_RemoveEmpty;
     buttongcd[2].creator = GButtonCreate;
+
+    buttonlabel[3].text = (unichar_t *) _("Remove All");
+    buttonlabel[3].text_is_1byte = true;
+    buttonlabel[3].text_in_resource = true;
+    buttongcd[3].gd.label = &buttonlabel[3];
+    buttongcd[3].gd.pos.x = 5; buttongcd[3].gd.pos.y = 5+4;
+    buttongcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    buttongcd[3].gd.popup_msg = (unichar_t *) _("Remove all entries.");
+    buttongcd[3].gd.handle_controlevent = PSTKD_RemoveAll;
+    buttongcd[3].creator = GButtonCreate;
 
     if ( sub->lookup->lookup_type == gsub_single ) {
 	label[i].text = (unichar_t *) _("_Default Using Suffix:");
@@ -3851,12 +4185,88 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	if ( is_boundsFeat(sub)!=0 )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	gcd[i].gd.popup_msg = (unichar_t *) _("When adding new entries, give them the same\ndelta values as those on the first line.");
 	gcd[i].gd.cid = CID_AllSame;
 	gcd[i].creator = GCheckBoxCreate;
 	varray[k++] = &gcd[i++]; varray[k++] = NULL;
     
     } else if ( sub->lookup->lookup_type == gpos_pair ) {
+	label[i].text = (unichar_t *) _("_Default Separation:");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "Add entries to the lookup trying to make the optical\n"
+	    "separation between all pairs of glyphs equal to this\n"
+	    "value." );
+	gcd[i].creator = GLabelCreate;
+	h4array[0] = &gcd[i++];
+
+	sprintf( sepbuf, "%d", sub->separation );
+	label[i].text = (unichar_t *) sepbuf;
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.width = 50;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
+	gcd[i].gd.cid = CID_Separation;
+	gcd[i].creator = GTextFieldCreate;
+	h4array[1] = &gcd[i++];
+
+	label[i].text = (unichar_t *) _("_Min Kern:");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "Any computed kerning change whose absolute value is less\n"
+	    "that this will be ignored.\n" );
+	gcd[i].creator = GLabelCreate;
+	h4array[2] = &gcd[i++];
+
+	sprintf( mkbuf, "%d", sub->minkern );
+	label[i].text = (unichar_t *) mkbuf;
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.width = 50;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
+	gcd[i].gd.cid = CID_MinKern;
+	gcd[i].creator = GTextFieldCreate;
+	h4array[3] = &gcd[i++];
+
+	label[i].text = (unichar_t *) _("_Touching");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	if ( sub->kerning_by_touch )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "Normally kerning is based on achieving a constant (optical)\n"
+	    "separation between glyphs, but occasionally it is desireable\n"
+	    "to have a kerning table where the kerning is based on the\n"
+	    "closest approach between two glyphs (So if the desired separ-\n"
+	    "ation is 0 then the glyphs will actually be touching.");
+	gcd[i].gd.cid = CID_Touched;
+	gcd[i].creator = GCheckBoxCreate;
+	h4array[4] = &gcd[i++];
+
+	h4array[5] = GCD_Glue; h4array[6] = NULL;
+
+	box[1].gd.flags = gg_enabled|gg_visible;
+	box[1].gd.u.boxelements = h4array;
+	box[1].creator = GHBoxCreate;
+	varray[k++] = &box[1]; varray[k++] = NULL;
+
 	label[i].text = (unichar_t *) _("Size:");
 	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
@@ -3894,10 +4304,10 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	gcd[i++].creator = GListButtonCreate;
 	h2array[4] = &gcd[i-1]; h2array[5] = GCD_Glue; h2array[6] = NULL;
 
-	box[1].gd.flags = gg_enabled|gg_visible;
-	box[1].gd.u.boxelements = h2array;
-	box[1].creator = GHBoxCreate;
-	varray[k++] = &box[1]; varray[k++] = NULL;
+	box[2].gd.flags = gg_enabled|gg_visible;
+	box[2].gd.u.boxelements = h2array;
+	box[2].creator = GHBoxCreate;
+	varray[k++] = &box[2]; varray[k++] = NULL;
 
 	gcd[i].gd.pos.width = 200;
 	gcd[i].gd.pos.height = 200;
@@ -3933,21 +4343,25 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     h3array[3] = GCD_Glue; h3array[4] = &gcd[i-1]; h3array[5] = GCD_Glue;
     h3array[6] = NULL;
 
-    box[2].gd.flags = gg_enabled|gg_visible;
-    box[2].gd.u.boxelements = h3array;
-    box[2].creator = GHBoxCreate;
-    varray[k++] = &box[2]; varray[k++] = NULL; varray[k++] = NULL;
-
-    box[3].gd.pos.x = box[3].gd.pos.y = 2;
     box[3].gd.flags = gg_enabled|gg_visible;
-    box[3].gd.u.boxelements = varray;
-    box[3].creator = GHVGroupCreate;
+    box[3].gd.u.boxelements = h3array;
+    box[3].creator = GHBoxCreate;
+    varray[k++] = &box[3]; varray[k++] = NULL; varray[k++] = NULL;
 
-    GGadgetsCreate(pstkd.gw,box+3);
-    GHVBoxSetExpandableRow(box[3].ret,mi_k/2);
-    GHVBoxSetExpandableCol(box[2].ret,gb_expandgluesame);
-    if ( sub->lookup->lookup_type == gsub_single || sub->lookup->lookup_type==gpos_pair )
+    box[4].gd.pos.x = box[4].gd.pos.y = 2;
+    box[4].gd.flags = gg_enabled|gg_visible;
+    box[4].gd.u.boxelements = varray;
+    box[4].creator = GHVGroupCreate;
+
+    GGadgetsCreate(pstkd.gw,box+4);
+    GHVBoxSetExpandableRow(box[4].ret,mi_k/2);
+    GHVBoxSetExpandableCol(box[3].ret,gb_expandgluesame);
+    if ( sub->lookup->lookup_type == gsub_single )
 	GHVBoxSetExpandableCol(box[1].ret,gb_expandglue);
+    else if ( sub->lookup->lookup_type==gpos_pair ) {
+	GHVBoxSetExpandableCol(box[1].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(box[2].ret,gb_expandglue);
+    }
     GHVBoxSetExpandableCol(box[0].ret,gb_expandglue);
     GMatrixEditAddButtons(gcd[mi_pos].ret,buttongcd);
     GMatrixEditSetColumnCompletion(gcd[mi_pos].ret,0,PSTKD_GlyphNameCompletion);
@@ -3964,7 +4378,8 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	GMatrixEditSetMouseMoveReporter(gcd[mi_pos].ret,PST_PopupPrepare);
     if ( sub->lookup->lookup_type == gpos_pair || sub->lookup->lookup_type == gpos_single )
 	PSTKD_DoHideUnused(&pstkd);
-    /* GHVBoxFitWindow(boxes[3].ret); */ /* Done in DoHide */
+    else
+	GHVBoxFitWindow(box[4].ret);
 
     GDrawSetVisible(pstkd.gw,true);
 
@@ -4054,6 +4469,8 @@ static struct lookup_subtable *NewSubtable(OTLookup *otl,int isgpos,SplineFont *
 
     sub = chunkalloc(sizeof(struct lookup_subtable));
     sub->lookup = otl;
+    sub->separation = 15*(sf->ascent+sf->descent)/100;
+    sub->minkern = sub->separation/10;
     if ( !EditSubtable(sub,isgpos,sf,sd,def_layer)) {
 	chunkfree(sub,sizeof(struct lookup_subtable));
 return( NULL );

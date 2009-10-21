@@ -39,8 +39,8 @@ fontforge_LIBOBJECTS = asmfpst.$O autohint.$O autosave.$O autotrace.$O autowidth
  splinesaveafm.$O splinesave.$O splinestroke.$O splineutil2.$O splineutil.$O \
  start.$O stemdb.$O svg.$O tottfaat.$O tottfgpos.$O tottf.$O \
  tottfvar.$O ttfinstrs.$O ttfspecial.$O ufo.$O unicoderange.$O utils.$O \
- winfonts.$O zapfnomen.$O groups.$O langfreq.$O ftdelta.$O
-fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
+ winfonts.$O zapfnomen.$O groups.$O langfreq.$O ftdelta.$O autowidth2.$O
+fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidth2dlg.o basedlg.o \
  bdfinfo.o bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o \
  combinations.o contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o \
  cvexportdlg.o cvfreehand.o cvgetinfo.o cvgridfit.o cvhand.o cvhints.o \

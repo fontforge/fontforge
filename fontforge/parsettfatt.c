@@ -3159,9 +3159,9 @@ static OTLookup *NewMacLookup(struct ttfinfo *info,int gpos) {
     otl->subtables = chunkalloc(sizeof(struct lookup_subtable));
     otl->subtables->lookup = otl;
     otl->features = chunkalloc(sizeof(FeatureScriptLangList));
-    if ( gpos )
+    if ( gpos ) {
 	otl->features->featuretag = CHR('k','e','r','n');
-    else {
+    } else {
 	otl->features->featuretag = (info->mort_feat<<16) | (info->mort_setting);
 	otl->features->ismac = true;
     }

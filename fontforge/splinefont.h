@@ -420,12 +420,14 @@ typedef struct otlookup {
     struct lookup_subtable {
 	char *subtable_name;
 	char *suffix;			/* for gsub_single, used to find a default replacement */
+	int16 separation, minkern;	/* for gpos_pair, used to guess default kerning values */
 	struct otlookup *lookup;
 	unsigned int unused: 1;
 	unsigned int per_glyph_pst_or_kern: 1;
 	unsigned int anchor_classes: 1;
 	unsigned int vertical_kerning: 1;
 	unsigned int ticked: 1;
+	unsigned int kerning_by_touch: 1;	/* for gpos_pair, calculate kerning so that glyphs will touch */
 	struct kernclass *kc;
 	struct generic_fpst *fpst;
 	struct generic_asm  *sm;
@@ -1840,6 +1842,7 @@ typedef struct splinefont {
     struct Base *horiz_base, *vert_base;
     Justify *justify;
     int extrema_bound;			/* Splines do not count for extrema complaints when the distance between the endpoints is less than or equal to this */
+    int width_separation;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2498,6 +2501,8 @@ extern int IntersectLinesClip(BasePoint *inter,
 #if 0
 extern void SSBisectTurners(SplineSet *spl);
 #endif
+extern extended BoundIterateSplineSolve(Spline1D *sp, extended tmin, extended tmax,
+	extended sought,double err);
 extern void SSRemoveBacktracks(SplineSet *ss);
 extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
@@ -3165,4 +3170,6 @@ extern double SFXHeight(SplineFont *sf, int layer, int return_error);
 extern double SFAscender(SplineFont *sf, int layer, int return_error);
 extern double SFDescender(SplineFont *sf, int layer, int return_error);
 
+extern SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
+	int class_cnt );
 #endif

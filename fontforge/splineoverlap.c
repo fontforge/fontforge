@@ -649,7 +649,7 @@ return( ilist );
 return( il );
 }
 
-static extended BoundIterateSplineSolve(Spline1D *sp, extended tmin, extended tmax,
+extended BoundIterateSplineSolve(Spline1D *sp, extended tmin, extended tmax,
 	extended sought,double err) {
     extended t = IterateSplineSolve(sp,tmin,tmax,sought,err);
     if ( t<tmin || t>tmax )

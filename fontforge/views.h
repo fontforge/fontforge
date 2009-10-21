@@ -613,8 +613,9 @@ extern void FVInterpolateFonts(FontView *fv);
 
 extern void FVDeselectAll(FontView *fv);
 
-extern void FVAutoKern(FontView *fv);
-extern void FVAutoWidth(FontView *fv);
+extern void FVAutoWidth2(FontView *fv);
+/*extern void FVAutoKern(FontView *fv);*/
+/*extern void FVAutoWidth(FontView *fv);*/
 
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
@@ -843,7 +844,7 @@ extern void FVPatternTile(FontView *fv);
 extern void SCCharInfo(SplineChar *sc,int deflayer,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
-extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r);
+extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r,int layer);
 extern GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,int def_layer,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc );
 extern GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,int def_layer,

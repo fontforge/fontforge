@@ -330,7 +330,7 @@ static OTLookup *CreateMacLookup(SplineFont1 *sf,ASM1 *sm) {
 return( otl );
 }
 
-static struct lookup_subtable *CreateSubtable(OTLookup *otl) {
+static struct lookup_subtable *CreateSubtable(OTLookup *otl,SplineFont1 *sf) {
     struct lookup_subtable *cur, *prev;
 
     cur = chunkalloc(sizeof(struct lookup_subtable));
@@ -353,9 +353,11 @@ static struct lookup_subtable *CreateSubtable(OTLookup *otl) {
 	    otl->lookup_type == gpos_mark2ligature ||
 	    otl->lookup_type == gpos_mark2mark )
 	cur->anchor_classes = true;
-    if ( otl->lookup_type == gpos_pair && otl->features!=NULL &&
-	    otl->features->featuretag==CHR('v','k','r','n'))
-	cur->vertical_kerning = true;
+    if ( otl->lookup_type == gpos_pair ) {
+	if ( otl->features!=NULL &&
+		otl->features->featuretag==CHR('v','k','r','n'))
+	    cur->vertical_kerning = true;
+    }
 return( cur );
 }
 
@@ -685,7 +687,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
 		if ( pst->pst.type == pst_lcaret || pst->pst.subtable!=NULL )
 	    continue;		/* Nothing to do, or already done */
 		otl = CreateLookup(sf,pst->tag,pst->script_lang_index,pst->flags,pst->pst.type);
-		sub = CreateSubtable(otl);
+		sub = CreateSubtable(otl,sf);
 		/* There might be another PST with the same flags on this glyph */
 		/* And we must fixup the current pst */
 		for ( pst2=pst ; pst2!=NULL; pst2 = (PST1 *) (pst2->pst.next) ) {
@@ -720,7 +722,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
 		continue;		/* already done */
 		    otl = CreateLookup(sf,isv ? CHR('v','k','r','n') : CHR('k','e','r','n'),
 			    kp->sli,kp->flags,pst_pair);
-		    sub = CreateSubtable(otl);
+		    sub = CreateSubtable(otl,sf);
 		    /* There might be another kp with the same flags on this glyph */
 		    /* And we must fixup the current kp */
 		    for ( kp2=kp ; kp2!=NULL; kp2 = (KernPair1 *) (kp2->kp.next) ) {
@@ -737,7 +739,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
 		    for ( kc=(KernClass1 *) (isv ? sf->sf.vkerns : sf->sf.kerns); kc!=NULL;
 			    kc = (KernClass1 *) (kc->kc.next) ) {
 			if ( kc->sli == kp->sli && kc->flags == kp->flags && kc->kc.subtable==NULL) {
-			    sub = CreateSubtable(otl);
+			    sub = CreateSubtable(otl,sf);
 			    sub->per_glyph_pst_or_kern = false;
 			    sub->kc = &kc->kc;
 			    kc->kc.subtable = sub;
@@ -755,7 +757,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
 			kc->sli,kc->flags,pst_pair);
 		for ( kc2=kc; kc2!=NULL; kc2=(KernClass1 *) (kc2->kc.next) ) {
 		    if ( kc->sli == kc2->sli && kc->flags == kc2->flags && kc2->kc.subtable==NULL) {
-			sub = CreateSubtable(otl);
+			sub = CreateSubtable(otl,sf);
 			sub->per_glyph_pst_or_kern = false;
 			sub->kc = &kc2->kc;
 			kc2->kc.subtable = sub;
@@ -771,7 +773,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
     for ( fpst=(FPST1 *) sf->sf.possub; fpst!=NULL; fpst=((FPST1 *) fpst->fpst.next) ) {
 	otl = CreateLookup(sf,fpst->tag, fpst->script_lang_index,
 		fpst->flags,fpst->fpst.type);
-	sub = CreateSubtable(otl);
+	sub = CreateSubtable(otl,sf);
 	sub->per_glyph_pst_or_kern = false;
 	sub->fpst = &fpst->fpst;
 	fpst->fpst.subtable = sub;
@@ -779,7 +781,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
     }
     for ( sm=(ASM1 *) sf->sf.sm; sm!=NULL; sm=((ASM1 *) sm->sm.next) ) {
 	otl = CreateMacLookup(sf,sm);
-	sub = CreateSubtable(otl);
+	sub = CreateSubtable(otl,sf);
 	sub->per_glyph_pst_or_kern = false;
 	sub->sm = &sm->sm;
 	sm->sm.subtable = sub;
@@ -813,7 +815,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
     for ( ac=(AnchorClass1 *) (sf->sf.anchor); ac!=NULL; ac=(AnchorClass1 *) ac->ac.next ) {
 	if ( ac->ac.subtable==NULL ) {
 	    otl = CreateACLookup(sf,ac);
-	    sub = CreateSubtable(otl);
+	    sub = CreateSubtable(otl,sf);
 	    for ( ac2=ac; ac2!=NULL; ac2 = (AnchorClass1 *) ac2->ac.next ) {
 		if ( ac2->feature_tag == ac->feature_tag &&
 			ac2->script_lang_index == ac->script_lang_index &&
