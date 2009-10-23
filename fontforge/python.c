@@ -11127,31 +11127,113 @@ static PyObject *MakeClassNameTuple(int cnt, char**classes) {
 return( tuple );
 }
 
+static int pyBuildClassesFromSelection(FontViewBase *fv,
+	struct lookup_subtable *sub,real good_enough) {
+    SplineFont *sf;
+    EncMap *map;
+    int selcnt;
+    int enc,gid;
+    SplineChar **glyphlist, *sc;
+
+    map = fv->map;
+    sf = fv->sf;
+    selcnt=0;
+    for ( enc=0; enc<map->enccount; ++enc ) {
+	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
+		SCWorthOutputting(sf->glyphs[gid]))
+	    ++selcnt;
+    }
+    if ( selcnt<=1 ) {
+	PyErr_Format(PyExc_EnvironmentError, "Please select some glyphs in the font view for FontForge to put into classes.");
+return(false);
+    }
+
+    glyphlist = galloc((selcnt+1)*sizeof(SplineChar *));
+    selcnt=0;
+    for ( enc=0; enc<map->enccount; ++enc ) {
+	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
+		SCWorthOutputting(sc = sf->glyphs[gid]))
+	    glyphlist[selcnt++] = sc;
+    }
+    glyphlist[selcnt] = NULL;
+    AutoKern2BuildClasses(sf,fv->active_layer,glyphlist,glyphlist,sub,sub->separation,0,0,
+	    good_enough);
+    free(glyphlist);
+return( true );
+}
+
+static void pyAddOffsetAsIs(void *data,int left_index,int right_index, int kern) {
+    struct lookup_subtable *sub = data;
+    KernClass *kc = sub->kc;
+
+    if ( !(sub->lookup->lookup_flags & pst_r2l) ) {
+	kc->offsets[left_index*kc->second_cnt+right_index] = kern;
+    } else {
+	kc->offsets[right_index*kc->second_cnt+left_index] = kern;
+    }
+}
+
+static void pyAutoKernAll(FontViewBase *fv,struct lookup_subtable *sub) {
+    char **lefts, **rights;
+    int lcnt, rcnt;
+    KernClass *kc = sub->kc;
+
+    if ( !(sub->lookup->lookup_flags & pst_r2l) ) {
+	lefts = kc->firsts; lcnt = kc->first_cnt;
+	rights = kc->seconds; rcnt = kc->second_cnt;
+    } else {
+	lefts = kc->seconds; lcnt = kc->second_cnt;
+	rights = kc->firsts; rcnt=kc->first_cnt;
+    }
+    AutoKern2NewClass(fv->sf,fv->active_layer, lefts, rights, lcnt, rcnt,
+	    pyAddOffsetAsIs, sub, sub->separation, 0, 0, 0);
+}
+
 static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *sf = fv->sf;
     char *lookup, *subtable, *after_str=NULL;
     int i;
     struct lookup_subtable *sub;
-    PyObject *class1s, *class2s, *offsets;
+    PyObject *class1s=NULL, *class2s=NULL, *offsets=NULL;
     char **class1_strs, **class2_strs;
     int cnt1, cnt2;
-    int16 *offs;
+    int16 *offs=NULL;
+    int separation, do_autokern=false;
+    double class_error_distance;
 
     if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
-	    &offsets, &after_str ))
+	    &offsets, &after_str )) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple(args,"ssid|OOs", &lookup, &subtable,
+		&separation, &class_error_distance, &class1s, &class2s,
+		&after_str ))
 return( NULL );
-
-    cnt1 = ParseClassNames(class1s,&class1_strs);
-    cnt2 = ParseClassNames(class2s,&class2_strs);
-    if ( cnt1*cnt2 != PySequence_Size(offsets) ) {
-	PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
+	do_autokern = true;
+	if ( class1s==Py_None ) class1s = NULL;
+	if ( class2s==Py_None ) class2s = NULL;
+	if ( class2s==NULL && class1s!=NULL ) {
+	    PyErr_Format(PyExc_ValueError, "If the first set of classes may not be specified if the second set of classes is not.");
 return( NULL );
+	}
     }
-    offs = galloc(cnt1*cnt2*sizeof(int16));
-    for ( i=0 ; i<cnt1*cnt2; ++i ) {
-	offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
-	if ( PyErr_Occurred())
+
+    if ( class1s!=NULL ) {
+	cnt1 = ParseClassNames(class1s,&class1_strs);
+	cnt2 = ParseClassNames(class2s,&class2_strs);
+	if ( offsets!=NULL ) {
+	    if ( cnt1*cnt2 != PySequence_Size(offsets) ) {
+		PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
 return( NULL );
+	    }
+	    offs = galloc(cnt1*cnt2*sizeof(int16));
+	    for ( i=0 ; i<cnt1*cnt2; ++i ) {
+		offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
+		if ( PyErr_Occurred())
+return( NULL );
+	    }
+	} else
+	    offs = gcalloc(cnt1*cnt2,sizeof(int16));
     }
 
     sub = addLookupSubtable(sf, lookup, subtable, after_str);
@@ -11162,16 +11244,25 @@ return( NULL );
 return( NULL );
     }
     sub->per_glyph_pst_or_kern = false;
+    if ( do_autokern )
+	sub->separation = separation;
     sub->kc = chunkalloc(sizeof(KernClass));
     sub->kc->subtable = sub;
-    sub->kc->first_cnt = cnt1;
-    sub->kc->second_cnt = cnt2;
-    sub->kc->firsts = class1_strs;
-    sub->kc->seconds = class2_strs;
-    sub->kc->offsets = offs;
+    if ( class1s!=NULL ) {
+	sub->kc->first_cnt = cnt1;
+	sub->kc->second_cnt = cnt2;
+	sub->kc->firsts = class1_strs;
+	sub->kc->seconds = class2_strs;
+	sub->kc->offsets = offs;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    sub->kc->adjusts = gcalloc(cnt1*cnt2,sizeof(DeviceTable));
+	sub->kc->adjusts = gcalloc(cnt1*cnt2,sizeof(DeviceTable));
 #endif
+	if ( offsets==NULL )
+	    pyAutoKernAll(fv,sub);
+    } else {
+	if ( !pyBuildClassesFromSelection(fv,sub,class_error_distance) )
+return( NULL );
+    }
 
     if ( sub->vertical_kerning ) {
 	sub->kc->next = sf->vkerns;
@@ -12991,14 +13082,17 @@ static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoWidth(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Font *) self)->fv;
-    int space;
+static char *autowidth_keywords[] = { "minBearing", "maxBearing", "height",
+	"loopCnt", NULL };
 
-    if ( !PyArg_ParseTuple(args,"i", &space ))
+static PyObject *PyFFFont_autoWidth(PyObject *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    int space, min=10, max=-1, height=0, loop=1;
+
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"i|iiii",autowidth_keywords,
+	    &space,&min,&max,&height,&loop))
 return( NULL );
-    if ( !AutoWidthScript(fv,space))
-	;
+    AutoWidth2(fv,space,min,max, height, loop);
 Py_RETURN( self );
 }
 
@@ -13280,7 +13374,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
     { "autoHint", PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
-    { "autoWidth", PyFFFont_autoWidth, METH_VARARGS, "Guess horizontal advance widths for selected glyphs" },
+    { "autoWidth", (PyCFunction) PyFFFont_autoWidth, METH_VARARGS | METH_KEYWORDS, "Guess horizontal advance widths for selected glyphs" },
     { "autoTrace", PyFFFont_autoTrace, METH_NOARGS, "Autotrace any background images"},
     { "build", PyFFFont_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFFont_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
