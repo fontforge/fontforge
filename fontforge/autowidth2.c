@@ -668,7 +668,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
     free(glyphs);
 }
 
-void AutoKernNewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
+void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
 	int lcnt, int rcnt,
 	void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data,
 	int from_closest_approach, int separation,int min_kern,
@@ -868,3 +868,211 @@ void AutoKern2Class(FontViewBase *fv,KernClass *kc,
     free(glyphs);
 }
 #endif
+
+static void kc2AddOffset(void *data,int left_index, int right_index,int offset) {
+    KernClass *kc = data;
+
+    if ( kc->subtable->lookup->lookup_flags & pst_r2l ) {
+	kc->offsets[right_index*kc->first_cnt+left_index] = offset;
+    } else
+	kc->offsets[left_index*kc->second_cnt+right_index] = offset;
+}
+
+void AutoKern2BuildClasses(SplineFont *sf,int layer,
+	SplineChar **leftglyphs,SplineChar **rightglyphs,
+	struct lookup_subtable *sub,
+	int separation, int min_kern, int touching,
+	real good_enough) {
+    AW_Data all;
+    AW_Glyph *glyphs, *me, *other;
+    int chunk_height;
+    int i,j,k,cnt,lcnt,rcnt, lclasscnt,rclasscnt;
+    int len;
+    int *lused, *rused;
+    char **lclassnames, **rclassnames, *str;
+    int *visual_separation;
+    KernClass *kc = sub->kc;
+    SplineChar *sc;
+
+    if ( kc==NULL )
+return;
+    free(kc->firsts); free(kc->seconds); free(kc->offsets);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    free(kc->adjusts);
+#endif
+
+    if ( good_enough==-1 )
+	good_enough = (sf->ascent+sf->descent)/100.0;
+
+    if ( separation==0 && !touching ) {
+	if ( sub->separation==0 && !sub->kerning_by_touch ) {
+	    sub->separation = sf->width_separation;
+	    if ( sf->width_separation==0 )
+		sub->separation = 15*(sf->ascent+sf->descent)/100;
+	    separation = sub->separation;
+	} else {
+	    separation = sub->separation;
+	    touching = sub->kerning_by_touch;
+	    min_kern = sub->minkern;
+	}
+    }
+    sub->separation = separation;
+    sub->minkern = min_kern;
+    sub->kerning_by_touch = touching;
+    chunk_height = (sf->ascent + sf->descent)/200;
+
+    memset(&all,0,sizeof(all));
+    all.layer = layer;
+    all.sub_height = chunk_height;
+    all.desired_separation = separation;
+    all.sf = sf;
+    all.denom = (sf->ascent + sf->descent)/DENOM_FACTOR_OF_EMSIZE;
+
+    /* ticked means a left glyph, ticked2 a right (a glyph can be both) */
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	sc->ticked = sc->ticked2 = false;
+	sc->ttf_glyph = -1;
+    }
+    for ( lcnt=0; (sc=leftglyphs[lcnt])!=NULL; ++lcnt )
+	sc->ticked = true;
+    for ( rcnt=0; (sc=rightglyphs[rcnt])!=NULL; ++rcnt )
+	sc->ticked2 = true;
+    for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL )
+	if ( sc->ticked || sc->ticked2 )
+	    ++cnt;
+
+    glyphs = gcalloc(cnt+1,sizeof(AW_Glyph));
+    for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	if ( sc->ticked || sc->ticked2 ) {
+	    SplineCharLayerFindBounds(sc,layer,&glyphs[cnt].bb);
+	    if ( glyphs[cnt].bb.minx<-16000 || glyphs[cnt].bb.maxx>16000 ||
+		    glyphs[cnt].bb.miny<-16000 || glyphs[cnt].bb.maxy>16000 ) {
+		ff_post_notice(_("Glyph too big"),_("%s has a bounding box which is too big for this algorithm to work. Ignored."),sc->name);
+		sc->ticked = sc->ticked2 = false;
+	    } else {
+		glyphs[cnt].sc = sc;
+		sc->ttf_glyph = cnt;
+		aw2_findedges(&glyphs[cnt++], &all);
+	    }
+	}
+    }
+
+    all.glyphs = glyphs;
+    all.gcnt = cnt;
+    visual_separation = galloc(lcnt*rcnt*sizeof(int));
+    for ( i=0; i<lcnt; ++i ) {
+	int *vpt = visual_separation + i*rcnt;
+	SplineChar *lsc = leftglyphs[i];
+	if ( lsc->ticked ) {
+	    me = &all.glyphs[lsc->ttf_glyph];
+	    for ( j=0; j<rcnt; ++j ) {
+		SplineChar *rsc = rightglyphs[j];
+		if ( rsc->ticked2 ) {
+		    other = &all.glyphs[rsc->ttf_glyph];
+		    vpt[j] = aw2_bbox_separation(me,other,all.denom);
+		} else
+		    vpt[j] = 0;
+	    }
+	} else {
+	    for ( j=0; j<rcnt; ++j )
+		vpt[j] = 0;
+	}
+    }
+    for ( i=0; i<cnt; ++i ) {
+	me = &glyphs[i];
+	free(me->left);
+	free(me->right);
+    }
+    free(glyphs); glyphs = all.glyphs = NULL;
+
+    good_enough *= good_enough;
+
+    lclassnames = galloc((lcnt+2) * sizeof(char *));
+    lclasscnt = 1;
+    lclassnames[0] = NULL;
+    lused = gcalloc(lcnt,sizeof(int));
+    for ( i=0; i<lcnt; ++i ) if ( leftglyphs[i]->ticked && !lused[i]) {
+	lused[i] = lclasscnt;
+	len = strlen(leftglyphs[i]->name)+1;
+	for ( j=i+1; j<lcnt; ++j ) if ( leftglyphs[j]->ticked && !lused[j] ) {
+	    long totdiff = 0, diff;
+	    int *vpt1 = visual_separation + i*rcnt;
+	    int *vpt2 = visual_separation + j*rcnt;
+	    for ( k=0; k<rcnt; ++k ) {
+		diff = vpt1[k] - vpt2[k];
+		totdiff += diff*diff;
+	    }
+	    if ( totdiff/((double) rcnt) < good_enough ) {
+		lused[j] = lclasscnt;
+		len += strlen(leftglyphs[j]->name)+1;
+	    }
+	}
+	lclassnames[lclasscnt] = str = galloc(len+1);
+	for ( j=i; j<lcnt; ++j ) if ( lused[j]==lclasscnt ) {
+	    strcpy(str,leftglyphs[j]->name);
+	    str += strlen(str);
+	    *str++ = ' ';
+	}
+	str[-1] = '\0';
+	++lclasscnt;
+    }
+    lclassnames[lclasscnt] = NULL;
+    kc = sub->kc;
+    kc->firsts = realloc(lclassnames,(lclasscnt+1)*sizeof(char *));
+    kc->first_cnt = lclasscnt;
+    free(lused); lused = NULL;
+
+    rclassnames = galloc((rcnt+2) * sizeof(char *));
+    rclasscnt = 1;
+    rclassnames[0] = NULL;
+    rused = gcalloc(rcnt,sizeof(int));
+    for ( i=0; i<rcnt; ++i ) if ( rightglyphs[i]->ticked2 && !rused[i]) {
+	rused[i] = rclasscnt;
+	len = strlen(rightglyphs[i]->name)+1;
+	for ( j=i+1; j<rcnt; ++j ) if ( rightglyphs[j]->ticked2 && !rused[j] ) {
+	    long totdiff = 0, diff;
+	    int *vpt1 = visual_separation + i;
+	    int *vpt2 = visual_separation + j;
+	    for ( k=0; k<lcnt; ++k ) {
+		diff = vpt1[k*rcnt] - vpt2[k*rcnt];
+		totdiff += diff*diff;
+	    }
+	    if ( totdiff/((double) lcnt) < good_enough ) {
+		rused[j] = rclasscnt;
+		len += strlen(rightglyphs[j]->name)+1;
+	    }
+	}
+	rclassnames[rclasscnt] = str = galloc(len+1);
+	for ( j=i; j<rcnt; ++j ) if ( rused[j]==rclasscnt ) {
+	    strcpy(str,rightglyphs[j]->name);
+	    str += strlen(str);
+	    *str++ = ' ';
+	}
+	str[-1] = '\0';
+	++rclasscnt;
+    }
+    rclassnames[rclasscnt] = NULL;
+    kc->seconds = realloc(rclassnames,(rclasscnt+1)*sizeof(char *));
+    kc->second_cnt = rclasscnt;
+    free(rused);
+    free(visual_separation);
+	
+    kc->offsets = gcalloc(lclasscnt*rclasscnt,sizeof(int16));;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    kc->adjusts = gcalloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
+#endif
+
+    AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,
+	    kc->first_cnt, kc->second_cnt,
+	    kc2AddOffset, kc,
+	    touching,separation,min_kern,chunk_height);
+
+    if ( sub->lookup->lookup_flags & pst_r2l ) {
+	char **temp = kc->seconds;
+	int tempsize = kc->second_cnt;
+	kc->seconds = kc->firsts;
+	kc->second_cnt = kc->first_cnt;
+	kc->firsts = temp;
+	kc->first_cnt = tempsize;
+    }
+}

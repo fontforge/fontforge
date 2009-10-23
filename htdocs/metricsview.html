@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 22-Oct-2009 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -37,9 +37,10 @@
 	<LI>
 	  <A href="charview.html" >Outline Glyph</A>
 	<LI>
-	  <small><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging TrueType</A></small>
+	  <SMALL><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging
+	  TrueType</A></SMALL>
 	<LI>
-	  <small><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></small>
+	  <SMALL><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></SMALL>
 	<LI>
 	  <A href="bitmapview.html" >Bitmap Glyph</A>
 	<LI>
@@ -51,7 +52,7 @@
 	<LI>
 	  <A href="fontinfo.html" >Font Information</A>
 	<LI>
-	  <small><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></small>
+	  <SMALL><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></SMALL>
 	<LI>
 	  <A href="charinfo.html" >Glyph Information</A>
 	<LI>
@@ -69,7 +70,7 @@
 	<LI>
 	  <A href="multiplemaster.html" >Multiple Master Information</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="lookups.html" >Lookups &amp; subtables</A>
 	<LI>
@@ -87,7 +88,7 @@
 	<LI>
 	  <A href="showatt.html" >Show Advanced Typography</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="problems.html" >Potential Problems dialog</A>
 	<LI>
@@ -105,7 +106,7 @@
 	<LI>
 	  <A href="generate.html#Mac" >Generate Mac Family dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="display.html" >Print &amp; Display dialog</A>
 	<LI>
@@ -113,13 +114,13 @@
 	<LI>
 	  <A href="groups.html" >Groups dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="elementmenu.html#Bitmaps">Manage Bitmap Strikes</A>
 	<LI>
 	  <A href="elementmenu.html#Regenerate">Re-Rasterize Bitmap Strikes</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="search.html" >Search &amp; Replace dialog</A>
 	<LI>
@@ -133,15 +134,15 @@
 	<LI>
 	  <A href="InsertTextDlg.html" >Insert Text dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set width dialogs</A>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set left/right bearings</A>
 	<LI>
-	  <A href="autowidth.html" >Auto Width &amp; Kern dialogs</A>
+	  <A href="autowidth.html" >Auto Width dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="hintsmenu.html#Review" >Review PS Hints dialog</A>
 	<LI>
@@ -149,7 +150,7 @@
 	<LI>
 	  <A href="ttfinstrs.html#cvt" >TrueType 'cvt ' Editor</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="selectbyatt.html" >Select by feature dialog</A>
 	<LI>
@@ -694,16 +695,41 @@
   after a T), and rather than create separate kerning pairs for each of the
   "A"s above, they could all be placed in a class of glyphs which kern alike.
   <P>
-  <IMG SRC="kernbyclasses.png" ALIGN="Right" WIDTH="314" HEIGHT="271">The
-  Metrics-&gt;Kern By Class command (or indirectly through Element-&gt;Font
-  Info-&gt;Lookups) provides an interface to this. It brings up a dialog showing
-  the kerning classes currently defined for the font (it labels them according
-  to their lookup subtable). You can create new classes (by creating a new
-  lookup subtable), delete existing classes, or change existing classes.
+  The <A HREF="lookups.html">Element-&gt;Font Info-&gt;Lookups</A> provides
+  an interface to
+  this.<IMG SRC="kerningformat.png" WIDTH="444" HEIGHT="227" ALIGN="Right">
+  It brings up a dialog showing all the GPOS lookups (of which kerning is one)
+  and their subtables. Each kerning class lives in its own subtable. When you
+  create a kerning subtable you will be asked whether you want a set of individual
+  kerning pairs or a matrix based on kerning classes. 
   <P>
-  <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="492" ALIGN="Left">Each kerning
-  class belongs to to a <A HREF="lookups.html">lookup subtable</A> and the
-  subtable name is displayed at the top of the dialog.
+  If you choose the latter then you may have fontforge try to guess a good
+  set of classes for you (it will look at the glyphs selected in the fontview
+  and divide them into classes). The Intra Class distance gives you some control
+  over how picky fontforge will be about what goes into a class. (This can
+  be thought of as being in em-units and being, roughly, the average error
+  in how two different glyphs interact with other glyphs). A value of 1 is
+  very picky and almost all classes will have one member. A value of 20 (in
+  a 1000em font) is fairly loose.
+  <P>
+  The <CODE>Default Separation</CODE> and <CODE>Min Kern</CODE> fields are
+  used in AutoKerning. The goal of kerning to to make the optical separation
+  between all glyphs to be constant, and the <CODE>Default Separation
+  </CODE>field specifies that desired value. The <CODE>Min Kern</CODE> value
+  is simply to prevent the dialog from filling with useless junk. If AutoKerning
+  suggests that two glyphs should be kerned by 1 em unit then this won't make
+  any difference to the human eye and there is no point in including it. So
+  if the kerning value (in absolute value) suggested by AutoKern is less than
+  <CODE>Min Kern</CODE> then fontforge will ignore that value. Selecting <CODE>[]
+  Touching</CODE> makes AutoKerning work in a slightly different way, instead
+  of trying to make the optical distance be the desired value this attempts
+  to make the minimum separation be the desired value. This is rarely useful,
+  but occasionally people want to set text where the letters actually touch
+  one another. 
+  <P>
+  <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="535" ALIGN="Left">Each kerning
+  class belongs to a <A HREF="lookups.html">lookup subtable</A> and the subtable
+  name is displayed at the top of the dialog.
   <P>
   But the more interesting stuff follows this. A kerning class actually consists
   of two sets of classes -- one set for the first glyph of the pair and one

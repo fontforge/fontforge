@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 22-Aug-2008 -->
+  <!-- AP: Last modified: 22-Oct-2009 -->
   <TITLE>The Metrics Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -37,9 +37,10 @@
 	<LI>
 	  <A href="charview.html" >Outline Glyph</A>
 	<LI>
-	  <small><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging TrueType</A></small>
+	  <SMALL><A href="charview.html#Debugging" >&nbsp; &nbsp;Debugging
+	  TrueType</A></SMALL>
 	<LI>
-	  <small><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></small>
+	  <SMALL><A href="multilayer.html" >&nbsp; &nbsp;Type3 Glyphs</A></SMALL>
 	<LI>
 	  <A href="bitmapview.html" >Bitmap Glyph</A>
 	<LI>
@@ -51,7 +52,7 @@
 	<LI>
 	  <A href="fontinfo.html" >Font Information</A>
 	<LI>
-	  <small><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></small>
+	  <SMALL><A href="histogram.html" >&nbsp; &nbsp;Histogram Dialog</A></SMALL>
 	<LI>
 	  <A href="charinfo.html" >Glyph Information</A>
 	<LI>
@@ -69,7 +70,7 @@
 	<LI>
 	  <A href="multiplemaster.html" >Multiple Master Information</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="lookups.html" >Lookups &amp; subtables</A>
 	<LI>
@@ -87,7 +88,7 @@
 	<LI>
 	  <A href="showatt.html" >Show Advanced Typography</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="problems.html" >Potential Problems dialog</A>
 	<LI>
@@ -105,7 +106,7 @@
 	<LI>
 	  <A href="generate.html#Mac" >Generate Mac Family dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="display.html" >Print &amp; Display dialog</A>
 	<LI>
@@ -113,13 +114,13 @@
 	<LI>
 	  <A href="groups.html" >Groups dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="elementmenu.html#Bitmaps">Manage Bitmap Strikes</A>
 	<LI>
 	  <A href="elementmenu.html#Regenerate">Re-Rasterize Bitmap Strikes</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="search.html" >Search &amp; Replace dialog</A>
 	<LI>
@@ -133,15 +134,15 @@
 	<LI>
 	  <A href="InsertTextDlg.html" >Insert Text dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set width dialogs</A>
 	<LI>
 	  <A href="metricsmenu.html#Width">Set left/right bearings</A>
 	<LI>
-	  <A href="autowidth.html" >Auto Width &amp; Kern dialogs</A>
+	  <A href="autowidth.html" >Auto Width dialog</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="hintsmenu.html#Review" >Review PS Hints dialog</A>
 	<LI>
@@ -149,7 +150,7 @@
 	<LI>
 	  <A href="ttfinstrs.html#cvt" >TrueType 'cvt ' Editor</A>
 	<LI>
-	  <HR>
+	    <HR>
 	<LI>
 	  <A href="selectbyatt.html" >Select by feature dialog</A>
 	<LI>
@@ -228,7 +229,9 @@
     <LI>
       <A HREF="#Auto">Auto Width...</A>
     <LI>
-      <A HREF="#Kern">Auto Kern...</A>
+      <STRIKE>Auto Kern...</STRIKE> (See the <A HREF="lookups.html#Pair">kerning
+      subtable</A> dialog and the <A HREF="metricsview.html#kernclass">kerning
+      class </A>dialog)
     <LI>
       <A HREF="#KernByClasses">Kern By Classes...</A>
     <LI>
@@ -306,12 +309,6 @@
       <A HREF="autowidth.html#AutoWidth">It attempts to guess reasonable values
       for the widths</A> (more accurately the left and right bearings) of the specified
       glyphs.
-    <DT>
-      Auto <A NAME="Kern">Kern</A>...
-    <DD>
-      This command is only available from the font view.
-      <A HREF="autowidth.html#AutoKern">It attempts to guess reasonable kerning
-      values </A>between the specified glyphs.
     <DT>
       <A NAME="KernByClasses">Kern</A> By Classes...
     <DD>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 12-Mar-2007 -->
-  <!-- AP: Last modified: 13-May-2009 -->
+  <!-- AP: Last modified: 22-Oct-2009 -->
   <TITLE>Manipulating OpenType Lookups</TITLE>
 </HEAD>
 <BODY>
@@ -319,7 +319,7 @@ Often all the adjustments in a subtable will be the same (the ones here are)
 so the [*] Default new entries to first check box will give all new entries
 the same value as the first line.
 <H3>
-  <IMG SRC="subtable-gpos-kernpair.png" WIDTH="415" HEIGHT="472" ALIGN="Right"><A
+  <IMG SRC="subtable-gpos-kernpair.png" WIDTH="523" HEIGHT="552" ALIGN="Right"><A
       NAME="Pair">Pair</A> Positioning (kerning)
 </H3>
 <P>
@@ -340,6 +340,24 @@ to right text this is generally the horizontal advance of the first glyph
 glyph is used instead, and for vertical top to bottom text the vertical advance
 of the first glyph (y_adv#1). Again, the [] Hide Unused Columns may be used
 to simplify the dialog.
+<P>
+The <CODE>Default Separation</CODE> and <CODE>Min Kern</CODE> fields are
+used in AutoKerning. The goal of kerning to to make the optical separation
+between all glyphs to be constant, and the <CODE>Default Separation
+</CODE>field specifies that desired value. The <CODE>Min Kern</CODE> value
+is simply to prevent the dialog from filling with useless junk. If AutoKerning
+suggests that two glyphs should be kerned by 1 em unit then this won't make
+any difference to the human eye and there is no point in including it. So
+if the kerning value (in absolute value) suggested by AutoKern is less than
+<CODE>Min Kern</CODE> then fontforge will ignore that value. Selecting <CODE>[]
+Touching</CODE> makes AutoKerning work in a slightly different way, instead
+of trying to make the optical distance be the desired value this attempts
+to make the minimum separation be the desired value. This is rarely useful,
+but occasionally people want to set text where the letters actually touch
+one another. The <CODE>[AutoKern] </CODE>button will look at all combinations
+of glyphs in all scripts in the feature attached to this lookup. The
+<CODE>[AutoKern Selected]</CODE> button will look at all combinations of
+glyphs which are selected in the fontview.
 <P>
 Below the value matrix is a visual display of the currently selected kerning
 pair. You may adjust the kerning value by moving the second glyph around.

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 13-May-2009 -->
+  <!-- AP: Last modified: 22-Oct-2009 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -30,7 +30,7 @@
   </TABLE>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often out of date. I thought it was
-  a correct on 12 May 2009.</STRONG></FONT> A
+  a correct on 22 Oct 2009.</STRONG></FONT> A
   <A HREF="sfdchangelog.html">changelog</A> file is available. Even if out
   of date it should be helpful, but if you really need to know the current
   format look at
@@ -115,7 +115,8 @@ UnderlinePosition: -133
 UnderlineWidth: 20
 Ascent: 800
 Descent: 200
-LayerCount:
+WidthSeparation: 140
+LayerCount: 4
 Layer: 0 0 "Back" 1
 Layer: 1 1 "Fore" 0
 Layer: 2 0 "Cubic_Fore" 0
@@ -191,6 +192,13 @@ ExtremaBound: 30
       the font in fontviews (it may be changed of course). Negative numbers mean
       to rasterize the display from the outlines, positive numbers mean to use
       a prebuilt bitmap font of that size.
+    <DT>
+      WidthSeparation
+    <DD>
+      This is internal information that the user never sees directly. It indicates
+      the most recent value for the desired separation between glyphs that was
+      used in the AutoWidth command. It is also used as a default for the separation
+      in AutoKern.
     <DT>
       DisplayLayer
     <DD>
@@ -355,7 +363,7 @@ EndPrivate
 Lookup: 6 0 0 "calt"  {"calt-1"  } ['calt' ('DFLT' &lt;'dflt' &gt; 'latn' &lt;'dflt' &gt; ) ]
 Lookup: 1 0 0 "'smcp' Lowercase to Small Capitals in Latin lookup 0"  {"'smcp' Lowercase to Small Capitals in Latin lookup 0"  } ['smcp' ('latn' &lt;'dflt' &gt; ) ]
 Lookup: 4 0 1 "'liga' Standard Ligatures in Latin lookup 1"  {"'liga' Standard Ligatures in Latin lookup 1"  } ['liga' ('latn' &lt;'dflt' &gt; ) ]
-Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizontal Kerning in Latin lookup 0"  } ['kern' ('latn' &lt;'dflt' &gt; ) ]
+Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizontal Kerning in Latin lookup 0" [150,0,0]  } ['kern' ('latn' &lt;'dflt' &gt; ) ]
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -367,6 +375,18 @@ Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizont
   lookup flags field is now a 32 bit number, the low order 16 bits being the
   traditional flags, and the high order being the mark attachment set index,
   if any).
+  <P>
+  GSUB single substitution subtable names may be followed by a pair parentheses
+  containing a utf7 string with the default suffix used for this subtable.
+  <P>
+  Kerning subtable names may be followed by a "(1)" to indicated they are vertical
+  kerning, or by a pair of brackets containing three numbers. These numbers
+  represent default values for autokerning in this subtable, the first is the
+  desired separation between glyphs, the next is the minimum (absolute) value
+  that will generate a kerning pair (kerning by 1 em unit isn't interesting
+  and if that's what autokern comes up with, there is really no point to it),
+  and the last is an indication if separation is based on closest approach
+  (touching).
   <P>
   The order in which lookups are applied is the order listed here. The order
   in which subtables are applied is the order listed here.
