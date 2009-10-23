@@ -2419,7 +2419,7 @@ static void kernfinishedit(GGadget *g, int r, int c, int wasnew) {
 	    if ( separation==0 && !touch )
 		separation = 15*(osc->parent->ascent+osc->parent->descent)/100;
 	    AutoKern2(osc->parent,ci->def_layer,lefts,rights,sub,
-		    touch,separation,0,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
+		    separation,0,touch,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
 		    kern_AddKP,&kp_offset);
 	    possub[r*cols+PAIR_DX_ADV1].u.md_ival=kp_offset;
 	}

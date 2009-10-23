@@ -324,7 +324,7 @@ return;
 	rights = space; rcnt=1;
     }
     AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
-	    KCD_AddOffset, kcd, touch, separation, minkern, 0);
+	    KCD_AddOffset, kcd, separation, minkern, touch, 0);
     for ( i=0; i<ocnt; ++i )
 	free(others[i]);
     free(others);
@@ -375,7 +375,7 @@ return;
 	rights = firsts; rcnt=fcnt;
     }
     AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
-	    KCD_AddOffsetAsIs, kcd, touch, separation, minkern, 0);
+	    KCD_AddOffsetAsIs, kcd, separation, minkern, touch, 0);
     for ( i=0; i<fcnt; ++i )
 	free(firsts[i]);
     free(firsts);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 11-Sep-2009 -->
+  <!-- AP: Last modified: 22-Oct-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3346,13 +3346,28 @@ pen = None;				# Finalize the pen. This tells FontForge
 	&nbsp;first-classes,<BR>
 	&nbsp;second-classes,<BR>
 	&nbsp;offsets<BR>
-	&nbsp;[,after])</CODE></TD>
+	&nbsp;[,after])</CODE>
+	<P ALIGN=Center>
+	<STRONG>or</STRONG>
+	<P>
+	<CODE>(lookup-name,new-subtable-name,<BR>
+	&nbsp;separation,class-distance,<BR>
+	&nbsp;[,first-classes,<BR>
+	&nbsp;second-classes,<BR>
+	&nbsp;after])</CODE></TD>
       <TD>Creates a new subtable and a new kerning class in the named lookup. The
 	classes arguments are tuples of tuples of glyph names (each sub-tuble of
 	glyph names is a kerning class). The offsets argument is a tuple of kerning
 	offsets. There must be as many entries as
 	<CODE>len(first-class)*len(second-class)</CODE>. The optional after argument
-	is used to specify the order of the subtable within the lookup.</TD>
+	is used to specify the order of the subtable within the lookup.
+	<P>
+	The second format will cause FontForge to auto kern the subtable. The separation
+	argument specifies the desired optical distance between any two glyphs. If
+	the sets of glyph classes are specified then they will be used, otherwise
+	fontforge will look at the current selection and try to guess glyph classes
+	using the class-distance argument to determine how precise the classes should
+	match (1 is very tight matching, 20 is rather loose).</TD>
     </TR>
     <TR>
       <TD><CODE><A name="font-addLookup">addLookup</A></CODE></TD>
@@ -4167,7 +4182,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>autoWidth</CODE></TD>
-      <TD><CODE>(space)</CODE></TD>
+      <TD><CODE>(separation [,minBearing=,maxBearing=])</CODE></TD>
       <TD>Guesses at reasonable horizontal advance widths for the selected glyphs</TD>
     </TR>
     <TR>

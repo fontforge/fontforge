@@ -581,14 +581,14 @@ extern void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff
 	int chunk_height );
 extern void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 	struct lookup_subtable *into,
-	int from_closest_approach, int separation,int min_kern,
+	int separation, int min_kern, int from_closest_approach,
 	int chunk_height,
 	void (*addkp)(void *data,SplineChar *left,SplineChar *r,int off),
 	void *data);
 extern void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
 	int lcnt, int rcnt,
 	void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data,
-	int from_closest_approach, int separation,int min_kern,
+	int separation, int min_kern, int from_closest_approach,
 	int chunk_height);
 extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 	SplineChar **leftglyphs,SplineChar **rightglyphs,

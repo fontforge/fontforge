@@ -5900,13 +5900,25 @@ static void bSetRBearing(Context *c) {
 }
 
 static void bAutoWidth(Context *c) {
+    int sep, min=10, max=-1;
 
-    if ( c->a.argc != 2 )
+    if ( c->a.argc < 2 || c->a.argc > 4 )
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int )
 	ScriptError(c,"Bad argument type in AutoWidth");
-    if ( !AutoWidthScript(c->curfv,c->a.vals[1].u.ival))
-	ScriptError(c,"No characters selected.");
+    sep = c->a.vals[1].u.ival;
+    max = 2*sep;
+    if ( c->a.argc>2 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    ScriptError(c,"Bad argument type in AutoWidth");
+	min = c->a.vals[2].u.ival;
+	if ( c->a.argc>3 ) {
+	    if ( c->a.vals[3].type!=v_int )
+		ScriptError(c,"Bad argument type in AutoWidth");
+	    max = c->a.vals[3].u.ival;
+	}
+    }
+    AutoWidth2(c->curfv,sep,min,max, 0, 1);
 }
 
 static void bAutoKern(Context *c) {

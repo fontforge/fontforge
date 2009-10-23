@@ -2867,7 +2867,7 @@ return;
     pstkd->rows = rows;
 
     AutoKern2(pstkd->sf,pstkd->def_layer,lefts,rights,pstkd->sub,
-	    touch,separation,0,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
+	    separation,0,touch,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
 	    PSTKD_AddKP,pstkd);
     if ( pstkd->psts != psts )
 	IError("AutoKern added too many pairs, was only supposed to add one");
@@ -3447,7 +3447,7 @@ static int PSTKD_DoAutoKern(PSTKernDlg *pstkd,SplineChar **glyphlist) {
     if ( err )
 return( false );
     AutoKern2(pstkd->sf,pstkd->def_layer,glyphlist,glyphlist,pstkd->sub,
-	    touch,separation,minkern,0,
+	    separation,minkern,touch,0,
 	    PSTKD_AddKP,pstkd);
 return( true );
 }
