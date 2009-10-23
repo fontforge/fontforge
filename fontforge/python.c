@@ -6232,7 +6232,12 @@ return(NULL );
     cnt = PySequence_Size(glyphs);
     len = 0;
     for ( i=0; i<cnt; ++i ) {
-	str = PyBytes_AsString(PySequence_GetItem(glyphs,i));
+	PyObject *aglyph = PySequence_GetItem(glyphs,i);
+	if ( PyType_IsSubtype(&PyFF_GlyphType,aglyph->ob_type) ) {
+	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    str = sc->name;
+	} else
+	    str = PyBytes_AsString(aglyph);
 	if ( str==NULL ) {
 	    PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
 return( NULL );
@@ -6242,7 +6247,12 @@ return( NULL );
 
     ret = pt = galloc(len+1);
     for ( i=0; i<cnt; ++i ) {
-	str = PyBytes_AsString(PySequence_GetItem(glyphs,i));
+	PyObject *aglyph = PySequence_GetItem(glyphs,i);
+	if ( PyType_IsSubtype(&PyFF_GlyphType,aglyph->ob_type) ) {
+	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    str = sc->name;
+	} else
+	    str = PyBytes_AsString(aglyph);
 	strcpy(pt,str);
 	pt += strlen(pt);
 	*pt++ = ' ';
@@ -6250,6 +6260,78 @@ return( NULL );
     if ( pt!=ret )
 	--pt;
     *pt = '\0';
+return( ret );
+}
+
+static SplineChar **GlyphsFromTuple(SplineFont *sf, PyObject *glyphs) {
+    int cnt;
+    char *str, *pt, *start, ch;
+    int i;
+    SplineChar **ret, *sc;
+
+    if ( glyphs==NULL ) {
+	PyErr_Format(PyExc_TypeError,"Unspecified argument." );
+return( NULL );
+    }
+    if ( PyBytes_Check(glyphs)) {
+	/* A string of glyph names */
+	str = PyBytes_AsString(glyphs);
+	cnt = 0;
+	for ( pt=str; *pt==' '; ++pt );
+	while ( *pt!='\0' ) {
+	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	    ++cnt;
+	    while ( *pt==' ' ) ++pt;
+	}
+	if ( cnt==0 )
+return( gcalloc(1,sizeof(SplineChar *)));
+
+	ret = galloc((cnt+1)*sizeof(SplineChar *));
+	cnt = 0;
+	for ( pt=str; *pt==' '; ++pt );
+	while ( *pt!='\0' ) {
+	    start = pt;
+	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	    ch = *pt; *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    if ( sc==NULL ) {
+		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", start );
+return( NULL );
+	    }
+	    *pt = ch;
+	    ret[cnt++] = sc;
+	    while ( *pt==' ' ) ++pt;
+	}
+	ret[cnt] = NULL;
+return( ret );
+    }
+
+    /* A tuple or list of glyphs of glyph names */
+    if ( !PySequence_Check(glyphs) ) {
+	PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
+return(NULL );
+    }
+    cnt = PySequence_Size(glyphs);
+    ret = galloc((cnt+1)*sizeof(SplineChar *));
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *aglyph = PySequence_GetItem(glyphs,i);
+	if ( PyType_IsSubtype(&PyFF_GlyphType,aglyph->ob_type) ) {
+	    ret[i] = ((PyFF_Glyph *) aglyph)->sc;
+	    if ( ret[i]->parent!=sf ) {
+		PyErr_Format(PyExc_TypeError,"Glyph object, %s, must belong to the expected font.", ret[i]->name);
+return( NULL );
+	    }
+	} else {
+	    str = PyBytes_AsString(aglyph);
+	    sc = SFGetChar(sf,-1,str);
+	    if ( sc==NULL ) {
+		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", str );
+return( NULL );
+	    }
+	    ret[i] = sc;
+	}
+    }
+    ret[i] = NULL;
 return( ret );
 }
 
@@ -11127,8 +11209,7 @@ static PyObject *MakeClassNameTuple(int cnt, char**classes) {
 return( tuple );
 }
 
-static int pyBuildClassesFromSelection(FontViewBase *fv,
-	struct lookup_subtable *sub,real good_enough) {
+static SplineChar **GlyphsFromSelection(FontViewBase *fv) {
     SplineFont *sf;
     EncMap *map;
     int selcnt;
@@ -11145,7 +11226,7 @@ static int pyBuildClassesFromSelection(FontViewBase *fv,
     }
     if ( selcnt<=1 ) {
 	PyErr_Format(PyExc_EnvironmentError, "Please select some glyphs in the font view for FontForge to put into classes.");
-return(false);
+return(NULL);
     }
 
     glyphlist = galloc((selcnt+1)*sizeof(SplineChar *));
@@ -11156,9 +11237,31 @@ return(false);
 	    glyphlist[selcnt++] = sc;
     }
     glyphlist[selcnt] = NULL;
-    AutoKern2BuildClasses(sf,fv->active_layer,glyphlist,glyphlist,sub,sub->separation,0,0,
+return( glyphlist );
+}
+
+static int pyBuildClasses(FontViewBase *fv,
+	struct lookup_subtable *sub,real good_enough,
+	PyObject *list1, PyObject *list2) {
+    SplineChar **glyphlist, **first, **second;
+
+    if ( list1==NULL ) {
+	glyphlist = GlyphsFromSelection(fv);
+	if ( glyphlist==NULL )
+return( false );
+	first = second = glyphlist;
+    } else {
+	first = GlyphsFromTuple(fv->sf,list1);
+	second = GlyphsFromTuple(fv->sf,list2);
+    }
+    if ( first==NULL || second==NULL )
+return( false );
+    AutoKern2BuildClasses(fv->sf,fv->active_layer,first,second,sub,
+	    sub->separation,0,sub->kerning_by_touch,
 	    good_enough);
-    free(glyphlist);
+    free(first);
+    if ( first!=second )
+	free(second);
 return( true );
 }
 
@@ -11186,7 +11289,7 @@ static void pyAutoKernAll(FontViewBase *fv,struct lookup_subtable *sub) {
 	rights = kc->firsts; rcnt=kc->first_cnt;
     }
     AutoKern2NewClass(fv->sf,fv->active_layer, lefts, rights, lcnt, rcnt,
-	    pyAddOffsetAsIs, sub, sub->separation, 0, 0, 0);
+	    pyAddOffsetAsIs, sub, sub->separation, 0, sub->kerning_by_touch, 0);
 }
 
 static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
@@ -11195,28 +11298,53 @@ static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
     char *lookup, *subtable, *after_str=NULL;
     int i;
     struct lookup_subtable *sub;
-    PyObject *class1s=NULL, *class2s=NULL, *offsets=NULL;
+    PyObject *class1s=NULL, *class2s=NULL, *offsets=NULL, *list1=NULL, *list2=NULL;
+    PyObject *arg3, *arg4;
     char **class1_strs, **class2_strs;
-    int cnt1, cnt2;
+    int cnt1, cnt2, acnt;
     int16 *offs=NULL;
-    int separation, do_autokern=false;
+    int separation= -1, touch=0, do_autokern=false;
     double class_error_distance;
+    /* arguments:
+    /*  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
+    /*  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [,char *after_sub_name])
+    /*  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [,char *after_sub_name])
+    /*  (char *lookupname, char *newsubtabname, int separation, double err [,char *after_sub_name])
+    /* First is fully specified set of classes with offsets cnt=5/6*/
+    /* Second fully specified set of classes, to be autokerned cnt=5/6*/
+    /* Third two lists of glyphs to be turned into classes and then autokerned cnt=6/7*/
+    /* Fourth turns the selection into a list of glyphs, to be used both left and right for two sets of classes to be autokerned cnt=4/5*/
 
-    if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
-	    &offsets, &after_str )) {
-	PyErr_Clear();
-	if ( !PyArg_ParseTuple(args,"ssid|OOs", &lookup, &subtable,
-		&separation, &class_error_distance, &class1s, &class2s,
+    if ( (acnt = PySequence_Size(args))<4 ) {
+	PyErr_Format(PyExc_EnvironmentError, "Too few arguments.");
+return( NULL );
+    }
+    arg3 = PySequence_GetItem(args,2);
+    arg4 = PySequence_GetItem(args,3);
+    do_autokern = true;
+    if ( !PyInt_Check(arg3) && !PyLong_Check(arg3)) {
+	if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
+		&offsets, &after_str ))
+return( NULL );
+	do_autokern = false;
+    } else if ( !PyInt_Check(arg4) && !PyLong_Check(arg4) && !PyFloat_Check(arg4)) {
+	if ( !PyArg_ParseTuple(args,"ssiOO|s", &lookup, &subtable,
+		&separation, &class1s, &class2s,
 		&after_str ))
 return( NULL );
-	do_autokern = true;
-	if ( class1s==Py_None ) class1s = NULL;
-	if ( class2s==Py_None ) class2s = NULL;
-	if ( class2s==NULL && class1s!=NULL ) {
-	    PyErr_Format(PyExc_ValueError, "If the first set of classes may not be specified if the second set of classes is not.");
+    } else if ( acnt>5 ) {
+	if ( !PyArg_ParseTuple(args,"ssidOO|s", &lookup, &subtable,
+		&separation, &class_error_distance, &list1, &list2,
+		&after_str ))
 return( NULL );
-	}
+    } else {
+	if ( !PyArg_ParseTuple(args,"ssid|s", &lookup, &subtable,
+		&separation, &class_error_distance,
+		&after_str ))
+return( NULL );
     }
+    if ( separation==0 )
+	touch=1;
 
     if ( class1s!=NULL ) {
 	cnt1 = ParseClassNames(class1s,&class1_strs);
@@ -11244,8 +11372,10 @@ return( NULL );
 return( NULL );
     }
     sub->per_glyph_pst_or_kern = false;
-    if ( do_autokern )
+    if ( do_autokern ) {
 	sub->separation = separation;
+	sub->kerning_by_touch = touch;
+    }
     sub->kc = chunkalloc(sizeof(KernClass));
     sub->kc->subtable = sub;
     if ( class1s!=NULL ) {
@@ -11260,7 +11390,7 @@ return( NULL );
 	if ( offsets==NULL )
 	    pyAutoKernAll(fv,sub);
     } else {
-	if ( !pyBuildClassesFromSelection(fv,sub,class_error_distance) )
+	if ( !pyBuildClasses(fv,sub,class_error_distance,list1,list2) )
 return( NULL );
     }
 
@@ -11390,6 +11520,55 @@ return( NULL );
 return( ret );
 }
 
+static char *ak_keywords1[] = { "subTableName", "separation", "minKern", "touch", "height", NULL };
+static char *ak_keywords2[] = { "subTableName", "separation", "list1", "list2",
+	"minKern", "touch", "height", NULL };
+static PyObject *PyFFFont_autoKern(PyObject *self, PyObject *args, PyObject *keywds) {
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *sf = fv->sf;
+    char *subtablename;
+    int separation;
+    PyObject *list1=NULL, *list2=NULL;
+    SplineChar **first, **second;
+    struct lookup_subtable *sub;
+    int minkern = 10, touch=0, height=0;
+
+    if ( PySequence_Size(args)==2 ) {
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "si|iii", ak_keywords1,
+		&subtablename, &separation, &minkern, &touch, &height))
+return( NULL );
+    } else {
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "siOO|iii", ak_keywords2,
+		&subtablename, &separation, &list1, &list2, &minkern, &touch, &height ))
+return( NULL );
+    }
+    sub = SFFindLookupSubtable(sf,subtablename);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s exists", subtablename );
+return( NULL );
+    }
+    if ( sub->lookup->lookup_type!=gpos_pair || sub->kc!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "%s is not a kerning pair subtable", subtablename );
+return( NULL );
+    }
+
+    if ( list1!=NULL ) {
+	first = GlyphsFromTuple(sf,list1);
+	second = GlyphsFromTuple(sf,list2);
+    } else {
+	first = second = GlyphsFromSelection(fv);
+    }
+    if ( first==NULL || second==NULL )
+return( NULL );
+    AutoKern2(sf, fv->active_layer,first,second, sub,
+	separation, minkern, touch, height,
+	NULL,NULL);
+    free(first);
+    if ( first!=second )
+	free(second);
+Py_RETURN( self );
+}    
+    
 static PyObject *PyFFFont_removeLookup(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     char *lookup;
@@ -13331,6 +13510,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "addAnchorClass", PyFFFont_addAnchorClass, METH_VARARGS, "Add a new anchor class to the subtable"},
     { "addKerningClass", PyFFFont_addKerningClass, METH_VARARGS, "Add a new subtable with a new kerning class to a lookup"},
     { "alterKerningClass", PyFFFont_alterKerningClass, METH_VARARGS, "Changes the existing kerning class in the named subtable"},
+    { "autoKern", (PyCFunction) PyFFFont_autoKern, METH_VARARGS | METH_KEYWORDS, "Automatically generates kerning pairs between the specified sets of glyphs."},
     { "buildOrReplaceAALTFeatures", PyFFFont_buildOrReplaceAALTFeatures, METH_NOARGS, "Removes any existing 'aalt' features and builds new ones."},
     { "findEncodingSlot", PyFFFont_findEncodingSlot, METH_VARARGS, "Returns the encoding of a unicode code point or glyph name if they are in the current encoding. Else returns -1" },
     { "getKerningClass", PyFFFont_getKerningClass, METH_VARARGS, "Returns the contents of the kerning class in the named subtable"},

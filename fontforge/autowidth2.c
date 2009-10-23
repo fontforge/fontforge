@@ -268,8 +268,11 @@ static int ak2_figure_touchclass(int *class1, int *class2, AW_Data *all) {
 		if ( tot<smaller )
 		    smaller = tot;
 	    }
-	    if ( smaller == 0x7fff )
+	    if ( smaller == 0x7fff ) {
+		if ( smallest < - (g2->bb.minx + g1->sc->width - g1->bb.maxx) )
+		    smallest = - (g2->bb.minx + g1->sc->width - g1->bb.maxx);
 	continue;	/* Overlaps only in gaps */
+	    }
 	    smaller += g2->bb.minx + g1->sc->width - g1->bb.maxx;
 	    if ( smaller<smallest )
 		smallest = smaller;
@@ -658,7 +661,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 		    kp->subtable = into;
 		    kp->sc = g2->sc;
 		    kp->off = kern;
-		    kp->next = sc->kerns;
+		    kp->next = g1->sc->kerns;
 		    g1->sc->kerns = kp;
 		} else
 		    (*addkp)(data,g1->sc,g2->sc,kern);
@@ -1065,7 +1068,7 @@ return;
     AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,
 	    kc->first_cnt, kc->second_cnt,
 	    kc2AddOffset, kc,
-	    touching,separation,min_kern,chunk_height);
+	    separation,min_kern,touching,chunk_height);
 
     if ( sub->lookup->lookup_flags & pst_r2l ) {
 	char **temp = kc->seconds;
