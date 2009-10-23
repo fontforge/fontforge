@@ -60,11 +60,12 @@ typedef struct kernclassdlg {
     int downpos, down, within, orig_kern;
     SplineFont *sf;
     int layer;
-    int first_class_new, r2l;
+    int isv;
+    int first_class_new, r2l, index;
 /* For the kern pair dlg */
     int done;
     SplineChar *sc1, *sc2;
-    int isv, iskernpair;
+    int iskernpair;
     SplineChar *scf, *scs;
     struct kernclassdlg *next;
     
@@ -259,27 +260,42 @@ static void KCD_AddOffset(void *data,int left_index,int right_index, int kern) {
     KernClassDlg *kcd = data;
 
     if ( kcd->first_class_new && !kcd->r2l ) {
-	left_index = kcd->first_cnt-1;
+	left_index = kcd->index;
 	kcd->offsets[left_index*kcd->second_cnt+right_index] = kern;
     } else if ( kcd->first_class_new ) {
-	right_index = kcd->first_cnt-1;
+	right_index = kcd->index;
 	kcd->offsets[right_index*kcd->second_cnt+left_index] = kern;
     } else if ( !kcd->r2l ) {
-	right_index = kcd->second_cnt-1;
+	right_index = kcd->index;
 	kcd->offsets[left_index*kcd->second_cnt+right_index] = kern;
     } else {
-	left_index = kcd->second_cnt-1;
+	left_index = kcd->index;
 	kcd->offsets[right_index*kcd->second_cnt+left_index] = kern;
     }
 }
 
-static void KCD_AutoKernNewClass(KernClassDlg *kcd,char *classnames,int is_first) {
+static void KCD_AddOffsetAsIs(void *data,int left_index,int right_index, int kern) {
+    KernClassDlg *kcd = data;
+
+    if ( !kcd->r2l ) {
+	kcd->offsets[left_index*kcd->second_cnt+right_index] = kern;
+    } else {
+	kcd->offsets[right_index*kcd->second_cnt+left_index] = kern;
+    }
+}
+
+static void KCD_AutoKernAClass(KernClassDlg *kcd,int index,int is_first) {
     char *space[1], **lefts, **rights, **others;
-    int lcnt, rcnt; int32 ocnt;
+    int lcnt, rcnt; int32 ocnt, acnt;
+    GGadget *activelist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?0:100));
     GGadget *otherlist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?100:0));
     GTextInfo **otherti = GGadgetGetList(otherlist,&ocnt);
+    GTextInfo **activeti = GGadgetGetList(activelist,&acnt);
     int err, touch=0, separation=0, minkern=0;
     int r2l, i;
+
+    if ( kcd->isv )
+return;
 
     err = false;
     touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
@@ -288,7 +304,7 @@ static void KCD_AutoKernNewClass(KernClassDlg *kcd,char *classnames,int is_first
     if ( err )
 return;
 
-    space[0] = classnames;
+    space[0] = u2utf8_copy(activeti[index]->text);
     others = galloc((ocnt+1)*sizeof(char *));
     for ( i=0; i<ocnt; ++i ) {
 	if ( i==0 && isEverythingElse(otherti[0]->text))
@@ -298,6 +314,7 @@ return;
     }
     kcd->first_class_new = is_first;
     kcd->r2l = r2l = (kcd->subtable->lookup->lookup_flags & pst_r2l)?1:0;
+    kcd->index = index;
 
     if ( (is_first && !r2l) || (!is_first && r2l) ) {
 	lefts = space; lcnt = 1;
@@ -306,11 +323,65 @@ return;
 	lefts = others; lcnt = ocnt;
 	rights = space; rcnt=1;
     }
-    AutoKernNewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
+    AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
 	    KCD_AddOffset, kcd, touch, separation, minkern, 0);
     for ( i=0; i<ocnt; ++i )
 	free(others[i]);
     free(others);
+    free(space[0]);
+}
+
+static void KCD_AutoKernAll(KernClassDlg *kcd) {
+    char **lefts, **rights, **firsts, **seconds;
+    int lcnt, rcnt; int32 fcnt, scnt;
+    GGadget *firstlist = GWidgetGetControl( kcd->gw, CID_ClassList+0);
+    GGadget *secondlist = GWidgetGetControl( kcd->gw, CID_ClassList+100);
+    GTextInfo **secondti = GGadgetGetList(secondlist,&scnt);
+    GTextInfo **firstti = GGadgetGetList(firstlist,&fcnt);
+    int err, touch=0, separation=0, minkern=0;
+    int r2l, i;
+
+    if ( kcd->isv )
+return;
+
+    err = false;
+    touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
+    separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
+    minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
+    if ( err )
+return;
+
+    firsts = galloc((fcnt+1)*sizeof(char *));
+    for ( i=0; i<fcnt; ++i ) {
+	if ( i==0 && isEverythingElse(firstti[0]->text))
+	    firsts[i] = copy("");
+	else
+	    firsts[i] = u2utf8_copy(firstti[i]->text);
+    }
+    seconds = galloc((scnt+1)*sizeof(char *));
+    for ( i=0; i<scnt; ++i ) {
+	if ( i==0 && isEverythingElse(secondti[0]->text))
+	    seconds[i] = copy("");
+	else
+	    seconds[i] = u2utf8_copy(secondti[i]->text);
+    }
+    kcd->r2l = r2l = (kcd->subtable->lookup->lookup_flags & pst_r2l)?1:0;
+
+    if ( !r2l ) {
+	lefts = firsts; lcnt = fcnt;
+	rights = seconds; rcnt = scnt;
+    } else {
+	lefts = seconds; lcnt = scnt;
+	rights = firsts; rcnt=fcnt;
+    }
+    AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
+	    KCD_AddOffsetAsIs, kcd, touch, separation, minkern, 0);
+    for ( i=0; i<fcnt; ++i )
+	free(firsts[i]);
+    free(firsts);
+    for ( i=0; i<scnt; ++i )
+	free(seconds[i]);
+    free(seconds);
 }
 
 static int KCD_Next(GGadget *g, GEvent *e) {
@@ -349,7 +420,7 @@ return( true );
 			0, kcd->second_cnt*sizeof(DeviceTable));
 #endif
 		++kcd->first_cnt;
-		KCD_AutoKernNewClass(kcd,ret,true);
+		KCD_AutoKernAClass(kcd,kcd->first_cnt-1,true);
 	    } else {
 		int16 *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(int16));
 		for ( i=0; i<kcd->first_cnt; ++i ) {
@@ -372,7 +443,7 @@ return( true );
 		}
 #endif
 		++kcd->second_cnt;
-		KCD_AutoKernNewClass(kcd,ret,false);
+		KCD_AutoKernAClass(kcd,kcd->second_cnt-1,false);
 	    }
 	    KCD_SBReset(kcd);
 	}
@@ -1202,10 +1273,6 @@ return( KCD_Next2(g,e));
 	if ( err )
 return( true );
 
-	kc->subtable->separation = separation;
-	kc->subtable->minkern = minkern;
-	kc->subtable->kerning_by_touch = touch;
-
 	kc = kcd->orig;
 	for ( i=1; i<kc->first_cnt; ++i )
 	    free( kc->firsts[i]);
@@ -1217,6 +1284,11 @@ return( true );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(kc->adjusts);
 #endif
+
+	kc->subtable->separation = separation;
+	kc->subtable->minkern = minkern;
+	kc->subtable->kerning_by_touch = touch;
+
 	kc->first_cnt = kcd->first_cnt;
 	kc->second_cnt = kcd->second_cnt;
 	kc->firsts = galloc(kc->first_cnt*sizeof(char *));
@@ -1549,16 +1621,28 @@ return( true );
 return( true );
 }
 
-#define MID_Clear	1000
-#define MID_ClearAll	1001
-#define MID_ClearDevTab	1002
+#define MID_Clear		1000
+#define MID_ClearAll		1001
+#define MID_ClearDevTab		1002
 #define MID_ClearAllDevTab	1003
+#define MID_AutoKernRow		1004
+#define MID_AutoKernCol		1005
+#define MID_AutoKernAll		1006
 
 static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
     KernClassDlg *kcd = GDrawGetUserData(gw);
     int i;
 
     switch ( mi->mid ) {
+      case MID_AutoKernRow:
+	KCD_AutoKernAClass(kcd,kcd->st_pos/kcd->second_cnt,true);
+      break;
+      case MID_AutoKernCol:
+	KCD_AutoKernAClass(kcd,kcd->st_pos%kcd->second_cnt,false);
+      break;
+      case MID_AutoKernAll:
+	KCD_AutoKernAll(kcd);
+      break;
       case MID_Clear:
 	kcd->offsets[kcd->st_pos] = 0;
       break;
@@ -1584,9 +1668,15 @@ static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
 #endif
     }
     kcd->st_pos = -1;
+    GDrawRequestExpose(kcd->gw,NULL,false);
 }
 
 static GMenuItem kernpopupmenu[] = {
+    { { (unichar_t *) N_("AutoKern Row"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_AutoKernRow },
+    { { (unichar_t *) N_("AutoKern Column"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_AutoKernCol },
+    { { (unichar_t *) N_("AutoKern All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_AutoKernAll },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
+#define Menu_VKern_Offset 4		/* No autokerning for vertical kerning */
     { { (unichar_t *) N_("Clear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_Clear },
     { { (unichar_t *) N_("Clear All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAll },
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1598,7 +1688,10 @@ static GMenuItem kernpopupmenu[] = {
 
 static void KCD_PopupMenu(KernClassDlg *kcd,GEvent *event,int pos) {
     kcd->st_pos = pos;
-    GMenuCreatePopupMenu(event->w,event, kernpopupmenu);
+    if ( kcd->isv )
+	GMenuCreatePopupMenu(event->w,event, kernpopupmenu+Menu_VKern_Offset);
+    else
+	GMenuCreatePopupMenu(event->w,event, kernpopupmenu);
 }
 
 static void KCD_Mouse(KernClassDlg *kcd,GEvent *event) {
@@ -2486,11 +2579,11 @@ return;
     kcd->kernh = kcd->fh+3;
     kcd->kernw = GDrawGetTextWidth(gw,kernw,-1,NULL)+3;
 
-    if ( kc->subtable->separation==0 ) {
+    if ( kc->subtable->separation==0 && !kc->subtable->kerning_by_touch ) {
 	kc->subtable->separation = sf->width_separation;
 	if ( sf->width_separation==0 )
 	    kc->subtable->separation = 15*(sf->ascent+sf->descent)/100;
-	kc->subtable->minkern = kc->subtable->separation/10;
+	kc->subtable->minkern = 0;
     }
 
     i = j = 0;
@@ -2526,7 +2619,7 @@ return;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_Separation;
 	gcd[i].creator = GTextFieldCreate;
-	h4array[1] = &gcd[i++];
+	h4array[1] = &gcd[i++]; h4array[2] = GCD_Glue;
 
 	label[i].text = (unichar_t *) _("_Min Kern:");
 	label[i].text_is_1byte = true;
@@ -2538,7 +2631,7 @@ return;
 	    "Any computed kerning change whose absolute value is less\n"
 	    "that this will be ignored.\n" );
 	gcd[i].creator = GLabelCreate;
-	h4array[2] = &gcd[i++];
+	h4array[3] = &gcd[i++];
 
 	sprintf( mkbuf, "%d", kc->subtable->minkern );
 	label[i].text = (unichar_t *) mkbuf;
@@ -2550,7 +2643,7 @@ return;
 	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
 	gcd[i].gd.cid = CID_MinKern;
 	gcd[i].creator = GTextFieldCreate;
-	h4array[3] = &gcd[i++];
+	h4array[4] = &gcd[i++];
 
 	label[i].text = (unichar_t *) _("_Touching");
 	label[i].text_is_1byte = true;
@@ -2568,9 +2661,9 @@ return;
 	    "ation is 0 then the glyphs will actually be touching.");
 	gcd[i].gd.cid = CID_Touched;
 	gcd[i].creator = GCheckBoxCreate;
-	h4array[4] = &gcd[i++];
+	h4array[5] = &gcd[i++];
 
-	h4array[5] = GCD_Glue; h4array[6] = NULL;
+	h4array[6] = GCD_Glue; h4array[7] = NULL;
 
 	memset(&sepbox,0,sizeof(sepbox));
 	sepbox.gd.flags = gg_enabled|gg_visible;
@@ -2686,6 +2779,7 @@ return;
     GHVBoxSetExpandableRow(mainbox[0].ret,4);
 
     GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(sepbox.ret,gb_expandglue);
 
     GHVBoxSetPadding(hvbox.ret,0,0);
     GHVBoxSetExpandableRow(hvbox.ret,1);

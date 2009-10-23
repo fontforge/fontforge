@@ -2113,6 +2113,12 @@ void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti) {
 	gme->col_data[col].enum_vals = NULL;
 }
 
+GMenuItem *GMatrixEditGetColumnChoices(GGadget *g, int col) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+return( gme->col_data[col].enum_vals );
+}
+
 int GMatrixEditGetColCnt(GGadget *g) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
 return( gme->cols );

@@ -2110,6 +2110,8 @@ return( copy(dvstr));
 #endif
 
 static void finishedit(GGadget *g, int r, int c, int wasnew);
+static void kernfinishedit(GGadget *g, int r, int c, int wasnew);
+static void kerninit(GGadget *g, int r);
 static void enable_enum(GGadget *g, GMenuItem *mi, int r, int c);
 
 static struct col_init simplesubsci[] = {
@@ -2197,7 +2199,7 @@ static int pst2lookuptype[] = { ot_undef, gpos_single, gpos_pair, gsub_single,
      gsub_alternate, gsub_multiple, gsub_ligature, 0 };
 struct matrixinit mi[] = {
     { sizeof(simpleposci)/sizeof(struct col_init)-1, simpleposci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(pairposci)/sizeof(struct col_init)-1, pairposci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(pairposci)/sizeof(struct col_init)-1, pairposci, 0, NULL, kerninit, NULL, kernfinishedit },
     { sizeof(simplesubsci)/sizeof(struct col_init)-1, simplesubsci, 0, NULL, NULL, NULL, finishedit },
     { sizeof(altsubsci)/sizeof(struct col_init)-1, altsubsci, 0, NULL, NULL, NULL, finishedit },
     { sizeof(multsubsci)/sizeof(struct col_init)-1, multsubsci, 0, NULL, NULL, NULL, finishedit },
@@ -2230,7 +2232,7 @@ return;
 	    mi[i].ti.disabled = false;
 	} else {
 	    for ( j=0; j<rows; ++j )
-		if ( mi[i].ti.userdata == (void *) possub[r*cols+0].u.md_ival ) {
+		if ( mi[i].ti.userdata == (void *) possub[j*cols+0].u.md_ival ) {
 		    mi[i].ti.selected = false;
 		    mi[i].ti.disabled = true;
 	    break;
@@ -2356,7 +2358,7 @@ return;
     if ( possub[r*cols+0].u.md_ival!=0 ) {
 	if ( wasnew )
 	    SCSubtableDefaultSubsCheck(ci->sc,(struct lookup_subtable *) possub[r*cols+0].u.md_ival, possub,
-		    cols, r, CVLayer((CharViewBase *) (ci->cv)) );
+		    cols, r, ci->def_layer );
 return;
     }
     /* They asked to create a new subtable */
@@ -2379,6 +2381,88 @@ return;
     }
     ci->old_sub = NULL;
     GGadgetRedraw(g);
+}
+
+static void kern_AddKP(void *data,SplineChar *left, SplineChar *right, int off) {
+    int *kp_offset = data;
+    *kp_offset = off;
+}
+
+static void kernfinishedit(GGadget *g, int r, int c, int wasnew) {
+    int rows;
+    struct matrix_data *possub;
+    CharInfo *ci;
+    int cols;
+    struct lookup_subtable *sub;
+    SplineChar *lefts[2], *rights[2];
+    int touch, separation, kp_offset=0;
+    SplineChar *osc;
+
+    if ( c==1 ) {
+	ci = GDrawGetUserData(GGadgetGetWindow(g));
+	possub = GMatrixEditGet(g, &rows);
+	cols = GMatrixEditGetColCnt(g);
+	sub = (struct lookup_subtable *) possub[r*cols+0].u.md_ival;
+	if ( possub[r*cols+PAIR_DX_ADV1].u.md_ival==0 &&
+		possub[r*cols+1].u.md_str!=NULL &&
+		(osc=SFGetChar(ci->sc->parent,-1,possub[r*cols+1].u.md_str))!=NULL ) {
+	    lefts[1] = rights[1] = NULL;
+	    if ( sub->lookup->lookup_flags & pst_r2l ) {
+		lefts[0] = osc;
+		rights[0] = ci->sc;
+	    } else {
+		lefts[0] = ci->sc;
+		rights[0] = osc;
+	    }
+	    touch = sub->kerning_by_touch;
+	    separation = sub->separation;
+	    if ( separation==0 && !touch )
+		separation = 15*(osc->parent->ascent+osc->parent->descent)/100;
+	    AutoKern2(osc->parent,ci->def_layer,lefts,rights,sub,
+		    touch,separation,0,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
+		    kern_AddKP,&kp_offset);
+	    possub[r*cols+PAIR_DX_ADV1].u.md_ival=kp_offset;
+	}
+    } else
+	finishedit(g,r,c,wasnew);
+}
+
+static int SubHasScript(uint32 script,struct lookup_subtable *sub) {
+    FeatureScriptLangList *f;
+    struct scriptlanglist *s;
+
+    if ( sub==NULL )
+return(false);
+    for ( f = sub->lookup->features; f!=NULL; f=f->next ) {
+	for ( s=f->scripts; s!=NULL; s=s->next ) {
+	    if ( s->script == script )
+return( true );
+	}
+    }
+return( false );
+}
+
+static void kerninit(GGadget *g, int r) {
+    CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    GMenuItem *mi = GMatrixEditGetColumnChoices(g,0);
+    int i,cols,rows;
+    struct matrix_data *possub;
+    uint32 script;
+
+    possub = GMatrixEditGet(g, &rows);
+    cols = GMatrixEditGetColCnt(g);
+
+    if ( r!=0 )
+	possub[r*cols+0].u.md_ival = possub[(r-1)*cols+0].u.md_ival;
+    else {
+	script = SCScriptFromUnicode(ci->sc);
+	for ( i=0; mi[i].ti.line || mi[i].ti.text!=NULL; ++i ) {
+	    if ( SubHasScript(script,(struct lookup_subtable *) mi[i].ti.userdata ) )
+	break;
+	}
+	if ( mi[i].ti.line || mi[i].ti.text!=NULL )
+	    possub[r*cols+0].u.md_ival = (intpt) mi[i].ti.userdata;
+    }
 }
 
 static void CI_DoHideUnusedSingle(CharInfo *ci) {

@@ -442,6 +442,7 @@ void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
 void GMatrixEditEnableColumn(GGadget *g, int col, int enabled);
 void GMatrixEditShowColumn(GGadget *g, int col, int visible);
 void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti);
+GMenuItem *GMatrixEditGetColumnChoices(GGadget *g, int col);
 void GMatrixEditSetColumnCompletion(GGadget *g, int col, GTextCompletionHandler completion);
 
 GWindow GDrawableGetWindow(GGadget *g);
