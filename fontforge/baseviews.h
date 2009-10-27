@@ -141,6 +141,20 @@ typedef struct charviewbase {
     struct cvcontainer *container;		/* The sv (or whatever) within which this view is embedded (if it is embedded) */
 } CharViewBase;
 
+struct fvcontainer {
+    struct fvcontainer_funcs *funcs;
+};
+
+struct fvcontainer_funcs {
+    enum fv_container_type { fvc_kernformat } type;
+    int is_modal;		/* If the fvc is in a modal dialog then we can't create modeless windows (like charviews, fontinfo, etc.) */
+    void (*activateMe)(struct fvcontainer *fvc,struct fontviewbase *fv);
+    void (*charEvent)(struct fvcontainer *fvc,void *event);
+    void (*doClose)(struct fvcontainer *fvc);		/* Cancel the containing dlg? */
+    void (*doResize)(struct fvcontainer *fvc,struct fontviewbase *fv);
+				/* Resize the container so that fv fits */
+};
+
 typedef struct fontviewbase {
     struct fontviewbase *next;		/* Next on list of open fontviews */
     struct fontviewbase *nextsame;	/* Next fv looking at this font */
@@ -157,6 +171,7 @@ typedef struct fontviewbase {
 #ifndef _NO_PYTHON
     void *python_fv_object;
 #endif
+    struct fvcontainer *container;
 } FontViewBase;
 
 enum origins { or_zero, or_center, or_lastpress, or_value, or_undefined };
