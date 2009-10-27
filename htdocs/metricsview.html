@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 22-Oct-2009 -->
+  <!-- AP: Last modified: 27-Oct-2009 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -697,15 +697,15 @@
   <P>
   The <A HREF="lookups.html">Element-&gt;Font Info-&gt;Lookups</A> provides
   an interface to
-  this.<IMG SRC="kerningformat.png" WIDTH="444" HEIGHT="227" ALIGN="Right">
+  this.<IMG SRC="kerningformat.png" WIDTH="444" HEIGHT="683" ALIGN="Right">
   It brings up a dialog showing all the GPOS lookups (of which kerning is one)
-  and their subtables. Each kerning class lives in its own subtable. When you
-  create a kerning subtable you will be asked whether you want a set of individual
-  kerning pairs or a matrix based on kerning classes. 
+  and their subtables. Each set of kerning classes lives in its own subtable.
+  When you create a kerning subtable you will be asked whether you want a set
+  of individual kerning pairs or a matrix based on kerning classes.
   <P>
   If you choose the latter then you may have fontforge try to guess a good
-  set of classes for you (it will look at the glyphs selected in the fontview
-  and divide them into classes). The Intra Class distance gives you some control
+  set of classes for you (it will look at the glyphs selected and divide them
+  into classes). The <CODE>Intra Class Distance</CODE> gives you some control
   over how picky fontforge will be about what goes into a class. (This can
   be thought of as being in em-units and being, roughly, the average error
   in how two different glyphs interact with other glyphs). A value of 1 is
@@ -725,7 +725,7 @@
   of trying to make the optical distance be the desired value this attempts
   to make the minimum separation be the desired value. This is rarely useful,
   but occasionally people want to set text where the letters actually touch
-  one another. 
+  one another.<BR clear="all">
   <P>
   <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="535" ALIGN="Left">Each kerning
   class belongs to a <A HREF="lookups.html">lookup subtable</A> and the subtable

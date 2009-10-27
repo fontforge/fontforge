@@ -389,6 +389,7 @@ typedef struct fontview {
 	/*  fix up the window. We do get a configure notify, but the window   */
 	/*  stays the same size, so kludge things */
     unsigned int glyphlabel: 2;
+    unsigned int notactive:1;			/* When embedded in a dlg */
     int16 magnify;
     int16 user_requested_magnify;
     struct searchview *sv;
@@ -589,6 +590,25 @@ struct gfi_data {		/* FontInfo */
     struct lkdata tables[2];
     int lkwidth, lkheight;
     int first_sel_lookup, first_sel_subtable;
+};
+
+struct kf_dlg /* : fvcontainer */ {
+    struct fvcontainer base;
+    struct lookup_subtable *sub;
+    GWindow gw, dw;
+    GFont *plain, *bold;
+    int fh, as;
+    GGadget *mb, *guts;
+    int mbh, label2_y;
+
+    SplineFont *sf;
+    int def_layer;
+    struct kf_results *results;
+    int done;
+
+    FontView *active;
+    FontView *first_fv;
+    FontView *second_fv;
 };
 
 enum genfam { gf_none, gf_macfamily, gf_ttc };
@@ -1134,4 +1154,9 @@ extern struct hslrgb *SFFontCols(SplineFont *sf,struct hslrgb fontcols[6]);
 extern Color view_bgcol;	/* Background color for views */
 extern void MVColInit(void);
 extern void CVColInit( void );
+
+extern void FontViewRemove(FontView *fv);
+extern void FVChar(FontView *fv,GEvent *event);
+extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
+extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
 #endif	/* _VIEWS_H */

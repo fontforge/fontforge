@@ -587,6 +587,18 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 
     if ( chunk_height <= 0 )
 	chunk_height = (sf->ascent + sf->descent)/200;
+    if ( separation==0 && !from_closest_approach ) {
+	if ( into->separation==0 && !into->kerning_by_touch ) {
+	    into->separation = sf->width_separation;
+	    if ( sf->width_separation==0 )
+		into->separation = 15*(sf->ascent+sf->descent)/100;
+	    separation = into->separation;
+	} else {
+	    separation = into->separation;
+	    from_closest_approach = into->kerning_by_touch;
+	    min_kern = into->minkern;
+	}
+    }
 
     memset(&all,0,sizeof(all));
     all.layer = layer;

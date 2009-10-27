@@ -4642,60 +4642,132 @@ return( NULL );
 return( NewSubtable(found,isgpos,sf,sd,def_layer));
 }
 
-static FontViewBase *FVofSFLayer(SplineFont *sf, int def_layer) {
-    FontViewBase *fv;
+static void kf_activateMe(struct fvcontainer *fvc,FontViewBase *fvb) {
+    struct kf_dlg *kf = (struct kf_dlg *) fvc;
+    FontView *fv = (FontView *) fvb;
 
-    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
-	if ( fv->active_layer == def_layer )
-    break;
-    }
-    if ( fv==NULL )
-	fv = sf->fv;
-return( fv );
-}
-
-static void BuildClassesFromSelection(SplineFont *sf,int def_layer,struct lookup_subtable *sub,real good_enough) {
-    FontViewBase *fv;
-    EncMap *map;
-    int selcnt;
-    int enc,gid;
-    SplineChar **glyphlist, *sc;
-
-    fv = FVofSFLayer(sf,def_layer);
-
-    map = fv->map;
-    selcnt=0;
-    for ( enc=0; enc<map->enccount; ++enc ) {
-	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
-		SCWorthOutputting(sf->glyphs[gid]))
-	    ++selcnt;
-    }
-    if ( selcnt<=1 ) {
-	ff_post_error(_("No selection"), _("Please select some glyphs in the font view for FontForge to put into classes."));
+    if ( !fv->notactive )
 return;
-    }
 
-    glyphlist = galloc((selcnt+1)*sizeof(SplineChar *));
-    selcnt=0;
-    for ( enc=0; enc<map->enccount; ++enc ) {
-	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
-		SCWorthOutputting(sc = sf->glyphs[gid]))
-	    glyphlist[selcnt++] = sc;
-    }
-    glyphlist[selcnt] = NULL;
-    AutoKern2BuildClasses(sf,def_layer,glyphlist,glyphlist,sub,0,0,0,good_enough);
-    free(glyphlist);
+    kf->first_fv->notactive = true;
+    kf->second_fv->notactive = true;
+    fv->notactive = false;
+    kf->active = fv;
+    GDrawSetUserData(kf->dw,fv);
+    GDrawRequestExpose(kf->dw,NULL,false);
 }
 
-struct kf_dlg {
-    struct lookup_subtable *sub;
-    SplineFont *sf;
-    int def_layer;
-    real *ge;
-    GWindow gw;
-    int done;
-    int ret;
+static void kf_charEvent(struct fvcontainer *fvc,void *event) {
+    struct kf_dlg *kf = (struct kf_dlg *) fvc;
+    FVChar(kf->active,event);
+}
+
+static void kf_doClose(struct fvcontainer *fvc) {
+    struct kf_dlg *kf = (struct kf_dlg *) fvc;
+    kf->done = true;
+}
+
+static void kf_doResize(struct fvcontainer *fvc,FontViewBase *fvb) {
+/*    struct kf_dlg *kf = (struct kf_dlg *) fvc; */
+/*    FontView *fv = (FontView *) fvb; */
+}
+
+static struct fvcontainer_funcs kernformat_funcs = {
+    fvc_kernformat,
+    true,			/* Modal dialog. No charviews, etc. */
+    kf_activateMe,
+    kf_charEvent,
+    kf_doClose,
+    kf_doResize
 };
+
+static void kf_FVSetSize(struct kf_dlg *kf,FontView *fv,int width, int height,
+	int y, int sbsize) {
+    int cc, rc, topchar;
+    GRect subsize;
+
+    topchar = fv->rowoff*fv->colcnt;
+    cc = (width-1) / fv->cbw;
+    if ( cc<1 ) cc=1;
+    rc = (height-1)/ fv->cbh;
+    if ( rc<1 ) rc = 1;
+    subsize.x = 0; subsize.y = 0;
+    subsize.width = cc*fv->cbw + 1;
+    subsize.height = rc*fv->cbh + 1;
+    GDrawResize(fv->v,subsize.width,subsize.height);
+    GDrawMove(fv->v,0,y);
+    GGadgetMove(fv->vsb,subsize.width,y);
+    GGadgetResize(fv->vsb,sbsize,subsize.height);
+
+    fv->colcnt = cc; fv->rowcnt = rc;
+    fv->width = subsize.width; fv->height = subsize.height;
+    fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
+    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+    fv->rowoff = topchar/fv->colcnt;
+    if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
+        fv->rowoff = fv->rowltot-fv->rowcnt;
+    if ( fv->rowoff<0 ) fv->rowoff =0;
+    GScrollBarSetPos(fv->vsb,fv->rowoff);
+
+    GDrawRequestExpose(fv->v,NULL,true);
+}
+
+static void kf_sizeSet(struct kf_dlg *kf,GWindow dw) {
+    GRect size, gsize;
+    int width, height, y;
+
+    GDrawGetSize(dw,&size);
+    GGadgetGetSize(kf->first_fv->vsb,&gsize);
+    width = size.width - gsize.width;
+    height = size.height - kf->mbh - kf->first_fv->infoh - 2*(kf->fh+4);
+    height /= 2;
+
+    y = kf->mbh + kf->first_fv->infoh + (kf->fh + 4);
+    kf_FVSetSize(kf,kf->first_fv,width,height,y,gsize.width);
+
+    kf->label2_y = y + height+2;
+    y = kf->label2_y + kf->fh + 2;
+    kf_FVSetSize(kf,kf->second_fv,width,height,y,gsize.width);
+}
+
+static int kf_sub_e_h(GWindow pixmap, GEvent *event) {
+    FontView *active_fv = (FontView *) GDrawGetUserData(pixmap);
+    struct kf_dlg *kf = (struct kf_dlg *) (active_fv->b.container);
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(active_fv->vsb,event));
+    }
+    
+    switch ( event->type ) {
+      case et_expose:
+	FVDrawInfo(active_fv,pixmap,event);
+	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
+	GDrawDrawBiText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
+		_("Select glyphs for the first part of the kern pair"),-1,NULL,0x000000);
+	GDrawSetFont(pixmap, kf->second_fv->notactive? kf->plain : kf->bold );
+	GDrawDrawBiText8(pixmap,10,kf->label2_y+kf->as,
+		_("Select glyphs for the second part of the kern pair"),-1,NULL,0x000000);
+      break;
+      case et_char:
+	kf_charEvent(&kf->base,event);
+      break;
+      case et_mousedown:
+	if ( event->u.mouse.y<kf->mbh )
+return(false);
+	kf_activateMe(&kf->base,(struct fontviewbase *)
+		(( event->u.mouse.y > kf->label2_y ) ?
+			kf->second_fv : kf->first_fv) );
+return(false);
+      break;
+      case et_mouseup: case et_mousemove:
+return(false);
+      case et_resize:
+        kf_sizeSet(kf,pixmap);
+      break;
+    }
+return( true );
+}
 
 #undef CID_Separation
 #undef CID_MinKern
@@ -4707,7 +4779,17 @@ struct kf_dlg {
 #define CID_MinKern	1004
 #define CID_Touched	1005
 #define CID_ClassDistance	1006
+#define CID_KPAuto	1007
+#define CID_Guts	1008
 
+struct kf_results {
+    int asked;
+    int autokern;
+    int autobuild;
+    real good_enough;
+    SplineChar **firstglyphs;
+    SplineChar **secondglyphs;
+};
 
 static int KF_FormatChange(GGadget *g, GEvent *e) {
     struct kf_dlg *kf;
@@ -4717,28 +4799,58 @@ static int KF_FormatChange(GGadget *g, GEvent *e) {
 	kf = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_KPairs)) ) {
 	    GGadgetSetEnabled(GWidgetGetControl(kf->gw,CID_KCBuild),0);
+	    GGadgetSetEnabled(GWidgetGetControl(kf->gw,CID_KPAuto),1);
 	    sprintf(mkbuf,"%d",15*(kf->sf->ascent+kf->sf->descent)/1000 );
 	    GGadgetSetTitle8(GWidgetGetControl(kf->gw,CID_MinKern),mkbuf);
 	} else {
 	    GGadgetSetEnabled(GWidgetGetControl(kf->gw,CID_KCBuild),1);
+	    GGadgetSetEnabled(GWidgetGetControl(kf->gw,CID_KPAuto),0);
 	    GGadgetSetTitle8(GWidgetGetControl(kf->gw,CID_MinKern),"0");
 	}
     }
 return( true );
 }
 
+static SplineChar **SelectedGlyphs(FontView *_fv) {
+    FontViewBase *fv = (FontViewBase *) _fv;
+    SplineFont *sf;
+    EncMap *map;
+    int selcnt;
+    int enc,gid;
+    SplineChar **glyphlist, *sc;
+
+    map = fv->map;
+    sf = fv->sf;
+    selcnt=0;
+    for ( enc=0; enc<map->enccount; ++enc ) {
+	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
+		SCWorthOutputting(sf->glyphs[gid]))
+	    ++selcnt;
+    }
+    if ( selcnt<1 ) {
+	ff_post_error(_("No selection"), _("Please select some glyphs in the font views at the bottom of the dialog for FontForge to put into classes."));
+return(NULL);
+    }
+
+    glyphlist = galloc((selcnt+1)*sizeof(SplineChar *));
+    selcnt=0;
+    for ( enc=0; enc<map->enccount; ++enc ) {
+	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
+		SCWorthOutputting(sc = sf->glyphs[gid]))
+	    glyphlist[selcnt++] = sc;
+    }
+    glyphlist[selcnt] = NULL;
+return( glyphlist );
+}
+
 static int KF_OK(GGadget *g, GEvent *e) {
-    struct kf_dlg *kf;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	kf = GDrawGetUserData(GGadgetGetWindow(g));
+	struct kf_dlg *kf = GDrawGetUserData(GGadgetGetWindow(g));
 	int touch, separation, minkern, err;
 	real good_enough=0;
-	int isclass, autobuild=0;
-	FontViewBase *fv;
-	EncMap *map;
-	int selcnt;
-	int enc,gid;
+	int isclass, autobuild=0, autokern=0;
+	struct kf_results *results = kf->results;
 
 	err = false;
 	touch = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_Touched));
@@ -4753,32 +4865,28 @@ return( true );
 	    good_enough = GetReal8(kf->gw,CID_ClassDistance,_("Intra Class Distance"),&err);
 	    if ( err )
 return( true );
-
-	    fv = FVofSFLayer(kf->sf,kf->def_layer);
-
-	    map = fv->map;
-	    selcnt=0;
-	    for ( enc=0; enc<map->enccount; ++enc ) {
-		if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
-			SCWorthOutputting(kf->sf->glyphs[gid]))
-		    ++selcnt;
-	    }
-	    if ( selcnt<=1 ) {
-		GDrawRaise(((FontView *) fv)->gw);
-		ff_post_error(_("No selection"), _("Please select some glyphs in the font view for FontForge to put into classes."));
-return(true);
+	} else
+	    autokern = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_KPAuto));
+	if ( autobuild || autokern ) {
+	    results->firstglyphs = SelectedGlyphs(kf->first_fv);
+	    if ( results->firstglyphs == NULL )
+return( true );
+	    results->secondglyphs = SelectedGlyphs(kf->second_fv);
+	    if ( results->secondglyphs == NULL ) {
+		free(results->firstglyphs); results->firstglyphs=NULL;
+return( true );
 	    }
 	}
 	kf->sub->separation = separation;
 	kf->sub->minkern = minkern;
 	kf->sub->kerning_by_touch = touch;
-	*kf->ge = good_enough;
+	results->good_enough = good_enough;
 	if ( !isclass )
-	    kf->ret = 0;
-	else if ( !autobuild )
-	    kf->ret = 1;
+	    results->asked = 0;
 	else
-	    kf->ret = 3;
+	    results->asked = 1;
+	results->autobuild = autobuild;
+	results->autokern = autokern;
 	kf->done = true;
     }
 return( true );
@@ -4790,7 +4898,6 @@ static int KF_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	kf = GDrawGetUserData(GGadgetGetWindow(g));
 	kf->done = true;
-	kf->ret = 2;
     }
 return( true );
 }
@@ -4801,7 +4908,6 @@ static int kf_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_close:
 	kf->done = true;
-	kf->ret = 2;
       break;
       case et_char:
 return( false );
@@ -4811,16 +4917,19 @@ return( true );
 }
 
 static int kern_format_dlg( SplineFont *sf, int def_layer,
-	struct lookup_subtable *sub, real *ge ) {
+	struct lookup_subtable *sub, struct kf_results *results ) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[6];
-    GGadgetCreateData *varray[15], *h1array[5], *h2array[6], *h4array[8], *buttonarray[8];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[14], boxes[7];
+    GGadgetCreateData *varray[17], *h1array[5], *h2array[6], *h3array[6], *h4array[8], *buttonarray[8];
+    GTextInfo label[14];
     char sepbuf[40], mkbuf[40], distancebuf[40];
     struct kf_dlg kf;
-    int i,j;
+    int i,j, guts_row;
     /* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel, 3=>Automatically build classes */
+    FontRequest rq;
+    int as, ds, ld;
+    static GFont *plainfont = NULL, *boldfont=NULL;
 
     if ( sub->separation==0 && !sub->kerning_by_touch ) {
 	sub->separation = sf->width_separation;
@@ -4835,10 +4944,12 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     memset(&label,0,sizeof(label));
     memset(&kf,0,sizeof(kf));
 
+    kf.base.funcs = &kernformat_funcs;
     kf.sub = sub;
-    kf.ge = ge;
+    kf.results = results;
     kf.sf = sf;
     kf.def_layer = def_layer;
+    results->asked = 2;			/* Cancel */
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -4851,6 +4962,22 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     pos.width = 100;
     pos.height = 100;
     kf.gw = GDrawCreateTopWindow(NULL,&pos,kf_e_h,&kf,&wattrs);
+
+    if ( plainfont==NULL ) {
+	memset(&rq,0,sizeof(rq));
+	rq.utf8_family_name = SANS_UI_FAMILIES;
+	rq.point_size = 12;
+	rq.weight = 400;
+	plainfont = GDrawInstanciateFont(NULL,&rq);
+	plainfont = GResourceFindFont("KernFormat.Font",plainfont);
+	GDrawDecomposeFont(plainfont, &rq);
+	rq.weight = 700;
+	boldfont = GDrawInstanciateFont(NULL,&rq);
+	boldfont = GResourceFindFont("KernFormat.BoldFont",boldfont);
+    }
+    kf.plain = plainfont; kf.bold = boldfont;
+    GDrawFontMetrics(kf.plain,&as,&ds,&ld);
+    kf.fh = as+ds; kf.as = as;
 
     i = j = 0;
 
@@ -4867,11 +4994,27 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     gcd[i].creator = GRadioCreate;
     varray[j++] = &gcd[i++]; varray[j++] = NULL;
 
+    label[i].text = (unichar_t *) _("FontForge will auto kern the selected glyphs");
+    label[i].text_is_1byte = true;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+    gcd[i].gd.popup_msg = (unichar_t *) _(
+	"FontForge will look at the glyphs selected in the font view\n"
+	"and guess at good kerning values for them" );
+    gcd[i].gd.cid = CID_KPAuto;
+    gcd[i].creator = GCheckBoxCreate;
+    h1array[0] = GCD_HPad10; h1array[1] = &gcd[i++]; h1array[2] = GCD_Glue; h1array[3] = NULL;
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = h1array;
+    boxes[2].creator = GHBoxCreate;
+    varray[j++] = &boxes[2]; varray[j++] = NULL;
+
     label[i].text = (unichar_t *) _("Use a matrix of kerning classes");
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_rad_continueold;
     gcd[i].gd.popup_msg = (unichar_t *) _(
 	"In this format you define a series of glyph classes and\n"
 	"specify a matix showing how each class interacts with all\n"
@@ -4892,11 +5035,11 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	"and generate kerning classes based on that information." );
     gcd[i].gd.cid = CID_KCBuild;
     gcd[i].creator = GCheckBoxCreate;
-    h1array[0] = GCD_HPad10; h1array[1] = &gcd[i++]; h1array[2] = GCD_Glue; h1array[3] = NULL;
-    boxes[2].gd.flags = gg_enabled|gg_visible;
-    boxes[2].gd.u.boxelements = h1array;
-    boxes[2].creator = GHBoxCreate;
-    varray[j++] = &boxes[2]; varray[j++] = NULL;
+    h2array[0] = GCD_HPad10; h2array[1] = &gcd[i++]; h2array[2] = GCD_Glue; h2array[3] = NULL;
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = h2array;
+    boxes[3].creator = GHBoxCreate;
+    varray[j++] = &boxes[3]; varray[j++] = NULL;
 
     label[i].text = (unichar_t *) _("Intra Class Distance:");
     label[i].text_is_1byte = true;
@@ -4913,7 +5056,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	"while a larger number (like 20) will mean fewer classes,\n"
 	"each with more glyphs." );
     gcd[i].creator = GLabelCreate;
-    h2array[0] = GCD_HPad10; h2array[1] = &gcd[i++];
+    h3array[0] = GCD_HPad10; h3array[1] = &gcd[i++];
 
     sprintf( distancebuf, "%g", (sf->ascent+sf->descent)/100. );
     label[i].text = (unichar_t *) distancebuf;
@@ -4925,12 +5068,12 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
     gcd[i].gd.cid = CID_ClassDistance;
     gcd[i].creator = GTextFieldCreate;
-    h2array[2] = &gcd[i++]; h2array[3] = GCD_Glue; h2array[4] = NULL;
+    h3array[2] = &gcd[i++]; h3array[3] = GCD_Glue; h3array[4] = NULL;
 
-    boxes[4].gd.flags = gg_enabled|gg_visible;
-    boxes[4].gd.u.boxelements = h2array;
-    boxes[4].creator = GHBoxCreate;
-    varray[j++] = &boxes[4]; varray[j++] = NULL;
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = h3array;
+    boxes[5].creator = GHBoxCreate;
+    varray[j++] = &boxes[5]; varray[j++] = NULL;
     varray[j++] = GCD_Glue; varray[j++] = NULL;
 
 	label[i].text = (unichar_t *) _("_Default Separation:");
@@ -5002,10 +5145,17 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 
 	h4array[6] = GCD_Glue; h4array[7] = NULL;
 
-	boxes[3].gd.flags = gg_enabled|gg_visible;
-	boxes[3].gd.u.boxelements = h4array;
-	boxes[3].creator = GHBoxCreate;
-	varray[j++] = &boxes[3]; varray[j++] = NULL;
+	boxes[4].gd.flags = gg_enabled|gg_visible;
+	boxes[4].gd.u.boxelements = h4array;
+	boxes[4].creator = GHBoxCreate;
+	varray[j++] = &boxes[4]; varray[j++] = NULL;
+
+    guts_row = j/2;
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.cid = CID_Guts;
+    gcd[i].gd.u.drawable_e_h = kf_sub_e_h;
+    gcd[i].creator = GDrawableCreate;
+    varray[j++] = &gcd[i++]; varray[j++] = NULL;
 
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[i].text = (unichar_t *) _("_OK");
@@ -5026,10 +5176,10 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[i-2]; buttonarray[2] = GCD_Glue;
     buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[i-1]; buttonarray[5] = GCD_Glue;
     buttonarray[6] = NULL;
-    boxes[5].gd.flags = gg_enabled|gg_visible;
-    boxes[5].gd.u.boxelements = buttonarray;
-    boxes[5].creator = GHBoxCreate;
-    varray[j++] = &boxes[5]; varray[j++] = NULL; varray[j++] = NULL;
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = buttonarray;
+    boxes[6].creator = GHBoxCreate;
+    varray[j++] = &boxes[6]; varray[j++] = NULL; varray[j++] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
@@ -5038,18 +5188,25 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 
     GGadgetsCreate(kf.gw,boxes);
 
-    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(boxes[0].ret,guts_row);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
+
+    KFFontViewInits(&kf, GWidgetGetControl(kf.gw,CID_Guts));
+    kf_activateMe((struct fvcontainer *) &kf,(struct fontviewbase *) kf.first_fv);
+
     GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(kf.gw,true);
     while ( !kf.done )
 	GDrawProcessOneEvent(NULL);
+    FontViewFree(&kf.second_fv->b);
+    FontViewFree(&kf.first_fv->b);
     GDrawSetUserData(kf.gw,NULL);
     GDrawDestroyWindow(kf.gw);
-return( kf.ret );
+return( results->asked );
 }
 
 void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
@@ -5089,9 +5246,9 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 		sub->kc==NULL &&
 		!sub->per_glyph_pst_or_kern ) {
 	char *buts[5];
-	int asked;
-	real good_enough=0;
+	struct kf_results results;
 
+	memset(&results,0,sizeof(results));
 	if ( sd!=NULL && sd->flags&sdf_verticalkern )
 	    sub->vertical_kerning = true;
 	else if ( sd!=NULL && sd->flags&sdf_horizontalkern )
@@ -5100,25 +5257,31 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	    sub->vertical_kerning = VerticalKernFeature(sf,sub->lookup,true);
 
 	if ( sd!=NULL && (sd->flags&sdf_kernclass) )
-	    asked = 1;
+	    results.asked = 1;
 	else if ( sd!=NULL && (sd->flags&sdf_kernpair) )
-	    asked = 0;
+	    results.asked = 0;
 	else {
 	    if ( sub->vertical_kerning || nested ) {
 		buts[0] = _("_Pairs"); buts[1] = _("C_lasses");
 		buts[2] = _("_Cancel"); buts[3]=NULL;
-		asked = gwwv_ask(_("Kerning format"),(const char **) buts,0,1,_("Kerning may be specified either by classes of glyphs\nor by pairwise combinatins of individual glyphs.\nWhich do you want for this subtable?") );
+		results.asked = gwwv_ask(_("Kerning format"),(const char **) buts,0,1,_("Kerning may be specified either by classes of glyphs\nor by pairwise combinatins of individual glyphs.\nWhich do you want for this subtable?") );
 	    } else {
 		nested = 1;
-		asked = kern_format_dlg(sf,def_layer,sub,&good_enough);
+		kern_format_dlg(sf,def_layer,sub,&results);
 		nested = 0;
 	    }
-	    if ( asked==2 )
+	    if ( results.asked==2 )
 return;
 	}
-	if ( asked==0 )
+	if ( results.asked==0 ) {
 	    sub->per_glyph_pst_or_kern = true;
-	else {
+	    if ( results.autokern ) {
+		/* Need to fix for Hebrew !!!! */
+		AutoKern2(sf, def_layer,results.firstglyphs,results.secondglyphs,
+		    sub,
+		    0,0,0, 0, NULL, NULL);
+	    }
+	} else {
 	    sub->kc = chunkalloc(sizeof(KernClass));
 	    if ( sub->vertical_kerning ) {
 		sub->kc->next = sf->vkerns;
@@ -5135,9 +5298,13 @@ return;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    sub->kc->adjusts = gcalloc(1,sizeof(DeviceTable));
 #endif
-	    if ( asked==3 )
-		BuildClassesFromSelection(sf,def_layer,sub,good_enough);
+		/* Need to fix for Hebrew !!!! */
+	    if ( results.autobuild )
+		AutoKern2BuildClasses(sf,def_layer,results.firstglyphs,
+			results.secondglyphs,sub,0,0,0,results.good_enough);
 	}
+	free(results.firstglyphs);
+	free(results.secondglyphs);
     }
 
     if ( sub->fpst && sf->fontinfo!=NULL ) {
