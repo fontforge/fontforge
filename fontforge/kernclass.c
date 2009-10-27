@@ -2776,7 +2776,7 @@ return;
     kcd->vsb = gcd[vi].ret;
     kcd->hsb = gcd[vi+1].ret;
 
-    GHVBoxSetExpandableRow(mainbox[0].ret,4);
+    GHVBoxSetExpandableRow(mainbox[0].ret,5);
 
     GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
     GHVBoxSetExpandableCol(sepbox.ret,gb_expandglue);
