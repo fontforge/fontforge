@@ -5283,8 +5283,15 @@ return;
 	if ( results.asked==0 ) {
 	    sub->per_glyph_pst_or_kern = true;
 	    if ( results.autokern ) {
-		/* Need to fix for Hebrew !!!! */
-		AutoKern2(sf, def_layer,results.firstglyphs,results.secondglyphs,
+		SplineChar **lefts, **rights;
+		if ( sub->lookup->lookup_flags & pst_r2l ) {
+		    lefts = results.secondglyphs;
+		    rights = results.firstglyphs;
+		} else {
+		    lefts = results.firstglyphs;
+		    rights = results.secondglyphs;
+		}
+		AutoKern2(sf, def_layer,lefts,rights,
 		    sub,
 		    0,0,0, 0, NULL, NULL);
 	    }

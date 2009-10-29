@@ -11529,7 +11529,7 @@ static PyObject *PyFFFont_autoKern(PyObject *self, PyObject *args, PyObject *key
     char *subtablename;
     int separation;
     PyObject *list1=NULL, *list2=NULL;
-    SplineChar **first, **second;
+    SplineChar **first, **second, **left, **right;
     struct lookup_subtable *sub;
     int minkern = 10, touch=0, height=0;
 
@@ -11560,7 +11560,14 @@ return( NULL );
     }
     if ( first==NULL || second==NULL )
 return( NULL );
-    AutoKern2(sf, fv->active_layer,first,second, sub,
+    if ( sub->lookup->lookup_flags & pst_r2l ) {
+	left = second;
+	right = first;
+    } else {
+	left = first;
+	right = second;
+    }
+    AutoKern2(sf, fv->active_layer,left,right, sub,
 	separation, minkern, touch, height,
 	NULL,NULL);
     free(first);

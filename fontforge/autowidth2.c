@@ -581,6 +581,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
     int i,cnt,k, kern;
     SplineChar *sc;
     KernPair *last, *kp, *next;
+    int is_l2r = !(into->lookup->lookup_flags & pst_r2l);
     /* Normally, kerning is based on some sort of average distance between */
     /*  two glyphs, but sometimes it is useful to kern so much that the glyphs*/
     /*  just touch. If that is desired then set from_closest_approach. */
@@ -671,10 +672,16 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 		if ( addkp==NULL ) {
 		    kp = chunkalloc(sizeof(KernPair));
 		    kp->subtable = into;
-		    kp->sc = g2->sc;
 		    kp->off = kern;
-		    kp->next = g1->sc->kerns;
-		    g1->sc->kerns = kp;
+		    if ( is_l2r ) {
+			kp->sc = g2->sc;
+			kp->next = g1->sc->kerns;
+			g1->sc->kerns = kp;
+		    } else {
+			kp->sc = g1->sc;
+			kp->next = g2->sc->kerns;
+			g2->sc->kerns = kp;
+		    }
 		} else
 		    (*addkp)(data,g1->sc,g2->sc,kern);
 	    }
@@ -694,7 +701,7 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
     SplineChar ***left = GlyphClassesFromNames(sf,leftnames,lcnt);
     SplineChar ***right = GlyphClassesFromNames(sf,rightnames,rcnt);
     int **ileft = galloc(lcnt*sizeof(int*));
-    int **iright = galloc(rcnt*sizeof(int));
+    int **iright = galloc(rcnt*sizeof(int*));
     SplineChar **class, *sc;
 
     if ( chunk_height <= 0 )
@@ -780,109 +787,6 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
     free(iright); free(right);
     free(glyphs);
 }
-
-#if 0
-void AutoKern2Class(FontViewBase *fv,KernClass *kc,
-	int from_closest_approach, int separation,int min_kern,
-	int chunk_height) {
-    AW_Data all;
-    AW_Glyph *glyphs;
-    int i,cnt,k, kern;
-    SplineFont *sf = fv->sf;
-    SplineChar ***left = GlyphClassesFromNames(sf,kc->firsts,kc->first_cnt);
-    SplineChar ***right = GlyphClassesFromNames(sf,kc->seconds,kc->second_cnt);
-    int **ileft = galloc(kc->first_cnt*sizeof(int*));
-    int **iright = galloc(kc->second_cnt*sizeof(int));
-    SplineChar **class, *sc;
-
-    if ( chunk_height <= 0 )
-	chunk_height = (sf->ascent + sf->descent)/200;
-
-    memset(&all,0,sizeof(all));
-    all.layer = fv->active_layer;
-    all.sub_height = chunk_height;
-    all.desired_separation = separation;
-    all.sf = sf;
-    all.denom = (sf->ascent + sf->descent)/DENOM_FACTOR_OF_EMSIZE;
-
-    /* ticked means a left glyph, ticked2 a right (a glyph can be both) */
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
-	sc->ticked = sc->ticked2 = false;
-	sc->ttf_glyph = -1;
-    }
-    for ( i=0; i<kc->first_cnt; ++i )
-	for ( class = left[i], k=0; (sc = class[k])!=NULL; ++k )
-	    sc->ticked = true;
-    for ( i=0; i<kc->second_cnt; ++i )
-	for ( class = right[i], k=0; (sc = class[k])!=NULL; ++k )
-	    sc->ticked2 = true;
-    for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL )
-	if ( sc->ticked || sc->ticked2 )
-	    ++cnt;
-
-    glyphs = gcalloc(cnt+1,sizeof(AW_Glyph));
-    for ( cnt=i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
-	if ( sc->ticked || sc->ticked2 ) {
-	    SplineCharLayerFindBounds(sc,fv->active_layer,&glyphs[cnt].bb);
-	    if ( glyphs[cnt].bb.minx<-16000 || glyphs[cnt].bb.maxx>16000 ||
-		    glyphs[cnt].bb.miny<-16000 || glyphs[cnt].bb.maxy>16000 ) {
-		ff_post_notice(_("Glyph too big"),_("%s has a bounding box which is too big for this algorithm to work. Ignored."),sc->name);
-		sc->ticked = sc->ticked2 = false;
-	    } else {
-		glyphs[cnt].sc = sc;
-		sc->ttf_glyph = cnt;
-		aw2_findedges(&glyphs[cnt++], &all);
-	    }
-	}
-    }
-
-    for ( i=0; i<kc->first_cnt; ++i ) {
-	for ( class = left[i], k=0; (sc = class[k])!=NULL; ++k );
-	ileft[i] = galloc((k+1)*sizeof(int));
-	for ( class = left[i], k=0; (sc = class[k])!=NULL; ++k )
-	    ileft[i][k] = sc->ttf_glyph;
-	ileft[i][k] = -1;
-    }
-    for ( i=0; i<kc->second_cnt; ++i ) {
-	for ( class = right[i], k=0; (sc = class[k])!=NULL; ++k );
-	iright[i] = galloc((k+1)*sizeof(int));
-	for ( class = right[i], k=0; (sc = class[k])!=NULL; ++k )
-	    iright[i][k] = sc->ttf_glyph;
-	iright[i][k] = -1;
-    }
-
-    all.glyphs = glyphs;
-    all.gcnt = cnt;
-    for ( i=0; i<kc->first_cnt; ++i ) {
-	for ( k=0; k<kc->second_cnt; ++k ) {
-	    if ( from_closest_approach )
-		kern = rint( ak2_figure_touchclass(ileft[i],iright[k],&all));
-	    else {
-		kern = rint( ak2_figure_kernclass(ileft[i],iright[k],&all));
-		if ( kern<min_kern && kern>-min_kern )
-		    kern = 0;
-	    }
-	    kc->offsets[i*kc->first_cnt+k] = kern;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	    free(kc->adjusts[i*kc->first_cnt+k].corrections);
-	    memset(&kc->adjusts[i*kc->first_cnt+k],0,sizeof(DeviceTable));
-#endif
-	}
-    }
-
-    for ( i=0; i<kc->first_cnt; ++i ) {
-	free(ileft[i]);
-	free(left[i]);
-    }
-    free(ileft); free(left);
-    for ( i=0; i<kc->second_cnt; ++i ) {
-	free(iright[i]);
-	free(right[i]);
-    }
-    free(iright); free(right);
-    free(glyphs);
-}
-#endif
 
 static void kc2AddOffset(void *data,int left_index, int right_index,int offset) {
     KernClass *kc = data;

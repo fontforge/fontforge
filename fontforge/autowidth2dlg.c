@@ -72,7 +72,8 @@ return( true );
 	width_last_em_size     = wi->sf->ascent + wi->sf->descent;
 	width_separation       = separation;
 	wi->sf->width_separation=separation;
-	width_min_side_bearing = min_side;
+	if ( wi->sf->italicangle==0 )
+	    width_min_side_bearing = min_side;
 	width_max_side_bearing = max_side;
 	width_chunk_height     = height;
 	width_loop_cnt         = loop;
@@ -193,7 +194,13 @@ void FVAutoWidth2(FontView *fv) {
     gcd[i++].creator = GLabelCreate;
     harray2[0] = &gcd[i-1];
 
-    sprintf( minbuf, "%d", (int) rint( width_min_side_bearing * emsize / width_last_em_size ));
+#define PI	3.1415926535897932
+    if ( sf->italicangle<0 )
+	sprintf( minbuf, "%d", (int) rint( sf->descent*tan(sf->italicangle*PI/180 )) );
+    else if ( sf->italicangle>0 )
+	sprintf( minbuf, "%d", (int) -rint( sf->ascent*tan(sf->italicangle*PI/180 )) );
+    else
+	sprintf( minbuf, "%d", (int) rint( width_min_side_bearing * emsize / width_last_em_size ));
     label[i].text = (unichar_t *) minbuf;
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
