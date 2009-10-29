@@ -572,7 +572,7 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
 
 void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 	struct lookup_subtable *into,
-	int separation, int min_kern, int from_closest_approach,
+	int separation, int min_kern, int from_closest_approach, int only_closer,
 	int chunk_height,
 	void (*addkp)(void *data,SplineChar *left,SplineChar *r,int off),
 	void *data) {
@@ -598,6 +598,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 	    separation = into->separation;
 	    from_closest_approach = into->kerning_by_touch;
 	    min_kern = into->minkern;
+	    only_closer = into->onlyCloser;
 	}
     }
 
@@ -668,6 +669,8 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 		if ( kern<min_kern && kern>-min_kern )
 		    kern = 0;
 	    }
+	    if ( only_closer && kern>0 )
+		kern=0;
 	    if ( kern!=0 ) {
 		if ( addkp==NULL ) {
 		    kp = chunkalloc(sizeof(KernPair));
@@ -693,7 +696,7 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
 	int lcnt, int rcnt,
 	void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data,
-	int separation, int min_kern, int from_closest_approach,
+	int separation, int min_kern, int from_closest_approach, int only_closer,
 	int chunk_height) {
     AW_Data all;
     AW_Glyph *glyphs;
@@ -771,6 +774,8 @@ void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightna
 		if ( kern<min_kern && kern>-min_kern )
 		    kern = 0;
 	    }
+	    if ( kern>0 && only_closer )
+		kern = 0;
 	    (*kcAddOffset)(data,i, k, kern);
 	}
     }
@@ -800,7 +805,7 @@ static void kc2AddOffset(void *data,int left_index, int right_index,int offset) 
 void AutoKern2BuildClasses(SplineFont *sf,int layer,
 	SplineChar **leftglyphs,SplineChar **rightglyphs,
 	struct lookup_subtable *sub,
-	int separation, int min_kern, int touching,
+	int separation, int min_kern, int touching, int only_closer,
 	real good_enough) {
     AW_Data all;
     AW_Glyph *glyphs, *me, *other;
@@ -833,11 +838,13 @@ return;
 	    separation = sub->separation;
 	    touching = sub->kerning_by_touch;
 	    min_kern = sub->minkern;
+	    only_closer = sub->onlyCloser;
 	}
     }
     sub->separation = separation;
     sub->minkern = min_kern;
     sub->kerning_by_touch = touching;
+    sub->onlyCloser = only_closer;
     chunk_height = (sf->ascent + sf->descent)/200;
 
     memset(&all,0,sizeof(all));
@@ -982,9 +989,9 @@ return;
 #endif
 
     AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,
-	    kc->first_cnt, kc->second_cnt,
+	    kc->first_cnt, kc->second_cnt, 
 	    kc2AddOffset, kc,
-	    separation,min_kern,touching,chunk_height);
+	    separation,min_kern,touching,only_closer,chunk_height);
 
     if ( sub->lookup->lookup_flags & pst_r2l ) {
 	char **temp = kc->seconds;

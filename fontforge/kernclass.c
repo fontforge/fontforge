@@ -124,6 +124,7 @@ typedef struct kernclasslistdlg {
 #define CID_Separation	2008
 #define CID_MinKern	2009
 #define CID_Touched	2010
+#define CID_OnlyCloser	2011
 
 extern int _GScrollBar_Width;
 
@@ -291,7 +292,7 @@ static void KCD_AutoKernAClass(KernClassDlg *kcd,int index,int is_first) {
     GGadget *otherlist = GWidgetGetControl( kcd->gw, CID_ClassList+(is_first?100:0));
     GTextInfo **otherti = GGadgetGetList(otherlist,&ocnt);
     GTextInfo **activeti = GGadgetGetList(activelist,&acnt);
-    int err, touch=0, separation=0, minkern=0;
+    int err, touch=0, separation=0, minkern=0, onlyCloser;
     int r2l, i;
 
     if ( kcd->isv )
@@ -301,6 +302,7 @@ return;
     touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
     separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
     minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
+    onlyCloser = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_OnlyCloser));
     if ( err )
 return;
 
@@ -324,7 +326,7 @@ return;
 	rights = space; rcnt=1;
     }
     AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
-	    KCD_AddOffset, kcd, separation, minkern, touch, 0);
+	    KCD_AddOffset, kcd, separation, minkern, touch, onlyCloser, 0);
     for ( i=0; i<ocnt; ++i )
 	free(others[i]);
     free(others);
@@ -338,7 +340,7 @@ static void KCD_AutoKernAll(KernClassDlg *kcd) {
     GGadget *secondlist = GWidgetGetControl( kcd->gw, CID_ClassList+100);
     GTextInfo **secondti = GGadgetGetList(secondlist,&scnt);
     GTextInfo **firstti = GGadgetGetList(firstlist,&fcnt);
-    int err, touch=0, separation=0, minkern=0;
+    int err, touch=0, separation=0, minkern=0, onlyCloser;
     int r2l, i;
 
     if ( kcd->isv )
@@ -348,6 +350,7 @@ return;
     touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
     separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
     minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
+    onlyCloser = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_OnlyCloser));
     if ( err )
 return;
 
@@ -375,7 +378,7 @@ return;
 	rights = firsts; rcnt=fcnt;
     }
     AutoKern2NewClass(kcd->sf,kcd->layer, lefts, rights, lcnt, rcnt,
-	    KCD_AddOffsetAsIs, kcd, separation, minkern, touch, 0);
+	    KCD_AddOffsetAsIs, kcd, separation, minkern, touch, onlyCloser, 0);
     for ( i=0; i<fcnt; ++i )
 	free(firsts[i]);
     free(firsts);
@@ -1255,7 +1258,7 @@ static int KC_OK(GGadget *g, GEvent *e) {
 	int i;
 	int32 len;
 	GTextInfo **ti;
-	int err, touch=0, separation=0, minkern=0;
+	int err, touch=0, separation=0, minkern=0, onlyCloser;
 
 	sf = kcd->sf;
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
@@ -1270,6 +1273,7 @@ return( KCD_Next2(g,e));
 	touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
 	separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
 	minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
+	onlyCloser = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_OnlyCloser));
 	if ( err )
 return( true );
 
@@ -1288,6 +1292,7 @@ return( true );
 	kc->subtable->separation = separation;
 	kc->subtable->minkern = minkern;
 	kc->subtable->kerning_by_touch = touch;
+	kc->subtable->onlyCloser = onlyCloser;
 
 	kc->first_cnt = kcd->first_cnt;
 	kc->second_cnt = kcd->second_cnt;
@@ -2493,11 +2498,11 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
 void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     GRect pos, subpos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[51], sepbox, classbox, hvbox, buttonbox, mainbox[2];
+    GGadgetCreateData gcd[52], sepbox, classbox, hvbox, buttonbox, mainbox[2];
     GGadgetCreateData selbox, *selarray[7], pane2[2];
     GGadgetCreateData *harray1[17], *harray2[17], *varray1[5], *varray2[5];
-    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[17], *h4array[8], *harrayclasses[6];
-    GTextInfo label[51];
+    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[19], *h4array[8], *harrayclasses[6];
+    GTextInfo label[52];
     KernClassDlg *kcd;
     int i, j, kc_width, vi, y, k;
     int as, ds, ld, sbsize;
@@ -2671,6 +2676,21 @@ return;
 	sepbox.creator = GHBoxCreate;
 	varray[j++] = &sepbox; varray[j++] = NULL;
 
+	label[i].text = (unichar_t *) _("Only kern glyphs closer");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	if ( kc->subtable->onlyCloser )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "When doing autokerning, only move glyphs closer together,\n"
+	    "so the kerning offset will be negative.");
+	gcd[i].gd.cid = CID_Touched;
+	gcd[i].creator = GCheckBoxCreate;
+	varray[j++] = &gcd[i++]; varray[j++] = NULL;
+
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+17);
     gcd[i].gd.pos.width = pos.width-20;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
@@ -2776,7 +2796,7 @@ return;
     kcd->vsb = gcd[vi].ret;
     kcd->hsb = gcd[vi+1].ret;
 
-    GHVBoxSetExpandableRow(mainbox[0].ret,5);
+    GHVBoxSetExpandableRow(mainbox[0].ret,6);
 
     GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
     GHVBoxSetExpandableCol(sepbox.ret,gb_expandglue);

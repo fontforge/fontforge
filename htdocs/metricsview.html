@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 27-Oct-2009 -->
+  <!-- AP: Last modified: 28-Oct-2009 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -697,7 +697,7 @@
   <P>
   The <A HREF="lookups.html">Element-&gt;Font Info-&gt;Lookups</A> provides
   an interface to
-  this.<IMG SRC="kerningformat.png" WIDTH="444" HEIGHT="683" ALIGN="Right">
+  this.<IMG SRC="kerningformat.png" WIDTH="444" HEIGHT="704" ALIGN="Right">
   It brings up a dialog showing all the GPOS lookups (of which kerning is one)
   and their subtables. Each set of kerning classes lives in its own subtable.
   When you create a kerning subtable you will be asked whether you want a set
@@ -723,11 +723,13 @@
   <CODE>Min Kern</CODE> then fontforge will ignore that value. Selecting <CODE>[]
   Touching</CODE> makes AutoKerning work in a slightly different way, instead
   of trying to make the optical distance be the desired value this attempts
-  to make the minimum separation be the desired value. This is rarely useful,
+  to make the minimum separation be the desired value (This is rarely useful,
   but occasionally people want to set text where the letters actually touch
-  one another.<BR clear="all">
+  one another). The <CODE>[] Only kern glyphs closer </CODE>flag means that
+  FontForge will only generate negative kerning offset, which will move glyphs
+  closer together.<BR clear="all">
   <P>
-  <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="535" ALIGN="Left">Each kerning
+  <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="556" ALIGN="Left">Each kerning
   class belongs to a <A HREF="lookups.html">lookup subtable</A> and the subtable
   name is displayed at the top of the dialog.
   <P>

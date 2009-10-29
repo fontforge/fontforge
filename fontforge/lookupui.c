@@ -1977,6 +1977,7 @@ typedef struct anchorclassdlg {
 #define CID_Separation	2008
 #define CID_MinKern	2009
 #define CID_Touched	2010
+#define CID_OnlyCloser	2011
 
 #define CID_KernDisplay		2022
 #define CID_PixelSize		2023
@@ -2867,7 +2868,7 @@ return;
     pstkd->rows = rows;
 
     AutoKern2(pstkd->sf,pstkd->def_layer,lefts,rights,pstkd->sub,
-	    separation,0,touch,0,	/* Don't bother with minkern, they asked for this, they get it, whatever it may be */
+	    separation,0,touch,0,0,	/* Don't bother with minkern,onlyCloser they asked for this, they get it, whatever it may be */
 	    PSTKD_AddKP,pstkd);
     if ( pstkd->psts != psts )
 	IError("AutoKern added too many pairs, was only supposed to add one");
@@ -3438,16 +3439,17 @@ return( true );
 }
 
 static int PSTKD_DoAutoKern(PSTKernDlg *pstkd,SplineChar **glyphlist) {
-    int err, touch, separation, minkern;
+    int err, touch, separation, minkern, onlyCloser;
 
     err = false;
     touch = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_Touched));
     separation = GetInt8(pstkd->gw,CID_Separation,_("Separation"),&err);
     minkern = GetInt8(pstkd->gw,CID_MinKern,_("Min Kern"),&err);
+    onlyCloser = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_OnlyCloser));
     if ( err )
 return( false );
     AutoKern2(pstkd->sf,pstkd->def_layer,glyphlist,glyphlist,pstkd->sub,
-	    separation,minkern,touch,0,
+	    separation,minkern,touch,onlyCloser,0,
 	    PSTKD_AddKP,pstkd);
 return( true );
 }
@@ -3616,7 +3618,7 @@ static int PSTKD_Ok(GGadget *g, GEvent *e) {
 	char *buts[3];
 	KernPair *kp, *kpprev, *kpnext;
 	PST *pst, *pstprev, *pstnext;
-	int err, touch=0, separation=0, minkern=0;
+	int err, touch=0, separation=0, minkern=0, onlyCloser=0;
 	int _t = lookup_type == gpos_single ? pst_position
 		: lookup_type == gpos_pair ? pst_pair
 		: lookup_type == gsub_single ? pst_substitution
@@ -3631,6 +3633,7 @@ static int PSTKD_Ok(GGadget *g, GEvent *e) {
 	    touch = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_Touched));
 	    separation = GetInt8(pstkd->gw,CID_Separation,_("Separation"),&err);
 	    minkern = GetInt8(pstkd->gw,CID_MinKern,_("Min Kern"),&err);
+	    onlyCloser = GGadgetIsChecked(GWidgetGetControl(pstkd->gw,CID_OnlyCloser));
 	    if ( err )
 return( true );
 	}
@@ -3819,6 +3822,7 @@ return( true );
 	    pstkd->sub->separation = separation;
 	    pstkd->sub->minkern = minkern;
 	    pstkd->sub->kerning_by_touch = touch;
+	    pstkd->sub->onlyCloser = onlyCloser;
 	}
 	pstkd->done = true;
     }
@@ -3960,9 +3964,9 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
     GWindowAttrs wattrs;
     char title[300];
     struct matrixinit mi;
-    GGadgetCreateData gcd[21], buttongcd[6], box[6];
-    GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[18], *h4array[8];
-    GTextInfo label[21], buttonlabel[6];
+    GGadgetCreateData gcd[22], buttongcd[6], box[6];
+    GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[20], *h4array[8];
+    GTextInfo label[22], buttonlabel[6];
     int i,k,mi_pos, mi_k;
     enum otlookup_type lookup_type = sub->lookup->lookup_type;
     char sepbuf[40], mkbuf[40];
@@ -4266,6 +4270,21 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	box[1].gd.u.boxelements = h4array;
 	box[1].creator = GHBoxCreate;
 	varray[k++] = &box[1]; varray[k++] = NULL;
+
+	label[i].text = (unichar_t *) _("Only kern glyphs closer");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	if ( sub->onlyCloser )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "When doing autokerning, only move glyphs closer together,\n"
+	    "so the kerning offset will be negative.");
+	gcd[i].gd.cid = CID_Touched;
+	gcd[i].creator = GCheckBoxCreate;
+	varray[k++] = &gcd[i++]; varray[k++] = NULL;
 
 	label[i].text = (unichar_t *) _("Size:");
 	label[i].text_is_1byte = true;
@@ -4779,6 +4798,7 @@ return( true );
 #undef CID_Separation
 #undef CID_MinKern
 #undef CID_Touched
+#undef CID_OnlyCloser
 #define CID_KPairs	1000
 #define CID_KClasses	1001
 #define CID_KCBuild	1002
@@ -4788,6 +4808,7 @@ return( true );
 #define CID_ClassDistance	1006
 #define CID_KPAuto	1007
 #define CID_Guts	1008
+#define CID_OnlyCloser	1009
 
 struct kf_results {
     int asked;
@@ -4854,7 +4875,7 @@ static int KF_OK(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct kf_dlg *kf = GDrawGetUserData(GGadgetGetWindow(g));
-	int touch, separation, minkern, err;
+	int touch, separation, minkern, err, onlyCloser;
 	real good_enough=0;
 	int isclass, autobuild=0, autokern=0;
 	struct kf_results *results = kf->results;
@@ -4863,6 +4884,7 @@ static int KF_OK(GGadget *g, GEvent *e) {
 	touch = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_Touched));
 	separation = GetInt8(kf->gw,CID_Separation,_("Separation"),&err);
 	minkern = GetInt8(kf->gw,CID_MinKern,_("Min Kern"),&err);
+	onlyCloser = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_OnlyCloser));
 	if ( err )
 return( true );
 
@@ -4887,6 +4909,7 @@ return( true );
 	kf->sub->separation = separation;
 	kf->sub->minkern = minkern;
 	kf->sub->kerning_by_touch = touch;
+	kf->sub->onlyCloser = onlyCloser;
 	results->good_enough = good_enough;
 	if ( !isclass )
 	    results->asked = 0;
@@ -4927,13 +4950,13 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	struct lookup_subtable *sub, struct kf_results *results ) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14], boxes[7];
-    GGadgetCreateData *varray[17], *h1array[5], *h2array[6], *h3array[6], *h4array[8], *buttonarray[8];
-    GTextInfo label[14];
+    GGadgetCreateData gcd[15], boxes[7];
+    GGadgetCreateData *varray[21], *h1array[5], *h2array[6], *h3array[6], *h4array[8], *buttonarray[8];
+    GTextInfo label[15];
     char sepbuf[40], mkbuf[40], distancebuf[40];
     struct kf_dlg kf;
     int i,j, guts_row;
-    /* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel, 3=>Automatically build classes */
+    /* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel */
     FontRequest rq;
     int as, ds, ld;
     static GFont *plainfont = NULL, *boldfont=NULL;
@@ -5157,6 +5180,21 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	boxes[4].creator = GHBoxCreate;
 	varray[j++] = &boxes[4]; varray[j++] = NULL;
 
+	label[i].text = (unichar_t *) _("Only kern glyphs closer");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	if ( sub->onlyCloser )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "When doing autokerning, only move glyphs closer together,\n"
+	    "so the kerning offset will be negative.");
+	gcd[i].gd.cid = CID_OnlyCloser;
+	gcd[i].creator = GCheckBoxCreate;
+	varray[j++] = &gcd[i++]; varray[j++] = NULL;
+
     guts_row = j/2;
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_Guts;
@@ -5293,7 +5331,7 @@ return;
 		}
 		AutoKern2(sf, def_layer,lefts,rights,
 		    sub,
-		    0,0,0, 0, NULL, NULL);
+		    0,0,0,0, 0, NULL, NULL);
 	    }
 	} else {
 	    sub->kc = chunkalloc(sizeof(KernClass));
@@ -5315,7 +5353,7 @@ return;
 		/* Need to fix for Hebrew !!!! */
 	    if ( results.autobuild )
 		AutoKern2BuildClasses(sf,def_layer,results.firstglyphs,
-			results.secondglyphs,sub,0,0,0,results.good_enough);
+			results.secondglyphs,sub,0,0,0,0,results.good_enough);
 	}
 	free(results.firstglyphs);
 	free(results.secondglyphs);

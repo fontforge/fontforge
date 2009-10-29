@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 23-Oct-2009 -->
+  <!-- AP: Last modified: 28-Oct-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3354,7 +3354,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	&nbsp;separation,<BR>
 	&nbsp;first-classes,<BR>
 	&nbsp;second-classes<BR>
-	&nbsp;[,after])</CODE>
+	&nbsp;[,onlyCloser,after])</CODE>
 	<P ALIGN=Center>
 	<STRONG>or</STRONG>
 	<P>
@@ -3362,13 +3362,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	&nbsp;separation,class-distance,<BR>
 	&nbsp;,first-glyph-list,<BR>
 	&nbsp;second-glyph-list,<BR>
-	&nbsp;after])</CODE>
+	&nbsp;[,onlyCloser,after])</CODE>
 	<P ALIGN=Center>
 	<STRONG>or</STRONG>
 	<P>
 	<CODE>(lookup-name,new-subtable-name,<BR>
 	&nbsp;separation,class-distance,<BR>
-	&nbsp;[,after])</CODE></TD>
+	&nbsp;[,onlyCloser,after])</CODE></TD>
       <TD>Creates a new subtable and a new kerning class in the named lookup. The
 	classes arguments are tuples of tuples of glyph names (each sub-tuble of
 	glyph names is a kerning class). The offsets argument is a tuple of kerning
@@ -3380,6 +3380,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 	argument specifies the desired optical distance between any two glyphs (if
 	this is specified as 0 then the kerning class will be designed so glyphs
 	just touch each other). Again the user specifies two sets of predefined classes.
+	If the (optional) <CODE>onlyCloser</CODE> flag is set true then only negative
+	kerning values will be inserted into the table.
 	<P>
 	In the third format the user merely specifies two lists of glyphs to be used,
 	fontforge will look for similarities among among the glyphs and guess at
@@ -3524,6 +3526,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>(subtable-name,<BR>
 	&nbsp;separation<BR>
 	&nbsp;[,minKern=,<BR>
+	&nbsp;onlyCloser=,<BR>
 	&nbsp;touch=])</CODE>
 	<P align="center">
 	<STRONG>or</STRONG>
@@ -3533,6 +3536,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	&nbsp;glyph-list1,<BR>
 	&nbsp;glyph-list2<BR>
 	&nbsp;[,minKern=,<BR>
+	&nbsp;onlyCloser=,<BR>
 	&nbsp;touch=])</CODE></TD>
       <TD>The named subtable must be a kerning pair subtable that already exists.
 	<P>
@@ -3546,9 +3550,11 @@ pen = None;				# Finalize the pen. This tells FontForge
 	value which will make the optical separation between the two appear to be
 	<CODE>separation</CODE> em-units. If <CODE>minkern</CODE> is specified then
 	and the (absolute value of the) kerning correction is less than this number
-	then no kerning pair will be generated. If touch is set to 1 then the kerning
-	offset will not be based on optical distance but on the closest approach
-	between two the two glyphs.</TD>
+	then no kerning pair will be generated. If <CODE>onlyCloser</CODE> is set
+	true then only negative kerning offsets will be generated (only thing which
+	move two glyphs closer together). If touch is set to 1 then the kerning offset
+	will not be based on optical distance but on the closest approach between
+	two the two glyphs.</TD>
     </TR>
     <TR>
       <TD><CODE>appendSFNTName</CODE></TD>

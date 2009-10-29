@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 12-Mar-2007 -->
-  <!-- AP: Last modified: 27-Oct-2009 -->
+  <!-- AP: Last modified: 28-Oct-2009 -->
   <TITLE>Manipulating OpenType Lookups</TITLE>
 </HEAD>
 <BODY>
@@ -322,7 +322,8 @@ the same value as the first line.
   <A NAME="Pair">Pair</A> Positioning (kerning)
 </H3>
 <H4>
-  <IMG SRC="kerningformat.png" ALIGN="Right">Kerning format dialog
+  <IMG SRC="kerningformat.png" ALIGN="Right" WIDTH="444" HEIGHT="704">Kerning
+  format dialog
 </H4>
 <P>
 When you create a kerning subtable you will first be asked whether you want
@@ -357,9 +358,11 @@ if the kerning value (in absolute value) suggested by AutoKern is less than
 <CODE>Min Kern</CODE> then fontforge will ignore that value. Selecting <CODE>[]
 Touching</CODE> makes AutoKerning work in a slightly different way, instead
 of trying to make the optical distance be the desired value this attempts
-to make the minimum separation be the desired value. This is rarely useful,
+to make the minimum separation be the desired value (This is rarely useful,
 but occasionally people want to set text where the letters actually touch
-one another.
+one another). The <CODE>[] Only kern glyphs closer </CODE>flag means that
+FontForge will only generate negative kerning offset, which will move glyphs
+closer together.
 <P>
 Below these fields are two panes which look rather like fontviews. Here you
 may specify the selections you want to describe the glyphs being autokerned.
@@ -375,7 +378,7 @@ pair.<BR clear="all">
   Kerning pairs
 </H4>
 <P>
-<IMG SRC="subtable-gpos-kernpair.png" WIDTH="523" HEIGHT="552" ALIGN="Right">
+<IMG SRC="subtable-gpos-kernpair.png" WIDTH="523" HEIGHT="537" ALIGN="Right">
 The kerning class dialog is described in its
 <A HREF="metricsview.html#kernclass">own section</A>, while the kerning pair
 subtable dialog is described below.
@@ -393,8 +396,10 @@ of the first glyph (y_adv#1). Again, the [] Hide Unused Columns may be used
 to simplify the dialog.
 <P>
 Each time you enter a new combination, FontForge will try to guess a kerning
-offset for you (autokerning). So the Separation text fields have a similar
-meaning to that which they had above.
+offset for you (autokerning). So the <CODE>Separation</CODE> text fields
+have a similar meaning to that which they had above -- with the exception
+that the <CODE>Min Kern</CODE> and <CODE>Only kern closer </CODE>fields will
+be ignored for individual pairs.
 <P>
 For more elaborate usage, <CODE>[AutoKern] </CODE>button will look at all
 combinations of glyphs in all scripts in the feature attached to this lookup.

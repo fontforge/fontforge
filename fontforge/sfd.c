@@ -1951,7 +1951,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
 		if ( otl->lookup_type==gpos_pair && (sub->separation!=0 || sub->kerning_by_touch))
-		    fprintf(sfd,"[%d,%d,%d]", sub->separation, sub->minkern, sub->kerning_by_touch );
+		    fprintf(sfd,"[%d,%d,%d]", sub->separation, sub->minkern, sub->kerning_by_touch+2*sub->onlyCloser );
 		putc(' ',sfd);
 	    }
 	    fprintf( sfd, "} [" );
@@ -5954,7 +5954,8 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 		    getsint(sfd,&sub->minkern);
 		    nlgetc(sfd);	/* slurp comma */
 		    ch = nlgetc(sfd);
-		    sub->kerning_by_touch = (ch=='1');
+		    sub->kerning_by_touch = ((ch-'0')&1)?1:0;
+		    sub->onlyCloser       = ((ch-'0')&2)?1:0;
 		    nlgetc(sfd);	/* slurp final paren */
 		} else {
 		    ungetc(ch,sfd);
