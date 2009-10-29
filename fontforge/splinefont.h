@@ -428,6 +428,7 @@ typedef struct otlookup {
 	unsigned int vertical_kerning: 1;
 	unsigned int ticked: 1;
 	unsigned int kerning_by_touch: 1;	/* for gpos_pair, calculate kerning so that glyphs will touch */
+	unsigned int onlyCloser: 1;
 	struct kernclass *kc;
 	struct generic_fpst *fpst;
 	struct generic_asm  *sm;

@@ -11257,7 +11257,7 @@ return( false );
     if ( first==NULL || second==NULL )
 return( false );
     AutoKern2BuildClasses(fv->sf,fv->active_layer,first,second,sub,
-	    sub->separation,0,sub->kerning_by_touch,
+	    sub->separation,0,sub->kerning_by_touch, sub->onlyCloser,
 	    good_enough);
     free(first);
     if ( first!=second )
@@ -11276,7 +11276,7 @@ static void pyAddOffsetAsIs(void *data,int left_index,int right_index, int kern)
     }
 }
 
-static void pyAutoKernAll(FontViewBase *fv,struct lookup_subtable *sub) {
+static void pyAutoKernAll(FontViewBase *fv,struct lookup_subtable *sub ) {
     char **lefts, **rights;
     int lcnt, rcnt;
     KernClass *kc = sub->kc;
@@ -11289,7 +11289,8 @@ static void pyAutoKernAll(FontViewBase *fv,struct lookup_subtable *sub) {
 	rights = kc->firsts; rcnt=kc->first_cnt;
     }
     AutoKern2NewClass(fv->sf,fv->active_layer, lefts, rights, lcnt, rcnt,
-	    pyAddOffsetAsIs, sub, sub->separation, 0, sub->kerning_by_touch, 0);
+	    pyAddOffsetAsIs, sub, sub->separation, 0, sub->kerning_by_touch,
+	    sub->onlyCloser, 0);
 }
 
 static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
@@ -11299,21 +11300,21 @@ static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
     int i;
     struct lookup_subtable *sub;
     PyObject *class1s=NULL, *class2s=NULL, *offsets=NULL, *list1=NULL, *list2=NULL;
-    PyObject *arg3, *arg4;
+    PyObject *arg3, *arg4, *arg5;
     char **class1_strs, **class2_strs;
     int cnt1, cnt2, acnt;
     int16 *offs=NULL;
-    int separation= -1, touch=0, do_autokern=false;
+    int separation= -1, touch=0, do_autokern=false, only_closer=0;
     double class_error_distance;
     /* arguments:
     /*  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
-    /*  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [,char *after_sub_name])
-    /*  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [,char *after_sub_name])
-    /*  (char *lookupname, char *newsubtabname, int separation, double err [,char *after_sub_name])
+    /*  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, char *after_sub_name])
+    /*  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [, int only_closer, char *after_sub_name])
+    /*  (char *lookupname, char *newsubtabname, int separation, double err [, int only_closer, char *after_sub_name])
     /* First is fully specified set of classes with offsets cnt=5/6*/
-    /* Second fully specified set of classes, to be autokerned cnt=5/6*/
-    /* Third two lists of glyphs to be turned into classes and then autokerned cnt=6/7*/
-    /* Fourth turns the selection into a list of glyphs, to be used both left and right for two sets of classes to be autokerned cnt=4/5*/
+    /* Second fully specified set of classes, to be autokerned cnt=5/7*/
+    /* Third two lists of glyphs to be turned into classes and then autokerned cnt=6/8*/
+    /* Fourth turns the selection into a list of glyphs, to be used both left and right for two sets of classes to be autokerned cnt=4/6*/
 
     if ( (acnt = PySequence_Size(args))<4 ) {
 	PyErr_Format(PyExc_EnvironmentError, "Too few arguments.");
@@ -11328,19 +11329,20 @@ return( NULL );
 return( NULL );
 	do_autokern = false;
     } else if ( !PyInt_Check(arg4) && !PyLong_Check(arg4) && !PyFloat_Check(arg4)) {
-	if ( !PyArg_ParseTuple(args,"ssiOO|s", &lookup, &subtable,
+	if ( !PyArg_ParseTuple(args,"ssiOO|is", &lookup, &subtable,
 		&separation, &class1s, &class2s,
-		&after_str ))
+		&only_closer, &after_str ))
 return( NULL );
-    } else if ( acnt>5 ) {
-	if ( !PyArg_ParseTuple(args,"ssidOO|s", &lookup, &subtable,
+    } else if ( acnt>5 &&
+	    (arg5=PySequence_GetItem(args,4)) && PySequence_Check(arg5) ) {
+	if ( !PyArg_ParseTuple(args,"ssidOO|is", &lookup, &subtable,
 		&separation, &class_error_distance, &list1, &list2,
-		&after_str ))
+		&only_closer, &after_str ))
 return( NULL );
     } else {
-	if ( !PyArg_ParseTuple(args,"ssid|s", &lookup, &subtable,
+	if ( !PyArg_ParseTuple(args,"ssid|is", &lookup, &subtable,
 		&separation, &class_error_distance,
-		&after_str ))
+		&only_closer, &after_str ))
 return( NULL );
     }
     if ( separation==0 )
@@ -11375,6 +11377,7 @@ return( NULL );
     if ( do_autokern ) {
 	sub->separation = separation;
 	sub->kerning_by_touch = touch;
+	sub->onlyCloser = only_closer;
     }
     sub->kc = chunkalloc(sizeof(KernClass));
     sub->kc->subtable = sub;
@@ -11520,9 +11523,10 @@ return( NULL );
 return( ret );
 }
 
-static char *ak_keywords1[] = { "subTableName", "separation", "minKern", "touch", "height", NULL };
+static char *ak_keywords1[] = { "subTableName", "separation", "minKern",
+	"touch", "onlyCloser", "height", NULL };
 static char *ak_keywords2[] = { "subTableName", "separation", "list1", "list2",
-	"minKern", "touch", "height", NULL };
+	"minKern", "touch", "onlyCloser", "height", NULL };
 static PyObject *PyFFFont_autoKern(PyObject *self, PyObject *args, PyObject *keywds) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineFont *sf = fv->sf;
@@ -11531,15 +11535,16 @@ static PyObject *PyFFFont_autoKern(PyObject *self, PyObject *args, PyObject *key
     PyObject *list1=NULL, *list2=NULL;
     SplineChar **first, **second, **left, **right;
     struct lookup_subtable *sub;
-    int minkern = 10, touch=0, height=0;
+    int minkern = 10, touch=0, height=0, onlyCloser=0;
 
     if ( PySequence_Size(args)==2 ) {
-	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "si|iii", ak_keywords1,
-		&subtablename, &separation, &minkern, &touch, &height))
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "si|iiii", ak_keywords1,
+		&subtablename, &separation, &minkern, &touch, &onlyCloser, &height))
 return( NULL );
     } else {
-	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "siOO|iii", ak_keywords2,
-		&subtablename, &separation, &list1, &list2, &minkern, &touch, &height ))
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "siOO|iiii", ak_keywords2,
+		&subtablename, &separation, &list1, &list2, &minkern, &touch,
+		&onlyCloser, &height ))
 return( NULL );
     }
     sub = SFFindLookupSubtable(sf,subtablename);
@@ -11568,7 +11573,7 @@ return( NULL );
 	right = second;
     }
     AutoKern2(sf, fv->active_layer,left,right, sub,
-	separation, minkern, touch, height,
+	separation, minkern, touch, onlyCloser, height,
 	NULL,NULL);
     free(first);
     if ( first!=second )
