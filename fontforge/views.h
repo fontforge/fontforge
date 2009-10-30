@@ -1101,8 +1101,12 @@ extern int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
 	struct subtable_data *sd,int def_layer);
 extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	struct subtable_data *sd,int def_layer);
+extern char *SCNameUniStr(SplineChar *sc);
+extern unichar_t *uSCNameUniStr(SplineChar *sc);
+extern char *SFNameList2NameUni(SplineFont *sf, char *str);
 extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space);
+extern char *NameListDeUnicode( char *str );
 extern void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang);
 extern void FVMassGlyphRename(FontView *fv);
 

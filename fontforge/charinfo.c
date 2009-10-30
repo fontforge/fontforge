@@ -717,7 +717,7 @@ void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
 	while ( *start==' ' ) ++start;
 	if ( *start=='\0' )
     break;
-	for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+	for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='('; ++pt );
 	ch = *pt; *pt = '\0';
 	other = SFGetChar(sc->parent,-1,start);
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
@@ -846,6 +846,10 @@ void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
 	    pst->ticked = true;
 	}
 	*pt = ch;
+	if ( ch=='(' ) {
+	    while ( *pt!=')' && *pt!='\0' ) ++pt;
+	    if ( *pt==')' ) ++pt;
+	}
 	start = pt;
     }
 }
@@ -921,7 +925,7 @@ return( true );
 return( false );
 	    }
 	    while ( *start ) {
-		for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+		for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='(' ; ++pt );
 		ch = *pt; *pt='\0';
 		found = SFGetChar(sc->parent,-1,start);
 		if ( found==NULL ) {
@@ -945,6 +949,10 @@ return( false );
 		    }
 		}
 		*pt = ch;
+		if ( ch=='(' ) {
+		    while ( *pt!=')' && *pt!='\0' ) ++pt;
+		    if ( *pt==')' ) ++pt;
+		}
 		while ( *pt== ' ' ) ++pt;
 		start = pt;
 	    }
@@ -976,7 +984,7 @@ return( false );
 	    } else
 		free( pst->u.subs.variant );
 	    pst->ticked = true;
-	    pst->u.subs.variant = copy( possub[cols*i+1].u.md_str );
+	    pst->u.subs.variant = NameListDeUnicode( possub[cols*i+1].u.md_str );
 	    if ( pstt==pst_ligature )
 		pst->u.lig.lig = sc;
 	}
@@ -2405,7 +2413,7 @@ static void kernfinishedit(GGadget *g, int r, int c, int wasnew) {
 	sub = (struct lookup_subtable *) possub[r*cols+0].u.md_ival;
 	if ( possub[r*cols+PAIR_DX_ADV1].u.md_ival==0 &&
 		possub[r*cols+1].u.md_str!=NULL &&
-		(osc=SFGetChar(ci->sc->parent,-1,possub[r*cols+1].u.md_str))!=NULL ) {
+		(osc = SFGetChar(ci->sc->parent,-1,possub[r*cols+1].u.md_str))!=NULL ) {
 	    lefts[1] = rights[1] = NULL;
 	    if ( sub->lookup->lookup_flags & pst_r2l ) {
 		lefts[0] = osc;
@@ -3035,10 +3043,14 @@ return( NULL );
     extracnt = 0;
     for ( pt=subs; *pt ; ) {
 	start = pt;
-	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	while ( *pt!=' ' && *pt!='\0' && *pt!='(' ) ++pt;
 	ch = *pt; *pt = '\0';
 	other = SFGetChar(sf,-1, start);
 	*pt = ch;
+	if ( ch=='(' ) {
+	    while ( *pt!=')' && *pt!='\0' ) ++pt;
+	    if ( *pt==')' ) ++pt;
+	}
 	if ( other!=NULL ) {
 	    if ( extracnt==0 ) width += ICON_WIDTH;
 	    extras[extracnt] = Rasterize(other,def_layer);
@@ -3665,14 +3677,14 @@ static void CIFillup(CharInfo *ci) {
 	    ValDevTabToStrings(mds[pst_pair],j+PAIR_DX2+1,pst->u.pair.vr[1].adjust);
 #endif
 	} else {
-	    mds[pst->type][j+1].u.md_str = copy(pst->u.subs.variant);
+	    mds[pst->type][j+1].u.md_str = SFNameList2NameUni(sf,pst->u.subs.variant);
 	}
     }
     for ( isv=0; isv<2; ++isv ) {
 	for ( kp=isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
 	    j = (cnts[pst_pair]++ * mi[pst_pair-1].col_cnt);
 	    mds[pst_pair][j+0].u.md_ival = (intpt) kp->subtable;
-	    mds[pst_pair][j+1].u.md_str = copy(kp->sc->name);
+	    mds[pst_pair][j+1].u.md_str = SCNameUniStr(kp->sc);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( isv ) {
 		mds[pst_pair][j+PAIR_DY_ADV1].u.md_ival = kp->off;

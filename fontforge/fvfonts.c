@@ -837,8 +837,22 @@ return( -1 );
 SplineChar *SFGetChar(SplineFont *sf, int unienc, const char *name ) {
     int ind;
     int j;
+    char *pt, *start; int ch;
 
-    ind = SFCIDFindCID(sf,unienc,name);
+    if ( name==NULL )
+	ind = SFCIDFindCID(sf,unienc,NULL);
+    else {
+	for ( start=(char *) name; *start==' '; ++start );
+	for ( pt=start; *pt!='\0' && *pt!='('; ++pt );
+	ch = *pt;
+	if ( ch=='\0' )
+	    ind = SFCIDFindCID(sf,unienc,start);
+	else {
+	    *pt = '\0';
+	    ind = SFCIDFindCID(sf,unienc,start);
+	    *pt = ch;
+	}
+    }
     if ( ind==-1 )
 return( NULL );
 

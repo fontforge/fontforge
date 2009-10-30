@@ -117,7 +117,7 @@ static unichar_t **JSTF_Glyph_Completion(GGadget *t,int from_tab) {
 return( SFGlyphNameCompletion(sf,t,from_tab,false));
 }
 
-static void GlyphMatrixInit(struct matrixinit *mi,char *glyphstr) {
+static void GlyphMatrixInit(struct matrixinit *mi,char *glyphstr,SplineFont *sf) {
     struct matrix_data *md;
     int k, cnt;
     char *start, *end;
@@ -132,7 +132,9 @@ static void GlyphMatrixInit(struct matrixinit *mi,char *glyphstr) {
 	if ( glyphstr!=NULL ) for ( start = glyphstr; *start; ) {
 	    for ( end=start; *end!='\0' && *end!=' ' && *end!=','; ++end );
 	    if ( k ) {
-		md[1*cnt+0].u.md_str = copyn(start,end-start);
+		char *str = copyn(start,end-start);
+		md[1*cnt+0].u.md_str = SFNameList2NameUni(sf,str);
+		free(str);
 	    }
 	    ++cnt;
 	    while ( *end==' ' || *end==',' ) ++end;
@@ -159,7 +161,7 @@ static int JSTF_Glyph_OK(GGadget *g, GEvent *e) {
 	    len = 0;
 	    for ( i=0; i<rows; ++i )
 		len += strlen(strings[1*i+0].u.md_str) +1;
-	    gld->ret = ret = galloc(len+1);
+	    ret = galloc(len+1);
 	    for ( i=0; i<rows; ++i ) {
 		strcpy(ret,strings[1*i+0].u.md_str);
 		strcat(ret," ");
@@ -167,6 +169,8 @@ static int JSTF_Glyph_OK(GGadget *g, GEvent *e) {
 	    }
 	    if ( ret>gld->ret && ret[-1] == ' ' )
 		ret[-1] = '\0';
+	    gld->ret = NameListDeUnicode(ret);
+	    free(ret);
 	}
 	gld->done = true;
     }
@@ -227,7 +231,7 @@ char *GlyphListDlg(SplineFont *sf, char *glyphstr) {
     pos.height = GDrawPointsToPixels(NULL,375);
     gld.gw = gw = GDrawCreateTopWindow(NULL,&pos,glyph_e_h,&gld,&wattrs);
 
-    GlyphMatrixInit(&mi,glyphstr);
+    GlyphMatrixInit(&mi,glyphstr,sf);
 
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
