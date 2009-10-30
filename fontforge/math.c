@@ -391,10 +391,14 @@ return( true );
 	while ( *start== ' ' ) ++start;
 	if ( *start=='\0' )
 return( true );
-	for ( pt=start ; *pt!=' ' && *pt!='\0'; ++pt );
+	for ( pt=start ; *pt!=' ' && *pt!='\0' && *pt!='('; ++pt );
 	ch = *pt; *pt = '\0';
 	sc = SFGetChar(sf,-1,start);
 	*pt = ch;
+	if ( ch=='(' ) {
+	    while ( *pt!=')' && *pt!='\0' ) ++pt;
+	    if ( *pt==')' ) ++pt;
+	}
 	start = pt;
 	if ( sc==NULL )
 return( false );
@@ -532,8 +536,8 @@ static void MATH_Init(MathDlg *math) {
 	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	    struct glyphvariants *gv = h ? sc->horiz_variants : sc->vert_variants;
 	    if ( gv!=NULL && gv->variants!=NULL ) {
-		mds[cols*cnt+0].u.md_str = copy(sc->name);
-		mds[cols*cnt+1].u.md_str = copy(gv->variants);
+		mds[cols*cnt+0].u.md_str = SCNameUniStr(sc);
+		mds[cols*cnt+1].u.md_str = SFNameList2NameUni(sf,gv->variants);
 		++cnt;
 	    }
 	}
@@ -1077,7 +1081,7 @@ return( true );
 		    if ( str!=NULL ) while ( *str==' ' ) ++str;
 		    if ( str!=NULL && *str!='\0' ) {
 			*gvp = chunkalloc(sizeof(struct glyphvariants));
-			(*gvp)->variants = copy( str );
+			(*gvp)->variants = NameListDeUnicode( str );
 		    }
 		} else if ( cid==CID_VGlyphConst || cid==CID_HGlyphConst ) {
 		    struct glyphvariants **gvp = cid == CID_VGlyphConst ?

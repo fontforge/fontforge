@@ -2650,17 +2650,17 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 		for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->subtable == sub ) {
 			if ( j ) {
-			    md[cnt*mi->col_cnt].u.md_str = copy( sc->name );
+			    md[cnt*mi->col_cnt].u.md_str = SCNameUniStr( sc );
 			    switch ( lookup_type ) {
 			      case gsub_single:
-				md[cnt*mi->col_cnt+1].u.md_str = copy(pst->u.subs.variant);
+				md[cnt*mi->col_cnt+1].u.md_str = SFNameList2NameUni(sf,pst->u.subs.variant);
 			      break;
 			      case gsub_multiple:
 			      case gsub_alternate:
-				md[cnt*mi->col_cnt+1].u.md_str = copy(pst->u.mult.components);
+				md[cnt*mi->col_cnt+1].u.md_str = SFNameList2NameUni(sf,pst->u.mult.components);
 			      break;
 			      case gsub_ligature:
-				md[cnt*mi->col_cnt+1].u.md_str = copy(pst->u.lig.components);
+				md[cnt*mi->col_cnt+1].u.md_str = SFNameList2NameUni(sf,pst->u.lig.components);
 			      break;
 			      case gpos_single:
 				md[cnt*mi->col_cnt+SIM_DX].u.md_ival = pst->u.pos.xoff;
@@ -2672,7 +2672,7 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 #endif
 			      break;
 			      case gpos_pair:
-				md[cnt*mi->col_cnt+1].u.md_str = copy( pst->u.pair.paired );
+				md[cnt*mi->col_cnt+1].u.md_str = SFNameList2NameUni( sf,pst->u.pair.paired );
 				md[cnt*mi->col_cnt+PAIR_DX1].u.md_ival = pst->u.pair.vr[0].xoff;
 				md[cnt*mi->col_cnt+PAIR_DY1].u.md_ival = pst->u.pair.vr[0].yoff;
 				md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = pst->u.pair.vr[0].h_adv_off;
@@ -2696,8 +2696,8 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 			for ( kp = isv ? sc->vkerns : sc->kerns ; kp!=NULL; kp=kp->next ) {
 			    if ( kp->subtable == sub ) {
 				if ( j ) {
-				    md[cnt*mi->col_cnt+0].u.md_str = copy( sc->name );
-				    md[cnt*mi->col_cnt+1].u.md_str = copy( kp->sc->name );
+				    md[cnt*mi->col_cnt+0].u.md_str = SCNameUniStr( sc );
+				    md[cnt*mi->col_cnt+1].u.md_str = SCNameUniStr( kp->sc );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 			            if ( isv ) {
 					md[cnt*mi->col_cnt+PAIR_DY_ADV1].u.md_ival = kp->off;
@@ -3659,7 +3659,7 @@ return( true );
 		}
 		/* Replacements which aren't in the font */
 		while ( *start ) {
-		    for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+		    for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='('; ++pt );
 		    ch = *pt; *pt='\0';
 		    found = SFGetChar(pstkd->sf,-1,start);
 		    if ( found==NULL ) {
@@ -3673,6 +3673,10 @@ return( true );
 			}
 		    }
 		    *pt = ch;
+		    if ( ch=='(' ) {
+			while ( *pt!=')' && *pt!='\0' ) ++pt;
+			if ( *pt==')' ) ++pt;
+		    }
 		    while ( *pt== ' ' ) ++pt;
 		    start = pt;
 		}
@@ -3754,7 +3758,7 @@ return( true );
 		    pst->u.pos.h_adv_off = psts[cols*r+SIM_DX_ADV].u.md_ival;
 		    pst->u.pos.v_adv_off = psts[cols*r+SIM_DY_ADV].u.md_ival;
 		} else {
-		    pst->u.subs.variant = copy( psts[cols*r+1].u.md_str );
+		    pst->u.subs.variant = NameListDeUnicode( psts[cols*r+1].u.md_str );
 		    if ( lookup_type==gsub_ligature )
 			pst->u.lig.lig = sc;
 		}
@@ -3843,6 +3847,108 @@ static int PSTKD_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
+char *NameListDeUnicode( char *str ) {
+    char *pt;
+    char *ret, *rpt;
+
+    rpt = ret = galloc(strlen(str)+1);
+    while ( *str==' ' ) ++str;
+    for ( pt=str; *pt!='\0'; ) {
+	if ( *pt==' ' ) {
+	    while ( *pt==' ' ) ++pt;
+	    --pt;
+	}
+	if ( *pt=='(' ) {
+	    while ( *pt!=')' && *pt!='\0' ) ++pt;
+	    if ( *pt==')' ) ++pt;
+	} else
+	    *rpt++ = *pt++;
+    }
+    *rpt = '\0';
+return( ret );
+}
+
+char *SFNameList2NameUni(SplineFont *sf, char *str) {
+    char *start, *pt, *ret, *rpt;
+    int cnt, ch;
+    SplineChar *sc;
+
+    if ( str==NULL )
+return( NULL );
+
+    cnt = 0;
+    for ( pt=str; *pt!='\0'; ++pt )
+	if ( *pt==' ' )
+	    ++cnt;
+    rpt = ret = galloc(strlen(str) + (cnt+1)*7 + 1);
+    for ( start=str; *start!='\0'; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+    break;
+	for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='('; ++pt );
+	ch = *pt; *pt='\0';
+	sc = SFGetChar(sf,-1,start);
+	strcpy(rpt,start);
+	rpt += strlen(rpt);
+	*pt = ch;
+	if ( sc!=NULL && sc->unicodeenc>32 && sc->unicodeenc!=')' &&
+		!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc))) {
+	    *rpt++ = '(';
+	    rpt = utf8_idpb(rpt,sc->unicodeenc);
+	    *rpt++ = ')';
+	}
+	*rpt++ = ' ';
+	if ( ch=='(' )
+	    while ( *pt!=')' && *pt!='\0' ) ++pt;
+	while ( *pt==' ' ) ++pt;
+	start = pt;
+    }
+    if ( rpt>ret )
+	rpt[-1] = '\0';
+    else
+	ret[0] = '\0';
+return( ret );
+}
+
+char *SCNameUniStr(SplineChar *sc) {
+    char *temp, *pt;
+    int len;
+
+    if ( sc==NULL )
+return( NULL );
+    len = strlen(sc->name);
+    temp = galloc(len + 8);
+    strcpy(temp,sc->name);
+    if ( sc->unicodeenc>32 && sc->unicodeenc!=')' &&
+	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc))) {
+	pt = temp+len;
+	*pt++ = '(';
+	pt = utf8_idpb(pt,sc->unicodeenc);
+	*pt++ = ')';
+	*pt = '\0';
+    }
+return( temp );
+}
+
+unichar_t *uSCNameUniStr(SplineChar *sc) {
+    unichar_t *temp;
+    int len;
+
+    if ( sc==NULL )
+return( NULL );
+    temp = galloc((strlen(sc->name) + 5) * sizeof(unichar_t));
+    utf82u_strcpy(temp,sc->name);
+    if ( sc->unicodeenc>32 && sc->unicodeenc!=')' &&
+	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc))) {
+	len = u_strlen(temp);
+	temp[len] = '(';
+	temp[len+1] = sc->unicodeenc;
+	temp[len+2] = ')';
+	temp[len+3] = '\0';
+    }
+return( temp );
+}
+    
 unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space) {
     unichar_t *pt, *spt, *basept, *wild; unichar_t **ret;
@@ -3865,8 +3971,24 @@ return( NULL );
     while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
 	++pt;
     do_wildcards = *pt!='\0';
+
+    if (( !do_wildcards && pt-spt==1 && ( *spt>=0x10000 || !isalpha(*spt))) ||
+	    (!from_tab && do_wildcards && pt-spt==2 && spt[1]==' ')) {
+	sc = SFGetChar(sf,*spt,NULL);
+	/* One unicode character which isn't a glyph name (so not "A") and */
+	/*  isn't a wildcard (so not "*") gets expanded to its glyph name. */
+	/*  (so "," becomes "comma(,)" */
+	/* Or, a single wildcard followed by a space gets expanded to glyph name */
+	if ( sc!=NULL ) {
+	    ret = galloc((2)*sizeof(unichar_t *));
+	    ret[0] = uSCNameUniStr(sc);
+	    ret[1] = NULL;
+return( ret );
+	}
+    }
     if ( do_wildcards && !from_tab )
 return( NULL );
+
     wild = NULL;
     if ( do_wildcards ) {
 	pt = spt;
@@ -3890,11 +4012,20 @@ return( NULL );
 	    if ( matched ) {
 		if ( doit ) {
 		    if ( spt==basept ) {
-			ret[cnt] = utf82u_copy(sc->name);
+			ret[cnt] = uSCNameUniStr(sc);
 		    } else {
-			unichar_t *temp = galloc((spt-basept+strlen(sc->name)+1)*sizeof(unichar_t));
+			unichar_t *temp = galloc((spt-basept+strlen(sc->name)+4)*sizeof(unichar_t));
+			int len;
 			u_strncpy(temp,basept,spt-basept);
 			utf82u_strcpy(temp+(spt-basept),sc->name);
+			len = u_strlen(temp);
+			if ( sc->unicodeenc>32 &&
+				!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) ) {
+			    temp[len] = '(';
+			    temp[len+1] = sc->unicodeenc;
+			    temp[len+2] = ')';
+			    temp[len+3] = '\0';
+			}
 			ret[cnt] = temp;
 		    }
 		}
@@ -4282,7 +4413,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer)
 	gcd[i].gd.popup_msg = (unichar_t *) _(
 	    "When doing autokerning, only move glyphs closer together,\n"
 	    "so the kerning offset will be negative.");
-	gcd[i].gd.cid = CID_Touched;
+	gcd[i].gd.cid = CID_OnlyCloser;
 	gcd[i].creator = GCheckBoxCreate;
 	varray[k++] = &gcd[i++]; varray[k++] = NULL;
 
@@ -5724,7 +5855,9 @@ static int MRD_OK(GGadget *g, GEvent *e) {
 	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->b.selected[enc] )
 	    ++sel_cnt;
 	if ( !themselves ) {
-	    start_name = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
+	    char *freeme = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
+	    start_name = NameListDeUnicode(freeme);
+	    free(freeme);
 	    enc_start = SFFindSlot(mrd->fv->b.sf,mrd->fv->b.map,-1,start_name);
 	    if ( enc_start==-1 ) {
 		ff_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
