@@ -927,6 +927,8 @@ return;
     GGadgetGetSize(gme->tf,&r);
     GGadgetMove(gme->tf,r.x,r.y-(gme->fh+1));
     GME_EnableDelete(gme);
+    if ( gme->rowmotion!=NULL )
+	(gme->rowmotion)((GGadget *) gme, gme->active_row+1,gme->active_row);
     GDrawRequestExpose(gme->nested,NULL,false);
 }
 
@@ -953,6 +955,8 @@ return;
     GGadgetGetSize(gme->tf,&r);
     GGadgetMove(gme->tf,r.x,r.y-(gme->fh+1));
     GME_EnableDelete(gme);
+    if ( gme->rowmotion!=NULL )
+	(gme->rowmotion)((GGadget *) gme, gme->active_row-1,gme->active_row);
     GDrawRequestExpose(gme->nested,NULL,false);
 return;
 }
@@ -2187,6 +2191,12 @@ void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r)
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
     gme->predelete = predelete;
+}
+
+void GMatrixEditSetRowMotionCallback(GGadget *g, void (*rowmotion)(GGadget *g, int oldr, int newr)) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->rowmotion = rowmotion;
 }
 
 GResInfo *_GMatrixEditRIHead(void) {

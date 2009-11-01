@@ -454,6 +454,7 @@ typedef struct gmatrixedit {
     void (*reportmousemove)(GGadget *g, int r, int c);
     void (*reporttextchanged)(GGadget *g, int r, int c, GGadget *textfield);
     void (*predelete)(GGadget *g, int r);
+    void (*rowmotion)(GGadget *g, int oldr, int newr);
 } GMatrixEdit;
 
 typedef struct gdrawable {
