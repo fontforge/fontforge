@@ -445,6 +445,7 @@ typedef struct gmatrixedit {
     char *newtext;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);
+    enum gme_updown (*canupdown)(GGadget *g,int row);
     void (*popupmenu)(GGadget *g,GEvent *e,int row,int col);
     int  (*handle_key)(GGadget *g,GEvent *e);
     char *(*bigedittitle)(GGadget *g,int r, int c);

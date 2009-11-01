@@ -438,7 +438,9 @@ void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r)
 void GMatrixEditSetRowMotionCallback(GGadget *g, void (*rowmotion)(GGadget *g, int oldr, int newr));
 void GMatrixEditUp(GGadget *g);
 void GMatrixEditDown(GGadget *g);
-void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);
+enum gme_updown { ud_up_enabled=1, ud_down_enabled=2 };
+void GMatrixEditSetCanUpDown(GGadget *g, enum gme_updown (*canupdown)(GGadget *g, int r));
+void GMatrixEditSetUpDownVisible(GGadget *g, int visible);
 void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
 void GMatrixEditEnableColumn(GGadget *g, int col, int enabled);
 void GMatrixEditShowColumn(GGadget *g, int col, int visible);

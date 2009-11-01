@@ -871,8 +871,18 @@ static void GME_EnableDelete(GMatrixEdit *gme) {
     GGadgetSetEnabled(gme->del,enabled);
 
     if ( gme->up!=NULL ) {
-	GGadgetSetEnabled(gme->up,gme->active_row>=1 && gme->active_row<gme->rows);
-	GGadgetSetEnabled(gme->up,gme->active_row>=0 && gme->active_row<gme->rows-1);
+	enum gme_updown updown;
+	if ( gme->canupdown != NULL )
+	    updown = (gme->canupdown)((GGadget *) gme,gme->active_row);
+	else {
+	    updown = 0;
+	    if ( gme->active_row>=1 && gme->active_row<gme->rows )
+		updown = ud_up_enabled;
+	    if ( gme->active_row>=0 && gme->active_row<gme->rows-1 )
+		updown = ud_down_enabled;
+	}
+	GGadgetSetEnabled(gme->up,updown & ud_up_enabled ? 1 : 0);
+	GGadgetSetEnabled(gme->up,updown & ud_down_enabled ? 1 : 0);
     }
 }
 
