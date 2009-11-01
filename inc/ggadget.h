@@ -435,6 +435,7 @@ void GMatrixEditSetMouseMoveReporter(GGadget *g, void (*rmm)(GGadget *g, int r, 
 void GMatrixEditSetTextChangeReporter(GGadget *g, void (*tcr)(GGadget *g, int r, int c, GGadget *text));
 void GMatrixEditSetValidateStr(GGadget *g, char *(*validate)(GGadget *g, int r, int c, int wasnew, char *str));
 void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r));
+void GMatrixEditSetRowMotionCallback(GGadget *g, void (*rowmotion)(GGadget *g, int oldr, int newr));
 void GMatrixEditUp(GGadget *g);
 void GMatrixEditDown(GGadget *g);
 void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);
