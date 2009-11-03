@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 28-Oct-2009 -->
+  <!-- AP: Last modified: 3-Nov-2009 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -729,21 +729,22 @@
   FontForge will only generate negative kerning offset, which will move glyphs
   closer together.<BR clear="all">
   <P>
-  <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="556" ALIGN="Left">Each kerning
+  <IMG SRC="kerningclass.png" WIDTH="576" HEIGHT="566" ALIGN="Left">Each kerning
   class belongs to a <A HREF="lookups.html">lookup subtable</A> and the subtable
   name is displayed at the top of the dialog.
   <P>
-  But the more interesting stuff follows this. A kerning class actually consists
-  of two sets of classes -- one set for the first glyph of the pair and one
-  for the second glyph of the pair. Under each list of classes are buttons
-  for adding new classes, and editing or deleting old ones. A glyph class consists
-  of a space separated list of glyph names.
+  But the more interesting stuff follows this. A kerning by class actually
+  consists of two sets of classes -- one set for the first glyph of the pair
+  and one for the second glyph of the pair. A glyph class consists of a space
+  separated list of glyph names (For most glyphs you may also enter the unicode
+  character itself, and fontforge will convert that to a glyph name).
   <P>
-  Pressing [New] or [Edit] displays another dlg containing a text field with
-  a list of glyph names. You may type in glyph names, or you may [Set] the
-  glyph list to the names of the glyphs selected in the font view. Similarly
-  the [Select] button will set the font view's selection to match the list
-  of glyph names.
+  To edit a class, simply type in it (at the very bottom of the class list
+  is an entry called <FONT COLOR="Blue">&lt;New&gt;</FONT>, clicking here will
+  create a new class). Pressing the little rectangle at the right of the class
+  will allow you to define your class as a selection in a font view widget.
+  You may delete a class by selecting it (clicking in it) and pressing the
+  [Delete] button.
   <P>
   The kerning classes can be fairly complex. You can search for a glyph by
   typing its name in the "Select Glyph" field. This will highlight the class
