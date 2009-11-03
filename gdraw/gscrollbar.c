@@ -82,6 +82,8 @@ static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32 pos) {
     } else {
 	active_len = gsb->g.inner.width;
     }
+    if ( active_len<=0 )
+	active_len = 1;
 
     e.type = et_controlevent;
     e.w = gsb->g.base;
