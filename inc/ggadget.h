@@ -426,6 +426,7 @@ GGadget *_GMatrixEditGetActiveTextField(GGadget *g);
 int GMatrixEditGetColCnt(GGadget *g);
 int GMatrixEditGetActiveRow(GGadget *g);
 int GMatrixEditGetActiveCol(GGadget *g);
+void GMatrixEditActivateRowCol(GGadget *g, int r, int c);
 void GMatrixEditDeleteRow(GGadget *g,int row);
 void GMatrixEditScrollToRowCol(GGadget *g,int r, int c);
 int GMatrixEditStringDlg(GGadget *g,int row,int col);

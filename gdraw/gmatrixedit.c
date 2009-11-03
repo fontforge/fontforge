@@ -39,7 +39,8 @@ static GBox gmatrixedit_button_box = { /* Don't initialize here */ 0 };
 static FontInstance *gmatrixedit_font = NULL, *gmatrixedit_titfont = NULL;
 static Color gmatrixedit_title_bg = 0x808080, gmatrixedit_title_fg = 0x000000, gmatrixedit_title_divider = 0xffffff;
 static Color gmatrixedit_rules = 0x000000;
-static Color gmatrixedit_frozencol = 0xff0000, gmatrixedit_activecol = 0x0000ff;
+static Color gmatrixedit_frozencol = 0xff0000,
+	gmatrixedit_activecol = 0x0000ff, gmatrixedit_activebg=0xffffc0;
 static int gmatrixedit_inited = false;
 
 static struct resed gmatrixedit_re[] = {
@@ -49,6 +50,7 @@ static struct resed gmatrixedit_re[] = {
     {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit")},
     {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit")},
     {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit")},
+    {N_("Active Background"), "ActiveBG", rt_color, &gmatrixedit_activebg, N_("Background color of the active entry in the main section of a matrix edit")},
     {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit")},
     NULL
 };
@@ -105,6 +107,7 @@ return;
     gmatrixedit_rules = GResourceFindColor("GMatrixEdit.RuleCol",gmatrixedit_rules);
     gmatrixedit_frozencol = GResourceFindColor("GMatrixEdit.FrozenCol",gmatrixedit_frozencol);
     gmatrixedit_activecol = GResourceFindColor("GMatrixEdit.ActiveCol",gmatrixedit_activecol);
+    gmatrixedit_activebg = GResourceFindColor("GMatrixEdit.ActiveBG",gmatrixedit_activebg);
     gmatrixedit_inited = true;
 
     _GGadgetCopyDefaultBox(&gmatrixedit_button_box);
@@ -360,6 +363,24 @@ static int GME_AdjustCol(GMatrixEdit *gme,int col) {
 	GME_RedrawTitles(gme);
     }
 return( changed );
+}
+
+static void GMatrixEdit_SetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    int bp = GBoxBorderWidth(g->base,g->box);
+
+    if ( outer!=NULL ) {
+	g->desired_width = outer->width;
+	g->desired_height = outer->height;
+    } else if ( inner!=NULL ) {
+	int extra = 2*bp+ gme->hsb->r.height+ (gme->has_titles?gme->fh:0);
+	if ( gme->del )
+	    extra += gme->del->r.height+DEL_SPACE;
+	g->desired_width = inner->width<=0 ? -1 : inner->width+2*bp+gme->vsb->r.width;
+	g->desired_height = inner->height<=0 ? -1 :
+		inner->height<10 ? inner->height*(gme->fh + gme->vpad) + extra :
+		    inner->height+extra;
+    }
 }
 
 static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
@@ -681,7 +702,7 @@ struct gfuncs gmatrixedit_funcs = {
     NULL,
 
     GMatrixEdit_GetDesiredSize,
-    _ggadget_setDesiredSize,
+    GMatrixEdit_SetDesiredSize,
     GMatrixEdit_FillsWindow
 };
 
@@ -1438,6 +1459,8 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		clip.width -= temp;
 	    } else if ( gme->col_data[c].disabled && gme->g.box->disabled_background!=COLOR_TRANSPARENT )
 		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
+	    else if ( gme->active_row==r )
+		GDrawFillRect(pixmap,&clip,gmatrixedit_activebg);
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
@@ -1880,7 +1903,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	static GBox small = { 0 };
 	static unichar_t nullstr[1] = { 0 };
 
-	small.main_background = small.main_foreground = COLOR_DEFAULT;
+	small.main_background = gmatrixedit_activebg;
 	small.main_foreground = gmatrixedit_activecol;
 	memset(&sub_gd,'\0',sizeof(sub_gd));
 	memset(&label,'\0',sizeof(label));
@@ -2207,6 +2230,21 @@ void GMatrixEditSetRowMotionCallback(GGadget *g, void (*rowmotion)(GGadget *g, i
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
     gme->rowmotion = rowmotion;
+}
+
+void GMatrixEditSetCanUpDown(GGadget *g, enum gme_updown (*canupdown)(GGadget *g, int r)) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->canupdown = canupdown;
+}
+
+void GMatrixEditActivateRowCol(GGadget *g, int r, int c) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->active_row = r;
+    gme->active_col = c;
+    GME_EnableDelete(gme);
+    GDrawRequestExpose(gme->nested,NULL,false);
 }
 
 GResInfo *_GMatrixEditRIHead(void) {
