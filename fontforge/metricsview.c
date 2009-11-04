@@ -2531,7 +2531,7 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuInsertChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->sf;
-    int i, j, pos = GotoChar(sf,mv->fv->b.map);
+    int i, j, pos = GotoChar(sf,mv->fv->b.map,NULL);
 
     if ( pos==-1 || pos>=mv->fv->b.map->enccount )
 return;
@@ -2605,7 +2605,7 @@ return;
 	    if ( pos<0 )
 return;
 	} else if ( mi->mid==MID_ReplaceChar ) {
-	    pos = GotoChar(sf,mv->fv->b.map);
+	    pos = GotoChar(sf,mv->fv->b.map,NULL);
 	    if ( pos<0 || pos>=mv->fv->b.map->enccount)
 return;
 	}

@@ -1771,7 +1771,7 @@ return( false );
 return( true );
 }
 
-static void ClassCheckUnique(GGadget *g,int r, int c, int wasnew) {
+static void ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
     /* Gadget g is a matrix edit and the first column contains a set of glyph */
     /*  classes. No glyph may appear in more than one class. */
     /* the entry at r,c has just changed. Check to validate the above */
@@ -1799,6 +1799,7 @@ static void ClassCheckUnique(GGadget *g,int r, int c, int wasnew) {
     *pt1 = '\0';
 
     /* Check for duplicate names in this class */
+    /*  also check for glyph names which aren't in the font */
     while ( *start1!='\0' ) {
 	for ( pt1=start1; *pt1!=' ' && *pt1!='(' && *pt1!='\0' ; ++pt1 );
 	eow1 = pt1;
@@ -1807,9 +1808,16 @@ static void ClassCheckUnique(GGadget *g,int r, int c, int wasnew) {
 	    if ( *eow1==')' ) ++eow1;
 	}
 	while ( *eow1==' ' ) ++eow1;
-	if ( *eow1=='\0' )
-    break;
 	ch1 = *pt1; *pt1='\0';
+	if ( sf!=NULL ) {
+	    SplineChar *sc = SFGetChar(sf,-1,start1);
+	    if ( sc==NULL )
+		ff_post_notice(_("Missing glyph"),_("The font does not contain a glyph named %s."), start1 );
+	}
+	if ( *eow1=='\0' ) {
+	    *pt1 = ch1;
+    break;
+	}
 	for ( start2 = eow1; *start2!='\0'; ) {
 	    for ( pt2=start2; *pt2!=' ' && *pt2!='(' && *pt2!='\0' ; ++pt2 );
 	    eow2 = pt2;
@@ -1821,6 +1829,9 @@ static void ClassCheckUnique(GGadget *g,int r, int c, int wasnew) {
 	    ch2 = *pt2; *pt2='\0';
 	    if ( strcmp(start1,start2)==0 ) {
 		off = eow2-start2;
+		if ( *eow2=='\0' && start2>classes[r*cols+c].u.md_str &&
+			start2[-1]==' ' )
+		    ++off;
 		for ( pt2=eow2; *pt2; ++pt2 )
 		    pt2[-off] = *pt2;
 		pt2[-off] = '\0';
@@ -1839,7 +1850,7 @@ static void ClassCheckUnique(GGadget *g,int r, int c, int wasnew) {
 
     buts[0] = _("_From this class"); buts[1] = _("From the _other class"); buts[2]=NULL;
     /* Now check for duplicates in other rows */
-    for ( start1=classes[r*cols+c].u.md_str; *start1==' '; ++start1 ) {
+    for ( start1=classes[r*cols+c].u.md_str; *start1!='\0'; ) {
 	for ( pt1=start1; *pt1!=' ' && *pt1!='(' && *pt1!='\0' ; ++pt1 );
 	eow1 = pt1;
 	if ( *eow1=='(' ) {
@@ -1896,7 +1907,7 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     int is_first = GGadgetGetCid(g) == CID_ClassList;
     int i;
 
-    ClassCheckUnique(g, r, c, wasnew);
+    ClassCheckUnique(g, r, c, kcd->sf);
 
     if ( wasnew ) {
 	if ( is_first ) {
@@ -1939,9 +1950,12 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     }
 }
 
-/* !!!!!!! */
 static char *KCD_PickGlyphsForClass(GGadget *g,int r, int c) {
-return( NULL );
+    KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *classes = _GMatrixEditGet(g,&rows);
+    char *new = GlyphSetFromSelection(kcd->sf,kcd->layer,classes[r*cols+c].u.md_str);
+return( new );
 }
 
 static enum gme_updown KCD_EnableUpDown(GGadget *g,int r) {
@@ -2434,7 +2448,7 @@ return;
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = false;
+    wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
 /* GT: The %s is the name of the lookup subtable containing this kerning class */

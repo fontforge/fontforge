@@ -4740,7 +4740,7 @@ static void VWMenuOpenGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void VWMenuGotoGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     FontView *fv = (FontView *) (vw->sf->fv);
-    int enc = GotoChar(vw->sf,fv->b.map);
+    int enc = GotoChar(vw->sf,fv->b.map,NULL);
     int gid, line;
     SplineChar *sc;
 
