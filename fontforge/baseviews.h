@@ -146,7 +146,7 @@ struct fvcontainer {
 };
 
 struct fvcontainer_funcs {
-    enum fv_container_type { fvc_kernformat } type;
+    enum fv_container_type { fvc_kernformat, fvc_glyphset } type;
     int is_modal;		/* If the fvc is in a modal dialog then we can't create modeless windows (like charviews, fontinfo, etc.) */
     void (*activateMe)(struct fvcontainer *fvc,struct fontviewbase *fv);
     void (*charEvent)(struct fvcontainer *fvc,void *event);

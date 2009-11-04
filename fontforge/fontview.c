@@ -2751,7 +2751,8 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 
 static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int pos = GotoChar(fv->b.sf,fv->b.map);
+    int merge_with_selection = false;
+    int pos = GotoChar(fv->b.sf,fv->b.map,&merge_with_selection);
     if ( fv->b.cidmaster!=NULL && pos!=-1 && !fv->b.map->enc->is_compact ) {
 	SplineFont *cidmaster = fv->b.cidmaster;
 	int k, hadk= cidmaster->subfontcnt;
@@ -2769,7 +2770,17 @@ static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( pos>=fv->b.sf->glyphcnt )
 	    pos = -1;
     }
-    FVChangeChar(fv,pos);
+    if ( !merge_with_selection )
+	FVChangeChar(fv,pos);
+    else {
+	if ( !fv->b.selected[pos] ) {
+	    fv->b.selected[pos] = ++fv->sel_index;
+	    FVToggleCharSelected(fv,pos);
+	}
+	fv->end_pos = fv->pressed_pos = pos;
+	FVScrollToChar(fv,pos);
+	FVShowInfo(fv);
+    }
 }
 
 static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -7477,14 +7488,14 @@ GResInfo fontview_ri = {
 /* ************************************************************************** */
 
 static void FVCopyInnards(FontView *fv,GRect *pos,int infoh,
-	FontView *fvorig,struct kf_dlg *kf) {
+	FontView *fvorig,GWindow dw, int def_layer, struct fvcontainer *kf) {
 
     fv->notactive = true;
-    fv->gw = kf->dw;
+    fv->gw = dw;
     fv->infoh = infoh;
-    fv->b.container = (struct fvcontainer *) kf;
+    fv->b.container = kf;
     fv->rowcnt = 4; fv->colcnt = 16;
-    fv->b.active_layer = kf->def_layer;
+    fv->b.active_layer = def_layer;
     FVCreateInnards(fv,pos);
     memcpy(fv->b.selected,fvorig->b.selected,fv->b.map->enccount);
     fv->rowoff = (fvorig->rowoff*fvorig->colcnt)/fv->colcnt;
@@ -7521,12 +7532,12 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     pos.width = 16*kf->first_fv->cbw+1;
     pos.height = 4*kf->first_fv->cbh+1;
 
-    FVCopyInnards(kf->first_fv,&pos,infoh,fvorig,kf);
+    FVCopyInnards(kf->first_fv,&pos,infoh,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
     pos.height = 4*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     kf->second_fv->mbh = kf->mbh;
     kf->label2_y = pos.y + pos.height+2;
     pos.y = kf->label2_y + kf->fh + 2;
-    FVCopyInnards(kf->second_fv,&pos,infoh,fvorig,kf);
+    FVCopyInnards(kf->second_fv,&pos,infoh,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
 
     kf->sf->display_size = ps;
 
@@ -7535,4 +7546,339 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     gsize.width = pos.width + sbsize.width;
     gsize.height = pos.y+pos.height;
     GGadgetSetDesiredSize(drawable,NULL,&gsize);
+}
+/* ************************************************************************** */
+/* ************************** Glyph Set from Selection ********************** */
+/* ************************************************************************** */
+
+struct gsd {
+    struct fvcontainer base;
+    FontView *fv;
+    int done;
+    int good;
+    GWindow gw;
+};
+
+static void gs_activateMe(struct fvcontainer *fvc,FontViewBase *fvb) {
+    /*struct gsd *gs = (struct gsd *) fvc;*/
+}
+
+static void gs_charEvent(struct fvcontainer *fvc,void *event) {
+    struct gsd *gs = (struct gsd *) fvc;
+    FVChar(gs->fv,event);
+}
+
+static void gs_doClose(struct fvcontainer *fvc) {
+    struct gsd *gs = (struct gsd *) fvc;
+    gs->done = true;
+}
+
+static void gs_doResize(struct fvcontainer *fvc,FontViewBase *fvb) {
+/*    struct gsd *gs = (struct gsd *) fvc; */
+/*    FontView *fv = (FontView *) fvb; */
+}
+
+static struct fvcontainer_funcs glyphset_funcs = {
+    fvc_glyphset,
+    true,			/* Modal dialog. No charviews, etc. */
+    gs_activateMe,
+    gs_charEvent,
+    gs_doClose,
+    gs_doResize
+};
+
+static int GS_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gsd *gs = GDrawGetUserData(GGadgetGetWindow(g));
+	gs->done = true;
+	gs->good = true;
+    }
+return( true );
+}
+
+static int GS_Cancel(GGadget *g, GEvent *e) {
+    struct gsd *gs;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	gs = GDrawGetUserData(GGadgetGetWindow(g));
+	gs->done = true;
+    }
+return( true );
+}
+
+static void gs_sizeSet(struct gsd *gs,GWindow dw) {
+    GRect size, gsize;
+    int width, height, y;
+    int cc, rc, topchar;
+    GRect subsize;
+    FontView *fv = gs->fv;
+
+    GDrawGetSize(dw,&size);
+    GGadgetGetSize(gs->fv->vsb,&gsize);
+    width = size.width - gsize.width;
+    height = size.height - gs->fv->mbh - gs->fv->infoh;
+
+    y = gs->fv->mbh + gs->fv->infoh;
+
+    topchar = fv->rowoff*fv->colcnt;
+    cc = (width-1) / fv->cbw;
+    if ( cc<1 ) cc=1;
+    rc = (height-1)/ fv->cbh;
+    if ( rc<1 ) rc = 1;
+    subsize.x = 0; subsize.y = 0;
+    subsize.width = cc*fv->cbw + 1;
+    subsize.height = rc*fv->cbh + 1;
+    GDrawResize(fv->v,subsize.width,subsize.height);
+    GDrawMove(fv->v,0,y);
+    GGadgetMove(fv->vsb,subsize.width,y);
+    GGadgetResize(fv->vsb,gsize.width,subsize.height);
+
+    fv->colcnt = cc; fv->rowcnt = rc;
+    fv->width = subsize.width; fv->height = subsize.height;
+    fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
+    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+    fv->rowoff = topchar/fv->colcnt;
+    if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
+        fv->rowoff = fv->rowltot-fv->rowcnt;
+    if ( fv->rowoff<0 ) fv->rowoff =0;
+    GScrollBarSetPos(fv->vsb,fv->rowoff);
+
+    GDrawRequestExpose(fv->v,NULL,true);
+}
+
+static int gs_sub_e_h(GWindow pixmap, GEvent *event) {
+    FontView *active_fv;
+    struct gsd *gs;
+
+    if ( event->type==et_destroy )
+return( true );
+
+    active_fv = (FontView *) GDrawGetUserData(pixmap);
+    gs = (struct gsd *) (active_fv->b.container);
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(active_fv->vsb,event));
+    }
+
+    
+    switch ( event->type ) {
+      case et_expose:
+	FVDrawInfo(active_fv,pixmap,event);
+      break;
+      case et_char:
+	gs_charEvent(&gs->base,event);
+      break;
+      case et_mousedown:
+return(false);
+      break;
+      case et_mouseup: case et_mousemove:
+return(false);
+      case et_resize:
+        gs_sizeSet(gs,pixmap);
+      break;
+    }
+return( true );
+}
+
+static int gs_e_h(GWindow gw, GEvent *event) {
+    struct gsd *gs = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_close:
+	gs->done = true;
+      break;
+      case et_char:
+	FVChar(gs->fv,event);
+      break;
+    }
+return( true );
+}
+
+char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
+    struct gsd gs;
+    GRect pos;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[5], boxes[3];
+    GGadgetCreateData *varray[21], *buttonarray[8];
+    GTextInfo label[5];
+    int i,j,k,guts_row,gid,enc,len;
+    char *ret, *rpt;
+    SplineChar *sc;
+    GGadget *drawable;
+    GWindow dw;
+    GGadgetData gd;
+    GRect gsize, sbsize;
+    int infoh, mbh;
+    int ps;
+    FontView *fvorig = (FontView *) sf->fv;
+    GGadget *mb;
+    char *start, *pt; int ch;
+#define CID_Guts	1000
+
+    FontViewInit();
+
+    memset(&wattrs,0,sizeof(wattrs));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+    memset(&label,0,sizeof(label));
+    memset(&gs,0,sizeof(gs));
+
+    gs.base.funcs = &glyphset_funcs;
+
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = true;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Glyph Set by Selection") ;
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    gs.gw = GDrawCreateTopWindow(NULL,&pos,gs_e_h,&gs,&wattrs);
+
+    i = j = 0;
+
+    guts_row = j/2;
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.cid = CID_Guts;
+    gcd[i].gd.u.drawable_e_h = gs_sub_e_h;
+    gcd[i].creator = GDrawableCreate;
+    varray[j++] = &gcd[i++]; varray[j++] = NULL;
+
+    label[i].text = (unichar_t *) _("Select glyphs in the font view above.\nThe selected glyphs become your glyph class.");
+    label[i].text_is_1byte = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].creator = GLabelCreate;
+    varray[j++] = &gcd[i++]; varray[j++] = NULL;
+
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[i].text = (unichar_t *) _("_OK");
+    label[i].text_is_1byte = true;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.handle_controlevent = GS_OK;
+    gcd[i++].creator = GButtonCreate;
+
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[i].text = (unichar_t *) _("_Cancel");
+    label[i].text_is_1byte = true;
+    label[i].text_in_resource = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.handle_controlevent = GS_Cancel;
+    gcd[i++].creator = GButtonCreate;
+
+    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[i-2]; buttonarray[2] = GCD_Glue;
+    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[i-1]; buttonarray[5] = GCD_Glue;
+    buttonarray[6] = NULL;
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = buttonarray;
+    boxes[2].creator = GHBoxCreate;
+    varray[j++] = &boxes[2]; varray[j++] = NULL; varray[j++] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gs.gw,boxes);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,guts_row);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+
+    drawable = GWidgetGetControl(gs.gw,CID_Guts);
+    dw = GDrawableGetWindow(drawable);
+
+    memset(&gd,0,sizeof(gd));
+    gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = FVMenuContextualHelp;
+    gd.u.menu2 = mblist;
+    mb = GMenu2BarCreate( dw, &gd, NULL);
+    GGadgetGetSize(mb,&gsize);
+    mbh = gsize.height;
+
+    ps = sf->display_size; sf->display_size = -24;
+    gs.fv = __FontViewCreate(sf);
+
+    infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
+    gs.fv->mbh = mbh;
+    pos.x = 0; pos.y = mbh+infoh;
+    pos.width = 16*gs.fv->cbw+1;
+    pos.height = 4*gs.fv->cbh+1;
+
+    FVCopyInnards(gs.fv,&pos,infoh,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
+    pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
+    GDrawSetUserData(dw,gs.fv);
+    memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
+    if ( current!=NULL && strcmp(current,_("{Everything Else}"))!=0 ) {
+	int first = true;
+	for ( start = current; *start==' '; ++start );
+	while ( *start ) {
+	    for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+	    ch = *pt; *pt='\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *pt = ch;
+	    if ( sc!=NULL && (enc = gs.fv->b.map->backmap[sc->orig_pos])!=-1 ) {
+		gs.fv->b.selected[enc] = true;
+		if ( first ) {
+		    first = false;
+		    gs.fv->rowoff = enc/gs.fv->colcnt;
+		}
+	    }
+	    start = pt;
+	    while ( *start==' ' ) ++start;
+	}
+    }
+    sf->display_size = ps;
+
+    GGadgetGetSize(gs.fv->vsb,&sbsize);
+    gsize.x = gsize.y = 0;
+    gsize.width = pos.width + sbsize.width;
+    gsize.height = pos.y+pos.height;
+    GGadgetSetDesiredSize(drawable,NULL,&gsize);
+
+    GHVBoxFitWindow(boxes[0].ret);
+    GDrawSetVisible(gs.gw,true);
+    while ( !gs.done )
+	GDrawProcessOneEvent(NULL);
+
+    ret = rpt = NULL;
+    if ( gs.good ) {
+	for ( k=0; k<2; ++k ) {
+	    len = 0;
+	    for ( enc=0; enc<gs.fv->b.map->enccount; ++enc ) {
+		if ( gs.fv->b.selected[enc] &&
+			(gid=gs.fv->b.map->map[enc])!=-1 &&
+			(sc = sf->glyphs[gid])!=NULL ) {
+		    if ( ret==NULL )
+			len += strlen(sc->name)+7;
+		    else {
+			strcpy(rpt,sc->name);
+			rpt += strlen(sc->name);
+			if ( sc->unicodeenc>32 && sc->unicodeenc!=')' &&
+				(!isalpha(sc->unicodeenc) || sc->unicodeenc>0x7f)) {
+			    *rpt++ = '(';
+			    rpt = utf8_idpb(rpt,sc->unicodeenc);
+			    *rpt++ = ')';
+			}
+			*rpt++ = ' ';
+		    }
+		}
+	    }
+	    if ( k==0 )
+		ret = rpt = galloc(len+1);
+	    else if ( rpt!=ret && rpt[-1]==' ' )
+		rpt[-1]='\0';
+	    else
+		*rpt='\0';
+	}
+    }
+    FontViewFree(&gs.fv->b);
+    GDrawSetUserData(gs.gw,NULL);
+    GDrawSetUserData(dw,NULL);
+    GDrawDestroyWindow(gs.gw);
+return( ret );
 }

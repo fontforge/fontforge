@@ -62,6 +62,7 @@ typedef struct gotodata {
 } GotoData;
 
 #define CID_Name 1000
+#define CID_MergeWithSelection	1001
 
 static int Goto_Cancel(GGadget *g, GEvent *e) {
     GWindow gw;
@@ -171,14 +172,15 @@ return( NULL );
 return( ret );
 }
 
-int GotoChar(SplineFont *sf,EncMap *map) {
+int GotoChar(SplineFont *sf,EncMap *map,int *merge_with_selection) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[9], boxes[3], *hvarray[5][2], *barray[10];
+    GGadgetCreateData gcd[9], boxes[3], *hvarray[6][2], *barray[10];
     GTextInfo label[9];
     static GotoData gd;
     GTextInfo *ranges = NULL;
+    int k,j;
 
     if ( !map->enc->only_1byte )
 	ranges = AvailableRanges(sf,map);
@@ -205,47 +207,60 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
 
-    label[0].text = (unichar_t *) _("Enter the name of a glyph in the font");
-    label[0].text_is_1byte = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.flags = gg_enabled|gg_visible;
-    gcd[0].creator = GLabelCreate;
-    hvarray[0][0] = &gcd[0]; hvarray[0][1] = NULL;
+    k=j=0;
+    label[k].text = (unichar_t *) _("Enter the name of a glyph in the font");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].creator = GLabelCreate;
+    hvarray[j][0] = &gcd[k++]; hvarray[j++][1] = NULL;
 
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_text_xim;
-    gcd[1].gd.cid = CID_Name;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_text_xim;
+    gcd[k].gd.cid = CID_Name;
     if ( ranges==NULL )
-	gcd[1].creator = GTextCompletionCreate;
+	gcd[k].creator = GTextCompletionCreate;
     else {
-	gcd[1].gd.u.list = ranges;
-	gcd[1].creator = GListFieldCreate;
+	gcd[k].gd.u.list = ranges;
+	gcd[k].creator = GListFieldCreate;
     }
-    hvarray[1][0] = &gcd[1]; hvarray[1][1] = NULL;
-    hvarray[2][0] = GCD_Glue; hvarray[2][1] = NULL;
+    hvarray[j][0] = &gcd[k++]; hvarray[j++][1] = NULL;
 
-    gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[2].text = (unichar_t *) _("_OK");
-    label[2].text_is_1byte = true;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.handle_controlevent = Goto_OK;
-    gcd[2].creator = GButtonCreate;
-    barray[0] = GCD_Glue; barray[1] = &gcd[2]; barray[2] = GCD_Glue; barray[3] = GCD_Glue;
+    if ( merge_with_selection!=NULL ) {
+	label[k].text = (unichar_t *) _("Merge into selection");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.cid = CID_MergeWithSelection;
+	gcd[k].gd.flags = *merge_with_selection ?
+		gg_enabled|gg_visible|gg_cb_on :
+		gg_enabled|gg_visible;
+	gcd[k].creator = GCheckBoxCreate;
+	hvarray[j][0] = &gcd[k++]; hvarray[j++][1] = NULL;
+    }
+    hvarray[j][0] = GCD_Glue; hvarray[j++][1] = NULL;
 
-    gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = (unichar_t *) _("_Cancel");
-    label[3].text_is_1byte = true;
-    label[3].text_in_resource = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.handle_controlevent = Goto_Cancel;
-    gcd[3].creator = GButtonCreate;
-    barray[4] = GCD_Glue; barray[5] = &gcd[3]; barray[6] = GCD_Glue; barray[7] = NULL;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Goto_OK;
+    gcd[k].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k++]; barray[2] = GCD_Glue; barray[3] = GCD_Glue;
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Goto_Cancel;
+    gcd[k].creator = GButtonCreate;
+    barray[4] = GCD_Glue; barray[5] = &gcd[k++]; barray[6] = GCD_Glue; barray[7] = NULL;
 
     boxes[2].gd.flags = gg_visible | gg_enabled;
     boxes[2].gd.u.boxelements = barray;
     boxes[2].creator = GHBoxCreate;
-    hvarray[3][0] = &boxes[2]; hvarray[3][1] = NULL;
-    hvarray[4][0] = NULL;
+    hvarray[j][0] = &boxes[2]; hvarray[j++][1] = NULL;
+    hvarray[j][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_visible | gg_enabled;
@@ -261,6 +276,8 @@ int GotoChar(SplineFont *sf,EncMap *map) {
     GDrawSetVisible(gw,true);
     while ( !gd.done )
 	GDrawProcessOneEvent(NULL);
+    if ( merge_with_selection!=NULL )
+	*merge_with_selection = GGadgetIsChecked(GWidgetGetControl(gw,CID_MergeWithSelection));
     GDrawDestroyWindow(gw);
     free(ranges);
 return( gd.ret );

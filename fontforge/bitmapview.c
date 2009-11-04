@@ -1687,7 +1687,7 @@ static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    int pos = GotoChar(bv->fv->b.sf,bv->fv->b.map);
+    int pos = GotoChar(bv->fv->b.sf,bv->fv->b.map,NULL);
 
     if ( pos!=-1 )
 	BVChangeChar(bv,pos,false);

@@ -4887,14 +4887,13 @@ static int kf_sub_e_h(GWindow pixmap, GEvent *event) {
     if ( event->type==et_destroy )
 return( true );
 
+    active_fv = (FontView *) GDrawGetUserData(pixmap);
+    kf = (struct kf_dlg *) (active_fv->b.container);
+
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
 return( GGadgetDispatchEvent(active_fv->vsb,event));
     }
-
-    active_fv = (FontView *) GDrawGetUserData(pixmap);
-    kf = (struct kf_dlg *) (active_fv->b.container);
-
     
     switch ( event->type ) {
       case et_expose:

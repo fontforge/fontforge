@@ -931,7 +931,7 @@ extern void CVMouseUpShape(CharView *cv);
 extern void LogoExpose(GWindow pixmap,GEvent *event, GRect *r,enum drawmode dm);
 extern void CVDebugPointPopup(CharView *cv);
 
-extern int GotoChar(SplineFont *sf,EncMap *map);
+extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
 
 extern void CVShowPoint(CharView *cv, BasePoint *me);
 
@@ -1163,4 +1163,5 @@ extern void FontViewRemove(FontView *fv);
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
+extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 #endif	/* _VIEWS_H */

@@ -6241,7 +6241,7 @@ static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     }
 
-    pos = GotoChar(cv->b.fv->sf,cv->b.fv->map);
+    pos = GotoChar(cv->b.fv->sf,cv->b.fv->map,NULL);
     if ( pos!=-1 )
 	CVChangeChar(cv,pos);
 }

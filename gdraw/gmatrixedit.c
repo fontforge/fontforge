@@ -1254,6 +1254,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
     int i;
     struct matrix_data *d;
     int old_off_left = gme->off_left;	/* We sometimes scroll */
+    int oldr;
 
     /* new row */
     if ( c==0 && r==gme->rows && event->type == et_mousedown &&
@@ -1284,7 +1285,15 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 
     if ( c==gme->cols || r>=gme->rows || gme->col_data[c].disabled )
 return;
+    oldr = gme->active_row;
     gme->active_col = c; gme->active_row = r;
+    if ( r!=oldr && oldr!=-1 ) {
+	GRect r;
+	r.x = 0; r.width=4000;
+	r.y = (oldr-gme->off_top)*(gme->fh+gme->vpad); r.height = gme->fh+gme->vpad;
+	if ( r.y+r.height>0 )
+	    GDrawRequestExpose(gme->nested,&r,false);
+    }
     GME_EnableDelete(gme);
 
     GMatrixEditScrollToRowCol(&gme->g,r,c);
@@ -1315,6 +1324,8 @@ return;
 	    /*  do that for me */
 	    free(gme->data[r*gme->cols+c].u.md_str);
 	    gme->data[r*gme->cols+c].u.md_str = ret;
+	    if ( gme->finishedit != NULL )
+		(gme->finishedit)(&gme->g,r,c,gme->wasnew);
 	    GDrawRequestExpose(gme->nested,NULL,false);
 	}
     } else if ( (gme->col_data[c].me_type==me_stringchoice ||
@@ -1461,6 +1472,11 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
 	    else if ( gme->active_row==r )
 		GDrawFillRect(pixmap,&clip,gmatrixedit_activebg);
+#if 0
+	    else
+		GDrawFillRect(pixmap,&clip,gme->g.box->main_background!=COLOR_DEFAULT?gme->g.box->main_background:
+			GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)));
+#endif
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||

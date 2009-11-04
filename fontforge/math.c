@@ -1870,7 +1870,7 @@ return;
 
     if ( type == nt_goto ) {
 	SplineFont *sf = mkd->cursc->parent;
-	int enc = GotoChar(sf,sf->fv->map);
+	int enc = GotoChar(sf,sf->fv->map,NULL);
 	if ( enc==-1 || sf->fv->map->map[enc]==-1 || (sc = sf->glyphs[ sf->fv->map->map[enc] ])==NULL )
 return;
 	if ( sc->mathkern==NULL )
