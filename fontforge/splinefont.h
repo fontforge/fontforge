@@ -409,7 +409,8 @@ typedef struct featurescriptlanglist {
 } FeatureScriptLangList;
 
 enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
-	pst_ignorecombiningmarks=8, pst_usemarkfilteringset=0x10 };
+	pst_ignorecombiningmarks=8, pst_usemarkfilteringset=0x10,
+	pst_markclass=0xff00, pst_markset=0xffff0000 };
 
 typedef struct otlookup {
     struct otlookup *next;

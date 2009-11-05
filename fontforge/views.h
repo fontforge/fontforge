@@ -574,17 +574,6 @@ struct gfi_data {		/* FontInfo */
     struct texdata texdata;
     struct contextchaindlg *ccd;
     struct statemachinedlg *smd;
-/* For GDEF Mark Attachment Class -- used in lookup flags */
-/* As usual, class 0 is unused */
-    int mark_class_cnt;
-    char **mark_classes;		/* glyph name list */
-    char **mark_class_names;		/* used within ff */
-/* For GDEF Mark Attachment Sets -- used in lookup flags */
-/* Here, class 0 is USED */
-    int mark_set_cnt;
-    char **mark_sets;			/* glyph name list */
-    char **mark_set_names;		/* used within ff */
-    struct markclassdlg *mcd;
     GFont *font;
     int as, fh;
     struct lkdata tables[2];
@@ -1164,4 +1153,6 @@ extern void FVChar(FontView *fv,GEvent *event);
 extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
 extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
+extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
+extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 #endif	/* _VIEWS_H */
