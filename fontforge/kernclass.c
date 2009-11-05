@@ -1771,17 +1771,16 @@ return( false );
 return( true );
 }
 
-static void ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
-    /* Gadget g is a matrix edit and the first column contains a set of glyph */
-    /*  classes. No glyph may appear in more than one class. */
+void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
+    /* Gadget g is a matrix edit and the column "c" contains a set of glyph */
+    /*  sets. No glyph may appear twice in a set, and glyph names */
+    /*  should be in the font. */
     /* the entry at r,c has just changed. Check to validate the above */
-    /* (also check that no glyph name is duplicated in the current class) */
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *classes = _GMatrixEditGet(g,&rows);
     char *start1, *start2, *pt1, *pt2, *eow1, *eow2;
-    int ch1, ch2, testr, off;
+    int ch1, ch2, off;
     int changed = false;
-    char *buts[3];
 
     /* Remove any leading spaces */
     for ( start1=classes[r*cols+c].u.md_str; *start1==' '; ++start1 );
@@ -1844,9 +1843,30 @@ static void ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
 	*pt1 = ch1;
 	start1 = eow1;
     }
-    if ( changed )
+    if ( changed ) {
 	GGadgetRedraw(g);
-    changed = false;
+	/* Remove trailing spaces too */
+	start1=classes[r*cols+c].u.md_str;
+	pt1 = start1+strlen(start1);
+	while ( pt1>start1 && pt1[-1]==' ' )
+	    --pt1;
+	*pt1 = '\0';
+    }
+}
+
+void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
+    /* Gadget g is a matrix edit and column "c" contains a set of glyph */
+    /*  classes. No glyph may appear in more than one class. */
+    /*  Also all checks in the above routine should be done. */
+    /* the entry at r,c has just changed. Check to validate the above */
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *classes = _GMatrixEditGet(g,&rows);
+    char *start1, *start2, *pt1, *pt2, *eow1, *eow2;
+    int ch1, ch2, testr, off;
+    int changed = false;
+    char *buts[3];
+
+    ME_SetCheckUnique(g,r,c,sf);
 
     buts[0] = _("_From this class"); buts[1] = _("From the _other class"); buts[2]=NULL;
     /* Now check for duplicates in other rows */
@@ -1907,7 +1927,7 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     int is_first = GGadgetGetCid(g) == CID_ClassList;
     int i;
 
-    ClassCheckUnique(g, r, c, kcd->sf);
+    ME_ClassCheckUnique(g, r, c, kcd->sf);
 
     if ( wasnew ) {
 	if ( is_first ) {
@@ -2032,19 +2052,30 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 	}
 	-- kcd->first_cnt;
     } else {
+	int16 *newoffs = galloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(int16));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DeviceTable *newadj = galloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(DeviceTable));
 	for ( i=0; i<kcd->first_cnt; ++i )
 	    free(kcd->adjusts[i*kcd->second_cnt+whichclass].corrections);
 #endif
-	for ( i=whichclass+1; i<rows; ++i ) {
+	for ( i=0; i<rows; ++i ) if ( i!=whichclass ) {
+	    int newi = i>whichclass ? i-1 : i;
 	    for ( j=0; j<kcd->first_cnt; ++j ) {
-		kcd->offsets[j*kcd->second_cnt+(i-1)] = kcd->offsets[j*kcd->second_cnt+i];
+		newoffs[j*(kcd->second_cnt-1)+newi] =
+			kcd->offsets[j*kcd->second_cnt+i];
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-		kcd->adjusts[j*kcd->second_cnt+(i-1)] = kcd->adjusts[j*kcd->second_cnt+i];
+		newadj[j*(kcd->second_cnt-1)+newi] =
+			kcd->adjusts[j*kcd->second_cnt+i];
 #endif
 	    }
 	}
 	-- kcd->second_cnt;
+	free(kcd->offsets);
+	kcd->offsets = newoffs;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	free(kcd->adjusts);
+	kcd->adjusts = newadj;
+#endif
     }    
 }
 
@@ -2073,7 +2104,7 @@ return( SFGlyphNameCompletion(sf,t,from_tab,false));
 }
 
 static struct col_init class_ci[] = {
-    { me_funcedit, KCD_PickGlyphsForClass, NULL, NULL, N_("Glyphs in classes") },
+    { me_funcedit, KCD_PickGlyphsForClass, NULL, NULL, N_("Glyphs in the classes") },
     };
 static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off,
 	struct matrixinit *mi, GGadgetCreateData **harray, GGadgetCreateData **varray,

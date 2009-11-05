@@ -1495,7 +1495,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		buf[18] = '\0';
 		k = strlen(buf);
 		buf[k] = '>'; buf[k+1] = '\0';
-		GDrawDrawBiText8(pixmap,gme->g.inner.x+gme->col_data[0].x - gme->off_left,y,
+		GDrawDrawBiText8(pixmap,gme->col_data[0].x - gme->off_left,y,
 			buf,-1,NULL,gmatrixedit_activecol);
 	    } else {
 		data = &gme->data[(r+gme->off_top)*gme->cols+c];
