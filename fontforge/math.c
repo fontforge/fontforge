@@ -1081,7 +1081,7 @@ return( true );
 		    if ( str!=NULL ) while ( *str==' ' ) ++str;
 		    if ( str!=NULL && *str!='\0' ) {
 			*gvp = chunkalloc(sizeof(struct glyphvariants));
-			(*gvp)->variants = NameListDeUnicode( str );
+			(*gvp)->variants = GlyphNameListDeUnicode( str );
 		    }
 		} else if ( cid==CID_VGlyphConst || cid==CID_HGlyphConst ) {
 		    struct glyphvariants **gvp = cid == CID_VGlyphConst ?

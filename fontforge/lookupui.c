@@ -67,6 +67,31 @@ GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type ) {
 return( ti );
 }
 
+GTextInfo *SFLookupArrayFromType(SplineFont *sf, int lookup_type ) {
+    int isgpos = (lookup_type>=gpos_start);
+    int k, cnt;
+    OTLookup *otl;
+    GTextInfo *ti;
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups ; otl!=NULL; otl=otl->next ) {
+	    if ( lookup_type==gsub_start || lookup_type==gpos_start ||
+		    otl->lookup_type == lookup_type ) {
+		if ( k ) {
+		    ti[cnt].userdata = (void *) otl;
+		    ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
+		    ti[cnt].text = utf82u_copy(otl->lookup_name);
+		}
+		++cnt;
+	    }
+	}
+	if ( !k )
+	    ti = gcalloc(cnt+2,sizeof(GTextInfo));
+    }
+return( ti );
+}
+
 GTextInfo *SFLookupArrayFromMask(SplineFont *sf, int mask ) {
     int k, cnt;
     OTLookup *otl;
@@ -3758,7 +3783,7 @@ return( true );
 		    pst->u.pos.h_adv_off = psts[cols*r+SIM_DX_ADV].u.md_ival;
 		    pst->u.pos.v_adv_off = psts[cols*r+SIM_DY_ADV].u.md_ival;
 		} else {
-		    pst->u.subs.variant = NameListDeUnicode( psts[cols*r+1].u.md_str );
+		    pst->u.subs.variant = GlyphNameListDeUnicode( psts[cols*r+1].u.md_str );
 		    if ( lookup_type==gsub_ligature )
 			pst->u.lig.lig = sc;
 		}
@@ -3847,7 +3872,7 @@ static int PSTKD_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-char *NameListDeUnicode( char *str ) {
+char *GlyphNameListDeUnicode( char *str ) {
     char *pt;
     char *ret, *rpt;
 
@@ -5490,13 +5515,9 @@ return;
     }
 
     if ( sub->fpst && sf->fontinfo!=NULL ) {
-	if ( sf->fontinfo->ccd )
-return;
-	sf->fontinfo->ccd = ContextChainEdit(sf,sub->fpst,sf->fontinfo,NULL);
+	ContextChainEdit(sf,sub->fpst,sf->fontinfo,NULL,def_layer);
     } else if ( sub->sm && sf->fontinfo!=NULL ) {
-	if ( sf->fontinfo->smd!=NULL )
-return;
-	sf->fontinfo->smd = StateMachineEdit(sf,sub->sm,sf->fontinfo);
+	StateMachineEdit(sf,sub->sm,sf->fontinfo);
     } else if ( sub->kc!=NULL ) {
 	KernClassD(sub->kc,sf,def_layer,sub->vertical_kerning);
     } else if ( sub->lookup->lookup_type>=gpos_cursive &&
@@ -5855,7 +5876,7 @@ static int MRD_OK(GGadget *g, GEvent *e) {
 	    ++sel_cnt;
 	if ( !themselves ) {
 	    char *freeme = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
-	    start_name = NameListDeUnicode(freeme);
+	    start_name = GlyphNameListDeUnicode(freeme);
 	    free(freeme);
 	    enc_start = SFFindSlot(mrd->fv->b.sf,mrd->fv->b.map,-1,start_name);
 	    if ( enc_start==-1 ) {

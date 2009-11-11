@@ -38,15 +38,6 @@ extern int _GScrollBar_Width;
 
 static int last_aspect=0;
 
-typedef struct markclassdlg {
-    GWindow gw;
-    struct gfi_data *d;
-    GGadget *list;
-    int which;
-    struct markclassdlg *next;
-    int isset;
-} MarkClassDlg;
-
 GTextInfo emsizes[] = {
     { (unichar_t *) "1000", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "1024", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -2066,11 +2057,6 @@ return( true );
 
 static void GFI_Close(struct gfi_data *d) {
 
-    if ( d->ccd )
-	CCD_Close(d->ccd);
-    if ( d->smd )
-	SMD_Close(d->smd);
-
     PSDictFree(d->private);
 
     GDrawDestroyWindow(d->gw);
@@ -4003,10 +3989,6 @@ return( true );
 return( true );
 	if ( !PIFinishFormer(d))
 return( true );
-	if ( d->ccd )
-	    CCD_Close(d->ccd);
-	if ( d->smd )
-	    SMD_Close(d->smd);
 
 	if ( ttfmultuniqueids(sf,d)) {
 	    char *buts[3];
@@ -4419,7 +4401,7 @@ return(true);
 	sf->mark_classes[0] = sf->mark_class_names[0] = NULL;
 	for ( i=0; i<mc_rows; ++i ) {
 	    sf->mark_class_names[i+1] = copy(markclasses[2*i+0].u.md_str);
-	    sf->mark_classes[i+1]     = copy(markclasses[2*i+1].u.md_str);
+	    sf->mark_classes[i+1]     = GlyphNameListDeUnicode(markclasses[2*i+1].u.md_str);
 	}
 
 	/* Set 0 is used */
@@ -4429,7 +4411,7 @@ return(true);
 	sf->mark_set_names = galloc((ms_rows)*sizeof(char *));
 	for ( i=0; i<ms_rows; ++i ) {
 	    sf->mark_set_names[i] = copy(marksets[2*i+0].u.md_str);
-	    sf->mark_sets[i]      = copy(marksets[2*i+1].u.md_str);
+	    sf->mark_sets[i]      = GlyphNameListDeUnicode(marksets[2*i+1].u.md_str);
 	}
 
 	GFI_Close(d);
@@ -5738,11 +5720,6 @@ return( true );
 
 /* ??? *//* How about a series of buttons to show only by lookup_type, feat-tag, script-tag */
 
-void GFI_CCDEnd(struct gfi_data *d) {
-
-    d->ccd = NULL;
-}
-
 void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success) {
     OTLookup *otl;
     struct lookup_subtable *sub, *prev;
@@ -5773,11 +5750,6 @@ void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success) {
 
 	chunkfree(fpst,sizeof(FPST));
     }
-}
-
-void GFI_SMDEnd(struct gfi_data *d) {
-
-    d->smd = NULL;
 }
 
 void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
@@ -9526,7 +9498,7 @@ return;
     markc_md = gcalloc(sf->mark_class_cnt+1,2*sizeof(struct matrix_data));
     for ( i=1; i<sf->mark_class_cnt; ++i ) {
 	markc_md[2*(i-1)+0].u.md_str = copy(sf->mark_class_names[i]);
-	markc_md[2*(i-1)+1].u.md_str = copy(sf->mark_classes[i]);
+	markc_md[2*(i-1)+1].u.md_str = SFNameList2NameUni(sf,sf->mark_classes[i]);
     }
     markc_mi.matrix_data = markc_md;
     markc_mi.initial_row_cnt = sf->mark_class_cnt>0?sf->mark_class_cnt-1:0;
@@ -9570,7 +9542,7 @@ return;
     marks_md = gcalloc(sf->mark_set_cnt+1,2*sizeof(struct matrix_data));
     for ( i=0; i<sf->mark_set_cnt; ++i ) {
 	marks_md[2*i+0].u.md_str = copy(sf->mark_set_names[i]);
-	marks_md[2*i+1].u.md_str = copy(sf->mark_sets[i]);
+	marks_md[2*i+1].u.md_str = SFNameList2NameUni(sf,sf->mark_sets[i]);
     }
     marks_mi.matrix_data = marks_md;
     marks_mi.initial_row_cnt = sf->mark_set_cnt;

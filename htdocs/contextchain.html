@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Aug-2003 -->
-  <!-- AP: Last modified: 30-Apr-2007 -->
+  <!-- AP: Last modified: 11-Nov-2009 -->
   <TITLE>The dialog for editing Contextual or Chaining Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -135,53 +135,37 @@
   coverage tables to match glyphs before the current glyph, and another list
   to match glyphs after.
   <P>
-  The buttons under the coverage list allow you to create new coverage tables
-  to go to the end of the list (ie. to be added to the end of the match string),
-  to edit current coverage tables, to remove a coverage table, or to reorder
-  the coverage tables.
-  <P>
   This feature does not directly describe how transformations are to happen
-  to the glyphs, instead it provides a list of nested features (actually lookups,
-  but I'm trying to hide that distinction) that are to be applied to specific
-  positions in the match string (positions in the backtrack and lookahead lists
-  my not be transformed).
+  to the glyphs, instead it invokes a list of nested lookups that are to be
+  applied to specific positions in the match string (positions in the backtrack
+  and lookahead lists may not be transformed).
   <P>
-  In the example at right, the feature 'L041' will be applied to any glyph
-  that matches the coverage table at the top of the list. Again the buttons
-  under the sequence lookup list allow you to add, change, remove or reorder
-  these transformations. (And yes, the order the transformations are applied
-  can matter in complex situations).<BR CLEAR=ALL>
+  In the example at right, the lookup 'high' will be applied to any glyph that
+  matches the coverage table at the top of the list. Again the buttons under
+  the sequence lookup list allow you to add, change, remove or reorder these
+  transformations. (And yes, the order the transformations are applied can
+  matter in complex situations).
   <H4>
-    <IMG SRC="contextchain-seqlookup.png" WIDTH="254" HEIGHT="212" ALIGN="Right">Creating
-    or editing a sequence lookup pair
+    Creating or editing a lookup position pair
   </H4>
   <P>
-  This dialog allows you to specify which position in the match string is to
-  have which nested feature applied to it.
+  You can change a lookup by clicking on it, this will produce a pull down
+  menu of all lookups that can be applied. You can change the position by editing
+  it.
   <P>
-  A nested feature is very similar to a normal feature (position, pair,
-  substitution, ligature, anchor, etc.) except that instead of having a
-  script/language list it has a special value of "Nested".<BR CLEAR=ALL>
+  You can add a new entry by pressing the &lt;New&gt; button, and then selecting
+  a lookup.
   <H3>
-    <IMG SRC="contextchain-cselect.png" WIDTH="476" HEIGHT="503" ALIGN="Right">Setting
-    a coverage table
+    Setting a coverage table
   </H3>
   <P>
-  If you press the [New] or [Edit] buttons from the coverage dialog above you
-  get the page to the right. The text field provides the names of all glyphs
-  in the coverage table. You may edit this list directly by typing in it, or
-  you may press the [Set From Font] button which sets the text field to contain
-  the names of all glyphs selected in the font view. And the [Select In Font]
-  button changes the selection of the font view to match the contents of the
-  text field.
-  <P>
-  You may also add some standard classes of glyphs (as shown in the pull down
-  menu). When adding letters only those letters will be used which are in the
-  scripts for which this lookup is active.
-  <P>
-  If you wish to cancel this operation press the [&lt;Prev] button and you
-  will be returned to the coverage list page (and any changes made here will
-  be lost), while pressing [Next&gt;] will accept those changes.<BR CLEAR=ALL>
+  You can change a coverage table by editing it. You may enter either glyph
+  names or unicode characters (which will be converted to a glyph name -- a
+  few characters which have special meaning: space, right parenthesis, asterix;
+  must have their names typed in full). If you click on the little box on the
+  right you will get a dialog containing a font view. In this view you may
+  select glyphs to your heart's content, when you press OK these glyphs become
+  your table.<BR CLEAR=ALL>
   <H3>
     <IMG SRC="contextchain-glyphlists.png" WIDTH="476" HEIGHT="498" ALIGN="Right"><A
 	NAME="Glyphs">Glyphs</A>
@@ -193,9 +177,8 @@
   them. If everything matched then the lookup "Smallcaps" will be applied to
   location 0 (in this case "D") , and "superscript" to location 1 (here, "E").
   <P>
-  The buttons underneath allow you to add, change, remove and reorder these
-  entries. The order is significant, word processors will stop at the first
-  match they find so in the following pattern strings:<BR>
+  The order is significant, word processors will stop at the first match they
+  find so in the following pattern strings:<BR>
   <CODE>&nbsp; &nbsp; &nbsp; b a</CODE><BR>
   <CODE>&nbsp; &nbsp; &nbsp; b a f</CODE><BR>
   the second entry would never be matched because "b a" would be applied first.

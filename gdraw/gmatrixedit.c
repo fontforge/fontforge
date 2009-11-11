@@ -128,6 +128,7 @@ static void MatrixDataFree(GMatrixEdit *gme) {
 		gme->col_data[c].me_type == me_stringchoicetrans ||
 		gme->col_data[c].me_type == me_stringchoicetag ||
 		gme->col_data[c].me_type == me_funcedit ||
+		gme->col_data[c].me_type == me_onlyfuncedit ||
 		gme->col_data[c].me_type == me_button ||
 		gme->col_data[c].me_type == me_func )
 	    free( gme->data[r*gme->cols+c].u.md_str );
@@ -175,8 +176,10 @@ static void GMatrixEdit_destroy(GGadget *g) {
 
 static void GME_FixScrollBars(GMatrixEdit *gme) {
     int width;
+    int pagesize = gme->vsb->r.height/(gme->fh+gme->vpad);
+    if ( pagesize<=0 ) pagesize=1;
 
-    GScrollBarSetBounds(gme->vsb,0,gme->rows+1,gme->vsb->r.height/(gme->fh+gme->vpad));
+    GScrollBarSetBounds(gme->vsb,0,gme->rows+1,pagesize);
     width = gme->col_data[gme->cols-1].x + gme->col_data[gme->cols-1].width;
     GScrollBarSetBounds(gme->hsb,0,width,gme->hsb->r.width);
 }
@@ -276,6 +279,7 @@ return( 0 );
       case me_button:
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
       case me_funcedit:
+      case me_onlyfuncedit:
       case me_string: case me_bigstr:
 	max = 0;
 	for ( r=0; r<gme->rows; ++r ) {
@@ -297,6 +301,7 @@ return( 0 );
 	if ( gme->col_data[c].me_type==me_stringchoice ||
 		gme->col_data[c].me_type==me_stringchoicetrans ||
 		gme->col_data[c].me_type==me_stringchoicetag ||
+		gme->col_data[c].me_type==me_onlyfuncedit ||
 		gme->col_data[c].me_type==me_funcedit )
 	    width += gme->mark_size + gme->mark_skip;
       break;
@@ -570,6 +575,10 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     GRect r, old, older;
     int c, y, lastc;
+    Color fg = gmatrixedit_title_fg;
+
+    if ( gme->g.state!=gs_enabled )
+	fg = gme->g.box->disabled_foreground;
 
     GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);
     if ( gme->has_titles ) {
@@ -587,7 +596,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 		r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 		r.width = gme->col_data[c].width;
 		GDrawPushClip(pixmap,&r,&old);
-		GDrawDrawBiText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,gmatrixedit_title_fg);
+		GDrawDrawBiText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,fg);
 		GDrawPopClip(pixmap,&old);
 	    }
 	    if ( c!=lastc && !gme->col_data[c].hidden)
@@ -718,6 +727,7 @@ static void GME_PositionEdit(GMatrixEdit *gme) {
 	if ( gme->col_data[c].me_type==me_stringchoice ||
 		gme->col_data[c].me_type==me_stringchoicetrans ||
 		gme->col_data[c].me_type==me_stringchoicetag ||
+		gme->col_data[c].me_type==me_onlyfuncedit ||
 		gme->col_data[c].me_type==me_funcedit )
 	    end -= gme->mark_size+gme->mark_skip;
 
@@ -813,7 +823,7 @@ return( false );
 	free(str);
   goto good;
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
-      case me_funcedit:
+      case me_funcedit: case me_onlyfuncedit:
       case me_string: case me_bigstr: case me_func: case me_button:
 	if ( gme->validatestr!=NULL )
 	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
@@ -923,6 +933,7 @@ return;
     for ( c=0; c<gme->cols; ++c ) {
 	if ( gme->col_data[c].me_type == me_string || gme->col_data[c].me_type == me_bigstr ||
 		gme->col_data[c].me_type == me_func || gme->col_data[c].me_type == me_funcedit ||
+		gme->col_data[c].me_type == me_onlyfuncedit ||
 		gme->col_data[c].me_type == me_button ||
 		gme->col_data[c].me_type == me_stringchoice ||
 		gme->col_data[c].me_type == me_stringchoicetag ||
@@ -1237,6 +1248,7 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
       break;
       case me_string: case me_bigstr:
       case me_funcedit:
+      case me_onlyfuncedit:
       case me_button:
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
 	str = d->u.md_str;
@@ -1269,6 +1281,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 	      case me_string: case me_bigstr:
 	      case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
 	      case me_funcedit:
+	      case me_onlyfuncedit:
 		d->u.md_str = copy("");
 	      break;
 	      case me_enum:
@@ -1314,10 +1327,14 @@ return;
 	    gme->data[r*gme->cols+c].u.md_str = ret;
 	    GDrawRequestExpose(gme->nested,NULL,false);
 	}
-    } else if ( gme->col_data[c].me_type==me_funcedit &&
+    } else if ( ((gme->col_data[c].me_type==me_funcedit ||
+		    gme->col_data[c].me_type==me_onlyfuncedit ) &&
 	    event->type==et_mousedown &&
 	    event->u.mouse.x>gme->col_data[c].x + gme->col_data[c].width -
-		(gme->mark_size+gme->mark_skip) - old_off_left ) {
+		(gme->mark_size+gme->mark_skip) - old_off_left ) ||
+	(gme->col_data[c].me_type==me_onlyfuncedit &&
+			event->type==et_mousedown &&
+			(gme->wasnew || event->u.mouse.clicks==2)) ) {
 	char *ret = (gme->col_data[c].func)(&gme->g,r,c);
 	if ( ret!=NULL ) {
 	    /* I don't bother validating it because I expect the function to */
@@ -1328,6 +1345,8 @@ return;
 		(gme->finishedit)(&gme->g,r,c,gme->wasnew);
 	    GDrawRequestExpose(gme->nested,NULL,false);
 	}
+    } else if ( gme->col_data[c].me_type==me_onlyfuncedit ) {
+	/* Don't allow other editing */
     } else if ( (gme->col_data[c].me_type==me_stringchoice ||
 	    gme->col_data[c].me_type==me_stringchoicetrans ||
 	    gme->col_data[c].me_type==me_stringchoicetag) &&
@@ -1421,6 +1440,8 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
     GMenuItem *mi;
 
     GDrawGetSize(gme->nested,&size);
+    if ( gme->g.state!=gs_enabled )
+	GDrawFillRect(pixmap,&size,gme->g.box->disabled_background);
 
     GDrawDrawLine(pixmap,0,0,0,size.height,gmatrixedit_rules);
     /* Make sure the last visible column ends at (or after) the edge */
@@ -1480,6 +1501,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
+		    gme->col_data[c].me_type == me_onlyfuncedit ||
 		    gme->col_data[c].me_type == me_funcedit )
 		clip.width -= gme->mark_size+gme->mark_skip;
 	    GDrawPushClip(pixmap,&clip,&old);
@@ -1532,6 +1554,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
+		    gme->col_data[c].me_type == me_onlyfuncedit ||
 		    gme->col_data[c].me_type == me_funcedit ) {
 		GListMarkDraw(pixmap,
 			clip.x + clip.width + gme->mark_skip + (gme->mark_size - gme->mark_length)/2,
@@ -1829,7 +1852,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     for ( c=0; c<gme->cols; ++c ) {
 	enum me_type me_type = gme->col_data[c].me_type;
 	if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
-		me_type==me_button ||
+		me_type==me_button || me_type==me_onlyfuncedit ||
 		me_type==me_funcedit || me_type==me_stringchoice ||
 		me_type==me_stringchoicetrans || me_type==me_stringchoicetag ) {
 	    for ( r=0; r<gme->rows; ++r )
@@ -1880,6 +1903,13 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->del = GButtonCreate(base,&sub_gd,gme);
     gme->del->contained = true;
 
+    if ( gme->g.r.height<10 ) {
+	int extra = 2*bp+ sbwidth + (gme->has_titles?gme->fh:0) +
+		    gme->del->r.height+DEL_SPACE;
+	gme->g.r.height = extra + gme->g.r.height*(gme->fh + gme->vpad);
+	gme->g.inner.height = gme->g.r.height - 2*bp;
+    }
+	
     memset(&wattrs,0,sizeof(wattrs));
     if ( gme->g.box->main_background!=COLOR_TRANSPARENT )
 	wattrs.mask = wam_events|wam_cursor|wam_backcol;
@@ -1959,7 +1989,7 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 	for ( c=0; c<gme->cols; ++c ) {
 	    enum me_type me_type = gme->col_data[c].me_type;
 	    if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
-		    me_type==me_button ||
+		    me_type==me_button || me_type==me_onlyfuncedit ||
 		    me_type==me_funcedit || me_type==me_stringchoice ||
 		    me_type==me_stringchoicetrans || me_type==me_stringchoicetag ) {
 		for ( r=0; r<rows; ++r )
@@ -2092,7 +2122,7 @@ return;
 	label[i].text = (unichar_t *) "↑";	/* Up Arrow */
 	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_visible | gg_enabled ;
+	gcd[i].gd.flags = gg_visible /*| gg_enabled*/ ;
 	gcd[i].gd.handle_controlevent = _GME_Up;
 	gcd[i].data = gme;
 	gcd[i++].creator = GButtonCreate;
@@ -2102,7 +2132,7 @@ return;
 	label[i].text = (unichar_t *) "↓";	/* Down Arrow */
 	label[i].text_is_1byte = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_visible | gg_enabled ;
+	gcd[i].gd.flags = gg_visible /*| gg_enabled*/ ;
 	gcd[i].gd.handle_controlevent = _GME_Down;
 	gcd[i].data = gme;
 	gcd[i++].creator = GButtonCreate;

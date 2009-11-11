@@ -1734,13 +1734,15 @@ static void FVSelectByScript(FontView *fv,int merge) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[7], *hvarray[11][2], *barray[8], boxes[3];
-    GTextInfo label[7];
+    GGadgetCreateData gcd[10], *hvarray[21][2], *barray[8], boxes[3];
+    GTextInfo label[10];
     int i,k;
     int done = 0, doit;
     char tagbuf[4];
     uint32 tag;
     const unichar_t *ret;
+    int lc_k, uc_k, select_k;
+    int only_uc=0, only_lc=0;
 
     LookupUIInit();
 
@@ -1770,10 +1772,39 @@ static void FVSelectByScript(FontView *fv,int merge) {
     gcd[k++].creator = GListFieldCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
 
-    label[k].text = (unichar_t *) _("Select Results");
+    label[k].text = (unichar_t *) _("All glyphs");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to all glyphs in the script.");
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
+    hvarray[i][0] = GCD_HPad10; hvarray[i++][1] = NULL;
+
+    uc_k = k;
+    label[k].text = (unichar_t *) _("Only upper case");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to any upper case glyphs in the script.");
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
+
+    lc_k = k;
+    label[k].text = (unichar_t *) _("Only lower case");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to any lower case glyphs in the script.");
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
+    hvarray[i][0] = GCD_HPad10; hvarray[i++][1] = NULL;
+
+    select_k = k;
+    label[k].text = (unichar_t *) _("Select Results");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_rad_startnew;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the glyphs\nwhich match");
     gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
@@ -1870,10 +1901,12 @@ static void FVSelectByScript(FontView *fv,int merge) {
 	    }
 	}
     }
-    merge = GGadgetIsChecked(gcd[1].ret) ? mt_set :
-	    GGadgetIsChecked(gcd[2].ret) ? mt_merge :
-	    GGadgetIsChecked(gcd[3].ret) ? mt_restrict :
-					   mt_and;
+    merge = GGadgetIsChecked(gcd[select_k+0].ret) ? mt_set :
+	    GGadgetIsChecked(gcd[select_k+1].ret) ? mt_merge :
+	    GGadgetIsChecked(gcd[select_k+2].ret) ? mt_restrict :
+						    mt_and;
+    only_uc = GGadgetIsChecked(gcd[uc_k+0].ret);
+    only_lc = GGadgetIsChecked(gcd[lc_k+0].ret);
 
     GDrawDestroyWindow(gw);
     if ( done==1 )
@@ -1882,6 +1915,14 @@ return;
 	
     for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	doit = ( SCScriptFromUnicode(sc)==tag );
+	if ( doit ) {
+	    if ( only_uc && (sc->unicodeenc==-1 || sc->unicodeenc>0xffff &&
+		    !isupper(sc->unicodeenc)) )
+		doit = false;
+	    else if ( only_lc && (sc->unicodeenc==-1 || sc->unicodeenc>0xffff &&
+		    !islower(sc->unicodeenc)) )
+		doit = false;
+	}
 	fv->b.selected[j] = mergefunc[ merge + (fv->b.selected[j]?2:0) + doit ];
     } else if ( merge==mt_set )
 	fv->b.selected[j] = false;

@@ -136,7 +136,7 @@ static void GHVBoxGatherSizeInfo(GHVBox *gb,struct sizeinfo *si) {
 		if ( r+1!=gb->rows && si->rows[r].min<gb->vpad ) si->rows[r].min = gb->vpad;
 	    } else if ( g==GG_HPad10 ) {
 		if ( c+1!=gb->cols && si->cols[c].min<gb->hpad+ten ) si->cols[c].min = gb->hpad+ten;
-		if ( r+1!=gb->rows && si->rows[r].min<gb->vpad ) si->rows[r].min = gb->vpad;
+		if ( r+1!=gb->rows && si->rows[r].min<gb->vpad ) si->rows[r].min = gb->vpad+ten/2;
 		si->cols[c].allglue = false;
 	    } else if ( g==GG_ColSpan || g==GG_RowSpan )
 		/* Skip it */;

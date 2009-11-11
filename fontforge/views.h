@@ -572,8 +572,6 @@ struct gfi_data {		/* FontInfo */
     unsigned int lk_dropablecursor: 1;
     struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
     struct texdata texdata;
-    struct contextchaindlg *ccd;
-    struct statemachinedlg *smd;
     GFont *font;
     int as, fh;
     struct lkdata tables[2];
@@ -750,7 +748,6 @@ extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);
 extern void FontInfo(SplineFont *sf,int layer,int aspect,int sync);
 extern void FontInfoDestroy(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);
-extern void GFI_CCDEnd(struct gfi_data *d);
 extern struct enc *MakeEncoding(SplineFont *sf, EncMap *map);
 extern void LoadEncodingFile(void);
 extern void RemoveEncoding(void);
@@ -1033,17 +1030,12 @@ struct psdict;
 extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8 *selected,
 	EncMap *map, enum hist_type which);
 
-extern void CCD_Close(struct contextchaindlg *ccd);
-extern int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title);
-extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
-	struct gfi_data *gfi,unichar_t *newname);
-extern int CCD_InvalidClassList(char *ret,GGadget *list,int wasedit);
+extern void ContextChainEdit(SplineFont *sf,FPST *fpst,
+	struct gfi_data *gfi,unichar_t *newname,int layer);
 extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
 
-extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
-extern void SMD_Close(struct statemachinedlg *smd);
+extern void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d);
 extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
-extern void GFI_SMDEnd(struct gfi_data *d);
 
 extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
 extern void MMWizard(MMSet *mm);
@@ -1081,6 +1073,7 @@ struct subtable_data {
 };
 
 extern GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type );
+extern GTextInfo *SFLookupArrayFromType(SplineFont *sf, int lookup_type );
 extern GTextInfo *SFLookupArrayFromMask(SplineFont *sf, int lookup_mask );
 extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
 extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
@@ -1095,7 +1088,7 @@ extern unichar_t *uSCNameUniStr(SplineChar *sc);
 extern char *SFNameList2NameUni(SplineFont *sf, char *str);
 extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space);
-extern char *NameListDeUnicode( char *str );
+extern char *GlyphNameListDeUnicode( char *str );
 extern void AddRmLang(SplineFont *sf, struct lkdata *lk,int add_lang);
 extern void FVMassGlyphRename(FontView *fv);
 

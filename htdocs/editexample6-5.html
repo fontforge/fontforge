@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
-  <!-- AP: Last modified: 15-Nov-2008 -->
+  <!-- AP: Last modified: 11-Nov-2009 -->
   <TITLE>Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -164,7 +164,7 @@
   feature. And of course we want an associated subtable). This will pop up
   a series of dialogs to edit a contextual subtable
   <P>
-  <IMG SRC="ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left">The first dialog
+  <IMG SRC="ott2_5.png" WIDTH="330" HEIGHT="249" ALIGN="Left">The first dialog
   allows you to specify the overall format of the substitution. We want a class
   based system -- we've already mentioned what the glyph classes will
   be.<BR CLEAR=ALL>
@@ -191,26 +191,17 @@
   If you look at the glyph class definitions you will see that class 1 includes
   those glyphs which must be followed by a high variant, so this seems reasonable.
   <P>
-  The second line is similar except that it matches glyphs in class 1. Looking
-  at the class definitions we see that classes 1 &amp; 2 include all the letters,
-  so these two lines mean that if any letter follows one of ``bovw'' then that
-  letter should be converted to its `high' variant. <BR CLEAR=ALL>
-  <P>
-  <IMG SRC="ott4.png" WIDTH="330" HEIGHT="357" ALIGN="Left">To edit a glyph
-  class simply double click on it. To create a new one press the [New] button
-  (under the class list). This produces another dialog showing all the names
-  of all the glyphs in the current class. Pressing the [Select] button will
-  set the selection in the font window to match the glyphs in the class, while
-  the [Set] button will do the reverse and set the class to the selection in
-  the font window. These provide a short cut to typing in a lot of glyph names.
-  <P>
-  Pressing the [Next] button defines the class and returns to the overview
-  dialog. <BR CLEAR=ALL>
+  The second line includes all letters not in class 1. <BR CLEAR=ALL>
+  To edit a glyph class simply click on it and type. To create a new one press
+  the &lt;New&gt; button (at the bottom of the list). You can also click on
+  the little box thingy off on the right. This produces another dialog showing
+  a font view. You can select glyphs in the font view if that is easier than
+  remembering their names.
   <P>
   <IMG SRC="ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right">To edit a pattern
-  double click on it, or to create a new one press the [New] button (under
-  the List of lists). Again the pattern string is divided into three categories,
-  <IMG SRC="ott5.png" WIDTH="330" HEIGHT="357" ALIGN="Left">those glyphs before
+  double click on it, or to create a new one press the &lt;New&gt; button (at
+  the bottom of the list). The pattern string is divided into three categories,
+  <IMG SRC="ott5.png" WIDTH="330" HEIGHT="358" ALIGN="Left">those glyphs before
   the current one, the current one itself, and any glyphs after the current
   one. You choose which category of the pattern you are editing with the tabs
   at the top of the dialog.
@@ -220,10 +211,9 @@
   for the current glyph(s). Clicking on one of the classes will add the class
   number to the pattern.
   <P>
-  To edit a substitution double click on it, or to create a new one press the
-  [New] button (under ``An ordered list...''). The sequence number specifies
-  which glyph among the current glyphs should be modified, and the tag specifies
-  a four character substitution name<BR CLEAR=ALL>
+  To edit a substitution click on it, or to create a new one press the
+  &lt;New&gt;button. The position specifies which glyph among the current glyphs
+  should be modified, and the lookup is the name of a lookup.<BR CLEAR=ALL>
   <P>
   <FONT COLOR="Red"><STRONG>A warning about contextual
   behavior:</STRONG></FONT> Not all software supports them. And even more confusing

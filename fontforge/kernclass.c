@@ -1120,12 +1120,12 @@ return( true );
 	kc->firsts[0] = kc->seconds[0] = NULL;
 	classes = GMatrixEditGet(GWidgetGetControl(kcd->gw,CID_ClassList),&len);
 	if ( !isEverythingElse(classes[0].u.md_str) )
-	    kc->firsts[0] = copy(classes[0].u.md_str);
+	    kc->firsts[0] = GlyphNameListDeUnicode(classes[0].u.md_str);
 	for ( i=1; i<kc->first_cnt; ++i )
-	    kc->firsts[i] = copy(classes[i].u.md_str);
+	    kc->firsts[i] = GlyphNameListDeUnicode(classes[i].u.md_str);
 	classes = GMatrixEditGet(GWidgetGetControl(kcd->gw,CID_ClassList+100),&len);
 	for ( i=1; i<kc->second_cnt; ++i )
-	    kc->seconds[i] = copy(classes[i].u.md_str);
+	    kc->seconds[i] = GlyphNameListDeUnicode(classes[i].u.md_str);
 	kc->offsets = kcd->offsets;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	kc->adjusts = kcd->adjusts;
