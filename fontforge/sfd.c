@@ -5923,6 +5923,8 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
     if ( ch=='{' ) {
 	lastsub = NULL;
 	while ( (subname = SFDReadUTF7Str(sfd))!=NULL ) {
+	    while ( (ch=nlgetc(sfd))==' ' );
+	    ungetc(ch,sfd);
 	    sub = chunkalloc(sizeof(struct lookup_subtable));
 	    sub->subtable_name = subname;
 	    sub->lookup = otl;
@@ -5956,7 +5958,7 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 		    ch = nlgetc(sfd);
 		    sub->kerning_by_touch = ((ch-'0')&1)?1:0;
 		    sub->onlyCloser       = ((ch-'0')&2)?1:0;
-		    nlgetc(sfd);	/* slurp final paren */
+		    nlgetc(sfd);	/* slurp final bracket */
 		} else {
 		    ungetc(ch,sfd);
 		}
