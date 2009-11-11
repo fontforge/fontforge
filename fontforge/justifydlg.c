@@ -169,7 +169,7 @@ static int JSTF_Glyph_OK(GGadget *g, GEvent *e) {
 	    }
 	    if ( ret>gld->ret && ret[-1] == ' ' )
 		ret[-1] = '\0';
-	    gld->ret = NameListDeUnicode(ret);
+	    gld->ret = GlyphNameListDeUnicode(ret);
 	    free(ret);
 	}
 	gld->done = true;

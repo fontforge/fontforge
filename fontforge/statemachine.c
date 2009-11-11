@@ -31,9 +31,6 @@
 #include <ustring.h>
 #include <gkeysym.h>
 
-#define CID_New		300
-#define CID_Edit	301
-#define CID_Delete	302
 #define CID_Classes	305
 
 
@@ -43,13 +40,9 @@
 #define CID_Line1	309
 #define CID_Line2	310
 #define CID_Group	311
-#define CID_Group2	312
 
 #define CID_Set		313
 #define CID_Select	314
-#define CID_GlyphList	315
-#define CID_Next	316
-#define CID_Prev	317
 
 #define CID_RightToLeft	318
 #define CID_VertOnly	319
@@ -85,7 +78,7 @@
 extern int _GScrollBar_Width;
 
 typedef struct statemachinedlg {
-    GWindow gw, cw, editgw;
+    GWindow gw, editgw;
     int state_cnt, class_cnt, index;
     struct asm_state *states;
     GGadget *hsb, *vsb;
@@ -105,6 +98,7 @@ typedef struct statemachinedlg {
     int isedit;
     int st_pos;
     int edit_done, edit_ok;
+    int done;
 } SMD;
 
 static int  SMD_SBReset(SMD *smd);
@@ -172,21 +166,18 @@ static struct asm_state *StateCopy(struct asm_state *old,int old_class_cnt,int o
 return( new );
 }
 
-static void StateRemoveClasses(SMD *smd, GTextInfo **removethese ) {
+static void StateRemoveClasses(SMD *smd, int removeme ) {
     struct asm_state *new;
-    int i,j,k, remove_cnt;
+    int i,j,k;
 
-    for ( remove_cnt=i=0; i<smd->class_cnt; ++i )
-	if ( removethese[i]->selected )
-	    ++remove_cnt;
-    if ( remove_cnt==0 )
+    if ( removeme<4 )
 return;
 
-    new = gcalloc((smd->class_cnt-remove_cnt)*smd->state_cnt,sizeof(struct asm_state));
+    new = gcalloc((smd->class_cnt-1)*smd->state_cnt,sizeof(struct asm_state));
     for ( i=0; i<smd->state_cnt ; ++i ) {
 	for ( j=k=0; j<smd->class_cnt; ++j ) {
-	    if ( !removethese[j]->selected )
-		new[i*(smd->class_cnt-remove_cnt)+k++] = smd->states[i*smd->class_cnt+j];
+	    if ( j!=removeme )
+		new[i*(smd->class_cnt-1)+k++] = smd->states[i*smd->class_cnt+j];
 	    else if ( smd->sm->type==asm_insert ) {
 		free(smd->states[i*smd->class_cnt+j].u.insert.mark_ins);
 		free(smd->states[i*smd->class_cnt+j].u.insert.cur_ins);
@@ -198,7 +189,7 @@ return;
 
     free(smd->states);
     smd->states = new;
-    smd->class_cnt -= remove_cnt;
+    --smd->class_cnt;
 }
 
 static int FindMaxReachableStateCnt(SMD *smd) {
@@ -270,15 +261,15 @@ static void SMD_Fillup(SMD *smd) {
     int state = smd->st_pos/smd->class_cnt;
     int class = smd->st_pos%smd->class_cnt;
     struct asm_state *this = &smd->states[smd->st_pos];
-    char buffer[100], *temp;
-    char buf[100];
+    char buffer[100];
+    char buf[100], *temp;
     int j;
     GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
-    GTextInfo *ti = GGadgetGetListItem(list,class);
+    int rows;
+    struct matrix_data *classes = GMatrixEditGet(list,&rows);
 
     snprintf(buffer,sizeof(buffer)/sizeof(buffer[0]),
-	    _("State %d,  %.40s"), state, (temp = u2utf8_copy(ti->text)) );
-    free(temp);
+	    _("State %d,  %.40s"), state, classes[class*1+0].u.md_str );
     GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_StateClass),buffer);
     sprintf(buf,"%d", this->next_state );
     GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_NextState),buf);
@@ -413,19 +404,20 @@ return( false );
 	this->u.context.mark_lookup = mlook;
 	this->u.context.cur_lookup = clook;
     } else {
-	char *foo;
 
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag2000)) ) flags |= 0x2000;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag1000)) ) flags |= 0x1000;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0800)) ) flags |= 0x0800;
 	if ( GGadgetIsChecked(GWidgetGetControl(smd->editgw,CID_Flag0400)) ) flags |= 0x0400;
 
+#if 0
 	foo = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_InsMark));
 	if ( !CCD_NameListCheck(smd->sf,foo,false,_("Missing Glyph Name"))) {
 	    free(foo);
 return( false );
 	}
 	free(foo);
+#endif
 
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
@@ -435,12 +427,14 @@ return( false );
 	}
 	flags |= cnt<<5;
 
+#if 0
 	foo = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_InsCur));
 	if ( !CCD_NameListCheck(smd->sf,foo,false,_("Missing Glyph Name"))) {
 	    free(foo);
 return( false );
 	}
 	free(foo);
+#endif
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
 	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
@@ -813,253 +807,17 @@ return;
 }
 
 /* ************************************************************************** */
-/* **************************** Edit/Add a Class **************************** */
-/* ************************************************************************** */
-
-static int SMD_ToSelection(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(smd->gw,CID_GlyphList));
-	SplineFont *sf = smd->sf;
-	FontView *fv = (FontView *) sf->fv;
-	const unichar_t *end;
-	int pos, found=-1;
-	char *nm;
-
-	GDrawSetVisible(fv->gw,true);
-	GDrawRaise(fv->gw);
-	memset(fv->b.selected,0,fv->b.map->enccount);
-	while ( *ret ) {
-	    end = u_strchr(ret,' ');
-	    if ( end==NULL ) end = ret+u_strlen(ret);
-	    nm = cu_copybetween(ret,end);
-	    for ( ret = end; isspace(*ret); ++ret);
-	    if (( pos = SFFindSlot(sf,fv->b.map,-1,nm))!=-1 ) {
-		if ( found==-1 ) found = pos;
-		fv->b.selected[pos] = true;
-	    }
-	    free(nm);
-	}
-
-	if ( found!=-1 )
-	    FVScrollToChar(fv,found);
-	GDrawRequestExpose(fv->v,NULL,false);
-    }
-return( true );
-}
-
-static int SMD_FromSelection(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	SplineFont *sf = smd->sf;
-	FontView *fv = (FontView *) sf->fv;
-	unichar_t *vals, *pt;
-	int i, len, max;
-	SplineChar *sc;
-    
-	for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
-	    sc = SFMakeChar(sf,fv->b.map,i);
-	    len += strlen(sc->name)+1;
-	    if ( fv->b.selected[i]>max ) max = fv->b.selected[i];
-	}
-	pt = vals = galloc((len+1)*sizeof(unichar_t));
-	*pt = '\0';
-	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] ) {
-	    int gid = fv->b.map->map[i];
-	    if ( gid!=-1 ) {
-		uc_strcpy(pt,sf->glyphs[gid]->name);
-		pt += u_strlen(pt);
-		*pt++ = ' ';
-	    }
-	}
-	if ( pt>vals ) pt[-1]='\0';
-    
-	GGadgetSetTitle(GWidgetGetControl(smd->gw,CID_GlyphList),vals);
-    }
-return( true );
-}
-
-static int SMD_Prev(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	GDrawSetVisible(smd->cw,false);
-    }
-return( true );
-}
-
-static unichar_t *AddClass(int class_num,char *text,int freetext) {
-    char buf[80];
-    unichar_t *ret;
-
-    snprintf(buf,sizeof(buf)/sizeof(buf[0]), _("Class %d"),class_num);
-    ret = galloc((strlen(buf)+strlen(text)+4)*sizeof(unichar_t));
-    utf82u_strcpy(ret,buf);
-    uc_strcat(ret,": ");
-    utf82u_strcpy(ret+u_strlen(ret),text);
-    if ( freetext )
-	free((unichar_t *) text);
-return( ret );
-}
-
-
-static unichar_t *UAddClass(int class_num,const unichar_t *text,int freetext) {
-    char buf[80];
-    unichar_t *ret;
-
-    snprintf(buf,sizeof(buf)/sizeof(buf[0]), _("Class %d"),class_num);
-    ret = galloc((strlen(buf)+u_strlen(text)+4)*sizeof(unichar_t));
-    utf82u_strcpy(ret,buf);
-    uc_strcat(ret,": ");
-    u_strcat(ret,text);
-    if ( freetext )
-	free((unichar_t *) text);
-return( ret );
-}
-static int SMD_Next(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	char *ret = GGadgetGetTitle8(GWidgetGetControl(smd->gw,CID_GlyphList));
-	unichar_t *temp;
-	GGadget *list = GWidgetGetControl( smd->gw, CID_Classes );
-	int32 len;
-
-	if ( !CCD_NameListCheck(smd->sf,ret,true,_("Bad Class")) ||
-		CCD_InvalidClassList(ret,list,smd->isedit)) {
-	    free(ret);
-return( true );
-	}
-
-	if ( smd->isedit ) {
-	    int cn = GGadgetGetFirstListSelectedItem(list);
-	    temp = AddClass(cn,ret,false);
-	    GListChangeLine(list,cn,temp);
-	} else {
-	    GGadgetGetList(list,&len);
-	    temp = AddClass(len,ret,false);
-	    GListAppendLine(list,temp,false);
-	    smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
-		    smd->class_cnt+1,smd->state_cnt,
-		    smd->sm->type,true);
-	    ++smd->class_cnt;
-	    SMD_SBReset(smd);
-	}
-	GDrawSetVisible(smd->cw,false);		/* This will give us an expose so we needed ask for one */
-	free(temp);
-    }
-return( true );
-}
-
-static void _SMD_DoEditNew(SMD *smd,int isedit) {
-    static unichar_t nullstr[] = { 0 };
-    unichar_t *upt;
-
-    smd->isedit = isedit;
-    if ( isedit ) {
-	GTextInfo *selected = GGadgetGetListItemSelected(GWidgetGetControl(
-		smd->gw, CID_Classes));
-	if ( selected==NULL )
-return;
-	upt = uc_strstr(selected->text,": ");
-	if ( upt==NULL ) upt = selected->text;
-	else upt += 2;
-	GGadgetSetTitle(GWidgetGetControl(smd->cw,CID_GlyphList),upt);
-    } else {
-	GGadgetSetTitle(GWidgetGetControl(smd->cw,CID_GlyphList),nullstr);
-    }
-    GDrawSetVisible(smd->cw,true);
-}
-
-/* ************************************************************************** */
 /* ****************************** Main Dialog ******************************* */
 /* ************************************************************************** */
-
-static void _SMD_EnableButtons(SMD *smd) {
-    GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
-    int32 i, len, j;
-    GTextInfo **ti;
-
-    ti = GGadgetGetList(list,&len);
-    i = GGadgetGetFirstListSelectedItem(list);
-    GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Delete),i>=4);
-    for ( j=i+1; j<len; ++j )
-	if ( ti[j]->selected )
-    break;
-    GGadgetSetEnabled(GWidgetGetControl(smd->gw,CID_Edit),i>=4 && j==len);
-}
-
-static void SMD_GListDelSelected(GGadget *list) {
-    int32 len; int i,j;
-    GTextInfo **old, **new;
-    unichar_t *upt;
-
-    old = GGadgetGetList(list,&len);
-    new = gcalloc(len+1,sizeof(GTextInfo *));
-    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	new[j] = galloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	upt = uc_strstr(new[j]->text,": ");
-	if ( upt==NULL ) upt = new[j]->text; else upt += 2;
-	new[j]->text = UAddClass(j,upt,false);
-	++j;
-    }
-    new[j] = gcalloc(1,sizeof(GTextInfo));
-    GGadgetSetList(list,new,false);
-}
-
-static int SMD_Delete(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
-	int32 len;
-
-	StateRemoveClasses(smd,GGadgetGetList(list,&len));
-	SMD_GListDelSelected(list);
-	_SMD_EnableButtons(smd);
-	SMD_SBReset(smd);
-	GDrawRequestExpose(smd->gw,NULL,false);
-    }
-return( true );
-}
-
-static int SMD_Edit(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( GGadgetGetFirstListSelectedItem(GWidgetGetControl(smd->gw,CID_Classes))>0 )
-	    _SMD_DoEditNew(smd,true);
-    }
-return( true );
-}
-
-static int SMD_New(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	_SMD_DoEditNew(smd,false);
-    }
-return( true );
-}
-
-static int SMD_ClassSelected(GGadget *g, GEvent *e) {
-    SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	_SMD_EnableButtons(smd);
-	SMD_HShow(smd,GGadgetGetFirstListSelectedItem(g));
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	if ( GGadgetGetFirstListSelectedItem(g)>0 )
-	    _SMD_DoEditNew(smd,true);
-    }
-return( true );
-}
 
 static void _SMD_Finish(SMD *smd, int success) {
 
     GDrawDestroyWindow(smd->gw);
 
     GFI_FinishSMNew(smd->d,smd->sm,success,smd->isnew);
-    GFI_SMDEnd(smd->d);
 
     GTextInfoListFree(smd->mactags);
-    free(smd);
+    smd->done = true;
 }
 
 static void _SMD_Cancel(SMD *smd) {
@@ -1071,9 +829,6 @@ static void _SMD_Cancel(SMD *smd) {
 static int SMD_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-
-	if ( GDrawIsVisible(smd->cw))
-return( SMD_Prev(g,e));
 
 	_SMD_Cancel(smd);
     }
@@ -1088,9 +843,6 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
 	ASM *sm = smd->sm;
 	unichar_t *upt;
-
-	if ( GDrawIsVisible(smd->cw))
-return( SMD_Next(g,e));
 	
 	for ( i=4; i<sm->class_cnt; ++i )
 	    free(sm->classes[i]);
@@ -1118,10 +870,10 @@ return( true );
 
 static void SMD_Mouse(SMD *smd,GEvent *event) {
     static unichar_t space[100];
-    unichar_t *upt;
+    char *pt;
     char buf[30];
-    int32 len;
-    GTextInfo **ti;
+    int len;
+    struct matrix_data *classes;
     int pos = ((event->u.mouse.y-smd->ystart2)/smd->stateh+smd->offtop) * smd->class_cnt +
 	    (event->u.mouse.x-smd->xstart2)/smd->statew + smd->offleft;
 
@@ -1148,12 +900,12 @@ return;
 	if ( event->u.mouse.x>=smd->xstart2 && c<smd->class_cnt ) {
 	    sprintf( buf, "Class %d\n", c );
 	    uc_strcat(space,buf);
-	    ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
+	    classes = GMatrixEditGet(GWidgetGetControl(smd->gw,CID_Classes),&len);
 	    len = u_strlen(space);
-	    upt = uc_strstr(ti[c]->text,": ");
-	    if ( upt==NULL ) upt = ti[c]->text;
-	    else upt += 2;
-	    u_strncpy(space+len,upt,(sizeof(space)/sizeof(space[0]))-1 - len);
+	    pt = strstr(classes[c].u.md_str,": ");
+	    if ( pt==NULL ) pt = classes[c].u.md_str;
+	    else pt += 2;
+	    utf82u_strncpy(space+len,pt,(sizeof(space)/sizeof(space[0]))-1 - len);
 	} else if ( event->u.mouse.x<smd->xstart2 ) {
 	    if ( s==0 )
 		utf82u_strcat(space,_("{Start of Input}"));
@@ -1443,26 +1195,6 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
     }
 }
 
-static int subsmd_e_h(GWindow gw, GEvent *event) {
-    SMD *smd = GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_char:
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("statemachine.html#EditClass");
-return( true );
-	} else if ( event->u.chr.keysym=='q' && (event->u.chr.state&ksm_control)) {
-	    if ( event->u.chr.state&ksm_shift )
-		_SMD_Cancel(smd);
-	    else
-		MenuExit(NULL,NULL,NULL);
-return( true );
-	}
-return( false );
-    }
-return( true );
-}
-
 static int smd_e_h(GWindow gw, GEvent *event) {
     SMD *smd = GDrawGetUserData(gw);
 
@@ -1490,22 +1222,17 @@ return( false );
 	GRect wsize, csize;
 
 	GDrawGetSize(smd->gw,&wsize);
-	GDrawResize(smd->cw,wsize.width,wsize.height);
 	GGadgetResize(GWidgetGetControl(smd->gw,CID_Group),wsize.width-4,wsize.height-4);
-	GGadgetResize(GWidgetGetControl(smd->gw,CID_Group2),wsize.width-4,wsize.height-4);
 	GGadgetResize(GWidgetGetControl(smd->gw,CID_Line1),wsize.width-20,1);
 	GGadgetResize(GWidgetGetControl(smd->gw,CID_Line2),wsize.width-20,1);
 
 	GGadgetGetSize(GWidgetGetControl(smd->gw,CID_Ok),&csize);
 	GGadgetMove(GWidgetGetControl(smd->gw,CID_Ok),csize.x,wsize.height-smd->canceldrop-3);
-	GGadgetMove(GWidgetGetControl(smd->cw,CID_Prev),csize.x+3,wsize.height-smd->canceldrop);
 	GGadgetGetSize(GWidgetGetControl(smd->gw,CID_Cancel),&csize);
 	GGadgetMove(GWidgetGetControl(smd->gw,CID_Cancel),wsize.width-blen-30,wsize.height-smd->canceldrop);
-	GGadgetMove(GWidgetGetControl(smd->gw,CID_Next),wsize.width-blen-33,wsize.height-smd->canceldrop-3);
 
 	GGadgetGetSize(GWidgetGetControl(smd->gw,CID_Classes),&csize);
 	GGadgetResize(GWidgetGetControl(smd->gw,CID_Classes),wsize.width-GDrawPointsToPixels(NULL,10),csize.height);
-	GGadgetResize(GWidgetGetControl(smd->gw,CID_GlyphList),wsize.width-GDrawPointsToPixels(NULL,10),csize.height);
 
 	GGadgetGetSize(smd->hsb,&csize);
 	smd->width = wsize.width-csize.height-smd->xstart2-5;
@@ -1524,18 +1251,6 @@ return( false );
       break;
       case et_controlevent:
 	switch( event->u.control.subtype ) {
-	  case et_textchanged:
-	    if ( event->u.control.u.tf_changed.from_pulldown!=-1 ) {
-		uint32 tag = (uint32) (intpt) smd->mactags[event->u.control.u.tf_changed.from_pulldown].userdata;
-		unichar_t ubuf[20];
-		char buf[20];
-		/* If they select something from the pulldown, don't show the human */
-		/*  readable form, instead show the numeric feature/setting */
-		sprintf( buf,"<%d,%d>", (int) (tag>>16), (int) (tag&0xffff) );
-		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(event->u.control.g,ubuf);
-	    }
-	  break;
 	  case et_scrollbarchange:
 	    if ( event->u.control.g == smd->hsb )
 		SMD_HScroll(smd,&event->u.control.u.sb);
@@ -1553,53 +1268,109 @@ return( false );
 return( true );
 }
 
-SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
+static char *SMD_PickGlyphsForClass(GGadget *g,int r, int c) {
+    SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *classes = _GMatrixEditGet(g,&rows);
+    char *new = GlyphSetFromSelection(smd->sf,ly_fore,classes[r*cols+c].u.md_str);
+return( new );
+}
+
+static void SMD_NewClassRow(GGadget *g,int r) {
+    SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+
+    smd->states = StateCopy(smd->states,smd->class_cnt,smd->state_cnt,
+	    smd->class_cnt+1,smd->state_cnt,
+	    smd->sm->type,true);
+    ++smd->class_cnt;
+    SMD_SBReset(smd);
+}
+
+static void SMD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
+    SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+
+    ME_ClassCheckUnique(g, r, c, smd->sf);
+}
+
+static int SMD_EnableDeleteClass(GGadget *g,int whichclass) {
+return( whichclass>=4 );
+}
+
+static void SMD_DeleteClass(GGadget *g,int whichclass) {
+    SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+
+    StateRemoveClasses(smd,whichclass);
+    SMD_SBReset(smd);
+    GDrawRequestExpose(smd->gw,NULL,false);
+}
+
+static void SMD_ClassSelectionChanged(GGadget *g,int whichclass, int c) {
+    SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
+    SMD_HShow(smd,whichclass);
+}
+
+static unichar_t **SMD_GlyphListCompletion(GGadget *t,int from_tab) {
+    SMD *smd = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = smd->sf;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,true));
+}
+
+static struct col_init class_ci[] = {
+    { me_funcedit, SMD_PickGlyphsForClass, NULL, NULL, N_("Glyphs in the classes") },
+    };
+void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     static char *titles[2][4] = {
 	{ N_("Edit Indic Rearrangement"), N_("Edit Contextual Substitution"), N_("Edit Contextual Glyph Insertion"), N_("Edit Contextual Kerning") },
 	{ N_("New Indic Rearrangement"), N_("New Contextual Substitution"), N_("New Contextual Glyph Insertion"), N_("New Contextual Kerning") }};
-    SMD *smd = gcalloc(1,sizeof(SMD));
-    GRect pos, subpos;
+    SMD smd;
+    GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[20];
     GTextInfo label[20];
-    int k, vk;
-    int blen = GIntGetResource(_NUM_Buttonsize);
-    const int space = 7;
+    int i, k, vk;
     int as, ds, ld, sbsize;
     FontRequest rq;
     static unichar_t statew[] = { '1', '2', '3', '4', '5', 0 };
     static GFont *font = NULL;
+    struct matrix_data *md;
+    struct matrixinit mi;
+    static char *specialclasses[4] = { N_("{End of Text}"),
+	    N_("{Everything Else}"),
+	    N_("{Deleted Glyph}"),
+	    N_("{End of Line}") };
 
-    smd->sf = sf;
-    smd->sm = sm;
-    smd->d = d;
-    smd->isnew = (sm->class_cnt==0);
-    if ( smd->isnew ) {
-	smd->class_cnt = 4;			/* 4 built in classes */
-	smd->state_cnt = 2;			/* 2 built in states */
-	smd->states = gcalloc(smd->class_cnt*smd->state_cnt,sizeof(struct asm_state));
-	smd->states[1*4+2].next_state = 1;	/* deleted glyph is a noop */
+    memset(&smd,0,sizeof(smd));
+    smd.sf = sf;
+    smd.sm = sm;
+    smd.d = d;
+    smd.isnew = (sm->class_cnt==0);
+    if ( smd.isnew ) {
+	smd.class_cnt = 4;			/* 4 built in classes */
+	smd.state_cnt = 2;			/* 2 built in states */
+	smd.states = gcalloc(smd.class_cnt*smd.state_cnt,sizeof(struct asm_state));
+	smd.states[1*4+2].next_state = 1;	/* deleted glyph is a noop */
     } else {
-	smd->class_cnt = sm->class_cnt;
-	smd->state_cnt = sm->state_cnt;
-	smd->states = StateCopy(sm->state,sm->class_cnt,sm->state_cnt,
-		smd->class_cnt,smd->state_cnt,sm->type,false);
+	smd.class_cnt = sm->class_cnt;
+	smd.state_cnt = sm->state_cnt;
+	smd.states = StateCopy(sm->state,sm->class_cnt,sm->state_cnt,
+		smd.class_cnt,smd.state_cnt,sm->type,false);
     }
-    smd->index = sm->type==asm_indic ? 0 : sm->type==asm_context ? 1 : sm->type==asm_insert ? 2 : 3;
+    smd.index = sm->type==asm_indic ? 0 : sm->type==asm_context ? 1 : sm->type==asm_insert ? 2 : 3;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = true;
-    wattrs.restrict_input_to_me = false;
+    wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _(titles[smd->isnew][smd->index]);
+    wattrs.utf8_window_title = _(titles[smd.isnew][smd.index]);
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(SMD_WIDTH));
     pos.height = GDrawPointsToPixels(NULL,SMD_HEIGHT);
-    smd->gw = gw = GDrawCreateTopWindow(NULL,&pos,smd_e_h,smd,&wattrs);
+    smd.gw = gw = GDrawCreateTopWindow(NULL,&pos,smd_e_h,&smd,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
@@ -1612,7 +1383,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.flags = gg_enabled|gg_visible | (sm->flags&0x4000?gg_cb_on:0);
     gcd[k].gd.cid = CID_RightToLeft;
     gcd[k++].creator = GCheckBoxCreate;
-    if ( smd->sm->type == asm_kern ) {
+    if ( smd.sm->type == asm_kern ) {
 	gcd[k-1].gd.flags = gg_enabled;		/* I'm not sure why kerning doesn't have an r2l bit */
     }
 
@@ -1630,65 +1401,51 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_Line1;
     gcd[k++].creator = GLineCreate;
 
+    memset(&mi,0,sizeof(mi));
+    mi.col_cnt = 1;
+    mi.col_init = class_ci;
+
+    if ( sm->class_cnt<4 ) sm->class_cnt=4;
+    md = gcalloc(sm->class_cnt+1,sizeof(struct matrix_data));
+    for ( i=0; i<sm->class_cnt; ++i ) {
+	if ( i<4 ) {
+	    md[i+0].u.md_str = copy( _(specialclasses[i]) );
+	    md[i+1].frozen = true;
+	} else
+	    md[i+0].u.md_str = SFNameList2NameUni(sf,sm->classes[i]);
+    }
+    mi.matrix_data = md;
+    mi.initial_row_cnt = i;
+    mi.initrow = SMD_NewClassRow;
+    mi.finishedit = SMD_FinishEdit;
+    mi.candelete = SMD_EnableDeleteClass;
+
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = GDrawPixelsToPoints(gw,gcd[k-1].gd.pos.y)+5;
     gcd[k].gd.pos.width = SMD_WIDTH-10;
-    gcd[k].gd.pos.height = 8*12+10;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
-    gcd[k].gd.handle_controlevent = SMD_ClassSelected;
-    gcd[k].gd.cid = CID_Classes;
-    gcd[k++].creator = GListCreate;
-
-    label[k].text = (unichar_t *) S_("Class|_New");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+10;
-    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.pos.height = 8*12+34;
     gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.handle_controlevent = SMD_New;
-    gcd[k].gd.cid = CID_New;
-    gcd[k++].creator = GButtonCreate;
+    gcd[k].gd.cid = CID_Classes;
+    gcd[k].gd.u.matrix = &mi;
+    gcd[k++].creator = GMatrixEditCreate;
 
-    label[k].text = (unichar_t *) _("_Edit");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible;
-    gcd[k].gd.handle_controlevent = SMD_Edit;
-    gcd[k].gd.cid = CID_Edit;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) _("_Delete");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+blen+space; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible;
-    gcd[k].gd.handle_controlevent = SMD_Delete;
-    gcd[k].gd.cid = CID_Delete;
-    gcd[k++].creator = GButtonCreate;
-
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-1].gd.pos.y+28);
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-1].gd.pos.y+gcd[k-1].gd.pos.height+5);
     gcd[k].gd.pos.width = pos.width-20;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[k].gd.cid = CID_Line2;
     gcd[k++].creator = GLineCreate;
 
-    smd->canceldrop = GDrawPointsToPixels(gw,SMD_CANCELDROP);
-    smd->sbdrop = smd->canceldrop+GDrawPointsToPixels(gw,7);
+    smd.canceldrop = GDrawPointsToPixels(gw,SMD_CANCELDROP);
+    smd.sbdrop = smd.canceldrop+GDrawPointsToPixels(gw,7);
 
     vk = k;
     gcd[k].gd.pos.width = sbsize = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gcd[k].gd.pos.x = pos.width-sbsize;
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
-    gcd[k].gd.pos.height = pos.height-gcd[k].gd.pos.y-sbsize-smd->sbdrop;
+    gcd[k].gd.pos.height = pos.height-gcd[k].gd.pos.y-sbsize-smd.sbdrop;
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     gcd[k++].creator = GScrollBarCreate;
-    smd->height = gcd[k-1].gd.pos.height;
-    smd->ystart = gcd[k-1].gd.pos.y;
+    smd.height = gcd[k-1].gd.pos.height;
+    smd.ystart = gcd[k-1].gd.pos.y;
 
     gcd[k].gd.pos.height = sbsize;
     gcd[k].gd.pos.y = pos.height-sbsize-8;
@@ -1696,8 +1453,8 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.pos.width = pos.width-sbsize;
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gcd[k++].creator = GScrollBarCreate;
-    smd->width = gcd[k-1].gd.pos.width;
-    smd->xstart = 5;
+    smd.width = gcd[k-1].gd.pos.width;
+    smd.xstart = 5;
 
     label[k].text = (unichar_t *) _("_OK");
     label[k].text_is_1byte = true;
@@ -1729,87 +1486,16 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k++].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
-    smd->vsb = gcd[vk].ret;
-    smd->hsb = gcd[vk+1].ret;
+    smd.vsb = gcd[vk].ret;
+    smd.hsb = gcd[vk+1].ret;
 
     {
-	GGadget *list = GWidgetGetControl(smd->gw,CID_Classes);
-	GListAppendLine8(list,_("Class 0: {End of Text}"),false);
-	GListAppendLine8(list,_("Class 1: {Everything Else}"),false);
-	GListAppendLine8(list,_("Class 2: {Deleted Glyph}"),false);
-	GListAppendLine8(list,_("Class 3: {End of Line}"),false);
-	for ( k=4; k<sm->class_cnt; ++k ) {
-	    unichar_t *temp = AddClass(k,sm->classes[k],true);
-	    GListAppendLine(list,temp,false);
-	    free(temp);
-	}
+	GGadget *list = GWidgetGetControl(smd.gw,CID_Classes);
+	GMatrixEditSetBeforeDelete(list, SMD_DeleteClass);
+    /* When the selection changes */
+	GMatrixEditSetOtherButtonEnable(list, SMD_ClassSelectionChanged);
+	GMatrixEditSetColumnCompletion(list,0,SMD_GlyphListCompletion);
     }
-
-    wattrs.mask = wam_events;
-    subpos = pos; subpos.x = subpos.y = 0;
-    smd->cw = GWidgetCreateSubWindow(smd->gw,&subpos,subsmd_e_h,smd,&wattrs);
-
-    memset(gcd,0,sizeof(gcd));
-    memset(label,0,sizeof(label));
-    k = 0;
-
-    label[k].text = (unichar_t *) _("Set From Font");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the characters selected in the fontview");
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.handle_controlevent = SMD_FromSelection;
-    gcd[k].gd.cid = CID_Set;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) _("Select In Font");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the characters named here");
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.handle_controlevent = SMD_ToSelection;
-    gcd[k].gd.cid = CID_Select;
-    gcd[k++].creator = GButtonCreate;
-
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 30;
-    gcd[k].gd.pos.width = SMD_WIDTH-25; gcd[k].gd.pos.height = 8*13+4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
-    gcd[k].gd.cid = CID_GlyphList;
-    gcd[k++].creator = GTextAreaCreate;
-
-    label[k].text = (unichar_t *) _("< _Prev");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible|gg_enabled /*| gg_but_cancel*/;
-    gcd[k].gd.handle_controlevent = SMD_Prev;
-    gcd[k].gd.cid = CID_Prev;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) _("_Next >");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = SMD_HEIGHT-SMD_CANCELDROP;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible|gg_enabled /*| gg_but_default*/;
-    gcd[k].gd.handle_controlevent = SMD_Next;
-    gcd[k].gd.cid = CID_Next;
-    gcd[k++].creator = GButtonCreate;
-
-    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width-4;
-    gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[k].gd.cid = CID_Group2;
-    gcd[k++].creator = GGroupCreate;
-
-    GGadgetsCreate(smd->cw,gcd);
-
 
     if ( font==NULL ) {
 	memset(&rq,'\0',sizeof(rq));
@@ -1819,21 +1505,17 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
 	font = GResourceFindFont("StateMachine.Font",font);
     }
-    smd->font = font;
-    GDrawFontMetrics(smd->font,&as,&ds,&ld);
-    smd->fh = as+ds; smd->as = as;
-    GDrawSetFont(gw,smd->font);
+    smd.font = font;
+    GDrawFontMetrics(smd.font,&as,&ds,&ld);
+    smd.fh = as+ds; smd.as = as;
+    GDrawSetFont(gw,smd.font);
 
-    smd->stateh = 4*smd->fh+3;
-    smd->statew = GDrawGetTextWidth(gw,statew,-1,NULL)+3;
-    smd->xstart2 = smd->xstart+smd->statew/2;
-    smd->ystart2 = smd->ystart+2*smd->fh+1;
+    smd.stateh = 4*smd.fh+3;
+    smd.statew = GDrawGetTextWidth(gw,statew,-1,NULL)+3;
+    smd.xstart2 = smd.xstart+smd.statew/2;
+    smd.ystart2 = smd.ystart+2*smd.fh+1;
 
     GDrawSetVisible(gw,true);
-
-return( smd );
-}
-
-void SMD_Close(SMD *smd) {
-    _SMD_Cancel(smd);
+    while ( !smd.done )
+	GDrawProcessOneEvent(NULL);
 }
