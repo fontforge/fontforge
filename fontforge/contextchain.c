@@ -699,7 +699,7 @@ static char *CCD_NewGlyphRule(GGadget *glyphrules,int r,int c) {
     free(temp2);
     GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+40),dummy.u.glyph.fore!=NULL?dummy.u.glyph.fore:"");
 
-    md = galloc(2*dummy.lookup_cnt*sizeof(struct matrix_data));
+    md = gcalloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
     for ( j=0; j<dummy.lookup_cnt; ++j ) {
 	md[2*j+0].u.md_ival = (intpt) (void *) dummy.lookups[j].lookup;
 	md[2*j+1].u.md_ival = (intpt) dummy.lookups[j].seq;
@@ -736,7 +736,7 @@ static char *CCD_NewClassRule(GGadget *classrules,int r,int c) {
 	    (temp=classnumbers(dummy.u.class.fcnt,dummy.u.class.fclasses)));
     free(temp);
 
-    md = galloc(2*dummy.lookup_cnt*sizeof(struct matrix_data));
+    md = gcalloc(2*dummy.lookup_cnt,sizeof(struct matrix_data));
     for ( j=0; j<dummy.lookup_cnt; ++j ) {
 	md[2*j+0].u.md_ival = (intpt) (void *) dummy.lookups[j].lookup;
 	md[2*j+1].u.md_ival = (intpt) dummy.lookups[j].seq;
@@ -1394,7 +1394,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     glyphrules_mi.col_init = glyphrules_ci;
     if ( fpst->format==pst_glyphs && fpst->rule_cnt>0 ) {
 	glyphrules_mi.initial_row_cnt = fpst->rule_cnt;
-	md = galloc(fpst->rule_cnt*sizeof(struct matrix_data));
+	md = gcalloc(fpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<fpst->rule_cnt; ++j ) {
 	    md[j+0].u.md_str = gruleitem(&fpst->rules[j]);
 	}
@@ -1527,7 +1527,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    int cnt = (&fpst->rules[0].u.coverage.ncnt)[i];
 	    char **names = (&fpst->rules[0].u.coverage.ncovers)[i];
 	    coverage_mi[i].initial_row_cnt = cnt;
-	    md = galloc(cnt*sizeof(struct matrix_data));
+	    md = gcalloc(cnt,sizeof(struct matrix_data));
 	    for ( j=0; j<cnt; ++j ) {
 		md[j].u.md_str = SFNameList2NameUni(sf,names[j]);
 	    }
@@ -1559,7 +1559,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 		if ( fpst->format==pst_coverage ) {
 		    r = &fpst->rules[0];
 		    co_seqlookup_mi.initial_row_cnt = r->lookup_cnt;
-		    md = galloc(2*r->lookup_cnt*sizeof(struct matrix_data));
+		    md = gcalloc(2*r->lookup_cnt,sizeof(struct matrix_data));
 		    for ( j=0; j<r->lookup_cnt; ++j ) {
 			md[2*j+0].u.md_ival = (intpt) (void *) r->lookups[j].lookup;
 			md[2*j+1].u.md_ival = (intpt) r->lookups[j].seq;
@@ -1700,7 +1700,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     classrules_mi.col_init = classrules_ci;
     if ( tempfpst->format==pst_class && tempfpst->rule_cnt>0 ) {
 	classrules_mi.initial_row_cnt = tempfpst->rule_cnt;
-	md = galloc(tempfpst->rule_cnt*sizeof(struct matrix_data));
+	md = gcalloc(tempfpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<tempfpst->rule_cnt; ++j ) {
 	    md[j+0].u.md_str = classruleitem(&tempfpst->rules[j]);
 	}
@@ -1759,8 +1759,9 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    else
 		cc = (&tempfpst->nccnt)[i];
 	    class_mi[i].initial_row_cnt = cc;
-	    md = galloc(cc*sizeof(struct matrix_data));
+	    md = gcalloc(cc,sizeof(struct matrix_data));
 	    md[0].u.md_str = copy(_("{Everything Else}"));
+	    md[0].frozen = true;
 	    for ( j=1; j<cc; ++j ) {
 		md[j+0].u.md_str = SFNameList2NameUni(sf,classes[j]);
 	    }

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 3-Nov-2009 -->
+  <!-- AP: Last modified: 11-Nov-2009 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -726,10 +726,10 @@
   to make the minimum separation be the desired value (This is rarely useful,
   but occasionally people want to set text where the letters actually touch
   one another). The <CODE>[] Only kern glyphs closer </CODE>flag means that
-  FontForge will only generate negative kerning offset, which will move glyphs
-  closer together.<BR clear="all">
+  FontForge will only generate negative kerning offsets, that is, offsets which
+  will move glyphs closer together.<BR clear="all">
   <P>
-  <IMG SRC="kerningclass.png" WIDTH="576" HEIGHT="566" ALIGN="Left">Each kerning
+  <IMG SRC="kerningclass.png" WIDTH="1037" HEIGHT="588" ALIGN="Top">Each kerning
   class belongs to a <A HREF="lookups.html">lookup subtable</A> and the subtable
   name is displayed at the top of the dialog.
   <P>
@@ -760,11 +760,10 @@
   the display of kerning values will scroll to display that class. If you move
   the mouse into the display and let it rest, a popup window will appear showing
   the glyphs that make up the classes which intersect at that point. If you
-  click on a kerning value in the display, the dlg changes to a kerning dialog.
-  <BR Clear=ALL>
+  click on a kerning value in the display, the dlg displays a visual representation
+  of that amount of kerning.
   <P>
-  <IMG SRC="kerningclass-kern.png" WIDTH="515" HEIGHT="337" ALIGN="Right">The
-  kerning dialog displays a representative glyph from each class and allows
+  The kerning dialog displays a representative glyph from each class and allows
   you to adjust the kerning between them (and all other class members of each
   class). You can select which glyphs to display in the pulldown menus. You
   can enter a new kerning offset by typing in a value, or you can click on
@@ -796,13 +795,14 @@
   of course, but that might break it at 14 pixels. So OpenType has the concept
   of a Device Table which allows you to add small corrections at particular
   point sizes. Simply set the Display Size to a small, but common, value (say
-  10-24) and examine the kerning. If the results are ugly type a value into
-  the "Device Table Correction" field, and this will change the spacing by
-  that many pixels at the given display size (and no other). In the case above
-  a correction of 1 would be appropriate for the 12px display.
+  10-24) and examine the kerning. If the results are ugly then type a value
+  into the "Device Table Correction" field, and this will change the spacing
+  by that many pixels at the given display size (and no other). In the case
+  above a correction of 1 might be appropriate for the 12px display.
   <P>
-  Because small pixel sizes can be hard to examine you can change the magnification
-  (rasterized at the same size, but each pixel made twice as big).
+  Because small pixel sizes can be hard to examine, you can change the
+  magnification (rasterized at the same size, but each pixel made twice as
+  big).
   <P>
   <A HREF="metricsview.html#DeviceTable">Device Tables</A> may also be created
   in a number of other cases. The example above was for a kerning class.
