@@ -857,6 +857,7 @@ static void KPKPCloseup(KPData *kpd) {
 	k->newoff = k->kp->off;
 	k->kp->off = oldoff;
 	GDrawRequestExpose(kpd->v,NULL,false);
+	kpd->selected = -1;
     }
 }
 

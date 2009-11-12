@@ -40,28 +40,29 @@ typedef struct kernclassdlg {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *adjusts;
     DeviceTable active_adjust;		/* The one that is currently active */
+    DeviceTable orig_adjust;		/* Initial value for this the active adjust */
 #endif
-    GWindow gw, kw;
+    GWindow gw, subw;
     GFont *font;
     int fh, as;
     int kernh, kernw;		/* Width of the box containing the kerning val */
     int xstart, ystart;		/* This is where the headers start */
     int xstart2, ystart2;	/* This is where the data start */
-    int width, height, fullwidth;
+    int width, height, fullwidth, subwidth;
     int canceldrop, sbdrop;
     int offleft, offtop;
     GGadget *hsb, *vsb;
     int isedit, off;
-    int st_pos;
+    int st_pos, old_pos;
     BDFChar *fsc, *ssc;
     int pixelsize;
     int magfactor;
-    int top;
     int downpos, down, within, orig_kern;
     SplineFont *sf;
     int layer;
     int isv;
     int first_class_new, r2l, index;
+    int orig_kern_offset;
 /* For the kern pair dlg */
     int done;
     SplineChar *sc1, *sc2;
@@ -86,7 +87,7 @@ typedef struct kernclasslistdlg {
 
 #define CID_Subtable	1001
 
-#define CID_List	1040
+#define CID_List	1040		/* List of kern class subtables */
 #define CID_New		1041
 #define CID_Delete	1042
 #define CID_Edit	1043
@@ -108,6 +109,7 @@ typedef struct kernclasslistdlg {
 #define CID_FreeType	1038
 #define CID_Magnifications	1039
 #define CID_ClearDevice	1040
+#define CID_Display	1041
 
 #define CID_Separation	2008
 #define CID_MinKern	2009
@@ -309,6 +311,7 @@ static void KPD_DoCancel(KernClassDlg *kcd) {
     kcd->fsc = kcd->ssc = NULL;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
+    free(kcd->orig_adjust.corrections); kcd->orig_adjust.corrections = NULL;
 #endif
     kcd->done = true;
 }
@@ -332,48 +335,36 @@ return( true );
 	kcd->fsc = kcd->ssc = NULL;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
+	free(kcd->orig_adjust.corrections); kcd->orig_adjust.corrections = NULL;
 #endif
 	kcd->done = true;
     }
 return( true );
 }
 
-static int KCD_Prev2(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
-	BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
-	kcd->fsc = kcd->ssc = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
-#endif
-	GDrawSetVisible(kcd->kw,false);
+static void KCD_Finalize(KernClassDlg *kcd) {
+    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset));
+    unichar_t *end;
+    int val = u_strtol(ret,&end,10);
+
+    if ( kcd->old_pos==-1 )
+return;
+
+    if ( val<-32768 || val>32767 || *end!='\0' ) {
+	ff_post_error( _("Bad Number"), _("Bad Number") );
+return;
     }
-return( true );
-}
-
-static int KCD_Next2(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset));
-	unichar_t *end;
-	int val = u_strtol(ret,&end,10);
-
-	if ( val<-32768 || val>32767 || *end!='\0' ) {
-	    ff_post_error( _("Bad Number"), _("Bad Number") );
-return( true );
-	}
-	kcd->offsets[kcd->st_pos] = val;
+    kcd->offsets[kcd->old_pos] = val;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	free(kcd->adjusts[kcd->st_pos].corrections);
-	kcd->adjusts[kcd->st_pos] = kcd->active_adjust;
-	kcd->active_adjust.corrections = NULL;
+    free(kcd->adjusts[kcd->old_pos].corrections);
+    kcd->adjusts[kcd->old_pos] = kcd->active_adjust;
+    kcd->active_adjust.corrections = NULL;
 #endif
 
-	BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
-	kcd->fsc = kcd->ssc = NULL;
-	GDrawSetVisible(kcd->kw,false);		/* This will give us an expose so we needed ask for one */
-    }
-return( true );
+    BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
+    kcd->fsc = kcd->ssc = NULL;
+    GDrawRequestExpose(kcd->gw,NULL,false);
+    kcd->old_pos = -1;
 }
 
 void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag) {
@@ -444,13 +435,13 @@ static void KCD_KernMouse(KernClassDlg *kcd,GEvent *event) {
     double scale;
 
     scale = kcd->pixelsize/(double) (kcd->sf->ascent+kcd->sf->descent);
-    kern = u_strtol(_GGadgetGetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset)),NULL,10);
+    kern = u_strtol(_GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset)),NULL,10);
     pkern = kcd->magfactor*rint( kern*scale );	/* rounding can't include magnification */
 
     if ( !kcd->isv ) {
 	/* Horizontal */
 	width = kcd->magfactor*((kcd->fsc!=NULL?kcd->fsc->width:0)+(kcd->ssc!=NULL?kcd->ssc->width:0))+pkern;
-	x = (kcd->fullwidth - width)/2;
+	x = (kcd->subwidth - width)/2;
 
 	if ( KCD_RightToLeft(kcd) ) {
 	    if ( kcd->ssc!=NULL )
@@ -462,17 +453,17 @@ static void KCD_KernMouse(KernClassDlg *kcd,GEvent *event) {
 	    }
 	}
 
-	if ( event->u.mouse.y<kcd->top || event->u.mouse.y>kcd->top+2*kcd->pixelsize*kcd->magfactor ||
+	if ( event->u.mouse.y>2*kcd->pixelsize*kcd->magfactor ||
 		event->u.mouse.x<x || event->u.mouse.x>x+width ) {
 	    if ( event->type == et_mousedown )
 return;
 	    if ( kcd->within ) {
-		GDrawSetCursor(kcd->kw,ct_pointer);
+		GDrawSetCursor(kcd->subw,ct_pointer);
 		if ( kcd->down && kcd->orig_kern!=kern ) {
 		    sprintf(buf, "%d", kcd->orig_kern);
 		    uc_strcpy(ubuf,buf);
-		    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
-		    GDrawRequestExpose(kcd->kw,NULL,false);
+		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
+		    GDrawRequestExpose(kcd->subw,NULL,false);
 		}
 		kcd->within = false;
 	    }
@@ -482,7 +473,7 @@ return;
 	}
 
 	if ( !kcd->within ) {
-	    GDrawSetCursor(kcd->kw,ct_leftright);
+	    GDrawSetCursor(kcd->subw,ct_leftright);
 	    kcd->within = true;
 	}
 	if ( event->type == et_mousedown ) {
@@ -496,8 +487,8 @@ return;
 	    if ( kern!=nkern ) {
 		sprintf(buf, "%d", nkern);
 		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
-		GDrawRequestExpose(kcd->kw,NULL,false);
+		GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
+		GDrawRequestExpose(kcd->subw,NULL,false);
 	    }
 	    if ( event->type==et_mouseup ) {
 		kcd->down = false;
@@ -506,31 +497,31 @@ return;
 		    free(kcd->active_adjust.corrections);
 		    kcd->active_adjust.corrections = NULL;
 		    ubuf[0] = '0'; ubuf[1] = '\0';
-		    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_Correction),ubuf);
-		    GDrawRequestExpose(kcd->kw,NULL,false);
+		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
+		    GDrawRequestExpose(kcd->subw,NULL,false);
 		}
 #endif
 	    }
 	}
     } else {
 	/* Vertical */
-	y = kcd->top + kcd->pixelsize/3;
+	y = kcd->pixelsize/3;
 	width = (kcd->ssc!=NULL ? kcd->magfactor*rint(kcd->ssc->sc->vwidth * scale) : 0);
 	if ( kcd->fsc!=NULL )
 	    y += kcd->magfactor*rint(kcd->fsc->sc->vwidth * scale) + pkern;
-	x = (kcd->fullwidth/2 - kcd->pixelsize/2)*kcd->magfactor;
+	x = (kcd->subwidth/2 - kcd->pixelsize/2)*kcd->magfactor;
 
 	if ( event->u.mouse.y<y || event->u.mouse.y>y+width ||
 		event->u.mouse.x<x || event->u.mouse.x>x+kcd->pixelsize ) {
 	    if ( event->type == et_mousedown )
 return;
 	    if ( kcd->within ) {
-		GDrawSetCursor(kcd->kw,ct_pointer);
+		GDrawSetCursor(kcd->subw,ct_pointer);
 		if ( kcd->down && kcd->orig_kern!=kern ) {
 		    sprintf(buf, "%d", kcd->orig_kern);
 		    uc_strcpy(ubuf,buf);
-		    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
-		    GDrawRequestExpose(kcd->kw,NULL,false);
+		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
+		    GDrawRequestExpose(kcd->subw,NULL,false);
 		}
 		kcd->within = false;
 	    }
@@ -540,7 +531,7 @@ return;
 	}
 
 	if ( !kcd->within ) {
-	    GDrawSetCursor(kcd->kw,ct_updown);
+	    GDrawSetCursor(kcd->subw,ct_updown);
 	    kcd->within = true;
 	}
 	if ( event->type == et_mousedown ) {
@@ -552,8 +543,8 @@ return;
 	    if ( kern!=nkern ) {
 		sprintf(buf, "%d", nkern);
 		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
-		GDrawRequestExpose(kcd->kw,NULL,false);
+		GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
+		GDrawRequestExpose(kcd->subw,NULL,false);
 	    }
 	    if ( event->type==et_mouseup ) {
 		kcd->down = false;
@@ -562,8 +553,8 @@ return;
 		    free(kcd->active_adjust.corrections);
 		    kcd->active_adjust.corrections = NULL;
 		    ubuf[0] = '0'; ubuf[1] = '\0';
-		    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_Correction),ubuf);
-		    GDrawRequestExpose(kcd->kw,NULL,false);
+		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
+		    GDrawRequestExpose(kcd->subw,NULL,false);
 		}
 #endif
 	    }
@@ -572,9 +563,6 @@ return;
 }
 
 static void KCD_KernExpose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
-    GRect *area = &event->u.expose.rect;
-    GRect rect;
-    GRect old1;
     int x, y;
     SplineFont *sf = kcd->sf;
     int em = sf->ascent+sf->descent;
@@ -583,16 +571,6 @@ static void KCD_KernExpose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
     int kern = u_strtol(ret,NULL,10);
     int baseline, xbaseline;
 
-    if ( area->y+area->height<kcd->top )
-return;
-    if ( area->y>kcd->top+3*kcd->pixelsize ||
-	    (!kcd->isv && area->y>kcd->top+2*kcd->pixelsize ))
-return;
-
-    rect.x = 0; rect.y = kcd->top;
-    rect.width = kcd->fullwidth;
-    rect.height = kcd->isv ? 3*kcd->pixelsize*kcd->magfactor : 2*kcd->pixelsize*kcd->magfactor;
-    GDrawPushClip(pixmap,&rect,&old1);
 
     kern = kcd->magfactor*rint(kern*kcd->pixelsize/(double) em);
 
@@ -609,10 +587,10 @@ return;
 #endif
 
     if ( !kcd->isv ) {
-	x = (kcd->fullwidth-( kcd->magfactor*(kcd->fsc!=NULL?kcd->fsc->width:0)+
+	x = (kcd->subwidth-( kcd->magfactor*(kcd->fsc!=NULL?kcd->fsc->width:0)+
 		kcd->magfactor*(kcd->ssc!=NULL?kcd->ssc->width:0)+
 		kern))/2;
-	baseline = kcd->top + as + kcd->magfactor*kcd->pixelsize/2;
+	baseline = 0 + as + kcd->magfactor*kcd->pixelsize/2;
 	if ( KCD_RightToLeft(kcd) ) {
 	    if ( kcd->ssc!=NULL ) {
 		KCD_DrawGlyph(pixmap,x,baseline,kcd->ssc,kcd->magfactor);
@@ -630,8 +608,8 @@ return;
 	}
     } else {
 	/* I don't support top to bottom vertical */
-	y = kcd->top + kcd->magfactor*kcd->pixelsize/3 + as;
-	xbaseline = kcd->fullwidth/2;
+	y = kcd->magfactor*kcd->pixelsize/3 + as;
+	xbaseline = kcd->subwidth/2;
 	if ( kcd->fsc!=NULL ) {
 	    KCD_DrawGlyph(pixmap,xbaseline-kcd->magfactor*kcd->pixelsize/2,y,kcd->fsc,kcd->magfactor);
 	    y += kcd->magfactor*rint(kcd->fsc->sc->vwidth * kcd->pixelsize/(double) em) + kern;
@@ -639,13 +617,12 @@ return;
 	if ( kcd->ssc!=NULL )
 	    KCD_DrawGlyph(pixmap,xbaseline-kcd->magfactor*kcd->pixelsize/2,y,kcd->ssc,kcd->magfactor);
     }
-    GDrawPopClip(pixmap,&old1);
 }
 
 static int KCD_KernOffChanged(GGadget *g, GEvent *e) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
-	GDrawRequestExpose(kcd->kw,NULL,false);
+	GDrawRequestExpose(kcd->subw,NULL,false);
 return( true );
 }
 
@@ -659,10 +636,10 @@ static void KCD_UpdateGlyph(KernClassDlg *kcd,int which) {
     BDFCharFree(*scpos);
     *scpos = NULL;
     if ( kcd->iskernpair ) {
-	temp = cu_copy(_GGadgetGetTitle(GWidgetGetControl(kcd->kw,
+	temp = cu_copy(_GGadgetGetTitle(GWidgetGetControl(kcd->gw,
 		which==0 ? CID_First : CID_Second )));
     } else {
-	GTextInfo *sel = GGadgetGetListItemSelected(GWidgetGetControl(kcd->kw,
+	GTextInfo *sel = GGadgetGetListItemSelected(GWidgetGetControl(kcd->gw,
 		which==0 ? CID_First : CID_Second ));
 	if ( sel==NULL )
 return;
@@ -682,32 +659,36 @@ return;
 	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
 }
 
+static void _KCD_DisplaySizeChanged(KernClassDlg *kcd) {
+    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_DisplaySize));
+    unichar_t *end;
+    int pixelsize = u_strtol(ret,&end,10);
+
+    while ( *end==' ' ) ++end;
+    if ( pixelsize>4 && pixelsize<400 && *end=='\0' ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	unichar_t ubuf[20]; char buffer[20];
+	ubuf[0] = '0'; ubuf[1] = '\0';
+	if ( kcd->active_adjust.corrections!=NULL &&
+		pixelsize>=kcd->active_adjust.first_pixel_size &&
+		pixelsize<=kcd->active_adjust.last_pixel_size ) {
+	    sprintf( buffer, "%d", kcd->active_adjust.corrections[
+		    pixelsize-kcd->active_adjust.first_pixel_size]);
+	    uc_strcpy(ubuf,buffer);
+	}
+	GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
+#endif
+	kcd->pixelsize = pixelsize;
+	KCD_UpdateGlyph(kcd,0);
+	KCD_UpdateGlyph(kcd,1);
+	GDrawRequestExpose(kcd->subw,NULL,false);
+    }
+}
+
 static int KCD_DisplaySizeChanged(GGadget *g, GEvent *e) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_DisplaySize));
-	unichar_t *end;
-	int pixelsize = u_strtol(ret,&end,10);
-
-	while ( *end==' ' ) ++end;
-	if ( pixelsize>4 && pixelsize<400 && *end=='\0' ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	    unichar_t ubuf[20]; char buffer[20];
-	    ubuf[0] = '0'; ubuf[1] = '\0';
-	    if ( kcd->active_adjust.corrections!=NULL &&
-		    pixelsize>=kcd->active_adjust.first_pixel_size &&
-		    pixelsize<=kcd->active_adjust.last_pixel_size ) {
-		sprintf( buffer, "%d", kcd->active_adjust.corrections[
-			pixelsize-kcd->active_adjust.first_pixel_size]);
-		uc_strcpy(ubuf,buffer);
-	    }
-	    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
-#endif
-	    kcd->pixelsize = pixelsize;
-	    KCD_UpdateGlyph(kcd,0);
-	    KCD_UpdateGlyph(kcd,1);
-	    GDrawRequestExpose(kcd->kw,NULL,false);
-	}
+	_KCD_DisplaySizeChanged(kcd);
     }
 return( true );
 }
@@ -719,7 +700,7 @@ static int KCD_MagnificationChanged(GGadget *g, GEvent *e) {
 
 	if ( mag!=-1 && mag!=kcd->magfactor-1 ) {
 	    kcd->magfactor = mag+1;
-	    GDrawRequestExpose(kcd->kw,NULL,false);
+	    GDrawRequestExpose(kcd->subw,NULL,false);
 	}
     }
 return( true );
@@ -730,7 +711,7 @@ static int KCB_FreeTypeChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	KCD_UpdateGlyph(kcd,0);
 	KCD_UpdateGlyph(kcd,1);
-	GDrawRequestExpose(kcd->kw,NULL,false);
+	GDrawRequestExpose(kcd->subw,NULL,false);
     }
 return( true );
 }
@@ -752,7 +733,7 @@ return( true );
 	}
 
 	DeviceTableSet(&kcd->active_adjust,kcd->pixelsize,correction);
-	GDrawRequestExpose(kcd->kw,NULL,false);
+	GDrawRequestExpose(kcd->subw,NULL,false);
 	GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClearDevice),
 		kcd->active_adjust.corrections!=NULL);
     }
@@ -771,6 +752,27 @@ static int KCD_ClearDevice(GGadget *g, GEvent *e) {
 return( true );
 }
 #endif
+
+static int KCD_RevertKerning(GGadget *g, GEvent *e) {
+    KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	char buf[20];
+	sprintf( buf, "%d", kcd->orig_kern_offset );
+	GGadgetSetTitle8(GWidgetGetControl(kcd->gw,CID_KernOffset),buf);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	free(kcd->active_adjust.corrections);
+	kcd->active_adjust = kcd->orig_adjust;
+	if ( kcd->orig_adjust.corrections!=NULL ) {
+	    int len = kcd->orig_adjust.last_pixel_size-kcd->orig_adjust.first_pixel_size+1;
+	    kcd->active_adjust = kcd->orig_adjust;
+	    kcd->active_adjust.corrections = galloc(len);
+	    memcpy(kcd->active_adjust.corrections,kcd->orig_adjust.corrections,len);
+	}
+#endif
+	_KCD_DisplaySizeChanged(kcd);
+    }
+return( true );
+}
 
 static void KPD_RestoreGlyphs(KernClassDlg *kcd) {
     if ( kcd->scf!=NULL )
@@ -916,6 +918,7 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
 	for ( kp = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns; kp!=NULL && kp->sc!=kcd->scs; kp=kp->next );
 	if ( kp!=NULL ) {
 	    offset = kp->off;
+	    kcd->orig_kern_offset = offset;
 	    KP_SelectSubtable(kcd,kp->subtable);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( kp->adjust!=NULL ) {
@@ -923,6 +926,9 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
 		kcd->active_adjust = *kp->adjust;
 		kcd->active_adjust.corrections = galloc(len);
 		memcpy(kcd->active_adjust.corrections,kp->adjust->corrections,len);
+		kcd->orig_adjust = *kp->adjust;
+		kcd->orig_adjust.corrections = galloc(len);
+		memcpy(kcd->orig_adjust.corrections,kp->adjust->corrections,len);
 	    }
 #endif
 	}
@@ -946,7 +952,7 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
 
     sprintf(buf, "%d", offset);
     uc_strcpy(ubuf,buf);
-    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_KernOffset),ubuf);
+    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     KCD_SetDevTab(kcd);
 #endif
@@ -977,7 +983,7 @@ static int KCD_GlyphSelected(GGadget *g, GEvent *e) {
     int which = GGadgetGetCid(g)==CID_Second;
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	KCD_UpdateGlyph(kcd,which);
-	GDrawRequestExpose(kcd->kw,NULL,false);
+	GDrawRequestExpose(kcd->subw,NULL,false);
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	if ( !KPD_FinishKP(kcd)) {
 	    KPD_RestoreGlyphs(kcd);
@@ -987,7 +993,7 @@ return( true );
 	if ( which==0 )
 	    KPD_BuildKernList(kcd);
 	KPD_PairSearch(kcd);
-	GDrawRequestExpose(kcd->kw,NULL,false);
+	GDrawRequestExpose(kcd->subw,NULL,false);
     }
 return( true );
 }
@@ -1029,41 +1035,53 @@ static GTextInfo **TiNamesFromClass(GGadget *list,int class_index) {
 return( ti );
 }
 
-static void KCD_EditOffset(KernClassDlg *kcd) {
-    int first = kcd->st_pos/kcd->second_cnt, second = kcd->st_pos%kcd->second_cnt;
+static void KCD_EditOffset(KernClassDlg *kcd, int first, int second) {
     char buf[12];
     unichar_t ubuf[12];
     GTextInfo **ti;
     static unichar_t nullstr[] = { 0 };
 
+    KCD_Finalize(kcd);
+    if ( GMatrixEditGetActiveRow(GWidgetGetControl(kcd->gw,CID_ClassList))!=first )
+	GMatrixEditActivateRowCol(GWidgetGetControl(kcd->gw,CID_ClassList),first,-1);
+    if ( GMatrixEditGetActiveRow(GWidgetGetControl(kcd->gw,CID_ClassList+100))!=second )
+	GMatrixEditActivateRowCol(GWidgetGetControl(kcd->gw,CID_ClassList+100),second,-1);
     if ( second==0 )
 	ff_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
-    GGadgetSetList(GWidgetGetControl(kcd->kw,CID_First),
-	    ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList),first),false);
-    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_First),
-	    ti==NULL || ti[0]->text==NULL ? nullstr: ti[0]->text);
-    GGadgetSetList(GWidgetGetControl(kcd->kw,CID_Second),
-	    ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList+100),second),false);
-    GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_Second),
-	    ti==NULL || ti[0]->text==NULL ? nullstr: ti[0]->text);
-    KCD_UpdateGlyph(kcd,0);
-    KCD_UpdateGlyph(kcd,1);
+    if ( first!=-1 && second!=-1 ) {
+	kcd->st_pos = first*kcd->second_cnt+second;
+	kcd->old_pos = kcd->st_pos;
+	GGadgetSetList(GWidgetGetControl(kcd->gw,CID_First),
+		ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList),first),false);
+	GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_First),
+		ti==NULL || ti[0]->text==NULL ? nullstr: ti[0]->text);
+	GGadgetSetList(GWidgetGetControl(kcd->gw,CID_Second),
+		ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList+100),second),false);
+	GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Second),
+		ti==NULL || ti[0]->text==NULL ? nullstr: ti[0]->text);
+	KCD_UpdateGlyph(kcd,0);
+	KCD_UpdateGlyph(kcd,1);
 
-    sprintf( buf, "%d", kcd->offsets[kcd->st_pos]);
-    uc_strcpy(ubuf,buf);
-    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
+	kcd->orig_kern_offset = kcd->offsets[kcd->st_pos];
+	sprintf( buf, "%d", kcd->offsets[kcd->st_pos]);
+	uc_strcpy(ubuf,buf);
+	GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    kcd->active_adjust = kcd->adjusts[kcd->st_pos];
-    if ( kcd->active_adjust.corrections!=NULL ) {
-	int len = kcd->active_adjust.last_pixel_size - kcd->active_adjust.first_pixel_size +1;
-	kcd->active_adjust.corrections = galloc(len);
-	memcpy(kcd->active_adjust.corrections,kcd->adjusts[kcd->st_pos].corrections,len);
-    }
-    KCD_SetDevTab(kcd);
+	kcd->active_adjust = kcd->adjusts[kcd->st_pos];
+	kcd->orig_adjust = kcd->adjusts[kcd->st_pos];
+	if ( kcd->active_adjust.corrections!=NULL ) {
+	    int len = kcd->active_adjust.last_pixel_size - kcd->active_adjust.first_pixel_size +1;
+	    kcd->active_adjust.corrections = galloc(len);
+	    memcpy(kcd->active_adjust.corrections,kcd->adjusts[kcd->st_pos].corrections,len);
+	    kcd->orig_adjust.corrections = galloc(len);
+	    memcpy(kcd->orig_adjust.corrections,kcd->adjusts[kcd->st_pos].corrections,len);
+	}
+	KCD_SetDevTab(kcd);
 #endif
-
-    GDrawSetVisible(kcd->kw,true);
+    }
+    GDrawRequestExpose(kcd->subw,NULL,false);
+    GDrawRequestExpose(kcd->gw,NULL,false);
 }
 
 /* ************************************************************************** */
@@ -1085,9 +1103,6 @@ static int KC_OK(GGadget *g, GEvent *e) {
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 	else if ( sf->mm!=NULL ) sf = sf->mm->normal;
 
-	if ( GDrawIsVisible(kcd->kw))
-return( KCD_Next2(g,e));
-
 	err = false;
 	touch = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Touched));
 	separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
@@ -1095,6 +1110,7 @@ return( KCD_Next2(g,e));
 	onlyCloser = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_OnlyCloser));
 	if ( err )
 return( true );
+	KCD_Finalize(kcd);
 
 	kc = kcd->orig;
 	for ( i=1; i<kc->first_cnt; ++i )
@@ -1159,8 +1175,6 @@ static int KC_Cancel(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	kcd = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( GDrawIsVisible(kcd->kw))
-return( KCD_Prev2(g,e));
 
 	KC_DoCancel(kcd);
     }
@@ -1186,7 +1200,7 @@ static int KCD_TextSelect(GGadget *g, GEvent *e) {
 	for ( i=0; i<rows; ++i ) {
 	    for ( start = classes[i].u.md_str; start!=NULL && *start!='\0'; ) {
 		while ( *start==' ' ) ++start;
-		for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='\0'; ++pt );
+		for ( pt=start; *pt!='\0' && *pt!=' ' && *pt!='(' && *pt!='\0'; ++pt );
 		if ( pt-start == nlen && strncmp(name,start,nlen)==0 ) {
 		    GMatrixEditScrollToRowCol(list,i,0);
 		    GMatrixEditActivateRowCol(list,i,0);
@@ -1195,6 +1209,10 @@ static int KCD_TextSelect(GGadget *g, GEvent *e) {
 		    else
 			KCD_HShow(kcd,i);
 return( true );
+		}
+		if ( *pt=='(' ) {
+		    while ( *pt!=')' && *pt!='\0' ) ++pt;
+		    ++pt;
 		}
 		start = pt;
 	    }
@@ -1335,7 +1353,7 @@ return;
 	kcd->st_pos = pos;
     else if ( event->type==et_mouseup ) {
 	if ( pos==kcd->st_pos )
-	    KCD_EditOffset(kcd);
+	    KCD_EditOffset(kcd, pos/kcd->second_cnt, pos%kcd->second_cnt);
     }
 }
 
@@ -1661,27 +1679,20 @@ static void KCD_VScroll(KernClassDlg *kcd,struct sbevent *sb) {
     }
 }
 
-static int subkern_e_h(GWindow gw, GEvent *event) {
+static int kcd_sub_e_h(GWindow gw, GEvent *event) {
     KernClassDlg *kcd = GDrawGetUserData(gw);
-
     switch ( event->type ) {
-      case et_char:
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("metricsview.html#kernclass");
-return( true );
-	} else if ( GMenuIsCommand(event,H_("Quit|Ctl+Q") )) {
-	    MenuExit(NULL,NULL,NULL);
-return( true );
-	} else if ( GMenuIsCommand(event,H_("Close|Ctl+Shft+Q") )) {
-	    KC_DoCancel(kcd);
-return( true );
-	}
-return( false );
+      case et_expose:
+	KCD_KernExpose(kcd,gw,event);
+      break;
       case et_mouseup: case et_mousedown: case et_mousemove:
 	KCD_KernMouse(kcd,event);
       break;
-      case et_expose:
-	KCD_KernExpose(kcd,gw,event);
+      case et_char:
+return( false );
+      case et_resize:
+	kcd->subwidth = event->u.resize.size.width;
+	GDrawRequestExpose(gw,NULL,false);
       break;
     }
 return( true );
@@ -1722,15 +1733,11 @@ return( false );
 	}
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
-	if ( kcd->iskernpair )
-	    KCD_KernMouse(kcd,event);
-	else
+	if ( !kcd->iskernpair )
 	    KCD_Mouse(kcd,event);
       break;
       case et_expose:
-	if ( kcd->iskernpair )
-	    KCD_KernExpose(kcd,gw,event);
-	else
+	if ( !kcd->iskernpair )
 	    KCD_Expose(kcd,gw,event);
       break;
       case et_resize: {
@@ -1739,8 +1746,9 @@ return( false );
 	GDrawGetSize(kcd->gw,&wsize);
 
 	kcd->fullwidth = wsize.width;
-	if ( kcd->kw!=NULL ) {
-	    GDrawResize(kcd->kw,wsize.width,wsize.height);
+	kcd->width = wsize.width-kcd->xstart2-5;
+	kcd->height = wsize.height-kcd->ystart2;
+	if ( kcd->hsb!=NULL ) {
 	    GGadgetGetSize(kcd->hsb,&csize);
 	    kcd->width = csize.width;
 	    kcd->xstart2 = csize.x;
@@ -1750,10 +1758,6 @@ return( false );
 	    kcd->xstart = kcd->xstart2-kcd->kernw;
 	    kcd->ystart = kcd->ystart2-kcd->fh-1;
 	    KCD_SBReset(kcd);
-	    GDrawRequestExpose(kcd->kw,NULL,false);
-	} else {
-	    kcd->width = wsize.width-kcd->xstart2-5;
-	    kcd->height = wsize.height-kcd->ystart2;
 	}
 	GDrawRequestExpose(kcd->gw,NULL,false);
       } break;
@@ -2082,11 +2086,16 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 static void KCD_ClassSelectionChanged(GGadget *g,int whichclass, int c) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     int is_first = GGadgetGetCid(g) == CID_ClassList;
+    int first, second;
 
     if ( is_first )
 	KCD_VShow(kcd,whichclass);
     else
 	KCD_HShow(kcd,whichclass);
+    first = GMatrixEditGetActiveRow(GWidgetGetControl(kcd->gw,CID_ClassList));
+    second = GMatrixEditGetActiveRow(GWidgetGetControl(kcd->gw,CID_ClassList+100));
+    if ( first!=-1 && second!=-1 )
+	KCD_EditOffset(kcd, first, second);
 }
 
 static unichar_t **KCD_GlyphListCompletion(GGadget *t,int from_tab) {
@@ -2097,7 +2106,7 @@ return( SFGlyphNameCompletion(sf,t,from_tab,true));
 }
 
 static unichar_t **KCD_GlyphCompletion(GGadget *t,int from_tab) {
-    KernClassDlg *kcd = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(t));
     SplineFont *sf = kcd->sf;
 
 return( SFGlyphNameCompletion(sf,t,from_tab,false));
@@ -2137,9 +2146,10 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     }
     md = gcalloc(cnt+10,sizeof(struct matrix_data));
     for ( i=0; i<cnt; ++i ) {
-	if ( i==0 && classes[i]==NULL )
+	if ( i==0 && classes[i]==NULL ) {
 	    md[i+0].u.md_str = copy( _("{Everything Else}") );
-	else
+	    if ( off!=0 ) md[i+0].frozen = true;
+	} else
 	    md[i+0].u.md_str = SFNameList2NameUni(sf,classes[i]);
     }
     mi->matrix_data = md;
@@ -2186,15 +2196,16 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
 return( k );
 }
 
-static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *sf) {
+static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
+	SplineFont *sf, GGadgetCreateData *topbox) {
     GGadgetCreateData gcd[31], hbox, flagbox, hvbox, buttonbox, mainbox[2];
-    GGadgetCreateData *harray[10], *hvarray[15], *flagarray[4], *buttonarray[9], *varray[12];
+    GGadgetCreateData *harray[10], *hvarray[20], *flagarray[4], *buttonarray[9], *varray[12];
+    GGadgetCreateData *bigharray[6];
     GTextInfo label[31];
     int k,j;
     char buffer[20];
-    GRect pos;
+    int drawable_row;
 
-    kcd->top = GDrawPointsToPixels(kcd->gw,100);
     kcd->pixelsize = 150;
     kcd->magfactor = 1;
 
@@ -2205,23 +2216,25 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     memset(&hvbox,0,sizeof(hvbox));
     memset(&buttonbox,0,sizeof(buttonbox));
     memset(&mainbox,0,sizeof(mainbox));
+    if ( topbox!=NULL )
+	memset(topbox,0,2*sizeof(*topbox));
     k = j = 0;
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.pos.width = 120;
+    gcd[k].gd.pos.width = 110;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.handle_controlevent = KCD_GlyphSelected;
     gcd[k].gd.cid = CID_First;
-    gcd[k++].creator = for_class ? GListButtonCreate : GTextFieldCreate;
+    gcd[k++].creator = left!=NULL ? GListButtonCreate : GTextFieldCreate;
     harray[0] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 130; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.pos.width = 120;
+    gcd[k].gd.pos.width = 110;
     gcd[k].gd.flags = gg_visible | gg_enabled;
-    if ( !for_class ) gcd[k].gd.flags |= gg_list_alphabetic;
+    if ( left==NULL ) gcd[k].gd.flags |= gg_list_alphabetic;
     gcd[k].gd.handle_controlevent = KCD_GlyphSelected;
     gcd[k].gd.cid = CID_Second;
-    gcd[k++].creator = for_class ? GListButtonCreate : GListFieldCreate;
+    gcd[k++].creator = left!=NULL ? GListButtonCreate : GListFieldCreate;
     harray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Use FreeType");
@@ -2247,7 +2260,6 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     label[k].text = (unichar_t *) _("Display Size:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
     hvarray[0] = &gcd[k-1];
@@ -2256,7 +2268,6 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     label[k].text = (unichar_t *) buffer;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 92; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 80;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k].gd.cid = CID_DisplaySize;
@@ -2271,26 +2282,24 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     label[k].text = (unichar_t *) _("Magnification:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
     hvarray[2] = &gcd[k-1];
 
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k].gd.cid = CID_Magnifications;
+    gcd[k].gd.pos.width = 60;
     gcd[k].gd.u.list = magnifications;
     gcd[k].gd.handle_controlevent = KCD_MagnificationChanged;
     gcd[k++].creator = GListButtonCreate;
-    hvarray[3] = &gcd[k-1]; hvarray[4] = GCD_Glue; hvarray[5] = GCD_Glue;
-    hvarray[6] = NULL;
+    hvarray[3] = &gcd[k-1]; hvarray[4] = GCD_Glue; hvarray[5] = NULL;
 
     label[k].text = (unichar_t *) _("Kern Offset:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
-    hvarray[7] = &gcd[k-1];
+    hvarray[6] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 60;
@@ -2298,57 +2307,73 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     gcd[k].gd.cid = CID_KernOffset;
     gcd[k].gd.handle_controlevent = KCD_KernOffChanged;
     gcd[k++].creator = GTextFieldCreate;
-    hvarray[8] = &gcd[k-1];
+    hvarray[7] = &gcd[k-1];
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    label[k].text = (unichar_t *) _("Device Table Correction:");
+    label[k].text = (unichar_t *) _("Device Table Correction:\n  (at display size)");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
-    hvarray[9] = &gcd[k-1];
+    hvarray[8] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 305; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 60;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k].gd.cid = CID_Correction;
     gcd[k].gd.handle_controlevent = KCD_CorrectionChanged;
     gcd[k++].creator = GTextFieldCreate;
-    hvarray[10] = &gcd[k-1];
+    hvarray[9] = &gcd[k-1]; hvarray[10]=NULL;
 
-    label[k].text = (unichar_t *) "Clear";
+    label[k].text = (unichar_t *) "Revert Kerning";
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 305; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
-    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Resets the kerning offset and device table corrections to what they were originally");
+    gcd[k].gd.handle_controlevent = KCD_RevertKerning;
+    gcd[k++].creator = GButtonCreate;
+    hvarray[11] = &gcd[k-1]; hvarray[12] = GCD_ColSpan;
+
+    label[k].text = (unichar_t *) "Clear Device Table";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
     gcd[k].gd.popup_msg = (unichar_t *) _("Clear all device table corrections associated with this combination");
     gcd[k].gd.cid = CID_ClearDevice;
     gcd[k].gd.handle_controlevent = KCD_ClearDevice;
     gcd[k++].creator = GButtonCreate;
-    hvarray[11] = &gcd[k-1];
+    hvarray[13] = &gcd[k-1]; hvarray[14] = GCD_ColSpan; hvarray[15] = NULL;
+    hvarray[16] = NULL;
 #else
-    hvarray[9] = GCD_Glue;
-    hvarray[10] = GCD_Glue;
-    hvarray[11] = GCD_Glue;
+    label[k].text = (unichar_t *) "Revert Kerning";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Resets the kerning offset to what it was originally");
+    gcd[k].gd.handle_controlevent = KCD_RevertKerning;
+    gcd[k++].creator = GButtonCreate;
+    hvarray[8] = &gcd[k-1]; hvarray[9] = GCD_ColSpan;
+    hvarray[10] = NULL;
+    hvarray[11] = NULL;
 #endif
-    hvarray[12] = GCD_Glue;
-    hvarray[13] = NULL; hvarray[14] = NULL;
 
     hvbox.gd.flags = gg_enabled|gg_visible;
     hvbox.gd.u.boxelements = hvarray;
     hvbox.creator = GHVBoxCreate;
     varray[j++] = &hvbox; varray[j++] = NULL;
 
-    varray[j++] = GCD_Glue; varray[j++] = NULL;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.pos.width = gcd[k].gd.pos.height = 100;
+    gcd[k].gd.cid = CID_Display;
+    gcd[k].gd.u.drawable_e_h = kcd_sub_e_h;
+    gcd[k].data = kcd;
+    gcd[k++].creator = GDrawableCreate;
+    drawable_row = j/2;
+    varray[j++] = &gcd[k-1]; varray[j++] = NULL;
 
-    GDrawGetSize(kcd->kw,&pos);
-
-    if ( !for_class ) {
+    if ( left==NULL ) {
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = -40;
 	gcd[k].gd.flags = gg_enabled ;
 	label[k].text = (unichar_t *) _("Lookup subtable:");
@@ -2357,8 +2382,6 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
 	gcd[k++].creator = GLabelCreate;
 	flagarray[0] = &gcd[k-1];
 
-	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP-27;
-	gcd[k].gd.pos.width = GDrawPixelsToPoints(kcd->kw,pos.width)-20;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Subtable;
 	gcd[k].gd.handle_controlevent = KP_Subtable;
@@ -2369,61 +2392,79 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
 	flagbox.gd.u.boxelements = flagarray;
 	flagbox.creator = GHBoxCreate;
 	varray[j++] = &flagbox; varray[j++] = NULL;
+
+	label[k].text = (unichar_t *) _("_OK");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
+	gcd[k].gd.pos.width = -1;
+	gcd[k].gd.flags = gg_visible|gg_enabled;
+	if ( left==NULL ) gcd[k].gd.flags |= gg_but_default;
+	gcd[k].gd.handle_controlevent = KPD_OK;
+	gcd[k].gd.cid = CID_Prev2;
+	gcd[k++].creator = GButtonCreate;
+
+	label[k].text = (unichar_t *) _("_Cancel");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
+	gcd[k].gd.pos.width = -1;
+	gcd[k].gd.flags = gg_visible|gg_enabled ;
+	if ( left==NULL ) gcd[k].gd.flags |= gg_but_cancel;
+	gcd[k].gd.handle_controlevent = KPD_Cancel;
+	gcd[k].gd.cid = CID_Next2;
+	gcd[k++].creator = GButtonCreate;
+
+	buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[k-2]; buttonarray[2] = GCD_Glue;
+	buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[k-1]; buttonarray[5] = GCD_Glue;
+	buttonarray[6] = NULL;
+	buttonbox.gd.flags = gg_enabled|gg_visible;
+	buttonbox.gd.u.boxelements = buttonarray;
+	buttonbox.creator = GHBoxCreate;
+	varray[j++] = &buttonbox; varray[j++] = NULL; varray[j++] = NULL;
+
+	mainbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
+	mainbox[0].gd.flags = gg_enabled|gg_visible;
+	mainbox[0].gd.u.boxelements = varray;
+	mainbox[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(kcd->gw,mainbox);
+	GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
+    } else {
+	varray[j++] = NULL;
+	mainbox[0].gd.flags = gg_enabled|gg_visible;
+	mainbox[0].gd.u.boxelements = varray;
+	mainbox[0].creator = GHVBoxCreate;
+
+	bigharray[0] = left;
+	bigharray[1] = mainbox;
+	bigharray[2] = bigharray[3] = NULL;
+
+	topbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
+	topbox[0].gd.flags = gg_enabled|gg_visible;
+	topbox[0].gd.u.boxelements = bigharray;
+	topbox[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(kcd->gw,topbox);
+	GHVBoxSetExpandableCol(topbox[0].ret,0);
     }
 
-    label[k].text = (unichar_t *) (for_class ? _("< _Prev") : _("_OK"));
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible|gg_enabled;
-    if ( !for_class ) gcd[k].gd.flags |= gg_but_default;
-    gcd[k].gd.handle_controlevent = for_class ? KCD_Prev2 : KPD_OK;
-    gcd[k].gd.cid = CID_Prev2;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) (for_class ? _("_Next >") : _("_Cancel"));
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = -30+3; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible|gg_enabled ;
-    if ( !for_class ) gcd[k].gd.flags |= gg_but_cancel;
-    gcd[k].gd.handle_controlevent = for_class ? KCD_Next2 : KPD_Cancel;
-    gcd[k].gd.cid = CID_Next2;
-    gcd[k++].creator = GButtonCreate;
-
-    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[k-2]; buttonarray[2] = GCD_Glue;
-    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[k-1]; buttonarray[5] = GCD_Glue;
-    buttonarray[6] = NULL;
-    buttonbox.gd.flags = gg_enabled|gg_visible;
-    buttonbox.gd.u.boxelements = buttonarray;
-    buttonbox.creator = GHBoxCreate;
-    varray[j++] = &buttonbox; varray[j++] = NULL; varray[j++] = NULL;
-
-    mainbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
-    mainbox[0].gd.flags = gg_enabled|gg_visible;
-    mainbox[0].gd.u.boxelements = varray;
-    mainbox[0].creator = GHVGroupCreate;
-
-    GGadgetsCreate(kcd->kw,mainbox);
-
-    GHVBoxSetExpandableRow(mainbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(mainbox[0].ret,drawable_row);
     GHVBoxSetExpandableCol(hbox.ret,gb_expandglue);
-    GHVBoxSetExpandableCol(hvbox.ret,gb_expandglue);
-    GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
-    if ( !for_class ) {
+    /*GHVBoxSetExpandableCol(hvbox.ret,gb_expandglue);*/
+    if ( left==NULL ) {
 	GHVBoxSetExpandableCol(flagbox.ret,gb_expandglue);
 	GGadgetSetList(flagarray[1]->ret,SFSubtablesOfType(sf,gpos_pair,false,false),false);
     }
+    kcd->subw = GDrawableGetWindow(GWidgetGetControl(kcd->gw,CID_Display));
 }
 
 void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
-    GRect pos, subpos;
+    GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[52], sepbox, classbox, hvbox, buttonbox, mainbox[2];
+    GGadgetCreateData gcd[52], sepbox, classbox, hvbox, buttonbox, mainbox[2], topbox[2];
     GGadgetCreateData *harray1[17], *harray2[17], *varray1[5], *varray2[5];
     GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[19], *h4array[8], *harrayclasses[6];
     GTextInfo label[52];
@@ -2450,6 +2491,7 @@ return;
     kcd->sf = sf;
     kcd->layer = layer;
     kcd->isv = isv;
+    kcd->old_pos = -1;
     kcd->next = sf->kcd;
     sf->kcd = kcd;
 
@@ -2718,7 +2760,7 @@ return;
     mainbox[0].gd.u.boxelements = varray;
     mainbox[0].creator = GHVGroupCreate;
 
-    GGadgetsCreate(kcd->gw,mainbox);
+    FillShowKerningWindow(kcd, mainbox, kcd->sf, topbox);
     kcd->vsb = gcd[vi].ret;
     kcd->hsb = gcd[vi+1].ret;
 
@@ -2752,13 +2794,7 @@ return;
 	GMatrixEditSetColumnCompletion(list,0,KCD_GlyphListCompletion);
     }
 
-
-    wattrs.mask = wam_events;
-    subpos = pos; subpos.x = subpos.y = 0;
-    kcd->kw = GWidgetCreateSubWindow(kcd->gw,&subpos,subkern_e_h,kcd,&wattrs);
-    FillShowKerningWindow(kcd, true, kcd->sf);
-
-    GHVBoxFitWindow(mainbox[0].ret);
+    GHVBoxFitWindow(topbox[0].ret);
     GDrawSetVisible(kcd->gw,true);
 }
 
@@ -3090,8 +3126,7 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer,int isv)
     kcd.canceldrop = GDrawPointsToPixels(gw,KC_CANCELDROP);
 
 
-    kcd.kw = gw;
-    FillShowKerningWindow(&kcd, false, kcd.sf);
+    FillShowKerningWindow(&kcd, NULL, kcd.sf, NULL);
 
     if ( sc1!=NULL ) {
 	unichar_t *utemp;
