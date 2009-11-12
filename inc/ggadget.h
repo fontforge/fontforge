@@ -220,7 +220,7 @@ struct matrixinit {
 		me_funcedit,
 		me_stringchoice, me_stringchoicetrans, me_stringchoicetag,
 		me_button,
-		me_hex, me_uhex, me_addr } me_type;
+		me_hex, me_uhex, me_addr, me_onlyfuncedit } me_type;
 	char *(*func)(GGadget *,int r,int c);
 	GTextInfo *enum_vals;
 	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
