@@ -13727,7 +13727,16 @@ typedef struct {
     AW_Glyph *base;
     int is_left;
 } PyFF_AWGlyphI;
-static PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType;
+
+typedef struct {
+    PyObject_HEAD
+    AW_Data *base;
+    PyObject *emSize;
+    PyObject *layer;
+    PyObject *regionHeight;
+    PyObject *denom;
+} PyFF_AWContext;
+static PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType, PyFF_AWContextType;
 
 static void PyFF_AWGlyphIndex_dealloc(PyFF_AWGlyphI *self) {
     self->ob_type->tp_free((PyObject *) self);
@@ -13935,6 +13944,121 @@ static PyTypeObject PyFF_AWGlyphType = {
     /*PyFF_AWGlyph_new*/ NULL, /* tp_new */
 };
 
+static void PyFF_AWContext_dealloc(PyFF_AWContext *self) {
+    Py_XDECREF(self->emSize);
+    Py_XDECREF(self->layer);
+    Py_XDECREF(self->regionHeight);
+    Py_XDECREF(self->denom);
+    if ( self->base!=NULL ) {
+	self->base->python_data = NULL;
+	self->base = NULL;
+    }
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *GetPythonObjectForAWData(AW_Data *all) {
+    if ( all->python_data==NULL ) {
+	all->python_data = PyFF_AWContextType.tp_alloc(&PyFF_AWContextType,0);
+	((PyFF_AWContext *) (all->python_data))->base = all;
+	Py_INCREF( (PyObject *) (all->python_data) );	/* for the pointer in the aw_glyph */
+    }
+    Py_INCREF( (PyFF_AWContext *) (all->python_data) );
+return( (PyObject *) (all->python_data) );
+}
+
+static PyObject *PyFF_AWContext_getFont(PyFF_AWContext *self,void *closure) {
+return( PyFV_From_FV( self->base->fv ));
+}
+
+static PyObject *PyFF_AWContext_getEmSize(PyFF_AWContext *self,void *closure) {
+    if ( self->emSize==NULL )
+	self->emSize = PyInt_FromLong(self->base->sf->ascent+self->base->sf->descent);
+    Py_INCREF( self->emSize );
+return( self->emSize );
+}
+
+static PyObject *PyFF_AWContext_getLayer(PyFF_AWContext *self,void *closure) {
+    if ( self->layer==NULL )
+	self->layer = PyInt_FromLong(self->base->layer);
+    Py_INCREF( self->layer );
+return( self->layer );
+}
+
+static PyObject *PyFF_AWContext_getRegionHeight(PyFF_AWContext *self,void *closure) {
+    if ( self->regionHeight==NULL )
+	self->regionHeight = PyInt_FromLong(self->base->sub_height);
+    Py_INCREF( self->regionHeight );
+return( self->regionHeight );
+}
+
+static PyObject *PyFF_AWContext_getDenom(PyFF_AWContext *self,void *closure) {
+    if ( self->denom==NULL )
+	self->denom = PyFloat_FromDouble(self->base->denom);
+    Py_INCREF( self->denom );
+return( self->denom );
+}
+
+static PyGetSetDef PyFF_AWContext_getset[] = {
+    {"font",
+	 (getter)PyFF_AWContext_getFont, (setter)PyFF_cant_set,
+	 "The underlying font which this object describes", NULL},
+    {"emSize",
+	 (getter)PyFF_AWContext_getEmSize, (setter)PyFF_cant_set,
+	 "Font's em-size", NULL},
+    {"layer",
+	 (getter)PyFF_AWContext_getLayer, (setter)PyFF_cant_set,
+	 "active layer during the current operation", NULL},
+    {"regionHeight",
+	 (getter)PyFF_AWContext_getRegionHeight, (setter)PyFF_cant_set,
+	 "The y coordinate line is subdivided into regions, and this is the height of each region", NULL},
+    {"denom",
+	 (getter)PyFF_AWContext_getDenom, (setter)PyFF_cant_set,
+	 "A useful small number which varies with the emsize", NULL},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject PyFF_AWContextType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.awcontext",     /*tp_name*/
+    sizeof(PyFF_AWContext),    /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_AWContext_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    NULL,                      /*tp_as_sequence*/
+    NULL,		       /*tp_as_mapping*/	/* Need separate left/right version so needs a new type. Sigh. */
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    NULL,                      /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge Auto Width/Kern Context object",   /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    0,		               /* tp_iternext */
+    NULL,                      /* tp_methods */
+    0,			       /* tp_members */
+    PyFF_AWContext_getset,     /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,		       /* tp_init */
+    0,                         /* tp_alloc */
+     NULL,			 /* tp_new */
+};
+
 /* User supplied python function which calculates the optical separation between */
 /*  two glyphs when placed so that there bounding boxes are contiguous. I assume */
 /*  that optical separation is linear (so if I move the bounding boxes by 3 em */
@@ -13942,7 +14066,7 @@ static PyTypeObject PyFF_AWGlyphType = {
 void *PyFF_GlyphSeparationHook = NULL;		/* Actually a python object */
 static PyObject *PyFF_GlyphSeparationArg = NULL;
 
-int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,real denom) {
+int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,AW_Data *all) {
     PyObject *arglist, *result;
     int ret;
 
@@ -13954,7 +14078,7 @@ return( -1 );
     Py_XINCREF((PyObject *) PyFF_GlyphSeparationHook);
     PyTuple_SetItem(arglist,0,GetPythonObjectForAWGlyph(g1));
     PyTuple_SetItem(arglist,1,GetPythonObjectForAWGlyph(g2));
-    PyTuple_SetItem(arglist,2,PyFloat_FromDouble(denom));
+    PyTuple_SetItem(arglist,2,GetPythonObjectForAWData(all));
     if ( PyFF_GlyphSeparationArg!=NULL &&
 			    PyFF_GlyphSeparationArg!=Py_None ) {
 	PyTuple_SetItem(arglist,3,PyFF_GlyphSeparationArg);
@@ -14007,6 +14131,10 @@ Py_RETURN_NONE;
 
 void FFPy_AWGlyphFree(AW_Glyph *me) {
     Py_XDECREF((PyObject *) me->python_data);
+}
+
+void FFPy_AWDataFree(AW_Data *all) {
+    Py_XDECREF((PyObject *) all->python_data);
 }
 /* ************************************************************************** */
 /*			     FontForge Python Module			      */
@@ -14327,14 +14455,14 @@ static void initPyFontForge(void) {
 	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
-	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType,
+	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
 	    NULL };
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter", "cvtiter",
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
-	    "autowidthglyph", "autowidthglyphindex",
+	    "awglyph", "awglyphIndex", "awcontext",
 	    NULL };
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };

@@ -34,10 +34,11 @@
 #include "autowidth2.h"
 #include "edgelist2.h"
 
-static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, real denom) {
+static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, AW_Data *all) {
     int j;
     int imin_y, imax_y;
     real tot, cnt;
+    real denom;
     /* the goal is to give a weighted average that expresses the visual */
     /*  separation between two glyphs when they are placed so their bounding */
     /*  boxes are adjacent. The separation between two rectangles would be 0 */
@@ -48,13 +49,14 @@ static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, real denom) {
 #if !defined(_NO_PYTHON)
 
     if ( PyFF_GlyphSeparationHook!=NULL )
-return( PyFF_GlyphSeparation(g1,g2,denom) );
+return( PyFF_GlyphSeparation(g1,g2,all) );
 #endif
 
     imin_y = g2->imin_y > g1->imin_y ? g2->imin_y : g1->imin_y;
     imax_y = g2->imax_y < g1->imax_y ? g2->imax_y : g1->imax_y;
     if ( imax_y < imin_y )		/* no overlap. ie grave and "a" */
 return( 0 );
+    denom = all->denom;
     tot = cnt = 0;
     for ( j=imin_y ; j<imax_y; ++j ) {
 	if ( g2->left[j-g2->imin_y] < 32767 && g1->right[j-g1->imin_y] > -32767 ) {
@@ -134,7 +136,7 @@ static void aw2_figure_all_sidebearing(AW_Data *all) {
 	me = &all->glyphs[i];
 	for ( j=0; j<all->gcnt; ++j ) {
 	    other = &all->glyphs[j];
-	    vpt[j] = aw2_bbox_separation(me,other,denom);
+	    vpt[j] = aw2_bbox_separation(me,other,all);
 	}
     }
 
@@ -197,7 +199,7 @@ static void aw2_figure_all_sidebearing(AW_Data *all) {
 }
 
 static int ak2_figure_kern(AW_Glyph *g1, AW_Glyph *g2, AW_Data *all) {
-    int sep = aw2_bbox_separation(g1,g2,all->denom);
+    int sep = aw2_bbox_separation(g1,g2,all);
     sep += g2->bb.minx + g1->sc->width - g1->bb.maxx;
 return( all->desired_separation - sep );
 }
@@ -233,7 +235,7 @@ static int ak2_figure_kernclass(int *class1, int *class2, AW_Data *all) {
 	AW_Glyph *g1 = &all->glyphs[class1[h]];
 	for ( i = 0; class2[i]!=-1; ++i ) {
 	    AW_Glyph *g2 = &all->glyphs[class2[i]];
-	    subtot = aw2_bbox_separation(g1,g2,all->denom);
+	    subtot = aw2_bbox_separation(g1,g2,all);
 	    tot += g2->bb.minx + g1->sc->width - g1->bb.maxx + subtot;
 	    ++cnt2;
 	}
@@ -517,6 +519,9 @@ void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	free(all.glyphs);
     }
     free(scripts);
+#if !defined(_NO_PYTHON)
+    FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
 }
 
 void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
@@ -531,7 +536,6 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
     AW_Data all;
     AW_Glyph glyph, edge;
     real loff, roff;
-    real denom = (sf->ascent + sf->descent)/DENOM_FACTOR_OF_EMSIZE;
     RefChar *r = HasUseMyMetrics(sc,layer);
 
     if ( r!=NULL ) {
@@ -555,6 +559,7 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
     all.layer = layer;
     all.sub_height = chunk_height;
     all.sf = sf;
+    all.denom = (sf->ascent + sf->descent)/DENOM_FACTOR_OF_EMSIZE;
 
     glyph.sc = sc;
     SplineCharLayerFindBounds(sc,layer,&glyph.bb);
@@ -567,13 +572,16 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
 	aw2_findedges(&glyph, &all);
 	edge.imin_y = glyph.imin_y; edge.imax_y = glyph.imax_y;
 	aw2_dummyedges(&edge,NULL);
-	loff = aw2_bbox_separation(&edge,&glyph,denom);
-	roff = aw2_bbox_separation(&glyph,&edge,denom);
+	loff = aw2_bbox_separation(&edge,&glyph,&all);
+	roff = aw2_bbox_separation(&glyph,&edge,&all);
 	*_loff = glyph.bb.minx + loff;
 	*_roff = sc->width - (glyph.bb.maxx - roff);
 	AWGlyphFree( &glyph );
 	AWGlyphFree( &edge );
     }
+#if !defined(_NO_PYTHON)
+    FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
 }
 
 void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
@@ -699,6 +707,9 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
     for ( i=0; i<cnt; ++i )
 	AWGlyphFree( &glyphs[i] );
     free(glyphs);
+#if !defined(_NO_PYTHON)
+    FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
 }
 
 void AutoKern2NewClass(SplineFont *sf,int layer,char **leftnames, char **rightnames,
@@ -903,7 +914,7 @@ return;
 		SplineChar *rsc = rightglyphs[j];
 		if ( rsc->ticked2 ) {
 		    other = &all.glyphs[rsc->ttf_glyph];
-		    vpt[j] = aw2_bbox_separation(me,other,all.denom);
+		    vpt[j] = aw2_bbox_separation(me,other,&all);
 		} else
 		    vpt[j] = 0;
 	    }
@@ -914,6 +925,9 @@ return;
     }
     for ( i=0; i<cnt; ++i )
 	AWGlyphFree( &glyphs[i] );
+#if !defined(_NO_PYTHON)
+    FFPy_AWDataFree(&all);
+#endif		/* PYTHON */
     free(glyphs); glyphs = all.glyphs = NULL;
 
     good_enough *= good_enough;

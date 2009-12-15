@@ -68,13 +68,17 @@ typedef struct aw_data {
     int desired_separation;
     int min_sidebearing, max_sidebearing;
     unsigned int normalize: 1;
-    int denom;
+    real denom;
+#if !defined(_NO_PYTHON)
+    void *python_data;
+#endif
 } AW_Data;
     
 #if !defined(_NO_PYTHON)
 extern void *PyFF_GlyphSeparationHook;
-extern int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,real denom);
+extern int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,AW_Data *all);
 extern void FFPy_AWGlyphFree(AW_Glyph *me);
+extern void FFPy_AWDataFree(AW_Data *all);
 #endif		/* PYTHON */
 
 #endif		/* _AUTOWIDTH2_H */
