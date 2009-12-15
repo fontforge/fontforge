@@ -45,6 +45,11 @@ static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, real denom) {
     /* The trick is to guess a good weighting function. My guess is that */
     /*  things that look close are more important than those which look far */
     /*  So "T" and "O" should be dominated by the crossbar of the "T"... */
+#if !defined(_NO_PYTHON)
+
+    if ( PyFF_GlyphSeparationHook!=NULL )
+return( PyFF_GlyphSeparation(g1,g2,denom) );
+#endif
 
     imin_y = g2->imin_y > g1->imin_y ? g2->imin_y : g1->imin_y;
     imax_y = g2->imax_y < g1->imax_y ? g2->imax_y : g1->imax_y;
@@ -52,7 +57,7 @@ static int aw2_bbox_separation(AW_Glyph *g1, AW_Glyph *g2, real denom) {
 return( 0 );
     tot = cnt = 0;
     for ( j=imin_y ; j<imax_y; ++j ) {
-	if ( g2->left[j-g2->imin_y] < 1e9 && g1->right[j-g1->imin_y] > -1e9 ) {
+	if ( g2->left[j-g2->imin_y] < 32767 && g1->right[j-g1->imin_y] > -32767 ) {
 	    /* beware of gaps such as those in "i" or "aaccute" */
 	    real sep = g2->left[j-g2->imin_y] - g1->right[j-g1->imin_y];
 	    real weight = 1.0/(sep + denom);
@@ -87,8 +92,6 @@ static void aw2_figure_lsb(int right_index, AW_Data *all) {
     if ( i!=0 )
 	lsb = (lsb + i/2)/i;
     lsb = rint((3 * lsb + me->lsb)/4.0);
-  if ( me->sc!=NULL && me->sc->unicodeenc=='O' )
-      printf( "lsb:%4d(%4d) ", lsb, me->lsb );
     me->nlsb = lsb;
 }
 
@@ -112,8 +115,6 @@ static void aw2_figure_rsb(int left_index, AW_Data *all) {
     if ( i!=0 )
 	rsb = (rsb + i/2)/i;
     rsb = rint((3 * rsb + me->rsb)/4.0);
-  if ( me->sc!=NULL && me->sc->unicodeenc=='O' )
-      printf( "rsb:%4d(%4d)\n", rsb, me->rsb );
     me->nrsb = rsb;
 }
 
@@ -351,8 +352,8 @@ static void aw2_findedges(AW_Glyph *me, AW_Data *all) {
 	}
 	if ( xmin>1e9 ) {
 	    /* Glyph might have a gap (as "i" or ":" do) */
-	    me->left[i-me->imin_y] = xmin /* floor((me->bb.maxx - me->bb.minx)/2)*/;
-	    me->right[i-me->imin_y] = xmax /* floor(-(me->bb.maxx - me->bb.minx)/2)*/;
+	    me->left[i-me->imin_y] = 32767 /* floor((me->bb.maxx - me->bb.minx)/2)*/;
+	    me->right[i-me->imin_y] = -32767 /* floor(-(me->bb.maxx - me->bb.minx)/2)*/;
 	} else {
 	    me->left[i-me->imin_y] = floor(xmin - me->bb.minx);
 	    me->right[i-me->imin_y] = floor(xmax - me->bb.maxx);	/* This is always non-positive, so floor will give the bigger absolute value */
@@ -381,6 +382,14 @@ static void aw2_dummyedges(AW_Glyph *flat,AW_Data *all) {
     flat->right = gcalloc((flat->imax_y-flat->imin_y+1),sizeof(short));
 }
 
+static void AWGlyphFree( AW_Glyph *me) {
+    free(me->left);
+    free(me->right);
+#if !defined(_NO_PYTHON)
+    FFPy_AWGlyphFree(me);
+#endif
+}
+
 static void aw2_handlescript(AW_Data *all) {
     int i;
     AW_Glyph *me;
@@ -389,11 +398,8 @@ static void aw2_handlescript(AW_Data *all) {
 	aw2_findedges(me,all);
     aw2_dummyedges(me,all); ++all->gcnt;
     aw2_figure_all_sidebearing(all);
-    for ( i=0; i<all->gcnt; ++i ) {
-	me = &all->glyphs[i];
-	free(me->left);
-	free(me->right);
-    }
+    for ( i=0; i<all->gcnt; ++i )
+	AWGlyphFree( &all->glyphs[i] );
 }
 
 SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
@@ -565,8 +571,8 @@ void GuessOpticalOffset(SplineChar *sc,int layer,real *_loff, real *_roff,
 	roff = aw2_bbox_separation(&glyph,&edge,denom);
 	*_loff = glyph.bb.minx + loff;
 	*_roff = sc->width - (glyph.bb.maxx - roff);
-	free(glyph.left); free(glyph.right);
-	free(edge.left); free(edge.right);
+	AWGlyphFree( &glyph );
+	AWGlyphFree( &edge );
     }
 }
 
@@ -690,6 +696,8 @@ void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **right,
 	    }
 	}
     }
+    for ( i=0; i<cnt; ++i )
+	AWGlyphFree( &glyphs[i] );
     free(glyphs);
 }
 
@@ -904,11 +912,8 @@ return;
 		vpt[j] = 0;
 	}
     }
-    for ( i=0; i<cnt; ++i ) {
-	me = &glyphs[i];
-	free(me->left);
-	free(me->right);
-    }
+    for ( i=0; i<cnt; ++i )
+	AWGlyphFree( &glyphs[i] );
     free(glyphs); glyphs = all.glyphs = NULL;
 
     good_enough *= good_enough;

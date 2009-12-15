@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 28-Oct-2009 -->
+  <!-- AP: Last modified: 14-Dec-2009 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -333,6 +333,17 @@
       <TD><CODE>(sequence)</CODE></TD>
       <TD>Reverse of the above. Converts a binary string into a human (sort of)
 	readable string</TD>
+    </TR>
+    <TR>
+      <TD><CODE>registerGlyphSeparationHook</CODE></TD>
+      <TD><CODE>(hook)</CODE></TD>
+      <TD>The GlpyphSeparationHook is a python routine which FontForge will call
+	when it wants to figure out the optical separation between two glyphs. If
+	you neve call this, or if you call it with a value of <CODE>None</CODE> FontForge
+	will use a built-in default. This routine gets called during AutoWidth, AutoKern,
+	and computing the optical left and right side bearings (for 'lfbd' and 'rtbd'
+	features). For more infomation see
+	<A HREF="autowidth.html#GlyphSeparationHook">its own section</A>.</TD>
     </TR>
     <TR>
       <TH colspan=3>User Interface Methods</TH>

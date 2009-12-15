@@ -47,6 +47,9 @@ typedef struct aw_glyph {
     short *right;
     int lsb, rsb;		/* approximations we refine as we go along */
     int nlsb, nrsb;		/* next guess */
+#if !defined(_NO_PYTHON)
+    void *python_data;
+#endif
 } AW_Glyph;
 
 typedef struct aw_data {
@@ -68,4 +71,10 @@ typedef struct aw_data {
     int denom;
 } AW_Data;
     
+#if !defined(_NO_PYTHON)
+extern void *PyFF_GlyphSeparationHook;
+extern int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,real denom);
+extern void FFPy_AWGlyphFree(AW_Glyph *me);
+#endif		/* PYTHON */
+
 #endif		/* _AUTOWIDTH2_H */

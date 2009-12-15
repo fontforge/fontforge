@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Jul-2002 -->
-  <!-- AP: Last modified: 22-Oct-2009 -->
+  <!-- AP: Last modified: 14-Dec-2009 -->
   <TITLE>Auto Width and Auto Kern</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -35,6 +35,189 @@
   <P>
   There used to be an Auto Kern dialog. There is no longer, this is now done
   in the <A HREF="lookups.html#Pair">kerning subtable</A> dialog and the
-  <A HREF="metricsview.html#kernclass">kerning class </A>dialog.
+  <A HREF="metricsview.html#kernclass">kerning class </A>dialog. 
+    <HR>
+  <H3>
+    The python
+    <CODE><A NAME="GlyphSeparationHook">GlyphSeparationHook</A></CODE>
+  </H3>
+  <P>
+  When FontForge does AutoKerning (and in a more complicated fashion, when
+  it does AutoWidthing) it tries to guess the optical separation between two
+  glyphs, and then it applies an appropriate kern value to make the optical
+  separation be the desired spacing.
+  <P>
+  FontForge assumes that the optical spacing is linear (so if you increase
+  the separation between two glyphs by 3 em-units, then the optical spacing
+  will also increase by 3 em-units).
+  <P>
+  FF guesses the separation between two glyphs by figuring a value for the
+  separation of two glyphs when their bounding boxes are adjacent. For two
+  rectangles (where the bounding box is the same as the glyph itself) the
+  separation will be 0 as the two glyphs will be touching. For a combination
+  like "To" the optical separation will be quite large.
+  <TABLE BORDER CELLPADDING="2" ALIGN="center">
+    <TR>
+      <TD><IMG SRC="GlyphSep-rectangles.png" WIDTH="129" HEIGHT="122"></TD>
+      <TD><IMG SRC="GlyphSep-To.png" WIDTH="105" HEIGHT="111"></TD>
+    </TR>
+  </TABLE>
+  <P>
+  The GlyphSeparationHook is a python routine which will be called with a bunch
+  of information about two glyphs, and is expected to return an integer
+  representing the optical separation between the two. It is a low-level routine;
+  the actual calculation of kerning offsets or setting glyph widths is done
+  elsewhere, but this routine provides the information those higher level routines
+  need. Of course, if you don't provide a routine, FontForge has a built-in
+  routine which will provide a default behavior. Here is a python version of
+  that default routine:
+  <BLOCKQUOTE>
+    <PRE>import fontforge;
+
+def GlyphSeparation(onLeft,onRight,denom) :
+    # the goal is to give a weighted average that expresses the visual 
+    #  separation between two glyphs when they are placed so their bounding 
+    #  boxes are adjacent. The separation between two rectangles would be 0 
+    #  While the separation between "T" and "o" would be fairly large 
+    # The trick is to guess a good weighting function. My guess is that 
+    #  things that look close are more important than those which look far 
+    #  So "T" and "O" should be dominated by the crossbar of the "T"...
+    #
+    # Find the area the two glyphs have in common (so when comparing "o" and
+    #  "l" or "g", ignore the ascenders and descenders since that's outside
+    #  the range of "o" and won't affect its visual proximity.
+    imin_y = max(onRight.iminY,onLeft.iminY);
+    imax_y = min(onRight.imaxY,onLeft.imaxY);
+    #
+    # Some glyph combinations will have no overlap -- the grave accent and the
+    # letter "a" will have none. So they don't interact visually.
+    if imax_y &lt; imin_y :
+	return( 0 )
+    #
+    # Otherwise compute some sort of weighted average of the separations between
+    # the two glyphs at various heights.
+    tot,cnt = 0,0
+    j = imin_y
+    while j&lt;=imax_y :
+	if onRight.left[j] &lt; 32767 and onLeft.right[j] &gt; -32767 :
+	    # beware of gaps such as those in "i" or "aaccute" 
+	    # a gap has a left or right value which is huge
+	    # so ignore any such, again it doesn't contribute to the
+	    # visual separation.
+	    sep = onRight.left[j] - onLeft.right[j]
+	    weight = 1.0/(sep + denom)
+	    weight *= weight
+	    tot += weight*sep
+	    cnt += weight
+	j += 1
+    if cnt!=0 :
+	tot /= cnt
+    return( int(round( tot )) );
+
+fontforge.registerGlyphSeparationHook(GlyphSeparation)
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The hook will be called with three arguments, a structure with information
+  about the glyph on the left, a structure with information about the glyph
+  on the right, and a floating point number which contains a small number which
+  varies with the em-size of the font (currently it will be 1/50th).
+  <P>
+  I don't pass a standard glyph object, because I preprocess it to get certain
+  important information. The underlying glyph object can be obtained through
+  the <CODE>glyph</CODE> member. The most important things in the structure
+  are two arrays, one representing the x offset between the left side of the
+  bounding box and the leftmost contour at a given height (this will always
+  be non-negative) called <CODE>left</CODE>, and the other being the x offset
+  betweeen the right side of the bounding box and the rightmost contour at
+  a given height (this will always be non-positive) called <CODE>right</CODE>.
+  The array rThe glyph structures contain the following members:
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TD>glyph</TD>
+      <TD>This is the standard python glyph object. This can (rarely) be None.</TD>
+    </TR>
+    <TR>
+      <TD>boundingbox</TD>
+      <TD>A tuple of 4 values (minx,miny,maxx,maxy) for the glyph</TD>
+    </TR>
+    <TR>
+      <TD>iminY</TD>
+      <TD>The low bound of the arrays.</TD>
+    </TR>
+    <TR>
+      <TD>imaxY</TD>
+      <TD>The high bound of the arrays</TD>
+    </TR>
+    <TR>
+      <TD>left</TD>
+      <TD>an array of integers representing the separation between the left edge
+	of the bounding box and the leftmost contour at that height (never negative)</TD>
+    </TR>
+    <TR>
+      <TD>right</TD>
+      <TD>an array of integers representing the separation between the right edge
+	of the bounding box and the rightmost contour at that height (never positive)</TD>
+    </TR>
+  </TABLE>
+  <P>
+  iminY and imaxY are scaled from the y units in the glyph itself. Generally
+  they will be about 1/10th of those units (though this will vary depending
+  on the em-size of the font). The value contain at left[0] would represent
+  minimum separation between boundingbox.minx and any the x location of any
+  contour when the y location was between 0 and 10. Similarly left[1] would
+  be the minimum separation with the y location between 10 and 20. And so forth.
+  <P>
+  Some glyphs, like "i" will have gaps -- in the hole between the dotlessi
+  and the dot. In this case the left array will have a value of 32767 to mark
+  the hole, and the right array a value of -32767.
+  <BLOCKQUOTE>
+    <PRE>    imin_y = max(onRight.iminY,onLeft.iminY);
+    imax_y = min(onRight.imaxY,onLeft.imaxY);
+    if imax_y &lt; imin_y :
+	return( 0 )
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Here we figure out the range along the y axis where the glyphs both exist.
+  If the two glyphs don't share any area along the y axis (as, for example,
+  the glyph "a" and the grave accent might not) then we assume they do not
+  interact and return a visual separation of 0.
+  <BLOCKQUOTE>
+    <PRE>    tot,cnt = 0,0
+    j = imin_y
+    while j&lt;=imax_y :
+	if onRight.left[j] &lt; 32767 and onLeft.right[j] &gt; -32767 :
+	    sep = onRight.left[j] - onLeft.right[j]
+	    weight = 1.0/(sep + denom)
+	    weight *= weight
+	    tot += weight*sep
+	    cnt += weight
+	j += 1
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Otherwise loop over the y range where both glyphs are active. Checking to
+  make sure there are no holes.
+  <P>
+  We find the actual separation between the two glyphs at this y value.
+  <P>
+  Then we calculate some magic weighting function (this is handwaving. your
+  routine will have a better weighting function)
+  <BLOCKQUOTE>
+    <PRE>    if cnt!=0 :
+	tot /= cnt
+    return( int(round( tot )) );
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  And finally we take the weighted average of those separations, and return
+  that as the optical separation.
+  <BLOCKQUOTE>
+    <PRE>fontforge.registerGlyphSeparationHook(GlyphSeparation)
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  And this routine will tell FontForge to use the hook you provide.
 </DIV>
 </BODY></HTML>
