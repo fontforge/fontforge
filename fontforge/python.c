@@ -812,7 +812,7 @@ return( NULL );
     py_ie[ie_cnt].all_extensions = copy(exten_list==NULL ? exten : exten_list);
     ++ie_cnt;
     py_ie[ie_cnt].name = NULL;		/* End list marker */
-    
+
 Py_RETURN_NONE;
 }
 
@@ -13663,9 +13663,6 @@ static PyMappingMethods PyFF_FontMapping = {
     PyFF_FontIndex,		/* subscript */
     NULL			/* subscript assign */
 };
-/* ************************************************************************** */
-/* ************************* initializer routines *************************** */
-/* ************************************************************************** */
 
 static PyTypeObject PyFF_FontType = {
     PyObject_HEAD_INIT(NULL)
@@ -13709,6 +13706,311 @@ static PyTypeObject PyFF_FontType = {
     PyFF_Font_new,             /* tp_new */
 };
 
+/* ************************************************************************** */
+/*		     Python Interface to FontForge Auto-Kerning		      */
+/* ************************************************************************** */
+#include "autowidth2.h"
+
+/* To give the user the ability to create his own routine to calculate the */
+/*  visual separation between two glyphs, we must provide a python type which */
+/*  contains the same data as the C type: AW_Glyph */
+/* Sigh. And another which is almost exactly the same for the left/right arrays*/
+
+typedef struct {
+    PyObject_HEAD
+    AW_Glyph *base;
+    PyObject *left, *right;
+} PyFF_AWGlyph;
+
+typedef struct {
+    PyObject_HEAD
+    AW_Glyph *base;
+    int is_left;
+} PyFF_AWGlyphI;
+static PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType;
+
+static void PyFF_AWGlyphIndex_dealloc(PyFF_AWGlyphI *self) {
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static Py_ssize_t PyFF_AWGlyphLength( PyObject *self ) {
+    AW_Glyph *aw = ((PyFF_AWGlyphI *) self)->base;
+return( aw->imax_y - aw->imin_y + 1 );
+}
+
+static PyObject *PyFF_AWGlyphIndex( PyObject *self, PyObject *index ) {
+    AW_Glyph *aw = ((PyFF_AWGlyphI *) self)->base;
+    int pos;
+
+    if ( !PyInt_Check(index)) {
+	PyErr_Format(PyExc_TypeError, "Index must be an integer" );
+return( NULL );
+    }
+
+    pos = PyInt_AsLong(index);
+    if ( pos<aw->imin_y || pos>aw->imax_y ) {
+	PyErr_Format(PyExc_TypeError, "Index out of bounds");
+return( NULL );
+    }
+    if ( ((PyFF_AWGlyphI *) self)->is_left )
+return( Py_BuildValue("i", aw->left[pos-aw->imin_y]) );
+    else
+return( Py_BuildValue("i", aw->right[pos-aw->imin_y]) );
+}
+
+static PyMappingMethods PyFF_AWGlyphMapping = {
+    PyFF_AWGlyphLength,		/* length */
+    PyFF_AWGlyphIndex,		/* subscript */
+    NULL			/* subscript assign */
+};
+
+static PyTypeObject PyFF_AWGlyphIndexType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.awglyphIndex",       /*tp_name*/
+    sizeof(PyFF_AWGlyphI),     /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_AWGlyphIndex_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    NULL,                      /*tp_as_sequence*/
+    &PyFF_AWGlyphMapping,      /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    NULL,                      /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge index aw",      /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    0,		               /* tp_iternext */
+    NULL,                      /* tp_methods */
+    0,			       /* tp_members */
+    NULL,                      /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,		       /* tp_init */
+    0,                         /* tp_alloc */
+    NULL,			 /* tp_new */
+};
+
+static void PyFF_AWGlyph_dealloc(PyFF_AWGlyph *self) {
+    Py_XDECREF(self->left);
+    Py_XDECREF(self->right);
+    if ( self->base!=NULL ) {
+	self->base->python_data = NULL;
+	self->base = NULL;
+    }
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *GetPythonObjectForAWGlyph(AW_Glyph *aw) {
+    if ( aw->python_data==NULL ) {
+	aw->python_data = PyFF_AWGlyphType.tp_alloc(&PyFF_AWGlyphType,0);
+	((PyFF_AWGlyph *) (aw->python_data))->base = aw;
+	Py_INCREF( (PyObject *) (aw->python_data) );	/* for the pointer in the aw_glyph */
+    }
+    Py_INCREF( (PyFF_AWGlyph *) (aw->python_data) );
+return( (PyObject *) (aw->python_data) );
+}
+
+static PyObject *PyFF_AWGlyph_getGlyph(PyFF_AWGlyph *self,void *closure) {
+    PyObject *ret;
+    if ( self->base->sc==NULL )
+	ret = Py_None;
+    else
+	ret = PySC_From_SC(self->base->sc);
+    Py_INCREF( ret );
+return( ret );
+}
+
+static PyObject *PyFF_AWGlyph_getBB(PyFF_AWGlyph *self,void *closure) {
+return( Py_BuildValue("(dddd)", self->base->bb.minx,self->base->bb.miny,
+	    self->base->bb.maxx,self->base->bb.maxy ));
+}
+
+static PyObject *PyFF_AWGlyph_getIminY(PyFF_AWGlyph *self,void *closure) {
+return( Py_BuildValue("i", self->base->imin_y ));
+}
+
+static PyObject *PyFF_AWGlyph_getImaxY(PyFF_AWGlyph *self,void *closure) {
+return( Py_BuildValue("i", self->base->imax_y ));
+}
+
+static PyObject *PyFF_AWGlyph_getLeft(PyFF_AWGlyph *self,void *closure) {
+    if ( self->left==NULL ) {
+	self->left = PyFF_AWGlyphIndexType.tp_alloc(&PyFF_AWGlyphIndexType,0);
+	((PyFF_AWGlyphI *) (self->left))->base = self->base;
+	((PyFF_AWGlyphI *) (self->left))->is_left = true;
+	Py_INCREF( self->left );	/* for the pointer in the aw_glyph */
+    }
+    Py_INCREF( self->left );
+return( self->left );
+}
+
+static PyObject *PyFF_AWGlyph_getRight(PyFF_AWGlyph *self,void *closure) {
+    if ( self->right==NULL ) {
+	self->right = PyFF_AWGlyphIndexType.tp_alloc(&PyFF_AWGlyphIndexType,0);
+	((PyFF_AWGlyphI *) (self->right))->base = self->base;
+	((PyFF_AWGlyphI *) (self->right))->is_left = false;
+	Py_INCREF( self->right );	/* for the pointer in the aw_glyph */
+    }
+    Py_INCREF( self->right );
+return( self->right );
+}
+
+static PyGetSetDef PyFF_AWGlyph_getset[] = {
+    {"glyph",
+	 (getter)PyFF_AWGlyph_getGlyph, (setter)PyFF_cant_set,
+	 "The underlying glyph which this object describes", NULL},
+    {"boundingbox",
+	 (getter)PyFF_AWGlyph_getBB, (setter)PyFF_cant_set,
+	 "The bounding box of the underlying glyph", NULL},
+    {"iminY",
+	 (getter)PyFF_AWGlyph_getIminY, (setter)PyFF_cant_set,
+	 "floor(bb.min_y/decimation_height)", NULL},
+    {"imaxY",
+	 (getter)PyFF_AWGlyph_getImaxY, (setter)PyFF_cant_set,
+	 "ceil(bb.max_y/decimation_height)", NULL},
+    {"left",
+	 (getter)PyFF_AWGlyph_getLeft, (setter)PyFF_cant_set,
+	 "array with left edge offsets from bounding box", NULL},
+    {"right",
+	 (getter)PyFF_AWGlyph_getRight, (setter)PyFF_cant_set,
+	 "array with left edge offsets from bounding box", NULL},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject PyFF_AWGlyphType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.awglyph",       /*tp_name*/
+    sizeof(PyFF_AWGlyph),      /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_AWGlyph_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    NULL,                      /*tp_as_sequence*/
+    NULL,		       /*tp_as_mapping*/	/* Need separate left/right version so needs a new type. Sigh. */
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    NULL,                      /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge Auto Width/Kern Glyph object",   /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    0,		               /* tp_iternext */
+    NULL,                      /* tp_methods */
+    0,			       /* tp_members */
+    PyFF_AWGlyph_getset,       /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,		       /* tp_init */
+    0,                         /* tp_alloc */
+    /*PyFF_AWGlyph_new*/ NULL, /* tp_new */
+};
+
+/* User supplied python function which calculates the optical separation between */
+/*  two glyphs when placed so that there bounding boxes are contiguous. I assume */
+/*  that optical separation is linear (so if I move the bounding boxes by 3 em */
+/*  then the optical separation also increases by 3 em) */
+void *PyFF_GlyphSeparationHook = NULL;		/* Actually a python object */
+static PyObject *PyFF_GlyphSeparationArg = NULL;
+
+int PyFF_GlyphSeparation(AW_Glyph *g1,AW_Glyph *g2,real denom) {
+    PyObject *arglist, *result;
+    int ret;
+
+    if ( PyFF_GlyphSeparationHook==NULL )
+return( -1 );
+
+    arglist = PyTuple_New(PyFF_GlyphSeparationArg!=NULL &&
+			    PyFF_GlyphSeparationArg!=Py_None?4:3);
+    Py_XINCREF((PyObject *) PyFF_GlyphSeparationHook);
+    PyTuple_SetItem(arglist,0,GetPythonObjectForAWGlyph(g1));
+    PyTuple_SetItem(arglist,1,GetPythonObjectForAWGlyph(g2));
+    PyTuple_SetItem(arglist,2,PyFloat_FromDouble(denom));
+    if ( PyFF_GlyphSeparationArg!=NULL &&
+			    PyFF_GlyphSeparationArg!=Py_None ) {
+	PyTuple_SetItem(arglist,3,PyFF_GlyphSeparationArg);
+	Py_XINCREF(PyFF_GlyphSeparationArg);
+    }
+    result = PyEval_CallObject(PyFF_GlyphSeparationHook, arglist);
+    Py_DECREF(arglist);
+    if ( PyErr_Occurred()!=NULL ) {
+	PyErr_Print();
+	Py_XDECREF(result);
+return( -1 );
+    } else {
+	ret = PyInt_AsLong(result);
+	Py_XDECREF(result);
+	if ( PyErr_Occurred()!=NULL ) {
+	    PyErr_Print();
+return( -1 );
+	}
+return( ret );
+    }
+}
+
+static PyObject *PyFF_registerGlyphSeparationHook(PyObject *self, PyObject *args) {
+    PyObject *name;	/* Ignored for now */
+    PyObject *hook, *arg=NULL;
+
+    if ( !PyArg_ParseTuple(args,"O|OO",&hook, &arg, &name ) )
+return( NULL );
+    if ( hook==Py_None ) {
+	Py_XDECREF((PyObject *) PyFF_GlyphSeparationHook);
+	Py_XDECREF( PyFF_GlyphSeparationArg);
+	PyFF_GlyphSeparationHook = NULL;
+	PyFF_GlyphSeparationArg = NULL;
+    } else if (!PyCallable_Check((PyObject *) hook)) {
+	PyErr_Format(PyExc_TypeError, "First argument is not callable" );
+return( NULL );
+    } else {
+	Py_XDECREF((PyObject *) PyFF_GlyphSeparationHook);
+	Py_XDECREF( PyFF_GlyphSeparationArg);
+	PyFF_GlyphSeparationHook = hook;
+	Py_XINCREF((PyObject *) PyFF_GlyphSeparationHook);
+	if ( arg==Py_None )
+	    arg = NULL;
+	PyFF_GlyphSeparationArg = arg;
+	Py_XINCREF(PyFF_GlyphSeparationArg);
+    }
+
+Py_RETURN_NONE;
+}
+
+void FFPy_AWGlyphFree(AW_Glyph *me) {
+    Py_XDECREF((PyObject *) me->python_data);
+}
+/* ************************************************************************** */
+/*			     FontForge Python Module			      */
+/* ************************************************************************** */
 static PyMethodDef FontForge_methods[] = {
     { "getPrefs", PyFF_GetPrefs, METH_VARARGS, "Get FontForge preference items" },
     { "setPrefs", PyFF_SetPrefs, METH_VARARGS, "Set FontForge preference items" },
@@ -13737,6 +14039,7 @@ static PyMethodDef FontForge_methods[] = {
     { "activeFontInUI", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},
     { "activeGlyph", PyFF_ActiveGlyph, METH_NOARGS, "If invoked from the UI, this returns the currently active glyph (or None)"},
     { "activeLayer", PyFF_ActiveLayer, METH_NOARGS, "If invoked from the UI, this returns the currently active layer"},
+    { "registerGlyphSeparationHook", PyFF_registerGlyphSeparationHook, METH_VARARGS, "registers a python routine which finds the visual separation between two glyphs. Used in autowidth/kern and optical bound setting."},
     /* Access to the User Interface ... if any */
     { "hasUserInterface", PyFF_hasUserInterface, METH_NOARGS, "Returns whether this fontforge session has a user interface (True if it has opened windows) or is just running a script (False)"},
     { "registerImportExport", PyFF_registerImportExport, METH_VARARGS, "Adds an import/export spline conversion module"},
@@ -13752,6 +14055,9 @@ static PyMethodDef FontForge_methods[] = {
     {NULL}  /* Sentinel */
 };
 
+/* ************************************************************************** */
+/* ************************* initializer routines *************************** */
+/* ************************************************************************** */
 void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *)) {
     int i;
 
@@ -14021,12 +14327,14 @@ static void initPyFontForge(void) {
 	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
+	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType,
 	    NULL };
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter", "cvtiter",
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
+	    "autowidthglyph", "autowidthglyphindex",
 	    NULL };
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
