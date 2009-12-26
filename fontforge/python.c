@@ -1809,10 +1809,17 @@ static PyObject *PyFFContour_Slice( PyObject *self, Py_ssize_t start, Py_ssize_t
     PyFF_Contour *ret;
     int len, i;
 
-    if ( start<0 || end<0 || end>cont->pt_cnt || start>cont->pt_cnt ) {
-	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
-return( NULL );
-    }
+    /* When passed in, start,end >= -cont->pt_cnt */
+    /* However, start,end can be arbitrarily large, particularly when the notation c[i:] 
+	is used, in which case end is a very large value (max size of uint). */ 
+    if ( start<0 )
+	start += cont->pt_cnt;
+    if ( start>cont->pt_cnt )
+	start = cont->pt_cnt;
+    if ( end<0 )
+	end += cont->pt_cnt;
+    if ( end>cont->pt_cnt )
+	end = cont->pt_cnt;
 
     if ( end<start ) 
 	len = end - start + cont->pt_cnt;
@@ -1847,11 +1854,18 @@ static int PyFFContour_SliceAssign( PyObject *_self, Py_ssize_t start, Py_ssize_
 	PyErr_Format(PyExc_TypeError, "Replacement must be a (FontForge) Contour");
 return( -1 );
     }
+    
+    if ( start<0 )
+	start += self->pt_cnt;
+    if ( start>self->pt_cnt )
+	start = self->pt_cnt;
+    if ( end<0 )
+	end += self->pt_cnt;
+    if ( end>self->pt_cnt )
+	end = self->pt_cnt;
+    
     if ( end<start ) {
 	PyErr_Format(PyExc_ValueError, "Slice specification out of order" );
-return( -1 );
-    } else if ( start<0 || end>self->pt_cnt ) {
-	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
 return( -1 );
     }
 
