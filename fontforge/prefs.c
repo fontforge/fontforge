@@ -599,7 +599,9 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
 		val->u.ival = *((int *) (pf->val));
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
 		val->type = v_str;
-		val->u.sval = copy( *((char **) (pf->val)));
+
+		char *tmpstr = pf->val ? *((char **) (pf->val)) : (char *) (pf->get)();
+		val->u.sval = copy( tmpstr ? tmpstr : "" );
 	    } else if ( pf->type == pr_encoding ) {
 		val->type = v_str;
 		if ( *((NameList **) (pf->val))==NULL )
