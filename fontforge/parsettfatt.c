@@ -4758,7 +4758,14 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	fseek(ttf,info->kern_start,SEEK_SET);
 	version = getlong(ttf);
 	tabcnt = getlong(ttf);
+	if ( version!=0x10000 ) {
+	    LogError(_("Invalid or unsupported version (0x%x) for 'kern' table"), version );
+	    info->bad_gx = true;
+return;
+	}
     }
+    if ( tabcnt<0 || tabcnt>0x1000 )
+	LogError(_("Warning: Unlikely number of subtables (%d) for 'kern' table"), tabcnt );
     for ( tab=0; tab<tabcnt; ++tab ) {
 	begin_table = ftell(ttf);
 	if ( version==0 ) {
@@ -4939,6 +4946,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	    if ( otl!=NULL )
 		OTLRemove(info,otl,true);
+return;		/* Give up */
 	}
     }
 }
