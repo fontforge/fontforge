@@ -2161,10 +2161,34 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>importOutlines</CODE></TD>
-      <TD><CODE>(filename)</CODE></TD>
+      <TD><CODE>(filename,[flags])</CODE></TD>
       <TD>Uses the file's extension to determine behavior. Imports outline descriptions
 	(eps, svg, glif files) into the forground layer. Imports image descriptions
-	(bmp, png, xbm, etc.) into the background layer.</TD>
+	(bmp, png, xbm, etc.) into the background layer.
+	Optionally, flags can be used to control PostScript import, it'll be ignored for
+	other file types. Flags is a tuple of the following strings
+	<DL>
+	  <DT>
+	    toobigwarn
+	  <DD>
+	    Supress warning window about too big stroke width
+	  <DT>
+	    removeoverlap
+	  <DD>
+	    When FontForge detects that an expanded stroke will self-intersect, then
+	    setting this flag will cause it to try to make things nice by removing the
+	    intersections
+	  <DT>
+	    handle_eraser
+	  <DD>
+	    Certain programs use pens with white ink as erasers. When this flag is set,
+	    FontForge will attempt to simulate that.
+	  <DT>
+	    correctdir
+	  <DD>
+
+	</DL>
+      </TD>
     </TR>
     <TR>
       <TD><CODE><A name="g-intersect">intersect</A></CODE></TD>

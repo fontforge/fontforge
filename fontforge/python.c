@@ -6035,12 +6035,20 @@ return(NULL);
 Py_RETURN( self );
 }
 
+static struct flaglist import_ps_flags[] = {
+    { "toobigwarn", sf_toobigwarn },
+    { "removeoverlap", sf_removeoverlap },
+    { "handle_eraser", sf_handle_eraser },
+    { "correctdir",  sf_correctdir },
+      NULL };
+
 static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     char *filename;
     char *locfilename = NULL, *pt;
+    PyObject *flags;
 
-    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
+    if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
@@ -6049,7 +6057,7 @@ return( NULL );
     if ( pt==NULL ) pt=locfilename;
 
     if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,0);
+	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,FlagsFromTuple(flags,import_ps_flags));
 #ifndef _NO_LIBXML
     else if ( strcasecmp(pt,".svg")==0 )
 	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
