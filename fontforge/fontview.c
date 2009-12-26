@@ -5876,7 +5876,7 @@ static struct { int start, last; int styles; int charset; } mathmap[] = {
     { 0x1d7f6, 0x1d7ff, _uni_mono,		_uni_digit },
     { 0, 0 }
 };
-    
+
 static GFont *FVCheckFont(FontView *fv,int type) {
     FontRequest rq;
     int family = type>>2;
@@ -6016,8 +6016,10 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			adobes_pua_alts[uni-0xf600]!=0 ) {
 		    use_utf8 = false;
 		    do_Adobe_Pua(buf,sizeof(buf),uni);
-		} else if ( uni>=0x1d400 && uni<=0x1d7ff ) {
+		} else if ( uni>=0x1d400 && uni<=0x1d7ff &&
+			!(GDrawHasCairo(fv->v)&gc_pango)) {
 		    int i;
+		    /* Pango knows how to find the right letters (or we hope it does) */
 		    for ( i=0; mathmap[i].start!=0; ++i ) {
 			if ( uni<=mathmap[i].last ) {
 			    buf[0] = maps[mathmap[i].charset][uni-mathmap[i].start];
