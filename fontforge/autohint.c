@@ -1245,7 +1245,7 @@ int StemListAnyConflicts(StemInfo *stems) {
 	s->hasconflicts = false;
     while ( stems!=NULL ) {
 	end = stems->width<0 ? stems->start : stems->start+stems->width;
-	for ( s=stems->next; s!=NULL && (s->width>0 ? s->start : s->start+s->width)<end; s=s->next ) {
+	for ( s=stems->next; s!=NULL && (s->width>0 ? s->start : s->start+s->width)<=end; s=s->next ) {
 	    stems->hasconflicts = true;
 	    s->hasconflicts = true;
 	    any = true;
@@ -2278,7 +2278,7 @@ return( possible );
 /* Does h have a conflict with any of the stems in the list which have bits */
 /*  set in the mask */
 static int ConflictsWithMask(StemInfo *stems, HintMask mask,StemInfo *h) {
-    while ( stems!=NULL && stems->start<h->start+h->width ) {
+    while ( stems!=NULL && stems->start<=h->start+h->width ) {
 	if ( stems->start+stems->width>=h->start && stems!=h ) {
 	    if ( stems->hintnumber!=-1 &&
 		    (mask[stems->hintnumber>>3]&(0x80>>(stems->hintnumber&7))) )
