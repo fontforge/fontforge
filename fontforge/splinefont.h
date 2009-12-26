@@ -3107,6 +3107,7 @@ extern void *PyFF_UnPickleMeToObjects(char *str);
 struct _object;		/* Python Object */
 extern void PyFF_CallDictFunc(struct _object *dict,char *key,char *argtypes, ... );
 extern void ff_init(void);
+extern struct _object *ff_init_py3(int);
 #endif
 extern void doinitFontForgeMain(void);
 

@@ -1132,7 +1132,7 @@ int main( int argc, char **argv ) {
 	default_encoding=FindOrMakeEncoding("ISO8859-1");
     if ( default_encoding==NULL )
 	default_encoding=&custom;	/* In case iconv is broken */
-    CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
+    CheckIsScript(argc,argv); /* Will run the script and exit if it is a script */
 					/* If there is no UI, there is always a script */
 			                /*  and we will never return from the above */
     if ( load_prefs==NULL ||
