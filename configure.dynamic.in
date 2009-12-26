@@ -260,17 +260,18 @@ if test "$python" = "yes" ; then
       fi
    ], : )
   echo -n "Checking for python..."
-  if $python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')" ; then
-    PyVersion=`$python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
-    PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
+  if $python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('VERSION'))" ; then
+    PyVersion=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('VERSION'))"`
+    PyMajorVersion=`echo $PyVersion |sed -e 's/\..*//'`
+    PySubVersion=`echo $PyVersion |sed -e 's/\(2\|3\)\.//'`
     PyName="python$PyVersion"
     if test "$PySubVersion" = "" ; then
       python="no"
-    elif test "$PySubVersion" -le 2 ; then
+    elif test "$PyMajorVersion" -le 2 -a "$PySubVersion" -le 2 ; then
       python="no"
       echo $ECHO_N "(need at least python 2.3) $ECHO_C" >&6
     else
-      PyInc=`$python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+      PyInc=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('INCLUDEPY'))"`
       if test "$py_headers" != "" -a -e "$py_headers" ; then
 	CPPFLAGS="$CPPFLAGS -I$py_headers"
       elif test "$PyInc" != "" -a -e "$PyInc" ; then
@@ -282,7 +283,7 @@ if test "$python" = "yes" ; then
       else
 	python="no"
       fi
-      PyLib=`$python_prog -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
+      PyLib=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('LIBPL') + '/' + distutils.sysconfig.get_config_var('LDLIBRARY'))"`
       if test "$py_lib" != "" ; then
         LIBS="$LIBS $py_lib"
       elif test "$PyLib" != "" -a -e "$PyLib" ; then
@@ -991,9 +992,11 @@ fi
 PY=
 if test "$gww_dopy" = "yes" >/dev/null 2>&1 ; then
   AC_SUBST(PYINCLUDE)
+  AC_SUBST(PYPREFIX)
   AC_SUBST(PYDEFINES)
   AC_SUBST(PYLIBS)
   PYINCLUDE=
+  PYPREFIX="$real_prefix"
   PYDEFINES="('PREFIX','\"$real_prefix\"')"
   if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
     PYDEFINES="$PYDEFINES, ('__Mac','1')"

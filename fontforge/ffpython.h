@@ -25,6 +25,32 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if PY_MAJOR_VERSION >= 3
+
+#define PyInt_Check    PyLong_Check
+#define PyInt_AsLong   PyLong_AsLong
+#define PyInt_FromLong PyLong_FromLong
+
+#define STRING_CHECK   PyUnicode_Check
+#define STRING_TO_PY   PyUnicode_FromString
+#define DECODE_UTF8(s, size, errors) PyUnicode_DecodeUTF8(s, size, errors)
+#define PYBYTES_UTF8(str)            PyUnicode_AsUTF8String(str)
+#define STRING_FROM_FORMAT           PyUnicode_FromFormat
+
+#define PICKLE "pickle"
+
+#else /* PY_MAJOR_VERSION >= 3 */
+
+#define STRING_CHECK   PyBytes_Check
+#define STRING_TO_PY   PyBytes_FromString
+#define DECODE_UTF8(s, size, errors) PyBytes_Decode(s, size, "UTF-8", errors)
+#define PYBYTES_UTF8(str)            PyString_AsEncodedObject(str, "UTF-8", NULL)
+#define STRING_FROM_FORMAT           PyBytes_FromFormat
+
+#define PICKLE "cPickle"
+
+#endif /* PY_MAJOR_VERSION >= 3 */
+
 
 #if !defined( Py_RETURN_NONE )
 /* Not defined before 2.4 */
