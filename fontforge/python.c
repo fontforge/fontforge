@@ -8445,9 +8445,20 @@ static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
     PyObject *tuple;
 
     if ( STRING_CHECK(index)) {
+#if PY_MAJOR_VERSION >= 3
+    char *name;
+    PyObject *bytes = PyUnicode_AsUTF8String(index);
+    if ( bytes==NULL )
+return( NULL );
+    name = PyBytes_AsString(bytes);
+	if ( private!=NULL )
+	    value = PSDictHasEntry(private,name);
+    Py_DECREF(bytes);
+#else /* PY_MAJOR_VERSION >= 3 */
 	char *name = PyBytes_AsString(index);
 	if ( private!=NULL )
 	    value = PSDictHasEntry(private,name);
+#endif /* PY_MAJOR_VERSION >= 3 */
     } else {
 	PyErr_Format(PyExc_TypeError, "Index must be a string" );
 return( NULL );
@@ -10389,14 +10400,30 @@ static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value,void *closure)
     FontViewBase *fv = self->fv;
     char *encname;
     Encoding *new_enc;
+#if PY_MAJOR_VERSION >= 3
+    PyObject *bytes;
+#endif
 
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete encoding field" );
 return( -1 );
     }
+#if PY_MAJOR_VERSION >= 3
+    {
+        bytes = PyUnicode_AsUTF8String(value);
+        if ( bytes==NULL )
+return( -1 );
+        encname = PyBytes_AsString(bytes);
+        if ( PyErr_Occurred()!=NULL ) {
+            Py_DECREF(bytes);
+return( -1 );
+        }
+    }
+#else /* PY_MAJOR_VERSION >= 3 */
     encname = PyBytes_AsString(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
+#endif /* PY_MAJOR_VERSION >= 3 */
     if ( strmatch(encname,"compacted")==0 ) {
 	fv->normal = EncMapCopy(fv->map);
 	CompactEncMap(fv->map,fv->sf);
@@ -10404,6 +10431,9 @@ return( -1 );
 	new_enc = FindOrMakeEncoding(encname);
 	if ( new_enc==NULL ) {
 	    PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
+#if PY_MAJOR_VERSION >= 3
+        Py_DECREF(bytes);
+#endif
 return -1;
 	}
 	if ( new_enc==&custom )
@@ -10426,6 +10456,10 @@ return -1;
     if ( !no_windowing_ui )
 	FontViewReformatAll(fv->sf);
     
+#if PY_MAJOR_VERSION >= 3
+    Py_DECREF(bytes);
+#endif
+
 return(0);
 }
 
