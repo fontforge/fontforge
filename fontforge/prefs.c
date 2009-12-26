@@ -602,6 +602,9 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
 
 		char *tmpstr = pf->val ? *((char **) (pf->val)) : (char *) (pf->get)();
 		val->u.sval = copy( tmpstr ? tmpstr : "" );
+
+		if( ! pf->val )
+		    free( tmpstr );
 	    } else if ( pf->type == pr_encoding ) {
 		val->type = v_str;
 		if ( *((NameList **) (pf->val))==NULL )
