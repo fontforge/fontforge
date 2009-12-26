@@ -1916,10 +1916,10 @@ return;
     for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
 	doit = ( SCScriptFromUnicode(sc)==tag );
 	if ( doit ) {
-	    if ( only_uc && (sc->unicodeenc==-1 || sc->unicodeenc>0xffff &&
+	    if ( only_uc && (sc->unicodeenc==-1 || sc->unicodeenc>0xffff ||
 		    !isupper(sc->unicodeenc)) )
 		doit = false;
-	    else if ( only_lc && (sc->unicodeenc==-1 || sc->unicodeenc>0xffff &&
+	    else if ( only_lc && (sc->unicodeenc==-1 || sc->unicodeenc>0xffff ||
 		    !islower(sc->unicodeenc)) )
 		doit = false;
 	}
