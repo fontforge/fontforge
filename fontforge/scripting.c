@@ -6496,15 +6496,15 @@ static void bAddAnchorPoint(Context *c) {
     sc = GetOneSelChar(c);
     if ( strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	type = at_mark;
-    else if ( strmatch(c->a.vals[2].u.sval,"basechar")==0 )
+    else if ( strmatch(c->a.vals[2].u.sval,"basechar")==0 || strmatch(c->a.vals[2].u.sval,"base")==0 )
 	type = at_basechar;
-    else if ( strmatch(c->a.vals[2].u.sval,"baselig")==0 )
+    else if ( strmatch(c->a.vals[2].u.sval,"baselig")==0 || strmatch(c->a.vals[2].u.sval,"ligature")==0 )
 	type = at_baselig;
     else if ( strmatch(c->a.vals[2].u.sval,"basemark")==0 )
 	type = at_basemark;
-    else if ( strmatch(c->a.vals[2].u.sval,"cursentry")==0 )
+    else if ( strmatch(c->a.vals[2].u.sval,"cursentry")==0 || strmatch(c->a.vals[2].u.sval,"entry")==0 )
 	type = at_centry;
-    else if ( strmatch(c->a.vals[2].u.sval,"cursexit")==0 )
+    else if ( strmatch(c->a.vals[2].u.sval,"cursexit")==0 || strmatch(c->a.vals[2].u.sval,"exit")==0 )
 	type = at_cexit;
     else if ( strmatch(c->a.vals[2].u.sval,"default")==0 ) {
 	int val = IsAnchorClassUsed(sc,t);
