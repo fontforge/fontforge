@@ -135,6 +135,7 @@ static Color clippathcol = 0x0000ff;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
+static Color rulerbigtickcol = 0x008000;
 
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
@@ -189,6 +190,7 @@ static struct resed charview2_re[] = {
     { N_("Raster Grid Color"), "RasterGridColor", rt_coloralpha, &rastergridcol },
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully convered") },
     { N_("Delta Grid Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notible grid pixel when suggesting deltas.") },
+    { N_("Ruler Big Tick Color"), "RulerBigTickColor", rt_color, &rulerbigtickcol, N_("The color used to draw the large tick marks in rulers.") },
     { NULL }
 };
 
@@ -4447,12 +4449,12 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	}
 	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
 	    x = cv->xoff + rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-6,x+cv->rulerh,ybase+cv->rulerh, def_fg);
+	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase,x+cv->rulerh,ybase+cv->rulerh, rulerbigtickcol);
 	    CVDrawNum(cv,pixmap,x+cv->rulerh,ybase+cv->sas,"%g",pos,1);
 	}
 	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
 	    y = -cv->yoff + cv->height - rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,cv->rulerh-6,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, def_fg);
+	    GDrawDrawLine(pixmap,0,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, rulerbigtickcol);
 	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas,"%g",pos,1);
 	}
     }
