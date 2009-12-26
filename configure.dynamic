@@ -22843,7 +22843,7 @@ if test "$gww_archlist" != "" ; then
   LDFLAGS="$LDFLAGS $gww_archlist"
 fi
 
-CFLAGS_NOOPT=`echo $CFLAGS | sed -e s/-O2// | sed -e s/-O//`
+CFLAGS_NOOPT=`echo $CFLAGS | sed -e s/-O.//g | sed -e s/-O//g`
 
 cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
