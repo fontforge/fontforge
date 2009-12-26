@@ -561,13 +561,13 @@ return( false );
 	    PListOutputInteger(plist,"openTypeOS2TypoDescender",sf->pfminfo.os2_typodescent);
 	PListOutputInteger(plist,"openTypeOS2TypoLineGap",sf->pfminfo.os2_typolinegap);
 	if ( sf->pfminfo.winascent_add )
-	    PListOutputInteger(plist,"openTypeOS2WinAscender",bb.maxy+sf->pfminfo.os2_winascent);
+	    PListOutputInteger(plist,"openTypeOS2WinAscent",bb.maxy+sf->pfminfo.os2_winascent);
 	else
-	    PListOutputInteger(plist,"openTypeOS2WinAscender",sf->pfminfo.os2_winascent);
+	    PListOutputInteger(plist,"openTypeOS2WinAscent",sf->pfminfo.os2_winascent);
 	if ( sf->pfminfo.windescent_add )
-	    PListOutputInteger(plist,"openTypeOS2WinDescender",bb.miny+sf->pfminfo.os2_windescent);
+	    PListOutputInteger(plist,"openTypeOS2WinDescent",bb.miny+sf->pfminfo.os2_windescent);
 	else
-	    PListOutputInteger(plist,"openTypeOS2WinDescender",sf->pfminfo.os2_windescent);
+	    PListOutputInteger(plist,"openTypeOS2WinDescent",sf->pfminfo.os2_windescent);
     }
     if ( sf->pfminfo.subsuper_set ) {
 	PListOutputInteger(plist,"openTypeOS2SubscriptXSize",sf->pfminfo.os2_subxsize);
@@ -1739,11 +1739,13 @@ return( NULL );
 		else
 		    free(valname);
 	    } else if ( strncmp((char *) keyname, "openTypeHhea",12)==0 ) {
-		if ( _xmlStrcmp(keyname+12,(xmlChar *) "Ascender")==0 )
+		if ( _xmlStrcmp(keyname+12,(xmlChar *) "Ascender")==0 ) {
 		    sf->pfminfo.hhead_ascent = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Descender")==0 )
+            sf->pfminfo.hheadascent_add = false;
+		} else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Descender")==0 ) {
 		    sf->pfminfo.hhead_descent = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
+            sf->pfminfo.hheaddescent_add = false;
+		} else if ( _xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
 		    sf->pfminfo.linegap = strtol((char *) valname,&end,10);
 		free(valname);
 		sf->pfminfo.hheadset = true;
@@ -1754,9 +1756,10 @@ return( NULL );
 		free(valname);
 	    } else if ( strncmp((char *) keyname,"openTypeOS2",11)==0 ) {
 		sf->pfminfo.pfmset = true;
-		if ( _xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 )
+		if ( _xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
+            sf->pfminfo.panose_set = true;
+		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
 		    sf->pfminfo.fstype = UFOGetBits(doc,value);
 		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
 		    char fc[2];
@@ -1768,17 +1771,21 @@ return( NULL );
 		    sf->pfminfo.weight = strtol((char *) valname,&end,10);
 		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 )
 		    memcpy(sf->pfminfo.os2_vendor,valname,4);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 )
+		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
+            sf->pfminfo.typoascent_add = false;
 		    sf->pfminfo.os2_typoascent = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 )
+		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 ) {
+            sf->pfminfo.typodescent_add = false;
 		    sf->pfminfo.os2_typodescent = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoLineGap")==0 )
+		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoLineGap")==0 )
 		    sf->pfminfo.os2_typolinegap = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinAscender")==0 )
+		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinAscent")==0 ) {
+            sf->pfminfo.winascent_add = false;
 		    sf->pfminfo.os2_winascent = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinDescender")==0 )
+		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinDescent")==0 ) {
+            sf->pfminfo.windescent_add = false;
 		    sf->pfminfo.os2_windescent = strtol((char *) valname,&end,10);
-		else if ( strncmp((char *) keyname+11,"Subscript",9)==0 ) {
+		} else if ( strncmp((char *) keyname+11,"Subscript",9)==0 ) {
 		    sf->pfminfo.subsuper_set = true;
 		    if ( _xmlStrcmp(keyname+20,(xmlChar *) "XSize")==0 )
 			sf->pfminfo.os2_subxsize = strtol((char *) valname,&end,10);
