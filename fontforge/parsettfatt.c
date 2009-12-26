@@ -162,9 +162,17 @@ return( copy(""));
 	}
     }
 
-    for ( i=len=0 ; glyphs[i]!=0xffff; ++i )
+    for ( i=len=0 ; glyphs[i]!=0xffff; ++i ) {
+	if ( glyphs[i]>=info->glyph_cnt ) {
+	    if ( !info->bad_ot ) {
+		LogError( _("GID out of range.\n") );
+		info->bad_ot = true;
+	    }
+return( copy(""));
+	}
 	if ( info->chars[glyphs[i]]!=NULL )
 	    len += strlen(info->chars[glyphs[i]]->name)+1;
+    }
     ret = pt = galloc(len+1); *pt = '\0';
     for ( i=0 ; glyphs[i]!=0xffff; ++i ) if ( info->chars[glyphs[i]]!=NULL ) {
 	strcpy(pt,info->chars[glyphs[i]]->name);
@@ -5753,8 +5761,14 @@ return( NULL );
     if ( cnt==0 )
 return( NULL );
     glyphs = galloc((cnt+1)*sizeof(uint16));
-    for ( i=0; i<cnt; ++i )
+    for ( i=0; i<cnt; ++i ) {
 	glyphs[i] = getushort(ttf);
+	if ( glyphs[i]>=info->glyph_cnt ) {
+	    LogError( _("Bad GID in JSTF extenser table.\n") );
+	    glyphs[i] = 0;
+	    info->bad_ot = true;
+	}
+    }
     glyphs[i] = 0xffff;
     ret = GlyphsToNames(info,glyphs,false);
     free(glyphs);
