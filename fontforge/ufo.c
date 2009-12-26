@@ -583,6 +583,28 @@ return( false );
     }
     if ( sf->pfminfo.vheadset )
 	PListOutputInteger(plist,"openTypeVheaTypoLineGap",sf->pfminfo.vlinegap);
+    if ( sf->pfminfo.hasunicoderanges ) {
+	char ranges[128];
+	int i, j, c = 0;
+
+	for ( i = 0; i<4; i++ )
+	    for ( j = 0; j<32; j++ )
+		if ( sf->pfminfo.unicoderanges[i] & (1 << j) )
+		    ranges[c++] = i*32+j;
+	if ( c!=0 )
+	    PListOutputIntArray(plist,"openTypeOS2UnicodeRanges",ranges,c);
+    }
+    if ( sf->pfminfo.hascodepages ) {
+	char pages[64];
+	int i, j, c = 0;
+
+	for ( i = 0; i<2; i++)
+	    for ( j=0; j<32; j++ )
+		if ( sf->pfminfo.codepages[i] & (1 << j) )
+		    pages[c++] = i*32+j;
+	if ( c!=0 )
+	    PListOutputIntArray(plist,"openTypeOS2CodePageRanges",pages,c);
+    }
     PListOutputString(plist,"postscriptFontName",sf->fontname);
     PListOutputString(plist,"postscriptFullName",sf->fullname);
     PListOutputString(plist,"postscriptWeightName",sf->weight);
@@ -1614,7 +1636,7 @@ return;
 	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
 	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
 	    if ( i<cnt )
-		array[i] = strtol(valName,NULL,10);
+		array[i++] = strtol(valName,NULL,10);
 	    free(valName);
 	}
     }
@@ -1634,6 +1656,23 @@ return( 0 );
 	}
     }
 return( mask );
+}
+
+static void UFOGetBitArray(xmlDocPtr doc,xmlNodePtr value,uint32 *res,int len) {
+    xmlNodePtr kid;
+    int index;
+
+    if ( _xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
+return;
+    for ( kid = value->children; kid!=NULL; kid=kid->next ) {
+	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
+	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
+	    index = strtol(valName,NULL,10);
+	    if ( index < len<<5 )
+		res[index>>5] |= 1<<(index&31);
+	    free(valName);
+	}
+    }
 }
 
 SplineFont *SFReadUFO(char *basedir, int flags) {
@@ -1741,10 +1780,10 @@ return( NULL );
 	    } else if ( strncmp((char *) keyname, "openTypeHhea",12)==0 ) {
 		if ( _xmlStrcmp(keyname+12,(xmlChar *) "Ascender")==0 ) {
 		    sf->pfminfo.hhead_ascent = strtol((char *) valname,&end,10);
-            sf->pfminfo.hheadascent_add = false;
+		    sf->pfminfo.hheadascent_add = false;
 		} else if ( _xmlStrcmp(keyname+12,(xmlChar *) "Descender")==0 ) {
 		    sf->pfminfo.hhead_descent = strtol((char *) valname,&end,10);
-            sf->pfminfo.hheaddescent_add = false;
+		    sf->pfminfo.hheaddescent_add = false;
 		} else if ( _xmlStrcmp(keyname+12,(xmlChar *) "LineGap")==0 )
 		    sf->pfminfo.linegap = strtol((char *) valname,&end,10);
 		free(valname);
@@ -1758,7 +1797,7 @@ return( NULL );
 		sf->pfminfo.pfmset = true;
 		if ( _xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
-            sf->pfminfo.panose_set = true;
+		    sf->pfminfo.panose_set = true;
 		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 )
 		    sf->pfminfo.fstype = UFOGetBits(doc,value);
 		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "FamilyClass")==0 ) {
@@ -1769,21 +1808,23 @@ return( NULL );
 		    sf->pfminfo.width = strtol((char *) valname,&end,10);
 		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WeightClass")==0 )
 		    sf->pfminfo.weight = strtol((char *) valname,&end,10);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 )
-		    memcpy(sf->pfminfo.os2_vendor,valname,4);
-		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
-            sf->pfminfo.typoascent_add = false;
+		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "VendorID")==0 ) {
+		    char *temp = sf->pfminfo.os2_vendor + 3;
+		    strncpy(sf->pfminfo.os2_vendor,valname,4);
+		    while ( *temp == 0 && temp >= sf->pfminfo.os2_vendor ) *temp-- = ' ';
+		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoAscender")==0 ) {
+		    sf->pfminfo.typoascent_add = false;
 		    sf->pfminfo.os2_typoascent = strtol((char *) valname,&end,10);
 		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoDescender")==0 ) {
-            sf->pfminfo.typodescent_add = false;
+		    sf->pfminfo.typodescent_add = false;
 		    sf->pfminfo.os2_typodescent = strtol((char *) valname,&end,10);
 		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "TypoLineGap")==0 )
 		    sf->pfminfo.os2_typolinegap = strtol((char *) valname,&end,10);
 		else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinAscent")==0 ) {
-            sf->pfminfo.winascent_add = false;
+		    sf->pfminfo.winascent_add = false;
 		    sf->pfminfo.os2_winascent = strtol((char *) valname,&end,10);
 		} else if ( _xmlStrcmp(keyname+11,(xmlChar *) "WinDescent")==0 ) {
-            sf->pfminfo.windescent_add = false;
+		    sf->pfminfo.windescent_add = false;
 		    sf->pfminfo.os2_windescent = strtol((char *) valname,&end,10);
 		} else if ( strncmp((char *) keyname+11,"Subscript",9)==0 ) {
 		    sf->pfminfo.subsuper_set = true;
@@ -1811,6 +1852,12 @@ return( NULL );
 			sf->pfminfo.os2_strikeysize = strtol((char *) valname,&end,10);
 		    else if ( _xmlStrcmp(keyname+20,(xmlChar *) "Position")==0 )
 			sf->pfminfo.os2_strikeypos = strtol((char *) valname,&end,10);
+		} else if ( strncmp((char *) keyname+11, "CodePageRanges",14)==0 ) {
+		    UFOGetBitArray(doc,value,sf->pfminfo.codepages,2);
+		    sf->pfminfo.hascodepages = true;
+		} else if ( strncmp((char *) keyname+11, "UnicodeRanges",13)==0 ) {
+		    UFOGetBitArray(doc,value,sf->pfminfo.unicoderanges,4);
+		    sf->pfminfo.hasunicoderanges = true;
 		}
 		free(valname);
 	    } else if ( strncmp((char *) keyname, "postscript",10)==0 ) {
