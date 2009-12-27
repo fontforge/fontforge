@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 11-Sep-2009 -->
+  <!-- AP: Last modified: 27-Dec-2009 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -115,10 +115,10 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	  <DD>
 	    Adds an AnchorPoint to the currently selected glyph. The first argument is
 	    the name of the AnchorClass. The second should be one of the strings: "mark",
-	    "basechar", "baselig", "basemark", "cursentry" , "cursexit" or "default"
-	    ("default" tries to guess an appropriate setting for you). The next two values
-	    specify the location of the point. The final argument is only present for
-	    things of type "baselig".
+	    "basechar" (or "base"), "baselig" (or "ligature"), "basemark", "cursentry"
+	    (or "entry") , "cursexit" (or "exit") or "default" ("default" tries to guess
+	    an appropriate setting for you). The next two values specify the location
+	    of the point. The final argument is only present for things of type "baselig".
 	  <DT>
 	    <STRIKE><A NAME="AddATT">A</A>ddATT(type,script-lang,tag,flags,variant)<BR>
 	    AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)<BR>
