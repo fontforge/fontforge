@@ -7344,6 +7344,8 @@ msgstr "Oczekiwano znaku diakrytycznego (lub klasy takich znaków) w wierszu %d 
 #, c-format
 msgid "Mark to base anchor statements may only have one anchor on line %d of %s"
 msgstr ""
+"Deklaracje kotwic diakrytycznych względem podstawowych mogą zawierać tylko jedną "
+"kotwicę; wiersz %d pliku %s"
 
 #: featurefile.c:5064
 #, c-format
@@ -16249,6 +16251,8 @@ msgid ""
 "The glyph, %s, contains a %s from %s and one from %s.\n"
 "The one from %s will be removed.\n"
 msgstr ""
+"Glif „%s” zawiera „%s” z „%s” i z „%s”.\n"
+"To z „%s” zostanie usunięte.\n"
 
 #: lookups.c:1873
 msgid "positioning"
@@ -16591,9 +16595,8 @@ msgid "Lang|Default"
 msgstr "domyślny"
 
 #: lookupui.c:350
-#, fuzzy
 msgid "Woods Cree"
-msgstr "kri-woods*"
+msgstr "kri leśny"
 
 #: lookupui.c:351
 msgid "German (Standard)"
@@ -16893,9 +16896,8 @@ msgid "Kamba"
 msgstr "kamba"
 
 #: lookupui.c:455
-#, fuzzy
 msgid "Kumaoni"
-msgstr "kumaoni"
+msgstr "kumauni"
 
 #: lookupui.c:456
 msgid "Komo"
@@ -17011,9 +17013,8 @@ msgid "Lak"
 msgstr "lacki"
 
 #: lookupui.c:486
-#, fuzzy
 msgid "Lambani"
-msgstr "lambani"
+msgstr "lambadi"
 
 #: lookupui.c:487 macenc.c:2317 macencui.c:158
 msgid "Lang|Lao"
@@ -17028,7 +17029,6 @@ msgid "L-Cree"
 msgstr "kri-L"
 
 #: lookupui.c:491
-#, fuzzy
 msgid "Ladakhi"
 msgstr "ladakhi"
 
@@ -17045,7 +17045,6 @@ msgid "Low Mari"
 msgstr "maryjski łęgowy"
 
 #: lookupui.c:495
-#, fuzzy
 msgid "Lang|Limbu"
 msgstr "limbu"
 
@@ -17067,7 +17066,6 @@ msgid "Luxembourgish"
 msgstr "luksemburski"
 
 #: lookupui.c:501
-#, fuzzy
 msgid "Luba"
 msgstr "luba"
 
@@ -17101,7 +17099,6 @@ msgid "Mansi"
 msgstr "mansyjski"
 
 #: lookupui.c:511
-#, fuzzy
 msgid "Mapudungun"
 msgstr "mapudungun"
 
@@ -17118,9 +17115,8 @@ msgid "Lang|Manchu"
 msgstr "mandżurski"
 
 #: lookupui.c:515
-#, fuzzy
 msgid "Moose Cree"
-msgstr "kri-moose*"
+msgstr "kri Moose"
 
 #: lookupui.c:516
 msgid "Mende"
@@ -21649,6 +21645,9 @@ msgid ""
 "Unexpected values for binsearch header. Based on the number of tables I\n"
 " expect searchRange=%d (not %d), entrySel=%d (not %d) rangeShift=%d (not %d)\n"
 msgstr ""
+"Nieoczekiwane wartości w nagłówku do wyszukiwania binarnego.\n"
+" Na podstawie ilości tablic oczekiwano: searchRange=%d (nie %d),\n"
+" entrySel=%d (nie %d) rangeShift=%d (nie %d)\n"
 
 #: parsettf.c:739
 msgid "An sfnt file must contain SOME tables, but this one does not."
@@ -29746,9 +29745,9 @@ msgid ""
 "RP0 on projection vector is 0"
 msgstr ""
 "ALIGNRP (ang. ALIGN to Reference Point).\n"
-"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik pętli,\n"
+"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik powtórzeń,\n"
 "i wyrównuje je wzdłuż wektora swobody do współrzędnej punktu RP0\n"
-"według wektora projekcji. Licznik pętli jest resetowany do 1."
+"według wektora projekcji. Licznik powtórzeń jest resetowany do 1."
 
 #: ttfinstrsui.c:68
 msgid ""
@@ -29964,7 +29963,7 @@ msgid ""
 "Flips whether each point is on/off curve"
 msgstr ""
 "FLIPPT (ang. FLIP PoinTs).\n"
-"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik pętli,\n"
+"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik powtórzeń,\n"
 "i przełącza ich typ między „na krzywej” a „na poza krzywą”."
 
 #: ttfinstrsui.c:92
@@ -30007,7 +30006,7 @@ msgstr ""
 "Zdejmuje ze stosu numer punktu, a wkłada jego\n"
 "współrzędną (F26dot6) wzdłuż wektora projekcji.\n"
 " a=0 mierzy dla położenia bieżącego punktu,\n"
-" a=1 mierzy dla położenia początkowego"
+" a=1 mierzy dla położenia początkowego."
 
 #: ttfinstrsui.c:96
 msgid ""
@@ -30094,7 +30093,7 @@ msgid ""
 "with respect to RP1 and RP2"
 msgstr ""
 "IP (ang. Interpolate Point).\n"
-"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik pętli,\n"
+"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik powtórzeń,\n"
 "i przesuwa je wzdłuż wektora swobody tak, aby odtworzyć początkowe\n"
 "proporcje względnych współrzędnych między każdym z nich a RP1 i RP2."
 
@@ -30243,8 +30242,8 @@ msgstr ""
 "rp2 (opcjonalnie też rp0), oraz rp1 na starą wartość rp0.\n"
 " a=0 nie zmienia rp0,\n"
 " a=1 zmienia rp0,\n"
-" b=0 nie stara się utrzymać dystansu progowego,\n"
-" b=1 utrzymuje dystans progowy,\n"
+" b=0 nie stara się utrzymać odległości progowej,\n"
+" b=1 utrzymuje odległość nie mniejszą niż progowa,\n"
 " c=0 nie zaokrągla współrzędnych wynikowych,\n"
 " c=1 zaokrągla współrzędne wynikowe,\n"
 " de=00 korygowana odległość jest szara,\n"
@@ -30311,8 +30310,8 @@ msgstr ""
 "(opcjonalnie też rp0) oraz rp1 na starą wartość rp0.\n"
 " a=0 nie zmienia rp0,\n"
 " a=1 zmienia rp0,\n"
-" b=0 nie stara się utrzymać dystansu progowego,\n"
-" b=1 utrzymuje dystans progowy,\n"
+" b=0 nie stara się utrzymać odległości progowej,\n"
+" b=1 utrzymuje odległość nie mniejszą niż progowa,\n"
 " c=0 nie zaokrągla współrzędnych wynikowych,\n"
 " c=1 zaokrągla współrzędne wynikowe,\n"
 " de=00 korygowana odległość jest szara,\n"
@@ -30608,8 +30607,8 @@ msgid ""
 "Moves point to given coordinate"
 msgstr ""
 "SCFS (ang. Sets Coordinate From Stack).\n"
-"Zdejmuje ze stosu współrzędną (F26dot6) i numer punktu do przesunęcia\n"
-"na tą współrzędną, stosując się do wektora projeksji i swobody."
+"Zdejmuje ze stosu współrzędną (F26dot6) wzdłuż wektora projekcji\n"
+"i numer punktu do przesunęcia wzdłuż wektora swobody."
 
 #: ttfinstrsui.c:151
 msgid ""
@@ -30624,6 +30623,9 @@ msgid ""
 "Set Delta Base\n"
 "Pops value sets delta base"
 msgstr ""
+"SDB (ang. Set Delta Base).\n"
+"Zdejmuje ze stosu i ustawia nowy podstawowy\n"
+"stopień pisma dla instrukcji delta."
 
 #: ttfinstrsui.c:153
 msgid ""
@@ -30634,12 +30636,21 @@ msgid ""
 "Sets a second projection vector based on original\n"
 "positions of points"
 msgstr ""
+"SDPVTL[a] (ang. Set Dual Projection Vector To Line).\n"
+"Zdejmuje ze stosu dwa numery punktów i ustawia\n"
+"wektor dualny projekcji względem prostej przechodzącej\n"
+"przez te punkty:\n"
+" a=0 ustawia wektor równolegle do prostej,\n"
+" a=1 ustawia wektor prostopadle do prostej."
 
 #: ttfinstrsui.c:154
 msgid ""
 "Set Delta Shift\n"
 "Pops a new value for delta shift"
 msgstr ""
+"SDS (ang. Set Delta Shift).\n"
+"Zdejmuje ze stosu i ustawia nowe jednostkowe\n"
+"przesunięcie dla instrukcji delta."
 
 #: ttfinstrsui.c:155
 msgid ""
@@ -30647,6 +30658,9 @@ msgid ""
 "pops 2 2.14 values (x,y) from stack\n"
 "must be a unit vector"
 msgstr ""
+"SFVFS (ang. Set Freedom Vector From Stack).\n"
+"Zdejmuje ze stosu i ustawia nowe składowe X i Y wektora swobody,\n"
+"jako liczby EF2dot14. Długość wektora musi być jednostkowa."
 
 #: ttfinstrsui.c:156
 msgid ""
@@ -30654,6 +30668,10 @@ msgid ""
 " 0=>y axis\n"
 " 1=>x axis\n"
 msgstr ""
+"SFVTCA[a] (ang. Set Freedom Vector To Coordinate Axis).\n"
+"Ustawia wektor swobody wzdłuż którejś osi układu współrzędnych:\n"
+" a=0 (albo y-axis) ustawia wektor wzdłuż osi Y,\n"
+" a=1 (albo x-axis) ustawia wektor wzdłuż osi X.\n"
 
 #: ttfinstrsui.c:157
 msgid ""
@@ -30663,10 +30681,18 @@ msgid ""
 "Pops two points used to establish the line\n"
 "Sets the freedom vector"
 msgstr ""
+"SFVTL[a] (ang. Set Freedom Vector To Line).\n"
+"Zdejmuje ze stosu dwa numery punktów i ustawia\n"
+"wektor swobody względem prostej przechodzącej\n"
+"przez te punkty:\n"
+" a=0 ustawia wektor równolegle do prostej,\n"
+" a=1 ustawia wektor prostopadle do prostej."
 
 #: ttfinstrsui.c:158
 msgid "Set Freedom Vector To Projection Vector"
 msgstr ""
+"SFVTPV (ang. Set Freedom Vector To Projection Vector).\n"
+"Ustawia wektor swobody wzdłuż wektora projekcji."
 
 #: ttfinstrsui.c:159
 msgid ""
@@ -30677,6 +30703,12 @@ msgid ""
 "Shifts the entire contour by the amount\n"
 "reference point was shifted"
 msgstr ""
+"SHC[a] (ang. SHift Contour using reference point).\n"
+"Zdejmuje ze stosu numer obrysu w glifie i przesuwa\n"
+"go zgodnie z bieżącym przesunięciem wybranego\n"
+"punktu odniesienia:\n"
+" a=0 przesuwa obrys za punktem rp2 strefy zp1,\n"
+" a=1 przesuwa obrys za punktem rp1 strefy zp0."
 
 #: ttfinstrsui.c:160
 msgid ""
@@ -30687,6 +30719,12 @@ msgid ""
 "Shifts each by the amount the reference\n"
 "point was shifted"
 msgstr ""
+"SHP[a] (ang. SHift Points using reference point).\n"
+"Zdejmuje ze stosu tyle numerów punktów, ile wskazuje licznik\n"
+"powtórzeń i przesuwa je zgodnie z bieżącym przesunięciem\n"
+"wybranego punktu odniesienia:\n"
+" a=0 przesuwa punkty za punktem rp2 strefy zp1,\n"
+" a=1 przesuwa punkty za punktem rp1 strefy zp0."
 
 #: ttfinstrsui.c:161
 msgid ""
@@ -30695,6 +30733,10 @@ msgid ""
 "as the loop counter specifies\n"
 "each point is shifted along the FREEDOM vector"
 msgstr ""
+"SHPIX (ang. SHift point by a PIXel amount).\n"
+"Zdejmuje ze stosu wartość przesunięcia (EF26dot6),\n"
+"tyle numerów punktów do przesunięcia, ile wskazuje\n"
+"licznik powtórzeń, i przesuwa je wzdłuż wektora swobody."
 
 #: ttfinstrsui.c:162
 msgid ""
@@ -30705,6 +30747,12 @@ msgid ""
 "Shifts all points in zone by the amount\n"
 "the reference point was shifted"
 msgstr ""
+"SHZ[a] (ang. SHift Zone using reference point).\n"
+"Zdejmuje ze stosu numer strefy i przesuwa ją\n"
+"zgodnie z bieżącym przesunięciem wybranego\n"
+"punktu odniesienia:\n"
+" a=0 przesuwa strefę za punktem rp2 strefy zp1,\n"
+" a=1 przesuwa strefę za punktem rp1 strefy zp0."
 
 #: ttfinstrsui.c:163
 msgid ""
@@ -30712,12 +30760,17 @@ msgid ""
 "Pops the new value for the loop counter\n"
 "Defaults to 1 after each use"
 msgstr ""
+"SLOOP (ang. Set LOOP variable).\n"
+"Zdejmuje ze stosu i ustawia nową wartość licznika\n"
+"powtórzeń. Jest on resetowany do 1 po każdym użyciu."
 
 #: ttfinstrsui.c:164
 msgid ""
 "Set Minimum Distance\n"
 "Pops a 26.6 value from stack to be new minimum distance"
 msgstr ""
+"SMD (ang. Set Minimum Distance).\n"
+"Zdejmuje ze stosu i ustawia nową wartość odległości progowej."
 
 #: ttfinstrsui.c:165
 msgid ""
@@ -30725,6 +30778,9 @@ msgid ""
 "pops 2 2.14 values (x,y) from stack\n"
 "must be a unit vector"
 msgstr ""
+"SPVFS (ang. Set Projection Vector From Stack).\n"
+"Zdejmuje ze stosu i ustawia nowe składowe X i Y wektora projekcji,\n"
+"jako liczby EF2dot14. Długość wektora musi być jednostkowa."
 
 #: ttfinstrsui.c:166
 msgid ""
@@ -30732,6 +30788,10 @@ msgid ""
 " 0=>y axis\n"
 " 1=>x axis\n"
 msgstr ""
+"SPVTCA[a] (ang. Set Projection Vector To Coordinate Axis).\n"
+"Ustawia wektor projekcji wzdłuż którejś osi układu współrzędnych:\n"
+" a=0 (albo y-axis) ustawia wektor wzdłuż osi Y,\n"
+" a=1 (albo x-axis) ustawia wektor wzdłuż osi X.\n"
 
 #: ttfinstrsui.c:167
 msgid ""
@@ -30741,42 +30801,64 @@ msgid ""
 "Pops two points used to establish the line\n"
 "Sets the projection vector"
 msgstr ""
+"SPVTL[a] (ang. Set Projection Vector To Line).\n"
+"Zdejmuje ze stosu dwa numery punktów i ustawia\n"
+"wektor projekcji względem prostej przechodzącej\n"
+"przez te punkty:\n"
+" a=0 ustawia wektor równolegle do prostej,\n"
+" a=1 ustawia wektor prostopadle do prostej."
 
 #: ttfinstrsui.c:168
 msgid ""
 "Super ROUND\n"
 "Too complicated. Look it up"
 msgstr ""
+"SROUND (ang. Super ROUND)\n"
+"Zbyt skomplikowane, żeby to tu opisać."
 
 #: ttfinstrsui.c:169
 msgid ""
 "Set Reference Point 0\n"
 "Pops a point which becomes the new rp0"
 msgstr ""
+"SRP0 (ang. Set Reference Point 0).\n"
+"Zdejmuje ze stosu numer punktu i ustawia go nowym punktem odniesienia rp0."
 
 #: ttfinstrsui.c:170
 msgid ""
 "Set Reference Point 1\n"
 "Pops a point which becomes the new rp1"
 msgstr ""
+"SRP1 (ang. Set Reference Point 1).\n"
+"Zdejmuje ze stosu numer punktu i ustawia go nowym punktem odniesienia rp1."
 
 #: ttfinstrsui.c:171
 msgid ""
 "Set Reference Point 2\n"
 "Pops a point which becomes the new rp2"
 msgstr ""
+"SRP2 (ang. Set Reference Point 2).\n"
+"Zdejmuje ze stosu numer punktu i ustawia go nowym punktem odniesienia rp2."
 
 #: ttfinstrsui.c:172
 msgid ""
 "Set Single Width\n"
 "Pops value for single width value (FUnit)"
 msgstr ""
+"SSW (ang. Set Single Width).\n"
+"Zdejmuje ze stosu i ustawia nową grubość standardową elementów,\n"
+"używaną na żądanie twórcy dla elementów, które po pohintowaniu\n"
+"są cieńsze niż grubość progowa."
 
 #: ttfinstrsui.c:173
 msgid ""
 "Set Single Width Cut-In\n"
 "Pops value for single width cut-in value (26.6)"
 msgstr ""
+"SSWCI (ang. Set Single Width Cut-In).\n"
+"Zdejmuje ze stosu i ustawia nową grubość progową elementów.\n"
+"Elementom, które po pohintowaniu są cieńsze, na żądanie twórcy\n"
+"zostanie nadana grubość standardowa."
 
 #: ttfinstrsui.c:174
 msgid ""
