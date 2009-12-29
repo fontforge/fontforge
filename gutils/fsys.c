@@ -41,6 +41,15 @@
 
 static char dirname_[1024];
 
+static void savestrcpy(char *dest,const char *src) {
+    forever {
+	*dest = *src;
+	if ( *dest=='\0' )
+    break;
+	++dest; ++src;
+    }
+}
+
 char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
     /* result may be the same as name */
     char buffer[1000];
@@ -62,13 +71,13 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
 	    if ( *spt=='/' ) ++spt;
 	    for ( pt = spt; *pt!='\0' && *pt!='/'; ++pt );
 	    if ( pt==spt )	/* Found // in a path spec, reduce to / (we've*/
-		strcpy(spt,pt); /*  skipped past the :// of the machine name) */
-	    else if ( pt==spt+1 && spt[0]=='.' )	/* Noop */
-		strcpy(spt,pt);
-	    else if ( pt==spt+2 && spt[0]=='.' && spt[1]=='.' ) {
+		savestrcpy(spt,spt+1); /*  skipped past the :// of the machine name) */
+	    else if ( pt==spt+1 && spt[0]=='.' ) {	/* Noop */
+		savestrcpy(spt,spt+2);
+	    } else if ( pt==spt+2 && spt[0]=='.' && spt[1]=='.' ) {
 		for ( bpt=spt-2 ; bpt>rpt && *bpt!='/'; --bpt );
 		if ( bpt>=rpt && *bpt=='/' ) {
-		    strcpy(bpt,pt);
+		    savestrcpy(bpt,pt);
 		    spt = bpt;
 		} else {
 		    rpt = pt;
@@ -99,7 +108,7 @@ char *GFileBuildName(char *dir,char *fname,char *buffer,int size) {
 
     if ( dir==NULL || *dir=='\0' ) {
 	if ( strlen( fname )<size-1 )		/* valgrind didn't like my strncpies but this complication makes it happy */
-	    strcpy(buffer,fname);
+	    savestrcpy(buffer,fname);
 	else {
 	    strncpy(buffer,fname,size-1);
 	    buffer[size-1]='\0';
