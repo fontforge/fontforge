@@ -63,7 +63,6 @@ struct unicoderange unicoderange[] = {
     { N_("Aramaic"), 0x820, 0x83f, -1, true },
     { N_("Pahlavi"), 0x840, 0x87f, -1, true },
     { N_("Tifinagh"), 0x880, 0x8af, -1, true },
-    { N_("Samaritan"), 0x8b0, 0x8cf, -1, true },
     { N_("Mandaic"), 0x8d0, 0x8ff, -1, true },
     { N_("Devangari"), 0x900, 0x97f, 0x905, true },
     { N_("Bengali"), 0x980, 0x9ff, 0x985, true },
