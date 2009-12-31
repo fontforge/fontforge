@@ -186,7 +186,7 @@ return( instrs );
  * There are no checks for overflow!
  */
 static uint8 *pushF26Dot6(uint8 *instrs, double num) {
-    unsigned int a, elems[3];
+    int a, elems[3];
     int negative=0;
 
     if (num < 0) {
@@ -197,7 +197,7 @@ static uint8 *pushF26Dot6(uint8 *instrs, double num) {
     num *= 64;
     a = rint(num);
     elems[0] = a % 65536;
-    elems[1] = (unsigned int)rint(a / 65536.0) % 65536;
+    elems[1] = (int)rint(a / 65536.0) % 65536;
     elems[2] = 16384;
 
     if (elems[1]) {
@@ -283,12 +283,12 @@ int TTF__getcvtval(SplineFont *sf,int val) {
 	cvt_tab->next = sf->ttf_tables;
 	sf->ttf_tables = cvt_tab;
     }
-    for ( i=0; sizeof(uint16)*i<cvt_tab->len; ++i ) {
+    for ( i=0; (int)sizeof(uint16)*i<cvt_tab->len; ++i ) {
 	int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
 	if ( val>=tval-1 && val<=tval+1 )
 return( i );
     }
-    if ( sizeof(uint16)*i>=cvt_tab->maxlen ) {
+    if ( (int)sizeof(uint16)*i>=cvt_tab->maxlen ) {
 	if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
 	cvt_tab->maxlen += 200;
 	cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
@@ -731,7 +731,7 @@ static void init_cvt(GlobalInstrCt *gic) {
         gic->cvt_done = 1;
     }
     else {
-        if (tab->len >= cvtsize * sizeof(int16) &&
+        if (tab->len >= cvtsize * (int)sizeof(int16) &&
 	    memcmp(cvt, tab->data, cvtsize * sizeof(int16)) == 0)
 	        gic->cvt_done = 1;
 
@@ -1608,7 +1608,8 @@ static void init_fpgm(GlobalInstrCt *gic) {
     }
 
     if (tab->len==0 ||
-        (tab->len < sizeof(new_fpgm) && !memcmp(tab->data, new_fpgm, tab->len)))
+        (tab->len < (int)sizeof(new_fpgm) &&
+        !memcmp(tab->data, new_fpgm, tab->len)))
     {
         /* We can safely update font program. */
         tab->len = tab->maxlen = sizeof(new_fpgm);
@@ -1619,7 +1620,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
     else {
         /* there already is a font program. */
         gic->fpgm_done = 0;
-        if (tab->len >= sizeof(new_fpgm))
+        if (tab->len >= (int)sizeof(new_fpgm))
             if (!memcmp(tab->data, new_fpgm, sizeof(new_fpgm)))
                 gic->fpgm_done = 1;  /* it's ours. */
 
@@ -2734,7 +2735,7 @@ return;
 	    curr=PrevOnContour(contourends, curr);
 	}
 
-	if (!affected[others[i]] & touchflag) tosnap[others[i]] = 1;
+	if (!(affected[others[i]] & touchflag)) tosnap[others[i]] = 1;
     }
 
     free(tosnap);
@@ -2964,7 +2965,7 @@ return;
  * or 'right' edge is hinted or not. This functions marks as done all edges at
  * specified coordinate, starting from given hint (hints sometimes share edges).
  */
-static void mark_startenddones(StemData *stem, int is_x, int is_l ) {
+static void mark_startenddones(StemData *stem, int is_l ) {
     struct dependent_stem *slave;
     int i;
     uint8 *done;
@@ -3071,7 +3072,7 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     if ( !reverse && !basedone ) {
         ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
         finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
-        mark_startenddones(stem, ct->xdir, is_l );
+        mark_startenddones(stem, is_l );
     }
 
     if (oppdone || (stem->ghost && ((stem->width==20) || (stem->width==21)))) {
@@ -3088,7 +3089,7 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
             init_stem_edge(ct, stem, is_l);
             ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
             finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
-            mark_startenddones(stem, ct->xdir, is_l );
+            mark_startenddones(stem, is_l );
         }
         return;
     }
@@ -3101,7 +3102,7 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
         *(ct->pt)++ = MDAP_rnd;
         ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
         finish_edge(ct, SHP_rp1);
-        mark_startenddones( stem, ct->xdir, is_l );
+        mark_startenddones( stem, is_l );
         if ( !stem->rdone ) {
             init_stem_edge(ct, stem, false);
             if (ct->edge.refpt == -1)
@@ -3113,7 +3114,7 @@ static void finish_stem(StemData *stem, int shp_rp1, int chg_rp0, InstrCt *ct)
     if (chg_rp0) ct->rp0 = ct->edge.refpt;
     ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, SHP_rp2);
-    mark_startenddones( stem, ct->xdir, !is_l );
+    mark_startenddones( stem, !is_l );
 }
 
 static void mark_points_affected(InstrCt *ct,StemData *target,PointData *opd,int next) {
@@ -3186,7 +3187,7 @@ return;
 
     ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, SHP_rp2);
-    mark_startenddones( slave, ct->xdir, !lbase );
+    mark_startenddones( slave, !lbase );
 
     if ( !interpolate_strong || !instruct_ball_terminals )
 return;
@@ -3688,7 +3689,7 @@ static void geninstrs(InstrCt *ct, StemData *stem, StemData *prev, int lbase) {
 
     if (stem->ldone && stem->rdone)
         return;
-    if ((lbase && stem->rdone) || (!lbase & stem->ldone))
+    if ((lbase && stem->rdone) || (!lbase && stem->ldone))
         lbase = !lbase;
     init_stem_edge(ct, stem, lbase);
     if (ct->edge.refpt == -1) {
