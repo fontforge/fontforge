@@ -690,7 +690,7 @@ return;
     }
 }
 
-static int32 filechecksum(FILE *file, int start, int len) {
+static int32 regionchecksom(FILE *file, int start, int len) {
     uint32 sum = 0, chunk;
 
     fseek(file,start,SEEK_SET);
@@ -792,12 +792,12 @@ return;
     }
 
     /* Checksums. First file as a whole, then each table */
-    if ( filechecksum(ttf,0,-1)!=0xb1b0afba ) {
+    if ( regionchecksom(ttf,0,-1)!=0xb1b0afba ) {
 	LogError(_("File checksum is incorrect."));
 	info->bad_sfnt_header = true;
     }
     for ( i=0; i<info->numtables-1; ++i ) if ( tabs[i].tag!=CHR('h','e','a','d')) {
-	if ( filechecksum(ttf,tabs[i].offset,tabs[i].length)!=tabs[i].checksum ) {
+	if ( regionchecksom(ttf,tabs[i].offset,tabs[i].length)!=tabs[i].checksum ) {
 	    LogError(_("Table '%c%c%c%c' has a bad checksum."),
 		    tabs[i].tag>>24, tabs[i].tag>>16, tabs[i].tag>>8, tabs[i].tag );
 	    info->bad_sfnt_header = true;

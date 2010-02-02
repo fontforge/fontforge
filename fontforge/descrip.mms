@@ -25,7 +25,7 @@ fontforge_LIBOBJECTS6=start.obj,stemdb.obj,svg.obj,tottfaat.obj,tottfgpos.obj,to
  tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,utils.obj,\
  winfonts.obj,zapfnomen.obj,groups.obj,langfreq.obj
 
-fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj
+fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj,woff.obj
 
 fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj,\
  bdfinfo.obj,bitmapdlg.obj,bitmapview.obj,charinfo.obj,charview.obj,clipui.obj,\
