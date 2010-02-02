@@ -1985,7 +1985,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttc, ff_ttfdfont, ff_otf, ff_otfdfont,
-	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_none };
+	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_woff, ff_none };
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
 extern int CanonicalCombiner(int uni);
@@ -2008,6 +2008,7 @@ enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_palm,
 	bf_ptype3,
 	bf_none };
+extern int32 filechecksum(FILE *file);
 extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
 extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
@@ -2016,6 +2017,10 @@ extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flag
 extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf,int layer);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *enc,int layer);
+extern int _WriteWOFFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
+extern int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
@@ -2493,6 +2498,9 @@ extern void SFConvertLayerToOrder3(SplineFont *sf,int layer);
 extern void SCConvertOrder(SplineChar *sc, int to_order2);
 extern void SplinePointPrevCPChanged2(SplinePoint *sp);
 extern void SplinePointNextCPChanged2(SplinePoint *sp);
+extern int IntersectLinesSlopes(BasePoint *inter,
+	BasePoint *line1, BasePoint *slope1,
+	BasePoint *line2, BasePoint *slope2);
 extern int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2);
@@ -2629,6 +2637,8 @@ extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
 extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);
 enum ttfflags { ttf_onlystrikes=1, ttf_onlyonestrike=2, ttf_onlykerns=4, ttf_onlynames=8 };
+extern SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags,
+	char *filename,struct fontdict *fd);
 extern SplineFont *_SFReadTTF(FILE *ttf,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
 extern SplineFont *SFReadTTF(char *filename,int flags,enum openflags openflags);

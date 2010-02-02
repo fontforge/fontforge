@@ -1056,6 +1056,9 @@ return( NULL );
 		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
 	    sf = _SFReadTTF(file,0,openflags,fullname,NULL);
 	    checked = 't';
+	} else if ( ch1=='w' && ch2=='O' && ch3=='F' && ch4=='F' ) {
+	    sf = _SFReadWOFF(file,0,openflags,fullname,NULL);
+	    checked = 'w';
 	} else if (( ch1=='%' && ch2=='!' ) ||
 		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
 	    sf = _SFReadPostscript(file,fullname);

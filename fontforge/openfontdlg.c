@@ -50,6 +50,9 @@ struct openfilefilters def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
+#ifndef _NO_LIBPNG
+	   "woff,"
+#endif
 #ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
@@ -85,6 +88,9 @@ struct openfilefilters def_font_filters[] = {
 	   "cff,"
 	   "cef,"
 	   "gai,"
+#ifndef _NO_LIBPNG
+	   "woff,"
+#endif
 #ifndef _NO_LIBXML
 	   "svg,"
 	   "ufo,"
@@ -118,6 +124,11 @@ struct openfilefilters def_font_filters[] = {
 	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,.lzma,}",
 	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,.lzma,}",
 	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}",
+#ifdef _NO_LIBPNG
+	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}",
+#else
+	N_("OpenType"), "*.{ttf,otf,woff}{.gz,.Z,.bz,.bz2,.lzma,}",
+#endif
 	N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}",
 	N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}",
 	N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}",

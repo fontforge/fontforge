@@ -5022,7 +5022,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     }
 }
 
-static int32 filecheck(FILE *file) {
+int32 filechecksum(FILE *file) {
     uint32 sum = 0, chunk;
 
     rewind(file);
@@ -5856,7 +5856,7 @@ return( false );
     for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data!=NULL ) {
 	at->tabdir.ordered[i]->offset = offset;
 	offset += ((at->tabdir.ordered[i]->length+3)>>2)<<2;
-	at->tabdir.ordered[i]->checksum = filecheck(at->tabdir.ordered[i]->data);
+	at->tabdir.ordered[i]->checksum = filechecksum(at->tabdir.ordered[i]->data);
     }
     for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data==NULL ) {
 	struct taboff *tab = &at->tabdir.tabs[at->tabdir.ordered[i]->dup_of];
@@ -5927,7 +5927,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     }
 
     if ( head_index!=-1 ) {
-	checksum = filecheck(ttf);
+	checksum = filechecksum(ttf);
 	checksum = 0xb1b0afba-checksum;
 	fseek(ttf,at->tabdir.alpha[head_index]->offset+2*sizeof(int32),SEEK_SET);
 	putlong(ttf,checksum);
@@ -6746,13 +6746,13 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
     /* it doesn't hurt */
     tab = findtabindir(&all[cnt].tabdir,CHR('h','h','e','a'));
     tab->offset = ftell(ttc);
-    tab->checksum = filecheck(tab->data);
+    tab->checksum = filechecksum(tab->data);
     if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	all[cnt].error = true;
     tab = findtabindir(&all[cnt].tabdir,CHR('v','h','e','a'));
     if ( tab!=NULL ) {
 	tab->offset = ftell(ttc);
-	tab->checksum = filecheck(tab->data);
+	tab->checksum = filechecksum(tab->data);
 	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	    all[cnt].error = true;
     }
@@ -6762,7 +6762,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	putc('\0', ttc);
     tab = findtabindir(&all[cnt].tabdir,CHR('F','F','T','M'));
     tab->offset = ftell(ttc);
-    tab->checksum = filecheck(tab->data);
+    tab->checksum = filechecksum(tab->data);
     if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	all[cnt].error = true;
 
@@ -6785,7 +6785,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
 	    if ( all[i].tabdir.tabs[j].data!=(void *) (intpt) -1 ) {
 		all[i].tabdir.tabs[j].offset = ftell(ttc);
-		all[i].tabdir.tabs[j].checksum = filecheck(all[i].tabdir.tabs[j].data);
+		all[i].tabdir.tabs[j].checksum = filechecksum(all[i].tabdir.tabs[j].data);
 		if ( !ttfcopyfile(ttc,all[i].tabdir.tabs[j].data, all[i].tabdir.tabs[j].offset,Tag2String(all[i].tabdir.tabs[j].tag)))
 		    all[cnt].error = true;
 	    }
@@ -6798,31 +6798,31 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
     /* Now dump the big shared tables */
     tab = findtabindir(&all[cnt].tabdir,CHR('h','m','t','x'));
     tab->offset = ftell(ttc);
-    tab->checksum = filecheck(tab->data);
+    tab->checksum = filechecksum(tab->data);
     if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	all[cnt].error = true;
     tab = findtabindir(&all[cnt].tabdir,CHR('v','m','t','x'));
     if ( tab!=NULL ) {
 	tab->offset = ftell(ttc);
-	tab->checksum = filecheck(tab->data);
+	tab->checksum = filechecksum(tab->data);
 	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	    all[cnt].error = true;
     }
     if ( format==ff_ttf ) {
 	tab = findtabindir(&all[cnt].tabdir,CHR('l','o','c','a'));
 	tab->offset = ftell(ttc);
-	tab->checksum = filecheck(tab->data);
+	tab->checksum = filechecksum(tab->data);
 	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	    all[cnt].error = true;
 	tab = findtabindir(&all[cnt].tabdir,CHR('g','l','y','f'));
 	tab->offset = ftell(ttc);
-	tab->checksum = filecheck(tab->data);
+	tab->checksum = filechecksum(tab->data);
 	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	    all[cnt].error = true;
     } else {
 	tab = findtabindir(&all[cnt].tabdir,CHR('C','F','F',' '));
 	tab->offset = ftell(ttc);
-	tab->checksum = filecheck(tab->data);
+	tab->checksum = filechecksum(tab->data);
 	if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
 	    all[cnt].error = true;
     }
@@ -6831,7 +6831,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
     redomaxp(&all[cnt],format);
     tab = findtabindir(&all[cnt].tabdir,CHR('m','a','x','p'));
     fseek(ttc,tab->offset,SEEK_SET);
-    tab->checksum = filecheck(all[cnt].maxpf);
+    tab->checksum = filechecksum(all[cnt].maxpf);
     tab->length = all[cnt].maxplen;
     rewind(all[cnt].maxpf);
     while ( (ch=getc(all[cnt].maxpf))!=EOF )
@@ -6881,7 +6881,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
     if ( tab!=NULL ) {
 	/* As far as I can tell the file checksum is ignored */
 	int checksum;
-	checksum = filecheck(ttc);
+	checksum = filechecksum(ttc);
 	checksum = 0xb1b0afba-checksum;
 	fseek(ttc,tab->offset+2*sizeof(int32),SEEK_SET);
 	putlong(ttc,checksum);

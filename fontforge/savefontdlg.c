@@ -130,6 +130,7 @@ struct gfc_data {
     uint8 optset[3];
     SplineFont *sf;
     EncMap *map;
+    int layer;
 #ifdef HAVE_PTHREAD_H
     uint8 please_die_thread;
     uint8 thread_active;
@@ -174,6 +175,7 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Unified Font Object"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Web Open Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -1692,6 +1694,14 @@ static void GFD_FigureWhich(struct gfc_data *d) {
 	which = 1;		/* truetype options */ /* type42 also */
     else
 	which = 2;		/* opentype options */
+    if ( fs==ff_woff ) {
+	SplineFont *sf = d->sf;
+	int layer = d->layer;
+	if ( sf->layers[layer].order2 )
+	    which = 1;			/* truetype */
+	else
+	    which = 2;			/* opentype */
+    }
     if ( bf == bf_otb && which==0 )
 	which = 3;		/* postscript options with opentype bitmap options */
     d->sod_which = which;
@@ -2144,6 +2154,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
+    d.layer = layer;
 #if 0 && defined(HAVE_PTHREAD_H)
     /* Drat. my allocation routines are not thread safe */
     /* If I can't create the thread, that's not a real problem. The font just*/

@@ -47,7 +47,7 @@ char *savefont_extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb"
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
 	".ttf", ".ttf", ".suit", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", ".ufo", NULL };
+	".otf.dfont", ".svg", ".ufo", ".woff", NULL };
 char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap", ".dfont", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #else
 char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", ".pt3", ".ps",
@@ -61,6 +61,7 @@ char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb"
 #else
 	".ufo",
 #endif
+	".woff",
 NULL };
 char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.bin", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 #endif
@@ -832,6 +833,10 @@ return( true );
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
 	  case ff_cff: case ff_cffcid:
 	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
+		flags,map,layer);
+	  break;
+	  case ff_woff:
+	    oerr = !WriteWOFFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags,map,layer);
 	  break;
 	  case ff_pfbmacbin:
