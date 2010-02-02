@@ -225,7 +225,7 @@ return;
 	if ( (ftell(woff)&3)!=0 ) {
 	    /* Pad to a 4 byte boundary */
 	    if ( ftell(woff)&1 )
-		putc('\0',sfnt);
+		putc('\0',woff);
 	    if ( ftell(woff)&2 )
 		putshort(woff,0);
 	}
