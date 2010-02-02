@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge 20080828\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-31 10:52+0100\n"
+"POT-Creation-Date: 2010-02-02 11:04+0100\n"
 "PO-Revision-Date: 2009-10-31 11:03+0100\n"
 "Last-Translator: Michał Nowakowski <miszka@limes.com.pl>\n"
 "Language-Team: \n"
@@ -56,16 +56,16 @@ msgstr "_Maksymalna odległość między punktami części"
 #: effectsui.c:483 fontinfo.c:1516 fontinfo.c:1615 fontinfo.c:1763 fontinfo.c:2341
 #: fontinfo.c:2617 fontinfo.c:3965 fontinfo.c:3997 fontinfo.c:4890 fontinfo.c:6652
 #: fontinfo.c:10393 fontview.c:1030 fontview.c:1839 fontview.c:2101 fontview.c:3063
-#: fontview.c:7802 fvfontsdlg.c:220 fvfontsdlg.c:399 fvimportbdf.c:1872
+#: fontview.c:7802 fvfontsdlg.c:220 fvfontsdlg.c:399 fvimportbdf.c:1875
 #: fvmetricsdlg.c:210 gotodlg.c:242 groupsdlg.c:1314 groupsdlg.c:1549 histograms.c:883
 #: justifydlg.c:251 justifydlg.c:458 justifydlg.c:774 justifydlg.c:970 kernclass.c:2396
 #: kernclass.c:2731 layer2layer.c:292 lookupui.c:847 lookupui.c:1134 lookupui.c:1898
 #: lookupui.c:2272 lookupui.c:4499 lookupui.c:5361 lookupui.c:5793 lookupui.c:6170
 #: macencui.c:507 macencui.c:857 macencui.c:1203 math.c:874 math.c:1259 math.c:2075
 #: metricsview.c:2841 mmdlg.c:683 mmdlg.c:747 mmdlg.c:1041 mmdlg.c:2539
-#: nonlineartransui.c:136 nonlineartransui.c:537 openfontdlg.c:354 openfontdlg.c:677
+#: nonlineartransui.c:136 nonlineartransui.c:537 openfontdlg.c:365 openfontdlg.c:688
 #: prefs.c:1476 prefs.c:2284 problems.c:2626 problems.c:4120 problems.c:5419
-#: savefontdlg.c:861 savefontdlg.c:1047 scriptingdlg.c:313 scstylesui.c:271
+#: savefontdlg.c:863 savefontdlg.c:1049 scriptingdlg.c:313 scstylesui.c:271
 #: scstylesui.c:1579 scstylesui.c:2067 scstylesui.c:2677 scstylesui.c:2848 showatt.c:2832
 #: showatt.c:3319 simplifydlg.c:418 statemachine.c:752 statemachine.c:1459
 #: tilepath.c:1210 tilepath.c:1880 transform.c:730 ttfinstrsui.c:763 ttfinstrsui.c:1460
@@ -91,7 +91,7 @@ msgstr "_OK"
 #: fontinfo.c:6694 fontinfo.c:10404 fontview.c:506 fontview.c:1031 fontview.c:1847
 #: fontview.c:2109 fontview.c:3073 fontview.c:3649 fontview.c:4683 fontview.c:4778
 #: fontview.c:7810 fontviewbase.c:991 fontviewbase.c:1630 fvfontsdlg.c:60
-#: fvfontsdlg.c:231 fvfontsdlg.c:410 fvimportbdf.c:1873 fvmetricsdlg.c:219 gotodlg.c:251
+#: fvfontsdlg.c:231 fvfontsdlg.c:410 fvimportbdf.c:1876 fvmetricsdlg.c:219 gotodlg.c:251
 #: groupsdlg.c:1324 groupsdlg.c:1559 histograms.c:893 justifydlg.c:262 justifydlg.c:469
 #: justifydlg.c:785 justifydlg.c:981 kernclass.c:2408 kernclass.c:2742 layer2layer.c:301
 #: lookupui.c:859 lookupui.c:1145 lookupui.c:1909 lookupui.c:2110 lookupui.c:2283
@@ -99,9 +99,9 @@ msgstr "_OK"
 #: lookupui.c:6178 macencui.c:518 macencui.c:868 macencui.c:1214 math.c:882 math.c:1267
 #: metricsview.c:1998 metricsview.c:2421 metricsview.c:2849 mmdlg.c:693 mmdlg.c:757
 #: mmdlg.c:1051 mmdlg.c:2573 nonlineartransui.c:147 nonlineartransui.c:548
-#: openfontdlg.c:365 openfontdlg.c:714 parsettf.c:5486 prefs.c:1486 prefs.c:2296
-#: problems.c:4132 savefont.c:754 savefontdlg.c:872 savefontdlg.c:1059 savefontdlg.c:1426
-#: savefontdlg.c:1617 savefontdlg.c:2310 scriptingdlg.c:325 scstylesui.c:282
+#: openfontdlg.c:376 openfontdlg.c:725 parsettf.c:5486 prefs.c:1486 prefs.c:2296
+#: problems.c:4132 savefont.c:755 savefontdlg.c:874 savefontdlg.c:1061 savefontdlg.c:1428
+#: savefontdlg.c:1619 savefontdlg.c:2321 scriptingdlg.c:325 scstylesui.c:282
 #: scstylesui.c:1600 scstylesui.c:2078 scstylesui.c:2685 scstylesui.c:2859
 #: searchview.c:842 showatt.c:3329 simplifydlg.c:430 splinechar.c:989 statemachine.c:762
 #: statemachine.c:1470 tilepath.c:1218 tilepath.c:1888 transform.c:751 ttfinstrsui.c:773
@@ -395,11 +395,11 @@ msgstr "MetaFont zwrócił komunikat błędu"
 msgid "AutoWidth failure on %s\n"
 msgstr "Nie udało się ustawić szerokości dla %s\n"
 
-#: autowidth.c:1219 encoding.c:601 fvimportbdf.c:2034 palmfonts.c:394 winfonts.c:938
+#: autowidth.c:1219 encoding.c:601 fvimportbdf.c:2037 palmfonts.c:394 winfonts.c:938
 msgid "Couldn't open file"
 msgstr "Nie udało się otworzyć pliku"
 
-#: autowidth.c:1219 encoding.c:601 fvimportbdf.c:2034 palmfonts.c:394
+#: autowidth.c:1219 encoding.c:601 fvimportbdf.c:2037 palmfonts.c:394
 #, c-format
 msgid "Couldn't open file %.200s"
 msgstr "Nie udało się otworzyć pliku %.200s"
@@ -775,7 +775,7 @@ msgstr "Dopuszczalne są tylko znaki z ASCII"
 
 #: bdfinfo.c:177 bitmapview.c:1928 cvstroke.c:2240 deltaui.c:67 deltaui.c:98
 #: deltaui.c:101 deltaui.c:104 fontview.c:1137 fontview.c:1990 fontview.c:3202
-#: fontview.c:3717 fontview.c:4648 fvimportbdf.c:1862 kernclass.c:354 macencui.c:724
+#: fontview.c:3717 fontview.c:4648 fvimportbdf.c:1865 kernclass.c:354 macencui.c:724
 #: macencui.c:1024 prefs.c:1348 prefs.c:1354 scstylesui.c:2154 ttfinstrsui.c:1039
 #: ttfinstrsui.c:1082 ../gdraw/gresedit.c:752 ../gdraw/gresedit.c:783
 #: ../gdraw/gresedit.c:795 ../gdraw/gresedit.c:875 ../gdraw/gresedit.c:901
@@ -833,7 +833,7 @@ msgstr "Wartość domyślna"
 msgid "Scaling Bitmaps"
 msgstr "Skalowanie bitmap"
 
-#: bitmapcontrol.c:223 savefont.c:340 savefont.c:347 winfonts.c:858
+#: bitmapcontrol.c:223 savefont.c:341 savefont.c:348 winfonts.c:858
 msgid "Missing Bitmap"
 msgstr "Brakujący rozmiar bitmap"
 
@@ -1006,7 +1006,7 @@ msgid "Skew..."
 msgstr "Pochyl..."
 
 #: bitmapview.c:2089 bitmapview.c:2091 charview.c:9209 charview.c:9211 fontview.c:4278
-#: fontview.c:4285 metricsview.c:3023 metricsview.c:3025 openfontdlg.c:689
+#: fontview.c:4285 metricsview.c:3023 metricsview.c:3025 openfontdlg.c:700
 msgid "Font|_New"
 msgstr "_Nowy"
 
@@ -1023,7 +1023,7 @@ msgid "_Close"
 msgstr "Z_amknij"
 
 #: bitmapview.c:2096 charview.c:9217 cvexportdlg.c:536 fontview.c:504 fontview.c:4294
-#: metricsview.c:3030 savefontdlg.c:1491 savefontdlg.c:2287 ../gdraw/gsavefiledlg.c:240
+#: metricsview.c:3030 savefontdlg.c:1493 savefontdlg.c:2298 ../gdraw/gsavefiledlg.c:240
 msgid "_Save"
 msgstr "_Zapisz"
 
@@ -1348,8 +1348,8 @@ msgstr "_Numer unikodo_wy:"
 #: contextchain.c:830 cvgetinfo.c:974 cvpalettes.c:1362 cvpointer.c:1154 cvundoes.c:2016
 #: cvundoes.c:2233 cvundoes.c:3549 fontviewbase.c:103 fontviewbase.c:1404 fvfontsdlg.c:60
 #: fvmetricsdlg.c:59 lookupui.c:3691 metricsview.c:1997 mmdlg.c:1975 parsettfbmf.c:483
-#: prefs.c:1363 problems.c:2734 savefont.c:753 savefontdlg.c:1326 savefontdlg.c:1425
-#: splinechar.c:980 splinechar.c:989 splinefont.c:1216 tottf.c:1374 tottf.c:6097
+#: prefs.c:1363 problems.c:2734 savefont.c:754 savefontdlg.c:1328 savefontdlg.c:1427
+#: splinechar.c:980 splinechar.c:989 splinefont.c:1219 tottf.c:1374 tottf.c:6097
 msgid "_Yes"
 msgstr "_Tak"
 
@@ -1357,7 +1357,7 @@ msgstr "_Tak"
 #: cvgetinfo.c:974 cvpalettes.c:1362 cvpointer.c:1155 cvundoes.c:2019 cvundoes.c:2233
 #: cvundoes.c:3552 fontviewbase.c:107 fontviewbase.c:1405 fvfontsdlg.c:60
 #: fvmetricsdlg.c:60 metricsview.c:2420 mmdlg.c:1975 parsettfbmf.c:484 prefs.c:1364
-#: problems.c:2735 savefontdlg.c:1327 splinechar.c:980 splinefont.c:1216 tottf.c:1377
+#: problems.c:2735 savefontdlg.c:1329 splinechar.c:980 splinefont.c:1219 tottf.c:1377
 #: tottf.c:6097
 msgid "_No"
 msgstr "_Nie"
@@ -2670,7 +2670,7 @@ msgstr "W. prowadnic"
 
 #. GT: Background, make it short
 #: charview.c:3076 cvpalettes.c:1329 cvstroke.c:1267 diffstubs.c:638 math.c:1958
-#: searchview.c:618 splinefont.c:1921 splineutil2.c:3673 tilepath.c:1021
+#: searchview.c:618 splinefont.c:1924 splineutil2.c:3673 tilepath.c:1021
 msgid "Back"
 msgstr "Warstwa tła"
 
@@ -3450,16 +3450,16 @@ msgstr "_Ligatury"
 msgid "PointNumbers|_None"
 msgstr "_Brak"
 
-#: charview.c:9683 openfontdlg.c:119 savefontdlg.c:162
+#: charview.c:9683 openfontdlg.c:125 savefontdlg.c:163
 msgid "TrueType"
 msgstr "TrueType"
 
-#: charview.c:9684 savefontdlg.c:554
+#: charview.c:9684 savefontdlg.c:556
 msgid "PostScript®"
 msgstr "PostScript®"
 
 #: charview.c:9685 cvexportdlg.c:246 cvimportdlg.c:409 cvimportdlg.c:430
-#: openfontdlg.c:125
+#: openfontdlg.c:136
 msgid "SVG"
 msgstr "SVG"
 
@@ -4049,7 +4049,7 @@ msgstr "Wsp. obrysu"
 msgid "Transformed"
 msgstr "Przekształcono"
 
-#: cvdebug.c:2071 cvgridfit.c:75 savefontdlg.c:1364
+#: cvdebug.c:2071 cvgridfit.c:75 savefontdlg.c:1366
 msgid "Instructions out of date"
 msgstr "Nieaktualne instrukcje"
 
@@ -4097,12 +4097,12 @@ msgstr "Wyjdź z debuggera"
 msgid "Instruction Gloss (TrueType)"
 msgstr "Słownik instrukcji TrueType"
 
-#: cvexport.c:716 cvexportdlg.c:288 fontview.c:681 savefont.c:656 savefont.c:852
+#: cvexport.c:716 cvexportdlg.c:288 fontview.c:681 savefont.c:657 savefont.c:857
 #: showatt.c:2327
 msgid "Save Failed"
 msgstr "Zapis nie powiódł się"
 
-#: cvexportdlg.c:56 cvexportdlg.c:117 fvimportbdf.c:1855
+#: cvexportdlg.c:56 cvexportdlg.c:117 fvimportbdf.c:1858
 msgid "Pixel size:"
 msgstr "Rozmiar w pikselach:"
 
@@ -4150,24 +4150,24 @@ msgstr "PDF"
 msgid "Raph's plate"
 msgstr "plate (Spiro)"
 
-#: cvexportdlg.c:307 fontview.c:4777 savefontdlg.c:1616
+#: cvexportdlg.c:307 fontview.c:4777 savefontdlg.c:1618
 msgid "_Replace"
 msgstr "_Nadpisz"
 
-#: cvexportdlg.c:310 savefontdlg.c:1619 ../gdraw/gsavefiledlg.c:75
+#: cvexportdlg.c:310 savefontdlg.c:1621 ../gdraw/gsavefiledlg.c:75
 msgid "File Exists"
 msgstr "Plik istnieje"
 
-#: cvexportdlg.c:310 savefontdlg.c:1619 ../gdraw/gsavefiledlg.c:75
+#: cvexportdlg.c:310 savefontdlg.c:1621 ../gdraw/gsavefiledlg.c:75
 #, c-format
 msgid "File, %s, exists. Replace it?"
 msgstr "Plik %s istnieje. Nadpisać go?"
 
-#: cvexportdlg.c:391 savefontdlg.c:1726 ../gdraw/gsavefiledlg.c:137
+#: cvexportdlg.c:391 savefontdlg.c:1736 ../gdraw/gsavefiledlg.c:137
 msgid "Couldn't create directory"
 msgstr "Nie udało się utworzyć katalogu"
 
-#: cvexportdlg.c:391 savefontdlg.c:1726
+#: cvexportdlg.c:391 savefontdlg.c:1736
 #, c-format
 msgid "Couldn't create directory: %s"
 msgstr "Nie udało się utworzyć katalogu: %s"
@@ -4176,7 +4176,7 @@ msgstr "Nie udało się utworzyć katalogu: %s"
 msgid "Create directory"
 msgstr "Utwórz katalog"
 
-#: cvexportdlg.c:404 savefontdlg.c:1737 ../gdraw/gsavefiledlg.c:153
+#: cvexportdlg.c:404 savefontdlg.c:1747 ../gdraw/gsavefiledlg.c:153
 msgid "Directory name?"
 msgstr "Nazwa katalogu:"
 
@@ -4184,12 +4184,12 @@ msgstr "Nazwa katalogu:"
 msgid "Export"
 msgstr "Eksportuj"
 
-#: cvexportdlg.c:545 cvimportdlg.c:699 openfontdlg.c:702 savefontdlg.c:2299
+#: cvexportdlg.c:545 cvimportdlg.c:699 openfontdlg.c:713 savefontdlg.c:2310
 #: ../gdraw/gfiledlg.c:138 ../gdraw/gsavefiledlg.c:255
 msgid "_Filter"
 msgstr "_Filtruj"
 
-#: cvexportdlg.c:571 savefontdlg.c:2321 ../gdraw/gsavefiledlg.c:270
+#: cvexportdlg.c:571 savefontdlg.c:2332 ../gdraw/gsavefiledlg.c:270
 msgid "Directory|_New"
 msgstr "_Nowy"
 
@@ -4904,7 +4904,7 @@ msgstr "Grafika ze strony PDF"
 msgid "Raph's plate files"
 msgstr "plate (Spiro)"
 
-#: cvimportdlg.c:417 savefontdlg.c:181
+#: cvimportdlg.c:417 savefontdlg.c:183
 msgid "BDF"
 msgstr "BDF"
 
@@ -4912,7 +4912,7 @@ msgstr "BDF"
 msgid "TTF"
 msgstr "TTF"
 
-#: cvimportdlg.c:419 openfontdlg.c:117
+#: cvimportdlg.c:419 openfontdlg.c:123
 msgid "ΤεΧ Bitmap Fonts"
 msgstr "Fonty bitmapowe ΤεΧ-a"
 
@@ -4924,7 +4924,7 @@ msgstr "PCF (pmf)"
 msgid "Mac Bitmap"
 msgstr "Bitmapa macowa"
 
-#: cvimportdlg.c:422 savefontdlg.c:193
+#: cvimportdlg.c:422 savefontdlg.c:195
 msgid "Win FON"
 msgstr "Windowsowy FON"
 
@@ -6277,7 +6277,7 @@ msgstr "Do _pliku"
 msgid "To P_DF File"
 msgstr "Do pliku P_DF"
 
-#: displayfonts.c:358 savefontdlg.c:1021 savefontdlg.c:1102
+#: displayfonts.c:358 savefontdlg.c:1023 savefontdlg.c:1104
 msgid "_Other"
 msgstr "_Inny"
 
@@ -6757,7 +6757,7 @@ msgstr ""
 msgid "Not a CID-keyed font"
 msgstr "To nie font CID"
 
-#: encoding.c:1450 savefontdlg.c:1428
+#: encoding.c:1450 savefontdlg.c:1430
 msgid "Encoding Too Large"
 msgstr "Kodowanie zbyt obszerne"
 
@@ -8962,7 +8962,7 @@ msgstr "konkani"
 msgid "Korean (Johab)"
 msgstr "koreański (johab)"
 
-#: fontinfo.c:503 fontinfo.c:686 unicoderange.c:79
+#: fontinfo.c:503 fontinfo.c:686 unicoderange.c:78
 msgid "Lao"
 msgstr "laotański"
 
@@ -9527,43 +9527,43 @@ msgstr "niewykorzystany bit 24"
 msgid "Devanagari"
 msgstr "dewanagari"
 
-#: fontinfo.c:677 unicoderange.c:69
+#: fontinfo.c:677 unicoderange.c:68
 msgid "Bengali"
 msgstr "bengalski"
 
-#: fontinfo.c:678 lookups.c:1345 lookupui.c:204 unicoderange.c:70
+#: fontinfo.c:678 lookups.c:1345 lookupui.c:204 unicoderange.c:69
 msgid "Gurmukhi"
 msgstr "gurmukhi"
 
-#: fontinfo.c:679 unicoderange.c:71
+#: fontinfo.c:679 unicoderange.c:70
 msgid "Gujarati"
 msgstr "Gudżarati"
 
-#: fontinfo.c:680 unicoderange.c:72
+#: fontinfo.c:680 unicoderange.c:71
 msgid "Oriya"
 msgstr "Orija"
 
-#: fontinfo.c:681 unicoderange.c:73
+#: fontinfo.c:681 unicoderange.c:72
 msgid "Tamil"
 msgstr "tamilski"
 
-#: fontinfo.c:682 unicoderange.c:74
+#: fontinfo.c:682 unicoderange.c:73
 msgid "Telugu"
 msgstr "Telugu"
 
-#: fontinfo.c:683 unicoderange.c:75
+#: fontinfo.c:683 unicoderange.c:74
 msgid "Kannada"
 msgstr "Kannada"
 
-#: fontinfo.c:684 unicoderange.c:76
+#: fontinfo.c:684 unicoderange.c:75
 msgid "Malayalam"
 msgstr "malajalam"
 
-#: fontinfo.c:685 unicoderange.c:78
+#: fontinfo.c:685 unicoderange.c:77
 msgid "Thai"
 msgstr "tajski"
 
-#: fontinfo.c:687 unicoderange.c:82
+#: fontinfo.c:687 unicoderange.c:81
 msgid "Georgian"
 msgstr "gruziński"
 
@@ -9575,15 +9575,15 @@ msgstr "niewykorzystany bit 27"
 msgid "Hangul Jamo"
 msgstr "hangyl jamo"
 
-#: fontinfo.c:690 unicoderange.c:111
+#: fontinfo.c:690 unicoderange.c:110
 msgid "Latin Extended Additional"
 msgstr "dodatkowe rozszerzenie łacińskiego"
 
-#: fontinfo.c:691 unicoderange.c:112
+#: fontinfo.c:691 unicoderange.c:111
 msgid "Greek Extended"
 msgstr "rozszerzenie greckiego"
 
-#: fontinfo.c:692 unicoderange.c:114
+#: fontinfo.c:692 unicoderange.c:113
 msgid "General Punctuation"
 msgstr "ogólna interpunkcja"
 
@@ -9591,7 +9591,7 @@ msgstr "ogólna interpunkcja"
 msgid "Subscripts and Superscripts"
 msgstr "frakcje górne i dolne"
 
-#: fontinfo.c:694 unicoderange.c:116
+#: fontinfo.c:694 unicoderange.c:115
 msgid "Currency Symbols"
 msgstr "symbole walut"
 
@@ -9599,7 +9599,7 @@ msgstr "symbole walut"
 msgid "Combining Diacritical Marks for Symbols"
 msgstr "znaki składające dla symboli"
 
-#: fontinfo.c:696 unicoderange.c:118
+#: fontinfo.c:696 unicoderange.c:117
 msgid "Letterlike Symbols"
 msgstr "symbole literopodobne"
 
@@ -9619,7 +9619,7 @@ msgstr "operatory matematyczne (dodatkowe i różne)"
 msgid "Miscellaneous Technical"
 msgstr "różne techniczne"
 
-#: fontinfo.c:701 unicoderange.c:123
+#: fontinfo.c:701 unicoderange.c:122
 msgid "Control Pictures"
 msgstr "obrazy znaków sterujących"
 
@@ -9627,35 +9627,35 @@ msgstr "obrazy znaków sterujących"
 msgid "Optical Character Recognition"
 msgstr "optyczne rozpoznawanie znaków"
 
-#: fontinfo.c:703 unicoderange.c:125
+#: fontinfo.c:703 unicoderange.c:124
 msgid "Enclosed Alphanumerics"
 msgstr "obwiedzione znaki alfanumeryczne"
 
-#: fontinfo.c:704 unicoderange.c:126
+#: fontinfo.c:704 unicoderange.c:125
 msgid "Box Drawing"
 msgstr "rysowanie ramek"
 
-#: fontinfo.c:705 unicoderange.c:127
+#: fontinfo.c:705 unicoderange.c:126
 msgid "Block Elements"
 msgstr "elementy blokowe"
 
-#: fontinfo.c:706 unicoderange.c:128
+#: fontinfo.c:706 unicoderange.c:127
 msgid "Geometric Shapes"
 msgstr "kształty geometryczne"
 
-#: fontinfo.c:707 unicoderange.c:129
+#: fontinfo.c:707 unicoderange.c:128
 msgid "Miscellaneous Symbols"
 msgstr "różnorodne symbole"
 
-#: fontinfo.c:708 unicoderange.c:130
+#: fontinfo.c:708 unicoderange.c:129
 msgid "Dingbats"
 msgstr "dingbaty"
 
-#: fontinfo.c:709 unicoderange.c:157
+#: fontinfo.c:709 unicoderange.c:156
 msgid "CJK Symbols and Punctuation"
 msgstr "symbole i interpunkcja CJK"
 
-#: fontinfo.c:710 langfreq.c:1825 unicoderange.c:158
+#: fontinfo.c:710 langfreq.c:1825 unicoderange.c:157
 msgid "Hiragana"
 msgstr "Hiragana"
 
@@ -9667,7 +9667,7 @@ msgstr "Katakana i rozszerzenia fonetyczne"
 msgid "Bopomofo & Extended"
 msgstr "Bopomofo i rozszerzenia"
 
-#: fontinfo.c:713 unicoderange.c:161
+#: fontinfo.c:713 unicoderange.c:160
 msgid "Hangul Compatibility Jamo"
 msgstr "Jamo zgodności dla hangyl"
 
@@ -9679,11 +9679,11 @@ msgstr "niewykorzystany bit 53"
 msgid "Enclosed CJK Leters and Months"
 msgstr "obwiedzione litery i miesiące CJK"
 
-#: fontinfo.c:716 unicoderange.c:168
+#: fontinfo.c:716 unicoderange.c:167
 msgid "CJK Compatibility"
 msgstr "znaki zgodności dla CJK"
 
-#: fontinfo.c:717 unicoderange.c:192
+#: fontinfo.c:717 unicoderange.c:191
 msgid "Hangul Syllables"
 msgstr "sylaby hangyl"
 
@@ -9695,7 +9695,7 @@ msgstr "dodatkowy obszar wielojęzyczny Unikodu"
 msgid "Unassigned Bit 58"
 msgstr "niewykorzystany bit 58"
 
-#: fontinfo.c:720 unicoderange.c:171
+#: fontinfo.c:720 unicoderange.c:170
 msgid "CJK Unified Ideographs"
 msgstr "ujednolicone ideogramy CJK"
 
@@ -9707,7 +9707,7 @@ msgstr "obszar do użytku prywatnego"
 msgid "CJK Compatability Ideographs"
 msgstr "ideogramy zgodności dla CJK"
 
-#: fontinfo.c:724 unicoderange.c:205
+#: fontinfo.c:724 unicoderange.c:204
 msgid "Alphabetic Presentation Forms"
 msgstr "alfabetyczne formy prezentacyjne"
 
@@ -9723,7 +9723,7 @@ msgstr "półznaki składające"
 msgid "CJK Compatability Forms"
 msgstr "znaki zgodności dla CJK"
 
-#: fontinfo.c:728 unicoderange.c:214
+#: fontinfo.c:728 unicoderange.c:213
 msgid "Small Form Variants"
 msgstr "różne małe formy"
 
@@ -9735,11 +9735,11 @@ msgstr "arabskie formy prezentacyjne B"
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "znaki pełnej i połowy długości"
 
-#: fontinfo.c:731 unicoderange.c:221
+#: fontinfo.c:731 unicoderange.c:220
 msgid "Specials"
 msgstr "specjalne"
 
-#: fontinfo.c:732 unicoderange.c:80
+#: fontinfo.c:732 unicoderange.c:79
 msgid "Tibetan"
 msgstr "tybetański"
 
@@ -9751,43 +9751,43 @@ msgstr "syriacki"
 msgid "Thaana"
 msgstr "thaana"
 
-#: fontinfo.c:735 unicoderange.c:77
+#: fontinfo.c:735 unicoderange.c:76
 msgid "Sinhala"
 msgstr "Sinhala"
 
-#: fontinfo.c:736 unicoderange.c:81
+#: fontinfo.c:736 unicoderange.c:80
 msgid "Myanmar"
 msgstr "birmański"
 
-#: fontinfo.c:737 unicoderange.c:86
+#: fontinfo.c:737 unicoderange.c:85
 msgid "Ethiopic"
 msgstr "etiopski"
 
-#: fontinfo.c:738 lookups.c:1318 unicoderange.c:88
+#: fontinfo.c:738 lookups.c:1318 unicoderange.c:87
 msgid "Cherokee"
 msgstr "czirokeski"
 
-#: fontinfo.c:739 unicoderange.c:89
+#: fontinfo.c:739 unicoderange.c:88
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "ujednolicony sylabariusz rdzennych Kanadyjczyków"
 
-#: fontinfo.c:740 lookups.c:1379 lookupui.c:235 unicoderange.c:90
+#: fontinfo.c:740 lookups.c:1379 lookupui.c:235 unicoderange.c:89
 msgid "Ogham"
 msgstr "ogamiczne"
 
-#: fontinfo.c:741 lookups.c:1394 lookupui.c:248 unicoderange.c:91
+#: fontinfo.c:741 lookups.c:1394 lookupui.c:248 unicoderange.c:90
 msgid "Runic"
 msgstr "runiczne"
 
-#: fontinfo.c:742 unicoderange.c:96
+#: fontinfo.c:742 unicoderange.c:95
 msgid "Khmer"
 msgstr "khmerski"
 
-#: fontinfo.c:743 unicoderange.c:97
+#: fontinfo.c:743 unicoderange.c:96
 msgid "Mongolian"
 msgstr "mongolski"
 
-#: fontinfo.c:744 unicoderange.c:136
+#: fontinfo.c:744 unicoderange.c:135
 msgid "Braille Patterns"
 msgstr "pismo Brajla"
 
@@ -9799,15 +9799,15 @@ msgstr "sylaby i klucze Yi"
 msgid "Tagalog/Hanunno/Buhid/Tagbanwa"
 msgstr "Tagalog/Hanunno/Buhid/Tagbanwa"
 
-#: fontinfo.c:747 unicoderange.c:237
+#: fontinfo.c:747 unicoderange.c:236
 msgid "Old Italic"
 msgstr "staroitalski"
 
-#: fontinfo.c:748 lookups.c:1341 lookupui.c:200 unicoderange.c:238
+#: fontinfo.c:748 lookups.c:1341 lookupui.c:200 unicoderange.c:237
 msgid "Gothic"
 msgstr "gockie"
 
-#: fontinfo.c:749 unicoderange.c:241
+#: fontinfo.c:749 unicoderange.c:240
 msgid "Deseret"
 msgstr "mormoński"
 
@@ -9815,7 +9815,7 @@ msgstr "mormoński"
 msgid "Byzantine Musical Symbols/Musical Symbols"
 msgstr "bizantyjskie symbole muzyczne"
 
-#: fontinfo.c:751 lookups.c:1373 lookupui.c:230 unicoderange.c:274
+#: fontinfo.c:751 lookups.c:1373 lookupui.c:230 unicoderange.c:273
 msgid "Mathematical Alphanumeric Symbols"
 msgstr "matematyczne symbole alfanumeryczne"
 
@@ -9823,7 +9823,7 @@ msgstr "matematyczne symbole alfanumeryczne"
 msgid "Private Use (planes 15&16)"
 msgstr "do użytku prywatnego (obszary 15 i 16)"
 
-#: fontinfo.c:753 unicoderange.c:210
+#: fontinfo.c:753 unicoderange.c:209
 msgid "Variation Selectors"
 msgstr "przełączniki wariantów glifów"
 
@@ -10471,7 +10471,7 @@ msgid "Bad Family Name, must begin with an alphabetic character."
 msgstr "Błędna nazwa rodziny – musi rozpoczynać się znakiem alfabetycznym."
 
 #: fontinfo.c:2620 fontinfo.c:2642 fontinfo.c:2645 fontinfo.c:2660 fontinfo.c:2668
-#: parsettf.c:1422 parsettf.c:1433 parsettf.c:1444 savefontdlg.c:1401
+#: parsettf.c:1422 parsettf.c:1433 parsettf.c:1444 savefontdlg.c:1403
 msgid "Bad Font Name"
 msgstr "Błędna nazwa fontu"
 
@@ -10506,7 +10506,7 @@ msgstr ""
 "Pewne wersje Windows nie dopuszczą do instalacji fontu jeśli nazwa rodziny jest dłuższa "
 "niż 31 znaków. Czy mimo to kontynuować?"
 
-#: fontinfo.c:2642 savefontdlg.c:1401
+#: fontinfo.c:2642 savefontdlg.c:1403
 msgid ""
 "Some versions of Windows will refuse to install postscript fonts if the fontname is "
 "longer than 31 characters. Do you want to continue anyway?"
@@ -10740,7 +10740,7 @@ msgstr ""
 "Tego nie będzie można potem cofnąć.\n"
 "Czy mimo to kontynuować?"
 
-#: fontinfo.c:3986 splinefont.c:1916
+#: fontinfo.c:3986 splinefont.c:1919
 msgid "Too many layers"
 msgstr "Zbyt wiele warstw"
 
@@ -10922,7 +10922,7 @@ msgstr "Błędny styl"
 msgid "A style may not have both condense and extend set (it makes no sense)"
 msgstr "Trudno o styl jednocześnie zwężony i poszerzony"
 
-#: fontinfo.c:4144 fontview.c:4836 openfontdlg.c:427 prefs.c:1696 savefontdlg.c:1335
+#: fontinfo.c:4144 fontview.c:4836 openfontdlg.c:438 prefs.c:1696 savefontdlg.c:1337
 msgid "Namelist contains non-ASCII names"
 msgstr "Lista nazw glifów zawiera znaki spoza ASCII"
 
@@ -11458,7 +11458,7 @@ msgstr "_Wys. pola znaku:"
 msgid "_Scale Outlines"
 msgstr "_Skaluj obrysy"
 
-#: fontinfo.c:7714 fontinfo.c:8096 savefontdlg.c:1008
+#: fontinfo.c:7714 fontinfo.c:8096 savefontdlg.c:1010
 msgid "_Guess"
 msgstr "_Oblicz"
 
@@ -12916,7 +12916,7 @@ msgstr "Zmień nazwy znaków według listy"
 msgid "Rename the glyphs in this font to the names found in the selected namelist"
 msgstr "Zmień nazwy glifów w bieżącym foncie na określone w wybranej liście nazw"
 
-#: fontview.c:4836 openfontdlg.c:427 prefs.c:1696 savefontdlg.c:1335
+#: fontview.c:4836 openfontdlg.c:438 prefs.c:1696 savefontdlg.c:1337
 msgid ""
 "Glyph names should be limited to characters in the ASCII character set, but there are "
 "names in this namelist which use characters outside that range."
@@ -13643,7 +13643,7 @@ msgid ""
 "when one of the glyphs being kerned will come from the base font?"
 msgstr "Czy zachować "
 
-#: fvfontsdlg.c:93 savefontdlg.c:1100
+#: fvfontsdlg.c:93 savefontdlg.c:1102
 msgid "Other ..."
 msgstr "Inny ..."
 
@@ -13687,57 +13687,57 @@ msgstr "o"
 msgid "Bad bounding box for %s.\n"
 msgstr "Błędny prostokąt brzegowy dla %s.\n"
 
-#: fvimportbdf.c:451
+#: fvimportbdf.c:454
 #, c-format
 msgid "Various specifications of PIXEL_SIZE do not match in %s"
 msgstr "Różne określenia PIXEL_SIZE nie pasują do siebie w %s"
 
-#: fvimportbdf.c:474
+#: fvimportbdf.c:477
 #, c-format
 msgid "Pixel size does not match sum of Font ascent+descent in %s"
 msgstr ""
 "Wielkość w pikselach różni się od odległości między górną a dolną granicami pól znaków "
 "w %s."
 
-#: fvimportbdf.c:479
+#: fvimportbdf.c:482
 #, c-format
 msgid "Guessing pixel size based on font ascent in %s"
 msgstr "Określanie wielkości w pikselach na podstawie górnej granicy pól znaków w %s."
 
-#: fvimportbdf.c:483
+#: fvimportbdf.c:486
 #, c-format
 msgid "Guessing pixel size based on font descent in %s"
 msgstr "Określanie wielkości w pikselach na podstawie dolnej granicy pól znaków w %s."
 
-#: fvimportbdf.c:661
+#: fvimportbdf.c:664
 #, c-format
 msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
 msgstr ""
 "FontForge nie obsługuje tej głębi kolorów %d (musi być 1, 2, 4, 8 albo 16 bitów)\n"
 
-#: fvimportbdf.c:965
+#: fvimportbdf.c:968
 msgid "Unexpected EOF in gf\n"
 msgstr "Nieoczekiwany koniec pliku gf\n"
 
-#: fvimportbdf.c:968
+#: fvimportbdf.c:971
 #, c-format
 msgid "Uninterpreted code in gf: %d\n"
 msgstr "Nie zinterpretowano kodu w gf: %d\n"
 
-#: fvimportbdf.c:1083
+#: fvimportbdf.c:1086
 #, c-format
 msgid "Duplicate repeat row count in char %d of pk file\n"
 msgstr ""
 
-#: fvimportbdf.c:1855
+#: fvimportbdf.c:1858
 msgid "What is the pixel size of the font in this file?"
 msgstr "Jaka jest rozmiar pikselowy tego fontu?"
 
-#: fvimportbdf.c:1876
+#: fvimportbdf.c:1879
 msgid "Duplicate pixelsize"
 msgstr "Taki rozmiar już istnieje"
 
-#: fvimportbdf.c:1877
+#: fvimportbdf.c:1880
 #, c-format
 msgid ""
 "The font database already contains a bitmap\n"
@@ -13747,64 +13747,64 @@ msgstr ""
 "Font zawiera już bitmapy w stopniu %d pikseli.\n"
 "Czy nadpisać je?"
 
-#: fvimportbdf.c:2041
+#: fvimportbdf.c:2044
 msgid "Not a pk file"
 msgstr "To nie plik pk"
 
-#: fvimportbdf.c:2041
+#: fvimportbdf.c:2044
 #, c-format
 msgid "Not a (metafont) pk file %.200s"
 msgstr "To nie jest (metafontowy) plik pk: %.200s"
 
-#: fvimportbdf.c:2048
+#: fvimportbdf.c:2051
 msgid "Not a gf file"
 msgstr "To nie plik gf"
 
-#: fvimportbdf.c:2048
+#: fvimportbdf.c:2051
 #, c-format
 msgid "Not a (metafont) gf file %.200s"
 msgstr "To nie jest (metafontowy) plik gf: %.200s"
 
-#: fvimportbdf.c:2054 fvimportbdf.c:2060 fvimportbdf.c:2148
+#: fvimportbdf.c:2057 fvimportbdf.c:2063 fvimportbdf.c:2151
 msgid "Not a pcf file"
 msgstr "To nie plik pcf"
 
-#: fvimportbdf.c:2054 fvimportbdf.c:2060 fvimportbdf.c:2148
+#: fvimportbdf.c:2057 fvimportbdf.c:2063 fvimportbdf.c:2151
 #, c-format
 msgid "Not an X11 pcf file %.200s"
 msgstr "To nie jest plik X11 pcf: %.200s"
 
-#: fvimportbdf.c:2066
+#: fvimportbdf.c:2069
 msgid "Not a bdf file"
 msgstr "To nie plik bdf"
 
-#: fvimportbdf.c:2066
+#: fvimportbdf.c:2069
 #, c-format
 msgid "Not a bdf file %.200s"
 msgstr "To nie jest plik bdf: %.200s"
 
-#: fvimportbdf.c:2205 splinefont.c:976
+#: fvimportbdf.c:2208 splinefont.c:976
 msgid "Decompress Failed!"
 msgstr "Dekompresja nie powiodła się"
 
-#: fvimportbdf.c:2295 fvimportbdf.c:2305 fvimportbdf.c:2383
+#: fvimportbdf.c:2298 fvimportbdf.c:2308 fvimportbdf.c:2386
 #, c-format
 msgid "Loading font from %.100s"
 msgstr "Wczytywanie fontu z %.100s"
 
-#: fvimportbdf.c:2296 fvimportbdf.c:2384 splinefont.c:998
+#: fvimportbdf.c:2299 fvimportbdf.c:2387 splinefont.c:998
 msgid "Loading..."
 msgstr "Wczytywanie..."
 
-#: fvimportbdf.c:2296 fvimportbdf.c:2384 splinefont.c:998
+#: fvimportbdf.c:2299 fvimportbdf.c:2387 splinefont.c:998
 msgid "Reading Glyphs"
 msgstr "Wczytywanie glifów"
 
-#: fvimportbdf.c:2327
+#: fvimportbdf.c:2330
 msgid "No Bitmap Font"
 msgstr "Bez bitmapowych"
 
-#: fvimportbdf.c:2327
+#: fvimportbdf.c:2330
 #, c-format
 msgid "Could not find a bitmap font in %s"
 msgstr "Nie znaleziono fontu bitmapowego w %s"
@@ -14326,7 +14326,7 @@ msgstr ""
 "Wpisanie numeru, np. „U+0041”, spowoduje identyfikację na podstawie numeru.\n"
 "Ładując glify z zaznaczenia, wybiera się jeden sposób dla wszystkich."
 
-#: groupsdlg.c:1252 oflib.c:702 oflib.c:1935 openfontdlg.c:265
+#: groupsdlg.c:1252 oflib.c:702 oflib.c:1935 openfontdlg.c:276
 msgid "Name"
 msgstr "Nazwa"
 
@@ -15078,7 +15078,7 @@ msgstr "francuski"
 msgid "German"
 msgstr "niemiecki"
 
-#: langfreq.c:1826 unicoderange.c:159
+#: langfreq.c:1826 unicoderange.c:158
 msgid "Katakana"
 msgstr "Katakana"
 
@@ -15871,7 +15871,7 @@ msgstr "bengalskie2"
 msgid "Bliss Symbolics"
 msgstr "symbole Blissa"
 
-#: lookups.c:1310 lookupui.c:171 unicoderange.c:160
+#: lookups.c:1310 lookupui.c:171 unicoderange.c:159
 msgid "Bopomofo"
 msgstr "bopomofo"
 
@@ -15899,7 +15899,7 @@ msgstr "bizantyjskie symbole muzyczne"
 msgid "Canadian Syllabics"
 msgstr "sylabariusz kanadyjski"
 
-#: lookups.c:1317 unicoderange.c:235
+#: lookups.c:1317 unicoderange.c:234
 msgid "Carian"
 msgstr "karyjskie"
 
@@ -15965,7 +15965,7 @@ msgstr "etiopskie"
 msgid "Script|Georgian"
 msgstr "gruzińskie"
 
-#: lookups.c:1340 lookupui.c:199 unicoderange.c:146
+#: lookups.c:1340 lookupui.c:199 unicoderange.c:145
 msgid "Glagolitic"
 msgstr "głagolica"
 
@@ -16001,7 +16001,7 @@ msgstr "hebrajskie"
 msgid "Script|Javanese"
 msgstr "jawajskie"
 
-#: lookups.c:1354 unicoderange.c:185
+#: lookups.c:1354 unicoderange.c:184
 msgid "Kayah Li"
 msgstr "kareński (Kayah Li)"
 
@@ -16053,11 +16053,11 @@ msgstr "linearne A"
 msgid "Linear B"
 msgstr "linearne B"
 
-#: lookups.c:1367 unicoderange.c:234
+#: lookups.c:1367 unicoderange.c:233
 msgid "Lycian"
 msgstr "licyjskie"
 
-#: lookups.c:1368 unicoderange.c:248
+#: lookups.c:1368 unicoderange.c:247
 msgid "Lydian"
 msgstr "lidyjskie"
 
@@ -16093,7 +16093,7 @@ msgstr "nowe tai lu"
 msgid "N'Ko"
 msgstr "n'ko"
 
-#: lookups.c:1380 unicoderange.c:107
+#: lookups.c:1380 unicoderange.c:106
 msgid "Ol Chiki"
 msgstr "ol chiki"
 
@@ -16117,7 +16117,7 @@ msgstr "orija"
 msgid "Script|Oriya2"
 msgstr "orija2"
 
-#: lookups.c:1386 lookupui.c:241 unicoderange.c:243
+#: lookups.c:1386 lookupui.c:241 unicoderange.c:242
 msgid "Osmanya"
 msgstr "osmanija"
 
@@ -16141,7 +16141,7 @@ msgstr "faistos"
 msgid "Pollard Phonetic"
 msgstr "fonetyczne Pollarda"
 
-#: lookups.c:1392 unicoderange.c:186
+#: lookups.c:1392 unicoderange.c:185
 msgid "Rejang"
 msgstr ""
 
@@ -16149,11 +16149,11 @@ msgstr ""
 msgid "Rongorongo"
 msgstr "rongo-rongo"
 
-#: lookups.c:1395 unicoderange.c:183
+#: lookups.c:1395 unicoderange.c:182
 msgid "Saurashtra"
 msgstr "saurasztrańskie (kathijawarskie)"
 
-#: lookups.c:1396 lookupui.c:249 unicoderange.c:242
+#: lookups.c:1396 lookupui.c:249 unicoderange.c:241
 msgid "Shavian"
 msgstr "shawa"
 
@@ -16185,7 +16185,7 @@ msgstr "tagalskie"
 msgid "Script|Tagbanwa"
 msgstr "tagbanuwa"
 
-#: lookups.c:1404 lookupui.c:256 unicoderange.c:99
+#: lookups.c:1404 lookupui.c:256 unicoderange.c:98
 msgid "Tai Le"
 msgstr "tai le"
 
@@ -20110,7 +20110,7 @@ msgstr "Typ fontu z wariantami:"
 msgid "Adobe"
 msgstr "Adobe"
 
-#: mmdlg.c:2619 parsettf.c:4458 savefontdlg.c:699
+#: mmdlg.c:2619 parsettf.c:4458 savefontdlg.c:701
 msgid "Apple"
 msgstr "Apple"
 
@@ -21278,89 +21278,89 @@ msgstr "Odpytywanie serwera o następne fonty"
 msgid "All Fonts"
 msgstr "Wszystkie fonty"
 
-#: openfontdlg.c:77
+#: openfontdlg.c:80
 msgid "Outline Fonts"
 msgstr "Fonty obrysowe"
 
-#: openfontdlg.c:103
+#: openfontdlg.c:109
 msgid "Bitmap Fonts"
 msgstr "Fonty bitmapowe"
 
-#: openfontdlg.c:118
+#: openfontdlg.c:124
 msgid "PostScript"
 msgstr "PostScriptowe"
 
-#: openfontdlg.c:120 prefs.c:495 savefontdlg.c:710
+#: openfontdlg.c:126 openfontdlg.c:128 openfontdlg.c:130 prefs.c:495 savefontdlg.c:712
 msgid "OpenType"
 msgstr "OpenType"
 
-#: openfontdlg.c:121
+#: openfontdlg.c:132
 msgid "Type1"
 msgstr "PS Type1"
 
-#: openfontdlg.c:122
+#: openfontdlg.c:133
 msgid "Type2"
 msgstr "PS Type2"
 
-#: openfontdlg.c:123
+#: openfontdlg.c:134
 msgid "Type3"
 msgstr "PS Type3"
 
-#: openfontdlg.c:127
+#: openfontdlg.c:138
 msgid "FontForge's SFD"
 msgstr "Pliki FontForge (SFD)"
 
-#: openfontdlg.c:128
+#: openfontdlg.c:139
 msgid "Backup SFD"
 msgstr "Kopia zapasowa SFD"
 
-#: openfontdlg.c:129
+#: openfontdlg.c:140
 msgid "Extract from PDF"
 msgstr "Wczytaj z PDF-a"
 
-#: openfontdlg.c:131
+#: openfontdlg.c:142
 msgid "Archives"
 msgstr "Archiwa"
 
-#: openfontdlg.c:132
+#: openfontdlg.c:143
 msgid "All Files"
 msgstr "Wszystkie pliki"
 
-#: openfontdlg.c:182
+#: openfontdlg.c:193
 msgid "Edit Filter List"
 msgstr "Edycja listy filtrów"
 
-#: openfontdlg.c:266
+#: openfontdlg.c:277
 msgid "Filter"
 msgstr "Filtr"
 
-#: openfontdlg.c:332
+#: openfontdlg.c:343
 msgid "Edit Font Filters"
 msgstr "Edycja listy filtrów"
 
-#: openfontdlg.c:390
+#: openfontdlg.c:401
 msgid "Filter|New"
 msgstr "Nowy"
 
-#: openfontdlg.c:611
+#: openfontdlg.c:622
 msgid "Filter:"
 msgstr "Filtr:"
 
-#: openfontdlg.c:616 openfontdlg.c:622
+#: openfontdlg.c:627 openfontdlg.c:633
 msgid "Display files of this type"
 msgstr "Wyświetl pliki tego typu"
 
-#: openfontdlg.c:632 savefontdlg.c:2531
+#: openfontdlg.c:643 savefontdlg.c:2542
 msgid "Force glyph names to:"
 msgstr "Nazwy glifów według:"
 
-#: openfontdlg.c:637 openfontdlg.c:644 savefontdlg.c:2536 savefontdlg.c:2544
-#: savefontdlg.c:2577
+#: openfontdlg.c:648 openfontdlg.c:655 savefontdlg.c:2547 savefontdlg.c:2555
+#: savefontdlg.c:2588
 msgid "In the saved font, force all glyph names to match those in the specified namelist"
 msgstr ""
 "Wymusza zgodność nazw glifów w zapisywanym foncie z określonymi w wybranej liście nazw"
 
-#: openfontdlg.c:649 savefontdlg.c:2549
+#: openfontdlg.c:660 savefontdlg.c:2560
 msgid "No Rename"
 msgstr "Oryginalne"
 
@@ -23267,11 +23267,11 @@ msgstr ""
 "Czy załadować wersje bitmapowe niektórych znaków, dostarczone w tym foncie?\n"
 "Które?"
 
-#: parsettfbmf.c:1224 savefont.c:914 winfonts.c:847
+#: parsettfbmf.c:1224 savefont.c:919 winfonts.c:847
 msgid "Saving Bitmap Font(s)"
 msgstr "Zapisywanie fontów bitmapowych"
 
-#: parsettfbmf.c:1278 savefont.c:797
+#: parsettfbmf.c:1278 savefont.c:798
 msgid "Saving TrueType Font"
 msgstr "Zapisywanie fontu TrueType"
 
@@ -23546,7 +23546,7 @@ msgstr ""
 "glifu podczas wyświetlania w małych wielkościach. Włączenie tej opcji może\n"
 "spowodować, że szerokości glifów będą się skalować niezupełnie liniowo."
 
-#: prefs.c:469 savefontdlg.c:746
+#: prefs.c:469 savefontdlg.c:748
 msgid ""
 "When generating a truetype or opentype font it is occasionally\n"
 "useful to know the mapping between truetype glyph ids and\n"
@@ -23740,7 +23740,7 @@ msgstr ""
 "Każda pozycja w menu wymaga pliku z przypisanym sobie skryptem oraz nazwy. Nazwa\n"
 "może zawierać znaki unikodowe. Przycisk podpisany „...” pozwoli na wybór pliku skryptu."
 
-#: prefs.c:1995 savefontdlg.c:2917
+#: prefs.c:1995 savefontdlg.c:2928
 msgid "..."
 msgstr "..."
 
@@ -24968,7 +24968,7 @@ msgstr "Krzywe"
 msgid "Refs"
 msgstr "Odwołania"
 
-#: problems.c:4020 savefontdlg.c:579
+#: problems.c:4020 savefontdlg.c:581
 msgid "Hints"
 msgstr "Hinty"
 
@@ -25669,36 +25669,36 @@ msgstr "Funkcja nie kończy się „return” w %s\n"
 msgid "<no glyph>"
 msgstr "<brak glifu>"
 
-#: savefont.c:88
+#: savefont.c:89
 msgid "Saving AFM File"
 msgstr "Zapisywanie pliku AFM"
 
-#: savefont.c:167
+#: savefont.c:168
 msgid "Saving TFM File"
 msgstr "Zapisywanie pliku TFM"
 
-#: savefont.c:230
+#: savefont.c:231
 msgid "Saving OFM File"
 msgstr "Zapisywanie pliku OFM"
 
-#: savefont.c:340 winfonts.c:858
+#: savefont.c:341 winfonts.c:858
 #, c-format
 msgid "Attempt to save a pixel size that has not been created (%d@%d)"
 msgstr "Próba zapisu bitmapy nieistniejącego rozmiaru (%d@%d)"
 
-#: savefont.c:347
+#: savefont.c:348
 msgid "Currently, FontForge only supports bitmap (not bytemap) type3 output"
 msgstr "Obecnie FontForge generuje tylko bitmapowe (nie bajtmapowe) fonty typu 3"
 
-#: savefont.c:400
+#: savefont.c:401
 msgid "No Sub Font Definition file"
 msgstr "Brakuje pliku definicji podfontu"
 
-#: savefont.c:423
+#: savefont.c:424
 msgid "Wrong type of SFD file"
 msgstr "Błędny typ pliku SFD"
 
-#: savefont.c:423
+#: savefont.c:424
 msgid ""
 "This looks like one of FontForge's SplineFont DataBase files.\n"
 "Not one of TeX's SubFont Definition files.\n"
@@ -25708,12 +25708,12 @@ msgstr ""
 "a nie na ΤεΧ-owy plik definicji podfonty (SubFont Definition file).\n"
 "Taka niefortunna zbieżność rozszerzeń nazw plików (*.sfd)."
 
-#: savefont.c:472
+#: savefont.c:473
 #, c-format
 msgid "Bad offset: %d for subfont %s\n"
 msgstr "Błędny offset: %d dla podfontu „%s”\n"
 
-#: savefont.c:503
+#: savefont.c:504
 #, c-format
 msgid ""
 "Warning: Encoding %d (0x%x) is mapped to at least two locations (%s@0x%02x and %s@0x%"
@@ -25723,40 +25723,40 @@ msgstr ""
 "Ostrzeżenie: Numer kodowy %d (0x%x) jest przypisany do co najmniej dwóch glifów(%s@0x%"
 "02x i %s@0x%02x). Zostanie użyty tylko jeden.\n"
 
-#: savefont.c:514
+#: savefont.c:515
 #, c-format
 msgid "More than 256 entries in subfont %s\n"
 msgstr "Więcej niż 256 znaków w podfoncie %s\n"
 
-#: savefont.c:659 savefont.c:871
+#: savefont.c:660 savefont.c:876
 msgid "Afm Save Failed"
 msgstr "Zapis pliku AFM nie powiódł się"
 
-#: savefont.c:665 savefont.c:858
+#: savefont.c:666 savefont.c:863
 msgid "Tfm Save Failed"
 msgstr "Zapis pliku TFM nie powiódł się"
 
-#: savefont.c:708
+#: savefont.c:709
 msgid "Bad Extension"
 msgstr "Nieprawidłowe rozszerzenie pliku"
 
-#: savefont.c:708
+#: savefont.c:709
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
 msgstr "Wymagane jest standardowe rozszerzenie Type1 (.pfb lub .pfa)"
 
-#: savefont.c:729 savefont.c:795
+#: savefont.c:730 savefont.c:796
 msgid "Saving font"
 msgstr "Zapisywanie fontu"
 
-#: savefont.c:730
+#: savefont.c:731
 msgid "Saving Multiple Postscript Fonts"
 msgstr "Zapisywanie fontów postscriptowych"
 
-#: savefont.c:761
+#: savefont.c:762
 msgid "Bad Drawing Operation"
 msgstr "Błędna operacja rysująca"
 
-#: savefont.c:761
+#: savefont.c:762
 msgid ""
 "This font contains at least one translucent layer, but type3 does not support that "
 "(anything translucent or transparent is treated as opaque). Do you want to proceed "
@@ -25765,99 +25765,99 @@ msgstr ""
 "Ten font zawiera co najmniej jedną warstwę z przezroczystością, ale fonty typy 3 tego "
 "nie obsługują (wszystko zostanie zapisane jako nieprzejrzyste). Czy mimo to kontynuować?"
 
-#: savefont.c:798 tottf.c:2003
+#: savefont.c:799 tottf.c:2003
 msgid "Saving OpenType Font"
 msgstr "Zapisywanie fontu OpenType"
 
-#: savefont.c:800
+#: savefont.c:801
 msgid "Saving CID keyed font"
 msgstr "Zapisywanie fontu CID"
 
-#: savefont.c:801
+#: savefont.c:802
 msgid "Saving multi-master font"
 msgstr "Zapisywanie fontu MultipleMaster"
 
-#: savefont.c:802
+#: savefont.c:803
 msgid "Saving SVG font"
 msgstr "Zapisywanie fontu SVG"
 
-#: savefont.c:803
+#: savefont.c:804
 msgid "Saving Unified Font Object"
 msgstr "Zapisywanie fontu UFO"
 
-#: savefont.c:804
+#: savefont.c:805
 msgid "Saving PostScript Font"
 msgstr "Zapisywanie fontu postscriptowego"
 
-#: savefont.c:813
+#: savefont.c:814
 msgid "Mac Resource Not Remote"
 msgstr "Nie można przesłać zasobu"
 
-#: savefont.c:813
+#: savefont.c:814
 msgid "You may not save a mac resource file to a remote location"
 msgstr "Zdalny zapis zasobów macintoshowych nie jest obsługiwany."
 
-#: savefont.c:816
+#: savefont.c:817
 msgid "Directory Not Remote"
 msgstr "Nie można przesłać katalogu"
 
-#: savefont.c:816
+#: savefont.c:817
 msgid "You may not save ufo directory to a remote location"
 msgstr "Zdalny zapis katalogów UFO nie jest obsługiwany"
 
-#: savefont.c:864
+#: savefont.c:869
 msgid "Ofm Save Failed"
 msgstr "Zapis pliku OFM nie powiódł się"
 
-#: savefont.c:878
+#: savefont.c:883
 msgid "FontLog Save Failed"
 msgstr "Nie udało się zapisać pliku FONTLOG"
 
-#: savefont.c:883
+#: savefont.c:888
 msgid "Saving PFM File"
 msgstr "Zapisywanie pliku PFM"
 
-#: savefont.c:886
+#: savefont.c:891
 msgid "Pfm Save Failed"
 msgstr "Zapis pliku PFM nie powiódł się"
 
-#: savefontdlg.c:141
+#: savefontdlg.c:142
 msgid "PS Type 1 (Ascii)"
 msgstr "PS typ 1 (ASCII)"
 
-#: savefontdlg.c:142
+#: savefontdlg.c:143
 msgid "PS Type 1 (Binary)"
 msgstr "PS typ 1 (binarny)"
 
-#: savefontdlg.c:144
+#: savefontdlg.c:145
 msgid "PS Type 1 (Resource)"
 msgstr "PS typ 1 (zasób)"
 
-#: savefontdlg.c:146
+#: savefontdlg.c:147
 msgid "PS Type 1 (MacBin)"
 msgstr "PS typ 1 (binarny macowy)"
 
-#: savefontdlg.c:148
+#: savefontdlg.c:149
 msgid "PS Type 1 (Multiple)"
 msgstr "PS typ 1 (wiele fontów)"
 
-#: savefontdlg.c:149
+#: savefontdlg.c:150
 msgid "PS Multiple Master(A)"
 msgstr "PS Multiple Master(A)"
 
-#: savefontdlg.c:150
+#: savefontdlg.c:151
 msgid "PS Multiple Master(B)"
 msgstr "PS Multiple Master(B)"
 
-#: savefontdlg.c:151
+#: savefontdlg.c:152
 msgid "PS Type 3"
 msgstr "PS typ 3"
 
-#: savefontdlg.c:152
+#: savefontdlg.c:153
 msgid "PS Type 0"
 msgstr "PS typ 0"
 
-#: savefontdlg.c:153
+#: savefontdlg.c:154
 msgid "PS CID"
 msgstr "PS CID"
 
@@ -25865,161 +25865,165 @@ msgstr "PS CID"
 #. GT: CFF is a font format that normally lives inside an OpenType font
 #. GT: but it is perfectly meaningful to remove all the OpenType complexity
 #. GT: and just leave a bare CFF font
-#: savefontdlg.c:158
+#: savefontdlg.c:159
 msgid "CFF (Bare)"
 msgstr "CFF (goły)"
 
-#: savefontdlg.c:159
+#: savefontdlg.c:160
 msgid "CFF CID (Bare)"
 msgstr "CFF CID (goły)"
 
-#: savefontdlg.c:160
+#: savefontdlg.c:161
 msgid "Type42"
 msgstr "PS Type42"
 
-#: savefontdlg.c:161
+#: savefontdlg.c:162
 msgid "Type11 (CID 2)"
 msgstr "PS Type11 (CID 2)"
 
-#: savefontdlg.c:163
+#: savefontdlg.c:164
 msgid "TrueType (Symbol)"
 msgstr "TrueType (Symbol)"
 
-#: savefontdlg.c:165
+#: savefontdlg.c:166
 msgid "TrueType (Resource)"
 msgstr "TrueType (zasób)"
 
-#: savefontdlg.c:167
+#: savefontdlg.c:168
 msgid "TrueType (MacBin)"
 msgstr "TrueType (binarny macowy)"
 
-#: savefontdlg.c:169
+#: savefontdlg.c:170
 msgid "TrueType (TTC)"
 msgstr "TrueType (TTC)"
 
-#: savefontdlg.c:170
+#: savefontdlg.c:171
 msgid "TrueType (Mac dfont)"
 msgstr "TrueType (macowy dfont)"
 
-#: savefontdlg.c:171
+#: savefontdlg.c:172
 msgid "OpenType (CFF)"
 msgstr "OpenType (CFF)"
 
-#: savefontdlg.c:172
+#: savefontdlg.c:173
 msgid "OpenType (Mac dfont)"
 msgstr "OpenType (macowy dfont)"
 
-#: savefontdlg.c:173
+#: savefontdlg.c:174
 msgid "OpenType CID"
 msgstr "OpenType CID"
 
-#: savefontdlg.c:174
+#: savefontdlg.c:175
 msgid "OpenType CID (dfont)"
 msgstr "OpenType CID (dfont)"
 
-#: savefontdlg.c:175
+#: savefontdlg.c:176
 msgid "SVG font"
 msgstr "Font SVG"
 
-#: savefontdlg.c:176
+#: savefontdlg.c:177
 msgid "Unified Font Object"
 msgstr "Unified Font Object"
 
-#: savefontdlg.c:177
+#: savefontdlg.c:178
+msgid "Web Open Font"
+msgstr "Web Open Font"
+
+#: savefontdlg.c:179
 msgid "No Outline Font"
 msgstr "Bez obrysowych"
 
-#: savefontdlg.c:182
+#: savefontdlg.c:184
 msgid "In TTF/OTF"
 msgstr "W foncie TTF/OTF"
 
-#: savefontdlg.c:183
+#: savefontdlg.c:185
 msgid "Apple bitmap only sfnt (dfont)"
 msgstr "Mac sfnt tylko bitmapy (dfont)"
 
-#: savefontdlg.c:184
+#: savefontdlg.c:186
 msgid "(faked) MS bitmap only sfnt (ttf)"
 msgstr "(spreparowany) MS sfnt tylko bitmapy (ttf)"
 
-#: savefontdlg.c:185
+#: savefontdlg.c:187
 msgid "X11 bitmap only sfnt (otb)"
 msgstr "X11 sfnt tylko bitmapy (otb)"
 
-#: savefontdlg.c:187
+#: savefontdlg.c:189
 msgid "NFNT (Resource)"
 msgstr "NFNT (zasób)"
 
-#: savefontdlg.c:189
+#: savefontdlg.c:191
 msgid "NFNT (MacBin)"
 msgstr "NFNT (binarny macowy)"
 
-#: savefontdlg.c:194
+#: savefontdlg.c:196
 msgid "Win FNT"
 msgstr "Windowsowy FNT"
 
-#: savefontdlg.c:195
+#: savefontdlg.c:197
 msgid "Palm OS Bitmap"
 msgstr "Bitmapa PalmOSa"
 
-#: savefontdlg.c:196
+#: savefontdlg.c:198
 msgid "PS Type3 Bitmap"
 msgstr "Bitmapa PS typ 3"
 
-#: savefontdlg.c:197
+#: savefontdlg.c:199
 msgid "No Bitmap Fonts"
 msgstr "Bez bitmapowych"
 
-#: savefontdlg.c:231 savefontdlg.c:1434 savefontdlg.c:1463
+#: savefontdlg.c:233 savefontdlg.c:1436 savefontdlg.c:1465
 msgid "Pixel List"
 msgstr "Rozmiary w pikselach"
 
-#: savefontdlg.c:537 savefontdlg.c:2338
+#: savefontdlg.c:539 savefontdlg.c:2349
 msgid "Options"
 msgstr "Opcje"
 
-#: savefontdlg.c:569
+#: savefontdlg.c:571
 msgid "Round"
 msgstr "Zaokrąglij"
 
-#: savefontdlg.c:571
+#: savefontdlg.c:573
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr "Czy zaokrąglić współrzędne punktów do liczb całkowitych? To oszczędza miejsce."
 
-#: savefontdlg.c:581
+#: savefontdlg.c:583
 msgid "Do you want the font file to contain PostScript hints?"
 msgstr "Czy wynikowy font postscriptowy ma zawierać hinting?"
 
-#: savefontdlg.c:590
+#: savefontdlg.c:592
 msgid "Flex Hints"
 msgstr "Hinty „flex”"
 
-#: savefontdlg.c:592
+#: savefontdlg.c:594
 msgid "Do you want the font file to contain PostScript flex hints?"
 msgstr "Czy wynikowy font postscriptowy ma zawierać hinting typu „flex”?"
 
-#: savefontdlg.c:601
+#: savefontdlg.c:603
 msgid "Hint Substitution"
 msgstr "Podstawianie hintów"
 
-#: savefontdlg.c:603
+#: savefontdlg.c:605
 msgid "Do you want the font file to do hint substitution?"
 msgstr "Czy wynikowy font ma korzystać z podstawiania hintów?"
 
-#: savefontdlg.c:610
+#: savefontdlg.c:612
 msgid "First 256"
 msgstr "Maks. 256 glifów"
 
-#: savefontdlg.c:612
+#: savefontdlg.c:614
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
 "will be included in the file"
 msgstr "Zapisuje do fontu tylko pierwszych 256 glifów użytych w bieżącym kodowaniu."
 
-#: savefontdlg.c:619
+#: savefontdlg.c:621
 msgid "Output AFM"
 msgstr "Zapisz AFM"
 
-#: savefontdlg.c:621
+#: savefontdlg.c:623
 msgid ""
 "The AFM file contains metrics information that many word-processors will read when "
 "using a PostScript® font."
@@ -26027,11 +26031,11 @@ msgstr ""
 "Plik AFM przechowuje informacje metryczne używane przez wiele edytorów przy korzystaniu "
 "z fontów postscriptowych"
 
-#: savefontdlg.c:629
+#: savefontdlg.c:631
 msgid "Composites in AFM"
 msgstr "Kompozyty w AFM"
 
-#: savefontdlg.c:631
+#: savefontdlg.c:633
 msgid ""
 "The AFM format allows some information about composites\n"
 "(roughly the same as mark to base anchor classes) to be\n"
@@ -26042,35 +26046,35 @@ msgstr ""
 "o glifach kompozytowych. To powoduje jednak gwałtowny wzrost\n"
 "objętości, gdyż te informacje nie są zapisywane w kompaktowy sposób."
 
-#: savefontdlg.c:639
+#: savefontdlg.c:641
 msgid "Output PFM"
 msgstr "Zapisz PFM"
 
-#: savefontdlg.c:641
+#: savefontdlg.c:643
 msgid "The PFM file contains information Windows needs to install a PostScript® font."
 msgstr ""
 "Pliki PFM przechowują informacje potrzebne dla Windows do zainstalowania fontów "
 "postscriptowych"
 
-#: savefontdlg.c:649
+#: savefontdlg.c:651
 msgid "Output TFM & ENC"
 msgstr "Zapisz TFM i ENC"
 
-#: savefontdlg.c:651
+#: savefontdlg.c:653
 msgid "The tfm and enc files contain information TeX needs to install a PostScript® font."
 msgstr ""
 "Pliki TFM i ENC przechowują informacje potrzebne ΤεΧ-owi do zainstalowania fontów "
 "postscriptowych"
 
-#: savefontdlg.c:664
+#: savefontdlg.c:666
 msgid "SFNT"
 msgstr "SFNT"
 
-#: savefontdlg.c:679
+#: savefontdlg.c:681
 msgid "TrueType Hints"
 msgstr "Hinting"
 
-#: savefontdlg.c:681
+#: savefontdlg.c:683
 msgid ""
 "Do you want the font file to contain truetype hints? This will not\n"
 "generate new instructions, it will just make use of whatever is associated\n"
@@ -26079,15 +26083,15 @@ msgstr ""
 "Czy wynikowy font ma zawierać hinting TrueType? Włączenie tej opcji nie spowoduje\n"
 "wygenerowania nowych instrukcji, zostaną użyte te które już są w foncie."
 
-#: savefontdlg.c:689
+#: savefontdlg.c:691
 msgid "PS Glyph Names"
 msgstr "Nazwy glifów"
 
-#: savefontdlg.c:691
+#: savefontdlg.c:693
 msgid "Do you want the font file to contain the names of each glyph in the font?"
 msgstr "Czy wynikowy font ma zawierać nazwy glifów?"
 
-#: savefontdlg.c:701
+#: savefontdlg.c:703
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
@@ -26109,7 +26113,7 @@ msgstr ""
 " Użycie raczej GPOS niż kern/opbd\n"
 " Użycie raczej GDEF niż lcar/prop"
 
-#: savefontdlg.c:712
+#: savefontdlg.c:714
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
@@ -26131,11 +26135,11 @@ msgstr ""
 " Użycie raczej GPOS niż kern/opbd\n"
 " Użycie raczej GDEF niż lcar/prop"
 
-#: savefontdlg.c:720
+#: savefontdlg.c:722
 msgid "Old style 'kern'"
 msgstr "Tradycyjna „kern”"
 
-#: savefontdlg.c:722
+#: savefontdlg.c:724
 msgid ""
 "Many applications still don't support 'GPOS' kerning.\n"
 "If you want to include both 'GPOS' and old-style 'kern'\n"
@@ -26148,11 +26152,11 @@ msgstr ""
 "„kern”, używanej dawniej do przechowywania informacji o kerningu. To może\n"
 "jednak zmylić niektóre programy. Nie wolno tego stosować razem z opcją „apple”."
 
-#: savefontdlg.c:731
+#: savefontdlg.c:733
 msgid "Dummy 'DSIG'"
 msgstr "Pusta tablica „DSIG”"
 
-#: savefontdlg.c:734
+#: savefontdlg.c:736
 msgid ""
 "MS uses the presence of a 'DSIG' table to determine whether to use an OpenType\n"
 "icon for the tt font. FontForge can't generate a useful 'DSIG' table, but it can\n"
@@ -26163,23 +26167,23 @@ msgstr ""
 "fontu, ale może wygenerować pustą tablicę tak, aby Windows pokazywał font\n"
 "jako OpenType. Poza tym ta opcja nie ma innych zastosowań."
 
-#: savefontdlg.c:744
+#: savefontdlg.c:746
 msgid "Output Glyph Map"
 msgstr "Zapisz mapę glifów"
 
-#: savefontdlg.c:754
+#: savefontdlg.c:756
 msgid "Output OFM & CFG"
 msgstr "Zapisz OFM i CFG"
 
-#: savefontdlg.c:756
+#: savefontdlg.c:758
 msgid "The ofm and cfg files contain information Omega needs to process a font."
 msgstr "Pliki OFM i CFG zawierają informacji potrzebne Omedze do przetwarzania fontu."
 
-#: savefontdlg.c:764
+#: savefontdlg.c:766
 msgid "PfaEdit Table"
 msgstr "Tablica PfEd"
 
-#: savefontdlg.c:766
+#: savefontdlg.c:768
 msgid ""
 "The PfaEdit table is an extension to the TrueType format\n"
 "and contains various data used by FontForge\n"
@@ -26190,43 +26194,43 @@ msgstr ""
 "różne dane używane przez FontForge (powinna się nazywać FFrg\n"
 "od „FontForge”, ale z przyczyn historycznych tak nie jest)."
 
-#: savefontdlg.c:774
+#: savefontdlg.c:776
 msgid "Save Comments"
 msgstr "Zapisz komentarze"
 
-#: savefontdlg.c:776
+#: savefontdlg.c:778
 msgid "Save glyph comments in the PfEd table"
 msgstr "Zapisuje komentarze wszystkich glifów w tablicy PfEd"
 
-#: savefontdlg.c:784
+#: savefontdlg.c:786
 msgid "Save Colors"
 msgstr "Zapisz kolory"
 
-#: savefontdlg.c:786
+#: savefontdlg.c:788
 msgid "Save glyph colors in the PfEd table"
 msgstr "Zapisuje kolory wszystkich glifów w tablicy PfEd"
 
-#: savefontdlg.c:794
+#: savefontdlg.c:796
 msgid "Lookup Names"
 msgstr "Nazwy tablic OT"
 
-#: savefontdlg.c:796
+#: savefontdlg.c:798
 msgid "Preserve the names of the GPOS/GSUB lookups and subtables"
 msgstr "Zachowaj nazwy tablic i podtablic funkcji zecerskich GPOS/GSUB w tablicy PfEd"
 
-#: savefontdlg.c:804
+#: savefontdlg.c:806
 msgid "Save Guides"
 msgstr "Zapisz warstwę odniesienia"
 
-#: savefontdlg.c:806
+#: savefontdlg.c:808
 msgid "Save the guidelines in the Guide layer."
 msgstr "Zapisuje prowadnice i zawartość warstwy odniesienia w tablicy PfEd"
 
-#: savefontdlg.c:814
+#: savefontdlg.c:816
 msgid "Save Layers"
 msgstr "Zapisz warstwy"
 
-#: savefontdlg.c:817
+#: savefontdlg.c:819
 msgid ""
 "Preserve any background and spiro layers.\n"
 "Also if we output a truetype font from a\n"
@@ -26236,11 +26240,11 @@ msgstr ""
 "Jeśli font truetype jest generowany z krzywych stopnia 3\n"
 "(postscriptowych), one także zostaną zachowane."
 
-#: savefontdlg.c:827
+#: savefontdlg.c:829
 msgid "TeX Table"
 msgstr "Tablica TeX"
 
-#: savefontdlg.c:829
+#: savefontdlg.c:831
 msgid ""
 "The TeX table is an extension to the TrueType format\n"
 "and the various data you would expect to find in\n"
@@ -26251,11 +26255,11 @@ msgstr ""
 "różne dane dla ΤεΧ-a, których nie ma w oryginalnej specyfikacji\n"
 "TrueType, a które zwykle znajdują się w plikach TFM.\n"
 
-#: savefontdlg.c:844
+#: savefontdlg.c:846
 msgid "Output Font Log"
 msgstr "Wygeneruj plik FONTLOG"
 
-#: savefontdlg.c:847
+#: savefontdlg.c:849
 msgid ""
 "The FONTLOG is a text file containing pertinent information\n"
 "about the font including such things as its change history.\n"
@@ -26274,25 +26278,25 @@ msgstr ""
 "to wybór tej opcji spowoduje zapisanie wraz z fontem, do tego samego\n"
 "katalogu, pliku „FONTLOG.txt”."
 
-#: savefontdlg.c:956 savefontdlg.c:971
+#: savefontdlg.c:958 savefontdlg.c:973
 msgid "BDF Resolution"
 msgstr "Rozdzielczość BDF"
 
-#: savefontdlg.c:1017
+#: savefontdlg.c:1019
 msgid "Guess each font's resolution based on its pixel size"
 msgstr ""
 "Ustal rozdzielczość, do jakiej przeznaczony jest font, na podstawie wysokości w "
 "pikselach."
 
-#: savefontdlg.c:1230
+#: savefontdlg.c:1232
 msgid "Find Sub Font Definition file"
 msgstr "Odszukaj plik definicji podfontu"
 
-#: savefontdlg.c:1344
+#: savefontdlg.c:1346
 msgid "Notdef name"
 msgstr "Nazwa .notdef"
 
-#: savefontdlg.c:1344
+#: savefontdlg.c:1346
 #, c-format
 msgid ""
 "The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is "
@@ -26304,11 +26308,11 @@ msgstr ""
 "się tak a nie inaczej, zostanie pominięty i zaleca się zmienić jego nazwę. Czy mimo to "
 "kontynuować?"
 
-#: savefontdlg.c:1356
+#: savefontdlg.c:1358
 msgid "Not a CID format"
 msgstr "To nie CID"
 
-#: savefontdlg.c:1356
+#: savefontdlg.c:1358
 msgid ""
 "You are attempting to save a CID font in a non-CID format. This is ok, but it means "
 "that only the current sub-font will be saved.\n"
@@ -26317,7 +26321,7 @@ msgstr ""
 "Próba zapisu fontu CID w nieCIDowym formacie. Zapisany zostanie tylko bieżący podfont. "
 "Czy mimo to kontynuować?"
 
-#: savefontdlg.c:1364
+#: savefontdlg.c:1366
 #, c-format
 msgid ""
 "The truetype instructions on glyph %s are out of date.\n"
@@ -26326,11 +26330,11 @@ msgstr ""
 "Instrukcje truetype'owe w %s są nieaktualne.\n"
 "Czy mimo to kontynuować?"
 
-#: savefontdlg.c:1372
+#: savefontdlg.c:1374
 msgid "Reference point match out of date"
 msgstr "Nieaktualne przystawanie punktów"
 
-#: savefontdlg.c:1372
+#: savefontdlg.c:1374
 #, c-format
 msgid ""
 "In glyph %s the reference to %s is positioned by point matching, and the point numbers "
@@ -26341,11 +26345,11 @@ msgstr ""
 "a numery punktów uległy zmianie i przystawanie może być nieaktualne.\n"
 "Czy mimo to kontynuować?"
 
-#: savefontdlg.c:1383
+#: savefontdlg.c:1385
 msgid "Bad OS/2 version"
 msgstr "Błędna wersja OS/2"
 
-#: savefontdlg.c:1383
+#: savefontdlg.c:1385
 msgid ""
 "OpenType fonts must have a version greater than 1\n"
 "Use Element->Font Info->OS/2->Misc to change this."
@@ -26353,11 +26357,11 @@ msgstr ""
 "Fonty OpenType zawierać tablicę „OS/2 w wersji wyższej niż 1.\n"
 "”To ustala się w Element -> Właściwości Fontu -> Różne."
 
-#: savefontdlg.c:1395 savefontdlg.c:1413
+#: savefontdlg.c:1397 savefontdlg.c:1415
 msgid "Non-standard Em-Size"
 msgstr "Niestandardowa wysokość pola znaku"
 
-#: savefontdlg.c:1395
+#: savefontdlg.c:1397
 #, c-format
 msgid ""
 "The convention is that PostScript fonts should have an Em-Size of 1000. But this font "
@@ -26370,7 +26374,7 @@ msgstr ""
 "ale lepiej rozważyć poprawienie tego w Element -> Właściwość Fontu -> Ogólne.\n"
 "Czy mimo to kontynuować?"
 
-#: savefontdlg.c:1413
+#: savefontdlg.c:1415
 #, c-format
 msgid ""
 "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But "
@@ -26383,7 +26387,7 @@ msgstr ""
 "to błąd, ale lepiej rozważyć poprawienie tego w Element -> Właściwość fontu -> Ogólne.\n"
 "Czy mimo to kontynuować?"
 
-#: savefontdlg.c:1428
+#: savefontdlg.c:1430
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a format that "
 "only supports one byte encodings. This means that you won't be able to access anything "
@@ -26395,11 +26399,11 @@ msgstr ""
 "kodowania jednobajtowe. Będzie można używać tylko pierwszych 256 znaków fontu.\n"
 "Czy mimo to kontynuować?"
 
-#: savefontdlg.c:1439
+#: savefontdlg.c:1441
 msgid "The 'NFNT' bitmap format is obsolete"
 msgstr "Format NFNT jest przestarzały"
 
-#: savefontdlg.c:1439
+#: savefontdlg.c:1441
 msgid ""
 "The 'NFNT' bitmap format is not used under OS/X (though you still need to create a "
 "(useless) bitmap font if you are saving a type1 PostScript resource)"
@@ -26408,11 +26412,11 @@ msgstr ""
 "formacie zasobu PostScript Type1 i tak konieczne jest utworzenie (bezużytecznego) fontu "
 "bitmapowego."
 
-#: savefontdlg.c:1442
+#: savefontdlg.c:1444
 msgid "Needs bitmap font"
 msgstr "Potrzebny font bitmapowy"
 
-#: savefontdlg.c:1442
+#: savefontdlg.c:1444
 msgid ""
 "When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap "
 "font to go with it. If you have not created any bitmaps for this font, cancel this dlg "
@@ -26422,11 +26426,11 @@ msgstr ""
 "najmniej jeden towarzyszący font bitmapowy w formacie NFNT. Jeśli ten font nie ma "
 "jeszcze bitmap, proszę anulować i wygenerować je w Element -> Wersje bitmapowe"
 
-#: savefontdlg.c:1446
+#: savefontdlg.c:1448
 msgid "The 'POST' type1 format is probably deprecated"
 msgstr "Format POST Type1 jest prawdopodobnie przestarzały"
 
-#: savefontdlg.c:1446
+#: savefontdlg.c:1448
 msgid ""
 "The 'POST' type1 format is probably depreciated and may not work in future version of "
 "the mac."
@@ -26434,15 +26438,15 @@ msgstr ""
 "Format POST Type1 prawdopodobnie jako przestarzały nie zadziała na przyszłych wersjach "
 "maców."
 
-#: savefontdlg.c:1490
+#: savefontdlg.c:1492
 msgid "_Review"
 msgstr "P_rzejrzyj"
 
-#: savefontdlg.c:1494
+#: savefontdlg.c:1496
 msgid "Errors detected"
 msgstr "Wykryto błędy"
 
-#: savefontdlg.c:1494
+#: savefontdlg.c:1496
 #, c-format
 msgid ""
 "The font contains errors.\n"
@@ -26451,43 +26455,43 @@ msgstr ""
 "W foncie wykryto błędy i zaleca się je przejrzeć.\n"
 "%sczy mimo to kontynuować?"
 
-#: savefontdlg.c:1641
+#: savefontdlg.c:1643
 msgid "Bad OFLib upload"
 msgstr "Błąd przy wysyłaniu do Open Font Library"
 
-#: savefontdlg.c:1643
+#: savefontdlg.c:1645
 msgid "Missing OFLib password"
 msgstr "Brakuje hasła do Open Font Library"
 
-#: savefontdlg.c:1645
+#: savefontdlg.c:1647
 msgid "Missing OFLib username"
 msgstr "Brakuje nazwy użytkownika Open Font Library"
 
-#: savefontdlg.c:1647
+#: savefontdlg.c:1649
 msgid "Missing OFLib description"
 msgstr "Brakuje opisu do Open Font Library"
 
-#: savefontdlg.c:1649
+#: savefontdlg.c:1651
 msgid "Missing OFLib name"
 msgstr "Brakuje nazwy fontu do Open Font Library"
 
-#: savefontdlg.c:1650
+#: savefontdlg.c:1652
 msgid "Missing OFLib keywords"
 msgstr "Brakuje słów kluczowych do Open Font Library"
 
-#: savefontdlg.c:1737 ../gdraw/gsavefiledlg.c:153
+#: savefontdlg.c:1747 ../gdraw/gsavefiledlg.c:153
 msgid "Create directory..."
 msgstr "Utwórz katalog..."
 
-#: savefontdlg.c:1966
+#: savefontdlg.c:1976
 msgid "Browse for a preview image"
 msgstr "Ścieżka do pliku z podglądem"
 
-#: savefontdlg.c:2240 savefontdlg.c:2244
+#: savefontdlg.c:2251 savefontdlg.c:2255
 msgid "Bad Mac Family"
 msgstr "Błędna rodzina macowa"
 
-#: savefontdlg.c:2240
+#: savefontdlg.c:2251
 msgid ""
 "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) "
 "style, and there must be other open fonts with the same family name."
@@ -26495,7 +26499,7 @@ msgstr ""
 "Aby wygenerować rodzinę macową, bieżący font musi mieć „podstawowy” styl (Normal, "
 "Regular...), muszą być też otwarte pozostałe fonty tej rodziny."
 
-#: savefontdlg.c:2244
+#: savefontdlg.c:2255
 #, c-format
 msgid ""
 "There are two open fonts with the current family name and the same style. %.30s and "
@@ -26504,31 +26508,31 @@ msgstr ""
 "Są otwarte dwa fonty o tym samym stylu i nazwie rodziny:\n"
 "%.30s i %.30s"
 
-#: savefontdlg.c:2260
+#: savefontdlg.c:2271
 msgid "Generate Mac Family"
 msgstr "Generuj rodzinę macową"
 
-#: savefontdlg.c:2260
+#: savefontdlg.c:2271
 msgid "Generate Fonts"
 msgstr "Generuj fonty"
 
-#: savefontdlg.c:2340
+#: savefontdlg.c:2351
 msgid "Allows you to select optional behavior when generating the font"
 msgstr "Pozwala na określenie opcjonalnego zachowania przy generowaniu fontów"
 
-#: savefontdlg.c:2572
+#: savefontdlg.c:2583
 msgid "Layer:"
 msgstr "Warstwa:"
 
-#: savefontdlg.c:2583
+#: savefontdlg.c:2594
 msgid "Save a font based on the specified layer"
 msgstr "Generuj font ze wskazanej warstwy."
 
-#: savefontdlg.c:2598
+#: savefontdlg.c:2609
 msgid "Validate Before Saving"
 msgstr "Sprawdź przed zapisem"
 
-#: savefontdlg.c:2608
+#: savefontdlg.c:2619
 msgid ""
 "Check the glyph outlines for standard errors before saving\n"
 "This can be slow."
@@ -26536,19 +26540,19 @@ msgstr ""
 "Pozwala sprawdzić font w poszukiwaniu typowych błędów przed\n"
 "wygenerowaniem. To może trochę potrwać."
 
-#: savefontdlg.c:2613
+#: savefontdlg.c:2624
 msgid "Append a FONTLOG entry"
 msgstr "Dodaj wpis pliku FONTLOG"
 
-#: savefontdlg.c:2620
+#: savefontdlg.c:2631
 msgid "The FONTLOG allows you to keep a log of changes made to your font."
 msgstr "FONTLOG pozwoli prowadzić rejestr zmian dokonanych w foncie."
 
-#: savefontdlg.c:2635
+#: savefontdlg.c:2646
 msgid "Upload to the"
 msgstr "Wyślij do"
 
-#: savefontdlg.c:2640
+#: savefontdlg.c:2651
 msgid ""
 "Once you have a final version of your font\n"
 "and if your font is licensed under the Open\n"
@@ -26570,35 +26574,35 @@ msgstr ""
 "osobistego loginu i hasła. Oczywiście konieczne jest\n"
 "połączenie z Internetem."
 
-#: savefontdlg.c:2662
+#: savefontdlg.c:2673
 msgid "Open Font Library"
 msgstr "Open Font Library (Biblioteka Otwartych Fontów)"
 
-#: savefontdlg.c:2673
+#: savefontdlg.c:2684
 msgid "Register"
 msgstr "Zarejestruj się"
 
-#: savefontdlg.c:2698
+#: savefontdlg.c:2709
 msgid "Username:"
 msgstr "Login:"
 
-#: savefontdlg.c:2702 savefontdlg.c:2712
+#: savefontdlg.c:2713 savefontdlg.c:2723
 msgid "Username on OFLib"
 msgstr "Nazwa konta w Open Font Library"
 
-#: savefontdlg.c:2717
+#: savefontdlg.c:2728
 msgid "Password:"
 msgstr "Hasło"
 
-#: savefontdlg.c:2721 savefontdlg.c:2735
+#: savefontdlg.c:2732 savefontdlg.c:2746
 msgid "Password on OFLib"
 msgstr "Hasło do konta w Open Font Library"
 
-#: savefontdlg.c:2741
+#: savefontdlg.c:2752
 msgid "Remember Me"
 msgstr "Zapamiętaj mnie"
 
-#: savefontdlg.c:2747
+#: savefontdlg.c:2758
 msgid ""
 "FontForge will remember your username/password\n"
 "by storing them as plain text (insecurely) in your preference file"
@@ -26606,29 +26610,29 @@ msgstr ""
 "FontForge zapamięta twoje login i hasło, zapisując je (czystym tekstem)\n"
 "w pliku ustawień. To nie jest bezpieczne."
 
-#: savefontdlg.c:2755
+#: savefontdlg.c:2766
 msgid "OFLib Name:"
 msgstr "Nazwa fontu"
 
-#: savefontdlg.c:2759 savefontdlg.c:2768
+#: savefontdlg.c:2770 savefontdlg.c:2779
 msgid "Font name to display on OFLib"
 msgstr "Nazwa pod jaką font zostanie dodany do Open Font Library"
 
-#: savefontdlg.c:2773
+#: savefontdlg.c:2784
 msgid "Artists:"
 msgstr "Twórcy:"
 
-#: savefontdlg.c:2777 savefontdlg.c:2783
+#: savefontdlg.c:2788 savefontdlg.c:2794
 msgid ""
 "Other artists involved in the design of this font.\n"
 "Collaborators, etc."
 msgstr "kto jeszcze był zaangażowany w tworzenie tego fontu?"
 
-#: savefontdlg.c:2789
+#: savefontdlg.c:2800
 msgid "Keyword Tags:"
 msgstr "Słowa kluczowe"
 
-#: savefontdlg.c:2793
+#: savefontdlg.c:2804
 msgid ""
 "A comma separated list of keywords that describe\n"
 "the font to help others search for it.\n"
@@ -26644,7 +26648,7 @@ msgstr ""
 "extended, compressed, thin, demibold, black, outline,\n"
 "regular, display, etc."
 
-#: savefontdlg.c:2799
+#: savefontdlg.c:2810
 msgid ""
 "A comma separated list of keywords that describe\n"
 "the font to help others search for it.\n"
@@ -26660,23 +26664,23 @@ msgstr ""
 "extended, compressed, thin, demibold, black, outline,\n"
 "regular, display, etc."
 
-#: savefontdlg.c:2805
+#: savefontdlg.c:2816
 msgid "Description:"
 msgstr "Opis:"
 
-#: savefontdlg.c:2809 savefontdlg.c:2816 savefontdlg.c:2826
+#: savefontdlg.c:2820 savefontdlg.c:2827 savefontdlg.c:2837
 msgid "A description of the font"
 msgstr "Krótki opis fontu"
 
-#: savefontdlg.c:2822
+#: savefontdlg.c:2833
 msgid "License:"
 msgstr "Licencja:"
 
-#: savefontdlg.c:2831
+#: savefontdlg.c:2842
 msgid "SIL"
 msgstr "SIL"
 
-#: savefontdlg.c:2837
+#: savefontdlg.c:2848
 msgid ""
 "The SIL Open Font License\n"
 "Please see http://scripts.sil.org/OFL"
@@ -26685,49 +26689,49 @@ msgstr ""
 "(OFL, Open Font License). Więcej pod adresem:\n"
 "http://scripts.sil.org/OFL"
 
-#: savefontdlg.c:2842 savefontdlg.c:2846
+#: savefontdlg.c:2853 savefontdlg.c:2857
 msgid "Public Domain"
 msgstr "W domenie publicznej"
 
-#: savefontdlg.c:2851
+#: savefontdlg.c:2862
 msgid "Upload License"
 msgstr "Wyślij treść licencji"
 
-#: savefontdlg.c:2857
+#: savefontdlg.c:2868
 msgid "Upload the license (as found in the list of truetype names)"
 msgstr "Wysyła treść licencji (z danych TTF we właściwościach fontu)"
 
-#: savefontdlg.c:2864
+#: savefontdlg.c:2875
 msgid "Upload FONTLOG"
 msgstr "Wyślij plik FONTLOG"
 
-#: savefontdlg.c:2876
+#: savefontdlg.c:2887
 msgid "Preview:"
 msgstr "Podgląd:"
 
-#: savefontdlg.c:2880
+#: savefontdlg.c:2891
 msgid "An image of the font in use"
 msgstr "Obraz fontu w użyciu"
 
-#: savefontdlg.c:2885
+#: savefontdlg.c:2896
 msgid "Generated Image"
 msgstr "Wygeneruj obraz"
 
-#: savefontdlg.c:2890
+#: savefontdlg.c:2901
 msgid ""
 "FontForge will generate a sample image for you\n"
 "before uploading."
 msgstr "Przed wysłaniem fontu, FontForge wygeneruje obraz podglądu."
 
-#: savefontdlg.c:2895
+#: savefontdlg.c:2906
 msgid "No Preview"
 msgstr "Brak podglądu"
 
-#: savefontdlg.c:2900
+#: savefontdlg.c:2911
 msgid "No image will be uploaded."
 msgstr "Nie zostanie wysłany żaden obraz z podglądem."
 
-#: savefontdlg.c:2906 savefontdlg.c:2912 savefontdlg.c:2922
+#: savefontdlg.c:2917 savefontdlg.c:2923 savefontdlg.c:2933
 msgid ""
 "If you have already created a preview image of the font\n"
 "then provide the pathspec here."
@@ -26735,11 +26739,11 @@ msgstr ""
 "Jeśli obraz podglądu został już przygotowany,\n"
 "tu można wprowadzić ścieżkę do niego."
 
-#: savefontdlg.c:2942
+#: savefontdlg.c:2953
 msgid "Not Safe for Work"
 msgstr "Nie dla środowisk roboczych"
 
-#: savefontdlg.c:2946
+#: savefontdlg.c:2957
 msgid ""
 "If for some reason the font is deemed inappropriate\n"
 "for a work environment."
@@ -26747,11 +26751,11 @@ msgstr ""
 "Wybrać, jeśli z jakichś przyczyn font wydaje\n"
 "się nieodpowiedni do środowisk roboczych."
 
-#: savefontdlg.c:3035
+#: savefontdlg.c:3046
 msgid "Merge tables across fonts"
 msgstr "Połącz wspólne dane"
 
-#: savefontdlg.c:3040
+#: savefontdlg.c:3051
 msgid ""
 "FontForge can generate two styles of ttc file.\n"
 "In the first each font is a separate entity\n"
@@ -26785,11 +26789,11 @@ msgstr ""
 "\n"
 "Poza tym, łączenie jest czasochłonne."
 
-#: savefontdlg.c:3059
+#: savefontdlg.c:3070
 msgid "As CFF fonts"
 msgstr "Zastosuj format CFF"
 
-#: savefontdlg.c:3064
+#: savefontdlg.c:3075
 msgid ""
 "Put CFF fonts into the ttc rather than TTF.\n"
 " These seem to work on the mac and linux\n"
@@ -28738,31 +28742,31 @@ msgstr "W tym archiwum jest wiele plików, proszę wybrać któryś"
 msgid "Loading font from "
 msgstr "Wczytywanie fontu z "
 
-#: splinefont.c:1196 splinefont.c:1198 splinefont.c:1200
+#: splinefont.c:1199 splinefont.c:1201 splinefont.c:1203
 msgid "Couldn't open font"
 msgstr "Nie udało się otworzyć fontu"
 
-#: splinefont.c:1196
+#: splinefont.c:1199
 #, c-format
 msgid "The requested file, %.100s, does not exist"
 msgstr "Żądany plik, %.100s, nie istnieje"
 
-#: splinefont.c:1198
+#: splinefont.c:1201
 #, c-format
 msgid "You do not have permission to read %.100s"
 msgstr "Odmowa prawa odczytu z %.100s"
 
-#: splinefont.c:1200
+#: splinefont.c:1203
 #, c-format
 msgid "%.100s is not in a known format (or is so badly corrupted as to be unreadable)"
 msgstr ""
 "Nie rozpoznano formatu pliku %.100s (albo jest on tak ciężko uszkodzony, że nieczytelny)"
 
-#: splinefont.c:1217
+#: splinefont.c:1220
 msgid "Restricted Font"
 msgstr "Font o zaostrzonej licencji"
 
-#: splinefont.c:1217
+#: splinefont.c:1220
 msgid ""
 "This font is marked with an FSType of 2 (Restricted\n"
 "License). That means it is not editable without the\n"
@@ -28776,7 +28780,7 @@ msgstr ""
 "\n"
 "Czy producent udzielił zezwolenia na edycję tego fontu?"
 
-#: splinefont.c:1916
+#: splinefont.c:1919
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "Próba utworzenia fontu o więcej niż %d warstwach."
@@ -31199,7 +31203,7 @@ msgstr "uzupełnienie grażdanki"
 msgid "Arabic Supplement"
 msgstr "uzupełnienie arabskiego"
 
-#: unicoderange.c:61 unicoderange.c:66
+#: unicoderange.c:61
 msgid "Samaritan"
 msgstr "samarytański"
 
@@ -31215,627 +31219,627 @@ msgstr "aramejski"
 msgid "Pahlavi"
 msgstr "pahlawi"
 
-#: unicoderange.c:65 unicoderange.c:150
+#: unicoderange.c:65 unicoderange.c:149
 msgid "Tifinagh"
 msgstr "tifinagh"
 
-#: unicoderange.c:67
+#: unicoderange.c:66
 msgid "Mandaic"
 msgstr "mandejski"
 
-#: unicoderange.c:68
+#: unicoderange.c:67
 msgid "Devangari"
 msgstr "dewanagari"
 
-#: unicoderange.c:83
+#: unicoderange.c:82
 msgid "Hangul Jamo, Choseong"
 msgstr "hangyl Jamo, Choseong"
 
-#: unicoderange.c:84
+#: unicoderange.c:83
 msgid "Hangul Jamo, Jungseong"
 msgstr "hangyl Jamo, Jungseong"
 
-#: unicoderange.c:85
+#: unicoderange.c:84
 msgid "Hangul Jamo, Jongseong"
 msgstr "hangyl Jamo, Jongseong"
 
-#: unicoderange.c:87
+#: unicoderange.c:86
 msgid "Ethiopic Supplement"
 msgstr "uzupełnienie etiopskiego"
 
-#: unicoderange.c:92
+#: unicoderange.c:91
 msgid "Tagalog"
 msgstr "tagalski"
 
-#: unicoderange.c:93
+#: unicoderange.c:92
 msgid "Hanunóo"
 msgstr "hanunoo"
 
-#: unicoderange.c:94
+#: unicoderange.c:93
 msgid "Buhid"
 msgstr "buid"
 
-#: unicoderange.c:95
+#: unicoderange.c:94
 msgid "Tagbanwa"
 msgstr "tagbanuwa"
 
-#: unicoderange.c:98
+#: unicoderange.c:97
 msgid "Limbu"
 msgstr "limbu"
 
-#: unicoderange.c:100
+#: unicoderange.c:99
 msgid "New Tai Lu"
 msgstr "nowe Tai Lu"
 
-#: unicoderange.c:101
+#: unicoderange.c:100
 msgid "Khmer Symbols"
 msgstr "symbole khmerskie"
 
-#: unicoderange.c:102
+#: unicoderange.c:101
 msgid "Buginese"
 msgstr "bugiński"
 
-#: unicoderange.c:103
+#: unicoderange.c:102
 msgid "Tai Tham"
 msgstr "lannijski"
 
-#: unicoderange.c:104
+#: unicoderange.c:103
 msgid "Balinese"
 msgstr "balijski"
 
-#: unicoderange.c:105
+#: unicoderange.c:104
 msgid "Sundanese"
 msgstr "sundajski"
 
-#: unicoderange.c:106
+#: unicoderange.c:105
 msgid "Lepcha"
 msgstr "lepcha"
 
-#: unicoderange.c:108
+#: unicoderange.c:107
 msgid "Phonetic Extensions"
 msgstr "rozszerzenia fonetyczne"
 
-#: unicoderange.c:109
+#: unicoderange.c:108
 msgid "Phonetic Extensions Supplement"
 msgstr "uzupełnienie rozszerzeń fonetycznych"
 
-#: unicoderange.c:110
+#: unicoderange.c:109
 msgid "Combining Diacritical Marks Supplement"
 msgstr "uzupełnienie składających znaków diakrytycznych"
 
-#: unicoderange.c:113
+#: unicoderange.c:112
 msgid "Symbols"
 msgstr "symbole"
 
-#: unicoderange.c:115
+#: unicoderange.c:114
 msgid "Super and Sub scripts"
 msgstr "frakcje górne i dolne"
 
-#: unicoderange.c:117
+#: unicoderange.c:116
 msgid "Combining marks for Symbols"
 msgstr "znaki składające dla symboli"
 
-#: unicoderange.c:119
+#: unicoderange.c:118
 msgid "Number Forms"
 msgstr "formy liczbowe"
 
-#: unicoderange.c:120
+#: unicoderange.c:119
 msgid "Arrows"
 msgstr "strzałki"
 
-#: unicoderange.c:121
+#: unicoderange.c:120
 msgid "Mathematical Operators"
 msgstr "operatory matematyczne"
 
-#: unicoderange.c:122
+#: unicoderange.c:121
 msgid "Miscellaneous Technical Symbols"
 msgstr "różnorodne symbole techniczne"
 
-#: unicoderange.c:124
+#: unicoderange.c:123
 msgid "OCR"
 msgstr "OCR"
 
-#: unicoderange.c:131
+#: unicoderange.c:130
 msgid "Zapf Dingbats"
 msgstr "dingbaty Zapfa"
 
-#: unicoderange.c:132
+#: unicoderange.c:131
 msgid "Miscellaneous Math Symbols-A"
 msgstr "różnorodne symbole matematyczne-A"
 
-#: unicoderange.c:133
+#: unicoderange.c:132
 msgid "Math Miscellaneous Symbols-A"
 msgstr "różnorodne symbole matematyczne-A"
 
-#: unicoderange.c:134
+#: unicoderange.c:133
 msgid "Supplemental Arrows-A"
 msgstr "dodatkowe strzałki-A"
 
-#: unicoderange.c:135
+#: unicoderange.c:134
 msgid "Arrows Supplemental-A"
 msgstr "dodatkowe strzałki-A"
 
-#: unicoderange.c:137
+#: unicoderange.c:136
 msgid "Supplemental Arrows-B"
 msgstr "dodatkowe strzałki-B"
 
-#: unicoderange.c:138
+#: unicoderange.c:137
 msgid "Arrows Supplemental-B"
 msgstr "dodatkowe strzałki-B"
 
-#: unicoderange.c:139
+#: unicoderange.c:138
 msgid "Miscellaneous Math Symbols-B"
 msgstr "różnorodne symbole matematyczne-B"
 
-#: unicoderange.c:140
+#: unicoderange.c:139
 msgid "Math Miscellaneous Symbols-B"
 msgstr "różnorodne symbole matematyczne-B"
 
-#: unicoderange.c:141
+#: unicoderange.c:140
 msgid "Supplemental Math Operators"
 msgstr "dodatkowe operatory matematyczne"
 
-#: unicoderange.c:142
+#: unicoderange.c:141
 msgid "Math Supplemental Operators"
 msgstr "dodatkowe operatory matematyczne"
 
-#: unicoderange.c:143
+#: unicoderange.c:142
 msgid "Supplemental Symbols and Arrows"
 msgstr "dodatkowe symbole i strzałki"
 
-#: unicoderange.c:144
+#: unicoderange.c:143
 msgid "Symbols Supplemental"
 msgstr "dodatkowe symbole"
 
-#: unicoderange.c:145
+#: unicoderange.c:144
 msgid "Alphabetic Extended"
 msgstr "rozszerzony znaków alfabetycznych"
 
-#: unicoderange.c:147
+#: unicoderange.c:146
 msgid "Latin Extended-C"
 msgstr "rozszerzony łaciński-C"
 
-#: unicoderange.c:148
+#: unicoderange.c:147
 msgid "Coptic"
 msgstr "koptyjski"
 
-#: unicoderange.c:149
+#: unicoderange.c:148
 msgid "Georgian Supplement"
 msgstr "uzupełnienie gruzińskiego"
 
-#: unicoderange.c:151
+#: unicoderange.c:150
 msgid "Ethiopic Extended"
 msgstr "rozszerzony etiopski"
 
-#: unicoderange.c:152
+#: unicoderange.c:151
 msgid "Supplemental Punctuation"
 msgstr "dodatkowa interpunkcja"
 
-#: unicoderange.c:153
+#: unicoderange.c:152
 msgid "CJK Radicals"
 msgstr "klucze CJK"
 
-#: unicoderange.c:154
+#: unicoderange.c:153
 msgid "Kanqxi Radicals"
 msgstr "klucze kanqxi"
 
-#: unicoderange.c:155
+#: unicoderange.c:154
 msgid "Ideographic Description Characters"
 msgstr "znaki opisu ideogramów"
 
-#: unicoderange.c:156
+#: unicoderange.c:155
 msgid "CJK Phonetics and Symbols"
 msgstr "znaki fonetyczne i symbole CJK"
 
-#: unicoderange.c:162
+#: unicoderange.c:161
 msgid "Kanbun"
 msgstr "kanbun"
 
-#: unicoderange.c:163
+#: unicoderange.c:162
 msgid "Bopomofo Extended"
 msgstr "rozszerzony bopomofo"
 
-#: unicoderange.c:164
+#: unicoderange.c:163
 msgid "CJK Strokes"
 msgstr "kreski CJK"
 
-#: unicoderange.c:165
+#: unicoderange.c:164
 msgid "Katakana Phonetic Extensions"
 msgstr "rozszerzenia fonetyczne katakany"
 
-#: unicoderange.c:166
+#: unicoderange.c:165
 msgid "Enclosed CJK Letters and Months"
 msgstr "obwiedzione litery i miesiące CJK"
 
-#: unicoderange.c:167
+#: unicoderange.c:166
 msgid "CJK Enclosed Letters and Months"
 msgstr "obwiedzione litery i miesiące CJK"
 
-#: unicoderange.c:169
+#: unicoderange.c:168
 msgid "CJK Unified Ideographs Extension A"
 msgstr "rozszerzone ujednolicone ideogramy CJK-A"
 
-#: unicoderange.c:170
+#: unicoderange.c:169
 msgid "Yijing Hexagram Symbols"
 msgstr "heksagramy yijing"
 
-#: unicoderange.c:172
+#: unicoderange.c:171
 msgid "Yi Syllables"
 msgstr "yi - sylaby"
 
-#: unicoderange.c:173
+#: unicoderange.c:172
 msgid "Yi"
 msgstr "yi"
 
-#: unicoderange.c:174
+#: unicoderange.c:173
 msgid "Yi Radicals"
 msgstr "klucze yi"
 
-#: unicoderange.c:175
+#: unicoderange.c:174
 msgid "Lisu"
 msgstr "lisu"
 
-#: unicoderange.c:176
+#: unicoderange.c:175
 msgid "Vai"
 msgstr "wai"
 
-#: unicoderange.c:177
+#: unicoderange.c:176
 msgid "Cyrillic Extended-B"
 msgstr "rozszerzona grażdanka-B"
 
-#: unicoderange.c:178
+#: unicoderange.c:177
 msgid "Bamum"
 msgstr "bamum"
 
-#: unicoderange.c:179
+#: unicoderange.c:178
 msgid "Modifier Tone Letters"
 msgstr "litery modyfikujące tonów"
 
-#: unicoderange.c:180
+#: unicoderange.c:179
 msgid "Latin Extended-D"
 msgstr "rozszerzony łaciński-D"
 
-#: unicoderange.c:181
+#: unicoderange.c:180
 msgid "Syloti Nagri"
 msgstr "syloti nagri"
 
-#: unicoderange.c:182
+#: unicoderange.c:181
 msgid "Phags-pa"
 msgstr "phags-pa"
 
-#: unicoderange.c:184
+#: unicoderange.c:183
 msgid "Devanagari Extended"
 msgstr "rozszerzenie dewanagari"
 
-#: unicoderange.c:187
+#: unicoderange.c:186
 msgid "Javanese"
 msgstr "jawajski"
 
-#: unicoderange.c:188
+#: unicoderange.c:187
 msgid "Cham"
 msgstr "czam"
 
-#: unicoderange.c:189
+#: unicoderange.c:188
 msgid "Myanmar Extended"
 msgstr "rozszerzenie birmańskiego"
 
-#: unicoderange.c:190
+#: unicoderange.c:189
 msgid "Tai Viet"
 msgstr "tai viet"
 
-#: unicoderange.c:191
+#: unicoderange.c:190
 msgid "Meetei Mayek"
 msgstr "manipuri (Meetei Mayek)"
 
-#: unicoderange.c:193
+#: unicoderange.c:192
 msgid "High Surrogate"
 msgstr "górne surogaty"
 
-#: unicoderange.c:194
+#: unicoderange.c:193
 msgid "Surrogate High"
 msgstr "górne surogaty"
 
-#: unicoderange.c:195
+#: unicoderange.c:194
 msgid "Surrogate High, Non Private Use"
 msgstr "górne surogaty, nie do użytku prywatnego"
 
-#: unicoderange.c:196
+#: unicoderange.c:195
 msgid "Surrogate High, Private Use"
 msgstr "górne surogaty, do użytku prywatnego"
 
-#: unicoderange.c:197
+#: unicoderange.c:196
 msgid "Low Surrogate"
 msgstr "dolne surogaty"
 
-#: unicoderange.c:198
+#: unicoderange.c:197
 msgid "Private/Corporate Use"
 msgstr "obszar do użytku prywatnego/firmowego"
 
-#: unicoderange.c:199
+#: unicoderange.c:198
 msgid "Private Use"
 msgstr "obszar do użytku prywatnego"
 
-#: unicoderange.c:202
+#: unicoderange.c:201
 msgid "Corporate Use"
 msgstr "obszar do użytku firmowego"
 
-#: unicoderange.c:203
+#: unicoderange.c:202
 msgid "MicroSoft Symbol Area"
 msgstr "obszar symboli Microsoftu"
 
-#: unicoderange.c:204
+#: unicoderange.c:203
 msgid "CJK Compatibility Ideographs"
 msgstr "ideogramy zgodności dla CJK"
 
-#: unicoderange.c:206
+#: unicoderange.c:205
 msgid "Latin Ligatures"
 msgstr "ligatury łacińskie"
 
-#: unicoderange.c:207
+#: unicoderange.c:206
 msgid "Armenian Ligatures"
 msgstr "ligatury ormiańskie"
 
-#: unicoderange.c:208
+#: unicoderange.c:207
 msgid "Hebrew Ligatures/Pointed Letters"
 msgstr "ligatury hebrajskie/litery z samogłoskami"
 
-#: unicoderange.c:209
+#: unicoderange.c:208
 msgid "Arabic Presentation Forms A"
 msgstr "arabskie formy prezentacyjne A"
 
-#: unicoderange.c:211
+#: unicoderange.c:210
 msgid "Vertical forms"
 msgstr "formy pionowe"
 
-#: unicoderange.c:212
+#: unicoderange.c:211
 msgid "Combining half marks"
 msgstr "półznaki składające"
 
-#: unicoderange.c:213
+#: unicoderange.c:212
 msgid "CJK Compatibility Forms"
 msgstr "formy zgodności dla CJK"
 
-#: unicoderange.c:215
+#: unicoderange.c:214
 msgid "Arabic Presentation Forms B"
 msgstr "arabskie formy prezentacyjne B"
 
-#: unicoderange.c:216
+#: unicoderange.c:215
 msgid "Byte Order Mark"
 msgstr "znacznik kolejności bajtów"
 
-#: unicoderange.c:217
+#: unicoderange.c:216
 msgid "Half and Full Width Forms"
 msgstr "formy ½ i pełnej szerokości"
 
-#: unicoderange.c:218
+#: unicoderange.c:217
 msgid "Latin Full Width Forms"
 msgstr "formy łacińskie pełnej szerokości"
 
-#: unicoderange.c:219
+#: unicoderange.c:218
 msgid "KataKana Half Width Forms"
 msgstr "formy katakany ½ szerokości"
 
-#: unicoderange.c:220
+#: unicoderange.c:219
 msgid "Hangul Jamo Half Width Forms"
 msgstr "formy hangyl jamo ½ szerokości"
 
-#: unicoderange.c:222
+#: unicoderange.c:221
 msgid "Not a Unicode Character"
 msgstr "znak nieunikodowy"
 
-#: unicoderange.c:223
+#: unicoderange.c:222
 msgid "Signature Mark"
 msgstr "znak sygnatury"
 
-#: unicoderange.c:225
+#: unicoderange.c:224
 msgid "Unicode Supplementary Multilingual Plane"
 msgstr "dodatkowy obszar wielojęzyczny Unikodu"
 
-#: unicoderange.c:226
+#: unicoderange.c:225
 msgid "Supplementary Multilingual Plane"
 msgstr "dodatkowy obszar wielojęzyczny"
 
-#: unicoderange.c:227
+#: unicoderange.c:226
 msgid "Aegean scripts"
 msgstr "pisma egejskie"
 
-#: unicoderange.c:228
+#: unicoderange.c:227
 msgid "Linear B Syllabary"
 msgstr "sylabariusz pisma linearnego B"
 
-#: unicoderange.c:229
+#: unicoderange.c:228
 msgid "Linear B Ideograms"
 msgstr "ideogramy pisma linearnego B"
 
-#: unicoderange.c:230
+#: unicoderange.c:229
 msgid "Aegean numbers"
 msgstr "liczby egejskie"
 
-#: unicoderange.c:231
+#: unicoderange.c:230
 msgid "Ancient Greek Numbers"
 msgstr "starożytne liczby greckie"
 
-#: unicoderange.c:232
+#: unicoderange.c:231
 msgid "Ancient Symbols"
 msgstr "symbole starożytne"
 
-#: unicoderange.c:233
+#: unicoderange.c:232
 msgid "Phaistos Disc"
 msgstr "pismo z dysku z Faistos"
 
-#: unicoderange.c:236
+#: unicoderange.c:235
 msgid "Alphabetic and syllabic LTR scripts"
 msgstr "alfabetyczne i sylabiczne pisma LTR"
 
-#: unicoderange.c:239
+#: unicoderange.c:238
 msgid "Ugaritic"
 msgstr "ugarycki"
 
-#: unicoderange.c:240
+#: unicoderange.c:239
 msgid "Old Persian"
 msgstr "staroperski"
 
-#: unicoderange.c:244
+#: unicoderange.c:243
 msgid "Alphabetic and syllabic RTL scripts"
 msgstr "alfabetyczne i sylabiczne pisma RTL"
 
-#: unicoderange.c:245
+#: unicoderange.c:244
 msgid "Cypriot Syllabary"
 msgstr "sylabariusz cypryjski"
 
-#: unicoderange.c:246
+#: unicoderange.c:245
 msgid "Imperial Aramaic"
 msgstr "aramejski imperialny"
 
-#: unicoderange.c:247
+#: unicoderange.c:246
 msgid "Phoenician"
 msgstr "fenicki"
 
-#: unicoderange.c:249
+#: unicoderange.c:248
 msgid "Kharosthi"
 msgstr "kharosztni"
 
-#: unicoderange.c:250
+#: unicoderange.c:249
 msgid "Old South Arabian"
 msgstr "staro-południowo-arabski"
 
-#: unicoderange.c:251
+#: unicoderange.c:250
 msgid "Avestan"
 msgstr "awestyjski"
 
-#: unicoderange.c:252
+#: unicoderange.c:251
 msgid "Inscriptional Parthian"
 msgstr "partyjski inskrypcyjny"
 
-#: unicoderange.c:253
+#: unicoderange.c:252
 msgid "Inscriptional Pahlavi"
 msgstr "pahlawi inskrypcyjny"
 
-#: unicoderange.c:254
+#: unicoderange.c:253
 msgid "Old Turkic"
 msgstr "staroturecki"
 
-#: unicoderange.c:255
+#: unicoderange.c:254
 msgid "Kaithi"
 msgstr "Kaithi"
 
-#: unicoderange.c:257
+#: unicoderange.c:256
 msgid "African and other syllabic scripts"
 msgstr "sylabariusze afrykańskie i inne"
 
-#: unicoderange.c:258
+#: unicoderange.c:257
 msgid "Cuneiform and other Near Eastern Scripts"
 msgstr "klinowe i inne bliskowschodnie"
 
-#: unicoderange.c:259
+#: unicoderange.c:258
 msgid "Cuneiform"
 msgstr "klinowe"
 
-#: unicoderange.c:260
+#: unicoderange.c:259
 msgid "Sumero-Akkadian Cuneiform"
 msgstr "klinowe sumero-akadyjskie"
 
-#: unicoderange.c:261
+#: unicoderange.c:260
 msgid "Cuneiform Numbers"
 msgstr "liczby pisma klinowego"
 
-#: unicoderange.c:263
+#: unicoderange.c:262
 msgid "Egyptian hieroglyphs"
 msgstr "hieroglify egipskie"
 
-#: unicoderange.c:264
+#: unicoderange.c:263
 msgid "North American ideographs and pictograms"
 msgstr "ideogramy i piktogramy północnoamerykańskie"
 
-#: unicoderange.c:265
+#: unicoderange.c:264
 msgid "Egyptian and Mayan hieroglyphs"
 msgstr "hieroglify Egipcjan i Majów"
 
-#: unicoderange.c:266
+#: unicoderange.c:265
 msgid "Sumerian pictograms"
 msgstr "piktogramy sumeryjskie"
 
-#: unicoderange.c:267
+#: unicoderange.c:266
 msgid "Large Asian Scripts"
 msgstr "duże pisma azjatyckie"
 
-#: unicoderange.c:268
+#: unicoderange.c:267
 msgid "Notational systems"
 msgstr "systemy notacji"
 
-#: unicoderange.c:269
+#: unicoderange.c:268
 msgid "Byzantine Musical Symbols"
 msgstr "bizantyjskie symbole muzyczne"
 
-#: unicoderange.c:270
+#: unicoderange.c:269
 msgid "Musical Symbols"
 msgstr "symbole muzyczne"
 
-#: unicoderange.c:271
+#: unicoderange.c:270
 msgid "Ancient Greek Musical Notation"
 msgstr "symbole muzyczne starożytnej Grecji"
 
-#: unicoderange.c:272
+#: unicoderange.c:271
 msgid "Tai Xuan Jing Symbols"
 msgstr "symbole Tai Xuan Jing"
 
-#: unicoderange.c:273
+#: unicoderange.c:272
 msgid "Chinese counting rod numerals"
 msgstr "chińskie cyfry patykowe"
 
-#: unicoderange.c:275
+#: unicoderange.c:274
 msgid "Mahjong Tiles"
 msgstr "kamienie do madżonga"
 
-#: unicoderange.c:276
+#: unicoderange.c:275
 msgid "Domino Tiles"
 msgstr "kamienie do domina"
 
-#: unicoderange.c:278
+#: unicoderange.c:277
 msgid "Unicode Supplementary Ideographic Plane"
 msgstr "dodatkowy obszar ideogramów Unikodu"
 
-#: unicoderange.c:279
+#: unicoderange.c:278
 msgid "Supplementary Ideographic Plane"
 msgstr "dodatkowy obszar ideogramów"
 
-#: unicoderange.c:280
+#: unicoderange.c:279
 msgid "CJK Unified Ideographs Extension B"
 msgstr "rozszerzone ujednolicone ideogramy CJK-B"
 
-#: unicoderange.c:281
+#: unicoderange.c:280
 msgid "CJK Compatibility Ideographs Supplement"
 msgstr "dodatkowe ideogramy zgodności dla CJK"
 
-#: unicoderange.c:283
+#: unicoderange.c:282
 msgid "Unicode Supplementary Special-purpose Plane"
 msgstr "dodatkowy obszar specjalnego przeznaczenia Unikodu"
 
-#: unicoderange.c:284
+#: unicoderange.c:283
 msgid "Supplementary Special-purpose Plane"
 msgstr "dodatkowy obszar specjalnego przeznaczenia"
 
-#: unicoderange.c:285
+#: unicoderange.c:284
 msgid "Tag characters"
 msgstr "znaczniki"
 
-#: unicoderange.c:286
+#: unicoderange.c:285
 msgid "Variation Selectors B"
 msgstr "przełączniki wariantów glifów B"
 
-#: unicoderange.c:288
+#: unicoderange.c:287
 msgid "Supplementary Private Use Area-A"
 msgstr "dodatkowy obszar prywatnego użytku-A"
 
-#: unicoderange.c:289
+#: unicoderange.c:288
 msgid "Supplementary Private Use Area-B"
 msgstr "dodatkowy obszar prywatnego użytku-B"
 
-#: unicoderange.c:294
+#: unicoderange.c:293
 msgid "Non-Unicode Glyphs"
 msgstr "znaki spoza Unikodu"
 
-#: unicoderange.c:295
+#: unicoderange.c:294
 msgid "Unassigned Code Points"
 msgstr "niewykorzystane kody numeryczne"
 
@@ -31866,6 +31870,57 @@ msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku w bitmapi
 #, c-format
 msgid "Could not open output file: %s"
 msgstr "nie udało się otworzyć do zapisu pliku: %s"
+
+#: woff.c:36 woff.c:42 woff.c:48 woff.c:274
+msgid "WOFF not supported"
+msgstr "Brak wsparcia dla formatu WOFF"
+
+#: woff.c:36 woff.c:42 woff.c:48
+msgid ""
+"This version of fontforge cannot handle WOFF files. You need to recompile it with "
+"libpng and zlib"
+msgstr ""
+"Fontforge musi być skompilowany z bibliotekami libpng i zlib, żeby obsługiwać fonty "
+"WOFF."
+
+#: woff.c:175
+msgid "Decompressed length did not match expected length for table"
+msgstr "Wielkość tablicy po dekompresji inna od oczekiwanej"
+
+#: woff.c:274
+msgid "Could not find the zlib library which is needed to understand WOFF"
+msgstr "Nie znaleziono biblioteki zlib, koniecznej do obsługi fontów WOFF"
+
+#: woff.c:282
+msgid "Bad signature in WOFF"
+msgstr "Błędna sygnatura WOFF"
+
+#: woff.c:289
+msgid "File length as specified in the WOFF header does not match the actual file length."
+msgstr "Wielkość pliku niezgodna z podaną w nagłówku WOFF."
+
+#: woff.c:295
+msgid "Bad WOFF header, a field which must be 0 is not."
+msgstr "Błędny nagłówek WOFF. Pole, które powinno być wyzerowane, nie jest."
+
+#: woff.c:310
+msgid "Could not open temporary file."
+msgstr "Nie udało się otworzyć pliku tymczasowego."
+
+#: woff.c:335
+#, c-format
+msgid "Invalid compressed table length for '%c%c%c%c'."
+msgstr "Błędna długość skompresowanej tablicy „%c%c%c%c”."
+
+#: woff.c:338
+#, c-format
+msgid "Table length stretches beyond end of file for '%c%c%c%c'."
+msgstr "Tablica „%c%c%c%c” wystaje poza koniec pliku."
+
+#: woff.c:359
+#, c-format
+msgid "Problem decompressing '%c%c%c%c' table."
+msgstr "Nie udało się rozpakować tablicy „%c%c%c%c”."
 
 #: ../gdraw/gaskdlg.c:1493
 msgid "_None"
