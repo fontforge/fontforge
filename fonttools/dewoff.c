@@ -39,6 +39,19 @@ static void putlong(FILE *file,int val) {
     putc((val>>8)&0xff,file);
     putc(val&0xff,file);
 }
+
+static int filecheck(FILE *file) {
+    unsigned int sum = 0, chunk;
+
+    rewind(file);
+    while ( 1 ) {
+	chunk = getlong(file);
+	if ( feof(file) || ferror(file))
+    break;
+	sum += chunk;
+    }
+return( sum );
+}
 /* ************************************************************************** */
 
 enum woff_errs { we_good, we_cantopen, we_cantopenout, we_badsignature,
@@ -124,6 +137,7 @@ static int dewoff(char *filename) {
     FILE *woff, *sfnt, *meta, *priv;
     char *start, *ext;
     int here, next, tab_start;
+    int head_pos = -1;
 
     woff = fopen( filename,"rb");
     if ( woff==NULL )
@@ -163,7 +177,7 @@ return( we_mbz );
     outname = malloc(strlen(start)+20);
     strcpy(outname,start);
     strcpy(outname+(ext-start),iscff ? ".otf" : ".ttf" );
-    sfnt = fopen( outname,"wb" );
+    sfnt = fopen( outname,"wb+" );
     if ( sfnt==NULL )
 return( we_cantopenout );
 
@@ -197,6 +211,8 @@ return( we_badtablen );
 	putlong(sfnt,checksum);
 	putlong(sfnt,next);
 	putlong(sfnt,uncompLen);
+	if ( tag==CHR('h','e','a','d'))
+	    head_pos = next;
 	tab_start = ftell(sfnt);
 	fseek(sfnt,next,SEEK_SET);
 	if ( compLen==uncompLen ) {
@@ -218,6 +234,18 @@ return( err );
 		putshort(sfnt,0);
 	}
 	fseek(woff,here,SEEK_SET);
+    }
+    /* I assumed at first that the check sum would just be right */
+    /*  but I've reordered the tables (probably) so I've got a different */
+    /*  set of offsets and I must figure it out for myself */
+    if ( head_pos!=-1 ) {
+	int checksum;
+	fseek(sfnt,head_pos+8,SEEK_SET);
+	putlong(sfnt,0);		/* Clear what was there */
+	checksum = filecheck(sfnt);	/* Recalc */
+	checksum = 0xb1b0afba-checksum;
+	fseek(sfnt,head_pos+8,SEEK_SET);
+	putlong(sfnt,checksum);
     }
     fclose(sfnt);
 
@@ -252,10 +280,23 @@ return( we_cantopenout );
 return( we_good );
 }
 
+static void usage(char *prog) {
+    printf( "%s {woff-filename}\n", prog );
+    printf( " Takes one (or several woff files, and converts them into their equivalent\n" );
+    printf( "ttf or otf forms. The output files will be placed in the current directory\n" );
+    printf( "with the same name as the original file and an extension of either \".otf\" or \".ttf\"\n" );
+    printf( "(as is appropriate). If the woff file contains metadata that will be stored\n" );
+    printf( "with the extension \"_meta.xml\", and a private table will have \".priv\"\n" );
+}
+
 int main(int argc, char **argv) {
     int i, err;
 
     for ( i=1; i<argc; ++i ) {
+	if ( *argv[i]=='-' ) {
+	    usage(argv[0]);
+    continue;
+	}
 	err = dewoff(argv[i]);
 	switch ( err ) {
 	  case we_good:
