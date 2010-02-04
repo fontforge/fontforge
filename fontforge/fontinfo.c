@@ -1162,6 +1162,12 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Scale	1018
 #define CID_Interpretation	1021
 #define CID_Namelist	1024
+#define CID_Revision	1025
+
+#define CID_WoffMajor	1050
+#define CID_WoffMinor	1051
+#define CID_WoffMetadata	1052
+
 #define CID_XUID	1113
 #define CID_Human	1114
 #define CID_SameAsFontname	1115
@@ -3951,6 +3957,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int layer_cnt;
 	struct matrix_data *layers = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Backgrounds), &layer_cnt);
 	int layer_flags;
+	int sfntRevision=sfntRevisionUnset, woffMajor=woffUnset, woffMinor=woffUnset;
 
 	if ( strings==NULL || gasp==NULL || layers==NULL )
 return( true );
@@ -4024,6 +4031,14 @@ return(true);
 	size_bottom = rint(10*GetReal8(gw,CID_DesignBottom,_("_Bottom"),&err));
 	size_top = rint(10*GetReal8(gw,CID_DesignTop,_("_Top"),&err));
 	styleid = GetInt8(gw,CID_StyleID,_("Style _ID:"),&err);
+	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_Revision))!='\0' )
+	    sfntRevision = rint(65536.*GetReal8(gw,CID_Revision,_("sfnt Revision:"),&err));
+	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMajor))!='\0' ) {
+	    woffMajor = GetInt8(gw,CID_WoffMajor,_("Woff Major Version:"),&err);
+	    woffMinor = 0;
+	    if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMinor))!='\0' )
+		woffMinor = GetInt8(gw,CID_WoffMinor,_("Woff Minor Version:"),&err);
+	}
 	if ( err )
 return(true);
 
@@ -4204,6 +4219,15 @@ return(true);
 	}
 	sf->use_xuid = usexuid;
 	sf->use_uniqueid = useuniqueid;
+
+	sf->sfntRevision = sfntRevision;
+
+	free(sf->woffMetadata);
+	sf->woffMetadata = NULL;
+	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMetadata))!='\0' )
+	    sf->woffMetadata = GGadgetGetTitle8(GWidgetGetControl(gw,CID_WoffMetadata));
+	sf->woffMajor = woffMajor;
+	sf->woffMinor = woffMinor;
 
 	free(sf->gasp);
 	sf->gasp_cnt = gasprows;
@@ -7257,18 +7281,19 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[25], vaspects[6], lkaspects[3];
-    GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
+    GTabInfo aspects[26], vaspects[6], lkaspects[3];
+    GGadgetCreateData mgcd[10], ngcd[19], psgcd[30], tngcd[8],
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
-	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8];
+	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8],
+	woffgcd[8];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[3], dbox[2], flogbox[2],
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
-	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4];
-    GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
+	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4], woffbox[2];
+    GGadgetCreateData *marray[7], *marray2[9], *narray[29], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
 	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
@@ -7281,19 +7306,20 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4],
 	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4],
-	*ssvarray[4];
-    GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
+	*ssvarray[4], *woffarray[16];
+    GTextInfo mlabel[10], nlabel[18], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7],
-	ssnlabel[7];
+	ssnlabel[7], wofflabel[8];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
 	    vbuf[20], uibuf[12], embuf[20];
-    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
+    char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20], sfntrbuf[20];
     char ranges[40], codepages[40];
+    char woffmajorbuf[20], woffminorbuf[20];
     int i,j,k,g, psrow;
     int mcs;
     char title[130];
@@ -7446,67 +7472,80 @@ return;
     ngcd[9].gd.cid = CID_Version;
     ngcd[9].creator = GTextFieldCreate;
 
-    ngcd[10].gd.pos.x = 12; ngcd[10].gd.pos.y = ngcd[8].gd.pos.y+28;
-    nlabel[10].text = (unichar_t *) _("_Base Filename:");
+    nlabel[10].text = (unichar_t *) _("sfnt _Revision:");
     nlabel[10].text_is_1byte = true;
     nlabel[10].text_in_resource = true;
     ngcd[10].gd.label = &nlabel[10];
-    ngcd[10].gd.popup_msg = (unichar_t *) _("Use this as the default base for the filename\nwhen generating a font." );
     ngcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    ngcd[10].gd.popup_msg = (unichar_t *) _("If you leave this field blank FontForge will use a default based on\neither the version string above, or one in the 'name' table." );
     ngcd[10].creator = GLabelCreate;
 
-    ngcd[11].gd.pos.x = 95; ngcd[11].gd.pos.y = ngcd[10].gd.pos.y-11;
-/* GT: The space in front of "Same" makes things line up better */
-    nlabel[11].text = (unichar_t *) _(" Same as Fontname");
+    sfntrbuf[0]='\0';
+    if ( sf->sfntRevision!=sfntRevisionUnset )
+	sprintf( sfntrbuf, "%g", sf->sfntRevision/65536.0 );
+    ngcd[11].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    nlabel[11].text = (unichar_t *) sfntrbuf;
     nlabel[11].text_is_1byte = true;
     ngcd[11].gd.label = &nlabel[11];
-    ngcd[11].gd.flags = sf->defbasefilename==NULL ? (gg_visible | gg_enabled | gg_cb_on ) : (gg_visible | gg_enabled);
-    ngcd[11].gd.cid = CID_SameAsFontname;
-    ngcd[11].creator = GRadioCreate;
+    ngcd[11].gd.cid = CID_Revision;
+    ngcd[11].gd.popup_msg = (unichar_t *) _("If you leave this field blank FontForge will use a default based on\neither the version string above, or one in the 'name' table." );
+    ngcd[11].creator = GTextFieldCreate;
 
-    ngcd[12].gd.pos.x = 95; ngcd[12].gd.pos.y = ngcd[10].gd.pos.y+11;
-    nlabel[12].text = (unichar_t *) "";
+    nlabel[12].text = (unichar_t *) _("_Base Filename:");
     nlabel[12].text_is_1byte = true;
+    nlabel[12].text_in_resource = true;
     ngcd[12].gd.label = &nlabel[12];
-    ngcd[12].gd.flags = sf->defbasefilename!=NULL ?
-		(gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold ) :
-		(gg_visible | gg_enabled | gg_rad_continueold);
-    ngcd[12].gd.cid = CID_HasDefBase;
-    ngcd[12].creator = GRadioCreate;
+    ngcd[12].gd.popup_msg = (unichar_t *) _("Use this as the default base for the filename\nwhen generating a font." );
+    ngcd[12].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    ngcd[12].creator = GLabelCreate;
 
-    ngcd[13].gd.pos.x = 115; ngcd[13].gd.pos.y = ngcd[12].gd.pos.y-4; ngcd[13].gd.pos.width = 137;
-    ngcd[13].gd.flags = gg_visible | gg_enabled|gg_text_xim;
-    nlabel[13].text = (unichar_t *) (sf->defbasefilename?sf->defbasefilename:"");
+/* GT: The space in front of "Same" makes things line up better */
+    nlabel[13].text = (unichar_t *) _(" Same as Fontname");
     nlabel[13].text_is_1byte = true;
     ngcd[13].gd.label = &nlabel[13];
-    ngcd[13].gd.cid = CID_DefBaseName;
-    ngcd[13].gd.handle_controlevent = GFI_DefBaseChange;
-    ngcd[13].creator = GTextFieldCreate;
+    ngcd[13].gd.flags = sf->defbasefilename==NULL ? (gg_visible | gg_enabled | gg_cb_on ) : (gg_visible | gg_enabled);
+    ngcd[13].gd.cid = CID_SameAsFontname;
+    ngcd[13].creator = GRadioCreate;
 
-    ngcd[14].gd.pos.x = 12; ngcd[14].gd.pos.y = ngcd[10].gd.pos.y+22;
-    ngcd[14].gd.flags = gg_visible | gg_enabled;
-    nlabel[14].text = (unichar_t *) _("Copy_right:");
+    nlabel[14].text = (unichar_t *) "";
     nlabel[14].text_is_1byte = true;
-    nlabel[14].text_in_resource = true;
     ngcd[14].gd.label = &nlabel[14];
-    ngcd[14].creator = GLabelCreate;
+    ngcd[14].gd.flags = sf->defbasefilename!=NULL ?
+		(gg_visible | gg_enabled | gg_cb_on | gg_rad_continueold ) :
+		(gg_visible | gg_enabled | gg_rad_continueold);
+    ngcd[14].gd.cid = CID_HasDefBase;
+    ngcd[14].creator = GRadioCreate;
 
-    ngcd[15].gd.pos.x = 12; ngcd[15].gd.pos.y = ngcd[14].gd.pos.y+14;
-    ngcd[15].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
-    ngcd[15].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    ngcd[15].gd.flags = gg_visible | gg_enabled|gg_text_xim;
+    nlabel[15].text = (unichar_t *) (sf->defbasefilename?sf->defbasefilename:"");
+    nlabel[15].text_is_1byte = true;
+    ngcd[15].gd.label = &nlabel[15];
+    ngcd[15].gd.cid = CID_DefBaseName;
+    ngcd[15].gd.handle_controlevent = GFI_DefBaseChange;
+    ngcd[15].creator = GTextFieldCreate;
+
+    ngcd[16].gd.flags = gg_visible | gg_enabled;
+    nlabel[16].text = (unichar_t *) _("Copy_right:");
+    nlabel[16].text_is_1byte = true;
+    nlabel[16].text_in_resource = true;
+    ngcd[16].gd.label = &nlabel[16];
+    ngcd[16].creator = GLabelCreate;
+
+    ngcd[17].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
+    ngcd[17].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     if ( sf->copyright!=NULL ) {
-	nlabel[15].text = (unichar_t *) sf->copyright;
-	nlabel[15].text_is_1byte = true;
-	ngcd[15].gd.label = &nlabel[15];
+	nlabel[17].text = (unichar_t *) sf->copyright;
+	nlabel[17].text_is_1byte = true;
+	ngcd[17].gd.label = &nlabel[17];
     }
-    ngcd[15].gd.cid = CID_Notice;
-    ngcd[15].creator = GTextAreaCreate;
+    ngcd[17].gd.cid = CID_Notice;
+    ngcd[17].creator = GTextAreaCreate;
 
     memset(&nb,0,sizeof(nb)); memset(&nb2,0,sizeof(nb2)); memset(&nb3,0,sizeof(nb3));
 
-    narray3[0] = &ngcd[12]; narray3[1] = &ngcd[13]; narray3[2] = NULL;
+    narray3[0] = &ngcd[14]; narray3[1] = &ngcd[15]; narray3[2] = NULL;
 
-    narray2[0] = &ngcd[10]; narray2[1] = &ngcd[11]; narray2[2] = NULL;
+    narray2[0] = &ngcd[12]; narray2[1] = &ngcd[13]; narray2[2] = NULL;
     narray2[3] = GCD_RowSpan; narray2[4] = &nb3; narray2[5] = NULL;
     narray2[6] = NULL;
 
@@ -7515,10 +7554,11 @@ return;
     narray[6] = &ngcd[4]; narray[7] = &ngcd[5]; narray[8] = NULL;
     narray[9] = &ngcd[6]; narray[10] = &ngcd[7]; narray[11] = NULL;
     narray[12] = &ngcd[8]; narray[13] = &ngcd[9]; narray[14] = NULL;
-    narray[15] = &nb2; narray[16] = GCD_ColSpan; narray[17] = NULL;
-    narray[18] = &ngcd[14]; narray[19] = GCD_ColSpan; narray[20] = NULL;
-    narray[21] = &ngcd[15]; narray[22] = GCD_ColSpan; narray[23] = NULL;
-    narray[24] = NULL;
+    narray[15] = &ngcd[10]; narray[16] = &ngcd[11]; narray[17] = NULL;
+    narray[18] = &nb2; narray[19] = GCD_ColSpan; narray[20] = NULL;
+    narray[21] = &ngcd[16]; narray[22] = GCD_ColSpan; narray[23] = NULL;
+    narray[24] = &ngcd[17]; narray[25] = GCD_ColSpan; narray[26] = NULL;
+    narray[27] = NULL;
 
     nb3.gd.flags = gg_enabled|gg_visible;
     nb3.gd.u.boxelements = narray3;
@@ -9562,6 +9602,82 @@ return;
     msbox[0].gd.u.boxelements = msarray;
     msbox[0].creator = GVBoxCreate;
 /******************************************************************************/
+    memset(&wofflabel,0,sizeof(wofflabel));
+    memset(&woffgcd,0,sizeof(woffgcd));
+
+    wofflabel[0].text = (unichar_t *) _("Version, Major:");
+    wofflabel[0].text_is_1byte = true;
+    woffgcd[0].gd.label = &wofflabel[0];
+    woffgcd[0].gd.flags = gg_visible | gg_enabled;
+    woffgcd[0].creator = GLabelCreate;
+
+    woffmajorbuf[0]='\0';
+    woffminorbuf[0]='\0';
+    if ( sf->woffMajor!=woffUnset ) {
+	sprintf( woffmajorbuf, "%d", sf->woffMajor );
+	sprintf( woffminorbuf, "%d", sf->woffMinor );
+    }
+    woffgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    wofflabel[1].text = (unichar_t *) woffmajorbuf;
+    wofflabel[1].text_is_1byte = true;
+    woffgcd[1].gd.label = &wofflabel[1];
+    woffgcd[1].gd.cid = CID_WoffMajor;
+    woffgcd[1].gd.popup_msg = (unichar_t *) _("If you leave this field blank FontForge will use a default based on\neither the version string, or one in the 'name' table." );
+    woffgcd[1].creator = GTextFieldCreate;
+
+    wofflabel[2].text = (unichar_t *) _("Minor:");
+    wofflabel[2].text_is_1byte = true;
+    woffgcd[2].gd.label = &wofflabel[2];
+    woffgcd[2].gd.flags = gg_visible | gg_enabled;
+    woffgcd[2].creator = GLabelCreate;
+
+    woffgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    wofflabel[3].text = (unichar_t *) woffminorbuf;
+    wofflabel[3].text_is_1byte = true;
+    woffgcd[3].gd.label = &wofflabel[3];
+    woffgcd[3].gd.cid = CID_WoffMinor;
+    woffgcd[3].gd.popup_msg = (unichar_t *) _("If you leave this field blank FontForge will use a default based on\neither the version string, or one in the 'name' table." );
+    woffgcd[3].creator = GTextFieldCreate;
+
+    woffarray[0] = &woffgcd[0];
+    woffarray[1] = &woffgcd[1];
+    woffarray[2] = &woffgcd[2];
+    woffarray[3] = &woffgcd[3];
+    woffarray[4] = NULL;
+
+    wofflabel[4].text = (unichar_t *) _("Metadata (xml):");
+    wofflabel[4].text_is_1byte = true;
+    woffgcd[4].gd.label = &wofflabel[4];
+    woffgcd[4].gd.flags = gg_visible | gg_enabled;
+    woffgcd[4].creator = GLabelCreate;
+
+    woffarray[5] = &woffgcd[4];
+    woffarray[6] = GCD_ColSpan;
+    woffarray[7] = GCD_ColSpan;
+    woffarray[8] = GCD_ColSpan;
+    woffarray[9] = NULL;
+
+    woffgcd[5].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    if ( sf->woffMetadata!=NULL ) {
+	wofflabel[5].text = (unichar_t *) sf->woffMetadata;
+	wofflabel[5].text_is_1byte = true;
+	woffgcd[5].gd.label = &wofflabel[5];
+    }
+    woffgcd[5].gd.cid = CID_WoffMetadata;
+    woffgcd[5].creator = GTextAreaCreate;
+
+    woffarray[10] = &woffgcd[5];
+    woffarray[11] = GCD_ColSpan;
+    woffarray[12] = GCD_ColSpan;
+    woffarray[13] = GCD_ColSpan;
+    woffarray[14] = NULL;
+    woffarray[15] = NULL;
+
+    memset(woffbox,0,sizeof(woffbox));
+    woffbox[0].gd.flags = gg_enabled|gg_visible;
+    woffbox[0].gd.u.boxelements = woffarray;
+    woffbox[0].creator = GHVBoxCreate;
+/******************************************************************************/
     memset(&txlabel,0,sizeof(txlabel));
     memset(&txgcd,0,sizeof(txgcd));
 
@@ -10349,6 +10465,10 @@ return;
 /*  the letter "L" has more of a left-side bearing than it should. It is not */
 /*  a bug in the nesting level. Remember this next time it bugs me */
 
+    aspects[i].text = (unichar_t *) _("WOFF");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = woffbox;
+
     aspects[i].text = (unichar_t *) _("Mac");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mcbox;
@@ -10461,7 +10581,7 @@ return;
     GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);
 
     GHVBoxSetExpandableCol(nb[0].ret,1);
-    GHVBoxSetExpandableRow(nb[0].ret,7);
+    GHVBoxSetExpandableRow(nb[0].ret,8);
     GHVBoxSetExpandableCol(nb2.ret,1);
     GHVBoxSetExpandableCol(nb3.ret,1);
 
@@ -10493,6 +10613,8 @@ return;
     GHVBoxSetExpandableCol(cbox[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(cbox[3].ret,gb_expandglue);
     GHVBoxSetExpandableRow(cbox[4].ret,gb_expandglue);
+
+    GHVBoxSetExpandableRow(woffbox[0].ret,2);
 
     GHVBoxSetExpandableRow(mkbox[0].ret,1);
     GMatrixEditSetBeforeDelete(mkgcd[1].ret, GFI_Mark_DeleteClass);

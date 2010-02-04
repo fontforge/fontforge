@@ -2458,6 +2458,8 @@ return( 0 );
 	formattypes[ff_ttc].disabled = false;
 	ofs = ff_ttc;
     }
+    if ( !CanWoff())
+	formattypes[ff_woff].disabled = true;
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;
     formattypes[ofs].selected = true;

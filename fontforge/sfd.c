@@ -1845,6 +1845,18 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     fprintf(sfd, "UnderlineWidth: %g\n", (double) sf->uwidth );
     fprintf(sfd, "Ascent: %d\n", sf->ascent );
     fprintf(sfd, "Descent: %d\n", sf->descent );
+    if ( sf->sfntRevision!=sfntRevisionUnset )
+	fprintf(sfd, "sfntRevision: 0x%08x\n", sf->sfntRevision );
+    if ( sf->woffMajor!=woffUnset ) {
+	fprintf(sfd, "woffMajor: %d\n", sf->woffMajor );
+	fprintf(sfd, "woffMinor: %d\n", sf->woffMinor );
+    }
+    if ( sf->woffMetadata!=NULL ) {
+	fprintf( sfd, "woffMetadata: " );
+	SFDDumpUTF7Str(sfd,sf->woffMetadata);
+	putc('\n',sfd);
+    }
+    fprintf(sfd, "Descent: %d\n", sf->descent );
     fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
@@ -2799,6 +2811,15 @@ static int gethex(FILE *sfd, uint32 *val) {
     if ( ch=='-' || ch=='+' ) {
 	*pt++ = ch;
 	ch = nlgetc(sfd);
+    }
+    if ( ch=='0' ) {
+	ch = nlgetc(sfd);
+	if ( ch=='x' || ch=='X' )
+	    ch = nlgetc(sfd);
+	else {
+	    ungetc(ch,sfd);
+	    ch = '0';
+	}
     }
     while ( isdigit(ch) || (ch>='a' && ch<='f') || (ch>='A' && ch<='F')) {
 	if ( pt<end ) *pt++ = ch;
@@ -6499,6 +6520,14 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&sf->ascent);
 	} else if ( strmatch(tok,"Descent:")==0 ) {
 	    getint(sfd,&sf->descent);
+	} else if ( strmatch(tok,"woffMajor:")==0 ) {
+	    getint(sfd,&sf->woffMajor);
+	} else if ( strmatch(tok,"woffMinor:")==0 ) {
+	    getint(sfd,&sf->woffMinor);
+	} else if ( strmatch(tok,"woffMetadata:")==0 ) {
+	    sf->woffMetadata = SFDReadUTF7Str(sfd);
+	} else if ( strmatch(tok,"sfntRevision:")==0 ) {
+	    gethex(sfd,&sf->sfntRevision);
 	} else if ( strmatch(tok,"Order2:")==0 ) {
 	    getint(sfd,&old_style_order2);
 	    sf->grid.order2 = old_style_order2;

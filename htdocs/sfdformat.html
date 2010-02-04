@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 22-Oct-2009 -->
+  <!-- AP: Last modified: 3-Feb-2010 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -30,7 +30,7 @@
   </TABLE>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often out of date. I thought it was
-  a correct on 22 Oct 2009.</STRONG></FONT> A
+  a correct on 3 Feb 2010.</STRONG></FONT> A
   <A HREF="sfdchangelog.html">changelog</A> file is available. Even if out
   of date it should be helpful, but if you really need to know the current
   format look at
@@ -115,6 +115,7 @@ UnderlinePosition: -133
 UnderlineWidth: 20
 Ascent: 800
 Descent: 200
+sfntRevision: 0x00078106
 WidthSeparation: 140
 LayerCount: 4
 Layer: 0 0 "Back" 1
@@ -172,6 +173,19 @@ ExtremaBound: 30
       there is a binary point after the first 20 binary digits (so to get the number
       divide by (1&lt;&lt;20)).
     <DT>
+      sfntRevision
+    <DD>
+      This is the revision number field of the 'head' table of an sfnt. It is stored
+      in hex in a 16.16 fixed number (that is, a 32 bit number where the binary
+      point is after the 16th binary bit).
+    <DT>
+      WidthSeparation
+    <DD>
+      This is internal information that the user never sees directly. It indicates
+      the most recent value for the desired separation between glyphs that was
+      used in the AutoWidth command. It is also used as a default for the separation
+      in AutoKern.
+    <DT>
       LayerCount
     <DD>
       The number of layers in a font, must be at least 2.
@@ -192,13 +206,6 @@ ExtremaBound: 30
       the font in fontviews (it may be changed of course). Negative numbers mean
       to rasterize the display from the outlines, positive numbers mean to use
       a prebuilt bitmap font of that size.
-    <DT>
-      WidthSeparation
-    <DD>
-      This is internal information that the user never sees directly. It indicates
-      the most recent value for the desired separation between glyphs that was
-      used in the AutoWidth command. It is also used as a default for the separation
-      in AutoKern.
     <DT>
       DisplayLayer
     <DD>
@@ -263,6 +270,28 @@ CIDVersion: 1.2
       big splines are not. But they don't define "big". This allows the user to
       specify that number. Splines where the distance between end-points is longer
       than this number will be checked for extrema.
+  </DL>
+  <P>
+  For WOFF files
+  <BLOCKQUOTE>
+    <PRE>woffMajor: 7
+woffMinor: 504
+woffMetadata: "&lt;?xml version+AD0AIgAA-1.0+ACIA encoding <B>...</B>"
+</PRE>
+  </BLOCKQUOTE>
+  <DL>
+    <DT>
+      woffMajor
+    <DD>
+      The major version number to be stored in a woff file.
+    <DT>
+      woffMinor
+    <DD>
+      The minor version number of the woff file.
+    <DT>
+      woffMetadata
+    <DD>
+      Metadata for the woff file, stored in UTF7.
   </DL>
   <P>
   Some fonts will have some TrueType information in them too (look at the

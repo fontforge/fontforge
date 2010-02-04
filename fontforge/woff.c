@@ -30,6 +30,8 @@
 /* Basically sfnts with compressed tables and some more metadata */
 
 #include "pfaedit.h"
+#include <math.h>
+#include <ctype.h>
 
 #ifdef _NO_LIBPNG
 SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
@@ -48,6 +50,10 @@ int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
     ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
 return( 1 );
 }
+
+int CanWoff(void) {
+return( 0 );
+}
 #else
 # if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
 #  include <dynamic.h>
@@ -63,6 +69,8 @@ static int (*_inflateEnd)(z_stream *);
 static int (*_deflateInit_)(z_stream *,int level, const char *,int);
 static int (*_deflate)(z_stream *,int flags);
 static int (*_deflateEnd)(z_stream *);
+static int (*_uncompress)(Bytef *, uLongf *, const Bytef *, uLong);
+static int (*_compress)(Bytef *, uLongf *, const Bytef *, uLong);
 
 static int haszlib(void) {
     if ( zlib!=NULL )
@@ -78,6 +86,8 @@ return( false );
     _deflateInit_ = (int (*)(z_stream *,int,const char *,int)) dlsym(zlib,"deflateInit_");
     _deflate = (int (*)(z_stream *,int )) dlsym(zlib,"deflate");
     _deflateEnd = (int (*)(z_stream *)) dlsym(zlib,"deflateEnd");
+    _uncompress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) dlsym(zlib,"uncompress");
+    _compress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) dlsym(zlib,"compress");
     if ( _inflateInit_==NULL || _inflate==NULL || _inflateEnd==NULL ||
 	    _deflateInit_==NULL || _deflate==NULL || _deflateEnd==NULL ) {
 	LogError( "%s", dlerror());
@@ -105,6 +115,8 @@ return( true );
 #define _deflateInit	deflateInit
 #define _deflate	deflate
 #define _deflateEnd	deflateEnd
+#define _compress	compress
+#define _uncompress	uncompress
 
 # endif /* !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC) */
 
@@ -388,18 +400,22 @@ return( NULL );
     sf = _SFReadTTF(sfnt,flags,openflags,filename,fd);
     fclose(sfnt);
 
-    /* Now I could do something with the metadata, and the major and minor versions */
-#if 0
-    if ( sf!=NULL && metaOffset!=0 ) {
-	strcpy(outname+(ext-start), "_meta.xml" );
-	meta = tmpfile();
-	if ( meta!=NULL ) {
-	    decompressdata(meta,0,woff,metaOffset,metaLenCompressed,metaLenUncompressed);
-	    sf->meta = slurpfile(meta);
-	    fclose(meta);
-	}
+    if ( sf!=NULL ) {
+	sf->woffMajor = major;
+	sf->woffMinor = minor;
     }
-#endif
+
+    if ( sf!=NULL && metaOffset!=0 ) {
+	char *temp = galloc(metaLenCompressed+1);
+	uLongf len = metaLenUncompressed;
+	fseek(woff,metaOffset,SEEK_SET);
+	fread(temp,1,metaLenCompressed,woff);
+	sf->woffMetadata = galloc(metaLenUncompressed+1);
+	sf->woffMetadata[metaLenUncompressed] ='\0';
+	_uncompress(sf->woffMetadata,&len,temp,metaLenCompressed);
+	sf->woffMetadata[len] ='\0';
+	free(temp);
+    }
 
 return( sf );
 }	
@@ -408,13 +424,42 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
     int ret;
     FILE *sfnt;
-    int major=1, minor=0;
+    int major=sf->woffMajor, minor=sf->woffMinor;
     int flavour, num_tabs;
     int filelen, len;
     int i;
     int compLen, uncompLen, newoffset;
     int tag, checksum, offset;
     int tab_start, here;
+
+    if ( !haszlib()) {
+	ff_post_error(_("WOFF not supported"), _("Could not find the zlib library which is needed to understand WOFF") );
+return( 0 );
+    }
+
+    if ( major==woffUnset ) {
+	struct ttflangname *useng;
+	major = 1; minor = 0;
+	for ( useng=sf->names; useng!=NULL; useng=useng->next )
+	    if ( useng->lang==0x409 )
+	break;
+	if ( useng!=NULL && useng->names[ttf_version]!=NULL &&
+		sscanf(useng->names[ttf_version], "Version %d.%d", &major, &minor)>=1 ) {
+	    /* All done */
+	} else if ( sf->subfontcnt!=0 ) {
+	    major = floor(sf->cidversion);
+	    minor = floor(1000.*(sf->cidversion-major));
+	} else if ( sf->version!=NULL ) {
+	    char *pt=sf->version;
+	    char *end;
+	    while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
+	    if ( *pt ) {
+		major = strtol(pt,&end,10);
+		if ( *end=='.' )
+		    minor = strtol(end+1,NULL,10);
+	    }
+	}
+    }
 
     format = sf->subfonts!=NULL ? ff_otfcid :
 		sf->layers[layer].order2 ? ff_ttf : ff_otf;
@@ -447,11 +492,11 @@ return( ret );
     putlong(woff,filelen);
     putshort(woff,major);	/* Major and minor version numbers of font */
     putshort(woff,minor);
-    putlong(woff,0);		/* Off: 20. Offset to metadata table */
-    putlong(woff,0);		/* Off: 24. Length (compressed) of metadata */
-    putlong(woff,0);		/* Off: 28. Length (uncompressed) */
-    putlong(woff,0);		/* Off: 32. Offset to private data */
-    putlong(woff,0);		/* Off: 36. Length of private data */
+    putlong(woff,0);		/* Off: 24. Offset to metadata table */
+    putlong(woff,0);		/* Off: 28. Length (compressed) of metadata */
+    putlong(woff,0);		/* Off: 32. Length (uncompressed) */
+    putlong(woff,0);		/* Off: 36. Offset to private data */
+    putlong(woff,0);		/* Off: 40. Length of private data */
 
     tab_start = ftell(woff);
     for ( i=0; i<5*num_tabs; ++i )
@@ -484,28 +529,28 @@ return( ret );
     }
     fclose(sfnt);
 
-#if 0 /* handle meta data some day? */
-    if ( sf->woffmeta!= NULL ) {
+    if ( sf->woffMetadata!= NULL ) {
+	int uncomplen = strlen(sf->woffMetadata);
+	uLongf complen = 2*uncomplen;
+	char *temp=galloc(complen+1);
 	newoffset = ftell(woff);
-	fseek(meta,0,SEEK_END);
-	uncompLen = ftell(meta);
-	rewind( meta );
-	compLen = compressOrNot(woff,newoffset,meta,0,uncompLen,true);
+	_compress(temp,&complen,sf->woffMetadata,uncomplen);
+	fwrite(temp,1,complen,woff);
+	free(temp);
 	if ( (ftell(woff)&3)!=0 ) {
 	    /* Pad to a 4 byte boundary */
 	    if ( ftell(woff)&1 )
-		putc('\0',sfnt);
+		putc('\0',woff);
 	    if ( ftell(woff)&2 )
 		putshort(woff,0);
 	}
-	fseek(woff,20,SEEK_SET);
+	fseek(woff,24,SEEK_SET);
 	putlong(woff,newoffset);
-	putlong(woff,compLen);
-	putlong(woff,uncompLen);
+	putlong(woff,complen);
+	putlong(woff,uncomplen);
 	fseek(woff,0,SEEK_END);
-	fclose(meta);
     }
-#endif
+
     fseek(woff,0,SEEK_END);
     len = ftell(woff);
     fseek(woff,8,SEEK_SET);
@@ -531,5 +576,9 @@ return( 0 );
     if ( fclose(woff)==-1 )
 return( 0 );
 return( ret );
+}
+
+int CanWoff(void) {
+return( haszlib());
 }
 #endif		/* NOLIBPNG */

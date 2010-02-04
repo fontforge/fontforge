@@ -1845,6 +1845,12 @@ typedef struct splinefont {
     Justify *justify;
     int extrema_bound;			/* Splines do not count for extrema complaints when the distance between the endpoints is less than or equal to this */
     int width_separation;
+    int sfntRevision;
+#define sfntRevisionUnset	0x44445555
+    int woffMajor;
+#define woffUnset		0x4455
+    int woffMinor;
+    char *woffMetadata;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1986,6 +1992,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttc, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_woff, ff_none };
+extern int CanWoff(void);
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format,int layer);
 extern int CanonicalCombiner(int uni);

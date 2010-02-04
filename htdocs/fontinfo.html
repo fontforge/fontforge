@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 11-Nov-2009 -->
+  <!-- AP: Last modified: 3-Feb-2010 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -256,6 +256,8 @@
     <LI>
       <A HREF="#Lookups">Lookups</A>
     <LI>
+      <A HREF="#WOFF">WOFF</A>
+    <LI>
       <A HREF="#Mac-Style">Mac Style</A>
     <LI>
       <A HREF="#Mac-Features">Mac Features</A>
@@ -282,6 +284,11 @@
   <P>
   In most fonts the version field is a string (and so has minimal constraints
   on it), but in CID keyed fonts it must be a floating point number.
+  <P>
+  You may also specify a separate version number to be used in any sfnt generated
+  from this database; this should be a floating point number. Or you may leave
+  this field blank. If you leave it blank FontForge will generate a default
+  value based on other version information specified elsewhere.
   <P>
   Normally when <A HREF="generate.html">generating a font,</A> FontForge will
   use the fontname as the base for the default filename of the font file (the
@@ -1048,6 +1055,22 @@
       Feature File</A>.<BR Clear=ALL>
       <BR CLEAR=ALL>
   </DL>
+  <H2>
+    <IMG SRC="fontinfo-woff.png" WIDTH="614" HEIGHT="548" ALIGN="Right" ALT="Font Info WOFF">
+    <A NAME="WOFF">WOFF</A> (Web Open Font Format)
+  </H2>
+  <P>
+  This sub-dialog allows you to specify additional information which may be
+  stored in a woff file. A woff file is very similar to a standard sfnt except
+  that its tables are compressed, and it has a few additional data fields.
+  It has version number fields for the WOFF file, a major and a minor version.
+  If you leave these fields blank then fontforge will generate defaults based
+  on some of the other font version information available to it.
+  <P>
+  It also has a metadata string. This is a small xml document (which ff does
+  not currently parse), stored in utf8. Its internal format is specified in
+  <A HREF="http://people.mozilla.com/~jkew/woff/woff-2009-09-16.html">a document
+  from Mozilla</A>. <BR CLEAR=ALL>
   <H2>
     <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
     <A NAME="Mac-Style">Mac Style</A> &amp; FOND
