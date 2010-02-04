@@ -204,11 +204,11 @@ return;
     putlong(woff,filelen);
     putshort(woff,major);	/* Major and minor version numbers of font */
     putshort(woff,minor);
-    putlong(woff,0);		/* Off: 20. Offset to metadata table */
-    putlong(woff,0);		/* Off: 24. Length (compressed) of metadata */
-    putlong(woff,0);		/* Off: 28. Length (uncompressed) */
-    putlong(woff,0);		/* Off: 32. Offset to private data */
-    putlong(woff,0);		/* Off: 36. Length of private data */
+    putlong(woff,0);		/* Off: 24. Offset to metadata table */
+    putlong(woff,0);		/* Off: 28. Length (compressed) of metadata */
+    putlong(woff,0);		/* Off: 32. Length (uncompressed) */
+    putlong(woff,0);		/* Off: 36. Offset to private data */
+    putlong(woff,0);		/* Off: 40. Length of private data */
 
     tab_start = ftell(woff);
     for ( i=0; i<5*num_tabs; ++i )
@@ -256,11 +256,11 @@ return;
 	if ( privfile!=NULL && (ftell(woff)&3)!=0 ) {
 	    /* Pad to a 4 byte boundary */
 	    if ( ftell(woff)&1 )
-		putc('\0',sfnt);
+		putc('\0',woff);
 	    if ( ftell(woff)&2 )
 		putshort(woff,0);
 	}
-	fseek(woff,20,SEEK_SET);
+	fseek(woff,24,SEEK_SET);
 	putlong(woff,newoffset);
 	putlong(woff,compLen);
 	putlong(woff,uncompLen);
@@ -281,7 +281,7 @@ return;
 	rewind( priv );
 	copydata(woff,newoffset,priv,0,uncompLen);
 	/* Not padded */
-	fseek(woff,32,SEEK_SET);
+	fseek(woff,36,SEEK_SET);
 	putlong(woff,newoffset);
 	putlong(woff,uncompLen);
 	fseek(woff,0,SEEK_END);
