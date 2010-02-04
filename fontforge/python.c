@@ -9685,6 +9685,7 @@ ff_gs_strnull(fontlog)
 ff_gs_strnull(copyright)
 ff_gs_strnull(xuid)
 ff_gs_strnull(fondname)
+ff_gs_strnull(woffMetadata)
 
 ff_gs_cidstrnull(fontname)
 ff_gs_cidstrnull(familyname)
@@ -9749,6 +9750,94 @@ ff_gs_bit(use_typo_metrics)
 ff_gs_bit(weight_width_slope_only)
 ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
+
+static PyObject *PyFF_Font_get_sfntRevision(PyFF_Font *self,void *closure) {
+    int version = self->fv->sf->sfntRevision;
+
+    if ( version==sfntRevisionUnset )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("d", version/65536.0 ));
+}
+
+static int PyFF_Font_set_sfntRevision(PyFF_Font *self,PyObject *value, void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( value==Py_None )
+	sf->sfntRevision = sfntRevisionUnset;
+    else if ( PyFloat_Check(value)) {
+	double temp = PyFloat_AsDouble(value);
+
+	sf->sfntRevision = rint(65536*temp);
+    } else if ( PyInt_Check(value)) {
+	int val = PyInt_AsLong(value);
+	/* if ( val<100 )
+	    sf->sfntRevision = val<<16;
+	else*/
+	    sf->sfntRevision = val;
+    } else {
+	PyErr_Format(PyExc_TypeError, "Value must be a double, integer or None" );
+return( -1 );
+    }
+
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_woffMajor(PyFF_Font *self,void *closure) {
+    int version = self->fv->sf->woffMajor;
+
+    if ( version==woffUnset )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("i", version ));
+}
+
+static int PyFF_Font_set_woffMajor(PyFF_Font *self,PyObject *value, void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( value==Py_None ) {
+	sf->woffMajor = woffUnset;
+	sf->woffMinor = woffUnset;
+    } else if ( PyInt_Check(value)) {
+	int val = PyInt_AsLong(value);
+	sf->woffMajor = val;
+	if ( sf->woffMinor==woffUnset )
+	    sf->woffMinor = 0;
+    } else {
+	PyErr_Format(PyExc_TypeError, "Value must be an integer or None" );
+return( -1 );
+    }
+
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_woffMinor(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( sf->woffMajor==woffUnset )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("i", sf->woffMinor ));
+}
+
+static int PyFF_Font_set_woffMinor(PyFF_Font *self,PyObject *value, void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( value==Py_None ) {
+	sf->woffMajor = woffUnset;
+	sf->woffMinor = woffUnset;
+    } else if ( PyInt_Check(value)) {
+	int val = PyInt_AsLong(value);
+	sf->woffMinor = val;
+	if ( sf->woffMajor==woffUnset )
+	    sf->woffMajor = 0;
+    } else {
+	PyErr_Format(PyExc_TypeError, "Value must be an integer or None" );
+return( -1 );
+    }
+
+return( 0 );
+}
 
 static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *self,void *closure) {
 return( Py_BuildValue("i", 0 ));
@@ -10913,6 +11002,18 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"em",
 	 (getter)PyFF_Font_get_em, (setter)PyFF_Font_set_em,
 	 "Em size", NULL},
+    {"sfntRevision",
+	 (getter)PyFF_Font_get_sfntRevision, (setter)PyFF_Font_set_sfntRevision,
+	 "sfnt revision number", NULL},
+    {"woffMajor",
+	 (getter)PyFF_Font_get_woffMajor, (setter)PyFF_Font_set_woffMajor,
+	 "woff major version number", NULL},
+    {"woffMinor",
+	 (getter)PyFF_Font_get_woffMinor, (setter)PyFF_Font_set_woffMinor,
+	 "woff minor version number", NULL},
+    {"woffMetadata",
+	 (getter)PyFF_Font_get_woffMetadata, (setter)PyFF_Font_set_woffMetadata,
+	 "woff meta data string (unparsed xml)", NULL},
     {"vertical_origin",
 	 (getter)PyFF_Font_get_vertical_origin, (setter)PyFF_Font_set_vertical_origin,
 	 "Vertical Origin (No longer supported, use BASE table instead)", NULL},

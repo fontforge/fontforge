@@ -84,6 +84,7 @@ struct ttfinfo {
     unsigned int weight_width_slope_only: 1;
     unsigned int optimized_for_cleartype: 1;
     unsigned int apply_lsb: 1;
+    int sfntRevision;
     enum openflags openflags;
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */

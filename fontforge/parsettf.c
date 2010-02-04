@@ -1256,9 +1256,12 @@ static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
 static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     /* Here I want units per em, and size of loca entries */
     /* oh... also creation/modification times */
-    int i, flags;
+    int i, flags, revision;
 
-    fseek(ttf,info->head_start+4*4,SEEK_SET);		/* skip over the version number and a bunch of junk */
+    fseek(ttf,info->head_start+4,SEEK_SET);		/* skip over the version number */
+    info->sfntRevision = getlong(ttf);
+    (void) getlong(ttf);
+    (void) getlong(ttf);
     flags = getushort(ttf);
     info->optimized_for_cleartype = (flags&(1<<13))?1:0;
     info->apply_lsb = !(flags&(1<<1));
@@ -6126,6 +6129,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->uniqueid = info->uniqueid;
     sf->pfminfo = info->pfminfo;
     sf->os2_version = info->os2_version;
+    sf->sfntRevision = info->sfntRevision;
     sf->use_typo_metrics = info->use_typo_metrics;
     sf->weight_width_slope_only = info->weight_width_slope_only;
     sf->head_optimized_for_cleartype = info->optimized_for_cleartype;

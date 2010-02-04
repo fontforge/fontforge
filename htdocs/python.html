@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 14-Dec-2009 -->
+  <!-- AP: Last modified: 3-Feb-2010 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2164,9 +2164,9 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>(filename,[flags])</CODE></TD>
       <TD>Uses the file's extension to determine behavior. Imports outline descriptions
 	(eps, svg, glif files) into the forground layer. Imports image descriptions
-	(bmp, png, xbm, etc.) into the background layer.
-	Optionally, flags can be used to control PostScript import, it'll be ignored for
-	other file types. Flags is a tuple of the following strings
+	(bmp, png, xbm, etc.) into the background layer. Optionally, flags can be
+	used to control PostScript import, it'll be ignored for other file types.
+	Flags is a tuple of the following strings
 	<DL>
 	  <DT>
 	    toobigwarn
@@ -2186,7 +2186,6 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <DT>
 	    correctdir
 	  <DD>
-
 	</DL>
       </TD>
     </TR>
@@ -3234,6 +3233,21 @@ pen = None;				# Finalize the pen. This tells FontForge
 	Mac names will be automagically created from ms names</TD>
     </TR>
     <TR>
+      <TD><CODE>sfntRevision</CODE></TD>
+      <TD colspan=2>The font revision field stored in the 'head' table of an sfnt.
+	This is documented to be a fixed 16.16 number (that is a 32 bit number with
+	the binary point between bits 15 and 16).
+	<P>
+	The field may be unset (in which case when the font is generated, FontForge
+	will guess a default value from one of the version strings).
+	<P>
+	The value returned with be <CODE>None</CODE> if the field is unset or a double.
+	<P>
+	You may set it to <CODE>None</CODE> which "unsets" it, or to a double value,
+	or to an integer. The integer will be treated as a 32 bit integer and right
+	shifted by 16 to get a 16.16 value).</TD>
+    </TR>
+    <TR>
       <TD><CODE>size_feature</CODE></TD>
       <TD colspan=2>The OpenType 'size' feature has two formats. It may either
 	represent the design size of the font (and nothing else) or the design size,
@@ -3317,6 +3331,35 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>weight</CODE></TD>
       <TD colspan=2>PostScript font weight string</TD>
+    </TR>
+    <TR>
+      <TD><CODE>woffMajor</CODE></TD>
+      <TD colspan=2>The major version number of a woff file, an integer.
+	<P>
+	The field may be unset (in which case when the font is generated, FontForge
+	will guess a default value from one of the version strings).
+	<P>
+	The value returned with be <CODE>None</CODE> if the field is unset or an
+	integer.
+	<P>
+	You may set it to <CODE>None</CODE> which "unsets" it, or to an integer.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>woffMinor</CODE></TD>
+      <TD colspan=2>The minor version number of a woff file, an integer.
+	<P>
+	The field may be unset (in which case when the font is generated, FontForge
+	will guess a default value from one of the version strings).
+	<P>
+	The value returned with be <CODE>None</CODE> if the field is unset or an
+	integer.
+	<P>
+	You may set it to <CODE>None</CODE> which "unsets" it, or to an integer.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>woffMetadata</CODE></TD>
+      <TD colspan=2>Any metadata associated with a woff file. This is a utf8 string
+	containing unparsed xml.</TD>
     </TR>
     <TR>
       <TD><CODE>xHeight</CODE></TD>
