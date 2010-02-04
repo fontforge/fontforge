@@ -2727,6 +2727,8 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     time_t now;
     int i, lr, rl, indic_rearrange, arabic;
     ASM *sm;
+    struct ttflangname *useng;
+    float vn;
 
     if ( at->gi.xmin==15000 ) at->gi.xmin = 0;
     if ( at->gi.ymin==15000 ) at->gi.ymin = 0;
@@ -2753,21 +2755,31 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     }
 
     head->version = 0x00010000;
-    if ( sf->subfontcnt!=0 ) {
-	int val, mant;
-	val = floor(sf->cidversion);
-	mant = floor(65536.*(sf->cidversion-val));
-	head->revision = (val<<16) | mant;
-    } else if ( sf->version!=NULL ) {
-	char *pt=sf->version;
-	double dval;
-	int val, mant;
-	while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
-	if ( *pt ) {
-	    dval = strtod(pt,NULL);
-	    val = floor(dval);
-	    mant = floor(65536.*(dval-val));
+    head->revision = sf->sfntRevision;
+    if ( sf->sfntRevision==sfntRevisionUnset ) {
+	head->revision = 0x00010000;
+	for ( useng=sf->names; useng!=NULL; useng=useng->next )
+	    if ( useng->lang==0x409 )
+	break;
+	if ( useng!=NULL && useng->names[ttf_version]!=NULL &&
+		sscanf(useng->names[ttf_version], "Version %f", &vn)==1 ) {
+	    head->revision = vn*65536;
+	} else if ( sf->subfontcnt!=0 ) {
+	    int val, mant;
+	    val = floor(sf->cidversion);
+	    mant = floor(65536.*(sf->cidversion-val));
 	    head->revision = (val<<16) | mant;
+	} else if ( sf->version!=NULL ) {
+	    char *pt=sf->version;
+	    double dval;
+	    int val, mant;
+	    while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
+	    if ( *pt ) {
+		dval = strtod(pt,NULL);
+		val = floor(dval);
+		mant = floor(65536.*(dval-val));
+		head->revision = (val<<16) | mant;
+	    }
 	}
     }
     head->checksumAdj = 0;
