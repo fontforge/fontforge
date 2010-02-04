@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2009 by George Williams */
+/* Copyright (C) 2000-2010 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -841,7 +841,7 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	    DoAutoSaves();
 	} else if ( event->u.timer.timer==splasht ) {
 	    if ( ++splash_cnt==1 )
-		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-24);
+		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height-30);
 	    else if ( splash_cnt==2 )
 		GDrawResize(gw,splashimage.u.image->width,splashimage.u.image->height);
 	    else if ( splash_cnt>=7 ) {
@@ -1030,10 +1030,10 @@ int main( int argc, char **argv ) {
 #endif
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    fprintf( stderr, "Copyright (c) 2000-2009 by George Williams.\n Executable based on sources from %s-ML.\n",
+    fprintf( stderr, "Copyright (c) 2000-2010 by George Williams.\n Executable based on sources from %s-ML.\n",
 	    source_modtime_str );
 #else
-    fprintf( stderr, "Copyright (c) 2000-2009 by George Williams.\n Executable based on sources from %s.\n",
+    fprintf( stderr, "Copyright (c) 2000-2010 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
 #endif
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
