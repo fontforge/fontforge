@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2009 by George Williams */
+/* Copyright (C) 2000-2010 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1256,7 +1256,7 @@ static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
 static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     /* Here I want units per em, and size of loca entries */
     /* oh... also creation/modification times */
-    int i, flags, revision;
+    int i, flags;
 
     fseek(ttf,info->head_start+4,SEEK_SET);		/* skip over the version number */
     info->sfntRevision = getlong(ttf);
