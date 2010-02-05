@@ -3750,6 +3750,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	    --len;
 	    switch ( v ) {
 	      case 0: /* dotsection */
+		if ( is_type2 )
+		    LogError( _("%s\'s dotsection operator is depreciated for Type2\n"), name );
 		sp = 0;
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
@@ -3757,6 +3759,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		/* according to the standard, if there is a vstem3 there can't */
 		/*  be any vstems, so there can't be any confusion about hint order */
 		/*  so we don't need to worry about unblended stuff */
+		if ( is_type2 )
+		    LogError( _("%s\'s vstem3 operator is not supported for Type2\n"), name );
 		sameh = NULL;
 		if ( !is_type2 )
 		    sameh = SameH(ret->vstem,stack[0] + ret->lsidebearing,stack[1],
@@ -3793,6 +3797,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
 		if ( sp<6 ) LogError( _("Stack underflow on hstem3 in %s\n"), name );
+		if ( is_type2 )
+		    LogError( _("%s\'s vstem3 operator is not supported for Type2\n"), name );
 		sameh = NULL;
 		if ( !is_type2 )
 		    sameh = SameH(ret->hstem,stack[0],stack[1], unblended,0);
@@ -3828,6 +3834,10 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	      case 6: /* seac */	/* build accented characters */
  seac:
 		if ( sp<5 ) LogError( _("Stack underflow on seac in %s\n"), name );
+		if ( is_type2 ) {
+			if ( v==6 ) LogError( _("%s\'s SEAC operator is invalid for Type2\n"), name );
+			else LogError( _("%s\'s SEAC-like endchar operator is depreciated for Type2\n"), name );
+		}
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
 		r1 = RefCharCreate();
 		r2 = RefCharCreate();
@@ -3857,6 +3867,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	      break;
 	      case 7: /* sbw */		/* generalized width/sidebearing command */
 		if ( sp<4 ) LogError( _("Stack underflow on sbw in %s\n"), name );
+		if ( is_type2 )
+		    LogError( _("%s\'s sbw operator is not supported for Type2\n"), name );
 		ret->lsidebearing = stack[0];
 		/* stack[1] is lsidebearing y (only for vertical writing styles, CJK) */
 		ret->width = stack[2];
@@ -4152,6 +4164,8 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 	      break;
 	      case 33: /* setcurrentpoint */
+		if ( is_type2 )
+		    LogError( _("Type2 fonts do not support the Type1 setcurrentpoint operator") );
 		if ( sp<2 ) LogError( _("Stack underflow on setcurrentpoint in %s\n"), name );
 		else {
 		    current.x = stack[0];
