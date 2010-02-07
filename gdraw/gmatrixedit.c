@@ -215,7 +215,7 @@ static void GMatrixEdit_Move(GGadget *g, int32 x, int32 y) {
     _ggadget_move(g,x,y);
 }
 
-static GMenuItem *FindMi(GMenuItem *mi, int val ) {
+static GMenuItem *FindMi(GMenuItem *mi, intpt val ) {
     int i;
 
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line; ++i ) {
