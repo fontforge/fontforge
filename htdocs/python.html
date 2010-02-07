@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 3-Feb-2010 -->
+  <!-- AP: Last modified: 6-Feb-2010 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -662,6 +662,14 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <A name="Point">point</A>
     </CAPTION>
     <TR>
+      <TH colspan=3>Creation</TH>
+    </TR>
+    <TR>
+      <TD><CODE>fontforge.point</CODE></TD>
+      <TD><CODE>([x,y,on-curve])</CODE></TD>
+      <TD>Creates a new point. Optionally specifying its location</TD>
+    </TR>
+    <TR>
       <TH colspan=3>Members</TH>
     </TR>
     <TR>
@@ -695,11 +703,6 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
-    </TR>
-    <TR>
-      <TD><CODE>new</CODE></TD>
-      <TD><CODE>([x,y,on-curve])</CODE></TD>
-      <TD>Creates a new point. Optionally specifying its location</TD>
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>
@@ -755,6 +758,14 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	the shape of the contour to match the new spiros.
 	<P>
 	Two contours may be compared to see if they describe similar paths.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Creation</TH>
+    </TR>
+    <TR>
+      <TD><CODE>fontforge.contour</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Creates a new contour</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -876,11 +887,6 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
-    </TR>
-    <TR>
-      <TD><CODE>new</CODE></TD>
-      <TD><CODE>()</CODE></TD>
-      <TD>Creates a new contour</TD>
     </TR>
     <TR>
       <TD><CODE>isEmpty</CODE></TD>
@@ -1114,6 +1120,14 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	Layers may be compared to see if their contours are similar.</TD>
     </TR>
     <TR>
+      <TH colspan=3>Creation</TH>
+    </TR>
+    <TR>
+      <TD><CODE>fontforge.layer</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Creates a new layer</TD>
+    </TR>
+    <TR>
       <TH colspan=3>Members</TH>
     </TR>
     <TR>
@@ -1163,11 +1177,6 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
-    </TR>
-    <TR>
-      <TD><CODE>new</CODE></TD>
-      <TD><CODE>()</CODE></TD>
-      <TD>Creates a new layer</TD>
     </TR>
     <TR>
       <TD><CODE>isEmpty</CODE></TD>
@@ -1534,7 +1543,10 @@ pen = None;				# Finalize the pen. This tells FontForge
 	things you expect to be associated with a glyph: a glyph name, a unicode
 	encoding, a drawing layer, GPOS/GSUB features...
 	<P>
-	This type may not be pickled.</TD>
+	This type may not be pickled.
+	<P>
+	This type may not be created directly -- all glyphs are bound to a font and
+	must be created through the font.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -2395,8 +2407,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD colspan=3><STRONG>Note:</STRONG> Glyphs do not have an independent existence.
-	They live in fonts. You may not create them with new(), only in the context
-	of a font. See <A href="#f-createChar">font.createChar</A></TD>
+	They live in fonts. You may not create them with stand-alone, only in the
+	context of a font. See <A href="#f-createChar">font.createChar</A></TD>
     </TR>
   </TABLE>
   <P>
@@ -2579,6 +2591,14 @@ pen = None;				# Finalize the pen. This tells FontForge
 	a list of GPOS/GSUB lookups and many other things.
 	<P>
 	This type may not be pickled.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Creation</TH>
+    </TR>
+    <TR>
+      <TD><CODE>fontforge.font</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Creates a new font</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -3406,11 +3426,6 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
-    </TR>
-    <TR>
-      <TD><CODE>new</CODE></TD>
-      <TD><CODE>()</CODE></TD>
-      <TD>Creates a new font</TD>
     </TR>
     <TR>
       <TD><CODE>addAnchorClass</CODE></TD>
