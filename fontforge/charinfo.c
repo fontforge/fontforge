@@ -3149,7 +3149,7 @@ return( NULL );
 return( NULL );
 
 return( NameList_GetImage(sf,sc,def_layer,old[cols*popup_r+1].u.md_str,
-	sub->lookup->lookup_type<=gsub_ligature));
+	sub->lookup->lookup_type==gsub_ligature));
 }
 
 static GImage *_CI_GetImage(const void *_ci) {
