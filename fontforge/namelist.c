@@ -994,6 +994,7 @@ return( NULL );
     BuildHash(&hash,sf,ret);
     SFRenameLookupsByHash(sf,&hash);
     __GlyphHashFree(&hash);
+    GlyphHashFree(sf);
 return( ret );
 }
 
@@ -1012,6 +1013,7 @@ void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former) {
     BuildHash(&hash,sf,former);
     SFRenameLookupsByHash(sf,&hash);
     __GlyphHashFree(&hash);
+    GlyphHashFree(sf);
     for ( gid = 0; gid<sf->glyphcnt; ++gid )
 	free(former[gid]);
     free(former);
