@@ -812,6 +812,14 @@ struct bits {
     SplineChar *rpl;
 };
 
+static void safestrcpy(char *to, const char *from) {
+    int ch;
+
+    while ( (ch=*from++)!='\0' )
+	*to++ = ch;
+    *to = '\0';
+}
+
 static char *DoReplacements(struct bits *bits,int bc,char **_src,char *start) {
     int offset = start - *_src;
     int diff, i, off, allsmall=1, len;
@@ -829,7 +837,7 @@ static char *DoReplacements(struct bits *bits,int bc,char **_src,char *start) {
 	    len = strlen(bits[i].rpl->name);
 	    memcpy(bits[i].start+diff,bits[i].rpl->name,len);
 	    if ( len<(bits[i].end-bits[i].start) )
-		strcpy(bits[i].start+len+diff,bits[i].end+diff);
+		safestrcpy(bits[i].start+len+diff,bits[i].end+diff);
 	    diff += len - (bits[i].end-bits[i].start);
 	}
     } else {
