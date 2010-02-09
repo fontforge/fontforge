@@ -2638,7 +2638,7 @@ static FILE *G___figureLookups(SplineFont *sf,int is_gpos,
 	struct alltabs *at) {
     OTLookup *otl;
     struct lookup_subtable *sub;
-    int index, i;
+    int index, i,j;
     FILE *final;
     FILE *lfile = tmpfile();
     OTLookup **sizeordered;
@@ -2687,14 +2687,14 @@ return( lfile );
 	len = otl->lookup_length;
 	while ( len>=32768 ) {
 	    int done = fread(buffer,1,32768,lfile);
-	    if ( done==EOF )
+	    if ( done==0 )		/* fread returns 0 on error, not EOF */
 	break;
 	    fwrite(buffer,1,done,final);
 	    len -= done;
 	}
 	if ( len>0 && len<=32768 ) {
 	    int done = fread(buffer,1,len,lfile);
-	    if ( done==EOF )
+	    if ( done==0 )
 	break;
 	    fwrite(buffer,1,done,final);
 	}
@@ -2702,8 +2702,8 @@ return( lfile );
 	    if ( !sub->unused ) {
 		sub->subtable_offset += diff;
 		if ( sub->extra_subtables!=NULL ) {
-		    for ( i=0; sub->extra_subtables[i]!=-1; ++i )
-			sub->extra_subtables[i] += diff;
+		    for ( j=0; sub->extra_subtables[j]!=-1; ++j )
+			sub->extra_subtables[j] += diff;
 		}
 	    }
 	}
