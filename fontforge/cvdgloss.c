@@ -30,6 +30,9 @@
 #include <ustring.h>
 #include <stdarg.h>
 
+extern GBox _ggadget_Default_Box;
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 #ifdef FREETYPE_HAS_DEBUGGER
 
 #include <ft2build.h>
@@ -88,7 +91,7 @@ static void scrprintf(struct scr *scr, char *format, ... ) {
 
     va_start(ap,format);
     vsnprintf(buffer,sizeof(buffer),format,ap);
-    GDrawDrawBiText8(scr->pixmap,3,scr->y,buffer,-1,NULL,0);
+    GDrawDrawBiText8(scr->pixmap,3,scr->y,buffer,-1,NULL,MAIN_FOREGROUND);
     scr->y += scr->fh;
     ++scr->lines;
 }

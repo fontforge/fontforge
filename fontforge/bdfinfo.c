@@ -34,6 +34,10 @@
 #include <math.h>
 #include <gkeysym.h>
 
+extern GBox _ggadget_Default_Box;
+#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 struct bdf_dlg_font {
     int old_prop_cnt;
     BDFProperties *old_props;
@@ -491,22 +495,22 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 	if ( sel ) {
 	    r.x = 0; r.width = bd->width;
 	    r.y = clip.y; r.height = clip.height;
-	    GDrawFillRect(pixmap,&r,0xffff00);
+	    GDrawFillRect(pixmap,&r,ACTIVE_BORDER);
 	}
 	GDrawPushClip(pixmap,&clip,&old);
-	GDrawDrawBiText8(pixmap,4,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].name,-1,NULL,0x000000);
+	GDrawDrawBiText8(pixmap,4,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].name,-1,NULL,MAIN_FOREGROUND);
 	GDrawPopClip(pixmap,&old);
 	switch ( bdf->props[i+cur->top_prop].type&~prt_property ) {
 	  case prt_string: case prt_atom:
-	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].u.str,-1,NULL,0x000000);
+	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,bdf->props[i+cur->top_prop].u.str,-1,NULL,MAIN_FOREGROUND);
 	  break;
 	  case prt_int:
 	    sprintf( buffer, "%d", bdf->props[i+cur->top_prop].u.val );
-	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,0x000000);
+	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,MAIN_FOREGROUND);
 	  break;
 	  case prt_uint:
 	    sprintf( buffer, "%u", (unsigned) bdf->props[i+cur->top_prop].u.val );
-	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,0x000000);
+	    GDrawDrawBiText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,MAIN_FOREGROUND);
 	  break;
 	}
 	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,0x808080);

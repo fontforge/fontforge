@@ -31,6 +31,10 @@
 #include <utype.h>
 #include <math.h>
 
+extern GBox _ggadget_Default_Box;
+#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 typedef struct kernclassdlg {
     struct kernclasslistdlg *kcld;
     KernClass *orig;
@@ -1447,14 +1451,14 @@ return;
 	if ( i+kcd->offtop<fcnt && i+kcd->offtop==factive ) {
 	    select.x = kcd->xstart+1; select.y = kcd->ystart2+i*kcd->kernh+1;
 	    select.width = rect.width-1; select.height = kcd->kernh-1;
-	    GDrawFillRect(pixmap,&select,0xffff00);
+	    GDrawFillRect(pixmap,&select,ACTIVE_BORDER);
 	}
     }
     for ( i=0 ; kcd->offleft+i<=kcd->second_cnt && (i-1)*kcd->kernw<kcd->fullwidth; ++i ) {
 	if ( i+kcd->offleft<scnt && i+kcd->offleft==sactive ) {
 	    select.x = kcd->xstart2+i*kcd->kernw+1; select.y = kcd->ystart+1;
 	    select.width = kcd->kernw-1; select.height = rect.height-1;
-	    GDrawFillRect(pixmap,&select,0xffff00);
+	    GDrawFillRect(pixmap,&select,ACTIVE_BORDER);
 	}
     }
 
@@ -1515,7 +1519,7 @@ return;
 	    sprintf( buf, "%d", kcd->offsets[(i+kcd->offtop)*kcd->second_cnt+j+kcd->offleft] );
 	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
 	    GDrawDrawBiText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
-		buf,-1,NULL,0x000000);
+		buf,-1,NULL,MAIN_FOREGROUND);
 	}
     }
 

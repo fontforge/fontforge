@@ -31,6 +31,10 @@
 #include "ttf.h"
 #include "ttfinstrs.h"
 
+extern GBox _ggadget_Default_Box;
+#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 extern int _GScrollBar_Width;
 #define EDGE_SPACING	2
 
@@ -382,7 +386,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	GRect r;
 	r.x = 0; r.width = ii->vwidth;
 	r.y = (ii->isel_pos-ii->lpos)*ii->fh+EDGE_SPACING; r.height = ii->fh;
-	GDrawFillRect(pixmap,&r,0xffff00);
+	GDrawFillRect(pixmap,&r,ACTIVE_BORDER);
     }
 
     if ( ii->showaddr )
@@ -444,10 +448,10 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 		    GDrawLayoutInit(pixmap,loc,-1,NULL);
 		    GDrawLayoutExtents(pixmap,&size);
 		    x = addr_end - EDGE_SPACING - size.width;
-		    GDrawLayoutDraw(pixmap,x,y+ii->as,0x000000);
+		    GDrawLayoutDraw(pixmap,x,y+ii->as,MAIN_FOREGROUND);
 		} else {
 		    x = addr_end - EDGE_SPACING - GDrawGetText8Width(pixmap,loc,-1,NULL);
-		    GDrawDrawBiText8(pixmap,x,y+ii->as,loc,-1,NULL,0x000000);
+		    GDrawDrawBiText8(pixmap,x,y+ii->as,loc,-1,NULL,MAIN_FOREGROUND);
 		}
 		if ( ii->bpcheck && ii->bpcheck(ii,i))
 		    GDrawDrawImage(pixmap,&GIcon_Stop,NULL,EDGE_SPACING,
@@ -455,8 +459,8 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    }
 	    x = addr_end + EDGE_SPACING;
 	    if ( ii->showhex )
-		GDrawDrawBiText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
-	    GDrawDrawBiText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,0x000000);
+		GDrawDrawBiText(pixmap,x,y+ii->as,uins,-1,NULL,MAIN_FOREGROUND);
+	    GDrawDrawBiText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,MAIN_FOREGROUND);
 	    y += ii->fh;
 	}
 	if ( ii->showaddr && ii->lstopped!=-1 ) {
@@ -1228,13 +1232,13 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     for ( ; y<=high && index<sv->len/2; ++index ) {
 	sprintf( caddr, "%d", index );
 	x = sv->addrend - ADDR_SPACER - GDrawGetText8Width(pixmap,caddr,-1,NULL);
-	GDrawDrawBiText8(pixmap,x,y+sv->as,caddr,-1,NULL,0x000000);
+	GDrawDrawBiText8(pixmap,x,y+sv->as,caddr,-1,NULL,MAIN_FOREGROUND);
 
 	sprintf( cval, "%d", sv->edits[index] );
-	GDrawDrawBiText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,0x000000);
+	GDrawDrawBiText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,MAIN_FOREGROUND);
 
 	if ( sv->comments[index]!=NULL )
-	    GDrawDrawBiText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,0x000000);
+	    GDrawDrawBiText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,MAIN_FOREGROUND);
 	y += sv->fh;
     }
 }

@@ -30,7 +30,12 @@
 #include <chardata.h>
 #include <utype.h>
 #include "unicoderange.h"
+
 extern int _GScrollBar_Width;
+extern GBox _ggadget_Default_Box;
+#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 #include <gkeysym.h>
 #include <math.h>
 #include <unistd.h>
@@ -6357,7 +6362,7 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 	    if ( lk->all[i].selected ) {
 		r.x = LK_MARGIN; r.width = gfi->lkwidth-2*LK_MARGIN;
 		r.y = (lcnt-lk->off_top)*gfi->fh; r.height = gfi->fh;
-		GDrawFillRect(pixmap,&r,0xffff00);
+		GDrawFillRect(pixmap,&r,ACTIVE_BORDER);
 	    }
 	    r.x = LK_MARGIN-lk->off_left; r.width = (gfi->as&~1);
 	    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh; r.height = r.width;
@@ -6366,7 +6371,7 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 	    if ( !lk->all[i].open )
 		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, 0x000000);
 	    GDrawDrawBiText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
-		    lk->all[i].lookup->lookup_name,-1,NULL,0x000000);
+		    lk->all[i].lookup->lookup_name,-1,NULL,MAIN_FOREGROUND);
 	}
 	++lcnt;
 	if ( lk->all[i].open ) {
@@ -6377,12 +6382,12 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 		    if ( lk->all[i].subtables[j].selected ) {
 			r.x = LK_MARGIN; r.width = gfi->lkwidth-2*LK_MARGIN;
 			r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh; r.height = gfi->fh;
-			GDrawFillRect(pixmap,&r,0xffff00);
+			GDrawFillRect(pixmap,&r,ACTIVE_BORDER);
 		    }
 		    r.x = LK_MARGIN+2*gfi->fh-lk->off_left;
 		    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh;
 		    GDrawDrawBiText8(pixmap,r.x, r.y+gfi->as,
-			    lk->all[i].subtables[j].subtable->subtable_name,-1,NULL,0x000000);
+			    lk->all[i].subtables[j].subtable->subtable_name,-1,NULL,MAIN_FOREGROUND);
 		}
 		++lcnt;
 	    }

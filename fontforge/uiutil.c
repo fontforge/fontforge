@@ -33,6 +33,10 @@
 #include <sys/time.h>
 #include <gkeysym.h>
 
+extern GBox _ggadget_Default_Box;
+#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 #if __CygWin
 extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
 extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
@@ -643,12 +647,12 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 		      xe = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],e_c,NULL);
 		  r.x = xs+3; r.width = xe-xs;
 		  r.y = i*errdata.fh; r.height = errdata.fh;
-		  GDrawFillRect(gw,&r,0xffff00);
+		  GDrawFillRect(gw,&r,ACTIVE_BORDER);
 	      }
 	      if ( GDrawHasCairo(gw)&gc_pango )
-		  GDrawLayoutDraw(gw,3,i*errdata.fh+errdata.as,0x000000);
+		  GDrawLayoutDraw(gw,3,i*errdata.fh+errdata.as,MAIN_FOREGROUND);
 	      else
-		  GDrawDrawBiText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,0x000000);
+		  GDrawDrawBiText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,MAIN_FOREGROUND);
 	  }
       break;
       case et_char:
