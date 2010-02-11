@@ -39,6 +39,10 @@
 #include <setjmp.h>
 #include <signal.h>
 
+extern GBox _ggadget_Default_Box;
+#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
 /* A dialog for browsing through fonts on the Open Font Library website */
 
 
@@ -1722,7 +1726,7 @@ static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
 	    if ( du==NULL ) {
 		/* Ignore selection on top level if it is open */
 		if ( d->show[index]->selected && !d->show[index]->open )
-		    GDrawFillRect(gw,&r,0xffff00);
+		    GDrawFillRect(gw,&r,ACTIVE_BORDER);
 
 		box.x = d->margin; box.width = (d->as&~1);
 		box.y = d->margin+(i)*d->fh; box.height = box.width;
@@ -1734,41 +1738,41 @@ static int oflib_fonts_e_h(GWindow gw, GEvent *event) {
 		}
 		x = box.x + d->fh;
 		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->name,-1,NULL,0x000000);
+			d->show[index]->name,-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 10*d->fh )
 		    x = box.x + d->fh + 11*d->fh;
 		else
 		    x += d->as;
 		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->author,-1,NULL,0x000000);
+			d->show[index]->author,-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 17*d->fh )
 		    x = box.x + d->fh + 18*d->fh;
 		else
 		    x += d->as;
 		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->license==ofll_ofl?"OFL":"PD",-1,NULL,0x000000);
+			d->show[index]->license==ofll_ofl?"OFL":"PD",-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 20*d->fh )
 		    x = box.x + d->fh + 21*d->fh;
 		else
 		    x += d->as;
 		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			d->show[index]->taglist,-1,NULL,0x000000);
+			d->show[index]->taglist,-1,NULL,MAIN_FOREGROUND);
 		if ( x< box.x + d->fh + 42*d->fh )
 		    x = box.x + d->fh + 43*d->fh;
 		else
 		    x += d->as;
 		formatOFLibDate(buffer,sizeof(buffer), d->show[index]->date );
 		x += GDrawDrawBiText8(gw,x, box.y+d->as,
-			buffer,-1,NULL,0x000000);
+			buffer,-1,NULL,MAIN_FOREGROUND);
 		if ( d->show[index]->open && d->show[index]->urls!=NULL )
 		    du = d->show[index]->urls;
 		else
 		    ++index;
 	    } else {
 		if ( du->selected )
-		    GDrawFillRect(gw,&r,0xffff00);
+		    GDrawFillRect(gw,&r,ACTIVE_BORDER);
 		GDrawDrawBiText8(gw,r.x + d->fh, r.y+d->as,
-			du->comment,-1,NULL,0x000000);
+			du->comment,-1,NULL,MAIN_FOREGROUND);
 		if ( du->next!=NULL )
 		    du = du->next;
 		else {
