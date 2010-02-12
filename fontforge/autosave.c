@@ -34,30 +34,12 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <ustring.h>
+#include "gfile.h"
 
+#if !defined(__MINGW32__)
 # include <pwd.h>
+#endif
 
-static char *gethomedir(void) {
-    static char *dir;
-    int uid;
-    struct passwd *pw;
-
-	dir = getenv("HOME");
-    if ( dir!=NULL )
-return( copy(dir) );
-
-    uid = getuid();
-    while ( (pw=getpwent())!=NULL ) {
-	if ( pw->pw_uid==uid ) {
-	    dir = copy(pw->pw_dir);
-	    endpwent();
-return( dir );
-	}
-    }
-    endpwent();
-
-return( NULL );
-}
 
 char *getPfaEditDir(char *buffer) {
     static char *editdir = NULL;
@@ -67,7 +49,7 @@ char *getPfaEditDir(char *buffer) {
     if ( editdir!=NULL )
 return( editdir );
 
-    dir=gethomedir();
+    dir = GFileGetHomeDir();
     if ( dir==NULL )
 return( NULL );
 #ifdef __VMS
@@ -89,7 +71,7 @@ return( NULL );
     free(dir);
     /* If we still can't find it, create it */
     if ( access(buffer,F_OK)==-1 )
-	if ( mkdir(buffer,0700)==-1 )
+	if ( GFileMkDir(buffer)==-1 )
 return( NULL );
     editdir = copy(buffer);
 return( editdir );
@@ -102,7 +84,7 @@ static char *getAutoDirName(char *buffer) {
 return( NULL );
     sprintf(buffer,"%s/autosave", dir);
     if ( access(buffer,F_OK)==-1 )
-	if ( mkdir(buffer,0700)==-1 )
+	if ( GFileMkDir(buffer)==-1 )
 return( NULL );
     dir = copy(buffer);
 return( dir );

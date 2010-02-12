@@ -49,6 +49,13 @@ extern void RunApplicationEventLoop(void);
 # undef KernPair
 #endif
 
+#if defined(__MINGW32__)
+#include <Windows.h>
+int  srandom( int n ){ srand(n); }
+int  random( void ){ return rand();}
+void sleep( int n ){ _sleep(n);}
+#endif
+
 int splash = 1;
 static int localsplash;
 static int unique = 0;
@@ -306,6 +313,7 @@ static struct library_descriptor {
 };
 
 static void _dolibrary(void) {
+#if !defined(__MINGW32__)
 #ifndef __VMS
    int i, j;
     char buffer[3000];
@@ -431,6 +439,7 @@ static void _dolibrary(void) {
 	if ( !libs[i].usable )
 	    fprintf( stderr, "\tUnfortunately this version of fontforge is not configured to use this\n\t library.  You must rebuild from source.\n" );
     }
+#endif
 #endif
 }
 
@@ -975,6 +984,17 @@ static char *getLocaleDir(void) {
 return( sharedir );
 
     set = true;
+
+#if defined(__MINGW32__)
+
+    len = strlen(GResourceProgramDir) + strlen("/share/locale") +1;
+    sharedir = galloc(len);
+    strcpy(sharedir, GResourceProgramDir);
+    strcat(sharedir, "/share/locale");
+    return sharedir;
+
+#else
+
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
 #ifdef SHAREDIR
@@ -990,6 +1010,8 @@ return( sharedir = PREFIX "/share/locale" );
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/locale");
 return( sharedir );
+
+#endif
 }
 
 #if defined(__Mac)
@@ -1066,6 +1088,21 @@ int main( int argc, char **argv ) {
 	local_x = 0;
 #endif
 
+#if defined(__MINGW32__)
+    if( getenv("DISPLAY")==NULL ) {
+	putenv("DISPLAY=127.0.0.1:0.0");
+    }
+    if( getenv("LC_ALL")==NULL ){
+	char lang[8];
+	char env[32];
+	if( GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, lang, 8) > 0 ){
+	    strcpy(env, "LC_ALL=");
+	    strcat(env, lang);
+	    putenv(env);
+	}
+    }
+#endif
+
     FF_SetUiInterface(&gdraw_ui_interface);
     FF_SetPrefsInterface(&gdraw_prefs_interface);
     FF_SetSCInterface(&gdraw_sc_interface);
@@ -1081,7 +1118,20 @@ int main( int argc, char **argv ) {
 
     InitSimpleStuff();
 
+#if defined(__MINGW32__)
+    {
+	char  path[MAX_PATH+4];
+	char  *c = path;
+	unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
+	path[len] = '\0';
+	for(; *c; *c++) /* backslash to slash */
+	    if(*c == '\\')
+		*c = '/';
+	GResourceSetProg(path);
+    }
+#else
     GResourceSetProg(argv[0]);
+#endif
 
 #if defined(__Mac)
     /* The mac seems to default to the "C" locale, LANG and LC_MESSAGES are not*/
@@ -1099,8 +1149,9 @@ int main( int argc, char **argv ) {
     { int did_keybindings = 0;
     if ( local_x && !get_mac_x11_prop("enable_key_equivalents") ) {
 	/* Ok, we get the command key */
-	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL )
+	if ( getenv("LANG")==NULL && getenv("LC_MESSAGES")==NULL ) {
 	    setenv("LC_MESSAGES","en_US.UTF-8",0);
+	}
 	/* Can we find a set of keybindings designed for the mac with cmd key? */
 	bind_textdomain_codeset("Mac-FontForge-MenuShortCuts","UTF-8");
 	bindtextdomain("Mac-FontForge-MenuShortCuts", getLocaleDir());
@@ -1122,7 +1173,21 @@ int main( int argc, char **argv ) {
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
     GResourceUseGetText();
-#ifdef SHAREDIR
+#if defined(__MINGW32__)
+    {
+	size_t len = strlen(GResourceProgramDir);
+	char*  path = galloc(len + 64);
+	strcpy(path, GResourceProgramDir);
+
+	strcpy(path+len, "/share/fontforge/pixmaps"); /* PixmapDir */
+	GGadgetSetImageDir(path);
+
+	strcpy(path+len, "/fontforge.resource"); /* Resource File */
+	GResourceAddResourceFile(path, GResourceProgramName);
+
+	gfree(path);
+    }
+#elif defined(SHAREDIR)
     GGadgetSetImageDir(SHAREDIR "/pixmaps");
 #endif
 

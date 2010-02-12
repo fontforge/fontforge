@@ -31,6 +31,7 @@
 #include <gkeysym.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include "gfile.h"
 
 #include <pthread.h>
 #ifndef __VMS
@@ -42,6 +43,10 @@
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
+#if defined(__MINGW32__)
+# define SIGUSR1 18
+#endif
 
 /* A dialog for browsing through fonts on the Open Font Library website */
 
@@ -517,7 +522,7 @@ return( oflibdir );
 return( NULL );
     sprintf(buffer,"%s/OFLib", getPfaEditDir(buffer));
     if ( access(buffer,F_OK)==-1 )
-	if ( mkdir(buffer,0700)==-1 )
+	if ( GFileMkDir(buffer)==-1 )
 return( NULL );
 
     oflibdir = copy(buffer);
@@ -1018,7 +1023,12 @@ pthread_exit(NULL);
     d->http_timer=NULL;
 
     d->die = true;
-    if ( d->http_thread ) {
+#if defined(__MINGW32__)
+    if ( d->http_thread.x )
+#else
+    if ( d->http_thread )
+#endif
+    {
 	void *status;
 	pthread_mutex_unlock(&d->http_thread_done);
 	pthread_mutex_unlock(&d->http_thread_can_do_stuff);

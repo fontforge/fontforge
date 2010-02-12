@@ -736,7 +736,7 @@ int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
     free( foo );
 
     /* Create it */
-    mkdir( basedir, 0755 );
+    GFileMkDir( basedir );
 
     err  = !UFOOutputMetaInfo(basedir,sf);
     err |= !UFOOutputFontInfo(basedir,sf,layer);
@@ -752,7 +752,7 @@ int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
 return( false );
 
     glyphdir = buildname(basedir,"glyphs");
-    mkdir( glyphdir, 0755 );
+    GFileMkDir( glyphdir );
 
     plist = PListCreate(glyphdir,"contents.plist");
     if ( plist==NULL ) {

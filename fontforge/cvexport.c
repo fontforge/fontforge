@@ -30,7 +30,6 @@
 #include <string.h>
 #include "gfile.h"
 #include <time.h>
-#include <pwd.h>
 #include "ustring.h"
 #include "gio.h"
 #include "gicons.h"

@@ -40,6 +40,67 @@
 #endif
 
 static char dirname_[1024];
+#if !defined(__MINGW32__)
+ #include <pwd.h>
+#else
+ #include <Windows.h>
+#endif
+
+#if defined(__MINGW32__)
+static void _backslash_to_slash(char* c){
+    for(; *c; c++)
+	if(*c == '\\')
+	    *c = '/';
+}
+static void _u_backslash_to_slash(unichar_t* c){
+    for(; *c; c++)
+	if(*c == '\\')
+	    *c = '/';
+}
+#endif
+
+char *GFileGetHomeDir(void) {
+#if defined(__MINGW32__)
+    char* dir = getenv("HOME");
+    if(!dir)
+	dir = getenv("USERPROFILE");
+    if(dir){
+	char* buffer = copy(dir);
+	_backslash_to_slash(buffer);
+return buffer;
+    }
+return NULL;
+#else
+    static char *dir;
+    int uid;
+    struct passwd *pw;
+
+    dir = getenv("HOME");
+    if ( dir!=NULL )
+	return( copy(dir) );
+
+    uid = getuid();
+    while ( (pw=getpwent())!=NULL ) {
+	if ( pw->pw_uid==uid ) {
+	    dir = copy(pw->pw_dir);
+	    endpwent();
+return( dir );
+	}
+    }
+    endpwent();
+return( NULL );
+#endif
+}
+
+unichar_t *u_GFileGetHomeDir(void) {
+    unichar_t* dir = NULL;
+    char* tmp = GFileGetHomeDir();
+    if( tmp ) {
+	dir = uc_copy(tmp);
+	gfree(tmp);
+    }
+return dir;
+}
 
 static void savestrcpy(char *dest,const char *src) {
     forever {
@@ -54,7 +115,7 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
     /* result may be the same as name */
     char buffer[1000];
 
-    if ( *name!='/' ) {
+     if ( ! GFileIsAbsolute(name) ) {
 	char *pt, *spt, *rpt, *bpt;
 
 	if ( dirname_[0]=='\0' ) {
@@ -64,6 +125,9 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
 	if ( buffer[strlen(buffer)-1]!='/' )
 	    strcat(buffer,"/");
 	strcat(buffer,name);
+	#if defined(__MINGW32__)
+	_backslash_to_slash(buffer);
+	#endif
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -92,6 +156,9 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
     if (result!=name) {
 	strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
+	#if defined(__MINGW32__)
+	_backslash_to_slash(result);
+	#endif
     }
 return(result);
 }
@@ -190,8 +257,13 @@ return(ret);
 }
 
 int GFileIsAbsolute(const char *file) {
+#if defined(__MINGW32__)
+    if( (file[1]==':') && (('a'<=file[0] && file[0]<='z') || ('A'<=file[0] && file[0]<='Z')) )
+return ( true );
+#else
     if ( *file=='/' )
 return( true );
+#endif
     if ( strstr(file,"://")!=NULL )
 return( true );
 
@@ -246,6 +318,29 @@ char *_GFile_find_program_dir(char *prog) {
     char *pt, *path, *program_dir=NULL;
     char filename[2000];
 
+#if defined(__MINGW32__)
+    char* pt1 = strrchr(prog, '/');
+    char* pt2 = strrchr(prog, '\\');
+    if(pt1<pt2) pt1=pt2;
+    if(pt1)
+	program_dir = copyn(prog, pt1-prog);
+    else if( (path = getenv("PATH")) != NULL ){
+	char* tmppath = copy(path);
+	path = tmppath;
+	for(;;){
+	    pt1 = strchr(path, ';');
+	    if(pt1) *pt1 = '\0';
+	    sprintf(filename,"%s/%s", path, prog);
+	    if ( access(filename,1)!= -1 ) {
+		program_dir = copy(path);
+		break;
+	    }
+	    if(!pt1) break;
+	    path = pt1+1;
+	}
+	gfree(tmppath);
+    }
+#else
     if ( (pt = strrchr(prog,'/'))!=NULL )
 	program_dir = copyn(prog,pt-prog);
     else if ( (path = getenv("PATH"))!=NULL ) {
@@ -265,6 +360,8 @@ char *_GFile_find_program_dir(char *prog) {
 		program_dir = copy(path);
 	}
     }
+#endif
+
     if ( program_dir==NULL )
 return( NULL );
     GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
@@ -277,7 +374,7 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     /* result may be the same as name */
     unichar_t buffer[1000];
 
-    if ( *name!='/' ) {
+    if ( ! u_GFileIsAbsolute(name) ) {
 	unichar_t *pt, *spt, *rpt, *bpt;
 
 	if ( dirname_[0]=='\0' ) {
@@ -287,6 +384,9 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
 	if ( buffer[u_strlen(buffer)-1]!='/' )
 	    uc_strcat(buffer,"/");
 	u_strcat(buffer,name);
+	#if defined(__MINGW32__)
+	_u_backslash_to_slash(buffer);
+	#endif
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -314,6 +414,9 @@ unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) 
     if (result!=name) {
 	u_strncpy(result,name,rsiz);
 	result[rsiz-1]='\0';
+	#if defined(__MINGW32__)
+	_u_backslash_to_slash(result);
+	#endif
     }
 return(result);
 }
@@ -426,8 +529,13 @@ return(ret);
 }
 
 int u_GFileIsAbsolute(const unichar_t *file) {
+#if defined(__MINGW32__)
+    if( (file[1]==':') && (('a'<=file[0] && file[0]<='z') || ('A'<=file[0] && file[0]<='Z')) )
+return ( true );
+#else
     if ( *file=='/' )
 return( true );
+#endif
     if ( uc_strstr(file,"://")!=NULL )
 return( true );
 

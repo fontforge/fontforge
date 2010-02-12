@@ -41,8 +41,10 @@ static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
     if ( top ) mi->ti.fg = 0x008000;
     mi->invoke = WindowSelect;
     mi->ti.text = GDrawGetWindowTitle(gw);
-    if ( u_strlen( mi->ti.text ) > 20 )
-	mi->ti.text[20] = '\0';
+    if(mi->ti.text == NULL)
+	mi->ti.text = utf82u_copy("(null)");
+    if ( u_strlen( mi->ti.text ) > 35 )
+	mi->ti.text[35] = '\0';
 }
 
 /* Builds up a menu containing the titles of all the major windows */

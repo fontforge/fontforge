@@ -36,6 +36,7 @@ extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   define dlclose(image_ptr)	/* Don't know how to do this on mac */
 #   define dlerror()		"Error when loading dynamic library"
 #  elif defined(__Mac)
+#  elif defined(__MINGW32__)
 #  else
 #   include <dlfcn.h>
 #   ifdef __CygWin

@@ -29,7 +29,9 @@
 #include "ustring.h"
 #include "utype.h"
 
+#if !defined(__MINGW32__)
 #include <netdb.h>
+#endif
 
 char *_GIO_decomposeURL(const unichar_t *url,char **host, int *port, char **username,
 	char **password) {
@@ -142,6 +144,10 @@ return( password );
 static struct hostdata *names[26], *numbers[10];
 
 struct hostdata *_GIO_LookupHost(char *host) {
+#if defined(__MINGW32__)
+return NULL;
+#else
+
     struct hostdata **base, *cur;
 #ifdef HAVE_PTHREAD_H
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -199,4 +205,5 @@ return( NULL );
     pthread_mutex_unlock(&mutex);
 #endif
 return( cur );
+#endif
 }

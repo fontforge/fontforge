@@ -40,6 +40,9 @@
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 #ifndef NAME_MAX
+# ifndef  _POSIX_NAME_MAX
+#  define _POSIX_NAME_MAX 512
+# endif
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
 
@@ -2287,7 +2290,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		char *fontprops;
 		FILE *ssfd;
 		sprintf( subfont,"%s/%s" SUBFONT_EXT, dirname, sf->subfonts[i]->fontname );
-		mkdir(subfont,0755);
+		GFileMkDir(subfont);
 		fontprops = galloc(strlen(subfont)+strlen("/" FONT_PROPS)+1);
 		strcpy(fontprops,subfont); strcat(fontprops,"/" FONT_PROPS);
 		ssfd = fopen( fontprops,"w");
@@ -2372,7 +2375,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    char *strikeprops;
 	    FILE *ssfd;
 	    sprintf( strike,"%s/%d" STRIKE_EXT, dirname, bdf->pixelsize );
-	    mkdir(strike,0755);
+	    GFileMkDir(strike);
 	    strikeprops = galloc(strlen(strike)+strlen("/" STRIKE_PROPS)+1);
 	    strcpy(strikeprops,strike); strcat(strikeprops,"/" STRIKE_PROPS);
 	    ssfd = fopen( strikeprops,"w");
@@ -2403,7 +2406,7 @@ static int SFD_MIDump(SplineFont *sf,EncMap *map,EncMap *normal, char *dirname,
     /* I'd like to use the font name, but the order of the instances is */
     /*  crucial and I must enforce an ordering on them */
     sprintf( instance,"%s/mm%d" INSTANCE_EXT, dirname, mm_pos );
-    mkdir(instance,0755);
+    GFileMkDir(instance);
     fontprops = galloc(strlen(instance)+strlen("/" FONT_PROPS)+1);
     strcpy(fontprops,instance); strcat(fontprops,"/" FONT_PROPS);
     ssfd = fopen( fontprops,"w");
@@ -2585,7 +2588,7 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
 
     if ( todir ) {
 	SFDirClean(filename);
-	mkdir(filename,0755);		/* this will fail if directory already exists. That's ok */
+	GFileMkDir(filename);		/* this will fail if directory already exists. That's ok */
 	tempfilename = galloc(strlen(filename)+strlen("/" FONT_PROPS)+1);
 	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
     }

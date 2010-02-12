@@ -797,14 +797,13 @@ static void GFCRefresh(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static int GFileChooserHome(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	char *homedir = getenv("HOME");
+	unichar_t* homedir = u_GFileGetHomeDir();
 	if ( homedir==NULL )
 	    GGadgetSetEnabled(g,false);
 	else {
-	    unichar_t *dir = uc_copy(homedir);
 	    GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(g);
-	    GFileChooserScanDir(gfc,dir);
-	    free(dir);
+	    GFileChooserScanDir(gfc,homedir);
+	    gfree(homedir);
 	}
     }
 return( true );
@@ -1104,7 +1103,7 @@ return;
 	gfc->wildcard = u_copy(slashpt);
     } else if ( gfc->lastname==NULL )
 	gfc->lastname = u_copy(slashpt);
-    if ( uc_strstr(spt,"://")!=NULL || *spt=='/' )	/* IsAbsolute */
+    if( u_GFileIsAbsolute(spt) )
 	dir = u_copyn(spt,slashpt-spt);
     else {
 	unichar_t *curdir = GFileChooserGetCurDir(gfc,-1);
@@ -1198,13 +1197,15 @@ return;
     pt = u_strrchr(tit,'/');
     free(gfc->lastname);
     gfc->lastname = NULL;
-    if ( (base=uc_strstr(tit,"://"))!=NULL || *(base=(unichar_t *) tit)=='/' ) {
-	if ( pt>base ) {
-	    if ( pt[1]!='\0' )
-		gfc->lastname = u_copy(pt+1);
-	    dir = u_copyn(tit,pt-tit);
-	} else {
-	    gfc->lastname = NULL;
+
+    if ( u_GFileIsAbsolute(tit) ){
+	base = uc_strstr(tit, "://");
+	if(!base) base = (unichar_t*) tit;
+	if(pt > base && pt[1]){
+	    gfc->lastname = u_copy(pt+1);
+	    dir = u_copyn(tit, pt-tit);
+	}
+	else{
 	    dir = u_copy(tit);
 	}
 	GFileChooserScanDir(gfc,dir);
@@ -1242,7 +1243,7 @@ static unichar_t *GFileChooserGetTitle(GGadget *g) {
     unichar_t *spt, *curdir, *file;
 
     spt = (unichar_t *) _GGadgetGetTitle(&gfc->name->g);
-    if ( uc_strstr(spt,"://")!=NULL || *spt=='/' )	/* IsAbsolute */
+    if ( u_GFileIsAbsolute(spt) )
 	file = u_copy(spt);
     else {
 	curdir = GFileChooserGetCurDir(gfc,-1);
@@ -1622,7 +1623,7 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     }
     if ( gd->label==NULL || gd->label->text==NULL )
 	GFileChooserSetTitle(&gfc->g,lastdir);
-    else if ( uc_strstr(gd->label->text,"://")!=NULL || *gd->label->text=='/' )
+    else if ( u_GFileIsAbsolute(gd->label->text) )
 	GFileChooserSetTitle(&gfc->g,gd->label->text);
     else {
 	unichar_t *temp = u_GFileAppendFile(lastdir,gd->label->text,false);

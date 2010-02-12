@@ -41,8 +41,13 @@
 #include <locale.h>		/* for setting the X locale properly */
 
 #ifdef HAVE_PTHREAD_H
-#include <sys/socket.h>
-#include <sys/un.h>
+# if defined(__MINGW32__)
+#  include <Windows.h>
+#  include <WinSock2.h>
+# else
+#  include <sys/socket.h>
+#  include <sys/un.h>
+# endif
 #endif
 
 #include <ustring.h>
@@ -1018,6 +1023,139 @@ return( XCreateWindow(gdisp->display, gdisp->root,
 	    gdisp->depth, InputOutput, gdisp->visual, wmask, &attrs));
 }
 
+
+#if defined(__MINGW32__)
+/* FIXME: Xming+WindowsWM hack */
+
+/* unichar to ActiveCodePage, this is not limited to setlocale() */
+static char*  u2acp_copy(const unichar_t* ustr){
+    if(ustr){
+	int wlen = u_strlen(ustr);
+	if(wlen > 0){
+	    WCHAR* wcs = galloc(sizeof(WCHAR) * (wlen));
+	    char*  mbs = galloc(sizeof(char) * (wlen*3));
+	    if(wcs && mbs){
+		WCHAR* w = wcs;
+		const unichar_t* u = ustr;
+		for(; *u; *w++ = (WCHAR)*u++); /* unichar(4) to WCHAR(2) */
+
+		int alen = WideCharToMultiByte(CP_ACP,0, wcs,wlen, mbs,wlen*3, 0,0);
+		if(alen<0) alen=0;
+		mbs[alen]='\0';
+
+		gfree(wcs);
+		return mbs;
+	    }
+	    if(wcs) gfree(wcs);
+	    if(mbs) gfree(mbs);
+	}
+    }
+    return NULL;
+}
+
+/* SET WM Name unichar */
+static void  mingw_set_wm_name(Display* display, Window window, const unichar_t* name){
+    char* a_str = u2acp_copy(name);
+    if(a_str){
+	XTextProperty prop;
+	if( XStringListToTextProperty(&a_str, 1, &prop) >= Success ){
+	    XSetWMName(display, window, &prop);
+	    XFree(prop.value);
+	}
+    }
+}
+/* Set WM IconName unichar */
+static void  mingw_set_wm_icon_name(Display* display, Window window, const unichar_t* name){
+    char* a_str = u2acp_copy(name);
+    if(a_str){
+	XTextProperty prop;
+	if( XStringListToTextProperty(&a_str, 1, &prop) >= Success ){
+	    XSetWMIconName(display, window, &prop);
+	    XFree(prop.value);
+	}
+    }
+}
+/* SET WM Name utf8 */
+static void  mingw_set_wm_name_utf8(Display* display, Window window, const char* utf8){
+    if(utf8){
+	unichar_t* uni = utf82u_copy(utf8);
+	if(uni){
+	    mingw_set_wm_name(display, window, uni);
+	    gfree(uni);
+	}
+    }
+}
+/* SET WM IconName utf8 */
+static void  mingw_set_wm_icon_name_utf8(Display* display, Window window, const char* utf8){
+    if(utf8){
+	unichar_t* uni = utf82u_copy(utf8);
+	if(uni){
+	    mingw_set_wm_icon_name(display, window, uni);
+	    gfree(uni);
+	}
+    }
+}
+/* GET WM Name unichar */
+static unichar_t*  mingw_get_wm_name(Display* display, Window window){
+    unichar_t* result = NULL;
+    XTextProperty prop;
+    if( XGetWMName(display, window, &prop) >= Success ){
+	char** list;
+	int    count;
+	if( XTextPropertyToStringList(&prop, &list, &count) >= Success ){
+	    char      *m, *mbs;
+	    WCHAR     *w, *wcs;
+	    unichar_t *u, *ustr;
+
+	    int i, wlen, alen=0;
+	    for(i=0; i < count; i++){
+		alen += strlen(list[i]);
+	    }
+
+	    mbs  = galloc(sizeof(char)      * (alen+4));
+	    wcs  = galloc(sizeof(WCHAR)     * (alen+4));
+	    ustr = galloc(sizeof(unichar_t) * (alen+4));
+
+	    if(mbs && wcs && ustr){
+		m = mbs;
+		for(i=0; i < count; i++){
+		    strcpy(m, list[i]);
+		    m += strlen(list[i]);
+		}
+
+		wlen = MultiByteToWideChar(CP_ACP,0, mbs,alen, wcs,alen);
+		if(wlen < 0) wlen=0;
+
+		w = wcs;
+		u = ustr;
+		for(i=0; i < wlen; i++)
+		    *u++ = (unichar_t)*w++;
+		*u++ = '\0';
+
+		result = ustr;
+		ustr = 0;
+	    }
+	    if(ustr) gfree(ustr);
+	    if(wcs)  gfree(wcs);
+	    if(mbs)  gfree(mbs);
+	    XFreeStringList(list);
+	}
+	XFree(prop.value);
+    }
+    return result;
+}
+/* GET WM Name utf8 */
+static char*  mingw_get_wm_name_utf8(Display* display, Window window){
+    unichar_t* uni = mingw_get_wm_name(display, window);
+    if(uni){
+	char* utf8 = u2utf8_copy(uni);
+	gfree(uni);
+	return utf8;
+    }
+    return NULL;
+}
+#endif
+
 static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
 	int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs) {
     Window parent;
@@ -1155,22 +1293,38 @@ return( NULL );
 	}
 	XSetWMHints(display,nw->w,&wm_hints);
 	if ( (wattrs->mask&wam_wtitle) && wattrs->window_title!=NULL ) {
+	    #if defined(__MINGW32__)
+	    mingw_set_wm_name(display, nw->w, wattrs->window_title);
+	    #else
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(wattrs->window_title)),NULL,NULL,0,NULL,NULL,NULL);
 	    gfree(pt);
+	    #endif
 	}
 	if ( (wattrs->mask&wam_ititle) && wattrs->icon_title!=NULL ) {
+	    #if defined(__MINGW32__)
+	    mingw_set_wm_icon_name(display, nw->w, wattrs->icon_title);
+	    #else
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(wattrs->icon_title)),NULL,0,NULL,NULL,NULL);
 	    gfree(pt);
+	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
+	    #if defined(__MINGW32__)
+	    mingw_set_wm_name_utf8(display, nw->w, wattrs->utf8_window_title);
+	    #else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_window_title);
 	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(tit)),NULL,NULL,0,NULL,NULL,NULL);
 	    gfree(pt); gfree(tit);
+	    #endif
 	}
 	if ( (wattrs->mask&wam_utf8_ititle) && wattrs->utf8_icon_title!=NULL ) {
+	    #if defined(__MINGW32__)
+	    mingw_set_wm_icon_name_utf8(display, nw->w, wattrs->utf8_icon_title);
+	    #else
 	    unichar_t *tit = utf82u_copy(wattrs->utf8_icon_title);
 	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(tit)),NULL,0,NULL,NULL,NULL);
 	    gfree(pt); gfree(tit);
+	    #endif
 	}
 	s_h.x = pos->x; s_h.y = pos->y;
 	s_h.base_width = s_h.width = pos->width; s_h.base_height = s_h.height = pos->height;
@@ -1679,6 +1833,11 @@ static void GXDrawLower(GWindow w) {
 }
 
 static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
+#if defined(__MINGW32__)
+    GXWindow gw = (GXWindow) w;
+    mingw_set_wm_name      (gw->display->display, gw->w, title);
+    mingw_set_wm_icon_name (gw->display->display, gw->w, icontit);
+#else
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
     char *ipt, *tpt;
@@ -1687,9 +1846,15 @@ static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unich
 			(ipt = u2def_copy(icontit)),
 			NULL,0,NULL,NULL,NULL);
     gfree(ipt); gfree(tpt);
+#endif
 }
 
 static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
+#if defined(__MINGW32__)
+    GXWindow gw = (GXWindow) w;
+    mingw_set_wm_name_utf8      (gw->display->display, gw->w, title);
+    mingw_set_wm_icon_name_utf8 (gw->display->display, gw->w, icontit);
+#else
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
     unichar_t *tit = utf82u_copy(title), *itit = utf82u_copy(icontit);
@@ -1700,6 +1865,7 @@ static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *ico
 			NULL,0,NULL,NULL,NULL);
     gfree(tit); gfree(tpt);
     gfree(itit); gfree(ipt);
+#endif
 }
 
 static void GXDrawSetTransientFor(GWindow transient, GWindow owner) {
@@ -1793,6 +1959,10 @@ return( NULL );
 static char *GXDrawGetWindowTitle8(GWindow w);
 
 static unichar_t *GXDrawGetWindowTitle(GWindow w) {
+#if defined(__MINGW32__)
+    GXWindow gw = (GXWindow) w;
+    return mingw_get_wm_name(gw->display->display, gw->w);
+#else
 #if X_HAVE_UTF8_STRING
     char *ret1 = GXDrawGetWindowTitle8(w);
     unichar_t *ret = utf82u_copy(ret1);
@@ -1810,9 +1980,14 @@ return( ret );
     XFree(pt);
 return( ret );
 #endif
+#endif
 }
 
 static char *GXDrawGetWindowTitle8(GWindow w) {
+#if defined(__MINGW32__)
+    GXWindow gw = (GXWindow) w;
+    return mingw_get_wm_name_utf8(gw->display->display, gw->w);
+#else
 #if X_HAVE_UTF8_STRING
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
@@ -1842,6 +2017,7 @@ return( ret );
 
     free(ret1);
 return( ret );
+#endif
 #endif
 }
 
@@ -3034,10 +3210,12 @@ static void GXDrawSyncThread(GDisplay *gd, void (*func)(void *), void *data) {
 
     pthread_mutex_lock(&gdisp->xthread.sync_mutex);
     if ( gdisp->xthread.sync_sock==-1 ) {
+	#if !defined(__MINGW32__)
 	int sv[2];
 	socketpair(PF_UNIX,SOCK_DGRAM,0,sv);
 	gdisp->xthread.sync_sock = sv[0];
 	gdisp->xthread.send_sock = sv[1];
+	#endif
     }
     if ( func==NULL ) {
 	/* what's the point in calling this routine with no function? */

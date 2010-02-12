@@ -33,7 +33,9 @@
 #include <ustring.h>
 #include "utype.h"
 #include <sys/types.h>
+#if !defined(__MINGW32__)
 #include <sys/wait.h>
+#endif
 #include <gkeysym.h>
 #include "print.h"
 

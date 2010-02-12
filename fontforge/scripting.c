@@ -7969,11 +7969,9 @@ static void bCompareFonts(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     free(t);
-    if ( *locfilename!='/' ) {
-	t = ToAbsolute(locfilename);
-	free(locfilename);
-	locfilename = t;
-    }
+    t = GFileMakeAbsoluteName(locfilename);
+    free(locfilename);
+    locfilename = t;
     sf2 = FontWithThisFilename(locfilename);
     free( locfilename );
     if ( sf2==NULL )
