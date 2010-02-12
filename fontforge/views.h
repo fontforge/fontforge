@@ -197,8 +197,9 @@ typedef struct charview {
     SplinePoint *lastselpt;
     spiro_cp *lastselcp;
     /*GWindow tools, layers;*/
-    int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
-    int8 s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
+    int8 b1_tool, cb1_tool, b2_tool, cb2_tool;	/* Button 3 does a popup */
+    int8 b1_tool_old;				/* Used by mingw port */
+    int8 s1_tool, s2_tool, er_tool;		/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     SplinePointList *active_spl;
     SplinePoint *active_sp;

@@ -30,12 +30,33 @@
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
 #if defined(FREETYPE_HAS_DEBUGGER) && FREETYPE_MINOR>=2
-# include <internal/internal.h>
+# if defined(__MINGW32__)
+#  include <freetype/internal/internal.h>
+# else
+#  include <internal/internal.h>
+# endif
 #endif
 #include <unistd.h>
-#include <sys/mman.h>
+
+#if defined(__MINGW32__)
+# include "winmmap.h"
+#else
+# include <sys/mman.h>
+#endif
 
 extern FT_Library ff_ft_context;
+
+#if FREETYPE_HAS_DEBUGGER
+# if defined(__MINGW32__)
+#  include "freetype/truetype/ttobjs.h"
+#  include "freetype/truetype/ttdriver.h"
+#  include "freetype/truetype/ttinterp.h"
+# else
+#  include "ttobjs.h"
+#  include "ttdriver.h"
+#  include "ttinterp.h"
+# endif
+#endif
 
 # if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
 
@@ -52,10 +73,6 @@ extern FT_Library ff_ft_context;
 #define _FT_Done_FreeType FT_Done_FreeType
 
 # if FREETYPE_HAS_DEBUGGER
-#  include "ttobjs.h"
-#  include "ttdriver.h"
-#  include "ttinterp.h"
-
 #  define _FT_Set_Debug_Hook FT_Set_Debug_Hook
 #  define _TT_RunIns TT_RunIns
 # endif
@@ -69,10 +86,6 @@ extern FT_Error (*_FT_Set_Char_Size)( FT_Face, int wid/*=0*/, int height/* =ptsi
 extern FT_Error (*_FT_Outline_Get_Bitmap)(FT_Library, FT_Outline *,FT_Bitmap *);
 
 # if FREETYPE_HAS_DEBUGGER
-#  include "ttobjs.h"
-#  include "ttdriver.h"
-#  include "ttinterp.h"
-
 extern void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
 extern FT_Error (*_TT_RunIns)( TT_ExecContext );
 # endif

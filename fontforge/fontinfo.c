@@ -6348,6 +6348,7 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
     int lcnt, i,j;
     struct lkdata *lk = &gfi->tables[isgpos];
     GRect r, old;
+    extern GBox _ggadget_Default_Box;
 
     r.x = LK_MARGIN; r.width = gfi->lkwidth-2*LK_MARGIN;
     r.y = LK_MARGIN; r.height = gfi->lkheight-2*LK_MARGIN;
@@ -10274,7 +10275,8 @@ return;
 
     t = sf->creationtime;
     tm = localtime(&t);
-    strftime(createtime,sizeof(createtime),"%c",tm);
+    if(!tm) strcpy(createtime, "error");
+    else    strftime(createtime,sizeof(createtime),"%c",tm);
     tmpcreatetime = def2u_copy(createtime);
     dgcd[1].gd.pos.x = 115; dgcd[1].gd.pos.y = dgcd[0].gd.pos.y;
     dgcd[1].gd.flags = gg_visible | gg_enabled;
@@ -10292,7 +10294,8 @@ return;
 
     t = sf->modificationtime;
     tm = localtime(&t);
-    strftime(modtime,sizeof(modtime),"%c",tm);
+    if(!tm) strcpy(modtime, "error");
+    else    strftime(modtime,sizeof(modtime),"%c",tm);
     tmpmodtime = def2u_copy(modtime);
     dgcd[3].gd.pos.x = 115; dgcd[3].gd.pos.y = dgcd[2].gd.pos.y;
     dgcd[3].gd.flags = gg_visible | gg_enabled;

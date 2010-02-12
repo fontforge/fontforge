@@ -33,7 +33,9 @@
 #include <ustring.h>
 #include "utype.h"
 #include <sys/types.h>
+#if !defined(__MINGW32__)
 #include <sys/wait.h>
+#endif
 #include "print.h"
 
 int pagewidth = 0, pageheight=0;	/* In points */
@@ -2748,6 +2750,7 @@ return( gcalloc(1,sizeof(unichar_t)));
 /* ************************************************************************** */
 
 static void QueueIt(PI *pi) {
+    #if !defined(__MINGW32__)
     int pid;
     int stdinno, i, status;
     char *argv[40], buf[10];
@@ -2837,6 +2840,7 @@ static void QueueIt(PI *pi) {
 	}
     }
     waitpid(-1,&status,WNOHANG);	/* Clean up any zombie ghostviews */
+    #endif
 }
 
 void DoPrinting(PI *pi,char *filename) {

@@ -31,7 +31,16 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#if defined(__MINGW32__)
+void* GIO_dispatch(GIOControl* gc) { return 0;}
+void GIO_cancel(GIOControl* gc) {}
+void GIO_init(void* handle, struct stdfuncs* _stdfuncs, int index) {}
+void GIO_term(void) {}
+#else
+
 #include <sys/socket.h>
+
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL        0x0		/* linux man page for "send" implies MSG_NOSIGNAL is in sys/socket.h, but it ain't implemente for Mac and Solaris */
 #endif
@@ -276,12 +285,14 @@ return( last );
 
     cur->mode = 0;
     if ( *line=='d' ) { cur->mode |= S_IFDIR; cur->isdir = 1; }
+    #if !defined(__MINGW32__)
     if ( *line=='l' ) {
 	cur->mode |= S_IFLNK;
 	pt = strstr(line," -> ");
 	if ( pt!=NULL ) *pt = '\0';
 	cur->islnk = 1;
     }
+    #endif
     if ( line[1]=='r' ) cur->mode |= 0400;
     if ( line[2]=='w' ) cur->mode |= 0200;
     if ( line[3]=='x' ) { cur->mode |= 0100; if ( !cur->isdir ) cur->isexe = 1; }
@@ -714,3 +725,4 @@ void GIO_init(void *handle,struct stdfuncs *_stdfuncs,int index) {
 
 void GIO_term(void) {
 }
+#endif /* !__MINGW32__ */

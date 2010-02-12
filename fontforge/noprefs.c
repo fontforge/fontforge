@@ -444,7 +444,26 @@ return( prefs );
 }
 
 static char *NOUI_getFontForgeShareDir(void) {
-#if defined(SHAREDIR)
+#if defined(__MINGW32__)
+    static char* sharedir = NULL;
+    if(!sharedir){
+	char path[MAX_PATH+32];
+	char* c = path;
+	char* tail = 0;
+	unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
+	path[len] = '\0';
+	for(; *c; *c++){
+	    if(*c == '\\'){
+		tail=c;
+		*c = '/';
+	    }
+	}
+	if(!tail) tail=c;
+	strcpy(tail, "/share/fontforge");
+	sharedir = copy(path);
+    }
+    return sharedir;
+#elif defined(SHAREDIR)
 return( SHAREDIR "/fontforge" );
 #elif defined(PREFIX)
 return( PREFIX "/share/fontforge" );

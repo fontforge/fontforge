@@ -730,6 +730,17 @@ static char *PrefsUI_getFontForgeShareDir(void) {
 return( sharedir );
 
     set = true;
+
+#if defined(__MINGW32__)
+
+    len = strlen(GResourceProgramDir) + strlen("/share/fontforge") +1;
+    sharedir = galloc(len);
+    strcpy(sharedir, GResourceProgramDir);
+    strcat(sharedir, "/share/fontforge");
+    return sharedir;
+
+#else
+
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
 #if defined(SHAREDIR)
@@ -747,6 +758,8 @@ return( NULL );
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
     strcpy(sharedir+(pt-GResourceProgramDir),"/share/fontforge");
 return( sharedir );
+
+#endif
 }
 
 #  include <charset.h>		/* we still need the charsets & encoding to set local_encoding */
@@ -960,7 +973,9 @@ static void DefaultXUID(void) {
 
 static void DefaultHelp(void) {
     if ( helpdir==NULL ) {
-#ifdef DOCDIR
+#if defined(__MINGW32__)
+	helpdir = copy("");
+#elif defined(DOCDIR)
 	helpdir = copy(DOCDIR "/");
 #elif defined(SHAREDIR)
 	helpdir = copy(SHAREDIR "/doc/fontforge/");

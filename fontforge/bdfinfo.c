@@ -486,6 +486,7 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
     int page = bd->vheight/(bd->fh+1);
     GRect clip, old, r;
     char buffer[40];
+    extern GBox _ggadget_Default_Box;
 
     GDrawSetFont(pixmap,bd->font);
     clip.x = 4; clip.width = bd->value_x-4-2; clip.height = bd->fh;
@@ -533,9 +534,9 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 /* GT: a translator may need to ask me to disambiguate more strings. Please do so: */
 /* GT:      <pfaedit@users.sourceforge.net> */
 	GDrawDrawBiText8(pixmap,4,i*(bd->fh+1)+bd->as,S_("Property|New..."),-1,NULL,0xff0000);
-	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,0x808080);
+	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh, _ggadget_Default_Box.border_darker);
     }
-    GDrawDrawLine(pixmap,bd->value_x,0,bd->value_x,bd->vheight,0x808080);
+    GDrawDrawLine(pixmap,bd->value_x,0,bd->value_x,bd->vheight, _ggadget_Default_Box.border_darker);
 }
 
 static void BdfP_Invoked(GWindow v, GMenuItem *mi, GEvent *e) {

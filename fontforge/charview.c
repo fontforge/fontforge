@@ -44,6 +44,25 @@ extern int _GScrollBar_Width;
 #undef H_
 #define H_(str) ("CV*" str)
 
+#if defined(__MINGW32__)
+#include <Windows.h>
+#undef PrintDlg
+#undef small
+static void _mingw_hand_tool_hack(CharView* cv){
+    if(GetAsyncKeyState(VK_SPACE) & 0x8000){
+	if(cv->b1_tool != cvt_hand){
+	    cv->b1_tool_old = cv->b1_tool;
+	    cv->b1_tool = cvt_hand;
+	}
+    }
+    else{
+	if(cv->b1_tool == cvt_hand){
+	    cv->b1_tool = cv->b1_tool_old;
+	}
+    }
+}
+#endif
+
 int ItalicConstrained=true;
 int cv_auto_goto = true;
 float arrowAmount=1;
@@ -2993,6 +3012,12 @@ static void CVDoFindInFontView(CharView *cv) {
 }
 
 static void CVCharUp(CharView *cv, GEvent *event ) {
+
+    #if defined(__MINGW32__)
+    if(event->u.chr.keysym==' ')
+	_mingw_hand_tool_hack(cv);
+    #endif
+
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -3582,6 +3607,11 @@ return;		/* I treat this more like a modifier key change than a button press */
 	CVToolsPopup(cv,event);
 return;
     }
+
+    #if defined(__MINGW32__)
+    _mingw_hand_tool_hack(cv);
+    #endif
+
     CVToolsSetCursor(cv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
     cv->active_tool = cv->showing_tool;
     cv->needsrasterize = false;
@@ -4115,6 +4145,10 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	cv->pressed = NULL;
     }
     cv->p.pressed = false;
+
+    #if defined(__MINGW32__)
+    _mingw_hand_tool_hack(cv);
+    #endif
 
     if ( cv->p.rubberbanding ) {
 	CVDrawRubberRect(cv->v,cv);
@@ -5364,9 +5398,9 @@ static void CVMenuWireframe(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     ShadowDlg(NULL,cv,NULL,true);
 }
 
-static void _CVMenuScale(CharView *cv,struct gmenuitem *mi) {
+static void _CVMenuScale(CharView *cv, int mid) {
 
-    if ( mi->mid == MID_Fit ) {
+    if ( mid == MID_Fit ) {
 	CVFit(cv);
     } else {
 	BasePoint c;
@@ -5374,13 +5408,13 @@ static void _CVMenuScale(CharView *cv,struct gmenuitem *mi) {
 	c.y = (cv->height/2-cv->yoff)/cv->scale;
 	if ( CVAnySel(cv,NULL,NULL,NULL,NULL))
 	    CVFindCenter(cv,&c,false);
-	CVMagnify(cv,c.x,c.y,mi->mid==MID_ZoomOut?-1:1);
+	CVMagnify(cv,c.x,c.y, mid==MID_ZoomOut?-1:1);
     }
 }
 
 static void CVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuScale(cv,mi);
+    _CVMenuScale(cv,mi->mid);
 }
 
 static void CVMenuShowHide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5859,6 +5893,11 @@ return;
     }
 #endif
 
+    #if defined(__MINGW32__)
+    if(event->u.chr.keysym==' ')
+	_mingw_hand_tool_hack(cv);
+    #endif
+
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
 	/* The window check is to prevent infinite loops since DVChar can */
@@ -5904,6 +5943,10 @@ return;
     } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
 	/* European keyboards need a funky modifier to get \ */
 	CVDoTransform(cv,cvt_none);
+    } else if ( (event->u.chr.state&ksm_control) && (event->u.chr.keysym=='-' || event->u.chr.keysym==0xffad/*XK_KP_Subtract*/) ){
+	    _CVMenuScale(cv, MID_ZoomOut);
+    } else if ( (event->u.chr.state&ksm_control) && (event->u.chr.keysym=='=' || event->u.chr.keysym==0xffab/*XK_KP_Add*/) ){
+	    _CVMenuScale(cv, MID_ZoomIn);
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Up ||
 	    event->u.chr.keysym == GK_Right ||
@@ -5978,6 +6021,9 @@ return;
 	CVVScroll(cv,&sb);
     } else if ( event->u.chr.keysym == GK_Home ) {
 	CVFit(cv);
+    #if defined(__MINGW32__)
+    } else if ( event->u.chr.keysym == ' '){
+    #endif
     } else if ( (event->u.chr.state&((GMenuMask()|navigation_mask)&~(ksm_shift|ksm_capslock)))==navigation_mask &&
 	    event->type == et_char &&
 	    event->u.chr.keysym!=0 &&
@@ -9688,9 +9734,9 @@ static GMenuItem2 nplist[] = {
 
 static GMenuItem2 gflist[] = {
     { { (unichar_t *) N_("Show _Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
-    { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|Ctl+Shft++"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
-    { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|Ctl+-"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
-    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|Ctl+="), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
+    { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
+    { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
+    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
     { { (unichar_t *) N_("_Off"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Grid Fit Off|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitOff },
     NULL
 };
@@ -10063,6 +10109,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->gi.u.image->clut->clut[0] = view_bgcol;
     cv->gi.u.image->clut->clut[1] = fillcol;
     cv->b1_tool = cv_b1_tool; cv->cb1_tool = cv_cb1_tool;
+    cv->b1_tool_old = cv->b1_tool;
     cv->b2_tool = cv_b2_tool; cv->cb2_tool = cv_cb2_tool;
     cv->s1_tool = cvt_freehand; cv->s2_tool = cvt_pen;
     cv->er_tool = cvt_knife;

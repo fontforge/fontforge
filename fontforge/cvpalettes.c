@@ -1016,6 +1016,10 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     int styluscntl = isstylus && (event->u.mouse.state&0x200);
     static int settings[2];
 
+    if(j >= 2)
+return;			/* If the wm gave me a window the wrong size */
+
+
     if ( i==(cvt_rect)/2 ) {
 	int current = CVCurrentTool(cv,event);
 	int changed = false;

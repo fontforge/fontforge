@@ -320,7 +320,7 @@ static void GMenuDrawArrow(struct gmenu *m, int ybase, int r2l) {
     GDrawSetLineWidth(m->w,pt);
     if ( r2l ) {
 	p[0].x = x;			p[0].y = ybase-as/2;
-	p[1].x = x+3*(as/2);		p[1].y = ybase;
+	p[1].x = x+1*(as/2);		p[1].y = ybase;
 	p[2].x = p[1].x;		p[2].y = ybase-as;
 
 	GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
@@ -331,7 +331,7 @@ static void GMenuDrawArrow(struct gmenu *m, int ybase, int r2l) {
 	GDrawDrawLine(m->w,p[1].x+pt,p[1].y-pt,p[0].x-pt,p[0].y,m->box->border_darkest);
     } else {
 	p[0].x = x;			p[0].y = ybase-as/2;
-	p[1].x = x-3*(as/2);		p[1].y = ybase;
+	p[1].x = x-1*(as/2);		p[1].y = ybase;
 	p[2].x = p[1].x;		p[2].y = ybase-as;
 
 	GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
@@ -710,6 +710,8 @@ return( true );
 	    m->scrollup = false;
 	} else if ( event->type == et_mousedown && m->child!=NULL &&
 		i == m->line_with_mouse ) {
+	    GMenuChangeSelection(m,-1,event);
+	} else if ( i >= m->mcnt ){
 	    GMenuChangeSelection(m,-1,event);
 	} else
 	    GMenuChangeSelection(m,i,event);

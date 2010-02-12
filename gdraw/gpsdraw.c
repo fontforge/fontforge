@@ -28,7 +28,9 @@
 #include <math.h>
 #include <time.h>
 #include <sys/types.h>
+#if !defined(__MINGW32__)
 #include <sys/wait.h>
+#endif
 #include <unistd.h>
 
 #include "gpsdrawP.h"
@@ -1068,6 +1070,7 @@ static void PSInitJob(GPSWindow ps, unichar_t *title) {
 }
 
 static int PSQueueFile(GPSWindow ps) {
+#if !defined(__MINGW32__)
     GPSDisplay *gdisp = ps->display;
     int pid = fork();
 
@@ -1130,6 +1133,7 @@ return( false );
 	if ( WIFEXITED(status))
 return( true );
     }
+#endif
 return( false );
 }
 

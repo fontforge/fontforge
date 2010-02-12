@@ -252,6 +252,53 @@ return;
     }
 }
     
+#if defined(__MINGW32__)
+#include <gresource.h>
+#include <Windows.h>
+void help(char *file) {
+    if(file){
+	char*  p_file  = copy(file);
+	char*  p_uri   = p_file;
+	char*  p_param = strrchr(p_file,'#');
+
+	if(p_param){
+	    *p_param = '\0';
+	}
+	if(! GFileIsAbsolute(p_file)){
+	    p_uri = (char*) galloc( 256 + strlen(GResourceProgramDir) + strlen(p_file) );
+
+	    strcpy(p_uri, GResourceProgramDir); /*  doc/fontforge/ja/file  */
+	    strcat(p_uri, "/doc/fontforge/");
+	    AppendSupportedLocale(p_uri);
+	    strcat(p_uri, p_file);
+
+	    if(!GFileReadable(p_uri)){
+		strcpy(p_uri, GResourceProgramDir);/*  doc/fontforge/file  */
+		strcat(p_uri, "/doc/fontforge/");
+		strcat(p_uri, p_file);
+
+		if(!GFileReadable(p_uri)){
+		    strcpy(p_uri, "http://fontforge.sourceforge.net/"); /*  http://host/ja/file  */
+		    AppendSupportedLocale(p_uri);
+		    strcat(p_uri, p_file);
+		}
+	    }
+	}
+	if(p_param){
+	    if(p_uri != p_file)
+		strcat(p_uri, p_param);
+	    else
+		*p_param = '#';
+	}
+
+	/* using default browser */
+	ShellExecute(NULL, "open", p_uri, NULL, NULL, SW_SHOWDEFAULT);
+
+	if(p_uri != p_file) gfree(p_uri);
+    }
+}
+#else
+
 void help(char *file) {
     char fullspec[1024], *temp, *pt;
 
@@ -266,7 +313,7 @@ return;
 
     if ( strstr(file,"http://")==NULL ) {
 	fullspec[0] = 0;
-	if ( *file!='/' ) {
+	if ( ! GFileIsAbsolute(file) ) {
 	    if ( helpdir==NULL || *helpdir=='\0' ) {
 #ifdef DOCDIR
 		strcpy(fullspec,DOCDIR "/");
@@ -364,6 +411,7 @@ return;
     }
     free(temp);
 }
+#endif
 
 static void UI_IError(const char *format,...) {
     va_list ap;
@@ -609,6 +657,7 @@ GMenuItem warnpopupmenu[] = {
 
 static int warningsv_e_h(GWindow gw, GEvent *event) {
     int i;
+    extern GBox _ggadget_Default_Box;
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
@@ -872,6 +921,7 @@ return( gwwv_save_filename(title,defaultfile,initial_filter) );
 }
 
 static void tinysleep(int microsecs) {
+    #if !defined(__MINGW32__)
     fd_set none;
     struct timeval timeout;
 
@@ -880,6 +930,7 @@ static void tinysleep(int microsecs) {
     timeout.tv_usec = microsecs;
 
     select(1,&none,&none,&none,&timeout);
+    #endif
 }
 
 static void allow_events(void) {

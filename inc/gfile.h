@@ -27,6 +27,9 @@
 #ifndef _GFILE_H
 #define _GFILE_H
 
+extern char* GFileGetHomeDir();
+extern unichar_t* u_GFileGetHomeDir();
+
 extern char *GFileGetAbsoluteName(char *name, char *result, int rsiz);
 extern char *GFileMakeAbsoluteName(char *name);
 extern char *GFileBuildName(char *dir,char *fname,char *buffer,int size);

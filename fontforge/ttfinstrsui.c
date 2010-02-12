@@ -367,6 +367,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     int addr_end, num_end;
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
     int indent;
+    extern GBox _ggadget_Default_Box;
 
     GDrawSetFont(pixmap,ii->gfont);
     GDrawSetLineWidth(pixmap,0);

@@ -29,6 +29,24 @@
 #include <utype.h>
 #include <gio.h>
 
+#if defined(__MINGW32__)
+int HasLicense(SplineFont *sf,FILE *tmp) {
+    return true;
+}
+int OFLibUploadFont(OFLibData *oflib) {
+    return false;
+}
+int HttpGetBuf(char *url, char *databuf, int *datalen, void *_lock) {
+    return -1;
+}
+FILE *URLToTempFile(char *url,void *_lock) {
+    return NULL;
+}
+int URLFromFile(char *url,FILE *from) {
+    return false;
+}
+#else
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/select.h>
@@ -1493,3 +1511,5 @@ return( FtpURLAndTempFile(url,NULL,from));
 return( false );
     }
 }
+
+#endif /* !__MINGW32__ */

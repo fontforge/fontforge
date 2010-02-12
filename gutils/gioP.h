@@ -29,9 +29,15 @@
 
 #include "gio.h"
 #include <sys/types.h>
+
+#if defined(__MINGW32__)
+#include <WinSock2.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
+
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
