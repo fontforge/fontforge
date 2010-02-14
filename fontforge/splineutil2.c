@@ -1543,21 +1543,14 @@ return;
 }
 
 SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
-    SplineSet *spl, *prev, *next;
+    SplineSet *spl;
 
-    for ( prev = NULL, spl=base; spl!=NULL; spl=next ) {
-	next = spl->next;
+    for ( spl=base; spl!=NULL; spl=spl->next ) {
+	RemoveZeroLengthSplines(spl,false,0);
 	if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
 		spl->first->nonextcp && spl->first->noprevcp ) {
-	    if ( prev==NULL )
-		base = next;
-	    else
-		prev->next = next;
-	    spl->next = NULL;
-	    SplinePointListFree(spl);
-	} else {
-	    RemoveZeroLengthSplines(spl,false,0);
-	    prev = spl;
+	    /* Turn it into a single point, rather than a zero length contour */
+	    spl->first->next = spl->first->prev = NULL;
 	}
     }
 return( base );
