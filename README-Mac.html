@@ -768,8 +768,9 @@ The value of the PATH variable is a set of directories separated by colons.
 </PRE>
 </BLOCKQUOTE>
 <P>
-Unfortunately there are two ways of doing this because there are two different
-conventions used by unix shells. Type:
+Unfortunately there are several ways of doing this because there are two different
+conventions used by unix shells. And the mac has yet a third way which only works
+sometimes. Type:
 <BLOCKQUOTE>
   <PRE><FONT COLOR="Gray">$ </FONT>echo $SHELL
 /bin/bash
@@ -811,6 +812,10 @@ setenv PATH /usr/local/bin:$PATH
 ^D
 </PRE>
 </BLOCKQUOTE>
+<P>
+On the mac you may also want to download the <a href="http://www.apple.com/downloads/macosx/system_disk_utilities/environmentvariablepreferencepane.html">environment
+preference plugin</a> and install the environment variable there. Note if you
+ssh into your mac this setting will not be noticed.
 <H3>
   <A NAME="Starting">Starting</A> fontforge from the command line
 </H3>
