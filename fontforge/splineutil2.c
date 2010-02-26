@@ -875,6 +875,13 @@ return( SplineMake3(from,to));
     trylen = (from->me.x-to->me.x)*tounit.x + (from->me.y-to->me.y)*tounit.y;
     if ( trylen>tlen ) tlen = trylen;
 
+    for ( i=0; i<cnt; ++i ) {
+	trylen = (mid[i].x-from->me.x)*fromunit.x + (mid[i].y-from->me.y)*fromunit.y;
+	if ( trylen>flen ) flen = trylen;
+	trylen = (mid[i].x-to->me.x)*tounit.x + (mid[i].y-to->me.y)*tounit.y;
+	if ( trylen>tlen ) tlen = trylen;
+    }
+
     ftunit.x = (to->me.x-from->me.x); ftunit.y = (to->me.y-from->me.y);
     ftlen = sqrt(ftunit.x*ftunit.x + ftunit.y*ftunit.y);
     if ( ftlen!=0 ) {
