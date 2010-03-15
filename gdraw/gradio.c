@@ -193,6 +193,23 @@ return;		/* Do Nothing, it's already on */
 	GDrawPostEvent(&e);
 }
 
+static int gradio_linecount(GRadio *gr) {
+    int lcnt;
+    unichar_t *pt;
+
+    lcnt = 0;
+    if ( gr->label!=NULL ) {
+	for ( pt = gr->label; ; ) {
+	    for ( ; *pt!='\0' && *pt!='\n'; ++pt );
+	    ++lcnt;
+	    if ( *pt=='\0' )
+	break;
+	    ++pt;
+	}
+    }
+return( lcnt );
+}
+
 static int gradio_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRadio *gr = (GRadio *) g;
     int x;
@@ -254,6 +271,9 @@ return( false );
 	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
+	int lcnt = gradio_linecount(gr);
+	if ( lcnt>1 )
+	    yoff = (g->inner.height-lcnt*gr->fh)/2;
 	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gr->as + yoff,gr->label,
 		g->mnemonic,fg,g->inner.y+g->inner.height);
 	x += GDrawDrawBiText(pixmap,x,g->inner.y + gr->as + yoff,gr->label,-1,NULL,
