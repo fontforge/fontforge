@@ -266,14 +266,14 @@ return( true );
 }
 
 enum psstrokeflags Ps_StrokeFlagsDlg(void) {
-    static enum psstrokeflags oldflags = sf_correctdir|sf_removeoverlap/*|sf_handle_eraser*/;
+    static enum psstrokeflags oldflags = sf_correctdir/*|sf_removeoverlap|sf_handle_eraser*/;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[11], boxes[4], *hvarray[7][2], *barray[10];
     GTextInfo label[11];
     int done = false;
-    int k, rm_k, he_k, cd_k;
+    int k, he_k, cd_k;
 
     if ( no_windowing_ui )
 return( oldflags );
@@ -321,6 +321,7 @@ return( oldflags );
     gcd[k++].creator = GCheckBoxCreate;
     hvarray[1][0] = &gcd[k-1]; hvarray[1][1] = NULL;
 
+#if 0
     rm_k = k;
     label[k].text = (unichar_t *) _("Cleanup Self Intersect");
     label[k].text_is_1byte = true;
@@ -331,6 +332,7 @@ return( oldflags );
     gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
     gcd[k++].creator = GCheckBoxCreate;
     hvarray[2][0] = &gcd[k-1]; hvarray[2][1] = NULL;
+#endif
 
     he_k = k;
     label[k].text = (unichar_t *) _("Handle Erasers");
@@ -341,8 +343,8 @@ return( oldflags );
 	    (oldflags&sf_handle_eraser?gg_cb_on:0);
     gcd[k].gd.popup_msg = (unichar_t *) _("Certain programs use pens with white ink as erasers\nIf you select (blacken) this checkbox, FontForge will\nattempt to simulate that.");
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray[3][0] = &gcd[k-1]; hvarray[3][1] = NULL;
-    hvarray[4][0] = GCD_Glue; hvarray[4][1] = NULL;
+    hvarray[2][0] = &gcd[k-1]; hvarray[2][1] = NULL;
+    hvarray[3][0] = GCD_Glue; hvarray[3][1] = NULL;
 
     gcd[k].gd.pos.x = (PSSF_Width-GIntGetResource(_NUM_Buttonsize))/2; gcd[k].gd.pos.y = PSSF_Height-34;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
@@ -357,8 +359,8 @@ return( oldflags );
     boxes[2].gd.flags = gg_enabled | gg_visible;
     boxes[2].gd.u.boxelements = barray;
     boxes[2].creator = GHBoxCreate;
-    hvarray[5][0] = &boxes[2]; hvarray[5][1] = NULL;
-    hvarray[6][0] = NULL;
+    hvarray[4][0] = &boxes[2]; hvarray[4][1] = NULL;
+    hvarray[5][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled | gg_visible;
@@ -379,8 +381,10 @@ return( oldflags );
     oldflags = 0;
     if ( GGadgetIsChecked(gcd[cd_k].ret) )
 	oldflags |= sf_correctdir;
+#if 0
     if ( GGadgetIsChecked(gcd[rm_k].ret) )
 	oldflags |= sf_removeoverlap;
+#endif
     if ( GGadgetIsChecked(gcd[he_k].ret) )
 	oldflags |= sf_handle_eraser;
     GDrawDestroyWindow(gw);

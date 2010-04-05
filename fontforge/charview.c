@@ -10330,7 +10330,7 @@ return;
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
 }
 
-static int sv_cv_e_h(GWindow gw, GEvent *event) {
+static int nested_cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     switch ( event->type ) {
@@ -10339,7 +10339,7 @@ static int sv_cv_e_h(GWindow gw, GEvent *event) {
 	CVLogoExpose(cv,gw,event);
       break;
       case et_char:
-	SVChar((SearchView *) (cv->b.container),event);
+	(cv->b.container->funcs->charEvent)(cv->b.container,event);
       break;
       case et_charup:
 	CVCharUp(cv,event);
@@ -10401,57 +10401,15 @@ void SVCharViewInits(SearchView *sv) {
     wattrs.mask = wam_events|wam_cursor;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
-    sv->cv_rpl.gw = GWidgetCreateSubWindow(sv->gw,&pos,sv_cv_e_h,&sv->cv_rpl,&wattrs);
+    sv->cv_rpl.gw = GWidgetCreateSubWindow(sv->gw,&pos,nested_cv_e_h,&sv->cv_rpl,&wattrs);
     _CharViewCreate(&sv->cv_rpl, &sv->sd.sc_rpl, &sv->dummy_fv, 1);
 
     pos.x = 10;
-    sv->cv_srch.gw = GWidgetCreateSubWindow(sv->gw,&pos,sv_cv_e_h,&sv->cv_srch,&wattrs);
+    sv->cv_srch.gw = GWidgetCreateSubWindow(sv->gw,&pos,nested_cv_e_h,&sv->cv_srch,&wattrs);
     _CharViewCreate(&sv->cv_srch, &sv->sd.sc_srch, &sv->dummy_fv, 0);
 }
 
 /* Same for the MATH Kern dlg */
-
-static int mkd_cv_e_h(GWindow gw, GEvent *event) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_expose:
-	InfoExpose(cv,gw,event);
-	CVLogoExpose(cv,gw,event);
-      break;
-      case et_char:
-	MKDChar((MathKernDlg *) (cv->b.container),event);
-      break;
-      case et_charup:
-	CVCharUp(cv,event);
-      break;
-      case et_controlevent:
-	switch ( event->u.control.subtype ) {
-	  case et_scrollbarchange:
-	    if ( event->u.control.g == cv->hsb )
-		CVHScroll(cv,&event->u.control.u.sb);
-	    else
-		CVVScroll(cv,&event->u.control.u.sb);
-	  break;
-	}
-      break;
-      case et_map:
-	if ( event->u.map.is_visible )
-	    CVPaletteActivate(cv);
-	else
-	    CVPalettesHideIfMine(cv);
-      break;
-      case et_resize:
-	if ( event->u.resize.sized )
-	    CVResize(cv);
-      break;
-      case et_mouseup: case et_mousedown:
-	GGadgetEndPopup();
-	CVPaletteActivate(cv);
-      break;
-    }
-return( true );
-}
 
 void MKDCharViewInits(MathKernDlg *mkd) {
     GGadgetData gd;
@@ -10479,7 +10437,7 @@ void MKDCharViewInits(MathKernDlg *mkd) {
 	wattrs.mask = wam_events|wam_cursor;
 	wattrs.event_masks = -1;
 	wattrs.cursor = ct_mypointer;
-	(&mkd->cv_topright)[i].gw = GWidgetCreateSubWindow(mkd->cvparent_w,&pos,mkd_cv_e_h,(&mkd->cv_topright)+i,&wattrs);
+	(&mkd->cv_topright)[i].gw = GWidgetCreateSubWindow(mkd->cvparent_w,&pos,nested_cv_e_h,(&mkd->cv_topright)+i,&wattrs);
 	_CharViewCreate((&mkd->cv_topright)+i, (&mkd->sc_topright)+i, &mkd->dummy_fv, i);
     }
 }
@@ -10487,47 +10445,6 @@ void MKDCharViewInits(MathKernDlg *mkd) {
 /* Same for the Tile Path dlg */
 
 #ifdef FONTFORGE_CONFIG_TILEPATH
-static int tpd_cv_e_h(GWindow gw, GEvent *event) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_expose:
-	InfoExpose(cv,gw,event);
-	CVLogoExpose(cv,gw,event);
-      break;
-      case et_char:
-	TPDChar((TilePathDlg *) (cv->b.container),event);
-      break;
-      case et_charup:
-	CVCharUp(cv,event);
-      break;
-      case et_controlevent:
-	switch ( event->u.control.subtype ) {
-	  case et_scrollbarchange:
-	    if ( event->u.control.g == cv->hsb )
-		CVHScroll(cv,&event->u.control.u.sb);
-	    else
-		CVVScroll(cv,&event->u.control.u.sb);
-	  break;
-	}
-      break;
-      case et_map:
-	if ( event->u.map.is_visible )
-	    CVPaletteActivate(cv);
-	else
-	    CVPalettesHideIfMine(cv);
-      break;
-      case et_resize:
-	if ( event->u.resize.sized )
-	    CVResize(cv);
-      break;
-      case et_mouseup: case et_mousedown:
-	GGadgetEndPopup();
-	CVPaletteActivate(cv);
-      break;
-    }
-return( true );
-}
 
 void TPDCharViewInits(TilePathDlg *tpd, int cid) {
     GGadgetData gd;
@@ -10556,7 +10473,7 @@ void TPDCharViewInits(TilePathDlg *tpd, int cid) {
 	wattrs.event_masks = -1;
 	wattrs.cursor = ct_mypointer;
 	(&tpd->cv_first)[i].gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid+i)),
-		&pos,tpd_cv_e_h,(&tpd->cv_first)+i,&wattrs);
+		&pos,nested_cv_e_h,(&tpd->cv_first)+i,&wattrs);
 	_CharViewCreate((&tpd->cv_first)+i, (&tpd->sc_first)+i, &tpd->dummy_fv, i);
     }
 }
@@ -10587,54 +10504,13 @@ void PTDCharViewInits(TilePathDlg *tpd, int cid) {
 	wattrs.event_masks = -1;
 	wattrs.cursor = ct_mypointer;
 	tpd->cv_first.gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid)),
-		&pos,tpd_cv_e_h,&tpd->cv_first,&wattrs);
+		&pos,nested_cv_e_h,&tpd->cv_first,&wattrs);
 	_CharViewCreate(&tpd->cv_first, &tpd->sc_first, &tpd->dummy_fv, 0);
     }
 }
 #endif		/* TilePath */
 
 #ifdef FONTFORGE_CONFIG_TYPE3		/* And gradients */
-static int gdd_cv_e_h(GWindow gw, GEvent *event) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_expose:
-	InfoExpose(cv,gw,event);
-	CVLogoExpose(cv,gw,event);
-      break;
-      case et_char:
-	GDDChar((GradientDlg *) (cv->b.container),event);
-      break;
-      case et_charup:
-	CVCharUp(cv,event);
-      break;
-      case et_controlevent:
-	switch ( event->u.control.subtype ) {
-	  case et_scrollbarchange:
-	    if ( event->u.control.g == cv->hsb )
-		CVHScroll(cv,&event->u.control.u.sb);
-	    else
-		CVVScroll(cv,&event->u.control.u.sb);
-	  break;
-	}
-      break;
-      case et_map:
-	if ( event->u.map.is_visible )
-	    CVPaletteActivate(cv);
-	else
-	    CVPalettesHideIfMine(cv);
-      break;
-      case et_resize:
-	if ( event->u.resize.sized )
-	    CVResize(cv);
-      break;
-      case et_mouseup: case et_mousedown:
-	GGadgetEndPopup();
-	CVPaletteActivate(cv);
-      break;
-    }
-return( true );
-}
 
 void GDDCharViewInits(GradientDlg *gdd, int cid) {
     GGadgetData gd;
@@ -10660,10 +10536,38 @@ void GDDCharViewInits(GradientDlg *gdd, int cid) {
     pos.width = pos.height; pos.x = 0;
     gdd->cv_grad.gw = GWidgetCreateSubWindow(
 	    GDrawableGetWindow(GWidgetGetControl(gdd->gw,cid)),
-	    &pos,gdd_cv_e_h,&gdd->cv_grad,&wattrs);
+	    &pos,nested_cv_e_h,&gdd->cv_grad,&wattrs);
     _CharViewCreate(&gdd->cv_grad, &gdd->sc_grad, &gdd->dummy_fv, 0);
 }
 #endif			/* Gradients (TYPE3) */
+
+void StrokeCharViewInits(StrokeDlg *sd, int cid) {
+    GGadgetData gd;
+    GWindowAttrs wattrs;
+    GRect pos, gsize;
+
+    CharViewInit();
+
+    memset(&gd,0,sizeof(gd));
+    gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = CVMenuContextualHelp;
+    gd.u.menu2 = mblist_nomm;
+    sd->mb = GMenu2BarCreate( sd->gw, &gd, NULL);
+    GGadgetGetSize(sd->mb,&gsize);
+    sd->mbh = gsize.height;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+
+    pos.y = 1; pos.height = 220;
+    pos.width = pos.height; pos.x = 0;
+    sd->cv_stroke.gw = GWidgetCreateSubWindow(
+	    GDrawableGetWindow(GWidgetGetControl(sd->gw,cid)),
+	    &pos,nested_cv_e_h,&sd->cv_stroke,&wattrs);
+    _CharViewCreate(&sd->cv_stroke, &sd->sc_stroke, &sd->dummy_fv, 0);
+}
 
 static void SC_CloseAllWindows(SplineChar *sc) {
     CharViewBase *cv, *next;

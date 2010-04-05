@@ -39,10 +39,10 @@ static void CVOutline(CharView *cv, real width) {
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
     si.radius = width;
-    si.removeoverlapifneeded = true;
+    /* si.removeoverlapifneeded = true;*/
 
     CVPreserveState((CharViewBase *) cv);
-    temp = SSStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.sc);
+    temp = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
     for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=NULL; spl=spl->next );
     spl->next = temp;
     SplineSetsCorrect(cv->b.layerheads[cv->b.drawmode]->splines,&changed);
@@ -57,7 +57,7 @@ static void MVOutline(MetricsView *mv, real width) {
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
     si.radius = width;
-    si.removeoverlapifneeded = true;
+    /* si.removeoverlapifneeded = true; */
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -65,7 +65,7 @@ static void MVOutline(MetricsView *mv, real width) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveLayer(sc,mv->layer,false);
-	temp = SSStroke(sc->layers[mv->layer].splines,&si,sc);
+	temp = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
 	for ( spl=sc->layers[mv->layer].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
 	SplineSetsCorrect(sc->layers[mv->layer].splines,&changed);
@@ -80,13 +80,13 @@ static void CVInline(CharView *cv, real width, real inset) {
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
-    si.removeoverlapifneeded = true;
+    /* si.removeoverlapifneeded = true;*/
 
     CVPreserveState((CharViewBase *) cv);
     si.radius = width;
-    temp = SSStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.sc);
+    temp = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
     si.radius = width+inset;
-    temp2 = SSStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.sc);
+    temp2 = SplineSetStroke(cv->b.layerheads[cv->b.drawmode]->splines,&si,cv->b.layerheads[cv->b.drawmode]->order2);
     for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=NULL; spl=spl->next );
     spl->next = temp;
     for ( ; spl->next!=NULL; spl=spl->next );
@@ -102,7 +102,7 @@ static void MVInline(MetricsView *mv, real width, real inset) {
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
-    si.removeoverlapifneeded = true;
+    /* si.removeoverlapifneeded = true;*/
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -111,9 +111,9 @@ static void MVInline(MetricsView *mv, real width, real inset) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveLayer(sc,mv->layer,false);
 	si.radius = width;
-	temp = SSStroke(sc->layers[mv->layer].splines,&si,sc);
+	temp = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
 	si.radius = width+inset;
-	temp2 = SSStroke(sc->layers[mv->layer].splines,&si,sc);
+	temp2 = SplineSetStroke(sc->layers[mv->layer].splines,&si,sc->layers[mv->layer].order2);
 	for ( spl=sc->layers[mv->layer].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
 	for ( ; spl->next!=NULL; spl=spl->next );
