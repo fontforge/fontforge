@@ -3414,7 +3414,7 @@ return( -1 );
 	}
 	si->stroke_type = si_caligraphic;
     } else if ( strcmp(str,"polygonal")==0 || strcmp(str,"poly")==0 ) {
-	if ( !PyArg_ParseTuple(args,"O|O", &poly, &flagtuple ) ) {
+	if ( !PyArg_ParseTuple(args,"sO|O", &str, &poly, &flagtuple ) ) {
 #if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
 #endif /* PY_MAJOR_VERSION >= 3 */
@@ -14021,6 +14021,7 @@ static PyObject *PyFFFont_Stroke(PyFF_Font *self, PyObject *args) {
 return( NULL );
 
     FVStrokeItScript(self->fv, &si,false);
+    SplinePointListsFree(si.poly); si.poly = NULL;
 Py_RETURN( self );
 }
 
