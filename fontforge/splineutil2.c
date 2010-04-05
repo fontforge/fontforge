@@ -4824,13 +4824,12 @@ return( -1 );
     for ( i=0; i<el.cnt ; ++i ) {
 	active = EIActiveEdgesRefigure(&el,active,i,1,&change);
 	for ( apt=active, cnt=0; apt!=NULL; apt = apt->aenext , ++cnt );
-	if ( el.ordered[i]!=NULL || el.ends[i] || cnt&1 ) {
+	if ( el.ordered[i]!=NULL || el.ends[i] || cnt&1 ||
+		waschange || change ||
+		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1])) ) {
 	    waschange = change;
     continue;			/* Just too hard to get the edges sorted when we are at a start vertex */
 	}
-	if ( !( waschange || change || el.ends[i] || el.ordered[i]!=NULL ||
-		(i!=el.cnt-1 && (el.ends[i+1] || el.ordered[i+1]!=NULL)) ))
-    continue;
 	waschange = change;
 	for ( apt=active; apt!=NULL; apt = e) {
 	    if ( EISkipExtremum(apt,i+el.low,1)) {
