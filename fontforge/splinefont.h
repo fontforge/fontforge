@@ -192,7 +192,7 @@ struct pen {
 };
 
 struct spline;
-enum si_type { si_std, si_caligraphic, si_elipse, si_centerline };
+enum si_type { si_std, si_caligraphic, si_poly, si_centerline };
 /* If you change this structure you may need to update MakeStrokeDlg */
 /*  and cvpalettes.c both contain statically initialized StrokeInfos */
 typedef struct strokeinfo {
@@ -200,25 +200,24 @@ typedef struct strokeinfo {
     enum linejoin join;
     enum linecap cap;
     enum si_type stroke_type;
-    unsigned int toobigwarn: 1;
     unsigned int removeinternal: 1;
     unsigned int removeexternal: 1;
-    unsigned int removeoverlapifneeded: 1;
-    unsigned int gottoobig: 1;
-    unsigned int gottoobiglocal: 1;
+    unsigned int leave_users_center: 1;			/* Don't move the pen so its center is at the origin */
     real penangle;
-    real ratio;				/* ratio of minor pen axis to major */
-/* For eplipse */
     real minorradius;
+    struct splinepointlist *poly;
+    real resolution;
 /* For freehand tool */
     real radius2;
     int pressure1, pressure2;
 /* End freehand tool */
-    bigreal c,s;
-    real xoff[8], yoff[8];
     void *data;
     bigreal (*factor)(void *data,struct spline *spline,real t);
 } StrokeInfo;
+
+enum PolyType { Poly_Convex, Poly_Concave, Poly_PointOnEdge,
+    Poly_TooFewPoints, Poly_Line };
+
 
 enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
 	over_exclude, over_findinter, over_fisel };
@@ -2521,8 +2520,9 @@ extern void SSBisectTurners(SplineSet *spl);
 extern extended BoundIterateSplineSolve(Spline1D *sp, extended tmin, extended tmax,
 	extended sought,double err);
 extern void SSRemoveBacktracks(SplineSet *ss);
-extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
-extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
+extern enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex);
+extern SplineSet *UnitShape(int isrect);
+extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,int order2);
 extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);
 extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 	real shadow_length,SplineChar *sc, int wireframe);
@@ -2904,8 +2904,10 @@ extern int32 EncFromName(const char *name,enum uni_interp interp,Encoding *encna
 extern void MatInverse(real into[6], real orig[6]);
 
 extern int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last);
+extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
+    /* Colinear & between */
 
-enum psstrokeflags { sf_toobigwarn=1, sf_removeoverlap=2, sf_handle_eraser=4,
+enum psstrokeflags { /* sf_removeoverlap=2,*/ sf_handle_eraser=4,
 	sf_correctdir=8, sf_clearbeforeinput=16 };
 
 extern char *MMAxisAbrev(char *axis_name);

@@ -800,7 +800,7 @@ return;
     GDrawRequestExpose(tpd->gw,NULL,false);
 }
 
-void TPDChar(TilePathDlg *tpd, GEvent *event) {
+static void TPDChar(TilePathDlg *tpd, GEvent *event) {
     int i;
     for ( i=0; i<4; ++i )
 	if ( !(&tpd->cv_first)[i].inactive )
@@ -1470,7 +1470,7 @@ return;
     GDrawSetUserData(ptd->gw,cv);
 }
 
-void PTDChar(TilePathDlg *ptd, GEvent *event) {
+static void PTDChar(TilePathDlg *ptd, GEvent *event) {
 
     CVChar(&ptd->cv_first,event);
 }

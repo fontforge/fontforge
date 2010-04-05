@@ -1445,7 +1445,7 @@ return;
     GDrawRequestExpose(mkd->cvparent_w,&r,false);
 }
 
-void MKDChar(MathKernDlg *mkd, GEvent *event) {
+static void MKDChar(MathKernDlg *mkd, GEvent *event) {
     int i;
     for ( i=0; i<4; ++i )
 	if ( !(&mkd->cv_topright)[i].inactive )

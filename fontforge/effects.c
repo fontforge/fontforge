@@ -47,7 +47,7 @@ void FVOutline(FontViewBase *fv, real width) {
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
     si.radius = width;
-    si.removeoverlapifneeded = true;
+    /*si.removeoverlapifneeded = true;*/
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -55,7 +55,7 @@ void FVOutline(FontViewBase *fv, real width) {
 		sc->layers[layer].splines && !sc->ticked ) {
 	    sc->ticked = true;
 	    SCPreserveLayer(sc,layer,false);
-	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	    temp = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
 	    for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp;
 	    SplineSetsCorrect(sc->layers[layer].splines,&changed);
@@ -81,7 +81,7 @@ void FVInline(FontViewBase *fv, real width, real inset) {
 
     memset(&si,0,sizeof(si));
     si.removeexternal = true;
-    si.removeoverlapifneeded = true;
+    /*si.removeoverlapifneeded = true;*/
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
@@ -90,9 +90,9 @@ void FVInline(FontViewBase *fv, real width, real inset) {
 	    sc->ticked = true;
 	    SCPreserveLayer(sc,layer,false);
 	    si.radius = width;
-	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	    temp = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
 	    si.radius = width+inset;
-	    temp2 = SSStroke(sc->layers[layer].splines,&si,sc);
+	    temp2 = SplineSetStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2);
 	    for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp;
 	    for ( ; spl->next!=NULL; spl=spl->next );
@@ -700,9 +700,16 @@ SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
     StrokeInfo si;
     SplineSet *internal, *temp, *bottom, *fatframe, *lines;
     int isfore = spl==sc->layers[ly_fore].splines;
+    int order2=false;
 
     if ( spl==NULL )
 return( NULL );
+    for ( temp=spl; temp!=NULL; temp=temp->next ) {
+	if ( temp->first->next != NULL ) {
+	    order2 = temp->first->next->order2;
+    break;
+	}
+    }
 
     trans[0] = trans[3] = cos(angle);
     trans[2] = sin(angle);
@@ -715,10 +722,10 @@ return( NULL );
     if ( outline_width!=0 && !wireframe ) {
 	memset(&si,0,sizeof(si));
 	si.removeexternal = true;
-	si.removeoverlapifneeded = true;
+	/*si.removeoverlapifneeded = true;*/
 	si.radius = outline_width;
-	temp = SplinePointListCopy(spl);	/* SSStroke confuses the direction I think */
-	internal = SSStroke(temp,&si,sc);
+	temp = SplinePointListCopy(spl);	/* SplineSetStroke confuses the direction I think */
+	internal = SplineSetStroke(temp,&si,order2);
 	SplinePointListsFree(temp);
 	SplineSetsAntiCorrect(internal);
     }
@@ -734,8 +741,8 @@ return( NULL );
 	if ( outline_width!=0 ) {
 	    memset(&si,0,sizeof(si));
 	    si.radius = outline_width/2;
-	    si.removeoverlapifneeded = true;
-	    fatframe = SSStroke(spl,&si,sc);
+	    /*si.removeoverlapifneeded = true;*/
+	    fatframe = SplineSetStroke(spl,&si,order2);
 	    SplinePointListsFree(spl);
 #if 0
 	    spl = SplineSetRemoveOverlap(sc,fatframe,over_remove);	/* Too likely to cause remove overlap problems */

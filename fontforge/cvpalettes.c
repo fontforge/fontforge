@@ -289,13 +289,10 @@ static char *editablelayers[] = { N_("F_ore"),
     N_("_Guide") };
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
 static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
-	    /* toobigwarn */  true,
 	    /* removeexternal */ false,
 	    /* removeinternal */ false,
-	    /* removeoverlapif*/ false,
-	    /* gottoobig */	 false,
-	    /* gottoobiglocal */ false,
-	3.1415926535897932/4, .2, 50 };
+	    /* leave users */ false,
+	3.1415926535897932/4, 25, NULL, 50 };
 
 real CVRoundRectRadius(void) {
 return( rr_radius );

@@ -361,7 +361,7 @@ return;
     GDrawRequestExpose(sv->gw,&r,false);
 }
 
-void SVChar(SearchView *sv, GEvent *event) {
+static void SVChar(SearchView *sv, GEvent *event) {
     if ( event->u.chr.keysym==GK_Tab || event->u.chr.keysym==GK_BackTab )
 	SVMakeActive(sv,sv->cv_srch.inactive ? &sv->cv_srch : &sv->cv_rpl);
     else

@@ -1040,14 +1040,13 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
     if ( sc->parent->strokedfont ) {
 	si.radius = sc->parent->strokewidth/2;
 	si.join = lj_bevel;
-	si.toobigwarn = true;
 	si.cap = lc_butt;
 	si.stroke_type = si_std;
-	head = SSStroke(layer->splines,&si,sc);
+	head = SplineSetStroke(layer->splines,&si,layer->order2);
 	if ( head!=NULL )
 	    for ( tail=head; tail->next!=NULL; tail=tail->next );
 	for ( r=layer->refs; r!=NULL; r=r->next ) {
-	    c = SSStroke(r->layers[0].splines,&si,sc);
+	    c = SplineSetStroke(r->layers[0].splines,&si,r->layers[0].order2);
 	    if ( c==NULL )
 		/* Do Nothing */;
 	    else if ( head==NULL ) {
@@ -1065,9 +1064,8 @@ return( head );
 	si.radius = layer->stroke_pen.width/2;
 	si.join = layer->stroke_pen.linejoin;
 	si.cap = layer->stroke_pen.linecap;
-	si.toobigwarn = true;
 	si.stroke_type = si_std;
-return( SSStroke(layer->splines,&si,sc));
+return( SplineSetStroke(layer->splines,&si,layer->order2));
     }
 #else
 return( layer->splines );
@@ -1083,8 +1081,7 @@ static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
     si.join = layer->stroke_pen.linejoin;
     si.cap = layer->stroke_pen.linecap;
     si.stroke_type = si_std;
-    si.toobigwarn = true;
-return( SSStroke(layer->splines,&si,sc));
+return( SplineSetStroke(layer->splines,&si,layer->order2));
 }
 
 static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *brush,

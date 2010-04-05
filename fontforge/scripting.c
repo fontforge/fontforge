@@ -4615,7 +4615,6 @@ static void bNonLinearTransform(Context *c) {
 
 static void bExpandStroke(Context *c) {
     StrokeInfo si;
-    real r2;
     double args[8];
     int i;
     /* Arguments:
@@ -4638,6 +4637,7 @@ static void bExpandStroke(Context *c) {
     }
     memset(&si,0,sizeof(si));
     si.radius = args[1]/2.;
+    si.minorradius = si.radius;
     si.stroke_type = si_std;
     if ( c->a.argc==2 ) {
 	si.join = lj_round;
@@ -4656,38 +4656,16 @@ static void bExpandStroke(Context *c) {
 	    si.removeinternal = true;
 	else if ( c->a.vals[5].u.ival&2 )
 	    si.removeexternal = true;
-	if ( c->a.vals[5].u.ival&4 )
-	    si.removeoverlapifneeded = true;
+	/*if ( c->a.vals[5].u.ival&4 )
+	    si.removeoverlapifneeded = true;*/	/* Obsolete */
     } else if ( c->a.argc==5 ) {
 	si.stroke_type = si_caligraphic;
 	si.penangle = 3.1415926535897932*args[2]/180;
-	si.ratio = args[3] / (double) args[4];
-        si.s = sin(si.penangle);
-        si.c = cos(si.penangle);
-        r2 = si.ratio*si.radius;
-        si.xoff[0] = si.xoff[4] = si.radius*si.c + r2*si.s;
-        si.yoff[0] = si.yoff[4] = -r2*si.c + si.radius*si.s;
-        si.xoff[1] = si.xoff[5] = si.radius*si.c - r2*si.s;
-        si.yoff[1] = si.yoff[5] = r2*si.c + si.radius*si.s;
-        si.xoff[2] = si.xoff[6] = -si.radius*si.c - r2*si.s;
-        si.yoff[2] = si.yoff[6] = r2*si.c - si.radius*si.s;
-        si.xoff[3] = si.xoff[7] = -si.radius*si.c + r2*si.s;
-        si.yoff[3] = si.yoff[7] = -r2*si.c - si.radius*si.s;
+	si.minorradius = si.radius * args[3] / (double) args[4];
     } else {
         si.stroke_type = si_caligraphic;
 	si.penangle = 3.1415926535897932*args[2]/180;
-	si.ratio = args[3] / (double) args[4];
-        si.s = sin(si.penangle);
-        si.c = cos(si.penangle);
-        r2 = si.ratio*si.radius;
-        si.xoff[0] = si.xoff[4] = si.radius*si.c + r2*si.s;
-        si.yoff[0] = si.yoff[4] = -r2*si.c + si.radius*si.s;
-        si.xoff[1] = si.xoff[5] = si.radius*si.c - r2*si.s;
-        si.yoff[1] = si.yoff[5] = r2*si.c + si.radius*si.s;
-        si.xoff[2] = si.xoff[6] = -si.radius*si.c - r2*si.s;
-        si.yoff[2] = si.yoff[6] = r2*si.c - si.radius*si.s;
-        si.xoff[3] = si.xoff[7] = -si.radius*si.c + r2*si.s;
-        si.yoff[3] = si.yoff[7] = -r2*si.c - si.radius*si.s;
+	si.minorradius = si.radius * args[3] / (double) args[4];
 	if ( c->a.vals[5].type!=v_int || c->a.vals[5].u.ival!=0 )
             ScriptError(c,"If 6 arguments are given, the fifth must be zero");
 	else if ( c->a.vals[6].type!=v_int )
@@ -4696,8 +4674,8 @@ static void bExpandStroke(Context *c) {
             si.removeinternal = true;
         else if ( c->a.vals[6].u.ival&2 )
             si.removeexternal = true;
-        if ( c->a.vals[6].u.ival&4 )
-            si.removeoverlapifneeded = true;
+        /* if ( c->a.vals[6].u.ival&4 )
+            si.removeoverlapifneeded = true; */ /* Obsolete */
     }
     FVStrokeItScript(c->curfv, &si, false);
 }

@@ -2233,17 +2233,6 @@ static void MVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	TransformDlgCreate( mv->glyphs[i].sc,MVTransFunc,getorigin,true,cvt_none );
 }
 
-static void MVMenuStroke(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    int i;
-
-    for ( i=mv->glyphcnt-1; i>=0; --i )
-	if ( mv->perchar[i].selected )
-    break;
-    if ( i!=-1 )
-	SCStroke(mv->glyphs[i].sc);
-}
-
 #ifdef FONTFORGE_CONFIG_TILEPATH
 static void MVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
@@ -3125,7 +3114,6 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), (GImage *) "elementregenbitmaps.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Regenerate Bitmap Glyphs...|Ctl+B"), NULL, NULL, MVMenuBitmaps, MID_RegenBitmaps },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Transform..."), (GImage *) "elementtransform.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transform...|Ctl+\\"), NULL, NULL, MVMenuTransform, MID_Transform },
-    { { (unichar_t *) N_("_Expand Stroke..."), (GImage *) "elementexpandstroke.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Expand Stroke...|Ctl+Shft+E"), NULL, NULL, MVMenuStroke, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
     { { (unichar_t *) N_("Tile _Path..."), (GImage *) "elementtilepath.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Tile Path...|No Shortcut"), NULL, NULL, MVMenuTilePath, MID_TilePath },
 #endif

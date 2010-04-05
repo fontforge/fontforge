@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 27-Mar-2009 -->
+  <!-- AP: Last modified: 5-Apr-2010 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -243,7 +243,7 @@
     <LI>
       <A HREF="#RemoveBitmaps">Remove Bitmap Glyphs...</A>
     <LI>
-      Styles
+      <A NAME="Style">Style</A>
       <UL>
 	<LI>
 	  <A HREF="#Embolden">Change Weight...</A>
@@ -786,17 +786,29 @@
       <IMG SRC="expandedlines.png" WIDTH="247" HEIGHT="247"><BR>
       Above is a simple example of what expand stroke can do. It takes the two
       open paths above left and turns them into the two closed paths right.<BR>
-      <IMG SRC="expandstroke.png" WIDTH="323" HEIGHT="488" ALIGN="Left"><BR>
+      <IMG SRC="expandstroke.png" WIDTH="358" HEIGHT="663" ALIGN="Left"><BR>
       The Expand Stroke dialog gives you control over various aspects of the expansion
-      process. You can chose a stroke width, how the ends of an open path should
-      be drawn, and how the path should look when two splines (or lines) join which
-      do not have the same slope (ie. at a corner point). Or you may choose to
-      have the path be that which would be traced by a calligraphic pen, or an
-      elliptical pen. For closed contours you may also choose to remove either
-      the generated contour which is inside the original, or that which is outside
-      (Note: Make sure your glyph is oriented correctly with
+      process. First you can specify three types of pen nibs:
+      <UL>
+	<LI>
+	  A round pen, which is circular by default but may be transformed into an
+	  ellipse
+	<LI>
+	  A rectangular pen, which is square by default but may be transformed into
+	  more traditional caligraphic nib shapes
+	<LI>
+	  A polygonal pen -- you can draw almost any convex polygon.
+      </UL>
+      <P>
+      For circular and caligraphic pens you can chose a stroke width, how the ends
+      of an open path should be drawn, and how the path should look when two splines
+      (or lines) join which do not have the same slope (ie. at a corner point).
+      <P>
+      For closed contours you may also choose to remove either the generated contour
+      which is inside the original, or that which is outside (Note: Make sure your
+      glyph is oriented correctly with
       <A HREF="elementmenu.html#Correct">Edit-&gt;Correct Direction </A>before
-      removing a contour (if misoriented the wrong contour is removed)).
+      removing a contour (if misoriented the wrong contour may be removed)).
       <P>
       <A HREF="pfaeditmath.html#Stroke">How is this done?</A><BR CLEAR=ALL>
     <DT>

@@ -72,17 +72,17 @@ static void SplineSetRefigure(SplineSet *ss) {
     }
 }
 
-static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
+static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,int order2,int ro) {
     SplineSet *temp;
     Spline *s1, *s2;
 
-    /* We don't want to use the remove overlap built into SSStroke because */
+    /* We don't want to use the remove overlap built into SplineSetStroke because */
     /*  only looks at one contour at a time, but we need to look at all together */
     /*  else we might get some unreal internal hints that will screw up */
     /*  counter correction */
-    temp = SSStroke(ss,si,sc);
+    temp = SplineSetStroke(ss,si,order2);
     if ( ro && temp!=NULL && SplineSetIntersect(temp,&s1,&s2))
-	temp = SplineSetRemoveOverlap(sc,temp,over_remove);
+	temp = SplineSetRemoveOverlap(NULL,temp,over_remove);
 return( temp );
 }
 
@@ -1553,10 +1553,9 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
 	    si.radius = -add/2.;
 	    si.removeexternal = true;
 	}
-	si.removeoverlapifneeded = false;
-	si.toobigwarn = true;
+	/*si.removeoverlapifneeded = false;*/
 
-	temp = BoldSSStroke( sc_sc->layers[layer].splines,&si,sc_sc,removeoverlap );
+	temp = BoldSSStroke( sc_sc->layers[layer].splines,&si,sc_sc->layers[layer].order2,removeoverlap );
 	SplinePointListsFree( sc_sc->layers[layer].splines );
 	sc_sc->layers[layer].splines = temp;
         if ( ratio != 1.0 ) {
@@ -3979,8 +3978,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	si.radius = -zones->stroke_width/2.;
 	si.removeexternal = true;
     }
-    si.removeoverlapifneeded = false;
-    si.toobigwarn = true;
+    /*si.removeoverlapifneeded = false;*/
 
     if ( layer!=ly_back && zones->wants_hints &&
 	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {
@@ -3997,7 +3995,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	SplineCharFindBounds(sc,&old);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    NumberLayerPoints(sc->layers[layer].splines);
-	    temp = BoldSSStroke(sc->layers[layer].splines,&si,sc,zones->removeoverlap);
+	    temp = BoldSSStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2,zones->removeoverlap);
 	    if ( zones->embolden_hook!=NULL )
 		temp = (zones->embolden_hook)(temp,zones,sc,layer);
 	    SplinePointListsFree( sc->layers[layer].splines );
@@ -4011,7 +4009,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	SCPreserveLayer(sc,layer,false);
 	NumberLayerPoints(sc->layers[layer].splines);
 	SplineSetFindBounds(sc->layers[layer].splines,&old);
-	temp = BoldSSStroke(sc->layers[layer].splines,&si,sc,zones->removeoverlap);
+	temp = BoldSSStroke(sc->layers[layer].splines,&si,sc->layers[layer].order2,zones->removeoverlap);
 	if ( zones->embolden_hook!=NULL )
 	    temp = (zones->embolden_hook)(temp,zones,sc,layer);
 	SplineSetFindBounds(temp,&new);

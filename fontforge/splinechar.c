@@ -558,6 +558,31 @@ return( false );
 return( true );
 }
 
+int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last) {
+    BasePoint dist_mf, unit_mf, dist_lf, unit_lf;
+    double len, off_lf, off_mf, len2;
+
+    dist_mf.x = mid->x - first->x; dist_mf.y = mid->y - first->y;
+    len = sqrt( dist_mf.x*dist_mf.x + dist_mf.y*dist_mf.y );
+    if ( len==0 )
+return( true );
+    unit_mf.x = dist_mf.x/len; unit_mf.y = dist_mf.y/len;
+
+    dist_lf.x = last->x - first->x; dist_lf.y = last->y - first->y;
+    len = sqrt( dist_lf.x*dist_lf.x + dist_lf.y*dist_lf.y );
+    if ( len==0 )
+return( false );
+    unit_lf.x = dist_lf.x/len; unit_lf.y = dist_lf.y/len;
+
+    off_mf = dist_lf.x*unit_mf.y - dist_lf.y*unit_mf.x;
+    off_lf = dist_mf.x*unit_lf.y - dist_mf.y*unit_lf.x;
+    if ( ( off_mf<-.1 || off_mf>.1 ) && ( off_lf<-.1 || off_lf>.1 ))
+return( false );
+
+    len2 = dist_mf.x*unit_lf.x + dist_mf.y*unit_lf.y;
+return( len2>=0 && len2<=len );
+}
+
 void SPChangePointType(SplinePoint *sp, int pointtype) {
     BasePoint unitnext, unitprev;
     double nextlen, prevlen;

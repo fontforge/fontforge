@@ -1641,66 +1641,6 @@ return( SplineMake2(from,to));
     else
 return( SplineMake3(from,to));
 }
-
-int IntersectLines(BasePoint *inter,
-	BasePoint *line1_1, BasePoint *line1_2,
-	BasePoint *line2_1, BasePoint *line2_2) {
-    double s1, s2;
-
-    if ( line1_1->x == line1_2->x ) {
-	inter->x = line1_1->x;
-	if ( line2_1->x == line2_2->x ) {
-	    if ( line2_1->x!=line1_1->x )
-return( false );		/* Parallel vertical lines */
-	    inter->y = (line1_1->y+line2_1->y)/2;
-	} else
-	    inter->y = line2_1->y + (inter->x-line2_1->x) * (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
-return( true );
-    } else if ( line2_1->x == line2_2->x ) {
-	inter->x = line2_1->x;
-	inter->y = line1_1->y + (inter->x-line1_1->x) * (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
-return( true );
-    } else {
-	s1 = (line1_2->y - line1_1->y)/(line1_2->x - line1_1->x);
-	s2 = (line2_2->y - line2_1->y)/(line2_2->x - line2_1->x);
-	if ( RealNear(s1,s2)) {
-	    if ( !RealNear(line1_1->y + (line2_1->x-line1_1->x) * s1,line2_1->y))
-return( false );
-	    inter->x = (line1_2->x+line2_2->x)/2;
-	    inter->y = (line1_2->y+line2_2->y)/2;
-	} else {
-	    inter->x = (s1*line1_1->x - s2*line2_1->x - line1_1->y + line2_1->y)/(s1-s2);
-	    inter->y = line1_1->y + (inter->x-line1_1->x) * s1;
-	}
-return( true );
-    }
-}
-
-int IntersectLinesClip(BasePoint *inter,
-	BasePoint *line1_1, BasePoint *line1_2,
-	BasePoint *line2_1, BasePoint *line2_2) {
-    BasePoint old = *inter, unit;
-    double len, val;
-
-    if ( !IntersectLines(inter,line1_1,line1_2,line2_1,line2_2))
-return( false );
-    else {
-	unit.x = line2_2->x-line1_2->x;
-	unit.y = line2_2->y-line1_2->y;
-	len = sqrt(unit.x*unit.x + unit.y*unit.y);
-	if ( len==0 )
-return( false );
-	else {
-	    unit.x /= len; unit.y /= len;
-	    val = unit.x*(inter->x-line1_2->x) + unit.y*(inter->y-line1_2->y);
-	    if ( val<=0 || val>=len ) {
-		*inter = old;
-return( false );
-	    }
-	}
-    }
-return( true );
-}
     
 void SplinePointPrevCPChanged2(SplinePoint *sp) {
     SplinePoint *p, *pp;

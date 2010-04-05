@@ -499,9 +499,7 @@ typedef struct tilepathdlg {
     SplineFont *base_sf;
     uint8 done, oked;
 } TilePathDlg;
-extern void TPDChar(TilePathDlg *tpd, GEvent *event);
 extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
-extern void PTDChar(TilePathDlg *tpd, GEvent *event);
 extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
@@ -530,9 +528,37 @@ typedef struct gradientdlg {
     uint8 done, oked;
     struct gradient *active;
 } GradientDlg;
-extern void GDDChar(GradientDlg *tpd, GEvent *event);
 extern void GDDCharViewInits(GradientDlg *gdd,int cid);
-#endif		/* Tile Path */
+#endif		/* Type3 */
+
+typedef struct strokedlg {
+    struct cvcontainer base;
+    FontView dummy_fv;
+    SplineFont dummy_sf;
+    LayerInfo layerinfo[2];
+    SplineChar sc_stroke;
+    SplineChar *chars[1];
+    EncMap dummy_map;
+    int32 map[1], backmap[1];
+    uint8 sel[1];
+    CharView cv_stroke;
+    int cv_width, cv_height;
+    GGadget *mb;
+    int mbh;
+    SplineSet *old_poly;
+/* ****** */
+    int done;
+    GWindow gw;
+    CharView *cv;
+    FontView *fv;
+    SplineFont *sf;
+    void (*strokeit)(void *,StrokeInfo *,int);
+    StrokeInfo *si;
+    GRect r1, r2;
+    int up[2];
+    int dontexpand;
+} StrokeDlg;
+extern void StrokeCharViewInits(StrokeDlg *sd,int cid);
 
 struct lkdata {
     int cnt, max;
@@ -980,13 +1006,11 @@ extern void Disp_DefaultTemplate(CharView *cv);
 extern SearchView *SVCreate(FontView *fv);
 extern void SVCharViewInits(SearchView *sv);
 extern void SV_DoClose(struct cvcontainer *cvc);
-extern void SVChar(SearchView *sv, GEvent *event);
 extern void SVMakeActive(SearchView *sv,CharView *cv);
 extern int SVAttachFV(FontView *fv,int ask_if_difficult);
 extern void SVDetachFV(FontView *fv);
 
 extern void MKDMakeActive(MathKernDlg *mkd,CharView *cv);
-extern void MKDChar(MathKernDlg *mkd, GEvent *event);
 extern void MKD_DoClose(struct cvcontainer *cvc);
 extern void MKDCharViewInits(MathKernDlg *mkd);
 extern void MathKernDialog(SplineChar *sc,int def_layer);

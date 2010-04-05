@@ -90,7 +90,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		si.radius = ent->u.splines.stroke_width/2;
 		new = NULL;
 		for ( test = ent->u.splines.splines; test!=NULL; test=test->next ) {
-		    temp = SplineSetStroke(test,&si,NULL);
+		    temp = SplineSetStroke(test,&si,false);
 		    if ( new==NULL )
 			new=temp;
 		    else

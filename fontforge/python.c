@@ -763,6 +763,19 @@ return( NULL );
 return( ret );
 }
 
+static PyObject *PyFF_unitShape(PyObject *self, PyObject *args) {
+    int n=0;
+    SplineSet *ss;
+    PyObject *ret;
+
+    if ( !PyArg_ParseTuple(args,"|i",&n) )
+return( NULL );
+    ss = UnitShape(n);
+    ret = (PyObject *) ContourFromSS(ss,NULL);
+    SplinePointListFree(ss);
+return( ret );
+}
+
 static struct flaglist printmethod[] = {
     { "lp", 0 },
     { "lpr", 1 },
@@ -3279,6 +3292,55 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
+static int PolyCheck(SplineSet *poly) {
+    SplineSet *ss;
+    SplinePoint *sp;
+    BasePoint pts[256];
+    int cnt;
+
+    for ( ss=poly ; ss!=NULL; ss=ss->next ) {
+	if ( ss->first->prev==NULL ) {
+	    PyErr_Format(PyExc_ValueError, "The polygonal pen must be a closed, convex polygon. This one is not closed." );
+return( false );
+	} else {
+	    for ( sp=ss->first, cnt=0; cnt<255; ++cnt ) {
+		pts[cnt] = sp->me;
+		if ( !sp->next->knownlinear ) {
+		    PyErr_Format(PyExc_ValueError, "The polygonal pen must be a closed, convex polygon. This one is has curved edges." );
+return( false );
+		}
+		sp = sp->next->to;
+		if ( sp==ss->first ) {
+		    ++cnt;
+	    break;
+		}
+	    }
+	    if ( cnt==255 ) {
+		PyErr_Format(PyExc_ValueError, "There are too many vertices on this polygon.");
+return( false );
+	    } else {
+		enum PolyType pt;
+		int badindex;
+		pt = PolygonIsConvex(pts,cnt,&badindex);
+		if ( pt==Poly_Line ) {
+		    PyErr_Format(PyExc_ValueError, "The polygonal pen must be a closed, convex polygon. This one is a line." );
+return( false );
+		} else if ( pt==Poly_TooFewPoints ) {
+		    PyErr_Format(PyExc_ValueError, "The polygonal pen must be a closed, convex polygon. This one has too few points." );
+return( false );
+		} else if ( pt!=Poly_Convex ) {
+		    if ( pt==Poly_PointOnEdge )
+			PyErr_Format(PyExc_ValueError, "There are at least 3 colinear vertices.");
+		    else
+			PyErr_Format(PyExc_ValueError, "The polygonal pen must be a closed, convex polygon. This one is concave." );
+return( false );
+		}
+	    }
+	}
+    }
+return( true );
+}
+
 struct flaglist linecap[] = {
     { "butt", lc_butt },
     { "round", lc_round },
@@ -3305,6 +3367,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args) {
     double width=0, minor=1, angle=0;
     int c, j, f;
     PyObject *flagtuple=NULL;
+    PyObject *poly=NULL;
 #if PY_MAJOR_VERSION >= 3
     PyObject *bytes;
 #endif /* PY_MAJOR_VERSION >= 3 */
@@ -3330,24 +3393,34 @@ return( -1 );
         Py_DECREF(bytes);
 #endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
-    }
+	}
 	si->stroke_type = si_std;
+	minor = width;
+	angle = 0;
     } else if ( strcmp(str,"eliptical")==0 ) {
 	if ( !PyArg_ParseTuple(args,"sddd|ssO", &str, &width, &minor, &angle, &cap, &join, &flagtuple ) ) {
 #if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
 #endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
-    }
-	si->stroke_type = si_elipse;
-    } else if ( strcmp(str,"caligraphic")==0 ) {
+	}
+	si->stroke_type = si_std;
+    } else if ( strcmp(str,"caligraphic")==0 || strcmp(str,"square")==0 ) {
 	if ( !PyArg_ParseTuple(args,"sddd|O", &str, &width, &minor, &angle, &flagtuple ) ) {
 #if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
 #endif /* PY_MAJOR_VERSION >= 3 */
 return( -1 );
-    }
+	}
 	si->stroke_type = si_caligraphic;
+    } else if ( strcmp(str,"polygonal")==0 || strcmp(str,"poly")==0 ) {
+	if ( !PyArg_ParseTuple(args,"O|O", &poly, &flagtuple ) ) {
+#if PY_MAJOR_VERSION >= 3
+        Py_DECREF(bytes);
+#endif /* PY_MAJOR_VERSION >= 3 */
+return( -1 );
+	}
+	si->stroke_type = si_poly;
     } else {
 #if PY_MAJOR_VERSION >= 3
         Py_DECREF(bytes);
@@ -3355,11 +3428,33 @@ return( -1 );
         PyErr_Format(PyExc_ValueError, "Unknown stroke type %s", str );
 return( -1 );
     }
-    if ( width<=0 || minor<=0 ) {
-
 #if PY_MAJOR_VERSION >= 3
-        Py_DECREF(bytes);
+    Py_DECREF(bytes);
 #endif /* PY_MAJOR_VERSION >= 3 */
+
+    if ( poly!=NULL ) {
+	SplineSet *ss=NULL;
+	int start=0, order2=0;
+
+	if ( PyType_IsSubtype(&PyFF_ContourType,poly->ob_type) ) {
+	    order2 = ((PyFF_Contour *) poly)->is_quadratic;
+	    ss = SSFromContour((PyFF_Contour *) poly,&start);
+	} else if ( PyType_IsSubtype(&PyFF_LayerType,poly->ob_type) ) {
+	    order2 = ((PyFF_Layer *) poly)->is_quadratic;
+	    ss = SSFromLayer((PyFF_Layer *) poly);
+	} else {
+	    PyErr_Format(PyExc_TypeError, "Second argument must be a (FontForge) Contour or Layer");
+return( -1 );
+	}
+	if ( order2 ) {
+	    SplineSet *temp = SSPSApprox(ss);
+	    SplinePointListsFree(ss);
+	    ss = temp;
+	}
+	if ( !PolyCheck(ss))
+return( -1 );
+	si->poly = ss;
+    } else if ( width<=0 || minor<=0 ) {
         PyErr_Format(PyExc_ValueError, "Stroke width must be positive" );
 return( -1 );
     }
@@ -3367,9 +3462,6 @@ return( -1 );
     j = FlagsFromString(join,linejoin);
     f = FlagsFromTuple(flagtuple,strokeflags);
     if ( c==0x80000000 || j==0x80000000 || f==0x80000000 ) {
-#if PY_MAJOR_VERSION >= 3
-        Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 	PyErr_Format(PyExc_ValueError, "Bad value for line cap, join or flags" );
 return( -1 );
     }
@@ -3380,17 +3472,11 @@ return( -1 );
 	si->removeinternal = true;
     if ( f&2 )
 	si->removeexternal = true;
-    if ( f&4 )
-	si->removeoverlapifneeded = true;
+/*  if ( f&4 )
+	si->removeoverlapifneeded = true; */	/* Obsolete */
     si->penangle = angle;
+    si->minorradius = minor/2;
 
-    if ( si->stroke_type == si_caligraphic )
-	si->ratio = minor/width;
-    else if ( si->stroke_type == si_elipse )
-	si->minorradius = minor/2;
-#if PY_MAJOR_VERSION >= 3
-    Py_DECREF(bytes);
-#endif /* PY_MAJOR_VERSION >= 3 */
 return( 0 );
 }
 
@@ -3459,10 +3545,11 @@ return( NULL );
     ss = SSFromLayer(self);
     if ( ss==NULL )
 Py_RETURN( self );		/* no contours=> nothing to do */
-    newss = SSStroke(ss,&si,NULL);
+    newss = SplineSetStroke(ss,&si,self->is_quadratic);
     SplinePointListFree(ss);
     LayerFromSS(newss,self);
     SplinePointListsFree(newss);
+    SplinePointListsFree(si.poly); si.poly = NULL;
 Py_RETURN( self );
 }
 
@@ -6318,8 +6405,8 @@ Py_RETURN( self );
 }
 
 static struct flaglist import_ps_flags[] = {
-    { "toobigwarn", sf_toobigwarn },
-    { "removeoverlap", sf_removeoverlap },
+    { "toobigwarn", 0 },			/* Obsolete */
+    { "removeoverlap", 0 },			/* Obsolete */
     { "handle_eraser", sf_handle_eraser },
     { "correctdir",  sf_correctdir },
       NULL };
@@ -7088,10 +7175,12 @@ static PyObject *PyFFGlyph_Stroke(PyFF_Glyph *self, PyObject *args) {
     if ( Stroke_Parse(&si,args)==-1 )
 return( NULL );
 
-    newss = SSStroke(self->sc->layers[self->layer].splines,&si,self->sc);
+    newss = SplineSetStroke(self->sc->layers[self->layer].splines,&si,
+	    self->sc->layers[self->layer].order2);
     SplinePointListFree(self->sc->layers[self->layer].splines);
     self->sc->layers[self->layer].splines = newss;
     SCCharChangedUpdate(self->sc,self->layer);
+    SplinePointListsFree(si.poly); si.poly = NULL;
 Py_RETURN( self );
 }
 
@@ -14739,6 +14828,7 @@ static PyMethodDef FontForge_methods[] = {
     { "printSetup", PyFF_printSetup, METH_VARARGS, "Prepare to print a font sample (select default printer or file, page size, etc.)" },
     { "parseTTInstrs", PyFF_ParseTTFInstrs, METH_VARARGS, "Takes a string and parses it into a tuple of truetype instruction bytes"},
     { "unParseTTInstrs", PyFF_UnParseTTFInstrs, METH_VARARGS, "Takes a tuple of truetype instruction bytes and converts to a human readable string"},
+    { "unitShape", PyFF_unitShape, METH_VARARGS, "Takes an integer argument an returns a regular n-gon with that many sides. If the argument is positive the n-gon is inscribed on the unit circle, negative it is circumscribed, 0 the result is the unit circle, 1 a square. Behavior undefined for 2, -1, -2."},
     { "activeFont", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},
     /* Deprecated name for the above */
     { "activeFontInUI", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},

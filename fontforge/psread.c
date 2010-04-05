@@ -2958,10 +2958,9 @@ return( head );
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 	if ( sc->layers[layer].dostroke ) {
 	    memset(&si,'\0',sizeof(si));
-	    si.toobigwarn = *flags & sf_toobigwarn ? 1 : 0;
 	    si.join = sc->layers[layer].stroke_pen.linejoin;
 	    si.cap = sc->layers[layer].stroke_pen.linecap;
-	    si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;
+	    /* si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;*/
 	    si.radius = sc->layers[layer].stroke_pen.width/2.0;
 	    if ( sc->layers[layer].stroke_pen.width==WIDTH_INHERITED )
 		si.radius = .5;
@@ -2997,8 +2996,6 @@ return( head );
 		if ( new!=NULL )
 		    for ( last = new; last->next!=NULL; last=last->next );
 	    }
-	    if ( si.toobigwarn )
-		*flags |= sf_toobigwarn;
 	}
 	if ( sc->layers[layer].dofill ) {
 	    if ( handle_eraser && sc->layers[layer].fill_brush.col==0xffffff ) {
@@ -3177,10 +3174,9 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		/*  ignore the stroke. This idiom is used by MetaPost sometimes and means */
 		/*  no stroke */
 		memset(&si,'\0',sizeof(si));
-		si.toobigwarn = *flags & sf_toobigwarn ? 1 : 0;
 		si.join = ent->u.splines.join;
 		si.cap = ent->u.splines.cap;
-		si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;
+		/* si.removeoverlapifneeded = *flags & sf_removeoverlap ? 1 : 0;*/
 		si.radius = ent->u.splines.stroke_width/2;
 		if ( ent->u.splines.stroke_width==WIDTH_INHERITED )
 		    si.radius = .5;
@@ -3194,7 +3190,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		transed = SplinePointListTransform(SplinePointListCopy(
 			ent->u.splines.splines),inversetrans,true);
 		for ( each = transed; each!=NULL; each=each->next ) {
-		    temp = SplineSetStroke(each,&si,ec->sc);
+		    temp = SplineSetStroke(each,&si,false);
 		    if ( new==NULL )
 			new=temp;
 		    else
@@ -3217,8 +3213,6 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		    if ( new!=NULL )
 			for ( last = new; last->next!=NULL; last=last->next );
 		}
-		if ( si.toobigwarn )
-		    *flags |= sf_toobigwarn;
 	    }
 	    /* If they have neither a stroke nor a fill, pretend they said fill */
 	    if ( ent->u.splines.fill.col==0xffffffff && ent->u.splines.stroke.col!=0xffffffff )

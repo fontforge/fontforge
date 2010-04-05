@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 6-Feb-2010 -->
+  <!-- AP: Last modified: 5-Apr-2010 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -333,6 +333,16 @@
       <TD><CODE>(sequence)</CODE></TD>
       <TD>Reverse of the above. Converts a binary string into a human (sort of)
 	readable string</TD>
+    </TR>
+    <TR>
+      <TD><CODE>unitShape</CODE></TD>
+      <TD><CODE>(n)</CODE></TD>
+      <TD>Returns a closed contour which is a regular n-gon. The contour will be
+	inscribed in the unit circle. If n is negative, then the contour will be
+	circumscribed around the unit circle. A value of 0 will produce a unit circle.
+	If n==1 it is treated as if n were -4 -- a circumscribed square where each
+	side is 2 units long (this is for historical reasons). Behavior is undefined
+	for n=2,-1,-2.</TD>
     </TR>
     <TR>
       <TD><CODE>registerGlyphSeparationHook</CODE></TD>
@@ -1332,7 +1342,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
 	("eliptical",width,minor-width,angle<BR>
 	&nbsp;[,linecap,linejoin,flags])<BR>
-	("caligraphic",width,height,angle[,flags])</CODE></TD>
+	("caligraphic",width,height,angle[,flags])<BR>
+	("polygon",contour[,flags])</CODE></TD>
       <TD>Strokes the current line using one of the indicated pens. Line cap may
 	be one of
 	<UL>
@@ -1363,7 +1374,9 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	  <LI>
 	    cleanup
 	</UL>
-      </TD>
+	<P>
+	If a polygonal pen is specified the contour must be a closed, convex polygon
+	(no curved edges) with fewer than 100 vertices.</TD>
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>
@@ -2301,7 +2314,8 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
 	("eliptical",width,minor-width,angle<BR>
 	&nbsp;[,linecap,linejoin,flags])<BR>
-	("caligraphic",width,height,angle[,flags])</CODE></TD>
+	("caligraphic",width,height,angle[,flags])<BR>
+	("polygonal",contour[,flags])</CODE></TD>
       <TD>Strokes the contours of the glyph using one of the indicated pens. Line
 	cap may be one of
 	<UL>
@@ -2332,7 +2346,9 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <LI>
 	    cleanup
 	</UL>
-      </TD>
+	<P>
+	If a polygonal pen is specified, the contour must be a closed convex polygon
+	(no curved edges) with fewer than 100 vertices.</TD>
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>
@@ -4543,7 +4559,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 	&nbsp;minor-width,angle<BR>
 	&nbsp;[,linecap,linejoin,flags])<BR>
 	("caligraphic",width,<BR>
-	&nbsp;height,angle[,flags])</CODE></TD>
+	&nbsp;height,angle[,flags])<BR>
+	("polygonal",contour[,flags])</CODE></TD>
       <TD>Strokes the contours of all selected glyphs using one of the indicated
 	pens. Line cap may be one of
 	<UL>
@@ -4574,7 +4591,9 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <LI>
 	    cleanup
 	</UL>
-      </TD>
+	<P>
+	If a polygonal pen is specified the contour must be a closed convex polygon
+	(no curved edges) with fewer than 100 vertices.</TD>
     </TR>
     <TR>
       <TD><CODE>transform</CODE></TD>

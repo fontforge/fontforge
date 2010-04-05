@@ -615,7 +615,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     if ( si->stroke_type!=si_centerline ) {
 	si->factor = ( si->pressure1==si->pressure2 ) ? NULL : Trace_Factor;
 	si->data = cv;
-	spl->next = SplineSetStroke(spl,si,cv->b.sc);
+	spl->next = SplineSetStroke(spl,si,false);
     }
 return( spl );
 }
