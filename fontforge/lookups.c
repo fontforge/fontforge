@@ -103,7 +103,7 @@ struct opentype_feature_friendlynames friendlies[] = {
     { CHR('i','s','o','l'),	"isol", N_("Isolated Forms"),		gsub_single_mask },
     { CHR('i','t','a','l'),	"ital", N_("Italics"),			gsub_single_mask },
     { CHR('j','a','l','t'),	"jalt", N_("Justification Alternatives"),	gsub_alternate_mask },
-    { CHR('j','a','j','p'),	"jajp", N_("Japanese Forms (Obsolete"),	gsub_single_mask|gsub_alternate_mask },
+    { CHR('j','a','j','p'),	"jajp", N_("Japanese Forms (Obsolete)"),	gsub_single_mask|gsub_alternate_mask },
     { CHR('j','p','0','4'),	"jp04", N_("JIS2004 Forms"),		gsub_single_mask },
     { CHR('j','p','7','8'),	"jp78", N_("JIS78 Forms"),		gsub_single_mask|gsub_alternate_mask },
     { CHR('j','p','8','3'),	"jp83", N_("JIS83 Forms"),		gsub_single_mask },

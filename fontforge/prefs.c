@@ -255,6 +255,10 @@ static struct prefs_list {
     unsigned int dontdisplay: 1;
     char *popup;
 } general_list[] = {
+/* GT: The following strings have no spaces and an odd capitalization */
+/* GT: this is because these strings are used in two different ways, one */
+/* GT: translated (which the user sees, and should probably have added spaces,*/
+/* GT: and one untranslated which needs the current odd format */
 	{ N_("ResourceFile"), pr_file, &xdefs_filename, NULL, NULL, 'R', NULL, 0, N_("When FontForge starts up, it loads display related resources from a\nproperty on the screen. Sometimes it is useful to be able to store\nthese resources in a file. These resources are only read at start\nup, so changing this has no effect until the next time you start\nFontForge.") },
 #if 0
 	{ N_("PixmapDir"), pr_file, &pixmapdir, NULL, NULL, 'R', NULL, 0, N_(
@@ -354,7 +358,7 @@ static struct prefs_list {
 	{ NULL }
 },
  hints_list[] = {
-	{ N_("StandardSlopeError"), pr_angle, &stem_slope_error, NULL, NULL, '\0', NULL, 0, N_("The maximum slope difference which still allows to consider two points \"parallel\".\nEnlarge this to make the autohinter more tolerable to small devations from straight lines when detecting stem edges.") },
+	{ N_("StandardSlopeError"), pr_angle, &stem_slope_error, NULL, NULL, '\0', NULL, 0, N_("The maximum slope difference which still allows to consider two points \"parallel\".\nEnlarge this to make the autohinter more tolerable to small deviations from straight lines when detecting stem edges.") },
 	{ N_("SerifSlopeError"), pr_angle, &stub_slope_error, NULL, NULL, '\0', NULL, 0, N_("Same as above, but for terminals of small features (e. g. serifs), which can deviate more significantly from the horizontal or vertical direction.") },
 	{ N_("HintBoundingBoxes"), pr_bool, &hint_bounding_boxes, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints to describe the bounding boxes of suitable glyphs.") },
 	{ N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },

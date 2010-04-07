@@ -3983,7 +3983,7 @@ return( true );
 			"Is this really your intent?"))==1 )
 return( true );
 	    } else if ( layer_flags & 2 ) {
-		if ( gwwv_ask(_("Remoing instructions cannot be UNDONE!"),(const char **) buts,0,1,_(
+		if ( gwwv_ask(_("Removing instructions cannot be UNDONE!"),(const char **) buts,0,1,_(
 			"You are about to change the last quadratic\n"
 			"layer to cubic. When this happens FontForge\n"
 			"will remove all truetype instructions.\n\n"

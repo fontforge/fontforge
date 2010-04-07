@@ -2219,7 +2219,7 @@ return( sc );
     if ( info->head_start!=0 && ( gbb[0]<info->fbb[0] || gbb[1]<info->fbb[1] ||
 				  gbb[2]>info->fbb[2] || gbb[3]>info->fbb[3])) {
 	if ( !info->bbcomplain || (info->openflags&of_fontlint)) {
-	    LogError(_("Glyph bounding box data excedes font bounding box data for GID %d\n"), gid );
+	    LogError(_("Glyph bounding box data exceeds font bounding box data for GID %d\n"), gid );
 	    info->bad_glyph_data = true;
 	    if ( !(info->openflags&of_fontlint) )
 		LogError("  Subsequent errors will not be reported.\n" );

@@ -44,7 +44,7 @@ typedef struct createwidthdlg {
 static char *rb1[] = { N_("Set Width To:"), N_("Set LBearing To:"), N_("Set RBearing To:"), N_("Set Bearings To:"), N_("Set Vert. Advance To:") };
 static char *rb2[] = { N_("Increment Width By:"), N_("Increment LBearing By:"), N_("Increment RBearing By:"), N_("Increment Bearings By:"), N_("Increment V. Adv. By:") };
 static char *rb3[] = { N_("Scale Width By:"), N_("Scale LBearing By:"), N_("Scale RBearing By:"), N_("Scale Bearings By:"), N_("Scale VAdvance By:") };
-static char *info[] = { N_("Left Side Bearing does not change."), N_("Advance Width does not change."), N_("Left Side Bearing does not change."), N_("ThisSpaceIntentionallyLeftBlank|"), N_("Top Bearing does not change.") };
+static char *info[] = { N_("Left Side Bearing does not change."), N_("Advance Width does not change."), N_("Left Side Bearing does not change."), N_("ThisSpaceIntentionallyLeftBlank-PleaseDoNotTranslate-LeaveThisOut|"), N_("Top Bearing does not change.") };
 
 static int CW_OK(GGadget *g, GEvent *e) {
 

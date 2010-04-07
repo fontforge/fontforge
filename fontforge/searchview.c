@@ -205,11 +205,11 @@ return( false );
 	if ( pathpointcnt(sv->sd.path)<3 ||
 		(check_replace && pathpointcnt(sv->sd.replacepath)<3 && pathpointcnt(sv->sd.replacepath)!=0 )) {
 	    if ( pathpointcnt(sv->sd.path)<0 )
-		ff_post_error(_("Bad search pattern"),_("When \"Use endpoints for direction only\" is checked, the search pattern must be a single open contour."));
+		ff_post_error(_("Bad search pattern"),_("When \"Endpoints specify minimum length and direction only\" is checked, the search pattern must be a single open contour."));
 	    else if ( pathpointcnt(sv->sd.path)<3 )
-		ff_post_error(_("Bad search pattern"),_("When \"Use endpoints for direction only\" is checked, the search pattern must be a single open contour with at least 3 points on it (otherwise there is nothing to match)."));
+		ff_post_error(_("Bad search pattern"),_("When \"Endpoints specify minimum length and direction only\" is checked, the search pattern must be a single open contour with at least 3 points on it (otherwise there is nothing to match)."));
 	    else
-		ff_post_error(_("Bad replace pattern"),_("When \"Use endpoints for direction only\" is checked, the replace pattern must be a single open contour with at least 3 points on it."));
+		ff_post_error(_("Bad replace pattern"),_("When \"Endpoints specify minimum length and direction only\" is checked, the replace pattern must be a single open contour with at least 3 points on it."));
 return( false );
 	}
     } else if ( pathpointcnt(sv->sd.path)>0 ) {
