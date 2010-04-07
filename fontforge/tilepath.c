@@ -1642,7 +1642,7 @@ return( true );
 	td->pattern->refs = RefCharsCopy(ptd->sc_first.layers[ly_fore].refs);
 	
 	if ( td->pattern->splines==NULL && td->pattern->refs==NULL ) {
-	    ff_post_error(_("Bad Patter"),_("You must specify a pattern"));
+	    ff_post_error(_("Bad Pattern"),_("You must specify a pattern"));
 return( true );
 	}
 

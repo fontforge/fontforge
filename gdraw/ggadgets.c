@@ -75,7 +75,7 @@ GResInfo ggadget_ri = {
     NULL,
     ggadget_re,
     N_("GGadget"),
-    N_("This is an \"abstract\" gadget. It will never appear on the screen\nbut it is the root of ggadget tree from which all others inherit"),
+    N_("This is an \"abstract\" gadget. It will never appear on the screen\nbut it is the root of gadget tree from which all others inherit"),
     "GGadget",
     "Gdraw",
     false
@@ -123,7 +123,7 @@ GResInfo listmark_ri = {
     &droplistbox,
     listmark_re,
     N_("List Mark"),
-    N_("This is the mark that differenciates ComboBoxes and ListButtons\n"
+    N_("This is the mark that differentiates ComboBoxes and ListButtons\n"
 	"from TextFields and normal Buttons." ),
     "GListMark",
     "Gdraw",

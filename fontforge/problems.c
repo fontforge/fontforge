@@ -1156,7 +1156,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			ExplainIt(p,sc,_("The selected point is too far from the origin"),0,0);
 		    } else {
 			lastsp->selected = true;
-			ExplainIt(p,sc,_("The selected points (or the itermediate control points) are too far apart"),0,0);
+			ExplainIt(p,sc,_("The selected points (or the intermediate control points) are too far apart"),0,0);
 		    }
 		    if ( p->ignorethis ) {
 			p->pointstoofar = false;
@@ -2611,7 +2611,7 @@ return(false);
 		  _("The lookup %.30s which invokes lookup %.30s is active "
 		    "for glyph %.30s which has script '%c%c%c%c', yet this script does not "
 		    "appear in any of the features which apply the lookup.\n"
-		    "Would you like to add this script to one of those lookups?"),
+		    "Would you like to add this script to one of those features?"),
 			otl->lookup_name, nested->lookup_name,
 			glyph_name,
 			script>>24, script>>16, script>>8, script);
@@ -2620,7 +2620,7 @@ return(false);
 		  _("The lookup %.30s is active for glyph %.30s which has script "
 		    "'%c%c%c%c', yet this script does not appear in any of the features which "
 		    "apply the lookup.\n\n"
-		    "Would you like to add this script to one of those lookups?"),
+		    "Would you like to add this script to one of those features?"),
 			otl->lookup_name, glyph_name,
 			script>>24, script>>16, script>>8, script);
 	    buts[0] = _("_OK"); buts[1] = _("_Skip"); buts[2]="_Ignore"; buts[3] = NULL;
@@ -3120,7 +3120,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[0].gd.popup_msg = (unichar_t *) _(
 	    "The coordinates of all points and control points in truetype\n"
 	    "must be integers (if they are not integers then FontForge will\n"
-	    "round them when it outputs them, potentially causing havok).\n"
+	    "round them when it outputs them, potentially causing havoc).\n"
 	    "Even in PostScript fonts it is generally a good idea to use\n"
 	    "integral values.");
     pgcd[0].gd.cid = CID_NonIntegral;
