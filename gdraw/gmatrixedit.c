@@ -913,7 +913,7 @@ static void GME_EnableDelete(GMatrixEdit *gme) {
 		updown = ud_down_enabled;
 	}
 	GGadgetSetEnabled(gme->up,updown & ud_up_enabled ? 1 : 0);
-	GGadgetSetEnabled(gme->up,updown & ud_down_enabled ? 1 : 0);
+	GGadgetSetEnabled(gme->down,updown & ud_down_enabled ? 1 : 0);
     }
 }
 
