@@ -606,13 +606,13 @@ static int GTextField_Show(GTextField *gt, int pos) {
     if ( gt->lines[i+1]==-1 ) ll = -1; else ll = gt->lines[i+1]-gt->lines[i]-1;
     if ( gt->pango ) {
 	GRect size;
-	if ( gt->lines8[i+1]==-1 ) ll = strlen(gt->utf8_text+gt->lines[i]); else ll = gt->lines8[i+1]-gt->lines8[i]-1;
-	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines[i],ll,NULL);
+	if ( gt->lines8[i+1]==-1 ) ll = strlen(gt->utf8_text+gt->lines8[i]); else ll = gt->lines8[i+1]-gt->lines8[i]-1;
+	GDrawLayoutInit(gt->g.base,gt->utf8_text+gt->lines8[i],ll,NULL);
 	GDrawLayoutExtents(gt->g.base,&size);
 	if ( size.width < width )
 	    xoff = 0;
 	else {
-	    int index8 = u2utf8_index(pos- gt->lines[i],gt->utf8_text + gt->lines8[i]);
+	    int index8 = u2utf8_index(pos- gt->lines8[i],gt->utf8_text + gt->lines8[i]);
 	    GDrawLayoutIndexToPos(gt->g.base,index8,&size);
 	    if ( size.x + 2*size.width < width )
 		xoff = 0;
