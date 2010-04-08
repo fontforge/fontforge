@@ -6260,12 +6260,6 @@ msgstr "Tâm ra"
 msgid "Rectangle"
 msgstr "Chữ nhật"
 
-#: cvpalettes.c:717
-#: cvpalettes.c:723
-#: cvpalettes.c:3136
-msgid "Ellipse"
-msgstr "Bầu dục"
-
 #: cvpalettes.c:718
 #: cvpalettes.c:724
 msgid "Round Rectangle Radius"
