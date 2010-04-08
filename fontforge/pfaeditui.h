@@ -146,4 +146,6 @@ extern Library_Version_Configuration exe_library_version_configuration;
 #define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont"
 #define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont"
 #define FIXED_UI_FAMILIES	"monospace,fixed,clearlyu,unifont"
+
+#define isprivateuse(enc) ((enc)>=0xe000 && (enc)<=0xf8ff)
 #endif

@@ -843,6 +843,24 @@ return( false );
 return( true );
 }
 
+void utf8_truncatevalid(char *str) {
+    /* There are certain cases where we have a fixed amount of space to display */
+    /*  something, and if it doesn't fit in that, then we truncate it. But... */
+    /*  that can leave us with a half completed utf8 byte sequence. So truncate*/
+    /*  again, right before the start of the bad sequence */
+    int ch;
+    char *old;
+
+    old = str;
+    while ( (ch=utf8_ildb((const char **) &str))!='\0' ) {
+	if ( ch==-1 ) {
+	    *old = '\0';
+return;
+	}
+	old = str;
+    }
+}
+
 char *utf8_db(char *utf8_text) {
     /* Decrement utf8 pointer */
     unsigned char *pt = (unsigned char *) utf8_text;

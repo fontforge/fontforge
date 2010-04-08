@@ -3893,8 +3893,6 @@ char *GlyphNameListDeUnicode( char *str ) {
 return( ret );
 }
 
-#define isprivate(enc) (enc>=0xe000 && enc<=0xf8ff)
-
 char *SFNameList2NameUni(SplineFont *sf, char *str) {
     char *start, *pt, *ret, *rpt;
     int cnt, ch;
@@ -3923,7 +3921,7 @@ return( NULL );
 	/*  or things in the private use area */
 	if ( sc!=NULL && sc->unicodeenc>32 && sc->unicodeenc!=')' &&
 		!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
-		!isprivate(sc->unicodeenc)) {
+		!isprivateuse(sc->unicodeenc)) {
 	    *rpt++ = '(';
 	    rpt = utf8_idpb(rpt,sc->unicodeenc);
 	    *rpt++ = ')';
