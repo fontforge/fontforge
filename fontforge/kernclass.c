@@ -1052,7 +1052,7 @@ static void KCD_EditOffset(KernClassDlg *kcd, int first, int second) {
 	GMatrixEditActivateRowCol(GWidgetGetControl(kcd->gw,CID_ClassList+100),second,-1);
     if ( second==0 )
 	ff_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
-    if ( first!=-1 && second!=-1 ) {
+    if ( first!=-1 && second!=-1 && first < kcd->first_cnt && second < kcd->second_cnt ) {
 	kcd->st_pos = first*kcd->second_cnt+second;
 	kcd->old_pos = kcd->st_pos;
 	GGadgetSetList(GWidgetGetControl(kcd->gw,CID_First),
@@ -1327,22 +1327,26 @@ return;
 	char *str;
 	space[0] = '\0';
 	if ( event->u.mouse.y>=kcd->ystart2 && s<kcd->first_cnt ) {
-	    sprintf( space, "First Class %d\n", s );
+	    sprintf( space, _("First Class %d\n"), s );
 	    classes = GMatrixEditGet(GWidgetGetControl(kcd->gw,CID_ClassList),&len);
-	    len = strlen(space);
 	    str = classes[s].u.md_str!=NULL ? classes[s].u.md_str :
 		    s==0 ? _("{Everything Else}") : "";
-	    strncpy(space+len,str,(sizeof(space)/sizeof(space[0]))/2-2 - len);
-	    strcat(space+len,"\n");
+	    len = strlen(space);
+	    strncpy(space+len,str,sizeof(space)/2-2 - len);
+	    space[sizeof(space)/2-2] = '\0';
+	    utf8_truncatevalid(space+len);
+	    strcat(space+strlen(space),"\n");
 	}
 	if ( event->u.mouse.x>=kcd->xstart2 && c<kcd->second_cnt ) {
 	    len = strlen(space);
-	    sprintf( space+len, "Second Class %d\n", c );
+	    sprintf( space+len, _("Second Class %d\n"), c );
 	    classes = GMatrixEditGet(GWidgetGetControl(kcd->gw,CID_ClassList+100),&len);
 	    str = classes[c].u.md_str!=NULL ? classes[c].u.md_str :
 		    c==0 ? _("{Everything Else}") : "";
-	    len += strlen(space+len);
-	    strncpy(space+len,str,(sizeof(space)/sizeof(space[0]))-1 - len);
+	    len = strlen(space);
+	    strncpy(space+len,str,sizeof(space)-1 - len);
+	    space[sizeof(space)-1] = '\0';
+	    utf8_truncatevalid(space+len);
 	}
 	if ( space[0]=='\0' )
 return;
@@ -1409,7 +1413,7 @@ return( false );
 	snprintf( buf, blen, "!%s", start );
 	*pt = ch;
 return( true );
-    } else if ( sc->unicodeenc==-1 )
+    } else if ( sc->unicodeenc==-1 || isprivateuse(sc->unicodeenc))	/* Pango complains that privateuse code points are "Invalid UTF8 strings" */
 	snprintf( buf, blen, "%s", start );
     else
 	utf8_idpb(buf,sc->unicodeenc);
@@ -1816,7 +1820,7 @@ void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
 	}
 	while ( *eow1==' ' ) ++eow1;
 	ch1 = *pt1; *pt1='\0';
-	if ( sf!=NULL ) {
+	if ( sf!=NULL && !isEverythingElse( start1 )) {
 	    SplineChar *sc = SFGetChar(sf,-1,start1);
 	    if ( sc==NULL )
 		ff_post_notice(_("Missing glyph"),_("The font does not contain a glyph named %s."), start1 );
