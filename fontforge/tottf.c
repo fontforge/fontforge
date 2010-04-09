@@ -4092,11 +4092,14 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     free( nt.entries );
     free( at->feat_name );
 
+#if 0
+    /* Windows changed it's mind. This is ok again */
     if ( at->namelen>5*1024 && !sf->internal_temp )
 	LogError( _("Windows has decided that fonts with 'name' tables bigger than 5K are\n"
 		    "insecure and will refuse to load them. Don't ask me why they believe this.\n"
 		    "This font has a name table which is %d bytes and is bigger than this limit.\n"),
 		    at->namelen);
+#endif
     
 }
 
