@@ -2618,6 +2618,40 @@ static int SetFontName(GWindow gw, SplineFont *sf) {
 return( diff );
 }
 
+static char *StripCopyright(const char *utf8_copyright) {
+    /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
+    char *newcr, *pt;
+
+    pt = newcr = galloc((3*strlen(utf8_copyright)/2)+1);
+    while ( *utf8_copyright ) {
+	if ( *utf8_copyright>=' ' && *utf8_copyright<'\177' )
+	    *pt++ = *utf8_copyright++;
+	else if ( *((uint8 *) utf8_copyright)==0xc2 && ((uint8 *) utf8_copyright)[1] == 0xa9 ) {
+	    *pt++ = '('; *pt++ = 'c'; *pt++ = ')';
+	    utf8_copyright += 2;
+	} else
+	    ++utf8_copyright;
+    }
+    *pt = '\0';
+return( newcr );
+}
+    
+static int cAllAscii(const char *txt) {
+    for ( ; *txt!='\0'; ++txt ) {
+	if ( *txt<' ' || *txt>='\177' )
+return( false );
+    }
+return( true );
+}
+
+static int AllAscii(const unichar_t *txt) {
+    for ( ; *txt!='\0'; ++txt ) {
+	if ( *txt<' ' || *txt>='\177' )
+return( false );
+    }
+return( true );
+}
+
 static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
@@ -3969,6 +4003,24 @@ return( true );
 	if ( gasprows>0 && gasp[5*gasprows-5].u.md_ival!=65535 ) {
 	    ff_post_error(_("Bad Grid Fitting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
 return( true );
+	}
+	{
+	    int i;
+	    static struct {
+		int cid;
+		char *tit, *msg;
+	    } msgs[] = {
+		{ CID_Notice, N_("Bad Copyright"), NU_("Copyright text (in the Names pane) must be entirely ASCII. So, use (c) instead of ©.")},
+		{ CID_Human, N_("Bad Human Fontname"), N_("The human-readable fontname text (in the Names pane) must be entirely ASCII.")},
+		{ CID_Weight, N_("Bad Weight"), N_("The weight text (in the Names pane) must be entirely ASCII.")},
+		{ CID_Version, N_("Bad Version"), N_("The version text (in the Names pane) must be entirely ASCII.")},
+		{ 0 }
+	    };
+	    for ( i = 0; msgs[i].cid!=0 ; ++i )
+		    if ( !AllAscii(_GGadgetGetTitle(GWidgetGetControl(d->gw,msgs[i].cid))) ) {
+		ff_post_error(_(msgs[i].tit),_(msgs[i].msg));
+return( true );
+	    }
 	}
 	if ( (layer_flags = GFI_AnyLayersRemoved(d))!=0 ) {
 	    char *buts[3];
@@ -7342,6 +7394,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     static GBox small_blue_box;
     extern GBox _GGadget_button_box;
     static GFont *fi_font=NULL;
+    char *copied_copyright;
 
     FontInfoInit();
 
@@ -7539,8 +7592,12 @@ return;
 
     ngcd[17].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
     ngcd[17].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    copied_copyright = NULL;
     if ( sf->copyright!=NULL ) {
-	nlabel[17].text = (unichar_t *) sf->copyright;
+	if ( !cAllAscii(sf->copyright))
+	    nlabel[17].text = (unichar_t *) (copied_copyright = StripCopyright(sf->copyright));
+	else
+	    nlabel[17].text = (unichar_t *) sf->copyright;
 	nlabel[17].text_is_1byte = true;
 	ngcd[17].gd.label = &nlabel[17];
     }
@@ -10701,6 +10758,8 @@ return;
 
     free(tmpcreatetime);
     free(tmpmodtime);
+
+    free(copied_copyright);
 
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     ProcessListSel(d);
