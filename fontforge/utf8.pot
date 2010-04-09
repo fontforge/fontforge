@@ -6,30 +6,6 @@
 #. xgettext doesn't like them, so I have to find them manually.
 #. it is encoded in utf-8
 
-#: autowidth.c
-msgid "Α-ΡΣ-Ωα-ω"
-msgstr ""
-
-#: autowidth.c
-msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
-msgstr ""
-
-#: autowidth.c
-msgid "α-ω.,:;-"
-msgstr ""
-
-#: autowidth.c
-msgid "Α-ΡΣ-Ωα-ω.,:;-"
-msgstr ""
-
-#: autowidth.c
-msgid "а-ик-яђє-іј-ћџ.,:;-"
-msgstr ""
-
-#: autowidth.c
-msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
-msgstr ""
-
 #. CW means clockwise
 #: bitmapview.c
 msgid "_Rotate 90° CW"
@@ -90,6 +66,10 @@ msgstr ""
 
 #: cvgetinfo.c, nonlineartrans.c, transform.c
 msgid "°"
+msgstr ""
+
+#: fontinfo.c
+msgid "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) instead of ©."
 msgstr ""
 
 #: fontinfo.c
