@@ -1359,6 +1359,7 @@ static int sv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	r.x = r.y = 0; r.width = sv->vwidth+40; r.height = sv->fh-1;
 	GDrawFillRect(gw,&r,0x808080);
+	GDrawSetFont(gw,sv->gfont);
 	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetBiText8Width(gw,_("Index"),-1,-1,NULL);
 	GDrawDrawBiText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
 	GDrawDrawBiText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
@@ -1557,6 +1558,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     }
     sv->gfont = font;
     GDrawSetFont(sv->v,sv->gfont);
+    GDrawSetFont(sv->gw,sv->gfont);
     GDrawFontMetrics(sv->gfont,&as,&ds,&ld);
     sv->as = as+1;
     sv->fh = sv->as+ds;
