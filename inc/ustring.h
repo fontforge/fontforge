@@ -127,4 +127,8 @@ extern char *u2def_copy(const unichar_t *ufrom);
 extern int u_sprintf(unichar_t *str, const unichar_t *format, ... );
 extern int u_snprintf(unichar_t *str, int len, const unichar_t *format, ... );
 extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap );
+
+extern int AllAscii(const unichar_t *str);
+extern int cAllAscii(const char *);
+extern char *StripToASCII(const char *utf8_str);
 #endif

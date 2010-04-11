@@ -906,3 +906,79 @@ int utf82u_strlen(const char *utf8_str) {
 	    ++len;
 return( len );
 }
+
+#include <chardata.h>
+char *StripToASCII(const char *utf8_str) {
+    /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
+    char *newcr, *pt, *end;
+    int len, ch;
+    const unichar_t *alt;
+
+    len = strlen(utf8_str);
+    pt = newcr = galloc(len+1);
+    end = pt+len;
+    while ( (ch= utf8_ildb(&utf8_str))!='\0' ) {
+	if ( pt>=end ) {
+	    int off = pt-newcr;
+	    newcr = grealloc(newcr,(off+10)+1);
+	    pt = newcr+off;
+	    end = pt+10;
+	}
+	if ( (ch>=' ' && ch<'\177' ) || ch=='\n' || ch=='\t' )
+	    *pt++ = ch;
+	else if ( ch=='\r' && *utf8_str!='\n' )
+	    *pt++ = '\n';
+	else if ( ch==0xa9 /* Copyright sign */ ) {
+	    char *str = "(c)";
+	    if ( pt+strlen(str)>=end ) {
+		int off = pt-newcr;
+		newcr = grealloc(newcr,(off+10+strlen(str))+1);
+		pt = newcr+off;
+		end = pt+10;
+	    }
+	    while ( *str )
+		*pt++ = *str++;
+	} else if ( unicode_alternates[ch>>8]!=NULL &&
+		(alt = unicode_alternates[ch>>8][ch&0xff])!=NULL ) {
+	    while ( *alt!='\0' ) {
+		if ( pt>=end ) {
+		    int off = pt-newcr;
+		    newcr = grealloc(newcr,(off+10)+1);
+		    pt = newcr+off;
+		    end = pt+10;
+		}
+		if ( *alt>=' ' && *alt<'\177' )
+		    *pt++ = *alt;
+		else if ( *alt==0x300 )
+		    *pt++ = '`';
+		else if ( *alt==0x301 )
+		    *pt++ = '\'';
+		else if ( *alt==0x302 )
+		    *pt++ = '^';
+		else if ( *alt==0x303 )
+		    *pt++ = '~';
+		else if ( *alt==0x308 )
+		    *pt++ = ':';
+		++alt;
+	    }
+	}
+    }
+    *pt = '\0';
+return( newcr );
+}
+    
+int cAllAscii(const char *txt) {
+    for ( ; *txt!='\0'; ++txt ) {
+	if ( *txt<' ' || *txt>='\177' )
+return( false );
+    }
+return( true );
+}
+
+int AllAscii(const unichar_t *txt) {
+    for ( ; *txt!='\0'; ++txt ) {
+	if ( *txt<' ' || *txt>='\177' )
+return( false );
+    }
+return( true );
+}

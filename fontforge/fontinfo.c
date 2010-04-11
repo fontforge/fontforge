@@ -2618,40 +2618,6 @@ static int SetFontName(GWindow gw, SplineFont *sf) {
 return( diff );
 }
 
-static char *StripCopyright(const char *utf8_copyright) {
-    /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
-    char *newcr, *pt;
-
-    pt = newcr = galloc((3*strlen(utf8_copyright)/2)+1);
-    while ( *utf8_copyright ) {
-	if ( *utf8_copyright>=' ' && *utf8_copyright<'\177' )
-	    *pt++ = *utf8_copyright++;
-	else if ( *((uint8 *) utf8_copyright)==0xc2 && ((uint8 *) utf8_copyright)[1] == 0xa9 ) {
-	    *pt++ = '('; *pt++ = 'c'; *pt++ = ')';
-	    utf8_copyright += 2;
-	} else
-	    ++utf8_copyright;
-    }
-    *pt = '\0';
-return( newcr );
-}
-    
-static int cAllAscii(const char *txt) {
-    for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt<' ' || *txt>='\177' )
-return( false );
-    }
-return( true );
-}
-
-static int AllAscii(const unichar_t *txt) {
-    for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt<' ' || *txt>='\177' )
-return( false );
-    }
-return( true );
-}
-
 static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
@@ -7594,17 +7560,18 @@ return;
     ngcd[16].creator = GLabelCreate;
 
     ngcd[17].gd.pos.width = ngcd[5].gd.pos.x+ngcd[5].gd.pos.width-26;
-    ngcd[17].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    ngcd[17].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_utf8_popup;
     copied_copyright = NULL;
     if ( sf->copyright!=NULL ) {
 	if ( !cAllAscii(sf->copyright))
-	    nlabel[17].text = (unichar_t *) (copied_copyright = StripCopyright(sf->copyright));
+	    nlabel[17].text = (unichar_t *) (copied_copyright = StripToASCII(sf->copyright));
 	else
 	    nlabel[17].text = (unichar_t *) sf->copyright;
 	nlabel[17].text_is_1byte = true;
 	ngcd[17].gd.label = &nlabel[17];
     }
     ngcd[17].gd.cid = CID_Notice;
+    ngcd[17].gd.popup_msg = (unichar_t *) _("This must be ASCII, so you may not use the copyright symbol (use (c) instead).");
     ngcd[17].creator = GTextAreaCreate;
 
     memset(&nb,0,sizeof(nb)); memset(&nb2,0,sizeof(nb2)); memset(&nb3,0,sizeof(nb3));
@@ -10451,7 +10418,7 @@ return;
 
     i = 0;
 
-    aspects[i].text = (unichar_t *) _("Names");
+    aspects[i].text = (unichar_t *) _("PS Names");
     d->old_aspect = 0;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = nb;
