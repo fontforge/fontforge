@@ -2250,6 +2250,11 @@ return( str );
 	free(ret);
 	ret = rpt;
     }
+    if ( !AllAscii(ret)) {
+	rpt = StripToASCII(ret);
+	free(ret);
+	ret = rpt;
+    }
 return(ret);
 }
 

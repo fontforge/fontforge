@@ -6026,6 +6026,15 @@ return;
     english->names[ttf_postscriptname]=NULL;
 }
 
+static void ASCIIcheck(char **str) {
+
+    if ( *str!=NULL && !cAllAscii(*str)) {
+	char *temp = StripToASCII(*str);
+	free(*str);
+	*str = temp;
+    }
+}
+
 static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf, *_sf;
     int i,k;
@@ -6217,6 +6226,16 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    sf->subfonts[i]->cidmaster = sf;
 	    sf->subfonts[i]->hasvmetrics = sf->hasvmetrics;
 	}
+    }
+    ASCIIcheck(&sf->copyright);
+    ASCIIcheck(&sf->familyname);
+    ASCIIcheck(&sf->weight);
+    ASCIIcheck(&sf->version);
+    
+    if ( sf->copyright!=NULL && !cAllAscii(sf->copyright)) {
+	char *temp = StripToASCII(sf->copyright);
+	free(sf->copyright);
+	sf->copyright = temp;
     }
     TTF_PSDupsDefault(sf);
 #if 0
