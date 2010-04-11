@@ -2250,7 +2250,7 @@ return( str );
 	free(ret);
 	ret = rpt;
     }
-    if ( !AllAscii(ret)) {
+    if ( !cAllAscii(ret)) {
 	rpt = StripToASCII(ret);
 	free(ret);
 	ret = rpt;
