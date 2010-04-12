@@ -1215,15 +1215,6 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 }
 #endif
 
-static int AllAscii(char *name) {
-    while ( *name ) {
-	if ( *name<' ' || *name>=0x7f )
-return( false );
-	++name;
-    }
-return( true );
-}
-
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     ImageList *img;
     KernPair *kp;

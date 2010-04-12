@@ -967,7 +967,7 @@ char *StripToASCII(const char *utf8_str) {
 return( newcr );
 }
     
-int cAllAscii(const char *txt) {
+int AllAscii(const char *txt) {
     for ( ; *txt!='\0'; ++txt ) {
 	if ( *txt<' ' || *txt>='\177' )
 return( false );
@@ -975,7 +975,7 @@ return( false );
 return( true );
 }
 
-int AllAscii(const unichar_t *txt) {
+int uAllAscii(const unichar_t *txt) {
     for ( ; *txt!='\0'; ++txt ) {
 	if ( *txt<' ' || *txt>='\177' )
 return( false );

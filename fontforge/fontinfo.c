@@ -3986,7 +3986,7 @@ return( true );
 		{ 0 }
 	    };
 	    for ( i = 0; msgs[i].cid!=0 ; ++i )
-		    if ( !AllAscii(_GGadgetGetTitle(GWidgetGetControl(d->gw,msgs[i].cid))) ) {
+		    if ( !uAllAscii(_GGadgetGetTitle(GWidgetGetControl(d->gw,msgs[i].cid))) ) {
 		ff_post_error(_(msgs[i].tit),_(msgs[i].msg));
 return( true );
 	    }
@@ -7563,7 +7563,7 @@ return;
     ngcd[17].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_utf8_popup;
     copied_copyright = NULL;
     if ( sf->copyright!=NULL ) {
-	if ( !cAllAscii(sf->copyright))
+	if ( !AllAscii(sf->copyright))
 	    nlabel[17].text = (unichar_t *) (copied_copyright = StripToASCII(sf->copyright));
 	else
 	    nlabel[17].text = (unichar_t *) sf->copyright;

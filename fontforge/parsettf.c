@@ -6028,7 +6028,7 @@ return;
 
 static void ASCIIcheck(char **str) {
 
-    if ( *str!=NULL && !cAllAscii(*str)) {
+    if ( *str!=NULL && !AllAscii(*str)) {
 	char *temp = StripToASCII(*str);
 	free(*str);
 	*str = temp;
@@ -6232,11 +6232,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     ASCIIcheck(&sf->weight);
     ASCIIcheck(&sf->version);
     
-    if ( sf->copyright!=NULL && !cAllAscii(sf->copyright)) {
-	char *temp = StripToASCII(sf->copyright);
-	free(sf->copyright);
-	sf->copyright = temp;
-    }
     TTF_PSDupsDefault(sf);
 #if 0
     if ( info->gsub_start==0 && info->mort_start==0 && info->morx_start==0 ) {
