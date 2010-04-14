@@ -597,6 +597,8 @@ void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index 
 	    f_bdf = f_bdf->next;
 	} else if ( t_bdf->pixelsize < f_bdf->pixelsize ) {
 	    t_bdf = t_bdf->next;
+	} else if ( t_bdf->pixelsize > f_bdf->pixelsize ) {
+	    /* Insert these bitmaps? Or skip? */
 	    f_bdf = f_bdf->next;
 	}
     }
