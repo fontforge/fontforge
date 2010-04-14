@@ -3353,7 +3353,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17; 
     pagcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
-    pagcd[3].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.\n Before doing this test insure that\nno paths self-intersect");
+    pagcd[3].gd.popup_msg = (unichar_t *) _("PostScript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare.\n Before doing this test insure that\nno paths self-intersect");
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
     paarray[3] = &pagcd[3];
@@ -3365,7 +3365,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+17; 
     pagcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( missingextrema ) pagcd[4].gd.flags |= gg_cb_on;
-    pagcd[4].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that when a path\nreaches its maximum or minimum position\nthere must be a point at that location.");
+    pagcd[4].gd.popup_msg = (unichar_t *) _("PostScript and TrueType require that when a path\nreaches its maximum or minimum position\nthere must be a point at that location.");
     pagcd[4].gd.cid = CID_MissingExtrema;
     pagcd[4].creator = GCheckBoxCreate;
     paarray[4] = &pagcd[4];
@@ -3418,7 +3418,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6; 
     rfgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
-    rfgcd[0].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nElement->Correct direction on it.");
+    rfgcd[0].gd.popup_msg = (unichar_t *) _("PostScript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nElement->Correct direction on it.");
     rfgcd[0].gd.cid = CID_FlippedRefs;
     rfgcd[0].creator = GCheckBoxCreate;
     rfarray[0] = &rfgcd[0];

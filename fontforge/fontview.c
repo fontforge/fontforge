@@ -919,7 +919,7 @@ void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	DelayEvent(_MenuExit,NULL);
 }
 
-char *GetPostscriptFontName(char *dir, int mult) {
+char *GetPostScriptFontName(char *dir, int mult) {
     unichar_t *ret;
     char *u_dir;
     char *temp;
@@ -965,7 +965,7 @@ void MenuOpen(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
     for ( fvcnt=0, test=fv_list; test!=NULL; ++fvcnt, test=(FontView *) (test->b.next) );
     do {
-	temp = GetPostscriptFontName(NULL,true);
+	temp = GetPostScriptFontName(NULL,true);
 	if ( temp==NULL )
 return;
 	eod = strrchr(temp,'/');
@@ -976,7 +976,7 @@ return;
 	    if ( fpt!=NULL ) *fpt = '\0';
 	    full = galloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
-	    ViewPostscriptFont(full,0);
+	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
 	    free(full);
 	} while ( fpt!=NULL );
@@ -3587,7 +3587,7 @@ static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( cidmaster==NULL || cidmaster->subfontcnt>=255 )	/* Open type allows 1 byte to specify the fdselect */
 return;
 
-    filename = GetPostscriptFontName(NULL,false);
+    filename = GetPostScriptFontName(NULL,false);
     if ( filename==NULL )
 return;
     new = LoadSplineFont(filename,0);

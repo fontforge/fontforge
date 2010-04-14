@@ -2708,7 +2708,7 @@ void PSFontFree(FontDict *fd) {
     free(fd);
 }
 
-char **_NamesReadPostscript(FILE *ps) {
+char **_NamesReadPostScript(FILE *ps) {
     char **ret = NULL;
     char buffer[2000], *pt, *end;
 
@@ -2735,6 +2735,6 @@ char **_NamesReadPostscript(FILE *ps) {
 return( ret );
 }
 
-char **NamesReadPostscript(char *filename) {
-return( _NamesReadPostscript( fopen(filename,"rb")));
+char **NamesReadPostScript(char *filename) {
+return( _NamesReadPostScript( fopen(filename,"rb")));
 }

@@ -130,7 +130,7 @@ static void garbagefree(struct garbage *all) {
 	    chunkfree(junk,sizeof(struct garbage));
     }
 }
-/**************************** Postscript Importer *****************************/
+/**************************** PostScript Importer *****************************/
 /* It's really dumb. It ignores almost everything except linetos and curvetos */
 /*  anything else, function calls, ... is thrown out, if this breaks a lineto */
 /*  or curveto or moveto (if there aren't enough things on the stack) then we */

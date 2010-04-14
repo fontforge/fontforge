@@ -2356,7 +2356,7 @@ static int MMW_CheckBrowse(GGadget *g, GEvent *e) {
 	unichar_t *ut;
 
 	if ( ti!=NULL && ti->userdata == (void *) -1 ) {
-	    temp = GetPostscriptFontName(NULL,false);
+	    temp = GetPostScriptFontName(NULL,false);
 	    if ( temp==NULL )
 return(true);
 	    sf = LoadSplineFont(temp,0);

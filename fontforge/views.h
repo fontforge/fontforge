@@ -633,7 +633,7 @@ extern int _FVMenuSave(FontView *fv);
 extern int _FVMenuSaveAs(FontView *fv);
 extern int _FVMenuGenerate(FontView *fv,int family);
 extern void _FVCloseWindows(FontView *fv);
-extern char *GetPostscriptFontName(char *defdir,int mult);
+extern char *GetPostScriptFontName(char *defdir,int mult);
 extern void MergeKernInfo(SplineFont *sf,EncMap *map);
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
 extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);

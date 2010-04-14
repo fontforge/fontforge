@@ -728,7 +728,7 @@ return( 1 );
 #endif
     path = def2utf8_copy(newname);
     ff_progress_start_indicator(10,_("Saving font"),
-	    _("Saving Multiple Postscript Fonts"),
+	    _("Saving Multiple PostScript Fonts"),
 	    path,256,(max+1)*filecnt );
     /*ff_progress_enable_stop(false);*/
     free(path);

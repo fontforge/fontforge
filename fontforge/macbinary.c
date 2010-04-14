@@ -1631,8 +1631,8 @@ return( 0 );
 #else
     header.macfilename = buffer;
 #endif
-	/* Adobe uses a creator of ASPF (Adobe Systems Postscript Font I assume) */
-	/* Fontographer uses ACp1 (Altsys Corp. Postscript type 1???) */
+	/* Adobe uses a creator of ASPF (Adobe Systems PostScript Font I assume) */
+	/* Fontographer uses ACp1 (Altsys Corp. PostScript type 1???) */
 	/* Both include an FREF, BNDL, ICON* and comment */
 	/* I shan't bother with that... It'll look ugly with no icon, but oh well */
     header.type = CHR('L','W','F','N');
@@ -1947,7 +1947,7 @@ void SfListFree(struct sflist *sfs) {
 
 /* ******************************** Reading ********************************* */
 
-static SplineFont *SearchPostscriptResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
+static SplineFont *SearchPostScriptResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	long name_list, int flags) {
     long here = ftell(f);
     long *offsets, lenpos;
@@ -2056,7 +2056,7 @@ return(NULL);
     fseek(f,here,SEEK_SET);
     rewind(pfb);
     if ( flags&ttf_onlynames )
-return( (SplineFont *) _NamesReadPostscript(pfb) );	/* This closes the font for us */
+return( (SplineFont *) _NamesReadPostScript(pfb) );	/* This closes the font for us */
 
     fd = _ReadPSFont(pfb);
     sf = NULL;
@@ -2867,7 +2867,7 @@ return( NULL );
 	rpos = type_list+getushort(f);
 	sf = NULL;
 	if ( tag==CHR('P','O','S','T') && !(flags&(ttf_onlystrikes|ttf_onlykerns)))		/* No FOND */
-	    sf = SearchPostscriptResources(f,rpos,subcnt,rdata_pos,name_list,flags);
+	    sf = SearchPostScriptResources(f,rpos,subcnt,rdata_pos,name_list,flags);
 	else if ( tag==CHR('s','f','n','t') && !(flags&ttf_onlykerns))
 	    sf = SearchTtfResources(f,rpos,subcnt,rdata_pos,name_list,filename,flags,openflags);
 	else if ( tag==CHR('N','F','N','T') ) {

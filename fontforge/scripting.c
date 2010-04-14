@@ -1629,7 +1629,7 @@ char **GetFontNames(char *filename) {
 		ret = NamesReadTTF(filename);
 	    } else if (( ch1=='%' && ch2=='!' ) ||
 			( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
-		ret = NamesReadPostscript(filename);
+		ret = NamesReadPostScript(filename);
 	    } else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
 		ret = NamesReadSVG(filename);
 	    } else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {

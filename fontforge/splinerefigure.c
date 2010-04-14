@@ -58,7 +58,7 @@ void SplineRefigure3(Spline *spline) {
 	xsp->a = xsp->b = 0;
 	ysp->a = ysp->b = 0;
     } else {
-	/* from p. 393 (Operator Details, curveto) Postscript Lang. Ref. Man. (Red book) */
+	/* from p. 393 (Operator Details, curveto) PostScript Lang. Ref. Man. (Red book) */
 	xsp->c = 3*(from->nextcp.x-from->me.x);
 	ysp->c = 3*(from->nextcp.y-from->me.y);
 	xsp->b = 3*(to->prevcp.x-from->nextcp.x)-xsp->c;

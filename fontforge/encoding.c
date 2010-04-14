@@ -1189,7 +1189,7 @@ static char *readpsstr(char *str) {
 
     while ( isspace(*str)) ++str;
     if ( *str=='(' ) ++str;
-    /* Postscript strings can be more complicated than this (hex, nested parens, Enc85...) */
+    /* PostScript strings can be more complicated than this (hex, nested parens, Enc85...) */
     /*  but none of those should show up here */
     for ( eos = str; *eos!=')' && *eos!='\0'; ++eos );
 return( copyn(str,eos-str));

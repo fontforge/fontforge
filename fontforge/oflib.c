@@ -1487,11 +1487,11 @@ static int OFL_Open(GGadget *g, GEvent *e) {
 		/* Ignore selection on top level if it is open */
 		for ( du=d->show[i]->urls ; du!=NULL ; du=du->next )
 		    if ( du->selected )
-			ViewPostscriptFont(du->url,0);
+			ViewPostScriptFont(du->url,0);
 	    } else if ( d->show[i]->selected ) {
 		du = OFLibHasFont(d,i);
 		if ( du!=NULL )
-		    ViewPostscriptFont(du->url,0);
+		    ViewPostScriptFont(du->url,0);
 		else
 		    GDrawBeep(NULL);
 	    }
