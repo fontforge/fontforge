@@ -753,7 +753,7 @@ static void SquareCap(StrokeContext *c,int isend) {
     StrokePoint done;
     StrokePoint *p;
     double t;
-    /* Postscript has all sorts of funky line endings for circular points */
+    /* PostScript has all sorts of funky line endings for circular points */
     /* I shan't bother with them, except for the one which is "draw the */
     /* final half pen". In PostScript that means draw a semi-circle. Here */
     /* we draw half a square (which is easier to draw than a circle) */

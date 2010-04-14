@@ -1560,11 +1560,11 @@ return( false );
 
     if ( incid==NULL ) {
 	ff_progress_next_stage();
-	ff_progress_change_line1(_("Converting Postscript"));
+	ff_progress_change_line1(_("Converting PostScript"));
 	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format,layer))==NULL )
 return( false );
 	ff_progress_next_stage();
-	ff_progress_change_line1(_("Saving Postscript Font"));
+	ff_progress_change_line1(_("Saving PostScript Font"));
     }
 
     if ( incid==NULL ) dumpstr(dumpchar,data,"dup\n");
@@ -2508,11 +2508,11 @@ return( NULL );
 	else
 	    fd->leniv = 4;
     }
-    ff_progress_change_line1(_("Converting Postscript"));
+    ff_progress_change_line1(_("Converting PostScript"));
     if ( (chars = CID2ChrsSubrs(cidmaster,cidbytes,flags,layer))==NULL )
 return( NULL );
     ff_progress_next_stage();
-    ff_progress_change_line1(_("Saving Postscript Font"));
+    ff_progress_change_line1(_("Saving PostScript Font"));
 
     chrs = tmpfile();
     for ( i=0; i<chars->next; ++i ) {

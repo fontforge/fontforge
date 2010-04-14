@@ -618,7 +618,7 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("Fullname"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("UniqueID"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Version"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
-/* Don't give user access to PostscriptName, we set that elsewhere */
+/* Don't give user access to PostScriptName, we set that elsewhere */
     { (unichar_t *) N_("Trademark"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Manufacturer"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Designer"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -1361,7 +1361,7 @@ const char *UI_TTFNameIds(int id) {
 return( (char *) ttfnameids[i].text );
 
     if ( id==6 )
-return( "Postscript" );
+return( "PostScript" );
 
 return( _("Unknown") );
 }
@@ -1382,7 +1382,7 @@ return( (char *) mslanguages[i].text );
 return( _("Unknown") );
 }
 
-/* These are Postscript names, and as such should not be translated */
+/* These are PostScript names, and as such should not be translated */
 enum { pt_number, pt_boolean, pt_array, pt_code };
 static struct { const char *name; short type, arr_size, present; } KnownPrivates[] = {
     { "BlueValues", pt_array, 14 },
@@ -2626,7 +2626,7 @@ static int CheckNames(struct gfi_data *d) {
     buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
 
     if ( u_strlen(ufont)>63 ) {
-	ff_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
+	ff_post_error(_("Bad Font Name"),_("A PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
 return( false );
     }
 
@@ -2640,7 +2640,7 @@ return( false );
     /*  do a cursory test for that */
     u_strtod(ufamily,&end);
     if ( *end=='\0' || (isdigit(ufamily[0]) && u_strchr(ufamily,'#')!=NULL) ) {
-	ff_post_error(_("Bad Font Family Name"),_("A Postscript name may not be a number"));
+	ff_post_error(_("Bad Font Family Name"),_("A PostScript name may not be a number"));
 return( false );
     }
     if ( u_strlen(ufamily)>31 ) {
@@ -2657,7 +2657,7 @@ return( false );
     }
     while ( *ufamily ) {
 	if ( *ufamily<' ' || *ufamily>=0x7f ) {
-	    ff_post_error(_("Bad Font Family Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	    ff_post_error(_("Bad Font Family Name"),_("A PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
 	++ufamily;
@@ -2666,7 +2666,7 @@ return( false );
     u_strtod(ufont,&end);
     if ( (*end=='\0' || (isdigit(ufont[0]) && u_strchr(ufont,'#')!=NULL)) &&
 	    *ufont!='\0' ) {
-	ff_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
+	ff_post_error(_("Bad Font Name"),_("A PostScript name may not be a number"));
 return( false );
     }
     for ( pt=ufont; *pt; ++pt ) {
@@ -2674,7 +2674,7 @@ return( false );
 		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
 		*pt=='%' || *pt=='/' ) {
-	    ff_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	    ff_post_error(_("Bad Font Name"),_("A PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
     }

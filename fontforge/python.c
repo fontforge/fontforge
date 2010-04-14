@@ -15643,7 +15643,7 @@ static struct flaglist sfnt_name_str_ids[] = {
     { "Fullname", 4},
     { "UniqueID", 3},
     { "Version", 5},
-    { "PostscriptName", 6},
+    { "PostScriptName", 6},
     { "Trademark", 7},
     { "Manufacturer", 8},
     { "Designer", 9},

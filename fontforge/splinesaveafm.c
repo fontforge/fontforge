@@ -234,7 +234,7 @@ return( 0 );
 return( true );
 }
 
-int CheckAfmOfPostscript(SplineFont *sf,char *psname, EncMap *map) {
+int CheckAfmOfPostScript(SplineFont *sf,char *psname, EncMap *map) {
     char *new, *pt;
     int ret;
     int wasuc=false;
@@ -2300,7 +2300,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map,int layer) {
     fseek(pfm,devname,SEEK_SET);
     putlint(pos,pfm);
     fseek(pfm,pos,SEEK_SET);
-    for ( pt="Postscript"/*"\273PostScript\253"*/; *pt; ++pt )
+    for ( pt="PostScript"/*"\273PostScript\253"*/; *pt; ++pt )
 	putc(*pt,pfm);
     putc('\0',pfm);
 

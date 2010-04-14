@@ -31,7 +31,7 @@
 #include "chardata.h"
 
 static void MergeAskFilename(FontView *fv,int preserveCrossFontKerning) {
-    char *filename = GetPostscriptFontName(NULL,true);
+    char *filename = GetPostScriptFontName(NULL,true);
     SplineFont *sf;
     char *eod, *fpt, *file, *full;
 
@@ -271,7 +271,7 @@ void FVMergeFonts(FontView *fv) {
 /******************************************************************************/
 
 static void InterAskFilename(FontView *fv, real amount) {
-    char *filename = GetPostscriptFontName(NULL,false);
+    char *filename = GetPostScriptFontName(NULL,false);
     SplineFont *sf;
 
     if ( filename==NULL )

@@ -690,7 +690,7 @@ static pascal OSErr OpenDocumentsAE( const AppleEvent * theAppleEvent,
                         NULL, NULL, &theFSRef,
                         sizeof(theFSRef), NULL);// 4
 	err = FSRefMakePath(&theFSRef,(unsigned char *) buffer,sizeof(buffer));
-	ViewPostscriptFont(buffer,0);
+	ViewPostScriptFont(buffer,0);
  fprintf( logfile, " file: %s\n", buffer );
     }
     system( "DYLD_LIBRARY_PATH=\"\"; osascript -e 'tell application \"X11\" to activate'" );
@@ -889,7 +889,7 @@ return( true );
 	    else if ( strcmp(arg,"-quit")==0 || strcmp(arg,"--quit")==0 )
 		MenuExit(NULL,NULL,NULL);
 	    else
-		ViewPostscriptFont(arg,0);
+		ViewPostScriptFont(arg,0);
 	    free(arg);
 	    GDrawGrabSelection(splashw,sn_user1);
 	}
@@ -1379,7 +1379,7 @@ exit( 0 );
 #  endif
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
-		if ( ViewPostscriptFont(RecentFiles[next_recent++],openflags))
+		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
 		    any = 1;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
@@ -1413,14 +1413,14 @@ exit( 0 );
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
 		    free(fname);
-		    if ( ViewPostscriptFont(buffer,openflags) )
+		    if ( ViewPostScriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
 			free(fname);
-			if ( ViewPostscriptFont(buffer,openflags) )
+			if ( ViewPostScriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
 			free(fname);
@@ -1429,14 +1429,14 @@ exit( 0 );
 			    buffer[strlen(buffer)+1]='\0';
 			    buffer[strlen(buffer)] = '/';
 			}
-			fname = GetPostscriptFontName(buffer,false);
+			fname = GetPostScriptFontName(buffer,false);
 			if ( fname!=NULL )
-			    ViewPostscriptFont(fname,openflags);
+			    ViewPostScriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
 			free(fname);
 		    }
 		}
-	    } else if ( ViewPostscriptFont(buffer,openflags)!=0 )
+	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )
 		any = 1;
 	}
     }

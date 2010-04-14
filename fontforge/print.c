@@ -1400,7 +1400,7 @@ return(false);
     }
     if ( pi->sfid==0 )
 	ff_progress_start_indicator(10,_("Printing Font"),_("Printing Font"),
-		_("Generating Postscript Font"),sf->glyphcnt,1);
+		_("Generating PostScript Font"),sf->glyphcnt,1);
     else
 	ff_progress_reset();
     ff_progress_enable_stop(false);

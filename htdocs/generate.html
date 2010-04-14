@@ -94,7 +94,7 @@
       OpenType (CFF). Officially OpenType includes True Type, but OpenType True
       Type fonts are no different from plain True Type fonts, so they might as
       well just be called True Type. So here when I say OpenType I mean OpenType
-      with a CFF Postscript Type 2 font inside it.
+      with a CFF PostScript Type 2 font inside it.
     <LI>
       OpenType dfont format, an OpenType font wrapped up in a mac dfont (data fork
       resource file). Mac OS/X font.
@@ -276,7 +276,7 @@
   will have both a 2 byte unicode encoding table and a 4 byte table. OpenType
   CID keyed fonts will be saved with Unicode encoding.
   <P>
-  Postscript fonts are generated in whatever encoding the font is using (except
+  PostScript fonts are generated in whatever encoding the font is using (except
   if you take a two byte encoding and generate a Type1 font (rather than a
   Type0) then only the first few (256) glyphs will be encoded). Type0 does
   not support a full Unicode (4 byte) encoding.
@@ -294,7 +294,7 @@
   SVG fonts don't really have the concept of an encoding other than Unicode.
   <P>
   TTF (and OpenType) fonts will produce vertical metrics tables if the font
-  has vertical metrics enabled. Postscript type1 fonts will not produce Metrics2
+  has vertical metrics enabled. PostScript type1 fonts will not produce Metrics2
   dictionaries (If someone actually wants this let me know, it can be done,
   but I get the impression that nobody uses this any more).
   <P>

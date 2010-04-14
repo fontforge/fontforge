@@ -61,7 +61,7 @@ Required by windows but not mac
 Required for TrueType
 	loca		pointers to the glyphs
 	glyf		character shapes
-Required for OpenType (Postscript)
+Required for OpenType (PostScript)
 	CFF 		A complete postscript CFF font here with all its internal tables
 Required for bitmaps
 	bdat/EBDT	bitmap data

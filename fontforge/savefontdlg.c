@@ -444,13 +444,13 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OFM),flags&ttf_flag_ofm);
     if ( d->optset[which] )
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),flags&ttf_flag_applemode);
-    else if ( which==0 || which==3 )	/* Postscript */
+    else if ( which==0 || which==3 )	/* PostScript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),false);
     else
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_AppleMode),(flags&ttf_flag_applemode));
     if ( d->optset[which] )
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),flags&ttf_flag_otmode);
-    else if ( which==0 )	/* Postscript */
+    else if ( which==0 )	/* PostScript */
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),false);
     else if ( (fs==ff_ttfmacbin || fs==ff_ttfdfont || fs==ff_otfdfont ||
 	     fs==ff_otfciddfont || d->family==gf_macfamily || (fs==ff_none && bf==bf_sfnt_dfont)))
@@ -1689,7 +1689,7 @@ static void GFD_FigureWhich(struct gfc_data *d) {
     if ( fs==ff_none )
 	which = 1;		/* Some bitmaps get stuffed int ttf files */
     else if ( fs<=ff_cffcid )
-	which = 0;		/* Postscript options */
+	which = 0;		/* PostScript options */
     else if ( fs<=ff_ttfdfont )
 	which = 1;		/* truetype options */ /* type42 also */
     else

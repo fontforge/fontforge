@@ -575,7 +575,7 @@ void SFSetModTime(SplineFont *sf) {
     sf->modificationtime = now;
 }
 
-static SplineFont *_SFReadPostscript(FILE *file,char *filename) {
+static SplineFont *_SFReadPostScript(FILE *file,char *filename) {
     FontDict *fd=NULL;
     SplineFont *sf=NULL;
 
@@ -587,12 +587,12 @@ static SplineFont *_SFReadPostscript(FILE *file,char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostscript(sf,filename,sf->map);
+	    CheckAfmOfPostScript(sf,filename,sf->map);
     }
 return( sf );
 }
 
-static SplineFont *SFReadPostscript(char *filename) {
+static SplineFont *SFReadPostScript(char *filename) {
     FontDict *fd=NULL;
     SplineFont *sf=NULL;
 
@@ -604,7 +604,7 @@ static SplineFont *SFReadPostscript(char *filename) {
 	sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
 	if ( sf!=NULL )
-	    CheckAfmOfPostscript(sf,filename,sf->map);
+	    CheckAfmOfPostScript(sf,filename,sf->map);
     }
 return( sf );
 }
@@ -1061,7 +1061,7 @@ return( NULL );
 	    checked = 'w';
 	} else if (( ch1=='%' && ch2=='!' ) ||
 		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
-	    sf = _SFReadPostscript(file,fullname);
+	    sf = _SFReadPostScript(file,fullname);
 	    checked = 'p';
 	} else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
 	    sf = _SFReadPdfFont(file,fullname,NULL,openflags);
@@ -1151,7 +1151,7 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".gsf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".pt3")==0 ||
 		strmatch(fullname+strlen(fullname)-3, ".ps")==0 ) && checked!='p' ) {
-	sf = SFReadPostscript(fullname);
+	sf = SFReadPostScript(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".cff")==0 && checked!='c' ) {
 	sf = CFFParse(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {

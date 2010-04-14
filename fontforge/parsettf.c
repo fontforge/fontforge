@@ -1425,7 +1425,7 @@ static void ValidatePostScriptFontName(struct ttfinfo *info, char *str) {
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
-	ff_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
+	ff_post_error(_("Bad Font Name"),_("A PostScript name may not be a number"));
 	info->bad_ps_fontname = true;
 	*str = 'a';
 	complained = true;
@@ -1436,7 +1436,7 @@ static void ValidatePostScriptFontName(struct ttfinfo *info, char *str) {
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
 		*pt=='%' || *pt=='/' ) {
 	    if ( !complained ) {
-		ff_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
+		ff_post_error(_("Bad Font Name"),_("The PostScript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
 		info->bad_ps_fontname = true;
 	    }
 	    complained = true;
@@ -1447,7 +1447,7 @@ static void ValidatePostScriptFontName(struct ttfinfo *info, char *str) {
 	}
     }
     if ( strlen(str)>63 ) {
-	ff_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
+	ff_post_error(_("Bad Font Name"),_("The PostScript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
 	info->bad_ps_fontname = true;
 	str[63] = '\0';
     }
