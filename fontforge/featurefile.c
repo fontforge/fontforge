@@ -4108,8 +4108,10 @@ static void fea_markedglyphsFree(struct markedglyphs *gl) {
 	free(gl->name_or_class);
 	free(gl->lookupname);
 	for ( i=0; i<gl->ap_cnt; ++i ) {
-	    gl->anchors[i]->next = NULL;
-	    AnchorPointsFree(gl->anchors[i]);
+	    if ( gl->anchors[i]!=NULL ) {	/* NULL anchors are permitted */
+		gl->anchors[i]->next = NULL;
+		AnchorPointsFree(gl->anchors[i]);
+	    }
 	}
 	free(gl->anchors);
 	for ( i=0; i<gl->apm_cnt; ++i )
@@ -4353,7 +4355,7 @@ static struct feat_item *fea_process_pos_markbase(struct parseState *tok,
 	    }
 	}
     }
-return( item );
+return( sofar );
 }
 
 static struct feat_item *fea_process_pos_ligature(struct parseState *tok,
@@ -5192,6 +5194,7 @@ static void fea_ParseLookupDef(struct parseState *tok, int could_be_stat ) {
     enum otlookup_type lookuptype;
     int has_marks;
     int ret;
+    int has_single, has_multiple;
 
     fea_ParseTok(tok);
     if ( tok->type!=tk_name ) {
@@ -5284,6 +5287,26 @@ return;
 	++tok->err_count;
     }
     fea_end_statement(tok);
+
+    /* Now a multiple substitution may have a single destination. In which case*/
+    /*  it will look just like a single substitution. So if there are both */
+    /*  multiple and single subs in a lookup, translate all the singles into */
+    /*  multiples */
+    has_single = has_multiple = false;
+    for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+	enum otlookup_type cur = fea_LookupTypeFromItem(item);
+	if ( cur==gsub_multiple )
+	    has_multiple = true;
+	else if ( cur==gsub_single )
+	    has_single = true;
+    }
+    if ( has_multiple && has_single ) {
+	for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+	    enum otlookup_type cur = fea_LookupTypeFromItem(item);
+	    if ( cur==gsub_single )
+		item->u2.pst->type = pst_multiple;
+	}
+    }
 
     /* Make sure all entries in this lookup of the same lookup type */
     lookuptype = ot_undef;
