@@ -2722,9 +2722,11 @@ return;
 		    SCCharChangedUpdate(sc_sc,fv->active_layer);
 		}
       end_loop2:
-		if ( !sc->ticked && !ff_progress_next())
+		if ( sc!=NULL ) {
+		    if ( !sc->ticked && !ff_progress_next())
     break;
-		sc->ticked = true;
+		    sc->ticked = true;
+		}
 	    }
 	}
     }
