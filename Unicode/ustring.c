@@ -969,7 +969,9 @@ return( newcr );
     
 int AllAscii(const char *txt) {
     for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt<' ' || *txt>='\177' )
+	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+	    /* All right */;
+	else if ( *txt<' ' || *txt>='\177' )
 return( false );
     }
 return( true );
@@ -977,7 +979,9 @@ return( true );
 
 int uAllAscii(const unichar_t *txt) {
     for ( ; *txt!='\0'; ++txt ) {
-	if ( *txt<' ' || *txt>='\177' )
+	if ( *txt=='\t' || *txt=='\n' || *txt=='\r' )
+	    /* All right */;
+	else if ( *txt<' ' || *txt>='\177' )
 return( false );
     }
 return( true );
