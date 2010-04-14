@@ -2226,11 +2226,11 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		}
 	    }
 	    cv->back_img_out_of_date = false;
-	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
+	    if ( cv->showhhints || cv->showvhints || cv->showdhints || cv->showblues || cv->showfamilyblues)
 		CVShowHints(cv,pixmap);
 	} else if ( cv->back_img_out_of_date ) {
 	    GDrawFillRect(cv->backimgs,NULL,view_bgcol);
-	    if ( cv->showhhints || cv->showvhints || cv->showdhints)
+	    if ( cv->showhhints || cv->showvhints || cv->showdhints || cv->showblues || cv->showfamilyblues)
 		CVShowHints(cv,cv->backimgs);
 	    for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
 		if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
@@ -2250,7 +2250,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
 	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
 	} else if ( !(GDrawHasCairo(cv->v)&gc_buildpath) &&
-		( cv->showhhints || cv->showvhints || cv->showdhints )) {
+		( cv->showhhints || cv->showvhints || cv->showdhints || cv->showblues || cv->showfamilyblues)) {
 	    /* if we've got bg images (and we're showing them) then the hints live in */
 	    /*  the bg image pixmap (else they get overwritten by the pixmap) */
 	    CVShowHints(cv,pixmap);
