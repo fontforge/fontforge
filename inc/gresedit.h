@@ -60,6 +60,9 @@ typedef struct gresinfo {
     uint32 override_mask;
     GBox *overrides;
     GBox orig_state;
+    void (*refresh)(void);	/* Called when user OKs the resource editor dlg */
+    void *reserved_for_future_use1;
+    void *reserved_for_future_use2;
 } GResInfo;
 
 enum override_mask_flags {
@@ -69,6 +72,13 @@ enum override_mask_flags {
     omf_border_width	= 0x400,
     omf_padding		= 0x800,
     omf_rr_radius	= 0x1000,
+
+    omf_refresh         = 0x2000, /* Not a real override flag. A hack */
+				/* I use it to indicate that the refresh field*/
+			        /* is meaningful. That field didn't exist in  */
+			        /* old versions of the library, adding this   */
+			        /* mask means we don't need to break binary   */
+			        /* compatibility */
 
     omf_main_foreground		= 0x10000,
     omf_disabled_foreground	= 0x20000,

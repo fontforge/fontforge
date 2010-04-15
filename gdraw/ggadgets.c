@@ -86,6 +86,7 @@ static struct resed popup_re[] = {
     {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear")},
     {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible")},
     { NULL }};
+static void popup_refresh(void);
 static GResInfo popup_ri = {
     &listmark_ri, NULL, NULL,NULL,
     NULL,	/* No box */
@@ -94,9 +95,13 @@ static GResInfo popup_ri = {
     popup_re,
     N_("Popup"),
     N_("Popup windows"),
-    "Popup",
+    "GGadget.Popup",
     "Gdraw",
-    false
+    false,
+    omf_refresh,
+    NULL,
+    { 0 },
+    popup_refresh
 };
 static struct resed listmark_re[] = {
     {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)")},
@@ -649,6 +654,12 @@ return;
     GDrawTranslateCoordinates(base,GDrawGetRoot(GDrawGetDisplayOfWindow(popup)), &pt);
     popup_within.x = pt.x; popup_within.y = pt.y;
     popup_timer = GDrawRequestTimer(popup,popup_delay,0,(void *) msg);
+}
+
+static void popup_refresh(void) {
+    if ( popup!=NULL ) {
+	GDrawSetWindowBackground(popup,popup_background);
+    }
 }
 
 void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {

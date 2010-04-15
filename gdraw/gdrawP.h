@@ -162,6 +162,7 @@ struct displayfuncs {
     int (*nativeWindowExists)(GDisplay *,void *native_window);
     void (*setZoom)(GWindow,GRect *size,enum gzoom_flags flags);
     void (*setWindowBorder)(GWindow,int width,Color);
+    void (*setWindowBackground)(GWindow,Color);
     int (*setDither)(GDisplay *,int);
 
     void (*reparentWindow)(GWindow,GWindow,int,int);

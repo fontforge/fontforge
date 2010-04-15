@@ -1557,6 +1557,14 @@ static void GXDrawSetWindowBorder(GWindow w,int width,Color col) {
 		_GXDraw_GetScreenPixel(gw->display,col));
 }
 
+static void GXDrawSetWindowBackground(GWindow w,Color col) {
+    GXWindow gw = (GXWindow) w;
+
+    if ( col!=COLOR_DEFAULT )
+	XSetWindowBackground(gw->display->display,gw->w,
+		_GXDraw_GetScreenPixel(gw->display,col));
+}
+
 static int GXSetDither(GDisplay *gdisp,int dither) {
     int old = ((GXDisplay *) gdisp)->do_dithering;
     ((GXDisplay *) gdisp)->do_dithering = dither;
@@ -4786,6 +4794,7 @@ static struct displayfuncs xfuncs = {
     GXNativeWindowExists,
     GXDrawSetZoom,
     GXDrawSetWindowBorder,
+    GXDrawSetWindowBackground,
     GXSetDither,
 
     GXDrawReparentWindow,
