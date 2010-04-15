@@ -7768,6 +7768,7 @@ Py_RETURN( owner->selection );
     self = PyObject_New(PyFF_Selection, &PyFF_SelectionType);
     self->fv = owner->fv;
     owner->selection = self;
+    self->by_glyphs = 0;
 Py_RETURN( self );
 }
 
@@ -7927,7 +7928,8 @@ Py_RETURN(self);
 static PyObject *fontiter_New(PyObject *font, int bysel, struct searchdata *sv);
 
 static PyObject *PySelection_iter(PyObject *self) {
-return( fontiter_New(self, 1+((PyFF_Selection *) self)->by_glyphs, NULL ));
+    /* FontIter with either 1 => encodings of selected glyphs, or 2 => selected glyphs */
+return( fontiter_New(self, ((PyFF_Selection *) self)->by_glyphs + 1, NULL ));
 }
 
 static PyMethodDef PyFFSelection_methods[] = {
@@ -8788,7 +8790,7 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 return( glyph );
 	}
     } else switch ( di->byselection ) {
-      case 0: {
+      case 0: {		/* names of all glyphs in GID order */
 	SplineFont *sf = di->sf;
 
 	if (sf == NULL)
