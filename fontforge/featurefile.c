@@ -1232,6 +1232,9 @@ static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
 	}
     }
 #ifndef FF_V1_6
+    if ( sub->lookup->lookup_type==gpos_cursive )
+return;
+
     k=0;
     do {
 	_sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
