@@ -69,7 +69,7 @@ static struct resed ggadget_re[] = {
     NULL
 };
 GResInfo ggadget_ri = {
-    &popup_ri, NULL,NULL, NULL,
+    &listmark_ri, NULL,NULL, NULL,
     &_ggadget_Default_Box,
     &_ggadget_default_font,
     NULL,
@@ -88,7 +88,7 @@ static struct resed popup_re[] = {
     { NULL }};
 static void popup_refresh(void);
 static GResInfo popup_ri = {
-    &listmark_ri, NULL, NULL,NULL,
+    &ggadget_ri, NULL, NULL,NULL,
     NULL,	/* No box */
     &popup_font,
     NULL,
@@ -1394,5 +1394,5 @@ GResInfo *_GGadgetRIHead(void) {
 
     if ( !_ggadget_inited )
 	GGadgetInit();
-return( &ggadget_ri );
+return( &popup_ri );
 }

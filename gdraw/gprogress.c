@@ -56,7 +56,7 @@ typedef struct gprogress {
     struct gprogress *prev;
 } GProgress;
 
-static Color progress_background;
+static Color progress_background, progress_foreground;
 static Color progress_fillcol = 0xc0c0ff;
 static GFont *progress_font = NULL;
 static int progress_init = false;
@@ -95,10 +95,10 @@ static void GProgressDraw(GProgress *p,GWindow pixmap,GRect *rect) {
     GDrawSetFont(pixmap,p->font);
     if ( p->line1!=NULL )
 	GDrawDrawBiText(pixmap, (p->width-p->l1width)/2, p->l1y, p->line1, -1,
-		NULL, 0x000000 );
+		NULL, progress_foreground );
     if ( p->line2!=NULL )
 	GDrawDrawBiText(pixmap, (p->width-p->l2width)/2, p->l2y, p->line2, -1,
-		NULL, 0x000000 );
+		NULL, progress_foreground );
 
     r.x = GDrawPointsToPixels(pixmap,10);
     r.y = p->boxy;
@@ -119,7 +119,7 @@ static void GProgressDraw(GProgress *p,GWindow pixmap,GRect *rect) {
 	GDrawSetStippled(pixmap,0,0,0);
     }
     r.width = width;
-    GDrawDrawRect(pixmap,&r,0x000000);
+    GDrawDrawRect(pixmap,&r,progress_foreground);
     GDrawPopClip(pixmap,&old);
 }
 
@@ -185,6 +185,37 @@ return( true );
 }
 
 /* ************************************************************************** */
+static struct resed progress_re[] = {
+    {N_("Color|Foreground"), "Foreground", rt_color, &progress_foreground, N_("Text color for progress windows")},
+    {N_("Color|FillColor"), "FillColor", rt_color, &progress_fillcol, N_("Color used to draw the progress bar")},
+    {N_("Color|Background"), "Background", rt_color, &progress_background, N_("Background color for progress windows")},
+    { NULL }};
+static GResInfo progress_ri = {
+    NULL, NULL, NULL,NULL,
+    NULL,	/* No box */
+    &progress_font,
+    NULL,
+    progress_re,
+    N_("Progress"),
+    N_("Popup windows"),
+    "GProgress",
+    "Gdraw",
+    false
+};
+
+static void GProgressResInit(void) {
+    if ( !progress_init ) {
+	progress_foreground = GResourceFindColor("GProgress.Foreground",
+		    GDrawGetDefaultForeground(NULL));
+	progress_background = GResourceFindColor("GProgress.Background",
+		    GDrawGetDefaultBackground(NULL));
+	progress_fillcol = GResourceFindColor("GProgress.FillColor",
+		    progress_fillcol);
+	progress_font = GResourceFindFont("GProgress.Font",NULL);
+	progress_init = true;
+    }
+}
+
 void GProgressStartIndicator(
     int delay,			/* in tenths of seconds */
     const unichar_t *win_title,	/* for the window decoration */
@@ -206,14 +237,8 @@ void GProgressStartIndicator(
     if ( screen_display==NULL )
 return;
 
-    if ( !progress_init ) {
-	progress_background = GResourceFindColor("GProgress.Background",
-		    GDrawGetDefaultBackground(NULL));
-	progress_fillcol = GResourceFindColor("GProgress.FillColor",
-		    progress_fillcol);
-	progress_font = GResourceFindFont("GProgress.Font",NULL);
-	progress_init = true;
-    }
+    if ( !progress_init )
+	GProgressResInit();
     new = gcalloc(1,sizeof(GProgress));
     new->line1 = u_copy(line1);
     new->line2 = u_copy(line2);
@@ -475,4 +500,11 @@ void GProgressChangeLine2_8(const char *line2) {
     unichar_t *l2 = utf82u_copy(line2);
     GProgressChangeLine2(l2);
     free(l2);
+}
+
+GResInfo *_GProgressRIHead(void) {
+
+    if ( !progress_init )
+	GProgressResInit();
+return( &progress_ri );
 }
