@@ -3188,6 +3188,7 @@ return( true );
 return( false );
 }
 
+#if 0
 static void MoveCPIn(SplinePoint *sp,BasePoint *cp) {
     bigreal xdiff, ydiff, off;
 
@@ -3202,69 +3203,95 @@ return;
 	}
     }
 }
+#endif
 
 /* An extremum is very close to the end-point. So close that we don't want */
 /*  to add a new point. Instead try moving the control points around */
 /*  Two options: */
+/*    o  if the slope at the endpoint is in the opposite direction from */
+/*           what we expect, then subtract off the components we don't like */
 /*    o  make the slope at the end point horizontal/vertical */
-/*    o  retain the slope at the other end-point, but move its cp closer to it*/
 static int ForceEndPointExtrema(Spline *s,int isto) {
     SplinePoint *end;
-    BasePoint *cp, to;
-    bigreal t[2], d, xdiff, ydiff;
-    int p, isy, i;
+    BasePoint *cp, to, unitslope, othercpunit, myslope;
+    bigreal xdiff, ydiff, len, cplen, len2, dot;
+    int changed;
 
     if ( isto ) {
 	end = s->to; cp = &end->prevcp;
+	othercpunit.x = s->from->nextcp.x - s->from->me.x;
+	othercpunit.y = s->from->nextcp.y - s->from->me.y;
     } else {
 	end = s->from; cp = &end->nextcp;
+	othercpunit.x = s->to->prevcp.x-s->to->me.x;
+	othercpunit.y = s->to->prevcp.y-s->to->me.y;
     }
+    cplen = othercpunit.x*othercpunit.x + othercpunit.y*othercpunit.y;
+    if ( cplen!=0 ) {
+	cplen = sqrt(cplen);
+	othercpunit.x /= cplen; othercpunit.y /= cplen;
+    }
+    myslope.x = cp->x - end->me.x;
+    myslope.y = cp->y - end->me.y;
+
+    unitslope.x = s->to->me.x - s->from->me.x;
+    unitslope.y = s->to->me.y - s->from->me.y;
+    len = unitslope.x*unitslope.x + unitslope.y*unitslope.y;
+    if ( len==0 )
+return( -1 );
+    len = sqrt(len);
+    unitslope.x /= len; unitslope.y /= len;
+
+    changed = false;
+    to = *cp;
+    dot = myslope.x*othercpunit.x + myslope.y*othercpunit.y;
+    if ( dot<0 ) {
+	to.x -= dot*othercpunit.x; to.y -= dot*othercpunit.y;
+	changed = true;
+	myslope.x = to.x - end->me.x;
+	myslope.y = to.y - end->me.y;
+    }
+    dot = myslope.x*unitslope.x + myslope.y*unitslope.y;
+    if ( dot<0 ) {
+	to.x -= dot*unitslope.x; to.y -= dot*unitslope.y;
+	changed = true;
+	if ( isto ) {
+	    myslope.x = end->me.x - to.x;
+	    myslope.y = end->me.y - to.y;
+	} else {
+	    myslope.x = to.x - end->me.x;
+	    myslope.y = to.x - end->me.y;
+	}
+    }
+    len2 = myslope.x*myslope.x + myslope.y*myslope.y;
+    if ( len2<.0001 ) {		/* so sqrt(len2)<.01 */
+	double t = isto ? .999 : .001;
+	to.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+	to.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+	changed = true;
+    }
+    if ( changed ) {
+	end->pointtype = pt_corner;	/* We just changed the slope. No longer a curve */
+	SPAdjustControl(end,cp,&to,s->order2);
+return( true );	/* We changed the slope */
+    }
+    
     if ( (xdiff = cp->x - end->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = cp->y - end->me.y)<0 ) ydiff = -ydiff;
-    to = *cp;
     /* To get here we know that the extremum is extremely close to the end */
     /*  point, and adjusting the slope at the end-point may be all we need */
     /*  to do. We won't need to adjust it by much, because it is so close. */
 
     if ( xdiff<ydiff/10.0 && xdiff>0 ) {
 	to.x = end->me.x;
-	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
+	end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
     } else if ( ydiff<xdiff/10 && ydiff>0 ) {
 	to.y = end->me.y;
-	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
+	end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
-    }
-
-    if ( s->order2 )
-return( -1 );		/* Can't do much with this. I hope this can't happen */
-
-    for ( isy=0; isy<2; ++isy ) {
-	p = 0;
-	if ( s->splines[isy].a!=0 ) {
-	    d = 4*s->splines[isy].b*s->splines[isy].b-4*3*s->splines[isy].a*s->splines[isy].c;
-	    if ( d>0 ) {
-		d = sqrt(d);
-		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],(-2*s->splines[isy].b+d)/(2*3*s->splines[isy].a));
-		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],(-2*s->splines[isy].b-d)/(2*3*s->splines[isy].a));
-	    }
-	} else if ( s->splines[isy].b!=0 ) {
-	    t[p++] = CheckExtremaForSingleBitErrors(&s->splines[isy],-s->splines[isy].c/(2*s->splines[isy].b));
-	}
-	for ( i=0; i<p; ++i ) {
-	    if (( t[i]>0 && t[i]<.05 && !isto ) ||
-		    ( t[i]<1.0 && t[i]>.95 && isto )) {
-		/* force this to 0 or 1 so the extremum is at the end point, */
-		/*  then guess what the to->prev control point must be for */
-		/*  that to work */
-		MoveCPIn(s->from,&s->from->nextcp);
-		MoveCPIn(s->to,&s->to->prevcp);
-		SplineRefigure(s);
-return( false );
-	    }
-	}
     }
 
 return( -1 );		/* Didn't do anything */
@@ -3421,7 +3448,7 @@ return(s);
 	for ( i=0; i<p; ++i ) {
 	    if ( t[i]>0 && t[i]<.05 ) {
 		BasePoint test;
-		/* Expand strong gets very confused on zero-length splines so */
+		/* Expand stroke gets very confused on zero-length splines so */
 		/*  don't let that happen */
 		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d - s->from->me.x;
 		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d - s->from->me.y;
