@@ -2378,7 +2378,7 @@ return( true );
 }
     
 void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *)) {
-    GResInfo *re_end;
+    GResInfo *re_end, *re;
     static int initted = false;
     char *oldimagepath;
     extern char *_GGadget_ImagePath;
@@ -2438,6 +2438,10 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	GGadgetSetImagePath(new);
     } else
 	free( oldimagepath );
+    for ( re=additional; re!=NULL; re=re->next ) {
+	if ( (re->override_mask&omf_refresh) && re->refresh!=NULL )
+	    (re->refresh)();
+    }
     if ( re_end!=NULL )
 	re_end->next = NULL;
 

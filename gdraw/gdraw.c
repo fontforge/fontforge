@@ -123,6 +123,10 @@ int GDrawNativeWindowExists(GDisplay *gdisp, void *native) {
 return( (gdisp->funcs->nativeWindowExists)(gdisp,native) );
 }
 
+void GDrawSetWindowBackground(GWindow w,Color col) {
+    (w->display->funcs->setWindowBackground)(w,col);
+}
+
 void GDrawSetWindowBorder(GWindow w,int width,Color col) {
     (w->display->funcs->setWindowBorder)(w,width,col);
 }

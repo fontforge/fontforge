@@ -97,6 +97,10 @@ static void PSSetWindowBorder(GWindow w,int width, Color col ) {
     fprintf( stderr, "SetWindowBorder not implemented for postscript\n" );
 }
 
+static void PSSetWindowBackground(GWindow w,int width, Color col ) {
+    fprintf( stderr, "SetWindowBackground not implemented for postscript\n" );
+}
+
 static int PSSetDither(GDisplay *gdisp,int dither ) {
     fprintf( stderr, "SetDither not implemented for postscript\n" );
 return( true );
@@ -1358,6 +1362,7 @@ static struct displayfuncs psfuncs = {
     PSNativeWindowExists,
     PSSetZoom,
     PSSetWindowBorder,
+    PSSetWindowBackground,
     PSSetDither,
 
     PSDrawReparentWindow,
