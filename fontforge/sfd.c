@@ -1850,7 +1850,6 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpUTF7Str(sfd,sf->woffMetadata);
 	putc('\n',sfd);
     }
-    fprintf(sfd, "Descent: %d\n", sf->descent );
     fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
