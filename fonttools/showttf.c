@@ -6800,7 +6800,7 @@ int main(int argc, char **argv) {
 	    if ( *pt=='-' ) ++pt;
 	    if ( strcmp(pt,"v")==0 || strcmp(pt,"verbose")==0 )
 		verbose = true;
-	    if ( strcmp(pt,"h")==0 || strcmp(pt,"headers")==0 )
+	    else if ( strcmp(pt,"h")==0 || strcmp(pt,"headers")==0 )
 		just_headers = true;
 	    else {
 		fprintf( stderr, "%s [-verbose] ttf-file\n", argv[0]);
