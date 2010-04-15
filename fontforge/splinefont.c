@@ -1200,7 +1200,7 @@ return( NULL );
     else if ( !GFileReadable(filename) )
 	ff_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
     else
-	ff_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
+	ff_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or uses features of that format fontforge does not support, or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 
     if ( oldstrippedname!=filename )
 	free(oldstrippedname);
