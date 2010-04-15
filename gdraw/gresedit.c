@@ -2396,7 +2396,9 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	    if ( strstr(getenv("LANG"),"_US")!=NULL )
 		gdraw_ri.extras = gdrawin_re;
 	}
-	gdraw_ri.next = _GGadgetRIHead();
+	gdraw_ri.next = _GProgressRIHead();
+	for ( re_end = _GProgressRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GGadgetRIHead();
 	for ( re_end = _GGadgetRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GButtonRIHead();
 	for ( re_end = _GButtonRIHead(); re_end->next!=NULL; re_end = re_end->next );
