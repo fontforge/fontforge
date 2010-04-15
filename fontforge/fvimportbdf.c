@@ -378,7 +378,11 @@ return;
 		for ( i=0; i<j; ++j )
 		    ch2 = getc(bdf);
 	    }
-	    if ( pt>=eol ) eol += bc->bytes_per_line;
+	    if ( pt>=eol ) {
+		eol += bc->bytes_per_line;
+		while ( (ch1 = getc(bdf)) != '\n')
+		    /* empty loop body */ ;
+	    }
 	    if ( ch2==EOF )
 	break;
 	}
