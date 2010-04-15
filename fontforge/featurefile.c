@@ -1047,9 +1047,11 @@ static int SameBaseAP(SplineChar *sc1,SplineChar *sc2,struct lookup_subtable *su
     AnchorPoint *ap1, *ap2;
 
     for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) {
-	if ( ap1->anchor->subtable == sub ) {
+	if ( ap1->anchor->subtable == sub &&
+		(ap1->type==at_basechar || ap1->type==at_basemark)) {
 	    for ( ap2=sc2->anchor; ap2!=NULL ; ap2=ap2->next ) {
-		if ( ap1->anchor==ap2->anchor ) {
+		if ( ap1->anchor==ap2->anchor &&
+			(ap2->type==at_basechar || ap2->type==at_basemark)) {
 		    if ( ap1->me.x!=ap2->me.x || ap1->me.y!=ap2->me.y ||
 			ap1->has_ttf_pt!=ap2->has_ttf_pt ||
 			    (ap1->has_ttf_pt && ap1->ttf_pt_index != ap2->ttf_pt_index ))
@@ -1058,11 +1060,10 @@ return( false );
 	    break;
 		}
 	    }
-	    if ( ap2==NULL )
-return( false );
+return( ap2!=NULL );
 	}
     }
-return( true );
+return( false );
 }
 
 static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
@@ -1252,7 +1253,7 @@ static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
 		    putc('[',out);
 		    for ( j=i; j<_sf->glyphcnt; ++j ) {
 			SplineChar *osc;
-			if ( (osc=_sf->glyphs[i])!=NULL && !osc->ticked && SameBaseAP(osc,sc,sub)) {
+			if ( (osc=_sf->glyphs[j])!=NULL && !osc->ticked && SameBaseAP(osc,sc,sub)) {
 			    osc->ticked = true;
 			    dump_glyphname(out,osc);
 			    putc(' ',out);
