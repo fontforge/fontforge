@@ -412,14 +412,23 @@ return( NULL );
 	    /* So if anything needs autohinting, do it now */
 	    if ( (ff==ff_pfb || ff==ff_pfa || ff==ff_otf || ff==ff_otfcid ) &&
 		    autohint_before_generate ) {
+		extern int preserve_hint_undoes;	/* users don't expect that rasterizing the glyph will cause an undo */
+		int phu = preserve_hint_undoes;		/* if metrics view & char view are open, and a change is made in */
+							/*  the char view, then metrics view rasterize glyph, changes hints, */
+							/*  adds a hint undo. And suddenly Undo does the wrong thing. It */
+							/*  undoes the hint change (which the user probably hasn't noticed) */
+							/*  and leaves the change the user did intact. And that will force */
+							/*  another rasterize and perhaps another hint undo... */
 		SplineChar *sc;
 		BlueData bd;
+		preserve_hint_undoes = false;
 		QuickBlues(sf,layer,&bd);
 		for ( i=0; i<sf->glyphcnt; ++i ) {
 		    if ( (sc=new[i])!=NULL && sc->changedsincelasthinted &&
 			    !sc->manualhints )
 			SplineCharAutoHint(sc,layer,&bd);
 		}
+		preserve_hint_undoes = phu;
 	    }
 	    sf->glyphs = new;
 	}
