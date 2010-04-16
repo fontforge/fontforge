@@ -469,7 +469,7 @@ return;
 	    bats[cnt++] = bits[3];
     }
     if ( bits[2]!=NULL )
-	bats[cnt++] = bits[1];
+	bats[cnt++] = bits[2];
 
     (*gvbase)->part_cnt = cnt;
     (*gvbase)->parts = gcalloc(cnt,sizeof(struct gv_part));
