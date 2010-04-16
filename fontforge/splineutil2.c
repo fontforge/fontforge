@@ -3284,12 +3284,12 @@ return( true );	/* We changed the slope */
 
     if ( xdiff<ydiff/10.0 && xdiff>0 ) {
 	to.x = end->me.x;
-	end->pointtype = pt_corner;
+	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
     } else if ( ydiff<xdiff/10 && ydiff>0 ) {
 	to.y = end->me.y;
-	end->pointtype = pt_corner;
+	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
     }
