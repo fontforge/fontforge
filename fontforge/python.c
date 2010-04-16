@@ -1109,6 +1109,15 @@ return( reto );
 /* ************************************************************************** */
 /* Points */
 /* ************************************************************************** */
+static PyObject *PyFFPoint_dup(PyFF_Point *self) {
+    PyFF_Point *ret = (PyFF_Point *)PyFF_PointType.tp_alloc(&PyFF_PointType, 0);
+    ret->x = self->x;
+    ret->y = self->y;
+    ret->on_curve = self->on_curve;
+    ret->selected = self->selected;
+return( (PyObject *) ret );
+}
+
 static void PyFF_TransformPoint(PyFF_Point *self, double transform[6]) {
     double x,y;
 
@@ -1203,6 +1212,8 @@ static PyMemberDef FFPoint_members[] = {
 };
 
 static PyMethodDef FFPoint_methods[] = {
+    {"dup", (PyCFunction)PyFFPoint_dup, METH_NOARGS,
+	     "Returns a copy of this point" },
     {"transform", (PyCFunction)PyFFPoint_Transform, METH_VARARGS,
 	     "Transforms the point by the transformation matrix (a 6 element tuple of reals)" },
     {"__reduce__", (PyCFunction)PyFFPoint_pickleReducer, METH_NOARGS,
@@ -1450,6 +1461,7 @@ static int PyFFContour_docompare(PyFF_Contour *self,PyObject *other,
 	double pt_err, double spline_err) {
     SplineSet *ss, *ss2;
     int ret;
+    SplinePoint *badpoint;
 
     if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
@@ -1457,7 +1469,7 @@ return( -1 );
     }
     ss = SSFromContour(self,NULL);
     ss2 = SSFromContour((PyFF_Contour *) other,NULL);
-    ret = SSsCompare(ss,ss2,pt_err,spline_err,NULL);
+    ret = SSsCompare(ss,ss2,pt_err,spline_err,&badpoint);
     SplinePointListFree(ss);
     SplinePointListFree(ss2);
 return(ret);
@@ -1943,6 +1955,27 @@ static PySequenceMethods PyFFContour_Sequence = {
 /* ************************************************************************** */
 /* Contour methods */
 /* ************************************************************************** */
+static PyObject *PyFFContour_dup(PyFF_Contour *self) {
+    /* Arg checking done elsewhere */
+    int i;
+    PyFF_Contour *ret = (PyFF_Contour *)PyFF_ContourType.tp_alloc(&PyFF_ContourType, 0);
+    ret->pt_max = ret->pt_cnt = self->pt_cnt;
+    ret->spiro_cnt = self->spiro_cnt;
+    ret->name = copy(self->name);
+    ret->is_quadratic = self->is_quadratic;
+    ret->closed = self->closed;
+    if ( ret->pt_cnt!=0 ) {
+	ret->points = galloc(ret->pt_cnt*sizeof(PyFF_Point *));
+	for ( i=0; i<ret->pt_cnt; ++i )
+	    ret->points[i] = (PyFF_Point *) PyFFPoint_dup(self->points[i]);
+    }
+    if ( ret->spiro_cnt!=0 ) {
+	ret->spiros = galloc(ret->pt_cnt*sizeof(spiro_cp));
+	memcpy(ret->spiros,self->spiros,self->spiro_cnt*sizeof(spiro_cp));
+    }
+return( (PyObject *) ret );
+}
+
 static PyObject *PyFFContour_IsEmpty(PyFF_Contour *self) {
     /* Arg checking done elsewhere */
 return( Py_BuildValue("i",self->pt_cnt==0 ) );
@@ -2642,6 +2675,8 @@ Py_RETURN( self );
 }
 
 static PyMethodDef PyFFContour_methods[] = {
+    {"dup", (PyCFunction)PyFFContour_dup, METH_NOARGS,
+	     "Returns a deep copy of the contour." },
     {"isEmpty", (PyCFunction)PyFFContour_IsEmpty, METH_NOARGS,
 	     "Returns whether a contour contains no points" },
     {"moveTo", (PyCFunction)PyFFContour_Start, METH_VARARGS,
@@ -2908,6 +2943,7 @@ static int PyFFLayer_docompare(PyFF_Layer *self,PyObject *other,
 	double pt_err, double spline_err) {
     SplineSet *ss, *ss2;
     int ret;
+    SplinePoint *badpoint;
 
     ss = SSFromLayer(self);
     if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
@@ -2918,7 +2954,7 @@ static int PyFFLayer_docompare(PyFF_Layer *self,PyObject *other,
 	PyErr_Format(PyExc_TypeError, "Unexpected type");
 return( -1 );
     }
-    ret = SSsCompare(ss,ss2,pt_err,spline_err,NULL);
+    ret = SSsCompare(ss,ss2,pt_err,spline_err,&badpoint);
     SplinePointListsFree(ss);
     SplinePointListsFree(ss2);
 return(ret);
@@ -3129,6 +3165,21 @@ static PySequenceMethods PyFFLayer_Sequence = {
 /* ************************************************************************** */
 /* Layer methods */
 /* ************************************************************************** */
+static PyObject *PyFFLayer_dup(PyFF_Layer *self) {
+    /* Arg checking done elsewhere */
+    int i;
+    PyFF_Layer *ret = (PyFF_Layer *)PyFF_LayerType.tp_alloc(&PyFF_LayerType, 0);
+
+    ret->cntr_cnt = ret->cntr_max = self->cntr_cnt;
+    ret->is_quadratic = self->is_quadratic;
+    if ( ret->cntr_cnt!=0 ) {
+	ret->contours = galloc(ret->cntr_cnt*sizeof(PyFF_Contour *));
+	for ( i=0; i<ret->cntr_cnt; ++i )
+	    ret->contours[i] = (PyFF_Contour *) PyFFContour_dup(self->contours[i]);
+    }
+return( (PyObject *) ret );
+}
+
 static PyObject *PyFFLayer_IsEmpty(PyFF_Layer *self) {
     /* Arg checking done elsewhere */
 return( Py_BuildValue("i",self->cntr_cnt==0 ) );
@@ -3745,6 +3796,8 @@ Py_RETURN( self );
 }
 
 static PyMethodDef PyFFLayer_methods[] = {
+    {"dup", (PyCFunction)PyFFLayer_dup, METH_NOARGS,
+	     "Returns a deep copy of the layer" },
     {"isEmpty", (PyCFunction)PyFFLayer_IsEmpty, METH_NOARGS,
 	     "Returns whether a layer contains no contours" },
     {"simplify", (PyCFunction)PyFFLayer_Simplify, METH_VARARGS,
@@ -5016,6 +5069,7 @@ static int PyFFGlyph_docompare(PyFF_Glyph *self,PyObject *other,
 	double pt_err, double spline_err) {
     SplineSet *ss2;
     int ret;
+    SplinePoint *badpoint;
 
     if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)other)->ob_type) ) {
 	SplineChar *sc = self->sc;
@@ -5039,7 +5093,7 @@ return( -1 );
     }
     if ( self->sc->layers[self->layer].refs!=NULL )
 return( SS_NoMatch | SS_RefMismatch );
-    ret = SSsCompare(self->sc->layers[self->layer].splines,ss2,pt_err,spline_err,NULL);
+    ret = SSsCompare(self->sc->layers[self->layer].splines,ss2,pt_err,spline_err,&badpoint);
     SplinePointListsFree(ss2);
 return(ret);
 }

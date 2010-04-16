@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 5-Apr-2010 -->
+  <!-- AP: Last modified: 15-Apr-2010 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -715,6 +715,11 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH>comments</TH>
     </TR>
     <TR>
+      <TD><CODE>dup</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a copy of the current point.</TD>
+    </TR>
+    <TR>
       <TD><CODE>transform</CODE></TD>
       <TD><CODE>(tuple)</CODE></TD>
       <TD>Transforms the point by the transformation matrix</TD>
@@ -897,6 +902,12 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>dup</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a deep copy of the contour. That is, it copies the points that
+	make up the contour.</TD>
     </TR>
     <TR>
       <TD><CODE>isEmpty</CODE></TD>
@@ -1187,6 +1198,12 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TH>method</TH>
       <TH>args</TH>
       <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>dup</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a deep copy of the layer. That is, it will copy all the contours
+	and all the points as well as copying the layer object itself.</TD>
     </TR>
     <TR>
       <TD><CODE>isEmpty</CODE></TD>
