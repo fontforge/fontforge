@@ -35,6 +35,8 @@
 #include <gkeysym.h>
 #include "lookups.h"
 
+int add_char_to_name_list = true;
+
 /* ************************************************************************** */
 /* ******************************* UI routines ****************************** */
 /* ************************************************************************** */
@@ -3900,6 +3902,8 @@ char *SFNameList2NameUni(SplineFont *sf, char *str) {
 
     if ( str==NULL )
 return( NULL );
+    if ( !add_char_to_name_list )
+return( copy(str));
 
     cnt = 0;
     for ( pt=str; *pt!='\0'; ++pt )
@@ -3945,6 +3949,9 @@ char *SCNameUniStr(SplineChar *sc) {
 
     if ( sc==NULL )
 return( NULL );
+    if ( !add_char_to_name_list )
+return( copy(sc->name));
+
     len = strlen(sc->name);
     temp = galloc(len + 8);
     strcpy(temp,sc->name);
