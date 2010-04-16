@@ -120,7 +120,16 @@ typedef struct kernclasslistdlg {
 #define CID_Touched	2010
 #define CID_OnlyCloser	2011
 
+#define CID_SizeLabel	3000
+#define CID_MagLabel	3001
+#define CID_OffsetLabel	3002
+#define CID_CorrectLabel	3003
+#define CID_Revert	3004
+#define CID_TopBox	3005
+#define CID_ShowHideKern	3006
+
 extern int _GScrollBar_Width;
+int show_kerning_pane_in_class = true;
 
 static GTextInfo magnifications[] = {
     { (unichar_t *) "100%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1},
@@ -1092,6 +1101,53 @@ static void KCD_EditOffset(KernClassDlg *kcd, int first, int second) {
 /* *************************** Kern Class Dialog **************************** */
 /* ************************************************************************** */
 
+static void KC_DoResize(KernClassDlg *kcd) {
+    GRect wsize, csize;
+
+    GDrawGetSize(kcd->gw,&wsize);
+
+    kcd->fullwidth = wsize.width;
+    kcd->width = wsize.width-kcd->xstart2-5;
+    kcd->height = wsize.height-kcd->ystart2;
+    if ( kcd->hsb!=NULL ) {
+	GGadgetGetSize(kcd->hsb,&csize);
+	kcd->width = csize.width;
+	kcd->xstart2 = csize.x;
+	GGadgetGetSize(kcd->vsb,&csize);
+	kcd->ystart2 = csize.y;
+	kcd->height = csize.height;
+	kcd->xstart = kcd->xstart2-kcd->kernw;
+	kcd->ystart = kcd->ystart2-kcd->fh-1;
+	KCD_SBReset(kcd);
+    }
+    GDrawRequestExpose(kcd->gw,NULL,false);
+}
+
+static int KC_ShowHideKernPane(GGadget *g, GEvent *e) {
+    static int cidlist[] = { CID_First, CID_Second, CID_FreeType, CID_SizeLabel,
+	    CID_DisplaySize, CID_MagLabel,CID_Magnifications, CID_OffsetLabel,
+	    CID_KernOffset,
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    CID_CorrectLabel, CID_Correction, CID_Revert, CID_ClearDevice,
+#endif
+	    CID_Display, 0 };
+    if ( e==NULL ||
+	    (e->type==et_controlevent && e->u.control.subtype == et_radiochanged) ) {
+	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
+	int i;
+
+	show_kerning_pane_in_class = GGadgetIsChecked(g);
+
+	for ( i=0; cidlist[i]!=0; ++i )
+	    GGadgetSetVisible(GWidgetGetControl(kcd->gw,cidlist[i]),show_kerning_pane_in_class);
+	GHVBoxReflow(GWidgetGetControl(kcd->gw,CID_TopBox));
+	KC_DoResize(kcd);
+	if ( e!=NULL )
+	    SavePrefs(true);
+    }
+return( true );
+}
+
 static int KC_OK(GGadget *g, GEvent *e) {
     SplineFont *sf;
 
@@ -1748,27 +1804,9 @@ return( false );
 	if ( !kcd->iskernpair )
 	    KCD_Expose(kcd,gw,event);
       break;
-      case et_resize: {
-	GRect wsize, csize;
-
-	GDrawGetSize(kcd->gw,&wsize);
-
-	kcd->fullwidth = wsize.width;
-	kcd->width = wsize.width-kcd->xstart2-5;
-	kcd->height = wsize.height-kcd->ystart2;
-	if ( kcd->hsb!=NULL ) {
-	    GGadgetGetSize(kcd->hsb,&csize);
-	    kcd->width = csize.width;
-	    kcd->xstart2 = csize.x;
-	    GGadgetGetSize(kcd->vsb,&csize);
-	    kcd->ystart2 = csize.y;
-	    kcd->height = csize.height;
-	    kcd->xstart = kcd->xstart2-kcd->kernw;
-	    kcd->ystart = kcd->ystart2-kcd->fh-1;
-	    KCD_SBReset(kcd);
-	}
-	GDrawRequestExpose(kcd->gw,NULL,false);
-      } break;
+      case et_resize:
+	KC_DoResize(kcd);
+      break;
       case et_controlevent:
 	switch( event->u.control.subtype ) {
 	  case et_scrollbarchange:
@@ -2269,6 +2307,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.cid = CID_SizeLabel;
     gcd[k++].creator = GLabelCreate;
     hvarray[0] = &gcd[k-1];
 
@@ -2291,6 +2330,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.cid = CID_MagLabel;
     gcd[k++].creator = GLabelCreate;
     hvarray[2] = &gcd[k-1];
 
@@ -2306,6 +2346,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.cid = CID_OffsetLabel;
     gcd[k++].creator = GLabelCreate;
     hvarray[6] = &gcd[k-1];
 
@@ -2322,6 +2363,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.cid = CID_CorrectLabel;
     gcd[k++].creator = GLabelCreate;
     hvarray[8] = &gcd[k-1];
 
@@ -2341,6 +2383,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
     gcd[k].gd.popup_msg = (unichar_t *) _("Resets the kerning offset and device table corrections to what they were originally");
     gcd[k].gd.handle_controlevent = KCD_RevertKerning;
+    gcd[k].gd.cid = CID_Revert;
     gcd[k++].creator = GButtonCreate;
     hvarray[11] = &gcd[k-1]; hvarray[12] = GCD_ColSpan;
 
@@ -2453,6 +2496,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
 	topbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
 	topbox[0].gd.flags = gg_enabled|gg_visible;
 	topbox[0].gd.u.boxelements = bigharray;
+	topbox[0].gd.cid = CID_TopBox;
 	topbox[0].creator = GHVGroupCreate;
 
 	GGadgetsCreate(kcd->gw,topbox);
@@ -2472,10 +2516,10 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
 void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[52], sepbox, classbox, hvbox, buttonbox, mainbox[2], topbox[2];
+    GGadgetCreateData gcd[53], sepbox, classbox, hvbox, buttonbox, mainbox[2], topbox[2], titbox;
     GGadgetCreateData *harray1[17], *harray2[17], *varray1[5], *varray2[5];
-    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[19], *h4array[8], *harrayclasses[6];
-    GTextInfo label[52];
+    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[19], *h4array[8], *harrayclasses[6], *titlist[4];
+    GTextInfo label[53];
     KernClassDlg *kcd;
     int i, j, kc_width, vi;
     int as, ds, ld, sbsize;
@@ -2525,6 +2569,7 @@ return;
     memset(&hvbox,0,sizeof(hvbox));
     memset(&buttonbox,0,sizeof(buttonbox));
     memset(&mainbox,0,sizeof(mainbox));
+    memset(&titbox,0,sizeof(titbox));
     memset(&label,0,sizeof(label));
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -2574,7 +2619,24 @@ return;
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i++].creator = GLabelCreate;
-    varray[j++] = &gcd[i-1]; varray[j++] = NULL;
+    titlist[0] = &gcd[i-1]; titlist[1] = GCD_Glue;
+
+
+    gcd[i].gd.flags = show_kerning_pane_in_class ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    label[i].text = (unichar_t *) _("Show Kerning");
+    label[i].text_is_1byte = true;
+    gcd[i].gd.label = &label[i];
+    gcd[i].gd.handle_controlevent = KC_ShowHideKernPane;
+    gcd[i].gd.cid = CID_ShowHideKern;
+    gcd[i++].creator = GCheckBoxCreate;
+    titlist[2] = &gcd[i-1]; titlist[3] = NULL;
+
+    memset(&titbox,0,sizeof(titbox));
+    titbox.gd.flags = gg_enabled|gg_visible;
+    titbox.gd.u.boxelements = titlist;
+    titbox.creator = GHBoxCreate;
+
+    varray[j++] = &titbox; varray[j++] = NULL;
 
 	label[i].text = (unichar_t *) _("_Default Separation:");
 	label[i].text_is_1byte = true;
@@ -2774,6 +2836,8 @@ return;
 
     GHVBoxSetExpandableRow(mainbox[0].ret,6);
 
+    GHVBoxSetExpandableCol(titbox.ret,gb_expandglue);
+
     GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
     GHVBoxSetExpandableCol(sepbox.ret,gb_expandglue);
 
@@ -2802,6 +2866,7 @@ return;
 	GMatrixEditSetColumnCompletion(list,0,KCD_GlyphListCompletion);
     }
 
+    KC_ShowHideKernPane(GWidgetGetControl(gw,CID_ShowHideKern),NULL);
     GHVBoxFitWindow(topbox[0].ret);
     GDrawSetVisible(kcd->gw,true);
 }
