@@ -139,7 +139,8 @@ static char *othersubrsfile = NULL;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
 extern int updateflex;				/* in charview.c */
-extern int allow_utf8_glyphnames;		/* in charinfo.c */
+extern int allow_utf8_glyphnames;		/* in lookupui.c */
+extern int add_char_to_name_list;		/* in charinfo.c */
 extern int clear_tt_instructions_when_needed;	/* in cvundoes.c */
 extern int export_clipboard;			/* in cvundoes.c */
 extern int default_cv_width;			/* in charview.c */
@@ -349,7 +350,7 @@ static struct prefs_list {
 	{ N_("NewFontNameList"), pr_namelist, &namelist_for_new_fonts, NULL, NULL, '\0', NULL, 0, N_("FontForge will use this namelist when assigning\nglyph names to code points in a new font.") },
 	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
 	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
-	{ N_("XUID-Base"), pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
+	{ N_("AddCharToNameList"), pr_bool, &add_char_to_name_list, NULL, NULL, 'O', NULL, 0, N_( "When displaying a list of glyph names\n(or sometimes just a single glyph name)\nFontForge will add the unicode character\nthe name refers to in parenthesis after\nthe name. It does this because some names\nare obscure.\nSome people would prefer not to see this,\nso this preference item lets you turn off\n this behavior" ) },
 	{ NULL }
 },
  generate_list[] = {
@@ -467,6 +468,7 @@ static struct prefs_list {
 	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1 },
 	{ "CV_B2Tool", pr_int, (int *) &cv_b2_tool, NULL, NULL, '\0', NULL, 1 },
 	{ "CV_CB2Tool", pr_int, (int *) &cv_cb2_tool, NULL, NULL, '\0', NULL, 1 },
+	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") }, /* Obsolete */
 	{ NULL }
 },
  oldnames[] = {
