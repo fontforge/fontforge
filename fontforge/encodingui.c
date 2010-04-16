@@ -341,6 +341,7 @@ return;
     continue;
 	AddToBlock(block,ent->d_name,dir);
     }
+    closedir(d);
 }
 
 static void FindMapsInNoLibsDir(struct block *block,char *dir) {
