@@ -142,7 +142,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	if ( sf->glyphs[i]->unicodeenc>maxu ) maxu = sf->glyphs[i]->unicodeenc;
     }
     if ( maxu!=0 )
-	fprintf(file, "    unicode-range=\"U+%04X-U+%04X\"\n", minu, maxu );
+	fprintf(file, "    unicode-range=\"U+%04X-%04X\"\n", minu, maxu );
     fprintf( file, "  />\n" );
 return( defwid );
 }
