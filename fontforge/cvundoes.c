@@ -40,6 +40,7 @@ int export_clipboard = 1;
 /* ********************************* Undoes ********************************* */
 
 int maxundoes = 12;		/* -1 is infinite */
+int preserve_hint_undoes = true;
 
 static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
     uint8 *ret = galloc(bytes_per_line*lines);
@@ -597,6 +598,8 @@ Undoes *SCPreserveHints(SplineChar *sc,int layer) {
 
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
 return(NULL);
+    if ( !preserve_hint_undoes )
+return( NULL );
 
     undo = chunkalloc(sizeof(Undoes));
 
