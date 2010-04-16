@@ -692,6 +692,7 @@ return( NULL );
 	}
     }
     files[fcnt] = NULL;
+    fclose(file);
 
     free(linebuffer);
     if ( fcnt==0 ) {
@@ -778,8 +779,19 @@ return( NULL );
     for ( i=0; archivers[i].ext!=NULL; ++i )
 	if ( strcmp(archivers[i].ext,pt)==0 )
     break;
-    if ( archivers[i].ext==NULL )
+    if ( archivers[i].ext==NULL ) {
+	/* some of those endings have two extensions... */
+	while ( pt>name && pt[-1]!='.' )
+	    --pt;
+	if ( pt==name )
 return( NULL );
+	--pt;
+	for ( i=0; archivers[i].ext!=NULL; ++i )
+	    if ( strcmp(archivers[i].ext,pt)==0 )
+	break;
+	if ( archivers[i].ext==NULL )
+return( NULL );
+    }
 
     if ( dir==NULL ) dir = P_tmpdir;
     archivedir = galloc(strlen(dir)+100);
@@ -898,7 +910,7 @@ SplineFont *_ReadSplineFont(FILE *file,char *filename,enum openflags openflags) 
     char ubuf[250], *temp;
     int fromsfd = false;
     int i;
-    char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
+    char *pt, *ext2, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
     char *archivedir=NULL;
     int len;
     int checked;
@@ -931,8 +943,10 @@ return( NULL );
 
     pt = strrchr(strippedname,'.');
     if ( pt!=NULL ) {
+	for ( ext2 = pt-1; ext2>strippedname && *ext2!='.'; --ext2 );
 	for ( i=0; archivers[i].ext!=NULL; ++i ) {
-	    if ( strcmp(archivers[i].ext,pt)==0 ) {
+	    /* some of the archive "extensions" are actually two like ".tar.bz2" */
+	    if ( strcmp(archivers[i].ext,pt)==0 || strcmp(archivers[i].ext,ext2)==0 ) {
 		if ( file!=NULL ) {
 		    char *spuriousname = ForceFileToHaveName(file,archivers[i].ext);
 		    strippedname = Unarchive(spuriousname,&archivedir);
