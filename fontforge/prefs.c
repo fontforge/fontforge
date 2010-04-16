@@ -162,6 +162,7 @@ extern int compact_font_on_open;		/* from fontview.c */
 extern int oflib_automagic_preview;		/* from oflib.c */
 extern int aa_pixelsize;			/* from anchorsaway.c */
 extern enum cvtools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool; /* cvpalettes.c */
+extern int show_kerning_pane_in_class;		/* kernclass.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -469,6 +470,7 @@ static struct prefs_list {
 	{ "CV_B2Tool", pr_int, (int *) &cv_b2_tool, NULL, NULL, '\0', NULL, 1 },
 	{ "CV_CB2Tool", pr_int, (int *) &cv_cb2_tool, NULL, NULL, '\0', NULL, 1 },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") }, /* Obsolete */
+	{ "ShowKerningPane", pr_int, (int *) &show_kerning_pane_in_class, NULL, NULL, '\0', NULL, 1 },
 	{ NULL }
 },
  oldnames[] = {
