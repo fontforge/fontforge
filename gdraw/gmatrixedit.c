@@ -1478,6 +1478,11 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    if ( gme->col_data[c].x + gme->col_data[c].width < gme->off_left )
 	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
+	    if ( clip.x+clip.width > size.width ) {
+		clip.width = size.width - clip.x;
+		if ( clip.width<0 )
+	continue;
+	    }
 	    if ( gme->col_data[c].me_type==me_button ) {
 		int temp;
 		clip.height += 2;
@@ -1504,53 +1509,55 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    gme->col_data[c].me_type == me_onlyfuncedit ||
 		    gme->col_data[c].me_type == me_funcedit )
 		clip.width -= gme->mark_size+gme->mark_skip;
-	    GDrawPushClip(pixmap,&clip,&old);
-	    str = NULL;
-	    if ( r+gme->off_top==gme->rows ) {
-		buf[0] = '<';
-		if ( gme->newtext!=NULL )
-		    strncpy(buf+1,gme->newtext,sizeof(buf)-2);
-		else if ( _ggadget_use_gettext )
-		    strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
-		else
-		    u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
-		buf[18] = '\0';
-		k = strlen(buf);
-		buf[k] = '>'; buf[k+1] = '\0';
-		GDrawDrawBiText8(pixmap,gme->col_data[0].x - gme->off_left,y,
-			buf,-1,NULL,gmatrixedit_activecol);
-	    } else {
-		data = &gme->data[(r+gme->off_top)*gme->cols+c];
-		fg = gme->g.state==gs_disabled?gme->g.box->disabled_foreground:
-			data->frozen ? gmatrixedit_frozencol:
-			gme->g.box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
-			gme->g.box->main_foreground;
-		switch ( gme->col_data[c].me_type ) {
-		  case me_enum:
-		    mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
-		    if ( mi!=NULL ) {
-			if ( mi->ti.text_is_1byte )
-			    GDrawDrawBiText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
-			else
-			    GDrawDrawBiText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
-		break;
+	    if ( clip.width>0 ) {
+		GDrawPushClip(pixmap,&clip,&old);
+		str = NULL;
+		if ( r+gme->off_top==gme->rows ) {
+		    buf[0] = '<';
+		    if ( gme->newtext!=NULL )
+			strncpy(buf+1,gme->newtext,sizeof(buf)-2);
+		    else if ( _ggadget_use_gettext )
+			strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
+		    else
+			u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
+		    buf[18] = '\0';
+		    k = strlen(buf);
+		    buf[k] = '>'; buf[k+1] = '\0';
+		    GDrawDrawBiText8(pixmap,gme->col_data[0].x - gme->off_left,y,
+			    buf,-1,NULL,gmatrixedit_activecol);
+		} else {
+		    data = &gme->data[(r+gme->off_top)*gme->cols+c];
+		    fg = gme->g.state==gs_disabled?gme->g.box->disabled_foreground:
+			    data->frozen ? gmatrixedit_frozencol:
+			    gme->g.box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+			    gme->g.box->main_foreground;
+		    switch ( gme->col_data[c].me_type ) {
+		      case me_enum:
+			mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
+			if ( mi!=NULL ) {
+			    if ( mi->ti.text_is_1byte )
+				GDrawDrawBiText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
+			    else
+				GDrawDrawBiText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
+		    break;
+			}
+			/* Fall through into next case */
+		      default:
+			kludge = gme->edit_active; gme->edit_active = false;
+			str = MD_Text(gme,r+gme->off_top,c);
+			if ( str==NULL && gme->col_data[c].me_type==me_button )
+			    str = copy("...");
+			gme->edit_active = kludge;
+		      break;
 		    }
-		    /* Fall through into next case */
-		  default:
-		    kludge = gme->edit_active; gme->edit_active = false;
-		    str = MD_Text(gme,r+gme->off_top,c);
-		    if ( str==NULL && gme->col_data[c].me_type==me_button )
-			str = copy("...");
-		    gme->edit_active = kludge;
-		  break;
+		    if ( str!=NULL ) {
+			pt = strchr(str,'\n');
+			GDrawDrawBiText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,NULL,fg);
+			free(str);
+		    }
 		}
-		if ( str!=NULL ) {
-		    pt = strchr(str,'\n');
-		    GDrawDrawBiText8(pixmap,clip.x,y,str,pt==NULL?-1:pt-str,NULL,fg);
-		    free(str);
-		}
+		GDrawPopClip(pixmap,&old);
 	    }
-	    GDrawPopClip(pixmap,&old);
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
