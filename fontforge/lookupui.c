@@ -4853,9 +4853,27 @@ static void kf_doClose(struct fvcontainer *fvc) {
     kf->done = true;
 }
 
-static void kf_doResize(struct fvcontainer *fvc,FontViewBase *fvb) {
-/*    struct kf_dlg *kf = (struct kf_dlg *) fvc; */
-/*    FontView *fv = (FontView *) fvb; */
+static void kf_doResize(struct fvcontainer *fvc,FontViewBase *fvb,
+	int width, int height) {
+    struct kf_dlg *kf = (struct kf_dlg *) fvc;
+    FontView *fv = (FontView *) fvb;
+    FontView *otherfv = fv==kf->first_fv ? kf->second_fv : kf->first_fv;
+    static int nested=0;
+    GRect size;
+
+    if ( fv->filled==NULL || otherfv->filled == NULL )
+return;		/* Not initialized yet */
+    if ( nested )
+return;
+    nested = 1;
+    FVSetUIToMatch(otherfv,fv);
+    nested = 0;
+
+    memset(&size,0,sizeof(size));
+    size.height = fv->mbh + kf->infoh + kf->fh+4 + 2*(height-fv->mbh) + kf->fh + 2;
+    size.width = width; 
+    GGadgetSetDesiredSize(kf->guts,NULL, &size);
+    GHVBoxFitWindow(kf->topbox);
 }
 
 static struct fvcontainer_funcs kernformat_funcs = {
@@ -5406,6 +5424,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
 
+    kf.topbox = boxes[0].ret;
     KFFontViewInits(&kf, GWidgetGetControl(kf.gw,CID_Guts));
     kf_activateMe((struct fvcontainer *) &kf,(struct fontviewbase *) kf.first_fv);
 

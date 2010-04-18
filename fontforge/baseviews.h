@@ -151,7 +151,7 @@ struct fvcontainer_funcs {
     void (*activateMe)(struct fvcontainer *fvc,struct fontviewbase *fv);
     void (*charEvent)(struct fvcontainer *fvc,void *event);
     void (*doClose)(struct fvcontainer *fvc);		/* Cancel the containing dlg? */
-    void (*doResize)(struct fvcontainer *fvc,struct fontviewbase *fv);
+    void (*doResize)(struct fvcontainer *fvc,struct fontviewbase *fv,int width,int height);
 				/* Resize the container so that fv fits */
 };
 

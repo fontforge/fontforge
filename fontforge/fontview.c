@@ -2951,7 +2951,9 @@ return;
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
 	} else if ( fv->b.container!=NULL && fv->b.container->funcs->doResize!=NULL ) {
-	    (fv->b.container->funcs->doResize)(fv->b.container,&fv->b);
+	    (fv->b.container->funcs->doResize)(fv->b.container,&fv->b,
+		    ccnt*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
+		    rcnt*fv->cbh+1+fv->mbh+fv->infoh);
 	} else {
 	    GDrawResize(fv->gw,
 		    ccnt*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
@@ -3096,7 +3098,7 @@ static void FV_ChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
 }
 
 static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw), *fvs, *fvss;
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
     int dspsize = fv->filled->pixelsize;
     int changedmodifier = false;
     extern int use_freetype_to_rasterize_fv;
@@ -3126,37 +3128,46 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SavePrefs(true);
     if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changedmodifier ) {
 	BDFFont *new, *old;
-	for ( fvs=(FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	    fvs->touched = false;
-	while ( 1 ) {
-	    for ( fvs=(FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-		if ( !fvs->touched )
-	    break;
-	    if ( fvs==NULL )
-	break;
-	    old = fvs->filled;
-	    new = SplineFontPieceMeal(fvs->b.sf,fv->b.active_layer,dspsize,72,
-		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0)|
-		    (use_freetype_to_rasterize_fv && !fvs->b.sf->strokedfont && !fvs->b.sf->multilayer?pf_ft_nohints:0),
-		NULL);
-	    for ( fvss=fvs; fvss!=NULL; fvss = (FontView *) (fvss->b.nextsame) ) {
-		if ( fvss->filled==old ) {
-		    fvss->filled = new;
-		    fvss->antialias = fvs->antialias;
-		    fvss->bbsized = fvs->bbsized;
-		    if ( fvss->show==old || fvss==fv )
-			FVChangeDisplayFont(fvss,new);
-		    fvss->touched = true;
-		}
-	    }
-	    BDFFontFree(old);
-	}
+	old = fv->filled;
+	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,dspsize,72,
+	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
+		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
+	    NULL);
+	fv->filled = new;
+	FVChangeDisplayFont(fv,new);
+	BDFFontFree(old);
 	fv->b.sf->display_size = -dspsize;
 	if ( fv->b.cidmaster!=NULL ) {
 	    int i;
 	    for ( i=0; i<fv->b.cidmaster->subfontcnt; ++i )
 		fv->b.cidmaster->subfonts[i]->display_size = -dspsize;
 	}
+    }
+}
+
+void FVSetUIToMatch(FontView *destfv,FontView *srcfv) {
+    extern int use_freetype_to_rasterize_fv;
+
+    if ( destfv->filled==NULL || srcfv->filled==NULL )
+return;
+    if ( destfv->magnify!=srcfv->magnify ||
+	    destfv->user_requested_magnify!=srcfv->user_requested_magnify ||
+	    destfv->bbsized!=srcfv->bbsized ||
+	    destfv->antialias!=srcfv->antialias ||
+	    destfv->filled->pixelsize != srcfv->filled->pixelsize ) {
+	BDFFont *new, *old;
+	destfv->magnify = srcfv->magnify;
+	destfv->user_requested_magnify = srcfv->user_requested_magnify;
+	destfv->bbsized = srcfv->bbsized;
+	destfv->antialias = srcfv->antialias;
+	old = destfv->filled;
+	new = SplineFontPieceMeal(destfv->b.sf,destfv->b.active_layer,srcfv->filled->pixelsize,72,
+	    (destfv->antialias?pf_antialias:0)|(destfv->bbsized?pf_bbsized:0)|
+		(use_freetype_to_rasterize_fv && !destfv->b.sf->strokedfont && !destfv->b.sf->multilayer?pf_ft_nohints:0),
+	    NULL);
+	destfv->filled = new;
+	FVChangeDisplayFont(destfv,new);
+	BDFFontFree(old);
     }
 }
 
@@ -7569,7 +7580,7 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     kf->first_fv = __FontViewCreate(kf->sf);
     kf->second_fv = __FontViewCreate(kf->sf);
 
-    infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
+    kf->infoh = infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
     kf->first_fv->mbh = kf->mbh;
     pos.x = 0; pos.y = kf->mbh+infoh+kf->fh+4;
     pos.width = 16*kf->first_fv->cbw+1;
@@ -7616,9 +7627,20 @@ static void gs_doClose(struct fvcontainer *fvc) {
     gs->done = true;
 }
 
-static void gs_doResize(struct fvcontainer *fvc,FontViewBase *fvb) {
-/*    struct gsd *gs = (struct gsd *) fvc; */
-/*    FontView *fv = (FontView *) fvb; */
+#define CID_Guts	1000
+#define CID_TopBox	1001
+
+static void gs_doResize(struct fvcontainer *fvc,FontViewBase *fvb,
+	int width,int height) {
+    struct gsd *gs = (struct gsd *) fvc;
+    /*FontView *fv = (FontView *) fvb;*/
+    GRect size;
+
+    memset(&size,0,sizeof(size));
+    size.width = width; size.height = height;
+    GGadgetSetDesiredSize(GWidgetGetControl(gs->gw,CID_Guts),
+	    NULL,&size);
+    GHVBoxFitWindow(GWidgetGetControl(gs->gw,CID_TopBox));
 }
 
 static struct fvcontainer_funcs glyphset_funcs = {
@@ -7656,6 +7678,9 @@ static void gs_sizeSet(struct gsd *gs,GWindow dw) {
     int cc, rc, topchar;
     GRect subsize;
     FontView *fv = gs->fv;
+
+    if ( gs->fv->vsb==NULL )
+return;
 
     GDrawGetSize(dw,&size);
     GGadgetGetSize(gs->fv->vsb,&gsize);
@@ -7758,7 +7783,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     FontView *fvorig = (FontView *) sf->fv;
     GGadget *mb;
     char *start, *pt; int ch;
-#define CID_Guts	1000
 
     FontViewInit();
 
@@ -7825,6 +7849,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
     boxes[0].gd.u.boxelements = varray;
+    boxes[0].gd.cid = CID_TopBox;
     boxes[0].creator = GHVGroupCreate;
 
     GGadgetsCreate(gs.gw,boxes);
@@ -7852,9 +7877,9 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     pos.width = 16*gs.fv->cbw+1;
     pos.height = 4*gs.fv->cbh+1;
 
+    GDrawSetUserData(dw,gs.fv);
     FVCopyInnards(gs.fv,&pos,infoh,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
     pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
-    GDrawSetUserData(dw,gs.fv);
     memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
     if ( current!=NULL && strcmp(current,_("{Everything Else}"))!=0 ) {
 	int first = true;
