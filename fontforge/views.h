@@ -612,8 +612,8 @@ struct kf_dlg /* : fvcontainer */ {
     GWindow gw, dw;
     GFont *plain, *bold;
     int fh, as;
-    GGadget *mb, *guts;
-    int mbh, label2_y;
+    GGadget *mb, *guts, *topbox;
+    int mbh, label2_y, infoh;
 
     SplineFont *sf;
     int def_layer;
@@ -720,6 +720,7 @@ extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
 	uint16 sli,SplineChar *sc);
 
 
+extern void FVSetUIToMatch(FontView *destfv,FontView *srcfv);
 extern void FVScrollToChar(FontView *fv,int i);
 extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern FontView *FontNew(void);
