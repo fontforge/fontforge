@@ -2091,11 +2091,6 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 	    clip.width = gw->ggc->clip.width;
 	    clip.height = gw->ggc->clip.height;
 	    _XftDrawSetClipRectangles(gw->xft_w,0,0,&clip,1);
-	    if ( clip.height<rect.height )
-		y -= (rect.height-clip.height)/2;	/* Pango has no concept of baseline. I want the text on the baseline */
-			/* Kerning Classes containing ff, fi, ffl, etc. ligatures */
-			/* need this patch to draw properly in the kernclass dlg matrixedits */
-			/* on a mac */
 	    my_xft_render_layout(gw->xft_w,&fg,layout,x,y);
 	}
     } else if ( drawit==tf_rect ) {
