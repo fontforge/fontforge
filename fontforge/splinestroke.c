@@ -3181,6 +3181,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    jump = (tot/50);
 		    extras = tot%50;
 		    skip = 50/(extras+1);
+		    tot = 50;
 		}
 		if ( tot >= c->tmax )
 		    c->tpt = grealloc(c->tpt,(c->tmax = tot+50)*sizeof(TPoint));
