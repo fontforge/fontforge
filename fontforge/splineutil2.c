@@ -55,8 +55,6 @@ return( b>-1e-8 && b<1e-8 );
 return( a>-1e-8 && a<1e-8 );
 
     d = a/(1024*1024.);
-    if ( d<0 ) d = -d;
-return( b>a-d && b<a+d );
 #else		/* For floats */
     if ( a==0 )
 return( b>-1e-5 && b<1e-5 );
@@ -64,19 +62,18 @@ return( b>-1e-5 && b<1e-5 );
 return( a>-1e-5 && a<1e-5 );
 
     d = a/(1024*64.);
+#endif
     a-=b;
     if ( d<0 )
 return( a>d && a<-d );
     else
 return( a>-d && a<d );
-#endif
 }
 
 int RealNearish(real a,real b) {
 
-    if ( a-b<.001 && a-b>-.001 )
-return( true );
-return( false );
+    a-=b;
+return( a<.001 && a>-.001 );
 }
 
 int RealApprox(real a,real b) {
@@ -903,12 +900,8 @@ return( SplineMake3(from,to));
     }
 
     db.base = from->me;
-    db.unit.x = (to->me.x-from->me.x); db.unit.y = (to->me.y-from->me.y);
-    db.len = sqrt(db.unit.x*db.unit.x + db.unit.y*db.unit.y);
-    if ( db.len!=0 ) {
-	db.unit.x /= db.len;
-	db.unit.y /= db.len;
-    }
+    db.unit = ftunit;
+    db.len = ftlen;
     ApproxBounds(&b,mid,cnt,&db);
 
     for ( k=0; k<TRY_CNT; ++k ) {
