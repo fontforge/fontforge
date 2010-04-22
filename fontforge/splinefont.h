@@ -2363,6 +2363,7 @@ extern SplineSet *LayerUnAllSplines(Layer *layer);
 extern int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2 );
 extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
 	extended tmin, extended tmax);
+extern int _CubicSolve(const Spline1D *sp,extended ts[3]);
 extern int CubicSolve(const Spline1D *sp,extended ts[3]);
 extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax, extended sought_y, double err);
 extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought_y, real err);

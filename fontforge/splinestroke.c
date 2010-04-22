@@ -582,9 +582,9 @@ static void HideStrokePointsCircle(StrokeContext *c) {
 
     for ( i=c->cur-1; i>=0 ; --i ) {
 	StrokePoint *p = &c->all[i];
-	int isline = p->sp->knownlinear;
+	Spline *myline = p->sp->knownlinear ? p->sp : NULL;
 	if ( p->line || p->circle )
-	    isline = false;
+	    myline = NULL;
 	for ( j=c->cur-1; j>=0; --j ) if ( j!=i ) {
 	    StrokePoint *op = &c->all[j];
 	    /* Something based at the same location as us cannot cover us */
@@ -592,7 +592,7 @@ static void HideStrokePointsCircle(StrokeContext *c) {
 	    if ( op->me.x==p->me.x && op->me.y==p->me.y )
 	continue;
 	    /* Something on the same line as us cannot cover us */
-	    if ( op->sp==p->sp && isline )
+	    if ( op->sp==myline )
 	continue;
 	    if ( p->butt_bevel ) {
 		/* Butt caps and bevel line joins cause problems because the */
@@ -933,9 +933,9 @@ static void HideStrokePointsSquare(StrokeContext *c) {
 
     for ( i=c->cur-1; i>=0 ; --i ) {
 	StrokePoint *p = &c->all[i];
-	int isline = p->sp->knownlinear;
+	Spline *myline = p->sp->knownlinear ? p->sp : NULL;
 	if ( p->line || p->circle )
-	    isline = false;
+	    myline = NULL;
 	for ( j=c->cur-1; j>=0; --j ) if ( j!=i ) {
 	    StrokePoint *op = &c->all[j];
 	    /* Something based at the same location as us cannot cover us */
@@ -943,7 +943,7 @@ static void HideStrokePointsSquare(StrokeContext *c) {
 	    if ( op->me.x==p->me.x && op->me.y==p->me.y )
 	continue;
 	    /* Something on the same line as us cannot cover us */
-	    if ( op->sp==p->sp && isline )
+	    if ( op->sp==myline )
 	continue;
 	    dist1 = dist2 = 1e20;
 	    if ( !p->left_hidden ) {
@@ -1607,15 +1607,15 @@ static void HideStrokePointsPoly(StrokeContext *c) {
     BasePoint rel;
     double res2 = c->resolution*c->resolution, res_bound = 100*res2;
     enum hittest hit;
-    /* Similar to the case for a circular pen, except the hit test for a square */
+    /* Similar to the case for a circular pen, except the hit test for a poly */
     /*  is slightly different from the hit test for a circle */
 
 
     for ( i=c->cur-1; i>=0 ; --i ) {
 	StrokePoint *p = &c->all[i];
-	int isline = p->sp->knownlinear;
+	Spline *myline = p->sp->knownlinear ? p->sp : NULL;
 	if ( p->line || p->circle )
-	    isline = false;
+	    myline = NULL;
 	for ( j=c->cur-1; j>=0; --j ) if ( j!=i ) {
 	    StrokePoint *op = &c->all[j];
 	    /* Something based at the same location as us cannot cover us */
@@ -1623,7 +1623,7 @@ static void HideStrokePointsPoly(StrokeContext *c) {
 	    if ( op->me.x==p->me.x && op->me.y==p->me.y )
 	continue;
 	    /* Something on the same line as us cannot cover us */
-	    if ( op->sp==p->sp && isline )
+	    if ( op->sp==myline )
 	continue;
 	    dist1sq = dist2sq = 1e20;
 	    if ( !p->left_hidden ) {
@@ -1631,8 +1631,8 @@ static void HideStrokePointsPoly(StrokeContext *c) {
 		ydiff = (p->left.y-op->me.y);
 		dist1sq = xdiff*xdiff + ydiff*ydiff;
 		if ( dist1sq<=c->largest_distance2 ) {
-		    rel.x = p->left.x-op->me.x;
-		    rel.y = p->left.y-op->me.y;
+		    rel.x = xdiff;
+		    rel.y = ydiff;
 		    if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,NULL))==ht_Inside ||
 			    (hit==ht_OnEdge && p->hide_left_if_on_edge)) {
 			p->left_hidden = true;
@@ -1646,8 +1646,8 @@ static void HideStrokePointsPoly(StrokeContext *c) {
 		ydiff = (p->right.y-op->me.y);
 		dist2sq = xdiff*xdiff + ydiff*ydiff;
 		if ( dist2sq<=c->largest_distance2 ) {
-		    rel.x = p->right.x-op->me.x;
-		    rel.y = p->right.y-op->me.y;
+		    rel.x = xdiff;
+		    rel.y = ydiff;
 		    if ( (hit = PolygonHitTest(c->corners,c->slopes,c->n,&rel,NULL))==ht_Inside ||
 			    (hit==ht_OnEdge && p->hide_right_if_on_edge)) {
 			p->right_hidden = true;
@@ -1669,7 +1669,7 @@ static void HideStrokePointsPoly(StrokeContext *c) {
 		if ( dist1sq<400 )
 		    j -= (6-1);
 		else
-		    j -= .66667*sqrt(dist1sq)-1;
+		    j -= .7*sqrt(dist1sq)-1;
 		/* Minus 1 because we are going to add 1 anyway */
 	    }
 	}
@@ -3126,6 +3126,8 @@ static SplineSet *SSRemoveBackForthLine(SplineSet *contours) {
 return( contours );
 }
 
+#define MAX_TPOINTS	40
+
 static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
     int end_pos, i, start_pos=0, pos, ipos;
     SplinePoint *first=NULL, *last=NULL, *cur;
@@ -3176,15 +3178,15 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    --end_pos;
 		tot = end_pos-start_pos;
 		jump = 1;
-		extras = 0; skip = 50;
-		if ( tot > 50 ) {
-		    jump = (tot/50);
-		    extras = tot%50;
-		    skip = 50/(extras+1);
-		    tot = 50;
+		extras = 0; skip = MAX_TPOINTS;
+		if ( tot > MAX_TPOINTS ) {
+		    jump = (tot/MAX_TPOINTS);
+		    extras = tot%MAX_TPOINTS;
+		    skip = MAX_TPOINTS/(extras+1);
+		    tot = MAX_TPOINTS;
 		}
 		if ( tot >= c->tmax )
-		    c->tpt = grealloc(c->tpt,(c->tmax = tot+50)*sizeof(TPoint));
+		    c->tpt = grealloc(c->tpt,(c->tmax = tot+MAX_TPOINTS)*sizeof(TPoint));
 		/* There is really no point in having a huge number of data points */
 		/*  I don't need 1000 points to approximate the curve, 10 will probably */
 		/*  do. The extra points just slow us down (we need them for the */
@@ -3256,15 +3258,15 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    --end_pos;
 		tot = end_pos-start_pos;
 		jump = 1;
-		extras = 0; skip = 50;
-		if ( tot > 50 ) {
-		    jump = (tot/50);
-		    extras = tot%50;
-		    skip = 50/(extras+1);
-		    tot = 50;
+		extras = 0; skip = MAX_TPOINTS;
+		if ( tot > MAX_TPOINTS ) {
+		    jump = (tot/MAX_TPOINTS);
+		    extras = tot%MAX_TPOINTS;
+		    skip = MAX_TPOINTS/(extras+1);
+		    tot = MAX_TPOINTS;
 		}
 		if ( tot >= c->tmax )
-		    c->tpt = grealloc(c->tpt,(c->tmax = tot+50)*sizeof(TPoint));
+		    c->tpt = grealloc(c->tpt,(c->tmax = tot+MAX_TPOINTS)*sizeof(TPoint));
 		ipos = start_pos; skip_cnt=0;
 		for ( i=0; i<=tot; ++i ) {
 		    TPoint *tpt = c->tpt + i;

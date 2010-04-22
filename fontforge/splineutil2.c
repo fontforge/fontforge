@@ -48,7 +48,7 @@ int snaptoint=0;
 int RealNear(real a,real b) {
     real d;
 
-#if 0 /* def FONTFORGE_CONFIG_USE_DOUBLE*/
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
     if ( a==0 )
 return( b>-1e-8 && b<1e-8 );
     if ( b==0 )
@@ -64,8 +64,11 @@ return( b>-1e-5 && b<1e-5 );
 return( a>-1e-5 && a<1e-5 );
 
     d = a/(1024*64.);
-    if ( d<0 ) d = -d;
-return( b>a-d && b<a+d );
+    a-=b;
+    if ( d<0 )
+return( a>d && a<-d );
+    else
+return( a>-d && a<d );
 #endif
 }
 
@@ -543,9 +546,9 @@ static double ClosestSplineSolve(Spline1D *sp,double sought,double close_to_t) {
 
     temp = *sp;
     temp.d -= sought;
-    CubicSolve(&temp,ts);
+    _CubicSolve(&temp,ts);
     best = 9e20; t= close_to_t;
-    for ( i=0; i<3; ++i ) if ( ts[i]!=-1 ) {
+    for ( i=0; i<3; ++i ) if ( ts[i]>-.0001 && ts[i]<1.0001 ) {
 	if ( (test=ts[i]-close_to_t)<0 ) test = -test;
 	if ( test<best ) {
 	    best = test;
@@ -564,31 +567,28 @@ struct dotbounds {
 };
 
 static double SigmaDeltas(Spline *spline,TPoint *mid, int cnt, DBounds *b, struct dotbounds *db) {
-    int i, lasti;
-    double xdiff, ydiff, sum, temp, t, lastt;
+    int i;
+    double xdiff, ydiff, sum, temp, t;
     SplinePoint *to = spline->to, *from = spline->from;
     extended ts[2], x,y;
     struct dotbounds db2;
     double dot;
+    int near_vert, near_horiz;
 
     if ( (xdiff = to->me.x-from->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = to->me.y-from->me.y)<0 ) ydiff = -ydiff;
+    near_vert = ydiff>2*xdiff;
+    near_horiz = xdiff>2*ydiff;
 
-    sum = 0; lastt = -1; lasti = -1;
+    sum = 0;
     for ( i=0; i<cnt; ++i ) {
-	if ( ydiff>2*xdiff ) {
+	if ( near_vert ) {
 	    t = ClosestSplineSolve(&spline->splines[1],mid[i].y,mid[i].t);
-	} else if ( xdiff>2*ydiff ) {
+	} else if ( near_horiz ) {
 	    t = ClosestSplineSolve(&spline->splines[0],mid[i].x,mid[i].t);
 	} else {
 	    t = (ClosestSplineSolve(&spline->splines[1],mid[i].y,mid[i].t) +
 		    ClosestSplineSolve(&spline->splines[0],mid[i].x,mid[i].t))/2;
-	}
-	if ( t==lastt )		/* These last* values appear to be debugging */
-	    t = lastt + (mid[i].t - mid[lasti].t);
-	else {
-	    lastt = t;
-	    lasti = i;
 	}
 	temp = mid[i].x - ( ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d );
 	sum += temp*temp;
@@ -720,7 +720,7 @@ static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, int order2) {
     BasePoint tounit, fromunit, ftunit;
-    double flen,tlen,ftlen;
+    double flen,tlen,ftlen,dot;
     Spline *spline, temp;
     BasePoint nextcp;
     int bettern, betterp;
@@ -893,6 +893,14 @@ return( SplineMake3(from,to));
     tmax = tdotft>0 ? ftlen/tdotft : 1e10;
     /* At fmax, tmax the control points will stretch beyond the other endpoint*/
     /*  when projected along the line between the two endpoints */
+
+    if ( (dot=fromunit.x*tounit.y - fromunit.y*tounit.x)<.0001 && dot>-.0001 &&
+	    (dot=ftunit.x*tounit.y - ftunit.y*tounit.x)<.0001 && dot>-.0001 ) {
+	/* It's a line. Slopes are parallel, and parallel to vector between (from,to) */
+	from->nonextcp = to->noprevcp = true;
+	from->nextcp = from->me; to->prevcp = to->me;
+return( SplineMake3(from,to));
+    }
 
     db.base = from->me;
     db.unit.x = (to->me.x-from->me.x); db.unit.y = (to->me.y-from->me.y);
