@@ -3203,7 +3203,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 /* This returns all real solutions, even those out of bounds */
 /* I use -999999 as an error flag, since we're really only interested in */
 /*  solns near 0 and 1 that should be ok. -1 is perhaps a little too close */
-static int _CubicSolve(const Spline1D *sp,extended ts[3]) {
+int _CubicSolve(const Spline1D *sp,extended ts[3]) {
     extended d, xN, yN, delta2, temp, delta, h, t2, t3, theta;
     int i=0;
 
@@ -3252,8 +3252,8 @@ static int _CubicSolve(const Spline1D *sp,extended ts[3]) {
 		    if ( temp<-1 ) temp = -1; else if ( temp>1 ) temp = 1;
 		    theta = acos(temp)/3;
 		    ts[i++] = xN+2*delta*cos(theta);
-		    ts[i++] = xN+2*delta*cos(2.0943951+theta);
-		    ts[i++] = xN+2*delta*cos(4.1887902+theta);
+		    ts[i++] = xN+2*delta*cos(2.0943951+theta);	/* 2*pi/3 */
+		    ts[i++] = xN+2*delta*cos(4.1887902+theta);	/* 4*pi/3 */
 		}
 	    }
 	} else if ( /* d==0 && */ delta2!=0 ) {
@@ -3282,27 +3282,27 @@ return( ts[0]!=-999999 );
 
 int CubicSolve(const Spline1D *sp,extended ts[3]) {
     extended t;
-    int i;
+    extended ts2[3];
+    int i,j;
     /* This routine gives us all solutions between [0,1] with -1 as an error flag */
     /* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
 
-    if ( !_CubicSolve(sp,ts)) {
-	ts[0] = ts[1] = ts[2] = -1;
+    ts[0] = ts[1] = ts[2] = -1;
+    if ( !_CubicSolve(sp,ts2)) {
 return( false );
     }
 
-    for ( i=0; i<3; ++i )
-	if ( ts[i]==-999999 ) ts[i] = -1;
-    if (ts[0]>1.0001 || ts[0]<-.0001 ) ts[0] = -1;
-    else if ( ts[0]<0 ) ts[0] = 0; else if ( ts[0]>1 ) ts[0] = 1;
-    if (ts[1]>1.0001 || ts[1]<-.0001 ) ts[1] = -1;
-    else if ( ts[1]<0 ) ts[1] = 0; else if ( ts[1]>1 ) ts[1] = 1;
-    if (ts[2]>1.0001 || ts[2]<-.0001 ) ts[2] = -1;
-    else if ( ts[2]<0 ) ts[2] = 0; else if ( ts[2]>1 ) ts[2] = 1;
-    if ( ts[1]==-1 ) { ts[1] = ts[2]; ts[2] = -1;}
-    if ( ts[0]==-1 ) { ts[0] = ts[1]; ts[1] = ts[2]; ts[2] = -1; }
-    if ( ts[0]==-1 )
+    for ( i=j=0; i<3; ++i ) {
+	if ( ts2[i]>-.0001 && ts2[i]<1.0001 ) {
+	    if ( ts2[i]<0 ) ts[j++] = 0;
+	    else if ( ts2[i]>1 ) ts[j++] = 1;
+	    else
+		ts[j++] = ts2[i];
+	}
+    }
+    if ( j==0 )
 return( false );
+
     if ( ts[0]>ts[2] && ts[2]!=-1 ) {
 	t = ts[0]; ts[0] = ts[2]; ts[2] = t;
     }
