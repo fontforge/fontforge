@@ -665,7 +665,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
 
 	len = ceil( length/c->resolution );
 	if ( len<2 ) len=2;
-	/* There will be len+1 sample points take. Two of those points will be*/
+	/* There will be len+1 sample points taken. Two of those points will be*/
 	/*  the end points, and there will be at least one internal point */
 	diff = 1.0/len;
 	for ( i=0, t=0; i<=len; ++i, t+= diff ) {
@@ -700,6 +700,53 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
     if ( !open )
 	LineJoin(c,true);
     HideStrokePointsCircle(c);
+
+    /* just in case... add an on curve point every time the sample's slopes */
+    /*  move through 90 degrees. (We only do this for circles because for  */
+    /*  squares and polygons this will happen automatically whenever we change */
+    /*  polygon/squar vertices, which is close enough to the same idea as no */
+    /*  matter) */
+    { int j,k, skip=10/c->resolution;
+    for ( i=c->cur-1; i>=0; ) {
+	while ( i>=0 && ( c->all[i].left_hidden || c->all[i].needs_point_left ))
+	    --i;
+	if ( i<c->cur-1 && !c->all[i-1].left_hidden )
+	    ++i;
+	while ( i>0 && c->all[i].left.x == c->all[i-1].left.x && c->all[i].left.y == c->all[i-1].left.y )
+	    --i;
+	for ( j=i-1; j>=0 && !c->all[j].left_hidden && !c->all[j].needs_point_left ; --j ) {
+	    if ( c->all[i].slope.x*c->all[j].slope.x + c->all[i].slope.y*c->all[j].slope.y <= 0 ) {
+		for ( k=j-1; k>=0 && k>j-skip && !c->all[k].left_hidden && !c->all[k].needs_point_left ; --k );
+		if ( k<=j-skip ) {
+		    c->all[j].needs_point_left = true;
+		    i=j;
+		    j=k;
+		}
+	    }
+	}
+	i=j;
+    }
+    for ( i=c->cur-1; i>=0; ) {
+	while ( i>=0 && ( c->all[i].right_hidden || c->all[i].needs_point_right ))
+	    --i;
+	if ( i<c->cur-1 && !c->all[i-1].right_hidden )
+	    ++i;
+	while ( i>0 && c->all[i].right.x == c->all[i-1].right.x && c->all[i].right.y == c->all[i-1].right.y )
+	    --i;
+	for ( j=i-1; j>=0 && !c->all[j].right_hidden && !c->all[j].needs_point_right ; --j ) {
+	    if ( c->all[i].slope.x*c->all[j].slope.x + c->all[i].slope.y*c->all[j].slope.y <= 0 ) {
+		for ( k=j-1; k>=0 && k>j-skip && !c->all[k].right_hidden && !c->all[k].needs_point_right ; --k );
+		if ( k<=j-skip ) {
+		    c->all[j].needs_point_right = true;
+		    i=j;
+		    j=k;
+		}
+	    }
+	}
+	i=j;
+    }
+    }
+		
 }
 
 /******************************************************************************/
