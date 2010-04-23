@@ -710,7 +710,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
     for ( i=c->cur-1; i>=0; ) {
 	while ( i>=0 && ( c->all[i].left_hidden || c->all[i].needs_point_left ))
 	    --i;
-	if ( i<c->cur-1 && !c->all[i-1].left_hidden )
+	if ( i<c->cur-1 && !c->all[i+1].left_hidden )
 	    ++i;
 	while ( i>0 && c->all[i].left.x == c->all[i-1].left.x && c->all[i].left.y == c->all[i-1].left.y )
 	    --i;
@@ -729,7 +729,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
     for ( i=c->cur-1; i>=0; ) {
 	while ( i>=0 && ( c->all[i].right_hidden || c->all[i].needs_point_right ))
 	    --i;
-	if ( i<c->cur-1 && !c->all[i-1].right_hidden )
+	if ( i<c->cur-1 && !c->all[i+1].right_hidden )
 	    ++i;
 	while ( i>0 && c->all[i].right.x == c->all[i-1].right.x && c->all[i].right.y == c->all[i-1].right.y )
 	    --i;
