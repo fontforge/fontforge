@@ -21,3 +21,13 @@ font.selection.all();
 pent=fontforge.unitShape(5).transform(psMat.scale(25))
 font.stroke("polygonal",pent);
 font.close();
+
+font=fontforge.open("fonts/StrokeTests.sfd");
+font.selection.all();
+font.stroke("circular",25);
+font.close();
+
+font=fontforge.open("fonts/StrokeTests.sfd");
+font.selection.all();
+font.stroke("caligraphic",25,2,45);
+font.close();
