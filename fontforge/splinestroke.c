@@ -2520,6 +2520,7 @@ static void AddUnhiddenPoints(StrokeContext *c) {
     /*  but too much or too little */
     int start, end, mid;
     int i, any;
+    double xdiff, ydiff;
 
     start=0;
     if ( c->all[0].left_hidden )
@@ -2537,14 +2538,31 @@ static void AddUnhiddenPoints(StrokeContext *c) {
 	--start;
 	mid = (start+end)/2;
 	/* See if already at a joint */
-	if ( (i=mid-10)<0 ) i=0;
 	any = false;
-	while ( i<=mid+10 && i<=c->cur ) {
-	    if ( c->all[i].line || c->all[i].circle || c->all[i].needs_point_right ) {
-		any = true;
+	for ( i=1; ; ++i ) {
+	    int back, fore;
+	    if ( mid-i>0 ) {
+		if ( c->all[mid-i].line || c->all[mid-i].circle || c->all[mid-i].needs_point_right ) {
+		    any = true;
 	break;
-	    }
-	    ++i;
+		}
+		xdiff = c->all[mid-i].me.x-c->all[mid].me.x;
+		ydiff = c->all[mid-i].me.y-c->all[mid].me.y;
+		back = (xdiff*xdiff + ydiff*ydiff > 100 );
+	    } else
+		back = true;
+	    if ( mid+i<c->cur ) {
+		if ( c->all[mid+i].line || c->all[mid+i].circle || c->all[mid+i].needs_point_right ) {
+		    any = true;
+	break;
+		}
+		xdiff = c->all[mid+i].me.x-c->all[mid].me.x;
+		ydiff = c->all[mid+i].me.y-c->all[mid].me.y;
+		fore = (xdiff*xdiff + ydiff*ydiff > 100 );
+	    } else
+		fore = true;
+	    if ( back && fore )
+	break;
 	}
 	if ( !any )
 	    c->all[mid].needs_point_right = true;
@@ -2566,14 +2584,31 @@ static void AddUnhiddenPoints(StrokeContext *c) {
 	--start;
 	mid = (start+end)/2;
 	/* See if already at a joint */
-	if ( (i=mid-10)<0 ) i=0;
 	any = false;
-	while ( i<=mid+10 && i<=c->cur ) {
-	    if ( c->all[i].line || c->all[i].circle || c->all[i].needs_point_left ) {
-		any = true;
+	for ( i=1; ; ++i ) {
+	    int back, fore;
+	    if ( mid-i>0 ) {
+		if ( c->all[mid-i].line || c->all[mid-i].circle || c->all[mid-i].needs_point_left ) {
+		    any = true;
 	break;
-	    }
-	    ++i;
+		}
+		xdiff = c->all[mid-i].me.x-c->all[mid].me.x;
+		ydiff = c->all[mid-i].me.y-c->all[mid].me.y;
+		back = (xdiff*xdiff + ydiff*ydiff > 100 );
+	    } else
+		back = true;
+	    if ( mid+i<c->cur ) {
+		if ( c->all[mid+i].line || c->all[mid+i].circle || c->all[mid+i].needs_point_left ) {
+		    any = true;
+	break;
+		}
+		xdiff = c->all[mid+i].me.x-c->all[mid].me.x;
+		ydiff = c->all[mid+i].me.y-c->all[mid].me.y;
+		fore = (xdiff*xdiff + ydiff*ydiff > 100 );
+	    } else
+		fore = true;
+	    if ( back && fore )
+	break;
 	}
 	if ( !any )
 	    c->all[mid].needs_point_left = true;
