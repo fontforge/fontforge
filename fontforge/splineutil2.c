@@ -699,6 +699,39 @@ return( true );
 static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
 #endif
 
+/* given a set of points (x,y,t) and slopes at the beginning and end (t=0, t=1) */
+/* find the cubic spline which best fits those points */
+
+/* pf == point from (start point) */
+/* Δf == slope from (cp(from) - from) */
+/* pt == point to (end point, t==1) */
+/* Δt == slope to (cp(to) - to) */
+
+/* A spline from pf to pt with slope vectors rf*Δf, rt*Δt is: */
+/* p(t) = pf +  [ 3*rf*Δf ]*t  +  3*[pt-pf+rt*Δt-2*rf*Δf] *t^2 +			*/
+/*		[2*pf-2*pt+3*rf*Δf-3*rt*Δt]*t^3 */
+
+/* So I want 
+/*   d  Σ (p(t(i))-p(i))^2/ d rf  == 0 */
+/*   d  Σ (p(t(i))-p(i))^2/ d rt  == 0 */
+/* now... */
+/*   d  Σ (p(t(i))-p(i))^2/ d rf  == 0 */
+/* => Σ 3*t*Δf*(1-2*t+t^2)*
+/*			[pf-pi+ 3*(pt-pf)*t^2 + 2*(pf-pt)*t^3]   +
+/*			3*[t - 2*t^2 + t^3]*Δf*rf   +
+/*			3*[t^2-t^3]*Δt*rt   */
+/* and... */
+/*   d  Σ (p(t(i))-p(i))^2/ d rt  == 0 */
+/* => Σ 3*t^2*Δt*(1-t)*
+*			[pf-pi+ 3*(pt-pf)*t^2 + 2*(pf-pt)*t^3]   +
+/*			3*[t - 2*t^2 + t^3]*Δf*rf   +
+/*			3*[t^2-t^3]*Δt*rt   */
+
+/* Now for a long time I looked at that and saw four equations and two unknowns*/
+/*  That was I was trying to solve for x and y separately, and that doesn't work. */
+/*  There are really just two equations and each sums over both x and y components */
+
+/* Old comment: */
 /* I used to do a least squares aproach adding two more to the above set of equations */
 /*  which held the slopes constant. But that didn't work very well. So instead*/
 /*  Then I tried doing the approximation, and then forcing the control points */
@@ -729,6 +762,8 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     DBounds b;
     struct dotbounds db;
     double offn_, offp_, finaldiff;
+    double pt_pf_x, pt_pf_y, determinant;
+    double consts[2], rt_terms[2], rf_terms[2];
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
@@ -866,6 +901,63 @@ return( SplineMake3(from,to));
     }
     fromunit.x /= flen; fromunit.y /= flen;
 
+    ftunit.x = (to->me.x-from->me.x); ftunit.y = (to->me.y-from->me.y);
+    ftlen = sqrt(ftunit.x*ftunit.x + ftunit.y*ftunit.y);
+    if ( ftlen!=0 ) {
+	ftunit.x /= ftlen; ftunit.y /= ftlen;
+    }
+
+    if ( (dot=fromunit.x*tounit.y - fromunit.y*tounit.x)<.0001 && dot>-.0001 &&
+	    (dot=ftunit.x*tounit.y - ftunit.y*tounit.x)<.0001 && dot>-.0001 ) {
+	/* It's a line. Slopes are parallel, and parallel to vector between (from,to) */
+	from->nonextcp = to->noprevcp = true;
+	from->nextcp = from->me; to->prevcp = to->me;
+return( SplineMake3(from,to));
+    }
+
+    pt_pf_x = to->me.x - from->me.x;
+    pt_pf_y = to->me.y - from->me.y;
+    consts[0] = consts[1] = rt_terms[0] = rt_terms[1] = rf_terms[0] = rf_terms[1] = 0;
+    for ( i=0; i<cnt; ++i ) {
+	double t = mid[i].t, t2 = t*t, t3=t2*t;
+	double factor_from = t-2*t2+t3;
+	double factor_to = t2-t3;
+	double const_x = from->me.x-mid[i].x + 3*pt_pf_x*t2 - 2*pt_pf_x*t3;
+	double const_y = from->me.y-mid[i].y + 3*pt_pf_y*t2 - 2*pt_pf_y*t3;
+	double temp1 = 3*(t-2*t2+t3);
+	double rf_term_x = temp1*fromunit.x;
+	double rf_term_y = temp1*fromunit.y;
+	double temp2 = 3*(t2-t3);
+	double rt_term_x = -temp2*tounit.x;
+	double rt_term_y = -temp2*tounit.y;
+
+	consts[0] += factor_from*( fromunit.x*const_x + fromunit.y*const_y );
+	consts[1] += factor_to *( -tounit.x*const_x + -tounit.y*const_y);
+	rf_terms[0] += factor_from*( fromunit.x*rf_term_x + fromunit.y*rf_term_y);
+	rf_terms[1] += factor_to*( -tounit.x*rf_term_x + -tounit.y*rf_term_y);
+	rt_terms[0] += factor_from*( fromunit.x*rt_term_x + fromunit.y*rt_term_y);
+	rt_terms[1] += factor_to*( -tounit.x*rt_term_x + -tounit.y*rt_term_y);
+    }
+
+    determinant = (rt_terms[0]*rf_terms[1]-rt_terms[1]*rf_terms[0]);
+    if ( determinant!=0 ) {
+	double rt, rf;
+	rt = (consts[1]*rf_terms[0]-consts[0]*rf_terms[1])/determinant;
+	if ( rf_terms[0]!=0 )
+	    rf = -(consts[0]+rt*rt_terms[0])/rf_terms[0];
+	else /* if ( rf_terms[1]!=0 ) This can't happen, otherwise the determinant would be 0 */
+	    rf = -(consts[1]+rt*rt_terms[1])/rf_terms[1];
+	if ( rt<=0 && rf>=0 ) {
+	    from->nextcp.x = from->me.x + rf*fromunit.x;
+	    from->nextcp.y = from->me.y + rf*fromunit.y;
+	    to->prevcp.x = to->me.x - rt*tounit.x;
+	    to->prevcp.y = to->me.y - rt*tounit.y;
+	    from->nonextcp = rf==0;
+	    to->noprevcp = rt==0;
+return( SplineMake3(from,to));
+	}
+    }
+
     trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
     if ( trylen>flen ) flen = trylen;
     
@@ -879,25 +971,12 @@ return( SplineMake3(from,to));
 	if ( trylen>tlen ) tlen = trylen;
     }
 
-    ftunit.x = (to->me.x-from->me.x); ftunit.y = (to->me.y-from->me.y);
-    ftlen = sqrt(ftunit.x*ftunit.x + ftunit.y*ftunit.y);
-    if ( ftlen!=0 ) {
-	ftunit.x /= ftlen; ftunit.y /= ftlen;
-    }
     fdotft = fromunit.x*ftunit.x + fromunit.y*ftunit.y;
     fmax = fdotft>0 ? ftlen/fdotft : 1e10;
     tdotft = -tounit.x*ftunit.x - tounit.y*ftunit.y;
     tmax = tdotft>0 ? ftlen/tdotft : 1e10;
     /* At fmax, tmax the control points will stretch beyond the other endpoint*/
     /*  when projected along the line between the two endpoints */
-
-    if ( (dot=fromunit.x*tounit.y - fromunit.y*tounit.x)<.0001 && dot>-.0001 &&
-	    (dot=ftunit.x*tounit.y - ftunit.y*tounit.x)<.0001 && dot>-.0001 ) {
-	/* It's a line. Slopes are parallel, and parallel to vector between (from,to) */
-	from->nonextcp = to->noprevcp = true;
-	from->nextcp = from->me; to->prevcp = to->me;
-return( SplineMake3(from,to));
-    }
 
     db.base = from->me;
     db.unit = ftunit;
