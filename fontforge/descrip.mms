@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 25 August 2009
+# Date : 23 April 2010
 
 CFLAGS=/nowarn/incl=([],[-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
 
@@ -25,9 +25,10 @@ fontforge_LIBOBJECTS6=start.obj,stemdb.obj,svg.obj,tottfaat.obj,tottfgpos.obj,to
  tottfvar.obj,ttfinstrs.obj,ttfspecial.obj,ufo.obj,utils.obj,\
  winfonts.obj,zapfnomen.obj,groups.obj,langfreq.obj
 
-fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj,woff.obj
+fontforge_LIBOBJECTS7=libstamp.obj,exelibstamp.obj,images.obj,autowidth2.obj,\
+	woff.obj
 
-fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj,\
+fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,basedlg.obj,\
  bdfinfo.obj,bitmapdlg.obj,bitmapview.obj,charinfo.obj,charview.obj,clipui.obj,\
  combinations.obj,contextchain.obj,cursors.obj,cvaddpoints.obj,cvdebug.obj,cvdgloss.obj,\
  cvexportdlg.obj,cvfreehand.obj,cvgetinfo.obj,cvgridfit.obj,cvhand.obj,cvhints.obj,\
@@ -41,7 +42,7 @@ fontforge_UIOBJECTS = alignment.obj,anchorsaway.obj,autowidthdlg.obj,basedlg.obj
  startui.obj,statemachine.obj,tilepath.obj,transform.obj,ttfinstrsui.obj,uiutil.obj
 
 fontforge_UIOBJECTS1=windowmenu.obj,oflib.obj,deltaui.obj,unicoderange.obj,\
-	justifydlg.obj,ftdelta.obj
+	justifydlg.obj,ftdelta.obj,autowidth2dlg.obj
 
 fontforge.exe : $(fontforge_UIOBJECTS) $(fontforge_UIOBJECTS1) lff.opt xlib.opt\
 	[-.libs]libfontforge.exe [-.libs]LIBGDRAW.olb
@@ -252,7 +253,6 @@ scstylesui.obj : scstylesui.c
 groupsdlg.obj : groupsdlg.c
 fvmetricsdlg.obj : fvmetricsdlg.c
 clipnoui.obj : clipnoui.c
-autowidthdlg.obj : autowidthdlg.c
 macencui.obj : macencui.c
 savefont.obj : savefont.c
 mmdlg.obj : mmdlg.c
@@ -261,12 +261,12 @@ langfreq.obj :langfreq.c
 ttfinstrsui.obj : ttfinstrsui.c
 libstamp.obj : libstamp.pre
 	pipe gsed -e "s/REPLACE_ME_WITH_MAJOR_VERSION/1/"\
-	-e "s/REPLACE_ME_WITH_MINOR_VERSION/0/" libstamp.pre > libstamp.c
+	-e "s/REPLACE_ME_WITH_MINOR_VERSION/0/" < libstamp.pre > libstamp.c
 	cc $(CFLAGS) libstamp.c
 	delete libstamp.c;*
 exelibstamp.obj : exelibstamp.pre
 	pipe gsed -e "s/REPLACE_ME_WITH_MAJOR_VERSION/1/"\
-	-e "s/REPLACE_ME_WITH_MINOR_VERSION/0/" exelibstamp.pre > exelibstamp.c
+	-e "s/REPLACE_ME_WITH_MINOR_VERSION/0/" < exelibstamp.pre > exelibstamp.c
 	cc $(CFLAGS) exelibstamp.c
 	delete exelibstamp.c;*
 clipui.obj : clipui.c
@@ -274,3 +274,6 @@ layer2layer.obj : layer2layer.c
 basedlg.obj : basedlg.c
 oflib.obj : oflib.c
 ftdelta.obj : ftdelta.c
+autowidth2.obj : autowidth2.c
+woff.obj : woff.c
+autowidth2dlg.obj : autowidth2dlg.c
