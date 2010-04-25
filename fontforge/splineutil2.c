@@ -281,6 +281,10 @@ static void CleanupDir(BasePoint *newcp,BasePoint *oldcp,BasePoint *base) {
 }
 #endif
 
+/* This routine should almost never be called now. It uses a flawed algorithm */
+/*  which won't produce the best results. It gets called only when the better */
+/*  approach doesn't work (singular matrices, etc.) */
+/* Old comment, back when I was confused... */
 /* Least squares tells us that:
 	| S(xi*ti^3) |	 | S(ti^6) S(ti^5) S(ti^4) S(ti^3) |   | a |
 	| S(xi*ti^2) | = | S(ti^5) S(ti^4) S(ti^3) S(ti^2) | * | b |
@@ -318,7 +322,7 @@ static int _ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
     int nrescnt=0, prescnt=0;
     double nmin, nmax, pmin, pmax, test, ptest;
     double bx, by, cx, cy;
-
+	    
     memset(&nres,0,sizeof(nres)); memset(&pres,0,sizeof(pres));
 
     /* Add the initial and end points */
@@ -502,11 +506,98 @@ static void TestForLinear(SplinePoint *from,SplinePoint *to) {
 
 /* Find a spline which best approximates the list of intermediate points we */
 /*  are given. No attempt is made to fix the slopes */
+/* given a set of points (x,y,t) */
+/* find the bezier spline which best fits those points */
+
+/* OK, we know the end points, so all we really need are the control points */
+  /*    For cubics.... */
+/* Pf = point from */
+/* CPf = control point, from nextcp */
+/* CPt = control point, to prevcp */
+/* Pt = point to */
+/* S(t) = Pf + 3*(CPf-Pf)*t + 3*(CPt-2*CPf+Pf)*t^2 + (Pt-3*CPt+3*CPf-Pf)*t^3 */
+/* S(t) = Pf - 3*Pf*t + 3*Pf*t^2 - Pf*t^3 + Pt*t^3 +                         */
+/*           3*(t-2*t^2+t^3)*CPf +                                           */
+/*           3*(t^2-t^3)*CPt                                                 */
+/* We want to minimize Σ [S(ti)-Pi]^2 */
+/* There are four variables CPf.x, CPf.y, CPt.x, CPt.y */
+/* When we take the derivative of the error term above with each of these */
+/*  variables, we find that the two coordinates are separate. So I shall only */
+/*  work through the equations once, leaving off the coordinate */
+/* d error/dCPf = Σ 2*3*(t-2*t^2+t^3) * [S(ti)-Pi] = 0 */
+/* d error/dCPt = Σ 2*3*(t^2-t^3)     * [S(ti)-Pi] = 0 */
+  /*    For quadratics.... */
+/* CP = control point, there's only one */
+/* S(t) = Pf + 2*(CP-Pf)*t + (Pt-2*CP+Pf)*t^2 */
+/* S(t) = Pf - 2*Pf*t + Pf*t^2 + Pt*t^2 +     */
+/*           2*(t-2*t^2)*CP                   */
+/* We want to minimize Σ [S(ti)-Pi]^2 */
+/* There are two variables CP.x, CP.y */
+/* d error/dCP = Σ 2*2*(t-2*t^2) * [S(ti)-Pi] = 0 */
+/* Σ (t-2*t^2) * [Pf - 2*Pf*t + Pf*t^2 + Pt*t^2 - Pi +     */
+/*           2*(t-2*t^2)*CP] = 0               */
+/* CP * (Σ 2*(t-2*t^2)*(t-2*t^2)) = Σ (t-2*t^2) * [Pf - 2*Pf*t + Pf*t^2 + Pt*t^2 - Pi] */
+
+/*        Σ (t-2*t^2) * [Pf - 2*Pf*t + Pf*t^2 + Pt*t^2 - Pi] */
+/* CP = ----------------------------------------------------- */
+/*                    Σ 2*(t-2*t^2)*(t-2*t^2)                */
 Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt, int order2) {
     int ret;
     Spline *spline;
     BasePoint nextcp, prevcp;
+    int i;
+
+    if ( order2 ) {
+	double xconst, yconst, term /* Same for x and y */;
+	xconst = yconst = term = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    double t = mid[i].t, t2 = t*t;
+	    double tfactor = (t-2*t2);
+	    term += 2*tfactor*tfactor;
+	    xconst += tfactor*(from->me.x*(1-2*t+t2) + to->me.x*t2 - mid[i].x);
+	    yconst += tfactor*(from->me.y*(1-2*t+t2) + to->me.y*t2 - mid[i].y);
+	}
+	if ( term!=0 ) {
+	    BasePoint cp;
+	    cp.x = xconst/term; cp.y = yconst/term;
+	    from->nextcp = to->prevcp = cp;
+return( SplineMake2(from,to));
+	}
+    } else {
+	double xconst[2], yconst[2], f_term[2], t_term[2] /* Same for x and y */;
+	double tfactor[2], determinant;
+	xconst[0] = xconst[1] = yconst[0] = yconst[1] =
+	    f_term[0] = f_term[1] = t_term[0] = t_term[1] =  0;
+	for ( i=0; i<cnt; ++i ) {
+	    double t = mid[i].t, t2 = t*t, t3=t*t2;
+	    double xc = (from->me.x*(1-3*t+3*t2-t3) + to->me.x*t3 - mid[i].x);
+	    double yc = (from->me.y*(1-3*t+3*t2-t3) + to->me.y*t3 - mid[i].y);
+	    tfactor[0] = (t-2*t2+t3); tfactor[1]=(t2-t3);
+	    xconst[0] += tfactor[0]*xc;
+	    xconst[1] += tfactor[1]*xc;
+	    yconst[0] += tfactor[0]*yc;
+	    yconst[1] += tfactor[1]*yc;
+	    f_term[0] += 3*tfactor[0]*tfactor[0];
+	    f_term[1] += 3*tfactor[0]*tfactor[1];
+	    /*t_term[0] += 3*tfactor[1]*tfactor[0];*/
+	    t_term[1] += 3*tfactor[1]*tfactor[1];
+	}
+	t_term[0] = f_term[1];
+	determinant = f_term[1]*t_term[0] - f_term[0]*t_term[1];
+	if ( determinant!=0 ) {
+	    to->prevcp.x = -(xconst[0]*f_term[1]-xconst[1]*f_term[0])/determinant;
+	    to->prevcp.y = -(yconst[0]*f_term[1]-yconst[1]*f_term[0])/determinant;
+	    if ( f_term[0]!=0 ) {
+		from->nextcp.x = (-xconst[0]-t_term[0]*to->prevcp.x)/f_term[0];
+		from->nextcp.y = (-yconst[0]-t_term[0]*to->prevcp.y)/f_term[0];
+	    } else {
+		from->nextcp.x = (-xconst[1]-t_term[1]*to->prevcp.x)/f_term[1];
+		from->nextcp.y = (-yconst[1]-t_term[1]*to->prevcp.y)/f_term[1];
+	    }
+return( SplineMake3(from,to));
+	}
+    }
 
     if ( (spline = IsLinearApprox(from,to,mid,cnt,order2))!=NULL )
 return( spline );
@@ -698,9 +789,6 @@ return( true );
 #if 0
 static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
 #endif
-
-/* given a set of points (x,y,t) and slopes at the beginning and end (t=0, t=1) */
-/* find the cubic spline which best fits those points */
 
 /* pf == point from (start point) */
 /* Δf == slope from (cp(from) - from) */
