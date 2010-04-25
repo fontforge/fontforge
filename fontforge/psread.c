@@ -179,7 +179,9 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_print, pt_cvi, pt_cvlit, pt_cvn, pt_cvr, pt_cvrs, pt_cvs, pt_cvx, pt_stringop,
 
     pt_opencurly, pt_closecurly, pt_openarray, pt_closearray, pt_string,
-    pt_number, pt_unknown, pt_namelit, pt_output, pt_outputd };
+    pt_number, pt_unknown, pt_namelit, pt_output, pt_outputd,
+
+    pt_showpage };
 
 static char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"lineto", "rlineto", "arc", "arcn", "arct", "arcto",
@@ -224,6 +226,8 @@ static char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 
 	"opencurly", "closecurly", "openarray", "closearray", "string",
 	"number", "unknown", "namelit", "=", "==",
+
+	"showpage",
 
 	NULL };
 
