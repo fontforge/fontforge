@@ -334,20 +334,19 @@ return;
     GDrawDrawLine(pixmap,0,mv->displayend+5*(mv->fh+4),mv->width,mv->displayend+5*(mv->fh+4),0x000000);
 }
 
-static void MVSetSubtables(MetricsView *mv) {
+static void MVSetSubtables(SplineFont *sf) {
     GTextInfo **ti;
-    SplineFont *sf;
     OTLookup *otl;
     struct lookup_subtable *sub;
     int cnt, doit;
     MetricsView *mvs;
-    int selected = false;
+    int selected;
 
-    sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
     /* There might be more than one metricsview wandering around. Update them all */
     for ( mvs = sf->metrics; mvs!=NULL; mvs=mvs->next ) {
+	selected = false;
 	for ( doit = 0; doit<2; ++doit ) {
 	    cnt = 0;
 	    for ( otl=sf->gpos_lookups; otl!=NULL; otl=otl->next ) {
@@ -386,6 +385,8 @@ static void MVSetSubtables(MetricsView *mv) {
 		ti[cnt] = gcalloc(1,sizeof(GTextInfo));
 	    }
 	}
+	if ( !selected )
+	    mvs->cur_subtable = NULL;
 
 	GGadgetSetList(mvs->subtable_list,ti,false);
     }
@@ -1052,7 +1053,7 @@ return( true );		/* No change, don't bother user */
 	    if ( sub==NULL )
 return( false );
 	    mv->cur_subtable = sub;
-	    MVSetSubtables(mv);
+	    MVSetSubtables(mv->sf);
 	    MVSetFeatures(mv);
 	}
 
@@ -1782,10 +1783,10 @@ static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 	    if ( sub==NULL )
 return( true );
 	    mv->cur_subtable = sub;
-	    MVSetSubtables(mv);
+	    MVSetSubtables(mv->sf);
 	    MVSetFeatures(mv);
 	} else if ( ti[len-2]->selected ) {	/* Idiots. They selected the line, can't have that */
-	    MVSetSubtables(mv);
+	    MVSetSubtables(mv->sf);
 	    sub = mv->cur_subtable;
 	} else
 	    mv->cur_subtable = GGadgetGetListItemSelected(mv->subtable_list)->userdata;
@@ -4629,7 +4630,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.label = NULL;
     gd.u.list = NULL;
     mv->subtable_list = GListButtonCreate(gw,&gd,mv);
-    MVSetSubtables(mv);
+    MVSetSubtables(master);
 
     gd.pos.y = mv->topend; gd.pos.x = 0;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_pos_use0|gg_list_multiplesel|gg_list_alphabetic;
@@ -4696,6 +4697,8 @@ return( mv->glyphs[i].sc );
 
 static void MV_ReKern(struct splinefont *sf) {
     MetricsView *mv;
+
+    MVSetSubtables(sf);
     for ( mv=sf->metrics; mv!=NULL; mv=mv->next )
 	MVReKern(mv);
 }
