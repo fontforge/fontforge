@@ -2072,6 +2072,9 @@ return( NULL );
 static void NoReKern(struct splinefont *sf) {
 }
 
+static void NoReFeature(struct splinefont *sf) {
+}
+
 static void NoCloseAll(struct splinefont *sf) {
 }
 
@@ -2079,6 +2082,7 @@ struct mv_interface noui_mv = {
     NoGlyphs,
     Nothing,
     NoReKern,
+    NoReFeature,
     NoCloseAll
 };
 
