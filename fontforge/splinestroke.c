@@ -2845,6 +2845,8 @@ static SplineSet *EdgeEffects(SplineSet *fragments,StrokeContext *c) {
 /*  stem of E) the two edges end at the same point, then we are left with two*/
 /*  disconnected lines which overlap. The points don't get hidden because they*/
 /*  are on the edge of the square pen, rather than inside it */
+
+/* This has problems when resolution<1 */
     for ( cur=fragments; cur!=NULL; cur=cur->next ) {
 	SSRemoveColinearPoints(cur);
 	if ( !cur->last->prev->knownlinear )
@@ -3405,6 +3407,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
     if ( lfragments!=NULL ) {
 	for ( ret=lfragments; ret->next!=NULL; ret=ret->next );
 	ret->next = rfragments;
+	lfragments=JoinFragments(lfragments,&contours,0);
     } else
 	lfragments = rfragments;
     for ( i=2; lfragments!=NULL && i<c->radius/2; ++i )
