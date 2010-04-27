@@ -6469,7 +6469,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     char *filename;
     char *locfilename = NULL, *pt;
-    PyObject *flags;
+    PyObject *flags=NULL;
 
     if ( !PyArg_ParseTuple(args,"es|O","UTF-8",&filename, &flags) )
 return( NULL );
