@@ -219,12 +219,13 @@ return( NULL );
     base = ret->u.image;
     if ( (info_ptr->valid&PNG_INFO_tRNS) && info_ptr->num_trans>0 ) {
 	if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA )
-	    base->trans = COLOR_CREATE(
 #if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
+	    base->trans = COLOR_CREATE(
 		    (info_ptr->trans_color.red>>8),
 		    (info_ptr->trans_color.green>>8),
 		    (info_ptr->trans_color.blue>>8));
 #else
+	    base->trans = COLOR_CREATE(
 		    (info_ptr->trans_values.red>>8),
 		    (info_ptr->trans_values.green>>8),
 		    (info_ptr->trans_values.blue>>8));
