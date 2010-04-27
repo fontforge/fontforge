@@ -2089,6 +2089,9 @@ struct svg_state {
     DashType dashes[DASH_MAX];
     SplineSet *clippath;
     uint8 free_clip;
+    uint32 currentColor;
+    uint32 stopColor;
+    float stopOpacity;
 };
 
 static void SVGFigureTransform(struct svg_state *st,char *name) {
@@ -2219,7 +2222,7 @@ return;
 	MatMultiply(trans,st->transform,st->transform);
     }
 }
-
+	    
 static real parseGCoord(xmlChar *prop,int bb_units,real bb_low, real bb_high) {
     char *end;
     double val = strtod((char *) prop,&end);
@@ -2232,10 +2235,10 @@ static real parseGCoord(xmlChar *prop,int bb_units,real bb_low, real bb_high) {
 return( val );
 }
 
-static int xmlParseColor(xmlChar *name,uint32 *color, char **url);
+static int xmlParseColor(xmlChar *name,uint32 *color, char **url,struct svg_state *st);
 
 static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
-	struct gradient **_grad,struct epattern **_epat) {
+	struct svg_state *st,struct gradient **_grad,struct epattern **_epat) {
     xmlNodePtr colour_source = XmlFindURI(top,name);
     int islinear;
     xmlChar *prop;
@@ -2345,30 +2348,44 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( _xmlStrcmp(kid->name,(xmlChar *) "stop")==0 )
 	    ++scnt;
 
-	grad->stop_cnt = scnt;
-	grad->grad_stops = gcalloc(scnt,sizeof(struct grad_stops));
-	scnt = 0;
-	for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( _xmlStrcmp(kid->name,(xmlChar *) "stop")==0 ) {
-	    prop = _xmlGetProp(kid,(xmlChar *) "offset");
-	    if ( prop!=NULL ) {
-		grad->grad_stops[scnt].offset = parseGCoord( prop,false,0,1.0);
-		_xmlFree(prop);
-	    }
-
-	    prop = _xmlGetProp(kid,(xmlChar *) "stop-color");
-	    if ( prop!=NULL ) {
-		xmlParseColor(prop, &grad->grad_stops[scnt].col, NULL);
-		_xmlFree(prop);
-	    }
-
-	    prop = _xmlGetProp(kid,(xmlChar *) "stop-opacity");
-	    if ( prop!=NULL ) {
-		grad->grad_stops[scnt].opacity = strtod((char *) prop,NULL);
-		_xmlFree(prop);
-	    } else
-		grad->grad_stops[scnt].opacity = 1.0;
-
+	if ( scnt==0 ) {
+	    /* I'm not sure how to use the style stop-color, but I'm guessing */
+	    /*  this might be it */
+	    grad->stop_cnt = 1;
+	    grad->grad_stops = gcalloc(1,sizeof(struct grad_stops));
+	    grad->grad_stops[scnt].offset = 1;
+	    grad->grad_stops[scnt].col = st->stopColor;
+	    grad->grad_stops[scnt].opacity = st->stopOpacity;
 	    ++scnt;
+	} else {
+	    grad->stop_cnt = scnt;
+	    grad->grad_stops = gcalloc(scnt,sizeof(struct grad_stops));
+	    scnt = 0;
+	    for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( _xmlStrcmp(kid->name,(xmlChar *) "stop")==0 ) {
+		grad->grad_stops[scnt].col = st->stopColor;
+		grad->grad_stops[scnt].opacity = st->stopOpacity;
+
+		prop = _xmlGetProp(kid,(xmlChar *) "offset");
+		if ( prop!=NULL ) {
+		    grad->grad_stops[scnt].offset = parseGCoord( prop,false,0,1.0);
+		    _xmlFree(prop);
+		}
+
+		prop = _xmlGetProp(kid,(xmlChar *) "stop-color");
+		if ( prop!=NULL ) {
+		    xmlParseColor(prop, &grad->grad_stops[scnt].col, NULL, st);
+		    _xmlFree(prop);
+		}
+
+		prop = _xmlGetProp(kid,(xmlChar *) "stop-opacity");
+		if ( prop!=NULL ) {
+		    grad->grad_stops[scnt].opacity = strtod((char *) prop,NULL);
+		    _xmlFree(prop);
+		} else
+		    grad->grad_stops[scnt].opacity = 1.0;
+
+		++scnt;
+	    }
 	}
     } else if ( _xmlStrcmp(colour_source->name,(xmlChar *) "pattern")==0 ) {
 	LogError("FontForge does not currently parse pattern Color Sources (%s).",
@@ -2385,6 +2402,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 /*  which components get this gradient/pattern, and which have their own source*/
 /*  that overrides the inherited one */
 static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
+	struct svg_state *st,
 	char *fill_colour_source,char *stroke_colour_source) {
     DBounds b, ssb;
     Entity *e;
@@ -2407,7 +2425,7 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
     if ( b.miny==b.maxy ) b.maxy = b.maxy+1;
 
     if ( fill_colour_source!=NULL ) {
-	xmlParseColorSource(top,fill_colour_source,&b,&grad,&epat);
+	xmlParseColorSource(top,fill_colour_source,&b,st,&grad,&epat);
 	free(fill_colour_source);
 	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
 	    if ( e->u.splines.fill.grad==NULL && e->u.splines.fill.tile==NULL &&
@@ -2421,7 +2439,7 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
     }
 
     if ( stroke_colour_source!=NULL ) {
-	xmlParseColorSource(top,stroke_colour_source,&b,&grad,&epat);
+	xmlParseColorSource(top,stroke_colour_source,&b,st,&grad,&epat);
 	free(stroke_colour_source);
 	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
 	    if ( e->u.splines.stroke.grad==NULL && e->u.splines.stroke.tile==NULL &&
@@ -2435,7 +2453,7 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
     }
 }
 
-static int xmlParseColor(xmlChar *name,uint32 *color, char **url) {
+static int xmlParseColor(xmlChar *name,uint32 *color, char **url,struct svg_state *st) {
     int doit, i;
     static struct { char *name; uint32 col; } stdcols[] = {
 	{ "red", 0xff0000 },
@@ -2471,7 +2489,7 @@ static int xmlParseColor(xmlChar *name,uint32 *color, char **url) {
 	if ( stdcols[i].name!=NULL )
 	    *color = stdcols[i].col;
 	else if ( _xmlStrcmp(name,(xmlChar *) "currentColor")==0 )
-	    *color = COLOR_INHERITED;
+	    *color = st->currentColor;
 	else if ( name[0]=='#' ) {
 	    unsigned int temp=0;
 	    if ( sscanf( (char *) name, "#%x", &temp )!=1 )
@@ -2692,6 +2710,92 @@ static void SvgStateFree(struct svg_state *st) {
 	SplinePointListFree(st->clippath);
 }
 
+static void SVGFigureStyle(struct svg_state *st,char *name,
+	char **fill_colour_source,char **stroke_colour_source) {
+    char *pt;
+    char namebuf[200], propbuf[400];
+
+    forever {
+	while ( isspace(*name)) ++name;
+	if ( *name==':' ) {
+	    /* Missing prop name, skip the value */
+	    while ( *name!=';' && *name!='\0' ) ++name;
+	    if ( *name==';' ) ++name;
+	} else if ( *name!='\0' && *name!=';' ) {
+	    pt = namebuf;
+	    while ( *name!='\0' && *name!=':' && *name!=';' && !isspace(*name) ) {
+		if ( pt<namebuf+sizeof(namebuf)-1 )
+		    *pt++ = *name;
+		++name;
+	    }
+	    *pt = '\0';
+	    while ( *name!=':' && *name!=';' && *name!='\0' ) ++name;
+	    if ( *name==':' ) ++name;
+	    while ( isspace(*name) ) ++name;
+	    propbuf[0] = '\0';
+	    if ( *name!='\0' && *name!=';' ) {
+		pt = propbuf;
+		while ( *name!='\0' && *name!=';' && !isspace(*name) ) {
+		    if ( pt<namebuf+sizeof(namebuf)-1 )
+			*pt++ = *name;
+		    ++name;
+		}
+		*pt = '\0';
+	    }
+	    while ( *name!=';' && *name!='\0' ) ++name;
+	    if ( *name==';' ) ++name;
+
+	    if ( strcmp(namebuf,"color")==0 )
+		xmlParseColor(propbuf,&st->currentColor,NULL,st);
+	    else if ( strcmp(namebuf,"fill")==0 )
+		st->dofill = xmlParseColor(propbuf,&st->fillcol,fill_colour_source,st);
+	    else if ( strcmp(namebuf,"visibility")==0 )
+		st->isvisible = strcmp(propbuf,"hidden")!=0 &&
+			strcmp(propbuf,"colapse")!=0;
+	    else if ( strcmp(namebuf,"fill-opacity")==0 )
+		st->fillopacity = strtod(propbuf,NULL);
+	    else if ( strcmp(namebuf,"stroke")==0 )
+		st->dostroke = xmlParseColor(propbuf,&st->strokecol,stroke_colour_source,st);
+	    else if ( strcmp(namebuf,"stroke-opacity")==0 )
+		st->strokeopacity = strtod((char *)propbuf,NULL);
+	    else if ( strcmp(namebuf,"stroke-width")==0 )
+		st->linewidth = strtod((char *)propbuf,NULL);
+	    else if ( strcmp(namebuf,"stroke-linecap")==0 )
+		st->lc = strcmp(propbuf,"butt") ? lc_butt :
+			     strcmp(propbuf,"round") ? lc_round :
+			     lc_square;
+	    else if ( strcmp(namebuf,"stroke-linejoin")==0 )
+		st->lj = strcmp(propbuf,"miter") ? lj_miter :
+			     strcmp(propbuf,"round") ? lj_round :
+			     lj_bevel;
+	    else if ( strcmp(namebuf,"stroke-dasharray")==0 ) {
+		if ( strcmp(propbuf,"inherit") ) {
+		    st->dashes[0] = 0; st->dashes[1] = DASH_INHERITED;
+		} else if ( strcmp(propbuf,"none") ) {
+		    st->dashes[0] = 0; st->dashes[1] = 0;
+		} else {
+		    int i;
+		    char *pt, *end;
+		    pt = propbuf;
+		    for ( i=0; i<DASH_MAX && *pt!='\0'; ++i ) {
+			st->dashes[i] = strtol( pt, &end,10);
+			pt = end;
+		    }
+		    if ( i<DASH_MAX ) st->dashes[i] = 0;
+		}
+	    } else if ( strcmp(namebuf,"stop-color")==0 )
+		xmlParseColor(propbuf,&st->stopColor,NULL,st);
+	    else if ( strcmp(namebuf,"stop-opacity")==0 )
+		st->stopOpacity = strtod(propbuf,NULL);
+	    else
+		/* Lots of props we ignore */;
+	} else if ( *name==';' )
+	    ++name;
+	if ( *name=='\0' )
+    break;
+    }
+}
+
 static Entity *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
 	struct svg_state *inherit) {
     struct svg_state st;
@@ -2723,7 +2827,7 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "fill");
     if ( name!=NULL ) {
-	st.dofill = xmlParseColor(name,&st.fillcol,&fill_colour_source);
+	st.dofill = xmlParseColor(name,&st.fillcol,&fill_colour_source,&st);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "fill-opacity");
@@ -2733,7 +2837,7 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke");
     if ( name!=NULL ) {
-	st.dostroke = xmlParseColor(name,&st.strokecol,&stroke_colour_source);
+	st.dostroke = xmlParseColor(name,&st.strokecol,&stroke_colour_source,&st);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke-opacity");
@@ -2776,6 +2880,11 @@ return( NULL );
 	    }
 	    if ( i<DASH_MAX ) st.dashes[i] = 0;
 	}
+	_xmlFree(name);
+    }
+    name = _xmlGetProp(svg,(xmlChar *) "style");
+    if ( name!=NULL ) {
+	SVGFigureStyle(&st,(char *) name, &fill_colour_source, &stroke_colour_source);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "transform");
@@ -2824,7 +2933,7 @@ return( NULL );
 	}
 	SvgStateFree(&st);
 	if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
-	    xmlApplyColourSources(top,ehead,fill_colour_source,stroke_colour_source);
+	    xmlApplyColourSources(top,ehead,&st,fill_colour_source,stroke_colour_source);
 return( ehead );
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "use")==0 ) {
 	name = _xmlGetProp(svg,(xmlChar *) "href");
@@ -2876,9 +2985,9 @@ return( NULL );
     SPLCatagorizePoints(head);
 
     eret = EntityCreate(SplinePointListTransform(head,st.transform,true), &st);
-    SvgStateFree(&st);
     if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
-	xmlApplyColourSources(top,eret,fill_colour_source,stroke_colour_source);
+	xmlApplyColourSources(top,eret,&st,fill_colour_source,stroke_colour_source);
+    SvgStateFree(&st);
 return( eret );
 }
 
@@ -2893,6 +3002,8 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
     st.linewidth = WIDTH_INHERITED;
     st.fillcol = COLOR_INHERITED;
     st.strokecol = COLOR_INHERITED;
+    st.currentColor = COLOR_INHERITED;
+    st.stopColor = COLOR_INHERITED;
     st.isvisible = true;
     st.transform[0] = 1;
     st.transform[3] = -1;	/* The SVG coord system has y increasing down */
