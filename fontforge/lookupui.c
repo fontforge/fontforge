@@ -3955,8 +3955,9 @@ return( copy(sc->name));
     len = strlen(sc->name);
     temp = galloc(len + 8);
     strcpy(temp,sc->name);
-    if ( sc->unicodeenc>32 && sc->unicodeenc!=')' &&
-	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc))) {
+    if ( sc->unicodeenc>32 && sc->unicodeenc!=')' && add_char_to_name_list &&
+	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+	    !isprivateuse(sc->unicodeenc)) {
 	pt = temp+len;
 	*pt++ = '(';
 	pt = utf8_idpb(pt,sc->unicodeenc);
@@ -3974,8 +3975,9 @@ unichar_t *uSCNameUniStr(SplineChar *sc) {
 return( NULL );
     temp = galloc((strlen(sc->name) + 5) * sizeof(unichar_t));
     utf82u_strcpy(temp,sc->name);
-    if ( sc->unicodeenc>32 && sc->unicodeenc!=')' &&
-	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc))) {
+    if ( sc->unicodeenc>32 && sc->unicodeenc!=')' && add_char_to_name_list &&
+	    !( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+	    !isprivateuse(sc->unicodeenc)) {
 	len = u_strlen(temp);
 	temp[len] = '(';
 	temp[len+1] = sc->unicodeenc;
@@ -4055,8 +4057,9 @@ return( NULL );
 			u_strncpy(temp,basept,spt-basept);
 			utf82u_strcpy(temp+(spt-basept),sc->name);
 			len = u_strlen(temp);
-			if ( sc->unicodeenc>32 &&
-				!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) ) {
+			if ( sc->unicodeenc>32 && add_char_to_name_list &&
+				!( sc->unicodeenc<0x7f && isalpha(sc->unicodeenc)) &&
+			        !isprivateuse(sc->unicodeenc)) {
 			    temp[len] = '(';
 			    temp[len+1] = sc->unicodeenc;
 			    temp[len+2] = ')';
