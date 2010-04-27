@@ -409,7 +409,16 @@ static void MVSetFeatures(MetricsView *mv) {
 	script = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
     if ( pt[4]=='{' && u_strlen(pt)>=9 )
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
-    stds = StdFeaturesOfScript(script);
+    if ( mv->oldscript!=script || mv->oldlang!=lang )
+	stds = StdFeaturesOfScript(script);
+    else {		/* features list may have changed, but retain those set */
+	int32 len, sc;
+	ti = GGadgetGetList(mv->features,&len);
+	stds = galloc((len+1)*sizeof(uint32));
+	for ( i=sc=0; i<len; ++i ) if ( ti[i]->selected )
+	    stds[sc++] = (uint32) (intpt) ti[i]->userdata;
+	stds[sc] = 0;
+    }
 
     tags = SFFeaturesInScriptLang(sf,-2,script,lang);
     /* Never returns NULL */
@@ -437,6 +446,7 @@ static void MVSetFeatures(MetricsView *mv) {
     }
     ti[i] = gcalloc(1,sizeof(GTextInfo));
     GGadgetSetList(mv->features,ti,false);
+    mv->oldscript = script; mv->oldlang = lang;
 }
 
 static void MVSelectSubtable(MetricsView *mv, struct lookup_subtable *sub) {
@@ -1784,7 +1794,7 @@ static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 return( true );
 	    mv->cur_subtable = sub;
 	    MVSetSubtables(mv->sf);
-	    MVSetFeatures(mv);
+	    MVSetFeatures(mv);		/* Is this needed? */
 	} else if ( ti[len-2]->selected ) {	/* Idiots. They selected the line, can't have that */
 	    MVSetSubtables(mv->sf);
 	    sub = mv->cur_subtable;
@@ -4695,12 +4705,19 @@ return( NULL );
 return( mv->glyphs[i].sc );
 }
 
-static void MV_ReKern(struct splinefont *sf) {
+static void MV_ReKernAll(struct splinefont *sf) {
+    MetricsView *mv;
+
+    for ( mv=sf->metrics; mv!=NULL; mv=mv->next )
+	MVReKern(mv);
+}
+
+static void MV_ReFeatureAll(struct splinefont *sf) {
     MetricsView *mv;
 
     MVSetSubtables(sf);
     for ( mv=sf->metrics; mv!=NULL; mv=mv->next )
-	MVReKern(mv);
+	MVSetFeatures(mv);
 }
 
 static void MV_CloseAll(struct splinefont *sf) {
@@ -4716,7 +4733,8 @@ static void MV_CloseAll(struct splinefont *sf) {
 struct mv_interface gdraw_mv_interface = {
     MV_GlyphCnt,
     MV_Glyph,
-    MV_ReKern,
+    MV_ReKernAll,
+    MV_ReFeatureAll,
     MV_CloseAll
 };
 

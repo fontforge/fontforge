@@ -310,10 +310,14 @@ struct mv_interface {
    /* Access to the i'th member */
     struct splinechar *(*get_glyph)(struct metricsview *,int);
 
-   /* Kerning information for this font has changed. Remetric the metric views*/
-   /* Now-a-days, call this when any kind of lookup information changes, not */
-   /*  just kerning */
+   /* Kerning (or width) information for this font has changed. Remetric the */
+   /*  metric views*/
     void (*rekern)(struct splinefont *);
+
+   /* Feature/lookup/subtable info for the font has changed */
+   /* Features, lookups or subtables have been added or removed */
+   /* This call should probably be followed by a call to rekern to remetric */
+    void (*refeature)(struct splinefont *);
 
    /* Close any metrics views associated with this font */
     void (*sf_close_metrics)(struct splinefont *sf);
@@ -323,6 +327,7 @@ extern struct mv_interface *mv_interface;
 #define MVGlyphCount			(mv_interface->glyph_cnt)
 #define MVGlyphIndex			(mv_interface->get_glyph)
 #define MVReKernAll			(mv_interface->rekern)
+#define MVReFeatureAll			(mv_interface->refeature)
 #define MVDestroyAll			(mv_interface->sf_close_metrics)
 
 void FF_SetMVInterface(struct mv_interface *mvi);

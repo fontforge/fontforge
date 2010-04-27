@@ -4467,6 +4467,7 @@ return(true);
 	GFI_Close(d);
 
 	SFReplaceFontnameBDFProps(sf);
+	MVReFeatureAll(sf);
 	MVReKernAll(sf);
     }
 return( true );
