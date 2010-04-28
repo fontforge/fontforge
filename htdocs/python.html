@@ -43,6 +43,8 @@
     <LI>
       <A HREF="#private">private</A>
     <LI>
+      <A HREF="#math">math</A>
+    <LI>
       <A href="#Font">font</A>
   </UL>
   <TABLE id="module" border=1>
@@ -2613,6 +2615,53 @@ pen = None;				# Finalize the pen. This tells FontForge
   <P>
   <TABLE id="type" border=1>
     <CAPTION>
+      <A NAME="math">math</A>
+    </CAPTION>
+    <TR>
+      <TD colspan=3>This represents a font's math constant table. Not all fonts
+      have math tables, and checking this field will not create the underlying
+      object, but examining or assigning to its members will create it..
+	<P>
+	This type may not be pickled.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>Any of the math constant names may be used as member names.<br>
+      The list is long, and I shall not copy them all. Here is a subset<br>
+      <CODE>ScriptPercentScaleDown<br>
+      ScriptScriptPercentScaleDown<br>
+      DelimitedSubFormulaMinHeight<br>
+      ...</CODE><br>
+      (These names begin with capital letters, not python's conventions but MicroSoft's)<br>
+      These all take (16 bit) integer values.<br>
+      I do not currently provide python access to any associated device tables.
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>exists</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether the font currently has an underlying math table associated with it.
+      Note that examining or assigning to one of the members will create such
+      a table.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>clear</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Removes any underlying math table from the font.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
       <A name="Font">font</A>
     </CAPTION>
     <TR>
@@ -3148,6 +3197,12 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  </TR>
 	</TABLE>
       </TD>
+    </TR>
+    <TR>
+      <TD><CODE>math</CODE></TD>
+      <TD colspan=2>Returns an <A HREF="#math">object which provides information
+        on the font's underlying math constant table. There is only one of these
+	per font.</TD>
     </TR>
     <TR>
       <TD><CODE>private</CODE></TD>
