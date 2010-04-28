@@ -174,6 +174,12 @@ typedef struct {
 } PyFF_Cvt;
 static PyTypeObject PyFF_CvtType;
 
+typedef struct fontmathobject {
+    PyObject_HEAD
+    SplineFont *sf;
+} PyFF_Math;
+static PyTypeObject PyFF_MathType;
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -182,6 +188,7 @@ typedef struct {
     PyFF_Private *private;
     PyFF_Cvt *cvt;
     PyFF_Selection *selection;
+    PyFF_Math *math;
 } PyFF_Font;
 static PyTypeObject PyFF_FontType;
 
@@ -1678,8 +1685,11 @@ static int PyFF_Contour_set_name(PyFF_Contour *self,PyObject *value,void *closur
         value = PyUnicode_AsUTF8String(value);
         if ( value==NULL )
 return( -1 );
-#endif /* PY_MAJOR_VERSION >= 3 */
 	self->name = PyBytes_AsString(value);
+	Py_DECREF(value);
+#else
+	self->name = PyBytes_AsString(value);
+#endif
     }
 return( 0 );
 }
@@ -8493,6 +8503,149 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 };
 
 /* ************************************************************************** */
+/* Font math constants type */
+/* ************************************************************************** */
+
+static void PyFFMath_dealloc(PyFF_Math *self) {
+    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject *PyFFMath_Str(PyFF_Math *self) {
+return( STRING_FROM_FORMAT( "<math table for font %s>", self->sf->fontname ));
+}
+
+static struct MATH *SFGetMathTable(SplineFont *sf) {
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    if ( sf->MATH==NULL )
+	sf->MATH = MathTableNew(sf);
+return(sf->MATH);
+}
+
+static PyObject *PyFFMath_get(PyFF_Math *self, void *closure) {
+    int offset = (int) (intpt) closure;
+    struct MATH *math;
+
+    math = SFGetMathTable(self->sf);
+	/* some entries are unsigned, but I don't know which here */
+return( Py_BuildValue("i", *(int16 *) (((char *) math) + offset) ));
+}
+
+static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
+    int offset = (int) (intpt) closure;
+    struct MATH *math;
+    long val;
+
+    math = SFGetMathTable(self->sf);
+    val = PyInt_AsLong(value);
+    if ( val==-1 && PyErr_Occurred())
+return( -1 );
+    if ( val<-32768 || val>65535 ) {
+	PyErr_Format(PyExc_ValueError, "The math table constants must have 16 bit values, but this (%ld) is out of range", val);
+return( -1 );
+    }
+    *(int16 *) (((char *) math) + offset) = val;
+return( 0 );
+}
+
+static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *args) {
+    SplineFont *sf = self->sf;
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    if ( sf->MATH!=NULL ) {
+	MATHFree(sf->MATH);
+	sf->MATH = NULL;
+    }
+Py_RETURN( self );
+}
+
+static PyObject *PyFFMath_exists(PyFF_Math *self, PyObject *args) {
+    PyObject *ret;
+    SplineFont *sf = self->sf;
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    ret = self->sf->MATH!=NULL ? Py_True : Py_False;
+    Py_INCREF( ret );
+return( ret );
+}
+
+static PyMethodDef FFMath_methods[] = {
+    {"clear", (PyCFunction)PyFFMath_clear, METH_NOARGS,
+	     "Removes any (underlying) math table from this font. Referencing a member will create the table again." },
+    {"exists", (PyCFunction)PyFFMath_exists, METH_NOARGS,
+	     "Returns whether there is an underlying table associated with this font. Referencing a member will create the table if it does not exist." },
+    NULL
+};
+
+static PyTypeObject PyFF_MathType = {
+#if PY_MAJOR_VERSION >= 3
+    PyVarObject_HEAD_INIT(NULL, 0)
+#else
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+#endif
+    "fontforge.math",	       /*tp_name*/
+    sizeof(PyFF_Math),      /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)PyFFMath_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,			       /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFMath_Str,   /*tp_str*/
+    0,			       /*tp_getattro*/
+    0,			       /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+#if PY_MAJOR_VERSION >= 3
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+#else
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+#endif
+    "fontforge math objects",   /* tp_doc */
+    0,				/* tp_traverse */
+    0,				/* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,			       /* tp_iter */
+    0,		               /* tp_iternext */
+    FFMath_methods,	       /* tp_methods */
+    0,			       /* tp_members */
+    0/* Will build this when readying the type*/,  /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,			       /* tp_init */
+    0,                         /* tp_alloc */
+    0,			       /* tp_new */
+};
+
+/* Build a get/set table for the math type based on the math_constants_descriptor */
+static void setupMath(void) {
+    int cnt;
+    PyGetSetDef *getset;
+
+    for ( cnt=0; math_constants_descriptor[cnt].script_name!=NULL; ++cnt );
+
+    getset = gcalloc(cnt+1,sizeof(PyGetSetDef));
+    for ( cnt=0; math_constants_descriptor[cnt].script_name!=NULL; ++cnt ) {
+	getset[cnt].name = math_constants_descriptor[cnt].script_name;
+	getset[cnt].get = (getter) PyFFMath_get;
+	getset[cnt].set = (setter) PyFFMath_set;
+	getset[cnt].doc = math_constants_descriptor[cnt].message;
+	getset[cnt].closure = (void *) (intpt) math_constants_descriptor[cnt].offset;
+    }
+    PyFF_MathType.tp_getset = getset;
+}
+
+/* ************************************************************************** */
 /* Private dictionary iterator type */
 /* ************************************************************************** */
 
@@ -9327,6 +9480,19 @@ return( PyFF_Font_get_lookups(self,closure,true));
 
 static PyObject *PyFF_Font_get_gsub_lookups(PyFF_Font *self,void *closure) {
 return( PyFF_Font_get_lookups(self,closure,false));
+}
+
+static PyObject *PyFF_Font_get_math(PyFF_Font *self,void *closure) {
+    PyFF_Math *math;
+
+    if ( self->math!=NULL )
+Py_RETURN( self->math );
+    math = (PyFF_Math *) PyObject_New(PyFF_Math, &PyFF_MathType);
+    if (math == NULL)
+return NULL;
+    math->sf = self->fv->sf;
+    self->math = math;
+Py_RETURN( self->math );
 }
 
 static PyObject *PyFF_Font_get_private(PyFF_Font *self,void *closure) {
@@ -11038,7 +11204,10 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "Vertical baseline data, if any", NULL},
     {"private",
 	 (getter)PyFF_Font_get_private, (setter)PyFF_cant_set,
-	 "The font's PostScript private dictionary (readonly)", NULL},
+	 "The font's PostScript private dictionary (You may not set this field, but you may set things in it)", NULL},
+    {"math",
+	 (getter)PyFF_Font_get_math, (setter)PyFF_cant_set,
+	 "The font's math constants (You may not set this field, but you may set things in it)", NULL},
     {"cvt",
 	 (getter)PyFF_Font_get_cvt, (setter)PyFF_Font_set_cvt,
 	 "The font's TrueType cvt table", NULL},
@@ -15250,6 +15419,7 @@ static int load_glibraries(void) {
     return 0;
 }
 
+    /* See also initPyFontForge above for the version 3 case */
 PyMODINIT_FUNC _PyInit_fontforge(void) {
     PyObject *m;
     int i;
@@ -15261,18 +15431,22 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 	    &PyFF_ContourIterType, &PyFF_LayerIterType, &PyFF_CvtIterType,
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
-	    NULL };
+	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
+	    &PyFF_MathType, NULL };
     
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter", "cvtiter",
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
+	    "awglyph", "awglyphIndex", "awcontext",
+	    "math",
 	    NULL };
 
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
 
+    setupMath();
     for ( i=0; types[i]!=NULL; ++i ) {
         ((PyObject *)types[i])->ob_type = &PyType_Type; /* Or does Type_Ready do this??? */
         if (PyType_Ready(types[i]) < 0)
@@ -15339,6 +15513,7 @@ void FontForge_PythonInit(void) {
 
 #else /* PY_MAJOR_VERSION >= 3 ---------------------------------------------*/
 
+    /* See also _PyInit_fontforge above for the version 3 case */
 static void initPyFontForge(void) {
     PyObject* m;
     int i;
@@ -15350,13 +15525,14 @@ static void initPyFontForge(void) {
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
 	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    NULL };
+	    &PyFF_MathType, NULL };
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter", "cvtiter",
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
 	    "awglyph", "awglyphIndex", "awcontext",
+	    "math",
 	    NULL };
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
@@ -15366,6 +15542,7 @@ static void initPyFontForge(void) {
 return;
     initted = true;
 
+    setupMath();
     for ( i=0; types[i]!=NULL; ++i ) {
 	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
 	if (PyType_Ready(types[i]) < 0)
