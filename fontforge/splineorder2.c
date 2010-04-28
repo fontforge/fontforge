@@ -475,13 +475,15 @@ typedef struct qpoint {
 } QPoint;
 
 static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
-	int round_to_int ) {
+	int round_to_int, int test_level ) {
     Spline ttf;
     int i;
     double err = round_to_int ? 1.5 : 1;
 
     if ( qfirst==qlast )		/* happened (was a bug) */
 return( false );
+
+    err *= (test_level+1);
 
     /* Control points diametrically opposed */
     if ( (data[qlast-2].cp.x-ps->to->me.x)*(ps->to->prevcp.x-ps->to->me.x) +
@@ -542,7 +544,7 @@ return( npos>=0 && /* npos<=ppos &&*/ ppos<=splinelen );
 }
 
 static int PrettyApprox(Spline *ps,double tmin, double tmax,
-	QPoint *data, int qcnt, int round_to_int ) {
+	QPoint *data, int qcnt, int round_to_int, int test_level ) {
     int ptcnt, q, i;
     double distance, dx, dy, tstart;
     BasePoint end, mid, slopemin, slopemid, slopeend;
@@ -718,7 +720,7 @@ return( -1 );			/* Points too close for a good approx */
 	    data[qcnt+i].bp.x = (data[qcnt+i].cp.x + data[qcnt+i-1].cp.x)/2;
 	    data[qcnt+i].bp.y = (data[qcnt+i].cp.y + data[qcnt+i-1].cp.y)/2;
 	}
-	if ( comparedata(ps,data,qcnt,q,round_to_int))
+	if ( comparedata(ps,data,qcnt,q,round_to_int,test_level))
 return( q );
     }
 return( -1 );
@@ -764,7 +766,7 @@ return( NULL );
 static SplinePoint *ttfApprox(Spline *ps, SplinePoint *start) {
 #if !defined(FONTFORGE_CONFIG_NON_SYMMETRIC_QUADRATIC_CONVERSION)
     extended magicpoints[6], last;
-    int cnt, i, j, qcnt;
+    int cnt, i, j, qcnt, test_level;
     QPoint data[8*10];
     int round_to_int =
     /* The end points are at integer points, or one coord is at half while */
@@ -805,7 +807,7 @@ return( ret );
     qcnt = 1;
     data[0].bp = ps->from->me;
     data[0].t = 0;
-    qcnt = PrettyApprox(ps,0,1,data,qcnt,round_to_int);
+    qcnt = PrettyApprox(ps,0,1,data,qcnt,round_to_int,0);
     if ( qcnt!=-1 )
 return( CvtDataToSplines(data,1,qcnt,start));
 
@@ -841,15 +843,17 @@ return( CvtDataToSplines(data,1,qcnt,start));
 	}
     }
 
-    qcnt = 1;
-    last = 0;
-    for ( i=0; i<cnt; ++i ) {
-	qcnt = PrettyApprox(ps,last,magicpoints[i],data,qcnt,round_to_int);
-	last = magicpoints[i];
+    for ( test_level=0; test_level<3; ++test_level ) {
+	qcnt = 1;
+	last = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    qcnt = PrettyApprox(ps,last,magicpoints[i],data,qcnt,round_to_int,test_level);
+	    last = magicpoints[i];
+	}
+	qcnt = PrettyApprox(ps,last,1,data,qcnt,round_to_int,test_level);
+	if ( qcnt!=-1 )
+    return( CvtDataToSplines(data,1,qcnt,start));
     }
-    qcnt = PrettyApprox(ps,last,1,data,qcnt,round_to_int);
-    if ( qcnt!=-1 )
-return( CvtDataToSplines(data,1,qcnt,start));
 #endif
 
 return( __ttfApprox(ps,0,1,start));
