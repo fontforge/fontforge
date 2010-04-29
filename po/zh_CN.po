@@ -3708,7 +3708,7 @@ msgstr "坏类属"
 #: contextchain.c:607
 msgid ""
 "A class must contain at least one glyph name, glyph names must be valid "
-"postscript names, and no glyphs may appear in any other class"
+"PostScript names, and no glyphs may appear in any other class"
 msgstr ""
 
 #
@@ -3720,14 +3720,14 @@ msgstr "不当范围"
 #: contextchain.c:608
 msgid ""
 "A coverage table must contain at least one glyph name, and glyph names must "
-"be valid postscript names"
+"be valid PostScript names"
 msgstr ""
 
 #
 #: contextchain.c:609
 msgid ""
 "A glyph list must contain at least one glyph name, and glyph names must be "
-"valid postscript names"
+"valid PostScript names"
 msgstr ""
 
 #
@@ -6513,7 +6513,7 @@ msgstr "其他(_O)"
 #: displayfonts.c:361
 msgid ""
 "Any other command with all its arguments.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 msgstr ""
 
@@ -6642,7 +6642,7 @@ msgstr ""
 #: displayfonts.c:1668 displayfonts.c:1682 displayfonts.c:1695
 msgid ""
 "Specifies file format used to pass the font to freetype\n"
-"  pfb -- is the standard postscript type1\n"
+"  pfb -- is the standard PostScript type1\n"
 "  ttf -- is truetype\n"
 "  otf -- is opentype\n"
 "  nohints -- freetype rasterizes without hints\n"
@@ -6827,13 +6827,13 @@ msgstr "自动消隐字体…"
 
 #
 #: dumppfa.c:1545 dumppfa.c:2482
-msgid "Converting Postscript"
-msgstr "转换 Postscript"
+msgid "Converting PostScript"
+msgstr "转换 PostScript"
 
 #
 #: dumppfa.c:1549 dumppfa.c:2486
-msgid "Saving Postscript Font"
-msgstr "保存 Postscript 字体"
+msgid "Saving PostScript Font"
+msgstr "保存 PostScript 字体"
 
 #
 #: effects.c:45
@@ -11225,7 +11225,7 @@ msgstr "不良字体名"
 #: fontinfo.c:2896
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
@@ -11242,20 +11242,20 @@ msgstr "不良字体集名称"
 
 #
 #: fontinfo.c:2910 fontinfo.c:2936 parsettf.c:1401
-msgid "A Postscript name may not be a number"
-msgstr "Postscript名称不可为数字"
+msgid "A PostScript name may not be a number"
+msgstr "PostScript名称不可为数字"
 
 #
 #: fontinfo.c:2914
 msgid ""
-"Some versions of Windows will refuse to install postscript fonts if the "
+"Some versions of Windows will refuse to install PostScript fonts if the "
 "familyname is longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
 #
 #: fontinfo.c:2918 savefontdlg.c:1419
 msgid ""
-"Some versions of Windows will refuse to install postscript fonts if the "
+"Some versions of Windows will refuse to install PostScript fonts if the "
 "fontname is longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
@@ -11269,7 +11269,7 @@ msgstr ""
 #: fontinfo.c:2927 fontinfo.c:2944
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space"
 msgstr ""
 
@@ -12311,7 +12311,7 @@ msgstr "所有层三次方"
 
 #: fontinfo.c:7743
 msgid ""
-"Use cubic (that is postscript) splines to hold the outlines of all\n"
+"Use cubic (that is PostScript) splines to hold the outlines of all\n"
 "layers of this font. Cubic splines are generally easier to edit\n"
 "than quadratic (and you may still generate a truetype font from them)."
 msgstr ""
@@ -12323,7 +12323,7 @@ msgstr "所有层二次方"
 #: fontinfo.c:7758
 msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of all\n"
-"layers of this font rather than cubic (postscript) splines."
+"layers of this font rather than cubic (PostScript) splines."
 msgstr ""
 
 #
@@ -12695,7 +12695,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its postscript equivalent\n"
+"To associate or disassocate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 
@@ -14195,7 +14195,7 @@ msgid "Too Many Breakpoints"
 msgstr "过多断点"
 
 #
-#. GT: the string "dotlessi" is the official postscript name for the glyph
+#. GT: the string "dotlessi" is the official PostScript name for the glyph
 #. GT: containing an "i" without a dot on top of it. The name "dotlessi"
 #. GT: should be left untranslated, though you may wish to explain what it
 #. GT: means
@@ -14283,8 +14283,8 @@ msgstr "插入字体到自身无所得"
 #: fvfonts.c:1566
 msgid ""
 "Interpolating between fonts with different spline orders (i.e. between "
-"postscript and truetype)"
-msgstr "在不同样条曲线顺序的字体间插入(如，在postscript与truetype之间)"
+"PostScript and truetype)"
+msgstr "在不同样条曲线顺序的字体间插入(如，在PostScript与truetype之间)"
 
 #
 #: fvfonts.c:1571
@@ -14996,8 +14996,8 @@ msgstr ""
 
 #
 #: groupsdlg.c:675
-msgid "Glyph names must be valid postscript names"
-msgstr "字形名应为有效的postscript名"
+msgid "Glyph names must be valid PostScript names"
+msgstr "字形名应为有效的PostScript名"
 
 #
 #: groupsdlg.c:699
@@ -19410,14 +19410,14 @@ msgstr ""
 #: macbinary.c:864 macbinary.c:1216
 msgid ""
 "ATM requires that fonts be encoded with the Macintosh Latin encoding. This "
-"postscript font will print fine, but only the bitmap versions will be "
+"PostScript font will print fine, but only the bitmap versions will be "
 "displayed on the screen"
 msgstr ""
 
 #
 #: macbinary.c:1972
-msgid "Can't open temporary file for postscript output\n"
-msgstr "不能打开临时文件以供postscript输出\n"
+msgid "Can't open temporary file for PostScript output\n"
+msgstr "不能打开临时文件以供PostScript输出\n"
 
 #
 #: macbinary.c:1992
@@ -19479,7 +19479,7 @@ msgstr "未找到字体文件 %s\n"
 #: macbinary.c:3158
 #, c-format
 msgid ""
-"%s is a mac resource file but contains no postscript or truetype fonts\n"
+"%s is a mac resource file but contains no PostScript or truetype fonts\n"
 msgstr ""
 
 #
@@ -21440,7 +21440,7 @@ msgstr "新字体Quadratic"
 #: noprefs.c:165 prefs.c:254
 msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
-"or cubic (postscript & opentype)."
+"or cubic (PostScript & opentype)."
 msgstr ""
 
 #
@@ -22492,7 +22492,7 @@ msgstr "忽略重复的 /Subrs 项目\n"
 #: parsepfa.c:1874
 msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
-"\t\"UniqueID\" (postscript is case concious)\n"
+"\t\"UniqueID\" (PostScript is case concious)\n"
 msgstr ""
 
 #
@@ -23596,7 +23596,7 @@ msgstr ""
 #: parsettf.c:1412 parsettf.c:1423
 #, c-format
 msgid ""
-"The Postscript font name \"%.63s\" is invalid.\n"
+"The PostScript font name \"%.63s\" is invalid.\n"
 "It should be printable ASCII,\n"
 "must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
@@ -24560,13 +24560,13 @@ msgstr "打印字体"
 
 #
 #: print.c:1390
-msgid "Generating Postscript Font"
-msgstr "生成Postscript字体"
+msgid "Generating PostScript Font"
+msgstr "生成PostScript字体"
 
 #
 #: print.c:1415
-msgid "Failed to generate postscript font"
-msgstr "未能生成Postscript字体"
+msgid "Failed to generate PostScript font"
+msgstr "未能生成PostScript字体"
 
 #
 #: print.c:1664 tottf.c:5978
@@ -24576,8 +24576,8 @@ msgstr "警告：字体中无字形"
 #
 #: print.c:2808 print.c:2813
 #, c-format
-msgid "Failed to generate postscript in file %s"
-msgstr "未能生成postscript 于文件 %s"
+msgid "Failed to generate PostScript in file %s"
+msgstr "未能生成PostScript 于文件 %s"
 
 #
 #: problems.c:214 problems.c:1544
@@ -25398,7 +25398,7 @@ msgstr "检查顺时针方向最外边的路径"
 #
 #: problems.c:3206
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. This lets you check that they\n"
 "are.\n"
 " Before doing this test insure that\n"
@@ -25412,7 +25412,7 @@ msgstr "检查缺失极点(_M)"
 
 #: problems.c:3218
 msgid ""
-"Postscript and TrueType require that when a path\n"
+"PostScript and TrueType require that when a path\n"
 "reaches its maximum or minimum position\n"
 "there must be a point at that location."
 msgstr ""
@@ -25437,7 +25437,7 @@ msgstr "检查翻转参照(_f)"
 #
 #: problems.c:3271
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. If you have a reference\n"
 "that has been flipped then the paths in that reference will\n"
 "probably be counter-clockwise. You should unlink it and do\n"
@@ -26206,8 +26206,8 @@ msgstr ""
 
 #
 #: psread.c:1599 psread.c:1608 psread.c:1617
-msgid "Divide by zero in postscript code.\n"
-msgstr "postscript 编码中除零.\n"
+msgid "Divide by zero in PostScript code.\n"
+msgstr "PostScript 编码中除零.\n"
 
 #
 #: psread.c:1699
@@ -26619,8 +26619,8 @@ msgstr "保存字体"
 
 #
 #: savefont.c:731
-msgid "Saving Multiple Postscript Fonts"
-msgstr "保存多个Postscript字体"
+msgid "Saving Multiple PostScript Fonts"
+msgstr "保存多个PostScript字体"
 
 #
 #: savefont.c:762
@@ -27023,7 +27023,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite characters are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -27037,7 +27037,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite glyphs are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -29329,7 +29329,7 @@ msgstr "比较消隐(_H)"
 
 #
 #: showatt.c:2996
-msgid "Compare postscript hints and hintmasks and truetype instructions"
+msgid "Compare PostScript hints and hintmasks and truetype instructions"
 msgstr ""
 
 #

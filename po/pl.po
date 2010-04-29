@@ -2390,7 +2390,7 @@ msgstr "Obrysy przycinające"
 
 #: charview.c:202
 msgid "The color of the clip path"
-msgstr "Kolor obrysu przycinającego inne obrysy w fontach postscriptowych typu 0"
+msgstr "Kolor obrysu przycinającego inne obrysy w fontach PostScriptowych typu 0"
 
 #: charview.c:203
 msgid "Background Image Color"
@@ -5676,7 +5676,7 @@ msgid ""
 "This does not work for PostScript linear gradients"
 msgstr ""
 "Poza wyznaczonymi granicami, gradient przyjmuje kolor swojego ostatniego\n"
-"punktu. To nie działa dla postscriptowych gradientów liniowych."
+"punktu. To nie działa dla PostScriptowych gradientów liniowych."
 
 #: cvstroke.c:1736
 msgid "Repeat"
@@ -5688,7 +5688,7 @@ msgid ""
 "This does not work for PostScript gradients."
 msgstr ""
 "Poza wyznaczonymi granicami, gradient należy powtórzyć.\n"
-"To nie działa dla gradientów postscriptowych."
+"To nie działa dla gradientów PostScriptowych."
 
 #: cvstroke.c:1747
 msgid "Reflect"
@@ -5700,7 +5700,7 @@ msgid ""
 "This does not work for PostScript gradients"
 msgstr ""
 "Poza wyznaczonymi granicami, powtarzany gradient należy\n"
-"lustrzanie odbijać To nie działa dla gradientów postscriptowych."
+"lustrzanie odbijać To nie działa dla gradientów PostScriptowych."
 
 #: cvstroke.c:1764
 msgid ""
@@ -6239,11 +6239,11 @@ msgstr "_Inny"
 #: displayfonts.c:369
 msgid ""
 "Any other command with all its arguments.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 msgstr ""
 "Własne polecenie druku wraz z odpowiednimi parametrami.\n"
-"Polecenie musi przetworzyć plik postscriptowy podany na\n"
+"Polecenie musi przetworzyć plik PostScriptowy podany na\n"
 "standardowe wejście."
 
 #: displayfonts.c:391
@@ -6348,7 +6348,7 @@ msgstr "Wygładź znaki w zaznaczonym tekście (zastosuj antyaliasing)"
 #: displayfonts.c:1743 displayfonts.c:1756
 msgid ""
 "Specifies file format used to pass the font to freetype\n"
-"  pfb -- is the standard postscript type1\n"
+"  pfb -- is the standard PostScript type1\n"
 "  ttf -- is truetype\n"
 "  otf -- is opentype\n"
 "  nohints -- freetype rasterizes without hints\n"
@@ -6358,7 +6358,7 @@ msgid ""
 "    freetype's. Only as last resort"
 msgstr ""
 "Wybór trybu pracy rasteryzatora freetype:\n"
-"  pfb ― standardowy postscriptowy Type1\n"
+"  pfb ― standardowy PostScriptowy Type1\n"
 "  ttf ― truetype\n"
 "  otf ― opentype\n"
 "  bez hintów ― freetype ma nie używać hintów z fontu.\n"
@@ -6522,11 +6522,11 @@ msgstr "Automatyczne hintowanie fontu..."
 
 #: dumppfa.c:1563 dumppfa.c:2511
 msgid "Converting PostScript"
-msgstr "Przetwarzanie postscriptu"
+msgstr "Przetwarzanie PostScriptu"
 
 #: dumppfa.c:1567 dumppfa.c:2515 savefont.c:805
 msgid "Saving PostScript Font"
-msgstr "Zapisywanie fontu postscriptowego"
+msgstr "Zapisywanie fontu PostScriptowego"
 
 #: effects.c:45
 msgid "Outlining glyphs"
@@ -10437,7 +10437,7 @@ msgid ""
 "and must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
-"Nazwa postscriptowa powinna składać się z co najwyżej\n"
+"Nazwa PostScriptowa powinna składać się z co najwyżej\n"
 "62 drukowalnych znaków ASCII i nie może zawierać znaków\n"
 "(){}[]<>%%/ ani spacji."
 
@@ -10451,11 +10451,11 @@ msgstr "Błędna nazwa rodziny fontu"
 
 #: fontinfo.c:2643 fontinfo.c:2669 parsettf.c:1428
 msgid "A PostScript name may not be a number"
-msgstr "Nazwa postscriptowa nie może być liczbą"
+msgstr "Nazwa PostScriptowa nie może być liczbą"
 
 #: fontinfo.c:2647
 msgid ""
-"Some versions of Windows will refuse to install postscript fonts if the familyname is "
+"Some versions of Windows will refuse to install PostScript fonts if the familyname is "
 "longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 "Pewne wersje Windows nie dopuszczą do instalacji fontu jeśli nazwa rodziny jest dłuższa "
@@ -10463,10 +10463,10 @@ msgstr ""
 
 #: fontinfo.c:2651 savefontdlg.c:1403
 msgid ""
-"Some versions of Windows will refuse to install postscript fonts if the fontname is "
+"Some versions of Windows will refuse to install PostScript fonts if the fontname is "
 "longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
-"Niektóre wersje Windows odmówią obsługi fontu postscriptowego o nazwie dłuższej niż 31 "
+"Niektóre wersje Windows odmówią obsługi fontu PostScriptowego o nazwie dłuższej niż 31 "
 "znaków. Czy mimo to kontynuować?"
 
 #: fontinfo.c:2654
@@ -10483,7 +10483,7 @@ msgid ""
 "A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space"
 msgstr ""
-"Nazwa postscriptowa powinna używać znaków ASCII\n"
+"Nazwa PostScriptowa powinna używać znaków ASCII\n"
 "i nie może zawierać znaków (){}[]<>%%/ ani spacji"
 
 #: fontinfo.c:2703
@@ -10493,11 +10493,11 @@ msgstr "Wersja %.20s"
 
 #: fontinfo.c:3092
 msgid "Detach from PostScript Names"
-msgstr "Inne niż nazwy postscriptowe"
+msgstr "Inne niż nazwy PostScriptowe"
 
 #: fontinfo.c:3095
 msgid "Same as PostScript Names"
-msgstr "Takie jak nazwy postscriptowe"
+msgstr "Takie jak nazwy PostScriptowe"
 
 #: fontinfo.c:3102
 msgid "Multi-line edit"
@@ -10725,7 +10725,7 @@ msgid ""
 "Is this really your intent?"
 msgstr ""
 "Próba zmiany ostatniej warstwy truetype'owej\n"
-"(stopnia 2) na warstwę postscriptową (stopnia 3).\n"
+"(stopnia 2) na warstwę PostScriptową (stopnia 3).\n"
 "FontForge w takim wypadku usuwa wszystkie programy\n"
 "glifów (hinting truetype'owy).\n"
 "Tego nie będzie można potem cofnąć.\n"
@@ -11535,11 +11535,11 @@ msgstr "Font stopnia _3"
 
 #: fontinfo.c:8042
 msgid ""
-"Use cubic (that is postscript) splines to hold the outlines of all\n"
+"Use cubic (that is PostScript) splines to hold the outlines of all\n"
 "layers of this font. Cubic splines are generally easier to edit\n"
 "than quadratic (and you may still generate a truetype font from them)."
 msgstr ""
-"Operuj na krzywych stopnia 3 (postscriptowych) we wszystkich warstwach.\n"
+"Operuj na krzywych stopnia 3 (PostScriptowych) we wszystkich warstwach.\n"
 "Krzywe te są łatwiejsze w edycji niż krzywe stopnia 2 (truetype'owe),\n"
 "a także z nich można wygenerować font TrueType."
 
@@ -11550,10 +11550,10 @@ msgstr "Font stopnia _2"
 #: fontinfo.c:8057
 msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of all\n"
-"layers of this font rather than cubic (postscript) splines."
+"layers of this font rather than cubic (PostScript) splines."
 msgstr ""
 "Operuj na krzywych stopnia 2 (truetype'owych) we wszystkich warstwach.\n"
-"Krzywe te są trudniejsze w edycji niż krzywe stopnia 3 (postscriptowe),\n"
+"Krzywe te są trudniejsze w edycji niż krzywe stopnia 3 (PostScriptowe),\n"
 "ale tylko one umożliwiają natywny hinting TrueType."
 
 #: fontinfo.c:8060
@@ -11568,7 +11568,7 @@ msgid ""
 msgstr ""
 "Ustaw stopień każdej warstwy fontu osobno.\n"
 "To może być bardzo użyteczne, jeśli chcesz\n"
-"przechowywać jednocześnie postscriptową\n"
+"przechowywać jednocześnie PostScriptową\n"
 "i truetype'ową wersję fontu."
 
 #: fontinfo.c:8083
@@ -11936,7 +11936,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its postscript equivalent\n"
+"To associate or disassocate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 "Aby dodać nową daną, należy kliknąć przycisk <Nowa> i wybrać jej język.\n"
@@ -11944,7 +11944,7 @@ msgstr ""
 "Aby zmienić typ wartości, należy go kliknąć i wybrać inny.\n"
 "Aby zmienić wartość, należy ją kliknąć i wpisać nową.\n"
 "Aby usunąć wartość, należy ją kliknąć i kliknąć przycisk Usuń.\n"
-"Aby powiązać wartość z jej odpowiednikiem postscriptowym, lub usunąć\n"
+"Aby powiązać wartość z jej odpowiednikiem PostScriptowym, lub usunąć\n"
 "powiązanie, należy kliknąć kliknąć wartość prawym przyciskiem myszy\n"
 "i z menu kontekstowego wybrać odpowiednią operację."
 
@@ -13586,7 +13586,7 @@ msgstr ""
 msgid "Too Many Breakpoints"
 msgstr "Zbyt wiele punktów wstrzymania"
 
-#. GT: the string "dotlessi" is the official postscript name for the glyph
+#. GT: the string "dotlessi" is the official PostScript name for the glyph
 #. GT: containing an "i" without a dot on top of it. The name "dotlessi"
 #. GT: should be left untranslated, though you may wish to explain what it
 #. GT: means
@@ -13669,17 +13669,17 @@ msgstr "Interpolacja między identycznymi fontami nic nie zmieni"
 
 #: fvfonts.c:1598
 msgid ""
-"Interpolating between fonts with different spline orders (i.e. between postscript and "
+"Interpolating between fonts with different spline orders (i.e. between PostScript and "
 "truetype)"
 msgstr ""
-"Próba interpolowania między fontami o różnych typach krzywych (postscriptowych i "
+"Próba interpolowania między fontami o różnych typach krzywych (PostScriptowych i "
 "truetype'owych)."
 
 #: fvfonts.c:1603
 msgid ""
 "Interpolating between fonts with different editing types (ie. between type3 and type1)"
 msgstr ""
-"Próba interpolowania między fontami o różnych budowach (postscriptowych Type3 i Type1)."
+"Próba interpolowania między fontami o różnych budowach (PostScriptowych Type3 i Type1)."
 
 #: fvfontsdlg.c:61 problems.c:2266
 msgid "Kerning"
@@ -14310,8 +14310,8 @@ msgid "Select by Color"
 msgstr "Zaznacz według koloru"
 
 #: groupsdlg.c:698
-msgid "Glyph names must be valid postscript names"
-msgstr "Nazwy glifów myszą być poprawnymi nazwami postscriptowymi"
+msgid "Glyph names must be valid PostScript names"
+msgstr "Nazwy glifów myszą być poprawnymi nazwami PostScriptowymi"
 
 #: groupsdlg.c:722
 msgid "Bad Range"
@@ -18469,7 +18469,7 @@ msgstr "Font nie zadziała w ATM"
 
 #: macbinary.c:871 macbinary.c:1223
 msgid ""
-"ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript "
+"ATM requires that fonts be encoded with the Macintosh Latin encoding. This PostScript "
 "font will print fine, but only the bitmap versions will be displayed on the screen"
 msgstr ""
 "Adobe Type Manager (ATM) wymaga, żeby fonty miały kodowanie Macintosh Latin.\n"
@@ -18477,8 +18477,8 @@ msgstr ""
 "tylko bitmapy."
 
 #: macbinary.c:1983
-msgid "Can't open temporary file for postscript output\n"
-msgstr "Nie udało się otworzyć pliku tymczasowego dla wyjścia postscriptowego.\n"
+msgid "Can't open temporary file for PostScript output\n"
+msgstr "Nie udało się otworzyć pliku tymczasowego dla wyjścia PostScriptowego.\n"
 
 #: macbinary.c:2003
 #, c-format
@@ -18528,10 +18528,10 @@ msgstr "Nie znaleziono pliku fontu: %s\n"
 
 #: macbinary.c:3170
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
+msgid "%s is a mac resource file but contains no PostScript or truetype fonts\n"
 msgstr ""
 "%s jest plikiem zasobów Macintosha, ale nie zawiera żadnych fontów truetype'owych ani "
-"postscriptowych\n"
+"PostScriptowych\n"
 
 #: macenc.c:2266 macencui.c:107
 msgid "Faroese (Icelandic)"
@@ -19808,7 +19808,7 @@ msgid ""
 "The font %.30s contains cubic splines. It must be converted to quadratic splines before "
 "it can be used in an apple distortable font"
 msgstr ""
-"Font „%.30s” zawiera obrysy postscriptowe (krzywe stopnia 3). Musi zostać "
+"Font „%.30s” zawiera obrysy PostScriptowe (krzywe stopnia 3). Musi zostać "
 "przekonwertowany na krzywe stopnia 2 zanim będzie mógł zostać użyty w apple'owskim "
 "foncie z wariantami"
 
@@ -19843,7 +19843,7 @@ msgid ""
 "The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, one cubic)"
 msgstr ""
 "Fonty %1$.30s i %2$.30s używają innych typów krzywych (jeden truetype'owych, drugi "
-"postscriptowych)"
+"PostScriptowych)"
 
 #: mm.c:1027
 #, c-format
@@ -20154,7 +20154,7 @@ msgstr ""
 
 #: mmdlg.c:2187
 msgid "Bad PostScript function"
-msgstr "Błędna funkcja postscriptowa"
+msgstr "Błędna funkcja PostScriptowa"
 
 #: mmdlg.c:2366 mmdlg.c:2369
 msgid "CID keyed fonts may not be a master design of a multiple master font"
@@ -20526,10 +20526,10 @@ msgstr "Krzywe stopnia 2"
 #: noprefs.c:180 prefs.c:289
 msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
-"or cubic (postscript & opentype)."
+"or cubic (PostScript & opentype)."
 msgstr ""
 "Wybór typu obrysów używanych w nowo tworzonych fontach: truetype'owe\n"
-"(krzywe stopnia drugiego) lub postscriptowe (stopnia trzeciego)."
+"(krzywe stopnia drugiego) lub PostScriptowe (stopnia trzeciego)."
 
 #: noprefs.c:181 prefs.c:274
 msgid "FreeTypeInFontView"
@@ -21646,7 +21646,7 @@ msgstr "Zignorowano powieloną pozycję /Subrs\n"
 #: parsepfa.c:1874
 msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
-"\t\"UniqueID\" (postscript is case concious)\n"
+"\t\"UniqueID\" (PostScript is case concious)\n"
 msgstr ""
 "Ten font zawiera zmienną „UniqueId”, a powinna się ona nazywać „UniqueID”\n"
 "\t(PostScript jest wrażliwy na wielkość liter)\n"
@@ -21861,7 +21861,7 @@ msgstr "tablica linii podstawowych pism (wersja AAT)"
 
 #: parsettf.c:895
 msgid "PostScript font program (Compact Font Format)"
-msgstr "postscriptowy format fontu (CFF)"
+msgstr "PostScriptowy format fontu (CFF)"
 
 #: parsettf.c:896
 msgid "Obsolete table for a type1 CID keyed font"
@@ -22135,7 +22135,7 @@ msgid ""
 "This font contains both truetype and PostScript glyph descriptions\n"
 "  only one will be used.\n"
 msgstr ""
-"Ten font zawiera jednocześnie postscriptowe i truetype'owe definicje glifu.\n"
+"Ten font zawiera jednocześnie PostScriptowe i truetype'owe definicje glifu.\n"
 "  Zostanie użyta tylko jedna z nich.\n"
 
 #: parsettf.c:1207
@@ -22195,7 +22195,7 @@ msgid ""
 "must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
-"Nazwa fontu „%.63s” nie jest poprawną nazwą postscriptową.\n"
+"Nazwa fontu „%.63s” nie jest poprawną nazwą PostScriptową.\n"
 "Powinna składać się z co najwyżej 62 drukowalnych znaków ASCII\n"
 "i nie może zawierać znaków (){}[]<>%%/ ani spacji"
 
@@ -22640,7 +22640,7 @@ msgid ""
 "can only deal with one at a time, please pick which one you want to use"
 msgstr ""
 "Ten font zawiera zarówno truetype'ową tablicę „glyf” jak i opentype'ową „CFF ” z "
-"obrysami postscriptowymi. FontForge może operować tylko na jednej z nich. Której użyć?"
+"obrysami PostScriptowymi. FontForge może operować tylko na jednej z nich. Której użyć?"
 
 #: parsettf.c:5533
 msgid "No Bitmap Strikes"
@@ -23647,7 +23647,7 @@ msgstr ""
 "Apple i MS/Adobe różnią się w szczegółach dotyczących fontów TrueType i OpenType.\n"
 "Ta opcja odnosi się do pozycji „Apple” w okienku Plik -> Generuj fonty.\n"
 "Podstawowe różnice:\n"
-" Wymagania obecności lub nie nazwy „postscript” w tablicy nazw są sprzeczne\n"
+" Wymagania obecności lub nie nazwy „PostScript” w tablicy nazw są sprzeczne\n"
 " Bitmapy są zapisywane w innych tablicach\n"
 " Skalowane glify kompozytowe są traktowane inaczej\n"
 " Użycie raczej GSUB niż morx(t)/feat\n"
@@ -23671,7 +23671,7 @@ msgstr ""
 "Apple i MS/Adobe różnią się w szczegółach dotyczących fontów TrueType i OpenType.\n"
 "Ta opcja odnosi się do pozycji „OpenType” w okienku Plik -> Generuj fonty.\n"
 "Podstawowe różnice:\n"
-" Wymagania obecności lub nie nazwy „postscript” w tablicy nazw są sprzeczne\n"
+" Wymagania obecności lub nie nazwy „PostScript” w tablicy nazw są sprzeczne\n"
 " Bitmapy są zapisywane w innych tablicach\n"
 " Skalowane glify kompozytowe są traktowane inaczej\n"
 " Użycie raczej GSUB niż morx(t)/feat\n"
@@ -23865,11 +23865,11 @@ msgstr "Drukowanie fontu"
 
 #: print.c:1403
 msgid "Generating PostScript Font"
-msgstr "Tworzenie fontu postscriptowego"
+msgstr "Tworzenie fontu PostScriptowego"
 
 #: print.c:1428
-msgid "Failed to generate postscript font"
-msgstr "Nie udało się utworzyć fontu postscriptowego"
+msgid "Failed to generate PostScript font"
+msgstr "Nie udało się utworzyć fontu PostScriptowego"
 
 #: print.c:1677 tottf.c:6106
 msgid "Warning: Font contained no glyphs"
@@ -23877,7 +23877,7 @@ msgstr "Uwaga: font nie zawiera żadnych glifów"
 
 #: print.c:2868 print.c:2873
 #, c-format
-msgid "Failed to generate postscript in file %s"
+msgid "Failed to generate PostScript in file %s"
 msgstr "Nie udało się wygenerować PostScriptu w pliku %s"
 
 #: problems.c:221 problems.c:1631
@@ -24505,7 +24505,7 @@ msgstr ""
 "Współrzędne wszystkich punktów w fontach truetype'owych muszą\n"
 "wyrażać się całkowitymi wartościami (jeśli teraz mają wartości\n"
 "niecałkowite, FontForge zaokrągli je przy generowaniu fontów,\n"
-"co może spowodować zniekształcenia obrysów). Fonty postscriptowe\n"
+"co może spowodować zniekształcenia obrysów). Fonty PostScriptowe\n"
 "dopuszczają współrzędne rzeczywiste, ale lepiej z tego nie korzystać."
 
 #: problems.c:3138
@@ -24663,7 +24663,7 @@ msgid ""
 " Before doing this test insure that\n"
 "no paths self-intersect"
 msgstr ""
-"Postscript i TrueType wymagają aby zewnętrzne kontury glifów\n"
+"PostScript i TrueType wymagają aby zewnętrzne kontury glifów\n"
 "były rysowane zgodnie z kierunkiem ruchu wskazówek zegara.\n"
 "Ta opcja pozwala się upewnić, czy to wymaganie jest spełnione.\n"
 "Wcześniej jednak należy się upewnić, czy kontury nie przecinają się."
@@ -24678,7 +24678,7 @@ msgid ""
 "reaches its maximum or minimum position\n"
 "there must be a point at that location."
 msgstr ""
-"Specyfikacje Postscriptu i TrueType w znacznej większości\n"
+"Specyfikacje PostScriptu i TrueType w znacznej większości\n"
 "przypadków usilnie zalecają aby w ekstremach obrysów (tam,\n"
 "gdzie krzywe osiągają największą lub najmniejszą wartość\n"
 "którejś współrzędnej) znajdowały się punkty."
@@ -24696,9 +24696,9 @@ msgstr ""
 "W Podręczniku (PostScript Language Reference manual, Dodatek B)\n"
 "można przeczytać, że interpreter nie musi obsługiwać glifów liczących\n"
 "więcej niż 1500 punktów. Sądzę, że w tej liczbie znajdują się również\n"
-"punkty kontrolne. Nowe interpretery Postscriptu zwykle pozwalają\n"
+"punkty kontrolne. Nowe interpretery PostScriptu zwykle pozwalają\n"
 "przekroczyć to ograniczenie. Istotna uwaga: obrysy truetype'owe po\n"
-"konwersji do Postscriptu mają dwukrotnie więcej punktów kontrolnych."
+"konwersji do PostScriptu mają dwukrotnie więcej punktów kontrolnych."
 
 #: problems.c:3413
 msgid "Check _flipped references"
@@ -24712,7 +24712,7 @@ msgid ""
 "probably be counter-clockwise. You should unlink it and do\n"
 "Element->Correct direction on it."
 msgstr ""
-"Postscript i TrueType wymagają aby zewnętrzne kontury glifów\n"
+"PostScript i TrueType wymagają aby zewnętrzne kontury glifów\n"
 "były rysowane zgodnie z kierunkiem ruchu wskazówek zegara.\n"
 "Jeśli w glifie znajduje się odwołanie odbite lustrzanie wzdłuż jednej\n"
 "osi, to raczej nie spełnia ono tego wymagania. Zaleca się odłączenie\n"
@@ -24752,7 +24752,7 @@ msgid ""
 "The first four entries of the transformation matrix should be\n"
 "[1 0 0 1]."
 msgstr ""
-"Funty postscriptowe Type1 i 2 pozwalają tylko na przesunięcie\n"
+"Funty PostScriptowe Type1 i 2 pozwalają tylko na przesunięcie\n"
 "odwołań. Pierwsze cztery elementy macierzy przekształcenia muszą\n"
 "być ustawione na [1 0 0 1]."
 
@@ -25233,7 +25233,7 @@ msgstr "Błędny wpis BlueShift."
 
 #: problems.c:4278 problems.c:4290
 msgid "Bad Private Dictionary"
-msgstr "Błąd w postscriptowym słowniku prywatnym"
+msgstr "Błąd w PostScriptowym słowniku prywatnym"
 
 #: problems.c:4751
 msgid "Glyph not in font"
@@ -25390,7 +25390,7 @@ msgid ""
 msgstr ""
 "W tym foncie pewne punkty obrysów mają niecałkowite\n"
 "współrzędne. To dozwolone w przypadku fontów SVG, lub\n"
-"postscriptowych, ale nie truetype'owych. Czy traktować\n"
+"PostScriptowych, ale nie truetype'owych. Czy traktować\n"
 "je jako błędne?"
 
 #: problems.c:5382
@@ -25468,8 +25468,8 @@ msgstr ""
 "więcej danych niż wprowadzono).\n"
 
 #: psread.c:1599 psread.c:1608 psread.c:1617
-msgid "Divide by zero in postscript code.\n"
-msgstr "Dzielenie przez zero w kodzie postscriptowym.\n"
+msgid "Divide by zero in PostScript code.\n"
+msgstr "Dzielenie przez zero w kodzie PostScriptowym.\n"
 
 #: psread.c:1699
 msgid "Can't compare arrays\n"
@@ -25852,7 +25852,7 @@ msgstr "Zapisywanie fontu"
 
 #: savefont.c:731
 msgid "Saving Multiple PostScript Fonts"
-msgstr "Zapisywanie fontów postscriptowych"
+msgstr "Zapisywanie fontów PostScriptowych"
 
 #: savefont.c:762
 msgid "Bad Drawing Operation"
@@ -26089,7 +26089,7 @@ msgstr "Czy zaokrąglić współrzędne punktów do liczb całkowitych? To oszcz
 
 #: savefontdlg.c:583
 msgid "Do you want the font file to contain PostScript hints?"
-msgstr "Czy wynikowy font postscriptowy ma zawierać hinting?"
+msgstr "Czy wynikowy font PostScriptowy ma zawierać hinting?"
 
 #: savefontdlg.c:592
 msgid "Flex Hints"
@@ -26097,7 +26097,7 @@ msgstr "Hinty „flex”"
 
 #: savefontdlg.c:594
 msgid "Do you want the font file to contain PostScript flex hints?"
-msgstr "Czy wynikowy font postscriptowy ma zawierać hinting typu „flex”?"
+msgstr "Czy wynikowy font PostScriptowy ma zawierać hinting typu „flex”?"
 
 #: savefontdlg.c:603
 msgid "Hint Substitution"
@@ -26127,7 +26127,7 @@ msgid ""
 "using a PostScript® font."
 msgstr ""
 "Plik AFM przechowuje informacje metryczne używane przez wiele edytorów przy korzystaniu "
-"z fontów postscriptowych"
+"z fontów PostScriptowych"
 
 #: savefontdlg.c:631
 msgid "Composites in AFM"
@@ -26152,7 +26152,7 @@ msgstr "Zapisz PFM"
 msgid "The PFM file contains information Windows needs to install a PostScript® font."
 msgstr ""
 "Pliki PFM przechowują informacje potrzebne dla Windows do zainstalowania fontów "
-"postscriptowych"
+"PostScriptowych"
 
 #: savefontdlg.c:651
 msgid "Output TFM & ENC"
@@ -26162,7 +26162,7 @@ msgstr "Zapisz TFM i ENC"
 msgid "The tfm and enc files contain information TeX needs to install a PostScript® font."
 msgstr ""
 "Pliki TFM i ENC przechowują informacje potrzebne ΤεΧ-owi do zainstalowania fontów "
-"postscriptowych"
+"PostScriptowych"
 
 #: savefontdlg.c:666
 msgid "SFNT"
@@ -26194,7 +26194,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite characters are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -26204,7 +26204,7 @@ msgstr ""
 "Apple i MS/Adobe różnią się w szczegółach dotyczących fontów TrueType i OpenType.\n"
 "Ta opcja pozwala wybrać standard, do którego ma się stosować generowany font.\n"
 "Podstawowe różnice:\n"
-" Wymagania obecności lub nie nazwy „postscript” w tablicy nazw są sprzeczne\n"
+" Wymagania obecności lub nie nazwy „PostScript” w tablicy nazw są sprzeczne\n"
 " Bitmapy są zapisywane w innych tablicach\n"
 " Skalowane znaki kompozytowe są traktowane inaczej\n"
 " Użycie raczej GSUB niż morx(t)/feat\n"
@@ -26216,7 +26216,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite glyphs are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -26226,7 +26226,7 @@ msgstr ""
 "Apple i MS/Adobe różnią się w szczegółach dotyczących fontów TrueType i OpenType.\n"
 "Ta opcja pozwala wybrać standard, do którego ma się stosować generowany font.\n"
 "Podstawowe różnice:\n"
-" Wymagania obecności lub nie nazwy „postscript” w tablicy nazw są sprzeczne\n"
+" Wymagania obecności lub nie nazwy „PostScript” w tablicy nazw są sprzeczne\n"
 " Bitmapy są zapisywane w innych tablicach\n"
 " Skalowane glify kompozytowe są traktowane inaczej\n"
 " Użycie raczej GSUB niż morx(t)/feat\n"
@@ -26336,7 +26336,7 @@ msgid ""
 msgstr ""
 "Zachowuje zawartość warstw tła i spiro w tablicy PfEd.\n"
 "Jeśli font truetype jest generowany z krzywych stopnia 3\n"
-"(postscriptowych), one także zostaną zachowane."
+"(PostScriptowych), one także zostaną zachowane."
 
 #: savefontdlg.c:829
 msgid "TeX Table"
@@ -26467,7 +26467,7 @@ msgid ""
 "with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"Według przyjętej konwencji fonty postscriptowe powinny mieć wysokość pola znaku "
+"Według przyjętej konwencji fonty PostScriptowe powinny mieć wysokość pola znaku "
 "ustawioną na 1000, jednak dla tego fontu wynosi ona %d. Teoretycznie nie jest to błąd, "
 "ale lepiej rozważyć poprawienie tego w Element -> Właściwość Fontu -> Ogólne.\n"
 "Czy mimo to kontynuować?"
@@ -28583,8 +28583,8 @@ msgid "Compare _Hints"
 msgstr "Porównaj _hinty"
 
 #: showatt.c:3208
-msgid "Compare postscript hints and hintmasks and truetype instructions"
-msgstr "Porównuj postscriptowe hinty i ich maski, a także instrukcje truetype'owe."
+msgid "Compare PostScript hints and hintmasks and truetype instructions"
+msgstr "Porównuj PostScriptowe hinty i ich maski, a także instrukcje truetype'owe."
 
 #: showatt.c:3216
 msgid "Compare Hint_Masks"
@@ -28678,7 +28678,7 @@ msgid ""
 "(both PostScript and TrueType suggest you retain these points)"
 msgstr ""
 "Zwykle upraszczanie zachowuje punkty ekstremalne, co jest zalecane\n"
-"w specyfikacjach zarówno fontów postscriptowych jak i truetype'owych."
+"w specyfikacjach zarówno fontów PostScriptowych jak i truetype'owych."
 
 #: simplifydlg.c:210
 msgid "Allow _slopes to change"

@@ -519,11 +519,11 @@ msgstr "Bad Colour"
 #: displayfonts.c:366
 msgid ""
 "Any other command with all its arguments.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 msgstr ""
 "Any other command with all its arguements.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 
 #: displayfonts.c:2116

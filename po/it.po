@@ -826,8 +826,8 @@ msgstr "Deviner(_G)"
 msgid "A Font Family name is required"
 msgstr "È necessario un nome di famiglia "
 
-msgid "A Postscript name may not be a number"
-msgstr "Il nome Postscript non può essere un numero"
+msgid "A PostScript name may not be a number"
+msgstr "Il nome PostScript non può essere un numero"
 
 msgid "Bad Font Family Name"
 msgstr "Nome della famiglia del font errato"
@@ -841,8 +841,8 @@ msgstr "Nome troppo lungo, max. 63 caratteri"
 msgid "Bad Font Modifier Name"
 msgstr "Font Modifier Name errato"
 
-msgid "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"
-msgstr "Un nome Postscript deve essere ASCII\ne non può contenere né (){}[]<>%%/ né spazi"
+msgid "A PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"
+msgstr "Un nome PostScript deve essere ASCII\ne non può contenere né (){}[]<>%%/ né spazi"
 
 msgid "Names"
 msgstr "Nomi"
@@ -1048,7 +1048,7 @@ msgstr "800 Nerissimo"
 msgid "900 Black"
 msgstr "900 Extra-nero"
 
-msgid "Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.\nThis field is often called \"FSType\" and is\navailabe in CID-keyed postscript fonts as well\nas truetype and opentype fonts"
+msgid "Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.\nThis field is often called \"FSType\" and is\navailabe in CID-keyed PostScript fonts as well\nas truetype and opentype fonts"
 msgstr "Questo font può venire incluso in un documento (pdf)?\nSe sì, quali sono i permessi relativi al documento e al font?"
 
 msgid "_Embeddable"
@@ -1570,7 +1570,7 @@ msgstr "Il file AFM contiene le metriche usate da molti programmi\ndi elaborazio
 msgid "The PFM file contains information Windows needs to install a PostScript® font."
 msgstr "Il file PFM contiene le informazioni necessarie a Windows\nper installare un font PostScript®."
 
-msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
+msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
 msgstr "Apple e MS/Adobe divergono per quanto riguarda il formato dei file truetype e opentype\nQuesta scelta ti permette di scegliere fra i 2 standard per il tuo font."
 
 msgid "No Outline Font"
@@ -1585,11 +1585,11 @@ msgstr "Errore di scrittura del file PFM"
 msgid "Saving font"
 msgstr "Salvataggio del font"
 
-msgid "Saving Postscript Font"
-msgstr "Salvataggio del font Postscript"
+msgid "Saving PostScript Font"
+msgstr "Salvataggio del font PostScript"
 
-msgid "Saving Multiple Postscript Fonts"
-msgstr "Salvataggio del font Multiple Postscript"
+msgid "Saving Multiple PostScript Fonts"
+msgstr "Salvataggio del font Multiple PostScript"
 
 msgid "Saving TrueType Font"
 msgstr "Salvataggio del font TrueType"
@@ -1717,8 +1717,8 @@ msgstr "Questo ti porta ad aprire più di 10 finestre.\nÈ proprio quello che vu
 msgid "Merge Kern Info"
 msgstr "Riunisci le informazioni di crenatura"
 
-msgid "Open Postscript Font"
-msgstr "Apri un font Postscript"
+msgid "Open PostScript Font"
+msgstr "Apri un font PostScript"
 
 msgid "Loading..."
 msgstr "Sto caricando..."
@@ -3181,8 +3181,8 @@ msgstr "Ancora persa"
 msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
 msgstr "Almeno un'ancora si è persa durante l'inserimento, perché non c'era una classe d'ancore idonea nel font di destiazione."
 
-msgid "Converting Postscript"
-msgstr "Conversione Postscript"
+msgid "Converting PostScript"
+msgstr "Conversione PostScript"
 
 msgid "Bad encoding file format"
 msgstr "Formato del file di encoding errato"
@@ -3613,14 +3613,14 @@ msgstr "Mostra se questo carattere ha esattement un hint per aste di tipo 3"
 msgid "Check _outermost paths clockwise"
 msgstr "C_ontrolla che i contorni esterni siano in verso orario"
 
-msgid "Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."
-msgstr "Postscript e TrueType richiedono che i contorni siano percorsi\nin senso orario.  Questo vi permette di verificarlo."
+msgid "PostScript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."
+msgstr "PostScript e TrueType richiedono che i contorni siano percorsi\nin senso orario.  Questo vi permette di verificarlo."
 
 msgid "Check flipped _references"
 msgstr "Cont_rolla i riferimenti ribaltati"
 
-msgid "Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."
-msgstr "Postscript e TrueType richiedono che i contorni siano percorsi\nin senso orario. Se hai un riferimento ribaltato,\ni contorni di questo riferimento sono probabilmente nel senso sbagliato.\nDevi cancellare il legame e applicargli 'Correggi la direzione'."
+msgid "PostScript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."
+msgstr "PostScript e TrueType richiedono che i contorni siano percorsi\nin senso orario. Se hai un riferimento ribaltato,\ni contorni di questo riferimento sono probabilmente nel senso sbagliato.\nDevi cancellare il legame e applicargli 'Correggi la direzione'."
 
 msgid "Check missing _bitmaps"
 msgstr "Controlla le _bitmap mancanti"
@@ -3781,11 +3781,11 @@ msgstr " pixel"
 msgid "Printing Font"
 msgstr "Sto stampando il font"
 
-msgid "Generating Postscript Font"
-msgstr "Sto generando un font Postscript"
+msgid "Generating PostScript Font"
+msgstr "Sto generando un font PostScript"
 
-msgid "Failed to generate postscript font"
-msgstr "Errore nella generazione di un font Postscript"
+msgid "Failed to generate PostScript font"
+msgstr "Errore nella generazione di un font PostScript"
 
 msgid "Page Setup"
 msgstr "Impostazione della pagina"
@@ -3796,7 +3796,7 @@ msgstr "Impostazion_e"
 msgid "_Other"
 msgstr "Altro"
 
-msgid "Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input."
+msgid "Any other command with all its arguments.\nThe command must expect to deal with a PostScript\nfile which it will find by reading its standard input."
 msgstr "Un comando qualunque con tutti i suoi argomenti.\nIl comando deve elaborare un file PostScript\nche troverà leggendo il suo stream d'ingresso standard."
 
 msgid "To _File"
@@ -4189,8 +4189,8 @@ msgstr "Caratteri AntiAlias (greymap), o caratteri bitmap"
 msgid "Specifies the pixel size of the glyphs on display"
 msgstr "Espone il corpo del carattere mostrato"
 
-msgid "Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
-msgstr "Specifica il formato del file usato per trasformare il font in freetype\n  pfb -- formato standard per postscript type1\n  ttf -- formato truetype\n  httf-- truetype con hints\n  otf -- formato opentype\n  bitmap -- freetype non è usato\n    Le bitmap devono già esister\n  FontForge -- utilizza il motore di FontForge, non quello di \n    freetype. Solamente come ultima risorsa"
+msgid "Specifies file format used to pass the font to freetype\n  pfb -- is the standard PostScript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
+msgstr "Specifica il formato del file usato per trasformare il font in freetype\n  pfb -- formato standard per PostScript type1\n  ttf -- formato truetype\n  httf-- truetype con hints\n  otf -- formato opentype\n  bitmap -- freetype non è usato\n    Le bitmap devono già esister\n  FontForge -- utilizza il motore di FontForge, non quello di \n    freetype. Solamente come ultima risorsa"
 
 msgid "Bad Size"
 msgstr "Dimensione errata"

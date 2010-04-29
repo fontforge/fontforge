@@ -4448,7 +4448,7 @@ msgid "Bad Class"
 msgstr "Hạng sai"
 
 #: contextchain.c:608
-msgid "A class must contain at least one glyph name, glyph names must be valid postscript names, and no glyphs may appear in any other class"
+msgid "A class must contain at least one glyph name, glyph names must be valid PostScript names, and no glyphs may appear in any other class"
 msgstr "Hạng phải chứa ít nhất một tên hình tượng; tên hình tượng phải là tên PostScript hợp lệ; không cho phép hình tượng xuất hiện trong hạng khác."
 
 #: contextchain.c:609
@@ -4458,11 +4458,11 @@ msgid "Bad Coverage"
 msgstr "Bao quát sai"
 
 #: contextchain.c:609
-msgid "A coverage table must contain at least one glyph name, and glyph names must be valid postscript names"
+msgid "A coverage table must contain at least one glyph name, and glyph names must be valid PostScript names"
 msgstr "Bảng bao quát phải chứa ít nhất một tên hình tượng; tên hình tượng phải là tên PostScript hợp lệ."
 
 #: contextchain.c:610
-msgid "A glyph list must contain at least one glyph name, and glyph names must be valid postscript names"
+msgid "A glyph list must contain at least one glyph name, and glyph names must be valid PostScript names"
 msgstr "Danh sách hình tượng phải chứa ít nhất một tên hình tượng; tên hình tượng phải là tên PostScript hợp lệ."
 
 #: contextchain.c:617
@@ -7484,7 +7484,7 @@ msgstr "_Khác"
 #: displayfonts.c:367
 msgid ""
 "Any other command with all its arguments.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 msgstr ""
 "Bất cứ câu lệnh khác nào với các đối số thích hợp.\n"
@@ -7620,7 +7620,7 @@ msgstr ""
 #: displayfonts.c:1754
 msgid ""
 "Specifies file format used to pass the font to freetype\n"
-"  pfb -- is the standard postscript type1\n"
+"  pfb -- is the standard PostScript type1\n"
 "  ttf -- is truetype\n"
 "  otf -- is opentype\n"
 "  nohints -- freetype rasterizes without hints\n"
@@ -7801,12 +7801,12 @@ msgstr "Đang tự động gợi ý phông..."
 
 #: dumppfa.c:1561
 #: dumppfa.c:2498
-msgid "Converting Postscript"
+msgid "Converting PostScript"
 msgstr "Đang chuyển đổi PostScript..."
 
 #: dumppfa.c:1565
 #: dumppfa.c:2502
-msgid "Saving Postscript Font"
+msgid "Saving PostScript Font"
 msgstr "Đang lưu phông PostScript..."
 
 #: effects.c:45
@@ -12034,7 +12034,7 @@ msgstr "Tên phông sai"
 #: fontinfo.c:3008
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
@@ -12056,16 +12056,16 @@ msgstr "Tên nhóm phông sai"
 #: fontinfo.c:3022
 #: fontinfo.c:3048
 #: parsettf.c:1422
-msgid "A Postscript name may not be a number"
+msgid "A PostScript name may not be a number"
 msgstr "Tên PostScript không thể là con số"
 
 #: fontinfo.c:3026
-msgid "Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
+msgid "Some versions of Windows will refuse to install PostScript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
 msgstr "Một số phiên bản Windows nào đó sẽ từ chối cài đặt phông PostScript nếu tên nhóm có chiều dài hơn 31 ký tự. Bạn vẫn muốn tiếp tục không?"
 
 #: fontinfo.c:3030
 #: savefontdlg.c:1401
-msgid "Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"
+msgid "Some versions of Windows will refuse to install PostScript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"
 msgstr "Một số phiên bản Windows nào đó sẽ từ chối cài đặt phông PostScript nếu tên phông có chiêu dài hơn 31 ký tự. Bạn vẫn muốn tiếp tục không?"
 
 #: fontinfo.c:3033
@@ -12076,7 +12076,7 @@ msgstr "Đặc tả tên phông của công ty Adobe (5088.FontNames.pdf) nói r
 #: fontinfo.c:3056
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space"
 msgstr ""
 "Tên PostScript nên chứa chỉ ký tự ASCII,\n"
@@ -12093,7 +12093,7 @@ msgstr "Gỡ ra Tên PostScript"
 
 #: fontinfo.c:3474
 msgid "Same as PostScript Names"
-msgstr "Trùng với Tên Postscript"
+msgstr "Trùng với Tên PostScript"
 
 #: fontinfo.c:3481
 msgid "Multi-line edit"
@@ -13129,7 +13129,7 @@ msgstr "Mọi lớp _lập phương"
 
 #: fontinfo.c:8386
 msgid ""
-"Use cubic (that is postscript) splines to hold the outlines of all\n"
+"Use cubic (that is PostScript) splines to hold the outlines of all\n"
 "layers of this font. Cubic splines are generally easier to edit\n"
 "than quadratic (and you may still generate a truetype font from them)."
 msgstr ""
@@ -13145,7 +13145,7 @@ msgstr "Mọi lớp _toán phương"
 #: fontinfo.c:8401
 msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of all\n"
-"layers of this font rather than cubic (postscript) splines."
+"layers of this font rather than cubic (PostScript) splines."
 msgstr ""
 "Hãy dùng chốt trục kiểu toàn phương (tức là TrueType)\n"
 "để giữ các nét ngoài của tất cả các lớp của phông chữ này,\n"
@@ -13554,7 +13554,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its postscript equivalent\n"
+"To associate or disassocate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 "Hành động:\n"
@@ -15156,7 +15156,7 @@ msgstr "Cvt %d đã được thay đổi từ %d (%.2f) sang %d (%.2f) bởi ch�
 msgid "Too Many Breakpoints"
 msgstr "Quá nhiều điểm ngắt"
 
-#. GT: the string "dotlessi" is the official postscript name for the glyph
+#. GT: the string "dotlessi" is the official PostScript name for the glyph
 #. GT: containing an "i" without a dot on top of it. The name "dotlessi"
 #. GT: should be left untranslated, though you may wish to explain what it
 #. GT: means
@@ -15236,7 +15236,7 @@ msgid "Interpolating a font with itself achieves nothing"
 msgstr "Nội suy phông với chính nó thì vô ích"
 
 #: fvfonts.c:1580
-msgid "Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"
+msgid "Interpolating between fonts with different spline orders (i.e. between PostScript and truetype)"
 msgstr "Nội suy giữa các phông có thứ tự chốt trục khác nhau (tức là giữa PostScript và TrueType)"
 
 #: fvfonts.c:1585
@@ -15724,7 +15724,7 @@ msgid "Select by Color"
 msgstr "Chọn theo màu"
 
 #: groupsdlg.c:698
-msgid "Glyph names must be valid postscript names"
+msgid "Glyph names must be valid PostScript names"
 msgstr "Tên hình tượng phải là tên PostScript hợp lệ"
 
 #: groupsdlg.c:722
@@ -19785,11 +19785,11 @@ msgstr "Phông đã tạo ra sẽ không hoạt động được với ATM"
 
 #: macbinary.c:871
 #: macbinary.c:1223
-msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"
+msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This PostScript font will print fine, but only the bitmap versions will be displayed on the screen"
 msgstr "ATM cần thiết các phông được mã hoá bằng bảng mã Latin Macintosh. Phông PostScript này sẽ in đẹp trên giấy, nhưng mà chỉ những phiên bản mảng ảnh sẽ hiển thị trên màn hình."
 
 #: macbinary.c:1983
-msgid "Can't open temporary file for postscript output\n"
+msgid "Can't open temporary file for PostScript output\n"
 msgstr "Không thể mở tập tin tạm thời để xuất PostScript\n"
 
 #: macbinary.c:2003
@@ -19856,7 +19856,7 @@ msgstr "Không tìm thấy tập tin phông tên %s\n"
 
 #: macbinary.c:3170
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
+msgid "%s is a mac resource file but contains no PostScript or truetype fonts\n"
 msgstr "%s là một tập tin tài nguyên Mac nhưng không chứa phông kiểu PostScript hay TrueType.\n"
 
 #: macenc.c:2266
@@ -21877,7 +21877,7 @@ msgstr "Phông mới TP/LP"
 #: prefs.c:285
 msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
-"or cubic (postscript & opentype)."
+"or cubic (PostScript & opentype)."
 msgstr ""
 "Phông mới nên chứa chốt trục kiểu toàn phương (TrueType)\n"
 "hay lập phương (PostScript và OpenType)."
@@ -23114,7 +23114,7 @@ msgstr "Đang bỏ qua mục nhập /Subrs trùng\n"
 #: parsepfa.c:1874
 msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
-"\t\"UniqueID\" (postscript is case concious)\n"
+"\t\"UniqueID\" (PostScript is case concious)\n"
 msgstr ""
 "Phông này chứa một biến « UniqueId » (mã số duy nhất), nhưng\n"
 "tên đúng là « UniqueID » vì PostScript phân biệt chữ hoa/thường.\n"
@@ -24329,7 +24329,7 @@ msgstr "Tên phông bắt đầu với dãy thứ tự byte UTF-8. Không cho ph
 #: parsettf.c:1444
 #, c-format
 msgid ""
-"The Postscript font name \"%.63s\" is invalid.\n"
+"The PostScript font name \"%.63s\" is invalid.\n"
 "It should be printable ASCII,\n"
 "must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
@@ -25388,11 +25388,11 @@ msgid "Printing Font"
 msgstr "Đang in phông"
 
 #: print.c:1401
-msgid "Generating Postscript Font"
+msgid "Generating PostScript Font"
 msgstr "Đang tạo ra phông PostScript"
 
 #: print.c:1426
-msgid "Failed to generate postscript font"
+msgid "Failed to generate PostScript font"
 msgstr "Lỗi tạo ra phông PostScript"
 
 #: print.c:1675
@@ -25403,7 +25403,7 @@ msgstr "Cảnh báo : phông không chứa hình tượng"
 #: print.c:2864
 #: print.c:2869
 #, c-format
-msgid "Failed to generate postscript in file %s"
+msgid "Failed to generate PostScript in file %s"
 msgstr "Lỗi tạo ra PostScript trong tập tin %s"
 
 #: problems.c:221
@@ -26212,7 +26212,7 @@ msgstr "Kiểm tra đường dẫn ng_oài ra nhất theo xuôi chiều"
 
 #: problems.c:3356
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. This lets you check that they\n"
 "are.\n"
 " Before doing this test insure that\n"
@@ -26230,7 +26230,7 @@ msgstr "Kiểm tra thái cực _bị thiếu"
 
 #: problems.c:3368
 msgid ""
-"Postscript and TrueType require that when a path\n"
+"PostScript and TrueType require that when a path\n"
 "reaches its maximum or minimum position\n"
 "there must be a point at that location."
 msgstr ""
@@ -26262,7 +26262,7 @@ msgstr "Kiểm tra tham chiếu bị _lật"
 
 #: problems.c:3421
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. If you have a reference\n"
 "that has been flipped then the paths in that reference will\n"
 "probably be counter-clockwise. You should unlink it and do\n"
@@ -27030,7 +27030,7 @@ msgstr ""
 #: psread.c:1599
 #: psread.c:1608
 #: psread.c:1617
-msgid "Divide by zero in postscript code.\n"
+msgid "Divide by zero in PostScript code.\n"
 msgstr "Chia cho số không trong mã PostScript.\n"
 
 #: psread.c:1699
@@ -27391,7 +27391,7 @@ msgid "Saving font"
 msgstr "Đang lưu phông"
 
 #: savefont.c:730
-msgid "Saving Multiple Postscript Fonts"
+msgid "Saving Multiple PostScript Fonts"
 msgstr "Đang lưu nhiều phông Postcript"
 
 #: savefont.c:761
@@ -27708,7 +27708,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite characters are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -27718,7 +27718,7 @@ msgstr ""
 "Công ty Apple và Adobe sử dụng định dạng tập tin TrueType và OpenType khác nhau.\n"
 "Tùy chọn này cho bạn khả năng chọn tiêu chuẩn nào phông cần theo.\n"
 "Khác biệt chính:\n"
-" • Các điều cần thiết cho tên 'postscript' trong bảng tên có xung đột\n"
+" • Các điều cần thiết cho tên 'PostScript' trong bảng tên có xung đột\n"
 " • Dữ liệu mảng ảnh có được cất giữ trong bảng khác nhau\n"
 " • Ký tự ghép đã co giãn được xử lý khác\n"
 " • Dùng GSUB hơn morx(t)/feat\n"
@@ -27730,7 +27730,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite glyphs are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -27740,7 +27740,7 @@ msgstr ""
 "Công ty Apple và Adobe sử dụng định dạng tập tin TrueType và OpenType khác nhau.\n"
 "Tùy chọn này cho bạn khả năng chọn tiêu chuẩn nào phông cần theo.\n"
 "Khác biệt chính:\n"
-" • Các điều cần thiết cho tên 'postscript' trong bảng tên có xung đột\n"
+" • Các điều cần thiết cho tên 'PostScript' trong bảng tên có xung đột\n"
 " • Dữ liệu mảng ảnh có được cất giữ trong bảng khác nhau\n"
 " • Hình tượng ghép đã co dãn có được xử lý khác\n"
 " • Dùng GSUB hơn morx(t)/feat\n"
@@ -30081,7 +30081,7 @@ msgid "Compare _Hints"
 msgstr "So sán_h lời gợi ý"
 
 #: showatt.c:3208
-msgid "Compare postscript hints and hintmasks and truetype instructions"
+msgid "Compare PostScript hints and hintmasks and truetype instructions"
 msgstr "So sánh các lời gợi ý và bộ lọc lời gợi ý PostScript và chỉ dẫn TrueType"
 
 #: showatt.c:3216

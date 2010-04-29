@@ -2830,7 +2830,7 @@ msgstr "Classe non autorisée"
 #: contextchain.c:857
 msgid ""
 "A class must contain at least one glyph name, glyph names must be valid "
-"postscript names, and no glyphs may appear in any other class"
+"PostScript names, and no glyphs may appear in any other class"
 msgstr ""
 "Une classe doit contenir au moins un nom de glyphe, qui doit être un nom "
 "PostScript valide, et aucun glyphe ne doit apparaître dans une autre classe"
@@ -2842,7 +2842,7 @@ msgstr "Couverture incorrecte"
 #: contextchain.c:858
 msgid ""
 "A coverage table must contain at least one glyph name, and glyph names must "
-"be valid postscript names"
+"be valid PostScript names"
 msgstr ""
 "Une table de couverture doit contenir au moins un nom de glyphe,\n"
 "et les noms de glyphes doivent être des noms PostScript valides"
@@ -2850,7 +2850,7 @@ msgstr ""
 #: contextchain.c:859
 msgid ""
 "A glyph list must contain at least one glyph name, and glyph names must be "
-"valid postscript names"
+"valid PostScript names"
 msgstr ""
 "Un motif de glyphes doit contenir au moins un nom de glyphe,\n"
 "et les noms de glyphes doivent être des noms PostScript valides"
@@ -5014,11 +5014,11 @@ msgid "Printing Font"
 msgstr "Impression de la fonte"
 
 #: displayfonts.c:1115
-msgid "Generating Postscript Font"
+msgid "Generating PostScript Font"
 msgstr "Génération de fonte PostScript"
 
 #: displayfonts.c:1140
-msgid "Failed to generate postscript font"
+msgid "Failed to generate PostScript font"
 msgstr "Échec de génération de fonte PostScript"
 
 #: displayfonts.c:1389 displayfonts.c:2324 displayfonts.c:2329
@@ -5057,7 +5057,7 @@ msgstr "_Autre"
 #: displayfonts.c:2056
 msgid ""
 "Any other command with all its arguments.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 msgstr ""
 "N'importe quelle commande avec tous ses arguments.\n"
@@ -5074,8 +5074,8 @@ msgstr "Im_primante:"
 
 #: displayfonts.c:2324 displayfonts.c:2329
 #, c-format
-msgid "Failed to generate postscript in file %s"
-msgstr "Échec de la génération du Postscript dans le fichier %s"
+msgid "Failed to generate PostScript in file %s"
+msgstr "Échec de la génération du PostScript dans le fichier %s"
 
 #: displayfonts.c:2389
 msgid "Invalid point size"
@@ -5137,7 +5137,7 @@ msgstr ""
 #: displayfonts.c:3903 displayfonts.c:3917 displayfonts.c:3930
 msgid ""
 "Specifies file format used to pass the font to freetype\n"
-"  pfb -- is the standard postscript type1\n"
+"  pfb -- is the standard PostScript type1\n"
 "  ttf -- is truetype\n"
 "  otf -- is opentype\n"
 "  nohints -- freetype rasterizes without hints\n"
@@ -5251,11 +5251,11 @@ msgid "Auto Hinting Font..."
 msgstr "Optimisation de rendu font, par hints..."
 
 #: dumppfa.c:1380 dumppfa.c:2299
-msgid "Converting Postscript"
+msgid "Converting PostScript"
 msgstr "Conversion PostScript"
 
 #: dumppfa.c:1384 dumppfa.c:2303
-msgid "Saving Postscript Font"
+msgid "Saving PostScript Font"
 msgstr "Enregistrement fonte PostScript"
 
 #: effects.c:45
@@ -8967,7 +8967,7 @@ msgstr "Nom de fonte incorrect"
 #: fontinfo.c:3412
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
@@ -8984,18 +8984,18 @@ msgid "Bad Font Family Name"
 msgstr "Nom de famille de fonte incorrect"
 
 #: fontinfo.c:3426 fontinfo.c:3452 parsettf.c:837
-msgid "A Postscript name may not be a number"
+msgid "A PostScript name may not be a number"
 msgstr "Le nom PostScript ne peut pas être un nombre"
 
 #: fontinfo.c:3430
 msgid ""
-"Some versions of Windows will refuse to install postscript fonts if the "
+"Some versions of Windows will refuse to install PostScript fonts if the "
 "familyname is longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
 #: fontinfo.c:3434 savefontdlg.c:2491
 msgid ""
-"Some versions of Windows will refuse to install postscript fonts if the "
+"Some versions of Windows will refuse to install PostScript fonts if the "
 "fontname is longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
@@ -9008,7 +9008,7 @@ msgstr ""
 #: fontinfo.c:3443 fontinfo.c:3460
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space"
 msgstr ""
 "Un nom PostScript doit être écrit en ASCII\n"
@@ -9817,9 +9817,9 @@ msgstr "Courbes _quadratiques"
 #: fontinfo.c:8181
 msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of this\n"
-"font rather than cubic (postscript) splines. Set this option if you\n"
+"font rather than cubic (PostScript) splines. Set this option if you\n"
 "are editing truetype font. Unset it if you are editing an opentype\n"
-"or postscript font (FontForge will convert to the appropriate\n"
+"or PostScript font (FontForge will convert to the appropriate\n"
 "spline type when it generates fonts so this is not required)."
 msgstr ""
 "Utiliser des courbes quadratiques (TrueType) pour définir les contours de "
@@ -10211,7 +10211,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its postscript equivalent\n"
+"To associate or disassocate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 
@@ -11463,7 +11463,7 @@ msgstr "Cvt %d modifié de %d (%.2f) vers %d (%.2f)par l'instruction précédent
 msgid "Too Many Breakpoints"
 msgstr "Trop de points d'arrêt"
 
-#. GT: the string "dotlessi" is the official postscript name for the glyph
+#. GT: the string "dotlessi" is the official PostScript name for the glyph
 #. GT: containing an "i" without a dot on top of it. The name "dotlessi"
 #. GT: should be left untranslated, though you may wish to explain what it
 #. GT: means
@@ -11547,7 +11547,7 @@ msgstr "Interpoler une fonte avec elle même ne conduit à rien"
 #: fvfonts.c:1555
 msgid ""
 "Interpolating between fonts with different spline orders (i.e. between "
-"postscript and truetype)"
+"PostScript and truetype)"
 msgstr ""
 "Interpolation entre fontes avec des courbes de Bézier d'ordres différents "
 "(ie. entre PostScript et TrueType)"
@@ -12158,7 +12158,7 @@ msgid ""
 msgstr ""
 
 #: groups.c:895
-msgid "Glyph names must be valid postscript names"
+msgid "Glyph names must be valid PostScript names"
 msgstr "Les noms de glyphes doivent être des noms PostScript valides"
 
 #: groups.c:919
@@ -15413,15 +15413,15 @@ msgstr "La fonte créée ne fontionnera pas avec ATM"
 #: macbinary.c:865 macbinary.c:1219
 msgid ""
 "ATM requires that fonts be encoded with the Macintosh Latin encoding. This "
-"postscript font will print fine, but only the bitmap versions will be "
+"PostScript font will print fine, but only the bitmap versions will be "
 "displayed on the screen"
 msgstr ""
 "ATM nécessite que la fonte soit codée avec un codage MacRoman. Cette fonte "
 "PostScript s'imprimera bien, mais à l'écran on ne verra que des bitmaps"
 
 #: macbinary.c:1974
-msgid "Can't open temporary file for postscript output\n"
-msgstr "Impossible d'ouvrir un fichier temporaire pour la sortie postscript\n"
+msgid "Can't open temporary file for PostScript output\n"
+msgstr "Impossible d'ouvrir un fichier temporaire pour la sortie PostScript\n"
 
 #: macbinary.c:1994
 #, c-format
@@ -15472,7 +15472,7 @@ msgstr "Fichier de police %s pas trouvé\n"
 #: macbinary.c:3161
 #, c-format
 msgid ""
-"%s is a mac resource file but contains no postscript or truetype fonts\n"
+"%s is a mac resource file but contains no PostScript or truetype fonts\n"
 msgstr ""
 
 #: macenc.c:2224
@@ -17494,7 +17494,7 @@ msgstr ""
 #: parsepfa.c:1874
 msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
-"\t\"UniqueID\" (postscript is case concious)\n"
+"\t\"UniqueID\" (PostScript is case concious)\n"
 msgstr ""
 
 #: parsepfa.c:1954
@@ -17577,12 +17577,12 @@ msgstr ""
 #: parsettf.c:848 parsettf.c:859
 #, c-format
 msgid ""
-"The Postscript font name \"%.63s\" is invalid.\n"
+"The PostScript font name \"%.63s\" is invalid.\n"
 "It should be printable ASCII,\n"
 "must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
-"Le nom de police Postscript \"%.63s\" est incorrect.\n"
+"Le nom de police PostScript \"%.63s\" est incorrect.\n"
 "Il doit être en ASCII imprimable,\n"
 "sans (){}[]<>%%/ ni espace\n"
 "et doit comporter moins de 63 caracteres"
@@ -18716,7 +18716,7 @@ msgstr "courbes quadratiques"
 #: prefs.c:289
 msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
-"or cubic (postscript & opentype)."
+"or cubic (PostScript & opentype)."
 msgstr ""
 "Les nouvelles fontes doivent elles utiliser des courbes\n"
 "quadratiques (TrueType) ou cubiques (PostScript & OpenType/CFF) ?"
@@ -20238,7 +20238,7 @@ msgstr "Chemins extérieurs dans le sens _horaire"
 
 #: problems.c:3004
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. This lets you check that they\n"
 "are.\n"
 " Before doing this test insure that\n"
@@ -20254,7 +20254,7 @@ msgstr "Vérifier les _extréma manquants"
 
 #: problems.c:3015
 msgid ""
-"Postscript and TrueType require that when a path\n"
+"PostScript and TrueType require that when a path\n"
 "reaches its maximum or minimum position\n"
 "there must be a point at that location."
 msgstr ""
@@ -20283,7 +20283,7 @@ msgstr "Vé_rifier les références miroitées"
 
 #: problems.c:3055
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. If you have a reference\n"
 "that has been flipped then the paths in that reference will\n"
 "probably be counter-clockwise. You should unlink it and do\n"
@@ -20945,8 +20945,8 @@ msgstr ""
 "soit négatifs, Ou nécessitant plus de données que fournies).\n"
 
 #: psread.c:1597 psread.c:1606 psread.c:1615
-msgid "Divide by zero in postscript code.\n"
-msgstr "Division par zero dans le code postscript.\n"
+msgid "Divide by zero in PostScript code.\n"
+msgstr "Division par zero dans le code PostScript.\n"
 
 #: psread.c:1697
 msgid "Can't compare arrays\n"
@@ -21497,7 +21497,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite characters are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -21507,7 +21507,7 @@ msgstr ""
 "Apple et MS/Adobe divergent quand au format des fichiers TrueType et "
 "OpenType.\n"
 "Les differences principales sont:\n"
-" Spécifications incompatibles des noms 'postscript dans la table 'name'.\n"
+" Spécifications incompatibles des noms 'PostScript dans la table 'name'.\n"
 " Les bitmaps ne sont pas dans les mêmes tables\n"
 " La mise à l'échelle des caractères composés est différente\n"
 " utilisation de GSUB à la place de morx(t)/feat\n"
@@ -21519,7 +21519,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite glyphs are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -21727,7 +21727,7 @@ msgid "Saving font"
 msgstr "Enregistrement de la fonte"
 
 #: savefontdlg.c:1859
-msgid "Saving Multiple Postscript Fonts"
+msgid "Saving Multiple PostScript Fonts"
 msgstr "Enregistrement en plusieurs fontes PostScript"
 
 #: savefontdlg.c:1903 tottf.c:1952
@@ -23037,7 +23037,7 @@ msgid "Compare _Hints"
 msgstr "Comparer les hints"
 
 #: showatt.c:2881
-msgid "Compare postscript hints and hintmasks and truetype instructions"
+msgid "Compare PostScript hints and hintmasks and truetype instructions"
 msgstr ""
 
 #: showatt.c:2889
