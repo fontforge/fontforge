@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jul-2003 -->
-  <!-- AP: Last modified: 4-Apr-2006 -->
+  <!-- AP: Last modified: 28-Apr-2010 -->
   <TITLE>FontForge's math</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <EM>Being a brief description of the mathematics underlying various of
-  FontForge's commands<BR>
+  FontForge's commands <BR>
   It is presumed that you understand about parameterized splines, if not look
   at the description of <A HREF="bezier.html">B&eacute;zier curves</A>.</EM>
   <UL>
@@ -214,149 +214,173 @@
   then it guesses<SUP><A HREF="#guess-t">1</A></SUP> at t values for those
   points.
   <P>
-  Now a cubic <a href="bezier.html">B&eacute;zier</a> spline is determined by
-  its two end points (P<sub>0</sub> and P<sub>1</sub>) and two control points (CP<sub>0</sub> and CP<sub>1</sub>, which specify the slope at those
-  end points). Here we know the end points, so all we need is to find the
-  control points. The spline can also be expressed as a cubic polynomial:
+  Now a cubic <A href="bezier.html">B&eacute;zier</A> spline is determined
+  by its two end points (P<SUB>0</SUB> and P<SUB>1</SUB>) and two control points
+  (CP<SUB>0</SUB> and CP<SUB>1</SUB>, which specify the slope at those end
+  points). Here we know the end points, so all we need is to find the control
+  points. The spline can also be expressed as a cubic polynomial:
   <BLOCKQUOTE>
     S(t) = a*t<SUP>3</SUP> + b*t<SUP>2</SUP> + c*t +d<BR>
-    &nbsp; &nbsp; -- with --<br>
-    d = P0<br>
-    c = 3*CP0 - 3*P0<br>
-    b = 3*CP1 - 6*CP0 + 3*P0<br>
-    a = P1 - 3*CP1 + 3*CP0 - P0<br>
-    <!--S<SUB>x</SUB>(t) = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP> +
+    &nbsp; &nbsp; -- with --<BR>
+    d = P0<BR>
+    c = 3*CP0 - 3*P0<BR>
+    b = 3*CP1 - 6*CP0 + 3*P0<BR>
+    a = P1 - 3*CP1 + 3*CP0 - P0<BR>
+    <!--S<SUB>x</SUB>(t) = a<SUB>x</SUB>*t<SUP>3</SUP> + b<SUB>x</SUB>*t<SUP>2</SUP>
+    +
     c<SUB>x</SUB>*t +d<SUB>x</SUB><BR>
-    S<SUB>y</SUB>(t) = a<SUB>y</SUB>*t<SUP>3</SUP> + b<SUB>y</SUB>*t<SUP>2</SUP> +
-    c<SUB>y</SUB>*t +d<SUB>y</SUB>-->
-    &nbsp; &nbsp; substituting<br>
-    S(t) = (P1 - 3*CP1 + 3*CP0 - P0)*t<SUP>3</SUP> +<br>
-    &nbsp; (3*CP1 - 6*CP0 + 3*P0)*t<SUP>2</SUP> +<br>
-    &nbsp; (3*CP0 - 3*P0)*t +<br>
-    &nbsp; P0<br>
-    &nbsp; &nbsp; rearranging<br>
-    S(t) = (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>) * CP1 +<br>
-    &nbsp; (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0 +<br>
+    S<SUB>y</SUB>(t) = a<SUB>y</SUB>*t<SUP>3</SUP> + b<SUB>y</SUB>*t<SUP>2</SUP>
+    +
+    c<SUB>y</SUB>*t +d<SUB>y</SUB>--> &nbsp; &nbsp; substituting<BR>
+    S(t) = (P1 - 3*CP1 + 3*CP0 - P0)*t<SUP>3</SUP> +<BR>
+    &nbsp; (3*CP1 - 6*CP0 + 3*P0)*t<SUP>2</SUP> +<BR>
+    &nbsp; (3*CP0 - 3*P0)*t +<BR>
+    &nbsp; P0<BR>
+    &nbsp; &nbsp; rearranging<BR>
+    S(t) = (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>) * CP1 +<BR>
+    &nbsp; (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0 +<BR>
     &nbsp; (P1-P0)*t<SUP>3</SUP> + 3*P0*t<SUP>2</SUP> - 3*P0*t + P0
   </BLOCKQUOTE>
   <P>
-  Now we want to minimize the sum of the squares of the difference between the
-  value we approximate with the new spline, S(t<sub>i</sub>), and the actual
-  value we were given, P<sub>i</sub>.
-  <Table>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>[ S(t<sub>i</sub>) - P<sub>i</sub>]<sup>2</sup></td>
-  </tr>
-  </table>
+  Now we want to minimize the sum of the squares of the difference between
+  the value we approximate with the new spline, S(t<SUB>i</SUB>), and the actual
+  value we were given, P<SUB>i</SUB>.
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>[ S(t<SUB>i</SUB>) - P<SUB>i</SUB>]<SUP>2</SUP></TD>
+    </TR>
+  </TABLE>
+  <P>
   Now we have four unknown variables, the x and y coordinates of the two control
   points. To find the minimum of the above error term we must take the derivative
-  with respect to each variable, and set that to zero. Then we have four
-  equations with four unknowns and we can solve for each variable.
-  <Table>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[ S<sub>x</sub>(t<sub>i</sub>) - P<sub>i.x</sub>] = 0</td>
-  </tr>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[ S<sub>y</sub>(t<sub>i</sub>) - P<sub>i.y</sub>] = 0</td>
-  </tr>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[ S<sub>x</sub>(t<sub>i</sub>) - P<sub>i.x</sub>] = 0</td>
-  </tr>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[ S<sub>y</sub>(t<sub>i</sub>) - P<sub>i.y</sub>] = 0</td>
-  </tr>
-  </table>
+  with respect to each variable, and set that to zero. Then we have four equations
+  with four unknowns and we can solve for each variable.
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[
+	S<SUB>x</SUB>(t<SUB>i</SUB>) - P<SUB>i.x</SUB>] = 0</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[
+	S<SUB>y</SUB>(t<SUB>i</SUB>) - P<SUB>i.y</SUB>] = 0</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[
+	S<SUB>x</SUB>(t<SUB>i</SUB>) - P<SUB>i.x</SUB>] = 0</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[
+	S<SUB>y</SUB>(t<SUB>i</SUB>) - P<SUB>i.y</SUB>] = 0</TD>
+    </TR>
+  </TABLE>
+  <P>
   Happily for us, the x and y terms do not interact and my be solved separately.
   The procedure is the same for each coordinate, so I shall only show one:
-  <Table>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td colspan="3">2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[ S<sub>x</sub>(t<sub>i</sub>) - P<sub>i.x</sub>] = 0</td>
-  </tr>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td colspan="3">2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[ S<sub>x</sub>(t<sub>i</sub>) - P<sub>i.x</sub>] = 0</td>
-  </tr>
-  <tr>
-  <td colspan="5" align="center">=></td>
-  </tr>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*</td>
-  <td>[ (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>) * CP1<sub>x</sub> +<br>
-    &nbsp; (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<sub>x</sub> +<br>
-    &nbsp; (P1<sub>x</sub>-P0<sub>x</sub>)*t<SUP>3</SUP> + 3*P0<sub>x</sub>*t<SUP>2</SUP> - 3*P0<sub>x</sub>*t + P0<sub>x</sub> - P<sub>i.x</sub>  ]
-  </td><td> = 0</td></tr>
-  </table>
-  <table>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td>CP1<sub>x</sub></td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)</td>
-  <td>=</td>
-  <td>-</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*</td>
-  <td>[ (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<sub>x</sub> +<br>
-    &nbsp; (P1<sub>x</sub>-P0<sub>x</sub>)*t<SUP>3</SUP> + 3*P0<sub>x</sub>*t<SUP>2</SUP> - 3*P0<sub>x</sub>*t + P0<sub>x</sub> - P<sub>i.x</sub>  ]</td>
-  </tr>
-  </table>
-  <table>
-  <tr>
-  <td rowspan="3">&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td rowspan="3">CP1<sub>x</sub></td>
-  <td rowspan="3">=</td>
-  <td rowspan="3">-</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*</td>
-  <td>[ (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<sub>x</sub> +<br>
-    &nbsp; (P1<sub>x</sub>-P0<sub>x</sub>)*t<SUP>3</SUP> + 3*P0<sub>x</sub>*t<SUP>2</SUP> - 3*P0<sub>x</sub>*t + P0<sub>x</sub> - P<sub>i.x</sub>  ]</td>
-  </tr>
-  <tr>
-  <td colspan="3"><hr></td>
-  </tr>
-  <tr>
-  <td colspan="3">
-  <table align="center">
-  <tr>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)</td>
-  </tr>
-  </table></td>
-  </tr>
-  </table>
-  <p>Now this can be plugged into the other equation
-  <table>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*</td>
-  <td>[ (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>) * CP1<sub>x</sub> +<br>
-    &nbsp; (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<sub>x</sub> +<br>
-    &nbsp; (P1<sub>x</sub>-P0<sub>x</sub>)*t<SUP>3</SUP> + 3*P0<sub>x</sub>*t<SUP>2</SUP> - 3*P0<sub>x</sub>*t + P0<sub>x</sub> - P<sub>i.x</sub>  ]
-  </td><td> = 0</td></tr>
-  </table>
-  And we can solve for CP0<sub>x</sub> and then CP1<sub>x</sub>. The algebra
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD colspan="3">2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[
+	S<SUB>x</SUB>(t<SUB>i</SUB>) - P<SUB>i.x</SUB>] = 0</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD colspan="3">2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[
+	S<SUB>x</SUB>(t<SUB>i</SUB>) - P<SUB>i.x</SUB>] = 0</TD>
+    </TR>
+    <TR>
+      <TD colspan="5" align="center">=&gt;</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*</TD>
+      <TD>[ (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>) * CP1<SUB>x</SUB> +<BR>
+	&nbsp; (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<SUB>x</SUB> +<BR>
+	&nbsp; (P1<SUB>x</SUB>-P0<SUB>x</SUB>)*t<SUP>3</SUP> +
+	3*P0<SUB>x</SUB>*t<SUP>2</SUP> - 3*P0<SUB>x</SUB>*t + P0<SUB>x</SUB> -
+	P<SUB>i.x</SUB> ]</TD>
+      <TD>= 0</TD>
+    </TR>
+  </TABLE>
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD>CP1<SUB>x</SUB></TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)</TD>
+      <TD>=</TD>
+      <TD>-</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*</TD>
+      <TD>[ (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<SUB>x</SUB> +<BR>
+	&nbsp; (P1<SUB>x</SUB>-P0<SUB>x</SUB>)*t<SUP>3</SUP> +
+	3*P0<SUB>x</SUB>*t<SUP>2</SUP> - 3*P0<SUB>x</SUB>*t + P0<SUB>x</SUB> -
+	P<SUB>i.x</SUB> ]</TD>
+    </TR>
+  </TABLE>
+  <TABLE>
+    <TR>
+      <TD rowspan="3">&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD rowspan="3">CP1<SUB>x</SUB></TD>
+      <TD rowspan="3">=</TD>
+      <TD rowspan="3">-</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*</TD>
+      <TD>[ (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<SUB>x</SUB> +<BR>
+	&nbsp; (P1<SUB>x</SUB>-P0<SUB>x</SUB>)*t<SUP>3</SUP> +
+	3*P0<SUB>x</SUB>*t<SUP>2</SUP> - 3*P0<SUB>x</SUB>*t + P0<SUB>x</SUB> -
+	P<SUB>i.x</SUB> ]</TD>
+    </TR>
+    <TR>
+      <TD colspan="3">
+	  <HR>
+      </TD>
+    </TR>
+    <TR>
+      <TD colspan="3"><TABLE align="center">
+	  <TR>
+	    <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+	    <TD>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)</TD>
+	  </TR>
+	</TABLE>
+      </TD>
+    </TR>
+  </TABLE>
+  <P>
+  Now this can be plugged into the other equation
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*</TD>
+      <TD>[ (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>) * CP1<SUB>x</SUB> +<BR>
+	&nbsp; (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t) * CP0<SUB>x</SUB> +<BR>
+	&nbsp; (P1<SUB>x</SUB>-P0<SUB>x</SUB>)*t<SUP>3</SUP> +
+	3*P0<SUB>x</SUB>*t<SUP>2</SUP> - 3*P0<SUB>x</SUB>*t + P0<SUB>x</SUB> -
+	P<SUB>i.x</SUB> ]</TD>
+      <TD>= 0</TD>
+    </TR>
+  </TABLE>
+  <P>
+  And we can solve for CP0<SUB>x</SUB> and then CP1<SUB>x</SUB>. The algebra
   becomes very messy, with lots of terms, but the concepts are simple.
-  <p>
+  <P>
   Thus we know where the control points are. We know where the end points are.
   We have our spline.
   <H3>
-    Why that didn't (quite) work 
+    Why that didn't (quite) work
   </H3>
   <P>
   The above matrix yields a curve which is a good approximation to the original
@@ -365,90 +389,126 @@
   enough to those of the original, and the human eye can now detect the join
   between this generated spline and the two that connect to it.
   <P>
-  Generally we will know the slopes at the end points as well as the end points themselves.
+  Generally we will know the slopes at the end points as well as the end points
+  themselves.
   <P>
   Let's try another approach, based on better geometry. Givens:
-  <ul>
-  <li>the start point
-  <li>the slope at the start point
-  <li>the end point
-  <li>the slope at the end point
-  </ul>
-  <p>
+  <UL>
+    <LI>
+      the start point
+    <LI>
+      the slope at the start point
+    <LI>
+      the end point
+    <LI>
+      the slope at the end point
+  </UL>
+  <P>
   We want to find the two control points. Now it may seem that specifying the
-  slope specifies the control point but this is not so, it merely specifies the
-  direction in which the control point lies. The control point may be anywhere
+  slope specifies the control point but this is not so, it merely specifies
+  the direction in which the control point lies. The control point may be anywhere
   along the line through the start point in that direction, and each position
   will give a different curve.
   <P>
-  So we can express the control point by saying it is
-  CP<sub>0</sub> = P<sub>0</sub> + r<sub>0</sub> <img src="delta0.png" width="28" height="28" align="top">
-  where <img src="delta0.png" width="28" height="28" align="top"> is a vector in the direction of the slope,
-  and r<sub>0</sub> is the distance in that direction. Similarly for the end point:
-  CP<sub>1</sub> = P<sub>1</sub> + r<sub>1</sub> <img src="delta1.png" width="28" height="28" align="top">
+  So we can express the control point by saying it is CP<SUB>0</SUB> =
+  P<SUB>0</SUB> + r<SUB>0</SUB>
+  <IMG src="delta0.png" width="28" height="28" align="top"> where
+  <IMG src="delta0.png" width="28" height="28" align="top"> is a vector in
+  the direction of the slope, and r<SUB>0</SUB> is the distance in that direction.
+  Similarly for the end point: CP<SUB>1</SUB> = P<SUB>1</SUB> + r<SUB>1</SUB>
+  <IMG src="delta1.png" width="28" height="28" align="top">
   <P>
-  We want to find r<sub>0</sub> and r<sub>1</sub>.
+  We want to find r<SUB>0</SUB> and r<SUB>1</SUB>.
   <P>
-  Converting from bezier control points into a polynomial gives us<br/> S(t) = a*t<sup>3</sup> + b*t<sup>2</sup> + c*t + d
-  <ul>
-  <li>d = P<sub>0</sub>
-  <li>c = 3*(CP<sub>0</sub> - P<sub>0</sub>)
-  <li>b = 3*(CP<sub>1</sub> - CP<sub>0</sub>) - c
-  <li>a = P<sub>1</sub>-P<sub>0</sub> - c - b
-  </ul>
-  <p>Substituting we get
-  <ul>
-  <li>d = P<sub>0</sub>
-  <li>c = 3*r<sub>0</sub>*<img src="delta0.png" width="28" height="28" align="top">
-  <li>b = 3*(P<sub>1</sub>-P<sub>0</sub>+r<sub>1</sub>*<img src="delta1.png" width="28" height="28" align="top">-2*r<sub>0</sub><img src="delta0.png" width="28" height="28" align="top">)
-  <li>a = 2*(P<sub>0</sub>-P<sub>1</sub>) + 3*(r<sub>0</sub><img src="delta0.png" width="28" height="28" align="top"> - r<sub>1</sub>*<img src="delta1.png" width="28" height="28" align="top">)
-  </ul>
+  Converting from bezier control points into a polynomial gives us<BR/>
+  S(t) = a*t<SUP>3</SUP> + b*t<SUP>2</SUP> + c*t + d
+  <UL>
+    <LI>
+      d = P<SUB>0</SUB>
+    <LI>
+      c = 3*(CP<SUB>0</SUB> - P<SUB>0</SUB>)
+    <LI>
+      b = 3*(CP<SUB>1</SUB> - CP<SUB>0</SUB>) - c
+    <LI>
+      a = P<SUB>1</SUB>-P<SUB>0</SUB> - c - b
+  </UL>
   <P>
-  For least squares we want to minimize <img src="Sigma13x16.png" width="13" height="16">(S(t<sub>i</sub>) - P<sub>i</sub>)<sup>2</sup>.<br/>
+  Substituting we get
+  <UL>
+    <LI>
+      d = P<SUB>0</SUB>
+    <LI>
+      c =
+      3*r<SUB>0</SUB>*<IMG src="delta0.png" width="28" height="28" align="top">
+    <LI>
+      b =
+      3*(P<SUB>1</SUB>-P<SUB>0</SUB>+r<SUB>1</SUB>*<IMG src="delta1.png" width="28"
+	  height="28" align="top">-2*r<SUB>0</SUB><IMG src="delta0.png" width="28"
+	  height="28" align="top">)
+    <LI>
+      a = 2*(P<SUB>0</SUB>-P<SUB>1</SUB>) +
+      3*(r<SUB>0</SUB><IMG src="delta0.png" width="28" height="28" align="top">
+      - r<SUB>1</SUB>*<IMG src="delta1.png" width="28" height="28" align="top">)
+  </UL>
+  <P>
+  For least squares we want to minimize
+  <IMG src="Sigma13x16.png" width="13" height="16">(S(t<SUB>i</SUB>) -
+  P<SUB>i</SUB>)<SUP>2</SUP>.<BR/>
   taking derivatives with both r0 and r1 we get:
-  <table>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td colspan="3">2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*<img src="delta0.png" width="28" height="28" align="top">*[ S(t<sub>i</sub>) - P<sub>i</sub>] = 0</td>
-  </tr>
-  <tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td colspan="3">2* (-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*<img src="delta1.png" width="28" height="28" align="top">*[ S(t<sub>i</sub>) - P<sub>i</sub>] = 0</td>
-  </tr>
-  <td colspan="5" align="center">dividing by constants and substituting, we get</td>
-  </tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[</td>
-  <td>P<sub>0</sub> - P<sub>i</sub> + 3 * (P<sub>1</sub>-P<sub>0</sub>*t<sup>2</sup> + 2 * (P<sub>0</sub> - P<sub>1</sub>)*t<sup>3</sup> +<br>
-  <img src="delta0.png" width="28" height="28" align="top">*(3*t - 6*t<sup>2</sup> + 3*t<sup>3</sup>) * r<sub>0</sub> + <br>
-  <img src="delta1.png" width="28" height="28" align="top">*(3*t<sup>2</sup> - 3*t<sup>3</sup>) * r<sub>1</sub> + </td>
-  <td>] = 0</td>
-  </tr>
-  </tr>
-  <td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
-  <td><img src="Sigma28x33.png" width="28" height="33"></td>
-  <td>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[</td>
-  <td>P<sub>0</sub> - P<sub>i</sub> + 3 * (P<sub>1</sub>-P<sub>0</sub>*t<sup>2</sup> + 2 * (P<sub>0</sub> - P<sub>1</sub>)*t<sup>3</sup> +<br>
-  <img src="delta0.png" width="28" height="28" align="top">*(3*t - 6*t<sup>2</sup> + 3*t<sup>3</sup>) * r<sub>0</sub> + <br>
-  <img src="delta1.png" width="28" height="28" align="top">*(3*t<sup>2</sup> - 3*t<sup>3</sup>) * r<sub>1</sub> + </td>
-  <td>] = 0</td>
-  </tr>
-  </table>
+  <TABLE>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD colspan="3">2* (3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> +
+	3*t)*<IMG src="delta0.png" width="28" height="28" align="top">*[
+	S(t<SUB>i</SUB>) - P<SUB>i</SUB>] = 0</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD colspan="3">2* (-3*t<SUP>3</SUP> +
+	3*t<SUP>2</SUP>)*<IMG src="delta1.png" width="28" height="28" align="top">*[
+	S(t<SUB>i</SUB>) - P<SUB>i</SUB>] = 0</TD>
+      <TD colspan="5" align="center">dividing by constants and substituting, we
+	get</TD>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(3*t<SUP>3</SUP> - 6*t<SUP>2</SUP> + 3*t)*[</TD>
+      <TD>P<SUB>0</SUB> - P<SUB>i</SUB> + 3 *
+	(P<SUB>1</SUB>-P<SUB>0</SUB>*t<SUP>2</SUP> + 2 * (P<SUB>0</SUB> -
+	P<SUB>1</SUB>)*t<SUP>3</SUP> +<BR>
+	<IMG src="delta0.png" width="28" height="28" align="top">*(3*t -
+	6*t<SUP>2</SUP> + 3*t<SUP>3</SUP>) * r<SUB>0</SUB> + <BR>
+	<IMG src="delta1.png" width="28" height="28" align="top">*(3*t<SUP>2</SUP>
+	- 3*t<SUP>3</SUP>) * r<SUB>1</SUB> +</TD>
+      <TD>] = 0</TD>
+      <TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
+      <TD><IMG src="Sigma28x33.png" width="28" height="33"></TD>
+      <TD>(-3*t<SUP>3</SUP> + 3*t<SUP>2</SUP>)*[</TD>
+      <TD>P<SUB>0</SUB> - P<SUB>i</SUB> + 3 *
+	(P<SUB>1</SUB>-P<SUB>0</SUB>*t<SUP>2</SUP> + 2 * (P<SUB>0</SUB> -
+	P<SUB>1</SUB>)*t<SUP>3</SUP> +<BR>
+	<IMG src="delta0.png" width="28" height="28" align="top">*(3*t -
+	6*t<SUP>2</SUP> + 3*t<SUP>3</SUP>) * r<SUB>0</SUB> + <BR>
+	<IMG src="delta1.png" width="28" height="28" align="top">*(3*t<SUP>2</SUP>
+	- 3*t<SUP>3</SUP>) * r<SUB>1</SUB> +</TD>
+      <TD>] = 0</TD>
+    </TR>
+  </TABLE>
+  <P>
   Again we have two linear equations in two unknowns (r0, and r1), and (after
-  a lot of algebraic grubbing) we can solve for them. One interesting thing here
-  is that the x and y terms do not separate but must be summed together.
+  a lot of algebraic grubbing) we can solve for them. One interesting thing
+  here is that the x and y terms do not separate but must be summed together.
   <H3>
     Singular matrices
   </H3>
   <P>
-  Very occasionally, a singular matrix will pop out of these equations.
-  Then what I do is calculate the slope vectors at the endpoints and then try
-  many reasonable lengths for those vectors and see which yields the best
-  approximation to the original curve (this gives us our new control points).
-  <P>This is very, very slow. 
+  Very occasionally, a singular matrix will pop out of these equations. Then
+  what I do is calculate the slope vectors at the endpoints and then try many
+  reasonable lengths for those vectors and see which yields the best approximation
+  to the original curve (this gives us our new control points).
+  <P>
+  This is very, very slow. 
     <HR>
   <H4>
     <SUP><A NAME="guess-t">1</A></SUP>Guessing values for t
@@ -489,11 +549,12 @@
   <P>
   &nbsp; &nbsp; <IMG SRC="expand-pre.png" WIDTH="126" HEIGHT="86" ALIGN="Middle">
   =&gt; <IMG SRC="expand-post.png" WIDTH="131" HEIGHT="91" ALIGN="Middle">
-  <p>
+  <P>
   FontForge can't deal with an infinite number of locations, so it samples
   the curve (approximately every em unit), and finds the two normal points.
   These are on the edge of the area to be stroked, so FontForge can approximate
-  new contours from these edge points (using the <a href="#Approximating">above algorithm</a>).
+  new contours from these edge points (using the <A href="#Approximating">above
+  algorithm</A>).
   <P>
   PostScript pens can end in
   <UL>
@@ -517,21 +578,20 @@
   must figure out where this intersection occurs. While on the outside FontForge
   must figure out either a round, miter or bevelled edge.
   <P>
-  Unfortunately, the normal points are not always on the edge of the filled region.
-  If the curve
-  makes a sharp bend, then one of the normal points may end up inside the pen when it
-  is centered somewhere else on the original contour (similar to the case of a
-  joint above).
-  <p>So FontForge makes another pass through the edge points and
-  figures out which ones are actually internal points. After that it will
-  approximate contours.
-  <p>
-  Now if we start with an open contour, (a straight line, for example) then we
-  will end up with one closed contour. While if we start with a closed contour
+  Unfortunately, the normal points are not always on the edge of the filled
+  region. If the curve makes a sharp bend, then one of the normal points may
+  end up inside the pen when it is centered somewhere else on the original
+  contour (similar to the case of a joint above).
+  <P>
+  So FontForge makes another pass through the edge points and figures out which
+  ones are actually internal points. After that it will approximate contours.
+  <P>
+  Now if we start with an open contour, (a straight line, for example) then
+  we will end up with one closed contour. While if we start with a closed contour
   we will end up with two closed contours (one on the inside, and one on the
-  outside). Unless there are places where the curve doubles back on itself, then
-  when can get arbetrarily many closed contours.
-    <H3>
+  outside). Unless there are places where the curve doubles back on itself,
+  then when can get arbetrarily many closed contours.
+  <H3>
     An elliptical pen
   </H3>
   <P>
@@ -568,17 +628,18 @@
     An arbitrary convex polygonal pen
   </H3>
   <P>
-  The same method which works for a rectangle
-  can be extended without too much difficulty to any convex polygon. (MetaFont
-  fonts can be drawn with such a pen. I don't know if any are)
+  The same method which works for a rectangle can be extended without too much
+  difficulty to any convex polygon. (MetaFont fonts can be drawn with such
+  a pen. I don't know if any are)
   <H3>
     A pen of variable width
   </H3>
   <P>
-  <!--If you have a wacom tablet then FontForge also supports variable width pens.
+  <!--If you have a wacom tablet then FontForge also supports variable width
+  pens.
   Extending the above algorithms is fairly simple.-->FontForge does not currently
-  support this (some of the assumptions behind this algorithm are broken if the
-  pen changes shape too rapidly).
+  support this (some of the assumptions behind this algorithm are broken if
+  the pen changes shape too rapidly).
   <H3>
     A pen at a varying angle
   </H3>
