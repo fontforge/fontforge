@@ -3375,15 +3375,18 @@ return;
 
 /* An extremum is very close to the end-point. So close that we don't want */
 /*  to add a new point. Instead try moving the control points around */
-/*  Two options: */
+/*  Options: */
+/*    o  if the control point is very close to the base point then remove it */
 /*    o  if the slope at the endpoint is in the opposite direction from */
 /*           what we expect, then subtract off the components we don't like */
 /*    o  make the slope at the end point horizontal/vertical */
 static int ForceEndPointExtrema(Spline *s,int isto) {
     SplinePoint *end;
     BasePoint *cp, to, unitslope, othercpunit, myslope;
-    bigreal xdiff, ydiff, len, cplen, len2, dot;
-    int changed;
+    bigreal xdiff, ydiff, mylen, cplen, mydot, cpdot, len;
+    /* To get here we know that the extremum is extremely close to the end */
+    /*  point, and adjusting the slope at the end-point may be all we need */
+    /*  to do. We won't need to adjust it by much, because it is so close. */
 
     if ( isto ) {
 	end = s->to; cp = &end->prevcp;
@@ -3395,12 +3398,10 @@ static int ForceEndPointExtrema(Spline *s,int isto) {
 	othercpunit.y = s->to->prevcp.y-s->to->me.y;
     }
     cplen = othercpunit.x*othercpunit.x + othercpunit.y*othercpunit.y;
-    if ( cplen!=0 ) {
-	cplen = sqrt(cplen);
-	othercpunit.x /= cplen; othercpunit.y /= cplen;
-    }
+    cplen = sqrt(cplen);
     myslope.x = cp->x - end->me.x;
     myslope.y = cp->y - end->me.y;
+    mylen = sqrt(myslope.x*myslope.x + myslope.y*myslope.y);
 
     unitslope.x = s->to->me.x - s->from->me.x;
     unitslope.y = s->to->me.y - s->from->me.y;
@@ -3408,56 +3409,46 @@ static int ForceEndPointExtrema(Spline *s,int isto) {
     if ( len==0 )
 return( -1 );
     len = sqrt(len);
+    if ( mylen<30*len && mylen<cplen && mylen<1 ) {
+	if ( isto ) {
+	    s->to->noprevcp = true;
+	    s->to->prevcp = s->to->me;
+	} else {
+	    s->from->nonextcp = true;
+	    s->from->nextcp = s->to->me;
+	}
+return( true );	/* We changed the slope */
+    }
     unitslope.x /= len; unitslope.y /= len;
 
-    changed = false;
-    to = *cp;
-    dot = myslope.x*othercpunit.x + myslope.y*othercpunit.y;
-    if ( dot<0 ) {
-	to.x -= dot*othercpunit.x; to.y -= dot*othercpunit.y;
-	changed = true;
-	myslope.x = to.x - end->me.x;
-	myslope.y = to.y - end->me.y;
-    }
-    dot = myslope.x*unitslope.x + myslope.y*unitslope.y;
-    if ( dot<0 ) {
-	to.x -= dot*unitslope.x; to.y -= dot*unitslope.y;
-	changed = true;
+    mydot = myslope.x*unitslope.y - myslope.y*unitslope.x;
+    cpdot = othercpunit.x*unitslope.y - othercpunit.y*unitslope.y;
+    if ( mydot*cpdot<0 && mylen<cplen ) {
+	/* The two control points are in opposite directions with respect to */
+	/*  the main spline, and ours isn't very big, so make it point along */
+	/*  the spline */
+	end->pointtype = pt_corner;
 	if ( isto ) {
-	    myslope.x = end->me.x - to.x;
-	    myslope.y = end->me.y - to.y;
+	    s->to->prevcp.x = s->to->me.x - mydot*unitslope.x;
+	    s->to->prevcp.y = s->to->me.y - mydot*unitslope.y;
 	} else {
-	    myslope.x = to.x - end->me.x;
-	    myslope.y = to.x - end->me.y;
+	    s->from->nextcp.x = s->from->me.x + mydot*unitslope.x;
+	    s->from->nextcp.y = s->from->me.y + mydot*unitslope.y;
 	}
-    }
-    len2 = myslope.x*myslope.x + myslope.y*myslope.y;
-    if ( len2<.0001 ) {		/* so sqrt(len2)<.01 */
-	double t = isto ? .999 : .001;
-	to.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
-	to.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
-	changed = true;
-    }
-    if ( changed ) {
-	end->pointtype = pt_corner;	/* We just changed the slope. No longer a curve */
-	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
     }
     
     if ( (xdiff = cp->x - end->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = cp->y - end->me.y)<0 ) ydiff = -ydiff;
-    /* To get here we know that the extremum is extremely close to the end */
-    /*  point, and adjusting the slope at the end-point may be all we need */
-    /*  to do. We won't need to adjust it by much, because it is so close. */
 
     if ( xdiff<ydiff/10.0 && xdiff>0 ) {
 	to.x = end->me.x;
-	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
+	end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
     } else if ( ydiff<xdiff/10 && ydiff>0 ) {
 	to.y = end->me.y;
-	if ( end->pointtype==pt_tangent ) end->pointtype = pt_corner;
+	end->pointtype = pt_corner;
 	SPAdjustControl(end,cp,&to,s->order2);
 return( true );	/* We changed the slope */
     }
