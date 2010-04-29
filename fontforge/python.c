@@ -125,12 +125,19 @@ typedef struct {
 } PyFF_RefArray;
 static PyTypeObject PyFF_RefArrayType;
 
+typedef struct glyphmathkernobject {
+    PyObject_HEAD
+    SplineChar *sc;
+} PyFF_MathKern;
+static PyTypeObject PyFF_MathKernType;
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;
     PyFF_LayerArray *layers;
     PyFF_RefArray *refs;
+    PyFF_MathKern *mk;
     int layer;
 } PyFF_Glyph;
 static PyTypeObject PyFF_GlyphType;
@@ -5060,6 +5067,147 @@ static PyTypeObject PyFF_RefArrayType = {
 };
 
 /* ************************************************************************** */
+/*  Glyph Math Kerning  */
+/* ************************************************************************** */
+
+static void PyFFMathKern_dealloc(PyFF_MathKern *self) {
+    ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject *PyFFMathKern_Str(PyFF_MathKern *self) {
+return( STRING_FROM_FORMAT( "<math kerning table for glyph %s>", self->sc->name ));
+}
+
+static PyObject *PyFF_MathKern_get_kerns(PyFF_MathKern *self, void *closure) {
+    struct mathkernvertex *mkv;
+    PyObject *tuple;
+    int i;
+
+    if ( self->sc->mathkern==NULL )
+Py_RETURN_NONE;
+    mkv = &self->sc->mathkern->top_right + (int) (intpt) closure;
+    if ( mkv->cnt==0 )
+Py_RETURN_NONE;
+
+    tuple = PyTuple_New(mkv->cnt);
+    for ( i=0; i<mkv->cnt; ++i ) {
+	if ( i==mkv->cnt-1 )
+	    PyTuple_SetItem(tuple,i,Py_BuildValue( "(ii)", mkv->mkd[i].kern,self->sc->parent->ascent));
+	else
+	    PyTuple_SetItem(tuple,i,Py_BuildValue( "(ii)", mkv->mkd[i].kern,mkv->mkd[i].height));
+    }
+return( tuple );
+}
+
+static int PyFF_MathKern_set_kerns(PyFF_MathKern *self, PyObject *value, void *closure) {
+    struct mathkernvertex *mkv;
+    struct mathkerndata *mkd;
+    int i, cnt;
+
+    if ( self->sc->mathkern==NULL ) {
+	if ( value==Py_None )
+return( 0 );
+	self->sc->mathkern = chunkalloc(sizeof(struct mathkern));
+    }
+    mkv = &self->sc->mathkern->top_right + (int) (intpt) closure;
+    if ( value==Py_None ) {
+	MathKernVContentsFree(mkv);
+	mkv->cnt = 0;
+	mkv->mkd = NULL;
+return( 0 );
+    }
+    if ( !PyTuple_Check(value) && !PyList_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a tuple or a list" );
+return( -1 );
+    }
+    cnt = PySequence_Size(value);
+    mkd = gcalloc(cnt,sizeof(struct mathkerndata));
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *obj = PyTuple_GetItem(value,i);
+	if ( i==cnt-1 && PyInt_Check(obj))
+	    mkd[i].kern = PyInt_AsLong(obj);
+	else if ( !PyArg_ParseTuple(obj, "hh", &mkd[i].kern, &mkd[i].height )) {
+	    free(mkd);
+return( -1 );
+	}
+    }
+    MathKernVContentsFree(mkv);
+    mkv->cnt = cnt;
+    if ( cnt==0 ) {
+	free(mkd);
+	mkd=NULL;
+    }
+    mkv->mkd = mkd;
+return( 0 );
+}
+
+static PyGetSetDef PyFFMathKern_members[] = {
+    {"topRight",
+	 (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
+	 "Math Kerning information for the top right corner", (void *) (intpt) 0},
+    {"topLeft",
+	 (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
+	 "Math Kerning information for the top left corner", (void *) (intpt) 1},
+    {"bottomLeft",
+	 (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
+	 "Math Kerning information for the bottom left corner", (void *) (intpt) 3},
+    {"bottomRight",
+	 (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
+	 "Math Kerning information for the bottom right corner", (void *) (intpt) 2},
+    { NULL }
+};
+
+static PyTypeObject PyFF_MathKernType = {
+#if PY_MAJOR_VERSION >= 3
+    PyVarObject_HEAD_INIT(NULL, 0)
+#else
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+#endif
+    "fontforge.mathKern",	       /*tp_name*/
+    sizeof(PyFF_MathKern),      /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)PyFFMathKern_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,			       /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFMathKern_Str, /*tp_str*/
+    0,			       /*tp_getattro*/
+    0,			       /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+#if PY_MAJOR_VERSION >= 3
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+#else
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+#endif
+    "fontforge per glyph math kerning objects",   /* tp_doc */
+    0,				/* tp_traverse */
+    0,				/* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,			       /* tp_iter */
+    0,		               /* tp_iternext */
+    0,			       /* tp_methods */
+    0,			       /* tp_members */
+    PyFFMathKern_members,      /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,			       /* tp_init */
+    0,                         /* tp_alloc */
+    0,			       /* tp_new */
+};
+
+/* ************************************************************************** */
 /* Glyph Standard Methods */
 /* ************************************************************************** */
 
@@ -5068,6 +5216,7 @@ static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
 	self->sc = NULL;
     Py_XDECREF(self->layers);
     Py_XDECREF(self->refs);
+    Py_XDECREF(self->mk);
     ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
 }
 
@@ -6010,6 +6159,279 @@ static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self,void *closure)
 return( Py_BuildValue("i", self->sc->layers[self->layer].validation_state ));
 }
 
+static char *GlyphListToStr(PyObject *value) {
+    char *str, *pt;
+    int i,cnt,len;
+
+    if ( !PySequence_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a sequence" );
+return( NULL );
+    }
+    if ( PyBytes_Check(value)) {
+	str = PyBytes_AsString(value);
+#if PY_MAJOR_VERSION >= 3
+    } else if ( PyUnicode_Check(value)) {
+	value = PyUnicode_AsUTF8String(value);
+	str = PyBytes_AsString(value);
+	Py_DECREF(value);
+#endif
+    } else {
+	cnt = PySequence_Size(value);
+	len = 0;
+	for ( i=0; i<cnt; ++i ) {
+	    PyObject *obj = PySequence_GetItem(value,i);
+	    if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)obj)->ob_type) ) {
+		PyFF_Glyph *g = (PyFF_Glyph *) obj;
+		len += strlen(g->sc->name) + 1;
+	    } else {
+		PyErr_Format(PyExc_TypeError, "Must be a sequence of glyphs" );
+return( NULL );
+	    }
+	}
+	pt = str = galloc(len);
+	for ( i=0; i<cnt; ++i ) {
+	    PyObject *obj = PySequence_GetItem(value,i);
+	    PyFF_Glyph *g = (PyFF_Glyph *) obj;
+	    strcpy(pt,g->sc->name);
+	    pt += strlen(g->sc->name);
+	    strcpy(pt," ");
+	    pt += 1;
+	}
+	if ( pt>str ) pt[-1] = '\0';
+    }
+return( str );
+}
+
+static PyObject *BuildComponentTuple(struct glyphvariants *gv) {
+    PyObject *tuple;
+    int i;
+
+    if ( gv->part_cnt==0 )
+Py_RETURN_NONE;
+    tuple = PyTuple_New(gv->part_cnt);
+    for ( i=0; i<gv->part_cnt; ++i ) {
+	PyTuple_SetItem(tuple,i,Py_BuildValue("(siiii)",
+		gv->parts[i].component,
+		gv->parts[i].is_extender,
+		gv->parts[i].startConnectorLength,
+		gv->parts[i].endConnectorLength,
+		gv->parts[i].fullAdvance));
+    }
+return( tuple );
+}
+
+static struct gv_part *ParseComponentTuple(PyObject *tuple,int *_cnt) {
+    int i, cnt;
+    struct gv_part *parts;
+
+    if ( !PyTuple_Check(tuple) && !PyList_Check(tuple)) {
+	PyErr_Format(PyExc_TypeError, "Must be a tuple or list" );
+return( NULL );
+    }
+    *_cnt = cnt = PySequence_Size(tuple);
+    parts = gcalloc(cnt+1,sizeof(struct gv_part));
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *obj = PySequence_GetItem(tuple,i);
+	int extender=0, start=0, end=0, full=0;
+	if ( PyType_IsSubtype(&PyFF_GlyphType,obj->ob_type) ) {
+	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
+	} else if ( PyUnicode_Check(obj)) {
+	    PyObject *bytes = PyUnicode_AsUTF8String(obj);
+	    parts[i].component = copy(PyBytes_AsString(bytes));
+	    Py_DECREF(bytes);
+	} else if ( PyString_Check(obj)) {
+	    parts[i].component = copy(PyString_AsString(obj));
+	} else if ( PyTuple_Check(obj) && PyTuple_Size(obj)>0 &&
+		PyType_IsSubtype(&PyFF_GlyphType,PyTuple_GetItem(obj,0)->ob_type) ) {
+	    PyObject *g;
+	    if ( !PyArg_ParseTuple(obj,"O|iiii", &g,
+		    &extender, &start, &end, &full )) {
+		free(parts);
+return( NULL );
+	    }
+	    parts[i].component = copy(((PyFF_Glyph *) g)->sc->name);
+	} else if ( !PyArg_ParseTuple(obj,"s|iiii", &parts[i].component,
+		&extender, &start, &end, &full ))
+return( NULL );
+	parts[i].is_extender = extender;
+	parts[i].startConnectorLength = start;
+	parts[i].endConnectorLength = end;
+	parts[i].fullAdvance = full;
+    }
+return( parts );
+}
+
+static void FreeGVParts(struct glyphvariants *gv) {
+    int i;
+
+    if ( gv==NULL || gv->part_cnt==0 )
+return;
+    for ( i=0; i<gv->part_cnt ; ++i )
+	free(gv->parts[i].component);
+    free(gv->parts);
+    gv->part_cnt = 0;
+    gv->parts = NULL;
+}
+
+static PyObject *PyFF_Glyph_get_horizontalCIC(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->horiz_variants==NULL )
+return( Py_BuildValue("i", 0));
+
+return( Py_BuildValue("i", self->sc->horiz_variants->italic_correction ));
+}
+
+static int PyFF_Glyph_set_horizontalCIC(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    if ( self->sc->horiz_variants == NULL )
+	self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+    self->sc->horiz_variants->italic_correction = val;
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_verticalCIC(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->vert_variants==NULL )
+return( Py_BuildValue("i", 0));
+
+return( Py_BuildValue("i", self->sc->vert_variants->italic_correction ));
+}
+
+static int PyFF_Glyph_set_verticalCIC(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    if ( self->sc->vert_variants == NULL )
+	self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+    self->sc->vert_variants->italic_correction = val;
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_verticalVariants(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->vert_variants==NULL || self->sc->vert_variants->variants==NULL )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("s", self->sc->vert_variants->variants ));
+}
+
+static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self,PyObject *value,void *closure) {
+    char *str=NULL;
+
+    if ( value == Py_None ) {
+	if ( self->sc->vert_variants!=NULL ) {
+	    free(self->sc->vert_variants->variants);
+	    self->sc->vert_variants->variants=NULL;
+	}
+    } else {
+	str = GlyphListToStr(value);
+	if ( str==NULL )
+return( -1 );
+	if ( self->sc->vert_variants == NULL )
+	    self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	self->sc->vert_variants->variants = str;
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_horizontalVariants(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->horiz_variants==NULL || self->sc->horiz_variants->variants==NULL )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("s", self->sc->horiz_variants->variants ));
+}
+
+static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self,PyObject *value,void *closure) {
+    char *str=NULL;
+
+    if ( value == Py_None ) {
+	if ( self->sc->horiz_variants!=NULL ) {
+	    free(self->sc->horiz_variants->variants);
+	    self->sc->horiz_variants->variants=NULL;
+	}
+    } else {
+	str = GlyphListToStr(value);
+	if ( str==NULL )
+return( -1 );
+	if ( self->sc->horiz_variants == NULL )
+	    self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	self->sc->horiz_variants->variants = str;
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_horizontalComponents(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->horiz_variants==0 || self->sc->horiz_variants->part_cnt==0 )
+Py_RETURN_NONE;
+
+return( BuildComponentTuple(self->sc->horiz_variants ));
+}
+
+static int PyFF_Glyph_set_horizontalComponents(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int cnt;
+    struct gv_part *parts;
+
+    if ( value == Py_None ) {
+	if ( self->sc->horiz_variants!=NULL ) {
+	    FreeGVParts(self->sc->horiz_variants);
+	}
+    } else {
+	parts = ParseComponentTuple(value,&cnt);
+	if ( parts==NULL )
+return( -1 );
+	FreeGVParts(self->sc->horiz_variants);
+	if ( self->sc->horiz_variants == NULL )
+	    self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	self->sc->horiz_variants->part_cnt = cnt;
+	self->sc->horiz_variants->parts = parts;
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_verticalComponents(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->vert_variants==0 || self->sc->vert_variants->part_cnt==0 )
+Py_RETURN_NONE;
+
+return( BuildComponentTuple(self->sc->vert_variants ));
+}
+
+static int PyFF_Glyph_set_verticalComponents(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int cnt;
+    struct gv_part *parts;
+
+    if ( value == Py_None ) {
+	if ( self->sc->vert_variants!=NULL ) {
+	    FreeGVParts(self->sc->vert_variants);
+	}
+    } else {
+	parts = ParseComponentTuple(value,&cnt);
+	if ( parts==NULL )
+return( -1 );
+	FreeGVParts(self->sc->vert_variants);
+	if ( self->sc->vert_variants == NULL )
+	    self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	self->sc->vert_variants->part_cnt = cnt;
+	self->sc->vert_variants->parts = parts;
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_mathKern(PyFF_Glyph *self,void *closure) {
+    PyFF_MathKern *mk;
+
+    if ( self->mk!=NULL )
+Py_RETURN( self->mk );
+    mk = (PyFF_MathKern *) PyObject_New(PyFF_MathKern, &PyFF_MathKernType);
+    if (mk == NULL)
+return NULL;
+    mk->sc = self->sc;
+    self->mk = mk;
+Py_RETURN( self->mk );
+}
+
 static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
 	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
@@ -6132,6 +6554,27 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"validation_state",
 	 (getter)PyFF_Glyph_get_validation_state, (setter)PyFF_cant_set,
 	 "glyph's validation state (readonly)", NULL},
+    {"horizontalVariants",
+	 (getter)PyFF_Glyph_get_horizontalVariants, (setter)PyFF_Glyph_set_horizontalVariants,
+	 "glyph's horizontal variants (for math typesetting) as a string of glyph names", NULL},
+    {"verticalVariants",
+	 (getter)PyFF_Glyph_get_verticalVariants, (setter)PyFF_Glyph_set_verticalVariants,
+	 "glyph's vertical variants (for math typesetting) as a string of glyph names", NULL},
+    {"horizontalComponents",
+	 (getter)PyFF_Glyph_get_horizontalComponents, (setter)PyFF_Glyph_set_horizontalComponents,
+	 "A way of build very large versions of the glyph (for math typesetting) out of lots of smaller glyphs.", NULL},
+    {"verticalComponents",
+	 (getter)PyFF_Glyph_get_verticalComponents, (setter)PyFF_Glyph_set_verticalComponents,
+	 "A way of build very large versions of the glyph (for math typesetting) out of lots of smaller glyphs.", NULL},
+    {"horizontalComponentItalicCorrection",
+	 (getter)PyFF_Glyph_get_horizontalCIC, (setter)PyFF_Glyph_set_horizontalCIC,
+	 "The italic correction for any composite glyph made with the horizontalComponents.", NULL},
+    {"verticalComponentItalicCorrection",
+	 (getter)PyFF_Glyph_get_verticalCIC, (setter)PyFF_Glyph_set_verticalCIC,
+	 "The italic correction for any composite glyph made with the verticalComponents.", NULL},
+    {"mathKern",
+	 (getter)PyFF_Glyph_get_mathKern, (setter)PyFF_cant_set,
+	 "math kerning information for the glyph.", NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -9107,6 +9550,7 @@ static void PyFF_Font_dealloc(PyFF_Font *self) {
     Py_XDECREF(self->selection);
     Py_XDECREF(self->cvt);
     Py_XDECREF(self->private);
+    Py_XDECREF(self->math);
     ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
 }
 
@@ -15432,7 +15876,7 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
 	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    &PyFF_MathType, NULL };
+	    &PyFF_MathType, &PyFF_MathKernType, NULL };
     
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
@@ -15440,7 +15884,7 @@ PyMODINIT_FUNC _PyInit_fontforge(void) {
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
 	    "awglyph", "awglyphIndex", "awcontext",
-	    "math",
+	    "math", "mathkern",
 	    NULL };
 
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
@@ -15525,14 +15969,14 @@ static void initPyFontForge(void) {
 	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
 	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
 	    &PyFF_AWGlyphType, &PyFF_AWGlyphIndexType, &PyFF_AWContextType,
-	    &PyFF_MathType, NULL };
+	    &PyFF_MathType, &PyFF_MathKernType, NULL };
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter", "cvtiter",
 	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
 	    "layerinfo", "fontlayerarray", "fontlayeriter",
 	    "awglyph", "awglyphIndex", "awcontext",
-	    "math",
+	    "math", "mathkern",
 	    NULL };
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };

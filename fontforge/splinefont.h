@@ -1234,7 +1234,7 @@ struct mathkernvertex {
     int cnt;		/* There is one more kern entry than height entry */
 	    /* So the last mkd should have its height ignored */
 	    /* The MATH table stores the height count, I think the kern count */
-	    /*  is more useful. They differ by 1 */
+	    /*  is more useful (and that's what I use here). They differ by 1 */
     struct mathkerndata {
 	int16 height,kern;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
