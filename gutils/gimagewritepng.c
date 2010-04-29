@@ -32,7 +32,7 @@
 static int a_file_must_define_something=0;	/* ANSI says so */
 #elif !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC) /* I don't know how to deal with dynamic libs on mac OS/X, hence this */
 #include <dynamic.h>
-#include <png.h>
+# include <png.h>
 
 #define int32 _int32
 #define uint32 _uint32
@@ -183,8 +183,13 @@ return(false);
        if ( info_ptr->num_palette<=16 )
 	   _png_set_packing(png_ptr);
        if ( base->trans!=-1 ) {
+#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
+	   info_ptr->trans_alpha = galloc(1);
+	   info_ptr->trans_alpha[0] = base->trans;
+#else
 	   info_ptr->trans = galloc(1);
 	   info_ptr->trans[0] = base->trans;
+#endif
        }
    } else {
        info_ptr->color_type = PNG_COLOR_TYPE_RGB;
@@ -192,9 +197,15 @@ return(false);
 	   info_ptr->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 
        if ( base->trans!=-1 ) {
+#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
+	   info_ptr->trans_color.red = COLOR_RED(base->trans);
+	   info_ptr->trans_color.green = COLOR_GREEN(base->trans);
+	   info_ptr->trans_color.blue = COLOR_BLUE(base->trans);
+#else
 	   info_ptr->trans_values.red = COLOR_RED(base->trans);
 	   info_ptr->trans_values.green = COLOR_GREEN(base->trans);
 	   info_ptr->trans_values.blue = COLOR_BLUE(base->trans);
+#endif
        }
    }
    _png_write_info(png_ptr, info_ptr);
@@ -210,7 +221,11 @@ return(false);
 
     _png_write_end(png_ptr, info_ptr);
 
+#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
+    if ( info_ptr->trans_alpha!=NULL ) gfree(info_ptr->trans_alpha);
+#else
     if ( info_ptr->trans!=NULL ) gfree(info_ptr->trans);
+#endif
     if ( info_ptr->palette!=NULL ) gfree(info_ptr->palette);
     _png_destroy_write_struct(&png_ptr, &info_ptr);
     gfree(rows);
