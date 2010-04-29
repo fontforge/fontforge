@@ -93,7 +93,7 @@ static double FindNewT(double pos,const Spline1D *s,double old_t) {
 return( closest );
 }
 
-/* I have arranged so that either both splineset are clockwise or anti */
+/* I have arranged so that either both splinesets are clockwise or anti */
 /*  Thus when we walk forward on one splineset we will walk forward on the */
 /*  other. So no need to back track here */
 static int NearSplineSet(BasePoint *here,const SplineSet *ss,
