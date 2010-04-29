@@ -1496,7 +1496,7 @@ static int PyFFContour_compare(PyFF_Contour *self,PyObject *other) {
     ret = PyFFContour_docompare(self,other,pt_err,spline_err);
     if ( !(ret&SS_NoMatch) )
 return( 0 );
-    /* There's no real ordering on this guys. Make up something that is */
+    /* There's no real ordering on these guys. Make up something that is */
     /*  at least consistent */
     if ( self->pt_cnt < ((PyFF_Contour *) other)->pt_cnt )
 return( -1 );
@@ -2380,6 +2380,30 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFContour_similar(PyFF_Contour *self, PyObject *args) {
+    double pt_err = -1, spline_err = -1;
+    int ret;
+    PyObject *other, *retO;
+
+    if ( !PyArg_ParseTuple(args,"O|dd", &other, &pt_err, &spline_err) )
+return( NULL );
+    if ( pt_err==-1 ) {
+	pt_err = .5;
+	spline_err = pt_err;
+    } else if ( spline_err==-1 )
+	spline_err = pt_err;
+
+    if ( !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+	PyErr_Format(PyExc_TypeError, "Unexpected type");
+return( NULL );
+    }
+
+    ret = PyFFContour_docompare(self,other,pt_err,spline_err);
+    retO = (ret&SS_NoMatch) ? Py_False : Py_True;
+    Py_INCREF( retO );
+return( retO );
+}
+
 static PyObject *PyFFContour_pickleReducer(PyFF_Contour *self, PyObject *args) {
     PyObject *reductionTuple, *argTuple;
     int i;
@@ -2720,6 +2744,8 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "Removes the specified on-curve point leaving the contour otherwise intact" },
     {"selfIntersects", (PyCFunction)PyFFContour_selfIntersects, METH_NOARGS,
 	     "Returns whether this contour intersects itself" },
+    {"similar", (PyCFunction)PyFFContour_similar, METH_VARARGS,
+	     "Returns whether two contours are similar within certain error bounds." },
     {"simplify", (PyCFunction)PyFFContour_Simplify, METH_VARARGS,
 	     "Smooths a contour" },
     {"transform", (PyCFunction)PyFFContour_Transform, METH_VARARGS,
@@ -3242,6 +3268,31 @@ return( NULL );
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
+}
+
+static PyObject *PyFFLayer_similar(PyFF_Layer *self, PyObject *args) {
+    double pt_err = -1, spline_err = -1;
+    int ret;
+    PyObject *other, *retO;
+
+    if ( !PyArg_ParseTuple(args,"O|dd", &other, &pt_err, &spline_err) )
+return( NULL );
+    if ( pt_err==-1 ) {
+	pt_err = .5;
+	spline_err = pt_err;
+    } else if ( spline_err==-1 )
+	spline_err = pt_err;
+
+    if ( !PyType_IsSubtype(&PyFF_LayerType,((PyObject *)other)->ob_type) &&
+	 !PyType_IsSubtype(&PyFF_ContourType,((PyObject *)other)->ob_type) ) {
+	PyErr_Format(PyExc_TypeError, "Unexpected type");
+return( NULL );
+    }
+
+    ret = PyFFLayer_docompare(self,other,pt_err,spline_err);
+    retO = (ret&SS_NoMatch) ? Py_False : Py_True;
+    Py_INCREF( retO );
+return( retO );
 }
 
 static PyObject *PyFFLayer_Transform(PyFF_Layer *self, PyObject *args) {
@@ -3817,6 +3868,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Returns a deep copy of the layer" },
     {"isEmpty", (PyCFunction)PyFFLayer_IsEmpty, METH_NOARGS,
 	     "Returns whether a layer contains no contours" },
+    {"similar", (PyCFunction)PyFFLayer_similar, METH_VARARGS,
+	     "compares two layers" },
     {"simplify", (PyCFunction)PyFFLayer_Simplify, METH_VARARGS,
 	     "Smooths a layer" },
     {"selfIntersects", (PyCFunction)PyFFLayer_selfIntersects, METH_NOARGS,

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 15-Apr-2010 -->
+  <!-- AP: Last modified: 28-Apr-2010 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -974,6 +974,15 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	<A href="#l-correctDirection">layer.correctDirection</A>.</TD>
     </TR>
     <TR>
+      <TD><CODE>similar</CODE></TD>
+      <TD><CODE>(other-contour[,error])</CODE></TD>
+      <TD>Checks whether this contour is similar to the other one where error is
+	the maximum distance (in em-units) allowed for the two contours to diverge.
+	<P>
+	This is like the comparison operator, but that doesn't allow you to specify
+	an error bound.</TD>
+    </TR>
+    <TR>
       <TD><CODE>xBoundsAtY</CODE></TD>
       <TD><CODE>(ybottom[,ytop])</CODE></TD>
       <TD>Finds the minimum and maximum x positions attained by the contour when
@@ -1292,6 +1301,16 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD><CODE>()</CODE></TD>
       <TD>Returns whether any of the contours on this layer intersects any other
 	contour (including itself).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>similar</CODE></TD>
+      <TD><CODE>(other-layer[,error])</CODE></TD>
+      <TD>Checks whether this layer is similar to the other one where error is
+	the maximum distance (in em-units) allowed for any two corresponding contours
+	in the layers to diverge.
+	<P>
+	This is like the comparison operator, but that doesn't allow you to specify
+	an error bound.</TD>
     </TR>
     <TR>
       <TD><CODE>simplify</CODE></TD>
@@ -1703,27 +1722,31 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>horizontalComponents</CODE></TD>
       <TD colspan=2>A tuple of tuples.
-        <p>This allows <a href="math.html#GlyphConstruction">constructing</a> very large versions of the glyph by
-	stacking the componants together. Some components may be repeated
-	so there is no bound on the size.
-	<p>This is different from horizontalVariants which expects prebuilt
-	glyphs of various fixed sizes.
-	<p>The components are stacked in the order they appear in the (top-level) tuple.
-	Each sub-tuple represents information on one component. The subtuple
-	should contain: (String glyph-name, Boolean is-extender, Int startConnectorLength,
-	Int endConnectorLength, Int fullAdvance). Any of these may be omitted
-	(except the glyph name) and will be assumed to be 0 if so.</td>
-    </TR>
-    </TR>
+	<P>
+	This allows <A href="math.html#GlyphConstruction">constructing</A> very large
+	versions of the glyph by stacking the componants together. Some components
+	may be repeated so there is no bound on the size.
+	<P>
+	This is different from horizontalVariants which expects prebuilt glyphs of
+	various fixed sizes.
+	<P>
+	The components are stacked in the order they appear in the (top-level) tuple.
+	Each sub-tuple represents information on one component. The subtuple should
+	contain: (String glyph-name, Boolean is-extender, Int startConnectorLength,
+	Int endConnectorLength, Int fullAdvance). Any of these may be omitted (except
+	the glyph name) and will be assumed to be 0 if so.</TD>
       <TD><CODE>horizontalComponentItalicCorrection</CODE></TD>
       <TD colspan=2>The italic correction for any composite glyph made with the
-      horizontalComponents.</td>
+	horizontalComponents.</TD>
     </TR>
     <TR>
       <TD><CODE>horizontalVariants</CODE></TD>
-      <TD colspan=2>A string containing a list of glyph names. These are <a href="math.html#Variants</a>alternate forms</a> of the current glyph for use in typesetting math. Presumably the variants are of different sizes.
-      <P>Although ff will always return a string of glyph names, you may assign
-      to it with a tuple of glyphs and ff will convert that to corresponding names.</TD>
+      <TD colspan=2>A string containing a list of glyph names. These are
+	<A href="math.html#Variants&lt;/a">alternate forms</A> of the current glyph
+	for use in typesetting math. Presumably the variants are of different sizes.
+	<P>
+	Although ff will always return a string of glyph names, you may assign to
+	it with a tuple of glyphs and ff will convert that to corresponding names.</TD>
     </TR>
     <TR>
       <TD><CODE>isExtendedShape</CODE></TD>
@@ -1767,30 +1790,30 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>mathKern.bottomLeft</CODE></TD>
       <TD colspan=2>The glyph's math kerning data associated with the bottom left
-      vertex. This returns a tuple of two element tuples, each of which contains
-      a kerning offset and an associated hieght (in the last entry the height
-      term is meaningless, but present).</TD>
+	vertex. This returns a tuple of two element tuples, each of which contains
+	a kerning offset and an associated hieght (in the last entry the height term
+	is meaningless, but present).</TD>
     </TR>
     <TR>
       <TD><CODE>mathKern.bottomRight</CODE></TD>
       <TD colspan=2>The glyph's math kerning data associated with the bottom right
-      vertex. This returns a tuple of two element tuples, each of which contains
-      a kerning offset and an associated hieght (in the last entry the height
-      term is meaningless, but present).</TD>
+	vertex. This returns a tuple of two element tuples, each of which contains
+	a kerning offset and an associated hieght (in the last entry the height term
+	is meaningless, but present).</TD>
     </TR>
     <TR>
       <TD><CODE>mathKern.topLeft</CODE></TD>
       <TD colspan=2>The glyph's math kerning data associated with the top left
-      vertex. This returns a tuple of two element tuples, each of which contains
-      a kerning offset and an associated hieght (in the last entry the height
-      term is meaningless, but present).</TD>
+	vertex. This returns a tuple of two element tuples, each of which contains
+	a kerning offset and an associated hieght (in the last entry the height term
+	is meaningless, but present).</TD>
     </TR>
     <TR>
       <TD><CODE>mathKern.topRight</CODE></TD>
       <TD colspan=2>The glyph's math kerning data associated with the top right
-      vertex. This returns a tuple of two element tuples, each of which contains
-      a kerning offset and an associated hieght (in the last entry the height
-      term is meaningless, but present).</TD>
+	vertex. This returns a tuple of two element tuples, each of which contains
+	a kerning offset and an associated hieght (in the last entry the height term
+	is meaningless, but present).</TD>
     </TR>
     <TR>
       <TD><CODE>originalgid</CODE></TD>
@@ -1999,24 +2022,28 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>verticalComponents</CODE></TD>
       <TD colspan=2>A tuple of tuples.
-        <p>This allows <a href="math.html#GlyphConstruction">constructing</a> very large versions of the glyph by
-	stacking the componants together. Some components may be repeated
-	so there is no bound on the size.
-	<p>This is different from verticalVariants which expects prebuilt
-	glyphs of various fixed sizes.
-	<p>The components are stacked in the order they appear in the (top-level) tuple.
-	Each sub-tuple represents information on one component. The subtuple
-	should contain: (String glyph-name, Boolean is-extender, Int startConnectorLength,
-	Int endConnectorLength, Int fullAdvance). Any of these may be omitted
-	(except the glyph name) and will be assumed to be 0 if so.</td>
-    </TR>
+	<P>
+	This allows <A href="math.html#GlyphConstruction">constructing</A> very large
+	versions of the glyph by stacking the componants together. Some components
+	may be repeated so there is no bound on the size.
+	<P>
+	This is different from verticalVariants which expects prebuilt glyphs of
+	various fixed sizes.
+	<P>
+	The components are stacked in the order they appear in the (top-level) tuple.
+	Each sub-tuple represents information on one component. The subtuple should
+	contain: (String glyph-name, Boolean is-extender, Int startConnectorLength,
+	Int endConnectorLength, Int fullAdvance). Any of these may be omitted (except
+	the glyph name) and will be assumed to be 0 if so.</TD>
       <TD><CODE>verticalComponentItalicCorrection</CODE></TD>
       <TD colspan=2>The italic correction for any composite glyph made with the
-      verticalComponents.</td>
+	verticalComponents.</TD>
     </TR>
     <TR>
       <TD><CODE>verticalVariants</CODE></TD>
-      <TD colspan=2>A string containing a list of glyph names. These are <a href="math.html#Variants</a>alternate forms</a> of the current glyph for use in typesetting math. Presumably the variants are of different sizes.</TD>
+      <TD colspan=2>A string containing a list of glyph names. These are
+	<A href="math.html#Variants&lt;/a">alternate forms</A> of the current glyph
+	for use in typesetting math. Presumably the variants are of different sizes.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="g-width">width</A></CODE></TD>
@@ -2694,8 +2721,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     </CAPTION>
     <TR>
       <TD colspan=3>This represents a font's math constant table. Not all fonts
-      have math tables, and checking this field will not create the underlying
-      object, but examining or assigning to its members will create it..
+	have math tables, and checking this field will not create the underlying
+	object, but examining or assigning to its members will create it..
 	<P>
 	This type may not be pickled.</TD>
     </TR>
@@ -2703,15 +2730,16 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TH colspan=3>Members</TH>
     </TR>
     <TR>
-      <TD colspan=3>Any of the math constant names may be used as member names.<br>
-      The list is long, and I shall not copy them all. Here is a subset<br>
-      <CODE>ScriptPercentScaleDown<br>
-      ScriptScriptPercentScaleDown<br>
-      DelimitedSubFormulaMinHeight<br>
-      ...</CODE><br>
-      (These names begin with capital letters, not python's conventions but MicroSoft's)<br>
-      These all take (16 bit) integer values.<br>
-      I do not currently provide python access to any associated device tables.
+      <TD colspan=3>Any of the math constant names may be used as member names.<BR>
+	The list is long, and I shall not copy them all. Here is a subset<BR>
+	<CODE>ScriptPercentScaleDown<BR>
+	ScriptScriptPercentScaleDown<BR>
+	DelimitedSubFormulaMinHeight<BR>
+	...</CODE><BR>
+	(These names begin with capital letters, not python's conventions but
+	MicroSoft's)<BR>
+	These all take (16 bit) integer values.<BR>
+	I do not currently provide python access to any associated device tables.</TD>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
@@ -2724,9 +2752,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>exists</CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Returns whether the font currently has an underlying math table associated with it.
-      Note that examining or assigning to one of the members will create such
-      a table.</TD>
+      <TD>Returns whether the font currently has an underlying math table associated
+	with it. Note that examining or assigning to one of the members will create
+	such a table.</TD>
     </TR>
     <TR>
       <TD><CODE>clear</CODE></TD>
@@ -3276,8 +3304,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>math</CODE></TD>
       <TD colspan=2>Returns an <A HREF="#math">object which provides information
-        on the font's underlying math constant table. There is only one of these
-	per font.</TD>
+	on the font's underlying math constant table. There is only one of these
+	per font.</A></TD>
     </TR>
     <TR>
       <TD><CODE>private</CODE></TD>
