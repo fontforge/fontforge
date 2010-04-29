@@ -841,7 +841,7 @@ msgstr "Збій збереження"
 #: showatt.c:1896
 #, fuzzy
 msgid "writing system|Script"
-msgstr "Перетворення Postscript"
+msgstr "Перетворення PostScript"
 
 #: basedlg.c:413
 #, fuzzy
@@ -4331,7 +4331,7 @@ msgstr ""
 #: splineutil.c:2607
 #, fuzzy
 msgid "Bad Multiple Master Font"
-msgstr "Збереження множини шрифтів Postscript"
+msgstr "Збереження множини шрифтів PostScript"
 
 #. GT: Here (and following) MM means "MultiMaster"
 #: charview.c:9747
@@ -4466,7 +4466,7 @@ msgid "Bad Class"
 msgstr ""
 
 #: contextchain.c:608
-msgid "A class must contain at least one glyph name, glyph names must be valid postscript names, and no glyphs may appear in any other class"
+msgid "A class must contain at least one glyph name, glyph names must be valid PostScript names, and no glyphs may appear in any other class"
 msgstr ""
 
 #: contextchain.c:609
@@ -4476,11 +4476,11 @@ msgid "Bad Coverage"
 msgstr ""
 
 #: contextchain.c:609
-msgid "A coverage table must contain at least one glyph name, and glyph names must be valid postscript names"
+msgid "A coverage table must contain at least one glyph name, and glyph names must be valid PostScript names"
 msgstr ""
 
 #: contextchain.c:610
-msgid "A glyph list must contain at least one glyph name, and glyph names must be valid postscript names"
+msgid "A glyph list must contain at least one glyph name, and glyph names must be valid PostScript names"
 msgstr ""
 
 #: contextchain.c:617
@@ -7216,7 +7216,7 @@ msgstr "Інше"
 #: displayfonts.c:367
 msgid ""
 "Any other command with all its arguments.\n"
-"The command must expect to deal with a postscript\n"
+"The command must expect to deal with a PostScript\n"
 "file which it will find by reading its standard input."
 msgstr ""
 
@@ -7348,7 +7348,7 @@ msgstr ""
 #: displayfonts.c:1754
 msgid ""
 "Specifies file format used to pass the font to freetype\n"
-"  pfb -- is the standard postscript type1\n"
+"  pfb -- is the standard PostScript type1\n"
 "  ttf -- is truetype\n"
 "  otf -- is opentype\n"
 "  nohints -- freetype rasterizes without hints\n"
@@ -7523,13 +7523,13 @@ msgstr "Автоінструктаж шрифту..."
 
 #: dumppfa.c:1545
 #: dumppfa.c:2482
-msgid "Converting Postscript"
-msgstr "Перетворення Postscript"
+msgid "Converting PostScript"
+msgstr "Перетворення PostScript"
 
 #: dumppfa.c:1549
 #: dumppfa.c:2486
-msgid "Saving Postscript Font"
-msgstr "Збереження шрифту Postscript"
+msgid "Saving PostScript Font"
+msgstr "Збереження шрифту PostScript"
 
 #: effects.c:45
 #, fuzzy
@@ -11836,7 +11836,7 @@ msgstr ""
 #: fontinfo.c:2907
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
 msgstr ""
@@ -11855,16 +11855,16 @@ msgstr ""
 #: fontinfo.c:2921
 #: fontinfo.c:2947
 #: parsettf.c:1415
-msgid "A Postscript name may not be a number"
-msgstr "Назва Postscript не повинна бути числом"
+msgid "A PostScript name may not be a number"
+msgstr "Назва PostScript не повинна бути числом"
 
 #: fontinfo.c:2925
-msgid "Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
+msgid "Some versions of Windows will refuse to install PostScript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
 #: fontinfo.c:2929
 #: savefontdlg.c:1423
-msgid "Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"
+msgid "Some versions of Windows will refuse to install PostScript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
 #: fontinfo.c:2932
@@ -11875,7 +11875,7 @@ msgstr ""
 #: fontinfo.c:2955
 #, c-format
 msgid ""
-"A Postscript name should be ASCII\n"
+"A PostScript name should be ASCII\n"
 "and must not contain (){}[]<>%%/ or space"
 msgstr ""
 
@@ -12869,7 +12869,7 @@ msgstr ""
 
 #: fontinfo.c:8162
 msgid ""
-"Use cubic (that is postscript) splines to hold the outlines of all\n"
+"Use cubic (that is PostScript) splines to hold the outlines of all\n"
 "layers of this font. Cubic splines are generally easier to edit\n"
 "than quadratic (and you may still generate a truetype font from them)."
 msgstr ""
@@ -12881,7 +12881,7 @@ msgstr ""
 #: fontinfo.c:8177
 msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of all\n"
-"layers of this font rather than cubic (postscript) splines."
+"layers of this font rather than cubic (PostScript) splines."
 msgstr ""
 
 #: fontinfo.c:8180
@@ -13230,7 +13230,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its postscript equivalent\n"
+"To associate or disassocate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 
@@ -14778,7 +14778,7 @@ msgstr ""
 msgid "Too Many Breakpoints"
 msgstr "Дуже багато компонент"
 
-#. GT: the string "dotlessi" is the official postscript name for the glyph
+#. GT: the string "dotlessi" is the official PostScript name for the glyph
 #. GT: containing an "i" without a dot on top of it. The name "dotlessi"
 #. GT: should be left untranslated, though you may wish to explain what it
 #. GT: means
@@ -14853,7 +14853,7 @@ msgid "Interpolating a font with itself achieves nothing"
 msgstr ""
 
 #: fvfonts.c:1595
-msgid "Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"
+msgid "Interpolating between fonts with different spline orders (i.e. between PostScript and truetype)"
 msgstr ""
 
 #: fvfonts.c:1600
@@ -15318,7 +15318,7 @@ msgid "Select by Color"
 msgstr "Вибрати за кольором "
 
 #: groupsdlg.c:698
-msgid "Glyph names must be valid postscript names"
+msgid "Glyph names must be valid PostScript names"
 msgstr ""
 
 #: groupsdlg.c:722
@@ -17490,7 +17490,7 @@ msgstr ""
 #: lookupui.c:119
 #, fuzzy
 msgid "Single Position"
-msgstr "Збереження шрифту Postscript"
+msgstr "Збереження шрифту PostScript"
 
 #: lookupui.c:120
 #, fuzzy
@@ -19516,11 +19516,11 @@ msgstr ""
 
 #: macbinary.c:871
 #: macbinary.c:1223
-msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"
+msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This PostScript font will print fine, but only the bitmap versions will be displayed on the screen"
 msgstr ""
 
 #: macbinary.c:1979
-msgid "Can't open temporary file for postscript output\n"
+msgid "Can't open temporary file for PostScript output\n"
 msgstr ""
 
 #: macbinary.c:1999
@@ -19588,7 +19588,7 @@ msgstr "Не вдалося відкрити файл %.200s"
 
 #: macbinary.c:3166
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
+msgid "%s is a mac resource file but contains no PostScript or truetype fonts\n"
 msgstr ""
 
 #: macenc.c:2266
@@ -21135,7 +21135,7 @@ msgstr ""
 #: mmdlg.c:2173
 #, fuzzy
 msgid "Bad PostScript function"
-msgstr "Збереження шрифту Postscript"
+msgstr "Збереження шрифту PostScript"
 
 #: mmdlg.c:2352
 #: mmdlg.c:2355
@@ -21536,7 +21536,7 @@ msgstr ""
 #: prefs.c:278
 msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
-"or cubic (postscript & opentype)."
+"or cubic (PostScript & opentype)."
 msgstr ""
 
 #: noprefs.c:181
@@ -22363,7 +22363,7 @@ msgstr "Без растрового"
 #: openfontdlg.c:118
 #, fuzzy
 msgid "PostScript"
-msgstr "Відкрити шрифт Postscript"
+msgstr "Відкрити шрифт PostScript"
 
 #: openfontdlg.c:120
 #: prefs.c:481
@@ -22510,7 +22510,7 @@ msgstr ""
 #: palmfonts.c:637
 #, fuzzy
 msgid "Multiple-Density Font"
-msgstr "Збереження множини шрифтів Postscript"
+msgstr "Збереження множини шрифтів PostScript"
 
 #: palmfonts.c:638
 msgid "High-Density Font"
@@ -22519,7 +22519,7 @@ msgstr ""
 #: palmfonts.c:639
 #, fuzzy
 msgid "Single and Multi-Density Fonts"
-msgstr "Збереження множини шрифтів Postscript"
+msgstr "Збереження множини шрифтів PostScript"
 
 #: palmfonts.c:640
 msgid "Single and High-Density Fonts"
@@ -22664,7 +22664,7 @@ msgstr ""
 #: parsepfa.c:1874
 msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
-"\t\"UniqueID\" (postscript is case concious)\n"
+"\t\"UniqueID\" (PostScript is case concious)\n"
 msgstr ""
 
 #: parsepfa.c:1954
@@ -23771,7 +23771,7 @@ msgstr ""
 #: parsettf.c:1437
 #, c-format
 msgid ""
-"The Postscript font name \"%.63s\" is invalid.\n"
+"The PostScript font name \"%.63s\" is invalid.\n"
 "It should be printable ASCII,\n"
 "must not contain (){}[]<>%%/ or space\n"
 "and must be shorter than 63 characters"
@@ -24699,12 +24699,12 @@ msgid "Printing Font"
 msgstr "Друк шрифту"
 
 #: print.c:1401
-msgid "Generating Postscript Font"
-msgstr "Створення шрифту Postscript"
+msgid "Generating PostScript Font"
+msgstr "Створення шрифту PostScript"
 
 #: print.c:1426
-msgid "Failed to generate postscript font"
-msgstr "Не вдалося створити шрифт postscript"
+msgid "Failed to generate PostScript font"
+msgstr "Не вдалося створити шрифт PostScript"
 
 #: print.c:1675
 #: tottf.c:6000
@@ -24714,8 +24714,8 @@ msgstr ""
 #: print.c:2864
 #: print.c:2869
 #, fuzzy, c-format
-msgid "Failed to generate postscript in file %s"
-msgstr "Не вдалося створити шрифт postscript"
+msgid "Failed to generate PostScript in file %s"
+msgstr "Не вдалося створити шрифт PostScript"
 
 #: problems.c:219
 #: problems.c:1571
@@ -25467,7 +25467,7 @@ msgstr ""
 
 #: problems.c:3294
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. This lets you check that they\n"
 "are.\n"
 " Before doing this test insure that\n"
@@ -25480,7 +25480,7 @@ msgstr ""
 
 #: problems.c:3306
 msgid ""
-"Postscript and TrueType require that when a path\n"
+"PostScript and TrueType require that when a path\n"
 "reaches its maximum or minimum position\n"
 "there must be a point at that location."
 msgstr ""
@@ -25504,7 +25504,7 @@ msgstr "Дзеркальне посилання"
 
 #: problems.c:3359
 msgid ""
-"Postscript and TrueType require that paths be drawn\n"
+"PostScript and TrueType require that paths be drawn\n"
 "in a clockwise direction. If you have a reference\n"
 "that has been flipped then the paths in that reference will\n"
 "probably be counter-clockwise. You should unlink it and do\n"
@@ -26231,7 +26231,7 @@ msgstr ""
 #: psread.c:1599
 #: psread.c:1608
 #: psread.c:1617
-msgid "Divide by zero in postscript code.\n"
+msgid "Divide by zero in PostScript code.\n"
 msgstr ""
 
 #: psread.c:1699
@@ -26586,8 +26586,8 @@ msgid "Saving font"
 msgstr "Збереження шрифту"
 
 #: savefont.c:731
-msgid "Saving Multiple Postscript Fonts"
-msgstr "Збереження множини шрифтів Postscript"
+msgid "Saving Multiple PostScript Fonts"
+msgstr "Збереження множини шрифтів PostScript"
 
 #: savefont.c:762
 msgid "Bad Drawing Operation"
@@ -26610,7 +26610,7 @@ msgstr "Збереження шрифту CID"
 #: savefont.c:802
 #, fuzzy
 msgid "Saving multi-master font"
-msgstr "Збереження множини шрифтів Postscript"
+msgstr "Збереження множини шрифтів PostScript"
 
 #: savefont.c:803
 #, fuzzy
@@ -26625,7 +26625,7 @@ msgstr "Збереження SFD (Spline Font Database)"
 #: savefont.c:805
 #, fuzzy
 msgid "Saving PostScript Font"
-msgstr "Збереження шрифту Postscript"
+msgstr "Збереження шрифту PostScript"
 
 #: savefont.c:814
 msgid "Mac Resource Not Remote"
@@ -26918,7 +26918,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite characters are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -26931,7 +26931,7 @@ msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
 "The main differences are:\n"
-" The requirements for the 'postscript' name in the name table conflict\n"
+" The requirements for the 'PostScript' name in the name table conflict\n"
 " Bitmap data are stored in different tables\n"
 " Scaled composite glyphs are treated differently\n"
 " Use of GSUB rather than morx(t)/feat\n"
@@ -27787,7 +27787,7 @@ msgstr "Вертикальні дроби"
 #: scstylesui.c:725
 #, fuzzy
 msgid "Original Y Position"
-msgstr "Збереження шрифту Postscript"
+msgstr "Збереження шрифту PostScript"
 
 #: scstylesui.c:726
 #, fuzzy
@@ -29212,7 +29212,7 @@ msgid "Compare _Hints"
 msgstr "Очистити інструкції "
 
 #: showatt.c:3205
-msgid "Compare postscript hints and hintmasks and truetype instructions"
+msgid "Compare PostScript hints and hintmasks and truetype instructions"
 msgstr ""
 
 #: showatt.c:3213

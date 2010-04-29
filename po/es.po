@@ -1033,8 +1033,8 @@ msgstr "Histograma"
 msgid "A Font Family name is required"
 msgstr "Se necesita un nombre de familia de fuente"
 
-msgid "A Postscript name may not be a number"
-msgstr "Un nombre postscript no puede ser un número"
+msgid "A PostScript name may not be a number"
+msgstr "Un nombre PostScript no puede ser un número"
 
 msgid "Bad Font Family Name"
 msgstr "Nombre de familia de fuente incorrecto"
@@ -1048,8 +1048,8 @@ msgstr "Nombre demasiado largo, no más de 63 caracteres"
 msgid "Bad Font Modifier Name"
 msgstr "Nombre de modificador de fuente incorrecto"
 
-msgid "A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"
-msgstr "Un nombre postscript debe ser escrito en ASCII\ny no puede contener los símbolos (){}[]<>%%/ o espacio"
+msgid "A PostScript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorted than 63 characters"
+msgstr "Un nombre PostScript debe ser escrito en ASCII\ny no puede contener los símbolos (){}[]<>%%/ o espacio"
 
 msgid "Names"
 msgstr "Nombres"
@@ -1093,8 +1093,8 @@ msgstr "_Origen vertical:"
 msgid "_Quadratic Splines"
 msgstr "Curvas cuadráticas(_Q)"
 
-msgid "Use quadratic (that is truetype) splines to hold the outlines of this\nfont rather than cubic (postscript) splines. Set this option if you\nare editing truetype font. Unset it if you are editing an opentype\nor postscript font (FontForge will convert to the appropriate\nspline type when it generates fonts so this is not required)."
-msgstr "Utilizar curvas cuadráticas (TrueType) para definir los perfiles de esta\nfuente en vez de curvas cúbicas (postscript). Active esta opción si\nestá editando una fuente truetype. Desactívela si se trata de una fuente opentype\no postscript (FontForge hará las coversiones correspondientes\nal momento de generar las fuentes, por lo tanto, esta opción no es necesaria)."
+msgid "Use quadratic (that is truetype) splines to hold the outlines of this\nfont rather than cubic (PostScript) splines. Set this option if you\nare editing truetype font. Unset it if you are editing an opentype\nor PostScript font (FontForge will convert to the appropriate\nspline type when it generates fonts so this is not required)."
+msgstr "Utilizar curvas cuadráticas (TrueType) para definir los perfiles de esta\nfuente en vez de curvas cúbicas (PostScript). Active esta opción si\nestá editando una fuente truetype. Desactívela si se trata de una fuente opentype\no PostScript (FontForge hará las coversiones correspondientes\nal momento de generar las fuentes, por lo tanto, esta opción no es necesaria)."
 
 msgid "_Multi Layered Font"
 msgstr "Edición _multicapa"
@@ -1378,7 +1378,7 @@ msgstr "800 Muy Negra"
 msgid "900 Black"
 msgstr "900 Negrita"
 
-msgid "Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.\nThis field is often called \"FSType\" and is\navailabe in CID-keyed postscript fonts as well\nas truetype and opentype fonts"
+msgid "Can this font be embedded in a downloadable (pdf)\ndocument and if so what behaviors are permitted on\nboth the document and the font.\nThis field is often called \"FSType\" and is\navailabe in CID-keyed PostScript fonts as well\nas truetype and opentype fonts"
 msgstr "¿Se puede incluir esta fuente en un documento (pdf)?\nSi es sí, ¿qué se permite en cuanto al documento?\n¿y en cuanto a la fuente?."
 
 msgid "_Embeddable"
@@ -2329,14 +2329,14 @@ msgstr "El archivo PFM contiene información que Windows necesita para instalar 
 msgid "The tfm and enc files contain information TeX needs to install a PostScript® font."
 msgstr "Los archivos TFM y ENC contienen información que TeX necesita para instalar una fuente PostScript®."
 
-msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
-msgstr "Apple y MS/Adobe difieren en cuanto al formato de los archivos truetype y opentype\nEste ítem le permite elegir el estándar para su fuente.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
+msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
+msgstr "Apple y MS/Adobe difieren en cuanto al formato de los archivos truetype y opentype\nEste ítem le permite elegir el estándar para su fuente.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
 
 msgid "OpenType"
 msgstr "OpenType"
 
-msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
-msgstr "Apple and MS/Adobe difieren en cuanto al formato de los archivos truetype y opentype\nEste ítem le permite elegir el estándar para su fuente.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
+msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis allows you to select which standard to follow for your font.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
+msgstr "Apple and MS/Adobe difieren en cuanto al formato de los archivos truetype y opentype\nEste ítem le permite elegir el estándar para su fuente.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop"
 
 msgid "No Outline Font"
 msgstr "Ninguna fuente de contorno"
@@ -2356,11 +2356,11 @@ msgstr "Error al guardar TFM"
 msgid "Saving font"
 msgstr "Guardando fuente"
 
-msgid "Saving Postscript Font"
-msgstr "Guardando fuente postscript"
+msgid "Saving PostScript Font"
+msgstr "Guardando fuente PostScript"
 
-msgid "Saving Multiple Postscript Fonts"
-msgstr "Guardando múltiples fuentes postscript"
+msgid "Saving Multiple PostScript Fonts"
+msgstr "Guardando múltiples fuentes PostScript"
 
 msgid "Saving TrueType Font"
 msgstr "Guardando fuente TrueType"
@@ -2584,8 +2584,8 @@ msgstr "Esto implica abrir más de 10 ventanas.\n¿Es lo que en verdad desea?"
 msgid "Merge Kern Info"
 msgstr "Fusionar atributos interletraje"
 
-msgid "Open Postscript Font"
-msgstr "Abrir fuente Postscript"
+msgid "Open PostScript Font"
+msgstr "Abrir fuente PostScript"
 
 msgid "Loading..."
 msgstr "Cargando..."
@@ -4744,8 +4744,8 @@ msgstr "Codificación predeterminada\npara las fuentes nuevas"
 msgid "The default size of the Em-Square in a newly created font."
 msgstr "Tamaño predeterminado del cuadratín en un fuente recién creada."
 
-msgid "Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype)."
-msgstr "Las nuevas fuentes deben utilizar curvas\n cuadráticas (TrueType) o cúbicas (Postscript u OpenType)."
+msgid "Whether new fonts should contain splines of quadratic (truetype)\nor cubic (PostScript & opentype)."
+msgstr "Las nuevas fuentes deben utilizar curvas\n cuadráticas (TrueType) o cúbicas (PostScript u OpenType)."
 
 msgid "Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic)."
 msgstr "Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic)."
@@ -4834,11 +4834,11 @@ msgstr "When FontForge starts up it loads display related resources from a\nprop
 msgid "When copying glyphs from the font view, also copy the\nglyphs' metadata (name, encoding, comment, etc)."
 msgstr "When copying characters from the font view, also copy the\ncharacters' metadata (name, encoding, comment, etc)."
 
-msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated"
-msgstr "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated"
+msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated"
+msgstr "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the Apple checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated"
 
-msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated"
-msgstr "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'postscript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated"
+msgid "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated"
+msgstr "Apple and MS/Adobe differ about the format of truetype and opentype files\nThis controls the default setting of the OpenType checkbox in the File->Generate Font dlg.\nThe main differences are:\n The requirements for the 'PostScript' name in the name table conflict\n Bitmap data are stored in different tables\n Scaled composite characters are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated"
 
 msgid "The maximum number of Undoes/Redoes stored in a glyph"
 msgstr "Número máximo de Deshacer/Rehacer almacenado en un carácter"
@@ -5611,8 +5611,8 @@ msgstr "Anclaje perdido"
 msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
 msgstr "Se perdió por lo menos un punto de anclaje al pegar ya que no se pudo encontrar una clase de anclaje coincidente en la fuente de destino."
 
-msgid "Converting Postscript"
-msgstr "Convirtiendo a Postscript"
+msgid "Converting PostScript"
+msgstr "Convirtiendo a PostScript"
 
 msgid "Bad encoding file format"
 msgstr "Formato de archivo de codificación incorrecto"
@@ -5725,7 +5725,7 @@ msgstr "Problemas al interpolar"
 msgid "Interpolating a font with itself achieves nothing"
 msgstr "El interpolar una fuente consigo misma no conduce a nada"
 
-msgid "Interpolating between fonts with different spline orders (ie. between postscript and truetype)"
+msgid "Interpolating between fonts with different spline orders (ie. between PostScript and truetype)"
 msgstr "Interpolación entre fuentes con curvas de Bézier de distinto orden (por ejemplo, entre Postcript y TrueType)"
 
 msgid "Interpolating between fonts with different editing types (ie. between type3 and type1)"
@@ -6115,13 +6115,13 @@ msgstr "Muestra cuando este carácter es exactamente un ajuste triple"
 msgid "Check _outermost paths clockwise"
 msgstr "Trayect_os externos en sentido horario"
 
-msgid "Postscript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."
+msgid "PostScript and TrueType require that paths be drawn\nin a clockwise direction. This lets you check that they\nare."
 msgstr "PostScript y TrueType exigen que los trayectos se tracen\nen sentido horario. Esto permite verificar que sea así."
 
 msgid "Check flipped _references"
 msgstr "Ve_rificar referencias reflejadas"
 
-msgid "Postscript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."
+msgid "PostScript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nCorect direction on it."
 msgstr "PostScript y TrueType exigen que los trayectos se tracen\nen sentido horario. Si posee una referencia\nque ha sido reflejada es probable que sus trayectos\nsean antihorarios. Debería desvincularla y\ncorregir su dirección."
 
 msgid "_More points than:"
@@ -6373,11 +6373,11 @@ msgstr " pixeles"
 msgid "Printing Font"
 msgstr "Imprimiendo fuente"
 
-msgid "Generating Postscript Font"
-msgstr "Generando fuente postscript"
+msgid "Generating PostScript Font"
+msgstr "Generando fuente PostScript"
 
-msgid "Failed to generate postscript font"
-msgstr "Error al generar fuente postscript"
+msgid "Failed to generate PostScript font"
+msgstr "Error al generar fuente PostScript"
 
 msgid "Page Setup"
 msgstr "Configurar página"
@@ -6388,8 +6388,8 @@ msgstr "Configurar(_E)"
 msgid "_Other"
 msgstr "Otro"
 
-msgid "Any other command with all its arguments.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input."
-msgstr "Cualquier comando con todo sus argumentos.\nThe command must expect to deal with a postscript\nfile which it will find by reading its standard input."
+msgid "Any other command with all its arguments.\nThe command must expect to deal with a PostScript\nfile which it will find by reading its standard input."
+msgstr "Cualquier comando con todo sus argumentos.\nThe command must expect to deal with a PostScript\nfile which it will find by reading its standard input."
 
 msgid "To _File"
 msgstr "En un archivo(_F)"
@@ -6820,8 +6820,8 @@ msgstr "_AA"
 msgid "AntiAlias (greymap) glyphs, or bitmap glyphs"
 msgstr "AntiAlias (greymap) characters, or bitmap characters"
 
-msgid "Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
-msgstr "Especifica el formato de archivo a pasa a FreeType\n  pfb -- estándar Postscript type1\n  ttf -- TrueType\n  httf-- TrueType hinted\n  otf -- OpenType\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
+msgid "Specifies file format used to pass the font to freetype\n  pfb -- is the standard PostScript type1\n  ttf -- is truetype\n  httf-- is hinted truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
+msgstr "Especifica el formato de archivo a pasa a FreeType\n  pfb -- estándar PostScript type1\n  ttf -- TrueType\n  httf-- TrueType hinted\n  otf -- OpenType\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort"
 
 msgid "Bad Size"
 msgstr "Tamaño incorrecto"
@@ -6841,8 +6841,8 @@ msgstr "Es probable que un navegador esté ejecutándose en el sistema de ventan
 msgid "The generated font won't work with ATM"
 msgstr "La fuente generada no funcionará con ATM"
 
-msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"
-msgstr "ATM exige que las fuentes sean codificadas con la codificación Latin de Macintosh. Esta fuente Postscript se imprimirá correctamente, pero por pantalla sólo se mostrarán las versiones en mapas de bits"
+msgid "ATM requires that fonts be encoded with the Macintosh Latin encoding. This PostScript font will print fine, but only the bitmap versions will be displayed on the screen"
+msgstr "ATM exige que las fuentes sean codificadas con la codificación Latin de Macintosh. Esta fuente PostScript se imprimirá correctamente, pero por pantalla sólo se mostrarán las versiones en mapas de bits"
 
 msgid "Allow _removal of extrema"
 msgstr "Pe_rmitir remoción de extremos"
@@ -7306,14 +7306,14 @@ msgstr " lookahead lists."
 msgid "Bad Coverage Table"
 msgstr "Bad Coverage Table"
 
-msgid "A coverage table must contain at least one glyph name, and glyph names must be valid postscript names"
-msgstr "A coverage table must contain at least one glyph name, and glyph names must be valid postscript names"
+msgid "A coverage table must contain at least one glyph name, and glyph names must be valid PostScript names"
+msgstr "A coverage table must contain at least one glyph name, and glyph names must be valid PostScript names"
 
 msgid "Bad Match Glyph List"
 msgstr "Bad Match Glyph List"
 
-msgid "A glyph list must contain at least one glyph name, and glyph names must be valid postscript names"
-msgstr "A glyph list must contain at least one glyph name, and glyph names must be valid postscript names"
+msgid "A glyph list must contain at least one glyph name, and glyph names must be valid PostScript names"
+msgstr "A glyph list must contain at least one glyph name, and glyph names must be valid PostScript names"
 
 msgid "Bad Backtrack Glyph List"
 msgstr "Bad Backtrack Glyph List"
@@ -7321,7 +7321,7 @@ msgstr "Bad Backtrack Glyph List"
 msgid "Bad Lookahead Glyph List"
 msgstr "Bad Lookahead Glyph List"
 
-msgid "Glyph names must be valid postscript names"
+msgid "Glyph names must be valid PostScript names"
 msgstr "Los nombres de glifos deben ser nombres PostScript válidos"
 
 msgid "Bad Sequence/Lookup List"
@@ -7381,7 +7381,7 @@ msgstr "Lista de los números de clase"
 msgid "List of lists of class numbers"
 msgstr "List of lists of class numbers"
 
-msgid "A class must contain at least one glyph name, glyph names must be valid postscript names, and no glyphs may appear in any other class"
+msgid "A class must contain at least one glyph name, glyph names must be valid PostScript names, and no glyphs may appear in any other class"
 msgstr "Una clase debe contener al menos el nombre de un glifo. Los nombres de los glifos deben ser nombres PostScript válidos y no pueden aparecer en otra clase"
 
 msgid "No glyphs from another class may appear here, but %.30s does"
@@ -8180,7 +8180,7 @@ msgid "Normalized position of this design along each axis"
 msgstr "Posición normalizada del diseño sobre cada eje"
 
 msgid "Bad PostScript function"
-msgstr "Función postScript incorrecta"
+msgstr "Función PostScript incorrecta"
 
 msgid "Force Bold Threshold:"
 msgstr "Force Bold Threshold:"
