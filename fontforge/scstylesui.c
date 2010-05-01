@@ -2795,7 +2795,7 @@ void ChangeXHeightDlg(FontView *fv,CharView *cv) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled ;
     gcd[k++].creator = GLabelCreate;
 
