@@ -9486,9 +9486,6 @@ msgstr "マルチプルマスターフォントを保存中"
 msgid "Saving SVG font"
 msgstr "SVGフォントを保存中"
 
-msgid "Saving PostScript Font"
-msgstr "PostScriptフォントを保存中"
-
 msgid "Load bitmap fonts?"
 msgstr "ビットマップフォントをロードしますか?"
 

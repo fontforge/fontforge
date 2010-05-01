@@ -27426,10 +27426,6 @@ msgstr "Đang lưu phông SVG"
 msgid "Saving Unified Font Object"
 msgstr "Đang lưu Đối Tượng Phông Thống Nhất"
 
-#: savefont.c:804
-msgid "Saving PostScript Font"
-msgstr "Đang lưu phông PostScript"
-
 #: savefont.c:813
 msgid "Mac Resource Not Remote"
 msgstr "Tài nguyên Mac không phải từ xa"

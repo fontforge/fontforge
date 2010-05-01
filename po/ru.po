@@ -26754,10 +26754,6 @@ msgstr "Сохранение шрифта SVG"
 msgid "Saving Unified Font Object"
 msgstr "Сохранение файла Unified Font Object"
 
-#: savefont.c:805
-msgid "Saving PostScript Font"
-msgstr "Сохранение шрифта PostScript"
-
 #: savefont.c:814
 msgid "Mac Resource Not Remote"
 msgstr ""

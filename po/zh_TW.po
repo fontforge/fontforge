@@ -19408,10 +19408,6 @@ msgstr "儲存 SVG 字型"
 msgid "Saving Unified Font Object"
 msgstr "儲存曲線字型資料庫"
 
-#: savefontdlg.c:1908
-msgid "Saving PostScript Font"
-msgstr "儲存 PostScript 字型"
-
 #: savefontdlg.c:1963
 msgid "Ofm Save Failed"
 msgstr "Ofm 儲存失敗"
