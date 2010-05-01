@@ -26622,11 +26622,6 @@ msgstr "Збереження шрифту"
 msgid "Saving Unified Font Object"
 msgstr "Збереження SFD (Spline Font Database)"
 
-#: savefont.c:805
-#, fuzzy
-msgid "Saving PostScript Font"
-msgstr "Збереження шрифту PostScript"
-
 #: savefont.c:814
 msgid "Mac Resource Not Remote"
 msgstr ""

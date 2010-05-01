@@ -16551,10 +16551,6 @@ msgstr ""
 msgid "Saving SVG font"
 msgstr ""
 
-#: savefontdlg.c:1902
-msgid "Saving PostScript Font"
-msgstr ""
-
 #: savefontdlg.c:1954
 msgid "Ofm Save Failed"
 msgstr ""

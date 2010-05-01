@@ -21750,10 +21750,6 @@ msgstr "Enregistrement police SVG"
 msgid "Saving Unified Font Object"
 msgstr "Enregistrement Objet Fonte Unifié"
 
-#: savefontdlg.c:1909
-msgid "Saving PostScript Font"
-msgstr "Enregistrement fonte PostScript"
-
 #: savefontdlg.c:1960
 msgid "Ofm Save Failed"
 msgstr "Échec enregistrement de l'OFM"
