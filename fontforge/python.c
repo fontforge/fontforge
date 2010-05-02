@@ -1509,7 +1509,7 @@ return( 1 );
 	if ( ret!=0 )
 return( ret );
     }
-return( -1 );		/* Arbetrary... but we can't get here=>all points same */
+return( -1 );		/* Arbitrary... but we can't get here=>all points same */
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -3036,7 +3036,7 @@ return( ret );
 	}
     }
 
-return( -1 );		/* Arbetrary... but we can't get here=>all points same */
+return( -1 );		/* Arbitrary... but we can't get here=>all points same */
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -6488,16 +6488,16 @@ Py_RETURN( self->mk );
 static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
 	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
-	 "arbetrary (non persistent) user data (deprecated name for temporary)", NULL},
+	 "arbitrary (non persistent) user data (deprecated name for temporary)", NULL},
     {"temporary",
 	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
-	 "arbetrary (non persistent) user data", NULL},
+	 "arbitrary (non persistent) user data", NULL},
     {"persistant",		/* I documented this member with the wrong spelling... so support it */
 	 (getter)PyFF_Glyph_get_persistent, (setter)PyFF_Glyph_set_persistent,
-	 "arbetrary persistent user data", NULL},
+	 "arbitrary persistent user data", NULL},
     {"persistent",
 	 (getter)PyFF_Glyph_get_persistent, (setter)PyFF_Glyph_set_persistent,
-	 "arbetrary persistent user data", NULL},
+	 "arbitrary persistent user data", NULL},
     {"activeLayer",
 	 (getter)PyFF_Glyph_get_activeLayer, (setter)PyFF_Glyph_set_activeLayer,
 	 "The layer in the glyph which is currently active", NULL},
@@ -8767,7 +8767,7 @@ return( -1 );
 static PyGetSetDef PyFF_LayerInfo_getset[] = {
     {"name",
 	 (getter)PyFF_LayerInfo_get_name, (setter)PyFF_LayerInfo_set_name,
-	 "arbetrary (non-persistent) user data (deprecated name for temporary)", NULL},
+	 "arbitrary (non-persistent) user data (deprecated name for temporary)", NULL},
     {"is_quadratic",
 	 (getter)PyFF_LayerInfo_get_order2, (setter)PyFF_LayerInfo_set_order2,
 	 "Does this layer contain quadratic or cubic splines (TrueType or PostScript)", NULL},
@@ -11665,16 +11665,16 @@ return( Py_BuildValue("d",val));
 static PyGetSetDef PyFF_Font_getset[] = {
     {"userdata",
 	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
-	 "arbetrary (non-persistent) user data (deprecated name for temporary)", NULL},
+	 "arbitrary (non-persistent) user data (deprecated name for temporary)", NULL},
     {"temporary",
 	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
-	 "arbetrary (non-persistent) user data", NULL},
+	 "arbitrary (non-persistent) user data", NULL},
     {"persistant",		/* I documented this member with the wrong spelling... so support it */
 	 (getter)PyFF_Font_get_persistent, (setter)PyFF_Font_set_persistent,
-	 "arbetrary persistent user data", NULL},
+	 "arbitrary persistent user data", NULL},
     {"persistent",
 	 (getter)PyFF_Font_get_persistent, (setter)PyFF_Font_set_persistent,
-	 "arbetrary persistent user data", NULL},
+	 "arbitrary persistent user data", NULL},
     {"selection",
 	 (getter)PyFF_Font_get_selection, (setter)PyFF_Font_set_selection,
 	 "The font's selection array", NULL},

@@ -1727,7 +1727,7 @@ msgstr "Correction italique"
 
 #: charinfo.c:4323
 msgid ""
-"The italic correction of the composed glyph. Should be independant of glyph "
+"The italic correction of the composed glyph. Should be independent of glyph "
 "size"
 msgstr ""
 
@@ -8243,7 +8243,7 @@ msgid "Private Use Area"
 msgstr "Zone privée (PUA)"
 
 #: fontinfo.c:906
-msgid "CJK Compatability Ideographs"
+msgid "CJK Compatibility Ideographs"
 msgstr "Idéogrammes de compatibilité CJK"
 
 #: fontinfo.c:907 unicoderange.c:186
@@ -8259,8 +8259,8 @@ msgid "Combining Half Marks"
 msgstr "demi symboles combinants"
 
 #: fontinfo.c:910
-msgid "CJK Compatability Forms"
-msgstr "Compatibilité CJK"
+msgid "CJK Compatibility Forms"
+msgstr "Formes de compatibilité CJK"
 
 #: fontinfo.c:911 unicoderange.c:195
 msgid "Small Form Variants"
@@ -24643,10 +24643,6 @@ msgstr ""
 msgid "MicroSoft Symbol Area"
 msgstr ""
 
-#: unicoderange.c:185
-msgid "CJK Compatibility Ideographs"
-msgstr "Idéogrammes de compatibilité CJK"
-
 #: unicoderange.c:187
 msgid "Latin Ligatures"
 msgstr "Ligatures latines"
@@ -24670,10 +24666,6 @@ msgstr "Formes verticales"
 #: unicoderange.c:193
 msgid "Combining half marks"
 msgstr "Demi-signes combinatoires"
-
-#: unicoderange.c:194
-msgid "CJK Compatibility Forms"
-msgstr "Formes de compatibilité CJC"
 
 #: unicoderange.c:196
 msgid "Arabic Presentation Forms B"

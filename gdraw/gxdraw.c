@@ -3511,7 +3511,7 @@ return;
 /*  bit set, then scim returns no keysym and no characters. On the other hand,*/
 /*  if I don't leave that bit set, then the default input method on the mac */
 /*  will not do the Option key transformations properly. What I pass should */
-/*  be IM independant. So I don't think I should have to do the next line */
+/*  be IM independent. So I don't think I should have to do the next line */
 		event->xkey.state &= ~Mod2Mask;
 /* But I do */
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
