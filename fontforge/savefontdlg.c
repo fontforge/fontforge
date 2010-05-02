@@ -3058,7 +3058,7 @@ return( 0 );
 		"also attempt to use the same space for tables in\n"
 		"different fonts which are bit by bit the same.\n\n"
 		"FontForge isn't always able to perform a merge, in\n"
-		"which case it falls back on generating independant\n"
+		"which case it falls back on generating independent\n"
 		"fonts within the ttc.\n"
 		" FontForge cannot merge if:\n"
 		"  * The fonts have different em-sizes\n"

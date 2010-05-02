@@ -2567,7 +2567,7 @@ msgid "Italic Cor:"
 msgstr "Sửa Nghiêng:"
 
 #: charinfo.c:4449
-msgid "The italic correction of the composed glyph. Should be independant of glyph size"
+msgid "The italic correction of the composed glyph. Should be independent of glyph size"
 msgstr "Giá trị điều chỉnh in nghiêng của hình tượng đã cấu tạo. Không nên phụ thuộc vào không hình tượng."
 
 #: charinfo.c:4492
@@ -11229,7 +11229,7 @@ msgid "Private Use Area"
 msgstr "Vùng dùng riêng"
 
 #: fontinfo.c:730
-msgid "CJK Compatability Ideographs"
+msgid "CJK Compatibility Ideographs"
 msgstr "Chữ viết ghi ý tương thích với tiếng Trung/Nhật/Hàn"
 
 #: fontinfo.c:731
@@ -11246,7 +11246,7 @@ msgid "Combining Half Marks"
 msgstr "Nửa dấu kết hợp"
 
 #: fontinfo.c:734
-msgid "CJK Compatability Forms"
+msgid "CJK Compatibility Forms"
 msgstr "Hình tương thích với tiếng Trung/Nhật/Hàn"
 
 #: fontinfo.c:735
@@ -28387,7 +28387,7 @@ msgid ""
 "different fonts which are bit by bit the same.\n"
 "\n"
 "FontForge isn't always able to perform a merge, in\n"
-"which case it falls back on generating independant\n"
+"which case it falls back on generating independent\n"
 "fonts within the ttc.\n"
 " FontForge cannot merge if:\n"
 "  * The fonts have different em-sizes\n"
@@ -33087,10 +33087,6 @@ msgstr "Dùng bởi công ty"
 msgid "MicroSoft Symbol Area"
 msgstr "Vùng ký hiệu MicroSoft"
 
-#: unicoderange.c:194
-msgid "CJK Compatibility Ideographs"
-msgstr "Chữ viết ghi ý tương tiếng Trung/Nhật/Hàn"
-
 #: unicoderange.c:196
 msgid "Latin Ligatures"
 msgstr "Chữ ghép La-tinh"
@@ -33114,10 +33110,6 @@ msgstr "Hình theo chiều dọc"
 #: unicoderange.c:202
 msgid "Combining half marks"
 msgstr "Tổ hợp nửa dấu"
-
-#: unicoderange.c:203
-msgid "CJK Compatibility Forms"
-msgstr "Hình tương thích tiếng Trung/Nhật/Hàn"
 
 #: unicoderange.c:205
 msgid "Arabic Presentation Forms B"

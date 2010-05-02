@@ -2589,7 +2589,7 @@ msgid "Italic Cor:"
 msgstr ""
 
 #: charinfo.c:4448
-msgid "The italic correction of the composed glyph. Should be independant of glyph size"
+msgid "The italic correction of the composed glyph. Should be independent of glyph size"
 msgstr ""
 
 #: charinfo.c:4491
@@ -11181,7 +11181,7 @@ msgid "Private Use Area"
 msgstr "Область частного использования"
 
 #: fontinfo.c:730
-msgid "CJK Compatability Ideographs"
+msgid "CJK Compatibility Ideographs"
 msgstr "CJK, идеограммы для совместимости"
 
 #: fontinfo.c:731
@@ -11198,7 +11198,7 @@ msgid "Combining Half Marks"
 msgstr ""
 
 #: fontinfo.c:734
-msgid "CJK Compatability Forms"
+msgid "CJK Compatibility Forms"
 msgstr "CJK, формы для совместимости"
 
 #: fontinfo.c:735
@@ -13828,7 +13828,7 @@ msgid ""
 "Unix style wildcarding is accepted:\n"
 "Most characters match themselves\n"
 "A \"?\" will match any single character\n"
-"A \"*\" will match an arbetrary number of characters (including none)\n"
+"A \"*\" will match an arbitrary number of characters (including none)\n"
 "A \"[abd]\" set of characters within square brackets will match any (single) character\n"
 "A \"{scmp,c2sc}\" set of strings within curly brackets will match any string\n"
 "So \"a.*\" would match \"a.\" or \"a.sc\" or \"a.swash\"\n"
@@ -27624,7 +27624,7 @@ msgid ""
 "different fonts which are bit by bit the same.\n"
 "\n"
 "FontForge isn't always able to perform a merge, in\n"
-"which case it falls back on generating independant\n"
+"which case it falls back on generating independent\n"
 "fonts within the ttc.\n"
 " FontForge cannot merge if:\n"
 "  * The fonts have different em-sizes\n"
@@ -31079,10 +31079,6 @@ msgstr ""
 msgid "MicroSoft Symbol Area"
 msgstr ""
 
-#: unicoderange.c:194
-msgid "CJK Compatibility Ideographs"
-msgstr ""
-
 #: unicoderange.c:196
 msgid "Latin Ligatures"
 msgstr "Латинские лигатуры"
@@ -31106,10 +31102,6 @@ msgstr "Вертикальные формы"
 #: unicoderange.c:202
 msgid "Combining half marks"
 msgstr ""
-
-#: unicoderange.c:203
-msgid "CJK Compatibility Forms"
-msgstr "CJK, формы для совместимости"
 
 #: unicoderange.c:205
 msgid "Arabic Presentation Forms B"

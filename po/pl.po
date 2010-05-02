@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge 20080828\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-01 10:09+0200\n"
+"POT-Creation-Date: 2010-05-01 11:22+0200\n"
 "PO-Revision-Date: 2009-10-31 11:03+0100\n"
 "Last-Translator: Michał Nowakowski <miszka@limes.com.pl>\n"
 "Language-Team: \n"
@@ -1922,7 +1922,7 @@ msgid "Italic Cor:"
 msgstr "Kompensata Pochylenia:"
 
 #: charinfo.c:4547
-msgid "The italic correction of the composed glyph. Should be independant of glyph size"
+msgid "The italic correction of the composed glyph. Should be independent of glyph size"
 msgstr ""
 "Kompensata pochylenia po glifie składanym, powinna być niezależna od wielkości glifu."
 
@@ -9658,8 +9658,8 @@ msgstr "ujednolicone ideogramy CJK"
 msgid "Private Use Area"
 msgstr "obszar do użytku prywatnego"
 
-#: fontinfo.c:726
-msgid "CJK Compatability Ideographs"
+#: fontinfo.c:726 unicoderange.c:203
+msgid "CJK Compatibility Ideographs"
 msgstr "ideogramy zgodności dla CJK"
 
 #: fontinfo.c:727 unicoderange.c:204
@@ -9674,9 +9674,9 @@ msgstr "arabskie formy prezentacyjne A"
 msgid "Combining Half Marks"
 msgstr "półznaki składające"
 
-#: fontinfo.c:730
-msgid "CJK Compatability Forms"
-msgstr "znaki zgodności dla CJK"
+#: fontinfo.c:730 unicoderange.c:212
+msgid "CJK Compatibility Forms"
+msgstr "formy zgodności dla CJK"
 
 #: fontinfo.c:731 unicoderange.c:213
 msgid "Small Form Variants"
@@ -26889,7 +26889,7 @@ msgid ""
 "different fonts which are bit by bit the same.\n"
 "\n"
 "FontForge isn't always able to perform a merge, in\n"
-"which case it falls back on generating independant\n"
+"which case it falls back on generating independent\n"
 "fonts within the ttc.\n"
 " FontForge cannot merge if:\n"
 "  * The fonts have different em-sizes\n"
@@ -31681,10 +31681,6 @@ msgstr "obszar do użytku firmowego"
 msgid "MicroSoft Symbol Area"
 msgstr "obszar symboli Microsoftu"
 
-#: unicoderange.c:203
-msgid "CJK Compatibility Ideographs"
-msgstr "ideogramy zgodności dla CJK"
-
 #: unicoderange.c:205
 msgid "Latin Ligatures"
 msgstr "ligatury łacińskie"
@@ -31708,10 +31704,6 @@ msgstr "formy pionowe"
 #: unicoderange.c:211
 msgid "Combining half marks"
 msgstr "półznaki składające"
-
-#: unicoderange.c:212
-msgid "CJK Compatibility Forms"
-msgstr "formy zgodności dla CJK"
 
 #: unicoderange.c:214
 msgid "Arabic Presentation Forms B"

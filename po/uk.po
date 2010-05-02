@@ -2493,7 +2493,7 @@ msgid "Italic Cor:"
 msgstr "Кут нахилу: "
 
 #: charinfo.c:4448
-msgid "The italic correction of the composed glyph. Should be independant of glyph size"
+msgid "The italic correction of the composed glyph. Should be independent of glyph size"
 msgstr ""
 
 #: charinfo.c:4491
@@ -11044,7 +11044,7 @@ msgid "Private Use Area"
 msgstr "Приватний ключ"
 
 #: fontinfo.c:705
-msgid "CJK Compatability Ideographs"
+msgid "CJK Compatibility Ideographs"
 msgstr ""
 
 #: fontinfo.c:706
@@ -11061,7 +11061,7 @@ msgid "Combining Half Marks"
 msgstr ""
 
 #: fontinfo.c:709
-msgid "CJK Compatability Forms"
+msgid "CJK Compatibility Forms"
 msgstr ""
 
 #: fontinfo.c:710
@@ -13763,7 +13763,7 @@ msgid ""
 "Unix style wildcarding is accepted:\n"
 "Most characters match themselves\n"
 "A \"?\" will match any single character\n"
-"A \"*\" will match an arbetrary number of characters (including none)\n"
+"A \"*\" will match an arbitrary number of characters (including none)\n"
 "A \"[abd]\" set of characters within square brackets will match any (single) character\n"
 "A \"{scmp,c2sc}\" set of strings within curly brackets will match any string\n"
 "So \"a.*\" would match \"a.\" or \"a.sc\" or \"a.swash\"\n"
@@ -30965,10 +30965,6 @@ msgstr ""
 msgid "MicroSoft Symbol Area"
 msgstr ""
 
-#: unicoderange.c:194
-msgid "CJK Compatibility Ideographs"
-msgstr ""
-
 #: unicoderange.c:196
 #, fuzzy
 msgid "Latin Ligatures"
@@ -30994,10 +30990,6 @@ msgstr "Вертикальні дроби"
 
 #: unicoderange.c:202
 msgid "Combining half marks"
-msgstr ""
-
-#: unicoderange.c:203
-msgid "CJK Compatibility Forms"
 msgstr ""
 
 #: unicoderange.c:205

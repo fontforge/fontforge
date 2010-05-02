@@ -2187,7 +2187,7 @@ msgstr "斜体修正："
 
 #: charinfo.c:4295
 msgid ""
-"The italic correction of the composed glyph. Should be independant of glyph "
+"The italic correction of the composed glyph. Should be independent of glyph "
 "size"
 msgstr ""
 
@@ -10388,9 +10388,10 @@ msgid "Private Use Area"
 msgstr "私用空间"
 
 #
-#: fontinfo.c:705
-msgid "CJK Compatability Ideographs"
+#: fontinfo.c:705 unicoderange.c:185
+msgid "CJK Compatibility Ideographs"
 msgstr "中日韩统一表意字符"
+# ? msgstr "中日韩兼容表意字符"
 
 #
 #: fontinfo.c:706 unicoderange.c:186
@@ -10408,8 +10409,8 @@ msgid "Combining Half Marks"
 msgstr "组合半角标记"
 
 #
-#: fontinfo.c:709
-msgid "CJK Compatability Forms"
+#: fontinfo.c:709 unicoderange.c:194
+msgid "CJK Compatibility Forms"
 msgstr "中日韩兼容形式"
 
 #
@@ -31324,11 +31325,6 @@ msgid "MicroSoft Symbol Area"
 msgstr "微软符号区"
 
 #
-#: unicoderange.c:185
-msgid "CJK Compatibility Ideographs"
-msgstr "中日韩兼容表意字符"
-
-#
 #: unicoderange.c:187
 msgid "Latin Ligatures"
 msgstr "拉丁组合字"
@@ -31357,11 +31353,6 @@ msgstr "竖直形式"
 #: unicoderange.c:193
 msgid "Combining half marks"
 msgstr "组合半角标记"
-
-#
-#: unicoderange.c:194
-msgid "CJK Compatibility Forms"
-msgstr "中日韩兼容形式"
 
 #
 #: unicoderange.c:196

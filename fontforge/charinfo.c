@@ -4544,7 +4544,7 @@ return;
 	    vargcd[i][3].gd.label = &varlabel[i][3];
 	    vargcd[i][3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	    vargcd[i][3].creator = GLabelCreate;
-	    vargcd[i][3].gd.popup_msg = (unichar_t *) _("The italic correction of the composed glyph. Should be independant of glyph size");
+	    vargcd[i][3].gd.popup_msg = (unichar_t *) _("The italic correction of the composed glyph. Should be independent of glyph size");
 	    varhvarray[i][2][0] = &vargcd[i][3];
 
 	    vargcd[i][4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
