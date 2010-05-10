@@ -510,8 +510,10 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 		else
 		    p->left = temp;
 		if ( rot.x<=0 && !was_neg ) {
-		    was_neg = true;
+		    was_neg = c->cur-1;
 		    p->needs_point_left = p->needs_point_right = true;
+		    incr_angle.y = diff_angle.y/20;
+		    incr_angle.x = sqrt(1-incr_angle.y*incr_angle.y);
 		}
 		temp.x = rot.x*incr_angle.x - rot.y*incr_angle.y;
 		temp.y = rot.x*incr_angle.y + rot.y*incr_angle.x;
@@ -525,6 +527,8 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 		rot = temp;
 	    }
 	}
+	if ( was_neg!=0 && c->cur-was_neg<5 )
+	    c->all[was_neg].needs_point_left = c->all[was_neg].needs_point_right = false;
     }
     if ( !atbreak )
 	c->all[c->cur++] = done;
@@ -704,9 +708,9 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
     /* just in case... add an on curve point every time the sample's slopes */
     /*  move through 90 degrees. (We only do this for circles because for  */
     /*  squares and polygons this will happen automatically whenever we change */
-    /*  polygon/squar vertices, which is close enough to the same idea as no */
+    /*  polygon/square vertices, which is close enough to the same idea as no */
     /*  matter) */
-    { int j,k, skip=10/c->resolution;
+    { int j,k,l, skip=10/c->resolution;
     for ( i=c->cur-1; i>=0; ) {
 	while ( i>=0 && ( c->all[i].left_hidden || c->all[i].needs_point_left ))
 	    --i;
@@ -2424,18 +2428,23 @@ static SplinePoint *RightPointFromContext(struct strokecontext *c, int *_pos,
     if ( startslope.x!=0 || startslope.y!=0 )
 	ret->noprevcp = false;
     if ( !*newcontour ) {
-	ret->nextcp.x += posslope.x;
-	ret->nextcp.y += posslope.y;
-	if ( posslope.x!=0 || posslope.y!=0 )
-	    ret->nonextcp = false;
 	/* the same point will often appear at the end of one spline and the */
 	/*  start of the next */
 	/* Or a joint may add a lot of points to the other side which show up */
 	/*  hidden on this side */
+	int opos = pos;
 	while ( pos+1<c->cur &&
 		((ret->me.x==c->all[pos+1].right.x && ret->me.y==c->all[pos+1].right.y ) ||
 		 c->all[pos+1].right_hidden))
 	    ++pos;
+	if ( opos!=pos ) {
+	    RightSlopeAtPos(c,pos,false,&posslope);
+	    ret->pointtype = pt_corner;
+	}
+	ret->nextcp.x += posslope.x;
+	ret->nextcp.y += posslope.y;
+	if ( posslope.x!=0 || posslope.y!=0 )
+	    ret->nonextcp = false;
 	len2 = (ret->me.x-c->all[pos].right.x)*(ret->me.x-c->all[pos].right.x) + (ret->me.y-c->all[pos].right.y)*(ret->me.y-c->all[pos].right.y);
 	if ( len2>=res_bound )
 	    *newcontour = true;
@@ -3281,7 +3290,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    StrokePoint *spt = c->all+ipos;
 		    tpt->x = spt->left.x;
 		    tpt->y = spt->left.y;
-		    tpt->t = (ipos-start_pos)/ (double) (end_pos-start_pos+1);
+		    tpt->t = (ipos-start_pos+1)/ (double) (end_pos-start_pos+1);
 		    ipos += jump;
 		    if ( ++skip_cnt>skip && extras>0 ) {
 			++ipos;
@@ -3291,9 +3300,9 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    if ( ipos>end_pos )
 			ipos = end_pos;
 		}
-		if ( end_pos!=start_pos )
+		if ( end_pos!=start_pos ) {
 		    ApproximateSplineFromPointsSlopes(last,cur,c->tpt,tot,false);
-		else
+		} else
 		    SplineMake3(last,cur);
 		last = cur;
 		if ( pos<end_pos ) {
@@ -3357,7 +3366,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    StrokePoint *spt = c->all+ipos;
 		    tpt->x = spt->right.x;
 		    tpt->y = spt->right.y;
-		    tpt->t = (ipos-start_pos)/ (double) (end_pos-start_pos+1);
+		    tpt->t = (ipos-start_pos+1)/ (double) (end_pos-start_pos+1);
 		    ipos += jump;
 		    if ( ++skip_cnt>skip && extras>0 ) {
 			++ipos;
@@ -3367,9 +3376,9 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    if ( ipos>end_pos )
 			ipos = end_pos;
 		}
-		if ( end_pos!=start_pos )
+		if ( end_pos!=start_pos ) {
 		    ApproximateSplineFromPointsSlopes(last,cur,c->tpt,tot,false);
-		else
+		} else
 		    SplineMake3(last,cur);
 		last = cur;
 		if ( last->next!=NULL ) last=last->next->to;

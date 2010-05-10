@@ -505,7 +505,7 @@ static void TestForLinear(SplinePoint *from,SplinePoint *to) {
 }
 
 /* Find a spline which best approximates the list of intermediate points we */
-/*  are given. No attempt is made to fix the slopes */
+/*  are given. No attempt is made to use fixed slope angles */
 /* given a set of points (x,y,t) */
 /* find the bezier spline which best fits those points */
 
@@ -1027,6 +1027,8 @@ return( SplineMake3(from,to));
 	rt_terms[1] += factor_to*( -tounit.x*rt_term_x + -tounit.y*rt_term_y);
     }
 
+ /* I've only seen singular matrices (determinant==0) when cnt==1 */
+ /* but even with cnt==1 the determinant is usually non-0 (16 times out of 17)*/
     determinant = (rt_terms[0]*rf_terms[1]-rt_terms[1]*rf_terms[0]);
     if ( determinant!=0 ) {
 	double rt, rf;
@@ -1035,6 +1037,16 @@ return( SplineMake3(from,to));
 	    rf = -(consts[0]+rt*rt_terms[0])/rf_terms[0];
 	else /* if ( rf_terms[1]!=0 ) This can't happen, otherwise the determinant would be 0 */
 	    rf = -(consts[1]+rt*rt_terms[1])/rf_terms[1];
+	/* If we get bad values (ones that point diametrically opposed to what*/
+	/*  we need), then fix that factor at 0, and see what we get for the */
+	/*  other */
+	if ( rf>=0 && rt>0 && rf_terms[0]!=0 &&
+		(rf = -consts[0]/rf_terms[0])>0 ) {
+	    rt = 0;
+	} else if ( rf<0 && rt<=0 && rt_terms[1]!=0 &&
+		(rt = -consts[1]/rt_terms[1])<0 ) {
+	    rf = 0;
+	}
 	if ( rt<=0 && rf>=0 ) {
 	    from->nextcp.x = from->me.x + rf*fromunit.x;
 	    from->nextcp.y = from->me.y + rf*fromunit.y;
