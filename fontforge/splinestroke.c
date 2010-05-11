@@ -306,7 +306,8 @@ static void LineJoin(StrokeContext *c,int atbreak) {
     StrokePoint *p, *pp;
     int pindex;
     int cnt, cnt1, i, was_neg;
-    /* atbreak means that we are dealing with a close contour, and we have */
+    int force_bevel;
+    /* atbreak means that we are dealing with a closed contour, and we have*/
     /*  reached the "end" of the contour (which is only the end because we */
     /*  had to start somewhere), so the next point on the contour is the   */
     /*  start (index 0), as opposed to (index+1) */
@@ -331,6 +332,8 @@ static void LineJoin(StrokeContext *c,int atbreak) {
     dot = (nslope.x*pslope.x + nslope.y*pslope.y);
     if ( dot>=.999 )
 return;		/* Essentially colinear */ /* Won't be perfect because control points lie on integers */
+    /* miterlimit of 6, 18 degrees */
+    force_bevel = ( c->join==lj_miter && dot<-.95 );
 
     cnt = ceil(c->radius/c->resolution);
     if ( cnt<6 ) cnt = 6;
@@ -353,7 +356,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
     else
 	bends_left = false;	/* So it bends right */
 
-    if ( c->join==lj_bevel ) {
+    if ( c->join==lj_bevel || force_bevel ) {
 	/* This is easy, a line between the two end points */
 	if ( bends_left ) {
 	    /* If it bends left, then the joint is on the right */
@@ -710,7 +713,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
     /*  squares and polygons this will happen automatically whenever we change */
     /*  polygon/square vertices, which is close enough to the same idea as no */
     /*  matter) */
-    { int j,k,l, skip=10/c->resolution;
+    { int j,k, skip=10/c->resolution;
     for ( i=c->cur-1; i>=0; ) {
 	while ( i>=0 && ( c->all[i].left_hidden || c->all[i].needs_point_left ))
 	    --i;
@@ -3645,6 +3648,8 @@ return( ret );
 
 #include "baseviews.h"
 
+char *glyphname=NULL;			/* Debug !!!!*/
+
 void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
     FontViewBase *fv = _fv;
     int layer = fv->active_layer;
@@ -3661,6 +3666,7 @@ void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
 	if ( (gid=fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
 		!sc->ticked && fv->selected[i] ) {
 	    sc->ticked = true;
+  glyphname = sc->name;			/* Debug !!!!!! */
 	    if ( sc->parent->multilayer ) {
 		SCPreserveState(sc,false);
 		for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
