@@ -77,6 +77,10 @@ typedef struct strokecontext {
     double radius2;	/* Squared */
     enum linejoin join;	/* Only for circles */
     enum linecap cap;	/* Only for circles */
+    double miterlimit;	/* Only for circles if join==lj_miter */
+	    /* PostScript uses 1/sin( theta/2 ) as their miterlimit */
+	    /*  I use -cos(theta). (where theta is the angle between the slopes*/
+	    /*  same idea, different implementation */
     int n;		/* For polygon pens */
     BasePoint *corners;	/* Expressed as an offset from the center of the poly */ /* (Where center could mean center of bounding box, or average or all verteces) */
     BasePoint *slopes;	/* slope[0] is unitvector corners[1]-corners[0] */
@@ -520,8 +524,7 @@ static void LineJoin(StrokeContext *c,int atbreak) {
     if ( dot>=.999 )
 return;		/* Essentially colinear */ /* Won't be perfect because control points lie on integers */
     /* miterlimit of 6, 18 degrees */
-    force_bevel = ( c->join==lj_miter && dot<-.95 );
- force_bevel = false;		/* !!!!! Debug */
+    force_bevel = ( c->join==lj_miter && dot<c->miterlimit );
 
     cnt = ceil(c->radius/c->resolution);
     if ( cnt<6 ) cnt = 6;
@@ -3612,6 +3615,7 @@ SplineSet *SplineSetStroke(SplineSet *ss,StrokeInfo *si, int order2) {
 		   pt_poly;
     c.join = si->join;
     c.cap  = si->cap;
+    c.miterlimit = /* -cos(theta) */ -.98 /* theta=~11 degrees, PS miterlimit=10 */;
     c.radius = si->radius;
     c.radius2 = si->radius*si->radius;
     c.remove_inner = si->removeinternal;
