@@ -51,10 +51,25 @@ typedef struct strokepoint {
     uint8 rt;
 } StrokePoint;
 
+/* Square line caps and miter line joins cover more area than the circular pen*/
+/*  So we need a list of the polygons which represent these guys so we can do */
+/*  an additional hit test on them. */
+/* I'm not sure that these will always be presented to us in a clockwise fashion*/
+/*  We can test that by taking a point which is the average of the vertices */
+/*  and seeing if the hit-test says it is inside (It will be inside because */
+/*  these polies are convex). If the hit test fails then the poly must be */
+/*  drawn counter clockwise */
+struct extrapoly {
+    BasePoint poly[4];
+    int ptcnt;		/* 3 (for miters) or 4 (for square caps) */
+};
+
 typedef struct strokecontext {
     enum pentype { pt_circle, pt_square, pt_poly } pentype;
     int cur, max;
     StrokePoint *all;
+    struct extrapoly *ep;
+    int ecur, emax;
     TPoint *tpt;
     int tmax;
     double resolution;	/* take samples roughly this many em-units */ /* radius/16.0? */
@@ -79,6 +94,8 @@ typedef struct strokecontext {
     real inverse[6];
 } StrokeContext;
 
+char *glyphname=NULL;			/* Debug !!!!*/
+
 /* Basically the idea is we find the spline, and then at each point, project */
 /*  out normal to the current slope and find a point that is radius units away*/
 /*  Now that's all well and good but we've also got to handle linecaps and joins */
@@ -90,6 +107,18 @@ typedef struct strokecontext {
 /*  together. Put break points where there were spline breaks in the original */
 /*  and where there is a significant hidden area, and at certain places within*/
 /*  caps and joins */
+
+/* Butt line caps and bevel line joins cause problems because they are going */
+/*  be inside (hidden) by a circle centered on the line end or joint. So we */
+/*  can't do the hit test on these edges using any point on the contour which */
+/*  is within radius of the joint. */
+/* Hmmm. That works for the edge itself, but if some other part of the contour*/
+/*  approaches closely (within radius) to the non-existant area it will be */
+/*  incorrectly hidden. BUG!!!!! */
+/* Square line caps and miter line joins have the opposite problem: They should*/
+/*  hide more points than a circular pen will cover. So we can build up a list*/
+/*  of the polygons which represent these extrusions (rectangle for the cap, */
+/*  and triangle for the miter) and do a polygon hit test with those. */
 
 /* OK, that's a circular pen. Now by scaling we can turn a circle into an */
 /*  elipse, and by rotating we can orient the main axis how we like */
@@ -146,7 +175,7 @@ typedef struct strokecontext {
 /* the pen (and testing that it wasn't concave). */
 /* For a concave poly, the concavities are only relevant at the joins and caps*/
 /* (otherwise the concavity will be filled as the pen moves) so we could      */
-/* simply use the smallest convex poly that contains the convex one, and just */
+/* simply use the smallest convex poly that contains the concave one, and just */
 /* worry about the concavity at the caps and joins (and maybe in doing the hit*/
 /* test) But I don't think there is much point in dealing with that, and there*/
 /* are the same issues on describing the shape as before */
@@ -168,6 +197,143 @@ static int AdjustedSplineLength(Spline *s) {
 return( len );			/* It's a straight line */
     len += 1.5*(len-distance);
 return( len );
+}
+
+enum hittest { ht_Outside, ht_Inside, ht_OnEdge };
+
+static enum hittest PolygonHitTest(BasePoint *poly,BasePoint *polyslopes, int n,BasePoint *test, double *distance) {
+    /* If the poly is drawn clockwise, then a point is inside the poly if it */
+    /*  is on the right side of each edge */
+    /* A point lies on an edge if the dot product of:		  */
+    /*  1. the vector normal to the edge			  */
+    /*  2. the vector from either vertex to the point in question */
+    /* is 0 (and it is otherwise inside)			  */
+    /* Now, if we choose the normal vector which points right, then */
+    /*  the dot product must be positive.			    */
+    /* Note we could modify this code to work with counter-clockwise*/
+    /*  polies. Either all the dots must be positive, or all must be*/
+    /*  negative */
+    /* Sigh. Rounding errors. dot may be off by a very small amount */
+    /*  (the polyslopes need to be unit vectors for this test to work) */
+    int i, zero_cnt=0, outside=false;
+    double dx,dy, dot, bestd= 0;
+
+    for ( i=0; i<n; ++i ) {
+
+	dx = test->x    - poly[i].x;
+	dy = test->y    - poly[i].y;
+	dot = dx*polyslopes[i].y - dy*polyslopes[i].x;
+	if ( dot>=-0.001 && dot<=.001 )
+	    ++zero_cnt;
+	else if ( dot<0 ) {	/* It's on the left, so it can't be inside */
+	    if ( distance==NULL )
+return( ht_Outside );
+	    outside= true;
+	    if ( bestd<-dot )
+		bestd = -dot;
+	}
+    }
+
+    if ( outside ) {
+	*distance = bestd;
+return( ht_Outside );
+    }
+
+    if ( distance!=NULL )
+	*distance = 0;
+    /* zero_cnt==1 => on edge, zero_cnt==2 => on a vertex (on edge), zero_cnt>2 is impossible on a nice poly */
+    if ( zero_cnt>0 ) {
+return( ht_OnEdge );
+    }
+
+return( ht_Inside );
+}
+
+/* Something is a valid polygonal pen if: */
+/*  1. It contains something (not a line, or a single point, something with area) */
+/*  2. It contains ONE contour */
+/*	(Multiple contours can be dealt with as long as each contour follows */
+/*	 requirements 3-n. If we have multiple contours: Find the offset from */
+/*	 the center of each contour to the center of all the contours. Trace  */
+/*	 each contour individually and then translate by this offset) */
+/*  3. All edges must be lines (no control points) */
+/*  4. No more than 255 corners (could extend this number, but why?) */
+/*  5. It must be drawn clockwise (not really an error, if found just invert, but important for later checks). */
+/*  6. It must be convex */
+/*  7. No extranious points on the edges */
+
+enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex) {
+    /* For each vertex: */
+    /*  Remove that vertex from the polygon, and then test if the vertex is */
+    /*  inside the resultant poly. If it is inside, then the polygon is not */
+    /*  convex */
+    /* If all verteces are outside then we have a convex poly */
+    /* If one vertex is on an edge, then we have a poly with an unneeded vertex */
+    double nx,ny;
+    int i,j,ni;
+
+    if ( badpointindex!=NULL )
+	*badpointindex = -1;
+    if ( n<3 )
+return( Poly_TooFewPoints );
+    /* All the points might lie on one line. That wouldn't be a polygon */
+    nx = -(poly[1].y-poly[0].y);
+    ny = (poly[1].x-poly[0].x);
+    for ( i=2; i<n; ++i ) {
+	if ( (poly[i].x-poly[0].x)*nx + (poly[i].y-poly[0].y)*ny != 0 )
+    break;
+    }
+    if ( i==n )
+return( Poly_Line );		/* Colinear */
+    if ( n==3 ) {
+	/* Triangles are always convex */
+return( Poly_Convex );
+    }
+
+    for ( j=0; j<n; ++j ) {
+	/* Test to see if poly[j] is inside the polygon poly[0..j-1,j+1..n] */
+	/* Basically the hit test code above modified to ignore poly[j] */
+	int outside = 0, zero_cnt=0, sign=0;
+	double sx, sy, dx,dy, dot;
+
+	for ( i=0; ; ++i ) {
+	    if ( i==j )
+	continue;
+	    ni = i+1;
+	    if ( ni==n ) ni=0;
+	    if ( ni==j ) {
+		++ni;
+		if ( ni==n )
+		    ni=0;		/* Can't be j, because it already was */
+	    }
+
+	    sx = poly[ni].x - poly[i].x;
+	    sy = poly[ni].y - poly[i].y;
+	    dx = poly[j ].x - poly[i].x;
+	    dy = poly[j ].y - poly[i].y;
+	    /* Only care about signs, so I don't need unit vectors */
+	    dot = dx*sy - dy*sx;
+	    if ( dot==0 )
+		++zero_cnt;
+	    else if ( sign==0 )
+		sign= dot;
+	    else if ( (dot<0 && sign>0) || (dot>0 && sign<0)) {
+		outside = true;
+	break;
+	    }
+	    if ( ni==0 )
+	break;
+	}
+	if ( !outside ) {
+	    if ( badpointindex!=NULL )
+		*badpointindex = j;
+	    if ( zero_cnt>0 )
+return( Poly_PointOnEdge );
+	    else
+return( Poly_Concave );
+	}
+    }
+return( Poly_Convex );
 }
 /******************************************************************************/
 /* ******************************* Circle Pen ******************************* */
@@ -240,6 +406,27 @@ static void LineCap(StrokeContext *c,int isend) {
 	halfleft.y = base2.y + c->radius*done.slope.x;
 	halfright.x = base2.x + c->radius*done.slope.y;
 	halfright.y = base2.y - c->radius*done.slope.x;
+	{
+	    struct extrapoly *ep;
+	    if ( c->ecur>=c->emax )
+		c->ep = grealloc(c->ep,(c->emax+=40)*sizeof(struct extrapoly));
+	    ep = &c->ep[c->ecur++];
+	    ep->poly[0] = done.left;
+	    ep->poly[1].x = done.left.x + c->radius*slope.x;
+	    ep->poly[1].y = done.left.y + c->radius*slope.y;
+	    ep->poly[2].x = done.right.x + c->radius*slope.x;
+	    ep->poly[2].y = done.right.y + c->radius*slope.y;
+	    ep->poly[3] = done.right;
+	    if ( !isend ) {
+		BasePoint temp;
+		ep->poly[0] = done.right;
+		temp = ep->poly[1];
+		ep->poly[1] = ep->poly[2];
+		ep->poly[2] = temp;
+		ep->poly[3] = done.left;
+	    }
+	    ep->ptcnt = 4;
+	}
 	for ( i=start; ; i+=incr ) {
 	    p = &c->all[c->cur++];
 	    p->sp = done.sp;
@@ -334,6 +521,7 @@ static void LineJoin(StrokeContext *c,int atbreak) {
 return;		/* Essentially colinear */ /* Won't be perfect because control points lie on integers */
     /* miterlimit of 6, 18 degrees */
     force_bevel = ( c->join==lj_miter && dot<-.95 );
+ force_bevel = false;		/* !!!!! Debug */
 
     cnt = ceil(c->radius/c->resolution);
     if ( cnt<6 ) cnt = 6;
@@ -405,6 +593,20 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	if ( !IntersectLinesSlopes(&inter,&base,&c->all[pindex].slope,
 				    &final,&done.slope))
 	    inter = base;
+	{
+	    struct extrapoly *ep;
+	    if ( c->ecur>=c->emax )
+		c->ep = grealloc(c->ep,(c->emax+=40)*sizeof(struct extrapoly));
+	    ep = &c->ep[c->ecur++];
+	    ep->poly[0] = base;
+	    ep->poly[1] = inter;
+	    ep->poly[2] = final;
+	    if ( bends_left ) {
+		ep->poly[0] = final;
+		ep->poly[2] = base;
+	    }
+	    ep->ptcnt = 3;
+	}
 	curslope.x = inter.x - base.x;
 	curslope.y = inter.y - base.y;
 	len = sqrt(curslope.x*curslope.x + curslope.y*curslope.y);
@@ -650,6 +852,32 @@ static void HideStrokePointsCircle(StrokeContext *c) {
 		    j -= .66667*sqrt(dist1sq)-1;
 		/* Minus 1 because we are going to add 1 anyway */
 	    }
+	}
+    }
+
+    /* now see if any miter join polygons (or square cap polys) cover anything */
+    for ( j=0; j<c->ecur; ++j ) {
+	BasePoint slopes[4];
+	double len;
+	struct extrapoly *ep = &c->ep[j];
+	for ( i=0; i<ep->ptcnt; ++i ) {
+	    int ni = i+1;
+	    if ( ni==ep->ptcnt ) ni=0;
+	    slopes[i].x = ep->poly[ni].x - ep->poly[i].x;
+	    slopes[i].y = ep->poly[ni].y - ep->poly[i].y;
+	    len = sqrt(slopes[i].x*slopes[i].x + slopes[i].y*slopes[i].y);
+	    if ( len==0 )
+return;
+	    slopes[i].x /= len; slopes[i].y /= len;
+	}
+	for ( i=c->cur-1; i>=0 ; --i ) {
+	    StrokePoint *p = &c->all[i];
+	    if ( !p->left_hidden )
+		if ( PolygonHitTest(ep->poly,slopes,ep->ptcnt,&p->left,NULL)==ht_Inside )
+		    p->left_hidden = true;
+	    if ( !p->right_hidden )
+		if ( PolygonHitTest(ep->poly,slopes,ep->ptcnt,&p->right,NULL)==ht_Inside )
+		    p->right_hidden = true;
 	}
     }
 }
@@ -1195,143 +1423,6 @@ static void FindStrokePointsSquare(SplineSet *ss, StrokeContext *c) {
 /******************************************************************************/
 /* ****************************** Polygon Pen ******************************* */
 /******************************************************************************/
-
-/* Something is a valid polygonal pen if: */
-/*  1. It contains something (not a line, or a single point, something with area) */
-/*  2. It contains ONE contour */
-/*	(Multiple contours can be dealt with as long as each contour follows */
-/*	 requirements 3-n. If we have multiple contours: Find the offset from */
-/*	 the center of each contour to the center of all the contours. Trace  */
-/*	 each contour individually and then translate by this offset) */
-/*  3. All edges must be lines (no control points) */
-/*  4. No more than 255 corners (could extend this number, but why?) */
-/*  5. It must be drawn clockwise (not really an error, if found just invert, but important for later checks). */
-/*  6. It must be convex */
-/*  7. No extranious points on the edges */
-
-enum hittest { ht_Outside, ht_Inside, ht_OnEdge };
-
-static enum hittest PolygonHitTest(BasePoint *poly,BasePoint *polyslopes, int n,BasePoint *test, double *distance) {
-    /* If the poly is drawn clockwise, then a point is inside the poly if it */
-    /*  is on the right side of each edge */
-    /* A point lies on an edge if the dot product of:		  */
-    /*  1. the vector normal to the edge			  */
-    /*  2. the vector from either vertex to the point in question */
-    /* is 0 (and it is otherwise inside)			  */
-    /* Now, if we choose the normal vector which points right, then */
-    /*  the dot product must be positive.			    */
-    /* Note we could modify this code to work with counter-clockwise*/
-    /*  polies. Either all the dots must be positive, or all must be*/
-    /*  negative */
-    /* Sigh. Rounding errors. dot may be off by a very small amount */
-    /*  (the polyslopes need to be unit vectors for this test to work) */
-    int i, zero_cnt=0, outside=false;
-    double dx,dy, dot, bestd= 0;
-
-    for ( i=0; i<n; ++i ) {
-
-	dx = test->x    - poly[i].x;
-	dy = test->y    - poly[i].y;
-	dot = dx*polyslopes[i].y - dy*polyslopes[i].x;
-	if ( dot>=-0.001 && dot<=.001 )
-	    ++zero_cnt;
-	else if ( dot<0 ) {	/* It's on the left, so it can't be inside */
-	    if ( distance==NULL )
-return( ht_Outside );
-	    outside= true;
-	    if ( bestd<-dot )
-		bestd = -dot;
-	}
-    }
-
-    if ( outside ) {
-	*distance = bestd;
-return( ht_Outside );
-    }
-
-    if ( distance!=NULL )
-	*distance = 0;
-    /* zero_cnt==1 => on edge, zero_cnt==2 => on a vertex (on edge), zero_cnt>2 is impossible on a nice poly */
-    if ( zero_cnt>0 ) {
-return( ht_OnEdge );
-    }
-
-return( ht_Inside );
-}
-
-enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex) {
-    /* For each vertex: */
-    /*  Remove that vertex from the polygon, and then test if the vertex is */
-    /*  inside the resultant poly. If it is inside, then the polygon is not */
-    /*  convex */
-    /* If all verteces are outside then we have a convex poly */
-    /* If one vertex is on an edge, then we have a poly with an unneeded vertex */
-    double nx,ny;
-    int i,j,ni;
-
-    if ( badpointindex!=NULL )
-	*badpointindex = -1;
-    if ( n<3 )
-return( Poly_TooFewPoints );
-    /* All the points might lie on one line. That wouldn't be a polygon */
-    nx = -(poly[1].y-poly[0].y);
-    ny = (poly[1].x-poly[0].x);
-    for ( i=2; i<n; ++i ) {
-	if ( (poly[i].x-poly[0].x)*nx + (poly[i].y-poly[0].y)*ny != 0 )
-    break;
-    }
-    if ( i==n )
-return( Poly_Line );		/* Colinear */
-    if ( n==3 ) {
-	/* Triangles are always convex */
-return( Poly_Convex );
-    }
-
-    for ( j=0; j<n; ++j ) {
-	/* Test to see if poly[j] is inside the polygon poly[0..j-1,j+1..n] */
-	/* Basically the hit test code above modified to ignore poly[j] */
-	int outside = 0, zero_cnt=0, sign=0;
-	double sx, sy, dx,dy, dot;
-
-	for ( i=0; ; ++i ) {
-	    if ( i==j )
-	continue;
-	    ni = i+1;
-	    if ( ni==n ) ni=0;
-	    if ( ni==j ) {
-		++ni;
-		if ( ni==n )
-		    ni=0;		/* Can't be j, because it already was */
-	    }
-
-	    sx = poly[ni].x - poly[i].x;
-	    sy = poly[ni].y - poly[i].y;
-	    dx = poly[j ].x - poly[i].x;
-	    dy = poly[j ].y - poly[i].y;
-	    /* Only care about signs, so I don't need unit vectors */
-	    dot = dx*sy - dy*sx;
-	    if ( dot==0 )
-		++zero_cnt;
-	    else if ( sign==0 )
-		sign= dot;
-	    else if ( (dot<0 && sign>0) || (dot>0 && sign<0)) {
-		outside = true;
-	break;
-	    }
-	    if ( ni==0 )
-	break;
-	}
-	if ( !outside ) {
-	    if ( badpointindex!=NULL )
-		*badpointindex = j;
-	    if ( zero_cnt>0 )
-return( Poly_PointOnEdge );
-	    else
-return( Poly_Concave );
-	}
-    }
-return( Poly_Convex );
-}
 
 static int WhichPolyCorner(StrokeContext *c, BasePoint *slope, int *right_trace) {
     /* The corner we are interested in is the corner whose normal distance */
@@ -2716,7 +2807,7 @@ return;
 
     SplinePointFree(other);
 }
-    
+
 static SplineSet *JoinFragments(SplineSet *fragments,SplineSet **contours,
 	double resolution) {
     double res2 = resolution*resolution;
@@ -3429,7 +3520,7 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
     lfragments = EdgeEffects(lfragments,c);
     lfragments=JoinFragments(lfragments,&contours,c->resolution);
     if ( lfragments!=NULL ) {
-	IError("Some fragments did not join");
+	IError(glyphname==NULL?_("Some fragments did not join"):_("Some fragments did not join in %s"),glyphname);
 	for ( ret=lfragments; ret->next!=NULL; ret=ret->next );
 	ret->next = contours;
 	contours = lfragments;
@@ -3456,6 +3547,7 @@ return(NULL);
 	if ( c->cur!=0 )
 	    memset(c->all,0,c->cur*sizeof(StrokePoint));
 	c->cur = 0;
+	c->ecur = 0;
 	c->open = base->first->prev==NULL;
 	switch ( c->pentype ) {
 	  case pt_circle:
@@ -3648,8 +3740,6 @@ return( ret );
 
 #include "baseviews.h"
 
-char *glyphname=NULL;			/* Debug !!!!*/
-
 void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
     FontViewBase *fv = _fv;
     int layer = fv->active_layer;
@@ -3686,5 +3776,6 @@ void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
     break;
 	}
     }
+ glyphname = NULL;
     ff_progress_end_indicator();
 }
