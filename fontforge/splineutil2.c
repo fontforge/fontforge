@@ -599,6 +599,56 @@ return( SplineMake3(from,to));
 	}
     }
 
+#if 0
+    /* if we look at (p(t)-pi) = (a*t^3+b*t^2+c*t+d)-pi */
+    /* d = p0, a = (p1-p0-b-c) */
+    /* We find another set of equations we can minimize. */
+    /* As might be expected it has exactly the same singularities */
+    /*  Just a linear transform, after all. But I worked through it hoping... */
+    if ( order2 ) {
+    } else {
+	/* Try a different approach */
+	double xconst[2], yconst[2], b_term[2], c_term[2] /* Same for x and y */;
+	double determinant;
+	BasePoint off;
+	xconst[0] = xconst[1] = yconst[0] = yconst[1] =
+	    b_term[0] = b_term[1] = c_term[0] = c_term[1] =  0;
+	off.x = to->me.x - from->me.x; off.y = to->me.y-from->me.y;
+	for ( i=0; i<cnt; ++i ) {
+	    double t = mid[i].t, t2 = t*t, t3=t*t2;
+	    double bfactor = t2-t3, cfactor=t-t3, bc = bfactor*cfactor;
+
+	    b_term[0] += bfactor*bfactor;
+	    b_term[1] += bc;
+	    /*c_term[0] += bc;*/ /* Same as b_term[1]; */
+	    c_term[1] += cfactor*cfactor;
+	    xconst[0] += (off.x*t3+from->me.x-mid[i].x)*bfactor;
+	    xconst[1] += (off.x*t3+from->me.x-mid[i].x)*cfactor;
+	    yconst[0] += (off.y*t3+from->me.y-mid[i].y)*bfactor;
+	    yconst[1] += (off.y*t3+from->me.y-mid[i].y)*cfactor;
+	}
+	c_term[0] = b_term[1];
+	determinant = b_term[1]*c_term[0] - b_term[0]*c_term[1];
+	if ( determinant!=0 ) {
+	    double bx, by, cx, cy;
+	    cx = -(xconst[0]*b_term[1] - xconst[1]*b_term[0])/determinant;
+	    cy = -(yconst[0]*b_term[1] - yconst[1]*b_term[0])/determinant;
+	    if ( b_term[0]!=0 ) {
+		bx = -(xconst[0]+c_term[0]*cx)/b_term[0];
+		by = -(yconst[0]+c_term[0]*cy)/b_term[0];
+	    } else {
+		bx = -(xconst[1]+c_term[1]*cx)/b_term[1];
+		by = -(yconst[1]+c_term[1]*cy)/b_term[1];
+	    }
+	    from->nextcp.x = from->me.x + cx/3;
+	    from->nextcp.y = from->me.y + cy/3;
+	    to->prevcp.x = from->nextcp.x + (bx+cx)/3;
+	    to->prevcp.y = from->nextcp.y + (by+cy)/3;
+return( SplineMake3(from,to));
+	}
+    }
+#endif
+
     if ( (spline = IsLinearApprox(from,to,mid,cnt,order2))!=NULL )
 return( spline );
 
@@ -852,6 +902,7 @@ Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
     double offn_, offp_, finaldiff;
     double pt_pf_x, pt_pf_y, determinant;
     double consts[2], rt_terms[2], rf_terms[2];
+ double rfbad=0, rtbad=0;
 
     /* If all the selected points are at the same spot, and one of the */
     /*  end-points is also at that spot, then just copy the control point */
@@ -1056,7 +1107,12 @@ return( SplineMake3(from,to));
 	    to->noprevcp = rt==0;
 return( SplineMake3(from,to));
 	}
-    }
+	
+  rfbad = rf; rtbad = -rt;
+    } else
+  rfbad = rtbad = -2;
+
+
 
     trylen = (to->me.x-from->me.x)*fromunit.x + (to->me.y-from->me.y)*fromunit.y;
     if ( trylen>flen ) flen = trylen;
