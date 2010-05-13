@@ -98,7 +98,7 @@ typedef struct strokecontext {
     real inverse[6];
 } StrokeContext;
 
-char *glyphname=NULL;			/* Debug !!!!*/
+static char *glyphname=NULL;
 
 /* Basically the idea is we find the spline, and then at each point, project */
 /*  out normal to the current slope and find a point that is radius units away*/
@@ -3318,6 +3318,133 @@ return( contours );
 
 #define MAX_TPOINTS	40
 
+static int InterpolateTPoints(StrokeContext *c,int start_pos,int end_pos,
+	int isleft) {
+    /* We have a short segment of the contour here. So short that there are */
+    /*  very few points StrokePoints on it. If we've only got 1 StrokePoint */
+    /*  we tend to get singular matrices. 2 StrokePoints just gives a bad */
+    /*  approximation (or might), etc. */
+    /* But we have the original spline. We can add as many points between */
+    /*  start and end as we like */
+    double start_t, end_t, t, diff_t;
+    double start_x, end_x, x, diff_x, start_y, end_y, y, diff_y, r2;
+    BasePoint slope, me;
+    Spline *s;
+    int lt,rt;
+    int i,j;
+    double len;
+
+    if ( start_pos==0 )
+return( end_pos-start_pos );
+
+    if ( 20 >= c->tmax )
+	c->tpt = grealloc(c->tpt,(c->tmax = 20+MAX_TPOINTS)*sizeof(TPoint));
+
+    if ( c->all[start_pos].line ) {
+	me = c->all[start_pos-1].me;
+	if ( isleft ) {
+	    slope.x = (c->all[end_pos].left.x - me.x)/6;
+	    slope.y = (c->all[end_pos].left.y - me.y)/6;
+	} else {
+	    slope.x = (c->all[end_pos].right.x - me.x)/6;
+	    slope.y = (c->all[end_pos].right.y - me.y)/6;
+	}
+	for ( i=0; i<5; ++i ) {
+	    c->tpt[i].x = me.x + slope.x*(i+1);
+	    c->tpt[i].x = me.y + slope.y*(i+1);
+	    c->tpt[i].t = (i+1)/6.0;
+	}
+return( 5 );
+    } else if ( c->all[start_pos].circle ) {
+	me = c->all[start_pos].me;		/* Center */
+	if ( isleft ) {
+	    start_x = c->all[start_pos-1].left.x - me.x;
+	    end_x = c->all[end_pos].left.x - me.x;
+	    start_y = c->all[start_pos-1].left.y - me.y;
+	    end_y = c->all[end_pos].left.y - me.y;
+	} else {
+	    start_x = c->all[start_pos-1].right.x - me.x;
+	    end_x = c->all[end_pos].right.x - me.x;
+	    start_y = c->all[start_pos-1].right.y - me.y;
+	    end_y = c->all[end_pos].right.y - me.y;
+	}
+	if ( (diff_x = end_x-start_x)<0 ) diff_x = -diff_x;
+	if ( (diff_y = end_y-start_y)<0 ) diff_y = -diff_y;
+	/* By choosing the bigger difference, I insure the other coord will */
+	/*  not cross over from negative to positive. Actually this is only */
+	/*  true for small segments of the circle. But that's what we've got*/
+	r2 = c->radius*c->radius;
+	if ( diff_y>diff_x ) {
+	    diff_y = (end_y-start_y)/11.0;
+	    for ( y=start_y+diff_y, i=0; i<10; ++i, y+=diff_y ) {
+		x = sqrt( r2-y*y );
+		if ( start_x<0 ) x=-x;
+		c->tpt[i].x = me.x + x;
+		c->tpt[i].y = me.y + y;
+		c->tpt[i].t = (i+1)/11.0;
+	    }
+	} else {
+	    diff_x = (end_x-start_x)/11.0;
+	    for ( x=start_x+diff_x, i=0; i<10; ++i, x+=diff_x ) {
+		y = sqrt( r2-x*x );
+		if ( start_y<0 ) y=-y;
+		c->tpt[i].x = me.x + x;
+		c->tpt[i].y = me.y + y;
+		c->tpt[i].t = (i+1)/11.0;
+	    }
+	}
+return( 10 );
+    }
+
+    if ( c->all[start_pos-1].t == c->all[end_pos].t ||
+	    c->all[start_pos-1].sp!=c->all[end_pos].sp ||
+	    ( isleft && c->all[start_pos-1].lt!=c->all[end_pos].lt) ||
+	    (!isleft && c->all[start_pos-1].rt!=c->all[end_pos].rt))
+return( end_pos-start_pos );		/* Well, nothing we can do here */
+
+    start_t = c->all[start_pos-1].t; end_t = c->all[end_pos].t;
+    diff_t = (end_t-start_t)/11;
+    s = c->all[start_pos].sp;
+    lt = c->all[start_pos].lt; rt = c->all[start_pos].rt;
+    for ( t=start_t+diff_t, j=i=0; i<10; ++i, t+=diff_t ) {
+	me.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+	me.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+	slope.x = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
+	slope.y = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
+	len = slope.x*slope.x + slope.y*slope.y;
+	if ( len==0 && c->pentype==pt_circle )
+    continue;
+	len = sqrt(len);
+	slope.x /= len; slope.y /= len;
+	if ( isleft ) {
+	    if ( c->pentype==pt_circle ) {
+		c->tpt[j].x = me.x - c->radius*slope.y;
+		c->tpt[j].y = me.y + c->radius*slope.x;
+	    } else if ( c->pentype==pt_square ) {
+		c->tpt[j].x = me.x + c->radius*SquareCorners[lt].x;
+		c->tpt[j].y = me.y + c->radius*SquareCorners[lt].y;
+	    } else {
+		c->tpt[j].x = me.x + c->corners[lt].x;
+		c->tpt[j].y = me.y + c->corners[lt].y;
+	    }
+	    c->tpt[j++].t = (i+1)/11.0;
+	} else {
+	    if ( c->pentype==pt_circle ) {
+		c->tpt[j].x = me.x + c->radius*slope.y;
+		c->tpt[j].y = me.y - c->radius*slope.x;
+	    } else if ( c->pentype==pt_square ) {
+		c->tpt[j].x = me.x + c->radius*SquareCorners[rt].x;
+		c->tpt[j].y = me.y + c->radius*SquareCorners[rt].y;
+	    } else {
+		c->tpt[j].x = me.x + c->corners[rt].x;
+		c->tpt[j].y = me.y + c->corners[rt].y;
+	    }
+	    c->tpt[j++].t = (i+1)/11.0;
+	}
+    }
+return( j );
+}
+
 static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
     int end_pos, i, start_pos=0, pos, ipos;
     SplinePoint *first=NULL, *last=NULL, *cur;
@@ -3397,6 +3524,8 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    if ( ipos>end_pos )
 			ipos = end_pos;
 		}
+		if ( end_pos<start_pos+3 )
+		    tot = InterpolateTPoints(c,start_pos,end_pos,true);
 		if ( end_pos!=start_pos ) {
 		    ApproximateSplineFromPointsSlopes(last,cur,c->tpt,tot,false);
 		} else
@@ -3473,6 +3602,8 @@ static SplineSet *ApproximateStrokeContours(StrokeContext *c) {
 		    if ( ipos>end_pos )
 			ipos = end_pos;
 		}
+		if ( end_pos<start_pos+3 )
+		    tot = InterpolateTPoints(c,start_pos,end_pos,false);
 		if ( end_pos!=start_pos ) {
 		    ApproximateSplineFromPointsSlopes(last,cur,c->tpt,tot,false);
 		} else
@@ -3760,7 +3891,7 @@ void FVStrokeItScript(void *_fv, StrokeInfo *si,int pointless_argument) {
 	if ( (gid=fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
 		!sc->ticked && fv->selected[i] ) {
 	    sc->ticked = true;
-  glyphname = sc->name;			/* Debug !!!!!! */
+	    glyphname = sc->name;
 	    if ( sc->parent->multilayer ) {
 		SCPreserveState(sc,false);
 		for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
