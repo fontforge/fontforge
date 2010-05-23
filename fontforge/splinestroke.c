@@ -284,7 +284,7 @@ return( Poly_TooFewPoints );
     nx = -(poly[1].y-poly[0].y);
     ny = (poly[1].x-poly[0].x);
     for ( i=2; i<n; ++i ) {
-	if ( (poly[i].x-poly[0].x)*nx + (poly[i].y-poly[0].y)*ny != 0 )
+	if ( (poly[i].x-poly[0].x)*ny - (poly[i].y-poly[0].y)*nx != 0 )
     break;
     }
     if ( i==n )
