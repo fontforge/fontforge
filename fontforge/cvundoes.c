@@ -1558,6 +1558,8 @@ return;
 	    ClipboardAddDataType("image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
 #ifndef _NO_LIBXML
+	    ClipboardAddDataType("image/svg+xml",&copybuffer,0,sizeof(char),
+		    copybuffer2svg,noop);
 	    ClipboardAddDataType("image/svg",&copybuffer,0,sizeof(char),
 		    copybuffer2svg,noop);
 #endif
@@ -2046,36 +2048,40 @@ static void SCCheckXClipboard(SplineChar *sc,int layer,int doclear) {
     char *paste;
     FILE *temp;
     GImage *image;
+    int sx=0, s_x=0;
 
     if ( no_windowing_ui )
 return;
     type = 0;
-#ifndef _NO_LIBPNG
-    if ( ClipboardHasType("image/png") )
-	type = 1;
-    else
-#endif
 #ifndef _NO_LIBXML
     /* SVG is a better format (than eps) if we've got it because it doesn't */
     /*  force conversion of quadratic to cubic and back */
-    if ( HasSVG() && ClipboardHasType("image/svg") )
-	type = 2;
+    if ( HasSVG() && ((sx = ClipboardHasType("image/svg+xml")) ||
+			(s_x = ClipboardHasType("image/svg-xml")) ||
+			ClipboardHasType("image/svg")) )
+	type = sx ? 1 : s_x ? 2 : 3;
     else
 #endif
-    if ( ClipboardHasType("image/bmp") )
-	type = 3;
-    else if ( ClipboardHasType("image/eps") )
+    if ( ClipboardHasType("image/eps") )
 	type = 4;
     else if ( ClipboardHasType("image/ps") )
 	type = 5;
+#ifndef _NO_LIBPNG
+    else if ( ClipboardHasType("image/png") )
+	type = 6;
+#endif
+    else if ( ClipboardHasType("image/bmp") )
+	type = 7;
 
     if ( type==0 )
 return;
 
-    paste = ClipboardRequest(type==1?"image/png":
-		type==2?"image/svg":
-		type==3?"image/bmp":
-		type==4?"image/eps":"image/ps",&len);
+    paste = ClipboardRequest(type==1?"image/svg+xml":
+		type==2?"image/svg-xml":
+		type==3?"image/svg":
+		type==4?"image/eps":
+		type==5?"image/ps":
+		type==6?"image/png":"image/bmp",&len);
     if ( paste==NULL )
 return;
 
@@ -2083,15 +2089,15 @@ return;
     if ( temp!=NULL ) {
 	fwrite(paste,1,len,temp);
 	rewind(temp);
-	if ( type>=4 ) {	/* eps/ps */
+	if ( type==4 || type==5 ) {	/* eps/ps */
 	    SCImportPSFile(sc,layer,temp,doclear,-1);
 #ifndef _NO_LIBXML
-	} else if ( type==2 ) {
+	} else if ( type<=3 ) {
 	    SCImportSVG(sc,layer,NULL,paste,len,doclear);
 #endif
 	} else {
 #ifndef _NO_LIBPNG
-	    if ( type==1 )
+	    if ( type==6 )
 		image = GImageRead_Png(temp);
 	    else
 #endif

@@ -5208,9 +5208,28 @@ static void CVMenuExport(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVExport(cv);
 }
 
+static void CVInkscapeAdjust(CharView *cv) {
+    /* Inkscape considers different coordinates useful. That is to say, */
+    /*  Inkscape views the world as a blank sheet of paper and often */
+    /*  put things outside the [0,1000] range (especially in Y) that */
+    /*  FF uses. So after doing a Paste, or Import or something similar */
+    /*  check and see if the image is completely out of view, and if so */
+    /*  then adjust the view field */
+    DBounds b;
+
+    SplineCharLayerQuickBounds(cv->b.sc,CVLayer((CharViewBase *) cv),&b);
+    b.minx *= cv->scale; b.maxx *= cv->scale;
+    b.miny = cv->height - b.miny*cv->scale; b.maxy = cv->height - b.maxy*cv->scale;
+
+    if ( b.miny<cv->yoff || b.maxy >= cv->yoff + cv->height ||
+	    b.maxx<cv->xoff || b.minx > cv->xoff+cv->width )
+	CVFit(cv);
+}
+
 static void CVMenuImport(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVImport(cv);
+    CVInkscapeAdjust(cv);
 }
 
 static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6475,6 +6494,7 @@ static void _CVPaste(CharView *cv) {
 static void CVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVPaste(cv);
+    CVInkscapeAdjust(cv);
 }
 
 static void _CVMerge(CharView *cv,int elide) {
@@ -6732,6 +6752,8 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/png") &&
 #endif
 #ifndef _NO_LIBXML
+		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg+xml") &&
+		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg-xml") &&
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/svg") &&
 #endif
 		    !GDrawSelectionHasType(cv->gw,sn_clipboard,"image/bmp") &&
