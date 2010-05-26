@@ -659,8 +659,8 @@ return( t );
 }
 
 static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1,Monotonic *m2) {
-    /* I believe that two monotonic cubics can still intersect in two points */
-    /*  so we can't just check if the splines are on oposite sides of each */
+    /* Note that two monotonic cubics can still intersect in two points */
+    /*  so we can't just check if the splines are on opposite sides of each */
     /*  other at top and bottom */
     DBounds b;
     const double error = .0001;
@@ -733,8 +733,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	x1o = x2o = 0;
 	while ( y<b.maxy ) {
 	    while ( y<b.maxy ) {
-		t1o = BoundIterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,b.miny,error);
-		t2o = BoundIterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,b.miny,error);
+		t1o = BoundIterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,y,error);
+		t2o = BoundIterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,y,error);
 		if ( t1o!=-1 && t2o!=-1 )
 	    break;
 		y += diff;
@@ -778,12 +778,12 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		/* A cross over has occured. (assume we have a small enough */
 		/*  region that three cross-overs can't have occurred) */
 		/* Use a binary search to track it down */
-		extended ytop, ybot;
+		extended ytop, ybot, ytest;
 		ytop = y;
 		ybot = y-diff;
 		while ( ytop!=ybot ) {
-		    extended ytest = (ytop+ybot)/2;
 		    extended t1t, t2t;
+		    ytest = (ytop+ybot)/2;
 		    t1t = BoundIterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,ytest,error);
 		    t2t = BoundIterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,ytest,error);
 		    x1 = ((m1->s->splines[0].a*t1t+m1->s->splines[0].b)*t1t+m1->s->splines[0].c)*t1t+m1->s->splines[0].d;
@@ -794,7 +794,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
 			pt.y = ytest; pt.x = (x1+x2)/2;
 			ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
-			b.maxy = m1->b.maxy<m2->b.maxy ? m1->b.maxy : m2->b.maxy;
+			/*b.maxy = m1->b.maxy<m2->b.maxy ? m1->b.maxy : m2->b.maxy;*/
 		break;
 		    } else if ( (x1o>x2o) != ( x1>x2 ) ) {
 			ytop = ytest;
@@ -802,7 +802,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			ybot = ytest;
 		    }
 		}
-		x1 = x1o; x1o = x2o; x2o = x1;
+		x1o = x2o = (x1+x2)/2;
+		y = ytest;		/* Might be more than one intersection, keep going */
 	    } else {
 		x1o = x1; x2o = x2;
 	    }
@@ -816,8 +817,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	y1o = y2o = 0;
 	while ( x<b.maxx ) {
 	    while ( x<b.maxx ) {
-		t1o = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx,error);
-		t2o = BoundIterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,b.minx,error);
+		t1o = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,x,error);
+		t2o = BoundIterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,x,error);
 		if ( t1o!=-1 && t2o!=-1 )
 	    break;
 		x += diff;
@@ -855,16 +856,16 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		if ( m2->tend==t2 && m2->s==m2->next->s ) m2 = m2->next;
 	    } else
 #endif
-	    if ( (y1o>y2o) != ( y1>y2 ) ) {
+	    if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
 		/* A cross over has occured. (assume we have a small enough */
 		/*  region that three cross-overs can't have occurred) */
 		/* Use a binary search to track it down */
-		extended xtop, xbot;
+		extended xtop, xbot, xtest;
 		xtop = x;
 		xbot = x-diff;
 		while ( xtop!=xbot ) {
-		    extended xtest = (xtop+xbot)/2;
 		    extended t1t, t2t;
+		    xtest = (xtop+xbot)/2;
 		    t1t = BoundIterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,xtest,error);
 		    t2t = BoundIterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,xtest,error);
 		    y1 = ((m1->s->splines[1].a*t1t+m1->s->splines[1].b)*t1t+m1->s->splines[1].c)*t1t+m1->s->splines[1].d;
@@ -875,7 +876,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    } else if (( y1-y2<error && y1-y2>-error ) || xtop==xtest || xbot==xtest ) {
 			pt.x = xtest; pt.y = (y1+y2)/2;
 			ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
-			b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
+			/*b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;*/
 		break;
 		    } else if ( (y1o>y2o) != ( y1>y2 ) ) {
 			xtop = xtest;
@@ -883,7 +884,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			xbot = xtest;
 		    }
 		}
-		y1 = y1o; y1o = y2o; y2o = y1;
+		y1o = y2o = (y1+y2)/2;
+		x = xtest;
 	    } else {
 		y1o = y1; y2o = y2;
 	    }
