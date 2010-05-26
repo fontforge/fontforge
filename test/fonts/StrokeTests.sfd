@@ -11,7 +11,6 @@ UnderlinePosition: -100
 UnderlineWidth: 50
 Ascent: 800
 Descent: 200
-Descent: 200
 LayerCount: 2
 Layer: 0 0 "Back"  1
 Layer: 1 0 "Fore"  0
@@ -21,7 +20,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1267052419
-ModificationTime: 1270506985
+ModificationTime: 1274880864
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
@@ -44,7 +43,7 @@ DisplaySize: -48
 AntiAlias: 1
 FitToEm: 1
 WinInfo: 64 16 4
-BeginChars: 256 31
+BeginChars: 256 34
 
 StartChar: B
 Encoding: 66 66 0
@@ -772,11 +771,106 @@ StartChar: at
 Encoding: 64 64 30
 Width: 1000
 VWidth: 0
-Flags: HO
+Flags: H
 LayerCount: 2
 Fore
 SplineSet
 0 0 m 29,0,0
+EndSplineSet
+EndChar
+
+StartChar: bracketright
+Encoding: 93 93 31
+Width: 960
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+473 342 m 4
+ 438 422 401 502 363 582 c 4
+ 277.381 758.945 430.885 624.903 449 582 c 4
+ 470 533 498 470 526 408 c 5
+ 545 447 563 485 585 539 c 4
+ 643.013 675.976 740.154 740.242 637 548 c 5
+ 616 511 574 424 559 389 c 4
+ 554 379 550 369 550 365 c 4
+ 550 361 552 353 557 341 c 4
+ 591 264 626 189 659 113 c 5
+ 690 183 720 253 749 324 c 4
+ 769 372 822 505 829 523 c 4
+ 886.035 680.944 988.349 781.193 851 463 c 6
+ 778 294 l 6
+ 734 192 694 94 653 -13 c 5
+ 650 -15 646 -16 641 -16 c 4
+ 636 -16 631 -15 627 -13 c 5
+ 595 76 537 201 506 271 c 5
+ 498 288 480.116 324.922 473 342 c 4
+EndSplineSet
+Comment: "These next three had problems with miter joins" 
+EndChar
+
+StartChar: asciicircum
+Encoding: 94 94 32
+Width: 500
+Flags: W
+HStem: -3 25 209 32<74 224 74 226 74 224 300 449> 322 32<74 210 74 224 74 210 313 449> 606.5 24.5
+VStem: 226 74<123 322 209 322> 332 182
+LayerCount: 2
+Fore
+SplineSet
+449 209 m 1
+ 298 209 l 1
+ 298 123 l 2
+ 298 -60.6672 226 -59.7612 226 123 c 6
+ 226 209 l 1
+ 74 209 l 1
+ 67 215 67 235 74 241 c 1
+ 224 241 l 1
+ 224 322 l 1
+ 74 322 l 1
+ 67 328 67 348 74 354 c 1
+ 210 354 l 1
+ 108 527 l 1
+ -12.0927 733.409 149.681 593.945 192 517 c 2
+ 243 426 l 2
+ 259 397 272 370 276 370 c 0
+ 281 370 292 381 307 409 c 2
+ 345 479 l 1
+ 418.457 617.099 526.561 718.376 402 507 c 1
+ 313 354 l 1
+ 449 354 l 1
+ 456 348 456 328 449 322 c 1
+ 300 322 l 1
+ 300 241 l 1
+ 449 241 l 1
+ 456 235 456 215 449 209 c 1
+EndSplineSet
+EndChar
+
+StartChar: underscore
+Encoding: 95 95 33
+Width: 401
+Flags: W
+HStem: -217 28<209 220.5 209 221> -14 56<215.5 232> 314 21G<357.5 366> 374 34<211 266.5>
+VStem: 36 72<174 239> 239 51<-161.5 -149.5>
+LayerCount: 2
+Fore
+SplineSet
+184 -97 m 1
+ 236 -13 l 2
+ 235 -14 233 -14 231 -14 c 0
+ 178 -14 129 3 94 37 c 0
+ 59 71 36 120 36 185 c 0
+ 36 293 112 408 278 408 c 0
+ 451.711 408 352.449 374 246 374 c 0
+ 176 374 108 319 108 213 c 0
+ 108 135 162 42 269 42 c 0
+ 327 42 357 68 380 102 c 1
+ 388 104 397 97 398 88 c 1
+ 371 29 319 0 270 -8 c 1
+ 241 -55 l 5
+ 226 -82 206 -80 184 -102 c 1
+ 184 -97 l 1
 EndSplineSet
 EndChar
 EndChars
