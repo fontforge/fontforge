@@ -720,8 +720,10 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 		if ( rot.x<=0 && !was_neg ) {
 		    was_neg = c->cur-1;
 		    p->needs_point_left = p->needs_point_right = true;
-		    incr_angle.y = diff_angle.y/20;
-		    incr_angle.x = sqrt(1-incr_angle.y*incr_angle.y);
+		    if ( diff_angle.y>.1 ) {
+			incr_angle.y = diff_angle.y/20;
+			incr_angle.x = sqrt(1-incr_angle.y*incr_angle.y);
+		    }
 		}
 		temp.x = rot.x*incr_angle.x - rot.y*incr_angle.y;
 		temp.y = rot.x*incr_angle.y + rot.y*incr_angle.x;
