@@ -13,7 +13,7 @@ for g in font.selection.byGlyphs :
     raise ValueError, "Comparison doesn't work";
   d.addExtrema("only_good_rm",1000);
   if ( c != d ) :
-    raise ValueError, "addExtrema perterbed things badly";
+    raise ValueError, "addExtrema perterbed things badly in " + g.glyphname;
 
 c = font["A"].foreground[0];
 d = font["B"].foreground[0];
