@@ -3483,8 +3483,10 @@ return( -1 );
 	    s->to->prevcp = s->to->me;
 	} else {
 	    s->from->nonextcp = true;
-	    s->from->nextcp = s->to->me;
+	    s->from->nextcp = s->from->me;
 	}
+	end->pointtype = pt_corner;
+	SplineRefigure(s);
 return( true );	/* We changed the slope */
     }
     unitslope.x /= len; unitslope.y /= len;
@@ -3503,12 +3505,14 @@ return( true );	/* We changed the slope */
 	    s->from->nextcp.x = s->from->me.x + mydot*unitslope.x;
 	    s->from->nextcp.y = s->from->me.y + mydot*unitslope.y;
 	}
+	SplineRefigure(s);
 return( true );	/* We changed the slope */
     }
     
     if ( (xdiff = cp->x - end->me.x)<0 ) xdiff = -xdiff;
     if ( (ydiff = cp->y - end->me.y)<0 ) ydiff = -ydiff;
 
+    to = *cp;
     if ( xdiff<ydiff/10.0 && xdiff>0 ) {
 	to.x = end->me.x;
 	end->pointtype = pt_corner;
