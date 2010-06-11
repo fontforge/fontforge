@@ -3301,6 +3301,8 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     os2->version = 1;
     if ( format==ff_otf || format==ff_otfcid )
 	os2->version = 3;
+    if ( sf->use_typo_metrics || sf->weight_width_slope_only )
+	os2->version = 4;
     if ( sf->os2_version!=0 )
 	os2->version = sf->os2_version;
     if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
