@@ -1627,9 +1627,9 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 	for ( on=fn->names; on!=NULL; on=on->next ) {
 	    fprintf( sfd, " %d ", on->lang );
 	    SFDDumpUTF7Str(sfd, on->name);
+	    putc('\n',sfd);
 	}
     }
-    putc('\n',sfd);
 }
 
 static void putstring(FILE *sfd, char *header, char *body) {
