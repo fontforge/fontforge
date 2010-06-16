@@ -955,7 +955,7 @@ static void BoxGradientRect(GWindow gw,GRect *r,Color middle,Color ends) {
 
     if ( r->height<=0 )
 return;
-    for ( i=0; i<=half; ++i ) {
+    else for ( i=0; i<=half; ++i ) {
 	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
 				(i*eg + (half-i)*mg)/half,
 			        (i*eb + (half-i)*mb)/half );
@@ -998,7 +998,7 @@ static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color e
     int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
     int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
     Color col, col2;
-    
+
     /* stuff for midpoint algorithm for drawing circles. */
     int xoff = rr;
     int yoff = 0;
@@ -1006,13 +1006,14 @@ static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color e
     int ychange = 1;
     int raderr = 0;
 
-    if ( r->height==0 )
+    if ( r->height<=0 )
 return;
     for ( i=0; i<=half; ++i ) {
-	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
+	if (half == 0) col = COLOR_CREATE( (er+mr)/2, (eg+mg)/2, (eb+mb)/2 );
+	else col = COLOR_CREATE((i*er + (half-i)*mr)/half,
 				(i*eg + (half-i)*mg)/half,
 			        (i*eb + (half-i)*mb)/half );
-	if ( half-i>rr ) {
+	if ((half == 0) || (half-i>rr)) {
 	    x = r->x;
 	    xend = r->x+r->width-1;
 	} 
@@ -1032,7 +1033,7 @@ return;
 
 	    x = r->x + rr - yoff;
 	    xend = r->x + r->width - (1 + rr - yoff);
-	    
+
 	    y = r->y + r->height - rr + xoff - 1;
 	    GDrawDrawLine(gw,x,y,xend,y,col2);
 	    y = r->y + rr - xoff;
@@ -1040,11 +1041,11 @@ return;
 
 	    x = r->x + rr - xoff;
 	    xend = r->x + r->width - (1 + rr - xoff);
-	    
+
 	    yoff++;
 	    raderr+=ychange;
 	    ychange+=2;
-	    
+
 	    if (2*raderr + xchange > 0) {
 		xoff--;
 		raderr+=xchange;
