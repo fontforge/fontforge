@@ -26,6 +26,7 @@
  */
 #include "pfaeditui.h"
 #include <ustring.h>
+#include <locale.h>
 #include <gfile.h>
 #include <gresource.h>
 #include <utype.h>
@@ -215,6 +216,10 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     int i;
     int32 *sizes;
+    char oldloc[24];
+
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
 
     *err = false;
     end2 = NULL;
@@ -241,12 +246,15 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	    free(sizes);
 	    GGadgetProtest8(msg);
 	    *err = true;
-return( NULL );
+    break;
 	}
 	while ( *end==' ' || *end==',' ) ++end;
 	pt = end;
     }
+    if ( *err )
+return( NULL );
     sizes[i] = 0;
+    setlocale(LC_NUMERIC,oldloc);
 return( sizes );
 }
 
