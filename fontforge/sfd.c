@@ -2571,7 +2571,7 @@ return;
     
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
     FILE *sfd;
-    char *oldloc;
+    char oldloc[24];
     int i, gc;
     char *tempfilename = filename;
     int err = false;
@@ -2591,7 +2591,8 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
     if ( sfd==NULL )
 return( 0 );
     
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     if ( sf->cidmaster!=NULL ) {
 	sf=sf->cidmaster;
 	gc = 1;
@@ -5709,12 +5710,6 @@ static char *SFDParseMMSubroutine(FILE *sfd) {
 return( sofar );
 }
 
-static void SFDCleanupFont(SplineFont *sf) {
-    if ( sf->sfd_version<2 )
-	SFD_AssignLookups((SplineFont1 *) sf);
-    AltUniFigure(sf,sf->map);
-}
-
 static void MMInferStuff(MMSet *mm) {
     int i,j;
 
@@ -7199,7 +7194,10 @@ exit( 1 );
     
     if ( !haddupenc )
 	SFD_DoAltUnis(sf);
-    SFDCleanupFont(sf);
+    else
+	AltUniFigure(sf,sf->map);
+    if ( sf->sfd_version<2 )
+	SFD_AssignLookups((SplineFont1 *) sf);
     if ( !hadtimes )
 	SFTimesFromFile(sf,sfd);
 return( sf );
@@ -7243,8 +7241,7 @@ return( dval );
 
 static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     SplineFont *sf=NULL;
-    char *oldloc;
-    char tok[2000];
+    char oldloc[24], tok[2000];
     double version;
 
     if ( sfd==NULL ) {
@@ -7256,7 +7253,8 @@ static SplineFont *SFD_Read(char *filename,FILE *sfd, int fromdir) {
     }
     if ( sfd==NULL )
 return( NULL );
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     ff_progress_change_stages(2);
     if ( (version = SFDStartsCorrectly(sfd,tok))!=-1 )
 	sf = SFD_GetFont(sfd,NULL,tok,fromdir,filename,version);
@@ -7302,8 +7300,7 @@ return( SFD_Read(filename,NULL,true));
 SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
     FILE *sfd;
     SplineChar *sc=NULL;
-    char *oldloc;
-    char tok[2000];
+    char oldloc[24], tok[2000];
     uint32 pos;
     SplineFont sf;
     LayerInfo layers[2];
@@ -7318,7 +7315,8 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
 	sfd = fopen(cur_sf->filename,"r");
     if ( sfd==NULL )
 return( NULL );
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
 
     memset(&sf,0,sizeof(sf));
     memset(&layers,0,sizeof(layers));
@@ -7587,8 +7585,7 @@ return( true );
 SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
     FILE *asfd = fopen( autosavename,"r");
     SplineFont *ret;
-    char *oldloc;
-    char tok[1025];
+    char oldloc[24], tok[1025];
 
     if ( asfd==NULL )
 return(NULL);
@@ -7596,7 +7593,8 @@ return(NULL);
 	fclose( asfd );
 return( NULL );
     }
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     ret = SlurpRecovery(asfd,tok,sizeof(tok));
     if ( ret==NULL ) {
 	char *buts[3];
@@ -7614,7 +7612,7 @@ return( ret );
 void SFAutoSave(SplineFont *sf,EncMap *map) {
     int i, k, max;
     FILE *asfd;
-    char *oldloc;
+    char oldloc[24];
     SplineFont *ssf;
     extern struct compressors compressors[];
 
@@ -7630,7 +7628,8 @@ return;
     for ( i=0; i<sf->subfontcnt; ++i )
 	if ( sf->subfonts[i]->glyphcnt>max ) max = sf->subfonts[i]->glyphcnt;
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     if ( !sf->new && sf->origname!=NULL )	/* might be a new file */
 	fprintf( asfd, "Base: %s%s\n", sf->origname,
 		sf->compression==0?"":compressors[sf->compression-1].ext );
@@ -7688,14 +7687,14 @@ return;
 
 char **NamesReadSFD(char *filename) {
     FILE *sfd = fopen(filename,"r");
-    char *oldloc;
-    char tok[2000];
+    char oldloc[24],tok[2000];
     char **ret = NULL;
     int eof;
 
     if ( sfd==NULL )
 return( NULL );
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     if ( SFDStartsCorrectly(sfd,tok)!=-1 ) {
 	while ( !feof(sfd)) {
 	    if ( (eof = getname(sfd,tok))!=1 ) {

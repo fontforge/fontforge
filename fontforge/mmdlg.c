@@ -97,10 +97,11 @@ static int ExecConvertDesignVector(real *designs, int dcnt, char *ndv, char *cdv
 	real *stack) {
     char *temp, dv[101];
     int j, len, cnt;
-    char *oldloc;
+    char oldloc[24];
 
     /* PostScript parses things in "C" locale too */
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     len = 0;
     for ( j=0; j<dcnt; ++j ) {
 	sprintf(dv+len, "%g ", (double) designs[j]);

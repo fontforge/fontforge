@@ -2701,7 +2701,7 @@ return( !cidbytes.errors );
 
 int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	EncMap *map, SplineFont *fullsf,int layer) {
-    char *oldloc;
+    char oldloc[24];
     int err = false;
     extern const char **othersubrs[];
 
@@ -2711,7 +2711,8 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
 	flags &= ~ps_flag_noflex;
 
     /* make sure that all reals get output with '.' for decimal points */
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )

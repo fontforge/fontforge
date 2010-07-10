@@ -1298,7 +1298,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char *oldloc;
+    char oldloc[24];
     int warned = 0;
     struct garbage tofrees;
     SplineSet *clippath = NULL;
@@ -1312,7 +1312,8 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     tokbuf = galloc(tokbufsize);
 #endif
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
