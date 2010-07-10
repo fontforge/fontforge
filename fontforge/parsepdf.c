@@ -1263,11 +1263,12 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
     DashType dashes[DASH_MAX];
     int dash_offset = 0;
     Entity *ent;
-    char *oldloc;
+    char oldloc[24];
     char tokbuf[100];
     const int tokbufsize = 100;
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
@@ -1994,10 +1995,11 @@ SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font,
 	enum openflags openflags) {
     struct pdfcontext pc;
     SplineFont *sf = NULL;
-    char *oldloc;
+    char oldloc[24];
     int i;
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     memset(&pc,0,sizeof(pc));
     pc.pdf = pdf;
     pc.openflags = openflags;
@@ -2078,12 +2080,13 @@ return( sf );
 
 Entity *EntityInterpretPDFPage(FILE *pdf,int select_page) {
     struct pdfcontext pc;
-    char *oldloc;
+    char oldloc[24];
     Entity *ent;
     char *ret;
     int choice;
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     memset(&pc,0,sizeof(pc));
     pc.pdf = pdf;
     pc.openflags = 0;

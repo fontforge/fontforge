@@ -5465,14 +5465,16 @@ return( false );
 }
 
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
-    char *oldloc;
+    char oldloc[24];
     int i;
 
     ff_progress_change_stages(3);
     if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
 return( 0 );
     }
-    oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
+    /* TrueType doesn't need this but opentype dictionaries do */
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     readttfpreglyph(ttf,info);
     ff_progress_change_total(info->glyph_cnt);
 

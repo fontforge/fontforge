@@ -6085,10 +6085,13 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
-    char *oldloc;
+    char oldloc[24];
     int i, anyglyphs;
 
-    oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
+    /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
+    
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
     } else {
@@ -6265,10 +6268,13 @@ static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) 
 int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
 	int flags,EncMap *map,int layer) {
     struct alltabs at;
-    char *oldloc;
+    char oldloc[24];
     int i;
 
-    oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
+    /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
+
     if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )

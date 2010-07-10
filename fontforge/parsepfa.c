@@ -2569,7 +2569,7 @@ return;
 FontDict *_ReadPSFont(FILE *in) {
     FILE *temp;
     struct fontparse fp;
-    char *oldloc;
+    char oldloc[24];
     struct stat b;
 
     temp = tmpfile();
@@ -2579,7 +2579,8 @@ FontDict *_ReadPSFont(FILE *in) {
 return(NULL);
     }
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     memset(&fp,'\0',sizeof(fp));
     fp.fd = fp.mainfd = PSMakeEmptyFont();
     fp.fdindex = -1;

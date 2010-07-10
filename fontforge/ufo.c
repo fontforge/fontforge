@@ -1682,7 +1682,7 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     xmlChar *keyname, *valname;
     char *stylename=NULL;
     char *temp, *glyphlist, *glyphdir;
-    char *oldloc, *end;
+    char oldloc[24], *end;
     int as = -1, ds= -1, em= -1;
 
     if ( !libxml_init_base()) {
@@ -1715,7 +1715,8 @@ return( NULL );
     }
 
     sf = SplineFontEmpty();
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && _xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
@@ -2002,7 +2003,7 @@ return( sf );
 SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
     xmlDocPtr doc;
-    char *oldloc;
+    char oldloc[24];
     SplineChar *sc;
     SplineSet *ss;
 
@@ -2017,7 +2018,8 @@ return( NULL );
     if ( doc==NULL )
 return( NULL );
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     sc = _UFOLoadGlyph(doc,filename);
     setlocale(LC_NUMERIC,oldloc);
 

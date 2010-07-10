@@ -77,10 +77,11 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     time_t now;
     struct tm *tm;
     int ret;
-    char *oldloc;
+    char oldloc[24];
     const char *author = GetAuthor();
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
     SplineCharLayerFindBounds(sc,layer,&b);
@@ -152,13 +153,14 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     time_t now;
     struct tm *tm;
     int ret;
-    char *oldloc;
+    char oldloc[24];
     int _objlocs[8], xrefloc, streamstart, streamlength, resid, nextobj;
     int *objlocs = _objlocs;
     const char *author = GetAuthor();
     int i;
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
 
     fprintf( pdf, "%%PDF-1.4\n%%\201\342\202\203\n" );	/* Header comment + binary comment */
     /* Every document contains a catalog which points to a page tree, which */
@@ -288,13 +290,14 @@ return( ret );
 
 
 int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
-    char *oldloc;
+    char oldloc[24];
     int do_open;
     SplineSet *ss;
     spiro_cp *spiros;
     int i, ret;
 
-    oldloc = setlocale(LC_NUMERIC,"C");
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     /* Output closed contours first, then open. Plate files can only handle */
     /*  one open contour (I think) and it must be at the end */
     fprintf( plate, "(plate\n" );
