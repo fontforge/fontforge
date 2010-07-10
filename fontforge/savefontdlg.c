@@ -251,10 +251,10 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 	while ( *end==' ' || *end==',' ) ++end;
 	pt = end;
     }
+    setlocale(LC_NUMERIC,oldloc);
     if ( *err )
 return( NULL );
     sizes[i] = 0;
-    setlocale(LC_NUMERIC,oldloc);
 return( sizes );
 }
 
