@@ -3686,6 +3686,14 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
+static PyObject *PyFFLayer_ReverseDirection(PyFF_Layer *self, PyObject *args) {
+    int i;
+
+    for ( i=0; i<self->cntr_cnt; ++i )
+	PyFFContour_ReverseDirection(self->contours[i],NULL); 
+Py_RETURN( self );
+}
+
 static PyObject *PyFFLayer_RemoveOverlap(PyFF_Layer *self, PyObject *args) {
     SplineSet *ss, *newss;
 
@@ -3894,6 +3902,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "The minimum and maximum values of y attained for a given x, or returns None" },
     {"correctDirection", (PyCFunction)PyFFLayer_Correct, METH_NOARGS,
 	     "Orient a layer so that external contours are clockwise and internal counter clockwise." },
+    {"reverseDirection", (PyCFunction)PyFFLayer_ReverseDirection, METH_NOARGS,
+	     "Reverse the orientation of each contour in the layer." },
     {"export", (PyCFunction)PyFFLayer_export, METH_VARARGS,
 	     "Exports the layer to a file" },
     {"stroke", (PyCFunction)PyFFLayer_Stroke, METH_VARARGS,
