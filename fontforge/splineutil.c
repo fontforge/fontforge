@@ -4112,7 +4112,7 @@ static void IterateSolve(const Spline1D *sp,extended ts[3]) {
 	if ( e[1]==-1 ) e[1] = 1;
 	if ( e[2]==-1 ) e[2] = 1;
 	for ( i=j=0; i<3; ++i ) {
-	    ts[j] = IterateSplineSolve(sp,e[i],e[i+1],0,.0001);
+	    ts[j] = IterateSplineSolve(sp,e[i],e[i+1],0);
 	    if ( ts[j]!=-1 ) ++j;
 	    if ( e[i+1]==1.0 )
 	break;
@@ -5030,7 +5030,7 @@ static int Crossings(Spline *s,BasePoint *pt) {
 	if ( (yi>yi1 && (pt->y<yi1 || pt->y>yi)) ||
 		(yi<yi1 && (pt->y<yi || pt->y>yi1)) )
     continue;
-	t = IterateSplineSolve(&s->splines[1],ext[i],ext[i+1],pt->y,.0001);
+	t = IterateSplineSolve(&s->splines[1],ext[i],ext[i+1],pt->y);
 	if ( t==-1 )
     continue;
 	x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;

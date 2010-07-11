@@ -288,7 +288,6 @@ return( all->desired_separation - smallest );
 }
 
 static double MonotonicFindY(Monotonic *m,double test,double old_t) {
-    const double error = .0001;
     double tstart, tend, t;
 
     tstart = m->tstart; tend = m->tend;
@@ -298,7 +297,7 @@ static double MonotonicFindY(Monotonic *m,double test,double old_t) {
 	else
 	    tend = old_t;
     }
-    t = BoundIterateSplineSolve(&m->s->splines[1],tstart,tend,test,error);
+    t = IterateSplineSolve(&m->s->splines[1],tstart,tend,test);
 return( t );
 }
 

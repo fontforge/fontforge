@@ -70,44 +70,47 @@ void FreeEdges(EdgeList *es) {
 }
 
 extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax,
-	extended sought,double err) {
+	extended sought) {
     extended t, low, high, test;
     Spline1D temp;
-    int cnt;
-
     /* Now the closed form CubicSolver can have rounding errors so if we know */
     /*  the spline to be monotonic, an iterative approach is more accurate */
+
+    if ( tmin>tmax ) {
+	t=tmin; tmin=tmax; tmax=t;
+    }
 
     temp = *sp;
     temp.d -= sought;
 
     if ( temp.a==0 && temp.b==0 && temp.c!=0 ) {
 	t = -temp.d/(extended) temp.c;
-	if ( t<0 || t>1 )
+	if ( t<tmin || t>tmax )
 return( -1 );
 return( t );
     }
 
     low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
     high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
-    if ( low<err && low>-err )
+    if ( low==0 )
 return(tmin);
-    if ( high<err && high>-err )
+    if ( high==0 )
 return(tmax);
     if (( low<0 && high>0 ) ||
 	    ( low>0 && high<0 )) {
 	
-	for ( cnt=0; cnt<1000; ++cnt ) {	/* Avoid impossible error limits */
+	forever {
 	    t = (tmax+tmin)/2;
+	    if ( t==tmax || t==tmin )
+return( t );
 	    test = ((temp.a*t+temp.b)*t+temp.c)*t+temp.d;
-	    if ( test>-err && test<err )
+	    if ( test==0 )
 return( t );
 	    if ( (low<0 && test<0) || (low>0 && test>0) )
 		tmin=t;
 	    else
 		tmax = t;
 	}
-return( (tmax+tmin)/2 );	
     }
 return( -1 );
 }
@@ -128,7 +131,7 @@ double TOfNextMajor(Edge *e, EdgeList *es, double sought_m ) {
 return( e->up?1.0:0.0 );
 	}
 
-	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
+	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale);
 	if ( new_t==-1 )
 	    IError( "No Solution");
 	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;
@@ -156,7 +159,7 @@ return( e->t_mmax );
 	    e->m_cur = sought_m;
 return( e->up?1.0:0.0 );
 	}
-	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale,.001);
+	new_t = IterateSplineSolve(msp,e->t_mmin,e->t_mmax,(sought_m+es->mmin)/es->scale);
 	if ( new_t==-1 )
 	    IError( "No Solution");
 	e->m_cur = (((msp->a*new_t + msp->b)*new_t+msp->c)*new_t + msp->d)*es->scale - es->mmin;

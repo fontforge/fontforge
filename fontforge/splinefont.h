@@ -2365,7 +2365,7 @@ extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4]
 	extended tmin, extended tmax);
 extern int _CubicSolve(const Spline1D *sp,extended ts[3]);
 extern int CubicSolve(const Spline1D *sp,extended ts[3]);
-extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax, extended sought_y, double err);
+extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax, extended sought_y);
 extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought_y, real err);
 extern int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]);
 extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
@@ -2518,8 +2518,6 @@ extern int IntersectLinesClip(BasePoint *inter,
 #if 0
 extern void SSBisectTurners(SplineSet *spl);
 #endif
-extern extended BoundIterateSplineSolve(Spline1D *sp, extended tmin, extended tmax,
-	extended sought,double err);
 extern void SSRemoveBacktracks(SplineSet *ss);
 extern enum PolyType PolygonIsConvex(BasePoint *poly,int n, int *badpointindex);
 extern SplineSet *UnitShape(int isrect);
