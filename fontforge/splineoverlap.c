@@ -103,10 +103,10 @@ static void SOError(char *format,...) {
 
 #if defined( FONTFORGE_CONFIG_USE_DOUBLE ) || defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
 # define RE_NearZero	.00001
-# define RE_Factor	(1024*1024*1024*1024*1024*2)	/* 52 bits => divide by 2^51 */
+# define RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0) /* 52 bits => divide by 2^51 */
 #else
 # define RE_NearZero	.001
-# define RE_Factor	(1024*1024*4)		/* 23 bits => divide by 2^22 */
+# define RE_Factor	(1024.0*1024.0*4.0)	/* 23 bits => divide by 2^22 */
 #endif
 
 static int Within4RoundingErrors(double v1, double v2) {
@@ -134,7 +134,7 @@ return( v2-v1 < re );
 return( v1-v2 > re );
 	} else {
 	    re = v2/ (RE_Factor/4);
-return( v2-v1 < re );
+return( v2-v1 > re );
 	}
     }
 }
@@ -164,7 +164,7 @@ return( v2-v1 < re );
 return( v1-v2 > re );
 	} else {
 	    re = v2/ (RE_Factor/16);
-return( v2-v1 < re );
+return( v2-v1 > re );
 	}
     }
 }
@@ -741,6 +741,7 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     const double error = .0001;
     BasePoint pt;
     extended t1,t2;
+    extended t1end = m1->tend, t2end = m2->tend;
 
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
     b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
@@ -822,6 +823,15 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	if ( x1o==x2o ) {	/* Unlikely... but just in case */
 	    pt.x = x1o; pt.y = y;
 	    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
+	    /* If pt is not one of the end points then AddIntersection will*/
+	    /*  split the monotonic in two at that point. m1/m2 will be the*/
+	    /*  section of the the monotonic with lower t values. We need  */
+	    /*  to keep testing the section with higher y values. So if yup*/
+	    /*  then m1/m2 have lower y values and m?->next will be what we*/
+	    /*  need */ /* Unless pt is the start point. Then there will be*/
+	    /*  no new monotonic and m?->tend won't have changed */
+	    if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
+	    if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 	}
 	for ( y+=diff; ; y += diff ) {
 	    /* I used to say y<=b.maxy in the above for statement. */
@@ -845,8 +855,9 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    if ( x1==x2 && x1o!=x2o ) {
 		pt.x = x1; pt.y = y;
 		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
-		/*if ( m1->tend==t1 && m1->s==m1->next->s ) m1 = m1->next;*/
-		/*if ( m2->tend==t2 && m2->s==m2->next->s ) m2 = m2->next;*/
+		/* see comment above for these next lines */
+		if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
+		if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 	    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
 		/* A cross over has occured. (assume we have a small enough */
 		/*  region that three cross-overs can't have occurred) */
@@ -862,12 +873,14 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    x1 = ((m1->s->splines[0].a*t1t+m1->s->splines[0].b)*t1t+m1->s->splines[0].c)*t1t+m1->s->splines[0].d;
 		    x2 = ((m2->s->splines[0].a*t2t+m2->s->splines[0].b)*t2t+m2->s->splines[0].c)*t2t+m2->s->splines[0].d;
 		    if ( t1t==-1 || t2t==-1 ) {
-			SOError( "Can't find something in range.\n" );
+			SOError( "Can't find something in range. y=%g\n", ytest );
 		break;
 		    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
 			pt.y = ytest; pt.x = (x1+x2)/2;
 			ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
-			/*b.maxy = m1->b.maxy<m2->b.maxy ? m1->b.maxy : m2->b.maxy;*/
+			/* see comment above for these next lines */
+			if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
+			if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 		break;
 		    } else if ( (x1o>x2o) != ( x1>x2 ) ) {
 			ytop = ytest;
@@ -904,6 +917,15 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	if ( y1o==y2o ) {
 	    pt.y = y1o; pt.x = x;
 	    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
+	    /* If pt is not one of the end points then AddIntersection will*/
+	    /*  split the monotonic in two at that point. m1/m2 will be the*/
+	    /*  section of the the monotonic with lower t values. We need  */
+	    /*  to keep testing the section with higher x values. So if xup*/
+	    /*  then m1/m2 have lower x values and m?->next will be what we*/
+	    /*  need */ /* Unless pt is the start point. Then there will be*/
+	    /*  no new monotonic and m?->tend won't have changed */
+	    if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
+	    if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 	}
 	y1 = y2 = 0;
 	for ( x+=diff; ; x += diff ) {
@@ -925,8 +947,9 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    if ( y1==y2 && y1o!=y2o ) {
 		pt.y = y1; pt.x = x;
 		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
-		if ( m1->tend==t1 && m1->s==m1->next->s ) m1 = m1->next;
-		if ( m2->tend==t2 && m2->s==m2->next->s ) m2 = m2->next;
+		/* see comment above */
+		if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
+		if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 	    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
 		/* A cross over has occured. (assume we have a small enough */
 		/*  region that three cross-overs can't have occurred) */
@@ -942,12 +965,14 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    y1 = ((m1->s->splines[1].a*t1t+m1->s->splines[1].b)*t1t+m1->s->splines[1].c)*t1t+m1->s->splines[1].d;
 		    y2 = ((m2->s->splines[1].a*t2t+m2->s->splines[1].b)*t2t+m2->s->splines[1].c)*t2t+m2->s->splines[1].d;
 		    if ( t1t==-1 || t2t==-1 ) {
-			SOError( "Can't find something in range.\n" );
+			SOError( "Can't find something in range. x=%g\n", (double) xtest );
 		break;
 		    } else if (( y1-y2<error && y1-y2>-error ) || xtop==xtest || xbot==xtest ) {
 			pt.x = xtest; pt.y = (y1+y2)/2;
 			ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
-			/*b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;*/
+			/* see comment above */
+			if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
+			if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 		break;
 		    } else if ( (y1o>y2o) != ( y1>y2 ) ) {
 			xtop = xtest;
@@ -1009,16 +1034,16 @@ static int CoincidentIntersect(Monotonic *m1,Monotonic *m2,BasePoint *pts,
     int cnt=0;
     extended t, t2, diff;
 
-    if ( m1==m2 || m1->next==m2 || m1->prev==m2 )
+    if ( m1==m2 )
 return( false );		/* Can't be coincident. Adjacent */
-    /* Actually adjacent splines can double back on themselves */
-
-    if ( (m1->xup==m2->xup && m1->yup==m2->yup) ||
-	    ((m1->xup!=m2->xup || (m1->b.minx==m1->b.maxx && m2->b.minx==m2->b.maxx)) ||
-	     (m1->yup!=m2->yup || (m1->b.miny==m1->b.maxy && m2->b.miny==m2->b.maxy))))
-	/* A match is possible */;
-    else
+    /* Adjacent splines can double back on themselves */
+    if ( m1->next==m2 || m1->prev==m2 ) {
+	/* But normally they'll only intersect in one point, where they join */
+	/* and that doesn't count */
+	if ( (m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx) == (m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx) &&
+		(m1->b.miny>m2->b.miny ? m1->b.miny : m2->b.miny) == (m1->b.maxy<m2->b.maxy ? m1->b.maxy : m2->b.maxy) )
 return( false );
+    }
 
     SetStartPoint(&pts[cnt],m1);
     t1s[cnt] = m1->tstart;
@@ -1578,16 +1603,29 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 		/*  this range. So let's add intersections at the end of */
 		/*  the range so we don't get confused */
 		if ( ilist!=NULL ) {
+		    real rh = (real) high;
 		    if ( (which==0 && (m1->b.minx!=m2->b.minx || m1->b.maxx!=m2->b.maxx)) ||
 			    (which==1 && (m1->b.miny!=m2->b.miny || m1->b.maxy!=m2->b.maxy)) ) {
 			ilist = SplitMonotonicsAt(m1,m2,which,low,ilist);
-			if ( (which==0 && high>m1->b.maxx && high<m1->next->b.maxx) ||
-				(which==1 && high>m1->b.maxy && high<m1->next->b.maxy))
+			if ( (which==0 && rh>m1->b.maxx && rh<m1->next->b.maxx) ||
+				(which==1 && rh>m1->b.maxy && rh<m1->next->b.maxy))
 			    m1 = m1->next;
-			if ( (which==0 && high>m2->b.maxx && high<m2->next->b.maxx) ||
-				(which==1 && high>m2->b.maxy && high<m2->next->b.maxy))
+			if ( (which==0 && rh>m2->b.maxx && rh<m2->next->b.maxx) ||
+				(which==1 && rh>m2->b.maxy && rh<m2->next->b.maxy))
 			    m2 = m2->next;
 			ilist = SplitMonotonicsAt(m1,m2,which,high,ilist);
+		    }
+		    if ( (&m1->xup)[which]!=(&m2->xup)[which] ) {
+			/* the two monotonics cancel each other out */
+			/* (they are close together, and go in opposite directions) */
+			if ( (which==0 && rh<m1->b.maxx && Within4RoundingErrors(rh,m1->next->b.maxx)) ||
+				(which==1 && rh<m1->b.maxy && Within4RoundingErrors(rh,m1->next->b.maxy)))
+			    m1 = m1->next;
+			if ( (which==0 && rh<m2->b.maxx && Within4RoundingErrors(rh,m2->next->b.maxx)) ||
+				(which==1 && rh<m2->b.maxy && Within4RoundingErrors(rh,m2->next->b.maxy)))
+			    m2 = m2->next;
+			m1->mutual_collapse = m1->isunneeded = true;
+			m2->mutual_collapse = m2->isunneeded = true;
 		    }
 		}
 		if ( pc>nc ) {
@@ -1619,7 +1657,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
     /*  find the value of the other coord on that line */
     /*  Order them (by the other coord) */
     /*  then run along that line figuring out which monotonics are needed */
-    int i, winding, ew, close;
+    int i, winding, ew, close, n;
 
     TryHarderWhenClose(which,test,space,MonotonicFindAt(ms,which,test,space),NULL);
 
@@ -1634,7 +1672,13 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	nwinding=winding;
 	new=ew;
 	m = space[i];
-	nm = space[i+1];
+	if ( m->mutual_collapse )
+    continue;
+	n=0;
+	do {
+	    ++n;
+	    nm = space[i+n];
+	} while ( nm!=NULL && nm->mutual_collapse );
 	if ( m->exclude )
 	    new += ( (&m->xup)[which] ? 1 : -1 );
 	else
@@ -1697,12 +1741,12 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 		m->isneeded = needed; m->isunneeded = !needed;
 		m->when_set = test;		/* Debugging */
 	    } else if ( m->isneeded!=needed || m->isunneeded!=!needed ) {
-		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). test=%g (prev=%g)\n",
+		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
 		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
 		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
 		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
 		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
-		    (double) test, m->when_set );
+		    which ? "y" : "x", (double) test, m->when_set );
 	    }
 	}
 	winding = nwinding;

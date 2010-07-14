@@ -111,7 +111,11 @@ return( t );
 	    else
 		tmax = t;
 	}
-    }
+    } else if ( low<.0001 && low>-.0001 )
+return( tmin );			/* Rounding errors */
+    else if ( high<.0001 && high>-.0001 )
+return( tmax );
+
 return( -1 );
 }
 
