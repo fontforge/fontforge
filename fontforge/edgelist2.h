@@ -36,6 +36,7 @@ typedef struct monotonic {
     uint8 yup;
     unsigned int isneeded : 1;
     unsigned int isunneeded : 1;
+    unsigned int mutual_collapse : 1;
     unsigned int exclude : 1;
     struct intersection *start;
     struct intersection *end;
