@@ -921,7 +921,7 @@ return( gwwv_save_filename(title,defaultfile,initial_filter) );
 }
 
 static void tinysleep(int microsecs) {
-    #if !defined(__MINGW32__)
+#if !defined(__MINGW32__)
     fd_set none;
     struct timeval timeout;
 
@@ -930,7 +930,7 @@ static void tinysleep(int microsecs) {
     timeout.tv_usec = microsecs;
 
     select(1,&none,&none,&none,&timeout);
-    #endif
+#endif
 }
 
 static void allow_events(void) {
