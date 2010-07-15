@@ -1487,6 +1487,14 @@ static void SplitMonotonicAt(Monotonic *m,int which,double coord,
 	id->new = false;
     } else {
 	t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,coord);
+#if 0
+	if ( t==-1 && m->next->s==m->s &&
+		(t = IterateSplineSolve(&m->next->s->splines[which],m->next->tstart,m->next->tend,coord))!=-1 )
+	    m=m->next;
+	else if ( t==-1 && m->prev->s==m->s &&
+		(t = IterateSplineSolve(&m->prev->s->splines[which],m->prev->tstart,m->prev->tend,coord))!=-1 )
+	    m=m->prev;
+#endif
 	if ( t==-1 )
 	    SOError("Intersection failed!\n");
 	othert = t;
@@ -1607,11 +1615,11 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 		    if ( (which==0 && (m1->b.minx!=m2->b.minx || m1->b.maxx!=m2->b.maxx)) ||
 			    (which==1 && (m1->b.miny!=m2->b.miny || m1->b.maxy!=m2->b.maxy)) ) {
 			ilist = SplitMonotonicsAt(m1,m2,which,low,ilist);
-			if ( (which==0 && rh>m1->b.maxx && rh<m1->next->b.maxx) ||
-				(which==1 && rh>m1->b.maxy && rh<m1->next->b.maxy))
+			if ( (which==0 && rh>m1->b.maxx && rh<=m1->next->b.maxx) ||
+				(which==1 && rh>m1->b.maxy && rh<=m1->next->b.maxy))
 			    m1 = m1->next;
-			if ( (which==0 && rh>m2->b.maxx && rh<m2->next->b.maxx) ||
-				(which==1 && rh>m2->b.maxy && rh<m2->next->b.maxy))
+			if ( (which==0 && rh>m2->b.maxx && rh<=m2->next->b.maxx) ||
+				(which==1 && rh>m2->b.maxy && rh<=m2->next->b.maxy))
 			    m2 = m2->next;
 			ilist = SplitMonotonicsAt(m1,m2,which,high,ilist);
 		    }
