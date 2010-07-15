@@ -4448,20 +4448,35 @@ return( false );
 		    s2->splines[0].c)*tempts[i]+s2->splines[0].d;
 	    y = ((s2->splines[1].a*tempts[i]+s2->splines[1].b)*tempts[i]+
 		    s2->splines[1].c)*tempts[i]+s2->splines[1].d;
+	    if ( s1->splines[0].c==0 )
+		x = s1->splines[0].d;
+	    if ( s1->splines[1].c==0 )
+		y = s1->splines[1].d;
 	    if ( (ac0 = s1->splines[0].c)<0 ) ac0 = -ac0;
 	    if ( (ac1 = s1->splines[1].c)<0 ) ac1 = -ac1;
 	    if ( ac0>ac1 )
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
-	    if ( tempts[i]>.999 && Closer(s1,s2,tempts[i],t,1,t))
+	    if ( tempts[i]>.999 && Closer(s1,s2,tempts[i],t,1,t)) {
 		tempts[i] = 1;
-	    else if ( tempts[i]<.001 && Closer(s1,s2,tempts[i],t,0,t))
+		x = s2->to->me.x; y = s2->to->me.y;
+	    } else if ( tempts[i]<.001 && Closer(s1,s2,tempts[i],t,0,t)) {
 		tempts[i] = 0;
-	    if ( t>.999 && Closer(s1,s2,tempts[i],t,tempts[i],1))
+		x = s2->from->me.x; y = s2->from->me.y;
+	    }
+	    /* I know we just did this, but we might have changed x,y so redo */
+	    if ( ac0>ac1 )
+		t = (x-s1->splines[0].d)/s1->splines[0].c;
+	    else
+		t = (y-s1->splines[1].d)/s1->splines[1].c;
+	    if ( t>.999 && Closer(s1,s2,tempts[i],t,tempts[i],1)) {
 		t = 1;
-	    else if ( t<.001 && Closer(s1,s2,tempts[i],t,tempts[i],0))
+		x = s1->to->me.x; y = s1->to->me.y;
+	    } else if ( t<.001 && Closer(s1,s2,tempts[i],t,tempts[i],0)) {
 		t = 0;
+		x = s1->from->me.x; y = s1->from->me.y;
+	    }
 	    if ( t<-.001 || t>1.001 || x<min1.x-.01 || y<min1.y-.01 || x>max1.x+.01 || y>max1.y+.01 )
 	continue;
 	    if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
