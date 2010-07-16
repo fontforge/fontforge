@@ -569,6 +569,7 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     continue;
 	} else
 	    factor /= 1.4;
+	*_t1 = t1; *_t2 = t2;
 	if ( error<1e-11 )	/* Error is actually the square of the error */
     break;			/* So this isn't as constraining as it looks */
 
@@ -577,7 +578,6 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
 	glen = esqrt(gt1*gt1 + gt2*gt2) * factor;
 	if ( glen==0 )
     break;
-	*_t1 = t1; *_t2 = t2;
 	t1 -= gt1/glen;
 	t2 -= gt2/glen;
 	if ( isnan(t1) || isnan(t2)) {
@@ -734,11 +734,11 @@ return( _AddIntersection(ilist,m1,m2,t1,t2,inter));
 }
 
 static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1,Monotonic *m2) {
-    /* Note that two monotonic cubics can still intersect in two points */
+    /* Note that two monotonic cubics can still intersect in multiple points */
     /*  so we can't just check if the splines are on opposite sides of each */
     /*  other at top and bottom */
     DBounds b;
-    const double error = .0001;
+    const double error = .00001;
     BasePoint pt;
     extended t1,t2;
     extended t1end = m1->tend, t2end = m2->tend;
@@ -838,7 +838,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    /*  that seemed to get rounding errors on the mac, so we do it */
 	    /*  like this now: */
 	    if ( y>b.maxy ) {
-		if ( y<b.maxy+diff/4 ) y = b.maxy;
+		if ( y<b.maxy+(63*diff/64) ) y = b.maxy;
 		else
 	break;
 	    }
@@ -858,13 +858,15 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		/* see comment above for these next lines */
 		if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
 		if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
+		x1o = x1; x2o = x2;
 	    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
 		/* A cross over has occured. (assume we have a small enough */
 		/*  region that three cross-overs can't have occurred) */
 		/* Use a binary search to track it down */
-		extended ytop, ybot, ytest;
-		ytop = y;
+		extended ytop, ybot, ytest, oldy;
+		oldy = ytop = y;
 		ybot = y-diff;
+		x1o = x1; x2o = x2;
 		while ( ytop!=ybot ) {
 		    extended t1t, t2t;
 		    ytest = (ytop+ybot)/2;
@@ -883,13 +885,12 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 		break;
 		    } else if ( (x1o>x2o) != ( x1>x2 ) ) {
-			ytop = ytest;
-		    } else {
 			ybot = ytest;
+		    } else {
+			ytop = ytest;
 		    }
 		}
-		x1o = x2o = (x1+x2)/2;
-		y = ytest;		/* Might be more than one intersection, keep going */
+		y = oldy;		/* Might be more than one intersection, keep going */
 	    } else {
 		x1o = x1; x2o = x2;
 	    }
@@ -930,7 +931,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	y1 = y2 = 0;
 	for ( x+=diff; ; x += diff ) {
 	    if ( x>b.maxx ) {
-		if ( x<b.maxx+diff/4 ) x = b.maxx;
+		if ( x<b.maxx+(63*diff/64) ) x = b.maxx;
 		else
 	break;
 	    }
@@ -950,13 +951,15 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		/* see comment above */
 		if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
 		if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
+		y1o = y1; y2o = y2;
 	    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
 		/* A cross over has occured. (assume we have a small enough */
 		/*  region that three cross-overs can't have occurred) */
 		/* Use a binary search to track it down */
-		extended xtop, xbot, xtest;
-		xtop = x;
+		extended xtop, xbot, xtest, oldx;
+		oldx = xtop = x;
 		xbot = x-diff;
+		y1o = y1; y2o = y2;
 		while ( xtop!=xbot ) {
 		    extended t1t, t2t;
 		    xtest = (xtop+xbot)/2;
@@ -975,13 +978,12 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 		break;
 		    } else if ( (y1o>y2o) != ( y1>y2 ) ) {
-			xtop = xtest;
-		    } else {
 			xbot = xtest;
+		    } else {
+			xtop = xtest;
 		    }
 		}
-		y1o = y2o = (y1+y2)/2;
-		x = xtest;
+		x = oldx;
 	    } else {
 		y1o = y1; y2o = y2;
 	    }
