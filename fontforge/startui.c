@@ -34,6 +34,18 @@
 #include <unistd.h>
 #include <dynamic.h>
 #include <stdlib.h>		/* getenv,setenv */
+#ifdef _NO_LIBPNG
+#  define PNGLIBNAME	"libpng"
+#else
+#  include <png.h>		/* for version number to find up shared image name */
+#  if !defined(PNG_LIBPNG_VER_SONUM) || PNG_LIBPNG_VER_SONUM<10
+#    define PNGLIBNAME	"libpng"
+#  else
+#    define xstr(s) str(s)
+#    define str(s) #s
+#    define PNGLIBNAME	"libpng" xstr(PNG_LIBPNG_VER_SONUM)
+#  endif
+#endif
 #ifdef __Mac
 # include </Developer/Headers/FlatCarbon/Files.h>
 # define FontInfo	MacFontInfo
@@ -168,7 +180,7 @@ static struct library_descriptor {
 	NULL,
 	-1
     },
-    { "libz", dlsymmod("deflateEnd"), "This is a prerequisite for reading png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/",
+    { "libz", dlsymmod("deflateEnd"), "This is a prerequisite for reading image png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/",
 #ifdef _NO_LIBPNG
 	0,
 #else
@@ -177,15 +189,7 @@ static struct library_descriptor {
 	NULL,
 	1
     },
-    { "libpng", dlsymmod("png_create_read_struct"), "This is one way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
-#ifdef _NO_LIBPNG
-	0,
-#else
-	1,
-#endif
-	"libz",
-	2 },
-    { "libpng12", dlsymmod("png_create_read_struct"), "This is another way to read png files.", "http://www.libpng.org/pub/png/libpng.html",
+    { PNGLIBNAME, dlsymmod("png_create_read_struct"), "This reads png image files.", "http://www.libpng.org/pub/png/libpng.html",
 #ifdef _NO_LIBPNG
 	0,
 #else
