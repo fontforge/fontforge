@@ -875,7 +875,12 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    x1 = ((m1->s->splines[0].a*t1t+m1->s->splines[0].b)*t1t+m1->s->splines[0].c)*t1t+m1->s->splines[0].d;
 		    x2 = ((m2->s->splines[0].a*t2t+m2->s->splines[0].b)*t2t+m2->s->splines[0].c)*t2t+m2->s->splines[0].d;
 		    if ( t1t==-1 || t2t==-1 ) {
-			SOError( "Can't find something in range. y=%g\n", ytest );
+			if ( t1t==-1 && (RealNear(ytest,m1->b.miny) || RealNear(ytest,m1->b.maxy)))
+			    /* OK */;
+			else if ( t2t==-1 && (RealNear(ytest,m2->b.miny) || RealNear(ytest,m2->b.maxy)))
+			    /* OK */;
+			else
+			    SOError( "Can't find something in range. y=%g\n", ytest );
 		break;
 		    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
 			pt.y = ytest; pt.x = (x1+x2)/2;
@@ -968,7 +973,12 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    y1 = ((m1->s->splines[1].a*t1t+m1->s->splines[1].b)*t1t+m1->s->splines[1].c)*t1t+m1->s->splines[1].d;
 		    y2 = ((m2->s->splines[1].a*t2t+m2->s->splines[1].b)*t2t+m2->s->splines[1].c)*t2t+m2->s->splines[1].d;
 		    if ( t1t==-1 || t2t==-1 ) {
-			SOError( "Can't find something in range. x=%g\n", (double) xtest );
+			if ( t1t==-1 && (RealNear(xtest,m1->b.minx) || RealNear(xtest,m1->b.maxx)))
+			    /* OK */;
+			else if ( t2t==-1 && (RealNear(xtest,m2->b.minx) || RealNear(xtest,m2->b.maxx)))
+			    /* OK */;
+			else
+			    SOError( "Can't find something in range. x=%g\n", (double) xtest );
 		break;
 		    } else if (( y1-y2<error && y1-y2>-error ) || xtop==xtest || xbot==xtest ) {
 			pt.x = xtest; pt.y = (y1+y2)/2;
