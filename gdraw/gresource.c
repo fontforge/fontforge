@@ -252,13 +252,15 @@ return;
     for ( i=j=0; i<rcur; ) {
 	if ( i!=j )
 	    _GResource_Res[j] = _GResource_Res[i];
-	for ( k=i+1; k<rcur && strcmp(_GResource_Res[i].res,_GResource_Res[k].res)==0; ++k ) {
+	for ( k=i+1; k<rcur && strcmp(_GResource_Res[j].res,_GResource_Res[k].res)==0; ++k ) {
 	    if (( !_GResource_Res[k].generic && (_GResource_Res[i].generic || _GResource_Res[i+1].new)) ||
 		    (_GResource_Res[k].generic && _GResource_Res[i].generic && _GResource_Res[i+1].new)) {
-		gfree(_GResource_Res[i].res); gfree(_GResource_Res[i].val);
+		gfree(_GResource_Res[j].res); gfree(_GResource_Res[j].val);
+		_GResource_Res[i].res=NULL;
 		_GResource_Res[j] = _GResource_Res[k];
 	    } else {
 		gfree(_GResource_Res[k].res); gfree(_GResource_Res[k].val);
+		_GResource_Res[k].res=NULL;
 	    }
 	}
 	i = k; ++j;
