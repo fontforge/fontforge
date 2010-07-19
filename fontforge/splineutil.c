@@ -4458,10 +4458,10 @@ return( false );
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
-	    if ( tempts[i]>.999 && Closer(s1,s2,tempts[i],t,1,t)) {
+	    if ( tempts[i]>.99996 && Closer(s1,s2,tempts[i],t,1,t)) {
 		tempts[i] = 1;
 		x = s2->to->me.x; y = s2->to->me.y;
-	    } else if ( tempts[i]<.001 && Closer(s1,s2,tempts[i],t,0,t)) {
+	    } else if ( tempts[i]<.00004 && Closer(s1,s2,tempts[i],t,0,t)) {
 		tempts[i] = 0;
 		x = s2->from->me.x; y = s2->from->me.y;
 	    }
@@ -4470,10 +4470,10 @@ return( false );
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
-	    if ( t>.999 && t<1.001 && Closer(s1,s2,tempts[i],t,tempts[i],1)) {
+	    if ( t>.99996 && t<1.001 && Closer(s1,s2,tempts[i],t,tempts[i],1)) {
 		t = 1;
 		x = s1->to->me.x; y = s1->to->me.y;
-	    } else if ( t<.001 && t>-.001 && Closer(s1,s2,tempts[i],t,tempts[i],0)) {
+	    } else if ( t<.00004 && t>-.001 && Closer(s1,s2,tempts[i],t,tempts[i],0)) {
 		t = 0;
 		x = s1->from->me.x; y = s1->from->me.y;
 	    }
