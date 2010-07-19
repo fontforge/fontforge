@@ -519,6 +519,120 @@ return( bound );
 return( t );
 }
 
+static int CloserT(Spline *s1,double test,double current,Spline *s2,double t2 ) {
+    double basex=((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
+    double basey=((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
+    double testx=((s2->splines[0].a*test+s2->splines[0].b)*test+s2->splines[0].c)*test+s2->splines[0].d;
+    double testy=((s2->splines[1].a*test+s2->splines[1].b)*test+s2->splines[1].c)*test+s2->splines[1].d;
+    double curx=((s2->splines[0].a*current+s2->splines[0].b)*current+s2->splines[0].c)*current+s2->splines[0].d;
+    double cury=((s2->splines[1].a*current+s2->splines[1].b)*current+s2->splines[1].c)*current+s2->splines[1].d;
+
+return( (testx-basex)*(testx-basex) + (testy-basey)*(testy-basey) <=
+	(curx-basex)*(curx-basex) + (cury-basey)*(cury-basey) );
+}
+
+static void ILReplaceMono(Intersection *il,Monotonic *m,Monotonic *otherm) {
+    MList *ml;
+
+    for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
+	if ( ml->m==m ) {
+	    ml->m = otherm;
+    break;
+	}
+    }
+}
+
+struct inter_data {
+    Monotonic *m, *otherm;
+    double t, othert;
+    BasePoint inter;
+    int new;
+};
+
+static void SplitMonotonicAtT(Monotonic *m,int which,double t,double coord,
+	struct inter_data *id) {
+    Monotonic *otherm = NULL;
+    double othert;
+    real cx,cy;
+    Spline1D *sx, *sy;
+
+    sx = &m->s->splines[0]; sy = &m->s->splines[1];
+    cx = ((sx->a*t+sx->b)*t+sx->c)*t+sx->d;
+    cy = ((sy->a*t+sy->b)*t+sy->c)*t+sy->d;
+    /* t might not be tstart/tend, but it could still produce a point which */
+    /*  (after rounding errors) is at the start/end point of the monotonic */
+    if ( t<=m->tstart || t>=m->tend ||
+	    ((cx<=m->b.minx || cx>=m->b.maxx) && (cy<=m->b.miny || cy>=m->b.maxy))) {
+	if ( t-m->tstart<m->tend-t ) {
+	    t = m->tstart;
+	    otherm = m->prev;
+	    othert = m->prev->tend;
+	} else {
+	    t = m->tend;
+	    otherm = m->next;
+	    othert = m->next->tstart;
+	}
+	sx = &m->s->splines[0]; sy = &m->s->splines[1];
+	cx = ((sx->a*t+sx->b)*t+sx->c)*t+sx->d;
+	cy = ((sy->a*t+sy->b)*t+sy->c)*t+sy->d;
+	if ( which==1 ) cy = coord; else if ( which==0 ) cx = coord;	/* Correct for rounding errors */
+	id->new = false;
+    } else {
+	othert = t;
+	otherm = chunkalloc(sizeof(Monotonic));
+	*otherm = *m;
+	m->next = otherm;
+	m->linked = otherm;
+	otherm->prev = m;
+	otherm->next->prev = otherm;
+	m->tend = t;
+	if ( otherm->end!=NULL ) {
+	    m->end = NULL;
+	    ILReplaceMono(otherm->end,m,otherm);
+	}
+	otherm->tstart = t; otherm->start = NULL;
+	if ( which==1 ) cy = coord; else if ( which==0 ) cx = coord;	/* Correct for rounding errors */
+	if ( m->xup ) {
+	    m->b.maxx = otherm->b.minx = cx;
+	} else {
+	    m->b.minx = otherm->b.maxx = cx;
+	}
+	if ( m->yup ) {
+	    m->b.maxy = otherm->b.miny = cy;
+	} else {
+	    m->b.miny = otherm->b.maxy = cy;
+	}
+	id->new = true;
+    }
+    id->m = m; id->otherm = otherm;
+    id->t = t; id->othert = othert;
+    id->inter.x = cx; id->inter.y = cy;
+}
+
+static void SplitMonotonicAt(Monotonic *m,int which,double coord,
+	struct inter_data *id) {
+    double t;
+    int low=0, high=0;
+
+    if (( which==0 && coord==m->b.minx ) || (which==1 && coord==m->b.miny))
+	low = true;
+    else if ( (which==0 && coord==m->b.maxx) || (which==1 && coord==m->b.maxy) )
+	high = true;
+
+    if ( low || high ) {
+	if ( (low && (&m->xup)[which]) || (high && !(&m->xup)[which]) ) {
+	    t = m->tstart;
+	} else if ( (low && !(&m->xup)[which]) || (high && (&m->xup)[which]) ) {
+	    t = m->tend;
+	}
+    } else {
+	t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,coord);
+	if ( t==-1 )
+	    SOError("Intersection failed!\n");
+    }
+    SplitMonotonicAtT(m,which,t,coord,id);
+}
+
 static extended Grad1(Spline1D *s1, Spline1D *s2,
 	extended t1,extended t2 ) {
     /* d/dt[12] (m1(t1).x-m2(t2).x)^2 + (m1(t1).y-m2(t2).y)^2 */
@@ -660,10 +774,11 @@ static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
 	closest = chunkalloc(sizeof(Intersection));
 	closest->inter = *inter;
 	closest->next = ilist;
+	ilist = closest;
     }
     AddSpline(closest,m1,t1);
     AddSpline(closest,m2,t2);
-return( closest );
+return( ilist );
 }
 
 static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
@@ -731,6 +846,45 @@ return( ilist );
 return( ilist );
 
 return( _AddIntersection(ilist,m1,m2,t1,t2,inter));
+}
+
+static Intersection *SplitMonotonicsAt(Monotonic *m1,Monotonic *m2,
+	int which,double coord,Intersection *ilist) {
+    struct inter_data id1, id2;
+    Intersection *check;
+
+    SplitMonotonicAt(m1,which,coord,&id1);
+    SplitMonotonicAt(m2,which,coord,&id2);
+    if ( !id1.new && !id2.new )
+return( ilist );
+    ilist = check = _AddIntersection(ilist,id1.m,id1.otherm,id1.t,id1.othert,&id2.inter);
+    ilist = _AddIntersection(ilist,id2.m,id2.otherm,id2.t,id2.othert,&id2.inter);	/* Use id1.inter to avoid rounding errors */
+    if ( check!=ilist )
+	IError("Added too many intersections.");
+return( ilist );
+}
+
+static Intersection *AddCloseIntersection(Intersection *ilist,Monotonic *m1,
+	Monotonic *m2,extended t1,extended t2,BasePoint *inter) {
+    struct inter_data id1, id2;
+    Intersection *check;
+
+    if ( t1<m1->tstart+.01 && CloserT(m1->s,m1->tstart,t1,m2->s,t2) )
+	t1 = m1->tstart;
+    else if ( t1>m1->tend-.01 && CloserT(m1->s,m1->tend,t1,m2->s,t2) )
+	t1 = m1->tend;
+    if ( t2<m2->tstart+.01 && CloserT(m2->s,m2->tstart,t2,m1->s,t1) )
+	t2 = m2->tstart;
+    else if ( t2>m2->tend-.01 && CloserT(m2->s,m2->tend,t2,m1->s,t1) )
+	t2 = m2->tend;
+
+    SplitMonotonicAtT(m1,-1,t1,0,&id1);
+    SplitMonotonicAtT(m2,-1,t2,0,&id2);
+    ilist = check = _AddIntersection(ilist,id1.m,id1.otherm,id1.t,id1.othert,&id2.inter);
+    ilist = _AddIntersection(ilist,id2.m,id2.otherm,id2.t,id2.othert,&id2.inter);	/* Use id1.inter to avoid rounding errors */
+    if ( check!=ilist )
+	IError("Added too many intersections.");
+return( ilist );
 }
 
 static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1,Monotonic *m2) {
@@ -1251,7 +1405,6 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
     extended t1s[10], t2s[10];
     Intersection *ilist=NULL;
     int i;
-    int wasc;
 
     for ( m1=ms; m1!=NULL; m1=m1->linked ) {
 	for ( m2=m1->linked; m2!=NULL; m2=m2->linked ) {
@@ -1260,21 +1413,23 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		    m2->b.miny > m1->b.maxy ||
 		    m2->b.maxy < m1->b.miny )
 	continue;		/* Can't intersect */;
-	    wasc = CoincidentIntersect(m1,m2,pts,t1s,t2s);
-	    if ( wasc || m1->s->knownlinear || m2->s->knownlinear ||
-		    (m1->s->splines[0].a==0 && m1->s->splines[1].a==0 &&
-		     m2->s->splines[0].a==0 && m2->s->splines[1].a==0 )) {
-		if ( !wasc && SplinesIntersect(m1->s,m2->s,pts,t1s,t2s)<=0 )
-	continue;
+	    if ( CoincidentIntersect(m1,m2,pts,t1s,t2s) ) {
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 		    if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 			    t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
-			ilist = AddIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
+			ilist = AddCloseIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
 		    }
 		}
-	continue;
-	    }
-	    ilist = FindMonotonicIntersection(ilist,m1,m2);
+	    } else if ( m1->s->knownlinear || m2->s->knownlinear ) {
+		if ( SplinesIntersect(m1->s,m2->s,pts,t1s,t2s)>0 )
+		    for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
+			if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
+				t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
+			    ilist = AddIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
+			}
+		    }
+	    } else
+		ilist = FindMonotonicIntersection(ilist,m1,m2);
 	}
     }
 
@@ -1448,115 +1603,6 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
     space[cnt] = NULL; space[cnt+1] = NULL;
     qsort(space,cnt,sizeof(Monotonic *),mcmp);
 return(cnt);
-}
-
-static void ILReplaceMono(Intersection *il,Monotonic *m,Monotonic *otherm) {
-    MList *ml;
-
-    for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
-	if ( ml->m==m ) {
-	    ml->m = otherm;
-    break;
-	}
-    }
-}
-
-struct inter_data {
-    Monotonic *m, *otherm;
-    double t, othert;
-    BasePoint inter;
-    int new;
-};
-
-static void SplitMonotonicAt(Monotonic *m,int which,double coord,
-	struct inter_data *id) {
-    Monotonic *otherm = NULL;
-    double t;
-    double othert;
-    int low=0, high=0;
-    double cx,cy;
-    Spline1D *sx, *sy;
-
-    if (( which==0 && coord==m->b.minx ) || (which==1 && coord==m->b.miny))
-	low = true;
-    else if ( (which==0 && coord==m->b.maxx) || (which==1 && coord==m->b.maxy) )
-	high = true;
-
-    if ( low || high ) {
-	if ( (low && (&m->xup)[which]) || (high && !(&m->xup)[which]) ) {
-	    t = m->tstart;
-	    otherm = m->prev;
-	    othert = m->prev->tend;
-	} else if ( (low && !(&m->xup)[which]) || (high && (&m->xup)[which]) ) {
-	    t = m->tend;
-	    otherm = m->next;
-	    othert = m->next->tstart;
-	}
-	sx = &m->s->splines[0]; sy = &m->s->splines[1];
-	cx = ((sx->a*t+sx->b)*t+sx->c)*t+sx->d;
-	cy = ((sy->a*t+sy->b)*t+sy->c)*t+sy->d;
-	if ( which ) cy = coord; else cx = coord;	/* Correct for rounding errors */
-	id->new = false;
-    } else {
-	t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,coord);
-#if 0
-	if ( t==-1 && m->next->s==m->s &&
-		(t = IterateSplineSolve(&m->next->s->splines[which],m->next->tstart,m->next->tend,coord))!=-1 )
-	    m=m->next;
-	else if ( t==-1 && m->prev->s==m->s &&
-		(t = IterateSplineSolve(&m->prev->s->splines[which],m->prev->tstart,m->prev->tend,coord))!=-1 )
-	    m=m->prev;
-#endif
-	if ( t==-1 )
-	    SOError("Intersection failed!\n");
-	othert = t;
-	otherm = chunkalloc(sizeof(Monotonic));
-	*otherm = *m;
-	m->next = otherm;
-	m->linked = otherm;
-	otherm->prev = m;
-	otherm->next->prev = otherm;
-	m->tend = t;
-	if ( otherm->end!=NULL ) {
-	    m->end = NULL;
-	    ILReplaceMono(otherm->end,m,otherm);
-	}
-	otherm->tstart = t; otherm->start = NULL;
-	sx = &m->s->splines[0]; sy = &m->s->splines[1];
-	cx = ((sx->a*t+sx->b)*t+sx->c)*t+sx->d;
-	cy = ((sy->a*t+sy->b)*t+sy->c)*t+sy->d;
-	if ( which ) cy = coord; else cx = coord;	/* Correct for rounding errors */
-	if ( m->xup ) {
-	    m->b.maxx = otherm->b.minx = cx;
-	} else {
-	    m->b.minx = otherm->b.maxx = cx;
-	}
-	if ( m->yup ) {
-	    m->b.maxy = otherm->b.miny = cy;
-	} else {
-	    m->b.miny = otherm->b.maxy = cy;
-	}
-	id->new = true;
-    }
-    id->m = m; id->otherm = otherm;
-    id->t = t; id->othert = othert;
-    id->inter.x = cx; id->inter.y = cy;
-}
-
-static Intersection *SplitMonotonicsAt(Monotonic *m1,Monotonic *m2,
-	int which,double coord,Intersection *ilist) {
-    struct inter_data id1, id2;
-    Intersection *check;
-
-    SplitMonotonicAt(m1,which,coord,&id1);
-    SplitMonotonicAt(m2,which,coord,&id2);
-    if ( !id1.new && !id2.new )
-return( ilist );
-    ilist = check = _AddIntersection(ilist,id1.m,id1.otherm,id1.t,id1.othert,&id2.inter);
-    ilist = _AddIntersection(ilist,id2.m,id2.otherm,id2.t,id2.othert,&id2.inter);	/* Use id1.inter to avoid rounding errors */
-    if ( check!=ilist )
-	IError("Added too many intersections.");
-return( ilist );
 }
 
 static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic **space,int cnt,
