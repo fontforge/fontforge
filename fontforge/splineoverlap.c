@@ -757,7 +757,7 @@ static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
     double dist, dx, dy, bestd=9e10;
 
     for ( il = ilist; il!=NULL; il=il->next ) {
-	if ( RealWithin(il->inter.x,inter->x,.01) && RealWithin(il->inter.y,inter->y,.01)) {
+	if ( Within16RoundingErrors(il->inter.x,inter->x) && Within16RoundingErrors(il->inter.y,inter->y)) {
 	    if ( (dx = il->inter.x-inter->x)<0 ) dx = -dx;
 	    if ( (dy = il->inter.y-inter->y)<0 ) dy = -dy;
 	    dist = dx+dy;
@@ -790,6 +790,37 @@ static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
     GradImproveInter(m1,m2,&t1,&t2,inter);
     if ( t1<m1->tstart || t1>m1->tend || t2<m2->tstart || t2>m2->tend )
 return( ilist );
+
+    if (( inter->x<=m1->b.minx || inter->x>=m1->b.maxx ) &&
+	    (inter->y<=m1->b.miny || inter->y>=m1->b.maxy) &&
+	    t1!=m1->tstart && t1!=m1->tend ) {
+	/* rounding errors. Multiple t values may lead to the same inter position */
+	/*  Things can get confused if we should be at the endpoints */
+	float xs = ((m1->s->splines[0].a*m1->tstart+m1->s->splines[0].b)*m1->tstart+m1->s->splines[0].c)*m1->tstart+m1->s->splines[0].d;
+	float ys = ((m1->s->splines[1].a*m1->tstart+m1->s->splines[1].b)*m1->tstart+m1->s->splines[1].c)*m1->tstart+m1->s->splines[1].d;
+	if ( xs==inter->x && ys==inter->y )
+	    t1 = m1->tstart;
+	else {
+	    float xe = ((m1->s->splines[0].a*m1->tend+m1->s->splines[0].b)*m1->tend+m1->s->splines[0].c)*m1->tend+m1->s->splines[0].d;
+	    float ye = ((m1->s->splines[1].a*m1->tend+m1->s->splines[1].b)*m1->tend+m1->s->splines[1].c)*m1->tend+m1->s->splines[1].d;
+	    if ( xe==inter->x && ye==inter->y )
+		t1 = m1->tend;
+	}
+    }
+    if (( inter->x<=m2->b.minx || inter->x>=m2->b.maxx ) &&
+	    (inter->y<=m2->b.miny || inter->y>=m2->b.maxy) &&
+	    t2!=m2->tstart && t2!=m2->tend ) {
+	float xs = ((m2->s->splines[0].a*m2->tstart+m2->s->splines[0].b)*m2->tstart+m2->s->splines[0].c)*m2->tstart+m2->s->splines[0].d;
+	float ys = ((m2->s->splines[1].a*m2->tstart+m2->s->splines[1].b)*m2->tstart+m2->s->splines[1].c)*m2->tstart+m2->s->splines[1].d;
+	if ( xs==inter->x && ys==inter->y )
+	    t2 = m2->tstart;
+	else {
+	    float xe = ((m2->s->splines[0].a*m2->tend+m2->s->splines[0].b)*m2->tend+m2->s->splines[0].c)*m2->tend+m2->s->splines[0].d;
+	    float ye = ((m2->s->splines[1].a*m2->tend+m2->s->splines[1].b)*m2->tend+m2->s->splines[1].c)*m2->tend+m2->s->splines[1].d;
+	    if ( xe==inter->x && ye==inter->y )
+		t2 = m2->tend;
+	}
+    }
 
 #if 0
     if (( m1->start==m2->start && m1->start!=NULL && RealNear(t1,m1->tstart) && RealNear(t2,m2->tstart)) ||
@@ -1181,23 +1212,18 @@ static void SubsetSpline1(Spline1D *subset,Spline1D *orig,
 static extended SplineContainsPoint(Monotonic *m,BasePoint *pt) {
     int which, nw;
     extended t;
-    BasePoint slope;
 
     which = ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny )? 0 : 1;
     nw = !which;
     t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
-    if ( t==-1 ) {
-	if ( (slope.x = (3*m->s->splines[0].a*t+2*m->s->splines[0].b)*t+m->s->splines[0].c)<0 )
-	    slope.x = -slope.x;
-	if ( (slope.y = (3*m->s->splines[1].a*t+2*m->s->splines[1].b)*t+m->s->splines[1].c)<0 )
-	    slope.y = -slope.y;
-    } else
-	slope.x = slope.y = 0;
-    if ( t==-1 || (slope.y>slope.x)!=which ) {
-	nw = which;
-	which = 1-which;
-	t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
-    }
+    if ( t!=-1 && Within4RoundingErrors((&pt->x)[nw],
+	   ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t +
+		m->s->splines[nw].c)*t + m->s->splines[nw].d ))
+return( t );
+
+    which = nw;
+    nw = !which;
+    t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
     if ( t!=-1 && Within4RoundingErrors((&pt->x)[nw],
 	   ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t +
 		m->s->splines[nw].c)*t + m->s->splines[nw].d ))
@@ -1237,7 +1263,10 @@ return( false );
     if ( cnt!=2 ) {
 	SetStartPoint(&pts[cnt],m2);
 	t2s[cnt] = m2->tstart;
-	if ( (t1s[cnt] = SplineContainsPoint(m1,&pts[cnt]))!=-1 )
+	if ( cnt==1 && pts[0].x==pts[1].x && pts[0].y==pts[1].y )
+	    /* This happened once, when working with two splines with a common*/
+	    /*  start point, and it lead to errors. So it's not a silly check*/;
+	else if ( (t1s[cnt] = SplineContainsPoint(m1,&pts[cnt]))!=-1 )
 	    ++cnt;
     }
 
@@ -2318,7 +2347,7 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	}
 	lastml = FindMLOfM(curil,finalm);
 	if ( lastml==NULL ) {
-	    IError("Could not find finalm");
+	    SOError("Could not find finalm");
 	    /* Try to preserve direction */
 	    for ( ml=curil->monos; ml!=NULL && (!ml->m->isneeded || ml->m->end==curil); ml=ml->next );
 	    if ( ml==NULL )
