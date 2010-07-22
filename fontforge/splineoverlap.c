@@ -467,10 +467,10 @@ return;
 }
 
 static void SetStartPoint(BasePoint *pt,Monotonic *m) {
-    if ( m->tstart==0 )
-	*pt = m->s->from->me;
-    else if ( m->start!=NULL )
+    if ( m->start!=NULL )
 	*pt = m->start->inter;
+    else if ( m->tstart==0 )
+	*pt = m->s->from->me;
     else {
 	pt->x = ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart +
 		m->s->splines[0].c)*m->tstart + m->s->splines[0].d;
@@ -480,10 +480,10 @@ static void SetStartPoint(BasePoint *pt,Monotonic *m) {
 }
 
 static void SetEndPoint(BasePoint *pt,Monotonic *m) {
-    if ( m->tend==1.0 )
-	*pt = m->s->to->me;
-    else if ( m->end!=NULL )
+    if ( m->end!=NULL )
 	*pt = m->end->inter;
+    else if ( m->tend==1.0 )
+	*pt = m->s->to->me;
     else {
 	pt->x = ((m->s->splines[0].a*m->tend+m->s->splines[0].b)*m->tend +
 		m->s->splines[0].c)*m->tend + m->s->splines[0].d;
@@ -522,10 +522,10 @@ return( t );
 static int CloserT(Spline *s1,double test,double current,Spline *s2,double t2 ) {
     double basex=((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
     double basey=((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
-    double testx=((s2->splines[0].a*test+s2->splines[0].b)*test+s2->splines[0].c)*test+s2->splines[0].d;
-    double testy=((s2->splines[1].a*test+s2->splines[1].b)*test+s2->splines[1].c)*test+s2->splines[1].d;
-    double curx=((s2->splines[0].a*current+s2->splines[0].b)*current+s2->splines[0].c)*current+s2->splines[0].d;
-    double cury=((s2->splines[1].a*current+s2->splines[1].b)*current+s2->splines[1].c)*current+s2->splines[1].d;
+    double testx=((s1->splines[0].a*test+s1->splines[0].b)*test+s1->splines[0].c)*test+s1->splines[0].d;
+    double testy=((s1->splines[1].a*test+s1->splines[1].b)*test+s1->splines[1].c)*test+s1->splines[1].d;
+    double curx=((s1->splines[0].a*current+s1->splines[0].b)*current+s1->splines[0].c)*current+s1->splines[0].d;
+    double cury=((s1->splines[1].a*current+s1->splines[1].b)*current+s1->splines[1].c)*current+s1->splines[1].d;
 
 return( (testx-basex)*(testx-basex) + (testy-basey)*(testy-basey) <=
 	(curx-basex)*(curx-basex) + (cury-basey)*(cury-basey) );
@@ -869,14 +869,24 @@ static Intersection *AddCloseIntersection(Intersection *ilist,Monotonic *m1,
     struct inter_data id1, id2;
     Intersection *check;
 
-    if ( t1<m1->tstart+.01 && CloserT(m1->s,m1->tstart,t1,m2->s,t2) )
+    if ( t1<m1->tstart+.01 && CloserT(m1->s,m1->tstart,t1,m2->s,t2) ) {
+	if ( m1->start!=NULL )	/* Since we use the m2 inter value, life gets confused if we've already got a different intersection here */
+return( ilist );
 	t1 = m1->tstart;
-    else if ( t1>m1->tend-.01 && CloserT(m1->s,m1->tend,t1,m2->s,t2) )
+    } else if ( t1>m1->tend-.01 && CloserT(m1->s,m1->tend,t1,m2->s,t2) ) {
+	if ( m1->end!=NULL )
+return( ilist );
 	t1 = m1->tend;
-    if ( t2<m2->tstart+.01 && CloserT(m2->s,m2->tstart,t2,m1->s,t1) )
+    }
+    if ( t2<m2->tstart+.01 && CloserT(m2->s,m2->tstart,t2,m1->s,t1) ) {
+	if ( m2->start!=NULL )
+return( ilist );
 	t2 = m2->tstart;
-    else if ( t2>m2->tend-.01 && CloserT(m2->s,m2->tend,t2,m1->s,t1) )
+    } else if ( t2>m2->tend-.01 && CloserT(m2->s,m2->tend,t2,m1->s,t1) ) {
+	if ( m2->end!=NULL )
+return( ilist );
 	t2 = m2->tend;
+    }
 
     SplitMonotonicAtT(m1,-1,t1,0,&id1);
     SplitMonotonicAtT(m2,-1,t2,0,&id2);
@@ -1176,10 +1186,13 @@ static extended SplineContainsPoint(Monotonic *m,BasePoint *pt) {
     which = ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny )? 0 : 1;
     nw = !which;
     t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
-    if ( (slope.x = (3*m->s->splines[0].a*t+2*m->s->splines[0].b)*t+m->s->splines[0].c)<0 )
-	slope.x = -slope.x;
-    if ( (slope.y = (3*m->s->splines[1].a*t+2*m->s->splines[1].b)*t+m->s->splines[1].c)<0 )
-	slope.y = -slope.y;
+    if ( t==-1 ) {
+	if ( (slope.x = (3*m->s->splines[0].a*t+2*m->s->splines[0].b)*t+m->s->splines[0].c)<0 )
+	    slope.x = -slope.x;
+	if ( (slope.y = (3*m->s->splines[1].a*t+2*m->s->splines[1].b)*t+m->s->splines[1].c)<0 )
+	    slope.y = -slope.y;
+    } else
+	slope.x = slope.y = 0;
     if ( t==-1 || (slope.y>slope.x)!=which ) {
 	nw = which;
 	which = 1-which;
@@ -1402,12 +1415,13 @@ static void Validate(Monotonic *ms, Intersection *ilist) {
 static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
     Monotonic *m1, *m2;
     BasePoint pts[9];
-    extended t1s[10], t2s[10];
+    extended t1s[10], t2s[10], oldtend;
     Intersection *ilist=NULL;
     int i;
 
     for ( m1=ms; m1!=NULL; m1=m1->linked ) {
 	for ( m2=m1->linked; m2!=NULL; m2=m2->linked ) {
+	    oldtend = m2->tend;
 	    if ( m2->b.minx > m1->b.maxx ||
 		    m2->b.maxx < m1->b.minx ||
 		    m2->b.miny > m1->b.maxy ||
@@ -1418,6 +1432,8 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		    if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 			    t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
 			ilist = AddCloseIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
+			if ( m2->linked!=NULL && m2->linked->s==m2->s && m2->linked->tend<=oldtend )
+			    m2 = m2->linked;
 		    }
 		}
 	    } else if ( m1->s->knownlinear || m2->s->knownlinear ) {
@@ -1426,10 +1442,15 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 			if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 				t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
 			    ilist = AddIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
+			    if ( m2->linked!=NULL && m2->linked->s==m2->s && m2->linked->tend<=oldtend )
+				m2 = m2->linked;
 			}
 		    }
-	    } else
+	    } else {
 		ilist = FindMonotonicIntersection(ilist,m1,m2);
+		while ( m2->linked!=NULL && m2->linked->s==m2->s && m2->linked->tend<=oldtend )
+		    m2 = m2->linked;
+	    }
 	}
     }
 
@@ -1629,6 +1650,8 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 		low = m1->b.miny>m2->b.miny ? m1->b.miny : m2->b.miny;
 		high = m1->b.maxy<m2->b.maxy ? m1->b.maxy : m2->b.maxy;
 	    }
+	    if ( low==high )
+    continue;			/* One ends, the other begins. No overlap really */
 #define DECIMATE	32
 	    incr = (high-low)/DECIMATE;
 	    neg_cnt = pos_cnt=0;
