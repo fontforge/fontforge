@@ -1727,6 +1727,54 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 return( ilist );
 }
 
+static void MonosMarkConnected(Monotonic *startm,int needed,double test,int which) {
+    Monotonic *m;
+    /* If a monotonic is needed, then all monotonics connected to it should */
+    /*  also be needed -- until we hit an intersection */
+
+    for ( m=startm; ; ) {
+	if ( m->isneeded || m->isunneeded ) {
+	    if ( m->isneeded!=needed )
+		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
+		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
+		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
+		    which ? "y" : "x", (double) test, m->when_set );
+	} else {
+	    m->isneeded = needed;
+	    m->isunneeded = !needed;
+	    m->when_set = test;
+	}
+	if ( m->end!=NULL )
+    break;
+	m=m->next;
+	if ( m==startm )
+    break;
+    }
+
+    for ( m=startm; ; ) {
+	if ( m->start!=NULL )
+    break;
+	m=m->prev;
+	if ( m==startm )
+    break;
+	if ( m->isneeded || m->isunneeded ) {
+	    if ( m->isneeded!=needed )
+		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
+		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
+		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
+		    which ? "y" : "x", (double) test, m->when_set );
+	} else {
+	    m->isneeded = needed;
+	    m->isunneeded = !needed;
+	    m->when_set = test;
+	}
+    }
+}
+
 static int IsNeeded(enum overlap_type ot,int winding, int nwinding, int ew, int new) {
     if ( ot==over_remove || ot==over_rmselected ) {
 return( winding==0 || nwinding==0 );
@@ -1827,8 +1875,9 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 		}
 	    }
 	    if ( !m->isneeded && !m->isunneeded ) {
-		m->isneeded = needed; m->isunneeded = !needed;
-		m->when_set = test;		/* Debugging */
+		MonosMarkConnected(m,needed,test,which);
+		/* m->isneeded = needed; m->isunneeded = !needed; */
+		/* m->when_set = test;		*//* Debugging */
 	    } else if ( m->isneeded!=needed || m->isunneeded!=!needed ) {
 		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
 		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
