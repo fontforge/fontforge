@@ -1701,15 +1701,19 @@ static int MV_TextChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	MetricsView *mv = GGadgetGetUserData(g);
-	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	int pos = e->u.control.u.tf_changed.from_pulldown;
+	if ( pos!=-1 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(g,&len);
-	    GTextInfo *cur = ti[e->u.control.u.tf_changed.from_pulldown];
+	    GTextInfo *cur = ti[pos];
 	    int type = (intpt) cur->userdata;
 	    if ( type < 0 )
 		MVLoadWordList(mv,type);
-	    else if ( cur->text!=NULL && cur->text[0]==0x200b ) 	/* Zero width space, flag for glyph names */
-		MVFigureGlyphNames(mv,cur->text+1);
+	    else if ( cur->text!=NULL ) {
+		mv->word_index = pos;
+		if ( cur->text[0]==0x200b )	/* Zero width space, flag for glyph names */
+		    MVFigureGlyphNames(mv,cur->text+1);
+	    }
 	}
 	MVTextChanged(mv);
     }
@@ -2517,7 +2521,8 @@ static void _MVMenuScale( MetricsView *mv, int mid ) {
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
 	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,mv->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
-	}
+	} else
+	    mv->pixelsize_set_by_window = false;
     }
     MVReKern(mv);
     MVSetVSb(mv);
@@ -3382,9 +3387,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].refs==NULL;
 	  break;
 	  case MID_Paste:
-#if 0	/* Paste should always be enabled so textfields will get the event */
-	    mi->ti.disabled = i==-1 ||
-		(!CopyContainsSomething() &&
+	    mi->ti.disabled = !CopyContainsSomething() &&
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/png") &&
 #endif
@@ -3395,8 +3398,8 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/ps") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps"));
-#endif
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps") &&
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"STRING");
 	  break;
 	}
     }
