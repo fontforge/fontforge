@@ -2434,7 +2434,7 @@ static void GListFSelectOne(GGadget *g, int32 pos) {
     int i;
 
     for ( i=0; i<gl->ltot; ++i )
-	gl->ti[pos]->selected = false;
+	gl->ti[i]->selected = false;
     if ( pos>=gl->ltot ) pos = gl->ltot-1;
     if ( pos<0 ) pos = 0;
     if ( gl->ltot>0 ) {
