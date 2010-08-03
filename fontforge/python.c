@@ -10568,6 +10568,7 @@ ff_gs_bit(use_typo_metrics)
 ff_gs_bit(weight_width_slope_only)
 ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
+ff_gs_bit(head_optimized_for_cleartype)
 
 static PyObject *PyFF_Font_get_sfntRevision(PyFF_Font *self,void *closure) {
     int version = self->fv->sf->sfntRevision;
@@ -11898,6 +11899,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"os2_fstype",
 	 (getter)PyFF_Font_get_OS2_fstype, (setter)PyFF_Font_set_OS2_fstype,
 	 "OS/2 fstype", NULL},
+    {"head_optimized_for_cleartype",
+	 (getter)PyFF_Font_get_head_optimized_for_cleartype, (setter)PyFF_Font_set_head_optimized_for_cleartype,
+	 "Whether the font is optimized for cleartype", NULL},
     {"hhea_linegap",
 	 (getter)PyFF_Font_get_OS2_linegap, (setter)PyFF_Font_set_OS2_linegap,
 	 "hhea linegap", NULL},
