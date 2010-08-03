@@ -3387,7 +3387,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].refs==NULL;
 	  break;
 	  case MID_Paste:
-	    mi->ti.disabled = !CopyContainsSomething() &&
+#if 0	/* Paste should always be enabled so textfields will get the event */
+	    mi->ti.disabled = i==-1 ||
+		(!CopyContainsSomething() &&
 #ifndef _NO_LIBPNG
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/png") &&
 #endif
@@ -3398,8 +3400,8 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #endif
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/bmp") &&
 		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/ps") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps") &&
-		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"STRING");
+		    !GDrawSelectionHasType(mv->gw,sn_clipboard,"image/eps"));
+#endif
 	  break;
 	}
     }
