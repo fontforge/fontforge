@@ -7195,7 +7195,7 @@ exit( 1 );
     if ( !haddupenc )
 	SFD_DoAltUnis(sf);
     else
-	AltUniFigure(sf,sf->map);
+	AltUniFigure(sf,sf->map,true);
     if ( sf->sfd_version<2 )
 	SFD_AssignLookups((SplineFont1 *) sf);
     if ( !hadtimes )

@@ -1042,7 +1042,7 @@ void SFSplinesFromLayers(SplineFont *sf,int flag) {
 }
 #endif
 
-void AltUniFigure(SplineFont *sf,EncMap *map) {
+void AltUniFigure(SplineFont *sf,EncMap *map,int check_dups) {
 }
 
 void AltUniAdd(SplineChar *sc,int uni) {
