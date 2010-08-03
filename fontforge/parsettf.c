@@ -5630,13 +5630,16 @@ static void SymbolFixup(struct ttfinfo *info) {
     map->enccount = max;
 }
 
-void AltUniFigure(SplineFont *sf,EncMap *map) {
+void AltUniFigure(SplineFont *sf,EncMap *map,int check_dups) {
     int i,gid;
 
     if ( map->enc!=&custom ) {
 	for ( i=0; i<map->enccount; ++i ) if ( (gid = map->map[i])!=-1 ) {
 	    int uni = UniFromEnc(i,map->enc);
-	    AltUniAdd_DontCheckDups(sf->glyphs[gid],uni);
+	    if (check_dups)
+		AltUniAdd(sf->glyphs[gid],uni);
+	    else
+		AltUniAdd_DontCheckDups(sf->glyphs[gid],uni);
 	}
     }
 }
@@ -5749,7 +5752,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     }
     sf->map = info->map;
     sf->uni_interp = info->uni_interp;
-    AltUniFigure(sf,sf->map);
+    AltUniFigure(sf,sf->map,false);
     NameConsistancyCheck(sf, sf->map);
 }
 
