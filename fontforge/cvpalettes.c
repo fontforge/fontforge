@@ -2967,6 +2967,9 @@ static void BVToolsMouse(BitmapView *bv, GEvent *event) {
     int isstylus = event->u.mouse.device!=NULL && strcmp(event->u.mouse.device,"stylus")==0;
     int styluscntl = isstylus && (event->u.mouse.state&0x200);
 
+    if(j >= 2)
+return;			/* If the wm gave me a window the wrong size */
+
     pos = i*2 + j;
     GGadgetEndPopup();
     if ( pos<0 || pos>=bvt_max )
