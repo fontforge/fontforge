@@ -150,7 +150,7 @@ return( defwid );
 static int svg_pathdump(FILE *file, SplineSet *spl, int lineout,
 	int forceclosed, int do_clips) {
     BasePoint last;
-    char buffer[60];
+    char buffer[85];
     int closed=false;
     Spline *sp, *first;
     /* as I see it there is nothing to be gained by optimizing out the */
