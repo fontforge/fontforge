@@ -4644,14 +4644,14 @@ SplineSet *LayerUnAllSplines(Layer *layer) {
 	if ( r==NULL )
 return( NULL );
 	spl = r->layers[0].splines;
-	r = r->next;
+	do { r = r->next; } while ( r!=NULL && r->layers[0].splines==NULL );
     }
     while ( r!=NULL ) {
 	while ( spl!=NULL && spl->next!=r->layers[0].splines )
 	    spl = spl->next;
 	spl->next = NULL;
 	spl = r->layers[0].splines;
-	r = r->next;
+	do { r = r->next; } while ( r!=NULL && r->layers[0].splines==NULL );
     }
 return( layer->splines );
 }
