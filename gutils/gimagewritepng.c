@@ -65,7 +65,7 @@ static int loadpng() {
 	fprintf(stderr,"%s\n", dlerror());
 return( 0 );
     }
-#  if !defined(PNG_LIBPNG_VER_SONUM) || PNG_LIBPNG_VER_SONUM<10
+#  if !defined(PNG_LIBPNG_VER_MAJOR) || (PNG_LIBPNG_VER_MAJOR==1 && PNG_LIBPNG_VER_MINOR<2)
 /* Early versions are called libpng. Later libpng10/libpng12/libpng14... */
     libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
 #    ifdef SO_2_EXT
@@ -75,7 +75,7 @@ return( 0 );
 #  else		/* After version 1.2.1 (I think) dynamic libpng is called libpng12/libpng14... */
 #    define xstr(s) str(s)
 #    define str(s) #s
-#    define PNGLIBNAME	"libpng" xstr(PNG_LIBPNG_VER_SONUM)
+#    define PNGLIBNAME	"libpng" xstr(PNG_LIBPNG_VER_MAJOR) xstr(PNG_LIBPNG_VER_MINOR)
     libpng = dlopen(PNGLIBNAME SO_EXT,RTLD_LAZY);
 #    ifdef SO_0_EXT
     if ( libpng==NULL )
