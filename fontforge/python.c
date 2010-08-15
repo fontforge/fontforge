@@ -10504,6 +10504,7 @@ ff_gs_strnull(copyright)
 ff_gs_strnull(xuid)
 ff_gs_strnull(fondname)
 ff_gs_strnull(woffMetadata)
+ff_gs_strnull(defbasefilename)
 
 ff_gs_cidstrnull(fontname)
 ff_gs_cidstrnull(familyname)
@@ -11725,6 +11726,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"sfd_path",
 	 (getter)PyFF_Font_get_sfd_path, (setter)PyFF_cant_set,
 	 "filename of the sfd file containing this font (if any) (readonly)", NULL},
+    {"default_base_filename",
+         (getter)PyFF_Font_get_defbasefilename, (setter)PyFF_Font_set_defbasefilename,
+	 "The default base for the filename when generating a font", NULL},
     {"fontname",
 	 (getter)PyFF_Font_get_fontname, (setter)PyFF_Font_set_fontname,
 	 "font name", NULL},
