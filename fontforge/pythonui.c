@@ -296,7 +296,7 @@ return( NULL );
 	}
 	if (PyTuple_GetItem(args,1)!=Py_None &&
 		!PyCallable_Check(PyTuple_GetItem(args,1))) {
-	    PyErr_Format(PyExc_TypeError, "First argument is not callable" );
+	    PyErr_Format(PyExc_TypeError, "Second argument is not callable" );
 return( NULL );
 	}
 	flags = FlagsFromTuple(PyTuple_GetItem(args,3), menuviews );
