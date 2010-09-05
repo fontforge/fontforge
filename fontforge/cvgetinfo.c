@@ -903,6 +903,11 @@ static void AI_Display(GIData *ci,AnchorPoint *ap) {
     unichar_t uval[40];
     AnchorPoint *aps;
 
+    if ( ap==NULL) {
+	SCUpdateAll(ci->sc);
+return;
+    }
+
     ci->ap = ap;
     for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next )
 	aps->selected = false;
