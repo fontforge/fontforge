@@ -4286,7 +4286,7 @@ return( 0 );
     if ( t1max==-1 || t1min==-1 || t2max==-1 || t1min==-1 )
 return( 0 );
     t1diff = (t1max-t1min)/64.0;
-    if ( t1diff==0 )
+    if (RealNear(t1diff,0))
 return( 0 );
 
     t1 = t1min; t2 = t2min;
