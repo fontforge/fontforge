@@ -1337,7 +1337,7 @@ int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer, int onlyacc
 	     unicodeenc==0x1fef || unicodeenc==0x1ffd || unicodeenc==0x1ffe))
 return( false );
 
-    if ( iszerowidth(unicodeenc) ||
+    if ((unicodeenc <= 0xffff && iszerowidth(unicodeenc)) ||
 	    (unicodeenc>=0x2000 && unicodeenc<=0x2015 ))
 return( !onlyaccents );
 
