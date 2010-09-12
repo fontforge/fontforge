@@ -62,7 +62,7 @@
 #define PyMODINIT_FUNC void
 #endif
 
-#if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 5)
+#if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 7)
 #define PyBytesObject PyStringObject
 #define PyBytes_Type PyString_Type
 
