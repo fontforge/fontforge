@@ -2366,7 +2366,7 @@ return;
 static void GTextFieldSetTitle(GGadget *g,const unichar_t *tit) {
     GTextField *gt = (GTextField *) g;
     unichar_t *old = gt->oldtext;
-    if ( u_strcmp(tit,gt->text)==0 )	/* If it doesn't change anything, then don't trash undoes or selection */
+    if ( tit==NULL || u_strcmp(tit,gt->text)==0 )	/* If it doesn't change anything, then don't trash undoes or selection */
 return;
     gt->oldtext = gt->text;
     gt->sel_oldstart = gt->sel_start; gt->sel_oldend = gt->sel_end; gt->sel_oldbase = gt->sel_base;
