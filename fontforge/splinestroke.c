@@ -89,7 +89,7 @@ typedef struct strokecontext {
     unsigned int open: 1;	/* Original is an open contour */
     unsigned int remove_inner: 1;
     unsigned int remove_outer: 1;
-    /* unsigned int rotate_relative_to_direction: 1;	/* Rotate the polygon pen so it maintains the same orientation with respect to the contour's slope */
+    /* unsigned int rotate_relative_to_direction: 1; */	/* Rotate the polygon pen so it maintains the same orientation with respect to the contour's slope */
     /* Um, the above is essentially equivalent to a circular pen. No point in duplicating it */
     unsigned int leave_users_center: 1;			/* Don't move the pen so its center is at the origin */
     unsigned int scaled_or_rotated: 1;

@@ -1587,8 +1587,8 @@ void SCGuessHintInstancesList( SplineChar *sc,int layer,StemInfo *hstem,StemInfo
     
     if ( hstem == NULL && vstem == NULL && dstem == NULL )
 return;
-    /* If all stems already have active zones assigned (actual for .sfd
-    /* files), then there is no need to wast time generating glyph data for
+    /* If all stems already have active zones assigned (actual for .sfd */
+    /* files), then there is no need to wast time generating glyph data for */
     /* this glyph */
     test = hstem;
     while ( !hneeds_gd && test != NULL ) {
@@ -1747,10 +1747,10 @@ return( true );
         prev = cur; cur = dn;
 
         /* Compare the given stem with each of the existing diagonal stem
-        /* hints. First ensure that it is not an exact duplicate of an already
-        /* added stem. Then test if unit vectors are parallel and edges colinear.
-        /* In this case we should either preserve the existing stem or replace
-        /* it with the new one, but not keep them both */
+         * hints. First ensure that it is not an exact duplicate of an already
+         * added stem. Then test if unit vectors are parallel and edges colinear.
+         * In this case we should either preserve the existing stem or replace
+         * it with the new one, but not keep them both */
         if (test->unit.x == dn->unit.x && test->unit.y == dn->unit.y &&
             test->left.x == dn->left.x && test->left.y == dn->left.y &&
             test->right.x == dn->right.x && test->right.y == dn->right.y ) {
@@ -1785,7 +1785,7 @@ return( false );
             }
         } else
             overlap = true;
-        /* It's probably a colinear dstem, as in older SFD files. Treat
+        /* It's probably a colinear dstem, as in older SFD files. Treat */
         /* it as one more instance for the already added stem */
         if ( !overlap ) {
             for ( hi=dn->where; hi->next != NULL; hi = hi->next ) ;
@@ -1793,8 +1793,8 @@ return( false );
             hi->next->begin = ibegin; hi->next->end = iend;
             DStemInfoFree( test );
 return( false );
-        /* The found stem is close but not identical to the stem we
-        /* are going to add. So just replace the older stem with the
+        /* The found stem is close but not identical to the stem we  */
+        /* are going to add. So just replace the older stem with the */
         /* new one */
         } else {
             test->next = dn->next;
@@ -1808,10 +1808,10 @@ return( true );
     }
     
     /* Insert the given stem to the list by such a way that diagonal 
-    /* stems are ordered by the X coordinate of the left edge key point, and 
-    /* by Y if X is the same. The order is arbitrary, but may be essential for
-    /* things like "W". So we should be sure that the autoinstructor will 
-    /* process diagonals from left to right. */
+     * stems are ordered by the X coordinate of the left edge key point, and 
+     * by Y if X is the same. The order is arbitrary, but may be essential for
+     * things like "W". So we should be sure that the autoinstructor will 
+     * process diagonals from left to right. */
     base = ( test->unit.y < 0 ) ? &test->right : &test->left;
     nbase = ( (*ds)->unit.y < 0 ) ? &(*ds)->right : &(*ds)->left;
 
@@ -2882,12 +2882,12 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
         /* A real diagonal stem should consist of one or more continuous
-        /* ranges. Thus the number of active zones should be less then the
-        /* number of stem chunks (i. e. pairs of the opposite points). If
-        /* each chunk has its own active zone, then we probably have got
-        /* not a real stem, but rather two (or more) separate point pairs,
-        /* which occasionally happened to have nearly the same vectors and 
-        /* to be positioned on the same lines */
+         * ranges. Thus the number of active zones should be less then the
+         * number of stem chunks (i. e. pairs of the opposite points). If
+         * each chunk has its own active zone, then we probably have got
+         * not a real stem, but rather two (or more) separate point pairs,
+         * which occasionally happened to have nearly the same vectors and 
+         * to be positioned on the same lines */
 	if ( stem->toobig )
     continue;
 	

@@ -8609,12 +8609,12 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCUpdateAll(cv->b.sc);
 }
 
-/* This is an improved version of the older CVTwoForePointsSelected function.
-/* Unlike the former, it doesn't just check if there are exactly two points
-/* selected, but rather returns the number of selected points (whatever this
-/* number can be) and puts references to those points into an array. It is up
-/* to the calling code to see if the returned result is satisfiable (there
-/* should be exactly two points selected for specifying a vertical or
+/* This is an improved version of the older CVTwoForePointsSelected function. */
+/* Unlike the former, it doesn't just check if there are exactly two points   */
+/* selected, but rather returns the number of selected points (whatever this  */
+/* number can be) and puts references to those points into an array. It is up */
+/* to the calling code to see if the returned result is satisfiable (there    */
+/* should be exactly two points selected for specifying a vertical or         */
 /* horizontal stem and four points for a diagonal stem). */
 static int CVNumForePointsSelected(CharView *cv, BasePoint **bp) {
     SplineSet *spl;

@@ -12674,15 +12674,15 @@ static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
     int separation= -1, touch=0, do_autokern=false, only_closer=0;
     double class_error_distance;
     /* arguments:
-    /*  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
-    /*  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, char *after_sub_name])
-    /*  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [, int only_closer, char *after_sub_name])
-    /*  (char *lookupname, char *newsubtabname, int separation, double err [, int only_closer, char *after_sub_name])
-    /* First is fully specified set of classes with offsets cnt=5/6*/
-    /* Second fully specified set of classes, to be autokerned cnt=5/7*/
-    /* Third two lists of glyphs to be turned into classes and then autokerned cnt=6/8*/
-    /* Fourth turns the selection into a list of glyphs, to be used both left and right for two sets of classes to be autokerned cnt=4/6*/
-
+     *  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
+     *  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, char *after_sub_name])
+     *  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [, int only_closer, char *after_sub_name])
+     *  (char *lookupname, char *newsubtabname, int separation, double err [, int only_closer, char *after_sub_name])
+     * First is fully specified set of classes with offsets cnt=5/6
+     * Second fully specified set of classes, to be autokerned cnt=5/7
+     * Third two lists of glyphs to be turned into classes and then autokerned cnt=6/8
+     * Fourth turns the selection into a list of glyphs, to be used both left and right for two sets of classes to be autokerned cnt=4/6
+     */
     if ( (acnt = PySequence_Size(args))<4 ) {
 	PyErr_Format(PyExc_EnvironmentError, "Too few arguments.");
 return( NULL );

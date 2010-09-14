@@ -42,7 +42,7 @@
 
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
-/* Currently trying to support the version of december 2008, Version 1.8.
+/* Currently trying to support the version of december 2008, Version 1.8. */
 /* For the previous version (March 2006), #define FF_V1_6 */
 
 /* Ambiguities */

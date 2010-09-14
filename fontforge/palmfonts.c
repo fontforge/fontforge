@@ -472,7 +472,7 @@ return( true );
 		    test->pixelsize,base->pixelsize, i);
 return( false );
 	}
-	/* Can't just use the glyph's max/min properties at this point, as some glyphs may contain
+	/* Can't just use the glyph's max/min properties at this point, as some glyphs may contain */
 	/* references, in which case those properties would be mostly irrelevant */
 	BDFCharQuickBounds( test->glyphs[gid],&ib,0,0,false,true );
 	if ( !warned &&

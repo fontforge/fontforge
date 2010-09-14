@@ -849,21 +849,21 @@ static int totcnt_cnt, nocnt_cnt, incr_cnt, curdiff_cnt;
 /* p(t) = pf +  [ 3*rf*Δf ]*t  +  3*[pt-pf+rt*Δt-2*rf*Δf] *t^2 +			*/
 /*		[2*pf-2*pt+3*rf*Δf-3*rt*Δt]*t^3 */
 
-/* So I want 
+/* So I want */
 /*   d  Σ (p(t(i))-p(i))^2/ d rf  == 0 */
 /*   d  Σ (p(t(i))-p(i))^2/ d rt  == 0 */
 /* now... */
 /*   d  Σ (p(t(i))-p(i))^2/ d rf  == 0 */
 /* => Σ 3*t*Δf*(1-2*t+t^2)*
-/*			[pf-pi+ 3*(pt-pf)*t^2 + 2*(pf-pt)*t^3]   +
-/*			3*[t - 2*t^2 + t^3]*Δf*rf   +
-/*			3*[t^2-t^3]*Δt*rt   */
+ *			[pf-pi+ 3*(pt-pf)*t^2 + 2*(pf-pt)*t^3]   +
+ *			3*[t - 2*t^2 + t^3]*Δf*rf   +
+ *			3*[t^2-t^3]*Δt*rt   */
 /* and... */
 /*   d  Σ (p(t(i))-p(i))^2/ d rt  == 0 */
 /* => Σ 3*t^2*Δt*(1-t)*
-*			[pf-pi+ 3*(pt-pf)*t^2 + 2*(pf-pt)*t^3]   +
-/*			3*[t - 2*t^2 + t^3]*Δf*rf   +
-/*			3*[t^2-t^3]*Δt*rt   */
+ *			[pf-pi+ 3*(pt-pf)*t^2 + 2*(pf-pt)*t^3]   +
+ *			3*[t - 2*t^2 + t^3]*Δf*rf   +
+ *			3*[t^2-t^3]*Δt*rt   */
 
 /* Now for a long time I looked at that and saw four equations and two unknowns*/
 /*  That was I was trying to solve for x and y separately, and that doesn't work. */
@@ -2169,6 +2169,7 @@ return( -1e10 );
 return( top/(dxdt*dxdt) );
 }
     
+
 /* Does the second derivative change sign around this point? If so we should */
 /*  retain it for truetype */
 static int SPisD2Change( SplinePoint *sp ) {
@@ -5190,9 +5191,9 @@ void SFFigureGrid(SplineFont *sf) {
 }
 #endif
 
-/* Since this function now deals with 4 arbitrarily selected points,
-/* it has to try to combine them by different ways in order to see
-/* if they actually can specify a diagonal stem. The reordered points 
+/* Since this function now deals with 4 arbitrarily selected points, */
+/* it has to try to combine them by different ways in order to see */
+/* if they actually can specify a diagonal stem. The reordered points */
 /* are placed back to array passed to the function.*/
 int PointsDiagonalable( SplineFont *sf,BasePoint **bp,BasePoint *unit ) {
     BasePoint *line1[2], *line2[2], *temp, *base;
@@ -5207,9 +5208,9 @@ return( false );
     }
 
     dist_error_diag = 0.0065 * ( sf->ascent + sf->descent );
-    /* Assume that the first point passed to the function is the starting
-    /* point of the first of two vectors. Then try all possible combinations
-    /* (there are 3), ensure the vectors are consistantly ordered, and
+    /* Assume that the first point passed to the function is the starting */
+    /* point of the first of two vectors. Then try all possible combinations */
+    /* (there are 3), ensure the vectors are consistantly ordered, and */
     /* check if they are parallel.*/
     base = bp[0];
     for ( i=1; i<4; i++ ) {
@@ -5254,10 +5255,10 @@ return( false );
     continue;
         width = ( line2[0]->x - line1[0]->x ) * unit->y -
                 ( line2[0]->y - line1[0]->y ) * unit->x;
-        /* Make sure this is a real line, rather than just two
-        /* short spline segments which occasionally have happened to be
-        /* parallel. This is necessary to correctly handle things which may
-        /* be "diagonalable" in 2 different directions (like slash in some 
+        /* Make sure this is a real line, rather than just two */
+        /* short spline segments which occasionally have happened to be */
+        /* parallel. This is necessary to correctly handle things which may */
+        /* be "diagonalable" in 2 different directions (like slash in some */
         /* designs). */
         if ( fabs( width ) > len1 || fabs( width ) > len2 )
     continue;

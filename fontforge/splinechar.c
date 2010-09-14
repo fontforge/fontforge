@@ -2219,7 +2219,7 @@ return( false );
     centered.me2.x = sp2->me.x - center.x; centered.me2.y = sp2->me.y - center.y;
 
     /* now guess the angle of rotation and find one which works */
-    /* doubtless there is a better way to do this, but I get lost in
+    /* doubtless there is a better way to do this, but I get lost in */
     /*  algebraic grunge */
     r1 = r2 = 1;
     for ( i=0; i<ITER; ++i ) {
