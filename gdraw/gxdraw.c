@@ -2659,7 +2659,7 @@ static void GXDrawScroll(GWindow _w, GRect *rect, int32 hor, int32 vert) {
 	rect = &temp;
     }
 
-    /*GDrawForceUpdate((GWindow) gw);		/* need to make sure the screen holds what it should */
+    /*GDrawForceUpdate((GWindow) gw); */	/* need to make sure the screen holds what it should */
 		/* but user has to do it, it's probably too late here */
     GDrawPushClip(_w,rect,&old);
 #ifdef _COMPOSITE_BROKEN

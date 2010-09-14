@@ -637,9 +637,9 @@ void BDFCharFindBounds(BDFChar *bc,IBounds *bb) {
 	memset(bb,0,sizeof(*bb));
 }
 
-/* Prepare a bitmap glyph for dumping to a font file. This function deals
-/* mainly with composite glyphs, and either converts them to normal bitmaps
-/* or regularizes for output. The current glyph state is preserved and can
+/* Prepare a bitmap glyph for dumping to a font file. This function deals   */
+/* mainly with composite glyphs, and either converts them to normal bitmaps */
+/* or regularizes for output. The current glyph state is preserved and can  */
 /* be restored later */
 void BCPrepareForOutput( BDFChar *bc,int mergeall ) {
     int bmp_has_image = false, bmp_width;
@@ -649,8 +649,8 @@ void BCPrepareForOutput( BDFChar *bc,int mergeall ) {
     bmp_width = ( bc->ymax - bc->ymin + 1 );
     bc->ticked = false;
     if ( bc->refs != NULL ) {
-	/* Preserve the current glyph bitmap with all related values, unless we
-	/* have already done this when detecting width groups for TTF output */
+	/* Preserve the current glyph bitmap with all related values, unless we */
+	/* have already done this when detecting width groups for TTF output    */
 	if ( bc->backup == NULL ) {
 	    bc->backup = galloc( sizeof( BDFFloat ));
 	    bc->backup->bytes_per_line = bc->bytes_per_line;
@@ -665,14 +665,14 @@ void BCPrepareForOutput( BDFChar *bc,int mergeall ) {
 	}
 
 	if ( mergeall || bmp_has_image ) {
-	    /* Can't output glyphs which contain both bitmaps and references. So
-	    /* we merge references into a single bitmap either if the glyph's
-	    /* bitmap already has something worth outputting, or if the font format
-	    /* doesn't support references at all (in which case 'mergeall' should
+	    /* Can't output glyphs which contain both bitmaps and references. So     */
+	    /* we merge references into a single bitmap either if the glyph's        */
+	    /* bitmap already has something worth outputting, or if the font format  */
+	    /* doesn't support references at all (in which case 'mergeall' should    */
 	    /* be true) */
-	    /* If the glyph is going to be output in a width group (EBDT format 5),
-	    /* then unlinking references will compress the bitmap to the actual image
-	    /* size. So preserve the original values and restore them after merging */
+	    /* If the glyph is going to be output in a width group (EBDT format 5),  */
+	    /* then unlinking references will compress the bitmap to the actual image*/
+	    /* size. So preserve the original values and restore them after merging  */
 	    if ( bc->widthgroup ) {
 		ib.minx = bc->xmin; ib.maxx = bc->xmax;
 		ib.miny = bc->ymin; ib.maxy = bc->ymax;
@@ -681,11 +681,11 @@ void BCPrepareForOutput( BDFChar *bc,int mergeall ) {
 	    if ( bc->widthgroup )
 		BCExpandBitmapToEmBox( bc,ib.minx,ib.miny,ib.maxx,ib.maxy );
 	} else {
-	    /* Otherwise we are going to output a composite glyph. Note that bounding box
-	    /* values have different meaning in our program context (there they denote
-	    /* the bitmap size and position and thus are mostly irrelevant for a glyph were
-	    /* only references are present) and in the EBDT table. In the later case they
-	    /* are used to specify the overall glyph metrics. So we calculate those values
+	    /* Otherwise we are going to output a composite glyph. Note that bounding box  */
+	    /* values have different meaning in our program context (there they denote     */
+	    /* the bitmap size and position and thus are mostly irrelevant for a glyph were*/
+	    /* only references are present) and in the EBDT table. In the later case they  */
+	    /* are used to specify the overall glyph metrics. So we calculate those values */
 	    /* just for TTF output and then immediately reset them back to zeros. */
 	    BDFCharQuickBounds( bc,&ib,0,0,false,true );
 	    bc->xmin = ib.minx; bc->xmax = ib.maxx;

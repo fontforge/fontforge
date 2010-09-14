@@ -67,13 +67,14 @@ return( NULL );
 	    ++name;
 	} else if ( ch=='[' ) {
 	    /* [<char>...] matches the chars
-	    /* [<char>-<char>...] matches any char within the range (inclusive)
-	    /* the above may be concattenated and the resultant pattern matches
-	    /*		anything thing which matches any of them.
-	    /* [^<char>...] matches any char which does not match the rest of
-	    /*		the pattern
-	    /* []...] as a special case a ']' immediately after the '[' matches
-	    /*		itself and does not end the pattern */
+	     * [<char>-<char>...] matches any char within the range (inclusive)
+	     * the above may be concattenated and the resultant pattern matches
+	     *		anything thing which matches any of them.
+	     * [^<char>...] matches any char which does not match the rest of
+	     *		the pattern
+	     * []...] as a special case a ']' immediately after the '[' matches
+	     *		itself and does not end the pattern
+	     */
 	    int found = 0, not=0;
 	    ++pattern;
 	    if ( pattern[0]=='^' ) { not = 1; ++pattern; }

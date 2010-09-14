@@ -50,7 +50,7 @@ static double dist_error_diag = 5.5;
 /* it is more difficult to get diagonal ones done */
 /* The "A" glyph in Apple's Times.dfont(Roman) is off by 6 in one spot */
 static double dist_error_curve = 22;
-/* The maximum possible distance between the edge of an active zone for
+/* The maximum possible distance between the edge of an active zone for */
 /* a curved spline segment and the spline itself */
 
 struct st {
@@ -947,9 +947,9 @@ return( FindMatchingHVEdge(gd,pd,is_next,edges,other_t,dist));
 	t = .999;
 	s = pd->sp->prev;
     }
-    /* For spline segments which have slope close enough to the font's italic
-    /* slant look for an opposite edge along the horizontal direction, rather 
-    /* than along the normal for the point's next/previous unit. This allows
+    /* For spline segments which have slope close enough to the font's italic */
+    /* slant look for an opposite edge along the horizontal direction, rather */
+    /* than along the normal for the point's next/previous unit. This allows  */
     /* us e. g. to detect serifs in italic fonts */
     if ( gd->has_slant ) {
 	if ( UnitsParallel( dir,&gd->slant_unit,true )) {
@@ -1038,10 +1038,10 @@ return( CornerCorrectSide( pd,( hv == 2 ),is_l ));
 	cnt = MonotonicOrder( gd->sspace,&myline,gd->stspace );
 	eo = -1;
 	is_x = fabs( dir->y ) > fabs( dir->x );
-	/* If a diagonal stem is more vertical than horizontal, then our
-	/* virtual line will go from left to right. It will first intersect
-	/* the left side of the stem, if the stem also points north-east.
-	/* In any other case the virtual line will first intersect the right
+	/* If a diagonal stem is more vertical than horizontal, then our     */
+	/* virtual line will go from left to right. It will first intersect  */
+	/* the left side of the stem, if the stem also points north-east.    */
+	/* In any other case the virtual line will first intersect the right */
 	/* side. */
 	i = ( is_x && dir->y > 0 ) ? 0 : cnt-1; 
 	while ( i >= 0 && i <= cnt-1 ) {
@@ -1208,18 +1208,18 @@ static uint8 IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1,
     if ( angle > stub_slope_error*1.5 && angle < PI - stub_slope_error*1.5 )
 return( 0 );
 
-    /* First check if it is a slightly slanted line or a curve which joins
-    /* a straight line under an angle close to 90 degrees. There are many
-    /* glyphs where circles or curved features are intersected by or
-    /* connected to vertical or horizontal straight stems (the most obvious
-    /* cases are Greek Psi and Cyrillic Yu), and usually it is highly desired to
+    /* First check if it is a slightly slanted line or a curve which joins */
+    /* a straight line under an angle close to 90 degrees. There are many */
+    /* glyphs where circles or curved features are intersected by or */
+    /* connected to vertical or horizontal straight stems (the most obvious */
+    /* cases are Greek Psi and Cyrillic Yu), and usually it is highly desired to */
     /* mark such an intersection with a hint */
     norm1 = ( sp1->me.x - sp2->me.x ) * odir2->x +
 	    ( sp1->me.y - sp2->me.y ) * odir2->y;
     norm2 = ( sp2->me.x - sp1->me.x ) * odir1->x +
 	    ( sp2->me.y - sp1->me.y ) * odir1->y;
-    /* if this is a real stub or intersection, then vectors on both sides
-    /* of out going-to-be stem should point in the same direction. So
+    /* if this is a real stub or intersection, then vectors on both sides */
+    /* of out going-to-be stem should point in the same direction. So */
     /* the following value should be positive */
     opp = dir1->x * dir2->x + dir1->y * dir2->y;
     if (( angle <= mid_err || angle >= PI - mid_err ) && 
@@ -1233,17 +1233,17 @@ return( 2 );
 	IsUnitHV( dir2,true ) && UnitsOrthogonal( dir2,odir1,false ))))
 return( 4 );
     
-    /* Now check if our 2 points form a serif termination or a feature stub
-    /* The check is pretty dumb: it returns 'true' if all the following 
-    /* conditions are met: 
-    /* - both the points belong to the same contour;
-    /* - there are no more than 3 other points between them;
-    /* - anyone of those intermediate points is positioned by such a way
-    /*   that it falls inside the stem formed by our 2 base point and
-    /*   the vector we are checking and its distance from the first point
-    /*   along that vector is not larger than the stem width;
-    /* - none of the intermediate points is parallel to the vector direction
-    /*   (otherwise we should have checked against that point instead)*/
+    /* Now check if our 2 points form a serif termination or a feature stub */
+    /* The check is pretty dumb: it returns 'true' if all the following */
+    /* conditions are met: */
+    /* - both the points belong to the same contour; */
+    /* - there are no more than 3 other points between them; */
+    /* - anyone of those intermediate points is positioned by such a way */
+    /*   that it falls inside the stem formed by our 2 base point and */
+    /*   the vector we are checking and its distance from the first point */
+    /*   along that vector is not larger than the stem width; */
+    /* - none of the intermediate points is parallel to the vector direction */
+    /*   (otherwise we should have checked against that point instead) */
     if ( !UnitsParallel( dir1,&hvdir,false ))
 return( 0 );
     
@@ -1283,11 +1283,11 @@ return( 1 );
 return( 0 );
 }
 
-/* We normalize all stem unit vectors so that they point between 90 and 270 
-/* degrees, as this range is optimal for sorting diagonal stems. This means 
-/* that vertical stems will normally point top to bottom, but for diagonal
-/* stems (even if their angle is actually very close to vertical) the opposite
-/* direction is also possible. Sometimes we "normalize" such stems converting
+/* We normalize all stem unit vectors so that they point between 90 and 270    */
+/* degrees, as this range is optimal for sorting diagonal stems. This means    */
+/* that vertical stems will normally point top to bottom, but for diagonal     */
+/* stems (even if their angle is actually very close to vertical) the opposite */
+/* direction is also possible. Sometimes we "normalize" such stems converting  */
 /* them to vertical. In such a case we have to swap their edges too.  */
 static void SwapEdges( struct glyphdata *gd,struct stemdata *stem ) {
     BasePoint tpos;
@@ -1330,7 +1330,7 @@ static void SwapEdges( struct glyphdata *gd,struct stemdata *stem ) {
 	}
     }
     
-    /* In case of a quadratic contour invert assignments to stem sides
+    /* In case of a quadratic contour invert assignments to stem sides */
     /* also for off-curve points */
     if ( gd->order2 ) {
 	for ( i=0; i<gd->realcnt; i++ ) if ( gd->points[i].sp == NULL ) {
@@ -1466,15 +1466,15 @@ return( false );
     off2 = (test2->x-stem->right.x)*dir.y - (test2->y-stem->right.y)*dir.x;
     if (off1 > ( lmax - dist_error ) && off1 < ( lmin + dist_error ) &&
 	off2 > ( rmax - dist_error ) && off2 < ( rmin + dist_error )) {
-	/* For some reasons in my patch from Feb 24 2008 I prohibited snapping
-	/* to stems point pairs which together form a bend, if at least
-	/* one point from the pair doesn't have exactly the same position as
-	/* the stem edge. Unfortunately I don't remember why I did this, but 
-	/* this behavior has at least one obviously negative effect: it
-	/* prevents building a stem from chunks which describe an ark 
-	/* intersected by some straight lines, even if the intersections lie
-	/* closely enough to the ark extremum. So don't apply this test
-	/* at least if the force_hv flag is on (which means either the
+	/* For some reasons in my patch from Feb 24 2008 I prohibited snapping */
+	/* to stems point pairs which together form a bend, if at least */
+	/* one point from the pair doesn't have exactly the same position as */
+	/* the stem edge. Unfortunately I don't remember why I did this, but */
+	/* this behavior has at least one obviously negative effect: it */
+	/* prevents building a stem from chunks which describe an ark   */
+	/* intersected by some straight lines, even if the intersections lie */
+	/* closely enough to the ark extremum. So don't apply this test */
+	/* at least if the force_hv flag is on (which means either the  */
 	/* chunk or the stem itself is not exactly horizontal/vertical) */
 	if ( !cove || force_hv || off1 == 0 || off2 == 0 )
 return( true );
@@ -1571,7 +1571,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
     max = stem->lmax;
     min = stem->lmin;
 
-    /* The following swaps "left" and "right" points in case we have
+    /* The following swaps "left" and "right" points in case we have */
     /* started checking relatively to a wrong edge */
     if ( pd1 != NULL ) {
 	test = &pd1->base;
@@ -1589,7 +1589,7 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
 
     if ( pd1 == NULL ) lincr = 0;
     if ( pd2 == NULL ) rincr = 0;
-    /* Now run through existing stem chunks and see if the chunk we are
+    /* Now run through existing stem chunks and see if the chunk we are */
     /* going to add doesn't duplicate an existing one.*/
     for ( i=stem->chunk_cnt-1; i>=0; --i ) {
 	chunk = &stem->chunks[i];
@@ -1637,8 +1637,8 @@ static struct stem_chunk *AddToStem( struct glyphdata *gd,struct stemdata *stem,
 		( pd1->base.y - stem->left.y ) * stem->l_to_r.y;
 	if ( is_next1==1 || is_next1==2 || pd1->colinear ) {
 	    AssignStemToPoint( pd1,stem,true,true );
-	    /* For quadratic layers assign the stem not only to
-	    /* spline points, but to their control points as well
+	    /* For quadratic layers assign the stem not only to   */
+	    /* spline points, but to their control points as well */
 	    /* (this may be important for TTF instructions */
 	    if ( gd->order2 && !pd1->sp->nonextcp && pd1->sp->nextcpindex < gd->realcnt ) {
 		cpidx = pd1->sp->nextcpindex;
@@ -1715,9 +1715,9 @@ return( stem );
     /* First pass to check for strict matches */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-	/* Ghost hints and BBox hits are usually generated after all other
-	/* hint types, but we can get them here in case we are generating
-	/* glyph data for a predefined hint layout. In this case they should
+	/* Ghost hints and BBox hits are usually generated after all other   */
+	/* hint types, but we can get them here in case we are generating    */
+	/* glyph data for a predefined hint layout. In this case they should */
 	/* be excluded from the following tests */
 	if ( stem->ghost || stem->bbox )
     continue;
@@ -1892,8 +1892,8 @@ static int IsDiagonalEnd( struct glyphdata *gd,
     if ( pd1->colinear || pd2->colinear )
 return( false );
     pt1 = &pd1->sp->me; pt2 = &pd2->sp->me;
-    /* Both key points of a diagonal end stem should have nearly the same
-    /* coordinate by x or y (otherwise we can't determine by which axis
+    /* Both key points of a diagonal end stem should have nearly the same */
+    /* coordinate by x or y (otherwise we can't determine by which axis   */
     /* it should be hinted) */
     if ( pt1->x >= pt2->x - dist_error_hv &&  pt1->x <= pt2->x + dist_error_hv ) {
 	width = pd1->sp->me.y - pd2->sp->me.y;
@@ -1925,10 +1925,10 @@ return( false );
     if ( pow( width,2 ) > length1 )
 return( false );
 
-    /* Finally exclude too short diagonals where the distance between key
-    /* points of one edge at the direction orthogonal to the unit vector
-    /* of the stem we are about to add is smaller than normal HV stem
-    /* fudge. Such diagonals may be later turned into HV stems, and we will
+    /* Finally exclude too short diagonals where the distance between key   */
+    /* points of one edge at the direction orthogonal to the unit vector    */
+    /* of the stem we are about to add is smaller than normal HV stem       */
+    /* fudge. Such diagonals may be later turned into HV stems, and we will */
     /* result into getting two coincident hints */
     dist1 = ( hv == 1 ) ? prevsp1->me.y - pt1->y : prevsp1->me.x - pt1->x;
     dist2 = ( hv == 1 ) ? prevsp2->me.y - pt2->y : prevsp2->me.x - pt2->x;
@@ -2000,7 +2000,7 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
 
 	if ( chunk != NULL && gd->linecnt > 0 ) {
 	    hv = IsUnitHV( &stem->unit,true );
-	    /* For HV stems allow assigning a line to a stem edge only
+	    /* For HV stems allow assigning a line to a stem edge only */
 	    /* if that line also has an exactly HV vector */
 	    if ( line != NULL && (( !hv &&
 		UnitsParallel( &stem->unit,&line->unit,true ) && 
@@ -2021,7 +2021,7 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
 		    l_changed = true;
 		    otherline = stem->leftline;
 		}
-		/* If lines are attached to both sides of a diagonal stem,
+		/* If lines are attached to both sides of a diagonal stem, */
 		/* then prefer the longer line */
 		if ( !hv && l_changed && !stem->positioned && 
 		    ( otherline == NULL || ( otherline->length < line->length )))
@@ -2088,9 +2088,9 @@ return( -1e4 );
 return( t1 );
 }
 
-/* This function is used when generating stem data for preexisting
-/* stem hints. If we already know the desired hint position, then we
-/* can safely assign to this hint any points which meet other conditions
+/* This function is used when generating stem data for preexisting */
+/* stem hints. If we already know the desired hint position, then we */
+/* can safely assign to this hint any points which meet other conditions */
 /* but have no corresponding position at the opposite edge. */
 static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
     struct stemdata *stem,BasePoint *dir,int is_next ) {
@@ -2168,11 +2168,11 @@ return( NULL );		/* Zero width stems aren't interesting */
 	pd->prev_e_t[eidx] = t1;
     }
 
-    /* In my experience the only case where this function may be useful
-    /* is when it occasionally finds a real spline point which for some
-    /* reasons has been neglected by other tests and yet forms a valid
-    /* pair for the first point. So run through points and see if we
-    /* have actually got just a position on spline midway between to points,
+    /* In my experience the only case where this function may be useful */
+    /* is when it occasionally finds a real spline point which for some */
+    /* reasons has been neglected by other tests and yet forms a valid  */
+    /* pair for the first point. So run through points and see if we    */
+    /* have actually got just a position on spline midway between to points, */
     /* or it is a normal point allowing to make a normal stem chunk */
     for ( i=0; i<gd->pcnt; ++i ) {
 	tpd = &gd->points[i];
@@ -2344,13 +2344,13 @@ return( 0 );
     tp = ParallelToDir( topd,false,dir,&opposite,pd->sp,tstub );
     fp = ParallelToDir( frompd,true,dir,&opposite,pd->sp,fstub );
     
-    /* if none of the opposite points is parallel to the needed vector, then
-    /* give it one more chance by skipping those points and looking at the next
-    /* and previous one. This can be useful in situations where the opposite
-    /* edge cannot be correctly detected just because there are too many points
-    /* on the spline (which is a very common situation for poorly designed
-    /* fonts or fonts with quadratic splines).
-    /* But do that only for colinear spline segments and ensure that there are
+    /* if none of the opposite points is parallel to the needed vector, then    */
+    /* give it one more chance by skipping those points and looking at the next */
+    /* and previous one. This can be useful in situations where the opposite    */
+    /* edge cannot be correctly detected just because there are too many points */
+    /* on the spline (which is a very common situation for poorly designed      */
+    /* fonts or fonts with quadratic splines). */
+    /* But do that only for colinear spline segments and ensure that there are  */
     /* no bends between two splines. */
     if ( !tp && ( !fp || t > 0.5 ) &&
 	topd->colinear && &other->to->next != NULL ) {
@@ -2649,8 +2649,8 @@ return;
 	pd->prev_e_t[eidx] = t;
 }
 
-/* flags: 1 -- accept curved extrema, 2 -- accept angles, 
-/*	4 -- analyze segments (not just single points) */
+/* flags: 1 -- accept curved extrema, 2 -- accept angles, */
+/*	4 -- analyze segments (not just single points)    */
 static int IsSplinePeak( struct glyphdata *gd,struct pointdata *pd,
     int outer,int is_x,int flags ) {
     
@@ -2770,8 +2770,8 @@ static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
     double norm, dist;
     Spline *sbase, *sopp, *other;
     
-    /* If a stem was already present before generating glyph data,
-    /* then it should always be preferred in case of a conflict */
+    /* If a stem was already present before generating glyph data, */
+    /* then it should always be preferred in case of a conflict    */
     if ( stem->positioned || chunk->stemcheat ) val++;
     
     if ( l_base ) {
@@ -2785,17 +2785,17 @@ static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
     sopp = ( opp_next ) ? opp->sp->next : opp->sp->prev;
     other = ( opp_next ) ? opp->nextedges[0] : opp->prevedges[0];
     
-    /* If there are 2 conflicting chunks belonging to different stems but
-    /* based on the same point, then we have to decide which stem is "better"
-    /* for that point. We compare stems (or rather chunks) by assigning a 
-    /* value to each of them and then prefer the stem whose value is positive. 
-    /* A chunk gets a +1 value bonus in the following cases:
-    /* - The stem is vertical/horizontal and splines are curved in the same
-    /*   direction at both sides of the chunk;
-    /* - A stem has both its width and the distance between the opposite points
-    /*   smaller than another stem;
-    /* - The common side of two stems is a straight line formed by two points
-    /*   and the opposite point can be projected to line segment between those
+    /* If there are 2 conflicting chunks belonging to different stems but       */
+    /* based on the same point, then we have to decide which stem is "better"   */
+    /* for that point. We compare stems (or rather chunks) by assigning a       */
+    /* value to each of them and then prefer the stem whose value is positive.  */
+    /* A chunk gets a +1 value bonus in the following cases:                    */
+    /* - The stem is vertical/horizontal and splines are curved in the same     */
+    /*   direction at both sides of the chunk;                                  */
+    /* - A stem has both its width and the distance between the opposite points */
+    /*   smaller than another stem;                                             */
+    /* - The common side of two stems is a straight line formed by two points   */
+    /*   and the opposite point can be projected to line segment between those  */
     /*   two points. */
     if ( IsUnitHV( &stem->unit,true ) && !sbase->knownlinear ) {
 	is_x = (int) rint( stem->unit.y );
@@ -2805,8 +2805,8 @@ static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
 	dist =  ( base->base.x - opp->base.x )*stem->unit.x +
 		( base->base.y - opp->base.y )*stem->unit.y;
 	
-	/* Are there any stems attached to the same base point which
-	/* are narrower than the distance between two points forming the
+	/* Are there any stems attached to the same base point which     */
+	/* are narrower than the distance between two points forming the */
 	/* given chunk? */
 	for ( i=0; i<chcnt; i++ ) {
 	    tchunk = vchunks[i].chunk;
@@ -2817,8 +2817,8 @@ static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
 	break;
 	}
 
-	/* If both points are curved in the same direction, then check also 
-	/* the "line of sight" between those points (if there are interventing
+	/* If both points are curved in the same direction, then check also    */
+	/* the "line of sight" between those points (if there are interventing */
 	/* splines, then it is not a real feature bend)*/
 	if ( i == chcnt && peak1 + peak2 == 3 && ConnectsAcross( gd,base->sp,opp_next,sopp,0 ))
 	    val++;
@@ -2842,10 +2842,10 @@ static int ValueChunk( struct glyphdata *gd,struct vchunk *vchunks,
     }
     if ( i==chcnt ) val++;
 
-    /* If just one of the checked chunks has both its sides parallel
-    /* to the stem direction, then we consider it is always worth to be output.
-    /* This check was introduced to avoid situations where a stem marking
-    /* a feature termination can be preferred to another stem which controls 
+    /* If just one of the checked chunks has both its sides parallel            */
+    /* to the stem direction, then we consider it is always worth to be output. */
+    /* This check was introduced to avoid situations where a stem marking       */
+    /* a feature termination can be preferred to another stem which controls    */
     /* the main part of the same feature */
     if ( vchunks[idx].parallel ) {
 	for ( i=0; i<chcnt; i++ ) {
@@ -2892,8 +2892,8 @@ static void CheckPotential( struct glyphdata *gd,struct pointdata *pd,int is_nex
 	if ( vchunks[i].value ) val_cnt++;
     }
 
-    /* If we was unable to figure out any reasons for which at least
-    /* one of the checked chunks should really be output, then keep
+    /* If we was unable to figure out any reasons for which at least */
+    /* one of the checked chunks should really be output, then keep  */
     /* all the 'potential' flags as they are and do nothing */
     if ( val_cnt > 0 ) {
 	for ( i=0; i<stemcnt; i++ ) if ( vchunks[i].chunk != NULL )  {
@@ -2979,8 +2979,8 @@ return( StillStem( gd,dist_error_diag,&pos,stem ));
     }
 }
 
-/* This function is used to check the distance between a hint's edge
-/* and a spline and determine the extet where this hint can be
+/* This function is used to check the distance between a hint's edge */
+/* and a spline and determine the extet where this hint can be */
 /* considered "active". */
 static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     struct stemdata *stem,int is_l,int force_ac,BasePoint *res ) {
@@ -3016,32 +3016,32 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     /*  think of them as lines then rather than treating them as curves */
     /*  figure out how long they remain within a few orthoganal units of */
     /*  the point */
-    /* We used to check the distance between a control point and a spline
-    /* and consider the segment "flat" if this distance is smaller than
-    /* the normal allowed "error" value. However this method doesn't produce
-    /* consistent results if the spline is not long enough (as usual for
-    /* fonts with quadratic splines). So now we consider a spline "flat"
-    /* only if it never deviates too far from the hint's edge and both 
+    /* We used to check the distance between a control point and a spline */
+    /* and consider the segment "flat" if this distance is smaller than   */
+    /* the normal allowed "error" value. However this method doesn't produce */
+    /* consistent results if the spline is not long enough (as usual for  */
+    /* fonts with quadratic splines). So now we consider a spline "flat"  */
+    /* only if it never deviates too far from the hint's edge and both    */
     /* its terminal points are snappable to the same hint */
     curved = ( IsStemAssignedToPoint( npd,stem,gonext ) == -1 &&
 	( off < min || off > max || !UnitsParallel( &stem->unit,nunit,true )));
 
-    /* If a spline does deviate from the edge too far to consider it flat,
-    /* then we calculate the extent where the spline and the edge are still
-    /* close enough to consider the hint active at this zone. If the hint is
-    /* still active at the end of the spline, we can check some subsequent splines 
-    /* too. This method produces better effect than any "magic" manipulations 
-    /* with control point coordinates, because it takes into account just the 
+    /* If a spline does deviate from the edge too far to consider it flat, */
+    /* then we calculate the extent where the spline and the edge are still */
+    /* close enough to consider the hint active at this zone. If the hint is */
+    /* still active at the end of the spline, we can check some subsequent splines */
+    /* too. This method produces better effect than any "magic" manipulations */
+    /* with control point coordinates, because it takes into account just the */
     /* spline configuration rather than point positions */
     if ( curved ) {
 	max = err = dist_error_curve;
 	min = -dist_error_curve;
-	/* The following statement forces our code to detect an active zone
-	/* even if all checks actually fail. This makes sense for stems
+	/* The following statement forces our code to detect an active zone */
+	/* even if all checks actually fail. This makes sense for stems */
 	/* marking arks and bends */
 	if ( force_ac )
 	    good = ( gonext ) ? sp->nextcp : sp->prevcp;
-	/* If a spline is closer to the opposite stem edge than to the current edge, then we
+	/* If a spline is closer to the opposite stem edge than to the current edge, then we */
 	/* can no longer consider the stem active at this point */
 	if ( err > width/2 ) err = width/2;
 	
@@ -3072,7 +3072,7 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
 		( pos.y - base->y )*stem->l_to_r.y;
 	dist  = ( pos.x - sp->me.x )*stem->unit.x +
 		( pos.y - sp->me.y )*stem->unit.y;
-	/* Don't check StillStem for non-curved segments, as they are subject 
+	/* Don't check StillStem for non-curved segments, as they are subject */
 	/* to further projection-related tests anyway */
 	if ( off > min && off < max && ( !curved || 
 	    ( fabs( dist ) < ( width + width * ratio ) &&
@@ -3099,7 +3099,7 @@ static int AdjustForImperfectSlopeMatch( SplinePoint *sp,BasePoint *pos,
     min = ( is_l ) ? stem->lmax - 2*err : stem->rmax - 2*err;
     max = ( is_l ) ? stem->lmin + 2*err : stem->rmin + 2*err;
     
-    /* Possible if the stem unit has been attached to a line. It is
+    /* Possible if the stem unit has been attached to a line. It is */
     /* hard to prevent this */
     if ( min > max ) {
 	min = stem->lmin; max = stem->lmax;
@@ -3147,13 +3147,13 @@ return( cnt );
     
     dot =   ( stem->unit.x * pd->nextunit.x ) +
 	    ( stem->unit.y * pd->nextunit.y );
-    /* We used to apply normal checks only if the point's unit vector pointing
-    /* in the direction we are going to check is nearly parallel to the stem unit.
-    /* But this is not the best method, because a spline, "parallel" to our
-    /* stem, may actually have filled space at a wrong side. On the other hand,
-    /* sometimes it makes sense to calculate active space even for splines
-    /* connected to our base point under an angle which is too large to consider
-    /* the direction "parallel". So now we check the units' direction first
+    /* We used to apply normal checks only if the point's unit vector pointing */
+    /* in the direction we are going to check is nearly parallel to the stem unit. */
+    /* But this is not the best method, because a spline, "parallel" to our */
+    /* stem, may actually have filled space at a wrong side. On the other hand, */
+    /* sometimes it makes sense to calculate active space even for splines */
+    /* connected to our base point under an angle which is too large to consider */
+    /* the direction "parallel". So now we check the units' direction first */
     /* and then (just for straight splines) also their parallelity. */
     if (( dot > 0 && same_dir ) || ( dot < 0 && !same_dir )) {
 	/* If the segment sp-start doesn't have exactly the right slope, then */
@@ -3208,21 +3208,21 @@ return( cnt );
     
     hv = IsUnitHV( &stem->unit,true );
     if ( hv ) {
-	/* For vertical/horizontal stems we assign a special meaning to
-	/* the 'curved' field. It will be non-zero if the key point of
-	/* this segment is positioned on a prominent curve: 
-	/* 1 if the inner side of that curve is inside of the contour
-	/* and 2 otherwise.
-	/* Later, if we get a pair of "inner" and "outer" curves, then
-	/* we are probably dealing with a feature's bend which should be
-	/* necessarily marked with a hint. Checks we apply for this type
+	/* For vertical/horizontal stems we assign a special meaning to  */
+	/* the 'curved' field. It will be non-zero if the key point of   */
+	/* this segment is positioned on a prominent curve:              */
+	/* 1 if the inner side of that curve is inside of the contour    */
+	/* and 2 otherwise. */
+	/* Later, if we get a pair of "inner" and "outer" curves, then   */
+	/* we are probably dealing with a feature's bend which should be */
+	/* necessarily marked with a hint. Checks we apply for this type */
 	/* of curved segments should be less strict than in other cases. */
 	extr = ( hv == 1 ) ? pd->y_extr : pd->x_extr;
 	space[cnt].curved = extr;
     } else {
-	/* For diagonal stems we consider a segment "curved" if both its
-	/* start and end are curved. Curved segments usually cannot be
-	/* merged (unless scurved or ecurved is equal to 2) and are not
+	/* For diagonal stems we consider a segment "curved" if both its */
+	/* start and end are curved. Curved segments usually cannot be   */
+	/* merged (unless scurved or ecurved is equal to 2) and are not  */
 	/* checked for "projections". */
 	space[cnt].curved = scurved && ecurved;
     }
@@ -3249,10 +3249,10 @@ static int MergeSegments(struct segment *space, int cnt) {
 	while ( i+1<cnt && space[i+1].start<space[j].end ) {
 	    if ( space[i+1].end >= space[j].end ) {
 		
-		/* If there are 2 overlapping segments and neither the
-		/* end of the first segment nor the start of the second
-		/* one are curved we can merge them. Otherwise we have
-		/* to preserve them both, but modify their start/end properties
+		/* If there are 2 overlapping segments and neither the  */
+		/* end of the first segment nor the start of the second */
+		/* one are curved we can merge them. Otherwise we have  */
+		/* to preserve them both, but modify their start/end properties */
 		/* so that the overlap is removed */
 		if ( space[j].ecurved != 1 && space[i+1].scurved != 1 ) {
 		    space[j].end = space[i+1].end;
@@ -3322,8 +3322,8 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
     }
     bcnt = 0;
     if ( lcnt!=0 && rcnt!=0 ) {
-	/* For curved segments we can extend left and right active segments 
-	/* a bit to ensure that they do overlap and thus can be marked with an
+	/* For curved segments we can extend left and right active segments    */
+	/* a bit to ensure that they do overlap and thus can be marked with an */
 	/* active zone */
 	if ( rcnt == lcnt && stem->chunk_cnt == lcnt ) {
 	    for ( i=0; i<lcnt; i++ ) {
@@ -3480,11 +3480,11 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 		    startset = true;
 		}
 		
-		/* If the stem is preceded by a curved segment, then skip
-		/* the first point position and start from the next one.
-		/* (Otherwise StemIsActiveAt() may consider the stem is
-		/* "inactive" at the fragment between the start of the active
-		/* space and the first point actually belonging to this stem)*/
+		/* If the stem is preceded by a curved segment, then skip     */
+		/* the first point position and start from the next one.      */
+		/* (Otherwise StemIsActiveAt() may consider the stem is       */
+		/* "inactive" at the fragment between the start of the active */
+		/* space and the first point actually belonging to this stem) */
 		if ( bothspace[bpos].scurved ) {
 		    while ( pcnt>i && pspace[i]->projection < bothspace[bpos].sbase ) i++;
 		    
@@ -3549,9 +3549,9 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
     for ( i=0; i<stem->chunk_cnt; ++i ) {
 	chunk = &stem->chunks[i];
 	/* stemcheat 1 -- diagonal edge stem;
-	/*           2 -- diagonal corner stem with a sharp top;
-	/*           3 -- diagonal corner stem with a flat top;
-	/*           4 -- bounding box hint */
+	 *           2 -- diagonal corner stem with a sharp top;
+	 *           3 -- diagonal corner stem with a flat top;
+	 *           4 -- bounding box hint */
 	if ( chunk->stemcheat==3 && chunk->l!=NULL && chunk->r!=NULL &&
 		i+1<stem->chunk_cnt &&
 		stem->chunks[i+1].stemcheat==3 && 
@@ -3589,11 +3589,11 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 	    activespace[acnt].sbase = activespace[acnt].ebase = proj;
 	    acnt++;
 	    ++i;
-	/* The following is probably not needed. Bounding box hints don't 
-	/* correspond to any actual glyph features, and their "active" zones 
-	/* usually look ugly when displayed. So we don't attempt to calculate
-	/* those faked "active" zones and instead just exclude bounding
-	/* box hints from any validity checks based on the hint's "active"
+	/* The following is probably not needed. Bounding box hints don't     */
+	/* correspond to any actual glyph features, and their "active" zones  */
+	/* usually look ugly when displayed. So we don't attempt to calculate */
+	/* those faked "active" zones and instead just exclude bounding       */
+	/* box hints from any validity checks based on the hint's "active"    */
 	/* length */
 	} else if ( chunk->stemcheat==4 && chunk->l!=NULL && chunk->r!=NULL ) {
 #if 0
@@ -3707,8 +3707,8 @@ return( true );
 return( false );
 }
 
-/* Convert diagonal stems generated for stubs and intersections to horizontal
-/* or vertical, if they have just one chunk. This should be done before calculating
+/* Convert diagonal stems generated for stubs and intersections to horizontal */
+/* or vertical, if they have just one chunk. This should be done before calculating */
 /* active zones, as they are calculated against each stem's unit vector */
 static void GDNormalizeStubs( struct glyphdata *gd ) {
     int i, j, hv;
@@ -3760,8 +3760,8 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
 
-	/* If stem had been already present in the spline char before we
-	/* started generating glyph data, then it should never be 
+	/* If stem had been already present in the spline char before we */
+	/* started generating glyph data, then it should never be */
 	/* considered "too big" */
 	if ( stem->positioned )
     continue;
@@ -3773,10 +3773,10 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	stem->toobig =  ( stem->clen + stem->clen * ratio < width );
     }
 
-    /* One more check for curved stems. If a stem has just one active
-    /* segment, this segment is curved and the stem has no conflicts,
-    /* then select the active segment length which allows us to consider
-    /* this stem suitable for PS output by such a way, that stems connecting
+    /* One more check for curved stems. If a stem has just one active */
+    /* segment, this segment is curved and the stem has no conflicts, */
+    /* then select the active segment length which allows us to consider */
+    /* this stem suitable for PS output by such a way, that stems connecting */
     /* the opposite sides of a circle are always accepted */
     for ( i=0; i<gd->stemcnt; ++i ) if ( gd->stems[i].toobig ) {
 	stem = &gd->stems[i];
@@ -3799,8 +3799,8 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	}
     }
 
-    /* And finally a check for stubs and feature terminations. We don't
-    /* want such things to be controlled by any special hints, if there
+    /* And finally a check for stubs and feature terminations. We don't */
+    /* want such things to be controlled by any special hints, if there */
     /* is already a hint controlling the middle of the same feature */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
@@ -3812,9 +3812,9 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	    slunit = chunk->lnext ? &chunk->l->nextunit : &chunk->l->prevunit;
 	    srunit = chunk->rnext ? &chunk->r->nextunit : &chunk->r->prevunit;
 	    
-	    /* This test is valid only for features which are not exactly horizontal/
-	    /* vertical. But we can't check this using the stem unit, as it may have
-	    /* already beeen reset to HV. So we use the units of this stem's base points
+	    /* This test is valid only for features which are not exactly horizontal/    */
+	    /* vertical. But we can't check this using the stem unit, as it may have     */
+	    /* already beeen reset to HV. So we use the units of this stem's base points */
 	    /* instead. */
 	    if ( IsUnitHV( slunit,true ) && IsUnitHV( srunit,true ))
     continue;
@@ -3884,13 +3884,13 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	    }
 	}
 
-	/* One more check for intersections between a curved segment and a
-	/* straight feature. Imagine a curve intersected by two bars, like in a Euro 
-	/* glyph. Very probably we will get two chunks, one controlling the uppest
-	/* two points of intersection, and another the lowest two, and most probably
-	/* these two chunks will get merged into a single stem (so this stem will
-	/* even get an exactly vertical vector). Yet we don't need this stem because
-	/* there is already a stem controlling the middle of the curve (between two
+	/* One more check for intersections between a curved segment and a */
+	/* straight feature. Imagine a curve intersected by two bars, like in a Euro */
+	/* glyph. Very probably we will get two chunks, one controlling the uppest   */
+	/* two points of intersection, and another the lowest two, and most probably */
+	/* these two chunks will get merged into a single stem (so this stem will    */
+	/* even get an exactly vertical vector). Yet we don't need this stem because */
+	/* there is already a stem controlling the middle of the curve (between two  */
 	/* bars).*/
 	else if ( stem->chunk_cnt == 2 && 
 	    (( stem->chunks[0].stub & 7 && stem->chunks[1].stub & 6 ) ||
@@ -3911,10 +3911,10 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	if ( IsUnitHV( &stem->unit,true ))
     continue;
 
-	/* If a diagonal stem doesn't have at least 2 points assigned to
-	/* each edge, then we probably can't instruct it. However we don't
-	/* disable stems which have just one point on each side, if those
-	/* points are inflection points, as such stems may be useful for 
+	/* If a diagonal stem doesn't have at least 2 points assigned to   */
+	/* each edge, then we probably can't instruct it. However we don't */
+	/* disable stems which have just one point on each side, if those  */
+	/* points are inflection points, as such stems may be useful for   */
 	/* metafont routines */
 	if ( stem->lpcnt < 2 || stem->rpcnt < 2 ) {
 	    lpd = rpd = NULL;
@@ -3930,9 +3930,9 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 	    stem->toobig = 2;
     }
 
-    /* When using preexisting stem data, occasionally we can get two slightly
-    /* different stems (one predefined, another recently detected) with nearly
-    /* parallel vectors, sharing some points at both sides. Attempting to instruct
+    /* When using preexisting stem data, occasionally we can get two slightly      */
+    /* different stems (one predefined, another recently detected) with nearly     */
+    /* parallel vectors, sharing some points at both sides. Attempting to instruct */
     /* them both would lead to very odd effects. So we must disable one */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
@@ -4051,7 +4051,7 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
 		if ( pos == testpos ) {
 		    lval = stem->chunks[j].l->value;
 		    stem->chunks[j].l->value++;
-		    /* An additional bonus for points which form together
+		    /* An additional bonus for points which form together */
 		    /* a longer stem segment */
 		    if ( sp->next->to == tsp || sp->prev->from == tsp ) {
 			llen = fabs(( sp->me.x - tsp->me.x )*stem->unit.x +
@@ -4108,10 +4108,10 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
 	rmost1->value++; rmost2->value++;
     }
     
-    /* Extrema points get an additional value bonus. This should
-    /* prevent us from preferring wrong points for stems controlling
+    /* Extrema points get an additional value bonus. This should     */
+    /* prevent us from preferring wrong points for stems controlling */
     /* curved segments */
-    /* Third pass to assign bonuses to extrema points (especially
+    /* Third pass to assign bonuses to extrema points (especially    */
     /* to those extrema which are opposed to another extremum point) */
     for ( i=0; i<stem->chunk_cnt; ++i ) {
 	chunk = &stem->chunks[i];
@@ -4148,12 +4148,12 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
 	qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
 	is_x = (int) rint( stem->unit.y );
 
-	/* For HV stems we have to check all chunks once more in order
-	/* to figure out "left" and "right" positions most typical
-	/* for this stem. We perform this by assigning a value to
+	/* For HV stems we have to check all chunks once more in order */
+	/* to figure out "left" and "right" positions most typical */
+	/* for this stem. We perform this by assigning a value to */
 	/* left and right side of this chunk. */
 
-	/* First pass to determine some point properties necessary
+	/* First pass to determine some point properties necessary */
 	/* for subsequent operations */
 	for ( i=0; i<stem->chunk_cnt; ++i ) {
 	    chunk = &stem->chunks[i];
@@ -4164,8 +4164,8 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
 		chunk->r->value = 0;
 	}
 
-	/* Second pass to check which positions relative to stem edges are
-	/* most common for this stem. Each position which repeats 
+	/* Second pass to check which positions relative to stem edges are */
+	/* most common for this stem. Each position which repeats */
 	/* more than once gets a plus 1 value bonus */
 	if ( stem->positioned ) FindRefPointsExisting( gd,stem );
 	else FindRefPointsNew( gd,stem );
@@ -4193,9 +4193,9 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
 		stem->left = lbest->me;
 		stem->leftidx = GetValidPointDataIndex( gd,lbest,stem );
 
-		/* Now assign "left" and "right" properties of the stem
-		/* to point coordinates taken from the most "typical" chunk
-		/* of this stem. We also have to recalculate stem width and
+		/* Now assign "left" and "right" properties of the stem     */
+		/* to point coordinates taken from the most "typical" chunk */
+		/* of this stem. We also have to recalculate stem width and */
 		/* left/right offset values */
 		loff = ( stem->left.x - lold.x ) * stem->unit.y -
 		       ( stem->left.y - lold.y ) * stem->unit.x;
@@ -4227,10 +4227,10 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     } else {
 	qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
 	lset = false; rset = false;
-	/* Search for a pair of points whose vectors are really parallel.
-	/* This check is necessary because a diagonal stem can start from
-	/* a feature termination, and our checks for such terminations
-	/* are more "liberal" than in other cases. However we don't want
+	/* Search for a pair of points whose vectors are really parallel. */
+	/* This check is necessary because a diagonal stem can start from */
+	/* a feature termination, and our checks for such terminations    */
+	/* are more "liberal" than in other cases. However we don't want  */
 	/* considering such a pair of points basic for this stem */
 	for ( i=0; i<stem->chunk_cnt; ++i ) {
 	    chunk = &stem->chunks[i];
@@ -4250,7 +4250,7 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
 		}
 	    }
 	}
-	/* If the above check fails, just select the first point (relatively)
+	/* If the above check fails, just select the first point (relatively) */
 	/* to the stem direction both at the left and the right edge */
 	if ( i == stem->chunk_cnt ) for ( i=0; i<stem->chunk_cnt; ++i ) {
 	    chunk = &stem->chunks[i];
@@ -4396,9 +4396,9 @@ static struct stemdata *FindOrMakeGhostStem( struct glyphdata *gd,
 	if ( tstem->blue == blue && tstem->ghost && tstem->width == width ) {
 	    stem = tstem;
     break;
-	/* If the stem controlling this blue zone is not for a ghost hint,
-	/* then we check if it has both left and right points, to ensure that
-	/* we don't occasionally assign an additional point to a stem which
+	/* If the stem controlling this blue zone is not for a ghost hint,    */
+	/* then we check if it has both left and right points, to ensure that */
+	/* we don't occasionally assign an additional point to a stem which   */
 	/* has already been rejected in favor of another stem */
 	} else if ( tstem->blue == blue && !tstem->ghost && !tstem->toobig ) {
 	    min = ( width == 20 ) ? tstem->left.y - tstem->lmin - 2*dist_error_hv :
@@ -4445,7 +4445,7 @@ static int AddGhostSegment( struct pointdata *pd,int cnt,double base,struct segm
     sp = nsp = psp = pd->sp;
     pos = pd->sp->me.y;
     
-    /* First check if there are points on the same line lying further
+    /* First check if there are points on the same line lying further */
     /* in the desired direction */
     if (( sp->next != NULL ) && ( sp->next->to->me.y == pos ))
 	nsp = sp->next->to;
@@ -4979,7 +4979,7 @@ static int ValidConflictingStem( struct stemdata *stem1,struct stemdata *stem2 )
     if ( s2 >= e1 || s1 >= e2 )
 return( false );
     
-    /* Stems which have no points assigned cannot be valid masters for
+    /* Stems which have no points assigned cannot be valid masters for    */
     /* other stems (however there is a notable exception for ghost hints) */
     if (( stem1->lpcnt > 0 || stem1->rpcnt > 0 ) && 
 	stem2->lpcnt == 0 && stem2->rpcnt == 0 && !stem2->ghost )
@@ -4995,7 +4995,7 @@ return( false );
     /* Don't attempt to handle together stems, linked to different zones */
     if ( stem1->blue >=0 && stem2->blue >= 0 && stem1->blue != stem2->blue )
 return( false );
-    /* If both stems are associated with a blue zone, but one of them is for
+    /* If both stems are associated with a blue zone, but one of them is for */
     /* a ghost hint, then that stem is preferred */
     if ( stem1->ghost && !stem2->ghost )
 return( false );
@@ -5087,36 +5087,36 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
 	tstart = ( is_x ) ? tstem->right.y : tstem->left.x;
 	tend = ( is_x ) ? tstem->left.y : tstem->right.x;
 
-	/* In this loop we are looking if the given stem has conflicts with
-	/* other stems and if anyone of those conflicting stems should
+	/* In this loop we are looking if the given stem has conflicts with */
+	/* other stems and if anyone of those conflicting stems should      */
 	/* take precedence over it */
 	if ( stem == tstem || tend < start || tstart > end || 
 	    !ValidConflictingStem( stem,tstem ) || HasDependentStem( stem,tstem ))
     continue;
-	/* Usually in case of conflicts we prefer the stem with longer active
-	/* zones. However a stem linked to a blue zone is always preferred to
-	/* a stem which is not, and ghost hints are preferred to any other
+	/* Usually in case of conflicts we prefer the stem with longer active */
+	/* zones. However a stem linked to a blue zone is always preferred to */
+	/* a stem which is not, and ghost hints are preferred to any other    */
 	/* stems */
 	if ( stem->clen > tstem->clen && ValidConflictingStem( tstem,stem ))
     continue;
     
 	stem->confl_cnt++;
     
-	/* If the master stem is for a ghost hint or both the stems are
-	/* linked to the same blue zone, then we can link only to the edge
+	/* If the master stem is for a ghost hint or both the stems are    */
+	/* linked to the same blue zone, then we can link only to the edge */
 	/* which fall into the blue zone */
 	allow_s = ( !tstem->ghost || tstem->width == 21 ) &&
 	    ( stem->blue == -1 || stem->blue != tstem->blue || bd->blues[stem->blue][0] < 0 );
 	allow_e = ( !tstem->ghost || tstem->width == 20 ) &&
 	    ( stem->blue == -1 || stem->blue != tstem->blue || bd->blues[stem->blue][0] > 0 );
 	
-	/* Assume there are two stems which have (almost) coincident left edges.
-	/* The hinting technique for this case is to merge all points found on
-	/* those coincident edges together, position them, and then link to the
+	/* Assume there are two stems which have (almost) coincident left edges. */
+	/* The hinting technique for this case is to merge all points found on   */
+	/* those coincident edges together, position them, and then link to the  */
 	/* opposite edges. */
-	/* However we don't allow merging if both stems can be snapped to a blue
-	/* zone, unless their edges are _exactly_ coincident, as shifting features
-	/* relatively to each other instead of snapping them to the same zone would
+	/* However we don't allow merging if both stems can be snapped to a blue    */
+	/* zone, unless their edges are _exactly_ coincident, as shifting features  */
+	/* relatively to each other instead of snapping them to the same zone would */
 	/* obviously be wrong */
 	if ( allow_s && tstart > smin && tstart < smax && start > tsmin && start < tsmax &&
 	    ( stem->blue == -1 || RealNear( tstart,start ))) {
@@ -5134,13 +5134,13 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
 		etype = 'a';
 	    }
 	    
-	/* Nested stems. I first planned to handle them by positioning the 
-	/* narrower stem first, and then linking its edges to the opposed edges 
-	/* of the nesting stem. But this works well only in those cases where
-	/* maintaining the dependent stem width is not important. So now the 
-	/* situations where a narrower or a wider stem can be preferred 
-	/* (because it has longer active zones) are equally possible. In the 
-	/* first case I link to the master stem just one edge of the secondary 
+	/* Nested stems. I first planned to handle them by positioning the      */
+	/* narrower stem first, and then linking its edges to the opposed edges */
+	/* of the nesting stem. But this works well only in those cases where   */
+	/* maintaining the dependent stem width is not important. So now the    */
+	/* situations where a narrower or a wider stem can be preferred         */
+	/* (because it has longer active zones) are equally possible. In the    */
+	/* first case I link to the master stem just one edge of the secondary  */
 	/* stem, just like with overlapping stems */
 	} else if ( tstart > start && tend < end ) {
 	    if ( allow_s && ( smaster == NULL || stype == 'i' ||
@@ -5155,8 +5155,8 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
 		emaster = tstem;
 		etype = 'm';
 	    }
-	/* However if we have to prefer the nesting stem, we do as with 
-	/* overlapping stems which require interpolations, i. e. interpolate 
+	/* However if we have to prefer the nesting stem, we do as with      */
+	/* overlapping stems which require interpolations, i. e. interpolate */
 	/* one edge and link to another */
 	} else if ( tstart < start && tend > end ) {
 	    link_to_s = ( allow_s && ( start - tstart < tend - end ));
@@ -5169,12 +5169,12 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
 		emaster = tstem;
 		etype = 'i';
 	    }
-	/* Overlapping stems. Here we first check all 4 distances between
-	/* 4 stem edges. If the closest distance is between left or right
-	/* edges, then the normal technique (in TrueType) is linking them
-	/* with MDRP without maintaining a minimum distance. Otherwise
-	/* we interpolate an edge of the "slave" stem between already
-	/* positioned edges of the "master" stem, and then gridfit it */
+	/* Overlapping stems. Here we first check all 4 distances between */
+	/* 4 stem edges. If the closest distance is between left or right */
+	/* edges, then the normal technique (in TrueType) is linking them */
+	/* with MDRP without maintaining a minimum distance. Otherwise    */
+	/* we interpolate an edge of the "slave" stem between already     */
+	/* positioned edges of the "master" stem, and then gridfit it     */
 	} else if (( tstart < start && start < tend && tend < end ) ||
 	    ( start < tstart && tstart < end && end < tend )) {
 		
@@ -5238,13 +5238,13 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
     }
 }
 
-/* If a stem has been considered depending from another stem which in
-/* its turn has its own "master", and the first stem doesn't conflict
-/* with the "master" of the stem it overlaps (or any other stems), then
-/* this dependency is unneeded and processing it in the autoinstructor 
-/* can even lead to undesired effects. Unfortunately we can't prevent
-/* detecting such dependecies in LookForMasterHVStem(), because we
-/* need to know the whole stem hierarchy first. So look for undesired
+/* If a stem has been considered depending from another stem which in   */
+/* its turn has its own "master", and the first stem doesn't conflict   */
+/* with the "master" of the stem it overlaps (or any other stems), then */
+/* this dependency is unneeded and processing it in the autoinstructor  */
+/* can even lead to undesired effects. Unfortunately we can't prevent   */
+/* detecting such dependecies in LookForMasterHVStem(), because we      */
+/* need to know the whole stem hierarchy first. So look for undesired   */
 /* dependencies and clean them now */
 static void ClearUnneededDeps( struct stemdata *stem ) {
     struct stemdata *master;
@@ -5271,10 +5271,10 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
     double dmove;
     DBounds bounds;
     
-    /* Some checks for undesired stems which we couldn't do earlier */
+    /* Some checks for undesired stems which we couldn't do earlier  */
     
-    /* First filter out HV stems which have only "potential" points
-    /* on their left or right edge. Such stems aren't supposed to be 
+    /* First filter out HV stems which have only "potential" points  */
+    /* on their left or right edge. Such stems aren't supposed to be */
     /* used for PS hinting, so we mark them as "too big" */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
@@ -5293,7 +5293,7 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
 	}
     }
 
-    /* Filter out HV stems which have both their edges controlled by
+    /* Filter out HV stems which have both their edges controlled by */
     /* other, narrower HV stems */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
@@ -5309,9 +5309,9 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
 		    for ( k=0; k<stem_cnt; k++ ) {
 			tstem = ( stem->chunks[j].lnext ) ? 
 			    lpd->nextstems[k] : lpd->prevstems[k];
-			/* Used to test tstem->toobig <= stem->toobig, but got into troubles with
-			/* a weird terminal stem preventing a ball terminal from being properly detected,
-			/* because both the stems initially have toobig == 1.
+			/* Used to test tstem->toobig <= stem->toobig, but got into troubles with */
+			/* a weird terminal stem preventing a ball terminal from being properly detected, */
+			/* because both the stems initially have toobig == 1. */
 			/* See the "f" from Heuristica-Italic */
 			if ( tstem != stem && 
 			    !tstem->toobig && tstem->positioned >= stem->positioned &&
@@ -5379,8 +5379,8 @@ static void GDBundleStems( struct glyphdata *gd, int maxtoobig, int needs_deps )
 	    RealNear( stem->unit.x,gd->slant_unit.x ) &&
 	    RealNear( stem->unit.y,gd->slant_unit.y )) {
 	    
-	    /* Move base point coordinates to the baseline to simplify
-	    /* stem ordering and positioning relatively to each other */
+	    /* Move base point coordinates to the baseline to simplify */
+	    /* stem ordering and positioning relatively to each other  */
 	    stem->left.x -= (( stem->left.y - bounds.miny ) * stem->unit.x )/stem->unit.y;
 	    stem->right.x -= (( stem->right.y - bounds.miny ) * stem->unit.x )/stem->unit.y;
 	    dmove = ( stem->left.y - bounds.miny ) / stem->unit.y;
@@ -5462,7 +5462,7 @@ return;
     master->serifs[scnt].is_ball = is_ball;
     master->serif_cnt++;
     
-    /* Mark the dependent stem as related with a bundle, although it
+    /* Mark the dependent stem as related with a bundle, although it */
     /* is not listed in that bundle itself */
     slave->bundle = master->bundle;
 }
@@ -5688,7 +5688,7 @@ static int StemPairsSimilar( struct stemdata *s1, struct stemdata *s2,
     int normal, reversed, ret;
     double olen1, olen2;
     
-    /* Stem widths in the second pair should be nearly the same as
+    /* Stem widths in the second pair should be nearly the same as */
     /* stem widths in the first pair */
     normal = (  ts1->width >= s1->width - dist_error_hv && 
 		ts1->width <= s1->width + dist_error_hv &&
@@ -5753,10 +5753,10 @@ static void FindCounterGroups( struct glyphdata *gd,int is_v ) {
     }
 }
 
-/* Normally we use the DetectDiagonalStems flag (set via the Preferences dialog) to determine 
-/* if diagonal stems should be generated. However, sometimes it makes sense to reduce the
-/* processing time, deliberately turning the diagonal stem detection off: in particular we
-/* don't need any diagonal stems if we only want to assign points to some preexisting HV
+/* Normally we use the DetectDiagonalStems flag (set via the Preferences dialog) to determine */
+/* if diagonal stems should be generated. However, sometimes it makes sense to reduce the */
+/* processing time, deliberately turning the diagonal stem detection off: in particular we */
+/* don't need any diagonal stems if we only want to assign points to some preexisting HV */
 /* hints. For thisreason  the only_hv argument still can be passed to this function. */
 struct glyphdata *GlyphDataInit( SplineChar *sc,int layer,double em_size,int only_hv ) {
     struct glyphdata *gd;
@@ -5969,8 +5969,8 @@ return( gd );
 	    DiagonalCornerStem( gd,pd,false );
 	}
 	
-	/* Snap corner extrema to preexisting hints if they have not
-	/* already been. This is currently done only when preparing
+	/* Snap corner extrema to preexisting hints if they have not */
+	/* already been. This is currently done only when preparing  */
 	/* glyph data for the autoinstructor */
 	if ( use_existing && ( pd->x_corner || pd->y_corner )) {
 	    has_h = has_v = false;
@@ -5995,14 +5995,14 @@ return( gd );
     }
     AssignLinePointsToStems( gd );
 
-    /* Normalize stems before calculating active zones (as otherwise
+    /* Normalize stems before calculating active zones (as otherwise */
     /* we don't know exact positions of stem edges */
     for ( i=0; i<gd->stemcnt; ++i )
 	NormalizeStem( gd,&gd->stems[i] );
     GDNormalizeStubs( gd );
 
-    /* Figure out active zones at the first order (as they are needed to
-    /* determine which stems are undesired and they don't depend from
+    /* Figure out active zones at the first order (as they are needed to */
+    /* determine which stems are undesired and they don't depend from */
     /* the "potential" state of left/right points in chunks */
     gd->lspace = galloc(gd->pcnt*sizeof(struct segment));
     gd->rspace = galloc(gd->pcnt*sizeof(struct segment));
@@ -6014,8 +6014,8 @@ return( gd );
     for ( i=0; i<gd->stemcnt; ++i )
 	FigureStemActive( gd,&gd->stems[i] );
 
-    /* Check this before resolving stem conflicts, as otherwise we can
-    /* occasionally prefer a stem which should be excluded from the list 
+    /* Check this before resolving stem conflicts, as otherwise we can */
+    /* occasionally prefer a stem which should be excluded from the list */
     /* for some other reasons */
     GDFindUnlikelyStems( gd );
 

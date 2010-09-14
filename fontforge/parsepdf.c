@@ -546,9 +546,9 @@ static int pdf_findfonts(struct pdfcontext *pc) {
 		    pc->fontobjs[k] = dnum;
 		    pc->cmapobjs[k] = cnum;
 		    pc->fontnames[k] = tpt;
-		    /* Store a flag indicating this particular CMap comes from a CID-keyed
-		    /* font. We can't determine this later just by examining sf->subfontcnt,
-		    /* as FF flattens TTF CID fonts at the time they are loaded, so that
+		    /* Store a flag indicating this particular CMap comes from a CID-keyed */
+		    /* font. We can't determine this later just by examining sf->subfontcnt, */
+		    /* as FF flattens TTF CID fonts at the time they are loaded, so that */
 		    /* they no longer look as CID-keyed fonts */
 		    pc->cmap_from_cid[k] = 1;
 		    k++;
@@ -1684,20 +1684,20 @@ static void add_mapping(SplineFont *basesf, long *mappings, int *uvals, int nuni
 	strcat(name, suffix);
     }
     
-    /* embedded TTF fonts may contain a 8-bit cmap table, denoted as platform ID 1 format 0
-    /* (Apple). In fact this mapping has nothing to do both with Unicode and Apple, and rather
-    /* stores a custom order used to refer to glyphs from this particular PDF.
-    /* If such a mapping is present, then GIDs used in the ToUnicode Cmap array will correspond
-    /* to "Unicode" values it specifies rather than to the real order in which the glyphs are
+    /* embedded TTF fonts may contain a 8-bit cmap table, denoted as platform ID 1 format 0 */
+    /* (Apple). In fact this mapping has nothing to do both with Unicode and Apple, and rather */
+    /* stores a custom order used to refer to glyphs from this particular PDF. */
+    /* If such a mapping is present, then GIDs used in the ToUnicode Cmap array will correspond */
+    /* to "Unicode" values it specifies rather than to the real order in which the glyphs are */
     /* stored in the file */
     pos = cmap_from_cid || sf->map == NULL ? gid : sf->map->map[gid];
     sc = sf->glyphs[pos];
     
     if (pos >= 0 && pos < sf->glyphcnt && (sc->unicodeenc != uvals[0] || nuni > 1)) {
-	/* Sometimes FF instead of assigning proper Unicode values to TTF glyphs keeps
-	/* them encoded to the same codepoint, but creates for each glyph an alternate 
-	/* encoding, corresponding to the position this glyph has in the font's encoding
-	/* map. As we are going to reencode the glyph anyway, we should remove those weird
+	/* Sometimes FF instead of assigning proper Unicode values to TTF glyphs keeps */
+	/* them encoded to the same codepoint, but creates for each glyph an alternate */
+	/* encoding, corresponding to the position this glyph has in the font's encoding */
+	/* map. As we are going to reencode the glyph anyway, we should remove those weird */
 	/* AltUni's first */
 	if (!cmap_from_cid) {
 	    for ( altuni = sc->altuni, prev = NULL; altuni!=NULL; prev = altuni, altuni = altuni->next ) {
@@ -1740,18 +1740,18 @@ return;
 		if (pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%x",&gid) &&
 		    pdf_skip_brackets(file,tok) >= 0 && sscanf(tok,"%lx",&mappings[cur])) {
 		    
-		    /* Values we store in the 'mappings' array are just unique identifiers,
-		    /* so they should not necessarily correspond to any valid Unicode codepoints.
-		    /* In order to get the real Unicode value mapped to a glyph we should parse the
+		    /* Values we store in the 'mappings' array are just unique identifiers, */
+		    /* so they should not necessarily correspond to any valid Unicode codepoints. */
+		    /* In order to get the real Unicode value mapped to a glyph we should parse the */
 		    /* hex string once again, dividing it into hex quartets */
 		    nhex = (strlen(tok))/4;
 		    nuni = 1;
 		    uvals = gcalloc(nhex,sizeof(int));
 		    sscanf(tok,"%4x", &uvals[0]);
 		    ccval = tok + 4;
-		    /* If a single glyph is mapped to a sequence of Unicode characters, then the
-		    /* CMap mapping will contain two or more hex quartets. However a pair of such
-		    /* quartets may also represent a single Unicode character encoded with
+		    /* If a single glyph is mapped to a sequence of Unicode characters, then the */
+		    /* CMap mapping will contain two or more hex quartets. However a pair of such */
+		    /* quartets may also represent a single Unicode character encoded with */
 		    /* a surrogate pair */
 		    for (j = 1; j<nhex && strlen(ccval) >= 4; j++) {
 			sscanf(ccval,"%4x", &lo);
@@ -1777,7 +1777,7 @@ return;
 
 		    uvals = gcalloc(1,sizeof(int));
 		    sscanf(tok,"%4x", &uni);
-		    /* For CMap values defining a character range we assume they should always
+		    /* For CMap values defining a character range we assume they should always */
 		    /* correspond to a single Unicode character (either a BMP character or a surrogate pair) */
 		    if (strlen(tok) >= 8) {
 			sscanf(tok+4,"%4x", &lo);
@@ -1800,7 +1800,7 @@ return;
 	    memcpy(prevtok,tok,200);
     }
     fclose(file);
-    /* If this is not a cid font, then regenerate the font encoding (so that it is no
+    /* If this is not a cid font, then regenerate the font encoding (so that it is no */
     /* longer identified as MacRoman) */
     if ( sf->map != NULL && basesf == sf ) {
 	EncMapFree( sf->map );
@@ -1963,7 +1963,7 @@ return( NULL );
 	sf = _CFFParse(file,len,pc->fontnames[font_num]);
     }
     fclose(file);
-    /* Don't attempt to parse CMaps for Type 1 fonts: they already have glyph names
+    /* Don't attempt to parse CMaps for Type 1 fonts: they already have glyph names */
     /* which are usually more meaningful */
     if (pc->cmapobjs[font_num] != -1 && type > 1)
 	pdf_getcmap(pc, sf, font_num);

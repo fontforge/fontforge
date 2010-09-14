@@ -1543,8 +1543,8 @@ return( true );
 	    /*  be possible to activate almost all lookups from the default */
 	    /*  script (for shaping engines which can't handle the script in */
 	    /*  question, or if glyphs are used in a context in which no */
-	    /*  script can be determined, or glyphs from font A are used
-	    /*  surounded by those of font B, and the font B glyphs establish
+	    /*  script can be determined, or glyphs from font A are used */
+	    /*  surounded by those of font B, and the font B glyphs establish */
 	    /*  a script font A does not support) so we do not view the presence*/
 	    /*  of the default script as a reliable indicator -- only if it */
 	    /*  is the sole script */

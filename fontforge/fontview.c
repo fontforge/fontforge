@@ -245,9 +245,9 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 /* When reencoding a font we can find times where index>=show->charcnt */
 	} else if ( fv->show!=NULL && feat_gid<fv->show->glyphcnt && feat_gid!=-1 &&
 		fv->show->glyphs[feat_gid]!=NULL ) {
-	    /* If fontview is set to display an embedded bitmap font (not a temporary font,
-	    /* rasterized specially for this purpose), then we can't use it directly, as bitmap
-	    /* glyphs may contain selections and references. So create a temporary copy of
+	    /* If fontview is set to display an embedded bitmap font (not a temporary font, */
+	    /* rasterized specially for this purpose), then we can't use it directly, as bitmap */
+	    /* glyphs may contain selections and references. So create a temporary copy of */
 	    /* the glyph merging all such elements into a single bitmap */
 	    bdfc = fv->show->piecemeal ? 
 		fv->show->glyphs[feat_gid] : BDFGetMergedChar( fv->show->glyphs[feat_gid] );
@@ -1580,13 +1580,14 @@ return( NULL );
 	    ++name;
 	} else if ( ch=='[' ) {
 	    /* [<char>...] matches the chars
-	    /* [<char>-<char>...] matches any char within the range (inclusive)
-	    /* the above may be concattenated and the resultant pattern matches
-	    /*		anything thing which matches any of them.
-	    /* [^<char>...] matches any char which does not match the rest of
-	    /*		the pattern
-	    /* []...] as a special case a ']' immediately after the '[' matches
-	    /*		itself and does not end the pattern */
+	     * [<char>-<char>...] matches any char within the range (inclusive)
+	     * the above may be concattenated and the resultant pattern matches
+	     *		anything thing which matches any of them.
+	     * [^<char>...] matches any char which does not match the rest of
+	     *		the pattern
+	     * []...] as a special case a ']' immediately after the '[' matches
+	     *		itself and does not end the pattern
+	     */
 	    int found = 0, not=0;
 	    ++pattern;
 	    if ( pattern[0]=='^' ) { not = 1; ++pattern; }

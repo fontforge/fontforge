@@ -207,11 +207,12 @@ static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt,
     for ( i=0; i<dcnt; i++ ) {
         stem = dstems[i];
         /* If a stem is more horizontal than vertical, then it should not
-        /* cause vertical counters to be increased, and vice versa. 
-        /* However we have to check both directions if stem slope angle
-        /* is close to 45 degrees, as otherwise undesired random effects 
-        /* can occur (e. g. in a multiply sign). So we have selected 0.75
-        /* (sin(48 deg. 36'), cos(41 deg. 24 min)) as a boundary value */
+         * cause vertical counters to be increased, and vice versa.
+         * However we have to check both directions if stem slope angle
+         * is close to 45 degrees, as otherwise undesired random effects
+         * can occur (e. g. in a multiply sign). So we have selected 0.75
+         * (sin(48 deg. 36'), cos(41 deg. 24 min)) as a boundary value
+         */
         if (( x_dir && fabs( stem->unit.x ) > .75 ) ||
             ( !x_dir && fabs( stem->unit.y ) > .75 ))
     continue;
@@ -275,18 +276,19 @@ return( black );
 }
 
 /* As with expanding/condensing, we are going to assume that LCG glyphs have 
-/* at most two counter zones, one near the bottom (baseline), one near the top. */
-/* So check if the given counter is intersected by some DStems at two positions:
-/* 25% glyph height and 75% glyph height. If so, then only the "white" part 
-/* of the counter can be scaled by the normal counter ratio, while for the space 
-/* covered by DStems the stem ratio should be used instead. */
-/* However if at least one of the stems which form the counter doesn't extend
-/* to the top/bottom part of the glyph (Latin "Y" is the most obvious example),
-/* then the actual counter width in that part is larger than just the space
-/* between two stems (or a stem and a glyph boundary), so that expanding just
-/* that space would make the counter disproportionally wide. We are attempting
-/* to compensate this by subtracting a half base stem width from the "white"
-/* part of the counter */
+ * at most two counter zones, one near the bottom (baseline), one near the top.
+ * So check if the given counter is intersected by some DStems at two positions:
+ * 25% glyph height and 75% glyph height. If so, then only the "white" part 
+ * of the counter can be scaled by the normal counter ratio, while for the space 
+ * covered by DStems the stem ratio should be used instead.
+ * However if at least one of the stems which form the counter doesn't extend
+ * to the top/bottom part of the glyph (Latin "Y" is the most obvious example),
+ * then the actual counter width in that part is larger than just the space
+ * between two stems (or a stem and a glyph boundary), so that expanding just
+ * that space would make the counter disproportionally wide. We are attempting
+ * to compensate this by subtracting a half base stem width from the "white"
+ * part of the counter
+ */
 static double ScaleCounter( GlyphData *gd, StemData **dstems, int dcnt,
     DBounds *orig_b, StemData *pstem, StemData *nstem, double stem_scale, double cntr_scale, int x_dir ) {
     
@@ -382,10 +384,11 @@ static void StemPosDependent( StemData *stem,struct genericchange *genchange,int
             slave = stem->serifs[i].stem;
             lbase = stem->serifs[i].lbase;
             /* In the autoinstructor we usually link an edge of the serif stem to the opposite
-            /* edge of the main stem. So, if 'lbase' is true, this actually means that we are
-            /* interested in the right edge of the serif stem. However, here, despite of
-            /* the variable name, we position the left edge of the serif relatively to the
-            /* left edge of the master stem and vice versa */
+             * edge of the main stem. So, if 'lbase' is true, this actually means that we are
+             * interested in the right edge of the serif stem. However, here, despite of
+             * the variable name, we position the left edge of the serif relatively to the
+             * left edge of the master stem and vice versa
+             */
             dist = lbase ? (&slave->right.x)[!x_dir] - r : l - (&slave->left.x)[!x_dir];
             dist *= serif_scale;
             if (lbase) (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
@@ -407,10 +410,11 @@ static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt
     int i, expanded;
 
     /* If additional amounts of em units for stem width/height have been
-    /* specified, but it was impossible to handle them via BoldSSStroke()
-    /* (e. g. because one of two values was zero) then just add them to the
-    /* scaled stem width. Otherwise stems have already been expanded, so
-    /* there is nothing to add */
+     * specified, but it was impossible to handle them via BoldSSStroke()
+     * (e. g. because one of two values was zero) then just add them to the
+     * scaled stem width. Otherwise stems have already been expanded, so
+     * there is nothing to add
+     */
     expanded = (genchange->stem_width_add != 0 && genchange->stem_height_add !=0 &&
                 genchange->stem_height_add/genchange->stem_width_add > 0 );
     if ( x_dir ) {
@@ -439,7 +443,7 @@ static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt
             else
                 newstart[!x_dir] = newprevend[!x_dir] + floor( cntr_new + cntr_add + .5 );
 
-            /* Bounding box hints usually don't mark real stems, so there is
+            /* Bounding box hints usually don't mark real stems, so there is */
             /* no reason to maintain the normal stem width ratio when dealing with them */
             if ( stem->bbox )
                 width_new = ScaleCounter( gd,dstems,dcnt,orig_b,NULL,NULL,stem_scale,cntr_scale,x_dir );
@@ -455,8 +459,8 @@ static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt
 
     *max_new = *min_new;
     prev = NULL;
-    /* A new pass to calculate the glyph's right boundary. Here we
-    /* need to take into account also dependent stems (and that's why we
+    /* A new pass to calculate the glyph's right boundary. Here we */
+    /* need to take into account also dependent stems (and that's why we */
     /* couldn't do that in the previous cycle) */
     for ( i=0; i<bundle->cnt; i++ ) {
         stem = bundle->stemlist[i];
@@ -516,7 +520,7 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
 
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
         stem = gd->hbundle->stemlist[i];
-        /* The 'blue' field now actually points to a 'position_maps' structure.
+        /* The 'blue' field now actually points to a 'position_maps' structure. */
         /* So the name is wrong, but who cares... */
         if (stem->blue != -1 ) {
             pm = &fix->maps[stem->blue];
@@ -614,8 +618,8 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
         if ( stem->master == NULL )
             StemPosDependent( stem,genchange,false );
     }
-    /* Final bounding box adjustment (it is possible that some of the
-    /* calculated stem boundaries are outside of the new bounding box,
+    /* Final bounding box adjustment (it is possible that some of the  */
+    /* calculated stem boundaries are outside of the new bounding box, */
     /* and we should fix this now */
     upper = lower = NULL;
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
@@ -658,7 +662,7 @@ static void InitZoneMappings( struct fixed_maps *fix, BlueData *bd, double stem_
     }
     if ( i>0 ) fix->cnt = j+1;
 
-    /* Init a set of blues from user-specified mappings (we need this for
+    /* Init a set of blues from user-specified mappings (we need this for */
     /* GlyphDataBuild(), to get stems associated with blues) */
     for ( i=0; i<fix->cnt; i++ ) {
         fix->maps[i].des_width = floor( fix->maps[i].cur_width * stem_scale + .5 );
@@ -718,7 +722,7 @@ static void PosStemPoints( GlyphData *gd, double stem_scale, int has_dstems, int
                         ( chunk->stemcheat == 2 || chunk->stemcheat == 3 ))
                 break;
                 }
-                /* Don't attempt to position inner points at diagonal intersections:
+                /* Don't attempt to position inner points at diagonal intersections: */
                 /* our diagonal stem processor will handle them better */
                 if ( j<best->chunk_cnt )
     continue;
@@ -1059,7 +1063,7 @@ static void GetDStemBounds( GlyphData *gd, StemData *stem, real *prev, real *nex
 static void AlignPointPair( StemData *stem,PointData *lpd, PointData *rpd, double hscale,double vscale ) {
     double off, newoff, dscale;
     
-    /* If points are already horizontally or vertically aligned,
+    /* If points are already horizontally or vertically aligned, */
     /* then there is nothing more to do here */
     if (( lpd->base.x == rpd->base.x && lpd->newpos.x == rpd->newpos.x ) ||
         ( lpd->base.y == rpd->base.y && lpd->newpos.y == rpd->newpos.y ))
@@ -1159,8 +1163,8 @@ static void ShiftDependent( GlyphData *gd, PointData *pd, StemData *stem,
     PointData *npd;
     StemData *tstem, *dstem = NULL;
     
-    /* Check if the given side of the point is controlled by another
-    /* DStem. If so, then we should check against that stem instead */
+    /* Check if the given side of the point is controlled by another */
+    /* DStem. If so, then we should check against that stem instead  */
     scnt = next ? pd->nextcnt : pd->prevcnt;
     for ( i=0; i<scnt; i++ ) {
         tstem = next ? pd->nextstems[i] : pd->prevstems[i];
@@ -1191,10 +1195,11 @@ return;
         ( from_min && dist <= 0 ) || ( !from_min && dist >= 0 ))) {
         
         /* Can't just check if the point is touched in a diagonal direction,
-        /* since not all DStems may have be done at the moment. So see if there
-        /* are any valid DStems attached to the point. If so, then it is not
-        /* a candidate for the strong interpolation, and thus there is no need
-        /* to adjust its position here */
+         * since not all DStems may have be done at the moment. So see if there
+         * are any valid DStems attached to the point. If so, then it is not
+         * a candidate for the strong interpolation, and thus there is no need
+         * to adjust its position here
+         */
         for ( i=0; i<npd->prevcnt && dstem == NULL; i++ ) {
             tstem = npd->prevstems[i];
             if ( !tstem->toobig && 
@@ -1241,9 +1246,10 @@ return;
 }
 
 /* If several DStems share one common edge, then use the longer one to
-/* position point on that edge and ignore others. Otherwise we can go
-/* far outside of our bounding box, attempting to find an intersection
-/* of two almost parallel (but still different) vectors */
+ * position point on that edge and ignore others. Otherwise we can go
+ * far outside of our bounding box, attempting to find an intersection
+ * of two almost parallel (but still different) vectors
+ */
 static int PreferredDStem( PointData *pd, StemData *stem, int next ) {
     int i, stemcnt = next ? pd->nextcnt : pd->prevcnt;
     StemData *tstem;
@@ -1270,13 +1276,14 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
     StemData *hvstem;
 
     /* Find the ratio by which the stem is going to be downsized in both directions. 
-    /* To do this, we assume each DStem crosses a counter and calculate the ratio by
-    /* comparing the original and resulting size of that counter. For "A" or "V"
-    /* such a "counter" will most probably cover the overall glyph width, while for
-    /* "M" or "N" it will be limited to the space between two vertical stems.
-    /* For the vertical direction we could just use genchange->v_scale instead, but it
-    /* is not guaranteed to be relevant if some blues were mapped to positions,
-    /* different from their default (scaled) values */
+     * To do this, we assume each DStem crosses a counter and calculate the ratio by
+     * comparing the original and resulting size of that counter. For "A" or "V"
+     * such a "counter" will most probably cover the overall glyph width, while for
+     * "M" or "N" it will be limited to the space between two vertical stems.
+     * For the vertical direction we could just use genchange->v_scale instead, but it
+     * is not guaranteed to be relevant if some blues were mapped to positions,
+     * different from their default (scaled) values
+     */
     stem_b.minx = orig_b->minx; stem_b.maxx = orig_b->maxx;
     GetDStemBounds( gd,stem,&stem_b.minx,&stem_b.maxx,true );
     min = orig_b->minx; max = orig_b->maxx;
@@ -1322,8 +1329,8 @@ return;
     }
     vscale = ( max_new - min_new )/( max - min );
     
-    /* Now scale positions of the left and right virtual points on the stem
-    /* by the ratios used to resize horizontal and vertical stems. We need
+    /* Now scale positions of the left and right virtual points on the stem */
+    /* by the ratios used to resize horizontal and vertical stems. We need  */
     /* this solely to calculate the desired stem width */
     stem->newleft.x = stem->left.x * genchange->stem_width_scale;
     stem->newleft.y = stem->left.y * genchange->stem_height_scale;
@@ -1338,8 +1345,8 @@ return;
     des_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
             ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
 
-    /* For italic stems we move left and right coordinates to the baseline, so
-    /* that they may well fall outside of the bounding box. We have to take care
+    /* For italic stems we move left and right coordinates to the baseline, so   */
+    /* that they may well fall outside of the bounding box. We have to take care */
     /* of this situation */
     left = stem->left; right = stem->right;
     if ( left.x < orig_b->minx ) {
@@ -1352,9 +1359,10 @@ return;
     }
     
     /* OK, now we know the desired width, so interpolate the coordinates of our
-    /* left and right points to determine where our DStem would probably be
-    /* placed if there were no DStem processor. We are not expecting to get an
-    /* exact result here, but it still would be a good starting point */
+     * left and right points to determine where our DStem would probably be
+     * placed if there were no DStem processor. We are not expecting to get an
+     * exact result here, but it still would be a good starting point
+     */
     stem->newleft.x = InterpolateBetweenEdges( 
         gd,left.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
     stem->newleft.y = InterpolateBetweenEdges( 
@@ -1364,7 +1372,7 @@ return;
     stem->newright.y = InterpolateBetweenEdges( 
         gd,right.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
 
-    /* Adjust the stem unit vector according to the horizontal and vertical
+    /* Adjust the stem unit vector according to the horizontal and vertical */
     /* ratios we have previously determined */
     if ( stem->bundle != NULL && stem->bundle == gd->ibundle ) {
         stem->newunit.x = stem->unit.x;
@@ -1377,7 +1385,7 @@ return;
         stem->newunit.y /= new_hyp;
     }
 
-    /* Get a possible width of the stem in the scaled glyph. We are going to
+    /* Get a possible width of the stem in the scaled glyph. We are going to */
     /* adjust that width then */
     new_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
             ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
@@ -1396,7 +1404,7 @@ return;
         l_to_r.y = -l_to_r.y;
     }
 
-    /* Now look if there are any points on the edges of our stem which are already fixed
+    /* Now look if there are any points on the edges of our stem which are already fixed */
     /* both by x and y and thus can no longer be moved */
     for ( i=0; i<gd->pcnt && ( lfixed == NULL || rfixed == NULL ); i++ ) if ( gd->points[i].sp != NULL ) {
         pd = &gd->points[i];
@@ -1408,13 +1416,13 @@ return;
             else rfixed = pd;
         }
     }
-    /* If there are such points at both edges, then we probably can do nothing useful
+    /* If there are such points at both edges, then we probably can do nothing useful */
     /* with this stem */
     if ( lfixed != NULL && rfixed != NULL ) {
         stem->toobig = true;
 return;
     }
-    /* If just one edge is fixed, then use it as a base and move another edge to
+    /* If just one edge is fixed, then use it as a base and move another edge to */
     /* maintain the desired stem width */
     else if ( lfixed != NULL ) {
         stem->newleft.x = lfixed->newpos.x; stem->newleft.y = lfixed->newpos.y;
@@ -1424,7 +1432,7 @@ return;
         stem->newright.x = rfixed->newpos.x; stem->newright.y = rfixed->newpos.y;
         stem->newleft.x = stem->newright.x - des_w * l_to_r.x;
         stem->newleft.y = stem->newright.y - des_w * l_to_r.y;
-    /* Otherwise move both edges to an equal amount of space from their initial
+    /* Otherwise move both edges to an equal amount of space from their initial */
     /* positions */
     } else {
         stem->newleft.x = stem->newleft.x - ( des_w - new_w )/2 * l_to_r.x;
@@ -1433,7 +1441,7 @@ return;
         stem->newright.y = stem->newright.y + ( des_w - new_w )/2 * l_to_r.y;
     }
 
-    /* Determine the preferred direction for moving points which have not
+    /* Determine the preferred direction for moving points which have not */
     /* already been touched */
     pref_y = fabs( stem->unit.y ) > fabs( stem->unit.x );
     min = pref_y ? orig_b->miny : orig_b->minx;
@@ -1452,16 +1460,17 @@ return;
             ( previdx != -1 && !PreferredDStem( pd,stem,false)))
     continue;
         is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
-        /* Move the point to a diagonal line. This doesn't yes guarantees it will
+        /* Move the point to a diagonal line. This doesn't yes guarantees it will */
         /* be placed inside our bounding box */
         MovePointToDiag( pd,stem,is_l );
 
         if ( !IsPointFixed( pd )) {
             /* Interpolate the point between either horizontal or vertical stem
-            /* edges along the preferred direction (determined according to the stem
-            /* unit vector). This will position points still floating outside the bounding
-            /* box and also guarantees e. g. proper point positioning relatively to serifs
-            /* if they have been expanded */
+             * edges along the preferred direction (determined according to the stem
+             * unit vector). This will position points still floating outside the bounding
+             * box and also guarantees e. g. proper point positioning relatively to serifs
+             * if they have been expanded
+             */
             coord_new = InterpolateBetweenEdges(
                 gd,(&pd->base.x)[pref_y],min,max,min_new,max_new,!pref_y );
             if ( pref_y ) {
@@ -1474,9 +1483,10 @@ return;
 
          }
         /* Check if there are obvious displacements relatively to stems going in the
-        /* other direction and correct them. For example, the top left point of the diagonal
-        /* stem in a Latin "N" may be moved inside the nearby vertical stem, and we have
-        /* to prevent this */
+         * other direction and correct them. For example, the top left point of the diagonal
+         * stem in a Latin "N" may be moved inside the nearby vertical stem, and we have
+         * to prevent this
+         */
         cscale = pref_y ? genchange->hcounter_scale : 
             genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
         if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,true,is_l,pref_y ))
@@ -1490,10 +1500,11 @@ return;
     }
 
     /* This is to fix relative positioning of starting/terminal points on a diagonal stem
-    /* which starts/finishes with a "stub" (i. e. no terminal serifs or connections with
-    /* other features), like in a slash or less/greater signs. We would expect such points
-    /* to be aligned as in the original outline, even if horizontal and vertical ratios
-    /* were different */
+     * which starts/finishes with a "stub" (i. e. no terminal serifs or connections with
+     * other features), like in a slash or less/greater signs. We would expect such points
+     * to be aligned as in the original outline, even if horizontal and vertical ratios
+     * were different
+     */
     dscale = fabs( hscale * stem->unit.x ) + fabs( vscale * stem->unit.y );
     if ( stem->keypts[0] != stem->keypts[2] && (
         ( stem->keypts[0]->sp->next->to == stem->keypts[2]->sp ) ||
@@ -1569,7 +1580,7 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
         }
         SplinePointListTransform( sc_sc->layers[layer].splines,scale,true );
 
-        /* If stroke has been expanded/condensed, then the old hints are no longer
+        /* If stroke has been expanded/condensed, then the old hints are no longer */
         /* relevant; so just remove them and rely solely on the stem detector */
         StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
         StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
@@ -1606,7 +1617,7 @@ return;
         }
     }
 
-    /* Have to prepare a DStem list before further operations, since they are needed
+    /* Have to prepare a DStem list before further operations, since they are needed */
     /* to properly calculate counters between vertical stems */
     if ( genchange->dstem_control ) {
         dstems = gcalloc( gd->stemcnt,sizeof( StemData *));
@@ -1624,8 +1635,8 @@ return;
         for ( i=0; i<dcnt; i++ )
             FixDStem( gd,dstems[i],dstems,dcnt,&orig_b,&new_b,genchange );
     }
-    /* Our manipulations with DStems may have moved some points outside of 
-    /* borders of the bounding box we have previously calculated. So adjust
+    /* Our manipulations with DStems may have moved some points outside of  */
+    /* borders of the bounding box we have previously calculated. So adjust */
     /* those borders now, as they may be important for point interpolations */
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
         pd = &gd->points[i];
@@ -3059,7 +3070,7 @@ return( ss );
 /*  Many of these have two zones (like "B" above) W, M, K, Y (maybe X) */
 /* Find the places where these guys hit the baseline/cap-height (x-height) */
 /*  and define these as potential counter boundries. Ignore places where   */
-/*  glyphs hit with curves (like O, Q, p).
+/*  glyphs hit with curves (like O, Q, p). */
 /* Remember to merge a hint with a top/bottom hit (harder with serifs) */
 
 /* We may still not have a useful counter: 7 3 2 C E T */

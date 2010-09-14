@@ -845,7 +845,7 @@ static const unichar_t accents[][3] = {
     { 0 },
     { 0 },
     { 0 },
-    { 0x2cb, 0x60 },		/* tone mark, left of circumflex */ /* 0x340
+    { 0x2cb, 0x60 },		/* tone mark, left of circumflex */ /* 0x340 */
     { 0x2ca, 0xb4 },		/* tone mark, right of circumflex */
     { 0x2dc, 0x7e },		/* perispomeni (tilde) */
     { 0x2bc, ',' },		/* koronis */

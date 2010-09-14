@@ -2098,14 +2098,15 @@ return;
 		}
 	    }
 	    /* Suppose we have deleted a reference from a composite glyph and than
-	    /* going to remove the previously referenced glyph from the font. The
-	    /* void reference still remains in the undoes stack, so that executing Undo/Redo
-	    /* on the first glyph may lead to unpredictable effects. It is also 
-	    /* impossible to detect such problematic undoes checking just our
-	    /* going-to-be-deleted glyph's dependents, because the composite character
-	    /* no longer contains the problematic reference and so is not listed
-	    /* in the dependents. Thus the only solution seems to be checking
-	    /* every single glyph in the font. */
+	     * going to remove the previously referenced glyph from the font. The
+	     * void reference still remains in the undoes stack, so that executing Undo/Redo
+	     * on the first glyph may lead to unpredictable effects. It is also 
+	     * impossible to detect such problematic undoes checking just our
+	     * going-to-be-deleted glyph's dependents, because the composite character
+	     * no longer contains the problematic reference and so is not listed
+	     * in the dependents. Thus the only solution seems to be checking
+	     * every single glyph in the font.
+	     */
 	    for ( i=0; i<bdf->glyphcnt; i++ ) if (( dbc = bdf->glyphs[i] ) != NULL ) {
 		BCProtectUndoes( dbc->undoes,bfc );
 		BCProtectUndoes( dbc->redoes,bfc );

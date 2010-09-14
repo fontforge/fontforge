@@ -3601,15 +3601,15 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
 	        getreal( sfd,&bp[2].x ) && getreal( sfd,&bp[2].y ) &&
 	        getreal( sfd,&bp[3].x ) && getreal( sfd,&bp[3].y )) {
 
-            /* Ensure point coordinates specified in the sfd file do
+            /* Ensure point coordinates specified in the sfd file do */
             /* form a diagonal line */
             if ( PointsDiagonalable( sf,bpref,&unit )) {
 	        cur = chunkalloc( sizeof( DStemInfo ));
 	        cur->left = *bpref[0];
 	        cur->right = *bpref[1];
                 cur->unit = unit;
-                /* Generate a temporary hint instance, so that the hint can
-                /* be visible in charview even if subsequent rebuilding instances
+                /* Generate a temporary hint instance, so that the hint can */
+                /* be visible in charview even if subsequent rebuilding instances */
                 /* fails (e. g. for composite characters) */
                 cur->where = chunkalloc( sizeof( HintInstance ));
                 rstartoff = ( cur->right.x - cur->left.x ) * cur->unit.x + 
@@ -4736,8 +4736,8 @@ exit(1);
 		sc = NULL;
 	    }
 #endif
-            /* Recalculating hint active zones may be needed for old .sfd files.
-            /* Do this when we have finished with other glyph components,
+            /* Recalculating hint active zones may be needed for old .sfd files. */
+            /* Do this when we have finished with other glyph components, */
             /* so that splines are already available */
 	    if ( sf->sfd_version<2 )
                 SCGuessHintInstancesList( sc,ly_fore,sc->hstem,sc->vstem,sc->dstem,false,false );
@@ -4875,8 +4875,8 @@ static int SFDGetBitmapReference(FILE *sfd,BDFFont *bdf) {
     int gid, rgid, xoff, yoff;
     char ch;
     
-    /* 'BDFRefChar:' elements should not occur in the file before the corresponding 
-    /* 'BDFChar:'. However it is possible that the glyphs they refer to are not yet
+    /* 'BDFRefChar:' elements should not occur in the file before the corresponding */
+    /* 'BDFChar:'. However it is possible that the glyphs they refer to are not yet */
     /* available. So we will find them later */
     if ( getint(sfd,&gid)!=1 || gid<=0 || gid >= bdf->glyphcnt || ( bc = bdf->glyphs[gid] ) == NULL )
 return( 0 );
