@@ -8654,7 +8654,7 @@ static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     num = CVNumForePointsSelected( cv,bp );
 
-    /* We need exactly 2 points to specify a horizontal or vertical stem
+    /* We need exactly 2 points to specify a horizontal or vertical stem */
     /* and exactly 4 points to specify a diagonal stem */
     if ( !(num == 2 && mi->mid != MID_AddDHint) && 
          !(num == 4 && mi->mid == MID_AddDHint))
@@ -8691,7 +8691,7 @@ return;
     } else {
 	if ( !PointsDiagonalable( cv->b.sc->parent,bp,&unit ))
 return;
-	/* No additional tests, as the points should have already been
+	/* No additional tests, as the points should have already been */
         /* reordered by PointsDiagonalable */
         d = chunkalloc(sizeof(DStemInfo));
         d->where = NULL;
@@ -8706,7 +8706,7 @@ return;
     }
     cv->b.sc->manualhints = true;
     
-    /* Hint Masks are not relevant for diagonal stems, so modifying
+    /* Hint Masks are not relevant for diagonal stems, so modifying */
     /* diagonal stems should not affect them */
     if ( (mi->mid==MID_AddVHint) || (mi->mid==MID_AddHHint) ) {
         if ( h!=NULL && cv->b.sc->parent->mm==NULL )
