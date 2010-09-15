@@ -2181,7 +2181,7 @@ static int EllipseSomewhere(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp2,
     /* First figure out a center. There will be one: */
     /*  Take a line through sp1 but parallel to slope2 */
     /*  Take a line through sp2 but parallel to slope1 */
-    /* The intersection of these two lines gives us a center
+    /* The intersection of these two lines gives us a center */
     /* First rotate everything by the rotation angle (around the origin -- it */
     /*  will do to cancel out the rotation */
 

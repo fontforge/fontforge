@@ -670,7 +670,7 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
     memset(bl,0,sizeof(bl));
     if ( notdefpos==-1 ) {
 	sc0.name = ".notdef";
-	/* sc0.ttf_glyph = 0; /* already done */
+	/* sc0.ttf_glyph = 0; */	/* already done */
 	sc0.parent = sf;
 	if ( width<4 ) w=4; else w=width;
 	sc0.width = w*(sf->ascent+sf->descent)/bdf->pixelsize;
@@ -1361,7 +1361,7 @@ void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	     putc(0,at->ebsc);
 	     putc(0,at->ebsc);
 	    /* Actual scaling info */
-	    putc( expected_sizes[i], at->ebsc);
+	    Åputc( expected_sizes[i], at->ebsc);
 	    putc( expected_sizes[i], at->ebsc);
 	    putc( bdf->pixelsize, at->ebsc);
 	    putc( bdf->pixelsize, at->ebsc);

@@ -1135,7 +1135,7 @@ return( NULL );
     qsort( line->points,line->pcnt,sizeof( struct pointdata * ),line_pt_cmp );
     start = &line->points[0]->sp->me;
     end = &line->points[pcnt]->sp->me;
-    /* Now recalculate the line unit vector basing on its starting and
+    /* Now recalculate the line unit vector basing on its starting and */
     /* terminal points */
     line->unit.x = ( end->x - start->x );
     line->unit.y = ( end->y - start->y );
