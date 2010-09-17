@@ -1361,7 +1361,7 @@ void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	     putc(0,at->ebsc);
 	     putc(0,at->ebsc);
 	    /* Actual scaling info */
-	    Åputc( expected_sizes[i], at->ebsc);
+	    putc( expected_sizes[i], at->ebsc);
 	    putc( expected_sizes[i], at->ebsc);
 	    putc( bdf->pixelsize, at->ebsc);
 	    putc( bdf->pixelsize, at->ebsc);
