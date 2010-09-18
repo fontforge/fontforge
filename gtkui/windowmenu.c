@@ -95,7 +95,7 @@ return;
 
 
 static void RecentSelect(GtkMenuItem *menuitem, gpointer user_data) {
-    ViewPostscriptFont((char *) (user_data),0);
+    ViewPostScriptFont((char *) (user_data),0);
 }
 
 void RecentMenuBuild(GtkMenuItem *menuitem, gpointer user_data) {

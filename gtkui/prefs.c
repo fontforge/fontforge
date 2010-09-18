@@ -93,6 +93,7 @@ extern int oldformatstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
 extern int oldbitmapstate;		/* in savefontdlg.c */
 static int old_ttf_flags=0, old_otf_flags=0;
+extern int old_sfnt_flags;
 extern int old_ps_flags;		/* in savefontdlg.c */
 extern int old_validate;		/* in savefontdlg.c */
 extern int old_fontlog;			/* in savefontdlg.c */

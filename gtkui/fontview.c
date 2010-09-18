@@ -984,7 +984,7 @@ return;
 	    if ( fpt!=NULL ) *fpt = '\0';
 	    full = galloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
-	    ViewPostscriptFont(full,0);
+	    ViewPostScriptFont(full,0);
 	    file = fpt+2;
 	    free(full);
 	} while ( fpt!=NULL );
@@ -5229,6 +5229,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
     if ( ps>200 ) ps = 128;
 
     fv->b.nextsame = sf->fv;
+    fv->b.active_layer = sf->display_layer;
     sf->fv = (FontViewBase *) fv;
     fv->b.next = (FontViewBase *) fv_list;
     fv_list = fv;
