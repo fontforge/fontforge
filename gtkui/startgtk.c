@@ -415,7 +415,7 @@ static int ParseArgs( gpointer data ) {
 #endif
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
-		if ( ViewPostscriptFont(RecentFiles[next_recent++],openflags))
+		if ( ViewPostScriptFont(RecentFiles[next_recent++],openflags))
 		    any = 1;
 	} else if ( strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
@@ -435,14 +435,14 @@ static int ParseArgs( gpointer data ) {
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
 		    free(fname);
-		    if ( ViewPostscriptFont(buffer,openflags) )
+		    if ( ViewPostScriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
 			free(fname);
-			if ( ViewPostscriptFont(buffer,openflags) )
+			if ( ViewPostScriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
 			free(fname);
@@ -453,12 +453,12 @@ static int ParseArgs( gpointer data ) {
 			}
 			fname = GetPostscriptFontName(buffer,false);
 			if ( fname!=NULL )
-			    ViewPostscriptFont(fname,openflags);
+			    ViewPostScriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
 			free(fname);
 		    }
 		}
-	    } else if ( ViewPostscriptFont(buffer,openflags)!=0 )
+	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )
 		any = 1;
 	}
     }
