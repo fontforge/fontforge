@@ -969,7 +969,7 @@ static int AI_Ok(GGadget *g, GEvent *e);
 static int AI_Delete(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	AnchorPoint *ap, *prev;
+	AnchorPoint *ap, *prev, *delete_it;
 
 	prev=NULL;
 	for ( ap=ci->sc->anchor; ap!=ci->ap; ap=ap->next )
@@ -982,14 +982,32 @@ static int AI_Delete(GGadget *g, GEvent *e) {
 return( true );
 	    }
 	}
-	ap = ci->ap->next;
-	if ( prev==NULL )
-	    ci->sc->anchor = ap;
-	else
-	    prev->next = ap;
-	ci->ap->next = NULL;
-	AnchorPointsFree(ci->ap);
-	AI_Display(ci,ap);
+	
+	delete_it = ci->ap;
+	
+	if ((prev == NULL) && (ci->ap->next == NULL)) {
+	    ci->sc->anchor = NULL;
+	    AnchorPointsFree(delete_it);
+	    AI_Ok(g,e);
+	    SCUpdateAll(ci->sc);
+	}
+	else if (ci->ap->next == NULL) {
+	    prev->next = NULL;
+	    AnchorPointsFree(delete_it);
+	    AI_Display(ci,prev);
+	}
+	else if (prev == NULL) {
+	    ci->sc->anchor = delete_it->next;
+	    delete_it->next = NULL;
+	    AnchorPointsFree(delete_it);
+	    AI_Display(ci,ci->sc->anchor);
+	}
+	else {
+	    prev->next = delete_it->next;
+	    delete_it->next = NULL;
+	    AnchorPointsFree(delete_it);
+	    AI_Display(ci,prev->next);
+	}
     }
 return( true );
 }
