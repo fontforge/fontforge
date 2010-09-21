@@ -99,9 +99,10 @@ int instruct_diagonal_stems = 1,
  * Low-level routines to add data for PUSHes to bytecode instruction stream.
  * pushheader() adds PUSH preamble, then repeating addpoint() adds items.
  *
- * Numbers larger than 65535 are not dupported (according to TrueType spec,
- * there can't be more points in a glyph, simple or compound).
- * Negative numbers aren't supported, either.
+ * Numbers larger than 65535 are not supported (according to TrueType spec,
+ * there can't be more points in a glyph, simple or compound). Negative
+ * numbers aren't supported, either. So don't use these functions as they
+ * are - there are higher-level ones further below, that handle things nicely.
  *
  ******************************************************************************/
 
@@ -131,6 +132,12 @@ static uint8 *addpoint(uint8 *instrs,int isword,int pt) {
     }
 return( instrs );
 }
+
+/* Exemplary high-level routines to add PUSH-es to bytecode instruction
+ * stream. They handle negative numbers correctly. As they are used
+ * in various roles here, some aliases are defined, so that the name
+ * speaks for itself in the code.
+ */
 
 static uint8 *pushpoint(uint8 *instrs,int pt) {
     instrs = pushheader(instrs,(pt>255)||(pt<0),1);
@@ -243,15 +250,15 @@ static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 com
     instrs = pushpoints(instrs, ptcnt<STACK_DEPTH?ptcnt:STACK_DEPTH-1, pts);
 
     if (use_sloop) {
-	*instrs++ = DEPTH;
-	*instrs++ = SLOOP;
-	*instrs++ = command;
+        *instrs++ = DEPTH;
+        *instrs++ = SLOOP;
+        *instrs++ = command;
     }
     else for (i=0; i<(ptcnt<STACK_DEPTH?ptcnt:STACK_DEPTH-1); i++)
-	*instrs++ = command;
+        *instrs++ = command;
 
     if (ptcnt>=STACK_DEPTH)
-	instrs=instructpoints(instrs, ptcnt-(STACK_DEPTH-1), pts+(STACK_DEPTH-1), command);
+        instrs=instructpoints(instrs, ptcnt-(STACK_DEPTH-1), pts+(STACK_DEPTH-1), command);
 
 return( instrs );
 }
@@ -276,22 +283,22 @@ int TTF__getcvtval(SplineFont *sf,int val) {
     struct ttf_table *cvt_tab = SFFindTable(sf,CHR('c','v','t',' '));
 
     if ( cvt_tab==NULL ) {
-	cvt_tab = chunkalloc(sizeof(struct ttf_table));
-	cvt_tab->tag = CHR('c','v','t',' ');
-	cvt_tab->maxlen = 200;
-	cvt_tab->data = galloc(100*sizeof(short));
-	cvt_tab->next = sf->ttf_tables;
-	sf->ttf_tables = cvt_tab;
+        cvt_tab = chunkalloc(sizeof(struct ttf_table));
+        cvt_tab->tag = CHR('c','v','t',' ');
+        cvt_tab->maxlen = 200;
+        cvt_tab->data = galloc(100*sizeof(short));
+        cvt_tab->next = sf->ttf_tables;
+        sf->ttf_tables = cvt_tab;
     }
     for ( i=0; (int)sizeof(uint16)*i<cvt_tab->len; ++i ) {
-	int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
-	if ( val>=tval-1 && val<=tval+1 )
+        int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
+        if ( val>=tval-1 && val<=tval+1 )
 return( i );
     }
     if ( (int)sizeof(uint16)*i>=cvt_tab->maxlen ) {
-	if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
-	cvt_tab->maxlen += 200;
-	cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
+        if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
+        cvt_tab->maxlen += 200;
+        cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
     }
     memputshort(cvt_tab->data,sizeof(uint16)*i,val);
     cvt_tab->len += sizeof(uint16);
@@ -326,8 +333,8 @@ return NULL;
 
     if (delta < mindelta) {
         mindelta = delta;
-	closestwidth = rint(mainstem->width);
-	closest = mainstem;
+        closestwidth = rint(mainstem->width);
+        closest = mainstem;
     }
 
     for (i=0; i<otherstemcnt; i++) {
@@ -335,9 +342,9 @@ return NULL;
 
         if (delta < mindelta) {
             mindelta = delta;
-	    closestwidth = otherstems[i].width;
-	    closest = otherstems+i;
-	}
+            closestwidth = otherstems[i].width;
+            closest = otherstems+i;
+        }
     }
 
     if (mindelta <= gic->fudge)
@@ -402,9 +409,9 @@ return NULL;
     while (*str)
     {
         while (!isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0')
-	    ++str;
+            ++str;
 
-	if ( *str=='\0' )
+        if ( *str=='\0' )
     break;
 
         d = strtod(str, &end);
@@ -412,10 +419,10 @@ return NULL;
         if ( d>=-32768 && d<=32767 ) {
             if (*rescnt) {
                 results = grealloc(results, sizeof(real)*(++(*rescnt)));
-	        results[*rescnt-1] = d;
+                results[*rescnt-1] = d;
             }
             else (results = gcalloc(*rescnt=1, sizeof(real)))[0] = d;
-	}
+        }
 
         str = end;
     }
@@ -605,7 +612,7 @@ static int SortStems(const void *a, const void *b) {
 }
 
 /* Import stem data into global instructing context. We deal only with
- * horizontal or vertical stems (xdir decides) here. If Std*V is not specified,
+ * horizontal or vertical stems (xdir decides) here. If Std*W is not specified,
  * but there exists StemSnap*, we'll make up a fake Std*V as a fallback.
  * Subtle manipulations with Std*W's value can result in massive change of
  * font appearance at some pixel sizes, because it's used as a base for
