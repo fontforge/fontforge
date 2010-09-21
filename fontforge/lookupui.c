@@ -36,6 +36,7 @@
 #include "lookups.h"
 
 int add_char_to_name_list = true;
+int default_autokern_dlg = true;
 
 /* ************************************************************************** */
 /* ******************************* UI routines ****************************** */
@@ -5446,6 +5447,7 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	struct subtable_data *sd,int def_layer) {
     int lookup_type = sub->lookup->lookup_type;
     static int nested=0;
+    extern int default_autokern_dlg;
 
     if ( (lookup_type == gsub_context || lookup_type == gsub_contextchain ||
 		lookup_type == gsub_reversecchain ||
@@ -5494,7 +5496,7 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	else if ( sd!=NULL && (sd->flags&sdf_kernpair) )
 	    results.asked = 0;
 	else {
-	    if ( sub->vertical_kerning || nested ) {
+	    if ( sub->vertical_kerning || nested || !default_autokern_dlg ) {
 		buts[0] = _("_Pairs"); buts[1] = _("C_lasses");
 		buts[2] = _("_Cancel"); buts[3]=NULL;
 		results.asked = gwwv_ask(_("Kerning format"),(const char **) buts,0,1,_("Kerning may be specified either by classes of glyphs\nor by pairwise combinatins of individual glyphs.\nWhich do you want for this subtable?") );
