@@ -9947,7 +9947,7 @@ return( -1 );
     else {
 	gasp = galloc(cnt*sizeof(struct gasp));
 	for ( i=0; i<cnt; ++i ) {
-	    if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"hO",
+	    if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"HO",
 		    &gasp[i].ppem, &flags ))
 return( -1 );
 	    flag = FlagsFromTuple(flags,gaspflags);
