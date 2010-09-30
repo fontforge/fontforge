@@ -277,3 +277,7 @@ ftdelta.obj : ftdelta.c
 autowidth2.obj : autowidth2.c
 woff.obj : woff.c
 autowidth2dlg.obj : autowidth2dlg.c
+freetypeui.obj : freetypeui.c
+pythonui.obj : pythonui.c
+tilepath.obj : tilepath.c
+deltaui.obj : deltaui.c
