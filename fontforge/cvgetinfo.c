@@ -1008,6 +1008,8 @@ return( true );
 	    AnchorPointsFree(delete_it);
 	    AI_Display(ci,prev->next);
 	}
+	
+	_CVCharChangedUpdate(&ci->cv->b,2);
     }
 return( true );
 }
