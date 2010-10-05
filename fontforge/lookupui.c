@@ -2731,8 +2731,10 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 					md[cnt*mi->col_cnt+PAIR_DY_ADV1].u.md_ival = kp->off;
 					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DY_ADV1+1].u.md_str,kp->adjust);
 				    } else if ( r2l ) {
-					md[cnt*mi->col_cnt+PAIR_DY_ADV1].u.md_ival = kp->off;
-					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DY_ADV1+1].u.md_str,kp->adjust);
+					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = kp->off;
+					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DX_ADV1+1].u.md_str,kp->adjust);
+					md[cnt*mi->col_cnt+PAIR_DX1].u.md_ival = kp->off;
+					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DX1+1].u.md_str,kp->adjust);
 				    } else {
 					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = kp->off;
 					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DX_ADV1+1].u.md_str,kp->adjust);
@@ -2741,7 +2743,7 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 			            if ( isv )
 					md[cnt*mi->col_cnt+PAIR_DY_ADV1].u.md_ival = kp->off;
 				    else if ( r2l )
-					md[cnt*mi->col_cnt+PAIR_DX_ADV2].u.md_ival = kp->off;
+					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = md[cnt*mi->col_cnt+PAIR_DX1].u.md_ival = kp->off;
 				    else
 					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = kp->off;
 #endif
@@ -2847,7 +2849,7 @@ return;
     psts[i*cols+0].u.md_str = copy(first->name);
     psts[i*cols+1].u.md_str = copy(second->name);
     if ( pstkd->sub->lookup->lookup_flags & pst_r2l )
-	psts[i*cols+PAIR_DX_ADV2].u.md_ival = off;
+	psts[i*cols+PAIR_DX_ADV1].u.md_ival = psts[i*cols+PAIR_DX1].u.md_ival = off;
     /* else if ( pstkd->sub->vertical_kerning ) */	/* We don't do vertical stuff */
     else
 	psts[i*cols+PAIR_DX_ADV1].u.md_ival = off;
@@ -2970,7 +2972,7 @@ static void PSTKD_DoHideUnused(PSTKernDlg *pstkd) {
 		if ( pstkd->sub->vertical_kerning )
 		    cols_used[PAIR_DY_ADV1] = true;
 		else if ( pstkd->sub->lookup->lookup_flags&pst_r2l )
-		    cols_used[PAIR_DX_ADV2] = true;
+		    cols_used[PAIR_DX_ADV1] = cols_used[PAIR_DX1] = true;
 		else
 		    cols_used[PAIR_DX_ADV1] = true;
 	    }
@@ -3168,11 +3170,11 @@ return;		/* Couldn't parse the numeric kerning info */
     } else if ( pstkd->sub->lookup->lookup_flags&pst_r2l ) {
 	xorig = 9*size.width/10;
 	yorig = pstkd->sf->ascent*size.height/(pstkd->sf->ascent+pstkd->sf->descent);
-	GDrawDrawLine(pixmap,xorig,0,xorig,size.height, 0x808080);
+	GDrawDrawLine(pixmap,xorig+vr1.h_adv_off-vr1.xoff,0,xorig+vr1.h_adv_off-vr1.xoff,size.height, 0x808080);
 	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, 0x808080);
 	xorig /= mag; yorig /= mag;
-	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-vr1.h_adv_off-vr1.xoff,yorig-vr1.yoff, bc1, mag);
-	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-vr1.h_adv_off-bc2->width-vr2.h_adv_off-vr2.xoff,yorig-vr2.yoff, bc2, mag);
+	PSTKern_DrawGlyph(pixmap,xorig-bc1->width,yorig-vr1.yoff, bc1, mag);
+	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-bc2->width-vr2.h_adv_off-vr2.xoff-vr1.xoff,yorig-vr2.yoff, bc2, mag);
     } else {
 	xorig = size.width/10;
 	yorig = pstkd->sf->ascent*size.height/(pstkd->sf->ascent+pstkd->sf->descent);
@@ -3192,7 +3194,8 @@ static void PSTKern_Mouse(PSTKernDlg *pstkd,GEvent *event) {
     int c = GMatrixEditGetActiveCol(pstk);
     GGadget *tf = _GMatrixEditGetActiveTextField(pstk);
     double scale = pstkd->pixelsize/(double) (pstkd->sf->ascent+pstkd->sf->descent);
-    int diff, col;
+    int diff, col, col2;
+    int r2l = pstkd->sub->lookup->lookup_flags&pst_r2l;
     char buffer[20];
     GCursor ct = ct_mypointer;
     GRect size;
@@ -3203,9 +3206,10 @@ return;		/* No kerning pair is active */
     if ( pstkd->sub->vertical_kerning ) {
 	diff = event->u.mouse.y - pstkd->orig_pos;
 	col = PAIR_DY_ADV1;
-    } else if ( pstkd->sub->lookup->lookup_flags&pst_r2l ) {
-	diff = pstkd->orig_pos - event->u.mouse.y;
-	col = PAIR_DX_ADV2;
+    } else if ( r2l ) {
+	diff = pstkd->orig_pos - event->u.mouse.x ;
+	col = PAIR_DX_ADV1;
+	col2 = PAIR_DX1;
     } else {
 	diff = event->u.mouse.x - pstkd->orig_pos;
 	col = PAIR_DX_ADV1;
@@ -3225,6 +3229,16 @@ return;		/* No kerning pair is active */
 	    old[r*cols+col].u.md_ival = pstkd->orig_value + diff;
 	    GGadgetRedraw(pstk);
 	}
+	if ( r2l ) {
+	    if ( col2==c && tf!=NULL ) {
+		sprintf( buffer, "%d", pstkd->orig_value + diff);
+		GGadgetSetTitle8(tf,buffer);
+		GGadgetRedraw(tf);
+	    } else {
+		old[r*cols+col2].u.md_ival = pstkd->orig_value + diff;
+		GGadgetRedraw(pstk);
+	    }
+	}
 	GGadgetRedraw(GWidgetGetControl(pstkd->gw,CID_KernDisplay));
 	if ( event->type == et_mouseup )
 	    pstkd->down = false;
@@ -3232,8 +3246,12 @@ return;		/* No kerning pair is active */
 	SplineChar *sc1 = SFGetChar(pstkd->sf,-1,old[r*cols+0].u.md_str);
 	if (sc1!=NULL ) {
 	    GDrawGetSize(event->w,&size);
-	    if ( col==PAIR_DX_ADV1 && event->u.mouse.x-size.width/10 > sc1->width*scale )
+	    if ( r2l ) {
+		if ( event->u.mouse.x < 9*size.width/10-sc1->width*scale )
+		    ct = ct_kerning;
+	    } else if ( col==PAIR_DX_ADV1 && event->u.mouse.x-size.width/10 > sc1->width*scale ) {
 		ct = ct_kerning;
+	    }
 	}
     }
     if ( ct!=pstkd->cursor_current ) {
