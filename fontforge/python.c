@@ -7279,6 +7279,10 @@ return( NULL );
 	    }
 	} else {
 	    str = PyBytes_AsString(aglyph);
+	    if ( str==NULL ) {
+		PyErr_Format(PyExc_TypeError,"String, %p, is not the name of a glyph in the expected font.", str );
+return( NULL );
+	    }
 	    sc = SFGetChar(sf,-1,str);
 	    if ( sc==NULL ) {
 		PyErr_Format(PyExc_TypeError,"String, %s, is not the name of a glyph in the expected font.", str );
