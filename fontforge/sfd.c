@@ -316,9 +316,9 @@ return( NULL );
 return( ret );
 }
 
-    /* Long lines can be broken by inserting \\\n (backslash newline) */
-    /*  into the line. I don't think this is ever ambiguous as I don't */
-    /*  think a line can end with backslash */
+/* Long lines can be broken by inserting \\\n (backslash newline) */
+/*  into the line. I don't think this is ever ambiguous as I don't */
+/*  think a line can end with backslash */
 static int nlgetc(FILE *sfd) {
     int ch, ch2;
 
@@ -350,7 +350,7 @@ return( NULL );
 	    if ( ch1=='+' ) {
 		ch1 = nlgetc(sfd);
 		if ( ch1=='-' ) {
-		    if ( pt<end ) *pt++ = '+';
+		    ch1 = '+';
 		    done = true;
 		} else {
 		    in = true;
