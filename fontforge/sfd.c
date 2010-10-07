@@ -319,6 +319,7 @@ return( ret );
 /* Long lines can be broken by inserting \\\n (backslash newline) */
 /*  into the line. I don't think this is ever ambiguous as I don't */
 /*  think a line can end with backslash */
+/* UPDATE: it can... that's handled in getquotedeol() below. */
 static int nlgetc(FILE *sfd) {
     int ch, ch2;
 
@@ -2676,8 +2677,15 @@ static char *getquotedeol(FILE *sfd) {
     while ( isspace(ch = nlgetc(sfd)) && ch!='\r' && ch!='\n' );
     while ( ch!='\n' && ch!='\r' && ch!=EOF ) {
 	if ( ch=='\\' ) {
-	    ch = nlgetc(sfd);
+	    /* We can't use nlgetc() here, because it would misinterpret */
+	    /* double backslash at the end of line. Multiline strings,   */
+	    /* broken with backslash + newline, are just handled above.  */
+	    ch = getc(sfd);
 	    if ( ch=='n' ) ch='\n';
+	    /* else if ( ch=='\\' ) ch=='\\'; */ /* second backslash of '\\' */
+
+	    /* FontForge doesn't write other escape sequences in this context. */
+	    /* So any other value of ch is assumed impossible. */
 	}
 	if ( pt>=end ) {
 	    pt = grealloc(str,end-str+101);
