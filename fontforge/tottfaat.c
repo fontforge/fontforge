@@ -2431,6 +2431,12 @@ int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting) {
 	    *featureSetting = msn[i].mac_feature_setting;
 return( true );
 	}
+    *featureType = (tag >> 16);
+    *featureSetting = (tag & 0xFFFF);
+	/* Ranges taken from Apple Font Registry. An OT tag without a 
+    corresponding mac feature should fail this test.*/
+    if (*featureType >= 0 && *featureType < 105 && *featureSetting < 16)
+        return ( true );
 
     *featureType = 0;
     *featureSetting = 0;
@@ -2438,27 +2444,20 @@ return( false );
 }
 
 static struct feature *featureFromTag(SplineFont *sf, uint32 tag ) {
-    int i;
+    int ft, fs;
     struct feature *feat;
-    struct macsettingname *msn = user_macfeat_otftag ? user_macfeat_otftag : macfeat_otftag;
-
-    for ( i=0; msn[i].otf_tag!=0; ++i )
-	if ( msn[i].otf_tag == tag )
-    break;
 
     feat = chunkalloc(sizeof(struct feature));
-    if ( msn[i].otf_tag!=0 ) {
-	feat->featureType = msn[i].mac_feature_type;
-	feat->featureSetting = msn[i].mac_feature_setting;
-    } else {
-	feat->featureType = tag>>16;
-	feat->featureSetting = tag & 0xffff;
+    if (OTTagToMacFeature(tag, &ft, &fs)) {
+        feat->featureType = ft;
+        feat->featureSetting = fs;
+        feat->mf = FindMacFeature(sf,feat->featureType,&feat->smf);
+        feat->ms = FindMacSetting(sf,feat->featureType,feat->featureSetting,&feat->sms);
+        feat->needsOff = feat->mf!=NULL && !feat->mf->ismutex;
+        feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');    
     }
-    feat->mf = FindMacFeature(sf,feat->featureType,&feat->smf);
-    feat->ms = FindMacSetting(sf,feat->featureType,feat->featureSetting,&feat->sms);
-    feat->needsOff = feat->mf!=NULL && !feat->mf->ismutex;
-    feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
-return( feat );
+    
+    return( feat );
 }
 
 static struct feature *featureFromSubtable(SplineFont *sf, struct lookup_subtable *sub ) {
@@ -2474,10 +2473,12 @@ static struct feature *featureFromSubtable(SplineFont *sf, struct lookup_subtabl
 	    if ( OTTagToMacFeature(fl->featuretag,&ft,&fs) )
 	break;
 	}
-	if ( fl==NULL )
+	  if ( fl==NULL ) {
 	    IError("Could not find a mac feature");
+      return NULL;
     }
-return( featureFromTag(sf,fl->featuretag));
+  }
+  return( featureFromTag(sf,fl->featuretag));
 }
     
 static int PSTHasTag(PST *pst, uint32 tag) {
