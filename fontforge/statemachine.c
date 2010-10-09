@@ -394,7 +394,7 @@ return( false );
 	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
 	    free(ret8);
 return( false );
-	} else if ( mlook->lookup_type!=gsub_single ) {
+	} else if ( clook->lookup_type!=gsub_single ) {
 	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
 	    free(ret8);
 return( false );
@@ -839,10 +839,12 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
 	int i;
-	int32 len;
-	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
+  struct ggadget * classControl = GWidgetGetControl(smd->gw,CID_Classes);
+  int rows;
+  struct matrix_data *classes = GMatrixEditGet(classControl,&rows);
+  
 	ASM *sm = smd->sm;
-	unichar_t *upt;
+	char *upt;
 	
 	for ( i=4; i<sm->class_cnt; ++i )
 	    free(sm->classes[i]);
@@ -850,11 +852,11 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 	sm->classes = galloc(smd->class_cnt*sizeof(char *));
 	sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
 	sm->class_cnt = smd->class_cnt;
-	for ( i=4; i<sm->class_cnt; ++i ) {
-	    upt = uc_strstr(ti[i]->text,": ");
-	    if ( upt==NULL ) upt = ti[i]->text; else upt += 2;
-	    sm->classes[i] = cu_copy(upt);
-	}
+    for ( i=4; i<sm->class_cnt; ++i ) {
+        upt = strstr(classes[i].u.md_str,": ");
+        if ( upt==NULL ) upt = classes[i].u.md_str; else upt += 2;
+        sm->classes[i] = copy(GlyphNameListDeUnicode(upt));
+    }
 
 	StatesFree(sm->state,sm->state_cnt,sm->class_cnt,
 		sm->type);
@@ -1410,9 +1412,10 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     for ( i=0; i<sm->class_cnt; ++i ) {
 	if ( i<4 ) {
 	    md[i+0].u.md_str = copy( _(specialclasses[i]) );
-	    md[i+1].frozen = true;
+	    md[i+0].frozen = true;
 	} else
-	    md[i+0].u.md_str = SFNameList2NameUni(sf,sm->classes[i]);
+      if (sm->classes[i])
+        md[i+0].u.md_str = SFNameList2NameUni(sf,sm->classes[i]);
     }
     mi.matrix_data = md;
     mi.initial_row_cnt = i;
