@@ -983,7 +983,7 @@ static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,OTLookup *otl,struct g
 		    (sc=SFGetChar(sf,-1,pst->u.subs.variant))!=NULL &&
 		    sc->ttf_glyph!=-1 ) {
 		if ( j ) {
-		    glyphs[gcnt] = sf->glyphs[i];
+		    glyphs[gcnt] = sf->glyphs[gi->bygid[i]];
 		    map[gcnt] = sc->ttf_glyph;
 		}
 		++gcnt;
