@@ -1393,8 +1393,13 @@ static void LKMatrixInit(struct matrixinit *mi,OTLookup *otl) {
 		}
 		if ( bpos>0 )
 		    --bpos;
-		buf[bpos] = '\0';
-		md[2*cnt+1].u.md_str = copy(buf);
+        if (buf) {
+            buf[bpos] = '\0';
+            md[2*cnt+1].u.md_str = copy(buf);
+        }
+        else {
+            md[2*cnt+1].u.md_str = NULL;
+        }
 	    }
 	    ++cnt;
 	}
