@@ -2364,8 +2364,9 @@ return;
 	int uni = si->sc->unicodeenc;
 	char *pt;
 
-	if ( isdecompositionnormative(uni) &&
-		    unicode_alternates[uni>>8]!=NULL &&
+        if ( uni!=-1 && uni<0x10000 &&
+        	isdecompositionnormative(uni) &&
+		unicode_alternates[uni>>8]!=NULL &&
 		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL )
 	    si->base = SFGetChar(pstkd->sf,alt[0],NULL);
 	if ( si->base==NULL &&
