@@ -937,7 +937,6 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     BasePoint pt;
     extended t1,t2;
     extended t1end = m1->tend, t2end = m2->tend;
-    int loopcount;
 
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
     b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
@@ -997,7 +996,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    }
 	}
     } else if ( b.maxy-b.miny > b.maxx-b.minx ) {
-	extended diff, y, x1,x2, x1o,x2o;
+	volatile extended bkp_y;
+	extended diff,y,x1,x2, x1o,x2o;
 	extended t1,t2, t1o,t2o;
 
 	diff = (b.maxy-b.miny)/32;
@@ -1029,7 +1029,6 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
 	    if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 	}
-	loopcount=0;
 	for ( y+=diff; ; y += diff ) {
 	    /* I used to say y<=b.maxy in the above for statement. */
 	    /*  that seemed to get rounding errors on the mac, so we do it */
@@ -1039,10 +1038,13 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		else
 	break;
 	    }
-	    /* The loop can become infinite for some combinations I don't yet */
-	    /* understand. Let's add a stopgap before I fix the code properly. */
-	    if (++loopcount > 1000)
-	break;
+
+	    /* This is a volatile code! */
+	    /* "diff" may become so small in comparison with "y", */
+	    /* that "y+=diff" might actually not change the value of "y". */
+	    bkp_y=y+diff;
+	    if (bkp_y==y) diff *= 2;
+	    
 	    t1 = IterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,y);
 	    if ( t1==-1 )
 		t1 = IterateSplineSolve(&m1->s->splines[1],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,y);
@@ -1102,7 +1104,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    }
 	}
     } else {
-	extended diff, x, y1,y2, y1o,y2o;
+	volatile extended bkp_x;
+	extended diff,x,y1,y2, y1o,y2o;
 	extended t1,t2, t1o,t2o ;
 
 	diff = (b.maxx-b.minx)/32;
@@ -1135,17 +1138,22 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 	}
 	y1 = y2 = 0;
-	loopcount=0;
 	for ( x+=diff; ; x += diff ) {
+	    /* I used to say x<=b.maxx in the above for statement. */
+	    /*  that seemed to get rounding errors on the mac, so we do it */
+	    /*  like this now: */
 	    if ( x>b.maxx ) {
 		if ( x<b.maxx+(63*diff/64) ) x = b.maxx;
 		else
 	break;
 	    }
-	    /* The loop can become infinite for some combinations I don't yet */
-	    /* understand. Let's add a stopgap before I fix the code properly. */
-	    if (++loopcount > 1000)
-	break;
+
+	    /* This is a volatile code! */
+	    /* "diff" may become so small in comparison with "y", */
+	    /* that "y+=diff" might actually not change the value of "y". */
+	    bkp_x=x+diff;
+	    if (bkp_x==x) diff *= 2;
+
 	    t1 = IterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,x);
 	    if ( t1==-1 )
 		t1 = IterateSplineSolve(&m1->s->splines[0],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,x);
