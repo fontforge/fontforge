@@ -1549,6 +1549,14 @@ static const unichar_t str_2091[] = { 0x0065, 0 };
 static const unichar_t str_2092[] = { 0x006f, 0 };
 static const unichar_t str_2093[] = { 0x0078, 0 };
 static const unichar_t str_2094[] = { 0x0259, 0 };
+static const unichar_t str_2095[] = { 0x0068, 0 };
+static const unichar_t str_2096[] = { 0x006b, 0 };
+static const unichar_t str_2097[] = { 0x006c, 0 };
+static const unichar_t str_2098[] = { 0x006d, 0 };
+static const unichar_t str_2099[] = { 0x006e, 0 };
+static const unichar_t str_209a[] = { 0x0070, 0 };
+static const unichar_t str_209b[] = { 0x0073, 0 };
+static const unichar_t str_209c[] = { 0x0074, 0 };
 static const unichar_t str_20a8[] = { 0x0052, 0x0073, 0 };
 static const unichar_t str_2100[] = { 0x0061, 0x002f, 0x0063, 0 };
 static const unichar_t str_2101[] = { 0x0061, 0x002f, 0x0073, 0 };
@@ -5974,7 +5982,15 @@ str_2091,
 str_2092,
 str_2093,
 str_2094,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_20a8,
+str_2095,
+str_2096,
+str_2097,
+str_2098,
+str_2099,
+str_209a,
+str_209b,
+str_209c,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_20a8,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static const unichar_t * const tab_21[] = {
