@@ -4139,8 +4139,8 @@ static void CVMagnify(CharView *cv, real midx, real midy, int bigger, int LockPo
     if (LockPosition) {
 	float mousex = rint(midx * oldscale + cv->xoff);
 	float mousey = rint(midy * oldscale + cv->yoff - cv->height);
-	cv->xoff = rint(mousex - midx*cv->scale);
-	cv->yoff = rint(mousey - midy*cv->scale + cv->height);
+	cv->xoff = mousex - midx*cv->scale;
+	cv->yoff = mousey - midy*cv->scale + cv->height;
     }
     else {
         cv->xoff = -(rint(midx*cv->scale) - cv->width/2);

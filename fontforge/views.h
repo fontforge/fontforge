@@ -178,7 +178,7 @@ typedef struct charview {
     GIC *gic;
     GIC *gwgic;
     int width, height;
-    int xoff, yoff;
+    float xoff, yoff; /* must be floating point, for precise zoom by scroll */
     int mbh, infoh, rulerh;
     int16 sas, sfh, sdh, nas, nfh;
     BasePoint info;
