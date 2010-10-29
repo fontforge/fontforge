@@ -4096,9 +4096,12 @@ return;
     }
 }
 
-static void CVMagnify(CharView *cv, real midx, real midy, int bigger) {
+static void CVMagnify(CharView *cv, real midx, real midy, int bigger, int LockPosition) {
     static float scales[] = { 1, 2, 3, 4, 6, 8, 11, 16, 23, 32, 45, 64, 90, 128, 181, 256, 512, 1024, 0 };
+    float oldscale;
     int i, j;
+
+    oldscale = cv->scale;
 
     if ( bigger!=0 ) {
 	if ( cv->scale>=1 ) {
@@ -4132,8 +4135,18 @@ static void CVMagnify(CharView *cv, real midx, real midy, int bigger) {
 		cv->scale = 1/scales[-j];
 	}
     }
-    cv->xoff = -(rint(midx*cv->scale) - cv->width/2);
-    cv->yoff = -(rint(midy*cv->scale) - cv->height/2);
+
+    if (LockPosition) {
+	float mousex = rint(midx * oldscale + cv->xoff);
+	float mousey = rint(midy * oldscale + cv->yoff - cv->height);
+	cv->xoff = rint(mousex - midx*cv->scale);
+	cv->yoff = rint(mousey - midy*cv->scale + cv->height);
+    }
+    else {
+        cv->xoff = -(rint(midx*cv->scale) - cv->width/2);
+        cv->yoff = -(rint(midy*cv->scale) - cv->height/2);
+    }
+
     CVNewScale(cv);
 }
 
@@ -4178,9 +4191,9 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	if ( cv->p.x>=event->u.mouse.x-6 && cv->p.x<=event->u.mouse.x+6 &&
 		 cv->p.y>=event->u.mouse.y-6 && cv->p.y<=event->u.mouse.y+6 ) {
 	    real cx, cy;
-	    cx = (event->u.mouse.x-cv->xoff)/cv->scale ;
+	    cx = (event->u.mouse.x-cv->xoff)/cv->scale;
 	    cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale ;
-	    CVMagnify(cv,cx,cy,cv->active_tool==cvt_minify?-1:1);
+	    CVMagnify(cv,cx,cy,cv->active_tool==cvt_minify?-1:1,event->u.mouse.button>3);
         } else {
 	    DBounds b;
 	    double oldscale = cv->scale;
@@ -5427,7 +5440,7 @@ static void _CVMenuScale(CharView *cv, int mid) {
 	c.y = (cv->height/2-cv->yoff)/cv->scale;
 	if ( CVAnySel(cv,NULL,NULL,NULL,NULL))
 	    CVFindCenter(cv,&c,false);
-	CVMagnify(cv,c.x,c.y, mid==MID_ZoomOut?-1:1);
+	CVMagnify(cv,c.x,c.y, mid==MID_ZoomOut?-1:1,0);
     }
 }
 
@@ -6072,7 +6085,7 @@ void CVShowPoint(CharView *cv, BasePoint *me) {
     x =  cv->xoff + rint(me->x*cv->scale);
     y = -cv->yoff + cv->height - rint(me->y*cv->scale);
     if ( x<fudge || y<fudge || x>cv->width-fudge || y>cv->height-fudge )
-	CVMagnify(cv,me->x,me->y,0);
+	CVMagnify(cv,me->x,me->y,0,0);
 }
 
 static void CVSelectContours(CharView *cv,struct gmenuitem *mi) {
@@ -6193,7 +6206,7 @@ return;
 	x =  cv->xoff + rint(other->x*cv->scale);
 	y = -cv->yoff + cv->height - rint(other->y*cv->scale);
 	if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
-	    CVMagnify(cv,other->x,other->y,0);
+	    CVMagnify(cv,other->x,other->y,0,0);
     }
 
     CVInfoDraw(cv,cv->gw);
@@ -6267,7 +6280,7 @@ return;
 	x =  cv->xoff + rint(other->me.x*cv->scale);
 	y = -cv->yoff + cv->height - rint(other->me.y*cv->scale);
 	if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
-	    CVMagnify(cv,other->me.x,other->me.y,0);
+	    CVMagnify(cv,other->me.x,other->me.y,0,0);
     }
 
     CVInfoDraw(cv,cv->gw);
