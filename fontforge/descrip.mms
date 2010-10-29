@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 23 April 2010
+# Date : 29 October 2010
 
 CFLAGS=/nowarn/incl=([],[-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
 
