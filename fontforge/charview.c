@@ -6592,6 +6592,12 @@ static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	mask = 1;
     else if ( mi->mid==MID_SelectAnchors )
 	mask = 2;
+    else if ( mi->mid==MID_SelAll ) {
+	mask = 1;
+	if (cv->b.drawmode==dm_fore) mask+=2;
+	/* TODO! Should we also check cv->schowanchor? */
+    }
+
     if ( CVSetSel(cv,mask))
 	SCUpdateAll(cv->b.sc);
 }
