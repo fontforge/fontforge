@@ -3066,6 +3066,8 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags,false);
 #endif
     }
+
+    SCCatagorizePoints(sc);
 }
 
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
