@@ -10334,6 +10334,31 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Font_get_texparams(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    int i, em = sf->ascent+sf->descent;
+    PyObject *tuple = PyTuple_New(23);
+    double val;
+
+    if ( sf->texdata.type==tex_text )
+	PyTuple_SetItem(tuple,0,Py_BuildValue("s", "text"));
+    else if ( sf->texdata.type==tex_math )
+	PyTuple_SetItem(tuple,0,Py_BuildValue("s", "mathsym"));
+    else if ( sf->texdata.type==tex_mathext )
+	PyTuple_SetItem(tuple,0,Py_BuildValue("s", "mathext"));
+    else if ( sf->texdata.type==tex_unset ) {
+	PyTuple_SetItem(tuple,0,Py_BuildValue("s", "unset"));
+	TeXDefaultParams(sf);
+    }
+
+    for ( i=1; i<24; i++ ) {
+	val = rint( (double) sf->texdata.params[i-1] * em / (1<<20) );
+	PyTuple_SetItem(tuple,i,Py_BuildValue( "d", val ));
+    }
+
+return( tuple );
+}
+
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_str(name) \
 static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
@@ -11721,6 +11746,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"math",
 	 (getter)PyFF_Font_get_math, (setter)PyFF_cant_set,
 	 "The font's math constants (You may not set this field, but you may set things in it)", NULL},
+    {"texparameters",
+	 (getter)PyFF_Font_get_texparams, (setter)PyFF_cant_set,
+	 "The font's TeX font parameters", NULL},
     {"cvt",
 	 (getter)PyFF_Font_get_cvt, (setter)PyFF_Font_set_cvt,
 	 "The font's TrueType cvt table", NULL},

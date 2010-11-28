@@ -3519,6 +3519,18 @@ pen = None;				# Finalize the pen. This tells FontForge
       </TD>
     </TR>
     <TR>
+      <TD><CODE>texparameters</CODE></TD>
+      <TD colspan=2>Returns a tuple of <A HREF="fontinfo.html#TeX">TeX font parameters</A>. TeX font type followed by 22 parameters. Font type is one of:
+        <UL>
+          <LI>text</LI>
+          <LI>mathsym</LI>
+          <LI>mathext</LI>
+          <LI>unset</LI>
+        </UL>
+        In case of "unset" default values for font parameters will be returned.
+      </TD>
+    </TR>
+    <TR>
       <TD><CODE>uniqueid</CODE></TD>
     </TR>
     <TR>
