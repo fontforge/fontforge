@@ -5096,13 +5096,14 @@ static void ttf_math_read_icta(FILE *ttf,struct ttfinfo *info, uint32 start, int
     if ( glyphs==NULL )
 return;
     fseek(ttf,start+4,SEEK_SET);
-    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL ) {
-	val = (int16) getushort(ttf);
+    for ( i=0; i<cnt; ++i ) {
+      val = (int16) getushort(ttf);
+      offset = getushort(ttf);
+      if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL ) {
 	if ( is_ic )
 	    info->chars[ glyphs[i] ]->italic_correction = val;
 	else
 	    info->chars[ glyphs[i] ]->top_accent_horiz = val;
-	offset = getushort(ttf);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( offset!=0 ) {
 	    DeviceTable *dv = chunkalloc(sizeof(DeviceTable));
@@ -5113,6 +5114,7 @@ return;
 		info->chars[ glyphs[i] ]->top_accent_adjusts = dv;
 	}
 #endif
+      }
     }
     free(glyphs);
 }
