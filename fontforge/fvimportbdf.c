@@ -560,7 +560,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	}
     
 	if ( strcmp(tok,"FONT")==0 ) {
-	    if ( sscanf(buf,"-%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic )!=0 ) {
+	    if ( sscanf(buf,"-%*[^-]-%99[^-]-%99[^-]-%99[^-]-%*[^-]-", family, weight, italic )!=0 ) {
 		char *pt=buf;
 		int dcnt=0;
 		while ( *pt=='-' && dcnt<7 ) { ++pt; ++dcnt; }
@@ -616,30 +616,34 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	    sscanf(buf, "%d", &defs->metricsset );
 	else if ( strcmp(tok,"VVECTOR")==0 )
 	    sscanf(buf, "%*d %d", &defs->vertical_origin );
+	/* For foundry, fontname and encname, only copy up to the buffer size */
 	else if ( strcmp(tok,"FOUNDRY")==0 )
-	    sscanf(buf, "%[^\"]", foundry );
+	    sscanf(buf, "%99[^\"]", foundry );
 	else if ( strcmp(tok,"FONT_NAME")==0 )
-	    sscanf(buf, "%[^\"]", fontname );
+	    sscanf(buf, "%99[^\"]", fontname );
 	else if ( strcmp(tok,"CHARSET_REGISTRY")==0 )
-	    sscanf(buf, "%[^\"]", encname );
+	    sscanf(buf, "%99[^\"]", encname );
 	else if ( strcmp(tok,"CHARSET_ENCODING")==0 ) {
 	    enc = 0;
 	    if ( sscanf(buf, " %d", &enc )!=1 )
 		sscanf(buf, "%d", &enc );
+	/* These properties should be copied up to the buffer length too */
 	} else if ( strcmp(tok,"FAMILY_NAME")==0 ) {
-	    strcpy(family,buf);
+	    strncpy(family,buf,99);
 	} else if ( strcmp(tok,"FULL_NAME")==0 || strcmp(tok,"FACE_NAME")==0 ) {
-	    strcpy(full,buf);
+	    strncpy(full,buf,99);
 	} else if ( strcmp(tok,"WEIGHT_NAME")==0 )
-	    strcpy(weight,buf);
+	    strncpy(weight,buf,99);
 	else if ( strcmp(tok,"SLANT")==0 )
-	    strcpy(italic,buf);
+	    strncpy(italic,buf,99);
 	else if ( strcmp(tok,"COPYRIGHT")==0 ) {
-	    strcpy(comments,buf);
+		/* LS: Assume the size of the passed-in buffer is 1000, see below in
+		 * COMMENT... */
+	    strncpy(comments,buf,999);
 	    found_copyright = true;
 	} else if ( strcmp(tok,"COMMENT")==0 && !found_copyright ) {
 	    char *pt = comments+strlen(comments);
-	    char *eoc = comments+1000-1;
+	    char *eoc = comments+1000-1; /* ...here */
 	    strncpy(pt,buf,eoc-pt);
 	    *eoc ='\0';
 	}
