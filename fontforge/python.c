@@ -10351,7 +10351,7 @@ static PyObject *PyFF_Font_get_texparams(PyFF_Font *self,void *closure) {
 	TeXDefaultParams(sf);
     }
 
-    for ( i=1; i<24; i++ ) {
+    for ( i=1; i<23; i++ ) {
 	val = rint( (double) sf->texdata.params[i-1] * em / (1<<20) );
 	PyTuple_SetItem(tuple,i,Py_BuildValue( "d", val ));
     }
