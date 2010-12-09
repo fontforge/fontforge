@@ -4336,9 +4336,9 @@ static int v_e_h(GWindow gw, GEvent *event) {
     GGadgetPopupExternalEvent(event);
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
-	if ( !(event->u.mouse.state&(ksm_shift)) )	/* bind shift to magnify/minify */
+	if ( !(event->u.mouse.state&(ksm_control)) )	/* bind control to magnify/minify */
 	{
-	    if (event->u.mouse.state&(ksm_control) )
+	    if (event->u.mouse.state&(ksm_shift) ) /* bind shift to vertical scrolling */
 return( GGadgetDispatchEvent(cv->hsb,event));
 	    else
 return( GGadgetDispatchEvent(cv->vsb,event));
