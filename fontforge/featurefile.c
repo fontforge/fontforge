@@ -3070,8 +3070,9 @@ return( NULL );
 			/* Single letter changes */
 			v1 = *start1; v2 = *start2;
 			for ( ++v1; v1<=v2; ++v1 ) {
-			    *start1 = v1;
-			    contents = fea_glyphname_validate(tok,start1);
+			    sprintf( last_glyph, "%.*s%c%s", (int) (start2-tok->tokbuf),
+			             tok->tokbuf, v1, start2+1);
+			    contents = fea_glyphname_validate(tok,last_glyph);
 			    if ( v1==v2 )
 			break;
 			    if ( contents!=NULL )
