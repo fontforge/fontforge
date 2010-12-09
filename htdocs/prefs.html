@@ -14,7 +14,7 @@
   </H1>
   <UL>
     <LI>
-      <IMG SRC="prefs-generic.png" WIDTH="502" HEIGHT="339" ALIGN="Right"><A HREF="prefs.html#ResourceFile">Generic</A>
+      <IMG SRC="prefs-generic.png" WIDTH="502" HEIGHT="360" ALIGN="Right"><A HREF="prefs.html#ResourceFile">Generic</A>
     <LI>
       <A HREF="prefs.html#NewCharset">New Font</A>
     <LI>
@@ -41,6 +41,8 @@
 	<LI>
 	  <A HREF="prefs.html#Hints">PS Hints</A>
 	<LI>
+	  <A HREF="prefs.html#Instrs">TT Instrs</A>
+	<LI>
 	  <A HREF="prefs.html#UseNewIndicScripts">OpenType</A>
       </UL>
     <LI>
@@ -57,7 +59,7 @@
       <BR CLEAR=ALL>
   </UL>
   <P>
-  <IMG SRC="prefs-generic.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-generic.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="ResourceFile">ResourceFile</A>
@@ -92,10 +94,24 @@
     <DT>
       SplashScreen
     <DD>
-      Controls whether a splash screen is displayed on start up.<BR Clear=all>
+      Controls whether a splash screen is displayed on start up.
+    <DT>
+      UseCairoDrawing
+    <DD>
+      FontForge can use its own drawing routines, or rely on Cairo library in the
+      <A HREF="charview.html">outline glyph view</A>. Using Cairo is slower, but gives
+      smooth curves, and subpixel display precision. New setting
+      applies only to windows created afterwards.
+    <DT>
+      UsePangoDrawing
+    <DD>
+      Controls whether FontForge uses its own interface text drawing routines, or relies
+      on Pango library. Using Pango slows down older machines, but gives antialiased text,
+      exotic Unicode support, and complex script support. New setting applies only to
+      windows created afterwards.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-newfont.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-newfont.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="NewCharset">NewCharset</A>
@@ -126,7 +142,7 @@
     <DT>
   </DL>
   <P>
-  <IMG SRC="prefs-openfont.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-openfont.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="PreferCJKEncoding">PreferCJKEncoding</A>
@@ -160,7 +176,7 @@
       or not).<BR CLEAR=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-navigation.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-navigation.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="GlyphAutoGoto">GlyphAutoGoto</A>
@@ -168,10 +184,16 @@
       In the glyph window this controls how ff behaves when the user types a normal
       character. If this is On then when a normal character is typed the glyph
       window will shift to display that character, if Off typed characters will
-      be ignored.<BR Clear=all>
+      be ignored.
+    <DT>
+      OpenCharsInNewWindow
+    <DD>
+      Double clicking on a glyph in a <A HREF="fontview.html">font view</A> can
+      either always create a new <A HREF="charview.html">glyph view</A>,
+      or reuse an already opened one.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-editing.png" WIDTH="506" HEIGHT="367" ALIGN="Right">
+  <IMG SRC="prefs-editing.png" WIDTH="502" HEIGHT="390" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="ItalicConstrained">ItalicConstrained</A>
@@ -235,10 +257,15 @@
       Adobe's
       <A HREF="http://partners.adobe.com/asn/developer/PDFS/TN/T1_SPEC.PDF">T1_Spec.pdf</A>.
       This setting can be used to show you when those criteria are not
-      met.<BR Clear=all>
+      met.
+    <DT>
+      <A NAME="UpdateFlex">AutoKernDialog</A>
+    <DD>
+      Controls whether FontForge opens an <A HREF="lookups.html#Pair">auto kern dialog</A>
+      for each new kerning subtable.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-sync.png" ALIGN="Right" WIDTH="502" HEIGHT="339">
+  <IMG SRC="prefs-sync.png" ALIGN="Right" WIDTH="502" HEIGHT="360">
   <DL>
     <DT>
       <A NAME="AutoWidthSync">AutoWidthSync</A>
@@ -255,7 +282,7 @@
       will also be shifted left)<BR CLEAR=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-tt.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-tt.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="ClearInstrsBigChanges">Clear Instructions on Big Changes</A>
@@ -283,7 +310,7 @@
       the new font).<BR CLEAR=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-accent.png" ALIGN="Right" WIDTH="502" HEIGHT="339">
+  <IMG SRC="prefs-accent.png" ALIGN="Right" WIDTH="502" HEIGHT="360">
   <DL>
     <DT>
       <A NAME="AccentOffsetPercent">AccentOffsetPercent</A>
@@ -308,7 +335,7 @@
       (0300-036F) when building accented glyphs.<BR CLEAR=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-apps.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-apps.png" WIDTH="502" HEIGHT="390" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="PreferPotrace">PreferPotrace</A>
@@ -348,7 +375,7 @@
       so.<BR Clear=all>
   </DL>
   <P>
-  <IMG SRC="prefs-font.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-font.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="FoundryName">Foundry Name</A>
@@ -383,6 +410,7 @@
       might be useful to have a wider range of letters available for glyph names.
       You should never export these names when you generate a font (Use the Force
       Glyph Names to field of the generate dialog).
+<!--
     <DT>
       <A NAME="XUID-Base">XUID-Base</A>
     <DD>
@@ -405,12 +433,19 @@
       directly with Adobe</A> for your own XUID base.
       <P>
       See also Adobe's comments on
-      <A HREF="http://partners.adobe.com/asn/tech/type/uniqueid.jsp">UniqueID</A>s<BR
-	  Clear=ALL>
-      .
+      <A HREF="http://partners.adobe.com/asn/tech/type/uniqueid.jsp">UniqueID</A>s.
+-->
+    <DT>
+      AddCharToNameList
+    <DD>
+      Some character names are barely understandable or unintuitive.
+      While editing opentype lookups having long lists of such names,
+      confusion is easy. A character itself may be appended to the name
+      to make things easier.
+      <BR Clear=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-generate.png" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-generate.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="AskBDFResolution">AskBDFResolution</A>
@@ -427,8 +462,22 @@
       generated.<BR Clear=ALL>
   </DL>
   <P>
-  <IMG SRC="prefs-pshints.png" WIDTH="433" HEIGHT="342" ALIGN="Right">I am
-  testing a few hinting options there are three radio button sets which add
+  <IMG SRC="prefs-pshints.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
+  <DL>
+    <DT>
+      StandardSlopeError
+    <DD>
+      The maximum slope difference that still allows two elements to be considered as parallel.
+      Enlarging this value makes autohinter more tolerable to small deviations from straight
+      lines when detecting stem hints.
+    <DT>
+      SerifSlopeError
+    <DD>
+      Serifs and other small features usually have to be allowed to deviate from parallellness
+      more than stem edges.
+  </DL>
+  <P>
+  I am testing a few hinting options there are three radio button sets which add
   the following hints:
   <TABLE BORDER CELLPADDING="2" WIDTH=500>
     <CAPTION>
@@ -458,7 +507,49 @@
   <A HREF="hintsmenu.html#AutoInstr">generate truetype instructions
   automatically</A>. <BR CLEAR=ALL>
   <P>
-  <IMG SRC="prefs-opentype.png" HEIGHT="339" ALIGN="Right">
+  <IMG SRC="prefs-ttinstrs.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
+  <A NAME="Instrs" HREF="hintsmenu.html#AutoInstr">Truetype autoinstructor</A> bases its output
+  on postscript hints, but it has also its own options:
+  <DL>
+    <DT>
+      InstructDiagonalStems
+    <DD>
+      Generate instructions for diagonal stem hints. For this option to be useful,
+      <A HREF="#DetectDiagonalStems">DetectDiagonalStems</A> must be enabled first.
+      Enabling this will lessen apparent weight inconsistencies, perceived at some
+      sizes whenever horizontal and vertical stems are controlled, but diagonals are not.
+    <DT>
+      InstructSerifs
+    <DD>
+      Try to detect serifs and other elements protruding from base stems and
+      generate instructions for them: try to control distances between serifs'
+      tips and their base stems.
+    <DT>
+      InstructBallTerminals
+    <DD>
+      Generate instructions for ball terminals. They need different handling
+      than other kinds of serifs.
+    <DT>
+      InterpolateStrongPoints
+    <DD>
+      Instructing stems is sometimes not enough. This option makes FontForge to
+      interpolate some important points (sharp corners, inflections, curve
+      extremes), not affected by other instructions, between stem edges.
+      Both parallel and perpendicular extremes are controlled. Agressive
+      optimization is employed, to still leave as many points as possible to IUP,
+      but manual review is nevertheless greatly adviced.
+    <DT>
+      CounterControl
+    <DD>
+      Make sure similar or equal counters remain the same in gridfitted
+      outlines. This was inspired by, but works somewhat independently from,
+      <A HREF="charinfo.html#CounterMasks">PS Counter Hints</A>. Enabling this
+      option means that proper shapes are more important than proper scaling
+      of advance widths.
+  </DL>
+  <BR CLEAR=ALL>
+  <P>
+  <IMG SRC="prefs-opentype.png" WIDTH="502" HEIGHT="360" ALIGN="Right">
   <DL>
     <DT>
       <A NAME="UseNewIndicScripts">UseNewIndicScripts</A>
@@ -466,12 +557,15 @@
       MS has changed the way it handles indic scripts and has created a parallel
       set of script tags for the new method. Set this flag if you want to create
       a font using the new Indic system.
+<!--
     <DT>
       AddDFLTScript
     <DD>
       Someone from Adobe recommended that almost all features should be active
       in the DFLT script. So setting this flag will mean the ff will output most
-      features in the OpenType sub-table for the DFLT script.<BR Clear=ALL>
+      features in the OpenType sub-table for the DFLT script.
+-->
+      <BR Clear=ALL>
   </DL>
   <P>
   <IMG SRC="prefs-script.png" WIDTH="502" HEIGHT="485" ALIGN="Right"><A NAME="scripts">This
