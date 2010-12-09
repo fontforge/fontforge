@@ -4336,8 +4336,13 @@ static int v_e_h(GWindow gw, GEvent *event) {
     GGadgetPopupExternalEvent(event);
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
-	if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
+	if ( !(event->u.mouse.state&(ksm_shift)) )	/* bind shift to magnify/minify */
+	{
+	    if (event->u.mouse.state&(ksm_control) )
+return( GGadgetDispatchEvent(cv->hsb,event));
+	    else
 return( GGadgetDispatchEvent(cv->vsb,event));
+	}
     }
 
     switch ( event->type ) {
@@ -6595,7 +6600,7 @@ static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     else if ( mi->mid==MID_SelAll ) {
 	mask = 1;
 	if (cv->b.drawmode==dm_fore) mask+=2;
-	/* TODO! Should we also check cv->schowanchor? */
+	/* TODO! Should we also check if this is the right foreground layer? */
     }
 
     if ( CVSetSel(cv,mask))
