@@ -5234,8 +5234,15 @@ static void CVInkscapeAdjust(CharView *cv) {
     /*  check and see if the image is completely out of view, and if so */
     /*  then adjust the view field */
     DBounds b;
+    int layer = CVLayer((CharViewBase *) cv);
+    
+    if (layer != -1) SplineCharLayerQuickBounds(cv->b.sc,layer,&b);
+    else {
+        b.minx = b.miny = 1e10;
+        b.maxx = b.maxy = -1e10;
+	SplineSetQuickBounds(cv->b.sc->parent->grid.splines,&b);
+    }
 
-    SplineCharLayerQuickBounds(cv->b.sc,CVLayer((CharViewBase *) cv),&b);
     b.minx *= cv->scale; b.maxx *= cv->scale;
     b.miny = cv->height - b.miny*cv->scale; b.maxy = cv->height - b.maxy*cv->scale;
 
