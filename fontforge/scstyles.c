@@ -5203,7 +5203,7 @@ static SplinePoint *StemMoveBottomEndCarefully(SplinePoint *sp,SplineSet *oldss,
 		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
-	    SplineSolveFull(&other->next->splines[1],sp->me.y,ts);
+	    CubicSolve(&other->next->splines[1],sp->me.y,ts);
 	    if ( ts[0]!=-1 ) {
 		SplinePoint *newend = SplineBisect(other->next,ts[0]);
 		SplineFree(newend->prev);
@@ -5230,7 +5230,7 @@ return( sp );
 		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
-	    SplineSolveFull(&other->prev->splines[1],sp->me.y,ts);
+	    CubicSolve(&other->prev->splines[1],sp->me.y,ts);
 	    if ( ts[0]!=-1 ) {
 		SplinePoint *newend = SplineBisect(other->prev,ts[0]);
 		SplineFree(newend->next);
@@ -5501,7 +5501,7 @@ static SplinePoint *StemMoveTopEndCarefully(SplinePoint *sp,SplineSet *oldss,
 		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
-	    SplineSolveFull(&other->next->splines[1],sp->me.y,ts);
+	    CubicSolve(&other->next->splines[1],sp->me.y,ts);
 	    if ( ts[0]!=-1 ) {
 		SplinePoint *newend = SplineBisect(other->next,ts[0]);
 		SplineFree(newend->prev);
@@ -5528,7 +5528,7 @@ return( sp );
 		    oldss->first = oldss->last = newsp;
 		sp=newsp;
 	    }
-	    SplineSolveFull(&other->prev->splines[1],sp->me.y,ts);
+	    CubicSolve(&other->prev->splines[1],sp->me.y,ts);
 	    if ( ts[0]!=-1 ) {
 		SplinePoint *newend = SplineBisect(other->prev,ts[0]);
 		SplineFree(newend->next);
@@ -6436,10 +6436,10 @@ return;
     if ( ii->x_height+drop < min ) {
 	ltemp = left->from;
     } else {
-	SplineSolveFull(&left->splines[1],ii->x_height+drop,ts);
+	CubicSolve(&left->splines[1],ii->x_height+drop,ts);
 	ltemp = SplineBisect(left,ts[0]);
     }
-    SplineSolveFull(&right->splines[1],ii->x_height,ts);
+    CubicSolve(&right->splines[1],ii->x_height,ts);
     rtemp = SplineBisect(right,ts[0]);
     if ( left_is_start ) {
 	start = ltemp;

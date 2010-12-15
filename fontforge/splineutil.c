@@ -3203,50 +3203,52 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 /* This returns all real solutions, even those out of bounds */
 /* I use -999999 as an error flag, since we're really only interested in */
 /*  solns near 0 and 1 that should be ok. -1 is perhaps a little too close */
-int _CubicSolve(const Spline1D *sp,extended ts[3]) {
+/* Sigh. When solutions are near 0, the rounding errors are appalling. */
+int _CubicSolve(const Spline1D *sp,bigreal sought, extended ts[3]) {
     extended d, xN, yN, delta2, temp, delta, h, t2, t3, theta;
+    extended sa=sp->a, sb=sp->b, sc=sp->c, sd=sp->d-sought;
     int i=0;
 
     ts[0] = ts[1] = ts[2] = -999999;
-    if ( sp->d==0 && sp->a!=0 ) {
+    if ( sd==0 && sa!=0 ) {
 	/* one of the roots is 0, the other two are the soln of a quadratic */
 	ts[0] = 0;
-	if ( sp->c==0 ) {
-	    ts[1] = -sp->b/(extended) sp->a;	/* two zero roots */
+	if ( sc==0 ) {
+	    ts[1] = -sb/(extended) sa;	/* two zero roots */
 	} else {
-	    temp = sp->b*(extended) sp->b-4*(extended) sp->a*sp->c;
+	    temp = sb*(extended) sb-4*(extended) sa*sc;
 	    if ( RealNear(temp,0))
-		ts[1] = -sp->b/(2*(extended) sp->a);
+		ts[1] = -sb/(2*(extended) sa);
 	    else if ( temp>=0 ) {
 		temp = sqrt(temp);
-		ts[1] = (-sp->b+temp)/(2*(extended) sp->a);
-		ts[2] = (-sp->b-temp)/(2*(extended) sp->a);
+		ts[1] = (-sb+temp)/(2*(extended) sa);
+		ts[2] = (-sb-temp)/(2*(extended) sa);
 	    }
 	}
-    } else if ( sp->a!=0 ) {
+    } else if ( sa!=0 ) {
     /* http://www.m-a.org.uk/eb/mg/mg077ch.pdf */
     /* this nifty solution to the cubic neatly avoids complex arithmatic */
-	xN = -sp->b/(3*(extended) sp->a);
-	yN = ((sp->a*xN + sp->b)*xN+sp->c)*xN + sp->d;
+	xN = -sb/(3*(extended) sa);
+	yN = ((sa*xN + sb)*xN+sc)*xN + sd;
 
-	delta2 = (sp->b*(extended) sp->b-3*(extended) sp->a*sp->c)/(9*(extended) sp->a*sp->a);
-	if ( RealNear(delta2,0) ) delta2 = 0;
+	delta2 = (sb*(extended) sb-3*(extended) sa*sc)/(9*(extended) sa*sa);
+	/*if ( RealWithin(delta2,0,.00000001) ) delta2 = 0;*/
 
 	/* the descriminant is yN^2-h^2, but delta might be <0 so avoid using h */
-	d = yN*yN - 4*sp->a*sp->a*delta2*delta2*delta2;
+	d = yN*yN - 4*sa*sa*delta2*delta2*delta2;
 	if ( ((yN>.01 || yN<-.01) && RealNear(d/yN,0)) || ((yN<=.01 && yN>=-.01) && RealNear(d,0)) )
 	    d = 0;
 	if ( d>0 ) {
 	    temp = sqrt(d);
-	    t2 = (-yN-temp)/(2*sp->a);
+	    t2 = (-yN-temp)/(2*sa);
 	    t2 = (t2==0) ? 0 : (t2<0) ? -pow(-t2,1./3.) : pow(t2,1./3.);
-	    t3 = (-yN+temp)/(2*sp->a);
+	    t3 = (-yN+temp)/(2*sa);
 	    t3 = t3==0 ? 0 : (t3<0) ? -pow(-t3,1./3.) : pow(t3,1./3.);
 	    ts[0] = xN + t2 + t3;
 	} else if ( d<0 ) {
 	    if ( delta2>=0 ) {
 		delta = sqrt(delta2);
-		h = 2*sp->a*delta2*delta;
+		h = 2*sa*delta2*delta;
 		temp = -yN/h;
 		if ( temp>=-1.0001 && temp<=1.0001 ) {
 		    if ( temp<-1 ) temp = -1; else if ( temp>1 ) temp = 1;
@@ -3257,30 +3259,30 @@ int _CubicSolve(const Spline1D *sp,extended ts[3]) {
 		}
 	    }
 	} else if ( /* d==0 && */ delta2!=0 ) {
-	    delta = yN/(2*sp->a);
+	    delta = yN/(2*sa);
 	    delta = delta==0 ? 0 : delta>0 ? pow(delta,1./3.) : -pow(-delta,1./3.);
 	    ts[i++] = xN + delta;	/* this root twice, but that's irrelevant to me */
 	    ts[i++] = xN - 2*delta;
 	} else if ( /* d==0 && */ delta2==0 ) {
 	    if ( xN>=-0.0001 && xN<=1.0001 ) ts[0] = xN;
 	}
-    } else if ( sp->b!=0 ) {
-	extended d = sp->c*(extended) sp->c-4*(extended) sp->b*sp->d;
-	if ( RealNear(d,0)) d=0;
+    } else if ( sb!=0 ) {
+	extended d = sc*(extended) sc-4*(extended) sb*sd;
+	if ( d<0 && RealNear(d,0)) d=0;
 	if ( d<0 )
 return(false);		/* All roots imaginary */
 	d = sqrt(d);
-	ts[0] = (-sp->c-d)/(2*(extended) sp->b);
-	ts[1] = (-sp->c+d)/(2*(extended) sp->b);
-    } else if ( sp->c!=0 ) {
-	ts[0] = -sp->d/(extended) sp->c;
+	ts[0] = (-sc-d)/(2*(extended) sb);
+	ts[1] = (-sc+d)/(2*(extended) sb);
+    } else if ( sc!=0 ) {
+	ts[0] = -sd/(extended) sc;
     } else {
 	/* If it's a point then either everything is a solution, or nothing */
     }
 return( ts[0]!=-999999 );
 }
 
-int CubicSolve(const Spline1D *sp,extended ts[3]) {
+int CubicSolve(const Spline1D *sp,bigreal sought, extended ts[3]) {
     extended t;
     extended ts2[3];
     int i,j;
@@ -3288,7 +3290,7 @@ int CubicSolve(const Spline1D *sp,extended ts[3]) {
     /* http://mathforum.org/dr.math/faq/faq.cubic.equations.html */
 
     ts[0] = ts[1] = ts[2] = -1;
-    if ( !_CubicSolve(sp,ts2)) {
+    if ( !_CubicSolve(sp,sought,ts2)) {
 return( false );
     }
 
@@ -3325,7 +3327,7 @@ static int QuarticAlternate(Quartic *q,double ts[4],double offset) {
 
     sp.a = 1; sp.b = 2*q->c; sp.c = q->c*q->c-4*q->e;
      sp.d = q->d*q->d;
-    if ( !_CubicSolve(&sp,zs))
+    if ( !_CubicSolve(&sp,0,zs))
 return(-1);
     for ( i=0; i<3; ++i )
 	if ( zs[i]>0 )
@@ -3378,13 +3380,13 @@ static int _QuarticSolve(Quartic *q,double ts[4]) {
 	} else {
 	    sp.a = q->b; sp.b = q->c; sp.c = q->d; sp.d = q->e;
 	    ts[3] = -1;
-	    if ( !CubicSolve(&sp,ts))
+	    if ( !CubicSolve(&sp,0,ts))
 return( -1 );
 	    for ( i=0; i<3 && ts[i]!=-1; ++i );
 	}
     } else if ( RealNear(q->e,0)) {
 	sp.a = q->a; sp.b = q->b; sp.c = q->c; sp.d = q->d;
-	CubicSolve(&sp,ts);
+	CubicSolve(&sp,0,ts);
 	for ( i=0; i<3 && ts[i]!=-1; ++i );
 	ts[i++] = 0;
     } else {
@@ -3401,7 +3403,7 @@ return( -1 );
 
 	if ( RealNear(work.e,0)) {
 	    sp.a = work.a; sp.b = work.b; sp.c = work.c; sp.d = work.d;
-	    CubicSolve(&sp,ts);
+	    CubicSolve(&sp,0,ts);
 	    for ( i=0; i<3 && ts[i]!=-1; ++i );
 	    ts[i++] = 0;
 	    for ( j=0; j<i; ++j )
@@ -3437,7 +3439,7 @@ return( -1 );
 	    sp.b = work.c/2;
 	    sp.c = (work.c*work.c-4*work.e)/16;
 	    sp.d = work.d*work.d/64;
-	    if ( !_CubicSolve(&sp,zs) )
+	    if ( !_CubicSolve(&sp,0,zs) )
 return( QuarticAlternate(&work,ts,offset));
 
 	    j = 0;
@@ -3474,21 +3476,21 @@ static int _QuarticSolve(Quartic *q,extended ts[4]) {
 	sp.c = q->d;
 	sp.d = q->e;
 	ts[4] = -999999;
-return( _CubicSolve(&sp,ts));
+return( _CubicSolve(&sp,0,ts));
     } else if ( q->e==0 ) {	/* we can factor out a zero root */
 	sp.a = q->a;
 	sp.b = q->b;
 	sp.c = q->c;
 	sp.d = q->d;
 	ts[0] = 0;
-return( _CubicSolve(&sp,ts+1)+1);
+return( _CubicSolve(&sp,0,ts+1)+1);
     }
 
     sp.a = 4*q->a;
     sp.b = 3*q->b;
     sp.c = 2*q->c;
     sp.d = q->d;
-    if ( _CubicSolve(&sp,extrema)) {
+    if ( _CubicSolve(&sp,0,extrema)) {
 	ecnt = 1;
 	if ( extrema[1]!=-999999 ) {
 	    ecnt = 2;
@@ -3588,23 +3590,200 @@ return(i+1);
 }
 #endif
 
-extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought,real err) {
+extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought) {
     /* We want to find t so that spline(t) = sought */
     /*  the curve must be monotonic */
     /* returns t which is near sought or -1 */
-    Spline1D temp;
     extended ts[3];
     int i;
     extended t;
 
-    temp = *sp;
-    temp.d -= sought;
-    CubicSolve(&temp,ts);
+    CubicSolve(sp,sought,ts);
     if ( tmax<tmin ) { t = tmax; tmax = tmin; tmin = t; }
     for ( i=0; i<3; ++i )
 	if ( ts[i]>=tmin && ts[i]<=tmax )
 return( ts[i] );
 
+return( -1 );
+}
+
+/* An IEEE double has 52 bits of precision. So one unit of rounding error will be */
+/*  the number divided by 2^51 */
+# define D_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0)
+/* But that's not going to work near 0, so, since the t values we care about */
+/*  are [0,1], let's use 1.0/D_RE_Factor */
+
+extended SplineSolveFixup(const Spline1D *sp, real tmin, real tmax, extended sought) {
+    extended ts[3];
+    int i;
+    double factor;
+    extended t;
+    extended val, valp, valm;
+
+    CubicSolve(sp,sought,ts);
+    if ( tmax<tmin ) { t = tmax; tmax = tmin; tmin = t; }
+    for ( i=0; i<3; ++i )
+	if ( ts[i]>=tmin && ts[i]<=tmax )
+    break;
+    if ( i==3 ) {
+	/* nothing in range, but ... */
+	/* did a rounding error take a solution just outside the bounds? */
+	extended bestd = .0001; int besti = -1;
+	extended off;
+	for ( i=0; i<3 && ts[i]!=-1; ++i ) {
+	    if ( ts[i]<tmin )
+		off = tmin-ts[i];
+	    else
+		off = ts[i]-tmax;
+	    if ( off<bestd ) {
+		bestd = off;
+		besti = i;
+	    }
+	}
+	if ( besti==-1 )
+return( -1 );
+	i = besti;
+    }
+    t = ts[i];
+
+    if ((val = (((sp->a*t+sp->b)*t+sp->c)*t+sp->d) - sought)<0 )
+	val=-val;
+    if ( val!=0 ) {
+	for ( factor=1024.0*1024.0*1024.0*1024.0*1024.0; factor>.5; factor/=2.0 ) {
+	    extended tp = t + (factor*t)/D_RE_Factor;
+	    extended tm = t - (factor*t)/D_RE_Factor;
+	    if ( (valp = (((sp->a*tp+sp->b)*tp+sp->c)*tp+sp->d) - sought)<0 )
+		valp = -valp;
+	    if ( (valm = (((sp->a*tm+sp->b)*tm+sp->c)*tm+sp->d) - sought)<0 )
+		valm = -valm;
+	    if ( valp<val && valp<valm ) {
+		if ( factor==1024.0*1024.0*1024.0*1024*1024 ) {
+		    double it = IterateSplineSolve(sp,tmin,tmax,sought);
+		    printf( "Used %g: orig-t: %g, new-t: %g iter-t: %g\n", factor, t, tp, it );
+		}
+		t = tp;
+		val = valp;
+	    } else if ( valm<val ) {
+		if ( factor==1024.0*1024.0*1024.0*1024*1024 ) {
+		    double it = IterateSplineSolve(sp,tmin,tmax,sought);
+		    printf( "Used -%g: orig-t: %g, new-t: %g iter-t: %g\n", factor, t, tm, it );
+		}
+		t = tm;
+		val = valm;
+	    }
+	}
+    }
+    if ( t>=tmin && t<=tmax )
+return( t );
+
+return( -1 );
+}
+
+extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax,
+	extended sought) {
+    extended t, low, high, test;
+    Spline1D temp;
+    /* Now the closed form CubicSolver can have rounding errors so if we know */
+    /*  the spline to be monotonic, an iterative approach is more accurate */
+
+    if ( tmin>tmax ) {
+	t=tmin; tmin=tmax; tmax=t;
+    }
+
+    temp = *sp;
+    temp.d -= sought;
+
+    if ( temp.a==0 && temp.b==0 && temp.c!=0 ) {
+	t = -temp.d/(extended) temp.c;
+	if ( t<tmin || t>tmax )
+return( -1 );
+return( t );
+    }
+
+    low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
+    high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
+    if ( low==0 )
+return(tmin);
+    if ( high==0 )
+return(tmax);
+    if (( low<0 && high>0 ) ||
+	    ( low>0 && high<0 )) {
+	
+	forever {
+	    t = (tmax+tmin)/2;
+	    if ( t==tmax || t==tmin )
+return( t );
+	    test = ((temp.a*t+temp.b)*t+temp.c)*t+temp.d;
+	    if ( test==0 )
+return( t );
+	    if ( (low<0 && test<0) || (low>0 && test>0) )
+		tmin=t;
+	    else
+		tmax = t;
+	}
+    } else if ( low<.0001 && low>-.0001 )
+return( tmin );			/* Rounding errors */
+    else if ( high<.0001 && high>-.0001 )
+return( tmax );
+
+return( -1 );
+}
+
+extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, extended tmax,
+	extended sought) {
+    extended t;
+    double factor;
+    extended val, valp, valm;
+
+    if ( tmin>tmax ) {
+	t=tmin; tmin=tmax; tmax=t;
+    }
+
+    t = IterateSplineSolve(sp,tmin,tmax,sought);
+
+    if ( t==-1 )
+return( -1 );
+
+    if ((val = (((sp->a*t+sp->b)*t+sp->c)*t+sp->d) - sought)<0 )
+	val=-val;
+    if ( val!=0 ) {
+	for ( factor=1024.0*1024.0*1024.0*1024.0*1024.0; factor>.5; factor/=2.0 ) {
+	    extended tp = t + (factor*t)/D_RE_Factor;
+	    extended tm = t - (factor*t)/D_RE_Factor;
+	    if ( tp>tmax ) tp=tmax;
+	    if ( tm<tmin ) tm=tmin;
+	    if ( (valp = (((sp->a*tp+sp->b)*tp+sp->c)*tp+sp->d) - sought)<0 )
+		valp = -valp;
+	    if ( (valm = (((sp->a*tm+sp->b)*tm+sp->c)*tm+sp->d) - sought)<0 )
+		valm = -valm;
+	    if ( valp<val && valp<valm ) {
+		t = tp;
+		val = valp;
+	    } else if ( valm<val ) {
+		t = tm;
+		val = valm;
+	    }
+	}
+    }
+    if ( t==0 && !Within16RoundingErrors(sought,sought+val))
+return( -1 );
+    /* if t!=0 then we we get the chance of far worse rounding errors */
+    else if ( t==tmax || t==tmin ) {
+	if ( Within16RoundingErrors(sought,sought+val) ||
+		Within16RoundingErrors(sp->a,sp->a+val) ||
+		Within16RoundingErrors(sp->b,sp->b+val) ||
+		Within16RoundingErrors(sp->c,sp->c+val) ||
+		Within16RoundingErrors(sp->c,sp->c+val) ||
+		Within16RoundingErrors(sp->d,sp->d+val))
+return( t );
+	else
+return( -1 );
+    }
+
+    if ( t>=tmin && t<=tmax )
+return( t );
+
+    /* I don't think this can happen... */
 return( -1 );
 }
 
@@ -3925,15 +4104,6 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
 	    /* Well we should just remove the whole spline? */;
     }
     *_t1 = t1; *_t2 = t2;
-}
-
-int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]) {
-    Spline1D temp;
-
-    temp = *sp;
-    temp.d -= val;
-    CubicSolve(&temp,ts);
-return( ts[0]!=-1 );
 }
 
 int IntersectLines(BasePoint *inter,
@@ -4762,7 +4932,7 @@ static int XSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
     bigreal t,x,y;
 
-    fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx,.001);
+    fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx);
     if ( t>=0 && t<=1 ) {
 	y = ((yspline->a*t+yspline->b)*t+yspline->c)*t + yspline->d;
 	if ( fs->yl<y && fs->yh>y )
@@ -4770,7 +4940,7 @@ return( true );
     }
     /* Although we know that globaly there's more x change, locally there */
     /*  maybe more y change */
-    fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy,.001);
+    fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy);
     if ( t>=0 && t<=1 ) {
 	x = ((xspline->a*t+xspline->b)*t+xspline->c)*t + xspline->d;
 	if ( fs->xl<x && fs->xh>x )
@@ -4783,7 +4953,7 @@ static int YSolve(Spline *spline,real tmin, real tmax,FindSel *fs) {
     Spline1D *yspline = &spline->splines[1], *xspline = &spline->splines[0];
     bigreal t,x,y;
 
-    fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy,.001);
+    fs->p->t = t = SplineSolve(yspline,tmin,tmax,fs->p->cy);
     if ( t>=0 && t<=1 ) {
 	x = ((xspline->a*t+xspline->b)*t+xspline->c)*t + xspline->d;
 	if ( fs->xl<x && fs->xh>x )
@@ -4791,7 +4961,7 @@ return( true );
     }
     /* Although we know that globaly there's more y change, locally there */
     /*  maybe more x change */
-    fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx,.001);
+    fs->p->t = t = SplineSolve(xspline,tmin,tmax,fs->p->cx);
     if ( t>=0 && t<=1 ) {
 	y = ((yspline->a*t+yspline->b)*t+yspline->c)*t + yspline->d;
 	if ( fs->yl<y && fs->yh>y )
@@ -7102,7 +7272,7 @@ int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wma
 		else if ( s->from->me.x>z2 && s->from->nextcp.x>z2 && s->to->prevcp.x>z2 && s->to->me.x>z2 )
 	continue;
 	    }
-	    if ( SplineSolveFull(zs,z1,ts)) {
+	    if ( CubicSolve(zs,z1,ts)) {
 		for ( i=0; i<2 && ts[i]!=-1; ++i ) {
 		    w = ((ws->a*ts[i]+ws->b)*ts[i]+ws->c)*ts[i]+ws->d;
 		    if ( w<w0 ) w0=w;
@@ -7110,7 +7280,7 @@ int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wma
 		    any = true;
 		}
 	    }
-	    if ( SplineSolveFull(zs,z2,ts)) {
+	    if ( CubicSolve(zs,z2,ts)) {
 		for ( i=0; i<2 && ts[i]!=-1; ++i ) {
 		    w = ((ws->a*ts[i]+ws->b)*ts[i]+ws->c)*ts[i]+ws->d;
 		    if ( w<w0 ) w0=w;

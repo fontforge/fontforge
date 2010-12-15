@@ -1893,7 +1893,7 @@ static int CutCircle(SplineSet *spl,BasePoint *me,int first) {
     firsts = NULL;
     for ( s = spl->first->next ; s!=NULL && s!=firsts; s = s->to->next ) {
 	if ( firsts==NULL ) firsts = s;
-	SplineSolveFull(&s->splines[0],me->x,ts);
+	CubicSolve(&s->splines[0],me->x,ts);
 	for ( i=0; i<3 && ts[i]!=-1; ++i ) {
 	    double y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
 	    double off = me->y-y;

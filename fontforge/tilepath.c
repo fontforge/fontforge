@@ -209,7 +209,7 @@ static void TDAddPoints(TD *td) {
 		    /* Do Nothing, already broken here */;
 		else if ( (tsp->to->me.y>len || tsp->to->prevcp.y>len || tsp->from->me.y>len || tsp->from->nextcp.y>len) &&
 			  (tsp->to->me.y<len || tsp->to->prevcp.y<len || tsp->from->me.y<len || tsp->from->nextcp.y<len) &&
-			  SplineSolveFull(&tsp->splines[1],len,ts) ) {
+			  CubicSolve(&tsp->splines[1],len,ts) ) {
 		    SplinePoint *mid = SplineBisect(tsp,ts[0]);
 		    tsp = mid->next;
 		}
@@ -232,7 +232,7 @@ return;
 return;
 
 
-    if ( !SplineSolveFull(&spline->splines[1],y,ts) )
+    if ( !CubicSolve(&spline->splines[1],y,ts) )
 return;
 
     last = spline->to;

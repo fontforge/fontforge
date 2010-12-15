@@ -7241,7 +7241,7 @@ static void FigureSplExt(SplineSet *spl,int pos,int xextrema, double minmax[2]) 
 		    pos < s->from->me.x && pos < s->from->nextcp.x &&
 		    pos < s->to->me.x && pos < s->to->prevcp.x ))
 	continue;	/* can't intersect spline */
-	    if ( SplineSolveFull(&s->splines[xextrema],pos,ts)==-1 )
+	    if ( CubicSolve(&s->splines[xextrema],pos,ts)==-1 )
 	continue;	/* didn't intersect */
 	    for ( i=0; i<3 && ts[i]!=-1; ++i ) {
 		val = ((s->splines[oth].a*ts[i]+s->splines[oth].b)*ts[i]+
@@ -7316,7 +7316,7 @@ static void FigureProfile(Context *c,SplineChar *sc,int pos,int xextrema) {
             pos < s->from->me.x && pos < s->from->nextcp.x &&
             pos < s->to->me.x && pos < s->to->prevcp.x ))
         continue;	/* can't intersect spline */
-      if ( SplineSolveFull(&s->splines[xextrema],pos,ts)==-1 )
+      if ( CubicSolve(&s->splines[xextrema],pos,ts)==-1 )
         continue;	/* didn't intersect */
       for ( i=0; i<3 && ts[i]!=-1; ++i ) {
         temp = ((s->splines[oth].a*ts[i]+s->splines[oth].b)*ts[i]+
@@ -7354,7 +7354,7 @@ skip1:
                 pos < s->from->me.x && pos < s->from->nextcp.x &&
                 pos < s->to->me.x && pos < s->to->prevcp.x ))
             continue;	/* can't intersect spline */
-          if ( SplineSolveFull(&s->splines[xextrema],pos,ts)==-1 )
+          if ( CubicSolve(&s->splines[xextrema],pos,ts)==-1 )
             continue;	/* didn't intersect */
           for ( i=0; i<3 && ts[i]!=-1; ++i ) {
             temp = ((s->splines[oth].a*ts[i]+s->splines[oth].b)*ts[i]+

@@ -141,7 +141,7 @@ return( false );
     for ( t=.125; t<1; t+= .125 ) {
 	d = (ttf->splines[dim].b*t+ttf->splines[dim].c)*t+ttf->splines[dim].d;
 	o = (ttf->splines[other].b*t+ttf->splines[other].c)*t+ttf->splines[other].d;
-	SplineSolveFull(&ps->splines[dim],d,ts);
+	CubicSolve(&ps->splines[dim],d,ts);
 	for ( i=0; i<3; ++i ) if ( ts[i]!=-1 ) {
 	    val = ((ps->splines[other].a*ts[i]+ps->splines[other].b)*ts[i]+ps->splines[other].c)*ts[i]+ps->splines[other].d;
 	    if ( val>o-err && val<o+err )
