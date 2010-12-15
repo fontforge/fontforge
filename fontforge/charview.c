@@ -7865,7 +7865,7 @@ static int IOSA_OK(GGadget *g, GEvent *e) {
 	}
 	if ( err )
 return(true);
-	if ( SplineSolveFull(&iosa->s->splines[which],val,ts)==0 ) {
+	if ( CubicSolve(&iosa->s->splines[which],val,ts)==0 ) {
 	    ff_post_error(_("Out of Range"),_("The spline does not reach %g"), (double) val );
 return( true );
 	}
@@ -7887,7 +7887,7 @@ return( true );
 return( true );
 	    }
 	    iosa->s = sp->next;
-	    if ( SplineSolveFull(&iosa->s->splines[which],val,ts)==0 ) {
+	    if ( CubicSolve(&iosa->s->splines[which],val,ts)==0 ) {
 		/* Odd. We found one earlier */
 		CVCharChangedUpdate(&iosa->cv->b);
 return( true );

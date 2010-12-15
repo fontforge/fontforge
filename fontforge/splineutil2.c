@@ -45,6 +45,74 @@ int snaptoint=0;
 
 /*#define DEBUG	1*/
 
+#if defined( FONTFORGE_CONFIG_USE_DOUBLE ) || defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
+# define RE_NearZero	.00000001
+# define RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0) /* 52 bits => divide by 2^51 */
+#else
+# define RE_NearZero	.00001
+# define RE_Factor	(1024.0*1024.0*4.0)	/* 23 bits => divide by 2^22 */
+#endif
+
+int Within4RoundingErrors(double v1, double v2) {
+    double temp=v1*v2;
+    double re;
+
+    if ( temp<0 ) /* Ok, if the two values are on different sides of 0 there */
+return( false );	/* is no way they can be within a rounding error of each other */
+    else if ( temp==0 ) {
+	if ( v1==0 )
+return( v2<RE_NearZero && v2>-RE_NearZero );
+	else
+return( v1<RE_NearZero && v1>-RE_NearZero );
+    } else if ( v1>0 ) {
+	if ( v1>v2 ) {		/* Rounding error from the biggest absolute value */
+	    re = v1/ (RE_Factor/4);
+return( v1-v2 < re );
+	} else {
+	    re = v2/ (RE_Factor/4);
+return( v2-v1 < re );
+	}
+    } else {
+	if ( v1<v2 ) {
+	    re = v1/ (RE_Factor/4);	/* This will be a negative number */
+return( v1-v2 > re );
+	} else {
+	    re = v2/ (RE_Factor/4);
+return( v2-v1 > re );
+	}
+    }
+}
+
+int Within16RoundingErrors(double v1, double v2) {
+    double temp=v1*v2;
+    double re;
+
+    if ( temp<0 ) /* Ok, if the two values are on different sides of 0 there */
+return( false );	/* is no way they can be within a rounding error of each other */
+    else if ( temp==0 ) {
+	if ( v1==0 )
+return( v2<RE_NearZero && v2>-RE_NearZero );
+	else
+return( v1<RE_NearZero && v1>-RE_NearZero );
+    } else if ( v1>0 ) {
+	if ( v1>v2 ) {		/* Rounding error from the biggest absolute value */
+	    re = v1/ (RE_Factor/16);
+return( v1-v2 < re );
+	} else {
+	    re = v2/ (RE_Factor/16);
+return( v2-v1 < re );
+	}
+    } else {
+	if ( v1<v2 ) {
+	    re = v1/ (RE_Factor/16);	/* This will be a negative number */
+return( v1-v2 > re );
+	} else {
+	    re = v2/ (RE_Factor/16);
+return( v2-v1 > re );
+	}
+    }
+}
+
 int RealNear(real a,real b) {
     real d;
 
@@ -677,14 +745,11 @@ static double ClosestSplineSolve(Spline1D *sp,double sought,double close_to_t) {
     /* We want to find t so that spline(t) = sought */
     /*  find the value which is closest to close_to_t */
     /* on error return closetot */
-    Spline1D temp;
     extended ts[3];
     int i;
     double t, best, test;
 
-    temp = *sp;
-    temp.d -= sought;
-    _CubicSolve(&temp,ts);
+    _CubicSolve(sp,sought,ts);
     best = 9e20; t= close_to_t;
     for ( i=0; i<3; ++i ) if ( ts[i]>-.0001 && ts[i]<1.0001 ) {
 	if ( (test=ts[i]-close_to_t)<0 ) test = -test;

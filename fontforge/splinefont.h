@@ -2080,6 +2080,8 @@ extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 
+extern int Within4RoundingErrors(double v1, double v2);
+extern int Within16RoundingErrors(double v1, double v2);
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);
 extern int RealApprox(real a,real b);
@@ -2365,11 +2367,16 @@ extern SplineSet *LayerUnAllSplines(Layer *layer);
 extern int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2 );
 extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
 	extended tmin, extended tmax);
-extern int _CubicSolve(const Spline1D *sp,extended ts[3]);
-extern int CubicSolve(const Spline1D *sp,extended ts[3]);
+extern int _CubicSolve(const Spline1D *sp,bigreal sought,extended ts[3]);
+extern int CubicSolve(const Spline1D *sp,bigreal sought,extended ts[3]);
+/* Uses an algebraic solution */
+extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought_y);
+/* Tries to fixup rounding errors that crept in to the solution */
+extern extended SplineSolveFixup(const Spline1D *sp, real tmin, real tmax, extended sought_y);
+/* Uses an iterative approximation */
 extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax, extended sought_y);
-extern extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought_y, real err);
-extern int SplineSolveFull(const Spline1D *sp,extended val, extended ts[3]);
+/* Uses an iterative approximation and then tries to fix things up */
+extern extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, extended tmax, extended sought_y);
 extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
 extern int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wmax, int major );
 extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);

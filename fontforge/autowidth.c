@@ -357,7 +357,7 @@ return( min );
     SplineFindExtrema(&spline->splines[1], &t1, &t2 );
     tbase = 0;
     if ( t1!=-1 ) {
-	t = SplineSolve(&spline->splines[1],0,t1,y,.01);
+	t = SplineSolve(&spline->splines[1],0,t1,y);
 	if ( t>=0 && t<=1 ) {
 	    val = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
 	    if ( min==NOTREACHED || val<min )
@@ -366,7 +366,7 @@ return( min );
 	tbase = t1;
     }
     if ( t2!=-1 ) {
-	t = SplineSolve(&spline->splines[1],tbase,t2,y,.01);
+	t = SplineSolve(&spline->splines[1],tbase,t2,y);
 	if ( t>=0 && t<=1 ) {
 	    val = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
 	    if ( min==NOTREACHED || val<min )
@@ -374,7 +374,7 @@ return( min );
 	}
 	tbase = t2;
     }
-    t = SplineSolve(&spline->splines[1],tbase,1.0,y,.01);
+    t = SplineSolve(&spline->splines[1],tbase,1.0,y);
     if ( t>=0 && t<=1 ) {
 	val = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
 	if ( min==NOTREACHED || val<min )

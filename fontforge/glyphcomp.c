@@ -82,7 +82,7 @@ static double FindNewT(double pos,const Spline1D *s,double old_t) {
     int i;
     double closest;
 
-    SplineSolveFull(s, pos, ts);
+    CubicSolve(s, pos, ts);
     closest = -1;
     for ( i=0; i<3 && ts[i]!=-1; ++i ) {
 	if ( ts[i]>old_t && ts[i]<=1 ) {
@@ -123,9 +123,9 @@ return( true );
 		if ( (dx=s->to->me.x-s->from->me.x)<0 ) dx = -dx;
 		if ( (dy=s->to->me.y-s->from->me.y)<0 ) dy = -dy;
 		if ( dx>dy )
-		    SplineSolveFull(&s->splines[0], here->x+err*offset[j], ts);
+		    CubicSolve(&s->splines[0], here->x+err*offset[j], ts);
 		else
-		    SplineSolveFull(&s->splines[1], here->y+err*offset[j], ts);
+		    CubicSolve(&s->splines[1], here->y+err*offset[j], ts);
 		for ( i=0; i<3 && ts[i]!=-1 ; ++i ) {
 		    test.x = ((s->splines[0].a*ts[i]+s->splines[0].b)*ts[i]+s->splines[0].c)*ts[i]+s->splines[0].d;
 		    test.y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
@@ -163,9 +163,9 @@ return( true );
 	for ( j=0; j<3; ++j ) {
 	    while ( s!=NULL ) {
 		if ( adx>ady )
-		    SplineSolveFull(&s->splines[0], here->x+err*offset[j], ts);
+		    CubicSolve(&s->splines[0], here->x+err*offset[j], ts);
 		else
-		    SplineSolveFull(&s->splines[1], here->y+err*offset[j], ts);
+		    CubicSolve(&s->splines[1], here->y+err*offset[j], ts);
 		for ( i=0; i<3 && ts[i]!=-1 ; ++i ) if ( ts[i]>=t ) {
 		    test.x = ((s->splines[0].a*ts[i]+s->splines[0].b)*ts[i]+s->splines[0].c)*ts[i]+s->splines[0].d;
 		    test.y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;

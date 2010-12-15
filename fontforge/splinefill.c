@@ -69,56 +69,6 @@ void FreeEdges(EdgeList *es) {
     HintsFree(es->vhints);
 }
 
-extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended tmax,
-	extended sought) {
-    extended t, low, high, test;
-    Spline1D temp;
-    /* Now the closed form CubicSolver can have rounding errors so if we know */
-    /*  the spline to be monotonic, an iterative approach is more accurate */
-
-    if ( tmin>tmax ) {
-	t=tmin; tmin=tmax; tmax=t;
-    }
-
-    temp = *sp;
-    temp.d -= sought;
-
-    if ( temp.a==0 && temp.b==0 && temp.c!=0 ) {
-	t = -temp.d/(extended) temp.c;
-	if ( t<tmin || t>tmax )
-return( -1 );
-return( t );
-    }
-
-    low = ((temp.a*tmin+temp.b)*tmin+temp.c)*tmin+temp.d;
-    high = ((temp.a*tmax+temp.b)*tmax+temp.c)*tmax+temp.d;
-    if ( low==0 )
-return(tmin);
-    if ( high==0 )
-return(tmax);
-    if (( low<0 && high>0 ) ||
-	    ( low>0 && high<0 )) {
-	
-	forever {
-	    t = (tmax+tmin)/2;
-	    if ( t==tmax || t==tmin )
-return( t );
-	    test = ((temp.a*t+temp.b)*t+temp.c)*t+temp.d;
-	    if ( test==0 )
-return( t );
-	    if ( (low<0 && test<0) || (low>0 && test>0) )
-		tmin=t;
-	    else
-		tmax = t;
-	}
-    } else if ( low<.0001 && low>-.0001 )
-return( tmin );			/* Rounding errors */
-    else if ( high<.0001 && high>-.0001 )
-return( tmax );
-
-return( -1 );
-}
-
 double TOfNextMajor(Edge *e, EdgeList *es, double sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
