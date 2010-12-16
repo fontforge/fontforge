@@ -255,7 +255,7 @@ return;
     if( winfail > 0 )
 	ff_post_error(_("Kerning is likely to fail on Windows"),_(
 		"On Windows many apps will have problems with this font's "
-		"kerning, because because %d of its glyph kern pairs cannot "
+		"kerning, because %d of its glyph kern pairs cannot "
 		"be mapped to unicode-BMP kern pairs"),
 	    winfail);
 
