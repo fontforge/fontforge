@@ -60,7 +60,7 @@
 
 #if defined( HAVE_LONG_DOUBLE ) && defined( This_does_not_seem_to_make_a_difference )
 # define extended	long double
-# define CheckExtremaForSingleBitErrors(sp,t)	(t)
+# define CheckExtremaForSingleBitErrors(sp,t,othert)	(t)
 # define EXTENDED_IS_LONG_DOUBLE	1
 #else
 # define extended	double
@@ -2402,7 +2402,7 @@ extern char **AutoTraceArgs(int ask);
 extern double SplineCurvature(Spline *s, double t);
 
 #ifndef EXTENDED_IS_LONG_DOUBLE
-extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t);
+extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert);
 #define esqrt(d)	sqrt(d)
 #else
 extern extended esqrt(extended e);
