@@ -1227,7 +1227,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    /* "diff" may become so small in comparison with "y", */
 		    /* that "y+=diff" might actually not change the value of "y". */
 		    bkp_y=y+diff;
-		    if (bkp_y==y) diff *= 2;
+		    while (bkp_y==y) { diff *= 2; bkp_y = y+diff; }
 
 		    t1 = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,y);
 		    if ( t1==-1 )
@@ -1348,7 +1348,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    /* "diff" may become so small in comparison with "y", */
 		    /* that "y+=diff" might actually not change the value of "y". */
 		    bkp_x=x+diff;
-		    if (bkp_x==x) diff *= 2;
+		    while (bkp_x==x) { diff *= 2; bkp_x = x+diff; }
 
 		    t1 = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,x);
 		    if ( t1==-1 )
