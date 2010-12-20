@@ -106,14 +106,22 @@ static Monotonic *SplineToMonotonic(Spline *s,extended startt,extended endt,
     Monotonic *m;
     BasePoint start, end;
 
-    start.x = ((s->splines[0].a*startt+s->splines[0].b)*startt+s->splines[0].c)*startt
-		+ s->splines[0].d;
-    start.y = ((s->splines[1].a*startt+s->splines[1].b)*startt+s->splines[1].c)*startt
-		+ s->splines[1].d;
-    end.x = ((s->splines[0].a*endt+s->splines[0].b)*endt+s->splines[0].c)*endt
-		+ s->splines[0].d;
-    end.y = ((s->splines[1].a*endt+s->splines[1].b)*endt+s->splines[1].c)*endt
-		+ s->splines[1].d;
+    if ( startt==0 )
+	start = s->from->me;
+    else {
+	start.x = ((s->splines[0].a*startt+s->splines[0].b)*startt+s->splines[0].c)*startt
+		    + s->splines[0].d;
+	start.y = ((s->splines[1].a*startt+s->splines[1].b)*startt+s->splines[1].c)*startt
+		    + s->splines[1].d;
+    }
+    if ( endt==1.0 )
+	end = s->to->me;
+    else {
+	end.x = ((s->splines[0].a*endt+s->splines[0].b)*endt+s->splines[0].c)*endt
+		    + s->splines[0].d;
+	end.y = ((s->splines[1].a*endt+s->splines[1].b)*endt+s->splines[1].c)*endt
+		    + s->splines[1].d;
+    }
     if ( (real) (((start.x+end.x)/2)==start.x || (real) ((start.x+end.x)/2)==end.x) &&
 	    (real) (((start.y+end.y)/2)==start.y || (real) ((start.y+end.y)/2)==end.y) ) {
 	/* The distance between the two extrema is so small */
@@ -297,11 +305,13 @@ return;
     ml->isend = isend;
     if ( isend ) {
 	if ( m->end!=NULL && m->end!=il )
-	    SOError("Resetting end.\n");
+	    SOError("Resetting _end. was: (%g,%g) now: (%g,%g)\n",
+		    m->end->inter.x, m->end->inter.y, il->inter.x, il->inter.y);
 	m->end = il;
     } else {
 	if ( m->start!=NULL && m->start!=il )
-	    SOError("Resetting start.\n");
+	    SOError("Resetting _start. was: (%g,%g) now: (%g,%g)\n",
+		    m->start->inter.x, m->start->inter.y, il->inter.x, il->inter.y);
 	m->start = il;
     }
 return;
@@ -325,16 +335,18 @@ return;
     ml->m = m;			/* This may change. We'll fix it up later */
     ml->t = t;
     ml->isend = true;
-    if ( t-m->tstart < m->tend-t && RealNear(m->tstart,t) ) {
+    if ( t-m->tstart < m->tend-t && Within4RoundingErrors(m->tstart,t) ) {
 	if ( m->start!=NULL && m->start!=il )
-	    SOError("Resetting start.\n");
+	    SOError("Resetting start. was: (%g,%g) now: (%g,%g)\n",
+		    m->start->inter.x, m->start->inter.y, il->inter.x, il->inter.y);
 	m->start = il;
 	ml->t = m->tstart;
 	ml->isend = false;
 	_AddSpline(il,m->prev,m->prev->tend,true);
-    } else if ( RealNear(m->tend,t)) {
+    } else if ( Within4RoundingErrors(m->tend,t)) {
 	if ( m->end!=NULL && m->end!=il )
-	    SOError("Resetting end.\n");
+	    SOError("Resetting end. was: (%g,%g) now: (%g,%g)\n",
+		    m->end->inter.x, m->end->inter.y, il->inter.x, il->inter.y);
 	m->end = il;
 	ml->t = m->tend;
 	_AddSpline(il,m->next,m->next->tstart,false);
@@ -347,7 +359,7 @@ return;
 	else {
 	    /* It is monotonic, so a subset of it must also be */
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
-	    BasePoint pt;
+	    BasePoint pt, inter;
 	    *m2 = *m;
 	    m->next = m2;
 	    m2->prev = m;
@@ -361,37 +373,41 @@ return;
 		    m->s->splines[0].c)*m->tstart+m->s->splines[0].d;
 	    pt.y = ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+
 		    m->s->splines[1].c)*m->tstart+m->s->splines[1].d;
-	    if ( pt.x>il->inter.x ) {
-		m->b.minx = il->inter.x;
+	    inter.x = ((m->s->splines[0].a*t+m->s->splines[0].b)*t+
+		    m->s->splines[0].c)*t+m->s->splines[0].d;
+	    inter.y = ((m->s->splines[1].a*t+m->s->splines[1].b)*t+
+		    m->s->splines[1].c)*t+m->s->splines[1].d;
+	    if ( pt.x>inter.x ) {
+		m->b.minx = inter.x;
 		m->b.maxx = pt.x;
 	    } else {
 		m->b.minx = pt.x;
-		m->b.maxx = il->inter.x;
+		m->b.maxx = inter.x;
 	    }
-	    if ( pt.y>il->inter.y ) {
-		m->b.miny = il->inter.y;
+	    if ( pt.y>inter.y ) {
+		m->b.miny = inter.y;
 		m->b.maxy = pt.y;
 	    } else {
 		m->b.miny = pt.y;
-		m->b.maxy = il->inter.y;
+		m->b.maxy = inter.y;
 	    }
 	    pt.x = ((m2->s->splines[0].a*m2->tend+m2->s->splines[0].b)*m2->tend+
 		    m2->s->splines[0].c)*m2->tend+m2->s->splines[0].d;
 	    pt.y = ((m2->s->splines[1].a*m2->tend+m2->s->splines[1].b)*m2->tend+
 		    m2->s->splines[1].c)*m2->tend+m2->s->splines[1].d;
-	    if ( pt.x>il->inter.x ) {
-		m2->b.minx = il->inter.x;
+	    if ( pt.x>inter.x ) {
+		m2->b.minx = inter.x;
 		m2->b.maxx = pt.x;
 	    } else {
 		m2->b.minx = pt.x;
-		m2->b.maxx = il->inter.x;
+		m2->b.maxx = inter.x;
 	    }
-	    if ( pt.y>il->inter.y ) {
-		m2->b.miny = il->inter.y;
+	    if ( pt.y>inter.y ) {
+		m2->b.miny = inter.y;
 		m2->b.maxy = pt.y;
 	    } else {
 		m2->b.miny = pt.y;
-		m2->b.maxy = il->inter.y;
+		m2->b.maxy = inter.y;
 	    }
 	    _AddSpline(il,m2,t,false);
 	}
@@ -424,6 +440,7 @@ static void SetEndPoint(BasePoint *pt,Monotonic *m) {
     }
 }
 
+#if 0
 static extended RoundToEndpoints(Monotonic *m,extended t,BasePoint *inter) {
     BasePoint end;
     extended bound;
@@ -450,6 +467,7 @@ return( bound );
 
 return( t );
 }
+#endif
 
 static int CloserT(Spline *s1,double test,double current,Spline *s2,double t2 ) {
     double basex=((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
@@ -495,19 +513,23 @@ static void SplitMonotonicAtT(Monotonic *m,int which,double t,double coord,
     /*  (after rounding errors) is at the start/end point of the monotonic */
     if ( t<=m->tstart || t>=m->tend ||
 	    ((cx<=m->b.minx || cx>=m->b.maxx) && (cy<=m->b.miny || cy>=m->b.maxy))) {
+	struct intersection *pt=NULL;
 	if ( t-m->tstart<m->tend-t ) {
 	    t = m->tstart;
 	    otherm = m->prev;
 	    othert = m->prev->tend;
+	    pt = m->start;
 	} else {
 	    t = m->tend;
 	    otherm = m->next;
 	    othert = m->next->tstart;
+	    pt = m->end;
 	}
 	sx = &m->s->splines[0]; sy = &m->s->splines[1];
 	cx = ((sx->a*t+sx->b)*t+sx->c)*t+sx->d;
 	cy = ((sy->a*t+sy->b)*t+sy->c)*t+sy->d;
 	if ( which==1 ) cy = coord; else if ( which==0 ) cx = coord;	/* Correct for rounding errors */
+	if ( pt!=NULL ) { cx = pt->inter.x; cy = pt->inter.y; }
 	id->new = false;
     } else {
 	othert = t;
@@ -558,29 +580,26 @@ static void SplitMonotonicAt(Monotonic *m,int which,double coord,
 	    t = m->tend;
 	}
     } else {
-	t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,coord);
+	t = IterateSplineSolveFixup(&m->s->splines[which],m->tstart,m->tend,coord);
 	if ( t==-1 )
 	    SOError("Intersection failed!\n");
     }
     SplitMonotonicAtT(m,which,t,coord,id);
 }
 
+#if 0
 static extended Grad1(Spline1D *s1, Spline1D *s2,
 	extended t1,extended t2 ) {
     /* d/dt[12] (m1(t1).x-m2(t2).x)^2 + (m1(t1).y-m2(t2).y)^2 */
     /* d/dt[12] (m1(t1).x^2 -2m1(t1).x*m2(t2).x + m2(t2).x^2) + (m1(t1).y^2 -2m1(t1).y*m2(t2).y + m2(t2).y^2) */
+    extended val1 = ((s1->a*t1+s1->b)*t1+s1->c)*t1+s1->d;
+    extended dval1 = (3*s1->a*t1+2*s1->b)*t1+s1->c;
     extended val2 = ((s2->a*t2+s2->b)*t2+s2->c)*t2+s2->d;
 
-return( ((((6*(extended)s1->a*s1->a*t1 +
-	    5*2*(extended)s1->a*s1->b)*t1 +
-	    4*(s1->b*(extended)s1->b+2*s1->a*(extended)s1->c))*t1 +
-	    3*2*(s1->a*(extended)s1->d+s1->b*(extended)s1->c))*t1 +
-	    2*(s1->c*(extended)s1->c+2*s1->b*(extended)s1->d))*t1 +
-	    2*s1->c*(extended)s1->d  -
-	     2*val2 * ((3*s1->a*t1 + 2*s1->b)*t1 + s1->c) );
+return( (val1-val2)*dval1 );
 }
 
-static void GradImproveInter(Monotonic *m1, Monotonic *m2,
+static int GradImproveInter(Monotonic *m1, Monotonic *m2,
 	extended *_t1,extended *_t2,BasePoint *inter) {
     Spline *s1 = m1->s, *s2 = m2->s;
     extended x1, x2, y1, y2;
@@ -588,7 +607,9 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     extended error, olderr=1e10;
     extended factor = 4096;
     extended t1=*_t1, t2=*_t2;
+    extended ot1=t1, ot2=t2;
     extended off, off2, yoff;
+    BasePoint pt;
     int cnt=0;
     /* We want to find (t1,t2) so that (m1(t1)-m2(t2))^2==0 */
     /* Find the gradiant and move in the reverse direction */
@@ -604,7 +625,7 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
 	y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
 	error = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 	if ( error>olderr ) {
-	    if ( olderr==1e10 )
+	    if ( olderr==1e10 )		/* The initial guess is way off. Too far off to fix */
     break;
 	    factor *= 2;
 	    if ( factor>4096*4096 )
@@ -615,12 +636,13 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     continue;
 	} else
 	    factor /= 1.4;
-	*_t1 = t1; *_t2 = t2;
-	if ( error<1e-11 )	/* Error is actually the square of the error */
+	ot1 = t1; ot1 = t2;
+	if ( error<1e-12 )	/* Error is actually the square of the error */
     break;			/* So this isn't as constraining as it looks */
 
-	gt1 = Grad1(&s1->splines[0],&s2->splines[0],t1,t2) + Grad1(&s1->splines[1],&s2->splines[1],t1,t2);
-	gt2 = Grad1(&s2->splines[0],&s1->splines[0],t2,t1) + Grad1(&s2->splines[1],&s1->splines[1],t2,t1);
+/* The x and y terms separate and the gradient is the sum of the two */
+	gt1 =    Grad1(&s1->splines[0],&s2->splines[0],t1,t2) + Grad1(&s1->splines[1],&s2->splines[1],t1,t2) ;
+	gt2 = -( Grad1(&s2->splines[0],&s1->splines[0],t2,t1) + Grad1(&s2->splines[1],&s1->splines[1],t2,t1));
 	glen = esqrt(gt1*gt1 + gt2*gt2) * factor;
 	if ( glen==0 )
     break;
@@ -635,25 +657,15 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
 	if ( cnt>1000 )
     break;
     }
-#if 0
-    if ( cnt<=1 && error>=1e-11 )
-	fprintf(stderr,"No Improvement\n" );
-    else if ( cnt>1 )
-	fprintf(stderr,"Improvement\n" );
-#endif
-    t1 = *_t1; t2 = *_t2;
-    if ( t1<0 && t1>-.00001 ) *_t1 = t1 = 0;
-    else if ( t1>1 && t1<1.00001 ) *_t1 = t1 = 1.0;
-    if ( t2<0 && t2>-.00001 ) *_t2 = t2 = 0;
-    else if ( t2>1 && t2<1.00001 ) *_t2 = t2 = 1.0;
-    x1 = ((s1->splines[0].a*t1 + s1->splines[0].b)*t1 + s1->splines[0].c)*t1 + s1->splines[0].d;
-    x2 = ((s2->splines[0].a*t2 + s2->splines[0].b)*t2 + s2->splines[0].c)*t2 + s2->splines[0].d;
-    y1 = ((s1->splines[1].a*t1 + s1->splines[1].b)*t1 + s1->splines[1].c)*t1 + s1->splines[1].d;
-    y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
-    inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
 
-    if ( (off=x1-x2)<0 ) off = -off;
-    if ( (yoff=y1-y2)<0 ) yoff = -yoff;
+    x1 = ((s1->splines[0].a*ot1 + s1->splines[0].b)*ot1 + s1->splines[0].c)*ot1 + s1->splines[0].d;
+    x2 = ((s2->splines[0].a*ot2 + s2->splines[0].b)*ot2 + s2->splines[0].c)*ot2 + s2->splines[0].d;
+    y1 = ((s1->splines[1].a*ot1 + s1->splines[1].b)*ot1 + s1->splines[1].c)*ot1 + s1->splines[1].d;
+    y2 = ((s2->splines[1].a*ot2 + s2->splines[1].b)*ot2 + s2->splines[1].c)*ot2 + s2->splines[1].d;
+    pt.x = (x1+x2)/2; pt.y = (y1+y2)/2;
+
+    off=x1-x2; off *= off;
+    yoff=y1-y2; yoff *= yoff;
     off += yoff;
 
     if ( t1<.0001 ) {
@@ -674,14 +686,228 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
 	x2 = s2->splines[0].a+s2->splines[0].b+s2->splines[0].c+s2->splines[0].d;
 	y2 = s2->splines[1].a+s2->splines[1].b+s2->splines[1].c+s2->splines[1].d;
     }
-    if ( (off2=x1-x2)<0 ) off2 = -off2;
-    if ( (yoff=y1-y2)<0 ) yoff = -yoff;
+    off2=x1-x2; off2 *= off2;
+    yoff=y1-y2; yoff *= yoff;
     off2 += yoff;
     if ( off2<=off ) {
-	*_t1 = t1; *_t2 = t2;
-	inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
+	ot1 = t1; ot2 = t2;
+	pt.x = (x1+x2)/2; pt.y = (y1+y2)/2;
     }
+    if ( ot1<m1->tstart || ot1>m1->tend || ot2<m2->tstart || ot2>m2->tend )
+return( false );
+    *_t1 = ot1; *_t2 = ot2;
+    *inter = pt;
+return( true );
 }
+#endif
+
+/* An IEEE double has 52 bits of precision. So one unit of rounding error will be */
+/*  the number divided by 2^51 */
+# define D_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0)
+/* But that's not going to work near 0, so, since the t values we care about */
+/*  are [0,1], let's use 1.0/D_RE_Factor */
+
+static int ImproveInter(Monotonic *m1, Monotonic *m2,
+	extended *_t1,extended *_t2,BasePoint *inter) {
+    Spline *s1 = m1->s, *s2 = m2->s;
+    extended x1, x2, y1, y2;
+    extended t1p, t1m, t2p, t2m;
+    extended x1p, x1m, x2p, x2m, y1p, y1m, y2p, y2m;
+    extended error, errors[9], beste;
+    int i, besti;
+    extended factor;
+    extended t1,t2;
+    int cnt=1, clamp;
+    /* We want to find (t1,t2) so that (m1(t1)-m2(t2))^2==0 */
+    /* Make slight adjustments to the t?s in all directions and see if that */
+    /*  improves things */
+    /* We know that the current values of (t1,t2) are close to an intersection*/
+
+#if 0
+    if ( !GradImproveInter(m1,m2,_t1,_t2,inter))
+return( false );
+#endif
+    t1=*_t1, t2=*_t2;
+
+    x1 = ((s1->splines[0].a*t1 + s1->splines[0].b)*t1 + s1->splines[0].c)*t1 + s1->splines[0].d;
+    x2 = ((s2->splines[0].a*t2 + s2->splines[0].b)*t2 + s2->splines[0].c)*t2 + s2->splines[0].d;
+    y1 = ((s1->splines[1].a*t1 + s1->splines[1].b)*t1 + s1->splines[1].c)*t1 + s1->splines[1].d;
+    y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
+    error = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+    if ( error==0 )
+return( true );
+    for ( clamp = 1; clamp>=0; --clamp ) {
+	factor = sqrt(error); /* 32*1024.0*1024.0*1024.0/D_RE_Factor;*/
+	for ( cnt=0; cnt<36; ++cnt ) {
+	    extended off1 = factor*t1;
+	    extended off2 = factor*t2;
+	    if ( off1==0 ) off1 = factor;
+	    if ( off2==0 ) off2 = factor;
+	    if ( clamp ) {
+		if (( t1p = t1+off1 )>m1->tend ) t1p = m1->tend;
+		if (( t1m = t1-off1 )<m1->tstart ) t1m = m1->tstart;
+		if (( t2p = t2+off2 )>m2->tend ) t2p = m2->tend;
+		if (( t2m = t2-off2 )<m2->tstart ) t2p = m2->tstart;
+	    } else {
+		t1p = t1+off1;
+		t1m = t1-off1;
+		t2p = t2+off2;
+		t2m = t2-off2;
+	    }
+	    if ( t1p==t1 && t2p==t2 )
+	break;
+    
+	    x1p = ((s1->splines[0].a*t1p + s1->splines[0].b)*t1p + s1->splines[0].c)*t1p + s1->splines[0].d;
+	    x2p = ((s2->splines[0].a*t2p + s2->splines[0].b)*t2p + s2->splines[0].c)*t2p + s2->splines[0].d;
+	    y1p = ((s1->splines[1].a*t1p + s1->splines[1].b)*t1p + s1->splines[1].c)*t1p + s1->splines[1].d;
+	    y2p = ((s2->splines[1].a*t2p + s2->splines[1].b)*t2p + s2->splines[1].c)*t2p + s2->splines[1].d;
+	    x1m = ((s1->splines[0].a*t1m + s1->splines[0].b)*t1m + s1->splines[0].c)*t1m + s1->splines[0].d;
+	    x2m = ((s2->splines[0].a*t2m + s2->splines[0].b)*t2m + s2->splines[0].c)*t2m + s2->splines[0].d;
+	    y1m = ((s1->splines[1].a*t1m + s1->splines[1].b)*t1m + s1->splines[1].c)*t1m + s1->splines[1].d;
+	    y2m = ((s2->splines[1].a*t2m + s2->splines[1].b)*t2m + s2->splines[1].c)*t2m + s2->splines[1].d;
+	    errors[0] = (x1m-x2m)*(x1m-x2m) + (y1m-y2m)*(y1m-y2m);
+	    errors[1] = (x1m-x2)*(x1m-x2) + (y1m-y2)*(y1m-y2);
+	    errors[2] = (x1m-x2p)*(x1m-x2p) + (y1m-y2p)*(y1m-y2p);
+	    errors[3] = (x1-x2m)*(x1-x2m) + (y1-y2m)*(y1-y2m);
+	    errors[4] = error;
+	    errors[5] = (x1-x2p)*(x1-x2p) + (y1-y2p)*(y1-y2p);
+	    errors[6] = (x1p-x2m)*(x1p-x2m) + (y1p-y2m)*(y1p-y2m);
+	    errors[7] = (x1p-x2)*(x1p-x2) + (y1p-y2)*(y1p-y2);
+	    errors[8] = (x1p-x2p)*(x1p-x2p) + (y1p-y2p)*(y1p-y2p);
+	    besti = -1; beste = error;
+	    for ( i=0; i<9; ++i ) {
+		if ( errors[i]<beste ) {
+		    besti = i;
+		    beste = errors[i];
+		}
+	    }
+	    if ( besti!=-1 ) {
+		if ( i<3 ) { t1 = t1m; x1=x1m; y1=y1m; }
+		else if ( i>5 ) { t1 = t1p; x1=x1p; y1=y1p; }
+		if ( i%3==0 ) { t2 = t2m; x2 = x2m; y2=y2m; }
+		else if ( i%3==2 ) { t2 = t2p; x2=x2p; y2=y2p; }
+		if ( t1<m1->tstart || t1>m1->tend || t2<m2->tstart || t2>m2->tend )
+return( false );
+		error = beste;
+		if ( beste==0 )
+	break;
+	    }
+	    factor/=2;
+	    if ( factor<1.0/D_RE_Factor )
+	break;
+	}
+	if ( Within4RoundingErrors(x1,x2) && Within4RoundingErrors(y1,y2))
+    break;
+    }
+    if ( !RealWithin(x1,x2,.005) || !RealWithin(y1,y2,.005))
+return( false );
+    inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
+    *_t1 = t1; *_t2 = t2;
+return( true );
+}
+
+#if 0
+static int FindIntersectionWithin(Monotonic *m1,extended lt1,extended ht1,
+	Monotonic *m2,extended lt2,extended ht2,
+	BasePoint *inter,extended *_t1,extended *_t2) {
+    /* Now we believe that there is an intersection between m1 and m2 somewhere */
+    /* between t and ot */ /* there might be three, but we're gonna hope not */
+    /*  This is very similar to the previous routine ImproveInter */
+    Spline *s1 = m1->s, *s2 = m2->s;
+    extended diff, t1,t2, t;
+    extended x1, x2, y1, y2;
+    extended t1p, t1m, t2p, t2m;
+    extended x1p, x1m, x2p, x2m, y1p, y1m, y2p, y2m;
+    extended error, errors[9], beste;
+    int i, besti;
+    int cnt, clamp;
+    extended fudge1, fudge2;
+
+    /* However, due to rounding errors we can't be certain that our bounds */
+    /*  are accurate. So let's extend our ranges slightly */
+    if ( lt1>ht1 ) { t = ht1; ht1=lt1; lt1=t; }
+    if ( lt2>ht2 ) { t = ht2; ht2=lt2; lt2=t; }
+
+    diff = ht1-lt1;
+    if ( (lt1 -= diff/2)<m1->tstart ) lt1 = m1->tstart;
+    if ( (ht1 += diff/2)>m1->tend   ) ht1 = m1->tend;
+
+    diff = ht2-lt2;
+    if ( (lt2 -= diff/2)<m2->tstart ) lt2 = m2->tstart;
+    if ( (ht2 += diff/2)>m2->tend   ) ht2 = m1->tend;
+
+    t1 = (ht1+lt1)/2;  t2 = (ht2+lt2)/2;
+    fudge1 = (ht1-lt1)/4;  fudge2 = (ht2-lt2)/4;
+    x1 = ((s1->splines[0].a*t1 + s1->splines[0].b)*t1 + s1->splines[0].c)*t1 + s1->splines[0].d;
+    x2 = ((s2->splines[0].a*t2 + s2->splines[0].b)*t2 + s2->splines[0].c)*t2 + s2->splines[0].d;
+    y1 = ((s1->splines[1].a*t1 + s1->splines[1].b)*t1 + s1->splines[1].c)*t1 + s1->splines[1].d;
+    y2 = ((s2->splines[1].a*t2 + s2->splines[1].b)*t2 + s2->splines[1].c)*t2 + s2->splines[1].d;
+    error = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+    if ( error==0 )
+return( true );
+    for ( clamp = 1; clamp>=0; --clamp ) {
+	for ( cnt=0; cnt<36; ++cnt ) {
+	    if ( clamp ) {
+		if (( t1p = t1+fudge1 )>ht1 ) t1p = ht1;
+		if (( t1m = t1-fudge1 )<lt1 ) t1m = lt1;
+		if (( t2p = t2+fudge2 )>ht2 ) t2p = ht2;
+		if (( t2m = t2-fudge2 )<lt2 ) t2p = lt2;
+	    } else {
+		t1p = t1+fudge1;
+		t1m = t1-fudge1;
+		t2p = t2+fudge2;
+		t2m = t2-fudge2;
+	    }
+	    if ( t1p==t1 && t2p==t2 )
+	break;
+    
+	    x1p = ((s1->splines[0].a*t1p + s1->splines[0].b)*t1p + s1->splines[0].c)*t1p + s1->splines[0].d;
+	    x2p = ((s2->splines[0].a*t2p + s2->splines[0].b)*t2p + s2->splines[0].c)*t2p + s2->splines[0].d;
+	    y1p = ((s1->splines[1].a*t1p + s1->splines[1].b)*t1p + s1->splines[1].c)*t1p + s1->splines[1].d;
+	    y2p = ((s2->splines[1].a*t2p + s2->splines[1].b)*t2p + s2->splines[1].c)*t2p + s2->splines[1].d;
+	    x1m = ((s1->splines[0].a*t1m + s1->splines[0].b)*t1m + s1->splines[0].c)*t1m + s1->splines[0].d;
+	    x2m = ((s2->splines[0].a*t2m + s2->splines[0].b)*t2m + s2->splines[0].c)*t2m + s2->splines[0].d;
+	    y1m = ((s1->splines[1].a*t1m + s1->splines[1].b)*t1m + s1->splines[1].c)*t1m + s1->splines[1].d;
+	    y2m = ((s2->splines[1].a*t2m + s2->splines[1].b)*t2m + s2->splines[1].c)*t2m + s2->splines[1].d;
+	    errors[0] = (x1m-x2m)*(x1m-x2m) + (y1m-y2m)*(y1m-y2m);
+	    errors[1] = (x1m-x2)*(x1m-x2) + (y1m-y2)*(y1m-y2);
+	    errors[2] = (x1m-x2p)*(x1m-x2p) + (y1m-y2p)*(y1m-y2p);
+	    errors[3] = (x1-x2m)*(x1-x2m) + (y1-y2m)*(y1-y2m);
+	    errors[4] = error;
+	    errors[5] = (x1-x2p)*(x1-x2p) + (y1-y2p)*(y1-y2p);
+	    errors[6] = (x1p-x2m)*(x1p-x2m) + (y1p-y2m)*(y1p-y2m);
+	    errors[7] = (x1p-x2)*(x1p-x2) + (y1p-y2)*(y1p-y2);
+	    errors[8] = (x1p-x2p)*(x1p-x2p) + (y1p-y2p)*(y1p-y2p);
+	    besti = -1; beste = error;
+	    for ( i=0; i<9; ++i ) {
+		if ( errors[i]<beste ) {
+		    besti = i;
+		    beste = errors[i];
+		}
+	    }
+	    if ( besti!=-1 ) {
+		if ( i<3 ) { t1 = t1m; x1=x1m; y1=y1m; }
+		else if ( i>5 ) { t1 = t1p; x1=x1p; y1=y1p; }
+		if ( i%3==0 ) { t2 = t2m; x2 = x2m; y2=y2m; }
+		else if ( i%3==2 ) { t2 = t2p; x2=x2p; y2=y2p; }
+		if ( t1<m1->tstart || t1>m1->tend || t2<m2->tstart || t2>m2->tend )
+return( false );
+		error = beste;
+		if ( beste==0 )
+	break;
+	    }
+	    fudge1/=2; fudge2/=2;
+	}
+	if ( Within4RoundingErrors(x1,x2) && Within4RoundingErrors(y1,y2))
+    break;
+    }
+    if ( !RealWithin(x1,x2,.005) || !RealWithin(y1,y2,.005))
+return( false );
+    inter->x = (x1+x2)/2; inter->y = (y1+y2)/2;
+    *_t1 = t1; *_t2 = t2;
+return( true );
+}
+#endif
 
 static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
 	Monotonic *m2,extended t1,extended t2,BasePoint *inter) {
@@ -718,9 +944,21 @@ static Intersection *AddIntersection(Intersection *ilist,Monotonic *m1,
     Intersection *il;
     extended ot1 = t1, ot2 = t2;
 
+    /* This is just a join between two adjacent monotonics. There might already*/
+    /*  be an intersection there, but if there be, we've already found it */
+    /* Do this now, because no point wasting the time it takes to ImproveInter*/
+    if (( m1->next==m2 && (t1==t2 || (t1==1.0 && t2==0.0))) ||
+	( m2->next==m1 && (t2==t1 || (t2==1.0 && t1==0.0))) )
+return( ilist );
+
     /* Fixup some rounding errors */
-    GradImproveInter(m1,m2,&t1,&t2,inter);
-    if ( t1<m1->tstart || t1>m1->tend || t2<m2->tstart || t2>m2->tend )
+    if ( !ImproveInter(m1,m2,&t1,&t2,inter))
+return( ilist );
+
+    /* Yeah, I know we just did this, but ImproveInter might have smoothed out*/
+    /*  some rounding errors */
+    if (( m1->next==m2 && (t1==t2 || (t1==1.0 && t2==0.0))) ||
+	( m2->next==m1 && (t2==t1 || (t2==1.0 && t1==0.0))) )
 return( ilist );
 
     if (( inter->x<=m1->b.minx || inter->x>=m1->b.maxx ) &&
@@ -754,27 +992,9 @@ return( ilist );
 	}
     }
 
-#if 0
-    if (( m1->start==m2->start && m1->start!=NULL && RealNear(t1,m1->tstart) && RealNear(t2,m2->tstart)) ||
-	    ( m1->start==m2->end && m1->start!=NULL && RealNear(t1,m1->tstart) && RealNear(t2,m2->tend)) ||
-	    ( m1->end==m2->start && m1->end!=NULL && RealNear(t1,m1->tend) && RealNear(t2,m2->tstart)) ||
-	    ( m1->end==m2->end && m1->end!=NULL && RealNear(t1,m1->tend) && RealNear(t2,m2->tend)) )
+    if (( m1->next==m2 && (t1==t2 || (t1==1.0 && t2==0.0))) ||
+	( m2->next==m1 && (t2==t1 || (t2==1.0 && t1==0.0))) )
 return( ilist );
-    else
-    if ( RealWithin(t1,1.0,.01) && RealWithin(t2,0.0,.01) && BpSame(&m1->s->to->me,&m2->s->from->me)) {
-	t1 = 1.0;
-	t2 = 0.0;
-    } else if ( RealWithin(t2,1.0,.01) && RealWithin(t1,0.0,.01) && BpSame(&m2->s->to->me,&m1->s->from->me)) {
-	t1 = 0.0;
-	t2 = 1.0;
-    } else {
-#endif
-	t1 = RoundToEndpoints(m1,t1,inter);
-	t2 = RoundToEndpoints(m2,t2,inter);
-	t1 = RoundToEndpoints(m1,t1,inter);	/* Do it twice. rounding t2 can mean we now need to round t1 */
-#if 0
-    }
-#endif
 
     if (( m1->s->to == m2->s->from && RealWithin(t1,1.0,.01) && RealWithin(t2,0,.01)) ||
 	    ( m1->s->from == m2->s->to && RealWithin(t1,0,.01) && RealWithin(t2,1.0,.01)))
@@ -820,6 +1040,10 @@ static Intersection *SplitMonotonicsAt(Monotonic *m1,Monotonic *m2,
     SplitMonotonicAt(m2,which,coord,&id2);
     if ( !id1.new && !id2.new )
 return( ilist );
+    if ( !id1.new )
+	id2.inter = id1.inter;
+    /* else if ( !id2.new ) */		/* We only use id2.inter */
+	/* id1.inter = id2.inter;*/
     ilist = check = _AddIntersection(ilist,id1.m,id1.otherm,id1.t,id1.othert,&id2.inter);
     ilist = _AddIntersection(ilist,id2.m,id2.otherm,id2.t,id2.othert,&id2.inter);	/* Use id1.inter to avoid rounding errors */
     if ( check!=ilist )
@@ -869,6 +1093,7 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     BasePoint pt;
     extended t1,t2;
     extended t1end = m1->tend, t2end = m2->tend;
+    int pick;
 
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
     b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
@@ -876,7 +1101,7 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     b.maxy = m1->b.maxy<m2->b.maxy ? m1->b.maxy : m2->b.maxy;
 
     if ( b.maxy==b.miny && b.minx==b.maxx ) {
-	extended x1,y1, x2,y2;
+	extended x1,y1, x2,y2, t1,t2;
 	if ( m1->next==m2 || m2->next==m1 )
 return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	if ( ((m1->start==m2->start || m1->end==m2->start) && m2->start!=NULL) ||
@@ -884,27 +1109,38 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 return( ilist );
 	pt.x = b.minx; pt.y = b.miny;
 	if ( m1->b.maxx-m1->b.minx > m1->b.maxy-m1->b.miny )
-	    t1 = IterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx);
+	    t1 = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,b.minx);
 	else
-	    t1 = IterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,b.miny);
+	    t1 = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,b.miny);
 	if ( m2->b.maxx-m2->b.minx > m2->b.maxy-m2->b.miny )
-	    t2 = IterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,b.minx);
+	    t2 = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart,m2->tend,b.minx);
 	else
-	    t2 = IterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,b.miny);
+	    t2 = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart,m2->tend,b.miny);
 	if ( t1!=-1 && t2!=-1 ) {
+	    ImproveInter(m1,m2,&t1,&t2,&pt);
 	    x1 = ((m1->s->splines[0].a*t1+m1->s->splines[0].b)*t1+m1->s->splines[0].c)*t1+m1->s->splines[0].d;
 	    y1 = ((m1->s->splines[1].a*t1+m1->s->splines[1].b)*t1+m1->s->splines[1].c)*t1+m1->s->splines[1].d;
 	    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
 	    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
-	    if ( x1-x2>-.01 && x1-x2<.01 && y1-y2>-.01 && y1-y2<.01 )
+	    if ( Within16RoundingErrors(x1,x2) && Within16RoundingErrors(y1,y2) )
 		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
 	}
     } else if ( b.maxy==b.miny ) {
 	extended x1,x2;
 	if ( m1->next==m2 || m2->next==m1 )
 return( ilist );		/* Not interesting. Only intersection is at an endpoint */
-	t1 = IterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,b.miny);
-	t2 = IterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,b.miny);
+	if (( b.maxy==m1->b.maxy && m1->yup ) || ( b.maxy==m1->b.miny && !m1->yup ))
+	    t1 = m1->tend;
+	else if (( b.maxy==m1->b.miny && m1->yup ) || ( b.maxy==m1->b.maxy && !m1->yup ))
+	    t1 = m1->tstart;
+	else
+	    t1 = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,b.miny);
+	if (( b.maxy==m2->b.maxy && m2->yup ) || ( b.maxy==m2->b.miny && !m2->yup ))
+	    t2 = m2->tend;
+	else if (( b.maxy==m2->b.miny && m2->yup ) || ( b.maxy==m2->b.maxy && !m2->yup ))
+	    t2 = m2->tstart;
+	else
+	    t2 = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart,m2->tend,b.miny);
 	if ( t1!=-1 && t2!=-1 ) {
 	    x1 = ((m1->s->splines[0].a*t1+m1->s->splines[0].b)*t1+m1->s->splines[0].c)*t1+m1->s->splines[0].d;
 	    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
@@ -917,8 +1153,18 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	extended y1,y2;
 	if ( m1->next==m2 || m2->next==m1 )
 return( ilist );		/* Not interesting. Only intersection is at an endpoint */
-	t1 = IterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,b.minx);
-	t2 = IterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,b.minx);
+	if (( b.maxx==m1->b.maxx && m1->xup ) || ( b.maxx==m1->b.minx && !m1->xup ))
+	    t1 = m1->tend;
+	else if (( b.maxx==m1->b.minx && m1->xup ) || ( b.maxx==m1->b.maxx && !m1->xup ))
+	    t1 = m1->tstart;
+	else
+	    t1 = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,b.minx);
+	if (( b.maxx==m2->b.maxx && m2->xup ) || ( b.maxx==m2->b.minx && !m2->xup ))
+	    t2 = m2->tend;
+	else if (( b.maxx==m2->b.minx && m2->xup ) || ( b.maxx==m2->b.maxx && !m2->xup ))
+	    t2 = m2->tstart;
+	else
+	    t2 = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart,m2->tend,b.minx);
 	if ( t1!=-1 && t2!=-1 ) {
 	    y1 = ((m1->s->splines[1].a*t1+m1->s->splines[1].b)*t1+m1->s->splines[1].c)*t1+m1->s->splines[1].d;
 	    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
@@ -927,222 +1173,257 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
 	    }
 	}
-    } else if ( b.maxy-b.miny > b.maxx-b.minx ) {
-	volatile extended bkp_y;
-	extended diff,y,x1,x2, x1o,x2o;
-	extended t1,t2, t1o,t2o;
+    } else {
+	for ( pick=0; pick<2; ++pick ) {
+	    int doy = (( b.maxy-b.miny > b.maxx-b.minx ) && pick ) ||
+			    (( b.maxy-b.miny <= b.maxx-b.minx ) && !pick );
+	    int any = false;
+	    if ( doy ) {
+		extended diff, y, x1,x2, x1o,x2o;
+		extended t1,t2, t1o,t2o/*, t1t,t2t */;
+		volatile extended bkp_y;
 
-	diff = (b.maxy-b.miny)/32;
-	y = b.miny;
-	x1o = x2o = 0;
-	while ( y<b.maxy ) {
-	    t1o = IterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,y);
-	    if ( t1o==-1 )
-		t1o = IterateSplineSolve(&m1->s->splines[1],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,y);
-	    t2o = IterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,y);
-	    if ( t2o==-1 )
-		t2o = IterateSplineSolve(&m2->s->splines[1],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,y);
-	    if ( t1o!=-1 && t2o!=-1 )
-	break;
-	    y += diff;
-	}
-	x1o = ((m1->s->splines[0].a*t1o+m1->s->splines[0].b)*t1o+m1->s->splines[0].c)*t1o+m1->s->splines[0].d;
-	x2o = ((m2->s->splines[0].a*t2o+m2->s->splines[0].b)*t2o+m2->s->splines[0].c)*t2o+m2->s->splines[0].d;
-	if ( x1o==x2o ) {	/* Unlikely... but just in case */
-	    pt.x = x1o; pt.y = y;
-	    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
-	    /* If pt is not one of the end points then AddIntersection will*/
-	    /*  split the monotonic in two at that point. m1/m2 will be the*/
-	    /*  section of the the monotonic with lower t values. We need  */
-	    /*  to keep testing the section with higher y values. So if yup*/
-	    /*  then m1/m2 have lower y values and m?->next will be what we*/
-	    /*  need */ /* Unless pt is the start point. Then there will be*/
-	    /*  no new monotonic and m?->tend won't have changed */
-	    if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
-	    if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
-	}
-	for ( y+=diff; ; y += diff ) {
-	    /* I used to say y<=b.maxy in the above for statement. */
-	    /*  that seemed to get rounding errors on the mac, so we do it */
-	    /*  like this now: */
-	    if ( y>b.maxy ) {
-		if ( y<b.maxy+(63*diff/64) ) y = b.maxy;
-		else
-	break;
-	    }
-
-	    /* This is a volatile code! */
-	    /* "diff" may become so small in comparison with "y", */
-	    /* that "y+=diff" might actually not change the value of "y". */
-	    bkp_y=y+diff;
-	    if (bkp_y==y) diff *= 2;
-	    
-	    t1 = IterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,y);
-	    if ( t1==-1 )
-		t1 = IterateSplineSolve(&m1->s->splines[1],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,y);
-	    t2 = IterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,y);
-	    if ( t2==-1 )
-		t2 = IterateSplineSolve(&m2->s->splines[1],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,y);
-	    if ( t1==-1 || t2==-1 )
-	continue;
-	    x1 = ((m1->s->splines[0].a*t1+m1->s->splines[0].b)*t1+m1->s->splines[0].c)*t1+m1->s->splines[0].d;
-	    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
-	    if ( x1==x2 && x1o!=x2o ) {
-		pt.x = x1; pt.y = y;
-		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
-		/* see comment above for these next lines */
-		if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
-		if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
-		x1o = x1; x2o = x2;
-	    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
-		/* A cross over has occured. (assume we have a small enough */
-		/*  region that three cross-overs can't have occurred) */
-		/* Use a binary search to track it down */
-		extended ytop, ybot, ytest, oldy;
-		oldy = ytop = y;
-		ybot = y-diff;
-		x1o = x1; x2o = x2;
-		while ( ytop!=ybot ) {
-		    extended t1t, t2t;
-		    ytest = (ytop+ybot)/2;
-		    t1t = IterateSplineSolve(&m1->s->splines[1],m1->tstart,m1->tend,ytest);
-		    t2t = IterateSplineSolve(&m2->s->splines[1],m2->tstart,m2->tend,ytest);
-		    x1 = ((m1->s->splines[0].a*t1t+m1->s->splines[0].b)*t1t+m1->s->splines[0].c)*t1t+m1->s->splines[0].d;
-		    x2 = ((m2->s->splines[0].a*t2t+m2->s->splines[0].b)*t2t+m2->s->splines[0].c)*t2t+m2->s->splines[0].d;
-		    if ( t1t==-1 || t2t==-1 ) {
-			if ( t1t==-1 && (RealNear(ytest,m1->b.miny) || RealNear(ytest,m1->b.maxy)))
-			    /* OK */;
-			else if ( t2t==-1 && (RealNear(ytest,m2->b.miny) || RealNear(ytest,m2->b.maxy)))
-			    /* OK */;
-			else
-			    SOError( "Can't find something in range. y=%g\n", ytest );
+		diff = (b.maxy-b.miny)/32;
+		y = b.miny;
+		x1o = x2o = 0;
+		while ( y<b.maxy ) {
+		    t1o = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,y);
+		    if ( t1o==-1 )
+			t1o = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,y);
+		    t2o = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart,m2->tend,y);
+		    if ( t2o==-1 )
+			t2o = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,y);
+		    if ( t1o!=-1 && t2o!=-1 )
 		break;
-		    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
-			pt.y = ytest; pt.x = (x1+x2)/2;
-			ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+		    y += diff;
+		}
+		x1o = ((m1->s->splines[0].a*t1o+m1->s->splines[0].b)*t1o+m1->s->splines[0].c)*t1o+m1->s->splines[0].d;
+		x2o = ((m2->s->splines[0].a*t2o+m2->s->splines[0].b)*t2o+m2->s->splines[0].c)*t2o+m2->s->splines[0].d;
+		if ( x1o==x2o ) {	/* Unlikely... but just in case */
+		    pt.x = x1o; pt.y = y;
+		    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
+		    /* If pt is not one of the end points then AddIntersection will*/
+		    /*  split the monotonic in two at that point. m1/m2 will be the*/
+		    /*  section of the the monotonic with lower t values. We need  */
+		    /*  to keep testing the section with higher y values. So if yup*/
+		    /*  then m1/m2 have lower y values and m?->next will be what we*/
+		    /*  need */ /* Unless pt is the start point. Then there will be*/
+		    /*  no new monotonic and m?->tend won't have changed */
+		    if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
+		    if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
+		    any = true;
+		}
+		for ( y+=diff; ; y += diff ) {
+		    /* I used to say y<=b.maxy in the above for statement. */
+		    /*  that seemed to get rounding errors on the mac, so we do it */
+		    /*  like this now: */
+		    if ( y>b.maxy ) {
+			if ( y<b.maxy+diff ) y = b.maxy;
+			else
+		break;
+		    }
+
+		    /* This is a volatile code! */
+		    /* "diff" may become so small in comparison with "y", */
+		    /* that "y+=diff" might actually not change the value of "y". */
+		    bkp_y=y+diff;
+		    if (bkp_y==y) diff *= 2;
+
+		    t1 = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,y);
+		    if ( t1==-1 )
+			t1 = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,y);
+		    t2 = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart,m2->tend,y);
+		    if ( t2==-1 )
+			t2 = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,y);
+		    if ( t1==-1 || t2==-1 )
+		continue;
+		    x1 = ((m1->s->splines[0].a*t1+m1->s->splines[0].b)*t1+m1->s->splines[0].c)*t1+m1->s->splines[0].d;
+		    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
+		    if ( x1==x2 && x1o!=x2o ) {
+			pt.x = x1; pt.y = y;
+			ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+			any = true;
 			/* see comment above for these next lines */
 			if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
 			if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
-		break;
-		    } else if ( (x1o>x2o) != ( x1>x2 ) ) {
-			ybot = ytest;
+			x1o = x1; x2o = x2;
+		    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
+			/* A cross over has occured. (assume we have a small enough */
+			/*  region that three cross-overs can't have occurred) */
+			/* Use a binary search to track it down */
+#if 0
+			if ( FindIntersectionWithin(m1,t1,t1o,m2,t2,t2o,&pt,&t1t,&t2t) ) {
+			    ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+			    any = true;
+			}
+#else
+			extended ytop, ybot, ytest, oldy;
+			oldy = ytop = y;
+			ybot = y-diff;
+			if ( ybot<b.miny )
+			    ybot = b.miny;
+			x1o = x1; x2o = x2;
+			while ( ytop!=ybot ) {
+			    extended t1t, t2t;
+			    ytest = (ytop+ybot)/2;
+			    t1t = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,ytest);
+			    t2t = IterateSplineSolveFixup(&m2->s->splines[1],m2->tstart,m2->tend,ytest);
+			    x1 = ((m1->s->splines[0].a*t1t+m1->s->splines[0].b)*t1t+m1->s->splines[0].c)*t1t+m1->s->splines[0].d;
+			    x2 = ((m2->s->splines[0].a*t2t+m2->s->splines[0].b)*t2t+m2->s->splines[0].c)*t2t+m2->s->splines[0].d;
+			    if ( t1t==-1 || t2t==-1 ) {
+				if ( t1t==-1 && (RealNear(ytest,m1->b.miny) || RealNear(ytest,m1->b.maxy)))
+				    /* OK */;
+				else if ( t2t==-1 && (RealNear(ytest,m2->b.miny) || RealNear(ytest,m2->b.maxy)))
+				    /* OK */;
+				else
+				    SOError( "Can't find something in range. y=%g\n", ytest );
+			break;
+			    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
+				pt.y = ytest; pt.x = (x1+x2)/2;
+				ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+				any = true;
+				/* see comment above for these next lines */
+				if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
+				if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
+			break;
+			    } else if ( (x1o>x2o) != ( x1>x2 ) ) {
+				ybot = ytest;
+			    } else {
+				ytop = ytest;
+			    }
+			}
+			y = oldy;		/* Might be more than one intersection, keep going */
 		    } else {
-			ytop = ytest;
+			x1o = x1; x2o = x2;
+#endif
 		    }
-		}
-		y = oldy;		/* Might be more than one intersection, keep going */
-	    } else {
-		x1o = x1; x2o = x2;
-	    }
-	}
-    } else {
-	volatile extended bkp_x;
-	extended diff,x,y1,y2, y1o,y2o;
-	extended t1,t2, t1o,t2o ;
-
-	diff = (b.maxx-b.minx)/32;
-	x = b.minx;
-	y1o = y2o = 0;
-	while ( x<b.maxx ) {
-	    t1o = IterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,x);
-	    if ( t1o==-1 )
-		t1o = IterateSplineSolve(&m1->s->splines[0],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,x);
-	    t2o = IterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,x);
-	    if ( t2o==-1 )
-		t2o = IterateSplineSolve(&m2->s->splines[0],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,x);
-	    if ( t1o!=-1 && t2o!=-1 )
-	break;
-	    x += diff;
-	}
-	y1o = ((m1->s->splines[1].a*t1o+m1->s->splines[1].b)*t1o+m1->s->splines[1].c)*t1o+m1->s->splines[1].d;
-	y2o = ((m2->s->splines[1].a*t2o+m2->s->splines[1].b)*t2o+m2->s->splines[1].c)*t2o+m2->s->splines[1].d;
-	if ( y1o==y2o ) {
-	    pt.y = y1o; pt.x = x;
-	    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
-	    /* If pt is not one of the end points then AddIntersection will*/
-	    /*  split the monotonic in two at that point. m1/m2 will be the*/
-	    /*  section of the the monotonic with lower t values. We need  */
-	    /*  to keep testing the section with higher x values. So if xup*/
-	    /*  then m1/m2 have lower x values and m?->next will be what we*/
-	    /*  need */ /* Unless pt is the start point. Then there will be*/
-	    /*  no new monotonic and m?->tend won't have changed */
-	    if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
-	    if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
-	}
-	y1 = y2 = 0;
-	for ( x+=diff; ; x += diff ) {
-	    /* I used to say x<=b.maxx in the above for statement. */
-	    /*  that seemed to get rounding errors on the mac, so we do it */
-	    /*  like this now: */
-	    if ( x>b.maxx ) {
-		if ( x<b.maxx+(63*diff/64) ) x = b.maxx;
-		else
-	break;
-	    }
-
-	    /* This is a volatile code! */
-	    /* "diff" may become so small in comparison with "y", */
-	    /* that "y+=diff" might actually not change the value of "y". */
-	    bkp_x=x+diff;
-	    if (bkp_x==x) diff *= 2;
-
-	    t1 = IterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,x);
-	    if ( t1==-1 )
-		t1 = IterateSplineSolve(&m1->s->splines[0],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,x);
-	    t2 = IterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,x);
-	    if ( t2==-1 )
-		t2 = IterateSplineSolve(&m2->s->splines[0],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,x);
-	    if ( t1==-1 || t2==-1 )
-	continue;
-	    y1 = ((m1->s->splines[1].a*t1+m1->s->splines[1].b)*t1+m1->s->splines[1].c)*t1+m1->s->splines[1].d;
-	    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
-	    if ( y1==y2 && y1o!=y2o ) {
-		pt.y = y1; pt.x = x;
-		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
-		/* see comment above */
-		if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
-		if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
-		y1o = y1; y2o = y2;
-	    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
-		/* A cross over has occured. (assume we have a small enough */
-		/*  region that three cross-overs can't have occurred) */
-		/* Use a binary search to track it down */
-		extended xtop, xbot, xtest, oldx;
-		oldx = xtop = x;
-		xbot = x-diff;
-		y1o = y1; y2o = y2;
-		while ( xtop!=xbot ) {
-		    extended t1t, t2t;
-		    xtest = (xtop+xbot)/2;
-		    t1t = IterateSplineSolve(&m1->s->splines[0],m1->tstart,m1->tend,xtest);
-		    t2t = IterateSplineSolve(&m2->s->splines[0],m2->tstart,m2->tend,xtest);
-		    y1 = ((m1->s->splines[1].a*t1t+m1->s->splines[1].b)*t1t+m1->s->splines[1].c)*t1t+m1->s->splines[1].d;
-		    y2 = ((m2->s->splines[1].a*t2t+m2->s->splines[1].b)*t2t+m2->s->splines[1].c)*t2t+m2->s->splines[1].d;
-		    if ( t1t==-1 || t2t==-1 ) {
-			if ( t1t==-1 && (RealNear(xtest,m1->b.minx) || RealNear(xtest,m1->b.maxx)))
-			    /* OK */;
-			else if ( t2t==-1 && (RealNear(xtest,m2->b.minx) || RealNear(xtest,m2->b.maxx)))
-			    /* OK */;
-			else
-			    SOError( "Can't find something in range. x=%g\n", (double) xtest );
+		    x1o = x1; x2o = x2;
+		    if ( y==b.maxy )
 		break;
-		    } else if (( y1-y2<error && y1-y2>-error ) || xtop==xtest || xbot==xtest ) {
-			pt.x = xtest; pt.y = (y1+y2)/2;
-			ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+		}
+	    } else {
+		volatile extended bkp_x;
+		extended diff, x, y1,y2, y1o,y2o;
+		extended t1,t2, t1o,t2o/*, t1t,t2t*/ ;
+
+		diff = (b.maxx-b.minx)/32;
+		x = b.minx;
+		y1o = y2o = 0;
+		while ( x<b.maxx ) {
+		    t1o = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,x);
+		    if ( t1o==-1 )
+			t1o = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,x);
+		    t2o = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart,m2->tend,x);
+		    if ( t2o==-1 )
+			t2o = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,x);
+		    if ( t1o!=-1 && t2o!=-1 )
+		break;
+		    x += diff;
+		}
+		y1o = ((m1->s->splines[1].a*t1o+m1->s->splines[1].b)*t1o+m1->s->splines[1].c)*t1o+m1->s->splines[1].d;
+		y2o = ((m2->s->splines[1].a*t2o+m2->s->splines[1].b)*t2o+m2->s->splines[1].c)*t2o+m2->s->splines[1].d;
+		if ( y1o==y2o ) {
+		    pt.y = y1o; pt.x = x;
+		    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
+		    any = true;
+		    /* If pt is not one of the end points then AddIntersection will*/
+		    /*  split the monotonic in two at that point. m1/m2 will be the*/
+		    /*  section of the the monotonic with lower t values. We need  */
+		    /*  to keep testing the section with higher x values. So if xup*/
+		    /*  then m1/m2 have lower x values and m?->next will be what we*/
+		    /*  need */ /* Unless pt is the start point. Then there will be*/
+		    /*  no new monotonic and m?->tend won't have changed */
+		    if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
+		    if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
+		}
+		y1 = y2 = 0;
+		for ( x+=diff; ; x += diff ) {
+		    if ( x>b.maxx ) {
+			if ( x<b.maxx+diff ) x = b.maxx;
+			else
+		break;
+		    }
+
+		    /* This is a volatile code! */
+		    /* "diff" may become so small in comparison with "y", */
+		    /* that "y+=diff" might actually not change the value of "y". */
+		    bkp_x=x+diff;
+		    if (bkp_x==x) diff *= 2;
+
+		    t1 = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,x);
+		    if ( t1==-1 )
+			t1 = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart-m1->tstart/32,m1->tend+m1->tend/32,x);
+		    t2 = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart,m2->tend,x);
+		    if ( t2==-1 )
+			t2 = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart-m2->tstart/32,m2->tend+m2->tend/32,x);
+		    if ( t1==-1 || t2==-1 )
+		continue;
+		    y1 = ((m1->s->splines[1].a*t1+m1->s->splines[1].b)*t1+m1->s->splines[1].c)*t1+m1->s->splines[1].d;
+		    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
+		    if ( y1==y2 && y1o!=y2o ) {
+			pt.y = y1; pt.x = x;
+			ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+			any = true;
 			/* see comment above */
 			if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
 			if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
-		break;
-		    } else if ( (y1o>y2o) != ( y1>y2 ) ) {
-			xbot = xtest;
+			y1o = y1; y2o = y2;
+		    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
+			/* A cross over has occured. (assume we have a small enough */
+			/*  region that three cross-overs can't have occurred) */
+			/* Use a binary search to track it down */
+#if 0
+			if ( FindIntersectionWithin(m1,t1,t1o,m2,t2,t2o,&pt,&t1t,&t2t) ) {
+			    ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+			    any = true;
+			}
+#else
+			extended xtop, xbot, xtest, oldx;
+			oldx = xtop = x;
+			xbot = x-diff;
+			if ( xbot<b.minx ) xbot = b.minx;
+			y1o = y1; y2o = y2;
+			while ( xtop!=xbot ) {
+			    extended t1t, t2t;
+			    xtest = (xtop+xbot)/2;
+			    t1t = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,xtest);
+			    t2t = IterateSplineSolveFixup(&m2->s->splines[0],m2->tstart,m2->tend,xtest);
+			    y1 = ((m1->s->splines[1].a*t1t+m1->s->splines[1].b)*t1t+m1->s->splines[1].c)*t1t+m1->s->splines[1].d;
+			    y2 = ((m2->s->splines[1].a*t2t+m2->s->splines[1].b)*t2t+m2->s->splines[1].c)*t2t+m2->s->splines[1].d;
+			    if ( t1t==-1 || t2t==-1 ) {
+				if ( t1t==-1 && (RealNear(xtest,m1->b.minx) || RealNear(xtest,m1->b.maxx)))
+				    /* OK */;
+				else if ( t2t==-1 && (RealNear(xtest,m2->b.minx) || RealNear(xtest,m2->b.maxx)))
+				    /* OK */;
+				else
+				    SOError( "Can't find something in range. x=%g\n", (double) xtest );
+			break;
+			    } else if (( y1-y2<error && y1-y2>-error ) || xtop==xtest || xbot==xtest ) {
+				pt.x = xtest; pt.y = (y1+y2)/2;
+				ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+				any = true;
+				/* see comment above */
+				if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
+				if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
+			break;
+			    } else if ( (y1o>y2o) != ( y1>y2 ) ) {
+				xbot = xtest;
+			    } else {
+				xtop = xtest;
+			    }
+			}
+			x = oldx;
 		    } else {
-			xtop = xtest;
+			y1o = y1; y2o = y2;
+#endif
 		    }
+		    y1o = y1; y2o = y2;
+		    if ( x==b.maxx )
+		break;
 		}
-		x = oldx;
-	    } else {
-		y1o = y1; y2o = y2;
 	    }
+	    if ( any )
+	break;
 	}
     }
 return( ilist );
@@ -1166,16 +1447,16 @@ static extended SplineContainsPoint(Monotonic *m,BasePoint *pt) {
 
     which = ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny )? 0 : 1;
     nw = !which;
-    t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
-    if ( t!=-1 && Within4RoundingErrors((&pt->x)[nw],
+    t = IterateSplineSolveFixup(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
+    if ( t!=-1 && Within16RoundingErrors((&pt->x)[nw],
 	   ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t +
 		m->s->splines[nw].c)*t + m->s->splines[nw].d ))
 return( t );
 
     which = nw;
     nw = !which;
-    t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
-    if ( t!=-1 && Within4RoundingErrors((&pt->x)[nw],
+    t = IterateSplineSolveFixup(&m->s->splines[which],m->tstart,m->tend,(&pt->x)[which]);
+    if ( t!=-1 && Within16RoundingErrors((&pt->x)[nw],
 	   ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t +
 		m->s->splines[nw].c)*t + m->s->splines[nw].d ))
 return( t );
@@ -1274,11 +1555,11 @@ return( true );
 	    if ( (slope.y = (3*m1->s->splines[1].a*t+2*m1->s->splines[1].b)*t+m1->s->splines[1].c)<0 )
 		slope.y = -slope.y;
 	    if ( slope.y>slope.x ) {
-		t2 = IterateSplineSolve(&m2->s->splines[1],t2s[0],t2s[1],here.y);
+		t2 = IterateSplineSolveFixup(&m2->s->splines[1],t2s[0],t2s[1],here.y);
 		if ( t2==-1 || !RealWithin(here.x,((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d,.1))
 return( false );
 	    } else {
-		t2 = IterateSplineSolve(&m2->s->splines[0],t2s[0],t2s[1],here.x);
+		t2 = IterateSplineSolveFixup(&m2->s->splines[0],t2s[0],t2s[1],here.x);
 		if ( t2==-1 || !RealWithin(here.y,((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d,.1))
 return( false );
 	    }
@@ -1534,7 +1815,7 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
 		    (( which==1 && m->s->from->me.y==m->s->to->me.y ) ||
 			(which==0 && m->s->from->me.x==m->s->to->me.x)))
     continue;
-	    t = IterateSplineSolve(&m->s->splines[which],m->tstart,m->tend,test);
+	    t = IterateSplineSolveFixup(&m->s->splines[which],m->tstart,m->tend,test);
 	    if ( t==-1 ) {
 		if ( which==0 ) {
 		    if (( test-m->b.minx > m->b.maxx-test && m->xup ) ||
@@ -1632,6 +1913,8 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 	    }
 	    if ( low==high )
     continue;			/* One ends, the other begins. No overlap really */
+	    if ( RealNear(low,high))
+    continue;			/* Too close together to be very useful */
 #define DECIMATE	32
 	    incr = (high-low)/DECIMATE;
 	    neg_cnt = pos_cnt=0;
@@ -1639,8 +1922,8 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 	    for ( j=0, test=low+incr; j<=DECIMATE; ++j, test += incr ) {
 		if ( test>high ) test=high;
 #undef DECIMATE
-		t1 = IterateSplineSolve(&m1->s->splines[which],m1->tstart,m1->tend,test);
-		t2 = IterateSplineSolve(&m2->s->splines[which],m2->tstart,m2->tend,test);
+		t1 = IterateSplineSolveFixup(&m1->s->splines[which],m1->tstart,m1->tend,test);
+		t2 = IterateSplineSolveFixup(&m2->s->splines[which],m2->tstart,m2->tend,test);
 		if ( t1==-1 || t2==-1 )
 	    continue;
 		c1 = ((m1->s->splines[other].a*t1+m1->s->splines[other].b)*t1+m1->s->splines[other].c)*t1+m1->s->splines[other].d;
@@ -1831,7 +2114,8 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	nineeded = IsNeeded(ot,winding,niwinding,ew,niew);
 	inneeded = IsNeeded(ot,niwinding,inwinding,niew,inew);
 	if ( nm!=NULL )
-	    close = nm->other-m->other < close_level;
+	    close = nm->other-m->other < close_level &&
+		    nm->other-m->other > -close_level;
 	else
 	    close = false;
 	if ( i>0 && m->other-space[i-1]->other < close_level &&
@@ -2789,9 +3073,9 @@ static double AdjacentSplinesMatch(Spline *s1,Spline *s2,int s2forward) {
 	double x = ((s2->splines[0].a*t+s2->splines[0].b)*t+s2->splines[0].c)*t+s2->splines[0].d;
 	double y = ((s2->splines[1].a*t+s2->splines[1].b)*t+s2->splines[1].c)*t+s2->splines[1].d;
 	if ( xoff>yoff )
-	    t1 = IterateSplineSolve(&s1->splines[0],t1start,t1end,x);
+	    t1 = IterateSplineSolveFixup(&s1->splines[0],t1start,t1end,x);
 	else
-	    t1 = IterateSplineSolve(&s1->splines[1],t1start,t1end,y);
+	    t1 = IterateSplineSolveFixup(&s1->splines[1],t1start,t1end,y);
 	if ( t1<0 || t1>1 )
 return( -1 );
 	x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].d;

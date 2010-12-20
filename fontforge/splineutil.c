@@ -3788,51 +3788,38 @@ return( -1 );
 }
 
 #ifndef EXTENDED_IS_LONG_DOUBLE
-double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
-    union { double dval; int32 ival[2]; } u1, um1, temp;
+double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert) {
+    double u1, um1;
     double slope, slope1, slopem1;
-#ifdef WORDS_BIGENDIAN
-    const int index = 1;
-#else
-    const int index = 0;
-#endif
+    int err;
+    double diff, factor;
+
+    if ( t<0 || t>1 )
+return( t );
+
+    factor = t*0x40000/D_RE_Factor;
+    if ( (diff = t-othert)<0 ) diff= -diff;
+    if ( factor>diff/4 && diff!=0 )		/* This little check is to insure we don't skip beyond the well of this extremum into the next */
+	factor = diff/4;
 
     slope = (3*(double) sp->a*t+2*sp->b)*t+sp->c;
-
-    u1.dval = t;
-    u1.ival[index] += 1;
-    slope1 = (3*(double) sp->a*u1.dval+2*sp->b)*u1.dval+sp->c;
-
-    um1.dval = t;
-    um1.ival[index] -= 1;
-    slopem1 = (3*(double) sp->a*um1.dval+2*sp->b)*um1.dval+sp->c;
-
     if ( slope<0 ) slope = -slope;
-    if ( slope1<0 ) slope1 = -slope1;
-    if ( slopem1<0 ) slopem1 = -slopem1;
 
-    if ( slope1<slope && slope1<=slopem1 ) {
-	 /* Ok, things got better when we added 1. */
-	 /*  Do they improve further if we add 1 more? */
-	temp = u1;
-	temp.ival[index] += 1;
-	slope = (3*(double) sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
-	if ( slope<0 ) slope = -slope;
-	if ( slope<slope1 )
-return( temp.dval );
-	else
-return( u1.dval );
-    } else if ( slopem1<slope && slopem1<=slope1 ) {
-	 /* Ok, things got better when we subtracted 1. */
-	 /*  Do they improve further if we subtract 1 more? */
-	temp = um1;
-	temp.ival[index] -= 1;
-	slope = (3*(double) sp->a*temp.dval+2*sp->b)*temp.dval+sp->c;
-	if ( slope<0 ) slope = -slope;
-	if ( slope<slopem1 )
-return( temp.dval );
-	else
-return( um1.dval );
+    for ( err = 0x40000; err!=0; err>>=1 ) {
+	u1 = t+factor;
+	slope1 = (3*(double) sp->a*u1+2*sp->b)*u1+sp->c;
+	if ( slope1<0 ) slope1 = -slope1;
+
+	um1 = t-factor;
+	slopem1 = (3*(double) sp->a*um1+2*sp->b)*um1+sp->c;
+	if ( slopem1<0 ) slopem1 = -slopem1;
+
+	if ( slope1<slope && slope1<=slopem1 && u1<=1.0 ) {
+	    t = u1;
+	} else if ( slopem1<slope && slopem1<=slope1 && um1>=0.0 ) {
+	    t = um1;
+	}
+	factor /= 2.0;
     }
     /* that seems as good as it gets */
 
@@ -3871,8 +3858,8 @@ static void _SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 
 	    b2_fourac = esqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
-	    t1 = CheckExtremaForSingleBitErrors(sp,t1);
-	    t2 = CheckExtremaForSingleBitErrors(sp,t2);
+	    t1 = CheckExtremaForSingleBitErrors(sp,t1,t2);
+	    t2 = CheckExtremaForSingleBitErrors(sp,t2,t1);
 	    if ( t1>t2 ) { extended temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
 	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
@@ -3904,8 +3891,8 @@ void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 ) {
 	    b2_fourac = esqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
-	    t1 = CheckExtremaForSingleBitErrors(sp,t1);
-	    t2 = CheckExtremaForSingleBitErrors(sp,t2);
+	    t1 = CheckExtremaForSingleBitErrors(sp,t1,t2);
+	    t2 = CheckExtremaForSingleBitErrors(sp,t2,t1);
 	    if ( t1>t2 ) { extended temp = t1; t1 = t2; t2 = temp; }
 	    else if ( t1==t2 ) t2 = -1;
 	    if ( RealNear(t1,0)) t1=0; else if ( RealNear(t1,1)) t1=1;
@@ -4504,16 +4491,16 @@ return( cnt );
 }
 
 static int Closer(const Spline *s1,const Spline *s2,extended t1,extended t2,extended t1p,extended t2p) {
-    double x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].c;
-    double y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].c;
-    double x2 = ((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].c;
-    double y2 = ((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].c;
-    double diff = abs(x1-x2) + abs(y1-y2);
-    double x1p = ((s1->splines[0].a*t1p+s1->splines[0].b)*t1p+s1->splines[0].c)*t1p+s1->splines[0].c;
-    double y1p = ((s1->splines[1].a*t1p+s1->splines[1].b)*t1p+s1->splines[1].c)*t1p+s1->splines[1].c;
-    double x2p = ((s2->splines[0].a*t2p+s2->splines[0].b)*t2p+s2->splines[0].c)*t2p+s2->splines[0].c;
-    double y2p = ((s2->splines[1].a*t2p+s2->splines[1].b)*t2p+s2->splines[1].c)*t2p+s2->splines[1].c;
-    double diffp = abs(x1p-x2p) + abs(y1p-y2p);
+    double x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].d;
+    double y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].d;
+    double x2 = ((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
+    double y2 = ((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
+    double diff = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+    double x1p = ((s1->splines[0].a*t1p+s1->splines[0].b)*t1p+s1->splines[0].c)*t1p+s1->splines[0].d;
+    double y1p = ((s1->splines[1].a*t1p+s1->splines[1].b)*t1p+s1->splines[1].c)*t1p+s1->splines[1].d;
+    double x2p = ((s2->splines[0].a*t2p+s2->splines[0].b)*t2p+s2->splines[0].c)*t2p+s2->splines[0].d;
+    double y2p = ((s2->splines[1].a*t2p+s2->splines[1].b)*t2p+s2->splines[1].c)*t2p+s2->splines[1].d;
+    double diffp = (x1p-x2p)*(x1p-x2p) + (y1p-y2p)*(y1p-y2p);
 
     if ( diff<diffp )
 return( false );
@@ -4628,10 +4615,10 @@ return( false );
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
-	    if ( tempts[i]>.99996 && Closer(s1,s2,tempts[i],t,1,t)) {
+	    if ( tempts[i]>.99996 && Closer(s1,s2,t,tempts[i],t,1)) {
 		tempts[i] = 1;
 		x = s2->to->me.x; y = s2->to->me.y;
-	    } else if ( tempts[i]<.00004 && Closer(s1,s2,tempts[i],t,0,t)) {
+	    } else if ( tempts[i]<.00001 && Closer(s1,s2,t,tempts[i],t,0)) {
 		tempts[i] = 0;
 		x = s2->from->me.x; y = s2->from->me.y;
 	    }
@@ -4640,10 +4627,10 @@ return( false );
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
-	    if ( t>.99996 && t<1.001 && Closer(s1,s2,tempts[i],t,tempts[i],1)) {
+	    if ( t>.99996 && t<1.001 && Closer(s1,s2,t,tempts[i],1,tempts[i])) {
 		t = 1;
 		x = s1->to->me.x; y = s1->to->me.y;
-	    } else if ( t<.00004 && t>-.001 && Closer(s1,s2,tempts[i],t,tempts[i],0)) {
+	    } else if ( t<.00001 && t>-.001 && Closer(s1,s2,t,tempts[i],0,tempts[i])) {
 		t = 0;
 		x = s1->from->me.x; y = s1->from->me.y;
 	    }
