@@ -45,6 +45,7 @@ typedef struct monotonic {
     struct monotonic *linked;		/* singly linked list of all monotonic*/
     					/*  segments, no contour indication */
     double when_set;			/* Debugging */
+    struct preintersection *pending;
 } Monotonic;
 
 extern void FreeMonotonics(Monotonic *m);

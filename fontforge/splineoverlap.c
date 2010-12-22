@@ -88,6 +88,14 @@ typedef struct intersection {
     BasePoint inter;
     struct intersection *next;
 } Intersection;
+ 
+typedef struct preintersection {
+    BasePoint inter;
+    Monotonic *m1; double t1;
+    Monotonic *m2; double t2;
+    unsigned int is_close: 1;
+    struct preintersection *next;
+} PreIntersection;    
 
 static char *glyphname=NULL;
 
@@ -361,6 +369,7 @@ return;
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
 	    BasePoint pt, inter;
 	    *m2 = *m;
+	    m2->pending = NULL;
 	    m->next = m2;
 	    m2->prev = m;
 	    m2->next->prev = m2;
@@ -535,6 +544,7 @@ static void SplitMonotonicAtT(Monotonic *m,int which,double t,double coord,
 	othert = t;
 	otherm = chunkalloc(sizeof(Monotonic));
 	*otherm = *m;
+	otherm->pending = NULL;
 	m->next = otherm;
 	m->linked = otherm;
 	otherm->prev = m;
@@ -1084,7 +1094,22 @@ return( ilist );
 return( ilist );
 }
 
-static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1,Monotonic *m2) {
+static void AddPreIntersection(Monotonic *m1, Monotonic *m2,
+	extended t1,extended t2,BasePoint *inter, int isclose) {
+    PreIntersection *p;
+
+    p = chunkalloc(sizeof(PreIntersection));
+    p->next = m1->pending;
+    m1->pending = p;
+    p->m1 = m1;
+    p->t1 = t1;
+    p->m2 = m2;
+    p->t2 = t2;
+    p->inter = *inter;
+    p->is_close = isclose;
+}
+
+static void FindMonotonicIntersection(Monotonic *m1,Monotonic *m2) {
     /* Note that two monotonic cubics can still intersect in multiple points */
     /*  so we can't just check if the splines are on opposite sides of each */
     /*  other at top and bottom */
@@ -1092,7 +1117,6 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     const double error = .00001;
     BasePoint pt;
     extended t1,t2;
-    extended t1end = m1->tend, t2end = m2->tend;
     int pick;
 
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
@@ -1103,10 +1127,10 @@ static Intersection *FindMonotonicIntersection(Intersection *ilist,Monotonic *m1
     if ( b.maxy==b.miny && b.minx==b.maxx ) {
 	extended x1,y1, x2,y2, t1,t2;
 	if ( m1->next==m2 || m2->next==m1 )
-return( ilist );		/* Not interesting. Only intersection is at an endpoint */
+return;		/* Not interesting. Only intersection is at an endpoint */
 	if ( ((m1->start==m2->start || m1->end==m2->start) && m2->start!=NULL) ||
 		((m1->start==m2->end || m1->end==m2->end ) && m2->end!=NULL ))
-return( ilist );
+return;
 	pt.x = b.minx; pt.y = b.miny;
 	if ( m1->b.maxx-m1->b.minx > m1->b.maxy-m1->b.miny )
 	    t1 = IterateSplineSolveFixup(&m1->s->splines[0],m1->tstart,m1->tend,b.minx);
@@ -1123,12 +1147,12 @@ return( ilist );
 	    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
 	    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
 	    if ( Within16RoundingErrors(x1,x2) && Within16RoundingErrors(y1,y2) )
-		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+		AddPreIntersection(m1,m2,t1,t2,&pt,false);
 	}
     } else if ( b.maxy==b.miny ) {
 	extended x1,x2;
 	if ( m1->next==m2 || m2->next==m1 )
-return( ilist );		/* Not interesting. Only intersection is at an endpoint */
+return;		/* Not interesting. Only intersection is at an endpoint */
 	if (( b.maxy==m1->b.maxy && m1->yup ) || ( b.maxy==m1->b.miny && !m1->yup ))
 	    t1 = m1->tend;
 	else if (( b.maxy==m1->b.miny && m1->yup ) || ( b.maxy==m1->b.maxy && !m1->yup ))
@@ -1146,13 +1170,13 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
 	    if ( x1-x2>-.01 && x1-x2<.01 ) {
 		pt.x = (x1+x2)/2; pt.y = b.miny;
-		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+		AddPreIntersection(m1,m2,t1,t2,&pt,false);
 	    }
 	}
     } else if ( b.maxx==b.minx ) {
 	extended y1,y2;
 	if ( m1->next==m2 || m2->next==m1 )
-return( ilist );		/* Not interesting. Only intersection is at an endpoint */
+return;		/* Not interesting. Only intersection is at an endpoint */
 	if (( b.maxx==m1->b.maxx && m1->xup ) || ( b.maxx==m1->b.minx && !m1->xup ))
 	    t1 = m1->tend;
 	else if (( b.maxx==m1->b.minx && m1->xup ) || ( b.maxx==m1->b.maxx && !m1->xup ))
@@ -1170,7 +1194,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
 	    if ( y1-y2>-.01 && y1-y2<.01 ) {
 		pt.x = b.minx; pt.y = (y1+y2)/2;
-		ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+		AddPreIntersection(m1,m2,t1,t2,&pt,false);
 	    }
 	}
     } else {
@@ -1201,16 +1225,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		x2o = ((m2->s->splines[0].a*t2o+m2->s->splines[0].b)*t2o+m2->s->splines[0].c)*t2o+m2->s->splines[0].d;
 		if ( x1o==x2o ) {	/* Unlikely... but just in case */
 		    pt.x = x1o; pt.y = y;
-		    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
-		    /* If pt is not one of the end points then AddIntersection will*/
-		    /*  split the monotonic in two at that point. m1/m2 will be the*/
-		    /*  section of the the monotonic with lower t values. We need  */
-		    /*  to keep testing the section with higher y values. So if yup*/
-		    /*  then m1/m2 have lower y values and m?->next will be what we*/
-		    /*  need */ /* Unless pt is the start point. Then there will be*/
-		    /*  no new monotonic and m?->tend won't have changed */
-		    if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
-		    if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
+		    AddPreIntersection(m1,m2,t1o,t2o,&pt,false);
 		    any = true;
 		}
 		for ( y+=diff; ; y += diff ) {
@@ -1241,11 +1256,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    x2 = ((m2->s->splines[0].a*t2+m2->s->splines[0].b)*t2+m2->s->splines[0].c)*t2+m2->s->splines[0].d;
 		    if ( x1==x2 && x1o!=x2o ) {
 			pt.x = x1; pt.y = y;
-			ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+			AddPreIntersection(m1,m2,t1,t2,&pt,false);
 			any = true;
-			/* see comment above for these next lines */
-			if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
-			if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 			x1o = x1; x2o = x2;
 		    } else if ( x1o!=x2o && (x1o>x2o) != ( x1>x2 ) ) {
 			/* A cross over has occured. (assume we have a small enough */
@@ -1280,11 +1292,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			break;
 			    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
 				pt.y = ytest; pt.x = (x1+x2)/2;
-				ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+				AddPreIntersection(m1,m2,t1t,t2t,&pt,false);
 				any = true;
-				/* see comment above for these next lines */
-				if ( m1->yup && m1->tend<t1end ) m1 = m1->next;
-				if ( m2->yup && m2->tend<t2end ) m2 = m2->next;
 			break;
 			    } else if ( (x1o>x2o) != ( x1>x2 ) ) {
 				ybot = ytest;
@@ -1324,17 +1333,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		y2o = ((m2->s->splines[1].a*t2o+m2->s->splines[1].b)*t2o+m2->s->splines[1].c)*t2o+m2->s->splines[1].d;
 		if ( y1o==y2o ) {
 		    pt.y = y1o; pt.x = x;
-		    ilist = AddIntersection(ilist,m1,m2,t1o,t2o,&pt);
+		    AddPreIntersection(m1,m2,t1o,t2o,&pt,false);
 		    any = true;
-		    /* If pt is not one of the end points then AddIntersection will*/
-		    /*  split the monotonic in two at that point. m1/m2 will be the*/
-		    /*  section of the the monotonic with lower t values. We need  */
-		    /*  to keep testing the section with higher x values. So if xup*/
-		    /*  then m1/m2 have lower x values and m?->next will be what we*/
-		    /*  need */ /* Unless pt is the start point. Then there will be*/
-		    /*  no new monotonic and m?->tend won't have changed */
-		    if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
-		    if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 		}
 		y1 = y2 = 0;
 		for ( x+=diff; ; x += diff ) {
@@ -1362,11 +1362,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 		    y2 = ((m2->s->splines[1].a*t2+m2->s->splines[1].b)*t2+m2->s->splines[1].c)*t2+m2->s->splines[1].d;
 		    if ( y1==y2 && y1o!=y2o ) {
 			pt.y = y1; pt.x = x;
-			ilist = AddIntersection(ilist,m1,m2,t1,t2,&pt);
+			AddPreIntersection(m1,m2,t1,t2,&pt,false);
 			any = true;
-			/* see comment above */
-			if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
-			if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 			y1o = y1; y2o = y2;
 		    } else if ( y1o!=y2o && (y1o>y2o) != ( y1>y2 ) ) {
 			/* A cross over has occured. (assume we have a small enough */
@@ -1374,7 +1371,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			/* Use a binary search to track it down */
 #if 0
 			if ( FindIntersectionWithin(m1,t1,t1o,m2,t2,t2o,&pt,&t1t,&t2t) ) {
-			    ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+			    AddPreIntersection(m1,m2,t1t,t2t,&pt,false);
 			    any = true;
 			}
 #else
@@ -1400,11 +1397,8 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 			break;
 			    } else if (( y1-y2<error && y1-y2>-error ) || xtop==xtest || xbot==xtest ) {
 				pt.x = xtest; pt.y = (y1+y2)/2;
-				ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
+				AddPreIntersection(m1,m2,t1t,t2t,&pt,false);
 				any = true;
-				/* see comment above */
-				if ( m1->xup && m1->tend<t1end ) m1 = m1->next;
-				if ( m2->xup && m2->tend<t2end ) m2 = m2->next;
 			break;
 			    } else if ( (y1o>y2o) != ( y1>y2 ) ) {
 				xbot = xtest;
@@ -1426,7 +1420,7 @@ return( ilist );		/* Not interesting. Only intersection is at an endpoint */
 	break;
 	}
     }
-return( ilist );
+return;
 }
 
 #if 0
@@ -1570,6 +1564,43 @@ return( true );
 #endif
 }
 
+static Monotonic *FindMonoContaining(Monotonic *base, double t) {
+    Monotonic *m;
+
+    for ( m=base; m->s == base->s; m=m->next ) {
+	if ( t >= m->tstart && t <= m->tend )
+return( m );
+    }
+    SOError("Failed to find monotonic containing %g\n", t );
+    for ( m=base; m->s == base->s; m=m->prev ) {
+	if ( t >= m->tstart && t <= m->tend )
+return( m );
+    }
+    SOError("Failed to find monotonic containing %g twice\n", t );
+return( NULL );
+}
+
+static Intersection *TurnPreInter2Inter(Monotonic *ms) {
+    PreIntersection *p, *pnext;
+    Intersection *ilist = NULL;
+    Monotonic *m1, *m2;
+
+    for ( ; ms!=NULL; ms=ms->linked ) {
+	for ( p = ms->pending; p!=NULL; p=pnext ) {
+	    pnext = p->next;
+	    m1 = FindMonoContaining(p->m1,p->t1);
+	    m2 = FindMonoContaining(p->m2,p->t2);
+	    if ( p->is_close )
+		ilist = AddCloseIntersection(ilist,m1,m2,p->t1,p->t2,&p->inter);
+	    else
+		ilist = AddIntersection(ilist,m1,m2,p->t1,p->t2,&p->inter);
+	    chunkfree(p,sizeof(PreIntersection));
+	}
+	ms->pending = NULL;
+    }
+return( ilist );
+}
+
 static void FigureProperMonotonicsAtIntersections(Intersection *ilist) {
     MList *ml, *ml2, *mlnext, *prev, *p2;
 
@@ -1676,13 +1707,12 @@ static void Validate(Monotonic *ms, Intersection *ilist) {
 static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
     Monotonic *m1, *m2;
     BasePoint pts[9];
-    extended t1s[10], t2s[10], oldtend;
+    extended t1s[10], t2s[10];
     Intersection *ilist=NULL;
     int i;
 
     for ( m1=ms; m1!=NULL; m1=m1->linked ) {
 	for ( m2=m1->linked; m2!=NULL; m2=m2->linked ) {
-	    oldtend = m2->tend;
 	    if ( m2->b.minx > m1->b.maxx ||
 		    m2->b.maxx < m1->b.minx ||
 		    m2->b.miny > m1->b.maxy ||
@@ -1692,9 +1722,7 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 		    if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 			    t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
-			ilist = AddCloseIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
-			if ( m2->linked!=NULL && m2->linked->s==m2->s && m2->linked->tend<=oldtend )
-			    m2 = m2->linked;
+			AddPreIntersection(m1,m2,t1s[i],t2s[i],&pts[i],true);
 		    }
 		}
 	    } else if ( m1->s->knownlinear || m2->s->knownlinear ) {
@@ -1702,19 +1730,16 @@ static Intersection *FindIntersections(Monotonic *ms, enum overlap_type ot) {
 		    for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
 			if ( t1s[i]>=m1->tstart && t1s[i]<=m1->tend &&
 				t2s[i]>=m2->tstart && t2s[i]<=m2->tend ) {
-			    ilist = AddIntersection(ilist,m1,m2,t1s[i],t2s[i],&pts[i]);
-			    if ( m2->linked!=NULL && m2->linked->s==m2->s && m2->linked->tend<=oldtend )
-				m2 = m2->linked;
+			    AddPreIntersection(m1,m2,t1s[i],t2s[i],&pts[i],false);
 			}
 		    }
 	    } else {
-		ilist = FindMonotonicIntersection(ilist,m1,m2);
-		while ( m2->linked!=NULL && m2->linked->s==m2->s && m2->linked->tend<=oldtend )
-		    m2 = m2->linked;
+		FindMonotonicIntersection(m1,m2);
 	    }
 	}
     }
 
+    ilist = TurnPreInter2Inter(ms);
     FigureProperMonotonicsAtIntersections(ilist);
 
     /* Now suppose we have a contour which intersects nothing? */
