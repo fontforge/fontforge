@@ -30,6 +30,11 @@ while ( i<cnt ) :
 	testg.foreground = fore1 + fore2;
 	testg.glyphname = g1.glyphname + "__" + g2.glyphname;
 	testg.removeOverlap();
+#Contour order seems to matter... (It shouldn't, but it can)
+	testg.foreground = fore2 + fore1;
+	testg.glyphname = g2.glyphname + "__" + g1.glyphname;
+	testg.removeOverlap();
+#And then reversing the direction
 #	testg.foreground = fore1 + fore2.reverseDirection();
 #	testg.glyphname = g1.glyphname + "__" + g2.glyphname + "_R";
 #	testg.removeOverlap();
