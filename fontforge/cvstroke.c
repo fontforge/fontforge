@@ -1161,6 +1161,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
     while ( !sd->done )
 	GDrawProcessOneEvent(NULL);
 
+    CVPalettesHideIfMine(&sd->cv_stroke);
     if ( strokeit!=NULL )
 	GDrawSetVisible(sd->gw,false);
     else
