@@ -630,16 +630,21 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	/* These properties should be copied up to the buffer length too */
 	} else if ( strcmp(tok,"FAMILY_NAME")==0 ) {
 	    strncpy(family,buf,99);
+	    family[99]='\0';
 	} else if ( strcmp(tok,"FULL_NAME")==0 || strcmp(tok,"FACE_NAME")==0 ) {
 	    strncpy(full,buf,99);
-	} else if ( strcmp(tok,"WEIGHT_NAME")==0 )
+	    full[99]='\0';
+	} else if ( strcmp(tok,"WEIGHT_NAME")==0 ) {
 	    strncpy(weight,buf,99);
-	else if ( strcmp(tok,"SLANT")==0 )
+	    weight[99]='\0';
+	} else if ( strcmp(tok,"SLANT")==0 ) {
 	    strncpy(italic,buf,99);
-	else if ( strcmp(tok,"COPYRIGHT")==0 ) {
+	    italic[99]='\0';
+	} else if ( strcmp(tok,"COPYRIGHT")==0 ) {
 		/* LS: Assume the size of the passed-in buffer is 1000, see below in
 		 * COMMENT... */
 	    strncpy(comments,buf,999);
+	    comments[999]='\0';
 	    found_copyright = true;
 	} else if ( strcmp(tok,"COMMENT")==0 && !found_copyright ) {
 	    char *pt = comments+strlen(comments);
