@@ -792,10 +792,10 @@ return( true );
 		}
 	    }
 	    if ( besti!=-1 ) {
-		if ( i<3 ) { t1 = t1m; x1=x1m; y1=y1m; }
-		else if ( i>5 ) { t1 = t1p; x1=x1p; y1=y1p; }
-		if ( i%3==0 ) { t2 = t2m; x2 = x2m; y2=y2m; }
-		else if ( i%3==2 ) { t2 = t2p; x2=x2p; y2=y2p; }
+		if ( besti<3 ) { t1 = t1m; x1=x1m; y1=y1m; }
+		else if ( besti>5 ) { t1 = t1p; x1=x1p; y1=y1p; }
+		if ( besti%3==0 ) { t2 = t2m; x2 = x2m; y2=y2m; }
+		else if ( besti%3==2 ) { t2 = t2p; x2=x2p; y2=y2p; }
 		if ( t1<m1->tstart || t1>m1->tend || t2<m2->tstart || t2>m2->tend )
 return( false );
 		error = beste;
