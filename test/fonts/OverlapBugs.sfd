@@ -18,7 +18,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 0
 CreationTime: 1134356799
-ModificationTime: 1293061259
+ModificationTime: 1293234087
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
@@ -41,7 +41,7 @@ DisplaySize: -36
 AntiAlias: 1
 FitToEm: 0
 WinInfo: 160 16 4
-BeginChars: 272 109
+BeginChars: 272 112
 
 StartChar: A
 Encoding: 65 65 0
@@ -5312,6 +5312,91 @@ SplineSet
  144 363 117 349 117 311 c 0
  117 262 157 241 201 218 c 1
  225 207 312 175 312 97 c 2xac
+EndSplineSet
+EndChar
+
+StartChar: Aacute
+Encoding: 193 193 109
+Width: 829
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+387 671 m 5
+ 280 411 191 170 108 -61 c 4
+ 95.7663 -97.7011 75.6243 -77.2994 54 -60 c 5
+ 144 180 228 409 330 677 c 5
+ 338.976 703.927 375.443 682.557 387 671 c 5
+180 64 m 5
+ 201.312 0.0653553 326.799 0 131 0 c 4
+ 96 0 66 -3 49 -3 c 5
+ 47 6 45 15 42 23 c 5
+ 180 64 l 5
+EndSplineSet
+EndChar
+
+StartChar: Acircumflex
+Encoding: 194 194 110
+Width: 510
+Flags: W
+HStem: 9 33<199.5 229> 584 32<264 280>
+VStem: 67 69<456.5 492> 229 35<-76 9 9 9 -76 43 43 272 376 584 616 693> 359 75<137.5 173.5>
+LayerCount: 2
+Fore
+SplineSet
+264 362 m 1
+ 67 453 l 0
+ 67 531 122 602 229 614 c 1
+ 229 693 l 1
+ 264 693 l 1
+ 264 362 l 1
+129 591 m 1
+ 248 639 l 0
+ 248 624 240 614 235 614 c 0
+ 203 615 182 600 182 574 c 0
+ 129 591 l 1
+EndSplineSet
+EndChar
+
+StartChar: Atilde
+Encoding: 195 195 111
+Width: 756
+Flags: W
+HStem: 529 41<155.5 158> 733 27<142.5 173 161 173>
+VStem: 38 66<631 663> 232 69<612.5 644>
+LayerCount: 2
+Fore
+SplineSet
+172 760 m 2
+ 173 760 l 2
+ 252 760 301 696 301 610 c 0
+ 301 518 244 446 154 411 c 0
+ 120 397 78 392 56 392 c 1
+ 52 415 l 1
+ 147 432 210 487 229 557 c 1
+ 188 538 l 2
+ 174 532 164 529 152 529 c 0
+ 83 529 38 576 38 634 c 0
+ 38 692 86 760 172 760 c 2
+162 733 m 2
+ 161 733 l 2
+ 124 733 104 695 104 654 c 0
+ 104 608 132 570 179 570 c 0
+ 200 570 219 576 230 583 c 1
+ 232 594 232 606 232 619 c 0
+ 232 669 218 733 162 733 c 2
+193 635 m 2xa9e0
+ 194 635 l 2
+ 295 635 338 534 338 453 c 0
+ 338 373 295 272 193 272 c 0
+ 92 272 49 373 49 453 c 0
+ 49 534 92 635 193 635 c 2xa9e0
+194 605 m 2
+ 193 605 l 2
+ 133 605 122 505 122 453 c 0
+ 122 402 133 302 194 302 c 0
+ 257 302 265 404 265 453 c 0
+ 265 503 257 605 194 605 c 2
 EndSplineSet
 EndChar
 EndChars
