@@ -1263,13 +1263,8 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			/* A cross over has occured. (assume we have a small enough */
 			/*  region that three cross-overs can't have occurred) */
 			/* Use a binary search to track it down */
-#if 0
-			if ( FindIntersectionWithin(m1,t1,t1o,m2,t2,t2o,&pt,&t1t,&t2t) ) {
-			    ilist = AddIntersection(ilist,m1,m2,t1t,t2t,&pt);
-			    any = true;
-			}
-#else
 			extended ytop, ybot, ytest, oldy;
+			extended oldx1 = x1, oldx2=x2;
 			oldy = ytop = y;
 			ybot = y-diff;
 			if ( ybot<b.miny )
@@ -1302,9 +1297,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			    }
 			}
 			y = oldy;		/* Might be more than one intersection, keep going */
-		    } else {
-			x1o = x1; x2o = x2;
-#endif
+			x1 = oldx1; x2 = oldx2;
 		    }
 		    x1o = x1; x2o = x2;
 		    if ( y==b.maxy )
@@ -1369,13 +1362,8 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			/* A cross over has occured. (assume we have a small enough */
 			/*  region that three cross-overs can't have occurred) */
 			/* Use a binary search to track it down */
-#if 0
-			if ( FindIntersectionWithin(m1,t1,t1o,m2,t2,t2o,&pt,&t1t,&t2t) ) {
-			    AddPreIntersection(m1,m2,t1t,t2t,&pt,false);
-			    any = true;
-			}
-#else
 			extended xtop, xbot, xtest, oldx;
+			extended oldy1 = y1, oldy2=y2;
 			oldx = xtop = x;
 			xbot = x-diff;
 			if ( xbot<b.minx ) xbot = b.minx;
@@ -1407,9 +1395,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 			    }
 			}
 			x = oldx;
-		    } else {
-			y1o = y1; y2o = y2;
-#endif
+			y1 = oldy1; y2 = oldy2;
 		    }
 		    y1o = y1; y2o = y2;
 		    if ( x==b.maxx )
