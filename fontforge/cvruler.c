@@ -122,9 +122,16 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
 	} else if ( cv->p.spline!=NULL ) {
 	    s = cv->p.spline;
 	    t = cv->p.t;
+#if 0
+	    sprintf( buf, _("Near (%f,%f) @t=%g"),
+		    (double) (((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d),
+		    (double) (((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d),
+		    t );
+#else
 	    sprintf( buf, _("Near (%f,%f)"),
 		    (double) (((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d),
 		    (double) (((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d) );
+#endif
 	} else if ( cv->p.sp!=NULL ) {
 	    sprintf( buf, _("Near (%f,%f)"),(double) cv->p.sp->me.x,(double) cv->p.sp->me.y );
 	} else
