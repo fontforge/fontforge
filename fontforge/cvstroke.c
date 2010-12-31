@@ -567,7 +567,7 @@ struct cvcontainer_funcs stroke_funcs = {
 static void StrokeInit(StrokeDlg *sd) {
     real transform[6];
 
-    memset(sd,0,sizeof(*sd));
+    /*memset(sd,0,sizeof(*sd));*/
     sd->base.funcs = &stroke_funcs;
 
     {
@@ -805,8 +805,8 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	    gcd[gcdoff].gd.cid = CID_CenterLine;
 	    gcd[gcdoff].gd.handle_controlevent = Stroke_CenterLine;
 	    gcd[gcdoff++].creator = GRadioCreate;
-	    pens[3] = NULL;
-	    pens[4] = &gcd[gcdoff-2]; pens[5] = &gcd[gcdoff-1]; pens[6] = NULL; pens[7] = NULL;
+	    pens[3] = NULL; pens[4] = GCD_Glue;
+	    pens[5] = &gcd[gcdoff-2]; pens[6] = &gcd[gcdoff-1]; pens[7] = NULL; pens[7] = NULL;
 	}
 
 	boxes[2].gd.flags = gg_enabled|gg_visible;

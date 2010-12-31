@@ -567,8 +567,10 @@ static SplineSet *TraceCurve(CharView *cv) {
 	/*  when they raise the pen */
 	if ( base->next->online || base->next==pt )
 	    SplineMake(last,cur,false);
-	else
+	else {
+	    last->nonextcp = 0; cur->noprevcp=0;
 	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,false);
+	}
 	last = cur;
     }
     spl->last = last;
@@ -800,7 +802,7 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     BasePoint *here;
 
     TraceDataFromEvent(cv,event);
-    /* I used to do the full processing here to get an path. But that took */
+    /* I used to do the full processing here to get a path. But that took */
     /*  too long to process them and we appeared to get events out of order */
     /*  from the wacom tablet */
     last = cv->freehand.current_trace->last;
@@ -836,13 +838,9 @@ void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 	    while ( ss->next!=NULL )
 		ss = ss->next;
 	    ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
-#if 0		/* This branch is correct */
 	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace->next;
 	    cv->freehand.current_trace->next = NULL;
 	    SplinePointListsFree(cv->freehand.current_trace);
-#else		/* Debug!!!! */
-	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace;
-#endif
 	}
 	cv->freehand.current_trace = NULL;
     }
