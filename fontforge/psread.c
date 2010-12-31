@@ -2978,7 +2978,7 @@ return( head );
 	    transed = SplinePointListTransform(SplinePointListCopy(
 		    sc->layers[layer].splines),inversetrans,true);
 	    for ( each = transed; each!=NULL; each=each->next ) {
-		temp = SplineSetStroke(each,&si,sc);
+		temp = SplineSetStroke(each,&si,sc->layers[layer].order2);
 		if ( new==NULL )
 		    new=temp;
 		else
