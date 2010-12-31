@@ -6858,12 +6858,43 @@ Py_RETURN( self );
 
 static PyObject *PyFFGlyph_addAnchorPoint(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
-    AnchorPoint *ap = APFromTuple(sc,args);
+    AnchorPoint *ap = APFromTuple(sc,args), *ap2;
+    int done = false;
 
     if ( ap==NULL )
 return( NULL );
-    ap->next = sc->anchor;
-    sc->anchor = ap;
+
+    for ( ap2=sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+        switch ( ap2->anchor->type ) {
+            default:
+                if ( ap2->anchor->name==ap->anchor->name && ap2->type==ap->type ) {
+                    ap->next = ap2->next;
+                    *ap2 = *ap;
+                    done = true;
+		}
+		break;
+            case act_mklg:
+                if ( ap2->anchor->name==ap->anchor->name && ap2->lig_index==ap->lig_index ) {
+                    ap->next = ap2->next;
+                    *ap2 = *ap;
+                    done = true;
+		}
+		break;
+            case act_mark:
+                if ( ap2->anchor->name==ap->anchor->name ) {
+                    ap->next = ap2->next;
+                    *ap2 = *ap;
+                    done = true;
+		}
+		break;
+	}
+    }
+
+    if ( !done ) {
+       ap->next = sc->anchor;
+       sc->anchor = ap;
+    }
+
     SCCharChangedUpdate(sc,((PyFF_Glyph *) self)->layer);
 
 Py_RETURN( self );

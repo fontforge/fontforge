@@ -2088,6 +2088,16 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <LI>
 	    "exit"
 	</UL>
+        If there is an anchor point with the same anchor-class-name and:
+        <UL>
+          <LI>
+          lookup type is "gpos_mark2base" or
+          <LI>
+          lookup type is "gpos_mark2ligature" and ligature-index is the same or
+          <LI>
+          anchor-type is the same
+        </UL>
+        then the existing anchor will be overwritten.
       </TD>
     </TR>
     <TR>
