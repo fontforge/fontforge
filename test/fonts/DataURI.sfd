@@ -1,0 +1,76 @@
+SplineFontDB: 2.0
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Medium
+Copyright: Created by George Williams with FontForge 2.0 (http://fontforge.sf.net)
+Comments: 2007-9-2: Created.
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 50
+Ascent: 800
+Descent: 200
+MultiLayer: 1
+NeedsXUIDChange: 1
+XUID: [1021 352 751823386 8042067]
+OS2Version: 0
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1188783632
+ModificationTime: 1188783658
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2TypoLinegap: 0
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2Vendor: 'PfEd'
+Encoding: ISO8859-1
+UnicodeInterp: none
+NameList: Adobe Glyph List
+DisplaySize: -36
+AntiAlias: 1
+FitToEm: 1
+WinInfo: 64 16 4
+OnlyBitmaps: 1
+BeginChars: 256 1
+StartChar: A
+Encoding: 65 65 0
+Width: 1000
+VWidth: 0
+Flags: HO
+LayerCount: 3
+Layer: 1  1 0 1  #fffffffe 1  #fffffffe 1 10 round round [1 0 0 1] []
+Layer: 2  0 0 1  #fffffffe 1  #fffffffe 1 10 round round [1 0 0 1] []
+Image: 32 32 1 32 32 ffffffff 6.85714 10.6479 1 1 0
+s8W+ebl<a@onL$DI';ONVV,[RcX2jS<f+I_J$MFbWB+mh0OpCq=c=@tK*jb\!&J3ezzzzzzzzzzz!<E3%
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%#7V+O%1NaL
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!=KGM&.fB`!s&E'!<E3%!<E3%!<E3%!<E3%!<E3%!<N`B
+&.fBa%KZY3!<E3%!<E3%!<E3%!<E3%!<E3%!<E95&.fBa&.AR?!<E3%!<E3%!<E3%!<E3%!<E3%
+!<E3(&.fBa&.f0L!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%#7qFX&.fBX!<E3%!<E3%!<E3%!<E3%
+!<E3%!<E3%!=BAL&.fBa"9AN(!<E3%!<E3%!<E3%!<E3%!<E3%!<EW@&.fBa%g)h5!<EZA&.fBa
+&.fBa&.fBa&.fBa&.fBa&.fBa&.SaB!<E`C&.fBa&.fBa&.fBa&.fBa&.fBa&.fBa&.f3M!<`rF
+&.fBa&.fBa&.fBa&.fBa&.fBa&.fBa&.fBV!='/I&.fBa&.fBa&.fBa&.fBa&.fBa&.fBa&.f'I
+!=9;K&.fBa&.fBa&.fBa&.fBa&.fBa&.fBa%g2n6!<E3%!<E3%!<E3%!<E3%!<E3%!Y#\P&.fB_
+!s&E'!<E3%!<E3%!<E3%!<E3%!<E3'%M00_&.f9P!<E3%!<E3%!<E3%!<E3%!<E3%!<E<6&.fBa
+&.8L>!<E3%!<E3%!<E3%!<E3%!<E3%!=',H&.fBa#QXr,!<E3%!<E3%!<E3%!<E3%!<E3%#nRXZ
+&.f?V!<E3%!<E3%!<E3%!<E3%!<E3%!<E3/&.fBa&.\mE!<E3%!<E3%!<E3%!<E3%!<E3%!<N`B
+&.fBa%KZY3!<E3%!<E3%!<E3%!<E3%!<E3%!t#JH%1NaR!W`<&!<E3%!<E3%!<E3%!<E3%!<E3%
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%
+!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%!<E3%
+
+EndImage
+EndChar
+EndChars
+EndSplineFont
