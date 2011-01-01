@@ -806,7 +806,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	    gcd[gcdoff].gd.handle_controlevent = Stroke_CenterLine;
 	    gcd[gcdoff++].creator = GRadioCreate;
 	    pens[3] = NULL; pens[4] = GCD_Glue;
-	    pens[5] = &gcd[gcdoff-2]; pens[6] = &gcd[gcdoff-1]; pens[7] = NULL; pens[7] = NULL;
+	    pens[5] = &gcd[gcdoff-2]; pens[6] = &gcd[gcdoff-1]; pens[7] = NULL; pens[8] = NULL;
 	}
 
 	boxes[2].gd.flags = gg_enabled|gg_visible;
