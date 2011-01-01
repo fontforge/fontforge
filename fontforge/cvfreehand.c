@@ -27,6 +27,8 @@
 #include "pfaeditui.h"
 #include <math.h>
 
+#undef DEBUG_FREEHAND
+
 const int min_line_cnt = 10;		/* line segments must be at least this many datapoints to be distinguished */
 const int min_line_len = 20;		/* line segments must be at least this many pixels to be distinguished */
 const double line_wobble = 1.0;		/* data must not stray more than this many pixels from the true line */
@@ -54,12 +56,14 @@ typedef struct tracedata {
 } TraceData;
 
 static void TraceDataFree(TraceData *td) {
-    TraceData *next;
+    TraceData *next, *first=td;
 
     while ( td!=NULL ) {
 	next = td->next;
 	chunkfree(td,sizeof(TraceData));
 	td = next;
+	if ( td==first )
+    break;
     }
 }
 
@@ -112,7 +116,7 @@ return;
     new->xtilt = event->u.mouse.xtilt;
     new->ytilt = event->u.mouse.ytilt;
     new->wasconstrained = (event->u.mouse.state&ksm_shift)?1:0;
-#if 0
+#ifdef DEBUG_FREEHAND
  printf( "(%d,%d) (%g,%g) %d %d\n", event->u.mouse.x, event->u.mouse.y,
   new->here.x, new->here.y, new->pressure, new->time );
  if ( new->prev!=NULL && new->time<new->prev->time )
@@ -379,6 +383,7 @@ static void TraceMassage(TraceData *head, TraceData *end) {
     head->use_as_pt = end->use_as_pt = true;
 }
 
+#if 0
 static void MakeExtremum(SplinePoint *cur,enum extreme extremum) {
     double len;
     /* If we decided this point should be an exteme point, then make sure */
@@ -426,6 +431,7 @@ return;
 	}
     }
 }
+#endif
 
 static bigreal Trace_Factor(void *_cv,Spline *spline, real t) {
     CharView *cv = (CharView *) _cv;
@@ -470,6 +476,44 @@ return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*si->radius)/
 		(si->radius*(si->pressure2-si->pressure1)) );
 }
 
+static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,TraceData *tcur) {
+    TraceData *pt;
+
+    last->nonextcp = false; cur->noprevcp=false;
+
+    for ( pt=tlast; !pt->use_as_pt ; pt=pt->prev );
+    if ( pt->online ) {
+	last->nextcp.x = last->me.x + ( tlast->x-pt->x );
+	last->nextcp.y = last->me.y + ( tlast->y-pt->y );
+    } else if ( tlast->extremum==e_xmin || tlast->extremum==e_xmax || tlast->extremum==e_xflat ) {
+	last->nextcp.x = last->me.x;
+	last->nextcp.y = cur->me.y>last->me.y ? last->me.y+1 : last->me.y-1;
+    } else if ( tlast->extremum==e_ymin || tlast->extremum==e_ymax || tlast->extremum==e_yflat ) {
+	last->nextcp.y = last->me.y;
+	last->nextcp.x = cur->me.x>last->me.x ? last->me.x+1 : last->me.x-1;
+    } else if ( !last->noprevcp && !tlast->constrained_corner ) {
+	last->nextcp.x = last->me.x + (last->me.x - last->prevcp.x);
+	last->nextcp.y = last->me.y + (last->me.y - last->prevcp.y);
+    } else
+	last->nonextcp = true;
+
+    if ( tcur->online ) {
+	for ( pt=tcur; !pt->use_as_pt ; pt=pt->next );
+	cur->prevcp.x = cur->me.x + ( tcur->x-pt->x );
+	cur->prevcp.y = cur->me.y + ( tcur->y-pt->y );
+    } else if ( tcur->extremum==e_xmin || tcur->extremum==e_xmax || tcur->extremum==e_xflat ) {
+	cur->prevcp.x = cur->me.x;
+	cur->prevcp.y = last->me.y>cur->me.y ? cur->me.y+1 : cur->me.y-1;
+    } else if ( tcur->extremum==e_ymin || tcur->extremum==e_ymax || tcur->extremum==e_yflat ) {
+	cur->prevcp.y = cur->me.y;
+	cur->prevcp.x = last->me.x>cur->me.x ? cur->me.x+1 : cur->me.x-1;
+    } else if ( !cur->nonextcp && !tcur->constrained_corner ) {	/* Only happens at end of a closed contour */
+	cur->prevcp.x = cur->me.x + (cur->me.x - cur->nextcp.x);
+	cur->prevcp.y = cur->me.y + (cur->me.y - cur->nextcp.y);
+    } else
+	cur->noprevcp = true;
+}
+
 static SplineSet *TraceCurve(CharView *cv) {
     TraceData *head = cv->freehand.head, *pt, *base, *e;
     SplineSet *spl;
@@ -507,7 +551,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     /* Find the middle of a range of extremum points, that'll be the one we want */
     for ( base=head->next; base!=NULL; base = base->next ) {
 	if ( base->extremum>=e_xmin ) {
-	    tot = 0;
+	    tot = 1;
 	    if ( base->extremum>=e_ymin ) {
 		for ( pt=base->next ; pt->extremum>=e_ymin ; pt = pt->next ) ++tot;
 	    } else {
@@ -515,7 +559,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 	    }
 	    tot /= 2;
 	    e = pt;
-	    for ( pt=base->next, i=0 ; i<tot ; pt = pt->next, ++i );
+	    for ( pt=base, i=0 ; i<tot ; pt = pt->next, ++i );
 	    pt->use_as_pt = true;
 	    base = e;
 	}
@@ -556,20 +600,25 @@ static SplineSet *TraceCurve(CharView *cv) {
 
     /* Splice things together */
     spl = chunkalloc(sizeof(SplineSet));
-    spl->first = last = SplinePointCreate(head->here.x,head->here.y);
+    spl->first = last = SplinePointCreate(rint(head->here.x),rint(head->here.y));
     last->ptindex = 0;
 
     for ( base=head; base!=NULL && base->next!=NULL; base = pt ) {
 	for ( pt=base->next; !pt->use_as_pt ; pt=pt->next );
-	cur = SplinePointCreate(pt->here.x,pt->here.y);
+	cur = SplinePointCreate(rint(pt->here.x),rint(pt->here.y));
 	cur->ptindex = pt->num;
 	/* even if we are order2, do everything in order3, and then convert */
 	/*  when they raise the pen */
 	if ( base->next->online || base->next==pt )
 	    SplineMake(last,cur,false);
 	else {
-	    last->nonextcp = 0; cur->noprevcp=0;
-	    ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,false);
+	    TraceFigureCPs(last,cur,base,pt);
+	    if ( !last->nonextcp && !cur->noprevcp )
+		ApproximateSplineFromPointsSlopes(last,cur,mids+base->num+1,pt->num-base->num-1,false);
+	    else {
+		last->nonextcp = false; cur->noprevcp=false;
+		ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,false);
+	    }
 	}
 	last = cur;
     }
@@ -585,6 +634,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 	spl->last->pointtype = pt_corner;
     else
 	spl->last->pointtype = pt_curve;
+#if 0
     if ( spl->first->next!=NULL ) {
 	pt = head;
 	for ( cur=spl->first->next->to; cur->next!=NULL ; cur = cur->next->to ) {
@@ -594,7 +644,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 		if ( !cur->nonextcp && !cur->noprevcp )
 		    cur->pointtype = pt_curve;
 		else
-		    cur->pointtype = pt_tangent;
+		    cur->pointtype = pt_corner;
 		SPWeightedAverageCps(cur);
 		while ( pt!=NULL && pt->num<cur->ptindex ) pt=pt->next;
 		if ( pt!=NULL && pt->extremum!=e_none )
@@ -610,6 +660,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 		    mids+cur->ptindex+1,
 		    cur->next->to->ptindex-cur->ptindex-1,false);
     }
+#endif
 
     free(mids);
 
@@ -724,6 +775,7 @@ return;
     SplineRefigure(trace->first->prev);
 }
 
+#if 0
 struct statistics {
     double xmean, ymean, xsd, ysd;
     int cnt;
@@ -763,13 +815,20 @@ static void TraceStatistics(TraceData *mid,struct statistics *stats) {
 	stats->ysd = sqrt(x2-x*x/cnt)/(cnt-1);
     }
 }
+#endif
 
-static void TraceDataCleanup(CharView *cv) {
-    TraceData *mid, *next, *prev;
+static int TraceDataCleanup(CharView *cv) {
+    TraceData *mid, *next;
+    int cnt=0;
+#if 0
+    TraceData *prev;
     struct statistics stats;
+#endif
 
     for ( mid = cv->freehand.head; mid!=NULL; mid=next ) {
+	++cnt;
 	next = mid->next;
+#if 0
 	TraceStatistics(mid,&stats);
 	if (( mid->here.x < stats.xmean-3*stats.xsd ||
 		mid->here.x > stats.xmean+3*stats.xsd ||
@@ -780,8 +839,11 @@ static void TraceDataCleanup(CharView *cv) {
 	    prev->next = next;
 	    next->prev = prev;
 	    chunkfree(mid,sizeof(TraceData));
+	    --cnt;
 	}
+#endif
     }
+return( cnt );
 }
 
 void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
@@ -793,7 +855,7 @@ void CVMouseDownFreeHand(CharView *cv, GEvent *event) {
 
     cv->freehand.current_trace = chunkalloc(sizeof(SplinePointList));
     cv->freehand.current_trace->first = cv->freehand.current_trace->last =
-	    SplinePointCreate(cv->freehand.head->here.x,cv->freehand.head->here.y);
+	    SplinePointCreate(rint(cv->freehand.head->here.x),rint(cv->freehand.head->here.y));
 }
 
 void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
@@ -810,52 +872,18 @@ void CVMouseMoveFreeHand(CharView *cv, GEvent *event) {
     if ( (dx=here->x-last->me.x)<0 ) dx = -dx;
     if ( (dy=here->y-last->me.y)<0 ) dy = -dy;
     if ( (dx+dy)*cv->scale > 4 ) {
-	SplineMake3(last,SplinePointCreate(here->x,here->y));
+	SplineMake3(last,SplinePointCreate(rint(here->x),rint(here->y)));
 	cv->freehand.current_trace->last = last->next->to;
 	GDrawRequestExpose(cv->v,NULL,false);
     }
 }
 
-void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
-
-    TraceDataCleanup(cv);
-
-    if ( event->u.chr.state&ksm_meta )
-	TraceDataClose(cv,event);
-    else {
-	SplinePointListsFree(cv->freehand.current_trace);
-	cv->freehand.current_trace = TraceCurve(cv);
-    }
-    if ( cv->freehand.current_trace!=NULL ) {
-	CVPreserveState((CharViewBase *) cv);
-	if ( cv->b.layerheads[cv->b.drawmode]->order2 )
-	    cv->freehand.current_trace = SplineSetsTTFApprox(cv->freehand.current_trace);
-	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
-	    cv->freehand.current_trace->next = cv->b.layerheads[cv->b.drawmode]->splines;
-	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace;
-	} else {
-	    SplineSet *ss = cv->freehand.current_trace;
-	    while ( ss->next!=NULL )
-		ss = ss->next;
-	    ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
-	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace->next;
-	    cv->freehand.current_trace->next = NULL;
-	    SplinePointListsFree(cv->freehand.current_trace);
-	}
-	cv->freehand.current_trace = NULL;
-    }
-    TraceDataFree(cv->freehand.head);
-    cv->freehand.head = cv->freehand.last = NULL;
-    CVCharChangedUpdate(&cv->b);
-    fflush( stdout );
-}
-
-#if 0
-void RepeatFromFile(CharView *cv) {
+#ifdef DEBUG_FREEHAND
+static void RepeatFromFile(CharView *cv) {
     FILE *foo = fopen("mousemove","r");
     /*char buffer[100];*/
     GEvent e;
-    int x,y,p;
+    int x,y,p,t;
 
     if ( foo==NULL )
 return;
@@ -864,13 +892,13 @@ return;
 
     e.w = cv->v;
     e.type = et_mousedown;
-    fscanf(foo,"(%d,%d) (%*g,%*g) %d\n", &x, &y, &p);
-    e.u.mouse.x = x; e.u.mouse.y = y; e.u.mouse.pressure = p;
+    fscanf(foo,"(%d,%d) (%*g,%*g) %d %d\n", &x, &y, &p, &t);
+    e.u.mouse.x = x; e.u.mouse.y = y; e.u.mouse.pressure = p; e.u.mouse.time = t;
     CVMouseDownFreeHand(cv,&e);
 
     e.type = et_mousemove;
-    while ( fscanf(foo,"(%d,%d) (%*g,%*g) %d\n", &x, &y, &p)==3 ) {
-	e.u.mouse.x = x; e.u.mouse.y = y; e.u.mouse.pressure = p;
+    while ( fscanf(foo,"(%d,%d) (%*g,%*g) %d %d\n", &x, &y, &p, &t)==4 ) {
+	e.u.mouse.x = x; e.u.mouse.y = y; e.u.mouse.pressure = p; e.u.mouse.time = t;
 	CVMouseMoveFreeHand(cv,&e);
     }
 
@@ -879,3 +907,62 @@ return;
     fclose(foo);
 }
 #endif
+
+void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
+    TraceData *head = cv->freehand.head;
+    TraceData *last;
+    double dx, dy;
+
+#ifdef DEBUG_FREEHAND
+    if ( event->u.mouse.clicks>1 ) {
+	TraceDataFree(cv->freehand.head);
+	cv->freehand.head = cv->freehand.last = NULL;
+	RepeatFromFile(cv);
+return;
+    }
+#endif
+    if ( head==NULL )
+return;
+
+    if ( TraceDataCleanup(cv)>=4 ) {
+	/* If there are fewer than 4 points then assume they made a mistake */
+	/*  (or intended a double click) and just ignore the path */
+	last = cv->freehand.last;
+	if ( (dx=head->x-last->x)<0 ) dx = -dx;
+	if ( (dy=head->y-last->y)<0 ) dy = -dy;
+
+	if (( event->u.chr.state&ksm_meta ) || (dx+dy)*cv->scale > 4 )
+	    TraceDataClose(cv,event);
+	else {
+	    SplinePointListsFree(cv->freehand.current_trace);
+	    cv->freehand.current_trace = TraceCurve(cv);
+	}
+	if ( cv->freehand.current_trace!=NULL ) {
+	    CVPreserveState((CharViewBase *) cv);
+	    if ( cv->b.layerheads[cv->b.drawmode]->order2 )
+		cv->freehand.current_trace = SplineSetsTTFApprox(cv->freehand.current_trace);
+	    if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
+		cv->freehand.current_trace->next = cv->b.layerheads[cv->b.drawmode]->splines;
+		cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace;
+	    } else {
+		SplineSet *ss = cv->freehand.current_trace;
+		while ( ss->next!=NULL )
+		    ss = ss->next;
+		ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
+		cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace->next;
+		cv->freehand.current_trace->next = NULL;
+		/*SplinePointListsFree(cv->freehand.current_trace);*/
+	    }
+	    cv->freehand.current_trace = NULL;
+	}
+    } else {
+	SplinePointListsFree(cv->freehand.current_trace);
+	cv->freehand.current_trace = NULL;
+    }
+    TraceDataFree(cv->freehand.head);
+    cv->freehand.head = cv->freehand.last = NULL;
+    CVCharChangedUpdate(&cv->b);
+#ifdef DEBUG_FREEHAND
+    fflush( stdout );
+#endif
+}
