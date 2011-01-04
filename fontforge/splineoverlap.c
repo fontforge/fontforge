@@ -938,6 +938,14 @@ static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
 	}
     }
 
+    if ( closest!=NULL && (closest->inter.x!=inter->x || closest->inter.y!=inter->y ) &&
+	    ((t1==0 && m1->s->from->me.x==inter->x && m1->s->from->me.y==inter->y) ||
+	     (t1==1 && m1->s->to->me.x==inter->x && m1->s->to->me.y==inter->y) ||
+	     (t2==0 && m2->s->from->me.x==inter->x && m2->s->from->me.y==inter->y) ||
+	     (t2==1 && m2->s->to->me.x==inter->x && m2->s->to->me.y==inter->y)))
+	closest = NULL;
+
+
     if ( closest==NULL ) {
 	closest = chunkalloc(sizeof(Intersection));
 	closest->inter = *inter;
@@ -1685,7 +1693,13 @@ static void Validate(Monotonic *ms, Intersection *ilist) {
 
     while ( ms!=NULL ) {
 	if ( ms->prev->end!=ms->start )
-	    SOError( "Mismatched intersection.\n");
+	    SOError( "Mismatched intersection.\n (%g,%g)->(%g,%g) ends at (%g,%g) while (%g,%g)->(%g,%g) starts at (%g,%g)\n",
+		ms->prev->s->from->me.x,ms->prev->s->from->me.y,
+		ms->prev->s->to->me.x,ms->prev->s->to->me.y,
+		ms->prev->end!=NULL?ms->prev->end->inter.x:-999999, ms->prev->end!=NULL?ms->prev->end->inter.y:-999999, 
+		ms->s->from->me.x,ms->s->from->me.y,
+		ms->s->to->me.x,ms->s->to->me.y,
+		ms->start!=NULL?ms->start->inter.x:-999999, ms->start!=NULL?ms->start->inter.y:-999999 );
 	ms = ms->linked;
     }
 }
