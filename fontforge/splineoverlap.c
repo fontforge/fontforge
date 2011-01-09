@@ -938,6 +938,25 @@ static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
 	}
     }
 
+    if ( m1->tstart==0 && m1->start==NULL &&
+	    Within16RoundingErrors(m1->s->from->me.x,inter->x) && Within16RoundingErrors(m1->s->from->me.y,inter->y)) {
+	t1=0;
+	*inter = m1->s->from->me;
+    } else if ( m1->tend==1.0 && m1->end==NULL &&
+	    Within16RoundingErrors(m1->s->to->me.x,inter->x) && Within16RoundingErrors(m1->s->to->me.y,inter->y)) {
+	t1=1.0;
+	*inter = m1->s->to->me;
+    } else if ( m2->tstart==0 && m2->start==NULL &&
+	    Within16RoundingErrors(m2->s->from->me.x,inter->x) && Within16RoundingErrors(m2->s->from->me.y,inter->y)) {
+	t2=0;
+	*inter = m2->s->from->me;
+    } else if ( m2->tend==1.0 && m2->end==NULL &&
+	    Within16RoundingErrors(m2->s->to->me.x,inter->x) && Within16RoundingErrors(m2->s->to->me.y,inter->y)) {
+	t2=1.0;
+	*inter = m2->s->to->me;
+    }
+
+
     if ( closest!=NULL && (closest->inter.x!=inter->x || closest->inter.y!=inter->y ) &&
 	    ((t1==0 && m1->s->from->me.x==inter->x && m1->s->from->me.y==inter->y) ||
 	     (t1==1 && m1->s->to->me.x==inter->x && m1->s->to->me.y==inter->y) ||
@@ -2499,7 +2518,11 @@ static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
     forever {
 	for ( mstart = m; m->s==mstart->s; m=m->next) {
 	    if ( !m->isneeded )
-		SOError( "Expected needed monotonic @(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y );
+		SOError( "Expected needed monotonic @(%g,%g) (%g,%g)->(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y,
+		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
+		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d );
 	    m->isneeded = false;		/* Mark as used */
 	    if ( m->end!=NULL )
 	break;
@@ -2539,7 +2562,11 @@ static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
     forever {
 	for ( mstart=m; m->s==mstart->s; m=m->prev) {
 	    if ( !m->isneeded )
-		SOError( "Expected needed monotonic (back) @(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y );
+		SOError( "Expected needed monotonic (back) @(%g,%g) (%g,%g)->(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y,
+		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
+		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
+		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d );
 	    m->isneeded = false;		/* Mark as used */
 	    if ( m->start!=NULL )
 	break;
