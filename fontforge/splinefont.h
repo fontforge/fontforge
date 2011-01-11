@@ -2082,6 +2082,7 @@ extern void SplineFontSetUnChanged(SplineFont *sf);
 
 extern int Within4RoundingErrors(double v1, double v2);
 extern int Within16RoundingErrors(double v1, double v2);
+extern int Within64RoundingErrors(double v1, double v2);
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);
 extern int RealApprox(real a,real b);
