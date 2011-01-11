@@ -113,6 +113,36 @@ return( v2-v1 > re );
     }
 }
 
+int Within64RoundingErrors(double v1, double v2) {
+    double temp=v1*v2;
+    double re;
+
+    if ( temp<0 ) /* Ok, if the two values are on different sides of 0 there */
+return( false );	/* is no way they can be within a rounding error of each other */
+    else if ( temp==0 ) {
+	if ( v1==0 )
+return( v2<RE_NearZero && v2>-RE_NearZero );
+	else
+return( v1<RE_NearZero && v1>-RE_NearZero );
+    } else if ( v1>0 ) {
+	if ( v1>v2 ) {		/* Rounding error from the biggest absolute value */
+	    re = v1/ (RE_Factor/64);
+return( v1-v2 < re );
+	} else {
+	    re = v2/ (RE_Factor/64);
+return( v2-v1 < re );
+	}
+    } else {
+	if ( v1<v2 ) {
+	    re = v1/ (RE_Factor/64);	/* This will be a negative number */
+return( v1-v2 > re );
+	} else {
+	    re = v2/ (RE_Factor/64);
+return( v2-v1 > re );
+	}
+    }
+}
+
 int RealNear(real a,real b) {
     real d;
 
@@ -1927,11 +1957,16 @@ static void OverlapClusterCpAngles(SplineSet *spl,double within) {
     BasePoint pdir, ndir, fpdir, fndir;
     int nbad, pbad;
 
+    /* Does this even work? Why do we dot ndir with the normal of pdir? !!!! */
+
     /* If we have a junction point (right mid of 3) where the two splines */
     /*  are almost, but not quite moving in the same direction as they go */
     /*  away from the point, and if there is a tiny overlap because of this */
     /*  "almost" same, then we will probably get a bit confused in remove */
     /*  overlap */
+
+    if ( spl->first->next!=NULL && spl->first->next->order2 )
+return;
 
     for ( sp = spl->first; ; ) {
 	if ( sp->next==NULL )

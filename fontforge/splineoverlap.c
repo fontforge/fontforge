@@ -924,6 +924,8 @@ static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
     Intersection *il, *closest=NULL;
     double dist, dx, dy, bestd=9e10;
 
+    /* I tried changing from Within16 to Within64 here, and below, and the */
+    /*  result was that I cause more new errors (about 6) than I fixed old(1) */
     for ( il = ilist; il!=NULL; il=il->next ) {
 	if ( Within16RoundingErrors(il->inter.x,inter->x) && Within16RoundingErrors(il->inter.y,inter->y)) {
 	    if ( (dx = il->inter.x-inter->x)<0 ) dx = -dx;
@@ -2414,23 +2416,37 @@ static void MonoFigure(Spline *s,extended firstt,extended endt, SplinePoint *fir
     Spline1D temp;
 
     f = endt - firstt;
-    /*temp.d = first->me.x;*/
-    /*temp.a = s->splines[0].a*f*f*f;*/
-    temp.b = (s->splines[0].b + 3*s->splines[0].a*firstt) *f*f;
-    temp.c = (s->splines[0].c + 2*s->splines[0].b*firstt + 3*s->splines[0].a*firstt*firstt) * f;
-    first->nextcp.x = first->me.x + temp.c/3;
-    end->prevcp.x = first->nextcp.x + (temp.b+temp.c)/3;
-    if ( temp.c>-.01 && temp.c<.01 ) first->nextcp.x = first->me.x;
-    if ( (temp.b+temp.c)>-.01 && (temp.b+temp.c)<.01 ) end->prevcp.x = end->me.x;
-
-    temp.b = (s->splines[1].b + 3*s->splines[1].a*firstt) *f*f;
-    temp.c = (s->splines[1].c + 2*s->splines[1].b*firstt + 3*s->splines[1].a*firstt*firstt) * f;
-    first->nextcp.y = first->me.y + temp.c/3;
-    end->prevcp.y = first->nextcp.y + (temp.b+temp.c)/3;
-    if ( temp.c>-.01 && temp.c<.01 ) first->nextcp.y = first->me.y;
-    if ( (temp.b+temp.c)>-.01 && (temp.b+temp.c)<.01 ) end->prevcp.y = end->me.y;
     first->nonextcp = false; end->noprevcp = false;
-    SplineMake3(first,end);
+    if ( s->order2 ) {
+	/*temp.d = first->me.x;*/
+	/*temp.a = 0;*/
+	/* temp.b = s->splines[0].b *f*f; */
+	temp.c = (s->splines[0].c + 2*s->splines[0].b*firstt) * f;
+	end->prevcp.x = first->nextcp.x = first->me.x + temp.c/2;
+	if ( temp.c>-.003 && temp.c<.003 ) end->prevcp.x = first->nextcp.x = first->me.x;
+
+	temp.c = (s->splines[1].c + 2*s->splines[1].b*firstt) * f;
+	end->prevcp.y = first->nextcp.y = first->me.y + temp.c/2;
+	if ( temp.c>-.003 && temp.c<.003 ) end->prevcp.y = first->nextcp.y = first->me.y;
+	SplineMake2(first,end);
+    } else {
+	/*temp.d = first->me.x;*/
+	/*temp.a = s->splines[0].a*f*f*f;*/
+	temp.b = (s->splines[0].b + 3*s->splines[0].a*firstt) *f*f;
+	temp.c = (s->splines[0].c + 2*s->splines[0].b*firstt + 3*s->splines[0].a*firstt*firstt) * f;
+	first->nextcp.x = first->me.x + temp.c/3;
+	end->prevcp.x = first->nextcp.x + (temp.b+temp.c)/3;
+	if ( temp.c>-.01 && temp.c<.01 ) first->nextcp.x = first->me.x;
+	if ( (temp.b+temp.c)>-.01 && (temp.b+temp.c)<.01 ) end->prevcp.x = end->me.x;
+
+	temp.b = (s->splines[1].b + 3*s->splines[1].a*firstt) *f*f;
+	temp.c = (s->splines[1].c + 2*s->splines[1].b*firstt + 3*s->splines[1].a*firstt*firstt) * f;
+	first->nextcp.y = first->me.y + temp.c/3;
+	end->prevcp.y = first->nextcp.y + (temp.b+temp.c)/3;
+	if ( temp.c>-.01 && temp.c<.01 ) first->nextcp.y = first->me.y;
+	if ( (temp.b+temp.c)>-.01 && (temp.b+temp.c)<.01 ) end->prevcp.y = end->me.y;
+	SplineMake3(first,end);
+    }
     if ( SplineIsLinear(first->next)) {
 	first->nextcp = first->me;
 	end->prevcp = end->me;
@@ -2540,7 +2556,7 @@ static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
 	    last->nonextcp = m->s->from->nonextcp;
 	    mid->prevcp = m->s->to->prevcp;
 	    mid->noprevcp = m->s->to->noprevcp;
-	    SplineMake3(last,mid);
+	    SplineMake(last,mid,m->s->order2);
 	} else {
 	    MonoFigure(m->s,mstart->tstart,m->tend,last,mid);
 	}
@@ -2585,7 +2601,7 @@ static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
 	    last->nonextcp = m->s->to->noprevcp;
 	    mid->prevcp = m->s->from->nextcp;
 	    mid->noprevcp = m->s->from->nonextcp;
-	    SplineMake3(last,mid);
+	    SplineMake(last,mid,m->s->order2);
 	} else {
 	    MonoFigure(m->s,mstart->tend,m->tstart,last,mid);
 	}
@@ -3289,20 +3305,6 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     Monotonic *ms;
     Intersection *ilist;
     SplineSet *ret;
-    SplineSet *order3 = NULL;
-    int is_o2 = false;
-    SplineSet *ss;
-
-    for ( ss=base; ss!=NULL; ss=ss->next )
-	if ( ss->first->next!=NULL ) {
-	    is_o2 = ss->first->next->order2;
-    break;
-	}
-    if ( is_o2 ) {
-	order3 = SplineSetsPSApprox(base);
-	SplinePointListsFree(base);
-	base = order3;
-    }
 
     if ( sc!=NULL )
 	glyphname = sc->name;
@@ -3310,7 +3312,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     base = SSRemoveTiny(base);
     SSRemoveStupidControlPoints(base);
     SplineSetsRemoveAnnoyingExtrema(base,.3);
-    SSOverlapClusterCpAngles(base,.01);
+    /*SSOverlapClusterCpAngles(base,.01);*/
     base = SSRemoveReversals(base);
     ms = SSsToMContours(base,ot);
     ilist = FindIntersections(ms,ot);
@@ -3329,10 +3331,5 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     FreeMonotonics(ms);
     FreeIntersections(ilist);
     glyphname = NULL;
-    if ( order3!=NULL ) {
-	ss = SplineSetsTTFApprox(ret);
-	SplinePointListsFree(ret);
-	ret = ss;
-    }
 return( ret );
 }
