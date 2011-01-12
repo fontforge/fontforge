@@ -286,8 +286,8 @@ return( true );
 	t2 = (spline->from->nextcp.x-spline->from->me.x)/(spline->to->me.x-spline->from->me.x);
 	t3 = (spline->to->me.y-spline->to->prevcp.y)/(spline->to->me.y-spline->from->me.y);
 	t4 = (spline->to->me.x-spline->to->prevcp.x)/(spline->to->me.x-spline->from->me.x);
-	ret = (RealApprox(t1,t2) || (RealApprox(t1,0) && RealApprox(t2,0))) &&
-		(RealApprox(t3,t4) || (RealApprox(t3,0) && RealApprox(t4,0)));
+	ret = (Within16RoundingErrors(t1,t2) || (RealApprox(t1,0) && RealApprox(t2,0))) &&
+		(Within16RoundingErrors(t3,t4) || (RealApprox(t3,0) && RealApprox(t4,0)));
 	if ( ret ) {
 	    if ( t1<0 || t2<0 || t3<0 || t4<0 ||
 		    t1>1 || t2>1 || t3>1 || t4>1 )
