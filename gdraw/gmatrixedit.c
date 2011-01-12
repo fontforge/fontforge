@@ -1706,7 +1706,6 @@ return( true );
 static void GME_HScroll(GMatrixEdit *gme,struct sbevent *sb) {
     int newpos = gme->off_left;
     GRect size;
-    /*конец таблицы */
     int hend = gme->col_data[gme->cols-1].x + gme->col_data[gme->cols-1].width;
 
     GDrawGetSize(gme->nested,&size);
@@ -1734,7 +1733,7 @@ static void GME_HScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	newpos = sb->pos;
       break;
     }
-    /*конец таблицы */
+
     if ( newpos + size.width > hend )
 	newpos = hend - size.width;
     if ( newpos<0 )
