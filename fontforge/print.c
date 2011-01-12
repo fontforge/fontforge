@@ -2424,6 +2424,11 @@ static char *_thaijohn[] = {
     "๏ ในทีเดิมนะนพวุํลอโฆเปนอยู่ แลเปนอยู่ดว้ยกันกับ พวุํเฆ้า",
     NULL
 };
+/* Mayan K'iche' of Guatemala */ /* Prolog to Popol Wuj */ /* Provided by Daniel Johnson */
+static char *_mayanPopolWuj[] = {
+    "Are u xe' ojer tzij waral, C'i Che' u bi'. Waral xchikatz'ibaj-wi, xchikatiquiba-wi ojer tzij, u ticaribal, u xe'nabal puch ronojel xban pa tinamit C'i Che', ramak C'i Che' winak.",
+    NULL
+};
 
 /* I've omitted cornish. no interesting letters. no current speakers */
 
@@ -2485,6 +2490,7 @@ static struct langsamples {
     { _thaijohn, "th", sc_latin, CHR('l','a','t','n'), CHR('T','H','A',' ')},
     { _georgianjohn, "ka", sc_georgian, CHR('g','e','o','r'), CHR('K','A','T',' ') },
     { _swahilijohn, "sw", sc_latin, CHR('l','a','t','n'), CHR('S','W','K',' ')},
+    { _mayanPopolWuj, "QUT", sc_latin, CHR('l','a','t','n'), CHR('Q','U','T',' ')},
     { NULL }
 };
 
