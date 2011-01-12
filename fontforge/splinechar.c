@@ -2410,10 +2410,12 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back) {
 			CVPreserveState(cv);
 			changed = true;
 		    }
-		    sp->nextcp = sp->me;
-		    sp->nonextcp = true;
-		    sp->next->to->prevcp = sp->next->to->me;
-		    sp->next->to->noprevcp = true;
+		    if (!do_arc) {
+			sp->nextcp = sp->me;
+			sp->nonextcp = true;
+			sp->next->to->prevcp = sp->next->to->me;
+			sp->next->to->noprevcp = true;
+		    }
 		    SplineRefigure(sp->next);
 		}
 	    }
