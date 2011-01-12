@@ -954,6 +954,54 @@ SplineSet *SplineSetsTTFApprox(SplineSet *ss) {
 return( head );
 }
 
+static void ImproveB3CPForQuadratic(real from,real *_ncp,real *_pcp,real to) {
+    real ncp = *_ncp, pcp = *_pcp;
+    real noff, poff;
+    real c,b,a, best;
+    int err, i, besti;
+    real offs[9];
+
+    if ( (noff=ncp/32768.0)<0 ) noff = -noff;
+    if ( (poff=pcp/32768.0)<0 ) poff = -poff;
+    if ( noff<1.0/32768.0 ) noff = 1.0/32768.0;
+    if ( poff<1.0/32768.0 ) poff = 1.0/32768.0;
+
+    c = 3*(ncp-from); b = 3*(pcp-ncp)-c; best = to-from-c-b;
+    offs[4] = best;
+    if ( best==0 )
+return;
+
+    for ( err=0; err<10; ++err, noff/=2.0, poff/=2.0 ) {
+	c = 3*(ncp-noff-from); b = 3*(pcp-poff-(ncp-noff))-c; offs[0] = to-from-c-b;
+	c = 3*(ncp-noff-from); b = 3*(pcp     -(ncp-noff))-c; offs[1] = to-from-c-b;
+	c = 3*(ncp-noff-from); b = 3*(pcp+poff-(ncp-noff))-c; offs[2] = to-from-c-b;
+	c = 3*(ncp     -from); b = 3*(pcp-poff-(ncp     ))-c; offs[3] = to-from-c-b;
+	c = 3*(ncp     -from); b = 3*(pcp+poff-(ncp     ))-c; offs[5] = to-from-c-b;
+	c = 3*(ncp+noff-from); b = 3*(pcp-poff-(ncp+noff))-c; offs[6] = to-from-c-b;
+	c = 3*(ncp+noff-from); b = 3*(pcp     -(ncp+noff))-c; offs[7] = to-from-c-b;
+	c = 3*(ncp+noff-from); b = 3*(pcp+poff-(ncp+noff))-c; offs[8] = to-from-c-b;
+	besti=4;
+	for ( i=0; i<9; ++i ) {
+	    if ( offs[i]<0 ) offs[i]= - offs[i];
+	    if ( offs[i]<best ) {
+		besti = i;
+		best = offs[i];
+	    }
+	}
+	if ( besti!=4 ) {
+	    if ( besti<3 ) ncp -= noff;
+	    else if ( besti>=6 ) ncp += noff;
+	    if ( besti%3==0 ) pcp -= poff;
+	    else if ( besti%3==2 ) pcp += poff;
+	    offs[4] = best;
+	    if ( best==0 )
+    break;
+	}
+    }
+    *_ncp = ncp;
+    *_pcp = pcp;
+}
+    
 SplineSet *SSPSApprox(SplineSet *ss) {
     SplineSet *ret = chunkalloc(sizeof(SplineSet));
     Spline *spline, *first;
@@ -976,10 +1024,12 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 	    memcpy(to->hintmask,spline->to->hintmask,sizeof(HintMask));
 	}
 	if ( !spline->knownlinear ) {
-	    ret->last->nextcp.x = spline->splines[0].c/3 + ret->last->me.x;
-	    ret->last->nextcp.y = spline->splines[1].c/3 + ret->last->me.y;
-	    to->prevcp.x = ret->last->nextcp.x+ (spline->splines[0].b+spline->splines[0].c)/3;
-	    to->prevcp.y = ret->last->nextcp.y+ (spline->splines[1].b+spline->splines[1].c)/3;
+	    ret->last->nextcp.x = ret->last->me.x + 2*(ret->last->nextcp.x-ret->last->me.x)/3;
+	    ret->last->nextcp.y = ret->last->me.y + 2*(ret->last->nextcp.y-ret->last->me.y)/3;
+	    to->prevcp.x = to->me.x + 2*(to->prevcp.x-to->me.x)/3;
+	    to->prevcp.y = to->me.y + 2*(to->prevcp.y-to->me.y)/3;
+	    ImproveB3CPForQuadratic(ret->last->me.x,&ret->last->nextcp.x,&to->prevcp.x,to->me.x);
+	    ImproveB3CPForQuadratic(ret->last->me.y,&ret->last->nextcp.y,&to->prevcp.y,to->me.y);
 	}
 	SplineMake3(ret->last,to);
 	ret->last = to;

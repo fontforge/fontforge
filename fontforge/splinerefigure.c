@@ -40,10 +40,7 @@ void SplineRefigure3(Spline *spline) {
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
     Spline old;
 
-#ifdef DEBUG
-    if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
-	IError("Zero length spline created");
-#endif
+    spline->isquadratic = false;
     if ( spline->acceptableextrema )
 	old = *spline;
     xsp->d = from->me.x; ysp->d = from->me.y;
@@ -71,9 +68,20 @@ void SplineRefigure3(Spline *spline) {
 	if ( RealNear(ysp->b,0)) ysp->b=0;
 	if ( RealNear(xsp->a,0)) xsp->a=0;
 	if ( RealNear(ysp->a,0)) ysp->a=0;
+	if ( xsp->a!=0 && ( Within16RoundingErrors(xsp->a+from->me.x,from->me.x) ||
+			    Within16RoundingErrors(xsp->a+to->me.x,to->me.x)))
+	    xsp->a = 0;
+	if ( ysp->a!=0 && ( Within16RoundingErrors(ysp->a+from->me.y,from->me.y) ||
+			    Within16RoundingErrors(ysp->a+to->me.y,to->me.y)))
+	    ysp->a = 0;
+	SplineIsLinear(spline);
 	spline->islinear = false;
-	if ( ysp->a==0 && xsp->a==0 && ysp->b==0 && xsp->b==0 )
-	    spline->islinear = true;	/* This seems extremely unlikely... */
+	if ( ysp->a==0 && xsp->a==0 ) {
+	    if ( ysp->b==0 && xsp->b==0 )
+		spline->islinear = true;	/* This seems extremely unlikely... */
+	    else
+		spline->isquadratic = true;	/* Only likely if we read in a TTF */
+	}
     }
     if ( !finite(ysp->a) || !finite(xsp->a) || !finite(ysp->c) || !finite(xsp->c) || !finite(ysp->d) || !finite(xsp->d))
 	IError("NaN value in spline creation");
@@ -82,9 +90,6 @@ void SplineRefigure3(Spline *spline) {
     spline->knowncurved = false;
     spline->knownlinear = spline->islinear;
     SplineIsLinear(spline);
-    spline->isquadratic = false;
-    if ( !spline->knownlinear && xsp->a==0 && ysp->a==0 )
-	spline->isquadratic = true;	/* Only likely if we read in a TTF */
     spline->order2 = false;
 
     if ( spline->acceptableextrema ) {
