@@ -16,6 +16,7 @@ font.encoding = "Original";
 font.unlinkReferences();
 testf = fontforge.font();
 testf.em = font.em;
+testf.layers["Fore"].is_quadratic = font.layers["Fore"].is_quadratic;
 testg = testf.createChar(0x65);
 
 i=0;

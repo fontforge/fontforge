@@ -140,10 +140,10 @@ int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    fprintf( stderr, "Copyright (c) 2000-2010 by George Williams.\n Executable based on sources from %s-ML.\n",
+    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s-ML.\n",
 	    source_modtime_str );
 #else
-    fprintf( stderr, "Copyright (c) 2000-2010 by George Williams.\n Executable based on sources from %s.\n",
+    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
 #endif
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
