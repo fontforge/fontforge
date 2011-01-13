@@ -2100,6 +2100,11 @@ static void bImport(Context *c) {
 	    format = fv_epstemplate;
 	else
 	    format = fv_eps;
+    } else if ( strmatch(ext,".pdf")==0 ) {
+	if ( strchr(filename,'*')!=NULL )
+	    format = fv_pdftemplate;
+	else
+	    format = fv_pdf;
     } else if ( strmatch(ext,".svg")==0 ) {
 	if ( strchr(filename,'*')!=NULL )
 	    format = fv_svgtemplate;
@@ -2124,7 +2129,7 @@ static void bImport(Context *c) {
 	ok = FVImportMult(c->curfv,filename, back, bf_ttf);
     else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
-    else if ( format==fv_image || format==fv_eps || format==fv_svg )
+    else if ( format==fv_image || format==fv_eps || format==fv_svg || format==fv_pdf )
 	ok = FVImportImages(c->curfv,filename,format,back,flags);
     else
 	ok = FVImportImageTemplate(c->curfv,filename,format,back,flags);
