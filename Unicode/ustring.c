@@ -386,7 +386,7 @@ double u_strtod(const unichar_t *str, unichar_t **ptr) {
     double val;
     extern double strtod();		/* Please don't delete this, not all of us have good ansi headers */
 
-    for ( upt=str, pt=buf; *upt<128 && *upt!='\0'; )
+    for ( upt=str, pt=buf; *upt<128 && *upt!='\0' && pt-buf<sizeof(buf)-1; )
 	*pt++ = *upt++;
     *pt = '\0';
     val = strtod(buf,&ret);
