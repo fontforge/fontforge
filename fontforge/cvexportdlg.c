@@ -216,7 +216,7 @@ return( 0 );
 	if ( !AskSizeBits(&pixelsize,&bitsperpixel) )
 return( 0 );
     }
-    if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
+    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
 return( ExportImage(filename,sc, layer, format, pixelsize, bitsperpixel));
 }
