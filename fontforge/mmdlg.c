@@ -55,14 +55,14 @@ static char *standard_cdvs[5] = {
     "}",
 /* 3 axes */
     "{\n"
-    "  1 3 index sub 1 3 index sub mul 1 3 index sub mul 4 1 roll\n"
-    "  2 index 1 3 index sub mul 1 3 index sub mul 4 1 roll\n"
-    "  1 3 index sub 2 index mul 1 3 index sub mul 4 1 roll\n"
-    "  2 index 2 index mul 1 3 index sub mul 4 1 roll\n"
-    "  1 3 index sub 1 3 index sub mul 2 index mul 4 1 roll\n"
-    "  2 index 1 3 index sub mul 2 index mul 4 1 roll\n"
-    "  1 3 index sub 2 index mul 2 index mul 4 1 roll\n"
-    "  2 index 2 index mul 2 index mul 4 1 roll\n"
+    "  1 3 index sub 1 3 index sub mul 1 2 index sub mul 4 1 roll\n"
+    "  2 index 1 3 index sub mul 1 2 index sub mul 4 1 roll\n"
+    "  1 3 index sub 2 index mul 1 2 index sub mul 4 1 roll\n"
+    "  2 index 2 index mul 1 2 index sub mul 4 1 roll\n"
+    "  1 3 index sub 1 3 index sub mul 1 index mul 4 1 roll\n"
+    "  2 index 1 3 index sub mul 1 index mul 4 1 roll\n"
+    "  1 3 index sub 2 index mul 1 index mul 4 1 roll\n"
+    "  2 index 2 index mul 1 index mul 4 1 roll\n"
     "  pop pop pop\n"
     "}",
 /* 4 axes */
@@ -71,22 +71,22 @@ static char *standard_cdvs[5] = {
 };
 static char *cdv_4axis[3] = {
     "{\n"
-    "  1 4 index sub 1 4 index sub mul 1 4 index sub 1 4 index sub mul 5 1 roll\n"
-    "  3 index 1 4 index sub mul 1 4 index sub mul 1 4 index sub mul 5 1 roll\n"
-    "  1 4 index sub 3 index mul 1 4 index sub mul 1 4 index sub mul 5 1 roll\n"
-    "  3 index 3 index mul 1 4 index sub mul 1 4 index sub mul 5 1 roll\n"
-    "  1 4 index sub 1 4 index sub mul 3 index mul 1 4 index sub mul 5 1 roll\n"
-    "  3 index 1 4 index sub mul 3 index mul 1 4 index sub mul 5 1 roll\n",
-    "  1 4 index sub 3 index mul 3 index mul 1 4 index sub mul 5 1 roll\n"
-    "  3 index 3 index mul 3 index mul 1 4 index sub mul 5 1 roll\n"
-    "  1 4 index sub 1 4 index sub mul 1 4 index sub 3 index mul 5 1 roll\n"
-    "  3 index 1 4 index sub mul 1 4 index sub mul 3 index mul 5 1 roll\n"
-    "  1 4 index sub 3 index mul 1 4 index sub mul 3 index mul 5 1 roll\n",
-    "  3 index 3 index mul 1 4 index sub mul 3 index mul 5 1 roll\n"
-    "  1 4 index sub 1 4 index sub mul 3 index mul 3 index mul 5 1 roll\n"
-    "  3 index 1 4 index sub mul 3 index mul 3 index mul 5 1 roll\n"
-    "  1 4 index sub 3 index mul 3 index mul 3 index mul 5 1 roll\n"
-    "  3 index 3 index mul 3 index mul 3 index mul 5 1 roll\n"
+    "  1 4 index sub 1 4 index sub mul 1 3 index sub mul 1 2 index sub mul 5 1 roll\n"
+    "  3 index 1 4 index sub mul 1 3 index sub mul 1 2 index sub mul 5 1 roll\n"
+    "  1 4 index sub 3 index mul 1 3 index sub mul 1 2 index sub mul 5 1 roll\n"
+    "  3 index 3 index mul 1 3 index sub mul 1 2 index sub mul 5 1 roll\n"
+    "  1 4 index sub 1 4 index sub mul 2 index mul 1 2 index sub mul 5 1 roll\n"
+    "  3 index 1 4 index sub mul 2 index mul 1 2 index sub mul 5 1 roll\n",
+    "  1 4 index sub 3 index mul 2 index mul 1 2 index sub mul 5 1 roll\n"
+    "  3 index 3 index mul 2 index mul 1 2 index sub mul 5 1 roll\n"
+    "  1 4 index sub 1 4 index sub mul 1 3 index sub mul 1 index mul 5 1 roll\n"
+    "  3 index 1 4 index sub mul 1 3 index sub mul 1 index mul 5 1 roll\n"
+    "  1 4 index sub 3 index mul 1 3 index sub mul 1 index mul 5 1 roll\n",
+    "  3 index 3 index mul 1 3 index sub mul 1 index mul 5 1 roll\n"
+    "  1 4 index sub 1 4 index sub mul 2 index mul 1 index mul 5 1 roll\n"
+    "  3 index 1 4 index sub mul 2 index mul 1 index mul 5 1 roll\n"
+    "  1 4 index sub 3 index mul 2 index mul 1 index mul 5 1 roll\n"
+    "  3 index 3 index mul 2 index mul 1 index mul 5 1 roll\n"
     "  pop pop pop pop\n"
     "}"
 };
@@ -1537,7 +1537,7 @@ static void MMW_WeightsValid(MMW *mmw) {
     char *temp;
     unichar_t *ut, *utc;
     int pos, i;
-    real axiscoords[4], weights[MmMax];
+    real axiscoords[4], weights[2*MmMax];
 
     if ( mmw->lastw_instance_count!=mmw->instance_count ) {
 	temp = galloc(mmw->instance_count*20+1);
@@ -1563,7 +1563,7 @@ static void MMW_WeightsValid(MMW *mmw) {
 			    mmw->mm->axismaps[i].designs[mmw->mm->axismaps[i].points-1])/2;
 	    }
 	    i = ExecConvertDesignVector(axiscoords,mmw->axis_count,mmw->mm->ndv,mmw->mm->cdv,
-		weights);
+		    weights);
 	    if ( i!=mmw->instance_count ) {	/* The functions don't work */
 		for ( i=0; i<mmw->instance_count; ++i )
 		    weights[i] = 1.0/mmw->instance_count;
@@ -2317,9 +2317,9 @@ static int MMW_CheckOptical(GGadget *g, GEvent *e) {
 	    def = "12";
 	    bottom = "6";
 	} else if ( uc_strcmp(ret,"Slant")==0 ) {
-	    top = "-22";
+	    top = "22";
 	    def = "0";
-	    bottom = "22";
+	    bottom = "-22";
 	} else if ( GGadgetIsChecked(GWidgetGetControl(mmw->subwins[mmw_counts],CID_Apple)) ) {
 	    top = "2.0";
 	    bottom = "0.5";
