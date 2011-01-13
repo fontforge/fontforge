@@ -623,10 +623,12 @@ static void StrokeInit(StrokeDlg *sd) {
     sd->dummy_map.enc = &custom;
 
     /* Default poly to a 50x50 square */
-    sd->old_poly = UnitShape( true );
-    memset(transform,0,sizeof(transform));
-    transform[0] = transform[3] = 25;
-    SplinePointListTransform(sd->old_poly,transform,true);
+    if ( sd->old_poly==NULL ) {
+	sd->old_poly = UnitShape( true );
+	memset(transform,0,sizeof(transform));
+	transform[0] = transform[3] = 25;
+	SplinePointListTransform(sd->old_poly,transform,true);
+    }
 }
 
 static int stroke_e_h(GWindow gw, GEvent *event) {
@@ -715,6 +717,10 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	memset(&freehand_dlg,0,sizeof(freehand_dlg));
 	sd->si = si;
 	yoff = 18;
+    }
+    if ( sd->old_poly==NULL && si->poly!=NULL ) {
+	sd->old_poly = si->poly;
+	si->poly = NULL;
     }
 
     if ( sd->gw==NULL ) {
@@ -1149,6 +1155,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
     if ( si==NULL ) {
 	StrokeSetup(sd,GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Caligraphic))?si_caligraphic:
 		GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Circle))?si_std:
+		GGadgetIsChecked( GWidgetGetControl(sd->gw,CID_Polygon))?si_poly:
 		si_centerline);
 	GGadgetSetVisible( GWidgetGetControl(sd->gw,CID_Apply),strokeit==CVStrokeIt );
     } else {
