@@ -29,7 +29,6 @@
 #include <math.h>
 #include "bitmapcontrol.h"
 
-int autohint_before_rasterize = 1;
 int bdfcontrol_lastwhich = bd_selected;
 
 static void RemoveBDFWindows(BDFFont *bdf) {
@@ -105,7 +104,7 @@ static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype,int rast
 
     first = true;
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 ) {
-	if ( first && autohint_before_rasterize )
+	if ( first && autohint_before_generate )
 	    SplineFontAutoHint(sf,layer);
 	if ( first && usefreetype )
 	    freetypecontext = FreeTypeFontContext(sf,NULL,NULL,layer);
@@ -187,7 +186,7 @@ return;
 	    else if ( usefreetype )
 		bdfc = SplineCharFreeTypeRasterizeNoHints(sf->glyphs[gid],layer,bdf->pixelsize,72,BDFDepth(bdf));
 	    if ( bdfc==NULL ) {
-		if ( autohint_before_rasterize && 
+		if ( autohint_before_generate && 
 			sf->glyphs[gid]->changedsincelasthinted &&
 			!sf->glyphs[gid]->manualhints )
 		    SplineCharAutoHint(sf->glyphs[gid],layer,NULL);

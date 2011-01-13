@@ -1,3 +1,3 @@
-#define LibFF_ModTime		1294794678L	/* Seconds since 1970 (standard unix time) */
-#define LibFF_ModTime_Str	"01:11 GMT 12-Jan-2011"
-#define LibFF_VersionDate	20110112	/* Year, month, day */
+#define LibFF_ModTime		1294889802L	/* Seconds since 1970 (standard unix time) */
+#define LibFF_ModTime_Str	"03:36 GMT 13-Jan-2011"
+#define LibFF_VersionDate	20110113	/* Year, month, day */

@@ -499,7 +499,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
     void *freetypecontext;
     double emsize = sc->parent->ascent+sc->parent->descent;
 
-    if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
+    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,layer,NULL);
 
     memset(&gi,'\0', sizeof(gi));

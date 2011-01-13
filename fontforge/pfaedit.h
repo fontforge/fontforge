@@ -56,7 +56,6 @@ extern int default_fv_bbsized;
 extern Encoding *default_encoding, custom;
 extern int adjustwidth;
 extern int adjustlbearing;
-extern int autohint_before_rasterize;
 extern int autohint_before_generate;
 extern int seperate_hint_controls;
 extern int no_windowing_ui;
