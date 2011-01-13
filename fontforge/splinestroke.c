@@ -929,7 +929,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
 		/*  move the stuff we just calculated until after the joint */
 		if ( open && !gothere )
 		    LineCap(c,0);
-		else if ( s!=first )
+		else if ( gothere )		/* Do nothing if it's the join at the start */
 		    LineJoin(c,false);
 		gothere = true;
 	    }
