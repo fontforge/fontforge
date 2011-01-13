@@ -3027,7 +3027,7 @@ GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,int def_layer,
     char *subs = namelist, *pt, *start;
     int ch;
 
-    if ( sc==NULL || sf==NULL )
+    if ( sc==NULL || sf==NULL || namelist==NULL )
 return( NULL );
     me = Rasterize(sc,def_layer);
     ymin = me->ymin; ymax = me->ymax;
