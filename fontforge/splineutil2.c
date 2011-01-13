@@ -1839,14 +1839,36 @@ return;
 	/* Zero length splines give us NaNs */
 	if ( curp!=NULL && (curp->selected || !onlyselected) ) {
 	    plen = nlen = 1e10;
-	    if ( curp->prev!=NULL )
+	    if ( curp->prev!=NULL ) {
 		plen = (curp->me.x-curp->prev->from->me.x)*(curp->me.x-curp->prev->from->me.x) +
 			(curp->me.y-curp->prev->from->me.y)*(curp->me.y-curp->prev->from->me.y);
-	    if ( curp->next!=NULL )
+		if ( plen<=bound ) {
+		    plen =
+			sqrt( (curp->me.x-curp->prevcp.x)*(curp->me.x-curp->prevcp.x) +
+				(curp->me.y-curp->prevcp.y)*(curp->me.y-curp->prevcp.y)) +
+			sqrt( (curp->prevcp.x-curp->prev->from->nextcp.x)*(curp->prevcp.x-curp->prev->from->nextcp.x) +
+				(curp->prevcp.y-curp->prev->from->nextcp.y)*(curp->prevcp.y-curp->prev->from->nextcp.y)) +
+			sqrt( (curp->prev->from->nextcp.x-curp->prev->from->me.x)*(curp->prev->from->nextcp.x-curp->prev->from->me.x) +
+				(curp->prev->from->nextcp.y-curp->prev->from->me.y)*(curp->prev->from->nextcp.y-curp->prev->from->me.y));
+		    plen *= plen;
+		}
+	    }
+	    if ( curp->next!=NULL ) {
 		nlen = (curp->me.x-next->me.x)*(curp->me.x-next->me.x) +
 			(curp->me.y-next->me.y)*(curp->me.y-next->me.y);
+		if ( nlen<=bound ) {
+		    nlen =
+			sqrt( (curp->me.x-curp->nextcp.x)*(curp->me.x-curp->nextcp.x) +
+				(curp->me.y-curp->nextcp.y)*(curp->me.y-curp->nextcp.y)) +
+			sqrt( (curp->nextcp.x-curp->next->to->prevcp.x)*(curp->nextcp.x-curp->next->to->prevcp.x) +
+				(curp->nextcp.y-curp->next->to->prevcp.y)*(curp->nextcp.y-curp->next->to->prevcp.y)) +
+			sqrt( (curp->next->to->prevcp.x-curp->next->to->me.x)*(curp->next->to->prevcp.x-curp->next->to->me.x) +
+				(curp->next->to->prevcp.y-curp->next->to->me.y)*(curp->next->to->prevcp.y-curp->next->to->me.y));
+		    nlen *= nlen;
+		}
+	    }
 	    if (( curp->prev!=NULL && plen<=bound && plen<nlen ) ||
-		    (curp->next!=NULL && nlen<bound && nlen<plen )) {
+		    (curp->next!=NULL && nlen<=bound && nlen<=plen )) {
 		if ( curp->prev!=NULL && plen<=bound && plen<nlen ) {
 		    SplinePoint *other = curp->prev->from;
 		    other->nextcp = curp->nextcp;
@@ -1888,6 +1910,7 @@ SplineSet *SSRemoveZeroLengthSplines(SplineSet *base) {
 	if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
 		spl->first->nonextcp && spl->first->noprevcp ) {
 	    /* Turn it into a single point, rather than a zero length contour */
+	    chunkfree(spl->first->next,sizeof(Spline));
 	    spl->first->next = spl->first->prev = NULL;
 	}
     }

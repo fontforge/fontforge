@@ -512,6 +512,7 @@ static void LineJoin(StrokeContext *c,int atbreak) {
 	/* We decrement c->cur a little later, after we figure out if we need */
 	/*  to add a line join */
     }
+    if ( pindex<0 ) IError("LineJoin: pindex<0");
     pslope = c->all[pindex].slope;
     nslope = done.slope;
     len = sqrt(nslope.x*nslope.x + nslope.y*nslope.y);
@@ -937,7 +938,7 @@ static void FindStrokePointsCircle(SplineSet *ss, StrokeContext *c) {
 	if ( s->to->next==NULL )
 	    LineCap(c,1);
     }
-    if ( !open )
+    if ( !open && c->cur>0 )
 	LineJoin(c,true);
     HideStrokePointsCircle(c);
 
@@ -1137,6 +1138,7 @@ static void SquareJoin(StrokeContext *c,int atbreak) {
 	pindex = c->cur-2;
 	nindex = c->cur-1;
     }
+    if ( pindex<0 ) IError("LineJoin: pindex<0");
     done = c->all[nindex];
     pslope = c->all[pindex].slope;
     nslope = done.slope;
@@ -1412,7 +1414,7 @@ static void FindStrokePointsSquare(SplineSet *ss, StrokeContext *c) {
 		/*  move the stuff we just calculated until after the joint */
 		if ( open && !gothere )
 		    SquareCap(c,0);
-		else if ( s!=first )
+		else if ( gothere )
 		    SquareJoin(c,false);
 		gothere = true;
 	    }
@@ -1420,7 +1422,7 @@ static void FindStrokePointsSquare(SplineSet *ss, StrokeContext *c) {
 	if ( s->to->next==NULL )
 	    SquareCap(c,1);
     }
-    if ( !c->open )
+    if ( !c->open && c->cur>0 )
 	SquareJoin(c,true);
     HideStrokePointsSquare(c);
 }
@@ -1610,6 +1612,7 @@ static void PolyJoin(StrokeContext *c,int atbreak) {
 	pindex = c->cur-2;
 	nindex = c->cur-1;
     }
+    if ( pindex<0 ) IError("LineJoin: pindex<0");
     done = c->all[nindex];
     pslope = c->all[pindex].slope;
     nslope = done.slope;
@@ -2017,7 +2020,7 @@ static void FindStrokePointsPoly(SplineSet *ss, StrokeContext *c) {
 		/*  move the stuff we just calculated until after the joint */
 		if ( open && !gothere )
 		    PolyCap(c,0);
-		else if ( s!=first )
+		else if ( gothere )
 		    PolyJoin(c,false);
 		gothere = true;
 	    }
@@ -2027,7 +2030,7 @@ static void FindStrokePointsPoly(SplineSet *ss, StrokeContext *c) {
 	if ( s->to->next==NULL )
 	    PolyCap(c,1);
     }
-    if ( !c->open )
+    if ( !c->open && c->cur>0 )
 	PolyJoin(c,true);
     HideStrokePointsPoly(c);
 }
@@ -2571,6 +2574,9 @@ static void HideSomeMorePoints(StrokeContext *c) {
     /*  where, due to rounding errors, something which SHOULD be on the edge*/
     /*  will appear to be inside */
     int i, last_h, next_h;
+
+    if ( c->cur==0 )
+return;
 
     last_h = c->open ? false : c->all[c->cur-1].left_hidden;
     for ( i=0; i<c->cur; ++i ) {
