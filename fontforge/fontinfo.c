@@ -218,8 +218,8 @@ static GTextInfo panfamily[] = {
     { (unichar_t *) "15", NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo panunknown[] = {
-    { (unichar_t *) "0", NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "1", NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "Any", NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "No Fit", NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "2", NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "3", NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "4", NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -678,10 +678,10 @@ static GTextInfo pancharrange[] = {
     { (unichar_t *) N_("Litterals"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("No Lower Case"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Small Caps"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Medium"), NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Medium High"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("High"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Very High"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "6", NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "7", NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "8", NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "9", NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "10", NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "11", NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "12", NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -731,10 +731,10 @@ static struct titlelist { char *name; GTextInfo *variants; } panoses[][9] = {
     /*Any*/    {{ N_("Class2"), panunknown }, { N_("Class3"), panunknown }, { N_("Class4"), panunknown }, { N_("Class5"), panunknown }, { N_("Class6"), panunknown }, { N_("Class7"), panunknown }, { N_("Class8"), panunknown }, { N_("Class9"), panunknown }, { N_("Class10"), panunknown }},
     /*NoFit*/  {{ N_("Class2"), panunknown }, { N_("Class3"), panunknown }, { N_("Class4"), panunknown }, { N_("Class5"), panunknown }, { N_("Class6"), panunknown }, { N_("Class7"), panunknown }, { N_("Class8"), panunknown }, { N_("Class9"), panunknown }, { N_("Class10"), panunknown }},
     /*LtnTxt*/ {{ N_("_Serifs"), panserifs }, { N_("Panose|_Weight"), panweight }, { N_("_Proportion"), panprop }, { N_("_Contrast"), pancontrast }, { N_("Stroke _Variation"), panstrokevar }, { N_("_Arm Style"), panarmstyle }, { N_("_Letterform"), panletterform }, { N_("_Midline"), panmidline }, { N_("_X-Height"), panxheight }},
-    /*LtnHnd*/ {{ N_("_Tool"), pantool }, { N_("Panose|_Weight"), panweight }, { N_("_Spacing"), panspacing }, { N_("_Aspect Ratio"), panasprat }, { N_("_Contrast"), pancontrast2 }, { N_("_Topology"), pantopology }, { N_("_Form"), panform }, { N_("F_inials"), panfinials }, { N_("_X-Ascent"), panxascent }},
-    /*LtnDcr*/ {{ N_("_Class"), panclass }, { N_("Panose|_Weight"), panweight }, { N_("_Aspect"), panaspect }, { N_("C_ontrast"), pancontrast3 }, { N_("_Serif Variant"), panserifvar }, { N_("_Treatment"), pantreatment }, { N_("_Lining"), panlining }, { N_("_Topology"), pantopology2 }, { N_("Character _Range"), pancharrange }},
+    /*LtnHnd*/ {{ N_("_Tool"), pantool }, { N_("Panose|_Weight"), panweight }, { N_("_Spacing"), panspacing }, { N_("_Aspect Ratio"), panasprat }, { N_("_Contrast"), pancontrast2 }, { N_("_Topology"), pantopology }, { N_("F_orm"), panform }, { N_("F_inials"), panfinials }, { N_("_X-Ascent"), panxascent }},
+    /*LtnDcr*/ {{ N_("_Class"), panclass }, { N_("Panose|_Weight"), panweight }, { N_("_Aspect"), panaspect }, { N_("C_ontrast"), pancontrast3 }, { N_("_Serif Variant"), panserifvar }, { N_("T_reatment"), pantreatment }, { N_("_Lining"), panlining }, { N_("_Topology"), pantopology2 }, { N_("Char. _Range"), pancharrange }},
 					    /* Yup, really should be "unknown", no weights permitted, nor aspect ratios */
-    /*LtnSym*/ {{ N_("_Kind"), pankind }, { N_("Panose|_Weight"), panunknown }, { N_("_Spacing"), panspacing }, { N_("_Aspect Ratio"), panunknown }, { N_("Aspect Ratio: Char 94"), panasprat2 }, { N_("Aspect Ratio: Char 119"), panasprat2 }, { N_("Aspect Ratio: Char 157"), panasprat2 }, { N_("Aspect Ratio: Char 163"), panasprat2 }, { N_("Aspect Ratio: Char 211"), panasprat2 }},
+    /*LtnSym*/ {{ N_("_Kind"), pankind }, { N_("Panose|_Weight"), panunknown }, { N_("_Spacing"), panspacing }, { N_("_Aspect Ratio"), panunknown }, { N_("AR: Char 94"), panasprat2 }, { N_("AR: Char 119"), panasprat2 }, { N_("AR: Char 157"), panasprat2 }, { N_("AR: Char 163"), panasprat2 }, { N_("AR: Char 211"), panasprat2 }},
     /* 6 */    {{ N_("Class2"), panunknown }, { N_("Class3"), panunknown }, { N_("Class4"), panunknown }, { N_("Class5"), panunknown }, { N_("Class6"), panunknown }, { N_("Class7"), panunknown }, { N_("Class8"), panunknown }, { N_("Class9"), panunknown }, { N_("Class10"), panunknown }},
     {NULL}};
 
@@ -4942,7 +4942,35 @@ return( true );
 
 static int GFI_ShowPanoseDocs(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	help("http://panose.com/");
+	help("http://panose.com/");	
+    }
+return( true );
+}
+
+static void GFI_SetPanoseLists(struct gfi_data *d) {
+    int kind = GGadgetGetFirstListSelectedItem(GWidgetGetControl(d->gw,CID_PanFamily));
+    int i;
+
+    if ( kind!=d->last_panose_family ) {
+	if ( kind>6 ) kind=6;	/* No data for any kinds beyond 5, so anything bigger is just undefined, and that's 6 */
+	for ( i=1; i<10; ++i ) {
+	    GGadget *lab = GWidgetGetControl(d->gw,CID_PanFamilyLab+i);
+	    GGadget *list = GWidgetGetControl(d->gw,CID_PanFamily+i);
+	    int temp = GGadgetGetFirstListSelectedItem(list);
+	    if ( kind==5 && i==2 ) temp=1;
+	    if ( temp>=16 && (kind!=4 || i!=5)) temp=15;
+	    else if ( temp>16 ) temp=16;	/* Decorative.serifvar has 17 elements */
+	    GGadgetSetTitle8WithMn(lab,panoses[kind][i-1].name);
+	    GGadgetSetList(list,GTextInfoArrayFromList(panoses[kind][i-1].variants,NULL),false);
+	    GGadgetSelectOneListItem(list,temp);
+	}
+    }
+}
+
+static int GFI_ChangePanoseFamily(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GFI_SetPanoseLists(d);
     }
 return( true );
 }
@@ -5105,9 +5133,16 @@ static void TTFSetup(struct gfi_data *d) {
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_PanDefault),!info.panose_set);
     _GFI_PanoseDefault(d);
-    if ( info.panose_set )
-	for ( i=0; i<10; ++i )
-	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
+    if ( info.panose_set ) {
+	for ( i=0; i<10; ++i ) {
+	    int v = info.panose[i];
+	    if ( v>=16 && (info.panose[0]!=4 || i!=5 )) v=15;
+	    else if ( v>16 ) v=16;	/* Sigh Decorative.SerifVar has 17 elements */
+	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),v);
+	    if ( i==0 )
+		GFI_SetPanoseLists(d);
+	}
+    }
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_SubSuperDefault),!info.subsuper_set);
     if ( info.subsuper_set )
@@ -9335,6 +9370,7 @@ return;
     pangcd[i].gd.cid = CID_PanFamily;
     pangcd[i].gd.u.list = panfamily;
     panarray[j++] = &pangcd[i];
+    pangcd[i].gd.handle_controlevent = GFI_ChangePanoseFamily;
     pangcd[i++].creator = GListButtonCreate;
     panarray[j++] = NULL;
 
@@ -11143,7 +11179,7 @@ void FontInfoInit(void) {
 	pantool, panspacing, panasprat, pancontrast2, pantopology, panform,
 	panfinials, panxascent,
 	panclass, panaspect, panserifvar, pantreatment, panlining,
-	pantopology2, pancharrange,
+	pantopology2, pancharrange, pancontrast3,
 	pankind, panasprat2,
 	mslanguages,
 	ttfnameids, interpretations, gridfit, antialias, os2versions,
