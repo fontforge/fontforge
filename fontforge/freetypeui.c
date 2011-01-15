@@ -612,6 +612,9 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     }
 #endif
 
+    if ( exc->metrics.y_ppem < 24 )
+       outline.flags |= FT_OUTLINE_HIGH_PRECISION;
+
     first = true;
     for ( k=0; k<outline.n_contours; ++k ) {
 	if ( outline.contours[k] - (k==0?-1:outline.contours[k-1])>1 ) {
