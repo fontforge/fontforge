@@ -605,6 +605,7 @@ struct gfi_data {		/* FontInfo */
     struct lkdata tables[2];
     int lkwidth, lkheight;
     int first_sel_lookup, first_sel_subtable;
+    int last_panose_family;
 };
 
 struct kf_dlg /* : fvcontainer */ {
