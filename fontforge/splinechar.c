@@ -200,10 +200,10 @@ return;
 	else if ( metrics==NULL && sc->width!=dlist->sc->width )
     continue;
 	SCPreserveLayer(dlist->sc,layer,false);
-	SplinePointListShift(dlist->sc->layers[layer].splines,off,true);
+	SplinePointListShift(dlist->sc->layers[layer].splines,off,tpt_AllPoints);
 	for ( ref = dlist->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 		if ( ref->sc!=sc ) {
-	    SplinePointListShift(ref->layers[0].splines,off,true);
+	    SplinePointListShift(ref->layers[0].splines,off,tpt_AllPoints);
 	    ref->transform[4] += off;
 	    ref->bb.minx += off; ref->bb.maxx += off;
 	}
@@ -2019,12 +2019,12 @@ static int BuildEllipse(int clockwise,double r1,double r2, double theta,
     spl = UnitCircle(clockwise);
     memset(trans,0,sizeof(trans));
     trans[0] = r1; trans[3] = r2;
-    SplinePointListTransform(spl,trans,true);
+    SplinePointListTransform(spl,trans,tpt_AllPoints);
     c = cos(theta); s = sin(theta);
     trans[0] = trans[3] = c;
     trans[1] = s; trans[2] = -s;
     trans[4] = center->x; trans[5] = center->y;
-    SplinePointListTransform(spl,trans,true);
+    SplinePointListTransform(spl,trans,tpt_AllPoints);
     if ( ellipse_to_back && CVLayer(cv)!=ly_back )
 	/* Originally this was debugging code... but hey, it's kind of neat */
 	/*  and may prove useful if we need to do more debugging. Invoked by */

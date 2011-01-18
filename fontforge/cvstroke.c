@@ -336,7 +336,7 @@ static void Stroke_ShowNib(StrokeDlg *sd) {
 	transform[1] *= width;
 	transform[2] *= height;
 	transform[3] *= height;
-	SplinePointListTransform(ss,transform,true);
+	SplinePointListTransform(ss,transform,tpt_AllPoints);
 	sd->dummy_sf.grid.splines = ss;
     }
     GDrawRequestExpose(sd->cv_stroke.v,NULL,false);
@@ -627,7 +627,7 @@ static void StrokeInit(StrokeDlg *sd) {
 	sd->old_poly = UnitShape( true );
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 25;
-	SplinePointListTransform(sd->old_poly,transform,true);
+	SplinePointListTransform(sd->old_poly,transform,tpt_AllPoints);
     }
 }
 

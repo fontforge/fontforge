@@ -591,7 +591,7 @@ static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, rea
     real t[6];
     ImageList *img;
 
-    SplinePointListTransform(sc->layers[i].splines,transform,true);
+    SplinePointListTransform(sc->layers[i].splines,transform,tpt_AllPoints);
     for ( refs = sc->layers[i].refs; refs!=NULL; refs=refs->next ) {
 	if ( (sel!=NULL && sel[fv->map->backmap[refs->sc->orig_pos]]) ||
 		(flags&fvt_partialreftrans)) {
@@ -612,11 +612,11 @@ static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, rea
 	    if ( t[4]!=0 || t[5]!=0 ) {
 		t[0] = t[3] = 1; t[1] = t[2] = 0;
 		for ( j=0; j<refs->layer_cnt; ++j )
-		    SplinePointListTransform(refs->layers[j].splines,t,true);
+		    SplinePointListTransform(refs->layers[j].splines,t,tpt_AllPoints);
 	    }
 	} else {
 	    for ( j=0; j<refs->layer_cnt; ++j )
-		SplinePointListTransform(refs->layers[j].splines,transform,true);
+		SplinePointListTransform(refs->layers[j].splines,transform,tpt_AllPoints);
 	    t[0] = refs->transform[0]*transform[0] +
 			refs->transform[1]*transform[2];
 	    t[1] = refs->transform[0]*transform[1] +
@@ -791,7 +791,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
     }
     if ( flags&fvt_dogrid ) {
 	SFPreserveGuide(fv->sf);
-	SplinePointListTransform(fv->sf->grid.splines,transform,true);
+	SplinePointListTransform(fv->sf->grid.splines,transform,tpt_AllPoints);
     }
     ff_progress_end_indicator();
 
@@ -1578,7 +1578,7 @@ void FVMetricsCenter(FontViewBase *fv,int docenter) {
 		else {
 		    SplineSet *base, *temp;
 		    base = LayerAllSplines(&sc->layers[fv->active_layer]);
-		    temp = SplinePointListTransform(SplinePointListCopy(base),itransform,true);
+		    temp = SplinePointListTransform(SplinePointListCopy(base),itransform,tpt_AllPoints);
 		    LayerUnAllSplines(&sc->layers[fv->active_layer]);
 		    SplineSetFindBounds(temp,&bb);
 		    SplinePointListsFree(temp);

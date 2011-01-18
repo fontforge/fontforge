@@ -70,6 +70,7 @@ float arrowAccelFactor=10.;
 float snapdistance=3.5;
 int updateflex = false;
 extern int clear_tt_instructions_when_needed;
+int interpCPsOnMotion=false;
 int default_cv_width = 540;
 int default_cv_height = 540;
 
@@ -1983,7 +1984,7 @@ return;
 	} else
 	    head = tail = temp;
     }
-    head = SplinePointListTransform(head,trans,true);
+    head = SplinePointListTransform(head,trans,tpt_AllPoints);
     CVDrawSplineSet(cv,pixmap,head,anchoredoutlinecol,
 	    false,clip);
     SplinePointListsFree(head);
@@ -7201,7 +7202,7 @@ static void TransRef(RefChar *ref,real transform[6], enum fvtrans_flags flags) {
     real t[6];
 
     for ( j=0; j<ref->layer_cnt; ++j )
-	SplinePointListTransform(ref->layers[j].splines,transform,true);
+	SplinePointListTransform(ref->layers[j].splines,transform,tpt_AllPoints);
     t[0] = ref->transform[0]*transform[0] +
 		ref->transform[1]*transform[2];
     t[1] = ref->transform[0]*transform[1] +
@@ -7237,7 +7238,8 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     if ( cv->b.sc->inspiro && hasspiro() )
 	SplinePointListSpiroTransform(ly->splines,transform,!anysel);
     else
-	SplinePointListTransform(ly->splines,transform,!anysel);
+	SplinePointListTransform(ly->splines,transform,!anysel?tpt_AllPoints:
+		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(ly->splines,1.0,cv->b.sc->inspiro && hasspiro(),!anysel);
     if ( ly->images!=NULL ) {
@@ -7294,7 +7296,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	    for ( img = cv->b.sc->layers[l].images; img!=NULL; img=img->next )
 		BackgroundImageTransform(cv->b.sc, img, transform);
 	    SplinePointListTransform(cv->b.sc->layers[l].splines,
-		    transform,true);
+		    transform,tpt_AllPoints);
 	    for ( refs=cv->b.sc->layers[l].refs; refs!=NULL; refs=refs->next )
 		TransRef(refs,transform,flags);
 	}
@@ -9190,7 +9192,7 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SplineSet *base, *temp;
 	base = LayerAllSplines(cv->b.layerheads[cv->b.drawmode]);
 	transform[2] = tan( cv->b.sc->parent->italicangle * 3.1415926535897932/180.0 );
-	temp = SplinePointListTransform(SplinePointListCopy(base),transform,true);
+	temp = SplinePointListTransform(SplinePointListCopy(base),transform,tpt_AllPoints);
 	transform[2] = 0;
 	LayerUnAllSplines(cv->b.layerheads[cv->b.drawmode]);
 	SplineSetFindBounds(temp,&bb);

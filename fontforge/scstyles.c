@@ -1551,7 +1551,7 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
             scale[0] = ratio;
             scale[3] = 1.;
         }
-        SplinePointListTransform( sc_sc->layers[layer].splines,scale,true );
+        SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
         
 	memset( &si,0,sizeof( si ));
 	si.stroke_type = si_std;
@@ -1578,7 +1578,7 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
                 scale[3] = 1.;
             }
         }
-        SplinePointListTransform( sc_sc->layers[layer].splines,scale,true );
+        SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
 
         /* If stroke has been expanded/condensed, then the old hints are no longer */
         /* relevant; so just remove them and rely solely on the stem detector */
@@ -1681,7 +1681,7 @@ return;
 	scale[4] = ( owidth - ( new_b.maxx - new_b.minx ))/2.0 - new_b.minx;
     else
 	scale[4] = orig_b.minx*genchange->lsb_scale + genchange->lsb_add - new_b.minx;
-    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    SplinePointListTransform(sc_sc->layers[layer].splines,scale,tpt_AllPoints);
     for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
 	ap->me.x += scale[4];
     SplineCharLayerFindBounds( sc_sc,layer,&new_b );
@@ -1692,7 +1692,7 @@ return;
     memset(scale,0,sizeof(scale));
     scale[0] = scale[3] = 1;
     scale[5] = genchange->vertical_offset;
-    SplinePointListTransform(sc_sc->layers[layer].splines,scale,true);
+    SplinePointListTransform(sc_sc->layers[layer].splines,scale,tpt_AllPoints);
     for ( ap = sc_sc->anchor; ap!=NULL; ap=ap->next )
 	ap->me.y += genchange->vertical_offset;
 
@@ -1771,7 +1771,7 @@ static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 	    dummy.layers[ly_fore].order2 = sc->layers[layer].order2;
 	    dummy.layers[ly_fore].splines = SplinePointListTransform(
 		    SplinePointListCopy(LayerAllSplines(&sc->layers[layer])),
-		    deskew,true);
+		    deskew,tpt_AllPoints);
 	    LayerUnAllSplines(&sc->layers[ly_fore]);
 
 	    SplineCharAutoHint(&dummy,ly_fore,NULL);
@@ -3359,7 +3359,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
 	transform[2] = tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
-	SplinePointListTransform(sc->layers[layer].splines,transform,true);
+	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
     }
     if ( sc->vstem==NULL )
@@ -3394,7 +3394,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
     transform[0] = transform[3] = 1;
     transform[4] = ci->bb.minx*ci->sb_factor/100. + ci->sb_add - b.minx;
     if ( transform[4]!=0 )
-	SplinePointListTransform(sc->layers[layer].splines,transform,true);
+	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
     if ( layer!=ly_back ) {
 	width = b.maxx + (sc->width-ci->bb.maxx)*ci->sb_factor/100. + ci->sb_add;
 	SCSynchronizeWidth(sc,width,sc->width,NULL);
@@ -3409,7 +3409,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
 	transform[2] = -tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
-	SplinePointListTransform(sc->layers[layer].splines,transform,true);
+	SplinePointListTransform(sc->layers[layer].splines,transform,tpt_AllPoints);
     }
     
     if ( layer!=ly_back ) {
@@ -3583,7 +3583,7 @@ static void CorrectLeftSideBearing(SplineSet *ss_expanded,SplineChar *sc,int lay
     transform[0] = transform[3] = 1;
     transform[4] = old.minx - new.minx;
     if ( transform[4]!=0 ) {
-	SplinePointListTransform(ss_expanded,transform,true);
+	SplinePointListTransform(ss_expanded,transform,tpt_AllPoints);
 	if ( layer==ly_fore )
 	    SCSynchronizeLBearing(sc,transform[4],layer);
     }
@@ -4399,7 +4399,7 @@ static void ItalicCompress(SplineChar *sc,int layer,struct hsquash *squash) {
 	memset(stemsquash,0,sizeof(stemsquash));
 	stemsquash[0] = squash->stem_percent;
 	stemsquash[3] = 1;
-	SplinePointListTransform(sc->layers[layer].splines,stemsquash,true);
+	SplinePointListTransform(sc->layers[layer].splines,stemsquash,tpt_AllPoints);
     }
     if ( !RealNear(squash->stem_percent,squash->counter_percent)) {
 	SplineCharAutoHint(sc,layer,NULL);
@@ -4421,7 +4421,7 @@ static void ItalicCompress(SplineChar *sc,int layer,struct hsquash *squash) {
 		(pre.minx!=0 && !RealNear(post.minx/pre.minx,squash->lsb_percent))) {
 	    translate[0] = translate[3] = 1;
 	    translate[4] = pre.minx==0 ? -post.minx : pre.minx*squash->lsb_percent - post.minx;
-	    SplinePointListTransform(sc->layers[layer].splines,translate,true);
+	    SplinePointListTransform(sc->layers[layer].splines,translate,tpt_AllPoints);
 	}
 	sc->width = (sc->width-pre.maxx)*squash->rsb_percent + post.maxx + translate[4];
     }
@@ -4611,7 +4611,7 @@ static SplineSet *MakeTopItalicSerif(double stemwidth,double endx,
     memset(trans,0,sizeof(trans));
     trans[0] = trans[3] = -1;
     trans[4] = endx; trans[5] = at_xh ? ii->x_height : ii->ascender_height;
-return( SplinePointListTransform(ss,trans,true));
+return( SplinePointListTransform(ss,trans,tpt_AllPoints));
 }
 
 static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
@@ -4635,14 +4635,14 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
     if ( top ) {
 	trans[0] = trans[3] = -1;
 	trans[4] = endx; trans[5] = top==1 ? ii->x_height : ii->ascender_height;
-	SplinePointListTransform(ss,trans,true);
+	SplinePointListTransform(ss,trans,tpt_AllPoints);
     }
     /* given the orientation of the dstem, do we need to flip the serif? */
     if ( (seriftype==0 && d->unit.x*d->unit.y>0) || (seriftype!=0 && d->unit.x*d->unit.y<0)) {
 	trans[0] = -1; trans[3] = 1;
 	trans[4] = ss->first->me.x+endx;
 	trans[5] = 0;
-	SplinePointListTransform(ss,trans,true);
+	SplinePointListTransform(ss,trans,tpt_AllPoints);
 	SplineSetReverse(ss);
     }
 
@@ -4655,7 +4655,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
     trans[0] = trans[3] = d->unit.x;
     trans[2] = -(trans[1] = -d->unit.y);
     trans[4] = trans[5] = 0;
-    SplinePointListTransform(ss,trans,true);
+    SplinePointListTransform(ss,trans,tpt_AllPoints);
 
     /* Now the min/max point will probably be on the first spline, but might */
     /*  be on the second (and will probably be on the last spline, but might */
@@ -4712,7 +4712,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
     }
     /* Now rotate it back to the correct orientation */
     trans[2] = -trans[2]; trans[1] = -trans[1];
-    SplinePointListTransform(ss,trans,true);
+    SplinePointListTransform(ss,trans,tpt_AllPoints);
 
     /* Now it probably doesn't have the correct stemwidth */
     cur_sw = (ss->first->me.x-ss->last->me.x)*d->unit.y - (ss->first->me.y-ss->last->me.y)*d->unit.x;
@@ -4757,7 +4757,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
 	else
 	    trans[4] = epos-ss->first->me.x;
     }
-    SplinePointListTransform(ss,trans,true);
+    SplinePointListTransform(ss,trans,tpt_AllPoints);
     if ( ii->order2 ) {
 	SplineSet *newss;
 	SplineSetsRound2Int(ss,1.0,false,false);
@@ -6394,7 +6394,7 @@ return;
 	memset(deskew,0,sizeof(deskew));
 	deskew[0] = deskew[3] = 1;
 	deskew[2] = ii->tan_ia;
-	SplinePointListTransform(d_ss,deskew,true);
+	SplinePointListTransform(d_ss,deskew,tpt_AllPoints);
     }
 
     scnt = 0;
@@ -6588,13 +6588,13 @@ static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
     skew[0] = skew[3] = 1;
     skew[2] = -ii->tan_ia;
 
-    SplinePointListTransform( sc->layers[layer].splines, skew, true );
+    SplinePointListTransform( sc->layers[layer].splines, skew, tpt_AllPoints );
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
 	memset(refpos,0,sizeof(refpos));
 	refpos[0] = refpos[3] = 1;
 	refpos[4] = -ii->tan_ia*ref->transform[5];
 	ref->transform[4] += refpos[4];
-	SplinePointListTransform(ref->layers[0].splines,refpos,true);
+	SplinePointListTransform(ref->layers[0].splines,refpos,tpt_AllPoints);
     }
 
     StemInfosFree(sc->hstem);  sc->hstem = NULL;

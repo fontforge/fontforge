@@ -820,12 +820,12 @@ return;
     transform[2] = -(transform[1] = si);
     transform[4] = -pov->x;
     transform[5] = -pov->y;
-    SplinePointListTransform(base,transform,!only_selected);
+    SplinePointListTransform(base,transform,only_selected?tpt_OnlySelected:tpt_AllPoints);
 
     if ( pov->d==0 || pov->tilt==0 ) {
 	transform[0] = transform[3] = pov->d/pov->z;
 	transform[1] = transform[2] = transform[4] = transform[5] = 0;
-	SplinePointListTransform(base,transform,!only_selected);
+	SplinePointListTransform(base,transform,only_selected?tpt_OnlySelected:tpt_AllPoints);
 return;
     }
 
@@ -840,7 +840,7 @@ return;
     transform[1] = -(transform[2] = si);
     transform[4] = pov->x;
     transform[5] = pov->y;
-    SplinePointListTransform(base,transform,!only_selected);
+    SplinePointListTransform(base,transform,only_selected?tpt_OnlySelected:tpt_AllPoints);
 }
 
 static void SCFindCenter(SplineChar *sc,BasePoint *center) {

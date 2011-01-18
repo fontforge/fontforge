@@ -326,7 +326,7 @@ return( ss );
     transform[4] = transform[5] = 0;
     MatInverse(inversetrans,transform);
 return( SplinePointListTransform(SplinePointListCopy(
-		    ss),inversetrans,true));
+		    ss),inversetrans,tpt_AllPoints));
 }
 #endif
 
@@ -2986,7 +2986,7 @@ return( NULL );
 
     SPLCatagorizePoints(head);
 
-    eret = EntityCreate(SplinePointListTransform(head,st.transform,true), &st);
+    eret = EntityCreate(SplinePointListTransform(head,st.transform,tpt_AllPoints), &st);
     if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
 	xmlApplyColourSources(top,eret,&st,fill_colour_source,stroke_colour_source);
     SvgStateFree(&st);
