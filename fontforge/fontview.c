@@ -7588,8 +7588,8 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     kf->guts = drawable;
 
     ps = kf->sf->display_size; kf->sf->display_size = -24;
-    kf->first_fv = __FontViewCreate(kf->sf);
-    kf->second_fv = __FontViewCreate(kf->sf);
+    kf->first_fv = __FontViewCreate(kf->sf); kf->first_fv->b.container = (struct fvcontainer *) kf;
+    kf->second_fv = __FontViewCreate(kf->sf); kf->second_fv->b.container = (struct fvcontainer *) kf;
 
     kf->infoh = infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
     kf->first_fv->mbh = kf->mbh;
@@ -7597,11 +7597,13 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     pos.width = 16*kf->first_fv->cbw+1;
     pos.height = 4*kf->first_fv->cbh+1;
 
+    GDrawSetUserData(dw,kf->first_fv);
     FVCopyInnards(kf->first_fv,&pos,infoh,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
     pos.height = 4*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     kf->second_fv->mbh = kf->mbh;
     kf->label2_y = pos.y + pos.height+2;
     pos.y = kf->label2_y + kf->fh + 2;
+    GDrawSetUserData(dw,kf->second_fv);
     FVCopyInnards(kf->second_fv,&pos,infoh,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
 
     kf->sf->display_size = ps;
