@@ -2976,7 +2976,7 @@ return( head );
 	    transform[4] = transform[5] = 0;
 	    MatInverse(inversetrans,transform);
 	    transed = SplinePointListTransform(SplinePointListCopy(
-		    sc->layers[layer].splines),inversetrans,true);
+		    sc->layers[layer].splines),inversetrans,tpt_AllPoints);
 	    for ( each = transed; each!=NULL; each=each->next ) {
 		temp = SplineSetStroke(each,&si,sc->layers[layer].order2);
 		if ( new==NULL )
@@ -2986,7 +2986,7 @@ return( head );
 		if ( temp!=NULL )
 		    for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 	    }
-	    new = SplinePointListTransform(new,transform,true);
+	    new = SplinePointListTransform(new,transform,tpt_AllPoints);
 	    SplinePointListsFree(transed);
 	    if ( handle_eraser && sc->layers[layer].stroke_pen.brush.col==0xffffff ) {
 		head = EraseStroke(sc,head,new);
@@ -3193,7 +3193,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 #endif
 		MatInverse(inversetrans,ent->u.splines.transform);
 		transed = SplinePointListTransform(SplinePointListCopy(
-			ent->u.splines.splines),inversetrans,true);
+			ent->u.splines.splines),inversetrans,tpt_AllPoints);
 		for ( each = transed; each!=NULL; each=each->next ) {
 		    temp = SplineSetStroke(each,&si,false);
 		    if ( new==NULL )
@@ -3203,7 +3203,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		    if ( temp!=NULL )
 			for ( nlast=temp; nlast->next!=NULL; nlast=nlast->next );
 		}
-		new = SplinePointListTransform(new,ent->u.splines.transform,true);
+		new = SplinePointListTransform(new,ent->u.splines.transform,tpt_AllPoints);
 		SplinePointListsFree(transed);
 		if ( handle_eraser && ent->u.splines.stroke.col==0xffffff ) {
 		    head = EraseStroke(ec->sc,head,new);

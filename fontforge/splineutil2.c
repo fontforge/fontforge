@@ -1614,7 +1614,7 @@ static void GlyphBindToPath(SplineSet *glyph,SplineSet *path) {
     transform[4] = pos.x;
     transform[5] = pos.y;
     MatMultiply(offset,transform,transform);
-    SplinePointListTransform(glyph,transform,true);
+    SplinePointListTransform(glyph,transform,tpt_AllPoints);
 }
     
 
@@ -1648,7 +1648,7 @@ SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int glyph_as_unit,
 	transform[5] += path->first->me.y;
     }
     transform[5] += offset;
-    SplinePointListTransform(ss,transform,true);
+    SplinePointListTransform(ss,transform,tpt_AllPoints);
     if ( pathlength==0 )
 return( ss );
 

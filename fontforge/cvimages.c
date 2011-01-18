@@ -281,7 +281,7 @@ return;
     memset(transform,0,sizeof(transform));
     transform[0] = 1; transform[3] = -1;
     transform[5] = 800;
-    head = SplinePointListTransform(head,transform,true);
+    head = SplinePointListTransform(head,transform,tpt_AllPoints);
     /* After doing the above flip, the contours appear oriented acording to my*/
     /*  conventions */
 

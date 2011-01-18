@@ -1020,7 +1020,7 @@ SplineSet *LIConvertToSplines(LayoutInfo *li,double dpi,int order2) {
 	    transform[0] = transform[3] = fd->pointsize*dpi/72.0/(fd->sf->ascent+fd->sf->descent);
 	    transform[4] =  x + line[i]->vr.xoff;
 	    transform[5] = -y + (line[i]->vr.yoff + line[i]->bsln_off);
-	    ss = SplinePointListTransform(ss,transform,true);
+	    ss = SplinePointListTransform(ss,transform,tpt_AllPoints);
 	    if ( head==NULL )
 		head = ss;
 	    else

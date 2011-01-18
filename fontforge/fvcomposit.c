@@ -2619,13 +2619,13 @@ return;
 	transform[4] = scbase->parent->descent; transform[5] = /*scbase->parent->vertical_origin*/ scbase->parent->ascent;
 
 	sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(scbase->layers[layer].splines),
-		transform, true );
+		transform, tpt_AllPoints );
 	if ( sc->layers[layer].splines==NULL ) last = NULL;
 	else for ( last = sc->layers[layer].splines; last->next!=NULL; last = last->next );
 
 	for ( ref = scbase->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	    temp = SplinePointListTransform(SplinePointListCopy(ref->layers[0].splines),
-		transform, true );
+		transform, tpt_AllPoints );
 	    if ( last==NULL )
 		sc->layers[layer].splines = temp;
 	    else
@@ -2809,7 +2809,7 @@ return;
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	ref->bb.minx += xoff; ref->bb.maxx += xoff;
 	ref->transform[4] += xoff;
-	SplinePointListTransform(ref->layers[0].splines,transform,true);
+	SplinePointListTransform(ref->layers[0].splines,transform,tpt_AllPoints);
     }
     SCSynchronizeWidth(sc,sc->width + xoff,sc->width,NULL);
 }

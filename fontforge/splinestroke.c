@@ -3682,7 +3682,7 @@ static SplineSet *SplineSet_Stroke(SplineSet *ss,struct strokecontext *c,
     if ( base==NULL )
 return(NULL);
     if ( c->transform_needed )
-	base = SplinePointListTransform(base,c->transform,true);
+	base = SplinePointListTransform(base,c->transform,tpt_AllPoints);
     if ( base->first->next==NULL )
 	ret = SinglePointStroke(base->first,c);
     else {
@@ -3707,7 +3707,7 @@ return(NULL);
 	ret = ApproximateStrokeContours(c);
     }
     if ( c->transform_needed )
-	ret = SplinePointListTransform(ret,c->inverse,true);
+	ret = SplinePointListTransform(ret,c->inverse,tpt_AllPoints);
     if ( order2 )
 	ret = SplineSetsConvertOrder(ret,order2 );
     SplinePointListFree(base);
@@ -3807,7 +3807,7 @@ return( NULL );				/* That's an error, must be closed */
 	    SplineSetQuickBounds(si->poly,&b);
 	    trans[4] = -(b.minx+b.maxx)/2;
 	    trans[5] = -(b.miny+b.maxy)/2;
-	    SplinePointListTransform(si->poly,trans,true);
+	    SplinePointListTransform(si->poly,trans,tpt_AllPoints);
 	}
 	for ( active=si->poly; active!=NULL; active=anext ) {
 	    int reversed = false;
@@ -3820,7 +3820,7 @@ return( NULL );				/* That's an error, must be closed */
 		SplineSetQuickBounds(active,&b);
 		trans[4] = -(b.minx+b.maxx)/2;
 		trans[5] = -(b.miny+b.maxy)/2;
-		SplinePointListTransform(active,trans,true);	/* Only works if pen is fixed and does not rotate or get scaled */
+		SplinePointListTransform(active,trans,tpt_AllPoints);	/* Only works if pen is fixed and does not rotate or get scaled */
 		active->next = anext;
 	    }
 	    maxd2 = 0; maxlen = 0;
@@ -3853,9 +3853,9 @@ return( NULL );				/* That's an error, must be closed */
 	    cur = SplineSets_Stroke(ss,&c,order2);
 	    if ( !c.scaled_or_rotated ) {
 		trans[4] = -trans[4]; trans[5] = -trans[5];
-		SplinePointListTransform(cur,trans,true);
+		SplinePointListTransform(cur,trans,tpt_AllPoints);
 		anext = active->next; active->next = NULL;
-		SplinePointListTransform(active,trans,true);
+		SplinePointListTransform(active,trans,tpt_AllPoints);
 		active->next = anext;
 	    }
 	    if ( reversed ) {

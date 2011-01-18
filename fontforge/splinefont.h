@@ -2263,9 +2263,12 @@ extern SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base);
 extern ImageList *ImageListCopy(ImageList *cimg);
 extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
 extern void ApTransform(AnchorPoint *ap, real transform[6]);
-extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints );
+/* The order of the enum elements below doesn't make much sense, but it's done*/
+/*  this way to preserve binary compatibility */
+enum transformPointType { tpt_OnlySelected, tpt_AllPoints, tpt_OnlySelectedInterpCPs };
+extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], enum transformPointType allpoints );
 extern SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints );
-extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, int allpoints );
+extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, enum transformPointType allpoints );
 extern HintMask *HintMaskFromTransformedRef(RefChar *ref,BasePoint *trans,
 	SplineChar *basesc,HintMask *hm);
 extern SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,

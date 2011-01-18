@@ -32,6 +32,7 @@ int center_out[2] = { false, true };
 float rr_radius=0;
 int ps_pointcnt=6;
 float star_percent=1.7320508;	/* Regular 6 pointed star */
+extern int interpCPsOnMotion;
 
 #include <gkeysym.h>
 #include <math.h>
@@ -368,7 +369,8 @@ static void FakeShapeEvents(CharView *cv) {
 	trans[2] = -trans[1];
 	trans[4] = -cv->p.x*trans[0] - cv->p.y*trans[2] + cv->p.x;
 	trans[5] = -cv->p.x*trans[1] - cv->p.y*trans[3] + cv->p.y;
-	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,trans,false);
+	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,trans,
+		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
 	SCUpdateAll(cv->b.sc);
     }
     cv->active_tool = cvt_none;

@@ -992,7 +992,7 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
 	    s->already_complained = true;
 	}
     }
-    temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.layers[ly_fore].splines),transform,true);
+    temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.layers[ly_fore].splines),transform,tpt_AllPoints);
     if ( sc->layers[layer].splines==NULL )
 	sc->layers[layer].splines = temp;
     else {

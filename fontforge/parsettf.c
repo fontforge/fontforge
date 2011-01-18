@@ -4063,7 +4063,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    if ( info->apply_lsb ) {
 		if ( sc->lsidebearing!=lsb ) {
 		    trans[4] = lsb-sc->lsidebearing;
-		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
+		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,tpt_AllPoints);
 		}
 	    }
 	}
@@ -4081,7 +4081,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 		lsb = (short) getushort(ttf);
 		if ( sc->lsidebearing!=lsb ) {
 		    trans[4] = lsb-sc->lsidebearing;
-		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
+		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,tpt_AllPoints);
 		}
 	    }
 	}

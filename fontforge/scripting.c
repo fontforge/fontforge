@@ -4588,7 +4588,7 @@ static void _bMoveReference(Context *c,int position) {
 		    ref->transform[4] += t[4];
 		    ref->transform[5] += t[5];
 		    for ( j=0; j<ref->layer_cnt; ++j )
-			SplinePointListTransform(ref->layers[j].splines,t,true);
+			SplinePointListTransform(ref->layers[j].splines,t,tpt_AllPoints);
 		    ref->bb.minx += t[4]; ref->bb.miny += t[5];
 		    ref->bb.maxx += t[4]; ref->bb.maxy += t[5];
 		}

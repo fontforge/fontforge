@@ -29,6 +29,7 @@
 #include <math.h>
 
 int stop_at_join = false;
+extern int interpCPsOnMotion;
 
 int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int anypoints = 0, anyrefs=0, anyimages=0, anyanchor=0;
@@ -978,7 +979,8 @@ return(false);
     if ( cv->b.sc->inspiro && hasspiro())
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
-	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
+	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,
+		interpCPsOnMotion?tpt_OnlySelectedInterpCPs:tpt_OnlySelected);
 
     for ( refs = cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];
@@ -986,7 +988,7 @@ return(false);
 	refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
 	refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
 	for ( j=0; j<refs->layer_cnt; ++j )
-	    SplinePointListTransform(refs->layers[j].splines,transform,true);
+	    SplinePointListTransform(refs->layers[j].splines,transform,tpt_AllPoints);
 	outlinechanged = true;
     }
     if ( CVLayer( (CharViewBase *) cv) > ly_back ) {

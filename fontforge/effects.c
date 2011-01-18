@@ -715,7 +715,7 @@ return( NULL );
     trans[2] = sin(angle);
     trans[1] = -trans[2];
     trans[4] = trans[5] = 0;
-    spl = SplinePointListTransform(spl,trans,true);
+    spl = SplinePointListTransform(spl,trans,tpt_AllPoints);
     SSCleanup(spl);
 
     internal = NULL;
@@ -758,7 +758,7 @@ return( NULL );
     }
 
     trans[1] = -trans[1]; trans[2] = -trans[2];
-    spl = SplinePointListTransform(spl,trans,true);	/* rotate back */
+    spl = SplinePointListTransform(spl,trans,tpt_AllPoints);	/* rotate back */
     SSCleanup(spl);
     if ( isfore ) {
 	sc->width += fabs(trans[0]*shadow_length);
@@ -766,7 +766,7 @@ return( NULL );
 	    trans[4] = -trans[0]*shadow_length;
 	    trans[0] = trans[3] = 1;
 	    trans[1] = trans[2] = 0;
-	    spl = SplinePointListTransform(spl,trans,true);
+	    spl = SplinePointListTransform(spl,trans,tpt_AllPoints);
 	}
     }
 

@@ -507,7 +507,7 @@ static void TileLine(TD *td) {
 			    0;
 	new = SplinePointListCopy((&td->basetile)[which]);
 	trans[5] = y;
-	new = SplinePointListTransform(new,trans,true);
+	new = SplinePointListTransform(new,trans,tpt_AllPoints);
 	if ( i==tilecnt-1 && td->tilescale==ts_tile )
 	    new = SplinePointListTruncateAtY(new,td->plength);
 	td->tileset = SplinePointListMerge(td->tileset,new);
@@ -724,7 +724,7 @@ static void TileIt(SplineSet **head,struct tiledata *td,
 	else if ( td->tilepos==tp_left )
 	    trans[4] = -bb->maxx;
 	if ( trans[4]!=0 || trans[5]!=0 )
-	    SplinePointListTransform(thistile,trans,true);
+	    SplinePointListTransform(thistile,trans,tpt_AllPoints);
 	SplineSetFindBounds(thistile,bb);
     }
     td->tileset = td->result = NULL;
@@ -1395,7 +1395,7 @@ return;
     for ( i=0; i<cnt->x; ++i ) for ( j=0; j<cnt->y; ++j ) {
 	transform[4] = i*size->x; transform[5] = j*size->y;
 	if ( pattern->splines!=NULL ) {
-	    ss = SplinePointListTransform(SplinePointListCopy(pattern->splines),transform,true);
+	    ss = SplinePointListTransform(SplinePointListCopy(pattern->splines),transform,tpt_AllPoints);
 	    if ( lastss!=NULL )
 		lastss->next = ss;
 	    else

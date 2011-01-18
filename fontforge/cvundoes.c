@@ -2032,7 +2032,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 		*refstate |= 2;
 	}
 	if ( (*refstate&1) || yes<=1 ) {
-	    new = SplinePointListTransform(SplinePointListCopy(fromsc->layers[ly_fore].splines),ref->transform,true);
+	    new = SplinePointListTransform(SplinePointListCopy(fromsc->layers[ly_fore].splines),ref->transform,tpt_AllPoints);
 	    SplinePointListSelect(new,true);
 	    if ( new!=NULL ) {
 		for ( spl = new; spl->next!=NULL; spl = spl->next );
@@ -2336,7 +2336,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		transform[0] = transform[3] = 1; transform[1] = transform[2] = transform[5] = 0;
 		transform[4] = width;
 		sc->layers[layer].splines = SplinePointListTransform(
-			sc->layers[layer].splines,transform,true);
+			sc->layers[layer].splines,transform,tpt_AllPoints);
 		for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 		    ref->transform[4] += width;
 		    SCReinstanciateRefChar(sc,ref,layer);
@@ -2379,7 +2379,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    if ( (pasteinto==2 || pasteinto==3 ) && (xoff!=0 || yoff!=0)) {
 		transform[0] = transform[3] = 1; transform[1] = transform[2] = 0;
 		transform[4] = xoff; transform[5] = yoff;
-		temp = SplinePointListTransform(temp,transform,true);
+		temp = SplinePointListTransform(temp,transform,tpt_AllPoints);
 	    }
 	    if ( paster->was_order2 != sc->layers[layer].order2 )
 		temp = SplineSetsConvertOrder(temp,sc->layers[layer].order2);
@@ -3093,7 +3093,7 @@ return;
 		else
 		    sc = NULL;
 		if ( sc!=NULL ) {
-		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,true);
+		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,tpt_AllPoints);
 		    SplinePointListSelect(new,true);
 		    if ( new!=NULL ) {
 			for ( spl = new; spl->next!=NULL; spl = spl->next );

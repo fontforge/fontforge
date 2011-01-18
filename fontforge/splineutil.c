@@ -1749,35 +1749,27 @@ ImageList *ImageListTransform(ImageList *img, real transform[6]) {
 return( head );
 }
 
-void ApTransform(AnchorPoint *ap, real transform[6]) {
+static void BpTransform(BasePoint *to, BasePoint *from, real transform[6]) {
     BasePoint p;
-    p.x = transform[0]*ap->me.x + transform[2]*ap->me.y + transform[4];
-    p.y = transform[1]*ap->me.x + transform[3]*ap->me.y + transform[5];
-    ap->me.x = rint(1024*p.x)/1024;
-    ap->me.y = rint(1024*p.y)/1024;
+    p.x = transform[0]*from->x + transform[2]*from->y + transform[4];
+    p.y = transform[1]*from->x + transform[3]*from->y + transform[5];
+    to->x = rint(1024*p.x)/1024;
+    to->y = rint(1024*p.y)/1024;
+}
+
+void ApTransform(AnchorPoint *ap, real transform[6]) {
+    BpTransform(&ap->me,&ap->me,transform);
 }
 
 static void TransformPoint(SplinePoint *sp, real transform[6]) {
-    BasePoint p;
-    p.x = transform[0]*sp->me.x + transform[2]*sp->me.y + transform[4];
-    p.y = transform[1]*sp->me.x + transform[3]*sp->me.y + transform[5];
-    p.x = rint(1024*p.x)/1024;
-    p.y = rint(1024*p.y)/1024;
-    sp->me = p;
+
+    BpTransform(&sp->me,&sp->me,transform);
     if ( !sp->nonextcp ) {
-	p.x = transform[0]*sp->nextcp.x + transform[2]*sp->nextcp.y + transform[4];
-	p.y = transform[1]*sp->nextcp.x + transform[3]*sp->nextcp.y + transform[5];
-	p.x = rint(1024*p.x)/1024;
-	p.y = rint(1024*p.y)/1024;
-	sp->nextcp = p;
+	BpTransform(&sp->nextcp,&sp->nextcp,transform);
     } else
 	sp->nextcp = sp->me;
     if ( !sp->noprevcp ) {
-	p.x = transform[0]*sp->prevcp.x + transform[2]*sp->prevcp.y + transform[4];
-	p.y = transform[1]*sp->prevcp.x + transform[3]*sp->prevcp.y + transform[5];
-	p.x = rint(1024*p.x)/1024;
-	p.y = rint(1024*p.y)/1024;
-	sp->prevcp = p;
+	BpTransform(&sp->prevcp,&sp->prevcp,transform);
     } else
 	sp->prevcp = sp->me;
     if ( sp->pointtype == pt_hvcurve ) {
@@ -1798,38 +1790,99 @@ static void TransformSpiro(spiro_cp *cp, real transform[6]) {
     cp->x = x;
 }
 
-SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints ) {
+static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
+	BasePoint *toorig,real transform[6] ) {
+    BasePoint totrans, temp;
+    double fraction;
+
+    /* Normally the "from" point will already have been translated, and the "to" */
+    /*  point will need to be. But if we have a closed contour then on the */
+    /*  last spline both from and to will have been transform. We can detect */
+    /*  this because toorig will be different from &spline->to->me */
+    if ( spline->to->selected && toorig==&spline->to->me )
+	BpTransform(&totrans,&spline->to->me,transform);
+    else
+	totrans = spline->to->me;
+
+    /* None of the control points will have been transformed yet */
+    if ( fromorig->x!=toorig->x ) {
+	fraction = (spline->from->nextcp.x-fromorig->x)/( toorig->x-fromorig->x );
+	spline->from->nextcp.x = spline->from->me.x + fraction*( totrans.x-spline->from->me.x );
+	fraction = (spline->to->prevcp.x-fromorig->x)/( toorig->x-fromorig->x );
+	spline->to->prevcp.x = spline->from->me.x + fraction*( totrans.x-spline->from->me.x );
+    } else {
+	BpTransform(&temp,&spline->from->nextcp,transform);
+	spline->from->nextcp.x = temp.x;
+	BpTransform(&temp,&spline->to->prevcp,transform);
+	spline->to->prevcp.x = temp.x;
+    }
+    if ( fromorig->y!=toorig->y ) {
+	fraction = (spline->from->nextcp.y-fromorig->y)/( toorig->y-fromorig->y );
+	spline->from->nextcp.y = spline->from->me.y + fraction*( totrans.y-spline->from->me.y );
+	fraction = (spline->to->prevcp.y-fromorig->y)/( toorig->y-fromorig->y );
+	spline->to->prevcp.y = spline->from->me.y + fraction*( totrans.y-spline->from->me.y );
+    } else {
+	BpTransform(&temp,&spline->from->nextcp,transform);
+	spline->from->nextcp.y = temp.y;
+	BpTransform(&temp,&spline->to->prevcp,transform);
+	spline->to->prevcp.y = temp.y;
+    }
+
+    if ( spline->to->selected )
+	spline->to->me = totrans;
+}
+
+SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6],
+	enum transformPointType tpt ) {
     Spline *spline, *first;
     SplinePointList *spl;
     SplinePoint *spt, *pfirst;
     int allsel, anysel, alldone=true;
+    BasePoint lastpointorig, firstpointorig, orig;
 
     for ( spl = base; spl!=NULL; spl = spl->next ) {
-	pfirst = NULL;
+	pfirst = NULL; first = NULL;
 	allsel = true; anysel=false;
-	for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
-	    if ( pfirst==NULL ) pfirst = spt;
-	    if ( allpoints || spt->selected ) {
-		TransformPoint(spt,transform);
-		if ( !allpoints ) {
-		    if ( spt->next!=NULL && spt->next->order2 && !spt->next->to->selected && spt->next->to->ttfindex==0xffff ) {
-			SplinePoint *to = spt->next->to;
-			to->prevcp = spt->nextcp;
-			to->me.x = (to->prevcp.x+to->nextcp.x)/2;
-			to->me.y = (to->prevcp.y+to->nextcp.y)/2;
-		    }
-		    if ( spt->prev!=NULL && spt->prev->order2 && !spt->prev->from->selected && spt->prev->from->ttfindex==0xffff ) {
-			SplinePoint *from = spt->prev->from;
-			from->nextcp = spt->prevcp;
-			from->me.x = (from->prevcp.x+from->nextcp.x)/2;
-			from->me.y = (from->prevcp.y+from->nextcp.y)/2;
-		    }
-		}
+	if ( tpt==tpt_OnlySelectedInterpCPs && spl->first->next!=NULL && !spl->first->next->order2 ) {
+	    lastpointorig = firstpointorig = spl->first->me;
+	    if ( spl->first->selected ) {
 		anysel = true;
+		BpTransform(&spl->first->me,&spl->first->me,transform);
 	    } else
-		allsel = alldone = false;
-	    if ( spt->next==NULL )
-	break;
+		allsel = false;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( first==NULL ) first = spline;
+		orig = spline->to->me;
+		if ( spline->from->selected || spline->to->selected )
+		    TransformPTsInterpolateCPs(&lastpointorig,spline,spl->first==spline->to?&firstpointorig:&spline->to->me,transform);
+		lastpointorig = orig;
+		if ( spline->to->selected ) anysel = true; else allsel = false;
+	    }
+	} else {
+	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
+		if ( pfirst==NULL ) pfirst = spt;
+		if ( tpt==tpt_AllPoints || spt->selected ) {
+		    TransformPoint(spt,transform);
+		    if ( tpt!=tpt_AllPoints ) {
+			if ( spt->next!=NULL && spt->next->order2 && !spt->next->to->selected && spt->next->to->ttfindex==0xffff ) {
+			    SplinePoint *to = spt->next->to;
+			    to->prevcp = spt->nextcp;
+			    to->me.x = (to->prevcp.x+to->nextcp.x)/2;
+			    to->me.y = (to->prevcp.y+to->nextcp.y)/2;
+			}
+			if ( spt->prev!=NULL && spt->prev->order2 && !spt->prev->from->selected && spt->prev->from->ttfindex==0xffff ) {
+			    SplinePoint *from = spt->prev->from;
+			    from->nextcp = spt->prevcp;
+			    from->me.x = (from->prevcp.x+from->nextcp.x)/2;
+			    from->me.y = (from->prevcp.y+from->nextcp.y)/2;
+			}
+		    }
+		    anysel = true;
+		} else
+		    allsel = alldone = false;
+		if ( spt->next==NULL )
+	    break;
+	    }
 	}
 	if ( !anysel )		/* This splineset had no selected points it's unchanged */
     continue;
@@ -1848,7 +1901,7 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	/* Figuring out where the edges of the selection are is difficult */
 	/*  so let's just tweak all points, it shouldn't matter */
 	/* It does matter. Let's tweak all default points */
-	if ( !allpoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 ) {
+	if ( tpt!=tpt_AllPoints && !allsel && spl->first->next!=NULL && !spl->first->next->order2 ) {
 	    pfirst = NULL;
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
@@ -1858,11 +1911,11 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 		if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
 			spt->next->to->pointtype == pt_tangent )
 		    SplineCharTangentNextCP(spt->next->to);
-		if ( spt->prev!=NULL && spt->prevcpdef )
+		if ( spt->prev!=NULL && spt->prevcpdef && tpt==tpt_OnlySelected )
 		    SplineCharDefaultPrevCP(spt);
 		if ( spt->next==NULL )
 	    break;
-		if ( spt->nextcpdef )
+		if ( spt->nextcpdef && tpt==tpt_OnlySelected )
 		    SplineCharDefaultNextCP(spt);
 	    }
 	}
@@ -1881,7 +1934,7 @@ SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real trans
     int i;
 
     if ( allpoints )
-return( SplinePointListTransform(base,transform,true));
+return( SplinePointListTransform(base,transform,tpt_AllPoints));
 
     for ( spl = base; spl!=NULL; spl = spl->next ) {
 	allsel = true; anysel=false;
@@ -1897,7 +1950,7 @@ return( SplinePointListTransform(base,transform,true));
 	    /* If we are transforming everything, then we can just transform */
 	    /*  the beziers too */
 	    spl->next = NULL;
-	    SplinePointListTransform(spl,transform,true);
+	    SplinePointListTransform(spl,transform,tpt_AllPoints);
 	    spl->next = next;
     continue;
 	}
@@ -1911,7 +1964,7 @@ return( SplinePointListTransform(base,transform,true));
 return( base );
 }
 
-SplinePointList *SplinePointListShift(SplinePointList *base,real xoff,int allpoints ) {
+SplinePointList *SplinePointListShift(SplinePointList *base,real xoff,enum transformPointType allpoints ) {
     real transform[6];
     if ( xoff==0 )
 return( base );
@@ -2188,7 +2241,7 @@ return;
 	    memset(topref->layers+lbase,0,(rsc->layer_cnt-1)*sizeof(struct reflayer));
 	}
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
-	    topref->layers[i-ly_fore+lbase].splines = SplinePointListTransform(SplinePointListCopy(rsc->layers[i].splines),transform,true);
+	    topref->layers[i-ly_fore+lbase].splines = SplinePointListTransform(SplinePointListCopy(rsc->layers[i].splines),transform,tpt_AllPoints);
 	    BrushCopy(&topref->layers[i-ly_fore+lbase].fill_brush, &rsc->layers[i].fill_brush);
 	    PenCopy(&topref->layers[i-ly_fore+lbase].stroke_pen, &rsc->layers[i].stroke_pen);
 	    topref->layers[i-ly_fore+lbase].dofill = rsc->layers[i].dofill;
@@ -2204,7 +2257,7 @@ return;
 #else
     {
 #endif
-	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[layer].splines),transform,true);
+	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[layer].splines),transform,tpt_AllPoints);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = topref->layers[0].splines;
@@ -2365,7 +2418,7 @@ return;		/* It's just the expected matrix */
     trans[5] = rint(fontmatrix[5]*em);
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
+	SplinePointListTransform(sc->layers[ly_fore].splines,trans,tpt_AllPoints);
 	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
 	    /* Just scale the offsets. we'll do all the base characters */
 	    real temp = refs->transform[4]*trans[0] +
@@ -2988,7 +3041,7 @@ return;
 	    if ( rsc->layers[i].splines!=NULL || rsc->layers[i].images!=NULL ) {
 		rf->layers[cnt].splines =
 			SplinePointListTransform(
-			 SplinePointListCopy(rsc->layers[i].splines),rf->transform,true);
+			 SplinePointListCopy(rsc->layers[i].splines),rf->transform,tpt_AllPoints);
 		rf->layers[cnt].images =
 			ImageListTransform(
 			 ImageListCopy(rsc->layers[i].images),rf->transform);
@@ -3000,7 +3053,7 @@ return;
 		    rf->layers[cnt] = subref->layers[j];
 		    rf->layers[cnt].splines =
 			    SplinePointListTransform(
-			     SplinePointListCopy(subref->layers[j].splines),rf->transform,true);
+			     SplinePointListCopy(subref->layers[j].splines),rf->transform,tpt_AllPoints);
 		    rf->layers[cnt].images =
 			    ImageListTransform(
 			     ImageListCopy(subref->layers[j].images),rf->transform);
@@ -3038,13 +3091,13 @@ return;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	rf->layers[0].dofill = true;
 #endif
-	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,true);
+	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,tpt_AllPoints);
 	rf->layers[0].splines = new;
 	last = NULL;
 	if ( new!=NULL )
 	    for ( last = new; last->next!=NULL; last = last->next );
 	for ( refs = rf->sc->layers[layer].refs; refs!=NULL; refs = refs->next ) {
-	    new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
+	    new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,tpt_AllPoints);
 	    if ( last!=NULL )
 		last->next = new;
 	    else
