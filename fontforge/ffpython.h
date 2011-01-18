@@ -43,7 +43,7 @@
 
 #define STRING_CHECK   PyBytes_Check
 #define STRING_TO_PY   PyBytes_FromString
-#define DECODE_UTF8(s, size, errors) PyBytes_Decode(s, size, "UTF-8", errors)
+#define DECODE_UTF8(s, size, errors) PyString_Decode(s, size, "UTF-8", errors)
 #define PYBYTES_UTF8(str)            PyString_AsEncodedObject(str, "UTF-8", NULL)
 #define STRING_FROM_FORMAT           PyBytes_FromFormat
 
