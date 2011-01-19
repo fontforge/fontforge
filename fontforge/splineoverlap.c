@@ -382,7 +382,7 @@ return;
 		    m->s->splines[0].c)*m->tstart+m->s->splines[0].d;
 	    pt.y = ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+
 		    m->s->splines[1].c)*m->tstart+m->s->splines[1].d;
-#if 0	/* t may not be perfectly correct (because of rounding errors) */
+#if 0	/* t may not be perfectly correct (because the correct value isn't expressable) */
 	/* so evalutating the spline at t may produce a slight variation */
 	/* now if t is a double and inter.x/y are floats that doesn't matter */
 	/* but if both are doubles then it does */
@@ -1081,6 +1081,13 @@ static Intersection *SplitMonotonicsAt(Monotonic *m1,Monotonic *m2,
 	int which,double coord,Intersection *ilist) {
     struct inter_data id1, id2;
     Intersection *check;
+
+    /* Intersections (even pseudo intersections) too close together are nasty things! */
+    if ( Within64RoundingErrors(coord,((m1->s->splines[which].a*m1->tstart+m1->s->splines[which].b)*m1->tstart+m1->s->splines[which].c)*m1->tstart+m1->s->splines[which].d) ||
+	 Within64RoundingErrors(coord,((m1->s->splines[which].a*m1->tend+m1->s->splines[which].b)*m1->tend+m1->s->splines[which].c)*m1->tend+m1->s->splines[which].d ) ||
+	 Within64RoundingErrors(coord,((m2->s->splines[which].a*m2->tstart+m2->s->splines[which].b)*m2->tstart+m2->s->splines[which].c)*m2->tstart+m2->s->splines[which].d) ||
+	 Within64RoundingErrors(coord,((m2->s->splines[which].a*m2->tend+m2->s->splines[which].b)*m2->tend+m2->s->splines[which].c)*m2->tend+m2->s->splines[which].d ) )
+return( ilist );
 
     SplitMonotonicAt(m1,which,coord,&id1);
     SplitMonotonicAt(m2,which,coord,&id2);
@@ -2315,7 +2322,8 @@ return(ilist);
 		gap_len = top-last;
 		test = last + gap_len/2;
 	    }
-	    FigureNeeds(ms,which,test,space,ot,closeness_level[l]);
+	    /* if ( test!=last && test!=top ) */
+		FigureNeeds(ms,which,test,space,ot,closeness_level[l]);
 	}
     }
     for ( m=ms; m!=NULL; m=m->linked ) if ( !m->isneeded && !m->isunneeded ) {
