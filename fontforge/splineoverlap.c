@@ -382,10 +382,17 @@ return;
 		    m->s->splines[0].c)*m->tstart+m->s->splines[0].d;
 	    pt.y = ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+
 		    m->s->splines[1].c)*m->tstart+m->s->splines[1].d;
+#if 0	/* t may not be perfectly correct (because of rounding errors) */
+	/* so evalutating the spline at t may produce a slight variation */
+	/* now if t is a double and inter.x/y are floats that doesn't matter */
+	/* but if both are doubles then it does */
 	    inter.x = ((m->s->splines[0].a*t+m->s->splines[0].b)*t+
 		    m->s->splines[0].c)*t+m->s->splines[0].d;
 	    inter.y = ((m->s->splines[1].a*t+m->s->splines[1].b)*t+
 		    m->s->splines[1].c)*t+m->s->splines[1].d;
+#else
+	    inter = il->inter;
+#endif
 	    if ( pt.x>inter.x ) {
 		m->b.minx = inter.x;
 		m->b.maxx = pt.x;
@@ -748,7 +755,7 @@ return( false );
 return( true );
     for ( clamp = 1; clamp>=0; --clamp ) {
 	factor = sqrt(error); /* 32*1024.0*1024.0*1024.0/D_RE_Factor;*/
-	for ( cnt=0; cnt<36; ++cnt ) {
+	for ( cnt=0; cnt<51; ++cnt ) {
 	    extended off1 = factor*t1;
 	    extended off2 = factor*t2;
 	    if ( off1==0 ) off1 = factor;
