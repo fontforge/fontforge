@@ -143,6 +143,12 @@ int main( int argc, char **argv ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
 #endif
+#ifdef FREETYPE_HAS_DEBUGGER
+	    "-TtfDb"
+#endif
+#ifdef _NO_PYTHON
+	    "-NoPython"
+#endif
 #ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
 	    "-LD"
 #elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
