@@ -470,7 +470,7 @@ static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic;
 static int as,fh, linecnt;
-static unichar_t msg[450];
+static unichar_t msg[470];
 static unichar_t *lines[20], *is, *ie;
 
 void ShowAboutScreen(void) {
@@ -522,6 +522,14 @@ static void SplashLayout() {
     uc_strcat(pt,source_version_str);
 #ifdef FONTFORGE_CONFIG_TYPE3
     uc_strcat(pt,"-ML");
+#endif
+#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
+    uc_strcat(pt,"-LD");
+#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+    uc_strcat(pt,"-D");
+#endif
+#ifndef FONTFORGE_CONFIG_DEVICETABLES
+    uc_strcat(pt,"-NoDevTab");
 #endif
     uc_strcat(pt,")");
     pt += u_strlen(pt);
@@ -1055,13 +1063,20 @@ int main( int argc, char **argv ) {
     int local_x;
 #endif
 
+    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s"
 #ifdef FONTFORGE_CONFIG_TYPE3
-    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s-ML.\n",
-	    source_modtime_str );
-#else
-    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s.\n",
-	    source_modtime_str );
+	    "-ML"
 #endif
+#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
+	    "-LD"
+#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+	    "-D"
+#endif
+#ifndef FONTFORGE_CONFIG_DEVICETABLES
+	    "-NoDevTab"
+#endif
+	    ".\n",
+	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
     /* Must be done before we cache the current directory */
