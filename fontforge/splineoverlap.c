@@ -773,7 +773,7 @@ return( true );
 		if (( t1p = t1+off1 )>m1->tend ) t1p = m1->tend;
 		if (( t1m = t1-off1 )<m1->tstart ) t1m = m1->tstart;
 		if (( t2p = t2+off2 )>m2->tend ) t2p = m2->tend;
-		if (( t2m = t2-off2 )<m2->tstart ) t2p = m2->tstart;
+		if (( t2m = t2-off2 )<m2->tstart ) t2m = m2->tstart;
 	    } else {
 		t1p = t1+off1;
 		t1m = t1-off1;
@@ -1149,6 +1149,13 @@ return( ilist );
 static void AddPreIntersection(Monotonic *m1, Monotonic *m2,
 	extended t1,extended t2,BasePoint *inter, int isclose) {
     PreIntersection *p;
+
+    /* This is just a join between two adjacent monotonics. There might already*/
+    /*  be an intersection there, but if there be, we've already found it */
+    /* Do this now, because no point wasting the time it takes to ImproveInter*/
+    if (( m1->next==m2 && (t1==t2 || (t1==1.0 && t2==0.0))) ||
+	( m2->next==m1 && (t2==t1 || (t2==1.0 && t1==0.0))) )
+return;
 
     p = chunkalloc(sizeof(PreIntersection));
     p->next = m1->pending;
