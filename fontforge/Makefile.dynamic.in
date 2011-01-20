@@ -181,8 +181,8 @@ FontForge-old.pot: *.c utf8.pot
 	-patch < pottitle.patch
 
 # Apply these before doing a release
-stamp.c: stamper $(fontforge_UIOBJECTS1) $(fontforge_LIBOBJECTS)
+#stamp.c: stamper $(fontforge_UIOBJECTS1) $(fontforge_LIBOBJECTS)
+#libffstamp.h: stamper $(fontforge_LIBOBJECTS)
+stamps: stamper
 	./stamper > stamp.c
-
-libffstamp.h: stamper $(fontforge_LIBOBJECTS)
 	./stamper -l >libffstamp.h
