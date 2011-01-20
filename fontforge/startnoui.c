@@ -139,13 +139,20 @@ int main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 
+    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s"
 #ifdef FONTFORGE_CONFIG_TYPE3
-    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s-ML.\n",
-	    source_modtime_str );
-#else
-    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s.\n",
-	    source_modtime_str );
+	    "-ML"
 #endif
+#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
+	    "-LD"
+#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+	    "-D"
+#endif
+#ifndef FONTFORGE_CONFIG_DEVICETABLES
+	    "-NoDevTab"
+#endif
+	    ".\n",
+	    source_modtime_str );
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
     /* I don't bother to check that the exe's exectations of the library are */
