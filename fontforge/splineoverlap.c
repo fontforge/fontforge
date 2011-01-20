@@ -378,14 +378,19 @@ return;
 	    m->end = il;
 	    m2->start = il;
 	    m2->tstart = t;
-	    pt.x = ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+
-		    m->s->splines[0].c)*m->tstart+m->s->splines[0].d;
-	    pt.y = ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+
-		    m->s->splines[1].c)*m->tstart+m->s->splines[1].d;
+	    if ( m->start!=NULL )
+		pt = m->start->inter;
+	    else {
+		pt.x = ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+
+			m->s->splines[0].c)*m->tstart+m->s->splines[0].d;
+		pt.y = ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+
+			m->s->splines[1].c)*m->tstart+m->s->splines[1].d;
+	    }
 #if 0	/* t may not be perfectly correct (because the correct value isn't expressable) */
 	/* so evalutating the spline at t may produce a slight variation */
 	/* now if t is a double and inter.x/y are floats that doesn't matter */
 	/* but if both are doubles then it does */
+	/*  Similar behavior seems needed above and below where we test against m->start/m->end */
 	    inter.x = ((m->s->splines[0].a*t+m->s->splines[0].b)*t+
 		    m->s->splines[0].c)*t+m->s->splines[0].d;
 	    inter.y = ((m->s->splines[1].a*t+m->s->splines[1].b)*t+
@@ -407,10 +412,14 @@ return;
 		m->b.miny = pt.y;
 		m->b.maxy = inter.y;
 	    }
-	    pt.x = ((m2->s->splines[0].a*m2->tend+m2->s->splines[0].b)*m2->tend+
-		    m2->s->splines[0].c)*m2->tend+m2->s->splines[0].d;
-	    pt.y = ((m2->s->splines[1].a*m2->tend+m2->s->splines[1].b)*m2->tend+
-		    m2->s->splines[1].c)*m2->tend+m2->s->splines[1].d;
+	    if ( m2->end!=NULL )
+		pt = m2->end->inter;
+	    else {
+		pt.x = ((m2->s->splines[0].a*m2->tend+m2->s->splines[0].b)*m2->tend+
+			m2->s->splines[0].c)*m2->tend+m2->s->splines[0].d;
+		pt.y = ((m2->s->splines[1].a*m2->tend+m2->s->splines[1].b)*m2->tend+
+			m2->s->splines[1].c)*m2->tend+m2->s->splines[1].d;
+	    }
 	    if ( pt.x>inter.x ) {
 		m2->b.minx = inter.x;
 		m2->b.maxx = pt.x;
@@ -2322,7 +2331,7 @@ return(ilist);
 		gap_len = top-last;
 		test = last + gap_len/2;
 	    }
-	    /* if ( test!=last && test!=top ) */
+	    if ( test!=last && test!=top )
 		FigureNeeds(ms,which,test,space,ot,closeness_level[l]);
 	}
     }
