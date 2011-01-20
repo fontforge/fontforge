@@ -1,7 +1,7 @@
 SplineFontDB: 3.0
-FontName: Untitled1
-FullName: Untitled1
-FamilyName: Untitled1
+FontName: OverlapBugs
+FullName: Overlap Bugs
+FamilyName: OverlapBugs
 Weight: Medium
 Copyright: Created by PfaEdit 1.0
 Version: 001.000
@@ -18,7 +18,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 0
 CreationTime: 1134356799
-ModificationTime: 1295412308
+ModificationTime: 1295536030
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
@@ -33,6 +33,7 @@ HheadAOffset: 1
 HheadDescent: 0
 HheadDOffset: 1
 OS2Vendor: 'PfEd'
+MarkAttachClasses: 1
 DEI: 91125
 Encoding: ISO8859-1
 UnicodeInterp: none
@@ -41,7 +42,7 @@ DisplaySize: -36
 AntiAlias: 1
 FitToEm: 0
 WinInfo: 160 16 4
-BeginChars: 272 122
+BeginChars: 272 125
 
 StartChar: A
 Encoding: 65 65 0
@@ -6123,6 +6124,125 @@ SplineSet
  322 334 306 314 263 264 c 1
  294 215 394 81 435 35 c 1
  481 -19 506 -41 527 -55 c 1
+EndSplineSet
+EndChar
+
+StartChar: Icircumflex
+Encoding: 206 206 122
+Width: 547
+Flags: HW
+LayerCount: 2
+Fore
+SplineSet
+178 364 m 1
+ 211 516 l 1
+ 249 516 l 1
+ 216 364 l 1
+ 178 364 l 1
+390 657 m 1
+ 267 485 l 1xe440
+ 241 498 l 1
+ 260 540 301 638 308 655 c 1
+ 390 657 l 1
+EndSplineSet
+EndChar
+
+StartChar: Idieresis
+Encoding: 207 207 123
+Width: 400
+Flags: HW
+HStem: 0 50<80 420 80 500> 650 50<80 420 80 80>
+VStem: 0 50<95 605 95 700> 450 50<95 605 605 605>
+LayerCount: 2
+Fore
+SplineSet
+0 0 m 1
+ 0 700 l 1
+ 500 700 l 1
+ 500 0 l 1
+ 0 0 l 1
+250 395 m 1
+ 420 650 l 1
+ 80 650 l 1
+ 250 395 l 1
+280 350 m 1
+ 450 95 l 1
+ 450 605 l 1
+ 280 350 l 1
+80 50 m 1
+ 420 50 l 1
+ 250 305 l 1
+ 80 50 l 1
+50 605 m 1
+ 50 95 l 1
+ 220 350 l 1
+ 50 605 l 1
+200 650 m 2x60
+ 201 650 l 2x60
+ 229 650 251 627 251 598 c 0
+ 251 571 229 547 200 547 c 0xa0
+ 174 547 150 571 150 598 c 0
+ 150 627 174 650 200 650 c 2x60
+EndSplineSet
+EndChar
+
+StartChar: Eth
+Encoding: 208 208 124
+Width: 496
+Flags: HWO
+HStem: -32 43<123 677 123 694 81 677> 579 69<123 750 133 677>
+VStem: 81 42<11 579 11 599 11 599> 677 73<21 579 579 579>
+LayerCount: 2
+Fore
+SplineSet
+133 648 m 1
+ 750 648 l 1
+ 750 21 l 1
+ 694 -32 l 1
+ 81 -32 l 1
+ 81 599 l 1
+ 133 648 l 1
+123 579 m 1
+ 123 11 l 1
+ 677 11 l 1
+ 677 579 l 1
+ 123 579 l 1
+510 0 m 1xba
+ 378 -1 l 1
+ 331 49 268 129 212 196 c 0
+ 198 212 190 218 181 217 c 1
+ 177 218 171 217 165 215 c 1
+ 165 104 l 2
+ 165 38 173 32 237 26 c 1
+ 237 0 l 1
+ 14 0 l 1
+ 14 26 l 1
+ 81 32 87 40 87 104 c 2
+ 87 576 l 2
+ 87 642 82 648 21 653 c 1
+ 21 677 l 1
+ 69 682 126 699 165 712 c 1
+ 165 241 l 1
+ 195 247 213 259 228 275 c 0
+ 250 297 280 336 299 363 c 0
+ 320 394 317 402 269 407 c 1xda
+ 269 433 l 1
+ 473 442 l 1
+ 473 417 l 1
+ 404 406 383 396 344 359 c 1
+ 319 333 302 314 258 264 c 1
+ 283 229 381 114 414 81 c 0
+ 451 44 472 28 510 26 c 1
+ 510 0 l 1xba
+264 -32 m 2xbc
+ 265 -32 l 2
+ 302 -32 338 -64 338 -111 c 0
+ 338 -171 289 -203 232 -217 c 1
+ 223 -189 l 1
+ 260 -174 283 -157 283 -133 c 0
+ 283 -112 263 -99 238 -93 c 1
+ 230 -90 223 -83 223 -69 c 0
+ 223 -45 244 -32 264 -32 c 2xbc
 EndSplineSet
 EndChar
 EndChars
