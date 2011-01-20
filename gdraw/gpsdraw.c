@@ -97,7 +97,7 @@ static void PSSetWindowBorder(GWindow w,int width, Color col ) {
     fprintf( stderr, "SetWindowBorder not implemented for postscript\n" );
 }
 
-static void PSSetWindowBackground(GWindow w,int width, Color col ) {
+static void PSSetWindowBackground(GWindow w, Color col ) {
     fprintf( stderr, "SetWindowBackground not implemented for postscript\n" );
 }
 
