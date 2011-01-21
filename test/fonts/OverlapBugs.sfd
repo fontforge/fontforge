@@ -18,7 +18,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 0
 CreationTime: 1134356799
-ModificationTime: 1295536030
+ModificationTime: 1295621991
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
@@ -42,7 +42,7 @@ DisplaySize: -36
 AntiAlias: 1
 FitToEm: 0
 WinInfo: 160 16 4
-BeginChars: 272 125
+BeginChars: 272 127
 
 StartChar: A
 Encoding: 65 65 0
@@ -6189,7 +6189,7 @@ EndChar
 StartChar: Eth
 Encoding: 208 208 124
 Width: 496
-Flags: HWO
+Flags: HW
 HStem: -32 43<123 677 123 694 81 677> 579 69<123 750 133 677>
 VStem: 81 42<11 579 11 599 11 599> 677 73<21 579 579 579>
 LayerCount: 2
@@ -6243,6 +6243,68 @@ SplineSet
  283 -112 263 -99 238 -93 c 1
  230 -90 223 -83 223 -69 c 0
  223 -45 244 -32 264 -32 c 2xbc
+EndSplineSet
+EndChar
+
+StartChar: Ntilde
+Encoding: 209 209 125
+Width: 400
+Flags: W
+HStem: 0 34<311 359.5 311 489> 622 28<40 301 40 301>
+VStem: 128 85<126 131 131 526>
+LayerCount: 2
+Fore
+SplineSet
+495 163 m 1
+ 525 157 l 1
+ 519 126 498 31 489 0 c 1
+ 36 0 l 1
+ 36 28 l 1
+ 120 34 128 41 128 126 c 2
+ 128 526 l 2
+ 128 611 122 616 40 622 c 1
+ 40 650 l 1
+ 301 650 l 1
+ 301 622 l 1
+ 222 616 213 611 213 526 c 2
+ 213 131 l 2
+ 213 77 218 57 236 47 c 0
+ 256 36 290 34 332 34 c 0
+ 387 34 421 39 444 65 c 0
+ 462 85 480 117 495 163 c 1
+246 0 m 1xc0
+ 224 -28 l 2xc0
+ 211 -45 214 -53 229 -69 c 1
+ 257 -96 268 -115 268 -138 c 0
+ 268 -183 224 -217 154 -239 c 1
+ 142 -212 l 1
+ 183 -194 201 -173 201 -152 c 0xa0
+ 201 -136 190 -125 179 -114 c 0
+ 155 -90 149 -76 169 -50 c 1
+ 205 0 l 1
+ 246 0 l 1xc0
+EndSplineSet
+EndChar
+
+StartChar: Ograve
+Encoding: 210 210 126
+Width: 418
+Flags: W
+HStem: 1 140<284 332 284 332> 176 180<309 310 310 334> 242 49<44 184 44 184 435 575> 392 140<284 332 284 332> 416 20G<104 104> 417 20G<514 514> 451 20G<139 139 480 480>
+VStem: 44 140<242 291 242 291> 221 177<241 291> 284 48<1 141 1 141 392 532> 435 140<242 291 242 291>
+LayerCount: 2
+Fore
+SplineSet
+44 291 m 1
+ 184 291 l 1
+ 184 242 l 1
+ 44 242 l 1
+ 44 291 l 1
+374 291 m 1
+ 45 291 l 1
+ 45 345 l 1
+ 374 345 l 1
+ 374 291 l 1
 EndSplineSet
 EndChar
 EndChars
