@@ -1012,13 +1012,15 @@ return( true );
 return( true );
 }
 
-static int AskNewKernClassEntry(SplineChar *fsc,SplineChar *lsc) {
+static int AskNewKernClassEntry(SplineChar *fsc,SplineChar *lsc,int first_is_0,int second_is_0) {
     char *yesno[3];
     yesno[0] = _("_Alter Class");
     yesno[1] = _("_Create Pair");
     yesno[2] = NULL;
-return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,_("This kerning pair (%.20s and %.20s) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?"),
-	fsc->name,lsc->name)==0 );
+return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,
+	_("This kerning pair (%.20s and %.20s) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?"),
+	first_is_0  ? _("{Everything Else}") : fsc->name,
+	second_is_0 ? _("{Everything Else}") : lsc->name)==0 );
 }
 
 static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff) {
@@ -1039,7 +1041,7 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
 	else if ( (!is_diff && offset==kc->offsets[index]) ||
 		  ( is_diff && offset==0))
 return( true );		/* No change, don't bother user */
-	else if ( kc->offsets[index]==0 && !AskNewKernClassEntry(psc,sc))
+	else if ( kc->offsets[index]==0 && !AskNewKernClassEntry(psc,sc,mv->glyphs[which-1].prev_kc0,mv->glyphs[which-1].next_kc0))
 	    kc=NULL;
 	else
 	    offset = kc->offsets[index] = is_diff ? kc->offsets[index]+offset : offset;
@@ -1870,6 +1872,7 @@ return( true );
 #define MID_Paste	2103
 #define MID_Clear	2104
 #define MID_SelAll	2106
+#define MID_ClearSel	2105
 #define MID_UnlinkRef	2108
 #define MID_Undo	2109
 #define MID_Redo	2110
@@ -2154,6 +2157,16 @@ return;
 static void MVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     GGadgetActiveGadgetEditCmd(mv->gw,ec_selectall);
+}
+
+static void MVClearSelection(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+
+    GWindowClearFocusGadgetOfWindow(mv->gw);
+    for ( i=0; i<mv->glyphcnt; ++i )
+	if ( mv->perchar[i].selected )
+	    MVDeselectChar(mv,i);
 }
 
 static void MVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3065,6 +3078,7 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("_Join"), (GImage *) "editjoin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|Ctl+Shft+J"), NULL, NULL, MVMenuJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Select _All"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Select All|Ctl+A"), NULL, NULL, MVSelectAll, MID_SelAll },
+    { { (unichar_t *) N_("_Deselect All"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Clear Selection|Escape"), NULL, NULL, MVClearSelection, MID_ClearSel },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("U_nlink Reference"), (GImage *) "editunlink.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|Ctl+U"), NULL, NULL, MVUnlinkRef, MID_UnlinkRef },
     { NULL }
