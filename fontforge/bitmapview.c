@@ -1027,8 +1027,8 @@ static void BVSetWidth(BitmapView *bv, int x) {
     BDFFont *bdf;
     BDFChar *bc = bv->bc;
 
+    bc->width = x;
     if ( bv->bdf->sf->onlybitmaps ) {
-	bc->width = x;
 	tot=0; cnt=0;
 	for ( bdf = bv->bdf->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->glyphs[bc->orig_pos]) {
@@ -1048,15 +1048,17 @@ static void BVSetVWidth(BitmapView *bv, int y) {
     BDFFont *bdf;
     BDFChar *bc = bv->bc;
 
-    if ( bv->bdf->sf->onlybitmaps && bv->bdf->sf->hasvmetrics ) {
-	bc->vwidth = bv->bdf->ascent-y;
+    if ( !bv->bdf->sf->hasvmetrics )
+return;
+    bc->vwidth = bv->bdf->ascent-y;
+    if ( bv->bdf->sf->onlybitmaps ) {
 	tot=0; cnt=0;
 	for ( bdf = bv->bdf->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    if ( bdf->glyphs[bc->orig_pos]) {
 		tot += bdf->glyphs[bc->orig_pos]->vwidth*1000/(bdf->ascent+bdf->descent);
 		++cnt;
 	    }
-	if ( cnt!=0 ) {
+	if ( cnt!=0 && bv->bdf->sf->onlybitmaps ) {
 	    bc->sc->vwidth = tot/cnt;
 	    bc->sc->widthset = true;
 	}
@@ -1176,12 +1178,12 @@ return;
 		GDrawSetCursor(bv->v,ct_shift);
 		/* otherwise we'll move the selection */
 	    }
-	} else if ( bc->sc->parent->onlybitmaps &&
+	} else if ( /*bc->sc->parent->onlybitmaps &&*/
 		event->u.mouse.x-bv->xoff > bc->width*bv->scale-3 &&
 		event->u.mouse.x-bv->xoff < bc->width*bv->scale+3 ) {
 	    bv->active_tool = bvt_setwidth;
 	    BVToolsSetCursor(bv,event->u.mouse.state|(1<<(7+event->u.mouse.button)), event->u.mouse.device );
-	} else if ( bc->sc->parent->onlybitmaps && bc->sc->parent->hasvmetrics &&
+	} else if ( /*bc->sc->parent->onlybitmaps &&*/ bc->sc->parent->hasvmetrics &&
 		bv->height-event->u.mouse.y-bv->yoff > (bv->bdf->ascent-bc->vwidth)*bv->scale-3 &&
 		bv->height-event->u.mouse.y-bv->yoff < (bv->bdf->ascent-bc->vwidth)*bv->scale+3 ) {
 	    bv->active_tool = bvt_setvwidth;
