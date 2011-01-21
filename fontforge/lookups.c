@@ -3354,20 +3354,24 @@ return( 0 );
 return( pos+1 );
 }
 
-static int ApplyPairPosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+static int ApplyPairPosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos,int allow_class0) {
     PST *pst;
-    int npos, isv, within;
+    int npos, isv, within, f, l, kcspecd;
     KernPair *kp;
 
     npos = skipglyphs(sub->lookup->lookup_flags,data,pos+1);
     if ( npos>=data->cnt )
 return( 0 );
     if ( sub->kc!=NULL ) {
-	within = KCFindIndex(sub->kc,data->str[pos].sc->name,data->str[npos].sc->name);
-	if ( within==-1 )
+	kcspecd = sub->kc->firsts[0] != NULL;
+	f = KCFindName(data->str[pos].sc->name ,sub->kc->firsts ,sub->kc->first_cnt ,allow_class0);
+	l = KCFindName(data->str[npos].sc->name,sub->kc->seconds,sub->kc->second_cnt,allow_class0);
+	if ( f==-1 || l==-1 || ( !kcspecd && f==0 && l==0 ) )
 return( 0 );
-	data->str[pos].kc_index = within;
+	data->str[pos].kc_index = within = f*sub->kc->second_cnt+l;
 	data->str[pos].kc = sub->kc;
+	data->str[pos].prev_kc0 = ( !kcspecd && f==0 );
+	data->str[pos].next_kc0 = ( l==0 );
 	if ( sub->vertical_kerning ) {
 	    data->str[pos].vr.v_adv_off += rint( sub->kc->offsets[within] * data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -3384,6 +3388,8 @@ return( 0 );
 	    data->str[pos].vr.h_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
 #endif
 	}
+	/* Return 1 if the result we have got comes from a combination with an {Everything Else} class */
+	/* This is acceptable, but we should continue looking for a better match */
 return( pos+1 );
     } else {
 	for ( pst=data->str[pos].sc->possub; pst!=NULL; pst=pst->next ) {
@@ -3546,67 +3552,72 @@ return( true );
 static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos) {
     struct lookup_subtable *sub;
     int newpos;
+    /* Need two passes for pair kerning lookups. At the second pass we accept */
+    /* also combinations with the {Everything Else} class */
+    int i, pcnt = otl->lookup_type==gpos_pair ? 2 : 1;
 
     /* Some tags imply a conditional check. Do that now */
     if ( !ConditionalTagOk(tag,otl,data,pos))
 return( 0 );
 
-    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-	switch ( otl->lookup_type ) {
-	  case gsub_single:
-	    newpos = ApplySingleSubsAtPos(sub,data,pos);
-	  break;
-	  case gsub_multiple:
-	    newpos = ApplyMultSubsAtPos(sub,data,pos);
-	  break;
-	  case gsub_alternate:
-	    newpos = ApplyAltSubsAtPos(sub,data,pos);
-	  break;
-	  case gsub_ligature:
-	    newpos = ApplyLigatureSubsAtPos(sub,data,pos);
-	  break;
-	  case gsub_context:
-	    newpos = ApplyContextual(sub,data,pos);
-	  break;
-	  case gsub_contextchain:
-	    newpos = ApplyContextual(sub,data,pos);
-	  break;
-	  case gsub_reversecchain:
-	    newpos = ApplySingleSubsAtPos(sub,data,pos);
-	  break;
+    for ( i=0; i<pcnt; i++ ) {
+	for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	    switch ( otl->lookup_type ) {
+	      case gsub_single:
+		newpos = ApplySingleSubsAtPos(sub,data,pos);
+	      break;
+	      case gsub_multiple:
+		newpos = ApplyMultSubsAtPos(sub,data,pos);
+	      break;
+	      case gsub_alternate:
+		newpos = ApplyAltSubsAtPos(sub,data,pos);
+	      break;
+	      case gsub_ligature:
+		newpos = ApplyLigatureSubsAtPos(sub,data,pos);
+	      break;
+	      case gsub_context:
+		newpos = ApplyContextual(sub,data,pos);
+	      break;
+	      case gsub_contextchain:
+		newpos = ApplyContextual(sub,data,pos);
+	      break;
+	      case gsub_reversecchain:
+		newpos = ApplySingleSubsAtPos(sub,data,pos);
+	      break;
 
-	  case gpos_single:
-	    newpos = ApplySinglePosAtPos(sub,data,pos);
-	  break;
-	  case gpos_pair:
-	    newpos = ApplyPairPosAtPos(sub,data,pos);
-	  break;
-	  case gpos_cursive:
-	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
-	  break;
-	  case gpos_mark2base:
-	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
-	  break;
-	  case gpos_mark2ligature:
-	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
-	  break;
-	  case gpos_mark2mark:
-	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
-	  break;
-	  case gpos_context:
-	    newpos = ApplyContextual(sub,data,pos);
-	  break;
-	  case gpos_contextchain:
-	    newpos = ApplyContextual(sub,data,pos);
-	  break;
-	  default:
-	    /* apple state machines */
-	    newpos = 0;
-	  break;
+	      case gpos_single:
+		newpos = ApplySinglePosAtPos(sub,data,pos);
+	      break;
+	      case gpos_pair:
+		newpos = ApplyPairPosAtPos(sub,data,pos,i>0);
+	      break;
+	      case gpos_cursive:
+		newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	      break;
+	      case gpos_mark2base:
+		newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	      break;
+	      case gpos_mark2ligature:
+		newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	      break;
+	      case gpos_mark2mark:
+		newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	      break;
+	      case gpos_context:
+		newpos = ApplyContextual(sub,data,pos);
+	      break;
+	      case gpos_contextchain:
+		newpos = ApplyContextual(sub,data,pos);
+	      break;
+	      default:
+		/* apple state machines */
+		newpos = 0;
+	      break;
+	    }
+	    /* if a subtable worked, we don't try to apply the next one */
+	    if ( newpos!=0 )
+    return( newpos );
 	}
-	/* if a subtable worked, we don't try to apply the next one */
-	if ( newpos!=0 )
-return( newpos );
     }
 return( 0 );
 }
@@ -4453,7 +4464,7 @@ return( kc->offsets[kwpos1*kc->second_cnt+scpos2] );
 return( 0 );
 }
 
-int KCFindName(char *name, char **classnames, int cnt, int class0meansAll ) {
+int KCFindName(char *name, char **classnames, int cnt, int allow_class0 ) {
     int i;
     char *pt, *end, ch;
 
@@ -4476,20 +4487,8 @@ return( i );
     }
     /* If class 0 is specified, then we didn't find anything. If class 0 is */
     /*  unspecified then it means "anything" so we found something */
-return( classnames[0]!=NULL || !class0meansAll ? -1 : 0 );
+return( classnames[0]!=NULL || !allow_class0 ? -1 : 0 );
 }
-
-int KCFindIndex(KernClass *kc,char *name1, char *name2) {
-    int f,l;
-
-    f = KCFindName(name1,kc->firsts,kc->first_cnt,false);
-    l = KCFindName(name2,kc->seconds,kc->second_cnt,true);
-    if ( f!=-1 && l!=-1 )
-return( f*kc->second_cnt+l );
-
-return( -1 );
-}
-
 
 static void NOFI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 }
