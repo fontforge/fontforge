@@ -91,8 +91,8 @@ typedef struct intersection {
  
 typedef struct preintersection {
     BasePoint inter;
-    Monotonic *m1; double t1;
-    Monotonic *m2; double t2;
+    Monotonic *m1; bigreal t1;
+    Monotonic *m2; bigreal t2;
     unsigned int is_close: 1;
     struct preintersection *next;
 } PreIntersection;    
@@ -314,12 +314,12 @@ return;
     if ( isend ) {
 	if ( m->end!=NULL && m->end!=il )
 	    SOError("Resetting _end. was: (%g,%g) now: (%g,%g)\n",
-		    m->end->inter.x, m->end->inter.y, il->inter.x, il->inter.y);
+		    (double) m->end->inter.x, (double) m->end->inter.y, (double) il->inter.x, (double) il->inter.y);
 	m->end = il;
     } else {
 	if ( m->start!=NULL && m->start!=il )
 	    SOError("Resetting _start. was: (%g,%g) now: (%g,%g)\n",
-		    m->start->inter.x, m->start->inter.y, il->inter.x, il->inter.y);
+		    (double) m->start->inter.x, (double) m->start->inter.y, (double) il->inter.x, (double) il->inter.y);
 	m->start = il;
     }
 return;
@@ -346,7 +346,7 @@ return;
     if ( t-m->tstart < m->tend-t && Within4RoundingErrors(m->tstart,t) ) {
 	if ( m->start!=NULL && m->start!=il )
 	    SOError("Resetting start. was: (%g,%g) now: (%g,%g)\n",
-		    m->start->inter.x, m->start->inter.y, il->inter.x, il->inter.y);
+		    (double) m->start->inter.x, (double) m->start->inter.y, (double) il->inter.x, (double) il->inter.y);
 	m->start = il;
 	ml->t = m->tstart;
 	ml->isend = false;
@@ -354,7 +354,7 @@ return;
     } else if ( Within4RoundingErrors(m->tend,t)) {
 	if ( m->end!=NULL && m->end!=il )
 	    SOError("Resetting end. was: (%g,%g) now: (%g,%g)\n",
-		    m->end->inter.x, m->end->inter.y, il->inter.x, il->inter.y);
+		    (double) m->end->inter.x, (double) m->end->inter.y, (double) il->inter.x, (double) il->inter.y);
 	m->end = il;
 	ml->t = m->tend;
 	_AddSpline(il,m->next,m->next->tstart,false);
@@ -363,7 +363,7 @@ return;
 	/*  the monotonic into two bits which end and start at this inter */
 	if ( t<m->tstart || t>m->tend )
 	    SOError( "Attempt to subset monotonic rejoin inappropriately: %g should be [%g,%g]\n",
-		    t, m->tstart, m->tend );
+		    (double) t, (double) m->tstart, (double) m->tend );
 	else {
 	    /* It is monotonic, so a subset of it must also be */
 	    Monotonic *m2 = chunkalloc(sizeof(Monotonic));
@@ -494,13 +494,13 @@ return( t );
 }
 #endif
 
-static int CloserT(Spline *s1,double test,double current,Spline *s2,double t2 ) {
-    double basex=((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
-    double basey=((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
-    double testx=((s1->splines[0].a*test+s1->splines[0].b)*test+s1->splines[0].c)*test+s1->splines[0].d;
-    double testy=((s1->splines[1].a*test+s1->splines[1].b)*test+s1->splines[1].c)*test+s1->splines[1].d;
-    double curx=((s1->splines[0].a*current+s1->splines[0].b)*current+s1->splines[0].c)*current+s1->splines[0].d;
-    double cury=((s1->splines[1].a*current+s1->splines[1].b)*current+s1->splines[1].c)*current+s1->splines[1].d;
+static int CloserT(Spline *s1,bigreal test,bigreal current,Spline *s2,bigreal t2 ) {
+    bigreal basex=((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
+    bigreal basey=((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
+    bigreal testx=((s1->splines[0].a*test+s1->splines[0].b)*test+s1->splines[0].c)*test+s1->splines[0].d;
+    bigreal testy=((s1->splines[1].a*test+s1->splines[1].b)*test+s1->splines[1].c)*test+s1->splines[1].d;
+    bigreal curx=((s1->splines[0].a*current+s1->splines[0].b)*current+s1->splines[0].c)*current+s1->splines[0].d;
+    bigreal cury=((s1->splines[1].a*current+s1->splines[1].b)*current+s1->splines[1].c)*current+s1->splines[1].d;
 
 return( (testx-basex)*(testx-basex) + (testy-basey)*(testy-basey) <=
 	(curx-basex)*(curx-basex) + (cury-basey)*(cury-basey) );
@@ -519,15 +519,15 @@ static void ILReplaceMono(Intersection *il,Monotonic *m,Monotonic *otherm) {
 
 struct inter_data {
     Monotonic *m, *otherm;
-    double t, othert;
+    bigreal t, othert;
     BasePoint inter;
     int new;
 };
 
-static void SplitMonotonicAtT(Monotonic *m,int which,double t,double coord,
+static void SplitMonotonicAtT(Monotonic *m,int which,bigreal t,bigreal coord,
 	struct inter_data *id) {
     Monotonic *otherm = NULL;
-    double othert;
+    bigreal othert;
     real cx,cy;
     Spline1D *sx, *sy;
 
@@ -589,9 +589,9 @@ static void SplitMonotonicAtT(Monotonic *m,int which,double t,double coord,
     id->inter.x = cx; id->inter.y = cy;
 }
 
-static void SplitMonotonicAt(Monotonic *m,int which,double coord,
+static void SplitMonotonicAt(Monotonic *m,int which,bigreal coord,
 	struct inter_data *id) {
-    double t;
+    bigreal t;
     int low=0, high=0;
 
     if (( which==0 && coord==m->b.minx ) || (which==1 && coord==m->b.miny))
@@ -727,11 +727,15 @@ return( true );
 }
 #endif
 
+#if !defined( HAVE_LONG_DOUBLE ) || !defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
 /* An IEEE double has 52 bits of precision. So one unit of rounding error will be */
 /*  the number divided by 2^51 */
-# define D_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0)
+# define BR_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*2.0)
 /* But that's not going to work near 0, so, since the t values we care about */
 /*  are [0,1], let's use 1.0/D_RE_Factor */
+#else
+# define BR_RE_Factor	(1024.0*1024.0*1024.0*1024.0*1024.0*1024.0*8.0) /* 64 bits => divide by 2^51 */
+#endif
 
 static int ImproveInter(Monotonic *m1, Monotonic *m2,
 	extended *_t1,extended *_t2,BasePoint *inter) {
@@ -763,12 +767,12 @@ return( false );
     if ( error==0 )
 return( true );
     for ( clamp = 1; clamp>=0; --clamp ) {
-	factor = sqrt(error); /* 32*1024.0*1024.0*1024.0/D_RE_Factor;*/
+	factor = sqrt(error); /* 32*1024.0*1024.0*1024.0/BR_RE_Factor;*/
 	for ( cnt=0; cnt<51; ++cnt ) {
 	    extended off1 = factor*t1;
 	    extended off2 = factor*t2;
-	    if ( off1==0 ) off1 = factor;
-	    if ( off2==0 ) off2 = factor;
+	    if ( t1<.0001 ) off1 = factor;
+	    if ( t2<.0001 ) off2 = factor;
 	    if ( clamp ) {
 		if (( t1p = t1+off1 )>m1->tend ) t1p = m1->tend;
 		if (( t1m = t1-off1 )<m1->tstart ) t1m = m1->tstart;
@@ -819,7 +823,7 @@ return( false );
 	break;
 	    }
 	    factor/=2;
-	    if ( factor<1.0/D_RE_Factor )
+	    if ( factor<1.0/BR_RE_Factor )
 	break;
 	}
 	if ( Within4RoundingErrors(x1,x2) && Within4RoundingErrors(y1,y2))
@@ -938,7 +942,7 @@ return( true );
 static Intersection *_AddIntersection(Intersection *ilist,Monotonic *m1,
 	Monotonic *m2,extended t1,extended t2,BasePoint *inter) {
     Intersection *il, *closest=NULL;
-    double dist, dx, dy, bestd=9e10;
+    bigreal dist, dx, dy, bestd=9e10;
 
     /* I tried changing from Within16 to Within64 here, and below, and the */
     /*  result was that I cause more new errors (about 6) than I fixed old(1) */
@@ -1087,7 +1091,7 @@ return( _AddIntersection(ilist,m1,m2,t1,t2,inter));
 }
 
 static Intersection *SplitMonotonicsAt(Monotonic *m1,Monotonic *m2,
-	int which,double coord,Intersection *ilist) {
+	int which,bigreal coord,Intersection *ilist) {
     struct inter_data id1, id2;
     Intersection *check;
 
@@ -1173,10 +1177,11 @@ static void FindMonotonicIntersection(Monotonic *m1,Monotonic *m2) {
     /*  so we can't just check if the splines are on opposite sides of each */
     /*  other at top and bottom */
     DBounds b;
-    const double error = .00001;
+    const bigreal error = .00001;
     BasePoint pt;
     extended t1,t2;
     int pick;
+    int oncebefore=false;
 
     b.minx = m1->b.minx>m2->b.minx ? m1->b.minx : m2->b.minx;
     b.maxx = m1->b.maxx<m2->b.maxx ? m1->b.maxx : m2->b.maxx;
@@ -1287,14 +1292,19 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 		    AddPreIntersection(m1,m2,t1o,t2o,&pt,false);
 		    any = true;
 		}
+		oncebefore = false;
 		for ( y+=diff; ; y += diff ) {
 		    /* I used to say y<=b.maxy in the above for statement. */
 		    /*  that seemed to get rounding errors on the mac, so we do it */
 		    /*  like this now: */
 		    if ( y>b.maxy ) {
-			if ( y<b.maxy+diff ) y = b.maxy;
+			if ( oncebefore )
+		break;
+			if ( y<b.maxy+diff )
+			    y = b.maxy;
 			else
 		break;
+			oncebefore = true;
 		    }
 
 		    /* This is a volatile code! */
@@ -1342,7 +1352,7 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 				else if ( t2t==-1 && (RealNear(ytest,m2->b.miny) || RealNear(ytest,m2->b.maxy)))
 				    /* OK */;
 				else
-				    SOError( "Can't find something in range. y=%g\n", ytest );
+				    SOError( "Can't find something in range. y=%g\n", (double) ytest );
 			break;
 			    } else if (( x1-x2<error && x1-x2>-error ) || ytop==ytest || ybot==ytest ) {
 				pt.y = ytest; pt.x = (x1+x2)/2;
@@ -1389,11 +1399,16 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 		    any = true;
 		}
 		y1 = y2 = 0;
+		oncebefore = false;
 		for ( x+=diff; ; x += diff ) {
 		    if ( x>b.maxx ) {
-			if ( x<b.maxx+diff ) x = b.maxx;
+			if ( oncebefore )
+		break;
+			if ( x<b.maxx+diff )
+			    x = b.maxx;
 			else
 		break;
+			oncebefore= true;
 		    }
 
 		    /* This is a volatile code! */
@@ -1609,19 +1624,19 @@ return( true );
 #endif
 }
 
-static Monotonic *FindMonoContaining(Monotonic *base, double t) {
+static Monotonic *FindMonoContaining(Monotonic *base, bigreal t) {
     Monotonic *m;
 
     for ( m=base; m->s == base->s; m=m->next ) {
 	if ( t >= m->tstart && t <= m->tend )
 return( m );
     }
-    SOError("Failed to find monotonic containing %g\n", t );
+    SOError("Failed to find monotonic containing %g\n", (double) t );
     for ( m=base; m->s == base->s; m=m->prev ) {
 	if ( t >= m->tstart && t <= m->tend )
 return( m );
     }
-    SOError("Failed to find monotonic containing %g twice\n", t );
+    SOError("Failed to find monotonic containing %g twice\n", (double) t );
 return( NULL );
 }
 
@@ -1734,23 +1749,23 @@ static void Validate(Monotonic *ms, Intersection *ilist) {
 	    if ( ml->m->isneeded ) ++mcnt;
 	    if ( ml->m->start!=ilist && ml->m->end!=ilist )
 		SOError( "Intersection (%g,%g) not on a monotonic which should contain it.\n",
-			ilist->inter.x, ilist->inter.y );
+			(double) ilist->inter.x, (double) ilist->inter.y );
 	}
 	if ( mcnt&1 )
 	    SOError( "Odd number of needed monotonic sections at intersection. (%g,%g)\n",
-		    ilist->inter.x,ilist->inter.y );
+		    (double) ilist->inter.x,(double) ilist->inter.y );
 	ilist = ilist->next;
     }
 
     while ( ms!=NULL ) {
 	if ( ms->prev->end!=ms->start )
 	    SOError( "Mismatched intersection.\n (%g,%g)->(%g,%g) ends at (%g,%g) while (%g,%g)->(%g,%g) starts at (%g,%g)\n",
-		ms->prev->s->from->me.x,ms->prev->s->from->me.y,
-		ms->prev->s->to->me.x,ms->prev->s->to->me.y,
-		ms->prev->end!=NULL?ms->prev->end->inter.x:-999999, ms->prev->end!=NULL?ms->prev->end->inter.y:-999999, 
-		ms->s->from->me.x,ms->s->from->me.y,
-		ms->s->to->me.x,ms->s->to->me.y,
-		ms->start!=NULL?ms->start->inter.x:-999999, ms->start!=NULL?ms->start->inter.y:-999999 );
+		(double) ms->prev->s->from->me.x,(double) ms->prev->s->from->me.y,
+		(double) ms->prev->s->to->me.x,(double) ms->prev->s->to->me.y,
+		(double) (ms->prev->end!=NULL?ms->prev->end->inter.x:-999999), (double) (ms->prev->end!=NULL?ms->prev->end->inter.y:-999999), 
+		(double) ms->s->from->me.x,(double) ms->s->from->me.y,
+		(double) ms->s->to->me.x,(double) ms->s->to->me.y,
+		(double) (ms->start!=NULL?ms->start->inter.x:-999999), (double) (ms->start!=NULL?ms->start->inter.y:-999999) );
 	ms = ms->linked;
     }
 }
@@ -1963,12 +1978,12 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
 return(cnt);
 }
 
-static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic **space,int cnt,
+static Intersection *TryHarderWhenClose(int which, bigreal tried_value, Monotonic **space,int cnt,
 	Intersection *ilist) {
     /* If splines are very close together at a certain point then we can't */
     /*  tell the proper ordering due to rounding errors. */
     int i, j;
-    double low, high, test, t1, t2, c1, c2, incr;
+    bigreal low, high, test, t1, t2, c1, c2, incr;
     int neg_cnt, pos_cnt, pc, nc;
     int other = !which;
 
@@ -2046,12 +2061,15 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 		    if ( (&m1->xup)[which]!=(&m2->xup)[which] ) {
 			/* the two monotonics cancel each other out */
 			/* (they are close together, and go in opposite directions) */
+#if 0		/* What's this? Was wrong once. Looks as though this has already been done above */
+/* Just seems to cause problems. Removed */
 			if ( (which==0 && rh<m1->b.maxx && Within4RoundingErrors(rh,m1->next->b.maxx)) ||
 				(which==1 && rh<m1->b.maxy && Within4RoundingErrors(rh,m1->next->b.maxy)))
 			    m1 = m1->next;
 			if ( (which==0 && rh<m2->b.maxx && Within4RoundingErrors(rh,m2->next->b.maxx)) ||
 				(which==1 && rh<m2->b.maxy && Within4RoundingErrors(rh,m2->next->b.maxy)))
 			    m2 = m2->next;
+#endif
 			m1->mutual_collapse = m1->isunneeded = true;
 			m2->mutual_collapse = m2->isunneeded = true;
 		    }
@@ -2066,7 +2084,7 @@ static Intersection *TryHarderWhenClose(int which, double tried_value, Monotonic
 return( ilist );
 }
 
-static void MonosMarkConnected(Monotonic *startm,int needed,double test,int which) {
+static void MonosMarkConnected(Monotonic *startm,int needed,bigreal test,int which) {
     Monotonic *m;
     /* If a monotonic is needed, then all monotonics connected to it should */
     /*  also be needed -- until we hit an intersection */
@@ -2075,11 +2093,11 @@ static void MonosMarkConnected(Monotonic *startm,int needed,double test,int whic
 	if ( m->isneeded || m->isunneeded ) {
 	    if ( m->isneeded!=needed )
 		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
-		    which ? "y" : "x", (double) test, m->when_set );
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d),
+		    which ? "y" : "x", (double) test, (double) m->when_set );
 	} else {
 	    m->isneeded = needed;
 	    m->isunneeded = !needed;
@@ -2101,11 +2119,11 @@ static void MonosMarkConnected(Monotonic *startm,int needed,double test,int whic
 	if ( m->isneeded || m->isunneeded ) {
 	    if ( m->isneeded!=needed )
 		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
-		    which ? "y" : "x", (double) test, m->when_set );
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d),
+		    which ? "y" : "x", (double) test, (double) m->when_set );
 	} else {
 	    m->isneeded = needed;
 	    m->isunneeded = !needed;
@@ -2128,7 +2146,7 @@ return( false );
 }
 
 static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **space,
-	enum overlap_type ot, double close_level) {
+	enum overlap_type ot, bigreal close_level) {
     /* Find all monotonic sections which intersect the line (x,y)[which] == test */
     /*  find the value of the other coord on that line */
     /*  Order them (by the other coord) */
@@ -2220,11 +2238,11 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 		/* m->when_set = test;		*//* Debugging */
 	    } else if ( m->isneeded!=needed || m->isunneeded!=!needed ) {
 		SOError( "monotonic is both needed and unneeded (%g,%g)->(%g,%g). %s=%g (prev=%g)\n",
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
-		    which ? "y" : "x", (double) test, m->when_set );
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d),
+		    which ? "y" : "x", (double) test, (double) m->when_set );
 	    }
 	}
 	winding = nwinding;
@@ -2232,7 +2250,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
     }
     if ( winding!=0 )
 	SOError( "Winding number did not return to 0 when %s=%g\n",
-		which ? "y" : "x", test );
+		which ? "y" : "x", (double) test );
 }
 
 struct gaps { extended test, len; int which; };
@@ -2254,7 +2272,7 @@ static Intersection *FindNeeded(Monotonic *ms,enum overlap_type ot,Intersection 
     int i,j,k,l, cnt,which;
     struct gaps *gaps;
     extended min_gap;
-    static const double closeness_level[] = { .1, .01, 0, -1 };
+    static const bigreal closeness_level[] = { .1, .01, 0, -1 };
 
     if ( ms==NULL )
 return(ilist);
@@ -2344,10 +2362,10 @@ return(ilist);
     }
     for ( m=ms; m!=NULL; m=m->linked ) if ( !m->isneeded && !m->isunneeded ) {
 	SOError( "Neither needed nor unneeded (%g,%g)->(%g,%g)\n",
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d);
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d));
     }
     free(ends[0]);
     free(ends[1]);
@@ -2360,13 +2378,13 @@ static void FindUnitVectors(Intersection *ilist) {
     MList *ml;
     Intersection *il;
     BasePoint u;
-    double len;
+    bigreal len;
 
     for ( il=ilist; il!=NULL; il=il->next ) {
 	for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
 	    if ( ml->m->isneeded ) {
 		Spline *s = ml->m->s;
-		double t1, t2;
+		bigreal t1, t2;
 		t1 = ml->t;
 		if ( ml->isend )
 		    t2 = ml->t - (ml->t-ml->m->tstart)/20.0;
@@ -2566,10 +2584,10 @@ static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
 	for ( mstart = m; m->s==mstart->s; m=m->next) {
 	    if ( !m->isneeded )
 		SOError( "Expected needed monotonic @(%g,%g) (%g,%g)->(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y,
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d );
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d) );
 	    m->isneeded = false;		/* Mark as used */
 	    if ( m->end!=NULL )
 	break;
@@ -2609,11 +2627,11 @@ static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
     forever {
 	for ( mstart=m; m->s==mstart->s; m=m->prev) {
 	    if ( !m->isneeded )
-		SOError( "Expected needed monotonic (back) @(%g,%g) (%g,%g)->(%g,%g).\n", (*curil)->inter.x, (*curil)->inter.y,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d );
+		SOError( "Expected needed monotonic (back) @(%g,%g) (%g,%g)->(%g,%g).\n", (double) (*curil)->inter.x, (double) (*curil)->inter.y,
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d) );
 	    m->isneeded = false;		/* Mark as used */
 	    if ( m->start!=NULL )
 	break;
@@ -2665,7 +2683,7 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	    last = MonoFollowBackward(&curil,ml,last,&finalm);
 	} else {
 	    SOError( "Couldn't find endpoint (%g,%g).\n",
-		    curil->inter.x, curil->inter.y );
+		    (double) curil->inter.x, (double) curil->inter.y );
 	    ml->m->isneeded = false;		/* Prevent infinite loops */
 	    ss->last = last;
     break;
@@ -2687,12 +2705,12 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	    if ( ml==NULL )
 		for ( ml=curil->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
 	} else {
-	    int k; MList *bestml; double bestdot;
+	    int k; MList *bestml; bigreal bestdot;
 	    for ( k=0; k<2; ++k ) {
 		bestml = NULL; bestdot = -2;
 		for ( ml=curil->monos; ml!=NULL ; ml=ml->next ) {
 		    if ( ml->m->isneeded && (ml->m->start==curil || k) ) {
-			double dot = lastml->unit.x*ml->unit.x + lastml->unit.y*ml->unit.y;
+			bigreal dot = lastml->unit.x*ml->unit.x + lastml->unit.y*ml->unit.y;
 			if ( dot>bestdot ) {
 			    bestml = ml;
 			    bestdot = dot;
@@ -2787,10 +2805,10 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 	    if ( !MonoGoesSomewhereUseful(il,ml->m)) {
 		Monotonic *m = ml->m;
 		SOError("Humph. This monotonic leads nowhere (%g,%g)->(%g,%g).\n",
-		    ((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d,
-		    ((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d,
-		    ((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d );
+		    (double) (((m->s->splines[0].a*m->tstart+m->s->splines[0].b)*m->tstart+m->s->splines[0].c)*m->tstart+m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+m->s->splines[1].c)*m->tstart+m->s->splines[1].d),
+		    (double) (((m->s->splines[0].a*m->tend  +m->s->splines[0].b)*m->tend  +m->s->splines[0].c)*m->tend  +m->s->splines[0].d),
+		    (double) (((m->s->splines[1].a*m->tend  +m->s->splines[1].b)*m->tend  +m->s->splines[1].c)*m->tend  +m->s->splines[1].d) );
 	/* break; */
 	    }
 	    cur = JoinAContour(il,ml);
@@ -2930,7 +2948,7 @@ static void FixupIntersectedSplines(Monotonic *ms) {
     }
 }
 
-static int BpClose(BasePoint *here, BasePoint *there, double error) {
+static int BpClose(BasePoint *here, BasePoint *there, bigreal error) {
     extended dx, dy;
 
     if ( (dx = here->x-there->x)<0 ) dx= -dx;
@@ -2943,7 +2961,7 @@ return( false );
 
 static SplineSet *SSRemoveTiny(SplineSet *base) {
     DBounds b;
-    double error;
+    bigreal error;
     extended test, dx, dy;
     SplineSet *prev = NULL, *head = base, *ssnext;
     SplinePoint *sp, *nsp;
@@ -3140,11 +3158,11 @@ return( nsp );
 return( psp );
 }
 
-static double AdjacentSplinesMatch(Spline *s1,Spline *s2,int s2forward) {
+static bigreal AdjacentSplinesMatch(Spline *s1,Spline *s2,int s2forward) {
     /* Is every point on s2 close to a point on s1 */
-    double t, tdiff, t1 = -1;
-    double xoff, yoff;
-    double t1start, t1end;
+    bigreal t, tdiff, t1 = -1;
+    bigreal xoff, yoff;
+    bigreal t1start, t1end;
     extended ts[2];
     int i;
 
@@ -3168,9 +3186,9 @@ static double AdjacentSplinesMatch(Spline *s1,Spline *s2,int s2forward) {
     }
 
     for ( ; (s2forward && t<=1) || (!s2forward && t>=0 ); t += tdiff ) {
-	double x1, y1, xo, yo;
-	double x = ((s2->splines[0].a*t+s2->splines[0].b)*t+s2->splines[0].c)*t+s2->splines[0].d;
-	double y = ((s2->splines[1].a*t+s2->splines[1].b)*t+s2->splines[1].c)*t+s2->splines[1].d;
+	bigreal x1, y1, xo, yo;
+	bigreal x = ((s2->splines[0].a*t+s2->splines[0].b)*t+s2->splines[0].c)*t+s2->splines[0].d;
+	bigreal y = ((s2->splines[1].a*t+s2->splines[1].b)*t+s2->splines[1].c)*t+s2->splines[1].d;
 	if ( xoff>yoff )
 	    t1 = IterateSplineSolveFixup(&s1->splines[0],t1start,t1end,x);
 	else
@@ -3196,7 +3214,7 @@ return;
 	if ( sp->next!=NULL && sp->prev!=NULL ) {
 	    SplinePoint *nsp = sp->next->to, *psp = sp->prev->from, *isp;
 	    BasePoint ndir, pdir;
-	    double dot, pdot, nlen, plen, t = -1;
+	    bigreal dot, pdot, nlen, plen, t = -1;
 
 	    ndir.x = (nsp->me.x - sp->me.x); ndir.y = (nsp->me.y - sp->me.y);
 	    pdir.x = (psp->me.x - sp->me.x); pdir.y = (psp->me.y - sp->me.y);
