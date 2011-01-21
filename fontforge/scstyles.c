@@ -109,7 +109,7 @@ return fabs(PrevTangent - NextTangent) > 0.261;
 
 static int IsExtremum(SplinePoint *sp,int xdir) {
     SplinePoint *psp, *nsp;
-    double val = (&sp->me.x)[xdir];
+    real val = (&sp->me.x)[xdir];
     
     if (sp->next == NULL || sp->prev == NULL )
 return( false );

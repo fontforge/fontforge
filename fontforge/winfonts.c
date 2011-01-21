@@ -510,7 +510,7 @@ return( false );
 		font->pixelsize, font->glyphs[badch]->sc->name );
     SFDefaultOS2Info(&pfminfo,font->sf,font->sf->fontname);
     widbytes = avgwid+spacesize;
-    if ( cnt!=0 ) avgwid = rint(avgwid/(double) cnt);
+    if ( cnt!=0 ) avgwid = rint(avgwid/(bigreal) cnt);
     gid = map->map['X'];
     if ( font->glyphs[gid]!=NULL && font->glyphs[gid]->sc!=NULL &&
 	    font->glyphs[gid]->sc->unicodeenc == 'X' )
@@ -545,7 +545,7 @@ return( false );
     lputshort(file,maxy+1);				/* ascent */
     lputshort(file,0);					/* internal_leading */
     lputshort(file,					/* external_leading */
-		    rint(pfminfo.linegap*font->pixelsize/(double)(font->sf->ascent+font->sf->descent)) );
+		    rint(pfminfo.linegap*font->pixelsize/(bigreal)(font->sf->ascent+font->sf->descent)) );
     if ( font->sf->italicangle!=0 ||
 	    strstrmatch(font->sf->fontname,"ital")!=NULL ||
 	    strstrmatch(font->sf->fontname,"kurs")!=NULL ||

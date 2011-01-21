@@ -44,7 +44,7 @@ return( "sl" );
 return( axis_name );
 }
 
-double MMAxisUnmap(MMSet *mm,int axis,double ncv) {
+bigreal MMAxisUnmap(MMSet *mm,int axis,bigreal ncv) {
     struct axismap *axismap = &mm->axismaps[axis];
     int j;
 
@@ -53,7 +53,7 @@ return(axismap->designs[0]);
 
     for ( j=1; j<axismap->points; ++j ) {
 	if ( ncv<=axismap->blends[j]) {
-	    double t = (ncv-axismap->blends[j-1])/(axismap->blends[j]-axismap->blends[j-1]);
+	    bigreal t = (ncv-axismap->blends[j-1])/(axismap->blends[j]-axismap->blends[j-1]);
 return( axismap->designs[j-1]+ t*(axismap->designs[j]-axismap->designs[j-1]) );
 	}
     }
@@ -107,7 +107,7 @@ static char *_MMMakeFontname(MMSet *mm,real *normalized,char **fullname) {
 		sprintf( pt, " %d%s", (int) rint(MMAxisUnmap(mm,i,normalized[i])),
 			MMAxisAbrev(mm->axes[i]));
 	    else
-		sprintf( pt, " %.1f%s", MMAxisUnmap(mm,i,normalized[i]),
+		sprintf( pt, " %.1f%s", (double) MMAxisUnmap(mm,i,normalized[i]),
 			MMAxisAbrev(mm->axes[i]));
 	    pt += strlen(pt);
 	}

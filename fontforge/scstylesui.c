@@ -58,7 +58,7 @@ typedef struct styledlg {
     int layer;
     struct smallcaps *small;
     enum glyphchange_type gc;
-    double scale;
+    bigreal scale;
 } StyleDlg;
 
 #define CID_C_Factor	1001
@@ -649,7 +649,7 @@ static int CG_VScale_Changed(GGadget *g, GEvent *e) {
 	GWindow ew = GGadgetGetWindow(g);
 	StyleDlg *ed = GDrawGetUserData(ew);
 	int err=0;
-	double scale;
+	bigreal scale;
 	GGadget *map = GWidgetGetControl(ew,CID_VMappings);
 	int rows, cols = GMatrixEditGetColCnt(map);
 	struct matrix_data *mappings = GMatrixEditGet(map, &rows);
@@ -659,7 +659,7 @@ static int CG_VScale_Changed(GGadget *g, GEvent *e) {
 	if ( err || scale<=0 || RealNear(ed->scale,scale) )
 return( true );
 	for ( i=0; i<rows; ++i ) {
-	    double offset = mappings[cols*i+2].u.md_real - rint(ed->scale*mappings[cols*i+0].u.md_real);
+	    bigreal offset = mappings[cols*i+2].u.md_real - rint(ed->scale*mappings[cols*i+0].u.md_real);
 	    mappings[cols*i+2].u.md_real =
 		    rint(scale * mappings[cols*i+0].u.md_real) + offset;
 	}
@@ -789,7 +789,7 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 	GWindow ew = GGadgetGetWindow(g);
 	StyleDlg *ed = GDrawGetUserData(ew);
 	enum glyphchange_type gc = ed->gc;
-	double glyph_scale = 1.0, stem_scale=1.0;
+	bigreal glyph_scale = 1.0, stem_scale=1.0;
 	char glyph_factor[40], stem_factor[40];
 	struct matrixinit mapmi;
 
@@ -812,8 +812,8 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 		stem_scale  = ed->small->lc_stem_width/ed->small->uc_stem_width;
 	}
 	ed->scale = glyph_scale;
-	sprintf( glyph_factor, "%.2f", 100*glyph_scale );
-	sprintf( stem_factor , "%.2f", 100* stem_scale );
+	sprintf( glyph_factor, "%.2f", (double) (100*glyph_scale) );
+	sprintf( stem_factor , "%.2f", (double) (100* stem_scale) );
 
 	GGadgetSetChecked(GWidgetGetControl(ew,CID_H_is_V),true);
 	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemHeight),stem_factor);
@@ -864,7 +864,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     int k,l,s, a;
     struct smallcaps small;
     struct matrixinit mapmi;
-    double glyph_scale = 1.0, stem_scale=1.0;
+    bigreal glyph_scale = 1.0, stem_scale=1.0;
     char glyph_factor[40], stem_factor[40];
     int layer = fv!=NULL ? fv->b.active_layer : CVLayer((CharViewBase *) cv);
     static GWindow last_dlg[gc_max] = { NULL };
@@ -1124,8 +1124,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	l = 0;
 
 	ed.scale = glyph_scale;
-	sprintf( glyph_factor, "%.2f", 100*glyph_scale );
-	sprintf( stem_factor , "%.2f", 100* stem_scale );
+	sprintf( glyph_factor, "%.2f", (double) (100*glyph_scale) );
+	sprintf( stem_factor , "%.2f", (double) (100* stem_scale) );
 
 	label[k].text = (unichar_t *) _("Uniform scaling for stems on both axes");
 	label[k].text_is_1byte = true;
@@ -2140,7 +2140,7 @@ static ItalicInfo last_ii = {
 };
 
 void ObliqueDlg(FontView *fv, CharView *cv) {
-    double temp;
+    bigreal temp;
     char def[40], *ret, *end;
     real transform[6];
 

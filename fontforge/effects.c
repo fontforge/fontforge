@@ -225,7 +225,7 @@ return(NULL);
 	    if ( first==NULL ) first = s;
 	    p=0;
 	    if ( s->splines[1].a!=0 ) {
-		double d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
+		bigreal d = 4*s->splines[1].b*s->splines[1].b-4*3*s->splines[1].a*s->splines[1].c;
 		if ( d>0 ) {
 		    d = sqrt(d);
 		    t[p++] = (-2*s->splines[1].b+d)/(2*3*s->splines[1].a);
@@ -400,10 +400,10 @@ static void SSCleanup(SplineSet *spl) {
     }
 }
 
-static double IntersectLine(Spline *spline1,Spline *spline2) {
+static bigreal IntersectLine(Spline *spline1,Spline *spline2) {
     extended t1s[10], t2s[10];
     BasePoint pts[9];
-    double mint=1;
+    bigreal mint=1;
     int i;
 
     if ( !SplinesIntersect(spline1,spline2,pts,t1s,t2s))
@@ -421,7 +421,7 @@ return( mint );
 }
 
 static int ClipLineTo3D(Spline *line,SplineSet *spl) {
-    double t= -1, cur;
+    bigreal t= -1, cur;
     Spline *s, *first;
 
     while ( spl!=NULL ) {
@@ -467,7 +467,7 @@ static extended *BottomFindIntersections(Spline *bottom,SplineSet *lines,SplineS
 		for ( i=0; i<25 && t1s[i]!=-1; ++i ) if ( t2s[i]>.001 && t2s[i]<.999 ) {
 		    if ( tcnt>=tmax ) {
 			tmax += 100;
-			ts = grealloc(ts,tmax*sizeof(double));
+			ts = grealloc(ts,tmax*sizeof(extended));
 		    }
 		    ts[tcnt++] = t1s[i];
 		}
@@ -483,7 +483,7 @@ static extended *BottomFindIntersections(Spline *bottom,SplineSet *lines,SplineS
 		for ( i=0; i<25 && t1s[i]!=-1; ++i ) if ( t2s[i]>.001 && t2s[i]<.999 ) {
 		    if ( tcnt>=tmax ) {
 			tmax += 100;
-			ts = grealloc(ts,tmax*sizeof(double));
+			ts = grealloc(ts,tmax*sizeof(extended));
 		    }
 		    ts[tcnt++] = t1s[i];
 		}
@@ -498,7 +498,7 @@ return( NULL );
     }
     for ( i=0; i<tcnt; ++i ) for ( j=i+1; j<tcnt; ++j ) {
 	if ( ts[i]>ts[j] ) {
-	    double temp = ts[i];
+	    extended temp = ts[i];
 	    ts[i] = ts[j];
 	    ts[j] = temp;
 	}
@@ -519,14 +519,14 @@ return( true );
 return( false );
 }
 
-static SplinePoint *SplinePointMidCreate(Spline *s,double t) {
+static SplinePoint *SplinePointMidCreate(Spline *s,bigreal t) {
 return( SplinePointCreate(
 	((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d,
 	((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d
     ));
 }
 
-static int MidLineCompetes(Spline *s,double t,double shadow_length,SplineSet *spl) {
+static int MidLineCompetes(Spline *s,bigreal t,bigreal shadow_length,SplineSet *spl) {
     SplinePoint *to = SplinePointMidCreate(s,t);
     SplinePoint *from = SplinePointCreate(to->me.x-shadow_length,to->me.y);
     Spline *line = SplineMake(from,to,s->order2);
@@ -539,9 +539,9 @@ static int MidLineCompetes(Spline *s,double t,double shadow_length,SplineSet *sp
 return( !ret );
 }
 
-static void SplineComplete(SplineSet *cur,Spline *s,double t_of_from,double t_of_to) {
+static void SplineComplete(SplineSet *cur,Spline *s,bigreal t_of_from,bigreal t_of_to) {
     SplinePoint *to;
-    double dt = t_of_to-t_of_from;
+    bigreal dt = t_of_to-t_of_from;
     Spline1D x,y;
     /* Very similar to SplineBisect */
 
@@ -608,7 +608,7 @@ return( lines );
 }
 
 static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *spl,
-	double shadow_length) {
+	bigreal shadow_length) {
     SplineSet *head=NULL, *last=NULL, *cur, *next;
     Spline *s;
     extended *ts;
@@ -649,7 +649,7 @@ static SplineSet *ClipBottomTo3D(SplineSet *bottom,SplineSet *lines,SplineSet *s
 		    i=1;
 		}
 		while ( ts[i]!=-1 ) {
-		    double tend = ts[i+1]==-1 ? 1 : ts[i+1];
+		    bigreal tend = ts[i+1]==-1 ? 1 : ts[i+1];
 		    if ( MidLineCompetes(s,(ts[i]+tend)/2,shadow_length,spl)) {
 			cur = chunkalloc(sizeof(SplineSet));
 			cur->first = cur->last = SplinePointMidCreate(s,ts[i]);
@@ -676,7 +676,7 @@ return( head );
 }
     
 static SplineSet *ClipTo3D(SplineSet *bottoms,SplineSet *lines,SplineSet *spl,
-	double shadow_length) {
+	bigreal shadow_length) {
     SplineSet *temp;
     SplineSet *head;
 

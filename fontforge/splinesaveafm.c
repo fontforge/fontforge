@@ -105,7 +105,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename,EncMap *map) {
     int off;
     char name[44], second[44], lig[44], buf2[100];
     PST *liga;
-    double scale = (sf->ascent+sf->descent)/1000.0;
+    bigreal scale = (sf->ascent+sf->descent)/1000.0;
 
     if ( file==NULL )
 return( 0 );
@@ -365,7 +365,7 @@ return;
 	    off = (sf->ascent+sf->descent) *
 		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
 			(tfmd->kerntab[k_index+2]<<8) + tfmd->kerntab[k_index+3])/
-		    (double) 0x100000;
+		    (bigreal) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,rint(off),false);
 	} else if ( tfmd->ligkerntab[lk_index*4+2]==0 &&
@@ -475,7 +475,7 @@ return;
     (*gvbase)->parts = gcalloc(cnt,sizeof(struct gv_part));
     for ( j=0; j<cnt; ++j ) {
 	DBounds b;
-	double len;
+	bigreal len;
 	SplineCharFindBounds(bats[j],&b);
 	if ( is_horiz )
 	    len = b.maxx;
@@ -498,7 +498,7 @@ int LoadKerningDataFromTfm(SplineFont *sf, char *filename,EncMap *map) {
     int charlist[256];
     int is_math;
     int width, height, depth;
-    real scale = (sf->ascent+sf->descent)/(double) (1<<20);
+    real scale = (sf->ascent+sf->descent)/(bigreal) (1<<20);
 
     if ( file==NULL )
 return( 0 );
@@ -627,7 +627,7 @@ return;
 	    off = (sf->ascent+sf->descent) *
 		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
 			(tfmd->kerntab[k_index+2]<<8) + tfmd->kerntab[k_index+3])/
-		    (double) 0x100000;
+		    (bigreal) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,rint(off),false);
 	} else if ( LKShort(lk_index,2)==0 &&
@@ -698,7 +698,7 @@ return;
     (*gvbase)->parts = gcalloc(cnt,sizeof(struct gv_part));
     for ( j=0; j<cnt; ++j ) {
 	DBounds b;
-	double len;
+	bigreal len;
 	SplineCharFindBounds(bats[j],&b);
 	if ( is_horiz )
 	    len = b.maxx;
@@ -718,7 +718,7 @@ int LoadKerningDataFromOfm(SplineFont *sf, char *filename,EncMap *map) {
     int level, font_dir;
     int is_math;
     int width, height, depth;
-    real scale = (sf->ascent+sf->descent)/(double) (1<<20);
+    real scale = (sf->ascent+sf->descent)/(bigreal) (1<<20);
     struct tfmdata tfmd;
 
     if ( file==NULL )
@@ -1092,7 +1092,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
     DBounds b;
     real width;
     int i, j, cnt, max;
-    double caph, xh, ash, dsh;
+    bigreal caph, xh, ash, dsh;
     int iscid = ( formattype==ff_cid || formattype==ff_otfcid );
     int ismm = ( formattype==ff_mma || formattype==ff_mmb );
     time_t now;
@@ -1491,7 +1491,7 @@ return;
 static void AfmComposites(FILE *afm, SplineFont *sf, struct cc_data *cc, int cc_cnt) {
     int i;
     struct cc_accents *cca;
-    double em = (sf->ascent+sf->descent);
+    bigreal em = (sf->ascent+sf->descent);
 
     fprintf( afm, "StartComposites %d\n", cc_cnt );
     for ( i=0; i<cc_cnt; ++i ) {

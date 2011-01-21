@@ -61,10 +61,10 @@ typedef struct tiledata {
     SplineSet *result;		/* Final result after transformation */
     DBounds bb, fbb, lbb, ibb;	/* Of the basetile, first & last tiles */
     uint8 include_white, finclude_white, linclude_white, iinclude_white;
-    double xscale[3];
+    bigreal xscale[3];
 
     SplineSet *path;
-    double plength;		/* Length of path */
+    bigreal plength;		/* Length of path */
     int pcnt;			/* Number of splines in path */
     int nsamples;
     struct tdsample {
@@ -101,9 +101,9 @@ enum whitespace_type { ws_include=0x1, ws_but_not_first=0x2 };
 
 static int TDMakeSamples(TD *td) {
     Spline *spline, *first;
-    double len, slen, sofar, t, toff, dt_per_sample;
+    bigreal len, slen, sofar, t, toff, dt_per_sample;
     int i,end, base, pcnt;
-    double sx, sy, angle;
+    bigreal sx, sy, angle;
 
     first = NULL; len = 0; pcnt = 0;
     for ( spline=td->path->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -193,8 +193,8 @@ static void TDAddPoints(TD *td) {
     /*  corresponding to the ends of the splines in the path */
     SplineSet *spl;
     Spline *spline, *first, *tsp;
-    double len;
-    double ts[3];
+    bigreal len;
+    bigreal ts[3];
 
     first = NULL; len = 0;
     for ( spline=td->path->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -221,7 +221,7 @@ static void TDAddPoints(TD *td) {
 }
 
 static void SplineSplitAtY(Spline *spline,real y) {
-    double ts[3];
+    bigreal ts[3];
     SplinePoint *last;
 
     if ( spline->from->me.y<=y && spline->from->nextcp.y<=y &&
@@ -410,7 +410,7 @@ return( old );
 #define Round_Up_At	.5
 static void TileLine(TD *td) {
     int tilecnt=1, i;
-    double scale=1, y;
+    bigreal scale=1, y;
     real trans[6];
     SplineSet *new;
     int use_first=false, use_last=false, use_isolated=false;
@@ -525,11 +525,11 @@ static void TileLine(TD *td) {
     }
 }
 
-static void AdjustPoint(TD *td,Spline *spline,double t,TPoint *to) {
-    double x, y;
-    double pos;
+static void AdjustPoint(TD *td,Spline *spline,bigreal t,TPoint *to) {
+    bigreal x, y;
+    bigreal pos;
     int low;
-    double dx, dy, c, s;
+    bigreal dx, dy, c, s;
     int i;
 
     to->t = t;
@@ -541,7 +541,7 @@ static void AdjustPoint(TD *td,Spline *spline,double t,TPoint *to) {
 	if ( RealNearish(y,td->joins[i].sofar) )
     break;
     if ( i>=0 ) {
-	double x1,y1, x2, y2, dx1, dx2, dy1, dy2;
+	bigreal x1,y1, x2, y2, dx1, dx2, dy1, dy2;
 	x1 = td->joins[i].dx + td->joins[i].c1*x;
 	y1 = td->joins[i].dy + td->joins[i].s1*x;
 	dx1 = -td->joins[i].s1;
@@ -559,11 +559,11 @@ static void AdjustPoint(TD *td,Spline *spline,double t,TPoint *to) {
 	    else
 		to->x = x1 + dx1*(y2-y1)/dy1;
 	} else {
-	    double s=(dy1*dx2/dy2-dx1);
+	    bigreal s=(dy1*dx2/dy2-dx1);
 	    if ( s>-.00001 && s<.00001 ) {	/* essentially parallel */
 		to->x = x1; to->y = y1;
 	    } else {
-		double t1 = (x1-x2- dx2/dy2*(y1-y2))/s;
+		bigreal t1 = (x1-x2- dx2/dy2*(y1-y2))/s;
 		to->x = x1 + dx1*t1;
 		to->y = y1 + dy1*t1;
 	    }
@@ -612,7 +612,7 @@ static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint 
 	int order2) {
     TPoint tps[15];
     int i;
-    double t;
+    bigreal t;
 
     if ( newfrom==NULL )
 	newfrom = TDMakePoint(td,old,0);

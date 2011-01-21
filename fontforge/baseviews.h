@@ -474,7 +474,7 @@ extern void CopySelected(CharViewBase *cv,int doanchors);
 extern void CVCopyGridFit(CharViewBase *cv);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
 extern void PasteToCV(CharViewBase *cv);
-extern void CVYPerspective(CharViewBase *cv,double x_vanish, double y_vanish);
+extern void CVYPerspective(CharViewBase *cv,bigreal x_vanish, bigreal y_vanish);
 extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
 extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);
 extern void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
