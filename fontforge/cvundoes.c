@@ -1616,6 +1616,7 @@ return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
 	cur->undotype==ut_hints ||
+	cur->undotype==ut_bitmap || cur->undotype==ut_bitmapsel ||
 	cur->undotype==ut_anchors || cur->undotype==ut_noop );
 }
 

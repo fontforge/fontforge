@@ -1952,7 +1952,7 @@ void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BVRotateBitmap(bv,mi->mid);
 }
 
-static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -1964,7 +1964,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
