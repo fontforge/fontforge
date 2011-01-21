@@ -1381,7 +1381,8 @@ return;
 	int c = (event->u.mouse.x - kcd->xstart2)/kcd->kernw + kcd->offleft;
 	int s = (event->u.mouse.y - kcd->ystart2)/kcd->kernh + kcd->offtop;
 	char *str;
-	space[0] = '\0';
+	//space[0] = '\0';
+	memset(space,'\0',sizeof(space));
 	if ( event->u.mouse.y>=kcd->ystart2 && s<kcd->first_cnt ) {
 	    sprintf( space, _("First Class %d\n"), s );
 	    classes = GMatrixEditGet(GWidgetGetControl(kcd->gw,CID_ClassList),&len);
@@ -1852,12 +1853,17 @@ void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
     /* Check for duplicate names in this class */
     /*  also check for glyph names which aren't in the font */
     while ( *start1!='\0' ) {
-	for ( pt1=start1; *pt1!=' ' && *pt1!='(' && *pt1!='\0' ; ++pt1 );
+	for ( pt1=start1; *pt1!=' ' && *pt1!='(' && *pt1!='{' && *pt1!='\0' ; ++pt1 );
+	/* Preserve the {Everything Else} string from splitting */
+	if ( *pt1=='{' ) {
+	    while ( *pt1!='\0' && *pt1!='}' ) ++pt1;
+	    if ( *pt1=='}' ) ++pt1;
+	}
 	eow1 = pt1;
 	if ( *eow1=='(' ) {
 	    while ( *eow1!='\0' && *eow1!=')' ) ++eow1;
 	    if ( *eow1==')' ) ++eow1;
-	}
+	} 
 	while ( *eow1==' ' ) ++eow1;
 	ch1 = *pt1; *pt1='\0';
 	if ( sf!=NULL && !isEverythingElse( start1 )) {
@@ -3231,15 +3237,21 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer,int isv)
 
 KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero) {
-    int i,f,l;
+    int i,f,l,pcnt = 2;
     KernClass *kc;
 
-    for ( i=0; i<=allow_zero; ++i ) {
+    /* At the first pass we check only combinations between defined classes. */
+    /* while at the second pass class 0 is also accepted. If zero kerning values are */
+    /* allowed, then we may need two more passes (again, first checking only defined */
+    /* classes, and then also class 0, but this time accepting also zero offsets) */
+    if (allow_zero) pcnt *= 2;
+    for ( i=0; i<=pcnt; ++i ) {
 	for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) {
-	    f = KCFindName(first->name,kc->firsts,kc->first_cnt,false);
-	    l = KCFindName(last->name,kc->seconds,kc->second_cnt,true);
-	    if ( f!=-1 && l!=-1 ) {
-		if ( i || kc->offsets[f*kc->second_cnt+l]!=0 ) {
+	    uint8 kspecd = kc->firsts[0] != NULL;
+	    f = KCFindName(first->name,kc->firsts ,kc->first_cnt ,i % 2);
+	    l = KCFindName(last->name ,kc->seconds,kc->second_cnt,i % 2);
+	    if ( f!=-1 && l!=-1 && ( kspecd || f!=0 || l!=0 )  ) {
+		if ( i > 1 || kc->offsets[f*kc->second_cnt+l]!=0 ) {
 		    *index = f*kc->second_cnt+l;
 return( kc );
 		}
@@ -3251,15 +3263,17 @@ return( NULL );
 
 KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero) {
-    int i,f,l;
+    int i,f,l,pcnt = 2;
     KernClass *kc;
 
-    for ( i=0; i<=allow_zero; ++i ) {
+    if (allow_zero) pcnt *= 2;
+    for ( i=0; i<=pcnt; ++i ) {
 	for ( kc=sf->vkerns; kc!=NULL; kc=kc->next ) {
-	    f = KCFindName(first->name,kc->firsts,kc->first_cnt,false);
-	    l = KCFindName(last->name,kc->seconds,kc->second_cnt,true);
-	    if ( f!=-1 && l!=-1 ) {
-		if ( i || kc->offsets[f*kc->second_cnt+l]!=0 ) {
+	    uint8 kspecd = kc->firsts[0] != NULL;
+	    f = KCFindName(first->name,kc->firsts ,kc->first_cnt ,i % 2);
+	    l = KCFindName(last->name ,kc->seconds,kc->second_cnt,i % 2);
+	    if ( f!=-1 && l!=-1 && ( kspecd || f!=0 || l!=0 ) ) {
+		if ( i > 1 || kc->offsets[f*kc->second_cnt+l]!=0 ) {
 		    *index = f*kc->second_cnt+l;
 return( kc );
 		}

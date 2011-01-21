@@ -705,6 +705,8 @@ struct opentype_str {
     struct vr vr;		/* Scaled and rounded gpos modifications (device table info included in xoff, etc. not in adjusts) */
     struct kernpair *kp;
     struct kernclass *kc;
+    unsigned int prev_kc0: 1;
+    unsigned int next_kc0: 1;
     int16 advance_width;	/* Basic advance, modifications in vr, scaled and rounded */
 	/* Er... not actually set by ApplyLookups, but somewhere the caller */
 	/*  can stash info. (Extract width from hinted bdf if possible, tt */
@@ -3055,8 +3057,7 @@ extern void AddNewAALTFeatures(SplineFont *sf);
 
 extern void SplinePointRound(SplinePoint *,real);
 
-extern int KCFindName(char *name, char **classnames, int cnt, int class0meansAll );
-extern int KCFindIndex(KernClass *kc,char *name1, char *name2);
+extern int KCFindName(char *name, char **classnames, int cnt, int allow_class0 );
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
