@@ -471,14 +471,14 @@ return( _ttfapprox(ps,tmin,tmax,start));
 typedef struct qpoint {
     BasePoint bp;
     BasePoint cp;
-    double t;
+    bigreal t;
 } QPoint;
 
 static int comparedata(Spline *ps,QPoint *data,int qfirst,int qlast,
 	int round_to_int, int test_level ) {
     Spline ttf;
     int i;
-    double err = round_to_int ? 1.5 : 1;
+    bigreal err = round_to_int ? 1.5 : 1;
 
     if ( qfirst==qlast )		/* happened (was a bug) */
 return( false );
@@ -526,7 +526,7 @@ return( start );
 
 static int SplineWithWellBehavedControlPoints(Spline *ps) {
     BasePoint splineunit;
-    double splinelen, npos, ppos;
+    bigreal splinelen, npos, ppos;
 
     splineunit.x = ps->to->me.x - ps->from->me.x;
     splineunit.y = ps->to->me.y - ps->from->me.y;
@@ -543,13 +543,13 @@ static int SplineWithWellBehavedControlPoints(Spline *ps) {
 return( npos>=0 && /* npos<=ppos &&*/ ppos<=splinelen );
 }
 
-static int PrettyApprox(Spline *ps,double tmin, double tmax,
+static int PrettyApprox(Spline *ps,bigreal tmin, bigreal tmax,
 	QPoint *data, int qcnt, int round_to_int, int test_level ) {
     int ptcnt, q, i;
-    double distance, dx, dy, tstart;
+    bigreal distance, dx, dy, tstart;
     BasePoint end, mid, slopemin, slopemid, slopeend;
     BasePoint splineunit, start;
-    double splinelen, midpos, lastpos, lastpos2, cppos;
+    bigreal splinelen, midpos, lastpos, lastpos2, cppos;
     int do_good_spline_check;
     QPoint data2[12];
 
@@ -559,7 +559,7 @@ return( -1 );
     slopemin.x = (3*ps->splines[0].a*tmin+2*ps->splines[0].b)*tmin+ps->splines[0].c;
     slopemin.y = (3*ps->splines[1].a*tmin+2*ps->splines[1].b)*tmin+ps->splines[1].c;
     if ( slopemin.x==0 && slopemin.y==0 ) {
-	double t = tmin + (tmax-tmin)/256;
+	bigreal t = tmin + (tmax-tmin)/256;
 	/* If there is no control point for this end point, then the slope is */
 	/*  0/0 at the end point. Which isn't useful, it leads to a quadratic */
 	/*  control point at the end point, but this one is real because it   */
@@ -574,7 +574,7 @@ return( -1 );
     slopeend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
     slopeend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
     if ( slopemin.x==0 && slopemin.y==0 ) {
-	double t = tmax - (tmax-tmin)/256;
+	bigreal t = tmax - (tmax-tmin)/256;
 	/* Same problem as above, except at the other end */
 	slopeend.x = (3*ps->splines[0].a*t+2*ps->splines[0].b)*t+ps->splines[0].c;
 	slopeend.y = (3*ps->splines[1].a*t+2*ps->splines[1].b)*t+ps->splines[1].c;
@@ -828,7 +828,7 @@ return( CvtDataToSplines(data,1,qcnt,start));
     /* sort points */
     for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
 	if ( magicpoints[i]>magicpoints[j] ) {
-	    double temp = magicpoints[i];
+	    bigreal temp = magicpoints[i];
 	    magicpoints[i] = magicpoints[j];
 	    magicpoints[j] = temp;
 	}
@@ -957,7 +957,7 @@ return( head );
 static void ImproveB3CPForQuadratic(real from,real *_ncp,real *_pcp,real to) {
     real ncp = *_ncp, pcp = *_pcp;
     real noff, poff;
-    real c,b,a, best;
+    real c,b, best;
     int err, i, besti;
     real offs[9];
 
@@ -1401,7 +1401,7 @@ return( 0 );	/* Neither */
 void SplineRefigureFixup(Spline *spline) {
     SplinePoint *from, *to, *prev, *next;
     BasePoint foff, toff, unit, new;
-    double len;
+    bigreal len;
     enum pointtype fpt, tpt;
     int done = false;
     extern int snaptoint;
@@ -1719,7 +1719,7 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 		    !p->noprevcp ) {
 		SplineRefigure2(sp->prev);
 		if ( p->prev==NULL ) {
-		    double len1, len2;
+		    bigreal len1, len2;
 		    len1 = sqrt((p->nextcp.x-p->me.x)*(p->nextcp.x-p->me.x) +
 				(p->nextcp.y-p->me.y)*(p->nextcp.y-p->me.y));
 		    len2 = sqrt((p->prevcp.x-p->me.x)*(p->prevcp.x-p->me.x) +
@@ -1732,9 +1732,9 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 		    /* Find the intersection (if any) of the lines between */
 		    /*  pp->nextcp&pp->me with p->prevcp&p->me */
 		    if ( IntersectLines(&p_pcp,&pp->nextcp,&pp->me,&p->nextcp,&p->me)) {
-			double len = (pp->me.x-p->me.x)*(pp->me.x-p->me.x) + (pp->me.y-p->me.y)*(pp->me.y-p->me.y);
-			double d1 = (p_pcp.x-p->me.x)*(pp->me.x-p->me.x) + (p_pcp.y-p->me.y)*(pp->me.y-p->me.y);
-			double d2 = (p_pcp.x-pp->me.x)*(p->me.x-pp->me.x) + (p_pcp.y-pp->me.y)*(p->me.y-pp->me.y);
+			bigreal len = (pp->me.x-p->me.x)*(pp->me.x-p->me.x) + (pp->me.y-p->me.y)*(pp->me.y-p->me.y);
+			bigreal d1 = (p_pcp.x-p->me.x)*(pp->me.x-p->me.x) + (p_pcp.y-p->me.y)*(pp->me.y-p->me.y);
+			bigreal d2 = (p_pcp.x-pp->me.x)*(p->me.x-pp->me.x) + (p_pcp.y-pp->me.y)*(p->me.y-pp->me.y);
 			if ( d1>=0 && d1<=len && d2>=0 && d2<=len ) {
 			    if ( rint(2*p->me.x)==2*p->me.x && rint(2*pp->me.x)==2*pp->me.x )
 				p_pcp.x = rint( p_pcp.x );
@@ -1773,7 +1773,7 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 		    !n->nonextcp ) {
 		SplineRefigure2(sp->next);
 		if ( n->next==NULL ) {
-		    double len1, len2;
+		    bigreal len1, len2;
 		    len1 = sqrt((n->prevcp.x-n->me.x)*(n->prevcp.x-n->me.x) +
 				(n->prevcp.y-n->me.y)*(n->prevcp.y-n->me.y));
 		    len2 = sqrt((n->nextcp.x-n->me.x)*(n->nextcp.x-n->me.x) +
@@ -1786,9 +1786,9 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 		    /* Find the intersection (if any) of the lines between */
 		    /*  nn->prevcp&nn->me with n->nextcp&.->me */
 		    if ( IntersectLines(&n_ncp,&nn->prevcp,&nn->me,&n->prevcp,&n->me)) {
-			double len = (nn->me.x-n->me.x)*(nn->me.x-n->me.x) + (nn->me.y-n->me.y)*(nn->me.y-n->me.y);
-			double d1 = (n_ncp.x-n->me.x)*(nn->me.x-n->me.x) + (n_ncp.y-n->me.y)*(nn->me.y-n->me.y);
-			double d2 = (n_ncp.x-nn->me.x)*(n->me.x-nn->me.x) + (n_ncp.y-nn->me.y)*(n->me.y-nn->me.y);
+			bigreal len = (nn->me.x-n->me.x)*(nn->me.x-n->me.x) + (nn->me.y-n->me.y)*(nn->me.y-n->me.y);
+			bigreal d1 = (n_ncp.x-n->me.x)*(nn->me.x-n->me.x) + (n_ncp.y-n->me.y)*(nn->me.y-n->me.y);
+			bigreal d2 = (n_ncp.x-nn->me.x)*(n->me.x-nn->me.x) + (n_ncp.y-nn->me.y)*(n->me.y-nn->me.y);
 			if ( d1>=0 && d1<=len && d2>=0 && d2<=len ) {
 			    if ( rint(2*n->me.x)==2*n->me.x && rint(2*nn->me.x)==2*nn->me.x )
 				n_ncp.x = rint( n_ncp.x);

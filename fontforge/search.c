@@ -66,10 +66,10 @@ static int SPMatchesF(SplinePoint *sp, SearchData *s, SplineSet *path,
 	SplinePoint *sc_path_first, int substring ) {
     SplinePoint *sc_sp, *nsc_sp, *p_sp, *np_sp;
     int flip, flipmax;
-    double rot, scale;
+    bigreal rot, scale;
     int saw_sc_first = false, first_of_path;
     BasePoint p_unit, pend_unit, sc_unit;
-    double len, temp;
+    bigreal len, temp;
 
     s->matched_sp = sp;
     s->matched_rot = 0;

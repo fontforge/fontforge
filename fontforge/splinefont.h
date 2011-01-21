@@ -58,7 +58,7 @@
 # define bigreal	double
 #endif
 
-#if defined( HAVE_LONG_DOUBLE ) && defined( This_does_not_seem_to_make_a_difference )
+#if defined( HAVE_LONG_DOUBLE ) && (defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) || defined( This_does_not_seem_to_make_a_difference ))
 # define extended	long double
 # define CheckExtremaForSingleBitErrors(sp,t,othert)	(t)
 # define EXTENDED_IS_LONG_DOUBLE	1
@@ -2082,9 +2082,9 @@ extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void ttfdumpbitmapscaling(SplineFont *sf,struct alltabs *at,int32 *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 
-extern int Within4RoundingErrors(double v1, double v2);
-extern int Within16RoundingErrors(double v1, double v2);
-extern int Within64RoundingErrors(double v1, double v2);
+extern int Within4RoundingErrors(bigreal v1, bigreal v2);
+extern int Within16RoundingErrors(bigreal v1, bigreal v2);
+extern int Within64RoundingErrors(bigreal v1, bigreal v2);
 extern int RealNear(real a,real b);
 extern int RealNearish(real a,real b);
 extern int RealApprox(real a,real b);
@@ -2299,7 +2299,7 @@ extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
 extern int GradientHere(double scale,DBounds *bbox,int iy,int ix,
 	struct gradient *grad,struct pattern *pat, int defgrey);
 extern void PatternPrep(SplineChar *sc,struct brush *brush,double scale);
-extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, double pixelsize);
+extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, bigreal pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int layer, int pixelsize, int indicate);
 extern void BDFCAntiAlias(BDFChar *bc, int linear_scale);
@@ -2384,7 +2384,7 @@ extern extended IterateSplineSolve(const Spline1D *sp, extended tmin, extended t
 /* Uses an iterative approximation and then tries to fix things up */
 extern extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, extended tmax, extended sought_y);
 extern void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 );
-extern int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wmax, int major );
+extern int SSBoundsWithin(SplineSet *ss,bigreal z1, bigreal z2, bigreal *wmin, bigreal *wmax, int major );
 extern bigreal SplineMinDistanceToPoint(Spline *s, BasePoint *p);
 
 SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);
@@ -2405,7 +2405,7 @@ extern void _SCAutoTrace(SplineChar *sc, int layer, char **args);
 extern char **AutoTraceArgs(int ask);
 
 #define CURVATURE_ERROR	-1e9
-extern double SplineCurvature(Spline *s, double t);
+extern bigreal SplineCurvature(Spline *s, bigreal t);
 
 #ifndef EXTENDED_IS_LONG_DOUBLE
 extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert);
@@ -2415,12 +2415,12 @@ extern extended esqrt(extended e);
 #endif
 extern int Spline2DFindExtrema(const Spline *sp, extended extrema[4] );
 extern int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] );
-extern int SplineAtInflection(Spline1D *sp, double t );
-extern int SplineAtMinMax(Spline1D *sp, double t );
+extern int SplineAtInflection(Spline1D *sp, bigreal t );
+extern int SplineAtMinMax(Spline1D *sp, bigreal t );
 extern void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
-extern int SplineT2SpiroIndex(Spline *spline,double t,SplineSet *spl);
+extern int SplineT2SpiroIndex(Spline *spline,bigreal t,SplineSet *spl);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
 extern SplinePoint *SplineBisect(Spline *spline, extended t);
 extern Spline *SplineSplit(Spline *spline, extended ts[3]);
@@ -2428,10 +2428,10 @@ extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt,int order2);
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt,int order2);
-extern double SplineLength(Spline *spline);
-extern double SplineLengthRange(Spline *spline, real from_t, real to_t);
-extern double PathLength(SplineSet *ss);
-extern Spline *PathFindDistance(SplineSet *path,double d,double *_t);
+extern bigreal SplineLength(Spline *spline);
+extern bigreal SplineLengthRange(Spline *spline, real from_t, real to_t);
+extern bigreal PathLength(SplineSet *ss);
+extern Spline *PathFindDistance(SplineSet *path,bigreal d,bigreal *_t);
 extern SplineSet *SplineSetBindToPath(SplineSet *ss,int doscale, int glyph_as_unit,
 	int align,real offset, SplineSet *path);
 extern int SplineIsLinear(Spline *spline);
@@ -2440,12 +2440,12 @@ extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
 extern int SSPointWithin(SplineSet *spl,BasePoint *pt);
 extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
-extern void SSOverlapClusterCpAngles(SplineSet *base,double within);
+extern void SSOverlapClusterCpAngles(SplineSet *base,bigreal within);
 extern void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int type);
 extern void SplineCharMerge(SplineChar *sc,SplineSet **head,int type);
-extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,double err);
-extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,double err);
-extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,double err);
+extern void SPLNearlyHvCps(SplineChar *sc,SplineSet *ss,bigreal err);
+extern void SPLNearlyHvLines(SplineChar *sc,SplineSet *ss,bigreal err);
+extern int  SPLNearlyLines(SplineChar *sc,SplineSet *ss,bigreal err);
 extern int SPInterpolate(SplinePoint *sp);
 extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 	struct simplifyinfo *smpl);
@@ -2796,8 +2796,8 @@ extern void SFLayerSetBackground(SplineFont *sf,int layer,int is_back);
 
 extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlysel);
 extern void SCRound2Int(SplineChar *sc,int layer, real factor);
-extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max);
-extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,double err);
+extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max);
+extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
 #if 0
 extern void SFFigureGrid(SplineFont *sf);
@@ -3200,10 +3200,10 @@ extern void SCClearInstrsOrMark(SplineChar *sc, int layer, int complain);
 extern void instrcheck(SplineChar *sc,int layer);
 extern void TTFPointMatches(SplineChar *sc,int layer,int top);
 
-extern double SFCapHeight(SplineFont *sf, int layer, int return_error);
-extern double SFXHeight(SplineFont *sf, int layer, int return_error);
-extern double SFAscender(SplineFont *sf, int layer, int return_error);
-extern double SFDescender(SplineFont *sf, int layer, int return_error);
+extern bigreal SFCapHeight(SplineFont *sf, int layer, int return_error);
+extern bigreal SFXHeight(SplineFont *sf, int layer, int return_error);
+extern bigreal SFAscender(SplineFont *sf, int layer, int return_error);
+extern bigreal SFDescender(SplineFont *sf, int layer, int return_error);
 
 extern SplineChar ***GlyphClassesFromNames(SplineFont *sf,char **classnames,
 	int class_cnt );

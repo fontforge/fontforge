@@ -2233,7 +2233,7 @@ return( Py_BuildValue("i",ret ) );
 static PyObject *PyFFContour_xBoundsAtY(PyFF_Contour *self, PyObject *args) {
     SplineSet *ss;
     double y1, y2=6.023e23;
-    double xmin, xmax;
+    bigreal xmin, xmax;
     int ret;
 
     if ( !PyArg_ParseTuple(args,"d|d", &y1, &y2 ))
@@ -2250,13 +2250,13 @@ Py_RETURN_NONE;
     if ( !ret )
 Py_RETURN_NONE;
 
-return( Py_BuildValue("(dd)",xmin, xmax ) );
+return( Py_BuildValue("(dd)",(double) xmin, (double) xmax ) );
 }
 
 static PyObject *PyFFContour_yBoundsAtX(PyFF_Contour *self, PyObject *args) {
     SplineSet *ss;
     double x1, x2=6.023e23;
-    double ymin, ymax;
+    bigreal ymin, ymax;
     int ret;
 
     if ( !PyArg_ParseTuple(args,"d|d", &x1, &x2 ))
@@ -2273,7 +2273,7 @@ Py_RETURN_NONE;
     if ( !ret )
 Py_RETURN_NONE;
 
-return( Py_BuildValue("(dd)",ymin, ymax ) );
+return( Py_BuildValue("(dd)",(double) ymin, (double) ymax ) );
 }
 
 static PyObject *PyFFContour_Merge(PyFF_Contour *self, PyObject *args) {
@@ -3821,7 +3821,7 @@ static PyObject *PyFFLayer_xBoundsAtY(PyFF_Layer *self, PyObject *args) {
     SplineSet *ss;
     double y1, y2=6.023e23;
     int ret;
-    double xmin, xmax;
+    bigreal xmin, xmax;
 
     if ( !PyArg_ParseTuple(args,"d|d", &y1, &y2 ))
 return( NULL );
@@ -3837,14 +3837,14 @@ Py_RETURN_NONE;
     if ( !ret )
 Py_RETURN_NONE;
 
-return( Py_BuildValue("(dd)",xmin, xmax ) );
+return( Py_BuildValue("(dd)",(double) xmin, (double) xmax ) );
 }
 
 static PyObject *PyFFLayer_yBoundsAtX(PyFF_Layer *self, PyObject *args) {
     SplineSet *ss;
     double x1, x2=6.023e23;
     int ret;
-    double ymin, ymax;
+    bigreal ymin, ymax;
 
     if ( !PyArg_ParseTuple(args,"d|d", &x1, &x2 ))
 return( NULL );
@@ -3860,7 +3860,7 @@ Py_RETURN_NONE;
     if ( !ret )
 Py_RETURN_NONE;
 
-return( Py_BuildValue("(dd)",ymin, ymax ) );
+return( Py_BuildValue("(dd)",(double) ymin, (double) ymax ) );
 }
 
 static PyObject *PyFFLayer_draw(PyFF_Layer *self, PyObject *args) {

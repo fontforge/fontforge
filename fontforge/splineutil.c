@@ -37,7 +37,7 @@
 /*#define DEBUG 1*/
 
 typedef struct quartic {
-    double a,b,c,d,e;
+    bigreal a,b,c,d,e;
 } Quartic;
 
 /* In an attempt to make allocation more efficient I just keep preallocated */
@@ -460,8 +460,8 @@ return;
 
     if ( lines!=NULL ) while ( (next = lines->next)!=NULL ) {
 	if ( prev->here.x!=next->here.x ) {
-	    double slope = (next->here.y-prev->here.y) / (double) (next->here.x-prev->here.x);
-	    double inter = prev->here.y - slope*prev->here.x;
+	    bigreal slope = (next->here.y-prev->here.y) / (bigreal) (next->here.x-prev->here.x);
+	    bigreal inter = prev->here.y - slope*prev->here.x;
 	    int y = rint(lines->here.x*slope + inter);
 	    if ( y == lines->here.y ) {
 		lines->here = next->here;
@@ -493,7 +493,7 @@ static void FigureSpline1(Spline1 *sp1,bigreal t0, bigreal t1, Spline1D *sp ) {
 	sp1->sp.a = s*s*s*sp->a;
 #if 0		/* Got invoked once on a perfectly good spline */
 	sp1->s1 = sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d;
-	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((double) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
+	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((bigreal) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
 		!RealNear(sp1->sp.d,sp1->s0))
 	    IError( "Created spline does not work in FigureSpline1");
 #endif
@@ -502,17 +502,17 @@ static void FigureSpline1(Spline1 *sp1,bigreal t0, bigreal t1, Spline1D *sp ) {
     sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
 }
 
-static LineList *SplineSegApprox(LineList *last, Spline *spline, double start, double end, real scale) {
+static LineList *SplineSegApprox(LineList *last, Spline *spline, bigreal start, bigreal end, real scale) {
     /* Divide into n equal segments */
     /* (first point is already on the line list) */
     /* what's a good value for n? Perhaps the normal distance of the control */
     /*  points to the line between the end points. */
     int i,n;
-    double t, diff, len;
-    double x,y;
+    bigreal t, diff, len;
+    bigreal x,y;
     LineList *cur;
     BasePoint startp, endp, slope, off;
-    double temp;
+    bigreal temp;
 
     n = 6;
     if ( start==0 && end==1 ) {
@@ -1184,8 +1184,8 @@ void SplinePointCatagorize(SplinePoint *sp) {
 	;
     } else {
 	BasePoint ndir, ncdir, ncunit, pdir, pcdir, pcunit;
-	double nlen, nclen, plen, pclen;
-	double dot;
+	bigreal nlen, nclen, plen, pclen;
+	bigreal dot;
 
 	ncdir.x = sp->nextcp.x - sp->me.x; ncdir.y = sp->nextcp.y - sp->me.y;
 	pcdir.x = sp->prevcp.x - sp->me.x; pcdir.y = sp->prevcp.y - sp->me.y;
@@ -1727,7 +1727,7 @@ ImageList *ImageListTransform(ImageList *img, real transform[6]) {
 	/* Don't support rotating, flipping or skewing images */;
     if ( transform[0]!=0 && transform[3]!=0 ) {
 	while ( img!=NULL ) {
-	    double x = img->xoff;
+	    bigreal x = img->xoff;
 	    img->xoff = transform[0]*x + transform[2]*img->yoff + transform[4];
 	    img->yoff = transform[1]*x + transform[3]*img->yoff + transform[5];
 	    if (( img->xscale *= transform[0])<0 ) {
@@ -1783,7 +1783,7 @@ static void TransformPoint(SplinePoint *sp, real transform[6]) {
 }
 
 static void TransformSpiro(spiro_cp *cp, real transform[6]) {
-    double x;
+    bigreal x;
 
     x = transform[0]*cp->x + transform[2]*cp->y + transform[4];
     cp->y = transform[1]*cp->x + transform[3]*cp->y + transform[5];
@@ -1793,7 +1793,7 @@ static void TransformSpiro(spiro_cp *cp, real transform[6]) {
 static void TransformPTsInterpolateCPs(BasePoint *fromorig,Spline *spline,
 	BasePoint *toorig,real transform[6] ) {
     BasePoint totrans, temp;
-    double fraction;
+    bigreal fraction;
 
     /* Normally the "from" point will already have been translated, and the "to" */
     /*  point will need to be. But if we have a closed contour then on the */
@@ -2771,7 +2771,7 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
-			double val = strtod(pt,NULL);
+			bigreal val = strtod(pt,NULL);
 			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;
@@ -3373,9 +3373,9 @@ return( true );
 #if 0
 /* These methods purport to solve all quartics. But they don't solve mine */
 /*  so I may have miscopied or something, but I'll give up on algebraic solns*/
-static int QuarticAlternate(Quartic *q,double ts[4],double offset) {
+static int QuarticAlternate(Quartic *q,bigreal ts[4],bigreal offset) {
     Spline1D sp;
-    double zs[3], h, j, temp;
+    bigreal zs[3], h, j, temp;
     int i;
 
     sp.a = 1; sp.b = 2*q->c; sp.c = q->c*q->c-4*q->e;
@@ -3407,10 +3407,10 @@ return( -1 );
 return( i );
 }
 
-static int _QuarticSolve(Quartic *q,double ts[4]) {
+static int _QuarticSolve(Quartic *q,bigreal ts[4]) {
     Quartic work;
-    double zs[3], pq[2], r;
-    double f,offset;
+    bigreal zs[3], pq[2], r;
+    bigreal f,offset;
     Spline1D sp;
     int i,j;
 
@@ -3463,7 +3463,7 @@ return( -1 );
 		ts[j] -= offset;
 	} else if ( RealNear(work.d,0)) {
 	    /* now we have a quadratic in s^2 */
-	    double b24ac = work.c*work.c - 4*work.e, t1, t2;
+	    bigreal b24ac = work.c*work.c - 4*work.e, t1, t2;
 	    if ( b24ac<0 && b24ac>-.0001 ) b24ac = 0;
 	    if ( b24ac < 0 )	/* All roots imaginary */
 return( -1 );
@@ -3669,7 +3669,7 @@ return( -1 );
 extended SplineSolveFixup(const Spline1D *sp, real tmin, real tmax, extended sought) {
     extended ts[3];
     int i;
-    double factor;
+    bigreal factor;
     extended t;
     extended val, valp, valm;
 
@@ -3711,15 +3711,15 @@ return( -1 );
 		valm = -valm;
 	    if ( valp<val && valp<valm ) {
 		if ( factor==1024.0*1024.0*1024.0*1024*1024 ) {
-		    double it = IterateSplineSolve(sp,tmin,tmax,sought);
-		    printf( "Used %g: orig-t: %g, new-t: %g iter-t: %g\n", factor, t, tp, it );
+		    bigreal it = IterateSplineSolve(sp,tmin,tmax,sought);
+		    printf( "Used %g: orig-t: %g, new-t: %g iter-t: %g\n", (double) factor, (double) t, (double) tp, (double) it );
 		}
 		t = tp;
 		val = valp;
 	    } else if ( valm<val ) {
 		if ( factor==1024.0*1024.0*1024.0*1024*1024 ) {
-		    double it = IterateSplineSolve(sp,tmin,tmax,sought);
-		    printf( "Used -%g: orig-t: %g, new-t: %g iter-t: %g\n", factor, t, tm, it );
+		    bigreal it = IterateSplineSolve(sp,tmin,tmax,sought);
+		    printf( "Used -%g: orig-t: %g, new-t: %g iter-t: %g\n", (double) factor, (double) t, (double) tm, (double) it );
 		}
 		t = tm;
 		val = valm;
@@ -3785,7 +3785,7 @@ return( -1 );
 extended IterateSplineSolveFixup(const Spline1D *sp, extended tmin, extended tmax,
 	extended sought) {
     extended t;
-    double factor;
+    bigreal factor;
     extended val, valp, valm;
 
     if ( tmin>tmax ) {
@@ -3963,9 +3963,9 @@ void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 ) {
     *_t1 = t1; *_t2 = t2;
 }
 
-double SplineCurvature(Spline *s, double t) {
+bigreal SplineCurvature(Spline *s, bigreal t) {
 	/* Kappa = (x'y'' - y'x'') / (x'^2 + y'^2)^(3/2) */
-    double dxdt, dydt, d2xdt2, d2ydt2, denom, numer;
+    bigreal dxdt, dydt, d2xdt2, d2ydt2, denom, numer;
 
     if ( s==NULL )
 return( CURVATURE_ERROR );
@@ -3985,13 +3985,13 @@ return( CURVATURE_ERROR );
 return( numer/denom );
 }
 
-int SplineAtInflection(Spline1D *sp, double t ) {
+int SplineAtInflection(Spline1D *sp, bigreal t ) {
     /* It's a point of inflection if d sp/dt==0 and d2 sp/dt^2==0 */
 return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
 	    RealNear( 6*sp->a*t + 2*sp->b, 0));
 }
 
-int SplineAtMinMax(Spline1D *sp, double t ) {
+int SplineAtMinMax(Spline1D *sp, bigreal t ) {
     /* It's a point of inflection if d sp/dt==0 and d2 sp/dt^2!=0 */
 return ( RealNear( (3*sp->a*t + 2*sp->b)*t + sp->c,0) &&
 	    !RealNear( 6*sp->a*t + 2*sp->b, 0));
@@ -4149,7 +4149,7 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
 int IntersectLines(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2) {
-    double s1, s2;
+    bigreal s1, s2;
 
     if ( line1_1->x == line1_2->x ) {
 	inter->x = line1_1->x;
@@ -4184,7 +4184,7 @@ int IntersectLinesClip(BasePoint *inter,
 	BasePoint *line1_1, BasePoint *line1_2,
 	BasePoint *line2_1, BasePoint *line2_2) {
     BasePoint old = *inter, unit;
-    double len, val;
+    bigreal len, val;
 
     if ( !IntersectLines(inter,line1_1,line1_2,line2_1,line2_2))
 return( false );
@@ -4209,8 +4209,8 @@ return( true );
 int IntersectLinesSlopes(BasePoint *inter,
 	BasePoint *line1, BasePoint *slope1,
 	BasePoint *line2, BasePoint *slope2) {
-    double denom = slope1->y*(double) slope2->x - slope1->x*(double) slope2->y;
-    double x,y;
+    bigreal denom = slope1->y*(bigreal) slope2->x - slope1->x*(bigreal) slope2->y;
+    bigreal x,y;
 
     if ( denom == 0 )
 return( false );			/* Lines are colinear, no intersection */
@@ -4219,9 +4219,9 @@ return( false );			/* Lines are colinear, no intersection */
 return( true );
     }
 
-    x = (slope1->y*(double) slope2->x*line1->x -
-	    slope2->y*(double) slope1->x*line2->x +
-	    slope2->x*(double) slope1->x*(line2->y - line1->y)) / denom;
+    x = (slope1->y*(bigreal) slope2->x*line1->x -
+	    slope2->y*(bigreal) slope1->x*line2->x +
+	    slope2->x*(bigreal) slope1->x*(line2->y - line1->y)) / denom;
     if ( slope1->x==0 )
 	y = slope2->y*(x-line2->x)/slope2->x + line2->y;
     else
@@ -4237,7 +4237,7 @@ return( true );
 #if 0
 static int CheckEndpoint(BasePoint *end,Spline *s,int te,BasePoint *pts,
 	real *tarray,real *ts,int soln) {
-    double t;
+    bigreal t;
     int i;
 
     for ( i=0; i<soln; ++i )
@@ -4544,16 +4544,16 @@ return( cnt );
 }
 
 static int Closer(const Spline *s1,const Spline *s2,extended t1,extended t2,extended t1p,extended t2p) {
-    double x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].d;
-    double y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].d;
-    double x2 = ((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
-    double y2 = ((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
-    double diff = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
-    double x1p = ((s1->splines[0].a*t1p+s1->splines[0].b)*t1p+s1->splines[0].c)*t1p+s1->splines[0].d;
-    double y1p = ((s1->splines[1].a*t1p+s1->splines[1].b)*t1p+s1->splines[1].c)*t1p+s1->splines[1].d;
-    double x2p = ((s2->splines[0].a*t2p+s2->splines[0].b)*t2p+s2->splines[0].c)*t2p+s2->splines[0].d;
-    double y2p = ((s2->splines[1].a*t2p+s2->splines[1].b)*t2p+s2->splines[1].c)*t2p+s2->splines[1].d;
-    double diffp = (x1p-x2p)*(x1p-x2p) + (y1p-y2p)*(y1p-y2p);
+    bigreal x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].d;
+    bigreal y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].d;
+    bigreal x2 = ((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].d;
+    bigreal y2 = ((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].d;
+    bigreal diff = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+    bigreal x1p = ((s1->splines[0].a*t1p+s1->splines[0].b)*t1p+s1->splines[0].c)*t1p+s1->splines[0].d;
+    bigreal y1p = ((s1->splines[1].a*t1p+s1->splines[1].b)*t1p+s1->splines[1].c)*t1p+s1->splines[1].d;
+    bigreal x2p = ((s2->splines[0].a*t2p+s2->splines[0].b)*t2p+s2->splines[0].c)*t2p+s2->splines[0].d;
+    bigreal y2p = ((s2->splines[1].a*t2p+s2->splines[1].b)*t2p+s2->splines[1].c)*t2p+s2->splines[1].d;
+    bigreal diffp = (x1p-x2p)*(x1p-x2p) + (y1p-y2p)*(y1p-y2p);
 
     if ( diff<diffp )
 return( false );
@@ -5167,7 +5167,7 @@ return( -1 );
 return( p.t );
 }
 
-int SplineT2SpiroIndex(Spline *spline,double t,SplineSet *spl) {
+int SplineT2SpiroIndex(Spline *spline,bigreal t,SplineSet *spl) {
     /* User clicked on a spline. Now, where in the spiro array was that? */
     /* I shall assume that the first time we hit a spiro point that corresponds */
     /*  to the point. In some really gnarly spiro tangles that might not be */
@@ -5176,7 +5176,7 @@ int SplineT2SpiroIndex(Spline *spline,double t,SplineSet *spl) {
     /* It appears that each spiro cp has a corresponding splinepoint, but */
     /*  I don't want to rely on that because it won't be true after a simplify*/
     Spline *sp, *lastsp=spl->first->next;
-    double lastt = 0, test;
+    bigreal lastt = 0, test;
     int i;
     BasePoint bp;
 
@@ -5211,8 +5211,8 @@ return( -1 );
 }
 
 static int SplinePrevMinMax(Spline *s,int up) {
-    const double t = .9999;
-    double y;
+    const bigreal t = .9999;
+    bigreal y;
     int pup;
 
     s = s->from->prev;
@@ -5224,8 +5224,8 @@ return( pup!=up );
 }
 
 static int SplineNextMinMax(Spline *s,int up) {
-    const double t = .0001;
-    double y;
+    const bigreal t = .0001;
+    bigreal y;
     int nup;
 
     s = s->to->next;
@@ -6714,7 +6714,7 @@ struct cluster {
 };
 
 static void countcluster(SplinePoint **ptspace, struct cluster *cspace,
-	int ptcnt, int is_y, int i, double within, double max) {
+	int ptcnt, int is_y, int i, bigreal within, bigreal max) {
     int j;
 
     cspace[i].cnt = 1;	/* current point is always within its own cluster */
@@ -6744,9 +6744,9 @@ static void countcluster(SplinePoint **ptspace, struct cluster *cspace,
 static int _SplineCharRoundToCluster(SplineChar *sc,SplinePoint **ptspace,
 	struct cluster *cspace,int ptcnt,int is_y,int dohints,
 	int layer, int changed,
-	double within, double max ) {
+	bigreal within, bigreal max ) {
     int i,j,best;
-    double low,high,cur;
+    bigreal low,high,cur;
 
     for ( i=0; i<ptcnt; ++i )
 	cspace[i].cnt = 1;		/* Initialize to non-zero */
@@ -6784,7 +6784,7 @@ return( changed );
 	    changed = true;
 	}
 	for ( i=cspace[j].first; i<=cspace[j].last; ++i ) {
-	    double off = (&ptspace[i]->me.x)[is_y] - cur;
+	    bigreal off = (&ptspace[i]->me.x)[is_y] - cur;
 	    (&ptspace[i]->nextcp.x)[is_y] -= off;
 	    (&ptspace[i]->prevcp.x)[is_y] -= off;
 	    (&ptspace[i]->me.x)[is_y] -= off;
@@ -6825,7 +6825,7 @@ return( changed );
     }
 }
 
-int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) {
+int SCRoundToCluster(SplineChar *sc,int layer,int sel,bigreal within,bigreal max) {
     /* Do a cluster analysis on the points in this character. Look at each */
     /* axis in turn. Order all points in char along this axis. For each pt: */
     /*  look at the two points before & after it. If those to pts are within */
@@ -6946,7 +6946,7 @@ return(false);				/* Can't be any clusters */
 return( changed );
 }
 
-static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
+static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,bigreal err_sq) {
     /* Remove extrema which are very close to one of the spline end-points */
     /*  and which are in the oposite direction (along the normal of the */
     /*  close end-point's cp) from the other end-point */
@@ -7044,7 +7044,7 @@ static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
 return( changed );
 }
 
-static int SplineRemoveAnnoyingExtrema(Spline *s,double err_sq) {
+static int SplineRemoveAnnoyingExtrema(Spline *s,bigreal err_sq) {
     int changed;
 
     changed = SplineRemoveAnnoyingExtrema1(s,0,err_sq);
@@ -7053,9 +7053,9 @@ static int SplineRemoveAnnoyingExtrema(Spline *s,double err_sq) {
 return( changed );
 }
 
-int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,double err) {
+int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,bigreal err) {
     int changed = false;
-    double err_sq = err*err;
+    bigreal err_sq = err*err;
     Spline *s, *first;
 
 
@@ -7277,20 +7277,20 @@ return( true );
 return( false );
 }
 
-int SSBoundsWithin(SplineSet *ss,double z1, double z2, double *wmin, double *wmax, int major ) {
+int SSBoundsWithin(SplineSet *ss,bigreal z1, bigreal z2, bigreal *wmin, bigreal *wmax, int major ) {
     /* if major==0 then find y values when x between z1, z2 */
     /* if major==1 then find x values when y between z1, z2 */
-    double w0= 1e23, w1= -1e23;
+    bigreal w0= 1e23, w1= -1e23;
     int any=0;
     Spline *s, *first;
     Spline1D *ws, *zs;
     extended ts[3];
-    double w, z;
+    bigreal w, z;
     int i;
     int other = !major;
 
     if ( z1>z2 ) {
-	double temp = z1;
+	bigreal temp = z1;
 	z1 = z2;
 	z2 = temp;
     }

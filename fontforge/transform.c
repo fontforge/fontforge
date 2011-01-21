@@ -107,7 +107,7 @@ static GTextInfo transformtypes[] = {
 
 static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];
-    double angle, angle2;
+    bigreal angle, angle2;
     int i, index, err;
     int alllayers = false, round_2_int = false, dokerns = false, dokp=false;
     int dogrid = false, dowidth = false;

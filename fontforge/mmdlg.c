@@ -183,7 +183,7 @@ return( uc_copy(""));
     MMWeightsUnMap(mm->defweights,axiscoords,mm->axis_count);
     pt = buffer;
     for ( i=0; i<mm->axis_count; ++i ) {
-	sprintf( pt,"%g ", MMAxisUnmap(mm,i,axiscoords[i]));
+	sprintf( pt,"%g ", (double) MMAxisUnmap(mm,i,axiscoords[i]));
 	pt += strlen(pt);
     }
     pt[-1] = ' ';

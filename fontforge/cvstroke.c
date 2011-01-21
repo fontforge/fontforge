@@ -849,7 +849,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	gcd[gcdoff++].creator = GLabelCreate;
 	swarray[swpos][0] = &gcd[gcdoff-1];
 
-	sprintf( axisbuf, "%g", (double) 2*def->minorradius );
+	sprintf( axisbuf, "%g", (double) (2*def->minorradius) );
 	label[gcdoff].text = (unichar_t *) axisbuf;
 	label[gcdoff].text_is_1byte = true;
 	gcd[gcdoff].gd.pos.width = 50;

@@ -69,11 +69,11 @@ void FreeEdges(EdgeList *es) {
     HintsFree(es->vhints);
 }
 
-double TOfNextMajor(Edge *e, EdgeList *es, double sought_m ) {
+bigreal TOfNextMajor(Edge *e, EdgeList *es, bigreal sought_m ) {
     /* We want to find t so that Mspline(t) = sought_m */
     /*  the curve is monotonic */
     Spline1D *msp = &e->spline->splines[es->major];
-    double new_t;
+    bigreal new_t;
 
     if ( es->is_overlap ) {
 
@@ -993,7 +993,7 @@ static void StrokeLine(uint8 *bytemap,IPoint *from, IPoint *to,EdgeList *es,int 
     int x1, x2, y1, y2;
     int dx, dy;
     BasePoint vector;
-    double len;
+    bigreal len;
     int xoff, yoff;
 
     x1 = from->x - es->omin;
@@ -1139,7 +1139,7 @@ static void StrokePaths(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt,
     StrokeSS(bytemap,es,width,grey,layer->splines,clipmask);
 }
 
-static int PatternHere(double scale,DBounds *bbox,int iy,int ix,
+static int PatternHere(bigreal scale,DBounds *bbox,int iy,int ix,
 	struct pattern *pat) {
     real x,y,tempx;
     int grey;
@@ -1167,12 +1167,12 @@ return( 0 );
 return( grey );
 }
 
-int GradientHere(double scale,DBounds *bbox,int iy,int ix,
+int GradientHere(bigreal scale,DBounds *bbox,int iy,int ix,
 	struct gradient *grad, struct pattern *pat,
 	int defgrey) {
     real x,y;
     BasePoint unit, offset;
-    double len, relpos;
+    bigreal len, relpos;
     int i, col, grey;
 
     if ( grad==NULL ) {
@@ -1221,7 +1221,7 @@ return ( defgrey );
     else if ( relpos==grad->grad_stops[i].offset || i==0 )
 	col = grad->grad_stops[i].col;
     else {
-	double percent = (relpos-grad->grad_stops[i-1].offset)/ (grad->grad_stops[i].offset-grad->grad_stops[i-1].offset);
+	bigreal percent = (relpos-grad->grad_stops[i-1].offset)/ (grad->grad_stops[i].offset-grad->grad_stops[i-1].offset);
 	uint32 col1 = grad->grad_stops[i-1].col;
 	uint32 col2 = grad->grad_stops[i  ].col;
 	if ( col1==COLOR_INHERITED ) col1 = 0x000000;
@@ -1237,7 +1237,7 @@ return ( defgrey );
 return( 255-grey );
 }
 	
-void PatternPrep(SplineChar *sc,struct brush *brush,double scale) {
+void PatternPrep(SplineChar *sc,struct brush *brush,bigreal scale) {
     SplineChar *psc;
     int pixelsize;
     SplineFont *sf;
@@ -1430,7 +1430,7 @@ return( 0 );
 /*  integer value there are a few cases (fill pattern for charview) where */
 /*  I need more precision and the pixelsize itself is largely irrelevant */
 /*  (I care about the scale though) */
-static BDFChar *_SplineCharRasterize(SplineChar *sc, int layer, double pixelsize, int is_aa) {
+static BDFChar *_SplineCharRasterize(SplineChar *sc, int layer, bigreal pixelsize, int is_aa) {
     EdgeList es;
     BDFChar *bdfc;
     int depth = 0;
@@ -1528,7 +1528,7 @@ return( NULL );
 return( bdfc );
 }
 
-BDFChar *SplineCharRasterize(SplineChar *sc, int layer, double pixelsize) {
+BDFChar *SplineCharRasterize(SplineChar *sc, int layer, bigreal pixelsize) {
 return( _SplineCharRasterize(sc,layer,pixelsize,false));
 }
 
