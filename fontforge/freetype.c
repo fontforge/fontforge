@@ -602,7 +602,7 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
     if ( _FT_Set_Char_Size(ftc->face,(int) (ptsize*64),(int) (ptsize*64), dpi, dpi))
  goto fail;
     if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[gid],
-	    depth==1?(FT_LOAD_RENDER|FT_LOAD_MONOCHROME):FT_LOAD_RENDER))
+	    depth==1?(FT_LOAD_RENDER|FT_LOAD_TARGET_MONO):FT_LOAD_RENDER))
  goto fail;
 
     slot = ftc->face->glyph;
