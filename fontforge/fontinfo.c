@@ -30,6 +30,7 @@
 #include <chardata.h>
 #include <utype.h>
 #include "unicoderange.h"
+#include <locale.h>
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
@@ -1978,6 +1979,58 @@ static void PIPrivateCheck(struct gfi_data *d) {
     }
 }
 
+static char *LocaleCvtCopy(const unichar_t *val) {
+    struct lconv *loc = localeconv();
+    char *space, *pt, *ret;
+    const unichar_t *upt; unichar_t *end;
+    double dval;
+    char *oldloc;
+    int foundarray=0;
+
+    if ( strcmp(loc->decimal_point,".")==0 )
+return( cu_copy(val));
+
+    for ( upt=val ; isspace(*upt); ++upt );
+    pt = space = galloc(3*u_strlen(upt)+10);
+
+    if ( *upt=='[' ) {
+	*pt++ = '[';
+	++upt;
+	while ( isspace(*upt) ) ++upt;
+	foundarray = 1;
+    }
+
+    oldloc = copy(setlocale(LC_NUMERIC,NULL));
+
+    forever {
+	dval = u_strtod(upt,&end);
+	setlocale(LC_NUMERIC,"C");
+	if ( *end=='.' ) {		/* Assume they used standard PS locale */
+	    dval = u_strtod(upt,&end);
+	    if ( upt==end )
+    break;
+	    while ( upt<end )		/* Don't pass through sprintf, that could lose precision, or something */
+		*pt++ = *upt++;
+	} else {
+	    if ( upt==end )
+    break;
+	    sprintf( pt, "%g", dval );
+	    pt += strlen(pt);
+	}
+	setlocale(LC_NUMERIC,oldloc);
+	upt = end;
+	if ( isspace(*upt)) *pt++=' ';
+	while ( isspace(*upt)) ++upt;
+    }
+    setlocale(LC_NUMERIC,oldloc); free(oldloc);
+    if ( foundarray )
+	*pt++ = ']';
+    *pt = '\0';
+    ret = copy(space);
+    free(space);
+return( ret );
+}
+
 static int PIFinishFormer(struct gfi_data *d) {
     unichar_t *end;
     char *buts[3];
@@ -2015,6 +2068,14 @@ return( false );
 	    } else if ( KnownPrivates[i].type==pt_number ) {
 		u_strtod(pt,&end);
 		while ( isspace(*end)) ++end;
+		if ( *end!='\0' ) {
+		    char *oldloc;
+		    oldloc = setlocale(LC_NUMERIC,NULL);
+		    setlocale(LC_NUMERIC,"C");
+		    u_strtod(pt,&end);
+		    while ( isspace(*end)) ++end;
+		    setlocale(LC_NUMERIC,oldloc);
+		}
 		if ( *end!='\0' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected number.\nProceed anyway?"))==1 )
 return( false );
 	    }
@@ -2022,7 +2083,12 @@ return( false );
 
 	/* Ok then set it */
 	free(d->private->values[d->old_sel]);
-	d->private->values[d->old_sel] = cu_copy(val);
+	/* Be careful of numbers with decimal points. They might have been given */
+	/*  to us with commas, but PS will demand full stops, so convert them */
+	if ( KnownPrivates[i].name!=NULL && (KnownPrivates[i].type==pt_number || KnownPrivates[i].type==pt_array))
+	    d->private->values[d->old_sel] = LocaleCvtCopy(val);
+	else
+	    d->private->values[d->old_sel] = cu_copy(val);
 	d->old_sel = -1;
     }
 return( true );
