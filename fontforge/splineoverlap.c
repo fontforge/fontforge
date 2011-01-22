@@ -1526,7 +1526,7 @@ static int CoincidentIntersect(Monotonic *m1,Monotonic *m2,BasePoint *pts,
     extended t, t2, diff;
 
     if ( m1==m2 )
-return( false );		/* Can't be coincident. Adjacent */
+return( false );		/* Stupid question */
     /* Adjacent splines can double back on themselves */
     if ( m1->next==m2 || m1->prev==m2 ) {
 	/* But normally they'll only intersect in one point, where they join */
@@ -1566,8 +1566,11 @@ return( false );
     if ( cnt!=2 )
 return( false );
 
-    if ( RealWithin(t1s[0],t1s[1],.01) )
-return( false );
+    if (( Within16RoundingErrors(t1s[0],m1->tstart) && Within16RoundingErrors(t1s[1],m1->tend)) ||
+	( Within16RoundingErrors(t2s[0],m2->tstart) && Within16RoundingErrors(t2s[1],m2->tend)) )
+	/* It covers one of the monotonics entirely */;
+    else if ( RealWithin(t1s[0],t1s[1],.01) )
+return( false );	/* But otherwise, don't create a new tiny spline */
 
     /* Ok, if we've gotten this far we know that two of the end points are  */
     /*  on both splines.                                                    */
