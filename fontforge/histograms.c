@@ -235,6 +235,10 @@ static void HistFindMax(HistData *h, int sum_around) {
 #define CID_OK			3001
 #define CID_Cancel		3002
 
+#define CID_LeftSide		4001
+#define CID_Histogram		4002
+#define CID_RightSide		4003
+
 struct hist_dlg {
     enum hist_type which;
     SplineFont *sf;
@@ -260,16 +264,11 @@ struct hist_dlg {
 };
 
 static void HistPopup(struct hist_dlg *hist,GEvent *e) {
-    int x = e->u.mouse.x - (hist->x+1);
+    int x = e->u.mouse.x;
     struct hentry *h;
     static char buffer[300];
     char *end = buffer + sizeof(buffer)/sizeof(buffer[0]), *pt, *line;
     int i;
-
-    if ( e->u.mouse.y<hist->y || e->u.mouse.y>hist->y+hist->hheight )
-return;
-    if ( x<0 || x>hist->hwidth-2 )
-return;
 
     x /= hist->barwidth;
     if ( x + hist->hoff > hist->h->high || x + hist->hoff - hist->h->low<0 )
@@ -362,14 +361,9 @@ return( new );
 }
 
 static void HistPress(struct hist_dlg *hist,GEvent *e) {
-    int x = e->u.mouse.x - (hist->x+1);
+    int x = e->u.mouse.x;
     static unichar_t fullformat[] = { '[', '%', 'd', ']', '\0' };
     unichar_t ubuf[20];
-
-    if ( e->u.mouse.y<hist->y || e->u.mouse.y>hist->y+hist->hheight )
-return;
-    if ( x<0 || x>hist->hwidth-2 )
-return;
 
     x /= hist->barwidth;
     x += hist->hoff;
@@ -417,25 +411,30 @@ return;
 
 static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
     GRect r,old;
-    int height = hist->hheight-hist->fh;
-    double yscale = (4*height/5.0)/(hist->h->max-0);
+    int height;
+    double yscale;
     int i;
     char buf[20];
+    GRect size;
+    GDrawGetSize(GDrawableGetWindow(GWidgetGetControl(hist->gw,CID_Histogram)),&size);
+
+    height = size.height-hist->fh-2;
+    yscale = (4*height/5.0)/(hist->h->max-0);
 
     GDrawSetLineWidth(pixmap,0);
-    r.x = hist->x; r.y = hist->y;
-    r.width = hist->hwidth; r.height = height;
+    r.x = 0; r.y = 0;
+    r.width = size.width-1; r.height = height-1;
     GDrawDrawRect(pixmap,&r,0x000000);
 
     ++r.x; r.width--;
     ++r.y; r.height--;
     GDrawPushClip(pixmap,&r,&old);
 
-    for ( i=hist->hoff; (i-hist->hoff)*hist->barwidth<hist->hwidth-2 && i<=hist->h->high; ++i ) {
-	r.x = (i-hist->hoff)*hist->barwidth+hist->x+1; r.width = hist->barwidth;
+    for ( i=hist->hoff; (i-hist->hoff)*hist->barwidth<size.width-2 && i<=hist->h->high; ++i ) {
+	r.x = (i-hist->hoff)*hist->barwidth+1; r.width = hist->barwidth;
 	r.height = rint(hist->h->hist[i-hist->h->low].sum * yscale);
 	if ( r.height>=0 ) {
-	    r.y = hist->y+height - r.height;
+	    r.y = height - r.height;
 	    GDrawFillRect(pixmap,&r,0x2020ff);
 	}
     }
@@ -443,26 +442,51 @@ static void HistExpose(GWindow pixmap, struct hist_dlg *hist) {
     GDrawPopClip(pixmap,&old);
 
     GDrawSetFont(pixmap,hist->font);
-    r.x = 10; r.y = hist->y+height+1; r.width = hist->hwidth+2*(hist->x-10); r.height = hist->fh;
-    GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
     sprintf(buf,"%d",hist->hoff);
-    GDrawDrawBiText8(pixmap,hist->x-GDrawGetText8Width(pixmap,buf,-1,NULL)/2,hist->y+height+hist->as,
-	    buf,-1,NULL,0x000000);
+    GDrawDrawBiText8(pixmap,0,height+2+hist->as, buf,-1,NULL,0x000000);
     sprintf(buf,"%d",hist->hoff+hist->hwidth/hist->barwidth);
-    GDrawDrawBiText8(pixmap,hist->x+hist->hwidth-GDrawGetText8Width(pixmap,buf,-1,NULL)/2,hist->y+height+hist->as,
+    GDrawDrawBiText8(pixmap,size.width-GDrawGetText8Width(pixmap,buf,-1,NULL),height+2+hist->as,
 	    buf,-1,NULL,0x000000);
+}
+
+static void HistRExpose(GWindow pixmap, struct hist_dlg *hist) {
+    int height;
+    double yscale;
+    GRect size;
+    char buf[20];
+
+    GDrawGetSize(GDrawableGetWindow(GWidgetGetControl(hist->gw,CID_RightSide)),&size);
+    height = size.height-hist->fh-2;
+    yscale = (4*height/5.0)/(hist->h->max-0);
 
     sprintf(buf,"%d",hist->h->max);
-    GDrawDrawBiText8(pixmap,hist->x-GDrawGetText8Width(pixmap,buf,-1,NULL)-2,hist->y+height-rint(hist->h->max*yscale),
+    GDrawDrawBiText8(pixmap,1,height-rint(hist->h->max*yscale),
 	    buf,-1,NULL,0x000000);
-    GDrawDrawBiText8(pixmap,hist->x+hist->hwidth+2,hist->y+height-rint(hist->h->max*yscale),
+}
+
+static void HistLExpose(GWindow pixmap, struct hist_dlg *hist) {
+    int height;
+    double yscale;
+    GRect size;
+    char buf[20];
+
+    GDrawGetSize(GDrawableGetWindow(GWidgetGetControl(hist->gw,CID_LeftSide)),&size);
+    height = size.height-hist->fh-2;
+    yscale = (4*height/5.0)/(hist->h->max-0);
+
+    sprintf(buf,"%d",hist->h->max);
+    GDrawDrawBiText8(pixmap,size.width-GDrawGetText8Width(pixmap,buf,-1,NULL)-1,height-rint(hist->h->max*yscale),
 	    buf,-1,NULL,0x000000);
 }
 
 static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {
     int newpos = hist->hoff;
-    int cols = (hist->hwidth-2)/hist->barwidth;
-    GRect r;
+    int cols;
+    GRect size;
+    GGadget *g = GWidgetGetControl(hist->gw,CID_ScrollBar);
+
+    GGadgetGetSize(g,&size);
+    cols = (size.width-2)/hist->barwidth;
 
     switch( sb->type ) {
       case et_sb_top:
@@ -492,25 +516,33 @@ static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {
         newpos = (hist->h->high+1-hist->h->low)-cols + hist->h->low;
     if ( newpos<hist->h->low ) newpos = hist->h->low;
     if ( newpos!=hist->hoff ) {
-	int diff = newpos-hist->hoff;
+	/*int diff = newpos-hist->hoff;*/
 	hist->hoff = newpos;
-	GScrollBarSetPos(GWidgetGetControl(hist->gw,CID_ScrollBar),hist->hoff);
-	r.x = hist->x+1; r.y = hist->y+1;
+	GScrollBarSetPos(g,hist->hoff);
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(hist->gw,CID_Histogram)),NULL,false);
+#if 0
+	r.x = 1; r.y = 1;
 	r.width = hist->hwidth-1; r.height = hist->hheight-1;
 	GDrawScroll(hist->gw,&r,-diff*hist->barwidth,0);
 	r.x = 10; r.y = hist->y+hist->hheight-hist->fh+1;
 	r.width = hist->hwidth+2*(hist->x-10); r.height = hist->fh;
 	GDrawRequestExpose(hist->gw,&r,false);
+#endif
     }
 }
 
 static void HistRefigureSB(struct hist_dlg *hist) {
     GGadget *g = GWidgetGetControl(hist->gw,CID_ScrollBar);
-    int width = hist->hwidth, hoff;
+    int width, hoff, cols;
+    GRect size;
 
-    GScrollBarSetBounds(g,hist->h->low,hist->h->high+1,(width-2)/hist->barwidth);
-    if ( hist->hoff+width/hist->barwidth >hist->h->high ) {
-	hoff = hist->h->high-width/hist->barwidth;
+    GGadgetGetSize(g,&size);
+    width = size.width-2;
+    cols = width/hist->barwidth;
+
+    GScrollBarSetBounds(g,hist->h->low,hist->h->high+1,cols);
+    if ( hist->hoff+cols >hist->h->high ) {
+	hoff = hist->h->high-cols;
 	if ( hoff<0 ) hoff = 0;
 	if ( hoff!=hist->hoff ) {
 	    hist->hoff = hoff;
@@ -520,71 +552,9 @@ static void HistRefigureSB(struct hist_dlg *hist) {
 }
 
 static void HistResize(struct hist_dlg *hist) {
-    GRect size;
-    int width, height, changed=false;
-    GGadget *g;
 
-    GDrawGetSize(hist->gw,&size);
-    width = size.width-2*hist->x;
-    height = size.height - hist->yoff - 20;
-    if ( width!=hist->hwidth || height!=hist->hheight ) {
-	changed = true;
-	g = GWidgetGetControl(hist->gw,CID_Group);
-	GGadgetGetSize(g,&size);
-	GGadgetResize(g,size.width+width-hist->hwidth,size.height+height-hist->hheight);
-    }
-    if ( width!=hist->hwidth ) {
-	g = GWidgetGetControl(hist->gw,CID_Cancel);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x+width-hist->hwidth,size.y);
-	g = GWidgetGetControl(hist->gw,CID_ScrollBar);
-	GGadgetGetSize(g,&size);
-	GGadgetResize(g,width+1,size.height);
-	hist->hwidth = width;
-	HistRefigureSB(hist);
-    }
-    if ( height!=hist->hheight ) {
-	int off = height-hist->hheight;
-	hist->hheight = height;
-	g = GWidgetGetControl(hist->gw,CID_ScrollBar);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_SumAroundL);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_SumAround);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_BarWidthL);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_BarWidth);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_MainValL);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_MainVal);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_SecondaryValL);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_SecondaryVal);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_BlueMsg);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_OK);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-	g = GWidgetGetControl(hist->gw,CID_Cancel);
-	GGadgetGetSize(g,&size);
-	GGadgetMove(g,size.x,size.y+off);
-    }
-    if ( changed )
-	GDrawRequestExpose(hist->gw,NULL,false);
+    HistRefigureSB(hist);
+    GDrawRequestExpose(hist->gw,NULL,false);
 }
 	
 static void HistSet(struct hist_dlg *hist) {
@@ -620,6 +590,76 @@ return;
     PSDictChangeEntry(p,secondary,temp=cu_copy(ret2)); free(temp);
 }
 
+static int leftside_e_h(GWindow gw, GEvent *event) {
+    struct hist_dlg *hist = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("histogram.html");
+return( true );
+	}
+return( false );
+      break;
+      case et_expose:
+	HistLExpose(gw,hist);
+      break;
+      case et_mousemove:
+      case et_mousedown:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
+static int rightside_e_h(GWindow gw, GEvent *event) {
+    struct hist_dlg *hist = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("histogram.html");
+return( true );
+	}
+return( false );
+      break;
+      case et_expose:
+	HistRExpose(gw,hist);
+      break;
+      case et_mousemove:
+      case et_mousedown:
+	GGadgetEndPopup();
+      break;
+    }
+return( true );
+}
+
+static int histogram_e_h(GWindow gw, GEvent *event) {
+    struct hist_dlg *hist = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("histogram.html");
+return( true );
+	}
+return( false );
+      break;
+      case et_expose:
+	HistExpose(gw,hist);
+      break;
+      case et_mousemove:
+	GGadgetEndPopup();
+	HistPopup(hist,event);
+      break;
+      case et_mousedown:
+	GGadgetEndPopup();
+	HistPress(hist,event);
+      break;
+    }
+return( true );
+}
+
 static int hist_e_h(GWindow gw, GEvent *event) {
     struct hist_dlg *hist = GDrawGetUserData(gw);
     int temp;
@@ -635,15 +675,11 @@ return( true );
 	}
 return( false );
     } else if ( event->type==et_resize ) {
-	HistResize(hist);
-    } else if ( event->type==et_expose ) {
-	HistExpose(gw,hist);
+	HistResize(hist);;
     } else if ( event->type==et_mousemove ) {
 	GGadgetEndPopup();
-	HistPopup(hist,event);
     } else if ( event->type==et_mousedown ) {
 	GGadgetEndPopup();
-	HistPress(hist,event);
     } else if ( event->type==et_controlevent ) {
 	switch ( event->u.control.subtype ) {
 	  case et_scrollbarchange:
@@ -665,7 +701,9 @@ return( false );
 		    hist->barwidth = temp;
 		    HistRefigureSB(hist);
 		}
-		GDrawRequestExpose(gw,NULL,false);
+		GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gw,CID_Histogram)),NULL,false);
+		GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gw,CID_LeftSide)),NULL,false);
+		GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gw,CID_RightSide)),NULL,false);
 	      break;
 	    }
 	  break;
@@ -701,8 +739,8 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     GWindow gw;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14];
-    GTextInfo label[14];
+    GGadgetCreateData gcd[17], boxes[6], *hv[4][2], *butarray[9], *hvctls[5][5], *hvbody[3][4];
+    GTextInfo label[17];
     int i,j;
     char binsize[20], barwidth[20], *primary, *secondary;
     FontRequest rq;
@@ -770,59 +808,93 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
 
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
+    memset(&boxes,0,sizeof(boxes));
 
     i=0;
-    gcd[i].gd.pos.x = hist.x; gcd[i].gd.pos.y = hist.y+hist.hheight;
+    gcd[i].gd.pos.width = hist.x; gcd[i].gd.pos.height = 200;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+    gcd[i].gd.cid = CID_LeftSide;
+    gcd[i].gd.u.drawable_e_h = leftside_e_h;
+    gcd[i++].creator = GDrawableCreate;
+    hvbody[0][0] = &gcd[i-1];
+
+    gcd[i].gd.pos.width = hist.hwidth+1; gcd[i].gd.pos.height = 200;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+    gcd[i].gd.cid = CID_Histogram;
+    gcd[i].gd.u.drawable_e_h = histogram_e_h;
+    gcd[i++].creator = GDrawableCreate;
+    hvbody[0][1] = &gcd[i-1];
+
+    gcd[i].gd.pos.width = hist.x; gcd[i].gd.pos.height = 200;
+    gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
+    gcd[i].gd.cid = CID_RightSide;
+    gcd[i].gd.u.drawable_e_h = rightside_e_h;
+    gcd[i++].creator = GDrawableCreate;
+    hvbody[0][2] = &gcd[i-1];
+    hvbody[0][3] = NULL;
+
+    hvbody[1][0] = GCD_Glue;
     gcd[i].gd.pos.width = hist.hwidth+1;
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_pos_in_pixels;
     gcd[i].gd.cid = CID_ScrollBar;
     gcd[i++].creator = GScrollBarCreate;
+    hvbody[1][1] = &gcd[i-1];
+    hvbody[1][2] = GCD_Glue;
+    hvbody[1][3] = NULL;
+    hvbody[2][0] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = &hvbody[0][0];
+    boxes[2].creator = GHVBoxCreate;
 
     label[i].text = (unichar_t *) _("Sum Around:");
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = GDrawPixelsToPoints(NULL,hist.y+hist.hheight)+12+10;
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_SumAroundL;
     gcd[i++].creator = GLabelCreate;
+    hvctls[0][0] = &gcd[i-1];
 
     sprintf(binsize,"%d", hist.sum_around);
     label[i].text = (unichar_t *) binsize;
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 64; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-4;
     gcd[i].gd.pos.width = 30;
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_SumAround;
     gcd[i++].creator = GTextFieldCreate;
+    hvctls[0][1] = &gcd[i-1];
 
     label[i].text = (unichar_t *) _("Bar Width:");
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 120; gcd[i].gd.pos.y = GDrawPixelsToPoints(NULL,hist.y+hist.hheight)+12+10;
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_BarWidthL;
     gcd[i++].creator = GLabelCreate;
+    hvctls[0][2] = &gcd[i-1];
 
     sprintf(barwidth,"%d", hist.barwidth);
     label[i].text = (unichar_t *) barwidth;
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 140+64-30-1; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-4;
     gcd[i].gd.pos.width = 30;
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_BarWidth;
     gcd[i++].creator = GTextFieldCreate;
+    hvctls[0][3] = &gcd[i-1];
+    hvctls[0][4] = NULL;
 
     label[i].text = (unichar_t *) _("BlueValues come in pairs. Select another.");
     label[i].text_is_1byte = true;
     label[i].fg = 0xff0000;
     label[i].bg = GDrawGetDefaultBackground(NULL);
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 8; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
     gcd[i].gd.flags = gg_enabled;
     gcd[i].gd.cid = CID_BlueMsg;
     gcd[i++].creator = GLabelCreate;
+    hvctls[1][0] = &gcd[i-1];
+    hvctls[1][1] = hvctls[1][2] = hvctls[1][3] = GCD_ColSpan;
+    hvctls[1][4] = NULL;
 
     switch ( which ) {
       case hist_hstem:
@@ -847,6 +919,7 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_MainValL;
     gcd[i++].creator = GLabelCreate;
+    hvctls[2][0] = &gcd[i-1];
 
     if ( private!=NULL && (j=PSDictFindEntry(private,primary))!=-1 ) {
 	label[i].text = (unichar_t *) private->values[j];
@@ -858,6 +931,9 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_MainVal;
     gcd[i++].creator = GTextFieldCreate;
+    hvctls[2][1] = &gcd[i-1];
+    hvctls[2][2] = hvctls[2][3] = GCD_ColSpan;
+    hvctls[2][4] = NULL;
 
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
@@ -865,6 +941,7 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_SecondaryValL;
     gcd[i++].creator = GLabelCreate;
+    hvctls[3][0] = &gcd[i-1];
 
     if ( private!=NULL && (j=PSDictFindEntry(private,secondary))!=-1 ) {
 	label[i].text = (unichar_t *) private->values[j];
@@ -876,9 +953,15 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     gcd[i].gd.flags = gg_enabled|gg_visible;
     gcd[i].gd.cid = CID_SecondaryVal;
     gcd[i++].creator = GTextFieldCreate;
+    hvctls[3][1] = &gcd[i-1];
+    hvctls[3][2] = hvctls[3][3] = GCD_ColSpan;
+    hvctls[3][4] = NULL;
+    hvctls[4][0] = NULL;
 
-    gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26;
-    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = &hvctls[0][0];
+    boxes[3].creator = GHVBoxCreate;
+
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[i].text = (unichar_t *) _("_OK");
     label[i].text_is_1byte = true;
@@ -886,9 +969,8 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_OK;
     gcd[i++].creator = GButtonCreate;
+    butarray[0] = GCD_Glue; butarray[1] = &gcd[i-1]; butarray[2] = GCD_Glue; butarray[3] = GCD_Glue;
 
-    gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
-    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[i].text = (unichar_t *) _("_Cancel");
     label[i].text_is_1byte = true;
@@ -897,18 +979,36 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *select
     gcd[i].gd.mnemonic = 'C';
     gcd[i].gd.cid = CID_Cancel;
     gcd[i++].creator = GButtonCreate;
+    butarray[4] = GCD_Glue; butarray[5] = &gcd[i-1]; butarray[6] = GCD_Glue; butarray[7] = NULL;
 
-    gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
-    gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[i].gd.cid = CID_Group;
-    gcd[i++].creator = GGroupCreate;
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = &butarray[0];
+    boxes[4].creator = GHBoxCreate;
 
-    GGadgetsCreate(gw,gcd);
+    hv[0][0] = &boxes[2]; hv[0][1] = NULL;
+    hv[1][0] = &boxes[3]; hv[1][1] = NULL;
+    hv[2][0] = &boxes[4]; hv[2][1] = NULL; hv[3][0] = NULL;
 
-    hist.hoff = hist.h->low;
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = &hv[0][0];
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,1);
+    GHVBoxSetExpandableRow(boxes[2].ret,0);
+    GHVBoxSetExpandableCol(boxes[3].ret,1);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
+
+    hist.hoff = 0;
+    if ( hist.h->low>0 )
+	hist.hoff = hist.h->low;
+    GScrollBarSetPos(GWidgetGetControl(hist.gw,CID_ScrollBar),hist.hoff);
     HistRefigureSB(&hist);
 
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
     while ( !hist.done )
 	GDrawProcessOneEvent(NULL);
