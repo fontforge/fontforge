@@ -1876,7 +1876,7 @@ static char *rplarraydecimal(const char *orig,const char *decimal_point,const ch
     const char *start, *pt; int ch;
 
     nlen = 2*strlen(orig)+10;
-    npt = new = galloc(nlen+1);
+    npt = new = gcalloc(1,nlen+1);
     *npt++ = '[';
 
     for ( pt=orig; isspace(*pt) || *pt=='['; ++pt );
@@ -1897,9 +1897,9 @@ return( NULL );
 	    new = grealloc(new,nlen += strlen(rpl)+100);
 	    npt = new+noff;
 	}
-	if ( npt[-1]!=']' )
+	if ( npt[-1]!='[' )
 	    *npt++ = ' ';
-	strcmp(npt,rpl);
+	strcpy(npt,rpl);
 	free(rpl);
 	npt += strlen(npt);
 	while ( isspace(*pt)) ++pt;
