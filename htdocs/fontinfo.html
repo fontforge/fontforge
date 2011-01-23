@@ -411,7 +411,7 @@
     <A NAME="Private">Private</A> -- <SMALL>(font-wide postscript hinting)</SMALL>
   </H2>
   <P>
-  <IMG SRC="fontinfo-private.png" WIDTH="376" HEIGHT="544" ALIGN="Right">This
+  <IMG SRC="fontinfo-private.png" WIDTH="480" HEIGHT="548" ALIGN="Right">This
   sub-dialog shows most entries in the font's Private dictionary. The interesting
   things in this dictionary are mostly concerned with hints appropriate for
   the entire font. I shall not go into detail about the meanings of the various
@@ -421,10 +421,15 @@
   <P>
   Don't try to change these until you understand what they mean.
   <P>
-  The dialog is shown at right. It consists of a list, an editable region and
-  a series of buttons. The list gives the names (keys) of the dictionary entries,
-  while the editable region displays the value of the currently selected entry.
-  To change an entry, simply select its key and then modify the value below.
+  The dialog is shown at right. It consists of a list of dictionary key/value
+  pairs. The keys are on the left, values on the right. Generally you will want
+  to use the standard PostScript keys (these are available from a pulldown list
+  that appears when you press one of the little grey buttons).
+  <P>
+  Note: The values must be things which PostScript can parse. This means that
+  <CODE>ForceBold</CODE> must have a value of "false" or "true", and "False" or "faux"
+  will not work. Similarly the decimal point in numbers must be "." (not ",").
+  If you enter a "," by mistake FontForge will convert it for you.
   <P>
   For example the <CODE>BlueValues</CODE> entry specifies certain key regions
   of the font in a vertical direction. For instance it might contain the baseline
@@ -435,30 +440,18 @@
   643</CODE>.
   <P>
   When the <CODE>[Guess]</CODE> button is enabled FontForge thinks it can make
-  a reasonable guess for the value of the currently selected entry. Often two
-  entries in the dictionary will be closely linked and guessing at one will
-  also guess at the value of the other (FontForge will warn you of this). In
-  this case if FontForge were to guess the value of <CODE>BlueValues</CODE>
-  it would also guess the value of <CODE>OtherBlues</CODE>.
+  a reasonable guess for the value of the currently selected entry.
   <P>
-  The [Hist] button is similar, it will bring up a
+  The <CODE>[Histogram]</CODE> button is similar, it will bring up a
   <A HREF="histogram.html">dialog showing a histogram</A> of the values of
   an attribute of the font. The hope is that this will allow you to pick a
   good value for the entry.
   <P>
-  You may also delete an entry from the dictionary with the <CODE>[Remove]
-  </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) are required
-  to be present in any type1 font, but you may still delete them. FontForge
+  You may also delete an entry from the dictionary with the <CODE>[Delete]
+  </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) must
+  be present in any type1 font, but you may still delete them. FontForge
   will simply guess at a reasonable value when it needs to generate the
-  font.<BR Clear=Right>
-  <P>
-  <IMG SRC="privatekey.png" WIDTH="208" HEIGHT="146" ALIGN="Left"><IMG SRC="privatekeymenu.png"
-      WIDTH="208" HEIGHT="202" ALIGN="Right">The <CODE>[Add]</CODE> button allows
-  you to add new keys to the dictionary. Every key will be added with a blank
-  value, and you will almost certainly need to provide an appropriate value
-  for it. When you press <CODE>[Add]</CODE> a dialog pops up which allows you
-  to enter the key's name. There is a pull down list of known keys (that aren't
-  already in the dictionary), or you may add keys by typing them in.
+  font.
   <P>
   Certain keys affect things other than hints. The <CODE>lenIV</CODE> entry
   controls how much random padding is placed around the type1 strings when
@@ -466,8 +459,7 @@
   (4 bytes per glyph in pfb format, 8 bytes in pfa) you may choose another
   value. The UniqueID key represents the font's Unique postscript ID. If you
   provide a value here then FontForge will copy it into the UniqueID field
-  in the Font Dictionary. If you do not provide a UniqueID here, FontForge
-  will generate a random one itself (this is different from True Type's UniqueID.
+  in the Font Dictionary. (this is different from True Type's UniqueID.
   They perform the same function but are formatted differently).
   <P>
   Some of these entries are only meaningful for PostScript fonts, others will

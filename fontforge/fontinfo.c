@@ -1551,16 +1551,9 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_StrokeWidth		1223
 #define CID_Backgrounds		1226
 
-#define CID_PrivateEntries	2001
-#define	CID_PrivateValues	2002
-#define	CID_Add			2003
+#define CID_Private		2001
 #define CID_Guess		2004
-#define CID_Remove		2005
 #define CID_Hist		2006
-#define CID_Top			2007
-#define CID_Up			2008
-#define CID_Down		2009
-#define CID_Bottom		2010
 
 #define CID_TTFTabs		3000
 #define CID_WeightClass		3001
@@ -1769,459 +1762,312 @@ static struct { const char *name; short type, arr_size, present; } KnownPrivates
     { NULL }
 };
 
-struct ask_data {
-    int ret;
-    int done;
+static GTextInfo psprivate_nameids[] = {
+/* Don't translate these here either */
+    { (unichar_t *) "BlueValues", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "OtherBlues", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "BlueFuzz", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "FamilyBlues", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "FamilyOtherBlues", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "BlueScale", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "BlueShift", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "StdHW", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "StdVW", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "StemSnapH", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "StemSnapV", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "ForceBold", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "LanguageGroup", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "RndStemUp", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "lenIV", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "ExpansionFactor", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) "Erode", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }
 };
 
-static int Ask_Cancel(GGadget *g, GEvent *e) {
-    GWindow gw;
-    struct ask_data *d;
+static void PI_KeyEnable(GGadget *g,GMenuItem *mi, int r, int c) {
+    int i,j, rows;
+    struct matrix_data *strings = _GMatrixEditGet(g, &rows);
+    int cols = GMatrixEditGetColCnt(g);
+    int found;
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gw = GGadgetGetWindow(g);
-	d = GDrawGetUserData(gw);
-	d->done = true;
-    }
-return( true );
-}
-
-static int Ask_OK(GGadget *g, GEvent *e) {
-    GWindow gw;
-    struct ask_data *d;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gw = GGadgetGetWindow(g);
-	d = GDrawGetUserData(gw);
-	d->done = d->ret = true;
-    }
-return( true );
-}
-
-static int ask_e_h(GWindow gw, GEvent *event) {
-    if ( event->type==et_close ) {
-	struct ask_data *d = GDrawGetUserData(gw);
-	d->done = true;
-    } else if ( event->type == et_char ) {
-return( false );
-    }
-return( true );
-}
-
-static char *AskKey(SplineFont *sf) {
-    int i,j, cnt=0;
-    GTextInfo *ti;
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8], boxes[3], *varray[9], *harray[7];
-    GTextInfo label[8];
-    struct ask_data d;
-    char *ret;
-    int ptwidth;
-
-    if ( sf->private==NULL )
-	for ( i=0; KnownPrivates[i].name!=NULL; ++i ) {
-	    KnownPrivates[i].present = 0;
-	    ++cnt;
-	}
-    else {
-	for ( i=0; KnownPrivates[i].name!=NULL; ++i ) {
-	    for ( j=0; j<sf->private->next; ++j )
-		if ( strcmp(KnownPrivates[i].name,sf->private->keys[j])==0 )
-	    break;
-	    if ( !(KnownPrivates[i].present = (j<sf->private->next)) )
-		++cnt;
-	}
-    }
-    if ( cnt==0 )
-	ti = NULL;
-    else {
-	ti = gcalloc(cnt+1,sizeof(GTextInfo));
-	for ( i=cnt=0; KnownPrivates[i].name!=NULL; ++i )
-	    if ( !KnownPrivates[i].present )
-		ti[cnt++].text = uc_copy(KnownPrivates[i].name);
-    }
-
-    memset(&d,'\0',sizeof(d));
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.is_dlg = true;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Private Key");
-    pos.x = pos.y = 0;
-    ptwidth = 2*GIntGetResource(_NUM_Buttonsize)+GGadgetScale(60);
-    pos.width =GDrawPointsToPixels(NULL,ptwidth);
-    pos.height = GDrawPointsToPixels(NULL,90);
-    gw = GDrawCreateTopWindow(NULL,&pos,ask_e_h,&d,&wattrs);
-
-    memset(&label,0,sizeof(label));
-    memset(&gcd,0,sizeof(gcd));
-
-    label[0].text = (unichar_t *) _("Key (in Private dictionary)");
-    label[0].text_is_1byte = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 6;
-    gcd[0].gd.flags = gg_visible | gg_enabled;
-    gcd[0].creator = GLabelCreate;
-    varray[0] = &gcd[0]; varray[1] = NULL;
-
-    gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = 18; gcd[1].gd.pos.width = ptwidth-20;
-    gcd[1].gd.flags = gg_visible | gg_enabled;
-    gcd[1].creator = GTextFieldCreate;
-    if ( ti!=NULL ) {
-	gcd[1].gd.u.list = ti;
-	gcd[1].creator = GListFieldCreate;
-    }
-    varray[2] = &gcd[1]; varray[3] = NULL;
-    varray[4] = GCD_Glue; varray[5] = NULL;
-
-    gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
-    gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-    gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[2].text = (unichar_t *) _("_OK");
-    label[2].text_is_1byte = true;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.handle_controlevent = Ask_OK;
-    gcd[2].creator = GButtonCreate;
-    harray[0] = GCD_Glue; harray[1] = &gcd[2]; harray[2] = GCD_Glue;
-
-    gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
-    gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
-    gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[3].text = (unichar_t *) _("_Cancel");
-    label[3].text_is_1byte = true;
-    label[3].text_in_resource = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.handle_controlevent = Ask_Cancel;
-    gcd[3].creator = GButtonCreate;
-    harray[3] = GCD_Glue; harray[4] = &gcd[3]; harray[5] = GCD_Glue;
-    harray[6] = NULL;
-    varray[6] = &boxes[2]; varray[7] = NULL;
-    varray[8] = NULL;
-
-    gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
-    gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-2;
-    gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[4].creator = GGroupCreate;
-
-    memset(boxes,0,sizeof(boxes));
-    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-    boxes[0].gd.flags = gg_enabled|gg_visible;
-    boxes[0].gd.u.boxelements = varray;
-    boxes[0].creator = GHVGroupCreate;
-
-    boxes[2].gd.flags = gg_enabled|gg_visible;
-    boxes[2].gd.u.boxelements = harray;
-    boxes[2].creator = GHBoxCreate;
-
-    GGadgetsCreate(gw,boxes);
-    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
-    GHVBoxFitWindow(boxes[0].ret);
-    GWidgetHidePalettes();
-    GDrawSetVisible(gw,true);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    ret = NULL;
-    if ( d.ret )
-	ret = cu_copy(_GGadgetGetTitle(gcd[1].ret));
-    GTextInfoListFree(ti);
-    GDrawDestroyWindow(gw);
-return( ret );
-}
-
-static GTextInfo *PI_ListSet(SplineFont *sf) {
-    GTextInfo *ti = gcalloc((sf->private==NULL?0:sf->private->next)+1,sizeof( GTextInfo ));
-    int i=0;
-
-    if ( sf->private!=NULL ) {
-	for ( i=0; i<sf->private->next; ++i ) {
-	    ti[i].text = uc_copy(sf->private->keys[i]);
-	}
-    }
-    if ( i!=0 )
-	ti[0].selected = true;
-return( ti );
-}
-
-static GTextInfo **PI_ListArray(struct psdict *private) {
-    GTextInfo **ti = gcalloc((private==NULL?0:private->next)+1,sizeof( GTextInfo *));
-    int i=0;
-
-    if ( private!=NULL ) {
-	for ( i=0; i<private->next; ++i ) {
-	    ti[i] = gcalloc(1,sizeof(GTextInfo));
-	    ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
-	    ti[i]->text = uc_copy(private->keys[i]);
-	}
-    }
-    ti[i] = gcalloc(1,sizeof(GTextInfo));
-    if ( i!=0 )
-	ti[0]->selected = true;
-return( ti );
-}
-
-static void PIPrivateCheck(struct gfi_data *d) {
-    if ( d->private==NULL ) {
-	if ( d->sf->private==NULL ) {
-	    d->private = gcalloc(1,sizeof(struct psdict));
-	    d->private->cnt = 10;
-	    d->private->keys = gcalloc(10,sizeof(char *));
-	    d->private->values = gcalloc(10,sizeof(char *));
-	} else
-	    d->private = PSDictCopy(d->sf->private);
-    }
-}
-
-static char *LocaleCvtCopy(const unichar_t *val) {
-    struct lconv *loc = localeconv();
-    char *space, *pt, *ret;
-    const unichar_t *upt; unichar_t *end;
-    double dval;
-    char *oldloc;
-    int foundarray=0;
-
-    if ( strcmp(loc->decimal_point,".")==0 )
-return( cu_copy(val));
-
-    for ( upt=val ; isspace(*upt); ++upt );
-    pt = space = galloc(3*u_strlen(upt)+10);
-
-    if ( *upt=='[' ) {
-	*pt++ = '[';
-	++upt;
-	while ( isspace(*upt) ) ++upt;
-	foundarray = 1;
-    }
-
-    oldloc = copy(setlocale(LC_NUMERIC,NULL));
-
-    forever {
-	dval = u_strtod(upt,&end);
-	setlocale(LC_NUMERIC,"C");
-	if ( *end=='.' ) {		/* Assume they used standard PS locale */
-	    dval = u_strtod(upt,&end);
-	    if ( upt==end )
-    break;
-	    while ( upt<end )		/* Don't pass through sprintf, that could lose precision, or something */
-		*pt++ = *upt++;
-	} else {
-	    if ( upt==end )
-    break;
-	    sprintf( pt, "%g", dval );
-	    pt += strlen(pt);
-	}
-	setlocale(LC_NUMERIC,oldloc);
-	upt = end;
-	if ( isspace(*upt)) *pt++=' ';
-	while ( isspace(*upt)) ++upt;
-    }
-    setlocale(LC_NUMERIC,oldloc); free(oldloc);
-    if ( foundarray )
-	*pt++ = ']';
-    *pt = '\0';
-    ret = copy(space);
-    free(space);
-return( ret );
-}
-
-static int PIFinishFormer(struct gfi_data *d) {
-    unichar_t *end;
-    char *buts[3];
-    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-
-    if ( d->old_sel < 0 )
-return( true );
-    if ( d->private==NULL && d->sf->private!=NULL ) {
-	const unichar_t *val = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_PrivateValues));
-	if ( uc_strcmp(val,d->sf->private->values[d->old_sel])==0 )
-return( true );			/* Didn't change */
-	PIPrivateCheck(d);
-    }
-    if ( d->private!=NULL && d->old_sel>=0 && d->old_sel!=d->private->next ) {
-	const unichar_t *val = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_PrivateValues));
-	const unichar_t *pt = val;
-	int i;
-
-	/* does the type appear reasonable? */
-	while ( isspace(*pt)) ++pt;
-	for ( i=0; KnownPrivates[i].name!=NULL; ++i )
-	    if ( strcmp(KnownPrivates[i].name,d->private->keys[d->old_sel])==0 )
+    for ( i=0; mi[i].ti.text!=NULL; ++i ) {
+	found = 0;
+	for ( j=0; j<rows; ++j ) {
+	    if ( strcmp((char *) mi[i].ti.text,strings[j*cols+0].u.md_str)==0 ) {
+		found=1;
 	break;
-	if ( KnownPrivates[i].name!=NULL ) {
-	    if ( KnownPrivates[i].type==pt_array ) {
-		if ( *pt!='[' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected array.\nProceed anyway?"))==1 )
-return( false );
-	    } else if ( KnownPrivates[i].type==pt_boolean ) {
-		if ( uc_strcmp(pt,"true")!=0 && uc_strcmp(pt,"false")!=0 &&
-			gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected boolean.\nProceed anyway?"))==1 )
-return( false );
-	    } else if ( KnownPrivates[i].type==pt_code ) {
-		if ( *pt!='{' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected code.\nProceed anyway?"))==1 )
-return( false );
-	    } else if ( KnownPrivates[i].type==pt_number ) {
-		u_strtod(pt,&end);
-		while ( isspace(*end)) ++end;
-		if ( *end!='\0' ) {
-		    char *oldloc;
-		    oldloc = setlocale(LC_NUMERIC,NULL);
-		    setlocale(LC_NUMERIC,"C");
-		    u_strtod(pt,&end);
-		    while ( isspace(*end)) ++end;
-		    setlocale(LC_NUMERIC,oldloc);
-		}
-		if ( *end!='\0' && gwwv_ask(_("Bad type"),(const char **) buts,0,1,_("Expected number.\nProceed anyway?"))==1 )
-return( false );
 	    }
 	}
-
-	/* Ok then set it */
-	free(d->private->values[d->old_sel]);
-	/* Be careful of numbers with decimal points. They might have been given */
-	/*  to us with commas, but PS will demand full stops, so convert them */
-	if ( KnownPrivates[i].name!=NULL && (KnownPrivates[i].type==pt_number || KnownPrivates[i].type==pt_array))
-	    d->private->values[d->old_sel] = LocaleCvtCopy(val);
-	else
-	    d->private->values[d->old_sel] = cu_copy(val);
-	d->old_sel = -1;
-    }
-return( true );
-}
-
-static void ProcessListSel(struct gfi_data *d) {
-    GGadget *list = GWidgetGetControl(d->gw,CID_PrivateEntries);
-    int sel = GGadgetGetFirstListSelectedItem(list);
-    unichar_t *temp;
-    static const unichar_t nullstr[] = { 0 };
-    SplineFont *sf = d->sf;
-    struct psdict *private;
-
-    if ( d->old_sel==sel )
-return;
-
-    if ( !PIFinishFormer(d)) {
-	/*GGadgetSelectListItem(list,sel,false);*/
-	GGadgetSelectListItem(list,d->old_sel,true);
-return;
-    }
-    private = d->private ? d->private : sf->private;
-    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Bottom),sel!=-1 && private!=NULL && sel<private->next-1 );
-    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Down),sel!=-1 && private!=NULL && sel<private->next-1 );
-    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Top),sel>0);
-    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Up),sel>0);
-
-    if ( sel==-1 ) {
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),false);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),false);
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),nullstr);
-    } else {
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),true);
-	if ( strcmp(private->keys[sel],"BlueValues")==0 ||
-		strcmp(private->keys[sel],"OtherBlues")==0 ||
-		strcmp(private->keys[sel],"StdHW")==0 ||
-		strcmp(private->keys[sel],"StemSnapH")==0 ||
-		strcmp(private->keys[sel],"StdVW")==0 ||
-		strcmp(private->keys[sel],"StemSnapV")==0 ) {
-	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),true);
-	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),true);
-	} else if ( strcmp(private->keys[sel],"BlueScale")==0 &&
-		PSDictFindEntry(private,"BlueValues")!=-1 ) {
-	    /* We can guess a BlueShift value if we've got a BlueValues entry */
-	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),true);
-	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
+	if ( j==r && found ) {
+	    mi[i].ti.disabled = false;
+	    mi[i].ti.selected = true;
 	} else {
-	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
-	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
+	    mi[i].ti.disabled = found;
+	    mi[i].ti.selected = false;
 	}
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_PrivateValues),true);
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
-		temp = uc_copy( private->values[sel]));
-	free( temp );
-	GTextFieldShow(GWidgetGetControl(d->gw,CID_PrivateValues),0);
     }
-    d->old_sel = sel;
 }
 
-static int PI_Add(GGadget *g, GEvent *e) {
-    GWindow gw;
-    struct gfi_data *d;
-    GGadget *list;
-    int i;
-    char *newkey;
-    GTextInfo **ti;
+static struct col_init psprivate_ci[] = {
+    { me_stringchoice, NULL, psprivate_nameids, PI_KeyEnable, N_("Key") },
+    { me_string, NULL, NULL, NULL, N_("Value") }
+    };
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gw = GGadgetGetWindow(g);
-	d = GDrawGetUserData(gw);
-	if ( !PIFinishFormer(d))
-return(true);
-	newkey = AskKey(d->sf);
-	if ( newkey==NULL )
-return( true );
-	PIPrivateCheck(d);
-	if (( i = PSDictFindEntry(d->private,newkey))==-1 ) {
-	    SFPrivateGuess(d->sf,ly_fore,d->private,newkey,true);
-	    if (( i = PSDictFindEntry(d->private,newkey))==-1 )
-		i = PSDictChangeEntry(d->private,newkey,"");
-	}
-	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
-	ti = PI_ListArray(d->private);
-	if ( i>0 ) {
-	    ti[0]->selected = false;
-	    ti[i]->selected = true;
-	}
-	GGadgetSetList(list,ti,false);
-	d->old_sel = -1;
-	ProcessListSel(d);
-	free(newkey);
+static char *rpldecimal(const char *orig,const char *decimal_point,const char *oldloc) {
+    char *end;
+    char *new, *npt; const char *pt;
+    int dlen;
+    double dval;
+    char buffer[40];
+
+    /* if the current locale uses a "." for a decimal point the we don't need */
+    /*  to translate the number, just check that it is valid */
+    if ( strcmp(decimal_point,".")==0 ) {
+	strtod(orig,&end);
+	while ( isspace(*end)) ++end;
+	if ( *end!='\0' )
+return( NULL );
+return( copy(orig));
     }
-return( true );
+
+    npt = new = galloc(2*strlen(orig)+10);
+    dlen = strlen(decimal_point);
+    /* now I want to change the number as little as possible. So if they use */
+    /*  arabic numerals we can get by with just switching the decimal point */
+    /*  If they use some other number convention, then parse in the old locale*/
+    /*  and sprintf in the PostScript ("C") locale. This might lose some */
+    /*  precision but the basic idea will get across */
+    for ( pt=orig; *pt; ) {
+	if ( strncmp(pt,decimal_point,dlen)==0 ) {
+	    pt += dlen;
+	    *npt++ = '.';
+	} else
+	    *npt++ = *pt++;
+    }
+    *npt = '\0';
+
+    setlocale(LC_NUMERIC,"C");
+    strtod(new,&end);
+    setlocale(LC_NUMERIC,oldloc);
+    while ( isspace(*end)) ++end;
+    if ( *end=='\0' ) {
+	char *ret = copy(new);
+	free(new);
+return( ret );
+    }
+
+    /* OK, can we parse the number in the original local? */
+    dval = strtod(new,&end);
+    while ( isspace(*end)) ++end;
+    if ( *end!='\0' ) {
+	free(new);
+return( NULL );
+    }
+    free(new);
+    setlocale(LC_NUMERIC,"C");
+    sprintf( buffer, "%g", dval );
+    setlocale(LC_NUMERIC,oldloc);
+return( copy(buffer));
+}
+
+static char *rplarraydecimal(const char *orig,const char *decimal_point,const char *oldloc) {
+    char *new, *npt, *rpl;
+    int nlen;
+    const char *start, *pt; int ch;
+
+    nlen = 2*strlen(orig)+10;
+    npt = new = galloc(nlen+1);
+    *npt++ = '[';
+
+    for ( pt=orig; isspace(*pt) || *pt=='['; ++pt );
+    while ( *pt!=']' && *pt!='\0' ) {
+	start=pt;
+	while ( *pt!=']' && *pt!=' ' && *pt!='\0' ) ++pt;
+	ch = *pt; *(char *) pt = '\0';
+	rpl = rpldecimal(start,decimal_point,oldloc);
+	*(char *) pt = ch;
+	if ( rpl==NULL ) {
+	    gwwv_post_notice(_("Bad type"),_("Expected array of numbers.\nFailed to parse \"%.*s\" as a number."),
+		    pt-start, start);
+	    free(new);
+return( NULL );
+	}
+	if ( npt-new + strlen(rpl) + 2 >nlen ) {
+	    int noff = npt-new;
+	    new = grealloc(new,nlen += strlen(rpl)+100);
+	    npt = new+noff;
+	}
+	if ( npt[-1]!=']' )
+	    *npt++ = ' ';
+	strcmp(npt,rpl);
+	free(rpl);
+	npt += strlen(npt);
+	while ( isspace(*pt)) ++pt;
+    }
+    *npt++ =']';
+    *npt = '\0';
+    rpl = copy(new);
+    free(new);
+return( rpl );
+}
+
+static void PSPrivate_FinishEdit(GGadget *g,int r, int c, int wasnew) {
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *strings = _GMatrixEditGet(g, &rows);
+    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    char *key = strings[r*cols+0].u.md_str;
+    char *val = strings[r*cols+1].u.md_str;
+    char *pt, *ept, *newval;
+    char *oldloc;
+    struct psdict *tempdict;
+
+    if ( key==NULL )
+return;
+
+    if ( c==0 && (wasnew || val==NULL || *val=='\0')) {
+	tempdict = gcalloc(1,sizeof(*tempdict));
+	SFPrivateGuess(d->sf,ly_fore,tempdict,key,true);
+	strings[r*cols+1].u.md_str = copy(PSDictHasEntry(tempdict,key));
+	PSDictFree(tempdict);
+    } else if ( c==1 && val!=NULL ) {
+	struct lconv *loc = localeconv();
+	int i;
+	for ( i=0; KnownPrivates[i].name!=NULL; ++i )
+	    if ( strcmp(KnownPrivates[i].name,key)==0 )
+	break;
+	if ( KnownPrivates[i].name==NULL )	/* If we don't recognize it, leave it be */
+return;
+	oldloc = copy(setlocale(LC_NUMERIC,NULL));
+
+	for ( pt=val; isspace(*pt); ++pt );
+	for ( ept = val+strlen(val-1); ept>pt && isspace(*ept); --ept );
+	if ( KnownPrivates[i].type==pt_boolean ) {
+	    if ( strcasecmp(val,"true")==0 || strcasecmp(val,"t")==0 || strtol(val,NULL,10)!=0 ) {
+		/* If they make a mistake about case, correct it */
+		strings[r*cols+1].u.md_str = copy("true");
+		free(val);
+	    } else if ( strcasecmp(val,"false")==0 || strcasecmp(val,"f")==0 || (*val=='0' && strtol(val,NULL,10)==0) ) {
+		strings[r*cols+1].u.md_str = copy("false");
+		free(val);
+	    } else
+/* GT: The words "true" and "false" should be left untranslated. We are restricted */
+/* GT: here by what PostScript understands, and it only understands the English */
+/* GT: words. You may, of course, change it to something like ("true" (vrai) ou "false" (faux)) */
+		gwwv_post_notice(_("Bad type"),_("Expected boolean value.\n(\"true\" or \"false\")"));
+	} else if ( KnownPrivates[i].type==pt_code ) {
+	    if ( *pt!='\0' && (*pt!='{' || (ept>=pt && *ept!='}')) )
+		gwwv_post_notice(_("Bad type"),_("Expected PostScript code.\nWhich usually begins with a \"{\" and ends with a \"}\"."));
+	} else if ( KnownPrivates[i].type==pt_number ) {
+	    newval = rpldecimal(val,loc->decimal_point,oldloc);
+	    if ( newval==NULL )
+		gwwv_post_notice(_("Bad type"),_("Expected number."));
+	    else {
+		strings[r*cols+1].u.md_str = newval;
+		free(val);
+	    }
+	} else if ( KnownPrivates[i].type==pt_array ) {
+	    newval = rplarraydecimal(val,loc->decimal_point,oldloc);
+	    if ( newval!=NULL ) {
+		strings[r*cols+1].u.md_str = newval;
+		free(val);
+	    }
+	}
+	free(oldloc);
+    }
+}
+
+static void PSPrivate_MatrixInit(struct matrixinit *mi,struct gfi_data *d) {
+    SplineFont *sf = d->sf;
+    int i,j;
+    struct matrix_data *md;
+
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 2;
+    mi->col_init = psprivate_ci;
+
+    mi->initial_row_cnt = sf->private==NULL?0:sf->private->next;
+    md = gcalloc(2*(mi->initial_row_cnt+1),sizeof(struct matrix_data));
+    if ( sf->private!=NULL ) {
+	for ( i=j=0; i<sf->private->next; ++i ) {
+	    md[2*j  ].u.md_str = copy(sf->private->keys[i]);
+	    md[2*j+1].u.md_str = copy(sf->private->values[i]);
+	    ++j;
+	}
+    }
+    mi->matrix_data = md;
+
+    mi->finishedit = PSPrivate_FinishEdit;
+}
+
+static struct psdict *GFI_ParsePrivate(struct gfi_data *d) {
+    struct psdict *ret = gcalloc(1,sizeof(struct psdict));
+    GGadget *private = GWidgetGetControl(d->gw,CID_Private);
+    int rows, cols = GMatrixEditGetColCnt(private);
+    struct matrix_data *strings = _GMatrixEditGet(private, &rows);
+    int i,j;
+
+    ret->cnt = rows;
+    ret->keys = galloc(rows*sizeof(char *));
+    ret->values = galloc(rows*sizeof(char *));
+    for ( i=j=0; i<rows; ++i ) {
+	if ( strings[i*cols+0].u.md_str!=NULL && strings[i*cols+1].u.md_str!=NULL ) {
+	    ret->keys[j] = copy(strings[i*cols+0].u.md_str);
+	    ret->values[j++] = copy(strings[i*cols+1].u.md_str);
+	}
+    }
+    ret->next = j;
+return( ret );
+}
+
+static void PSPrivate_EnableButtons(GGadget *g, int r, int c) {
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *strings = _GMatrixEditGet(g, &rows);
+    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    char *key = r>=0 && r<rows ? strings[r*cols+0].u.md_str : NULL;
+    int has_hist = key!=NULL && (
+		    strcmp(key,"BlueValues")==0 ||
+		    strcmp(key,"OtherBlues")==0 ||
+		    strcmp(key,"StdHW")==0 ||
+		    strcmp(key,"StemSnapH")==0 ||
+		    strcmp(key,"StdVW")==0 ||
+		    strcmp(key,"StemSnapV")==0);
+    int has_guess = key!=NULL && (has_hist ||
+		    strcmp(key,"BlueScale")==0 ||
+		    strcmp(key,"BlueShift")==0 ||
+		    strcmp(key,"BlueFuzz")==0 ||
+		    strcmp(key,"ForceBold")==0 ||
+		    strcmp(key,"LanguageGroup")==0 ||
+		    strcmp(key,"ExpansionFactor")==0);
+    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess), has_guess);
+    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist ), has_hist );
 }
 
 static int PI_Guess(GGadget *g, GEvent *e) {
     GWindow gw;
     struct gfi_data *d;
-    GGadget *list;
-    int sel;
-    SplineFont *sf;
-    unichar_t *temp;
-    struct psdict *private;
-    char *buts[3];
-    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
+    GGadget *private;
+    struct psdict *tempdict;
+    struct matrix_data *strings;
+    int rows, cols, r;
+    char *key, *ret;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
-	sf = d->sf;
-	private = d->private ? d->private : sf->private;
-	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
-	sel = GGadgetGetFirstListSelectedItem(list);
-	if ( strcmp(private->keys[sel],"BlueValues")==0 ||
-		strcmp(private->keys[sel],"OtherBlues")==0 ) {
-	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both BlueValues and OtherBlues.\nDo you want to continue?"))==1 )
-return( true );
-	} else if ( strcmp(private->keys[sel],"StdHW")==0 ||
-		strcmp(private->keys[sel],"StemSnapH")==0 ) {
-	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both StdHW and StemSnapH.\nDo you want to continue?"))==1 )
-return( true );
-	} else if ( strcmp(private->keys[sel],"StdVW")==0 ||
-		strcmp(private->keys[sel],"StemSnapV")==0 ) {
-	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both StdVW and StemSnapV.\nDo you want to continue?"))==1 )
-return( true );
+	private = GWidgetGetControl(gw,CID_Private);
+	strings = _GMatrixEditGet(private, &rows);
+	cols = GMatrixEditGetColCnt(private);
+	r = GMatrixEditGetActiveRow(private);
+	key = strings[r*cols+0].u.md_str;
+	tempdict = gcalloc(1,sizeof(*tempdict));
+	SFPrivateGuess(d->sf,ly_fore,tempdict,key,true);
+	ret = copy(PSDictHasEntry(tempdict,key));
+	if ( ret!=NULL ) {
+	    free(strings[r*cols+1].u.md_str);
+	    strings[r*cols+1].u.md_str = ret;
+	    GGadgetRedraw(private);
 	}
-	PIPrivateCheck(d);
-	SFPrivateGuess(sf,ly_fore,d->private,private->keys[sel],false);
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
-		temp = uc_copy( d->private->values[sel]));
-	free( temp );
+	PSDictFree(tempdict);
     }
 return( true );
 }
@@ -2229,134 +2075,41 @@ return( true );
 static int PI_Hist(GGadget *g, GEvent *e) {
     GWindow gw;
     struct gfi_data *d;
-    GGadget *list;
-    int sel;
-    SplineFont *sf;
-    struct psdict *private;
+    GGadget *private;
+    struct psdict *tempdict;
     enum hist_type h;
-    unichar_t *temp;
+    struct matrix_data *strings;
+    int rows, cols, r;
+    char *key, *ret;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
-	sf = d->sf;
-	PIPrivateCheck(d);
-	private = d->private ? d->private : sf->private;
-	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
-	sel = GGadgetGetFirstListSelectedItem(list);
-	if ( strcmp(private->keys[sel],"BlueValues")==0 ||
-		strcmp(private->keys[sel],"OtherBlues")==0 )
+	private = GWidgetGetControl(gw,CID_Private);
+	strings = _GMatrixEditGet(private, &rows);
+	cols = GMatrixEditGetColCnt(private);
+	r = GMatrixEditGetActiveRow(private);
+	key = strings[r*cols+0].u.md_str;
+	if ( strcmp(key,"BlueValues")==0 ||
+		strcmp(key,"OtherBlues")==0 )
 	    h = hist_blues;
-	else if ( strcmp(private->keys[sel],"StdHW")==0 ||
-		strcmp(private->keys[sel],"StemSnapH")==0 )
+	else if ( strcmp(key,"StdHW")==0 ||
+		strcmp(key,"StemSnapH")==0 )
 	    h = hist_hstem;
-	else if ( strcmp(private->keys[sel],"StdVW")==0 ||
-		strcmp(private->keys[sel],"StemSnapV")==0 )
+	else if ( strcmp(key,"StdVW")==0 ||
+		strcmp(key,"StemSnapV")==0 )
 	    h = hist_vstem;
 	else
 return( true );		/* can't happen */
-	SFHistogram(sf,ly_fore,private,NULL,NULL,h);
-	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
-		temp = uc_copy( d->private->values[sel]));
-	free( temp );
-    }
-return( true );
-}
-
-static int PI_Delete(GGadget *g, GEvent *e) {
-    GWindow gw;
-    struct gfi_data *d;
-    GGadget *list;
-    int sel;
-    SplineFont *sf;
-    GTextInfo **ti;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gw = GGadgetGetWindow(g);
-	d = GDrawGetUserData(gw);
-	PIPrivateCheck(d);
-	sf = d->sf;
-	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
-	sel = GGadgetGetFirstListSelectedItem(list);
-	PSDictRemoveEntry(d->private, d->private->keys[sel]);
-	sf->changed = true;
-	ti = PI_ListArray(d->private);
-	--sel;
-	if ( d->private!=NULL && sel>=d->private->next )
-	    sel = d->private->next-1;
-	if ( sel>0 ) {
-	    ti[0]->selected = false;
-	    ti[sel]->selected = true;
+	tempdict = GFI_ParsePrivate(d);
+	SFHistogram(d->sf,ly_fore,tempdict,NULL,NULL,h);
+	ret = copy(PSDictHasEntry(tempdict,key));
+	if ( ret!=NULL ) {
+	    free(strings[r*cols+1].u.md_str);
+	    strings[r*cols+1].u.md_str = ret;
+	    GGadgetRedraw(private);
 	}
-	GGadgetSetList(list,ti,false);
-	d->old_sel = -2;
-	ProcessListSel(d);
-    }
-return( true );
-}
-
-static int PI_Move(GGadget *g, GEvent *e) {
-    GWindow gw;
-    struct gfi_data *d;
-    GGadget *list;
-    int sel, cid, i, new_sel;
-    GTextInfo **ti;
-    char *key, *val;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gw = GGadgetGetWindow(g);
-	d = GDrawGetUserData(gw);
-	PIPrivateCheck(d);
-	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
-	sel = GGadgetGetFirstListSelectedItem(list);
-	cid = GGadgetGetCid(g);
-	if ( d->private==NULL || sel==-1 )
-return( true );
-	key = d->private->keys[sel];
-	val = d->private->values[sel];
-	if ( cid==CID_Top && sel>0 ) {
-	    for ( i=sel; i>0; --i ) {
-		d->private->keys[i] = d->private->keys[i-1];
-		d->private->values[i] = d->private->values[i-1];
-	    }
-	    d->private->keys[0] = key;
-	    d->private->values[0] = val;
-	    new_sel = 0;
-	} else if ( cid==CID_Up && sel>0 ) {
-	    d->private->keys[sel] = d->private->keys[sel-1];
-	    d->private->values[sel] = d->private->values[sel-1];
-	    d->private->keys[sel-1] = key;
-	    d->private->values[sel-1] = val;
-	    new_sel = sel-1;
-	} else if ( cid==CID_Down && sel<d->private->next-1 ) {
-	    d->private->keys[sel] = d->private->keys[sel+1];
-	    d->private->values[sel] = d->private->values[sel+1];
-	    d->private->keys[sel+1] = key;
-	    d->private->values[sel+1] = val;
-	    new_sel = sel+1;
-	} else if ( cid==CID_Bottom && sel<d->private->next-1 ) {
-	    for ( i=sel; i<d->private->next-1; ++i ) {
-		d->private->keys[i] = d->private->keys[i+1];
-		d->private->values[i] = d->private->values[i+1];
-	    }
-	    d->private->keys[d->private->next-1] = key;
-	    d->private->values[d->private->next-1] = val;
-	    new_sel = d->private->next-1;
-	}
-	ti = PI_ListArray(d->private);
-	ti[0]->selected = false;
-	ti[new_sel]->selected = true;
-	GGadgetSetList(list,ti,false);
-	d->old_sel = -2;
-	ProcessListSel(d);
-    }
-return( true );
-}
-
-static int PI_ListSel(GGadget *g, GEvent *e) {
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	ProcessListSel(GDrawGetUserData(GGadgetGetWindow(g)));
+	PSDictFree(tempdict);
     }
 return( true );
 }
@@ -2493,8 +2246,6 @@ return( true );
 }
 
 static void GFI_Close(struct gfi_data *d) {
-
-    PSDictFree(d->private);
 
     GDrawDestroyWindow(d->gw);
     if ( d->sf->fontinfo == d )
@@ -3390,9 +3141,9 @@ static void TN_StrIDEnable(GGadget *g,GMenuItem *mi, int r, int c) {
 static void TN_LangEnable(GGadget *g,GMenuItem *mi, int r, int c) {
     int i;
 
-    for ( i=0; mi[i].ti.text!=NULL; ++i )
+    for ( i=0; mi[i].ti.text!=NULL; ++i );
     qsort(mi,i,sizeof(mi[0]),menusort);
-}    
+}
 
 static void TN_NewName(GGadget *g,int row) {
     int rows;
@@ -4446,8 +4197,6 @@ return( true );
 	}
 	if ( !CheckNames(d))
 return( true );
-	if ( !PIFinishFormer(d))
-return( true );
 
 	if ( ttfmultuniqueids(sf,d)) {
 	    char *buts[3];
@@ -4759,11 +4508,9 @@ return(true);
 	for ( j=0; j<_sf->subfontcnt; ++j )
 	    _sf->subfonts[j]->hasvmetrics = vmetrics;
 
-	if ( d->private!=NULL ) {
-	    PSDictFree(sf->private);
-	    sf->private = d->private;
-	    d->private = NULL;
-	}
+	PSDictFree(sf->private);
+	sf->private = GFI_ParsePrivate(d);
+
 	if ( d->names_set )
 	    StoreTTFNames(d);
 	StoreSSNames(d);
@@ -7783,7 +7530,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[8], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20], msgcd[7], ssngcd[8],
-	woffgcd[8];
+	woffgcd[8], privategcd_def[4];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[3], dbox[2], flogbox[2],
@@ -7791,8 +7538,8 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	    lkbox[7], cbox[6], lbox[8], msbox[3], ssboxes[4], woffbox[2];
     GGadgetCreateData *marray[7], *marray2[9], *narray[29], *narray2[7], *narray3[3],
 	*xuarray[20], *psarray[10], *psarray2[21], *psarray4[10],
-	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
-	*pp2buttons[7], *ssarray[58], *panarray[40], *comarray[3], *flogarray[3],
+	*pparray[6], *vradio[5], *varray[38], *metarray[46],
+	*ssarray[58], *panarray[40], *comarray[3], *flogarray[3],
 	*mkarray[6], *msarray[6],
 	*txarray[5], *txarray2[30],
 	*txarray3[6], *txarray4[6], *uarray[5], *darray[10],
@@ -7808,7 +7555,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
 	sslabel[23], xulabel[8], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20], mslabel[7],
-	ssnlabel[7], wofflabel[8];
+	ssnlabel[7], wofflabel[8], privatelabel_def[3];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -7826,7 +7573,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     unichar_t *tmpcreatetime, *tmpmodtime;
     time_t t;
     const struct tm *tm;
-    struct matrixinit mi, gaspmi, layersmi, ssmi, marks_mi, markc_mi;
+    struct matrixinit mi, gaspmi, layersmi, ssmi, marks_mi, markc_mi, private_mi;
     struct matrix_data *marks_md, *markc_md;
     int ltype;
     static GBox small_blue_box;
@@ -8604,104 +8351,48 @@ return;
     memset(&plabel,0,sizeof(plabel));
     memset(&pgcd,0,sizeof(pgcd));
 
-    pgcd[0].gd.pos.x = 10; pgcd[0].gd.pos.y = 6;
-    pgcd[0].gd.pos.width = 240; pgcd[0].gd.pos.height = 8*12+10;
-    pgcd[0].gd.flags = gg_visible | gg_enabled;
-    pgcd[0].gd.cid = CID_PrivateEntries;
-    pgcd[0].gd.u.list = PI_ListSet(sf);
-    pgcd[0].gd.handle_controlevent = PI_ListSel;
-    pgcd[0].creator = GListCreate;
+    PSPrivate_MatrixInit(&private_mi,d);
 
-    pgcd[1].gd.pos.x = 10; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+pgcd[0].gd.pos.height+10;
-    pgcd[1].gd.pos.width = pgcd[0].gd.pos.width; pgcd[1].gd.pos.height = 8*12+10;
-    pgcd[1].gd.flags = gg_visible | gg_enabled;
-    pgcd[1].gd.cid = CID_PrivateValues;
-    pgcd[1].creator = GTextAreaCreate;
-
-    pgcd[2].gd.pos.x = 10; pgcd[2].gd.pos.y = 300-35-30;
-    pgcd[2].gd.pos.width = -1; pgcd[2].gd.pos.height = 0;
-    pgcd[2].gd.flags = gg_visible | gg_enabled ;
-    plabel[2].text = (unichar_t *) _("_Add");
-    plabel[2].text_is_1byte = true;
-    plabel[2].text_in_resource = true;
-    pgcd[2].gd.label = &plabel[2];
-    pgcd[2].gd.handle_controlevent = PI_Add;
-    pgcd[2].gd.cid = CID_Add;
-    pgcd[2].creator = GButtonCreate;
-
-    pgcd[3].gd.pos.x = (260)/2-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-5;
-    pgcd[3].gd.pos.y = pgcd[2].gd.pos.y;
-    pgcd[3].gd.pos.width = -1; pgcd[3].gd.pos.height = 0;
-    pgcd[3].gd.flags = gg_visible ;
-    plabel[3].text = (unichar_t *) _("_Guess");
-    plabel[3].text_is_1byte = true;
-    plabel[3].text_in_resource = true;
-    pgcd[3].gd.label = &plabel[3];
-    pgcd[3].gd.handle_controlevent = PI_Guess;
-    pgcd[3].gd.cid = CID_Guess;
-    pgcd[3].creator = GButtonCreate;
-
-    pgcd[4].gd.pos.x = -(260/2-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-5);
-    pgcd[4].gd.pos.y = pgcd[2].gd.pos.y;
-    pgcd[4].gd.pos.width = -1; pgcd[4].gd.pos.height = 0;
-    pgcd[4].gd.flags = gg_visible | gg_utf8_popup ;
-/* GT: This is an abbreviation for Histogram */
-    plabel[4].text = (unichar_t *) _("_Hist.");
-    plabel[4].text_is_1byte = true;
-    plabel[4].text_in_resource = true;
-    pgcd[4].gd.label = &plabel[4];
-    pgcd[4].gd.handle_controlevent = PI_Hist;
-    pgcd[4].gd.cid = CID_Hist;
-    pgcd[4].gd.popup_msg = (unichar_t *) _("Histogram Dialog");
-    pgcd[4].creator = GButtonCreate;
-
-    pgcd[5].gd.pos.x = -10; pgcd[5].gd.pos.y = pgcd[2].gd.pos.y;
-    pgcd[5].gd.pos.width = -1; pgcd[5].gd.pos.height = 0;
-    pgcd[5].gd.flags = gg_visible | gg_enabled ;
-    plabel[5].text = (unichar_t *) _("_Remove");
-    plabel[5].text_is_1byte = true;
-    plabel[5].text_in_resource = true;
-    pgcd[5].gd.label = &plabel[5];
-    pgcd[5].gd.handle_controlevent = PI_Delete;
-    pgcd[5].gd.cid = CID_Remove;
-    pgcd[5].creator = GButtonCreate;
-
-    ppbuttons[0] = &pgcd[2]; ppbuttons[1] = &pgcd[3];
-    ppbuttons[2] = &pgcd[4]; ppbuttons[3] = &pgcd[5]; ppbuttons[4] = NULL;
-
-    {
-	static int cids[] = { CID_Top, CID_Up, CID_Down, CID_Bottom, 0 };
-	static char *names[] = { N_("_Top"), N_("_Up"), N_("_Down"), N_("_Bottom") };
-	pp2buttons[0] = GCD_Glue;
-	for ( i=0 ; cids[i]!=0 ; ++i ) {
-	    pgcd[i+6].gd.flags = gg_visible | gg_enabled ;
-	    plabel[i+6].text = (unichar_t *) _(names[i]);
-	    plabel[i+6].text_is_1byte = true;
-	    plabel[i+6].text_in_resource = true;
-	    pgcd[i+6].gd.label = &plabel[i+6];
-	    pgcd[i+6].gd.handle_controlevent = PI_Move;
-	    pgcd[i+6].gd.cid = cids[i];
-	    pgcd[i+6].creator = GButtonCreate;
-	    pp2buttons[i+1] = &pgcd[i+6];
-	}
-	pp2buttons[5] = GCD_Glue; pp2buttons[6] = NULL;
-    }
-
-    pparray[0] = &pgcd[0]; pparray[1] = &ppbox[3]; pparray[2] = &pgcd[1];
-    pparray[3] = &ppbox[2]; pparray[4] = NULL;
+    i=0;
+    pgcd[i].gd.pos.width = 300; pgcd[i].gd.pos.height = 200;
+    pgcd[i].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    pgcd[i].gd.cid = CID_Private;
+    pgcd[i].gd.u.matrix = &private_mi;
+    pgcd[i].gd.popup_msg = (unichar_t *) _(
+	"The PostScript 'Private' dictionary gives you control over\n"
+	"several font-wide versions of hinting.\n"
+	"The 'Private' dictionary only applies to PostScript fonts.");
+    pgcd[i].data = d;
+    pgcd[i++].creator = GMatrixEditCreate;
+    pparray[0] = &pgcd[0]; pparray[1] = NULL;
 
     memset(ppbox,0,sizeof(ppbox));
     ppbox[0].gd.flags = gg_enabled|gg_visible;
     ppbox[0].gd.u.boxelements = pparray;
     ppbox[0].creator = GVBoxCreate;
 
-    ppbox[2].gd.flags = gg_enabled|gg_visible;
-    ppbox[2].gd.u.boxelements = ppbuttons;
-    ppbox[2].creator = GHBoxCreate;
 
-    ppbox[3].gd.flags = gg_enabled|gg_visible;
-    ppbox[3].gd.u.boxelements = pp2buttons;
-    ppbox[3].creator = GHBoxCreate;
+    memset(&privatelabel_def,0,sizeof(privatelabel_def));
+    memset(&privategcd_def,0,sizeof(privategcd_def));
+    privategcd_def[0].gd.flags = gg_visible ;
+    privatelabel_def[0].text = (unichar_t *) _("_Guess");
+    privatelabel_def[0].text_is_1byte = true;
+    privatelabel_def[0].text_in_resource = true;
+    privategcd_def[0].gd.label = &privatelabel_def[0];
+    privategcd_def[0].gd.handle_controlevent = PI_Guess;
+    privategcd_def[0].gd.cid = CID_Guess;
+    privategcd_def[0].creator = GButtonCreate;
+
+    privategcd_def[1].gd.flags = gg_visible | gg_utf8_popup ;
+    privatelabel_def[1].text = (unichar_t *) _("_Histogram");
+    privatelabel_def[1].text_is_1byte = true;
+    privatelabel_def[1].text_in_resource = true;
+    privategcd_def[1].gd.label = &privatelabel_def[1];
+    privategcd_def[1].gd.handle_controlevent = PI_Hist;
+    privategcd_def[1].gd.cid = CID_Hist;
+    privategcd_def[1].gd.popup_msg = (unichar_t *) _("Histogram Dialog");
+    privategcd_def[1].creator = GButtonCreate;
+
 /******************************************************************************/
     memset(&vlabel,0,sizeof(vlabel));
     memset(&vgcd,0,sizeof(vgcd));
@@ -11079,6 +10770,10 @@ return;
     GHVBoxSetExpandableCol(gaspboxes[2].ret,2);
     GHVBoxSetExpandableRow(gaspboxes[0].ret,1);
 
+    GMatrixEditAddButtons(pgcd[0].ret,privategcd_def);
+    GMatrixEditSetUpDownVisible(pgcd[0].ret, true);
+    GMatrixEditSetOtherButtonEnable(pgcd[0].ret, PSPrivate_EnableButtons);
+
     GHVBoxSetExpandableCol(lbox[2].ret,3);
     GHVBoxSetExpandableCol(lbox[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(lbox[4].ret,gb_expandglue);
@@ -11105,10 +10800,6 @@ return;
     GHVBoxSetExpandableRow(psb[0].ret,psrow);
     GHVBoxSetExpandableCol(psb2[0].ret,3);
     GHVBoxSetExpandableCol(psb2[1].ret,1);
-
-    GHVBoxSetExpandableRow(ppbox[0].ret,0);
-    GHVBoxSetExpandableCol(ppbox[2].ret,gb_samesize);
-    GHVBoxSetExpandableCol(ppbox[3].ret,gb_expandgluesame);
 
     GHVBoxSetExpandableRow(vbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(vbox[0].ret,1);
@@ -11199,7 +10890,6 @@ return;
     d->as = as; d->fh = as+ds;
 
     GTextInfoListFree(namelistnames);
-    GTextInfoListFree(pgcd[0].gd.u.list);
 
     for ( i=0; i<mi.initial_row_cnt; ++i )
 	free( mi.matrix_data[3*i+2].u.md_str );
@@ -11211,7 +10901,7 @@ return;
     free(copied_copyright);
 
     GWidgetIndicateFocusGadget(ngcd[1].ret);
-    ProcessListSel(d);
+    PSPrivate_EnableButtons(GWidgetGetControl(d->gw,CID_Private),-1,-1);
     GFI_AspectChange(mgcd[0].ret,NULL);
     GGadgetSetList(GWidgetGetControl(gw,CID_StyleName),StyleNames(sf->fontstyle_name),false);
 
