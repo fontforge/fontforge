@@ -1039,8 +1039,8 @@ static void BVSetWidth(BitmapView *bv, int x) {
 	    bc->sc->width = tot/cnt;
 	    bc->sc->widthset = true;
 	}
-	BCCharChangedUpdate(bc);
     }
+    BCCharChangedUpdate(bc);
 }
 
 static void BVSetVWidth(BitmapView *bv, int y) {
@@ -1062,8 +1062,8 @@ return;
 	    bc->sc->vwidth = tot/cnt;
 	    bc->sc->widthset = true;
 	}
-	BCCharChangedUpdate(bc);
     }
+    BCCharChangedUpdate(bc);
 }
 
 int BVColor(BitmapView *bv) {
