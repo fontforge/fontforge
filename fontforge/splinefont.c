@@ -36,6 +36,7 @@
 #include <time.h>
 #include "unicoderange.h"
 #include "psfont.h"
+#include <locale.h>
 
 void SFUntickAll(SplineFont *sf) {
     int i;
@@ -1821,6 +1822,12 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
     real snapcnt[12];
     real stemsnap[12];
     char buffer[211];
+    char *oldloc;
+    int ret;
+
+    oldloc = copy(setlocale(LC_NUMERIC,NULL));
+    setlocale(LC_NUMERIC,"C");
+    ret = true;
 
     if ( strcmp(name,"BlueValues")==0 || strcmp(name,"OtherBlues")==0 ) {
 	FindBlues(sf,layer,bluevalues,otherblues);
@@ -1873,9 +1880,11 @@ int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, 
     } else if ( strcmp(name,"ExpansionFactor")==0 ) {
 	PSDictChangeEntry(private,"ExpansionFactor","0.06" );
     } else
-return( 0 );
+	ret = false;
 
-return( true );
+    setlocale(LC_NUMERIC,oldloc);
+    free( oldloc );
+return( ret );
 }
 
 void SFRemoveLayer(SplineFont *sf,int l) {

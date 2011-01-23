@@ -590,7 +590,6 @@ struct gfi_data {		/* FontInfo */
     int private_aspect, ttfv_aspect, tn_aspect, tx_aspect, unicode_aspect;
     int old_sel, old_aspect, old_lang, old_strid;
     int ttf_set, names_set, tex_set;
-    struct psdict *private;
     int langlocalecode;	/* MS code for the current locale */
     unsigned int family_untitled: 1;
     unsigned int human_untitled: 1;
