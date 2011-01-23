@@ -1946,9 +1946,11 @@ return;
 		/* If they make a mistake about case, correct it */
 		strings[r*cols+1].u.md_str = copy("true");
 		free(val);
+		GGadgetRedraw(g);
 	    } else if ( strcasecmp(val,"false")==0 || strcasecmp(val,"f")==0 || (*val=='0' && strtol(val,NULL,10)==0) ) {
 		strings[r*cols+1].u.md_str = copy("false");
 		free(val);
+		GGadgetRedraw(g);
 	    } else
 /* GT: The words "true" and "false" should be left untranslated. We are restricted */
 /* GT: here by what PostScript understands, and it only understands the English */
@@ -1961,15 +1963,23 @@ return;
 	    newval = rpldecimal(val,loc->decimal_point,oldloc);
 	    if ( newval==NULL )
 		gwwv_post_notice(_("Bad type"),_("Expected number."));
+	    else if ( strcmp(newval,val)==0 )
+		free(newval);		/* No change */
 	    else {
 		strings[r*cols+1].u.md_str = newval;
 		free(val);
+		GGadgetRedraw(g);
 	    }
 	} else if ( KnownPrivates[i].type==pt_array ) {
 	    newval = rplarraydecimal(val,loc->decimal_point,oldloc);
-	    if ( newval!=NULL ) {
+	    if ( newval==NULL )
+		gwwv_post_notice(_("Bad type"),_("Expected number."));
+	    else if ( strcmp(newval,val)==0 )
+		free(newval);		/* No change */
+	    else {
 		strings[r*cols+1].u.md_str = newval;
 		free(val);
+		GGadgetRedraw(g);
 	    }
 	}
 	free(oldloc);
@@ -10773,6 +10783,7 @@ return;
     GMatrixEditAddButtons(pgcd[0].ret,privategcd_def);
     GMatrixEditSetUpDownVisible(pgcd[0].ret, true);
     GMatrixEditSetOtherButtonEnable(pgcd[0].ret, PSPrivate_EnableButtons);
+    GMatrixEditSetNewText(pgcd[0].ret,S_("PSPrivateDictKey|New"));
 
     GHVBoxSetExpandableCol(lbox[2].ret,3);
     GHVBoxSetExpandableCol(lbox[3].ret,gb_expandglue);
