@@ -1991,6 +1991,48 @@ static void pcFree(struct pdfcontext *pc) {
     free(pc->tokbuf);
 }
 
+char **NamesReadPDF(char *filename) {
+    struct pdfcontext pc;
+    char oldloc[24];
+    int i;
+    char **list;
+
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
+    memset(&pc,0,sizeof(pc));
+    pc.pdf = fopen(filename,"r");
+    if ( pc.pdf==NULL )
+return( NULL );
+    if ( (pc.objs = FindObjects(&pc))==NULL ) {
+	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
+	fclose(pc.pdf);
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    if ( pc.encrypted ) {
+	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
+	fclose(pc.pdf);
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    if ( pdf_findfonts(&pc)==0 ) {
+	fclose(pc.pdf);
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    list = galloc((pc.fcnt+1)*sizeof(char *));
+    for ( i=0; i<pc.fcnt; ++i )
+	list[i] = copy( pc.fontnames[i]);
+    list[i] = NULL;
+    fclose(pc.pdf);
+    pcFree(&pc);
+    setlocale(LC_NUMERIC,oldloc);
+return( list );
+}
+
 SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font,
 	enum openflags openflags) {
     struct pdfcontext pc;

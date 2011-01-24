@@ -2689,6 +2689,7 @@ extern SplineFont *SFReadIkarus(char *fontname);
 extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,char *select_this_font, enum openflags openflags);
 extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
 extern char **GetFontNames(char *filename);
+extern char **NamesReadPDF(char *filename);
 extern char **NamesReadSFD(char *filename);
 extern char **NamesReadTTF(char *filename);
 extern char **NamesReadCFF(char *filename);
