@@ -1134,7 +1134,7 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) && checked!='t') {
 	sf = SFReadTTF(fullname,0,openflags);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 && checked!='S' ) {
+    } else if ( strmatch(fullname+strlen(strippedname)-4, ".svg")==0 && checked!='S' ) {
 	sf = SFReadSVG(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".ufo")==0 && checked!='u' ) {
 	sf = SFReadUFO(fullname,0);
@@ -1171,7 +1171,7 @@ return( NULL );
 	sf = CFFParse(fullname);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".mf")==0 ) {
 	sf = SFFromMF(fullname);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".pdf")==0 && checked!='P' ) {
+    } else if ( strmatch(strippedname+strlen(strippedname)-4, ".pdf")==0 && checked!='P' ) {
 	sf = SFReadPdfFont(fullname,openflags);
     } else if ( strmatch(fullname+strlen(fullname)-3, ".ik")==0 && checked!='i' ) {
 	sf = SFReadIkarus(fullname);
