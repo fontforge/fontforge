@@ -759,7 +759,6 @@ static void GME_PositionEdit(GMatrixEdit *gme) {
 }
 
 static void GME_StrSmallEdit(GMatrixEdit *gme,char *str, GEvent *event) {
-
     gme->edit_active = true;
     /* Shift so all of column is in window???? */
     GME_PositionEdit(gme);
@@ -929,7 +928,7 @@ static void GME_EnableDelete(GMatrixEdit *gme) {
 	    if ( gme->active_row>=1 && gme->active_row<gme->rows )
 		updown = ud_up_enabled;
 	    if ( gme->active_row>=0 && gme->active_row<gme->rows-1 )
-		updown = ud_down_enabled;
+		updown |= ud_down_enabled;
 	}
 	GGadgetSetEnabled(gme->up,updown & ud_up_enabled ? 1 : 0);
 	GGadgetSetEnabled(gme->down,updown & ud_down_enabled ? 1 : 0);
@@ -990,7 +989,7 @@ return;
     GME_EnableDelete(gme);
     if ( gme->rowmotion!=NULL )
 	(gme->rowmotion)((GGadget *) gme, gme->active_row+1,gme->active_row);
-    GDrawRequestExpose(gme->nested,NULL,false);
+    GMatrixEditScrollToRowCol(&gme->g,gme->active_row,gme->active_col);
 }
 
 static int _GME_Up(GGadget *g, GEvent *e) {
@@ -1018,7 +1017,7 @@ return;
     GME_EnableDelete(gme);
     if ( gme->rowmotion!=NULL )
 	(gme->rowmotion)((GGadget *) gme, gme->active_row-1,gme->active_row);
-    GDrawRequestExpose(gme->nested,NULL,false);
+    GMatrixEditScrollToRowCol(&gme->g,gme->active_row,gme->active_col);
 return;
 }
 
@@ -1488,6 +1487,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		size.width,(r-gme->off_top)*(gme->fh+gme->vpad)-1,
 		gmatrixedit_rules);
 
+    
     GDrawSetFont(pixmap,gme->font);
     for ( r=event->u.expose.rect.y/(gme->fh+gme->vpad);
 	    r<=(event->u.expose.rect.y+event->u.expose.rect.height+gme->fh+gme->vpad-1)/gme->fh &&
@@ -1498,6 +1498,10 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	y = clip.y + gme->as;
 	clip.height = gme->fh;
 	for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
+	/* Compensate for the top border line */
+	if ( clip.y <= 0 ) {
+	    clip.y = 1; clip.height += ( clip.y - 1 );
+	}
 
 	for ( c=0; c<gme->cols; ++c ) {
 	    if ( gme->col_data[c].hidden )
@@ -1519,7 +1523,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		clip.width -= temp;
 	    } else if ( gme->col_data[c].disabled && gme->g.box->disabled_background!=COLOR_TRANSPARENT )
 		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
-	    else if ( gme->active_row==r )
+	    else if ( gme->active_row==r+gme->off_top )
 		GDrawFillRect(pixmap,&clip,gmatrixedit_activebg);
 #if 0
 	    else
@@ -1592,9 +1596,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    gme->col_data[c].me_type == me_funcedit ) {
 		GRect mr;
 		mr.x = clip.x + clip.width; mr.width = gme->mark_size+gme->mark_skip;
-		mr.y = clip.y + 1; mr.height = clip.height - gme->vpad;
+		mr.y = clip.y; mr.height = clip.height;
 		
-		mkbg = gme->active_row==r ?
+		mkbg = gme->active_row==r+gme->off_top ?
 			gmatrixedit_activebg : GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
 		GDrawFillRect(pixmap,&mr,mkbg);
 		GListMarkDraw(pixmap,
@@ -1804,12 +1808,14 @@ static void GME_VScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	newpos = 0;
     if ( newpos!=gme->off_top ) {
 	int diff = (newpos-gme->off_top)*(gme->fh+gme->vpad);
-	GRect r;
+	GRect r, size;
 	gme->off_top = newpos;
 	GScrollBarSetPos(gme->vsb,newpos);
 	r.x = 1; r.y = 1; r.width = size.width-1; r.height = size.height-1;
 	GDrawScroll(gme->nested,&r,0,diff);
 	GME_PositionEdit(gme);
+	GGadgetGetSize(gme->tf,&size);
+	GDrawRequestExpose(gme->nested,NULL,false);
     }
 }
 
@@ -2269,9 +2275,10 @@ void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int rows_shown = gme->vsb->r.height/(gme->fh+gme->vpad);
     int context = rows_shown/3;
-    int needs_expose = false;
+    int needs_expose = true;
     int width = gme->hsb->r.width;
     int i;
+    GRect size;
 
     if ( r<0 ) r = 0; else if ( r>=gme->rows ) r = gme->rows-1;
     if ( r<gme->off_top || r>=gme->off_top+rows_shown ) {
@@ -2303,9 +2310,8 @@ void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
     }
     if ( needs_expose ) {
 	int hend = gme->col_data[gme->cols-1].x + gme->col_data[gme->cols-1].width;
-	GRect size;
-	GDrawGetSize(gme->nested,&size);
 
+	GDrawGetSize(gme->nested,&size);
 	if ( gme->off_left>hend-size.width )
 	    gme->off_left = hend-size.width;
 	if ( gme->off_left<0 )
@@ -2313,7 +2319,14 @@ void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
 	GScrollBarSetPos(gme->hsb,gme->off_left);
 	GScrollBarSetPos(gme->vsb,gme->off_top);
 	GGadgetRedraw(&gme->g);
-	/* GDrawRequestExpose(gme->nested,NULL,false);*/
+    /* Used to request expose only if the row or column we are scrolling to */
+    /* was outside of the visible area. However we need expose anyway, because */
+    /* otherwise it is impossible to properly highlight fields in the active row. */
+    /* So the rectangle associated with the expose event is now the only thing which */
+    /* makes some difference. */
+    } else {
+	GGadgetGetSize(gme->tf,&size);
+	GDrawRequestExpose(gme->nested,&size,false);
     }
 }
 
