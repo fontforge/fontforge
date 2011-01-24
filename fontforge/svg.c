@@ -2977,7 +2977,8 @@ return( NULL );
 	head = SVGParsePoly(svg,1);		/* points */
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "image")==0 ) {
 	eret = SVGParseImage(svg);
-	eret->clippath = st.clippath;
+	if (eret!=NULL)
+	    eret->clippath = st.clippath;
 return( eret );
     } else
 return( NULL );
