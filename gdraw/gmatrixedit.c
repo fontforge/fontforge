@@ -1815,7 +1815,7 @@ static void GME_VScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	GDrawScroll(gme->nested,&r,0,diff);
 	GME_PositionEdit(gme);
 	GGadgetGetSize(gme->tf,&size);
-	GDrawRequestExpose(gme->nested,NULL,false);
+	GDrawRequestExpose(gme->nested,&size,false);
     }
 }
 
