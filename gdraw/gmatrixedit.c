@@ -1826,7 +1826,7 @@ static void GME_VScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	newpos = 0;
     if ( newpos!=gme->off_top ) {
 	int diff = (newpos-gme->off_top)*(gme->fh+gme->vpad);
-	GRect r, size;
+	GRect r;
 	gme->off_top = newpos;
 	GScrollBarSetPos(gme->vsb,newpos);
 	r.x = 1; r.y = 1; r.width = size.width-1; r.height = size.height-1;
