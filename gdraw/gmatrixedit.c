@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "gdraw.h"
-#include "gdrawP.h"
+#include "../gdraw/gdrawP.h"
 #include "gkeysym.h"
 #include "ggadgetP.h"
 #include "gwidget.h"
@@ -528,6 +528,18 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
 static int GMatrixEdit_Mouse(GGadget *g, GEvent *event) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int c, nw, i, x, ex = event->u.mouse.x + gme->off_left;
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7)) {
+	    int isv = event->u.mouse.button<=5;
+	if ( event->u.mouse.state&ksm_shift ) isv = !isv;
+	if ( isv && gme->vsb!=NULL )
+return( GGadgetDispatchEvent(gme->vsb,event));
+	else if ( !isv && gme->hsb!=NULL )
+return( GGadgetDispatchEvent(gme->hsb,event));
+	else
+return( true );
+    }
 
     if ( gme->pressed_col>=0 && (event->type==et_mouseup || event->type==et_mousemove)) {
 	c = gme->pressed_col;
@@ -1619,9 +1631,15 @@ static int matrixeditsub_e_h(GWindow gw, GEvent *event) {
 
     GGadgetPopupExternalEvent(event);
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
-	if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7)) {
+	    int isv = event->u.mouse.button<=5;
+	if ( event->u.mouse.state&ksm_shift ) isv = !isv;
+	if ( isv && gme->vsb!=NULL )
 return( GGadgetDispatchEvent(gme->vsb,event));
+	else if ( !isv && gme->hsb!=NULL )
+return( GGadgetDispatchEvent(gme->hsb,event));
+	else
+return( true );
     }
 
     switch ( event->type ) {

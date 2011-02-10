@@ -290,15 +290,25 @@ return( false );
     }
 
     if ( (event->type==et_mouseup || event->type==et_mousedown) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 	/* X treats scroll wheels as though they send events from buttons 4 and 5 */
 	/* Badly configured wacom mice send "p5 r5 p4 r4" or "p4 r4 p5 r5" */
 	/*  properly configured mice just send "p4 r4" or "p5 r5" */
+	/* And apple's mouse with a scrollwheel sends buttons 6&7 for horizontal*/
+	/*  scrolling */
+	/* Convention is that shift-vertical scroll=horizontal scroll */
+	/*                    control-vertical scroll=minimize/maximize */
 	if ( event->type==et_mousedown ) {
 	    GDrawCancelTimer(gsb->pressed); gsb->pressed = NULL;
-	    if ( event->u.mouse.button==5 ) {
+	    int isv = event->u.mouse.button<=5;
+	    if ( event->u.mouse.state&ksm_shift ) isv = !isv;
+	    if ( isv != g->vert )
+return( false );	/* Only respond to scrolling events in our direction */
+	    else if ( event->u.mouse.state&ksm_control )
+return( false );
+	    if ( event->u.mouse.button==5 || event->u.mouse.button==7 ) {
 		GScrollBarChanged(gsb,et_sb_down,0);
-	    } else if ( event->u.mouse.button==4 ) {
+	    } else if ( event->u.mouse.button==4 || event->u.mouse.button==6 ) {
 		GScrollBarChanged(gsb,et_sb_up,0);
 	    }
 	}

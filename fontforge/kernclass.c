@@ -1368,7 +1368,7 @@ static void KCD_Mouse(KernClassDlg *kcd,GEvent *event) {
     GGadgetEndPopup();
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 	GGadgetDispatchEvent(kcd->vsb,event);
 return;
     }

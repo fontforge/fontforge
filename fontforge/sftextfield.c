@@ -1497,9 +1497,16 @@ return( false );
     if ( event->type == et_crossing )
 return( false );
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
-	    st->vsb!=NULL )
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7)) {
+	int isv = event->u.mouse.button<=5;
+	if ( event->u.mouse.state&ksm_shift ) isv = !isv;
+	if ( isv && st->vsb!=NULL )
 return( GGadgetDispatchEvent(&st->vsb->g,event));
+	else if ( !isv && st->hsb!=NULL )
+return( GGadgetDispatchEvent(&st->hsb->g,event));
+	else
+return( true );
+    }
 
     if ( st->pressed==NULL && event->type == et_mousemove && g->popup_msg!=NULL &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))

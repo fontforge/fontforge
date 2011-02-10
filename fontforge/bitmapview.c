@@ -1378,8 +1378,12 @@ static int v_e_h(GWindow gw, GEvent *event) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
-	if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+	int ish = event->u.mouse.button>5;
+	if ( event->u.mouse.state&ksm_shift ) ish = !ish;
+	if ( ish ) /* bind shift to vertical scrolling */
+return( GGadgetDispatchEvent(bv->hsb,event));
+	else
 return( GGadgetDispatchEvent(bv->vsb,event));
     }
 
@@ -1434,7 +1438,12 @@ static int bv_e_h(GWindow gw, GEvent *event) {
     int enc;
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+	int ish = event->u.mouse.button>5;
+	if ( event->u.mouse.state&ksm_shift ) ish = !ish;
+	if ( ish ) /* bind shift to vertical scrolling */
+return( GGadgetDispatchEvent(bv->hsb,event));
+	else
 return( GGadgetDispatchEvent(bv->vsb,event));
     }
 
