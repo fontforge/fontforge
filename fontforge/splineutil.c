@@ -2898,6 +2898,7 @@ return( NULL );
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
 	chars[i]->orig_pos = i;
+	chars[i]->altuni = CIDSetAltUnis(map,i);
 	/* There better not be any references (seac's) because we have no */
 	/*  encoding on which to base any fixups */
 	if ( chars[i]->layers[ly_fore].refs!=NULL )

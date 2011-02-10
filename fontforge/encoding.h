@@ -1,6 +1,12 @@
 #ifndef _ENCODING_H
 #define _ENCODING_H
 
+struct cidaltuni {
+    struct cidaltuni *next;
+    int uni;
+    int cid;
+};
+
 struct cidmap {
     char *registry, *ordering;
     int supplement, maxsupple;
@@ -8,6 +14,7 @@ struct cidmap {
     int namemax;		/* Max cid with useful info */
     uint32 *unicode;
     char **name;
+    struct cidaltuni *alts;
     struct cidmap *next;
 };
 

@@ -3848,6 +3848,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 		subrs,gsubrs,buffer);
 	info->chars[i]->vwidth = sf->ascent+sf->descent;
 	info->chars[i]->unicodeenc = uni;
+	info->chars[i]->altuni = CIDSetAltUnis(map,cid);
 	sf->glyphs[cid] = info->chars[i];
 	sf->glyphs[cid]->parent = sf;
 	sf->glyphs[cid]->orig_pos = cid;		/* Bug! should be i, but I assume sf->chars[orig_pos]->orig_pos==orig_pos */

@@ -193,6 +193,8 @@ return( sc );
 	sc->name = copy(dummy.name);
 	sc->width = dummy.width;
 	sc->orig_pos = 0xffff;
+	if ( sf->cidmaster!=NULL )
+	    sc->altuni = CIDSetAltUnis(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),enc);
 	/*SCLigDefault(sc);*/
 	SFAddGlyphAndEncode(sf,sc,map,enc);
     }
