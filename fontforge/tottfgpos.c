@@ -973,6 +973,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 			devtablen += ValDevTabLen(pst->u.pair.vr[0].adjust) +
 				 ValDevTabLen(pst->u.pair.vr[1].adjust);
 #endif
+
 		    }
 		    ++tot;
 		}
@@ -1121,12 +1122,13 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 
     chunk_max = chunk_cnt = 0;
     for ( start_cnt=0; start_cnt<cnt; start_cnt=end_cnt ) {
-	int len = 5*2;
+	int len = 5*2;		/* Subtable header */
 	for ( end_cnt=start_cnt; end_cnt<cnt; ++end_cnt ) {
 	    int glyph_len = 2;		/* For the glyph's offset */
 	    if ( seconds[end_cnt][0].samewas==0xffff || seconds[end_cnt][0].samewas<start_cnt )
 		glyph_len += (bit_cnt*2+2)*seconds[end_cnt][0].tot +
-				seconds[end_cnt][0].devtablen;
+				seconds[end_cnt][0].devtablen +
+			        2;	/* Number of secondary glyphs */
 	    if ( glyph_len>65535 && end_cnt==start_cnt ) {
 		LogError(_("Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"),
 			sub->subtable_name, glyphs[start_cnt]->name );
@@ -1239,6 +1241,8 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	}
 	end = ftell(gpos);
 	fseek(gpos,coverage_pos,SEEK_SET);
+	if ( end-start>65535 )
+	    IError(_("I miscalculated the size of subtable %s, this means the kerning output is wrong."), sub->subtable_name );
 	putshort(gpos,end-start);
 	fseek(gpos,end,SEEK_SET);
 	gtemp = glyphs[end_cnt]; glyphs[end_cnt] = NULL;
@@ -3249,6 +3253,7 @@ return( NULL );
 	    free(sub->extra_subtables);
 	    sub->extra_subtables = NULL;
 	}
+	otf->needs_extension = false;
     }
 return( g___ );
 }
