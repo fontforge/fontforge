@@ -4350,14 +4350,20 @@ static int mv_v_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
 	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-		(event->u.mouse.button==4 || event->u.mouse.button==5) ) {
-	    if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) )	/* bind shift to magnify/minify */
+		(event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+	    int ish = event->u.mouse.button>5;
+	    if ( event->u.mouse.state&ksm_shift ) ish = !ish;
+	    if ( event->u.mouse.state&ksm_control ) {	/* bind control to magnify/minify */
+		if ( event->type==et_mousedown ) {
+		    if ( event->u.mouse.button==4 || event->u.mouse.button==6 )
+			_MVMenuScale(mv,MID_ZoomIn);
+		    else
+			_MVMenuScale(mv,MID_ZoomOut);
+		}
+	    } else if ( ish ) {		/* bind shift to horizontal scroll */
+return( GGadgetDispatchEvent(mv->hsb,event));
+	    } else {
 return( GGadgetDispatchEvent(mv->vsb,event));
-	    if ( event->type==et_mousedown ) {
-		if ( event->u.mouse.button==4 )
-		    _MVMenuScale(mv,MID_ZoomIn);
-		else if ( event->u.mouse.button==5 )
-		    _MVMenuScale(mv,MID_ZoomOut);
 	    }
 return( true );
 	}
@@ -4393,8 +4399,22 @@ static int mv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
 	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-		(event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+		(event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+	    int ish = event->u.mouse.button>5;
+	    if ( event->u.mouse.state&ksm_shift ) ish = !ish;
+	    if ( event->u.mouse.state&ksm_control ) {	/* bind control to magnify/minify */
+		if ( event->type==et_mousedown ) {
+		    if ( event->u.mouse.button==4 || event->u.mouse.button==6 )
+			_MVMenuScale(mv,MID_ZoomIn);
+		    else
+			_MVMenuScale(mv,MID_ZoomOut);
+		}
+	    } else if ( ish ) {	/* bind shift to horizontal scroll */
+return( GGadgetDispatchEvent(mv->hsb,event));
+	    } else {
 return( GGadgetDispatchEvent(mv->vsb,event));
+	    }
+return( true );
 	}
 	if ( mv->gwgic!=NULL && event->type==et_mousedown)
 	    GDrawSetGIC(mv->gw,mv->gwgic,0,20);

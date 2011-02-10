@@ -2001,9 +2001,16 @@ return( glistfield_mouse(ge,event));
 	    event->u.mouse.y<ge->buttonrect.y+ge->buttonrect.height )
 return( gnumericfield_mouse(gt,event));
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
-	    gt->vsb!=NULL )
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7)) {
+	int isv = event->u.mouse.button<=5;
+	if ( event->u.mouse.state&ksm_shift ) isv = !isv;
+	if ( isv && gt->vsb!=NULL )
 return( GGadgetDispatchEvent(&gt->vsb->g,event));
+	else if ( !isv && gt->hsb!=NULL )
+return( GGadgetDispatchEvent(&gt->hsb->g,event));
+	else
+return( true );
+    }
 
     if ( gt->pressed==NULL && event->type == et_mousemove && g->popup_msg!=NULL &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))

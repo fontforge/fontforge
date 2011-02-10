@@ -5270,6 +5270,10 @@ static int vwv_e_h(GWindow gw, GEvent *event) {
       case et_mouseup:
       case et_mousedown:
       case et_mousemove:
+	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+		(event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+return( GGadgetDispatchEvent(vw->vsb,event));
+	}
 	VWMouse(vw,event);
       break;
       case et_char:

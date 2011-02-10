@@ -2684,7 +2684,7 @@ static int attv_e_h(GWindow gw, GEvent *event) {
     struct att_dlg *att = (struct att_dlg *) GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(att->vsb,event));
     }
 
@@ -2707,7 +2707,7 @@ static int att_e_h(GWindow gw, GEvent *event) {
     struct att_dlg *att = (struct att_dlg *) GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(att->vsb,event));
     }
 

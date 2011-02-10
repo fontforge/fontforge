@@ -516,7 +516,7 @@ return( false );
 static int warnings_e_h(GWindow gw, GEvent *event) {
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(errdata.vsb,event));
     }
 
@@ -660,7 +660,7 @@ static int warningsv_e_h(GWindow gw, GEvent *event) {
     extern GBox _ggadget_Default_Box;
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(errdata.vsb,event));
     }
 

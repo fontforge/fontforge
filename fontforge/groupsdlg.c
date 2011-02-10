@@ -524,7 +524,7 @@ static int grpv_e_h(GWindow gw, GEvent *event) {
     struct groupdlg *grp = (struct groupdlg *) GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(grp->vsb,event));
     }
 
@@ -1083,7 +1083,7 @@ static int displaygrp_e_h(GWindow gw, GEvent *event) {
     struct groupdlg *grp = (struct groupdlg *) GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(grp->vsb,event));
     }
 

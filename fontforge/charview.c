@@ -4336,10 +4336,12 @@ static int v_e_h(GWindow gw, GEvent *event) {
 
     GGadgetPopupExternalEvent(event);
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7 ) ) {
 	if ( !(event->u.mouse.state&(ksm_control)) )	/* bind control to magnify/minify */
 	{
-	    if (event->u.mouse.state&(ksm_shift) ) /* bind shift to vertical scrolling */
+	    int ish = event->u.mouse.button>5;
+	    if ( event->u.mouse.state&ksm_shift ) ish = !ish;
+	    if ( ish ) /* bind shift to vertical scrolling */
 return( GGadgetDispatchEvent(cv->hsb,event));
 	    else
 return( GGadgetDispatchEvent(cv->vsb,event));
@@ -4823,7 +4825,12 @@ static int cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+	int ish = event->u.mouse.button>5;
+	if ( event->u.mouse.state&ksm_shift ) ish = !ish;
+	if ( ish ) /* bind shift to vertical scrolling */
+return( GGadgetDispatchEvent(cv->hsb,event));
+	else
 return( GGadgetDispatchEvent(cv->vsb,event));
     }
 

@@ -1299,9 +1299,12 @@ static int gfilechooser_mouse(GGadget *g, GEvent *event) {
     GFileChooser *gfc = (GFileChooser *) g;
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
-	    gfc->files->vsb!=NULL )
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+	if ( gfc->files->vsb!=NULL )
 return( GGadgetDispatchEvent(&gfc->files->vsb->g,event));
+	else
+return( true );
+    }
 
 return( false );
 }

@@ -7497,7 +7497,7 @@ static int lookups_e_h(GWindow gw, GEvent *event, int isgpos) {
     struct gfi_data *gfi = GDrawGetUserData(gw);
 
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(GWidgetGetControl(gw,CID_LookupVSB+isgpos),event));
     }
 
