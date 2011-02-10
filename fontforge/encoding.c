@@ -770,9 +770,10 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
     if ( map==NULL )
 	sprintf(buffer,"cid-%d", cid);
-    else if ( cid<map->namemax && map->name[cid]!=NULL )
+    else if ( cid<map->namemax && map->name[cid]!=NULL ) {
 	strncpy(buffer,map->name[cid],len);
-    else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
+	buffer[len-1] = '\0';
+    } else if ( cid==0 || (cid<map->namemax && map->unicode[cid]!=0 )) {
 	if ( map->unicode==NULL || map->namemax==0 )
 	    enc = 0;
 	else
@@ -785,9 +786,10 @@ int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len) {
 #else
     if ( map==NULL )
 	snprintf(buffer,len,"cid-%d", cid);
-    else if ( cid<map->namemax && map->name[cid]!=NULL )
+    else if ( cid<map->namemax && map->name[cid]!=NULL ) {
 	strncpy(buffer,map->name[cid],len);
-    else if ( cid==0 )
+	buffer[len-1] = '\0';
+    } else if ( cid==0 )
 	strcpy(buffer,".notdef");
     else if ( cid<map->namemax && map->unicode[cid]!=0 ) {
 	if ( map->unicode==NULL || map->namemax==0 )
@@ -805,6 +807,7 @@ return( enc );
 
 int NameUni2CID(struct cidmap *map,int uni, const char *name) {
     int i;
+    struct cidaltuni *alts;
 
     if ( map==NULL )
 return( -1 );
@@ -812,12 +815,32 @@ return( -1 );
 	for ( i=0; i<map->namemax; ++i )
 	    if ( map->unicode[i]==uni )
 return( i );
+	for ( alts=map->alts; alts!=NULL; alts=alts->next )
+	    if ( alts->uni==uni )
+return( alts->cid );
     } else {
 	for ( i=0; i<map->namemax; ++i )
 	    if ( map->name[i]!=NULL && strcmp(map->name[i],name)==0 )
 return( i );
     }
 return( -1 );
+}
+
+struct altuni *CIDSetAltUnis(struct cidmap *map,int cid) {
+    /* Some CIDs are mapped to several unicode code points, damn it */
+    struct altuni *sofar = NULL, *alt;
+    struct cidaltuni *alts;
+
+    for ( alts=map->alts; alts!=NULL; alts=alts->next ) {
+	if ( alts->cid==cid ) {
+	    alt = chunkalloc(sizeof(struct altuni));
+	    alt->next = sofar;
+	    sofar = alt;
+	    alt->unienc = alts->uni;
+	    alt->vs = -1;
+	}
+    }
+return( sofar );
 }
 
 int MaxCID(struct cidmap *map) {
@@ -910,6 +933,7 @@ static struct cidmap *MakeDummyMap(char *registry,char *ordering,int supplement)
     ret->supplement = ret->maxsupple = supplement;
     ret->cidmax = ret->namemax = 0;
     ret->unicode = NULL; ret->name = NULL;
+    ret->alts = NULL;
     ret->next = cidmaps;
     cidmaps = ret;
 return( ret );
@@ -920,7 +944,7 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
     struct cidmap *ret = galloc(sizeof(struct cidmap));
     char *pt = strrchr(file,'.');
     FILE *f;
-    int cid1, cid2, uni, cnt, i;
+    int cid1, cid2, uni, cnt, i, ch;
     char name[100];
 
     while ( pt>file && isdigit(pt[-1]))
@@ -930,19 +954,18 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	ret->maxsupple = supplement;
     ret->registry = copy(registry);
     ret->ordering = copy(ordering);
+    ret->alts = NULL;
+    ret->cidmax = ret->namemax = 0;
+    ret->unicode = NULL; ret->name = NULL;
     ret->next = cidmaps;
     cidmaps = ret;
 
     f = fopen( file,"r" );
     if ( f==NULL ) {
 	ff_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
-	ret->cidmax = ret->namemax = 0;
-	ret->unicode = NULL; ret->name = NULL;
     } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
 	ff_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 	fprintf( stderr, _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
-	ret->cidmax = ret->namemax = 0;
-	ret->unicode = NULL; ret->name = NULL;
     } else {
 	ret->unicode = gcalloc(ret->namemax+1,sizeof(uint32));
 	ret->name = gcalloc(ret->namemax+1,sizeof(char *));
@@ -957,9 +980,21 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 		for ( i=cid1; i<=cid2; ++i )
 		    ret->unicode[i] = uni++;
 	    } else if ( cnt==1 ) {
-		if ( fscanf(f,"%x", (unsigned *) &uni )==1 )
+		if ( fscanf(f,"%x", (unsigned *) &uni )==1 ) {
 		    ret->unicode[cid1] = uni;
-		else if ( fscanf(f," /%s", name )==1 )
+		    ch = getc(f);
+		    while ( ch==',' ) {
+			if ( fscanf(f,"%x", (unsigned *) &uni )==1 ) {
+			    struct cidaltuni *alt = chunkalloc(sizeof(struct cidaltuni));
+			    alt->next = ret->alts;
+			    ret->alts = alt;
+			    alt->uni = uni;
+			    alt->cid = cid1;
+			}
+			ch = getc(f);
+		    }
+		    ungetc(ch,f);
+		} else if ( fscanf(f," /%s", name )==1 )
 		    ret->name[cid1] = copy(name);
 	    }
 	}

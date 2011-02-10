@@ -2809,6 +2809,7 @@ extern int CIDFromName(char *name,SplineFont *cidmaster);
 extern int CID2Uni(struct cidmap *map,int cid);
 extern int CID2NameUni(struct cidmap *map,int cid, char *buffer, int len);
 extern int NameUni2CID(struct cidmap *map,int uni, const char *name);
+extern struct altuni *CIDSetAltUnis(struct cidmap *map,int cid);
 extern int MaxCID(struct cidmap *map);
 extern struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 	int supplement);

@@ -5,6 +5,8 @@
 static char used[0x110000];
 static int cid_2_unicode[0x10000];
 static char *nonuni_names[0x10000];
+#define MULT_MAX	6
+static int cid_2_unicodemult[0x100000][MULT_MAX];
 
 #define VERTMARK 0x1000000
 
@@ -32,8 +34,8 @@ static int allstars(char *buffer) {
 return( *buffer=='\0' );
 }
 
-static int getnth(char *buffer, int col) {
-    int i, val=0, best;
+static int getnth(char *buffer, int col, int *mults) {
+    int i,j, val=0, best;
     char *end;
     int vals[10];
 
@@ -79,6 +81,14 @@ return( -1 );
 		best = ucs2_score(vals[i]);
 	    }
 	}
+	if ( mults!=NULL ) for ( i=j=0; vals[i]!=0; ++i ) {
+	    if ( vals[i]!=val && !(vals[i]&VERTMARK))
+		mults[j++] = vals[i];
+	}
+	if ( j>MULT_MAX ) {
+	    fprintf( stderr, "Too many multiple values for %04x, need %d slots\n", val, j );
+exit(1);
+	}
     }
 
 return( val );
@@ -95,10 +105,10 @@ int main(int argc, char **argv) {
     while ( fgets(buffer,sizeof(buffer),stdin)!=NULL ) {
 	if ( *buffer=='#' /*|| allstars(buffer)*/)
     continue;
-	cid = getnth(buffer,1);
-	uni = getnth(buffer,7);
+	cid = getnth(buffer,1,NULL);
 	if ( cid==-1 )
     continue;
+	uni = getnth(buffer,7,cid_2_unicodemult[cid]);
 	maxcid = cid;
 	if ( uni==-1 ) {
     continue;
@@ -117,14 +127,19 @@ int main(int argc, char **argv) {
     printf("%d %d\n",maxcid, max );
 
     for ( cid=0; cid<=max; ++cid ) {
-	if ( cid_2_unicode[cid]!=-1 ) {
-	    for ( i=1; cid+i<=max && cid_2_unicode[cid+i]==cid_2_unicode[cid]+i; ++i );
+	if ( cid_2_unicode[cid]!=-1 && cid_2_unicodemult[cid][0]==0 ) {
+	    for ( i=1; cid+i<=max && cid_2_unicode[cid+i]==cid_2_unicode[cid]+i && cid_2_unicodemult[cid+i][0]==0; ++i );
 	    --i;
 	    if ( i!=0 ) {
 		printf( "%d..%d %04x\n", cid, cid+i, cid_2_unicode[cid] );
 		cid += i;
 	    } else
 		printf( "%d %04x\n", cid, cid_2_unicode[cid] );
+	} else if ( cid_2_unicode[cid]!=-1 ) {
+	    printf( "%d %04x", cid, cid_2_unicode[cid]);
+	    for ( i=0; cid_2_unicodemult[cid][i]!=0; ++i )
+		printf( ",%04x", cid_2_unicodemult[cid][i]);
+	    printf( "\n");
 	} else if ( nonuni_names[cid]!=NULL )
 	    printf( "%d /%s\n", cid, nonuni_names[cid] );
     }
