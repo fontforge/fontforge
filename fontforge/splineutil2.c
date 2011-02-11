@@ -3728,6 +3728,7 @@ return(s);
 	    bigreal d = 4*s->splines[0].b*s->splines[0].b-4*3*s->splines[0].a*s->splines[0].c;
 	    if ( d>0 ) {
 		extended t1, t2;
+		d = esqrt(d);
 		t1 = (-2*s->splines[0].b+d)/(2*3*s->splines[0].a);
 		t2 = (-2*s->splines[0].b-d)/(2*3*s->splines[0].a);
 		t[p++] = CheckExtremaForSingleBitErrors(&s->splines[0],t1,t2);
