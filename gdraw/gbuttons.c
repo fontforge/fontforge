@@ -239,30 +239,53 @@ static void GButtonPressed(GButton *b) {
     }
 }
 
-static int gbutton_textsize(GImageButton *gb, int *_lcnt) {
-    int lcnt, maxtextwidth;
+static int gbutton_stringsize( GButton *gb,unichar_t *label,int *lcnt ) {
+    int maxtextwidth = 0;
     unichar_t *pt, *start;
+
+    for ( pt = label; ; ) {
+        for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
+        if ( pt!=start ) {
+	    int w = GDrawGetBiTextWidth(gb->g.base,start,-1,pt-start,NULL);
+	    if ( w>maxtextwidth ) maxtextwidth=w;
+        }
+        ++(*lcnt);
+        if ( *pt=='\0' )
+    break;
+        ++pt;
+    }
+return maxtextwidth;
+}
+
+static unichar_t *gbutton_textsize( GButton *gb, int *_maxlcnt, int *_maxw ) {
+    int i, lcnt, maxlcnt, maxtextwidth;
+    unichar_t *ltxt;
     GFont *old;
 
     old = GDrawSetFont(gb->g.base,gb->font);
 
-    maxtextwidth = lcnt = 0;
+    maxtextwidth = maxlcnt = 0;
     if ( gb->label!=NULL ) {
-	for ( pt = gb->label; ; ) {
-	    for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
-	    if ( pt!=start ) {
-		int w = GDrawGetBiTextWidth(gb->g.base,start,-1,pt-start,NULL);
-		if ( w>maxtextwidth ) maxtextwidth=w;
+	maxtextwidth = gbutton_stringsize( gb,gb->label,&maxlcnt );
+	ltxt = gb->label;
+    }
+    /* If there is a list of alternate labels, iterate through all */
+    /* and get the maximum width and height */
+    if ( gb->labeltype == 0 && gb->ti!=NULL ) {
+	for ( i=0; i<gb->ltot; i++ ) {
+	    lcnt = 0;
+	    int w = gbutton_stringsize( gb,gb->ti[i]->text,&lcnt );
+	    if ( w>maxtextwidth ) {
+		maxtextwidth=w;
+		ltxt = gb->ti[i]->text;
 	    }
-	    ++lcnt;
-	    if ( *pt=='\0' )
-	break;
-	    ++pt;
+	    if ( lcnt>maxlcnt ) maxlcnt=lcnt;
 	}
     }
     (void) GDrawSetFont(gb->g.base,old);
-    *_lcnt = lcnt;
-return( maxtextwidth );
+    *_maxlcnt = maxlcnt;
+    *_maxw = maxtextwidth;
+return( ltxt );
 }
 
 static int gbutton_expose(GWindow pixmap, GGadget *g, GEvent *event) {
@@ -308,7 +331,7 @@ return( false );
     if ( gb->font!=NULL )
 	GDrawSetFont(pixmap,gb->font);
 
-    maxtextwidth = gbutton_textsize(gb,&lcnt);
+    gbutton_textsize((GButton *) gb,&lcnt,&maxtextwidth);
     yoff = (g->inner.height-lcnt*gb->fh)/2;
     if ( lcnt>1 && yoff<0 )
 	yoff = 0;
@@ -384,7 +407,7 @@ return( false );
 
     if ( gb->labeltype==2 ) {
 	int bp = GBoxBorderWidth(g->base,g->box);
-	GListMarkDraw(pixmap,
+GListMarkDraw(pixmap,
 		g->r.x + g->r.width - marklen - spacing/2 - bp,
 		g->inner.y,
 		g->inner.height,
@@ -650,7 +673,7 @@ static int GButtonGetDesiredWidth(GLabel *gl) {
     }
     if ( gl->label!=NULL ) {
 	int lcnt;
-	width = gbutton_textsize((GImageButton *) gl,&lcnt);
+	gbutton_textsize(gl,&lcnt,&width);
     }
 
     if ( width!=0 && iwidth!=0 )
@@ -679,10 +702,11 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     GDrawWindowFontMetrics(g->base,gl->font,&as, &ds, &ld);
     if ( gl->label!=NULL ) {
 	int lcnt;
-	width = gbutton_textsize((GImageButton *) gl,&lcnt);
+	unichar_t *ltxt = NULL;
+	ltxt = gbutton_textsize(gl,&lcnt,&width);
 	if ( lcnt==1 ) {
 	    FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	    width = GDrawGetBiTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	    width = GDrawGetBiTextBounds(gl->g.base,ltxt, -1, NULL, &bounds);
 	    GDrawSetFont(gl->g.base,old);
 	    if ( as<bounds.as ) as = bounds.as;
 	    if ( ds<bounds.ds ) ds = bounds.ds;
@@ -957,7 +981,6 @@ static void GLabelFit(GLabel *gl) {
 }
 
 static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
-
     if ( !gbutton_inited )
 	_GButtonInit();
     gl->g.funcs = &gbutton_funcs;
@@ -992,8 +1015,18 @@ return( gl );
 }
 
 GGadget *GLabelCreate(struct gwindow *base, GGadgetData *gd,void *data) {
-    GLabel *gl = _GLabelCreate(gcalloc(1,sizeof(GLabel)),base,gd,data,&label_box);
+    GLabel *gl = gcalloc(1,sizeof(GListButton));;
+    int i;
 
+    if ( gd->u.list!=NULL ) {
+	gl->ti = GTextInfoArrayFromList(gd->u.list,&gl->ltot);
+    }
+    if ( gd->label==NULL && gd->u.list!=NULL ) {
+	for ( i=0; gd->u.list[i].text == NULL; ++i );
+	if ( gd->u.list[i].text!=NULL )
+	    gd->label = &gd->u.list[i];
+    }
+    gl = _GLabelCreate(gl,base,gd,data,&label_box);
 return( &gl->g );
 }
 

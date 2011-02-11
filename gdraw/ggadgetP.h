@@ -124,6 +124,8 @@ typedef struct glabel {		/* or simple text, or groupbox */
     FontInstance *font;
     unichar_t *label;
     GImage *image;
+    GTextInfo **ti;
+    uint16 ltot;
 } GLabel, GButton;
 
 typedef struct gimagebutton {

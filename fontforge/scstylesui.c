@@ -322,24 +322,30 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #undef CID_HScale
 #undef CID_VScale
 
-#define CID_Feature	1001
-#define CID_Extension	1002
-#define CID_H_is_V	1003
-#define CID_StemHeight	1004
-#define CID_StemWidth	1005
-#define CID_StemHeightAdd	1006
-#define CID_StemWidthAdd	1007
-#define CID_DStemOn		1008
+#define CID_Feature		1001
+#define CID_Extension		1002
+#define CID_StemsUniform	1003
+#define CID_Stems_H_V		1004
+#define CID_Stems_by_Width	1005
+#define CID_StemThreshold	1006
+#define CID_StemHeight		1007
+#define CID_StemHeightLabel	1008
+#define CID_StemWidth		1009
+#define CID_StemWidthLabel	1010
+#define CID_StemHeightAdd	1011
+#define CID_StemWidthAdd	1012
+#define CID_DStemOn		1013
 
 #define CID_Counter_SameAdvance	1020
-#define CID_Counter_is_SideB	1021
-#define CID_Counter_isnt_SideB	1022
-#define CID_CounterPercent	1023
-#define CID_CounterAdd		1024
-#define CID_LSBPercent		1025
-#define CID_LSBAdd		1026
-#define CID_RSBPercent		1027
-#define CID_RSBAdd		1028
+#define CID_Counter_PropAdvance	1021
+#define CID_Counter_is_SideB	1022
+#define CID_Counter_isnt_SideB	1023
+#define CID_CounterPercent	1024
+#define CID_CounterAdd		1025
+#define CID_LSBPercent		1026
+#define CID_LSBAdd		1027
+#define CID_RSBPercent		1028
+#define CID_RSBAdd		1029
 
 #define CID_UseVerticalCounters	1040
 #define CID_VCounterPercent	1041
@@ -383,6 +389,26 @@ static int ss_percent_xh_up[] = {
     50
 };
 
+static double GuessStemThreshold(SplineFont *sf) {
+    double stdvw = 0, stdhw = 0, avg;
+    char *ret;
+
+    if ( sf->private!=NULL ) {
+	if ((ret=PSDictHasEntry(sf->private,"StdVW"))!=NULL ) {
+	    if ( ret[0] == '[' ) ret++;
+	    stdvw = strtod(ret,NULL);
+	}
+	if ((ret=PSDictHasEntry(sf->private,"StdHW"))!=NULL ) {
+	    if ( ret[0] == '[' ) ret++;
+	    stdhw = strtod(ret,NULL);
+	}
+    }
+    avg = (stdvw + stdhw)/2;
+    if ( avg<=0 )
+	avg = (sf->ascent+sf->descent)/25;
+return( avg );
+}
+
 static int SS_Feature_Changed(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged &&
@@ -410,7 +436,8 @@ static int GlyphChange_OK(GGadget *g, GEvent *e) {
 	GWindow ew = GGadgetGetWindow(g);
 	StyleDlg *ed = GDrawGetUserData(ew);
 	struct genericchange genchange;
-	int stem_xy_same = GGadgetIsChecked(GWidgetGetControl(ew,CID_H_is_V));
+	int stem_xy_same = GGadgetIsChecked(GWidgetGetControl(ew,CID_StemsUniform));
+	int stem_bywidth = GGadgetIsChecked(GWidgetGetControl(ew,CID_Stems_by_Width));
 	enum glyphchange_type gc = ed->gc;
 
 	memset(&genchange,0,sizeof(genchange));
@@ -418,16 +445,19 @@ static int GlyphChange_OK(GGadget *g, GEvent *e) {
 	genchange.small = ed->small;
 	genchange.stem_height_scale = GetReal8(ew,CID_StemHeight,_("Horizontal Stem Height Scale"),&err)/100.;
 	genchange.stem_height_add   = GetReal8(ew,CID_StemHeightAdd,_("Horizontal Stem Height Add"),&err);
+	genchange.stem_threshold = stem_bywidth ? GetReal8(ew,CID_StemThreshold,_("Threshold between Thin and Thick Stems"),&err) : 0;
 	if ( stem_xy_same ) {
 	    genchange.stem_width_scale = genchange.stem_height_scale;
 	    genchange.stem_width_add   = genchange.stem_height_add;
 	} else {
 	    genchange.stem_width_scale = GetReal8(ew,CID_StemWidth,_("Vertical Stem Width Scale"),&err)/100.;
-	    genchange.stem_width_add   = GetReal8(ew,CID_StemWidthAdd,_("Vertical Stem Width Add"),&err);
+	    genchange.stem_width_add   = stem_bywidth ? genchange.stem_height_add : GetReal8(ew,CID_StemWidthAdd,_("Vertical Stem Width Add"),&err);
 	}
 	genchange.dstem_control        = GGadgetIsChecked(GWidgetGetControl(ew,CID_DStemOn));
 	if ( err )
 return( true );
+	if (stem_bywidth && genchange.stem_threshold <= 0) 
+	    ff_post_error(_("Unlikely stem threshold"), _("Stem threshold should be positive"));
 	if ( genchange.stem_width_scale<.03 || genchange.stem_width_scale>10 ||
 		genchange.stem_height_scale<.03 || genchange.stem_height_scale>10 ) {
 	    ff_post_error(_("Unlikely scale factor"), _("Scale factors must be between 3 and 1000 percent"));
@@ -493,7 +523,12 @@ return( true );
 	    }
 	}
 
-	genchange.center_in_hor_advance = GGadgetIsChecked(GWidgetGetControl(ew,CID_Counter_SameAdvance));
+	if (GGadgetIsChecked(GWidgetGetControl(ew,CID_Counter_SameAdvance)))
+	    genchange.center_in_hor_advance = 1;
+	else if (GGadgetIsChecked(GWidgetGetControl(ew,CID_Counter_PropAdvance)))
+	    genchange.center_in_hor_advance = 2;
+	else
+	    genchange.center_in_hor_advance = 0;
 	genchange.hcounter_scale = GetReal8(ew,CID_CounterPercent,_("Horizontal Counter Scale"),&err)/100.;
 	genchange.hcounter_add   = GetReal8(ew,CID_CounterAdd,_("Horizontal Counter Add"),&err);
 	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_Counter_is_SideB)) ) {
@@ -557,19 +592,42 @@ return( true );
 return( true );
 }
 
+static GTextInfo stemwidth[] = {
+    { (unichar_t *) N_("Width of Vertical Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Width/Height of Thick Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }
+};
+static GTextInfo stemheight[] = {
+    { (unichar_t *) N_("Height of Horizontal Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Width/Height of Thin Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }
+};
+
 static int CG_SameAs_Changed(GGadget *g, GEvent *e) {
 
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
 	GWindow ew = GGadgetGetWindow(g);
-	int on = GGadgetIsChecked(g);
-	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemWidth), !on);
-	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemWidthAdd), !on);
-	if ( on ) {
+	int uniform = GGadgetIsChecked(GWidgetGetControl(ew,CID_StemsUniform));
+	int by_dir = GGadgetIsChecked(GWidgetGetControl(ew,CID_Stems_H_V));
+	int by_width = GGadgetIsChecked(GWidgetGetControl(ew,CID_Stems_by_Width));
+	unichar_t *v_label = by_width ? stemwidth[1].text : stemwidth[0].text;
+	unichar_t *h_label = by_width ? stemheight[1].text : stemheight[0].text;
+	
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemWidth), !uniform);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemWidthAdd), by_dir);
+	GGadgetSetEnabled(GWidgetGetControl(ew,CID_StemThreshold), by_width);
+	if ( uniform ) {
 	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidth),
 		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeight)));
 	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidthAdd),
 		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeightAdd)));
+	} else if ( by_width ) {
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidthAdd),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeightAdd)));
 	}
+
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemWidthLabel), (char *) v_label);
+	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemHeightLabel), (char *) h_label);
     }
 return( true );
 }
@@ -578,11 +636,16 @@ static int CG_VStem_Changed(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow ew = GGadgetGetWindow(g);
-	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_H_is_V))) {
+	if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_StemsUniform))) {
 	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidth),
 		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeight)));
 	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidthAdd),
 		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeightAdd)));
+
+	} else if ( GGadgetIsChecked(GWidgetGetControl(ew,CID_Stems_by_Width))) {
+	    GGadgetSetTitle(GWidgetGetControl(ew,CID_StemWidthAdd),
+		    _GGadgetGetTitle(GWidgetGetControl(ew,CID_StemHeightAdd)));
+
 	}
     }
 return( true );
@@ -815,7 +878,7 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 	sprintf( glyph_factor, "%.2f", (double) (100*glyph_scale) );
 	sprintf( stem_factor , "%.2f", (double) (100* stem_scale) );
 
-	GGadgetSetChecked(GWidgetGetControl(ew,CID_H_is_V),true);
+	GGadgetSetChecked(GWidgetGetControl(ew,CID_StemsUniform),true);
 	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemHeight),stem_factor);
 	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemHeightAdd),"0");
 	GGadgetSetTitle8(GWidgetGetControl(ew,CID_StemWidth),stem_factor);
@@ -842,7 +905,7 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 	GMatrixEditSet(GWidgetGetControl(ew,CID_VMappings),
 		mapmi.matrix_data,mapmi.initial_row_cnt,false);
 
-	CG_SameAs_Changed(GWidgetGetControl(ew,CID_H_is_V),NULL);
+	CG_SameAs_Changed(GWidgetGetControl(ew,CID_StemsUniform),NULL);
 	CG_CounterSameAs_Changed(GWidgetGetControl(ew,CID_Counter_is_SideB),NULL);
 	CG_UseVCounters(GWidgetGetControl(ew,CID_UseVerticalMappings),NULL);
     }
@@ -855,20 +918,21 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[56], boxes[20], *barray[11], *stemarray[15],
-	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[16], *varrays[10],
-	    *varrayhc[12], *varrayvc[12], *pcarray[4],
+    GGadgetCreateData gcd[64], boxes[19], *barray[11], *stemarray[22], *stemtarray[6],
+	    *stemarrayhc[20], *stemarrayvc[8], *varrayi[16], *varrays[15],
+	    *varrayhc[14], *varrayvc[12], *pcarray[4],
 	    *varray[7], *harray[6], *voarray[6], *extarray[7], *exarray[6];
-    GTextInfo label[56];
+    GTextInfo label[64];
     GTabInfo aspects[5];
-    int k,l,s, a;
+    int i,k,l,s, a;
     struct smallcaps small;
     struct matrixinit mapmi;
     bigreal glyph_scale = 1.0, stem_scale=1.0;
-    char glyph_factor[40], stem_factor[40];
+    char glyph_factor[40], stem_factor[40], stem_threshold[10];
     int layer = fv!=NULL ? fv->b.active_layer : CVLayer((CharViewBase *) cv);
     static GWindow last_dlg[gc_max] = { NULL };
     static SplineFont *last_sf[gc_max] = { NULL };
+    static int intldone = false;
 
     memset(&ed,0,sizeof(ed));
     ed.fv = fv;
@@ -876,6 +940,14 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     ed.sf = sf;
     ed.small = &small;
     ed.gc = gc;
+
+    if (!intldone) {
+	intldone = true;
+	for ( i=0; stemwidth[i].text; ++i )
+	    stemwidth[i].text = (unichar_t *) _((char *) stemwidth[i].text);
+	for ( i=0; stemheight[i].text; ++i )
+	    stemheight[i].text = (unichar_t *) _((char *) stemheight[i].text);
+    }
 
     SmallCapsFindConstants(&small,sf,layer); /* I want to know the xheight... */
 
@@ -1127,23 +1199,79 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	sprintf( glyph_factor, "%.2f", (double) (100*glyph_scale) );
 	sprintf( stem_factor , "%.2f", (double) (100* stem_scale) );
 
-	label[k].text = (unichar_t *) _("Uniform scaling for stems on both axes");
+	label[k].text = (unichar_t *) _("Uniform scaling for stems of any width and direction");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_enabled | gg_visible | gg_cb_on;
-	gcd[k].gd.cid = CID_H_is_V;
+	gcd[k].gd.cid = CID_StemsUniform;
 	gcd[k].gd.handle_controlevent = CG_SameAs_Changed;
-	gcd[k++].creator = GCheckBoxCreate;
+	gcd[k++].creator = GRadioCreate;
 	varrays[l++] = &gcd[k-1]; varrays[l++] = NULL;
 
-	label[k].text = (unichar_t *) _("Height of Horizontal Stems:");
+	label[k].text = (unichar_t *) _("Separate ratios for thin and thick stems");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k].gd.cid = CID_Stems_by_Width;
+	gcd[k].gd.handle_controlevent = CG_SameAs_Changed;
+	gcd[k++].creator = GRadioCreate;
+	varrays[l++] = &gcd[k-1]; varrays[l++] = NULL;
+
+	label[k].text = (unichar_t *) _("Threshold between \"thin\" and \"thick\":");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k++].creator = GLabelCreate;
+	stemtarray[s++] = &gcd[k-1];
+
+	sprintf(stem_threshold,"%.0f",GuessStemThreshold(sf));
+	label[k].text = (unichar_t *) stem_threshold;
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_visible;
+	gcd[k].gd.cid = CID_StemThreshold;
+	gcd[k].gd.pos.width = 60;
+	gcd[k++].creator = GTextFieldCreate;
+	stemtarray[s++] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) _("em-units");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k++].creator = GLabelCreate;
+	stemtarray[s++] = &gcd[k-1];
+	stemtarray[s++] = NULL;
+	stemtarray[s++] = NULL;
+
+	boxes[6].gd.flags = gg_enabled|gg_visible;
+	boxes[6].gd.u.boxelements = stemtarray;
+	boxes[6].creator = GHVBoxCreate;
+	varrays[l++] = &boxes[6]; varrays[l++] = NULL;
+	
+	label[k].text = (unichar_t *) _("Separate ratios for horizontal and vertical stems");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_rad_continueold;
+	gcd[k].gd.cid = CID_Stems_H_V;
+	gcd[k].gd.handle_controlevent = CG_SameAs_Changed;
+	gcd[k++].creator = GRadioCreate;
+	varrays[l++] = &gcd[k-1]; varrays[l++] = NULL;
+
+	s = 0;
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k].gd.cid = CID_StemHeightLabel;
+	gcd[k].gd.u.list = stemheight;
 	gcd[k++].creator = GLabelCreate;
 	stemarray[s++] = &gcd[k-1];
 
@@ -1186,12 +1314,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	stemarray[s++] = &gcd[k-1];
 	stemarray[s++] = NULL;
 
-	label[k].text = (unichar_t *) _("Width of Vertical Stems:");
-	label[k].text_is_1byte = true;
-	label[k].text_in_resource = true;
-	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k].gd.cid = CID_StemWidthLabel;
+	gcd[k].gd.u.list = stemwidth;
 	gcd[k++].creator = GLabelCreate;
 	stemarray[s++] = &gcd[k-1];
 
@@ -1233,10 +1359,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	stemarray[s++] = NULL;
 	stemarray[s++] = NULL;
 
-	boxes[6].gd.flags = gg_enabled|gg_visible;
-	boxes[6].gd.u.boxelements = stemarray;
-	boxes[6].creator = GHVBoxCreate;
-	varrays[l++] = &boxes[6]; varrays[l++] = NULL;
+	boxes[7].gd.flags = gg_enabled|gg_visible;
+	boxes[7].gd.u.boxelements = stemarray;
+	boxes[7].creator = GHVBoxCreate;
+	varrays[l++] = &boxes[7]; varrays[l++] = NULL;
 
 	label[k].text = (unichar_t *) _("Activate diagonal stem processing");
 	label[k].text_is_1byte = true;
@@ -1247,15 +1373,15 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k].gd.cid = CID_DStemOn;
 	gcd[k++].creator = GCheckBoxCreate;
 	varrays[l++] = &gcd[k-1]; varrays[l++] = NULL;
-	varrays[l++] = GCD_Glue; varrays[l++] = NULL; varrays[l++] = NULL;
+	varrays[l++] = GCD_Glue;  varrays[l++] = NULL; varrays[l++] = NULL;
 
-	boxes[7].gd.flags = gg_enabled|gg_visible;
-	boxes[7].gd.u.boxelements = varrays;
-	boxes[7].creator = GHVBoxCreate;
+	boxes[8].gd.flags = gg_enabled|gg_visible;
+	boxes[8].gd.u.boxelements = varrays;
+	boxes[8].creator = GHVBoxCreate;
 
 	aspects[a].text = (unichar_t *) _("Stems");
 	aspects[a].text_is_1byte = true;
-	aspects[a++].gcd = &boxes[7];
+	aspects[a++].gcd = &boxes[8];
 
 	l=s=0;
 
@@ -1266,6 +1392,17 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
 	gcd[k].gd.flags = gg_enabled | gg_visible;
 	gcd[k].gd.cid = CID_Counter_SameAdvance;
+	gcd[k].gd.handle_controlevent = CG_CounterSameAs_Changed;
+	gcd[k++].creator = GRadioCreate;
+	varrayhc[l++] = &gcd[k-1]; varrayhc[l++] = NULL;
+
+	label[k].text = (unichar_t *) _("Retain current advance width, scale side bearings proportionally");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+	gcd[k].gd.flags = gg_enabled | gg_visible;
+	gcd[k].gd.cid = CID_Counter_PropAdvance;
 	gcd[k].gd.handle_controlevent = CG_CounterSameAs_Changed;
 	gcd[k++].creator = GRadioCreate;
 	varrayhc[l++] = &gcd[k-1]; varrayhc[l++] = NULL;
@@ -1424,19 +1561,19 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	stemarrayhc[s++] = NULL;
 	stemarrayhc[s++] = NULL;
 
-	boxes[9].gd.flags = gg_enabled|gg_visible;
-	boxes[9].gd.u.boxelements = stemarrayhc;
-	boxes[9].creator = GHVBoxCreate;
-	varrayhc[l++] = &boxes[9]; varrayhc[l++] = NULL;
+	boxes[10].gd.flags = gg_enabled|gg_visible;
+	boxes[10].gd.u.boxelements = stemarrayhc;
+	boxes[10].creator = GHVBoxCreate;
+	varrayhc[l++] = &boxes[10]; varrayhc[l++] = NULL;
 	varrayhc[l++] = GCD_Glue; varrayhc[l++] = NULL; varrayhc[l++] = NULL;
 
-	boxes[10].gd.flags = gg_enabled|gg_visible;
-	boxes[10].gd.u.boxelements = varrayhc;
-	boxes[10].creator = GHVBoxCreate;
+	boxes[11].gd.flags = gg_enabled|gg_visible;
+	boxes[11].gd.u.boxelements = varrayhc;
+	boxes[11].creator = GHVBoxCreate;
 
 	aspects[a].text = (unichar_t *) _("Horizontal");
 	aspects[a].text_is_1byte = true;
-	aspects[a++].gcd = &boxes[10];
+	aspects[a++].gcd = &boxes[11];
 
 	l=s=0;
 
@@ -1496,10 +1633,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	if ( s > sizeof(stemarrayvc)/sizeof(stemarrayvc[0]) )
 	    IError( "Increase size of stemarrayvc" );
 
-	boxes[12].gd.flags = gg_enabled|gg_visible;
-	boxes[12].gd.u.boxelements = stemarrayvc;
-	boxes[12].creator = GHBoxCreate;
-	varrayvc[l++] = &boxes[12]; varrayvc[l++] = NULL;
+	boxes[13].gd.flags = gg_enabled|gg_visible;
+	boxes[13].gd.u.boxelements = stemarrayvc;
+	boxes[13].creator = GHBoxCreate;
+	varrayvc[l++] = &boxes[13]; varrayvc[l++] = NULL;
 
 	label[k].text = (unichar_t *) _("Control Vertical Mapping (use for Latin, Greek, Cyrillic)");
 	label[k].text_is_1byte = true;
@@ -1539,10 +1676,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k++].creator = GLabelCreate;
 	harray[s++] = &gcd[k-1]; harray[s++] = GCD_Glue; harray[s++] = NULL;
 
-	boxes[13].gd.flags = gg_enabled|gg_visible;
-	boxes[13].gd.u.boxelements = harray;
-	boxes[13].creator = GHBoxCreate;
-	varrayvc[l++] = &boxes[13]; varrayvc[l++] = NULL;
+	boxes[14].gd.flags = gg_enabled|gg_visible;
+	boxes[14].gd.u.boxelements = harray;
+	boxes[14].creator = GHBoxCreate;
+	varrayvc[l++] = &boxes[14]; varrayvc[l++] = NULL;
 
 
 	MappingMatrixInit(&mapmi,
@@ -1556,13 +1693,13 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	gcd[k++].creator = GMatrixEditCreate;
 	varrayvc[l++] = &gcd[k-1]; varrayvc[l++] = NULL; varrayvc[l++] = NULL;
 
-	boxes[14].gd.flags = gg_enabled|gg_visible;
-	boxes[14].gd.u.boxelements = varrayvc;
-	boxes[14].creator = GHVBoxCreate;
+	boxes[15].gd.flags = gg_enabled|gg_visible;
+	boxes[15].gd.u.boxelements = varrayvc;
+	boxes[15].creator = GHVBoxCreate;
 
 	aspects[a].text = (unichar_t *) _("Vertical");
 	aspects[a].text_is_1byte = true;
-	aspects[a++].gcd = &boxes[14];
+	aspects[a++].gcd = &boxes[15];
 
 	l=0;
 
@@ -1606,10 +1743,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	barray[6] = GCD_Glue; barray[7] = &gcd[k]; barray[8] = GCD_Glue;
 	barray[9] = NULL;
 
-	boxes[16].gd.flags = gg_enabled|gg_visible;
-	boxes[16].gd.u.boxelements = barray;
-	boxes[16].creator = GHBoxCreate;
-	varray[l++] = &boxes[16]; varray[l++] = NULL; varray[l++] = NULL;
+	boxes[17].gd.flags = gg_enabled|gg_visible;
+	boxes[17].gd.u.boxelements = barray;
+	boxes[17].creator = GHBoxCreate;
+	varray[l++] = &boxes[17]; varray[l++] = NULL; varray[l++] = NULL;
 
 	if ( l>=sizeof(varray)/sizeof(varray[0]))
 	    IError("Increase size of varray" );
@@ -1631,10 +1768,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
 	if ( boxes[4].ret!=NULL )
 	    GHVBoxSetExpandableRow(boxes[4].ret,gb_expandglue);
-	GHVBoxSetExpandableRow(boxes[7].ret,gb_expandglue);
-	GHVBoxSetExpandableRow(boxes[10].ret,gb_expandglue);
-	GHVBoxSetExpandableRow(boxes[14].ret,4);
-	GHVBoxSetExpandableCol(boxes[16].ret,gb_expandgluesame);
+	GHVBoxSetExpandableRow(boxes[8].ret,gb_expandglue);
+	GHVBoxSetExpandableRow(boxes[11].ret,gb_expandglue);
+	GHVBoxSetExpandableRow(boxes[15].ret,4);
+	GHVBoxSetExpandableCol(boxes[17].ret,gb_expandgluesame);
 	GHVBoxSetExpandableRow(boxes[0].ret,0);
 	GHVBoxFitWindow(boxes[0].ret);
 	/* if ( gc==gc_subsuper ) */
