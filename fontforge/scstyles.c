@@ -96,7 +96,7 @@ static int IsAnglePoint(SplinePoint *sp) {
     double PrevTangent, NextTangent;
 
     if (sp->next == NULL || sp->prev == NULL || 
-        sp->pointtype != pt_corner || sp->ttfindex == 0xffff)
+	sp->pointtype != pt_corner || sp->ttfindex == 0xffff)
 return( false );
 
     psp = sp->prev->from;
@@ -117,7 +117,7 @@ return( false );
     psp = sp->prev->from;
     nsp = sp->next->to;
 return ((val < (&psp->me.x)[xdir] && val < (&nsp->me.x)[xdir]) ||
-        (val > (&psp->me.x)[xdir] && val > (&nsp->me.x)[xdir]));
+	(val > (&psp->me.x)[xdir] && val > (&nsp->me.x)[xdir]));
 }
 
 static double InterpolateVal( double a,double b,double a1, double b1, double val ) {
@@ -126,8 +126,8 @@ return( a1 + ( val - a ) * ( b1 - a1 )/( b - a ));
 
 static int IsPointFixed( PointData *pd ) {
 return (( pd->touched & tf_x && pd->touched & tf_y ) ||
-        ( pd->touched & tf_x && pd->touched & tf_d ) ||
-        ( pd->touched & tf_y && pd->touched & tf_d ));
+	( pd->touched & tf_x && pd->touched & tf_d ) ||
+	( pd->touched & tf_y && pd->touched & tf_d ));
 }
 
 static int active_cmp(const void *_s1, const void *_s2) {
@@ -180,22 +180,23 @@ return( czone_top | czone_bot );
     fudge = ( max - min )/16.;
     
     for ( i=0; i<stem->activecnt && ret < 3; i++ ) {
-        s = (&stem->left.x)[!by_x] + 
-            stem->active[i].start * (&stem->unit.x)[!by_x];
-        e = (&stem->left.x)[!by_x] + 
-            stem->active[i].end * (&stem->unit.x)[!by_x];
-        if ( s < middle - fudge || e < middle - fudge )
-            ret |= czone_bot;
-        if ( e > middle + fudge || s > middle + fudge )
-            ret |= czone_top;
+	s = (&stem->left.x)[!by_x] + 
+	    stem->active[i].start * (&stem->unit.x)[!by_x];
+	e = (&stem->left.x)[!by_x] + 
+	    stem->active[i].end * (&stem->unit.x)[!by_x];
+	if ( s < middle - fudge || e < middle - fudge )
+	    ret |= czone_bot;
+	if ( e > middle + fudge || s > middle + fudge )
+	    ret |= czone_top;
     }
 return( ret );
 }
 
 static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt, 
-    DBounds *orig_b, double cstart, double cend, double pos, uint8 czone, int x_dir ) {
+    DBounds *orig_b, double cstart, double cend, double pos, uint8 czone, struct genericchange *gc, int x_dir ) {
     
     double ldist, rdist, lrdist, is, ie, temp, black=0;
+    double scale, w;
     struct segment *inters;
     StemBundle *bundle;
     StemData *stem;
@@ -205,71 +206,77 @@ static double GetCounterBlackSpace( GlyphData *gd, StemData **dstems, int dcnt,
     inters = gcalloc( dcnt + bundle->cnt,sizeof( struct segment ));
 
     for ( i=0; i<dcnt; i++ ) {
-        stem = dstems[i];
-        /* If a stem is more horizontal than vertical, then it should not
-         * cause vertical counters to be increased, and vice versa.
-         * However we have to check both directions if stem slope angle
-         * is close to 45 degrees, as otherwise undesired random effects
-         * can occur (e. g. in a multiply sign). So we have selected 0.75
-         * (sin(48 deg. 36'), cos(41 deg. 24 min)) as a boundary value
-         */
-        if (( x_dir && fabs( stem->unit.x ) > .75 ) ||
-            ( !x_dir && fabs( stem->unit.y ) > .75 ))
+	stem = dstems[i];
+	/* If a stem is more horizontal than vertical, then it should not
+	 * cause vertical counters to be increased, and vice versa.
+	 * However we have to check both directions if stem slope angle
+	 * is close to 45 degrees, as otherwise undesired random effects
+	 * can occur (e. g. in a multiply sign). So we have selected 0.75
+	 * (sin(48 deg. 36'), cos(41 deg. 24 min)) as a boundary value
+	 */
+	if (( x_dir && fabs( stem->unit.x ) > .75 ) ||
+	    ( !x_dir && fabs( stem->unit.y ) > .75 ))
     continue;
-        ldist = ( pos - (&stem->left.x)[x_dir] )/(&stem->unit.x)[x_dir];
-        rdist = ( pos - (&stem->right.x)[x_dir] )/(&stem->unit.x)[x_dir];
-        lrdist =( stem->right.x - stem->left.x ) * stem->unit.x +
-                ( stem->right.y - stem->left.y ) * stem->unit.y;
-        
-        for ( j=0; j<stem->activecnt; j++ ) {
-            if (ldist >= stem->active[j].start && ldist <= stem->active[j].end &&
-                rdist + lrdist >= stem->active[j].start && rdist + lrdist <= stem->active[j].end ) {
+	ldist = ( pos - (&stem->left.x)[x_dir] )/(&stem->unit.x)[x_dir];
+	rdist = ( pos - (&stem->right.x)[x_dir] )/(&stem->unit.x)[x_dir];
+	lrdist =( stem->right.x - stem->left.x ) * stem->unit.x +
+		( stem->right.y - stem->left.y ) * stem->unit.y;
+	
+	for ( j=0; j<stem->activecnt; j++ ) {
+	    if (ldist >= stem->active[j].start && ldist <= stem->active[j].end &&
+		rdist + lrdist >= stem->active[j].start && rdist + lrdist <= stem->active[j].end ) {
 
-                is = (&stem->left.x)[!x_dir] + ldist * (&stem->unit.x)[!x_dir];
-                ie = (&stem->right.x)[!x_dir] + rdist * (&stem->unit.x)[!x_dir];
-                if ( is > ie ) {
-                    temp = is; is = ie; ie = temp;
-                }
-                if ( is >= cstart && is < cend ) {
-                    inters[icnt  ].start = is;
-                    inters[icnt++].end = ( ie < cend ) ? ie : cend;
-                } else if ( ie > cstart && ie <=cend ) {
-                    inters[icnt  ].start = ( is > cstart ) ? is : cstart;
-                    inters[icnt++].end = ie;
-                }
-            }
-        }
+		is = (&stem->left.x)[!x_dir] + ldist * (&stem->unit.x)[!x_dir];
+		ie = (&stem->right.x)[!x_dir] + rdist * (&stem->unit.x)[!x_dir];
+		if ( is > ie ) {
+		    temp = is; is = ie; ie = temp;
+		}
+		if ( is >= cstart && is < cend ) {
+		    inters[icnt  ].start = is;
+		    inters[icnt++].end = ( ie < cend ) ? ie : cend;
+		} else if ( ie > cstart && ie <=cend ) {
+		    inters[icnt  ].start = ( is > cstart ) ? is : cstart;
+		    inters[icnt++].end = ie;
+		}
+	    }
+	}
     }
     for ( i=0; i<bundle->cnt; i++ ) {
-        stem = bundle->stemlist[i];
-        if ( stem->bbox )
+	stem = bundle->stemlist[i];
+	if ( stem->bbox )
     continue;
-        is = x_dir ? stem->left.x : stem->right.y;
-        ie = x_dir ? stem->right.x : stem->left.y;
-        
-        if ( is >= cstart && is < cend && GetStemCounterZone( stem,orig_b ) & czone ) {
-            inters[icnt  ].start = is;
-            inters[icnt++].end = ( ie < cend ) ? ie : cend;
-        } else if ( ie > cstart && ie <=cend && GetStemCounterZone( stem,orig_b ) & czone  ) {
-            inters[icnt  ].start = ( is > cstart ) ? is : cstart;
-            inters[icnt++].end = ie;
-        }
+	is = x_dir ? stem->left.x : stem->right.y;
+	ie = x_dir ? stem->right.x : stem->left.y;
+	
+	if ( is >= cstart && is < cend && GetStemCounterZone( stem,orig_b ) & czone ) {
+	    inters[icnt  ].start = is;
+	    inters[icnt++].end = ( ie < cend ) ? ie : cend;
+	} else if ( ie > cstart && ie <=cend && GetStemCounterZone( stem,orig_b ) & czone  ) {
+	    inters[icnt  ].start = ( is > cstart ) ? is : cstart;
+	    inters[icnt++].end = ie;
+	}
     }
     qsort( inters,icnt,sizeof(struct segment),active_cmp );
     
     for ( i=j=0; i<icnt; i++ ) {
-        if ( i == 0 )
-            black += ( inters[i].end - inters[i].start );
-        else {
-            while ( i<icnt && inters[i].end <= inters[j].end ) i++;
-            if ( i == icnt )
+	if ( i == 0 ) {
+	    w = ( inters[i].end - inters[i].start );
+	} else {
+	    while ( i<icnt && inters[i].end <= inters[j].end ) i++;
+	    if ( i == icnt )
     break;
-            if ( inters[i].start < inters[i-1].end )
-                black += ( inters[i].end - inters[i-1].end );
-            else
-                black += ( inters[i].end - inters[i].start );
-        }
-        j = i;
+	    if ( inters[i].start < inters[i-1].end )
+		w = ( inters[i].end - inters[i-1].end );
+	    else
+		w = ( inters[i].end - inters[i].start );
+	}
+	if (gc->stem_threshold > 0) {
+	    scale = w > gc->stem_threshold ? gc->stem_width_scale : gc->stem_height_scale;
+	} else {
+	    scale = x_dir ? gc->stem_width_scale : gc->stem_height_scale;
+	}
+	black += w*scale;
+	j = i;
     }
     free( inters );
 return( black );
@@ -290,14 +297,15 @@ return( black );
  * part of the counter
  */
 static double ScaleCounter( GlyphData *gd, StemData **dstems, int dcnt,
-    DBounds *orig_b, StemData *pstem, StemData *nstem, double stem_scale, double cntr_scale, int x_dir ) {
+    DBounds *orig_b, StemData *pstem, StemData *nstem, struct genericchange *gc, int x_dir ) {
     
-    double min, max, onequarter, threequarters, cstart, cend; 
+    double min, max, onequarter, threequarters, cstart, cend, cntr_scale; 
     double black25, black75, white25, white75, gen25, gen75, ret;
     uint8 pczone, nczone;
 
     min = x_dir ? orig_b->minx : orig_b->miny;
     max = x_dir ? orig_b->maxx : orig_b->maxy;
+    cntr_scale = x_dir ? gc->hcounter_scale : gc->vcounter_scale;
     cstart = ( pstem != NULL ) ? x_dir ? pstem->right.x : pstem->left.y : min;
     cend = ( nstem != NULL ) ? x_dir ? nstem->left.x : nstem->right.y : max;
     if ( cend == cstart )
@@ -310,21 +318,21 @@ return( 0 );
     max = x_dir ? orig_b->maxy : orig_b->maxx;
     onequarter = min + ( max - min )*.25;
     threequarters = min + ( max - min )*.75;
-    black25 = GetCounterBlackSpace( gd,dstems,dcnt,orig_b,cstart,cend,onequarter,czone_bot,x_dir );
-    black75 = GetCounterBlackSpace( gd,dstems,dcnt,orig_b,cstart,cend,threequarters,czone_top,x_dir );
+    black25 = GetCounterBlackSpace( gd,dstems,dcnt,orig_b,cstart,cend,onequarter,czone_bot,gc,x_dir );
+    black75 = GetCounterBlackSpace( gd,dstems,dcnt,orig_b,cstart,cend,threequarters,czone_top,gc,x_dir );
     white25 = cend - cstart - black25;
     white75 = cend - cstart - black75;
 
-    if ( !(pczone & czone_top) && pstem->width/2 < white75 )
-        white75 -= pstem->width/2;
-    if ( !(pczone & czone_bot) && pstem->width/2 < white25 )
-        white25 -= pstem->width/2;
-    if ( !(nczone & czone_top) && nstem->width/2 < white75 )
-        white75 -= nstem->width/2;
-    if ( !(nczone & czone_bot) && nstem->width/2 < white25 )
-        white25 -= nstem->width/2;
-    gen25 = white25 * cntr_scale + black25 * stem_scale;
-    gen75 = white75 * cntr_scale + black75 * stem_scale;
+    if ( !(pczone & czone_top) && white75 > white25 + pstem->width/2 )
+	white75 -= pstem->width/2;
+    if ( !(nczone & czone_top) && white75 > white25 + nstem->width/2 )
+	white75 -= nstem->width/2;
+    if ( !(pczone & czone_bot) && white25 > white75 + pstem->width/2 )
+	white25 -= pstem->width/2;
+    if ( !(nczone & czone_bot) && white25 > white75 + nstem->width/2 )
+	white25 -= nstem->width/2;
+    gen25 = white25 * cntr_scale + black25;
+    gen75 = white75 * cntr_scale + black75;
     ret = ( gen25 > gen75 ) ? gen25 : gen75;
 
 return( ret );
@@ -338,62 +346,69 @@ static void StemPosDependent( StemData *stem,struct genericchange *genchange,int
     double stem_scale, stem_add, stroke_add, serif_scale, width_new;
 
     expanded = (genchange->stem_width_add != 0 && genchange->stem_height_add !=0 &&
-                genchange->stem_height_add/genchange->stem_width_add > 0 );
+		genchange->stem_height_add/genchange->stem_width_add > 0 );
     l = (&stem->left.x)[!x_dir]; r = (&stem->right.x)[!x_dir];
     l1 = (&stem->newleft.x)[!x_dir]; r1 = (&stem->newright.x)[!x_dir];
     if ( x_dir ) {
-        stem_scale = genchange->stem_width_scale;
-        stem_add = genchange->stem_width_add;
-        serif_scale = genchange->serif_width_scale;
+	stem_scale = genchange->stem_width_scale;
+	stem_add = genchange->stem_width_add;
+	serif_scale = genchange->serif_width_scale;
     } else {
-        stem_scale = genchange->stem_height_scale;
-        stem_add = genchange->stem_height_add;
-        serif_scale = genchange->serif_height_scale;
+	stem_scale = genchange->stem_height_scale;
+	stem_add = genchange->stem_height_add;
+	serif_scale = genchange->serif_height_scale;
     }
     stroke_add = expanded ? stem_add : 0;
 
     for (i=0; i<stem->dep_cnt; i++) {
-        slave = stem->dependent[i].stem;
-        lbase = stem->dependent[i].lbase;
-        if ( !slave->ldone && !slave->rdone ) {
-            width_new = ( slave->width - stroke_add )*stem_scale + stem_add;
-            sl = (&slave->left.x)[!x_dir]; sr = (&slave->right.x)[!x_dir];
-            if ( !x_dir ) width_new = -width_new;
-            if (stem->dependent[i].dep_type == 'a' || stem->dependent[i].dep_type == 'm') {
-                dist = lbase ? sl - l : sr - r;
-                dist *= stem_scale;
-                if (lbase) (&slave->newleft.x)[!x_dir] = l1 + floor( dist + .5 );
-                else (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
-            } else if (stem->dependent[i].dep_type == 'i') {
-                if (lbase)
-                    (&slave->newleft.x)[!x_dir] = floor( InterpolateVal( l,r,l1,r1,sl ) + .5 );
-                else
-                    (&slave->newright.x)[!x_dir] = floor( InterpolateVal( l,r,l1,r1,sr ) + .5 );
-            }
-            if (lbase)
-                (&slave->newright.x)[!x_dir] = (&slave->newleft.x)[!x_dir] + floor( width_new + .5 );
-            else
-                (&slave->newleft.x)[!x_dir] = (&slave->newright.x)[!x_dir] - floor( width_new + .5 );
-        }
-        if ( slave->dep_cnt > 0 )
-            StemPosDependent( slave,genchange,x_dir );
+	slave = stem->dependent[i].stem;
+	lbase = stem->dependent[i].lbase;
+	if ( genchange->stem_threshold > 0 ) {
+	    stem_scale = slave->width > genchange->stem_threshold ?
+		genchange->stem_width_scale : genchange->stem_height_scale;
+	    stem_add = genchange->stem_height_add;
+	}
+	stroke_add = expanded ? stem_add : 0;
+
+	if ( !slave->ldone && !slave->rdone ) {
+	    width_new = ( slave->width - stroke_add )*stem_scale + stem_add;
+	    sl = (&slave->left.x)[!x_dir]; sr = (&slave->right.x)[!x_dir];
+	    if ( !x_dir ) width_new = -width_new;
+	    if (stem->dependent[i].dep_type == 'a' || stem->dependent[i].dep_type == 'm') {
+		dist = lbase ? sl - l : sr - r;
+		dist *= stem_scale;
+		if (lbase) (&slave->newleft.x)[!x_dir] = l1 + floor( dist + .5 );
+		else (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
+	    } else if (stem->dependent[i].dep_type == 'i') {
+		if (lbase)
+		    (&slave->newleft.x)[!x_dir] = floor( InterpolateVal( l,r,l1,r1,sl ) + .5 );
+		else
+		    (&slave->newright.x)[!x_dir] = floor( InterpolateVal( l,r,l1,r1,sr ) + .5 );
+	    }
+	    if (lbase)
+		(&slave->newright.x)[!x_dir] = (&slave->newleft.x)[!x_dir] + floor( width_new + .5 );
+	    else
+		(&slave->newleft.x)[!x_dir] = (&slave->newright.x)[!x_dir] - floor( width_new + .5 );
+	}
+	if ( slave->dep_cnt > 0 )
+	    StemPosDependent( slave,genchange,x_dir );
     }
 
     if ( genchange->serif_control ) {
-        for (i=0; i<stem->serif_cnt; i++) {
-            slave = stem->serifs[i].stem;
-            lbase = stem->serifs[i].lbase;
-            /* In the autoinstructor we usually link an edge of the serif stem to the opposite
-             * edge of the main stem. So, if 'lbase' is true, this actually means that we are
-             * interested in the right edge of the serif stem. However, here, despite of
-             * the variable name, we position the left edge of the serif relatively to the
-             * left edge of the master stem and vice versa
-             */
-            dist = lbase ? (&slave->right.x)[!x_dir] - r : l - (&slave->left.x)[!x_dir];
-            dist *= serif_scale;
-            if (lbase) (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
-            else (&slave->newleft.x)[!x_dir] = l1 - floor( dist + .5 );
-        }
+	for (i=0; i<stem->serif_cnt; i++) {
+	    slave = stem->serifs[i].stem;
+	    lbase = stem->serifs[i].lbase;
+	    /* In the autoinstructor we usually link an edge of the serif stem to the opposite
+	     * edge of the main stem. So, if 'lbase' is true, this actually means that we are
+	     * interested in the right edge of the serif stem. However, here, despite
+	     * the variable name, we position the left edge of the serif relatively to the
+	     * left edge of the master stem and vice versa
+	     */
+	    dist = lbase ? (&slave->right.x)[!x_dir] - r : l - (&slave->left.x)[!x_dir];
+	    dist *= serif_scale;
+	    if (lbase) (&slave->newright.x)[!x_dir] = r1 + floor( dist + .5 );
+	    else (&slave->newleft.x)[!x_dir] = l1 - floor( dist + .5 );
+	}
     }
 }
 
@@ -416,45 +431,51 @@ static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt
      * there is nothing to add
      */
     expanded = (genchange->stem_width_add != 0 && genchange->stem_height_add !=0 &&
-                genchange->stem_height_add/genchange->stem_width_add > 0 );
+		genchange->stem_height_add/genchange->stem_width_add > 0 );
     if ( x_dir ) {
-        stem_scale = genchange->stem_width_scale;
-        stem_add = genchange->stem_width_add;
-        cntr_scale = genchange->hcounter_scale;
-        cntr_add = genchange->hcounter_add;
+	stem_scale = genchange->stem_width_scale;
+	stem_add = genchange->stem_width_add;
+	cntr_scale = genchange->hcounter_scale;
+	cntr_add = genchange->hcounter_add;
     } else {
-        stem_scale = genchange->stem_height_scale;
-        stem_add = genchange->stem_height_add;
-        cntr_scale = genchange->vcounter_scale;
-        cntr_add = genchange->vcounter_add;
+	stem_scale = genchange->stem_height_scale;
+	stem_add = genchange->stem_height_add;
+	cntr_scale = genchange->vcounter_scale;
+	cntr_add = genchange->vcounter_add;
     }
-    stroke_add = expanded ? stem_add : 0;
 
     *min_new = floor( min_coord * cntr_scale + cntr_add + .5 );
     for ( i=0; i<bundle->cnt; i++ ) {
-        stem = bundle->stemlist[i];
-        if ( stem->master == NULL ) {
-            newstart = x_dir ? &stem->newleft.x : &stem->newright.x;
-            newend = x_dir ? &stem->newright.x : &stem->newleft.x;
-            
-            cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,prev,stem,stem_scale,cntr_scale,x_dir );
-            if ( prev == NULL )
-                newstart[!x_dir] = *min_new + floor( cntr_new + cntr_add + .5 );
-            else
-                newstart[!x_dir] = newprevend[!x_dir] + floor( cntr_new + cntr_add + .5 );
+	stem = bundle->stemlist[i];
+	if ( genchange->stem_threshold > 0 ) {
+	    stem_scale = stem->width > genchange->stem_threshold ?
+		genchange->stem_width_scale : genchange->stem_height_scale;
+	    stem_add = genchange->stem_height_add;
+	}
+	stroke_add = expanded ? stem_add : 0;
 
-            /* Bounding box hints usually don't mark real stems, so there is */
-            /* no reason to maintain the normal stem width ratio when dealing with them */
-            if ( stem->bbox )
-                width_new = ScaleCounter( gd,dstems,dcnt,orig_b,NULL,NULL,stem_scale,cntr_scale,x_dir );
-            else
-                width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
-            newend[!x_dir] = newstart[!x_dir] + floor( width_new + .5 );
-            stem->ldone = stem->rdone = true;
-            StemPosDependent( stem,genchange,x_dir );
-            prev = stem;
-            newprevend = newend;
-        }
+	if ( stem->master == NULL ) {
+	    newstart = x_dir ? &stem->newleft.x : &stem->newright.x;
+	    newend = x_dir ? &stem->newright.x : &stem->newleft.x;
+	    
+	    cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,prev,stem,genchange,x_dir );
+	    if ( prev == NULL )
+		newstart[!x_dir] = *min_new + floor( cntr_new + cntr_add + .5 );
+	    else
+		newstart[!x_dir] = newprevend[!x_dir] + floor( cntr_new + cntr_add + .5 );
+
+	    /* Bounding box hints usually don't mark real stems, so there is */
+	    /* no reason to maintain the normal stem width ratio when dealing with them */
+	    if ( stem->bbox )
+		width_new = ScaleCounter( gd,dstems,dcnt,orig_b,NULL,NULL,genchange,x_dir );
+	    else
+		width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
+	    newend[!x_dir] = newstart[!x_dir] + floor( width_new + .5 );
+	    stem->ldone = stem->rdone = true;
+	    StemPosDependent( stem,genchange,x_dir );
+	    prev = stem;
+	    newprevend = newend;
+	}
     }
 
     *max_new = *min_new;
@@ -463,18 +484,18 @@ static void StemResize( SplineSet *ss,GlyphData *gd, StemData **dstems, int dcnt
     /* need to take into account also dependent stems (and that's why we */
     /* couldn't do that in the previous cycle) */
     for ( i=0; i<bundle->cnt; i++ ) {
-        stem = bundle->stemlist[i];
-        if ( stem->bbox )
+	stem = bundle->stemlist[i];
+	if ( stem->bbox )
     continue;
-        end = x_dir ? &stem->right.x : &stem->left.y;
-        newend = x_dir ? &stem->newright.x : &stem->newleft.y;
-        if ( prev == NULL || end[!x_dir] > prevend[!x_dir] ) {
-            *max_new = floor( newend[!x_dir] + .5 );
-            prevend = end;
-            prev = stem;
-        }
+	end = x_dir ? &stem->right.x : &stem->left.y;
+	newend = x_dir ? &stem->newright.x : &stem->newleft.y;
+	if ( prev == NULL || end[!x_dir] > prevend[!x_dir] ) {
+	    *max_new = floor( newend[!x_dir] + .5 );
+	    prevend = end;
+	    prev = stem;
+	}
     }
-    cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,prev,NULL,stem_scale,cntr_scale,x_dir );
+    cntr_new = ScaleCounter( gd,dstems,dcnt,orig_b,prev,NULL,genchange,x_dir );
     *max_new += floor( cntr_new + cntr_add + .5 );
 }
 
@@ -490,11 +511,10 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
     struct position_maps *pm;
 
     expanded = (genchange->stem_width_add != 0 && genchange->stem_height_add !=0 &&
-                genchange->stem_height_add/genchange->stem_width_add > 0 );
-    scale = genchange->v_scale;
-    stem_scale = genchange->stem_height_scale;
+		genchange->stem_height_add/genchange->stem_width_add > 0 );
     stem_add = genchange->stem_height_add;
     stroke_add = expanded ? stem_add : 0;
+    scale = genchange->v_scale;
     
     bd = &gd->bd;
     new_b->miny = orig_b->miny * scale;
@@ -502,137 +522,149 @@ static void HStemResize( SplineSet *ss,GlyphData *gd,
     
     /* Extend the scaled glyph bounding box if necessary to ensure all mapped values are inside */
     if ( fix->cnt > 0 ) {
-        if ( fix->maps[0].cur_width < 0 && new_b->miny > fix->maps[0].desired + fix->maps[0].des_width )
+	if ( fix->maps[0].cur_width < 0 && new_b->miny > fix->maps[0].desired + fix->maps[0].des_width )
 	    new_b->miny = fix->maps[0].desired + fix->maps[0].des_width -
 		genchange->v_scale * ( fix->maps[0].current + fix->maps[0].cur_width - orig_b->miny );
-        else if ( fix->maps[0].cur_width > 0 && new_b->miny > fix->maps[0].desired )
+	else if ( fix->maps[0].cur_width > 0 && new_b->miny > fix->maps[0].desired )
 	    new_b->miny = fix->maps[0].desired -
 		genchange->v_scale * ( fix->maps[0].current - orig_b->miny );
 
-        fcnt = fix->cnt - 1;
-        if ( fix->maps[fcnt].cur_width > 0 && new_b->maxy < fix->maps[fcnt].desired + fix->maps[fcnt].des_width )
+	fcnt = fix->cnt - 1;
+	if ( fix->maps[fcnt].cur_width > 0 && new_b->maxy < fix->maps[fcnt].desired + fix->maps[fcnt].des_width )
 	    new_b->maxy = fix->maps[fcnt].desired + fix->maps[fcnt].des_width +
 		genchange->v_scale * ( orig_b->maxy - ( fix->maps[fcnt].current + fix->maps[fcnt].cur_width ));
-        else if ( fix->maps[fcnt].cur_width < 0 && new_b->maxy < fix->maps[fcnt].desired )
+	else if ( fix->maps[fcnt].cur_width < 0 && new_b->maxy < fix->maps[fcnt].desired )
 	    new_b->maxy = fix->maps[fcnt].desired +
 		genchange->v_scale * ( orig_b->maxy - fix->maps[fcnt].current );
     }
 
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
-        stem = gd->hbundle->stemlist[i];
-        /* The 'blue' field now actually points to a 'position_maps' structure. */
-        /* So the name is wrong, but who cares... */
-        if (stem->blue != -1 ) {
-            pm = &fix->maps[stem->blue];
-            width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
-            lpos = stem->left.y - stroke_add/2;
-            rpos = stem->right.y + stroke_add/2;
-            if ( pm->cur_width < 0 && ( !stem->ghost || stem->width == 21 ) &&
-                rpos >= pm->current + pm->cur_width - fuzz && rpos <= pm->current + fuzz ) {
-                
-                top = pm->current; bot = pm->current + pm->cur_width;
-                if ( rpos >= bot && rpos <= top )
-                    stem->newright.y = floor( InterpolateVal( bot,top,
-                        pm->desired + pm->des_width,pm->desired,rpos ) + .5 );
-                else if ( rpos < bot )
-                    stem->newright.y = floor( pm->desired + pm->des_width - 
-                        ( bot - rpos ) * stem_scale + .5 );
-                else if ( rpos > top )
-                    stem->newright.y = floor( pm->desired + 
-                        ( rpos - top ) * stem_scale + .5 );
-                    
-                if ( !stem->ghost )
-                    stem->newleft.y = stem->newright.y + floor( width_new + .5 );
-                else
-                    stem->newleft.y = stem->newright.y + 21;
-                stem->ldone = stem->rdone = true;
-            } else if ( pm->cur_width > 0 && ( !stem->ghost || stem->width == 20 ) &&
-                lpos >= pm->current - fuzz && lpos <= pm->current + pm->cur_width + fuzz  ) {
-                
-                top = pm->current + pm->cur_width; bot = pm->current;
-                if ( lpos >= bot && lpos <= top )
-                    stem->newleft.y = floor( InterpolateVal( bot,top,
-                        pm->desired,pm->desired + pm->des_width,lpos ) + .5 );
-                else if ( lpos < bot )
-                    stem->newleft.y = floor( pm->desired - 
-                        ( bot - lpos ) * stem_scale + .5 );
-                else if ( lpos > top )
-                    stem->newleft.y = floor( pm->desired + pm->des_width + 
-                        ( lpos - top ) * stem_scale + .5 );
+	stem = gd->hbundle->stemlist[i];
+	if ( genchange->stem_threshold > 0 )
+	    stem_scale = stem->width > genchange->stem_threshold ?
+		genchange->stem_width_scale : genchange->stem_height_scale;
+	else
+	    stem_scale = genchange->stem_height_scale;
 
-                if ( !stem->ghost )
-                    stem->newright.y = stem->newleft.y - floor( width_new + .5 );
-                else
-                    stem->newright.y = stem->newleft.y - 20;
-                stem->ldone = stem->rdone = true;
-            } else
-                stem->blue = -1;
-        }
-        if ( stem->bbox && stem->blue != -1 ) {
-            new_b->miny = stem->newright.y;
-            new_b->maxy = stem->newleft.y;
-        }
+	/* The 'blue' field now actually points to a 'position_maps' structure. */
+	/* So the name is wrong, but who cares... */
+	if (stem->blue != -1 ) {
+	    pm = &fix->maps[stem->blue];
+	    width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
+	    lpos = stem->left.y - stroke_add/2;
+	    rpos = stem->right.y + stroke_add/2;
+	    if ( pm->cur_width < 0 && ( !stem->ghost || stem->width == 21 ) &&
+		rpos >= pm->current + pm->cur_width - fuzz && rpos <= pm->current + fuzz ) {
+		
+		top = pm->current; bot = pm->current + pm->cur_width;
+		if ( rpos >= bot && rpos <= top )
+		    stem->newright.y = floor( InterpolateVal( bot,top,
+			pm->desired + pm->des_width,pm->desired,rpos ) + .5 );
+		else if ( rpos < bot )
+		    stem->newright.y = floor( pm->desired + pm->des_width - 
+			( bot - rpos ) * stem_scale + .5 );
+		else if ( rpos > top )
+		    stem->newright.y = floor( pm->desired + 
+			( rpos - top ) * stem_scale + .5 );
+		    
+		if ( !stem->ghost )
+		    stem->newleft.y = stem->newright.y + floor( width_new + .5 );
+		else
+		    stem->newleft.y = stem->newright.y + 21;
+		stem->ldone = stem->rdone = true;
+	    } else if ( pm->cur_width > 0 && ( !stem->ghost || stem->width == 20 ) &&
+		lpos >= pm->current - fuzz && lpos <= pm->current + pm->cur_width + fuzz  ) {
+		
+		top = pm->current + pm->cur_width; bot = pm->current;
+		if ( lpos >= bot && lpos <= top )
+		    stem->newleft.y = floor( InterpolateVal( bot,top,
+			pm->desired,pm->desired + pm->des_width,lpos ) + .5 );
+		else if ( lpos < bot )
+		    stem->newleft.y = floor( pm->desired - 
+			( bot - lpos ) * stem_scale + .5 );
+		else if ( lpos > top )
+		    stem->newleft.y = floor( pm->desired + pm->des_width + 
+			( lpos - top ) * stem_scale + .5 );
+
+		if ( !stem->ghost )
+		    stem->newright.y = stem->newleft.y - floor( width_new + .5 );
+		else
+		    stem->newright.y = stem->newleft.y - 20;
+		stem->ldone = stem->rdone = true;
+	    } else
+		stem->blue = -1;
+	}
+	if ( stem->bbox && stem->blue != -1 ) {
+	    new_b->miny = stem->newright.y;
+	    new_b->maxy = stem->newleft.y;
+	}
     }
 
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
-        stem = gd->hbundle->stemlist[i];
-        if (stem->blue == -1 && stem->master == NULL) {
-            middle = stem->right.y + stem->width/2;
-            upper = lower = NULL;
-            width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
-            for ( j=0; j<gd->hbundle->cnt; j++ ) {
-                test = gd->hbundle->stemlist[j];
-                if ( test != stem && test->blue != -1 ) {
-                    if ( test->right.y > stem->left.y &&
-                        ( upper == NULL || test->right.y < upper->right.y ))
-                        upper = test;
-                    else if ( test->left.y < stem->right.y &&
-                        ( lower == NULL || test->left.y > lower->left.y ))
-                        lower = test;
-                }
-            }
-            if ( upper != NULL && lower != NULL ) {
-                middle = InterpolateVal( lower->left.y,upper->right.y,
-                    lower->newleft.y,upper->newright.y,middle );
-                stem->newleft.y = floor( middle + ( width_new/2 + .5 ));
-                stem->newright.y = floor( middle - ( width_new/2 + .5 ));
-            } else if ( upper != NULL ) {
-                stem->newright.y = floor( InterpolateVal( orig_b->miny,upper->right.y,
-                    new_b->miny,upper->newright.y,stem->right.y ) + .5 );
-                stem->newleft.y = stem->newright.y + floor( width_new + .5 );
-            } else if ( lower != NULL ) {
-                stem->newleft.y = floor( InterpolateVal( lower->left.y,orig_b->maxy,
-                    lower->newleft.y,new_b->maxy,stem->left.y ) + .5 );
-                stem->newright.y = stem->newleft.y - floor( width_new + .5 );
-            } else {
-                middle = InterpolateVal( orig_b->miny,orig_b->maxy,
-                    new_b->miny,new_b->maxy,middle );
-                stem->newleft.y = floor( middle + ( width_new/2 + .5 ));
-                stem->newright.y = floor( middle - ( width_new/2 + .5 ));
-            }
-        }
+	stem = gd->hbundle->stemlist[i];
+	if ( genchange->stem_threshold > 0 )
+	    stem_scale = stem->width > genchange->stem_threshold ?
+		genchange->stem_width_scale : genchange->stem_height_scale;
+	else
+	    stem_scale = genchange->stem_height_scale;
+
+	if (stem->blue == -1 && stem->master == NULL) {
+	    middle = stem->right.y + stem->width/2;
+	    upper = lower = NULL;
+	    width_new = ( stem->width - stroke_add )*stem_scale + stem_add;
+	    for ( j=0; j<gd->hbundle->cnt; j++ ) {
+		test = gd->hbundle->stemlist[j];
+		if ( test != stem && test->blue != -1 ) {
+		    if ( test->right.y > stem->left.y &&
+			( upper == NULL || test->right.y < upper->right.y ))
+			upper = test;
+		    else if ( test->left.y < stem->right.y &&
+			( lower == NULL || test->left.y > lower->left.y ))
+			lower = test;
+		}
+	    }
+	    if ( upper != NULL && lower != NULL ) {
+		middle = InterpolateVal( lower->left.y,upper->right.y,
+		    lower->newleft.y,upper->newright.y,middle );
+		stem->newleft.y = floor( middle + ( width_new/2 + .5 ));
+		stem->newright.y = floor( middle - ( width_new/2 + .5 ));
+	    } else if ( upper != NULL ) {
+		stem->newright.y = floor( InterpolateVal( orig_b->miny,upper->right.y,
+		    new_b->miny,upper->newright.y,stem->right.y ) + .5 );
+		stem->newleft.y = stem->newright.y + floor( width_new + .5 );
+	    } else if ( lower != NULL ) {
+		stem->newleft.y = floor( InterpolateVal( lower->left.y,orig_b->maxy,
+		    lower->newleft.y,new_b->maxy,stem->left.y ) + .5 );
+		stem->newright.y = stem->newleft.y - floor( width_new + .5 );
+	    } else {
+		middle = InterpolateVal( orig_b->miny,orig_b->maxy,
+		    new_b->miny,new_b->maxy,middle );
+		stem->newleft.y = floor( middle + ( width_new/2 + .5 ));
+		stem->newright.y = floor( middle - ( width_new/2 + .5 ));
+	    }
+	}
     }
 
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
-        stem = gd->hbundle->stemlist[i];
-        if ( stem->master == NULL )
-            StemPosDependent( stem,genchange,false );
+	stem = gd->hbundle->stemlist[i];
+	if ( stem->master == NULL )
+	    StemPosDependent( stem,genchange,false );
     }
     /* Final bounding box adjustment (it is possible that some of the  */
     /* calculated stem boundaries are outside of the new bounding box, */
     /* and we should fix this now */
     upper = lower = NULL;
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
-        stem = gd->hbundle->stemlist[i];
-        if ( upper == NULL || stem->newleft.y > upper->newleft.y ) 
-            upper = stem;
-        if ( lower == NULL || stem->newright.y < lower->newright.y ) 
-            lower = stem;
+	stem = gd->hbundle->stemlist[i];
+	if ( upper == NULL || stem->newleft.y > upper->newleft.y ) 
+	    upper = stem;
+	if ( lower == NULL || stem->newright.y < lower->newright.y ) 
+	    lower = stem;
     }
     if ( upper != NULL )
-        new_b->maxy = upper->newleft.y + ( orig_b->maxy - upper->left.y )*scale;
+	new_b->maxy = upper->newleft.y + ( orig_b->maxy - upper->left.y )*scale;
     if ( lower != NULL )
-        new_b->miny = lower->newright.y - ( lower->right.y - orig_b->miny )*scale;
+	new_b->miny = lower->newright.y - ( lower->right.y - orig_b->miny )*scale;
 }
 
 static void InitZoneMappings( struct fixed_maps *fix, BlueData *bd, double stem_scale ) {
@@ -644,97 +676,102 @@ static void InitZoneMappings( struct fixed_maps *fix, BlueData *bd, double stem_
     
     /* Remove overlapping mappings */
     for ( i=j=0; i<fix->cnt; i++ ) {
-        if ( i==j)
+	if ( i==j)
     continue;
-        s_cur = ( fix->maps[i].cur_width > 0 ) ? 
-            fix->maps[i].current : fix->maps[i].current + fix->maps[i].cur_width;
-        e_cur = ( fix->maps[j].cur_width > 0 ) ? 
-            fix->maps[j].current + fix->maps[j].cur_width : fix->maps[j].current;
-        s_des = ( fix->maps[i].des_width > 0 ) ? 
-            fix->maps[i].desired : fix->maps[i].desired + fix->maps[i].des_width;
-        e_des = ( fix->maps[j].des_width > 0 ) ? 
-            fix->maps[j].desired + fix->maps[j].des_width : fix->maps[j].desired;
-        if ( s_cur > e_cur && s_des > e_des ) {
-            j++;
-            if ( j<i )
-                memcpy( &fix->maps[j],&fix->maps[i],sizeof( struct position_maps ));
-        }
+	s_cur = ( fix->maps[i].cur_width > 0 ) ? 
+	    fix->maps[i].current : fix->maps[i].current + fix->maps[i].cur_width;
+	e_cur = ( fix->maps[j].cur_width > 0 ) ? 
+	    fix->maps[j].current + fix->maps[j].cur_width : fix->maps[j].current;
+	s_des = ( fix->maps[i].des_width > 0 ) ? 
+	    fix->maps[i].desired : fix->maps[i].desired + fix->maps[i].des_width;
+	e_des = ( fix->maps[j].des_width > 0 ) ? 
+	    fix->maps[j].desired + fix->maps[j].des_width : fix->maps[j].desired;
+	if ( s_cur > e_cur && s_des > e_des ) {
+	    j++;
+	    if ( j<i )
+		memcpy( &fix->maps[j],&fix->maps[i],sizeof( struct position_maps ));
+	}
     }
     if ( i>0 ) fix->cnt = j+1;
 
     /* Init a set of blues from user-specified mappings (we need this for */
     /* GlyphDataBuild(), to get stems associated with blues) */
     for ( i=0; i<fix->cnt; i++ ) {
-        fix->maps[i].des_width = floor( fix->maps[i].cur_width * stem_scale + .5 );
-        if ( i < 12 ) {
-            bd->blues[i][0] = fix->maps[i].cur_width < 0 ? 
-                fix->maps[i].current + fix->maps[i].cur_width : fix->maps[i].current;
-            bd->blues[i][1] = fix->maps[i].cur_width < 0 ? 
-                fix->maps[i].current : fix->maps[i].current + fix->maps[i].cur_width;
-            bd->bluecnt++;
-        }
+	fix->maps[i].des_width = floor( fix->maps[i].cur_width * stem_scale + .5 );
+	if ( i < 12 ) {
+	    bd->blues[i][0] = fix->maps[i].cur_width < 0 ? 
+		fix->maps[i].current + fix->maps[i].cur_width : fix->maps[i].current;
+	    bd->blues[i][1] = fix->maps[i].cur_width < 0 ? 
+		fix->maps[i].current : fix->maps[i].current + fix->maps[i].cur_width;
+	    bd->bluecnt++;
+	}
     }
 }
 
-static void PosStemPoints( GlyphData *gd, double stem_scale, int has_dstems, int x_dir ) {
+static void PosStemPoints( GlyphData *gd, struct genericchange *genchange, int has_dstems, int x_dir ) {
     
     int i, j, best_is_l;
     uint8 flag = x_dir ? tf_x : tf_y;
     PointData *pd;
     StemData *tstem, *best;
     struct stem_chunk *chunk;
-    double dist, bdist;
+    double dist, bdist, stem_scale;
     BasePoint *sbase;
 
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
-        best = NULL; bdist = 0;
-        for ( j=0; j<pd->prevcnt; j++ ) {
-            tstem = pd->prevstems[j];
-            if ( !tstem->toobig && tstem->unit.x == !x_dir && RealNear( tstem->unit.y,x_dir )) {
-                sbase = pd->prev_is_l[j] ? &tstem->left : &tstem->right;
-                dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
-                if ( best == NULL || fabs( dist ) < fabs( bdist )) {
-                    best = tstem;
-                    bdist = dist;
-                    best_is_l = pd->prev_is_l[j];
-                }
-            }
-        }
-        for ( j=0; j<pd->nextcnt; j++ ) {
-            tstem = pd->nextstems[j];
-            if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir ) {
-                sbase = pd->next_is_l[j] ? &tstem->left : &tstem->right;
-                dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
-                if ( best == NULL || fabs( dist ) < fabs( bdist )) {
-                    best = tstem;
-                    bdist = dist;
-                    best_is_l = pd->next_is_l[j];
-                }
-            }
-        }
+	pd = &gd->points[i];
+	best = NULL; bdist = 0;
+	for ( j=0; j<pd->prevcnt; j++ ) {
+	    tstem = pd->prevstems[j];
+	    if ( !tstem->toobig && tstem->unit.x == !x_dir && RealNear( tstem->unit.y,x_dir )) {
+		sbase = pd->prev_is_l[j] ? &tstem->left : &tstem->right;
+		dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
+		if ( best == NULL || fabs( dist ) < fabs( bdist )) {
+		    best = tstem;
+		    bdist = dist;
+		    best_is_l = pd->prev_is_l[j];
+		}
+	    }
+	}
+	for ( j=0; j<pd->nextcnt; j++ ) {
+	    tstem = pd->nextstems[j];
+	    if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir ) {
+		sbase = pd->next_is_l[j] ? &tstem->left : &tstem->right;
+		dist = ( pd->base.x - sbase->x )*x_dir - ( pd->base.y - sbase->y )*!x_dir;
+		if ( best == NULL || fabs( dist ) < fabs( bdist )) {
+		    best = tstem;
+		    bdist = dist;
+		    best_is_l = pd->next_is_l[j];
+		}
+	    }
+	}
 
-        if ( best != NULL ) {
-            if ( has_dstems && ( pd->x_corner == 2 || pd->y_corner == 2 )) {
-                for ( j=0; j<best->chunk_cnt; j++ ) {
-                    chunk = &best->chunks[j];
-                    if (( chunk->l == pd || chunk->r == pd ) && 
-                        ( chunk->stemcheat == 2 || chunk->stemcheat == 3 ))
-                break;
-                }
-                /* Don't attempt to position inner points at diagonal intersections: */
-                /* our diagonal stem processor will handle them better */
-                if ( j<best->chunk_cnt )
+	if ( best != NULL ) {
+	    if ( has_dstems && ( pd->x_corner == 2 || pd->y_corner == 2 )) {
+		for ( j=0; j<best->chunk_cnt; j++ ) {
+		    chunk = &best->chunks[j];
+		    if (( chunk->l == pd || chunk->r == pd ) && 
+			( chunk->stemcheat == 2 || chunk->stemcheat == 3 ))
+		break;
+		}
+		/* Don't attempt to position inner points at diagonal intersections: */
+		/* our diagonal stem processor will handle them better */
+		if ( j<best->chunk_cnt )
     continue;
-            }
-            
-            if ( !x_dir ) bdist = -bdist;
-            (&pd->newpos.x)[!x_dir] = best_is_l ?
-                (&best->newleft.x)[!x_dir] + bdist * stem_scale : 
-                (&best->newright.x)[!x_dir] + bdist * stem_scale;
-            pd->touched |= flag;
-            pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
-        }
+	    }
+	    if (genchange->stem_threshold > 0)
+		stem_scale = best->width > genchange->stem_threshold ?
+		    genchange->stem_width_scale : genchange->stem_height_scale;
+	    else
+		stem_scale = x_dir ? genchange->stem_width_scale : genchange->stem_height_scale;
+	    
+	    if ( !x_dir ) bdist = -bdist;
+	    (&pd->newpos.x)[!x_dir] = best_is_l ?
+		(&best->newleft.x)[!x_dir] + bdist * stem_scale : 
+		(&best->newright.x)[!x_dir] + bdist * stem_scale;
+	    pd->touched |= flag;
+	    pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+	}
     }
 }
 
@@ -748,39 +785,39 @@ static double InterpolateBetweenEdges( GlyphData *gd, double coord, double min, 
 
     prev_pos = -1e4; next_pos = 1e4;
     for ( i=0; i<bundle->cnt; i++ ) {
-        stem = bundle->stemlist[i];
-        start = x_dir ? stem->left.x : stem->right.y;
-        end = x_dir ? stem->right.x : stem->left.y;
+	stem = bundle->stemlist[i];
+	start = x_dir ? stem->left.x : stem->right.y;
+	end = x_dir ? stem->right.x : stem->left.y;
 
-        if ( start >= min && start <= max ) {
-            if ( start < coord && start > prev_pos ) {
-                prev_pos = start;
-                prev_new = x_dir ? stem->newleft.x : stem->newright.y;
-            }
-            if ( start > coord && start < next_pos ) {
-                next_pos = start;
-                next_new = x_dir ? stem->newleft.x : stem->newright.y;
-            }
-        }
-        if ( end >= min && end <= max ) {
-            if ( end > coord && end < next_pos ) {
-                next_pos = end;
-                next_new = x_dir ? stem->newright.x : stem->newleft.y;
-            }
-            if ( end < coord && end > prev_pos ) {
-                prev_pos = end;
-                prev_new = x_dir ? stem->newright.x : stem->newleft.y;
-            }
-        }
+	if ( start >= min && start <= max ) {
+	    if ( start < coord && start > prev_pos ) {
+		prev_pos = start;
+		prev_new = x_dir ? stem->newleft.x : stem->newright.y;
+	    }
+	    if ( start > coord && start < next_pos ) {
+		next_pos = start;
+		next_new = x_dir ? stem->newleft.x : stem->newright.y;
+	    }
+	}
+	if ( end >= min && end <= max ) {
+	    if ( end > coord && end < next_pos ) {
+		next_pos = end;
+		next_new = x_dir ? stem->newright.x : stem->newleft.y;
+	    }
+	    if ( end < coord && end > prev_pos ) {
+		prev_pos = end;
+		prev_new = x_dir ? stem->newright.x : stem->newleft.y;
+	    }
+	}
     }
     if ( prev_pos > -1e4 && next_pos < 1e4 )
-        ret = InterpolateVal( prev_pos,next_pos,prev_new,next_new,coord );
+	ret = InterpolateVal( prev_pos,next_pos,prev_new,next_new,coord );
     else if ( prev_pos > -1e4 )
-        ret = InterpolateVal( prev_pos,max,prev_new,max_new,coord );
+	ret = InterpolateVal( prev_pos,max,prev_new,max_new,coord );
     else if ( next_pos < 1e4 )
-        ret = InterpolateVal( min,next_pos,min_new,next_new,coord );
+	ret = InterpolateVal( min,next_pos,min_new,next_new,coord );
     else
-        ret = InterpolateVal( min,max,min_new,max_new,coord );
+	ret = InterpolateVal( min,max,min_new,max_new,coord );
 return( ret );
 }
 
@@ -797,15 +834,15 @@ static void InterpolateStrong( GlyphData *gd, DBounds *orig_b, DBounds *new_b, i
     min_new = x_dir ? new_b->minx : new_b->miny;
     max_new = x_dir ? new_b->maxx : new_b->maxy;
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
+	pd = &gd->points[i];
 
-        if ( !(pd->touched & mask) && ( IsExtremum(pd->sp,!x_dir) || IsAnglePoint(pd->sp))) {
-            coord = (&pd->base.x)[!x_dir];
-            new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
-            (&pd->newpos.x)[!x_dir] = new;
-            pd->touched |= flag;
-            pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
-        }
+	if ( !(pd->touched & mask) && ( IsExtremum(pd->sp,!x_dir) || IsAnglePoint(pd->sp))) {
+	    coord = (&pd->base.x)[!x_dir];
+	    new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
+	    (&pd->newpos.x)[!x_dir] = new;
+	    pd->touched |= flag;
+	    pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+	}
     }
 }
 
@@ -823,91 +860,91 @@ static void InterpolateWeak( GlyphData *gd, DBounds *orig_b, DBounds *new_b, dou
     
     /* Position any points which line between points already positioned */
     for ( i=0; i<gd->pcnt; i++ ) {
-        pd = &gd->points[i];
-        if ( pd->sp != NULL && !(pd->touched & mask) ) {
-            coord = (&pd->base.x)[!x_dir];
-            if ( pd->sp->prev != NULL && pd->sp->next != NULL ) {
-                fpd = &gd->points[pd->sp->prev->from->ptindex];
-                while ( !(fpd->touched & mask) && fpd != pd && fpd->sp->prev != NULL )
-                    fpd = &gd->points[fpd->sp->prev->from->ptindex];
+	pd = &gd->points[i];
+	if ( pd->sp != NULL && !(pd->touched & mask) ) {
+	    coord = (&pd->base.x)[!x_dir];
+	    if ( pd->sp->prev != NULL && pd->sp->next != NULL ) {
+		fpd = &gd->points[pd->sp->prev->from->ptindex];
+		while ( !(fpd->touched & mask) && fpd != pd && fpd->sp->prev != NULL )
+		    fpd = &gd->points[fpd->sp->prev->from->ptindex];
 
-                tpd = &gd->points[pd->sp->next->to->ptindex];
-                while ( !(tpd->touched & mask) && tpd != pd && fpd->sp->next != NULL )
-                    tpd = &gd->points[tpd->sp->next->to->ptindex];
+		tpd = &gd->points[pd->sp->next->to->ptindex];
+		while ( !(tpd->touched & mask) && tpd != pd && fpd->sp->next != NULL )
+		    tpd = &gd->points[tpd->sp->next->to->ptindex];
 
-                if (( fpd->touched & mask ) && ( tpd->touched & mask ) && 
-                    (&fpd->base.x)[!x_dir] != (&tpd->base.x)[!x_dir] && (
-                    ( (&fpd->base.x)[!x_dir] <= coord && coord <= (&tpd->base.x)[!x_dir] ) ||
-                    ( (&tpd->base.x)[!x_dir] <= coord && coord <= (&fpd->base.x)[!x_dir] ))) {
-                    new = InterpolateVal( (&fpd->base.x)[!x_dir],(&tpd->base.x)[!x_dir],
-                                            (&fpd->newpos.x)[!x_dir],(&tpd->newpos.x)[!x_dir],coord );
-                    (&pd->newpos.x)[!x_dir] = new;
-                    pd->touched |= flag;
-                    pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
-                }
-            }
-        }
+		if (( fpd->touched & mask ) && ( tpd->touched & mask ) && 
+		    (&fpd->base.x)[!x_dir] != (&tpd->base.x)[!x_dir] && (
+		    ( (&fpd->base.x)[!x_dir] <= coord && coord <= (&tpd->base.x)[!x_dir] ) ||
+		    ( (&tpd->base.x)[!x_dir] <= coord && coord <= (&fpd->base.x)[!x_dir] ))) {
+		    new = InterpolateVal( (&fpd->base.x)[!x_dir],(&tpd->base.x)[!x_dir],
+					    (&fpd->newpos.x)[!x_dir],(&tpd->newpos.x)[!x_dir],coord );
+		    (&pd->newpos.x)[!x_dir] = new;
+		    pd->touched |= flag;
+		    pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+		}
+	    }
+	}
     }
     /* Any points which aren't currently positioned, just interpolate them */
     /*  between the hint zones between which they lie */
     /* I don't think this can actually happen... but do it just in case */
     for ( i=0; i<gd->pcnt; i++ ) {
-        pd = &gd->points[i];
-        if ( pd->sp != NULL && !(pd->touched & mask) ) {
-            coord = (&pd->base.x)[!x_dir];
-            new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
-            (&pd->newpos.x)[!x_dir] = new;
-            pd->touched |= flag;
-            pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
-        }
+	pd = &gd->points[i];
+	if ( pd->sp != NULL && !(pd->touched & mask) ) {
+	    coord = (&pd->base.x)[!x_dir];
+	    new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
+	    (&pd->newpos.x)[!x_dir] = new;
+	    pd->touched |= flag;
+	    pd->posdir.x = !x_dir; pd->posdir.y = x_dir;
+	}
     }
 
     /* Interpolate the control points. More complex in order2. We want to */
     /*  preserve interpolated points, but simplified as we only have one cp */
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
-        if ( !pd->sp->noprevcp && !gd->order2 ) {
-            coord = (&pd->sp->prevcp.x)[!x_dir];
-            fpd = &gd->points[pd->sp->prev->from->ptindex];
-            if (coord == (&pd->base.x)[!x_dir] )
-                (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
-            else {
-                if (( coord >= (&fpd->base.x)[!x_dir] && coord <= (&pd->base.x)[!x_dir] ) ||
-                    ( coord <= (&fpd->base.x)[!x_dir] && coord >= (&pd->base.x)[!x_dir] ))
+	pd = &gd->points[i];
+	if ( !pd->sp->noprevcp && !gd->order2 ) {
+	    coord = (&pd->sp->prevcp.x)[!x_dir];
+	    fpd = &gd->points[pd->sp->prev->from->ptindex];
+	    if (coord == (&pd->base.x)[!x_dir] )
+		(&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
+	    else {
+		if (( coord >= (&fpd->base.x)[!x_dir] && coord <= (&pd->base.x)[!x_dir] ) ||
+		    ( coord <= (&fpd->base.x)[!x_dir] && coord >= (&pd->base.x)[!x_dir] ))
 
-                    (&pd->newprev.x)[!x_dir] = InterpolateVal((&pd->base.x)[!x_dir],
-                        (&fpd->base.x)[!x_dir],(&pd->newpos.x)[!x_dir],(&fpd->newpos.x)[!x_dir],coord);
-                else
-                    (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir] + 
-                        ( coord - (&pd->base.x)[!x_dir] )*scale;
-            }
-        }
-        if ( !pd->sp->nonextcp ) {
-            coord = (&pd->sp->nextcp.x)[!x_dir];
-            tpd = &gd->points[pd->sp->next->to->ptindex];
-            if ( coord == (&pd->base.x)[!x_dir] )
-                (&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
-            else {
-                if (( coord >= (&tpd->base.x)[!x_dir] && coord <= (&pd->base.x)[!x_dir] ) ||
-                    ( coord <= (&tpd->base.x)[!x_dir] && coord >= (&pd->base.x)[!x_dir] ))
-                    
-                    (&pd->newnext.x)[!x_dir] = InterpolateVal((&pd->base.x)[!x_dir],
-                        (&tpd->base.x)[!x_dir],(&pd->newpos.x)[!x_dir],(&tpd->newpos.x)[!x_dir],coord);
-                else
-                    (&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir] + 
-                        ( coord - (&pd->base.x)[!x_dir] )*scale;
-            }
-            if ( gd->order2 )
-               (&tpd->newprev.x)[!x_dir] = (&pd->newnext.x)[!x_dir];
-        }
+		    (&pd->newprev.x)[!x_dir] = InterpolateVal((&pd->base.x)[!x_dir],
+			(&fpd->base.x)[!x_dir],(&pd->newpos.x)[!x_dir],(&fpd->newpos.x)[!x_dir],coord);
+		else
+		    (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir] + 
+			( coord - (&pd->base.x)[!x_dir] )*scale;
+	    }
+	}
+	if ( !pd->sp->nonextcp ) {
+	    coord = (&pd->sp->nextcp.x)[!x_dir];
+	    tpd = &gd->points[pd->sp->next->to->ptindex];
+	    if ( coord == (&pd->base.x)[!x_dir] )
+		(&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
+	    else {
+		if (( coord >= (&tpd->base.x)[!x_dir] && coord <= (&pd->base.x)[!x_dir] ) ||
+		    ( coord <= (&tpd->base.x)[!x_dir] && coord >= (&pd->base.x)[!x_dir] ))
+		    
+		    (&pd->newnext.x)[!x_dir] = InterpolateVal((&pd->base.x)[!x_dir],
+			(&tpd->base.x)[!x_dir],(&pd->newpos.x)[!x_dir],(&tpd->newpos.x)[!x_dir],coord);
+		else
+		    (&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir] + 
+			( coord - (&pd->base.x)[!x_dir] )*scale;
+	    }
+	    if ( gd->order2 )
+	       (&tpd->newprev.x)[!x_dir] = (&pd->newnext.x)[!x_dir];
+	}
     }
     if ( gd->order2 ) {
-        for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-            pd = &gd->points[i];
-            if ( pd->ttfindex == 0xFFFF ) {
-                (&pd->newpos.x)[!x_dir] = ((&pd->newnext.x)[!x_dir] + (&pd->newprev.x)[!x_dir])/2;
-            }
-        }
+	for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
+	    pd = &gd->points[i];
+	    if ( pd->ttfindex == 0xFFFF ) {
+		(&pd->newpos.x)[!x_dir] = ((&pd->newnext.x)[!x_dir] + (&pd->newprev.x)[!x_dir])/2;
+	    }
+	}
     }
 }
 
@@ -923,16 +960,16 @@ static void InterpolateAnchorPoints( GlyphData *gd,AnchorPoint *aps,
     max_new = x_dir ? new_b->maxx : new_b->maxy;
 
     for ( ap=aps; ap!=NULL; ap=ap->next ) {
-        coord = (&ap->me.x)[!x_dir];
+	coord = (&ap->me.x)[!x_dir];
 	/* Anchor points might be outside the bounding box */
-        if ( coord >= min && coord <= max )
-            new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
-        else if ( coord < min )
-            new = min_new - ( min - coord ) * scale;
-        else
-            new = max_new + ( coord - max ) * scale;
+	if ( coord >= min && coord <= max )
+	    new = InterpolateBetweenEdges( gd,coord,min,max,min_new,max_new,x_dir );
+	else if ( coord < min )
+	    new = min_new - ( min - coord ) * scale;
+	else
+	    new = max_new + ( coord - max ) * scale;
 
-        (&ap->me.x)[!x_dir] = new;
+	(&ap->me.x)[!x_dir] = new;
     }
 }
 
@@ -944,44 +981,44 @@ static int PrepareDStemList( GlyphData *gd, StemData **dstems ) {
     int i, j, dcnt=0;
 
     for ( i=0; i<gd->stemcnt; i++ ) {
-        stem = &gd->stems[i];
-        if ( stem->toobig ||
-            ( stem->unit.y > -.05 && stem->unit.y < .05 ) ||
-            ( stem->unit.x > -.05 && stem->unit.x < .05 ) ||
-            stem->activecnt == 0 || stem->lpcnt == 0 || stem->rpcnt == 0 )
+	stem = &gd->stems[i];
+	if ( stem->toobig ||
+	    ( stem->unit.y > -.05 && stem->unit.y < .05 ) ||
+	    ( stem->unit.x > -.05 && stem->unit.x < .05 ) ||
+	    stem->activecnt == 0 || stem->lpcnt == 0 || stem->rpcnt == 0 )
     continue;
 
-        prevlsp = prevrsp = 1e4;
-        prevlep = prevrep = -1e4;
-        ls = rs = le = re = NULL;
-        for ( j=0; j<stem->chunk_cnt; j++ ) {
-            chunk = &stem->chunks[j];
-            if ( chunk->l != NULL ) {
-                lpos =  ( chunk->l->base.x - stem->left.x )*stem->unit.x +
-                        ( chunk->l->base.y - stem->left.y )*stem->unit.y;
-                if ( lpos < prevlsp ) {
-                    ls = chunk->l; prevlsp = lpos;
-                } 
-                if ( lpos > prevlep ) {
-                    le = chunk->l; prevlep = lpos;
-                }
-            }
-            if ( chunk->r != NULL ) {
-                rpos =  ( chunk->r->base.x - stem->right.x )*stem->unit.x +
-                        ( chunk->r->base.y - stem->right.y )*stem->unit.y;
-                if ( rpos < prevrsp ) {
-                    rs = chunk->r; prevrsp = rpos;
-                } 
-                if ( rpos > prevrep ) {
-                    re = chunk->r; prevrep = rpos;
-                }
-           }
-        }
-        if ( ls == NULL || rs == NULL || le == NULL || re == NULL )
+	prevlsp = prevrsp = 1e4;
+	prevlep = prevrep = -1e4;
+	ls = rs = le = re = NULL;
+	for ( j=0; j<stem->chunk_cnt; j++ ) {
+	    chunk = &stem->chunks[j];
+	    if ( chunk->l != NULL ) {
+		lpos =  ( chunk->l->base.x - stem->left.x )*stem->unit.x +
+			( chunk->l->base.y - stem->left.y )*stem->unit.y;
+		if ( lpos < prevlsp ) {
+		    ls = chunk->l; prevlsp = lpos;
+		} 
+		if ( lpos > prevlep ) {
+		    le = chunk->l; prevlep = lpos;
+		}
+	    }
+	    if ( chunk->r != NULL ) {
+		rpos =  ( chunk->r->base.x - stem->right.x )*stem->unit.x +
+			( chunk->r->base.y - stem->right.y )*stem->unit.y;
+		if ( rpos < prevrsp ) {
+		    rs = chunk->r; prevrsp = rpos;
+		} 
+		if ( rpos > prevrep ) {
+		    re = chunk->r; prevrep = rpos;
+		}
+	   }
+	}
+	if ( ls == NULL || rs == NULL || le == NULL || re == NULL )
     continue;
-        stem->keypts[0] = ls; stem->keypts[1] = le;
-        stem->keypts[2] = rs; stem->keypts[3] = re;
-        dstems[dcnt++] = stem;
+	stem->keypts[0] = ls; stem->keypts[1] = le;
+	stem->keypts[2] = rs; stem->keypts[3] = re;
+	dstems[dcnt++] = stem;
     }
     qsort( dstems,dcnt,sizeof( StemData *),ds_cmp );
 return( dcnt );
@@ -993,15 +1030,15 @@ static void MovePointToDiag( PointData *pd, StemData *stem, int is_l ) {
 
     base = is_l ? &stem->newleft : &stem->newright;
     if ( !pd->touched ) {
-        ptpos = &pd->base;
-        if ( fabs( stem->unit.x ) > fabs( stem->unit.y )) {
-            fv.x = 0; fv.y = 1;
-        } else {
-            fv.x = 1; fv.y = 0;
-        }
+	ptpos = &pd->base;
+	if ( fabs( stem->unit.x ) > fabs( stem->unit.y )) {
+	    fv.x = 0; fv.y = 1;
+	} else {
+	    fv.x = 1; fv.y = 0;
+	}
     } else {
-        fv.x = pd->posdir.x; fv.y = pd->posdir.y;
-        ptpos = &pd->newpos;
+	fv.x = pd->posdir.x; fv.y = pd->posdir.y;
+	ptpos = &pd->newpos;
     }
 
     d = stem->newunit.x * fv.y - stem->newunit.y * fv.x;
@@ -1009,13 +1046,13 @@ static void MovePointToDiag( PointData *pd, StemData *stem, int is_l ) {
     db = ( base->y - ptpos->y )*stem->newunit.x - ( base->x - ptpos->x )*stem->newunit.y;
 
     if ( fabs( d ) > 0 ) {
-        pd->newpos.x = base->x - ( da/d )*stem->newunit.x;
-        pd->newpos.y = base->y - ( da/d )*stem->newunit.y;
-        if ( pd->touched & tf_d && ( pd->posdir.x != stem->newunit.x || pd->posdir.y != stem->newunit.y )) {
-            pd->touched |= tf_x; pd->touched |= tf_y;
-        } else
-            pd->touched |= tf_d;
-        pd->posdir.x = stem->newunit.x; pd->posdir.y = stem->newunit.y;
+	pd->newpos.x = base->x - ( da/d )*stem->newunit.x;
+	pd->newpos.y = base->y - ( da/d )*stem->newunit.y;
+	if ( pd->touched & tf_d && ( pd->posdir.x != stem->newunit.x || pd->posdir.y != stem->newunit.y )) {
+	    pd->touched |= tf_x; pd->touched |= tf_y;
+	} else
+	    pd->touched |= tf_d;
+	pd->posdir.x = stem->newunit.x; pd->posdir.y = stem->newunit.y;
     }
 }
 
@@ -1026,37 +1063,37 @@ static void GetDStemBounds( GlyphData *gd, StemData *stem, real *prev, real *nex
     StemData *hvstem;
     
     roff =  ( stem->right.x - stem->left.x ) * stem->unit.x +
-            ( stem->right.y - stem->left.y ) * stem->unit.y;
+	    ( stem->right.y - stem->left.y ) * stem->unit.y;
     maxact = stem->activecnt - 1;
 
     if ( stem->unit.y > 0 ) {
-        dstart = x_dir ?
-            stem->right.x + ( stem->active[0].start - roff ) * stem->unit.x :
-            stem->left.y + stem->active[0].start * stem->unit.y;
-        dend = x_dir ?
-            stem->left.x + stem->active[maxact].end * stem->unit.x :
-            stem->right.y + ( stem->active[maxact].end - roff ) * stem->unit.y;
+	dstart = x_dir ?
+	    stem->right.x + ( stem->active[0].start - roff ) * stem->unit.x :
+	    stem->left.y + stem->active[0].start * stem->unit.y;
+	dend = x_dir ?
+	    stem->left.x + stem->active[maxact].end * stem->unit.x :
+	    stem->right.y + ( stem->active[maxact].end - roff ) * stem->unit.y;
     } else {
-        dstart = x_dir ?
-            stem->left.x + stem->active[0].start * stem->unit.x :
-            stem->right.y + ( stem->active[0].start - roff ) * stem->unit.y ;
-        dend = x_dir ?
-            stem->right.x + ( stem->active[maxact].end - roff ) * stem->unit.x :
-            stem->left.y + stem->active[maxact].end * stem->unit.y;
+	dstart = x_dir ?
+	    stem->left.x + stem->active[0].start * stem->unit.x :
+	    stem->right.y + ( stem->active[0].start - roff ) * stem->unit.y ;
+	dend = x_dir ?
+	    stem->right.x + ( stem->active[maxact].end - roff ) * stem->unit.x :
+	    stem->left.y + stem->active[maxact].end * stem->unit.y;
     }
     if ( dstart > dend ) {
-        temp = dstart; dstart = dend; dend = temp;
+	temp = dstart; dstart = dend; dend = temp;
     }
     
     bundle = x_dir ? gd->vbundle : gd->hbundle;
     for ( i=0; i<bundle->cnt; i++ ) {
-        hvstem = bundle->stemlist[i];
-        hvstart = x_dir ? hvstem->left.x : hvstem->right.y;
-        hvend = x_dir ? hvstem->right.x : hvstem->left.y;
-        if ( hvend > *prev && hvend <= dstart )
-            *prev = hvend;
-        else if ( hvstart < *next && hvstart >= dend )
-            *next = hvstart;
+	hvstem = bundle->stemlist[i];
+	hvstart = x_dir ? hvstem->left.x : hvstem->right.y;
+	hvend = x_dir ? hvstem->right.x : hvstem->left.y;
+	if ( hvend > *prev && hvend <= dstart )
+	    *prev = hvend;
+	else if ( hvstart < *next && hvstart >= dend )
+	    *next = hvstart;
     }
 }
 
@@ -1066,25 +1103,25 @@ static void AlignPointPair( StemData *stem,PointData *lpd, PointData *rpd, doubl
     /* If points are already horizontally or vertically aligned, */
     /* then there is nothing more to do here */
     if (( lpd->base.x == rpd->base.x && lpd->newpos.x == rpd->newpos.x ) ||
-        ( lpd->base.y == rpd->base.y && lpd->newpos.y == rpd->newpos.y ))
+	( lpd->base.y == rpd->base.y && lpd->newpos.y == rpd->newpos.y ))
 return;
 
     dscale =  sqrt( pow( hscale * stem->unit.x,2 ) + 
-                    pow( vscale * stem->unit.y,2 ));
+		    pow( vscale * stem->unit.y,2 ));
     if ( !IsPointFixed( rpd )) {
-         off    =( rpd->base.x - lpd->base.x ) * stem->unit.x +
-                 ( rpd->base.y - lpd->base.y ) * stem->unit.y;
-         newoff =( rpd->newpos.x - lpd->newpos.x ) * stem->newunit.x +
-                 ( rpd->newpos.y - lpd->newpos.y ) * stem->newunit.y;
-         rpd->newpos.x += ( off*dscale - newoff )*stem->newunit.x;
-         rpd->newpos.y += ( off*dscale - newoff )*stem->newunit.y;
+	 off    =( rpd->base.x - lpd->base.x ) * stem->unit.x +
+		 ( rpd->base.y - lpd->base.y ) * stem->unit.y;
+	 newoff =( rpd->newpos.x - lpd->newpos.x ) * stem->newunit.x +
+		 ( rpd->newpos.y - lpd->newpos.y ) * stem->newunit.y;
+	 rpd->newpos.x += ( off*dscale - newoff )*stem->newunit.x;
+	 rpd->newpos.y += ( off*dscale - newoff )*stem->newunit.y;
      } else if ( !IsPointFixed( lpd )) {
-         off    =( lpd->base.x - rpd->base.x ) * stem->unit.x +
-                 ( lpd->base.y - rpd->base.y ) * stem->unit.y;
-         newoff =( lpd->newpos.x - rpd->newpos.x ) * stem->newunit.x +
-                 ( lpd->newpos.y - rpd->newpos.y ) * stem->newunit.y;
-         lpd->newpos.x += ( off*dscale - newoff )*stem->newunit.x;
-         lpd->newpos.y += ( off*dscale - newoff )*stem->newunit.y;
+	 off    =( lpd->base.x - rpd->base.x ) * stem->unit.x +
+		 ( lpd->base.y - rpd->base.y ) * stem->unit.y;
+	 newoff =( lpd->newpos.x - rpd->newpos.x ) * stem->newunit.x +
+		 ( lpd->newpos.y - rpd->newpos.y ) * stem->newunit.y;
+	 lpd->newpos.x += ( off*dscale - newoff )*stem->newunit.x;
+	 lpd->newpos.y += ( off*dscale - newoff )*stem->newunit.y;
      }
 }
 
@@ -1110,26 +1147,26 @@ return( false );
     pdot = pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
     
     while ( npd != pd && ( ndot > 0 || pdot > 0 )) {
-        if ( npd->touched & flag ) {
-            for ( i=0; i<npd->prevcnt && !found; i++ ) {
-                tstem = npd->prevstems[i];
-                if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir )
-                    found = true;
-            }
-            for ( i=0; i<npd->nextcnt && !found; i++ ) {
-                tstem = npd->nextstems[i];
-                if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir )
-                    found = true;
-            }
-        }
-        if ( found )
+	if ( npd->touched & flag ) {
+	    for ( i=0; i<npd->prevcnt && !found; i++ ) {
+		tstem = npd->prevstems[i];
+		if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir )
+		    found = true;
+	    }
+	    for ( i=0; i<npd->nextcnt && !found; i++ ) {
+		tstem = npd->nextstems[i];
+		if ( !tstem->toobig && tstem->unit.x == !x_dir && tstem->unit.y == x_dir )
+		    found = true;
+	    }
+	}
+	if ( found )
     break;
-        ns = next ? npd->sp->next : npd->sp->prev;
-        if ( ns == NULL )
+	ns = next ? npd->sp->next : npd->sp->prev;
+	if ( ns == NULL )
     break;
-        npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
-        ndot = pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
-        pdot = pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
+	npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
+	ndot = pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
+	pdot = pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
     }
     if ( !found )
 return( false );
@@ -1139,15 +1176,15 @@ return( false );
     base_orig = (&npd->base.x)[!x_dir];
     base_new = (&npd->newpos.x)[!x_dir];
     if (( coord_orig > base_orig && coord_new <= base_new ) ||
-        ( coord_orig < base_orig && coord_new >= base_new )) {
-        coord_new = base_new + ( coord_orig - base_orig )*scale;
-        if ( x_dir ) {
-            pd->newpos.y += stem->newunit.y * (( coord_new - pd->newpos.x  )/stem->newunit.x );
-            pd->newpos.x = coord_new;
-        } else {
-            pd->newpos.x += stem->newunit.x * (( coord_new - pd->newpos.y )/stem->newunit.y );
-            pd->newpos.y = coord_new;
-        }
+	( coord_orig < base_orig && coord_new >= base_new )) {
+	coord_new = base_new + ( coord_orig - base_orig )*scale;
+	if ( x_dir ) {
+	    pd->newpos.y += stem->newunit.y * (( coord_new - pd->newpos.x  )/stem->newunit.x );
+	    pd->newpos.x = coord_new;
+	} else {
+	    pd->newpos.x += stem->newunit.x * (( coord_new - pd->newpos.y )/stem->newunit.y );
+	    pd->newpos.y = coord_new;
+	}
 return( true );
     }
 return( false );
@@ -1167,17 +1204,17 @@ static void ShiftDependent( GlyphData *gd, PointData *pd, StemData *stem,
     /* DStem. If so, then we should check against that stem instead  */
     scnt = next ? pd->nextcnt : pd->prevcnt;
     for ( i=0; i<scnt; i++ ) {
-        tstem = next ? pd->nextstems[i] : pd->prevstems[i];
-        if ( tstem != stem && !tstem->toobig && 
-            ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
-            ( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
+	tstem = next ? pd->nextstems[i] : pd->prevstems[i];
+	if ( tstem != stem && !tstem->toobig && 
+	    ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
+	    ( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
 return;
     }
 
     /* Is this edge closer to the initial or the final coordinate of the bounding box? */
     from_min = (( x_dir && is_l && stem->unit.y > 0 ) || 
-                ( x_dir && !is_l && stem->unit.y < 0 ) ||
-                ( !x_dir && !is_l ));
+		( x_dir && !is_l && stem->unit.y < 0 ) ||
+		( !x_dir && !is_l ));
     ns = next ? pd->sp->next : pd->sp->prev;
     if ( ns == NULL )
 return;
@@ -1187,61 +1224,61 @@ return;
     ndot = pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
     pdot = pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
     off =   ( npd->base.x - pd->base.x )*stem->unit.y -
-            ( npd->base.y - pd->base.y )*stem->unit.x;
+	    ( npd->base.y - pd->base.y )*stem->unit.x;
     dist =  (&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir];
     
     while ( npd != pd && ( ndot > 0 || pdot > 0 ) && !( npd->touched & flag ) && (
-        ( is_l && off <= 0 ) || ( !is_l && off >= 0 ) || 
-        ( from_min && dist <= 0 ) || ( !from_min && dist >= 0 ))) {
-        
-        /* Can't just check if the point is touched in a diagonal direction,
-         * since not all DStems may have be done at the moment. So see if there
-         * are any valid DStems attached to the point. If so, then it is not
-         * a candidate for the strong interpolation, and thus there is no need
-         * to adjust its position here
-         */
-        for ( i=0; i<npd->prevcnt && dstem == NULL; i++ ) {
-            tstem = npd->prevstems[i];
-            if ( !tstem->toobig && 
-                ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
-                ( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
-                dstem = tstem;
-        }
-        for ( i=0; i<npd->nextcnt && dstem == NULL; i++ ) {
-            tstem = npd->nextstems[i];
-            if ( !tstem->toobig && 
-                ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
-                ( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
-                dstem = tstem;
-        }
-        if ( dstem != NULL )
+	( is_l && off <= 0 ) || ( !is_l && off >= 0 ) || 
+	( from_min && dist <= 0 ) || ( !from_min && dist >= 0 ))) {
+	
+	/* Can't just check if the point is touched in a diagonal direction,
+	 * since not all DStems may have been done at the moment. So see if there
+	 * are any valid DStems attached to the point. If so, then it is not
+	 * a candidate for the strong interpolation, and thus there is no need
+	 * to adjust its position here
+	 */
+	for ( i=0; i<npd->prevcnt && dstem == NULL; i++ ) {
+	    tstem = npd->prevstems[i];
+	    if ( !tstem->toobig && 
+		( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
+		( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
+		dstem = tstem;
+	}
+	for ( i=0; i<npd->nextcnt && dstem == NULL; i++ ) {
+	    tstem = npd->nextstems[i];
+	    if ( !tstem->toobig && 
+		( tstem->unit.x < -.05 || tstem->unit.x > .05 ) &&
+		( tstem->unit.y < -.05 || tstem->unit.y > .05 ))
+		dstem = tstem;
+	}
+	if ( dstem != NULL )
     break;
-        if ( IsExtremum( npd->sp,!x_dir ) || IsAnglePoint( npd->sp )) {
-            if ( (&npd->base.x)[!x_dir] < (&pd->base.x)[!x_dir] ) {
-                s = x_dir ? orig_b->minx : orig_b->miny;
-                s_new = x_dir ? new_b->minx : new_b->miny;
-                e = (&pd->base.x)[!x_dir]; e_new = (&pd->newpos.x)[!x_dir];
-            } else {
-                s = (&pd->base.x)[!x_dir]; s_new = (&pd->newpos.x)[!x_dir];
-                e = x_dir ? orig_b->maxx : orig_b->maxy;
-                e_new = x_dir ? new_b->maxx : new_b->maxy;
-            }
-            (&npd->newpos.x)[!x_dir] = (&pd->newpos.x)[!x_dir] +
-                ((&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir]) * cscale;
+	if ( IsExtremum( npd->sp,!x_dir ) || IsAnglePoint( npd->sp )) {
+	    if ( (&npd->base.x)[!x_dir] < (&pd->base.x)[!x_dir] ) {
+		s = x_dir ? orig_b->minx : orig_b->miny;
+		s_new = x_dir ? new_b->minx : new_b->miny;
+		e = (&pd->base.x)[!x_dir]; e_new = (&pd->newpos.x)[!x_dir];
+	    } else {
+		s = (&pd->base.x)[!x_dir]; s_new = (&pd->newpos.x)[!x_dir];
+		e = x_dir ? orig_b->maxx : orig_b->maxy;
+		e_new = x_dir ? new_b->maxx : new_b->maxy;
+	    }
+	    (&npd->newpos.x)[!x_dir] = (&pd->newpos.x)[!x_dir] +
+		((&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir]) * cscale;
 
-            npd->touched |= flag;
-            npd->posdir.x = !x_dir; npd->posdir.y = x_dir;
-        }
-        
-        ns = next ? npd->sp->next : npd->sp->prev;
-        if ( ns == NULL )
+	    npd->touched |= flag;
+	    npd->posdir.x = !x_dir; npd->posdir.y = x_dir;
+	}
+	
+	ns = next ? npd->sp->next : npd->sp->prev;
+	if ( ns == NULL )
     break;
-        npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
-        ndot = pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
-        pdot = pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
-        off =   ( npd->base.x - pd->base.x )*stem->unit.y -
-                ( npd->base.y - pd->base.y )*stem->unit.x;
-        dist =  (&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir];
+	npd = next ? &gd->points[ns->to->ptindex] : &gd->points[ns->from->ptindex];
+	ndot = pd->nextunit.x * npd->nextunit.x + pd->nextunit.y * npd->nextunit.y;
+	pdot = pd->prevunit.x * npd->prevunit.x + pd->prevunit.y * npd->prevunit.y;
+	off =   ( npd->base.x - pd->base.x )*stem->unit.y -
+		( npd->base.y - pd->base.y )*stem->unit.x;
+	dist =  (&npd->base.x)[!x_dir] - (&pd->base.x)[!x_dir];
     }
 }
 
@@ -1255,10 +1292,10 @@ static int PreferredDStem( PointData *pd, StemData *stem, int next ) {
     StemData *tstem;
     
     for ( i=0; i<stemcnt; i++ ) {
-        tstem = next ? pd->nextstems[i] : pd->prevstems[i];
-        if ( tstem != stem && !tstem->toobig &&
-            ( tstem->unit.y < -.05 || tstem->unit.y > .05 ) &&
-            ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) && tstem->clen > stem->clen )
+	tstem = next ? pd->nextstems[i] : pd->prevstems[i];
+	if ( tstem != stem && !tstem->toobig &&
+	    ( tstem->unit.y < -.05 || tstem->unit.y > .05 ) &&
+	    ( tstem->unit.x < -.05 || tstem->unit.x > .05 ) && tstem->clen > stem->clen )
 return( false );
     }
 return( true );
@@ -1269,7 +1306,7 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
     
     int i, is_l, pref_y, nextidx, previdx;
     PointData *pd, *lfixed=NULL, *rfixed=NULL;
-    double new_hyp, new_w, des_w, dscale, hscale, vscale, cscale;
+    double new_hyp, new_w, des_w, dscale, hscale, vscale, hscale1, vscale1, cscale;
     double coord_new, min, max, min_new, max_new;
     BasePoint l_to_r, left, right, temp;
     DBounds stem_b;
@@ -1289,20 +1326,20 @@ static void FixDStem( GlyphData *gd, StemData *stem,  StemData **dstems, int dcn
     min = orig_b->minx; max = orig_b->maxx;
     min_new = new_b->minx; max_new = new_b->maxx;
     for ( i=0; i<gd->vbundle->cnt; i++ ) {
-        hvstem = gd->vbundle->stemlist[i];
-        if (( RealNear( hvstem->left.x,min ) && RealNear( hvstem->right.x,max )) ||
-            ( RealNear( hvstem->left.x,max ) && RealNear( hvstem->right.x,min )))
+	hvstem = gd->vbundle->stemlist[i];
+	if (( RealNear( hvstem->left.x,min ) && RealNear( hvstem->right.x,max )) ||
+	    ( RealNear( hvstem->left.x,max ) && RealNear( hvstem->right.x,min )))
     continue;
-        if ( hvstem->left.x >= stem_b.maxx && hvstem->left.x < max ) {
-            max = hvstem->left.x;
-            max_new = hvstem->newleft.x;
-        } else if ( hvstem->right.x <= stem_b.minx && hvstem->right.x > min ) {
-            min = hvstem->right.x;
-            min_new = hvstem->newright.x;
-        }
+	if ( hvstem->left.x >= stem_b.maxx && hvstem->left.x < max ) {
+	    max = hvstem->left.x;
+	    max_new = hvstem->newleft.x;
+	} else if ( hvstem->right.x <= stem_b.minx && hvstem->right.x > min ) {
+	    min = hvstem->right.x;
+	    min_new = hvstem->newright.x;
+	}
     }
     if ( max == min ) {
-        stem->toobig = true;
+	stem->toobig = true;
 return;
     }
     hscale = ( max_new - min_new )/( max - min );
@@ -1312,19 +1349,19 @@ return;
     min = orig_b->miny; max = orig_b->maxy;
     min_new = new_b->miny; max_new = new_b->maxy;
     for ( i=0; i<gd->hbundle->cnt; i++ ) {
-        hvstem = gd->hbundle->stemlist[i];
-        if ( hvstem->left.y == min && hvstem->right.y == max )
+	hvstem = gd->hbundle->stemlist[i];
+	if ( hvstem->left.y == min && hvstem->right.y == max )
     continue;
-        if ( hvstem->right.y >= stem_b.maxy && hvstem->right.y < max ) {
-            max = hvstem->right.y;
-            max_new = hvstem->newright.y;
-        } else if ( hvstem->left.y <= stem_b.miny && hvstem->left.y > min ) {
-            min = hvstem->left.y;
-            min_new = hvstem->newleft.y;
-        }
+	if ( hvstem->right.y >= stem_b.maxy && hvstem->right.y < max ) {
+	    max = hvstem->right.y;
+	    max_new = hvstem->newright.y;
+	} else if ( hvstem->left.y <= stem_b.miny && hvstem->left.y > min ) {
+	    min = hvstem->left.y;
+	    min_new = hvstem->newleft.y;
+	}
     }
     if ( max == min ) {
-        stem->toobig = true;
+	stem->toobig = true;
 return;
     }
     vscale = ( max_new - min_new )/( max - min );
@@ -1332,30 +1369,37 @@ return;
     /* Now scale positions of the left and right virtual points on the stem */
     /* by the ratios used to resize horizontal and vertical stems. We need  */
     /* this solely to calculate the desired stem width */
-    stem->newleft.x = stem->left.x * genchange->stem_width_scale;
-    stem->newleft.y = stem->left.y * genchange->stem_height_scale;
-    stem->newright.x = stem->right.x * genchange->stem_width_scale;
-    stem->newright.y = stem->right.y * genchange->stem_height_scale;
-    stem->newunit.x = stem->unit.x * genchange->stem_width_scale;
-    stem->newunit.y = stem->unit.y * genchange->stem_height_scale;
+    if (genchange->stem_threshold > 0) {
+	hscale1 = vscale1 = stem->width > genchange->stem_threshold ?
+	    genchange->stem_width_scale : genchange->stem_height_scale;
+    } else {
+	hscale1 = genchange->stem_height_scale;
+	vscale1 = genchange->stem_width_scale;
+    }
+    stem->newleft.x = stem->left.x * vscale1;
+    stem->newleft.y = stem->left.y * hscale1;
+    stem->newright.x = stem->right.x * vscale1;
+    stem->newright.y = stem->right.y * hscale1;
+    stem->newunit.x = stem->unit.x * vscale1;
+    stem->newunit.y = stem->unit.y * hscale1;
     new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
     stem->newunit.x /= new_hyp;
     stem->newunit.y /= new_hyp;
 
     des_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
-            ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
+	    ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
 
     /* For italic stems we move left and right coordinates to the baseline, so   */
     /* that they may well fall outside of the bounding box. We have to take care */
     /* of this situation */
     left = stem->left; right = stem->right;
     if ( left.x < orig_b->minx ) {
-        left.y += (( orig_b->minx - left.x ) * stem->unit.y )/stem->unit.x;
-        left.x = orig_b->minx;
+	left.y += (( orig_b->minx - left.x ) * stem->unit.y )/stem->unit.x;
+	left.x = orig_b->minx;
     }
     if ( right.x < orig_b->minx ) {
-        right.y += (( orig_b->minx - right.x ) * stem->unit.y )/stem->unit.x;
-        right.x = orig_b->minx;
+	right.y += (( orig_b->minx - right.x ) * stem->unit.y )/stem->unit.x;
+	right.x = orig_b->minx;
     }
     
     /* OK, now we know the desired width, so interpolate the coordinates of our
@@ -1364,81 +1408,81 @@ return;
      * exact result here, but it still would be a good starting point
      */
     stem->newleft.x = InterpolateBetweenEdges( 
-        gd,left.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
+	gd,left.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
     stem->newleft.y = InterpolateBetweenEdges( 
-        gd,left.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
+	gd,left.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
     stem->newright.x = InterpolateBetweenEdges( 
-        gd,right.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
+	gd,right.x,orig_b->minx,orig_b->maxx,new_b->minx,new_b->maxx,true );
     stem->newright.y = InterpolateBetweenEdges( 
-        gd,right.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
+	gd,right.y,orig_b->miny,orig_b->maxy,new_b->miny,new_b->maxy,false );
 
     /* Adjust the stem unit vector according to the horizontal and vertical */
     /* ratios we have previously determined */
     if ( stem->bundle != NULL && stem->bundle == gd->ibundle ) {
-        stem->newunit.x = stem->unit.x;
-        stem->newunit.y = stem->unit.y;
+	stem->newunit.x = stem->unit.x;
+	stem->newunit.y = stem->unit.y;
     } else {
-        stem->newunit.x = stem->unit.x * hscale;
-        stem->newunit.y = stem->unit.y * vscale;
-        new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
-        stem->newunit.x /= new_hyp;
-        stem->newunit.y /= new_hyp;
+	stem->newunit.x = stem->unit.x * hscale;
+	stem->newunit.y = stem->unit.y * vscale;
+	new_hyp = sqrt( pow( stem->newunit.x,2 ) + pow( stem->newunit.y,2 ));
+	stem->newunit.x /= new_hyp;
+	stem->newunit.y /= new_hyp;
     }
 
     /* Get a possible width of the stem in the scaled glyph. We are going to */
     /* adjust that width then */
     new_w = ( stem->newright.x - stem->newleft.x ) * stem->newunit.y -
-            ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
+	    ( stem->newright.y - stem->newleft.y ) * stem->newunit.x;
     if ( new_w < 0 ) {
-        temp.x = stem->newleft.x; temp.y = stem->newleft.y;
-        stem->newleft.x = stem->newright.x; stem->newleft.y = stem->newright.y;
-        stem->newright.x = temp.x; stem->newright.y = temp.y;
-        new_w = -new_w;
+	temp.x = stem->newleft.x; temp.y = stem->newleft.y;
+	stem->newleft.x = stem->newright.x; stem->newleft.y = stem->newright.y;
+	stem->newright.x = temp.x; stem->newright.y = temp.y;
+	new_w = -new_w;
     }
     /* Guess at which normal we want */
     l_to_r.x = stem->newunit.y; l_to_r.y = -stem->newunit.x;
     /* If we guessed wrong, use the other */
     if (( stem->newright.x - stem->newleft.x )*l_to_r.x +
-        ( stem->newright.y - stem->newleft.y )*l_to_r.y < 0 ) {
-        l_to_r.x = -l_to_r.x;
-        l_to_r.y = -l_to_r.y;
+	( stem->newright.y - stem->newleft.y )*l_to_r.y < 0 ) {
+	l_to_r.x = -l_to_r.x;
+	l_to_r.y = -l_to_r.y;
     }
 
     /* Now look if there are any points on the edges of our stem which are already fixed */
     /* both by x and y and thus can no longer be moved */
     for ( i=0; i<gd->pcnt && ( lfixed == NULL || rfixed == NULL ); i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
-        nextidx = IsStemAssignedToPoint( pd,stem,true );
-        previdx = IsStemAssignedToPoint( pd,stem,false );
-        if (( nextidx != -1 || previdx != -1 ) && IsPointFixed( pd )) {
-            is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
-            if ( is_l ) lfixed = pd;
-            else rfixed = pd;
-        }
+	pd = &gd->points[i];
+	nextidx = IsStemAssignedToPoint( pd,stem,true );
+	previdx = IsStemAssignedToPoint( pd,stem,false );
+	if (( nextidx != -1 || previdx != -1 ) && IsPointFixed( pd )) {
+	    is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
+	    if ( is_l ) lfixed = pd;
+	    else rfixed = pd;
+	}
     }
     /* If there are such points at both edges, then we probably can do nothing useful */
     /* with this stem */
     if ( lfixed != NULL && rfixed != NULL ) {
-        stem->toobig = true;
+	stem->toobig = true;
 return;
     }
     /* If just one edge is fixed, then use it as a base and move another edge to */
     /* maintain the desired stem width */
     else if ( lfixed != NULL ) {
-        stem->newleft.x = lfixed->newpos.x; stem->newleft.y = lfixed->newpos.y;
-        stem->newright.x = stem->newleft.x + des_w * l_to_r.x;
-        stem->newright.y = stem->newleft.y + des_w * l_to_r.y;
+	stem->newleft.x = lfixed->newpos.x; stem->newleft.y = lfixed->newpos.y;
+	stem->newright.x = stem->newleft.x + des_w * l_to_r.x;
+	stem->newright.y = stem->newleft.y + des_w * l_to_r.y;
     } else if ( rfixed != NULL ) {
-        stem->newright.x = rfixed->newpos.x; stem->newright.y = rfixed->newpos.y;
-        stem->newleft.x = stem->newright.x - des_w * l_to_r.x;
-        stem->newleft.y = stem->newright.y - des_w * l_to_r.y;
+	stem->newright.x = rfixed->newpos.x; stem->newright.y = rfixed->newpos.y;
+	stem->newleft.x = stem->newright.x - des_w * l_to_r.x;
+	stem->newleft.y = stem->newright.y - des_w * l_to_r.y;
     /* Otherwise move both edges to an equal amount of space from their initial */
     /* positions */
     } else {
-        stem->newleft.x = stem->newleft.x - ( des_w - new_w )/2 * l_to_r.x;
-        stem->newleft.y = stem->newleft.y - ( des_w - new_w )/2 * l_to_r.y;
-        stem->newright.x = stem->newright.x + ( des_w - new_w )/2 * l_to_r.x;
-        stem->newright.y = stem->newright.y + ( des_w - new_w )/2 * l_to_r.y;
+	stem->newleft.x = stem->newleft.x - ( des_w - new_w )/2 * l_to_r.x;
+	stem->newleft.y = stem->newleft.y - ( des_w - new_w )/2 * l_to_r.y;
+	stem->newright.x = stem->newright.x + ( des_w - new_w )/2 * l_to_r.x;
+	stem->newright.y = stem->newright.y + ( des_w - new_w )/2 * l_to_r.y;
     }
 
     /* Determine the preferred direction for moving points which have not */
@@ -1451,52 +1495,52 @@ return;
 
     /* Now proceed to positioning points */
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
-        nextidx = IsStemAssignedToPoint( pd,stem,true );
-        previdx = IsStemAssignedToPoint( pd,stem,false );
-        if (( nextidx == -1 && previdx == -1 ) || IsPointFixed( pd ))
+	pd = &gd->points[i];
+	nextidx = IsStemAssignedToPoint( pd,stem,true );
+	previdx = IsStemAssignedToPoint( pd,stem,false );
+	if (( nextidx == -1 && previdx == -1 ) || IsPointFixed( pd ))
     continue;
-        if (( nextidx != -1 && !PreferredDStem( pd,stem,true)) ||
-            ( previdx != -1 && !PreferredDStem( pd,stem,false)))
+	if (( nextidx != -1 && !PreferredDStem( pd,stem,true)) ||
+	    ( previdx != -1 && !PreferredDStem( pd,stem,false)))
     continue;
-        is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
-        /* Move the point to a diagonal line. This doesn't yes guarantees it will */
-        /* be placed inside our bounding box */
-        MovePointToDiag( pd,stem,is_l );
+	is_l = ( nextidx == -1 ) ? pd->prev_is_l[previdx] : pd->next_is_l[nextidx];
+	/* Move the point to a diagonal line. This doesn't yes guarantees it will */
+	/* be placed inside our bounding box */
+	MovePointToDiag( pd,stem,is_l );
 
-        if ( !IsPointFixed( pd )) {
-            /* Interpolate the point between either horizontal or vertical stem
-             * edges along the preferred direction (determined according to the stem
-             * unit vector). This will position points still floating outside the bounding
-             * box and also guarantees e. g. proper point positioning relatively to serifs
-             * if they have been expanded
-             */
-            coord_new = InterpolateBetweenEdges(
-                gd,(&pd->base.x)[pref_y],min,max,min_new,max_new,!pref_y );
-            if ( pref_y ) {
-                pd->newpos.x += stem->newunit.x * (( coord_new - pd->newpos.y )/stem->newunit.y );
-                pd->newpos.y = coord_new;
-            } else {
-                pd->newpos.y += stem->newunit.y * (( coord_new - pd->newpos.x  )/stem->newunit.x );
-                pd->newpos.x = coord_new;
-            }
+	if ( !IsPointFixed( pd )) {
+	    /* Interpolate the point between either horizontal or vertical stem
+	     * edges along the preferred direction (determined according to the stem
+	     * unit vector). This will position points still floating outside the bounding
+	     * box and also guarantees e. g. proper point positioning relatively to serifs
+	     * if they have been expanded
+	     */
+	    coord_new = InterpolateBetweenEdges(
+		gd,(&pd->base.x)[pref_y],min,max,min_new,max_new,!pref_y );
+	    if ( pref_y ) {
+		pd->newpos.x += stem->newunit.x * (( coord_new - pd->newpos.y )/stem->newunit.y );
+		pd->newpos.y = coord_new;
+	    } else {
+		pd->newpos.y += stem->newunit.y * (( coord_new - pd->newpos.x  )/stem->newunit.x );
+		pd->newpos.x = coord_new;
+	    }
 
-         }
-        /* Check if there are obvious displacements relatively to stems going in the
-         * other direction and correct them. For example, the top left point of the diagonal
-         * stem in a Latin "N" may be moved inside the nearby vertical stem, and we have
-         * to prevent this
-         */
-        cscale = pref_y ? genchange->hcounter_scale : 
-            genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
-        if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,true,is_l,pref_y ))
-            ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,true,is_l,pref_y );
-        if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,false,is_l,pref_y ))
-            ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,false,is_l,pref_y );
-         cscale = pref_y ? genchange->use_vert_mapping ? 
-             genchange->v_scale : genchange->vcounter_scale : genchange->hcounter_scale;
-         ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,true,is_l,!pref_y );
-         ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,false,is_l,!pref_y );
+	 }
+	/* Check if there are obvious displacements relatively to stems going in the
+	 * other direction and correct them. For example, the top left point of the diagonal
+	 * stem in a Latin "N" may be moved inside the nearby vertical stem, and we have
+	 * to prevent this
+	 */
+	cscale = pref_y ? genchange->hcounter_scale : 
+	    genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale;
+	if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,true,is_l,pref_y ))
+	    ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,true,is_l,pref_y );
+	if ( !CorrectDPointPos( gd,pd,stem,pref_y?hscale:vscale,false,is_l,pref_y ))
+	    ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,false,is_l,pref_y );
+	 cscale = pref_y ? genchange->use_vert_mapping ? 
+	     genchange->v_scale : genchange->vcounter_scale : genchange->hcounter_scale;
+	 ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,true,is_l,!pref_y );
+	 ShiftDependent( gd,pd,stem,orig_b,new_b,cscale,false,is_l,!pref_y );
     }
 
     /* This is to fix relative positioning of starting/terminal points on a diagonal stem
@@ -1507,14 +1551,14 @@ return;
      */
     dscale = fabs( hscale * stem->unit.x ) + fabs( vscale * stem->unit.y );
     if ( stem->keypts[0] != stem->keypts[2] && (
-        ( stem->keypts[0]->sp->next->to == stem->keypts[2]->sp ) ||
-        ( stem->keypts[0]->sp->prev->from == stem->keypts[2]->sp )))
-        AlignPointPair( stem,stem->keypts[0],stem->keypts[2],hscale,vscale );
+	( stem->keypts[0]->sp->next->to == stem->keypts[2]->sp ) ||
+	( stem->keypts[0]->sp->prev->from == stem->keypts[2]->sp )))
+	AlignPointPair( stem,stem->keypts[0],stem->keypts[2],hscale,vscale );
 
     if ( stem->keypts[1] != stem->keypts[3] && (
-        ( stem->keypts[1]->sp->next->to == stem->keypts[3]->sp ) ||
-        ( stem->keypts[1]->sp->prev->from == stem->keypts[3]->sp )))
-        AlignPointPair( stem,stem->keypts[1],stem->keypts[3],hscale,vscale );
+	( stem->keypts[1]->sp->next->to == stem->keypts[3]->sp ) ||
+	( stem->keypts[1]->sp->prev->from == stem->keypts[3]->sp )))
+	AlignPointPair( stem,stem->keypts[1],stem->keypts[3],hscale,vscale );
 }
 
 static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, struct genericchange *genchange ) {
@@ -1531,28 +1575,28 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
     BlueData bd;
 
     if ( sc_sc != orig_sc ) {
-        sc_sc->layers[layer].splines = SplinePointListCopy( orig_sc->layers[layer].splines );
-        sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
+	sc_sc->layers[layer].splines = SplinePointListCopy( orig_sc->layers[layer].splines );
+	sc_sc->anchor = AnchorPointsCopy(orig_sc->anchor);
     }
     memset( &bd,0,sizeof( bd ));
-    InitZoneMappings( &genchange->m,&bd,genchange->stem_height_scale );
+    InitZoneMappings( &genchange->m,&bd,genchange->v_scale );
     
     if (genchange->stem_height_add!=0 && genchange->stem_width_add!=0 &&
-        genchange->stem_height_add/genchange->stem_width_add > 0 ) {
+	genchange->stem_height_add/genchange->stem_width_add > 0 ) {
 
 	ratio = genchange->stem_height_add/genchange->stem_width_add;
-        memset( scale,0,sizeof( scale ));
-        if ( ratio>1 ) {
-            add = genchange->stem_width_add;
-            scale[0] = 1.;
-            scale[3] = 1/ratio;
-        } else {
-            add = genchange->stem_height_add;
-            scale[0] = ratio;
-            scale[3] = 1.;
-        }
-        SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
-        
+	memset( scale,0,sizeof( scale ));
+	if ( ratio>1 ) {
+	    add = genchange->stem_width_add;
+	    scale[0] = 1.;
+	    scale[3] = 1/ratio;
+	} else {
+	    add = genchange->stem_height_add;
+	    scale[0] = ratio;
+	    scale[3] = 1.;
+	}
+	SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
+	
 	memset( &si,0,sizeof( si ));
 	si.stroke_type = si_std;
 	si.join = lj_miter;
@@ -1569,33 +1613,33 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
 	temp = BoldSSStroke( sc_sc->layers[layer].splines,&si,sc_sc->layers[layer].order2,removeoverlap );
 	SplinePointListsFree( sc_sc->layers[layer].splines );
 	sc_sc->layers[layer].splines = temp;
-        if ( ratio != 1.0 ) {
-            if ( ratio>1 ) {
-                scale[0] = 1.;
-                scale[3] = ratio;
-            } else {
-                scale[0] = 1/ratio;
-                scale[3] = 1.;
-            }
-        }
-        SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
+	if ( ratio != 1.0 ) {
+	    if ( ratio>1 ) {
+		scale[0] = 1.;
+		scale[3] = ratio;
+	    } else {
+		scale[0] = 1/ratio;
+		scale[3] = 1.;
+	    }
+	}
+	SplinePointListTransform( sc_sc->layers[layer].splines,scale,tpt_AllPoints );
 
-        /* If stroke has been expanded/condensed, then the old hints are no longer */
-        /* relevant; so just remove them and rely solely on the stem detector */
-        StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
-        StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
-        DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
-        
-        /* Resize blues so that GlyphDataBuild() could snap the emboldened stems to them */
-        for ( i=0; i<bd.bluecnt; i++ ) {
-            if ( bd.blues[i][0] < 0 ) {
-                bd.blues[i][0] -= genchange->stem_height_add/2;
-                bd.blues[i][1] -= genchange->stem_height_add/2;
-            } else if ( bd.blues[i][1] > 0 ) {
-                bd.blues[i][1] += genchange->stem_height_add/2;
-                bd.blues[i][0] += genchange->stem_height_add/2;
-            }
-        }
+	/* If stroke has been expanded/condensed, then the old hints are no longer */
+	/* relevant; so just remove them and rely solely on the stem detector */
+	StemInfosFree(sc_sc->hstem);  sc_sc->hstem = NULL;
+	StemInfosFree(sc_sc->vstem);  sc_sc->vstem = NULL;
+	DStemInfosFree(sc_sc->dstem); sc_sc->dstem = NULL;
+	
+	/* Resize blues so that GlyphDataBuild() could snap the emboldened stems to them */
+	for ( i=0; i<bd.bluecnt; i++ ) {
+	    if ( bd.blues[i][0] < 0 ) {
+		bd.blues[i][0] -= genchange->stem_height_add/2;
+		bd.blues[i][1] -= genchange->stem_height_add/2;
+	    } else if ( bd.blues[i][1] > 0 ) {
+		bd.blues[i][1] += genchange->stem_height_add/2;
+		bd.blues[i][0] += genchange->stem_height_add/2;
+	    }
+	}
     }
 
     SplineCharLayerFindBounds( orig_sc,layer,&orig_b );
@@ -1604,50 +1648,50 @@ static void ChangeGlyph( SplineChar *sc_sc, SplineChar *orig_sc, int layer, stru
     if ( gd == NULL )
 return;
     if (genchange->stem_height_add!=0 && genchange->stem_width_add!=0 &&
-        genchange->stem_height_add/genchange->stem_width_add > 0 ) {
-        /* Resize blues back to original values so that stems could be shifted to their original positions */
-        for ( i=0; i<bd.bluecnt; i++ ) {
-            if ( bd.blues[i][0] < 0 ) {
-                bd.blues[i][0] += genchange->stem_height_add/2;
-                bd.blues[i][1] += genchange->stem_height_add/2;
-            } else if ( bd.blues[i][1] > 0 ) {
-                bd.blues[i][1] -= genchange->stem_height_add/2;
-                bd.blues[i][0] -= genchange->stem_height_add/2;
-            }
-        }
+	genchange->stem_height_add/genchange->stem_width_add > 0 ) {
+	/* Resize blues back to original values so that stems could be shifted to their original positions */
+	for ( i=0; i<bd.bluecnt; i++ ) {
+	    if ( bd.blues[i][0] < 0 ) {
+		bd.blues[i][0] += genchange->stem_height_add/2;
+		bd.blues[i][1] += genchange->stem_height_add/2;
+	    } else if ( bd.blues[i][1] > 0 ) {
+		bd.blues[i][1] -= genchange->stem_height_add/2;
+		bd.blues[i][0] -= genchange->stem_height_add/2;
+	    }
+	}
     }
 
     /* Have to prepare a DStem list before further operations, since they are needed */
     /* to properly calculate counters between vertical stems */
     if ( genchange->dstem_control ) {
-        dstems = gcalloc( gd->stemcnt,sizeof( StemData *));
-        dcnt = PrepareDStemList( gd,dstems );
+	dstems = gcalloc( gd->stemcnt,sizeof( StemData *));
+	dcnt = PrepareDStemList( gd,dstems );
     }
 
     StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,true );
     if ( genchange->use_vert_mapping && genchange->m.cnt > 0 )
-        HStemResize( sc_sc->layers[layer].splines,gd,&orig_b,&new_b,genchange );
+	HStemResize( sc_sc->layers[layer].splines,gd,&orig_b,&new_b,genchange );
     else
-        StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,false );
-    PosStemPoints( gd,genchange->stem_width_scale,dcnt > 0,true );
-    PosStemPoints( gd,genchange->stem_height_scale,dcnt > 0,false );
+	StemResize( sc_sc->layers[layer].splines,gd,dstems,dcnt,&orig_b,&new_b,genchange,false );
+    PosStemPoints( gd,genchange,dcnt > 0,true );
+    PosStemPoints( gd,genchange,dcnt > 0,false );
     if ( genchange->dstem_control ) {
-        for ( i=0; i<dcnt; i++ )
-            FixDStem( gd,dstems[i],dstems,dcnt,&orig_b,&new_b,genchange );
+	for ( i=0; i<dcnt; i++ )
+	    FixDStem( gd,dstems[i],dstems,dcnt,&orig_b,&new_b,genchange );
     }
     /* Our manipulations with DStems may have moved some points outside of  */
     /* borders of the bounding box we have previously calculated. So adjust */
     /* those borders now, as they may be important for point interpolations */
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
-        if ( pd->touched & tf_d && pd->newpos.x < new_b.minx )
-            new_b.minx = pd->newpos.x;
-        else if ( pd->touched & tf_d && pd->newpos.x > new_b.maxx )
-            new_b.maxx = pd->newpos.x;
-        if ( pd->touched & tf_d && pd->newpos.y < new_b.miny )
-            new_b.miny = pd->newpos.y;
-        else if ( pd->touched & tf_d && pd->newpos.y > new_b.maxy )
-            new_b.maxy = pd->newpos.y;
+	pd = &gd->points[i];
+	if ( pd->touched & tf_d && pd->newpos.x < new_b.minx )
+	    new_b.minx = pd->newpos.x;
+	else if ( pd->touched & tf_d && pd->newpos.x > new_b.maxx )
+	    new_b.maxx = pd->newpos.x;
+	if ( pd->touched & tf_d && pd->newpos.y < new_b.miny )
+	    new_b.miny = pd->newpos.y;
+	else if ( pd->touched & tf_d && pd->newpos.y > new_b.maxy )
+	    new_b.maxy = pd->newpos.y;
     }
     InterpolateStrong( gd,&orig_b,&new_b,true );
     InterpolateStrong( gd,&orig_b,&new_b,false );
@@ -1655,21 +1699,21 @@ return;
     InterpolateWeak( gd,&orig_b,&new_b,genchange->stem_height_scale,false );
     InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,genchange->hcounter_scale,true );
     InterpolateAnchorPoints( gd,sc_sc->anchor,&orig_b,&new_b,
-        genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale,false );
+	genchange->use_vert_mapping ? genchange->v_scale : genchange->vcounter_scale,false );
 
     /* Finally move every point to its new location */
     for ( i=0; i<gd->pcnt; i++ ) if ( gd->points[i].sp != NULL ) {
-        pd = &gd->points[i];
-        pd->sp->me.x = pd->newpos.x;
-        pd->sp->me.y = pd->newpos.y;
-        if ( !pd->sp->nonextcp ) {
-            pd->sp->nextcp.x = pd->newnext.x;
-            pd->sp->nextcp.y = pd->newnext.y;
-        }
-        if ( !pd->sp->noprevcp ) {
-            pd->sp->prevcp.x = pd->newprev.x;
-            pd->sp->prevcp.y = pd->newprev.y;
-        }
+	pd = &gd->points[i];
+	pd->sp->me.x = pd->newpos.x;
+	pd->sp->me.y = pd->newpos.y;
+	if ( !pd->sp->nonextcp ) {
+	    pd->sp->nextcp.x = pd->newnext.x;
+	    pd->sp->nextcp.y = pd->newnext.y;
+	}
+	if ( !pd->sp->noprevcp ) {
+	    pd->sp->prevcp.x = pd->newprev.x;
+	    pd->sp->prevcp.y = pd->newprev.y;
+	}
     }
     SplineSetRefigure(sc_sc->layers[layer].splines);
     SplineCharLayerFindBounds(sc_sc,layer,&new_b);
@@ -1677,8 +1721,11 @@ return;
     /* Set the left and right side bearings appropriately */
     memset(scale,0,sizeof(scale));
     scale[0] = scale[3] = 1;
-    if ( genchange->center_in_hor_advance )
+    if ( genchange->center_in_hor_advance == 1 )
 	scale[4] = ( owidth - ( new_b.maxx - new_b.minx ))/2.0 - new_b.minx;
+    else if ( genchange->center_in_hor_advance == 2 )
+	scale[4] = orig_b.minx/( owidth - ( orig_b.maxx - orig_b.minx )) * 
+	    ( owidth - ( new_b.maxx - new_b.minx )) - new_b.minx;
     else
 	scale[4] = orig_b.minx*genchange->lsb_scale + genchange->lsb_add - new_b.minx;
     SplinePointListTransform(sc_sc->layers[layer].splines,scale,tpt_AllPoints);
@@ -1697,7 +1744,7 @@ return;
 	ap->me.y += genchange->vertical_offset;
 
     if ( genchange->dstem_control )
-        free( dstems );
+	free( dstems );
     GlyphDataFree( gd );
     StemInfosFree( sc_sc->hstem );  sc_sc->hstem = NULL;
     StemInfosFree( sc_sc->vstem );  sc_sc->vstem = NULL;
@@ -2661,7 +2708,7 @@ return;
 		if ( sc->unicodeenc==0xdf || (sc->unicodeenc>=0xfb00 && sc->unicodeenc<=0xfb06))
 		    BuildSCLigatures(sc_sc,sc,fv->active_layer,genchange);
 		else
-                    ChangeGlyph( sc_sc,sc,fv->active_layer,genchange );
+		    ChangeGlyph( sc_sc,sc,fv->active_layer,genchange );
       end_loop:
 		if ( !ff_progress_next())
     break;
@@ -2835,8 +2882,8 @@ void FVGenericChange(FontViewBase *fv, struct genericchange *genchange) {
 return;		/* Can't randomly add things to a CID keyed font */
 
     if ( genchange->small != NULL ) {
-        genchange->italic_angle = genchange->small->italic_angle;
-        genchange->tan_ia = genchange->small->tan_ia;
+	genchange->italic_angle = genchange->small->italic_angle;
+	genchange->tan_ia = genchange->small->tan_ia;
     }
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
@@ -2903,7 +2950,7 @@ return;
 	    }
 	    if ( achar==NULL )
 		achar = sc_sc;
-            ChangeGlyph( sc_sc,sc,fv->active_layer,genchange );
+	    ChangeGlyph( sc_sc,sc,fv->active_layer,genchange );
       end_loop:
 	    if ( !ff_progress_next())
     break;
@@ -2989,8 +3036,8 @@ void CVGenericChange(CharViewBase *cv, struct genericchange *genchange) {
 return;
 
     if ( genchange->small != NULL ) {
-        genchange->italic_angle = genchange->small->italic_angle;
-        genchange->tan_ia = genchange->small->tan_ia;
+	genchange->italic_angle = genchange->small->italic_angle;
+	genchange->tan_ia = genchange->small->tan_ia;
     }
 
     genchange->g.cnt = genchange->m.cnt+2;
@@ -3047,7 +3094,7 @@ SplineSet *SSControlStems(SplineSet *ss,double stemwidthscale, double stemheight
     genchange.stem_width_scale  = stemwidthscale !=-1 ? stemwidthscale  : stemheightscale;
     genchange.stem_height_scale = stemheightscale!=-1 ? stemheightscale : stemwidthscale ;
     genchange.hcounter_scale    = hscale !=-1 ? hscale  : vscale;
-    genchange.v_scale           = vscale !=-1 ? vscale  : hscale;
+    genchange.v_scale	   = vscale !=-1 ? vscale  : hscale;
     genchange.lsb_scale = genchange.rsb_scale = genchange.hcounter_scale;
 
     ChangeGlyph( &dummy,&dummy,ly_fore,&genchange );
@@ -3060,7 +3107,7 @@ return( ss );
 
 /* We need to look at the counters. There are two types of counters: */
 /*  the left and right side bearings */
-/*  internal counters                */
+/*  internal counters		*/
 /* If the glyph is nicely hinted with vertical stems then all we need to */
 /*  do is look at the hints. Complications "B" which has slightly different */
 /*  counters top and bottom. */
@@ -3307,7 +3354,7 @@ return;
 		bp->x = base +
 			(bp->x-oldbase) *
 				(ci->zones[z][i].moveto-base)/
-			        (ci->zones[z][i].start-oldbase);
+				(ci->zones[z][i].start-oldbase);
 	    } else {
 		bp->x = ci->zones[z][i].moveto +
 		    ci->zones[z][i].newwidth * (bp->x-ci->zones[z][i].start)/ ci->zones[z][i].width;
@@ -6368,7 +6415,7 @@ return;
 
     genchange.stem_width_scale  = small.lc_stem_width / small.uc_stem_width;
     genchange.stem_height_scale = genchange.stem_width_scale;
-    genchange.v_scale           = small.xheight / small.capheight;
+    genchange.v_scale	   = small.xheight / small.capheight;
     genchange.hcounter_scale    = genchange.v_scale;
     genchange.lsb_scale = genchange.rsb_scale = genchange.v_scale;
 
@@ -6700,9 +6747,9 @@ static void InitItalicConstants(SplineFont *sf, int layer, ItalicInfo *ii) {
 
     ii->tan_ia = tan(ii->italic_angle * 3.1415926535897932/180.0 );
 
-    ii->x_height          = SFXHeight  (sf,layer,false);
+    ii->x_height	  = SFXHeight  (sf,layer,false);
     ii->ascender_height   = SFAscender (sf,layer,false);
-    ii->pq_depth          = SFDescender(sf,layer,false);
+    ii->pq_depth	  = SFDescender(sf,layer,false);
 
     for ( i=cnt=0; lc_botserif_str[i]!=0; ++i ) {
 	val = SerifExtent(SFGetChar(sf,lc_botserif_str[i],NULL),layer,true);
