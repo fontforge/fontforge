@@ -1832,8 +1832,7 @@ static void GME_VScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	r.x = 1; r.y = 1; r.width = size.width-1; r.height = size.height-1;
 	GDrawScroll(gme->nested,&r,0,diff);
 	GME_PositionEdit(gme);
-	GGadgetGetSize(gme->tf,&size);
-	GDrawRequestExpose(gme->nested,&size,false);
+	GDrawRequestExpose(gme->nested,&size,false); 
     }
 }
 
@@ -1942,6 +1941,11 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	}
     }
 
+    gme->mark_length = GDrawPointsToPixels(base,_GListMarkSize);
+    gme->mark_size = gme->mark_length +
+	    2*GBoxBorderWidth(base,&_GListMark_Box);
+    gme->mark_skip = GDrawPointsToPixels(base,_GGadget_TextImageSkip);
+
     /* Can't do this earlier. It depends on matrix_data being set */
     x = 1;
     for ( c=0; c<gme->cols; ++c ) {
@@ -2047,10 +2051,6 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	((GTextField *) (gme->tf))->accepts_tabs = false;
     }
 
-    gme->mark_length = GDrawPointsToPixels(gme->nested,_GListMarkSize);
-    gme->mark_size = gme->mark_length +
-	    2*GBoxBorderWidth(gme->nested,&_GListMark_Box);
-    gme->mark_skip = GDrawPointsToPixels(gme->nested,_GGadget_TextImageSkip);
     if ( gme->g.state!=gs_invisible )
 	GDrawSetVisible(gme->nested,true);
 return( &gme->g );
