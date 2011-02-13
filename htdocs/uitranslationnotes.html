@@ -58,8 +58,8 @@
       <A HREF="uitranslationnotes.html#Testing">Testing a "po" file</A>
     <LI>
       Examples,
-      <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/po">browse
-      the CVS tree</A>
+      <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">browse
+      the git repository for the "po" directory</A>
     <LI>
       <A HREF="#More">Still more strings to translate!</A>
     <LI>
@@ -95,15 +95,15 @@
   <P>
   Then edit the file<CODE> FontForge.pot</CODE>.
   <H4>
-    from the <A NAME="src-cvs">cvs</A> tree
+    from the <A NAME="src-git">git</A> repository
   </H4>
   <P>
   This is a better solution because it gives you a current version of the pot
-  file. Create a cvs directory as described in the
-  <A HREF="source-build.html#src-cvs">section on building from source</A>.
+  file. Create a git repository as described in the
+  <A HREF="source-build.html#src-git">section on building from source</A>.
   Having done that type
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge/fontforge
+    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
 <FONT COLOR="Gray">$ </FONT>make -f Makefile.in FontForge.pot
 </PRE>
   </BLOCKQUOTE>
@@ -499,7 +499,7 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   The hot key pot file is called: <TT>FontForge-MenuShortCuts.pot</TT>
   <P>
   (This can also be obtained <A HREF="FontForge-MenuShortCuts.pot.bz2">from
-  the website</A>, or generated from the cvs tree)
+  the website</A>, or generated from the git repository)
   <P>
   On the Mac, FontForge allows for two different key bindings. X11 can be
   configured to pass the command key on to FontForge, or X11 may use the command
@@ -683,7 +683,7 @@ msgstr "Efface"
   Currently there are no examples of these files, and there is nothing in the
   Makefile to install them.
   <P>
-  Creating a Mac file is similar. There is one example of this in the cvs tree
+  Creating a Mac file is similar. There is one example of this in the git repository
   under <CODE>po/mackeys/en.po</CODE>. It should be the same as the default
   key bindings except that the Control key has been replaced everywhere with
   the Command key. You can install it
