@@ -33,7 +33,9 @@
 	    <LI>
 	      <A HREF="#src-tarball">tarball</A>
 	    <LI>
-	      <A HREF="#src-cvs">from the cvs tree</A>
+	      <A HREF="#src-git">from the git repository</A>
+	    <LI>
+	      <A HREF="#src-cvs"><del>from the cvs tree</del></A>
 	  </UL>
 	<LI>
 	  <A HREF="#src-Building">Building &amp; installing it</A>
@@ -168,7 +170,7 @@
   </H3>
   <P>
   There are two basic ways to obtain a source distribution. One is by downloading
-  an entire source tree from the web, and the other is by using the cvs utility
+  an entire source tree from the web, and the other is by using the git utility
   to maintain a source tree on your machine which will be as up to date as
   possible. The former solution provides more stability, the latter provides
   access to cutting edge bugs.
@@ -191,13 +193,37 @@
 </PRE>
   </BLOCKQUOTE>
   <H4>
-    from the <A NAME="src-cvs">cvs</A> tree
+    from the <A NAME="src-git">git</A> repository</del>
   </H4>
   <P>
-  cvs is a nifty set of utilities which allows concurrent access to a source
-  tree by many users. To set up your own (local) copy of the cvs tree (including
+  git is another version control system. To set up your own (local, read-only)
+  copy of the git repository (including
   documentation), create a new directory, cd into it and type the following
   (do not type "$", when it asks for a password, just hit return):
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>git clone git://fontforge.git.sourceforge.net/gitroot/fontforge/fontforge
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  You can also
+  <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">browse
+  the git repository</A> online. Or see
+  <A HREF="http://sourceforge.net/apps/trac/sourceforge/wiki/Git">about using
+  git on sourceforge</A> for more information, or read the
+  <A HREF="http://git-scm.com/documentation">git documentation</A>.</del>
+  <H4>
+    <del>from the <A NAME="src-cvs">cvs</A> tree</del>
+  </H4>
+  <P>
+  The cvs repository is no longer up to date. It still exists (for now) for
+  historical purposes (and in case something goes wrong with git) but it is
+  no longer in active service and no commits have been made to it since
+  13-Feb-2011. You really want to use git, above.
+  <P>
+  <del>cvs is a nifty set of utilities which allows concurrent access to a source
+  tree by many users. To set up your own (local) copy of the cvs tree (including
+  documentation), create a new directory, cd into it and type the following
+  (do not type "$", when it asks for a password, just hit return):</del>
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
@@ -206,8 +232,8 @@ CVS password:
 </PRE>
   </BLOCKQUOTE>
   <P>
-  Once you have established a directory you may update it to obtain the most
-  recent version of the source by typing:
+  <del>Once you have established a directory you may update it to obtain the most
+  recent version of the source by typing:</del>
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
 <FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
@@ -216,12 +242,12 @@ CVS password:
 </PRE>
   </BLOCKQUOTE>
   <P>
-  You can also
+  <del>You can also
   <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">browse
   the CVS tree</A> online. Or see
   <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's description
   </A>for more information, or read the
-  <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>.
+  <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>.</del>
   <H3>
     <A NAME="src-Building">Building</A> &amp; installing it
   </H3>
@@ -344,11 +370,11 @@ CVS password:
 </PRE>
   </BLOCKQUOTE>
   <H4>
-    Installing <A NAME="installing-documentation-cvs">documentation</A> from
+    Installing <A NAME="installing-documentation-git">documentation</A> from
     the cvs tree
   </H4>
   <P>
-  If you have a copy of the cvs tree on your system then you should be able
+  If you have a copy of the git repository on your system then you should be able
   to type
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray"># </FONT>make install_docs
@@ -371,7 +397,7 @@ CVS password:
   <P>
   So before you can apply the patch you must
   <A HREF="source-build.html#src-distribution">have the source code </A>available
-  to you. If you choose to download from the cvs tree, then, in all probability,
+  to you. If you choose to download from the git repository, then, in all probability,
   the patch will already have been applied (so you don't need to do anything
   with it). But if you download one of my tarballs then you will need to apply
   the patch:
@@ -604,17 +630,17 @@ CVS password:
 	  <A HREF="tutorial.tgz">example files </A>(to work through the tutorial yourself)
       </UL>
     <LI>
-      The cvs tree contains a sub-directory called htdocs containing the manual
+      The git repository contains a sub-directory called htdocs containing the manual
       <UL>
 	<LI>
-	  The cvs tree contains a sub-sub-directory called htdocs/ja containing the
+	  The git repository contains a sub-sub-directory called htdocs/ja containing the
 	  Japanese translation of the manual
       </UL>
       <P>
-      See the general comments on the <A HREF="#src-cvs">cvs tree </A>to see how
+      See the general comments on the <A HREF="#src-git">git repository </A>to see how
       to access this.<BR>
-      See the section on <A HREF="#installing-documentation-cvs">installing cvs
-      documentation </A>to see how to install the docs from the cvs tree
+      See the section on <A HREF="#installing-documentation-git">installing git
+      documentation </A>to see how to install the docs from the git tree
   </UL>
   <H3>
     <A NAME="doc-tar">Installing a documentation tarball</A>
