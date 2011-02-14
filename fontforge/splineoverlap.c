@@ -1312,6 +1312,9 @@ return;		/* Not interesting. Only intersection is at an endpoint */
 		    /* that "y+=diff" might actually not change the value of "y". */
 		    bkp_y=y+diff;
 		    while (bkp_y==y) { diff *= 2; bkp_y = y+diff; }
+		    /* Someone complained here that ff was depending on "exact" */
+		    /*  arithmetic here. They failed to understand what was going */
+		    /*  on, or even to read the comment above which should explain*/
 
 		    t1 = IterateSplineSolveFixup(&m1->s->splines[1],m1->tstart,m1->tend,y);
 		    if ( t1==-1 )
