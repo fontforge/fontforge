@@ -26,7 +26,7 @@
  */
 
 /* Routines to handle bdf properties, and a dialog to set them */
-#include "pfaeditui.h"
+#include "fontforgeui.h"
 #include "splinefont.h"
 #include <string.h>
 #include <ustring.h>

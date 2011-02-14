@@ -1,4 +1,4 @@
-#include "pfaedit.h"
+#include "fontforge.h"
 #include "baseviews.h"
 #include "libffstamp.h"
 #include "uiinterface.h"

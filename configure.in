@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 orig_args="$*"
 
-AC_INIT(fontforge/pfaedit.h)
+AC_INIT(fontforge/fontforge.h)
 AC_CONFIG_HEADERS([inc/config.h])
 AC_PROG_CC
 AC_PROG_INSTALL

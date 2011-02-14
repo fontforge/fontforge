@@ -1,7 +1,7 @@
-/* A set of routines used in pfaedit that I don't want/need to bother with for*/
+/* A set of routines used in fontforge that I don't want/need to bother with for*/
 /*  sfddiff, but which get called by it */
 
-#include "pfaeditui.h"
+#include "fontforgeui.h"
 #include "ttf.h"
 #include <stdarg.h>
 #include <math.h>

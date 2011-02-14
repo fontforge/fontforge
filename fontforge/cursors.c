@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgeui.h"
 
 #ifndef _CursorsMustBe16x16
 # define _CursorsMustBe16x16	0	/* X on Mac OSX can't handle anything bigger than 16x16 cursors (I think, it seems to manage smaller ones) */

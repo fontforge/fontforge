@@ -26,7 +26,7 @@
  */
 /*			   Yet another interpreter			      */
 
-#include "pfaedit.h"
+#include "fontforge.h"
 #include <gfile.h>
 #include <utype.h>
 #include <ustring.h>

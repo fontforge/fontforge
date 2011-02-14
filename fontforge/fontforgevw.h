@@ -27,7 +27,7 @@
 #ifndef _FONTFORGEVW_H_
 #define _FONTFORGEVW_H_
 
-#include "pfaedit.h"
+#include "fontforge.h"
 #include "gimage.h"
 #include "baseviews.h"
 

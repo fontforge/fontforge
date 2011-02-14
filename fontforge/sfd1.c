@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaedit.h"
+#include "fontforge.h"
 #include "sfd1.h"
 #include <string.h>
 
