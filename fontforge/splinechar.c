@@ -640,7 +640,7 @@ return;
 	if ( nextlen!=0 && prevlen!=0 ) {
 	    unitnext.x /= nextlen; unitnext.y /= nextlen;
 	    unitprev.x /= prevlen; unitprev.y /= prevlen;
-	    if ( unitnext.x*unitprev.x + unitnext.y*unitprev.y>=.95 ) {
+	    if ( unitnext.x*unitprev.x + unitnext.y*unitprev.y<=-.95 ) {
 		/* If the control points are essentially in the same direction*/
 		/*  (so valid for a curve) then leave them as is */
 		makedflt = false;
@@ -669,7 +669,7 @@ return;
 	    sp->prevcp = pcp;
 	    if ( sp->prev!=NULL && sp->prev->order2 )
 		sp->prev->from->nextcp = pcp;
-	    makedflt = true;
+	    makedflt = false;
 	}
 	if ( makedflt ) {
 	    sp->nextcpdef = sp->prevcpdef = true;
