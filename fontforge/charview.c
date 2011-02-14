@@ -4602,7 +4602,7 @@ return;
 	GGadgetMove(cv->hsb,0,size.height-sbsize);
 	GGadgetResize(cv->hsb,sbwidth,sbsize);
 	cv->width = newwidth; cv->height = newheight;
-	CVFit(cv);
+	/*CVFit(cv);*/ CVNewScale(cv);
 	CVPalettesRaise(cv);
 	if ( cv->b.container == NULL && ( default_cv_width!=size.width || default_cv_height!=size.height )) {
 	    default_cv_width = size.width;
