@@ -28,7 +28,7 @@ FF_AGE=0
 fontforge_LIBOBJECTS = asmfpst.$O autohint.$O autosave.$O autotrace.$O autowidth.$O \
  bezctx_ff.$O bitmapchar.$O bitmapcontrol.$O bvedit.$O clipnoui.$O crctab.$O \
  cvexport.$O cvimages.$O cvundoes.$O dumpbdf.$O dumppfa.$O effects.$O encoding.$O \
- featurefile.$O fontviewbase.$O freetype.$O fvcomposit.$O fvfonts.$O fvimportbdf.$O \
+ featurefile.$O fontviewbase.$O freetype.$O fvcomposite.$O fvfonts.$O fvimportbdf.$O \
  fvmetrics.$O glyphcomp.$O http.$O ikarus.$O lookups.$O macbinary.$O \
  macenc.$O mathconstants.$O mm.$O namelist.$O nonlineartrans.$O noprefs.$O nouiutil.$O \
  nowakowskittfinstr.$O ofl.$O othersubrs.$O palmfonts.$O parsepdf.$O parsepfa.$O \
