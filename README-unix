@@ -32,8 +32,6 @@ INSTALLATION WITHOUT DYNAMIC LIBRARIES
 	A README file or two
 	fontforge    -- the executable
 	fontforge.1  --	the man page.
-	pfaedit-*.ui --	various user interface string files for different
-			languages
     You should:
     	$ su
 	# mkdir -p /usr/local/bin /usr/local/man/man1 /usr/local/share/fontforge

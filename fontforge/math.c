@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaeditui.h"
+#include "fontforgeui.h"
 #include <math.h>
 #include <stddef.h>
 #include <gkeysym.h>

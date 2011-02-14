@@ -551,7 +551,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="fontforge/pfaedit.h"
+ac_unique_file="fontforge/fontforge.h"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>

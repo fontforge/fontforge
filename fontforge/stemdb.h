@@ -27,7 +27,7 @@
 #ifndef _STEMDB_H_
 # define _STEMDB_H_
 
-# include "pfaedit.h"
+# include "fontforge.h"
 
 typedef struct glyphdata {
     SplineFont *sf;

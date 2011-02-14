@@ -28,7 +28,7 @@
 #define _SPLINEFONT_H
 
 #include "basics.h"
-#include "configure-pfaedit.h"
+#include "configure-fontforge.h"
 #ifdef HAVE_ICONV_H
 # include <iconv.h>
 /* libiconv.h defines iconv as taking a const pointer for inbuf. iconv doesn't*/

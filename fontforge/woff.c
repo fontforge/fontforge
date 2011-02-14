@@ -29,7 +29,7 @@
 /* Which are defined here: http://people.mozilla.com/~jkew/woff/woff-2009-09-16.html */
 /* Basically sfnts with compressed tables and some more metadata */
 
-#include "pfaedit.h"
+#include "fontforge.h"
 #include <math.h>
 #include <ctype.h>
 
