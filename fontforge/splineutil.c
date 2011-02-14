@@ -3768,7 +3768,7 @@ return(tmax);
 	    if ( t==tmax || t==tmin )
 return( t );
 	    test = ((temp.a*t+temp.b)*t+temp.c)*t+temp.d;
-	    if ( test==0 )
+	    if ( test==0 )	/* someone complained that this test relied on exact arithmetic. In fact this test will almost never be hit, the real exit test is the line above, when tmin/tmax are so close that there is no space between them in the floating representation */
 return( t );
 	    if ( (low<0 && test<0) || (low>0 && test>0) )
 		tmin=t;
