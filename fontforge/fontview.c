@@ -6820,9 +6820,9 @@ static void FVResize(FontView *fv,GEvent *event) {
 	if ( cc<=0 ) cc = 1;
 	if ( rc<=0 ) rc = 1;
 	GDrawGetSize(GDrawGetRoot(NULL),&screensize);
-	if ( cc*fv->cbw+GDrawPointsToPixels(fv->gw,_GScrollBar_Width)+10>screensize.width )
+	if ( cc*fv->cbw+GDrawPointsToPixels(fv->gw,_GScrollBar_Width)>screensize.width )
 	    --cc;
-	if ( rc*fv->cbh+fv->mbh+fv->infoh+20>screensize.height )
+	if ( rc*fv->cbh+fv->mbh+fv->infoh+10>screensize.height )
 	    --rc;
 	GDrawResize(fv->gw,
 		cc*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
