@@ -401,10 +401,12 @@ dnl bloody useless thing to do, but check for both (don't need to check for
 dnl zlib.h because we never use it directly, only used inside libpng)
 
 AC_CHECK_LIB(z, deflateEnd, : ,AC_DEFINE(_NO_LIBPNG), -lm) 
-AC_CHECK_LIB(png, png_create_read_struct, : ,[
+AC_CHECK_LIB(png16, png_create_read_struct, AC_DEFINE(_LIBPNG16),[
+AC_CHECK_LIB(png15, png_create_read_struct, AC_DEFINE(_LIBPNG15),[
  AC_CHECK_LIB(png14, png_create_read_struct, AC_DEFINE(_LIBPNG14),[
-  AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12),
-      AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)], -lz -lm)
+  AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12),[
+   AC_CHECK_LIB(png, png_create_read_struct, : ,
+      AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)], -lz -lm)], -lz -lm)], -lz -lm)
 AC_CHECK_HEADER(png.h, : , AC_DEFINE(_NO_LIBPNG))
 AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
 AC_CHECK_HEADER(jpeglib.h, : , AC_DEFINE(_NO_LIBJPEG))

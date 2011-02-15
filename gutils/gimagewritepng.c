@@ -53,6 +53,13 @@ static void (*_png_set_packing)(png_structp);
 static void (*_png_set_filler)(png_structp,png_uint_32,int);
 static void (*_png_write_image)(png_structp,png_bytep*);
 static void (*_png_write_end)(png_structp,png_infop);
+#if (PNG_LIBPNG_VER >= 10500)
+static void (*_png_longjmp)(png_structp, int);
+static jmp_buf* (*_png_set_longjmp_fn)(png_structp,png_longjmp_ptr, size_t);
+#endif
+static void (*_png_set_IHDR)(png_structp,png_infop,png_uint_32,png_uint_32,int,int,int,int,int);
+static void (*_png_set_PLTE)(png_structp,png_infop,png_colorp,int);
+static void (*_png_set_tRNS)(png_structp,png_infop,png_bytep,int,png_color_16p);
 
 static int loadpng() {
     /* Oops someone might have libpng without libz. If we try to load libpng */
@@ -81,6 +88,13 @@ return( 0 );
     if ( libpng==NULL )
 	libpng = dlopen(PNGLIBNAME SO_0_EXT,RTLD_LAZY);
 #    endif
+    if ( libpng==NULL ) {
+	libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
+#    ifdef SO_2_EXT
+	if ( libpng==NULL )
+	    libpng = dlopen("libpng" SO_2_EXT,RTLD_LAZY);
+#    endif
+    }
 #  endif
     if ( libpng==NULL ) {
 	fprintf(stderr,"%s", dlerror());
@@ -104,6 +118,18 @@ return( 0 );
 	    dlsym(libpng,"png_write_image");
     _png_write_end = (void (*)(png_structp,png_infop))
 	    dlsym(libpng,"png_write_end");
+#if (PNG_LIBPNG_VER >= 10500)
+    _png_longjmp = (void (*)(png_structp, int))
+	    dlsym(libpng,"png_longjmp");
+    _png_set_longjmp_fn = (jmp_buf* (*)(png_structp,png_longjmp_ptr,size_t))
+	    dlsym(libpng,"png_set_longjmp_fn");
+#endif
+    _png_set_IHDR = (void (*)(png_structp,png_infop,png_uint_32,png_uint_32,int,int,int,int,int))
+	    dlsym(libpng,"png_set_IHDR");
+    _png_set_PLTE = (void (*)(png_structp,png_infop,png_colorp,int))
+	    dlsym(libpng,"png_set_PLTE");
+    _png_set_tRNS = (void (*)(png_structp,png_infop,png_bytep,int,png_color_16p))
+	    dlsym(libpng,"png_set_tRNS");
     if ( _png_create_write_struct && _png_create_info_struct && _png_destroy_write_struct &&
 	    _png_init_io && _png_set_filler && _png_write_info && _png_set_packing &&
 	    _png_write_image && _png_write_end)
@@ -115,7 +141,11 @@ return( 0 );
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr,"%s", error_msg );
+#if (PNG_LIBPNG_VER < 10500)
     longjmp(png_ptr->jmpbuf,1);
+#else
+    _png_longjmp (png_ptr, 1);
+#endif
 }
 
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
@@ -128,6 +158,12 @@ int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
     png_infop info_ptr;
     png_byte **rows;
     int i;
+    int bit_depth;
+    int color_type;
+    int num_palette;
+    png_bytep trans_alpha = NULL;
+    png_color_16p trans_color = NULL;
+    png_colorp palette = NULL;
 
     if ( libpng==NULL )
 	if ( !loadpng())
@@ -146,75 +182,71 @@ return(false);
 return(false);
    }
 
-   if (setjmp(png_ptr->jmpbuf)) {
-      _png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
+#if (PNG_LIBPNG_VER < 10500)
+    if (setjmp(png_ptr->jmpbuf))
+#else
+    if (setjmp(*_png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf))))
+#endif
+    {
+	_png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
 return(false);
-   }
+    }
 
    _png_init_io(png_ptr, fp);
 
-   info_ptr->width = base->width;
-   info_ptr->height = base->height;
-   info_ptr->bit_depth = 8;
-   info_ptr->valid = 0;
-   info_ptr->interlace_type = progressive;
-   if ( base->trans!=-1 ) {
-       info_ptr->num_trans = 1;
-       info_ptr->valid |= PNG_INFO_tRNS;
-   }
+   bit_depth = 8;
+   num_palette = base->clut==NULL?2:base->clut->clut_len;
    if ( base->image_type==it_index || base->image_type==it_bitmap ) {
-       info_ptr->color_type = PNG_COLOR_TYPE_PALETTE;
-       info_ptr->valid |= PNG_INFO_PLTE;
-       info_ptr->num_palette = base->clut==NULL?2:base->clut->clut_len;
-       info_ptr->palette = (png_color *) galloc(info_ptr->num_palette*sizeof(png_color));
+       color_type = PNG_COLOR_TYPE_PALETTE;
+       if ( num_palette<=2 )
+	   bit_depth=1;
+       else if ( num_palette<=4 )
+	   bit_depth=2;
+       else if ( num_palette<=16 )
+	   bit_depth=4;
+   } else {
+       color_type = PNG_COLOR_TYPE_RGB;
+       if ( base->image_type == it_rgba )
+	   color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+   }
+
+   _png_set_IHDR(png_ptr, info_ptr, base->width, base->height,
+		 bit_depth, color_type, progressive,
+		 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+   if ( base->image_type==it_index || base->image_type==it_bitmap ) {
+       palette = (png_color *) galloc(num_palette*sizeof(png_color));
        if ( base->clut==NULL ) {
-	    info_ptr->palette[0].red = info_ptr->palette[0].green = info_ptr->palette[0].blue = 0;
-	    info_ptr->palette[1].red = info_ptr->palette[1].green = info_ptr->palette[1].blue = 0xff;
+	    palette[0].red = palette[0].green = palette[0].blue = 0;
+	    palette[1].red = palette[1].green = palette[1].blue = 0xff;
        } else {
-	   for ( i=0; i<info_ptr->num_palette; ++i ) {
+	   for ( i=0; i<num_palette; ++i ) {
 		long col = base->clut->clut[i];
-		info_ptr->palette[i].red = COLOR_RED(col);
-		info_ptr->palette[i].green = COLOR_GREEN(col);
-		info_ptr->palette[i].blue = COLOR_BLUE(col);
+		palette[i].red = COLOR_RED(col);
+		palette[i].green = COLOR_GREEN(col);
+		palette[i].blue = COLOR_BLUE(col);
 	   }
        }
-       if ( info_ptr->num_palette<=2 )
-	   info_ptr->bit_depth=1;
-       else if ( info_ptr->num_palette<=4 )
-	   info_ptr->bit_depth=2;
-       else if ( info_ptr->num_palette<=16 )
-	   info_ptr->bit_depth=4;
-       if ( info_ptr->num_palette<=16 )
+       _png_set_PLTE(png_ptr, info_ptr, palette, num_palette);
+       if ( num_palette<=16 )
 	   _png_set_packing(png_ptr);
-       if ( base->trans!=-1 ) {
-#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
-	   info_ptr->trans_alpha = galloc(1);
-	   info_ptr->trans_alpha[0] = base->trans;
-#else
-	   info_ptr->trans = galloc(1);
-	   info_ptr->trans[0] = base->trans;
-#endif
-       }
-   } else {
-       info_ptr->color_type = PNG_COLOR_TYPE_RGB;
-       if ( base->image_type == it_rgba )
-	   info_ptr->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 
        if ( base->trans!=-1 ) {
-#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
-	   info_ptr->trans_color.red = COLOR_RED(base->trans);
-	   info_ptr->trans_color.green = COLOR_GREEN(base->trans);
-	   info_ptr->trans_color.blue = COLOR_BLUE(base->trans);
-#else
-	   info_ptr->trans_values.red = COLOR_RED(base->trans);
-	   info_ptr->trans_values.green = COLOR_GREEN(base->trans);
-	   info_ptr->trans_values.blue = COLOR_BLUE(base->trans);
-#endif
+	   trans_alpha = galloc(1);
+	   trans_alpha[0] = base->trans;
        }
+   } else {
+       if ( base->trans!=-1 ) {
+	   trans_color->red = COLOR_RED(base->trans);
+	   trans_color->green = COLOR_GREEN(base->trans);
+	   trans_color->blue = COLOR_BLUE(base->trans);
+       }
+   }
+   if ( base->trans!=-1 ) {
+       _png_set_tRNS(png_ptr, info_ptr, trans_alpha, 1, trans_color);
    }
    _png_write_info(png_ptr, info_ptr);
 
-    if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
+    if (color_type == PNG_COLOR_TYPE_RGB)
 	_png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
 
     rows = galloc(base->height*sizeof(png_byte *));
@@ -225,12 +257,8 @@ return(false);
 
     _png_write_end(png_ptr, info_ptr);
 
-#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
-    if ( info_ptr->trans_alpha!=NULL ) gfree(info_ptr->trans_alpha);
-#else
-    if ( info_ptr->trans!=NULL ) gfree(info_ptr->trans);
-#endif
-    if ( info_ptr->palette!=NULL ) gfree(info_ptr->palette);
+    if ( trans_alpha!=NULL ) gfree(trans_alpha);
+    if ( palette!=NULL ) gfree(palette);
     _png_destroy_write_struct(&png_ptr, &info_ptr);
     gfree(rows);
 return( 1 );
@@ -265,7 +293,11 @@ return( ret );
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr, "%s\n", error_msg );
+#if (PNG_LIBPNG_VER < 10500)
     longjmp(png_ptr->jmpbuf,1);
+#else
+    _png_longjmp (png_ptr, 1);
+#endif
 }
 
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
@@ -292,7 +324,7 @@ return(false);
 return(false);
    }
 
-   if (setjmp(png_ptr->jmpbuf)) {
+   if (setjmp(*_png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf)))) {
       png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
 return(false);
    }
