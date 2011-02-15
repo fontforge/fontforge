@@ -60,6 +60,17 @@ static void (*_png_set_packing)(png_structp);
 static void (*_png_set_filler)(png_structp,png_uint_32,int);
 static void (*_png_read_image)(png_structp,png_bytep*);
 static void (*_png_read_end)(png_structp,png_infop);
+#if (PNG_LIBPNG_VER >= 10500)
+static void (*_png_longjmp)(png_structp, int);
+static jmp_buf* (*_png_set_longjmp_fn)(png_structp,png_longjmp_ptr, size_t);
+#endif
+static png_byte (*_png_get_color_type)(png_structp,png_infop);
+static png_byte (*_png_get_bit_depth)(png_structp,png_infop);
+static png_uint_32 (*_png_get_image_width)(png_structp,png_infop);
+static png_uint_32 (*_png_get_image_height)(png_structp,png_infop);
+static png_uint_32 (*_png_get_PLTE)(png_structp,png_infop,png_colorp *,int *);
+static png_uint_32 (*_png_get_tRNS)(png_structp,png_infop,png_bytep *,int *,png_color_16p *);
+static png_uint_32 (*_png_get_valid)(png_structp,png_infop,png_uint_32);
 
 #ifndef RTLD_GLOBAL		/* OSF on Alpha doesn't define this */
 # define RTLD_GLOBAL 0
@@ -93,6 +104,13 @@ return( 0 );
     if ( libpng==NULL )
 	libpng = dlopen(PNGLIBNAME SO_0_EXT,RTLD_LAZY);
 #    endif
+    if ( libpng==NULL ) {
+	libpng = dlopen("libpng" SO_EXT,RTLD_LAZY);
+#    ifdef SO_2_EXT
+	if ( libpng==NULL )
+	    libpng = dlopen("libpng" SO_2_EXT,RTLD_LAZY);
+#    endif
+    }
 #  endif
     if ( libpng==NULL ) {
 	fprintf(stderr,"libpng: %s\n", dlerror());
@@ -109,6 +127,17 @@ return( 0 );
     _png_set_filler = (void (*)(png_structp,png_uint_32,int)) dlsym(libpng,"png_set_filler");
     _png_read_image = (void (*)(png_structp,png_bytep*)) dlsym(libpng,"png_read_image");
     _png_read_end = (void (*)(png_structp,png_infop)) dlsym(libpng,"png_read_end");
+#if (PNG_LIBPNG_VER >= 10500)
+    _png_longjmp = (void (*)(png_structp, int)) dlsym(libpng,"png_longjmp");
+    _png_set_longjmp_fn = (jmp_buf* (*)(png_structp,png_longjmp_ptr,size_t)) dlsym(libpng,"png_set_longjmp_fn");
+#endif
+    _png_get_color_type = (png_byte (*)(png_structp,png_infop)) dlsym(libpng,"png_get_color_type");
+    _png_get_bit_depth = (png_byte (*)(png_structp,png_infop)) dlsym(libpng,"png_get_bit_depth");
+    _png_get_image_width = (png_uint_32 (*)(png_structp,png_infop)) dlsym(libpng,"png_get_image_width");
+    _png_get_image_height = (png_uint_32 (*)(png_structp,png_infop)) dlsym(libpng,"png_get_image_height");
+    _png_get_PLTE = (png_uint_32 (*)(png_structp,png_infop,png_colorp *,int *)) dlsym(libpng,"png_get_PLTE");
+    _png_get_tRNS = (png_uint_32 (*)(png_structp,png_infop,png_bytep *,int *,png_color_16p *)) dlsym(libpng,"png_get_tRNS");
+    _png_get_valid = (png_uint_32 (*)(png_structp,png_infop,png_uint_32)) dlsym(libpng,"png_get_valid");
     if ( _png_create_read_struct && _png_create_info_struct && _png_destroy_read_struct &&
 	    _png_init_io && _png_read_info && _png_set_strip_16 && _png_set_packing &&
 	    _png_set_filler && _png_read_image && _png_read_end &&
@@ -130,6 +159,15 @@ return( 0 );
 #  define _png_set_filler png_set_filler
 #  define _png_read_image png_read_image
 #  define _png_read_end png_read_end
+#  define _png_longjmp png_longjmp
+#  define _png_set_longjmp_fn png_set_longjmp_fn
+#  define _png_get_color_type png_get_color_type
+#  define _png_get_bit_depth png_get_bit_depth
+#  define _png_get_image_width png_get_image_width
+#  define _png_get_image_height png_get_image_height
+#  define _png_get_PLTE png_get_PLTE
+#  define _png_get_tRNS png_get_tRNS
+#  define _png_get_valid png_get_valid
 static void *libpng=(void *) 1;
 
 static int loadpng() { return true; }
@@ -137,7 +175,11 @@ static int loadpng() { return true; }
  
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr,"%s\n", error_msg);
+#if (PNG_LIBPNG_VER < 10500)
     longjmp(png_ptr->jmpbuf,1);
+#else
+    _png_longjmp (png_ptr, 1);
+#endif
 }
 
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
@@ -150,6 +192,9 @@ GImage *GImageRead_Png(FILE *fp) {
     png_structp png_ptr;
     png_infop info_ptr;
     png_bytep *row_pointers=NULL;
+    png_bytep trans_alpha;
+    int num_trans;
+    png_color_16p trans_color;
     int i;
 
     if ( libpng==NULL )
@@ -168,7 +213,12 @@ return( NULL );
 return( NULL );
     }
 
-    if (setjmp(png_ptr->jmpbuf)) {
+#if (PNG_LIBPNG_VER < 10500)
+    if (setjmp(png_ptr->jmpbuf))
+#else
+    if (setjmp(*_png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf))))
+#endif
+    {
       /* Free all of the memory associated with the png_ptr and info_ptr */
       _png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
       if ( ret!=NULL ) {
@@ -182,74 +232,63 @@ return( NULL );
     _png_init_io(png_ptr, fp);
     _png_read_info(png_ptr, info_ptr);
     _png_set_strip_16(png_ptr);
-    if ( (info_ptr->color_type==PNG_COLOR_TYPE_GRAY || info_ptr->color_type==PNG_COLOR_TYPE_PALETTE ) &&
-	    info_ptr->bit_depth == 1 )
+    if ( (_png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY || _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_PALETTE ) &&
+	    _png_get_bit_depth(png_ptr,info_ptr) == 1 )
 	/* Leave bitmaps packed */;
     else
 	_png_set_packing(png_ptr);
-    if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY_ALPHA )
+    if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY_ALPHA )
 	_png_set_strip_alpha(png_ptr);
-    if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
+    if (_png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB)
 	_png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
 
-    if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY && info_ptr->bit_depth == 1 ) {
-	ret = GImageCreate(it_mono,info_ptr->width,info_ptr->height);
-    } else if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY || info_ptr->color_type==PNG_COLOR_TYPE_GRAY_ALPHA ) {
+    if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY && _png_get_bit_depth(png_ptr,info_ptr) == 1 ) {
+	ret = GImageCreate(it_mono,_png_get_image_width(png_ptr,info_ptr),_png_get_image_height(png_ptr,info_ptr));
+    } else if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY || _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY_ALPHA ) {
 	GClut *clut;
-	ret = GImageCreate(it_index,info_ptr->width,info_ptr->height);
+	ret = GImageCreate(it_index,_png_get_image_width(png_ptr,info_ptr),_png_get_image_height(png_ptr,info_ptr));
 	clut = ret->u.image->clut;
 	clut->is_grey = true;
 	clut->clut_len = 256;
 	for ( i=0; i<256; ++i )
 	    clut->clut[i] = COLOR_CREATE(i,i,i);
-    } else if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA ) {
-	ret = GImageCreate(it_rgba,info_ptr->width,info_ptr->height);
-    } else if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA )
-	ret = GImageCreate(it_true,info_ptr->width,info_ptr->height);
+    } else if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB_ALPHA ) {
+	ret = GImageCreate(it_rgba,_png_get_image_width(png_ptr,info_ptr),_png_get_image_height(png_ptr,info_ptr));
+    } else if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB || _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB_ALPHA )
+	ret = GImageCreate(it_true,_png_get_image_width(png_ptr,info_ptr),_png_get_image_height(png_ptr,info_ptr));
     else {
+	png_colorp palette;
+	int num_palette;
 	GClut *clut;
-	ret = GImageCreate(info_ptr->bit_depth != 1? it_index : it_mono,
-		info_ptr->width,info_ptr->height);
+	ret = GImageCreate(_png_get_bit_depth(png_ptr,info_ptr) != 1? it_index : it_mono,
+		_png_get_image_width(png_ptr,info_ptr),_png_get_image_height(png_ptr,info_ptr));
 	clut = ret->u.image->clut;
 	if ( clut==NULL )
 	    clut = ret->u.image->clut = gcalloc(1,sizeof(GClut));
 	clut->is_grey = true;
-	clut->clut_len = info_ptr->num_palette;
-	for ( i=0; i<info_ptr->num_palette; ++i )
-	    clut->clut[i] = COLOR_CREATE(info_ptr->palette[i].red,
-			info_ptr->palette[i].green,
-			info_ptr->palette[i].blue);
+	_png_get_PLTE(png_ptr,info_ptr,&palette,&num_palette);
+	clut->clut_len = num_palette;
+	for ( i=0; i<num_palette; ++i )
+	    clut->clut[i] = COLOR_CREATE(palette[i].red,
+			palette[i].green,
+			palette[i].blue);
     }
+    _png_get_tRNS(png_ptr,info_ptr,&trans_alpha,&num_trans,&trans_color);
     base = ret->u.image;
-    if ( (info_ptr->valid&PNG_INFO_tRNS) && info_ptr->num_trans>0 ) {
-	if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA )
-#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
+    if ( (_png_get_valid(png_ptr,info_ptr,PNG_INFO_tRNS)) && num_trans>0 ) {
+	if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB || _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB_ALPHA )
 	    base->trans = COLOR_CREATE(
-		    (info_ptr->trans_color.red>>8),
-		    (info_ptr->trans_color.green>>8),
-		    (info_ptr->trans_color.blue>>8));
-#else
-	    base->trans = COLOR_CREATE(
-		    (info_ptr->trans_values.red>>8),
-		    (info_ptr->trans_values.green>>8),
-		    (info_ptr->trans_values.blue>>8));
-#endif
+		    (trans_color->red>>8),
+		    (trans_color->green>>8),
+		    (trans_color->blue>>8));
         else if ( base->image_type == it_mono )
-#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
-	    base->trans = info_ptr->trans_alpha[0];
-#else
-	    base->trans = info_ptr->trans[0];
-#endif
+	    base->trans = trans_alpha[0];
 	else
-#if ( PNG_LIBPNG_VER_MAJOR > 1 || PNG_LIBPNG_VER_MINOR > 2 )
-	    base->clut->trans_index = base->trans = info_ptr->trans_alpha[0];
-#else
-	    base->clut->trans_index = base->trans = info_ptr->trans[0];
-#endif
+	    base->clut->trans_index = base->trans = trans_alpha[0];
     }
 
-    row_pointers = galloc(info_ptr->height*sizeof(png_bytep));
-    for ( i=0; i<info_ptr->height; ++i )
+    row_pointers = galloc(_png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
+    for ( i=0; i<_png_get_image_height(png_ptr,info_ptr); ++i )
 	row_pointers[i] = (png_bytep) (base->data + i*base->bytes_per_line);
 
     /* Ignore progressive loads for now */
@@ -258,7 +297,7 @@ return( NULL );
     _png_read_image(png_ptr,row_pointers);
     _png_read_end(png_ptr, NULL);
 
-    if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA ) {
+    if ( _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB || _png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB_ALPHA ) {
 	/* PNG orders its bytes as AABBGGRR instead of 00RRGGBB */
 	uint32 *ipt, *iend;
 	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {

@@ -20475,13 +20475,13 @@ else
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_create_read_struct in -lpng" >&5
-$as_echo_n "checking for png_create_read_struct in -lpng... " >&6; }
-if test "${ac_cv_lib_png_png_create_read_struct+set}" = set; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_create_read_struct in -lpng16" >&5
+$as_echo_n "checking for png_create_read_struct in -lpng16... " >&6; }
+if test "${ac_cv_lib_png16_png_create_read_struct+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpng -lz -lm $LIBS"
+LIBS="-lpng16 -lz -lm $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -20501,18 +20501,60 @@ return png_create_read_struct ();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_png_png_create_read_struct=yes
+  ac_cv_lib_png16_png_create_read_struct=yes
 else
-  ac_cv_lib_png_png_create_read_struct=no
+  ac_cv_lib_png16_png_create_read_struct=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_create_read_struct" >&5
-$as_echo "$ac_cv_lib_png_png_create_read_struct" >&6; }
-if test "x$ac_cv_lib_png_png_create_read_struct" = x""yes; then :
-  :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png16_png_create_read_struct" >&5
+$as_echo "$ac_cv_lib_png16_png_create_read_struct" >&6; }
+if test "x$ac_cv_lib_png16_png_create_read_struct" = x""yes; then :
+  $as_echo "#define _LIBPNG16 1" >>confdefs.h
+
+else
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_create_read_struct in -lpng15" >&5
+$as_echo_n "checking for png_create_read_struct in -lpng15... " >&6; }
+if test "${ac_cv_lib_png15_png_create_read_struct+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpng15 -lz -lm $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char png_create_read_struct ();
+int
+main ()
+{
+return png_create_read_struct ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_png15_png_create_read_struct=yes
+else
+  ac_cv_lib_png15_png_create_read_struct=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png15_png_create_read_struct" >&5
+$as_echo "$ac_cv_lib_png15_png_create_read_struct" >&6; }
+if test "x$ac_cv_lib_png15_png_create_read_struct" = x""yes; then :
+  $as_echo "#define _LIBPNG15 1" >>confdefs.h
+
 else
 
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_create_read_struct in -lpng14" >&5
@@ -20596,7 +20638,51 @@ if test "x$ac_cv_lib_png12_png_create_read_struct" = x""yes; then :
   $as_echo "#define _LIBPNG12 1" >>confdefs.h
 
 else
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_create_read_struct in -lpng" >&5
+$as_echo_n "checking for png_create_read_struct in -lpng... " >&6; }
+if test "${ac_cv_lib_png_png_create_read_struct+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpng -lz -lm $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char png_create_read_struct ();
+int
+main ()
+{
+return png_create_read_struct ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_png_png_create_read_struct=yes
+else
+  ac_cv_lib_png_png_create_read_struct=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_create_read_struct" >&5
+$as_echo "$ac_cv_lib_png_png_create_read_struct" >&6; }
+if test "x$ac_cv_lib_png_png_create_read_struct" = x""yes; then :
+  :
+else
   $as_echo "#define _NO_LIBPNG 1" >>confdefs.h
+
+fi
+
+fi
 
 fi
 
