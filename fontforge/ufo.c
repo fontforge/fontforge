@@ -545,11 +545,11 @@ return( false );
 	{
 	    int fscnt,i;
 	    char fstype[16];
+	    /* Now the spec SAYS we should output bit >numbers<. */
+	    /* What is MEANT is that bit >values< should be output. */
 	    for ( i=fscnt=0; i<16; ++i )
-		if ( sf->pfminfo.fstype&(1<<i) )
-		    fstype[fscnt++] = i;
-	    if ( fscnt!=0 )
-		PListOutputIntArray(plist,"openTypeOS2Type",fstype,fscnt);
+		fstype[fscnt++] = sf->pfminfo.fstype&(1<<i) ? 1 : 0;
+	    PListOutputIntArray(plist,"openTypeOS2Type",fstype,fscnt);
 	}
 	if ( sf->pfminfo.typoascent_add )
 	    PListOutputInteger(plist,"openTypeOS2TypoAscender",sf->ascent+sf->pfminfo.os2_typoascent);
@@ -761,36 +761,37 @@ return( false );
     }
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
-	gfname = galloc(strlen(sc->name)+20);
-	if ( isupper(sc->name[0])) {
-	    char *pt;
-	    pt = strchr(sc->name,'.');
-	    if ( pt==NULL ) {
-		strcpy(gfname,sc->name);
-		strcat(gfname,"_");
-	    } else {
-		strncpy(gfname,sc->name,pt-sc->name);
-		gfname[pt-sc->name] = '_';
+	char *start, *gstart;
+	gstart = gfname = galloc(2*strlen(sc->name)+20);
+	start = sc->name;
+	if ( *start=='.' ) {
+	    *gstart++ = '_';
+	    ++start;
+	}
+	while ( *start ) {
+	    /* Now the spec has a very complicated algorithm for producing a */
+	    /*  filename, dividing the glyph name into chunks at every period*/
+	    /*  and then again at every underscore, and then adding an under-*/
+	    /*  score at the end of a chunk if the chunk begins with a capital*/
+	    /* BUT... */
+	    /* That's not what RoboFAB does. It simply adds an underscore after*/
+	    /*  every capital letter. Much easier. And since people have */
+	    /*  complained that I follow the spec, let's not. */
+	    if ( isupper( *start )) {
+		*gstart++ = tolower( *start );
+		*gstart++ = '_';
+	    } else
+		*gstart++ = *start;
+	    ++start;
+	}
 #ifdef __VMS
-		gfname[pt-sc->name+1] = '@';
-		strcpy(gfname + (pt-sc->name) + 2,pt+1);
-#else
-		strcpy(gfname + (pt-sc->name) + 1,pt);
+	*gstart ='\0';
+	for ( gstart=gfname; *gstart; ++gstart ) {
+	    if ( *gstart=='.' )
+		*gstart = '@';		/* VMS only allows one "." in a filename */
+	}
 #endif
-	    }
-	} else
-#ifdef __VMS
-	    {
-		char *pt;
-		strcpy(gfname,sc->name);
-		for ( pt=gfname; *pt; ++pt )
-		    if ( *pt=='.' )
-			*pt='@';
-	    }
-#else
-	    strcpy(gfname,sc->name);
-#endif
-	strcat(gfname,".glif");
+	strcpy(gstart,".glif");
 	PListOutputString(plist,sc->name,gfname);
 	err |= !GlifDump(glyphdir,gfname,sc,layer);
 	free(gfname);
@@ -1644,15 +1645,18 @@ return;
 
 static long UFOGetBits(xmlDocPtr doc,xmlNodePtr value) {
     xmlNodePtr kid;
-    long mask=0;
+    long mask=0, bit;
 
     if ( _xmlStrcmp(value->name,(const xmlChar *) "array")!=0 )
 return( 0 );
+    bit = 1;
     for ( kid = value->children; kid!=NULL; kid=kid->next ) {
 	if ( _xmlStrcmp(kid->name,(const xmlChar *) "integer")==0 ) {
 	    char *valName = (char *) _xmlNodeListGetString(doc,kid->children,true);
-	    mask |= 1<<strtol(valName,NULL,10);
+	    if ( strtol(valName,NULL,10))
+		mask |= bit;
 	    free(valName);
+	    bit<<=1;
 	}
     }
 return( mask );
