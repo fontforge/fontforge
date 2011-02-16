@@ -1433,9 +1433,10 @@ exit( 0 );
 	else if ( strcmp(pt,"-open")==0 )
 	    doopen = true;
 	else {
-	    if ( strstr(argv[i],"://")!=NULL )		/* Assume an absolute URL */
+	    if ( strstr(argv[i],"://")!=NULL ) {		/* Assume an absolute URL */
 		strncpy(buffer,argv[i],sizeof(buffer));
-	    else
+		buffer[sizeof(buffer)-1]= '\0';
+	    } else
 		GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer) || (strstr(buffer,"://")!=NULL && buffer[strlen(buffer)-1]=='/')) {
 		char *fname;
