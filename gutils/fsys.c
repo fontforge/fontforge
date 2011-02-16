@@ -132,7 +132,10 @@ char *GFileGetAbsoluteName(char *name, char *result, int rsiz) {
 	/* Normalize out any .. */
 	spt = rpt = buffer;
 	while ( *spt!='\0' ) {
-	    if ( *spt=='/' ) ++spt;
+	    if ( *spt=='/' )  {
+		if ( *++spt=='\0' )
+	break;
+	    }
 	    for ( pt = spt; *pt!='\0' && *pt!='/'; ++pt );
 	    if ( pt==spt )	/* Found // in a path spec, reduce to / (we've*/
 		savestrcpy(spt,spt+1); /*  skipped past the :// of the machine name) */
