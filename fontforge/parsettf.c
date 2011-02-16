@@ -3183,6 +3183,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->bluevalues[i] += td->bluevalues[i-1];
 	    }
+	    if ( i==0 ) td->bluevalues[0] = 1234567;	/* Marker for an empty arry, which is legal, and different from no array */
 	  break;
 	  case 7:
 	    for ( i=0; i<sp && i<10; ++i ) {
@@ -3190,6 +3191,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->otherblues[i] += td->otherblues[i-1];
 	    }
+	    if ( i==0 ) td->otherblues[0] = 1234567;
 	  break;
 	  case 8:
 	    for ( i=0; i<sp && i<14; ++i ) {
@@ -3197,6 +3199,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->familyblues[i] += td->familyblues[i-1];
 	    }
+	    if ( i==0 ) td->familyblues[0] = 1234567;
 	  break;
 	  case 9:
 	    for ( i=0; i<sp && i<10; ++i ) {
@@ -3204,6 +3207,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->familyotherblues[i] += td->familyotherblues[i-1];
 	    }
+	    if ( i==0 ) td->familyotherblues[0] = 1234567;
 	  break;
 	  case (12<<8)+9:
 	    td->bluescale = stack[sp-1];
@@ -3226,6 +3230,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->stemsnaph[i] += td->stemsnaph[i-1];
 	    }
+	    if ( i==0 ) td->stemsnaph[0] = 1234567;
 	  break;
 	  case (12<<8)+13:
 	    for ( i=0; i<sp && i<10; ++i ) {
@@ -3233,6 +3238,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->stemsnapv[i] += td->stemsnapv[i-1];
 	    }
+	    if ( i==0 ) td->stemsnapv[0] = 1234567;
 	  break;
 	  case (12<<8)+14:
 	    td->forcebold = stack[sp-1];
@@ -3557,6 +3563,8 @@ static char *realarray2str(real *array, int size, int must_be_even) {
     for ( i=size-1; i>=0 && array[i]==0; --i );
     if ( i==-1 )
 return( NULL );
+    if ( i==0 && array[0]==1234567 ) /* Special marker for a null array */
+return( copy( "[]" ));
     if ( must_be_even && !(i&1) && array[i]<0 )
 	++i;			/* Someone gave us a bluevalues of [-20 0] and we reported [-20] */
     ret = pt = galloc((i+1)*20+12);
