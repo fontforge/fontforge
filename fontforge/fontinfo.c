@@ -2013,7 +2013,7 @@ static struct psdict *GFI_ParsePrivate(struct gfi_data *d) {
     struct psdict *ret = gcalloc(1,sizeof(struct psdict));
     GGadget *private = GWidgetGetControl(d->gw,CID_Private);
     int rows, cols = GMatrixEditGetColCnt(private);
-    struct matrix_data *strings = _GMatrixEditGet(private, &rows);
+    struct matrix_data *strings = GMatrixEditGet(private, &rows);
     int i,j;
 
     ret->cnt = rows;
