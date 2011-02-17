@@ -88,12 +88,14 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
     for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	j = 0;
 	for ( kp = sf->glyphs[at->gi.bygid[i]]->kerns; kp!=NULL; kp=kp->next )
-	    if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup ))
+	    if ( kp->off!=0 && kp->sc->ttf_glyph!=-1 &&
+		    LookupHasDefault(kp->subtable->lookup ))
 		++cnt, ++j;
 	if ( j>mh ) mh=j;
 	j=0;
 	for ( kp = sf->glyphs[at->gi.bygid[i]]->vkerns; kp!=NULL; kp=kp->next )
-	    if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup ))
+	    if ( kp->off!=0 && kp->sc->ttf_glyph!=-1 &&
+		    LookupHasDefault(kp->subtable->lookup ))
 		++vcnt, ++j;
 	if ( j>mv ) mv=j;
     }
@@ -218,7 +220,8 @@ return;
 		    SplineChar *sc = sf->glyphs[at->gi.bygid[gid]];
 		    m = 0;
 		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
-			if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup)) {
+			if ( kp->off!=0 && kp->sc->ttf_glyph!=-1 &&
+				LookupHasDefault(kp->subtable->lookup)) {
 			    /* order the pairs */
 			    for ( j=0; j<m; ++j )
 				if ( kp->sc->ttf_glyph<glnum[j] )
