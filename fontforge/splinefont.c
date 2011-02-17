@@ -535,6 +535,8 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     sf->pfminfo.os2_strikeypos = rint( sf->pfminfo.os2_strikeypos * scale);
     sf->upos *= scale;
     sf->uwidth *= scale;
+    sf->ufo_ascent *= scale;
+    sf->ufo_descent *= scale;
 
     if ( sf->private!=NULL )
 	SFScalePrivate(sf,scale);

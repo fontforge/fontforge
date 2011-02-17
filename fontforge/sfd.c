@@ -1851,6 +1851,10 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpUTF7Str(sfd,sf->woffMetadata);
 	putc('\n',sfd);
     }
+    if ( sf->ufo_ascent!=0 )
+	fprintf(sfd, "UFOAscent: %g\n", sf->ufo_ascent );
+    if ( sf->ufo_descent!=0 )
+	fprintf(sfd, "UFODescent: %g\n", sf->ufo_descent );
     fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
@@ -6522,6 +6526,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&sf->woffMinor);
 	} else if ( strmatch(tok,"woffMetadata:")==0 ) {
 	    sf->woffMetadata = SFDReadUTF7Str(sfd);
+	} else if ( strmatch(tok,"UFOAscent:")==0 ) {
+	    getreal(sfd,&sf->ufo_ascent);
+	} else if ( strmatch(tok,"UFODescent:")==0 ) {
+	    getreal(sfd,&sf->ufo_descent);
 	} else if ( strmatch(tok,"sfntRevision:")==0 ) {
 	    gethex(sfd,&sf->sfntRevision);
 	} else if ( strmatch(tok,"Order2:")==0 ) {

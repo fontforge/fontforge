@@ -491,8 +491,18 @@ return( false );
     test = SFCapHeight(sf,layer,true);
     if ( test>0 )
 	PListOutputInteger(plist,"capHeight",(int) rint(test));
-    PListOutputInteger(plist,"ascender",sf->ascent);
-    PListOutputInteger(plist,"descender",-sf->descent);
+    if ( sf->ufo_ascent==0 )
+	PListOutputInteger(plist,"ascender",sf->ascent);
+    else if ( sf->ufo_ascent==floor(sf->ufo_ascent))
+	PListOutputInteger(plist,"ascender",sf->ufo_ascent);
+    else
+	PListOutputReal(plist,"ascender",sf->ufo_ascent);
+    if ( sf->ufo_descent==0 )
+	PListOutputInteger(plist,"descender",-sf->descent);
+    else if ( sf->ufo_descent==floor(sf->ufo_descent))
+	PListOutputInteger(plist,"descender",sf->ufo_descent);
+    else
+	PListOutputReal(plist,"descender",sf->ufo_descent);
     PListOutputReal(plist,"italicAngle",sf->italicangle);
 #ifdef Version_1
     PListOutputString(plist,"fullName",sf->fullname);
@@ -1902,12 +1912,14 @@ return( NULL );
 		if ( *end!='\0' ) em = -1;
 		free(valname);
 	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "ascender")==0 ) {
-		as = strtol((char *) valname,&end,10);
+		as = strtod((char *) valname,&end);
 		if ( *end!='\0' ) as = -1;
+		else sf->ufo_ascent = as;
 		free(valname);
 	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
-		ds = -strtol((char *) valname,&end,10);
+		ds = -strtod((char *) valname,&end);
 		if ( *end!='\0' ) ds = -1;
+		else sf->ufo_descent = -ds;
 		free(valname);
 	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ||
 		    _xmlStrcmp(keyname,(xmlChar *) "postscriptSlantAngle")==0 ) {
