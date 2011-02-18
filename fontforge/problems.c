@@ -5215,7 +5215,7 @@ static int VWCheckup(struct val_data *vw) {
 	if ( sc!=NULL && vw->need_to_check_with_user_on_mask &&
 		(sc->layers[vw->layer].validation_state&vs_nonintegral )) {
 	    vw->need_to_check_with_user_on_mask = false;
-	    buts[0] = _("Erroneous"); buts[1]=_("Acceptable"); buts[2] = NULL;
+	    buts[0] = _("Report as Error"); buts[1]=_("Ignore"); buts[2] = NULL;
 	    if ( ff_ask(_("Not sure if this is an error..."),(const char **) buts,0,1,
 		    _("This font contains non-integral coordinates. That's OK\n"
 			"in PostScript and SVG but causes problems in TrueType.\n"
