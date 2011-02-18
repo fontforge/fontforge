@@ -151,7 +151,7 @@ if test "$python" = "yes" ; then
   if python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')" >/dev/null 2>&1 ; then
     if python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))" >/dev/null 2>&1 ; then
       PyVersion=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
-      PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
+      PySubVersion=`echo $PyVersion |sed -e 's/2\.//' -e 's/3\.//'`
       PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
       PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
       if test "$PySubVersion" \!= "" -a "$PySubVersion" -le 2 ; then
