@@ -1,7 +1,8 @@
 # Makefile for OpenVMS
-# Date : 11 November 2008
+# Date : 16 February 2011
 
 all :
+	if f$search("libs.dir") .eqs. "" then create/directory [.libs]
 	set def [.inc]
 	mms
 	set def [-.unicode]
