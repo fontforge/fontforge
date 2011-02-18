@@ -166,7 +166,7 @@ struct unicoderange unicoderange[] = {
     {  N_("CJK Enclosed Letters and Months"), 0x3200, 0x32ff, 0x3200 },
     { N_("CJK Compatibility"), 0x3300, 0x33ff, 0x3300, true },
     { N_("CJK Unified Ideographs Extension A"), 0x3400, 0x4dff, -1, true },
-    { N_("Yijing Hexagram Symbols"), 0x4db0, 0x4dff, -1, true },
+    { N_("Yijing Hexagram Symbols"), 0x4dc0, 0x4dff, -1, true },
     { N_("CJK Unified Ideographs"), 0x4e00, 0x9fff, 0x4e00, true },
     { N_("Yi Syllables"), 0xa000, 0xa3ff, -1, true },
     { N_("Yi"), 0xa000, 0xa3ff, -1, true },
