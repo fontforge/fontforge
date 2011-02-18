@@ -3211,7 +3211,7 @@ return( NULL );
     for ( otf = all; otf!=NULL; otf=otf->next ) if ( otf->lookup_index!=-1 ) {
 	putshort(g___,!otf->needs_extension ? (otf->lookup_type&0xff)
 			: is_gpos ? 9 : 7);
-	putshort(g___,otf->lookup_flags);
+	putshort(g___,(otf->lookup_flags&0xffff));
 	putshort(g___,otf->subcnt);
 	for ( sub = otf->subtables; sub!=NULL; sub=sub->next ) {
 	    if ( sub->subtable_offset==-1 )
