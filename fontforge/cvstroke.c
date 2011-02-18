@@ -1945,7 +1945,7 @@ return( true );
 return( true );
 	PatternSCBounds(patternsc,&b);
 	height = width * (b.maxy - b.miny)/(b.maxx - b.minx);
-	sprintf( buffer, "%g", height );
+	sprintf( buffer, "%g", (double) height );
 	GGadgetSetTitle8(GWidgetGetControl(gw,CID_THeight), buffer);
     }
 return( true );
@@ -1973,7 +1973,7 @@ return( true );
 return( true );
 	PatternSCBounds(patternsc,&b);
 	width = height * (b.maxx - b.minx)/(b.maxy - b.miny);
-	sprintf( buffer, "%g", width );
+	sprintf( buffer, "%g", (double) width );
 	GGadgetSetTitle8(GWidgetGetControl(gw,CID_TWidth), buffer);
     }
 return( true );
@@ -2146,12 +2146,12 @@ static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) 
     if ( active!=NULL ) {
 	SplineChar *patternsc = SFGetChar(ld->sf,-1,active->pattern);
 	name = active->pattern;
-	sprintf( width, "%g", active->width );
-	sprintf( height, "%g", active->height );
+	sprintf( width, "%g", (double) active->width );
+	sprintf( height, "%g", (double) active->height );
 	sprintf( transform, "[%g %g %g %g %g %g]",
-		active->transform[0], active->transform[1],
-		active->transform[2], active->transform[3],
-		active->transform[4], active->transform[5]);
+		(double) active->transform[0], (double) active->transform[1],
+		(double) active->transform[2], (double) active->transform[3],
+		(double) active->transform[4], (double) active->transform[5]);
 	if ( patternsc!=NULL ) {
 	    DBounds b;
 	    PatternSCBounds(patternsc,&b);
@@ -3133,9 +3133,9 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     gcd[gcdoff++].creator = GLabelCreate;
     shvarray[k++] = &gcd[gcdoff-1];
 
-    sprintf( transbuf, "[%.4g %.4g %.4g %.4g]", layer->stroke_pen.trans[0],
-	    layer->stroke_pen.trans[1], layer->stroke_pen.trans[2],
-	    layer->stroke_pen.trans[3]);
+    sprintf( transbuf, "[%.4g %.4g %.4g %.4g]", (double) layer->stroke_pen.trans[0],
+	    (double) layer->stroke_pen.trans[1], (double) layer->stroke_pen.trans[2],
+	    (double) layer->stroke_pen.trans[3]);
     label[gcdoff].text = (unichar_t *) transbuf;
     label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];

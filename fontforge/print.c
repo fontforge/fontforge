@@ -418,8 +418,8 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	function_obj = pdf_addobject(pi);
 	fprintf( pi->out, "<<\n" );
 	fprintf( pi->out, "  /FunctionType 0\n" );	/* Iterpolation between samples */
-	fprintf( pi->out, "  /Domain [%g %g]\n", grad->grad_stops[0].offset,
-		grad->grad_stops[grad->stop_cnt-1].offset );
+	fprintf( pi->out, "  /Domain [%g %g]\n", (double) grad->grad_stops[0].offset,
+		(double) grad->grad_stops[grad->stop_cnt-1].offset );
 	fprintf( pi->out, "  /Range [0 1.0 0 1.0 0 1.0]\n" );
 	fprintf( pi->out, "  /Size [%d]\n", grad->stop_cnt==2?2:101 );
 	fprintf( pi->out, "  /BitsPerSample 8\n" );
@@ -479,11 +479,11 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	fprintf( pi->out, "  /ColorSpace /DeviceRGB\n" );
 	if ( grad->radius==0 ) {
 	    fprintf( pi->out, "  /Coords [%g %g %g %g]\n",
-		    grad->start.x, grad->start.y, grad->stop.x, grad->stop.y);
+		    (double) grad->start.x, (double) grad->start.y, (double) grad->stop.x, (double) grad->stop.y);
 	} else {
 	    fprintf( pi->out, "  /Coords [%g %g 0 %g %g %g]\n",
-		    grad->start.x, grad->start.y, grad->stop.x, grad->stop.y,
-		    grad->radius );
+		    (double) grad->start.x, (double) grad->start.y, (double) grad->stop.x, (double) grad->stop.y,
+		    (double) grad->radius );
 	}
 	fprintf( pi->out, "  /Function %d 0 R\n", function_obj );
 	fprintf( pi->out, "  /Extend [true true]\n" );	/* implies pad */
@@ -526,15 +526,15 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	fprintf( pi->out, "  /PatternType 1\n" );
 	fprintf( pi->out, "  /PaintType 1\n" );		/* The intricacies of uncolored tiles are not something into which I wish to delve */
 	fprintf( pi->out, "  /TilingType 1\n" );
-	fprintf( pi->out, "  /BBox [%g %g %g %g]\n", b.minx, b.miny, b.maxx, b.maxy );
-	fprintf( pi->out, "  /XStep %g\n", b.maxx-b.minx );
-	fprintf( pi->out, "  /YStep %g\n", b.maxy-b.miny );
+	fprintf( pi->out, "  /BBox [%g %g %g %g]\n", (double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
+	fprintf( pi->out, "  /XStep %g\n", (double) (b.maxx-b.minx) );
+	fprintf( pi->out, "  /YStep %g\n", (double) (b.maxy-b.miny) );
 	memset(scale,0,sizeof(scale));
 	scale[0] = pat->width/(b.maxx-b.minx);
 	scale[3] = pat->height/(b.maxy-b.miny);
 	MatMultiply(scale,pat->transform, result);
-	fprintf( pi->out, "  /Matrix [%g %g %g %g %g %g]\n", result[0], result[1],
-		result[2], result[3], result[4], result[5]);
+	fprintf( pi->out, "  /Matrix [%g %g %g %g %g %g]\n", (double) result[0], (double) result[1],
+		(double) result[2], (double) result[3], (double) result[4], (double) result[5]);
 	fprintf( pi->out, "    /Resources " );
 	respos = ftell(pi->out);
 	fprintf( pi->out, "000000 0 R\n" );
@@ -768,7 +768,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
 	SplineCharFindBounds(sc,&b);
 	fprintf( pi->out, "%d 0 %g %g %g %g d1\n",
 		sc->width,
-		b.minx, b.miny, b.maxx, b.maxy );
+		(double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
     } else
 	fprintf( pi->out, "%d 0 d0\n", sc->width );
 

@@ -268,7 +268,7 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 /*  will give us the splines we desire. */
     if ( pen.trans[0]!=1.0 || pen.trans[3]!=1.0 || pen.trans[1]!=0 || pen.trans[2]!=0 )
 	fprintf( file, "transform=\"matrix(%g, %g, %g, %g, 0, 0)\" ",
-		pen.trans[0], pen.trans[1], pen.trans[2], pen.trans[3] );
+		(double) pen.trans[0], (double) pen.trans[1], (double) pen.trans[2], (double) pen.trans[3] );
     if ( pen.dashes[0]==0 && pen.dashes[1]==DASH_INHERITED ) {
 	fprintf( file, "stroke-dasharray=\"inherit\" " );
     } else if ( pen.dashes[0]!=0 ) {
@@ -508,7 +508,7 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 	PatternSCBounds(pattern_sc,&b);
 	fprintf( file, "\n\tviewBox=\"%g %g %g %g\"",
 		(double) b.minx, (double) b.miny,
-		(double) b.maxx-b.minx, (double) b.maxy-b.miny );
+		(double) (b.maxx-b.minx), (double) (b.maxy-b.miny) );
     }
     fprintf( file, "\n\twidth=\"%g\" height=\"%g\"",
 	    (double) pattern->width, (double) pattern->height );
@@ -516,9 +516,9 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 	    pattern->transform[2]!=0 || pattern->transform[3]!=1 ||
 	    pattern->transform[4]!=0 || pattern->transform[5]!=0 ) {
 	fprintf( file, "\n\tpatternTransform=\"matrix(%g %g %g %g %g %g)\"",
-		pattern->transform[0], pattern->transform[1],
-		pattern->transform[2], pattern->transform[3],
-		pattern->transform[4], pattern->transform[5] );
+		(double) pattern->transform[0], (double) pattern->transform[1],
+		(double) pattern->transform[2], (double) pattern->transform[3],
+		(double) pattern->transform[4], (double) pattern->transform[5] );
     }
     if ( pattern_sc!=NULL )
 	svg_dumpscdefs(file,pattern_sc,patsubname,false);
@@ -615,8 +615,8 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop) {
 	    base = images->image->list_len==0 ? images->image->u.image :
 		    images->image->u.images[0];
 	    fprintf(file, "\twidth=\"%g\"\n\theight=\"%g\"\n",
-		    base->width*images->xscale, base->height*images->yscale );
-	    fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", images->xoff, images->yoff );
+		    (double) (base->width*images->xscale), (double) (base->height*images->yscale) );
+	    fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", (double) images->xoff, (double) images->yoff );
 	    fprintf(file, "\txlink:href=\"data:" );
 	    DataURI_ImageDump(file,images->image);
 	    fprintf(file, "\" />\n" );
