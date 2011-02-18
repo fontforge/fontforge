@@ -2245,16 +2245,24 @@ return;
 	nid = getushort(ttf);
 	info->design_range_bottom = getushort(ttf);
 	info->design_range_top = getushort(ttf);
-	if ( info->fontstyle_id == 0 && nid==0 &&
+	if ( info->fontstyle_id == 0 && nid==0 && info->design_size!=0 &&
 		info->design_range_bottom==0 && info->design_range_top==0 ) {
 	    /* Reasonable spec, only design size provided */
 	    info->fontstyle_name = NULL;
     break;
 	}
-	if ( info->design_size < info->design_range_bottom ||
+	if ( info->design_size==0 ||
+		info->design_size < info->design_range_bottom ||
 		info->design_size > info->design_range_top ||
-		info->design_range_bottom > info->design_range_top ||
-		nid<256 || nid>32767 )
+		info->design_range_bottom > info->design_range_top )
+    continue;
+	if ( info->fontstyle_id == 0 && nid==0 ) {
+	    /* Not really allowed, but we'll accept it anyway */
+	    /* If a range is provided than a style name is expected */
+	    info->fontstyle_name = NULL;
+    break;
+	}
+	if ( nid<256 || nid>32767 )
     continue;
 	info->fontstyle_name = FindAllLangEntries(ttf,info,nid);
 	if ( info->fontstyle_name==NULL )
