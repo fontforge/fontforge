@@ -49,6 +49,7 @@ typedef struct charinfo {
     int r,c;
     int lc_seen, lc_aspect, vert_aspect;
     Color last, real_last;
+    int cancel_is_done;
 } CharInfo;
 
 #define CI_Width	218
@@ -3882,6 +3883,10 @@ return( true );
 	}
 	ci->sc = new;
 	ci->enc = enc;
+	if ( !ci->cancel_is_done ) {
+	    ci->cancel_is_done = true;
+	    GGadgetSetTitle8WithMn(GWidgetGetControl(ci->gw,CID_Cancel),_("_Done"));
+	}
 	CIFillup(ci);
     }
 return( true );
@@ -4843,11 +4848,10 @@ return;
 
 	mgcd[4].gd.pos.x = -25; mgcd[4].gd.pos.y = mgcd[3].gd.pos.y+3;
 	mgcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	mlabel[4].text = (unichar_t *) _("_Done");
+	mlabel[4].text = (unichar_t *) _("_Cancel");
 	mlabel[4].text_is_1byte = true;
 	mlabel[4].text_in_resource = true;
 	mgcd[4].gd.label = &mlabel[4];
-	mgcd[4].gd.mnemonic = 'C';
 	mgcd[4].gd.handle_controlevent = CI_Cancel;
 	mgcd[4].gd.cid = CID_Cancel;
 	mharray2[4] = GCD_Glue; mharray2[5] = &mgcd[4]; mharray2[6] = GCD_Glue; mharray2[7] = NULL;
