@@ -2298,9 +2298,9 @@ extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
 extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
-extern int GradientHere(double scale,DBounds *bbox,int iy,int ix,
+extern int GradientHere(bigreal scale,DBounds *bbox,int iy,int ix,
 	struct gradient *grad,struct pattern *pat, int defgrey);
-extern void PatternPrep(SplineChar *sc,struct brush *brush,double scale);
+extern void PatternPrep(SplineChar *sc,struct brush *brush,bigreal scale);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, bigreal pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int layer, int pixelsize, int indicate);
