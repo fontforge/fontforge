@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 29 October 2010
+# Date : 16 February 2011
 
 CFLAGS=/nowarn/incl=([],[-.inc])/name=(as_is,short)/define=("HAVE_CONFIG_H=1")
 
@@ -7,7 +7,7 @@ fontforge_LIBOBJECTS = asmfpst.obj,autohint.obj,autosave.obj,autotrace.obj,autow
  bezctx_ff.obj,bitmapchar.obj,bitmapcontrol.obj,bvedit.obj,clipnoui.obj,crctab.obj,\
  cvexport.obj,cvimages.obj,cvundoes.obj,dumpbdf.obj,dumppfa.obj,effects.obj,encoding.obj
 
-fontforge_LIBOBJECTS1=featurefile.obj,fontviewbase.obj,freetype.obj,fvcomposit.obj,fvfonts.obj,fvimportbdf.obj,\
+fontforge_LIBOBJECTS1=featurefile.obj,fontviewbase.obj,freetype.obj,fvcomposite.obj,fvfonts.obj,fvimportbdf.obj,\
  fvmetrics.obj,glyphcomp.obj,http.obj,ikarus.obj,lookups.obj,macbinary.obj
 
 fontforge_LIBOBJECTS2=macenc.obj,mathconstants.obj,mm.obj,namelist.obj,nonlineartrans.obj,noprefs.obj,nouiutil.obj
@@ -134,7 +134,7 @@ dumpbdf.obj : dumpbdf.c
 dumppfa.obj : dumppfa.c
 fontinfo.obj : fontinfo.c
 fontview.obj : fontview.c
-fvcomposit.obj : fvcomposit.c
+fvcomposite.obj : fvcomposite.c
 fvfonts.obj : fvfonts.c
 fvimportbdf.obj : fvimportbdf.c
 fvmetrics.obj : fvmetrics.c
