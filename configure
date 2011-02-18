@@ -19983,7 +19983,7 @@ fi
   if $python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('VERSION'))" ; then
     PyVersion=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('VERSION'))"`
     PyMajorVersion=`echo $PyVersion |sed -e 's/\..*//'`
-    PySubVersion=`echo $PyVersion |sed -e 's/\(2\|3\)\.//'`
+    PySubVersion=`echo $PyVersion |sed -e 's/2\.//' -e 's/3\.//'`
     PyName="python$PyVersion"
     if test "$PySubVersion" = "" ; then
       python="no"
