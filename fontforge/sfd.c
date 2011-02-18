@@ -1852,9 +1852,9 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	putc('\n',sfd);
     }
     if ( sf->ufo_ascent!=0 )
-	fprintf(sfd, "UFOAscent: %g\n", sf->ufo_ascent );
+	fprintf(sfd, "UFOAscent: %g\n", (double) sf->ufo_ascent );
     if ( sf->ufo_descent!=0 )
-	fprintf(sfd, "UFODescent: %g\n", sf->ufo_descent );
+	fprintf(sfd, "UFODescent: %g\n", (double) sf->ufo_descent );
     fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
     for ( i=0; i<sf->layer_cnt; ++i ) {
 	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2/*, sf->layers[i].background*/ );
