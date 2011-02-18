@@ -4133,6 +4133,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GTextInfo **ti;
 	int subs[4], super[4], strike[2];
 	int design_size, size_top, size_bottom, styleid;
+	struct otfname *fontstyle_name;
 	int strokedfont = false;
 	real strokewidth;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4242,6 +4243,34 @@ return(true);
 	size_bottom = rint(10*GetReal8(gw,CID_DesignBottom,_("_Bottom"),&err));
 	size_top = rint(10*GetReal8(gw,CID_DesignTop,_("_Top"),&err));
 	styleid = GetInt8(gw,CID_StyleID,_("Style _ID:"),&err);
+	fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
+	OtfNameListFree(fontstyle_name);
+	if ( design_size==0 && ( size_bottom!=0 || size_top!=0 || styleid!=0 || fontstyle_name!=NULL )) {
+	    ff_post_error(_("Bad Design Size Info"),_("If the design size is 0, then all other fields on that pane must be zero (or unspecified) too."));
+return( true );
+	} else if ( styleid!=0 && fontstyle_name==NULL ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a style name"));
+return( true );
+	} else if ( fontstyle_name==NULL && styleid!=0 ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style name for the design size, then you must specify a style id"));
+return( true );
+	} else if ( design_size<0 ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a design size, it must be positive"));
+return( true );
+	} else if ( size_bottom!=0 && size_bottom>design_size ) {
+	    ff_post_error(_("Bad Design Size Info"),_("In the design size range, the bottom field must be less than the design size."));
+return( true );
+	} else if ( size_top!=0 && size_top<design_size ) {
+	    ff_post_error(_("Bad Design Size Info"),_("In the design size range, the bottom top must be more than the design size."));
+return( true );
+	} else if ( styleid!=0 && size_top==0 ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a size range"));
+return( true );
+	} else if ( size_top!=0 && styleid==0 ) {
+	    ff_post_notice(_("Bad Design Size Info"),_("If you specify a design size range, then you are supposed to specify a style id and style name too. FontForge will allow you to leave those fields blank, but other applications may not."));
+	    /* no return, this is just a warning */
+	}
+
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_Revision))!='\0' )
 	    sfntRevision = rint(65536.*GetReal8(gw,CID_Revision,_("sfnt Revision:"),&err));
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMajor))!='\0' ) {

@@ -3142,19 +3142,16 @@ return( NULL );
 #endif
 	fseek(g___,size_params_loc,SEEK_SET);
 	putshort(g___,sf->design_size);
-	if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
-		sf->design_range_bottom!=0 || sf->design_range_top!=0 ) {
+	if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ) {
 	    putshort(g___,sf->fontstyle_id);
 	    at->fontstyle_name_strid = at->next_strid++;
 	    putshort(g___,at->fontstyle_name_strid);
-	    putshort(g___,sf->design_range_bottom);
-	    putshort(g___,sf->design_range_top);
 	} else {
 	    putshort(g___,0);
 	    putshort(g___,0);
-	    putshort(g___,0);
-	    putshort(g___,0);
 	}
+	putshort(g___,sf->design_range_bottom);
+	putshort(g___,sf->design_range_top);
     }
     for ( i=0; i<ginfo.fcnt; ++i ) {
 	if ( ginfo.feat_lookups[i].name_param_ptr!=0 &&
