@@ -1209,10 +1209,10 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 
     fprintf( sfd, "%s %s %g;%g [%g %g %g %g %g %g]\n", keyword,
 	    pattern->pattern,
-	    pattern->width, pattern->height,
-	    pattern->transform[0], pattern->transform[1],
-	    pattern->transform[2], pattern->transform[3],
-	    pattern->transform[4], pattern->transform[5] );
+	    (double) pattern->width, (double) pattern->height,
+	    (double) pattern->transform[0], (double) pattern->transform[1],
+	    (double) pattern->transform[2], (double) pattern->transform[3],
+	    (double) pattern->transform[4], (double) pattern->transform[5] );
 }
 #endif
 
@@ -1304,8 +1304,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 		    sc->layers[i].fill_brush.col, sc->layers[i].fill_brush.opacity,
 		    sc->layers[i].stroke_pen.brush.col, sc->layers[i].stroke_pen.brush.opacity,
 		     sc->layers[i].stroke_pen.width, joins[sc->layers[i].stroke_pen.linejoin], caps[sc->layers[i].stroke_pen.linecap],
-		    sc->layers[i].stroke_pen.trans[0], sc->layers[i].stroke_pen.trans[1],
-		    sc->layers[i].stroke_pen.trans[2], sc->layers[i].stroke_pen.trans[3] );
+		    (double) sc->layers[i].stroke_pen.trans[0], (double) sc->layers[i].stroke_pen.trans[1],
+		    (double) sc->layers[i].stroke_pen.trans[2], (double) sc->layers[i].stroke_pen.trans[3] );
 	    if ( sc->layers[i].stroke_pen.dashes[0]==0 && sc->layers[i].stroke_pen.dashes[1]==DASH_INHERITED )
 		fprintf(sfd,"0 %d]\n", DASH_INHERITED);
 	    else { int j;
