@@ -547,7 +547,7 @@ static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\nHEAD table (at %d)\n", info->head_start );
     printf( "\tVersion=%g\n", getfixed(ttf));
     printf( "\tfontRevision=%g\n", getfixed(ttf));
-    printf( "\tchecksumAdj=%x\n", getlong(ttf));
+    printf( "\tchecksumAdj=%x\n", (int) getlong(ttf));
     mn = getlong(ttf);
     printf( "\tmagicNumber=%x (0x5f0f3cf5, diff=%x)\n", mn, mn-0x5f0f3cf5);
     printf( "\tflags=%x ", flags=getushort(ttf));
@@ -558,13 +558,13 @@ static void readttfhead(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( flags&16 ) printf( "instr_set_width " );
     printf( "\n" );
     printf( "\tunitsPerEm=%d\n", getushort(ttf));
-    printf( "\tcreate[0]=%x\n", getlong(ttf));
-    printf( "\t create[1]=%x\n", getlong(ttf));
+    printf( "\tcreate[0]=%x\n", (int) getlong(ttf));
+    printf( "\t create[1]=%x\n", (int) getlong(ttf));
     fseek(ttf,-8,SEEK_CUR);
     unix_date = readdate(ttf);
     printf( "\tFile created: %s", ctime(&unix_date));
-    printf( "\tmodtime[0]=%x\n", getlong(ttf));
-    printf( "\t modtime[1]=%x\n", getlong(ttf));
+    printf( "\tmodtime[0]=%x\n", (int) getlong(ttf));
+    printf( "\t modtime[1]=%x\n", (int) getlong(ttf));
     fseek(ttf,-8,SEEK_CUR);
     unix_date = readdate(ttf);
     printf( "\tFile modified: %s", ctime(&unix_date));
@@ -810,10 +810,10 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	else printf( "???\n" );
     }
     printf( "\n");
-    printf( "\t UnicodeRange=%08x ", getlong(ttf));
-    printf( "%08x ", getlong(ttf));
-    printf( "%08x ", getlong(ttf));
-    printf( "%08x\n", getlong(ttf));
+    printf( "\t UnicodeRange=%08x ", (int) getlong(ttf));
+    printf( "%08x ", (int) getlong(ttf));
+    printf( "%08x ", (int) getlong(ttf));
+    printf( "%08x\n", (int) getlong(ttf));
     printf( "\t achVendId " );
     for ( i=0; i<4; ++i )
 	printf( "%02x ", getc(ttf));
@@ -829,8 +829,8 @@ static void readttfos2(FILE *ttf, FILE *util, struct ttfinfo *info) {
     if ( info->os2_len==78 ) {
 	printf( "\t (no CodePageRange)\n" );
     } else {
-	printf( "\t CodePageRange=%08x ", getlong(ttf));
-	printf( "%08x\n", getlong(ttf));
+	printf( "\t CodePageRange=%08x ", (int) getlong(ttf));
+	printf( "%08x\n", (int) getlong(ttf));
 	if ( info->os2_len==96 ) {
 	    /* Open type additions */
 	    printf( "\txHeight=%d\n", (short) getushort(ttf));
@@ -1826,7 +1826,7 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
     for ( i=0; i<nencs; ++i ) {
 	platform = getushort(ttf);
 	specific = getushort(ttf);
-	offset = getlong(ttf);
+	offset = (int) getlong(ttf);
 	if ( platform==3 /*&& (specific==1 || specific==5)*/) {
 	    enc = 1;
 	    encoff = offset;
@@ -1878,8 +1878,8 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    printf( " Format=%d len=%d Language=%x\n", format, len, getushort(ttf) );
 	} else {
 	    /* padding */ getushort(ttf);
-	    len = getlong(ttf);
-	    printf( " Format=%d len=%d Language=%x\n", format, len, getlong(ttf) );
+	    len = (int) getlong(ttf);
+	    printf( " Format=%d len=%d Language=%x\n", format, len, (int) getlong(ttf) );
 	}
 	if ( format==0 ) {
 	    printf( "  Table: " );
@@ -2136,15 +2136,15 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->postscript_start,SEEK_SET);
     printf( "\npost table (at %d)\n", info->postscript_start );
-    printf( "\t format=%08x\n", format = getlong(ttf));
+    printf( "\t format=%08x\n", format = (int) getlong(ttf));
     printf( "\t italicAngle=%g\n", getfixed(ttf));
     printf( "\t underlinePos=%d\n", (short) getushort(ttf));
     printf( "\t underlineWidth=%d\n", getushort(ttf));
-    printf( "\t fixedpitch=%d\n", getlong(ttf));
-    printf( "\t mem1=%d\n", getlong(ttf));
-    printf( "\t mem2=%d\n", getlong(ttf));
-    printf( "\t mem3=%d\n", getlong(ttf));
-    printf( "\t mem4=%d\n", getlong(ttf));
+    printf( "\t fixedpitch=%d\n", (int) getlong(ttf));
+    printf( "\t mem1=%d\n", (int) getlong(ttf));
+    printf( "\t mem2=%d\n", (int) getlong(ttf));
+    printf( "\t mem3=%d\n", (int) getlong(ttf));
+    printf( "\t mem4=%d\n", (int) getlong(ttf));
 
     if ( format==0x00030000 ) {
 	/* Used in Open Type, seems only to contain the above stuff */
@@ -3045,7 +3045,7 @@ static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) 
 	     tag==CHR('o','p','s','z')? "Optical Size" :
 	     tag==CHR('n','a','l','f')? "Non-alphabetic" :
 		 "Unknown",
-	     lval );
+	     (long) lval );
 	switch ( tag ) {
 	  case CHR('w','g','h','t'):
 	  case CHR('w','d','t','h'):
@@ -3078,7 +3078,7 @@ static void readttffeatures(FILE *ttf, FILE *util, struct ttfinfo *info) {
     n = getushort(ttf);
     printf( "\t number of features=%d\n", n);
     printf( "\t must be zero: %x\n", getushort(ttf));
-    printf( "\t must be zero: %x\n", getlong(ttf));
+    printf( "\t must be zero: %x\n", (int) getlong(ttf));
     info->features = calloc(n+1,sizeof(struct features));
     info->features[n].feature = -1;
     for ( i=0; i<n; ++i ) {
@@ -3092,7 +3092,7 @@ static void readttffeatures(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	printf( "\t Feature %d\n", i );
 	printf( "\t  Feature Id %d\n", info->features[i].feature );
 	printf( "\t  number Settings %d\n", info->features[i].nsettings );
-	printf( "\t  setting offset %ld\n", setting_offset );
+	printf( "\t  setting offset %d\n", setting_offset );
 	printf( "\t  feature flags %d ", info->features[i].featureflags );
 	if ( !(info->features[i].featureflags&0x8000) )
 	    printf( "Non-Exclusive settings\n" );
@@ -4327,7 +4327,7 @@ return;
 	    }
 	    lig_glyph = memushort(sm->data,sm->ligOff+2*lig_offset);
 	    if ( lig_glyph>=sm->info->glyph_cnt ) {
-		fprintf(stderr, "Attempt to make a ligature for glyph %d out of " );
+		fprintf(stderr, "Attempt to make a ligature for glyph %d out of ", lig_glyph );
 		for ( j=lcp; j<sm->lcp; ++j )
 		    fprintf(stderr,"%d ",sm->lig_comp_glyphs[j]);
 		fprintf(stderr,"\n");
@@ -4461,19 +4461,19 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
     for ( i=0; i<n; ++i ) {
 	printf( "\t For Chain %d\n", i );
 	chain_start = ftell(ttf);
-	printf( "\t  default flags=%lx\n", getlong(ttf));
+	printf( "\t  default flags=%lx\n", (long) getlong(ttf));
 	printf( "\t  chain length=%ld\n", (long) (len = getlong(ttf)));
 	printf( "\t  number Feature Entries=%d\n", nf = ismorx ? getlong(ttf) : getushort(ttf));
-	printf( "\t  number Subtables=%d\n", ns = ismorx ? getlong(ttf) : getushort(ttf));
+	printf( "\t  number Subtables=%d\n", ns = ismorx ? (int) getlong(ttf) : getushort(ttf));
 	for ( j=k=0; j<nf; ++j ) {
 	    printf( "\t  For Feature %d of Chain %d\n", j, i );
 	    printf( "\t   Feature Type=%d ", type = getushort(ttf));
 	    printf( "%s\n", getfeaturename(info,type));
 	    printf( "\t   Feature Setting=%d ", setting=getushort(ttf));
 	    printf( "%s\n", getsettingname(info,type, setting));
-	    printf( "\t   Enable Flags=%08lx\n", flags = getlong(ttf));
+	    printf( "\t   Enable Flags=%08lx\n", (long) (flags = getlong(ttf)));
 	    printf( "\t   Disable Flags=%08lx ", (long) (temp=getlong(ttf)));
-	    printf( "(Complement=%08lx)\n", ~temp);
+	    printf( "(Complement=%08lx)\n", (long) ~temp);
 	    /* try to get a unique flag value for this feature setting */
 	    for ( l=0; l<k; ++l )
 		flags &= ~masks[l];
@@ -5649,7 +5649,7 @@ return;
 	printf("\n");
     } else if ( (format&0x7f)==1 ) {
 	cnt = getc(ttf);
-	printf( " Enc range cnt=%d\n" );
+	printf( " Enc range cnt=%d\n", cnt );
 	for ( i=0; i<cnt; ++i ) {
 	    printf( "  Enc Range %d: First=%02x ", i, getc(ttf));
 	    printf( "nLeft=%d\n", getc(ttf));
@@ -5897,7 +5897,7 @@ return;
 	}
     }
     if ( len!=0 )
-	printf("!!!\tLength field wrong. %d left\n", len );
+	printf("!!!\tLength field wrong. %d left\n", (int) len );
     fseek(ttf,here,SEEK_SET);
 }
 
@@ -5918,18 +5918,18 @@ static void readttfIndexSubTab(FILE *ttf,long offset, int first, int last,
 	for ( i=first; i<=last; ++i ) {
 	    nextstart = (indexFormat==1?getlong(ttf):getushort(ttf));
 	    if ( info->glyph_names==NULL )
-		printf( "\t    Glyph %d starts at %5d length=%d\n", i, curstart, nextstart-curstart );
+		printf( "\t    Glyph %d starts at %5d length=%d\n", i, (int) curstart, (int) (nextstart-curstart) );
 	    else if ( i<info->glyph_cnt && info->glyph_names[i]!=NULL )
 		printf( "\t    Glyph %d (%10s) starts at %5d length=%d\n", i,
-			info->glyph_names[i], curstart, nextstart-curstart );
+			info->glyph_names[i], (int) curstart, (int) (nextstart-curstart) );
 	    else
 		printf( "\t    Glyph %d (          ) starts at %5d length=%d\n", i,
-			curstart, nextstart-curstart );
+			(int) curstart, (int) (nextstart-curstart) );
 	    ShowGlyph(ttf,bdatOff+curstart,nextstart-curstart,imageFormat,info);
 	    curstart = nextstart;
 	}
     } else if ( indexFormat==2 ) {
-	printf( "\t   Bitmap Image Size=%d\n", getlong(ttf));
+	printf( "\t   Bitmap Image Size=%d\n", (int) getlong(ttf));
 	printf( "\t   big Metrics for any glyph\n" );
 	readttfBigGlyphMetrics(ttf,"\t    ");
     }
@@ -5945,7 +5945,7 @@ static void readttfIndexSizeSubTab(FILE *ttf,long offset, long size, long num,
 	printf( "\t indexSubTable[%d]\n", i );
 	printf( "\t  first glyph=%d\n", first = getushort(ttf));
 	printf( "\t  last glyph=%d\n", last = getushort(ttf));
-	printf( "\t  additional offset=%d\n", moreoff = getlong(ttf));
+	printf( "\t  additional offset=%d\n", (int) (moreoff = getlong(ttf)));
 	here = ftell(ttf);
 	readttfIndexSubTab(ttf,offset+moreoff,first,last,info);
 	fseek(ttf,here,SEEK_SET);
@@ -5973,8 +5973,8 @@ static int readttfbitmapscale(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->bitmapscale_start,SEEK_SET);
     printf( "\nBitmap scaling data (at %d)\n", info->bitmapscale_start);
-    printf( "\tVersion: 0x%08x\n", getlong(ttf));
-    printf( "\tnum Sizes: %d\n", cnt = getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", (int) getlong(ttf));
+    printf( "\tnum Sizes: %d\n", cnt = (int) getlong(ttf));
     for ( i=0; i<cnt; ++i ) {
 	printf( " Scaling Info %d\n", i );
 	printf( "  Horizontal metrics\n" );
@@ -5997,13 +5997,13 @@ static int readttfbitmaps(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
     printf( "\nBitmap location data (at %d for %d bytes)\n", info->bitmaploc_start, info->bitmaploc_length);
-    printf( "\tVersion: 0x%08\n", getlong(ttf));
-    printf( "\tnumStrikes: %d\n", cnt = getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", (int) getlong(ttf));
+    printf( "\tnumStrikes: %d\n", (int) (cnt = getlong(ttf)));
     for ( i=0; i<cnt; ++i ) {
-	printf( "\t indexSubTableArrayOffset: %d\n", offset = getlong(ttf));
-	printf( "\t indexTableSize: %d\n", size = getlong(ttf));
-	printf( "\t numberOfIndexSubTables: %d\n", num = getlong(ttf));
-	printf( "\t colorRef: %d\n", getlong(ttf));
+	printf( "\t indexSubTableArrayOffset: %d\n", (int) (offset = getlong(ttf)));
+	printf( "\t indexTableSize: %d\n", (int) (size = getlong(ttf)));
+	printf( "\t numberOfIndexSubTables: %d\n", (int) (num = getlong(ttf)));
+	printf( "\t colorRef: %d\n", (int) getlong(ttf));
 	printf( "\t horizontal metrics\n" );
 	sbitLineMetrics(ttf);
 	printf( "\t vertical metrics\n" );
@@ -6028,9 +6028,9 @@ static int readttfhdmx(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->hdmx_start,SEEK_SET);
     printf( "\nHorizontal device metrics (at %d)\n", info->hdmx_start);
-    printf( "\tVersion: 0x%08\n", getushort(ttf));
+    printf( "\tVersion: 0x%08x\n", getushort(ttf));
     printf( "\tnum Records: %d\n", cnt = getushort(ttf));
-    printf( "\trecord Size: %d\n", size = getlong(ttf));
+    printf( "\trecord Size: %d\n", size = (int) getlong(ttf));
     pos = ftell(ttf);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,pos+i*size,SEEK_SET);
@@ -6336,7 +6336,7 @@ static int readttfmath(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->math_start,SEEK_SET);
     printf( "\nMATH table (at %d)\n", info->math_start);
-    printf( "\tVersion: 0x%08x\n", version = getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", version = (int) getlong(ttf));
     if ( version!=0x00010000 )
 	fprintf( stderr, "!> Bad version number for math table.\n" );
     printf( "\tOffset to Constants: %d\n", constants = getushort(ttf));
