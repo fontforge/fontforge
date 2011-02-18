@@ -281,7 +281,6 @@ return( ret );
 }
 #else
 #include <png.h>
-#include <pnginfo.h>
 
 #define int32 _int32
 #define uint32 _uint32
