@@ -2248,6 +2248,7 @@ return;
 	if ( info->fontstyle_id == 0 && nid==0 && info->design_size!=0 &&
 		info->design_range_bottom==0 && info->design_range_top==0 ) {
 	    /* Reasonable spec, only design size provided */
+	    LogError(_("This font contains a 'size' feature with a design size and design range but no stylename. That is technically an error, but we'll let it pass"));
 	    info->fontstyle_name = NULL;
     break;
 	}
