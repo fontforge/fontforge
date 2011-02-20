@@ -757,13 +757,13 @@ static void GME_PositionEdit(GMatrixEdit *gme) {
 	    GDrawGetSize(gme->nested,&wsize);
 	    if ( end>wsize.width )
 		end = wsize.width - x;
+	    if ( gme->col_data[c].me_type==me_stringchoice ||
+		    gme->col_data[c].me_type==me_stringchoicetrans ||
+		    gme->col_data[c].me_type==me_stringchoicetag ||
+		    gme->col_data[c].me_type==me_onlyfuncedit ||
+		    gme->col_data[c].me_type==me_funcedit )
+		end -= gme->mark_size+gme->mark_skip;
 	}
-	if ( gme->col_data[c].me_type==me_stringchoice ||
-		gme->col_data[c].me_type==me_stringchoicetrans ||
-		gme->col_data[c].me_type==me_stringchoicetag ||
-		gme->col_data[c].me_type==me_onlyfuncedit ||
-		gme->col_data[c].me_type==me_funcedit )
-	    end -= gme->mark_size+gme->mark_skip;
 
 	GGadgetResize(gme->tf,end-x,gme->fh);
 	GGadgetMove(gme->tf,x,y);
@@ -1349,6 +1349,7 @@ return;
     markpos = ( c == lastc && gme->col_data[c].x + gme->col_data[c].width > size.width ) ?
 	    size.width - gme->col_data[c].x : gme->col_data[c].width;
     markpos -= (gme->mark_size+gme->mark_skip);
+    if ( markpos < 0 ) markpos = 0;
     if ( event->type==et_mousedown && event->u.mouse.button==3 ) {
 	if ( gme->popupmenu!=NULL )
 	    (gme->popupmenu)(&gme->g,event,r,c);
@@ -1542,15 +1543,22 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		GDrawFillRect(pixmap,&clip,gme->g.box->main_background!=COLOR_DEFAULT?gme->g.box->main_background:
 			GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)));
 #endif
-	    if ( c == lastc && clip.x+gme->col_data[c].width > size.width )
-		clip.width = size.width - clip.x;
-
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
 		    gme->col_data[c].me_type == me_onlyfuncedit ||
 		    gme->col_data[c].me_type == me_funcedit ) {
-		clip.width -= (gme->mark_size+gme->mark_skip);
+		
+		if ( c == lastc ) {
+		    if ( clip.x < size.width && clip.x + clip.width > size.width )
+			clip.width = size.width - clip.x;
+		    else if ( clip.x >= size.width ) 
+			clip.width = 0;
+		}
+		if ( clip.width >= (gme->mark_size+gme->mark_skip) )
+		    clip.width -= (gme->mark_size+gme->mark_skip);
+		else
+		    clip.width = 0;
 	    }
 	    if ( clip.width>0 ) {
 		GDrawPushClip(pixmap,&clip,&old);
@@ -1778,8 +1786,14 @@ static void GME_HScroll(GMatrixEdit *gme,struct sbevent *sb) {
 		gme->col_data[lastc].me_type == me_stringchoicetrans ||
 		gme->col_data[lastc].me_type == me_stringchoicetag ||
 		gme->col_data[lastc].me_type == me_onlyfuncedit ||
-		gme->col_data[lastc].me_type == me_funcedit) &&
-		gme->col_data[lastc].x + gme->col_data[lastc].width > clip.width ) {
+		gme->col_data[lastc].me_type == me_funcedit ) &&
+		gme->col_data[lastc].x <= gme->off_left + size.width - (gme->mark_size + gme->mark_skip) ) {
+	    int xdiff = gme->off_left + size.width - (gme->mark_size + gme->mark_skip) - gme->col_data[lastc].x;
+	    /* Catch the moment when we should stop scrolling the list mark area */
+	    if ( xdiff + diff < 0 ) {
+		GDrawScroll( gme->nested,&clip,xdiff + diff,0 );
+		diff = -xdiff;
+	    }
 	    clip.width -= (gme->mark_size + gme->mark_skip);
 	}
 	GDrawScroll( gme->nested,&clip,diff,0 );
