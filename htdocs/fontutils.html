@@ -9,50 +9,50 @@
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Utilities for examining fonts
-</H1>
-<H2>
-  <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">ShowTTF</A>
-</H2>
-<P>
-showttf is a program which will decompose a truetype (or opentype) font file
-into its various tables and display the contents of those tables as best
-it can. It will also point out the errors it finds in the file. This is similar
-to MicroSoft's
-<A HREF="http://www.microsoft.com/typography/tools/tools.htm">ttfdump</A>
-(except mine shows some of Apple's tables which ttfdump does not), and to
-Apple's
-<A HREF="http://developer.apple.com/fonts/OSXTools.html">ftxdumperfuser</A>
-(except mine shows some OpenType tables which Apple's ignores). And, of course,
-mine is open source and runs on most any system.
-<BLOCKQUOTE>
-  <PRE>showttf fontfile
+  <H1 ALIGN=Center>
+    Utilities for examining fonts
+  </H1>
+  <H2>
+    <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">ShowTTF</A>
+  </H2>
+  <P>
+  showttf is a program which will decompose a truetype (or opentype) font file
+  into its various tables and display the contents of those tables as best
+  it can. It will also point out the errors it finds in the file. This is similar
+  to MicroSoft's
+  <A HREF="http://www.microsoft.com/typography/tools/tools.htm">ttfdump</A>
+  (except mine shows some of Apple's tables which ttfdump does not), and to
+  Apple's
+  <A HREF="http://developer.apple.com/fonts/OSXTools.html">ftxdumperfuser</A>
+  (except mine shows some OpenType tables which Apple's ignores). And, of course,
+  mine is open source and runs on most any system.
+  <BLOCKQUOTE>
+    <PRE>showttf fontfile
 </PRE>
-</BLOCKQUOTE>
-<P>
-<A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">The
-source code is in the git repository under fonttools/showttf.c</A>.
-<H2>
-  <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">Ttf2Eps</A>
-</H2>
-<P>
-ttf2eps will allow you to extract one (or all) glyphs from a font and convert
-them into eps files.
-<H2>
-  <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">PfaDecrypt</A>
-</H2>
-<P>
-pfadecrypt will undo Adobe's encryption on pfa/pfb files and converts the
-byte codes into readable postscript like instructions.
-<H2>
-  <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">Pcl2Ttf</A>
-</H2>
-<P>
-Will extract ttf or bitmap fonts embedded in an hp pcl file. Bitmap fonts
-become bdf fonts (I don't have any examples of run length encoded bitmap
-fonts, and do not currently support them. If you have an rle bitmap pcl font
-please send it to me). I have neither documentation on nor examples of the
-"Intellifont" format, so these fonts are not supported.
+  </BLOCKQUOTE>
+  <P>
+  <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">The
+  source code is in the git repository under fonttools/showttf.c</A>.
+  <H2>
+    <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">Ttf2Eps</A>
+  </H2>
+  <P>
+  ttf2eps will allow you to extract one (or all) glyphs from a font and convert
+  them into eps files.
+  <H2>
+    <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">PfaDecrypt</A>
+  </H2>
+  <P>
+  pfadecrypt will undo Adobe's encryption on pfa/pfb files and converts the
+  byte codes into readable postscript like instructions.
+  <H2>
+    <A HREF="http://fontforge.git.sourceforge.net/git/gitweb.cgi?p=fontforge/fontforge;a=summary">Pcl2Ttf</A>
+  </H2>
+  <P>
+  Will extract ttf or bitmap fonts embedded in an hp pcl file. Bitmap fonts
+  become bdf fonts (I don't have any examples of run length encoded bitmap
+  fonts, and do not currently support them. If you have an rle bitmap pcl font
+  please send it to me). I have neither documentation on nor examples of the
+  "Intellifont" format, so these fonts are not supported.
 </DIV>
 </BODY></HTML>

@@ -28,14 +28,14 @@
       <A HREF="#src-source">Building and installing from source</A>
       <UL>
 	<LI>
-	  <A HREF="#src-distribution">Obtaining a source distribution</A> 
+	  <A HREF="#src-distribution">Obtaining a source distribution</A>
 	  <UL>
 	    <LI>
 	      <A HREF="#src-tarball">tarball</A>
 	    <LI>
 	      <A HREF="#src-git">from the git repository</A>
 	    <LI>
-	      <A HREF="#src-cvs"><del>from the cvs tree</del></A>
+	      <A HREF="#src-cvs"><DEL>from the cvs tree</DEL></A>
 	  </UL>
 	<LI>
 	  <A HREF="#src-Building">Building &amp; installing it</A>
@@ -193,13 +193,13 @@
 </PRE>
   </BLOCKQUOTE>
   <H4>
-    from the <A NAME="src-git">git</A> repository</del>
+    from the <A NAME="src-git">git</A> repository
   </H4>
   <P>
   git is another version control system. To set up your own (local, read-only)
-  copy of the git repository (including
-  documentation), create a new directory, cd into it and type the following
-  (do not type "$", when it asks for a password, just hit return):
+  copy of the git repository (including documentation), create a new directory,
+  cd into it and type the following (do not type "$", when it asks for a password,
+  just hit return):
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>git clone git://fontforge.git.sourceforge.net/gitroot/fontforge/fontforge
 </PRE>
@@ -210,9 +210,9 @@
   the git repository</A> online. Or see
   <A HREF="http://sourceforge.net/apps/trac/sourceforge/wiki/Git">about using
   git on sourceforge</A> for more information, or read the
-  <A HREF="http://git-scm.com/documentation">git documentation</A>.</del>
+  <A HREF="http://git-scm.com/documentation">git documentation</A>.
   <H4>
-    <del>from the <A NAME="src-cvs">cvs</A> tree</del>
+    <DEL>from the <A NAME="src-cvs">cvs</A> tree</DEL>
   </H4>
   <P>
   The cvs repository is no longer up to date. It still exists (for now) for
@@ -220,10 +220,11 @@
   no longer in active service and no commits have been made to it since
   13-Feb-2011. You really want to use git, above.
   <P>
-  <del>cvs is a nifty set of utilities which allows concurrent access to a source
-  tree by many users. To set up your own (local) copy of the cvs tree (including
-  documentation), create a new directory, cd into it and type the following
-  (do not type "$", when it asks for a password, just hit return):</del>
+  <DEL>cvs is a nifty set of utilities which allows concurrent access to a
+  source tree by many users. To set up your own (local) copy of the cvs tree
+  (including documentation), create a new directory, cd into it and type the
+  following (do not type "$", when it asks for a password, just hit
+  return):</DEL>
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
@@ -232,8 +233,8 @@ CVS password:
 </PRE>
   </BLOCKQUOTE>
   <P>
-  <del>Once you have established a directory you may update it to obtain the most
-  recent version of the source by typing:</del>
+  <DEL>Once you have established a directory you may update it to obtain the
+  most recent version of the source by typing:</DEL>
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
 <FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
@@ -242,12 +243,12 @@ CVS password:
 </PRE>
   </BLOCKQUOTE>
   <P>
-  <del>You can also
+  <DEL>You can also
   <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/">browse
   the CVS tree</A> online. Or see
   <A HREF="http://sourceforge.net/cvs/?group_id=103338">sourceforge's description
   </A>for more information, or read the
-  <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>.</del>
+  <A HREF="http://www.cvshome.org/docs/manual/">CVS manual</A>.</DEL>
   <H3>
     <A NAME="src-Building">Building</A> &amp; installing it
   </H3>
@@ -374,8 +375,8 @@ CVS password:
     the cvs tree
   </H4>
   <P>
-  If you have a copy of the git repository on your system then you should be able
-  to type
+  If you have a copy of the git repository on your system then you should be
+  able to type
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray"># </FONT>make install_docs
 </PRE>
@@ -397,10 +398,10 @@ CVS password:
   <P>
   So before you can apply the patch you must
   <A HREF="source-build.html#src-distribution">have the source code </A>available
-  to you. If you choose to download from the git repository, then, in all probability,
-  the patch will already have been applied (so you don't need to do anything
-  with it). But if you download one of my tarballs then you will need to apply
-  the patch:
+  to you. If you choose to download from the git repository, then, in all
+  probability, the patch will already have been applied (so you don't need
+  to do anything with it). But if you download one of my tarballs then you
+  will need to apply the patch:
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
 <FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
@@ -527,8 +528,8 @@ CVS password:
       <A HREF="http://www.macports.org/">macports</A>. 
 	<HR>
       <STRONG>Sadly one important library is hard to find in fink's distributions
-      for Mac X.5. I have bundled up all
-      the (fink) libraries used by fontforge and provide them in a
+      for Mac X.5. I have bundled up all the (fink) libraries used by fontforge
+      and provide them in a
       <A href="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=302003&amp;release_id=645772">
       package of my own</A>.</STRONG>
   </UL>
@@ -630,15 +631,16 @@ CVS password:
 	  <A HREF="tutorial.tgz">example files </A>(to work through the tutorial yourself)
       </UL>
     <LI>
-      The git repository contains a sub-directory called htdocs containing the manual
+      The git repository contains a sub-directory called htdocs containing the
+      manual
       <UL>
 	<LI>
-	  The git repository contains a sub-sub-directory called htdocs/ja containing the
-	  Japanese translation of the manual
+	  The git repository contains a sub-sub-directory called htdocs/ja containing
+	  the Japanese translation of the manual
       </UL>
       <P>
-      See the general comments on the <A HREF="#src-git">git repository </A>to see how
-      to access this.<BR>
+      See the general comments on the <A HREF="#src-git">git repository </A>to
+      see how to access this.<BR>
       See the section on <A HREF="#installing-documentation-git">installing git
       documentation </A>to see how to install the docs from the git tree
   </UL>

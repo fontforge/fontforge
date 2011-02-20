@@ -2088,17 +2088,18 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <LI>
 	    "exit"
 	</UL>
-        If there is an anchor point with the same anchor-class-name and:
-        <UL>
-          <LI>
-          lookup type is "gpos_mark2base" or
-          <LI>
-          lookup type is "gpos_mark2ligature" and ligature-index is the same or
-          <LI>
-          anchor-type is the same
-        </UL>
-        then the existing anchor will be overwritten.
-      </TD>
+	<P>
+	If there is an anchor point with the same anchor-class-name and:
+	<UL>
+	  <LI>
+	    lookup type is "gpos_mark2base" or
+	  <LI>
+	    lookup type is "gpos_mark2ligature" and ligature-index is the same or
+	  <LI>
+	    anchor-type is the same
+	</UL>
+	<P>
+	then the existing anchor will be overwritten.</TD>
     </TR>
     <TR>
       <TD><CODE>addExtrema</CODE></TD>
@@ -3530,15 +3531,21 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>texparameters</CODE></TD>
-      <TD colspan=2>Returns a tuple of <A HREF="fontinfo.html#TeX">TeX font parameters</A>. TeX font type followed by 22 parameters. Font type is one of:
-        <UL>
-          <LI>text</LI>
-          <LI>mathsym</LI>
-          <LI>mathext</LI>
-          <LI>unset</LI>
-        </UL>
-        In case of "unset" default values for font parameters will be returned.
-      </TD>
+      <TD colspan=2>Returns a tuple of <A HREF="fontinfo.html#TeX">TeX font
+	parameters</A>. TeX font type followed by 22 parameters. Font type is one
+	of:
+	<UL>
+	  <LI>
+	    text
+	  <LI>
+	    mathsym
+	  <LI>
+	    mathext
+	  <LI>
+	    unset
+	</UL>
+	<P>
+	In case of "unset" default values for font parameters will be returned.</TD>
     </TR>
     <TR>
       <TD><CODE>uniqueid</CODE></TD>

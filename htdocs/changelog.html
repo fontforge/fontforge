@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 29-Apr-2010 -->
+  <!-- AP: Last modified: 20-Feb-2011 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,11 +47,479 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      20-Feb-2011
+      <UL>
+	<LI>
+	  Did a lot of work to improve the accuracy in remove overlap. Improved accuracy
+	  means that it is less likely to do the wrong thing. Problems happen when
+	  there are points or intersections very close to each other. (So quadratic
+	  glyphs are more likely to have problems than cubics simply because they have
+	  more points, on average).
+	<LI>
+	  Fix various error messages.
+	<LI>
+	  Remove some obsolete documentation.
+	<LI>
+	  Technical fixes to stroking code.
+	<LI>
+	  Add a miterlimit to stroking code.
+	<LI>
+	  FontForge was using the wrong MIME type for svg files. W3C has changed it
+	  and it's now "image/svg+xml" not "image/svg-xml" or "image/svg".
+	<LI>
+	  Since Inkscape images tend to be at unexpected y positions, force the view
+	  to rescale/recenter itself if the result after a paste/import is outside
+	  the current window. (Inkscape tends to put things at the top of a page, but
+	  the origin is at the bottom, and FF looks at the origin.
+	<LI>
+	  A line joint of 180 degrees (which shouldn't have happened in stroking, but
+	  did) caused an infinite loop.
+	<LI>
+	  Typo in add extrema code (again).
+	<LI>
+	  Patch from Khaled Hosny: sets correct version of OS/2 tf table.
+	<LI>
+	  Patch from Khaled Hosny: instead of dumping all OtfFeatName's into a single
+	  line, dump each on a line of its own, this make VCS diffs more readable.
+	<LI>
+	  Commas in the list of bitmap strikes could be recognized as a decimal separators
+	  when generating fonts with bitmap strikes and this caused broken fonts to
+	  be generated.
+	<LI>
+	  In various places FF was supposed to temporary set LC_NUMERIC to `C', but
+	  the original locale was actually never restored.
+	<LI>
+	  Add a python reverseDirection() method to Layer.
+	<LI>
+	  Make the head_optimized_for_cleartype flag accessible via Python interface.
+	<LI>
+	  Patch by Khaled Hosny to allow setting default font file base name from python.
+	<LI>
+	  Patch by Khaled Hosny: adds &lt;font&gt;.texparameters member to access TeX
+	  font parameters from Python, readonly for now. The returned values can be
+	  different from what is present in FF UI due to different rounding methods.
+	<LI>
+	  Patch from Khaled Hosny: python's addAnchorPoint() function does now check
+	  if a similar anchor point exists or not, and behaves accordingly.
+	<LI>
+	  When we open an sfd file it can contain flags asking us to open charviews
+	  for some glyphs. But on the mac, if we open more than one charview X11 (usually)
+	  crashes. So, on the mac, put in a hook that only opens one.
+	<LI>
+	  valgrind found a place where I was looking at freed memory.
+	<LI>
+	  In the metrics view list index was not properly updated when user was manually
+	  selecting an item from the word list. So wromg items were selected if (s)he
+	  then used up/down arrow keys to navigate the list.
+	<LI>
+	  Matthias Kilian spotted a buffer overflow in svg processing.
+	<LI>
+	  The fix for LastResort.ttf had an undesired effect: each time an sfd file
+	  was opened all AltUni entries were duplicated.
+	<LI>
+	  Fixed validation crash for references to empty glyphs (Fedora bug 536920);
+	  patch by Paul Flo Williams
+	<LI>
+	  Patch by Paul Flo Williams to fix a crash when resizing toolbox while editing
+	  bitmap glyphs.
+	<LI>
+	  Try to get compilation working with multiple versions of libpng on the system.
+	<LI>
+	  Khaled Hosny found that deleting the last anchor in a glyph causes a crash.
+	<LI>
+	  Khaled Hosny fixed a crash in multiline text editing widget.
+	<LI>
+	  Patch by Paul Flo Williams to fix a crash when attempting to edit glyphs
+	  in Unicode Plane 16.
+	<LI>
+	  Patch by Werner Lemberg to make FF compile with Python 2.7.
+	<LI>
+	  Patch by Khaled Hosny to prevent crash when adding certain lookup types.
+	<LI>
+	  If one try to compile with -Wall -Wextra, lots of warnings show up. The first
+	  to fix are nested comments. As a result, a value that got, commented out
+	  in gxdrawtxt.c, probably by accident, is now active.
+	<LI>
+	  Notice from Andrey Panov: FF did not compile with gcc 4.4.4
+	<LI>
+	  Khaled Hosny made gtk stub compile again.
+	<LI>
+	  Some typos and new comments in autoinstr code.
+	<LI>
+	  Khaled Hosny provided an option in preferences/edit to turn off automatic
+	  openning of autokern window for any new horizontal kerning subtable.
+	<LI>
+	  Patch by Khaled Hosny to fix wrong type conversion when assigning GASP values
+	  from python script. Spotted by Adam Twardoch.
+	<LI>
+	  Khaled Hosny noticed that deleting anchors from Anchor Info dialog didn't
+	  mark glyphs affected as changed.
+	<LI>
+	  Patch by Khaled Hosny, who noticed that OpenType glyph positioning is applied
+	  from left to right even for right to left scripts. As he writes:
+	  <BLOCKQUOTE>
+	    'This patch fixes the kerning pairs dialog to render kerning as close to
+	    what OpenType engines does, also makes sure FF activates by default and adjusts
+	    the correct fields. There are other places in the code that need to be checked
+	    too, but I think the code affected by this patch is self contained.'
+	  </BLOCKQUOTE>
+	<LI>
+	  Fixed a crash when FontForge was given NULL glyph name in python script.
+	<LI>
+	  Fixed misinterpretation of '+-' in UTF-7 strings read from sfd files. Spotted
+	  by Paul Flo Williams.
+	<LI>
+	  Fixed misinterpretation of '//' at end of lines read from sfd files. Spotted
+	  by Paul Flo Williams.
+	<LI>
+	  The statemachine table uses a matrix gadget, but some of the code was still
+	  expecting a list gadget, causing a crash. The patch, by Keith Stribley, also
+	  fixes a couple of typos and round tripping of the glyphnames
+	<LI>
+	  Patch by Keith Stribley, to fix crashing lookup metadata that don't have
+	  scripts specified - he points that AAT doesn't need them.
+	<LI>
+	  Patch by Keith Stribley, to fix corrupting of single substitution lookups
+	  used in the state table after generating are corrupted.
+	<LI>
+	  Patch by Keith Stribley, to fix export of Mac features, though it may not
+	  cover every case.
+	<LI>
+	  Patch by Khaled Hosny, to update Unicode support to Unicode 6.0.0
+	<LI>
+	  One point in code forgot to check if unicode number is in range before testing
+	  for alternatives.
+	<LI>
+	  Removed two infinite loops in overlap code. Turned out to be a floating point
+	  accurracy issue.
+	<LI>
+	  Zoom by mouse scroll scales around mouse pointer now.
+	<LI>
+	  Ctrl+A in background layer (in charview window) picked up anchor points from
+	  foreground layers, too.
+	<LI>
+	  Fontforge forgot to categorize points after importing a svg font.
+	<LI>
+	  Patch by Philipp Stephani, to fix wrong interpretation of most top accent
+	  data for newer versions of Cambria Math.
+	<LI>
+	  Patch by Louis Simard: fixes multiple stack based buffer overflows in BDF
+	  processing routine. Ref: https://bugzilla.redhat.com/show_bug.cgi?id=659359
+	<LI>
+	  Patch by Barry Schwartz to fix error in handling of glyph name ranges in
+	  feature files, reported by Matthew Skala:
+	<LI>
+	  Fixed crashes on pasting splines into guide layer in the glyph view window,
+	  reported by Andrey Panov.
+	<LI>
+	  Remove one source of rounding errors in solving cubics, clean up function
+	  calls to match new calling conventions.
+	<LI>
+	  Matthias Kilian notices that previous patch to fvimportbdf.c made unterminated
+	  strings.
+	<LI>
+	  Khaled Hosny spots a paragraph in the docs that's no longer valid.
+	<LI>
+	  Cleanup the fontforge desktop file.
+	<LI>
+	  Freehand tool was very broken.
+	<LI>
+	  When doing remove overlap on quadratic beziers (truetype) ff converted them
+	  to cubics and then did the ro. This introduced slight rounding errors which
+	  gave ro canniptions. Just as easy to make remove overlap work on quadratics
+	  too.
+	<LI>
+	  See if we can improve conversion from quadratic beziers to cubic. There are
+	  rounding errors involved in finding the "cubic" control points which mean
+	  that the cubic term of the spline will be non-zero when it should be zero.
+	  See if we can find better approximations to the control points, and be prepared
+	  to force a small third order term to 0.
+	<LI>
+	  "Make arc" didn't work as expected for connected points (it actually produced
+	  a straight line).
+	<LI>
+	  The previous patch for matrixedit was incomplete: although the function indicator
+	  box was always drawn at the visible area of the control, it actually didn't
+	  work. Moreover, the box was being duplicated multiple times during horizontal
+	  scrolling. So this is one more attempt to make the whole GUI for editing
+	  OT glyph classes functional again. Note that now the special handling is
+	  applied only to the last column of a matrix edit control: if this column
+	  contains text fields with function indicators, then those indicators are
+	  always drawn at the top of the field by a such way that they should always
+	  be visible.
+	<LI>
+	  Daniel Dumitriu has provided Romanian translations for style names.
+	<LI>
+	  Daniel Johnson sent me a print sample of Mayan in the K'iche' dialect used
+	  in Guatemala from the prolog to the Popol Wuj.
+	<LI>
+	  Expand stroke didn't work if the intial spline in a contour had a length
+	  of 0.
+	<LI>
+	  Khaled points out that if the subtable dlg for a single substitution is
+	  [Populated] then hovering the mouse cursor over an empty cell will cause
+	  a crash. (the thing that pops up an image of the sustitution failed here).
+	<LI>
+	  Legacy scripting did not support importing pdf files.
+	<LI>
+	  There used to be two preference item controling autohinting. That does not
+	  seem a good idea, so coelesce them into one preference item.
+	<LI>
+	  _strtod could munch the stack if given a long string. This caused crashes,
+	  etc.
+	<LI>
+	  Fixed a number of problems with the mm dlg:
+	  <OL>
+	    <LI>
+	      of the design vector were bigger than 60 characters then ff would crash (happened
+	      if there were more than 2 axes)
+	    <LI>
+	      default values for the Slant access were backwards
+	    <LI>
+	      Convert-Design-Vector functions were wrong for 3 &amp; 4 axis designs.
+	  </OL>
+	<LI>
+	  The freehand dlg did not retain the previous shape of a polygonal nib. It
+	  always used the default shape each time it was invoked.
+	<LI>
+	  More problems with zero length splines in expand stroke. Biggest problem
+	  was that the routine which was suppposed to remove them didn't (at least
+	  in some cases).
+	<LI>
+	  Add a link to the panose docs from the panose pane of fontinfo.
+	<LI>
+	  Add strings and support for other latin panose families.
+	<LI>
+	  Patch by Werner Lemberg to improve rasterization accuracy in TTF debugger.
+	<LI>
+	  Trying to create a new kerning subtable from font info would often crash.
+	<LI>
+	  Brian Zick wanted a preference item so that if one end of a spline were moved
+	  and the other were not then the control points would be interpolated (rather
+	  than being moved by the same amount as the adjacent end point).
+	  <P>
+	  Note that this will have problems if the moving end point ever ends up on
+	  the same horizontal/vertical line as the stationary end point. Then the control
+	  point may vanish and never reappear.
+	<LI>
+	  Add a bit more info to the version string (whether compiled for doubles,
+	  etc.)
+	<LI>
+	  When modifying OT classes by inserting glyphs from a fontview-based window,
+	  the add_char_to_name_list preference item was not respected.
+	<LI>
+	  FF used to allow modifying the width (and vwidth) of a bitmap glyph only
+	  in bitmap-only fonts. This seems to make no sense for TTF, where widths of
+	  rasterized glyphs can be set independently for each PPEM.
+	<LI>
+	  Use FT_LOAD_TARGET_MONO instead of FT_LOAD_MONOCHROME for spline rasterization
+	  with freetype. This guarantees more accurate rendering of hinted fonts in
+	  monochrome mode.
+	<LI>
+	  If a font contains several sets of kerning classes (e. g. for different scripts),
+	  and a particular glyph is present in more than one set, then attempting to
+	  find a matching kerning value between this glyph and a subsequent glyph might
+	  result in selecting the combination with the {Everything Else} class from
+	  the first set being processed, even if there are better matches in other
+	  sets.
+	  <P>
+	  Also FF would still complain that the "{Everythin Else}" string in the kern
+	  class dialog represents a missing glyph.
+	<LI>
+	  Two small corrections for metrics view:
+	  <OL>
+	    <LI>
+	      Since the {Everything Else} class is now recognized by FF as a valid glyph
+	      class, it was possible to occasionally modify a kerning value involving this
+	      class in the metrics view. So when asking user if he is going to modify a
+	      class-based kerning value or create a new kerning pair, inform him if one
+	      of the glyphs from this pair has been actually matched by the {Everything
+	      Else} class.
+	    <LI>
+	      Make it possible to easily deselect all glyphs in the metrics view by pressing
+	      [Escape].
+	  </OL>
+	<LI>
+	  Pasting bitmaps from fontview didn't work.
+	<LI>
+	  Allow a user to enter values for the PS private dictionary in his/her own
+	  locale but convert them to the "C"==PostScript locale when storing them.
+	  That is a French user could enter [3,5 20] for BlueValues, but it needs to
+	  be converted to [3.5 20] when put in the sfd file (or PS font file).
+	<LI>
+	  Change the Histogram dialog to use boxes (cosmetic change, shouldn't matter
+	  to English speakers, dlg won't have fields overrunning other fields in French).
+	<LI>
+	  Redo the "PS Private" pane of the Font Info dialog so that it uses a matrix
+	  edit rather than the old clumsy list with editing area kludge.
+	<LI>
+	  Patch by Khaled Hosny to fix crash when importing svg with linked image.
+	<LI>
+	  The scripting function "FontsInFile" did not support pdf files, and always
+	  returned an empty array when asking if they contained fonts.
+	<LI>
+	  Scripting didn't let anyone pick a subfont within a pdf file. (did not support:
+	  filename(fontname) notation for pdf).
+	<LI>
+	  Update cidmap to CNS-1.6.
+	<LI>
+	  My cidmap files have always been a one to one mapping of cid to unicode.
+	  But that's not what Adobe does. Many cids get mapped to several code points
+	  each. So I've revamped the format to support this. The new map files need
+	  the new code (obviously) so don't download one without the other.
+	<LI>
+	  An earlier patch added support for horizontal scrolling (shift trackwheel)
+	  in the outline glyph window. This builds on that and supports it in (I hope)
+	  all windows. Also adds support for apple's wheel which can do both horizontal
+	  and vertical motion.
+	<LI>
+	  When ff calculated the size of a kerning subtable it was off by two bytes
+	  per glyph in the coverage table. This meant that it would sometimes make
+	  a table that was slightly too big to be supported and not realize it. I've
+	  fixed the bug, and put in checks so that if there's yet another problem like
+	  this, at list it will be reported to the user.
+	<LI>
+	  It is now possible to differentiate stems by width (rather than by direction)
+	  in the "Change glyph" dialog. This approach produces better results for glyphs
+	  like "N" or "g", and thus seems more logical even for the Latin script, where
+	  vertical stems are normally "thick" and horizontal ones are "thin".
+	  <P>
+	  This patch also affects some gdraw internals, since the new layout of the
+	  "Change glyph" dialog makes it necessary to dynamically switch the captions
+	  of some labels, and the text strings should fit to the space initially reserved
+	  for those labels. So it is now possible to assign a list of strings to a
+	  label, just like if it was a list button.
+	<LI>
+	  Fix some issues with hv points.
+	<LI>
+	  Do some internal cleanup.
+	<LI>
+	  User doesn't like that ff does a "fit to window" ever time the user resizes
+	  the window. So... let's try not doing that.
+	<LI>
+	  Someone complained that when the fontview was maximized it would make itself
+	  one cell smaller than it should have. Well that's screen size and window
+	  manager dependant. It did allow 10 pixels of horizontal border (not knowing
+	  what the WM would give it). That's probably too much. And even if a tiny
+	  bit of the window is off the screen, it probably doesn't matter much.
+	<LI>
+	  When ff was started with a .ufo fontdirectory on the command line, it would
+	  fail to open it (and produce a garbage error message). I suspect the underlying
+	  problem would cause other problems too, but haven't found any yet.
+	<LI>
+	  Barry points out that FF incorrectly loaded an opentype font with an empty
+	  bluevalues array (FF showed it as not having a bluevalues array at all, the
+	  two are different). (pfb files with empty arrays worked as expected).
+	<LI>
+	  Correct two "bugs" in UFO output. I believe that I was following the spec
+	  in both cases, but since the reference implimentation does not follow the
+	  spec I shall do what it does instead.
+	  <OL>
+	    <LI>
+	      The spec gives a complex algorithm for converting a glyph name to a filename.
+	      The proper behavior appears to be "add an underscore immediately after every
+	      capital letter" and leave it at that.
+	    <LI>
+	      The spec says for OS2 fsType we should output bit numbers. It doesn't mean
+	      the numbers of the bits (0..15) but rather the values (0..1).
+	  </OL>
+	<LI>
+	  Retain the UFO ascender and descender fields.
+	<LI>
+	  Werner found a place where apple kerning output didn't work if glyphs which
+	  weren't being output had kerning pairs associated with them.
+	<LI>
+	  Richard Gitschlag and Khaled complain that the Glyph Info dlg says "Done"
+	  rather than "Cancel".
+	  <P>
+	  There is a reason for this. The button does not do a cancel. It only cancels
+	  changes to the current glyph, but the dlg can be applied to several glyphs
+	  one after another, and any changes made to previous glyphs are committed
+	  when the user changes glyphs. So the "Done" button only cancels the current
+	  glyph.
+	  <P>
+	  However, I can change it so that it says "Cancel" until the user changes
+	  glyphs. And in most cases the user is only interested in one glyph so this
+	  will solve most of the problem...
+	<LI>
+	  Richard Gitshlag suggests that the buttons in the "non-integral coordinates"
+	  question of validation are confusing and suggests they be relabeled.
+	<LI>
+	  More fixes needed where *printf expects a double and gets a long double if
+	  --enabel-longdouble.
+	<LI>
+	  According to the spec there are two different types of GPOS 'size' feature.
+	  One specifies a design size and nothing else, the other specifies a design
+	  size, a design range a style name and a magic number used to associate all
+	  fonts in the same family with the same weight and style but with different
+	  design sizes.
+	  <P>
+	  Fontforge was not very good about warning the user when s/he created something
+	  which had some but not all of these attributes. (ie. a design range but no
+	  style name). So add some error messages to the fontinfo dlg which makes these
+	  checks.
+	  <P>
+	  FF would also not read in a 'size' feature unless it were in one of these
+	  formats. So if the user created a 'size' feature with a design size, and
+	  a design range but no style name, then FF would not complain, would happily
+	  output it, but would not read it back in again. So be a little more lenient
+	  in what we read in.
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+	<LI>
+      </UL>
+    <LI>
       13-Feb-2011
       <UL>
 	<LI>
 	  Switched from cvs to git.
-	</LI>
       </UL>
     <LI>
       29-Apr-2010
