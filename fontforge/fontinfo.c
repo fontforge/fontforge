@@ -3487,6 +3487,20 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int ss_cmp(const void *_md1, const void *_md2) {
+    const struct matrix_data *md1 = _md1, *md2 = _md2;
+
+    char buf1[20], buf2[20];
+    const char *l1, *l2;
+
+    if ( md1[1].u.md_ival == md2[1].u.md_ival ) {
+	l1 = langname(md1[0].u.md_ival,buf1);
+	l2 = langname(md2[0].u.md_ival,buf2);
+return( strcoll(l1,l2));
+    }
+return( md1[1].u.md_ival - md2[1].u.md_ival );
+}
+
 static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     SplineFont *sf = d->sf;
     struct matrix_data *md;
@@ -3509,6 +3523,7 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	    md[3*cnt+2].u.md_str = copy(on->name);
 	}
     }
+    qsort( md, cnt, 3*sizeof(struct matrix_data), ss_cmp );
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
 }
@@ -3935,7 +3950,8 @@ static void StoreSSNames(struct gfi_data *d) {
     OtfFeatNameListFree(sf->feat_names);
     sf->feat_names = NULL;
 
-    for ( i=0; i<rows; ++i ) {
+    qsort( strings, rows, 3*sizeof(struct matrix_data), ss_cmp );
+    for ( i=rows-1; i>=0; --i ) {
 	if ( strings[3*i+2].u.md_str == NULL )
     continue;
 	tag = strings[3*i+1].u.md_ival;
