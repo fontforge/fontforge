@@ -422,14 +422,14 @@
   Don't try to change these until you understand what they mean.
   <P>
   The dialog is shown at right. It consists of a list of dictionary key/value
-  pairs. The keys are on the left, values on the right. Generally you will want
-  to use the standard PostScript keys (these are available from a pulldown list
-  that appears when you press one of the little grey buttons).
+  pairs. The keys are on the left, values on the right. Generally you will
+  want to use the standard PostScript keys (these are available from a pulldown
+  list that appears when you press one of the little grey buttons).
   <P>
   Note: The values must be things which PostScript can parse. This means that
-  <CODE>ForceBold</CODE> must have a value of "false" or "true", and "False" or "faux"
-  will not work. Similarly the decimal point in numbers must be "." (not ",").
-  If you enter a "," by mistake FontForge will convert it for you.
+  <CODE>ForceBold</CODE> must have a value of "false" or "true", and "False"
+  or "faux" will not work. Similarly the decimal point in numbers must be "."
+  (not ","). If you enter a "," by mistake FontForge will convert it for you.
   <P>
   For example the <CODE>BlueValues</CODE> entry specifies certain key regions
   of the font in a vertical direction. For instance it might contain the baseline
@@ -448,10 +448,9 @@
   good value for the entry.
   <P>
   You may also delete an entry from the dictionary with the <CODE>[Delete]
-  </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) must
-  be present in any type1 font, but you may still delete them. FontForge
-  will simply guess at a reasonable value when it needs to generate the
-  font.
+  </CODE>button. Some entries (such as <CODE>BlueValues</CODE>) must be present
+  in any type1 font, but you may still delete them. FontForge will simply guess
+  at a reasonable value when it needs to generate the font.
   <P>
   Certain keys affect things other than hints. The <CODE>lenIV</CODE> entry
   controls how much random padding is placed around the type1 strings when
@@ -459,8 +458,8 @@
   (4 bytes per glyph in pfb format, 8 bytes in pfa) you may choose another
   value. The UniqueID key represents the font's Unique postscript ID. If you
   provide a value here then FontForge will copy it into the UniqueID field
-  in the Font Dictionary. (this is different from True Type's UniqueID.
-  They perform the same function but are formatted differently).
+  in the Font Dictionary. (this is different from True Type's UniqueID. They
+  perform the same function but are formatted differently).
   <P>
   Some of these entries are only meaningful for PostScript fonts, others will
   be used by the truetype autoinstructor.<BR CLEAR=ALL>
@@ -614,7 +613,7 @@
   <A HREF="http://www.panose.com/">HP</A>,
   <A HREF="http://www.agfamonotype.com/hardware/pan1.asp">AGFA</A> and
   <A HREF="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/fontext_48aa.asp">MS</A>,
-  <A HREF="http://forum.high-logic.com/viewtopic.php?f=4&t=941">discussion</A>.
+  <A HREF="http://forum.high-logic.com/viewtopic.php?f=4&amp;t=941">discussion</A>.
   <P>
   If you leave the [*] Default checkbox set then FontForge will generate reasonable
   values when the font is output, otherwise you may set these values manually.
@@ -759,7 +758,8 @@
       If you want to use the <A HREF="http://scripts.sil.org/OFL/">SIL Open Font
       License</A>, there is a button at the bottom of the dialog which will add
       that directly (so you don't need to type it in).
-      <!-- The warning below is no longer needed - the stuff got fixed properly -->
+      <!-- The warning below is no longer needed - the stuff got fixed properly
+      -->
       <!--
       <P>
       MicroSoft recently (2009) released a security patch in which they decided

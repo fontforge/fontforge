@@ -13,27 +13,29 @@
     FontForge install procedures<BR>
     <SMALL>for the macintosh</SMALL>
   </H1>
-  <p><strong><font color="red">I no longer provide pre-built packages. You may either compile from source
-  or download a package from another site (both <a href="http://www.macports.org/">macports</a>
-  and <a href="http://www.finkproject.org/">fink</a> have fontforge
-  packages).</font></strong>
+  <P>
+  <STRONG><FONT color="red">I no longer provide pre-built packages. You may
+  either compile from source or download a package from another site (both
+  <A href="http://www.macports.org/">macports</A> and
+  <A href="http://www.finkproject.org/">fink</A> have fontforge
+  packages).</FONT></STRONG>
   <UL>
-	<LI>
-	  <A HREF="#Before">Before you install</A>
-<!--
     <LI>
+      <A HREF="#Before">Before you install</A>
+      <!--
+      <LI>
       <A HREF="#Installing">Installing from a pre-built mac package</A>
       <UL>
-	<LI>
-	  <A HREF="#Before">Before you install</A>
-	<LI>
-	  <A HREF="#Obtaining">Obtaining one of my pre-built packages</A>
-	<LI>
-	  <A HREF="#install">Installing</A>
-	<LI>
-	  <A HREF="#Notes">Notes</A>
+      <LI>
+      <A HREF="#Before">Before you install</A>
+      <LI>
+      <A HREF="#Obtaining">Obtaining one of my pre-built packages</A>
+      <LI>
+      <A HREF="#install">Installing</A>
+      <LI>
+      <A HREF="#Notes">Notes</A>
       </UL>
--->
+      -->
     <LI>
       <A HREF="nix-install.html">Installing on a unix/linux system</A>
     <LI>
@@ -150,26 +152,27 @@
   <P>
   If type the following into a terminal (or xterm) window
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>cat >~/.fonts.conf
-&lt;?xml version="1.0"?>
-&lt;!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-&lt;!-- /etc/fonts/fonts.conf file to configure system font access -->
-&lt;fontconfig>
+    <PRE><FONT COLOR="Gray">$ </FONT>cat &gt;~/.fonts.conf
+&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE fontconfig SYSTEM "fonts.dtd"&gt;
+&lt;!-- /etc/fonts/fonts.conf file to configure system font access --&gt;
+&lt;fontconfig&gt;
 
-&lt;!-- Font directory list -->
-&lt;!-- Add to system list -->
+&lt;!-- Font directory list --&gt;
+&lt;!-- Add to system list --&gt;
 
-        &lt;dir>/System/Library/Fonts&lt;/dir>
-        &lt;dir>/Library/Fonts&lt;/dir>
-        &lt;dir>~/Library/Fonts&lt;/dir>
+        &lt;dir&gt;/System/Library/Fonts&lt;/dir&gt;
+        &lt;dir&gt;/Library/Fonts&lt;/dir&gt;
+        &lt;dir&gt;~/Library/Fonts&lt;/dir&gt;
 
-&lt;/fontconfig>
-<b>^D</b>
+&lt;/fontconfig&gt;
+<B>^D</B>
 </PRE>
   </BLOCKQUOTE>
   <P>
-  then fontforge's UI will be able to use the fonts Apple supplies with the mac.
-  (You don't type the "$", and ^D means hold down the control key and press "D").
+  then fontforge's UI will be able to use the fonts Apple supplies with the
+  mac. (You don't type the "$", and ^D means hold down the control key and
+  press "D").
   <H5>
     Note:
   </H5>
@@ -181,8 +184,9 @@
   <P>
   I used to post mac install packages on
   <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=111040">sourceforge's
-  file release system</A>. The old ones are still there <strong>but they are now out of date.</strong> There's a certain amount of pother involved in using
-  the file release system, but you get the file eventually.
+  file release system</A>. The old ones are still there <STRONG>but they are
+  now out of date.</STRONG> There's a certain amount of pother involved in
+  using the file release system, but you get the file eventually.
   <P>
   I currently post builds for Mac 10.5 &amp; 10.4 (I post different builds
   for the two systems because they provide different python libraries).
