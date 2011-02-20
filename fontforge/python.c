@@ -5734,6 +5734,75 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self,void *closure) {
+
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int cnt=0, i;
+    PST *pst, *lcar = NULL;
+    PyObject *tuple;
+
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type==pst_lcaret ) {
+	    lcar = pst;
+	    cnt = lcar->u.lcaret.cnt;
+    break;
+	}
+    }
+    tuple = PyTuple_New(cnt);
+
+    if ( lcar != NULL ) {
+	for ( i=0; i<cnt; ++i ) {
+	    PyTuple_SetItem( tuple,i,Py_BuildValue("i",lcar->u.lcaret.carets[i]) );
+	}
+    }
+return( tuple );
+}
+
+static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value,void *closure) {
+    SplineChar *sc = self->sc;
+    int i, cnt, lig_comp_max = 0, lc;
+    char *pt;
+    int16 *carets;
+    PST *pst, *lcar = NULL;
+
+    cnt = PySequence_Size(value);
+    if ( cnt==-1 )
+return( -1 );
+
+    if ( cnt > 0 )
+	carets = galloc( cnt*sizeof(int16) );
+    for ( i=0; i<cnt; ++i ) {
+	carets[i] = PyInt_AsLong( PySequence_GetItem(value,i) );
+	if ( PyErr_Occurred())
+return( -1 );
+    }
+
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type==pst_lcaret ) {
+	    lcar = pst;
+	    free( lcar->u.lcaret.carets );
+	} else if ( pst->type==pst_ligature ) {
+	    for ( lc=0, pt=pst->u.lig.components; *pt; ++pt )
+		if ( *pt==' ' ) ++lc;
+	    if ( lc>lig_comp_max )
+		lig_comp_max = lc;
+	}
+    }
+
+    if ( lcar == NULL && cnt > 0 ) {
+	lcar = chunkalloc(sizeof(PST));
+	lcar->type = pst_lcaret;
+	lcar->next = sc->possub;
+	sc->possub = lcar;
+    }
+    if ( lcar != NULL ) {
+	lcar->u.lcaret.cnt = cnt;
+	lcar->u.lcaret.carets = cnt > 0 ? carets : NULL;
+	sc->lig_caret_cnt_fixed = ( cnt != lig_comp_max ) ? true : false;
+    }
+return( 0 );
+}
+
 static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self,void *closure) {
 
 return( PyFV_From_FV_I(self->sc->parent->fv));
@@ -6614,6 +6683,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"manualHints",
 	 (getter)PyFF_Glyph_get_manualhints, (setter)PyFF_Glyph_set_manualhints,
 	 "The hints have been set manually, and the glyph should not be autohinted by default" },
+    {"lcarets",
+	 (getter)PyFF_Glyph_get_lcarets, (setter)PyFF_Glyph_set_lcarets,
+	 "The ligature caret locations, defined for this glyph, as a tuple.", NULL},
     {"validation_state",
 	 (getter)PyFF_Glyph_get_validation_state, (setter)PyFF_cant_set,
 	 "glyph's validation state (readonly)", NULL},
