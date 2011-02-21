@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforgeui.h"
+#include "pfaeditui.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>
@@ -2013,7 +2013,7 @@ static struct psdict *GFI_ParsePrivate(struct gfi_data *d) {
     struct psdict *ret = gcalloc(1,sizeof(struct psdict));
     GGadget *private = GWidgetGetControl(d->gw,CID_Private);
     int rows, cols = GMatrixEditGetColCnt(private);
-    struct matrix_data *strings = GMatrixEditGet(private, &rows);
+    struct matrix_data *strings = _GMatrixEditGet(private, &rows);
     int i,j;
 
     ret->cnt = rows;
@@ -2459,7 +2459,7 @@ static void AskForLangName(GGadget *list,int sel) {
     unichar_t *name, *pt;
     char *cname;
     int lang_index;
-    GGadgetCreateData gcd[7];
+    GGadgetCreateData gcd[7], boxes[4], *buttonarray[10], *array[10];
     GTextInfo label[5];
     GRect pos;
     GWindow gw;
@@ -2502,10 +2502,9 @@ static void AskForLangName(GGadget *list,int sel) {
 	name = u_copyn(old[sel]->text,pt-old[sel]->text);
     }
 
-    memset(gcd,0,sizeof(gcd));
+    memset(gcd,0,sizeof(gcd)); memset(boxes,0,sizeof(boxes));
     memset(label,0,sizeof(label));
 
-    gcd[0].gd.pos.x = 7; gcd[0].gd.pos.y = 7;
     gcd[0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
     gcd[0].gd.cid = CID_Language;
     gcd[0].gd.u.list = mslanguages;
@@ -2513,26 +2512,24 @@ static void AskForLangName(GGadget *list,int sel) {
     for ( i=0; mslanguages[i].text!=NULL; ++i )
 	mslanguages[i].selected = false;
     mslanguages[lang_index].selected = true;
+    array[0] = &gcd[0]; array[1] = GCD_ColSpan; array[2] = NULL;
 
     k = 1;
     label[k].text = (unichar_t *) _("_Name:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
+    array[3] = &gcd[k-1];
 
     label[k].text = name;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 50; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
-    gcd[k].gd.pos.width = 122;
     gcd[k].gd.flags = gg_visible | gg_enabled|gg_text_xim;
     gcd[k].gd.cid = CID_StyleName;
     gcd[k++].creator = GTextFieldCreate;
+    array[4] = &gcd[k-1]; array[5] = NULL;
 
-    gcd[k].gd.pos.x = 25-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
-    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _("_OK");
     label[k].text_is_1byte = true;
@@ -2540,9 +2537,8 @@ static void AskForLangName(GGadget *list,int sel) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = true;
     gcd[k++].creator = GButtonCreate;
+    buttonarray[0] = GCD_Glue; buttonarray[1]=&gcd[k-1]; buttonarray[2]=GCD_Glue; buttonarray[3]=GCD_Glue;
 
-    gcd[k].gd.pos.x = -25; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
-    gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[k].text = (unichar_t *) _("_Cancel");
     label[k].text_is_1byte = true;
@@ -2550,6 +2546,18 @@ static void AskForLangName(GGadget *list,int sel) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = false;
     gcd[k++].creator = GButtonCreate;
+    buttonarray[4] = GCD_Glue; buttonarray[5]=&gcd[k-1]; buttonarray[6]=GCD_Glue; buttonarray[7]=NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = buttonarray;
+    boxes[2].creator = GHBoxCreate;
+    array[6] = &boxes[2]; array[7] = GCD_ColSpan; array[8] = NULL;
+    array[9] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = array;
+    boxes[0].creator = GHVGroupCreate;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -2564,7 +2572,8 @@ static void AskForLangName(GGadget *list,int sel) {
     pos.height = GDrawPointsToPixels(NULL,2*26+45);
     gw = GDrawCreateTopWindow(NULL,&pos,sn_e_h,&done,&wattrs);
 
-    GGadgetsCreate(gw,gcd);
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[2].ret,gb_expandglue);
     free(name);
     ti = GGadgetGetList(gcd[0].ret,&len);
     for ( i=0; i<len; ++i )
@@ -2572,6 +2581,7 @@ static void AskForLangName(GGadget *list,int sel) {
 	    GGadgetSelectOneListItem(gcd[0].ret,i);
     break;
 	}
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
 
     while ( !done )
@@ -3487,20 +3497,6 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int ss_cmp(const void *_md1, const void *_md2) {
-    const struct matrix_data *md1 = _md1, *md2 = _md2;
-
-    char buf1[20], buf2[20];
-    const char *l1, *l2;
-
-    if ( md1[1].u.md_ival == md2[1].u.md_ival ) {
-	l1 = langname(md1[0].u.md_ival,buf1);
-	l2 = langname(md2[0].u.md_ival,buf2);
-return( strcoll(l1,l2));
-    }
-return( md1[1].u.md_ival - md2[1].u.md_ival );
-}
-
 static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     SplineFont *sf = d->sf;
     struct matrix_data *md;
@@ -3523,7 +3519,6 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	    md[3*cnt+2].u.md_str = copy(on->name);
 	}
     }
-    qsort( md, cnt, 3*sizeof(struct matrix_data), ss_cmp );
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
 }
@@ -3950,8 +3945,7 @@ static void StoreSSNames(struct gfi_data *d) {
     OtfFeatNameListFree(sf->feat_names);
     sf->feat_names = NULL;
 
-    qsort( strings, rows, 3*sizeof(struct matrix_data), ss_cmp );
-    for ( i=rows-1; i>=0; --i ) {
+    for ( i=0; i<rows; ++i ) {
 	if ( strings[3*i+2].u.md_str == NULL )
     continue;
 	tag = strings[3*i+1].u.md_ival;
@@ -4149,7 +4143,6 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	GTextInfo **ti;
 	int subs[4], super[4], strike[2];
 	int design_size, size_top, size_bottom, styleid;
-	struct otfname *fontstyle_name;
 	int strokedfont = false;
 	real strokewidth;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4219,7 +4212,7 @@ return( true );
 	}
 	if ( layer_cnt>=BACK_LAYER_MAX-2 ) {
 	    ff_post_error(_("Too many layers"),_("FontForge supports at most %d layers"),BACK_LAYER_MAX-2);
-	    /* This can be increased in configure-fontforge.h */
+	    /* This can be increased in configure-pfaedit.h */
 return( true );
 	}
 	if ( !CheckNames(d))
@@ -4259,34 +4252,6 @@ return(true);
 	size_bottom = rint(10*GetReal8(gw,CID_DesignBottom,_("_Bottom"),&err));
 	size_top = rint(10*GetReal8(gw,CID_DesignTop,_("_Top"),&err));
 	styleid = GetInt8(gw,CID_StyleID,_("Style _ID:"),&err);
-	fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
-	OtfNameListFree(fontstyle_name);
-	if ( design_size==0 && ( size_bottom!=0 || size_top!=0 || styleid!=0 || fontstyle_name!=NULL )) {
-	    ff_post_error(_("Bad Design Size Info"),_("If the design size is 0, then all other fields on that pane must be zero (or unspecified) too."));
-return( true );
-	} else if ( styleid!=0 && fontstyle_name==NULL ) {
-	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a style name"));
-return( true );
-	} else if ( fontstyle_name==NULL && styleid!=0 ) {
-	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style name for the design size, then you must specify a style id"));
-return( true );
-	} else if ( design_size<0 ) {
-	    ff_post_error(_("Bad Design Size Info"),_("If you specify a design size, it must be positive"));
-return( true );
-	} else if ( size_bottom!=0 && size_bottom>design_size ) {
-	    ff_post_error(_("Bad Design Size Info"),_("In the design size range, the bottom field must be less than the design size."));
-return( true );
-	} else if ( size_top!=0 && size_top<design_size ) {
-	    ff_post_error(_("Bad Design Size Info"),_("In the design size range, the bottom top must be more than the design size."));
-return( true );
-	} else if ( styleid!=0 && size_top==0 ) {
-	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a size range"));
-return( true );
-	} else if ( size_top!=0 && styleid==0 ) {
-	    ff_post_notice(_("Bad Design Size Info"),_("If you specify a design size range, then you are supposed to specify a style id and style name too. FontForge will allow you to leave those fields blank, but other applications may not."));
-	    /* no return, this is just a warning */
-	}
-
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_Revision))!='\0' )
 	    sfntRevision = rint(65536.*GetReal8(gw,CID_Revision,_("sfnt Revision:"),&err));
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMajor))!='\0' ) {
