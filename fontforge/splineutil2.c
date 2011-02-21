@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fontforge.h"
+#include "pfaedit.h"
 #include <math.h>
 #include "ustring.h"
 #include "chardata.h"
@@ -697,6 +697,7 @@ return( SplineMake2(from,to));
 		from->nextcp.x = (-xconst[1]-t_term[1]*to->prevcp.x)/f_term[1];
 		from->nextcp.y = (-yconst[1]-t_term[1]*to->prevcp.y)/f_term[1];
 	    }
+	    to->noprevcp = from->nonextcp = false;
 return( SplineMake3(from,to));
 	}
     }
