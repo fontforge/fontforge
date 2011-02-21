@@ -2065,7 +2065,7 @@ static int PI_Guess(GGadget *g, GEvent *e) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
 	private = GWidgetGetControl(gw,CID_Private);
-	strings = _GMatrixEditGet(private, &rows);
+	strings = GMatrixEditGet(private, &rows);	/* Commit any changes made thus far */
 	cols = GMatrixEditGetColCnt(private);
 	r = GMatrixEditGetActiveRow(private);
 	key = strings[r*cols+0].u.md_str;
