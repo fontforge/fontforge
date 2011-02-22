@@ -119,6 +119,7 @@ typedef struct kernclasslistdlg {
 #define CID_MinKern	2009
 #define CID_Touched	2010
 #define CID_OnlyCloser	2011
+#define CID_Autokern	2012
 
 #define CID_SizeLabel	3000
 #define CID_MagLabel	3001
@@ -1157,7 +1158,7 @@ static int KC_OK(GGadget *g, GEvent *e) {
 	int i;
 	int len;
 	struct matrix_data *classes;
-	int err, touch=0, separation=0, minkern=0, onlyCloser;
+	int err, touch=0, separation=0, minkern=0, onlyCloser, autokern;
 
 	sf = kcd->sf;
 	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
@@ -1168,6 +1169,7 @@ static int KC_OK(GGadget *g, GEvent *e) {
 	separation = GetInt8(kcd->gw,CID_Separation,_("Separation"),&err);
 	minkern = GetInt8(kcd->gw,CID_MinKern,_("Min Kern"),&err);
 	onlyCloser = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_OnlyCloser));
+	autokern = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Autokern));
 	if ( err )
 return( true );
 	KCD_Finalize(kcd);
@@ -1188,6 +1190,7 @@ return( true );
 	kc->subtable->minkern = minkern;
 	kc->subtable->kerning_by_touch = touch;
 	kc->subtable->onlyCloser = onlyCloser;
+	kc->subtable->dontautokern = !autokern;
 
 	kc->first_cnt = kcd->first_cnt;
 	kc->second_cnt = kcd->second_cnt;
@@ -1983,11 +1986,12 @@ void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
 static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     int is_first = GGadgetGetCid(g) == CID_ClassList;
-    int i;
+    int i, autokern;
 
     ME_ClassCheckUnique(g, r, c, kcd->sf);
 
     if ( wasnew ) {
+	autokern = GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_Autokern));
 	if ( is_first ) {
 	    kcd->offsets = grealloc(kcd->offsets,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int16));
 	    memset(kcd->offsets+kcd->first_cnt*kcd->second_cnt,
@@ -1998,7 +2002,8 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 		    0, kcd->second_cnt*sizeof(DeviceTable));
 #endif
 	    ++kcd->first_cnt;
-	    KCD_AutoKernAClass(kcd,kcd->first_cnt-1,true);
+	    if ( autokern )
+		KCD_AutoKernAClass(kcd,kcd->first_cnt-1,true);
 	} else {
 	    int16 *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(int16));
 	    for ( i=0; i<kcd->first_cnt; ++i ) {
@@ -2021,7 +2026,8 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 	    }
 #endif
 	    ++kcd->second_cnt;
-	    KCD_AutoKernAClass(kcd,kcd->second_cnt-1,false);
+	    if ( autokern )
+		KCD_AutoKernAClass(kcd,kcd->second_cnt-1,false);
 	}
 	KCD_SBReset(kcd);
 	GDrawRequestExpose(kcd->gw,NULL,false);
@@ -2524,10 +2530,10 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
 void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[53], sepbox, classbox, hvbox, buttonbox, mainbox[2], topbox[2], titbox;
+    GGadgetCreateData gcd[54], sepbox, classbox, hvbox, buttonbox, mainbox[2], topbox[2], titbox, hbox;
     GGadgetCreateData *harray1[17], *harray2[17], *varray1[5], *varray2[5];
-    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[19], *h4array[8], *harrayclasses[6], *titlist[4];
-    GTextInfo label[53];
+    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[19], *h4array[8], *harrayclasses[6], *titlist[4], *h5array[3];
+    GTextInfo label[54];
     KernClassDlg *kcd;
     int i, j, kc_width, vi;
     int as, ds, ld, sbsize;
@@ -2574,6 +2580,7 @@ return;
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
     memset(&classbox,0,sizeof(classbox));
+    memset(&hbox,0,sizeof(hbox));
     memset(&hvbox,0,sizeof(hvbox));
     memset(&buttonbox,0,sizeof(buttonbox));
     memset(&mainbox,0,sizeof(mainbox));
@@ -2725,7 +2732,6 @@ return;
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	if ( kc->subtable->onlyCloser )
 	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
@@ -2734,7 +2740,28 @@ return;
 	    "so the kerning offset will be negative.");
 	gcd[i].gd.cid = CID_OnlyCloser;
 	gcd[i].creator = GCheckBoxCreate;
-	varray[j++] = &gcd[i++]; varray[j++] = NULL;
+	h5array[0] = &gcd[i++];
+
+	label[i].text = (unichar_t *) _("Autokern new entries");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	if ( !kc->subtable->dontautokern )
+	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_cb_on;
+	gcd[i].gd.popup_msg = (unichar_t *) _(
+	    "When adding a new class provide default kerning values\n"
+	    "Between it and every class with which it interacts.");
+	gcd[i].gd.cid = CID_Autokern;
+	gcd[i].creator = GCheckBoxCreate;
+	h5array[1] = &gcd[i++]; h5array[2] = NULL;
+
+	memset(&hbox,0,sizeof(hbox));
+	hbox.gd.flags = gg_enabled|gg_visible;
+	hbox.gd.u.boxelements = h5array;
+	hbox.creator = GHBoxCreate;
+	
+	varray[j++] = &hbox; varray[j++] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+17);
     gcd[i].gd.pos.width = pos.width-20;

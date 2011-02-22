@@ -610,6 +610,7 @@ extern void AutoKern2BuildClasses(SplineFont *sf,int layer,
 	SplineChar **leftglyphs,SplineChar **rightglyphs,
 	struct lookup_subtable *sub,
 	int separation, int min_kern, int touching, int only_closer,
+	int autokern,
 	real good_enough);
 
 #endif

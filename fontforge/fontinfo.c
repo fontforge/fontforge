@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgeui.h"
 #include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>
@@ -2013,7 +2013,7 @@ static struct psdict *GFI_ParsePrivate(struct gfi_data *d) {
     struct psdict *ret = gcalloc(1,sizeof(struct psdict));
     GGadget *private = GWidgetGetControl(d->gw,CID_Private);
     int rows, cols = GMatrixEditGetColCnt(private);
-    struct matrix_data *strings = _GMatrixEditGet(private, &rows);
+    struct matrix_data *strings = GMatrixEditGet(private, &rows);
     int i,j;
 
     ret->cnt = rows;
@@ -3497,6 +3497,20 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int ss_cmp(const void *_md1, const void *_md2) {
+    const struct matrix_data *md1 = _md1, *md2 = _md2;
+
+    char buf1[20], buf2[20];
+    const char *l1, *l2;
+
+    if ( md1[1].u.md_ival == md2[1].u.md_ival ) {
+       l1 = langname(md1[0].u.md_ival,buf1);
+       l2 = langname(md2[0].u.md_ival,buf2);
+return( strcoll(l1,l2));
+    }
+return( md1[1].u.md_ival - md2[1].u.md_ival );
+}
+
 static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     SplineFont *sf = d->sf;
     struct matrix_data *md;
@@ -3519,6 +3533,7 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	    md[3*cnt+2].u.md_str = copy(on->name);
 	}
     }
+    qsort( md, cnt, 3*sizeof(struct matrix_data), ss_cmp );
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
 }
@@ -3945,7 +3960,8 @@ static void StoreSSNames(struct gfi_data *d) {
     OtfFeatNameListFree(sf->feat_names);
     sf->feat_names = NULL;
 
-    for ( i=0; i<rows; ++i ) {
+    qsort( strings, rows, 3*sizeof(struct matrix_data), ss_cmp );
+    for ( i=rows-1; i>=0; --i ) {
 	if ( strings[3*i+2].u.md_str == NULL )
     continue;
 	tag = strings[3*i+1].u.md_ival;
@@ -4142,6 +4158,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int32 len;
 	GTextInfo **ti;
 	int subs[4], super[4], strike[2];
+	struct otfname *fontstyle_name;
 	int design_size, size_top, size_bottom, styleid;
 	int strokedfont = false;
 	real strokewidth;
@@ -4212,7 +4229,7 @@ return( true );
 	}
 	if ( layer_cnt>=BACK_LAYER_MAX-2 ) {
 	    ff_post_error(_("Too many layers"),_("FontForge supports at most %d layers"),BACK_LAYER_MAX-2);
-	    /* This can be increased in configure-pfaedit.h */
+	    /* This can be increased in configure-fontforge.h */
 return( true );
 	}
 	if ( !CheckNames(d))
@@ -4252,6 +4269,34 @@ return(true);
 	size_bottom = rint(10*GetReal8(gw,CID_DesignBottom,_("_Bottom"),&err));
 	size_top = rint(10*GetReal8(gw,CID_DesignTop,_("_Top"),&err));
 	styleid = GetInt8(gw,CID_StyleID,_("Style _ID:"),&err);
+	fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
+	OtfNameListFree(fontstyle_name);
+	if ( design_size==0 && ( size_bottom!=0 || size_top!=0 || styleid!=0 || fontstyle_name!=NULL )) {
+	    ff_post_error(_("Bad Design Size Info"),_("If the design size is 0, then all other fields on that pane must be zero (or unspecified) too."));
+return( true );
+	} else if ( styleid!=0 && fontstyle_name==NULL ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a style name"));
+return( true );
+	} else if ( fontstyle_name==NULL && styleid!=0 ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style name for the design size, then you must specify a style id"));
+return( true );
+	} else if ( design_size<0 ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a design size, it must be positive"));
+return( true );
+	} else if ( size_bottom!=0 && size_bottom>design_size ) {
+	    ff_post_error(_("Bad Design Size Info"),_("In the design size range, the bottom field must be less than the design size."));
+return( true );
+	} else if ( size_top!=0 && size_top<design_size ) {
+	    ff_post_error(_("Bad Design Size Info"),_("In the design size range, the bottom top must be more than the design size."));
+return( true );
+	} else if ( styleid!=0 && size_top==0 ) {
+	    ff_post_error(_("Bad Design Size Info"),_("If you specify a style id for the design size, then you must specify a size range"));
+return( true );
+	} else if ( size_top!=0 && styleid==0 ) {
+	    ff_post_notice(_("Bad Design Size Info"),_("If you specify a design size range, then you are supposed to specify a style id and style name too. FontForge will allow you to leave those fields blank, but other applications may not."));
+	    /* no return, this is just a warning */
+	}
+
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_Revision))!='\0' )
 	    sfntRevision = rint(65536.*GetReal8(gw,CID_Revision,_("sfnt Revision:"),&err));
 	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_WoffMajor))!='\0' ) {

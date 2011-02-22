@@ -1626,10 +1626,10 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 	fprintf( sfd, "OtfFeatName: '%c%c%c%c' ",
 		fn->tag>>24, fn->tag>>16, fn->tag>>8, fn->tag );
 	for ( on=fn->names; on!=NULL; on=on->next ) {
-	    fprintf( sfd, "%d ", on->lang );
+	    fprintf( sfd, " %d ", on->lang );
 	    SFDDumpUTF7Str(sfd, on->name);
+	    putc('\n',sfd);
 	}
-	putc('\n',sfd);
     }
 }
 
@@ -1961,7 +1961,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		} else if ( otl->lookup_type==gpos_pair && sub->vertical_kerning )
 		    fprintf(sfd,"(1)");
 		if ( otl->lookup_type==gpos_pair && (sub->separation!=0 || sub->kerning_by_touch))
-		    fprintf(sfd,"[%d,%d,%d]", sub->separation, sub->minkern, sub->kerning_by_touch+2*sub->onlyCloser );
+		    fprintf(sfd,"[%d,%d,%d]", sub->separation, sub->minkern, sub->kerning_by_touch+2*sub->onlyCloser+4*sub->dontautokern );
 		putc(' ',sfd);
 	    }
 	    fprintf( sfd, "} [" );
@@ -5979,6 +5979,7 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 		    ch = nlgetc(sfd);
 		    sub->kerning_by_touch = ((ch-'0')&1)?1:0;
 		    sub->onlyCloser       = ((ch-'0')&2)?1:0;
+		    sub->dontautokern     = ((ch-'0')&4)?1:0;
 		    nlgetc(sfd);	/* slurp final bracket */
 		} else {
 		    ungetc(ch,sfd);
