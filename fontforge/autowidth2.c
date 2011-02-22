@@ -824,6 +824,7 @@ void AutoKern2BuildClasses(SplineFont *sf,int layer,
 	SplineChar **leftglyphs,SplineChar **rightglyphs,
 	struct lookup_subtable *sub,
 	int separation, int min_kern, int touching, int only_closer,
+	int autokern,
 	real good_enough) {
     AW_Data all;
     AW_Glyph *glyphs, *me, *other;
@@ -847,22 +848,26 @@ return;
 	good_enough = (sf->ascent+sf->descent)/100.0;
 
     if ( separation==0 && !touching ) {
+	/* Use default values. Generate them if they don't exist */
 	if ( sub->separation==0 && !sub->kerning_by_touch ) {
 	    sub->separation = sf->width_separation;
 	    if ( sf->width_separation==0 )
 		sub->separation = 15*(sf->ascent+sf->descent)/100;
 	    separation = sub->separation;
+	    autokern = true;
 	} else {
 	    separation = sub->separation;
 	    touching = sub->kerning_by_touch;
 	    min_kern = sub->minkern;
 	    only_closer = sub->onlyCloser;
+	    autokern = !sub->dontautokern;
 	}
     }
     sub->separation = separation;
     sub->minkern = min_kern;
     sub->kerning_by_touch = touching;
     sub->onlyCloser = only_closer;
+    sub->dontautokern = !autokern;
     chunk_height = (sf->ascent + sf->descent)/200;
 
     memset(&all,0,sizeof(all));
@@ -1006,10 +1011,11 @@ return;
     kc->adjusts = gcalloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
 #endif
 
-    AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,
-	    kc->first_cnt, kc->second_cnt, 
-	    kc2AddOffset, kc,
-	    separation,min_kern,touching,only_closer,chunk_height);
+    if ( autokern )
+	AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,
+		kc->first_cnt, kc->second_cnt, 
+		kc2AddOffset, kc,
+		separation,min_kern,touching,only_closer,chunk_height);
 
     if ( sub->lookup->lookup_flags & pst_r2l ) {
 	char **temp = kc->seconds;

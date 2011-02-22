@@ -5734,75 +5734,6 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self,void *closure) {
-
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
-    int cnt=0, i;
-    PST *pst, *lcar = NULL;
-    PyObject *tuple;
-
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type==pst_lcaret ) {
-	    lcar = pst;
-	    cnt = lcar->u.lcaret.cnt;
-    break;
-	}
-    }
-    tuple = PyTuple_New(cnt);
-
-    if ( lcar != NULL ) {
-	for ( i=0; i<cnt; ++i ) {
-	    PyTuple_SetItem( tuple,i,Py_BuildValue("i",lcar->u.lcaret.carets[i]) );
-	}
-    }
-return( tuple );
-}
-
-static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value,void *closure) {
-    SplineChar *sc = self->sc;
-    int i, cnt, lig_comp_max = 0, lc;
-    char *pt;
-    int16 *carets;
-    PST *pst, *lcar = NULL;
-
-    cnt = PySequence_Size(value);
-    if ( cnt==-1 )
-return( -1 );
-
-    if ( cnt > 0 )
-	carets = galloc( cnt*sizeof(int16) );
-    for ( i=0; i<cnt; ++i ) {
-	carets[i] = PyInt_AsLong( PySequence_GetItem(value,i) );
-	if ( PyErr_Occurred())
-return( -1 );
-    }
-
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type==pst_lcaret ) {
-	    lcar = pst;
-	    free( lcar->u.lcaret.carets );
-	} else if ( pst->type==pst_ligature ) {
-	    for ( lc=0, pt=pst->u.lig.components; *pt; ++pt )
-		if ( *pt==' ' ) ++lc;
-	    if ( lc>lig_comp_max )
-		lig_comp_max = lc;
-	}
-    }
-
-    if ( lcar == NULL && cnt > 0 ) {
-	lcar = chunkalloc(sizeof(PST));
-	lcar->type = pst_lcaret;
-	lcar->next = sc->possub;
-	sc->possub = lcar;
-    }
-    if ( lcar != NULL ) {
-	lcar->u.lcaret.cnt = cnt;
-	lcar->u.lcaret.carets = cnt > 0 ? carets : NULL;
-	sc->lig_caret_cnt_fixed = ( cnt != lig_comp_max ) ? true : false;
-    }
-return( 0 );
-}
-
 static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self,void *closure) {
 
 return( PyFV_From_FV_I(self->sc->parent->fv));
@@ -6683,9 +6614,6 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"manualHints",
 	 (getter)PyFF_Glyph_get_manualhints, (setter)PyFF_Glyph_set_manualhints,
 	 "The hints have been set manually, and the glyph should not be autohinted by default" },
-    {"lcarets",
-	 (getter)PyFF_Glyph_get_lcarets, (setter)PyFF_Glyph_set_lcarets,
-	 "The ligature caret locations, defined for this glyph, as a tuple.", NULL},
     {"validation_state",
 	 (getter)PyFF_Glyph_get_validation_state, (setter)PyFF_cant_set,
 	 "glyph's validation state (readonly)", NULL},
@@ -12760,6 +12688,7 @@ return( false );
 return( false );
     AutoKern2BuildClasses(fv->sf,fv->active_layer,first,second,sub,
 	    sub->separation,0,sub->kerning_by_touch, sub->onlyCloser,
+	    !sub->dontautokern,
 	    good_enough);
     free(first);
     if ( first!=second )
@@ -12806,13 +12735,15 @@ static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
     char **class1_strs, **class2_strs;
     int cnt1, cnt2, acnt;
     int16 *offs=NULL;
-    int separation= -1, touch=0, do_autokern=false, only_closer=0;
+    int separation= -1, touch=0, do_autokern=false, only_closer=0, autokern=true;
     double class_error_distance;
     /* arguments:
      *  (char *lookupname, char *newsubtabname, char ***classes1, char ***classes2, int *offsets [,char *after_sub_name])
-     *  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, char *after_sub_name])
-     *  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [, int only_closer, char *after_sub_name])
-     *  (char *lookupname, char *newsubtabname, int separation, double err [, int only_closer, char *after_sub_name])
+     *  (char *lookupname, char *newsubtabname, int separation, char ***classes1, char ***classes2 [, int only_closer, int autokern, char *after_sub_name])
+     *  (char *lookupname, char *newsubtabname, int separation, double err, char **list1, char **list2 [, int only_closer, int autokern, char *after_sub_name])
+     *  (char *lookupname, char *newsubtabname, int separation, double err [, int only_closer, int autokern, char *after_sub_name])
+     *  Also support arguments where [,int autokern] is absent as we used not to
+     *  allow the user to specify it
      * First is fully specified set of classes with offsets cnt=5/6
      * Second fully specified set of classes, to be autokerned cnt=5/7
      * Third two lists of glyphs to be turned into classes and then autokerned cnt=6/8
@@ -12831,21 +12762,45 @@ return( NULL );
 return( NULL );
 	do_autokern = false;
     } else if ( !PyInt_Check(arg4) && !PyLong_Check(arg4) && !PyFloat_Check(arg4)) {
-	if ( !PyArg_ParseTuple(args,"ssiOO|is", &lookup, &subtable,
-		&separation, &class1s, &class2s,
-		&only_closer, &after_str ))
+	PyObject *arg7 = acnt>=7 ? PySequence_GetItem(args,6) : NULL;
+	if ( arg7!=NULL && (PyInt_Check(arg7) || PyLong_Check(arg7))) {
+	    if ( !PyArg_ParseTuple(args,"ssiOO|iis", &lookup, &subtable,
+		    &separation, &class1s, &class2s,
+		    &only_closer, &autokern, &after_str ))
 return( NULL );
+	} else {
+	    if ( !PyArg_ParseTuple(args,"ssiOO|is", &lookup, &subtable,
+		    &separation, &class1s, &class2s,
+		    &only_closer, &after_str ))
+return( NULL );
+	}
     } else if ( acnt>5 &&
 	    (arg5=PySequence_GetItem(args,4)) && PySequence_Check(arg5) ) {
-	if ( !PyArg_ParseTuple(args,"ssidOO|is", &lookup, &subtable,
-		&separation, &class_error_distance, &list1, &list2,
-		&only_closer, &after_str ))
+	PyObject *arg8 = acnt>=8 ? PySequence_GetItem(args,7) : NULL;
+	if ( arg8!=NULL && (PyInt_Check(arg8) || PyLong_Check(arg8))) {
+	    if ( !PyArg_ParseTuple(args,"ssidOO|iis", &lookup, &subtable,
+		    &separation, &class_error_distance, &list1, &list2,
+		    &only_closer, &autokern, &after_str ))
 return( NULL );
+	} else {
+	    if ( !PyArg_ParseTuple(args,"ssidOO|is", &lookup, &subtable,
+		    &separation, &class_error_distance, &list1, &list2,
+		    &only_closer, &after_str ))
+return( NULL );
+	}
     } else {
-	if ( !PyArg_ParseTuple(args,"ssid|is", &lookup, &subtable,
-		&separation, &class_error_distance,
-		&only_closer, &after_str ))
+	PyObject *arg6 = acnt>=6 ? PySequence_GetItem(args,5) : NULL;
+	if ( arg6!=NULL && (PyInt_Check(arg6) || PyLong_Check(arg6))) {
+	    if ( !PyArg_ParseTuple(args,"ssid|iis", &lookup, &subtable,
+		    &separation, &class_error_distance,
+		    &only_closer, &autokern, &after_str ))
 return( NULL );
+	} else {
+	    if ( !PyArg_ParseTuple(args,"ssid|is", &lookup, &subtable,
+		    &separation, &class_error_distance,
+		    &only_closer, &after_str ))
+return( NULL );
+	}
     }
     if ( separation==0 )
 	touch=1;
@@ -12880,6 +12835,7 @@ return( NULL );
 	sub->separation = separation;
 	sub->kerning_by_touch = touch;
 	sub->onlyCloser = only_closer;
+	sub->dontautokern = !autokern;
     }
     sub->kc = chunkalloc(sizeof(KernClass));
     sub->kc->subtable = sub;
