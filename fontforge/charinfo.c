@@ -1422,11 +1422,14 @@ static void CI_ApplyAll(CharInfo *ci) {
 	PSTFree(sc->possub);
 	sc->possub = cached->possub;
 	cached->possub = NULL;
-
 #ifdef FONTFORGE_CONFIG_TYPE3
 	sc->tile_margin = cached->tile_margin;
 	sc->tile_bounds = cached->tile_bounds;
 #endif
+	if ( !sc->changed ) {
+	    sc->changed = true;
+	    refresh_fvdi = true;
+	}
     }
     if ( refresh_fvdi ) {
 	for ( fvs=(FontView *) sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next ) {
