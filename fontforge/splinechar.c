@@ -1023,6 +1023,7 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     int i, mv=0;
     int isnotdef, samename=false, sameuni=false;
     struct altuni *alt;
+    int real_glyph_change = sf->glyphs[sc->orig_pos]==sc;	/* Odd things happen in charinfo when user presses Next/Prev, hence need for the orig_pos check */
 
     for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
     if ( unienc==sc->unicodeenc || alt!=NULL )
@@ -1032,7 +1033,7 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     }
     if ( alt!=NULL || !samename ) {
 	isnotdef = strcmp(name,".notdef")==0;
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=sc ) {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->orig_pos!=sc->orig_pos ) {
 	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
 		if ( !mv && !MultipleValues(sf->glyphs[i]->name,i)) {
 return( false );
@@ -1075,15 +1076,19 @@ return( false );
 	alt->unienc = sc->unicodeenc;
     sc->unicodeenc = unienc;
     if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
-	if ( sc->name!=NULL )
+	if ( sc->name!=NULL && real_glyph_change )	/* Odd things happen in charinfo when user presses Next/Prev, hence need for the orig_pos check */
 	    SFGlyphRenameFixup(sf,sc->name,name);
 	free(sc->name);
 	sc->name = copy(name);
 	sc->namechanged = true;
-	GlyphHashFree(sf);
+	if ( real_glyph_change )
+	    GlyphHashFree(sf);
     }
-    sf->changed = true;
-    if ( samename )
+    if ( real_glyph_change )
+	sf->changed = true;
+    if ( !real_glyph_change )
+	/* Do Nothing */;
+    else if ( samename )
 	/* Ok to name it itself */;
     else if ( sameuni && ( unienc>=0xe000 && unienc<=0xf8ff ))
 	/* Ok to name things in the private use area */;
@@ -1102,7 +1107,8 @@ return( false );
     if ( comment!=NULL && *comment!='\0' )
 	sc->comment = copy(comment);
 
-    SCRefreshTitles(sc);
+    if ( real_glyph_change )
+	SCRefreshTitles(sc);
 return( true );
 }
 

@@ -39,7 +39,7 @@ static int last_gi_aspect = 0;
 typedef struct charinfo {
     CharView *cv;
     EncMap *map;
-    SplineChar *sc;
+    SplineChar *sc, *cachedsc;
     int def_layer;
     SplineChar *oldsc;		/* oldsc->charinfo will point to us. Used to keep track of that pointer */
     int enc;
@@ -49,7 +49,7 @@ typedef struct charinfo {
     int r,c;
     int lc_seen, lc_aspect, vert_aspect;
     Color last, real_last;
-    int cancel_is_done;
+    struct splinecharlist *changes;
 } CharInfo;
 
 #define CI_Width	218
@@ -566,7 +566,7 @@ return( true );
 static void CI_ParseCounters(CharInfo *ci) {
     int32 i,len;
     GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+600),&len);
-    SplineChar *sc = ci->sc;
+    SplineChar *sc = ci->cachedsc;
 
     free(sc->countermasks);
 
@@ -860,7 +860,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
     /*  complain and return failure */
     /* Check for various other errors */
     /* Otherwise process */
-    SplineChar *sc = ci->sc, *found;
+    SplineChar *sc = ci->cachedsc, *found;
     int i,j, rows, cols, isv, pstt, ch;
     char *pt;
     struct matrix_data *possub;
@@ -1163,7 +1163,7 @@ static void CI_ParseAltUnis(CharInfo *ci) {
     struct matrix_data *stuff = GMatrixEditGet(au,&rows);
     int i;
     struct altuni *altuni, *last = NULL;
-    SplineChar *sc = ci->sc;
+    SplineChar *sc = ci->cachedsc;
     int deenc = false;
     FontView *fvs;
     int oldcnt, newcnt;
@@ -1212,10 +1212,9 @@ static void CI_ParseAltUnis(CharInfo *ci) {
 
 static int _CI_OK(CharInfo *ci) {
     int val;
-    int ret, refresh_fvdi=0;
+    int ret;
     char *name, *comment;
     const unichar_t *nm;
-    FontView *fvs;
     int err = false;
     int tex_height, tex_depth, italic, topaccent;
     int hic, vic;
@@ -1291,6 +1290,17 @@ return( false );
 return( false );
     }
 #endif
+    if ( ci->cachedsc==NULL ) {
+	struct splinecharlist *scl;
+	ci->cachedsc = chunkalloc(sizeof(SplineChar));
+	ci->cachedsc->orig_pos = ci->sc->orig_pos;
+	ci->cachedsc->parent = ci->sc->parent;
+	scl = chunkalloc(sizeof(struct splinecharlist));
+	scl->sc = ci->cachedsc;
+	scl->next = ci->changes;
+	ci->changes = scl;
+    }
+    /* CI_ProcessPosSubs is the first thing which might change anything real */
     if ( !CI_ProcessPosSubs(ci)) {
 	free( accentdevtab );
 	free( italicdevtab );
@@ -1298,42 +1308,28 @@ return( false );
 return( false );
     }
     name = u2utf8_copy( nm );
-    if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
-	refresh_fvdi = 1;
     comment = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_Comment));
-    SCPreserveState(ci->sc,2);
-    ret = SCSetMetaData(ci->sc,name,val,comment);
+    ret = SCSetMetaData(ci->cachedsc,name,val,comment);
     free(name); free(comment);
-    ci->sc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
-    if ( refresh_fvdi ) {
-	for ( fvs=(FontView *) ci->sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next ) {
-	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
-	    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw character area in case this char is on screen */
-	}
-    }
+    ci->cachedsc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
     if ( ret ) {
-	ci->sc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
+	ci->cachedsc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
 	val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
-	if ( val!=-1 ) {
-	    if ( ci->sc->color != (int) (intpt) (std_colors[val].userdata) ) {
-		ci->sc->color = (intpt) (std_colors[val].userdata);
-		for ( fvs=(FontView *) ci->sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next )
-		    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw info area just in case this char is selected */
-	    }
-	}
+	if ( val!=-1 )
+	    ci->cachedsc->color = (intpt) (std_colors[val].userdata);
 	CI_ParseCounters(ci);
-	ci->sc->tex_height = tex_height;
-	ci->sc->tex_depth  = tex_depth;
-	ci->sc->italic_correction = italic;
-	ci->sc->top_accent_horiz = topaccent;
-	ci->sc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
+	ci->cachedsc->tex_height = tex_height;
+	ci->cachedsc->tex_depth  = tex_depth;
+	ci->cachedsc->italic_correction = italic;
+	ci->cachedsc->top_accent_horiz = topaccent;
+	ci->cachedsc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	ci->sc->italic_adjusts = DeviceTableParse(ci->sc->italic_adjusts,italicdevtab);
-	ci->sc->top_accent_adjusts = DeviceTableParse(ci->sc->top_accent_adjusts,accentdevtab);
+	ci->cachedsc->italic_adjusts = DeviceTableParse(ci->cachedsc->italic_adjusts,italicdevtab);
+	ci->cachedsc->top_accent_adjusts = DeviceTableParse(ci->cachedsc->top_accent_adjusts,accentdevtab);
 #endif
     }
-    ci->sc->horiz_variants = CI_ParseVariants(ci->sc->horiz_variants,ci,1,hicdt,hic,false);
-    ci->sc->vert_variants  = CI_ParseVariants(ci->sc->vert_variants ,ci,0,vicdt,vic,false);
+    ci->cachedsc->horiz_variants = CI_ParseVariants(ci->cachedsc->horiz_variants,ci,1,hicdt,hic,false);
+    ci->cachedsc->vert_variants  = CI_ParseVariants(ci->cachedsc->vert_variants ,ci,0,vicdt,vic,false);
 
     free( accentdevtab );
     free( italicdevtab );
@@ -1341,19 +1337,17 @@ return( false );
 
     CI_ParseAltUnis(ci);
 
-    if ( ret )
-	ci->sc->parent->changed = true;
     if ( ret && ci->lc_seen ) {
 	PST *pst, *prev=NULL;
 	int i;
-	ci->sc->lig_caret_cnt_fixed = lig_caret_cnt_fixed;
+	ci->cachedsc->lig_caret_cnt_fixed = lig_caret_cnt_fixed;
 	for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next )
 	    prev = pst;
 	if ( pst==NULL && lc_cnt==0 )
 	    /* Nothing to do */;
 	else if ( pst!=NULL && lc_cnt==0 ) {
 	    if ( prev==NULL )
-		ci->sc->possub = pst->next;
+		ci->cachedsc->possub = pst->next;
 	    else
 		prev->next = pst->next;
 	    pst->next = NULL;
@@ -1363,7 +1357,7 @@ return( false );
 		pst = chunkalloc(sizeof(PST));
 		pst->type = pst_lcaret;
 		pst->next = ci->sc->possub;
-		ci->sc->possub = pst;
+		ci->cachedsc->possub = pst;
 	    }
 	    if ( lc_cnt>pst->u.lcaret.cnt )
 		pst->u.lcaret.carets = grealloc(pst->u.lcaret.carets,lc_cnt*sizeof(int16));
@@ -1374,22 +1368,94 @@ return( false );
     }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    ci->sc->tile_margin = tile_margin;
-    ci->sc->tile_bounds = tileb;
+    ci->cachedsc->tile_margin = tile_margin;
+    ci->cachedsc->tile_bounds = tileb;
 #endif
 
 return( ret );
 }
 
+static void CI_ApplyAll(CharInfo *ci) {
+    int ret, refresh_fvdi = false;
+    struct splinecharlist *scl;
+    SplineChar *cached, *sc;
+    SplineFont *sf = ci->sc->parent;
+    FontView *fvs;
+
+    for ( scl = ci->changes; scl!=NULL; scl=scl->next ) {
+	cached = scl->sc;
+	sc = sf->glyphs[cached->orig_pos];
+	SCPreserveState(sc,2);
+	if ( strcmp(cached->name,sc->name)!=0 || cached->unicodeenc!=sc->unicodeenc )
+	    refresh_fvdi = 1;
+	ret = SCSetMetaData(sc,cached->name,cached->unicodeenc,cached->comment);
+	sc->unlink_rm_ovrlp_save_undo = cached->unlink_rm_ovrlp_save_undo;
+	sc->glyph_class = cached->glyph_class;
+	if ( sc->color != cached->color )
+	    refresh_fvdi = true;
+	sc->color = cached->color;
+	free(sc->countermasks);
+	sc->countermask_cnt = cached->countermask_cnt;
+	sc->countermasks = cached->countermasks;
+	cached->countermasks = NULL; cached->countermask_cnt = 0;
+	sc->tex_height = cached->tex_height;
+	sc->tex_depth  = cached->tex_depth;
+	sc->italic_correction = cached->italic_correction;
+	sc->top_accent_horiz = cached->top_accent_horiz;
+	sc->is_extended_shape = cached->is_extended_shape;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DeviceTableFree(sc->italic_adjusts);
+	DeviceTableFree(sc->top_accent_adjusts);
+	sc->italic_adjusts = cached->italic_adjusts;
+	sc->top_accent_adjusts = cached->top_accent_adjusts;
+	cached->italic_adjusts = cached->top_accent_adjusts = NULL;
+#endif
+	GlyphVariantsFree(sc->horiz_variants);
+	GlyphVariantsFree(sc->vert_variants);
+	sc->horiz_variants = cached->horiz_variants;
+	sc->vert_variants = cached->vert_variants;
+	cached->horiz_variants = cached->vert_variants = NULL;
+	AltUniFree(sc->altuni);
+	sc->altuni = cached->altuni;
+	cached->altuni = NULL;
+	sc->lig_caret_cnt_fixed = cached->lig_caret_cnt_fixed;
+	PSTFree(sc->possub);
+	sc->possub = cached->possub;
+	cached->possub = NULL;
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+	sc->tile_margin = cached->tile_margin;
+	sc->tile_bounds = cached->tile_bounds;
+#endif
+    }
+    if ( refresh_fvdi ) {
+	for ( fvs=(FontView *) sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next ) {
+	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
+	    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw character area in case this char is on screen */
+	}
+    }
+    if ( ci->changes )
+	sf->changed = true;
+}
+
 static void CI_Finish(CharInfo *ci) {
+    struct splinecharlist *scl, *next;
+
+    for ( scl=ci->changes; scl!=NULL; scl=next ) {
+	next = scl->next;
+	SplineCharFree(scl->sc);
+	chunkfree(scl,sizeof(*scl));
+    }
     GDrawDestroyWindow(ci->gw);
 }
 
 static int CI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( _CI_OK(ci) )
+	if ( _CI_OK(ci) ) {
+	    CI_ApplyAll(ci);
 	    CI_Finish(ci);
+	}
     }
 return( true );
 }
@@ -3592,7 +3658,7 @@ return( true );
 }
 
 static void CIFillup(CharInfo *ci) {
-    SplineChar *sc = ci->sc;
+    SplineChar *sc = ci->cachedsc!=NULL ? ci->cachedsc : ci->sc;
     SplineFont *sf = sc->parent;
     unichar_t *temp;
     char buffer[400];
@@ -3614,8 +3680,8 @@ static void CIFillup(CharInfo *ci) {
 
     if ( ci->oldsc!=NULL && ci->oldsc->charinfo==ci )
 	ci->oldsc->charinfo = NULL;
-    sc->charinfo = ci;
-    ci->oldsc = sc;
+    ci->sc->charinfo = ci;
+    ci->oldsc = ci->sc;
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), ci->enc>0 &&
 	    ((gid=ci->map->map[ci->enc-1])==-1 ||
@@ -3869,6 +3935,7 @@ static int CI_NextPrev(GGadget *g, GEvent *e) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int enc = ci->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
 	SplineChar *new;
+	struct splinecharlist *scl;
 
 	if ( enc<0 || enc>=ci->map->enccount ) {
 	    GGadgetSetEnabled(g,false);
@@ -3883,10 +3950,9 @@ return( true );
 	}
 	ci->sc = new;
 	ci->enc = enc;
-	if ( !ci->cancel_is_done ) {
-	    ci->cancel_is_done = true;
-	    GGadgetSetTitle8WithMn(GWidgetGetControl(ci->gw,CID_Cancel),_("_Done"));
-	}
+	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new->orig_pos;
+		scl = scl->next );
+	ci->cachedsc = scl==NULL ? NULL : scl->sc;
 	CIFillup(ci);
     }
 return( true );
