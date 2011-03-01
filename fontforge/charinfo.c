@@ -50,6 +50,7 @@ typedef struct charinfo {
     int lc_seen, lc_aspect, vert_aspect;
     Color last, real_last;
     struct splinecharlist *changes;
+    int name_change, uni_change;
 } CharInfo;
 
 #define CI_Width	218
@@ -1210,6 +1211,203 @@ static void CI_ParseAltUnis(CharInfo *ci) {
     }
 }
 
+static KernPair *CI_KPCopy(KernPair *kp) {
+    KernPair *head=NULL, *last=NULL, *newkp;
+
+    while ( kp!=NULL ) {
+	newkp = chunkalloc(sizeof(KernPair));
+	*newkp = *kp;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	newkp->adjust = DeviceTableCopy(kp->adjust);
+#endif;
+	newkp->next = NULL;
+	if ( head==NULL )
+	    head = newkp;
+	else
+	    last->next = newkp;
+	last = newkp;
+	kp = kp->next;
+    }
+return( head );
+}
+
+static PST *CI_PSTCopy(PST *pst) {
+    PST *head=NULL, *last=NULL, *newpst;
+
+    while ( pst!=NULL ) {
+	newpst = chunkalloc(sizeof(KernPair));
+	*newpst = *pst;
+	if ( newpst->type==pst_ligature ) {
+	    newpst->u.lig.components = copy(pst->u.lig.components);
+	} else if ( newpst->type==pst_pair ) {
+	    newpst->u.pair.paired = copy(pst->u.pair.paired);
+	    newpst->u.pair.vr = chunkalloc(sizeof( struct vr [2]));
+	    memcpy(newpst->u.pair.vr,pst->u.pair.vr,sizeof(struct vr [2]));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    newpst->u.pair.vr[0].adjust = ValDevTabCopy(pst->u.pair.vr[0].adjust);
+	    newpst->u.pair.vr[1].adjust = ValDevTabCopy(pst->u.pair.vr[1].adjust);
+#endif
+	} else if ( newpst->type==pst_lcaret ) {
+	    newpst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
+	    memcpy(newpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(uint16));
+	} else if ( newpst->type==pst_substitution || newpst->type==pst_multiple || newpst->type==pst_alternate )
+	    newpst->u.subs.variant = copy(pst->u.subs.variant);
+	newpst->next = NULL;
+	if ( head==NULL )
+	    head = newpst;
+	else
+	    last->next = newpst;
+	last = newpst;
+	pst = pst->next;
+    }
+return( head );
+}
+
+static SplineChar *CI_SCDuplicate(SplineChar *sc) {
+    SplineChar *newsc;		/* copy everything we care about in this dlg */
+
+    newsc = chunkalloc(sizeof(SplineChar));
+    newsc->name = copy(sc->name);
+    newsc->unicodeenc = sc->unicodeenc;
+    newsc->orig_pos = sc->orig_pos;
+    newsc->comment = copy(sc->comment);
+    newsc->unlink_rm_ovrlp_save_undo = sc->unlink_rm_ovrlp_save_undo;
+    newsc->glyph_class = sc->glyph_class;
+    newsc->color = sc->color;
+    if ( sc->countermask_cnt!=0 ) {
+	newsc->countermask_cnt = sc->countermask_cnt;
+	newsc->countermasks = galloc(sc->countermask_cnt*sizeof(HintMask));
+	memcpy(newsc->countermasks,sc->countermasks,sc->countermask_cnt*sizeof(HintMask));
+    }
+    newsc->tex_height = sc->tex_height;
+    newsc->tex_depth = sc->tex_depth;
+    newsc->italic_correction = sc->italic_correction;
+    newsc->top_accent_horiz = sc->top_accent_horiz;
+    newsc->is_extended_shape = sc->is_extended_shape;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    newsc->italic_adjusts = DeviceTableCopy(sc->italic_adjusts);
+    newsc->top_accent_adjusts = DeviceTableCopy(sc->top_accent_adjusts);
+#endif
+    newsc->horiz_variants = GlyphVariantsCopy(sc->horiz_variants);
+    newsc->vert_variants = GlyphVariantsCopy(sc->vert_variants);
+    newsc->altuni = AltUniCopy(sc->altuni,NULL);
+    newsc->lig_caret_cnt_fixed = sc->lig_caret_cnt_fixed;
+    newsc->possub = CI_PSTCopy(sc->possub);
+    newsc->kerns = CI_KPCopy(sc->kerns);
+    newsc->vkerns = CI_KPCopy(sc->vkerns);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    newsc->tile_margin = sc->tile_margin;
+    newsc->tile_bounds = sc->tile_bounds;
+#endif
+return( newsc );
+}
+
+static int CI_CheckMetaData(CharInfo *ci,SplineChar *oldsc,char *name,int unienc, char *comment) {
+    SplineFont *sf = oldsc->parent;
+    int i;
+    int isnotdef, samename=false, sameuni=false;
+    struct altuni *alt;
+    SplineChar *newsc = ci->cachedsc;
+    struct splinecharlist *scl, *baduniscl, *badnamescl;
+    SplineChar *baduni, *badname;
+
+    for ( alt=oldsc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
+    if ( unienc==oldsc->unicodeenc || alt!=NULL )
+	sameuni=true;
+    samename = ( strcmp(name,oldsc->name)==0 );
+    
+    isnotdef = strcmp(name,".notdef")==0;
+    if (( !sameuni && unienc!=-1) || (!samename && !isnotdef) ) {
+	baduniscl = badnamescl = NULL;
+	baduni = badname = NULL;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=ci->sc ) {
+	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
+		for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=i; scl = scl->next );
+		if ( scl==NULL ) {
+		    baduni = sf->glyphs[i];
+		    baduniscl = NULL;
+		} else if ( scl->sc->unicodeenc==unienc ) {
+		    baduni = scl->sc;
+		    baduniscl = scl;
+		}
+	    }
+	    if ( !isnotdef && strcmp(name,sf->glyphs[i]->name )==0 ) {
+		for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=i; scl = scl->next );
+		if ( scl==NULL ) {
+		    badname = sf->glyphs[i];
+		    badnamescl = NULL;
+		} else if ( strcmp(scl->sc->name,name)==0 ) {
+		    badname = scl->sc;
+		    badnamescl = scl;
+		}
+	    }
+	}
+	for ( scl=ci->changes; scl!=NULL ; scl = scl->next ) if ( scl->sc!=newsc ) {
+	    if ( unienc!=-1 && scl->sc->unicodeenc==unienc ) {
+		baduni = scl->sc;
+		baduniscl = scl;
+	    }
+	    if ( !isnotdef && strcmp(scl->sc->name,name)==0 ) {
+		badname = scl->sc;
+		badnamescl = scl;
+	    }
+	}
+	if ( baduni!=NULL || badname!=NULL ) {
+	    char *buts[3];
+	    buts[0] = _("_Yes"); buts[1]=_("_Cancel"); buts[2] = NULL;
+	    if ( badname==baduni ) {
+		if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this name and encoding,\nboth must be unique within a font,\ndo you want to swap them?"))==1 )
+return( false );
+		/* If we're going to swap, then add the swapee to the list of */
+		/*  things that need changing */
+		if ( baduniscl==NULL ) {
+		    baduni = CI_SCDuplicate(baduni);
+		    baduniscl = chunkalloc(sizeof(struct splinecharlist));
+		    baduniscl->sc = baduni;
+		    baduniscl->next = ci->changes;
+		    ci->changes = baduniscl;
+		}
+		baduni->unicodeenc = oldsc->unicodeenc;
+		free(baduni->name); baduni->name = copy(oldsc->name);
+	    } else {
+		if ( baduni!=NULL ) {
+		    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this encoding,\nwhich must be unique within a font,\ndo you want to swap the encodings of the two?"))==1 )
+return( false );
+		    if ( baduniscl==NULL ) {
+			baduni = CI_SCDuplicate(baduni);
+			baduniscl = chunkalloc(sizeof(struct splinecharlist));
+			baduniscl->sc = baduni;
+			baduniscl->next = ci->changes;
+			ci->changes = baduniscl;
+		    }
+		    baduni->unicodeenc = oldsc->unicodeenc;
+		}
+		if ( badname!=NULL ) {
+		    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this name,\nwhich must be unique within a font,\ndo you want to swap the names of the two?"))==1 )
+return( false );
+		    if ( badnamescl==NULL ) {
+			badname = CI_SCDuplicate(badname);
+			badnamescl = chunkalloc(sizeof(struct splinecharlist));
+			badnamescl->sc = badname;
+			badnamescl->next = ci->changes;
+			ci->changes = badnamescl;
+		    }
+		    free(badname->name); badname->name = copy(oldsc->name);
+		}
+	    }
+	}
+    }
+    if ( !samename )
+	ci->name_change = true;
+    if ( !sameuni )
+	ci->uni_change = true;
+    free( newsc->name ); free( newsc->comment );
+    newsc->name = copy( name );
+    newsc->unicodeenc = unienc;
+    newsc->comment = copy( comment );
+return( true );
+}
+
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret;
@@ -1228,6 +1426,7 @@ static int _CI_OK(CharInfo *ci) {
     real tile_margin=0;
     DBounds tileb;
 #endif
+    SplineChar *oldsc = ci->cachedsc==NULL ? ci->sc : ci->cachedsc;
 
     if ( !CI_ValidateAltUnis(ci))
 return( false );
@@ -1309,25 +1508,33 @@ return( false );
     }
     name = u2utf8_copy( nm );
     comment = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_Comment));
-    ret = SCSetMetaData(ci->cachedsc,name,val,comment);
-    free(name); free(comment);
-    ci->cachedsc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
-    if ( ret ) {
-	ci->cachedsc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
-	val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
-	if ( val!=-1 )
-	    ci->cachedsc->color = (intpt) (std_colors[val].userdata);
-	CI_ParseCounters(ci);
-	ci->cachedsc->tex_height = tex_height;
-	ci->cachedsc->tex_depth  = tex_depth;
-	ci->cachedsc->italic_correction = italic;
-	ci->cachedsc->top_accent_horiz = topaccent;
-	ci->cachedsc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	ci->cachedsc->italic_adjusts = DeviceTableParse(ci->cachedsc->italic_adjusts,italicdevtab);
-	ci->cachedsc->top_accent_adjusts = DeviceTableParse(ci->cachedsc->top_accent_adjusts,accentdevtab);
-#endif
+    if ( comment!=NULL && *comment=='\0' ) {
+	free(comment);
+	comment=NULL;
     }
+    ret = CI_CheckMetaData(ci,oldsc,name,val,comment);
+    free(name); free(comment);
+    if ( !ret ) {
+	free( accentdevtab );
+	free( italicdevtab );
+	free(hicdt); free(vicdt);
+return( true );
+    }
+    ci->cachedsc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
+    ci->cachedsc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
+    val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
+    if ( val!=-1 )
+	ci->cachedsc->color = (intpt) (std_colors[val].userdata);
+    CI_ParseCounters(ci);
+    ci->cachedsc->tex_height = tex_height;
+    ci->cachedsc->tex_depth  = tex_depth;
+    ci->cachedsc->italic_correction = italic;
+    ci->cachedsc->top_accent_horiz = topaccent;
+    ci->cachedsc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    ci->cachedsc->italic_adjusts = DeviceTableParse(ci->cachedsc->italic_adjusts,italicdevtab);
+    ci->cachedsc->top_accent_adjusts = DeviceTableParse(ci->cachedsc->top_accent_adjusts,accentdevtab);
+#endif
     ci->cachedsc->horiz_variants = CI_ParseVariants(ci->cachedsc->horiz_variants,ci,1,hicdt,hic,false);
     ci->cachedsc->vert_variants  = CI_ParseVariants(ci->cachedsc->vert_variants ,ci,0,vicdt,vic,false);
 
@@ -1337,11 +1544,11 @@ return( false );
 
     CI_ParseAltUnis(ci);
 
-    if ( ret && ci->lc_seen ) {
+    if ( ci->lc_seen ) {
 	PST *pst, *prev=NULL;
 	int i;
 	ci->cachedsc->lig_caret_cnt_fixed = lig_caret_cnt_fixed;
-	for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next )
+	for ( pst = ci->cachedsc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next )
 	    prev = pst;
 	if ( pst==NULL && lc_cnt==0 )
 	    /* Nothing to do */;
@@ -1376,7 +1583,7 @@ return( ret );
 }
 
 static void CI_ApplyAll(CharInfo *ci) {
-    int ret, refresh_fvdi = false;
+    int refresh_fvdi = false;
     struct splinecharlist *scl;
     SplineChar *cached, *sc;
     SplineFont *sf = ci->sc->parent;
@@ -1388,7 +1595,35 @@ static void CI_ApplyAll(CharInfo *ci) {
 	SCPreserveState(sc,2);
 	if ( strcmp(cached->name,sc->name)!=0 || cached->unicodeenc!=sc->unicodeenc )
 	    refresh_fvdi = 1;
-	ret = SCSetMetaData(sc,cached->name,cached->unicodeenc,cached->comment);
+	if ( sc->name==NULL || strcmp( sc->name,cached->name )!=0 ) {
+	    if ( sc->name!=NULL )
+		SFGlyphRenameFixup(sf,sc->name,cached->name);
+	    free(sc->name); sc->name = copy(cached->name);
+	    sc->namechanged = true;
+	    GlyphHashFree(sf);
+	}
+	if ( sc->unicodeenc != cached->unicodeenc ) {
+	    struct splinecharlist *scl;
+	    int layer;
+	    RefChar *ref;
+	    struct altuni *alt;
+
+	    /* All references need the new unicode value */
+	    for ( scl=sc->dependents; scl!=NULL; scl=scl->next ) {
+		for ( layer=ly_back; layer<scl->sc->layer_cnt; ++layer )
+		    for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+			if ( ref->sc==sc )
+			    ref->unicode_enc = cached->unicodeenc;
+	    }
+	    /* If the current unicode enc were in the list of alt unis */
+	    /*  the user might have forgotten to remove it. So if s/he did */
+	    /*  forget, swap the altuni value with the old value */
+	    for ( alt=cached->altuni; alt!=NULL && (alt->unienc!=cached->unicodeenc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
+	    if ( alt!=NULL )	/* alt->unienc==new value */
+		alt->unienc = sc->unicodeenc;
+	    sc->unicodeenc = cached->unicodeenc;
+	}
+	free(sc->comment); sc->comment = copy(cached->comment);
 	sc->unlink_rm_ovrlp_save_undo = cached->unlink_rm_ovrlp_save_undo;
 	sc->glyph_class = cached->glyph_class;
 	if ( sc->color != cached->color )
@@ -1422,6 +1657,9 @@ static void CI_ApplyAll(CharInfo *ci) {
 	PSTFree(sc->possub);
 	sc->possub = cached->possub;
 	cached->possub = NULL;
+	KernPairsFree(sc->kerns); KernPairsFree(sc->vkerns);
+	sc->kerns = cached->kerns; sc->vkerns = cached->vkerns;
+	cached->kerns = cached->vkerns = NULL;
 #ifdef FONTFORGE_CONFIG_TYPE3
 	sc->tile_margin = cached->tile_margin;
 	sc->tile_bounds = cached->tile_bounds;
@@ -1430,9 +1668,22 @@ static void CI_ApplyAll(CharInfo *ci) {
 	    sc->changed = true;
 	    refresh_fvdi = true;
 	}
+	SCRefreshTitles(sc);
+    }
+    if ( ci->name_change || ci->uni_change ) {
+	for ( fvs=(FontView *) sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
+	    /* Postscript encodings are by name, others are by unicode */
+	    /* Hence slight differences in when we update the encoding */
+	    if ( (ci->name_change && fvs->b.map->enc->psnames!=NULL ) ||
+		    (ci->uni_change && fvs->b.map->enc->psnames==NULL )) {
+		fvs->b.map->enc = &custom;
+		FVSetTitle((FontViewBase *) fvs);
+		refresh_fvdi = true;
+	    }
+	}
     }
     if ( refresh_fvdi ) {
-	for ( fvs=(FontView *) sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next ) {
+	for ( fvs=(FontView *) sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
 	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
 	    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw character area in case this char is on screen */
 	}

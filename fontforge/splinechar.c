@@ -1023,7 +1023,9 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     int i, mv=0;
     int isnotdef, samename=false, sameuni=false;
     struct altuni *alt;
-    int real_glyph_change = sf->glyphs[sc->orig_pos]==sc;	/* Odd things happen in charinfo when user presses Next/Prev, hence need for the orig_pos check */
+
+    if ( sf->glyphs[sc->orig_pos]!=sc )
+	IError("Bad call to SCSetMetaData");
 
     for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
     if ( unienc==sc->unicodeenc || alt!=NULL )
@@ -1076,19 +1078,15 @@ return( false );
 	alt->unienc = sc->unicodeenc;
     sc->unicodeenc = unienc;
     if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
-	if ( sc->name!=NULL && real_glyph_change )	/* Odd things happen in charinfo when user presses Next/Prev, hence need for the orig_pos check */
+	if ( sc->name!=NULL )
 	    SFGlyphRenameFixup(sf,sc->name,name);
 	free(sc->name);
 	sc->name = copy(name);
 	sc->namechanged = true;
-	if ( real_glyph_change )
-	    GlyphHashFree(sf);
+	GlyphHashFree(sf);
     }
-    if ( real_glyph_change )
-	sf->changed = true;
-    if ( !real_glyph_change )
-	/* Do Nothing */;
-    else if ( samename )
+    sf->changed = true;
+    if ( samename )
 	/* Ok to name it itself */;
     else if ( sameuni && ( unienc>=0xe000 && unienc<=0xf8ff ))
 	/* Ok to name things in the private use area */;
@@ -1107,8 +1105,7 @@ return( false );
     if ( comment!=NULL && *comment!='\0' )
 	sc->comment = copy(comment);
 
-    if ( real_glyph_change )
-	SCRefreshTitles(sc);
+    SCRefreshTitles(sc);
 return( true );
 }
 
