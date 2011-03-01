@@ -5965,6 +5965,27 @@ return;
     chunkfree(gv,sizeof(*gv));
 }
 
+struct glyphvariants *GlyphVariantsCopy(struct glyphvariants *gv) {
+    struct glyphvariants *newgv;
+    int i;
+
+    if ( gv==NULL )
+return( NULL );
+    newgv = chunkalloc(sizeof(struct glyphvariants));
+    newgv->variants = copy(gv->variants);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    newgv->italic_adjusts = DeviceTableCopy(gv->italic_adjusts);
+#endif
+    newgv->part_cnt = gv->part_cnt;
+    if ( gv->part_cnt!=0 ) {
+	newgv->parts = gcalloc(gv->part_cnt,sizeof(struct gv_part));
+	memcpy(newgv->parts,gv->parts,gv->part_cnt*sizeof(struct gv_part));
+	for ( i=0; i<gv->part_cnt; ++i )
+	    newgv->parts[i].component = copy(gv->parts[i].component);
+    }
+return( newgv );
+}
+
 struct mathkern *MathKernCopy(struct mathkern *mk) {
     int i,j;
     struct mathkern *mknew;

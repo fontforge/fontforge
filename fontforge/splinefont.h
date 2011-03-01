@@ -2187,6 +2187,7 @@ extern SplineChar *SplineCharCreate(int layer_cnt);
 extern SplineChar *SFSplineCharCreate(SplineFont *sf);
 extern RefChar *RefCharCreate(void);
 extern RefChar *RefCharsCopy(RefChar *ref);	/* Still needs to be instanciated and have the dependency list adjusted */
+extern struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff);
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
@@ -2205,6 +2206,7 @@ extern void MacNameListFree(struct macname *mn);
 extern void MacSettingListFree(struct macsetting *ms);
 extern void MacFeatListFree(MacFeat *mf);
 extern void GlyphVariantsFree(struct glyphvariants *gv);
+extern struct glyphvariants *GlyphVariantsCopy(struct glyphvariants *gv);
 extern void MathKernVContentsFree(struct mathkernvertex *mk);
 extern void MathKernFree(struct mathkern *mk);
 extern struct mathkern *MathKernCopy(struct mathkern *mk);

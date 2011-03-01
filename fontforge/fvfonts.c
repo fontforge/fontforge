@@ -464,7 +464,7 @@ static void KernClassesAdd(SplineFont *into, SplineFont *from,struct sfmergecont
     }
 }
 
-static struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) {
+struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) {
     struct altuni *head=NULL, *last=NULL, *cur;
 
     while ( altuni!=NULL ) {
