@@ -2317,24 +2317,26 @@ static void GFI_Mark_DeleteClass(GGadget *g,int whichclass) {
     OTLookup *otl;
     int isgpos;
 
+    whichclass += is_markclass;		/* Classes begin at 1, Sets begin at 0 */
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
 	    if ( is_markclass ) {
 		int old = (otl->lookup_flags & pst_markclass)>>8;
 		if ( old==whichclass ) {
 		    ff_post_notice(_("Mark Class was in use"),_("This mark class (%s) was used in lookup %s"),
-			    classes[2*whichclass+0].u.md_str,otl->lookup_name);
+			    classes[2*whichclass-2].u.md_str,otl->lookup_name);
 		    otl->lookup_flags &= ~ pst_markclass;
 		} else if ( old>whichclass ) {
 		    otl->lookup_flags &= ~ pst_markclass;
 		    otl->lookup_flags |= (old-1)<<8;
 		}
-	    } else {
+	    } else if ( otl->lookup_flags&pst_usemarkfilteringset ) {
 		int old = (otl->lookup_flags & pst_markset)>>16;
 		if ( old==whichclass ) {
 		    ff_post_notice(_("Mark Set was in use"),_("This mark set (%s) was used in lookup %s"),
 			    classes[2*whichclass+0].u.md_str,otl->lookup_name);
 		    otl->lookup_flags &= ~ pst_markset;
+		    otl->lookup_flags &= ~pst_usemarkfilteringset;
 		} else if ( old>whichclass ) {
 		    otl->lookup_flags &= ~ pst_markset;
 		    otl->lookup_flags |= (old-1)<<16;
