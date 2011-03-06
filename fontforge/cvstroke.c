@@ -718,7 +718,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
 	sd->si = si;
 	yoff = 18;
     }
-    if ( sd->old_poly==NULL && si->poly!=NULL ) {
+    if ( sd->old_poly==NULL && si!=NULL && si->poly!=NULL ) {
 	sd->old_poly = si->poly;
 	si->poly = NULL;
     }
