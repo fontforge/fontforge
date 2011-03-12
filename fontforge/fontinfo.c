@@ -1232,6 +1232,10 @@ static struct col_init ssci[] = {
     { me_enum, NULL, otfssfeattags, NULL, N_("Feature Tags") },
     { me_string, NULL, NULL, NULL, N_("Friendly Name") }
     };
+static struct col_init sizeci[] = {
+    { me_enum, NULL, mslanguages, NULL, N_("Language") },
+    { me_string, NULL, NULL, NULL, N_("Name") }
+    };
 static GTextInfo gridfit[] = {
     { (unichar_t *) N_("No Grid Fit"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) N_("Grid Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -1658,9 +1662,6 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_DesignTop		8303
 #define CID_StyleID		8304
 #define CID_StyleName		8305
-#define CID_StyleNameNew	8306
-#define CID_StyleNameDel	8307
-#define CID_StyleNameRename	8308
 
 #define CID_Tabs		10001
 #define CID_OK			10002
@@ -2374,64 +2375,16 @@ static void GFI_CancelClose(struct gfi_data *d) {
     GFI_Close(d);
 }
 
-static char *OtfNameToText(int lang, const char *name) {
-    const char *langname;
-    char *text;
+static struct otfname *OtfNameFromStyleNames(GGadget *me) {
     int i;
-
-    for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-	if ( mslanguages[i].userdata == (void *) (intpt) lang )
-    break;
-    if ( i==-1 )
-	for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-	    if ( ((intpt) mslanguages[i].userdata&0xff) == (lang&0xff) )
-	break;
-    if ( i==-1 )
-	langname = "";
-    else
-	langname = (char*) (mslanguages[i].text);
-
-    text = galloc((strlen(langname)+strlen(name)+4));
-    strcpy(text,name);
-    strcat(text," | ");
-    strcat(text,langname);
-return( text );
-}
-
-static GTextInfo **StyleNames(struct otfname *otfn) {
-    int cnt;
-    struct otfname *on;
-    GTextInfo **tis;
-    char *cname;
-
-    for ( cnt=0, on=otfn; on!=NULL; on=on->next )
-	++cnt;
-    tis = galloc((cnt+1)*sizeof(GTextInfo *));
-    for ( cnt=0, on=otfn; on!=NULL; on=on->next, ++cnt ) {
-	tis[cnt] = gcalloc(1,sizeof(GTextInfo));
-	tis[cnt]->fg = tis[cnt]->bg = COLOR_DEFAULT;
-	tis[cnt]->userdata = (void *) (intpt) otfn->lang;
-	cname = OtfNameToText(on->lang,on->name);
-	tis[cnt]->text = utf82u_copy(cname);
-	free(cname);
-    }
-    tis[cnt] = gcalloc(1,sizeof(GTextInfo));
-return( tis );
-}
-
-static struct otfname *OtfNameFromStyleNames(GGadget *list) {
-    int32 len; int i;
-    GTextInfo **old = GGadgetGetList(list,&len);
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(me, &rows);
     struct otfname *head=NULL, *last, *cur;
-    unichar_t *pt, *temp;
 
-    for ( i=0; i<len; ++i ) {
+    for ( i=0; i<rows; ++i ) {
 	cur = chunkalloc(sizeof(struct otfname));
-	cur->lang = (intpt) old[i]->userdata;
-	pt = uc_strstr(old[i]->text," | ");
-	temp = u_copyn(old[i]->text,pt-old[i]->text);
-	cur->name = u2utf8_copy(temp);
-	free(temp);
+	cur->lang = strings[2*i  ].u.md_ival;
+	cur->name = copy(strings[2*i+1].u.md_str);
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -2439,217 +2392,6 @@ static struct otfname *OtfNameFromStyleNames(GGadget *list) {
 	last = cur;
     }
 return( head );
-}
-
-static int sn_e_h(GWindow gw, GEvent *event) {
-
-    if ( event->type==et_close ) {
-	int *d = GDrawGetUserData(gw);
-	*d = true;
-    } else if ( event->type == et_char ) {
-return( false );
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
-	int *d = GDrawGetUserData(gw);
-	*d = GGadgetGetCid(event->u.control.g)+1;
-    }
-return( true );
-}
-
-static void AskForLangName(GGadget *list,int sel) {
-    int32 len; int i;
-    GTextInfo **old = GGadgetGetList(list,&len);
-    unichar_t *name, *pt;
-    char *cname;
-    int lang_index;
-    GGadgetCreateData gcd[7], boxes[4], *buttonarray[10], *array[10];
-    GTextInfo label[5];
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    int done = 0;
-    int k;
-    GTextInfo **ti;
-    char *temp;
-
-    for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-	mslanguages[i].fg = mslanguages[i].bg = COLOR_DEFAULT;
-    if ( sel==-1 ) {
-	for ( i=0; i<len; ++i )
-	    if ( old[i]->userdata == (void *) 0x409 )
-	break;
-	if ( i==len ) {
-	    for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
-		if ( mslanguages[i].userdata == (void *) 0x409 )
-	    break;
-	    lang_index = i;
-	} else {
-	    for ( lang_index=sizeof(mslanguages)/sizeof(mslanguages[0])-1; lang_index>=0 ; --lang_index ) {
-		for ( i=0; i<len; ++i )
-		    if ( mslanguages[lang_index].userdata == old[i]->userdata )
-		break;
-		if ( i==len )
-	    break;
-	    }
-	}
-	if ( lang_index < 0 )
-	    lang_index = 0;
-	name = uc_copy("");
-    } else {
-	for ( lang_index=sizeof(mslanguages)/sizeof(mslanguages[0])-1; lang_index>=0 ; --lang_index )
-	    if ( mslanguages[lang_index].userdata == old[sel]->userdata )
-	break;
-	if ( lang_index < 0 )
-	    lang_index = 0;
-	pt = uc_strstr(old[sel]->text," | ");
-	name = u_copyn(old[sel]->text,pt-old[sel]->text);
-    }
-
-    memset(gcd,0,sizeof(gcd)); memset(boxes,0,sizeof(boxes));
-    memset(label,0,sizeof(label));
-
-    gcd[0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
-    gcd[0].gd.cid = CID_Language;
-    gcd[0].gd.u.list = mslanguages;
-    gcd[0].creator = GListButtonCreate;
-    for ( i=0; mslanguages[i].text!=NULL; ++i )
-	mslanguages[i].selected = false;
-    mslanguages[lang_index].selected = true;
-    array[0] = &gcd[0]; array[1] = GCD_ColSpan; array[2] = NULL;
-
-    k = 1;
-    label[k].text = (unichar_t *) _("_Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
-    array[3] = &gcd[k-1];
-
-    label[k].text = name;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled|gg_text_xim;
-    gcd[k].gd.cid = CID_StyleName;
-    gcd[k++].creator = GTextFieldCreate;
-    array[4] = &gcd[k-1]; array[5] = NULL;
-
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[k].text = (unichar_t *) _("_OK");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = true;
-    gcd[k++].creator = GButtonCreate;
-    buttonarray[0] = GCD_Glue; buttonarray[1]=&gcd[k-1]; buttonarray[2]=GCD_Glue; buttonarray[3]=GCD_Glue;
-
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[k].text = (unichar_t *) _("_Cancel");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = false;
-    gcd[k++].creator = GButtonCreate;
-    buttonarray[4] = GCD_Glue; buttonarray[5]=&gcd[k-1]; buttonarray[6]=GCD_Glue; buttonarray[7]=NULL;
-
-    boxes[2].gd.flags = gg_enabled|gg_visible;
-    boxes[2].gd.u.boxelements = buttonarray;
-    boxes[2].creator = GHBoxCreate;
-    array[6] = &boxes[2]; array[7] = GCD_ColSpan; array[8] = NULL;
-    array[9] = NULL;
-
-    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-    boxes[0].gd.flags = gg_enabled|gg_visible;
-    boxes[0].gd.u.boxelements = array;
-    boxes[0].creator = GHVGroupCreate;
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.is_dlg = true;
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Style Name");
-    pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(180));
-    pos.height = GDrawPointsToPixels(NULL,2*26+45);
-    gw = GDrawCreateTopWindow(NULL,&pos,sn_e_h,&done,&wattrs);
-
-    GGadgetsCreate(gw,boxes);
-    GHVBoxSetExpandableRow(boxes[2].ret,gb_expandglue);
-    free(name);
-    ti = GGadgetGetList(gcd[0].ret,&len);
-    for ( i=0; i<len; ++i )
-	if ( ti[i]->userdata == mslanguages[lang_index].userdata ) {
-	    GGadgetSelectOneListItem(gcd[0].ret,i);
-    break;
-	}
-    GHVBoxFitWindow(boxes[0].ret);
-    GDrawSetVisible(gw,true);
-
-    while ( !done )
-	GDrawProcessOneEvent(NULL);
-
-    if ( done==2 ) {
-	lang_index = GGadgetGetFirstListSelectedItem(gcd[0].ret);
-	cname = OtfNameToText((intpt) ti[lang_index]->userdata,
-		(temp = GGadgetGetTitle8(GWidgetGetControl(gw,CID_StyleName))));
-	free(temp);
-	if ( sel==-1 )
-	    GListAppendLine8(list,cname,false)->userdata =
-		    ti[lang_index]->userdata;
-	else
-	    GListChangeLine8(list,sel,cname)->userdata =
-		    ti[lang_index]->userdata;
-    }
-
-    GDrawDestroyWindow(gw);
-}
-
-static int GFI_StyleNameNew(GGadget *g, GEvent *e) {
-    GGadget *list;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_StyleName);
-	AskForLangName(list,-1);
-    }
-return( true );
-}
-
-static int GFI_StyleNameDel(GGadget *g, GEvent *e) {
-    GGadget *list;
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_StyleName);
-	GListDelSelected(list);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_StyleNameDel),false);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_StyleNameRename),false);
-    }
-return( true );
-}
-
-static int GFI_StyleNameRename(GGadget *g, GEvent *e) {
-    GGadget *list;
-    int sel;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_StyleName);
-	if ( (sel=GGadgetGetFirstListSelectedItem(list))==-1 )
-return( true );
-	AskForLangName(list,sel);
-    }
-return( true );
-}
-
-static int GFI_StyleNameSelChanged(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int sel = GGadgetGetFirstListSelectedItem(g);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_StyleNameDel),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_StyleNameRename),sel!=-1);
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	e->u.control.subtype = et_buttonactivate;
-	GFI_StyleNameRename(g,e);
-    }
-return( true );
 }
 
 void GListMoveSelected(GGadget *list,int offset) {
@@ -3536,6 +3278,39 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	}
     }
     qsort( md, cnt, 3*sizeof(struct matrix_data), ss_cmp );
+    mi->matrix_data = md;
+    mi->initial_row_cnt = cnt;
+}
+
+static int size_cmp(const void *_md1, const void *_md2) {
+    const struct matrix_data *md1 = _md1, *md2 = _md2;
+
+    char buf1[20], buf2[20];
+    const char *l1, *l2;
+
+   l1 = langname(md1[0].u.md_ival,buf1);
+   l2 = langname(md2[0].u.md_ival,buf2);
+return( strcoll(l1,l2));
+}
+
+static void SizeMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
+    SplineFont *sf = d->sf;
+    struct matrix_data *md;
+    struct otfname *on;
+    int cnt;
+
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 2;
+    mi->col_init = sizeci;
+
+    for ( cnt=0, on=sf->fontstyle_name; on!=NULL; on=on->next )
+	++cnt;
+    md = gcalloc(2*(cnt+10),sizeof(struct matrix_data));
+    for ( cnt=0, on=sf->fontstyle_name; on!=NULL; on=on->next, ++cnt ) {
+	md[2*cnt  ].u.md_ival = on->lang;
+	md[2*cnt+1].u.md_str = copy(on->name);
+    }
+    qsort( md, cnt, 2*sizeof(struct matrix_data), size_cmp );
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
 }
@@ -7612,7 +7387,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*txarray3[6], *txarray4[6], *uarray[5], *darray[10],
 	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
+	*szarray4[4], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4],
 	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4],
@@ -7640,7 +7415,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     unichar_t *tmpcreatetime, *tmpmodtime;
     time_t t;
     const struct tm *tm;
-    struct matrixinit mi, gaspmi, layersmi, ssmi, marks_mi, markc_mi, private_mi;
+    struct matrixinit mi, gaspmi, layersmi, ssmi, sizemi, marks_mi, markc_mi, private_mi;
     struct matrix_data *marks_md, *markc_md;
     int ltype;
     static GBox small_blue_box;
@@ -9741,7 +9516,7 @@ return;
     ssngcd[1].gd.cid = CID_SSNames;
     ssngcd[1].gd.u.matrix = &ssmi;
     ssngcd[1].gd.popup_msg = (unichar_t *) _(
-	"To create a new name, left click on the <New> button, and select a locale.\n"
+	"To create a new name, left click on the <New> button, and select a locale (language).\n"
 	"To change the locale, left click on it.\n"
 	"To change the feature, left click on it.\n"
 	"To change the text, left click in it and then type.\n"
@@ -10051,6 +9826,7 @@ return;
 /******************************************************************************/
     memset(&szlabel,0,sizeof(szlabel));
     memset(&szgcd,0,sizeof(szgcd));
+    SizeMatrixInit(&sizemi,d);
 
     k=0;
 
@@ -10159,63 +9935,29 @@ return;
     szgcd[k].gd.popup_msg = (unichar_t *) _("This provides a set of names used to identify the\nstyle of this font. Names may be translated into multiple\nlanguages (English is required, others are optional)\nAll fonts with the same Style ID should share this name.");
     szgcd[k++].creator = GLabelCreate;
 
-    szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+14;
-    szgcd[k].gd.pos.width = ngcd[15].gd.pos.width; szgcd[k].gd.pos.height = 100;
-    szgcd[k].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
+    szgcd[k].gd.pos.width = 300; szgcd[k].gd.pos.height = 200;
+    szgcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
     szgcd[k].gd.cid = CID_StyleName;
-    szgcd[k].gd.handle_controlevent = GFI_StyleNameSelChanged;
-    szgcd[k++].creator = GListCreate;
-
-    szgcd[k].gd.pos.x = 10; szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y+szgcd[k-1].gd.pos.height+4;
-    szgcd[k].gd.pos.width = -1;
-    szgcd[k].gd.flags = gg_visible | gg_enabled;
-    szlabel[k].text = (unichar_t *) S_("StyleName|_New...");
-    szlabel[k].text_is_1byte = true;
-    szlabel[k].text_in_resource = true;
-    szgcd[k].gd.label = &szlabel[k];
-    szgcd[k].gd.cid = CID_StyleNameNew;
-    szgcd[k].gd.handle_controlevent = GFI_StyleNameNew;
-    szgcd[k++].creator = GButtonCreate;
-
-    szgcd[k].gd.pos.x = 20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor);
-    szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y;
-    szgcd[k].gd.pos.width = -1;
-    szgcd[k].gd.flags = gg_visible;
-    szlabel[k].text = (unichar_t *) _("_Delete");
-    szlabel[k].text_is_1byte = true;
-    szlabel[k].text_in_resource = true;
-    szgcd[k].gd.label = &szlabel[k];
-    szgcd[k].gd.cid = CID_StyleNameDel;
-    szgcd[k].gd.handle_controlevent = GFI_StyleNameDel;
-    szgcd[k++].creator = GButtonCreate;
-
-    szgcd[k].gd.pos.x = 10 + 2*(10+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor));
-    szgcd[k].gd.pos.y = szgcd[k-1].gd.pos.y;
-    szgcd[k].gd.pos.width = -1;
-    szgcd[k].gd.flags = gg_visible;
-    szlabel[k].text = (unichar_t *) _("_Edit...");
-    szlabel[k].text_is_1byte = true;
-    szlabel[k].text_in_resource = true;
-    szgcd[k].gd.label = &szlabel[k];
-    szgcd[k].gd.cid = CID_StyleNameRename;
-    szgcd[k].gd.handle_controlevent = GFI_StyleNameRename;
-    szgcd[k++].creator = GButtonCreate;
+    szgcd[k].gd.u.matrix = &sizemi;
+    szgcd[k].gd.popup_msg = (unichar_t *) _(
+	"To create a new name, left click on the <New> button, and select a locale (language).\n"
+	"To change the locale, left click on it.\n"
+	"To change the text, left click in it and then type.\n"
+	);
+    szgcd[k].data = d;
+    szgcd[k].creator = GMatrixEditCreate;
 
     szarray[0] = &szbox[2];
     szarray[1] = &szbox[3];
     szarray[2] = &szbox[4];
     szarray[3] = &szgcd[11];
     szarray[4] = &szgcd[12];
-    szarray[5] = &szbox[5];
-    szarray[6] = NULL;
+    szarray[5] = NULL;
 
     szarray2[0] = &szgcd[0]; szarray2[1] = &szgcd[1]; szarray2[2] = &szgcd[2]; szarray2[3] = GCD_Glue; szarray2[4] = NULL;
     szarray3[0] = &szgcd[5]; szarray3[1] = &szgcd[6]; szarray3[2] = &szgcd[7]; szarray3[3] = &szgcd[8]; szarray3[4] = GCD_Glue; szarray3[5] = NULL;
      szarray3[6] = NULL;
     szarray4[0] = &szgcd[9]; szarray4[1] = &szgcd[10]; szarray4[2] = GCD_Glue; szarray4[3] = NULL;
-    szarray5[0] = &szgcd[13]; szarray5[1] = GCD_Glue;
-     szarray5[2] = &szgcd[14]; szarray5[3] = GCD_Glue;
-     szarray5[4] = &szgcd[15]; szarray5[5] = NULL;
 
     memset(szbox,0,sizeof(szbox));
     szbox[0].gd.flags = gg_enabled|gg_visible;
@@ -10234,10 +9976,6 @@ return;
     szbox[4].gd.flags = gg_enabled|gg_visible;
     szbox[4].gd.u.boxelements = szarray4;
     szbox[4].creator = GHBoxCreate;
-
-    szbox[5].gd.flags = gg_enabled|gg_visible;
-    szbox[5].gd.u.boxelements = szarray5;
-    szbox[5].creator = GHBoxCreate;
 
 /******************************************************************************/
     memset(&mcgcd,0,sizeof(mcgcd));
@@ -10909,7 +10647,6 @@ return;
     GHVBoxSetExpandableCol(szbox[3].ret,gb_expandglue);
     GHVBoxSetPadding(szbox[4].ret,6,2);
     GHVBoxSetExpandableCol(szbox[4].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(szbox[5].ret,gb_expandglue);
 
     GHVBoxSetExpandableRow(tnboxes[0].ret,1);
     GHVBoxSetExpandableCol(tnboxes[2].ret,gb_expandglue);
@@ -10971,7 +10708,6 @@ return;
     GWidgetIndicateFocusGadget(ngcd[1].ret);
     PSPrivate_EnableButtons(GWidgetGetControl(d->gw,CID_Private),-1,-1);
     GFI_AspectChange(mgcd[0].ret,NULL);
-    GGadgetSetList(GWidgetGetControl(gw,CID_StyleName),StyleNames(sf->fontstyle_name),false);
 
     GHVBoxFitWindow(mb[0].ret);
 
@@ -11021,6 +10757,7 @@ void FontInfoInit(void) {
 			{ sizeof(gaspci)/sizeof(gaspci[0]), gaspci },
 			{ sizeof(layersci)/sizeof(layersci[0]), layersci },
 			{ sizeof(ssci)/sizeof(ssci[0]), ssci },
+			{ sizeof(sizeci)/sizeof(sizeci[0]), sizeci },
 			{ sizeof(marks_ci)/sizeof(marks_ci[0]), marks_ci },
 			{ sizeof(markc_ci)/sizeof(markc_ci[0]), markc_ci },
 			{ 0 }};
