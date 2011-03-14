@@ -151,10 +151,18 @@ typedef struct gmenu {
     struct gmenu *parent, *child;
     struct gmenubar *menubar;
     GWindow owner;
-    GTimer *scrollit;
+    GTimer *scrollit;		/* No longer in use, see comment below */
     FontInstance *font;
     void (*donecallback)(GWindow owner);
     GIC *gic;
+    /* The code below still contains the old code for using up/down arrows */
+    /*  in the menu instead of a scrollbar. If vsb==NULL and the menu doesn't */
+    /*  fit on the screen, then the old code will be implemented (normally */
+    /*  that won't happen, but if I ever want to re-enable it, this is how */
+    /* The up arrow was placed at the top of the menu IFF there were lines off */
+    /*  the top, similarly for the bottom. Clicking on either one would scroll */
+    /*  in the indicated directions */
+    GGadget *vsb;
 } GMenu;
 
 static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
@@ -381,7 +389,7 @@ static void GMenuDrawDownArrow(struct gmenu *m, int ybase) {
     GDrawDrawLine(m->w,p[2].x-pt,p[2].y,p[0].x,p[0].y+pt,m->box->border_darkest);
 }
 
-static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
+static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixmap) {
     unichar_t shortbuf[300];
     int as = GTextInfoGetAs(m->w,&mi->ti,m->font);
     int h, width;
@@ -392,23 +400,23 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
     int x;
 
     new.x = m->tickoff; new.width = m->rightedge-m->tickoff;
-    new.y = y; new.height = GTextInfoGetHeight(m->w,&mi->ti,m->font);
-    GDrawPushClip(m->w,&new,&old);
+    new.y = y; new.height = GTextInfoGetHeight(pixmap,&mi->ti,m->font);
+    GDrawPushClip(pixmap,&new,&old);
 
     if ( mi->ti.fg!=COLOR_DEFAULT && mi->ti.fg!=COLOR_UNKNOWN )
 	fg = mi->ti.fg;
     if ( mi->ti.disabled || m->disabled )
 	fg = m->box->disabled_foreground;
     if ( fg==COLOR_DEFAULT )
-	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(m->w));
+	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     if ( mi->ti.text!=NULL && isrighttoleft(mi->ti.text[0]) )
 	r2l = true;
 
     if ( r2l )
-	x = m->width-m->tioff-GTextInfoGetWidth(m->w,&mi->ti,m->font);
+	x = m->width-m->tioff-GTextInfoGetWidth(pixmap,&mi->ti,m->font);
     else
 	x = m->tioff;
-    h = GTextInfoDraw(m->w,x,y,&mi->ti,m->font,
+    h = GTextInfoDraw(pixmap,x,y,&mi->ti,m->font,
 	    (mi->ti.disabled || m->disabled )?m->box->disabled_foreground:fg,
 	    m->box->active_border,new.y+new.height);
 
@@ -423,52 +431,55 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
 	GMenuDrawArrow(m,ybase,r2l);
     else if ( mi->shortcut!=0 && (mi->short_mask&0xffe0)==0 && mac_menu_icons ) {
 	_shorttext(mi->shortcut,0,shortbuf);
-	width = GDrawGetBiTextWidth(m->w,shortbuf,-1,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
+	width = GDrawGetBiTextWidth(pixmap,shortbuf,-1,-1,NULL) + GMenuMacIconsWidth(m,mi->short_mask);
 	if ( r2l ) {
-	    int x = GDrawDrawBiText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    int x = GDrawDrawBiText(pixmap,m->bp,ybase,shortbuf,-1,NULL,fg);
 	    GMenuDrawMacIcons(m,fg,ybase, x, mi->short_mask);
 	} else {
 	    int x = GMenuDrawMacIcons(m,fg,ybase,m->rightedge-width, mi->short_mask);
-	    GDrawDrawBiText(m->w,x,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawBiText(pixmap,x,ybase,shortbuf,-1,NULL,fg);
 	}
     } else if ( mi->shortcut!=0 ) {
 	shorttext(mi,shortbuf);
 
-	width = GDrawGetBiTextWidth(m->w,shortbuf,-1,-1,NULL);
+	width = GDrawGetBiTextWidth(pixmap,shortbuf,-1,-1,NULL);
 	if ( r2l )
-	    GDrawDrawBiText(m->w,m->bp,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawBiText(pixmap,m->bp,ybase,shortbuf,-1,NULL,fg);
 	else
-	    GDrawDrawBiText(m->w,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
+	    GDrawDrawBiText(pixmap,m->rightedge-width,ybase,shortbuf,-1,NULL,fg);
     }
-    GDrawPopClip(m->w,&old);
+    GDrawPopClip(pixmap,&old);
 return( y + h );
 }
 
-static int gmenu_expose(struct gmenu *m, GEvent *event) {
+static int gmenu_expose(struct gmenu *m, GEvent *event,GWindow pixmap) {
     GRect old1, old2;
     GRect r;
     int i;
 
-    GDrawPushClip(m->w,&event->u.expose.rect,&old1);
+    GDrawPushClip(pixmap,&event->u.expose.rect,&old1);
     r.x = 0; r.width = m->width; r.y = 0; r.height = m->height;
-    GBoxDrawBackground(m->w,&r,m->box,gs_active,false);
-    GBoxDrawBorder(m->w,&r,m->box,gs_active,false);
+    GBoxDrawBackground(pixmap,&r,m->box,gs_active,false);
+    GBoxDrawBorder(pixmap,&r,m->box,gs_active,false);
     r.x = m->tickoff; r.width = m->rightedge-m->tickoff;
     r.y = m->bp; r.height = m->height - 2*m->bp;
-    GDrawPushClip(m->w,&r,&old2);
+    GDrawPushClip(pixmap,&r,&old2);
     for ( i = event->u.expose.rect.y/m->fh+m->offtop; i<m->mcnt &&
 	    i<=(event->u.expose.rect.y+event->u.expose.rect.height)/m->fh+m->offtop;
 	    ++i ) {
-	if ( i==m->offtop && m->offtop!=0 )
+	if ( i==m->offtop && m->offtop!=0 && m->vsb==NULL )
 	    GMenuDrawUpArrow(m, m->bp+m->as);
 	else if ( m->lcnt!=m->mcnt && i==m->lcnt+m->offtop-1 && i!=m->mcnt-1 ) {
-	    GMenuDrawDownArrow(m, m->bp+(i-m->offtop)*m->fh+m->as);
+	    if ( m->vsb==NULL )
+		GMenuDrawDownArrow(m, m->bp+(i-m->offtop)*m->fh+m->as);
+	    else
+		GMenuDrawMenuLine(m, &m->mi[i], m->bp+(i-m->offtop)*m->fh, pixmap);
     break;	/* Otherwise we get bits of the line after the last */
 	} else
-	    GMenuDrawMenuLine(m, &m->mi[i], m->bp+(i-m->offtop)*m->fh);
+	    GMenuDrawMenuLine(m, &m->mi[i], m->bp+(i-m->offtop)*m->fh, pixmap);
     }
-    GDrawPopClip(m->w,&old2);
-    GDrawPopClip(m->w,&old1);
+    GDrawPopClip(pixmap,&old2);
+    GDrawPopClip(pixmap,&old1);
 return( true );
 }
 	    
@@ -485,7 +496,7 @@ static void GMenuDrawLines(struct gmenu *m, int ln, int cnt) {
     GDrawPushClip(m->w,&r,&old2);
     cnt += ln;
     for ( ; ln<cnt; ++ln )
-	GMenuDrawMenuLine(m, &m->mi[ln], m->bp+(ln-m->offtop)*m->fh);
+	GMenuDrawMenuLine(m, &m->mi[ln], m->bp+(ln-m->offtop)*m->fh,m->w);
     GDrawPopClip(m->w,&old2);
     GDrawPopClip(m->w,&old1);
 }
@@ -698,12 +709,12 @@ return( true );
 	    ;
 	else if ( event->u.mouse.y<m->bp && event->type==et_mousedown )
 	    GMenuDismissAll(m);
-	else if ( l==0 && m->offtop!=0 ) {
+	else if ( l==0 && m->offtop!=0 && m->vsb==NULL ) {
 	    GMenuChangeSelection(m,-1,event);
 	    if ( m->scrollit==NULL )
 		m->scrollit = GDrawRequestTimer(m->w,1,_GScrollBar_RepeatTime,m);
 	    m->scrollup = true;
-	} else if ( l>=m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) {
+	} else if ( l>=m->lcnt-1 && m->offtop+m->lcnt<m->mcnt && m->vsb==NULL ) {
 	    GMenuChangeSelection(m,-1,event);
 	    if ( m->scrollit==NULL )
 		m->scrollit = GDrawRequestTimer(m->w,1,_GScrollBar_RepeatTime,m);
@@ -733,8 +744,8 @@ return( true );
 		!MParentInitialPress(m)) {
 	    int l = (event->u.mouse.y-m->bp)/m->fh;
 	    int i = l + m->offtop;
-	    if ( !( l==0 && m->offtop!=0 ) &&
-		    !( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) &&
+	    if ( !( l==0 && m->offtop!=0 && m->vsb==NULL ) &&
+		    !( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt && m->vsb==NULL ) &&
 		    !m->disabled &&
 		    !m->mi[i].ti.disabled && !m->mi[i].ti.line ) {
 		if ( m->mi[i].ti.checkable )
@@ -1153,7 +1164,7 @@ static int gmenu_eh(GWindow w,GEvent *ge) {
 	    GDrawSetGIC(w,m->gic,0,20);
 return( true );
       case et_expose:
-return( gmenu_expose(m,ge));
+return( gmenu_expose(m,ge,w));
       case et_char:
 return( gmenu_key(m,ge));
       case et_mousemove: case et_mousedown: case et_mouseup: case et_crossing:
@@ -1169,6 +1180,44 @@ return( true );
 return( false );
 }
 
+static int gmenu_scroll(GGadget *g, GEvent *event) {
+    enum sb sbt = event->u.control.u.sb.type;
+    GMenu *m = (GMenu *) (g->data);
+    int newpos = m->offtop;
+
+    if ( sbt==et_sb_top )
+	newpos = 0;
+    else if ( sbt==et_sb_bottom )
+	newpos = m->mcnt-m->lcnt;
+    else if ( sbt==et_sb_up ) {
+	--newpos;
+    } else if ( sbt==et_sb_down ) {
+	++newpos;
+    } else if ( sbt==et_sb_uppage ) {
+	if ( m->lcnt!=1 )		/* Normally we leave one line in window from before, except if only one line fits */
+	    newpos -= m->lcnt-1;
+	else
+	    newpos -= 1;
+    } else if ( sbt==et_sb_downpage ) {
+	if ( m->lcnt!=1 )		/* Normally we leave one line in window from before, except if only one line fits */
+	    newpos += m->lcnt-1;
+	else
+	    newpos += 1;
+    } else /* if ( sbt==et_sb_thumb || sbt==et_sb_thumbrelease ) */ {
+	newpos = event->u.control.u.sb.pos;
+    }
+    if ( newpos+m->lcnt > m->mcnt )
+	newpos = m->mcnt-m->lcnt;
+    if ( newpos<0 )
+	newpos = 0;
+    if ( newpos!= m->offtop ) {
+	m->offtop = newpos;
+	GScrollBarSetPos(m->vsb,newpos);
+	GDrawRequestExpose(m->w,NULL,false);
+    }
+return( true );
+}
+
 static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	int awidth, int aheight, GFont *font, int disable) {
     GMenu *m = gcalloc(1,sizeof(GMenu));
@@ -1177,7 +1226,9 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     GWindowAttrs pattrs;
     int i, width, keywidth;
     unichar_t buffer[300];
+    extern int _GScrollBar_Width;
     int ds, ld, temp, lh;
+    int sbwidth = 0;
     GRect screen;
 
     m->owner = owner;
@@ -1241,12 +1292,27 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     m->height = pos.height = i*m->fh + 2*m->bp;
     GDrawGetSize(GDrawGetRoot(disp),&screen);
 
+    sbwidth = 0;
 /* On the mac, the menu bar takes up the top twenty pixels or so of screen */
 /*  so never put a menu that high */
 #define MAC_MENUBAR	20
     if ( pos.height > screen.height-MAC_MENUBAR-m->fh ) {
+	GGadgetData gd;
+
 	m->lcnt = (screen.height-MAC_MENUBAR-m->fh-2*m->bp)/m->fh;
-	pos.height = m->lcnt*m->fh + 2*m->bp;
+	m->height = pos.height = m->lcnt*m->fh + 2*m->bp;
+
+	/* It's too long, so add a scrollbar */
+	sbwidth = GDrawPointsToPixels(owner,_GScrollBar_Width);
+	pos.width += sbwidth;
+	memset(&gd,'\0',sizeof(gd));
+	gd.pos.y = 0; gd.pos.height = pos.height;
+	gd.pos.width = sbwidth;
+	gd.pos.x = m->width;
+	gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert|gg_pos_use0;
+	gd.handle_controlevent = gmenu_scroll;
+	m->vsb = GScrollBarCreate(m->w,&gd,m);
+	GScrollBarSetBounds(m->vsb,0,m->mcnt,m->lcnt);
     }
 
     pos.x = where->x; pos.y = where->y;
@@ -1270,7 +1336,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     }
     if ( pos.x+pos.width > screen.width ) {
 	if ( where->x+awidth-pos.width >= 0 )
-	    pos.x = where->x+awidth-pos.width;
+	    pos.x = where->x+awidth-pos.width-3;
 	else
 	    pos.x = 0;
     }
