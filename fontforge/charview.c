@@ -8659,7 +8659,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static int CVNumForePointsSelected(CharView *cv, BasePoint **bp) {
     SplineSet *spl;
     SplinePoint *test, *first;
-    BasePoint *bps[4];
+    BasePoint *bps[5];
     int i, cnt;
 
     if ( cv->b.drawmode!=dm_fore )
