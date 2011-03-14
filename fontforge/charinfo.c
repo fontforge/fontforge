@@ -1219,7 +1219,7 @@ static KernPair *CI_KPCopy(KernPair *kp) {
 	*newkp = *kp;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	newkp->adjust = DeviceTableCopy(kp->adjust);
-#endif;
+#endif
 	newkp->next = NULL;
 	if ( head==NULL )
 	    head = newkp;
