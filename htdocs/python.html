@@ -4211,6 +4211,106 @@ pen = None;				# Finalize the pen. This tells FontForge
 	is specified then only data for that lookup will be generated.</TD>
     </TR>
     <TR>
+      <TD><CODE>genericGlyphChange</CODE></TD>
+      <TD><CODE>(stemType=&lt;str>,<BR>
+	&nbsp;thickThreshold=&lt;double>,<BR>
+	&nbsp;stemScale=&lt;double>,<BR>
+	&nbsp;stemAdd=&lt;double>,<BR>
+	&nbsp;stemHeightScale=&lt;double>,<BR>
+	&nbsp;stemHeightAdd=&lt;double>,<BR>
+	&nbsp;stemWidthScale=&lt;double>,<BR>
+	&nbsp;stemWidthAdd=&lt;double>,<BR>
+	&nbsp;thinStemScale=&lt;double>,<BR>
+	&nbsp;thinStemAdd=&lt;double>,<BR>
+	&nbsp;thickStemScale=&lt;double>,<BR>
+	&nbsp;thickStemAdd=&lt;double>,<BR>
+	&nbsp;processDiagonalStems=&lt;boolean>,<BR>
+	&nbsp;<BR>
+	&nbsp;hCounterType=&lt;str>,<BR>
+	&nbsp;hCounterScale=&lt;double>,<BR>
+	&nbsp;hCounterAdd=&lt;double>,<BR>
+	&nbsp;lsbScale=&lt;double>,<BR>
+	&nbsp;lsbAdd=&lt;double>,<BR>
+	&nbsp;rsbScale=&lt;double>,<BR>
+	&nbsp;rsbAdd=&lt;double>,<BR>
+	&nbsp;<BR>
+	&nbsp;vCounterType=&lt;str>,<BR>
+	&nbsp;vCounterScale=&lt;double>,<BR>
+	&nbsp;vCounterAdd=&lt;double>,<BR>
+	&nbsp;vScale=&lt;double>,<BR>
+	&nbsp;vMap=&lt;tuple of tuples>)</CODE></TD>
+      <TD>This function uses keyword parameters. Which ones are required depends
+        on the three type arguments (<CODE>stemType, hCounterType,
+	vCounterType</CODE>).
+	<P>
+	If <CODE>stemType</CODE> is omitted, or is the string "uniform", then
+	the <CODE>stemScale</CODE> parameter must be specified (and
+	<CODE>stemAdd</CODE> may be). <CODE>stemScale</CODE> specifies a
+	scaling factor by which all stems (horizontal and vertical, thick and
+	thin) will be scaled. A value of 1.0 means no change. While
+	<CODE>stemAdd</CODE> specifies the number of em-units to add to the
+	width of each stem.
+	<P>
+	If <CODE>stemType</CODE> is the string "horizontalVertical",
+	then values must be specified for <CODE>stemHeightScale</CODE> and
+	<CODE>stemWidthScale</CODE> (and may be for <CODE>stemHeightAdd,
+	stemWidthAdd</CODE>). The first of these specifies scaling for the
+	height of horizontal stems, and the second scaling for the width
+	of vertical stems.
+	<P>
+	If <CODE>stemType</CODE> is the string "thickThin",
+	then values must be specified for <CODE>thinStemScale</CODE>,
+	<CODE>thickStemScale</CODE> and <CODE>thickThreshold</CODE>
+	(and may be for <CODE>thinStemAdd, thickStemAdd</CODE>). The
+	first of these specifies scaling for the width/height of thin
+	stems, and the second scaling for the width/height of thick
+	stems. While the <CODE>thickThreshold</CODE> argument specifies
+	the size (in em-units) at which a stem is classified as "thick".
+	<P>
+	<P>
+	If <CODE>hCounterType</CODE> is omitted, or is the string "uniform",
+	then horizontal counters, and the left and right side bearings will
+	all be scaled using the same rules, and <CODE>hCounterScale</CODE>
+	must be specified to provide the scaling factor (while
+	<CODE>hCounterAdd</CODE> may be specified).
+	<P>
+	If <CODE>hCounterType</CODE> is the string "nonUniform",
+	then horizontal counters, and the left and right side bearings may
+	all be scaled using different rules, and <CODE>hCounterScale,
+	lsbScale</CODE> and <CODE>rsbScale</CODE> must be specified to
+	provide the scaling factors (while <CODE>hCounterAdd, lsbAdd,</CODE>
+	and <CODE>rsbAdd</CODE> may be specified).
+	<P>
+	If <CODE>hCounterType</CODE> is the string "center", then the left
+	and right side-bearings will be set so the new glyph is centered
+	within the original glyph's width. (Probably more useful for CJK
+	fonts than LGC fonts).
+	<P>
+	If <CODE>hCounterType</CODE> is the string "retainScale", then the
+	left and right side-bearings will be set so the new glyph is within
+	within the original glyph's width, and the side-bearings remain in
+	the same proportion to each other as before.
+	<P>
+	<P>
+	If <CODE>vCounterType</CODE> is omitted, or is the string "mapped",
+	then certain zones on the glyph may be placed at new (or the same)
+	locations -- similar to BlueValues. So you can specify a zone for
+	the baseline, one for the
+	x-height and another for the top of capitals and ascenders (and perhaps
+	a fourth for descenders). Each such zone is specified by the
+	<CODE>vMap</CODE> argument which is a tuple of 3-tuples, each
+	3-tuple specifying a zone with: Original location, original width, and
+	final location. <strong>No default value is provided for this argument
+	you must figure out all the values yourself</strong>.
+	<P>
+	If <CODE>vCounterType</CODE> is the string "scaled",
+	then vertical counters, and the top and bottom side bearings will
+	all be scaled using the same rules, and <CODE>vCounterScale</CODE>
+	must be specified to provide the scaling factor (while
+	<CODE>vCounterAdd</CODE> may be specified). This is probably most
+	useful for CJK fonts.</TD>
+    </TR>
+    <TR>
       <TD><CODE>getKerningClass</CODE></TD>
       <TD><CODE>(subtable-name)</CODE></TD>
       <TD>Returns a tuple whose entries are: (first-classes, second-classes, offsets).
