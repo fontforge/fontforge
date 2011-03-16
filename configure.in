@@ -922,6 +922,12 @@ dnl a pity.
 dnl Build a $ac_confdir/po/Makefile.in with appropriate instructions for installing all locales
 
 MACKEYS=
+if ! msgfmt --help >/dev/null 2>&1 ; then
+  dnl even if the library is installed, the executables might not be. Or might
+  dnl  not be in the PATH.
+
+  gww_has_gettext="no";
+fi
 if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
  if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
   mofiles="$(cd $ac_confdir/po/mackeys && ls *.po | sed -e 's#\.po#\.mo#g')"
