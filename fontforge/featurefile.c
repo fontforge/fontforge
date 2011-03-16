@@ -5549,6 +5549,7 @@ static void fea_ParseFeatureDef(struct parseState *tok) {
     uint32 feat_tag;
     struct feat_item *item, *size_item = NULL;
     int type, ret;
+    int has_single, has_multiple;
 
     fea_ParseTag(tok);
     if ( tok->type!=tk_name || !tok->could_be_tag ) {
@@ -5678,6 +5679,27 @@ return;
 	++tok->err_count;
     }
     fea_end_statement(tok);
+
+    /* Now a multiple substitution may have a single destination. In which case*/
+    /*  it will look just like a single substitution. So if there are both */
+    /*  multiple and single subs in a feature, translate all the singles into */
+    /*  multiples */
+    /* Another approach would be to make two lookups, but this is easier... */
+    has_single = has_multiple = false;
+    for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+	enum otlookup_type cur = fea_LookupTypeFromItem(item);
+	if ( cur==gsub_multiple )
+	    has_multiple = true;
+	else if ( cur==gsub_single )
+	    has_single = true;
+    }
+    if ( has_multiple && has_single ) {
+	for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
+	    enum otlookup_type cur = fea_LookupTypeFromItem(item);
+	    if ( cur==gsub_single )
+		item->u2.pst->type = pst_multiple;
+	}
+    }
 
     item = chunkalloc(sizeof(struct feat_item));
     item->type = ft_feat_end;
