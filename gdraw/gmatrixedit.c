@@ -609,11 +609,11 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GBoxDrawBorder(pixmap,&g->r,g->box,g->state,false);
     if ( gme->has_titles ) {
 	r = gme->g.inner;
-	r.height = gme->fh;
+	r.height = gme->font_fh;
 	r.width = gme->hsb->r.width;
 	GDrawPushClip(pixmap,&r,&older);
 	GDrawFillRect(pixmap,&r,gmatrixedit_title_bg);
-	y = r.y + gme->as;
+	y = r.y + gme->font_as;
 	GDrawSetFont(pixmap,gme->titfont);
 	for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
 	for ( c=0; c<gme->cols; ++c ) {
@@ -662,13 +662,92 @@ static void GMatrixEdit_Redraw(GGadget *g ) {
     _ggadget_redraw(g);
 }
 
+static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
+    char buffer[20], *str= NULL;
+    struct matrix_data *d = &gme->data[r*gme->cols+c];
+    
+    switch ( gme->col_data[c].me_type ) {
+      case me_enum:
+	/* Fall through into next case */
+      case me_int:
+	sprintf( buffer,"%d",(int) d->u.md_ival );
+	str = buffer;
+      break;
+      case me_hex:
+	sprintf( buffer,"0x%x",(int) d->u.md_ival );
+	str = buffer;
+      break;
+      case me_uhex:
+	sprintf( buffer,"U+%04X",(int) d->u.md_ival );
+	str = buffer;
+      break;
+      case me_addr:
+	sprintf( buffer,"%p", d->u.md_addr );
+	str = buffer;
+      break;
+      case me_real:
+	sprintf( buffer,"%g",d->u.md_real );
+	str = buffer;
+      break;
+      case me_string: case me_bigstr:
+      case me_funcedit:
+      case me_onlyfuncedit:
+      case me_button:
+      case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
+	str = d->u.md_str;
+      break;
+      case me_func:
+	str = d->u.md_str;
+	if ( str==NULL )
+return( (gme->col_data[c].func)(&gme->g,r,c) );
+      break;
+    }
+return( copy(str));
+}
+
+static int GME_RecalcFH(GMatrixEdit *gme) {
+    int r,c, as, ds;
+    char *str;
+    GTextBounds bounds;
+    GMenuItem *mi;
+
+    GDrawSetFont(gme->nested,gme->font);
+    as = gme->font_as; ds = gme->font_fh-as;
+    for ( r=0; r<gme->rows; ++r ) for ( c=0; c<gme->cols; ++c ) {
+	switch ( gme->col_data[c].me_type ) {
+	  case me_enum:
+	    mi = FindMi(gme->col_data[c].enum_vals,gme->data[r*gme->cols+c].u.md_ival);
+	    if ( mi==NULL )
+    continue;
+	    str = copy( (char *)mi->ti.text );
+	break;
+	  default:
+	    str = MD_Text(gme,r,c);
+	break;
+	}
+	GDrawGetBiText8Bounds(gme->nested, str, -1, NULL, &bounds);
+	free(str);
+	if ( bounds.as>as )
+	    as = bounds.as;
+	if ( bounds.ds>ds )
+	    ds = bounds.ds;
+    }
+    if ( as!=gme->as || as+ds!=gme->fh ) {
+	gme->fh = as+ds;
+	gme->as = as;
+return( true );
+    }
+return( false );
+}
+
 static void GMatrixEdit_SetFont(GGadget *g,FontInstance *new) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int as, ds, ld;
     gme->font = new;
     GDrawWindowFontMetrics(g->base,gme->font,&as, &ds, &ld);
-    gme->as = as;
-    gme->fh = as+ds;
+    gme->font_as = gme->as = as;
+    gme->font_fh = gme->fh = as+ds;
+    GME_RecalcFH(gme);
     GME_FixScrollBars(gme);
     GDrawRequestExpose(gme->nested,NULL,false);
 }
@@ -892,6 +971,10 @@ return( false );
     gme->edit_active = false;
     GGadgetSetVisible(gme->tf,false);
     GME_AdjustCol(gme,gme->active_col);
+    if ( GME_RecalcFH(gme) ) {
+	GME_FixScrollBars(gme);
+	GDrawRequestExpose(gme->nested,NULL,false);
+    }
 
     gme->wasnew = false;
 return( true );
@@ -1249,49 +1332,6 @@ static void GME_StringChoices(GMatrixEdit *gme,GEvent *event,int r,int c) {
     _GMenuCreatePopupMenu(gme->nested,event, mi, GME_FinishChoice);
 }
 
-static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
-    char buffer[20], *str= NULL;
-    struct matrix_data *d = &gme->data[r*gme->cols+c];
-    
-    switch ( gme->col_data[c].me_type ) {
-      case me_enum:
-	/* Fall through into next case */
-      case me_int:
-	sprintf( buffer,"%d",(int) d->u.md_ival );
-	str = buffer;
-      break;
-      case me_hex:
-	sprintf( buffer,"0x%x",(int) d->u.md_ival );
-	str = buffer;
-      break;
-      case me_uhex:
-	sprintf( buffer,"U+%04X",(int) d->u.md_ival );
-	str = buffer;
-      break;
-      case me_addr:
-	sprintf( buffer,"%p", d->u.md_addr );
-	str = buffer;
-      break;
-      case me_real:
-	sprintf( buffer,"%g",d->u.md_real );
-	str = buffer;
-      break;
-      case me_string: case me_bigstr:
-      case me_funcedit:
-      case me_onlyfuncedit:
-      case me_button:
-      case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
-	str = d->u.md_str;
-      break;
-      case me_func:
-	str = d->u.md_str;
-	if ( str==NULL )
-return( (gme->col_data[c].func)(&gme->g,r,c) );
-      break;
-    }
-return( copy(str));
-}
-
 static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *event) {
     int i, markpos, lastc;
     struct matrix_data *d;
@@ -1508,7 +1548,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    ++r ) {
 	int y, lastc;
 	clip.y = r*(gme->fh+gme->vpad);
-	y = clip.y + gme->as;
+	y = clip.y + gme->font_as;	/* I know this looks odd, but it seems to work when we grab a glyph from another font with cairo */
 	clip.height = gme->fh;
 	for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
 	/* Compensate for the top border line */
@@ -1920,8 +1960,8 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->font = gmatrixedit_font;
     gme->titfont = gmatrixedit_titfont;
     GDrawWindowFontMetrics(base,gme->font,&as, &ds, &ld);
-    gme->fh = as+ds;
-    gme->as = as;
+    gme->font_as = gme->as = as;
+    gme->font_fh = gme->fh = as+ds;
 
     gme->rows = matrix->initial_row_cnt; gme->cols = matrix->col_cnt;
     gme->row_max = gme->rows;
@@ -2045,6 +2085,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->hsb = GScrollBarCreate(base,&sub_gd,gme);
     gme->hsb->contained = true;
 
+    GME_RecalcFH(gme);
     {
 	static GBox small = { 0 };
 	static unichar_t nullstr[1] = { 0 };
@@ -2074,31 +2115,38 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int r,c;
 
-    MatrixDataFree(gme);
-
-    gme->rows = gme->row_max = rows;
-    if ( !copy_it ) {
-	gme->data = data;
+    if ( data==gme->data ) {
+	if ( rows<gme->rows )
+	    gme->rows = rows;
+	GME_RecalcFH(gme);
     } else {
-	gme->data = gcalloc(rows*gme->cols,sizeof(struct matrix_data));
-	memcpy(gme->data,data,rows*gme->cols*sizeof(struct matrix_data));
-	for ( c=0; c<gme->cols; ++c ) {
-	    enum me_type me_type = gme->col_data[c].me_type;
-	    if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
-		    me_type==me_button || me_type==me_onlyfuncedit ||
-		    me_type==me_funcedit || me_type==me_stringchoice ||
-		    me_type==me_stringchoicetrans || me_type==me_stringchoicetag ) {
-		for ( r=0; r<rows; ++r )
-		    gme->data[r*gme->cols+c].u.md_str = copy(gme->data[r*gme->cols+c].u.md_str);
+	MatrixDataFree(gme);
+
+	gme->rows = gme->row_max = rows;
+	if ( !copy_it ) {
+	    gme->data = data;
+	} else {
+	    gme->data = gcalloc(rows*gme->cols,sizeof(struct matrix_data));
+	    memcpy(gme->data,data,rows*gme->cols*sizeof(struct matrix_data));
+	    for ( c=0; c<gme->cols; ++c ) {
+		enum me_type me_type = gme->col_data[c].me_type;
+		if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
+			me_type==me_button || me_type==me_onlyfuncedit ||
+			me_type==me_funcedit || me_type==me_stringchoice ||
+			me_type==me_stringchoicetrans || me_type==me_stringchoicetag ) {
+		    for ( r=0; r<rows; ++r )
+			gme->data[r*gme->cols+c].u.md_str = copy(gme->data[r*gme->cols+c].u.md_str);
+		}
 	    }
 	}
-    }
+	GME_RecalcFH(gme);
 
-    gme->active_row = gme->active_col = -1;
-    GME_EnableDelete(gme);
-    if ( !GME_AdjustCol(gme,-1)) {
-	GME_FixScrollBars(gme);
-	GDrawRequestExpose(gme->nested,NULL,false);
+	gme->active_row = gme->active_col = -1;
+	GME_EnableDelete(gme);
+	if ( !GME_AdjustCol(gme,-1)) {
+	    GME_FixScrollBars(gme);
+	    GDrawRequestExpose(gme->nested,NULL,false);
+	}
     }
 }
 

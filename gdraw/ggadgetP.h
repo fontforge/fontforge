@@ -433,6 +433,7 @@ typedef struct gmatrixedit {
     int pressed_col;			/* For changing column spacing */
     struct matrix_data *data;
     int16 as, fh;
+    int16 font_as, font_fh;
     FontInstance *font;
     FontInstance *titfont;
     GGadget *tf;
