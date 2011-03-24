@@ -6065,6 +6065,7 @@ static int GFI_LookupEditMetadata(GGadget *g, GEvent *e) {
 	continue;
 	    if ( lk->all[i].selected ) {
 		EditLookup(lk->all[i].lookup,isgpos,gfi->sf);
+		GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
 return( true );
 	    } else if ( lk->all[i].open ) {
 		for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
@@ -6072,6 +6073,7 @@ return( true );
 		continue;
 		    if ( lk->all[i].subtables[j].selected ) {
 			EditSubtable(lk->all[i].subtables[j].subtable,isgpos,gfi->sf,NULL,gfi->def_layer);
+			GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
 return( true );
 		    }
 		}
