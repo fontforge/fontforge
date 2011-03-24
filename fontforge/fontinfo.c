@@ -1254,10 +1254,10 @@ static GTextInfo gfsymsmooth[] = {
     { NULL }};
 static struct col_init gaspci[] = {
     { me_int , NULL, NULL, NULL, N_("Gasp|For Pixels Per EM <= Value") },
-    { me_enum, NULL, gridfit, NULL, N_("Gasp|Grid Fit") },
-    { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") },
-    { me_enum, NULL, symsmooth, NULL, N_("Gasp|Symmetric Smoothing") },
-    { me_enum, NULL, gfsymsmooth, NULL, N_("Gasp|Grid Fit w/ Sym Smooth") }
+    { me_enum, NULL, gridfit, NULL, N_("Gasp|Grid Fit") },			/* 1 */
+    { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") },			/* 2 */
+    { me_enum, NULL, symsmooth, NULL, N_("Gasp|Symmetric Smoothing") },		/* 8 */
+    { me_enum, NULL, gfsymsmooth, NULL, N_("Gasp|Grid Fit w/ Sym Smooth") }	/* 4 */
     };
 static GTextInfo splineorder[] = {
     { (unichar_t *) N_("Cubic"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
@@ -3389,8 +3389,8 @@ static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	    md[5*i  ].u.md_ival = sf->gasp[i].ppem;
 	    md[5*i+1].u.md_ival = (sf->gasp[i].flags&1)?1:0;
 	    md[5*i+2].u.md_ival = (sf->gasp[i].flags&2)?1:0;
-	    md[5*i+3].u.md_ival = (sf->gasp[i].flags&4)?1:0;
-	    md[5*i+4].u.md_ival = (sf->gasp[i].flags&8)?1:0;
+	    md[5*i+3].u.md_ival = (sf->gasp[i].flags&8)?1:0;
+	    md[5*i+4].u.md_ival = (sf->gasp[i].flags&4)?1:0;
 	}
 	mi->initial_row_cnt = sf->gasp_cnt;
     }
@@ -4287,8 +4287,8 @@ return(true);
 		else
 		    sf->gasp[i].flags = gasp[5*i+1].u.md_ival |
 			    (gasp[5*i+2].u.md_ival<<1) |
-			    (gasp[5*i+2].u.md_ival<<2) |
-			    (gasp[5*i+2].u.md_ival<<3);
+			    (gasp[5*i+4].u.md_ival<<2) |
+			    (gasp[5*i+3].u.md_ival<<3);
 	    }
 	}
 	sf->head_optimized_for_cleartype = GGadgetIsChecked(GWidgetGetControl(gw,CID_HeadClearType));
