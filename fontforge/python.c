@@ -7321,6 +7321,34 @@ return( NULL );
 return( ret );
 }
 
+static char **GlyphNameArrayFromTuple(PyObject *glyphs) {
+    int cnt;
+    char *str, **ret;
+    int i;
+
+    if ( STRING_CHECK(glyphs) || !PySequence_Check(glyphs) ) {
+	PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
+return(NULL );
+    }
+    cnt = PySequence_Size(glyphs);
+    ret = galloc((cnt+1)*sizeof(char *));
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *aglyph = PySequence_GetItem(glyphs,i);
+	if ( PyType_IsSubtype(&PyFF_GlyphType,((PyObject *)aglyph)->ob_type) ) {
+	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    str = sc->name;
+	} else
+	    str = PyBytes_AsString(aglyph);
+	if ( str==NULL ) {
+	    PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
+	    free(ret);
+return( NULL );
+	}
+	ret[i] = copy(str);
+    }
+return( ret );
+}
+
 static SplineChar **GlyphsFromTuple(SplineFont *sf, PyObject *glyphs) {
     int cnt;
     char *str, *pt, *start, ch;
@@ -13624,12 +13652,190 @@ return( Py_BuildValue("(sOO)",type,flags_tuple,farray) );
 static PyObject *PyFFFont_addLookupSubtable(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     char *lookup, *subtable, *after_str=NULL;
+    OTLookup *otl;
 
     if ( !PyArg_ParseTuple(args,"ss|s", &lookup, &subtable, &after_str ))
 return( NULL );
 
+    otl = SFFindLookup(sf,lookup);
+    if ( otl!=NULL ) {
+	if ( otl->lookup_type==gsub_context || otl->lookup_type==gsub_contextchain ||
+		otl->lookup_type==gpos_context || otl->lookup_type==gpos_contextchain ||
+		otl->lookup_type==gsub_reversecchain ) {
+	    PyErr_Format(PyExc_TypeError, "Use addContextualSubtable to create a subtable in %s.", lookup );
+return( NULL );
+	}
+    }
+
     if ( addLookupSubtable(sf, lookup, subtable, after_str)==NULL )
 return( NULL );
+
+Py_RETURN( self );
+}
+
+static char *contextchain_keywords[] = { "afterSubtable",
+	"bclasses", "mclasses", "fclasses",
+	"bclassnames", "mclassnames", "fclassnames", NULL };
+static PyObject *PyFFFont_addContextualSubtable(PyObject *self, PyObject *args, PyObject *keywds) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup, *subtable, *after_str=NULL, *type, *rule;
+    PyObject *bclasses=NULL, *mclasses=NULL, *fclasses=NULL;
+    PyObject *bclassnames=NULL, *mclassnames=NULL, *fclassnames=NULL;
+    struct lookup_subtable *new_subtable;
+    FPST *fpst;
+    OTLookup *otl;
+    enum fpossub_format format;
+    int bcnt=0, mcnt=0, fcnt=0;
+    char **backclasses=NULL, **matchclasses=NULL, **forclasses=NULL;
+    char **backclassnames=NULL, **matchclassnames=NULL, **forclassnames=NULL;
+    int is_warning;
+    char *msg;
+
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOO", contextchain_keywords,
+	    &lookup, &subtable, &type, &rule,
+	    &after_str, &bclasses, &mclasses, &fclasses,
+	    &bclassnames, &mclassnames, &fclassnames))
+return( NULL );
+
+    if ( strcasecmp(type,"glyph")==0 )
+	format = pst_glyphs;
+    else if ( strcasecmp(type,"class")==0 )
+	format = pst_class;
+    else if ( strcasecmp(type,"coverage")==0 )
+	format = pst_coverage;
+    else if ( strcasecmp(type,"reversecoverage")==0 )
+	format = pst_reversecoverage;
+    else {
+	PyErr_Format(PyExc_TypeError, "Bad format, %s, for contextual lookup (must be one of \"glyph\", \"class\" or \"coverage\" (or, rarely, \"reversecoverage\"))", type );
+return( NULL );
+    }
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl!=NULL ) {
+	if ( otl->lookup_type!=gsub_context && otl->lookup_type!=gsub_contextchain &&
+		otl->lookup_type!=gpos_context && otl->lookup_type!=gpos_contextchain &&
+		otl->lookup_type!=gsub_reversecchain ) {
+	    PyErr_Format(PyExc_TypeError, "The lookup, %s, may not contain a contextual subtable.\nUse addLookupSubtable() instead", lookup );
+return( NULL );
+	}
+	if ( otl->lookup_type == gsub_reversecchain && format!=pst_reversecoverage ) {
+	    PyErr_Format(PyExc_TypeError, "Bad format, %s, for reverse context chaining lookup (must be \"reversecoverage\")", type );
+return( NULL );
+	}
+	if ( otl->lookup_type != gsub_reversecchain && format==pst_reversecoverage ) {
+	    PyErr_Format(PyExc_TypeError, "Bad format, %s, for this lookup (must be one of \"glyph\", \"class\" or \"coverage\")", type );
+return( NULL );
+	}
+    }
+
+    if ( format==pst_class && mclasses==NULL ) {
+	PyErr_Format(PyExc_TypeError, "When using the class format, you must specify some classes" );
+return( NULL );
+    } else if ( format!=pst_class &&
+	    (mclasses!=NULL || bclasses!=NULL || fclasses!=NULL ||
+	     mclassnames!=NULL || bclassnames!=NULL || fclassnames!=NULL )) {
+	PyErr_Format(PyExc_TypeError, "When not using the class format, you may not specify any classes" );
+return( NULL );
+    } else if ( otl!=NULL && ( otl->lookup_type==gsub_context || otl->lookup_type==gpos_context ) &&
+	    ( bclasses!=NULL || fclasses!=NULL )) {
+	PyErr_Format(PyExc_TypeError, "You may only specify backtracking or forward-looking classes when building a contextual chaining lookup (this one is merely contextual)." );
+return( NULL );
+    } else if ( (mclasses==NULL && mclassnames!=NULL) ||
+		(bclasses==NULL && bclassnames!=NULL) ||
+		(fclasses==NULL && fclassnames!=NULL) ) {
+	PyErr_Format(PyExc_TypeError, "If you specify class names, you must also specify some classes..." );
+return( NULL );
+    } else if ( (mclasses!=NULL && mclassnames!=NULL && PySequence_Size(mclasses)!=PySequence_Size(mclassnames)) ||
+		(bclasses!=NULL && bclassnames!=NULL && PySequence_Size(bclasses)!=PySequence_Size(bclassnames)) ||
+		(fclasses!=NULL && fclassnames!=NULL && PySequence_Size(fclasses)!=PySequence_Size(fclassnames)) ) {
+	PyErr_Format(PyExc_TypeError, "When you specify class names there must be as many names as there are classes" );
+return( NULL );
+    } else if ( format==pst_class ) {
+	mcnt = ParseClassNames(mclasses,&matchclasses);
+	if ( mcnt==-1 ) {
+	    PyErr_Format(PyExc_TypeError, "Bad match class" );
+return( NULL );
+	}
+	if ( mclassnames!=NULL ) {
+	    if ((matchclassnames = GlyphNameArrayFromTuple(mclassnames))== NULL ) {
+		PyErr_Format(PyExc_TypeError, "Bad set of class names for mclassname." );
+return( NULL );
+	    }
+	}
+	if ( bclasses!=NULL ) {
+	    bcnt = ParseClassNames(bclasses,&backclasses);
+	    if ( bcnt==-1 ) {
+		PyErr_Format(PyExc_TypeError, "Bad backtrack class" );
+return( NULL );
+	    }
+	    if ( bclassnames!=NULL ) {
+		if ((backclassnames = GlyphNameArrayFromTuple(bclassnames))== NULL ) {
+		    PyErr_Format(PyExc_TypeError, "Bad set of class names for bclassname." );
+return( NULL );
+		}
+	    }
+	}
+	if ( fclasses!=NULL ) {
+	    fcnt = ParseClassNames(fclasses,&forclasses);
+	    if ( fcnt==-1 ) {
+		PyErr_Format(PyExc_TypeError, "Bad forward class" );
+return( NULL );
+	    }
+	    if ( fclassnames!=NULL ) {
+		if ((forclassnames = GlyphNameArrayFromTuple(fclassnames))== NULL ) {
+		    PyErr_Format(PyExc_TypeError, "Bad set of class names for fclassname." );
+return( NULL );
+		}
+	    }
+	}
+    }
+
+    new_subtable = addLookupSubtable(sf, lookup, subtable, after_str);
+    if ( new_subtable==NULL )
+return( NULL );
+    fpst = chunkalloc(sizeof(FPST));
+    fpst->subtable = new_subtable;
+    new_subtable->fpst = fpst;
+    fpst->format = format;
+    fpst->type = otl->lookup_type==gsub_reversecchain ? pst_reversesub :
+		otl->lookup_type==gsub_context ? pst_contextsub :
+		otl->lookup_type==gsub_contextchain ? pst_chainsub :
+		otl->lookup_type==gpos_context ? pst_contextpos :
+		  pst_chainpos;
+    fpst->next = sf->possub;
+    sf->possub = fpst;
+    fpst->bccnt = bcnt;
+    fpst->bclass = backclasses;
+    if ( backclasses!=NULL && backclassnames==NULL )
+	fpst->bclassnames = gcalloc(bcnt,sizeof(char *));
+    else
+	fpst->bclassnames = backclassnames;
+    fpst->nccnt = mcnt;
+    fpst->nclass = matchclasses;
+    if ( matchclasses!=NULL && matchclassnames==NULL )
+	fpst->nclassnames = gcalloc(mcnt,sizeof(char *));
+    else
+	fpst->nclassnames = matchclassnames;
+    fpst->fccnt = fcnt;
+    fpst->fclass = forclasses;
+    if ( forclasses!=NULL && forclassnames==NULL )
+	fpst->fclassnames = gcalloc(fcnt,sizeof(char *));
+    else
+	fpst->fclassnames = forclassnames;
+    fpst->rule_cnt = 1;
+    fpst->rules = gcalloc(1,sizeof(struct fpst_rule));
+
+    msg = FPSTRule_From_Str( sf,fpst,fpst->rules,rule,&is_warning);
+    if ( is_warning ) {
+	LogError("%s",msg);
+	free(msg);
+	msg = NULL;
+    }
+    if ( msg!=NULL ) {
+	PyErr_Format(PyExc_TypeError, "%s", msg );
+	free(msg);
+return( NULL );
+    }
 
 Py_RETURN( self );
 }
@@ -14903,14 +15109,14 @@ return( NULL );
     if ( genchange.stem_height_add!=genchange.stem_width_add ) {
 	if (( genchange.stem_height_add==0 && genchange.stem_width_add!=0 ) ||
 		( genchange.stem_height_add!=0 && genchange.stem_width_add==0 )) {
-	    PyErr_Format(PyExc_TypeError, _("The horizontal and vertical stem add amounts must either both be zero, or neither may be 0"));
+	    PyErr_SetString(PyExc_TypeError, _("The horizontal and vertical stem add amounts must either both be zero, or neither may be 0"));
 return( NULL );
 	}
 	/* if width_add has a different sign than height_add that's also */
 	/*  a problem, but this test will catch that too */
 	if (( genchange.stem_height_add/genchange.stem_width_add>4 ) ||
 		( genchange.stem_height_add/genchange.stem_width_add<.25 )) {
-	     PyErr_Format(PyExc_TypeError, _("The horizontal and vertical stem add amounts may not differ by more than a factor of 4"));
+	     PyErr_SetString(PyExc_TypeError, _("The horizontal and vertical stem add amounts may not differ by more than a factor of 4"));
 return( NULL );
 	}
     }
@@ -15261,7 +15467,8 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "getTableData", PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
     { "setTableData", PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},
     { "addLookup", PyFFFont_addLookup, METH_VARARGS, "Add a new lookup"},
-    { "addLookupSubtable", PyFFFont_addLookupSubtable, METH_VARARGS, "Add a new lookup-subtable"},
+    { "addLookupSubtable", PyFFFont_addLookupSubtable, METH_VARARGS, "Add a new lookup-subtable (not for contextual lookups)"},
+    { "addContextualSubtable", (PyCFunction) PyFFFont_addContextualSubtable, METH_VARARGS | METH_KEYWORDS, "Create a subtable in a contextual, contextual chaining or reverse contextual chaining lookup." },
     { "addAnchorClass", PyFFFont_addAnchorClass, METH_VARARGS, "Add a new anchor class to the subtable"},
     { "addKerningClass", PyFFFont_addKerningClass, METH_VARARGS, "Add a new subtable with a new kerning class to a lookup"},
     { "alterKerningClass", PyFFFont_alterKerningClass, METH_VARARGS, "Changes the existing kerning class in the named subtable"},

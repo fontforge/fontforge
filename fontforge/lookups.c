@@ -31,6 +31,7 @@
 #include <math.h>
 #include <locale.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "ttf.h"
 #include "lookups.h"
 
@@ -2024,6 +2025,10 @@ static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
     newfpst->nclass = ClassCopy(newfpst->nccnt,newfpst->nclass);
     newfpst->bclass = ClassCopy(newfpst->bccnt,newfpst->bclass);
     newfpst->fclass = ClassCopy(newfpst->fccnt,newfpst->fclass);
+
+    newfpst->nclassnames = ClassCopy(newfpst->nccnt,newfpst->nclassnames);
+    newfpst->bclassnames = ClassCopy(newfpst->bccnt,newfpst->bclassnames);
+    newfpst->fclassnames = ClassCopy(newfpst->fccnt,newfpst->fclassnames);
 
     newfpst->rules = galloc(newfpst->rule_cnt*sizeof(struct fpst_rule));
     memcpy(newfpst->rules,fpst->rules,newfpst->rule_cnt*sizeof(struct fpst_rule));
@@ -4490,6 +4495,542 @@ return( i );
 return( classnames[0]!=NULL || !allow_class0 ? -1 : 0 );
 }
 
+/* Routines to generate human readable forms of FPST rules */
+static void GrowBufferAddLookup(GrowBuf *gb,struct fpst_rule *rule, int seq) {
+    int i;
+
+    for ( i=0; i<rule->lookup_cnt; ++i ) {
+	if ( seq==rule->lookups[i].seq ) {
+	    GrowBufferAddStr(gb,"@<");
+	    GrowBufferAddStr(gb,rule->lookups[i].lookup->lookup_name);
+	    GrowBufferAddStr(gb,"> ");
+	}
+    }
+}
+
+static void GrowBufferAddClass(GrowBuf *gb,int class_n,char **classnames, int class_cnt) {
+    char buffer[20], *str;
+
+    if ( class_n<0 || class_n>=class_cnt ) {
+	IError("Bad class in FPST" );
+	class_n = 0;
+    }
+    if ( classnames==NULL || (str=classnames[class_n])==NULL ) {
+	sprintf( buffer,"%d", class_n );
+	str = buffer;
+    }
+    GrowBufferAddStr(gb,str);
+    GrowBufferAdd(gb,' ');
+}
+
+int GlyphNameCnt(const char *pt) {
+    int cnt = 0;
+
+    while ( *pt ) {
+	while ( isspace( *pt )) ++pt;
+	if ( *pt=='\0' )
+return( cnt );
+	++cnt;
+	while ( !isspace(*pt) && *pt!='\0' ) ++pt;
+    }
+return( cnt );
+}
+
+char *reverseGlyphNames(char *str) {
+    char *ret;
+    char *rpt, *pt, *start, *spt;
+
+    if ( str==NULL )
+return( NULL );
+
+    rpt = ret = galloc(strlen(str)+1);
+    *ret = '\0';
+    for ( pt=str+strlen(str); pt>str; pt=start ) {
+	for ( start = pt-1; start>=str && *start!=' '; --start );
+	for ( spt=start+1; spt<pt; )
+	    *rpt++ = *spt++;
+	*rpt++ = ' ';
+    }
+    if ( rpt>ret )
+	rpt[-1] = '\0';
+return( ret );
+}
+
+char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
+    int i, max=0;
+    char *ret, *npt;
+    int seq=0;
+    GrowBuf gb;
+
+    /* Note that nothing in the output distinquishes between back, match and forward */
+    /*  the thought being that to all intents and purposes, match starts at */
+    /*  the first lookup and ends at the last. Anything before is back, */
+    /*  anything after is for */ /* Adobe uses this convention in feature files*/
+    /* Drat. That doesn't work for classes if the back/fore classes differ */
+    /*  from match classes */ /* Adobe doesn't support classes in feature files*/
+    /* Nor does it work when the lookup needs more than one input characters */
+    /*  ligature lookups */
+    memset(&gb,0,sizeof(gb));
+    switch ( fpst->format ) {
+      case pst_glyphs:
+	max = ( rule->u.glyph.names ? strlen(rule->u.glyph.names) : 0 ) +
+		( rule->u.glyph.back ? strlen(rule->u.glyph.back) : 0 ) +
+		( rule->u.glyph.fore ? strlen(rule->u.glyph.fore) : 0 ) +
+		200;
+	gb.base = gb.pt = galloc(max+1);
+	gb.end = gb.base+max;
+        if ( rule->u.glyph.back!=NULL ) {
+	    char *temp;
+	    GrowBufferAddStr(&gb,(temp = reverseGlyphNames(rule->u.glyph.back)));
+	    free(temp);
+	    GrowBufferAdd(&gb,' ');
+	}
+	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
+	    GrowBufferAddStr(&gb,"| ");
+	for ( npt=rule->u.glyph.names; isspace(*npt); ++npt)
+	    /* Skip over leading spaces, if any */;
+	for ( npt=rule->u.glyph.names, seq=0; *npt; ++seq ) {
+	    while ( isspace(*npt))
+		++npt;
+	    while ( *npt!='\0' && !isspace( *npt ) ) {
+		GrowBufferAdd(&gb, *npt++);
+	    }
+	    GrowBufferAdd(&gb,' ');
+	    GrowBufferAddLookup(&gb,rule,seq);
+	}
+	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
+	    GrowBufferAddStr(&gb,"| ");
+        if ( rule->u.glyph.fore!=NULL ) {
+	    GrowBufferAddStr(&gb,rule->u.glyph.fore);
+	}
+      break;
+      case pst_class:
+	/* Reverse the backtrack classes */
+	for ( i=rule->u.class.bcnt-1; i>=0; --i )
+	    GrowBufferAddClass(&gb,rule->u.class.bclasses[i],fpst->bclassnames,fpst->bccnt);
+	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
+	    GrowBufferAddStr(&gb,"| ");
+	for ( i=0; i<rule->u.class.ncnt; ++i ) {
+	    GrowBufferAddClass(&gb,rule->u.class.nclasses[i],fpst->nclassnames,fpst->nccnt);
+	    GrowBufferAddLookup(&gb,rule,i);
+	}
+	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
+	    GrowBufferAddStr(&gb,"| ");
+	for ( i=0; i<rule->u.class.fcnt; ++i )
+	    GrowBufferAddClass(&gb,rule->u.class.fclasses[i],fpst->fclassnames,fpst->fccnt);
+      break;
+      case pst_coverage:
+      case pst_reversecoverage:
+        /* Reverse the backtrack tables */
+	for ( i=rule->u.coverage.bcnt-1; i>=0; --i ) {
+	    GrowBufferAdd(&gb,'[');
+	    GrowBufferAddStr(&gb,rule->u.coverage.bcovers[i]);
+	    GrowBufferAddStr(&gb,"] ");
+	}
+	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
+	    GrowBufferAddStr(&gb,"| ");
+	for ( i=0; i<rule->u.coverage.ncnt; ++i ) {
+	    GrowBufferAdd(&gb,'[');
+	    GrowBufferAddStr(&gb,rule->u.coverage.ncovers[i]);
+	    GrowBufferAddStr(&gb,"] ");
+	    if ( fpst->format==pst_reversecoverage ) {
+		GrowBufferAddStr(&gb,"=> [");
+		GrowBufferAddStr(&gb,rule->u.rcoverage.replacements);
+		GrowBufferAddStr(&gb,"] ");
+	    } else {
+		GrowBufferAddLookup(&gb,rule,i);
+	    }
+	}
+	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
+	    GrowBufferAddStr(&gb,"| ");
+	for ( i=0; i<rule->u.coverage.fcnt; ++i ) {
+	    GrowBufferAdd(&gb,'[');
+	    GrowBufferAddStr(&gb,rule->u.coverage.fcovers[i]);
+	    GrowBufferAddStr(&gb,"] ");
+	}
+      break;
+      default:
+	IError( "Bad FPST format");
+return( NULL );
+    }
+    if ( gb.pt>gb.base && gb.pt[-1]==' ' )
+	gb.pt[-1] = '\0';
+    ret = copy(gb.base);
+    free(gb.base);
+return( ret );
+}
+
+static char *my_asprintf( const char *format,...) {
+    va_list ap;
+    char buffer[400];
+    va_start(ap,format);
+    vsnprintf(buffer,sizeof(buffer),format,ap);
+    va_end(ap);
+return( copy( buffer ));
+}
+
+typedef struct lookuplist {
+    OTLookup *lookup;
+    struct lookuplist *next;
+} LookupList;
+
+typedef struct matchstr {
+    char *entity;
+    char *replacements;		/* For reverse contextual chaining */
+    LookupList *lookups;
+} MatchStr;
+
+/* Returns an error message, a warning, or NULL if parsing were successful */
+/*  if successful rule will be filled in. Error msg must be freed */
+char *FPSTRule_From_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule,
+	char *line, int *return_is_warning ) {
+    char *lpt, *start, *end;
+    int ch;
+    int do_replacements=0, anylookup=0;
+    int cnt=0, max=0;
+    MatchStr *parsed=NULL;
+    LookupList *ll, *llp;
+    int i,j,first,last;
+    char *ret;
+    int isgpos = fpst->type==pst_contextpos || fpst->type==pst_chainpos;
+    OTLookup *lookup;
+
+    /* Parse the string into meaningful chunks. These could be:
+	A coverage table (a list of glyph names enclosed in []
+	A glyph name	(I'll accept this as a degenerate coverage table containing one glyph)
+	A class name
+	A lookup invocation
+	A list of replacement glyphs for a reverse contextual chaining lookup
+	    (This is a two step process. First parse the replacement marker "=>"
+	     then parse the coverage table)
+	We can also have a mark that we've switched from the backtracking list
+	    to the match list to the forward list. Might be needed for classes
+    */
+
+    first = last = -1;
+    *return_is_warning = false;
+    for ( lpt=line; *lpt; ) {
+	while ( isspace(*lpt)) ++lpt;
+	if ( *lpt=='\0' )
+    break;
+	start = lpt;
+	if ( *start=='|' ) {
+	    if ( fpst->type==pst_contextpos || fpst->type==pst_contextsub )
+return( my_asprintf( _("Separation marks only meaningful in contextual chaining lookups, starting at: %.20s..."), lpt ));
+	    if ( first==-1 )
+		first = cnt;
+	    else if ( last==-1 )
+		last = cnt;
+	    else
+return( my_asprintf( _("Too many separation marks, starting at: %.20s..."), lpt ));
+	    ++lpt;
+    continue;
+	} else if ( *start=='[' ) {
+	    /* A coverage table */
+	    if ( fpst->format!=pst_coverage && fpst->format!=pst_reversecoverage )
+return( my_asprintf( _("A coverage table was found in a glyph or class based contextual lookup, starting at: %.20s..."), lpt ));
+	    ++start;
+	    for ( lpt = start; *lpt!='\0' && *lpt!=']'; ++lpt );
+	    if ( *lpt!=']' )
+return( my_asprintf( _("Unterminated coverage table, starting at: %.20s..."), start-1 ));
+	    end = lpt++;
+	    if ( do_replacements==1 ) {
+		int rcnt, ecnt;
+		do_replacements = 2;
+		if ( cnt==0 )
+return( my_asprintf( _("Replacements must follow the coverage table to which they apply: %s"), start-4 ));
+		ch = *end; *end = '\0';
+		parsed[cnt].replacements = copy(start);
+		*end = ch;
+		rcnt = GlyphNameCnt(parsed[cnt].replacements);
+		ecnt = GlyphNameCnt(parsed[cnt].entity);
+		if ( ecnt==rcnt )
+		    /* Good */;
+		else if ( rcnt==1 && ecnt>1 ) {
+		    char *newr;
+		    newr = galloc(ecnt*(strlen(parsed[cnt].replacements)+1)+1);
+		    *newr = '\0';
+		    for ( i=0; i<ecnt; ++i ) {
+			strcat(newr,parsed[cnt].replacements);
+			if ( i!=ecnt-1 )
+			    strcat(newr," ");
+		    }
+		    free(parsed[cnt].replacements);
+		    parsed[cnt].replacements = newr;
+		} else
+return( my_asprintf( _("There must be as many replacement glyphs as there are match glyphs: %s => %s"),
+		    parsed[cnt].entity, parsed[cnt].replacements));
+    continue;
+	    }
+	} else if ( *start!='@' && *start!='<' && !(*start=='=' && start[1]=='>') ) {
+	    /* Just a normal glyph or class name. (If we expect a coverage table we'll treat it as a table with one glyph) */
+	    while ( *lpt!='\0' && !isspace(*lpt) && *lpt!='@' && *lpt!='<' && *lpt!='[' )
+		++lpt;
+	    end = lpt;
+	} else if ( *start=='=' && start[1]=='>' ) {
+	    /* A reverse contextual chaining */
+	    if ( fpst->format!=pst_reversecoverage )
+return( my_asprintf( _("No replacement lists may be specified in this contextual lookup, use a nested lookup instead, starting at: %.20s..."), lpt ));
+	    if ( do_replacements )
+return( my_asprintf( _("Only one replacement list may be specified in a reverse contextual chaining lookup, starting at: %.20s..."), lpt ));
+	    do_replacements = true;
+	    lpt += 2;
+	} else {
+	    /* A lookup invocation */
+	    if ( fpst->format==pst_reversecoverage )
+return( my_asprintf( _("No lookups may be specified in a reverse contextual lookup (use a replacement list instead), starting at: %.20s..."), lpt ));
+
+	    if ( *start=='@' ) {
+		for ( lpt=start+1; isspace( *lpt ); ++lpt );
+		if ( *lpt!='<' )
+return( my_asprintf( _("A lookup invocation must be started by the sequence '@<' and ended with '>', starting at: %.20s..." ), start ) );
+	    }
+	    start= ++lpt;
+	    for ( lpt = start; *lpt!='\0' && *lpt!='>'; ++lpt );
+	    if ( *lpt!='>' )
+return( my_asprintf( _("Unterminated lookup invocation, starting at: %.20s..."), start-1 ));
+	    *lpt = '\0';
+	    lookup = SFFindLookup(sf,start);
+	    if ( lookup==NULL ) {
+		ret = my_asprintf( _("Unknown lookup: %s"), start );
+		*lpt = '>';
+return( ret );
+	    } else if ( (isgpos && lookup->lookup_type<gpos_start) || (!isgpos && lookup->lookup_type>gpos_start)) {
+		ret = my_asprintf( isgpos ? _("GSUB lookup refered to in this GPOS contextual lookup: %s"):
+			    _("GPOS lookup refered to in this GSUB contextual lookup: %s"),
+			start );
+		*lpt = '>';
+return( ret );
+	    } else if ( cnt==0 ) {
+		ret = my_asprintf( _("Lookups must follow the glyph, class or coverage table to which they apply: %s"), start );
+		*lpt = '>';
+return( ret );
+	    }
+	    *lpt++ = '>';
+	    ll = chunkalloc(sizeof(LookupList));
+	    ll->lookup = lookup;
+	    /* Lookup order is important */
+	    if ( parsed[cnt-1].lookups==NULL )
+		parsed[cnt-1].lookups = ll;
+	    else {
+		for ( llp=parsed[cnt-1].lookups; llp->next!=NULL; llp=llp->next );
+		llp->next = ll;
+	    }
+	    anylookup = true;
+	    if ( first==-1 ) first = cnt-1;
+    continue;
+	}
+	/* We get here on glyph/class names and coverage tables */
+	/*  not on lookup invocations */
+	ch = *end; *end='\0';
+	if ( cnt>=max )
+	    parsed = grealloc(parsed,(max+=200)*sizeof(MatchStr));
+	memset(&parsed[cnt],'\0',sizeof(MatchStr));
+	parsed[cnt++].entity = copy(start);
+	*end = ch;
+    }
+
+    if ( cnt==0 )
+return( copy( _("Empty rule" )) );
+
+    ret = NULL;
+
+    if ( !do_replacements && !anylookup ) {
+	if ( fpst->format==pst_reversecoverage )
+return( copy( _("A reverse contextual chaining lookup must have a set of replacement glyphs somewhere" )) );
+	else {
+	    *return_is_warning = true;
+	    /* If there are no lookups then this rule matches and does nothing */
+	    /*  which can make it easier to write subsequent rules */
+	    ret = copy( _("This contextual rule applies no lookups." ));
+	}
+    }
+
+    /* Figure out the boundaries between backtrack, match and forward */
+    for ( i=0; i<cnt; ++i ) {
+	if ( parsed[i].lookups!=NULL ) {
+	    if ( i>last ) last = i;
+	    if ( first==-1 ) first = i;
+	}
+	if ( parsed[i].replacements!=NULL ) {
+	    if (( first!=-1 && first!=i ) || (last!=-1 && last!=i ))
+return( copy( _("A reverse contextual chaining lookup can only match one coverage table directly" )) );
+	    first = last = i;
+	}
+    }
+    if ( fpst->type==pst_contextpos || fpst->type==pst_contextsub ) {
+	first = 0;
+	last = cnt-1;
+    }
+
+    switch ( fpst->format ) {
+      case pst_glyphs: {
+	int blen=0, mlen=0, flen=0;
+	for ( i=0; i<cnt; ++i ) {
+	    if ( SFGetChar(sf,-1,parsed[i].entity)==NULL ) {
+		if ( ret==NULL ) {
+		    ret = my_asprintf( _("There is no glyph named \"%s\" in the font."), parsed[i].entity );
+		    *return_is_warning = true;
+		}
+	    }
+	    if ( i<first )
+		blen += strlen(parsed[i].entity)+1;
+	    else if ( i<=last )
+		mlen += strlen(parsed[i].entity)+1;
+	    else
+		flen += strlen(parsed[i].entity)+1;
+	}
+	rule->u.glyph.names = gcalloc(mlen+1,1);
+	if ( blen!=0 )
+	    rule->u.glyph.back = gcalloc(blen+1,1);
+	if ( flen!=0 )
+	    rule->u.glyph.fore = gcalloc(flen+1,1);
+	for ( i=0; i<cnt; ++i ) {
+	    if ( i<first ) {
+		strcat(rule->u.glyph.back,parsed[i].entity);
+		if ( i!=first-1)
+		    strcat(rule->u.glyph.back," ");
+	    } else if ( i<=last ) {
+		strcat(rule->u.glyph.names,parsed[i].entity);
+		if ( i!=last)
+		    strcat(rule->u.glyph.names," ");
+	    } else {
+		strcat(rule->u.glyph.fore,parsed[i].entity);
+		if ( i!=cnt-1)
+		    strcat(rule->u.glyph.fore," ");
+	    }
+	}
+	if ( blen!=0 ) {
+	    char *temp = reverseGlyphNames(rule->u.glyph.back);
+	    free(rule->u.glyph.back);
+	    rule->u.glyph.back = temp;
+	}
+      } break;
+      case pst_class:
+        rule->u.class.ncnt = last+1-first;
+	rule->u.class.nclasses = galloc(rule->u.class.ncnt*sizeof(uint16));
+	rule->u.class.bcnt = first;
+	if ( first!=0 )
+	    rule->u.class.bclasses = galloc(first*sizeof(uint16));
+	rule->u.class.fcnt = cnt-last-1;
+	if ( rule->u.class.fcnt!=0 )
+	    rule->u.class.fclasses = galloc(rule->u.class.fcnt*sizeof(uint16));
+	for ( i=0; i<cnt; ++i ) {
+	    char **classnames, *pend;
+	    int class_cnt, val;
+	    if ( i<first ) {
+		classnames = fpst->bclassnames;
+		class_cnt = fpst->bccnt;
+	    } else if ( i<=last ) {
+		classnames = fpst->nclassnames;
+		class_cnt = fpst->nccnt;
+	    } else {
+		classnames = fpst->fclassnames;
+		class_cnt = fpst->fccnt;
+	    }
+	    val = strtol(parsed[i].entity,&pend,10);
+	    if ( *pend!='\0' )
+		val = -1;
+	    for ( j=0; j<class_cnt; ++j ) {
+		if ( classnames[j]!=NULL ) {
+		    if ( strcmp(parsed[i].entity,classnames[j])==0 )
+	    break;
+		} else {
+		    if ( val==j )
+	    break;
+		}
+	    }
+	    if ( j==class_cnt ) {
+		free( rule->u.class.nclasses ); rule->u.class.nclasses = NULL;
+		free( rule->u.class.bclasses ); rule->u.class.bclasses = NULL;
+		free( rule->u.class.fclasses ); rule->u.class.fclasses = NULL;
+		rule->u.class.bcnt = rule->u.class.fcnt = rule->u.class.ncnt = 0;
+		if ( i<first )
+return( my_asprintf( _("%s is not a class name for the backtracking classes." ), parsed[i].entity ) );
+		else if ( i<=last )
+return( my_asprintf( _("%s is not a class name for the matching classes." ), parsed[i].entity ) );
+		else
+return( my_asprintf( _("%s is not a class name for the forward classes." ), parsed[i].entity ) );
+	    }
+	    if ( i<first )
+		rule->u.class.bclasses[first-1-i] = j;	/* Reverse the backtrack classes */
+	    else if ( i<=last )
+		rule->u.class.nclasses[i-first] = j;
+	    else
+		rule->u.class.fclasses[i-last-1] = j;
+	}
+      break;
+      case pst_coverage:
+      case pst_reversecoverage:
+	for ( i=0; i<cnt; ++i ) {
+	    for ( lpt = parsed[i].entity; *lpt ; ) {
+		while ( isspace(*lpt)) ++lpt;
+		if ( *lpt=='\0' )
+	    break;
+		start = lpt;
+		while ( !isspace(*lpt) && *lpt!='\0' )
+		    ++lpt;
+		ch = *lpt; *lpt='\0';
+		if ( SFGetChar(sf,-1,start)==NULL ) {
+		    if ( ret==NULL ) {
+			ret = my_asprintf( _("There is no glyph named \"%s\" in the font."), start );
+			*return_is_warning = true;
+		    }
+		}
+		*lpt = ch;
+	    }
+	}
+        rule->u.coverage.ncnt = last+1-first;
+	rule->u.coverage.ncovers = galloc(rule->u.coverage.ncnt*sizeof(char *));
+	rule->u.coverage.bcnt = first;
+	if ( first!=0 )
+	    rule->u.coverage.bcovers = galloc(first*sizeof(char *));
+	rule->u.coverage.fcnt = cnt-last-1;
+	if ( rule->u.coverage.fcnt!=0 )
+	    rule->u.coverage.fcovers = galloc(rule->u.coverage.fcnt*sizeof(char *));
+	for ( i=0; i<cnt; ++i ) {
+	    if ( i<first )
+		rule->u.coverage.bcovers[first-1-i] = parsed[i].entity;	/* Reverse the order of backtrack coverage tables */
+	    else if ( i<=last ) {
+		rule->u.coverage.ncovers[i-first] = parsed[i].entity;
+		if ( fpst->format==pst_reversecoverage ) {
+		    rule->u.rcoverage.replacements = parsed[i].replacements;
+		    parsed[i].replacements = NULL;
+		}
+	    } else
+		rule->u.coverage.ncovers[i-last-1] = parsed[i].entity;
+	    parsed[i].entity = NULL;
+	}
+      break;
+      default:
+return( copy( _("Bad FPST format")) );
+    }
+    if ( fpst->format!=pst_reversecoverage ) {
+	int tot=0;
+	for ( i=first; i<=last; ++i ) {
+	    for ( ll=parsed[i].lookups; ll!=NULL; ll=ll->next )
+		++tot;
+	}
+	rule->lookups = gcalloc(tot,sizeof(struct seqlookup));
+	rule->lookup_cnt = tot;
+	tot = 0;
+	for ( i=first; i<=last; ++i ) {
+	    for ( ll=parsed[i].lookups; ll!=NULL; ll=llp ) {
+		llp = ll->next;
+		rule->lookups[tot].seq = i-first;
+		rule->lookups[tot].lookup = ll->lookup;
+		++tot;
+		chunkfree(ll,sizeof(*ll));
+	    }
+	}
+    }
+    for ( i=0; i<cnt; ++i )
+	free( parsed[i].entity );
+    free(parsed);
+return( ret );
+}
+
+/* User interface functionality when we have no UI */
 static void NOFI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 }
 

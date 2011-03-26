@@ -50,12 +50,6 @@ typedef struct io {
     int advance_width;		/* Can be set from a PS comment by MF2PT1 */
 } IO;
 
-typedef struct growbuf {
-    char *pt;
-    char *base;
-    char *end;
-} GrowBuf;
-
 #define GARBAGE_MAX	64
 struct garbage {
     int cnt;
@@ -64,30 +58,12 @@ struct garbage {
     int16 cnts[GARBAGE_MAX];
 };
 
-static void GrowBuffer(GrowBuf *gb,int len) {
-    if ( len<400 ) len = 400;
-    if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(len);
-	gb->end = gb->base + len;
-    } else {
-	int off = gb->pt-gb->base;
-	len += (gb->end-gb->base);
-	gb->base = grealloc(gb->base,len);
-	gb->end = gb->base + len;
-	gb->pt = gb->base+off;
-    }
-}
-
 static void AddTok(GrowBuf *gb,char *buf,int islit) {
-    int len = islit + strlen(buf) + 1;
 
-    if ( gb->pt+len+1 >= gb->end )
-	GrowBuffer(gb,len+1);
     if ( islit )
-	*(gb->pt++) = '/';
-    strcpy(gb->pt,buf);
-    gb->pt += strlen(buf);
-    *gb->pt++ = ' ';
+	GrowBufferAdd(gb,'/');
+    GrowBufferAddStr(gb,buf);
+    GrowBufferAdd(gb,' ');
 }
 
 static struct pskeyval *lookup(struct pskeydict *dict,char *tokbuf) {

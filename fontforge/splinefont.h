@@ -587,7 +587,7 @@ enum fpossub_format { pst_glyphs, pst_class, pst_coverage,
 		    pst_reversecoverage, pst_formatmax };
 
 typedef struct generic_fpst {
-    uint16 /*enum sfpossub_type*/ type;
+    uint16 /*enum possub_type*/ type;
     uint16 /*enum fpossub_format*/ format;
     struct lookup_subtable *subtable;
     struct generic_fpst *next;
@@ -596,6 +596,8 @@ typedef struct generic_fpst {
     char **nclass, **bclass, **fclass;
     struct fpst_rule {
 	union {
+	    /* Note: Items in backtrack area are in reverse order because that's how the OT wants them */
+	    /*  they need to be reversed again to be displayed to the user */
 	    struct fpg { char *names, *back, *fore; } glyph;
 	    struct fpc { int ncnt, bcnt, fcnt; uint16 *nclasses, *bclasses, *fclasses, *allclasses; } class;
 	    struct fpv { int ncnt, bcnt, fcnt; char **ncovers, **bcovers, **fcovers; } coverage;
@@ -609,6 +611,7 @@ typedef struct generic_fpst {
     } *rules;
     uint8 ticked;
     uint8 effectively_by_glyphs;
+    char **nclassnames, **bclassnames, **fclassnames;
 } FPST;
 
 enum asm_type { asm_indic, asm_context, asm_lig, asm_simple=4, asm_insert,
@@ -2006,7 +2009,16 @@ struct cidbytes;
 struct fd2data;
 struct ttfinfo;
 struct alltabs;
-struct growbuf;
+
+typedef struct growbuf {
+    unsigned char *pt;
+    unsigned char *base;
+    unsigned char *end;
+} GrowBuf;
+extern void GrowBuffer(GrowBuf *gb);
+extern void GrowBufferAdd(GrowBuf *gb,int ch);
+extern void GrowBufferAddStr(GrowBuf *gb,char *str);
+
 struct glyphdata;
 extern int UnitsParallel(BasePoint *u1,BasePoint *u2,int strict);
 extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
@@ -2198,6 +2210,7 @@ extern void OTLookupFree(OTLookup *lookup);
 extern void OTLookupListFree(OTLookup *lookup );
 extern FPST *FPSTCopy(FPST *fpst);
 extern void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format);
+extern void FPSTClassesFree(FPST *fpst);
 extern void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int rcnt);
 extern void FPSTFree(FPST *fpst);
 extern void ASMFree(ASM *sm);
@@ -3025,6 +3038,11 @@ extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
 extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name);
 extern OTLookup *SFFindLookup(SplineFont *sf,char *name);
 extern void NameOTLookup(OTLookup *otl,SplineFont *sf);
+extern int GlyphNameCnt(const char *pt);
+extern char *reverseGlyphNames(char *str);
+extern char *FPSTRule_From_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule,
+	char *line, int *return_is_warning );
+extern char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule);
 extern void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
 extern void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
 struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
