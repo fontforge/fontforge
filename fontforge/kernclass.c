@@ -1827,8 +1827,73 @@ return( false );
 return( true );
 }
 
+void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf) {
+    /* Gadget g is a matrix edit and the column "c" contains a list of glyph */
+    /*  lists. Glyphs may appear multiple times in the list, but glyph names */
+    /*  should be in the font. */
+    /* the entry at r,c has just changed. Check to validate the above */
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *classes = _GMatrixEditGet(g,&rows);
+    char *start1, *start2, *pt1, *pt2, *eow1, *eow2;
+    int ch1, ch2, off;
+    int changed = false;
+
+    /* Remove any leading spaces */
+    for ( start1=classes[r*cols+c].u.md_str; *start1==' '; ++start1 );
+    if ( start1!=classes[r*cols+c].u.md_str ) {
+	off = start1-classes[r*cols+c].u.md_str;
+	for ( pt1=start1; *pt1; ++pt1 )
+	    pt1[-off] = *pt1;
+	pt1[-off] = '\0';
+	changed = true;
+	pt1 -= off;
+	start1 -= off;
+    } else
+	pt1 = start1+strlen(start1);
+    while ( pt1>start1 && pt1[-1]==' ' ) --pt1;
+    *pt1 = '\0';
+
+    /* Check for duplicate names in this class */
+    /*  also check for glyph names which aren't in the font */
+    while ( *start1!='\0' ) {
+	for ( pt1=start1; *pt1!=' ' && *pt1!='(' && *pt1!='{' && *pt1!='\0' ; ++pt1 );
+	/* Preserve the {Everything Else} string from splitting */
+	if ( *pt1=='{' ) {
+	    while ( *pt1!='\0' && *pt1!='}' ) ++pt1;
+	    if ( *pt1=='}' ) ++pt1;
+	}
+	eow1 = pt1;
+	if ( *eow1=='(' ) {
+	    while ( *eow1!='\0' && *eow1!=')' ) ++eow1;
+	    if ( *eow1==')' ) ++eow1;
+	} 
+	while ( *eow1==' ' ) ++eow1;
+	ch1 = *pt1; *pt1='\0';
+	if ( sf!=NULL && !isEverythingElse( start1 )) {
+	    SplineChar *sc = SFGetChar(sf,-1,start1);
+	    if ( sc==NULL )
+		ff_post_notice(_("Missing glyph"),_("The font does not contain a glyph named %s."), start1 );
+	}
+	if ( *eow1=='\0' ) {
+	    *pt1 = ch1;
+    break;
+	}
+	*pt1 = ch1;
+	start1 = eow1;
+    }
+    if ( changed ) {
+	/* Remove trailing spaces too */
+	start1=classes[r*cols+c].u.md_str;
+	pt1 = start1+strlen(start1);
+	while ( pt1>start1 && pt1[-1]==' ' )
+	    --pt1;
+	*pt1 = '\0';
+	GGadgetRedraw(g);
+    }
+}
+
 void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
-    /* Gadget g is a matrix edit and the column "c" contains a set of glyph */
+    /* Gadget g is a matrix edit and the column "c" contains a list of glyph */
     /*  sets. No glyph may appear twice in a set, and glyph names */
     /*  should be in the font. */
     /* the entry at r,c has just changed. Check to validate the above */
@@ -1916,7 +1981,7 @@ void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
 }
 
 void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf) {
-    /* Gadget g is a matrix edit and column "c" contains a set of glyph */
+    /* Gadget g is a matrix edit and column "c" contains a list of glyph */
     /*  classes. No glyph may appear in more than one class. */
     /*  Also all checks in the above routine should be done. */
     /* the entry at r,c has just changed. Check to validate the above */

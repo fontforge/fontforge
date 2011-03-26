@@ -87,12 +87,6 @@ int autohint_before_generate = 1;
 /* Then, on top of that I tried generating some full glyph subroutines, and   */
 /*  to my surprise, it just made things worse.                                */
 
-typedef struct growbuf {
-    unsigned char *pt;
-    unsigned char *base;
-    unsigned char *end;
-} GrowBuf;
-
 #define HSH_SIZE	511
 /* In type2 charstrings we divide every character into bits where a bit is */
 /* bounded by a hintmask/moveto. Each of these is a potential subroutine and */
@@ -203,19 +197,6 @@ static void GIFree(GlyphInfo *gi,SplineChar *dummynotdef) {
     free(gi->gb);
     free(gi->psubrs);
     free(gi->bits);
-}
-
-static void GrowBuffer(GrowBuf *gb) {
-    if ( gb->base==NULL ) {
-	gb->base = gb->pt = galloc(200);
-	gb->end = gb->base + 200;
-    } else {
-	int len = (gb->end-gb->base) + 400;
-	int off = gb->pt-gb->base;
-	gb->base = grealloc(gb->base,len);
-	gb->end = gb->base + len;
-	gb->pt = gb->base+off;
-    }
 }
 
 static void StartNextSubroutine(GrowBuf *gb,struct hintdb *hdb) {

@@ -5829,21 +5829,53 @@ FPST *FPSTCopy(FPST *fpst) {
     nfpst->next = NULL;
     if ( nfpst->nccnt!=0 ) {
 	nfpst->nclass = galloc(nfpst->nccnt*sizeof(char *));
-	for ( i=0; i<nfpst->nccnt; ++i )
+	nfpst->nclassnames = galloc(nfpst->nccnt*sizeof(char *));
+	for ( i=0; i<nfpst->nccnt; ++i ) {
 	    nfpst->nclass[i] = copy(fpst->nclass[i]);
+	    nfpst->nclassnames[i] = copy(fpst->nclassnames[i]);
+	}
     }
     if ( nfpst->bccnt!=0 ) {
 	nfpst->bclass = galloc(nfpst->bccnt*sizeof(char *));
-	for ( i=0; i<nfpst->bccnt; ++i )
+	nfpst->bclassnames = galloc(nfpst->bccnt*sizeof(char *));
+	for ( i=0; i<nfpst->bccnt; ++i ) {
 	    nfpst->bclass[i] = copy(fpst->bclass[i]);
+	    nfpst->bclassnames[i] = copy(fpst->bclassnames[i]);
+	}
     }
     if ( nfpst->fccnt!=0 ) {
 	nfpst->fclass = galloc(nfpst->fccnt*sizeof(char *));
-	for ( i=0; i<nfpst->fccnt; ++i )
+	nfpst->fclassnames = galloc(nfpst->fccnt*sizeof(char *));
+	for ( i=0; i<nfpst->fccnt; ++i ) {
 	    nfpst->fclass[i] = copy(fpst->fclass[i]);
+	    nfpst->fclassnames[i] = copy(fpst->fclassnames[i]);
+	}
     }
     nfpst->rules = RulesCopy(fpst->rules,fpst->rule_cnt,fpst->format);
 return( nfpst );
+}
+
+void FPSTClassesFree(FPST *fpst) {
+    int i;
+
+    for ( i=0; i<fpst->nccnt; ++i ) {
+	free(fpst->nclass[i]);
+	free(fpst->nclassnames[i]);
+    }
+    for ( i=0; i<fpst->bccnt; ++i ) {
+	free(fpst->bclass[i]);
+	free(fpst->bclassnames[i]);
+    }
+    for ( i=0; i<fpst->fccnt; ++i ) {
+	free(fpst->fclass[i]);
+	free(fpst->fclassnames[i]);
+    }
+    free(fpst->nclass); free(fpst->bclass); free(fpst->fclass);
+    free(fpst->nclassnames); free(fpst->bclassnames); free(fpst->fclassnames);
+
+    fpst->nccnt = fpst->bccnt = fpst->fccnt = 0;
+    fpst->nclass = fpst->bclass = fpst->fclass = NULL;
+    fpst->nclassnames = fpst->bclassnames = fpst->fclassnames = NULL;
 }
 
 void FPSTFree(FPST *fpst) {
@@ -5852,13 +5884,7 @@ void FPSTFree(FPST *fpst) {
 
     while ( fpst!=NULL ) {
 	next = fpst->next;
-	for ( i=0; i<fpst->nccnt; ++i )
-	    free(fpst->nclass[i]);
-	for ( i=0; i<fpst->bccnt; ++i )
-	    free(fpst->bclass[i]);
-	for ( i=0; i<fpst->fccnt; ++i )
-	    free(fpst->fclass[i]);
-	free(fpst->nclass); free(fpst->bclass); free(fpst->fclass);
+	FPSTClassesFree(fpst);
 	for ( i=0; i<fpst->rule_cnt; ++i ) {
 	    FPSTRuleContentsFree( &fpst->rules[i],fpst->format );
 	}
@@ -7564,4 +7590,52 @@ return(sqrt(best));
 return( sqrt(off[0]*off[0] + off[1]*off[1]) );
     }
 return( -1 );
+}
+
+void GrowBuffer(GrowBuf *gb) {
+    if ( gb->base==NULL ) {
+	gb->base = gb->pt = galloc(200);
+	gb->end = gb->base + 200;
+    } else {
+	int len = (gb->end-gb->base) + 400;
+	int off = gb->pt-gb->base;
+	gb->base = grealloc(gb->base,len);
+	gb->end = gb->base + len;
+	gb->pt = gb->base+off;
+    }
+}
+
+void GrowBufferAdd(GrowBuf *gb,int ch) {
+    if ( gb->base==NULL ) {
+	gb->base = gb->pt = galloc(200);
+	gb->end = gb->base + 200;
+    } else if ( gb->pt>=gb->end ) {
+	int len = (gb->end-gb->base) + 400;
+	int off = gb->pt-gb->base;
+	gb->base = grealloc(gb->base,len);
+	gb->end = gb->base + len;
+	gb->pt = gb->base+off;
+    }
+    *gb->pt++ = ch;
+}
+
+void GrowBufferAddStr(GrowBuf *gb,char *str) {
+    int n;
+
+    if ( str==NULL )
+return;
+    n = strlen(str);
+
+    if ( gb->base==NULL ) {
+	gb->base = gb->pt = galloc(200+n);
+	gb->end = gb->base + 200+n;
+    } else if ( gb->pt+n+1>=gb->end ) {
+	int len = (gb->end-gb->base) + n+200;
+	int off = gb->pt-gb->base;
+	gb->base = grealloc(gb->base,len);
+	gb->end = gb->base + len;
+	gb->pt = gb->base+off;
+    }
+    strcpy(gb->pt,str);
+    gb->pt += n;
 }

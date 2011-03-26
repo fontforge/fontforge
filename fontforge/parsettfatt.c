@@ -1353,6 +1353,7 @@ return;
 	class = getClassDefTable(ttf, stoffset+classoff, info);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
+	fpst->nclassnames = gcalloc(fpst->nccnt,sizeof(char *));
 
 	/* Just in case they used the coverage table to redefine class 0 */
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
@@ -1502,6 +1503,7 @@ return;
 	class = getClassDefTable(ttf, stoffset+classoff, info);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
+	fpst->nclassnames = gcalloc(fpst->nccnt,sizeof(char *));
 
 	/* Just in case they used the coverage table to redefine class 0 */
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
@@ -1515,6 +1517,7 @@ return;
 	    class = gcalloc(info->glyph_cnt,sizeof(uint16));
 	fpst->bccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->bclass = ClassToNames(info,fpst->bccnt,class,info->glyph_cnt);
+	fpst->bclassnames = gcalloc(fpst->bccnt,sizeof(char *));
 	free(class);
 	if ( fclassoff!=0 )
 	    class = getClassDefTable(ttf, stoffset+fclassoff, info);
@@ -1522,6 +1525,7 @@ return;
 	    class = gcalloc(info->glyph_cnt,sizeof(uint16));
 	fpst->fccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->fclass = ClassToNames(info,fpst->fccnt,class,info->glyph_cnt);
+	fpst->fclassnames = gcalloc(fpst->fccnt,sizeof(char *));
 	free(class);
 
 	cnt = 0;
