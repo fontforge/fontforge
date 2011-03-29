@@ -711,7 +711,8 @@ return( copy(str));
 
 static int GME_RecalcFH(GMatrixEdit *gme) {
     int r,c, as, ds;
-    char *str;
+    int32 end = -1;
+    char *str, *ept;
     GTextBounds bounds;
     GMenuItem *mi;
 
@@ -727,9 +728,11 @@ static int GME_RecalcFH(GMatrixEdit *gme) {
 	break;
 	  default:
 	    str = MD_Text(gme,r,c);
+	    if ( ( ept = strchr(str,'\n') ) != NULL )
+		end = ept - str;
 	break;
 	}
-	GDrawGetBiText8Bounds(gme->nested, str, -1, NULL, &bounds);
+	GDrawGetBiText8Bounds(gme->nested, str, end, NULL, &bounds);
 	free(str);
 	if ( bounds.as>as )
 	    as = bounds.as;
