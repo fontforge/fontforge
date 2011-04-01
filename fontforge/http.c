@@ -645,7 +645,7 @@ static int HowIDidIt(char *databuf, int datalen,
     fprintf(formdata,"classname\r\n" );
     fprintf(formdata,"--%s--\r\n", boundary );
 
-    sprintf( databuf, _("Transmitting Meta Data...") );
+    sprintf( databuf, "%s", _("Transmitting Meta Data...") );
     ChangeLine2_8(databuf);
     soc = makeConnection(addr);
     if ( soc==-1 ) {

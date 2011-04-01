@@ -6515,12 +6515,12 @@ static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub,
     pos = strlen(popup_msg);
 
     if ( sub!=NULL && otl->lookup_type==gpos_pair && sub->kc!=NULL ) {
-	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_("(kerning class)\n") );
+	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%s",_("(kerning class)\n") );
 	pos += strlen( popup_msg+pos );
     }
 
     if ( otl->features==NULL )
-	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_("Not attached to a feature"));
+	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%s",_("Not attached to a feature"));
     else {
 	for ( fl=otl->features; fl!=NULL && pos<sizeof(popup_msg)-2; fl=fl->next ) {
 	    snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%c%c%c%c: ",

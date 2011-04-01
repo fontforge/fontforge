@@ -1834,8 +1834,8 @@ void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf) {
     /* the entry at r,c has just changed. Check to validate the above */
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *classes = _GMatrixEditGet(g,&rows);
-    char *start1, *start2, *pt1, *pt2, *eow1, *eow2;
-    int ch1, ch2, off;
+    char *start1, *pt1, *eow1;
+    int ch1, off;
     int changed = false;
 
     /* Remove any leading spaces */
