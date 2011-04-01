@@ -4556,6 +4556,10 @@ return( NULL );
 return( ret );
 }
 
+/* Note: My string format cannot represent contextual rules were the order */
+/*  of application of lookups is not the same as textual order. This rarely */
+/*  happens. Adobe's feature files have the same drawback. And there are */
+/*  rarely two or more lookups applied by one rule. But it could, so be aware!*/
 char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
     int i, max=0;
     char *ret, *npt;
@@ -4720,7 +4724,7 @@ return( my_asprintf( _("Separation marks only meaningful in contextual chaining 
 	    if ( first==-1 )
 		first = cnt;
 	    else if ( last==-1 )
-		last = cnt;
+		last = cnt-1;
 	    else
 return( my_asprintf( _("Too many separation marks, starting at: %.20s..."), lpt ));
 	    ++lpt;
@@ -4912,7 +4916,7 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 	rule->u.class.bcnt = first;
 	if ( first!=0 )
 	    rule->u.class.bclasses = galloc(first*sizeof(uint16));
-	rule->u.class.fcnt = cnt-last-1;
+	rule->u.class.fcnt = cnt==last?0:cnt-last-1;
 	if ( rule->u.class.fcnt!=0 )
 	    rule->u.class.fclasses = galloc(rule->u.class.fcnt*sizeof(uint16));
 	for ( i=0; i<cnt; ++i ) {

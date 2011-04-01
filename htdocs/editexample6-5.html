@@ -116,21 +116,16 @@
     </CAPTION>
     <TR>
       <TD >The following example may not work! The font tables produced by it are
-	all correct, but the designers of OpenType (or its implementors) decided
-	that the latin script does not need complex conditional features and many
-	implementations of OpenType do not support them for latin. This is not even
-	mentioned in the standard, but is hidden away in supplemental information
-	on microsoft's site.
+	all correct, but early implementations of OpenType did not support decided
+	the "Contextual Alternative" ('calt') feature for the latin script.
 	<P>
-	Why do I provide an example which doesn't work? It's the best I can do. If
+	Why do I provide an example which might not work? It's the best I can do. If
 	I knew enough about Indic or Arabic typesetting I would provide an example
 	for those scripts. But I don't. The procedures are the same. If you follow
 	them for some other scripts they will work.
 	<P>
-	On some systems and in some applications 'calt' is supported for latn and
-	this example will work. On other systems/applications the example can be
-	made to work by replacing the 'calt' feature tag (conditional alternatives)
-	with a Required tag (but I gather that is now deprecated).</TD>
+	As time has gone on 'calt' has been supported by more applications for latn and
+	this warning is no longer as applicable as it once was.</TD>
     </TR>
   </TABLE>
   <P>
@@ -164,56 +159,51 @@
   feature. And of course we want an associated subtable). This will pop up
   a series of dialogs to edit a contextual subtable
   <P>
-  <IMG SRC="ott2_5.png" WIDTH="330" HEIGHT="249" ALIGN="Left">The first dialog
+  <IMG SRC="contextchain-format.png" WIDTH="476" HEIGHT="503" ALIGN="Left">
+  The first dialog
   allows you to specify the overall format of the substitution. We want a class
   based system -- we've already mentioned what the glyph classes will
   be.<BR CLEAR=ALL>
   <P>
-  <IMG SRC="ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right">The next dialog
-  finally shows something interesting. At the top are a series of patterns
+  <IMG SRC="contextchain-simpleclasses.png" WIDTH="476" HEIGHT="503" ALIGN="Right">
+  The next dialog
+  finally shows something interesting. At the top is a pattern
   to match and substitutions that will be applied if the string matches. Underneath
   that are the glyph classes that this substitution uses. A contextual chaining
-  dialog divides the glyph stream into three categories: those glyphs before
-  the current glyph (these are called backtracking glyphs), the current glyph
-  itself (you may specify more than one), and this (these) glyphs may have
+  dialog divides the glyph stream into three sections: those glyphs before
+  the current glyph (these are called backtracking glyphs), the current glyph(s)
+  itself (themselves), which may have
   simple substitutions applied to them, and finally glyphs after the current
   glyph (these are called lookahead glyphs).
   <P>
   Each category of glyphs may divide glyphs into a different set of classes,
   but in this example we use the same classes for all categories (this makes
   it easier to convert the substitution to Apple's format). The first line
-  (in the ``List of lists'' field) should be read thus: If a backtracking glyph
-  (the glyph before the current one) in class 1 is followed by the current
-  glyph in class 2, then location 0 --the only location -- in the match string
-  (that is the current glyph) should have simple substitution `high' applied
-  to it.
+  (in the ``Matching rules'' field) should be read thus: If a backtracking glyph
+  (the glyph before the current one) in class "high-after" is followed by the
+  current glyph in class "letter", then that letter in the match string
+  (that is the current glyph) should have simple substitution `To-TopJoin'
+  applied to it.
   <P>
-  If you look at the glyph class definitions you will see that class 1 includes
-  those glyphs which must be followed by a high variant, so this seems reasonable.
+  If you look at the glyph class definitions you will see that class "high-afters"
+  includes those glyphs which must be followed by a high variant, so this seems reasonable.
   <P>
-  The second line includes all letters not in class 1. <BR CLEAR=ALL>
+  Now there should be a second line which would look like
+  <CODE>"high-after | high-after @&lt;To-TopJoin&gt; |"</CODE> to handle
+  the second case mentioned above. Unfortunately that doesn't seem to work.
+  The OpenType spec allows for it, but implementations of OpenType don't
+  seem to support it. Instead that line must be in a separate sub-table in
+  the same lookup.<BR CLEAR=ALL>
   To edit a glyph class simply click on it and type. To create a new one press
   the &lt;New&gt; button (at the bottom of the list). You can also click on
   the little box thingy off on the right. This produces another dialog showing
   a font view. You can select glyphs in the font view if that is easier than
   remembering their names.
   <P>
-  <IMG SRC="ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right">To edit a pattern
-  double click on it, or to create a new one press the &lt;New&gt; button (at
-  the bottom of the list). The pattern string is divided into three categories,
-  <IMG SRC="ott5.png" WIDTH="330" HEIGHT="358" ALIGN="Left">those glyphs before
-  the current one, the current one itself, and any glyphs after the current
-  one. You choose which category of the pattern you are editing with the tabs
-  at the top of the dialog.
-  <P>
-  Underneath these is the subset of the pattern that falls within the current
-  category, the classes defined for this category, and finally the substitutions
-  for the current glyph(s). Clicking on one of the classes will add the class
-  number to the pattern.
-  <P>
-  To edit a substitution click on it, or to create a new one press the
-  &lt;New&gt;button. The position specifies which glyph among the current glyphs
-  should be modified, and the lookup is the name of a lookup.<BR CLEAR=ALL>
+  You may edit a pattern in the obvious way. As you enter glyph names they will
+  be auto completed for you. There are two buttons down at the bottom of the
+  pattern list, one to start a new section (go from back tracking to active, or
+  from active to lookahead), and one to add a new lookup reference.
   <P>
   <FONT COLOR="Red"><STRONG>A warning about contextual
   behavior:</STRONG></FONT> Not all software supports them. And even more confusing
