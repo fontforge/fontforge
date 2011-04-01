@@ -429,7 +429,7 @@ return( buffer );
       case 3:
 	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
 	if ( dx==0 && dy==0 )
-	    snprintf( buffer, blen, _("No Slope") );
+	    snprintf( buffer, blen, "%s", _("No Slope") );
 	else if ( dx==0 )
 	    snprintf( buffer, blen, "∆y/∆x= ∞" );
 	else
