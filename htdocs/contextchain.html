@@ -3,17 +3,17 @@
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Aug-2003 -->
   <!-- AP: Last modified: 11-Nov-2009 -->
-  <TITLE>The dialog for editing Contextual or Chaining Contextual features</TITLE>
+  <TITLE>The dialog for editing Contextual or Chaining Contextual lookups</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
   <H1>
-    Editing Contextual or Chaining Contextual features
+    Editing Contextual or Chaining Contextual lookups
   </H1>
   <H2>
-    What is a Contextual Positioning feature?
+    What is a Contextual Positioning lookup?
   </H2>
   <P>
   There are two types of contextual positioning modes: Contextual Positioning
@@ -35,7 +35,7 @@
   may only be made to the part including the current glyph, and the word processor
   will advance by the number of glyphs in that subset of the pattern.
   <H2>
-    What is a Contextual Substitution feature?
+    What is a Contextual Substitution lookup?
   </H2>
   <P>
   Substitutions come in three types. The first two are similar to the two types
@@ -59,7 +59,7 @@
     More complete descriptions
   </H2>
   <P>
-  For more information on contextual features see Adobe's Docs:
+  For more information on contextual lookups see Adobe's Docs:
   <UL>
     <LI>
       <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">The
@@ -80,14 +80,15 @@
   on <A HREF="gposgsub.html#sometimes">Apple Advanced Typography </A>for more
   information as to when and caveats about how.
   <H2>
-    Creating a contextual feature
+    Creating a contextual lookup
   </H2>
   <P>
-  Before you can edit one of these features you must create it from the
-  <A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
-  dialog</A>.
+  First you must create a contextual lookup with the
+  <A HREF="fontinfo.html#Lookups">Element-&gt;Font Info-&gt;Lookups
+  dialog</A>, then in that same dialog create and name a subtable in that
+  lookup. Then the contextual editor will open.
   <H2>
-    Editing a feature
+    Editing a lookup
   </H2>
   <H3>
     <IMG SRC="contextchain-format.png" WIDTH="476" HEIGHT="503" ALIGN="Right">Format
@@ -117,11 +118,66 @@
   The third format is the most general and allows you to specify your pattern
   by a <A HREF="#Coverage">separate list of glyphs</A> for each glyph
   position:<BR>
-  <CODE>&nbsp; &nbsp; &nbsp; [bovw] [a-z]</CODE><BR>
+  <CODE>&nbsp; &nbsp; &nbsp; [bovw] [a-z]</CODE>
+  <P>
+  Most contextual specifications are fairly simple, FontForge has two dialog
+  formats, one for simpler specifications and one for more complicated ones.
+  The complicated dialog is (I think) more difficult to understand, but allows
+  for greater generality.
+  <P>
+  In both the glyph and the class format you are allowed to specify multiple
+  matching rules (in the coverage format you may only specify one rule. I know
+  this sounds odd, I did not design the system). <STRONG>UNFORTUNATELY</STRONG>
+  the OpenType interpreters do not seem to support multiple rules within a
+  single subtable. Instead I suggest you use multiple subtables. It will have
+  the same effect but is less efficient. FontForge still supports multiple
+  rules because the spec says it should.
   <BR CLEAR=ALL>
   <H3>
-    <IMG SRC="contextchain-coverage.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
-	NAME="Coverage">Coverage</A>
+    <IMG SRC="contextchain-simplecoverage.png" WIDTH="659" HEIGHT="503" ALIGN="Right"><A
+	NAME="Coverage">Simple Coverage</A>
+  </H3>
+  <P>
+  This display shows a list of three items, the first column consists of
+  coverage tables -- that is lists of glyphs. A match occurs if the current
+  glyph matches one of the glyphs named in the current coverage table. The
+  second column contains the name of a lookup that should be applied to
+  the glyph associated with the coverage table if the entire rule matches.
+  <P>
+  As noted earlier the rule is divided into three sections, backtrack, match
+  and lookahead. The third column indicates when each section starts. Lookups
+  may only occur in the middle (the "match") section. If you don't specify
+  the start of each section FontForge will figure it out for you assuming that
+  the match section starts with the first lookup and ends with the last.
+  <STRONG>WARNING:</STRONG> this simple heuristic does not work for ligatures.
+  The match section must be long enough to provide all glyphs that might be
+  consumed by the ligature conversion.
+  <P>
+  This lookup does not directly describe how transformations are to happen
+  to the glyphs, merely WHEN. Instead it invokes a nested lookup that will be
+  applied to specific positions in the match string (positions in the backtrack
+  and lookahead lists may not be transformed).
+  <P>
+  So in the example at right, the first list of glyphs is a coverage table
+  in the backtrack section, while the second line starts the match section.
+  The rule says that if one of the letters [bovw] is followed by any other
+  letter, then the second letter should be transformed using the nested
+  lookup "To-TopJoin" (which will convert the glyph into an alternate format).
+  Here there is no need for a lookahead list (and there is none).
+  <H3>
+    Setting a coverage table
+  </H3>
+  <P>
+  You can change a coverage table by editing it. You may enter either glyph
+  names or unicode characters (which will be converted to a glyph name -- a
+  few characters which have special meaning: space, right parenthesis, asterix;
+  must have their names typed in full). If you click on the little box on the
+  right you will get a dialog containing a font view. In this view you may
+  select glyphs to your heart's content, when you press OK these glyphs become
+  your table.<BR CLEAR=ALL>
+  <H3>
+    <IMG SRC="contextchain-coverage.png" WIDTH="476" HEIGHT="503" ALIGN="Right">
+	Coverage</A>
   </H3>
   <P>
   This display shows a list whose entries are coverage tables -- that is lists
@@ -134,11 +190,6 @@
   In a Chaining Contextual feature it is also possible to specify a list of
   coverage tables to match glyphs before the current glyph, and another list
   to match glyphs after.
-  <P>
-  This feature does not directly describe how transformations are to happen
-  to the glyphs, instead it invokes a list of nested lookups that are to be
-  applied to specific positions in the match string (positions in the backtrack
-  and lookahead lists may not be transformed).
   <P>
   In the example at right, the lookup 'high' will be applied to any glyph that
   matches the coverage table at the top of the list. Again the buttons under
@@ -154,21 +205,29 @@
   it.
   <P>
   You can add a new entry by pressing the &lt;New&gt; button, and then selecting
-  a lookup.
+  a lookup.<BR CLEAR=ALL>
   <H3>
-    Setting a coverage table
+    <IMG SRC="contextchain-simpleglyph.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
+	NAME="Glyphs">Simple Glyphs</A>
   </H3>
+  In the glyph format each rule allows you to specify a list of glyphs that
+  need to be matched along with lookups that should be applied to appropriate
+  glyphs after the match has been made.
   <P>
-  You can change a coverage table by editing it. You may enter either glyph
-  names or unicode characters (which will be converted to a glyph name -- a
-  few characters which have special meaning: space, right parenthesis, asterix;
-  must have their names typed in full). If you click on the little box on the
-  right you will get a dialog containing a font view. In this view you may
-  select glyphs to your heart's content, when you press OK these glyphs become
-  your table.<BR CLEAR=ALL>
+  Again each rule is divided into sections (here marked with the vertical bar
+  "|"). In the match section glyphs may be followed by lookup names, and those
+  lookups will be applied to the preceding glyph if a match occurs.
+  <P>
+  So the example at right is an attempt to do with a series of glyph rules
+  what was done easily with one coverage table rule. Every possible combination
+  of letters must be spelled out as a separate rule.
+  <P>
+  At the bottom of the list are two buttons, one to add a lookup reference after
+  a glyph, and the other to start a new section.
+  <BR CLEAR=ALL>
   <H3>
-    <IMG SRC="contextchain-glyphlists.png" WIDTH="476" HEIGHT="498" ALIGN="Right"><A
-	NAME="Glyphs">Glyphs</A>
+    <IMG SRC="contextchain-glyphlists.png" WIDTH="476" HEIGHT="498" ALIGN="Right">
+	Glyphs</A>
   </H3>
   <P>
   This format allows you to specify several glyph lists to match. In the example
@@ -199,15 +258,19 @@
   <P>
   As above a set of lookups can be applied after the match occurs.<BR CLEAR=ALL>
   <H3>
-    <IMG SRC="contextchain-class.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
-	NAME="Classes">Classes</A>
+    <IMG SRC="contextchain-simpleclasses.png" WIDTH="476" HEIGHT="503" ALIGN="Right"><A
+	NAME="Classes">Simple Classes</A>
   </H3>
   <P>
   When specifying a class match, you must specify at least one set of glyph
-  classes. (you may also specify separate sets of classes for the backtrack
-  and lookahead lists, or you use the same set for everything). You must also
-  specify a list of patterns where each pattern is a list of numbers and each
-  number is the index of the class into the class list.
+  classes. If you only specify one set these classes will be used in all
+  sections, alternately each section may have its own set of glyph classes.
+  You may give each glyph class a name (if you don't then the class will be
+  named something dull like "1", "2", etc.)
+  <P>
+  You must also
+  specify a list of patterns where each pattern is a list of class names (or
+  numbers).
   <P>
   Every set of classes has a magic class at index 0 which matches whatever
   glyphs are not explicitly mentioned in another class. FontForge displays
@@ -215,7 +278,22 @@
   this class. Other classes are just unordered lists of glyph names (rather
   like coverage tables above), however any specific glyph may belong to at
   most one class at a time (whereas a glyph may occur in as many coverage tables
-  as desired).<BR CLEAR=ALL>
+  as desired).
+  <P>
+  In the example at right, any letter that occurs after one of the special
+  letters [bovw] will be changed into an alternate form.
+  <P>
+  There is a small bug here. Because classes must be disjoint, the "letters"
+  class does not contain the letters [bovw]. So there actually needs to be
+  a second rule that looks like <CODE>"high-after | high-after @&lt;To-TopJoin&gt; |"</CODE>.
+  As I mentioned early, multiple rules don't actually work, so that rule
+  is in a separate subtable (which is in the same lookup) and isn't displayed
+  here.<BR CLEAR=ALL>
+  <H3>
+    <IMG SRC="contextchain-class.png" WIDTH="476" HEIGHT="503" ALIGN="Right">
+	Classes</A>
+  </H3>
+<BR CLEAR=ALL>
   <H3>
     <IMG SRC="contextchain-classlist.png" WIDTH="476" HEIGHT="503" ALIGN="Right">A
     list of Class numbers

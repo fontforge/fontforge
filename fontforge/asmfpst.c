@@ -83,13 +83,12 @@ return( NULL );
 	for ( j=0; j<3; ++j ) {
 	    cnt = 0;
 	    if ( (&fpst->rules[i].u.glyph.names)[j]!=NULL && *(&fpst->rules[i].u.glyph.names)[j]!='\0' ) {
-		cnt = 1;
 		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; ++pt ) {
-		    if ( *pt==' ' ) {
-			++cnt;
-			while ( *pt==' ' ) ++pt;
-			--pt;
-		    }
+		    while ( *pt==' ' ) ++pt;
+		    if ( *pt=='\0' )
+		break;
+		    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+		    ++cnt;
 		}
 	    }
 	    (&new->rules[i].u.class.ncnt)[j] = cnt;
@@ -129,6 +128,8 @@ return( NULL );
 	new->bccnt = new->fccnt = nextclass;
 	new->bclass = classcopy(names,nextclass);
 	new->fclass = classcopy(names,nextclass);
+	new->bclassnames = gcalloc(nextclass,sizeof(char *));	/* Leave as NULL */
+	new->fclassnames = gcalloc(nextclass,sizeof(char *));	/* Leave as NULL */
     }
 return( new );
 }

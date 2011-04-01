@@ -181,7 +181,8 @@ static void GME_FixScrollBars(GMatrixEdit *gme) {
     int pagesize = gme->vsb->r.height/(gme->fh+gme->vpad);
     if ( pagesize<=0 ) pagesize=1;
 
-    GScrollBarSetBounds(gme->vsb,0,gme->rows+1,pagesize);
+	/* Editable matrixedits need one extra line, for the <New> button */
+    GScrollBarSetBounds(gme->vsb,0,gme->rows+!gme->no_edit,pagesize);
     for (lastc=gme->cols-1; lastc>=0 && gme->col_data[lastc].hidden; lastc--);
     width = gme->col_data[lastc].x + gme->col_data[lastc].width;
     GScrollBarSetBounds(gme->hsb,0,width,gme->hsb->r.width);
@@ -457,7 +458,8 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
 
     width -= 2*bp; height -= 2*bp;
 
-    subheight = height - (gme->del->r.height+DEL_SPACE) -
+    subheight = height -
+	    (gme->no_edit && gme->buttonlist==NULL?0:(gme->del->r.height+DEL_SPACE)) -
 	    (gme->has_titles?gme->fh:0) -
 	    gme->hsb->r.height;
     subwidth = width - gme->vsb->r.width;
@@ -488,7 +490,9 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
 	    if ( gme->buttonlist[i]->state!=gs_invisible )
 		++bcnt;
     }
-    if ( bcnt==1 ) {
+    if ( bcnt==1 && gme->no_edit ) {
+	/* No delete button to display */
+    } else if ( bcnt==1 ) {
 	GGadgetMove(gme->del,gme->g.inner.x + (width-gme->del->r.width)/2,
 				 gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE/2));
     } else {
@@ -1344,7 +1348,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
     for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
     /* new row */
     if ( c==0 && r==gme->rows && event->type == et_mousedown &&
-	    event->u.mouse.button==1 ) {
+	    event->u.mouse.button==1 && !gme->no_edit ) {
 	if ( gme->rows>=gme->row_max )
 	    gme->data = grealloc(gme->data,(gme->row_max+=10)*gme->cols*sizeof(struct matrix_data));
 	++gme->rows;
@@ -1395,6 +1399,8 @@ return;
 	    (gme->popupmenu)(&gme->g,event,r,c);
     } else if ( d->frozen ) {
 	GDrawBeep(NULL);
+    } else if ( gme->no_edit ) {
+	/* Twiddle toes */;
     } else if ( gme->col_data[c].me_type==me_enum ) {
 	GME_Choices(gme,event,r,c);
     } else if ( gme->col_data[c].me_type==me_button ) {
@@ -1604,18 +1610,20 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		GDrawPushClip(pixmap,&clip,&old);
 		str = NULL;
 		if ( r+gme->off_top==gme->rows ) {
-		    buf[0] = '<';
-		    if ( gme->newtext!=NULL )
-			strncpy(buf+1,gme->newtext,sizeof(buf)-2);
-		    else if ( _ggadget_use_gettext )
-			strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
-		    else
-			u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
-		    buf[18] = '\0';
-		    k = strlen(buf);
-		    buf[k] = '>'; buf[k+1] = '\0';
-		    GDrawDrawBiText8(pixmap,gme->col_data[0].x - gme->off_left,y,
-			    buf,-1,NULL,gmatrixedit_activecol);
+		    if ( !gme->no_edit ) {
+			buf[0] = '<';
+			if ( gme->newtext!=NULL )
+			    strncpy(buf+1,gme->newtext,sizeof(buf)-2);
+			else if ( _ggadget_use_gettext )
+			    strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
+			else
+			    u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
+			buf[18] = '\0';
+			k = strlen(buf);
+			buf[k] = '>'; buf[k+1] = '\0';
+			GDrawDrawBiText8(pixmap,gme->col_data[0].x - gme->off_left,y,
+				buf,-1,NULL,gmatrixedit_activecol);
+		    }
 		} else {
 		    data = &gme->data[(r+gme->off_top)*gme->cols+c];
 		    fg = gme->g.state==gs_disabled?gme->g.box->disabled_foreground:
@@ -2441,6 +2449,15 @@ void GMatrixEditActivateRowCol(GGadget *g, int r, int c) {
     gme->active_row = r;
     gme->active_col = c;
     GME_EnableDelete(gme);
+    GDrawRequestExpose(gme->nested,NULL,false);
+}
+
+void GMatrixEditSetEditable(GGadget *g, int editable ) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->no_edit = !editable;
+    GGadgetSetVisible(gme->del,editable);
+    GMatrixEdit_Resize(&gme->g,gme->g.r.width,gme->g.r.height);
     GDrawRequestExpose(gme->nested,NULL,false);
 }
 

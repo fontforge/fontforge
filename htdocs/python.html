@@ -3671,7 +3671,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Adds an anchor class to the specified (anchor) subtable.</TD>
     </TR>
     <TR>
-      <TD><CODE>addKerningClass</CODE></TD>
+      <TD><a name="addKerningClass"><CODE>addKerningClass</CODE></a></TD>
       <TD><CODE>(lookup-name,new-subtable-name,<BR>
 	&nbsp;first-classes,<BR>
 	&nbsp;second-classes,<BR>
@@ -3799,9 +3799,112 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>(lookup-name,<BR>
 	&nbsp;new-subtable-name<BR>
 	&nbsp;[,after-subtable-name])</CODE></TD>
-      <TD>Creates a new subtable within the specified lookup. The optional final
+      <TD>Creates a new subtable within the specified lookup.
+	The lookup name should be a string specifying an existing lookup.
+	The subtable name should also be a string and should not match
+	any currently existing subtable in the lookup.
+        The optional final
 	argument allows you to specify the ordering within the lookup. If not specified
-	this subtable will be first in the lookup.</TD>
+	this subtable will be first in the lookup.
+	<P>
+	If you want to create a subtable in a contextual lookup, then use
+	<a href="#addContextualSubtable"><CODE>addContextualSubtable</CODE></a> below.
+	If you want to create a kerning class subtable, then use
+	<a href="#addKerningClass"><CODE>addKerningClass</CODE></a> above.
+	</TD>
+    </TR>
+    <TR>
+      <TD><a name="addContextualSubtable"><CODE>addContextualSubtable</CODE></a></TD>
+      <TD><CODE>(lookup-name,<BR>
+	&nbsp;new-subtable-name<BR>
+	&nbsp;type<BR>
+	&nbsp;rule<BR>
+	&nbsp;[,afterSubtable=]
+	&nbsp;[,bclasses=]
+	&nbsp;[,mclasses=]
+	&nbsp;[,fclasses=]
+	&nbsp;[,bclassnames=]
+	&nbsp;[,mclassnames=]
+	&nbsp;[,fclassnames=] )</CODE></TD>
+      <TD>Creates a new subtable within the specified contextual lookup
+        (contextual, contextual chaining, or reverse contextual chaining).
+	The lookup name should be a string specifying an existing lookup.
+	The subtable name should also be a string and should not match
+	any currently existing subtable in the lookup.
+	<P>The <CODE>type</CODE> should be one of the strings "glyph", "class",
+	"coverage" or "reversecoverage".
+	The <CODE>rule</CODE> should be a string specifying a string to match
+	and a set of lookups to apply once the match has been made. (See below
+	for more details).
+	<P>The remaining arguments are optional, keyword arguments.
+	<UL><LI><CODE>afterSubtable=</CODE>, if present this should be followed by
+	a string, the name of a subtable after which this one is to be placed
+	in the lookup. If not specified this subtable will be first in the
+	lookup.
+	<LI><CODE>bclasses=, fclasses=, mclasses=</CODE> these three arguments
+	specify sets of glyph classes for when <CODE>type="class"</CODE>. They
+	should be a tuple of thingies where each thingy is either a string
+	containing a list of space separated glyph names, or another tuple
+	containing a set of strings, each a glyph name. Note that the first
+	class is magic and should usually be left as a null string.
+	<LI><CODE>bclassnames=, fclassnames=, mclassnames=</CODE> These provide
+	names for the glyph classes described above. These names are optional,
+	but can be convenient. These are tuples of strings. There should be the
+	same number of entries in <CODE>bclassnames</CODE> as there are in
+	<CODE>bclasses</code>.
+	</UL>
+	<DL>
+	<DT>
+	When <CODE>type="glyph"</CODE>
+	<DD>The rule should look something like:<BR/>
+	<CODE>&nbsp;&nbsp;glyph-name1 glyph-name2 | glyph-name3 @&lt;lookup-name&gt; | glyph-name4</CODE><BR/>
+	The "|"s divide between backtrack, match and lookahead sections. So this
+	example would match it the current glyph were named <CODE>glyph-name3</CODE>
+	and it were preceded by <CODE>glyph-name2</CODE> and that by
+	<CODE>glyph-name1</CODE> and followed by <CODE>glyph-name4</CODE>. If
+	the match were successful then the lookup named <CODE>lookup-name</CODE>
+	would be applied. The @&lt;&gt; are litteral characters and should be
+	present in the rule.
+	<P>If the invoked lookup is a ligature lookup then it should be invoked
+	after the first glyph that forms the lookup (rather than the last) and
+	all glyphs that might make up the lookup should be in the match section.
+	So...<BR/>
+	<CODE>&nbsp;&nbsp;e | f @<ff-lig> f l | o</CODE><BR/>
+	would only apply the <CODE>ff-lig</CODE> lookup if the <CODE>ffl</CODE>
+	were preceeded by <CODE>e</CODE> and followed by <CODE>o</CODE>.
+	<DT>
+	When <CODE>type="class"</CODE>
+	<DD>The rule should look something like:<BR/>
+	<CODE>&nbsp;&nbsp;class-name1 class-name2 | class-name3 @&lt;lookup-name&gt; | class-name4</CODE><BR/>
+	Very similar to the case of glyphs, except that instead of glyph names
+	we have class names here. It is possible to have different sets of
+	class names in the three different sections (backtrack, match and
+	lookahead). If you don't specify any class names then you must use
+	numbers instead, each number refering to the class at that position in
+	the tuple (the first class will be class 0, the second class 1, and so
+	on).
+	<DT>
+	When <CODE>type="coverage"</CODE>
+	<DD>The rule should look something like:<BR/>
+	<CODE>&nbsp;&nbsp;[g1 g2] [g3 g4] | [g5 g6 g7] @&lt;lookup-name&gt; | [g8 g9]</CODE><BR/>
+	Each entry within brackets, <CODE>[]</CODE>, represents a coverage table
+	and should be a list of glyph names. The brackets are specified literally.
+	<DT>
+	When <CODE>type="reversecoverage"</CODE>
+	<DD>The rule should look something like:<BR/>
+	<CODE>&nbsp;&nbsp;[g1 g2] [g3 g4] | [g5 g6 g7] =&gt; [rg1 rg2 rg3] | [g8 g9]</CODE><BR/>
+	Very similar to normal coverage tables except that instead of specifying
+	a lookup there are replacement glyphs inline. There must be the same
+	number of replacement glyphs (<CODE>rg1, rg2, rg3</CODE>) as match
+	glyphs (<CODE>g5, g6, g7</CODE>) and there may be only one coverage
+	table in the match section.
+	</DL>
+	<STRONG>WARNING</STRONG> This format has some limitations, if there are
+	multiple lookups they will be applied in textual order (First lookup
+	in the string is the first one applied). This limitation is also
+	present in Adobe's feature files so I hope it shan't be a severe
+	limitation.
+	</TD>
     </TR>
     <TR>
       <TD><CODE>addSmallCaps</CODE></TD>
