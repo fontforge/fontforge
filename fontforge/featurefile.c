@@ -3151,7 +3151,7 @@ return( 0 );
     tok->gdef_mark[is_set][tok->gm_cnt[is_set]].glyphs = glyphs;
     /* see if the mark class is already in the font? */
     if ( is_set ) {
-	for ( i=sf->mark_class_cnt-1; i>=0; --i ) {
+	for ( i=sf->mark_set_cnt-1; i>=0; --i ) {
 	    if ( strcmp(sf->mark_set_names[i],tok->tokbuf+1)==0 ||
 		    strcmp(sf->mark_sets[i],glyphs)==0 )
 	break;
