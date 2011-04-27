@@ -1120,7 +1120,12 @@ return;
 	dummyfpst->rule_cnt = len;
 	dummyfpst->rules = gcalloc(len,sizeof(struct fpst_rule));
 	for ( i=0; i<len; ++i ) {
-	    msg = FPSTRule_From_Str(ccd->sf,dummyfpst,&dummyfpst->rules[i],old[i].u.md_str,&iswarning);
+	    char *temp = old[i].u.md_str;
+	    if ( ccd->aw==aw_glyphs_simple )
+		temp = GlyphNameListDeUnicode(temp);
+	    msg = FPSTRule_From_Str(ccd->sf,dummyfpst,&dummyfpst->rules[i],temp,&iswarning);
+	    if ( temp!=old[i].u.md_str )
+		free(temp);
 	    if ( msg!=NULL ) {
 		if ( !iswarning ) {
 		    ff_post_error(_("Bad rule"), "%s", msg );
