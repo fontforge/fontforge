@@ -3926,19 +3926,19 @@ void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
 	}
 	for ( r=0; r<fpst->rule_cnt; ++r ) {
 	    struct fpst_rule *rule = &fpst->rules[r];
-	    if ( fpst->type==pst_glyphs ) {
+	    if ( fpst->format==pst_glyphs ) {
 		rplstr(&rule->u.glyph.names,old,new,true);
 		rplstr(&rule->u.glyph.back,old,new,true);
 		rplstr(&rule->u.glyph.fore,old,new,true);
-	    } else if ( fpst->type==pst_coverage ||
-		    fpst->type==pst_reversecoverage ) {
+	    } else if ( fpst->format==pst_coverage ||
+		    fpst->format==pst_reversecoverage ) {
 		for ( i=0; i<rule->u.coverage.ncnt ; ++i )
 		    rplstr(&rule->u.coverage.ncovers[i],old,new,false);
 		for ( i=0; i<rule->u.coverage.bcnt ; ++i )
 		    rplstr(&rule->u.coverage.bcovers[i],old,new,false);
 		for ( i=0; i<rule->u.coverage.fcnt ; ++i )
 		    rplstr(&rule->u.coverage.fcovers[i],old,new,false);
-		if ( fpst->type==pst_reversecoverage )
+		if ( fpst->format==pst_reversecoverage )
 		    rplstr(&rule->u.rcoverage.replacements,old,new,true);
 	    }
 	}
