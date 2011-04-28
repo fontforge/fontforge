@@ -83,7 +83,7 @@ return( NULL );
 	for ( j=0; j<3; ++j ) {
 	    cnt = 0;
 	    if ( (&fpst->rules[i].u.glyph.names)[j]!=NULL && *(&fpst->rules[i].u.glyph.names)[j]!='\0' ) {
-		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; ++pt ) {
+		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; ) {
 		    while ( *pt==' ' ) ++pt;
 		    if ( *pt=='\0' )
 		break;
