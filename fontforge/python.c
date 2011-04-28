@@ -5419,6 +5419,7 @@ return( Py_BuildValue("s", self->sc->name ));
 }
 
 static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value,void *closure) {
+    FontViewBase *fvs;
 
 #if PY_MAJOR_VERSION >= 3
     char *str;
@@ -5446,6 +5447,13 @@ return( -1 );
 #if PY_MAJOR_VERSION >= 3
     Py_DECREF(bytes);
 #endif /* PY_MAJOR_VERSION >= 3 */
+    for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	/* Postscript encodings are by name, others are by codepoint */
+	if ( fvs->map->enc->psnames!=NULL && fvs->map->enc!=&custom ) {
+	    fvs->map->enc = &custom;
+	    FVSetTitle(fvs);
+	}
+    }
 return( 0 );
 }
 
@@ -5462,6 +5470,7 @@ return( Py_BuildValue("i", self->sc->unicodeenc ));
 }
 
 static int PyFF_Glyph_set_unicode(PyFF_Glyph *self,PyObject *value,void *closure) {
+    FontViewBase *fvs;
     int uenc;
 
     uenc = PyInt_AsLong(value);
@@ -5469,6 +5478,13 @@ static int PyFF_Glyph_set_unicode(PyFF_Glyph *self,PyObject *value,void *closure
 return( -1 );
     self->sc->unicodeenc = uenc;
     SCRefreshTitles(self->sc);
+    for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	/* Postscript encodings are by name, others are by codepoint */
+	if ( fvs->map->enc->psnames==NULL && fvs->map->enc!=&custom ) {
+	    fvs->map->enc = &custom;
+	    FVSetTitle(fvs);
+	}
+    }
 return( 0 );
 }
 
