@@ -5555,7 +5555,12 @@ return( 0 );
 	readttfvwidths(ttf,info);
     /* 'cmap' is not meaningful for cid keyed fonts, and not supplied for */
     /*  type42 fonts */
-    if ( info->cidregistry==NULL && info->encoding_start!=0 )
+    /* Oops. It is meaningful for cid fonts. It just seemed redundant to me */
+    /*  but that was my ignorance. Adobe complains that FF doesn't read it */
+    /* (We've already (probably) set the unicodeencs of the glyphs according */
+    /*  to the cidmap files, but we can override that here. Mmm. what about a*/
+    /*  glyph in cidmap but not in cmap???? */
+    if ( /*info->cidregistry==NULL &&*/ info->encoding_start!=0 )
 	readttfencodings(ttf,info,git_normal);
     if ( info->os2_start!=0 )
 	readttfos2metrics(ttf,info);
