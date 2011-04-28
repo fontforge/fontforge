@@ -719,6 +719,7 @@ static int GME_RecalcFH(GMatrixEdit *gme) {
     GDrawSetFont(gme->nested,gme->font);
     as = gme->font_as; ds = gme->font_fh-as;
     for ( r=0; r<gme->rows; ++r ) for ( c=0; c<gme->cols; ++c ) {
+	end = -1;
 	switch ( gme->col_data[c].me_type ) {
 	  case me_enum:
 	    mi = FindMi(gme->col_data[c].enum_vals,gme->data[r*gme->cols+c].u.md_ival);
