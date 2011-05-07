@@ -216,6 +216,12 @@ static void DumpPyObject( FILE *file, PyObject *value ) {
 /* ************************************************************************** */
 /* ****************************   GLIF Output    **************************** */
 /* ************************************************************************** */
+static int refcomp(const void *_r1, const void *_r2) {
+    const RefChar *ref1 = *(RefChar * const *)_r1;
+    const RefChar *ref2 = *(RefChar * const *)_r2;
+return( strcmp( ref1->sc->name, ref2->sc->name) );
+}
+
 static int _GlifDump(FILE *glif,SplineChar *sc,int layer) {
     struct altuni *altuni;
     int isquad = sc->layers[layer].order2;
@@ -235,41 +241,56 @@ return( false );
     else
 	fprintf( glif, "  <advance width=\"%d\"/>\n", sc->width );
     if ( sc->unicodeenc!=-1 )
-	fprintf( glif, "  <unicode hex=\"%04x\"/>\n", sc->unicodeenc );
+	fprintf( glif, "  <unicode hex=\"%04X\"/>\n", sc->unicodeenc );
     for ( altuni = sc->altuni; altuni!=NULL; altuni = altuni->next )
 	if ( altuni->vs==-1 && altuni->fid==0 )
 	    fprintf( glif, "  <unicode hex=\"%04x\"/>\n", altuni->unienc );
 
     if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
 	fprintf( glif, "  <outline>\n" );
-	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc)) {
-	    fprintf( glif, "    <component base=\"%s\"", ref->sc->name );
-	    if ( ref->transform[0]!=1 )
-		fprintf( glif, " xScale=\"%g\"", (double) ref->transform[0] );
-	    if ( ref->transform[3]!=1 )
-		fprintf( glif, " yScale=\"%g\"", (double) ref->transform[3] );
-	    if ( ref->transform[1]!=0 )
-		fprintf( glif, " xyScale=\"%g\"", (double) ref->transform[1] );
-	    if ( ref->transform[2]!=0 )
-		fprintf( glif, " yxScale=\"%g\"", (double) ref->transform[2] );
-	    if ( ref->transform[4]!=0 )
-		fprintf( glif, " xOffset=\"%g\"", (double) ref->transform[4] );
-	    if ( ref->transform[5]!=0 )
-		fprintf( glif, " yOffset=\"%g\"", (double) ref->transform[5] );
-	    fprintf( glif, "/>\n" );
+	/* RoboFab outputs components in alphabetic (case sensitive) order */
+	/*  I've been asked to do that too */
+	if ( sc->layers[layer].refs!=NULL ) {
+	    RefChar **refs;
+	    int i, cnt;
+	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
+		++cnt;
+	    refs = galloc(cnt*sizeof(RefChar *));
+	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc))
+		refs[cnt++] = ref;
+	    if ( cnt>1 )
+		qsort(refs,cnt,sizeof(RefChar *),refcomp);
+	    for ( i=0; i<cnt; ++i ) {
+		ref = refs[i];
+		fprintf( glif, "    <component base=\"%s\"", ref->sc->name );
+		if ( ref->transform[0]!=1 )
+		    fprintf( glif, " xScale=\"%g\"", (double) ref->transform[0] );
+		if ( ref->transform[3]!=1 )
+		    fprintf( glif, " yScale=\"%g\"", (double) ref->transform[3] );
+		if ( ref->transform[1]!=0 )
+		    fprintf( glif, " xyScale=\"%g\"", (double) ref->transform[1] );
+		if ( ref->transform[2]!=0 )
+		    fprintf( glif, " yxScale=\"%g\"", (double) ref->transform[2] );
+		if ( ref->transform[4]!=0 )
+		    fprintf( glif, " xOffset=\"%g\"", (double) ref->transform[4] );
+		if ( ref->transform[5]!=0 )
+		    fprintf( glif, " yOffset=\"%g\"", (double) ref->transform[5] );
+		fprintf( glif, "/>\n" );
+	    }
+	    free(refs);
 	}
 	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
 		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
-		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\" smooth=\"%s\"/>\n",
+		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\"%s/>\n",
 			    (double) sp->me.x, (double) sp->me.y,
 			    sp->prev==NULL        ? "move"   :
 			    sp->prev->knownlinear ? "line"   :
 			    isquad 		      ? "qcurve" :
 						    "curve",
-			    sp->pointtype!=pt_corner?"yes":"no" );
+			    sp->pointtype!=pt_corner?" smooth=\"yes\"":"" );
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->next->knownlinear )
