@@ -10058,8 +10058,8 @@ return( bitmapper(self,value,true));
 static struct flaglist gaspflags[] = {
     { "gridfit",		1 },
     { "antialias",		2 },
-    { "symmetric-smoothing",	4 },
-    { "gridfit+smoothing",	8 },
+    { "symmetric-smoothing",	8 },
+    { "gridfit+smoothing",	4 },
     NULL };
 
 static PyObject *PyFF_Font_get_gasp(PyFF_Font *self,void *closure) {
