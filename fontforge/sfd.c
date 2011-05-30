@@ -1787,6 +1787,24 @@ static void SFDDumpJustify(FILE *sfd,SplineFont *sf) {
 	fprintf( sfd, "EndJustify\n" );
 }
 
+static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,char *keyword) {
+    char buffer[20];
+    int i;
+
+    if ( class_cnt>0 && classnames!=NULL ) {
+	fprintf( sfd, "  %s: ", keyword );
+	for ( i=0; i<class_cnt; ++i ) {
+	    if ( classnames[i]==NULL ) {
+		sprintf( buffer,"%d", i );
+		SFDDumpUTF7Str(sfd,buffer );
+	    } else
+		SFDDumpUTF7Str(sfd,classnames[i] );
+	    putc(' ',sfd);
+	}
+	putc('\n',sfd);
+    }
+}
+
 static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	int todir, char *dirname) {
     int i, j, realcnt;
@@ -2129,6 +2147,13 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	      break;
 	    }
 	}
+	/* It would make more sense to output these up near the classes */
+	/*  but that would break backwards compatibility (old parsers will */
+	/*  ignore these entries if they are at the end, new parsers will */
+	/*  read them */
+	SFDFpstClassNamesOut(sfd,fpst->nccnt,fpst->nclassnames,"ClassNames");
+	SFDFpstClassNamesOut(sfd,fpst->bccnt,fpst->bclassnames,"BClassNames");
+	SFDFpstClassNamesOut(sfd,fpst->fccnt,fpst->fclassnames,"FClassNames");
 	fprintf( sfd, "EndFPST\n" );
     }
     for ( sm=sf->sm; sm!=NULL; sm=sm->next ) {
@@ -5469,11 +5494,14 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
     fscanf(sfd, "%hu %hu %hu %hu", &fpst->nccnt, &fpst->bccnt, &fpst->fccnt, &fpst->rule_cnt );
     if ( fpst->nccnt!=0 || fpst->bccnt!=0 || fpst->fccnt!=0 ) {
 	fpst->nclass = galloc(fpst->nccnt*sizeof(char *));
+	fpst->nclassnames = gcalloc(fpst->nccnt,sizeof(char *));
 	if ( fpst->nccnt!=0 ) fpst->nclass[0] = NULL;
 	if ( fpst->bccnt!=0 || fpst->fccnt!=0 ) {
 	    fpst->bclass = galloc(fpst->bccnt*sizeof(char *));
+	    fpst->bclassnames = gcalloc(fpst->bccnt,sizeof(char *));
 	    if (fpst->bccnt!=0 ) fpst->bclass[0] = NULL;
 	    fpst->fclass = galloc(fpst->fccnt*sizeof(char *));
+	    fpst->fclassnames = gcalloc(fpst->fccnt,sizeof(char *));
 	    if (fpst->fccnt!=0 ) fpst->fclass[0] = NULL;
 	}
     }
@@ -5554,7 +5582,20 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	  break;
 	}
     }
-    getname(sfd,tok);
+    getname(sfd,tok);	/* EndFPST, or one of the ClassName tokens (in newer sfds) */
+    while ( strcmp(tok,"ClassNames:")==0 || strcmp(tok,"BClassNames:")==0 ||
+	    strcmp(tok,"FClassNames:")==0 ) {
+	int which = strcmp(tok,"ClassNames:")==0 ? 0 :
+		    strcmp(tok,"BClassNames:")==0 ? 1 : 2;
+	int cnt = (&fpst->nccnt)[which];
+	char **classnames = (&fpst->nclassnames)[which];
+	int i;
+
+	for ( i=0; i<cnt; ++i )
+	    classnames[i] = SFDReadUTF7Str(sfd);
+	getname(sfd,tok);	/* EndFPST, or one of the ClassName tokens (in newer sfds) */
+    }
+
 }
 
 static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok,int old) {

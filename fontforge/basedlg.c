@@ -719,7 +719,7 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    snprintf(buffer,sizeof(buffer),is_vertical ? _("Vertical Baselines") : _("Horizontal Baselines") );
+    snprintf(buffer,sizeof(buffer),"%s", is_vertical ? _("Vertical Baselines") : _("Horizontal Baselines") );
     wattrs.utf8_window_title = buffer;
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;

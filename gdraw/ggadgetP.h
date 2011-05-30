@@ -430,6 +430,7 @@ typedef struct gmatrixedit {
     unsigned int wasnew: 1;		/* So we need to call newafter when finished editing */
     unsigned int big_done: 1;
     unsigned int edit_active: 1;
+    unsigned int no_edit: 1;
     int pressed_col;			/* For changing column spacing */
     struct matrix_data *data;
     int16 as, fh;

@@ -542,6 +542,9 @@ SplineChar **SFGlyphsFromNames(SplineFont *sf,char *names) {
     char *pt, *end;
     SplineChar *sc, **glyphs;
 
+    if ( names==NULL )
+return( gcalloc(1,sizeof(SplineChar *)) );
+
     cnt = 0;
     for ( pt = names; *pt; pt = end+1 ) {
 	++cnt;

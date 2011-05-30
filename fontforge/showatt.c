@@ -406,8 +406,11 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
     struct fpst_rule *r = &fpst->rules[index];
     int len, i, j;
     struct node *lines;
-    char buf[200], *space, *pt, *start, *spt;
+    char buf[200], *pt, *start, *spt;
     char *upt;
+    GrowBuf gb;
+
+    memset(&gb,0,sizeof(gb));
 
     for ( i=0; i<2; ++i ) {
 	len = 0;
@@ -416,7 +419,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  case pst_glyphs:
 	    if ( r->u.glyph.back!=NULL && *r->u.glyph.back!='\0' ) {
 		if ( i ) {
-		    sprintf(buf, _("Backtrack Match: ") );
+		    strcpy(buf, _("Backtrack Match: ") );
 		    lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.back)+1));
 		    strcpy(lines[len].label,buf);
 		    upt = lines[len].label+strlen(lines[len].label);
@@ -432,7 +435,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 		++len;
 	    }
 	    if ( i ) {
-		sprintf(buf, _("Match: ") );
+		strcpy(buf, _("Match: ") );
 		lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.names)+1));
 		strcpy(lines[len].label,buf);
 		strcat(lines[len].label,r->u.glyph.names);
@@ -441,7 +444,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    ++len;
 	    if ( r->u.glyph.fore!=NULL && *r->u.glyph.fore!='\0' ) {
 		if ( i ) {
-		    sprintf(buf, _("Lookahead Match: ") );
+		    strcpy(buf, _("Lookahead Match: ") );
 		    lines[len].label = galloc((strlen(buf)+strlen(r->u.glyph.fore)+1));
 		    strcpy(lines[len].label,buf);
 		    strcat(lines[len].label,r->u.glyph.fore);
@@ -453,44 +456,47 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  case pst_class:
 	    if ( r->u.class.bcnt!=0 ) {
 		if ( i ) {
-		    space = pt = galloc(100+7*r->u.class.bcnt);
-		    strcpy(space, P_("Backtrack class: ","Backtrack classes: ",r->u.class.bcnt));
-		    pt += strlen(space);
+		    gb.pt = gb.base;
+		    GrowBufferAddStr(&gb,P_("Backtrack class: ","Backtrack classes: ",r->u.class.bcnt));
 		    for ( j=r->u.class.bcnt-1; j>=0; --j ) {
-			sprintf( pt, "%d ", r->u.class.bclasses[j] );
-			pt += strlen( pt );
-			lines[len].label = copy(space);
-			lines[len].parent = node;
+			if ( fpst->bclassnames==NULL || fpst->bclassnames[r->u.class.bclasses[j]]==NULL ) {
+			    sprintf( buf, "%d ", r->u.class.bclasses[j] );
+			    GrowBufferAddStr(&gb,buf);
+			} else
+			    GrowBufferAddStr(&gb,fpst->bclassnames[r->u.class.bclasses[j]]);
 		    }
-		    free(space);
+		    lines[len].label = copy(gb.base);
+		    lines[len].parent = node;
 		}
 		++len;
 	    }
 	    if ( i ) {
-		space = pt = galloc(100+7*r->u.class.ncnt);
-		strcpy(space, P_("Class","Classes",r->u.class.ncnt));
-		pt += strlen(space);
+		gb.pt = gb.base;
+		GrowBufferAddStr(&gb, P_("Class","Classes",r->u.class.ncnt));
 		for ( j=0; j<r->u.class.ncnt; ++j ) {
-		    sprintf( pt, "%d ", r->u.class.nclasses[j] );
-		    pt += strlen( pt );
-		    lines[len].label = copy(space);
-		    lines[len].parent = node;
+		    if ( fpst->nclassnames==NULL || fpst->nclassnames[r->u.class.nclasses[j]]==NULL ) {
+			sprintf( buf, "%d ", r->u.class.nclasses[j] );
+			GrowBufferAddStr(&gb,buf);
+		    } else
+			GrowBufferAddStr(&gb,fpst->nclassnames[r->u.class.nclasses[j]]);
 		}
-		free(space);
+		lines[len].label = copy(gb.base);
+		lines[len].parent = node;
 	    }
 	    ++len;
 	    if ( r->u.class.fcnt!=0 ) {
 		if ( i ) {
-		    space = pt = galloc(100+7*r->u.class.fcnt);
-		    strcpy(space, P_("Lookahead class: ","Lookahead classes: ",r->u.class.fcnt));
-		    pt += strlen(space);
+		    gb.pt = gb.base;
+		    GrowBufferAddStr(&gb, P_("Lookahead Class","Lookahead Classes",r->u.class.fcnt));
 		    for ( j=0; j<r->u.class.fcnt; ++j ) {
-			sprintf( pt, "%d ", r->u.class.fclasses[j] );
-			pt += strlen( pt );
-			lines[len].label = copy(space);
-			lines[len].parent = node;
+			if ( fpst->fclassnames==NULL || fpst->fclassnames[r->u.class.fclasses[j]]==NULL ) {
+			    sprintf( buf, "%d ", r->u.class.fclasses[j] );
+			    GrowBufferAddStr(&gb,buf);
+			} else
+			    GrowBufferAddStr(&gb,fpst->fclassnames[r->u.class.fclasses[j]]);
 		    }
-		    free(space);
+		    lines[len].label = copy(gb.base);
+		    lines[len].parent = node;
 		}
 		++len;
 	    }
@@ -547,7 +553,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	  break;
 	  case pst_reversecoverage:
 	    if ( i ) {
-		sprintf(buf, _("Replacement: ") );
+		strcpy(buf, _("Replacement: ") );
 		lines[len].label = galloc((strlen(buf)+strlen(r->u.rcoverage.replacements)+1));
 		strcpy(lines[len].label,buf);
 		strcat(lines[len].label,r->u.rcoverage.replacements);
@@ -561,6 +567,7 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    node->cnt = len;
 	}
     }
+    free(gb.base);
 }
 
 static void BuildFPST(struct node *node,struct att_dlg *att) {
@@ -1856,7 +1863,7 @@ return;
 	    buf[7]='\0';
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "Script", ignore "writing system|" */
-/* GT: English uses "script" to me a general writing style (latin, greek, kanji) */
+/* GT: English uses "script" to mean a general writing style (latin, greek, kanji) */
 /* GT: and the cursive handwriting style. Here we mean the general writing system. */
 	strcat(buf,S_("writing system|Script"));
 	scriptnodes[i].label = copy(buf);

@@ -6065,6 +6065,7 @@ static int GFI_LookupEditMetadata(GGadget *g, GEvent *e) {
 	continue;
 	    if ( lk->all[i].selected ) {
 		EditLookup(lk->all[i].lookup,isgpos,gfi->sf);
+		GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
 return( true );
 	    } else if ( lk->all[i].open ) {
 		for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
@@ -6072,6 +6073,7 @@ return( true );
 		continue;
 		    if ( lk->all[i].subtables[j].selected ) {
 			EditSubtable(lk->all[i].subtables[j].subtable,isgpos,gfi->sf,NULL,gfi->def_layer);
+			GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,false);
 return( true );
 		    }
 		}
@@ -6513,12 +6515,12 @@ static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub,
     pos = strlen(popup_msg);
 
     if ( sub!=NULL && otl->lookup_type==gpos_pair && sub->kc!=NULL ) {
-	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_("(kerning class)\n") );
+	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%s",_("(kerning class)\n") );
 	pos += strlen( popup_msg+pos );
     }
 
     if ( otl->features==NULL )
-	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_("Not attached to a feature"));
+	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%s",_("Not attached to a feature"));
     else {
 	for ( fl=otl->features; fl!=NULL && pos<sizeof(popup_msg)-2; fl=fl->next ) {
 	    snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%c%c%c%c: ",
