@@ -540,7 +540,7 @@ return(1);
 	scrproj(&scr,exc);
       break;
       case 0x3A: case 0x3B:
-	scrprintf(&scr," MIAP Move Stack Indirect Relative Point"); 
+	scrprintf(&scr," MSIRP Move Stack Indirect Relative Point"); 
 	scrprintf(&scr,operator&1?"  set rp0 to point":
 		    "  don't set rp0"); 
 	scrprintf(&scr,"moves point along freedom vector");
@@ -1513,7 +1513,7 @@ return;		/* At end */
 	}
       break;
       case 0x3A: case 0x3B:
-	/* MIAP Move Stack Indirect Relative Point */
+	/* MSIRP Move Stack Indirect Relative Point */
 	if ( exc->GS.gep1 )
 	    changing_point = exc->stack[exc->top-2];
 	if ( exc->GS.gep0 )
