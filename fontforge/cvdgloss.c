@@ -540,7 +540,7 @@ return(1);
 	scrproj(&scr,exc);
       break;
       case 0x3A: case 0x3B:
-	scrprintf(&scr," MIAP Move Stack Indirect Relative Point"); 
+	scrprintf(&scr," MSIRP Move Stack Indirect Relative Point"); 
 	scrprintf(&scr,operator&1?"  set rp0 to point":
 		    "  don't set rp0"); 
 	scrprintf(&scr,"moves point along freedom vector");
@@ -665,22 +665,22 @@ return(1);
 
 	val1 = exc->stack[exc->top-1];
 	val2 = exc->stack[exc->top-2];
-	if ( operator==0x4a ) {
+	if ( operator==0x49 ) {
 	    scrprintf(&scr,"Pop: %d (cur point (%.2f,%.2f))", val1,
-		    exc->zp0.cur[val1].x/64.0,exc->zp0.cur[val1].y/64.0 ); 
-	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" ); 
-	    scrprintf(&scr,"Pop: %d (cur point (%.2f,%.2f))", val2,
-		    exc->zp1.cur[val2].x/64.0,exc->zp1.cur[val2].y/64.0 ); 
+		    exc->zp1.cur[val1].x/64.0,exc->zp1.cur[val1].y/64.0 ); 
 	    scrprintf(&scr," (in zone from zp1: %s)", exc->GS.gep1?"Normal":"Twilight" ); 
+	    scrprintf(&scr,"Pop: %d (cur point (%.2f,%.2f))", val2,
+		    exc->zp0.cur[val2].x/64.0,exc->zp0.cur[val2].y/64.0 ); 
+	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" ); 
 	    scrprintf(&scr, "projVec: %g,%g", (((int)exc->GS.projVector.x<<16)>>(16+14)) + ((exc->GS.projVector.x&0x3fff)/16384.0),
 		    (((int)exc->GS.projVector.y<<16)>>(16+14)) + ((exc->GS.projVector.y&0x3fff)/16384.0) );
 	} else {
 	    scrprintf(&scr,"Pop: %d (orig point (%.2f,%.2f))", val1,
-		    exc->zp0.org[val1].x/64.0,exc->zp0.org[val1].y/64.0 ); 
-	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" ); 
-	    scrprintf(&scr,"Pop: %d (orig point (%.2f,%.2f))", val2,
-		    exc->zp1.org[val2].x/64.0,exc->zp1.org[val2].y/64.0 ); 
+		    exc->zp1.org[val1].x/64.0,exc->zp1.org[val1].y/64.0 ); 
 	    scrprintf(&scr," (in zone from zp1: %s)", exc->GS.gep1?"Normal":"Twilight" ); 
+	    scrprintf(&scr,"Pop: %d (orig point (%.2f,%.2f))", val2,
+		    exc->zp0.org[val2].x/64.0,exc->zp0.org[val2].y/64.0 ); 
+	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" ); 
 	    scrprintf(&scr, "dualVec: %g,%g", (((int)exc->GS.dualVector.x<<16)>>(16+14)) + ((exc->GS.dualVector.x&0x3fff)/16384.0),
 		    (((int)exc->GS.dualVector.y<<16)>>(16+14)) + ((exc->GS.dualVector.y&0x3fff)/16384.0) );
 	}
@@ -1513,7 +1513,7 @@ return;		/* At end */
 	}
       break;
       case 0x3A: case 0x3B:
-	/* MIAP Move Stack Indirect Relative Point */
+	/* MSIRP Move Stack Indirect Relative Point */
 	if ( exc->GS.gep1 )
 	    changing_point = exc->stack[exc->top-2];
 	if ( exc->GS.gep0 )
