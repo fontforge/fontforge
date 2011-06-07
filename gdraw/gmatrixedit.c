@@ -100,7 +100,7 @@ return;
     gmatrixedit_font = _GGadgetInitDefaultBox("GMatrixEdit.",&gmatrixedit_box,gmatrixedit_font);
     GDrawDecomposeFont(gmatrixedit_font,&rq);
     rq.point_size = (rq.point_size>=12) ? rq.point_size-2 : rq.point_size>=10 ? rq.point_size-1 : rq.point_size;
-    rq.weight = 700; 
+    rq.weight = 700;
     gmatrixedit_titfont = GResourceFindFont("GMatrixEdit.TitleFont",GDrawInstanciateFont(screen_display,&rq));
     gmatrixedit_title_bg = GResourceFindColor("GMatrixEdit.TitleBG",gmatrixedit_title_bg);
     gmatrixedit_title_fg = GResourceFindColor("GMatrixEdit.TitleFG",gmatrixedit_title_fg);
@@ -473,7 +473,7 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
     wsize.width  = subwidth;
     wsize.height = subheight;
     gme->nested->pos = wsize;
-    
+
     GGadgetResize(gme->vsb,gme->vsb->r.width,subheight);
     GGadgetMove(gme->vsb,gme->g.inner.x + width-2*bp-gme->vsb->r.width,
 			    gme->vsb->r.y);
@@ -669,7 +669,7 @@ static void GMatrixEdit_Redraw(GGadget *g ) {
 static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
     char buffer[20], *str= NULL;
     struct matrix_data *d = &gme->data[r*gme->cols+c];
-    
+
     switch ( gme->col_data[c].me_type ) {
       case me_enum:
 	/* Fall through into next case */
@@ -729,6 +729,8 @@ static int GME_RecalcFH(GMatrixEdit *gme) {
 	break;
 	  default:
 	    str = MD_Text(gme,r,c);
+	    if ( str == NULL )
+    continue;
 	    if ( ( ept = strchr(str,'\n') ) != NULL )
 		end = ept - str;
 	break;
@@ -839,7 +841,7 @@ static void GME_PositionEdit(GMatrixEdit *gme) {
 	x = gme->col_data[c].x - gme->off_left;
 	y = (r-gme->off_top)*(gme->fh+gme->vpad);
 	end = x + gme->col_data[c].width;
-	
+
 	if ( c == lastc ) {
 	    GDrawGetSize(gme->nested,&wsize);
 	    if ( end>wsize.width )
@@ -1393,7 +1395,7 @@ return;
 
     GMatrixEditScrollToRowCol(&gme->g,r,c);
     d = &gme->data[r*gme->cols+c];
-    
+
     markpos = ( c == lastc && gme->col_data[c].x + gme->col_data[c].width > size.width ) ?
 	    size.width - gme->col_data[c].x : gme->col_data[c].width;
     markpos -= (gme->mark_size+gme->mark_skip);
@@ -1550,7 +1552,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		size.width,(r-gme->off_top)*(gme->fh+gme->vpad)-1,
 		gmatrixedit_rules);
 
-    
+
     GDrawSetFont(pixmap,gme->font);
     for ( r=event->u.expose.rect.y/(gme->fh+gme->vpad);
 	    r<=(event->u.expose.rect.y+event->u.expose.rect.height+gme->fh+gme->vpad-1)/gme->fh &&
@@ -1598,11 +1600,11 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		    gme->col_data[c].me_type == me_stringchoicetag ||
 		    gme->col_data[c].me_type == me_onlyfuncedit ||
 		    gme->col_data[c].me_type == me_funcedit ) {
-		
+
 		if ( c == lastc ) {
 		    if ( clip.x < size.width && clip.x + clip.width > size.width )
 			clip.width = size.width - clip.x;
-		    else if ( clip.x >= size.width ) 
+		    else if ( clip.x >= size.width )
 			clip.width = 0;
 		}
 		if ( clip.width >= (gme->mark_size+gme->mark_skip) )
@@ -1669,7 +1671,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		GRect mr;
 		mr.x = clip.x + clip.width; mr.width = gme->mark_size+gme->mark_skip;
 		mr.y = clip.y; mr.height = clip.height;
-		
+
 		mkbg = gme->active_row==r+gme->off_top ?
 			gmatrixedit_activebg : GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
 		GDrawFillRect(pixmap,&mr,mkbg);
@@ -1829,11 +1831,11 @@ static void GME_HScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	clip.y = 1;
 	clip.height = size.height - 1;
 	for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
-	
+
 	gme->off_left = newpos;
 	GScrollBarSetPos(gme->hsb,newpos);
 	clip.x = 1; clip.y = 1; clip.width = size.width-1; clip.height = size.height-1;
-	
+
 	if (( gme->col_data[lastc].me_type == me_stringchoice ||
 		gme->col_data[lastc].me_type == me_stringchoicetrans ||
 		gme->col_data[lastc].me_type == me_stringchoicetag ||
@@ -1898,7 +1900,7 @@ static void GME_VScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	r.x = 1; r.y = 1; r.width = size.width-1; r.height = size.height-1;
 	GDrawScroll(gme->nested,&r,0,diff);
 	GME_PositionEdit(gme);
-	GDrawRequestExpose(gme->nested,&size,false); 
+	GDrawRequestExpose(gme->nested,&size,false);
     }
 }
 
@@ -2061,7 +2063,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gme->g.r.height = extra + gme->g.r.height*(gme->fh + gme->vpad);
 	gme->g.inner.height = gme->g.r.height - 2*bp;
     }
-	
+
     memset(&wattrs,0,sizeof(wattrs));
     if ( gme->g.box->main_background!=COLOR_TRANSPARENT )
 	wattrs.mask = wam_events|wam_cursor|wam_backcol;
@@ -2475,6 +2477,6 @@ GResInfo *_GMatrixEditRIHead(void) {
 	gmatrixedit_ri.extras = NULL;
 	gmatrixedit_ri.seealso1 = &gmatrixedit2_ri;
     }
-    
+
 return( &gmatrixedit_ri );
 }
