@@ -917,13 +917,17 @@ return;
     fclose(p);
 }
 
+static void NOUI_LastFontsSave(void) {
+}
+
 static struct prefs_interface prefsnoui = {
     NOUI_SavePrefs,
     NOUI_LoadPrefs,
     NOUI_GetPrefs,
     NOUI_SetPrefs,
     NOUI_getFontForgeShareDir,
-    NOUI_SetDefaults
+    NOUI_SetDefaults,
+    NOUI_LastFontsSave
 };
 
 struct prefs_interface *prefs_interface = &prefsnoui;
