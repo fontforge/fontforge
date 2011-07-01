@@ -1908,6 +1908,18 @@ static int CCD_EnableDeleteClass(GGadget *g,int whichclass) {
 return( whichclass>0 );
 }
 
+static enum gme_updown CCD_EnableUpDown(GGadget *g,int r) {
+    int rows;
+    enum gme_updown ret = 0;
+
+    (void) GMatrixEditGet(g,&rows);
+    if ( r>=2 )
+	ret = ud_up_enabled;
+    if ( r>=1 && r<rows-1 )
+	ret |= ud_down_enabled;
+return( ret );
+}
+
 static GTextInfo section[] = {
     { (unichar_t *) N_("Section|Continue"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) N_("Section|Start"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -2058,7 +2070,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	rcoveragesimple_ci[1].title = S_(rcoveragesimple_ci[1].title);
 	glyph_ci[0].title = S_(glyph_ci[0].title);
     }
-	
+
     ccd = chunkalloc(sizeof(struct contextchaindlg));
     ccd->gfi = gfi;
     ccd->sf = sf;
@@ -2141,7 +2153,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     boxes[2].gd.flags = gg_enabled | gg_visible;
     boxes[2].gd.u.boxelements = barray;
     boxes[2].creator = GHBoxCreate;
-    hvarray[1][0] = &boxes[2]; hvarray[1][1] = hvarray[2][0] = NULL; 
+    hvarray[1][0] = &boxes[2]; hvarray[1][1] = hvarray[2][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled | gg_visible;
@@ -2240,8 +2252,8 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     rlabel[i].text_is_1byte = true;
     rgcd[i].gd.label = &rlabel[i];
     rgcd[i++].creator = GLabelCreate;
-    hvarray[2][0] = GCD_HPad10; hvarray[2][1] = NULL; 
-    hvarray[3][0] = &rgcd[i-1]; hvarray[3][1] = NULL; 
+    hvarray[2][0] = GCD_HPad10; hvarray[2][1] = NULL;
+    hvarray[3][0] = &rgcd[i-1]; hvarray[3][1] = NULL;
 
     rgcd[i].gd.pos.x = 5; rgcd[i].gd.pos.y = 5+i*13;
     rgcd[i].gd.flags = gg_visible | gg_enabled;
@@ -2272,7 +2284,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = barray2;
     boxes[3].creator = GHBoxCreate;
-    hvarray[4][0] = &boxes[3]; hvarray[4][1] = NULL; 
+    hvarray[4][0] = &boxes[3]; hvarray[4][1] = NULL;
     hvarray[5][0] = GCD_Glue; hvarray[5][1] = NULL; hvarray[6][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
@@ -2795,12 +2807,13 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 		classnames = NULL;
 	    }
 	    if ( classes==NULL )
-		cc=0;
+		/* Make sure the class 0 is always present */
+		cc=1;
 	    else
 		cc = (&tempfpst->nccnt)[i];
 	    class_mi[i].initial_row_cnt = cc;
 	    md = gcalloc(3*cc+3,sizeof(struct matrix_data));
-	    md[0+0].u.md_str = copy(classnames==NULL || cc==0 || classnames[0]==NULL?S_("Glyphs|All_Others"):classnames[0]); 
+	    md[0+0].u.md_str = copy(classnames==NULL || cc==0 || classnames[0]==NULL?S_("Glyphs|All_Others"):classnames[0]);
 	    md[3*0+1].u.md_str = copy(_("{Everything Else}"));
 	    md[3*0+1].frozen = true;
 	    md[0+2].u.md_str = copy(md[0+0].u.md_str);
@@ -2875,9 +2888,13 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     GMatrixEditSetColumnCompletion(GWidgetGetControl(ccd->classrules,CID_GList+300+0*20),0,CCD_GlyphListCompletion);
     GMatrixEditSetColumnCompletion(GWidgetGetControl(ccd->classrules,CID_GList+300+1*20),0,CCD_GlyphListCompletion);
     GMatrixEditSetColumnCompletion(GWidgetGetControl(ccd->classrules,CID_GList+300+2*20),0,CCD_GlyphListCompletion);
+    GMatrixEditSetUpDownVisible(GWidgetGetControl(ccd->classrules,CID_GList+200), true);
     GMatrixEditSetOtherButtonEnable(GWidgetGetControl(ccd->classrules,CID_GList+200),CCD_NewClassRule);
     for ( i=0; i<3; ++i ) {
-	GMatrixEditShowColumn(GWidgetGetControl(ccd->classrules,CID_GList+300+i*20),2,false);
+	GGadget *list = GWidgetGetControl(ccd->classrules,CID_GList+300+i*20);
+	GMatrixEditShowColumn(list,2,false);
+	GMatrixEditSetUpDownVisible(list, true);
+	GMatrixEditSetCanUpDown(list, CCD_EnableUpDown);
     }
 
 	/* This pane displays a set of class rules, and below the three sets of classes_simple for those rules */
@@ -2964,7 +2981,8 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 		classnames = NULL;
 	    }
 	    if ( classes==NULL )
-		cc=0;
+		/* Make sure the class 0 is always present */
+		cc=1;
 	    else
 		cc = (&tempfpst->nccnt)[i];
 	    class_mi[i].initial_row_cnt = cc;
@@ -2972,7 +2990,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 /* GT: This is the default class name for the class containing any glyphs_simple */
 /* GT: which aren't specified in other classes_simple. The class name may NOT */
 /* GT: contain spaces. Use an underscore or something similar instead */
-	    md[0+0].u.md_str = copy(classnames==NULL || cc==0 || classnames[0]==NULL?S_("Glyphs|All_Others"):classnames[0]); 
+	    md[0+0].u.md_str = copy(classnames==NULL || cc==0 || classnames[0]==NULL?S_("Glyphs|All_Others"):classnames[0]);
 	    md[0+1].u.md_str = copy(_("{Everything Else}"));
 	    md[0+1].frozen = true;
 	    md[0+2].u.md_str = copy(md[0+0].u.md_str);
@@ -3041,10 +3059,14 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	extrabuttonsgcd[1].gd.cid = CID_CAddLookup;
     } else
 	extrabuttonsgcd[0].gd.cid = CID_CAddLookup;
+    GMatrixEditSetUpDownVisible(GWidgetGetControl(ccd->classes_simple,CID_CList_Simple), true);
     GMatrixEditAddButtons(GWidgetGetControl(ccd->classes_simple,CID_CList_Simple),extrabuttonsgcd);
     for ( i=0; i<3; ++i ) {
-	GMatrixEditShowColumn(GWidgetGetControl(ccd->classes_simple,CID_MatchClasses+i*20),2,false);
-	GMatrixEditSetBeforeDelete(GWidgetGetControl(ccd->classes_simple,CID_MatchClasses+i*20),CCD_ClassGoing);
+	GGadget *list = GWidgetGetControl(ccd->classes_simple,CID_MatchClasses+i*20);
+	GMatrixEditShowColumn(list,2,false);
+	GMatrixEditSetUpDownVisible(list, true);
+	GMatrixEditSetCanUpDown(list, CCD_EnableUpDown);
+	GMatrixEditSetBeforeDelete(list,CCD_ClassGoing);
     }
     if ( tempfpst!=fpst )
 	FPSTFree(tempfpst);
