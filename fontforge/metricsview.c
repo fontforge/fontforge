@@ -499,7 +499,7 @@ return;
 	r.x = mv->dwidth - r.x - r.width;
     GDrawRequestExpose(mv->v,&r,false);
     if ( mv->perchar[i].selected && i!=0 ) {
-	struct lookup_subtable *sub = mv->glyphs[i].kp!=NULL ? mv->glyphs[i].kp->subtable : mv->glyphs[i].kc!=NULL ? mv->glyphs[i].kc->subtable : NULL;
+	struct lookup_subtable *sub = mv->glyphs[i].kp!=NULL ? mv->glyphs[i].kp->subtable : mv->glyphs[i].kc!=NULL && mv->glyphs[i].kc->offsets[mv->glyphs[i].kc_index]!=0 ? mv->glyphs[i].kc->subtable : NULL;
 	if ( sub!=NULL )
 	    MVSelectSubtable(mv,sub);
     }
@@ -518,6 +518,11 @@ static void MVSelectSubtableForScript(MetricsView *mv,uint32 script) {
     GTextInfo **ti = GGadgetGetList(mv->subtable_list,&len);
     struct lookup_subtable *sub;
     int i;
+
+    if ( mv->cur_subtable != NULL && FeatureScriptTagInFeatureScriptList(
+	    mv->vertical?CHR('v','k','r','n') : CHR('k','e','r','n'),script,
+	    mv->cur_subtable->lookup->features ))
+return;
 
     sub = NULL;
     for ( i=0; i<len; ++i )
@@ -541,7 +546,7 @@ return;
 	GGadgetSetEnabled(mv->perchar[i].name,false);
     if ( mv->glyphs[i].kp!=NULL )
 	MVSelectSubtable(mv,mv->glyphs[i].kp->subtable);
-    else if ( mv->glyphs[i].kc!=NULL )
+    else if ( mv->glyphs[i].kc!=NULL && mv->glyphs[i].kc->offsets[mv->glyphs[i].kc_index]!=0 )
 	MVSelectSubtable(mv,mv->glyphs[i].kc->subtable);
     else
 	MVSelectSubtableForScript(mv,SCScriptFromUnicode(mv->glyphs[i].sc));
@@ -1038,9 +1043,12 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
     if ( kc!=NULL ) {
 	if ( index==-1 )
 	    kc = NULL;
+	else if ( kp != NULL && kp->off != 0 )
+	    kc=NULL;
 	else if ( (!is_diff && offset==kc->offsets[index]) ||
 		  ( is_diff && offset==0))
 return( true );		/* No change, don't bother user */
+	/* If there is already a kerning pair, then assume it takes the precedence over the kerning class */
 	else if ( kc->offsets[index]==0 && !AskNewKernClassEntry(psc,sc,mv->glyphs[which-1].prev_kc0,mv->glyphs[which-1].next_kc0))
 	    kc=NULL;
 	else
@@ -1069,32 +1077,53 @@ return( false );
 	    MVSetFeatures(mv);
 	}
 
-	if ( kp==NULL ) {
-	    kp = chunkalloc(sizeof(KernPair));
-	    kp->sc = sc;
-	    if ( !mv->vertical ) {
-		kp->next = psc->kerns;
-		psc->kerns = kp;
-	    } else {
-		kp->next = psc->vkerns;
-		psc->vkerns = kp;
-	    }
-	    mv->glyphs[which-1].kp = kp;
-	}
-	if ( !mv->vertical )
-	    MMKern(sc->parent,psc,sc,kp==NULL?offset:is_diff?offset:offset-kp->off,
-		    sub,kp);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	/* If we change the kerning offset, then any pixel corrections*/
 	/*  will no longer apply (they only had meaning with the old  */
 	/*  offset) so free the device table, if any */
-	if ( (!is_diff && kp->off!=offset) || ( is_diff && offset!=0) ) {
+	if ( kp != NULL && ((!is_diff && kp->off!=offset) || ( is_diff && offset!=0)) ) {
 	    DeviceTableFree(kp->adjust);
 	    kp->adjust = NULL;
 	}
 #endif
-	offset = kp->off = is_diff ? kp->off+offset : offset;
-	kp->subtable = sub;
+
+	offset = is_diff && kp != NULL ? kp->off+offset : offset;
+	/* If kern offset has been set to zero by user, then cleanup this kerning pair */
+	if ( kp != NULL && offset == 0 ) {
+	    KernPair *kpcur, *kpprev;
+	    KernPair **kphead = mv->vertical ? &psc->vkerns : &psc->kerns;
+	    if ( kp == *kphead ) {
+		*kphead = kp->next;
+	    } else {
+		kpprev = *kphead;
+		for ( kpcur=kpprev->next; kpcur != NULL; kpcur = kpcur->next ) {
+		    if ( kpcur == kp ) {
+			kpprev->next = kp->next;
+		break;
+		    }
+		    kpprev = kpcur;
+		}
+	    }
+	    chunkfree( kp,sizeof(KernPair) );
+	    kp = mv->glyphs[which-1].kp = NULL;
+	} else if ( offset != 0 ) {
+	    if ( kp==NULL ) {
+		kp = chunkalloc(sizeof(KernPair));
+		kp->sc = sc;
+		if ( !mv->vertical ) {
+		    kp->next = psc->kerns;
+		    psc->kerns = kp;
+		} else {
+		    kp->next = psc->vkerns;
+		    psc->vkerns = kp;
+		}
+		mv->glyphs[which-1].kp = kp;
+	    }
+	    kp->off = offset;
+	    kp->subtable = sub;
+	    if ( !mv->vertical )
+		MMKern(sc->parent,psc,sc,is_diff?offset:offset-kp->off,sub,kp);
+	}
     }
     mv->perchar[which-1].kernafter = iscale * (offset*mv->pixelsize)/
 	    (mv->sf->ascent+mv->sf->descent);
@@ -2581,7 +2610,7 @@ return;
 	memset(mv->chars+oldmax,'\0',(mv->cmax-oldmax)*sizeof(SplineChar *));
     }
     for ( j=mv->clen; j>i; --j )
-	mv->chars[j] = mv->chars[j-1]; 
+	mv->chars[j] = mv->chars[j-1];
     mv->chars[i] = SFMakeChar(sf,mv->fv->b.map,pos);
     ++mv->clen;
     MVRemetric(mv);
@@ -3242,7 +3271,7 @@ static void lylistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
     GMenuItemArrayFree(mi->sub);
     mi->sub = sub;
-}	
+}
 
 static GMenuItem2 gdlist[] = {
     { { (unichar_t *) N_("_Show"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Show Grid|No Shortcut"), NULL, NULL, MVMenuShowGrid, MID_ShowGrid },
@@ -3797,7 +3826,7 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     if ( event->type == et_mousemove && !mv->pressed ) {
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->glyphs[within].sc;
-	if ( sc!=NULL ) 
+	if ( sc!=NULL )
 	    SCPreparePopup(mv->gw,sc,mv->fv->b.map->remap,mv->fv->b.map->backmap[sc->orig_pos],sc->unicodeenc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
@@ -3988,7 +4017,7 @@ return;
 			event->u.mouse.x>mv->perchar[within+1].dx-3 ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
-		} else if ( within>0 && 
+		} else if ( within>0 &&
 			event->u.mouse.x<mv->perchar[within].dx+3 )
 		    onkern = true;
 	    } else if ( mv->type == mv_widthonly ) {
@@ -4082,7 +4111,7 @@ return;
     if ( event->type == et_mousemove && !mv->pressed ) {
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->glyphs[within].sc;
-	if ( sc!=NULL ) 
+	if ( sc!=NULL )
 	    SCPreparePopup(mv->gw,sc,mv->fv->b.map->remap,mv->fv->b.map->backmap[sc->orig_pos],sc->unicodeenc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
@@ -4572,7 +4601,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->layer = fv->b.active_layer;
     mv->type = mv_type;
     mv->pixelsize_set_by_window = true;
-    mv->dpi = 72; 
+    mv->dpi = 72;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
