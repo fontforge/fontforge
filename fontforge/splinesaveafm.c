@@ -583,7 +583,7 @@ return( 0 );
 	if ( charlist[i]!=-1 )
 	    tfmDoCharList(sf,i,&tfmd,map);
     }
-    
+
     free( tfmd.ligkerntab); free(tfmd.kerntab); free(tfmd.ext); free(tfmd.ictab);
     free( tfmd.dptab ); free( tfmd.httab ); free( tfmd.widtab );
     fclose(file);
@@ -838,7 +838,7 @@ return( 0 );
 	if ( tfmd.charlist[i]!=-1 )
 	    tfmDoCharList(sf,i,&tfmd,map);
     }
-    
+
     free( tfmd.ligkerntab); free(tfmd.kerntab); free(tfmd.ext); free(tfmd.ictab);
     free( tfmd.dptab ); free( tfmd.httab ); free( tfmd.widtab );
     free( tfmd.charlist );
@@ -1124,7 +1124,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 	} else
 	    sc = sf->glyphs[i];
 	if ( sc!=NULL ) {
-	    if ( SCWorthOutputting(sc) || (iscid && i==0 && sc!=NULL)) 
+	    if ( SCWorthOutputting(sc) || (iscid && i==0 && sc!=NULL))
 		++cnt;
 	}
     }
@@ -1570,7 +1570,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 		}
 	} else
 	    sc = sf->glyphs[gid];
-	if ( SCWorthOutputting(sc) || (iscid && i==0 && sc!=NULL)) 
+	if ( SCWorthOutputting(sc) || (iscid && i==0 && sc!=NULL))
 	    ++cnt;
     }
 
@@ -1579,7 +1579,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 	    map->enc->is_unicodefull)) {
 	for ( i=0x2700; i<map->enccount && i<encmax && i<=0x27ff; ++i ) {
 	    int gid = map->map[i];
-	    if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) 
+	    if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) )
 		anyzapf = true;
 	}
 	if ( !anyzapf )
@@ -2012,10 +2012,17 @@ static void AddTempKP(SplineChar *first,SplineChar *second,
 
 void SFKernClassTempDecompose(SplineFont *sf,int isv) {
     KernClass *kc, *head= isv ? sf->vkerns : sf->kerns;
+    KernPair *kp;
     SplineChar ***first, ***last;
     int i, j, k, l;
     OTLookup *otl;
 
+    /* Make sure the temporary field is cleaned up. Otherwise we may lose kerning data */
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	for ( kp = isv ? sf->glyphs[i]->vkerns : sf->glyphs[i]->kerns; kp!=NULL; kp = kp->next ) {
+	    kp->kcid = false;
+	}
+    }
     for ( kc = head, i=0; kc!=NULL; kc = kc->next )
 	kc->kcid = ++i;
     for ( kc = head; kc!=NULL; kc = kc->next ) {
@@ -2191,7 +2198,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map,int layer) {
 	if ( SCWorthOutputting(sf->glyphs[i]) ) {
 	    ++cnt;
 	    if ( sf->glyphs[i]->unicodeenc=='I' || sf->glyphs[i]->unicodeenc=='x' ||
-		    sf->glyphs[i]->unicodeenc=='H' || sf->glyphs[i]->unicodeenc=='d' || 
+		    sf->glyphs[i]->unicodeenc=='H' || sf->glyphs[i]->unicodeenc=='d' ||
 		    sf->glyphs[i]->unicodeenc=='p' || sf->glyphs[i]->unicodeenc=='l' ) {
 		SplineCharLayerFindBounds(sf->glyphs[i],layer,&b);
 		if ( ymax<b.maxy ) ymax = b.maxy;
