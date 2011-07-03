@@ -75,6 +75,8 @@ extern char *TTFFoundry;
 extern char *xuid;
 extern char *SaveTablesPref;
 extern char *RecentFiles[RECENT_MAX];
+static char *LastFonts[2*RECENT_MAX];
+static int LastFontIndex=0;
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
@@ -2414,7 +2416,7 @@ void DoPrefs(void) {
 }
 
 void RecentFilesRemember(char *filename) {
-    int i;
+    int i,j;
 
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i )
 	if ( strcmp(RecentFiles[i],filename)==0 )
@@ -2423,7 +2425,8 @@ void RecentFilesRemember(char *filename) {
     if ( i<RECENT_MAX && RecentFiles[i]!=NULL ) {
 	if ( i!=0 ) {
 	    filename = RecentFiles[i];
-	    RecentFiles[i] = RecentFiles[0];
+	    for ( j=i; j>0; --j )
+		RecentFiles[j] = RecentFiles[j-1];
 	    RecentFiles[0] = filename;
 	}
     } else {
@@ -2434,6 +2437,35 @@ void RecentFilesRemember(char *filename) {
 	RecentFiles[0] = copy(filename);
     }
     PrefsUI_SavePrefs(true);
+    if ( LastFontIndex<sizeof(LastFonts)/sizeof(LastFonts[0]) )
+	LastFonts[LastFontIndex++] = copy(filename);
+}
+
+void LastFontsClear(void) {
+    int i;
+
+    for ( --LastFontIndex; LastFontIndex>=0; --LastFontIndex )
+	free(LastFonts[LastFontIndex]);
+    LastFontIndex = 0;
+}
+
+static void PrefsUI_LastFontsSave(void) {
+    char buffer[1024];
+    char *ffdir = getPfaEditDir(buffer);
+    FILE *preserve;
+    int i;
+
+    if ( LastFontIndex==0 )
+return;
+    if ( ffdir==NULL )
+return;
+    sprintf( buffer, "%s/FontsOpenAtLastQuit", ffdir );
+    preserve = fopen(buffer,"w");
+    if ( preserve==NULL )
+return;
+    for ( i=0; i<LastFontIndex; ++i )
+	fprintf( preserve, "%s\n", LastFonts[i]);
+    fclose(preserve);
 }
 
 struct prefs_interface gdraw_prefs_interface = {
@@ -2442,7 +2474,8 @@ struct prefs_interface gdraw_prefs_interface = {
     PrefsUI_GetPrefs,
     PrefsUI_SetPrefs,
     PrefsUI_getFontForgeShareDir,
-    PrefsUI_SetDefaults
+    PrefsUI_SetDefaults,
+    PrefsUI_LastFontsSave
 };
 
 static void change_res_filename(const char *newname) {

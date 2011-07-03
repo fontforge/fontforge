@@ -927,6 +927,31 @@ static void AddR(char *prog, char *name, char *val ) {
     GResourceAddResourceString(full,prog);
 }
 
+static int ReopenLastFonts(void) {
+    char buffer[1024];
+    char *ffdir = getPfaEditDir(buffer);
+    FILE *old;
+    int any = 0;
+
+    if ( ffdir==NULL )
+return( false );
+    sprintf( buffer, "%s/FontsOpenAtLastQuit", ffdir );
+    old = fopen(buffer,"r");
+    if ( old==NULL )
+return( false );
+    while ( fgets(buffer,sizeof(buffer),old)!=NULL ) {
+	int len = strlen( buffer );
+	if ( buffer[len-1]=='\n' )
+	    buffer[--len] = '\0';
+	if ( buffer[len-1]=='\r' )
+	    buffer[--len] = '\0';
+	if ( ViewPostScriptFont(buffer,0)!=0 )
+	    any = 1;
+    }
+    fclose(old);
+return( any );
+}
+
 #if defined(__Mac)
 /* Read a property from the x11 properties files */
 /* At the moment we want to know if we get the command key, or if the menubar */
@@ -1472,6 +1497,8 @@ exit( 0 );
 		any = 1;
 	}
     }
+    if ( !any && !doopen )
+	any = ReopenLastFonts();
 #if defined(__Mac)
     if ( listen_to_apple_events ) {
 	install_apple_event_handlers();

@@ -660,6 +660,7 @@ extern void SCStroke(SplineChar *sc);
 
 extern void PfaEditSetFallback(void);
 extern void RecentFilesRemember(char *filename);
+extern void LastFontsClear(void);
 
 
 struct debugger_context;
