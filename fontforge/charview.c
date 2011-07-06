@@ -1313,7 +1313,7 @@ static void CVShowDHint ( CharView *cv, GWindow pixmap, DStemInfo *dstem ) {
     BasePoint bp[4];
     HintInstance *hi;
     double roff;
-    
+
     roff =  ( dstem->right.x - dstem->left.x ) * dstem->unit.x +
             ( dstem->right.y - dstem->left.y ) * dstem->unit.y;
 
@@ -2589,7 +2589,8 @@ static void _CVFit(CharView *cv,DBounds *b, int integral) {
 	}
     }
 
-    cv->xoff = -left *cv->scale + offset;
+    /* Center glyph horizontally */
+    cv->xoff = ( (cv->width-offset) - (right*cv->scale) )/2 + offset  - b->minx*cv->scale;
     if ( hsmall )
 	cv->yoff = -bottom*cv->scale;
     else
@@ -2607,11 +2608,14 @@ static void CVFit(CharView *cv) {
 	b.maxy =cv->b.sc->parent->ascent;
 	b.miny = -cv->b.sc->parent->descent;
     }
-    if ( b.miny>=0 ) b.miny = -cv->b.sc->parent->descent;
-    if ( b.minx>0 ) b.minx = 0;
-    if ( b.maxx<0 ) b.maxx = 0;
-    if ( b.maxy<0 ) b.maxy = 0;
-    if ( b.maxx<cv->b.sc->width ) b.maxx = cv->b.sc->width;
+    /* FF used to normalize bounding boxes making maxx positive. But this */
+    /* may result into an incorrect positioning for combining marks, which */
+    /* usually have both bearings negative. So keep negative values as they are. */
+    /* As for the Y axis, we only ensure the minimum value doesn't exceed zero, */
+    /* so that the baseline is always visible. */
+
+    if ( b.miny>0 ) b.miny = 0;
+
     /* Now give some extra space around the interesting stuff */
     center = (b.maxx+b.minx)/2;
     b.minx = center - (center - b.minx)*1.2;
@@ -4005,9 +4009,11 @@ return;
     /*  current point as it moves across the screen (jerkily) */
     if ( cv->active_tool == cvt_hand || cv->active_tool == cvt_freehand )
 	/* Don't snap to points */;
+#if 0
     else if ( cv->active_tool == cvt_pointer &&
 	    ( cv->p.nextcp || cv->p.prevcp))
 	/* Don't snap to points when moving control points */;
+#endif
     else if ( !cv->joinvalid ||
 	    ((!cv->b.sc->inspiro || has_spiro) && !CheckPoint(&fs,&cv->joinpos,NULL)) ||
 	    (  cv->b.sc->inspiro && has_spiro  && !CheckSpiroPoint(&fs,&cv->joincp,NULL,0))) {
@@ -4018,12 +4024,20 @@ return;
 		(cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_state ||
 		 cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate ))
 	    spl = cv->b.layerheads[cv->b.drawmode]->undoes->u.state.splines;
-	if ( cv->active_tool != cvt_knife && cv->active_tool != cvt_ruler )
+	if ( cv->active_tool != cvt_knife && cv->active_tool != cvt_ruler ) {
+	    if ( cv->active_tool == cvt_pointer && ( cv->p.nextcp || cv->p.prevcp ))
+		fs.select_controls = true;
 	    NearSplineSetPoints(&fs,spl,cv->b.sc->inspiro && has_spiro);
-	else 
+	} else
 	    InSplineSet(&fs,spl,cv->b.sc->inspiro && has_spiro);
     }
-    if ( p.sp!=NULL && p.sp!=cv->active_sp ) {		/* Snap to points */
+    if ( cv->p.nextcp && p.sp!=NULL && p.sp == cv->p.sp ) {
+	p.cx = p.sp->nextcp.x;
+	p.cy = p.sp->nextcp.y;
+    } else if ( cv->p.prevcp && p.sp!=NULL && p.sp == cv->p.sp ) {
+	p.cx = p.sp->prevcp.x;
+	p.cy = p.sp->prevcp.y;
+    } else if ( p.sp!=NULL && p.sp!=cv->active_sp ) {		/* Snap to points */
 	p.cx = p.sp->me.x;
 	p.cy = p.sp->me.y;
     } else if ( p.spiro!=NULL && p.spiro!=cv->active_cp ) {
@@ -4531,7 +4545,7 @@ return;
 	r.y = cv->mbh; r.height = cv->infoh;
 #endif
 	GDrawPushClip(pixmap,&expose->u.expose.rect,&old2);
-    
+
 	GDrawDrawLine(pixmap,0,cv->mbh+cv->infoh-1,8096,cv->mbh+cv->infoh-1,def_fg);
 	GDrawDrawImage(pixmap,&GIcon_rightpointer,NULL,RPT_BASE,cv->mbh+2);
 	GDrawDrawImage(pixmap,&GIcon_selectedpoint,NULL,SPT_BASE,cv->mbh+2);
@@ -5243,7 +5257,7 @@ static void CVInkscapeAdjust(CharView *cv) {
     /*  then adjust the view field */
     DBounds b;
     int layer = CVLayer((CharViewBase *) cv);
-    
+
     if (layer != -1) SplineCharLayerQuickBounds(cv->b.sc,layer,&b);
     else {
         b.minx = b.miny = 1e10;
@@ -5252,10 +5266,10 @@ static void CVInkscapeAdjust(CharView *cv) {
     }
 
     b.minx *= cv->scale; b.maxx *= cv->scale;
-    b.miny = cv->height - b.miny*cv->scale; b.maxy = cv->height - b.maxy*cv->scale;
+    b.miny *= cv->scale; b.maxy *= cv->scale;
 
-    if ( b.miny<cv->yoff || b.maxy >= cv->yoff + cv->height ||
-	    b.maxx<cv->xoff || b.minx > cv->xoff+cv->width )
+    if ( b.minx + cv->xoff < 0 || b.miny + cv->yoff < 0 ||
+	    b.maxx + cv->xoff > cv->width || b.maxy + cv->yoff > cv->height )
 	CVFit(cv);
 }
 
@@ -6842,7 +6856,7 @@ static void CVMenuAcceptableExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	}
     }
 }
-    
+
 static void _CVMenuPointType(CharView *cv,struct gmenuitem *mi) {
     int pointtype = mi->mid==MID_Corner?pt_corner:mi->mid==MID_Tangent?pt_tangent:
 	    mi->mid==MID_Curve?pt_curve:pt_hvcurve;
@@ -7992,7 +8006,7 @@ return;		/* Need a spline */
     label[0].text_is_1byte = true;
     label[0].text_in_resource = true;
     gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
     gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
     gcd[0].gd.cid = CID_XR;
     gcd[0].gd.handle_controlevent = IOSA_RadioChange;
@@ -8003,7 +8017,7 @@ return;		/* Need a spline */
     label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.label = &label[1];
-    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32; 
+    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 32;
     gcd[1].gd.flags = gg_enabled|gg_visible|gg_rad_continueold ;
     gcd[1].gd.cid = CID_YR;
     gcd[1].gd.handle_controlevent = IOSA_RadioChange;
@@ -8073,7 +8087,7 @@ return;		/* Need a spline */
     topbox[0].gd.flags = gg_enabled|gg_visible;
     topbox[0].gd.u.boxelements = varray;
     topbox[0].creator = GHVGroupCreate;
-	
+
 
     GGadgetsCreate(iosa.gw,topbox);
     GHVBoxSetExpandableRow(topbox[0].ret,1);
@@ -8299,7 +8313,7 @@ return;
 
     if ( !refchanged )
 	CVPreserveState(&cv->b);
-	
+
     cv->b.layerheads[cv->b.drawmode]->splines = SplineSetsCorrect(cv->b.layerheads[cv->b.drawmode]->splines,&changed);
     if ( changed || refchanged )
 	CVCharChangedUpdate(&cv->b);
@@ -8696,7 +8710,7 @@ static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     /* We need exactly 2 points to specify a horizontal or vertical stem */
     /* and exactly 4 points to specify a diagonal stem */
-    if ( !(num == 2 && mi->mid != MID_AddDHint) && 
+    if ( !(num == 2 && mi->mid != MID_AddDHint) &&
          !(num == 4 && mi->mid == MID_AddDHint))
 return;
 
@@ -8745,7 +8759,7 @@ return;
             MergeDStemInfo( cv->b.sc->parent,&cv->b.sc->dstem,d );
     }
     cv->b.sc->manualhints = true;
-    
+
     /* Hint Masks are not relevant for diagonal stems, so modifying */
     /* diagonal stems should not affect them */
     if ( (mi->mid==MID_AddVHint) || (mi->mid==MID_AddHHint) ) {
@@ -8779,7 +8793,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i=0, num = 0;
 
     for (i=0; i<4; i++) {bp[i]=NULL;}
-    
+
     num = CVNumForePointsSelected(cv,bp);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -9205,7 +9219,7 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	SplineSetFindBounds(temp,&bb);
 	SplinePointListsFree(temp);
     }
-	
+
     if ( mi->mid==MID_Center )
 	transform[4] = (cv->b.sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
     else
@@ -9837,7 +9851,7 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("Snap Outlines to Pi_xel Grid"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Snap Outlines to Pixel Grid|No Shortcut"), NULL, NULL, CVMenuSnapOutlines, MID_SnapOutlines },
     NULL
 };
-    
+
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Fit"), (GImage *) "viewfit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit|Ctl+F"), NULL, NULL, CVMenuScale, MID_Fit },
     { { (unichar_t *) N_("Z_oom out"), (GImage *) "viewzoomout.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|Alt+Ctl+-"), NULL, NULL, CVMenuScale, MID_ZoomOut },

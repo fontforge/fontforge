@@ -609,9 +609,11 @@ return;
 	    SetCur(cv);
 	}
     } else if ( event->u.mouse.clicks<=1 && !(event->u.mouse.state&ksm_shift)) {
-	if ( fs->p->nextcp || fs->p->prevcp )
+	if ( fs->p->nextcp || fs->p->prevcp ) {
 	    CPStartInfo(cv,event);
-	else if ( fs->p->sp!=NULL ) {
+	    /* Needs update to draw control points selected */
+	    needsupdate = true;
+	} else if ( fs->p->sp!=NULL ) {
 	    if ( !fs->p->sp->selected ) needsupdate = true;
 	    fs->p->sp->selected = true;
 	} else if ( fs->p->spiro!=NULL ) {
@@ -633,9 +635,10 @@ return;
 	    fs->p->ap->selected = true;
 	}
     } else if ( event->u.mouse.clicks<=1 ) {
-	if ( fs->p->nextcp || fs->p->prevcp )
-	    /* Nothing to do */;
-	else if ( fs->p->sp!=NULL ) {
+	if ( fs->p->nextcp || fs->p->prevcp ) {
+	    /* Needs update to draw control points selected */
+	    needsupdate = true;
+	} else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
 	} else if ( fs->p->spiro!=NULL ) {
@@ -1440,7 +1443,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 8+4; 
+	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 8+4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
@@ -1453,7 +1456,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
@@ -1466,7 +1469,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+23; 
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+23;
 	gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[k].gd.cid = CID_Exact;
 	gcd[k++].creator = GRadioCreate;
@@ -1475,7 +1478,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13; 
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Fuzzy;
 	gcd[k++].creator = GRadioCreate;
@@ -1493,7 +1496,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+17+4; 
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y+17+4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
@@ -1511,7 +1514,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+17+4; 
+	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y+17+4;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
@@ -1525,7 +1528,7 @@ void CVSelectPointAt(CharView *cv) {
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
 	gcd[k].gd.label = &label[k];
-	gcd[k].gd.pos.x = 100; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y; 
+	gcd[k].gd.pos.x = 100; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k++].creator = GLabelCreate;
 
