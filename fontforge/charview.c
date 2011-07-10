@@ -3787,8 +3787,10 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		/* Do nothing */;
 	    else if ( sc->parent->multilayer || sc->parent->strokedfont || sc->layers[cvlayer].order2 )
 		sc->changed_since_search = true;
-	    else if ( cv->b.drawmode==dm_fore )
-		sc->changed_since_search = sc->changedsincelasthinted = true;
+	    else if ( cv->b.drawmode==dm_fore ) {
+		sc->changed_since_search = true;
+		_SCHintsChanged(cv->b.sc);
+	    }
 	    sc->changed_since_autosave = true;
 	    sf->changed_since_autosave = true;
 	    sf->changed_since_xuidchanged = true;
@@ -3796,7 +3798,6 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		sf->cidmaster->changed_since_autosave = true;
 		sf->cidmaster->changed_since_xuidchanged = true;
 	    }
-	    _SCHintsChanged(cv->b.sc);
 	}
 	if ( cv->b.drawmode!=dm_grid ) {
 	    cv->needsrasterize = true;
@@ -3851,14 +3852,13 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 		changed==1 && !sc->parent->strokedfont &&
 		layer>=0 &&
 		!sc->layers[layer].background && !sc->layers[layer].order2 )
-	    sc->changedsincelasthinted = true;
+	    _SCHintsChanged(sc);
 	sc->changed_since_search = true;
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = true;
 	if ( layer>=0 )
 	    SCTickValidationState(sc,layer);
-	_SCHintsChanged(sc);
     }
     if ( sf->cidmaster!=NULL )
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
