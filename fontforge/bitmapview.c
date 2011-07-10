@@ -377,7 +377,7 @@ static void BVDrawTempPoint(BitmapView *bv,int x, int y,void *pixmap) {
     GDrawSetStippled(pixmap,0, 0,0);
 }
 
-static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap, 
+static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap,
 	uint8 selected, int8 xoff, int8 yoff) {
     int i, j;
     int isblack, lw, rw, tw, bw;
@@ -388,7 +388,7 @@ static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap,
 	for ( j=0; j<=bc->xmax-bc->xmin; ++j ) {
 	    tx = bv->xoff + (bc->xmin + xoff +j)*bv->scale;
 	    ty = bv->height-bv->yoff - (bc->ymax + yoff - i)*bv->scale;
-	    
+
 	    isblack = ( !bc->byte_data &&
 		( bc->bitmap[i*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))))) ||
 		( bc->byte_data && bc->bitmap[i*bc->bytes_per_line+j] != 0 );
@@ -406,7 +406,7 @@ static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap,
 	    bw = ( i == 0 || ( !bc->byte_data &&
 		!( bc->bitmap[(i-1)*bc->bytes_per_line+(j>>3)] & (1<<(7-(j&7))))) ||
 		( bc->byte_data && bc->bitmap[(i-1)*bc->bytes_per_line+j] == 0 ));
-	    
+
 	    if ( lw )
 		GDrawDrawLine(pixmap,tx+1,ty, tx+1,ty-bv->scale,outcolor);
 	    if ( rw )
@@ -619,7 +619,7 @@ static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) 
 
     refinfo = galloc(strlen(ref->bdfc->sc->name) +  30);
     sprintf(refinfo,"%s XOff: %d YOff: %d", ref->bdfc->sc->name, ref->xoff, ref->yoff);
-    
+
     bb.minx = ref->bdfc->xmin + ref->xoff;
     bb.maxx = ref->bdfc->xmax + ref->xoff;
     bb.miny = ref->bdfc->ymin + ref->yoff;
@@ -707,14 +707,14 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	/*  actually need to draw it first, otherwise it obscures everything */
 	pixel.width = pixel.height = bv->scale+1;
 	BVDrawGlyph( bv,bc,pixmap,&pixel,false,false,0,0 );
-	
+
 	if ( bv->active_tool!=bvt_none ) {
 	    /* This does nothing for many tools, but for lines, rects and circles */
 	    /*  it draws temporary points */
 	    BCGeneralFunction(bv,BVDrawTempPoint,pixmap);
 	}
 	/* Selected references are handled in BVDrawGlyph() */
-	if ( bv->bc->selection ) 
+	if ( bv->bc->selection )
 	    BVDrawSelection(bv,pixmap);
     }
     if ( bv->showgrid ) {
@@ -1082,10 +1082,10 @@ return( false );
     rbc = ref->bdfc;
     ny = rbc->ymax - y + ref->yoff;
     nx = x - rbc->xmin - ref->xoff;
-    if (nx>=0 && nx<=( rbc->xmax - rbc->xmin ) && 
+    if (nx>=0 && nx<=( rbc->xmax - rbc->xmin ) &&
 	ny>=0 && ny<=( rbc->ymax - rbc->ymin ) &&
 	(( rbc->byte_data && rbc->bitmap[ny*rbc->bytes_per_line+nx] != 0 ) ||
-	(( !rbc->byte_data && 
+	(( !rbc->byte_data &&
 	    rbc->bitmap[ny*rbc->bytes_per_line + (nx>>3)] & (1<<(7 - (nx&7)))))))
 return( true );
 
@@ -1837,7 +1837,7 @@ static void BVDoClear(BitmapView *bv) {
     BDFRefChar *head, *next;
     BDFChar *bc = bv->bc;
     int refs_changed = false;
-    
+
     for ( head=bc->refs; head!=NULL; head=next ) {
 	next = head->next;
 	if ( head->selected ) {
@@ -1848,7 +1848,7 @@ static void BVDoClear(BitmapView *bv) {
 	    BCRemoveDependent( bc,head );
 	}
     }
-    
+
     if ( bc->selection!=NULL ) {
 	BCPreserveState( bc );
 	BDFFloatFree( bc->selection );
@@ -1975,12 +1975,17 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    BDFRefChar *cur;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Cut: /*case MID_Copy:*/ case MID_Clear:
 	    /* If nothing is selected, copy copies everything */
 	    mi->ti.disabled = bv->bc->selection==NULL;
+	    for ( cur=bv->bc->refs; cur!=NULL && mi->ti.disabled; cur=cur->next ) {
+		if ( cur->selected )
+		    mi->ti.disabled = false;
+	    }
 	  break;
 	  case MID_Paste:
 	    mi->ti.disabled = !CopyContainsBitmap();
@@ -2096,7 +2101,7 @@ char *BVFlipNames[] = { N_("Flip Horizontally"), N_("Flip Vertically"),
     NU_("Rotate 90° CCW"),
     NU_("Rotate 180°"),
     N_("Skew..."), NULL };
- 
+
 static GMenuItem2 dummyitem[] = { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|Ctl+N"), NULL, NULL, MenuNew },
