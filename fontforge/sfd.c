@@ -1556,7 +1556,7 @@ static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
 	    fprintf(sfd, "BDFRefChar: %d %d %d %d %c\n",
 		newgids!=NULL ? newgids[bc->orig_pos] : bc->orig_pos,
 		newgids!=NULL ? newgids[ref->bdfc->orig_pos] : ref->bdfc->orig_pos,
-		ref->xoff,ref->yoff,ref->selected?'S':'N' );    	    
+		ref->xoff,ref->yoff,ref->selected?'S':'N' );
     }
     fprintf( sfd, "EndBitmapFont\n" );
 return( err );
@@ -1752,7 +1752,7 @@ return;
     }
     putc('\n',sfd);
 }
-	
+
 static void SFDDumpJustify(FILE *sfd,SplineFont *sf) {
     Justify *jscript;
     struct jstf_lang *jlang;
@@ -2245,7 +2245,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf(sfd, "Compacted: 1\n" );
     fprintf( sfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
     fprintf( sfd, "NameList: %s\n", sf->for_new_glyphs->title );
-	
+
     if ( map->remap!=NULL ) {
 	struct remap *remap;
 	int n;
@@ -2598,7 +2598,7 @@ return;
     free(markerfile);
     closedir(dir);
 }
-    
+
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
     FILE *sfd;
     char oldloc[24];
@@ -2620,7 +2620,7 @@ int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir)
     if ( tempfilename!=filename ) free(tempfilename);
     if ( sfd==NULL )
 return( 0 );
-    
+
     strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
     if ( sf->cidmaster!=NULL ) {
@@ -3649,11 +3649,11 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
                 /* be visible in charview even if subsequent rebuilding instances */
                 /* fails (e. g. for composite characters) */
                 cur->where = chunkalloc( sizeof( HintInstance ));
-                rstartoff = ( cur->right.x - cur->left.x ) * cur->unit.x + 
+                rstartoff = ( cur->right.x - cur->left.x ) * cur->unit.x +
                             ( cur->right.y - cur->left.y ) * cur->unit.y;
-                rendoff =   ( bpref[2]->x - cur->left.x ) * cur->unit.x + 
+                rendoff =   ( bpref[2]->x - cur->left.x ) * cur->unit.x +
                             ( bpref[2]->y - cur->left.y ) * cur->unit.y;
-                lendoff =   ( bpref[3]->x - cur->left.x ) * cur->unit.x + 
+                lendoff =   ( bpref[3]->x - cur->left.x ) * cur->unit.x +
                             ( bpref[3]->y - cur->left.y ) * cur->unit.y;
                 cur->where->begin = ( rstartoff > 0 ) ? rstartoff : 0;
                 cur->where->end   = ( rendoff > lendoff ) ? lendoff : rendoff;
@@ -4830,7 +4830,7 @@ static int SFDGetBitmapChar(FILE *sfd,BDFFont *bdf) {
     bfc = chunkalloc(sizeof(BDFChar));
     memset( bfc,'\0',sizeof( BDFChar ));
     map = bdf->sf->map;
-    
+
     if ( getint(sfd,&orig)!=1 || orig<0 )
 return( 0 );
     if ( getint(sfd,&enc)!=1 )
@@ -4911,7 +4911,7 @@ static int SFDGetBitmapReference(FILE *sfd,BDFFont *bdf) {
     BDFRefChar *ref, *head;
     int gid, rgid, xoff, yoff;
     char ch;
-    
+
     /* 'BDFRefChar:' elements should not occur in the file before the corresponding */
     /* 'BDFChar:'. However it is possible that the glyphs they refer to are not yet */
     /* available. So we will find them later */
@@ -4938,7 +4938,7 @@ static void SFDFixupBitmapRefs( BDFFont *bdf ) {
     BDFChar *bc, *rbc;
     BDFRefChar *head, *next, *prev;
     int i;
-    
+
     for ( i=0; i<bdf->glyphcnt; i++ ) if (( bc = bdf->glyphs[i] ) != NULL ) {
 	prev = NULL;
 	for ( head = bc->refs; head != NULL; head = next ) {
@@ -4955,7 +4955,7 @@ static void SFDFixupBitmapRefs( BDFFont *bdf ) {
 	    }
 	}
     }
-    
+
 }
 
 static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) {
@@ -5094,7 +5094,7 @@ return( sc );
 
     while ( sc->layers[ly_fore].refs!=NULL &&
 	    sc->layers[ly_fore].refs->sc!=NULL &&	/* Can happen if we are called during font loading before references are fixed up */
-	    sc->layers[ly_fore].refs->next==NULL && 
+	    sc->layers[ly_fore].refs->next==NULL &&
 	    sc->layers[ly_fore].refs->transform[0]==1 && sc->layers[ly_fore].refs->transform[1]==0 &&
 	    sc->layers[ly_fore].refs->transform[2]==0 && sc->layers[ly_fore].refs->transform[3]==1 &&
 	    sc->layers[ly_fore].refs->transform[4]==0 && sc->layers[ly_fore].refs->transform[5]==0 ) {
@@ -5179,6 +5179,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 			else
 			    index = map->map[index];
 		    }
+		    kp->kcid = false;
 		    ksf = sf;
 		    if ( cidmaster!=sf ) {
 			for ( l=0; l<cidmaster->subfontcnt; ++l ) {
@@ -5704,7 +5705,7 @@ static struct macname *SFDParseMacNames(FILE *sfd, char *tok) {
 	cur->enc = enc;
 	cur->lang = lang;
 	cur->name = pt = galloc(len+1);
-	
+
 	while ( (ch=nlgetc(sfd))==' ');
 	if ( ch=='"' )
 	    ch = nlgetc(sfd);
@@ -7267,7 +7268,7 @@ exit( 1 );
     }
     if ( sf->cidmaster==NULL )
 	SFDFixupRefs(sf);
-    
+
     if ( !haddupenc )
 	SFD_DoAltUnis(sf);
     else
