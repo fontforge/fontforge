@@ -174,7 +174,6 @@ struct prefs_interface {
     int   (*set_prefs)(char *name,struct val *val1, struct val *val2);
     char *(*get_exe_share_dir)(void);
     void  (*init_prefs)(void);
-    void  (*save_lastfonts)(void);
 };
 extern struct prefs_interface *prefs_interface;
 
@@ -184,7 +183,6 @@ extern struct prefs_interface *prefs_interface;
 #define SetPrefs		(prefs_interface->set_prefs)
 #define getFontForgeShareDir	(prefs_interface->get_exe_share_dir)
 #define SetDefaults		(prefs_interface->init_prefs)
-#define LastFontsSave		(prefs_interface->save_lastfonts)
 
 void FF_SetPrefsInterface(struct prefs_interface *prefsi);
 
