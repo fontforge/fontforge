@@ -76,7 +76,7 @@ extern char *xuid;
 extern char *SaveTablesPref;
 extern char *RecentFiles[RECENT_MAX];
 static char *LastFonts[2*RECENT_MAX];
-static int LastFontIndex=0;
+static int LastFontIndex=0, LastFontsPreserving=0;
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
@@ -2436,26 +2436,32 @@ void RecentFilesRemember(char *filename) {
 	    RecentFiles[i] = RecentFiles[i-1];
 	RecentFiles[0] = copy(filename);
     }
+
+    if ( LastFontsPreserving ) {
+	for ( i=0; i<LastFontIndex ; ++i )
+	    if ( strcmp(filename,LastFonts[i])==0 )
+	break;
+	if ( LastFontIndex<RECENT_MAX && i==LastFontIndex )
+	    LastFonts[LastFontIndex++] = copy(filename);
+    }
     PrefsUI_SavePrefs(true);
-    if ( LastFontIndex<sizeof(LastFonts)/sizeof(LastFonts[0]) )
-	LastFonts[LastFontIndex++] = copy(filename);
 }
 
-void LastFontsClear(void) {
-    int i;
-
-    for ( --LastFontIndex; LastFontIndex>=0; --LastFontIndex )
-	free(LastFonts[LastFontIndex]);
+void LastFonts_Activate() {
+    LastFontsPreserving = true;
+    for ( ; LastFontIndex>0; --LastFontIndex )
+	free(LastFonts[LastFontIndex-1]);
     LastFontIndex = 0;
 }
 
-static void PrefsUI_LastFontsSave(void) {
+void LastFonts_End(int success) {
     char buffer[1024];
     char *ffdir = getPfaEditDir(buffer);
     FILE *preserve;
     int i;
 
-    if ( LastFontIndex==0 )
+    LastFontsPreserving = false;
+    if ( !success )
 return;
     if ( ffdir==NULL )
 return;
@@ -2474,8 +2480,7 @@ struct prefs_interface gdraw_prefs_interface = {
     PrefsUI_GetPrefs,
     PrefsUI_SetPrefs,
     PrefsUI_getFontForgeShareDir,
-    PrefsUI_SetDefaults,
-    PrefsUI_LastFontsSave
+    PrefsUI_SetDefaults
 };
 
 static void change_res_filename(const char *newname) {
