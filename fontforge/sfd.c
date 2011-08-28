@@ -5047,7 +5047,22 @@ return( 1 );
 
 static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
     RefChar *rf;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int ly;
 
+    if ( sc->parent->multilayer ) {
+	for ( ly=ly_fore; ly<ref->sc->layer_cnt; ++ly ) {
+	    for ( rf = ref->sc->layers[ly].refs; rf!=NULL; rf=rf->next ) {
+		if ( rf->sc==sc ) {	/* Huh? */
+		    ref->sc->layers[ly].refs = NULL;
+	    break;
+		}
+		if ( rf->layers[0].splines==NULL )
+		    SFDFixupRef(ref->sc,rf,layer);
+	    }
+	}
+    } else {
+#endif
     for ( rf = ref->sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
 	if ( rf->sc==sc ) {	/* Huh? */
 	    ref->sc->layers[layer].refs = NULL;
@@ -5056,6 +5071,9 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
 	if ( rf->layers[0].splines==NULL )
 	    SFDFixupRef(ref->sc,rf,layer);
     }
+#ifdef FONTFORGE_CONFIG_TYPE3
+    }
+#endif
     SCReinstanciateRefChar(sc,ref,layer);
     SCMakeDependent(sc,ref->sc);
 }
