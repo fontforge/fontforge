@@ -83,10 +83,10 @@ dnl  library to be found (otherwise only portable to machines with macports/fink
  if test "$CPPFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
  elif test -d /sw/include >/dev/null ; then
-  CPPFLAGS="$CPPFLAGS -idirafter /sw/include"
+  CPPFLAGS="$CPPFLAGS -I /sw/include"
   gww_extraincludes="/sw/include"
  elif test -d /opt/local/include >/dev/null ; then
-  CPPFLAGS="$CPPFLAGS -idirafter /opt/local/include"
+  CPPFLAGS="$CPPFLAGS -I /opt/local/include"
   gww_extraincludes="/opt/local/include";
  fi
  rmlibs=""
