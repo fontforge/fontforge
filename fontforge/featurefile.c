@@ -39,6 +39,7 @@
 #include <string.h>
 #include <utype.h>
 #include <ustring.h>
+#include <locale.h>
 
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
@@ -170,7 +171,7 @@ static int MarkNeeded(uint8 *needed,uint8 *setsneeded,OTLookup *otl) {
     }
 return( any );
 }
-    
+
 static void gdef_markclasscheck(FILE *out,SplineFont *sf,OTLookup *otl) {
     uint8 *needed;
     uint8 *setsneeded;
@@ -1296,7 +1297,7 @@ return;
 			    }
 			}
 			if ( !any && anymore ) {
-			    if ( li!=0 ) 
+			    if ( li!=0 )
 				fprintf( out, "\n    ligComponent\n      " );
 			    fprintf( out, "<anchor NULL>" );	/* In adobe's example no anchor class is given */
 			}
@@ -1451,7 +1452,7 @@ static void dump_needednestedlookups(FILE *out, SplineFont *sf, OTLookup *otl) {
 	}
     }
 }
-		    
+
 static void dump_lookup(FILE *out, SplineFont *sf, OTLookup *otl) {
     struct lookup_subtable *sub;
     static char *flagnames[] = { "RightToLeft", "IgnoreBaseGlyphs", "IgnoreLigatures", "IgnoreMarks", NULL };
@@ -1696,22 +1697,25 @@ void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl) {
 
 static void dump_gdef(FILE *out,SplineFont *sf) {
     PST *pst;
-    int i,gid,j,k,l, lcnt, needsclass;
+    int i,gid,j,k,l, lcnt, needsclasses, hasclass[4], clsidx;
     SplineChar *sc;
     SplineFont *_sf;
     struct lglyphs { SplineChar *sc; PST *pst; } *glyphs;
     static char *clsnames[] = { "@GDEF_Simple", "@GDEF_Ligature", "@GDEF_Mark", "@GDEF_Component" };
 
     glyphs = NULL;
+    needsclasses = false;
+    memset(hasclass,0,sizeof(hasclass));
     for ( l=0; l<2; ++l ) {
 	lcnt = 0;
-	needsclass = false;
 	k=0;
 	do {
 	    _sf = sf->subfontcnt==0 ? sf : _sf;
 	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
-		if ( sc->glyph_class!=0 || gdefclass(sc)!=1 )
-		    needsclass = true;
+		if ( l==0 ) {
+		    clsidx = sc->glyph_class!=0 ? sc->glyph_class: gdefclass(sc)+1;
+		    if (clsidx > 1) needsclasses = hasclass[clsidx-2] = true;
+		}
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 		    if ( pst->type == pst_lcaret ) {
 			for ( j=pst->u.lcaret.cnt-1; j>=0; --j )
@@ -1736,7 +1740,7 @@ static void dump_gdef(FILE *out,SplineFont *sf) {
 	glyphs[lcnt].sc = NULL;
     }
 
-    if ( !needsclass && lcnt==0 && sf->mark_class_cnt==0 )
+    if ( !needsclasses && lcnt==0 && sf->mark_class_cnt==0 )
 return;					/* No anchor positioning, no ligature carets */
 
 #ifndef FF_V1_6
@@ -1750,35 +1754,40 @@ return;					/* No anchor positioning, no ligature carets */
     }
 #endif
 
-    if ( needsclass ) {
+    if ( needsclasses ) {
 	int len;
 	putc('\n',out);
 	/* Class definitions must go outside the table itself. Stupid */
 	for ( i=0; i<4; ++i ) {
-	    fprintf( out, "%s = [", clsnames[i] );
 	    len = strlen(clsnames[i])+8;
 	    k=0;
-	    do {
-		_sf = sf->subfontcnt==0 ? sf : _sf;
-		for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
-		    if ( sc->glyph_class==i+1 || (sc->glyph_class==0 && gdefclass(sc)==i+1 )) {
-			if ( len+strlen(sc->name)+1 >80 ) {
-			    putc('\n',out); putc('\t',out);
-			    len = 8;
+	    if ( hasclass[i] ) {
+		k = 0;
+		fprintf( out, "%s = [", clsnames[i] );
+		do {
+		    _sf = sf->subfontcnt==0 ? sf : _sf;
+		    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
+			if ( sc->glyph_class==i+2 || (sc->glyph_class==0 && gdefclass(sc)==i+1 )) {
+			    if ( len+strlen(sc->name)+1 >80 ) {
+				putc('\n',out); putc('\t',out);
+				len = 8;
+			    }
+			    dump_glyphname(out,sc);
+			    putc(' ',out);
+			    len += strlen(sc->name)+1;
 			}
-			dump_glyphname(out,sc);
-			putc(' ',out);
-			len += strlen(sc->name)+1;
 		    }
-		}
-		++k;
-	    } while ( k<sf->subfontcnt );
-	    fprintf( out, "];\n");
+		    ++k;
+		} while ( k<sf->subfontcnt );
+		fprintf( out, "];\n");
+	    } else
+		/* AFDKO does't like empty classes, there should be just a placeholder */
+		clsnames[i] = " ";
 	}
     }
     fprintf( out, "\ntable GDEF {\n" );
-    if ( needsclass ) {
-	fprintf( out, "  GlyphClassDef %s %s %s %s;\n\n",
+    if ( needsclasses ) {
+	fprintf( out, "  GlyphClassDef %s, %s, %s, %s;\n\n",
 		clsnames[0], clsnames[1], clsnames[2], clsnames[3]);
     }
 
@@ -2055,11 +2064,15 @@ static void cleanupnames(SplineFont *sf) {
 }
 
 void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
+    char oldloc[24];
 
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
 
     SFFindUnusedLookups(sf);
-    
+
+
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     untick_lookups(sf);
     preparenames(sf);
     gdef_markclasscheck(out,sf,NULL);
@@ -2067,6 +2080,7 @@ void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
     dump_gdef(out,sf);
     dump_base(out,sf);
     cleanupnames(sf);
+    setlocale(LC_NUMERIC,oldloc);
 }
 
 
@@ -2952,7 +2966,7 @@ return( sc );
 	}
 return( sc );
     }
-    
+
     for ( gid=sf->glyphcnt-1; gid>=0; --gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	if ( strcmp(sc->name,name)==0 )
 return( sc );
@@ -3547,7 +3561,7 @@ static struct vr *ValueRecordCopy(struct vr *ovr) {
 #endif
 return( nvr );
 }
-	
+
 static struct vr *fea_ParseValueRecord(struct parseState *tok) {
     struct vr *vr=NULL;
     struct namedvalue *nvr;
@@ -3853,7 +3867,7 @@ static struct markedglyphs *fea_ParseMarkedGlyphsV1_6(struct parseState *tok,
     if ( head!=NULL && mark_state.mark_cnt!=0 )
 	head->has_marks = true;
     fea_UnParseTok(tok);
-return( head );	
+return( head );
 }
 
 static struct markedglyphs *fea_parseBaseMarkSequence(struct parseState *tok,
@@ -4101,7 +4115,7 @@ return( fea_ParseMarkedGlyphsV1_6(tok,is_pos,allow_marks,allow_lookups));
     if ( head!=NULL && mark_state.mark_cnt!=0 )
 	head->has_marks = true;
     fea_UnParseTok(tok);
-return( head );	
+return( head );
 }
 
 static void fea_markedglyphsFree(struct markedglyphs *gl) {
@@ -4137,7 +4151,7 @@ static void fea_markedglyphsFree(struct markedglyphs *gl) {
 	gl = next;
     }
 }
-    
+
 static struct feat_item *fea_AddAllLigPosibilities(struct parseState *tok,struct markedglyphs *glyphs,
 	SplineChar *sc,char *sequence_start,char *next, struct feat_item *sofar) {
     char *start, *pt, ch;
@@ -4519,7 +4533,7 @@ static char *fea_mergeTickedMarks(struct markedglyphs *g, int only_ticked) {
 	pt[-1] = '\0';
     else
 	*pt = '\0';
-return( ret );    
+return( ret );
 }
 
 static int fea_AddAGlyphSet(char **covers,char **ncovers,int i, struct markedglyphs *g) {
@@ -4709,9 +4723,9 @@ static void fea_ParseIgnore(struct parseState *tok) {
 	if ( tok->type!=tk_char || tok->tokbuf[0]!=',' )
     break;
     }
-	    
+
     fea_now_semi(tok);
-}    
+}
 
 static int spacecount(char *str) {
     int scnt=0;
@@ -4874,7 +4888,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    fea_markedglyphsFree(rpl);
 	}
     }
-		    
+
     fea_end_statement(tok);
     fea_markedglyphsFree(glyphs);
 }
@@ -5171,7 +5185,7 @@ static int fea_LookupSwitch(struct parseState *tok) {
       case tk_enumerate:
 	fea_TokenMustBe(tok,tk_position,'\0');
 	enumer = true;
-	/* Fall through */;  
+	/* Fall through */;
       case tk_position:
 	fea_ParsePosition(tok,enumer);
       break;
@@ -5670,7 +5684,7 @@ return;
 	} else if ( ret==2 )
     break;
     }
-    
+
     fea_ParseTag(tok);
     if ( tok->type!=tk_name || !tok->could_be_tag || tok->tag!=feat_tag ) {
 	LogError(_("Expected '%c%c%c%c' in lookup definition on line %d of %s"),
@@ -5931,9 +5945,18 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 	    tok->sofar = item;
 	    for ( i=0; i<4; ++i ) {
 		fea_ParseTok(tok);
-		item->u1.gdef_classes[i] = fea_ParseGlyphClassGuarded(tok);
+		if ( tok->type==tk_char && (( i<3 && tok->tokbuf[0]==',' ) || ( i==3 && tok->tokbuf[0]==';' )) )
+		    ; /* Skip the placeholder for a missing class definition or a final semicolon */
+		else if ( tok->type==tk_class ) {
+		    item->u1.gdef_classes[i] = fea_ParseGlyphClassGuarded(tok);
+		    fea_ParseTok(tok);
+		    if ( tok->type==tk_char && (( i<3 && tok->tokbuf[0]==',' ) || ( i==3 && tok->tokbuf[0]==';' )) )
+			; /* skip the delimiting comma or a final semicolon */
+		    else
+			LogError(_("Expected comma or semicolon on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		} else
+		    LogError(_("Expected class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    }
-	    fea_ParseTok(tok);
 	} else {
 	    LogError(_("Expected Attach or LigatureCaret or GlyphClassDef on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
@@ -7165,7 +7188,7 @@ static void fea_GDefGlyphClasses(SplineFont *sf, struct feat_item *f) {
 	    sc = SFGetChar(sf,-1,start);
 	    *pt = ch;
 	    if ( sc!=NULL )
-		sc->glyph_class = i+1;
+		sc->glyph_class = i+2;
 	}
     }
 }
@@ -7429,7 +7452,7 @@ static void fea_NameLookups(struct parseState *tok) {
 	    int cnt=0;
 	    char *namebuf = galloc(strlen( otl->lookup_name )+8 );
 	    /* Name already in use, modify it */
-	    do { 
+	    do {
 		sprintf(namebuf,"%s-%d", otl->lookup_name, cnt++ );
 	    } while ( SFFindLookup(sf,namebuf)!=NULL );
 	    free(otl->lookup_name);
@@ -7497,13 +7520,14 @@ static void fea_NameLookups(struct parseState *tok) {
     FVSetTitles(sf);
     FVRefreshAll(sf);
 }
-	
+
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
     struct namedvalue *nvr, *nvrnext;
     int i,j;
+    char oldloc[24];
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -7513,7 +7537,10 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
 
+    strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
+    setlocale(LC_NUMERIC,"C");
     fea_ParseFeatureFile(&tok);
+    setlocale(LC_NUMERIC,oldloc);
     if ( tok.err_count==0 ) {
 	tok.sofar = fea_reverseList(tok.sofar);
 	fea_ApplyFile(&tok, tok.sofar);
