@@ -137,7 +137,7 @@ MacStyle: 0
 TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 CreationTime: 1151539072
 ModificationTime: 11516487392
-GaspTable 3 8 2 16 1 65535 3
+GaspTable 3 8 2 16 1 65535 3 0
 DEI: 91125
 ExtremaBound: 30
 </PRE>
@@ -252,7 +252,8 @@ CIDVersion: 1.2
       GaspTable
     <DD>
       The first number following the keyword gives the number of ppem/flag pairs
-      on the line. The next two numbers are the first ppem and first flag.
+      on the line. The next two numbers are the first ppem and first flag. The
+      last number is gasp table version.
     <DT>
       UseXUID
     <DD>
@@ -532,24 +533,24 @@ JstfExtender: afii57440 afii5739
 Justify: 'latn'
 JstfLang: 'dflt' 5
 JstfPrio:
-JstfMaxShrink: "JSTF shrinkage max at priority 0 #0 for dflt in latn"  
-JstfMaxExtend: "JSTF extension max at priority 0 #1 for dflt in latn"  
+JstfMaxShrink: "JSTF shrinkage max at priority 0 #0 for dflt in latn"
+JstfMaxExtend: "JSTF extension max at priority 0 #1 for dflt in latn"
 JstfPrio:
-JstfEnableShrink: "'mark' Mark Positioning in Latin lookup 5"  "'kern' Horizontal Kerning in Latin lookup 6"  "'kern' Horizontal Kerning in Cyrillic lookup 7"  
+JstfEnableShrink: "'mark' Mark Positioning in Latin lookup 5"  "'kern' Horizontal Kerning in Latin lookup 6"  "'kern' Horizontal Kerning in Cyrillic lookup 7"
 JstfPrio:
-JstfEnableShrink: "'liga' Standard Ligatures in Latin lookup 10"  "'alig' Ancient Ligatures in Latin lookup 11"  "'liga' Standard Ligatures in Latin lookup 12"  
-JstfDisableExtend: "'liga' Standard Ligatures in Latin lookup 10"  "'alig' Ancient Ligatures in Latin lookup 11"  "'liga' Standard Ligatures in Latin lookup 12"  
+JstfEnableShrink: "'liga' Standard Ligatures in Latin lookup 10"  "'alig' Ancient Ligatures in Latin lookup 11"  "'liga' Standard Ligatures in Latin lookup 12"
+JstfDisableExtend: "'liga' Standard Ligatures in Latin lookup 10"  "'alig' Ancient Ligatures in Latin lookup 11"  "'liga' Standard Ligatures in Latin lookup 12"
 JstfPrio:
-JstfMaxShrink: "JSTF shrinkage max at priority 3 #2 for dflt in latn"  
-JstfMaxExtend: "JSTF extension max at priority 3 #3 for dflt in latn"  
+JstfMaxShrink: "JSTF shrinkage max at priority 3 #2 for dflt in latn"
+JstfMaxExtend: "JSTF extension max at priority 3 #3 for dflt in latn"
 JstfPrio:
-JstfMaxShrink: "JSTF shrinkage max at priority 4 #4 for dflt in latn"  
-JstfMaxExtend: "JSTF extension max at priority 4 #5 for dflt in latn"  
+JstfMaxShrink: "JSTF shrinkage max at priority 4 #4 for dflt in latn"
+JstfMaxExtend: "JSTF extension max at priority 4 #5 for dflt in latn"
 Justify: 'cyrl'
 JstfLang: 'dflt' 1
 JstfPrio:
-JstfMaxShrink: "JSTF shrinkage max at priority 0 #6 for dflt in cyrl"  
-JstfMaxExtend: "JSTF extension max at priority 0 #7 for dflt in cyrl"  
+JstfMaxShrink: "JSTF shrinkage max at priority 0 #6 for dflt in cyrl"
+JstfMaxExtend: "JSTF extension max at priority 0 #7 for dflt in cyrl"
 EndJustify
 </PRE>
   </BLOCKQUOTE>
@@ -652,7 +653,7 @@ LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
   <P>
   If your font has any anchor classes:
   <BLOCKQUOTE>
-    <PRE>AnchorClass2: "top" "Latin marks-1" "bottom" "Latin marks-1" "Anchor-2" "Latin marks-1" "Anchor-3" "Latin marks-2" "Anchor-4" "Latin marks-2" "Anchor-5" "Latin marks-2" "Anchor-6" "Latin marks-2" 
+    <PRE>AnchorClass2: "top" "Latin marks-1" "bottom" "Latin marks-1" "Anchor-2" "Latin marks-1" "Anchor-3" "Latin marks-2" "Anchor-4" "Latin marks-2" "Anchor-5" "Latin marks-2" "Anchor-6" "Latin marks-2"
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -766,13 +767,13 @@ EndFPST
   Class: 201 shaddakasraarabic shaddakasratanarabic shaddafathaarabic shaddadammaarabic shaddadammatanarabic fathatanarabic dammatanarabic kasratanarabic fathaarabic dammaarabic kasraarabic shaddaarabic sukunarabic
   Class: 13 tatweelarabic
   Class: 17 ttehinitialarabic
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 0 0 ~ ~ 
- 2 32768 ~ ~ 
- ... 
- 3 32768 "high" "low" 
+ 0 0 ~ ~
+ 0 0 ~ ~
+ 0 0 ~ ~
+ 0 0 ~ ~
+ 2 32768 ~ ~
+ ...
+ 3 32768 "high" "low"
  ...
 EndASM
 </PRE>
@@ -889,9 +890,9 @@ MATH:ScriptScriptPercentScaleDown: 60
     <PRE>StartChar: exclam
 Encoding: 33 33 3
 Width: 258
-Flags: 
+Flags:
 HStem: 736 13&lt;39 155&gt;  -14 88&lt;162 180&gt;
-VStem: 71 84&lt;49 396&gt; 
+VStem: 71 84&lt;49 396&gt;
 DStem2: 510 435 225 423 0.568682 -0.822558&lt;0 124.816&gt;
 Fore
 SplineSet
@@ -1138,10 +1139,10 @@ Fore
     <PRE>StartChar: semicolon
 Encoding: 59 59
 Width: 264
-Flags: 
-HStem: 
+Flags:
+HStem:
 VStem:
-Fore 
+Fore
 Refer: 33 44 N 1 0 0 1 0 0 1
 Refer: 35 46 N 1 0 0 1 0 414 2
 EndChar
@@ -1377,7 +1378,7 @@ Ligature2: "Latin Ligatures" one slash four
 Substitution2: "Latin Smallcaps" agrave.sc
 AlternateSubs2: "Latin Swash" glyph490 A.swash
 MultipleSubs2: "Latin Decomposition" a grave
-LCarets2: 1 650 
+LCarets2: 1 650
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -1473,12 +1474,12 @@ TopRightVertex: 2 0,0{13-15 1,0,1} 100,10
   <BLOCKQUOTE>
     <PRE>LayerCount: 3
 Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1] []
-FillGradient: 220;260 490;450 0 pad 2 {0 #808080 1} {1 #000000 1} 
+FillGradient: 220;260 490;450 0 pad 2 {0 #808080 1} {1 #000000 1}
 SplineSet
 ...
 EndSplineSet
 Layer: 2  1 0 1  #00ff00 1  #0000ff 1 19 miter butt [0.5 0 0 1] [10 5]
-FillGradient: 400;400 400;400 400 repeat 2 {0 #ffffff 1} {1 #808080 1} 
+FillGradient: 400;400 400;400 400 repeat 2 {0 #ffffff 1} {1 #808080 1}
 SplineSet
 ...
 EndSplineSet
@@ -1662,9 +1663,9 @@ MMAxisMap: 0 2 0=&gt;50 1=&gt;1450
 MMAxisMap: 1 2 0=&gt;50 1=&gt;1450
 MMCDV:
 {
-1 index 1 2 index sub mul 3 1 roll 
-1 2 index sub 1 index mul 3 1 roll 
-1 index 1 index mul 3 1 roll 
+1 index 1 2 index sub mul 3 1 roll
+1 2 index sub 1 index mul 3 1 roll
+1 index 1 index mul 3 1 roll
 pop pop
 0 1 1 3 {index add} for 1 exch sub 4 1 roll
 }
@@ -1699,7 +1700,7 @@ BeginMMFonts: 5 0
   here, both are simple postscript. The first is the /NormalizeDesignVector
   routine and the second is the /ConvertDesignVector routine.
   <P>
-  Finally we have the actual instance fonts. 
+  Finally we have the actual instance fonts.
     <HR>
   <P>
   Fonts with information for Apple's '*var' tables ('fvar', 'gvar', 'avar'

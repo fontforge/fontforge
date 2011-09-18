@@ -1595,6 +1595,7 @@ return;
     fprintf( sfd, "GaspTable: %d", sf->gasp_cnt );
     for ( i=0; i<sf->gasp_cnt; ++i )
 	fprintf( sfd, " %d %d", sf->gasp[i].ppem, sf->gasp[i].flags );
+    fprintf( sfd, " %d", sf->gasp_version);
     putc('\n',sfd);
 }
 
@@ -5326,6 +5327,7 @@ static void SFDGetGasp(FILE *sfd,SplineFont *sf) {
 	getsint(sfd,(int16 *) &sf->gasp[i].ppem);
 	getsint(sfd,(int16 *) &sf->gasp[i].flags);
     }
+    getsint(sfd,(int16 *) &sf->gasp_version);
 }
 
 static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
