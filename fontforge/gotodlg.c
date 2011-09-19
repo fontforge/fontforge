@@ -41,12 +41,14 @@ static GTextInfo *AvailableRanges(SplineFont *sf,EncMap *map) {
     int i, cnt, ch, pos;
 
     for ( i=cnt=0; unicoderange[i].name!=NULL; ++i ) {
-	ch = unicoderange[i].defined==-1 ? unicoderange[i].first : unicoderange[i].defined;
-	pos = SFFindSlot(sf,map,ch,NULL);
-	if ( pos!=-1 ) {
-	    ret[cnt].text = (unichar_t *) _(unicoderange[i].name);
-	    ret[cnt].text_is_1byte = true;
-	    ret[cnt++].userdata = (void *) (intpt) pos;
+	if ( unicoderange[i].display ) {
+	    ch = unicoderange[i].defined==-1 ? unicoderange[i].first : unicoderange[i].defined;
+	    pos = SFFindSlot(sf,map,ch,NULL);
+	    if ( pos!=-1 ) {
+	        ret[cnt].text = (unichar_t *) _(unicoderange[i].name);
+	        ret[cnt].text_is_1byte = true;
+	        ret[cnt++].userdata = (void *) (intpt) pos;
+	    }
 	}
     }
     qsort(ret,cnt,sizeof(GTextInfo),alpha);

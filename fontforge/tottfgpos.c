@@ -104,7 +104,7 @@ static uint32 scripts[][15] = {
 /* Mathematical Alphanumeric Symbols */
 		{ CHR('m','a','t','h'), 0x1d400, 0x1d7ff },
 /* Mongolian */	{ CHR('m','o','n','g'), 0x1800, 0x18af },
-/* Musical */	{ CHR('m','u','s','i'), 0x1d100, 0x1d1ff },
+/* Musical */	{ CHR('m','u','s','c'), 0x1d100, 0x1d1ff },
 /* Myanmar */	{ CHR('m','y','m','r'), 0x1000, 0x107f },
 /* New Tai Lue*/{ CHR('t','a','l','u'), 0 },
 /* N'Ko */	{ CHR('n','k','o',' '), 0x07c0, 0x07fa },
@@ -191,7 +191,7 @@ uint32 ScriptFromUnicode(int u,SplineFont *sf) {
 		else if ( script == CHR('g','u','j','r' )) script = CHR('g','j','r','2');
 		else if ( script == CHR('g','u','r','u' )) script = CHR('g','u','r','2');
 		else if ( script == CHR('k','n','d','a' )) script = CHR('k','n','d','2');
-		else if ( script == CHR('m','l','y','m' )) script = CHR('m','l','y','2');
+		else if ( script == CHR('m','l','y','m' )) script = CHR('m','l','m','2');
 		else if ( script == CHR('o','r','y','a' )) script = CHR('o','r','y','2');
 		else if ( script == CHR('t','a','m','l' )) script = CHR('t','m','l','2');
 		else if ( script == CHR('t','e','l','u' )) script = CHR('t','e','l','2');

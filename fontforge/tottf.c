@@ -359,7 +359,13 @@ const char *ttfstandardnames[258] = {
 "ccaron",
 "dcroat"
 };
-
+/* Relates Unicode blocks as in 
+ 	http://unicode.org/Public/UNIDATA/Blocks.txt
+   to bit positions in the OpenType standard Unicode Character Range
+   field 'ulUnicodeRange'.
+   Note that the OpenType standard specifies bits for a subset
+   of the Unicode blocks.
+ */
 static int uniranges[][3] = {
     { 0x20, 0x7e, 0 },		/* Basic Latin */
     { 0xa0, 0xff, 1 },		/* Latin-1 Supplement */
@@ -368,13 +374,17 @@ static int uniranges[][3] = {
     { 0x250, 0x2af, 4 },	/* IPA Extensions */
     { 0x2b0, 0x2ff, 5 },	/* Spacing Modifier Letters */
     { 0x300, 0x36f, 6 },	/* Combining Diacritical Marks */
-    { 0x370, 0x3ff, 7 },	/* Greek */
+    { 0x370, 0x3ff, 7 },	/* Greek and Coptic */
     { 0x400, 0x52f, 9 },	/* Cyrillic / Cyrillic Supplement */
     { 0x530, 0x58f, 10 },	/* Armenian */
     { 0x590, 0x5ff, 11 },	/* Hebrew */
     { 0x600, 0x6ff, 13 },	/* Arabic */
     { 0x700, 0x74f, 71 },	/* Syriac */
+    { 0x750, 0x77f, 13 },	/* Arabic Supplement */
     { 0x780, 0x7bf, 72 },	/* Thaana */
+    { 0x7c0, 0x7ff, 14 },	/* N'Ko */
+    /* { 0x800, 0x83f, ? },	 Samaritan */
+    /* { 0x840, 0x85f, ? },	 Mandaic */
     { 0x900, 0x97f, 15 },	/* Devanagari */
     { 0x980, 0x9ff, 16 },	/* Bengali */
     { 0xa00, 0xa7f, 17 },	/* Gurmukhi */
@@ -392,17 +402,31 @@ static int uniranges[][3] = {
     { 0x10a0, 0x10ff, 26 },	/* Georgian */
     { 0x1100, 0x11ff, 28 },	/* Hangul Jamo */
     { 0x1200, 0x137f, 75 },	/* Ethiopic */
+    { 0x1380, 0x139f, 75 },	/* Ethiopic Supplement */
     { 0x13a0, 0x13ff, 76 },	/* Cherokee */
     { 0x1400, 0x167f, 77 },	/* Unified Canadian Aboriginal Symbols */
     { 0x1680, 0x169f, 78 },	/* Ogham */
     { 0x16a0, 0x16ff, 79 },	/* Runic */
-    { 0x1700, 0x177f, 84 },	/* Tagalog / Harunoo / Buhid / Tagbanwa */
+    { 0x1700, 0x1714, 84 },	/* Tagalog */
+    { 0x1720, 0x1736, 84 },	/* Harunoo */
+    { 0x1740, 0x1753, 84 },	/* Buhid */
+    { 0x1750, 0x1773, 84 },	/* Tagbanwa */
     { 0x1780, 0x17ff, 80 },	/* Khmer */
     { 0x1800, 0x18af, 81 },	/* Mongolian */
-    /* { 0x1900, 0x194f, },	   Limbu */
-    /* { 0x1950, 0x197f, },	   Tai le */
-    /* { 0x19e0, 0x19ff, },	   Khmer Symbols */
-    /* { 0x1d00, 0x1d7f, },	   Phonetic Extensions */
+    { 0x18B0, 0x18f5, 77 },	/* Unified Canadian Aboriginal Symbols Extended */
+    { 0x1900, 0x194f, 93 },	/* Limbu */
+    { 0x1950, 0x197f, 94 },	/* Tai Le */
+    { 0x1980, 0x19DF, 95 },	/* New Tai Lue */
+    { 0x19e0, 0x19ff, 80 },	/* Khmer Symbols */
+    { 0x1A00, 0x1A1F, 96 },	/* Buginese */
+    { 0x1B00, 0x1B7f, 27 },	/* Balinese */
+    { 0x1B80, 0x1BB9, 112 },	/* Sudanese */
+    /*{ 0x1bc0, 0x1bff, ? },	 Batak */
+    { 0x1C00, 0x1C4F, 113 },	/* Lepcha */
+    { 0x1C50, 0x1C7F, 114 },	/* Ol Chiki */
+    /*{ 0x1cd0, 0x1cff, ? },	 Vedic Extensions */
+    { 0x1d00, 0x1dbf, 4 },	/* Phonetic Extensions & Supplement */
+    { 0x1d80, 0x1dff, 6 },	/* Combining Diacritical Marks Supplement */
     { 0x1e00, 0x1eff, 29 },	/* Latin Extended Additional */
     { 0x1f00, 0x1fff, 30 },	/* Greek Extended */
     { 0x2000, 0x206f, 31 },	/* General Punctuation */
@@ -428,6 +452,15 @@ static int uniranges[][3] = {
     { 0x2900, 0x297f, 37 },	/* Supplementary Arrows-B */
     { 0x2980, 0x2aff, 38 },	/* Miscellaneous Mathematical Symbols-B /
 				   Supplemental Mathematical Operators */
+    { 0x2b00, 0x2bff, 37 },	/* Miscellaneous Symbols and Arrows */
+    { 0x2C00, 0x2C5E, 97 },	/* Glagolitic */
+    { 0x2c60, 0x2c7f, 29 },	/* Latin Extended-C */
+    { 0x2c80, 0x2cff, 8 },	/* Coptic */
+    { 0x2D00, 0x2D25, 26 },	/* Georgian Supplement */
+    { 0x2D30, 0x2D6F, 98 },	/* Tifinagh */
+    { 0x2d80, 0x2ddf, 75 },	/* Ethiopic Extended */
+    { 0x2de0, 0x2dff, 9 },	/* Cyrillic Extended-A */
+    { 0x2e00, 0x2e7f, 31 },	/* Supplemental Punctuation */
     { 0x2e80, 0x2fff, 59 },	/* CJK Radicals Supplement / Kangxi Radicals /
 				   Ideographic Description Characters */
     { 0x3000, 0x303f, 48 },	/* CJK Symbols and Punctuation */
@@ -441,10 +474,31 @@ static int uniranges[][3] = {
     { 0x3200, 0x32ff, 54 },	/* Enclosed CJK Letters and Months */
     { 0x3300, 0x33ff, 55 },	/* CJK compatability */
     { 0x3400, 0x4dbf, 59 },	/* CJK Unified Ideographs Extension A */
-    /* { 0x4dc0, 0x4dff, },	   Yijing Hexagram Symbols */
+    { 0x4dc0, 0x4dff, 99 },	/* Yijing Hexagram Symbols */
     { 0x4e00, 0x9fff, 59 },	/* CJK Unified Ideographs */
     { 0xa000, 0xa4cf, 81 },	/* Yi Syllables / Yi Radicals */
-    { 0xac00, 0xd7af, 56 },	/* Hangul */
+    /*{ 0xA4d0, 0xA4ff, ? },	 Lisu */
+    { 0xA500, 0xA62b, 12 },	/* Vai */
+    { 0xa640, 0xa69f, 9 },	/* Cyrillic Extended-B */
+    /*{ 0xa6a0, 0xa6ff, ? },	 Bamum */
+    { 0xa700, 0xa71f, 5 },	/* Modifier Tone Letters */
+    { 0xa720, 0xa7ff, 29 },	/* Latin Extended-D */
+    { 0xA800, 0xA82F, 100 },	/* Syloti Nagri */
+    /*{ 0xa830, 0xa83f, ? },	 Common Indic Number Forms */
+    { 0xa840, 0xa87f, 53 },	/* Phags-pa */
+    { 0xA880, 0xA8D9, 115 },	/* Saurashtra */
+    /*{ 0xA8E0, 0xA8FF, ? },	 Devanagari Extended */
+    { 0xA900, 0xA92F, 116 },	/* Kayah Li */
+    { 0xA930, 0xA95F, 117 },	/* Rejang */
+    /*{ 0xA960, 0xA97F, 28? },	 Hangul Jamo Extended-A */
+    /*{ 0xA980, 0xA9DF, ? },	 Javanese */
+    { 0xAA00, 0xAA5F, 118 },	/* Cham */
+    /*{ 0xAA60, 0xAA7F, 74? },	 Myanmar Extended-A */
+    /*{ 0xAA80, 0xAADF, ? },	 Tai Viet */
+    /*{ 0xab00, 0xab2f, 75? },	 Ethiopic Extended-A */
+    /*{ 0xabc0, 0xabff, ? },	 Meetei Mayek */
+    { 0xac00, 0xd7af, 56 },	/* Hangul Syllables */
+    { 0xd800, 0xdfff, 57 },	/* Non-Plane 0 */
     { 0xe000, 0xf8ff, 60 },	/* Private Use Area */
 
     { 0xf900, 0xfaff, 61 },	/* CJK Compatibility Ideographs */
@@ -475,19 +529,55 @@ static int uniranges[][3] = {
     { 0xff00, 0xffef, 68 },	/* Halfwidth and Fullwidth Forms */
     { 0xfff0, 0xffff, 69 },	/* Specials */
 
-    /* { 0x10000, 0x1007f, },   Linear B Syllabary */
-    /* { 0x10080, 0x100ff, },   Linear B Ideograms */
-    /* { 0x10100, 0x1013f, },   Aegean Numbers */
+    { 0x10000, 0x1007f, 101 },	/* Linear B Syllabary */
+    { 0x10080, 0x100ff, 101 },	/* Linear B Ideograms */
+    { 0x10100, 0x1013f, 101 },	/* Aegean Numbers */
+    { 0x10140, 0x1018F, 102 },	/* Ancient Greek Numbers */
+    { 0x10190, 0x101CF, 119 },	/* Ancient Symbols */
+    { 0x101D0, 0x101FF, 120 },	/* Phaistos Disc */
+    { 0x102A0, 0x102D0, 121 },	/* Carian */
+    { 0x10280, 0x1029C, 121 },	/* Lycian */
     { 0x10300, 0x1032f, 85 },	/* Old Italic */
     { 0x10330, 0x1034f, 86 },	/* Gothic */
+    { 0x10380, 0x1039F, 103 },	/* Ugaritic */
+    { 0x103A0, 0x103D6, 104 },	/* Old Persian */
     { 0x10400, 0x1044f, 87 },	/* Deseret */
-    /* { 0x10450, 0x1047f, },   Shavian */
-    /* { 0x10480, 0x104af, },   Osmanya */
-    /* { 0x10800, 0x1083f, },   Cypriot Syllabary */
+    { 0x10450, 0x1047f, 105 },	/* Shavian */
+    { 0x10480, 0x104af, 106 },	/* Osmanya */
+    { 0x10800, 0x1083f, 107 },	/* Cypriot Syllabary */
+    /*{ 0x10840, 0x1085f, ? },	 Imperial Aramaic */
+    { 0x10900, 0x1091f, 58 },	/* Phoenician */
+    { 0x10920, 0x10939, 121 },	/* Lydian */
+    { 0x10A00, 0x10A5F, 108 },	/* Kharoshthi */
+    /*{ 0x10A60, 0x10A7F, ? },	 Old South Arabian */
+    /*{ 0x10B00, 0x10B3F, ? },	 Avestan */
+    /*{ 0x10B40, 0x10B5F, ? },	 Inscriptional Parthian */
+    /*{ 0x10B60, 0x10B7F, ? },	 Inscriptional Pahlavi */
+    /*{ 0x10C00, 0x10C4F, ? },	 Old Turkic */
+    /*{ 0x10E60, 0x10E7F, ? },	 Rumi Numeral Symbols */
+    /*{ 0x11000, 0x1107F, ? },	 Brahmi */
+    /*{ 0x11000, 0x1107F, ? },	 Kaithi */
+    { 0x12000, 0x1247F, 110 },	/* Cuneiform; Numbers & Punctuation */
+    /*{ 0x13000, 0x1342F, ? },	 Egyptian Hieroglyphs */
+    /*{ 0x16800, 0x16A3F, ? },	 Bamum Supplement */
+    /*{ 0x1B000, 0x1B0FF, ? },	 Kana Supplement */
     { 0x1d000, 0x1d1ff, 88 },	/* Byzantine Musical Symbols / Musical Symbols */
-    /* { 0x1d300, 0x1d35f, },   Tai Xuan Jing Symbols */
+    /*{ 0x1D200, 0x1D24F, ? },	 Ancient Greek Musical Notation */
+    { 0x1d300, 0x1d35f, 109 },	/* Tai Xuan Jing Symbols */
+    { 0x1D360, 0x1D37F, 111 },	/* Counting Rod Numerals */
     { 0x1d400, 0x1d7ff, 89 },	/* Mathematical Alphanumeric Symbols */
+    { 0x1F000, 0x1F02B, 122 },	/* Mahjong Tiles */
+    { 0x1F030, 0x1F093, 122 },	/* Dominos */
+    /*{ 0x1F0A0, 0x1F0FF, ? },	 Playing Cards */
+    /*{ 0x1F100, 0x1F1FF, ? },	 Enclosed Alphanumeric Supplement */
+    /*{ 0x1F200, 0x1F2FF, ? },	 Enclosed Ideographic Supplement */
+    /*{ 0x1F300, 0x1F5FF, ? },	 Miscellaneous Symbols And Pictographs */
+    /*{ 0x1F600, 0x1F64F, ? },	 Emoticons */
+    /*{ 0x1F680, 0x1F6FF, ? },	 Transport And Map Symbols */
+    /*{ 0x1F700, 0x1F77F, ? },	 Alchemical Symbols */
     { 0x20000, 0x2a6df, 59 },	/* CJK Unified Ideographs Extension B */
+    /*{ 0x2A700, 0x2B73F, 59? },	CJK Unified Ideographs Extension C */
+    /*{ 0x2B740, 0x2B81F, 59? },	CJK Unified Ideographs Extension D */
     { 0x2f800, 0x2fa1f, 61 },	/* CJK Compatibility Ideographs Supplement */
     { 0xe0000, 0xe007f, 92 },	/* Tags */
     { 0xe0100, 0xe01ef, 91 },	/* Variation Selectors Supplement */
