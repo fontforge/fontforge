@@ -1370,10 +1370,10 @@ static struct {
     { N_("Script|Mandaean"), CHR('m','a','n','d') },
 /*  { N_("Mayan hieroglyphs"), CHR('m','a','y','a') },*/
     { NU_("Script|Malayālam"), CHR('m','l','y','m') },
-    { NU_("Script|Malayālam2"), CHR('m','l','y','2') },
+    { NU_("Script|Malayālam2"), CHR('m','l','m','2') },
     { NU_("Mathematical Alphanumeric Symbols"), CHR('m','a','t','h') },
     { N_("Script|Mongolian"), CHR('m','o','n','g') },
-    { N_("Musical"), CHR('m','u','s','i') },
+    { N_("Musical"), CHR('m','u','s','c') },
     { N_("Script|Myanmar"), CHR('m','y','m','r') },
     { N_("New Tai Lue"), CHR('t','a','l','u') },
     { N_("N'Ko"), CHR('n','k','o',' ') },
