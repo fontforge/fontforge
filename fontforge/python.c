@@ -6479,7 +6479,7 @@ static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self,PyObject *value,void
 return( -1 );
 	if ( self->sc->vert_variants == NULL )
 	    self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->vert_variants->variants = str;
+	self->sc->vert_variants->variants = copy(str);
     }
 return( 0 );
 }
@@ -6505,7 +6505,7 @@ static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self,PyObject *value,vo
 return( -1 );
 	if ( self->sc->horiz_variants == NULL )
 	    self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->horiz_variants->variants = str;
+	self->sc->horiz_variants->variants = copy(str);
     }
 return( 0 );
 }
