@@ -168,7 +168,7 @@ static char *cornernames[] = {
     N_("Top Right"),
     N_("Top Left"),
     N_("Bottom Right"),
-    N_("Bottom Right"),
+    N_("Bottom Left"),
     NULL
 };
 
