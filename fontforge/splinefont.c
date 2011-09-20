@@ -1698,7 +1698,7 @@ static bigreal SFStandardHeight(SplineFont *sf, int layer, int do_max, unichar_t
 	}
 	result = test/tot;
     } else if ( ccnt==0 )
-return( -1e23 );		/* We didn't find any glyphs */
+return( do_max ? -1e23 : 1e23 );		/* We didn't find any glyphs */
     else {
 	/* Italic fonts will often have no flat surfaces for x-height just wavies */
 	test = 0;
