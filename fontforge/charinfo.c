@@ -3021,7 +3021,7 @@ return( NULL );
 			me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
 	    }
 	}
-	xoffset = 1 - minx + me->width + kern - other->xmin + rint(old[cols*ci->r+PAIR_DX2+coff2].u.md_ival*scale);
+	xoffset = 1 - minx + me->width + kern - rint(old[cols*ci->r+PAIR_DX2+coff2].u.md_ival*scale);
 	yoffset = 1 + maxy - rint(old[cols*ci->r+PAIR_DY2+coff2].u.md_ival*scale);
 	for ( y=other->ymin; y<=other->ymax; ++y ) {
 	    for ( x=other->xmin; x<=other->xmax; ++x ) {
