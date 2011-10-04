@@ -1111,7 +1111,9 @@ return( true );
 
 void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
     RefChar *refs, *prev, *next;
-    int layer;
+    KernPair *kp, *kprev, *knext;
+    SplineFont *cidmaster = sf, *ksf;
+    int layer, isv, l;
 
     for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
 	for ( prev=NULL, refs = sc->layers[layer].refs ; refs!=NULL; refs = next ) {
@@ -1128,6 +1130,38 @@ void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
 		else
 		    prev->next = next;
 		RefCharFree(refs);
+	    }
+	}
+    }
+    /* Fixup kerning pairs as well */
+    for ( isv=0; isv<2; ++isv ) {
+	for ( kprev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=knext ) {
+	    int index = (intpt) (kp->sc);
+	    knext = kp->next;
+	    kp->kcid = false;
+	    ksf = sf;
+	    if ( cidmaster!=sf ) {
+		for ( l=0; l<cidmaster->subfontcnt; ++l ) {
+		    ksf = cidmaster->subfonts[l];
+		    if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
+	    break;
+		}
+	    }
+	    if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
+		IError( "Bad kerning information in glyph %s\n", sc->name );
+		kp->sc = NULL;
+	    } else
+		kp->sc = ksf->glyphs[index];
+	    if ( kp->sc!=NULL )
+		kprev = kp;
+	    else{
+		if ( kprev!=NULL )
+		    kprev->next = knext;
+		else if ( isv )
+		    sc->vkerns = knext;
+		else
+		    sc->kerns = knext;
+		chunkfree(kp,sizeof(KernPair));
 	    }
 	}
     }
