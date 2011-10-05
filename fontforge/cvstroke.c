@@ -1857,6 +1857,13 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
 	CVPalettesHideIfMine(cv);
     }
     GDrawDestroyWindow(gdd.gw);
+    /* Now because the cv of the nested window is on the stack, we need to */
+    /*  handle its destruction HERE while that stack location still makes */
+    /*  sense. Can't do it in whoever calls us */
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
 return( gdd.active );
 }
 
