@@ -4034,12 +4034,16 @@ return;
     /* p.sp and cv->p.sp may correspond to different undo states, thus being */
     /* different objects even while describing essentially the same point. */
     /* So compare point coordinates rather than the points themselves */
-    if ( cv->p.nextcp && p.sp!=NULL && cv->p.sp != NULL &&
-	p.sp->me.x == cv->p.sp->me.x && p.sp->me.y == cv->p.sp->me.y ) {
+    if ( (cv->p.nextcp || cv->p.prevcp) && p.nextcp &&
+	    p.sp!=NULL && cv->p.sp != NULL &&
+	    p.sp->me.x == cv->p.sp->me.x && p.sp->me.y == cv->p.sp->me.y ) {
+	/* If either control point selected, then snap to it or its brother */
+	/*  when close */
 	p.cx = p.sp->nextcp.x;
 	p.cy = p.sp->nextcp.y;
-    } else if ( cv->p.prevcp && p.sp!=NULL && cv->p.sp != NULL &&
-	p.sp->me.x == cv->p.sp->me.x && p.sp->me.y == cv->p.sp->me.y ) {
+    } else if (( cv->p.nextcp || cv->p.prevcp) && p.prevcp &&
+	    p.sp!=NULL && cv->p.sp != NULL &&
+	    p.sp->me.x == cv->p.sp->me.x && p.sp->me.y == cv->p.sp->me.y ) {
 	p.cx = p.sp->prevcp.x;
 	p.cy = p.sp->prevcp.y;
     } else if ( p.sp!=NULL && p.sp!=cv->active_sp ) {		/* Snap to points */
