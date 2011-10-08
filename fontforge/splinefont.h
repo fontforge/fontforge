@@ -2282,6 +2282,7 @@ extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base);
 extern ImageList *ImageListCopy(ImageList *cimg);
 extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
+extern void BpTransform(BasePoint *to, BasePoint *from, real transform[6]);
 extern void ApTransform(AnchorPoint *ap, real transform[6]);
 /* The order of the enum elements below doesn't make much sense, but it's done*/
 /*  this way to preserve binary compatibility */
@@ -2775,6 +2776,7 @@ extern int UnblendedCompare(real u1[MmMax], real u2[MmMax], int cnt);
 extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name);
 extern void MatMultiply(real m1[6], real m2[6], real to[6]);
+extern int MatIsIdentity(real transform[6]);
 
 extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
 extern void GlyphHashFree(SplineFont *sf);
@@ -3212,12 +3214,12 @@ extern char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***freq);
 
 extern int SSHasClip(SplineSet *ss);
 extern int SSHasDrawn(SplineSet *ss);
-extern struct gradient *GradientCopy(struct gradient *old);
+extern struct gradient *GradientCopy(struct gradient *old,real transform[6]);
 extern void GradientFree(struct gradient *grad);
-extern struct pattern *PatternCopy(struct pattern *old);
+extern struct pattern *PatternCopy(struct pattern *old,real transform[6]);
 extern void PatternFree(struct pattern *pat);
-extern void BrushCopy(struct brush *into, struct brush *from);
-extern void PenCopy(struct pen *into, struct pen *from);
+extern void BrushCopy(struct brush *into, struct brush *from,real transform[6]);
+extern void PenCopy(struct pen *into, struct pen *from,real transform[6]);
 extern void PatternSCBounds(SplineChar *sc,DBounds *b);
 
 extern char *SFDefaultImage(SplineFont *sf,char *filename);

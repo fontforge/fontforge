@@ -2432,8 +2432,8 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
 	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
 	    if ( e->u.splines.fill.grad==NULL && e->u.splines.fill.tile==NULL &&
 		    e->u.splines.fill.col == COLOR_INHERITED ) {
-		e->u.splines.fill.grad = GradientCopy(grad);
-		/*e->u.splines.fill.tile = EPatternCopy(epat);*/
+		e->u.splines.fill.grad = GradientCopy(grad,NULL);
+		/*e->u.splines.fill.tile = EPatternCopy(epat,NULL);*/
 	    }
 	}
 	GradientFree(grad);
@@ -2446,8 +2446,8 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
 	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
 	    if ( e->u.splines.stroke.grad==NULL && e->u.splines.stroke.tile==NULL &&
 		    e->u.splines.stroke.col == COLOR_INHERITED ) {
-		e->u.splines.stroke.grad = GradientCopy(grad);
-		/*e->u.splines.stroke.tile = EPatternCopy(epat);*/
+		e->u.splines.stroke.grad = GradientCopy(grad,NULL);
+		/*e->u.splines.stroke.tile = EPatternCopy(epat,NULL);*/
 	    }
 	}
 	GradientFree(grad);

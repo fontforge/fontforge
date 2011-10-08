@@ -28,6 +28,8 @@ enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_pdf, pt_unknown=-1 };
 extern int pagewidth, pageheight;
 extern char *printlazyprinter;
 extern char *printcommand;
+#include "baseviews.h"
+
 extern int printtype;
 extern int use_gv;
 
@@ -106,3 +108,7 @@ extern struct printdefaults {
 extern void PI_Init(PI *pi,FontViewBase *fv,SplineChar *sc);
 extern void DoPrinting(PI *pi,char *filename);
 extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);
+#ifdef FONTFORGE_CONFIG_TYPE3
+extern void makePatName(char *buffer,
+	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad);
+#endif

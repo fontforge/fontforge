@@ -42,6 +42,7 @@
 #include "splinefont.h"
 #ifdef FONTFORGE_CONFIG_TYPE3
  #include <gdraw.h>		/* For image defn */
+ #include "print.h"		/* For makePatName */
 #endif
 
 #ifdef __CygWin
@@ -528,13 +529,13 @@ return( true );
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
-	struct gradient *grad, SplineChar *sc, int layer, int pdfopers, int isstroke ) {
+	struct gradient *grad, RefChar *ref, SplineChar *sc, int layer, int pdfopers, int isstroke ) {
 
     if ( pdfopers ) {
+	char buffer[200];
 	dumpf(dumpchar,data,"/Pattern %s\n", isstroke ? "CS" : "cs" );
-	dumpf(dumpchar,data,"/%s_ly%d_%s_grad %s\n", sc->name, layer,
-		    isstroke ? "stroke":"fill",
-		    isstroke ? "SCN" : "scn" );
+	makePatName(buffer,ref,sc,layer,isstroke,true);
+	dumpf(dumpchar,data,"/%s %s\n", buffer, isstroke ? "SCN" : "scn" );
 	/* PDF output looks much simpler than postscript. It isn't. It's just */
 	/*  that the equivalent pdf dictionaries need to be created as objects*/
 	/*  and can't live in the content stream, so they are done elsewhere */
@@ -613,16 +614,16 @@ static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpPattern(void (*dumpchar)(int ch,void *data), void *data,
-	struct pattern *pat, SplineChar *sc, int layer, int pdfopers, int isstroke ) {
+	struct pattern *pat, RefChar *ref, SplineChar *sc, int layer, int pdfopers, int isstroke ) {
     SplineChar *pattern_sc = SFGetChar(sc->parent,-1,pat->pattern);
     DBounds b;
     real scale[6], result[6];
 
     if ( pdfopers ) {
+	char buffer[200];
 	dumpf(dumpchar,data,"/Pattern %s\n", isstroke ? "CS" : "cs" );
-	dumpf(dumpchar,data,"/%s_ly%d_%s_pattern %s\n", sc->name, layer,
-		    isstroke ? "stroke":"fill",
-		    isstroke ? "SCN" : "scn" );
+	makePatName(buffer,ref,sc,layer,isstroke,false);
+	dumpf(dumpchar,data,"/%s %s\n", buffer, isstroke ? "SCN" : "scn" );
 	/* PDF output looks much simpler than postscript. It isn't. It's just */
 	/*  that the equivalent pdf dictionaries need to be created as objects*/
 	/*  and can't live in the content stream, so they are done elsewhere */
@@ -652,11 +653,11 @@ static void dumpPattern(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
-	struct brush *brush, SplineChar *sc, int layer, int pdfopers ) {
+	struct brush *brush, RefChar *ref, SplineChar *sc, int layer, int pdfopers ) {
     if ( brush->gradient!=NULL )
-	dumpGradient(dumpchar,data,brush->gradient,sc,layer,pdfopers,false);
+	dumpGradient(dumpchar,data,brush->gradient,ref,sc,layer,pdfopers,false);
     else if ( brush->pattern!=NULL )
-	dumpPattern(dumpchar,data,brush->pattern,sc,layer,pdfopers,false);
+	dumpPattern(dumpchar,data,brush->pattern,ref,sc,layer,pdfopers,false);
     else if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
@@ -667,16 +668,18 @@ static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
 	else
 	    dumpf(dumpchar,data,(pdfopers ? "%g %g %g rg\n" : "%g %g %g setrgbcolor\n"),
 		    r/255.0, g/255.0, b/255.0 );
+	if ( pdfopers && brush->opacity<1.0 && brush->opacity>=0 )
+	    dumpf(dumpchar,data,"/gs_fill_opacity_%g gs\n", brush->opacity );
     }
 }
 
 /* Grumble. PDF uses different operators for colors for stroke and fill */
 static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
-	struct brush *brush, SplineChar *sc, int layer, int pdfopers ) {
+	struct brush *brush, RefChar *ref, SplineChar *sc, int layer, int pdfopers ) {
     if ( brush->gradient!=NULL )
-	dumpGradient(dumpchar,data,brush->gradient,sc,layer,pdfopers,true);
+	dumpGradient(dumpchar,data,brush->gradient,ref,sc,layer,pdfopers,true);
     else if ( brush->pattern!=NULL )
-	dumpPattern(dumpchar,data,brush->pattern,sc,layer,pdfopers,true);
+	dumpPattern(dumpchar,data,brush->pattern,ref,sc,layer,pdfopers,true);
     else if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
@@ -687,12 +690,14 @@ static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
 	else
 	    dumpf(dumpchar,data,(pdfopers ? "%g %g %g RG\n" : "%g %g %g setrgbcolor\n"),
 		    r/255.0, g/255.0, b/255.0 );
+	if ( pdfopers && brush->opacity<1.0 && brush->opacity>=0 )
+	    dumpf(dumpchar,data,"/gs_stroke_opacity_%g gs\n", brush->opacity );
     }
 }
 
 static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
-	struct pen *pen, SplineChar *sc, int layer, int pdfopers) {
-    dumppenbrush(dumpchar,data,&pen->brush,sc,layer,pdfopers);
+	struct pen *pen, RefChar *ref, SplineChar *sc, int layer, int pdfopers) {
+    dumppenbrush(dumpchar,data,&pen->brush,ref,sc,layer,pdfopers);
 
     if ( pen->width!=WIDTH_INHERITED )
 	dumpf(dumpchar,data,(pdfopers ? "%g w\n": "%g setlinewidth\n"), pen->width );
@@ -701,7 +706,7 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
     if ( pen->linecap!=lc_inherited )
 	dumpf(dumpchar,data,(pdfopers ? "%d J\n": "%d setlinecap\n"), pen->linecap );
     if ( pen->trans[0]!=1.0 || pen->trans[3]!=1.0 || pen->trans[1]!=0 || pen->trans[2]!=0 )
-	dumpf(dumpchar,data,(pdfopers ? "[%g %g %g %g 0 0] cm\n" : "[%g %g %g %g 0 0] concat\n"),
+	dumpf(dumpchar,data,(pdfopers ? "%g %g %g %g 0 0 cm\n" : "[%g %g %g %g 0 0] concat\n"),
 		(double) pen->trans[0], (double) pen->trans[1], (double) pen->trans[2], (double) pen->trans[3]);
     if ( pen->dashes[0]!=0 || pen->dashes[1]!=DASH_INHERITED ) {
 	int i;
@@ -988,7 +993,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	SplineChar *sc, int refs_to_splines, int pdfopers, int layer ) {
     RefChar *ref;
     real inverse[6];
-    int i,j, last, first;
+    int i, j, last, first;
     SplineSet *temp;
 
     if ( sc==NULL )
@@ -1016,27 +1021,27 @@ return;
 			false);
 		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
 		    if ( pdfopers ) {
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,sc,i,pdfopers);
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,sc,i,pdfopers);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,sc,i,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,sc,i,pdfopers);
 			dumpstr(dumpchar,data, "B " );
 		    } else if ( sc->layers[i].fillfirst ) {
 			dumpstr(dumpchar,data, "gsave " );
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,sc,i,pdfopers);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,sc,i,pdfopers);
 			dumpstr(dumpchar,data,"fill grestore " );
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,sc,i,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,sc,i,pdfopers);
 			dumpstr(dumpchar,data,"stroke " );
 		    } else {
 			dumpstr(dumpchar,data, "gsave " );
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,sc,i,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,sc,i,pdfopers);
 			dumpstr(dumpchar,data,"stroke grestore " );
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,sc,i,pdfopers);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,sc,i,pdfopers);
 			dumpstr(dumpchar,data,"fill " );
 		    }
 		} else if ( sc->layers[i].dofill ) {
-		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,sc,i,pdfopers);
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,sc,i,pdfopers);
 		    dumpstr(dumpchar,data,pdfopers ? "f ": "fill " );
 		} else if ( sc->layers[i].dostroke ) {
-		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen,sc,i,pdfopers);
+		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,sc,i,pdfopers);
 		    dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 		}
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
@@ -1051,50 +1056,52 @@ return;
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
 		if ( sc->layers[i].dofill )
-		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, sc, i, pdfopers);
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, NULL, sc, i, pdfopers);
 	    }
 #endif
 	    if ( refs_to_splines ) {
-		for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
-		    for ( j=0; j<ref->layer_cnt; ++j ) {
-			temp = ref->layers[j].splines;
-			if ( sc->layers[i].order2 ) temp = SplineSetsPSApprox(temp);
-#ifdef FONTFORGE_CONFIG_TYPE3
-			if ( sc->parent->multilayer ) {
+		if ( !pdfopers || !sc->parent->multilayer ) {
+		    /* In PostScript, patterns are transformed by the page's */
+		    /*  transformation matrix. In PDF they are not. */
+		    /* Of course if we have no patterns we can still use this code */
+		    for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
+			dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
+			if ( !MatIsIdentity(ref->transform) ) {
+			    dumpf(dumpchar,data,pdfopers ? "%g %g %g %g %g %g cm " : "[%g %g %g %g %g %g] concat ",
+				    (double) ref->transform[0], (double) ref->transform[1], (double) ref->transform[2],
+				    (double) ref->transform[3], (double) ref->transform[4], (double) ref->transform[5]);
+			}
+			SC_PSDump(dumpchar,data,ref->sc,refs_to_splines,pdfopers,ly_all);
+			dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
+		    }
+		} else {
+		    /* If we get here we are outputting pdf, are type3, refs_2_splines */
+/*  We need different gradients and patterns for different transform */
+/*  matrices of references */
+		    for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
+			for ( j=0; j<ref->layer_cnt; ++j ) {
+			    temp = ref->layers[j].splines;
+			    /*if ( sc->layers[i].order2 )
+				temp = SplineSetsPSApprox(temp);*/
 			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
 			    dumpsplineset(dumpchar,data,temp,pdfopers,ref->layers[j].dofill,
 				    ref->layers[j].dostroke && ref->layers[j].stroke_pen.linecap==lc_round,
-				    false);
+			    false);
 			    if ( ref->layers[j].dofill && ref->layers[j].dostroke ) {
-				if ( pdfopers ) {
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
-				    dumpstr(dumpchar,data, "B " );
-				} else if ( ref->layers[j].fillfirst ) {
-				    dumpstr(dumpchar,data, "gsave " );
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
-				    dumpstr(dumpchar,data,"fill grestore " );
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
-				    dumpstr(dumpchar,data,"stroke " );
-				} else {
-				    dumpstr(dumpchar,data, "gsave " );
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
-				    dumpstr(dumpchar,data,"stroke grestore " );
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
-				    dumpstr(dumpchar,data,"fill " );
-				}
+				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref,ref->sc,j,pdfopers);
+				dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref,ref->sc,j,pdfopers);
+				dumpstr(dumpchar,data, "B " );
 			    } else if ( ref->layers[j].dofill ) {
-				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
+				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref,ref->sc,j,pdfopers);
 				dumpstr(dumpchar,data,pdfopers ? "f ": "fill " );
 			    } else if ( ref->layers[j].dostroke ) {
-				dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
+				dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref,ref->sc,j,pdfopers);
 				dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 			    }
 			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
-			} else
-#endif
-			    dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false,false);
-			if ( sc->layers[layer].order2 ) SplinePointListsFree(temp);
+			    /* if ( sc->layers[layer].order2 )
+				SplinePointListsFree(temp);*/
+			}
 		    }
 		}
 	    } else {
@@ -1135,7 +1142,7 @@ return;
 	if ( sc->layers[i].images!=NULL  ) { ImageList *img; int icnt=0;
 	    dumpstr(dumpchar,data,pdfopers ? "q\n" : "gsave\n" );
 	    if ( sc->layers[i].dofill )
-		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,i,pdfopers);
+		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,sc,i,pdfopers);
 	    for ( img = sc->layers[i].images; img!=NULL; img=img->next, ++icnt )
 		dumpimage(dumpchar,data,img,sc->layers[i].dofill,pdfopers,i,icnt,sc);
 	    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );

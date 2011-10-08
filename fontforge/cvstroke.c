@@ -2652,10 +2652,10 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     pos.height = GDrawPointsToPixels(NULL,LY_Height);
     ld.gw = gw = GDrawCreateTopWindow(NULL,&pos,layer_e_h,&ld,&wattrs);
 
-    ld.fillgrad = GradientCopy(layer->fill_brush.gradient);
-    ld.strokegrad = GradientCopy(layer->stroke_pen.brush.gradient);
-    ld.fillpat = PatternCopy(layer->fill_brush.pattern);
-    ld.strokepat = PatternCopy(layer->stroke_pen.brush.pattern);
+    ld.fillgrad = GradientCopy(layer->fill_brush.gradient,NULL);
+    ld.strokegrad = GradientCopy(layer->stroke_pen.brush.gradient,NULL);
+    ld.fillpat = PatternCopy(layer->fill_brush.pattern,NULL);
+    ld.strokepat = PatternCopy(layer->stroke_pen.brush.pattern,NULL);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));

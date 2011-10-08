@@ -159,6 +159,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     const char *author = GetAuthor();
     int i;
 
+    SFUntickAll(sc->parent);
     strcpy( oldloc,setlocale(LC_NUMERIC,NULL) );
     setlocale(LC_NUMERIC,"C");
 

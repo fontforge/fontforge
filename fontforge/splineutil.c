@@ -1749,7 +1749,7 @@ ImageList *ImageListTransform(ImageList *img, real transform[6]) {
 return( head );
 }
 
-static void BpTransform(BasePoint *to, BasePoint *from, real transform[6]) {
+void BpTransform(BasePoint *to, BasePoint *from, real transform[6]) {
     BasePoint p;
     p.x = transform[0]*from->x + transform[2]*from->y + transform[4];
     p.y = transform[1]*from->x + transform[3]*from->y + transform[5];
@@ -2242,8 +2242,8 @@ return;
 	}
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
 	    topref->layers[i-ly_fore+lbase].splines = SplinePointListTransform(SplinePointListCopy(rsc->layers[i].splines),transform,tpt_AllPoints);
-	    BrushCopy(&topref->layers[i-ly_fore+lbase].fill_brush, &rsc->layers[i].fill_brush);
-	    PenCopy(&topref->layers[i-ly_fore+lbase].stroke_pen, &rsc->layers[i].stroke_pen);
+	    BrushCopy(&topref->layers[i-ly_fore+lbase].fill_brush, &rsc->layers[i].fill_brush,transform);
+	    PenCopy(&topref->layers[i-ly_fore+lbase].stroke_pen, &rsc->layers[i].stroke_pen,transform);
 	    topref->layers[i-ly_fore+lbase].dofill = rsc->layers[i].dofill;
 	    topref->layers[i-ly_fore+lbase].dostroke = rsc->layers[i].dostroke;
 	    topref->layers[i-ly_fore+lbase].fillfirst = rsc->layers[i].fillfirst;
@@ -2966,9 +2966,9 @@ return( sf );
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void LayerToRefLayer(struct reflayer *rl,Layer *layer) {
-    BrushCopy(&rl->fill_brush, &layer->fill_brush);
-    PenCopy(&rl->stroke_pen, &layer->stroke_pen);
+static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6]) {
+    BrushCopy(&rl->fill_brush, &layer->fill_brush,transform);
+    PenCopy(&rl->stroke_pen, &layer->stroke_pen,transform);
     rl->dofill = layer->dofill;
     rl->dostroke = layer->dostroke;
     rl->fillfirst = layer->fillfirst;
@@ -3046,7 +3046,7 @@ return;
 		rf->layers[cnt].images =
 			ImageListTransform(
 			 ImageListCopy(rsc->layers[i].images),rf->transform);
-		LayerToRefLayer(&rf->layers[cnt],&rsc->layers[i]);
+		LayerToRefLayer(&rf->layers[cnt],&rsc->layers[i],rf->transform);
 		++cnt;
 	    }
 	    for ( subref=rsc->layers[i].refs; subref!=NULL; subref=subref->next ) {
@@ -3229,8 +3229,8 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 	    sc->layers[sc->layer_cnt+rlayer].refs = NULL;
 	    sc->layers[sc->layer_cnt+rlayer].undoes = NULL;
 	    sc->layers[sc->layer_cnt+rlayer].redoes = NULL;
-	    BrushCopy(&sc->layers[sc->layer_cnt+rlayer].fill_brush, &rf->layers[rlayer].fill_brush);
-	    PenCopy(&sc->layers[sc->layer_cnt+rlayer].stroke_pen, &rf->layers[rlayer].stroke_pen);
+	    BrushCopy(&sc->layers[sc->layer_cnt+rlayer].fill_brush, &rf->layers[rlayer].fill_brush,rf->transform);
+	    PenCopy(&sc->layers[sc->layer_cnt+rlayer].stroke_pen, &rf->layers[rlayer].stroke_pen,rf->transform);
 	    sc->layers[sc->layer_cnt+rlayer].dofill = rf->layers[rlayer].dofill;
 	    sc->layers[sc->layer_cnt+rlayer].dostroke = rf->layers[rlayer].dostroke;
 	    sc->layers[sc->layer_cnt+rlayer].fillfirst = rf->layers[rlayer].fillfirst;
@@ -6067,7 +6067,7 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
     }
 }
 
-struct pattern *PatternCopy(struct pattern *old) {
+struct pattern *PatternCopy(struct pattern *old, real transform[6]) {
     struct pattern *pat = chunkalloc(sizeof(struct pattern));
 
     if ( old==NULL )
@@ -6077,6 +6077,8 @@ return( NULL );
 
     *pat = *old;
     pat->pattern = copy( old->pattern );
+    if ( transform!=NULL )
+	MatMultiply(pat->transform,transform,pat->transform);
 return( pat );
 }
 
@@ -6087,7 +6089,7 @@ return;
     chunkfree(pat,sizeof(struct pattern));
 }
 
-struct gradient *GradientCopy(struct gradient *old) {
+struct gradient *GradientCopy(struct gradient *old,real transform[6]) {
     struct gradient *grad = chunkalloc(sizeof(struct gradient));
 
     if ( old==NULL )
@@ -6098,6 +6100,10 @@ return( NULL );
     *grad = *old;
     grad->grad_stops = galloc(old->stop_cnt*sizeof(struct grad_stops));
     memcpy(grad->grad_stops,old->grad_stops,old->stop_cnt*sizeof(struct grad_stops));
+    if ( transform!=NULL ) {
+	BpTransform(&grad->start,&grad->start,transform);
+	BpTransform(&grad->stop,&grad->stop,transform);
+    }
 return( grad );
 }
 
@@ -6108,16 +6114,16 @@ return;
     chunkfree(grad,sizeof(struct gradient));
 }
 
-void BrushCopy(struct brush *into, struct brush *from) {
+void BrushCopy(struct brush *into, struct brush *from, real transform[6]) {
     *into = *from;
-    into->gradient = GradientCopy(from->gradient);
-    into->pattern = PatternCopy(from->pattern);
+    into->gradient = GradientCopy(from->gradient,transform);
+    into->pattern = PatternCopy(from->pattern,transform);
 }
 
-void PenCopy(struct pen *into, struct pen *from) {
+void PenCopy(struct pen *into, struct pen *from,real transform[6]) {
     *into = *from;
-    into->brush.gradient = GradientCopy(from->brush.gradient);
-    into->brush.pattern = PatternCopy(from->brush.pattern);
+    into->brush.gradient = GradientCopy(from->brush.gradient,transform);
+    into->brush.pattern = PatternCopy(from->brush.pattern,transform);
 }
 
 void LayerFreeContents(SplineChar *sc,int layer) {
