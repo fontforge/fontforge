@@ -403,11 +403,36 @@ struct glyph_res {
     int image_cnt, image_max;
     char **image_names;
     int *image_objs;
+    int opacity_cnt, opacity_max;
+    struct opac_state { int isfill; float opacity; int obj; } *opac_state;
 };
 
 #ifdef FONTFORGE_CONFIG_TYPE3
+void makePatName(char *buffer,
+	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad) {
+    /* In PDF patterns (which include gradients) are fixed to the page. They */
+    /*  do not alter with the Current Transformation Matrix. So if we have */
+    /*  a reference to a glyph, then every reference to the same glyph will */
+    /*  need a different pattern description where that description involves */
+    /*  the reference's transform matrix */
+
+    if ( ref==NULL )
+	sprintf( buffer,"%s_ly%d_%s_%s", sc->name, layer,
+		    isstroke ? "stroke":"fill", isgrad ? "grad": "pattern" );
+    else {
+	/* PDF names are significant up to 127 chars long and can contain */
+	/*  all kinds of odd characters, just no spaces or slashes, so this */
+	/*  name should be legal */
+	sprintf( buffer,"%s_trans_%g,%g,%g,%g,%g,%g_ly%d_%s_%s", sc->name,
+		ref->transform[0], ref->transform[1], ref->transform[2],
+		ref->transform[3], ref->transform[4], ref->transform[5],
+		layer,
+		isstroke ? "stroke":"fill", isgrad ? "grad": "pattern" );
+    }
+}
+
 static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
-	int isfill,int layer,SplineChar *sc) {
+	int isfill,int layer,SplineChar *sc, RefChar *ref) {
     char buffer[400];
     int function_obj, shade_obj;
     int i,j;
@@ -494,7 +519,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	    gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
 	    gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
 	}
-	sprintf( buffer, "%s_ly%d_%s_grad", sc->name, layer, isfill?"fill":"stroke" );
+	makePatName(buffer,ref,sc,layer,!isfill,true);
 	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
 	gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
 	fprintf( pi->out, "<<\n" );
@@ -518,7 +543,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	    gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
 	    gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
 	}
-	sprintf( buffer, "%s_ly%d_%s_pattern", sc->name, layer, isfill?"fill":"stroke" );
+	makePatName(buffer,ref,sc,layer,!isfill,false);
 	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
 	gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
 	fprintf( pi->out, "<<\n" );
@@ -555,6 +580,30 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	fseek(pi->out,lenpos,SEEK_SET);
 	fprintf(pi->out,"%8d", len );
 	fseek(pi->out,0,SEEK_END);
+    }
+    if ( brush->opacity<1.0 && brush->opacity>=0 ) {
+	for ( i=gr->opacity_cnt-1; i>=0; --i ) {
+	    if ( brush->opacity==gr->opac_state[i].opacity && isfill==gr->opac_state[i].opacity )
+	break;	/* Already done */
+	}
+	if ( i==-1 ) {
+	    if ( gr->opacity_cnt>=gr->opacity_max ) {
+		gr->opac_state = grealloc(gr->opac_state,(gr->opacity_max+=100)*sizeof(struct opac_state));
+	    }
+	    gr->opac_state[gr->opacity_cnt].opacity = brush->opacity;
+	    gr->opac_state[gr->opacity_cnt].isfill  = isfill;
+	    gr->opac_state[gr->opacity_cnt].obj     = function_obj = pdf_addobject(pi);
+	    ++gr->opacity_cnt;
+	    fprintf( pi->out, "<<\n" );
+	    fprintf( pi->out, "  /Type /ExtGState\n" );
+	    if ( isfill )
+		fprintf( pi->out, "  /ca %g\n", brush->opacity );
+	    else
+		fprintf( pi->out, "  /CA %g\n", brush->opacity );
+	    fprintf( pi->out, "  /AIS false\n" );	/* alpha value */
+	    fprintf( pi->out, ">>\n" );
+	    fprintf( pi->out, "endobj\n\n" );
+	}
     }
 }
 
@@ -624,24 +673,30 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 }
 #endif
 
+/* We need different gradients and patterns for different transform */
+/*  matrices of references to the same glyph. Sigh. */
 int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     int resobj;
     struct glyph_res gr = { 0 };
     int i;
+
 #ifdef FONTFORGE_CONFIG_TYPE3
     int layer;
     RefChar *ref;
 
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	pdf_BrushCheck(pi,&gr,&sc->layers[layer].fill_brush,true,layer,sc);
-	pdf_BrushCheck(pi,&gr,&sc->layers[layer].stroke_pen.brush,false,layer,sc);
+	if ( sc->layers[layer].dofill )
+	    pdf_BrushCheck(pi,&gr,&sc->layers[layer].fill_brush,true,layer,sc,NULL);
+	if ( sc->layers[layer].dostroke )
+	    pdf_BrushCheck(pi,&gr,&sc->layers[layer].stroke_pen.brush,false,layer,sc,NULL);
 	pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,sc);
-	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( !ref->sc->ticked ) {
-	    ref->sc->ticked = true;
+	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	    for ( i=0; i<ref->layer_cnt; ++i ) {
-		pdf_BrushCheck(pi,&gr,&ref->layers[i].fill_brush,true,i,ref->sc);
-		pdf_BrushCheck(pi,&gr,&ref->layers[i].stroke_pen.brush,false,i,ref->sc);
-		pdf_ImageCheck(pi,&gr,ref->layers[layer].images,i,ref->sc);
+		if ( ref->layers[i].dofill )
+		    pdf_BrushCheck(pi,&gr,&ref->layers[i].fill_brush,true,i,ref->sc,ref);
+		if ( ref->layers[i].dostroke )
+		    pdf_BrushCheck(pi,&gr,&ref->layers[i].stroke_pen.brush,false,i,ref->sc,ref);
+		pdf_ImageCheck(pi,&gr,ref->layers[i].images,i,ref->sc);
 	    }
 	}
     }
@@ -666,6 +721,16 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
 	free(gr.image_names); free(gr.image_objs);
 	fprintf( pi->out, "  >>\n");
     }
+    if ( gr.opacity_cnt!=0 ) {
+	fprintf( pi->out, "  /ExtGState <<\n" );
+	for ( i=0; i<gr.opacity_cnt; ++i ) {
+	    fprintf( pi->out, "    /gs_%s_opacity_%g %d 0 R\n",
+		    gr.opac_state[i].isfill ? "fill" : "stroke",
+		    gr.opac_state[i].opacity, gr.opac_state[i].obj );
+	}
+	free(gr.opac_state);
+	fprintf( pi->out, "  >>\n");
+    }
     fprintf( pi->out, ">>\n" );
     fprintf( pi->out, "endobj\n\n" );
 return( resobj );
@@ -678,12 +743,24 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     int layer, gid;
     SplineChar *sc;
+    RefChar *ref;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    pdf_BrushCheck(pi,&gr,&sc->layers[layer].fill_brush,true,layer,sc);
-	    pdf_BrushCheck(pi,&gr,&sc->layers[layer].stroke_pen.brush,false,layer,sc);
+	    if ( sc->layers[layer].dofill )
+		pdf_BrushCheck(pi,&gr,&sc->layers[layer].fill_brush,true,layer,sc,NULL);
+	    if ( sc->layers[layer].dostroke )
+		pdf_BrushCheck(pi,&gr,&sc->layers[layer].stroke_pen.brush,false,layer,sc,NULL);
 	    pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,sc);
+	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+		for ( i=0; i<ref->layer_cnt; ++i ) {
+		    if ( ref->layers[i].dofill )
+			pdf_BrushCheck(pi,&gr,&ref->layers[i].fill_brush,true,i,ref->sc,ref);
+		    if ( ref->layers[i].dostroke )
+			pdf_BrushCheck(pi,&gr,&ref->layers[i].stroke_pen.brush,false,i,ref->sc,ref);
+		    pdf_ImageCheck(pi,&gr,ref->layers[layer].images,i,ref->sc);
+		}
+	    }
 	}
     }
 #endif
@@ -705,6 +782,16 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
 	    free(gr.image_names[i]);
 	}
 	free(gr.image_names); free(gr.image_objs);
+	fprintf( pi->out, "  >>\n");
+    }
+    if ( gr.opacity_cnt!=0 ) {
+	fprintf( pi->out, "  /ExtGState <<\n" );
+	for ( i=0; i<gr.opacity_cnt; ++i ) {
+	    fprintf( pi->out, "    /gs_%s_opacity_%g %d 0 R\n",
+		    gr.opac_state[i].isfill ? "fill" : "stroke",
+		    gr.opac_state[i].opacity, gr.opac_state[i].obj );
+	}
+	free(gr.opac_state);
 	fprintf( pi->out, "  >>\n");
     }
     fprintf( pi->out, ">>\n" );

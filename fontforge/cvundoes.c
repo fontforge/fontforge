@@ -573,8 +573,8 @@ return(NULL);
     }
     undo->u.state.images = ImageListCopy(cv->layerheads[cv->drawmode]->images);
 #ifdef FONTFORGE_CONFIG_TYPE3
-    BrushCopy(&undo->u.state.fill_brush,&cv->layerheads[cv->drawmode]->fill_brush);
-    PenCopy(&undo->u.state.stroke_pen,&cv->layerheads[cv->drawmode]->stroke_pen);
+    BrushCopy(&undo->u.state.fill_brush,&cv->layerheads[cv->drawmode]->fill_brush,NULL);
+    PenCopy(&undo->u.state.stroke_pen,&cv->layerheads[cv->drawmode]->stroke_pen,NULL);
     undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
@@ -649,8 +649,8 @@ return(NULL);
     }
     undo->u.state.images = ImageListCopy(sc->layers[layer].images);
 #ifdef FONTFORGE_CONFIG_TYPE3
-    BrushCopy(&undo->u.state.fill_brush,&sc->layers[layer].fill_brush);
-    PenCopy(&undo->u.state.stroke_pen,&sc->layers[layer].stroke_pen);
+    BrushCopy(&undo->u.state.fill_brush,&sc->layers[layer].fill_brush,NULL);
+    PenCopy(&undo->u.state.stroke_pen,&sc->layers[layer].stroke_pen,NULL);
     undo->u.state.dofill = sc->layers[layer].dofill;
     undo->u.state.dostroke = sc->layers[layer].dostroke;
     undo->u.state.fillfirst = sc->layers[layer].fillfirst;
@@ -1721,8 +1721,8 @@ void CopyReference(SplineChar *sc) {
     copybuffer.copied_from = sc->parent;
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( ly_fore<sc->layer_cnt ) {
-	BrushCopy(&copybuffer.u.state.fill_brush, &sc->layers[ly_fore].fill_brush);
-	PenCopy(&copybuffer.u.state.stroke_pen, &sc->layers[ly_fore].stroke_pen);
+	BrushCopy(&copybuffer.u.state.fill_brush, &sc->layers[ly_fore].fill_brush,NULL);
+	PenCopy(&copybuffer.u.state.stroke_pen, &sc->layers[ly_fore].stroke_pen,NULL);
 	copybuffer.u.state.dofill = sc->layers[ly_fore].dofill;
 	copybuffer.u.state.dostroke = sc->layers[ly_fore].dostroke;
 	copybuffer.u.state.fillfirst = sc->layers[ly_fore].fillfirst;
@@ -1787,8 +1787,8 @@ void CopySelected(CharViewBase *cv,int doanchors) {
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( cv->drawmode==dm_fore || cv->drawmode==dm_back ) {
-	BrushCopy(&copybuffer.u.state.fill_brush, &cv->layerheads[cv->drawmode]->fill_brush);
-	PenCopy(&copybuffer.u.state.stroke_pen, &cv->layerheads[cv->drawmode]->stroke_pen);
+	BrushCopy(&copybuffer.u.state.fill_brush, &cv->layerheads[cv->drawmode]->fill_brush,NULL);
+	PenCopy(&copybuffer.u.state.stroke_pen, &cv->layerheads[cv->drawmode]->stroke_pen,NULL);
 	copybuffer.u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
 	copybuffer.u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
 	copybuffer.u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
@@ -1867,8 +1867,8 @@ static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( layer<sc->layer_cnt ) {
 	    cur->u.state.images = ImageListCopy(sc->layers[layer].images);
-	    BrushCopy(&cur->u.state.fill_brush, &sc->layers[layer].fill_brush);
-	    PenCopy(&cur->u.state.stroke_pen, &sc->layers[layer].stroke_pen);
+	    BrushCopy(&cur->u.state.fill_brush, &sc->layers[layer].fill_brush,NULL);
+	    PenCopy(&cur->u.state.stroke_pen, &sc->layers[layer].stroke_pen,NULL);
 	    cur->u.state.dofill = sc->layers[layer].dofill;
 	    cur->u.state.dostroke = sc->layers[layer].dostroke;
 	    cur->u.state.fillfirst = sc->layers[layer].fillfirst;
@@ -2355,8 +2355,8 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		sc->layers[layer].refs==NULL && sc->layers[layer].images==NULL &&
 		sc->parent->multilayer ) {
 	    /* pasting into an empty layer sets the fill/stroke */
-	    BrushCopy(&sc->layers[layer].fill_brush, &paster->u.state.fill_brush);
-	    PenCopy(&sc->layers[layer].stroke_pen, &paster->u.state.stroke_pen);
+	    BrushCopy(&sc->layers[layer].fill_brush, &paster->u.state.fill_brush,NULL);
+	    PenCopy(&sc->layers[layer].stroke_pen, &paster->u.state.stroke_pen,NULL);
 	    sc->layers[layer].dofill = paster->u.state.dofill;
 	    sc->layers[layer].dostroke = paster->u.state.dostroke;
 	    sc->layers[layer].fillfirst = paster->u.state.fillfirst;
@@ -2985,8 +2985,8 @@ return;
 	if ( wasemptylayer && cv->layerheads[dm_fore]->images==NULL &&
 		cvsc->parent->multilayer ) {
 	    /* pasting into an empty layer sets the fill/stroke */
-	    BrushCopy(&cv->layerheads[dm_fore]->fill_brush, &paster->u.state.fill_brush);
-	    PenCopy(&cv->layerheads[dm_fore]->stroke_pen, &paster->u.state.stroke_pen);
+	    BrushCopy(&cv->layerheads[dm_fore]->fill_brush, &paster->u.state.fill_brush,NULL);
+	    PenCopy(&cv->layerheads[dm_fore]->stroke_pen, &paster->u.state.stroke_pen,NULL);
 	    cv->layerheads[dm_fore]->dofill = paster->u.state.dofill;
 	    cv->layerheads[dm_fore]->dostroke = paster->u.state.dostroke;
 	    cv->layerheads[dm_fore]->fillfirst = paster->u.state.fillfirst;
