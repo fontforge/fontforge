@@ -89,16 +89,13 @@ dnl  library to be found (otherwise only portable to machines with macports/fink
   CPPFLAGS="$CPPFLAGS -I /opt/local/include"
   gww_extraincludes="/opt/local/include";
  fi
- rmlibs=""
  if test "$oldLDFLAGS" \!= "" >/dev/null ; then
   TrustUser="yes"
  elif test -d /sw/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/sw/lib"
-  rmlibs="-L/sw/lib"
   gww_rpath="-rpath /sw/lib"
  elif test -d /opt/local/lib >/dev/null ; then
   LDFLAGS="$LDFLAGS -L/opt/local/lib"
-  rmlibs="-L/opt/local/lib"
   gww_rpath="-rpath /opt/local/lib"
  fi
  LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
@@ -681,7 +678,6 @@ AC_ARG_WITH(regular-link,
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	gww_regular_link="yes"
-	rmlibs=""
 	AC_DEFINE(NODYNAMIC)
 	gww_rpath=""
 	if test "$gww_extraincludes" != "" ; then
@@ -1035,11 +1031,6 @@ GTFF=
 if test -e gtkui/Makefile.in -a \( -e /usr/include/gtk-2.0/gtk/gtk.h -o -e /sw/include/gtk-2.0/gtk/gtk.h \) ; then
   GTFF=gtkui/Makefile
 fi
-
-if test "$rmlibs" != "" ; then
-  LDFLAGS=`echo $LDFLAGS | sed -e "s%$rmlibs%%"`
-fi
-
 
 if test "$gww_archlist" != "" ; then
   CFLAGS="$CFLAGS $gww_archlist"
