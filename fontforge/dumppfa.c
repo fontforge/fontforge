@@ -993,7 +993,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	SplineChar *sc, int refs_to_splines, int pdfopers, int layer ) {
     RefChar *ref;
     real inverse[6];
-    int i, j, last, first;
+    int i, last, first;
     SplineSet *temp;
 
     if ( sc==NULL )
@@ -1075,9 +1075,11 @@ return;
 			dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 		    }
 		} else {
+#ifdef FONTFORGE_CONFIG_TYPE3
 		    /* If we get here we are outputting pdf, are type3, refs_2_splines */
 /*  We need different gradients and patterns for different transform */
 /*  matrices of references */
+		    int j;
 		    for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
 			for ( j=0; j<ref->layer_cnt; ++j ) {
 			    temp = ref->layers[j].splines;
@@ -1103,6 +1105,7 @@ return;
 				SplinePointListsFree(temp);*/
 			}
 		    }
+#endif
 		}
 	    } else {
 		dumpstr(dumpchar,data,"    pop -1\n" );
