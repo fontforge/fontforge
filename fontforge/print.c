@@ -424,8 +424,8 @@ void makePatName(char *buffer,
 	/*  all kinds of odd characters, just no spaces or slashes, so this */
 	/*  name should be legal */
 	sprintf( buffer,"%s_trans_%g,%g,%g,%g,%g,%g_ly%d_%s_%s", sc->name,
-		ref->transform[0], ref->transform[1], ref->transform[2],
-		ref->transform[3], ref->transform[4], ref->transform[5],
+		(double) ref->transform[0], (double) ref->transform[1], (double) ref->transform[2],
+		(double) ref->transform[3], (double) ref->transform[4], (double) ref->transform[5],
 		layer,
 		isstroke ? "stroke":"fill", isgrad ? "grad": "pattern" );
     }
