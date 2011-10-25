@@ -811,7 +811,7 @@ static void install_mac_timer(void) {
     EventLoopTimerRef timer;
 
     InstallEventLoopTimer(GetMainEventLoop(),
-	    .001,.001,		/* I can't find the units documented: seconds? */
+	    .001*kEventDurationSecond,.001*kEventDurationSecond,
 	    NewEventLoopTimerUPP(DoRealStuff), NULL,
 	    &timer);
 }	    
