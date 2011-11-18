@@ -1721,28 +1721,30 @@ ImageList *ImageListCopy(ImageList *cimg) {
 return( head );
 }
 
-ImageList *ImageListTransform(ImageList *img, real transform[6]) {
+ImageList *ImageListTransform(ImageList *img, real transform[6],int everything) {
     ImageList *head = img;
 
 	/* Don't support rotating, flipping or skewing images */;
     if ( transform[0]!=0 && transform[3]!=0 ) {
 	while ( img!=NULL ) {
-	    bigreal x = img->xoff;
-	    img->xoff = transform[0]*x + transform[2]*img->yoff + transform[4];
-	    img->yoff = transform[1]*x + transform[3]*img->yoff + transform[5];
-	    if (( img->xscale *= transform[0])<0 ) {
-		img->xoff += img->xscale *
-		    (img->image->list_len==0?img->image->u.image:img->image->u.images[0])->width;
-		img->xscale = -img->xscale;
+	    if ( everything || (!everything && img->selected)) {
+		bigreal x = img->xoff;
+		img->xoff = transform[0]*x + transform[2]*img->yoff + transform[4];
+		img->yoff = transform[1]*x + transform[3]*img->yoff + transform[5];
+		if (( img->xscale *= transform[0])<0 ) {
+		    img->xoff += img->xscale *
+			(img->image->list_len==0?img->image->u.image:img->image->u.images[0])->width;
+		    img->xscale = -img->xscale;
+		}
+		if (( img->yscale *= transform[3])<0 ) {
+		    img->yoff += img->yscale *
+			(img->image->list_len==0?img->image->u.image:img->image->u.images[0])->height;
+		    img->yscale = -img->yscale;
+		}
+		img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
+		img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
+		img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
 	    }
-	    if (( img->yscale *= transform[3])<0 ) {
-		img->yoff += img->yscale *
-		    (img->image->list_len==0?img->image->u.image:img->image->u.images[0])->height;
-		img->yscale = -img->yscale;
-	    }
-	    img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
-	    img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
-	    img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
 	    img = img->next;
 	}
     }
@@ -3045,7 +3047,7 @@ return;
 			 SplinePointListCopy(rsc->layers[i].splines),rf->transform,tpt_AllPoints);
 		rf->layers[cnt].images =
 			ImageListTransform(
-			 ImageListCopy(rsc->layers[i].images),rf->transform);
+			 ImageListCopy(rsc->layers[i].images),rf->transform,true);
 		LayerToRefLayer(&rf->layers[cnt],&rsc->layers[i],rf->transform);
 		++cnt;
 	    }
@@ -3057,7 +3059,7 @@ return;
 			     SplinePointListCopy(subref->layers[j].splines),rf->transform,tpt_AllPoints);
 		    rf->layers[cnt].images =
 			    ImageListTransform(
-			     ImageListCopy(subref->layers[j].images),rf->transform);
+			     ImageListCopy(subref->layers[j].images),rf->transform,true);
 		    ++cnt;
 		}
 	    }

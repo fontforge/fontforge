@@ -2281,7 +2281,7 @@ extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
 extern SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base);
 extern ImageList *ImageListCopy(ImageList *cimg);
-extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
+extern ImageList *ImageListTransform(ImageList *cimg,real transform[6],int everything);
 extern void BpTransform(BasePoint *to, BasePoint *from, real transform[6]);
 extern void ApTransform(AnchorPoint *ap, real transform[6]);
 /* The order of the enum elements below doesn't make much sense, but it's done*/
