@@ -9539,7 +9539,7 @@ static void orlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	islast = r->next==NULL;
     } else if ( im!=NULL ) {
 	isfirst = cv->b.layerheads[cv->b.drawmode]->images==im;
-	islast = im->next!=NULL;
+	islast = im->next==NULL;
     }
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
