@@ -737,6 +737,12 @@ return;
 	offsets[i].exit  = getushort(ttf);
     }
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+    if ( glyphs==NULL ) {
+/* GT: This continues a multi-line error message, hence the leading space */
+	LogError( _(" Bad cursive alignment table, ignored\n") );
+	free(offsets);
+return;
+    }
 
     class = chunkalloc(sizeof(AnchorClass));
     snprintf(buf,sizeof(buf),_("Cursive-%d"),
@@ -916,6 +922,7 @@ static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
     baseglyphs = getCoverageTable(ttf,stoffset+basecoverage,info);
     if ( baseglyphs==NULL || markglyphs==NULL ) {
 	free(baseglyphs); free(markglyphs);
+	LogError( _(" Bad mark attachment table, ignored\n") );
 return;
     }
 	/* as is the (first) mark table */
@@ -972,6 +979,7 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(vr);
+	LogError( _(" Bad simple positioning table, ignored\n") );
 return;
     }
     for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {
@@ -1037,6 +1045,11 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
     for ( i=0; i<rcnt; ++i )
 	rules[i].offsets = getushort(ttf)+stoffset;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+    if ( glyphs==NULL ) {
+/* GT: This continues a multi-line error message, hence the leading space */
+	LogError( _(" Bad contextual table, ignored\n") );
+return;
+    }
     cnt = 0;
     for ( i=0; i<rcnt; ++i ) {
 	fseek(ttf,rules[i].offsets,SEEK_SET);
@@ -1146,6 +1159,7 @@ static void g___ChainingSubTable1(FILE *ttf, int stoffset,
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(rules);
+	LogError( _(" Bad contextual chaining table, ignored\n") );
 return;
     }
     cnt = 0;
@@ -1366,6 +1380,11 @@ return;
 
 	/* Just in case they used the coverage table to redefine class 0 */
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+	if ( glyphs==NULL ) {
+/* GT: This continues a multi-line error message, hence the leading space */
+	    LogError( _(" Bad contextual substitution table, ignored\n") );
+return;
+	}
 	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
 	free(glyphs); free(class); class = NULL;
 
@@ -1516,6 +1535,11 @@ return;
 
 	/* Just in case they used the coverage table to redefine class 0 */
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+	if ( glyphs==NULL ) {
+/* GT: This continues a multi-line error message, hence the leading space */
+	    LogError( _(" Bad contextual chaining substitution table, ignored\n") );
+return;
+	}
 	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
 	free(glyphs); free(class); class = NULL;
 
@@ -1802,6 +1826,7 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(glyph2s);
+	LogError( _(" Bad simple substitution table, ignored\n") );
 return;
     }
     if ( justinuse==git_findnames ) {
@@ -1896,6 +1921,7 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(offsets);
+	LogError( _(" Bad multiple substitution table, ignored\n") );
 return;
     }
     for ( i=0; glyphs[i]!=0xffff; ++i );
@@ -1992,8 +2018,10 @@ return;
     for ( i=0; i<cnt; ++i )
 	ls_offsets[i]=getushort(ttf);
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
-    if ( glyphs==NULL )
+    if ( glyphs==NULL ) {
+	LogError( _(" Bad ligature table, ignored\n") );
 return;
+    }
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
 	lig_cnt = getushort(ttf);
