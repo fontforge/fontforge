@@ -953,8 +953,10 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {
 
     image = ImageAlterClut(image);
     scale = (sc->parent->ascent+sc->parent->descent)/(real) GImageGetHeight(image);
-    if ( doclear )
-	ImageListsFree(sc->layers[layer].images); sc->layers[layer].images = NULL;
+    if ( doclear ) {
+	ImageListsFree(sc->layers[layer].images);
+	sc->layers[layer].images = NULL;
+    }
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
