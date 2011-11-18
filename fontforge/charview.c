@@ -7273,7 +7273,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(ly->splines,1.0,cv->b.sc->inspiro && hasspiro(),!anysel);
     if ( ly->images!=NULL ) {
-	ImageListTransform(ly->images,transform);
+	ImageListTransform(ly->images,transform,!anysel);
 	SCOutOfDateBackground(cv->b.sc);
     }
     for ( refs = ly->refs; refs!=NULL; refs=refs->next )
