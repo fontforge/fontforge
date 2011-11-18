@@ -348,6 +348,7 @@ static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo *
     } else {
 	LogError( _("Unknown class table format: %d\n"), format );
 	info->bad_ot = true;
+	/* Put everything in class 0 and return that */
     }
 
     /* Do another validity test */
@@ -555,8 +556,11 @@ return;
 	for ( i=0; i<cnt; ++i )
 	    ps_offsets[i]=getushort(ttf);
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
-	if ( glyphs==NULL )
+	if ( glyphs==NULL ) {
+/* GT: This continues a multi-line error message, hence the leading space */
+	    LogError( _(" Bad pairwise kerning table, ignored\n") );
 return;
+	}
 	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    fseek(ttf,stoffset+ps_offsets[i],SEEK_SET);
 	    pair_cnt = getushort(ttf);
@@ -595,6 +599,11 @@ return;
 	class1 = getClassDefTable(ttf, stoffset+cd1, info);
 	class2 = getClassDefTable(ttf, stoffset+cd2, info);
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+	if ( glyphs==NULL ) {
+/* GT: This continues a multi-line error message, hence the leading space */
+	    LogError( _(" Bad kerning class table, ignored\n") );
+return;
+	}
 	fseek(ttf, foffset, SEEK_SET);	/* come back */
 	c1_cnt = getushort(ttf);
 	c2_cnt = getushort(ttf);
