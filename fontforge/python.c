@@ -13442,7 +13442,7 @@ return( NULL );
     }
     if ( after_str!=NULL ) {
 	after = SFFindLookup(sf,after_str);
-	if ( after!=NULL ) {
+	if ( after==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", after_str );
 return( NULL );
 	}
