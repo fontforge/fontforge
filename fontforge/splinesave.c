@@ -2759,7 +2759,7 @@ return;
     while ( h!=NULL && h->hintnumber!=-1 ) {
 	/* Type2 hints do not support negative widths except in the case of */
 	/*  ghost (now called edge) hints */
-	if ( cnt>24-1 ) {	/* stack max = 48 numbers, => 24 hints, leave a bit of slop for the width */
+	if ( cnt>24-2 ) {	/* stack max = 48 numbers, => 24 hints, leave a bit of slop for the width */
 	    if ( gb->pt+1>=gb->end )
 		GrowBuffer(gb);
 	    *gb->pt++ = midoper;
