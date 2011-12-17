@@ -1518,7 +1518,7 @@ return( false );
 	free( accentdevtab );
 	free( italicdevtab );
 	free(hicdt); free(vicdt);
-return( true );
+return( false );
     }
     ci->cachedsc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
     ci->cachedsc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
