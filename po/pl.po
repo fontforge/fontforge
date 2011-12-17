@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge 20080828\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-27 18:42+0100\n"
+"POT-Creation-Date: 2011-12-17 14:08+0100\n"
 "PO-Revision-Date: 2009-10-31 11:03+0100\n"
 "Last-Translator: Michał Nowakowski <miszka@limes.com.pl>\n"
 "Language-Team: \n"
@@ -3529,8 +3529,8 @@ msgstr "_Żaden"
 #: mm.c:1019 mm.c:1027 mm.c:1041 mm.c:1044 mm.c:1054 mm.c:1064 mm.c:1072 mm.c:1079
 #: mm.c:1086 mm.c:1093 mm.c:1100 mm.c:1107 mm.c:1116 mm.c:1126 mm.c:1133 mm.c:1143
 #: mm.c:1159 mm.c:1172 mm.c:1179 mmdlg.c:934 mmdlg.c:1777 mmdlg.c:2135 mmdlg.c:2147
-#: mmdlg.c:2159 mmdlg.c:2162 mmdlg.c:2367 mmdlg.c:2370 splineutil.c:2621
-#: splineutil.c:2670 splineutil.c:2672
+#: mmdlg.c:2159 mmdlg.c:2162 mmdlg.c:2367 mmdlg.c:2370 splineutil.c:2623
+#: splineutil.c:2672 splineutil.c:2674
 msgid "Bad Multiple Master Font"
 msgstr "Błędny font Multiple Master"
 
@@ -4804,66 +4804,66 @@ msgstr "Nie znaleziono pliku"
 msgid "Bad xfig file"
 msgstr "Błędny plik xfig"
 
-#: cvimages.c:977 cvimages.c:1088 cvimages.c:1093 cvimportdlg.c:83 cvimportdlg.c:106
+#: cvimages.c:979 cvimages.c:1090 cvimages.c:1095 cvimportdlg.c:83 cvimportdlg.c:106
 msgid "Bad image file"
 msgstr "Błędny plik obrazu"
 
-#: cvimages.c:977 cvimages.c:1088 cvimportdlg.c:83 cvimportdlg.c:106
+#: cvimages.c:979 cvimages.c:1090 cvimportdlg.c:83 cvimportdlg.c:106
 #, c-format
 msgid "Bad image file: %.100s"
 msgstr "Błędny plik obrazu: %.100s"
 
-#: cvimages.c:1011 groupsdlg.c:1492 groupsdlg.c:1495
+#: cvimages.c:1013 groupsdlg.c:1492 groupsdlg.c:1495
 msgid "Nothing Selected"
 msgstr "Niczego nie wybrano"
 
-#: cvimages.c:1011
+#: cvimages.c:1013
 msgid "You must select a glyph before you can import an image into it"
 msgstr "Trzeba wybrać glif do którego ma zostać zaimportowany obraz."
 
-#: cvimages.c:1013
+#: cvimages.c:1015
 msgid "More Images Than Selected Glyphs"
 msgstr "Jest więcej obrazów niż wybrano glifów"
 
-#: cvimages.c:1032 cvimages.c:1040
+#: cvimages.c:1034 cvimages.c:1042
 msgid "Bad Template"
 msgstr "Błędny szablon"
 
-#: cvimages.c:1032
+#: cvimages.c:1034
 msgid "Bad template, no extension"
 msgstr "Błędny szablon – brak rozszerzenia nazwy pliku"
 
-#: cvimages.c:1040
+#: cvimages.c:1042
 msgid "Bad template, unrecognized format"
 msgstr "Błędny szablon – nieznany format"
 
-#: cvimages.c:1051 cvimages.c:1120
+#: cvimages.c:1053 cvimages.c:1122
 msgid "Nothing Loaded"
 msgstr "Niczego nie wczytano"
 
-#: cvimages.c:1072
+#: cvimages.c:1074
 msgid "Unicode value not in font"
 msgstr "Pominięto obraz"
 
-#: cvimages.c:1072
+#: cvimages.c:1074
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
 msgstr ""
 "Glif o numerze unikodowym (%x) nie występuje w foncie.\n"
 "Odpowiadający obraz został pominięty."
 
-#: cvimages.c:1080
+#: cvimages.c:1082
 msgid "Encoding value not in font"
 msgstr "Pominięto obraz"
 
-#: cvimages.c:1080
+#: cvimages.c:1082
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
 msgstr ""
 "Glif o numerze kodowym (%x) nie występuje w foncie.\n"
 "Odpowiadający obraz został pominięty."
 
-#: cvimages.c:1093
+#: cvimages.c:1095
 #, c-format
 msgid "Bad image file, not a bitmap: %.100s"
 msgstr "Błędny plik obrazu, to nie bitmapa: %.100s"
@@ -6325,7 +6325,7 @@ msgstr "%s w tablicy %d"
 
 #. GT: This string is used to generate a name for an OpenType lookup subtable.
 #. GT:  %s is the lookup name
-#: diffstubs.c:1351 lookups.c:1602 parsettfatt.c:5906
+#: diffstubs.c:1351 lookups.c:1602 parsettfatt.c:5943
 #, c-format
 msgid "%s subtable"
 msgstr "Podtablica %s"
@@ -7678,7 +7678,7 @@ msgstr "Nie udało się określić typu tablicy funkcji zecerskich"
 msgid "Mark anchors provided when nothing can use them"
 msgstr "Podane kotwice znaków diakrytycznych nie zostały nigdzie użyte."
 
-#: featurefile.c:7486 parsettfatt.c:770
+#: featurefile.c:7486 parsettfatt.c:785
 #, c-format
 msgid "Anchor-%d"
 msgstr "Kotwica-%d"
@@ -9842,7 +9842,7 @@ msgstr "konkani"
 msgid "Korean (Johab)"
 msgstr "koreański (johab)"
 
-#: fontinfo.c:866 fontinfo.c:1049 unicoderange.c:80
+#: fontinfo.c:866 fontinfo.c:1049 unicoderange.c:77
 msgid "Lao"
 msgstr "laotański"
 
@@ -10375,7 +10375,7 @@ msgstr "składające znaki diakrytyczne"
 msgid "Greek and Coptic"
 msgstr "grecki i koptyjski"
 
-#: fontinfo.c:1032 unicoderange.c:151
+#: fontinfo.c:1032 unicoderange.c:150
 msgid "Coptic"
 msgstr "koptyjski"
 
@@ -10407,63 +10407,63 @@ msgstr "n'ko"
 msgid "Devanagari"
 msgstr "dewanagari"
 
-#: fontinfo.c:1040 unicoderange.c:70
+#: fontinfo.c:1040 unicoderange.c:67
 msgid "Bengali"
 msgstr "bengalski"
 
-#: fontinfo.c:1041 lookups.c:1346 lookupui.c:207 unicoderange.c:71
+#: fontinfo.c:1041 lookups.c:1346 lookupui.c:207 unicoderange.c:68
 msgid "Gurmukhi"
 msgstr "gurmukhi"
 
-#: fontinfo.c:1042 unicoderange.c:72
+#: fontinfo.c:1042 unicoderange.c:69
 msgid "Gujarati"
 msgstr "Gudżarati"
 
-#: fontinfo.c:1043 unicoderange.c:73
+#: fontinfo.c:1043 unicoderange.c:70
 msgid "Oriya"
 msgstr "Orija"
 
-#: fontinfo.c:1044 unicoderange.c:74
+#: fontinfo.c:1044 unicoderange.c:71
 msgid "Tamil"
 msgstr "tamilski"
 
-#: fontinfo.c:1045 unicoderange.c:75
+#: fontinfo.c:1045 unicoderange.c:72
 msgid "Telugu"
 msgstr "Telugu"
 
-#: fontinfo.c:1046 unicoderange.c:76
+#: fontinfo.c:1046 unicoderange.c:73
 msgid "Kannada"
 msgstr "Kannada"
 
-#: fontinfo.c:1047 unicoderange.c:77
+#: fontinfo.c:1047 unicoderange.c:74
 msgid "Malayalam"
 msgstr "malajalam"
 
-#: fontinfo.c:1048 unicoderange.c:79
+#: fontinfo.c:1048 unicoderange.c:76
 msgid "Thai"
 msgstr "tajski"
 
-#: fontinfo.c:1050 unicoderange.c:83
+#: fontinfo.c:1050 unicoderange.c:80
 msgid "Georgian"
 msgstr "gruziński"
 
-#: fontinfo.c:1051 unicoderange.c:105
+#: fontinfo.c:1051 unicoderange.c:103
 msgid "Balinese"
 msgstr "balijski"
 
 #: fontinfo.c:1052 lookups.c:1348 lookupui.c:209
 msgid "Hangul Jamo"
-msgstr "hangyl jamo"
+msgstr "dzamo hangyl"
 
-#: fontinfo.c:1053 unicoderange.c:112
+#: fontinfo.c:1053 unicoderange.c:111
 msgid "Latin Extended Additional"
 msgstr "dodatkowe rozszerzenie łacińskiego"
 
-#: fontinfo.c:1054 unicoderange.c:113
+#: fontinfo.c:1054 unicoderange.c:112
 msgid "Greek Extended"
 msgstr "rozszerzenie greckiego"
 
-#: fontinfo.c:1055 unicoderange.c:115
+#: fontinfo.c:1055 unicoderange.c:114
 msgid "General Punctuation"
 msgstr "ogólna interpunkcja"
 
@@ -10471,7 +10471,7 @@ msgstr "ogólna interpunkcja"
 msgid "Subscripts and Superscripts"
 msgstr "frakcje górne i dolne"
 
-#: fontinfo.c:1057 unicoderange.c:117
+#: fontinfo.c:1057 unicoderange.c:116
 msgid "Currency Symbols"
 msgstr "symbole walut"
 
@@ -10479,7 +10479,7 @@ msgstr "symbole walut"
 msgid "Combining Diacritical Marks for Symbols"
 msgstr "znaki składające dla symboli"
 
-#: fontinfo.c:1059 unicoderange.c:119
+#: fontinfo.c:1059 unicoderange.c:118
 msgid "Letterlike Symbols"
 msgstr "symbole literopodobne"
 
@@ -10499,7 +10499,7 @@ msgstr ""
 msgid "Miscellaneous Technical"
 msgstr "różne techniczne"
 
-#: fontinfo.c:1064 unicoderange.c:125
+#: fontinfo.c:1064 unicoderange.c:124
 msgid "Control Pictures"
 msgstr "obrazy znaków sterujących"
 
@@ -10507,27 +10507,27 @@ msgstr "obrazy znaków sterujących"
 msgid "Optical Character Recognition"
 msgstr "optyczne rozpoznawanie znaków"
 
-#: fontinfo.c:1066 unicoderange.c:127
+#: fontinfo.c:1066 unicoderange.c:126
 msgid "Enclosed Alphanumerics"
 msgstr "obwiedzione znaki alfanumeryczne"
 
-#: fontinfo.c:1067 unicoderange.c:128
+#: fontinfo.c:1067 unicoderange.c:127
 msgid "Box Drawing"
 msgstr "rysowanie ramek"
 
-#: fontinfo.c:1068 unicoderange.c:129
+#: fontinfo.c:1068 unicoderange.c:128
 msgid "Block Elements"
 msgstr "elementy blokowe"
 
-#: fontinfo.c:1069 unicoderange.c:130
+#: fontinfo.c:1069 unicoderange.c:129
 msgid "Geometric Shapes"
 msgstr "kształty geometryczne"
 
-#: fontinfo.c:1070 unicoderange.c:131
+#: fontinfo.c:1070 unicoderange.c:130
 msgid "Miscellaneous Symbols"
 msgstr "różnorodne symbole"
 
-#: fontinfo.c:1071 unicoderange.c:133
+#: fontinfo.c:1071 unicoderange.c:132
 msgid "Dingbats"
 msgstr "dingbaty"
 
@@ -10549,9 +10549,9 @@ msgstr "Bopomofo i rozszerzenia"
 
 #: fontinfo.c:1076 unicoderange.c:165
 msgid "Hangul Compatibility Jamo"
-msgstr "Jamo zgodności dla hangyl"
+msgstr "dzamo zgodności dla hangyl"
 
-#: fontinfo.c:1077 unicoderange.c:186
+#: fontinfo.c:1077 unicoderange.c:187
 msgid "Phags-pa"
 msgstr "phags-pa"
 
@@ -10563,7 +10563,7 @@ msgstr "obwiedzione litery i miesiące CJK"
 msgid "CJK Compatibility"
 msgstr "znaki zgodności dla CJK"
 
-#: fontinfo.c:1080 unicoderange.c:196
+#: fontinfo.c:1080 unicoderange.c:199
 msgid "Hangul Syllables"
 msgstr "sylaby hangyl"
 
@@ -10571,7 +10571,7 @@ msgstr "sylaby hangyl"
 msgid "Non-Basic Multilingual Plane"
 msgstr "dodatkowy obszar wielojęzyczny Unikodu"
 
-#: fontinfo.c:1082 unicoderange.c:251
+#: fontinfo.c:1082 unicoderange.c:254
 msgid "Phoenician"
 msgstr "fenicki"
 
@@ -10579,15 +10579,15 @@ msgstr "fenicki"
 msgid "CJK Unified Ideographs"
 msgstr "ujednolicone ideogramy CJK"
 
-#: fontinfo.c:1085
+#: fontinfo.c:1085 unicoderange.c:205
 msgid "Private Use Area"
 msgstr "obszar do użytku prywatnego"
 
-#: fontinfo.c:1086 unicoderange.c:208
+#: fontinfo.c:1086 unicoderange.c:211
 msgid "CJK Compatibility Ideographs"
 msgstr "ideogramy zgodności dla CJK"
 
-#: fontinfo.c:1087 unicoderange.c:209
+#: fontinfo.c:1087 unicoderange.c:212
 msgid "Alphabetic Presentation Forms"
 msgstr "alfabetyczne formy prezentacyjne"
 
@@ -10595,15 +10595,15 @@ msgstr "alfabetyczne formy prezentacyjne"
 msgid "Arabic Presentation Forms-A"
 msgstr "arabskie formy prezentacyjne A"
 
-#: fontinfo.c:1089 unicoderange.c:216
+#: fontinfo.c:1089 unicoderange.c:219
 msgid "Combining Half Marks"
 msgstr "półznaki składające"
 
-#: fontinfo.c:1090 unicoderange.c:217
+#: fontinfo.c:1090 unicoderange.c:220
 msgid "CJK Compatibility Forms"
 msgstr "formy zgodności dla CJK"
 
-#: fontinfo.c:1091 unicoderange.c:218
+#: fontinfo.c:1091 unicoderange.c:221
 msgid "Small Form Variants"
 msgstr "różne małe formy"
 
@@ -10615,11 +10615,11 @@ msgstr "arabskie formy prezentacyjne B"
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "znaki pełnej i połowy długości"
 
-#: fontinfo.c:1094 unicoderange.c:225
+#: fontinfo.c:1094 unicoderange.c:228
 msgid "Specials"
 msgstr "specjalne"
 
-#: fontinfo.c:1095 unicoderange.c:81
+#: fontinfo.c:1095 unicoderange.c:78
 msgid "Tibetan"
 msgstr "tybetański"
 
@@ -10631,43 +10631,43 @@ msgstr "syriacki"
 msgid "Thaana"
 msgstr "thaana"
 
-#: fontinfo.c:1098 unicoderange.c:78
+#: fontinfo.c:1098 unicoderange.c:75
 msgid "Sinhala"
 msgstr "Sinhala"
 
-#: fontinfo.c:1099 unicoderange.c:82
+#: fontinfo.c:1099 unicoderange.c:79
 msgid "Myanmar"
 msgstr "birmański"
 
-#: fontinfo.c:1100 unicoderange.c:87
+#: fontinfo.c:1100 unicoderange.c:84
 msgid "Ethiopic"
 msgstr "etiopski"
 
-#: fontinfo.c:1101 lookups.c:1319 unicoderange.c:89
+#: fontinfo.c:1101 lookups.c:1319 unicoderange.c:86
 msgid "Cherokee"
 msgstr "czirokeski"
 
-#: fontinfo.c:1102 unicoderange.c:90
+#: fontinfo.c:1102 unicoderange.c:87
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "ujednolicony sylabariusz rdzennych Kanadyjczyków"
 
-#: fontinfo.c:1103 lookups.c:1380 lookupui.c:238 unicoderange.c:91
+#: fontinfo.c:1103 lookups.c:1380 lookupui.c:238 unicoderange.c:88
 msgid "Ogham"
 msgstr "ogamiczne"
 
-#: fontinfo.c:1104 lookups.c:1395 lookupui.c:251 unicoderange.c:92
+#: fontinfo.c:1104 lookups.c:1395 lookupui.c:251 unicoderange.c:89
 msgid "Runic"
 msgstr "runiczne"
 
-#: fontinfo.c:1105 unicoderange.c:97
+#: fontinfo.c:1105 unicoderange.c:94
 msgid "Khmer"
 msgstr "khmerski"
 
-#: fontinfo.c:1106 unicoderange.c:98
+#: fontinfo.c:1106 unicoderange.c:95
 msgid "Mongolian"
 msgstr "mongolski"
 
-#: fontinfo.c:1107 unicoderange.c:139
+#: fontinfo.c:1107 unicoderange.c:138
 msgid "Braille Patterns"
 msgstr "pismo Brajla"
 
@@ -10679,15 +10679,15 @@ msgstr "sylaby i klucze Yi"
 msgid "Tagalog/Hanunno/Buhid/Tagbanwa"
 msgstr "Tagalog/Hanunno/Buhid/Tagbanwa"
 
-#: fontinfo.c:1110 unicoderange.c:241
+#: fontinfo.c:1110 unicoderange.c:244
 msgid "Old Italic"
 msgstr "staroitalski"
 
-#: fontinfo.c:1111 lookups.c:1342 lookupui.c:203 unicoderange.c:242
+#: fontinfo.c:1111 lookups.c:1342 lookupui.c:203 unicoderange.c:245
 msgid "Gothic"
 msgstr "gockie"
 
-#: fontinfo.c:1112 unicoderange.c:245
+#: fontinfo.c:1112 unicoderange.c:248
 msgid "Deseret"
 msgstr "mormoński"
 
@@ -10695,7 +10695,7 @@ msgstr "mormoński"
 msgid "Musical Symbols, Byzantine & Western"
 msgstr ""
 
-#: fontinfo.c:1114 lookups.c:1374 lookupui.c:233 unicoderange.c:278
+#: fontinfo.c:1114 lookups.c:1374 lookupui.c:233 unicoderange.c:285
 msgid "Mathematical Alphanumeric Symbols"
 msgstr "matematyczne symbole alfanumeryczne"
 
@@ -10703,7 +10703,7 @@ msgstr "matematyczne symbole alfanumeryczne"
 msgid "Private Use (planes 15&16)"
 msgstr "do użytku prywatnego (obszary 15 i 16)"
 
-#: fontinfo.c:1116 unicoderange.c:214
+#: fontinfo.c:1116 unicoderange.c:217
 msgid "Variation Selectors"
 msgstr "przełączniki wariantów glifów"
 
@@ -10711,27 +10711,27 @@ msgstr "przełączniki wariantów glifów"
 msgid "Tags"
 msgstr "tagi"
 
-#: fontinfo.c:1118 unicoderange.c:99
+#: fontinfo.c:1118 unicoderange.c:97
 msgid "Limbu"
 msgstr "limbu"
 
-#: fontinfo.c:1119 lookups.c:1405 lookupui.c:259 unicoderange.c:100
+#: fontinfo.c:1119 lookups.c:1405 lookupui.c:259 unicoderange.c:98
 msgid "Tai Le"
 msgstr "tai le"
 
-#: fontinfo.c:1120 lookups.c:1378
+#: fontinfo.c:1120 lookups.c:1378 unicoderange.c:99
 msgid "New Tai Lue"
 msgstr "nowe tai lu"
 
-#: fontinfo.c:1121 unicoderange.c:103
+#: fontinfo.c:1121 unicoderange.c:101
 msgid "Buginese"
 msgstr "bugiński"
 
-#: fontinfo.c:1122 lookups.c:1341 lookupui.c:202 unicoderange.c:149
+#: fontinfo.c:1122 lookups.c:1341 lookupui.c:202 unicoderange.c:148
 msgid "Glagolitic"
 msgstr "głagolica"
 
-#: fontinfo.c:1123 unicoderange.c:67 unicoderange.c:153
+#: fontinfo.c:1123 unicoderange.c:152
 msgid "Tifinagh"
 msgstr "tifinagh"
 
@@ -10747,27 +10747,27 @@ msgstr "syloti nagri"
 msgid "Linear B Syllabary/Ideograms, Agean Num."
 msgstr ""
 
-#: fontinfo.c:1127 unicoderange.c:235
+#: fontinfo.c:1127 unicoderange.c:238
 msgid "Ancient Greek Numbers"
 msgstr "starożytne liczby greckie"
 
-#: fontinfo.c:1128 unicoderange.c:243
+#: fontinfo.c:1128 unicoderange.c:246
 msgid "Ugaritic"
 msgstr "ugarycki"
 
-#: fontinfo.c:1129 unicoderange.c:244
+#: fontinfo.c:1129 unicoderange.c:247
 msgid "Old Persian"
 msgstr "staroperski"
 
-#: fontinfo.c:1130 lookups.c:1397 lookupui.c:252 unicoderange.c:246
+#: fontinfo.c:1130 lookups.c:1397 lookupui.c:252 unicoderange.c:249
 msgid "Shavian"
 msgstr "shawa"
 
-#: fontinfo.c:1131 lookups.c:1387 lookupui.c:244 unicoderange.c:247
+#: fontinfo.c:1131 lookups.c:1387 lookupui.c:244 unicoderange.c:250
 msgid "Osmanya"
 msgstr "osmanija"
 
-#: fontinfo.c:1132 unicoderange.c:249
+#: fontinfo.c:1132 unicoderange.c:252
 msgid "Cypriot Syllabary"
 msgstr "sylabariusz cypryjski"
 
@@ -10775,7 +10775,7 @@ msgstr "sylabariusz cypryjski"
 msgid "Kharoshthi"
 msgstr "Kharoszthi"
 
-#: fontinfo.c:1134 unicoderange.c:276
+#: fontinfo.c:1134 unicoderange.c:283
 msgid "Tai Xuan Jing Symbols"
 msgstr "symbole Tai Xuan Jing"
 
@@ -10789,37 +10789,37 @@ msgstr "Patyczki liczbowe"
 
 #: fontinfo.c:1137
 msgid "Sudanese"
-msgstr ""
+msgstr "sudański"
 
-#: fontinfo.c:1138 unicoderange.c:107
+#: fontinfo.c:1138 unicoderange.c:106
 msgid "Lepcha"
 msgstr "lepcha"
 
-#: fontinfo.c:1139 lookups.c:1381 unicoderange.c:108
+#: fontinfo.c:1139 lookups.c:1381 unicoderange.c:107
 msgid "Ol Chiki"
 msgstr "ol chiki"
 
-#: fontinfo.c:1140 lookups.c:1396 unicoderange.c:187
+#: fontinfo.c:1140 lookups.c:1396 unicoderange.c:188
 msgid "Saurashtra"
 msgstr "saurasztrańskie (kathijawarskie)"
 
-#: fontinfo.c:1141 lookups.c:1355 unicoderange.c:189
+#: fontinfo.c:1141 lookups.c:1355 unicoderange.c:190
 msgid "Kayah Li"
 msgstr "kareński (Kayah Li)"
 
-#: fontinfo.c:1142 lookups.c:1393 unicoderange.c:190
+#: fontinfo.c:1142 lookups.c:1393 unicoderange.c:191
 msgid "Rejang"
-msgstr ""
+msgstr "Rejang"
 
-#: fontinfo.c:1143 unicoderange.c:192
+#: fontinfo.c:1143 unicoderange.c:194
 msgid "Cham"
 msgstr "czam"
 
-#: fontinfo.c:1144 unicoderange.c:236
+#: fontinfo.c:1144 unicoderange.c:239
 msgid "Ancient Symbols"
 msgstr "symbole starożytne"
 
-#: fontinfo.c:1145 unicoderange.c:237
+#: fontinfo.c:1145 unicoderange.c:240
 msgid "Phaistos Disc"
 msgstr "pismo z dysku z Faistos"
 
@@ -12933,6 +12933,10 @@ msgid ""
 "To change the feature, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 msgstr ""
+"Aby utworzyć nową nazwę, kliknij przycisk <Nowa> i wybierz język.\n"
+"Aby zmienić język, kliknij na niego.\n"
+"Aby zmienić funkcję, kliknij na nią.\n"
+"Aby zmienić tekst, kliknij w nim i pisz.\n"
 
 #: fontinfo.c:9538
 msgid "The font comment can contain whatever you feel it should"
@@ -13060,6 +13064,9 @@ msgid ""
 "To change the locale, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 msgstr ""
+"Aby utworzyć nową nazwę, kliknij przycisk <Nowa> i wybierz język.\n"
+"Aby zmienić język, kliknij na niego.\n"
+"Aby zmienić tekst, kliknij w nim i pisz.\n"
 
 #: fontinfo.c:9987
 msgid "Mac Style Set:"
@@ -16440,7 +16447,7 @@ msgstr "Ligatury zwykłe"
 
 #: lookups.c:115
 msgid "Leading Jamo Forms"
-msgstr "Formy początkowe jamo"
+msgstr "Formy początkowe dzamo"
 
 #: lookups.c:116
 msgid "Lining Figures"
@@ -16688,7 +16695,7 @@ msgstr "Formy tytułowe"
 
 #: lookups.c:179
 msgid "Trailing Jamo Forms"
-msgstr "Formy końcowe jamo"
+msgstr "Formy końcowe dzamo"
 
 #: lookups.c:180
 msgid "Traditional Name Forms"
@@ -16728,7 +16735,7 @@ msgstr "Alternatywne formy połowy wysokości"
 
 #: lookups.c:189
 msgid "Vowel Jamo Forms"
-msgstr "Formy samogłoskowe jamo"
+msgstr "Formy samogłoskowe dzamo"
 
 #: lookups.c:190
 msgid "Vertical Kana Alternates"
@@ -16892,7 +16899,7 @@ msgstr "bizantyjskie symbole muzyczne"
 msgid "Canadian Syllabics"
 msgstr "sylabariusz kanadyjski"
 
-#: lookups.c:1318 unicoderange.c:239
+#: lookups.c:1318 unicoderange.c:242
 msgid "Carian"
 msgstr "karyjskie"
 
@@ -17038,11 +17045,11 @@ msgstr "linearne A"
 msgid "Linear B"
 msgstr "linearne B"
 
-#: lookups.c:1368 unicoderange.c:238
+#: lookups.c:1368 unicoderange.c:241
 msgid "Lycian"
 msgstr "licyjskie"
 
-#: lookups.c:1369 unicoderange.c:252
+#: lookups.c:1369 unicoderange.c:255
 msgid "Lydian"
 msgstr "lidyjskie"
 
@@ -23777,58 +23784,81 @@ msgstr "Błędna tablica definicji klasy: glify %d-%d poza zakresem [0, %d)\n"
 msgid "Unknown class table format: %d\n"
 msgstr "Nieznany format tablicy klas: %d\n"
 
-#: parsettfatt.c:357
+#: parsettfatt.c:358
 #, c-format
 msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
 msgstr "Błędne przypisanie klasy Open Type: numer klasy %d glifu %d poza zakresem.\n"
 
-#: parsettfatt.c:404
+#: parsettfatt.c:405
 msgid "Bad device table\n"
 msgstr "Błędna tablica rastrowania\n"
 
-#: parsettfatt.c:476
+#: parsettfatt.c:477
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
 msgstr "Błędne pozycjonowanie pary: numery glifów %d i %d powinny być mniejsze niż %d\n"
 
-#: parsettfatt.c:515
+#: parsettfatt.c:516
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
 msgstr "Błędna para kerningowa: numery glifów %d i %d powinny być mniejsze niż %d\n"
 
-#: parsettfatt.c:733
+#. GT: This continues a multi-line error message, hence the leading space
+#: parsettfatt.c:561
+msgid " Bad pairwise kerning table, ignored\n"
+msgstr ""
+
+#. GT: This continues a multi-line error message, hence the leading space
+#: parsettfatt.c:604
+msgid " Bad kerning class table, ignored\n"
+msgstr ""
+
+#. GT: This continues a multi-line error message, hence the leading space
+#: parsettfatt.c:742
+msgid " Bad cursive alignment table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:748
 #, c-format
 msgid "Cursive-%d"
 msgstr "ZłączePisane-%d"
 
-#: parsettfatt.c:789
+#: parsettfatt.c:804
 msgid "Bad mark table.\n"
 msgstr "Błędna tablica „mark”.\n"
 
-#: parsettfatt.c:800
+#: parsettfatt.c:815
 msgid "Class out of bounds in GPOS mark sub-table\n"
 msgstr "Numer klasy wykracza poza zakres\n"
 
-#: parsettfatt.c:802
+#: parsettfatt.c:817
 #, c-format
 msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
 msgstr ""
 "Numer klasy z podtablicy dla znaków diakrytycznych %.30s w GPOS wykracza poza "
 "zadeklarowany zakres.\n"
 
-#: parsettfatt.c:829
+#: parsettfatt.c:844
 msgid "Bad base table.\n"
 msgstr "Błędna tablica „base”.\n"
 
-#: parsettfatt.c:860
+#: parsettfatt.c:875
 msgid "Bad ligature base table.\n"
 msgstr ""
 
-#: parsettfatt.c:874
+#: parsettfatt.c:889
 msgid "Bad ligature anchor count.\n"
 msgstr "Błędna liczba kotwic ligaturowych.\n"
 
-#: parsettfatt.c:994
+#: parsettfatt.c:925
+msgid " Bad mark attachment table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:982
+msgid " Bad simple positioning table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:1011
 #, c-format
 msgid ""
 "Attempt to reference lookup %d (within a contextual lookup), but there are\n"
@@ -23837,13 +23867,18 @@ msgstr ""
 "Próba odwołania się do tablicy funkcji zecerskich o numerze %d (w ramach tablicy\n"
 "kontekstowej), ale jest tylko %d tablic w tym foncie foncie (%s).\n"
 
-#: parsettfatt.c:1049 parsettfatt.c:1190
+#. GT: This continues a multi-line error message, hence the leading space
+#: parsettfatt.c:1050
+msgid " Bad contextual table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:1071 parsettfatt.c:1213
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
 msgstr ""
 "Błędna podtablica kontekstowa bądź łańcuchowa: numer glifu %d poza zakresem [0, %d)\n"
 
-#: parsettfatt.c:1062 parsettfatt.c:1210 parsettfatt.c:1329 parsettfatt.c:1478
+#: parsettfatt.c:1084 parsettfatt.c:1233 parsettfatt.c:1352 parsettfatt.c:1506
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
@@ -23852,28 +23887,42 @@ msgstr ""
 "Próba zastosowania funkcji zecerskiej do położenia poza\n"
 "zasięgiem tej tablicy kontekstowej: seq=%d max=%d\n"
 
-#: parsettfatt.c:1154 parsettfatt.c:1165 parsettfatt.c:1177 parsettfatt.c:1201
+#: parsettfatt.c:1162
+msgid " Bad contextual chaining table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:1177 parsettfatt.c:1188 parsettfatt.c:1200 parsettfatt.c:1224
 msgid "Unexpected end of file in contextual chaining subtable.\n"
 msgstr "Nieoczekiwany koniec pliku w kontekstowej podtablicy łańcuchowej.\n"
 
-#: parsettfatt.c:1296 parsettfatt.c:1425
+#: parsettfatt.c:1319 parsettfatt.c:1453
 msgid "Bad count in context chaining sub-table.\n"
 msgstr "Błędna wartość w kontekstowej podtablicy łańcuchowej.\n"
 
-#: parsettfatt.c:1309 parsettfatt.c:1437 parsettfatt.c:1447 parsettfatt.c:1458
+#: parsettfatt.c:1332 parsettfatt.c:1465 parsettfatt.c:1475 parsettfatt.c:1486
 msgid "Bad class count in contextual chaining sub-table.\n"
 msgstr "Błędna liczba klas w kontekstowej podtablicy łańcuchowej.\n"
 
-#: parsettfatt.c:1319 parsettfatt.c:1468
+#: parsettfatt.c:1342 parsettfatt.c:1496
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "Błędna podtablica kontekstowego podstawienia łańcuchowego.\n"
 
-#: parsettfatt.c:1575
+#. GT: This continues a multi-line error message, hence the leading space
+#: parsettfatt.c:1385
+msgid " Bad contextual substitution table, ignored\n"
+msgstr ""
+
+#. GT: This continues a multi-line error message, hence the leading space
+#: parsettfatt.c:1540
+msgid " Bad contextual chaining substitution table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:1608
 msgid "End of file in context chaining sub-table.\n"
 msgstr ""
 "Nieoczekiwany koniec pliku w podtablicy kontekstowego podstawienia łańcuchowego.\n"
 
-#: parsettfatt.c:1586 parsettfatt.c:1672
+#: parsettfatt.c:1619 parsettfatt.c:1705
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
@@ -23882,42 +23931,54 @@ msgstr ""
 "Próba zastosowania tablicy funkcji zecerskich poza zakresem działania tej\n"
 " tablicy kontekstowej: seq=%d, max=%d\n"
 
-#: parsettfatt.c:1637 parsettfatt.c:1646 parsettfatt.c:1655 parsettfatt.c:1664
+#: parsettfatt.c:1670 parsettfatt.c:1679 parsettfatt.c:1688 parsettfatt.c:1697
 msgid "End of file in context chaining subtable.\n"
 msgstr ""
 "Nieoczekiwany koniec pliku w podtablicy kontekstowego podstawienia łańcuchowego.\n"
 
-#: parsettfatt.c:1839
+#: parsettfatt.c:1829
+msgid " Bad simple substitution table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:1873
 #, c-format
 msgid "Bad substitution glyph: GID %d not less than %d\n"
 msgstr "Błędny glif w podstawieniu: numer glifu %d nie jest mniejszy od %d\n"
 
-#: parsettfatt.c:1880 parsettfatt.c:1908 parsettfatt.c:1920
+#: parsettfatt.c:1914 parsettfatt.c:1943 parsettfatt.c:1955
 msgid "Unexpected end of file in GSUB sub-table.\n"
 msgstr "Nieoczekiwany koniec pliku w podtablicy w „GSUB”.\n"
 
-#: parsettfatt.c:1894
+#: parsettfatt.c:1924
+msgid " Bad multiple substitution table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:1929
 msgid ""
 "Coverage table specifies a different number of glyphs than the sub-table expects.\n"
 msgstr "Tablica grupująca podaje inną liczbę glifów niż oczekiwana dla podtablicy.\n"
 
-#: parsettfatt.c:1926
+#: parsettfatt.c:1961
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"
 msgstr ""
 "Błędny glif w podstawieniu wielokrotnym lub alternatywnym:\n"
 " numer glifu %d nie jest mniejszy od %d\n"
 
-#: parsettfatt.c:1978 parsettfatt.c:1992 parsettfatt.c:2000
+#: parsettfatt.c:2013 parsettfatt.c:2029 parsettfatt.c:2037
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Nieoczekiwany koniec pliku w podtablicy ligatur w „GSUB”.\n"
 
-#: parsettfatt.c:2008
+#: parsettfatt.c:2022
+msgid " Bad ligature table, ignored\n"
+msgstr ""
+
+#: parsettfatt.c:2045
 #, c-format
 msgid "Bad ligature glyph. GID %d not less than %d\n"
 msgstr "Błędny glif ligatury: numer znaku %d nie jest mniejszy od %d\n"
 
-#: parsettfatt.c:2015
+#: parsettfatt.c:2052
 #, c-format
 msgid ""
 "Unlikely count of ligature components (%d), I suspect this ligature sub-\n"
@@ -23926,21 +23987,21 @@ msgstr ""
 "Podejrzana liczba składników ligatury (%d). Bieżąca podtablica\n"
 "ligatur może zawierać śmieci, więc zostanie pominięta.\n"
 
-#: parsettfatt.c:2026
+#: parsettfatt.c:2063
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
 msgstr ""
 "Błędny glif składowy ligatury: numer znaku %d nie jest mniejszy od %d\n"
 " (w ligaturze %d)\n"
 
-#: parsettfatt.c:2167
+#: parsettfatt.c:2204
 #, c-format
 msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
 msgstr ""
 "Błędny glif w odwrotnym łańcuchowym podstawieniu kontekstowym:\n"
 " numer glifu %d nie jest mniejszy od %d\n"
 
-#: parsettfatt.c:2234
+#: parsettfatt.c:2271
 #, c-format
 msgid ""
 "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I "
@@ -23949,11 +24010,11 @@ msgstr ""
 "W foncie %s funkcja zecerska „size” występuje wielokrotnie. Interpretacja takiej "
 "zawartości jest niepewna. FontForge wybierze któreś pojedyncze wystąpienie.\n"
 
-#: parsettfatt.c:2235
+#: parsettfatt.c:2272
 msgid "<Untitled>"
 msgstr "<Bez tytułu>"
 
-#: parsettfatt.c:2255
+#: parsettfatt.c:2292
 msgid ""
 "This font contains a 'size' feature with a design size and design range but no "
 "stylename. That is technically an error, but we'll let it pass"
@@ -23962,7 +24023,7 @@ msgstr ""
 "był projektowany, ale bez podania nazwy i identyfikatora stylu. Formalnie jest to błąd, "
 "ale FontForge przymknie na to oko."
 
-#: parsettfatt.c:2279
+#: parsettfatt.c:2316
 msgid ""
 "The 'size' feature does not seem to follow the standard,\n"
 "nor does it conform to Adobe's early misinterpretation of\n"
@@ -23972,7 +24033,7 @@ msgstr ""
 "zgodnie z wczesnym, adobe-owskim błędnym rozumieniem standardu OpenType, ani\n"
 "na zgodne z tym standardem. Nie ma jak tego przetworzyć.\n"
 
-#: parsettfatt.c:2284
+#: parsettfatt.c:2321
 msgid ""
 "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf "
 "standard.\n"
@@ -23980,17 +24041,17 @@ msgstr ""
 "Dane dotyczące funkcji zecerskiej „size” w tym foncie wyglądają tak jakby powstały "
 "zgodnie z wczesnym, adobe-owskim błędnym rozumieniem standardu OpenType.\n"
 
-#: parsettfatt.c:2309
+#: parsettfatt.c:2346
 #, c-format
 msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
 msgstr "Parametr „name” funkcji „%c%c%c%c” zawiera niepoprawny identyfikator nazwy.\n"
 
-#: parsettfatt.c:2312
+#: parsettfatt.c:2349
 #, c-format
 msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
 msgstr "Parametr „name” funkcji „%c%c%c%c” zawiera zbyt nietypowy numer wersji: %d.\n"
 
-#: parsettfatt.c:2321
+#: parsettfatt.c:2358
 #, c-format
 msgid ""
 "There are multiple name ids naming the '%c%c%c%c' feature\n"
@@ -23999,70 +24060,70 @@ msgstr ""
 "Napotkano wiele różnych identyfikatorów nazwy dla funkcji „%c%c%c%c”.\n"
 " Jest to zgodne ze specyfikacją, ale FontForge nie potrafi tego obsłużyć.\n"
 
-#: parsettfatt.c:2340 parsettfatt.c:2378
+#: parsettfatt.c:2377 parsettfatt.c:2415
 #, c-format
 msgid "Attempt to read script data beyond end of %s table"
 msgstr "Próba odczytu danych obsługiwanych pism poza końcem tablicy „%s”."
 
-#: parsettfatt.c:2349
+#: parsettfatt.c:2386
 #, c-format
 msgid "Too many scripts %d\n"
 msgstr "Zbyt wiele pism %d\n"
 
-#: parsettfatt.c:2387
+#: parsettfatt.c:2424
 #, c-format
 msgid "End of file when reading scripts in %s table"
 msgstr "Nieoczekiwany koniec pliku podczas czytania obsługiwanych pism z tablicy „%s”."
 
-#: parsettfatt.c:2398
+#: parsettfatt.c:2435
 #, c-format
 msgid "End of file in %s table"
 msgstr "Nieoczekiwany koniec pliku podczas czytania tablicy „%s”."
 
-#: parsettfatt.c:2415 parsettfatt.c:2437
+#: parsettfatt.c:2452 parsettfatt.c:2474
 #, c-format
 msgid "Attempt to read feature data beyond end of %s table"
 msgstr "Próba odczytu danych funkcji zecerskiej poza końcem tablicy „%s”."
 
-#: parsettfatt.c:2424
+#: parsettfatt.c:2461
 #, c-format
 msgid "Too many features %d\n"
 msgstr "Zbyt wiele funkcji %d\n"
 
-#: parsettfatt.c:2453
+#: parsettfatt.c:2490
 #, c-format
 msgid "End of file when reading features in %s table"
 msgstr "Nieoczekiwany koniec pliku podczas czytania funkcji zecerskich z tablicy „%s”."
 
-#: parsettfatt.c:2472 parsettfatt.c:2494
+#: parsettfatt.c:2509 parsettfatt.c:2531
 #, c-format
 msgid "Attempt to read lookup data beyond end of %s table"
 msgstr "Próba odczytu danych tablic funkcji zecerskich poza końcem tablicy „%s”."
 
-#: parsettfatt.c:2484
+#: parsettfatt.c:2521
 #, c-format
 msgid "Too many lookups %d\n"
 msgstr "Zbyt wiele tablic funkcji %d\n"
 
-#: parsettfatt.c:2520
+#: parsettfatt.c:2557
 #, c-format
 msgid "End of file when reading lookups in %s table"
 msgstr ""
 "Nieoczekiwany koniec pliku podczas czytania tablic funkcji zecerskich z tablicy „%s”."
 
-#: parsettfatt.c:2564
+#: parsettfatt.c:2601
 msgid "Lookup out of bounds in feature table.\n"
 msgstr "Numer tablicy funkcji zecerskich poza zakresem w tablicy funkcji zecerskich.\n"
 
-#: parsettfatt.c:2597
+#: parsettfatt.c:2634
 msgid "Required feature out of bounds in script table.\n"
 msgstr "Numer wymaganej funkcji poza zakresem w tablicy pism.\n"
 
-#: parsettfatt.c:2604
+#: parsettfatt.c:2641
 msgid "Feature out of bounds in script table.\n"
 msgstr "Numer funkcji poza zakresem w tablicy pism.\n"
 
-#: parsettfatt.c:2664
+#: parsettfatt.c:2701
 msgid ""
 "This font is erroneous: it has a GPOS extension subtable that points to\n"
 "another extension sub-table.\n"
@@ -24070,16 +24131,16 @@ msgstr ""
 "Błędny font: zawiera w „GPOS” podtablicę rozszerzoną,\n"
 "która odwołuje się do innej podtablicy rozszerzonej.\n"
 
-#: parsettfatt.c:2669 parsettfatt.c:2755
+#: parsettfatt.c:2706 parsettfatt.c:2792
 #, c-format
 msgid "Unknown GPOS sub-table type: %d\n"
 msgstr "Nieznany typ podtablicy GPOS: %d\n"
 
-#: parsettfatt.c:2674 parsettfatt.c:2760
+#: parsettfatt.c:2711 parsettfatt.c:2797
 msgid "Subtable extends beyond end of GPOS table\n"
 msgstr "Podtablica wychodzi poza tablicę GPOS.\n"
 
-#: parsettfatt.c:2709
+#: parsettfatt.c:2746
 msgid ""
 "This font is erroneous: it has a GSUB extension subtable that points to\n"
 "another extension sub-table.\n"
@@ -24087,58 +24148,58 @@ msgstr ""
 "Błędny font: zawiera w „GSUB” podtablicę rozszerzoną,\n"
 "która odwołuje się do innej podtablicy rozszerzonej.\n"
 
-#: parsettfatt.c:2717 parsettfatt.c:2793
+#: parsettfatt.c:2754 parsettfatt.c:2830
 #, c-format
 msgid "Unknown GSUB sub-table type: %d\n"
 msgstr "Nieznany typ podtablicy „GSUB”: %d\n"
 
-#: parsettfatt.c:2722 parsettfatt.c:2798
+#: parsettfatt.c:2759 parsettfatt.c:2835
 msgid "Subtable extends beyond end of GSUB table\n"
 msgstr "Podtablica kończy się poza zawierającą ją tablicą „GSUB”\n"
 
-#: parsettfatt.c:2941
+#: parsettfatt.c:2978
 #, c-format
 msgid "MarkClass-%d"
 msgstr "Klasa Diakrytycznych %d"
 
-#: parsettfatt.c:2953
+#: parsettfatt.c:2990
 #, c-format
 msgid "MarkSet-%d"
 msgstr "ZestawDiakrytycznych-%d"
 
-#: parsettfatt.c:3022
+#: parsettfatt.c:3059
 #, c-format
 msgid "!!!! Unknown caret format %d !!!!\n"
 msgstr "!!!! Nieznany format kursora %d !!!!\n"
 
-#: parsettfatt.c:3060
+#: parsettfatt.c:3097
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
 msgstr ""
 "Błędna tablica funkcji zecerskich: format=2 (%d/%d), pierwszy=%d, ostatni=%d, liczba "
 "glifów w foncie=%d\n"
 
-#: parsettfatt.c:3084
+#: parsettfatt.c:3121
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
 msgstr ""
 "Błędna tablica funkcji zecerskich: format=4 (%d/%d), pierwszy=%d, ostatni=%d, liczba "
 "glifów w foncie=%d\n"
 
-#: parsettfatt.c:3108
+#: parsettfatt.c:3145
 #, c-format
 msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
 msgstr ""
 "Błędna tablica funkcji zecerskich: format=6, pierwszy=%d, liczba glifów w foncie=%d\n"
 
-#: parsettfatt.c:3123
+#: parsettfatt.c:3160
 #, c-format
 msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
 msgstr ""
 "Błędna tablica funkcji zecerskich: format=8, pierwszy=%d, liczba=%d, liczba glifów w "
 "foncie=%d\n"
 
-#: parsettfatt.c:3135
+#: parsettfatt.c:3172
 #, c-format
 msgid "Invalid lookup table format. %d\n"
 msgstr "Błędny (nieznany) format tablicy funkcji zecerskich: %d.\n"
@@ -24147,56 +24208,56 @@ msgstr "Błędny (nieznany) format tablicy funkcji zecerskich: %d.\n"
 #. GT: a statemachine. The %s is the name of the statemachine('s lookup)
 #. GT: and the %d is n, where this lookup is the n'th defined for this state
 #. GT: machine
-#: parsettfatt.c:3211
+#: parsettfatt.c:3248
 #, c-format
 msgid "%s nested-substitutions %d"
 msgstr "%s, podstawienia zagnieżdżone, %d-ta tablica stanu"
 
-#: parsettfatt.c:3215
+#: parsettfatt.c:3252
 msgid "subtable"
 msgstr "podtablica"
 
-#: parsettfatt.c:3234
+#: parsettfatt.c:3271
 #, c-format
 msgid "Glyph out of bounds in 'prop' table %d\n"
 msgstr "Numer glifu w tablicy „prop” poza dozwolonym zakresem: %d\n"
 
-#: parsettfatt.c:3308
+#: parsettfatt.c:3345
 #, c-format
 msgid "Glyph out of bounds in 'lcar' table %d\n"
 msgstr "Numer glifu w tablicy „lcar” poza dozwolonym zakresem: %d\n"
 
-#: parsettfatt.c:3363
+#: parsettfatt.c:3400
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d\n"
 msgstr "Numer glifu w tablicy „opbd” poza dozwolonym zakresem: %d\n"
 
-#: parsettfatt.c:3491
+#: parsettfatt.c:3528
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Numer glifu w tablicy „mort”/„morx” poza dozwolonym zakresem: %d\n"
 
-#: parsettfatt.c:3503
+#: parsettfatt.c:3540
 #, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Numer glifu podstawianego w tablicy „mort”/„morx” poza dozwolonym zakresem: %d\n"
 
-#: parsettfatt.c:3571 parsettfatt.c:3581
+#: parsettfatt.c:3608 parsettfatt.c:3618
 msgid "Bad font, offset out of bounds.\n"
 msgstr "Błędny font, położenie w pliku poza zakresem.\n"
 
-#: parsettfatt.c:3625 parsettfatt.c:3752
+#: parsettfatt.c:3662 parsettfatt.c:3789
 msgid "Invalid ligature offset\n"
 msgstr "Błędne położenie ligatury w pliku\n"
 
-#: parsettfatt.c:3633
+#: parsettfatt.c:3670
 #, c-format
 msgid "Attempt to make a ligature for glyph %d out of "
 msgstr "Próba złożenia ligatury dla glifu %d z "
 
 #. GT: This is a reference to "Much Ado About Nothing". The string should read
 #. GT: "A ligature sub-table in Apple's 'mort'/'morx' table is too\ncomplex for me to understand. I shall give up on it.\nYour ligatures may not be complete."
-#: parsettfatt.c:3704 parsettfatt.c:3826
+#: parsettfatt.c:3741 parsettfatt.c:3863
 msgid ""
 "In an attempt to process the ligatures of this font, I've concluded\n"
 "that the state machine in Apple's mort/morx table is\n"
@@ -24207,24 +24268,24 @@ msgstr ""
 "gdyż działania maszyny stanów w tablicach „mort”/„morx” są zbyt chytre,\n"
 "aby je właściwie zrozumieć. Nie wszystkie ligatury zostały wczytane.\n"
 
-#: parsettfatt.c:3760
+#: parsettfatt.c:3797
 #, c-format
 msgid "Attempt to make a ligature for (non-existent) glyph %d out of "
 msgstr "Próba złożenia ligatury dla (nieistniejącego w foncie) glifu %d z "
 
-#: parsettfatt.c:3870
+#: parsettfatt.c:3907
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "Błędna (zbyt krótka) tablica ligatur „mort”\n"
 
-#: parsettfatt.c:3983 parsettfatt.c:4002
+#: parsettfatt.c:4020 parsettfatt.c:4039
 msgid "Bad class in state machine.\n"
 msgstr "Błędna klasa w maszynie stanów.\n"
 
-#: parsettfatt.c:3993
+#: parsettfatt.c:4030
 msgid "Bad glyph count in mort table.\n"
 msgstr "Błędna liczba glifów w tablicy „mort”.\n"
 
-#: parsettfatt.c:4039
+#: parsettfatt.c:4076
 msgid ""
 "It looks to me as though there's a morx sub-table with more than 1000\n"
 " transitions. Which makes me think there's probably an error\n"
@@ -24232,7 +24293,7 @@ msgstr ""
 "Pewna podtablica „morx” wydaje się zawierać ponad 1000 przejść stanów.\n"
 "FontForge zakłada, że to musi oznaczać błąd w tablicy.\n"
 
-#: parsettfatt.c:4058
+#: parsettfatt.c:4095
 msgid ""
 "It looks to me as though there's a morx sub-table with more than 1000\n"
 " states. Which makes me think there's probably an error\n"
@@ -24240,68 +24301,68 @@ msgstr ""
 "Pewna podtablica „morx” wydaje się zawierać ponad 1000 stanów.\n"
 "FontForge zakłada, że to musi oznaczać błąd w tablicy.\n"
 
-#: parsettfatt.c:4716 parsettfatt.c:4725
+#: parsettfatt.c:4753 parsettfatt.c:4762
 msgid "Unexpected end of file found in morx chain.\n"
 msgstr "Nieoczekiwany koniec pliku podczas przetwarzania łańcucha „morx”.\n"
 
-#: parsettfatt.c:4783
+#: parsettfatt.c:4820
 #, c-format
 msgid "Invalid or unsupported version (0x%x) for 'kern' table"
 msgstr "Błędna lub nieobsługiwana wersja tablicy „kern” (0x%x)."
 
-#: parsettfatt.c:4789
+#: parsettfatt.c:4826
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "Ostrzeżenie: zbyt nietypowa ilość podtablic (%d) w tablicy „kern”."
 
-#: parsettfatt.c:4834
+#: parsettfatt.c:4871
 msgid ""
 "In the 'kern' table, a subtable's length does not match the number of kerning pairs."
 msgstr ""
 "Długość jednej z podtablic w tablicy „kern” nie zgadza się z zawartą w niej liczbą par "
 "kerningowych."
 
-#: parsettfatt.c:4862
+#: parsettfatt.c:4899
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "Błędna para kerningowa: %d i %d muszą być mniejsze niż %d.\n"
 
-#: parsettfatt.c:4930
+#: parsettfatt.c:4967
 #, c-format
 msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
 msgstr "Podtablica 3 kerningu podaje, że font liczy %d glifów, a tablica „maxp”, że %d\n"
 
-#: parsettfatt.c:4965
+#: parsettfatt.c:5002
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
 msgstr "Błędny bądź nieobsługiwany format (%d) podtablicy tablicy „kern”."
 
-#: parsettfatt.c:4987 parsettfatt.c:5011 parsettfatt.c:5032
+#: parsettfatt.c:5024 parsettfatt.c:5048 parsettfatt.c:5069
 msgid "End of file in feat table.\n"
 msgstr "Nieoczekiwany koniec pliku w tablicy „feat”.\n"
 
-#: parsettfatt.c:5335
+#: parsettfatt.c:5372
 msgid "Bad glyph variant subtable of MATH table.\n"
 msgstr "Błędna podtablica wariantów w tablicy „MATH”.\n"
 
-#: parsettfatt.c:5764 parsettfatt.c:5772 parsettfatt.c:5814 parsettfatt.c:5823
-#: parsettfatt.c:5837 parsettfatt.c:5855 parsettfatt.c:5956 parsettfatt.c:5963
-#: parsettfatt.c:6040 parsettfatt.c:6051
+#: parsettfatt.c:5801 parsettfatt.c:5809 parsettfatt.c:5851 parsettfatt.c:5860
+#: parsettfatt.c:5874 parsettfatt.c:5892 parsettfatt.c:5993 parsettfatt.c:6000
+#: parsettfatt.c:6077 parsettfatt.c:6088
 msgid "JSTF table is too long.\n"
 msgstr "Tablica „JSTF” jest zbyt długa.\n"
 
-#: parsettfatt.c:5782
+#: parsettfatt.c:5819
 msgid "Bad GID in JSTF extenser table.\n"
 msgstr "Błędny numer glifu w tablicy rozszerzonej JSTF.\n"
 
-#: parsettfatt.c:5843
+#: parsettfatt.c:5880
 #, c-format
 msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
 msgstr ""
 "Numer tablicy funkcji zecerskich w tablicy „JSTF” (%d) poza zakresem dostępnych w "
 "„GSUB”.\n"
 
-#: parsettfatt.c:5861
+#: parsettfatt.c:5898
 #, c-format
 msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
 msgstr ""
@@ -24310,22 +24371,22 @@ msgstr ""
 
 #. GT: This string is used to generate a name for an OpenType lookup.
 #. GT:  the %c%c... is the language followed by the script (OT tags)
-#: parsettfatt.c:5879
+#: parsettfatt.c:5916
 #, c-format
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "'jstf' graniczne zbicie wiersza: waga %d #%d, język %c%c%c%c, pismo %c%c%c%c"
 
-#: parsettfatt.c:5890
+#: parsettfatt.c:5927
 #, c-format
 msgid "JSTF extension max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "'jstf' graniczne rozbicie wiersza: waga %d #%d, język %c%c%c%c, pismo %c%c%c%c"
 
-#: parsettfatt.c:5908
+#: parsettfatt.c:5945
 #, c-format
 msgid "%s subtable %d"
 msgstr "%s podtablica %d"
 
-#: parsettfatt.c:6024
+#: parsettfatt.c:6061
 #, c-format
 msgid ""
 "Unlikely script count (%d), I suspect the JSTF-\n"
@@ -24334,7 +24395,7 @@ msgstr ""
 "Podejrzana liczba pism (%d) - tablica „JSTF”\n"
 "może zawierać śmieci, więc zostanie zignorowana.\n"
 
-#: parsettfatt.c:6034 parsettfatt.c:6062
+#: parsettfatt.c:6071 parsettfatt.c:6099
 msgid "End of file found in JSTF table.\n"
 msgstr "Nieoczekiwany koniec pliku wewnątrz tablicy „JSTF.”\n"
 
@@ -30030,20 +30091,20 @@ msgstr "Niektórych fragmentów krzywych w glifie %s nieudało się połączyć.
 msgid "Stroking..."
 msgstr "Rysowanie..."
 
-#: splineutil.c:2203
+#: splineutil.c:2205
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s\n"
 msgstr "Nie znaleziono znaku „%s” w %s – a istnieją do niego odwołania.\n"
 
-#: splineutil.c:2637
+#: splineutil.c:2639
 msgid "Multiple master font with more than 16 instances\n"
 msgstr "Font Multiple-Master o więcej niż 16 składnikach\n"
 
-#: splineutil.c:2662
+#: splineutil.c:2664
 msgid "Multiple master font with more than 4 axes\n"
 msgstr "Font MultipleMaster o więcej niż czterech osiach\n"
 
-#: splineutil.c:2670
+#: splineutil.c:2672
 #, c-format
 msgid ""
 "This multiple master font has %1$d instance fonts, but it needs at least %2$d master "
@@ -30052,7 +30113,7 @@ msgstr ""
 "Ten font Multiple Master zawiera %1$d wariantów; potrzebuje przynajmniej %2$d wariantów "
 "końcowych dla %3$d osi. FontForge nie będzie w stanie poprawnie edytować tego fontu."
 
-#: splineutil.c:2672
+#: splineutil.c:2674
 #, c-format
 msgid ""
 "This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d "
@@ -30061,31 +30122,31 @@ msgstr ""
 "Ten font Multiple Master zawiera %1$d wariantów, a FontForge potrafi obsłużyć tylko %2"
 "$d wariantów końcowych dla %3$d osi – nie będzie w stanie poprawnie edytować tego fontu."
 
-#: splineutil.c:2689
+#: splineutil.c:2691
 msgid "Too many axis positions specified in /BlendDesignPositions.\n"
 msgstr "Zbyt wiele współrzędnych na osiach w /BlendDesignPositions.\n"
 
-#: splineutil.c:2721
+#: splineutil.c:2723
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "Zbyt wiele punktów danych mapowań w /BlendDesignMap dla osi %s.\n"
 
-#: splineutil.c:2730
+#: splineutil.c:2732
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s.\n"
 msgstr "Błędna wartość w /BlendDesignMap dla osi %s.\n"
 
-#: splineutil.c:2743
+#: splineutil.c:2745
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "Błędne wartości w /BlendDesignMap dla osi %s.\n"
 
-#: splineutil.c:2856
+#: splineutil.c:2858
 #, c-format
 msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
 msgstr "Nie udało się wczytać fontu CIDowego, %sCIDFontType %d, %sfonttype %d\n"
 
-#: splineutil.c:2864
+#: splineutil.c:2866
 msgid "CID format doesn't contain what we expected it to.\n"
 msgstr "CID nie zawiera tego, czego oczekiwano.\n"
 
@@ -30117,7 +30178,7 @@ msgstr "Na początku była czcionka..."
 msgid "fontology recapitulates file-ogeny"
 msgstr "Fontologia odzwierciedla plikogenezę"
 
-#: startui.c:1215
+#: startui.c:1214
 msgid "Flag0x10+"
 msgstr "Flaga 0x10+"
 
@@ -32385,188 +32446,188 @@ msgid "Samaritan, Punctuation"
 msgstr "samarytański - interpunkcja"
 
 #: unicoderange.c:65
-msgid "Aramaic"
-msgstr "aramejski"
-
-#: unicoderange.c:66
-msgid "Pahlavi"
-msgstr "pahlawi"
-
-#: unicoderange.c:68
 msgid "Mandaic"
 msgstr "mandejski"
 
-#: unicoderange.c:69
+#: unicoderange.c:66
 msgid "Devangari"
 msgstr "dewanagari"
 
-#: unicoderange.c:84
+#: unicoderange.c:81
 msgid "Hangul Jamo, Choseong"
-msgstr "hangyl Jamo, Choseong"
+msgstr "dz hangyl, Choseong"
+
+#: unicoderange.c:82
+msgid "Hangul Jamo, Jungseong"
+msgstr "dzamo hangyl, Jungseong"
+
+#: unicoderange.c:83
+msgid "Hangul Jamo, Jongseong"
+msgstr "dzamo hangyl, Jongseong"
 
 #: unicoderange.c:85
-msgid "Hangul Jamo, Jungseong"
-msgstr "hangyl Jamo, Jungseong"
-
-#: unicoderange.c:86
-msgid "Hangul Jamo, Jongseong"
-msgstr "hangyl Jamo, Jongseong"
-
-#: unicoderange.c:88
 msgid "Ethiopic Supplement"
 msgstr "uzupełnienie etiopskiego"
 
-#: unicoderange.c:93
+#: unicoderange.c:90
 msgid "Tagalog"
 msgstr "tagalski"
 
-#: unicoderange.c:94
+#: unicoderange.c:91
 msgid "Hanunóo"
 msgstr "hanunoo"
 
-#: unicoderange.c:95
+#: unicoderange.c:92
 msgid "Buhid"
 msgstr "buid"
 
-#: unicoderange.c:96
+#: unicoderange.c:93
 msgid "Tagbanwa"
 msgstr "tagbanuwa"
 
-#: unicoderange.c:101
-msgid "New Tai Lu"
-msgstr "nowe Tai Lu"
+#: unicoderange.c:96
+msgid "Unified Canadian Aboriginal Syllabics Extended"
+msgstr "rozszerzenia ujednoliconego sylabariusza rdzennych Kanadyjczyków"
 
-#: unicoderange.c:102
+#: unicoderange.c:100
 msgid "Khmer Symbols"
 msgstr "symbole khmerskie"
 
-#: unicoderange.c:104
+#: unicoderange.c:102
 msgid "Tai Tham"
 msgstr "lannijski"
 
-#: unicoderange.c:106
+#: unicoderange.c:104
 msgid "Sundanese"
 msgstr "sundajski"
 
-#: unicoderange.c:109
+#: unicoderange.c:105
+msgid "Batak"
+msgstr "Batak"
+
+#: unicoderange.c:108
 msgid "Phonetic Extensions"
 msgstr "rozszerzenia fonetyczne"
 
-#: unicoderange.c:110
+#: unicoderange.c:109
 msgid "Phonetic Extensions Supplement"
 msgstr "uzupełnienie rozszerzeń fonetycznych"
 
-#: unicoderange.c:111
+#: unicoderange.c:110
 msgid "Combining Diacritical Marks Supplement"
 msgstr "uzupełnienie składających znaków diakrytycznych"
 
-#: unicoderange.c:114
+#: unicoderange.c:113
 msgid "Symbols"
 msgstr "symbole"
 
-#: unicoderange.c:116
+#: unicoderange.c:115
 msgid "Super and Sub scripts"
 msgstr "frakcje górne i dolne"
 
-#: unicoderange.c:118
+#: unicoderange.c:117
 msgid "Combining Marks for Symbols"
-msgstr ""
+msgstr "znaki składające dla symboli"
 
-#: unicoderange.c:120
+#: unicoderange.c:119
 msgid "Number Forms"
 msgstr "formy liczbowe"
 
-#: unicoderange.c:121
+#: unicoderange.c:120
 msgid "Arrows"
 msgstr "strzałki"
 
-#: unicoderange.c:122
+#: unicoderange.c:121
 msgid "Mathematical Operators"
 msgstr "operatory matematyczne"
 
-#: unicoderange.c:123
+#: unicoderange.c:122
 msgid "Miscellaneous Technical Symbols"
 msgstr "różnorodne symbole techniczne"
 
-#: unicoderange.c:124
+#: unicoderange.c:123
 msgid "Technical Symbols Misc."
 msgstr "różnorodne symbole techniczne"
 
-#: unicoderange.c:126
+#: unicoderange.c:125
 msgid "OCR"
 msgstr "OCR"
 
-#: unicoderange.c:132
+#: unicoderange.c:131
 msgid "Symbols Misc."
-msgstr ""
+msgstr "różnorodne symbole"
 
-#: unicoderange.c:134
+#: unicoderange.c:133
 msgid "Zapf Dingbats"
 msgstr "dingbaty Zapfa"
 
-#: unicoderange.c:135
+#: unicoderange.c:134
 msgid "Miscellaneous Math Symbols-A"
 msgstr "różnorodne symbole matematyczne-A"
 
-#: unicoderange.c:136
+#: unicoderange.c:135
 msgid "Math Misc. Symbols-A"
 msgstr "różnorodne symbole matematyczne-A"
 
-#: unicoderange.c:137
+#: unicoderange.c:136
 msgid "Supplemental Arrows-A"
 msgstr "dodatkowe strzałki-A"
 
-#: unicoderange.c:138
+#: unicoderange.c:137
 msgid "Arrows Supplement-A"
 msgstr "dodatkowe strzałki-A"
 
-#: unicoderange.c:140
+#: unicoderange.c:139
 msgid "Supplemental Arrows-B"
 msgstr "dodatkowe strzałki-B"
 
-#: unicoderange.c:141
+#: unicoderange.c:140
 msgid "Arrows Supplement-B"
 msgstr "dodatkowe strzałki-B"
 
-#: unicoderange.c:142
+#: unicoderange.c:141
 msgid "Miscellaneous Math Symbols-B"
 msgstr "różnorodne symbole matematyczne-B"
 
-#: unicoderange.c:143
+#: unicoderange.c:142
 msgid "Math Misc. Symbols-B"
 msgstr "różnorodne symbole matematyczne-B"
 
-#: unicoderange.c:144
+#: unicoderange.c:143
 msgid "Supplemental Math Operators"
 msgstr "dodatkowe operatory matematyczne"
 
-#: unicoderange.c:145
+#: unicoderange.c:144
 msgid "Math Operators Supplement"
 msgstr "dodatkowe operatory matematyczne"
 
-#: unicoderange.c:146
+#: unicoderange.c:145
 msgid "Supplemental Symbols and Arrows"
 msgstr "dodatkowe symbole i strzałki"
 
-#: unicoderange.c:147
+#: unicoderange.c:146
 msgid "Symbols and Arrows Supplement"
 msgstr "dodatkowe symbole i strzałki"
 
-#: unicoderange.c:148
+#: unicoderange.c:147
 msgid "Alphabetic Extended"
 msgstr "rozszerzony znaków alfabetycznych"
 
-#: unicoderange.c:150
+#: unicoderange.c:149
 msgid "Latin Extended-C"
 msgstr "rozszerzony łaciński-C"
 
-#: unicoderange.c:152
+#: unicoderange.c:151
 msgid "Georgian Supplement"
 msgstr "uzupełnienie gruzińskiego"
 
-#: unicoderange.c:154
+#: unicoderange.c:153
 msgid "Ethiopic Extended"
 msgstr "rozszerzony etiopski"
+
+#: unicoderange.c:154
+msgid "Cyrillic Extended-A"
+msgstr "rozszerzenia grażdanki A"
 
 #: unicoderange.c:155
 msgid "Supplemental Punctuation"
@@ -32577,8 +32638,8 @@ msgid "Punctuation Supplement"
 msgstr "dodatkowa interpunkcja"
 
 #: unicoderange.c:157
-msgid "CJK Radicals"
-msgstr "klucze CJK"
+msgid "CJK Radicals Supplement"
+msgstr "uzupełnienia kluczy CJK"
 
 #: unicoderange.c:158
 msgid "Kanqxi Radicals"
@@ -32648,291 +32709,351 @@ msgstr "litery modyfikujące tonów"
 msgid "Latin Extended-D"
 msgstr "rozszerzony łaciński-D"
 
-#: unicoderange.c:188
+#: unicoderange.c:186
+msgid "Common Indic Number Forms"
+msgstr "wspólne indyjskie formy liczbowe"
+
+#: unicoderange.c:189
 msgid "Devanagari Extended"
 msgstr "rozszerzenie dewanagari"
 
-#: unicoderange.c:191
+#: unicoderange.c:192
+msgid "Hangul Jamo Extended-A"
+msgstr "rozszerzenia dzamo hangyl A"
+
+#: unicoderange.c:193
 msgid "Javanese"
 msgstr "jawajski"
 
-#: unicoderange.c:193
-msgid "Myanmar Extended"
-msgstr "rozszerzenie birmańskiego"
+#: unicoderange.c:195
+msgid "Myanmar Extended-A"
+msgstr "rozszerzenia birmańskiego A"
 
-#: unicoderange.c:194
+#: unicoderange.c:196
 msgid "Tai Viet"
 msgstr "tai viet"
 
-#: unicoderange.c:195
+#: unicoderange.c:197
+msgid "Ethiopic Extended-A"
+msgstr "rozszerzenia etiopskiego A"
+
+#: unicoderange.c:198
 msgid "Meetei Mayek"
 msgstr "manipuri (Meetei Mayek)"
 
-#: unicoderange.c:197
+#: unicoderange.c:200
 msgid "High Surrogate"
 msgstr "górne surogaty"
 
-#: unicoderange.c:198
+#: unicoderange.c:201
 msgid "Surrogate High"
 msgstr "górne surogaty"
 
-#: unicoderange.c:199
+#: unicoderange.c:202
 msgid "Surrogate High, Non Private Use"
 msgstr "górne surogaty, nie do użytku prywatnego"
 
-#: unicoderange.c:200
+#: unicoderange.c:203
 msgid "Surrogate High, Private Use"
 msgstr "górne surogaty, do użytku prywatnego"
 
-#: unicoderange.c:201
-msgid "Low Surrogate"
-msgstr "dolne surogaty"
+#: unicoderange.c:204
+msgid "Low Surrogates"
+msgstr "młodsze surogaty"
 
-#: unicoderange.c:202
-msgid "Private/Corporate Use"
-msgstr "obszar do użytku prywatnego/firmowego"
-
-#: unicoderange.c:203
+#: unicoderange.c:206
 msgid "Private Use"
 msgstr "obszar do użytku prywatnego"
 
-#: unicoderange.c:206
+#: unicoderange.c:209
 msgid "Corporate Use"
 msgstr "obszar do użytku firmowego"
 
-#: unicoderange.c:207
+#: unicoderange.c:210
 msgid "MicroSoft Symbol Area"
 msgstr "obszar symboli Microsoftu"
 
-#: unicoderange.c:210
+#: unicoderange.c:213
 msgid "Latin Ligatures"
 msgstr "ligatury łacińskie"
 
-#: unicoderange.c:211
+#: unicoderange.c:214
 msgid "Armenian Ligatures"
 msgstr "ligatury ormiańskie"
 
-#: unicoderange.c:212
+#: unicoderange.c:215
 msgid "Hebrew Ligatures/Pointed Letters"
 msgstr "ligatury hebrajskie/litery z samogłoskami"
 
-#: unicoderange.c:213
+#: unicoderange.c:216
 msgid "Arabic Presentation Forms A"
 msgstr "arabskie formy prezentacyjne A"
 
-#: unicoderange.c:215
+#: unicoderange.c:218
 msgid "Vertical Forms"
-msgstr ""
+msgstr "formy pionowe"
 
-#: unicoderange.c:219
+#: unicoderange.c:222
 msgid "Arabic Presentation Forms B"
 msgstr "arabskie formy prezentacyjne B"
 
-#: unicoderange.c:220
+#: unicoderange.c:223
 msgid "Byte Order Mark"
 msgstr "znacznik kolejności bajtów"
 
-#: unicoderange.c:221
+#: unicoderange.c:224
 msgid "Half and Full Width Forms"
 msgstr "formy ½ i pełnej szerokości"
 
-#: unicoderange.c:222
+#: unicoderange.c:225
 msgid "Latin Full Width Forms"
 msgstr "formy łacińskie pełnej szerokości"
 
-#: unicoderange.c:223
+#: unicoderange.c:226
 msgid "KataKana Half Width Forms"
 msgstr "formy katakany ½ szerokości"
 
-#: unicoderange.c:224
+#: unicoderange.c:227
 msgid "Hangul Jamo Half Width Forms"
-msgstr "formy hangyl jamo ½ szerokości"
+msgstr "formy dzamo hangyl ½ szerokości"
 
-#: unicoderange.c:226
+#: unicoderange.c:229
 msgid "Not a Unicode Character"
 msgstr "znak nieunikodowy"
 
-#: unicoderange.c:227
+#: unicoderange.c:230
 msgid "Signature Mark"
 msgstr "znak sygnatury"
 
-#: unicoderange.c:229
+#: unicoderange.c:232
 msgid "Unicode Supplementary Multilingual Plane"
 msgstr "dodatkowy obszar wielojęzyczny Unikodu"
 
-#: unicoderange.c:230
+#: unicoderange.c:233
 msgid "Supplementary Multilingual Plane"
 msgstr "dodatkowy obszar wielojęzyczny"
 
-#: unicoderange.c:231
+#: unicoderange.c:234
 msgid "Aegean scripts"
 msgstr "pisma egejskie"
 
-#: unicoderange.c:232
+#: unicoderange.c:235
 msgid "Linear B Syllabary"
 msgstr "sylabariusz pisma linearnego B"
 
-#: unicoderange.c:233
+#: unicoderange.c:236
 msgid "Linear B Ideograms"
 msgstr "ideogramy pisma linearnego B"
 
-#: unicoderange.c:234
+#: unicoderange.c:237
 msgid "Aegean numbers"
 msgstr "liczby egejskie"
 
-#: unicoderange.c:240
+#: unicoderange.c:243
 msgid "Alphabetic and syllabic LTR scripts"
 msgstr "alfabetyczne i sylabiczne pisma LTR"
 
-#: unicoderange.c:248
+#: unicoderange.c:251
 msgid "Alphabetic and syllabic RTL scripts"
 msgstr "alfabetyczne i sylabiczne pisma RTL"
 
-#: unicoderange.c:250
+#: unicoderange.c:253
 msgid "Imperial Aramaic"
 msgstr "aramejski imperialny"
 
-#: unicoderange.c:253
+#: unicoderange.c:256
 msgid "Kharosthi"
 msgstr "kharosztni"
 
-#: unicoderange.c:254
+#: unicoderange.c:257
 msgid "Old South Arabian"
 msgstr "staro-południowo-arabski"
 
-#: unicoderange.c:255
+#: unicoderange.c:258
 msgid "Avestan"
 msgstr "awestyjski"
 
-#: unicoderange.c:256
+#: unicoderange.c:259
 msgid "Inscriptional Parthian"
 msgstr "partyjski inskrypcyjny"
 
-#: unicoderange.c:257
+#: unicoderange.c:260
 msgid "Inscriptional Pahlavi"
 msgstr "pahlawi inskrypcyjny"
 
-#: unicoderange.c:258
+#: unicoderange.c:261
 msgid "Old Turkic"
 msgstr "staroturecki"
 
-#: unicoderange.c:259
+#: unicoderange.c:262
+msgid "Rumi Numeral Symbols"
+msgstr "symbole liczbowe Rumi"
+
+#: unicoderange.c:264
+msgid "Brahmi"
+msgstr "Brahmi"
+
+#: unicoderange.c:265
 msgid "Kaithi"
 msgstr "Kaithi"
 
-#: unicoderange.c:261
+#: unicoderange.c:266
 msgid "African and other syllabic scripts"
 msgstr "sylabariusze afrykańskie i inne"
 
-#: unicoderange.c:262
+#: unicoderange.c:267
 msgid "Cuneiform and other Near Eastern Scripts"
 msgstr "klinowe i inne bliskowschodnie"
 
-#: unicoderange.c:263
+#: unicoderange.c:268
 msgid "Cuneiform"
 msgstr "klinowe"
 
-#: unicoderange.c:264
+#: unicoderange.c:269
 msgid "Sumero-Akkadian Cuneiform"
 msgstr "klinowe sumero-akadyjskie"
 
-#: unicoderange.c:265
+#: unicoderange.c:270
 msgid "Cuneiform Numbers"
 msgstr "liczby pisma klinowego"
 
-#: unicoderange.c:267
+#: unicoderange.c:272
 msgid "Egyptian hieroglyphs"
 msgstr "hieroglify egipskie"
 
-#: unicoderange.c:268
+#: unicoderange.c:273
 msgid "North American ideographs and pictograms"
 msgstr "ideogramy i piktogramy północnoamerykańskie"
 
-#: unicoderange.c:269
+#: unicoderange.c:274
 msgid "Egyptian and Mayan hieroglyphs"
 msgstr "hieroglify Egipcjan i Majów"
 
-#: unicoderange.c:270
+#: unicoderange.c:275
+msgid "Bamum Supplement"
+msgstr "uzupełnienia Bamum"
+
+#: unicoderange.c:276
 msgid "Sumerian pictograms"
 msgstr "piktogramy sumeryjskie"
 
-#: unicoderange.c:271
+#: unicoderange.c:277
 msgid "Large Asian Scripts"
 msgstr "duże pisma azjatyckie"
 
-#: unicoderange.c:272
+#: unicoderange.c:278
+msgid "Kana Supplement"
+msgstr "uzupełnienia Kany"
+
+#: unicoderange.c:279
 msgid "Notational systems"
 msgstr "systemy notacji"
 
-#: unicoderange.c:273
+#: unicoderange.c:280
 msgid "Byzantine Musical Symbols"
 msgstr "bizantyjskie symbole muzyczne"
 
-#: unicoderange.c:274
+#: unicoderange.c:281
 msgid "Musical Symbols"
 msgstr "symbole muzyczne"
 
-#: unicoderange.c:275
+#: unicoderange.c:282
 msgid "Ancient Greek Musical Notation"
 msgstr "symbole muzyczne starożytnej Grecji"
 
-#: unicoderange.c:277
+#: unicoderange.c:284
 msgid "Chinese counting rod numerals"
 msgstr "chińskie cyfry patykowe"
 
-#: unicoderange.c:279
+#: unicoderange.c:286
 msgid "Mahjong Tiles"
 msgstr "kamienie do madżonga"
 
-#: unicoderange.c:280
+#: unicoderange.c:287
 msgid "Domino Tiles"
 msgstr "kamienie do domina"
 
-#: unicoderange.c:282
+#: unicoderange.c:288
+msgid "Playing Cards"
+msgstr "karty do gry"
+
+#: unicoderange.c:289
+msgid "Enclosed Alphanumeric Supplement"
+msgstr "uzupełnienia obwiedzionych znaków alfanumerycznych"
+
+#: unicoderange.c:290
+msgid "Enclosed Ideographic Supplement"
+msgstr "uzupełnienia obwiedzionych ideogramów"
+
+#: unicoderange.c:291
+msgid "Miscellaneous Symbols And Pictographs"
+msgstr "różnorodne symbole i piktogramy"
+
+#: unicoderange.c:292
+msgid "Emoticons"
+msgstr "emotikony"
+
+#: unicoderange.c:293
+msgid "Transport And Map Symbols"
+msgstr "symbole komunikacyjne i znaki na mapach"
+
+#: unicoderange.c:294
+msgid "Alchemical Symbols"
+msgstr "symbole alchemiczne"
+
+#: unicoderange.c:296
 msgid "Unicode Supplementary Ideographic Plane"
 msgstr "dodatkowy obszar ideogramów Unikodu"
 
-#: unicoderange.c:283
+#: unicoderange.c:297
 msgid "Supplementary Ideographic Plane"
 msgstr "dodatkowy obszar ideogramów"
 
-#: unicoderange.c:284
+#: unicoderange.c:298
 msgid "CJK Unified Ideographs Extension B"
 msgstr "rozszerzone ujednolicone ideogramy CJK-B"
 
-#: unicoderange.c:285
+#: unicoderange.c:299
+msgid "CJK Unified Ideographs Extension C"
+msgstr "rozszerzone ujednolicone ideogramy CJK-C"
+
+#: unicoderange.c:300
+msgid "CJK Unified Ideographs Extension D"
+msgstr "rozszerzone ujednolicone ideogramy CJK-D"
+
+#: unicoderange.c:301
 msgid "CJK Compatibility Ideographs Supplement"
 msgstr "dodatkowe ideogramy zgodności dla CJK"
 
-#: unicoderange.c:287
+#: unicoderange.c:303
 msgid "Unicode Supplementary Special-purpose Plane"
 msgstr "dodatkowy obszar specjalnego przeznaczenia Unikodu"
 
-#: unicoderange.c:288
+#: unicoderange.c:304
 msgid "Supplementary Special-purpose Plane"
 msgstr "dodatkowy obszar specjalnego przeznaczenia"
 
-#: unicoderange.c:289
+#: unicoderange.c:305
 msgid "Tag characters"
 msgstr "znaczniki"
 
-#: unicoderange.c:290
+#: unicoderange.c:306
 msgid "Variation Selectors B"
 msgstr "przełączniki wariantów glifów B"
 
-#: unicoderange.c:292
+#: unicoderange.c:308
 msgid "Supplementary Private Use Area-A"
 msgstr "dodatkowy obszar prywatnego użytku-A"
 
-#: unicoderange.c:293
+#: unicoderange.c:309
 msgid "Supplementary Private Use Area-B"
 msgstr "dodatkowy obszar prywatnego użytku-B"
 
-#: unicoderange.c:298
+#: unicoderange.c:314
 msgid "Non-Unicode Glyphs"
 msgstr "znaki spoza Unikodu"
 
-#: unicoderange.c:299
+#: unicoderange.c:315
 msgid "Unassigned Code Points"
 msgstr "niewykorzystane kody numeryczne"
 
@@ -33820,6 +33941,27 @@ msgstr "65"
 #: ../gdraw/gtextinfo.c:1069
 msgid "GGadget|ScaleFactor|100"
 msgstr "130"
+
+#~ msgid "Aramaic"
+#~ msgstr "aramejski"
+
+#~ msgid "Pahlavi"
+#~ msgstr "pahlawi"
+
+#~ msgid "New Tai Lu"
+#~ msgstr "nowe Tai Lu"
+
+#~ msgid "CJK Radicals"
+#~ msgstr "klucze CJK"
+
+#~ msgid "Myanmar Extended"
+#~ msgstr "rozszerzenie birmańskiego"
+
+#~ msgid "Low Surrogate"
+#~ msgstr "dolne surogaty"
+
+#~ msgid "Private/Corporate Use"
+#~ msgstr "obszar do użytku prywatnego/firmowego"
 
 #~ msgid "Bad Match Class Number"
 #~ msgstr "Błędny numer klasy pasującej"
