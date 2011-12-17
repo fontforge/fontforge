@@ -91,7 +91,7 @@ static void dump_glyphbyname(FILE *out, SplineFont *sf, char *name) {
 
     if ( sc==NULL )
 	LogError( "No glyph named %s.", name );
-    if ( sc->NULL || sc->parent->cidmaster==NULL )
+    if ( sc==NULL || sc->parent->cidmaster==NULL )
 	fprintf( out, "\\%s", name );
     else
 	fprintf( out, "\\%s", sc->name );
