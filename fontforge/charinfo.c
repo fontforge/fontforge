@@ -3654,6 +3654,9 @@ static int TeX_Default(GGadget *g, GEvent *e) {
 		isbaseline(ci->sc->unicodeenc) &&
 		(basesc = SFGetChar(sf,'I',NULL))!=NULL )
 	    /* Done */;
+	else
+	    basesc = ci->sc;
+
 	SplineCharFindBounds(basesc,&b);
 	style = MacStyleCode(sf,NULL);
 
