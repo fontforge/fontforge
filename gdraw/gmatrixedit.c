@@ -706,6 +706,7 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
 return( (gme->col_data[c].func)(&gme->g,r,c) );
       break;
     }
+    if (!str) str="";
 return( copy(str));
 }
 
