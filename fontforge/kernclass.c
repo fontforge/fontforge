@@ -2456,7 +2456,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     gcd[k++].creator = GTextFieldCreate;
     hvarray[9] = &gcd[k-1]; hvarray[10]=NULL;
 
-    label[k].text = (unichar_t *) "Revert Kerning";
+    label[k].text = (unichar_t *) _("Revert Kerning");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
@@ -2466,7 +2466,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     gcd[k++].creator = GButtonCreate;
     hvarray[11] = &gcd[k-1]; hvarray[12] = GCD_ColSpan;
 
-    label[k].text = (unichar_t *) "Clear Device Table";
+    label[k].text = (unichar_t *) _("Clear Device Table");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
@@ -2477,7 +2477,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     hvarray[13] = &gcd[k-1]; hvarray[14] = GCD_ColSpan; hvarray[15] = NULL;
     hvarray[16] = NULL;
 #else
-    label[k].text = (unichar_t *) "Revert Kerning";
+    label[k].text = (unichar_t *) _("Revert Kerning");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
