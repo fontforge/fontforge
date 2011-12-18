@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge 20080828\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-17 14:08+0100\n"
+"POT-Creation-Date: 2011-12-18 10:55+0100\n"
 "PO-Revision-Date: 2009-10-31 11:03+0100\n"
 "Last-Translator: Michał Nowakowski <miszka@limes.com.pl>\n"
 "Language-Team: \n"
@@ -47,7 +47,7 @@ msgstr "_Maksymalna odległość między punktami części"
 
 #: alignment.c:419 anchorsaway.c:1421 autowidth2dlg.c:281 basedlg.c:342 basedlg.c:852
 #: bdfinfo.c:862 bitmapdlg.c:524 charinfo.c:340 charinfo.c:1147 charinfo.c:2385
-#: charinfo.c:5160 charinfo.c:5441 charview.c:8053 combinations.c:1181
+#: charinfo.c:5163 charinfo.c:5444 charview.c:8053 combinations.c:1181
 #: contextchain.c:2114 cvexportdlg.c:154 cvgetinfo.c:587 cvgetinfo.c:700 cvgetinfo.c:1621
 #: cvgetinfo.c:3205 cvgetinfo.c:3635 cvgridfit.c:356 cvhints.c:566 cvhints.c:807
 #: cvimportdlg.c:351 cvpalettes.c:538 cvpointer.c:1549 cvstroke.c:1092 cvstroke.c:1792
@@ -70,14 +70,14 @@ msgstr "_Maksymalna odległość między punktami części"
 #: ttfinstrsui.c:764 ttfinstrsui.c:1462 ttfinstrsui.c:1601 ttfinstrsui.c:1917
 #: ../gdraw/gaskdlg.c:1196 ../gdraw/gaskdlg.c:1233 ../gdraw/gaskdlg.c:1270
 #: ../gdraw/gaskdlg.c:1326 ../gdraw/gaskdlg.c:1587 ../gdraw/gaskdlg.c:1646
-#: ../gdraw/gcolor.c:673 ../gdraw/gfiledlg.c:123 ../gdraw/gmatrixedit.c:1205
+#: ../gdraw/gcolor.c:673 ../gdraw/gfiledlg.c:123 ../gdraw/gmatrixedit.c:1206
 #: ../gdraw/gresedit.c:2249
 msgid "_OK"
 msgstr "_OK"
 
 #: alignment.c:430 anchorsaway.c:1432 autowidth2dlg.c:290 basedlg.c:350 basedlg.c:860
 #: bdfinfo.c:873 bitmapdlg.c:536 charinfo.c:351 charinfo.c:935 charinfo.c:945
-#: charinfo.c:1147 charinfo.c:1357 charinfo.c:2394 charinfo.c:5171 charinfo.c:5452
+#: charinfo.c:1147 charinfo.c:1357 charinfo.c:2394 charinfo.c:5174 charinfo.c:5455
 #: charview.c:8064 charview.c:8305 combinations.c:1192 contextchain.c:2144
 #: cvexportdlg.c:166 cvexportdlg.c:307 cvexportdlg.c:554 cvgetinfo.c:277 cvgetinfo.c:598
 #: cvgetinfo.c:1633 cvgetinfo.c:3217 cvgetinfo.c:3647 cvgetinfo.c:3735 cvgetinfo.c:3810
@@ -106,7 +106,7 @@ msgstr "_OK"
 #: ttfinstrsui.c:1473 ttfinstrsui.c:1602 ttfinstrsui.c:1928 ../gdraw/gaskdlg.c:1197
 #: ../gdraw/gaskdlg.c:1234 ../gdraw/gaskdlg.c:1588 ../gdraw/gaskdlg.c:1647
 #: ../gdraw/gcolor.c:682 ../gdraw/gfilechooser.c:919 ../gdraw/gfiledlg.c:153
-#: ../gdraw/gmatrixedit.c:1218 ../gdraw/gresedit.c:2265 ../gdraw/gsavefiledlg.c:287
+#: ../gdraw/gmatrixedit.c:1219 ../gdraw/gresedit.c:2265 ../gdraw/gsavefiledlg.c:287
 msgid "_Cancel"
 msgstr "_Anuluj"
 
@@ -483,11 +483,11 @@ msgstr "Pęt_le:"
 msgid "Language"
 msgstr "Język"
 
-#: basedlg.c:72 basedlg.c:78 basedlg.c:154 charinfo.c:4974 cvgetinfo.c:510
+#: basedlg.c:72 basedlg.c:78 basedlg.c:154 charinfo.c:4977 cvgetinfo.c:510
 msgid "Min"
 msgstr "Minimum"
 
-#: basedlg.c:73 basedlg.c:79 basedlg.c:155 charinfo.c:4991 cvgetinfo.c:517
+#: basedlg.c:73 basedlg.c:79 basedlg.c:155 charinfo.c:4994 cvgetinfo.c:517
 msgid "Max"
 msgstr "Maksimum"
 
@@ -703,7 +703,7 @@ msgid "Strike Information for %.90s"
 msgstr "Dane wersji bitmapowej dla %.90s"
 
 #: bdfinfo.c:809 cvstroke.c:2785 cvstroke.c:2833 cvstroke.c:2981 cvstroke.c:3029
-#: fontinfo.c:3044 ../gdraw/gmatrixedit.c:2052
+#: fontinfo.c:3044 ../gdraw/gmatrixedit.c:2053
 msgid "Delete"
 msgstr "Usuń"
 
@@ -1226,7 +1226,7 @@ msgstr "Edytuj maskę świateł wewnątrzliterowych"
 msgid "Select hints between which counters are formed"
 msgstr "Wybierz hinty między którymi ma zostać utrzymane światło"
 
-#: charinfo.c:507 charinfo.c:4352
+#: charinfo.c:507 charinfo.c:4355
 msgid "Unicode _Value:"
 msgstr "_Numer unikodo_wy:"
 
@@ -1630,65 +1630,65 @@ msgstr "ZakładkaKon"
 msgid "FullLen"
 msgstr "RozmiarCałk"
 
-#: charinfo.c:3699 charinfo.c:5025 deltaui.c:404 groupsdlg.c:1260 parsettf.c:4472
+#: charinfo.c:3702 charinfo.c:5028 deltaui.c:404 groupsdlg.c:1260 parsettf.c:4472
 msgid "Unicode"
 msgstr "Unikod"
 
-#: charinfo.c:3700
+#: charinfo.c:3703
 msgid "Variation Selector (or 0)"
 msgstr "Przełącznik wariantu (lub 0)"
 
-#: charinfo.c:3897 cvstroke.c:2596 fontview.c:1963 fontview.c:2379 groupsdlg.c:1006
+#: charinfo.c:3900 cvstroke.c:2596 fontview.c:1963 fontview.c:2379 groupsdlg.c:1006
 #: ../gdraw/gbuttons.c:199
 msgid "Pick a color"
 msgstr "Wybór koloru"
 
-#: charinfo.c:3932
+#: charinfo.c:3935
 #, c-format
 msgid "Glyph Info for %.40s"
 msgstr "Właściwości glifu dla %.40s"
 
-#: charinfo.c:3933
+#: charinfo.c:3936
 msgid "Glyph Info..."
 msgstr "Właściwości glifu..."
 
-#: charinfo.c:4041
+#: charinfo.c:4044
 msgid "No components"
 msgstr "Brak składników"
 
-#: charinfo.c:4042 charinfo.c:4610
+#: charinfo.c:4045 charinfo.c:4613
 msgid "Accented glyph composed of:"
 msgstr "Glif akcentowany składający się z:"
 
-#: charinfo.c:4043
+#: charinfo.c:4046
 msgid "Glyph composed of:"
 msgstr "Glif składający się z:"
 
-#: charinfo.c:4319
+#: charinfo.c:4322
 msgid "Glyph Info"
 msgstr "Właściwości glifu"
 
-#: charinfo.c:4334
+#: charinfo.c:4337
 msgid "Glyph _Name:"
 msgstr "_Nazwa glifu:"
 
-#: charinfo.c:4370
+#: charinfo.c:4373
 msgid "Unicode C_har:"
 msgstr "_Znak unikodowy:"
 
-#: charinfo.c:4390
+#: charinfo.c:4393
 msgid "Set From N_ame"
 msgstr "Ustaw według n_azwy"
 
-#: charinfo.c:4401
+#: charinfo.c:4404
 msgid "Set From Val_ue"
 msgstr "Ustaw wedł_ug wartości"
 
-#: charinfo.c:4416
+#: charinfo.c:4419
 msgid "Alternate Unicode Encodings / Variation Selectors"
 msgstr "Dodatkowe numery unikodowe / przełączniki wariantów glifów"
 
-#: charinfo.c:4420
+#: charinfo.c:4423
 msgid ""
 "Some glyphs may be used for more than one\n"
 "unicode code point -- I don't recommend\n"
@@ -1717,15 +1717,15 @@ msgstr ""
 "przełącznik wariantu użyć 0, w przeciwnym wypadku\n"
 "należy użyć odpowiedniego numeru unikodowego."
 
-#: charinfo.c:4444
+#: charinfo.c:4447
 msgid "OT _Glyph Class:"
 msgstr "_Klasa OpenType:"
 
-#: charinfo.c:4459
+#: charinfo.c:4462
 msgid "Mark for Unlink, Remove Overlap Before Save"
 msgstr "Usuń przecięcia odwołań przed generacją fontu."
 
-#: charinfo.c:4464
+#: charinfo.c:4467
 msgid ""
 "A few glyphs, like Aring, Ccedilla, Eogonek\n"
 "are composed of two overlapping references.\n"
@@ -1749,19 +1749,19 @@ msgstr ""
 "fontach odwołania zostaną odłączone (zastąpione obrysami),\n"
 "a przecięcia usunięte, bez zmiany pliku źródłowego."
 
-#: charinfo.c:4479 charinfo.c:5030 fontinfo.c:10453 ttfinstrsui.c:1366
+#: charinfo.c:4482 charinfo.c:5033 fontinfo.c:10453 ttfinstrsui.c:1366
 msgid "Comment"
 msgstr "Komentarz"
 
-#: charinfo.c:4495 cvstroke.c:2677 cvstroke.c:2872
+#: charinfo.c:4498 cvstroke.c:2677 cvstroke.c:2872
 msgid "Color:"
 msgstr "Kolor"
 
-#: charinfo.c:4534 lookupui.c:4267
+#: charinfo.c:4537 lookupui.c:4267
 msgid "_Hide Unused Columns"
 msgstr "_Ukryj nieużywane kolumny"
 
-#: charinfo.c:4540
+#: charinfo.c:4543
 msgid ""
 "Don't display columns of 0s.\n"
 "The OpenType lookup allows for up to 8 kinds\n"
@@ -1773,26 +1773,26 @@ msgstr ""
 "jednego. Można wyłączyć wyświetlanie nieużywanych parametrów\n"
 "aby widok stał się cokolwiek bardziej przejrzysty."
 
-#: charinfo.c:4562
+#: charinfo.c:4565
 msgid "CounterHint|_New..."
 msgstr "_Nowa maska..."
 
-#: charinfo.c:4574 cvgetinfo.c:1564 encoding.c:1175 encoding.c:1610 encodingui.c:162
+#: charinfo.c:4577 cvgetinfo.c:1564 encoding.c:1175 encoding.c:1610 encodingui.c:162
 #: groupsdlg.c:1202 kernclass.c:3162 macencui.c:663 macencui.c:1181 macencui.c:1375
 #: mmdlg.c:2971 prefs.c:1930
 msgid "_Delete"
 msgstr "_Usuń"
 
-#: charinfo.c:4586 kernclass.c:3174 macencui.c:674 macencui.c:1192 macencui.c:1387
+#: charinfo.c:4589 kernclass.c:3174 macencui.c:674 macencui.c:1192 macencui.c:1387
 #: mmdlg.c:2982 prefs.c:1942
 msgid "_Edit..."
 msgstr "_Edytuj..."
 
-#: charinfo.c:4634 cvstroke.c:2233 metricsview.c:644 tilepath.c:1811
+#: charinfo.c:4637 cvstroke.c:2233 metricsview.c:644 tilepath.c:1811
 msgid "Height:"
 msgstr "Wysokość"
 
-#: charinfo.c:4639
+#: charinfo.c:4642
 msgid ""
 "The height and depth fields are the metrics fields used\n"
 "by TeX, they are corrected for optical distortion.\n"
@@ -1802,19 +1802,19 @@ msgstr ""
 "uwzględniają korektę zniekształceń optycznych, więc zapewne\n"
 "„wysokość” dla znaków „x” oraz „o” powinna być taka sama."
 
-#: charinfo.c:4651 charinfo.c:4678 charinfo.c:4705 charinfo.c:4743
+#: charinfo.c:4654 charinfo.c:4681 charinfo.c:4708 charinfo.c:4746
 msgid "Guess"
 msgstr "Oblicz"
 
-#: charinfo.c:4661
+#: charinfo.c:4664
 msgid "Depth:"
 msgstr "Głębia kolorów:"
 
-#: charinfo.c:4688
+#: charinfo.c:4691
 msgid "Italic Correction:"
 msgstr "Kompensata pochylenia:"
 
-#: charinfo.c:4694
+#: charinfo.c:4697
 msgid ""
 "The Italic correction field is used by both TeX and the MS 'MATH'\n"
 "table. It is used when joining slanted text (italic) to upright.\n"
@@ -1826,7 +1826,7 @@ msgstr ""
 "trzeba wstawić, kiedy tekst pochyły przechodzi w prosty, aby litery\n"
 "pochyłe nie kolidowały z następującymi po nich prostymi."
 
-#: charinfo.c:4719
+#: charinfo.c:4722
 msgid ""
 "A device table for italic correction.\n"
 "Expects a comma separated list of <pixelsize>\":\"<adjustment>\n"
@@ -1836,11 +1836,11 @@ msgstr ""
 "Należy wprowadzić listę rozdzielonych przecinkami par\n"
 "<rozmiar w pikselach>„:”<korekta>, np. „9:-1,12:1,13:1”"
 
-#: charinfo.c:4725
+#: charinfo.c:4728
 msgid "Top Accent Pos:"
 msgstr "Pozycja akcentów nad:"
 
-#: charinfo.c:4732
+#: charinfo.c:4735
 msgid ""
 "In the MS 'MATH' table this value specifies where (horizontally)\n"
 "an accent should be placed above the glyph. Vertical placement\n"
@@ -1850,7 +1850,7 @@ msgstr ""
 "powinny być umieszczane akcenty nag glifem. Do określenia położenia\n"
 "w pionie służą inne środki."
 
-#: charinfo.c:4757
+#: charinfo.c:4760
 msgid ""
 "A device table for horizontal accent positioning.\n"
 "Expects a comma separated list of <pixelsize>\":\"<adjustment>\n"
@@ -1860,11 +1860,11 @@ msgstr ""
 "Należy wprowadzić listę rozdzielonych przecinkami par\n"
 "<rozmiar w pikselach>„:”<korekta>, np. „9:-1,12:1,13:1”"
 
-#: charinfo.c:4763 math.c:64
+#: charinfo.c:4766 math.c:64
 msgid "Is Extended Shape"
 msgstr "Ma wystający kształt"
 
-#: charinfo.c:4770
+#: charinfo.c:4773
 msgid ""
 "Is this an extended shape (like a tall parenthesis)?\n"
 "Extended shapes need special attention for vertical\n"
@@ -1874,11 +1874,11 @@ msgstr ""
 "Takie kształty wymagają więcej uwagi jeśli występują\n"
 "przy nich frakcje górne."
 
-#: charinfo.c:4774 math.c:1925
+#: charinfo.c:4777 math.c:1925
 msgid "Math Kerning"
 msgstr "Kerning matematyczny"
 
-#: charinfo.c:4780
+#: charinfo.c:4783
 msgid ""
 "Brings up a dialog which gives fine control over\n"
 "horizontal positioning of subscripts and superscripts\n"
@@ -1887,11 +1887,11 @@ msgstr ""
 "Otwiera okno pozwalające na dostosowanie poziomego położenia\n"
 "frakcji górnych i dolnych w zależności od ich położenia w pionie."
 
-#: charinfo.c:4801
+#: charinfo.c:4804
 msgid "Default Ligature Caret Count"
 msgstr "Domyślna liczba pozycji kursora w ligaturze"
 
-#: charinfo.c:4807 charinfo.c:4819 charinfo.c:4826
+#: charinfo.c:4810 charinfo.c:4822 charinfo.c:4829
 msgid ""
 "Ligature caret locations are used by a text editor\n"
 "when it needs to draw a text edit caret inside a\n"
@@ -1911,15 +1911,15 @@ msgstr ""
 "Można je ustawiać w oknie edycji znaku – wystarczy je przeciągać\n"
 "z pozycji początkowej na odpowiednie miejsca."
 
-#: charinfo.c:4813
+#: charinfo.c:4816
 msgid "Ligature Caret Count:"
 msgstr "Liczba pozycji kursora w ligaturze:"
 
-#: charinfo.c:4842
+#: charinfo.c:4845
 msgid "Variant Glyphs:"
 msgstr "Glify wariantów:"
 
-#: charinfo.c:4848
+#: charinfo.c:4851
 msgid ""
 "A list of the names of pre defined glyphs which represent\n"
 "bigger versions of the current glyph."
@@ -1927,11 +1927,11 @@ msgstr ""
 "Lista nazw predefiniowanych glifów reprezentujących coraz\n"
 "większe warianty bieżącego glifu."
 
-#: charinfo.c:4857
+#: charinfo.c:4860
 msgid "Glyph Extension Components"
 msgstr "Składniki wersji rozszerzonych"
 
-#: charinfo.c:4862
+#: charinfo.c:4865
 msgid ""
 "A really big version of this glyph may be made up of the\n"
 "following component glyphs. They will be stacked either\n"
@@ -1951,16 +1951,16 @@ msgstr ""
 "„RozmiarCałk” określa całkowitą wielkość glifu w danym wymiarze."
 
 #. GT: "Cor" is an abbreviation for correction
-#: charinfo.c:4867
+#: charinfo.c:4870
 msgid "Italic Cor:"
 msgstr "Kompensata Pochylenia:"
 
-#: charinfo.c:4872
+#: charinfo.c:4875
 msgid "The italic correction of the composed glyph. Should be independent of glyph size"
 msgstr ""
 "Kompensata pochylenia po glifie składanym, powinna być niezależna od wielkości glifu."
 
-#: charinfo.c:4915
+#: charinfo.c:4918
 msgid ""
 "If this glyph is used as a pattern to tile\n"
 "some other glyph then it is useful to specify\n"
@@ -1974,152 +1974,152 @@ msgstr ""
 "Wprowadza się albo o ile należy powiększyć prostokąt\n"
 "brzegowy glifu, albo jawnie sam prostokąt."
 
-#: charinfo.c:4928
+#: charinfo.c:4931
 msgid "Tile Margin:"
 msgstr "Margines:"
 
-#: charinfo.c:4949
+#: charinfo.c:4952
 msgid "Tile Bounding Box:"
 msgstr "Prostokąt brzegowy:"
 
 #. GT: X is a coordinate, the leading spaces help to align it
-#: charinfo.c:4960 fontinfo.c:8732
+#: charinfo.c:4963 fontinfo.c:8732
 msgid "  X"
 msgstr "  X"
 
-#: charinfo.c:4967
+#: charinfo.c:4970
 msgid "  Y"
 msgstr "  Y"
 
-#: charinfo.c:5035 fontinfo.c:8890
+#: charinfo.c:5038 fontinfo.c:8890
 msgid "Pos"
 msgstr "Pozycja"
 
-#: charinfo.c:5037
+#: charinfo.c:5040
 msgid "Positionings"
 msgstr "Pozycjonowanie"
 
-#: charinfo.c:5043
+#: charinfo.c:5046
 msgid "Pair"
 msgstr "Poz. par"
 
-#: charinfo.c:5045
+#: charinfo.c:5048
 msgid "Pairwise Pos"
 msgstr "Pozycjonowanie par"
 
-#: charinfo.c:5051
+#: charinfo.c:5054
 msgid "Subs"
 msgstr "Podst."
 
-#: charinfo.c:5053
+#: charinfo.c:5056
 msgid "Substitutions"
 msgstr "Podstawienia"
 
-#: charinfo.c:5058
+#: charinfo.c:5061
 msgid "Alt Subs"
 msgstr "Podst. alternatywne"
 
-#: charinfo.c:5062
+#: charinfo.c:5065
 msgid "Mult Subs"
 msgstr "Podst. wielokrotne"
 
-#: charinfo.c:5067 showatt.c:1415
+#: charinfo.c:5070 showatt.c:1415
 msgid "Ligature"
 msgstr "Ligatura"
 
-#: charinfo.c:5069 combinations.c:116 showatt.c:655
+#: charinfo.c:5072 combinations.c:116 showatt.c:655
 msgid "Ligatures"
 msgstr "Ligatury"
 
-#: charinfo.c:5074
+#: charinfo.c:5077
 msgid "Components"
 msgstr "Składniki"
 
-#: charinfo.c:5080
+#: charinfo.c:5083
 msgid "Lig. Carets"
 msgstr "Kursory ligatury"
 
-#: charinfo.c:5085 scstylesui.c:2674
+#: charinfo.c:5088 scstylesui.c:2674
 msgid "Counters"
 msgstr "Światła wewn. "
 
-#: charinfo.c:5089
+#: charinfo.c:5092
 msgid "ΤεΧ & Math"
 msgstr "ΤεΧ i matematyczne"
 
 #. GT: "Vert." is an abbreviation for Vertical
-#: charinfo.c:5095 math.c:160
+#: charinfo.c:5098 math.c:160
 msgid "Vert. Variants"
 msgstr "Warianty pionowe"
 
 #. GT: "Horiz." is an abbreviation for Horizontal
-#: charinfo.c:5101
+#: charinfo.c:5104
 msgid "Horiz. Variants"
 msgstr "Warianty poziome"
 
-#: charinfo.c:5108
+#: charinfo.c:5111
 msgid "Tile Size"
 msgstr "Rozmiar kafelka"
 
-#: charinfo.c:5131 contextchain.c:2124 cvgetinfo.c:1582 cvgetinfo.c:3154 cvgetinfo.c:3570
+#: charinfo.c:5134 contextchain.c:2124 cvgetinfo.c:1582 cvgetinfo.c:3154 cvgetinfo.c:3570
 #: cvhints.c:534 mmdlg.c:2552
 msgid "< _Prev"
 msgstr "< _Poprzedni"
 
-#: charinfo.c:5143 contextchain.c:2134 cvgetinfo.c:1595 cvgetinfo.c:3166 cvgetinfo.c:3581
+#: charinfo.c:5146 contextchain.c:2134 cvgetinfo.c:1595 cvgetinfo.c:3166 cvgetinfo.c:3581
 #: cvhints.c:545 mmdlg.c:2563
 msgid "_Next >"
 msgstr "_Następny >"
 
-#: charinfo.c:5286
+#: charinfo.c:5289
 msgid "Select By ATT..."
 msgstr "Zaznacz według ATT..."
 
-#: charinfo.c:5286
+#: charinfo.c:5289
 msgid "No glyphs matched"
 msgstr "Nie znaleziono pasujących glifów"
 
-#: charinfo.c:5363 cvundoes.c:2866
+#: charinfo.c:5366 cvundoes.c:2866
 msgid "No Lookups"
 msgstr "Brak tablic funkcji zecerskich"
 
-#: charinfo.c:5363
+#: charinfo.c:5366
 msgid "No applicable lookup subtables"
 msgstr "Nie istnieje żadna odpowiednia podtablica funkcji zecerskich"
 
-#: charinfo.c:5380
+#: charinfo.c:5383
 msgid "Select By Lookup Subtable"
 msgstr "Zaznacz według podtablicy funkcji zecerskich"
 
-#: charinfo.c:5392
+#: charinfo.c:5395
 msgid "Select Glyphs in lookup subtable"
 msgstr "Wybierz glify w podtablicy funkcji zecerskich"
 
-#: charinfo.c:5408 fontview.c:1809 fontview.c:2071
+#: charinfo.c:5411 fontview.c:1809 fontview.c:2071
 msgid "Select Results"
 msgstr "Zaznacz"
 
-#: charinfo.c:5413
+#: charinfo.c:5416
 msgid ""
 "Set the selection of the font view to the glyphs\n"
 "found by this search"
 msgstr "Zaznacz w widoku fontu tylko znalezione glify"
 
-#: charinfo.c:5418 fontview.c:1817 fontview.c:2079
+#: charinfo.c:5421 fontview.c:1817 fontview.c:2079
 msgid "Merge Results"
 msgstr "Dodaj do zaznaczenia"
 
-#: charinfo.c:5423
+#: charinfo.c:5426
 msgid ""
 "Expand the selection of the font view to include\n"
 "all the glyphs found by this search"
 msgstr "Dodaj znalezione glify do zaznaczenia w widoku fontu"
 
-#: charinfo.c:5428 fontview.c:1825 fontview.c:2087
+#: charinfo.c:5431 fontview.c:1825 fontview.c:2087
 msgid "Restrict Selection"
 msgstr "Odejmij od zaznaczenia"
 
-#: charinfo.c:5433
+#: charinfo.c:5436
 msgid ""
 "Only search the selected glyphs, and unselect\n"
 "any characters which do not match this search"
@@ -6237,7 +6237,7 @@ msgstr ""
 msgid "Rasterize at sizes:"
 msgstr "Rastruj w rozmiarach:"
 
-#: deltaui.c:268 metricsview.c:2871
+#: deltaui.c:268 displayfonts.c:1833 metricsview.c:2871
 msgid "DPI:"
 msgstr "Punkty na cal:"
 
@@ -15875,7 +15875,7 @@ msgstr "Wyczyść"
 msgid "Clear All"
 msgstr "Wyczyść wszystkie"
 
-#: kernclass.c:1350
+#: kernclass.c:1350 kernclass.c:2469
 msgid "Clear Device Table"
 msgstr "Wyczyść tablicę rastrowania"
 
@@ -15956,6 +15956,10 @@ msgid ""
 msgstr ""
 "Korekta:\n"
 "  (w tym stopniu):"
+
+#: kernclass.c:2459 kernclass.c:2480
+msgid "Revert Kerning"
+msgstr ""
 
 #: kernclass.c:2463
 msgid ""
@@ -23806,17 +23810,17 @@ msgstr "Błędna para kerningowa: numery glifów %d i %d powinny być mniejsze n
 #. GT: This continues a multi-line error message, hence the leading space
 #: parsettfatt.c:561
 msgid " Bad pairwise kerning table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica kerningu, zignorowano\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
 #: parsettfatt.c:604
 msgid " Bad kerning class table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica klas kerningu, zignorowano\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
 #: parsettfatt.c:742
 msgid " Bad cursive alignment table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica złącz pisanych międzyznakowych, zignorowano\n"
 
 #: parsettfatt.c:748
 #, c-format
@@ -23844,7 +23848,7 @@ msgstr "Błędna tablica „base”.\n"
 
 #: parsettfatt.c:875
 msgid "Bad ligature base table.\n"
-msgstr ""
+msgstr "Błędna tablica ligatur.\n"
 
 #: parsettfatt.c:889
 msgid "Bad ligature anchor count.\n"
@@ -23852,11 +23856,11 @@ msgstr "Błędna liczba kotwic ligaturowych.\n"
 
 #: parsettfatt.c:925
 msgid " Bad mark attachment table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica położenia znaków diakrytycznych, zignorowano\n"
 
 #: parsettfatt.c:982
 msgid " Bad simple positioning table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica pozycjonowania prostego, zignorowano\n"
 
 #: parsettfatt.c:1011
 #, c-format
@@ -23870,7 +23874,7 @@ msgstr ""
 #. GT: This continues a multi-line error message, hence the leading space
 #: parsettfatt.c:1050
 msgid " Bad contextual table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica kontekstowa, zignorowano\n"
 
 #: parsettfatt.c:1071 parsettfatt.c:1213
 #, c-format
@@ -23889,7 +23893,7 @@ msgstr ""
 
 #: parsettfatt.c:1162
 msgid " Bad contextual chaining table, ignored\n"
-msgstr ""
+msgstr " Błędna kontekstowa tablica łańcuchowa, zignorowano\n"
 
 #: parsettfatt.c:1177 parsettfatt.c:1188 parsettfatt.c:1200 parsettfatt.c:1224
 msgid "Unexpected end of file in contextual chaining subtable.\n"
@@ -23910,12 +23914,12 @@ msgstr "Błędna podtablica kontekstowego podstawienia łańcuchowego.\n"
 #. GT: This continues a multi-line error message, hence the leading space
 #: parsettfatt.c:1385
 msgid " Bad contextual substitution table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica podstawienia kontekstowego, zignorowano\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
 #: parsettfatt.c:1540
 msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica łańcuchowego podstawienia kontekstowego, zignorowano\n"
 
 #: parsettfatt.c:1608
 msgid "End of file in context chaining sub-table.\n"
@@ -23938,7 +23942,7 @@ msgstr ""
 
 #: parsettfatt.c:1829
 msgid " Bad simple substitution table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica podstawienia prostego, zignorowano\n"
 
 #: parsettfatt.c:1873
 #, c-format
@@ -23951,7 +23955,7 @@ msgstr "Nieoczekiwany koniec pliku w podtablicy w „GSUB”.\n"
 
 #: parsettfatt.c:1924
 msgid " Bad multiple substitution table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica podstawienia wieokrotnego, zignorowano\n"
 
 #: parsettfatt.c:1929
 msgid ""
@@ -23971,7 +23975,7 @@ msgstr "Nieoczekiwany koniec pliku w podtablicy ligatur w „GSUB”.\n"
 
 #: parsettfatt.c:2022
 msgid " Bad ligature table, ignored\n"
-msgstr ""
+msgstr " Błędna tablica ligatur, zignorowano\n"
 
 #: parsettfatt.c:2045
 #, c-format
@@ -28195,7 +28199,7 @@ msgstr "O ile powiększyć grubości kresek poziomych"
 
 #: scstylesui.c:448
 msgid "Threshold between Thin and Thick Stems"
-msgstr ""
+msgstr "Granica między kreskami grubymi a cienkimi"
 
 #: scstylesui.c:453
 msgid "Vertical Stem Width Scale"
@@ -28207,11 +28211,11 @@ msgstr "O ile powiększyć grubości kresek pionowych"
 
 #: scstylesui.c:460
 msgid "Unlikely stem threshold"
-msgstr ""
+msgstr "Mało prawdopodobna wartość graniczna"
 
 #: scstylesui.c:460
 msgid "Stem threshold should be positive"
-msgstr ""
+msgstr "Wartosć graniczna powinna być dodatnia"
 
 #: scstylesui.c:463
 msgid "Unlikely scale factor"
@@ -28295,7 +28299,7 @@ msgstr "Kreski pionowe:"
 
 #: scstylesui.c:597
 msgid "Width/Height of Thick Stems:"
-msgstr ""
+msgstr "Kreski grube:"
 
 #: scstylesui.c:601
 msgid "Height of Horizontal Stems:"
@@ -28303,7 +28307,7 @@ msgstr "Kreski poziome:"
 
 #: scstylesui.c:602
 msgid "Width/Height of Thin Stems:"
-msgstr ""
+msgstr "Kreski cienkie:"
 
 #: scstylesui.c:778
 msgid "Original Y Position"
@@ -28391,19 +28395,19 @@ msgstr "Utwórz warianty kapitalikowe także dla symboli"
 
 #: scstylesui.c:1202
 msgid "Uniform scaling for stems of any width and direction"
-msgstr ""
+msgstr "Skaluj jednakowo kreski poziome, pionowe i każdej grubości"
 
 #: scstylesui.c:1213
 msgid "Separate ratios for thin and thick stems"
-msgstr ""
+msgstr "Skaluj kreski grube inaczej, niż cienkie"
 
 #: scstylesui.c:1224
 msgid "Threshold between \"thin\" and \"thick\":"
-msgstr ""
+msgstr "Granica między kreskami \"grubymi\" a \"cienkimi\":"
 
 #: scstylesui.c:1259
 msgid "Separate ratios for horizontal and vertical stems"
-msgstr ""
+msgstr "Skaluj kreski pionowe inaczej, niż poziomie"
 
 #: scstylesui.c:1288 scstylesui.c:1333 scstylesui.c:1450 scstylesui.c:1494
 #: scstylesui.c:1537 scstylesui.c:1607
@@ -28424,7 +28428,7 @@ msgstr "Zachowaj całkowitą szerokość, wycentruj glif"
 
 #: scstylesui.c:1399
 msgid "Retain current advance width, scale side bearings proportionally"
-msgstr ""
+msgstr "Zachowaj całkowitą szerokość, skaluj odsadki proporcjonalnie"
 
 #: scstylesui.c:1410
 msgid "Uniform scaling for horizontal counters and side bearings"
@@ -30178,7 +30182,7 @@ msgstr "Na początku była czcionka..."
 msgid "fontology recapitulates file-ogeny"
 msgstr "Fontologia odzwierciedla plikogenezę"
 
-#: startui.c:1214
+#: startui.c:1215
 msgid "Flag0x10+"
 msgstr "Flaga 0x10+"
 
@@ -30606,6 +30610,8 @@ msgid ""
 "Attempt to output %d into a 16-bit field. It will be truncated and the file may not be "
 "useful."
 msgstr ""
+"Próba zapisania wartości %d do pola 16-bitowego. Wartość zostanie obcięta, a plik może "
+"nie nadawać się do użycia."
 
 #: tottf.c:4366 tottf.c:4372 tottf.c:4378
 #, c-format
@@ -30701,6 +30707,8 @@ msgid ""
 "On Windows many apps will have problems with this font's kerning, because %d of its "
 "glyph kern pairs cannot be mapped to unicode-BMP kern pairs"
 msgstr ""
+"Wiele aplikacji systemu Windows będzie miało kłopot z kerningiem tego fomtu, ponieważ %"
+"d par kerningu nie może być zmapowanych do unidoce-BMP."
 
 #: tottfgpos.c:1136
 #, c-format
@@ -30721,7 +30729,7 @@ msgstr "Podtablica funkcji zecerskich „%s” musiała zostać podzielona na mn
 #: tottfgpos.c:1248
 #, c-format
 msgid "I miscalculated the size of subtable %s, this means the kerning output is wrong."
-msgstr ""
+msgstr "Pomyłka przy obliczaniu rozmiaru podtablicy %s - będą błędy kerningu."
 
 #: tottfgpos.c:1560
 msgid "Two cursive anchor classes"
@@ -33479,7 +33487,7 @@ msgstr "Ustawienia wyglądu tabel"
 msgid "Matrix Edit Continued"
 msgstr "Tabela - ciąg dalszy"
 
-#: ../gdraw/gmatrixedit.c:1624
+#: ../gdraw/gmatrixedit.c:1625
 msgid "Row|New"
 msgstr "Dodaj"
 
