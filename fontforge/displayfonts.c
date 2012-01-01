@@ -1830,7 +1830,7 @@ return;
     gcd[14].creator = GLineCreate;
     varray2[4] = &gcd[14]; varray2[5] = NULL;
 
-    label[15].text = (unichar_t *) "DPI:";
+    label[15].text = (unichar_t *) _("DPI:");
     label[15].text_is_1byte = true;
     gcd[15].gd.label = &label[15];
     gcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
