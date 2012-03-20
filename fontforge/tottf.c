@@ -5786,7 +5786,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     }
 
     if ( sf->subfonts!=NULL ) {
-	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
+	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the separate fonts of a cid keyed fonts and treat it as flat */
     } else if ( format!=ff_none )
 	AssignTTFGlyph(&at->gi,sf,at->map,format==ff_otf);
     else {
@@ -6101,7 +6101,7 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
 	AssignTTFGlyph(&at->gi,sf,at->map,true);
 	ret = dumptype2glyphs(sf,at);
     } else {
-	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the seperate fonts of a cid keyed fonts and treat it as flat */
+	SFDummyUpCIDs(&at->gi,sf);	/* life is easier if we ignore the separate fonts of a cid keyed fonts and treat it as flat */
 	ret = dumpcidglyphs(sf,at);
 	free(sf->glyphs); sf->glyphs = NULL;
 	sf->glyphcnt = sf->glyphmax = 0;

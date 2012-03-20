@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
 	    else if ( cid>=8720 && cid<=8949 )
 		sprintf( buffer, "Japan1.%d.vert", cid-8720+1 );
     /* Rotated halfwidth latin, japanese ascii (ie yen for backslash) */
-    /*  (don't really need a seperate case here, both blocks are consecutive) */
+    /*  (don't really need a separate case here, both blocks are consecutive) */
 	    else if ( cid>=8950 && cid<=9044 )
 		sprintf( buffer, "Japan1.%d.vert", cid-8950+231 );
     /* Rotated halfwidth latin, nonascii */
