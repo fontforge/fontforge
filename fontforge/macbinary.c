@@ -3130,7 +3130,7 @@ static SplineFont *FindResourceFile(char *filename,int flags,enum openflags open
 return( sf );
 
     /* Well, look in the resource fork directory (if it exists), the resource */
-    /*  fork is placed there in a seperate file on (some) non-Mac disks */
+    /*  fork is placed there in a separate file on (some) non-Mac disks */
     strcpy(buffer,filename);
     spt = strrchr(buffer,'/');
     if ( spt==NULL ) { spt = buffer; pt = filename; }

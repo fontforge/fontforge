@@ -524,7 +524,7 @@ typedef struct kernpair {
 
 typedef struct kernclass {
     int first_cnt, second_cnt;		/* Count of classes for first and second chars */
-    char **firsts;			/* list of a space seperated list of char names */
+    char **firsts;			/* list of a space separated list of char names */
     char **seconds;			/*  one entry for each class. Entry 0 is null */
     					/*  and means everything not specified elsewhere */
     struct lookup_subtable *subtable;

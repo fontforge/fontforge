@@ -3902,7 +3902,7 @@ return( rf );
 
 /* I used to create multiple ligatures by putting ";" between them */
 /* that is the component string for "ffi" was "ff i ; f f i" */
-/* Now I want to have seperate ligature structures for each */
+/* Now I want to have separate ligature structures for each */
 static PST1 *LigaCreateFromOldStyleMultiple(PST1 *liga) {
     char *pt;
     PST1 *new, *last=liga;

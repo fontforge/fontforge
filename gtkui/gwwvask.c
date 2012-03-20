@@ -470,7 +470,7 @@ return( FALSE );
 	    pattern = ppt;
 	    ++name;
 	} else if ( ch=='{' ) {
-	    /* matches any of a comma seperated list of substrings */
+	    /* matches any of a comma separated list of substrings */
 	    for ( ppt = pattern+1; *ppt!='\0' ; ppt = ept ) {
 		for ( ept=ppt; *ept!='}' && *ept!=',' && *ept!='\0'; ++ept );
 		for ( npt = name; ppt<ept; ++npt, ++ppt ) {

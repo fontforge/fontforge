@@ -2799,7 +2799,7 @@ void MMWizard(MMSet *mm) {
 		for ( j=1; j<mmw.mm->axismaps[i].points-1; ++j ) {
 		    if ( mmw.mm->apple && mmw.mm->axismaps[i].designs[j]==mmw.mm->axismaps[i].def )
 		continue;
-		    /* I wanted to seperate things with commas, but that isn't*/
+		    /* I wanted to separate things with commas, but that isn't*/
 		    /*  a good idea in Europe (comma==decimal point) */
 		    sprintf(buffer,"%g ",(double) mmw.mm->axismaps[i].designs[j]);
 		    if ( designs[i]!=NULL )
