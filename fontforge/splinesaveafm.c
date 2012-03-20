@@ -1139,7 +1139,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
     if ( sf->fullname!=NULL ) fprintf( afm, "FullName %s\n", sf->fullname );
     if ( sf->familyname!=NULL ) fprintf( afm, "FamilyName %s\n", sf->familyname );
     if ( sf->weight!=NULL ) fprintf( afm, "Weight %s\n", sf->weight );
-    /* AFM lines are limitted to 256 characters and US ASCII */
+    /* AFM lines are limited to 256 characters and US ASCII */
     if ( sf->copyright!=NULL ) {
 	char *pt, *start, *p;
 	for ( pt=start=sf->copyright; *pt && pt-start<200 && *pt!='\n'; ++pt );

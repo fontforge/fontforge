@@ -1835,7 +1835,7 @@ msgid "Bad Name"
 msgstr "Tên sai"
 
 #: charinfo.c:535
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr "Tên hình tượng có chiều dài tối đa 31 ký tự."
 
 #: charinfo.c:541
@@ -2289,7 +2289,7 @@ msgstr "Đánh dấu để bỏ liên kết, gỡ bỏ sự chống chéo trư�
 msgid ""
 "A few glyphs, like Aring, Ccedilla, Eogonek\n"
 "are composed of two overlapping references.\n"
-"Often it is desireable to retain the references\n"
+"Often it is desirable to retain the references\n"
 "(so that changes made to the base glyph are\n"
 "reflected in the composed glyph), but that\n"
 "means you are stuck with overlapping contours.\n"
@@ -8534,12 +8534,12 @@ msgstr "Từ khoá « ignore » (bỏ qua) phải có hoặc vị trí hoặc s�
 
 #: featurefile.c:4750
 #, c-format
-msgid "Empty subsitute on line %d of %s"
+msgid "Empty substitute on line %d of %s"
 msgstr "Sự thay thế rỗng trên dòng %d của %s"
 
 #: featurefile.c:4753
 #, c-format
-msgid "Reverse subsitute must have exactly one marked glyph and no lookups on line %d of %s"
+msgid "Reverse substitute must have exactly one marked glyph and no lookups on line %d of %s"
 msgstr "Đảo thay thế thì phải có chính xác một hình tượng đánh dấu và không tra tìm gì trên dòng %d trên %s"
 
 #: featurefile.c:4776
@@ -10471,7 +10471,7 @@ msgid "Polish"
 msgstr "Tiếng Ba Lan"
 
 #: fontinfo.c:534
-msgid "Portugese (Portugal)"
+msgid "Portuguese (Portugal)"
 msgstr "Tiếng Bồ Đào Nha (Bồ Đào Nha)"
 
 #: fontinfo.c:535
@@ -12177,7 +12177,7 @@ msgid "The amount of space between words when using this font"
 msgstr "Khoảng cách giữa hai từ khi dùng phông này"
 
 #: fontinfo.c:3917
-msgid "The amount of strechable space between words when using this font"
+msgid "The amount of stretchable space between words when using this font"
 msgstr "Khoảng cách có thể kéo giãn được giữa hai từ khi dùng phông này"
 
 #: fontinfo.c:3918
@@ -13554,7 +13554,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its PostScript equivalent\n"
+"To associate or disassociate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 "Hành động:\n"
@@ -20313,7 +20313,7 @@ msgstr "Tiểu thả cơ sở chữ thấp:"
 #: mathconstants.c:56
 msgid ""
 "Maximum allowed drop of the baseline of\n"
-"subscripts realtive to the bottom of the base.\n"
+"subscripts relative to the bottom of the base.\n"
 "Used for bases that are treated as a box\n"
 "or extended shape. Positive for subscript\n"
 "baseline dropped below base bottom."
@@ -20367,7 +20367,7 @@ msgstr "Đại thả cơ sở chữ cao :"
 #: mathconstants.c:60
 msgid ""
 "Maximum allowed drop of the baseline of\n"
-"superscripts realtive to the top of the base.\n"
+"superscripts relative to the top of the base.\n"
 "Used for bases that are treated as a box\n"
 "or extended shape. Positive for superscript\n"
 "baseline below base top."
@@ -20771,7 +20771,7 @@ msgid "UnderbarExtraDescender:"
 msgstr "Vùng dưới thanh dưới:"
 
 #: mathconstants.c:94
-msgid "Extra white space resevered below the underbar."
+msgid "Extra white space reserved below the underbar."
 msgstr ""
 "Khoảng trắng thêm dành riêng\n"
 "bên dưới thanh dưới."
@@ -24457,7 +24457,7 @@ msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
 msgstr "Hình tượng %d thử tham chiếu đến hình tượng %d mà nằm bên ngoài phông\n"
 
 #: parsettf.c:2164
-msgid "Reached end of file when reading composit glyph\n"
+msgid "Reached end of file when reading composite glyph\n"
 msgstr "Gặp kết thúc tập tin trong khi đọc hình tượng ghép\n"
 
 #: parsettf.c:2194
@@ -24905,7 +24905,7 @@ msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fv
 msgstr "Trong bảng 'avar' có số đếm trục khác với số trong bảng 'fvar'.\n"
 
 #: parsettfvar.c:183
-msgid "Hmm, the the 'avar' table is too long.\n"
+msgid "Hmm, the 'avar' table is too long.\n"
 msgstr "Bảng 'avar; quá dài.\n"
 
 #: parsettfvar.c:497
@@ -26569,7 +26569,7 @@ msgstr ""
 "cho chữ viết của hình tượng đó."
 
 #: problems.c:3968
-msgid "Check subtitutions for empty chars"
+msgid "Check substitutions for empty chars"
 msgstr "Kiểm tra sự thay thế ký tự rỗng"
 
 #: problems.c:3974
@@ -29186,7 +29186,7 @@ msgstr "Thêm các hình tượng mới và tham chiếu đến chúng khi một
 
 #: search.c:1460
 #, c-format
-msgid "%s had both contours and references, so the contours were moved into this glyph, and the a reference to it was added in the original."
+msgid "%s had both contours and references, so the contours were moved into this glyph, and a reference to it was added in the original."
 msgstr "%s có cả hai đường viền và tham chiếu, thì các đường viền được dời vào hình tượng này, và tham chiếu đến nó được thêm vào hình tượng gốc."
 
 #: search.c:1481
@@ -34182,7 +34182,7 @@ msgstr "55"
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
 #. GT: "GGadget|ScaleFactor|", that's only to provide context. The number should
-#. GT: be a percentage and indicates the the ratio of the length of a string in
+#. GT: be a percentage and indicates the ratio of the length of a string in
 #. GT: your language to the same string's length in English.
 #. GT: Suppose it takes 116 pixels to say "Ne pas enregistrer" in French but
 #. GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor
@@ -34385,10 +34385,10 @@ msgstr "º Xuôi chiều"
 msgid "° Withershins"
 msgstr "° Ngược chiều"
 
-# FontForge needs to recoginze the quotes used here(“”). If you change them
+# FontForge needs to recognize the quotes used here(“”). If you change them
 # (in the translated strings) let me know. It currently also recognizes
 # guillemets and a couple of other quotes as well.
-#. FontForge needs to recoginze the quotes used here(“”). If you change them
+#. FontForge needs to recognize the quotes used here(“”). If you change them
 #. (in the translated strings) let me know. It currently also recognizes
 #. guillemets and a couple of other quotes as well.
 #. pfaedit@users.sourceforge.net

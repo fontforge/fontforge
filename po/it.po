@@ -2914,7 +2914,7 @@ msgstr "Il carattere, %.40s, conteneva dei riferimenti, ma l'encoding del font �
 msgid "Glyph Name Changed"
 msgstr "Il nome del carattere è cambiato"
 
-msgid "The the name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"
+msgid "The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"
 msgstr "Il nome del carattere %.40s è cambiato. Ecco quello che io utilizzo per trovare il glifo nel file, così che non posso ritornare sul carattere.\n(Non sarai più avvertito per i successivi caratteri)"
 
 msgid "Pixel size?"

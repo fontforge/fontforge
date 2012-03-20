@@ -3116,7 +3116,7 @@ msgstr "パピアメント語"
 msgid "Portugues Portugues"
 msgstr "ポルトガル語(ポルトガル)"
 
-msgid "Portugese (Portugal)"
+msgid "Portuguese (Portugal)"
 msgstr "ポルトガル語(ポルトガル)"
 
 msgid "Portugues Brasil"
@@ -3320,7 +3320,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name right click and select the\n"
+"To associate or disassociate a truetype name right click and select the\n"
 " appropriate menu item."
 msgstr ""
 "新しい名前の作成: <新規>ボタンをクリックしてから,ロケールを選択します.\n"
@@ -3346,7 +3346,7 @@ msgstr "このフォントを使用したときの単語間スペースの量"
 msgid "Stretch:"
 msgstr "語間の伸長度:"
 
-msgid "The amount of strechable space between words when using this font"
+msgid "The amount of stretchable space between words when using this font"
 msgstr "このフォントを使用したときの, 単語間スペースの拡大可能な量"
 
 msgid "Shrink:"
@@ -4316,7 +4316,7 @@ msgstr "楕円(塗りつぶし)"
 msgid "Multiple"
 msgstr "重複"
 
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr "グリフ名は31文字までに制限されています"
 
 msgid "A glyph name may not start with a digit nor a full stop (period)"
@@ -9272,7 +9272,7 @@ msgstr "置換・カーニングクラス等が,フォント内の\nどのグリ
 msgid "Check for missing _lookup tags"
 msgstr "存在しない表引きタグをチェック(_L)"
 
-msgid "Check whether a contextual subtitution/positioning item refers to a tag which is not defined in the font"
+msgid "Check whether a contextual substitution/positioning item refers to a tag which is not defined in the font"
 msgstr "文脈依存の置換/位置指定の項目がフォント内で定義されていないタグを使用していないかチェックします"
 
 msgid "Check for use of '_DFLT' script"
@@ -9376,7 +9376,7 @@ msgid ""
 "Check for characters whose vertical advance width is not the displayed value."
 msgstr "縦書き時の送り幅が表示されている値と異なる文字をチェックします."
 
-msgid "Check subtitutions for empty chars"
+msgid "Check substitutions for empty chars"
 msgstr "空のグリフへの置換をチェック"
 
 msgid "Check for glyphs which contain 'GSUB' entries which refer to empty glyphs"
@@ -12439,7 +12439,7 @@ msgstr "'glyf'テーブルの解析中に, 境界を超えたグリフ %d への
 msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
 msgstr "グリフ %d がフォントのグリフ数を超えるグリフ %d を参照しようとしました\n"
 
-msgid "Reached end of file when reading composit glyph\n"
+msgid "Reached end of file when reading composite glyph\n"
 msgstr "合成グリフの読み込み中にファイルの終端に到達しました\n"
 
 msgid ""
@@ -12935,7 +12935,7 @@ msgid ""
 "table.\n"
 msgstr "ふむ, 'avar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります.\n"
 
-msgid "Hmm, the the 'avar' table is too long.\n"
+msgid "Hmm, the 'avar' table is too long.\n"
 msgstr "ふむ, 'avar' テーブルが大きすぎます\n"
 
 msgid "Mismatched local and shared tuple flags.\n"

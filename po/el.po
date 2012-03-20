@@ -3559,7 +3559,7 @@ msgid "Bad Name"
 msgstr ""
 
 #: charinfo.c:4566
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr ""
 
 #: charinfo.c:4572
@@ -8214,8 +8214,8 @@ msgstr ""
 
 #: fontinfo.c:756
 #, fuzzy
-msgid "Portugese (Portugal)"
-msgstr "Portugese Portugal"
+msgid "Portuguese (Portugal)"
+msgstr "Portuguese Portugal"
 
 #: fontinfo.c:757
 #, fuzzy
@@ -8864,7 +8864,7 @@ msgid "The amount of space between words when using this font"
 msgstr ""
 
 #: fontinfo.c:4845
-msgid "The amount of strechable space between words when using this font"
+msgid "The amount of stretchable space between words when using this font"
 msgstr ""
 
 #: fontinfo.c:4846
@@ -9750,7 +9750,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its PostScript equivalent\n"
+"To associate or disassociate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 
@@ -9972,7 +9972,7 @@ msgid ""
 "the file, so I cannot revert this glyph.\n"
 "(You will not be warned for subsequent glyphs.)"
 msgstr ""
-"The the name of glyph %.40s has changed. This is what I use to find the "
+"The name of glyph %.40s has changed. This is what I use to find the "
 "glyph in the file, so I cannot revert this glyph.\n"
 "(You will not be warned for subsequent glyphs)"
 
@@ -13585,7 +13585,7 @@ msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
 msgstr ""
 
 #: parsettf.c:1550
-msgid "Reached end of file when reading composit glyph\n"
+msgid "Reached end of file when reading composite glyph\n"
 msgstr ""
 
 #: parsettf.c:1582
@@ -13936,7 +13936,7 @@ msgid ""
 msgstr ""
 
 #: parsettfvar.c:183
-msgid "Hmm, the the 'avar' table is too long.\n"
+msgid "Hmm, the 'avar' table is too long.\n"
 msgstr ""
 
 #: parsettfvar.c:497
@@ -15646,7 +15646,7 @@ msgid ""
 msgstr ""
 
 #: problems.c:3082
-msgid "Check subtitutions for empty chars"
+msgid "Check substitutions for empty chars"
 msgstr ""
 
 #: problems.c:3088
@@ -15700,7 +15700,7 @@ msgstr ""
 
 #: problems.c:3164
 msgid ""
-"Check whether a contextual subtitution/positioning item refers to a tag "
+"Check whether a contextual substitution/positioning item refers to a tag "
 "which is not defined in the font"
 msgstr ""
 
@@ -19557,7 +19557,7 @@ msgstr "100"
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
 #. GT: "GGadget|ScaleFactor|", that's only to provide context. The number should
-#. GT: be a percentage and indicates the the ratio of the length of a string in
+#. GT: be a percentage and indicates the ratio of the length of a string in
 #. GT: your language to the same string's length in English.
 #. GT: Suppose it takes 116 pixels to say "Ne pas enregistrer" in French but
 #. GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor
@@ -19775,10 +19775,10 @@ msgstr "° Κατά τη φορά των δεικτών του ρολογιού"
 msgid "° Withershins"
 msgstr "° Αντίθετα από τη φορά των δεικτών του ρολογιού"
 
-# FontForge needs to recoginze the quotes used here(“”). If you change them
+# FontForge needs to recognize the quotes used here(“”). If you change them
 # (in the translated strings) let me know. It currently also recognizes
 # guillemets and a couple of other quotes as well.
-#. FontForge needs to recoginze the quotes used here(“”). If you change them
+#. FontForge needs to recognize the quotes used here(“”). If you change them
 #. (in the translated strings) let me know. It currently also recognizes
 #. guillemets and a couple of other quotes as well.
 #.   pfaedit@users.sourceforge.net

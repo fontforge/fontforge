@@ -100,7 +100,7 @@ A font's encoding is stored in a separate data structure called an EncMap.
 This structure controls what glyph goes where and also contains a pointer
 to an Encoding structure which provides a name for the encoding. The EncMap
 contains two arrays, the <CODE>map</CODE> and the <CODE>backmap</CODE>. The
-map is indexed by the a character's encoding and provides the position (in
+map is indexed by the character's encoding and provides the position (in
 the associated splinefont's glyph list) of the associated glyph. The backmap
 provides the reverse mapping, it is indexed by a glyph's position in the
 splinefont and provides an encoding for that glyph. (Note: the map array

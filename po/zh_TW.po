@@ -1187,7 +1187,7 @@ msgid "Bad Name"
 msgstr "不當的名稱"
 
 #: charinfo.c:623
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr "字圖名稱受限為 31 個字元"
 
 #: charinfo.c:629
@@ -6660,7 +6660,7 @@ msgid "Polish"
 msgstr "波蘭語"
 
 #: fontinfo.c:736
-msgid "Portugese (Portugal)"
+msgid "Portuguese (Portugal)"
 msgstr "葡萄牙語(葡萄牙)"
 
 #: fontinfo.c:737
@@ -7426,7 +7426,7 @@ msgid "The amount of space between words when using this font"
 msgstr "使用此字型時在字詞之間的空間數量"
 
 #: fontinfo.c:4057
-msgid "The amount of strechable space between words when using this font"
+msgid "The amount of stretchable space between words when using this font"
 msgstr "使用此字型時在字詞之間可擴展的空間數量"
 
 #: fontinfo.c:4058
@@ -8411,7 +8411,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its PostScript equivalent\n"
+"To associate or disassociate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 "要建立新的名稱，在 <新增> 鈕上按一下左鍵，然後選取語區。\n"
@@ -10073,7 +10073,7 @@ msgstr "描邊字圖\n"
 msgid "Glyph Differences\n"
 msgstr "字圖差異\n"
 
-#. GT: FontForge needs to recoginze the quotes used here(“”). If you change them
+#. GT: FontForge needs to recognize the quotes used here(“”). If you change them
 #. GT: (in the translated strings) let me know. It currently also recognizes
 #. GT: guillemets and a couple of other quotes as well.
 #. GT:   pfaedit@users.sourceforge.net
@@ -16014,8 +16014,8 @@ msgstr "字圖 %d 試圖到參照字圖 %d 該項為外側字型\n"
 
 #: parsettf.c:1558
 #, fuzzy
-msgid "Reached end of file when reading composit glyph\n"
-msgstr "達到的檔案結尾何時讀取 composit 字圖\n"
+msgid "Reached end of file when reading composite glyph\n"
+msgstr "達到的檔案結尾何時讀取 composite 字圖\n"
 
 #: parsettf.c:1590
 #, fuzzy
@@ -16367,7 +16367,7 @@ msgid ""
 msgstr "Hmm，軸線計數在之中「avar」表格為不同的從該在之中「fvar」表格。\n"
 
 #: parsettfvar.c:183
-msgid "Hmm, the the 'avar' table is too long.\n"
+msgid "Hmm, the 'avar' table is too long.\n"
 msgstr "嗯，「avar」表格太長。\n"
 
 #: parsettfvar.c:497
@@ -18420,7 +18420,7 @@ msgid ""
 msgstr "檢查垂直前端寬度並非可顯示值的字元。"
 
 #: problems.c:2908
-msgid "Check subtitutions for empty chars"
+msgid "Check substitutions for empty chars"
 msgstr "檢查空格字元的替代物"
 
 #: problems.c:2914
@@ -22459,7 +22459,7 @@ msgstr "55"
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
 #. GT: "GGadget|ScaleFactor|", that's only to provide context. The number should
-#. GT: be a percentage and indicates the the ratio of the length of a string in
+#. GT: be a percentage and indicates the ratio of the length of a string in
 #. GT: your language to the same string's length in English.
 #. GT: Suppose it takes 116 pixels to say "Ne pas enregistrer" in French but
 #. GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor

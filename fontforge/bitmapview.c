@@ -597,7 +597,7 @@ void BCGeneralFunction(BitmapView *bv,
 		CirclePoints(bv,x,y,ox,oy,modx,mody,SetPoint,data);
 	    }
 	    if ( bv->active_tool==bvt_elipse ) {
-		/* there may be quite a gap between the the two semi-circles */
+		/* there may be quite a gap between the two semi-circles */
 		/*  because the tangent is nearly vertical here. So just fill */
 		/*  it in */
 		int j;

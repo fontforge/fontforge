@@ -1061,7 +1061,7 @@ int GIntGetResource(int index) {
 /* GT: This is an unusual string. It is used to get around a limitation in */
 /* GT: FontForge's widget set. You should put a number here (do NOT translate */
 /* GT: "GGadget|ScaleFactor|", that's only to provide context. The number should */
-/* GT: be a percentage and indicates the the ratio of the length of a string in */
+/* GT: be a percentage and indicates the ratio of the length of a string in */
 /* GT: your language to the same string's length in English. */
 /* GT: Suppose it takes 116 pixels to say "Ne pas enregistrer" in French but */
 /* GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor */
