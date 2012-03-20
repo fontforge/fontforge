@@ -1,4 +1,4 @@
-/* Copyright (C) 2004-2011 by George Williams */
+/* Copyright (C) 2004-2012 by George Williams */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -11,8 +11,8 @@
 
 /* Update copyright notices to a new year */
 
-#define OLD	"2010"
-#define NEW	"2011"
+#define OLD	"2011"
+#define NEW	"2012"
 
 static int IsCopyright(char *orig,char *buffer) {
     char *pt;

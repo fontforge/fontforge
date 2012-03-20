@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2011 by
+/* Copyright (C) 2000-2012 by
    George Williams, Michal Nowakowski & Alexey Kryukov */
 
 /*
