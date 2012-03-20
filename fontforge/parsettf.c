@@ -6294,7 +6294,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    ++k;
 	} while ( k<sf->subfontcnt );
     }
-    SFRelativeWinAsDs(sf);
+    /* should not be default as it confuses users */
+    /* SFRelativeWinAsDs(sf); */
     free(info->savetab);
 
     if ( info->openflags & of_fontlint ) {
