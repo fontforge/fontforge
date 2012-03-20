@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2011 by George Williams */
+/* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1094,7 +1094,7 @@ int main( int argc, char **argv ) {
     int local_x;
 #endif
 
-    fprintf( stderr, "Copyright (c) 2000-2011 by George Williams.\n Executable based on sources from %s"
+    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
 #endif
