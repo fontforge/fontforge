@@ -676,7 +676,7 @@ static GTextInfo pancharrange[] = {
     { (unichar_t *) N_("PanoseCharRange|Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("PanoseCharRange|No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Extended Collection"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Litterals"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Literals"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("No Lower Case"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Small Caps"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "6", NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -887,7 +887,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Papiamentu"), NULL, 0, 0, (void *) 0x479, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Pashto"), NULL, 0, 0, (void *) 0x463, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Polish"), NULL, 0, 0, (void *) 0x415, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Portugese (Portugal)"), NULL, 0, 0, (void *) 0x416, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Portuguese (Portugal)"), NULL, 0, 0, (void *) 0x416, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Portuguese (Brasil)"), NULL, 0, 0, (void *) 0x816, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Punjabi (India)"), NULL, 0, 0, (void *) 0x446, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Punjabi (Pakistan)"), NULL, 0, 0, (void *) 0x846, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -3524,7 +3524,7 @@ static char *texparams[] = { N_("Slant:"), N_("Space:"), N_("Stretch:"),
 	N_("Extra Sp:"), NULL };
 static char *texpopups[] = { N_("In an italic font the horizontal change per unit vertical change"),
     N_("The amount of space between words when using this font"),
-    N_("The amount of strechable space between words when using this font"),
+    N_("The amount of stretchable space between words when using this font"),
     N_("The amount the space between words may shrink when using this font"),
     N_("The height of the lower case letters with flat tops"),
     N_("The width of one em"),
@@ -9441,7 +9441,7 @@ return;
 	"To change the string type, left click on it.\n"
 	"To change the text, left click in it and then type.\n"
 	"To delete a name, right click on the name & select Delete from the menu.\n"
-	"To associate or disassocate a truetype name to its postscript equivalent\n"
+	"To associate or disassociate a truetype name to its postscript equivalent\n"
 	"right click and select the appropriate menu item." );
     tngcd[4].data = d;
     tngcd[4].creator = GMatrixEditCreate;

@@ -1139,7 +1139,7 @@ msgid "Bad Name"
 msgstr "Unzulässiger Name"
 
 #: charinfo.c:4548
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr "Zeichennamen sind auf 31 Buchstaben begrenzt"
 
 #: charinfo.c:4618 charinfo.c:6137 metricsview.c:963

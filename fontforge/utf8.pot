@@ -171,7 +171,7 @@ msgid "° Withershins"
 msgstr ""
 
 
-#. FontForge needs to recoginze the quotes used here(“”). If you change them
+#. FontForge needs to recognize the quotes used here(“”). If you change them
 #. (in the translated strings) let me know. It currently also recognizes
 #. guillemets and a couple of other quotes as well.
 #.   pfaedit@users.sourceforge.net

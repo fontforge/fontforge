@@ -86,7 +86,7 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
     DBounds b;
 
     /* Go through once to get some idea of the average value so we can weed */
-    /*  out undesireables */
+    /*  out undesirables */
     caph[0] = caph[1] = caph[2] = xh[0] = xh[1] = xh[2] = 0;
     ascenth[0] = ascenth[1] = ascenth[2] = digith[0] = digith[1] = digith[2] = 0;
     descenth[0] = descenth[1] = descenth[2] = base[0] = base[1] = base[2] = 0;

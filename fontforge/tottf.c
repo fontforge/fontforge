@@ -2981,7 +2981,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     hhead->maxwidth = width;
     hhead->minlsb = at->head.xmin;
     hhead->minrsb = rbearing;
-    /* Apple's ftxvalidator says the the min sidebearing should be 0 even if it isn't */
+    /* Apple's ftxvalidator says the min sidebearing should be 0 even if it isn't */
     if ( hhead->minlsb>0 ) hhead->minlsb = 0;
     if ( hhead->minrsb>0 ) hhead->minrsb = 0;
     hhead->maxextent = at->head.xmax;

@@ -4768,10 +4768,10 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    ++mk_num;
     }
     if ( glyphs==NULL ) {
-	LogError(_("Empty subsitute on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	LogError(_("Empty substitute on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
     } else if ( is_reverse && (mk_num!=1 || has_lookups!=0)) {
-	LogError(_("Reverse subsitute must have exactly one marked glyph and no lookups on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	LogError(_("Reverse substitute must have exactly one marked glyph and no lookups on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
     } else if ( !glyphs->has_marks ) {
 	/* Non-contextual */

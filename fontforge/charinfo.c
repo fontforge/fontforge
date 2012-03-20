@@ -534,7 +534,7 @@ static int CI_NameCheck(const unichar_t *name) {
     if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
 return( true );
     if ( u_strlen(name)>31 ) {
-	ff_post_error(_("Bad Name"),_("Glyph names are limitted to 31 characters"));
+	ff_post_error(_("Bad Name"),_("Glyph names are limited to 31 characters"));
 return( false );
     } else if ( *name=='\0' ) {
 	ff_post_error(_("Bad Name"),_("Bad Name"));
@@ -4464,7 +4464,7 @@ return;
 	ulabel[12].text_in_resource = true;
 	ugcd[12].gd.label = &ulabel[12];
 	ugcd[12].gd.cid = CID_UnlinkRmOverlap;
-	ugcd[12].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desireable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before saving the\nfont, fontforge will unlink the references,\nand run remove overlap on them, then just\nafter saving it will undo the operation\nthereby retaining the references.");
+	ugcd[12].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desirable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before saving the\nfont, fontforge will unlink the references,\nand run remove overlap on them, then just\nafter saving it will undo the operation\nthereby retaining the references.");
 	ugcd[12].creator = GCheckBoxCreate;
 	uhvarray[21] = &ugcd[12]; uhvarray[22] = GCD_ColSpan; uhvarray[23] = NULL;
 	uhvarray[24] = GCD_Glue; uhvarray[25] = GCD_Glue; uhvarray[26] = NULL;

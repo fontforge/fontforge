@@ -1509,7 +1509,7 @@ msgstr "不良名称"
 
 #
 #: charinfo.c:530
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr "字形名称最长31个字符"
 
 #
@@ -1997,7 +1997,7 @@ msgstr "标记未连接的，保存前移除重叠者"
 msgid ""
 "A few glyphs, like Aring, Ccedilla, Eogonek\n"
 "are composed of two overlapping references.\n"
-"Often it is desireable to retain the references\n"
+"Often it is desirable to retain the references\n"
 "(so that changes made to the base glyph are\n"
 "reflected in the composed glyph), but that\n"
 "means you are stuck with overlapping contours.\n"
@@ -7504,7 +7504,7 @@ msgstr ""
 
 #: featurefile.c:3376
 #, c-format
-msgid "Empty subsitute on line %d of %s"
+msgid "Empty substitute on line %d of %s"
 msgstr "空替代于行%d (%s)"
 
 #: featurefile.c:3399
@@ -9588,7 +9588,7 @@ msgstr "波兰语"
 
 #
 #: fontinfo.c:533
-msgid "Portugese (Portugal)"
+msgid "Portuguese (Portugal)"
 msgstr "葡萄牙语(葡萄牙)"
 
 #
@@ -11374,7 +11374,7 @@ msgstr ""
 
 #
 #: fontinfo.c:3773
-msgid "The amount of strechable space between words when using this font"
+msgid "The amount of stretchable space between words when using this font"
 msgstr ""
 
 #
@@ -12696,7 +12696,7 @@ msgid ""
 "To change the string type, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 "To delete a name, right click on the name & select Delete from the menu.\n"
-"To associate or disassocate a truetype name to its PostScript equivalent\n"
+"To associate or disassociate a truetype name to its PostScript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
 
@@ -14595,7 +14595,7 @@ msgid "Glyph Differences\n"
 msgstr "字形差异\n"
 
 #
-#. GT: FontForge needs to recoginze the quotes used here(“”). If you change them
+#. GT: FontForge needs to recognize the quotes used here(“”). If you change them
 #. GT: (in the translated strings) let me know. It currently also recognizes
 #. GT: guillemets and a couple of other quotes as well.
 #. GT:   pfaedit@users.sourceforge.net
@@ -19972,7 +19972,7 @@ msgstr "下标基线下沉最小值："
 #: mathconstants.c:56
 msgid ""
 "Maximum allowed drop of the baseline of\n"
-"subscripts realtive to the bottom of the base.\n"
+"subscripts relative to the bottom of the base.\n"
 "Used for bases that are treated as a box\n"
 "or extended shape. Positive for subscript\n"
 "baseline dropped below base bottom."
@@ -20017,7 +20017,7 @@ msgstr "上标基线下降最大值："
 #: mathconstants.c:60
 msgid ""
 "Maximum allowed drop of the baseline of\n"
-"superscripts realtive to the top of the base.\n"
+"superscripts relative to the top of the base.\n"
 "Used for bases that are treated as a box\n"
 "or extended shape. Positive for superscript\n"
 "baseline below base top."
@@ -20352,7 +20352,7 @@ msgid "UnderbarExtraDescender:"
 msgstr ""
 
 #: mathconstants.c:94
-msgid "Extra white space resevered below the underbar."
+msgid "Extra white space reserved below the underbar."
 msgstr ""
 
 #: mathconstants.c:95
@@ -23710,7 +23710,7 @@ msgstr ""
 
 #
 #: parsettf.c:2132
-msgid "Reached end of file when reading composit glyph\n"
+msgid "Reached end of file when reading composite glyph\n"
 msgstr ""
 
 #
@@ -24201,7 +24201,7 @@ msgstr ""
 
 #
 #: parsettfvar.c:183
-msgid "Hmm, the the 'avar' table is too long.\n"
+msgid "Hmm, the 'avar' table is too long.\n"
 msgstr ""
 
 #
@@ -25723,7 +25723,7 @@ msgstr ""
 
 #
 #: problems.c:3793
-msgid "Check subtitutions for empty chars"
+msgid "Check substitutions for empty chars"
 msgstr "查找空字符的替代"
 
 #
@@ -31757,7 +31757,7 @@ msgstr "GGadget|ButtonSize|55"
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
 #. GT: "GGadget|ScaleFactor|", that's only to provide context. The number should
-#. GT: be a percentage and indicates the the ratio of the length of a string in
+#. GT: be a percentage and indicates the ratio of the length of a string in
 #. GT: your language to the same string's length in English.
 #. GT: Suppose it takes 116 pixels to say "Ne pas enregistrer" in French but
 #. GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor

@@ -2167,7 +2167,7 @@ return;
 	    last = cur;
 	}
 	if ( feof(ttf)) {
-	    LogError(_("Reached end of file when reading composit glyph\n") );
+	    LogError(_("Reached end of file when reading composite glyph\n") );
 	    info->bad_glyph_data = true;
     break;
 	}

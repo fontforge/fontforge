@@ -3965,7 +3965,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[1].creator = GCheckBoxCreate;
     aarray[1] = &agcd[1];
 
-    alabel[2].text = (unichar_t *) _("Check subtitutions for empty chars");
+    alabel[2].text = (unichar_t *) _("Check substitutions for empty chars");
     alabel[2].text_is_1byte = true;
     agcd[2].gd.label = &alabel[2];
     agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+15; 

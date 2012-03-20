@@ -17154,7 +17154,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Papiamentu", 0x479},
     { "Pashto", 0x463},
     { "Polish", 0x415},
-    { "Portugese (Portugal)", 0x416},
+    { "Portuguese (Portugal)", 0x416},
     { "Portuguese (Brasil)", 0x816},
     { "Punjabi (India)", 0x446},
     { "Punjabi (Pakistan)", 0x846},

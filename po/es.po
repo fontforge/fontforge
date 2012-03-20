@@ -2146,7 +2146,7 @@ msgstr "La cantidad de espacio entre palabras al usar esta fuente"
 msgid "Stretch:"
 msgstr "Extensión:"
 
-msgid "The amount of strechable space between words when using this font"
+msgid "The amount of stretchable space between words when using this font"
 msgstr "Estiramiento máximo del espacio entre palabras"
 
 msgid "Shrink:"
@@ -2731,7 +2731,7 @@ msgstr "Elipse rellena"
 msgid "Multiple"
 msgstr "Múltiples"
 
-msgid "Glyph names are limitted to 31 characters"
+msgid "Glyph names are limited to 31 characters"
 msgstr "Los nombres de los glifos pueden constar de a lo sumo 31 caracteres"
 
 msgid "A glyph name may not start with a digit nor a full stop (period)"
@@ -5275,7 +5275,7 @@ msgstr "El carácter, %.40s, contiene referencias pero la codificación de la fu
 msgid "Glyph Name Changed"
 msgstr "Se modificó el nombre del carácter"
 
-msgid "The the name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"
+msgid "The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs)"
 msgstr "Se cambió el nombre del carácter %.40s. Es lo que se usa para ubicar el glifo en el archivo, con lo cual no es posible revertir este carácter\n(no será advertido para los siguientes cararacteres)"
 
 msgid "Not Foreground"
@@ -6169,7 +6169,7 @@ msgstr "Verificar si una substitución, una clase de interletraje, etc. utiliza 
 msgid "Check for missing _lookup tags"
 msgstr "Verificar etiquetas _lookup faltantes"
 
-msgid "Check whether a contextual subtitution/positioning item refers to a tag which is not defined in the font"
+msgid "Check whether a contextual substitution/positioning item refers to a tag which is not defined in the font"
 msgstr "Verificar si un elemento en una substitución o en un desplazamiento contextual refencia un elemento faltante en la fuente"
 
 msgid "Check for use of '_DFLT' script"
@@ -6244,7 +6244,7 @@ msgstr "Verificar ancho vertical:"
 msgid "Check for glyphs whose vertical advance width is not the displayed value."
 msgstr "Verificar los caracteres cuyo ancho vertical no coincide con el valor mostrado."
 
-msgid "Check subtitutions for empty chars"
+msgid "Check substitutions for empty chars"
 msgstr "Verificar substituciones para caracteres vacíos"
 
 msgid "Check for glyphs which contain 'GSUB' entries which refer to empty glyphs"
