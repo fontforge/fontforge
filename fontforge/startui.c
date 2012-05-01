@@ -68,6 +68,7 @@ int  random( void ){ return rand();}
 void sleep( int n ){ _sleep(n);}
 #endif
 
+extern int AutoSaveFrequency;
 int splash = 1;
 static int localsplash;
 static int unique = 0;
@@ -1406,7 +1407,8 @@ exit( 0 );
     if ( localsplash && !listen_to_apple_events )
 	start_splash_screen();
 
-    autosave_timer=GDrawRequestTimer(splashw,60*1000,30*1000,NULL);
+    if ( AutoSaveFrequency>0 )
+	autosave_timer=GDrawRequestTimer(splashw,2*AutoSaveFrequency*1000,AutoSaveFrequency*1000,NULL);
 
     GDrawProcessPendingEvents(NULL);
     GDrawSetBuildCharHooks(BuildCharHook,InsCharHook);

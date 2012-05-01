@@ -166,6 +166,7 @@ extern int oflib_automagic_preview;		/* from oflib.c */
 extern int aa_pixelsize;			/* from anchorsaway.c */
 extern enum cvtools cv_b1_tool, cv_cb1_tool, cv_b2_tool, cv_cb2_tool; /* cvpalettes.c */
 extern int show_kerning_pane_in_class;		/* kernclass.c */
+extern int AutoSaveFrequency;			/* autosave.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -285,6 +286,7 @@ static struct prefs_list {
 	{ N_("UsePangoDrawing"), pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the pango library for text (if available)\nThis makes for prettier and handles complex scripts.\nBut it can slow things down on older machines.\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
+	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
 	{ NULL }
 },
   new_list[] = {

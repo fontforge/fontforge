@@ -36,6 +36,8 @@
 #include <ustring.h>
 #include "gfile.h"
 
+int AutoSaveFrequency=30;
+
 #if !defined(__MINGW32__)
 # include <pwd.h>
 #endif
@@ -163,6 +165,9 @@ return;
 void _DoAutoSaves(FontViewBase *fvs) {
     FontViewBase *fv;
     SplineFont *sf;
+
+    if ( AutoSaveFrequency<=0 )
+return;
 
     for ( fv=fvs; fv!=NULL; fv=fv->next ) {
 	sf = fv->cidmaster?fv->cidmaster:fv->sf;
