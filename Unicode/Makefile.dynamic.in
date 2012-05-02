@@ -22,7 +22,7 @@ Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ @DEFS@
 
 ../libgunicode.la: $(libgunicode_OBJECTS)
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) -no-undefined @LDFLAGS@ -o ../libgunicode.la $(libgunicode_OBJECTS) \
+	$(LIBTOOL) --mode=link $(CC) -no-undefined @LDFLAGS@ -o ../libgunicode.la $(libgunicode_OBJECTS) \
 	    @LIBS@ \
 	    -rpath $(libdir) -version-info $(GU_VERSION):$(GU_REVISION):$(GU_AGE)
 
