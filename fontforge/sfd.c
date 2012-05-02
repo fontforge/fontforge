@@ -1884,6 +1884,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
 	fprintf(sfd, "MultiLayer: %d\n", sf->multilayer );
+    if ( sf->hasvmetrics )
+	fprintf(sfd, "HasVMetrics: %d\n", sf->hasvmetrics );
     if ( sf->use_xuid && sf->changed_since_xuidchanged )
 	fprintf(sfd, "NeedsXUIDChange: 1\n" );
     if ( sf->xuid!=NULL )
@@ -6657,6 +6659,10 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->hasvmetrics = true;
+	} else if ( strmatch(tok,"HasVMetrics:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sf->hasvmetrics = temp;
 	} else if ( strmatch(tok,"Justify:")==0 ) {
 	    SFDParseJustify(sfd,sf,tok);
 	} else if ( strmatch(tok,"BaseHoriz:")==0 ) {
