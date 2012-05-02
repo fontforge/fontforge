@@ -5698,8 +5698,16 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 		struct altuni *alt;
 		for ( alt = sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
 		if ( alt==NULL )
-		    LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
+		{
+                   if ( strcmp(sc->name,"alefmaksurainitialarabic")==0 ||
+                        strcmp(sc->name,"alefmaksuramedialarabic")==0 )
+                   {
+                      LogError( _("The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n") );
+                   } else {
+		      LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
 			    sc->name,sc->unicodeenc, uni);
+		   }
+		}
 		else if ( alt->vs==0 ) {
 		    alt->unienc = sc->unicodeenc;
 		    sc->unicodeenc = uni;
@@ -5711,6 +5719,9 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 	    else if ( sc->unicodeenc==-1 )
 		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
 			sc->name,uni);
+	    else if ( strcmp(sc->name,"alefmaksurainitialarabic")==0 ||
+                        strcmp(sc->name,"alefmaksuramedialarabic")==0 )
+		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\nWould you like to retain the name in spite of this?"));
 	    else
 		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
 			sc->name,sc->unicodeenc, uni);
