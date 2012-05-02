@@ -522,9 +522,7 @@ static PyObject *PyFF_LoadEncodingFile(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"s", &filename) )
 return( NULL );
 
-    ParseEncodingFile((char *) filename);
-
-Py_RETURN_NONE;
+return( Py_BuildValue("s", ParseEncodingFile((char *) filename)) );
 }
 
 static PyObject *PyFF_LoadNamelist(PyObject *self, PyObject *args) {

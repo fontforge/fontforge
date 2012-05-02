@@ -2413,7 +2413,7 @@ extern SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amo
 double SFSerifHeight(SplineFont *sf);
 
 extern void DumpPfaEditEncodings(void);
-extern void ParseEncodingFile(char *filename);
+extern char *ParseEncodingFile(char *filename);
 extern void LoadPfaEditEncodings(void);
 
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
