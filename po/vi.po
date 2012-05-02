@@ -32784,7 +32784,7 @@ msgid "Mandaic"
 msgstr "Tiếng Man-đa"
 
 #: unicoderange.c:66
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "Tiếng Đe-va-na-ga-ri"
 
 #: unicoderange.c:81

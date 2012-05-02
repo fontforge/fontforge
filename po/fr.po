@@ -24352,7 +24352,7 @@ msgid "Mandaic"
 msgstr ""
 
 #: unicoderange.c:66
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "Dévanagari"
 
 #: unicoderange.c:81

@@ -586,7 +586,7 @@ void RemoveMultiples(Encoding *item) {
 	DeleteEncoding(test);
 }
 
-void ParseEncodingFile(char *filename) {
+char *ParseEncodingFile(char *filename) {
     FILE *file;
     char *orig = filename;
     Encoding *head, *item, *prev, *next;
@@ -599,12 +599,12 @@ void ParseEncodingFile(char *filename) {
     if ( file==NULL ) {
 	if ( orig!=NULL )
 	    ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
-return;
+return( NULL );
     }
     ch = getc(file);
     if ( ch==EOF ) {
 	fclose(file);
-return;
+return( NULL );
     }
     ungetc(ch,file);
     if ( ch=='#' || ch=='0' )
@@ -614,7 +614,7 @@ return;
     fclose(file);
     if ( head==NULL ) {
 	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
-return;
+return( NULL );
     }
 
     for ( i=0, prev=NULL, item=head; item!=NULL; prev = item, item=next, ++i ) {
@@ -622,7 +622,7 @@ return;
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
 		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
-return;
+return( NULL );
 	    }
 	    if ( item==head && item->next==NULL )
 		strcpy(buf,_("Please name this encoding"));
@@ -670,6 +670,7 @@ return;
 	for ( item=enclist; item->next!=NULL; item=item->next );
 	item->next = head;
     }
+return( copy( head->enc_name ) );
 }
 
 void LoadPfaEditEncodings(void) {

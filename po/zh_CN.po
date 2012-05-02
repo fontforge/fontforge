@@ -30966,7 +30966,7 @@ msgstr "Mandaic"
 
 #
 #: unicoderange.c:66
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "梵文字母, 天城体"
 
 #
