@@ -924,10 +924,6 @@ msgstr "«Εξ ορισμού»"
 msgid "Deseret (Mormon)"
 msgstr "Deseret (Μορμονική)"
 
-#: charinfo.c:133
-msgid "Devanagari"
-msgstr ""
-
 #: charinfo.c:134
 #, fuzzy
 msgid "Devanagari2"

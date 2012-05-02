@@ -21626,8 +21626,9 @@ msgid "Mandaic"
 msgstr "Mundari"
 
 #: unicoderange.c:66
-msgid "Devanagari"
-msgstr "梵文字母天城體"
+#!!!Two different translations of Devanagari, see line 11085
+#msgid "Devanagari"
+#msgstr "梵文字母天城體"
 
 #: unicoderange.c:67
 msgid "Bengali"

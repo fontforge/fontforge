@@ -30966,8 +30966,9 @@ msgstr "Mandaic"
 
 #
 #: unicoderange.c:66
-msgid "Devanagari"
-msgstr "梵文字母, 天城体"
+#!!!!! Two different translations of Devanagari, see line 10171
+#msgid "Devanagari"
+#msgstr "梵文字母, 天城体"
 
 #
 #: unicoderange.c:81

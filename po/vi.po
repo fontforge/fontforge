@@ -32783,10 +32783,6 @@ msgstr "Tiếng Xa-ma-ri-tan"
 msgid "Mandaic"
 msgstr "Tiếng Man-đa"
 
-#: unicoderange.c:66
-msgid "Devanagari"
-msgstr "Tiếng Đe-va-na-ga-ri"
-
 #: unicoderange.c:81
 msgid "Hangul Jamo, Choseong"
 msgstr "Hangul Jamo, Choseong"

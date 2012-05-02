@@ -32457,10 +32457,6 @@ msgstr "samarytański - interpunkcja"
 msgid "Mandaic"
 msgstr "mandejski"
 
-#: unicoderange.c:66
-msgid "Devanagari"
-msgstr "dewanagari"
-
 #: unicoderange.c:81
 msgid "Hangul Jamo, Choseong"
 msgstr "dz hangyl, Choseong"
