@@ -3810,7 +3810,7 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *la
 
     name = SFDReadUTF7Str(sfd);
     if ( name==NULL ) {
-	LogError( "Anchor Point with no class name" );
+	LogError( "Anchor Point with no class name: %s", sc->name );
 return( lastap );
     }
     for ( an=sc->parent->anchor; an!=NULL && strcmp(an->name,name)!=0; an=an->next );
@@ -3852,7 +3852,7 @@ return( lastap );
 	}
     }
     if ( ap->anchor==NULL || ap->type==-1 ) {
-	LogError( "Bad Anchor Point" );
+	LogError( "Bad Anchor Point: %s", sc->name );
 	AnchorPointsFree(ap);
 return( lastap );
     }
