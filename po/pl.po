@@ -32458,7 +32458,7 @@ msgid "Mandaic"
 msgstr "mandejski"
 
 #: unicoderange.c:66
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "dewanagari"
 
 #: unicoderange.c:81

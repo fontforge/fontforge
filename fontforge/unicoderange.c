@@ -63,7 +63,7 @@ struct unicoderange unicoderange[] = {
     { N_("Samaritan"), 0x800, 0x82D, ASFIRST, true },
     { N_("Samaritan, Punctuation"), 0x830, 0x83E, ASFIRST, true },
     { N_("Mandaic"), 0x8d0, 0x8ff, ASFIRST, true },
-    { N_("Devangari"), 0x900, 0x97f, 0x905, true },
+    { N_("Devanagari"), 0x900, 0x97f, 0x905, true },
     { N_("Bengali"), 0x980, 0x9ff, 0x985, true },
     { N_("Gurmukhi"), 0xa00, 0xa7f, 0xa05, true },
     { N_("Gujarati"), 0xa80, 0xaff, 0xa85, true },

@@ -21626,7 +21626,7 @@ msgid "Mandaic"
 msgstr "Mundari"
 
 #: unicoderange.c:66
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "梵文字母天城體"
 
 #: unicoderange.c:67

@@ -31299,7 +31299,7 @@ msgid "Mandaic"
 msgstr "Mac"
 
 #: unicoderange.c:69
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "Деванагари"
 
 #: unicoderange.c:84

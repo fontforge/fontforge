@@ -18695,7 +18695,7 @@ msgstr "Mundari"
 
 #: unicoderange.c:66
 #, fuzzy
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "Devanagari"
 
 #: unicoderange.c:67

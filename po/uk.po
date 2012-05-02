@@ -31815,7 +31815,7 @@ msgid "Mandaic"
 msgstr "Мандейська"
 
 #: unicoderange.c:66
-msgid "Devangari"
+msgid "Devanagari"
 msgstr "Деванагарі"
 
 #: unicoderange.c:81
