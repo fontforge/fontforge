@@ -31814,10 +31814,6 @@ msgstr "Самаритянська, пунктуація"
 msgid "Mandaic"
 msgstr "Мандейська"
 
-#: unicoderange.c:66
-msgid "Devanagari"
-msgstr "Деванагарі"
-
 #: unicoderange.c:81
 msgid "Hangul Jamo, Choseong"
 msgstr "Хангиль-чжамо, чосьонг"

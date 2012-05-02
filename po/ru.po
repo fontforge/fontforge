@@ -31298,10 +31298,6 @@ msgstr "Пехлеви"
 msgid "Mandaic"
 msgstr "Mac"
 
-#: unicoderange.c:69
-msgid "Devanagari"
-msgstr "Деванагари"
-
 #: unicoderange.c:84
 msgid "Hangul Jamo, Choseong"
 msgstr ""

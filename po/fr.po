@@ -24351,10 +24351,6 @@ msgstr ""
 msgid "Mandaic"
 msgstr ""
 
-#: unicoderange.c:66
-msgid "Devanagari"
-msgstr "Dévanagari"
-
 #: unicoderange.c:81
 msgid "Hangul Jamo, Choseong"
 msgstr "Jamo Hangul, Choseong"
