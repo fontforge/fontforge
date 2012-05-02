@@ -711,6 +711,9 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$ac_cv_lib_png14_png_create_read_struct" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lpng14 -lz"
  fi
+ if test "$ac_cv_lib_png15_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng15 -lz"
+ fi
  if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"
  fi
@@ -808,6 +811,9 @@ case "$host" in
  fi
  if test "$ac_cv_lib_png14_png_create_read_struct" = "yes"; then
   AC_CHECK_LIB_LA(png14, :, [ STATIC_LIBS="$STATIC_LIBS -lpng14 -lz" ; AC_DEFINE(_STATIC_LIBPNG14)])
+ fi
+ if test "$ac_cv_lib_png15_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png15, :, [ STATIC_LIBS="$STATIC_LIBS -lpng15 -lz" ; AC_DEFINE(_STATIC_LIBPNG15)])
  fi
  if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
   AC_CHECK_LIB_LA(tiff, :, [ STATIC_LIBS="$STATIC_LIBS -ltiff" ; AC_DEFINE(_STATIC_LIBTIFF)])
