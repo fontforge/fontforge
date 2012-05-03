@@ -3318,10 +3318,8 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
 	CodePage[1] |= 1<<21;		/* hebrew */
     if ( cp864 && has_radical )
 	CodePage[1] |= 1<<19;		/* arabic */
-#if 0		/* Can't find this codepage */
-    if ( cp708 && )
+    if ( cp708 && has_lineart)
 	CodePage[1] |= 1<<29;		/* arabic; ASMO 708 */
-#endif
     if ( cp863 && has_lineart && has_radical )
 	CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
     if ( cp865 && has_lineart && has_radical )
