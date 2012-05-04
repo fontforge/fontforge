@@ -1780,15 +1780,17 @@ return;					/* No anchor positioning, no ligature carets */
 		    ++k;
 		} while ( k<sf->subfontcnt );
 		fprintf( out, "];\n");
-	    } else
-		/* AFDKO does't like empty classes, there should be just a placeholder */
-		clsnames[i] = " ";
+	    }
 	}
     }
     fprintf( out, "\ntable GDEF {\n" );
     if ( needsclasses ) {
+	/* AFDKO does't like empty classes, there should be just a placeholder */
 	fprintf( out, "  GlyphClassDef %s, %s, %s, %s;\n\n",
-		clsnames[0], clsnames[1], clsnames[2], clsnames[3]);
+		hasclass[0]? clsnames[0]: "",
+		hasclass[1]? clsnames[1]: "",
+		hasclass[2]? clsnames[2]: "",
+		hasclass[3]? clsnames[3]: "");
     }
 
     for ( i=0; i<lcnt; ++i ) {
