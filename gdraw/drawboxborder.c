@@ -390,6 +390,8 @@ static int GBoxRectBorder(GWindow gw,GRect *pos,GBox *design,
     Color fg = state==gs_disabled?design->disabled_foreground:
 		    design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
 
     FigureBorderCols(design,cols);
     if ( is_def && (design->flags & box_draw_default) && bt!=bt_none ) {
@@ -410,7 +412,7 @@ static int GBoxRectBorder(GWindow gw,GRect *pos,GBox *design,
 	}
 	--cur.width; --cur.height;
 	if ( design->flags&box_foreground_border_outer )
-	    GDrawDrawRect(gw,&cur,fg);
+	    GDrawDrawRect(gw,&cur,color_outer);
 	else {
 	    GDrawDrawLine(gw,cur.x+scale,cur.y+cur.height,cur.x+cur.width,cur.y+cur.height,fg);
 	    GDrawDrawLine(gw,cur.x+cur.width,cur.y+scale,cur.x+cur.width,cur.y+cur.height,fg);
@@ -474,9 +476,9 @@ static int GBoxRectBorder(GWindow gw,GRect *pos,GBox *design,
 	    cur.width -= scale; cur.height -= scale;
 	}
 	--cur.width; --cur.height;
-	GDrawDrawRect(gw,&cur,state==gs_disabled?design->disabled_foreground:
-	        state==gs_active && (design->flags & box_active_border_inner)? design->active_border:
-		fg);
+	GDrawDrawRect(gw,&cur,
+		state == gs_active && (design->flags & box_active_border_inner) ?
+			design->active_border : color_inner);
 	inset += scale;
     }
 return( inset );
@@ -490,6 +492,8 @@ int GBoxDrawHLine(GWindow gw,GRect *pos,GBox *design) {
     Color cols[4];
     Color fg = design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
     int bp = GBoxBorderWidth(gw,design);
 
     FigureBorderCols(design,cols);
@@ -499,7 +503,7 @@ int GBoxDrawHLine(GWindow gw,GRect *pos,GBox *design) {
 
     if ( (design->flags & box_foreground_border_outer) ) {
 	GDrawSetLineWidth(gw,scale);
-	GDrawDrawLine(gw,x,y+scale/2,xend,y+scale/2,fg);
+	GDrawDrawLine(gw,x,y+scale/2,xend,y+scale/2,color_outer);
 	y += scale;
     }
 
@@ -536,7 +540,7 @@ int GBoxDrawHLine(GWindow gw,GRect *pos,GBox *design) {
 
     if ( design->flags & box_foreground_border_inner ) {
 	GDrawSetLineWidth(gw,scale);
-	GDrawDrawLine(gw,x,y+scale/2,xend,y+scale/2,fg);
+	GDrawDrawLine(gw,x,y+scale/2,xend,y+scale/2,color_inner);
 	y += scale;
     }
 return( y );
@@ -550,6 +554,8 @@ int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design) {
     Color cols[4];
     Color fg = design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
     int bp = GBoxBorderWidth(gw,design);
 
     FigureBorderCols(design,cols);
@@ -559,7 +565,7 @@ int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design) {
 
     if ( (design->flags & box_foreground_border_outer) ) {
 	GDrawSetLineWidth(gw,scale);
-	GDrawDrawLine(gw,x+scale/2,y,x+scale/2,yend,fg);
+	GDrawDrawLine(gw,x+scale/2,y,x+scale/2,yend,color_outer);
 	x += scale;
     }
 
@@ -596,7 +602,7 @@ int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design) {
 
     if ( design->flags & box_foreground_border_inner ) {
 	GDrawSetLineWidth(gw,scale);
-	GDrawDrawLine(gw,x+scale/2,y,x+scale/2,yend,fg);
+	GDrawDrawLine(gw,x+scale/2,y,x+scale/2,yend,color_inner);
 	x += scale;
     }
 return( x );
@@ -613,6 +619,8 @@ static int GBoxRoundRectBorder(GWindow gw,GRect *pos,GBox *design,
     Color fg = state==gs_disabled?design->disabled_foreground:
 		    design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
 
     if ( rr==0 )
 	rr = pos->width/2;
@@ -635,7 +643,7 @@ static int GBoxRoundRectBorder(GWindow gw,GRect *pos,GBox *design,
     if ( design->flags & (box_foreground_border_outer|box_foreground_shadow_outer) ) {
 	GDrawSetLineWidth(gw,scale);
 	if ( design->flags&box_foreground_border_outer )
-	    DrawRoundRect(gw,pos,scale/2,rr,fg);
+	    DrawRoundRect(gw,pos,scale/2,rr,color_outer);
 	else {
 	    GDrawDrawLine(gw,pos->x+scale+rr,pos->y+pos->height,pos->x+pos->width,pos->y+pos->height,fg);
 	    GDrawDrawLine(gw,pos->x+pos->width,pos->y+scale+rr,pos->x+pos->width,pos->y+pos->height,fg);
@@ -683,11 +691,10 @@ static int GBoxRoundRectBorder(GWindow gw,GRect *pos,GBox *design,
 
     if ( (design->flags & box_foreground_border_inner) ||
 	    ((design->flags & box_active_border_inner) && state==gs_active)) {
-	Color col = state==gs_disabled?design->disabled_foreground:
-	        state==gs_active && (design->flags & box_active_border_inner)? design->active_border:
-		fg;
 	GDrawSetLineWidth(gw,scale);
-	DrawRoundRect(gw,pos,inset+scale/2,rr,col);
+	DrawRoundRect(gw,pos,inset+scale/2,rr,
+		state == gs_active && (design->flags & box_active_border_inner) ?
+			design->active_border : color_inner);
 	inset += scale;
     }
 return( inset );
@@ -704,6 +711,8 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
     Color fg = state==gs_disabled?design->disabled_foreground:
 		    design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
 
     if ( !(scale&1)) --scale;
     if ( scale==0 ) scale = 1;
@@ -731,7 +740,7 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
 	    cur.width -= scale; cur.height -= scale;
 	}
 	--cur.width; --cur.height;
-	GDrawDrawElipse(gw,&cur,fg);
+	GDrawDrawElipse(gw,&cur,color_outer);
 	inset += scale;
     }
 
@@ -816,9 +825,9 @@ static int GBoxElipseBorder(GWindow gw,GRect *pos,GBox *design,
 	    cur.width -= scale; cur.height -= scale;
 	}
 	--cur.width; --cur.height;
-	GDrawDrawElipse(gw,&cur,state==gs_disabled?design->disabled_foreground:
-	        state==gs_active && (design->flags & box_active_border_inner)? design->active_border:
-		fg);
+	GDrawDrawElipse(gw,&cur,
+		state == gs_active && (design->flags & box_active_border_inner) ?
+			design->active_border : color_inner);
 	inset += scale;
     }
 return( inset );
@@ -834,6 +843,8 @@ static int GBoxDiamondBorder(GWindow gw,GRect *pos,GBox *design,
     Color fg = state==gs_disabled?design->disabled_foreground:
 		    design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
 
     FigureBorderCols(design,cols);
     if ( is_def && (design->flags & box_draw_default) && bt!=bt_none ) {
@@ -852,7 +863,7 @@ static int GBoxDiamondBorder(GWindow gw,GRect *pos,GBox *design,
 	pts[2].x = pos->x+pos->width-1-scale/2; pts[2].y = pts[0].y;
 	pts[3].x = pts[1].x; pts[3].y = pos->y+pos->height-1-scale/2;
 	pts[4] = pts[0];
-	GDrawDrawPoly(gw,pts,5,fg);
+	GDrawDrawPoly(gw,pts,5,color_outer);
 	inset += scale;
     }
 
@@ -904,9 +915,6 @@ static int GBoxDiamondBorder(GWindow gw,GRect *pos,GBox *design,
 
     if ( (design->flags & box_foreground_border_inner) ||
 	    ((design->flags & box_active_border_inner) && state==gs_active)) {
-	Color col = state==gs_disabled?design->disabled_foreground:
-	        state==gs_active && (design->flags & box_active_border_inner)? design->active_border:
-		fg;
 	GPoint pts[5];
 	GDrawSetLineWidth(gw,scale);
 	pts[0].x = pos->x+inset+scale/2; pts[0].y = pos->y+pos->height/2;
@@ -914,7 +922,9 @@ static int GBoxDiamondBorder(GWindow gw,GRect *pos,GBox *design,
 	pts[2].x = pos->x+pos->width-1-inset-scale/2; pts[2].y = pts[0].y;
 	pts[3].x = pts[1].x; pts[3].y = pos->y+pos->height-1-inset-scale/2;
 	pts[4] = pts[0];
-	GDrawDrawPoly(gw,pts,5,col);
+	GDrawDrawPoly(gw,pts,5,
+		state == gs_active && (design->flags & box_active_border_inner) ?
+			design->active_border : color_inner);
 	inset += scale;
     }
 return( inset );
@@ -945,119 +955,132 @@ int GBoxDrawBorder(GWindow gw,GRect *pos,GBox *design,enum gadget_state state,
 return( ret );
 }
 
-static void BoxGradientRect(GWindow gw,GRect *r,Color middle,Color ends) {
-    int y,i;
-    int x = r->x, xend=r->x+r->width;
-    int half = (r->height+1)/2;
-    int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
-    int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
-    Color col;
+static void BoxGradientRect(GWindow gw, GRect *r, Color start, Color end)
+{
+	int xend = r->x + r->width - 1;
+	int i;
 
-    if ( r->height<=0 )
+	int rstart = COLOR_RED(start);
+	int gstart = COLOR_GREEN(start);
+	int bstart = COLOR_BLUE(start);
+	int rdiff = COLOR_RED(end) - rstart;
+	int gdiff = COLOR_GREEN(end) - gstart;
+	int bdiff = COLOR_BLUE(end) - bstart;
+
+	if (r->height <= 0)
 return;
-    else for ( i=0; i<=half; ++i ) {
-	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
-				(i*eg + (half-i)*mg)/half,
-			        (i*eb + (half-i)*mb)/half );
-	y = r->y + half-i;
-	GDrawDrawLine(gw,x,y,xend,y,col);
-	y = r->y + (r->height&1 ? half+i : half+i+1);
-	GDrawDrawLine(gw,x,y,xend,y,col);
-    }
+
+	for (i = 0; i < r->height; i++)
+		GDrawDrawLine(gw, r->x, r->y + i, xend, r->y + i, COLOR_CREATE(
+			rstart + rdiff * i / r->height,
+			gstart + gdiff * i / r->height,
+			bstart + bdiff * i / r->height ));
 }
 
-static void BoxGradientElipse(GWindow gw,GRect *r,Color middle,Color ends) {
-    int y,i;
-    int x = r->x, xend=r->x+r->width, xoff;
-    int half = r->height/2;
-    double xhalf = r->width/2.0;
-    int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
-    int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
-    Color col;
-    double yfrac;
+static void BoxGradientElipse(GWindow gw, GRect *r, Color start, Color end)
+{
+	/*
+	 * Ellipse borders are 1 unit wider and 1 unit higher than the passed GRect.
+	 * With corrected values the gradient-fill will fit its corresponding border.
+	 */
+	int correctedwidth = r->width + 1;
+	int correctedheight = r->height + 1;
 
-    if ( r->height<=1 )
+	int xend = r->x + correctedwidth - 1;
+	int yend = r->y + correctedheight - 1;
+	int i, xoff;
+
+	double a = (double)correctedwidth / 2.0;
+	double b = (double)correctedheight / 2.0;
+	double precalc = (a * a) / (b * b);
+
+	int rstart = COLOR_RED(start);
+	int gstart = COLOR_GREEN(start);
+	int bstart = COLOR_BLUE(start);
+	int rdiff = COLOR_RED(end) - rstart;
+	int gdiff = COLOR_GREEN(end) - gstart;
+	int bdiff = COLOR_BLUE(end) - bstart;
+
+	if (correctedheight <= 0)
 return;
-    for ( i=0; i<=half; ++i ) {
-	col = COLOR_CREATE( (i*er + (half-i)*mr)/half,
-				(i*eg + (half-i)*mg)/half,
-			        (i*eb + (half-i)*mb)/half );
-	yfrac = ((double) i)/((double) half);
-	xoff = rint( xhalf - xhalf*sqrt( 1-yfrac*yfrac ));
-	y = r->y + half-i;
-	GDrawDrawLine(gw,x+xoff,y,xend-xoff,y,col);
-	y = r->y + (r->height&1 ? half+i+1 : half+i);
-	GDrawDrawLine(gw,x+xoff,y,xend-xoff,y,col);
-    }
+
+    for (i = 0; i < (correctedheight + 1) / 2; ++i)
+	{
+		xoff = lrint(a - sqrt(precalc * (double)(i * (correctedheight - i)) ));
+
+		GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, COLOR_CREATE(
+			rstart + rdiff * i / correctedheight,
+			gstart + gdiff * i / correctedheight,
+			bstart + bdiff * i / correctedheight ));
+
+		GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, COLOR_CREATE(
+			rstart + rdiff * (correctedheight - i) / correctedheight,
+			gstart + gdiff * (correctedheight - i) / correctedheight,
+			bstart + bdiff * (correctedheight - i) / correctedheight ));
+	}
 }
 
-static void BoxGradientRoundRect(GWindow gw,GRect *r,int rr,Color middle,Color ends) {
-    int y,i;
-    int x = r->x, xend=r->x+r->width;
-    int half = (r->height-1)/2;
-    int mr = COLOR_RED(middle), mg = COLOR_GREEN(middle), mb=COLOR_BLUE(middle);
-    int er = COLOR_RED(ends), eg = COLOR_GREEN(ends), eb=COLOR_BLUE(ends);
-    Color col, col2;
+static void BoxGradientRoundRect(GWindow gw, GRect *r, int rr, Color start, Color end)
+{
+	int radius = rr <= (r->height+1)/2 ? (rr > 0 ? rr : 0) : (r->height+1)/2;
+	int xend = r->x + r->width - 1;
+	int yend = r->y + r->height - 1;
+	int precalc = radius * 2 - 1;
+	int i, xoff;
 
-    /* stuff for midpoint algorithm for drawing circles. */
-    int xoff = rr;
-    int yoff = 0;
-    int xchange = 1 - 2*rr;
-    int ychange = 1;
-    int raderr = 0;
+	int rstart = COLOR_RED(start);
+	int gstart = COLOR_GREEN(start);
+	int bstart = COLOR_BLUE(start);
+	int rdiff = COLOR_RED(end) - rstart;
+	int gdiff = COLOR_GREEN(end) - gstart;
+	int bdiff = COLOR_BLUE(end) - bstart;
 
-    if ( r->height<=0 )
+    if (r->height <= 0)
 return;
-    for ( i=0; i<=half; ++i ) {
-	if (half == 0) col = COLOR_CREATE( (er+mr)/2, (eg+mg)/2, (eb+mb)/2 );
-	else col = COLOR_CREATE((i*er + (half-i)*mr)/half,
-				(i*eg + (half-i)*mg)/half,
-			        (i*eb + (half-i)*mb)/half );
-	if ((half == 0) || (half-i>rr)) {
-	    x = r->x;
-	    xend = r->x+r->width-1;
-	} 
-	else {
-	    if (xoff < yoff) break;
 
-	    /* Midpoint algorithm for drawing circles exploits symmetry to draw
-	     * nice circles quickly - one computed (x, y) pair suffices for
-	     * generating 8 different points. We have to do exactly the same
-	     * here, but because we're drawing gradient lines, code gets uglier.
-	     */
+    for (i = 0; i < radius; i++)
+	{
+		xoff = radius - lrint(sqrt( (double)(i * (precalc - i)) ));
 
-	    int j = half - rr + xoff;
-	    col2 = COLOR_CREATE( (j*er + (half-j)*mr)/half,
-				(j*eg + (half-j)*mg)/half,
-			        (j*eb + (half-j)*mb)/half );
+		GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, COLOR_CREATE(
+			rstart + rdiff * i / r->height,
+			gstart + gdiff * i / r->height,
+			bstart + bdiff * i / r->height ));
 
-	    x = r->x + rr - yoff;
-	    xend = r->x + r->width - (1 + rr - yoff);
-
-	    y = r->y + r->height - rr + xoff - 1;
-	    GDrawDrawLine(gw,x,y,xend,y,col2);
-	    y = r->y + rr - xoff;
-	    GDrawDrawLine(gw,x,y,xend,y,col2);
-
-	    x = r->x + rr - xoff;
-	    xend = r->x + r->width - (1 + rr - xoff);
-
-	    yoff++;
-	    raderr+=ychange;
-	    ychange+=2;
-
-	    if (2*raderr + xchange > 0) {
-		xoff--;
-		raderr+=xchange;
-		xchange+=2;
-	    }
+		GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, COLOR_CREATE(
+			rstart + rdiff * (r->height - i) / r->height,
+			gstart + gdiff * (r->height - i) / r->height,
+			bstart + bdiff * (r->height - i) / r->height ));
 	}
 
-	y = r->y + half-i;
-	GDrawDrawLine(gw,x,y,xend,y,col);
-	y = r->y + (r->height&1 ? half+i : half+i+1);
-	GDrawDrawLine(gw,x,y,xend,y,col);
-    }
+	for (i = radius; i < r->height - radius; i++)
+		GDrawDrawLine(gw, r->x, r->y + i, xend, r->y + i, COLOR_CREATE(
+			rstart + rdiff * i / r->height,
+			gstart + gdiff * i / r->height,
+			bstart + bdiff * i / r->height ));
+}
+
+static void BoxFillRoundRect(GWindow gw, GRect *r, int rr, Color color)
+{
+	int radius = rr <= (r->height+1)/2 ? (rr > 0 ? rr : 0) : (r->height+1)/2;
+	int xend = r->x + r->width - 1;
+	int yend = r->y + r->height - 1;
+	int precalc = radius * 2 - 1;
+	int i, xoff;
+
+	GRect middle = {r->x, r->y + radius, r->width, r->height - 2 * radius};
+
+    if (r->height <= 0)
+return;
+
+    for (i = 0; i < radius; i++)
+	{
+		xoff = radius - lrint(sqrt( (double)(i * (precalc - i)) ));
+		GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, color);
+		GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, color);
+	}
+
+	GDrawFillRect(gw, &middle, color);
 }
 
 void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
@@ -1121,7 +1144,7 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	    if ( design->flags & box_gradient_bg )
 		BoxGradientRoundRect(gw,pos,rr,ibg,design->gradient_bg_end);
 	    else
-		BoxGradientRoundRect(gw,pos,rr,ibg,ibg);
+		BoxFillRoundRect(gw,pos,rr,ibg);
 	}
     }
     if ( state == gs_disabled )
@@ -1171,6 +1194,8 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
     Color fg = g->state==gs_disabled?design->disabled_foreground:
 		    design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    design->main_foreground;
+	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
 
     r.x = x; r.y = y; r.width = width; r.height = rowh;
 
@@ -1201,7 +1226,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
     if ( design->flags & (box_foreground_border_outer|box_foreground_shadow_outer) ) {
 	GDrawSetLineWidth(pixmap,scale);
 	if ( design->flags&box_foreground_border_outer )
-	    DrawRoundTab(pixmap,&r,scale/2,rr,fg,fg,fg,fg);
+	    DrawRoundTab(pixmap,&r,scale/2,rr,color_outer,color_outer,color_outer,color_outer);
 	else
 	    GDrawDrawLine(pixmap,r.x+r.width-1,r.y+rr,r.x+r.width-1,r.y+r.height-1,fg);
 	inset += scale;
@@ -1247,7 +1272,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 
     if ( (design->flags & box_foreground_border_inner) ) {
 	GDrawSetLineWidth(pixmap,scale);
-	DrawRoundTab(pixmap,&r,inset+scale/2,rr,fg,fg,fg,fg);
+	DrawRoundTab(pixmap,&r,inset+scale/2,rr,color_inner,color_inner,color_inner,color_inner);
 	inset += scale;
     }
 }

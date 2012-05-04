@@ -132,6 +132,8 @@ typedef struct gbox {
     Color active_border;
     Color depressed_background;
     Color gradient_bg_end;
+	Color border_inner;
+	Color border_outer;
 } GBox;
 
 typedef struct ggadget GGadget;
