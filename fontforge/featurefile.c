@@ -1675,9 +1675,7 @@ void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl) {
     dump_lookup(out,sf,otl);
 
     for ( fl = otl->features; fl!=NULL; fl=fl->next ) {
-	fprintf( out, "\nfeature %s%c%c%c%c {\n",
-		fl->featuretag==CHR('m','a','r','k') ? "\\" : "",
-		fl->featuretag>>24, fl->featuretag>>16, fl->featuretag>>8, fl->featuretag );
+	fprintf( out, "\nfeature %c%c%c%c {\n", fl->featuretag>>24, fl->featuretag>>16, fl->featuretag>>8, fl->featuretag );
 	for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
 	    fprintf( out, "  script %c%c%c%c;\n",
 		    sl->script>>24, sl->script>>16, sl->script>>8, sl->script );
@@ -1689,9 +1687,7 @@ void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl) {
 		fprintf( out, "      lookup %s;\n", lookupname(otl));
 	    }
 	}
-	fprintf( out, "\n} %s%c%c%c%c;\n",
-		fl->featuretag==CHR('m','a','r','k') ? "\\" : "",
-		fl->featuretag>>24, fl->featuretag>>16, fl->featuretag>>8, fl->featuretag );
+	fprintf( out, "\n} %c%c%c%c;\n", fl->featuretag>>24, fl->featuretag>>16, fl->featuretag>>8, fl->featuretag );
     }
 }
 
@@ -1899,9 +1895,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		if ( otl->features!=NULL && !otl->unused )	/* Nested lookups will be output with the lookups which invoke them */
 		    dump_lookup( out, sf, otl );
 	    for ( i=0; feats[i]!=0; ++i ) {
-		fprintf( out, "\nfeature %s%c%c%c%c {\n",
-			feats[i]==CHR('m','a','r','k') ? "\\" : "",
-			feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
+		fprintf( out, "\nfeature %c%c%c%c {\n", feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
 		if ( feats[i]>=CHR('s','s','0','1') &&  feats[i]<=CHR('s','s','2','0') &&
 			(fn = findotffeatname(feats[i],sf))!=NULL ) {
 		    fprintf( out, "  featureNames {\n" );
@@ -1969,9 +1963,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		    }
 		    free(langs);
 		}
-		fprintf( out, "} %s%c%c%c%c;\n",
-			    feats[i]==CHR('m','a','r','k') ? "\\" : "",
-			    feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
+		fprintf( out, "} %c%c%c%c;\n", feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
 	    }
 	    free(scripts);
 	}
