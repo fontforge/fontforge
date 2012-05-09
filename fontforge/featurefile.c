@@ -5893,6 +5893,8 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		}
 	    }
 	} else if ( strcmp(tok->tokbuf,"LigatureCaret")==0 ) {
+	    carets=NULL;
+	    len=0;
 	    item = chunkalloc(sizeof(struct feat_item));
 	    item->type = ft_lcaret;
 	    item->next = tok->sofar;
@@ -5919,8 +5921,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		    fea_ParseCaret(tok);
 		else
 	    break;
-		if ( len>=max )
-		    carets = grealloc(carets,(max+=10)*sizeof(int16));
+		carets = grealloc(carets,(max+=10)*sizeof(int16));
 		carets[len++] = tok->value;
 	    }
 	    if ( tok->type!=tk_char || tok->tokbuf[0]!=';' ) {
