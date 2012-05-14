@@ -1706,7 +1706,7 @@ return( do_max ? -1e23 : 1e23 );		/* We didn't find any glyphs */
 	/* find the mean */
 	for ( i=0; i<ccnt; ++i ) {
 	    test += curves[i].pos;
-	    tot += curves[i].cnt;
+	    ++tot;
 	}
 	result = test/tot;
     }
