@@ -1118,6 +1118,7 @@ return( false );
 	    ++tot;
 	}
     }
+    closedir(dir);
     if ( tot==0 )
 	ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( true );

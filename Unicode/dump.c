@@ -963,7 +963,8 @@ return 1;
     }
     if (( header = fopen( "chardata.h", "w" ))==NULL ) {
 	fprintf( stderr, "Can't open %s\n", "chardata.h" );
-return 1;
+        fclose(output);
+	return 1;
     }
 
     fprintf( header, "#include \"basics.h\"\n\n" );
@@ -976,11 +977,14 @@ return 1;
 
     if (( output = fopen( "cjk.c", "w" ))==NULL ) {
 	fprintf( stderr, "Can't open %s\n", "cjk.c" );
+        fclose(header);
 return 1;
     }
     dumpcjks(output,header);
+    fclose(output);
     if (( output = fopen( "backtrns.c", "w" ))==NULL ) {
 	fprintf( stderr, "Can't open %s\n", "cjk.c" );
+        fclose(header);
 return 1;
     }
     dumptrans(output,header);
