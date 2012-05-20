@@ -191,14 +191,18 @@ int main(int argc, char **argv) {
     }
 
     pua = fopen("cns14.pua","w");
-    for ( i=0; i<0xf8ff-0xe000; i+=8 ) {
-	int j;
-	fprintf(pua, "/* %0X */\t", i+0xe000 );
-	for ( j=0; j<8; ++j )
-	    if ( puamap[i+j]!=0 )
-		fprintf(pua, "0x%05x,%s", puamap[i+j], j==7 ? "\n" : " " );
-	    else
-		fprintf(pua, "    0x0,%s", j==7 ? "\n" : " " );
+    if (pua) {
+        for ( i=0; i<0xf8ff-0xe000; i+=8 ) {
+            int j;
+            fprintf(pua, "/* %0X */\t", i+0xe000 );
+            for ( j=0; j<8; ++j ) {
+                if ( puamap[i+j]!=0 )
+                    fprintf(pua, "0x%05x,%s", puamap[i+j], j==7 ? "\n" : " " );
+                else
+                    fprintf(pua, "    0x0,%s", j==7 ? "\n" : " " );
+            }
+        }
+        fclose(pua);
     }
 
 return( 0 );
