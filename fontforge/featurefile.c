@@ -694,7 +694,10 @@ static void dump_contextpstcoverage(FILE *out,SplineFont *sf,
     char *start, *pt, *last_end;
     int ch, ch2, uses_lookups=false;
 
-    for ( i=0; i<r->u.coverage.bcnt; ++i ) {
+    /* bcovers glyph classes are in reverse order, but they should be in */
+    /* natural order in the feature file, so we dump them in the reverse */
+    /* order */
+    for ( i=r->u.coverage.bcnt-1; i>=0; --i ) {
 	putc('[',out);
 	dump_glyphnamelist(out,sf,r->u.coverage.bcovers[i] );
 	fprintf( out, "] ");
@@ -4549,9 +4552,10 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	int is_pos,int is_ignore, int is_reverse) {
     struct markedglyphs *g;
     int bcnt=0, ncnt=0, fcnt=0, lookup_cnt=0;
+    char **bcovers;
     int all_single=true;
     int mmax = 0;
-    int i, lc;
+    int i, j, k, lc;
     FPST *fpst;
     struct fpst_rule *r;
     struct feat_item *item, *head = NULL;
@@ -4630,8 +4634,17 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
 	r->u.coverage.ncovers = galloc(ncnt*sizeof(char*));
 	r->u.coverage.bcovers = galloc(bcnt*sizeof(char*));
 	r->u.coverage.fcovers = galloc(fcnt*sizeof(char*));
+
+	/* bcovers glyph classes should be in reverse order, but they */
+	/* are in natural order in the feature file, so we reverse them */
+	bcovers = galloc(bcnt*sizeof(char*));
 	for ( i=0, g=glyphs; i<bcnt; ++i, g=g->next )
-	    i = fea_AddAGlyphSet(r->u.coverage.bcovers,r->u.coverage.ncovers,i,g);
+	    i = fea_AddAGlyphSet(bcovers,r->u.coverage.ncovers,i,g);
+	for ( j=0, k=bcnt-1; j<bcnt; j++ ) {
+		r->u.coverage.bcovers[j] = copy(bcovers[k]);
+		k--;
+	}
+
 	i = i>bcnt ? 1 : 0;
 	for (    ; i<ncnt ; ++i, g=g->next )
 		i = fea_AddAGlyphSet(r->u.coverage.ncovers,NULL,i,g);
