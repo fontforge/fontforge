@@ -6396,8 +6396,10 @@ return( NULL );
 	    }
 	    parts[i].component = copy(((PyFF_Glyph *) g)->sc->name);
 	} else if ( !PyArg_ParseTuple(obj,"s|iiii", &parts[i].component,
-		&extender, &start, &end, &full ))
+		&extender, &start, &end, &full )) {
+            free(parts);
 return( NULL );
+        }
 	parts[i].is_extender = extender;
 	parts[i].startConnectorLength = start;
 	parts[i].endConnectorLength = end;
