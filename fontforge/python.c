@@ -6333,7 +6333,7 @@ return( NULL );
 return( NULL );
 	    }
 	}
-	pt = str = galloc(len);
+	pt = str = galloc(len+1);
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
 	    PyFF_Glyph *g = (PyFF_Glyph *) obj;
