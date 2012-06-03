@@ -2518,7 +2518,7 @@ return;
     fea_ParseTok(tok);
 }
 
-static void fea_ParseTok(struct parseState *tok) {
+static void fea_ParseTokWithKeywords(struct parseState *tok, int do_keywords) {
     FILE *in = tok->inlist[tok->inc_depth];
     int ch, peekch;
     char *pt, *start;
@@ -2624,7 +2624,7 @@ return;
 	    ++tok->err_count;
 	}
 
-	if ( check_keywords ) {
+	if ( check_keywords && do_keywords) {
 	    int i;
 	    for ( i=tk_firstkey; fea_keywords[i].name!=NULL; ++i ) {
 		if ( strcmp(fea_keywords[i].name,tok->tokbuf)==0 ) {
@@ -2669,6 +2669,10 @@ return;
   goto skip_whitespace;
 	}
     }
+}
+
+static void fea_ParseTok(struct parseState *tok) {
+    fea_ParseTokWithKeywords(tok, true);
 }
 
 static void fea_ParseTag(struct parseState *tok) {
@@ -5222,7 +5226,8 @@ static void fea_ParseLookupDef(struct parseState *tok, int could_be_stat ) {
     int ret;
     int has_single, has_multiple;
 
-    fea_ParseTok(tok);
+    /* keywords are allowed in lookup names */
+    fea_ParseTokWithKeywords(tok, false);
     if ( tok->type!=tk_name ) {
 	LogError(_("Expected name in lookup on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
@@ -5306,7 +5311,7 @@ return;
 	    }
 	}
     }
-    fea_ParseTok(tok);
+    fea_ParseTokWithKeywords(tok, false);
     if ( tok->type!=tk_name || strcmp(tok->tokbuf,lookup_name)!=0 ) {
 	LogError(_("Expected %s in lookup definition on line %d of %s"),
 		lookup_name, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
