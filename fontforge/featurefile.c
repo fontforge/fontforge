@@ -1040,7 +1040,7 @@ static int HasBaseAP(SplineChar *sc,struct lookup_subtable *sub) {
     AnchorPoint *ap;
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-	if ( ap->anchor->subtable == sub )
+	if ( ap->anchor->subtable==sub && ap->type!=at_mark )
 return( true );
     }
 
@@ -1273,7 +1273,7 @@ return;
 		}
 		if ( sub->lookup->lookup_type!=gpos_mark2ligature ) {
 		    int first = true;
-		    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->anchor->subtable==sub ) {
+		    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->anchor->subtable==sub && ap->type!=at_mark ) {
 			if ( !first )
 			    fprintf(out,"\n\t");
 			first = false;
