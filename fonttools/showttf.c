@@ -3176,7 +3176,9 @@ static char *getsettingname(struct ttfinfo *info, int type, int setting) {
     if ( info->features!=NULL ) {
 	for ( k=0; info->features[k].feature!=-1 && info->features[k].feature!=type; ++k );
 	if ( info->features[k].feature!=-1 ) {
-	    /*name = info->features[k].name;		/* will be null at end of list */
+#if 0
+	    name = info->features[k].name;		/* will be null at end of list */
+#endif
 	    for ( l=0 ; l<info->features[k].nsettings && info->features[k].settings[l].setting!=setting; ++l );
 	    if ( l<info->features[k].nsettings )
 		name = info->features[k].settings[l].name;
@@ -5081,7 +5083,7 @@ static void ShowCharString(uint8 *str,int len,int type) {
 	      case 17: printf( "pop " ); break;
 	      case 33: printf( "setcurrentpoint " ); break;
 /* End obselete codes */
-	      default: printf( "???-12-%d-??? ", v ); break;
+	      default: printf( "?\?\?-12-%d-??? ", v ); break;
 	    }
 	} else switch ( v ) {
 	  case 1: printf( "hstem " ); break;
@@ -5111,7 +5113,7 @@ static void ShowCharString(uint8 *str,int len,int type) {
 	  case 9: printf( "closepath " ); break;
 	  case 13: printf( "hsbw " ); break;
 /* End obselete codes */
-	  default: printf( "???-%d-??? ", v );
+	  default: printf( "?\?\?-%d-??? ", v );
 	}
 	--len;
 	if ( v==19 || v==20 ) {
