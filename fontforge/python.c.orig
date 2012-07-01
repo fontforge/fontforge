@@ -10855,11 +10855,6 @@ return( Py_BuildValue("(ii)", sf->pfminfo.codepages[0],sf->pfminfo.codepages[1])
 static int PyFF_Font_set_os2codepages(PyFF_Font *self,PyObject *value,void *closure) {
     SplineFont *sf = self->fv->sf;
 
-    if ( value == NULL ) {
-        sf->pfminfo.hascodepages = false;
-return( 0 );
-    }
-
     if ( !PyArg_ParseTuple(value,"ii", &sf->pfminfo.codepages[0], &sf->pfminfo.codepages[1]))
 return(-1);
     sf->pfminfo.hascodepages = true;
@@ -10879,11 +10874,6 @@ return( Py_BuildValue("(iiii)",
 
 static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value,void *closure) {
     SplineFont *sf = self->fv->sf;
-
-    if ( value == NULL ) {
-        sf->pfminfo.hasunicoderanges = false;
-return( 0 );
-    }
 
     if ( !PyArg_ParseTuple(value,"iiii",
 	    &sf->pfminfo.unicoderanges[0], &sf->pfminfo.unicoderanges[1],
