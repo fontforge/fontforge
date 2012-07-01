@@ -1612,6 +1612,24 @@ pen = None;				# Finalize the pen. This tells FontForge
 	May be set to an integer or a layer name to change the active layer.</TD>
     </TR>
     <TR>
+      <TD><CODE><A name="g-altuni">altuni</A></CODE></TD>
+      <TD colspan=2>Returns additional unicode code points for this glyph.
+        For a primary code point, see <A HREF="#g-unicode">unicode</A>.
+	<P>
+        Returns either None or a tuple of alternate encodings. Each alternate
+        encoding is a tuple of<BR>
+        <CODE>(unicode-value, variation-selector, reserved-field)</CODE><BR>
+        The first is an unicode value of this alternate code point.
+        The second is an integer for variation selector and can be set to -1
+        if not used. The third is an empty field reserved for future use
+        and currently must be set to zero.
+        <P>
+        <CODE>glyph.altuni<?CODE> can be set to None to clear all alternates,
+        or to a tuple. The elements of the tuple may be either integers
+    	(an alternate unicode value with no variation selector)
+	or a tuple with up to 3 values in it as explained above.</TD>
+    </TR>
+    <TR>
       <TD><CODE>anchorPoints</CODE></TD>
       <TD colspan=2>Returns the list of anchor points in the glyph. Each anchor
 	point is a tuple of<BR>
@@ -1877,8 +1895,11 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>Any truetype instructions, returned as a binary string</TD>
     </TR>
     <TR>
-      <TD><CODE>unicode</CODE></TD>
-      <TD colspan=2>The glyph's unicode code point, or -1</TD>
+      <TD><CODE><A name="g-unicode">unicode</A></CODE></TD>
+      <TD colspan=2>The glyph's unicode code point, or -1.
+        In addition to this primary mapping, a glyph can have multiple
+        secondary mappings - see <A HREF="#g-altuni">altuni</A>.
+      </TD>
     </TR>
     <TR>
       <TD><CODE>unlinkRmOvrlpSave</CODE></TD>
