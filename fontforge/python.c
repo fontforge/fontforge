@@ -10877,7 +10877,7 @@ static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value,void *
 
     if ( !PyArg_ParseTuple(value,"iiii",
 	    &sf->pfminfo.unicoderanges[0], &sf->pfminfo.unicoderanges[1],
-	    &sf->pfminfo.unicoderanges[2], &sf->pfminfo.unicoderanges[3]));
+	    &sf->pfminfo.unicoderanges[2], &sf->pfminfo.unicoderanges[3]))
 return(-1);
     sf->pfminfo.hasunicoderanges = true;
 return( 0 );
