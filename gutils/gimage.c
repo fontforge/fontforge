@@ -251,6 +251,50 @@ return;
     }
 }
 
+/* Blends src image with alpha channel over dest. Both images must be */
+/* 32-bit truecolor. Alpha channel of dest must be all opaque.        */
+void GImageBlendOver(GImage *dest,GImage *src,GRect *from,int x, int y) {
+    struct _GImage *sbase, *dbase;
+    int i, j, a, r, g, b;
+    uint32 *dpt, *spt;
+
+    dbase = dest->u.image;
+    sbase =  src->u.image;
+
+    if ( dbase->image_type != it_true ) {
+	fprintf( stderr, "Bad call to GImageBlendOver\n" );
+return;
+    }
+
+    if ( sbase->image_type != it_rgba ) {
+	fprintf( stderr, "Bad call to GImageBlendOver\n" );
+return;
+    }
+
+    for ( i=0; i<from->height; ++i ) {
+	dpt = (uint32 *) (dbase->data + (i+y)*dbase->bytes_per_line + x);
+	spt = (uint32 *) (sbase->data + (i+from->y)*sbase->bytes_per_line + from->x);
+	
+	for (j=0; j<from->width; j++) {
+            a = COLOR_ALPHA(*spt);
+            r = ((255-a)*COLOR_RED(*dpt)  + a*COLOR_RED(*spt))/255;
+            g = ((255-a)*COLOR_GREEN(*dpt)+ a*COLOR_GREEN(*spt))/255;
+            b = ((255-a)*COLOR_BLUE(*dpt) + a*COLOR_BLUE(*spt))/255;
+
+//            r = ((255-a)*255+a*COLOR_RED(GImageGetPixelRGBA(src,from->x+j, from->y+i)))/255;
+//            g = ((255-a)*255+a*COLOR_GREEN(GImageGetPixelRGBA(src,from->x+j, from->y+i)))/255;
+//            b = ((255-a)*255+a*COLOR_BLUE(GImageGetPixelRGBA(src,from->x+j, from->y+i)))/255;
+
+//            r = ((255-a)*255+a*COLOR_RED(*spt))/255;
+//            g = ((255-a)*255+a*COLOR_GREEN(*spt))/255;
+//            b = ((255-a)*255+a*COLOR_BLUE(*spt))/255;
+
+            spt++;
+            *dpt++ = 0xff000000 | COLOR_CREATE(r,g,b);
+	}
+    }
+}
+
 int GImageGetWidth(GImage *img) {
     if ( img->list_len==0 ) {
 return( img->u.image->width );
