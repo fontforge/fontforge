@@ -1895,6 +1895,9 @@ void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
     Display *display=gdisp->display;
     Window w = gw->w;
     GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
+    GRect win_src = {x, y, src->width, src->height};
+    GRect scr_src = {0, 0, src->width, src->height};
+    GImage *scratch = NULL;
     int depth;
 
 #ifndef _NO_LIBCAIRO
@@ -1916,6 +1919,17 @@ return;
 	/*  depth) support 1 bit bitmaps */
 	gdraw_bitmap(gw,image->u.image,base->clut,base->trans,src,x,y);
 return;
+    }
+
+    if ((depth >= 16) && (base->image_type == it_rgba)) {
+        /* We can blend this with background to support an alpha channel */
+        scratch = _GXDraw_CopyScreenToImage(_w, &win_src);
+        if (scratch != NULL) {
+            GImageBlendOver(scratch, image, src, 0, 0);
+            image = scratch;
+            base = image->list_len==0?image->u.image:image->u.images[0];
+            src = &scr_src;
+        }
     }
 
     gximage_to_ximage(gw, image, src);
@@ -1948,6 +1962,9 @@ return;
 	XPutImage(display,w,gc,gdisp->gg.img,0,0,
 		x,y, src->width, src->height );
     }
+    
+    if (scratch != NULL)
+        GImageDestroy(scratch);
 }
 
 void _GXDraw_TileImage( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
