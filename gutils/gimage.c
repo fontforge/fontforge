@@ -280,15 +280,6 @@ return;
             r = ((255-a)*COLOR_RED(*dpt)  + a*COLOR_RED(*spt))/255;
             g = ((255-a)*COLOR_GREEN(*dpt)+ a*COLOR_GREEN(*spt))/255;
             b = ((255-a)*COLOR_BLUE(*dpt) + a*COLOR_BLUE(*spt))/255;
-
-//            r = ((255-a)*255+a*COLOR_RED(GImageGetPixelRGBA(src,from->x+j, from->y+i)))/255;
-//            g = ((255-a)*255+a*COLOR_GREEN(GImageGetPixelRGBA(src,from->x+j, from->y+i)))/255;
-//            b = ((255-a)*255+a*COLOR_BLUE(GImageGetPixelRGBA(src,from->x+j, from->y+i)))/255;
-
-//            r = ((255-a)*255+a*COLOR_RED(*spt))/255;
-//            g = ((255-a)*255+a*COLOR_GREEN(*spt))/255;
-//            b = ((255-a)*255+a*COLOR_BLUE(*spt))/255;
-
             spt++;
             *dpt++ = 0xff000000 | COLOR_CREATE(r,g,b);
 	}
