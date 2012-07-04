@@ -4250,6 +4250,7 @@ static struct feat_item *fea_process_pos_pair(struct parseState *tok,
     struct feat_item *item;
     struct vr vr[2];
     SplineChar *sc, *sc2;
+    int i;
 
     memset(vr,0,sizeof(vr));
     if ( glyphs->vr==NULL )
@@ -4259,6 +4260,14 @@ static struct feat_item *fea_process_pos_pair(struct parseState *tok,
 	if ( glyphs->next->vr!=NULL )
 	    vr[1] = *glyphs->next->vr;
     }
+
+    /* FontForge only supports kerning classes in one direction at a time, not full value records */
+    /* so if there is a full value record, assume "enumerate" */
+    for ( i=0; i<2; ++i ) {
+	if ( vr[i].xoff!=0 || vr[i].yoff!=0 || ( vr[i].h_adv_off!=0 && vr[i].v_adv_off!=0 ) )
+	    enumer = true;
+    }
+
     if ( enumer || (glyphs->is_name && glyphs->next->is_name)) {
 	start = glyphs->name_or_class;
 	forever {
