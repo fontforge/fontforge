@@ -49,7 +49,6 @@ extern int splash;
 extern int adjustwidth;
 extern int adjustlbearing;
 extern Encoding *default_encoding;
-extern int autohint_before_rasterize;
 extern int autohint_before_generate;
 extern int use_freetype_to_rasterize_fv;
 extern int OpenCharsInNewWindow;
@@ -229,7 +228,6 @@ static struct prefs_list {
 	{ N_("HelpDir"), pr_file, &helpdir, NULL, NULL, 'H', NULL, 0, N_("The directory on your local system in which FontForge will search for help\nfiles.  If a file is not found there, then FontForge will look for it on the net.") },
 	{ N_("OtherSubrsFile"), pr_file, &othersubrsfile, NULL, NULL, 'O', NULL, 0, N_("If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\nwith an array of your own, set this to point to a file containing\na list of up to 14 PostScript subroutines. Each subroutine must\nbe preceded by a line starting with '%%%%' (any text before the\nfirst '%%%%' line will be treated as an initial copyright notice).\nThe first three subroutines are for flex hints, the next for hint\nsubstitution (this MUST be present), the 14th (or 13 as the\nnumbering actually starts with 0) is for counter hints.\nThe subroutines should not be enclosed in a [ ] pair.") },
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
-	{ N_("AutoHint"), pr_bool, &autohint_before_rasterize, NULL, NULL, 'A', NULL, 0, N_("AutoHint before rasterizing") },
 	{ N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
 	{ NULL }
 },
@@ -302,7 +300,7 @@ static struct prefs_list {
 },
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
-	{ N_("HintForGen"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+	{ N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
 	{ NULL }
 },
  hints_list[] = {
