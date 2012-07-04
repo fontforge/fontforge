@@ -948,7 +948,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     int start_cnt, end_cnt;
     int chunk_cnt, chunk_max;
     SplineChar *sc, **glyphs, *gtemp;
-    int isr2l = -1;
     struct sckppst **seconds;
     int devtablen;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1088,20 +1087,8 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	    }
 	    if ( (kp = seconds[cnt][tot].kp)!=NULL ) {
 		int mask = 0, mask2=0;
-		if ( !seconds[cnt][tot].isv && isr2l==-1 ) {
-		    SplineChar *sc = seconds[cnt][tot].sc;
-		    int known_r2l = SCRightToLeft(sc);
-		    if ( known_r2l )
-			isr2l = true;
-		    else if ( SCScriptFromUnicode(sc)== DEFAULT_SCRIPT )
-	continue;
-		    else
-			isr2l = false;
-		}
 		if ( seconds[cnt][tot].isv )
 		    mask = 0x0008;
-		else if ( isr2l )
-		    mask2 = 0x0004;
 		else
 		    mask = 0x0004;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1115,7 +1102,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	    }
 	}
     }
-    if ( isr2l==-1 ) isr2l = 0;
     if ( vf1==0 && vf2==0 ) vf1=1;
     bit_cnt = 0;
     for ( i=0; i<8; ++i ) {
@@ -1225,8 +1211,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		    int mask=0, mask2=0;
 		    if ( seconds[i][tot].isv )
 			mask = 0x8;
-		    else if ( isr2l )
-			mask2 = 0x4;
 		    else
 			mask = 0x4;
 		    gposvrmaskeddump(gpos,vf1,mask,kp->off);
@@ -1369,65 +1353,13 @@ static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
     }
 }
 
-static int KernClassR2L(SplineFont *sf, KernClass *kc) {
-    int i, ch, known_r2l ;
-    char *pt, *start;
-    SplineChar *sc;
-
-    for ( i=1; i<kc->first_cnt; ++i ) {
-	for ( start = kc->firsts[i]; *start ; ) {
-	    for ( pt=start; *pt!=' ' && *pt!='\0'; ++pt );
-	    ch = *pt; *pt = '\0';
-	    sc = SFGetChar(sf,-1,start);
-	    *pt = ch;
-	    if ( sc!=NULL ) {
-		known_r2l = SCRightToLeft(sc);
-		if ( known_r2l )
-return( true );
-		else if ( SCScriptFromUnicode(sc)== DEFAULT_SCRIPT )
-		    /* Do Nothing */;
-		else
-return( false );
-	    }
-	    while ( ch==' ' )
-		ch = *++pt;
-	    start = pt;
-	}
-    }
-
-    /* Eh? All the data were non-commital? Well, try the second set of classes*/
-    for ( i=1; i<kc->second_cnt; ++i ) {
-	for ( start = kc->seconds[i]; *start ; ) {
-	    for ( pt=start; *pt!=' ' && *pt!='\0'; ++pt );
-	    ch = *pt; *pt = '\0';
-	    sc = SFGetChar(sf,-1,start);
-	    *pt = ch;
-	    if ( sc!=NULL ) {
-		known_r2l = SCRightToLeft(sc);
-		if ( known_r2l )
-return( true );
-		else if ( SCScriptFromUnicode(sc)== DEFAULT_SCRIPT )
-		    /* Do Nothing */;
-		else
-return( false );
-	    }
-	    while ( ch==' ' )
-		ch = *++pt;
-	    start = pt;
-	}
-    }
-
-    /* We still don't have any idea? Well, lets just say it's l2r */
-return( false );
-}
-
 static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
 	struct lookup_subtable *sub, struct alltabs *at) {
     uint32 begin_off = ftell(gpos), pos;
     uint16 *class1, *class2;
     KernClass *kc = sub->kc, *test;
     SplineChar **glyphs;
-    int i, isv, isr2l;
+    int i, isv;
     int anydevtab = false;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     int next_devtab;
@@ -1446,18 +1378,12 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
 
     for ( test=sf->vkerns; test!=NULL && test!=kc; test=test->next );
     isv = test==kc;
-    isr2l = KernClassR2L(sf,kc);
 
     if ( isv ) {
 	/* As far as I know there is no "bottom to top" writing direction */
 	/*  Oh. There is. Ogham, Runic */
 	putshort(gpos,anydevtab?0x0088:0x0008);	/* Alter YAdvance of first character */
 	putshort(gpos,0x0000);			/* leave second char alone */
-    } else if ( isr2l ) {
-	/* Right to left kerns modify the second character's width */
-	/*  this doesn't make sense to me, but who am I to argue */
-	putshort(gpos,0x0000);			/* leave first char alone */
-	putshort(gpos,anydevtab?0x0044:0x0004);	/* Alter XAdvance of second character */
     } else {
 	putshort(gpos,anydevtab?0x0044:0x0004);	/* Alter XAdvance of first character */
 	putshort(gpos,0x0000);			/* leave second char alone */
