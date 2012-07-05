@@ -315,7 +315,7 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
     depressed = box->flags & box_do_depressed_background;
     def = box->flags & box_draw_default;
     grad = box->flags & box_gradient_bg;
-    shadow = box->flags & box_gradient_bg;
+    shadow = box->flags & box_foreground_shadow_outer;
 
     bordertype[0].val = &bt;
     boxtypes[0].val = &bt;
@@ -374,6 +374,8 @@ FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffon
 	box->flags |= box_draw_default;
     if ( grad )
 	box->flags |= box_gradient_bg;
+    if ( shadow )
+	box->flags |= box_foreground_shadow_outer;
 
     if ( fi==NULL ) {
 	FontRequest rq;
