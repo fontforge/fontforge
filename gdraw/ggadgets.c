@@ -46,8 +46,8 @@ GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0,
     COLOR_CREATE(0xff,0xff,0x00),		/* active border */
     COLOR_CREATE(0xa0,0xa0,0xa0),		/* pressed background */
     COLOR_CREATE(0x00,0x00,0x00),		/* gradient bg end */
-    COLOR_DEFAULT,				/* border inner */
-    COLOR_DEFAULT				/* border outer */
+    COLOR_CREATE(0x00,0x00,0x00),		/* border inner */
+    COLOR_CREATE(0x00,0x00,0x00),		/* border outer */
 };
 GBox _GListMark_Box = { /* Don't initialize here */ 0 };
 FontInstance *_ggadget_default_font = NULL;
