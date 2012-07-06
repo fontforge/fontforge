@@ -678,7 +678,8 @@ static int GRE_Save(GGadget *g, GEvent *e) {
 		"GradientBG", NULL };
 	static char *colornames[] = { "NormalForeground", "DisabledForeground", "NormalBackground",
 		"DisabledBackground", "PressedBackground", "GradientStartCol", "BorderBrightest",
-		"BorderBrighter", "BorderDarker", "BorderDarkest", "ActiveBorder",
+		"BorderBrighter", "BorderDarker", "BorderDarkest", "BorderInnerCol", "BorderOuterCol",
+		"ActiveBorder",
 		NULL };
 	static char *intnames[] = { "BorderWidth", "Padding", "Radius", NULL };
 	struct resed *extras;
@@ -1670,7 +1671,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].carray[l][0] = &gcd[k-1];
 
-	    lab[k].text = (unichar_t *) _("Outer Border:");
+	    lab[k].text = (unichar_t *) _("Inner Border:");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
@@ -1678,17 +1679,17 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k++].creator = GLabelCreate;
 	    tofree[i].carray[l][1] = &gcd[k-1];
 
-	    gcd[k].gd.u.col = res->boxdata->border_outer;
+	    gcd[k].gd.u.col = res->boxdata->border_inner;
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_ColorChanged;
-	    gcd[k].data = &res->boxdata->border_outer;
+	    gcd[k].data = &res->boxdata->border_inner;
 	    gcd[k++].creator = GColorButtonCreate;
 	    tofree[i].carray[l][2] = &gcd[k-1];
 	    tofree[i].carray[l][3] = GCD_Glue;
 	    if ( res->inherits_from==NULL )
 		gcd[k-3].gd.flags &= ~gg_enabled;
-	    else if ( res->inherits_from->boxdata->border_outer == res->boxdata->border_outer ) {
+	    else if ( res->inherits_from->boxdata->border_inner == res->boxdata->border_inner ) {
 		gcd[k-3].gd.flags |= gg_cb_on;
 		gcd[k-2].gd.flags &= ~gg_enabled;
 		gcd[k-1].gd.flags &= ~gg_enabled;
@@ -1705,7 +1706,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].carray[l][4] = &gcd[k-1];
 
-	    lab[k].text = (unichar_t *) _("Inner Border:");
+	    lab[k].text = (unichar_t *) _("Outer Border:");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
@@ -1713,16 +1714,16 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    gcd[k++].creator = GLabelCreate;
 	    tofree[i].carray[l][5] = &gcd[k-1];
 
-	    gcd[k].gd.u.col = res->boxdata->border_inner;
+	    gcd[k].gd.u.col = res->boxdata->border_outer;
 	    gcd[k].gd.flags = gg_visible|gg_enabled;
 	    gcd[k].gd.cid = ++cid;
 	    gcd[k].gd.handle_controlevent = GRE_ColorChanged;
-	    gcd[k].data = &res->boxdata->border_inner;
+	    gcd[k].data = &res->boxdata->border_outer;
 	    gcd[k++].creator = GColorButtonCreate;
 	    tofree[i].carray[l][6] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
 		gcd[k-3].gd.flags &= ~gg_enabled;
-	    else if ( res->inherits_from->boxdata->border_inner == res->boxdata->border_inner ) {
+	    else if ( res->inherits_from->boxdata->border_outer == res->boxdata->border_outer ) {
 		gcd[k-3].gd.flags |= gg_cb_on;
 		gcd[k-2].gd.flags &= ~gg_enabled;
 		gcd[k-1].gd.flags &= ~gg_enabled;
