@@ -272,8 +272,8 @@ return;
     }
 
     for ( i=0; i<from->height; ++i ) {
-	dpt = (uint32 *) (dbase->data + (i+y)*dbase->bytes_per_line + x);
-	spt = (uint32 *) (sbase->data + (i+from->y)*sbase->bytes_per_line + from->x);
+	dpt = (uint32 *) (dbase->data + (i+y)*dbase->bytes_per_line + x*sizeof(uint32));
+	spt = (uint32 *) (sbase->data + (i+from->y)*sbase->bytes_per_line + from->x*sizeof(uint32));
 	
 	for (j=0; j<from->width; j++) {
             a = COLOR_ALPHA(*spt);
