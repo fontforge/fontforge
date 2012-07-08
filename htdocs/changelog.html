@@ -46,6 +46,336 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+
+    <LI>
+      Git HEAD
+      <UL>
+        <LI>
+          <B>General:</B>
+        <LI>
+          Configure works on mac again.
+        <LI>
+          Fixed compilation with XCode 4.3 on Max OS X Lion.
+        <LI>
+          Fixed a crash for fonts with kerning entries containing negative values.
+        <LI>
+          Patch by Sourceforge user serval2412 to fix some resource leaks.
+        <LI>
+          Patch by Khaled Hosny for calculating wrong x and cap height for some fonts.
+          If glyphs checked don't have flat surfaces at the top, FontForge takes the
+          mean. But it was dividing by the wrong value.
+        <LI>
+          FontForge didn't build on some systems where /bin/sh is synonymous with dash,
+          yet the usual user shell is bash. Configure and libtool were thus using
+          different shells, that turned out to be incompatible. Luigi Scarso suggested
+          patching the makefiles with explicitly setting the SHELL variable.
+        <LI>
+           Path by Steve White to enable support for ASMO 708 codepage.
+        <LI>
+          <a href="http://sourceforge.net/mailarchive/forum.php?thread_name=4F37E48C.4020508%40newtypography.co.uk&forum_name=fontforge-devel">We needed to go back to old implementation of the fsType table.</a>
+        <LI>
+          Patch by Michael Terry to fix crashes for pngs having NULL for trans_alpha;
+        <LI>
+          Patches by Daniel Kahn Gillmor and Paul Flo Williams to add support for libpng 1.5.
+        <LI>
+          The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph
+          List disagree with Unicode. The use of these glyph names is therefore discouraged.
+          Patch by Steve White.
+        <LI>
+          Encoding ID should be set to 10 for fonts containing unicode characters outside of BMP.
+          Patch by Steve White.
+        <LI>
+          Hunh. We aren't adding libintl to the library list when we find out that we need it.
+        <LI>
+          Patch from Johan Winge to fix outputting of 24-bit BMP images.
+        <LI>
+          Patch from Maxim Iorsh to fix a crash for very long lines in UI.
+          Specifically, crash occurs when putting a very long list of glyphs
+          (~300 characters) in chaining substitution dialog.
+        <LI>
+          Patch by Pierre Hanser to fix a segfault in validation code
+          when there was an empty line in PS private dictionary.
+        <LI>
+          Patch from Paul Flo Williams to Fedora bug 694986.
+          See https://bugzilla.redhat.com/show_bug.cgi?id=694986
+        <LI>
+          Patch by Khaled Hosny to fix a crash when cancelling a warning
+          about glyph name or encoding already being in use.
+        <LI>
+          Patch from Matthew Skala to fix PS "Stack got too big" error.
+        <LI>
+          Matthew Skala pointed out, that featurefile.c line 94 tests the
+          pointer sc for being null *after* dereferencing it, thus segfaulting
+          if it does happen to be null.
+        <LI>
+          Patch from Steve White, to fix various issues in the Unicode Ranges panel in the Font Info dialog.
+        <LI>
+          Khaled Hosny forwarded a tweaked patch from Werner Fink of LuaTEX team,
+          fixing a warning on line 400 and 401 within ioescapestopped() of psread.c
+        <LI>
+          When reading a kerning class we did not check to see if we got back an erroneous coverage table.
+        <LI>
+          At some point, FF only compiled if configured for type3 fonts.
+        <LI>
+          Fixed handling PDF opacity and patterns/gradients behaviour with
+          respect to the current transformation matrix.
+        <LI>
+          Kerning pairs associated with a glyph weren't properly reinstantiated when
+          reverting that glyph from the original SFD file. This could result to crashes
+          (e. g. when attempting to save the font).
+        <LI>
+          When displaying a pair of kerned glyphs in a tooltip box, FF would
+          actually ignore the left bearing of the second glyph. If bearing was
+          negative (e. g. in case of a combining mark) this could even result
+          into a crash.
+        <LI>
+          A wrong Descender value has been written into generated afm files, if
+          the font lacked typical glyphs with descenders.
+        <LI>
+          The gasp table version was ignored when writing and opening SFD files.
+        <LI>
+          Fixed a bug when loading a type3 font with references.
+        <LI>
+          Patch by Alexey Kryukov to fix a crash in matrix edit controls.
+        <LI>
+          FF wasn't reading cmap AT ALL for cid keyed files.
+        <LI>
+          FF's CID menu now allows 256 cid sub-fonts - it used to be 42.
+        <LI>
+          Fixed a crash when a context chaining lookup glyph-based subtable had
+          no glyphs in the backtrack section.
+        <LI>
+          The routine which (re)calculated the line height of a matrix edit had
+          a bug which caused it to look at (random garbage) characters after the
+          end of a string. This often produced warnings about "bad utf8 string"
+          or some such.
+        <LI>
+          Fixed handling of he symetrical smoothing flag bits for gasp.
+        <LI>
+          FontForge checks at configure to see if libintl and libintl.h are on
+          the system. It did NOT check whether msgfmt was in the path. So if
+          a user has installed macports/fink but not added the appropriate bin
+          directory to their path the configure script would think all was well
+          and would create a makefile for .po files. Unfortunately the make file
+          would die because msgfmt would not run.
+        <LI>
+          The charview hint routines used a routine which could try to store
+          5 points in an array that only held 4. The resultant memory corruption
+          could cause crashes. Patch by Paul Flo Williams.
+        <LI>
+          Fixed a crash in Expand Stroke.
+        <LI>
+          Fixed some bugs in deletion of mark classes and mark sets in font info.
+        <LI>
+          <B>Python scripting fixes and additions:</B>
+        <LI>
+          'altuni' member of glyph object in Python API was not documented.
+        <LI>
+          Patches by Akiro Sakigawa to fix setting and changing os2_unicoderanges and os2_codepages.
+        <LI>
+          Patch by GUST Team to fix a resource leak in python scripting.
+        <LI>
+          Patch by Khaled Hosny to fix a memory corruption crash in python scripting.
+        <LI>
+          When loading an encoding from Python, one need to know the name of the
+          encoding in order to use it, so it makes sense for loadEncodingFile() to
+          return that name. Patch by Khaled Hosny.
+        <LI>
+          'fontlog' and 'comment' members of font object in Python API were not documented.
+          Patch by Khaled Hosny.
+        <LI>
+          Patch from Andrew Miller to make python "addLookup" function actually work.
+        <LI>
+          A patch from Khaled, fixing a memory issue in python interface.
+        <LI>
+          Assign the correct meaning to the symmetrical smoothing GASP flags in the Python interface.
+        <LI>
+          Changing the unicode value of a code point with python did not mark
+          the font's encoding as changed which lead to subtle errors later.
+        <LI>
+          New python command: <CODE>font.addContextualSubtable</CODE>
+        <LI>
+           Adxded a python entry to the "Change Glyph" dlg.
+        <LI>
+          <B>Opentype Features fixes and additions, mostly by Khaled Hosny:</B>
+        <LI>
+          In contextual chaining substitution lookups the backtrack classes are
+          ordered in reverse way, but feature file syntax expects them to be in
+          natural order, as confirmed by Adobe. FF does this from now, but this
+          breaks any feature files that expect the old, incorrect behaviour.
+        <LI>
+          Added support for feature files containing kerning classes with value
+          records that can't be handled by classes. They will get converted into
+          kerning pairs, like with AFDKO's makeotf.
+        <LI>
+          Changed behaviour of kerning right to left characters. Now it's the user
+          who is responsible for specifying the kerning in the right order and for
+          adjusting the right values. But this makes things predictable.
+        <LI>
+          FontForge was trying to output "pos" rules for the marks themselves,
+          not base glyphs. It was also outputting the mark once for the base
+          anchor (correct) and once for the mark anchor (wrong).
+        <LI>
+          FontForge will, from now, handle new, unescaped syntax for mark lookup
+          tags in feature files.
+        <LI>
+          FontForge escaped 'mark' feature tag when exporting feature files.
+          According to the specification, escaping is only for glyph names
+          and CID indices.
+        <LI>
+          Ligature caret handling in feature files was broken; only first
+          LigatureCaret declaration worked as expected, all subsequent ones was
+          accumulating all previous ones. 
+        <LI>
+          Sometimes GDEF definitions in feature file were being formatted wrongly.
+        <LI>
+          Fixes by Alexey Kryukov to some issues reported by Adam Twardoch:
+          <UL>
+            <LI>                  
+              In the 'size' feature the parameters were written with a locale-dependent
+              decimal separator, while the decimal dotis only allowed by the spec;
+            <LI>
+              FF used to generate empty definitions for standard GDEF classes if there
+              were no glyphs to assign to them, while they should have been omitted
+              according to the spec. Although the class names in GlyphClassDef should be
+              comma-separated, and the positions for omitted classes still should be
+              indicated with commas.
+            <LI>
+              Moreover, FF would put some glyphs into wrong classes due to a difference
+              between its internal standard class IDs and ones used in the feature file
+              syntax.
+          </UL>
+        <LI>
+          Any operation which required temporary expansion of kerning classes
+          (such as displaying the "Kern Pairs" dialog) could result into a complete
+          loss of pairwise (not class based) kerning data.
+        <LI>
+          Eric Schrijver requested that GLIF output be more similar to that of RoboFab's
+          to make diffing files easier.
+        <LI>
+          Patch by Khaled to fix a bug in ff's featurefile processing
+          of UseMarkFilteringSet.
+        <LI>
+          If a feature contained both multiple and single substitutions, then FF
+          would lose the single subs. Instead change the single subs to multiples.
+        <LI>
+          <B>UI fixes and additions:</B>
+        <LI>
+          Added support for UI icons with alpha-channel.
+        <LI>
+          New X resources for interface styling:
+          <UL>
+            <LI>
+              <CODE>Box.BorderInnerCol</CODE>
+            <LI>
+              <CODE>Box.BorderOuterCol</CODE>
+            <LI>
+              <CODE>FontView.GlyphInfoColor</CODE>
+            <LI>
+              <CODE>FontView.EmptySlotFgColor</CODE>
+            <LI>
+              <CODE>FontView.HintingNeededColor</CODE>
+          </UL>
+        <LI>
+          Widget gradients changed.
+        <LI>
+          Charview palette buttons are now loadable from files.
+        <LI>
+          Fixed  OuterShadow handling in resource editor.
+        <LI>
+          New Catalan translation, from Rafael Ferran i Peralta.
+        <LI>
+          New Ukrainian translation from Yuri Chornoivan.
+        <LI>
+          Lee Chenhwa  Simplified Chinese translation.
+        <LI>
+          Wei-Lun Chao updated Traditional Chinese translation.
+        <LI>
+          Michal Nowakowski updated Polish translation.
+        <LI>
+          Updated Russian translation from Alexandre Proukodine.
+        <LI>
+          Spelling Fixes by Yuri Chornoivan, Steve White and Michal Nowakowski.
+        <LI>
+          Make message about bad anchor point more informative.
+          Patch by Steve White.
+        <LI>
+          Allow user to customize frequency of autosaving (or turn off entirely).
+        <LI>
+          Patch from Khaled Hosny, to disable automatic setting "Is offset" field on
+          in the font metrics. This confused users.
+        <LI>
+          Patch from Khaled Hosny not to set NeedsXUIDChange if UseXUID is not set.
+        <LI>
+          The CharView->Element->Order submenu did not enable its menu items properly if an image were selected.
+        <LI>
+          If a glyph had more than one background image then selecting one and scaling it would ignore the selection and scale all images.
+        <LI>
+          It was impossible to import more than one background image due to a typo.
+        <LI>
+          When closing a gradient window, ff tended to crash.
+        <LI>
+          Patch by Alexey Kryukov to make possible selecting control points without moving them.
+          Later its glitch were fixed by George Williams.
+        <LI>
+          It was not possible to cut or delete bitmap references from bitmap view.
+        <LI>
+          Patch by Alexey Kryukov to center glyphs in charview by default
+          (but not yet vertically).
+        <LI>
+          Patch by Alexey Kryukov to tweak rules on when to refit charview contents
+          within window after pasting new content there.
+        <LI>
+          A few tweaks by Alexey Kryukov to metrics view.
+          <UL>
+            <LI>
+              If the displayed kerning value comes from a kerning file, assume this pair should
+              take a precedence over any possible kern class entries and don't bother user asking
+              what exactly (s)he wants to modify;
+            <LI>
+              If user sets a kerning offset to zero and this offset is defined by a kerning pair,
+              then clean up that kerning pair automatically;
+            <LI>
+              The kerning subtable selection combo box was practically useless as its value was
+              reset each time a glyph was selected. So first check if the selected subtable is
+              relevant, and, if so, don't change it.
+          </UL>
+        <LI>
+          Patch by Alexey Kryukov to make it possible again to reorder classes and rules in the
+          contextual substitutions dialog. Also the dialog was initialized with zero classes,
+          but, as soon as the first class was created, FF was starting to treat it as an
+          "Everything else" class, no matter how it was defined by user. So make sure this
+          magick class is always present to avoid any confusion.
+        <LI>
+          FF will remember the last font(s) open (at the last quit) and reopen them
+          on a start-up with no named fonts on the command line.
+          Starting up with the flag --open will avoid this code.
+        <LI>
+          On glyph rename, all places the name is referenced (substitutions,
+          etc.) are supposed to be updated. But glyph and coverage table
+          contextual (chaining) substitutions were not being renamed.
+        <LI>
+          In the new context chain dlg, simple glyph page had a bug which failed
+          to remove the parenthesised unicode character after a glyph name (and
+          complained about it).
+        <LI>
+          Change the context chaining dialog. I hope it will be easier to use.
+          Unfortunately there are lookups which can't be expressed in the new format
+          so retain the old format as a fall-back. (Adobe's feature files don't
+          support these exceptions either, so I doubt anyone actually uses them).
+        <LI>
+          The lookup panes of font info didn't refresh when someone changed the name
+          (Edit metadata) of a lookup or subtable.
+        <LI>
+          It used to be that long menus which didn't fit on the screen had up/down
+          arrows at the top and bottom. But for very long menus scrolling using this
+          method was slow. So this code puts in a scrollbar instead.
+        <LI>
+          Changed the Size pane of Font Info to use a matrix edit for font style names.
+        <LI>
+          People didn't like the way Glyph Info behaved (They wanted the "Done" button
+          to do a "Cancel". So make it so.
+      </UL>
     <LI>
       21-Feb-2011
       <UL>
