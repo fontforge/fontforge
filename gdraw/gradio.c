@@ -29,6 +29,7 @@
 #include "ggadgetP.h"
 #include "ustring.h"
 #include "gkeysym.h"
+#include <math.h>
 
 static GBox radio_box = { /* Don't initialize here */ 0 };
 static GBox radio_on_box = { /* Don't initialize here */ 0 };
@@ -36,7 +37,10 @@ static GBox radio_off_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
 static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
+static GBox visibility_on_box = { /* Don't initialize here */ 0 };
+static GBox visibility_off_box = { /* Don't initialize here */ 0 };
 static GResImage *radon, *radoff, *checkon, *checkoff, *raddison, *raddisoff, *checkdison, *checkdisoff;
+static GResImage *visibilityon, *visibilityoff, *visibilitydison, *visibilitydisoff;
 static FontInstance *checkbox_font = NULL;
 static int gradio_inited = false;
 
@@ -193,6 +197,7 @@ return;		/* Do Nothing, it's already on */
 	GDrawPostEvent(&e);
 }
 
+/* Return the number of lines in the label of a radio button. */
 static int gradio_linecount(GRadio *gr) {
     int lcnt;
     unichar_t *pt;
@@ -210,10 +215,11 @@ static int gradio_linecount(GRadio *gr) {
 return( lcnt );
 }
 
+/* Called on expose events, this renders the button. */
 static int gradio_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRadio *gr = (GRadio *) g;
     int x;
-    GImage *img = gr->image;
+    GImage *img = gr->image; /* the optional image tied to the label */
     GResImage *mark;
     GRect old1, old2, old3;
     int yoff = (g->inner.height-(gr->fh))/2;
@@ -221,6 +227,7 @@ static int gradio_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     if ( g->state == gs_invisible )
 return( false );
 
+     /* First blank out the button area. */
     GDrawPushClip(pixmap,&g->r,&old1);
 
     GBoxDrawBackground(pixmap,&g->r,g->box,
@@ -230,15 +237,18 @@ return( false );
     GDrawPushClip(pixmap,&gr->onoffrect,&old2);
     GBoxDrawBackground(pixmap,&gr->onoffrect,gr->ison?gr->onbox:gr->offbox,
 	    gs_pressedactive,false);
-    GBoxDrawBorder(pixmap,&gr->onoffrect,gr->ison?gr->onbox:gr->offbox,
-	    gs_pressedactive,false);
+    if (gr->ison && gr->onbox->border_type!=bt_none)
+        GBoxDrawBorder(pixmap,&gr->onoffrect,gr->onbox, gs_pressedactive,false);
+    else if (!gr->ison && gr->offbox->border_type!=bt_none)
+        GBoxDrawBorder(pixmap,&gr->onoffrect,gr->offbox,gs_pressedactive,false);
 
+     /* Next draw either the right image or draw in an on or off indicator. */
     mark = NULL;
     if ( g->state == gs_disabled )
-	mark = gr->ison ? gr->ondis : gr->offdis;
+	mark = gr->ison ? gr->ondis : gr->offdis; /* note: ondis or offdis may be NULL! */
     if ( mark==NULL || mark->image==NULL )
-	mark = gr->ison ? gr->on : gr->off;
-    if ( mark!=NULL && mark->image==NULL )
+	mark = gr->ison ? gr->on : gr->off; /* note: on or off may be NULL! */
+    if ( mark!=NULL && mark->image==NULL ) /* when there's a reference to a special image, but no actual image */
 	mark = NULL;
     if ( mark!=NULL ) {
 	GDrawPushClip(pixmap,&gr->onoffinner,&old3);
@@ -246,6 +256,7 @@ return( false );
 		gr->onoffinner.x,gr->onoffinner.y);
 	GDrawPopClip(pixmap,&old3);
     } else if ( gr->ison && gr->onbox == &checkbox_on_box ) {
+	 /* for radio buttons where the on is a checkbox style, draw an X */
 	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
@@ -256,10 +267,77 @@ return( false );
 	GDrawDrawLine(pixmap, gr->onoffrect.x+gr->onoffrect.width-1-bp,gr->onoffrect.y+bp,
 				gr->onoffrect.x+bp,gr->onoffrect.y+gr->onoffrect.height-1-bp,
 			        fg);
+    } else if ( gr->ison && gr->onbox == &visibility_on_box ) {
+         /* draw open white of eye */
+        GPoint pts[15];
+        Color fg;
+        double angle;
+        int c,i;
+	int bp = gr->onbox->border_type==bt_none ? 0 : GDrawPointsToPixels(pixmap,gr->onbox->border_width);
+        int x=gr->onoffrect.x+bp;
+        int y=gr->onoffrect.y+bp;
+        int w=gr->onoffrect.width -1-2*bp;
+        int h=gr->onoffrect.height-1-2*bp;
+        GRect rect;
+        for (c=0, i=0; c<7; c++) {
+            angle=(30+c/6.*120)*M_PI/180;
+            pts[i].x=.5*w*cos(angle)+x+w/2;
+            pts[i].y=.5*h*sin(angle)+y+h/4;
+            ++i;
+        }
+        for (c=1; c<6; c++) {
+            angle=(180+30+c/6.*120)*M_PI/180;
+            pts[i].x=.5*w*cos(angle)+x+w/2;
+            pts[i].y=.5*h*sin(angle)+y+h*3/4;
+            ++i;
+        }
+        pts[i].x=pts[0].x;
+        pts[i].y=pts[0].y;
+        ++i;
+        fg=0x00ffffff; /* white */
+        GDrawFillPoly(pixmap, pts, i, fg);
+	fg = g->state==gs_disabled?g->box->disabled_foreground:
+			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+			g->box->main_foreground;
+        GDrawDrawPoly(pixmap, pts, i, fg);
+
+         /* draw pupil */
+        rect.x=gr->onoffrect.x+bp+w*.3;
+        rect.y=gr->onoffrect.y+bp+h*.3;
+        rect.width =.4*w;
+        rect.height=.4*h;
+        fg=0; /* black */
+        GDrawFillElipse(pixmap, &rect, fg);
+
+    } else if ( (!gr->ison) && gr->onbox == &visibility_on_box ) {
+         /* draw closed eye */
+        GPoint pts[6];
+        int c,i;
+        double angle;
+	int bp = gr->onbox->border_type==bt_none ? 0 : GDrawPointsToPixels(pixmap,gr->onbox->border_width);
+        int x=gr->onoffrect.x+bp;
+        int y=gr->onoffrect.y+bp;
+        int w=gr->onoffrect.width -1-2*bp;
+        int h=gr->onoffrect.height-1-2*bp;
+        Color fg = g->state==gs_disabled?g->box->disabled_foreground:
+			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+			g->box->main_foreground;
+        for (c=0, i=0; c<=6; c++) {
+            angle=(30+c/6.*120)*M_PI/180;
+            pts[i].x=.5*w*cos(angle)+x+w/2;
+            pts[i].y=.5*h*sin(angle)+y+h/4;
+
+             /* draw lashes */
+            if (i>0 && i<5) GDrawDrawLine(pixmap, pts[i].x,pts[i].y, .75*w*cos(angle)+x+w/2, .75*h*sin(angle)+y+h/4, fg);
+            ++i;
+        }
+        GDrawDrawPoly(pixmap, pts, i, fg);
     }
+
     GDrawPopClip(pixmap,&old2);
     x = gr->onoffrect.x + gr->onoffrect.width + GDrawPointsToPixels(pixmap,4);
 
+     /* Finally write out the label if any. */
     GDrawPushClip(pixmap,&g->inner,&old2);
     if ( gr->font!=NULL )
 	GDrawSetFont(pixmap,gr->font);
@@ -517,6 +595,9 @@ static void GRadioInit() {
     _GGadgetCopyDefaultBox(&checkbox_box);
     _GGadgetCopyDefaultBox(&checkbox_on_box);
     _GGadgetCopyDefaultBox(&checkbox_off_box);
+    _GGadgetCopyDefaultBox(&visibility_on_box);
+    _GGadgetCopyDefaultBox(&visibility_off_box);
+
     radio_box.padding = 0;
     radio_box.border_type = bt_none;
     radio_on_box.border_type = bt_raised;
@@ -531,26 +612,44 @@ static void GRadioInit() {
     checkbox_on_box.flags = checkbox_off_box.flags |= box_do_depressed_background;
     checkbox_font = _GGadgetInitDefaultBox("GRadio.",&radio_box,NULL);
     checkbox_font = _GGadgetInitDefaultBox("GCheckBox.",&checkbox_box,checkbox_font);
+
+    visibility_on_box.border_type=bt_none;
+    visibility_on_box.padding=1;
+    visibility_off_box.border_type=bt_none;
+    visibility_off_box.padding=1;
+
     _GGadgetInitDefaultBox("GRadioOn.",&radio_on_box,NULL);
     _GGadgetInitDefaultBox("GRadioOff.",&radio_off_box,NULL);
     _GGadgetInitDefaultBox("GCheckBoxOn.",&checkbox_on_box,NULL);
     _GGadgetInitDefaultBox("GCheckBoxOff.",&checkbox_off_box,NULL);
+    _GGadgetInitDefaultBox("GVisibilityBoxOn.",&visibility_on_box,NULL);
+    _GGadgetInitDefaultBox("GVisibitityBoxOff.",&visibility_off_box,NULL);
+
     if ( radio_on_box.depressed_background == radio_off_box.depressed_background ) {
 	radio_on_box.depressed_background = radio_on_box.active_border;
 	radio_off_box.depressed_background = radio_off_box.main_background;
     }
+
     if ( checkbox_on_box.depressed_background == checkbox_off_box.depressed_background ) {
 	checkbox_on_box.depressed_background = checkbox_on_box.active_border;
 	checkbox_off_box.depressed_background = checkbox_off_box.main_background;
     }
+
     radon = GGadgetResourceFindImage("GRadioOn.Image",NULL);
     radoff = GGadgetResourceFindImage("GRadioOff.Image",NULL);
-    checkon = GGadgetResourceFindImage("GCheckBoxOn.Image",NULL);
-    checkoff = GGadgetResourceFindImage("GCheckBoxOff.Image",NULL);
     raddison = GGadgetResourceFindImage("GRadioOn.DisabledImage",NULL);
     raddisoff = GGadgetResourceFindImage("GRadioOff.DisabledImage",NULL);
+
+    checkon = GGadgetResourceFindImage("GCheckBoxOn.Image",NULL);
+    checkoff = GGadgetResourceFindImage("GCheckBoxOff.Image",NULL);
     checkdison = GGadgetResourceFindImage("GCheckBoxOn.DisabledImage",NULL);
     checkdisoff = GGadgetResourceFindImage("GCheckBoxOff.DisabledImage",NULL);
+
+    visibilityon = GGadgetResourceFindImage("GVisibilityBoxOn.Image",NULL);
+    visibilityoff = GGadgetResourceFindImage("GVisibilityBoxOff.Image",NULL);
+    visibilitydison = GGadgetResourceFindImage("GVisibilityBoxOn.DisabledImage",NULL);
+    visibilitydisoff = GGadgetResourceFindImage("GVisibilityBoxOff.DisabledImage",NULL);
+
     gradio_inited = true;
 }
 
@@ -641,6 +740,18 @@ return( gl );
 
 GGadget *GCheckBoxCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GCheckBox *gl = _GCheckBoxCreate(gcalloc(1,sizeof(GCheckBox)),base,gd,data,&checkbox_box);
+
+return( &gl->g );
+}
+
+GGadget *GVisibilityBoxCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GCheckBox *gl = _GCheckBoxCreate(gcalloc(1,sizeof(GCheckBox)),base,gd,data,&checkbox_box);
+    gl->onbox = &visibility_on_box;
+    gl->offbox = &visibility_off_box;
+    gl->on = visibilityon;
+    gl->off = visibilityoff;
+    gl->ondis = visibilitydison;
+    gl->offdis = visibilitydisoff;
 
 return( &gl->g );
 }
