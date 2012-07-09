@@ -4,7 +4,7 @@
   <!-- AP: Created on: 26-Oct-2005 -->
   <!-- AP: Last modified: 8-Dec-2008 -->
   <TITLE>Building FontForge from source</TITLE>
-  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="icon" href="fftype16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
@@ -477,18 +477,19 @@ CVS password:
       <CODE>--enable-extra-encodings</CODE>, as FontForge requires Shift-JIS.
     <LI>
       <A HREF="http://freetype.sf.net/">freetype</A><BR>
-      To do a better job rasterizing bitmaps, and to enable the truetype debugger
+      To do a better job rasterizing bitmaps, and to enable the truetype debugger.
       <TABLE BORDER CELLPADDING="6" WIDTH="50%" ALIGN=CENTER>
 	<TR>
-	  <TD BGCOLOR="#ffff00">Some of FontForge's commands depend on your compiling
-	    freetype with the byte code interpreter enabled. This is disabled by default
-	    because it infringes on certain
-	    <A HREF="http://freetype.sourceforge.net/patents.html">patents granted to
-	    Apple</A>. If you have a license from Apple (or live in a country where these
-	    patents do not apply) then you may enable the interpreter by setting the
-	    appropriate macro in .../include/freetype/config/ftoption.h before you build
-	    the library (see the README.UNX file on the top level of the freetype
-	    distribution).
+	  <TD BGCOLOR="#ffff00">Some of FontForge's commands depend on you
+	    compiling freetype with the byte code interpreter enabled. It
+	    used to be disabled by default because of some
+	    <A HREF="http://freetype.sourceforge.net/patents.html">patents
+	    granted to  Apple</A>. Now that they have expired, you no longer
+	    need to worry about this, unless your setup happens to use an old
+	    library version. Then you may enable the interpreter by setting
+	    the appropriate macro in <I>.../include/freetype/config/ftoption.h</I>
+	    before you build the library (see the README.UNX file on the top
+	    level of the freetype distribution).
 	    <P>
 	    To enable the truetype debugger, FontForge needs to have the freetype source
 	    directories available when it is built (there are some include files there
