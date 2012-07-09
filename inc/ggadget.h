@@ -487,6 +487,7 @@ GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GColorButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GRadioCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GCheckBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GVisibilityBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);

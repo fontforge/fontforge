@@ -43,14 +43,10 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
     <DD>
       Sets the color used to mark changed glyphs.
     <DT>
-      <CODE>fontforge.FontView.FontFamily</CODE>
+      <CODE>fontforge.FontView.GlyphInfoColor</CODE>
     <DD>
-      A list of font family names to be used in the font view to display an example
-      character over each user character.
-    <DT>
-      <CODE>fontforge.FontView.FontSize</CODE>
-    <DD>
-      Point size of those fonts.
+      Sets the color used to dislpay information about selected glyph,
+      betwen the FontView menu bar and the glyph array.
     <DT>
       <CODE>fontforge.FontView.SelectedColor</CODE>
     <DD>
@@ -59,6 +55,19 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       <CODE>fontforge.FontView.SelectedFgColor</CODE>
     <DD>
       Sets the foreground color of selected glyphs.
+    <DT>
+      <CODE>fontforge.FontView.EmptySlotFgColor</CODE>
+    <DD>
+      Sets the color of crosses marking empty code points.
+    <DT>
+      <CODE>fontforge.FontView.HintingNeededColor</CODE>
+    <DD>
+      Sets the color of markings for glyphs that need hinting or instructing.
+    <DT>
+      <CODE>fontforge.FontView.FontFamily</CODE>
+    <DD>
+      A list of font family names to be used in the font view to display an example
+      character over each user character.
     <DT>
       <CODE>fontforge.FontView.SerifFamily</CODE>
     <DD>
@@ -104,6 +113,10 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       character over each user character when the character is one of the stylized
       variants in U+1D400-U+1D7FF. Used for characters that should be drawn with
       a monospaced font.
+    <DT>
+      <CODE>fontforge.FontView.FontSize</CODE>
+    <DD>
+      Point size of those fonts.
     <DT>
       <CODE>fontforge.CharView.InfoFamily</CODE>
     <DD>
@@ -845,6 +858,13 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       Will be used instead of GListMark.Box if present. This is either a fully
       qualified pathname, or the filename of an image in the pixmap directory.
     <DT>
+      <CODE>Gdraw.GListMark.DisabledImage</CODE>
+    <DD>
+      A filename of an image file<BR>
+      Will be used instead of GListMark.Box for disabled (non-clickable)
+      instances, if present. This is either a fully qualified pathname, or the
+      filename of an image in the pixmap directory.
+    <DT>
       <CODE>Gdraw.GMenu.Grab</CODE>
     <DD>
       A boolean<BR>
@@ -876,6 +896,15 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       rectangle). This is either a fully qualified pathname, or the filename of
       an image in the pixmap directory.
     <DT>
+      <CODE>Gdraw.GRadioOn.DisabledImage</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "On" state of a disabled (non-clickable) radio
+      button. (This is drawn within the <CODE>GRadioOn</CODE> box, if you intend
+      the image to be the entire radio marker you should probably make the
+      <CODE>GRadioOn</CODE> box be a blank rectangle). This is either a fully
+      qualified pathname, or the filename of an image in the pixmap directory.
+    <DT>
       <CODE>Gdraw.GRadioOff.Image</CODE>
     <DD>
       A filename of an image file.<BR>
@@ -884,6 +913,16 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       marker you should probably make the <CODE>GRadioOff</CODE> box be a blank
       rectangle). This is either a fully qualified pathname, or the filename of
       an image in the pixmap directory.
+    <DT>
+      <CODE>Gdraw.GRadioOff.DisabledImage</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "Off" state of a disabled (non-clickable) radio
+      button. (This is drawn within the <CODE>GRadioOff</CODE> box, if you
+      intend the image to be the full radio marker you should probably make
+      the <CODE>GRadioOff</CODE> box be a blank rectangle). This is either
+      a fully qualified pathname, or the filename of an image in the pixmap
+      directory.
     <DT>
       <CODE>Gdraw.GCheckBoxOn.Image</CODE>
     <DD>
@@ -894,6 +933,16 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       be a blank rectangle). This is either a fully qualified pathname, or the
       filename of an image in the pixmap directory.
     <DT>
+      <CODE>Gdraw.GCheckBoxOn.DisabledImage</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "On" state of a disabled (non-clickable) check box
+      button. (This is drawn within the <CODE>GCheckBoxOn</CODE> box, if you
+      intend the image to be the complete check box marker you should probably
+      make the <CODE>GCheckBoxOn</CODE> box be a blank rectangle). This is
+      either a fully qualified pathname, or the filename of an image in the
+      pixmap directory.
+    <DT>
       <CODE>Gdraw.GCheckBoxOff.Image</CODE>
     <DD>
       A filename of an image file.<BR>
@@ -902,6 +951,48 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       check box marker you should probably make the <CODE>GCheckBoxOff</CODE> box
       be a blank rectangle). This is either a fully qualified pathname, or the
       filename of an image in the pixmap directory.
+    <DT>
+      <CODE>Gdraw.GCheckBoxOff.DisabledImage</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "Off" state of a disabled )non-clickable) check box
+      button. (This is drawn within the <CODE>GCheckBoxOff</CODE> box, if you
+      intend the image to be the sole check box marker you should probably make
+      the <CODE>GCheckBoxOff</CODE> box be a blank rectangle). This is either
+      a fully qualified pathname, or the filename of an image in the pixmap
+      directory.
+    <DT>
+      <CODE>Gdraw.GVisibilityBoxOn.Image</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "On" state of a visibility box button. (This is the
+      "eye" drawn within the layers palette of glyph view). This is either
+      a fully qualified pathname, or the filename of an image in the pixmap
+      directory.
+    <DT>
+      <CODE>Gdraw.GVisibilityBoxOn.DisabledImage</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "On" state of a disabled (non-clickable) visibility
+      box button. (This is the "eye" drawn within the layers palette of glyph
+      view). This is either a fully qualified pathname, or the filename of an
+      image in the pixmap directory.
+    <DT>
+      <CODE>Gdraw.GVisibilityBoxOff.Image</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "Off" state of a visibility box button. (This is the
+      "eye" drawn within the layers palette of glyph view). This is either
+      a fully qualified pathname, or the filename of an image in the pixmap
+      directory.
+    <DT>
+      <CODE>Gdraw.GVisibilityBoxOff.DisabledImage</CODE>
+    <DD>
+      A filename of an image file.<BR>
+      Used for drawing the "Off" state of a disabled (non-clickable) visibility
+      box button. (This is the "eye" drawn within the layers palette of glyph
+      view). This is either a fully qualified pathname, or the filename of an
+      image in the pixmap directory.
     <DT>
       <CODE>Gdraw.GMatrixEdit.TitleFont</CODE>
     <DD>
