@@ -244,6 +244,8 @@ static void draw_arrow(GWindow pixmap, GScrollBar *gsb, int which) {
     }
 }
 
+static void GScrollBarFit(GScrollBar *gsb);
+
 static int gscrollbar_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GScrollBar *gsb = (GScrollBar *) g;
     GRect old1;
@@ -252,6 +254,9 @@ static int gscrollbar_expose(GWindow pixmap, GGadget *g, GEvent *event) {
 
     if ( g->state == gs_invisible )
 return( false );
+
+    /* In case border was changed in resource editor. */
+    GScrollBarFit(gsb);
 
     GDrawPushClip(pixmap,&g->r,&old1);
 
@@ -264,9 +269,9 @@ return( false );
     else { r.x += ar; r.width -= 2*ar; }
     GBoxDrawBorder(pixmap,&r,g->box,g->state,false);
 
+    draw_thumb(pixmap,gsb); /* sets line width for arrows too */
     draw_arrow(pixmap,gsb,gsb->g.vert);
     draw_arrow(pixmap,gsb,gsb->g.vert|2);
-    draw_thumb(pixmap,gsb);
 
     GDrawPopClip(pixmap,&old1);
 return( true );
