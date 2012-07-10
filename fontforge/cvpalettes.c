@@ -1869,7 +1869,9 @@ return;
     memset(&base,0,sizeof(base));
     gi.u.image = &base;
     base.image_type = it_index;
+#ifdef FONTFORGE_CONFIG_TYPE3
     base.clut = layer2.clut;
+#endif
     base.trans = -1;
     GDrawSetFont(pixmap,layerinfo.font);
 
