@@ -6963,8 +6963,10 @@ exit(1);
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->texdata.type = temp;
-	    getsint(sfd,(int16 *) &sf->design_size);
-	    sf->design_size = (5*sf->design_size+(1<<18))>>19;
+	    getint(sfd,(int16 *) &temp);
+	    if ( sf->design_size==0 ) {
+	    	sf->design_size = (5*temp+(1<<18))>>19;
+	    }
 	    for ( i=0; i<22; ++i ) {
 		int foo;
 		getint(sfd,&foo);
