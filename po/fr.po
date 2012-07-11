@@ -15302,7 +15302,7 @@ msgstr "Format du crénage"
 #: lookups.c:7633
 msgid ""
 "Kerning may be specified either by classes of glyphs\n"
-"or by pairwise combinatins of individual glyphs.\n"
+"or by pairwise combinations of individual glyphs.\n"
 "Which do you want for this subtable?"
 msgstr ""
 
@@ -15711,7 +15711,7 @@ msgstr ""
 msgid ""
 "Maximum height of the (ink) top of subscripts\n"
 "that does not require moving\n"
-"ubscripts further down."
+"subscripts further down."
 msgstr ""
 
 #: math.c:54
@@ -15751,7 +15751,7 @@ msgstr ""
 
 #: math.c:57
 msgid ""
-"Minimum allowed hieght of the bottom\n"
+"Minimum allowed height of the bottom\n"
 "of superscripts that does not require moving\n"
 "them further up."
 msgstr ""
@@ -15774,7 +15774,7 @@ msgid "SubSuperscriptGapMin:"
 msgstr ""
 
 #: math.c:59
-msgid "Minimum gap between the supersecript and subscript ink."
+msgid "Minimum gap between the superscript and subscript ink."
 msgstr ""
 
 #: math.c:60
@@ -15796,7 +15796,7 @@ msgstr ""
 #: math.c:61
 msgid ""
 "Extra white space to be added after each\n"
-"ub/superscript."
+"sub/superscript."
 msgstr ""
 
 #: math.c:62
@@ -15964,7 +15964,7 @@ msgstr ""
 #: math.c:78
 msgid ""
 "Standard shift down applied to the denominator.\n"
-"Postive values indicate downward motion."
+"Positive values indicate downward motion."
 msgstr ""
 
 #: math.c:79
@@ -15975,7 +15975,7 @@ msgstr ""
 msgid ""
 "Standard shift down applied to the\n"
 "denominator in display style.\n"
-"Postive values indicate downward motion."
+"Positive values indicate downward motion."
 msgstr ""
 
 #: math.c:80

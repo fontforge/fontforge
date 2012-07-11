@@ -20933,7 +20933,7 @@ msgstr "Matriu de classes d'interlletratge"
 #: lookupui.c:5269
 msgid ""
 "In this format you define a series of glyph classes and\n"
-"specify a matix showing how each class interacts with all\n"
+"specify a matrix showing how each class interacts with all\n"
 "the others."
 msgstr ""
 "L'interlletratge s'especifica definint una sèrie\n"
@@ -20977,7 +20977,7 @@ msgstr "C_lasses"
 #: lookupui.c:5551
 msgid ""
 "Kerning may be specified either by classes of glyphs\n"
-"or by pairwise combinatins of individual glyphs.\n"
+"or by pairwise combinations of individual glyphs.\n"
 "Which do you want for this subtable?"
 msgstr ""
 "L'interlletratge és pot establir per parells individuals\n"
@@ -21637,7 +21637,7 @@ msgstr ""
 msgid ""
 "Maximum height of the (ink) top of subscripts\n"
 "that does not require moving\n"
-"ubscripts further down."
+"subscripts further down."
 msgstr ""
 
 #: mathconstants.c:56
@@ -21677,7 +21677,7 @@ msgstr ""
 
 #: mathconstants.c:59
 msgid ""
-"Minimum allowed hieght of the bottom\n"
+"Minimum allowed height of the bottom\n"
 "of superscripts that does not require moving\n"
 "them further up."
 msgstr ""
@@ -21700,7 +21700,7 @@ msgid "SubSuperscriptGapMin:"
 msgstr ""
 
 #: mathconstants.c:61
-msgid "Minimum gap between the supersecript and subscript ink."
+msgid "Minimum gap between the superscript and subscript ink."
 msgstr ""
 
 #: mathconstants.c:62
@@ -21722,7 +21722,7 @@ msgstr ""
 #: mathconstants.c:63
 msgid ""
 "Extra white space to be added after each\n"
-"ub/superscript."
+"sub/superscript."
 msgstr ""
 
 #: mathconstants.c:64
@@ -21890,7 +21890,7 @@ msgstr ""
 #: mathconstants.c:80
 msgid ""
 "Standard shift down applied to the denominator.\n"
-"Postive values indicate downward motion."
+"Positive values indicate downward motion."
 msgstr ""
 
 #: mathconstants.c:81
@@ -21901,7 +21901,7 @@ msgstr ""
 msgid ""
 "Standard shift down applied to the\n"
 "denominator in display style.\n"
-"Postive values indicate downward motion."
+"Positive values indicate downward motion."
 msgstr ""
 
 #: mathconstants.c:82

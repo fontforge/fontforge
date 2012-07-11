@@ -5267,7 +5267,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup|gg_rad_continueold;
     gcd[i].gd.popup_msg = (unichar_t *) _(
 	"In this format you define a series of glyph classes and\n"
-	"specify a matix showing how each class interacts with all\n"
+	"specify a matrix showing how each class interacts with all\n"
 	"the others.");
     gcd[i].gd.cid = CID_KClasses;
     gcd[i].gd.handle_controlevent = KF_FormatChange;
@@ -5548,7 +5548,7 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	    if ( sub->vertical_kerning || nested || !default_autokern_dlg ) {
 		buts[0] = _("_Pairs"); buts[1] = _("C_lasses");
 		buts[2] = _("_Cancel"); buts[3]=NULL;
-		results.asked = gwwv_ask(_("Kerning format"),(const char **) buts,0,1,_("Kerning may be specified either by classes of glyphs\nor by pairwise combinatins of individual glyphs.\nWhich do you want for this subtable?") );
+		results.asked = gwwv_ask(_("Kerning format"),(const char **) buts,0,1,_("Kerning may be specified either by classes of glyphs\nor by pairwise combinations of individual glyphs.\nWhich do you want for this subtable?") );
 	    } else {
 		nested = 1;
 		kern_format_dlg(sf,def_layer,sub,&results);
