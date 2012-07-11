@@ -12241,51 +12241,61 @@ void InitToolIconClut(Color bg) {
     }
 }
 
+/* Loads an icon from external file into global icon cache. */
+/* Needs that cache up and running first. */
 static void LoadGIcon(GImage *icon, char *name) {
     GImage *loaded = GGadgetImageCache(name);
     if (loaded != NULL) *icon = *loaded;
 }
 
+/* Among other things, this routine sets global icon cache up. */
+extern void GGadgetInit(void);
+
+/* Some icons in this file, so that FontForge could show anything meaningful */
+/* when devoid of its external images. But if these are available and set up */
+/* by means of X resources, this routine polls them for fancy icons to use */
+/* instead of rudimentary pixmaps hardcoded above. */
 void InitToolIcons(void) {
     static int done = false;
     
-    if (done)
-return;
+    if ( ! done) {
+        done = true;
+        GGadgetInit();
 
-    done = true;
-
-    LoadGIcon(&GIcon_hand, "palettehand.png");
-    LoadGIcon(&GIcon_line, "paletteline.png");
-    LoadGIcon(&GIcon_pencil, "palettepencil.png");
-    LoadGIcon(&GIcon_shift, "paletteshift.png");
-    LoadGIcon(&GIcon_star, "palettestar.png");
-    LoadGIcon(&GIcon_poly, "palettepoly.png");
-    LoadGIcon(&GIcon_elipse, "paletteelipse.png");
-    LoadGIcon(&GIcon_rect, "paletterect.png");
-    LoadGIcon(&GIcon_freehand, "palettefreehand.png");
-    LoadGIcon(&GIcon_greyfree, "palettegreyfree.png");
-    LoadGIcon(&GIcon_pen, "palettepen.png");
-    LoadGIcon(&GIcon_knife, "paletteknife.png");
-    LoadGIcon(&GIcon_scale, "palettescale.png");
-    LoadGIcon(&GIcon_flip, "paletteflip.png");
-    LoadGIcon(&GIcon_skew, "paletteskew.png");
-    LoadGIcon(&GIcon_rotate, "paletterotate.png");
-    LoadGIcon(&GIcon_3drotate, "palette3drotate.png");
-    LoadGIcon(&GIcon_perspective, "paletteperspective.png");
-    LoadGIcon(&GIcon_tangent, "palettetangent.png");
-    LoadGIcon(&GIcon_curve, "palettecurve.png");
-    LoadGIcon(&GIcon_hvcurve, "palettehvcurve.png");
-    LoadGIcon(&GIcon_corner, "palettecorner.png");
-    LoadGIcon(&GIcon_spirocorner, "palettespirocorner.png");
-    LoadGIcon(&GIcon_spirocurve, "palettespirocurve.png");
-    LoadGIcon(&GIcon_spirog2curve, "palettespirog2curve.png");
-    LoadGIcon(&GIcon_spiroright, "palettespiroright.png");
-    LoadGIcon(&GIcon_spiroleft, "palettespiroleft.png");
-    LoadGIcon(&GIcon_spirodisabled, "palettespirodisabled.png");
-    LoadGIcon(&GIcon_spiroup, "palettespiroup.png");
-    LoadGIcon(&GIcon_spirodown, "palettespirodown.png");
-    LoadGIcon(&GIcon_ruler, "paletteruler.png");
-    LoadGIcon(&GIcon_pointer, "palettepointer.png");
-    LoadGIcon(&GIcon_magnify, "palettemagnify.png");
+        /* Large icons for CharView tool palettes */
+        LoadGIcon(&GIcon_hand, "palettehand.png");
+        LoadGIcon(&GIcon_line, "paletteline.png");
+        LoadGIcon(&GIcon_pencil, "palettepencil.png");
+        LoadGIcon(&GIcon_shift, "paletteshift.png");
+        LoadGIcon(&GIcon_star, "palettestar.png");
+        LoadGIcon(&GIcon_poly, "palettepoly.png");
+        LoadGIcon(&GIcon_elipse, "paletteelipse.png");
+        LoadGIcon(&GIcon_rect, "paletterect.png");
+        LoadGIcon(&GIcon_freehand, "palettefreehand.png");
+        LoadGIcon(&GIcon_greyfree, "palettegreyfree.png");
+        LoadGIcon(&GIcon_pen, "palettepen.png");
+        LoadGIcon(&GIcon_knife, "paletteknife.png");
+        LoadGIcon(&GIcon_scale, "palettescale.png");
+        LoadGIcon(&GIcon_flip, "paletteflip.png");
+        LoadGIcon(&GIcon_skew, "paletteskew.png");
+        LoadGIcon(&GIcon_rotate, "paletterotate.png");
+        LoadGIcon(&GIcon_3drotate, "palette3drotate.png");
+        LoadGIcon(&GIcon_perspective, "paletteperspective.png");
+        LoadGIcon(&GIcon_tangent, "palettetangent.png");
+        LoadGIcon(&GIcon_curve, "palettecurve.png");
+        LoadGIcon(&GIcon_hvcurve, "palettehvcurve.png");
+        LoadGIcon(&GIcon_corner, "palettecorner.png");
+        LoadGIcon(&GIcon_spirocorner, "palettespirocorner.png");
+        LoadGIcon(&GIcon_spirocurve, "palettespirocurve.png");
+        LoadGIcon(&GIcon_spirog2curve, "palettespirog2curve.png");
+        LoadGIcon(&GIcon_spiroright, "palettespiroright.png");
+        LoadGIcon(&GIcon_spiroleft, "palettespiroleft.png");
+        LoadGIcon(&GIcon_spirodisabled, "palettespirodisabled.png");
+        LoadGIcon(&GIcon_spiroup, "palettespiroup.png");
+        LoadGIcon(&GIcon_spirodown, "palettespirodown.png");
+        LoadGIcon(&GIcon_ruler, "paletteruler.png");
+        LoadGIcon(&GIcon_pointer, "palettepointer.png");
+        LoadGIcon(&GIcon_magnify, "palettemagnify.png");
+    }
 }
 
