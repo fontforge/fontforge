@@ -15536,7 +15536,7 @@ msgstr "Bad Transformation Matrix"
 #: problems.c:2872
 msgid ""
 "Type1 and 2 fonts only support translation of references.\n"
-"The first four entries of the transformation matix should be\n"
+"The first four entries of the transformation matrix should be\n"
 "[1 0 0 1]."
 msgstr ""
 

@@ -9135,7 +9135,7 @@ msgstr "不正なPostScript変換行列を含む参照"
 
 msgid ""
 "Type1 and 2 fonts only support translation of references.\n"
-"The first four entries of the transformation matix should be\n"
+"The first four entries of the transformation matrix should be\n"
 "[1 0 0 1]."
 msgstr ""
 "Type1とType2フォントがサポートしているのは参照の平行移動\n"

@@ -19383,11 +19383,11 @@ msgstr "使用字距微調類別的矩陣"
 #, fuzzy
 msgid ""
 "In this format you define a series of glyph classes and\n"
-"specify a matix showing how each class interacts with all\n"
+"specify a matrix showing how each class interacts with all\n"
 "the others."
 msgstr ""
 "在…中這個格式您定義系列的字圖類別和\n"
-"指定 matix 顯示如何每個類別互動式操作與所有\n"
+"指定 matrix 顯示如何每個類別互動式操作與所有\n"
 "其他人。"
 
 #: lookupui.c:5277
@@ -19440,11 +19440,11 @@ msgstr "類別(_L)"
 #, fuzzy
 msgid ""
 "Kerning may be specified either by classes of glyphs\n"
-"or by pairwise combinatins of individual glyphs.\n"
+"or by pairwise combinations of individual glyphs.\n"
 "Which do you want for this subtable?"
 msgstr ""
 "字距微調也許會被指定的若非由類別的字圖\n"
-"或由成對 combinatins 的個別字圖。\n"
+"或由成對 combinations 的個別字圖。\n"
 "該項做您想要用於這個子表格？"
 
 #: lookupui.c:5709
@@ -20089,11 +20089,11 @@ msgstr "SubscriptTopMax："
 msgid ""
 "Maximum height of the (ink) top of subscripts\n"
 "that does not require moving\n"
-"ubscripts further down."
+"subscripts further down."
 msgstr ""
 "最大值高度的 (油墨) 頂的註標\n"
 "該不需求移動中\n"
-"ubscripts 進一步的向下。"
+"subscripts 進一步的向下。"
 
 #: mathconstants.c:56
 msgid "SubscriptBaselineDropMin:"
@@ -20142,11 +20142,11 @@ msgstr "SuperscriptBottomMin："
 #: mathconstants.c:59
 #, fuzzy
 msgid ""
-"Minimum allowed hieght of the bottom\n"
+"Minimum allowed height of the bottom\n"
 "of superscripts that does not require moving\n"
 "them further up."
 msgstr ""
-"最小允許的 hieght 的底部\n"
+"最小允許的 height 的底部\n"
 "的上標該不需求移動中\n"
 "它們進一步的向上。"
 
@@ -20175,8 +20175,8 @@ msgstr "SubSuperscriptGapMin："
 
 #: mathconstants.c:61
 #, fuzzy
-msgid "Minimum gap between the supersecript and subscript ink."
-msgstr "最小間隙在之間 supersecript 和註標油墨。"
+msgid "Minimum gap between the superscript and subscript ink."
+msgstr "最小間隙在之間 superscript 和註標油墨。"
 
 #: mathconstants.c:62
 msgid "SuperscriptBottomMaxWithSubscript:"
@@ -20203,10 +20203,10 @@ msgstr "SpaceAfterScript："
 #, fuzzy
 msgid ""
 "Extra white space to be added after each\n"
-"ub/superscript."
+"sub/superscript."
 msgstr ""
 "其他空白為已加入之後每個\n"
-"ub/上標。"
+"sub/上標。"
 
 #: mathconstants.c:64
 msgid "UpperLimitGapMin:"
@@ -20417,10 +20417,10 @@ msgstr "FractionDenominatorShiftDown："
 #, fuzzy
 msgid ""
 "Standard shift down applied to the denominator.\n"
-"Postive values indicate downward motion."
+"Positive values indicate downward motion."
 msgstr ""
 "標準 Shift 向下套用到分母。\n"
-"Postive 值指出 downward 移動。"
+"Positive 值指出 downward 移動。"
 
 #: mathconstants.c:81
 msgid "FractionDenominatorDisplayStyleShiftDown:"
@@ -20431,11 +20431,11 @@ msgstr "FractionDenominatorDisplayStyleShiftDown："
 msgid ""
 "Standard shift down applied to the\n"
 "denominator in display style.\n"
-"Postive values indicate downward motion."
+"Positive values indicate downward motion."
 msgstr ""
 "標準 Shift 向下套用到\n"
 "分母在…中顯示樣式。\n"
-"Postive 值指出 downward 移動。"
+"Positive 值指出 downward 移動。"
 
 #: mathconstants.c:82
 msgid "FractionNumeratorGapMin:"
