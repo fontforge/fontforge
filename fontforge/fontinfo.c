@@ -4102,7 +4102,7 @@ return(true);
 	os2version = sf->os2_version;
 	if ( d->ttf_set ) {
 	    char *os2v = GGadgetGetTitle8(GWidgetGetControl(gw,CID_OS2Version));
-	    if ( strcasecmp(os2v,_( (char *) os2versions[0].text ))== 0 )
+	    if ( strcasecmp(os2v,(char *) os2versions[0].text )== 0 )
 		os2version = 0;
 	    else
 		os2version = GetInt8(gw,CID_OS2Version,_("Weight, Width, Slope Only"),&err);
