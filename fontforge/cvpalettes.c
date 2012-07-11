@@ -128,8 +128,6 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     GWindow root;
     GRect ownerpos, screensize;
 
-    InitToolIcons();
-
     pt.x = pos->x; pt.y = pos->y;
     if ( !palettes_fixed ) {
 	root = GDrawGetRoot(NULL);
