@@ -12241,7 +12241,7 @@ void InitToolIconClut(Color bg) {
     }
 }
 
-void LoadGIcon(GImage *icon, char *name) {
+static void LoadGIcon(GImage *icon, char *name) {
     GImage *loaded = GGadgetImageCache(name);
     if (loaded != NULL) *icon = *loaded;
 }
@@ -12250,7 +12250,7 @@ void InitToolIcons(void) {
     static int done = false;
     
     if (done)
-return
+return;
 
     done = true;
 
