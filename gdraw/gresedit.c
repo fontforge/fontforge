@@ -1919,7 +1919,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][6] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
 		gcd[k-3].gd.flags &= ~gg_enabled;
-	    else if ( res->inherits_from->boxdata->border_shape == res->boxdata->border_shape ) {
+	    else if ( res->inherits_from->boxdata->padding == res->boxdata->padding ) {
 		gcd[k-3].gd.flags |= gg_cb_on;
 		gcd[k-2].gd.flags &= ~gg_enabled;
 		gcd[k-1].gd.flags &= ~gg_enabled;
