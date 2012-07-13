@@ -424,7 +424,7 @@ void GGadgetInit(void) {
 	_GListMarkSize = GResourceFindInt("GListMark.Width", _GListMarkSize);
 	_GListMark_Image = GGadgetResourceFindImage("GListMark.Image", NULL);
 	_GListMark_DisImage = GGadgetResourceFindImage("GListMark.DisabledImage", NULL);
-	if ( _GListMark_Image!=NULL ) {
+	if ( _GListMark_Image!=NULL && _GListMark_Image->image!=NULL ) {
 	    int size = GDrawPixelsToPoints(NULL,GImageGetWidth(_GListMark_Image->image));
 	    if ( size>_GListMarkSize )
 		_GListMarkSize=size;
@@ -459,10 +459,11 @@ void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state st
     GRect r, old;
     int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize);
 
-    if ( state == gs_disabled && _GListMark_DisImage!=NULL ) {
+    if ( state == gs_disabled &&
+           _GListMark_DisImage!=NULL && _GListMark_DisImage->image!=NULL) {
 	GDrawDrawScaledImage(pixmap,_GListMark_DisImage->image,x,
 		y + (height-GImageGetScaledHeight(pixmap,_GListMark_DisImage->image))/2);
-    } else if ( _GListMark_Image!=NULL ) {
+    } else if ( _GListMark_Image!=NULL && _GListMark_Image->image!=NULL ) {
 	GDrawDrawScaledImage(pixmap,_GListMark_Image->image,x,
 		y + (height-GImageGetScaledHeight(pixmap,_GListMark_Image->image))/2);
     } else {
