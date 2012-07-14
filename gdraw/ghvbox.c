@@ -47,7 +47,7 @@ GResInfo ghvgroupbox_ri = {
     NULL,
     N_("HV Group Box"),
     N_("A box drawn around other gadgets"),
-    "GHVGroupBox",
+    "GGroup",
     "Gdraw",
     false,
     omf_border_type|omf_border_shape|omf_padding|omf_main_background|omf_disabled_background
