@@ -12262,7 +12262,7 @@ void InitToolIcons(void) {
         done = true;
         GGadgetInit();
 
-        /* Large icons for CharView tool palettes */
+        /* Large 24x24 icons for CharView tool palettes */
         LoadGIcon(&GIcon_hand, "palettehand.png");
         LoadGIcon(&GIcon_line, "paletteline.png");
         LoadGIcon(&GIcon_pencil, "palettepencil.png");
@@ -12296,6 +12296,41 @@ void InitToolIcons(void) {
         LoadGIcon(&GIcon_ruler, "paletteruler.png");
         LoadGIcon(&GIcon_pointer, "palettepointer.png");
         LoadGIcon(&GIcon_magnify, "palettemagnify.png");
+
+        /* Small 16x12 icons for CharView tool palettes */
+        LoadGIcon(&GIcon_small3drotate, "palettesmall3drotate.png");
+        LoadGIcon(&GIcon_smallperspective, "palettesmallperspective.png");
+        LoadGIcon(&GIcon_smallskew, "palettesmallskew.png");
+        LoadGIcon(&GIcon_smallscale, "palettesmallscale.png");
+        LoadGIcon(&GIcon_smallrotate, "palettesmallrotate.png");
+        LoadGIcon(&GIcon_smallflip, "palettesmallflip.png");
+        LoadGIcon(&GIcon_smalltangent, "palettesmalltangent.png");
+        LoadGIcon(&GIcon_smallcorner, "palettesmallcorner.png");
+        LoadGIcon(&GIcon_smallcurve, "palettesmallcurve.png");
+        LoadGIcon(&GIcon_smallhvcurve, "palettesmallhvcurve.png");
+        LoadGIcon(&GIcon_smallspirocorner, "palettesmallspirocorner.png");
+        LoadGIcon(&GIcon_smallspirog2curve, "palettesmallspirog2curve.png");
+        LoadGIcon(&GIcon_smallspirocurve, "palettesmallspirocurve.png");
+        LoadGIcon(&GIcon_smallspiroright, "palettesmallspiroright.png");
+        LoadGIcon(&GIcon_smallspiroleft, "palettesmallspiroleft.png");
+        LoadGIcon(&GIcon_smallmag, "palettesmallmag.png");
+        LoadGIcon(&GIcon_smallknife, "palettesmallknife.png");
+        LoadGIcon(&GIcon_smallhand, "palettesmallhand.png");
+        LoadGIcon(&GIcon_smallpen, "palettesmallpen.png");
+        LoadGIcon(&GIcon_smallpencil, "palettesmallpencil.png");
+        LoadGIcon(&GIcon_smallpointer, "palettesmallpointer.png");
+        LoadGIcon(&GIcon_smallruler, "palettesmallruler.png");
+        LoadGIcon(&GIcon_smallelipse, "palettesmallelipse.png");
+        LoadGIcon(&GIcon_smallrect, "palettesmallrect.png");
+        LoadGIcon(&GIcon_smallpoly, "palettesmallpoly.png");
+        LoadGIcon(&GIcon_smallstar, "palettesmallstar.png");
+
+        /* 16x16 icons for point types in point info window */
+        /* Note: spiro mode uses smaller (16x12) icons from CharView tool palette. */
+        LoadGIcon(&GIcon_midtangent, "ptinfotangent.png");
+        LoadGIcon(&GIcon_midcurve, "ptinfocurve.png");
+        LoadGIcon(&GIcon_midhvcurve, "ptinfohvcurve.png");
+        LoadGIcon(&GIcon_midcorner, "ptinfocorner.png");
     }
 }
 
