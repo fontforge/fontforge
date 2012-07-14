@@ -816,7 +816,7 @@ return( true );
 		  } break;
 		  case rt_image: {
 		    GResImage *ri = *((GResImage **) (extras->val));
-		    if ( ri!=NULL ) {	/* No image if ri==NULL */
+		    if ( ri!=NULL && ri->filename!=NULL ) {
 			char **paths = _GGadget_GetImagePath();
 			int i;
 			for ( i=0; paths[i]!=NULL; ++i ) {
