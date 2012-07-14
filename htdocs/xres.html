@@ -831,7 +831,7 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
       Gdraw.GList...<BR>
       Gdraw.GScrollBar...<BR>
       Gdraw.GScrollBarThumb...<BR>
-      Gdraw.GGroup...<BR>
+      Gdraw.GGroup... -- a frame around groups of gadgets.<BR>
       Gdraw.GLine...<BR>
       Gdraw.GMenu...<BR>
       Gdraw.GMenuBar...<BR>
@@ -839,6 +839,22 @@ fontforge.FontView.FontFamily: Helvetica, GillSans
     <DD>
       As above.<BR>
       Specifies the box, font, color, etc. for this particular type of ggadget.
+    <DT>
+      <CODE>Gdraw.GHVGroupBox</CODE>
+    <DD>
+      <B>Don't use it!</B> Old versions of X resource editor saved
+      <CODE>Gdraw.GGroup</CODE> under this name. That was wrong, as it was never
+      actually recognized by X Resource loader and had no effect. The confusion
+      is because we actually have two gadgets: <CODE>GGroup</CODE> and
+      <CODE>GHVBox</CODE>, that are supposed to work in tandem. Actually,
+      only <CODE>GGroup</CODE> is worth styling.
+    <DT>
+      <CODE>Gdraw.GHVBox</CODE>
+    <DD>
+      A group of gadgets that sits inside <CODE>GGroup</CODE> and supports graceful
+      reflow of window contents in event of resizing. Modelled after GTK boxes.
+      It's supposed to be invisible, but interface developers might actually want
+      to style it.
     <DT>
       <CODE>Gdraw.GScrollBar.Width</CODE>
     <DD>
