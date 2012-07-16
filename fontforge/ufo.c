@@ -808,12 +808,9 @@ return( false );
 	    /* That's not what RoboFAB does. It simply adds an underscore after*/
 	    /*  every capital letter. Much easier. And since people have */
 	    /*  complained that I follow the spec, let's not. */
-	    if ( isupper( *start )) {
-		*gstart++ = tolower( *start );
-		*gstart++ = '_';
-	    } else
-		*gstart++ = *start;
-	    ++start;
+	    *gstart++ = *start;
+	    if ( isupper( *start++ ))
+	        *gstart++ = '_';
 	}
 #ifdef __VMS
 	*gstart ='\0';
