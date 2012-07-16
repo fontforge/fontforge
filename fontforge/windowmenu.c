@@ -37,8 +37,7 @@ static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
     mi->ti.userdata = gw;
-    mi->ti.bg = changed?0xffffff:GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gw));
-    if ( top ) mi->ti.fg = 0x008000;
+    mi->ti.bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gw));
     mi->invoke = WindowSelect;
     mi->ti.text = GDrawGetWindowTitle(gw);
     if(mi->ti.text == NULL)
