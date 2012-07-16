@@ -475,8 +475,8 @@ static void CreateErrorWindow(void) {
     fm = pango_font_get_metrics(font,NULL);
     as = pango_font_metrics_get_ascent(fm);
     ds = pango_font_metrics_get_descent(fm);
-    errdata.as = as;
-    errdata.fh = as+ds;
+    errdata.as = as / PANGO_SCALE;
+    errdata.fh = (as+ds) / PANGO_SCALE;
 
     gtk_widget_set_size_request(view, 40*errdata.fh, 5*errdata.fh );
 
