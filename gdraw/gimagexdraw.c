@@ -1914,8 +1914,11 @@ void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     Display *display=gdisp->display;
+    Screen *screen=gdisp->screen;
     Window w = gw->w;
     GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
+    GRect rootPos = {0, 0, XDisplayWidth(display,gdisp->screen),
+                           XDisplayHeight(display,gdisp->screen)};
     GRect img_pos = {x+_w->pos.x, y+_w->pos.y, src->width, src->height};
     GRect win_pos = {x, y, src->width, src->height};
     GRect blend_src = {0, 0, src->width, src->height};
@@ -1950,7 +1953,7 @@ return;
         /* This requires caution, as the rectangle being worked */
         /* must be contained within both screen and the window. */
         intersect_rectangles(&img_pos, &(_w->pos));
-        intersect_rectangles(&img_pos, &(gdisp->groot->pos));
+        intersect_rectangles(&img_pos, &rootPos);
         img_pos.x -= _w->pos.x;
         img_pos.y -= _w->pos.y;
         win_pos = img_pos;
