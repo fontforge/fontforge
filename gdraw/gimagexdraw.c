@@ -1914,7 +1914,6 @@ void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     Display *display=gdisp->display;
-    Screen *screen=gdisp->screen;
     Window w = gw->w;
     GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
     GRect rootPos = {0, 0, XDisplayWidth(display,gdisp->screen),
