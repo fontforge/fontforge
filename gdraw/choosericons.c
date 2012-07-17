@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "gdraw.h"
+#include "ggadget.h"
 #include "gicons.h"
 
 static uint8 textmake_data[] = {
@@ -1098,7 +1099,7 @@ static uint8 homefolder_data[] = {
 };
 
 static GClut homefolder_clut = { 3, 1, 0,
-    0xb0b0b0, 0x000000, 0xd0d0ff };
+    { 0xb0b0b0, 0x000000, 0xd0d0ff } };
 
 static struct _GImage homefolder_base = {
     it_index,
@@ -1144,7 +1145,7 @@ static uint8 configtool0_data[] = {
 };
 
 static GClut configtool0_clut = { 130, 1, 0,
-    0xffffff, 0xc6c6d1, 0xdadae1, 0xdcdce3, 0xd4d4dc, 0xd9d9df, 0xd6d6dc, 0xd8d8e0, 
+  { 0xffffff, 0xc6c6d1, 0xdadae1, 0xdcdce3, 0xd4d4dc, 0xd9d9df, 0xd6d6dc, 0xd8d8e0, 
     0xfcfcfd, 0xfbfbfc, 0xe4e4ea, 0xceced7, 0xd2d2d9, 0xd5d5dd, 0xfdfdfd, 0xfefefe, 
     0xdadae2, 0xd4d4da, 0xb6b6c4, 0xd9d9de, 0xbebeca, 0xebebf0, 0xededf0, 0xccccd5, 
     0xe9e9eb, 0xadadbe, 0xbbbbc8, 0xdadade, 0xc7c7d0, 0xd7d7df, 0xf5f5f7, 0xf7f7f8, 
@@ -1160,7 +1161,7 @@ static GClut configtool0_clut = { 130, 1, 0,
     0xd5ba95, 0xceb598, 0xd7a233, 0xfbd031, 0xffb61f, 0xffa112, 0xff9e10, 0xf9a417, 
     0xc68b35, 0xd29c36, 0xfaad1c, 0xffa011, 0xff960c, 0xfe9e10, 0xc68222, 0xcbb297, 
     0xcd8527, 0xf7a71a, 0xffa716, 0xfc9e11, 0xb9792a, 0xc6aa8f, 0xb0702c, 0xbb751f, 
-    0xba7a2a, 0xa77031 };
+    0xba7a2a, 0xa77031 } };
 
 static struct _GImage configtool0_base = {
     it_index,
@@ -1206,7 +1207,7 @@ static uint8 bookmark0_data[] = {
 };
 
 static GClut bookmark0_clut = { 7, 1, 0,
-    0xffffff, 0xba5f35, 0x999999, 0x8b4513, 0x4f4f4f, 0xe2e2e2, 0x0 };
+    { 0xffffff, 0xba5f35, 0x999999, 0x8b4513, 0x4f4f4f, 0xe2e2e2, 0x0 } };
 
 static struct _GImage bookmark0_base = {
     it_index,
@@ -1297,8 +1298,8 @@ static uint8 back0_data[] = {
 };
 
 static GClut back0_clut = { 10, 1, 0,
-    0xffffff, 0x34fe9c, 0x848284, 0x48284, 0xcccefc, 0x48204, 0x4fe04, 0x4363c, 
-    0x242224, 0x449aa4 };
+  { 0xffffff, 0x34fe9c, 0x848284, 0x48284, 0xcccefc,
+    0x48204, 0x4fe04, 0x4363c, 0x242224, 0x449aa4 } };
 
 static struct _GImage back0_base = {
     it_index,
@@ -1344,8 +1345,8 @@ static uint8 forward0_data[] = {
 };
 
 static GClut forward0_clut = { 11, 1, 0,
-    0xffffff, 0xffffff, 0x848284, 0x34fe9c, 0x48284, 0x48204, 0xcccefc, 0x4363c, 
-    0x4fe04, 0x242224, 0x449aa4 };
+  { 0xffffff, 0xffffff, 0x848284, 0x34fe9c, 0x48284, 0x48204, 0xcccefc, 0x4363c, 
+    0x4fe040, 0x242224, 0x449aa4 } };
 
 static struct _GImage forward0_base = {
     it_index,
@@ -1358,36 +1359,83 @@ static struct _GImage forward0_base = {
 
 
 
-GImage _GIcon_compressed = { 0, { &compressed0_base } };
-GImage _GIcon_tar = { 0, { &tar0_base } };
-GImage _GIcon_ttf = { 0, { &ttf0_base } };
-GImage _GIcon_unknown = { 0, { &unknown0_base } };
-GImage _GIcon_texthtml = { 0, { &texthtml0_base } };
-GImage _GIcon_textxml = { 0, { &textxml0_base } };
-GImage _GIcon_textcss = { 0, { &textcss0_base } };
-GImage _GIcon_textjava = { 0, { &textjava0_base } };
-GImage _GIcon_textfontsfd = { 0, { &textfontsfd0_base } };
-GImage _GIcon_textfontbdf = { 0, { &textbdf0_base } };
-GImage _GIcon_textfontps = { 0, { &textfontps0_base } };
-GImage _GIcon_textps = { 0, { &textps0_base } };
-GImage _GIcon_textplain = { 0, { &textplain0_base } };
-GImage _GIcon_textc = { 0, { &textc0_base } };
-GImage _GIcon_textmake = { 0, { &textmake_base } };
-GImage _GIcon_object = { 0, { &object0_base } };
-GImage _GIcon_updir = { 0, { &updir0_base } };
-GImage _GIcon_dir = { 0, { &dir0_base } };
-GImage _GIcon_core = { 0, { &core0_base } };
-GImage _GIcon_image = { 0, { &image0_base } };
-GImage _GIcon_video = { 0, { &video0_base } };
-GImage _GIcon_audio = { 0, { &audio0_base } };
-GImage _GIcon_cid = { 0, { &cid0_base } };
-GImage _GIcon_mac = { 0, { &mac_base } };
-GImage _GIcon_macttf = { 0, { &macttf0_base } };
+GImage _GIcon_compressed = { 0, { &compressed0_base }, NULL };
+GImage _GIcon_tar = { 0, { &tar0_base }, NULL };
+GImage _GIcon_ttf = { 0, { &ttf0_base }, NULL };
+GImage _GIcon_unknown = { 0, { &unknown0_base }, NULL };
+GImage _GIcon_texthtml = { 0, { &texthtml0_base }, NULL };
+GImage _GIcon_textxml = { 0, { &textxml0_base }, NULL };
+GImage _GIcon_textcss = { 0, { &textcss0_base }, NULL };
+GImage _GIcon_textjava = { 0, { &textjava0_base }, NULL };
+GImage _GIcon_textfontsfd = { 0, { &textfontsfd0_base }, NULL };
+GImage _GIcon_textfontbdf = { 0, { &textbdf0_base }, NULL };
+GImage _GIcon_textfontps = { 0, { &textfontps0_base }, NULL };
+GImage _GIcon_textps = { 0, { &textps0_base }, NULL };
+GImage _GIcon_textplain = { 0, { &textplain0_base }, NULL };
+GImage _GIcon_textc = { 0, { &textc0_base }, NULL };
+GImage _GIcon_textmake = { 0, { &textmake_base }, NULL };
+GImage _GIcon_object = { 0, { &object0_base }, NULL };
+GImage _GIcon_updir = { 0, { &updir0_base }, NULL };
+GImage _GIcon_dir = { 0, { &dir0_base }, NULL };
+GImage _GIcon_core = { 0, { &core0_base }, NULL };
+GImage _GIcon_image = { 0, { &image0_base }, NULL };
+GImage _GIcon_video = { 0, { &video0_base }, NULL };
+GImage _GIcon_audio = { 0, { &audio0_base }, NULL };
+GImage _GIcon_cid = { 0, { &cid0_base }, NULL };
+GImage _GIcon_mac = { 0, { &mac_base }, NULL };
+GImage _GIcon_macttf = { 0, { &macttf0_base }, NULL };
 
-GImage _GIcon_homefolder = { 0, &homefolder_base };
-GImage _GIcon_configtool = { 0, &configtool0_base };
-GImage _GIcon_bookmark   = { 0, &bookmark0_base };
-GImage _GIcon_nobookmark = { 0, &nobookmark0_base };
+GImage _GIcon_homefolder = { 0, { &homefolder_base }, NULL };
+GImage _GIcon_configtool = { 0, { &configtool0_base }, NULL };
+GImage _GIcon_bookmark   = { 0, { &bookmark0_base }, NULL };
+GImage _GIcon_nobookmark = { 0, { &nobookmark0_base }, NULL };
 
-GImage _GIcon_backarrow = { 0, &back0_base };
-GImage _GIcon_forwardarrow = { 0, &forward0_base };
+GImage _GIcon_backarrow = { 0, { &back0_base }, NULL };
+GImage _GIcon_forwardarrow = { 0, { &forward0_base }, NULL };
+
+
+/* Some icons in this file, so that FontForge could show anything meaningful */
+/* when devoid of its external images. But if these are available and set up */
+/* by means of X resources, this routine polls them for fancy icons to use */
+/* instead of rudimentary pixmaps hardcoded above. */
+void InitChooserIcons(void) {
+    static int done = false;
+
+    if ( ! done) {
+        done = true;
+
+        TryGGadgetImageCache(&_GIcon_compressed, "choosercompressed.png" );
+        TryGGadgetImageCache(&_GIcon_tar, "choosertar.png");
+        TryGGadgetImageCache(&_GIcon_ttf, "chooserttf.png");
+        TryGGadgetImageCache(&_GIcon_unknown, "chooserunknown.png");
+        TryGGadgetImageCache(&_GIcon_texthtml, "choosertexthtml.png");
+        TryGGadgetImageCache(&_GIcon_textxml, "choosertextxml.png");
+        TryGGadgetImageCache(&_GIcon_textcss, "choosertextcss.png");
+        TryGGadgetImageCache(&_GIcon_textjava, "choosertextjava.png");
+        TryGGadgetImageCache(&_GIcon_textfontsfd, "choosertextfontsfd.png");
+        TryGGadgetImageCache(&_GIcon_textfontbdf, "choosertextbdf.png");
+        TryGGadgetImageCache(&_GIcon_textfontps, "choosertextfontps.png");
+        TryGGadgetImageCache(&_GIcon_textps, "choosertextps.png");
+        TryGGadgetImageCache(&_GIcon_textplain, "choosertextplain.png");
+        TryGGadgetImageCache(&_GIcon_textc, "choosertextc.png");
+        TryGGadgetImageCache(&_GIcon_textmake, "choosertextmake.png");
+        TryGGadgetImageCache(&_GIcon_object, "chooserobject.png");
+        TryGGadgetImageCache(&_GIcon_updir, "chooserupdir.png");
+        TryGGadgetImageCache(&_GIcon_dir, "chooserdir.png");
+        TryGGadgetImageCache(&_GIcon_core, "choosercore.png");
+        TryGGadgetImageCache(&_GIcon_image, "chooserimage.png");
+        TryGGadgetImageCache(&_GIcon_video, "chooservideo.png");
+        TryGGadgetImageCache(&_GIcon_audio, "chooseraudio.png");
+        TryGGadgetImageCache(&_GIcon_cid, "choosercid.png");
+        TryGGadgetImageCache(&_GIcon_mac, "choosermac.png");
+        TryGGadgetImageCache(&_GIcon_macttf, "choosermacttf.png");
+
+        TryGGadgetImageCache(&_GIcon_homefolder, "chooserhomefolder.png");
+        TryGGadgetImageCache(&_GIcon_configtool, "chooserconfigtool.png");
+        TryGGadgetImageCache(&_GIcon_bookmark, "chooserbookmark.png");
+        TryGGadgetImageCache(&_GIcon_nobookmark, "choosernobookmark.png");
+
+        TryGGadgetImageCache(&_GIcon_backarrow, "chooserback.png");
+        TryGGadgetImageCache(&_GIcon_forwardarrow, "chooserforward.png");
+    }
+}
