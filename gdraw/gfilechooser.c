@@ -190,6 +190,8 @@ return( fc_hide );
 static GImage *GFileChooserPickIcon(GDirEntry *e) {
     unichar_t *m = e->mimetype;
 
+    InitChooserIcons();
+
     if ( e->isdir ) {
 	if ( uc_strcmp(e->name,"..")==0 )
 return( &_GIcon_updir );
@@ -1567,7 +1569,7 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
 
     for ( l=0; l<k; ++l )
 	gcd[l].data = gfc;
-    
+
     GGadgetsCreate(gfc->g.base,boxes);
 
     gfc->topbox      = (GHVBox *)      boxes[0].ret;

@@ -496,6 +496,14 @@ GImage *GGadgetImageCache(char *filename) {
 return( _GGadgetImageCache(filename,NULL));
 }
 
+/* Substitutes an image contents with what's found in cache. */
+/* That is, unless there is nothing found in the cache.      */
+int TryGGadgetImageCache(GImage *image, char *name) {
+    GImage *loaded = GGadgetImageCache(name);
+    if (loaded != NULL) *image = *loaded;
+return (loaded != NULL);
+}
+
 GResImage *GGadgetResourceFindImage(char *name, GImage *def) {
     GImage *ret;
     char *fname;

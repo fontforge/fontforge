@@ -12331,16 +12331,6 @@ void InitToolIcons(void) {
         LoadGIcon(&GIcon_midcurve, "ptinfocurve.png");
         LoadGIcon(&GIcon_midhvcurve, "ptinfohvcurve.png");
         LoadGIcon(&GIcon_midcorner, "ptinfocorner.png");
-
-        /* Icons for truetype debugger */
-        LoadGIcon(&GIcon_continue, "ttdebugcontinue.png");
-        LoadGIcon(&GIcon_stepout, "ttdebugstepout.png");
-        LoadGIcon(&GIcon_stepover, "ttdebugstepover.png");
-        LoadGIcon(&GIcon_stepinto, "ttdebugstepinto.png");
-        LoadGIcon(&GIcon_watchpnt, "ttdebugwatchpnt.png");
-        LoadGIcon(&GIcon_menudelta, "ttdebugmenudelta.png");
-        LoadGIcon(&GIcon_exit, "ttdebugexit.png");
-        LoadGIcon(&GIcon_Stopped, "ttdebugstopped.png");
-        LoadGIcon(&GIcon_Stop, "ttdebugstop.png");
     }
 }
+
