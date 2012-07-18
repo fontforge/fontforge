@@ -12241,13 +12241,6 @@ void InitToolIconClut(Color bg) {
     }
 }
 
-/* Loads an icon from external file into global icon cache. */
-/* Needs that cache up and running first. */
-static void LoadGIcon(GImage *icon, char *name) {
-    GImage *loaded = GGadgetImageCache(name);
-    if (loaded != NULL) *icon = *loaded;
-}
-
 /* Among other things, this routine sets global icon cache up. */
 extern void GGadgetInit(void);
 
@@ -12263,74 +12256,85 @@ void InitToolIcons(void) {
         GGadgetInit();
 
         /* Large 24x24 icons for CharView tool palettes */
-        LoadGIcon(&GIcon_hand, "palettehand.png");
-        LoadGIcon(&GIcon_line, "paletteline.png");
-        LoadGIcon(&GIcon_pencil, "palettepencil.png");
-        LoadGIcon(&GIcon_shift, "paletteshift.png");
-        LoadGIcon(&GIcon_star, "palettestar.png");
-        LoadGIcon(&GIcon_poly, "palettepoly.png");
-        LoadGIcon(&GIcon_elipse, "paletteelipse.png");
-        LoadGIcon(&GIcon_rect, "paletterect.png");
-        LoadGIcon(&GIcon_freehand, "palettefreehand.png");
-        LoadGIcon(&GIcon_greyfree, "palettegreyfree.png");
-        LoadGIcon(&GIcon_pen, "palettepen.png");
-        LoadGIcon(&GIcon_knife, "paletteknife.png");
-        LoadGIcon(&GIcon_scale, "palettescale.png");
-        LoadGIcon(&GIcon_flip, "paletteflip.png");
-        LoadGIcon(&GIcon_skew, "paletteskew.png");
-        LoadGIcon(&GIcon_rotate, "paletterotate.png");
-        LoadGIcon(&GIcon_3drotate, "palette3drotate.png");
-        LoadGIcon(&GIcon_perspective, "paletteperspective.png");
-        LoadGIcon(&GIcon_tangent, "palettetangent.png");
-        LoadGIcon(&GIcon_curve, "palettecurve.png");
-        LoadGIcon(&GIcon_hvcurve, "palettehvcurve.png");
-        LoadGIcon(&GIcon_corner, "palettecorner.png");
-        LoadGIcon(&GIcon_spirocorner, "palettespirocorner.png");
-        LoadGIcon(&GIcon_spirocurve, "palettespirocurve.png");
-        LoadGIcon(&GIcon_spirog2curve, "palettespirog2curve.png");
-        LoadGIcon(&GIcon_spiroright, "palettespiroright.png");
-        LoadGIcon(&GIcon_spiroleft, "palettespiroleft.png");
-        LoadGIcon(&GIcon_spirodisabled, "palettespirodisabled.png");
-        LoadGIcon(&GIcon_spiroup, "palettespiroup.png");
-        LoadGIcon(&GIcon_spirodown, "palettespirodown.png");
-        LoadGIcon(&GIcon_ruler, "paletteruler.png");
-        LoadGIcon(&GIcon_pointer, "palettepointer.png");
-        LoadGIcon(&GIcon_magnify, "palettemagnify.png");
+        TryGGadgetImageCache(&GIcon_hand, "palettehand.png");
+        TryGGadgetImageCache(&GIcon_line, "paletteline.png");
+        TryGGadgetImageCache(&GIcon_pencil, "palettepencil.png");
+        TryGGadgetImageCache(&GIcon_shift, "paletteshift.png");
+        TryGGadgetImageCache(&GIcon_star, "palettestar.png");
+        TryGGadgetImageCache(&GIcon_poly, "palettepoly.png");
+        TryGGadgetImageCache(&GIcon_elipse, "paletteelipse.png");
+        TryGGadgetImageCache(&GIcon_rect, "paletterect.png");
+        TryGGadgetImageCache(&GIcon_freehand, "palettefreehand.png");
+        TryGGadgetImageCache(&GIcon_greyfree, "palettegreyfree.png");
+        TryGGadgetImageCache(&GIcon_pen, "palettepen.png");
+        TryGGadgetImageCache(&GIcon_knife, "paletteknife.png");
+        TryGGadgetImageCache(&GIcon_scale, "palettescale.png");
+        TryGGadgetImageCache(&GIcon_flip, "paletteflip.png");
+        TryGGadgetImageCache(&GIcon_skew, "paletteskew.png");
+        TryGGadgetImageCache(&GIcon_rotate, "paletterotate.png");
+        TryGGadgetImageCache(&GIcon_3drotate, "palette3drotate.png");
+        TryGGadgetImageCache(&GIcon_perspective, "paletteperspective.png");
+        TryGGadgetImageCache(&GIcon_tangent, "palettetangent.png");
+        TryGGadgetImageCache(&GIcon_curve, "palettecurve.png");
+        TryGGadgetImageCache(&GIcon_hvcurve, "palettehvcurve.png");
+        TryGGadgetImageCache(&GIcon_corner, "palettecorner.png");
+        TryGGadgetImageCache(&GIcon_spirocorner, "palettespirocorner.png");
+        TryGGadgetImageCache(&GIcon_spirocurve, "palettespirocurve.png");
+        TryGGadgetImageCache(&GIcon_spirog2curve, "palettespirog2curve.png");
+        TryGGadgetImageCache(&GIcon_spiroright, "palettespiroright.png");
+        TryGGadgetImageCache(&GIcon_spiroleft, "palettespiroleft.png");
+        TryGGadgetImageCache(&GIcon_spirodisabled, "palettespirodisabled.png");
+        TryGGadgetImageCache(&GIcon_spiroup, "palettespiroup.png");
+        TryGGadgetImageCache(&GIcon_spirodown, "palettespirodown.png");
+        TryGGadgetImageCache(&GIcon_ruler, "paletteruler.png");
+        TryGGadgetImageCache(&GIcon_pointer, "palettepointer.png");
+        TryGGadgetImageCache(&GIcon_magnify, "palettemagnify.png");
 
         /* Small 16x12 icons for CharView tool palettes */
-        LoadGIcon(&GIcon_small3drotate, "palettesmall3drotate.png");
-        LoadGIcon(&GIcon_smallperspective, "palettesmallperspective.png");
-        LoadGIcon(&GIcon_smallskew, "palettesmallskew.png");
-        LoadGIcon(&GIcon_smallscale, "palettesmallscale.png");
-        LoadGIcon(&GIcon_smallrotate, "palettesmallrotate.png");
-        LoadGIcon(&GIcon_smallflip, "palettesmallflip.png");
-        LoadGIcon(&GIcon_smalltangent, "palettesmalltangent.png");
-        LoadGIcon(&GIcon_smallcorner, "palettesmallcorner.png");
-        LoadGIcon(&GIcon_smallcurve, "palettesmallcurve.png");
-        LoadGIcon(&GIcon_smallhvcurve, "palettesmallhvcurve.png");
-        LoadGIcon(&GIcon_smallspirocorner, "palettesmallspirocorner.png");
-        LoadGIcon(&GIcon_smallspirog2curve, "palettesmallspirog2curve.png");
-        LoadGIcon(&GIcon_smallspirocurve, "palettesmallspirocurve.png");
-        LoadGIcon(&GIcon_smallspiroright, "palettesmallspiroright.png");
-        LoadGIcon(&GIcon_smallspiroleft, "palettesmallspiroleft.png");
-        LoadGIcon(&GIcon_smallmag, "palettesmallmag.png");
-        LoadGIcon(&GIcon_smallknife, "palettesmallknife.png");
-        LoadGIcon(&GIcon_smallhand, "palettesmallhand.png");
-        LoadGIcon(&GIcon_smallpen, "palettesmallpen.png");
-        LoadGIcon(&GIcon_smallpencil, "palettesmallpencil.png");
-        LoadGIcon(&GIcon_smallpointer, "palettesmallpointer.png");
-        LoadGIcon(&GIcon_smallruler, "palettesmallruler.png");
-        LoadGIcon(&GIcon_smallelipse, "palettesmallelipse.png");
-        LoadGIcon(&GIcon_smallrect, "palettesmallrect.png");
-        LoadGIcon(&GIcon_smallpoly, "palettesmallpoly.png");
-        LoadGIcon(&GIcon_smallstar, "palettesmallstar.png");
+        TryGGadgetImageCache(&GIcon_small3drotate, "palettesmall3drotate.png");
+        TryGGadgetImageCache(&GIcon_smallperspective, "palettesmallperspective.png");
+        TryGGadgetImageCache(&GIcon_smallskew, "palettesmallskew.png");
+        TryGGadgetImageCache(&GIcon_smallscale, "palettesmallscale.png");
+        TryGGadgetImageCache(&GIcon_smallrotate, "palettesmallrotate.png");
+        TryGGadgetImageCache(&GIcon_smallflip, "palettesmallflip.png");
+        TryGGadgetImageCache(&GIcon_smalltangent, "palettesmalltangent.png");
+        TryGGadgetImageCache(&GIcon_smallcorner, "palettesmallcorner.png");
+        TryGGadgetImageCache(&GIcon_smallcurve, "palettesmallcurve.png");
+        TryGGadgetImageCache(&GIcon_smallhvcurve, "palettesmallhvcurve.png");
+        TryGGadgetImageCache(&GIcon_smallspirocorner, "palettesmallspirocorner.png");
+        TryGGadgetImageCache(&GIcon_smallspirog2curve, "palettesmallspirog2curve.png");
+        TryGGadgetImageCache(&GIcon_smallspirocurve, "palettesmallspirocurve.png");
+        TryGGadgetImageCache(&GIcon_smallspiroright, "palettesmallspiroright.png");
+        TryGGadgetImageCache(&GIcon_smallspiroleft, "palettesmallspiroleft.png");
+        TryGGadgetImageCache(&GIcon_smallmag, "palettesmallmag.png");
+        TryGGadgetImageCache(&GIcon_smallknife, "palettesmallknife.png");
+        TryGGadgetImageCache(&GIcon_smallhand, "palettesmallhand.png");
+        TryGGadgetImageCache(&GIcon_smallpen, "palettesmallpen.png");
+        TryGGadgetImageCache(&GIcon_smallpencil, "palettesmallpencil.png");
+        TryGGadgetImageCache(&GIcon_smallpointer, "palettesmallpointer.png");
+        TryGGadgetImageCache(&GIcon_smallruler, "palettesmallruler.png");
+        TryGGadgetImageCache(&GIcon_smallelipse, "palettesmallelipse.png");
+        TryGGadgetImageCache(&GIcon_smallrect, "palettesmallrect.png");
+        TryGGadgetImageCache(&GIcon_smallpoly, "palettesmallpoly.png");
+        TryGGadgetImageCache(&GIcon_smallstar, "palettesmallstar.png");
 
         /* 16x16 icons for point types in point info window */
         /* Note: spiro mode uses smaller (16x12) icons from CharView tool palette. */
-        LoadGIcon(&GIcon_midtangent, "ptinfotangent.png");
-        LoadGIcon(&GIcon_midcurve, "ptinfocurve.png");
-        LoadGIcon(&GIcon_midhvcurve, "ptinfohvcurve.png");
-        LoadGIcon(&GIcon_midcorner, "ptinfocorner.png");
+        TryGGadgetImageCache(&GIcon_midtangent, "ptinfotangent.png");
+        TryGGadgetImageCache(&GIcon_midcurve, "ptinfocurve.png");
+        TryGGadgetImageCache(&GIcon_midhvcurve, "ptinfohvcurve.png");
+        TryGGadgetImageCache(&GIcon_midcorner, "ptinfocorner.png");
+
+        /* Icons for truetype debugger */
+        TryGGadgetImageCache(&GIcon_continue, "ttdebugcontinue.png");
+        TryGGadgetImageCache(&GIcon_stepout, "ttdebugstepout.png");
+        TryGGadgetImageCache(&GIcon_stepover, "ttdebugstepover.png");
+        TryGGadgetImageCache(&GIcon_stepinto, "ttdebugstepinto.png");
+        TryGGadgetImageCache(&GIcon_watchpnt, "ttdebugwatchpnt.png");
+        TryGGadgetImageCache(&GIcon_menudelta, "ttdebugmenudelta.png");
+        TryGGadgetImageCache(&GIcon_exit, "ttdebugexit.png");
+        TryGGadgetImageCache(&GIcon_Stopped, "ttdebugstopped.png");
+        TryGGadgetImageCache(&GIcon_Stop, "ttdebugstop.png");
     }
 }
 
