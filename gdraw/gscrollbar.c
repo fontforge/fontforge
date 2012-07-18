@@ -272,12 +272,9 @@ return( false );
     box.flags = box_foreground_border_outer;
     box.border_width = 0;
     GBoxDrawBackground(pixmap,&g->r,g->box,g->state,false);
+    GBoxDrawBackground(pixmap,&r,g->box,gs_pressedactive,false);
     GBoxDrawBorder(pixmap,&g->r,&box,g->state,false);
-
-    box = *(g->box);
-    /* box.border_shape = gsb->thumbbox->border_shape; */
-    GBoxDrawBackground(pixmap,&r,&box,gs_pressedactive,false);
-    GBoxDrawBorder(pixmap,&r,&box,g->state,false);
+    GBoxDrawBorder(pixmap,&r,g->box,g->state,false);
 
     draw_thumb(pixmap,gsb); /* sets line width for arrows too */
     draw_arrow(pixmap,gsb,gsb->g.vert);
