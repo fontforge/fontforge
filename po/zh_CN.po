@@ -23337,7 +23337,7 @@ msgstr ""
 #: mathconstants.c:87
 msgid ""
 "Horizontal distance between the top\n"
-"and bottom elemnts of a skewed fraction."
+"and bottom elements of a skewed fraction."
 msgstr ""
 
 #: mathconstants.c:88

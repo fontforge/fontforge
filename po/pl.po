@@ -20406,7 +20406,7 @@ msgstr "Odstęp poziomy w ukośnych:"
 #: mathconstants.c:87
 msgid ""
 "Horizontal distance between the top\n"
-"and bottom elemnts of a skewed fraction."
+"and bottom elements of a skewed fraction."
 msgstr ""
 "Odstęp w poziomie między licznikiem\n"
 "a mianownikiem w ułamkach ukośnych."

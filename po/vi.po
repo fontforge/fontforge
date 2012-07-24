@@ -20697,7 +20697,7 @@ msgstr "Khe ngang phân số bị lệch:"
 #: mathconstants.c:87
 msgid ""
 "Horizontal distance between the top\n"
-"and bottom elemnts of a skewed fraction."
+"and bottom elements of a skewed fraction."
 msgstr ""
 "Khoảng cách theo chiều ngang giữa\n"
 "yếu tố đầu và yếu tố cuối của phân số\n"
