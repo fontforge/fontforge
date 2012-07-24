@@ -20948,7 +20948,7 @@ msgstr "Гор. інтервал скошеного дробу:"
 #: mathconstants.c:87
 msgid ""
 "Horizontal distance between the top\n"
-"and bottom elemnts of a skewed fraction."
+"and bottom elements of a skewed fraction."
 msgstr ""
 "Горизонтальна відстань між верхнім і\n"
 "нижнім елементами перекошеного дробу."

@@ -20507,10 +20507,10 @@ msgstr "SkewedFractionHorizontalGap："
 #, fuzzy
 msgid ""
 "Horizontal distance between the top\n"
-"and bottom elemnts of a skewed fraction."
+"and bottom elements of a skewed fraction."
 msgstr ""
 "水平間距    頂\n"
-"和底部 elemnts 的歪斜的分數。"
+"和底部 elements 的歪斜的分數。"
 
 #: mathconstants.c:88
 msgid "SkewedFractionVerticalGap:"
