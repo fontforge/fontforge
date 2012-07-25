@@ -33,9 +33,15 @@
 
 static void NOUI_IError(const char *format,...) {
     va_list ap;
+    char buffer[400], *str;
     va_start(ap,format);
     fprintf(stderr, "Internal Error: " );
-    vfprintf(stderr,format,ap);
+    vsnprintf(buffer,sizeof(buffer),format,ap);
+    str = utf82def_copy(buffer);
+    fprintf(stderr,"%s",str);
+    if ( str[strlen(str)-1]!='\n' )
+	putc('\n',stderr);
+    free(str);
     va_end(ap);
 }
 
