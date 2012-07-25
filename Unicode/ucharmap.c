@@ -416,7 +416,7 @@ static int BytesNormal(iconv_t latin1_2_unicode) {
     } u[8];
 #else
     union {
-	int s;
+	int32 s;
 	char c[4];
     } u[8];
 #endif
