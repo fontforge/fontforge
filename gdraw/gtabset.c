@@ -143,7 +143,8 @@ static int gtabset_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GTabSet *gts = (GTabSet *) g;
     int x,y,i,rd, dsel;
     GRect old1, bounds;
-    int yoff = (gts->rcnt==1?GBoxBorderWidth(pixmap,g->box):0);
+    int bw = GBoxBorderWidth(pixmap,g->box);
+    int yoff = ( gts->rcnt==1 ? bw : 0 );
     Color fg;
     int ni = GDrawPointsToPixels(pixmap,NEST_INDENT);
 
@@ -163,8 +164,8 @@ return( false );
     GDrawSetFont(pixmap,gts->font);
 
     if ( gts->vertical ) {
-	x = g->r.x + GBoxBorderWidth(pixmap,g->box) + 3;
-	y = g->r.y + GBoxBorderWidth(pixmap,g->box) + 3;
+	x = g->r.x + bw + 3;
+	y = g->r.y + bw + 3;
 	for ( i=gts->offtop; i<gts->tabcnt; ++i ) {
 	    fg = gts->tabs[i].disabled?gts->g.box->disabled_foreground:gts->g.box->main_foreground;
 	    if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
@@ -179,8 +180,8 @@ return( false );
 	}
 	fg = gts->g.box->main_foreground;
 	if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
-	GDrawDrawLine(pixmap,x-6+gts->vert_list_width,g->r.y + GBoxBorderWidth(pixmap,g->box),
-			     x-6+gts->vert_list_width,g->r.y + g->r.height -GBoxBorderWidth(pixmap,g->box),
+	GDrawDrawLine(pixmap,x + gts->vert_list_width-4, g->r.y + bw,
+			     x + gts->vert_list_width-4, g->r.y + g->r.height - (bw+1),
 			     fg);
 	if ( gts->vsb != NULL )
 	    gts->vsb->funcs->handle_expose(pixmap,gts->vsb,event);
@@ -608,10 +609,8 @@ static void _gtabset_resize(GGadget *g, int32 width, int32 height ) {
 
 static void _gtabset_setvisible(GGadget *g,int visible) {
     GTabSet *gts = (GTabSet *) g;
-    int i;
 
     _ggadget_setvisible(g,visible);
-    i = gts->sel;
     if ( gts->tabs[gts->sel].w!=NULL )
 	GDrawSetVisible(gts->tabs[gts->sel].w, visible);
     if ( gts->vsb!=NULL )
@@ -839,7 +838,7 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gts->g.inner.y += bp; gts->g.inner.height -= 2*bp;
     } else {
 	gts->g.inner.x += bp; gts->g.inner.width -= 2*bp;
-	gts->g.inner.y += gts->rcnt*gts->rowh; gts->g.inner.height -= bp+gts->rcnt*gts->rowh;
+	gts->g.inner.y += gts->rcnt*gts->rowh+bp; gts->g.inner.height -= 2*bp+gts->rcnt*gts->rowh;
     }
     if ( gts->rcnt==1 ) {
 	gts->g.inner.y += bp; gts->g.inner.height -= bp;
