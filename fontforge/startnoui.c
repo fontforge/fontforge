@@ -135,7 +135,7 @@ static void doscripthelp(void) {
 exit(0);
 }
 
-int main( int argc, char **argv ) {
+int fontforge_main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 
