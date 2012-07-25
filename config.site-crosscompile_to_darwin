@@ -1,0 +1,17 @@
+# Example autoconf config.site for cross-compiling to Darwin.
+#
+# Example configure options for a cross-compiler named
+# i686-apple-darwin10-gcc running on an AMD64 Linux/GNU host:
+#
+#    ./configure CONFIG_SITE=this-file --build=x86_64-pc-linux-gnu --host=i686-apple-darwin10
+#
+
+# Where do you have the SDK from Xcode installed?
+SDK=${SDK:="/usr/local/mac/SDKs/MacOSX10.4u.sdk"}
+
+PREFIX=${ROOT:="${SDK}/usr"}
+
+CPPFLAGS=${CPPFLAGS:="-I${PREFIX}/include -I${PREFIX}/X11R6/include"}
+LDFLAGS=${LDFLAGS:="-L${PREFIX}/lib -L${PREFIX}/X11R6/lib"}
+
+export PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR:="${PREFIX}"}
