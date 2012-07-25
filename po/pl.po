@@ -27533,6 +27533,19 @@ msgstr ""
 "różne dane dla ΤεΧ-a, których nie ma w oryginalnej specyfikacji\n"
 "TrueType, a które zwykle znajdują się w plikach TFM.\n"
 
+#: savefontdlg.c:2641
+msgid "Prepend timestamp"
+msgstr "Dopisz znacznik czasu"
+
+#: savefontdlg.c:2641
+msgid ""
+"This option prepends a timestamp in the format YYMMDDHHMM to the filename and "
+"font-family name metadata."
+msgstr ""
+"Włączenie tej opcji spowoduje dopisanie znacznika czasowego w postaci YYMMDDhhmm "
+"do nazwy wygenerowanego pliku fontu oraz do nazwy rodziny. Opcja przeznaczona jest "
+"np. dla twórców, którzy chcą sprawdzić zachowanie poszczególnych wersji fontu."
+
 #: savefontdlg.c:854
 msgid "Output Font Log"
 msgstr "Wygeneruj plik FONTLOG"
