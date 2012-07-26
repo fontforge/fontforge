@@ -25,6 +25,33 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * This program generates 4 different files based on the latest UnicodeData.txt
+ * obtained from http://unicode.org which is then used to build FontForge
+ *
+ * To generate the latest files, you will first need to go and get these 4 files
+ * and put them in the Unicode subdirectory:
+ *	http://unicode.org/Public/UNIDATA/LineBreak.txt
+ *	http://unicode.org/Public/UNIDATA/NamesList.txt
+ *	http://unicode.org/Public/UNIDATA/PropList.txt
+ *	http://unicode.org/Public/UNIDATA/UnicodeData.txt
+ *
+ * Next, you will need to build ./makeutype before you can use it:
+ * Run "make makeutype"
+ * or
+ * Run "gcc -s -I../inc -o makeutype makeutype.c"
+ *
+ * Then run the executable binary "/makeutype".
+ * This will create 4 files in the same directory:
+ *	ArabicForms.c, unialt.c, utype.c, utype.h
+ * (please move utype.h into Fontforge's "inc" subdirectory)
+ *
+ * When done building the updated files, you can clean-up by removing
+ * LineBreak.txt, NamesList.txt, PropList.txt,UnicodeData.txt, and the
+ * binary executable file makeutype as they are no longer needed now.
+ */
+
+
 /* Build a ctype array out of the UnicodeData.txt and PropList.txt files */
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,6 +126,11 @@ unsigned int flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
 int assignedcodepoints[0x120000/32];
 
+const char GeneratedFileMessage[] = "\n/* This file was generated using the program 'makeutype' */\n\n";
+const char CantReadFile[] = "Can't find or read file %s\n";
+const char CantSaveFile[] = "Can't open or write to output file %s\n";
+const char NoMoreMemory[] = "Can't access more memory.\n";
+
 static void FigureAlternates(unichar_t index, char *apt, int normative) {
     int alt, i;
     char *end;
@@ -161,17 +193,18 @@ return;
 }
 
 static void readin(void) {
-    char buffer[300], buf2[300], oldname[100], *pt, *end, *pt1;
+    char buffer[300+1], buf2[300+1], oldname[100+1], *pt, *end, *pt1;
     int index, lc, uc, tc, flg, val, cc, indexend;
     int wasfirst;
     FILE *fp;
     int i,j;
 
+    buffer[301]='\0'; buf2[301]='\0'; oldname[100]='\0';
     if ((fp = fopen("UnicodeData.txt","r"))==NULL ) {
-	fprintf( stderr, "Can't find UnicodeData.txt\n" );
+	fprintf( stderr, CantReadFile,"UnicodeData.txt" );
 	exit(1);
     }
-    while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
+    while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	if ( *buffer=='#' )
     continue;
 	flg = 0;
@@ -305,10 +338,10 @@ static void readin(void) {
     fclose(fp);
 
     if ((fp = fopen("LineBreak.txt","r"))==NULL ) {
-	fprintf( stderr, "Can't find LineBreak.txt\n" );
+	fprintf( stderr, CantReadFile, "LineBreak.txt" );
 	exit(1);
     }
-    while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
+    while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	if ( *buffer=='#' )
     continue;
 	flg = 0;
@@ -362,10 +395,10 @@ static void readin(void) {
     fclose(fp);
 
     if ((fp = fopen("PropList.txt","r"))==NULL ) {
-	fprintf( stderr, "Can't find PropList.txt\n" );
+	fprintf( stderr, CantReadFile, "PropList.txt" );
 	exit(1);
     }
-    while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
+    while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	flg = 0;
 	if ( true || strncmp(buffer,"Property dump for:", strlen("Property dump for:"))==0 ) {
 	    if ( strstr(buffer, "(Zero-width)")!=NULL || strstr(buffer, "ZERO WIDTH")!=NULL )
@@ -409,10 +442,10 @@ static void readin(void) {
     flags[0xFEFF] |= _NOBREAK;
 
     if ((fp = fopen("NamesList.txt","r"))==NULL ) {
-	fprintf( stderr, "Can't find NamesList.txt\n" );
+	fprintf( stderr, CantReadFile, "NamesList.txt" );
 	exit(1);
     }
-    while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
+    while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	flg = 0;
 	if ( (index = strtol(buffer,NULL,16))!=0 ) {
 	    if ( strstr(buffer, "COMBINING")!=NULL )
@@ -435,15 +468,16 @@ static void readin(void) {
 }
 
 static void readcorpfile(char *prefix, char *corp) {
-    char buffer[300], buf2[300], *pt, *end, *pt1;
+    char buffer[300+1], buf2[300+1], *pt, *end, *pt1;
     int index;
     FILE *fp;
 
+    buffer[301]='\0'; buf2[301]='\0';
     if ((fp = fopen(corp,"r"))==NULL ) {
-	fprintf( stderr, "Can't find %s\n", corp );		/* Not essential */
+	fprintf( stderr, CantReadFile, corp );		/* Not essential */
 return;
     }
-    while ( fgets(buffer,sizeof(buffer),fp)!=NULL ) {
+    while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	if ( *buffer=='#' )
     continue;
 	/* code */
@@ -461,7 +495,10 @@ return;
 	    FigureAlternates(index,pt, false);
 	    if ( index>=MAXC )
     break;
-	    names[index]= malloc(strlen(buf2)+strlen(prefix)+4);
+	    if ((names[index]= malloc(strlen(buf2)+strlen(prefix)+4)) == NULL) {
+		fprintf( stderr, NoMoreMemory );
+		exit(3);
+	    }
 	    strcpy(names[index],prefix); strcat(names[index],buf2);
 	}
     }
@@ -469,9 +506,10 @@ return;
 }
 
 static int find(char *base, char *suffix) {
-    char name[300];
+    char name[300+1];
     int i;
 
+    name[301]='\0';
     strcpy(name,base);
     strcat(name,suffix);
 
@@ -526,12 +564,15 @@ static void dumparabicdata(FILE *header) {
 
     data = fopen( "ArabicForms.c","w");
     if ( data==NULL || data==NULL ) {
-	fprintf( stderr, "Can't open output file ArabicForms.c\n" );
+	fprintf( stderr, CantSaveFile, "ArabicForms.c" );
 	exit(2);
     }
 
     fprintf( data, "#include <utype.h>\n" );
-    fprintf( data, "\nstruct arabicforms ArabicForms[] = {\n" );
+
+    fprintf( data, GeneratedFileMessage );
+
+    fprintf( data, "struct arabicforms ArabicForms[] = {\n" );
     for ( i=0; i<256; ++i ) {
 	fprintf( data, "\t{ 0x%04x, 0x%04x, 0x%04x, 0x%04x, %d, %d, %d }%s\n",
 		forms[i].initial, forms[i].medial, forms[i].final, forms[i].isolated,
@@ -550,13 +591,14 @@ static void dump() {
     data = fopen("utype.c","w");
 
     if ( header==NULL || data==NULL ) {
-	fprintf( stderr, "Can't open output files (utype.[ch])\n" );
+	fprintf( stderr, CantSaveFile, "(utype.[ch])" );
 	exit(2);
     }
 
     fprintf( header, "#ifndef _UTYPE_H\n" );
-    fprintf( header, "#define _UTYPE_H\n\n" );
+    fprintf( header, "#define _UTYPE_H\n" );
 
+    fprintf( header, GeneratedFileMessage );
 
     fprintf( header, "#include <ctype.h>\t\t/* Include here so we can control it. If a system header includes it later bad things happen */\n" );
     fprintf( header, "#ifdef tolower\n" );
@@ -691,7 +733,8 @@ static void dump() {
 
     fprintf( header, "\n" );
 
-    fprintf( data, "#include \"utype.h\"\n\n" );
+    fprintf( data, "#include \"utype.h\"\n" );
+    fprintf( data, GeneratedFileMessage );
     fprintf( data, "const unsigned short ____tolower[]= { 0,\n " );
     for ( i=0; i<MAXC; i+=j ) {
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
@@ -779,11 +822,13 @@ static void dump() {
 #if 0
     data = fopen( "uninames.c", "w");
     if ( data==NULL ) {
-	fprintf( stderr, "Cannot open uninames.c for output\n" );
+	fprintf( stderr, CantSaveFile, "uninames.c" );
 	exit( 1 );
     }
+
     fprintf( data, "#include <stdio.h>\n" );
-    fprintf( data, "#include <utype.h>\n\n" );
+    fprintf( data, "#include <utype.h>\n" );
+    fprintf( data, GeneratedFileMessage );
     for ( i=0; i<MAXC; ++i ) if ( names[i]!=NULL && *names[i]!='<' ) {
 	fprintf( data, "static const unsigned short _%04x[] = { ", i );
 	for ( j=0; names[i][j]!='\0'; ++j )
@@ -845,11 +890,13 @@ static void dump_alttable() {
     FILE *file;
 
     if (( file = fopen("unialt.c","w" ))==NULL ) {
-	fprintf(stderr, "Can't open file for alternates\n" );
+	fprintf(stderr, CantSaveFile, "unialt.c" );
 return;
     }
 
-    fprintf(file, "#include <chardata.h>\n\n" );
+    fprintf(file, "#include <chardata.h>\n" );
+
+    fprintf(file, GeneratedFileMessage );
 
     for ( i=32; i<MAXC; ++i ) {
 	if ( alts[i][0]!=0 ) {
@@ -887,10 +934,11 @@ return;
     fprintf(file, "0};\n" );
     fclose(file);
 
-#if 0		/* moved to dump.c to make build process easier */
+#if 0	/* moved to dump.c to make build process easier */
 	/* Now only one thing touches chardata. Even though it's our entry */
 	/*  best if done elsewhere */
     file = fopen("chardata.h","a");
+    fprintf( file, GeneratedFileMessage );
     fprintf( file,"\nextern const unichar_t *const * const unicode_alternates[];\n" );
     fclose(file);
 #endif
@@ -901,7 +949,7 @@ static void visualalts(void) {
     /* These non-normative decompositions allow display algorithems to */
     /*  pick something that looks right, even if the character doesn't mean */
     /*  what it should. For example Alpha LOOKS LIKE A so if we don't have */
-    /*  an Alpha character avaiable we can draw it with an A. But this decomp */
+    /*  an Alpha character available we can draw it with an A. But this decomp */
     /*  is not normative and should not be used for ordering purposes */
 
     /* ligatures */
@@ -973,7 +1021,7 @@ static void visualalts(void) {
     alts[0x3c1][0] = 'p';
     alts[0x3c7][0] = 'x';
 
-    alts[0x405][0] = 'S';					/* Cyrillic */
+    alts[0x405][0] = 'S';		/* Cyrillic */
     alts[0x406][0] = 'I';
     alts[0x408][0] = 'J';
     alts[0x410][0] = 'A';
@@ -1003,7 +1051,7 @@ static void visualalts(void) {
     alts[0x456][0] = 'i';
     alts[0x458][0] = 'j';
 
-    alts[0x470][0] = 0x3a8;		/* extended cyrillic */
+    alts[0x470][0] = 0x3a8;		/* extended Cyrillic */
     alts[0x471][0] = 0x3c8;
     alts[0x4ae][0] = 'Y';
     alts[0x4c0][0] = 'I';
@@ -1038,7 +1086,7 @@ static void visualalts(void) {
     alts[0x6d4][0] = 0xb7;
 
     /* Many of the Korean Jamo are ligatures of other Jamo */
-    	/* 0x110b often, but not always, rides underneath (0x1135 it's left) */
+	/* 0x110b often, but not always, rides underneath (0x1135 it's left) */
  /* Chosung */
     alts[0x1101][0] = 0x1100; alts[0x1101][1] = 0x1100;
     alts[0x1104][0] = 0x1103; alts[0x1104][1] = 0x1103;
@@ -1301,7 +1349,7 @@ static void visualalts(void) {
 
     alts[0x2126][0] = 0x3a9;
 
-    alts[0x2205][0] = 0xd8;			/* Mathematical operators */
+    alts[0x2205][0] = 0xd8;		/* Mathematical operators */
     alts[0x2206][0] = 0x394;
     alts[0x220f][0] = 0x3a0;
     alts[0x2211][0] = 0x3a3;
@@ -1322,9 +1370,9 @@ static void visualalts(void) {
     alts[0x22c5][0] = 0xb7;
     alts[0x22ef][0] = 0xb7;	alts[0x22ef][1] = 0xb7;	alts[0x22ef][2] = 0xb7;
 
-    alts[0x2303][0] = '^';			/* Misc Technical */
+    alts[0x2303][0] = '^';		/* Misc Technical */
 
-    alts[0x2373][0] = 0x3b9;			/* APL greek */
+    alts[0x2373][0] = 0x3b9;		/* APL greek */
     alts[0x2374][0] = 0x3c1;
     alts[0x2375][0] = 0x3c9;
     alts[0x237a][0] = 0x3b1;
@@ -1380,7 +1428,7 @@ static void visualalts(void) {
     alts[0x2758][0] = '|';
     alts[0x2762][0] = '!';
 
-    alts[0x3001][0] = ',';	/* Idiographic symbols */
+    alts[0x3001][0] = ',';		/* Idiographic symbols */
     alts[0x3008][0] = '<';
     alts[0x3009][0] = '>';
     alts[0x300a][0] = 0xab;
@@ -1646,7 +1694,7 @@ static void cheat(void) {
     mymirror[0x207E] = 0x207D;
     mymirror[0x208D] = 0x208E;		/* subscript paren */
     mymirror[0x208E] = 0x208D;
-    /* mathmatical symbols not mirrorred!!!! some tech symbols missing too */
+    /* mathematical symbols not mirrorred!!!! some tech symbols missing too */
     /*  no code points */
     mymirror[0x2308] = 0x2309;		/* ceiling */
     mymirror[0x2309] = 0x2308;
