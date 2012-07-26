@@ -105,7 +105,7 @@ dnl  library to be found (otherwise only portable to machines with macports/fink
  dnl it and we get undefined symbols.
 
  ;;
-powerpc-*-*linux*)
+powerpc*-*-*linux*)
  AC_DEFINE(_Keyboard,3)
  ;;
 *sparc*)
