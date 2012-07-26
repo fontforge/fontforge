@@ -1216,17 +1216,20 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 }
 #endif
 
-static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
+static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir) {
     ImageList *img;
     KernPair *kp;
     PST *pst;
     int i, v, enc;
     struct altuni *altuni;
 
+    if (!todir)
+	putc('\n',sfd);
+
     if ( AllAscii(sc->name))
-	fprintf(sfd, "\nStartChar: %s\n", sc->name );
+	fprintf(sfd, "StartChar: %s\n", sc->name );
     else {
-	fprintf(sfd, "\nStartChar: " );
+	fprintf(sfd, "StartChar: " );
 	SFDDumpUTF7Str(sfd,sc->name );
 	putc('\n',sfd);
     }
@@ -2360,14 +2363,14 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	for ( i=0; i<sf->glyphcnt; ++i ) {
 	    if ( !SFDOmit(sf->glyphs[i]) ) {
 		if ( !todir )
-		    SFDDumpChar(sfd,sf->glyphs[i],map,newgids);
+		    SFDDumpChar(sfd,sf->glyphs[i],map,newgids,todir);
 		else {
 		    char *glyphfile = galloc(strlen(dirname)+2*strlen(sf->glyphs[i]->name)+20);
 		    FILE *gsfd;
 		    appendnames(glyphfile,dirname,"/",sf->glyphs[i]->name,GLYPH_EXT );
 		    gsfd = fopen(glyphfile,"w");
 		    if ( gsfd!=NULL ) {
-			SFDDumpChar(gsfd,sf->glyphs[i],map,newgids);
+			SFDDumpChar(gsfd,sf->glyphs[i],map,newgids,todir);
 			if ( ferror(gsfd)) err = true;
 			if ( fclose(gsfd)) err = true;
 		    } else
@@ -7741,7 +7744,7 @@ return;
 	    }
 	}
 	if ( ssf->glyphs[i]!=NULL && ssf->glyphs[i]->changed )
-	    SFDDumpChar( asfd,ssf->glyphs[i],map,NULL);
+	    SFDDumpChar( asfd,ssf->glyphs[i],map,NULL,false);
     }
     fprintf( asfd, "EndChars\n" );
     fprintf( asfd, "EndSplineFont\n" );
