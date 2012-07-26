@@ -1192,9 +1192,14 @@ return;
     if ( gadget != NULL && GGadgetFillsWindow(gadget)) {
 	GRect wsize;
 	GDrawGetSize(gw, &wsize);
+
 	/* Make any offset simmetrical */
-	wsize.width -= 2*gadget->r.x;
-	wsize.height -= 2*gadget->r.y;
+	if (wsize.width >= 2*gadget->r.x) wsize.width -= 2*gadget->r.x;
+	else wsize.width = 0;
+	
+	if (wsize.height >= 2*gadget->r.y) wsize.height -= 2*gadget->r.y;
+	else wsize.height = 0;
+	
 	GGadgetResize(gadget,wsize.width,wsize.height);
 	GDrawRequestExpose(gw,NULL,false);
     }
