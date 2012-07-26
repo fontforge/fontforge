@@ -14,4 +14,22 @@ PREFIX=${ROOT:="${SDK}/usr"}
 CPPFLAGS=${CPPFLAGS:="-I${PREFIX}/include -I${PREFIX}/X11R6/include"}
 LDFLAGS=${LDFLAGS:="-L${PREFIX}/lib -L${PREFIX}/X11R6/lib"}
 
+PYTHON_VERSION="2.3"
+am_cv_python_version="${PYTHON_VERSION}"
+PYTHON_LIBS="-L${PREFIX}/lib -lpython${PYTHON_VERSION}"
+PYTHON_CFLAGS="-I${SDK}/System/Library/Frameworks/Python.framework/Versions/${PYTHON_VERSION}/include/python${PYTHON_VERSION}/"
+
+LIBXML_LIBS="-L${PREFIX}/lib -lxml2"
+LIBXML_CFLAGS="-I${PREFIX}/include/libxml2"
+
+FREETYPE_LIBS="-L${PREFIX}/lib -lfreetype"
+FREETYPE_CFLAGS="-I${PREFIX}/include/freetype2"
+
+with_libpng=no
+with_libtiff=no
+with_cairo=no
+with_pango=no
+with_libuninameslist=no
+with_libspiro=no
+
 export PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR:="${PREFIX}"}
