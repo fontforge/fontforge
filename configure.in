@@ -48,7 +48,7 @@ gww_needsstaticimages="no"
 gww_rpath=""
 gww_archlist=""
 AC_ARG_WITH(static-imagelibs,
- [  --with-static-imagelibs   Control whether to try using static image libaries],
+ AS_HELP_STRING([--with-static-imagelibs],[Control whether to try using static image libaries]),
  [
    if test "$withval" \!= "no" ; then
      gww_needsstaticimages="yes"
@@ -147,7 +147,7 @@ AC_C_BIGENDIAN()
 LT_INIT
 
 AC_ARG_ENABLE(arch-i386,
- [  --enable-arch-i386   (Mac only) build for i386 machines],
+ AS_HELP_STRING([--enable-arch-i386],[(Mac only) build for i386 machines]),
  [
    if test "$enableval" \!= "no" ; then
      gww_archlist="$gww_archlist -arch i386"
@@ -156,7 +156,7 @@ AC_ARG_ENABLE(arch-i386,
  ])
 
 AC_ARG_ENABLE(arch-x86_64,
- [  --enable-arch-x86_64   (Mac only) build for 64bit x86 machines],
+ AS_HELP_STRING([--enable-arch-x86_64],[(Mac only) build for 64bit x86 machines]),
  [
    if test "$enableval" \!= "no" ; then
      gww_archlist="$gww_archlist -arch x86_64"
@@ -165,7 +165,7 @@ AC_ARG_ENABLE(arch-x86_64,
  ])
 
 AC_ARG_ENABLE(arch-ppc,
- [  --enable-arch-ppc   (Mac only) build for PPC machines],
+ AS_HELP_STRING([--enable-arch-ppc],[(Mac only) build for PPC machines]),
  [
    if test "$enableval" \!= "no" ; then
      gww_archlist="$gww_archlist -arch ppc"
@@ -174,7 +174,7 @@ AC_ARG_ENABLE(arch-ppc,
  ])
 
 AC_ARG_WITH(capslock-for-alt,
- [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
+ AS_HELP_STRING([--with-capslock-for-alt],[Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows]),
  [
    if test "$withval" \!= "2" ; then
      gww_define_caps_for_alt="2"
@@ -189,7 +189,7 @@ if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
 fi
 
 AC_ARG_ENABLE(debug-raw-points,
- [  --enable-debug-raw-points   Add a raw mode to the points window of the debugger],
+ AS_HELP_STRING([--enable-debug-raw-points],[Add a raw mode to the points window of the debugger]),
  [
    if test "$enableval" \!= "no" ; then
      AC_DEFINE(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
@@ -202,7 +202,7 @@ dnl to work.
 
 gww_uselessiconv="no"
 AC_ARG_WITH(iconv,
- [  --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead],
+ AS_HELP_STRING([--without-iconv],[Don't use the system's iconv(3) routines, use fontforge's instead]),
  [
    if test "$withval" = "no" ; then
      gww_uselessiconv="yes"
@@ -223,7 +223,7 @@ fi
 python="yes"
 python_prog="python"
 AC_ARG_WITH(python,
- [  --without-python   Don't include a python interpreter],
+ AS_HELP_STRING([--without-python],[Don't include a python interpreter]),
  [
     if test "$withval" = "no" >/dev/null 2>&1 ; then
 	python="no"
@@ -240,7 +240,7 @@ if test "$python" = "yes" ; then
  py_headers=""
  py_lib=""
  AC_ARG_WITH(python-headers,
-  [  --with-python-headers   Specify the directory containing the python headers],
+  AS_HELP_STRING([--with-python-headers],[Specify the directory containing the python headers]),
   [
      if test "$withval" != "no" >/dev/null 2>&1 ; then
 	  py_headers="$withval"
@@ -250,7 +250,7 @@ if test "$python" = "yes" ; then
       fi
    ], : )
  AC_ARG_WITH(python-lib,
-  [  --with-python-lib   Specify the python shared library],
+  AS_HELP_STRING([--with-python-lib],[Specify the python shared library]),
   [
      if test "$withval" != "no" -a "$withval" != "yes" -a "$withval" != "" >/dev/null 2>&1 ; then
 	  py_lib="$withval"
@@ -298,7 +298,7 @@ fi
 gww_dopy=no
 gww_fflib=yes
 AC_ARG_ENABLE(libff,
-  AC_HELP_STRING(--enable-libff, disable/enable building shared fontforge library),
+  AC_HELP_STRING([--enable-libff],[disable/enable building shared fontforge library]),
 [
   case $enableval in
    no)
@@ -312,7 +312,7 @@ fi
 AC_DEFINE_UNQUOTED(PYTHON_LIB_NAME,"python$PyVersion")
 
 AC_ARG_ENABLE(pyextension,
-  AC_HELP_STRING(--enable-pyextension, disable/enable installing libfontforge as a python extension plugin),
+  AC_HELP_STRING([--enable-pyextension],[disable/enable installing libfontforge as a python extension plugin]),
 [
   case $enableval in
    yes)
@@ -338,7 +338,7 @@ fi
 
 ffscript="yes"
 AC_ARG_WITH(native-script,
- [  --without-native-script   Don't include a legacy fontforge scripting interpreter],
+ AS_HELP_STRING([--without-native-script],[Don't include a legacy fontforge scripting interpreter]),
  [
     if test "$withval" = "no" >/dev/null 2>&1 ; then
 	ffscript="no"
@@ -438,7 +438,7 @@ dnl Do we have libcairo
 gww_hascairo="no"
 gww_checkcairo="yes"
 AC_ARG_WITH(cairo,
- [  --without-cairo   Don't use libcairo],
+ AS_HELP_STRING([--without-cairo],[Don't use libcairo]),
  [
    if test "$withval" = "no" ; then
      gww_checkcairo="no"
@@ -479,7 +479,7 @@ gww_haspangocairo="no"
 gww_checkpango="yes"
 gww_has_pkg_config="yes"
 AC_ARG_WITH(pango,
- [  --without-pango   Don't use libpango],
+ AS_HELP_STRING([--without-pango],[Don't use libpango]),
  [
    if test "$withval" = "no" ; then
      gww_checkpango="no"
@@ -489,7 +489,7 @@ if test "$gww_checkpango" = "yes" ; then
  pan_headers=""
  pan_lib=""
  AC_ARG_WITH(pango-headers,
-  [  --with-pango-headers=dirs   Specify the CPPFLAGS needed to compile pango],
+  AS_HELP_STRING([--with-pango-headers=dirs],[Specify the CPPFLAGS needed to compile pango]),
   [
      if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
 	  pan_headers="$withval"
@@ -497,7 +497,7 @@ if test "$gww_checkpango" = "yes" ; then
       fi
    ], : )
  AC_ARG_WITH(pango-lib,
-  [  --with-pango-lib   Specify LDFLAGS needed to link with pango],
+  AS_HELP_STRING([--with-pango-lib],[Specify LDFLAGS needed to link with pango]),
   [
      if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
 	  pan_lib="$withval"
@@ -539,7 +539,7 @@ elif test "$gww_haspango" = "done" ; then
 fi
 
 AC_ARG_ENABLE(macapp,
-  [  --disable-macapp   Do not build a mac Application (only for macs)],
+  AS_HELP_STRING([--disable-macapp],[Do not build a mac Application (only for macs)]),
   [
     if test "$enableval" = "no" >/dev/null 2>&1 ; then
        MACAPP=
@@ -552,7 +552,7 @@ dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard sea
 gww_use_freetype="yes"
 gww_hasbytecode="no"
 AC_ARG_ENABLE(freetype,
-  [  --disable-freetype   Control whether we build with freetype],
+  AS_HELP_STRING([--disable-freetype],[Control whether we build with freetype]),
   [
     if test "$enableval" = "no" >/dev/null 2>&1 ; then
        AC_DEFINE(_NO_FREETYPE)
@@ -578,7 +578,7 @@ if test "$gww_use_freetype" != "no" >/dev/null 2>&1 ; then
 
  if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
   AC_ARG_WITH(freetype-bytecode,
-   [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
+   AS_HELP_STRING([--with-freetype-bytecode],[Control whether we build with the bytecode interpreter]),
    [
       gww_hasbytecode="$withval"
    ],
@@ -602,8 +602,8 @@ AC_CHECK_LIB(pthread, pthread_create,
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
  AC_ARG_WITH(freetype-src,
- [  --with-freetype-src=dir   Specify freetype source directory],
- [
+  AS_HELP_STRING([--with-freetype-src=DIR],[Freetype source files are in DIR]),
+  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	FreeType2_TT_BUILD_INC="$withval/src/truetype"
 #	if test "${FreeType2_TT_BUILD_INC:0:1}" != "/" ; then
@@ -618,7 +618,7 @@ if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); th
 		echo "Unable to find $FreeType2_TT_BUILD_INC/ttobjs.h"
 	fi
     fi
- ],
+  ],
  [
 	dnl guess directory
 	AC_MSG_CHECKING(trying to find the freetype source directory -- be patient)
@@ -674,7 +674,7 @@ fi
 
 gww_regular_link="no"
 AC_ARG_WITH(regular-link,
- [  --with-regular-link   Don't try to dlopen libraries],
+ AS_HELP_STRING([--with-regular-link],[Don't try to dlopen libraries]),
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	gww_regular_link="yes"
@@ -840,14 +840,14 @@ esac
 fi
 
 AC_ARG_ENABLE(type3,
- [  --enable-type3   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.],
+ AS_HELP_STRING([--enable-type3],[Control whether we build with support for type3/SVG fonts containing multilayered drawing with strokes, fills, images, etc.]),
  [
     if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
     fi
  ], : )
 AC_ARG_ENABLE(multilayer,
- [  --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)],
+ AS_HELP_STRING([--enable-multilayer],[Control whether we build with support for type3/SVG fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)]),
  [
     if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
