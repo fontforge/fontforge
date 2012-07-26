@@ -1378,17 +1378,23 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-arch-i386   (Mac only) build for i386 machines
-  --enable-arch-x86_64   (Mac only) build for 64bit x86 machines
-  --enable-arch-ppc   (Mac only) build for PPC machines
-  --enable-debug-raw-points   Add a raw mode to the points window of the debugger
+  --enable-arch-i386      (Mac only) build for i386 machines
+  --enable-arch-x86_64    (Mac only) build for 64bit x86 machines
+  --enable-arch-ppc       (Mac only) build for PPC machines
+  --enable-debug-raw-points
+                          Add a raw mode to the points window of the debugger
   --enable-libff          disable/enable building shared fontforge library
   --enable-pyextension    disable/enable installing libfontforge as a python
                           extension plugin
-  --disable-macapp   Do not build a mac Application (only for macs)
-  --disable-freetype   Control whether we build with freetype
-  --enable-type3   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
-  --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)
+  --disable-macapp        Do not build a mac Application (only for macs)
+  --disable-freetype      Control whether we build with freetype
+  --enable-type3          Control whether we build with support for type3/SVG
+                          fonts containing multilayered drawing with strokes,
+                          fills, images, etc.
+  --enable-multilayer     Control whether we build with support for type3/SVG
+                          fonts containing multilayered drawing with strokes,
+                          fills, images, etc. (deprecated. Use --enable-type3
+                          instead)
   --enable-devicetables   Control whether we build with support for device
                           tables which allow fine control of kerning (etc.) at
                           small point sizes
@@ -1407,25 +1413,31 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-x                use the X Window System
-  --with-static-imagelibs   Control whether to try using static image libaries
+  --with-static-imagelibs Control whether to try using static image libaries
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
-  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows
-  --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
-  --without-python   Don't include a python interpreter
+  --with-capslock-for-alt Control whether to use capslock rather than alt/meta
+                          to alter behavior of tools in outline/bitmap windows
+  --without-iconv         Don't use the system's iconv(3) routines, use
+                          fontforge's instead
+  --without-python        Don't include a python interpreter
   --with-python-headers   Specify the directory containing the python headers
-  --with-python-lib   Specify the python shared library
-  --without-native-script   Don't include a legacy fontforge scripting interpreter
-  --without-cairo   Don't use libcairo
-  --without-pango   Don't use libpango
-  --with-pango-headers=dirs   Specify the CPPFLAGS needed to compile pango
-  --with-pango-lib   Specify LDFLAGS needed to link with pango
-  --with-freetype-bytecode   Control whether we build with the bytecode interpreter
-  --with-freetype-src=dir   Specify freetype source directory
-  --with-regular-link   Don't try to dlopen libraries
+  --with-python-lib       Specify the python shared library
+  --without-native-script Don't include a legacy fontforge scripting
+                          interpreter
+  --without-cairo         Don't use libcairo
+  --without-pango         Don't use libpango
+  --with-pango-headers=dirs
+                          Specify the CPPFLAGS needed to compile pango
+  --with-pango-lib        Specify LDFLAGS needed to link with pango
+  --with-freetype-bytecode
+                          Control whether we build with the bytecode
+                          interpreter
+  --with-freetype-src=DIR Freetype source files are in DIR
+  --with-regular-link     Don't try to dlopen libraries
 
 Some influential environment variables:
   CC          C compiler command
