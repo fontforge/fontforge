@@ -51,12 +51,12 @@ int almaps[] = { em_iso8859_1, em_iso8859_2, em_iso8859_3, em_iso8859_4,
 char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
 	"HANGUL.TXT", "Big5HKSCS.txt", NULL };
 /* I'm only paying attention to Wansung encoding (in HANGUL.TXT) which is 94x94 */
-/* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved*/
+/* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved */
 char *adobecjk[] = { "aj16cid2code.txt", "aj20cid2code.txt", "ac15cid2code.txt",
 	"ag15cid2code.txt", "ak12cid2code.txt", NULL };
 /* I'm told that most of the mappings provided on the Unicode site go to */
 /*  Unicode 1.* and that CJK have been moved radically since. So instead */
-/*  of the unicode site's files, try using adobe's which claim they are */
+/*  of the unicode site's files, try using Adobe's which claim they are */
 /*  up to date. These may be found in: */
 /*	ftp://ftp.ora.com/pub/examples/nutshell/ujip/adobe/samples/{aj14,aj20,ak12,ac13,ag14}/cid2code.txt */
 /* they may be bundled up in a tar file, I forget exactly... */
@@ -65,35 +65,43 @@ int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601, em_big5h
 
 unsigned long *used[256];
 
+const char CantReadFile[] = "Can't find or read file %s\n";
+const char CantSaveFile[] = "Can't open or write to output file %s\n";
+const char NoMoreMemory[] = "Can't access more memory.\n";
+
 static void dumpalphas(FILE *output, FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode, mask;
     unichar_t unicode[256];
     unsigned char *table[256], *plane;
-    char buffer[200];
+    char buffer[200+1];
 
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned char c_allzeros[256] = { 0 };\n\n" );
 
+    buffer[201]='\0';
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
     for ( j=0; alphabets[j]!=NULL; ++j ) {
 	file = fopen( alphabets[j], "r" );
 	if ( file==NULL ) {
-	    fprintf( stderr, "Can't open %s\n", alphabets[j]);
+	    fprintf( stderr, CantReadFile, alphabets[j]);
 	} else {
 	    for ( i=0; i<160; ++i )
 		unicode[i] = i;
 	    for ( ; i<256; ++i )
 		unicode[i] = 0;
-	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
 		sscanf(buffer, "0x%lx 0x%lx", (unsigned long *) &_orig, (unsigned long *) &_unicode);
 		unicode[_orig] = _unicode;
 		if ( table[_unicode>>8]==NULL ) {
-		    plane = table[_unicode>>8] = calloc(256,1);
+		    if ((plane = table[_unicode>>8] = calloc(256,1))==NULL) {
+			fprintf( stderr, NoMoreMemory );
+			exit(3);
+		    }
 		    if ( j==0 && (_unicode>>8)==0 )
 			for ( k=0; k<256; ++k )
 			    plane[k] = k;
@@ -103,7 +111,10 @@ static void dumpalphas(FILE *output, FILE *header) {
 		}
 		table[_unicode>>8][_unicode&0xff] = _orig;
 		if ( used[_unicode>>8]==NULL ) {
-		    used[_unicode>>8] = calloc(256,sizeof(long));
+		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+			fprintf( stderr, NoMoreMemory );
+			exit(3);
+		    }
 		}
 		if ( almaps[j]!=-1 )
 		    used[_unicode>>8][_unicode&0xff] |= (1<<almaps[j]);
@@ -341,17 +352,18 @@ static void dumpjis(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode208[94*94], unicode212[94*94];
     unichar_t *table[256], *plane;
-    char buffer[400];
+    char buffer[400+1];
 
     memset(table,0,sizeof(table));
+    buffer[401]='\0';
 
     j=0;
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
+	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
 	memset(unicode208,0,sizeof(unicode208));
-	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
 	    _orig = getnth(buffer,2);
@@ -367,7 +379,10 @@ static void dumpjis(FILE *output,FILE *header) {
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
+		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+		    fprintf( stderr, NoMoreMemory );
+		    exit(3);
+		}
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    _orig -= 0x2121;
 	    _orig = (_orig>>8)*94 + (_orig&0xff);
@@ -376,7 +391,10 @@ static void dumpjis(FILE *output,FILE *header) {
 	    else {
 		unicode208[_orig] = _unicode;
 		if ( used[_unicode>>8]==NULL ) {
-		    used[_unicode>>8] = calloc(256,sizeof(long));
+		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+			fprintf( stderr, NoMoreMemory );
+			exit(3);
+		    }
 		}
 		used[_unicode>>8][_unicode&0xff] |= (1<<em_jis208);
 	    }
@@ -387,10 +405,10 @@ static void dumpjis(FILE *output,FILE *header) {
     j=1;
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
+	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
 	memset(unicode212,0,sizeof(unicode212));
-	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
 	    _orig = getnth(buffer,2);
@@ -406,7 +424,10 @@ static void dumpjis(FILE *output,FILE *header) {
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
+		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+		    fprintf( stderr, NoMoreMemory );
+		    exit(3);
+		}
 	    if ( table[_unicode>>8][_unicode&0xff]==0 )
 		table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
 	    else
@@ -418,7 +439,10 @@ static void dumpjis(FILE *output,FILE *header) {
 	    else {
 		unicode212[_orig] = _unicode;
 		if ( used[_unicode>>8]==NULL ) {
-		    used[_unicode>>8] = calloc(256,sizeof(long));
+		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+			fprintf( stderr, NoMoreMemory );
+			exit(3);
+		    }
 		}
 		used[_unicode>>8][_unicode&0xff] |= (1<<em_jis212);
 	    }
@@ -484,18 +508,18 @@ static void dumpbig5(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode[0x6000];
     unichar_t *table[256], *plane;
-    char buffer[400];
-
-    j = 2;
-
-    memset(table,0,sizeof(table));
+    char buffer[400+1];
 
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", adobecjk[j]);
+	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
+	j = 2;
+	buffer[401]='\0';
+	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
-	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+
+	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
 	    _orig = getnth(buffer,3);
@@ -528,10 +552,16 @@ static void dumpbig5(FILE *output,FILE *header) {
 	    }
 	    unicode[_orig-0xa100] = _unicode;
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
+		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+		    fprintf( stderr, NoMoreMemory );
+		    exit(3);
+		}
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    if ( used[_unicode>>8]==NULL ) {
-		used[_unicode>>8] = calloc(256,sizeof(long));
+		if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+		    fprintf( stderr, NoMoreMemory );
+		    exit(3);
+		}
 	    }
 	    used[_unicode>>8][_unicode&0xff] |= (1<<em_big5);
 	}
@@ -586,18 +616,18 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode[0x8000];
     unichar_t *table[256], *plane;
-    char buffer[400];
-
-    j=5;
-
-    memset(table,0,sizeof(table));
+    char buffer[400+1];
 
     file = fopen( cjk[j], "r" );
     if ( file==NULL ) {
-	fprintf( stderr, "Can't open %s\n", cjk[j] );
+	fprintf( stderr, CantReadFile, cjk[j] );
     } else {
+	j=5;
+	buffer[401]='\0';
+	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
-	while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+
+	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 	    if ( buffer[0]=='#' )
 	continue;
 	    if ( sscanf( buffer, "U+%lx: %lx", (unsigned long *) &_unicode, (unsigned long *) &_orig )!=2 )
@@ -610,10 +640,16 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	    }
 	    unicode[_orig-0x8100] = _unicode;
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
+		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+		    fprintf( stderr, NoMoreMemory );
+		    exit(3);
+		}
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    if ( used[_unicode>>8]==NULL ) {
-		used[_unicode>>8] = calloc(256,sizeof(long));
+		if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+		    fprintf( stderr, NoMoreMemory );
+		    exit(3);
+		}
 	    }
 	    used[_unicode>>8][_unicode&0xff] |= (1<<em_big5hkscs);
 	}
@@ -668,19 +704,21 @@ static void dumpWansung(FILE *output,FILE *header) {
     long _orig, _unicode, _johab;
     unichar_t unicode[94*94], junicode[0x7c00];
     unichar_t *table[256], *plane, *jtable[256];
-    char buffer[400];
+    char buffer[400+1];
     /* Johab high=[0x84-0xf9] low=[0x31-0xfe] */
+
+	buffer[401]='\0';
 
 	memset(table,0,sizeof(table));
 	memset(jtable,0,sizeof(jtable));
 
 	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
-	    fprintf( stderr, "Can't open %s\n", adobecjk[j]);
+	    fprintf( stderr, CantReadFile, adobecjk[j]);
 	} else {
 	    memset(unicode,0,sizeof(unicode));
 	    memset(junicode,0,sizeof(junicode));
-	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
 		_johab = getnth(buffer,7);
@@ -702,7 +740,10 @@ static void dumpWansung(FILE *output,FILE *header) {
 		}
 		if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e ) {
 		    if ( table[_unicode>>8]==NULL )
-			table[_unicode>>8] = calloc(256,sizeof(unichar_t));
+			if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+			    fprintf( stderr, NoMoreMemory );
+			    exit(3);
+			}
 		    table[_unicode>>8][_unicode&0xff] = _orig;
 		    _orig -= 0x2121;
 		    _orig = (_orig>>8)*94 + (_orig&0xff);
@@ -712,18 +753,27 @@ static void dumpWansung(FILE *output,FILE *header) {
 		    }
 		    unicode[_orig] = _unicode;
 		    if ( used[_unicode>>8]==NULL ) {
-			used[_unicode>>8] = calloc(256,sizeof(long));
+			if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+			    fprintf( stderr, NoMoreMemory );
+			    exit(3);
+			}
 		    }
 		    used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
 		}
 		if ( _johab>=0x8431 && _johab<=0xf9fe ) {
 		    if ( jtable[_unicode>>8]==NULL )
-			jtable[_unicode>>8] = calloc(256,sizeof(unichar_t));
+			if ((jtable[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+			    fprintf( stderr, NoMoreMemory );
+			    exit(3);
+			}
 		    jtable[_unicode>>8][_unicode&0xff] = _johab;
 		    _johab -= 0x8400;
 		    junicode[_johab] = _unicode;
 		    if ( used[_unicode>>8]==NULL ) {
-			used[_unicode>>8] = calloc(256,sizeof(long));
+			if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+			    fprintf( stderr, NoMoreMemory );
+			    exit(3);
+			}
 		    }
 		    used[_unicode>>8][_unicode&0xff] |= (1<<em_johab);
 		}
@@ -829,17 +879,18 @@ static void dumpgb2312(FILE *output,FILE *header) {
     long _orig, _unicode;
     unichar_t unicode[94*94];
     unichar_t *table[256], *plane;
-    char buffer[400];
+    char buffer[400+1];
 
+    buffer[401]='\0';
     memset(table,0,sizeof(table));
 
     j = 3;
 	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
-	    fprintf( stderr, "Can't open %s\n", adobecjk[j]);
+	    fprintf( stderr, CantReadFile, adobecjk[j]);
 	} else {
 	    memset(unicode,0,sizeof(unicode));
-	    while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
+	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
 		if ( buffer[0]=='#' )
 	    continue;
 		_orig = getnth(buffer,2);
@@ -855,13 +906,19 @@ static void dumpgb2312(FILE *output,FILE *header) {
 	    continue;
 		}
 		if ( table[_unicode>>8]==NULL )
-		    table[_unicode>>8] = calloc(256,sizeof(unichar_t));
+		    if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
+			fprintf( stderr, NoMoreMemory );
+			exit(3);
+		    }
 		table[_unicode>>8][_unicode&0xff] = _orig;
 		_orig -= 0x2121;
 		_orig = (_orig>>8)*94 + (_orig&0xff);
 		unicode[_orig] = _unicode;
 		if ( used[_unicode>>8]==NULL ) {
-		    used[_unicode>>8] = calloc(256,sizeof(long));
+		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
+			fprintf( stderr, NoMoreMemory );
+			exit(3);
+		    }
 		}
 		used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
 	    }
@@ -958,11 +1015,11 @@ int main(int argc, char **argv) {
     FILE *output, *header;
 
     if (( output = fopen( "alphabet.c", "w" ))==NULL ) {
-	fprintf( stderr, "Can't open %s\n", "alphabet.c" );
+	fprintf( stderr, CantSaveFile, "alphabet.c" );
 return 1;
     }
     if (( header = fopen( "chardata.h", "w" ))==NULL ) {
-	fprintf( stderr, "Can't open %s\n", "chardata.h" );
+	fprintf( stderr, CantSaveFile, "chardata.h" );
         fclose(output);
 	return 1;
     }
@@ -976,21 +1033,21 @@ return 1;
     fclose(output);
 
     if (( output = fopen( "cjk.c", "w" ))==NULL ) {
-	fprintf( stderr, "Can't open %s\n", "cjk.c" );
+	fprintf( stderr, CantSaveFile, "cjk.c" );
         fclose(header);
 return 1;
     }
     dumpcjks(output,header);
     fclose(output);
     if (( output = fopen( "backtrns.c", "w" ))==NULL ) {
-	fprintf( stderr, "Can't open %s\n", "cjk.c" );
+	fprintf( stderr, CantSaveFile, "backtrns.c" );
         fclose(header);
 return 1;
     }
     dumptrans(output,header);
 
     /* This really should be in make ctype, but putting it there causes all */
-    /*  sorts of build problems in things happen out of order */
+    /*  sorts of build problems in things when they happen out of order */
     fprintf( header,"\nextern const unichar_t *const * const unicode_alternates[];\n" );
 
     fclose(output); fclose(header);
