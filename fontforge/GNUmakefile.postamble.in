@@ -1,0 +1,15 @@
+# -*- Makefile -*-
+#
+# Support for --with-gnustep-make
+
+before-all::
+
+after-all::
+
+after-clean::
+	rm -f fontimage fontlint sfddiff libstamp.c exelibstamp.c
+
+after-distclean::
+	rm -f GNUmakefile GNUmakefile.postamble
+
+after-clean::

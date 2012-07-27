@@ -1,5 +1,7 @@
 pixmapsdir = "${pkgdatadir}/pixmaps"
 
+# FIXME: Write a script to generate this list. (Don't run it from the
+# Makefile -- it's not for users.)
 dist_pixmaps_DATA = chooseraudio.png chooserback.png					\
 	chooserbookmark.png choosercid.png choosercompressed.png			\
 	chooserconfigtool.png choosercore.png chooserdir.png				\
@@ -92,10 +94,3 @@ dist_pixmaps_DATA = chooseraudio.png chooserback.png					\
 	viewnextdef.png viewnext.png viewpalettes.png viewprevdef.png		\
 	viewprev.png viewreplace.png viewsmallersize.png viewzoomin.png		\
 	viewzoomout.png
-
-uninstall-local:
-	-echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-	-echo $(distuninstallcheck_listfiles)
-	-echo yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-	$(distuninstallcheck_listfiles)
-	-echo zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz

@@ -1,3 +1,5 @@
+# FIXME: Update this to the pkg-config file from my patch.
+
 prefix=@prefix@
 exec_prefix=${prefix}
 

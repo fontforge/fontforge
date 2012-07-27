@@ -1,0 +1,18 @@
+# Support for --with-gnustep-make
+
+include $(GNUSTEP_MAKEFILES)/common.make
+
+PACKAGE_NAME = FontForgeApp
+
+LIBRARY_NAME = libGUnicode
+
+include common.mk
+include @top_srcdir@/overall_common.mk
+
+libGUnicode_VERSION = ${GUNI_VERSION}.${GUNI_REVISION}.${GUNI_AGE}
+libGUnicode_C_FILES = $(GUNICODE_C_SOURCES)
+#libGUnicode_HEADER_FILES = $(GUNICODE_H_SOURCES)
+
+-include GNUmakefile.preamble
+include $(GNUSTEP_MAKEFILES)/library.make
+-include GNUmakefile.postamble

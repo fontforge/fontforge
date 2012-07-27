@@ -102,8 +102,9 @@ FONTFORGE_ARG_ENABLE([tile-path],
 
 FONTFORGE_ARG_ENABLE([native-callbacks],
         [AS_HELP_STRING([--enable-native-callbacks],
-                [support for callbacks to native machine code,
-                 with fontforge called as a library [EXPERIMENTAL and undocumented]])],
+                [(experimental, undocumented)
+                 support for callbacks to native machine code,
+                 with fontforge called as a library])],
         [NATIVE_CALLBACKS])
 
 
@@ -182,7 +183,7 @@ use the --disable-freetype-debugger option.
 fi
 
 FONTFORGE_ARG_WITH_ARCH
-
+FONTFORGE_ARG_WITH_GNUSTEP_MAKE
 
 #--------------------------------------------------------------------------
 #
@@ -292,21 +293,35 @@ my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS} -lX11 ${PTHREA
 test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([inc/Makefile])
-AC_CONFIG_FILES([Unicode/Makefile])
-AC_CONFIG_FILES([gutils/Makefile])
-AC_CONFIG_FILES([gdraw/Makefile])
-AC_CONFIG_FILES([fontforge/Makefile])
-AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
-AC_CONFIG_FILES([po/Makefile])
-AC_CONFIG_FILES([po/mackeys/Makefile])
+if test x"${with_gnustep_make}" = xyes; then
+   AC_CONFIG_FILES([overall_common.mk])
+   AC_CONFIG_FILES([GNUmakefile GNUmakefile.postamble])
+   AC_CONFIG_FILES([Unicode/GNUmakefile Unicode/GNUmakefile.postamble])
+   AC_CONFIG_FILES([gutils/GNUmakefile gutils/GNUmakefile.postamble])
+   AC_CONFIG_FILES([gdraw/GNUmakefile gdraw/GNUmakefile.postamble])
+   AC_CONFIG_FILES([fontforge/GNUmakefile fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
+#   AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
+#   AC_CONFIG_FILES([po/Makefile])
+#   AC_CONFIG_FILES([po/mackeys/Makefile])
+else
+   AC_CONFIG_FILES([Makefile])
+   AC_CONFIG_FILES([inc/Makefile])
+   AC_CONFIG_FILES([Unicode/Makefile])
+   AC_CONFIG_FILES([gutils/Makefile])
+   AC_CONFIG_FILES([gdraw/Makefile])
+   AC_CONFIG_FILES([fontforge/Makefile])
+   AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
+   AC_CONFIG_FILES([po/Makefile])
+   AC_CONFIG_FILES([po/mackeys/Makefile])
+fi
+
 AC_CONFIG_FILES([fontforge.pc])
 
-#AC_CONFIG_FILES([gtkui/Makefile
-#                 plugins/Makefile])
-AC_OUTPUT
+#AC_CONFIG_FILES([gtkui/Makefile])
+#AC_CONFIG_FILES([plugins/Makefile])
 
+AC_CONFIG_COMMANDS_POST(
+[
 AC_MSG_NOTICE([
 
 Summary of optional features:
@@ -338,6 +353,10 @@ Summary of optional dependencies:
   libspiro         ${i_do_have_libspiro}
   X Window System  ${i_do_have_x}
   regular link     ${i_do_have_regular_link}
+  gnustep-make     ${with_gnustep_make}
 ])
+])
+
+AC_OUTPUT
 
 #--------------------------------------------------------------------------

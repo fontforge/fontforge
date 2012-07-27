@@ -1,0 +1,13 @@
+# Support for --with-gnustep-make
+
+include $(GNUSTEP_MAKEFILES)/common.make
+
+PACKAGE_NAME = FontForgeApp
+
+SUBPROJECTS = Unicode gutils gdraw fontforge
+
+include @top_srcdir@/overall_common.mk
+
+-include GNUmakefile.preamble
+include $(GNUSTEP_MAKEFILES)/aggregate.make
+-include GNUmakefile.postamble

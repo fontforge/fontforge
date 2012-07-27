@@ -310,6 +310,23 @@ AC_DEFUN([FONTFORGE_ARG_WITH_ARCH],
 #])
 
 
+#*************************************************************
+# FIXME: Test this as a way to make a Macintosh application. #
+#*************************************************************
+dnl FONTFORGE_ARG_WITH_GNUSTEP_MAKE
+dnl -------------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_GNUSTEP_MAKE],
+[
+AC_ARG_WITH([gnustep-make],
+   [AS_HELP_STRING([--with-gnustep-make],
+                   [(experimental and undocumented)
+                    build FontForge as a GNUstep application, FontForgeApp.app.
+                    Requires GNU Make, the GNU Objective C compiler, and gnustep-make.
+                    (Out-of-source builds are not supported if this option is chosen,
+                    and some configure options that work in "normal" builds may do nothing.)])])
+])
+
+
 dnl FONTFORGE_WARN_PKG_NOT_FOUND
 dnl ----------------------------
 AC_DEFUN([FONTFORGE_WARN_PKG_NOT_FOUND],

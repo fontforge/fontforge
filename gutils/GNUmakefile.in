@@ -1,0 +1,22 @@
+# Support for --with-gnustep-make
+
+include $(GNUSTEP_MAKEFILES)/common.make
+
+PACKAGE_NAME = FontForgeApp
+
+LIBRARY_NAME = libGUtils libGIOFTP
+
+include common.mk
+include @top_srcdir@/overall_common.mk
+
+libGUtils_VERSION = ${GUTL_VERSION}.${GUTL_REVISION}.${GUTL_AGE}
+libGUtils_C_FILES = $(GUTILS_C_SOURCES)
+#libGUtils_HEADER_FILES = $(GUTILS_H_SOURCES)
+
+libGIOFTP_VERSION = ${GFTP_VERSION}.${GFTP_REVISION}.${GFTP_AGE}
+libGIOFTP_C_FILES = $(GIOFTP_C_SOURCES)
+#libGIOFTP_HEADER_FILES = $(GIOFTP_H_SOURCES)
+
+-include GNUmakefile.preamble
+include $(GNUSTEP_MAKEFILES)/library.make
+-include GNUmakefile.postamble

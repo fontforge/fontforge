@@ -1,22 +1,9 @@
+include common.mk
+
 lib_LTLIBRARIES = libgutils.la libgioftp.la
 
-GUTL_VERSION = 1
-GUTL_REVISION = 3
-GUTL_AGE = 0
-
-GFTP_VERSION = 1
-GFTP_REVISION = 0
-GFTP_AGE = 0
-
-libgutils_la_SOURCES = divisors.c fsys.c gcol.c gimage.c				\
-	gimagereadbmp.c gimageread.c gimagereadgif.c gimagereadjpeg.c		\
-	gimagereadpng.c gimagereadras.c gimagereadrgb.c gimagereadtiff.c	\
-	gimagereadxbm.c gimagereadxpm.c gimagewritebmp.c					\
-	gimagewritegimage.c gimagewritejpeg.c gimagewritepng.c				\
-	gimagewritexbm.c gimagewritexpm.c gwwintl.c dynamic.c gio.c			\
-	giofile.c giohosts.c giomime.c giothread.c giotrans.c				\
-	gimagebmpP.h gioftpP.h giofuncP.h gioP.h
-libgioftp_la_SOURCES = gioftp.c
+libgutils_la_SOURCES = ${GUTILS_C_SOURCES} ${GUTILS_H_SOURCES}
+libgioftp_la_SOURCES = ${GIOFTP_C_SOURCES} ${GIOFTP_H_SOURCES}
 
 libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
