@@ -80,7 +80,7 @@ static void dumpalphas(FILE *output, FILE *header) {
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned char c_allzeros[256] = { 0 };\n\n" );
 
-    buffer[201]='\0';
+    buffer[200]='\0';
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
     for ( j=0; alphabets[j]!=NULL; ++j ) {
@@ -355,7 +355,7 @@ static void dumpjis(FILE *output,FILE *header) {
     char buffer[400+1];
 
     memset(table,0,sizeof(table));
-    buffer[401]='\0';
+    buffer[400]='\0';
 
     j=0;
     file = fopen( adobecjk[j], "r" );
@@ -515,7 +515,7 @@ static void dumpbig5(FILE *output,FILE *header) {
 	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
 	j = 2;
-	buffer[401]='\0';
+	buffer[400]='\0';
 	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
 
@@ -623,7 +623,7 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	fprintf( stderr, CantReadFile, cjk[j] );
     } else {
 	j=5;
-	buffer[401]='\0';
+	buffer[400]='\0';
 	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
 
@@ -707,7 +707,7 @@ static void dumpWansung(FILE *output,FILE *header) {
     char buffer[400+1];
     /* Johab high=[0x84-0xf9] low=[0x31-0xfe] */
 
-	buffer[401]='\0';
+	buffer[400]='\0';
 
 	memset(table,0,sizeof(table));
 	memset(jtable,0,sizeof(jtable));
@@ -881,7 +881,7 @@ static void dumpgb2312(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
-    buffer[401]='\0';
+    buffer[400]='\0';
     memset(table,0,sizeof(table));
 
     j = 3;

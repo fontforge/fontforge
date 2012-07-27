@@ -199,7 +199,7 @@ static void readin(void) {
     FILE *fp;
     int i,j;
 
-    buffer[301]='\0'; buf2[301]='\0'; oldname[100]='\0';
+    buffer[300]='\0'; buf2[300]='\0'; oldname[100]='\0';
     if ((fp = fopen("UnicodeData.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile,"UnicodeData.txt" );
 	exit(1);
@@ -472,7 +472,7 @@ static void readcorpfile(char *prefix, char *corp) {
     int index;
     FILE *fp;
 
-    buffer[301]='\0'; buf2[301]='\0';
+    buffer[300]='\0'; buf2[300]='\0';
     if ((fp = fopen(corp,"r"))==NULL ) {
 	fprintf( stderr, CantReadFile, corp );		/* Not essential */
 return;
@@ -509,7 +509,7 @@ static int find(char *base, char *suffix) {
     char name[300+1];
     int i;
 
-    name[301]='\0';
+    name[300]='\0';
     strcpy(name,base);
     strcat(name,suffix);
 
