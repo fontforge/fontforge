@@ -784,7 +784,7 @@ static void DVDefaultRaster(DebugView *dv) {
     }
     cv->b.ft_gridfitwidth = 0;
 
-    if ( cv!=NULL )
+    if ( cv->v!=NULL )
 	GDrawRequestExpose(cv->v,NULL,false);
     if ( dv->raster!=NULL )
 	GDrawRequestExpose(dv->raster,NULL,false);
