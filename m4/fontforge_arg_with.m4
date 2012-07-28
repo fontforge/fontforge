@@ -296,18 +296,12 @@ AM_CONDITIONAL([DYNAMIC_LOADING],[test x"${i_do_have_regular_link}" != xyes])
 
 dnl FONTFORGE_ARG_WITH_ARCH
 dnl -----------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_ARCH],
-[])
-#[
-#AC_ARG_WITH([arch],
-#        [AS_HELP_STRING([--with-arch=i386,x86_64,ppc],
-#                [(Macintosh only) build for the listed architectures],
-#        [my_archlist="${withval}"],
-#        [my_archlist=""])
-#if test x"${my_archlist}" != x; then
-#   
-#fi
-#])
+dnl
+dnl This was going to be a replacement for the "--with-arch*" options
+dnl of the old configuration system, but if someone wants "-arch *" in
+dnl their compiler options they can simply add it to CFLAGS or CC.
+dnl
+AC_DEFUN([FONTFORGE_ARG_WITH_ARCH],[])
 
 
 #*************************************************************
@@ -324,6 +318,10 @@ AC_ARG_WITH([gnustep-make],
                     Requires GNU Make, the GNU Objective C compiler, and gnustep-make.
                     (Out-of-source builds are not supported if this option is chosen,
                     and some configure options that work in "normal" builds may do nothing.)])])
+test x"${with_gnustep_make}" = x && with_gnustep_make=no
+if test x"${with_gnustep_make}" = xyes; then
+   AC_DEFINE([GNUSTEP_APP],[1],[Define if building a GNUstep application.])
+fi
 ])
 
 

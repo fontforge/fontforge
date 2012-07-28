@@ -3,11 +3,16 @@
 # Support for --with-gnustep-make
 
 before-all::
+	rm -r -f Resources
+	mkdir Resources && \
+	mkdir Resources/pixmaps && \
+	$(LN_S) $(addprefix @abs_srcdir@/pixmaps/, $(PNG_LIST)) Resources/pixmaps/.
 
 after-all::
 
 after-clean::
 	rm -f fontimage fontlint sfddiff libstamp.c exelibstamp.c
+	rm -r -f Resources
 
 after-distclean::
 	rm -f GNUmakefile GNUmakefile.postamble

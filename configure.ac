@@ -37,6 +37,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
+AC_PROG_OBJC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -129,8 +130,8 @@ if test x"${i_do_have_x}" = xyes; then
                 [AC_DEFINE(_NO_XKB,1,[Define if not using xkb.])],
                 [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm])
 fi
-AC_SUBST(XINPUT_LIBS)
-AC_SUBST(XKB_LIBS)
+AC_SUBST([XINPUT_LIBS])
+AC_SUBST([XKB_LIBS])
 
 PKG_CHECK_MODULES([ZLIB],[zlib])
 
@@ -221,6 +222,16 @@ fi
 
 AX_PTHREAD
 
+CONSTANT_STRING_OBJCFLAGS=""
+if test x"${with_gnustep_make}" = xyes; then
+   AC_LANG_PUSH([Objective C])
+   AX_CHECK_COMPILE_FLAG([-fconstant-string-class=NSConstantString],
+        [CONSTANT_STRING_OBJCFLAGS="-fconstant-string-class=NSConstantString"],
+        [:])
+   AC_LANG_POP
+fi
+AC_SUBST([CONSTANT_STRING_OBJCFLAGS])
+
 #--------------------------------------------------------------------------
 # Checks for library functions.
 
@@ -300,6 +311,7 @@ if test x"${with_gnustep_make}" = xyes; then
    AC_CONFIG_FILES([gutils/GNUmakefile gutils/GNUmakefile.postamble])
    AC_CONFIG_FILES([gdraw/GNUmakefile gdraw/GNUmakefile.postamble])
    AC_CONFIG_FILES([fontforge/GNUmakefile fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
+#   AC_CONFIG_FILES([fontforge/pixmaps/GNUmakefile fontforge/pixmaps/GNUmakefile.postamble])
 #   AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
 #   AC_CONFIG_FILES([po/Makefile])
 #   AC_CONFIG_FILES([po/mackeys/Makefile])
@@ -313,9 +325,8 @@ else
    AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
    AC_CONFIG_FILES([po/Makefile])
    AC_CONFIG_FILES([po/mackeys/Makefile])
+   AC_CONFIG_FILES([fontforge.pc])
 fi
-
-AC_CONFIG_FILES([fontforge.pc])
 
 #AC_CONFIG_FILES([gtkui/Makefile])
 #AC_CONFIG_FILES([plugins/Makefile])

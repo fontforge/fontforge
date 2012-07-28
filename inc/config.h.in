@@ -33,6 +33,9 @@
 /* Define if using the freetype debugger (requires freetype source code). */
 #undef FREETYPE_HAS_DEBUGGER
 
+/* Define if building a GNUstep application. */
+#undef GNUSTEP_APP
+
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
 
