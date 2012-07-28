@@ -10,8 +10,8 @@ include common.mk
 include @top_srcdir@/overall_common.mk
 
 libGDraw_VERSION = ${GD_VERSION}.${GD_REVISION}.${GD_AGE}
-libGDraw_C_FILES = $(GDRAW_C_SOURCES)
-#libGDraw_HEADER_FILES = $(GDRAW_H_SOURCES)
+libGDraw_C_FILES = $(GDRAW_C_SRCFILES)
+#libGDraw_HEADER_FILES = $(GDRAW_H_SRCFILES)
 
 -include GNUmakefile.preamble
 include $(GNUSTEP_MAKEFILES)/library.make

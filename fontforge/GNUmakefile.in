@@ -12,16 +12,16 @@ include common.mk
 include @top_srcdir@/overall_common.mk
 
 libFontForge_VERSION = ${FF_VERSION}.${FF_REVISION}.${FF_AGE}
-libFontForge_C_FILES = $(LIBFF_C_SOURCES) $(NODIST_LIBFF_C_SOURCES)	\
-	$(EXTRA_LIBFF_C_SOURCES)
+libFontForge_C_FILES = $(LIBFF_C_SRCFILES) $(NODIST_LIBFF_C_SRCFILES)	\
+	$(EXTRA_LIBFF_C_SRCFILES)
 libFontForge_CFLAGS = "-DSHAREDIR=\"${pkgdatadir}\""	\
 	"-DDOCDIR=\"${docdir}\""
 
 libFontForgeExe_VERSION = ${FF_VERSION}.${FF_REVISION}.${FF_AGE}
-libFontForgeExe_C_FILES = $(LIBFFEXE_C_SOURCES)	\
-	$(NODIST_LIBFFEXE_C_SOURCES) $(EXTRA_LIBFFEXE_C_SOURCES)
+libFontForgeExe_C_FILES = $(LIBFFEXE_C_SRCFILES)	\
+	$(NODIST_LIBFFEXE_C_SRCFILES) $(EXTRA_LIBFFEXE_C_SRCFILES)
 
-FontForgeApp_C_FILES = $(FF_C_SOURCES)
+FontForgeApp_C_FILES = $(FF_C_SRCFILES)
 FontForgeApp_LIB_DIRS = $(addprefix -L@top_srcdir@/, $(addsuffix	\
 	/$(GNUSTEP_OBJ_DIR), Unicode gutils gdraw fontforge))
 FontForgeApp_GUI_LIBS = "-lFontForgeExe" "-lFontForge" "-lGDraw"		\

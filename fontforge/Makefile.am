@@ -31,12 +31,12 @@ sfddiff: sfddiff.pe
 
 #--------------------------------------------------------------------------
 
-noinst_HEADERS = $(H_SOURCES)
-pkginclude_HEADERS = $(INST_H_SOURCES)
+noinst_HEADERS = $(INST_FF_H_SRCFILES)
+pkginclude_HEADERS = $(INST_FF_H_SRCFILES)
 
 #--------------------------------------------------------------------------
 
-fontforge_SOURCES = $(FF_C_SOURCES)
+fontforge_SOURCES = $(FF_C_SRCFILES)
 fontforge_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
 fontforge_LDADD = libfontforgeexe.la
@@ -44,9 +44,9 @@ fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
 
 #--------------------------------------------------------------------------
 
-libfontforge_la_SOURCES        = $(LIBFF_C_SOURCES)
-nodist_libfontforge_la_SOURCES = $(NODIST_LIBFF_C_SOURCES)
-EXTRA_libfontforge_la_SOURCES  = $(EXTRA_LIBFF_C_SOURCES)
+libfontforge_la_SOURCES        = $(LIBFF_C_SRCFILES)
+nodist_libfontforge_la_SOURCES = $(NODIST_LIBFF_C_SRCFILES)
+EXTRA_libfontforge_la_SOURCES  = $(EXTRA_LIBFF_C_SRCFILES)
 
 libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"			\
 	"-I$(top_srcdir)/inc" "-DSHAREDIR=\"${pkgdatadir}\""	\
@@ -66,7 +66,7 @@ libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 
 if GRAPHICAL_USER_INTERFACE
 
-libfontforgeexe_la_SOURCES = $(LIBFFEXE_C_SOURCES)
+libfontforgeexe_la_SOURCES = $(LIBFFEXE_C_SRCFILES)
 
 else !GRAPHICAL_USER_INTERFACE
 
@@ -74,7 +74,7 @@ libfontforgeexe_la_SOURCES = startnoui.c
 
 endif !GRAPHICAL_USER_INTERFACE
 
-nodist_libfontforgeexe_la_SOURCES = $(NODIST_LIBFFEXE_C_SOURCES)
+nodist_libfontforgeexe_la_SOURCES = $(NODIST_LIBFFEXE_C_SRCFILES)
 
 libfontforgeexe_la_CPPFLAGS = $(libfontforge_la_CPPFLAGS)
 libfontforgeexe_la_LIBADD = libfontforge.la

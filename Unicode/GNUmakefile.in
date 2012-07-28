@@ -10,8 +10,8 @@ include common.mk
 include @top_srcdir@/overall_common.mk
 
 libGUnicode_VERSION = ${GUNI_VERSION}.${GUNI_REVISION}.${GUNI_AGE}
-libGUnicode_C_FILES = $(GUNICODE_C_SOURCES)
-#libGUnicode_HEADER_FILES = $(GUNICODE_H_SOURCES)
+libGUnicode_C_FILES = $(GUNICODE_C_SRCFILES)
+#libGUnicode_HEADER_FILES = $(GUNICODE_H_SRCFILES)
 
 -include GNUmakefile.preamble
 include $(GNUSTEP_MAKEFILES)/library.make

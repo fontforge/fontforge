@@ -5,7 +5,7 @@ FF_VERSION = 1
 FF_REVISION = 0
 FF_AGE = 0
 
-LIBFF_C_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c			\
+LIBFF_C_SRCFILES = asmfpst.c autohint.c autosave.c autotrace.c			\
 	autowidth.c bezctx_ff.c bitmapchar.c bitmapcontrol.c bvedit.c		\
 	clipnoui.c crctab.c cvexport.c cvimages.c cvundoes.c dumpbdf.c		\
 	dumppfa.c effects.c encoding.c featurefile.c fontviewbase.c			\
@@ -24,11 +24,11 @@ LIBFF_C_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c			\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
 	activeinui.c
 
-NODIST_LIBFF_C_SOURCES = libstamp.c
+NODIST_LIBFF_C_SRCFILES = libstamp.c
 
-EXTRA_LIBFF_C_SOURCES = splinerefigure.c
+EXTRA_LIBFF_C_SRCFILES = splinerefigure.c
 
-LIBFFEXE_C_SOURCES = alignment.c anchorsaway.c autowidth2dlg.c			\
+LIBFFEXE_C_SRCFILES = alignment.c anchorsaway.c autowidth2dlg.c			\
 	basedlg.c bdfinfo.c bitmapdlg.c bitmapview.c charinfo.c				\
 	charview.c clipui.c combinations.c contextchain.c cursors.c			\
 	cvaddpoints.c cvdebug.c cvdgloss.c cvexportdlg.c cvfreehand.c		\
@@ -44,12 +44,12 @@ LIBFFEXE_C_SOURCES = alignment.c anchorsaway.c autowidth2dlg.c			\
 	statemachine.c tilepath.c transform.c ttfinstrsui.c uiutil.c		\
 	windowmenu.c justifydlg.c deltaui.c usermenu.c
 
-NODIST_LIBFFEXE_C_SOURCES = exelibstamp.c
+NODIST_LIBFFEXE_C_SRCFILES = exelibstamp.c
 
-FF_C_SOURCES = main.c
+FF_C_SRCFILES = main.c
 
 # FIXME: Decide which of these to install.
-H_SOURCES = autowidth2.h ffpython.h nonlineartrans.h sfd1.h	\
+FF_H_SRCFILES = autowidth2.h ffpython.h nonlineartrans.h sfd1.h	\
 	autowidth.h fontforge.h ofl.h sflayoutP.h baseviews.h			\
 	fontforgeui.h PfEd.h sftextfieldP.h bezctx_ff.h fontforgevw.h	\
 	plugins.h splinefont.h bitmapcontrol.h fvmetrics.h print.h		\
@@ -59,4 +59,6 @@ H_SOURCES = autowidth2.h ffpython.h nonlineartrans.h sfd1.h	\
 	unicoderange.h encoding.h mm.h sd.h views.h fffreetype.h		\
 	namehash.h search.h usermenu.h
 
-INST_H_SOURCES =
+INST_FF_H_SRCFILES =
+
+FF_M_SRCFILES = gnustepappmain.m
