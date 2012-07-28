@@ -31,7 +31,7 @@ sfddiff: sfddiff.pe
 
 #--------------------------------------------------------------------------
 
-noinst_HEADERS = $(INST_FF_H_SRCFILES)
+noinst_HEADERS = $(FF_H_SRCFILES)
 pkginclude_HEADERS = $(INST_FF_H_SRCFILES)
 
 #--------------------------------------------------------------------------
