@@ -12,6 +12,8 @@ nodist_pkgconfig_DATA = fontforge.pc
 EXTRA_DIST = LICENSE README-Mac.html README-MS.html README-unix		\
 	README-Unix.html Readme.VMS
 
+MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
+	GNUmakefile.postamble
 
 
 

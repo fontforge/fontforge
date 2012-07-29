@@ -16,3 +16,6 @@ libgutils_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GUTL_VERSION):$(GUTL_REVISION):$(GUTL_AGE)"
 libgioftp_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GFTP_VERSION):$(GFTP_REVISION):$(GFTP_AGE)"
+
+MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
+	GNUmakefile.postamble

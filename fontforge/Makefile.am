@@ -94,4 +94,6 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre exelibstamp.pre
-MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c exelibstamp.c
+MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
+	exelibstamp.c GNUmakefile GNUmakefile.preamble			\
+	GNUmakefile.postamble
