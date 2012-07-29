@@ -1,0 +1,38 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+bindir = @bindir@
+libdir = @libdir@
+
+CC = @CC@
+RANLIB = @RANLIB@
+
+X_CFLAGS = @X_CFLAGS@
+
+libgutils_OBJECTS = divisors.o fsys.o gcol.o gimage.o gimagereadbmp.o \
+ gimageread.o gimagereadgif.o gimagereadjpeg.o gimagereadpng.o \
+ gimagereadras.o gimagereadrgb.o gimagereadtiff.o gimagereadxbm.o \
+ gimagereadxpm.o gimagewritebmp.o gimagewritegimage.o \
+ gimagewritejpeg.o gimagewritepng.o gimagewritexbm.o gimagewritexpm.o \
+ gwwintl.o dynamic.o \
+ gio.o giofile.o giohosts.o giomime.o giothread.o giotrans.o
+
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
+
+all: ../libs/libgutils.a
+
+../libs/libgutils.a: $(libgutils_OBJECTS)
+	ar cr ../libs/libgutils.a $(libgutils_OBJECTS)
+	$(RANLIB) ../libs/libgutils.a
+
+clean:
+	-rm -f *.o ../libs/libgutils.a
+
+distclean cleaner:
+	-rm -f *.o ../libs/libgutils.a Makefile

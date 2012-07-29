@@ -1945,6 +1945,8 @@ return;
 return;
     }
 
+/* Throws errors in Mac OS X */
+#ifndef __Mac
     /* Can we blend this with background to support an alpha channel? */
     /* it's slow, particularly so on network connections, but that's */
     /* all we can get without reworking GDraw to use XComposite ext. */
@@ -1974,6 +1976,7 @@ return;
             src = &blend_src;
         }
     }
+#endif
 
     gximage_to_ximage(gw, image, src);
 

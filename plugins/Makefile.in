@@ -1,0 +1,48 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+sharedir = @prefix@/share/fontforge
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+top_builddir = ..
+VPATH = @srcdir@
+bindir = @bindir@
+libdir = @libdir@
+plugindir = $(sharedir)/plugins
+
+LIBTOOL = @LIBTOOL@
+INSTALL = @INSTALL@
+CC = @CC@
+
+_CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. -I$(top_srcdir)/fontforge \
+    @WFLAGS@ $(X_CFLAGS) \
+    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
+    @CPPFLAGS@ '-DPREFIX="@prefix@"'
+CFLAGS = @CFLAGS@ $(_CFLAGS)
+
+LIBS = -rpath $(libdir)  -L/usr/lib -lm
+
+PLUGINS = gb12345.la
+
+all: $(PLUGINS)
+
+clean:
+	-rm -rf .libs *.la *.lo
+
+distclean: clean
+	-rm -rf Makefile
+
+%.lo: %.c
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+
+%.la: %.lo
+	$(LIBTOOL) --mode=link $(CC) -export-dynamic -module -o $@ $< $(LIBS)
+
+install: all
+	mkdir -p $(DESTDIR)$(plugindir)
+	-mv .libs/*.{so,dll,dylib,lai}* $(DESTDIR)$(plugindir)
+	mv *.la $(DESTDIR)$(plugindir)
+
+

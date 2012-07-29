@@ -1,0 +1,38 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+top_srcdir = @top_srcdir@
+top_builddir = ..
+libdir = @libdir@
+VPATH = @srcdir@
+bindir = @bindir@
+
+GU_VERSION=3
+GU_REVISION=2
+GU_AGE=0
+
+LIBTOOL = @LIBTOOL@
+CC = @CC@
+
+libgunicode_OBJECTS =  ArabicForms.lo alphabet.lo backtrns.lo char.lo \
+ cjk.lo memory.lo ucharmap.lo unialt.lo ustring.lo utype.lo \
+ usprintf.lo gwwiconv.lo
+
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ @DEFS@
+
+../libgunicode.la: $(libgunicode_OBJECTS)
+	$(LIBTOOL) --mode=link $(CC) -no-undefined @LDFLAGS@ -o ../libgunicode.la $(libgunicode_OBJECTS) \
+	    @LIBS@ \
+	    -rpath $(libdir) -version-info $(GU_VERSION):$(GU_REVISION):$(GU_AGE)
+
+%.lo: %.c
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+
+clean:
+	-rm -fr *.o *.lo ../libgunicode.la .libs/* .libs
+
+distclean cleaner:
+	-rm -f *.o *.lo ../libgunicode.la .libs/* .libs Makefile

@@ -1,0 +1,57 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+top_builddir = ..
+VPATH = @srcdir@
+bindir = @bindir@
+libdir = @libdir@
+
+GD_VERSION=4
+GD_REVISION=10
+GD_AGE=0
+
+LIBTOOL = @LIBTOOL@
+CC = @CC@
+
+X_CFLAGS = @X_CFLAGS@
+X_LIBS = @X_LIBS@
+X_11LIB = @X_11LIB@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+STATIC_LIBS = @STATIC_LIBS@
+
+libgdraw_OBJECTS =  choosericons.lo ctlvalues.lo drawboxborder.lo \
+ gaskdlg.lo gbuttons.lo gcolor.lo gchardlg.lo gcontainer.lo gdraw.lo \
+ gdrawbuildchars.lo gdrawerror.lo gdrawtxt.lo gdrawtxtinit.lo \
+ gfilechooser.lo gfiledlg.lo ggadgets.lo ggroupbox.lo \
+ gimageclut.lo gimagecvt.lo gimagepsdraw.lo \
+ gimagewriteeps.lo gdrawgimage.lo \
+ gimagexdraw.lo gkeysym.lo glist.lo \
+ gmenu.lo gprogress.lo gpsdraw.lo gpstxtinit.lo gradio.lo gresource.lo \
+ gresourceimage.lo gresedit.lo gsavefiledlg.lo gscrollbar.lo gtabset.lo \
+ gtextfield.lo gtextinfo.lo gwidgets.lo gxdraw.lo gxcdraw.lo \
+ ghvbox.lo gmatrixedit.lo gdrawable.lo gspacer.lo xkeysyms_unicode.lo
+
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
+
+../libgdraw.la: $(libgdraw_OBJECTS)
+	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) -o ../libgdraw.la $(libgdraw_OBJECTS) \
+	    ../libgutils.la ../libgunicode.la $(X_LIBS) @LDFLAGS@ @LIBS@ \
+	    $(STATIC_LIBS) $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS)  \
+	    -rpath $(libdir) -version-info $(GD_VERSION):$(GD_REVISION):$(GD_AGE)
+
+%.lo: %.c
+
+%.lo: %.c $(srcdir)/gdrawP.h $(srcdir)/ggadgetP.h $(srcdir)/gwidgetP.h $(srcdir)/gxdrawP.h $(srcdir)/fontP.h
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+
+clean:
+	-rm -rf *.lo *.o .libs/* .libs ../libgdraw.la
+
+distclean cleaner:
+	-rm -rf *.lo *.o ../libgdraw.la .libs/* .libs Makefile

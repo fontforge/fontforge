@@ -1,0 +1,36 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+bindir = @bindir@
+
+CC = @CC@
+RANLIB = @RANLIB@
+
+libgunicode_OBJECTS =  ArabicForms.o alphabet.o backtrns.o char.o \
+ cjk.o memory.o ucharmap.o unialt.o ustring.o utype.o usprintf.o gwwiconv.o
+
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ @DEFS@
+
+all: ../libs/libgunicode.a
+
+../libs/libgunicode.a: $(libgunicode_OBJECTS)
+	ar cr ../libs/libgunicode.a $(libgunicode_OBJECTS)
+	$(RANLIB) ../libs/libgunicode.a
+
+#../libs/libgunicode.so.1.0: $(libgunicode_OBJECTS)
+#	rm -f ../libs/libgunicode.so*
+#	gcc -shared -Wl,-soname,libgunicode.so.1 -o ../libs/libgunicode.so.1.0 $(libgunicode_OBJECTS)
+#	ln -s libgunicode.so.1.0 ../libs/libgunicode.so.1
+#	ln -s libgunicode.so.1 ../libs/libgunicode.so
+
+clean:
+	-rm -f *.o ../libs/libgunicode.a
+
+distclean cleaner:
+	-rm -f *.o ../libs/libgunicode.a Makefile

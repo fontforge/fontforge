@@ -1,0 +1,47 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+bindir = @bindir@
+libdir = @libdir@
+
+CC = @CC@
+RANLIB = @RANLIB@
+
+X_CFLAGS = @X_CFLAGS@
+
+libgdraw_OBJECTS =  choosericons.o ctlvalues.o drawboxborder.o \
+ gaskdlg.o gbuttons.o gchardlg.o gcolor.o gcontainer.o gdraw.o \
+ gdrawbuildchars.o gdrawerror.o gdrawtxt.o gdrawtxtinit.o \
+ gfilechooser.o gfiledlg.o ggadgets.o ggroupbox.o \
+ gimageclut.o gimagecvt.o gimagepsdraw.o \
+ gimagewriteeps.o gdrawgimage.o \
+ gimagexdraw.o gkeysym.o glist.o \
+ gmenu.o gprogress.o gpsdraw.o gpstxtinit.o gradio.o gresource.o \
+ gresourceimage.o gresedit.o gsavefiledlg.o gscrollbar.o gtabset.o \
+ gtextfield.o gtextinfo.o gwidgets.o gxdraw.o gxcdraw.o \
+ ghvbox.o gmatrixedit.o gdrawable.o gspacer.o xkeysyms_unicode.o
+
+Incs = -I$(top_srcdir)/inc -I../inc -I/usr/pkg/include -I/usr/pkg/include/giflib
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
+
+all: ../libs/libgdraw.a
+
+../libs/libgdraw.a: $(libgdraw_OBJECTS)
+	ar cr ../libs/libgdraw.a $(libgdraw_OBJECTS)
+	$(RANLIB) ../libs/libgdraw.a
+
+%.o: %.c
+
+%.o: %.c $(srcdir)/gdrawP.h $(srcdir)/ggadgetP.h $(srcdir)/gwidgetP.h $(srcdir)/gxdrawP.h $(srcdir)/fontP.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	-rm -f *.o ../libs/libgdraw.a
+
+distclean cleaner:
+	-rm -f *.o ../libs/libgdraw.a Makefile

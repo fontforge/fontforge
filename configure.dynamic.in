@@ -1,0 +1,1128 @@
+dnl Process this file with autoconf to produce a configure script.
+
+orig_args="$*"
+
+AC_INIT(fontforge/fontforge.h)
+AC_CONFIG_HEADERS([inc/config.h])
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_DISABLE_STATIC
+AC_ENABLE_SHARED
+AC_CANONICAL_HOST
+AC_SUBST(HOST)
+AC_SUBST(MACAPP)
+HOST="$host"
+
+AC_C_CONST
+AC_PATH_XTRA
+AC_SUBST(X_11LIB)
+AC_SUBST(GDRAW_LIB)
+AC_SUBST(exeOBJECTS)
+AC_SUBST(LINK_WITH_GDRAW)
+X_11LIB=-lX11
+GDRAW_LIB=libgdraw
+exeOBJECTS=fontforge_UIOBJECTS
+LINK_WITH_GDRAW=../libgdraw.la
+if test "$no_x" = "yes"; then
+ X_11LIB=
+ GDRAW_LIB=
+ exeOBJECTS=fontforge_SCRIPTOBJ
+ LINK_WITH_GDRAW=
+ MACAPP=
+
+else
+ dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
+ dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
+ dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
+
+ AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
+ AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm ) 
+fi
+
+gww_define_caps_for_alt="dontknow"
+gww_nodynamic="no"
+gww_needsstatic="no"
+gww_ismac="no"
+gww_iscygwin="no"
+gww_needsstaticimages="no"
+gww_rpath=""
+gww_archlist=""
+AC_ARG_WITH(static-imagelibs,
+ [  --with-static-imagelibs   Control whether to try using static image libaries],
+ [
+   if test "$withval" \!= "no" ; then
+     gww_needsstaticimages="yes"
+   fi
+   dnl Mac doesn't ship with image libraries, so my builds should include
+   dnl static versions, else users won't have them.
+
+ ])
+
+oldCPPFLAGS="$CPPFLAGS"
+gww_extraincludes=""
+oldLDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
+
+case "$host" in
+*-apple-darwin*)
+ gww_ismac="yes"
+ AC_DEFINE(_CursorsMustBe16x16)
+ AC_DEFINE(_Keyboard,1)
+ AC_DEFINE(__Mac,1)
+ MACAPP=FontForge.app/Contents/Info.plist
+ gww_define_caps_for_alt="1"
+ if test "$no_x" = "yes"; then
+  MACAPP=""
+ fi
+
+dnl fink puts stuff under /sw
+dnl macports puts stuff under /opt/local
+dnl but when macport/fink overwrite a standard lib, I still want the standard
+dnl  library to be found (otherwise only portable to machines with macports/fink)
+
+ if test "$CPPFLAGS" \!= "" >/dev/null ; then
+  TrustUser="yes"
+ elif test -d /sw/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I /sw/include"
+  gww_extraincludes="/sw/include"
+ elif test -d /opt/local/include >/dev/null ; then
+  CPPFLAGS="$CPPFLAGS -I /opt/local/include"
+  gww_extraincludes="/opt/local/include";
+ fi
+ if test "$oldLDFLAGS" \!= "" >/dev/null ; then
+  TrustUser="yes"
+ elif test -d /sw/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/sw/lib"
+  gww_rpath="-rpath /sw/lib"
+ elif test -d /opt/local/lib >/dev/null ; then
+  LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  gww_rpath="-rpath /opt/local/lib"
+ fi
+ LIBS="-Wl,/System/Library/Frameworks/Carbon.framework/Carbon $LIBS"
+ LIBS="-Wl,/System/Library/Frameworks/CoreServices.framework/CoreServices $LIBS"
+ dnl I would like to be able to just leave the framework as a filename. But
+ dnl if I do that, libtool eats it and gcc doesn't get it and ld doesn't get
+ dnl it and we get undefined symbols.
+
+ ;;
+powerpc-*-*linux*)
+ AC_DEFINE(_Keyboard,3)
+ ;;
+*sparc*)
+ AC_DEFINE(_Keyboard,2)
+ ;;
+*-pc-cygwin*)
+
+ AC_DEFINE(_BrokenBitmapImages)
+ AC_DEFINE(_ModKeysAutoRepeat)
+ AC_DEFINE(__CygWin,1)
+ gww_iscygwin="yes"
+
+dnl Although present on my cygwin system the Xi library does not load
+dnl and crashes gdb if we attempt to use it.
+
+ AC_DEFINE(_NO_XINPUT)
+
+dnl on cygwin the file we dlopen is not the expected filename. We must
+dnl search for a libtool .la file (libpng.la for example) to tell us
+dnl what name we should dlopen. Sadly cygwin doesn't always provide
+dnl these => we must link statically, or load at start up.
+
+dnl so provide a simplistic function to check for the .la file
+dnl AC_CHECK_LIB_LA(lib-name, action-if-found, action-if-missing)
+
+AC_DEFUN([AC_CHECK_LIB_LA],
+ [
+  AC_CHECK_FILE(/lib/lib$1.la,[$2],[
+   AC_CHECK_FILE(/usr/lib/lib$1.la,[$2],[
+    AC_CHECK_FILE(/usr/local/lib/lib$1.la,[$2],[
+     AC_CHECK_FILE(/usr/X11R6/lib/lib$1.la,[$2],[$3])])])])
+ ])
+
+ ;;
+esac
+
+AC_C_BIGENDIAN()
+
+LT_INIT
+
+AC_ARG_ENABLE(arch-i386,
+ [  --enable-arch-i386   (Mac only) build for i386 machines],
+ [
+   if test "$enableval" \!= "no" ; then
+     gww_archlist="$gww_archlist -arch i386"
+   fi
+
+ ])
+
+AC_ARG_ENABLE(arch-x86_64,
+ [  --enable-arch-x86_64   (Mac only) build for 64bit x86 machines],
+ [
+   if test "$enableval" \!= "no" ; then
+     gww_archlist="$gww_archlist -arch x86_64"
+   fi
+
+ ])
+
+AC_ARG_ENABLE(arch-ppc,
+ [  --enable-arch-ppc   (Mac only) build for PPC machines],
+ [
+   if test "$enableval" \!= "no" ; then
+     gww_archlist="$gww_archlist -arch ppc"
+   fi
+
+ ])
+
+AC_ARG_WITH(capslock-for-alt,
+ [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
+ [
+   if test "$withval" \!= "2" ; then
+     gww_define_caps_for_alt="2"
+   elif test "$withval" \!= "no" ; then
+     gww_define_caps_for_alt="1"
+   else
+     gww_define_caps_for_alt="0"
+   fi
+ ])
+if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
+  AC_DEFINE_UNQUOTED(FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT,$gww_define_caps_for_alt)
+fi
+
+AC_ARG_ENABLE(debug-raw-points,
+ [  --enable-debug-raw-points   Add a raw mode to the points window of the debugger],
+ [
+   if test "$enableval" \!= "no" ; then
+     AC_DEFINE(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
+   fi
+
+ ])
+
+dnl One user seems to have messed up iconv on his system and can't get it
+dnl to work.
+
+gww_uselessiconv="no"
+AC_ARG_WITH(iconv,
+ [  --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead],
+ [
+   if test "$withval" = "no" ; then
+     gww_uselessiconv="yes"
+   fi
+ ])
+
+AC_SUBST(FF_EXTRA_FILES)
+
+AC_SEARCH_LIBS(dlopen, dl) dnl some systems have this in libc (Darwin uses dyld)
+AC_SEARCH_LIBS(inet_aton, resolv) dnl some systems have this in libc
+if test "$gww_uselessiconv" = "no" ; then
+# on some systems "iconv()" lives in libc. On others it lives in libiconv
+#  on older systems "libiconv()" lives in libiconv
+ AC_SEARCH_LIBS(iconv, iconv,,
+   AC_SEARCH_LIBS(libiconv, iconv,,gww_uselessiconv="yes"))
+fi
+
+python="yes"
+python_prog="python"
+AC_ARG_WITH(python,
+ [  --without-python   Don't include a python interpreter],
+ [
+    if test "$withval" = "no" >/dev/null 2>&1 ; then
+	python="no"
+    elif test "$withval" != "yes" >/dev/null 2>&1 ; then
+        python_prog="$withval"
+    fi
+ ], : )
+if test "$python" = "yes" ; then
+ # python thinks it knows where to find its headers and library.
+ # unfortunately on all my build systems that idea is incorrect.
+ # So we allow the user to specify the location manually. We
+ # ask python where it thinks things are, and we check some standard
+ # places.
+ py_headers=""
+ py_lib=""
+ AC_ARG_WITH(python-headers,
+  [  --with-python-headers   Specify the directory containing the python headers],
+  [
+     if test "$withval" != "no" >/dev/null 2>&1 ; then
+	  py_headers="$withval"
+	  if test "$py_headers" != "" -a \! -e "$py_headers" ; then
+	    py_headers=""
+	  fi
+      fi
+   ], : )
+ AC_ARG_WITH(python-lib,
+  [  --with-python-lib   Specify the python shared library],
+  [
+     if test "$withval" != "no" -a "$withval" != "yes" -a "$withval" != "" >/dev/null 2>&1 ; then
+	  py_lib="$withval"
+      fi
+   ], : )
+  echo -n "Checking for python..."
+  if $python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('VERSION'))" ; then
+    PyVersion=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('VERSION'))"`
+    PyMajorVersion=`echo $PyVersion |sed -e 's/\..*//'`
+    PySubVersion=`echo $PyVersion |sed -e 's/2\.//' -e 's/3\.//'`
+    PyName="python$PyVersion"
+    if test "$PySubVersion" = "" ; then
+      python="no"
+    elif test "$PyMajorVersion" -le 2 -a "$PySubVersion" -le 2 ; then
+      python="no"
+      echo $ECHO_N "(need at least python 2.3) $ECHO_C" >&6
+    else
+      PyInc=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('INCLUDEPY'))"`
+      if test "$py_headers" != "" -a -e "$py_headers" ; then
+	CPPFLAGS="$CPPFLAGS -I$py_headers"
+      elif test "$PyInc" != "" -a -e "$PyInc" ; then
+	CPPFLAGS="$CPPFLAGS -I$PyInc"
+      elif test -d /usr/include/$PyName ; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
+      elif test -d /usr/include/python ; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/python"
+      else
+	python="no"
+      fi
+      PyLib=`$python_prog -c "import distutils.sysconfig ; print(distutils.sysconfig.get_config_var('LIBPL') + '/' + distutils.sysconfig.get_config_var('LDLIBRARY'))"`
+      if test "$py_lib" != "" ; then
+        LIBS="$LIBS $py_lib"
+      elif test "$PyLib" != "" -a -e "$PyLib" ; then
+        LIBS="$LIBS $PyLib"
+      else
+	AC_SEARCH_LIBS(Py_Main, $PyName python, : , python="no")
+      fi
+    fi
+  else
+    python="no"
+  fi
+  echo $python
+fi
+
+gww_dopy=no
+gww_fflib=yes
+AC_ARG_ENABLE(libff,
+  AC_HELP_STRING(--enable-libff, disable/enable building shared fontforge library),
+[
+  case $enableval in
+   no)
+    gww_fflib=no
+   ;;
+  esac
+])
+if test "$python" = "no" ; then
+  AC_DEFINE(_NO_PYTHON)
+fi
+AC_DEFINE_UNQUOTED(PYTHON_LIB_NAME,"python$PyVersion")
+
+AC_ARG_ENABLE(pyextension,
+  AC_HELP_STRING(--enable-pyextension, disable/enable installing libfontforge as a python extension plugin),
+[
+  case $enableval in
+   yes)
+    if test "$gww_fflib" != "yes" -o "$python" = "no" ; then
+      echo FAILED --enable-pyextension requires that python be available and
+      echo "   " that libfontforge be built "(--enable-libff)"
+    else
+      gww_dopy=yes
+    fi
+   ;;
+  esac
+])
+
+AC_SUBST(FINAL_TARGET)
+AC_SUBST(O_EXTENSION)
+if test "$gww_fflib" = "no" ; then
+  FINAL_TARGET=fontforge
+  O_EXTENSION=o
+else
+  FINAL_TARGET=../libfontforge.la
+  O_EXTENSION=lo
+fi
+
+ffscript="yes"
+AC_ARG_WITH(native-script,
+ [  --without-native-script   Don't include a legacy fontforge scripting interpreter],
+ [
+    if test "$withval" = "no" >/dev/null 2>&1 ; then
+	ffscript="no"
+    fi
+ ], : )
+if test "$ffscript" = "no" ; then
+  AC_DEFINE(_NO_FFSCRIPT)
+fi
+
+AC_CHECK_FUNC(tzset,:,AC_DEFINE(_NO_TZSET))
+
+dnl Is there a better way to add a directory to the include path?
+
+FreeType2_IncRoot=
+if sh -c "freetype-config --prefix" >/dev/null 2>&1 ; then
+ FreeType2_IncRoot=`freetype-config --prefix`
+ AC_CHECK_FILE($FreeType2_IncRoot/include/freetype2,CFLAGS="$CFLAGS -I$FreeType2_IncRoot/include/freetype2/",FreeType2_IncRoot=)
+ ft_flags=`freetype-config --cflags`
+ CFLAGS="$CFLAGS $ft_flags"
+fi
+
+if test "$FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
+ AC_CHECK_FILE(/usr/include/freetype2,[CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+     FreeType2_IncRoot="/usr"
+ ],[
+ AC_CHECK_FILE(/usr/local/include/freetype2,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/freetype2/"
+     FreeType2_IncRoot="/usr/local/"
+ ],[
+ AC_CHECK_FILE(/usr/X11R6/include/freetype2,[CFLAGS="$CFLAGS -I/usr/X11R6/include -I/usr/X11R6/include/freetype2/"
+     FreeType2_IncRoot="/usr/X11R6/"
+ ],AC_DEFINE(_NO_FREETYPE))])])
+fi
+
+AC_CHECK_FILE(/usr/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/include/libxml2/"],[
+ AC_CHECK_FILE(/usr/local/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/libxml2/"],
+  AC_DEFINE(_NO_LIBXML))])
+
+dnl Some old versions of lib(un)gif don't work for us, they've got the
+dnl Function argument in the wrong place. So check the header files.
+dnl check for both libgif and libungif, I think they use the same args.
+
+AC_CHECK_LIB(gif, DGifOpenFileName, [
+echo -n checking for ExtensionBlock.Function in gif_lib.h...
+AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
+    ac_cv_lib_ungif_DGifOpenFileName=no
+    AC_DEFINE(_NO_LIBUNGIF)])
+] , [
+  AC_CHECK_LIB(ungif, DGifOpenFileName, [
+  echo -n checking for ExtensionBlock.Function in gif_lib.h...
+  AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
+      ac_cv_lib_ungif_DGifOpenFileName=no
+      AC_DEFINE(_NO_LIBUNGIF)])
+  ] , AC_DEFINE(_NO_LIBUNGIF))])
+
+dnl some people have installed libraries without include files.
+dnl bloody useless thing to do, but check for both (don't need to check for
+dnl zlib.h because we never use it directly, only used inside libpng)
+
+AC_CHECK_LIB(z, deflateEnd, : ,AC_DEFINE(_NO_LIBPNG), -lm) 
+AC_CHECK_LIB(png16, png_create_read_struct, AC_DEFINE(_LIBPNG16),[
+AC_CHECK_LIB(png15, png_create_read_struct, AC_DEFINE(_LIBPNG15),[
+ AC_CHECK_LIB(png14, png_create_read_struct, AC_DEFINE(_LIBPNG14),[
+  AC_CHECK_LIB(png12, png_create_read_struct, AC_DEFINE(_LIBPNG12),[
+   AC_CHECK_LIB(png, png_create_read_struct, : ,
+      AC_DEFINE(_NO_LIBPNG), -lz -lm)], -lz -lm)], -lz -lm)], -lz -lm)], -lz -lm)
+AC_CHECK_HEADER(png.h, : , AC_DEFINE(_NO_LIBPNG))
+AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG)) 
+AC_CHECK_HEADER(jpeglib.h, : , AC_DEFINE(_NO_LIBJPEG))
+AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
+AC_CHECK_HEADER(tiffio.h, : , AC_DEFINE(_NO_LIBTIFF))
+AC_CHECK_LIB(spiro, TaggedSpiroCPsToBezier, :  ,AC_DEFINE(_NO_LIBSPIRO)) 
+AC_CHECK_HEADER(spiroentrypoints.h, : , AC_DEFINE(_NO_LIBSPIRO))
+case "$host" in
+*-pc-cygwin*)
+ AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML), [-liconv -lz])
+ ;;
+*)
+ AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML))
+ ;;
+esac
+
+if test "$gww_uselessiconv" = "no" ; then
+ AC_CHECK_HEADERS([iconv.h])
+fi
+AC_CHECK_HEADERS([langinfo.h])
+
+dnl linux has isnan in math.h, solaris puts it in ieeeefp.h
+
+AC_CHECK_HEADERS([ieeefp.h])
+
+dnl linux has integer types in stdint.h, solaris, vms in inttypes.h
+
+AC_CHECK_HEADERS([stdint.h])
+
+dnl Do we have libcairo
+
+gww_hascairo="no"
+gww_checkcairo="yes"
+AC_ARG_WITH(cairo,
+ [  --without-cairo   Don't use libcairo],
+ [
+   if test "$withval" = "no" ; then
+     gww_checkcairo="no"
+   fi
+ ], : )
+if test "$gww_checkcairo" = "yes" ; then
+  gww_CFLAGS=$CFLAGS
+  gww_LDFLAGS=$LDFLAGS
+  CFLAGS="$CFLAGS $X_CFLAGS"
+  LDFLAGS="$X_LIBS $LDFLAGS"
+  AC_CHECK_HEADER(fontconfig/fontconfig.h, [
+   AC_CHECK_LIB(fontconfig, FcConfigCreate, [
+    AC_CHECK_LIB(cairo, cairo_set_scaled_font, gww_hascairo="yes" )])])
+#I used to check for cairo_xlib_surface_create, but that's in version 1.0 too
+# cairo_set_scaled_font is not in 1.0 (fontforge needs at least 1.2)
+  CFLAGS=$gww_CFLAGS
+  LDFLAGS=$gww_LDFLAGS
+fi
+if test "$gww_hascairo" = "yes" ; then
+  gww_hascairo="no"
+  for gww_prefix in /usr /usr/local /sw /opt/local /usr/X11R6/
+  do
+    if test -e $gww_prefix/include/cairo/cairo.h ; then
+      CFLAGS="$CFLAGS -I$gww_prefix/include/cairo"
+      gww_hascairo="yes"
+  break
+    fi
+  done
+fi
+if test "$gww_hascairo" = "no" ; then
+ AC_DEFINE(_NO_LIBCAIRO)
+fi
+
+dnl Do we have libpango
+
+gww_haspango="no"
+gww_haspangocairo="no"
+gww_checkpango="yes"
+gww_has_pkg_config="yes"
+AC_ARG_WITH(pango,
+ [  --without-pango   Don't use libpango],
+ [
+   if test "$withval" = "no" ; then
+     gww_checkpango="no"
+   fi
+ ], : )
+if test "$gww_checkpango" = "yes" ; then
+ pan_headers=""
+ pan_lib=""
+ AC_ARG_WITH(pango-headers,
+  [  --with-pango-headers=dirs   Specify the CPPFLAGS needed to compile pango],
+  [
+     if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
+	  pan_headers="$withval"
+	  CFLAGS="$CFLAGS $pan_headers"
+      fi
+   ], : )
+ AC_ARG_WITH(pango-lib,
+  [  --with-pango-lib   Specify LDFLAGS needed to link with pango],
+  [
+     if test "$withval" != "no" -a "$withval" != "yes" >/dev/null 2>&1 ; then
+	  pan_lib="$withval"
+	  LDFLAGS="$LDFLAGS $pan_libs"
+      fi
+   ], : )
+  if test "$pan_headers" != "" > /dev/null 2>&1 ; then
+    gww_haspango="done"
+  elif pkg-config --libs pangoxft > /dev/null 2>&1 ; then
+    gww_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $X_CFLAGS"
+    AC_CHECK_HEADER(X11/Xft/Xft.h, gww_haspango="yes",,[#include <ft2build.h>])
+    CFLAGS="$gww_CFLAGS"
+  else
+    for gww_prefix in /usr /usr/local /sw /opt/local
+    do
+      if test -d $gww_prefix/include/pango-1.0/pango -a -d $gww_prefix/include/glib-2.0 -a -d $gww_prefix/lib/glib-2.0/include ; then
+        CFLAGS="$CFLAGS -I$gww_prefix/include/pango-1.0 -I$gww_prefix/include/glib-2.0 -I$gww_prefix/lib/glib-2.0/include"
+        gww_haspango="done"
+    break
+      fi
+    done
+  fi
+fi
+if test "$gww_haspango" = "yes" ; then
+ CFLAGS="$CFLAGS `pkg-config --cflags pangoxft`"
+fi
+if test "$gww_haspango" = "yes" -a "$gww_hascairo" = "yes" ; then
+  if pkg-config --libs pangocairo > /dev/null 2>&1 ; then
+    gww_haspangocairo="yes"
+    CFLAGS="$CFLAGS `pkg-config --cflags pangocairo`"
+  fi
+fi
+if test "$gww_haspango" = "no" ; then
+  gww_haspangocairo="no"
+  AC_DEFINE(_NO_LIBPANGO)
+elif test "$gww_haspango" = "done" ; then
+ gww_haspango="yes"
+fi
+
+AC_ARG_ENABLE(macapp,
+  [  --disable-macapp   Do not build a mac Application (only for macs)],
+  [
+    if test "$enableval" = "no" >/dev/null 2>&1 ; then
+       MACAPP=
+    fi
+  ])
+
+
+dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard search path
+
+gww_use_freetype="yes"
+gww_hasbytecode="no"
+AC_ARG_ENABLE(freetype,
+  [  --disable-freetype   Control whether we build with freetype],
+  [
+    if test "$enableval" = "no" >/dev/null 2>&1 ; then
+       AC_DEFINE(_NO_FREETYPE)
+       gww_use_freetype="no"
+    fi
+  ])
+  
+if test "$gww_use_freetype" != "no" >/dev/null 2>&1 ; then
+ AC_CHECK_LIB(freetype, FT_New_Memory_Face, : , [
+  gww_save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/usr/X11/lib"
+  dnl Avoid configure's cache.
+
+  unset ac_cv_lib_freetype_FT_New_Memory_Face
+  echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
+  AC_CHECK_LIB(freetype, FT_New_Memory_Face,[
+    gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
+   ] , [
+    LDFLAGS=$gww_save_LDFLAGS
+    AC_DEFINE(_NO_FREETYPE)
+   ])
+ ])
+
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
+  AC_ARG_WITH(freetype-bytecode,
+   [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
+   [
+      gww_hasbytecode="$withval"
+   ],
+   [
+     echo checking for bytecode interpreter in freetype...
+     AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )
+   ])
+ fi
+fi
+
+# Used for ftp and the freetype bytecode debugger
+AC_CHECK_LIB(pthread, pthread_create,
+  [
+    LIBS="$LIBS -lpthread"
+    AC_CHECK_HEADERS([pthread.h], : , gww_hasbytecode="no")
+  ] ,
+  [
+    gww_hasbytecode="no"
+  ])
+
+if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
+ gww_hasbytecode="no"
+ AC_ARG_WITH(freetype-src,
+ [  --with-freetype-src=dir   Specify freetype source directory],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	FreeType2_TT_BUILD_INC="$withval/src/truetype"
+#	if test "${FreeType2_TT_BUILD_INC:0:1}" != "/" ; then
+	if test `echo ${FreeType2_TT_BUILD_INC} | sed 's/\(.\).*/\1/'` != "/" ; then
+		FreeType2_TT_BUILD_INC=`pwd`/$FreeType2_TT_BUILD_INC
+	fi
+	AC_MSG_CHECKING(for valid freetype tree)
+	if test -f "$FreeType2_TT_BUILD_INC/ttobjs.h"; then
+		AC_MSG_RESULT(ok)
+	else
+		AC_MSG_RESULT(missing ttobjs.h)
+		echo "Unable to find $FreeType2_TT_BUILD_INC/ttobjs.h"
+	fi
+    fi
+ ],
+ [
+	dnl guess directory
+	AC_MSG_CHECKING(trying to find the freetype source directory -- be patient)
+	  FreeType2_TT_SRC_DIRs=`find / -name ttobjs.h -print 2>/dev/null |grep '[freetype[^/\]*2[^/\]*/src/truetype/ttobjs.h]' | sort -r | sed -e 's/ttobjs.h//'`
+	  for dir in $FreeType2_TT_SRC_DIRs; do
+	   if cmp -s ${dir}../../include/freetype/freetype.h ${FreeType2_IncRoot}/freetype/freetype.h >/dev/null 2>&1 ; then
+	    FreeType2_TT_BUILD_INC=$dir
+	  break
+	   fi
+	  done
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   for dir in $FreeType2_TT_SRC_DIRs; do
+	    has_goodft2sources="no"
+	    FreeType2_TT_BUILD_INC=$dir
+	   break
+	   done
+	  fi
+	  if test "$FreeType2_TT_BUILD_INC" = "" >/dev/null 2>&1 ; then
+	   echo " " no
+	  else
+	   echo " " probably
+	  fi
+ ])
+ if test "$FreeType2_TT_BUILD_INC" \!= "" >/dev/null 2>&1 ; then
+  if test -f $FreeType2_TT_BUILD_INC/ttdriver.h >/dev/null 2>&1 ; then
+   CFLAGS="$CFLAGS -I$FreeType2_TT_BUILD_INC -I$FreeType2_TT_BUILD_INC/../../include -I$FreeType2_TT_BUILD_INC/../../include/freetype"
+   gww_hasbytecode="yes"
+   AC_DEFINE(FREETYPE_HAS_DEBUGGER)
+  fi
+ fi
+fi
+
+dnl older libc's don't have snprintf
+
+AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
+
+AC_C_LONG_DOUBLE
+echo -n checking for long long ...
+AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
+    echo " " yes] , echo " " no )
+
+dnl mac's don't have gettext, people have to use fink to install it
+dnl used to check for gettext here, but we require a version with b_t_c
+dnl and not all libintls have that. So check for it instead.
+dnl sometimes it lives in libc so we can't dlopen it
+
+gww_has_gettext="yes"
+AC_LINK_IFELSE([AC_LANG_CALL([],[bind_textdomain_codeset])], AC_DEFINE(_STATIC_LIBINTL) , [
+  AC_CHECK_LIB(intl, bind_textdomain_codeset,LIBS="$LIBS -lintl" ,gww_has_gettext="no" )])
+if test $gww_has_gettext = yes >/dev/null ; then
+ AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
+fi
+
+gww_regular_link="no"
+AC_ARG_WITH(regular-link,
+ [  --with-regular-link   Don't try to dlopen libraries],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	gww_regular_link="yes"
+	AC_DEFINE(NODYNAMIC)
+	gww_rpath=""
+	if test "$gww_extraincludes" != "" ; then
+	 CPPFLAGS=`echo $CPPFLAGS | sed -e "s%-idirafter $gww_extraincludes%%"`
+	 CPPFLAGS="$CPPFLAGS -I$gww_extraincludes"
+	fi
+    fi
+ ], : )
+
+dnl If we can't/don't want to use dynamic libraries then we must link with
+dnl the static libraries we've found
+
+AC_SUBST(STATIC_LIBS)
+STATIC_LIBS=
+if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
+ if test "$gww_needsstatic" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -static"
+ fi
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lungif"
+ fi
+ if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lgif"
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng -lz"
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
+ fi
+ if test "$ac_cv_lib_png14_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng14 -lz"
+ fi
+ if test "$ac_cv_lib_png15_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng15 -lz"
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ltiff"
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ljpeg"
+ fi
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lfreetype"
+ fi
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lxml2"
+ fi
+ if test "$ac_cv_lib_intl_bind_textdomain_codeset" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lintl"
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+ fi
+ AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
+   STATIC_LIBS="$STATIC_LIBS -luninameslist"
+   AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
+ if test "$gww_hascairo" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS -lcairo -lfontconfig"
+ fi
+ if test "$gww_haspango" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
+ fi
+fi
+
+if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
+ if test "$gww_needsstatic" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -static"
+ fi
+ if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lgif"
+  AC_DEFINE(_STATIC_LIBUNGIF)
+ fi
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lungif"
+  AC_DEFINE(_STATIC_LIBUNGIF)
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng12 -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
+ fi
+ if test "$ac_cv_lib_png14_png_create_read_struct" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lpng14 -lz"
+  AC_DEFINE(_STATIC_LIBPNG)
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ltiff"
+  AC_DEFINE(_STATIC_LIBTIFF)
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -ljpeg"
+  AC_DEFINE(_STATIC_LIBJPEG)
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+  AC_DEFINE(_STATIC_LIBSPIRO)
+ fi
+ if test "$gww_hascairo" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS -lcairo"
+  AC_DEFINE(_STATIC_LIBCAIRO)
+  X_PRE_LIBS="$X_PRE_LIBS -lfontconfig"
+  AC_DEFINE(_STATIC_LIBFONTCONFIG)
+ fi
+ if test "$gww_haspango" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
+  AC_DEFINE(_STATIC_LIBPANGO)
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
+ fi
+fi
+if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \
+    "$gww_needsstaticimages" != "yes" ; then
+case "$host" in
+*-pc-cygwin*)
+ if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
+  AC_CHECK_LIB_LA(ungif, :, [ STATIC_LIBS="$STATIC_LIBS -lungif" ; AC_DEFINE(_STATIC_LIBUNGIF)])
+ fi
+ if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png, :, [ STATIC_LIBS="$STATIC_LIBS -lpng -lz" ; AC_DEFINE(_STATIC_LIBPNG)])
+ fi
+ if test "$ac_cv_lib_png12_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png12, :, [ STATIC_LIBS="$STATIC_LIBS -lpng12 -lz" ; AC_DEFINE(_STATIC_LIBPNG12)])
+ fi
+ if test "$ac_cv_lib_png14_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png14, :, [ STATIC_LIBS="$STATIC_LIBS -lpng14 -lz" ; AC_DEFINE(_STATIC_LIBPNG14)])
+ fi
+ if test "$ac_cv_lib_png15_png_create_read_struct" = "yes"; then
+  AC_CHECK_LIB_LA(png15, :, [ STATIC_LIBS="$STATIC_LIBS -lpng15 -lz" ; AC_DEFINE(_STATIC_LIBPNG15)])
+ fi
+ if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
+  AC_CHECK_LIB_LA(tiff, :, [ STATIC_LIBS="$STATIC_LIBS -ltiff" ; AC_DEFINE(_STATIC_LIBTIFF)])
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  AC_CHECK_LIB_LA(spiro, :, [ STATIC_LIBS="$STATIC_LIBS -lspiro" ; AC_DEFINE(_STATIC_LIBSPIRO)])
+ fi
+ if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
+  AC_CHECK_LIB_LA(jpeg, :, [ STATIC_LIBS="$STATIC_LIBS -ljpeg" ; AC_DEFINE(_STATIC_LIBJPEG)])
+ fi
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes"; then
+  AC_CHECK_LIB_LA(freetype, :, [ STATIC_LIBS="$STATIC_LIBS -lfreetype" ; AC_DEFINE(_STATIC_LIBFREETYPE)])
+ fi
+ if test "$ac_cv_lib_xml2_xmlParseFile" = "yes"; then
+  AC_CHECK_LIB_LA(xml2, :, [ STATIC_LIBS="$STATIC_LIBS -lxml2" ; AC_DEFINE(_STATIC_LIBXML2)])
+ fi
+ if test "$gww_hascairo" = "yes"; then
+  AC_CHECK_LIB_LA(cairo, :, [ X_PRE_LIBS="$X_PRE_LIBS -lcairo" ; AC_DEFINE(_STATIC_LIBCAIRO)])
+  AC_CHECK_LIB_LA(fontconfig, :, [ X_PRE_LIBS="$X_PRE_LIBS -lfontconfig" ; AC_DEFINE(_STATIC_LIBFONTCONFIG)])
+ fi
+ if test "$gww_haspango" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangoxft` -lXft"
+  AC_DEFINE(_STATIC_LIBPANGO)
+ fi
+ if test "$gww_haspangocairo" = "yes"; then
+  X_PRE_LIBS="$X_PRE_LIBS `pkg-config --libs pangocairo`"
+ fi
+ ;;
+esac
+fi
+
+AC_ARG_ENABLE(type3,
+ [  --enable-type3   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.],
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
+    fi
+ ], : )
+AC_ARG_ENABLE(multilayer,
+ [  --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)],
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
+    fi
+ ], : )
+
+AC_ARG_ENABLE(devicetables,
+ AS_HELP_STRING([--enable-devicetables], [Control whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES)
+    fi
+ ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
+
+AC_ARG_ENABLE(double,
+ AS_HELP_STRING([--enable-double], [Control whether fontforge uses doubles internally (normally it uses floats)]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_USE_DOUBLE)
+    fi
+ ], : )
+AC_ARG_ENABLE(longdouble,
+ AS_HELP_STRING([--enable-longdouble], [Control whether fontforge uses long doubles internally (normally it uses floats)]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_USE_LONGDOUBLE)
+    fi
+ ], : )
+AC_ARG_ENABLE(pasteafter,
+ AS_HELP_STRING([--enable-pasteafter], [Control whether fontforge has a paste after command (Useful for making words?)]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_PASTEAFTER)
+    fi
+ ], : )
+AC_ARG_ENABLE(gb12345,
+ AS_HELP_STRING([--enable-gb12345], [Control whether fontforge understands the gb12345 encoding]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_GB12345)
+    fi
+ ], : )
+AC_ARG_ENABLE(tilepath,
+ AS_HELP_STRING([--enable-tilepath], [Control whether fontforge has a tile path command (a variant of expand stroke)]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_TILEPATH)
+    fi
+ ], : )
+
+test -d libs || mkdir libs
+
+AC_SUBST(WFLAGS)
+if test "$GCC" = yes; then
+  WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
+else
+  WFLAGS=""
+fi
+
+dnl LIBS="$LIBS $gww_rpath"
+dnl The above causes problems when creating shared libraries. The rpath option
+dnl is overloaded. When creating an executable it means directories to search
+dnl for shared libraries (at load time). When creating a shared library it means
+dnl the ultimate location of the library. There doesn't seem to be a way of
+dnl saying where to look for other libraries linked into this one. Which is
+dnl a pity.
+
+dnl Build a $ac_confdir/po/Makefile.in with appropriate instructions for installing all locales
+
+MACKEYS=
+if ! msgfmt --help >/dev/null 2>&1 ; then
+  dnl even if the library is installed, the executables might not be. Or might
+  dnl  not be in the PATH.
+
+  gww_has_gettext="no";
+fi
+if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
+ if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+  mofiles="$(cd $ac_confdir/po/mackeys && ls *.po | sed -e 's#\.po#\.mo#g')"
+
+  cat </dev/null >$ac_confdir/po/mackeys/Makefile.in
+  echo 'prefix = @prefix@' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'localedir = $(prefix)/share/locale' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'INSTALL = @INSTALL@' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'INSTALL_DATA = @INSTALL_DATA@' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo "MOFILES =" $mofiles >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '.SUFFIXES:' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '.SUFFIXES: .po .mo' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'all: $(MOFILES)' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '.po.mo:' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '	msgfmt -o $@ $<' >> $ac_confdir/po/mackeys/Makefile.in
+  echo '' >> $ac_confdir/po/mackeys/Makefile.in
+  echo 'install:' >> $ac_confdir/po/mackeys/Makefile.in
+
+  for localefile in $mofiles; do
+    locale="${localefile%%.mo}"
+    echo '	mkdir -p $(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES'       >> $ac_confdir/po/mackeys/Makefile.in
+    echo '	$(INSTALL_DATA)' $localefile '$(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES/Mac-FontForge-MenuShortCuts.mo'       >> $ac_confdir/po/mackeys/Makefile.in
+  done
+  MACKEYS=po/mackeys/Makefile
+ fi
+ mofiles="$(cd $ac_confdir/po && ls *.po | sed -e 's#\.po#\.mo#g')"
+
+ cat </dev/null >$ac_confdir/po/Makefile.in
+ echo 'prefix = @prefix@' >> $ac_confdir/po/Makefile.in
+ echo 'localedir = $(prefix)/share/locale' >> $ac_confdir/po/Makefile.in
+ echo 'INSTALL = @INSTALL@' >> $ac_confdir/po/Makefile.in
+ echo 'INSTALL_DATA = @INSTALL_DATA@' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo "MOFILES =" $mofiles >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo '.SUFFIXES:' >> $ac_confdir/po/Makefile.in
+ echo '.SUFFIXES: .po .mo' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'all: $(MOFILES)' >> $ac_confdir/po/Makefile.in
+ if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+  echo '	cd mackeys ; make all'  >> $ac_confdir/po/Makefile.in
+ fi
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo '.po.mo:' >> $ac_confdir/po/Makefile.in
+ echo '	msgfmt -o $@ $<' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'install:' >> $ac_confdir/po/Makefile.in
+
+  for localefile in $mofiles; do
+    locale="${localefile%%.mo}"
+    echo '	mkdir -p $(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES'       >> $ac_confdir/po/Makefile.in
+    echo '	$(INSTALL_DATA)' $localefile '$(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo'       >> $ac_confdir/po/Makefile.in
+  done
+ if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+  echo '	cd mackeys ; make install'  >> $ac_confdir/po/Makefile.in
+ fi
+else
+ cat </dev/null >$ac_confdir/po/Makefile.in
+ echo 'all:' >> $ac_confdir/po/Makefile.in
+ echo '	' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'install:' >> $ac_confdir/po/Makefile.in
+ echo '	' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+fi
+
+dnl end code for locale files.
+
+AC_SUBST(VERSION)
+VERSION=`cat $ac_confdir/VERSION`
+
+if test "x$prefix" != xNONE; then
+  real_prefix="$prefix"
+else
+  real_prefix="$ac_default_prefix"
+fi
+
+PY=
+if test "$gww_dopy" = "yes" >/dev/null 2>&1 ; then
+  AC_SUBST(PYINCLUDE)
+  AC_SUBST(PYPREFIX)
+  AC_SUBST(PYDEFINES)
+  AC_SUBST(PYLIBS)
+  PYINCLUDE=
+  PYPREFIX="$real_prefix"
+  PYDEFINES="('PREFIX','\"$real_prefix\"')"
+  if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+    PYDEFINES="$PYDEFINES, ('__Mac','1')"
+  elif test "$gww_iscygwin" = "yes" >/dev/null 2>&1 ; then
+    PYDEFINES="$PYDEFINES, ('__CygWin','1')"
+  fi
+  if test "$ac_cv_lib_dl_dlopen" = "yes" >/dev/null 2>&1 ; then
+    PYLIBS="'dl'"
+  else
+    PYLIBS=""
+  fi
+  PY=pyhook/setup.py
+fi
+
+GTFF=
+if test -e gtkui/Makefile.in -a \( -e /usr/include/gtk-2.0/gtk/gtk.h -o -e /sw/include/gtk-2.0/gtk/gtk.h \) ; then
+  GTFF=gtkui/Makefile
+fi
+
+if test "$gww_archlist" != "" ; then
+  CFLAGS="$CFLAGS $gww_archlist"
+  LDFLAGS="$LDFLAGS $gww_archlist"
+fi
+AC_SUBST(CFLAGS_NOOPT)
+CFLAGS_NOOPT=`echo $CFLAGS | sed -e s/-O.//g | sed -e s/-O//g`
+
+cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
+cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
+cp $ac_confdir/gutils/Makefile.dynamic.in $ac_confdir/gutils/Makefile.in
+cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
+cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
+UMAP=
+if test -e umap >/dev/null 2>&1 ; then
+  cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
+  UMAP=umap/Makefile
+fi
+AC_OUTPUT( Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY $GTFF $MACKEYS $UMAP )
+
+echo Configuration defines: $DEFS
+echo CFLAGS: $CFLAGS
+if test "$STATIC_LIBS" != ""; then
+  echo Non DlOpenable or Static Libraries: $STATIC_LIBS
+fi
+
+if ! echo $PATH | tr : \\n | grep -x $real_prefix/bin >/dev/null ; then
+ echo " *******************************************************************"
+ echo " * You do not have $real_prefix/bin in your PATH environment variable   *"
+ echo " *******************************************************************"
+ echo
+fi
+
+if test "$no_x" = "yes"; then
+ echo " *******************************************************************"
+ echo " * This version of fontforge will only run scripts. No X libraries *"
+ echo " * (or X include files or some such) were found so there is NO user*"
+ echo " * interface!!!!! If you want a UI try installing X11 on your      *"
+ echo " * system.                                                         *"
+ echo " * Caveat: You will probably need to install two packages, the     *"
+ echo " *  base X11 package and the developer SDK package                 *"
+ echo " *******************************************************************"
+ case "$host" in
+ *-apple-darwin*)
+  echo ""
+  echo "X11 is optional software on the mac, it does not install automatically"
+  echo " but X11User it is on CD 3 of the OS/X install disks, and X11SDK is on"
+  echo " the Xcode CD. You must install both packages for fontforge to build"
+  echo " with a user interface"
+  ;;
+ esac
+ echo
+fi
+if test "$gww_has_gettext" = "no"; then
+ echo " *******************************************************************"
+ echo " * Your system does not have the gettext package installed.  This  *"
+ echo " * means that fontforge cannot localize its user interface and all *"
+ echo " * messages will be in English. You might want to install libintl. *"
+ if test "$gww_ismac" = "yes"; then
+  echo " * Unfortunately Mac OS/X does not ship with gettext. You can find *"
+  echo " * it as part of the standard fink download at:                    *"
+  echo " *  http://fink.sourceforge.net/                                   *"
+  echo " * of from macports:                                               *"
+  echo " *  http://www.macports.org/                                       *"
+ fi
+ echo " *******************************************************************"
+fi
+if test "$gww_has_pkg_config" = "no"; then
+ echo "*** Your system does not have pkg-config installed, so I can't figure out"
+ echo "*** if you have pango on your machine. If you do, set --with-pango-headers"
+ echo "*** and --with-pango-lib to specify the options needed to build with pango"
+ if test "$gww_ismac" = "yes"; then
+  echo " *** Unfortunately Mac OS/X does not ship with pango. You can find"
+  echo " *** it as part of the standard fink download at:"
+  echo " ***  http://fink.sourceforge.net/"
+  echo " *** of from macports:"
+  echo " ***  http://www.macports.org/"
+ fi
+elif test "$gww_haspango" = "no"; then
+ if test "$gww_ismac" = "yes"; then
+  echo " *** Unfortunately Mac OS/X does not ship with pango. You can find"
+  echo " *** it as part of the standard fink download at:"
+  echo " ***  http://fink.sourceforge.net/"
+  echo " *** of from macports:"
+  echo " ***  http://www.macports.org/"
+ fi
+fi
+
+dnl EOF

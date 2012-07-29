@@ -1,0 +1,146 @@
+SHELL = @SHELL@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+sharedir = @prefix@/share/fontforge
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+
+bindir = @bindir@
+
+CC = @CC@
+
+X_CFLAGS = @X_CFLAGS@
+X_LIBS = @X_LIBS@
+X_11LIB = @X_11LIB@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+STATIC_LIBS = @STATIC_LIBS@
+
+fontforge_LIBOBJECTS = asmfpst.o autohint.o autosave.o autotrace.o autowidth.o \
+ bezctx_ff.o bitmapchar.o bitmapcontrol.o bvedit.o clipnoui.o crctab.o \
+ cvexport.o cvimages.o cvundoes.o dumpbdf.o dumppfa.o effects.o encoding.o \
+ featurefile.o fontviewbase.o freetype.o fvcomposite.o fvfonts.o fvimportbdf.o \
+ fvmetrics.o glyphcomp.o http.o ikarus.o lookups.o macbinary.o \
+ macenc.o mathconstants.o mm.o namelist.o nonlineartrans.o noprefs.o nouiutil.o \
+ nowakowskittfinstr.o ofl.o othersubrs.o palmfonts.o parsepdf.o parsepfa.o \
+ parsettfatt.o parsettfbmf.o parsettf.o parsettfvar.o plugins.o print.o \
+ psread.o pua.o python.o savefont.o scripting.o scstyles.o search.o \
+ sfd1.o sfd.o sflayout.o spiro.o splinechar.o splinefill.o \
+ splinefont.o splineorder2.o splineoverlap.o splinerefigure.o \
+ splinesaveafm.o splinesave.o splinestroke.o splineutil2.o splineutil.o \
+ start.o stemdb.o svg.o tottfaat.o tottfgpos.o tottf.o \
+ tottfvar.o ttfinstrs.o ttfspecial.o ufo.o unicoderange.o utils.o \
+ winfonts.o zapfnomen.o groups.o langfreq.o ftdelta.o autowidth2.o \
+ woff.o
+fontforge_UIOBJECTS = alignment.o anchorsaway.o basedlg.o \
+ bdfinfo.o bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o \
+ combinations.o contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o \
+ cvexportdlg.o cvfreehand.o cvgetinfo.o cvgridfit.o cvhand.o cvhints.o \
+ cvimportdlg.o cvknife.o cvpalettes.o cvpointer.o cvruler.o cvshapes.o \
+ cvstroke.o cvtranstools.o displayfonts.o effectsui.o encodingui.o \
+ fontinfo.o fontview.o freetypeui.o fvfontsdlg.o fvmetricsdlg.o \
+ gotodlg.o \
+ groupsdlg.o histograms.o images.o layer2layer.o kernclass.o lookupui.o \
+ macencui.o math.o metricsview.o mmdlg.o nonlineartransui.o oflib.o \
+ openfontdlg.o prefs.o problems.o pythonui.o savefontdlg.o scriptingdlg.o \
+ scstylesui.o searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o \
+ startui.o stamp.o statemachine.o tilepath.o transform.o ttfinstrsui.o \
+ uiutil.o windowmenu.o justifydlg.o deltaui.o autowidth2dlg.o
+fontforge_SCRIPTOBJ = startnoui.o stamp.o
+fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
+
+DIFFOBJS = sfddiff.o stamp.o $(fontforge_LIBOBJECTS) 
+ACORNOBJS = acorn2sfd.o stamp.o $(fontforge_LIBOBJECTS) 
+
+_CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
+    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
+    @CPPFLAGS@ '-DPREFIX="@prefix@"'
+CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
+
+LDFLAGS = @LDFLAGS@
+LIBS = -L../libs $(X_LIBS) @LINK_WITH_GDRAW@ ../libs/libgutils.a \
+    ../libs/libgunicode.a \
+    $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
+DLIBS = ../libs/libgutils.a ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
+
+all: fontforge @MACAPP@ sfddiff fontimage fontlint
+
+fontforge: $(fontforge_OBJECTS) exelibstamp.pre libstamp.pre
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/1/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/0/' < exelibstamp.pre > exelibstamp.c
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/1/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/0/' < libstamp.pre > libstamp.c
+	$(CC) $(CFLAGS) -c libstamp.c
+	$(CC) $(CFLAGS) -c exelibstamp.c
+	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) \
+	    exelibstamp.o libstamp.o \
+	    $(LIBS)
+
+FontForge.app/Contents/Info.plist: MacFontForgeApp.zip stamp.c
+	-rm -rf FontForge.app __MACOSX
+	unzip MacFontForgeApp.zip
+	cp FontForge.app/Contents/Info.plist /tmp
+	( VERSION=`grep source_version_str stamp.c |sed 's/const char \*source_version_str = "//' | sed 's/";//'` ; sed s/20080725/$$VERSION/ < /tmp/Info.plist >FontForge.app/Contents/Info.plist )
+	rm /tmp/Info.plist
+
+sfddiff: sfddiff.pe
+	echo "#!$(bindir)/fontforge -lang=ff" >sfddiff
+	cat sfddiff.pe >>sfddiff
+	chmod +x sfddiff
+
+fontimage: fontimage.pe
+	echo "#!$(bindir)/fontforge -lang=ff" >fontimage
+	cat fontimage.pe >>fontimage
+	chmod +x fontimage
+
+fontlint: fontlint.pe
+	echo "#!$(bindir)/fontforge -lang=ff" >fontlint
+	cat fontlint.pe >>fontlint
+	chmod +x fontlint
+
+sfddiff.old: $(DIFFOBJS)
+	$(LIBTOOL) --mode=link $(CC) -o sfddiff.old $(DIFFOBJS) $(DLIBS)
+
+acorn2sfd: $(ACORNOBJS)
+	$(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)
+
+# The slight error introduced occasionally by optimization turns out to have
+# disasterous effects. This file may not be compiled with the optimizer.
+# On the other hand we do need CPPFLAGS to get the right includes...
+splinerefigure.o: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
+	$(CC) -g -c -o splinerefigure.o $(_CFLAGS) $(srcdir)/splinerefigure.c
+
+%.o: %.c
+
+%.o: %.c $(srcdir)/splinefont.h $(srcdir)/views.h $(srcdir)/stemdb.h $(srcdir)/ttf.h $(srcdir)/unicoderange.h $(srcdir)/psfont.h $(srcdir)/groups.h $(srcdir)/edgelist.h $(srcdir)/edgelist2.h $(srcdir)/uiinterface.h $(srcdir)/fontforgevw.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	-rm -f fontforge sfddiff fontimage acorn2sfd fontimage fontlint exelibstamp.c libstamp.c
+	-rm -rf FontForge.app __MACOSX
+	-rm -f *.o
+	-rm -f *.lo
+	-rm -rf .libs
+
+distclean cleaner: clean
+	-rm -f Makefile
+
+FontForge-MenuShortCuts.pot: *.c
+	xgettext -kH_ -oFontForge-MenuShortCuts.pot *.c ../gdraw/*.c
+	-patch < potmstitle.patch
+
+FontForge.pot: *.c utf8.pot
+	echo "If this doesn't work try make fontforge-old.pot instead"
+	xgettext --from-code=UTF-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../gdraw/*.c
+	-patch < pottitle.patch
+
+# xgettext has caniptions and strips any non-ASCII characters from my strings
+# but I do occasionally want to use unicode characters (TeX, arrows, Increment)
+# so I have put these messages in utf8.pot which I manage by hand. non-ASCII
+# strings work just fine as keys. It does mean that my pot files should be
+# viewed in utf8 though.
+FontForge-old.pot: *.c utf8.pot
+	xgettext -k_ -kN_ -kS_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../gdraw/*.c
+	cat utf8.pot >> FontForge.pot
+	-patch < pottitle.patch
