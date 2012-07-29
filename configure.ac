@@ -225,6 +225,9 @@ AX_PTHREAD
 CONSTANT_STRING_OBJCFLAGS=""
 if test x"${with_gnustep_make}" = xyes; then
    AC_LANG_PUSH([Objective C])
+   # GNU Objective C by default uses class NXConstantString for
+   # @"string", but GNUstep wants class NSConstantString. There is a
+   # flag specifically for this problem.
    AX_CHECK_COMPILE_FLAG([-fconstant-string-class=NSConstantString],
         [CONSTANT_STRING_OBJCFLAGS="-fconstant-string-class=NSConstantString"],
         [:])
@@ -325,6 +328,7 @@ else
    AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
    AC_CONFIG_FILES([po/Makefile])
    AC_CONFIG_FILES([po/mackeys/Makefile])
+   AC_CONFIG_FILES([htdocs/Makefile])
    AC_CONFIG_FILES([fontforge.pc])
 fi
 

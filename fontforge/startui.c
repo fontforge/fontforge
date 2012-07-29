@@ -1076,8 +1076,6 @@ static void GrokNavigationMask(void) {
     navigation_mask = GMenuItemParseMask(H_("NavigationMask|None"));
 }
 
-char *gnustep_resources_pixmaps;
-
 int fontforge_main( int argc, char **argv ) {
     extern const char *source_modtime_str;
     extern const char *source_version_str;

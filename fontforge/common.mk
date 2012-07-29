@@ -42,7 +42,7 @@ LIBFFEXE_C_SRCFILES = alignment.c anchorsaway.c autowidth2dlg.c			\
 	pythonui.c savefontdlg.c scriptingdlg.c scstylesui.c searchview.c	\
 	sftextfield.c showatt.c simplifydlg.c splashimage.c startui.c		\
 	statemachine.c tilepath.c transform.c ttfinstrsui.c uiutil.c		\
-	windowmenu.c justifydlg.c deltaui.c usermenu.c
+	windowmenu.c justifydlg.c deltaui.c usermenu.c gnustepresources.c
 
 NODIST_LIBFFEXE_C_SRCFILES = exelibstamp.c
 

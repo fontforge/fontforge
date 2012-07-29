@@ -25,38 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* FIXME: Work out how to handle "intl.h" versus GNUstep's built-in
- * support for i18n. For now, "#undef _" and see what happens. */
-#include "fontforge.h"
-#include "fontforgeui.h"
-#undef _
-#import <Foundation/Foundation.h>
+/* Locations of GNUstep resources. These variables are used only when
+ * FontForge is configured for the GNUstep build system. */
 
-int main( int argc, char **argv ) {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+char *gnustep_resources_sharedir;
+char *gnustep_resources_pixmaps;
+char *gnustep_resources_htdocs;
 
-    NSString *sharedir = [[NSBundle mainBundle] pathForResource:@"share" ofType:@""];
-    if (!sharedir) {
-        fprintf(stderr, "\nCannot find \"share\" in the application's resources.\n"
-                "Maybe the FontForgeApp installation is corrupted.\n\n");
-        abort();
-    }   
-    NSString *pixmaps =
-        [NSString pathWithComponents:[NSArray arrayWithObjects:sharedir, @"pixmaps", (void*)nil]];
-    NSString *htdocs =
-        [NSString pathWithComponents:[NSArray arrayWithObjects:sharedir, @"doc", @"fontforge", (void*)nil]];
-
-    gnustep_resources_sharedir = strdup([sharedir UTF8String]);
-    gnustep_resources_pixmaps = strdup([pixmaps UTF8String]);
-    gnustep_resources_htdocs = strdup([htdocs UTF8String]);
-
-    int retval = fontforge_main( argc, argv );
-
-    free(gnustep_resources_htdocs);
-    free(gnustep_resources_pixmaps);
-    free(gnustep_resources_sharedir);
-
-    [pool drain];
-
-    return retval;
-}

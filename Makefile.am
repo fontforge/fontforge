@@ -1,10 +1,10 @@
 ACLOCAL_AMFLAGS = -I m4
 
+SUBDIRS = inc Unicode gutils 
 if GRAPHICAL_USER_INTERFACE
-SUBDIRS = inc Unicode gutils gdraw fontforge po
-else !GRAPHICAL_USER_INTERFACE
-SUBDIRS = inc Unicode gutils fontforge po
-endif !GRAPHICAL_USER_INTERFACE
+SUBDIRS += gdraw
+endif GRAPHICAL_USER_INTERFACE
+SUBDIRS += fontforge po htdocs
 
 pkgconfigdir = "${libdir}/pkgconfig"
 nodist_pkgconfig_DATA = fontforge.pc

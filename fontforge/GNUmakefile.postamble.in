@@ -4,14 +4,21 @@
 
 before-all::
 	rm -r -f Resources
-	mkdir Resources && \
-	mkdir Resources/pixmaps && \
-	$(LN_S) $(addprefix @abs_srcdir@/pixmaps/, $(PNG_LIST)) Resources/pixmaps/.
+	$(MKDIR_P) Resources/share/pixmaps
+	$(LN_S) $(addprefix @abs_srcdir@/pixmaps/, $(PNG_LIST)) Resources/share/pixmaps/.
+	rm -f __htdocs__.tar
+#	Only tar flags compatible with the Perl script "ptar" are used below;
+#   "make TAR=ptar" should work if you have Perl installed.
+	(cd @top_srcdir@/htdocs; $(TAR) -c -f "@abs_builddir@/__htdocs__.tar" $(INSTALLED_DOC_LIST))
+	$(MKDIR_P) Resources/share/doc/fontforge
+	(cd Resources/share/doc/fontforge; $(TAR) -x -f "@abs_builddir@/__htdocs__.tar")
+	rm -f __htdocs__.tar
 
 after-all::
 
 after-clean::
 	rm -f fontimage fontlint sfddiff libstamp.c exelibstamp.c
+	rm -f __htdocs__.tar
 	rm -r -f Resources
 
 after-distclean::
