@@ -282,10 +282,11 @@
     <A NAME="Layers">Layers</A>
   </H2>
   <P>
-  <IMG SRC="layers.png" WIDTH="135" HEIGHT="108" ALIGN="Left"> There are several
-  layers in the outline view, three of which are editable. Each layer has a
-  check box (indicating whether it is visible or not) and the editable layers
-  also have a radio button (indicating whether it is curently editable).
+  <IMG SRC="layers.png" WIDTH="123" HEIGHT="84" ALIGN="Left"> There are several
+  drawing layers in the outline view. Each layer has an "eye box" (indicating
+  whether it is visible or not), curve type ("C" for cubic, "Q"for quadratic,
+  " " for Guide layer, which is always cubic), mode ("#" for Guide layer, "B"
+  for background layers, "F" for foreground layers) and a name.
   <P>
   The first layer is a set of guide lines/splines. These are common to all
   glyphs in the font. A few lines are provided for you (the x=0 line, the ascent,
@@ -310,6 +311,16 @@
   <P>
   The last is the foreground layer, this contains the splines that actually
   make up the glyph that will be placed into the font.
+  <P>
+  One can actually have multiple foreground and background layers. They can
+  be created and deleted with "+" and "-" buttons. FontForge, won't delete
+  last layer of its type, though. And care must be taken when generating
+  a font to have the right foreground layer selected, if multiple are present.
+  <P>
+  Layer curve type and visibility can be toggled freely with left mouse button.
+  Making the layer cubic or quadratic is a little trickier, as it's done with
+  right mouse button: a pop-up menu will appear, allowing for some additional
+  operations, like moving contents between layers.
   <H2>
     <A NAME="Tools">Tools</A>
   </H2>
