@@ -287,6 +287,9 @@
    */
 #undef LT_OBJDIR
 
+/* Define if enabling feature 'maintainer-tools'. */
+#undef MAINTAINER_TOOLS
+
 /* Define if enabling feature 'native-callbacks'. */
 #undef NATIVE_CALLBACKS
 

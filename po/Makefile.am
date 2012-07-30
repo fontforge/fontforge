@@ -2,8 +2,10 @@ if MACINTOSH
 SUBDIRS = mackeys
 endif MACINTOSH
 
+if MAINTAINER_TOOLS
 noinst_PROGRAMS = toengb
 toengb_SOURCES = toengb.c
+endif MAINTAINER_TOOLS
 
 PO_FILES = ca.po el.po es.po it.po pl.po vi.po zh_TW.po de.po en_GB.po	\
 	fr.po ja.po ml.po ru.po uk.po zh_CN.po

@@ -108,6 +108,11 @@ FONTFORGE_ARG_ENABLE([native-callbacks],
                  with fontforge called as a library])],
         [NATIVE_CALLBACKS])
 
+FONTFORGE_ARG_ENABLE([maintainer-tools],
+        [AS_HELP_STRING([--enable-maintainer-tools],
+                [build programs used normally only by fontforge maintainers and developers])],
+        [MAINTAINER_TOOLS])
+AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes])
 
 #--------------------------------------------------------------------------
 #
