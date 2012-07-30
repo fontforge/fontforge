@@ -4,7 +4,15 @@ pixmapsdir = "${pkgdatadir}/pixmaps"
 
 dist_pixmaps_DATA = $(PNG_LIST)
 
-EXTRA_DIST = RUN_ME_TO_CHANGE_THE_PNGS.sh
+# Targets for maintainers.
+update: update-png_list.mk
+update-png_list.mk: $(srcdir)/png_list.mk
+$(srcdir)/png_list.mk:
+	(cd $(srcdir); /bin/sh RUN_ME_TO_CHANGE_THE_PNGS.sh)
+
+EXTRA_DIST = RUN_ME_TO_CHANGE_THE_PNGS.sh $(srcdir)/png_list.mk
 
 MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
 	GNUmakefile.postamble
+
+MAINTAINERCLEANFILES = $(srcdir)/png_list.mk

@@ -15,5 +15,5 @@ include $(srcdir)/incl.mk
 
 EXTRA_DIST += incl.mk
 
-MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
+MOSTLYCLEANFILES += GNUmakefile GNUmakefile.preamble	\
 	GNUmakefile.postamble
