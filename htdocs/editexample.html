@@ -139,11 +139,16 @@
   <P>
   The outline glyph window contains two palettes snuggled up on the left side
   of the window. The top palette contains a set of editing tools, and the bottom
-  palette controls which layers of the window are visible or editable.
+  palette is for managing drawing layers. They can be added, deleted (not all!),
+  shown or hidden, for example.
   <P>
-  The foreground layer contains the outline that will become part of the font.
-  The background layer can contain images or line drawings that help you draw
-  this particular glyph. The guide layer contains lines that are useful on
+  Cubic layers (C) use third-order Bezier splines, like PS fonts. Quadratic ones
+  (Q) use second-degree splines, that are harder to edit, but mathematically
+  easier and simpler to control, so they are used in TTF fonts.
+  <P>
+  The foreground (F) layer contains the outline that will become part of the font.
+  The background (B) layer can contain images or line drawings that help you draw
+  this particular glyph. The guide (#) layer contains lines that are useful on
   a font-wide basis (such as the x-height). Currently all layers are empty.
   <P>
   This window also shows the glyph's internal coordinate system with the x
