@@ -32,23 +32,43 @@
 #undef _
 #import <Foundation/Foundation.h>
 
+static void early_abort(void) {    
+    fprintf(stderr, "\nFailure during start-up. Perhaps you are out of memory?\n");
+    abort();
+}
+
+static void sharedir_not_found(void) {
+    fprintf(stderr, "\nCannot find \"share\" in the application's resources.\n"
+            "Maybe the FontForgeApp installation is corrupted.\n\n");
+    abort();
+}
+
 int main( int argc, char **argv ) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    if (!pool)
+        early_abort();
 
     NSString *sharedir = [[NSBundle mainBundle] pathForResource:@"share" ofType:@""];
-    if (!sharedir) {
-        fprintf(stderr, "\nCannot find \"share\" in the application's resources.\n"
-                "Maybe the FontForgeApp installation is corrupted.\n\n");
-        abort();
-    }   
+    if (!sharedir)
+        sharedir_not_found();
     NSString *pixmaps =
         [NSString pathWithComponents:[NSArray arrayWithObjects:sharedir, @"pixmaps", (void*)nil]];
+    if (!pixmaps)
+        early_abort();    
     NSString *htdocs =
         [NSString pathWithComponents:[NSArray arrayWithObjects:sharedir, @"doc", @"fontforge", (void*)nil]];
+    if (!htdocs)
+        early_abort();
 
     gnustep_resources_sharedir = strdup([sharedir UTF8String]);
+    if (!gnustep_resources_sharedir)
+        early_abort();
     gnustep_resources_pixmaps = strdup([pixmaps UTF8String]);
+    if (!gnustep_resources_pixmaps)
+        early_abort();
     gnustep_resources_htdocs = strdup([htdocs UTF8String]);
+    if (!gnustep_resources_htdocs)
+        early_abort();
 
     int retval = fontforge_main( argc, argv );
 
