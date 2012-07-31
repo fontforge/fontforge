@@ -123,7 +123,7 @@ static void FVCreateWidth(void *_fv,void (*doit)(CreateWidthData *),
     GGadgetCreateData gcd[11], boxes[2], topbox[2], *hvs[17], *varray[8], *buttons[6];
     GTextInfo label[11];
     static CreateWidthDlg cwd;
-    static GWindow winds[3];
+    static GWindow winds[5];
     static char *title[] = { N_("Set Width..."), N_("Set LBearing..."), N_("Set RBearing..."), N_("Set Both Side Bearings..."), N_("Set Vertical Advance...") };
 
     cwd.wd.done = false;
