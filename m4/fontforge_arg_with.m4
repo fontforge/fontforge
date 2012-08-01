@@ -82,11 +82,22 @@ dnl FONTFORGE_ARG_WITH_LIBTIFF
 dnl --------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF],
 [
-FONTFORGE_ARG_WITH([libtiff],
+FONTFORGE_ARG_WITH_BASE([libtiff],
         [AS_HELP_STRING([--without-libtiff],[build without TIFF support])],
         [libtiff-4],
         [FONTFORGE_WARN_PKG_NOT_FOUND([LIBTIFF])],
-        [_NO_LIBTIFF])
+        [_NO_LIBTIFF],
+        [FONTFORGE_ARG_WITH_LIBTIFF_fallback])
+])
+dnl
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF_fallback],
+[
+   AC_CHECK_LIB([tiff],[TIFFClose],
+      [i_do_have_libtiff=yes
+       AC_SUBST([LIBTIFF_CFLAGS],[""])
+       AC_SUBST([LIBTIFF_LIBS],["-ltiff"])
+       FONTFORGE_WARN_PKG_FALLBACK([LIBTIFF])],
+      [i_do_have_libtiff=no])
 ])
 
 

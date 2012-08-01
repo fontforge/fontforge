@@ -9,6 +9,7 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
 AM_INIT_AUTOMAKE([1.10 foreign -Wall -Werror])
+AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
 dnl You will need the following for >=automake-1.12. Presumably
