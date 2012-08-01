@@ -25,10 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Locations of GNUstep resources. These variables are used only when
- * FontForge is configured for the GNUstep build system. */
+/* Locations of GNUstep resources. These variables are actually used
+ * only when FontForge is configured for the GNUstep build system. */
 
 char *gnustep_resources_sharedir;
 char *gnustep_resources_pixmaps;
 char *gnustep_resources_htdocs;
+char *gnustep_resources_localedir;
 

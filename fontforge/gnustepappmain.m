@@ -25,12 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* FIXME: Work out how to handle "intl.h" versus GNUstep's built-in
- * support for i18n. For now, "#undef _" and see what happens. */
+#import <Foundation/Foundation.h>
+#undef _
 #include "fontforge.h"
 #include "fontforgeui.h"
-#undef _
-#import <Foundation/Foundation.h>
 
 static void early_abort(void) {    
     fprintf(stderr, "\nFailure during start-up. Perhaps you are out of memory?\n");
@@ -60,6 +58,16 @@ int main( int argc, char **argv ) {
     if (!htdocs)
         early_abort();
 
+    // FIXME: It would be nice to have the ability to do locales as
+    // add-on bundles. This may be especially so for key remappings --
+    // assuming we keep the current scheme for those. (Whatever scheme
+    // we did adopt should include the undocumented support for
+    // Barry’s special hand-disability remappings, of course. :) )
+    NSString *localedir =
+        [NSString pathWithComponents:[NSArray arrayWithObjects:sharedir, @"locale", (void*)nil]];
+    if (!localedir)
+        early_abort();
+
     gnustep_resources_sharedir = strdup([sharedir UTF8String]);
     if (!gnustep_resources_sharedir)
         early_abort();
@@ -69,9 +77,13 @@ int main( int argc, char **argv ) {
     gnustep_resources_htdocs = strdup([htdocs UTF8String]);
     if (!gnustep_resources_htdocs)
         early_abort();
+    gnustep_resources_localedir = strdup([localedir UTF8String]);
+    if (!gnustep_resources_localedir)
+        early_abort();
 
     int retval = fontforge_main( argc, argv );
 
+    free(gnustep_resources_localedir);
     free(gnustep_resources_htdocs);
     free(gnustep_resources_pixmaps);
     free(gnustep_resources_sharedir);

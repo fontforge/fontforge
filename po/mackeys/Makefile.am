@@ -1,4 +1,24 @@
-PO_FILES = en.po
-MO_FILES = en.mo
+include common.mk
 
-include $(top_srcdir)/po/incl.mk
+.po.mo:
+	$(MSGFMT) -o $@ $<
+
+all-local: $(MACKEYS_MO_FILES)
+
+install-data-local:
+	(for localefile in $(MACKEYS_MO_FILES); do \
+		locale=`echo "$${localefile}" | $(SED) -e 's/\.mo$$//'`; \
+		$(MKDIR_P) "$(DESTDIR)$(localedir)/$${locale}/LC_MESSAGES"; \
+		$(INSTALL_DATA) "$${localefile}" "$(DESTDIR)$(localedir)/$${locale}/LC_MESSAGES/Mac-FontForge-MenuShortCuts.mo"; \
+	done)
+
+uninstall-local:
+	(for localefile in $(MACKEYS_MO_FILES); do \
+		locale=`echo "$${localefile}" | $(SED) -e 's/\.mo$$//'`; \
+		$(MKDIR_P) "$(DESTDIR)$(localedir)/$${locale}/LC_MESSAGES"; \
+		rm -f "$(DESTDIR)$(localedir)/$${locale}/LC_MESSAGES/Mac-FontForge-MenuShortCuts.mo"; \
+	done)
+
+EXTRA_DIST = $(MACKEYS_PO_FILES)
+MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
+	GNUmakefile.postamble $(MACKEYS_MO_FILES)

@@ -10,6 +10,8 @@ APP_NAME = FontForgeApp
 include common.mk
 include pixmaps/png_list.mk
 include @top_srcdir@/htdocs/doc_list.mk
+include @top_srcdir@/po/common.mk
+include @top_srcdir@/po/mackeys/common.mk
 include @top_srcdir@/overall_common.mk
 
 libFontForge_VERSION = ${FF_VERSION}.${FF_REVISION}.${FF_AGE}

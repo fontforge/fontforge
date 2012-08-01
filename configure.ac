@@ -117,22 +117,25 @@ AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes]
 #
 # Checks for libraries.
 
-AC_CHECK_LIB([m],[cos])
-AC_SEARCH_LIBS([dlopen],[c dl])
+AC_SEARCH_LIBS([cos],[m])
+AC_SEARCH_LIBS([dlopen],[dl])
 
 if test x"${i_do_have_x}" = xyes; then
+   AC_SEARCH_LIBS([XOpenDisplay],[X11])
    if test x"${gww_iscygwin}" = xyes; then
       dnl Although present on my cygwin system the Xi library does not load
       dnl and crashes gdb if we attempt to use it.
       AC_DEFINE([_NO_XINPUT],[1])
    else
-      AC_CHECK_LIB([Xi],[XOpenDevice],[XINPUT_LIBS="-lXi -lX11"],
-                   [AC_DEFINE(_NO_XINPUT,1,[Define if not using xinput.])],
-                   [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11])
+      FONTFORGE_SEARCH_LIBS([XOpenDevice],[Xi],
+                     [XINPUT_LIBS="${found_lib}"],
+                     [AC_DEFINE(_NO_XINPUT,1,[Define if not using xinput.])],
+                     [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS])
    fi
-   AC_CHECK_LIB([xkbui],[XkbQueryExtension],[XKB_LIBS="-lxkbui -lX11"],
-                [AC_DEFINE(_NO_XKB,1,[Define if not using xkb.])],
-                [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm])
+   FONTFORGE_SEARCH_LIBS([XkbQueryExtension],[xkbui],
+                  [XKB_LIBS="${found_lib}"],
+                  [AC_DEFINE(_NO_XKB,1,[Define if not using xkb.])],
+                  [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS])
 fi
 AC_SUBST([XINPUT_LIBS])
 AC_SUBST([XKB_LIBS])

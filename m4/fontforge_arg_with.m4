@@ -92,10 +92,10 @@ FONTFORGE_ARG_WITH_BASE([libtiff],
 dnl
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBTIFF_fallback],
 [
-   AC_CHECK_LIB([tiff],[TIFFClose],
+   FONTFORGE_SEARCH_LIBS([TIFFClose],[tiff],
       [i_do_have_libtiff=yes
        AC_SUBST([LIBTIFF_CFLAGS],[""])
-       AC_SUBST([LIBTIFF_LIBS],["-ltiff"])
+       AC_SUBST([LIBTIFF_LIBS],["${found_lib}"])
        FONTFORGE_WARN_PKG_FALLBACK([LIBTIFF])],
       [i_do_have_libtiff=no])
 ])
@@ -130,10 +130,10 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
 dnl
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST_fallback],
 [
-   AC_CHECK_LIB([uninameslist],[UnicodeNameAnnot],
+   FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist],
       [i_do_have_libuninameslist=yes
        AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
-       AC_SUBST([LIBUNINAMESLIST_LIBS],["-luninameslist"])
+       AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
        FONTFORGE_WARN_PKG_FALLBACK([LIBUNINAMESLIST])],
       [i_do_have_libuninameslist=no])
 ])
@@ -151,12 +151,12 @@ FONTFORGE_ARG_WITH_BASE([libspiro],
    [FONTFORGE_WARN_PKG_NOT_FOUND([LIBSPIRO])],
    [_NO_LIBSPIRO],
    [
-        AC_CHECK_LIB([spiro],[TaggedSpiroCPsToBezier],
-        [i_do_have_libspiro=yes
-         AC_SUBST([LIBSPIRO_CFLAGS],[""])
-         AC_SUBST([LIBSPIRO_LIBS],["-lspiro"])
-         FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])],
-        [i_do_have_libspiro=no])
+      FONTFORGE_SEARCH_LIBS([TaggedSpiroCPsToBezier],[spiro],
+         [i_do_have_libspiro=yes
+          AC_SUBST([LIBSPIRO_CFLAGS],[""])
+          AC_SUBST([LIBSPIRO_LIBS],["${found_lib}"])
+          FONTFORGE_WARN_PKG_FALLBACK([LIBSPIRO])],
+         [i_do_have_libspiro=no])
    ])
 ])
 
@@ -172,14 +172,9 @@ AC_ARG_VAR([GIFLIB_LIBS],[linker flags for GIFLIB, overriding the automatic dete
 AC_ARG_WITH([giflib],[AS_HELP_STRING([--without-giflib],[build without GIF support])],
             [i_do_have_giflib="${withval}"],[i_do_have_giflib=yes])
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_LIBS}" = x; then
-   AC_CHECK_LIB([gif],[DGifOpenFileName],
-        [AC_SUBST([GIFLIB_LIBS],["-lgif"])],
-        [
-           # libungif is obsolescent, but check for it anyway.
-           AC_CHECK_LIB([ungif],[DGifOpenFileName],
-                [AC_SUBST([GIFLIB_LIBS],["-lungif"])],
-                [i_do_have_giflib=no])
-        ])
+   FONTFORGE_SEARCH_LIBS([DGifOpenFileName],[gif ungif],
+                  [AC_SUBST([GIFLIB_LIBS],["${found_lib}"])],
+                  [i_do_have_giflib=no])
 fi
 if test x"${i_do_have_giflib}" = xyes -a x"${GIFLIB_CFLAGS}" = x; then
    AC_CHECK_HEADER(gif_lib.h,[AC_SUBST([GIFLIB_CFLAGS],[""])],[i_do_have_giflib=no])
@@ -212,12 +207,12 @@ AC_ARG_VAR([LIBJPEG_LIBS],[linker flags for LIBJPEG, overriding the automatic de
 AC_ARG_WITH([libjpeg],[AS_HELP_STRING([--without-libjpeg],[build without JPEG support])],
             [i_do_have_libjpeg="${withval}"],[i_do_have_libjpeg=yes])
 if test x"${i_do_have_libjpeg}" = xyes -a x"${LIBJPEG_LIBS}" = x; then
-   AC_CHECK_LIB([jpeg],[jpeg_CreateDecompress],
-        [AC_SUBST([LIBJPEG_LIBS],["-ljpeg"])],
-        [i_do_have_libjpeg=no])
+   FONTFORGE_SEARCH_LIBS([jpeg_CreateDecompress],[jpeg],
+                  [AC_SUBST([LIBJPEG_LIBS],["${found_lib}"])],
+                  [i_do_have_libjpeg=no])
 fi
 if test x"${i_do_have_libjpeg}" = xyes -a x"${LIBJPEG_CFLAGS}" = x; then
-   AC_CHECK_HEADER(jpeglib.h,[AC_SUBST([LIBJPEG_CFLAGS],[""])],[i_do_have_libjpeg=no])
+   AC_CHECK_HEADER([jpeglib.h],[AC_SUBST([LIBJPEG_CFLAGS],[""])],[i_do_have_libjpeg=no])
 fi
 if test x"${i_do_have_libjpeg}" != xyes; then
    FONTFORGE_WARN_PKG_NOT_FOUND([LIBJPEG])
@@ -255,7 +250,8 @@ AC_ARG_WITH([regular-link],
                     libtiff,
                     libxml,
                     libuninameslist,
-                    libspiro])],
+                    libspiro,
+                    libintl])],
         [i_do_have_regular_link="${withval}"],
         [i_do_have_regular_link=no])
 
@@ -271,6 +267,7 @@ if test x"${i_do_have_regular_link}" = xyes; then
    regular_link_libspiro=yes
    regular_link_cairo=yes
    regular_link_pango=yes
+   regular_link_libintl=yes
 fi
 
 if test x"${i_do_have_regular_link}" != xyes -a x"${i_do_have_regular_link}" != xno; then
@@ -279,29 +276,44 @@ if test x"${i_do_have_regular_link}" != xyes -a x"${i_do_have_regular_link}" != 
         [giflib],[AC_DEFINE([_STATIC_LIBUNGIF],[1],[Define if enabling feature 'regular-link' for giflib.])
                   regular_link_giflib=yes],
         [libjpeg],[AC_DEFINE([_STATIC_LIBJPEG],[1],[Define if enabling feature 'regular-link' for libjpeg.])
-                  regular_link_libjpeg=yes],
+                   regular_link_libjpeg=yes],
         [libpng],[AC_DEFINE([_STATIC_LIBPNG],[1],[Define if enabling feature 'regular-link' for libpng.])
                   regular_link_libpng=yes],
         [libtiff],[AC_DEFINE([_STATIC_LIBTIFF],[1],[Define if enabling feature 'regular-link' for libtiff.])
-                  regular_link_libtiff=yes],
+                   regular_link_libtiff=yes],
         [freetype],[AC_DEFINE([_STATIC_LIBFREETYPE],[1],[Define if enabling feature 'regular-link' for freetype.])
-                  regular_link_freetype=yes],
+                    regular_link_freetype=yes],
         [libuninameslist],[AC_DEFINE([_STATIC_LIBUNINAMESLIST],[1],[Define if enabling feature 'regular-link' for libuninameslist.])
                   regular_link_libuninameslist=yes],
         [libxml],[AC_DEFINE([_STATIC_LIBXML],[1],[Define if enabling feature 'regular-link' for libxml.])
                   regular_link_libxml=yes],
         [libspiro],[AC_DEFINE([_STATIC_LIBSPIRO],[1],[Define if enabling feature 'regular-link' for libspiro.])
-                  regular_link_libspiro=yes],
+                    regular_link_libspiro=yes],
         [cairo],[AC_DEFINE([_STATIC_LIBCAIRO],[1],[Define if enabling feature 'regular-link' for cairo.])
-                  regular_link_cairo=yes],
+                 regular_link_cairo=yes],
         [pango],[AC_DEFINE([_STATIC_LIBPANGO],[1],[Define if enabling feature 'regular-link' for pango.])
-                  regular_link_pango=yes],
+                 regular_link_pango=yes],
+        [libintl],[AC_DEFINE([_STATIC_LIBINTL],[1],[Define if enabling feature 'regular-link' for libintl.])
+                   regular_link_libintl=yes],
         [:] dnl FIXME: Give a warning in the default case.
        )       
    done
 fi
 
-AM_CONDITIONAL([DYNAMIC_LOADING],[test x"${i_do_have_regular_link}" != xyes])
+if test x"${i_do_have_regular_link}" = xyes -o x"${regular_link_libintl}" = xyes; then
+   AC_SEARCH_LIBS([bindtextdomain],[intl])
+fi
+
+# glibc has the libintl.h functions in -lc. Therefore libintl.so need
+# not and typically cannot be dynamically loaded on GNU systems and
+# regular-link must be forced.
+if test x"${regular_link_libintl}" != xyes; then
+   AC_SEARCH_LIBS([bindtextdomain],[])
+   if test x"${ac_cv_search_bindtextdomain}" = x"none required"; then
+      AC_DEFINE([_STATIC_LIBINTL],[1])
+      regular_link_libintl=yes
+   fi
+fi
 ])
 
 

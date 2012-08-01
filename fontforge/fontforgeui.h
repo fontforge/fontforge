@@ -32,10 +32,6 @@
 
 extern void help(char *filename);
 
-extern char *gnustep_resources_sharedir;
-extern char *gnustep_resources_pixmaps;
-extern char *gnustep_resources_htdocs;
-
 # include "gdraw.h"
 # include "gwidget.h"
 # include "ggadget.h"

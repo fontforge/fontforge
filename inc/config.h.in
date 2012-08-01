@@ -90,9 +90,6 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
-/* Define to 1 if you have the `m' library (-lm). */
-#undef HAVE_LIBM
-
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -451,6 +448,9 @@
 
 /* Define if enabling feature 'regular-link' for freetype. */
 #undef _STATIC_LIBFREETYPE
+
+/* Define if enabling feature 'regular-link' for libintl. */
+#undef _STATIC_LIBINTL
 
 /* Define if enabling feature 'regular-link' for libjpeg. */
 #undef _STATIC_LIBJPEG
