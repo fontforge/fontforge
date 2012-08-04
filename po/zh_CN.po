@@ -1956,7 +1956,7 @@ msgstr "字形信息"
 
 #
 #: charinfo.c:4337
-msgid "Glyph _Name:"
+msgid "Gl_yph Name:"
 msgstr "字形名称(_N):"
 
 #

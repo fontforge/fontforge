@@ -1739,7 +1739,7 @@ msgid "Glyph Info"
 msgstr "Відомості щодо гліфа"
 
 #: charinfo.c:4337
-msgid "Glyph _Name:"
+msgid "Gl_yph Name:"
 msgstr "Назва _гліфа:"
 
 #: charinfo.c:4373

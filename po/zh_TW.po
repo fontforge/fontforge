@@ -1691,7 +1691,7 @@ msgid "Glyph Info"
 msgstr "字圖資訊"
 
 #: charinfo.c:4014
-msgid "Glyph _Name:"
+msgid "Gl_yph Name:"
 msgstr "字圖名稱(_N)："
 
 #: charinfo.c:4050

@@ -2225,7 +2225,7 @@ msgid "Glyph Info"
 msgstr "Thông tin hình tượng"
 
 #: charinfo.c:3911
-msgid "Glyph _Name:"
+msgid "Gl_yph Name:"
 msgstr "Tê_n hình tượng:"
 
 #: charinfo.c:3947
