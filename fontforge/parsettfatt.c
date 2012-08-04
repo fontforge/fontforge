@@ -5508,7 +5508,7 @@ return;
     if ( variants!=0 )
 	ttf_math_read_variants(ttf,info,info->math_start+variants,justinuse);
     if ( ftell(ttf)>info->g_bounds ) {
-	LogError("MATH table extends beyond table bounds");
+	LogError(_("MATH table extends beyond table bounds"));
 	info->bad_ot = true;
     }
     info->g_bounds = 0;
@@ -5632,7 +5632,7 @@ return;
 		    tot = coordcnt = getushort(ttf);
 		    if ( coordcnt!=curBase->baseline_cnt ) {
 			info->bad_ot = true;
-			LogError( "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n",
+			LogError(_("!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n"),
 				coordcnt,
 				bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
 				curBase->baseline_cnt );
@@ -5650,7 +5650,7 @@ return;
 			curScript->baseline_pos[j]  = (short) getushort(ttf);
 			if ( format!=1 && format!=2 && format!=3 ) {
 			    info->bad_ot = true;
-			    LogError("!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n",
+			    LogError(_("!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n"),
 					format,
 					curBase->baseline_tags[j]>>24, curBase->baseline_tags[j]>>16, curBase->baseline_tags[j]>>8, curBase->baseline_tags[j],
 					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );

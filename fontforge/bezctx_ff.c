@@ -23,7 +23,7 @@ static void
 nancheck(bezctx_ff *bc) {
 
     if ( !bc->gotnans ) {
-	LogError("Spiros did not converge" );
+	LogError(_("Spiros did not converge") );
 	bc->gotnans = true;
     }
 }

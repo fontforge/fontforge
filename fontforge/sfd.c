@@ -3119,7 +3119,7 @@ static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
 }
 
 static void tterr(void *rubbish, char *message, int pos) {
-    LogError( "When loading tt instrs from sfd: %s\n", message );
+    LogError(_("When loading tt instrs from sfd: %s\n"), message );
 }
 
 static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
@@ -3815,7 +3815,7 @@ static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *la
 
     name = SFDReadUTF7Str(sfd);
     if ( name==NULL ) {
-	LogError( "Anchor Point with no class name: %s", sc->name );
+	LogError(_("Anchor Point with no class name: %s"), sc->name );
 return( lastap );
     }
     for ( an=sc->parent->anchor; an!=NULL && strcmp(an->name,name)!=0; an=an->next );
@@ -3857,7 +3857,7 @@ return( lastap );
 	}
     }
     if ( ap->anchor==NULL || ap->type==-1 ) {
-	LogError( "Bad Anchor Point: %s", sc->name );
+	LogError(_("Bad Anchor Point: %s"), sc->name );
 	AnchorPointsFree(ap);
 return( lastap );
     }
@@ -4519,11 +4519,11 @@ return( NULL );
 	    struct lookup_subtable *sub;
 
 	    if ( sf->sfd_version<2 )
-		LogError( "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n" );
+		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
 		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		if ( sub==NULL ) {
-		    LogError( "KernPair with no subtable name.\n" );
+		    LogError(_("KernPair with no subtable name.\n"));
 	    break;
 		}
 		kp = chunkalloc(sizeof(KernPair1));
@@ -4954,7 +4954,7 @@ static void SFDFixupBitmapRefs( BDFFont *bdf ) {
 		BCMakeDependent( bc,rbc );
 		prev = head;
 	    } else {
-		LogError("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)",
+		LogError(_("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"),
 		    bc->orig_pos, bdf->pixelsize, head->gid );
 		if ( prev == NULL ) bc->refs = next;
 		else prev->next = next;
@@ -5156,7 +5156,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 			rprev = refs;
 			if ( refs->use_my_metrics ) {
 			    if ( sc->width != refs->sc->width ) {
-				LogError("Bad sfd file. Glyph %s has width %d even though it should be\n  bound to the width of %s which is %d.\n",
+				LogError(_("Bad sfd file. Glyph %s has width %d even though it should be\n  bound to the width of %s which is %d.\n"),
 					sc->name, sc->width, refs->sc->name, refs->sc->width );
 				sc->width = refs->sc->width;
 			    }
@@ -5436,7 +5436,7 @@ static void SFDGetNameList(FILE *sfd, char *tok, SplineFont *sf) {
     geteol(sfd,tok);
     nl = NameListByName(tok);
     if ( nl==NULL )
-	LogError( "Failed to find NameList: %s", tok);
+	LogError(_("Failed to find NameList: %s"), tok);
     else
 	sf->for_new_glyphs = nl;
 }
@@ -6861,9 +6861,9 @@ exit(1);
 		    kc->subtable->kc = kc;
 		else {
 		    if ( kc->subtable==NULL )
-			LogError("Bad SFD file, missing subtable in kernclass defn.\n" );
+			LogError(_("Bad SFD file, missing subtable in kernclass defn.\n") );
 		    else
-			LogError("Bad SFD file, two kerning classes assigned to the same subtable: %s\n", kc->subtable->subtable_name );
+			LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s\n"), kc->subtable->subtable_name );
 		    kc->subtable = NULL;
 		}
 	    }
@@ -7319,7 +7319,7 @@ return( -1 );
     /*  perculate through to users before I introduce the new format so there */
     /*  will be fewer complaints when it happens */
     if ( dval!=0 && dval!=1 && dval!=2.0 && dval!=3.0 && dval!=4.0 ) {
-	LogError("Bad SFD Version number %.1f", dval );
+	LogError(_("Bad SFD Version number %.1f"), dval );
 return( -1 );
     }
     ch = nlgetc(sfd); ungetc(ch,sfd);

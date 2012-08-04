@@ -195,7 +195,7 @@ return( false );
 /* Here we are compiled with an old library, so if the dynamic one is new we fail */
     if ( FreeTypeAtLeast(2,3,5)) {
 	if ( !complained ) {
-	    LogError("This version of FontForge expects freetype 2.3.4 or less.");
+	    LogError(_("This version of FontForge expects freetype 2.3.4 or less."));
 	    complained = true;
 	}
 return( false );
@@ -203,7 +203,7 @@ return( false );
 #else
     if ( !FreeTypeAtLeast(2,3,5)) {
 	if ( !complained ) {
-	    LogError("This version of FontForge expects freetype 2.3.5 or more.");
+	    LogError(_("This version of FontForge expects freetype 2.3.5 or more."));
 	    complained = true;
 	}
 return( false );

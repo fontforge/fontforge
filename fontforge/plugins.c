@@ -57,13 +57,13 @@ void LoadPlugin(char *dynamic_lib_name) {
     }
     plugin = dlopen(dynamic_lib_name,RTLD_LAZY);
     if ( plugin==NULL ) {
-	LogError("Failed to dlopen: %s\n%s", dynamic_lib_name, dlerror());
+	LogError(_("Failed to dlopen: %s\n%s"), dynamic_lib_name, dlerror());
 	free(freeme);
 return;
     }
     init = (int (*)(void)) dlsym(plugin,"FontForgeInit");
     if ( init==NULL ) {
-	LogError("Failed to find init function in %s", dynamic_lib_name);
+	LogError(_("Failed to find init function in %s"), dynamic_lib_name);
 	dlclose(plugin);
 	free(freeme);
 return;

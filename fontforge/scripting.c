@@ -7673,7 +7673,7 @@ static void bGetPosSub(Context *c) {
 			ret->vals[cnt].type = v_void;
 /* The important things here should not be translated. We hope the user will */
 /*  never see this. Let's not translate it at all */
-			LogError( "Unexpected PST type in GetPosSub (%d).\n", pst->type );
+			LogError(_("Unexpected PST type in GetPosSub (%d).\n"), pst->type );
 		      break;
 		      case pst_position:
 			temp->argc = 6;

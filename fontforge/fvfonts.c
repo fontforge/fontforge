@@ -316,7 +316,7 @@ static AnchorPoint *AnchorPointsDuplicate(AnchorPoint *base,SplineChar *sc) {
 	break;
 	cur->anchor = ac;
 	if ( ac==NULL ) {
-	    LogError( "No matching AnchorClass for %s", base->anchor->name);
+	    LogError(_("No matching AnchorClass for %s"), base->anchor->name);
 	    chunkfree(cur,sizeof(AnchorPoint));
 	} else {
 	    if ( head==NULL )
@@ -1433,48 +1433,48 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     if ( base->dofill==other->dofill )
 	to->dofill = base->dofill;
     else
-	LogError( "Different settings on whether to fill in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on whether to fill in layer %d of %s\n"), lc, sc->name );
     if ( base->fill_brush.col==COLOR_INHERITED && other->fill_brush.col==COLOR_INHERITED )
 	to->fill_brush.col = COLOR_INHERITED;
     else if ( base->fill_brush.col!=COLOR_INHERITED && other->fill_brush.col!=COLOR_INHERITED )
 	to->fill_brush.col = InterpColor( base->fill_brush.col,other->fill_brush.col, amount );
     else
-	LogError( "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on whether to inherit fill color in layer %d of %s\n"), lc, sc->name );
     if ( base->fill_brush.opacity<0 && other->fill_brush.opacity<0 )
 	to->fill_brush.opacity = WIDTH_INHERITED;
     else if ( base->fill_brush.opacity>=0 && other->fill_brush.opacity>=0 )
 	to->fill_brush.opacity = base->fill_brush.opacity + amount*(other->fill_brush.opacity-base->fill_brush.opacity);
     else
-	LogError( "Different settings on whether to inherit fill opacity in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on whether to inherit fill opacity in layer %d of %s\n"), lc, sc->name );
     if ( base->stroke_pen.brush.col==COLOR_INHERITED && other->stroke_pen.brush.col==COLOR_INHERITED )
 	to->stroke_pen.brush.col = COLOR_INHERITED;
     else if ( base->stroke_pen.brush.col!=COLOR_INHERITED && other->stroke_pen.brush.col!=COLOR_INHERITED )
 	to->stroke_pen.brush.col = InterpColor( base->stroke_pen.brush.col,other->stroke_pen.brush.col, amount );
     else
-	LogError( "Different settings on whether to inherit fill color in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on whether to inherit fill color in layer %d of %s\n"), lc, sc->name );
     if ( base->stroke_pen.brush.opacity<0 && other->stroke_pen.brush.opacity<0 )
 	to->stroke_pen.brush.opacity = WIDTH_INHERITED;
     else if ( base->stroke_pen.brush.opacity>=0 && other->stroke_pen.brush.opacity>=0 )
 	to->stroke_pen.brush.opacity = base->stroke_pen.brush.opacity + amount*(other->stroke_pen.brush.opacity-base->stroke_pen.brush.opacity);
     else
-	LogError( "Different settings on whether to inherit stroke opacity in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on whether to inherit stroke opacity in layer %d of %s\n"), lc, sc->name );
     if ( base->stroke_pen.width<0 && other->stroke_pen.width<0 )
 	to->stroke_pen.width = WIDTH_INHERITED;
     else if ( base->stroke_pen.width>=0 && other->stroke_pen.width>=0 )
 	to->stroke_pen.width = base->stroke_pen.width + amount*(other->stroke_pen.width-base->stroke_pen.width);
     else
-	LogError( "Different settings on whether to inherit stroke width in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on whether to inherit stroke width in layer %d of %s\n"), lc, sc->name );
     if ( base->stroke_pen.linecap==other->stroke_pen.linecap )
 	to->stroke_pen.linecap = base->stroke_pen.linecap;
     else
-	LogError( "Different settings on stroke linecap in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on stroke linecap in layer %d of %s\n"), lc, sc->name );
     if ( base->stroke_pen.linejoin==other->stroke_pen.linejoin )
 	to->stroke_pen.linejoin = base->stroke_pen.linejoin;
     else
-	LogError( "Different settings on stroke linejoin in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different settings on stroke linejoin in layer %d of %s\n"), lc, sc->name );
     if ( base->fill_brush.gradient!=NULL || other->fill_brush.gradient!=NULL ||
 	    base->stroke_pen.brush.gradient!=NULL || other->stroke_pen.brush.gradient!=NULL )
-	LogError( "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n", lc, sc->name );
+	LogError(_("I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"), lc, sc->name );
 #if 0
     if ( base->fill_brush.pattern!=NULL && other->fill_brush.pattern!=NULL &&
 	    strcmp(base->fill_brush.pattern,other->fill_brush.pattern)==0 )
@@ -1482,7 +1482,7 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     else
 #endif
     if ( base->fill_brush.pattern!=NULL || other->fill_brush.pattern!=NULL )
-	LogError( "Different fill patterns in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different fill patterns in layer %d of %s\n"), lc, sc->name );
 #if 0
     if ( base->stroke_pen.brush.pattern!=NULL && other->stroke_pen.brush.pattern!=NULL &&
 	    strcmp(base->stroke_pen.brush.pattern,other->stroke_pen.brush.pattern)==0 )
@@ -1490,12 +1490,12 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     else
 #endif
     if ( base->stroke_pen.brush.pattern!=NULL || other->stroke_pen.brush.pattern!=NULL )
-	LogError( "Different stroke patterns in layer %d of %s\n", lc, sc->name );
+	LogError(_("Different stroke patterns in layer %d of %s\n"), lc, sc->name );
 
     to->splines = SplineSetsInterpolate(base->splines,other->splines,amount,sc);
     to->refs = InterpRefs(base->refs,other->refs,amount,sc);
     if ( base->images!=NULL || other->images!=NULL )
-	LogError( "I can't even imagine how to attempt to interpolate images in layer %d of %s\n", lc, sc->name );
+	LogError(_("I can't even imagine how to attempt to interpolate images in layer %d of %s\n"), lc, sc->name );
 }
 #endif
 
@@ -1524,7 +1524,7 @@ return( NULL );
     if ( base->parent->multilayer && other->parent->multilayer ) {
 	int lc = base->layer_cnt;
 	if ( lc!=other->layer_cnt ) {
-	    LogError( "Different numbers of layers in %s\n", base->name );
+	    LogError(_("Different numbers of layers in %s\n"), base->name );
 	    if ( other->layer_cnt<lc ) lc = other->layer_cnt;
 	}
 	if ( lc>2 ) {

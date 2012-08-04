@@ -86,7 +86,7 @@ return;
 
     _TaggedSpiroCPsToBezier = (void (*)(spiro_cp *spiros,bezctx *bc)) dlsym(libspiro,"TaggedSpiroCPsToBezier");
    if ( _TaggedSpiroCPsToBezier==NULL ) {
-	LogError("Hmm. This system has a libspiro, but it doesn't contain the entry points\nfontforge needs. Must be something else.\n");
+	LogError(_("Hmm. This system has a libspiro, but it doesn't contain the entry points\nfontforge needs. Must be something else.\n"));
     } else
 	has_spiro = true;
 }

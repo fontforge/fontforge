@@ -1082,7 +1082,7 @@ return( Py_BuildValue("d",val));
 	free(contents);
 return( ret );
     }
-    LogError("Unknown python type <%s> when reading UFO/GLIF lib data.", (char *) entry->name);
+    LogError(_("Unknown python type <%s> when reading UFO/GLIF lib data."), (char *) entry->name);
     free( contents );
 return( NULL );
 }
@@ -1722,7 +1722,7 @@ return( NULL );
     glyphdir = buildname(basedir,"glyphs");
     glyphlist = buildname(glyphdir,"contents.plist");
     if ( !GFileExists(glyphlist)) {
-	LogError( "No glyphs directory or no contents file\n" );
+	LogError(_("No glyphs directory or no contents file\n") );
 	free(glyphlist);
 return( NULL );
     }

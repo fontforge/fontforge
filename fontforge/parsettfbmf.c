@@ -95,7 +95,7 @@ return;
 	/* metrics from EBLC */
 	/* Do nothing here */
 	if ( metrics==NULL ) {
-	    LogError( "Unexpected use of bitmap format 5, no metrics are appearant\n" );
+	    LogError(_("Unexpected use of bitmap format 5, no metrics are appearant\n"));
 	    info->bad_embedded_bitmap = true;
 	    /*fseek(ttf,len,SEEK_CUR);*/
 return;
@@ -104,17 +104,17 @@ return;
 	/* format 3 is obsolete */
 	/* format 4 is compressed apple and I'm not supporting it (Nor is MS) */
 	if ( imageformat==3 && !info->obscomplain ) {
-	    LogError( "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n" );
+	    LogError(_("This font contains bitmaps in the obsolete format 3 (And I can't read them)\n") );
 	    info->bad_embedded_bitmap = true;
 	    info->obscomplain = true;
 	} else if ( imageformat==4 ) {
 	    /* Apple doesn't describe it (fully) in their spec. */
 	    /* MS doesn't support it (and doesn't describe) */
 	    /* Adobe doesn't describe it (and says MS doesn't support it) */
-	    LogError( "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n" );
+	    LogError(_("This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n"));
 	    info->cmpcomplain = true;
 	} else if ( !info->unkcomplain ) {
-	    LogError( "This font contains bitmaps in a format %d that I've never heard of\n", imageformat );
+	    LogError(_("This font contains bitmaps in a format %d that I've never heard of\n"), imageformat );
 	    info->bad_embedded_bitmap = true;
 	    info->unkcomplain = true;
 	}
@@ -267,7 +267,7 @@ static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *inf
 	    prev = head;
 	} else if ( !*warned ) {
 	    /* Glyphs aren't named yet */
-	    LogError("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)",
+	    LogError(_("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"),
 		    gid, bdf->pixelsize, head->gid );
 	    info->bad_embedded_bitmap = true;
 	    *warned = true;
@@ -369,7 +369,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	last =  getushort(ttf);
 	moreoff = getlong(ttf);
 	if ( last<first ) {
-	    LogError( "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n",
+	    LogError(_("Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"),
 		    j, head->numIndexSubTables, bdf->pixelsize, first, last );
 	    info->bad_embedded_bitmap = true;
     continue;
@@ -461,7 +461,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    free(glyphs);
 	  break;
 	  default:
-	    LogError("Didn't understand index format: %d\n", indexformat );
+	    LogError(_("Didn't understand index format: %d\n"), indexformat );
 	    info->bad_embedded_bitmap = true;
 	  break;
 	}
