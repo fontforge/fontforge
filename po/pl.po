@@ -1670,7 +1670,7 @@ msgid "Glyph Info"
 msgstr "Właściwości glifu"
 
 #: charinfo.c:4337
-msgid "Glyph _Name:"
+msgid "Gl_yph Name:"
 msgstr "_Nazwa glifu:"
 
 #: charinfo.c:4373
