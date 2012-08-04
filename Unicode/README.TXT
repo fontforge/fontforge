@@ -1,6 +1,6 @@
 UPDATING FONTFORGE'S SUPPORT FOR UNICODE
 
-Thanks to Thanks to Khaled Hosny for reverse-engineering this.
+Thanks to Khaled Hosny for reverse-engineering this.
 To update unicode coverage, run:
 
 wget http://unicode.org/Public/UNIDATA/LineBreak.txt
@@ -31,7 +31,6 @@ wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-8.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-9.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-10.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-11.TXT
-wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-12.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-13.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-14.TXT
 wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-15.TXT
@@ -42,7 +41,16 @@ mv JIS0201.TXT JIS0201.txt
 wget http://unicode.org/Public/MAPPINGS/VENDORS/ADOBE/zdingbat.txt
 mv zdingbat.txt zapfding.TXT
 wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0212.TXT
+wget http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/MAC/ROMAN.TXT
+mv ROMAN.TXT MacRoman.TXT
+wget http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/MAC/CYRILLIC.TXT
+mv CYRILLIC.TXT MacCYRILLIC.TXT
+
 gcc -s -o dump dump.c
 ./dump
 rm *.txt *.TXT
+
+NOTE: Some standards listed above may be obsolete, check for updates by reading
+ftp://ftp.ora.com/pub/examples/nutshell/ujip/doc/cjk.inf
+ftp://ftp.ora.com/pub/examples/nutshell/ujip/00README
 
