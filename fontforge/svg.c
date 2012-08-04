@@ -495,7 +495,7 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 	patsubname = strconcat3(scname,"-",pattern->pattern);
 	svg_dumpscdefs(file,pattern_sc,patsubname,false);
     } else
-	LogError("No glyph named %s, used as a pattern in %s\n", pattern->pattern, scname);
+	LogError(_("No glyph named %s, used as a pattern in %s\n"), pattern->pattern, scname);
 
     fprintf( file, "    <pattern " );
     if ( nested==NULL )
@@ -2249,7 +2249,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 
     *_grad = NULL; *_epat = NULL;
     if ( colour_source==NULL )
-	LogError("Could not find Color Source with id %s.", name );
+	LogError(_("Could not find Color Source with id %s."), name );
     else if ( (islinear = _xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0) ||
 	    _xmlStrcmp(colour_source->name,(xmlChar *) "radialGradient")==0 ) {
 	struct gradient *grad = chunkalloc(sizeof(struct gradient));
@@ -2390,10 +2390,10 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	    }
 	}
     } else if ( _xmlStrcmp(colour_source->name,(xmlChar *) "pattern")==0 ) {
-	LogError("FontForge does not currently parse pattern Color Sources (%s).",
+	LogError(_("FontForge does not currently parse pattern Color Sources (%s)."),
 		name );
     } else {
-	LogError("Color Source with id %s had an unexpected type %s.",
+	LogError(_("Color Source with id %s had an unexpected type %s."),
 		name, (char *) colour_source->name );
     }
 }
@@ -2605,7 +2605,7 @@ return( NULL );
 	    strcmp(mimetype,"image/bmp")==0 )
 	/* These we support (if we've got the libraries) */;
     else {
-	LogError("Unsupported mime type in data URI: %s\n", mimetype );
+	LogError(_("Unsupported mime type in data URI: %s\n"), mimetype );
 return( NULL );
     }
     tmp = tmpfile();
@@ -2669,7 +2669,7 @@ static Entity *SVGParseImage(xmlNodePtr svg) {
     if ( val==NULL )
 return( NULL );
     if ( strncmp((char *) val,"data:",5)!=0 ) {
-	LogError("FontForge only supports embedded images in data: URIs\n");
+	LogError(_("FontForge only supports embedded images in data: URIs\n"));
 	free(val);
 return( NULL );		/* I can only handle data URIs */
     }
@@ -2912,7 +2912,7 @@ return( NULL );
 	    }
 	    free(eret);
 	} else
-	    LogError("Could not find clippath named %s.", name );
+	    LogError(_("Could not find clippath named %s."), name );
 	_xmlFree(name);
     }
 

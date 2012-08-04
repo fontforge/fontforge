@@ -6046,13 +6046,13 @@ return( -1 );
             &lx,&ly,&rx,&ry,&ux,&uy ))
 return( -1 );
         if ( ux == 0 && uy == 0 ) {
-            LogError( "Invalid unit vector has been specified. The hint is ignored.\n" );
+            LogError(_("Invalid unit vector has been specified. The hint is ignored.\n"));
     continue;
         } else if ( ux == 0 ) {
-            LogError( "Use the \'vhint\' property to specify a vertical hint.\n" );
+            LogError(_("Use the \'vhint\' property to specify a vertical hint.\n"));
     continue;
         } else if ( uy == 0 ) {
-            LogError( "Use the \'hhint\' property to specify a horizontal hint.\n" );
+            LogError(_("Use the \'hhint\' property to specify a horizontal hint.\n"));
     continue;
         }
 	cur = chunkalloc(sizeof(DStemInfo));
@@ -7480,7 +7480,7 @@ return( NULL );
 			PyTuple_SetItem(ret,i,Py_None);
 /* The important things here should not be translated. We hope the user will */
 /*  never see this. Let's not translate it at all */
-			LogError( "Unexpected PST type in GetPosSub (%d).\n", pst->type );
+			LogError(_("Unexpected PST type in GetPosSub (%d).\n"), pst->type );
 		      break;
 		      case pst_position:
 			PyTuple_SetItem(ret,cnt,Py_BuildValue("(ssiiii)",
@@ -16818,7 +16818,7 @@ void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     if ( fv!=NULL )
 	layer_active_in_ui = fv->active_layer;
     if ( fp==NULL )
-	LogError( "Can't open %s", filename );
+	LogError(_("Can't open %s"), filename );
     else {
 	PyRun_SimpleFile(fp,filename);
 	fclose(fp);
@@ -16915,7 +16915,7 @@ void PyFF_CallDictFunc(PyObject *dict,char *key,char *argtypes, ... ) {
 	    (func = PyMapping_GetItemString(dict,key))==NULL )
 return;
     if ( !PyCallable_Check(func)) {
-	LogError( "%s: Is not callable", key );
+	LogError(_("%s: Is not callable"), key );
 	Py_DECREF(func);
 return;
     }
