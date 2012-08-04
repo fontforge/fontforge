@@ -153,13 +153,23 @@ return( false );
 
     GDrawPushClip(pixmap,&g->r,&old1);
 
-    GBoxDrawBackground(pixmap,&g->r,g->box,
-	    g->state==gs_enabled? gs_pressedactive: g->state,false);
+    GBoxDrawBackground(pixmap,&g->r,g->box,g->state,false);
     bounds = g->r;
+
     if ( !gts->vertical ) {
-	bounds.y += gts->rcnt*gts->rowh+yoff-1;
-	bounds.height -= gts->rcnt*gts->rowh+yoff-1;
+        /* make room for tabs */
+        bounds.y += gts->rcnt*gts->rowh+yoff-1;
+        bounds.height -= gts->rcnt*gts->rowh+yoff-1;
     }
+    else if ( g->state==gs_enabled ) {
+        /* background for labels */
+        GRect old2, vertListRect = g->r;
+        vertListRect.width = gts->vert_list_width+bw-1;
+        GDrawPushClip(pixmap,&vertListRect,&old2);
+        GBoxDrawBackground(pixmap,&g->r,g->box,gs_pressedactive,false);
+        GDrawPopClip(pixmap,&old2);
+    }
+
     GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     GDrawSetFont(pixmap,gts->font);
 

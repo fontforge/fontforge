@@ -1179,6 +1179,18 @@ int GBoxDrawnWidth(GWindow gw, GBox *box) {
 return( bp );
 }
 
+static void GBoxDrawTabBackground(GWindow pixmap, GRect *rect, int radius, Color color)
+{
+    GRect older, r = *rect;
+
+    GDrawPushClip(pixmap,rect,&older);
+    GDrawSetLineWidth(pixmap,1);
+    r.height*=2;
+    if (2*radius>=r.height) r.height=2*radius+1;
+    BoxFillRoundRect(pixmap, &r, radius, color);
+    GDrawPopClip(pixmap,&older);
+}
+
 void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 	int width, int rowh, int active ) {
     GRect r;
@@ -1191,37 +1203,45 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
     int inset = 0;
     enum border_type bt = design->border_type;
     Color cols[4];
+
     Color fg = g->state==gs_disabled?design->disabled_foreground:
 		    design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    design->main_foreground;
-	Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
-	Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
+
+    Color color_inner = design->border_inner == COLOR_DEFAULT ? fg : design->border_inner;
+    Color color_outer = design->border_outer == COLOR_DEFAULT ? fg : design->border_outer;
+
+    Color gbg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
+    Color mbg = design->main_background==COLOR_DEFAULT?gbg:design->main_background;
+    Color dbg = design->disabled_background==COLOR_DEFAULT?gbg:design->disabled_background;
+    Color pbg = design->depressed_background==COLOR_DEFAULT?gbg:design->depressed_background;
+    Color ibg;
 
     r.x = x; r.y = y; r.width = width; r.height = rowh;
 
-    FigureBorderCols(design,cols);
-    if ( active ) {
-	Color gbg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
-	Color mbg = design->main_background==COLOR_DEFAULT?gbg:design->main_background;
-	Color dbg = design->disabled_background==COLOR_DEFAULT?gbg:design->disabled_background;
-	Color ibg;
-
-	r.x -= bp; r.y -= bp; r.width += 2*bp; r.height += dw+bp;
-
-	if ( g->state == gs_disabled ) {
-	    ibg=dbg;
-	    GDrawSetStippled(pixmap,1,0,0);
-	} else
-	    ibg=mbg;
-
-	GDrawFillRect(pixmap,&r,ibg);
-	if ( g->state == gs_disabled )
-	    GDrawSetStippled(pixmap,0,0,0);
-    }
     if ( rr==0 )
-	rr = GDrawPointsToPixels(pixmap,3);
+        rr = GDrawPointsToPixels(pixmap,3);
+
     if ( !(scale&1)) --scale;
     if ( scale==0 ) scale = 1;
+
+    FigureBorderCols(design,cols);
+
+    if ( active ) {
+        r.x -= bp; r.y -= bp; r.width += 2*bp; r.height += dw+bp;
+    }
+
+    if ( g->state == gs_disabled ) {
+        ibg=dbg;
+        GDrawSetStippled(pixmap,1,0,0);
+    } else if ( !active && (design->flags & box_do_depressed_background ))
+        ibg=pbg;
+    else
+        ibg=mbg;
+
+    GBoxDrawTabBackground(pixmap,&r,rr,ibg);
+    if ( g->state == gs_disabled )
+        GDrawSetStippled(pixmap,0,0,0);
 
     if ( design->flags & (box_foreground_border_outer|box_foreground_shadow_outer) ) {
 	GDrawSetLineWidth(pixmap,scale);
