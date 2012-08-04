@@ -24,6 +24,33 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/*
+ * To generate the latest files, you will first need to go and get these files
+ * (see below in "alphabets[]) and put them in the Unicode subdirectory:
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-1.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-2.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-3.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-4.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-5.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-6.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-7.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-8.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-9.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-10.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-11.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-13.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-14.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-15.TXT
+ * wget http://unicode.org/Public/MAPPINGS/VENDORS/MISC/KOI8-R.TXT
+ * mv KOI8-R.TXT koi8r.TXT
+ * wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0201.TXT
+ * mv JIS0201.TXT JIS0201.txt
+ * wget http://unicode.org/Public/MAPPINGS/VENDORS/ADOBE/zdingbat.txt
+ * mv zdingbat.txt zapfding.TXT
+ * wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0212.TXT
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,9 +92,11 @@ int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601, em_big5h
 
 unsigned long *used[256];
 
-const char CantReadFile[] = "Can't find or read file %s\n";
-const char CantSaveFile[] = "Can't open or write to output file %s\n";
-const char NoMoreMemory[] = "Can't access more memory.\n";
+const char GeneratedFileMessage[] = "/* This file was generated using the program 'dump' */\n\n";
+const char CantReadFile[] = "Can't find or read file %s\n";		/* exit(2) */
+const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(1) */
+const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
+const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
 static void dumpalphas(FILE *output, FILE *header) {
     FILE *file;
@@ -83,7 +112,7 @@ static void dumpalphas(FILE *output, FILE *header) {
     buffer[200]='\0';
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-    for ( j=0; alphabets[j]!=NULL; ++j ) {
+    for ( j=0; j<256 && alphabets[j]!=NULL; ++j ) {
 	file = fopen( alphabets[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, CantReadFile, alphabets[j]);
@@ -972,6 +1001,8 @@ static void dumpgb2312(FILE *output,FILE *header) {
 
 static void dumpcjks(FILE *output,FILE *header) {
 
+    fprintf( output, GeneratedFileMessage );
+
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned short u_allzeros[256] = { 0 };\n\n" );
 
@@ -985,6 +1016,8 @@ static void dumpcjks(FILE *output,FILE *header) {
 static void dumptrans(FILE *output, FILE *header) {
     unsigned long *plane;
     int k, i;
+
+    fprintf( output, GeneratedFileMessage );
 
     fprintf(output, "static const unsigned long l_allzeros[256] = { 0 };\n" );
     for ( k=0; k<256; ++k ) {
@@ -1020,9 +1053,12 @@ return 1;
     }
     if (( header = fopen( "chardata.h", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "chardata.h" );
-        fclose(output);
-	return 1;
+	fclose(output);
+return 1;
     }
+
+    fprintf( output, GeneratedFileMessage );
+    fprintf( header, GeneratedFileMessage );
 
     fprintf( header, "#include \"basics.h\"\n\n" );
     fprintf( header, "struct charmap {\n    int first, last;\n    unsigned char **table;\n    unichar_t *totable;\n};\n" );
@@ -1034,14 +1070,16 @@ return 1;
 
     if (( output = fopen( "cjk.c", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "cjk.c" );
-        fclose(header);
+	fclose(header);
 return 1;
     }
+
     dumpcjks(output,header);
     fclose(output);
+
     if (( output = fopen( "backtrns.c", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "backtrns.c" );
-        fclose(header);
+	fclose(header);
 return 1;
     }
     dumptrans(output,header);
