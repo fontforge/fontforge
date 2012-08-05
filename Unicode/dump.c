@@ -100,7 +100,7 @@ const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(
 
 static int dumpalphas(FILE *output, FILE *header) {
     FILE *file;
-    int i,j,k, first, last;
+    int i,j,k, l, first, last;
     long _orig, _unicode, mask;
     unichar_t unicode[256];
     unsigned char *table[256], *plane;
@@ -109,13 +109,14 @@ static int dumpalphas(FILE *output, FILE *header) {
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned char c_allzeros[256] = { 0 };\n\n" );
 
-    buffer[200]='\0';
+    buffer[200]='\0'; l=0;
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
     for ( j=0; j<256 && alphabets[j]!=NULL; ++j ) {
 	file = fopen( alphabets[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, CantReadFile, alphabets[j]);
+	    l = 1;
 	} else {
 	    for ( i=0; i<160; ++i )
 		unicode[i] = i;
@@ -221,6 +222,12 @@ return( 3 );
 		table[k]=NULL;
 	    }
 	}
+    }
+    if ( l ) {				/* missing files, shouldn't go any further */
+	for ( k=0; k<256; ++k )
+	    if ( used[k] != NULL )
+		free(used[k]);
+return( 2 );
     }
 
 /*	Mac Symbol appears as a font even on unix.  Cyrillic does not but so what?
