@@ -539,11 +539,12 @@ static void dumpbig5(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
+    j = 2;
+
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
-	j = 2;
 	buffer[400]='\0';
 	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
@@ -647,11 +648,12 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
+    j=5;
+
     file = fopen( cjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, CantReadFile, cjk[j] );
     } else {
-	j=5;
 	buffer[400]='\0';
 	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
