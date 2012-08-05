@@ -79,21 +79,21 @@ DLIBS = -rpath $(libdir)  ../libfontforge.la ../libgutils.la ../libgunicode.la @
 
 all: @FINAL_TARGET@ @MACAPP@ sfddiff fontimage fontlint
 
-fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
-	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < exelibstamp.pre > exelibstamp.c
+fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) $(srcdir)/exelibstamp.pre $(srcdir)/libstamp.pre
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < $(srcdir)/exelibstamp.pre > exelibstamp.c
 	$(CC) -c $(CFLAGS) exelibstamp.c
-	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < $(srcdir)/libstamp.pre > libstamp.c
 	$(CC) -c $(CFLAGS) libstamp.c
 	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge \
 	    $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.o libstamp.o $(LIBS)
 
-../libfontforge.la: $(@exeOBJECTS@)  $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
-	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c
+../libfontforge.la: $(@exeOBJECTS@)  $(fontforge_LIBOBJECTS) $(srcdir)/exelibstamp.pre $(srcdir)/libstamp.pre
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < $(srcdir)/libstamp.pre > libstamp.c
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c libstamp.c
 	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) $(LDFLAGS) \
 	    -o ../libfontforge.la $(fontforge_LIBOBJECTS) libstamp.lo $(LIBLIBS) \
 	    -rpath $(libdir) -version-info $(FF_VERSION):$(FF_REVISION):$(FF_AGE)
-	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < exelibstamp.pre > exelibstamp.c
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < $(srcdir)/exelibstamp.pre > exelibstamp.c
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c exelibstamp.c
 	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o fontforge \
 	    $(@exeOBJECTS@) exelibstamp.lo ../libfontforge.la $(LIBS)

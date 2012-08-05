@@ -37,7 +37,14 @@ libgdraw: libgutils libgunicode
 	( cd gdraw ; $(MAKE) )
 
 pos:
-	-ln -s $(srcdir)/po/*.po po
+	-case $(srcdir) in \
+		/*) \
+			ln -s $(srcdir)/po/*.po po \
+			;; \
+		*) \
+			(cd po ; ln -s ../$(srcdir)/po/*.po . ) \
+			;; \
+	esac
 	( cd po ; $(MAKE) )
 
 fontforgegtk: fontforge
