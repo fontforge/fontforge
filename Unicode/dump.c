@@ -98,7 +98,7 @@ const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(1
 const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
 const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
-static void dumpalphas(FILE *output, FILE *header) {
+static int dumpalphas(FILE *output, FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode, mask;
@@ -122,6 +122,17 @@ static void dumpalphas(FILE *output, FILE *header) {
 	    for ( ; i<256; ++i )
 		unicode[i] = 0;
 	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+		if (strlen(buffer)>=199) {
+		    fprintf( stderr, LineLengthBg,alphabets[j],buffer );
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 4 );
+		}
 		if ( buffer[0]=='#' )
 	    continue;
 		sscanf(buffer, "0x%lx 0x%lx", (unsigned long *) &_orig, (unsigned long *) &_unicode);
@@ -129,7 +140,14 @@ static void dumpalphas(FILE *output, FILE *header) {
 		if ( table[_unicode>>8]==NULL ) {
 		    if ((plane = table[_unicode>>8] = calloc(256,1))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		    if ( j==0 && (_unicode>>8)==0 )
 			for ( k=0; k<256; ++k )
@@ -142,7 +160,14 @@ static void dumpalphas(FILE *output, FILE *header) {
 		if ( used[_unicode>>8]==NULL ) {
 		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		}
 		if ( almaps[j]!=-1 )
@@ -237,6 +262,7 @@ static void dumpalphas(FILE *output, FILE *header) {
 	    mask |= (1<<almaps[j]);
     for ( i=0; i<' '; ++i )
 	used[0][i] |= mask;
+return( 0 );				/* no errors encountered */
 }
 
 #if 0
@@ -1048,6 +1074,7 @@ static void dumptrans(FILE *output, FILE *header) {
 
 int main(int argc, char **argv) {
     FILE *output, *header;
+    int i;
 
     if (( output = fopen( "alphabet.c", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "alphabet.c" );
@@ -1066,7 +1093,12 @@ return 1;
     fprintf( header, "struct charmap {\n    int first, last;\n    unsigned char **table;\n    unichar_t *totable;\n};\n" );
     fprintf( header, "struct charmap2 {\n    int first, last;\n    unsigned short **table;\n    unichar_t *totable;\n};\n\n" );
 
-    dumpalphas(output,header);
+    if ( i=dumpalphas(output,header)) {	/* load files listed in alphabets[] */
+	fclose(header);
+	fclose(output);
+return( i );
+    }
+
     /*dumprandom(output,header);*/
     fclose(output);
 
