@@ -44,6 +44,9 @@ struct resed {
     int found;
 };
 
+#define RESED_EMPTY { NULL, NULL, 0, NULL, NULL, NULL, { 0 }, 0, 0 }
+
+
 typedef struct gresinfo {
     struct gresinfo *next;
     struct gresinfo *inherits_from;

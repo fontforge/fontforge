@@ -76,9 +76,9 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_AppendFontLog	400
 #define CID_FontLogBit		401
 #define CID_Layers		402
-#define CID_PrependTimestamp 403
+#define CID_PrependTimestamp    403
 
-#define CID_OK		1001
+#define CID_OK		        1001
 #define CID_PS_AFM		1002
 #define CID_PS_PFM		1003
 #define CID_PS_TFM		1004
@@ -142,65 +142,65 @@ struct gfc_data {
 };
 
 static GTextInfo formattypes[] = {
-    { (unichar_t *) N_("PS Type 1 (Ascii)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS Type 1 (Binary)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PS Type 1 (Ascii)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS Type 1 (Binary)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #if __Mac
-    { (unichar_t *) N_("PS Type 1 (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PS Type 1 (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #else
-    { (unichar_t *) N_("PS Type 1 (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PS Type 1 (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
-    { (unichar_t *) N_("PS Type 1 (Multiple)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS Multiple Master(A)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS Multiple Master(B)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS Type 3"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS Type 0"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PS Type 1 (Multiple)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS Multiple Master(A)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS Multiple Master(B)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS Type 3"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS Type 0"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 /* GT: "CFF (Bare)" means a CFF font without the normal OpenType wrapper */
 /* GT: CFF is a font format that normally lives inside an OpenType font */
 /* GT: but it is perfectly meaningful to remove all the OpenType complexity */
 /* GT: and just leave a bare CFF font */
-    { (unichar_t *) N_("CFF (Bare)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("CFF CID (Bare)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Type42"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Type11 (CID 2)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("TrueType"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("TrueType (Symbol)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("CFF (Bare)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("CFF CID (Bare)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Type42"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Type11 (CID 2)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("TrueType"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("TrueType (Symbol)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #if __Mac
-    { (unichar_t *) N_("TrueType (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #else
-    { (unichar_t *) N_("TrueType (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("TrueType (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
-    { (unichar_t *) N_("TrueType (TTC)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("TrueType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("OpenType (CFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("OpenType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("OpenType CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Unified Font Object"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Web Open Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { NULL }
+    { (unichar_t *) N_("TrueType (TTC)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("TrueType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("OpenType (CFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("OpenType (Mac dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("OpenType CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Unified Font Object"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 static GTextInfo bitmaptypes[] = {
-    { (unichar_t *) N_("BDF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("In TTF/OTF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Apple bitmap only sfnt (dfont)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("(faked) MS bitmap only sfnt (ttf)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("X11 bitmap only sfnt (otb)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BDF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("In TTF/OTF"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Apple bitmap only sfnt (dfont)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("(faked) MS bitmap only sfnt (ttf)"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("X11 bitmap only sfnt (otb)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #if __Mac
-    { (unichar_t *) N_("NFNT (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("NFNT (Resource)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #else
-    { (unichar_t *) N_("NFNT (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("NFNT (MacBin)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
 /* OS/X doesn't seem to support NFNTs, so there's no point in putting them in a dfont */
-/*  { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },*/
-    { (unichar_t *) N_("Win FON"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Win FNT"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Palm OS Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PS Type3 Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("No Bitmap Fonts"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-    { NULL }
+/*  { (unichar_t *) "NFNT (dfont)", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },*/
+    { (unichar_t *) N_("Win FON"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Win FNT"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Palm OS Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PS Type3 Bitmap"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("No Bitmap Fonts"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 int old_validate = true;
@@ -1451,7 +1451,6 @@ return;
 return;
 	    psscalewarned = true;
 	}
-
 	if ( (strlen(d->sf->fontname)>31 || (d->sf->familyname!=NULL && strlen(d->sf->familyname)>31)) && !psfnlenwarned ) {
 	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
 return;

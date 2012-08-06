@@ -232,27 +232,29 @@ struct gfc_data {
 
 
 static GTextInfo bcformats[] = {
-    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
-    { NULL }};
+    GTEXTINFO_EMPTY
+};
 
 static GTextInfo formats[] = {
-    { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 1, 0, 1 },
-    { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PDF"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Raph's plate"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("PDF"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Raph's plate"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #define BITMAP_FORMAT_START	6
-    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) BITMAP_FORMAT_START, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+1), 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) BITMAP_FORMAT_START, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+1), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+2), 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) (BITMAP_FORMAT_START+2), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 #endif
-    { NULL }};
+    GTEXTINFO_EMPTY
+};
 static int last_format = 0;
 
 static void DoExport(struct gfc_data *d,unichar_t *path) {

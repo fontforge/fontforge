@@ -33,20 +33,20 @@
 
 
 GTextInfo sizes[] = {
-    { (unichar_t *) "24", NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "36", NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "48", NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "72", NULL, 0, 0, (void *) 72, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "96", NULL, 0, 0, (void *) 96, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "200", NULL, 0, 0, (void *) 200, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) "24", NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "36", NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "48", NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "72", NULL, 0, 0, (void *) 72, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "96", NULL, 0, 0, (void *) 96, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "200", NULL, 0, 0, (void *) 200, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
 };
 enum sortby { sb_first, sb_second, sb_kern };
 GTextInfo sortby[] = {
-    { (unichar_t *) N_("First Char"), NULL, 0, 0, (void *) sb_first, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Second Char"), NULL, 0, 0, (void *) sb_second, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Kern Size"), NULL, 0, 0, (void *) sb_kern, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) N_("First Char"), NULL, 0, 0, (void *) sb_first, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Second Char"), NULL, 0, 0, (void *) sb_second, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Kern Size"), NULL, 0, 0, (void *) sb_kern, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
 };
 
 void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
@@ -894,15 +894,15 @@ static void KPMenuACM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static GMenuItem kernmenu[] = {
-    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove },
-    { { (unichar_t *) N_("Kern Pair Closeup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuKPCloseup },
-    { NULL }
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\177', 0, NULL, NULL, KPMenuRemove, 0 },
+    { { (unichar_t *) N_("Kern Pair Closeup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuKPCloseup, 0 },
+    GMENUITEM_EMPTY
 };
 
 static GMenuItem acmenu[] = {
-    { { (unichar_t *) N_("Anchor Control for Base"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuACB },
-    { { (unichar_t *) N_("Anchor Control for Mark"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuACM },
-    { NULL }
+    { { (unichar_t *) N_("Anchor Control for Base"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuACB, 0 },
+    { { (unichar_t *) N_("Anchor Control for Mark"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'N' }, '\0', 0, NULL, NULL, KPMenuACM, 0 },
+    GMENUITEM_EMPTY
 };
 
 static unichar_t upopupbuf[100];

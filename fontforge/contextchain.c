@@ -1921,9 +1921,10 @@ return( ret );
 }
 
 static GTextInfo section[] = {
-    { (unichar_t *) N_("Section|Continue"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
-    { (unichar_t *) N_("Section|Start"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }};
+    { (unichar_t *) N_("Section|Continue"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Section|Start"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
+};
 static struct col_init class_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Class|Name") },
     { me_funcedit, CCD_PickGlyphsForClass, NULL, NULL, N_("Glyphs in the class") },

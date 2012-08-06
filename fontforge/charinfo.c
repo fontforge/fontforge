@@ -144,29 +144,29 @@ typedef struct charinfo {
 #endif
 
 static GTextInfo glyphclasses[] = {
-    { (unichar_t *) N_("Automatic"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("No Class"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Base Glyph"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Base Lig"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Mark"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) N_("Component"), NULL, 0, 0, NULL, NULL, false, false, false, false, false, false, true },
-    { NULL, NULL }
+    { (unichar_t *) N_("Automatic"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("No Class"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Base Glyph"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Base Lig"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Mark"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Component"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 #define CUSTOM_COLOR	9
 #define COLOR_CHOOSE	(-10)
 static GTextInfo std_colors[] = {
-    { (unichar_t *) N_("Color|Choose..."), NULL, 0, 0, (void *) COLOR_CHOOSE, NULL, false, true, false, false, false, false, true },
-    { (unichar_t *) N_("Color|Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, false, true, false, false, false, false, true },
-    { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, false, true },
-    { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, false, true },
-    { NULL, &green_image, 0, 0, (void *) 0x00ff00, NULL, false, true },
-    { NULL, &blue_image, 0, 0, (void *) 0x0000ff, NULL, false, true },
-    { NULL, &yellow_image, 0, 0, (void *) 0xffff00, NULL, false, true },
-    { NULL, &cyan_image, 0, 0, (void *) 0x00ffff, NULL, false, true },
-    { NULL, &magenta_image, 0, 0, (void *) 0xff00ff, NULL, false, true },
-    { NULL, NULL, 0, 0, (void *) 0x000000, NULL, false, true },
-    { NULL, NULL }
+    { (unichar_t *) N_("Color|Choose..."), NULL, 0, 0, (void *) COLOR_CHOOSE, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Color|Default"), &def_image, 0, 0, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { NULL, &white_image, 0, 0, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, &red_image, 0, 0, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, &green_image, 0, 0, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, &blue_image, 0, 0, (void *) 0x0000ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, &yellow_image, 0, 0, (void *) 0xffff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, &cyan_image, 0, 0, (void *) 0x00ffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, &magenta_image, 0, 0, (void *) 0xff00ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    { NULL, NULL, 0, 0, (void *) 0x000000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 static char *newstrings[] = { N_("New Positioning"), N_("New Pair Position"),
@@ -2218,8 +2218,8 @@ struct devtab_dlg {
 static struct col_init devtabci[] = {
     { me_int, NULL, NULL, NULL, N_("Pixel Size") },
     { me_int, NULL, NULL, NULL, N_("Correction") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static void DevTabMatrixInit(struct matrixinit *mi,char *dvstr) {
     struct matrix_data *md;
@@ -2446,23 +2446,23 @@ static void enable_enum(GGadget *g, GMenuItem *mi, int r, int c);
 static struct col_init simplesubsci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
     { me_string, NULL, NULL, NULL, N_("Replacement Glyph Name") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct col_init ligatureci[] = {
     { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple ligatures for a glyph */
     { me_string, NULL, NULL, NULL, N_("Source Glyph Names") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct col_init altsubsci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
     { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct col_init multsubsci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
     { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 static struct col_init simpleposci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
@@ -2478,8 +2478,8 @@ static struct col_init simpleposci[] = {
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
     { me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct col_init pairposci[] = {
     { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple kern-pairs for a glyph */
     { me_string , DevTab_Dlg, NULL, NULL, N_("Second Glyph Name") },
@@ -2499,8 +2499,8 @@ static struct col_init pairposci[] = {
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
     { me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 #else
 static struct col_init simpleposci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
@@ -2508,8 +2508,8 @@ static struct col_init simpleposci[] = {
     { me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
     { me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
     { me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct col_init pairposci[] = {
     { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple kern-pairs for a glyph */
     { me_string , NULL, NULL, NULL, N_("Second Glyph Name") },
@@ -2521,20 +2521,20 @@ static struct col_init pairposci[] = {
     { me_int, NULL, NULL, NULL, NU_("∆y #2") },	/* delta-y */
     { me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
     { me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
-    0
-    };
+    COL_INIT_EMPTY
+};
 #endif
 static int pst2lookuptype[] = { ot_undef, gpos_single, gpos_pair, gsub_single,
      gsub_alternate, gsub_multiple, gsub_ligature, 0 };
 struct matrixinit mi[] = {
-    { sizeof(simpleposci)/sizeof(struct col_init)-1, simpleposci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(pairposci)/sizeof(struct col_init)-1, pairposci, 0, NULL, kerninit, NULL, kernfinishedit },
-    { sizeof(simplesubsci)/sizeof(struct col_init)-1, simplesubsci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(altsubsci)/sizeof(struct col_init)-1, altsubsci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(multsubsci)/sizeof(struct col_init)-1, multsubsci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(ligatureci)/sizeof(struct col_init)-1, ligatureci, 0, NULL, NULL, NULL, finishedit },
-    { 0 }
-    };
+    { sizeof(simpleposci)/sizeof(struct col_init)-1, simpleposci, 0, NULL, NULL, NULL, finishedit, NULL, NULL, NULL },
+    { sizeof(pairposci)/sizeof(struct col_init)-1, pairposci, 0, NULL, kerninit, NULL, kernfinishedit, NULL, NULL, NULL },
+    { sizeof(simplesubsci)/sizeof(struct col_init)-1, simplesubsci, 0, NULL, NULL, NULL, finishedit, NULL, NULL, NULL },
+    { sizeof(altsubsci)/sizeof(struct col_init)-1, altsubsci, 0, NULL, NULL, NULL, finishedit, NULL, NULL, NULL },
+    { sizeof(multsubsci)/sizeof(struct col_init)-1, multsubsci, 0, NULL, NULL, NULL, finishedit, NULL, NULL, NULL },
+    { sizeof(ligatureci)/sizeof(struct col_init)-1, ligatureci, 0, NULL, NULL, NULL, finishedit, NULL, NULL, NULL },
+    MATRIXINIT_EMPTY
+};
 
 static void enable_enum(GGadget *g, GMenuItem *mi, int r, int c) {
     int i,rows,j;
@@ -3570,9 +3570,10 @@ return;
 }
 
 static GTextInfo truefalse[] = {
-    { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("true"),  NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
-    NULL };
+    { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("true"),  NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
+};
 
 static struct col_init extensionpart[] = {
     { me_string , NULL, NULL, NULL, N_("Glyph") },
@@ -3581,10 +3582,10 @@ static struct col_init extensionpart[] = {
     { me_int, NULL, NULL, NULL, N_("StartLen") },
     { me_int, NULL, NULL, NULL, N_("EndLen") },
     { me_int, NULL, NULL, NULL, N_("FullLen") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct matrixinit mi_extensionpart =
-    { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
+    { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit, NULL, NULL, NULL };
 
 static int isxheight(int uni) {
     if ( uni>=0x10000 || !islower(uni))
@@ -3701,10 +3702,10 @@ return( true );
 static struct col_init altuniinfo[] = {
     { me_uhex , NULL, NULL, NULL, N_("Unicode") },
     { me_uhex, NULL, truefalse, NULL, N_("Variation Selector (or 0)") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct matrixinit mi_altuniinfo =
-    { sizeof(altuniinfo)/sizeof(struct col_init)-1, altuniinfo, 0, NULL, NULL, NULL, NULL };
+    { sizeof(altuniinfo)/sizeof(struct col_init)-1, altuniinfo, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 static void CI_NoteAspect(CharInfo *ci) {
     int new_aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs));
