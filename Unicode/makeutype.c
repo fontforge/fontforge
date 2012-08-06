@@ -124,14 +124,22 @@ unsigned short mymirror[MAXC];
 unsigned int flags[MAXC];
 unsigned int flags2[MAXC];
 unichar_t alts[MAXC][MAXA+1];
-int assignedcodepoints[0x120000/32];
+long assignedcodepoints[0x120000/32];
 
 const char GeneratedFileMessage[] = "\n/* This file was generated using the program 'makeutype' */\n\n";
-const char CantReadFile[] = "Can't find or read file %s\n";
-const char CantSaveFile[] = "Can't open or write to output file %s\n";
-const char NoMoreMemory[] = "Can't access more memory.\n";
+const char CantReadFile[] = "Can't find or read file %s\n";		/* exit(1) */
+const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(2) */
+const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
+const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
-static void FigureAlternates(unichar_t index, char *apt, int normative) {
+static void FreeNamesMemorySpace() {
+    long index;
+    for ( index=0; index<MAXC ; ++index ) {
+	if ( names[index]!=NULL ) free( names[index] );
+    }
+}
+
+static void FigureAlternates(long index, char *apt, int normative) {
     int alt, i;
     char *end;
     int isisolated=0, iscircled=0;
@@ -168,23 +176,24 @@ static void FigureAlternates(unichar_t index, char *apt, int normative) {
 	alts[alts[index][0]][0] = index;
 }
 
-static void processAssignment(int index,char *pt) {
-    static int first=-1;
-    int i;
+static void processAssignment(long index,char *pt) {
+    static long first=-1;
+    long i;
 
     if ( index>0x11ffff )
 return;
-    ++pt;	/* semicolon */
+    ++pt;							/* move past semicolon */
     if ( *pt!='<' ) {
-	assignedcodepoints[index/32] |= (1<<(index%32));
-    } else if ( strstr(pt,", First")!=NULL ) {
+	assignedcodepoints[index/32] |= (1<<(index%32));	/* This Unicode char is visible */
+    } else if ( strstr(pt,", First")!=NULL ) {			/* start of an extended charset */
 	first = index;
-    } else if ( strstr(pt,", Last")!=NULL ) {
-	if ( first==-1 )
+    } else if ( strstr(pt,", Last")!=NULL ) {			/* end of an extended charset */
+	if ( first==-1 || first > index )
 	    fprintf( stderr,"Something went wrong, first isn't defined at last. %x\n", index );
 	else if ( first>=0xd800 && first<=0xdfff )
 	    /* surrogate pairs. Not assigned really */;
 	else {
+	    /* mark all characters visible in the range of {First...Last} */
 	    for ( i=first; i<=index; ++i )
 		assignedcodepoints[i/32] |= (1<<(i%32));
 	}
@@ -193,30 +202,38 @@ return;
 }
 
 static void readin(void) {
-    char buffer[300+1], buf2[300+1], oldname[100+1], *pt, *end, *pt1;
-    int index, lc, uc, tc, flg, val, cc, indexend;
-    int wasfirst;
+    char buffer[512+1], buf2[300+1], oldname[301], *pt, *end, *pt1;
+    long index, lc, uc, tc, flg, val, indexend, wasfirst;
+    int  cc;
     FILE *fp;
     int i,j;
 
-    buffer[300]='\0'; buf2[300]='\0'; oldname[100]='\0';
+    buffer[512]='\0'; buf2[0] = buf2[300]='\0'; oldname[0]='\0';
     if ((fp = fopen("UnicodeData.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile,"UnicodeData.txt" );
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
+	if (strlen(buffer)>=299) {	/* previous version was linelength of 300 chars, jul2012 */
+	    fprintf( stderr, LineLengthBg,"UnicodeData.txt",buffer );
+	    fprintf( stderr, "\n%s\n",buffer );
+
+	    fclose(fp);
+	    FreeNamesMemorySpace();
+	    exit(4);
+	}
 	if ( *buffer=='#' )
     continue;
 	flg = 0;
-	/* code */
+	/* Unicode character value */
 	index = strtol(buffer,&end,16);
 	processAssignment(index,end);
-	if ( index>0xffff )		/* For now can only deal with BMP !!!! */
+	if ( index>=MAXC )		/* For now can only deal with BMP !!!! */
     continue;
 	pt = end;
 	if ( *pt==';' ) {
 	    ++pt;
-	    /* character name */
+	    /* buf2 = character name */
 	    for ( pt1=pt; *pt1!=';' && *pt1!='\0'; ++pt1 );
 	    strncpy(buf2,pt,pt1-pt); buf2[pt1-pt] = '\0'; pt = pt1;
 	    if ( *pt==';' ) ++pt;
@@ -234,7 +251,7 @@ static void readin(void) {
 		flg |= _DIGIT;
 	    pt = pt1;
 	    if ( *pt==';' ) ++pt;
-	    /* unicode combining classes, I do my own version later */
+	    /* Unicode combining classes, I do my own version later */
 	    cc = strtol(pt,&end,16);
 	    pt = end;
 	    if ( *pt==';' ) ++pt;
@@ -284,7 +301,8 @@ static void readin(void) {
 	    if ( *pt==';' ) ++pt;
 	    /* Only care about old name (unicode 1.0) for control characters */
 	    for ( pt1=pt; *pt1!=';' && *pt1!='\0'; ++pt1 );
-	    strncpy(oldname,pt,pt1-pt); oldname[pt1-pt] = '\0'; pt = pt1;
+	    strncpy(oldname,pt,pt1-pt); oldname[pt1-pt] = '\0';
+	    if ( pt1-pt>100 ) oldname[100] = '\0'; pt = pt1;
 	    if ( *pt==';' ) ++pt;
 	    /* Don't care about 10646 comment field */
 	    while ( *pt!=';' && *pt!='\0' ) ++pt;
@@ -339,13 +357,20 @@ static void readin(void) {
 
     if ((fp = fopen("LineBreak.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "LineBreak.txt" );
+	FreeNamesMemorySpace();
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
+	if (strlen(buffer)>=299) {	/* previous version was linelength of 300 chars, jul2012 */
+	    fprintf( stderr, LineLengthBg,"LineBreak.txt",buffer );
+	    fclose(fp);
+	    FreeNamesMemorySpace();
+	    exit(4);
+	}
 	if ( *buffer=='#' )
     continue;
 	flg = 0;
-	/* code */
+	/* Unicode character value */
 	indexend = index = strtol(buffer,&end,16);
 	if ( index>0xffff )		/* Only BMP now !!!!!! */
     continue;
@@ -396,10 +421,17 @@ static void readin(void) {
 
     if ((fp = fopen("PropList.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "PropList.txt" );
+	FreeNamesMemorySpace();
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	flg = 0;
+	if (strlen(buffer)>=299) {	/* previous version was linelength of 300 chars, jul2012 */
+	    fprintf( stderr, LineLengthBg,"PropList.txt",buffer );
+	    fclose(fp);
+	    FreeNamesMemorySpace();
+	    exit(4);
+	}
 	if ( true || strncmp(buffer,"Property dump for:", strlen("Property dump for:"))==0 ) {
 	    if ( strstr(buffer, "(Zero-width)")!=NULL || strstr(buffer, "ZERO WIDTH")!=NULL )
 		flg = _ZEROWIDTH;
@@ -443,10 +475,17 @@ static void readin(void) {
 
     if ((fp = fopen("NamesList.txt","r"))==NULL ) {
 	fprintf( stderr, CantReadFile, "NamesList.txt" );
+	FreeNamesMemorySpace();
 	exit(1);
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
 	flg = 0;
+	if (strlen(buffer)>=511) {
+	    fprintf( stderr, LineLengthBg,"NamesList.txt",buffer );
+	    fclose(fp);
+	    FreeNamesMemorySpace();
+	    exit(4);
+	}
 	if ( (index = strtol(buffer,NULL,16))!=0 ) {
 	    if ( strstr(buffer, "COMBINING")!=NULL )
 		flg = _COMBINING;
@@ -469,15 +508,21 @@ static void readin(void) {
 
 static void readcorpfile(char *prefix, char *corp) {
     char buffer[300+1], buf2[300+1], *pt, *end, *pt1;
-    int index;
+    long index;
     FILE *fp;
 
-    buffer[300]='\0'; buf2[300]='\0';
+    buffer[300]='\0'; buf2[0] = buf2[300]='\0';
     if ((fp = fopen(corp,"r"))==NULL ) {
 	fprintf( stderr, CantReadFile, corp );		/* Not essential */
 return;
     }
     while ( fgets(buffer,sizeof(buffer)-1,fp)!=NULL ) {
+	if (strlen(buffer)>=299) {
+	    fprintf( stderr, LineLengthBg,corp,buffer );
+	    fclose(fp);
+	    FreeNamesMemorySpace();
+	    exit(4);
+	}
 	if ( *buffer=='#' )
     continue;
 	/* code */
@@ -497,6 +542,8 @@ return;
     break;
 	    if ((names[index]= malloc(strlen(buf2)+strlen(prefix)+4)) == NULL) {
 		fprintf( stderr, NoMoreMemory );
+		fclose(fp);
+		FreeNamesMemorySpace();
 		exit(3);
 	    }
 	    strcpy(names[index],prefix); strcat(names[index],buf2);
@@ -565,6 +612,7 @@ static void dumparabicdata(FILE *header) {
     data = fopen( "ArabicForms.c","w");
     if ( data==NULL || data==NULL ) {
 	fprintf( stderr, CantSaveFile, "ArabicForms.c" );
+	FreeNamesMemorySpace();
 	exit(2);
     }
 
@@ -592,6 +640,9 @@ static void dump() {
 
     if ( header==NULL || data==NULL ) {
 	fprintf( stderr, CantSaveFile, "(utype.[ch])" );
+	if ( header ) fclose( header );
+	if ( data   ) fclose( data );
+	FreeNamesMemorySpace();
 	exit(2);
     }
 
@@ -823,6 +874,7 @@ static void dump() {
     data = fopen( "uninames.c", "w");
     if ( data==NULL ) {
 	fprintf( stderr, CantSaveFile, "uninames.c" );
+	FreeNamesMemorySpace();
 	exit( 1 );
     }
 
@@ -1723,14 +1775,15 @@ static void cheat(void) {
 }
 
 int main() {
-    visualalts();
-    readin();
+    visualalts();			/* pre-populate matrix with visual alternative fonts */
+    readin();				/* load the "official" Unicode data from unicode.org */
     /* Apple's file contains no interesting information that I can see */
     /* Adobe's file is interesting, but should only be used conditionally */
     /*  so apply at a different level */
     /* readcorpfile("ADOBE ", "AdobeCorporateuse.txt"); */
-    cheat();
+    cheat();				/* over-ride with these mods after reading input files */
     dump();
     dump_alttable();
+    FreeNamesMemorySpace();		/* cleanup alloc of memory */
 return( 0 );
 }

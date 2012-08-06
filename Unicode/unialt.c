@@ -1,5 +1,7 @@
 #include <chardata.h>
 
+/* This file was generated using the program 'makeutype' */
+
 static const unichar_t str_a0[] = { 0x0020, 0 };
 static const unichar_t str_a8[] = { 0x0020, 0x0308, 0 };
 static const unichar_t str_aa[] = { 0x0061, 0 };
@@ -2829,6 +2831,8 @@ static const unichar_t str_33fd[] = { 0x0033, 0x0030, 0x65e5, 0 };
 static const unichar_t str_33fe[] = { 0x0033, 0x0031, 0x65e5, 0 };
 static const unichar_t str_33ff[] = { 0x0067, 0x0061, 0x006c, 0 };
 static const unichar_t str_a770[] = { 0xa76f, 0 };
+static const unichar_t str_a7f8[] = { 0x0126, 0 };
+static const unichar_t str_a7f9[] = { 0x0153, 0 };
 static const unichar_t str_f900[] = { 0x8c48, 0 };
 static const unichar_t str_f901[] = { 0x66f4, 0 };
 static const unichar_t str_f902[] = { 0x8eca, 0 };
@@ -3119,6 +3123,8 @@ static const unichar_t str_fa2a[] = { 0x98ef, 0 };
 static const unichar_t str_fa2b[] = { 0x98fc, 0 };
 static const unichar_t str_fa2c[] = { 0x9928, 0 };
 static const unichar_t str_fa2d[] = { 0x9db4, 0 };
+static const unichar_t str_fa2e[] = { 0x90de, 0 };
+static const unichar_t str_fa2f[] = { 0x96b7, 0 };
 static const unichar_t str_fa30[] = { 0x4fae, 0 };
 static const unichar_t str_fa31[] = { 0x50e7, 0 };
 static const unichar_t str_fa32[] = { 0x514d, 0 };
@@ -7313,7 +7319,9 @@ str_33ff,
 
 static const unichar_t * const tab_a7[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a770,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a7f8,
+str_a7f9,
+0, 0, 0, 0, 0, 0, 0};
 
 static const unichar_t * const tab_f9[] = {
 str_f900,
@@ -7609,7 +7617,9 @@ str_fa26,
 str_fa2b,
 str_fa2c,
 str_fa2d,
-0, 0, str_fa30,
+str_fa2e,
+str_fa2f,
+str_fa30,
 str_fa31,
 str_fa32,
 str_fa33,

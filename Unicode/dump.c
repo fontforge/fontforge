@@ -179,10 +179,15 @@ return( 3 );
 
 	    fprintf( header, "extern const unichar_t unicode_from_%s[];\n", alnames[j] );
 	    fprintf( output, "const unichar_t unicode_from_%s[] = {\n", alnames[j] );
-	    for ( i=0; i<256-8; i+=8 )
-		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	    for ( i=0; i<256-8; i+=8 ) {
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 			unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+		if ( (i & 63)==0 )
+		    fprintf( output, "\t/* 0x%04x */\n",i);
+		else
+		    fprintf( output, "\n");
+	    }
 	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
@@ -194,12 +199,17 @@ return( 3 );
 		    last = k;
 		    plane = table[k];
 		    fprintf( output, "static const unsigned char %s_from_unicode_%x[] = {\n", alnames[j], k );
-		    for ( i=0; i<256-16; i+=16 )
-			fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x,\n",
+		    for ( i=0; i<256-16; i+=16 ) {
+			fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x,",
 				plane[i], plane[i+1], plane[i+2], plane[i+3],
 				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
 				plane[i+8], plane[i+9], plane[i+10], plane[i+11],
 				plane[i+12], plane[i+13], plane[i+14], plane[i+15]);
+		    if ( (i & 63)==0 )
+			fprintf( output, "\t/* 0x%04x */\n",i);
+		    else
+			fprintf( output, "\n");
+		    }
 		    fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n};\n\n",
 				plane[i], plane[i+1], plane[i+2], plane[i+3],
 				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
