@@ -398,14 +398,14 @@ return( b.old );
 }
 
 GTextInfo baselinetags[] = {
-    { (unichar_t *) ("hang"), NULL, 0, 0, (void *) CHR('h','a','n','g'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) ("icfb"), NULL, 0, 0, (void *) CHR('i','c','f','b'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) ("icft"), NULL, 0, 0, (void *) CHR('i','c','f','t'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) ("ideo"), NULL, 0, 0, (void *) CHR('i','d','e','o'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) ("idtp"), NULL, 0, 0, (void *) CHR('i','d','t','p'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) ("math"), NULL, 0, 0, (void *) CHR('m','a','t','h'), NULL, false, false, false, false, false, false, true },
-    { (unichar_t *) ("romn"), NULL, 0, 0, (void *) CHR('r','o','m','n'), NULL, false, false, false, false, false, false, true },
-    NULL
+    { (unichar_t *) ("hang"), NULL, 0, 0, (void *) CHR('h','a','n','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) ("icfb"), NULL, 0, 0, (void *) CHR('i','c','f','b'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) ("icft"), NULL, 0, 0, (void *) CHR('i','c','f','t'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) ("ideo"), NULL, 0, 0, (void *) CHR('i','d','e','o'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) ("idtp"), NULL, 0, 0, (void *) CHR('i','d','t','p'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) ("math"), NULL, 0, 0, (void *) CHR('m','a','t','h'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) ("romn"), NULL, 0, 0, (void *) CHR('r','o','m','n'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 static struct col_init baselinesci[10] = {

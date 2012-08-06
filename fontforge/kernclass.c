@@ -133,11 +133,11 @@ extern int _GScrollBar_Width;
 int show_kerning_pane_in_class = true;
 
 static GTextInfo magnifications[] = {
-    { (unichar_t *) "100%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1},
-    { (unichar_t *) "200%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "300%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "400%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) "100%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "200%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "300%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "400%", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
 };
 
 static int  KCD_SBReset(KernClassDlg *);
@@ -1342,7 +1342,7 @@ static GMenuItem kernpopupmenu[] = {
     { { (unichar_t *) N_("AutoKern Row"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_AutoKernRow },
     { { (unichar_t *) N_("AutoKern Column"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_AutoKernCol },
     { { (unichar_t *) N_("AutoKern All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_AutoKernAll },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0'}, '\0', 0, NULL, NULL, NULL, 0},
 #define Menu_VKern_Offset 4		/* No autokerning for vertical kerning */
     { { (unichar_t *) N_("Clear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_Clear },
     { { (unichar_t *) N_("Clear All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAll },
@@ -1350,7 +1350,7 @@ static GMenuItem kernpopupmenu[] = {
     { { (unichar_t *) N_("Clear Device Table"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearDevTab },
     { { (unichar_t *) N_("Clear All Device Tables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAllDevTab },
 #endif
-    { NULL }
+    GMENUITEM_EMPTY
 };
 
 static void KCD_PopupMenu(KernClassDlg *kcd,GEvent *event,int pos) {

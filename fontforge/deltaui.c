@@ -395,16 +395,16 @@ void QGRmFontView(QGData *qg,FontView *fv) {
 #define CID_GlyphSort	201
 
 static GTextInfo sorts[] = {
-    { (unichar_t *) N_("Glyph, Size, Point"), NULL, 0, 0, (void *) is_glyph_size_pt, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Glyph, Point, Size"), NULL, 0, 0, (void *) is_glyph_pt_size, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Size, Glyph, Point"), NULL, 0, 0, (void *) is_size_glyph_pt, NULL, 0, 0, 0, 0, 0, 0, 1},
-    NULL
+    { (unichar_t *) N_("Glyph, Size, Point"), NULL, 0, 0, (void *) is_glyph_size_pt, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Glyph, Point, Size"), NULL, 0, 0, (void *) is_glyph_pt_size, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Size, Glyph, Point"), NULL, 0, 0, (void *) is_size_glyph_pt, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 static GTextInfo glyphsorts[] = {
-    { (unichar_t *) N_("Unicode"), NULL, 0, 0, (void *) gs_unicode, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Sort|Alphabetic"), NULL, 0, 0, (void *) gs_alpha, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Glyph Order"), NULL, 0, 0, (void *) gs_gid, NULL, 0, 0, 0, 0, 0, 0, 1},
-    NULL
+    { (unichar_t *) N_("Unicode"), NULL, 0, 0, (void *) gs_unicode, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Sort|Alphabetic"), NULL, 0, 0, (void *) gs_alpha, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Glyph Order"), NULL, 0, 0, (void *) gs_gid, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 static int QG_VScroll(GGadget *g, GEvent *e) {

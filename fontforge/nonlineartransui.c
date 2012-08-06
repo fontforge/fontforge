@@ -203,19 +203,21 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
 }
 
 static GTextInfo originx[] = {
-    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 /* GT: The (x,y) position on the window where the user last pressed a mouse button */
-    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { NULL }};
+    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 static GTextInfo originy[] = {
-    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 /* GT: The (x,y) position on the window where the user last pressed a mouse button */
-    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { NULL }};
+    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Value"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 #define CID_XType	1001
 #define CID_YType	1002
 #define CID_XValue	1003
@@ -281,7 +283,7 @@ return( true );
 
 int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     static struct pov_data def = { or_center, or_value, 0, 0, .1,
-	    0, 3.1415926535897932/16, .2 };
+	    0, 3.1415926535897932/16, .2, 0 };
     double emsize = (sf->ascent + sf->descent);
     struct nldlg d;
     GRect pos;

@@ -84,26 +84,28 @@ typedef struct transdata {
 #define TBlock_CIDOffset	100
 
 static GTextInfo origin[] = {
-    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glyph Origin"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Center of Selection"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
 /* GT: The (x,y) position on the window where the user last pressed a mouse button */
-    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { NULL }};
+    { (unichar_t *) N_("Last Press"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 
 static int selcid[] = { 0, CID_XMove, CID_Angle, CID_Scale, CID_XScale, 0, CID_SkewAng, CID_XAxis };
 static GTextInfo transformtypes[] = {
-    { (unichar_t *) N_("Do Nothing"), NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Move..."), NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Rotate..."), NULL, 0, 0, (void *) 0x2, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Scale Uniformly..."), NULL, 0, 0, (void *) 0x4, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Scale..."), NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Flip..."), NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Skew..."), NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Rotate 3D Around..."), NULL, 0, 0, (void *) 0x40, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Move by Ruler..."), NULL, 0, 0, (void *) 0x401, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Rotate by Ruler..."), NULL, 0, 0, (void *) 0x402, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Skew by Ruler..."), NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { NULL }};
+    { (unichar_t *) N_("Do Nothing"), NULL, 0, 0, (void *) 0x1000, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Move..."), NULL, 0, 0, (void *) 0x1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Rotate..."), NULL, 0, 0, (void *) 0x2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Scale Uniformly..."), NULL, 0, 0, (void *) 0x4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Scale..."), NULL, 0, 0, (void *) 0x8, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Flip..."), NULL, 0, 0, (void *) 0x10, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Skew..."), NULL, 0, 0, (void *) 0x20, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Rotate 3D Around..."), NULL, 0, 0, (void *) 0x40, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Move by Ruler..."), NULL, 0, 0, (void *) 0x401, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Rotate by Ruler..."), NULL, 0, 0, (void *) 0x402, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Skew by Ruler..."), NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 
 static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];

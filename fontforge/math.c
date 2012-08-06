@@ -55,15 +55,16 @@ static void mathkern_finishedit(GGadget *g, int r, int c, int wasnew);
 static void mathkern_initrow(GGadget *g, int r);
 
 static GTextInfo truefalse[] = {
-    { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("true"),  NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
-    NULL };
+    { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("true"),  NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 
 static struct col_init exten_shape_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_enum, NULL, truefalse, NULL, N_("Is Extended Shape") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init italic_cor_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
@@ -71,8 +72,8 @@ static struct col_init italic_cor_ci[] = {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 #endif
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init top_accent_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
@@ -80,14 +81,14 @@ static struct col_init top_accent_ci[] = {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 #endif
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init glyph_variants_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_string, NULL, NULL, NULL, N_("Pre-Built Larger Variants") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init glyph_construction_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
@@ -97,25 +98,25 @@ static struct col_init glyph_construction_ci[] = {
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 #endif
     { me_funcedit, GlyphConstruction_Dlg, NULL, NULL, N_("Parts List") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init math_kern_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_button, MKChange_Dlg, NULL, NULL, N_("Height/Kern Data") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 struct matrixinit mis[] = {
-    { sizeof(exten_shape_ci)/sizeof(struct col_init)-1, exten_shape_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(italic_cor_ci)/sizeof(struct col_init)-1, italic_cor_ci, 0, NULL, NULL, NULL, italic_finishedit },
-    { sizeof(top_accent_ci)/sizeof(struct col_init)-1, top_accent_ci, 0, NULL, NULL, NULL, topaccent_finishedit },
-    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, mathkern_initrow, NULL, mathkern_finishedit },
-    { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
-    { 0 }
+    { sizeof(exten_shape_ci)/sizeof(struct col_init)-1, exten_shape_ci, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+    { sizeof(italic_cor_ci)/sizeof(struct col_init)-1, italic_cor_ci, 0, NULL, NULL, NULL, italic_finishedit, NULL, NULL, NULL },
+    { sizeof(top_accent_ci)/sizeof(struct col_init)-1, top_accent_ci, 0, NULL, NULL, NULL, topaccent_finishedit, NULL, NULL, NULL },
+    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, mathkern_initrow, NULL, mathkern_finishedit, NULL, NULL, NULL },
+    { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
+    MATRIXINIT_EMPTY
 };
 
 static struct col_init extensionpart[] = {
@@ -125,10 +126,10 @@ static struct col_init extensionpart[] = {
     { me_int, NULL, NULL, NULL, N_("StartLen") },
     { me_int, NULL, NULL, NULL, N_("EndLen") },
     { me_int, NULL, NULL, NULL, N_("FullLen") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct matrixinit mi_extensionpart =
-    { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
+    { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit, NULL, NULL, NULL };
 
 static struct col_init mathkern[] = {
     { me_int , NULL, NULL, NULL, N_("Height") },
@@ -137,10 +138,10 @@ static struct col_init mathkern[] = {
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Height Adjusts") },
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Kern Adjusts") },
 #endif
-    0
-    };
+    COL_INIT_EMPTY
+};
 static struct matrixinit mi_mathkern =
-    { sizeof(mathkern)/sizeof(struct col_init)-1, mathkern, 0, NULL, NULL, NULL, extpart_finishedit };
+    { sizeof(mathkern)/sizeof(struct col_init)-1, mathkern, 0, NULL, NULL, NULL, extpart_finishedit, NULL, NULL, NULL };
 
 
 #define CID_Exten	1000
