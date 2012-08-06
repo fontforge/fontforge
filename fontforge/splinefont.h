@@ -1667,6 +1667,7 @@ struct Base {
 
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
+    char *familyname_with_timestamp;
     char *copyright;
     char *filename;				/* sfd name. NULL if we open a font, that's origname */
     char *defbasefilename;

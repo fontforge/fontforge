@@ -96,7 +96,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 	fprintf( file, "vert-adv-y=\"%d\" ", sf->ascent+sf->descent );
     putc('>',file); putc('\n',file);
     fprintf( file, "  <font-face \n" );
-    fprintf( file, "    font-family=\"%s\"\n", sf->familyname );
+    fprintf( file, "    font-family=\"%s\"\n", sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname );
     fprintf( file, "    font-weight=\"%d\"\n", info.weight );
     if ( strstrmatch(sf->fontname,"obli") || strstrmatch(sf->fontname,"slanted") )
 	fprintf( file, "    font-style=\"oblique\"\n" );

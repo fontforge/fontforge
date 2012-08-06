@@ -39,6 +39,7 @@
 #include <gkeysym.h>
 #include "psfont.h"
 #include "savefont.h"
+#include <time.h>
 
 int ask_user_for_resolution = true;
 char *oflib_username = NULL;
@@ -75,6 +76,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_AppendFontLog	400
 #define CID_FontLogBit		401
 #define CID_Layers		402
+#define CID_PrependTimestamp 403
 
 #define CID_OK		1001
 #define CID_PS_AFM		1002
@@ -1314,6 +1316,46 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
 return ( ret );
 }
 
+int will_prepend_timestamp = false;
+
+static void prepend_timestamp(struct gfc_data *d){
+
+  if (d->sf->familyname_with_timestamp)
+    free(d->sf->familyname_with_timestamp);
+  d->sf->familyname_with_timestamp = NULL;
+  
+  if (will_prepend_timestamp){
+    //prepend "YYMMDDHHMM-"
+
+    time_t rawtime;
+    struct tm * timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    char timestamp[11];
+    strftime(timestamp, 11, "%y%m%d%H%M", timeinfo);
+
+    char* new_name;
+    char* original_name = (d->sf->familyname) ? d->sf->familyname : d->sf->fontname;
+    int i;
+
+    if (original_name!=NULL){
+    //if we already have a timestamp prepended, we should remove it before appending a new one
+      int timestamp_found = (original_name[10]=='-');
+      for (i=0;i<10;i++)
+        if (original_name[i]<'0' || original_name[i]>'9')
+          timestamp_found = false;
+
+      if (timestamp_found)
+        original_name = original_name + 11; //skip previous timestamp
+
+      new_name = malloc (sizeof(char) * (strlen(original_name) + 12));
+      sprintf(new_name, "%s-%s", timestamp, original_name);
+
+      d->sf->familyname_with_timestamp = new_name;
+    }
+  }
+}
+
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
@@ -1332,6 +1374,8 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int layer = ly_fore;
     int likecff;
     char *buts[3];
+
+    prepend_timestamp(d);
 
     buts[0] = _("_Yes");
     buts[1] = _("_No");
@@ -1407,6 +1451,7 @@ return;
 return;
 	    psscalewarned = true;
 	}
+
 	if ( (strlen(d->sf->fontname)>31 || (d->sf->familyname!=NULL && strlen(d->sf->familyname)>31)) && !psfnlenwarned ) {
 	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
 return;
@@ -1908,6 +1953,13 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFD_TogglePrependTimestamp(GGadget *g, GEvent *e) {
+  if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+    will_prepend_timestamp = GGadgetIsChecked(g);
+  }
+  return( true );
+}
+
 static int GFD_ToggleFontLog(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -2139,9 +2191,9 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20+2*48+5], *varray[13], *hvarray[46], *famarray[3*52+1],
+    GGadgetCreateData gcd[20+2*48+5+1], *varray[13], *hvarray[47], *famarray[3*52+1],
 	    *harray[10], boxes[9], *oflarray[11][5], *oflibinfo[8], *parray[3][4], *p2array[5];
-    GTextInfo label[20+2*48+4];
+    GTextInfo label[20+2*48+4+1];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int hvi, i, j, k, f, old, ofs, y, fc, dupfc, dupstyle, rk, vk;
@@ -2651,6 +2703,17 @@ return( 0 );
 	hvarray[hvi++] = &gcd[k-1];
 	hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = NULL;
 
+	label[k].text = (unichar_t *) _("Prepend timestamp");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
+	gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("This option prepends a timestamp in the format YYMMDDHHMM to the filename and font-family name metadata.");
+	gcd[k].gd.cid = CID_PrependTimestamp;
+	gcd[k].gd.handle_controlevent = GFD_TogglePrependTimestamp;
+	gcd[k++].creator = GCheckBoxCreate; //???
+	hvarray[hvi++] = &gcd[k-1]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
+	hvarray[hvi++] = NULL;
 
 	/* And OFLib uploads of families won't work because they don't accept dfonts */
 	label[k].text = (unichar_t *) _("Upload to the");
