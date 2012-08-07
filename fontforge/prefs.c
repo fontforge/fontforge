@@ -246,8 +246,9 @@ enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
 	pr_file, pr_namelist, pr_unicode, pr_angle };
 struct enums { char *name; int value; };
 
-struct enums fvsize_enums[] = { {NULL} };
+struct enums fvsize_enums[] = { {NULL, 0} };
 
+#define PREFS_LIST_EMPTY { NULL, 0, NULL, NULL, NULL, '\0', NULL, 0, NULL }
 static struct prefs_list {
     char *name;
     	/* In the prefs file the untranslated name will always be used, but */
@@ -287,14 +288,14 @@ static struct prefs_list {
 #endif
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
   new_list[] = {
 	{ N_("NewCharset"), pr_encoding, &default_encoding, NULL, NULL, 'N', NULL, 0, N_("Default encoding for\nnew fonts") },
 	{ N_("NewEmSize"), pr_int, &new_em_size, NULL, NULL, 'S', NULL, 0, N_("The default size of the Em-Square in a newly created font.") },
 	{ N_("NewFontsQuadratic"), pr_bool, &new_fonts_are_order2, NULL, NULL, 'Q', NULL, 0, N_("Whether new fonts should contain splines of quadratic (truetype)\nor cubic (postscript & opentype).") },
 	{ N_("LoadedFontsAsNew"), pr_bool, &loaded_fonts_same_as_new, NULL, NULL, 'L', NULL, 0, N_("Whether fonts loaded from the disk should retain their splines\nwith the original order (quadratic or cubic), or whether the\nsplines should be converted to the default order for new fonts\n(see NewFontsQuadratic).") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
   open_list[] = {
 	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
@@ -302,12 +303,12 @@ static struct prefs_list {
 	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
 	{ N_("SeekCharacter"), pr_unicode, &home_char, NULL, NULL, '\0', NULL, 0, N_("When fontforge opens a (non-sfd) font it will try to display this unicode character in the fontview.")},
 	{ N_("CompactOnOpen"), pr_bool, &compact_font_on_open, NULL, NULL, 'O', NULL, 0, N_("When a font is opened, should it be made compact?")},
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
   navigation_list[] = {
 	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
 	{ N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
   editing_list[] = {
 	{ N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
@@ -322,24 +323,24 @@ static struct prefs_list {
 	{ N_("UndoDepth"), pr_int, &maxundoes, NULL, NULL, '\0', NULL, 0, N_("The maximum number of Undoes/Redoes stored in a glyph") },
 	{ N_("UpdateFlex"), pr_bool, &updateflex, NULL, NULL, '\0', NULL, 0, N_("Figure out flex hints after every change") },
 	{ N_("AutoKernDialog"), pr_bool, &default_autokern_dlg, NULL, NULL, '\0', NULL, 0, N_("Open AutoKern dialog for new kerning subtables") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
   sync_list[] = {
 	{ N_("AutoWidthSync"), pr_bool, &adjustwidth, NULL, NULL, '\0', NULL, 0, N_("Changing the width of a glyph\nchanges the widths of all accented\nglyphs based on it.") },
 	{ N_("AutoLBearingSync"), pr_bool, &adjustlbearing, NULL, NULL, '\0', NULL, 0, N_("Changing the left side bearing\nof a glyph adjusts the lbearing\nof other references in all accented\nglyphs based on it.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  tt_list[] = {
 	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
 	{ N_("CopyTTFInstrs"), pr_bool, &copyttfinstr, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' truetype instructions.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
   accent_list[] = {
 	{ N_("AccentOffsetPercent"), pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, N_("The percentage of an em by which an accent is offset from its base glyph in Build Accent") },
 	{ N_("AccentCenterLowest"), pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ N_("CharCenterHighest"), pr_bool, &CharCenterHighest, NULL, NULL, '\0', NULL, 0, N_("When centering an accent over a glyph, should the accent\nbe centered on the highest point(s) of the glyph,\nor the middle of the glyph?") },
 	{ N_("PreferSpacingAccents"), pr_bool, &PreferSpacingAccents, NULL, NULL, '\0', NULL, 0, N_("Use spacing accents (Unicode: 02C0-02FF) rather than\ncombining accents (Unicode: 0300-036F) when\nbuilding accented glyphs.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  args_list[] = {
 	{ N_("PreferPotrace"), pr_bool, &preferpotrace, NULL, NULL, '\0', NULL, 0, N_("FontForge supports two different helper applications to do autotracing\n autotrace and potrace\nIf your system only has one it will use that one, if you have both\nuse this option to tell FontForge which to pick.") },
@@ -349,7 +350,7 @@ static struct prefs_list {
 	{ N_("MfAsk"), pr_bool, &mf_ask, NULL, NULL, '\0', NULL, 0, N_("Ask the user for mf commands each time mf is invoked") },
 	{ N_("MfClearBg"), pr_bool, &mf_clearbackgrounds, NULL, NULL, '\0', NULL, 0, N_("FontForge loads large images into the background of each glyph\nprior to autotracing them. You may retain those\nimages to look at after mf processing is complete, or\nremove them to save space") },
 	{ N_("MfShowErr"), pr_bool, &mf_showerrors, NULL, NULL, '\0', NULL, 0, N_("MetaFont (mf) generates lots of verbiage to stdout.\nMost of the time I find it an annoyance but it is\nimportant to see if something goes wrong.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  fontinfo_list[] = {
 	{ N_("FoundryName"), pr_string, &BDFFoundry, NULL, NULL, 'F', NULL, 0, N_("Name used for foundry field in bdf\nfont generation") },
@@ -358,12 +359,12 @@ static struct prefs_list {
 	{ N_("RecognizePUANames"), pr_bool, &recognizePUA, NULL, NULL, 'U', NULL, 0, N_("Once upon a time, Adobe assigned PUA (public use area) encodings\nfor many stylistic variants of characters (small caps, old style\nnumerals, etc.). Adobe no longer believes this to be a good idea,\nand recommends that these encodings be ignored.\n\n The assignments were originally made because most applications\ncould not handle OpenType features for accessing variants. Adobe\nnow believes that all apps that matter can now do so. Applications\nlike Word and OpenOffice still can't handle these features, so\n fontforge's default behavior is to ignore Adobe's current\nrecommendations.\n\nNote: This does not affect figuring out unicode from the font's encoding,\nit just controls determining unicode from a name.") },
 	{ N_("UnicodeGlyphNames"), pr_bool, &allow_utf8_glyphnames, NULL, NULL, 'O', NULL, 0, N_("Allow the full unicode character set in glyph names.\nThis does not conform to adobe's glyph name standard.\nSuch names should be for internal use only and\nshould NOT end up in production fonts." ) },
 	{ N_("AddCharToNameList"), pr_bool, &add_char_to_name_list, NULL, NULL, 'O', NULL, 0, N_( "When displaying a list of glyph names\n(or sometimes just a single glyph name)\nFontForge will add the unicode character\nthe name refers to in parenthesis after\nthe name. It does this because some names\nare obscure.\nSome people would prefer not to see this,\nso this preference item lets you turn off\n this behavior" ) },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  generate_list[] = {
 	{ N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
 	{ N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  hints_list[] = {
 	{ N_("StandardSlopeError"), pr_angle, &stem_slope_error, NULL, NULL, '\0', NULL, 0, N_("The maximum slope difference which still allows to consider two points \"parallel\".\nEnlarge this to make the autohinter more tolerable to small deviations from straight lines when detecting stem edges.") },
@@ -372,7 +373,7 @@ static struct prefs_list {
 	{ N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },
 	{ N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
 	{ N_("DetectDiagonalStems"), pr_bool, &detect_diagonal_stems, NULL, NULL, '\0', NULL, 0, N_("FontForge will generate diagonal stem hints, which then can be used by the AutoInstr command.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  instrs_list[] = {
 	{ N_("InstructDiagonalStems"), pr_bool, &instruct_diagonal_stems, NULL, NULL, '\0', NULL, 0, N_("Generate instructions for diagonal stem hints.") },
@@ -380,114 +381,114 @@ static struct prefs_list {
 	{ N_("InstructBallTerminals"), pr_bool, &instruct_ball_terminals, NULL, NULL, '\0', NULL, 0, N_("Generate instructions for ball terminals.") },
 	{ N_("InterpolateStrongPoints"), pr_bool, &interpolate_strong, NULL, NULL, '\0', NULL, 0, N_("Interpolate between stem edges some important points, not affected by other instructions.") },
 	{ N_("CounterControl"), pr_bool, &control_counters, NULL, NULL, '\0', NULL, 0, N_("Make sure similar or equal counters remain the same in gridfitted outlines.\nEnabling this option may result in glyph advance widths being\ninconsistently scaled at some PPEMs.") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
  opentype_list[] = {
 	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
-	{ NULL }
+	PREFS_LIST_EMPTY
 },
 /* These are hidden, so will never appear in preference ui, hence, no "N_(" */
 /*  They are controled elsewhere AntiAlias is a menu item in the font window's View menu */
 /*  etc. */
  hidden_list[] = {
-	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultFVShowHmetrics", pr_int, &default_fv_showhmetrics, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultFVShowVmetrics", pr_int, &default_fv_showvmetrics, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultFVSize", pr_int, &default_fv_font_size, NULL, NULL, 'S', NULL, 1 },
-	{ "DefaultFVRowCount", pr_int, &default_fv_row_count, NULL, NULL, 'S', NULL, 1 },
-	{ "DefaultFVColCount", pr_int, &default_fv_col_count, NULL, NULL, 'S', NULL, 1 },
-	{ "DefaultFVGlyphLabel", pr_int, &default_fv_glyphlabel, NULL, NULL, 'S', NULL, 1 },
-	{ "SaveToDir", pr_int, &save_to_dir, NULL, NULL, 'S', NULL, 1 },
-	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
-	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1 },
-	{ "CVVisible0", pr_bool, &cvvisible[0], NULL, NULL, '\0', NULL, 1 },
-	{ "CVVisible1", pr_bool, &cvvisible[1], NULL, NULL, '\0', NULL, 1 },
-	{ "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1 },
-	{ "BVVisible1", pr_bool, &bvvisible[1], NULL, NULL, '\0', NULL, 1 },
-	{ "BVVisible2", pr_bool, &bvvisible[2], NULL, NULL, '\0', NULL, 1 },
-	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
-	{ "MarkPointsOfInflect", pr_int, &CVShows.markpoi, NULL, NULL, '\0', NULL, 1 },
+	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultFVShowHmetrics", pr_int, &default_fv_showhmetrics, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultFVShowVmetrics", pr_int, &default_fv_showvmetrics, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultFVSize", pr_int, &default_fv_font_size, NULL, NULL, 'S', NULL, 1, NULL },
+	{ "DefaultFVRowCount", pr_int, &default_fv_row_count, NULL, NULL, 'S', NULL, 1, NULL },
+	{ "DefaultFVColCount", pr_int, &default_fv_col_count, NULL, NULL, 'S', NULL, 1, NULL },
+	{ "DefaultFVGlyphLabel", pr_int, &default_fv_glyphlabel, NULL, NULL, 'S', NULL, 1, NULL },
+	{ "SaveToDir", pr_int, &save_to_dir, NULL, NULL, 'S', NULL, 1, NULL },
+	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultCVWidth", pr_int, &default_cv_width, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultCVHeight", pr_int, &default_cv_height, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CVVisible0", pr_bool, &cvvisible[0], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CVVisible1", pr_bool, &cvvisible[1], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "BVVisible1", pr_bool, &bvvisible[1], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "BVVisible2", pr_bool, &bvvisible[2], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "MarkPointsOfInflect", pr_int, &CVShows.markpoi, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },
-	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1 },
-	{ "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowSideBearings", pr_int, &CVShows.showsidebearings, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowRefNames", pr_int, &CVShows.showrefnames, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowFilled", pr_int, &CVShows.showfilled, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowTabs", pr_int, &CVShows.showtabs, NULL, NULL, '\0', NULL, 1 },
- 	{ "SnapOutlines", pr_int, &CVShows.snapoutlines, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowAlmostHVLines", pr_bool, &CVShows.showalmosthvlines, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowAlmostHVCurves", pr_bool, &CVShows.showalmosthvcurves, NULL, NULL, '\0', NULL, 1 },
-	{ "AlmostHVBound", pr_int, &CVShows.hvoffset, NULL, NULL, '\0', NULL, 1 },
-	{ "CheckSelfIntersects", pr_bool, &CVShows.checkselfintersects, NULL, NULL, '\0', NULL, 1 },
-	{ "ShowDebugChanges", pr_bool, &CVShows.showdebugchanges, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
-	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1 },
-	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1 },
-	{ "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1 },
-	{ "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultSFNTflags", pr_int, &old_sfnt_flags, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1 },
-	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1 },
-	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1 },
-	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1 },
-	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1 },
-	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1 },
-	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1 },
-	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1 },
-	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1 },
-	{ "RectCenterOut", pr_bool, &center_out[0], NULL, NULL, '\0', NULL, 1 },
-	{ "EllipseCenterOut", pr_bool, &center_out[1], NULL, NULL, '\0', NULL, 1 },
-	{ "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1 },
-	{ "RoundRectRadius", pr_real, &rr_radius, NULL, NULL, '\0', NULL, 1 },
-	{ "StarPercent", pr_real, &star_percent, NULL, NULL, '\0', NULL, 1 },
-	{ "CoverageFormatsAllowed", pr_int, &coverageformatsallowed, NULL, NULL, '\0', NULL, 1 },
-	{ "DebugWins", pr_int, &debug_wins, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitDpi", pr_int, &gridfit_dpi, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitDepth", pr_int, &gridfit_depth, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitPointSize", pr_real, &gridfit_pointsizey, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitPointSizeX", pr_real, &gridfit_pointsizex, NULL, NULL, '\0', NULL, 1 },
-	{ "GridFitSameAs", pr_int, &gridfit_x_sameas_y, NULL, NULL, '\0', NULL, 1 },
-	{ "MVShowGrid", pr_int, &mvshowgrid, NULL, NULL, '\0', NULL, 1 },
-	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1 },
-	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
-	{ "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1 },
-	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1 },
-	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1 },
-	{ "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultMVWidth", pr_int, &mv_width, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1 },
-	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1 },
+	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "InfoWindowDistance", pr_int, &infowindowdistance, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowSideBearings", pr_int, &CVShows.showsidebearings, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowRefNames", pr_int, &CVShows.showrefnames, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowFilled", pr_int, &CVShows.showfilled, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowTabs", pr_int, &CVShows.showtabs, NULL, NULL, '\0', NULL, 1, NULL },
+ 	{ "SnapOutlines", pr_int, &CVShows.snapoutlines, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowAlmostHVLines", pr_bool, &CVShows.showalmosthvlines, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowAlmostHVCurves", pr_bool, &CVShows.showalmosthvcurves, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "AlmostHVBound", pr_int, &CVShows.hvoffset, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CheckSelfIntersects", pr_bool, &CVShows.checkselfintersects, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ShowDebugChanges", pr_bool, &CVShows.showdebugchanges, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultSFNTflags", pr_int, &old_sfnt_flags, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PageWidth", pr_int, &pagewidth, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PageHeight", pr_int, &pageheight, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PrintType", pr_int, &printtype, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PrintCommand", pr_string, &printcommand, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PageLazyPrinter", pr_string, &printlazyprinter, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "RectCenterOut", pr_bool, &center_out[0], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "EllipseCenterOut", pr_bool, &center_out[1], NULL, NULL, '\0', NULL, 1, NULL },
+	{ "PolyStartPointCnt", pr_int, &ps_pointcnt, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "RoundRectRadius", pr_real, &rr_radius, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "StarPercent", pr_real, &star_percent, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CoverageFormatsAllowed", pr_int, &coverageformatsallowed, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DebugWins", pr_int, &debug_wins, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "GridFitDpi", pr_int, &gridfit_dpi, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "GridFitDepth", pr_int, &gridfit_depth, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "GridFitPointSize", pr_real, &gridfit_pointsizey, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "GridFitPointSizeX", pr_real, &gridfit_pointsizex, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "GridFitSameAs", pr_int, &gridfit_x_sameas_y, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "MVShowGrid", pr_int, &mvshowgrid, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "FCShowHidden", pr_bool, &gfc_showhidden, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "FCDirPlacement", pr_int, &gfc_dirplace, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "FCBookmarks", pr_string, &gfc_bookmarks, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "OFLibAutomagicPreview", pr_int, &oflib_automagic_preview, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultMVWidth", pr_int, &mv_width, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultMVHeight", pr_int, &mv_height, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1, NULL },
 #ifdef _NO_LIBCAIRO
 	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
 #ifdef _NO_LIBPANGO
 	{ "UsePangoDrawing", pr_bool, &prefs_usepango, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
 #endif
-	{ "CV_B1Tool", pr_int, (int *) &cv_b1_tool, NULL, NULL, '\0', NULL, 1 },
-	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1 },
-	{ "CV_B2Tool", pr_int, (int *) &cv_b2_tool, NULL, NULL, '\0', NULL, 1 },
-	{ "CV_CB2Tool", pr_int, (int *) &cv_cb2_tool, NULL, NULL, '\0', NULL, 1 },
+	{ "CV_B1Tool", pr_int, (int *) &cv_b1_tool, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CV_B2Tool", pr_int, (int *) &cv_b2_tool, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "CV_CB2Tool", pr_int, (int *) &cv_cb2_tool, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "XUID-Base", pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") }, /* Obsolete */
-	{ "ShowKerningPane", pr_int, (int *) &show_kerning_pane_in_class, NULL, NULL, '\0', NULL, 1 },
-	{ NULL }
+	{ "ShowKerningPane", pr_int, (int *) &show_kerning_pane_in_class, NULL, NULL, '\0', NULL, 1, NULL },
+	PREFS_LIST_EMPTY
 },
  oldnames[] = {
 	{ "DumpGlyphMap", pr_bool, &glyph_2_name_map, NULL, NULL, '\0', NULL, 0, N_("When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data.") },
-	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1 },
+	{ "DefaultTTFApple", pr_int, &pointless, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "AcuteCenterBottom", pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 1, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ "AlwaysGenApple", pr_bool, &alwaysgenapple, NULL, NULL, 'A', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the Apple checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and OpenType are set, both formats are generated") },
 	{ "AlwaysGenOpenType", pr_bool, &alwaysgenopentype, NULL, NULL, 'O', NULL, 0, N_("Apple and MS/Adobe differ about the format of truetype and opentype files.\nThis controls the default setting of the OpenType checkbox in the\nFile->Generate Font dialog.\nThe main differences are:\n Bitmap data are stored in different tables\n Scaled composite glyphs are treated differently\n Use of GSUB rather than morx(t)/feat\n Use of GPOS rather than kern/opbd\n Use of GDEF rather than lcar/prop\nIf both this and Apple are set, both formats are generated") },
-	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
-	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },
-	{ NULL }
+	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1, NULL },
+	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1, NULL },
+	PREFS_LIST_EMPTY
 },
  *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, hidden_list, NULL },
  *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, instrs_list, hidden_list, oldnames, NULL };
@@ -507,8 +508,8 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
     { N_("PS Hints"), 1, hints_list},
     { N_("TT Instrs"), 1, instrs_list},
     { N_("OpenType"), 1, opentype_list},
-    { 0 }
- };
+    { NULL, 0, NULL }
+};
 
 static void FileChooserPrefsChanged(void *pointless) {
     SavePrefs(true);
@@ -878,7 +879,9 @@ static int encmatch(const char *enc,int subok) {
 	{ "ujis", ??? },
 	{ "EUC-KR", e_euckorean },
 #endif
-	{ NULL }};
+	{ NULL, 0 }
+    };
+
     int i;
     char buffer[80];
 #if HAVE_ICONV_H
