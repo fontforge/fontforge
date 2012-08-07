@@ -339,7 +339,7 @@ AC_ARG_WITH([gnustep-make],
                    [(experimental and undocumented)
                     build FontForge as a GNUstep application, FontForgeApp.app.
                     Requires GNU Make, the GNU Objective C compiler, and gnustep-make.
-                    (Out-of-source builds are not supported if this option is chosen,
+                    (Outside-of-source builds are not supported if this option is chosen,
                     and some configure options that work in "normal" builds may do nothing.)])])
 test x"${with_gnustep_make}" = x && with_gnustep_make=no
 if test x"${with_gnustep_make}" = xyes; then

@@ -319,7 +319,7 @@ test x"${regular_link_cairo}" = xyes -a x"${CAIRO_LIBS}" != x && my_libs="${my_l
 test x"${regular_link_pango}" = xyes -a x"${PANGO_LIBS}" != x && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${regular_link_pango}" = xyes -a x"${PANGOCAIRO_LIBS}" != x && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${regular_link_pango}" = xyes -a x"${PANGOXFT_LIBS}" != x && my_libs="${my_libs} ${PANGOXFT_LIBS}"
-my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS} -lX11 ${PTHREAD_LIBS}"
+my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS} ${PTHREAD_LIBS}"
 test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
