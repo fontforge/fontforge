@@ -8,7 +8,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([1.10 foreign silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([1.11.1 foreign silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
