@@ -6,7 +6,7 @@
 # Maintainers with working Makefiles can simply delete doc_list.mk to
 # have it rebuilt by this script.
 
-doc_list="`find . -type f -print`"
+doc_list="`find . -type f -print | grep -v '^Makefile'`"
 root_doc_list="`ls *.html *.png *.gif *.pdf`"
 nonbmp_doc_list="`find nonBMP -type f -print`"
 flags_doc_list="`find flags -type f -print`"
