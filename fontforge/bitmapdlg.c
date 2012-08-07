@@ -40,10 +40,11 @@ static int oldusefreetype=1;
 int oldsystem=0 /* X11 */;
 
 static GTextInfo which[] = {
-    { (unichar_t *) N_("All Glyphs"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 },
-    { (unichar_t *) N_("Selected Glyphs"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 },
-    { (unichar_t *) N_("Current Glyph"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 },
-    { NULL }};
+    { (unichar_t *) N_("All Glyphs"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' },
+    { (unichar_t *) N_("Selected Glyphs"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' },
+    { (unichar_t *) N_("Current Glyph"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 
 #define CID_Which	1001
 #define CID_Pixel	1002

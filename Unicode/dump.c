@@ -24,6 +24,34 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/*
+ * To generate the latest files, you will first need to go and get these files
+ * (see below in "alphabets[]) and put them in the Unicode subdirectory:
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-1.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-2.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-3.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-4.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-5.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-6.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-7.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-8.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-9.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-10.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-11.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-13.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-14.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-15.TXT
+ * wget http://unicode.org/Public/MAPPINGS/ISO8859/8859-16.TXT
+ * wget http://unicode.org/Public/MAPPINGS/VENDORS/MISC/KOI8-R.TXT
+ * mv KOI8-R.TXT koi8r.TXT
+ * wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0201.TXT
+ * mv JIS0201.TXT JIS0201.txt
+ * wget http://unicode.org/Public/MAPPINGS/VENDORS/ADOBE/zdingbat.txt
+ * mv zdingbat.txt zapfding.TXT
+ * wget http://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0212.TXT
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,17 +62,17 @@
 char *alphabets[] = { "8859-1.TXT", "8859-2.TXT", "8859-3.TXT", "8859-4.TXT",
     "8859-5.TXT", "8859-6.TXT", "8859-7.TXT", "8859-8.TXT", "8859-9.TXT",
     "8859-10.TXT", "8859-11.TXT", "8859-13.TXT", "8859-14.TXT", "8859-15.TXT",
-    "koi8r.TXT", "JIS0201.txt", "WIN.TXT", "MacRoman.TXT",
+    /*"8859-16.TXT",*/ "koi8r.TXT", "JIS0201.txt", "WIN.TXT", "MacRoman.TXT",
     "MacSYMBOL.TXT", "zapfding.TXT", /*"MacCYRILLIC.TXT",*/ NULL };
 char *alnames[] = { "i8859_1", "i8859_2", "i8859_3", "i8859_4",
     "i8859_5", "i8859_6", "i8859_7", "i8859_8", "i8859_9",
     "i8859_10", "i8859_11", "i8859_13", "i8859_14", "i8859_15",
-    "koi8_r", "jis201", "win", "mac",
+    /* "i8859_16",*/ "koi8_r", "jis201", "win", "mac",
     "MacSymbol", "ZapfDingbats", /*"MacCyrillic",*/ NULL };
 int almaps[] = { em_iso8859_1, em_iso8859_2, em_iso8859_3, em_iso8859_4,
     em_iso8859_5, em_iso8859_6, em_iso8859_7, em_iso8859_8, em_iso8859_9,
     em_iso8859_10, em_iso8859_11, em_iso8859_13, em_iso8859_14, em_iso8859_15,
-    em_koi8_r, em_jis201, em_win, em_mac, em_symbol, em_zapfding,
+    /*em_iso8859_16,*/ em_koi8_r, em_jis201, em_win, em_mac, em_symbol, em_zapfding,
     -1 };
 
 
@@ -65,13 +93,15 @@ int cjkmaps[] = { em_jis208, em_jis212, em_big5, em_gb2312, em_ksc5601, em_big5h
 
 unsigned long *used[256];
 
-const char CantReadFile[] = "Can't find or read file %s\n";
-const char CantSaveFile[] = "Can't open or write to output file %s\n";
-const char NoMoreMemory[] = "Can't access more memory.\n";
+const char GeneratedFileMessage[] = "/* This file was generated using the program 'dump' */\n\n";
+const char CantReadFile[] = "Can't find or read file %s\n";		/* exit(2) */
+const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(1) */
+const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
+const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
-static void dumpalphas(FILE *output, FILE *header) {
+static int dumpalphas(FILE *output, FILE *header) {
     FILE *file;
-    int i,j,k, first, last;
+    int i,j,k, l, first, last;
     long _orig, _unicode, mask;
     unichar_t unicode[256];
     unsigned char *table[256], *plane;
@@ -80,19 +110,31 @@ static void dumpalphas(FILE *output, FILE *header) {
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned char c_allzeros[256] = { 0 };\n\n" );
 
-    buffer[200]='\0';
+    buffer[200]='\0'; l=0;
     for ( k=0; k<256; ++k ) table[k] = NULL;
 
-    for ( j=0; alphabets[j]!=NULL; ++j ) {
+    for ( j=0; j<256 && alphabets[j]!=NULL; ++j ) {
 	file = fopen( alphabets[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, CantReadFile, alphabets[j]);
+	    l = 1;
 	} else {
 	    for ( i=0; i<160; ++i )
 		unicode[i] = i;
 	    for ( ; i<256; ++i )
 		unicode[i] = 0;
 	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+		if (strlen(buffer)>=199) {
+		    fprintf( stderr, LineLengthBg,alphabets[j],buffer );
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 4 );
+		}
 		if ( buffer[0]=='#' )
 	    continue;
 		sscanf(buffer, "0x%lx 0x%lx", (unsigned long *) &_orig, (unsigned long *) &_unicode);
@@ -100,7 +142,14 @@ static void dumpalphas(FILE *output, FILE *header) {
 		if ( table[_unicode>>8]==NULL ) {
 		    if ((plane = table[_unicode>>8] = calloc(256,1))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		    if ( j==0 && (_unicode>>8)==0 )
 			for ( k=0; k<256; ++k )
@@ -113,7 +162,14 @@ static void dumpalphas(FILE *output, FILE *header) {
 		if ( used[_unicode>>8]==NULL ) {
 		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		}
 		if ( almaps[j]!=-1 )
@@ -123,10 +179,15 @@ static void dumpalphas(FILE *output, FILE *header) {
 
 	    fprintf( header, "extern const unichar_t unicode_from_%s[];\n", alnames[j] );
 	    fprintf( output, "const unichar_t unicode_from_%s[] = {\n", alnames[j] );
-	    for ( i=0; i<256-8; i+=8 )
-		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	    for ( i=0; i<256-8; i+=8 ) {
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 			unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+		if ( (i & 63)==0 )
+		    fprintf( output, "\t/* 0x%04x */\n",i);
+		else
+		    fprintf( output, "\n");
+	    }
 	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
@@ -138,12 +199,17 @@ static void dumpalphas(FILE *output, FILE *header) {
 		    last = k;
 		    plane = table[k];
 		    fprintf( output, "static const unsigned char %s_from_unicode_%x[] = {\n", alnames[j], k );
-		    for ( i=0; i<256-16; i+=16 )
-			fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x,\n",
+		    for ( i=0; i<256-16; i+=16 ) {
+			fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x,",
 				plane[i], plane[i+1], plane[i+2], plane[i+3],
 				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
 				plane[i+8], plane[i+9], plane[i+10], plane[i+11],
 				plane[i+12], plane[i+13], plane[i+14], plane[i+15]);
+		    if ( (i & 63)==0 )
+			fprintf( output, "\t/* 0x%04x */\n",i);
+		    else
+			fprintf( output, "\n");
+		    }
 		    fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n};\n\n",
 				plane[i], plane[i+1], plane[i+2], plane[i+3],
 				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
@@ -167,6 +233,12 @@ static void dumpalphas(FILE *output, FILE *header) {
 		table[k]=NULL;
 	    }
 	}
+    }
+    if ( l ) {				/* missing files, shouldn't go any further */
+	for ( k=0; k<256; ++k )
+	    if ( used[k] != NULL )
+		free(used[k]);
+return( 2 );
     }
 
 /*	Mac Symbol appears as a font even on unix.  Cyrillic does not but so what?
@@ -208,6 +280,7 @@ static void dumpalphas(FILE *output, FILE *header) {
 	    mask |= (1<<almaps[j]);
     for ( i=0; i<' '; ++i )
 	used[0][i] |= mask;
+return( 0 );				/* no errors encountered */
 }
 
 #if 0
@@ -510,11 +583,12 @@ static void dumpbig5(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
+    j = 2;
+
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
-	j = 2;
 	buffer[400]='\0';
 	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
@@ -618,11 +692,12 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
+    j=5;
+
     file = fopen( cjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, CantReadFile, cjk[j] );
     } else {
-	j=5;
 	buffer[400]='\0';
 	memset(table,0,sizeof(table));
 	memset(unicode,0,sizeof(unicode));
@@ -972,6 +1047,8 @@ static void dumpgb2312(FILE *output,FILE *header) {
 
 static void dumpcjks(FILE *output,FILE *header) {
 
+    fprintf( output, GeneratedFileMessage );
+
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned short u_allzeros[256] = { 0 };\n\n" );
 
@@ -985,6 +1062,8 @@ static void dumpcjks(FILE *output,FILE *header) {
 static void dumptrans(FILE *output, FILE *header) {
     unsigned long *plane;
     int k, i;
+
+    fprintf( output, GeneratedFileMessage );
 
     fprintf(output, "static const unsigned long l_allzeros[256] = { 0 };\n" );
     for ( k=0; k<256; ++k ) {
@@ -1013,6 +1092,7 @@ static void dumptrans(FILE *output, FILE *header) {
 
 int main(int argc, char **argv) {
     FILE *output, *header;
+    int i;
 
     if (( output = fopen( "alphabet.c", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "alphabet.c" );
@@ -1020,28 +1100,38 @@ return 1;
     }
     if (( header = fopen( "chardata.h", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "chardata.h" );
-        fclose(output);
-	return 1;
+	fclose(output);
+return 1;
     }
+
+    fprintf( output, GeneratedFileMessage );
+    fprintf( header, GeneratedFileMessage );
 
     fprintf( header, "#include \"basics.h\"\n\n" );
     fprintf( header, "struct charmap {\n    int first, last;\n    unsigned char **table;\n    unichar_t *totable;\n};\n" );
     fprintf( header, "struct charmap2 {\n    int first, last;\n    unsigned short **table;\n    unichar_t *totable;\n};\n\n" );
 
-    dumpalphas(output,header);
+    if ( i=dumpalphas(output,header)) {	/* load files listed in alphabets[] */
+	fclose(header);
+	fclose(output);
+return( i );
+    }
+
     /*dumprandom(output,header);*/
     fclose(output);
 
     if (( output = fopen( "cjk.c", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "cjk.c" );
-        fclose(header);
+	fclose(header);
 return 1;
     }
+
     dumpcjks(output,header);
     fclose(output);
+
     if (( output = fopen( "backtrns.c", "w" ))==NULL ) {
 	fprintf( stderr, CantSaveFile, "backtrns.c" );
-        fclose(header);
+	fclose(header);
 return 1;
     }
     dumptrans(output,header);

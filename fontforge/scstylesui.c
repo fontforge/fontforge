@@ -365,12 +365,12 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
 #define CID_TabSet		1100
 
 static GTextInfo ss_features[] = {
-    { (unichar_t *) N_("Superscript"), NULL, 0, 0, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Scientific Inferiors"), NULL, 0, 0, (void *) CHR('s','i','n','f'), NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Subscript"), NULL, 0, 0, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Denominators"), NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Numerators"), NULL, 0, 0, (void *) CHR('n','u','m','r'), NULL, 0, 0, 0, 0, 0, 0, 1},
-    NULL
+    { (unichar_t *) N_("Superscript"), NULL, 0, 0, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Scientific Inferiors"), NULL, 0, 0, (void *) CHR('s','i','n','f'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Subscript"), NULL, 0, 0, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Denominators"), NULL, 0, 0, (void *) CHR('d','n','o','m'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Numerators"), NULL, 0, 0, (void *) CHR('n','u','m','r'), NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
 };
 /* Not translated */
 static char *ss_extensions[] = {
@@ -593,14 +593,14 @@ return( true );
 }
 
 static GTextInfo stemwidth[] = {
-    { (unichar_t *) N_("Width of Vertical Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Width/Height of Thick Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) N_("Width of Vertical Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Width/Height of Thick Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
 };
 static GTextInfo stemheight[] = {
-    { (unichar_t *) N_("Height of Horizontal Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Width/Height of Thin Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) N_("Height of Horizontal Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Width/Height of Thin Stems:"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    GTEXTINFO_EMPTY
 };
 
 static int CG_SameAs_Changed(GGadget *g, GEvent *e) {

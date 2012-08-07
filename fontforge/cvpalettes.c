@@ -2353,8 +2353,10 @@ static void LayerMenu(CharView *cv,GEvent *event, int nolayer) {
 	if ( names[i]!=(char *) -1 ) {
 	    mi[i].ti.text = (unichar_t *) _(names[i]);
 	    mi[i].ti.text_is_1byte = true;
+	    mi[i].ti.text_in_resource = true;
 	} else
 	    mi[i].ti.line = true;
+
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = mids[i];

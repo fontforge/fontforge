@@ -1991,7 +1991,7 @@ return;
 		LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
 		info->bad_glyph_data = true;
 		if ( !(info->openflags&of_fontlint) )
-		    LogError("  Subsequent errors will not be reported.\n" );
+		    LogError(_("  Subsequent errors will not be reported.\n") );
 		info->gbbcomplain = true;
 	    }
 	}
@@ -2014,7 +2014,7 @@ return;
 		LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
 		info->bad_glyph_data = true;
 		if ( !(info->openflags&of_fontlint) )
-		    LogError("  Subsequent errors will not be reported.\n" );
+		    LogError(_("  Subsequent errors will not be reported.\n") );
 		info->gbbcomplain = true;
 	    }
 	}
@@ -2225,7 +2225,7 @@ return( sc );
 	    LogError(_("Glyph bounding box data exceeds font bounding box data for GID %d\n"), gid );
 	    info->bad_glyph_data = true;
 	    if ( !(info->openflags&of_fontlint) )
-		LogError("  Subsequent errors will not be reported.\n" );
+		LogError(_("  Subsequent errors will not be reported.\n") );
 	    info->bbcomplain = true;
 	}
     }
@@ -3161,7 +3161,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 
     while ( ftell(ttf)<end ) {
 	if ( feof(ttf) ) {
-	    LogError("End of file found when reading private dictionary.\n" );
+	    LogError(_("End of file found when reading private dictionary.\n") );
     break;
 	}
 	sp = 0;
@@ -4047,22 +4047,22 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    if ( lastwidth>info->advanceWidthMax && info->hhea_start!=0 ) {
 		if ( !info->wdthcomplain || (info->openflags&of_fontlint)) {
 		    if ( info->fontname!=NULL && sc->name!=NULL )
-			LogError("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n",
+			LogError(_("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"),
 				info->fontname, lastwidth, sc->name, info->advanceWidthMax );
 		    else
-			LogError("In GID %d the advance width (%d) is greater than the stated maximum (%d)\n",
+			LogError(_("In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"),
 				i, lastwidth, info->advanceWidthMax );
 		    if ( !(info->openflags&of_fontlint) )
-			LogError("  Subsequent errors will not be reported.\n" );
+			LogError(_("  Subsequent errors will not be reported.\n") );
 		    info->wdthcomplain = true;
 		}
 	    }
 	    if ( check_width_consistency && sc->width!=lastwidth ) {
 		if ( info->fontname!=NULL && sc->name!=NULL )
-		    LogError("In %s, in glyph %s, 'CFF ' advance width (%d) and\n  'hmtx' width (%d) do not match. (Subsequent mismatches will not be reported)\n",
+		    LogError(_("In %s, in glyph %s, 'CFF ' advance width (%d) and\n  'hmtx' width (%d) do not match. (Subsequent mismatches will not be reported)\n"),
 			    info->fontname, sc->name, sc->width, lastwidth );
 		else
-		    LogError("In GID %d, 'CFF ' advance width (%d) and 'hmtx' width (%d) do not match.\n  (Subsequent mismatches will not be reported)\n",
+		    LogError(_("In GID %d, 'CFF ' advance width (%d) and 'hmtx' width (%d) do not match.\n  (Subsequent mismatches will not be reported)\n"),
 			    i, sc->width, lastwidth );
 		info->bad_metrics = true;
 		check_width_consistency = false;
@@ -4174,7 +4174,7 @@ return( enc );
 
 static int badencoding(struct ttfinfo *info) {
     if ( !info->bad_cmap ) {
-	LogError("Bad encoding information in 'cmap' table.");
+	LogError(_("Bad encoding information in 'cmap' table."));
 	info->bad_cmap = true;
     }
 return( -1 );
@@ -5090,10 +5090,10 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     }
 
     if ( info->os2_version==0 ) {
-	LogError("Windows will reject fonts with an OS/2 version number of 0\n");
+	LogError(_("Windows will reject fonts with an OS/2 version number of 0\n"));
 	info->bad_os2_version = true;
     } else if ( info->os2_version==1 && info->cff_start!=0 ) {
-	LogError("Windows will reject otf (cff) fonts with an OS/2 version number of 1\n");
+	LogError(_("Windows will reject otf (cff) fonts with an OS/2 version number of 1\n"));
 	info->bad_os2_version = true;
     }
 }

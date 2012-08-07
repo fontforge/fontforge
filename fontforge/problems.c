@@ -3243,6 +3243,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 
     plabel[9].text = (unichar_t *) _("Irrelevant _Factor:");
     plabel[9].text_is_1byte = true;
+    plabel[9].text_in_resource = true;
     pgcd[9].gd.label = &plabel[9];
     pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+17; 
     pgcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;

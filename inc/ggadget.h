@@ -51,6 +51,9 @@ typedef struct gtextinfo {
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
 } GTextInfo;
 
+#define GTEXTINFO_EMPTY { NULL, NULL, 0x000000, 0x000000, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\0' }
+
+
 typedef struct gtextinfo2 {
     unichar_t *text;
     GImage *image;
@@ -72,6 +75,9 @@ typedef struct gtextinfo2 {
 						/* should really be in menuitem, but that wastes space and complicates GTextInfoDraw */
 } GTextInfo2;
 
+#define GTEXTINFO2_EMPTY { NULL, NULL, 0x000000, 0x000000, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\0' }
+
+
 typedef struct gmenuitem {
     GTextInfo ti;
     unichar_t shortcut;
@@ -82,6 +88,9 @@ typedef struct gmenuitem {
     int mid;
 } GMenuItem;
 
+#define GMENUITEM_EMPTY { GTEXTINFO_EMPTY, '\0', 0, NULL, NULL, NULL, 0 }
+
+
 typedef struct gmenuitem2 {
     GTextInfo ti;
     char *shortcut;
@@ -90,6 +99,9 @@ typedef struct gmenuitem2 {
     void (*invoke)(struct gwindow *base,struct gmenuitem *mi,GEvent *);	/* called on mouse release */
     int mid;
 } GMenuItem2;
+
+#define GMENUITEM2_EMPTY { GTEXTINFO_EMPTY, NULL, NULL, NULL, NULL, 0 }
+
 
 typedef struct tabinfo {
     unichar_t *text;
@@ -247,6 +259,10 @@ struct matrixinit {
     int  (*handle_key)(GGadget *g,GEvent *e);
     char *(*bigedittitle)(GGadget *g,int r, int c);
 };
+
+#define COL_INIT_EMPTY { 0, NULL, NULL, NULL, NULL }
+#define MATRIX_DATA_EMPTY { { 0 }, 0, 0, 0 }
+#define MATRIXINIT_EMPTY { 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 #define GME_NoChange	0x80000000
 

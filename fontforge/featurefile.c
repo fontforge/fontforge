@@ -90,7 +90,7 @@ static void dump_glyphbyname(FILE *out, SplineFont *sf, char *name) {
     SplineChar *sc = SFGetChar(sf,-1,name);
 
     if ( sc==NULL )
-	LogError( "No glyph named %s.", name );
+	LogError(_("No glyph named %s."), name );
     if ( sc==NULL || sc->parent->cidmaster==NULL )
 	fprintf( out, "\\%s", name );
     else
@@ -128,7 +128,7 @@ static void dump_glyphnamelist(FILE *out, SplineFont *sf, char *names) {
 	    ch = *pt; *pt = '\0';
 	    sc2 = SFGetChar(sf,-1,start);
 	    if ( sc2==NULL ) {
-		LogError( "No CID named %s", start);
+		LogError(_("No CID named %s"), start);
 		nm = start;
 	    } else {
 		sprintf( cidbuf, "\\%d", sc2->orig_pos );

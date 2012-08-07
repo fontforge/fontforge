@@ -1009,7 +1009,7 @@ return;			/* Bad version number */
 	    else
 		info->chars[j]->comment = pfed_read_ucs2_len(ttf,base+offset,next-offset);
 	    if ( info->chars[j]->comment == NULL )
-		LogError("Invalid comment string (negative length?) in 'PfEd' table for glyph %s.",
+		LogError(_("Invalid comment string (negative length?) in 'PfEd' table for glyph %s."),
 			info->chars[j]->name );
 	}
     }
@@ -1074,7 +1074,7 @@ return;			/* Bad version number */
 		}
 		if ( ss[j].subs_off!=0 ) {
 		    if ( !sub->anchor_classes )
-			LogError("Whoops, attempt to name anchors in a subtable which doesn't contain any\n");
+			LogError(_("Whoops, attempt to name anchors in a subtable which doesn't contain any\n"));
 		    else {
 			fseek(ttf,base+ss[j].subs_off,SEEK_SET);
 			a = getushort(ttf);
@@ -1098,13 +1098,13 @@ return;			/* Bad version number */
 	    }
 	    /* I guess it's ok for some subtables to be unnamed, so no check for sub!=NULL */
 	    if ( j<s )
-		LogError("Whoops, more names than subtables of lookup %s\n", otl->lookup_name );
+		LogError(_("Whoops, more names than subtables of lookup %s\n"), otl->lookup_name );
 	    free(ss);
 	}
     }
     /* I guess it's ok for some lookups to be unnamed, so no check for otf!=NULL */
     if ( i<n )
-	LogError("Whoops, more names than lookups\n" );
+	LogError(_("Whoops, more names than lookups\n") );
     free(ls);
 }
 
@@ -1116,7 +1116,7 @@ return( (float) (short) getushort(ttf));
     else if ( mod==V_F )
 return( getlong(ttf)/256.0 );
     else {
-	LogError( "Bad data type in contour verb in 'PfEd'\n");
+	LogError(_("Bad data type in contour verb in 'PfEd'\n"));
 return( 0 );
     }
 }
@@ -1132,7 +1132,7 @@ static void pfed_read_normal_contour(FILE *ttf,SplineSet *ss,
 
     verb = getc(ttf);
     if ( COM_VERB(verb)!=V_MoveTo ) {
-	LogError("Whoops, contours must begin with a move to\n" );
+	LogError(_("Whoops, contours must begin with a move to\n") );
 	ss->first = ss->last = SplinePointCreate(0,0);
 return;
     }
@@ -1143,7 +1143,7 @@ return;
 	verb = getc(ttf);
 	v = COM_VERB(verb); m = COM_MOD(verb);
 	if ( m==3 ) {
-	    LogError("Bad data modifier in contour command in 'PfEd'\n" );
+	    LogError(_("Bad data modifier in contour command in 'PfEd'\n") );
     break;
 	}
 	if ( verb==V_Close || verb==V_End )
@@ -1216,7 +1216,7 @@ return;
 	    sp->prevcp.y = current->nextcp.y+offy1;
 	    sp->noprevcp = false;
 	} else {
-	    LogError("Whoops, unexpected verb in contour %d.%d\n", v, m );
+	    LogError(_("Whoops, unexpected verb in contour %d.%d\n"), v, m );
     break;
 	}
 	SplineMake(current,sp,type==2);
@@ -1253,7 +1253,7 @@ static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
 	if ( ch!=SPIRO_OPEN_CONTOUR && ch!=SPIRO_CORNER && ch!=SPIRO_G4 &&
 		ch!=SPIRO_G2 && ch!=SPIRO_LEFT && ch!=SPIRO_RIGHT &&
 		ch!=SPIRO_END && ch!=SPIRO_CLOSE_CONTOUR ) {
-	    LogError("Whoops, bad spiro command %d\n", ch);
+	    LogError(_("Whoops, bad spiro command %d\n"), ch);
     break;
 	}
 	if ( ss->spiro_cnt>=ss->spiro_max )
@@ -1307,7 +1307,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	    cur->transform[j] = getlong(ttf)/32768.0;
 	gid = getushort(ttf);
 	if ( gid>=info->glyph_cnt ) {
-	    LogError("Bad glyph reference in layer info.\n");
+	    LogError(_("Bad glyph reference in layer info.\n"));
     break;
 	}
 	cur->sc = info->chars[gid];
@@ -1337,7 +1337,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 		pfed_read_spiro_contour(ttf,ss,base+contours[i].data_off,type);
 		ss = ss->next;
 	    } else
-		LogError("Whoops, Ran out of spiros\n");
+		LogError(_("Whoops, Ran out of spiros\n"));
 	}
     }
     free(contours);
