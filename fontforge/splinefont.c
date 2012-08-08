@@ -1083,7 +1083,7 @@ return( NULL );
 	    sf = _SFReadPostScript(file,fullname);
 	    checked = 'p';
 	} else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
-	    sf = _SFReadPdfFont(file,fullname,NULL,openflags);
+	    sf = _SFReadPdfFont(file,fullname,openflags);
 	    checked = 'P';
 	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
 	    int len;
