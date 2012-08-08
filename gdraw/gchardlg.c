@@ -1025,32 +1025,34 @@ static unichar_t inschar[] = { 'I', 'n', 's', 'e', 'r', 't', ' ', 'C', 'h', 'a',
 void GWidgetCreateInsChar(void) {
     GTextInfo charsetnames[sizeof(encodingnames)/sizeof(struct namemap)];
     static GTextInfo labels[11] = {
-	{ (unichar_t *) "Character Set", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Character", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Hex", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Dec", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Unicode", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Ku Ten", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "< Prev", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Next >", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Insert", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Close", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 },
-	{ (unichar_t *) "Show", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1 }};
+        { (unichar_t *) "Character Set", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Character", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Hex", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Dec", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Unicode", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Ku Ten", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "< Prev", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Next >", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Insert", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Close", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+        { (unichar_t *) "Show", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
+    };
     static GGadgetCreateData gcd[] = {
-	{ GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-	{ GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-	{ GLabelCreate, {{ 6, 50 }, NULL, 'C', 0, 0, 0, 0, &labels[1], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-	{ GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 | gg_textarea_wrap }}, /* gg_textarea_wrap means (here) that we should not invoke the InsChar Hook for selections */
-	{ GRadioCreate, {{ 85, 48 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], NULL, gg_visible | gg_enabled | gg_cb_on | gg_pos_use0 }},
-	{ GRadioCreate, {{ 85, 68 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-	{ GRadioCreate, {{ 127, 48 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-	{ GRadioCreate, {{ 127, 68 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], NULL, gg_visible | gg_pos_use0 }},
-	{ GButtonCreate, {{ 73, 93, 50 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], NULL, gg_visible | gg_pos_use0 }},
-	{ GButtonCreate, {{ 137, 93, 50 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], NULL, gg_visible | gg_pos_use0 }},
-	{ GButtonCreate, {{ 196-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default | gg_pos_use0 }},
-	{ GButtonCreate, {{ 196, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
-	{ GButtonCreate, {{ 196, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
-	{ NULL }};
+        { GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+        { GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+        { GLabelCreate, {{ 6, 50 }, NULL, 'C', 0, 0, 0, 0, &labels[1], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+        { GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 | gg_textarea_wrap }}, /* gg_textarea_wrap means (here) that we should not invoke the InsChar Hook for selections */
+        { GRadioCreate, {{ 85, 48 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], NULL, gg_visible | gg_enabled | gg_cb_on | gg_pos_use0 }},
+        { GRadioCreate, {{ 85, 68 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+        { GRadioCreate, {{ 127, 48 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
+        { GRadioCreate, {{ 127, 68 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], NULL, gg_visible | gg_pos_use0 }},
+        { GButtonCreate, {{ 73, 93, 50 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], NULL, gg_visible | gg_pos_use0 }},
+        { GButtonCreate, {{ 137, 93, 50 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], NULL, gg_visible | gg_pos_use0 }},
+        { GButtonCreate, {{ 196-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default | gg_pos_use0 }},
+        { GButtonCreate, {{ 196, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
+        { GButtonCreate, {{ 196, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
+        { NULL }
+    };
 #define keyboard_width 15
 #define keyboard_height 9
     static unsigned char keyboard_bits[] = {

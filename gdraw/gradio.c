@@ -47,16 +47,17 @@ static int gradio_inited = false;
 static GResInfo gradio_ri, gradioon_ri, gradiooff_ri;
 static GResInfo gcheckbox_ri, gcheckboxon_ri, gcheckboxoff_ri;
 static GTextInfo radio_lab[] = {
-	{ (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "Enabled 2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+    { (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled 2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GGadgetCreateData radio_gcd[] = {
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[0],NULL,gg_visible}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[1],NULL,gg_visible|gg_cb_on}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[2],NULL,gg_visible|gg_enabled}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[3],NULL,gg_visible|gg_enabled|gg_cb_on}}
-    };
+    {GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[0],NULL,gg_visible}},
+    {GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[1],NULL,gg_visible|gg_cb_on}},
+    {GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[2],NULL,gg_visible|gg_enabled}},
+    {GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[3],NULL,gg_visible|gg_enabled|gg_cb_on}}
+};
 static GGadgetCreateData *rarray[] = { GCD_Glue, &radio_gcd[0], GCD_Glue, &radio_gcd[1], GCD_Glue, &radio_gcd[2], GCD_Glue, &radio_gcd[3], GCD_Glue, NULL, NULL };
 static GGadgetCreateData radiobox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) rarray,gg_visible|gg_enabled}};
@@ -74,9 +75,9 @@ static GResInfo gradio_ri = {
     omf_border_type|omf_padding
 };
 static struct resed gradioon_re[] = {
-    {N_("Image"), "Image", rt_image, &radon, N_("Image used instead of the Radio On Mark")},
-    {N_("Disabled Image"), "DisabledImage", rt_image, &raddison, N_("Image used instead of the Radio On Mark (when the radio is disabled)")},
-    NULL
+    {N_("Image"), "Image", rt_image, &radon, N_("Image used instead of the Radio On Mark"), NULL, { 0 }, 0, 0 },
+    {N_("Disabled Image"), "DisabledImage", rt_image, &raddison, N_("Image used instead of the Radio On Mark (when the radio is disabled)"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gradioon_ri = {
     &gradiooff_ri, &ggadget_ri,&gradiooff_ri, &gradio_ri,
@@ -110,14 +111,15 @@ static GResInfo gradiooff_ri = {
     omf_border_type|omf_border_shape|box_do_depressed_background
 };
 static GTextInfo checkbox_lab[] = {
-	{ (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+    { (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GGadgetCreateData checkbox_gcd[] = {
-	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[0],NULL,gg_visible}},
-	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_cb_on}},
-	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_enabled}}
-    };
+    {GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[0],NULL,gg_visible}},
+    {GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_cb_on}},
+    {GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_enabled}}
+};
 static GGadgetCreateData *carray[] = { GCD_Glue, &checkbox_gcd[0], GCD_Glue, &checkbox_gcd[1], GCD_Glue, &checkbox_gcd[2], GCD_Glue, NULL, NULL };
 static GGadgetCreateData checkboxbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) carray,gg_visible|gg_enabled}};

@@ -55,22 +55,22 @@ typedef struct greseditdlg {
 } GRE;
 
 static GTextInfo bordertype[] = {
-    { (unichar_t *) "None", NULL, 0, 0, (void *) (intpt) bt_none, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Box", NULL, 0, 0, (void *) (intpt) bt_box, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Raised", NULL, 0, 0, (void *) (intpt) bt_raised, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Lowered", NULL, 0, 0, (void *) (intpt) bt_lowered, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Engraved", NULL, 0, 0, (void *) (intpt) bt_engraved, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Embossed", NULL, 0, 0, (void *) (intpt) bt_embossed, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Double", NULL, 0, 0, (void *) (intpt) bt_double, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) "None", NULL, 0, 0, (void *) (intpt) bt_none, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Box", NULL, 0, 0, (void *) (intpt) bt_box, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Raised", NULL, 0, 0, (void *) (intpt) bt_raised, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Lowered", NULL, 0, 0, (void *) (intpt) bt_lowered, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Engraved", NULL, 0, 0, (void *) (intpt) bt_engraved, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Embossed", NULL, 0, 0, (void *) (intpt) bt_embossed, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Double", NULL, 0, 0, (void *) (intpt) bt_double, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 static GTextInfo bordershape[] = {
-    { (unichar_t *) "Rect", NULL, 0, 0, (void *) (intpt) bs_rect, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Round Rect", NULL, 0, 0, (void *) (intpt) bs_roundrect, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Elipse", NULL, 0, 0, (void *) (intpt) bs_elipse, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) "Diamond", NULL, 0, 0, (void *) (intpt) bs_diamond, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { NULL }
+    { (unichar_t *) "Rect", NULL, 0, 0, (void *) (intpt) bs_rect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Round Rect", NULL, 0, 0, (void *) (intpt) bs_roundrect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Elipse", NULL, 0, 0, (void *) (intpt) bs_elipse, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Diamond", NULL, 0, 0, (void *) (intpt) bs_diamond, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 static void GRE_RefreshAll(GRE *gre) {
@@ -2423,16 +2423,16 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 static double _GDraw_Width_cm, _GDraw_Width_Inches;
 static Color _GDraw_fg, _GDraw_bg;
 static struct resed gdrawcm_re[] = {
-    {N_("Default Background"), "Background", rt_color, &_GDraw_bg, N_("Default background color for windows")},
-    {N_("Default Foreground"), "Foreground", rt_color, &_GDraw_fg, N_("Default foreground color for windows")},
-    {N_("Screen Width in Centimeters"), "ScreenWidthCentimeters", rt_double, &_GDraw_Width_cm, N_("Physical screen width, measured in centimeters\nFor this to take effect you must save the resource data (press the [Save] button)\nand restart fontforge")},
-    NULL
+    {N_("Default Background"), "Background", rt_color, &_GDraw_bg, N_("Default background color for windows"), NULL, { 0 }, 0, 0 },
+    {N_("Default Foreground"), "Foreground", rt_color, &_GDraw_fg, N_("Default foreground color for windows"), NULL, { 0 }, 0, 0 },
+    {N_("Screen Width in Centimeters"), "ScreenWidthCentimeters", rt_double, &_GDraw_Width_cm, N_("Physical screen width, measured in centimeters\nFor this to take effect you must save the resource data (press the [Save] button)\nand restart fontforge"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static struct resed gdrawin_re[] = {
-    {N_("Default Background"), "Background", rt_color, &_GDraw_bg, N_("Default background color for windows")},
-    {N_("Default Foreground"), "Foreground", rt_color, &_GDraw_fg, N_("Default foreground color for windows")},
-    {N_("Screen Width in Inches"), "ScreenWidthInches", rt_double, &_GDraw_Width_Inches, N_("Physical screen width, measured in inches\nFor this to take effect you must save the resource data (press the [Save] button)\nand restart fontforge")},
-    NULL
+    {N_("Default Background"), "Background", rt_color, &_GDraw_bg, N_("Default background color for windows"), NULL, { 0 }, 0, 0 },
+    {N_("Default Foreground"), "Foreground", rt_color, &_GDraw_fg, N_("Default foreground color for windows"), NULL, { 0 }, 0, 0 },
+    {N_("Screen Width in Inches"), "ScreenWidthInches", rt_double, &_GDraw_Width_Inches, N_("Physical screen width, measured in inches\nFor this to take effect you must save the resource data (press the [Save] button)\nand restart fontforge"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gdraw_ri = {
     NULL, NULL,NULL, NULL,

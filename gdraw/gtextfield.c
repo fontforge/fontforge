@@ -45,14 +45,15 @@ static int gtextfield_inited = false;
 
 static GResInfo listfield_ri, listfieldmenu_ri, numericfield_ri, numericfieldspinner_ri;
 static GTextInfo text_lab[] = {
-	{ (unichar_t *) "Disabled", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+    { (unichar_t *) "Disabled", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	NULL
-    };
+    { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 static GGadgetCreateData text_gcd[] = {
 	{GTextFieldCreate, {{0,0,70},NULL,0,0,0,0,0,&text_lab[0],NULL,gg_visible}},
 	{GTextFieldCreate, {{0,0,70},NULL,0,0,0,0,0,&text_lab[1],NULL,gg_visible|gg_enabled}}
@@ -74,9 +75,9 @@ static GResInfo gtextfield_ri = {
     omf_font|omf_padding
 };
 static GGadgetCreateData textlist_gcd[] = {
-	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[0],list_choices,gg_visible}},
-	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[1],list_choices,gg_visible|gg_enabled}}
-    };
+    {GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[0],list_choices,gg_visible}},
+    {GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[1],list_choices,gg_visible|gg_enabled}}
+};
 static GGadgetCreateData *tlarray[] = { GCD_Glue, &textlist_gcd[0], GCD_Glue, &textlist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData textlistbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tlarray,gg_visible|gg_enabled}};
@@ -106,9 +107,9 @@ static GResInfo listfieldmenu_ri = {
     omf_padding
 };
 static GGadgetCreateData num_gcd[] = {
-	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible}},
-	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible|gg_enabled}}
-    };
+    {GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible}},
+    {GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible|gg_enabled}}
+};
 static GGadgetCreateData *narray[] = { GCD_Glue, &num_gcd[0], GCD_Glue, &num_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData numbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) narray,gg_visible|gg_enabled}};

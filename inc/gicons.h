@@ -57,4 +57,4 @@ extern GImage _GIcon_nobookmark;
 extern GImage _GIcon_backarrow;
 extern GImage _GIcon_forwardarrow;
 
-extern void InitChooserIcons();
+extern void InitChooserIcons(void);
