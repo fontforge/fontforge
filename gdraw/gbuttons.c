@@ -60,18 +60,19 @@ static GResInfo glabel_ri = {
     omf_border_type|omf_border_width|omf_padding
 };
 static GTextInfo button_lab[] = {
-	{ (unichar_t *) "Disabled Button", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled Button" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+	{ (unichar_t *) "Disabled Button", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	{ (unichar_t *) "Enabled Button" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GGadgetCreateData button_gcd[] = {
 	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible}},
 	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled}}
-    };
+};
 static GGadgetCreateData *barray[] = { GCD_Glue, &button_gcd[0], GCD_Glue, &button_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData buttonbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) barray,gg_visible|gg_enabled}};
 static struct resed gbutton_re[] = {
-    {N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("Background color of column headers at the top of a matrix edit")},
-    NULL
+    {N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gbutton_ri = {
     &gdefault_ri, &ggadget_ri,&gdefault_ri, &gcancel_ri,
@@ -143,7 +144,7 @@ static GResInfo gcancel_ri = {
 static GGadgetCreateData color_gcd[] = {
 	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible}},
 	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible|gg_enabled}}
-    };
+};
 static GGadgetCreateData *colarray[] = { GCD_Glue, &color_gcd[0], GCD_Glue, &color_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData colorbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) colarray,gg_visible|gg_enabled}};
@@ -160,15 +161,16 @@ static GResInfo gcolor_ri = {
     true
 };
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	NULL
-    };
+	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	{ (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	{ (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	GTEXTINFO_EMPTY
+};
+
 static GGadgetCreateData droplist_gcd[] = {
 	{GListButtonCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
 	{GListButtonCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
-    };
+};
 static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData droplistbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) dlarray,gg_visible|gg_enabled}};

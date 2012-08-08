@@ -67,9 +67,9 @@ static int popup_delay=1000, popup_lifetime=20000;
 
 static GResInfo popup_ri;
 static struct resed ggadget_re[] = {
-    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both")},
-    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePath, N_("List of directories to search for images, separated by colons")},
-    NULL
+    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both"), NULL, { 0 }, 0, 0 },
+    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePath, N_("List of directories to search for images, separated by colons"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 GResInfo ggadget_ri = {
     &listmark_ri, NULL,NULL, NULL,
@@ -84,11 +84,12 @@ GResInfo ggadget_ri = {
     false
 };
 static struct resed popup_re[] = {
-    {N_("Color|Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows")},
-    {N_("Color|Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows")},
-    {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear")},
-    {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible")},
-    { NULL }};
+    {N_("Color|Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows"), NULL, { 0 }, 0, 0 },
+    {N_("Color|Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows"), NULL, { 0 }, 0, 0 },
+    {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear"), NULL, { 0 }, 0, 0 },
+    {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static void popup_refresh(void);
 static GResInfo popup_ri = {
     &ggadget_ri, NULL, NULL,NULL,
@@ -107,20 +108,21 @@ static GResInfo popup_ri = {
     popup_refresh
 };
 static struct resed listmark_re[] = {
-    {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)")},
-    {N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)")},
-    {N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark")},
-    { NULL }};
+    {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
+    {N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
+    {N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	NULL
-    };
+    { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 static GGadgetCreateData droplist_gcd[] = {
-	{GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
-	{GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
-    };
+    {GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
+    {GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
+};
 static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData droplistbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) dlarray,gg_visible|gg_enabled}};

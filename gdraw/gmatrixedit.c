@@ -45,15 +45,15 @@ static Color gmatrixedit_frozencol = 0xff0000,
 static int gmatrixedit_inited = false;
 
 static struct resed gmatrixedit_re[] = {
-    {N_("Title Background"), "TitleBG", rt_color, &gmatrixedit_title_bg, N_("Background color of column headers at the top of a matrix edit")},
-    {N_("Title Text Color"), "TitleFG", rt_color, &gmatrixedit_title_fg, N_("Text color of column headers at the top of a matrix edit")},
-    {N_("Title Divider Color"), "TitleDivider", rt_color, &gmatrixedit_title_divider, N_("Color of column dividers in the title section of a matrix edit")},
-    {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit")},
-    {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit")},
-    {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit")},
-    {N_("Active Background"), "ActiveBG", rt_color, &gmatrixedit_activebg, N_("Background color of the active entry in the main section of a matrix edit")},
-    {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit")},
-    NULL
+    {N_("Title Background"), "TitleBG", rt_color, &gmatrixedit_title_bg, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Title Text Color"), "TitleFG", rt_color, &gmatrixedit_title_fg, N_("Text color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Title Divider Color"), "TitleDivider", rt_color, &gmatrixedit_title_divider, N_("Color of column dividers in the title section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Active Background"), "ActiveBG", rt_color, &gmatrixedit_activebg, N_("Background color of the active entry in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gmatrixedit_ri = {
     NULL, &ggadget_ri, NULL,NULL,

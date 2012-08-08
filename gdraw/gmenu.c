@@ -73,8 +73,9 @@ static GResInfo gmenubar_ri = {
     omf_border_shape|omf_border_width|box_foreground_border_outer
 };
 static struct resed menu_re[] = {
-    {N_("MacIcons"), "MacIcons", rt_bool, &mac_menu_icons, N_("Whether to use mac-like icons to indicate modifiers (for instance ^ for Control)\nor to use an abbreviation (for instance \"Cnt-\")")},
-    { NULL }};
+    {N_("MacIcons"), "MacIcons", rt_bool, &mac_menu_icons, N_("Whether to use mac-like icons to indicate modifiers (for instance ^ for Control)\nor to use an abbreviation (for instance \"Cnt-\")"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static GResInfo gmenu_ri = {
     NULL, &ggadget_ri,&gmenubar_ri, NULL,
     &menu_box,

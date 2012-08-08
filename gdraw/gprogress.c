@@ -186,10 +186,11 @@ return( true );
 
 /* ************************************************************************** */
 static struct resed progress_re[] = {
-    {N_("Color|Foreground"), "Foreground", rt_color, &progress_foreground, N_("Text color for progress windows")},
-    {N_("Color|FillColor"), "FillColor", rt_color, &progress_fillcol, N_("Color used to draw the progress bar")},
-    {N_("Color|Background"), "Background", rt_color, &progress_background, N_("Background color for progress windows")},
-    { NULL }};
+    {N_("Color|Foreground"), "Foreground", rt_color, &progress_foreground, N_("Text color for progress windows"), NULL, { 0 }, 0, 0 },
+    {N_("Color|FillColor"), "FillColor", rt_color, &progress_fillcol, N_("Color used to draw the progress bar"), NULL, { 0 }, 0, 0 },
+    {N_("Color|Background"), "Background", rt_color, &progress_background, N_("Background color for progress windows"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static GResInfo progress_ri = {
     NULL, NULL, NULL,NULL,
     NULL,	/* No box */

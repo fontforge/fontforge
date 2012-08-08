@@ -951,15 +951,15 @@ static FontInstance *list_font = NULL;
 static int glist_inited = false;
 
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	NULL
-    };
+	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	{ (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	{ (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+	GTEXTINFO_EMPTY
+};
 static GGadgetCreateData list_gcd[] = {
 	{GListCreate, {{0,0,0,36},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
 	{GListCreate, {{0,0,0,36},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible|gg_enabled}}
-    };
+};
 static GGadgetCreateData *tarray[] = { GCD_Glue, &list_gcd[0], GCD_Glue, &list_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData listhvbox =
 	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tarray,gg_visible|gg_enabled}};
