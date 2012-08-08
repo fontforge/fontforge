@@ -107,6 +107,8 @@ struct cvshows CVShows = {
 	1,		/* Check for self-intersections in the element view */
 	1		/* In tt debugging, mark changed rasters differently */
 };
+struct cvshows CVShowsPrevewToggleSavedState;
+
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
 static Color selectedpointcol = 0xc8c800;
@@ -3020,6 +3022,10 @@ static void CVDoFindInFontView(CharView *cv) {
     GDrawRaise(((FontView *) (cv->b.fv))->gw);
 }
 
+static uint16 HaveModifiers = 0;
+static uint16 PressingTilde = 0;
+static uint16 PrevCharEventWasCharUpOnControl = 0;
+
 static void CVCharUp(CharView *cv, GEvent *event ) {
 
     #if defined(__MINGW32__)
@@ -3027,6 +3033,47 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	_mingw_hand_tool_hack(cv);
     #endif
 
+    if( !cv_auto_goto )
+    {
+	if( event->u.chr.keysym=='`' ) {
+	    PressingTilde = 1;
+	}
+
+	if( PrevCharEventWasCharUpOnControl
+	    && event->u.chr.keysym=='`' )
+	{
+	    HaveModifiers = 0;
+	    PrevCharEventWasCharUpOnControl = 0;
+	    return;
+	}
+	PrevCharEventWasCharUpOnControl = 0;
+	
+	if( !event->u.chr.autorepeat
+	    && (event->u.chr.keysym == GK_Control_L
+		|| event->u.chr.keysym == GK_Control_R ))
+	{
+	    PrevCharEventWasCharUpOnControl = 1;
+	    if( !PressingTilde ) {
+		HaveModifiers = 0;
+	    }
+	}
+	
+	if ( !event->u.chr.autorepeat && !HaveModifiers && event->u.chr.keysym=='`' ) {
+	    PressingTilde = 0;
+	    CVPreviewModeSet( cv->gw, false );
+	    return;
+	}
+	
+	if ( !event->u.chr.autorepeat && event->u.chr.keysym=='`' ) {
+	    PressingTilde = 0;
+	}
+	if ( event->u.chr.autorepeat && HaveModifiers && event->u.chr.keysym=='`' ) {
+	    return;
+	}
+    }
+    
+    
+    
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -4999,6 +5046,7 @@ return( true );
 #define MID_Next	2007
 #define MID_Prev	2008
 #define MID_HideRulers	2009
+#define MID_Preview     2010
 #define MID_NextDef	2012
 #define MID_PrevDef	2013
 #define MID_DisplayCompositions	2014
@@ -5706,6 +5754,111 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
+static struct cvshows* cvshowsCopyTo( struct cvshows* dst, CharView* src ) 
+{
+    dst->showfore = src->showfore;
+    dst->showgrids = src->showgrids;
+    dst->showhhints = src->showhhints;
+    dst->showvhints = src->showvhints;
+    dst->showdhints = src->showdhints;
+    dst->showpoints = src->showpoints;
+    dst->showfilled = src->showfilled;
+    dst->showrulers = src->showrulers;
+    dst->showrounds = src->showrounds;
+    dst->showmdx = src->showmdx;
+    dst->showmdy = src->showmdy;
+    dst->showhmetrics = src->showhmetrics;
+    dst->showvmetrics = src->showvmetrics;
+    dst->markextrema = src->markextrema;
+    dst->markpoi = src->markpoi;
+    dst->showblues = src->showblues;
+    dst->showfamilyblues = src->showfamilyblues;
+    dst->showanchor = src->showanchor;
+    dst->showcpinfo = src->showcpinfo;
+    dst->showtabs = src->showtabs;
+    dst->showsidebearings = src->showsidebearings;
+    dst->showrefnames = src->showrefnames;
+    dst->snapoutlines = src->snapoutlines;
+    dst->showalmosthvlines = src->showalmosthvlines;
+    dst->showalmosthvcurves = src->showalmosthvcurves;
+    dst->hvoffset = src->hvoffset;
+    dst->checkselfintersects = src->checkselfintersects;
+    dst->showdebugchanges = src->showdebugchanges;
+    return dst;
+}
+static CharView* cvshowsCopyFrom( CharView* dst, struct cvshows* src ) 
+{
+    dst->showfore = src->showfore;
+    dst->showgrids = src->showgrids;
+    dst->showhhints = src->showhhints;
+    dst->showvhints = src->showvhints;
+    dst->showdhints = src->showdhints;
+    dst->showpoints = src->showpoints;
+    dst->showfilled = src->showfilled;
+    dst->showrulers = src->showrulers;
+    dst->showrounds = src->showrounds;
+    dst->showmdx = src->showmdx;
+    dst->showmdy = src->showmdy;
+    dst->showhmetrics = src->showhmetrics;
+    dst->showvmetrics = src->showvmetrics;
+    dst->markextrema = src->markextrema;
+    dst->markpoi = src->markpoi;
+    dst->showblues = src->showblues;
+    dst->showfamilyblues = src->showfamilyblues;
+    dst->showanchor = src->showanchor;
+    dst->showcpinfo = src->showcpinfo;
+    dst->showtabs = src->showtabs;
+    dst->showsidebearings = src->showsidebearings;
+    dst->showrefnames = src->showrefnames;
+    dst->snapoutlines = src->snapoutlines;
+    dst->showalmosthvlines = src->showalmosthvlines;
+    dst->showalmosthvcurves = src->showalmosthvcurves;
+    dst->hvoffset = src->hvoffset;
+    dst->checkselfintersects = src->checkselfintersects;
+    dst->showdebugchanges = src->showdebugchanges;
+    return dst;
+}
+
+void CVPreviewModeSet(GWindow gw, int checked ) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    if( checked && cv->inPreviewMode )
+        return;
+
+    cv->inPreviewMode = checked;
+    if( checked ) {
+        cvshowsCopyTo( &CVShowsPrevewToggleSavedState, cv );
+        cv->showfore   = 1;
+        cv->showgrids  = 0;
+        cv->showhhints = 0;
+        cv->showvhints = 0;
+        cv->showdhints = 0;
+        cv->showpoints = 0;
+        cv->showfilled = 1;
+        cv->showrounds = 0;
+        cv->showanchor = 0;
+        cv->showrefnames = 0;
+        cv->showhmetrics = 0;
+        cv->showvmetrics = 0;
+    } else {
+        cvshowsCopyFrom( cv, &CVShowsPrevewToggleSavedState );
+    }
+    CVRegenFill(cv);
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+
+                                    
+static void CVMenuPreview(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int checked = mi->ti.checked;
+
+    if( !cv_auto_goto ) {
+	if( !HaveModifiers )
+	    return;
+    }
+    CVPreviewModeSet( gw, checked );
+}
+
 static void CVMenuShowGridFit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -5947,6 +6100,20 @@ void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount, arrowAccelFactor;
     extern int navigation_mask;
 
+    if( !cv_auto_goto ) {
+	if( event->u.chr.keysym == GK_Control_L
+	    || event->u.chr.keysym == GK_Control_R )
+	{
+	    HaveModifiers = 1;
+	}
+	
+	if( !HaveModifiers && event->u.chr.keysym=='`' ) {
+	    PressingTilde = 1;
+	    CVPreviewModeSet( cv->gw, true );
+	    return;
+	}
+    }
+	
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
 	if ( cv->autorpt!=NULL ) {
@@ -9844,6 +10011,7 @@ static GMenuItem2 swlist[] = {
     { { (unichar_t *) N_("_Side Bearings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
     { { (unichar_t *) N_("Reference Names"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Reference Names|No Shortcut"), NULL, NULL, CVMenuShowRefNames, MID_ShowRefNames },
     { { (unichar_t *) N_("_Fill"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
+    { { (unichar_t *) N_("Previe_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Preview|Ctl+`"), NULL, NULL, CVMenuPreview, MID_Preview },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, pllist, pllistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Glyph Tabs|No Shortcut"), NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
@@ -10128,7 +10296,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showanchor = CVShows.showanchor;
     cv->showcpinfo = CVShows.showcpinfo;
     cv->showtabs = CVShows.showtabs;
-
+    cv->inPreviewMode = 0;
     cv->checkselfintersects = CVShows.checkselfintersects;
 
     cv->showdebugchanges = CVShows.showdebugchanges;

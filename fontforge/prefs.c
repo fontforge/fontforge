@@ -306,7 +306,7 @@ static struct prefs_list {
 	PREFS_LIST_EMPTY
 },
   navigation_list[] = {
-	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
+	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character.\nEnabling GlyphAutoGoto will disable the shortcut where holding just the ` key will enable Preview mode as long as the key is held.") },
 	{ N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
 	PREFS_LIST_EMPTY
 },
