@@ -419,7 +419,7 @@ return( -1 );
 return( val );
 }
 
-static void dumpjis(FILE *output,FILE *header) {
+static int dumpjis(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode;
@@ -430,13 +430,24 @@ static void dumpjis(FILE *output,FILE *header) {
     memset(table,0,sizeof(table));
     buffer[400]='\0';
 
-    j=0;
+    j=0;				/* load info from aj16/cid2code.txt */
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
 	memset(unicode208,0,sizeof(unicode208));
 	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+	    if (strlen(buffer)>=399) {
+		fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
+		fclose(file);
+		for ( k=0; k<256; ++k ) {
+		    if ( table[k] != NULL )
+			free(table[k]);
+		    if ( used[k] != NULL )
+			free(used[k]);
+		}
+return( 4 );
+	    }
 	    if ( buffer[0]=='#' )
 	continue;
 	    _orig = getnth(buffer,2);
@@ -454,7 +465,14 @@ static void dumpjis(FILE *output,FILE *header) {
 	    if ( table[_unicode>>8]==NULL )
 		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 		    fprintf( stderr, NoMoreMemory );
-		    exit(3);
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 3 );
 		}
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    _orig -= 0x2121;
@@ -466,7 +484,14 @@ static void dumpjis(FILE *output,FILE *header) {
 		if ( used[_unicode>>8]==NULL ) {
 		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		}
 		used[_unicode>>8][_unicode&0xff] |= (1<<em_jis208);
@@ -475,13 +500,24 @@ static void dumpjis(FILE *output,FILE *header) {
 	fclose(file);
     }
 
-    j=1;
+    j=1;				/* load info from aj20/cid2code.txt */
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
 	fprintf( stderr, CantReadFile, adobecjk[j]);
     } else {
 	memset(unicode212,0,sizeof(unicode212));
 	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+	    if (strlen(buffer)>=399) {
+		fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
+		fclose(file);
+		for ( k=0; k<256; ++k ) {
+		    if ( table[k] != NULL )
+			free(table[k]);
+		    if ( used[k] != NULL )
+			free(used[k]);
+		}
+return( 4 );
+	    }
 	    if ( buffer[0]=='#' )
 	continue;
 	    _orig = getnth(buffer,2);
@@ -499,7 +535,14 @@ static void dumpjis(FILE *output,FILE *header) {
 	    if ( table[_unicode>>8]==NULL )
 		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 		    fprintf( stderr, NoMoreMemory );
-		    exit(3);
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 3 );
 		}
 	    if ( table[_unicode>>8][_unicode&0xff]==0 )
 		table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
@@ -514,7 +557,14 @@ static void dumpjis(FILE *output,FILE *header) {
 		if ( used[_unicode>>8]==NULL ) {
 		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		}
 		used[_unicode>>8][_unicode&0xff] |= (1<<em_jis212);
@@ -573,9 +623,10 @@ static void dumpjis(FILE *output,FILE *header) {
 
     for ( k=first; k<=last; ++k )
 	free(table[k]);
+return( 0 );				/* no errors encountered */
 }
 
-static void dumpbig5(FILE *output,FILE *header) {
+static int dumpbig5(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode;
@@ -583,7 +634,7 @@ static void dumpbig5(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
-    j = 2;
+    j = 2;				/* load info from ac15/cid2code.txt */
 
     file = fopen( adobecjk[j], "r" );
     if ( file==NULL ) {
@@ -594,6 +645,17 @@ static void dumpbig5(FILE *output,FILE *header) {
 	memset(unicode,0,sizeof(unicode));
 
 	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+	    if (strlen(buffer)>=399) {
+		fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
+		fclose(file);
+		for ( k=0; k<256; ++k ) {
+		    if ( table[k] != NULL )
+			free(table[k]);
+		    if ( used[k] != NULL )
+			free(used[k]);
+		}
+return( 4 );
+	    }
 	    if ( buffer[0]=='#' )
 	continue;
 	    _orig = getnth(buffer,3);
@@ -628,13 +690,27 @@ static void dumpbig5(FILE *output,FILE *header) {
 	    if ( table[_unicode>>8]==NULL )
 		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 		    fprintf( stderr, NoMoreMemory );
-		    exit(3);
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 3 );
 		}
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    if ( used[_unicode>>8]==NULL ) {
 		if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 		    fprintf( stderr, NoMoreMemory );
-		    exit(3);
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 3 );
 		}
 	    }
 	    used[_unicode>>8][_unicode&0xff] |= (1<<em_big5);
@@ -682,9 +758,10 @@ static void dumpbig5(FILE *output,FILE *header) {
 	for ( k=first; k<=last; ++k )
 	    free(table[k]);
     }
+return( 0 );				/* no errors encountered */
 }
 
-static void dumpbig5hkscs(FILE *output,FILE *header) {
+static int dumpbig5hkscs(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode;
@@ -692,7 +769,7 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
     unichar_t *table[256], *plane;
     char buffer[400+1];
 
-    j=5;
+    j=5;				/* load info from Big5HKSCS.txt */
 
     file = fopen( cjk[j], "r" );
     if ( file==NULL ) {
@@ -703,6 +780,17 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	memset(unicode,0,sizeof(unicode));
 
 	while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+	    if (strlen(buffer)>=399) {
+		fprintf( stderr, LineLengthBg,cjk[j],buffer );
+		fclose(file);
+		for ( k=0; k<256; ++k ) {
+		    if ( table[k] != NULL )
+			free(table[k]);
+		    if ( used[k] != NULL )
+			free(used[k]);
+		}
+return( 4 );
+	    }
 	    if ( buffer[0]=='#' )
 	continue;
 	    if ( sscanf( buffer, "U+%lx: %lx", (unsigned long *) &_unicode, (unsigned long *) &_orig )!=2 )
@@ -717,13 +805,27 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	    if ( table[_unicode>>8]==NULL )
 		if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 		    fprintf( stderr, NoMoreMemory );
-		    exit(3);
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 3 );
 		}
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    if ( used[_unicode>>8]==NULL ) {
 		if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 		    fprintf( stderr, NoMoreMemory );
-		    exit(3);
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 3 );
 		}
 	    }
 	    used[_unicode>>8][_unicode&0xff] |= (1<<em_big5hkscs);
@@ -771,18 +873,21 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	for ( k=first; k<=last; ++k )
 	    free(table[k]);
     }
+return( 0 );				/* no errors encountered */
 }
 
-static void dumpWansung(FILE *output,FILE *header) {
+static int dumpWansung(FILE *output,FILE *header) {
     FILE *file;
-    int i,j=4,k, first, last;
+    int i,j,k, first, last;
     long _orig, _unicode, _johab;
     unichar_t unicode[94*94], junicode[0x7c00];
     unichar_t *table[256], *plane, *jtable[256];
     char buffer[400+1];
     /* Johab high=[0x84-0xf9] low=[0x31-0xfe] */
 
-	buffer[400]='\0';
+    buffer[400]='\0';
+
+    j=4;				/* load info from ak12/cid2code.txt */
 
 	memset(table,0,sizeof(table));
 	memset(jtable,0,sizeof(jtable));
@@ -794,6 +899,19 @@ static void dumpWansung(FILE *output,FILE *header) {
 	    memset(unicode,0,sizeof(unicode));
 	    memset(junicode,0,sizeof(junicode));
 	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+		if (strlen(buffer)>=399) {
+		    fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( jtable[k] != NULL )
+			    free(jtable[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 4 );
+		}
 		if ( buffer[0]=='#' )
 	    continue;
 		_johab = getnth(buffer,7);
@@ -817,7 +935,16 @@ static void dumpWansung(FILE *output,FILE *header) {
 		    if ( table[_unicode>>8]==NULL )
 			if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 			    fprintf( stderr, NoMoreMemory );
-			    exit(3);
+			    fclose(file);
+			    for ( k=0; k<256; ++k ) {
+				if ( table[k] != NULL )
+				    free(table[k]);
+				if ( jtable[k] != NULL )
+				    free(jtable[k]);
+				if ( used[k] != NULL )
+				    free(used[k]);
+			    }
+return( 3 );
 			}
 		    table[_unicode>>8][_unicode&0xff] = _orig;
 		    _orig -= 0x2121;
@@ -830,7 +957,16 @@ static void dumpWansung(FILE *output,FILE *header) {
 		    if ( used[_unicode>>8]==NULL ) {
 			if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			    fprintf( stderr, NoMoreMemory );
-			    exit(3);
+			    fclose(file);
+			    for ( k=0; k<256; ++k ) {
+				if ( table[k] != NULL )
+				    free(table[k]);
+				if ( jtable[k] != NULL )
+				    free(jtable[k]);
+				if ( used[k] != NULL )
+				    free(used[k]);
+			    }
+return( 3 );
 			}
 		    }
 		    used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
@@ -839,7 +975,16 @@ static void dumpWansung(FILE *output,FILE *header) {
 		    if ( jtable[_unicode>>8]==NULL )
 			if ((jtable[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 			    fprintf( stderr, NoMoreMemory );
-			    exit(3);
+			    fclose(file);
+			    for ( k=0; k<256; ++k ) {
+				if ( table[k] != NULL )
+				    free(table[k]);
+				if ( jtable[k] != NULL )
+				    free(jtable[k]);
+				if ( used[k] != NULL )
+				    free(used[k]);
+			    }
+return( 3 );
 			}
 		    jtable[_unicode>>8][_unicode&0xff] = _johab;
 		    _johab -= 0x8400;
@@ -847,7 +992,16 @@ static void dumpWansung(FILE *output,FILE *header) {
 		    if ( used[_unicode>>8]==NULL ) {
 			if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			    fprintf( stderr, NoMoreMemory );
-			    exit(3);
+			    fclose(file);
+			    for ( k=0; k<256; ++k ) {
+				if ( table[k] != NULL )
+				    free(table[k]);
+				if ( jtable[k] != NULL )
+				    free(jtable[k]);
+				if ( used[k] != NULL )
+				    free(used[k]);
+			    }
+return( 3 );
 			}
 		    }
 		    used[_unicode>>8][_unicode&0xff] |= (1<<em_johab);
@@ -945,10 +1099,13 @@ static void dumpWansung(FILE *output,FILE *header) {
 	else for ( k=first; k<=last; ++k ) {
 	    free(table[k]);
 	    table[k]=NULL;
+	    if ( jtable[k] != NULL )
+		free(jtable[k]);
 	}
+return( 0 );				/* no errors encountered */
 }
 
-static void dumpgb2312(FILE *output,FILE *header) {
+static int dumpgb2312(FILE *output,FILE *header) {
     FILE *file;
     int i,j,k, first, last;
     long _orig, _unicode;
@@ -959,13 +1116,24 @@ static void dumpgb2312(FILE *output,FILE *header) {
     buffer[400]='\0';
     memset(table,0,sizeof(table));
 
-    j = 3;
+    j = 3;				/* load info from ag15/cid2code.txt */
 	file = fopen( adobecjk[j], "r" );
 	if ( file==NULL ) {
 	    fprintf( stderr, CantReadFile, adobecjk[j]);
 	} else {
 	    memset(unicode,0,sizeof(unicode));
 	    while ( fgets(buffer,sizeof(buffer)-1,file)!=NULL ) {
+		if (strlen(buffer)>=399) {
+		    fprintf( stderr, LineLengthBg,adobecjk[j],buffer );
+		    fclose(file);
+		    for ( k=0; k<256; ++k ) {
+			if ( table[k] != NULL )
+			    free(table[k]);
+			if ( used[k] != NULL )
+			    free(used[k]);
+		    }
+return( 4 );
+		}
 		if ( buffer[0]=='#' )
 	    continue;
 		_orig = getnth(buffer,2);
@@ -983,7 +1151,14 @@ static void dumpgb2312(FILE *output,FILE *header) {
 		if ( table[_unicode>>8]==NULL )
 		    if ((table[_unicode>>8] = calloc(256,sizeof(unichar_t)))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		table[_unicode>>8][_unicode&0xff] = _orig;
 		_orig -= 0x2121;
@@ -992,7 +1167,14 @@ static void dumpgb2312(FILE *output,FILE *header) {
 		if ( used[_unicode>>8]==NULL ) {
 		    if ((used[_unicode>>8] = calloc(256,sizeof(long)))==NULL) {
 			fprintf( stderr, NoMoreMemory );
-			exit(3);
+			fclose(file);
+			for ( k=0; k<256; ++k ) {
+			    if ( table[k] != NULL )
+				free(table[k]);
+			    if ( used[k] != NULL )
+				free(used[k]);
+			}
+return( 3 );
 		    }
 		}
 		used[_unicode>>8][_unicode&0xff] |= (1<<cjkmaps[j]);
@@ -1043,20 +1225,23 @@ static void dumpgb2312(FILE *output,FILE *header) {
 	    free(table[k]);
 	    table[k]=NULL;
 	}
+return( 0 );				/* no errors encountered */
 }
 
-static void dumpcjks(FILE *output,FILE *header) {
+static int dumpcjks(FILE *output,FILE *header) {
+    int i;
 
     fprintf( output, GeneratedFileMessage );
 
     fprintf(output, "#include <chardata.h>\n\n" );
     fprintf(output, "const unsigned short u_allzeros[256] = { 0 };\n\n" );
 
-    dumpjis(output,header);
-    dumpbig5(output,header);
-    dumpbig5hkscs(output,header);
-    dumpWansung(output,header);
-    dumpgb2312(output,header);
+    if (i=dumpjis(output,header)) return( i );		/* aj16/cid2code.txt, aj20/cid2code.txt */
+    if (i=dumpbig5(output,header)) return( i );		/* ac15/cid2code.txt */
+    if (i=dumpbig5hkscs(output,header)) return( i );	/* Big5HKSCS.txt */
+    if (i=dumpWansung(output,header)) return( i );	/* ak12/cid2code.txt */
+    if (i=dumpgb2312(output,header)) return( i );	/* ag15/cid2code.txt */
+return( 0 );
 }
 
 static void dumptrans(FILE *output, FILE *header) {
@@ -1126,7 +1311,12 @@ return( i );
 return 1;
     }
 
-    dumpcjks(output,header);
+    if ( i=dumpcjks(output,header)) {	/* load files listed in cjk[] */
+	fclose(header);
+	fclose(output);
+return( i );
+    }
+
     fclose(output);
 
     if (( output = fopen( "backtrns.c", "w" ))==NULL ) {
@@ -1141,5 +1331,10 @@ return 1;
     fprintf( header,"\nextern const unichar_t *const * const unicode_alternates[];\n" );
 
     fclose(output); fclose(header);
+
+    for ( i=0; i<256; ++i ) {
+	if ( used[i] != NULL )
+	    free(used[i]);
+    }
 return 0;
 }
