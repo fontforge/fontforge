@@ -344,6 +344,9 @@ AC_ARG_WITH([gnustep-make],
 test x"${with_gnustep_make}" = x && with_gnustep_make=no
 if test x"${with_gnustep_make}" = xyes; then
    AC_DEFINE([GNUSTEP_APP],[1],[Define if building a GNUstep application.])
+   AC_SUBST([GNUSTEP_APP],[yes])
+else
+   AC_SUBST([GNUSTEP_APP],[no])
 fi
 ])
 

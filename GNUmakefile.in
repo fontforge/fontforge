@@ -1,4 +1,10 @@
-# Support for --with-gnustep-make
+# Special support for GNU Make.
+
+ifneq (@GNUSTEP_APP@,yes)
+
+include Makefile
+
+else # GNUSTEP_APP
 
 include $(GNUSTEP_MAKEFILES)/common.make
 
@@ -13,3 +19,5 @@ include @top_srcdir@/overall_common.mk
 -include GNUmakefile.preamble
 include $(GNUSTEP_MAKEFILES)/aggregate.make
 -include GNUmakefile.postamble
+
+endif # GNUSTEP_APP

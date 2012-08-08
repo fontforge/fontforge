@@ -1,4 +1,10 @@
-# Support for --with-gnustep-make
+# Special support for GNU Make.
+
+ifneq (@GNUSTEP_APP@,yes)
+
+include Makefile
+
+else # GNUSTEP_APP
 
 include $(GNUSTEP_MAKEFILES)/common.make
 
@@ -20,3 +26,5 @@ libGIOFTP_C_FILES = $(GIOFTP_C_SRCFILES)
 -include GNUmakefile.preamble
 include $(GNUSTEP_MAKEFILES)/library.make
 -include GNUmakefile.postamble
+
+endif # GNUSTEP_APP

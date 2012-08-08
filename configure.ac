@@ -112,6 +112,7 @@ FONTFORGE_ARG_ENABLE([maintainer-tools],
                 [build programs used normally only by fontforge maintainers and developers])],
         [MAINTAINER_TOOLS])
 AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes])
+AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 
 #--------------------------------------------------------------------------
 #
@@ -323,30 +324,38 @@ my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS} ${PTHREAD_LIBS}"
 test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
-if test x"${with_gnustep_make}" = xyes; then
-   AC_CONFIG_FILES([overall_common.mk])
-   AC_CONFIG_FILES([GNUmakefile GNUmakefile.postamble])
-   AC_CONFIG_FILES([Unicode/GNUmakefile Unicode/GNUmakefile.postamble])
-   AC_CONFIG_FILES([gutils/GNUmakefile gutils/GNUmakefile.postamble])
-   AC_CONFIG_FILES([gdraw/GNUmakefile gdraw/GNUmakefile.postamble])
-   AC_CONFIG_FILES([fontforge/GNUmakefile fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
-#   AC_CONFIG_FILES([fontforge/pixmaps/GNUmakefile fontforge/pixmaps/GNUmakefile.postamble])
-#   AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
-#   AC_CONFIG_FILES([po/Makefile])
-#   AC_CONFIG_FILES([po/mackeys/Makefile])
-else
-   AC_CONFIG_FILES([Makefile])
-   AC_CONFIG_FILES([inc/Makefile])
-   AC_CONFIG_FILES([Unicode/Makefile])
-   AC_CONFIG_FILES([gutils/Makefile])
-   AC_CONFIG_FILES([gdraw/Makefile])
-   AC_CONFIG_FILES([fontforge/Makefile])
-   AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
-   AC_CONFIG_FILES([po/Makefile])
-   AC_CONFIG_FILES([po/mackeys/Makefile])
-   AC_CONFIG_FILES([htdocs/Makefile])
-   AC_CONFIG_FILES([fontforge.pc])
-fi
+dnl Portable makefiles. These are ignored if you are building
+dnl with GNUstep.
+AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([inc/Makefile])
+AC_CONFIG_FILES([Unicode/Makefile])
+AC_CONFIG_FILES([gutils/Makefile])
+AC_CONFIG_FILES([gdraw/Makefile])
+AC_CONFIG_FILES([fontforge/Makefile])
+AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
+AC_CONFIG_FILES([po/Makefile])
+AC_CONFIG_FILES([po/mackeys/Makefile])
+AC_CONFIG_FILES([htdocs/Makefile])
+
+dnl GNUmakefiles that act as wrappers around portable makefiles,
+dnl or, in the case of GNUstep, are the primary makefiles.
+dnl (GNUmakefile wrappers can do fancy things that are mainly
+dnl for the benefit of maintainers.)
+AC_CONFIG_FILES([GNUmakefile])
+AC_CONFIG_FILES([Unicode/GNUmakefile])
+AC_CONFIG_FILES([gutils/GNUmakefile])
+AC_CONFIG_FILES([gdraw/GNUmakefile])
+AC_CONFIG_FILES([fontforge/GNUmakefile])
+
+dnl GNUstep-specific makefiles.
+AC_CONFIG_FILES([GNUmakefile.postamble])
+AC_CONFIG_FILES([Unicode/GNUmakefile.postamble])
+AC_CONFIG_FILES([gutils/GNUmakefile.postamble])
+AC_CONFIG_FILES([gdraw/GNUmakefile.postamble])
+AC_CONFIG_FILES([fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
+AC_CONFIG_FILES([overall_common.mk])
+
+AC_CONFIG_FILES([fontforge.pc])
 
 #AC_CONFIG_FILES([gtkui/Makefile])
 #AC_CONFIG_FILES([plugins/Makefile])
