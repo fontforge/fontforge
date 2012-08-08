@@ -3471,6 +3471,7 @@ return;
 	gevent.type = event->type==KeyPress?et_char:et_charup;
 	gevent.u.chr.time = event->xkey.time;
 	gevent.u.chr.state = event->xkey.state;
+	gevent.u.chr.autorepeat = 0;
 /*#ifdef __Mac*/
 	/* On mac os x, map the command key to the control key. So Comand-Q=>^Q=>Quit */
 	/* No... don't. Let the user have access to the command key as distinct from control */
@@ -3558,6 +3559,20 @@ return;
 	    len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
 	    gevent.u.chr.keysym = keysym;
 	    gevent.u.chr.chars[0] = '\0';
+	}
+	/*
+	 * If we are a charup, but the very next XEvent is a chardown
+	 * on the same key, then we are just an autorepeat XEvent which
+	 * other code might like to ignore
+	 */
+	if ( gevent.type==et_charup && XEventsQueued(gdisp->display, QueuedAfterReading)) {
+	    XEvent nev;
+	    XPeekEvent(gdisp->display, &nev);
+	    if (nev.type == KeyPress && nev.xkey.time == event->xkey.time &&
+		nev.xkey.keycode == event->xkey.keycode)
+	    {
+		gevent.u.chr.autorepeat = 1;
+	    }
 	}
       break;
       case ButtonPress: case ButtonRelease: case MotionNotify:

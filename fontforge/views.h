@@ -164,6 +164,7 @@ typedef struct charview {
     unsigned int showalmosthvcurves: 1;
     unsigned int checkselfintersects: 1;
     unsigned int showdebugchanges: 1;
+    unsigned int inPreviewMode: 1;
     int hvoffset;		/* for showalmosthvlines */
     int layers_off_top;
     real scale;

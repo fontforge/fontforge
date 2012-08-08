@@ -141,6 +141,7 @@ typedef struct gevent {
 	    uint16 state;
 	    int16 x,y;
 	    uint16 keysym;
+	    int16 autorepeat;
 	    unichar_t chars[_GD_EVT_CHRLEN];
 	} chr;
 	struct {
