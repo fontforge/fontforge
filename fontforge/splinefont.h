@@ -2714,7 +2714,7 @@ extern void SFCheckPSBitmap(SplineFont *sf);
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
-extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,char *select_this_font, enum openflags openflags);
+extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
 extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
 extern char **GetFontNames(char *filename);
 extern char **NamesReadPDF(char *filename);
