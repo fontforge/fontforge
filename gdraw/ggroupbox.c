@@ -28,8 +28,8 @@
 #include "gresource.h"
 #include "ggadgetP.h"
 
-GBox _GGroup_LineBox = { /* Don't initialize here */ 0  };
-static GBox group_box = { /* Don't initialize here */ 0 };
+GBox _GGroup_LineBox = GBOX_EMPTY; /* Don't initialize here */
+static GBox group_box = GBOX_EMPTY; /* Don't initialize here */
 static int ggroup_inited = false;
 
 static GGadgetCreateData gline_gcd[] = {

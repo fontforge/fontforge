@@ -117,7 +117,7 @@ static void rplall(int l) {
     int i;
 
     for ( i=0; words[i].us!=NULL; ++i )
-	replace( linebuffers[l],words[i].us,words[i].gb);
+	replace( linebuffers[l], words[i].us, words[i].gb);
 }
 
 int main(int argc, char **argv) {
@@ -127,14 +127,15 @@ int main(int argc, char **argv) {
     int i,l, start, end;
     char *pt;
 
-    input = fopen("FontForge.pot","r");
+    input = fopen("FontForge.pot", "r");
     if ( input==NULL ) {
 	fprintf( stderr, "No pot file\n" );
 return( 1 );
     }
-    output = fopen("en_GB.po","w");
+    output = fopen("en_GB.po", "w");
     if ( output==NULL ) {
 	fprintf( stderr, "Can't create en_GB.po\n" );
+	fclose( input );
 return( 1 );
     }
 
@@ -177,6 +178,8 @@ return( 1 );
     continue;
 	if ( l==LINE_MAX ) {
 	    fprintf( stderr, "Increase LINE_MAX. MSG:\n%s\n", linebuffers[0] );
+	    fclose( output );
+	    fclose( input );
 return( 1 );
 	}
 	for ( i=0; i<l; ++i )

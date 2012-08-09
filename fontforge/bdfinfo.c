@@ -714,7 +714,7 @@ void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone) {
     extern int _GScrollBar_Width;
     int sbwidth;
     static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    static GBox small = { 0 };
+    static GBox small = GBOX_EMPTY;
     GGadgetData gd;
     /* I don't use a MatrixEdit here because I want to be able to display */
     /*  non-standard properties. And a MatrixEdit can only disply things in */

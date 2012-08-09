@@ -3079,7 +3079,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     SplineChar *ssc;
     int i;
     SplineFont *sf;
-    /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
+    /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };*/
 
     memset(&p,0,sizeof(p));
     if ( fv==NULL ) fv = (FontView *) (cv->b.fv);

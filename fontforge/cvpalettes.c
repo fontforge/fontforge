@@ -1629,7 +1629,7 @@ static void CVMakeLayers2(CharView *cv) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[25];
     GTextInfo label[25];
-    static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
+    static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
     FontRequest rq;
     int i;
     extern int _GScrollBar_Width;
@@ -3344,7 +3344,7 @@ GWindow BVMakeLayers(BitmapView *bv) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[8], boxes[2], *hvarray[5][3];
     GTextInfo label[8];
-    static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
+    static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
     FontRequest rq;
     int i;
 

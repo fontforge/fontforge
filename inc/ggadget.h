@@ -144,9 +144,12 @@ typedef struct gbox {
     Color active_border;
     Color depressed_background;
     Color gradient_bg_end;
-	Color border_inner;
-	Color border_outer;
+    Color border_inner;
+    Color border_outer;
 } GBox;
+
+#define GBOX_EMPTY { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0 ,0 }
+
 
 typedef struct ggadget GGadget;
 typedef struct ggadget *GGadgetSet;

@@ -172,8 +172,8 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     GGadgetInit();
     u_vsnprintf(ubuf,sizeof(ubuf)/sizeof(ubuf[0]),question,ap);
     if ( screen_display==NULL ) {
-	char *temp;
-	fprintf(stderr, "%s\n", temp=u2def_copy(ubuf));
+	char *temp = u2def_copy(ubuf);
+	fprintf(stderr, "%s\n", temp);
 	free(temp);
 	if ( d!=NULL ) d->done = true;
 return( NULL );

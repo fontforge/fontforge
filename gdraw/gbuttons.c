@@ -34,12 +34,12 @@
 
 static void GListButtonDoPopup(GListButton *);
 
-GBox _GGadget_button_box = { /* Don't initialize here */ 0 };
-GBox _GGadget_defaultbutton_box = { /* Don't initialize here */ 0 };
-static GBox _GGadget_cancelbutton_box = { /* Don't initialize here */ 0 };
-static GBox _GGadget_colorbutton_box = { /* Don't initialize here */ 0 };
-static GBox _GGadget_droplist_box = { /* Don't initialize here */ 0 };
-static GBox label_box = { /* Don't initialize here */ 0 };
+GBox _GGadget_button_box = GBOX_EMPTY; /* Don't initialize here */
+GBox _GGadget_defaultbutton_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox _GGadget_cancelbutton_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox _GGadget_colorbutton_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox _GGadget_droplist_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox label_box = GBOX_EMPTY; /* Don't initialize here */
 static int shift_on_press = 0;
 static FontInstance *label_font = NULL, *button_font = NULL;
 static int gbutton_inited = false;

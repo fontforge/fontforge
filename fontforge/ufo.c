@@ -876,11 +876,14 @@ return( NULL );
 	    if ( get_thingy(info,buffer,"string")!=NULL ) {
 		ret = gcalloc(2,sizeof(char *));
 		ret[0] = copy(buffer);
+		fclose(info);
 return( ret );
 	    }
+	    fclose(info);
 return( NULL );
 	}
     }
+    fclose(info);
 return( NULL );
 }
 

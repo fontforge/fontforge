@@ -35,8 +35,8 @@
 
 #define DEL_SPACE	6
 
-static GBox gmatrixedit_box = { /* Don't initialize here */ 0 };
-static GBox gmatrixedit_button_box = { /* Don't initialize here */ 0 };
+static GBox gmatrixedit_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gmatrixedit_button_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *gmatrixedit_font = NULL, *gmatrixedit_titfont = NULL;
 static Color gmatrixedit_title_bg = 0x808080, gmatrixedit_title_fg = 0x000000, gmatrixedit_title_divider = 0xffffff;
 static Color gmatrixedit_rules = 0x000000;
@@ -2102,7 +2102,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GME_RecalcFH(gme);
     {
-	static GBox small = { 0 };
+	static GBox small = GBOX_EMPTY;
 	static unichar_t nullstr[1] = { 0 };
 
 	small.main_background = gmatrixedit_activebg;

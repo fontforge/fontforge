@@ -5046,6 +5046,7 @@ return( 0 );
 		}
 	    }
 	}
+	closedir(dir);
     }
     SFDFixupBitmapRefs( bdf );
 return( 1 );

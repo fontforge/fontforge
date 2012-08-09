@@ -40,7 +40,7 @@
 /*  to make them work together. Therefore there are no expose routines here, */
 /*  nor mouse, nor key. That's all handled by the individual gadgets themselves*/
 /* Instead we've got a bunch of routines that make them work as a whole */
-static GBox gfilechooser_box = { 0 };	/* no box */
+static GBox gfilechooser_box = GBOX_EMPTY; /* no box */
 static unichar_t *lastdir;
 static int showhidden = false;
 static enum { dirs_mixed, dirs_first, dirs_separate } dir_placement = dirs_mixed;
