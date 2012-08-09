@@ -31,7 +31,7 @@
 #include "ustring.h"
 #include "gkeysym.h"
 
-static GBox gtabset_box = { /* Don't initialize here */ 0 };
+static GBox gtabset_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *gtabset_font = NULL;
 static int gtabset_inited = false;
 

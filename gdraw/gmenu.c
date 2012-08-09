@@ -33,8 +33,8 @@
 #include <utype.h>
 #include <gresource.h>
 
-static GBox menubar_box = { /* Don't initialize here */ 0 };
-static GBox menu_box = { /* Don't initialize here */ 0 };
+static GBox menubar_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox menu_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *menu_font = NULL, *menubar_font = NULL;
 static int gmenubar_inited = false;
 #ifdef __Mac

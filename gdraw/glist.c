@@ -946,7 +946,7 @@ struct gfuncs GList_funcs = {
     glist_FillsWindow
 };
 
-static GBox list_box = { /* Don't initialize here */ 0 };
+static GBox list_box = GBOX_EMPTY; /* Don't initialize here */;
 static FontInstance *list_font = NULL;
 static int glist_inited = false;
 

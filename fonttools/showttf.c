@@ -1911,6 +1911,7 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		    4*segCount*sizeof(unsigned short);
 	    if ( len<0 ) {
 		fprintf( stderr, "This font has an illegal format 4 subtable with too little space for all the segments.\n" );
+		free(startchars); free(endchars); free(delta); free(rangeOffset);
 return;
 	    }
 	    /* that's the amount of space left in the subtable and it must */
@@ -3823,6 +3824,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
     break;
 	if ( ent_max>1000 ) {
 	    fprintf( stderr, "It looks to me as though there's a morx sub-table with more than 1000\n transitions. Which makes me think there's probably an error\n" );
+	    free(st);
 return( NULL );
 	}
 	fseek(ttf,here+entry_off+old_ent_max*ent_size,SEEK_SET);
@@ -3840,6 +3842,7 @@ return( NULL );
 	}
 	if ( state_max>1000 ) {
 	    fprintf( stderr, "It looks to me as though there's a morx sub-table with more than 1000\n states. Which makes me think there's probably an error\n" );
+	    free(st);
 return( NULL );
 	}
     }
@@ -4754,6 +4757,7 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     }
 
     printf( "\n" );
+    free(offsets);
 }
 
 static void readttfgasp(FILE *ttf, FILE *util, struct ttfinfo *info) {

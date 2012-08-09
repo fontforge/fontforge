@@ -35,11 +35,11 @@
 
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
-GBox _GGadget_gtextfield_box = { /* Don't initialize here */ 0 };
-static GBox glistfield_box = { /* Don't initialize here */ 0 };
-static GBox glistfieldmenu_box = { /* Don't initialize here */ 0 };
-static GBox gnumericfield_box = { /* Don't initialize here */ 0 };
-static GBox gnumericfieldspinner_box = { /* Don't initialize here */ 0 };
+GBox _GGadget_gtextfield_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox glistfield_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox glistfieldmenu_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gnumericfield_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gnumericfieldspinner_box = GBOX_EMPTY; /* Don't initialize here */
 FontInstance *_gtextfield_font = NULL;
 static int gtextfield_inited = false;
 
@@ -1950,7 +1950,7 @@ static int GTextFieldDoDrop(GTextField *gt,GEvent *event,int endpos) {
 		gt->sel_oldstart = gt->sel_start;
 		gt->sel_oldend = gt->sel_end;
 		gt->sel_oldbase = gt->sel_base;
-		gt->sel_start = gt->sel_end = gt->sel_end = pos;
+		gt->sel_start = gt->sel_end = pos;
 		gt->text = temp;
 		free(old);
 		GTextFieldRefigureLines(gt, endpos<gt->sel_oldstart?endpos:gt->sel_oldstart);

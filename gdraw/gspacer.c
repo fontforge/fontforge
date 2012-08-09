@@ -31,7 +31,7 @@
 #include "gkeysym.h"
 #include "gresource.h"
 
-static GBox spacer_box = { 0 };
+static GBox spacer_box = GBOX_EMPTY;
 static int gspacer_inited = false;
 
 static int gspacer_expose(GWindow pixmap, GGadget *g, GEvent *event) {

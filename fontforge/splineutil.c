@@ -3531,7 +3531,7 @@ static int _QuarticSolve(Quartic *q,extended ts[4]) {
 	sp.b = q->c;
 	sp.c = q->d;
 	sp.d = q->e;
-	ts[4] = -999999;
+	ts[3] = -999999;
 return( _CubicSolve(&sp,0,ts));
     } else if ( q->e==0 ) {	/* we can factor out a zero root */
 	sp.a = q->a;

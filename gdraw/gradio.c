@@ -31,14 +31,14 @@
 #include "gkeysym.h"
 #include <math.h>
 
-static GBox radio_box = { /* Don't initialize here */ 0 };
-static GBox radio_on_box = { /* Don't initialize here */ 0 };
-static GBox radio_off_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
-static GBox visibility_on_box = { /* Don't initialize here */ 0 };
-static GBox visibility_off_box = { /* Don't initialize here */ 0 };
+static GBox radio_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox radio_on_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox radio_off_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox checkbox_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox checkbox_on_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox checkbox_off_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox visibility_on_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox visibility_off_box = GBOX_EMPTY; /* Don't initialize here */
 static GResImage *radon, *radoff, *checkon, *checkoff, *raddison, *raddisoff, *checkdison, *checkdisoff;
 static GResImage *visibilityon, *visibilityoff, *visibilitydison, *visibilitydisoff;
 static FontInstance *checkbox_font = NULL;

@@ -39,6 +39,9 @@ typedef struct gresstruct {
     int found;
 } GResStruct;
 
+#define GRESSTRUCT_EMPTY { NULL, 0, NULL, NULL, 0 }
+
+
 extern char *GResourceProgramName, *GResourceFullProgram, *GResourceProgramDir;
 extern int local_encoding;
 #if HAVE_ICONV_H

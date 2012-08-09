@@ -49,12 +49,12 @@ static Color rbearinglinecol = 0x000080;
 void MVColInit( void ) {
     static int cinit=false;
     GResStruct mvcolors[] = {
-	{ "AdvanceWidthColor", rt_color, &widthcol },
-	{ "ItalicAdvanceColor", rt_color, &italicwidthcol },
-	{ "SelectedGlyphColor", rt_color, &selglyphcol },
-	{ "KernLineColor", rt_color, &kernlinecol },
-	{ "SideBearingLineColor", rt_color, &rbearinglinecol },
-	{ NULL }
+	{ "AdvanceWidthColor", rt_color, &widthcol, NULL, 0 },
+	{ "ItalicAdvanceColor", rt_color, &italicwidthcol, NULL, 0 },
+	{ "SelectedGlyphColor", rt_color, &selglyphcol, NULL, 0 },
+	{ "KernLineColor", rt_color, &kernlinecol, NULL, 0 },
+	{ "SideBearingLineColor", rt_color, &rbearinglinecol, NULL, 0 },
+	GRESSTRUCT_EMPTY
     };
     if ( !cinit ) {
 	GResourceFind( mvcolors, "MetricsView.");
@@ -616,7 +616,7 @@ static void MVRefreshValues(MetricsView *mv, int i) {
 }
 
 static void MVMakeLabels(MetricsView *mv) {
-    static GBox small = { 0 };
+    static GBox small = GBOX_EMPTY;
     GGadgetData gd;
     GTextInfo label;
 
@@ -666,7 +666,7 @@ static int MV_LBearingChanged(GGadget *g, GEvent *e);
 static int MV_WidthChanged(GGadget *g, GEvent *e);
 
 static void MVCreateFields(MetricsView *mv,int i) {
-    static GBox small = { 0 };
+    static GBox small = GBOX_EMPTY;
     GGadgetData gd;
     GTextInfo label;
     static unichar_t nullstr[1] = { 0 };

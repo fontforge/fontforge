@@ -31,7 +31,7 @@
 #include "ggadgetP.h"
 #include <string.h>
 
-static GBox gdrawable_box = { /* Don't initialize here */ 0 };
+static GBox gdrawable_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *gdrawable_font = NULL;
 static int gdrawable_inited = false;
 

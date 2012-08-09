@@ -29,8 +29,8 @@
 #include "ggadgetP.h"
 #include "ustring.h"
 
-static GBox scrollbar_box = { /* Don't initialize here */ 0 };
-static GBox thumb_box = { /* Don't initialize here */ 0 };
+static GBox scrollbar_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox thumb_box = GBOX_EMPTY; /* Don't initialize here */
 int _GScrollBar_Width = 13;			/* in points */
 int _GScrollBar_StartTime=300, _GScrollBar_RepeatTime=200;
 static int gscrollbar_inited = false;

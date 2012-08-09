@@ -3011,7 +3011,7 @@ return;
     }
     if ( (nl = LoadNamelist(temp))==NULL ) {
 	gwwv_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
-	free(ret); free(temp);
+	free(ret); free(temp); fclose(old);
 return;
     }
     free(ret); free(temp);
@@ -3025,6 +3025,7 @@ return;
     new = fopen( buffer,"w");
     if ( new==NULL ) {
 	gwwv_post_error(_("Create failed"),_("Could not write %s"), buffer );
+	fclose(old);
 return;
     }
 
@@ -4577,8 +4578,9 @@ return( true );
 	if ( index<0 ) index = 9;
 	if ( script_filenames[index]!=NULL )
 	    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
+    } else
 #endif
-    } else if ( event->keyval == GDK_Left ||
+    if ( event->keyval == GDK_Left ||
 	    event->keyval == GDK_Tab ||
 	    /*event->keyval == GDK_BackTab ||*/
 	    event->keyval == GDK_Up ||

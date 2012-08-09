@@ -35,8 +35,8 @@
 #define GG_RowSpan	((GGadget *) -3)	/* Must match those in ggadget.h */
 #define GG_HPad10	((GGadget *) -4)
 
-static GBox hvgroup_box = { /* Don't initialize here */ 0 };
-static GBox hvbox_box = { /* Don't initialize here */ 0 };
+static GBox hvgroup_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox hvbox_box = GBOX_EMPTY; /* Don't initialize here */
 static int ghvbox_inited = false;
 
 GResInfo ghvgroupbox_ri = {

@@ -4282,7 +4282,7 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
 #endif
     int i;
     GTabInfo aspects[17];
-    static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
+    static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
     static int boxset=0;
     FontRequest rq;
     static GFont *font=NULL;

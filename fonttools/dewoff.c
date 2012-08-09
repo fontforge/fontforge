@@ -178,8 +178,10 @@ return( we_mbz );
     strcpy(outname,start);
     strcpy(outname+(ext-start),iscff ? ".otf" : ".ttf" );
     sfnt = fopen( outname,"wb+" );
-    if ( sfnt==NULL )
+    if ( sfnt==NULL ) {
+        free(outname);
 return( we_cantopenout );
+    }
 
     putlong(sfnt,flavour);
     putshort(sfnt,num_tabs);
@@ -202,6 +204,7 @@ return( we_cantopenout );
 	if ( compLen>uncompLen || offset+compLen>len ) {
 	    fclose(sfnt);
 	    fclose(woff);
+	    free(outname);
 return( we_badtablen );
 	}
 	here = ftell(woff);
@@ -223,6 +226,7 @@ return( we_badtablen );
 	    if ( err!=we_good ) {
 		fclose(sfnt);
 		fclose(woff);
+		free(outname);
 return( err );
 	    }
 	}
@@ -254,12 +258,14 @@ return( err );
 	meta = fopen( outname,"wb" );
 	if ( meta==NULL ) {
 	    fclose(woff);
+	    free(outname);
 return( we_cantopenout );
 	}
 	err = decompressdata(meta,0,woff,metaOffset,metaLenCompressed,metaLenUncompressed);
 	fclose(meta);
 	if ( err!=we_good ) {
 	    fclose(woff);
+	    free(outname);
 return( err );
 	}
     }

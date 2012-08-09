@@ -49,7 +49,7 @@ GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0,
     COLOR_CREATE(0x00,0x00,0x00),		/* border inner */
     COLOR_CREATE(0x00,0x00,0x00),		/* border outer */
 };
-GBox _GListMark_Box = { /* Don't initialize here */ 0 };
+GBox _GListMark_Box = GBOX_EMPTY; /* Don't initialize here */
 FontInstance *_ggadget_default_font = NULL;
 static FontInstance *popup_font = NULL;
 int _GListMarkSize = 12;
@@ -863,7 +863,7 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 	    for ( ; prev!=NULL && prev->r.y==prevline->r.y ; prev = prev->prev )
 		onprev++;
 	    for ( prev = prevline, i=0; prev!=NULL && i<onprev-onthisline; prev = prev->prev);
-	    if ( prev==NULL )
+	    if ( prev!=NULL )
 		g->r.x = prev->r.x;
 	}
 	if ( g->r.x==0 )
