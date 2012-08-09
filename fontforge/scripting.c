@@ -3211,14 +3211,15 @@ static void bHasPreservedTable(Context *c) {
 static void bLoadEncodingFile(Context *c) {
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc != 2 && c->a.argc != 3 )
 	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    else if ((c->a.vals[1].type!=v_str ) ||
+            (c->a.argc >= 3 && c->a.vals[2].type !=v_str))
 	ScriptError(c,"Bad argument type");
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    ParseEncodingFile(locfilename);
+    ParseEncodingFile(locfilename, (c->a.argc>=3 ? c->a.vals[2].u.sval : NULL));
     free(locfilename); free(t);
     /*DumpPfaEditEncodings();*/
 }

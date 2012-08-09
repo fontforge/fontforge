@@ -522,12 +522,13 @@ Py_RETURN_NONE;
 
 static PyObject *PyFF_LoadEncodingFile(PyObject *self, PyObject *args) {
     const char *filename;
+    char * encodingname = NULL;
 
     /* here we do want the default encoding */
-    if ( !PyArg_ParseTuple(args,"s", &filename) )
+    if ( !PyArg_ParseTuple(args,"s|s", &filename, &encodingname) )
 return( NULL );
 
-return( Py_BuildValue("s", ParseEncodingFile((char *) filename)) );
+return( Py_BuildValue("s", ParseEncodingFile((char *) filename, encodingname)) );
 }
 
 static PyObject *PyFF_LoadNamelist(PyObject *self, PyObject *args) {
