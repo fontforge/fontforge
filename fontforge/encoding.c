@@ -587,7 +587,7 @@ void RemoveMultiples(Encoding *item) {
 	DeleteEncoding(test);
 }
 
-char *ParseEncodingFile(char *filename) {
+char *ParseEncodingFile(char *filename, char *encodingname) {
     FILE *file;
     char *orig = filename;
     Encoding *head, *item, *prev, *next;
@@ -609,7 +609,11 @@ return( NULL );
     }
     ungetc(ch,file);
     if ( ch=='#' || ch=='0' )
-	head = ParseConsortiumEncodingFile(file);
+    {
+        head = ParseConsortiumEncodingFile(file);
+        if(encodingname)
+            head->enc_name = copy(encodingname);
+    }
     else
 	head = PSSlurpEncodings(file);
     fclose(file);
@@ -675,7 +679,7 @@ return( copy( head->enc_name ) );
 }
 
 void LoadPfaEditEncodings(void) {
-    ParseEncodingFile(NULL);
+    ParseEncodingFile(NULL, NULL);
 }
 
 void DumpPfaEditEncodings(void) {
