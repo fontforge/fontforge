@@ -229,7 +229,7 @@ void LoadEncodingFile(void) {
     if ( fn==NULL )
 return;
     filename = utf82def_copy(fn);
-    ParseEncodingFile(filename);
+    ParseEncodingFile(filename, NULL);
     free(fn); free(filename);
     DumpPfaEditEncodings();
 }
