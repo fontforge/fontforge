@@ -2100,6 +2100,7 @@ struct tablekeywords {
     int cnt;			/* normally 1, but 10 for panose, -1 for infinite */
     int offset;			/* -1 => parse but don't store */
 };
+#define TABLEKEYWORDS_EMPTY { NULL, 0, 0, 0 }
 
 struct tablevalues {
     int index;			/* in the table key structure above */
@@ -2404,7 +2405,7 @@ static struct keywords {
     { "rsub", tk_reversesub },
     { "enum", tk_enumerate },
     { "anon", tk_anonymous },
-    NULL
+    { NULL, 0 }
 };
 
 static struct tablekeywords hhead_keys[] = {
@@ -2412,14 +2413,14 @@ static struct tablekeywords hhead_keys[] = {
     { "Ascender", sizeof(short), 1, offsetof(struct pfminfo,hhead_ascent)+offsetof(SplineFont,pfminfo) },
     { "Descender", sizeof(short), 1, offsetof(struct pfminfo,hhead_descent)+offsetof(SplineFont,pfminfo) },
     { "LineGap", sizeof(short), 1, offsetof(struct pfminfo,linegap)+offsetof(SplineFont,pfminfo) },
-    NULL
+    TABLEKEYWORDS_EMPTY
 };
 
 static struct tablekeywords vhead_keys[] = {
     { "VertTypoAscender", sizeof(short), 1, -1 },
     { "VertTypoDescender", sizeof(short), 1, -1 },
     { "VertTypoLineGap", sizeof(short), 1, offsetof(struct pfminfo,vlinegap)+offsetof(SplineFont,pfminfo) },
-    NULL
+    TABLEKEYWORDS_EMPTY
 };
 
 static struct tablekeywords os2_keys[] = {
@@ -2437,7 +2438,7 @@ static struct tablekeywords os2_keys[] = {
     { "WeightClass", sizeof(short), 1, offsetof(struct pfminfo,weight)+offsetof(SplineFont,pfminfo) },
     { "WidthClass", sizeof(short), 1, offsetof(struct pfminfo,width)+offsetof(SplineFont,pfminfo) },
     { "Vendor", sizeof(short), 1, offsetof(struct pfminfo,os2_vendor)+offsetof(SplineFont,pfminfo) },
-    NULL
+    TABLEKEYWORDS_EMPTY
 };
 
 

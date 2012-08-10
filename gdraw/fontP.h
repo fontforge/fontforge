@@ -119,6 +119,9 @@ struct fontabbrev {
     struct font_name *found;
 };
 
+#define FONTABBREV_EMPTY { NULL, 0, 0, 0, 0, 0, NULL }
+
+
 struct kern_info {
     int16 following;		/* second character */
     int16 kern;			/* amount to kern by */

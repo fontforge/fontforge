@@ -46,7 +46,12 @@ static GResInfo gtabset_ri = {
     "GTabSet",
     "Gdraw",
     false,
-    omf_border_width|omf_border_shape
+    omf_border_width|omf_border_shape,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 #define NEST_INDENT	4
 
@@ -725,7 +730,8 @@ struct gfuncs gtabset_funcs = {
 
     gtabset_GetDesiredSize,
     _ggadget_setDesiredSize,
-    gtabset_FillsWindow
+    gtabset_FillsWindow,
+    NULL
 };
 
 static int sendtoparent_eh(GWindow gw, GEvent *event) {

@@ -789,31 +789,32 @@ return(shortcut_domain);
 }
 
 static struct { char *modifier; int mask; char *alt; } modifiers[] = {
-    { "Ctl+", ksm_control },
-    { "Control+", ksm_control },
-    { "Shft+", ksm_shift },
-    { "Shift+", ksm_shift },
-    { "CapsLk+", ksm_capslock },
-    { "CapsLock+", ksm_capslock },
-    { "Meta+", ksm_meta },
-    { "Alt+", ksm_meta },
-    { "Flag0x01+", 0x01 },
-    { "Flag0x02+", 0x02 },
-    { "Flag0x04+", 0x04 },
-    { "Flag0x08+", 0x08 },
-    { "Flag0x10+", 0x10 },
-    { "Flag0x20+", 0x20 },
-    { "Flag0x40+", 0x40 },
-    { "Flag0x80+", 0x80 },
-    { "Opt+", ksm_meta },
-    { "Option+", ksm_meta },
-	/* We used to map command to control on the mac, no longer, let it be itself */
-    { "Command+", ksm_cmdmacosx },
-    { "Cmd+", ksm_cmdmacosx },
-    { "NumLk+", ksm_cmdmacosx },		/* This is unfortunate. Numlock should be ignored, Command should not */
-    { "NumLock+", ksm_cmdmacosx },
-    { NULL }};
+    { "Ctl+", ksm_control, NULL },
+    { "Control+", ksm_control, NULL },
+    { "Shft+", ksm_shift, NULL },
+    { "Shift+", ksm_shift, NULL },
+    { "CapsLk+", ksm_capslock, NULL },
+    { "CapsLock+", ksm_capslock, NULL },
+    { "Meta+", ksm_meta, NULL },
+    { "Alt+", ksm_meta, NULL },
+    { "Flag0x01+", 0x01, NULL },
+    { "Flag0x02+", 0x02, NULL },
+    { "Flag0x04+", 0x04, NULL },
+    { "Flag0x08+", 0x08, NULL },
+    { "Flag0x10+", 0x10, NULL },
+    { "Flag0x20+", 0x20, NULL },
+    { "Flag0x40+", 0x40, NULL },
+    { "Flag0x80+", 0x80, NULL },
+    { "Opt+", ksm_meta, NULL },
+    { "Option+", ksm_meta, NULL },
+    /* We used to map command to control on the mac, no longer, let it be itself */
+    { "Command+", ksm_cmdmacosx, NULL },
+    { "Cmd+", ksm_cmdmacosx, NULL },
+    { "NumLk+", ksm_cmdmacosx, NULL },    /* This is unfortunate. Numlock should be ignored, Command should not */
+    { "NumLock+", ksm_cmdmacosx, NULL },
+    { NULL, 0, NULL }
     /* Windows flag key=Super (keysym ffeb/ffec) key maps to 0x40 on my machine */
+};
 
 static void initmods(void) {
     if ( modifiers[0].alt==NULL ) {

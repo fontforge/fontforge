@@ -44,7 +44,11 @@ char *printcommand=NULL;
 int printtype = pt_unknown;
 int use_gv;
 
-struct printdefaults pdefs[] = { { &custom, pt_fontdisplay }, { &custom, pt_chars }, { &custom, pt_fontdisplay }};
+struct printdefaults pdefs[] = {
+    { &custom, pt_fontdisplay, 0, NULL },
+    { &custom, pt_chars, 0, NULL },
+    { &custom, pt_fontdisplay, 0, NULL }
+};
 
 
 /* ************************************************************************** */
@@ -407,6 +411,9 @@ struct glyph_res {
     struct opac_state { int isfill; float opacity; int obj; } *opac_state;
 };
 
+#define GLYPH_RES_EMPTY { 0, 0, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL }
+
+
 #ifdef FONTFORGE_CONFIG_TYPE3
 void makePatName(char *buffer,
 	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad) {
@@ -677,7 +684,7 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 /*  matrices of references to the same glyph. Sigh. */
 int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     int resobj;
-    struct glyph_res gr = { 0 };
+    struct glyph_res gr = GLYPH_RES_EMPTY;
     int i;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -738,7 +745,7 @@ return( resobj );
 
 static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
     int resobj;
-    struct glyph_res gr = { 0 };
+    struct glyph_res gr = GLYPH_RES_EMPTY;
     int i;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int layer, gid;
@@ -2578,7 +2585,7 @@ static struct langsamples {
     { _georgianjohn, "ka", sc_georgian, CHR('g','e','o','r'), CHR('K','A','T',' ') },
     { _swahilijohn, "sw", sc_latin, CHR('l','a','t','n'), CHR('S','W','K',' ')},
     { _mayanPopolWuj, "QUT", sc_latin, CHR('l','a','t','n'), CHR('Q','U','T',' ')},
-    { NULL }
+    { NULL, NULL, 0, 0, 0 }
 };
 
 static void OrderSampleByLang(void) {

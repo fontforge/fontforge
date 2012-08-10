@@ -106,18 +106,18 @@ static uint8 image_data[] = {
     0x00, 0x00,
 };
 static GClut cluts[2*USEFUL_MAX] = {
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0},
-    { 2, 0, COLOR_UNKNOWN, 0, 0}
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY },
+    { 2, 0, COLOR_UNKNOWN, CLUT_CLUT_EMPTY }
 };
 static struct _GImage bases[2*USEFUL_MAX] = {
     { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[0], COLOR_UNKNOWN },
@@ -134,18 +134,18 @@ static struct _GImage bases[2*USEFUL_MAX] = {
     { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[11], COLOR_UNKNOWN }
 };
 static GImage blanks[2*USEFUL_MAX] = {
-    { 0, &bases[0] },
-    { 0, &bases[1] },
-    { 0, &bases[2] },
-    { 0, &bases[3] },
-    { 0, &bases[4] },
-    { 0, &bases[5] },
-    { 0, &bases[6] },
-    { 0, &bases[7] },
-    { 0, &bases[8] },
-    { 0, &bases[9] },
-    { 0, &bases[10] },
-    { 0, &bases[11] }
+    { 0, { &bases[0] }, NULL },
+    { 0, { &bases[1] }, NULL },
+    { 0, { &bases[2] }, NULL },
+    { 0, { &bases[3] }, NULL },
+    { 0, { &bases[4] }, NULL },
+    { 0, { &bases[5] }, NULL },
+    { 0, { &bases[6] }, NULL },
+    { 0, { &bases[7] }, NULL },
+    { 0, { &bases[8] }, NULL },
+    { 0, { &bases[9] }, NULL },
+    { 0, { &bases[10] }, NULL },
+    { 0, { &bases[11] }, NULL }
 };
 /* ************************************************************************** */
 struct hslrgba recent_cols[USEFUL_MAX+1];

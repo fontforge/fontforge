@@ -10935,7 +10935,13 @@ GResInfo charview2_ri = {
     N_("This window displays a single outline glyph (more data)"),
     "CharView",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 GResInfo charview_ri = {
     &charview2_ri, NULL,NULL, NULL,
@@ -10947,5 +10953,11 @@ GResInfo charview_ri = {
     N_("This window displays a single outline glyph"),
     "CharView",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };

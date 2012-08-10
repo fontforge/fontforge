@@ -33,10 +33,11 @@ static GBox group_box = GBOX_EMPTY; /* Don't initialize here */
 static int ggroup_inited = false;
 
 static GGadgetCreateData gline_gcd[] = {
-	{GLineCreate, {{0,0,100},NULL,0,0,0,0,0,NULL,NULL,gg_visible|gg_enabled}}};
+    { GLineCreate, { { 0, 0, 100, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *larray[] = { GCD_Glue, &gline_gcd[0], GCD_Glue, NULL, NULL };
 static GGadgetCreateData linebox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) larray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) larray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 GResInfo gline_ri = {
     NULL, &ggadget_ri, NULL, NULL,
     &_GGroup_LineBox,
@@ -48,7 +49,12 @@ GResInfo gline_ri = {
     "GLine",
     "Gdraw",
     false,
-    omf_border_type|omf_border_shape|omf_padding
+    omf_border_type|omf_border_shape|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 void _GGroup_Init(void) {
@@ -160,7 +166,9 @@ struct gfuncs gline_funcs = {
     NULL,
 
     GGroupGetDesiredSize,
-    _ggadget_setDesiredSize
+    _ggadget_setDesiredSize,
+    NULL,
+    NULL
 };
 
 struct gfuncs ggroup_funcs = {
@@ -207,7 +215,9 @@ struct gfuncs ggroup_funcs = {
     NULL,
 
     GGroupGetDesiredSize,
-    _ggadget_setDesiredSize
+    _ggadget_setDesiredSize,
+    NULL,
+    NULL
 };
 
 static void GLineFit(GGadget *g) {

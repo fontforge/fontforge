@@ -39,13 +39,13 @@ static char *JSTF_Langs(GGadget *, int r, int c);
 
 static struct col_init glyph_ci[] = {
     { me_string , NULL, NULL, NULL, N_("Glyph Names") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init lookup_ci[] = {
     { me_enum , NULL, NULL, NULL, N_("Lookups") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init jstf_lang_ci[] = {
     { me_stringchoicetag , NULL, languages, NULL, N_("Language") },
@@ -55,16 +55,16 @@ static struct col_init jstf_lang_ci[] = {
     { me_funcedit, JSTF_LookupListDlg, NULL, NULL, N_("Shrink Lookups On") },
     { me_funcedit, JSTF_LookupListDlg, NULL, NULL, N_("Shrink Lookups Off") },
     { me_funcedit, JSTF_LookupListDlg, NULL, NULL, N_("Shrink Max Lookups") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 static struct col_init justify_ci[] = {
     { me_stringchoicetag , NULL, scripts, NULL, N_("writing system|Script") },
     { me_funcedit, JSTF_GlyphDlg, NULL, NULL, N_("Extenders") },
     { me_button, JSTF_Langs, NULL, NULL, N_("Language info") },
     { me_addr, NULL, NULL, NULL, N_("Hidden") },
-    0
-    };
+    COL_INIT_EMPTY
+};
 
 struct glyph_list_dlg {
     int done;

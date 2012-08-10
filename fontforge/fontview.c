@@ -7572,7 +7572,13 @@ GResInfo view_ri = {
     N_("This is an abstract class which defines common features of the\nFontView, CharView, BitmapView and MetricsView"),
     "View",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 GResInfo fontview_ri = {
@@ -7585,7 +7591,13 @@ GResInfo fontview_ri = {
     N_("This is the main fontforge window displaying a font"),
     "FontView",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 /* ************************************************************************** */

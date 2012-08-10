@@ -72,13 +72,15 @@ struct l2 {
     int rename_active;    /* If >=2, layer number for which the edit box for layer names is active */
     GClut *clut;
     GFont *font;          /* font to draw text in the palette with */
-} layerinfo = { 2 }; /* info about the current layers in the layers palette */
+} layerinfo = {           /* info about the current layers in the layers palette */
+    2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL
+};
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-struct l2 layer2 = { 2 };
+struct l2 layer2 = { 2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL };
 static int layers2_active = -1;
 #endif
-static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
+static GPoint cvtoolsoff = { -9999, -9999 }, cvlayersoff = { -9999, -9999 }, bvlayersoff = { -9999, -9999 }, bvtoolsoff = { -9999, -9999 }, bvshadesoff = { -9999, -9999 };
 int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 
@@ -2717,7 +2719,7 @@ int CVPaletteMnemonicCheck(GEvent *event) {
 	{ N_("_Back"), CID_EBack },
 /* GT: Guide layer, make it short */
 	{ N_("_Guide"), CID_EGrid },
-	{ 0 }
+	{ NULL, 0 }
     };
     unichar_t mn, mnc;
     int j, i, ch;
