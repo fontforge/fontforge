@@ -57,21 +57,27 @@ static GResInfo glabel_ri = {
     "GLabel",
     "Gdraw",
     false,
-    omf_border_type|omf_border_width|omf_padding
+    omf_border_type|omf_border_width|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
+
 static GTextInfo button_lab[] = {
-	{ (unichar_t *) "Disabled Button", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	{ (unichar_t *) "Enabled Button" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+    { (unichar_t *) "Disabled Button", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled Button" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
 };
 static GGadgetCreateData button_gcd[] = {
-	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible}},
-	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled}}
+    { GButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &button_lab[0], { NULL }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &button_lab[1], { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
 };
 static GGadgetCreateData *barray[] = { GCD_Glue, &button_gcd[0], GCD_Glue, &button_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData buttonbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) barray,gg_visible|gg_enabled}};
+	{GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) barray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static struct resed gbutton_re[] = {
-    {N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    { N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 static GResInfo gbutton_ri = {
@@ -87,19 +93,25 @@ static GResInfo gbutton_ri = {
     true,
 #ifdef __Mac
     box_do_depressed_background|omf_border_type|omf_border_width|
-	    omf_border_shape|omf_padding
+	    omf_border_shape|omf_padding,
 #else
     box_foreground_border_inner|box_foreground_border_outer|
-	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default
+	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default,
 #endif
+    /* Will be initialized later */
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GGadgetCreateData def_gcd[] = {
-	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible|gg_but_default}},
-	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled|gg_but_default}}
-    };
+    { GButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &button_lab[0], { NULL }, gg_visible|gg_but_default, NULL, NULL }, NULL, NULL },
+    { GButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &button_lab[1], { NULL }, gg_visible|gg_enabled|gg_but_default, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *darray[] = { GCD_Glue, &def_gcd[0], GCD_Glue, &def_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData defbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) darray,gg_visible|gg_enabled}};
+	{ GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) darray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gdefault_ri = {
     &gcancel_ri, &gbutton_ri,&gcancel_ri,NULL,
     &_GGadget_defaultbutton_box,
@@ -112,18 +124,23 @@ static GResInfo gdefault_ri = {
     "Gdraw",
     true,
 #ifdef __Mac
-    box_gradient_bg|omf_main_background|omf_gradient_bg_end
+    box_gradient_bg|omf_main_background|omf_gradient_bg_end,
 #else
-    0
+    0,
 #endif
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GGadgetCreateData cancel_gcd[] = {
-	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[0],NULL,gg_visible|gg_but_cancel}},
-	{GButtonCreate, {{0},NULL,0,0,0,0,0,&button_lab[1],NULL,gg_visible|gg_enabled|gg_but_cancel}}
-    };
+    { GButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &button_lab[0], { NULL }, gg_visible|gg_but_cancel, NULL, NULL }, NULL, NULL },
+    { GButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &button_lab[1], { NULL }, gg_visible|gg_enabled|gg_but_cancel, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *carray[] = { GCD_Glue, &cancel_gcd[0], GCD_Glue, &cancel_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData cancelbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) carray,gg_visible|gg_enabled}};
+    {GHVGroupCreate, { {2, 2, 0, 0}, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) carray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gcancel_ri = {
     &gcolor_ri, &gbutton_ri,&gdefault_ri,NULL,
     &_GGadget_cancelbutton_box,
@@ -136,18 +153,23 @@ static GResInfo gcancel_ri = {
     "Gdraw",
     true,
 #ifdef __Mac
-    box_gradient_bg|omf_main_background|omf_gradient_bg_end
+    box_gradient_bg|omf_main_background|omf_gradient_bg_end,
 #else
-    0
+    0,
 #endif
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GGadgetCreateData color_gcd[] = {
-	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible}},
-	{GColorButtonCreate, {{0},NULL,0,0,0,0,0,NULL,(GTextInfo *) (intpt) (0x000000),gg_visible|gg_enabled}}
+    { GColorButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) (intpt) (0x000000) }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GColorButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) (intpt) (0x000000) }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
 };
 static GGadgetCreateData *colarray[] = { GCD_Glue, &color_gcd[0], GCD_Glue, &color_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData colorbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) colarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) colarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gcolor_ri = {
     &gdroplist_ri, &gbutton_ri,NULL,NULL,
     &_GGadget_colorbutton_box,
@@ -158,22 +180,28 @@ static GResInfo gcolor_ri = {
     N_("Color Button"),
     "GColorButton",
     "Gdraw",
-    true
+    true,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	{ (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	{ (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	GTEXTINFO_EMPTY
+    { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 
 static GGadgetCreateData droplist_gcd[] = {
-	{GListButtonCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
-	{GListButtonCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
+    { GListButtonCreate, { { 0, 0, 80, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GListButtonCreate, { { 0, 0, 80, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[1], { list_choices }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
 };
 static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData droplistbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) dlarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) dlarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gdroplist_ri = {
     NULL, &gbutton_ri,&listmark_ri,NULL,
     &_GGadget_droplist_box,
@@ -186,10 +214,15 @@ static GResInfo gdroplist_ri = {
     "Gdraw",
     true,
 #ifdef __Mac
-    omf_border_type|omf_border_width|omf_border_shape
+    omf_border_type|omf_border_width|omf_border_shape,
 #else
-    0
+    0,
 #endif
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GButtonInvoked(GButton *b,GEvent *ev) {
@@ -883,7 +916,9 @@ struct gfuncs glistbutton_funcs = {
     NULL,
 
     GButtonGetDesiredSize,
-    _ggadget_setDesiredSize		/* GTextField does this right. but this is good enough for now */
+    _ggadget_setDesiredSize,		/* GTextField does this right. but this is good enough for now */
+    NULL,
+    NULL
 };
 
 void _GButton_SetDefault(GGadget *g,int32 is_default) {

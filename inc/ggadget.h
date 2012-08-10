@@ -113,6 +113,9 @@ typedef struct tabinfo {
     unsigned char nesting;
 } GTabInfo;
 
+#define GTABINFO_EMPTY { NULL, NULL, 0, 0, 0, 0, 0 }
+
+
 enum border_type { bt_none, bt_box, bt_raised, bt_lowered, bt_engraved,
 	    bt_embossed, bt_double };
 enum border_shape { bs_rect, bs_roundrect, bs_elipse, bs_diamond };
@@ -209,12 +212,18 @@ typedef struct ggadgetdata {
     GGadgetHandler handle_controlevent;
 } GGadgetData;
 
+#define GGADGETDATA_EMPTY { GRECT_EMPTY, NULL, '\0', '\0', 0, 0, 0, NULL, { NULL }, 0, NULL, NULL }
+
+
 typedef struct ggadgetcreatedata {
     GGadget *(*creator)(struct gwindow *base, GGadgetData *gd,void *data);
     GGadgetData gd;
     void *data;
     GGadget *ret;
 } GGadgetCreateData;
+
+#define GGADGETCREATEDATA_EMPTY { NULL, GGADGETDATA_EMPTY, NULL, NULL }
+
 
 #define GCD_Glue	((GGadgetCreateData *) -1)	/* Special entries */
 #define GCD_ColSpan	((GGadgetCreateData *) -2)	/* for box elements */

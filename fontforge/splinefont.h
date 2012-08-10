@@ -1961,10 +1961,13 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		};
 
 struct compressors { char *ext, *decomp, *recomp; };
+#define COMPRESSORS_EMPTY { NULL, NULL, NULL }
+
 struct archivers {
     char *ext, *unarchive, *archive, *listargs, *extractargs, *appendargs;
     enum archive_list_style { ars_tar, ars_zip } ars;
 };
+#define ARCHIVERS_EMPTY { NULL, NULL, NULL, NULL, NULL, NULL, 0 }
 
 struct fontdict;
 struct pschars;

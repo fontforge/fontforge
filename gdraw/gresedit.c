@@ -2444,7 +2444,13 @@ static GResInfo gdraw_ri = {
     N_("General facts about the windowing system"),
     "",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static int refresh_eh(GWindow cover,GEvent *event) {

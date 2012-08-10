@@ -307,7 +307,7 @@ struct unicoderange unicoderange[] = {
 /* End of SSP */
     { N_("Supplementary Private Use Area-A"), 0xf0000, 0xfffff, ASFIRST, 2, 0, 0 },
     { N_("Supplementary Private Use Area-B"), 0x100000, 0x10ffff, ASFIRST, 2, 0, 0 },
-    { NULL, 0, 0, 0, 0, 0, 0 }
+    UNICODERANGE_EMPTY
 };
 int unicoderange_cnt = sizeof(unicoderange)/sizeof(unicoderange[0])-1;
 
@@ -325,7 +325,7 @@ static struct unicoderange unassignedplanes[] = {
     { "<Unassigned Plane 11>", 0xb0000, 0xbffff, ASFIRST, 2, 1, 0 },
     { "<Unassigned Plane 12>", 0xc0000, 0xcffff, ASFIRST, 2, 1, 0 },
     { "<Unassigned Plane 13>", 0xd0000, 0xdffff, ASFIRST, 2, 1, 0 },
-    { NULL, 0, 0, 0, 0, 0, 0 }
+    UNICODERANGE_EMPTY
 };
 
 static int ucmp(const void *_ri1, const void *_ri2) {

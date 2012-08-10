@@ -943,7 +943,8 @@ struct gfuncs GList_funcs = {
 
     GListGetDesiredSize,
     _ggadget_setDesiredSize,
-    glist_FillsWindow
+    glist_FillsWindow,
+    NULL
 };
 
 static GBox list_box = GBOX_EMPTY; /* Don't initialize here */;
@@ -951,18 +952,18 @@ static FontInstance *list_font = NULL;
 static int glist_inited = false;
 
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	{ (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	{ (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-	GTEXTINFO_EMPTY
+    { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
 };
 static GGadgetCreateData list_gcd[] = {
-	{GListCreate, {{0,0,0,36},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
-	{GListCreate, {{0,0,0,36},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible|gg_enabled}}
+    { GListCreate, { { 0, 0, 0, 36 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GListCreate, { { 0, 0, 0, 36 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
 };
 static GGadgetCreateData *tarray[] = { GCD_Glue, &list_gcd[0], GCD_Glue, &list_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData listhvbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) tarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo glist_ri = {
     NULL, &ggadget_ri,NULL, NULL,
     &list_box,
@@ -974,7 +975,12 @@ static GResInfo glist_ri = {
     "GList",
     "Gdraw",
     false,
-    box_foreground_border_outer
+    box_foreground_border_outer,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GListInit() {

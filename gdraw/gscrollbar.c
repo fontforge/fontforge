@@ -38,12 +38,12 @@ static int gscrollbar_inited = false;
 static GGadget *GScrollBarCreateInitialized(struct gwindow *base, GGadgetData *gd,void *data);
 static struct scrollbarinit sbinit = { 0, 40, 20, 10 };
 static GGadgetCreateData scrollbar_gcd[] = {
-	{GScrollBarCreateInitialized, {{0,0,100,13},NULL,0,0,0,0,0,NULL,(GTextInfo *) &sbinit,gg_visible}},
-	{GScrollBarCreateInitialized, {{0,0,100,13},NULL,0,0,0,0,0,NULL,(GTextInfo *) &sbinit,gg_visible|gg_enabled}}
-    };
+    { GScrollBarCreateInitialized, { { 0, 0, 100, 13 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) &sbinit }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GScrollBarCreateInitialized, { { 0, 0, 100, 13 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) &sbinit }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *sarray[] = { GCD_Glue, &scrollbar_gcd[0], GCD_Glue, &scrollbar_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData scrollbarbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) sarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) sarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gthumb_ri;
 static GResInfo gscrollbar_ri = {
     &gthumb_ri, &ggadget_ri,&gthumb_ri, NULL,
@@ -57,7 +57,12 @@ static GResInfo gscrollbar_ri = {
     "Gdraw",
     false,
     box_foreground_border_outer|omf_border_type|omf_border_width|
-	omf_padding|omf_main_background
+	omf_padding|omf_main_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GResInfo gthumb_ri = {
     NULL, &ggadget_ri,&gscrollbar_ri, NULL,
@@ -70,7 +75,12 @@ static GResInfo gthumb_ri = {
     "GScrollBarThumb",
     "Gdraw",
     true,
-    omf_main_background|omf_border_width|omf_padding
+    omf_main_background|omf_border_width|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32 pos) {
@@ -471,7 +481,10 @@ struct gfuncs gscrollbar_funcs = {
     NULL,
     NULL,
 
-    gscrollbar_get_desired_size
+    gscrollbar_get_desired_size,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GScrollBarInit() {

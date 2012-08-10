@@ -201,7 +201,13 @@ static GResInfo progress_ri = {
     N_("Popup windows"),
     "GProgress",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GProgressResInit(void) {

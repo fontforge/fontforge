@@ -67,7 +67,12 @@ static GResInfo gmatrixedit_ri = {
     "Gdraw",
     false,
     omf_border_type|omf_border_width|omf_border_shape|omf_padding|
-	omf_main_background|omf_disabled_background
+	omf_main_background|omf_disabled_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GResInfo gmatrixedit2_ri = {
     NULL, &ggadget_ri, &gmatrixedit_ri,NULL,
@@ -79,7 +84,13 @@ static GResInfo gmatrixedit2_ri = {
     N_("Matrix Edit (sort of like a spreadsheet)"),
     "GMatrixEdit",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void _GMatrixEdit_Init(void) {
@@ -828,7 +839,8 @@ struct gfuncs gmatrixedit_funcs = {
 
     GMatrixEdit_GetDesiredSize,
     GMatrixEdit_SetDesiredSize,
-    GMatrixEdit_FillsWindow
+    GMatrixEdit_FillsWindow,
+    NULL
 };
 
 static void GME_PositionEdit(GMatrixEdit *gme) {

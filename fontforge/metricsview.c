@@ -4831,5 +4831,11 @@ GResInfo metricsview_ri = {
     N_("This window displays metrics information about a font"),
     "MetricsView",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };

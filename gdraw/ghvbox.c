@@ -50,7 +50,12 @@ GResInfo ghvgroupbox_ri = {
     "GGroup",
     "Gdraw",
     false,
-    omf_border_type|omf_border_shape|omf_padding|omf_main_background|omf_disabled_background
+    omf_border_type|omf_border_shape|omf_padding|omf_main_background|omf_disabled_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void _GHVBox_Init(void) {

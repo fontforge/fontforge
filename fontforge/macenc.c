@@ -2010,7 +2010,7 @@ static struct macname fs_names[] = {
 	{ NULL, 0, 4, "Volledige breedte" },
 	{ NULL, 0, 4, "Unicodeontleding" },
 	{ NULL, 0, 4, "Canonieke ontleding" },
-	 { NULL }
+	{ NULL, 0, 0, NULL }
 };
 
 static struct macsetting fs_settings[] = {
@@ -2130,7 +2130,7 @@ static struct macsetting fs_settings[] = {
 	{ &fs_settings[112], 2, 0, &fs_names[142], 0 },
 	{ &fs_settings[113], 1, 0, &fs_names[141], 0 },
 	{ &fs_settings[114], 0, 0, &fs_names[140], 1 },
-	 { NULL }
+	{ NULL, 0, 0, NULL, 0 }
 };
 
 static MacFeat fs_features[] = {
@@ -2161,7 +2161,7 @@ static MacFeat fs_features[] = {
 	{ &fs_features[23], 2, 1, 0, 0, &fs_names[11], &fs_settings[11] },
 	{ &fs_features[24], 1, 0, 0, 0, &fs_names[2], &fs_settings[8] },
 	{ &fs_features[25], 0, 0, 0, 0, &fs_names[0], &fs_settings[0] },
-	 { NULL }
+	{ NULL, 0, 0, 0, 0, NULL, NULL }
 };
 
 MacFeat *default_mac_feature_map = &fs_features[26],
@@ -2353,7 +2353,8 @@ static struct { char *name; int code; } localmaclang[] = {
     {N_("Greek (polytonic)"), 148},
     {N_("Greenlandic"), 149},
     {N_("Azebaijani (roman)"), 150},
-    { NULL }};
+    { NULL, 0 }
+};
 
 char *MacLanguageFromCode(int code) {
     int i;
