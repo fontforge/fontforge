@@ -1,12 +1,22 @@
 include common.mk
 
+#--------------------------------------------------------------------------
+
+if THE_PROGRAMS
+
 bin_PROGRAMS = fontforge
-lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
-dist_man_MANS = fontforge.1 fontimage.1 fontlint.1 sfddiff.1
+dist_man_MANS = fontforge.1
 
 if NATIVE_SCRIPTING
 nodist_bin_SCRIPTS = fontimage fontlint sfddiff
+dist_man_MANS += fontimage.1 fontlint.1 sfddiff.1
 endif NATIVE_SCRIPTING
+
+endif THE_PROGRAMS
+
+lib_LTLIBRARIES = libfontforge.la libfontforgeexe.la
+
+#--------------------------------------------------------------------------
 
 SUBDIRS = pixmaps
 
@@ -36,11 +46,15 @@ pkginclude_HEADERS = $(INST_FF_H_SRCFILES)
 
 #--------------------------------------------------------------------------
 
+if THE_PROGRAMS
+
 fontforge_SOURCES = $(FF_C_SRCFILES)
 fontforge_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
 fontforge_LDADD = libfontforgeexe.la
 fontforge_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -export-dynamic
+
+endif THE_PROGRAMS
 
 #--------------------------------------------------------------------------
 
@@ -95,6 +109,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 #--------------------------------------------------------------------------
 
-EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre exelibstamp.pre
+EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
+	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c

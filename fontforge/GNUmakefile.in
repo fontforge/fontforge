@@ -6,6 +6,10 @@ include Makefile
 
 ifeq (@MAINTAINER_TOOLS@,yes)
 
+# You need to build the "fontforge" program to do the stamps for
+# release.
+ifeq (@THE_PROGRAMS@,yes)
+
 #######################################################################
 # Run "make stamps-for-release" with GNU Make before doing a release. #
 #######################################################################
@@ -30,6 +34,7 @@ STAMP_C_DEPENDS = \
 $(srcdir)/stamp.c: stamper $(STAMP_C_DEPENDS) 
 $(srcdir)/libffstamp.h: stamper $(LIBFFSTAMP_H_DEPENDS) 
 
+endif # THE_PROGRAMS
 endif # MAINTAINER_TOOLS
 
 else # GNUSTEP_APP

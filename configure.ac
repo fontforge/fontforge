@@ -47,6 +47,14 @@ AC_PATH_PROG([MSGFMT],[msgfmt])
 
 FONTFORGE_ARG_ENABLE_REAL
 
+AC_ARG_ENABLE([programs],
+        [AS_HELP_STRING([--disable-programs],[do not build "fontforge" and related programs
+                                              (but do build libraries and possibly the Python extensions)])],
+        [i_do_have_programs="${enableval}"],
+        [i_do_have_programs=yes])
+AM_CONDITIONAL([THE_PROGRAMS],[test x"${i_do_have_programs}" = xyes])
+AC_SUBST([THE_PROGRAMS],["${i_do_have_programs}"])
+
 FONTFORGE_ARG_DISABLE([native-scripting],
         [AS_HELP_STRING([--disable-native-scripting],[disable the legacy fontforge scripting language])],
         [_NO_FFSCRIPT])
@@ -393,6 +401,7 @@ AC_MSG_NOTICE([
 Summary of optional features:
 
   real (floating pt) ${my_real_type}
+  programs           ${i_do_have_programs}
   native scripting   ${i_do_have_native_scripting}
   python scripting   ${i_do_have_python_scripting}
   python extension   ${i_do_have_python_extension}
