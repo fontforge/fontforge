@@ -7,6 +7,8 @@ datarootdir=@datarootdir@
 mandir=@mandir@
 localedir=@localedir@
 
-Name: FontForge
-Description: an outline font editor.
+Name: libfontforgeexe
+Description: for embedding the FontForge UI in a program.
 Version: @VERSION@
+Libs: -L${libdir} -lfontforgeexe
+Cflags: -I${includedir}/fontforge

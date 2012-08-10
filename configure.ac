@@ -46,12 +46,14 @@ PKG_PROG_PKG_CONFIG
 AC_PATH_PROG([MSGFMT],[msgfmt])
 
 FONTFORGE_ARG_ENABLE_REAL
-FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
 
 FONTFORGE_ARG_DISABLE([native-scripting],
         [AS_HELP_STRING([--disable-native-scripting],[disable the legacy fontforge scripting language])],
         [_NO_FFSCRIPT])
 AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes])
+
+FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
+FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
 
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
@@ -356,19 +358,44 @@ AC_CONFIG_FILES([fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble]
 AC_CONFIG_FILES([overall_common.mk])
 
 AC_CONFIG_FILES([fontforge.pc])
+AC_CONFIG_FILES([libfontforge.pc])
+AC_CONFIG_FILES([libfontforgeexe.pc])
 
 #AC_CONFIG_FILES([gtkui/Makefile])
 #AC_CONFIG_FILES([plugins/Makefile])
 
-AC_CONFIG_COMMANDS_POST(
-[
+#--------------------------------------------------------------------------
+#
+# Configure the Python extension.
+#
+# The Python extension has its own configure script, so it can be
+# configured for an already installed libfontforge. Here, where we
+# want the extension configured for the libfontforge we are making
+# ourselves, the pkg-config settings for "libfontforge" are
+# overridden.
+
+if test x"${i_do_have_python_extension}" = xyes; then
+   export LIBFONTFORGE_CFLAGS
+   LIBFONTFORGE_CFLAGS="AS_ESCAPE([-I"$(top_srcdir)/../inc"])"
+
+   export LIBFONTFORGE_LIBS
+   LIBFONTFORGE_LIBS="AS_ESCAPE(["$(top_builddir)/../fontforge/libfontforge.la"])"
+
+   AC_CONFIG_SUBDIRS([pyhook])
+fi
+
+#--------------------------------------------------------------------------
+
+AC_OUTPUT
+
 AC_MSG_NOTICE([
 
 Summary of optional features:
 
   real (floating pt) ${my_real_type}
-  python scripting   ${i_do_have_python_scripting}
   native scripting   ${i_do_have_native_scripting}
+  python scripting   ${i_do_have_python_scripting}
+  python extension   ${i_do_have_python_extension}
   freetype debugger  ${i_do_have_freetype_debugger}
   capslock for alt   ${i_do_have_capslock_for_alt}
   raw points mode    ${i_do_have_capslock_for_alt}
@@ -395,8 +422,5 @@ Summary of optional dependencies:
   regular link     ${i_do_have_regular_link}
   gnustep-make     ${with_gnustep_make}
 ])
-])
-
-AC_OUTPUT
 
 #--------------------------------------------------------------------------

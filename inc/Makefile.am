@@ -1,4 +1,4 @@
-include_HEADERS = basics.h config.h gdraw.h gicons.h gkeysym.h		\
-	gresource.h intl.h chardata.h dynamic.h gfile.h gimage.h		\
-	gprogress.h gwidget.h ustring.h charset.h fileutil.h ggadget.h	\
-	gio.h gresedit.h gwwiconv.h utype.h
+pkginclude_HEADERS = basics.h chardata.h charset.h config.h dynamic.h	\
+	fileutil.h gdraw.h gfile.h ggadget.h gicons.h gimage.h gio.h		\
+	gkeysym.h gprogress.h gresedit.h gresource.h gwidget.h gwwiconv.h	\
+	intl.h ustring.h utype.h

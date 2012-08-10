@@ -29,5 +29,4 @@ uninstall-local:
 	done)
 
 EXTRA_DIST = $(PO_FILES)
-MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
-	GNUmakefile.postamble $(MO_FILES)
+MOSTLYCLEANFILES = $(MO_FILES)

@@ -1,19 +1,19 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = inc Unicode gutils 
+
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
-SUBDIRS += fontforge po htdocs
+
+SUBDIRS += fontforge po htdocs $(subdirs)
 
 pkgconfigdir = "${libdir}/pkgconfig"
-nodist_pkgconfig_DATA = fontforge.pc
+nodist_pkgconfig_DATA = fontforge.pc libfontforge.pc	\
+	libfontforgeexe.pc
 
-EXTRA_DIST = LICENSE README-Mac.html README-MS.html README-unix		\
+EXTRA_DIST = LICENSE README-Mac.html README-MS.html README-unix	\
 	README-Unix.html Readme.VMS
-
-MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
-	GNUmakefile.postamble
 
 
 

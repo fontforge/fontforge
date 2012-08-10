@@ -9,6 +9,3 @@ libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
 
 libgunicode_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GUNI_VERSION):$(GUNI_REVISION):$(GUNI_AGE)"
-
-MOSTLYCLEANFILES = GNUmakefile GNUmakefile.preamble	\
-	GNUmakefile.postamble

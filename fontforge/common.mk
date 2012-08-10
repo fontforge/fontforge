@@ -48,17 +48,19 @@ NODIST_LIBFFEXE_C_SRCFILES = exelibstamp.c
 
 FF_C_SRCFILES = main.c
 
-# FIXME: Decide which of these to install.
-FF_H_SRCFILES = autowidth2.h ffpython.h nonlineartrans.h sfd1.h	\
-	autowidth.h fontforge.h ofl.h sflayoutP.h baseviews.h			\
-	fontforgeui.h PfEd.h sftextfieldP.h bezctx_ff.h fontforgevw.h	\
-	plugins.h splinefont.h bitmapcontrol.h fvmetrics.h print.h		\
-	stemdb.h configure-fontforge.h groups.h psfont.h ttf.h delta.h	\
-	import.h savefont.h ttfinstrs.h edgelist2.h libffstamp.h		\
-	scriptfuncs.h uiinterface.h edgelist.h lookups.h scripting.h	\
-	unicoderange.h encoding.h mm.h sd.h views.h fffreetype.h		\
-	namehash.h search.h usermenu.h
+FF_H_SRCFILES = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
+	views.h
 
-INST_FF_H_SRCFILES =
+INST_FF_H_SRCFILES = autowidth2.h configure-fontforge.h fontforge.h		\
+	libffstamp.h psfont.h stemdb.h autowidth.h delta.h		\
+	fontforgevw.h  lookups.h savefont.h ttf.h baseviews.h	\
+	 fvmetrics.h  mm.h scriptfuncs.h ttfinstrs.h		\
+	edgelist2.h namehash.h scripting.h		\
+	uiinterface.h bezctx_ff.h edgelist.h  groups.h				\
+	nonlineartrans.h sd.h unicoderange.h bitmapcontrol.h encoding.h		\
+	  ofl.h search.h usermenu.h 			\
+	fffreetype.h  PfEd.h sfd1.h 			\
+ ffpython.h import.h plugins.h sflayoutP.h		\
+	 print.h splinefont.h
 
 FF_M_SRCFILES = gnustepappmain.m

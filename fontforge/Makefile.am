@@ -52,11 +52,13 @@ libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"			\
 	"-I$(top_srcdir)/inc" "-DSHAREDIR=\"${pkgdatadir}\""	\
 	"-DDOCDIR=\"${docdir}\"" $(MY_CFLAGS)
 
-libfontforge_la_LIBADD = splinerefigure.lo ../Unicode/libgunicode.la	\
-	../gutils/libgutils.la ../gutils/libgioftp.la
+libfontforge_la_LIBADD = splinerefigure.lo		\
+	$(top_builddir)/Unicode/libgunicode.la		\
+	$(top_builddir)/gutils/libgutils.la			\
+	$(top_builddir)/gutils/libgioftp.la
 if GRAPHICAL_USER_INTERFACE
-libfontforge_la_LIBADD += ../gdraw/libgdraw.la $(XINPUT_LIBS)	\
-	$(XKB_LIBS)
+libfontforge_la_LIBADD += $(top_builddir)/gdraw/libgdraw.la	\
+	$(XINPUT_LIBS) $(XKB_LIBS)
 endif GRAPHICAL_USER_INTERFACE
 
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
@@ -95,5 +97,4 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre exelibstamp.pre
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
-	exelibstamp.c GNUmakefile GNUmakefile.preamble			\
-	GNUmakefile.postamble
+	exelibstamp.c
