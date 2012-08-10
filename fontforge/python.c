@@ -52,6 +52,9 @@
 #endif /* PY_MAJOR_VERSION >= 3 */
 #include "ffpython.h"
 
+#define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
+#define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
+
 static struct flaglist sfnt_name_str_ids[], sfnt_name_mslangs[];
 
 /*** These have been moved elsewhere ***/
@@ -265,14 +268,16 @@ static PyObject *enrichened_compare(cmpfunc compare, PyObject *a, PyObject *b, i
 
 #endif /* PY_MAJOR_VERSION >= 3 */
 
-static int FlagsFromString(char *str,struct flaglist *flags) {
-    int i;
+#define PYFF_FLAG_UNKNOWN ((int32)0x80000000)
+
+static uint32 FlagsFromString(char *str,struct flaglist *flags) {
+    uint32 i;
     for ( i=0; flags[i].name!=NULL; ++i )
 	if ( strcmp(str,flags[i].name)==0 )
 return( flags[i].flag );
 
     PyErr_Format( PyExc_TypeError, "Unknown flag %s", str );
-return( 0x80000000 );
+return( PYFF_FLAG_UNKNOWN );
 }
 
 int FlagsFromTuple(PyObject *tuple,struct flaglist *flags) {
@@ -289,7 +294,7 @@ return( 0 );
 #if PY_MAJOR_VERSION >= 3
         obj = PyUnicode_AsUTF8String(tuple);
         if (obj == NULL)
-return( 0x80000000 );
+return( PYFF_FLAG_UNKNOWN );
         str = PyBytes_AsString(obj);
         i = FlagsFromString(str,flags);
         Py_DECREF(obj);
@@ -306,13 +311,13 @@ return( FlagsFromString(str,flags));
 	continue;
 	    if ( !STRING_CHECK(obj)) {
 		PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be strings");
-return( 0x80000000 );
+return( PYFF_FLAG_UNKNOWN );
 	    }
 #if PY_MAJOR_VERSION >= 3
         {
             PyObject *obj2 = PyUnicode_AsUTF8String(obj);
             if (obj2 == NULL)
-return( 0x80000000 );
+return( PYFF_FLAG_UNKNOWN );
             str = PyBytes_AsString(obj2);
             temp = FlagsFromString(str,flags);
             Py_DECREF(obj2);
@@ -321,14 +326,14 @@ return( 0x80000000 );
 	    str = PyBytes_AsString(obj);
 	    temp = FlagsFromString(str,flags);
 #endif /* PY_MAJOR_VERSION >= 3 */
-	    if ( temp==0x80000000 )
-return( 0x80000000 );
+	    if ( temp==PYFF_FLAG_UNKNOWN )
+return( PYFF_FLAG_UNKNOWN );
 	    ret |= temp;
 	}
 return( ret );
     } else {
 	PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be a tuple of strings (or a string)");
-return( 0x80000000 );
+return( PYFF_FLAG_UNKNOWN );
     }
 }
 
@@ -797,7 +802,8 @@ static struct flaglist printmethod[] = {
     { "ps-file", 3 },
     { "command", 4 },
     { "pdf-file", 5 },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFF_printSetup(PyObject *self, PyObject *args) {
     char *ptype, *pcmd = NULL;
@@ -806,7 +812,7 @@ static PyObject *PyFF_printSetup(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"s|sii", &ptype, &pcmd, &pagewidth, &pageheight ) )
 return( NULL );
     iptype = FlagsFromString(ptype,printmethod);
-    if ( iptype==0x80000000 ) {
+    if ( iptype==PYFF_FLAG_UNKNOWN ) {
 	PyErr_Format(PyExc_TypeError, "Unknown printing method" );
 return( NULL );
     }
@@ -1222,7 +1228,7 @@ static PyMemberDef FFPoint_members[] = {
      "whether this point lies on the curve or is a control point"},
     {"selected", T_UBYTE, offsetof(PyFF_Point, selected), 0,
      "whether this point is selected"},
-    {NULL}  /* Sentinel */
+    {NULL, 0, 0, 0, NULL}  /* Sentinel */
 };
 
 static PyMethodDef FFPoint_methods[] = {
@@ -1232,7 +1238,7 @@ static PyMethodDef FFPoint_methods[] = {
 	     "Transforms the point by the transformation matrix (a 6 element tuple of reals)" },
     {"__reduce__", (PyCFunction)PyFFPoint_pickleReducer, METH_NOARGS,
 	     "cPickle calls this routine when it wants to pickle us" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFFPoint_New(PyTypeObject *type, PyObject *args, PyObject *kwds) {
@@ -1258,53 +1264,64 @@ static PyTypeObject PyFF_PointType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.point",         /*tp_name*/
-    sizeof(PyFF_Point),		/*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    0,                         /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
+    "fontforge.point",         /* tp_name */
+    sizeof(PyFF_Point),        /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    NULL,                      /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
 #if PY_MAJOR_VERSION >= 3
-    0,                          /* tp_reserved */
+    NULL,                      /* tp_reserved */
 #else
-    (cmpfunc) PyFFPoint_compare, /*tp_compare*/
+    (cmpfunc) PyFFPoint_compare, /* tp_compare */
 #endif
-    (reprfunc) PyFFPoint_Repr, /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFPoint_Str,  /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    (reprfunc) PyFFPoint_Repr, /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFPoint_Str,  /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
     "fontforge Point objects", /* tp_doc */
-    0                       ,  /* tp_traverse */
-    0,			       /* tp_clear */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
 #if PY_MAJOR_VERSION >= 3
-    (richcmpfunc) PyFFPoint_richcompare, /*tp_richcompare*/
+    (richcmpfunc) PyFFPoint_richcompare, /* tp_richcompare */
 #else
-    0,		               /* tp_richcompare */
+    NULL,                      /* tp_richcompare */
 #endif
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
     FFPoint_methods,           /* tp_methods */
     FFPoint_members,           /* tp_members */
-    0,		               /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    PyFFPoint_New	       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    PyFFPoint_New,             /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel) {
@@ -1364,38 +1381,58 @@ static PyTypeObject PyFF_ContourIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"contouriter",				/* tp_name */
-	sizeof(contouriterobject),		/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)contouriter_dealloc,	/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)contouriter_iternext,	/* tp_iternext */
-	0,					/* tp_methods */
-	0,
+    "contouriter",             /* tp_name */
+    sizeof(contouriterobject), /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)contouriter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)contouriter_iternext,	/* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -1717,8 +1754,8 @@ static PyGetSetDef PyFFContour_getset[] = {
 	 "Alternate representation of the contour as a tuple of spiro control points", NULL},
     {"name",
 	 (getter)PyFF_Contour_get_name, (setter)PyFF_Contour_set_name,
-	 "Contours may be named"},
-    { NULL }
+	 "Contours may be named", NULL},
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -1799,7 +1836,7 @@ return( NULL );
     }
     old_cnt = self->pt_cnt;
     self->pt_max = self->pt_cnt = self->pt_cnt + c2->pt_cnt;
-    self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max);
+    PyMem_Resize(self->points,PyFF_Point *,self->pt_max); /* Messes with self->points */
     for ( i=0; i<c2->pt_cnt; ++i ) {
 	Py_INCREF(c2->points[i]);
 	self->points[old_cnt+i] = c2->points[i];
@@ -1917,7 +1954,7 @@ return( -1 );
     if ( diff>0 ) {
 	if ( self->pt_cnt+diff >= self->pt_max ) {
 	    self->pt_max = self->pt_cnt + diff;
-	    self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max);
+	    PyMem_Resize(self->points,PyFF_Point *,self->pt_max); /* Messes with self->points */
 	}
 	for ( i=self->pt_cnt-1; i>=end; --i )
 	    self->points[i+diff] = self->points[i];
@@ -1940,7 +1977,7 @@ static int PyFFContour_Contains(PyObject *_self, PyObject *_pt) {
     int i;
 
     if ( PySequence_Check(_pt)) {
-	if ( !PyArg_ParseTuple(_pt,"ff", &x, &y ));
+	if ( !PyArg_ParseTuple(_pt,"ff", &x, &y ))
 return( -1 );
     } else if ( !PyType_IsSubtype(&PyFF_PointType,((PyObject *)_pt)->ob_type) ) {
 	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Point");
@@ -1966,7 +2003,8 @@ static PySequenceMethods PyFFContour_Sequence = {
     PyFFContour_IndexAssign,	/* subscript assign */
     PyFFContour_SliceAssign,	/* slice assign */
     PyFFContour_Contains,	/* contains */
-    PyFFContour_InPlaceConcat	/* inplace_concat */
+    PyFFContour_InPlaceConcat,	/* inplace_concat */
+    NULL			/* inplace repeat */
 };
 
 /* ************************************************************************** */
@@ -2007,8 +2045,10 @@ return( NULL );
     }
     if ( !PyArg_ParseTuple( args, "dd", &x, &y ))
 return( NULL );
-    if ( 1>self->pt_max )
-	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    if ( 1>self->pt_max ) {
+        /* Messes with self->points */
+        PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    }
     self->points[0] = PyFFPoint_CNew(x,y,true,false);
     self->pt_cnt = 1;
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
@@ -2037,8 +2077,10 @@ return( NULL );
 	PyErr_SetString(PyExc_AttributeError, "Contour contains no on-curve points");
 return( NULL );
     }
-    if ( self->pt_cnt >= self->pt_max )
-	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    if ( self->pt_cnt >= self->pt_max ) {
+        /* Messes with self->points */
+        PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
     self->points[pos+1] = PyFFPoint_CNew(x,y,true,false);
@@ -2079,8 +2121,10 @@ return( NULL );
 	PyErr_SetString(PyExc_AttributeError, "Contour contains no on-curve points");
 return( NULL );
     }
-    if ( self->pt_cnt+3 >= self->pt_max )
-	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    if ( self->pt_cnt+3 >= self->pt_max ) {
+        /* Messes with self->points */
+        PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+3] = self->points[i];
     self->points[pos+1] = np;
@@ -2121,8 +2165,10 @@ return( NULL );
 	PyErr_SetString(PyExc_AttributeError, "Contour contains no on-curve points");
 return( NULL );
     }
-    if ( self->pt_cnt+2 >= self->pt_max )
-	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    if ( self->pt_cnt+2 >= self->pt_max ) {
+        /* Messes with self->points */
+        PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+2] = self->points[i];
     self->points[pos+1] = cp;
@@ -2153,8 +2199,10 @@ return( NULL );
 
     if ( pos<0 || pos>=self->pt_cnt-1 )
 	pos = self->pt_cnt-1;
-    if ( self->pt_cnt >= self->pt_max )
-	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    if ( self->pt_cnt >= self->pt_max ) {
+         /* Messes with self->points */
+        PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
+    }
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
     if ( p==NULL )
@@ -2316,7 +2364,7 @@ struct flaglist simplifyflags[] = {
     { "setstarttoextremum", 128 },
     { "setstarttoextrema", 128 },		/* Documentation error */
     { "removesingletonpoints", 256 },
-    { NULL }
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFFContour_selfIntersects(PyFF_Contour *self, PyObject *args) {
@@ -2333,7 +2381,7 @@ return( ret );
 
 static PyObject *PyFFContour_Simplify(PyFF_Contour *self, PyObject *args) {
     SplineSet *ss;
-    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
+    static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
     int i;
 
     smpl.err = 1;
@@ -2466,7 +2514,7 @@ struct flaglist addextremaflags[] = {
     { "all", 0 },
     { "only_good", 2 },
     { "only_good_rm", 3 },
-    { NULL }
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFFContour_AddExtrema(PyFF_Contour *self, PyObject *args) {
@@ -2479,7 +2527,7 @@ static PyObject *PyFFContour_AddExtrema(PyFF_Contour *self, PyObject *args) {
 return( NULL );
     if ( flag!=NULL )
 	ae = FlagsFromString(flag,addextremaflags);
-    if ( ae==0x80000000 )
+    if ( ae==PYFF_FLAG_UNKNOWN )
 return( NULL );
 
     ss = SSFromContour(self,NULL);
@@ -2767,7 +2815,7 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "Support for the \"pen\" protocol (I hope)\nhttp://just.letterror.com/ltrwiki/PenProtocol" },
     {"__reduce__", (PyCFunction)PyFFContour_pickleReducer, METH_NOARGS,
 	     "cPickle calls this routine when it wants to pickle us" },
-    {NULL}  /* Sentinel */
+    PYMETHODDEF_EMPTY  /* Sentinel */
 };
 
 static PyTypeObject PyFF_ContourType = {
@@ -2781,51 +2829,62 @@ static PyTypeObject PyFF_ContourType = {
     sizeof(PyFF_Contour),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyFFContour_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
+    NULL,                      /*tp_print*/
+    NULL,                      /*tp_getattr*/
+    NULL,                      /*tp_setattr*/
 #if PY_MAJOR_VERSION >= 3
-    0,                          /* tp_reserved */
+    NULL,                      /* tp_reserved */
 #else
     (cmpfunc)PyFFContour_compare, /*tp_compare*/
 #endif
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
+    NULL,                      /*tp_repr*/
+    NULL,                      /*tp_as_number*/
     &PyFFContour_Sequence,     /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFContour_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    NULL,                      /*tp_as_mapping*/
+    NULL,                      /*tp_hash */
+    NULL,                      /*tp_call*/
+    (reprfunc)PyFFContour_Str, /*tp_str*/
+    NULL,                      /*tp_getattro*/
+    NULL,                      /*tp_setattro*/
+    NULL,                      /*tp_as_buffer*/
 #if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
 #endif
     "fontforge Contour objects", /* tp_doc */
-    0/*(traverseproc)FFContour_traverse*/,  /* tp_traverse */
+    NULL /*(traverseproc)FFContour_traverse*/,  /* tp_traverse */
     (inquiry)PyFFContour_clear,  /* tp_clear */
 #if PY_MAJOR_VERSION >= 3
     (richcmpfunc)PyFFContour_richcompare, /*tp_richcompare*/
 #else
-    0,		               /* tp_richcompare */
+    NULL,                      /* tp_richcompare */
 #endif
-    0,		               /* tp_weaklistoffset */
-    contouriter_new,	       /* tp_iter */
-    0,		               /* tp_iternext */
+    0,                         /* tp_weaklistoffset */
+    contouriter_new,           /* tp_iter */
+    NULL,                      /* tp_iternext */
     PyFFContour_methods,       /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFFContour_getset,        /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)PyFFContour_init,/* tp_init */
-    0,                         /* tp_alloc */
+    NULL,                      /* tp_alloc */
     PyFFContour_new,           /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -2875,38 +2934,58 @@ static PyTypeObject PyFF_LayerIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"layeriter",				/* tp_name */
-	sizeof(layeriterobject),		/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)layeriter_dealloc,	/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)layeriter_iternext,	/* tp_iternext */
-	0,					/* tp_methods */
-	0,
+    "layeriter",               /* tp_name */
+    sizeof(layeriterobject),   /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)layeriter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)layeriter_iternext, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    PyFFContour_getset,        /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    (initproc)PyFFContour_init,/* tp_init */
+    NULL,                      /* tp_alloc */
+    PyFFContour_new,           /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -3080,7 +3159,7 @@ static PyGetSetDef PyFFLayer_getset[] = {
     {"is_quadratic",
 	 (getter)PyFF_Layer_get_is_quadratic, (setter)PyFF_Layer_set_is_quadratic,
 	 "Whether this is an quadratic or cubic layer", NULL},
-    { NULL }
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -3146,7 +3225,7 @@ return( NULL );
     self->cntr_cnt += c2->cntr_cnt;
     if ( self->cntr_cnt >= self->cntr_max ) {
 	self->cntr_max = self->cntr_cnt;
-	self->contours = PyMem_Resize(self->contours,PyFF_Contour *,self->cntr_max);
+	PyMem_Resize(self->contours,PyFF_Contour *,self->cntr_max);  /* Messes with self->contours */
     }
     for ( i=0; i<c2->cntr_cnt; ++i ) {
 	Py_INCREF(c2->contours[i]);
@@ -3202,7 +3281,8 @@ static PySequenceMethods PyFFLayer_Sequence = {
     PyFFLayer_IndexAssign,	/* subscript assign */
     NULL,			/* slice assign */
     NULL,			/* contains */
-    PyFFLayer_InPlaceConcat	/* inplace_concat */
+    PyFFLayer_InPlaceConcat,	/* inplace_concat */
+    NULL			/* inplace repeat */
 };
 
 /* ************************************************************************** */
@@ -3242,7 +3322,7 @@ return( ret );
 
 static PyObject *PyFFLayer_Simplify(PyFF_Layer *self, PyObject *args) {
     SplineSet *ss;
-    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
+    static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
 
     smpl.err = 1;
     smpl.linefixup = 2;
@@ -3464,21 +3544,21 @@ struct flaglist linecap[] = {
     { "butt", lc_butt },
     { "round", lc_round },
     { "square", lc_square },
-    { NULL }
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 struct flaglist linejoin[] = {
     { "miter", lj_miter },
     { "round", lj_round },
     { "bevel", lj_bevel },
-    { NULL }
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 struct flaglist strokeflags[] = {
     { "removeinternal", 1 },
     { "removeexternal", 2 },
     { "cleanup", 4 },
-    { NULL }
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 static int Stroke_Parse(StrokeInfo *si, PyObject *args) {
@@ -3580,7 +3660,7 @@ return( -1 );
     c = FlagsFromString(cap,linecap);
     j = FlagsFromString(join,linejoin);
     f = FlagsFromTuple(flagtuple,strokeflags);
-    if ( c==0x80000000 || j==0x80000000 || f==0x80000000 ) {
+    if ( c==PYFF_FLAG_UNKNOWN || j==PYFF_FLAG_UNKNOWN || f==PYFF_FLAG_UNKNOWN ) {
 	PyErr_Format(PyExc_ValueError, "Bad value for line cap, join or flags" );
 return( -1 );
     }
@@ -3920,7 +4000,7 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Support for the \"pen\" protocol (I hope)\nhttp://just.letterror.com/ltrwiki/PenProtocol" },
     {"__reduce__", (PyCFunction)PyFFLayer_pickleReducer, METH_NOARGS,
 	     "cPickle calls this routine when it wants to pickle us" },
-    {NULL}  /* Sentinel */
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_LayerType = {
@@ -3928,57 +4008,68 @@ static PyTypeObject PyFF_LayerType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.layer",         /*tp_name*/
-    sizeof(PyFF_Layer),        /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyFFLayer_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
+    "fontforge.layer",         /* tp_name */
+    sizeof(PyFF_Layer),        /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor)PyFFLayer_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
 #if PY_MAJOR_VERSION >= 3
-    0,                          /* tp_reserved */
+    NULL,                      /* tp_reserved */
 #else
-    (cmpfunc)PyFFLayer_compare,/*tp_compare*/
+    (cmpfunc)PyFFLayer_compare,/* tp_compare */
 #endif
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    &PyFFLayer_Sequence,       /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFLayer_Str,  /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    &PyFFLayer_Sequence,       /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFLayer_Str,  /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
 #if PY_MAJOR_VERSION >= 3
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
 #else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES, /* tp_flags */
 #endif
     "fontforge Layer objects", /* tp_doc */
-    0/*(traverseproc)FFLayer_traverse*/,  /* tp_traverse */
+    NULL /*(traverseproc)FFLayer_traverse*/,  /* tp_traverse */
     (inquiry)PyFFLayer_clear,  /* tp_clear */
 #if PY_MAJOR_VERSION >= 3
-    (richcmpfunc)PyFFLayer_richcompare,/*tp_richcompare*/
+    (richcmpfunc)PyFFLayer_richcompare, /* tp_richcompare */
 #else
-    0,		               /* tp_richcompare */
+    NULL,                      /* tp_richcompare */
 #endif
-    0,		               /* tp_weaklistoffset */
-    layeriter_new,	       /* tp_iter */
-    0,		               /* tp_iternext */
+    0,                         /* tp_weaklistoffset */
+    layeriter_new,             /* tp_iter */
+    NULL,                      /* tp_iternext */
     PyFFLayer_methods,         /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFFLayer_getset,          /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)PyFFLayer_init,  /* tp_init */
-    0,                         /* tp_alloc */
+    NULL,                      /* tp_alloc */
     PyFFLayer_new,             /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -4242,7 +4333,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	if ( !k ) {
 	    if ( cnt>=ret->pt_max ) {
 		ret->pt_max = cnt;
-		ret->points = PyMem_Resize(ret->points,PyFF_Point *,cnt);
+		PyMem_Resize(ret->points,PyFF_Point *,cnt);  /* Messes with ret->points */
 	    }
 	    ret->pt_cnt = cnt;
 	}
@@ -4276,8 +4367,10 @@ static PyFF_Layer *LayerFromSS(SplineSet *ss,PyFF_Layer *layer) {
 	layer = (PyFF_Layer *) PyFFLayer_new(&PyFF_LayerType,NULL,NULL);
 
     for ( cnt=0, cur=ss; cur!=NULL; cur=cur->next, ++cnt );
-    if ( cnt>layer->cntr_max )
-	layer->contours = PyMem_Resize(layer->contours,PyFF_Contour *,layer->cntr_max = cnt );
+    if ( cnt>layer->cntr_max ) {
+         /* Messes with layer->contours */
+        PyMem_Resize(layer->contours,PyFF_Contour *,layer->cntr_max = cnt );
+    }
     if ( cnt>layer->cntr_cnt ) {
 	for ( i=layer->cntr_cnt; i<cnt; ++i )
 	    layer->contours[i] = NULL;
@@ -4596,7 +4689,7 @@ static PyMethodDef PyFF_GlyphPen_methods[] = {
     { "closePath", PyFFGlyphPen_closePath, METH_VARARGS, "Closes the current contour (and ends it)" },
     { "endPath", PyFFGlyphPen_endPath, METH_VARARGS, "Ends the current contour (without closing it)" },
     { "addComponent", PyFFGlyphPen_addComponent, METH_VARARGS, "Adds a reference into the glyph" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 /* ************************************************************************** */
 /*  GlyphPen Type  */
@@ -4607,45 +4700,56 @@ static PyTypeObject PyFF_GlyphPenType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.glyphPen",      /*tp_name*/
-    sizeof(PyFF_GlyphPen),     /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_GlyphPen_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,		               /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFGlyphPen_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "fontforge.glyphPen",      /* tp_name */
+    sizeof(PyFF_GlyphPen),     /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_GlyphPen_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFGlyphPen_Str,/* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge GlyphPen object",/* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
     PyFF_GlyphPen_methods,     /* tp_methods */
-    0,			       /* tp_members */
-    0,			       /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    /*(initproc)PyFF_GlyphPen_init*/0,  /* tp_init */
-    0,                         /* tp_alloc */
-    /*PyFF_GlyphPen_new*/0        /* tp_new */
+    NULL,/*(initproc)PyFF_GlyphPen_init*/ /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,/*PyFF_GlyphPen_new*/ /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -4819,38 +4923,58 @@ static PyTypeObject PyFF_LayerArrayIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"dictionary-keyiterator",		/* tp_name */
-	sizeof(layersiterobject),		/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)layersiter_dealloc, 	/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)layersiter_iternextkey,	/* tp_iternext */
-	0,					/* tp_methods */
-	0
+    "dictionary-keyiterator",  /* tp_name */
+    sizeof(layersiterobject),  /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)layersiter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)layersiter_iternextkey, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,/*(initproc)PyFF_GlyphPen_init*/ /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,/*PyFF_GlyphPen_new*/ /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -4950,45 +5074,56 @@ static PyTypeObject PyFF_LayerArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.glyphlayerarray",       /*tp_name*/
-    sizeof(PyFF_LayerArray), /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_LayerArray_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    &PyFF_LayerArrayMapping,   /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFLayerArray_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "fontforge.glyphlayerarray", /* tp_name */
+    sizeof(PyFF_LayerArray),   /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_LayerArray_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    &PyFF_LayerArrayMapping,   /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFLayerArray_Str, /*tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge layers array",  /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    layersiter_new,	       /* tp_iter */
-    0,		               /* tp_iternext */
-    0,			       /* tp_methods */
-    0,			       /* tp_members */
-    0,		               /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    layersiter_new,            /* tp_iter */
+    NULL,                      /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -5088,45 +5223,56 @@ static PyTypeObject PyFF_RefArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.references",       /*tp_name*/
-    sizeof(PyFF_RefArray),     /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_RefArray_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    &PyFF_RefArrayMapping,   /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFReferences_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "fontforge.references",    /* tp_name */
+    sizeof(PyFF_RefArray),     /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_RefArray_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    &PyFF_RefArrayMapping,     /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFReferences_Str, /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge layers references array",  /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    layersiter_new,	       /* tp_iter */
-    0,		               /* tp_iternext */
-    0,			       /* tp_methods */
-    0,			       /* tp_members */
-    0,		               /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    layersiter_new,            /* tp_iter */
+    NULL,                      /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -5217,7 +5363,7 @@ static PyGetSetDef PyFFMathKern_members[] = {
     {"bottomRight",
 	 (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
 	 "Math Kerning information for the bottom right corner", (void *) (intpt) 2},
-    { NULL }
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_MathKernType = {
@@ -5225,49 +5371,60 @@ static PyTypeObject PyFF_MathKernType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.mathKern",	       /*tp_name*/
-    sizeof(PyFF_MathKern),      /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyFFMathKern_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,			       /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFMathKern_Str, /*tp_str*/
-    0,			       /*tp_getattro*/
-    0,			       /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    "fontforge.mathKern",      /* tp_name */
+    sizeof(PyFF_MathKern),     /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor)PyFFMathKern_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFMathKern_Str, /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
 #if PY_MAJOR_VERSION >= 3
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
 #endif
-    "fontforge per glyph math kerning objects",   /* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,			       /* tp_iter */
-    0,		               /* tp_iternext */
-    0,			       /* tp_methods */
-    0,			       /* tp_members */
+    "fontforge per glyph math kerning objects", /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
     PyFFMathKern_members,      /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0,			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -5891,7 +6048,7 @@ struct flaglist glyphclasses[] = {
     { "baseligature", 3 },
     { "mark", 4 },
     { "component", 5 },
-    NULL
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFF_Glyph_get_glyphclass(PyFF_Glyph *self,void *closure) {
@@ -5905,7 +6062,7 @@ static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value,void *clos
     if ( str==NULL )
 return( -1 );
     gc = FlagsFromString(str,glyphclasses);
-    if ( gc==0x80000000 )
+    if ( gc==PYFF_FLAG_UNKNOWN )
 return( -1 );
     self->sc->glyph_class = gc;
 return( 0 );
@@ -6133,7 +6290,8 @@ static struct flaglist ap_types[] = {
     { "entry", at_centry },
     { "exit", at_cexit },
     { "baselig", at_baselig },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *_PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,int withsel) {
     SplineChar *sc = self->sc;
@@ -6201,7 +6359,7 @@ return( NULL );
 return( NULL );
     }
     aptype = FlagsFromString(type,ap_types);
-    if ( aptype==0x80000000 )
+    if ( aptype==PYFF_FLAG_UNKNOWN )
 return( NULL );
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
 	if ( strcmp(ac->name,ac_name)==0 )
@@ -6699,7 +6857,7 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 	 "The diagonal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing three pairs of coordinates, specifying a point on the left edge, a point on the right edge and a unit vector for this hint.", NULL},
     {"manualHints",
 	 (getter)PyFF_Glyph_get_manualhints, (setter)PyFF_Glyph_set_manualhints,
-	 "The hints have been set manually, and the glyph should not be autohinted by default" },
+	 "The hints have been set manually, and the glyph should not be autohinted by default", NULL },
     {"lcarets",
         (getter)PyFF_Glyph_get_lcarets, (setter)PyFF_Glyph_set_lcarets,
         "The ligature caret locations, defined for this glyph, as a tuple.", NULL},
@@ -6727,7 +6885,7 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"mathKern",
 	 (getter)PyFF_Glyph_get_mathKern, (setter)PyFF_cant_set,
 	 "math kerning information for the glyph.", NULL},
-    {NULL}  /* Sentinel */
+    PYGETSETDEF_EMPTY  /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -6831,13 +6989,15 @@ static struct flaglist cw_types[] = {
     { "custom", embolden_custom },
     { "LCG", embolden_lcg },
     { "CJK", embolden_cjk },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static struct flaglist co_types[] = {
     { "squish", ct_squish },
     { "retain", ct_retain },
     { "auto", ct_auto },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, PyObject *args) {
     enum embolden_type type;
@@ -6857,10 +7017,10 @@ static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, 
 	    &zoneO ))
 return( embolden_error );
     type = FlagsFromString(type_name,cw_types);
-    if ( type==0x80000000 )
+    if ( type==(uint32)PYFF_FLAG_UNKNOWN )
 return( embolden_error );
     zones->counter_type = FlagsFromString(counter_name,co_types);
-    if ( zones->counter_type==0x80000000 )
+    if ( zones->counter_type==(uint32)PYFF_FLAG_UNKNOWN )
 return( embolden_error );
 
     just_top = true;
@@ -7099,7 +7259,8 @@ static struct flaglist import_ps_flags[] = {
     { "removeoverlap", 0 },			/* Obsolete */
     { "handle_eraser", sf_handle_eraser },
     { "correctdir",  sf_correctdir },
-      NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
@@ -7789,7 +7950,8 @@ return( Py_BuildValue( "i", SCValidate(sc,layer,force)) );
 static struct flaglist trans_flags[] = {
     { "partialRefs", fvt_partialreftrans },
     { "round", fvt_round_to_int },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
@@ -7803,7 +7965,7 @@ static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
 	    &flagO) )
 return( NULL );
     flags = FlagsFromTuple(flagO,trans_flags);
-    if ( flags==0x80000000 )
+    if ( flags==PYFF_FLAG_UNKNOWN )
 return( NULL );
     flags |= fvt_alllayers;
     for ( i=0; i<6; ++i )
@@ -7826,7 +7988,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
-    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
+    static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
     SplineChar *sc = self->sc;
     SplineFont *sf = sc->parent;
     int em = sf->ascent+sf->descent;
@@ -8027,7 +8189,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "unlinkThisGlyph", PyFFGlyph_unlinkThisGlyph, METH_NOARGS, "Unlink all references to the current glyph in any other glyph in the font."},
     { "useRefsMetrics", PyFFGlyph_useRefsMetrics, METH_VARARGS, "Search the references of the current layer of the glyph and set the named reference's \"useMyMetrics\" flag."},
     { "preserveLayerAsUndo", (PyCFunction)PyFFGlyph_preserveLayer, METH_VARARGS, "Preserves the current layer -- as it now is -- in an undo"},
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 /* ************************************************************************** */
 /*  Glyph Type  */
@@ -8038,53 +8200,64 @@ static PyTypeObject PyFF_GlyphType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.glyph",         /*tp_name*/
-    sizeof(PyFF_Glyph),	       /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_Glyph_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
+    "fontforge.glyph",         /* tp_name */
+    sizeof(PyFF_Glyph),	       /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_Glyph_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
 #if PY_MAJOR_VERSION >= 3
-    0,                          /* tp_reserved */
+    NULL,                      /* tp_reserved */
 #else
-    (cmpfunc)PyFFGlyph_compare,/*tp_compare*/
+    (cmpfunc)PyFFGlyph_compare,/* tp_compare */
 #endif
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,		               /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFGlyph_Str,  /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFGlyph_Str,  /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge Glyph object",  /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
 #if PY_MAJOR_VERSION >= 3
-    (richcmpfunc)PyFFGlyph_richcompare,/*tp_richcompare*/
+    (richcmpfunc)PyFFGlyph_richcompare, /* tp_richcompare */
 #else
-    0,		               /* tp_richcompare */
+    NULL,                      /* tp_richcompare */
 #endif
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
     PyFF_Glyph_methods,        /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFF_Glyph_getset,         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    /*(initproc)PyFF_Glyph_init*/0,  /* tp_init */
-    0,                         /* tp_alloc */
-    /*PyFF_Glyph_new*/0        /* tp_new */
+    NULL, /*(initproc)PyFF_Glyph_init*/ /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL, /*PyFF_Glyph_new*/   /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -8133,38 +8306,58 @@ static PyTypeObject PyFF_CvtIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"cvtiter",				/* tp_name */
-	sizeof(cvtiterobject),			/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)cvtiter_dealloc,		/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)cvtiter_iternext,		/* tp_iternext */
-	0,					/* tp_methods */
-	0,
+    "cvtiter",                 /* tp_name */
+    sizeof(cvtiterobject),     /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)cvtiter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)cvtiter_iternext, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    PyFF_Glyph_getset,         /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL, /*(initproc)PyFF_Glyph_init*/ /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL, /*PyFF_Glyph_new*/   /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -8395,8 +8588,9 @@ static PySequenceMethods PyFFCvt_Sequence = {
     PyFFCvt_Slice,		/* slice */
     PyFFCvt_IndexAssign,	/* subscript assign */
     PyFFCvt_SliceAssign,	/* slice assign */
-    PyFFCvt_Contains,	/* contains */
-    PyFFCvt_InPlaceConcat	/* inplace_concat */
+    PyFFCvt_Contains,		/* contains */
+    PyFFCvt_InPlaceConcat,	/* inplace_concat */
+    NULL			/* inplace repeat */
 };
 
 static PyObject *PyFFCvt_find(PyObject *self, PyObject *args) {
@@ -8422,7 +8616,7 @@ return( Py_BuildValue("i", -1 ));
 
 static PyMethodDef PyFFCvt_methods[] = {
     { "find", PyFFCvt_find, METH_VARARGS, "Finds the index in the cvt table of the specified value" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_CvtType = {
@@ -8432,48 +8626,60 @@ static PyTypeObject PyFF_CvtType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #endif
-    "fontforge.cvt",	       /*tp_name*/
-    sizeof(PyFF_Cvt),      /*tp_basicsize*/
+    "fontforge.cvt",           /*tp_name*/
+    sizeof(PyFF_Cvt),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyFFCvt_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
+    NULL,                      /*tp_print*/
+    NULL,                      /*tp_getattr*/
+    NULL,                      /*tp_setattr*/
+    NULL,                      /*tp_compare*/
+    NULL,                      /*tp_repr*/
+    NULL,                      /*tp_as_number*/
     &PyFFCvt_Sequence,         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
+    NULL,                      /*tp_as_mapping*/
+    NULL,                      /*tp_hash */
+    NULL,                      /*tp_call*/
     (reprfunc) PyFFCvt_Str,    /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    NULL,                      /*tp_getattro*/
+    NULL,                      /*tp_setattro*/
+    NULL,                      /*tp_as_buffer*/
 #if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
 #endif
     "fontforge cvt objects",   /* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    cvtiter_new,	       /* tp_iter */
-    0,		               /* tp_iternext */
-    PyFFCvt_methods,	       /* tp_methods */
-    0,			       /* tp_members */
-    0,			       /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    cvtiter_new,               /* tp_iter */
+    NULL,                      /* tp_iternext */
+    PyFFCvt_methods,           /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,				/* tp_init */
-    0,                         /* tp_alloc */
-    0,			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
+
 /* ************************************************************************** */
 /* Selection Standard Methods */
 /* ************************************************************************** */
@@ -8521,7 +8727,8 @@ struct flaglist select_flags[] = {
     { "encoding", sel_encoding },
     { "singletons", sel_singletons },
     { "ranges", sel_ranges },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFFSelection_All(PyObject *self, PyObject *args) {
     FontViewBase *fv = ((PyFF_Selection *) self)->fv;
@@ -8605,7 +8812,7 @@ static PyObject *PyFFSelection_select(PyObject *self, PyObject *args) {
 	PyObject *arg = PyTuple_GetItem(args,i);
 	if ( !STRING_CHECK(arg) && PySequence_Check(arg)) {
 	    int newflags = FlagsFromTuple(arg,select_flags);
-	    if ( newflags==0x80000000 )
+	    if ( newflags==PYFF_FLAG_UNKNOWN )
 return( NULL );
 	    if ( (newflags&(sel_more|sel_less)) == 0 )
 		newflags |= (flags&(sel_more|sel_less));
@@ -8660,14 +8867,14 @@ static PyMethodDef PyFFSelection_methods[] = {
     { "none", PyFFSelection_None, METH_NOARGS, "Deselects everything" },
     { "changed", PyFFSelection_Changed, METH_NOARGS, "Selects those glyphs which have changed" },
     { "invert", PyFFSelection_Invert, METH_NOARGS, "Inverts the selection" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyGetSetDef PyFFSelection_getset[] = {
     {"byGlyphs",
 	 (getter)PyFFSelection_ByGlyphs, (setter)PyFF_cant_set,
 	 "returns a selection object whose iterator will return glyph objects (rather than encoding indices)", NULL},
-    {NULL}  /* Sentinel */
+    PYGETSETDEF_EMPTY  /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -8740,43 +8947,54 @@ static PyTypeObject PyFF_SelectionType = {
     sizeof(PyFF_Selection),    /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyFFSelection_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,			       /*tp_as_sequence*/
+    NULL,                      /*tp_print*/
+    NULL,                      /*tp_getattr*/
+    NULL,                      /*tp_setattr*/
+    NULL,                      /*tp_compare*/
+    NULL,                      /*tp_repr*/
+    NULL,                      /*tp_as_number*/
+    NULL,                      /*tp_as_sequence*/
     &PyFFSelection_Mapping,    /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFSelection_Str,    /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    NULL,                      /*tp_hash */
+    NULL,                      /*tp_call*/
+    (reprfunc)PyFFSelection_Str, /*tp_str*/
+    NULL,                      /*tp_getattro*/
+    NULL,                      /*tp_setattro*/
+    NULL,                      /*tp_as_buffer*/
 #if PY_MAJOR_VERSION >= 3
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
 #else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
 #endif
-    "fontforge selection objects",   /* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    "fontforge selection objects", /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
     PySelection_iter,          /* tp_iter */
-    0,		               /* tp_iternext */
+    NULL,                      /* tp_iternext */
     PyFFSelection_methods,     /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFFSelection_getset,      /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,				/* tp_init */
-    0,                         /* tp_alloc */
-    0,			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 
@@ -8824,38 +9042,58 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"fontforge.fontlayeriter",		/* tp_name */
-	sizeof(layerinfoiterobject),		/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)layerinfoiter_dealloc, 	/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)layerinfoiter_iternextkey,/* tp_iternext */
-	0,					/* tp_methods */
-	0
+    "fontforge.fontlayeriter", /* tp_name */
+    sizeof(layerinfoiterobject), /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)layerinfoiter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)layerinfoiter_iternextkey, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* members */
+    PyFFSelection_getset,      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -8936,7 +9174,7 @@ static PyGetSetDef PyFF_LayerInfo_getset[] = {
     {"is_background",
 	 (getter)PyFF_LayerInfo_get_background, (setter)PyFF_LayerInfo_set_background,
 	 "Is this a background layer or a foreground one?\nForeground layers may have fonts generated from them.\nBackground layers may contain background images", NULL},
-     NULL
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_LayerInfoType = {
@@ -8944,45 +9182,56 @@ static PyTypeObject PyFF_LayerInfoType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.layerinfo",	/*tp_name*/
-    sizeof(PyFF_LayerInfo),	/*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_LayerInfo_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,			       /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFLayerInfo_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "fontforge.layerinfo",     /* tp_name */
+    sizeof(PyFF_LayerInfo),    /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_LayerInfo_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFLayerInfo_Str, /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge layer info",    /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,			       /* tp_iter */
-    0,		               /* tp_iternext */
-    0,			       /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
     PyFF_LayerInfo_getset,     /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -9111,7 +9360,7 @@ Py_RETURN(self);
 
 static PyMethodDef PyFF_LayerInfoArray_methods[] = {
     { "add", PyFF_LayerInfoArray_add, METH_VARARGS, "Adds a new layer to the font" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_LayerInfoArrayType = {
@@ -9125,39 +9374,50 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
     sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor) PyFF_LayerInfoArray_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    &PyFF_LayerInfoArrayMapping,   /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFLayerInfoArray_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    NULL,                      /*tp_print*/
+    NULL,                      /*tp_getattr*/
+    NULL,                      /*tp_setattr*/
+    NULL,                      /*tp_compare*/
+    NULL,                      /*tp_repr*/
+    NULL,                      /*tp_as_number*/
+    NULL,                      /*tp_as_sequence*/
+    &PyFF_LayerInfoArrayMapping, /*tp_as_mapping*/
+    NULL,                      /*tp_hash */
+    NULL,                      /*tp_call*/
+    (reprfunc) PyFFLayerInfoArray_Str, /*tp_str*/
+    NULL,                      /*tp_getattro*/
+    NULL,                      /*tp_setattro*/
+    NULL,                      /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
     "FontForge layers array",  /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    layerinfoiter_new,	       /* tp_iter */
-    0,		               /* tp_iternext */
-    PyFF_LayerInfoArray_methods,/* tp_methods */
-    0,			       /* tp_members */
-    0,		               /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    layerinfoiter_new,         /* tp_iter */
+    NULL,                      /* tp_iternext */
+    PyFF_LayerInfoArray_methods, /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -9232,7 +9492,7 @@ static PyMethodDef FFMath_methods[] = {
 	     "Removes any (underlying) math table from this font. Referencing a member will create the table again." },
     {"exists", (PyCFunction)PyFFMath_exists, METH_NOARGS,
 	     "Returns whether there is an underlying table associated with this font. Referencing a member will create the table if it does not exist." },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_MathType = {
@@ -9240,49 +9500,60 @@ static PyTypeObject PyFF_MathType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.math",	       /*tp_name*/
-    sizeof(PyFF_Math),      /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyFFMath_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,			       /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFMath_Str,   /*tp_str*/
-    0,			       /*tp_getattro*/
-    0,			       /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    "fontforge.math",	       /* tp_name */
+    sizeof(PyFF_Math),         /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor)PyFFMath_dealloc, /*tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFMath_Str,   /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
 #if PY_MAJOR_VERSION >= 3
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
 #else
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES, /* tp_flags */
 #endif
-    "fontforge math objects",   /* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,			       /* tp_iter */
-    0,		               /* tp_iternext */
-    FFMath_methods,	       /* tp_methods */
-    0,			       /* tp_members */
-    0/* Will build this when readying the type*/,  /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    "fontforge math objects",  /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
+    FFMath_methods,            /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL, /* Will build this when readying the type*/ /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0,			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* Build a get/set table for the math type based on the math_constants_descriptor */
@@ -9346,38 +9617,58 @@ static PyTypeObject PyFF_PrivateIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"dictionary-keyiterator",		/* tp_name */
-	sizeof(privateiterobject),		/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)privateiter_dealloc, 	/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)privateiter_iternextkey,	/* tp_iternext */
-	0,					/* tp_methods */
-	0
+    "dictionary-keyiterator",  /* tp_name */
+    sizeof(privateiterobject), /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)privateiter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)privateiter_iternextkey, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -9536,7 +9827,7 @@ Py_RETURN( self );
 static PyMethodDef FFPrivate_methods[] = {
     {"guess", (PyCFunction)PyFFPrivate_Guess, METH_VARARGS,
 	     "Given the name of an entry, guesses a default value for it." },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -9548,45 +9839,56 @@ static PyTypeObject PyFF_PrivateType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.private",       /*tp_name*/
-    sizeof(PyFF_Private), /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_Private_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    &PyFF_PrivateMapping,      /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFPrivate_Str,/*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "fontforge.private",       /* tp_name */
+    sizeof(PyFF_Private),      /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_Private_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    &PyFF_PrivateMapping,      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFPrivate_Str,/* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge private dictionary", /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    privateiter_new,		/* tp_iter */
-    0,		               /* tp_iternext */
-    FFPrivate_methods,	       /* tp_methods */
-    0,			       /* tp_members */
-    0,		               /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    privateiter_new,           /* tp_iter */
+    NULL,                      /* tp_iternext */
+    FFPrivate_methods,         /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,			       /* tp_init */
-    0,                         /* tp_alloc */
-    0			       /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -9721,38 +10023,58 @@ static PyTypeObject PyFF_FontIterType = {
 #if PY_MAJOR_VERSION >= 3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
 #endif
-	"fontiter",				/* tp_name */
-	sizeof(fontiterobject),			/* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)fontiter_dealloc,	 	/* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	0,					/* tp_repr */
-	0,					/* tp_as_number */
-	0,					/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	0,					/* tp_hash */
-	0,					/* tp_call */
-	0,					/* tp_str */
-	0,					/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT,			/* tp_flags */
- 	0,					/* tp_doc */
- 	0,					/* tp_traverse */
- 	0,					/* tp_clear */
-	0,					/* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	PyObject_SelfIter,			/* tp_iter */
-	(iternextfunc)fontiter_iternextkey,	/* tp_iternext */
-	0,					/* tp_methods */
-	0,
+    "fontiter",                /* tp_name */
+    sizeof(fontiterobject),    /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)fontiter_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)fontiter_iternextkey, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -9849,7 +10171,7 @@ return( 0 );
 	lang_str = PyBytes_AsString(val);
 	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
 #endif /* PY_MAJOR_VERSION >= 3 */
-	if ( lang==0x80000000 ) {
+	if ( lang==PYFF_FLAG_UNKNOWN ) {
 	    PyErr_Format(PyExc_TypeError, "Unknown language" );
 return( 0 );
 	}
@@ -9873,7 +10195,7 @@ return( 0 );
 	strid_str = PyBytes_AsString(val);
 	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
 #endif /* PY_MAJOR_VERSION >= 3 */
-	if ( strid==0x80000000 ) {
+	if ( strid==PYFF_FLAG_UNKNOWN ) {
 	    PyErr_Format(PyExc_TypeError, "Unknown string id" );
 return( 0 );
 	}
@@ -10062,7 +10384,8 @@ static struct flaglist gaspflags[] = {
     { "antialias",		2 },
     { "symmetric-smoothing",	8 },
     { "gridfit+smoothing",	4 },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFF_Font_get_gasp(PyFF_Font *self,void *closure) {
     PyObject *tuple, *flagstuple;
@@ -10103,7 +10426,7 @@ return( -1 );
 		    &gasp[i].ppem, &flags ))
 return( -1 );
 	    flag = FlagsFromTuple(flags,gaspflags);
-	    if ( flag==0x80000000 )
+	    if ( flag==PYFF_FLAG_UNKNOWN )
 return( -1 );
 	    gasp[i].flags = flag;
 	}
@@ -11361,7 +11684,7 @@ return( -1 );
 	if ( STRING_CHECK(val) ) {
 	    char *lang_str = PyBytes_AsString(val);
 	    lang = FlagsFromString(lang_str,sfnt_name_mslangs);
-	    if ( lang==0x80000000 ) {
+	    if ( lang==PYFF_FLAG_UNKNOWN ) {
 		PyErr_Format(PyExc_TypeError, "Unknown language" );
 return( 0 );
 	    }
@@ -12222,7 +12545,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"markClasses",
 	 (getter)PyFF_Font_get_mark_classes, (setter)PyFF_Font_set_mark_classes,
 	 "A tuple each entry of which is itself a tuple containing a mark-class-name and a tuple of glyph-names", NULL},
-    {NULL}  /* Sentinel */
+    PYGETSETDEF_EMPTY  /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -12409,7 +12732,8 @@ static struct flaglist compflags[] = {
     { "gsub",			  0x400 },
     { "add-outlines",		  0x800 },
     { "create-glyphs",		  0x1000 },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFFFont_compareFonts(PyFF_Font *self,PyObject *args) {
     /* Compare the current font against the named one	     */
@@ -12431,7 +12755,7 @@ return( NULL );
 return( NULL );
     }
     flags = FlagsFromTuple(flagstuple,compflags);
-    if ( flags==0x80000000 )
+    if ( flags==PYFF_FLAG_UNKNOWN )
 return( NULL );
 
     if ( strcmp(filename,"-")==0 )
@@ -12641,19 +12965,28 @@ return( NULL );
 	sub->next = otl->subtables;
 	otl->subtables = sub;
     }
+
     switch ( otl->lookup_type ) {
-      case gpos_cursive: case gpos_mark2base: case gpos_mark2ligature: case gpos_mark2mark:
-	sub->anchor_classes = true;
+      case gpos_cursive:
+      case gpos_mark2base:
+      case gpos_mark2ligature:
+      case gpos_mark2mark:
+        sub->anchor_classes = true;
       break;
       case gpos_pair:
-	is_v = VerticalKernFeature(sf,otl,false);
-	if ( is_v==-1 ) is_v = false;
-	sub->vertical_kerning = is_v;
-	sub->per_glyph_pst_or_kern = true;
+        is_v = VerticalKernFeature(sf, otl, false);
+        if ( is_v==-1 ) is_v = false;
+        sub->vertical_kerning = is_v;
+        sub->per_glyph_pst_or_kern = true;
       break;
       case gpos_single:
-      case gsub_single: case gsub_multiple: case gsub_alternate: case gsub_ligature:
-	sub->per_glyph_pst_or_kern = true;
+      case gsub_single:
+      case gsub_multiple:
+      case gsub_alternate:
+      case gsub_ligature:
+        sub->per_glyph_pst_or_kern = true;
+      break;
+      default:
       break;
     }
 
@@ -13285,7 +13618,9 @@ static struct flaglist lookup_types[] = {
     { "gpos_context", gpos_context },
     { "gpos_contextchain", gpos_contextchain },
     { "kern_statemachine", kern_statemachine },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
+
 static struct flaglist lookup_flags[] = {
     { "right_to_left", pst_r2l },
     { "ignore_bases", pst_ignorebaseglyphs },
@@ -13293,7 +13628,8 @@ static struct flaglist lookup_flags[] = {
     { "ignore_marks", pst_ignorecombiningmarks },
     { "right_2_left", pst_r2l },
     { "right2left", pst_r2l },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static int ParseLookupFlagsItem(SplineFont *sf,PyObject *flagstr) {
     char *str = PyBytes_AsString(flagstr);
@@ -13641,7 +13977,7 @@ return( NULL );
     }
 
     for ( i=0; lookup_types[i].name!=NULL ; ++i )
-	if ( lookup_types[i].flag == otl->lookup_type )
+	if ( (uint32)lookup_types[i].flag == otl->lookup_type )
     break;
     type = lookup_types[i].name;
 
@@ -14004,7 +14340,7 @@ struct flaglist find_flags[] = {
     {"rotate", sv_rotate},
     {"scale", sv_scale},
     {"endpoints", sv_endpoints},
-    NULL,
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFFFont_find(PyObject *self, PyObject *args) {
@@ -14164,12 +14500,12 @@ struct flaglist gen_flags[] = {
     { "no-hints", 0x80000 },
     { "round", 0x200000 },
     { "composites-in-afm", 0x400000 },
-    NULL
+    FLAGLIST_EMPTY /* Sentinel */
 };
 struct flaglist genttc_flags[] = {
     { "merge", ttc_flag_trymerge },
     { "cff", ttc_flag_cff },
-    NULL
+    FLAGLIST_EMPTY /* Sentinel */
 };
 
 static PyObject *PyFFFont_Generate(PyObject *self, PyObject *args, PyObject *keywds) {
@@ -14202,7 +14538,7 @@ return( NULL );
     }
     if ( flags!=NULL ) {
 	iflags = FlagsFromTuple(flags,gen_flags);
-	if ( iflags==0x80000000 ) {
+	if ( iflags==PYFF_FLAG_UNKNOWN ) {
 	    PyErr_Format(PyExc_TypeError, "Unknown flag");
 return( NULL );
 	}
@@ -14291,7 +14627,7 @@ return( NULL );
     }
     if ( flags!=NULL ) {
 	iflags = FlagsFromTuple(flags,gen_flags);
-	if ( iflags==0x80000000 ) {
+	if ( iflags==PYFF_FLAG_UNKNOWN ) {
 	    PyErr_Format(PyExc_TypeError, "Unknown flag");
 return( NULL );
 	}
@@ -14309,7 +14645,7 @@ return( NULL );
     }
     if ( ttcflags!=NULL ) {
 	ittcflags = FlagsFromTuple(ttcflags,genttc_flags);
-	if ( ittcflags==0x80000000 ) {
+	if ( ittcflags==PYFF_FLAG_UNKNOWN ) {
 	    PyErr_Format(PyExc_TypeError, "Unknown ttc flag");
 return( NULL );
 	}
@@ -14627,7 +14963,8 @@ static struct flaglist printflags[] = {
     { "fontsample", 3 },
     { "fontsampleinfile", 4 },
     { "multisize", 2 },
-    NULL };
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 static PyObject *PyFFFont_print(PyObject *self, PyObject *args) {
     int type, i, inlinesample = true;
@@ -14649,7 +14986,7 @@ return( NULL );
     if ( ptype==NULL )
 return( NULL );
     type = FlagsFromString(ptype,printflags);
-    if ( type==0x80000000 ) {
+    if ( type==PYFF_FLAG_UNKNOWN ) {
 	PyErr_Format(PyExc_TypeError, "Unknown printing type" );
 return( NULL );
     }
@@ -14853,33 +15190,37 @@ static char *italicize_keywords[] = {
     "u0448",
     "u0452",
     "u045f",
-    NULL };
+    NULL
+};
 
 static ItalicInfo default_ii = {
-    -13,		/* Italic angle (in degrees) */
-    .95,		/* xheight percent */
+    -13,                    /* Italic angle (in degrees) */
+    .95,                    /* xheight percent */
+
     /* horizontal squash, lsb, stemsize, countersize, rsb */
-    .91, .89, .90, .91,		/* For lower case */
-    .91, .93, .93, .91,		/* For upper case */
-    .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
-    srf_flat,		/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
-    true,		/* Transform bottom serifs */
-    true,		/* Transform serifs at x-height */
-    false,		/* Transform serifs on ascenders */
-    true,		/* Transform serifs on diagonal stems at baseline and x-height */
+    { .91, .89, .90, .91 }, /* For lower case */
+    { .91, .93, .93, .91 }, /* For upper case */
+    { .91, .93, .93, .91 }, /* For things which are neither upper nor lower case */
+    srf_flat,               /* Secondary serifs (initial, medial on "m", descender on "p", "q" */
+    true,                   /* Transform bottom serifs */
+    true,                   /* Transform serifs at x-height */
+    false,                  /* Transform serifs on ascenders */
+    true,                   /* Transform serifs on diagonal stems at baseline and x-height */
 
-    true,		/* Change the shape of an "a" to look like a "d" without ascender */
-    false,		/* Change the shape of "f" so it descends below baseline (straight down no flag at end) */
-    true,		/* Change the shape of "f" so the bottom looks like the top */
-    true,		/* Remove serifs from the bottom of descenders */
+    true,                   /* Change the shape of an "a" to look like a "d" without ascender */
+    false,                  /* Change the shape of "f" so it descends below baseline (straight down no flag at end) */
+    true,                   /* Change the shape of "f" so the bottom looks like the top */
+    true,                   /* Remove serifs from the bottom of descenders */
 
-    true,		/* Make the cyrillic "phi" glyph have a top like an "f" */
-    true,		/* Make the cyrillic "i" glyph look like a latin "u" */
-    true,		/* Make the cyrillic "pi" glyph look like a latin "n" */
-    true,		/* Make the cyrillic "te" glyph look like a latin "m" */
-    true,		/* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
-    true,		/* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
-    true		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+    true,                   /* Make the cyrillic "phi" glyph have a top like an "f" */
+    true,                   /* Make the cyrillic "i" glyph look like a latin "u" */
+    true,                   /* Make the cyrillic "pi" glyph look like a latin "n" */
+    true,                   /* Make the cyrillic "te" glyph look like a latin "m" */
+    true,                   /* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
+    true,                   /* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
+    true,                   /* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+
+    ITALICINFO_REMAINDER
 };
 
 static int SquashParse(struct hsquash *squash,PyObject *po) {
@@ -15300,7 +15641,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_Simplify(PyFF_Font *self, PyObject *args) {
-    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
+    static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
     FontViewBase *fv = self->fv;
 
     smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
@@ -15566,7 +15907,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "nltransform", (PyCFunction)PyFFFont_NLTransform, METH_VARARGS, "Transform a font by non-linear expessions for x and y." },
     { "validate", PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -15669,7 +16010,8 @@ static PySequenceMethods PyFF_FontSequence = {
     NULL,			/* subscript assign */
     NULL,			/* slice assign */
     PyFF_FontContains,		/* contains */
-    NULL			/* inplace_concat */
+    NULL,			/* inplace_concat */
+    NULL			/* inplace repeat */
 };
 
 static PyMappingMethods PyFF_FontMapping = {
@@ -15683,45 +16025,56 @@ static PyTypeObject PyFF_FontType = {
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    0,                         /* ob_size */
 #endif
-    "fontforge.font",          /*tp_name*/
-    sizeof(PyFF_Font), /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_Font_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    &PyFF_FontSequence,        /*tp_as_sequence*/
-    &PyFF_FontMapping,         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    (reprfunc) PyFFFont_Str,   /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "fontforge.font",          /* tp_name */
+    sizeof(PyFF_Font),         /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_Font_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    &PyFF_FontSequence,        /* tp_as_sequence */
+    &PyFF_FontMapping,         /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFFont_Str,   /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge Font object",   /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
     fontiter_new,              /* tp_iter */
-    0,		               /* tp_iternext */
+    NULL,                      /* tp_iternext */
     PyFF_Font_methods,         /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFF_Font_getset,          /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
     /*(initproc)PyFF_Font_init*/0,  /* tp_init */
     0,                         /* tp_alloc */
     PyFF_Font_new,             /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* ************************************************************************** */
@@ -15793,44 +16146,55 @@ static PyMappingMethods PyFF_AWGlyphMapping = {
 
 static PyTypeObject PyFF_AWGlyphIndexType = {
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "fontforge.awglyphIndex",       /*tp_name*/
-    sizeof(PyFF_AWGlyphI),     /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_AWGlyphIndex_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    NULL,                      /*tp_as_sequence*/
-    &PyFF_AWGlyphMapping,      /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    NULL,                      /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    0,                         /* ob_size */
+    "fontforge.awglyphIndex",  /* tp_name */
+    sizeof(PyFF_AWGlyphI),     /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_AWGlyphIndex_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    &PyFF_AWGlyphMapping,      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge index aw",      /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
-    0,		               /* tp_iternext */
+    NULL,                      /* tp_iternext */
     NULL,                      /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     NULL,                      /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    NULL,		       /* tp_init */
-    0,                         /* tp_alloc */
-    NULL,			 /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 static void PyFF_AWGlyph_dealloc(PyFF_AWGlyph *self) {
@@ -15917,49 +16281,60 @@ static PyGetSetDef PyFF_AWGlyph_getset[] = {
     {"right",
 	 (getter)PyFF_AWGlyph_getRight, (setter)PyFF_cant_set,
 	 "array with left edge offsets from bounding box", NULL},
-    {NULL}  /* Sentinel */
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_AWGlyphType = {
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "fontforge.awglyph",       /*tp_name*/
-    sizeof(PyFF_AWGlyph),      /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_AWGlyph_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    NULL,                      /*tp_as_sequence*/
-    NULL,		       /*tp_as_mapping*/	/* Need separate left/right version so needs a new type. Sigh. */
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    NULL,                      /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    0,                         /* ob_size */
+    "fontforge.awglyph",       /* tp_name */
+    sizeof(PyFF_AWGlyph),      /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_AWGlyph_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */    /* Need separate left/right version so needs a new type. Sigh. */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "FontForge Auto Width/Kern Glyph object",   /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
-    0,		               /* tp_iternext */
+    NULL,                      /* tp_iternext */
     NULL,                      /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFF_AWGlyph_getset,       /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    NULL,		       /* tp_init */
-    0,                         /* tp_alloc */
-    /*PyFF_AWGlyph_new*/ NULL, /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL, /*PyFF_AWGlyph_new*/ /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 static void PyFF_AWContext_dealloc(PyFF_AWContext *self) {
@@ -16032,49 +16407,60 @@ static PyGetSetDef PyFF_AWContext_getset[] = {
     {"denom",
 	 (getter)PyFF_AWContext_getDenom, (setter)PyFF_cant_set,
 	 "A useful small number which varies with the emsize", NULL},
-    {NULL}  /* Sentinel */
+    PYGETSETDEF_EMPTY /* Sentinel */
 };
 
 static PyTypeObject PyFF_AWContextType = {
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "fontforge.awcontext",     /*tp_name*/
-    sizeof(PyFF_AWContext),    /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor) PyFF_AWContext_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    NULL,                      /*tp_as_sequence*/
-    NULL,		       /*tp_as_mapping*/	/* Need separate left/right version so needs a new type. Sigh. */
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    NULL,                      /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    "FontForge Auto Width/Kern Context object",   /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    0,                         /* ob_size */
+    "fontforge.awcontext",     /* tp_name */
+    sizeof(PyFF_AWContext),    /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor) PyFF_AWContext_dealloc, /* tp_dealloc */
+    NULL,                      /* tp_print */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */        /* Need separate left/right version so needs a new type. Sigh. */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    "FontForge Auto Width/Kern Context object", /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
     NULL,                      /* tp_iter */
-    0,		               /* tp_iternext */
+    NULL,                      /* tp_iternext */
     NULL,                      /* tp_methods */
-    0,			       /* tp_members */
+    NULL,                      /* tp_members */
     PyFF_AWContext_getset,     /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    NULL,		       /* tp_init */
-    0,                         /* tp_alloc */
-     NULL,			 /* tp_new */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    0,                         /* tp_version_tag */
+#endif
 };
 
 /* User supplied python function which calculates the optical separation between */
@@ -16199,7 +16585,7 @@ static PyMethodDef FontForge_methods[] = {
     { "ask", PyFF_ask, METH_VARARGS, "Pops up a dialog asking the user a question and providing a set of buttons for the user to reply with" },
     { "askChoices", PyFF_askChoices, METH_VARARGS, "Pops up a dialog asking the user a question and providing a scrolling list for the user to reply with" },
     { "askString", PyFF_askString, METH_VARARGS, "Pops up a dialog asking the user a question and providing a textfield for the user to reply with" },
-    {NULL}  /* Sentinel */
+    PYMETHODDEF_EMPTY  /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -16322,7 +16708,7 @@ static PyMethodDef psMat_methods[] = {
     { "scale", PyPS_Scale, METH_VARARGS, "Scale transformation" },
     { "compose", PyPS_Compose, METH_VARARGS, "Compose two transformations (matrix multiplication)" },
     { "inverse", PyPS_Inverse, METH_VARARGS, "Provide an inverse transformations (not always possible)" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 #if PY_MAJOR_VERSION >= 3
@@ -16480,7 +16866,7 @@ static PyMethodDef FontForge_internal_methods[] = {
     { "newPoint", PyFFi_newPoint, METH_VARARGS, "Top level function to create a new point, needed (I think) for the pickler" },
     { "newContour", PyFFi_newContour, METH_VARARGS, "Top level function to create a new contour, needed (I think) for the pickler" },
     { "newLayer", PyFFi_newLayer, METH_VARARGS, "Top level function to create a new layer, needed (I think) for the pickler" },
-    NULL
+    PYMETHODDEF_EMPTY /* Sentinel */
 };
 
 #if PY_MAJOR_VERSION >= 3
@@ -17019,7 +17405,7 @@ static struct flaglist sfnt_name_str_ids[] = {
     { "CID findfont Name", 20},
     { "WWS Family", 21},
     { "WWS Subfamily", 22},
-    NULL
+    FLAGLIST_EMPTY /* Sentinel */
 };
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
 static struct flaglist sfnt_name_mslangs[] = {
@@ -17246,7 +17632,8 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Yiddish", 0x43d},
     { "Yoruba", 0x46a},
     { "Zulu", 0x435},
-    { NULL }};
+    FLAGLIST_EMPTY /* Sentinel */
+};
 
 const char *NOUI_TTFNameIds(int id) {
     int i;

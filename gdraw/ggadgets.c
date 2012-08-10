@@ -49,7 +49,7 @@ GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0,
     COLOR_CREATE(0x00,0x00,0x00),		/* border inner */
     COLOR_CREATE(0x00,0x00,0x00),		/* border outer */
 };
-GBox _GListMark_Box = { /* Don't initialize here */ 0 };
+GBox _GListMark_Box = GBOX_EMPTY; /* Don't initialize here */
 FontInstance *_ggadget_default_font = NULL;
 static FontInstance *popup_font = NULL;
 int _GListMarkSize = 12;
@@ -67,9 +67,9 @@ static int popup_delay=1000, popup_lifetime=20000;
 
 static GResInfo popup_ri;
 static struct resed ggadget_re[] = {
-    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both")},
-    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePath, N_("List of directories to search for images, separated by colons")},
-    NULL
+    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both"), NULL, { 0 }, 0, 0 },
+    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePath, N_("List of directories to search for images, separated by colons"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 GResInfo ggadget_ri = {
     &listmark_ri, NULL,NULL, NULL,
@@ -81,14 +81,21 @@ GResInfo ggadget_ri = {
     N_("This is an \"abstract\" gadget. It will never appear on the screen\nbut it is the root of gadget tree from which all others inherit"),
     "GGadget",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static struct resed popup_re[] = {
-    {N_("Color|Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows")},
-    {N_("Color|Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows")},
-    {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear")},
-    {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible")},
-    { NULL }};
+    {N_("Color|Foreground"), "Foreground", rt_color, &popup_foreground, N_("Text color for popup windows"), NULL, { 0 }, 0, 0 },
+    {N_("Color|Background"), "Background", rt_color, &popup_background, N_("Background color for popup windows"), NULL, { 0 }, 0, 0 },
+    {N_("Delay"), "Delay", rt_int, &popup_delay, N_("Delay (in milliseconds) before popup windows appear"), NULL, { 0 }, 0, 0 },
+    {N_("Life Time"), "LifeTime", rt_int, &popup_lifetime, N_("Time (in milliseconds) that popup windows remain visible"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static void popup_refresh(void);
 static GResInfo popup_ri = {
     &ggadget_ri, NULL, NULL,NULL,
@@ -103,27 +110,30 @@ static GResInfo popup_ri = {
     false,
     omf_refresh,
     NULL,
-    { 0 },
-    popup_refresh
+    GBOX_EMPTY,
+    popup_refresh,
+    NULL,
+    NULL
 };
 static struct resed listmark_re[] = {
-    {N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)")},
-    {N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)")},
-    {N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark")},
-    { NULL }};
+    { N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
+    { N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
+    { N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	NULL
-    };
+    { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 static GGadgetCreateData droplist_gcd[] = {
-	{GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[0],list_choices,gg_visible}},
-	{GListFieldCreate, {{0,0,80},NULL,0,0,0,0,0,&list_choices[1],list_choices,gg_visible|gg_enabled}}
-    };
+    { GListFieldCreate, { {0, 0, 80, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GListFieldCreate, { {0, 0, 80, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[1], { list_choices }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData droplistbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) dlarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) dlarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 GResInfo listmark_ri = {
     NULL, &ggadget_ri, NULL,NULL,
     &_GListMark_Box,	/* No box */
@@ -136,9 +146,14 @@ GResInfo listmark_ri = {
     "GListMark",
     "Gdraw",
     false,
-    omf_border_width|omf_padding
+    omf_border_width|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
-    
+
 
 static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
@@ -260,41 +275,41 @@ void _GGadgetCopyDefaultBox(GBox *box) {
 
 FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffont) {
     GResStruct bordertype[] = {
-	{ "Box.BorderType", rt_string, NULL, border_type_cvt },
-	{ NULL }
+	{ "Box.BorderType", rt_string, NULL, border_type_cvt, 0 },
+	GRESSTRUCT_EMPTY
     };
     GResStruct boxtypes[] = {
-	{ "Box.BorderType", rt_string, NULL, border_type_cvt },
-	{ "Box.BorderShape", rt_string, NULL, border_shape_cvt },
-	{ "Box.BorderWidth", rt_int, NULL },
-	{ "Box.Padding", rt_int, NULL },
-	{ "Box.Radius", rt_int, NULL },
-	{ "Box.BorderInner", rt_bool, NULL },
-	{ "Box.BorderOuter", rt_bool, NULL },
-	{ "Box.ActiveInner", rt_bool, NULL },
-	{ "Box.DoDepressedBackground", rt_bool, NULL },
-	{ "Box.DrawDefault", rt_bool, NULL },
-	{ "Box.BorderBrightest", rt_color, NULL },
-	{ "Box.BorderBrighter", rt_color, NULL },
-	{ "Box.BorderDarkest", rt_color, NULL },
-	{ "Box.BorderDarker", rt_color, NULL },
-	{ "Box.NormalBackground", rt_color, NULL },
-	{ "Box.NormalForeground", rt_color, NULL },
-	{ "Box.DisabledBackground", rt_color, NULL },
-	{ "Box.DisabledForeground", rt_color, NULL },
-	{ "Box.ActiveBorder", rt_color, NULL },
-	{ "Box.PressedBackground", rt_color, NULL },
-	{ "Box.BorderLeft", rt_color, NULL },
-	{ "Box.BorderTop", rt_color, NULL },
-	{ "Box.BorderRight", rt_color, NULL },
-	{ "Box.BorderBottom", rt_color, NULL },
-	{ "Font", rt_string, NULL, GResource_font_cvt },
-	{ "Box.GradientBG", rt_bool, NULL },
-	{ "Box.GradientStartCol", rt_color, NULL },
-	{ "Box.ShadowOuter", rt_bool, NULL },
-	{ "Box.BorderInnerCol", rt_color, NULL },
-	{ "Box.BorderOuterCol", rt_color, NULL },
-	{ NULL }
+	{ "Box.BorderType", rt_string, NULL, border_type_cvt, 0 },
+	{ "Box.BorderShape", rt_string, NULL, border_shape_cvt, 0 },
+	{ "Box.BorderWidth", rt_int, NULL, NULL, 0 },
+	{ "Box.Padding", rt_int, NULL, NULL, 0 },
+	{ "Box.Radius", rt_int, NULL, NULL, 0 },
+	{ "Box.BorderInner", rt_bool, NULL, NULL, 0 },
+	{ "Box.BorderOuter", rt_bool, NULL, NULL, 0 },
+	{ "Box.ActiveInner", rt_bool, NULL, NULL, 0 },
+	{ "Box.DoDepressedBackground", rt_bool, NULL, NULL, 0 },
+	{ "Box.DrawDefault", rt_bool, NULL, NULL, 0 },
+	{ "Box.BorderBrightest", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderBrighter", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderDarkest", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderDarker", rt_color, NULL, NULL, 0 },
+	{ "Box.NormalBackground", rt_color, NULL, NULL, 0 },
+	{ "Box.NormalForeground", rt_color, NULL, NULL, 0 },
+	{ "Box.DisabledBackground", rt_color, NULL, NULL, 0 },
+	{ "Box.DisabledForeground", rt_color, NULL, NULL, 0 },
+	{ "Box.ActiveBorder", rt_color, NULL, NULL, 0 },
+	{ "Box.PressedBackground", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderLeft", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderTop", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderRight", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderBottom", rt_color, NULL, NULL, 0 },
+	{ "Font", rt_string, NULL, GResource_font_cvt, 0 },
+	{ "Box.GradientBG", rt_bool, NULL, NULL, 0 },
+	{ "Box.GradientStartCol", rt_color, NULL, NULL, 0 },
+	{ "Box.ShadowOuter", rt_bool, NULL, NULL, 0 },
+	{ "Box.BorderInnerCol", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderOuterCol", rt_color, NULL, NULL, 0 },
+	GRESSTRUCT_EMPTY
     };
     intpt bt, bs;
     int bw, pad, rr, inner, outer, active, depressed, def, grad, shadow;
@@ -408,8 +423,8 @@ return( -10 );
 
 void GGadgetInit(void) {
     static GResStruct res[] = {
-	{ "Font", rt_string, NULL, GResource_font_cvt },
-	{ NULL }
+	{ "Font", rt_string, NULL, GResource_font_cvt, 0 },
+	GRESSTRUCT_EMPTY
     };
     if ( !_ggadget_inited ) {
 	_ggadget_inited = true;
@@ -861,7 +876,7 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 	    for ( ; prev!=NULL && prev->r.y==prevline->r.y ; prev = prev->prev )
 		onprev++;
 	    for ( prev = prevline, i=0; prev!=NULL && i<onprev-onthisline; prev = prev->prev);
-	    if ( prev==NULL )
+	    if ( prev!=NULL )
 		g->r.x = prev->r.x;
 	}
 	if ( g->r.x==0 )

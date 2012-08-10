@@ -35,31 +35,32 @@
 
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
-GBox _GGadget_gtextfield_box = { /* Don't initialize here */ 0 };
-static GBox glistfield_box = { /* Don't initialize here */ 0 };
-static GBox glistfieldmenu_box = { /* Don't initialize here */ 0 };
-static GBox gnumericfield_box = { /* Don't initialize here */ 0 };
-static GBox gnumericfieldspinner_box = { /* Don't initialize here */ 0 };
+GBox _GGadget_gtextfield_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox glistfield_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox glistfieldmenu_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gnumericfield_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gnumericfieldspinner_box = GBOX_EMPTY; /* Don't initialize here */
 FontInstance *_gtextfield_font = NULL;
 static int gtextfield_inited = false;
 
 static GResInfo listfield_ri, listfieldmenu_ri, numericfield_ri, numericfieldspinner_ri;
 static GTextInfo text_lab[] = {
-	{ (unichar_t *) "Disabled", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+    { (unichar_t *) "Disabled", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GTextInfo list_choices[] = {
-	{ (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "3" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	NULL
-    };
+    { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "2", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    GTEXTINFO_EMPTY
+};
 static GGadgetCreateData text_gcd[] = {
-	{GTextFieldCreate, {{0,0,70},NULL,0,0,0,0,0,&text_lab[0],NULL,gg_visible}},
-	{GTextFieldCreate, {{0,0,70},NULL,0,0,0,0,0,&text_lab[1],NULL,gg_visible|gg_enabled}}
-    };
+    { GTextFieldCreate, { { 0, 0, 70, 0 }, NULL, 0, 0, 0, 0, 0, &text_lab[0], { NULL }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GTextFieldCreate, { { 0, 0, 70, 0 }, NULL, 0, 0, 0, 0, 0, &text_lab[1], { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *tarray[] = { GCD_Glue, &text_gcd[0], GCD_Glue, &text_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData textbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) tarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gtextfield_ri = {
     &listfield_ri, &ggadget_ri,NULL, NULL,
     &_GGadget_gtextfield_box,
@@ -71,15 +72,20 @@ static GResInfo gtextfield_ri = {
     "GTextField",
     "Gdraw",
     false,
-    omf_font|omf_padding
+    omf_font|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GGadgetCreateData textlist_gcd[] = {
-	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[0],list_choices,gg_visible}},
-	{GListFieldCreate, {{0},NULL,0,0,0,0,0,&text_lab[1],list_choices,gg_visible|gg_enabled}}
-    };
+    { GListFieldCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &text_lab[0], { list_choices }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GListFieldCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &text_lab[1], { list_choices }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *tlarray[] = { GCD_Glue, &textlist_gcd[0], GCD_Glue, &textlist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData textlistbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) tlarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) tlarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo listfield_ri = {
     &listfieldmenu_ri, &gtextfield_ri,&listfieldmenu_ri, &listmark_ri,
     &glistfield_box,
@@ -90,7 +96,13 @@ static GResInfo listfield_ri = {
     N_("List Field (Combo Box)"),
     "GComboBox",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GResInfo listfieldmenu_ri = {
     &numericfield_ri, &listfield_ri, &listmark_ri,NULL,
@@ -103,15 +115,20 @@ static GResInfo listfieldmenu_ri = {
     "GComboBoxMenu",
     "Gdraw",
     false,
-    omf_padding
+    omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GGadgetCreateData num_gcd[] = {
-	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible}},
-	{GNumericFieldCreate, {{0,0,50},NULL,0,0,0,0,0,&list_choices[0],NULL,gg_visible|gg_enabled}}
-    };
+    { GNumericFieldCreate, { { 0, 0, 50, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { NULL }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GNumericFieldCreate, { { 0, 0, 50, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *narray[] = { GCD_Glue, &num_gcd[0], GCD_Glue, &num_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData numbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) narray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) narray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo numericfield_ri = {
     &numericfieldspinner_ri, &gtextfield_ri,&numericfieldspinner_ri, NULL,
     &gnumericfield_box,
@@ -122,7 +139,13 @@ static GResInfo numericfield_ri = {
     N_("Numeric Field (Spinner)"),
     "GNumericField",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GResInfo numericfieldspinner_ri = {
     NULL, &numericfield_ri,NULL, NULL,
@@ -135,7 +158,12 @@ static GResInfo numericfieldspinner_ri = {
     "GNumericFieldSpinner",
     "Gdraw",
     false,
-    omf_border_type|omf_border_width|omf_padding
+    omf_border_type|omf_border_width|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static unichar_t nullstr[] = { 0 }, nstr[] = { 'n', 0 },
@@ -1274,16 +1302,16 @@ return;
 }
 
 static GMenuItem gtf_popuplist[] = {
-    { { (unichar_t *) "_Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "Cu_t", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
-    { { (unichar_t *) "_Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
-    { { (unichar_t *) "_Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) "_Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
-    { { (unichar_t *) "Save in _UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
-    { { (unichar_t *) "_Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1 }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
-    { NULL }
+    { { (unichar_t *) "_Undo", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'Z', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Undo },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, 0, '\0' }, '\0', 0, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) "Cu_t", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'X', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Cut },
+    { { (unichar_t *) "_Copy", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'C', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Copy },
+    { { (unichar_t *) "_Paste", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'V', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Paste },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, 0, '\0' }, '\0', 0, NULL, NULL, NULL, 0 }, /* line */
+    { { (unichar_t *) "_Save in UTF8", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'S', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Save },
+    { { (unichar_t *) "Save in _UCS2", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, GTFPopupInvoked, MID_SaveUCS2 },
+    { { (unichar_t *) "_Import", NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'I', ksm_control, NULL, NULL, GTFPopupInvoked, MID_Import },
+    GMENUITEM_EMPTY
 };
 static int first = true;
 
@@ -1949,7 +1977,7 @@ static int GTextFieldDoDrop(GTextField *gt,GEvent *event,int endpos) {
 		gt->sel_oldstart = gt->sel_start;
 		gt->sel_oldend = gt->sel_end;
 		gt->sel_oldbase = gt->sel_base;
-		gt->sel_start = gt->sel_end = gt->sel_end = pos;
+		gt->sel_start = gt->sel_end = pos;
 		gt->text = temp;
 		free(old);
 		GTextFieldRefigureLines(gt, endpos<gt->sel_oldstart?endpos:gt->sel_oldstart);
@@ -2823,7 +2851,8 @@ struct gfuncs gtextfield_funcs = {
 
     GTextFieldGetDesiredSize,
     GTextFieldSetDesiredSize,
-    gtextfield_FillsWindow
+    gtextfield_FillsWindow,
+    NULL
 };
 
 struct gfuncs glistfield_funcs = {
@@ -2869,7 +2898,9 @@ struct gfuncs glistfield_funcs = {
     NULL,
 
     GTextFieldGetDesiredSize,
-    GTextFieldSetDesiredSize
+    GTextFieldSetDesiredSize,
+    NULL,
+    NULL
 };
 
 static void GTextFieldInit() {

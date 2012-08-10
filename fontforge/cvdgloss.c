@@ -979,13 +979,13 @@ return(1);
 	    scrprintf(&scr,"Turn off dropout control");
 	else {
 	    if ( val1&0x100 ) {
-		if ( (val1&&0xff)==0xff )
+		if ( (val1&0xff)==0xff )
 		    scrprintf(&scr,"set dropout control for all ppem");
 		else
 		    scrprintf(&scr,"set dropout control for ppem <= %d", (val1&0xff));
 	    }
 	    if ( val1&0x800 ) {
-		if ( (val1&&0xff)==0xff )
+		if ( (val1&0xff)==0xff )
 		    scrprintf(&scr,"<I can't figure this combination out>");
 		else
 		    scrprintf(&scr,"unset dropout control unless ppem <= %d", (val1&0xff));

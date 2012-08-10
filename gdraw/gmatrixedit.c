@@ -35,8 +35,8 @@
 
 #define DEL_SPACE	6
 
-static GBox gmatrixedit_box = { /* Don't initialize here */ 0 };
-static GBox gmatrixedit_button_box = { /* Don't initialize here */ 0 };
+static GBox gmatrixedit_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox gmatrixedit_button_box = GBOX_EMPTY; /* Don't initialize here */
 static FontInstance *gmatrixedit_font = NULL, *gmatrixedit_titfont = NULL;
 static Color gmatrixedit_title_bg = 0x808080, gmatrixedit_title_fg = 0x000000, gmatrixedit_title_divider = 0xffffff;
 static Color gmatrixedit_rules = 0x000000;
@@ -45,15 +45,15 @@ static Color gmatrixedit_frozencol = 0xff0000,
 static int gmatrixedit_inited = false;
 
 static struct resed gmatrixedit_re[] = {
-    {N_("Title Background"), "TitleBG", rt_color, &gmatrixedit_title_bg, N_("Background color of column headers at the top of a matrix edit")},
-    {N_("Title Text Color"), "TitleFG", rt_color, &gmatrixedit_title_fg, N_("Text color of column headers at the top of a matrix edit")},
-    {N_("Title Divider Color"), "TitleDivider", rt_color, &gmatrixedit_title_divider, N_("Color of column dividers in the title section of a matrix edit")},
-    {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit")},
-    {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit")},
-    {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit")},
-    {N_("Active Background"), "ActiveBG", rt_color, &gmatrixedit_activebg, N_("Background color of the active entry in the main section of a matrix edit")},
-    {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit")},
-    NULL
+    {N_("Title Background"), "TitleBG", rt_color, &gmatrixedit_title_bg, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Title Text Color"), "TitleFG", rt_color, &gmatrixedit_title_fg, N_("Text color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Title Divider Color"), "TitleDivider", rt_color, &gmatrixedit_title_divider, N_("Color of column dividers in the title section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Rule Color"), "RuleCol", rt_color, &gmatrixedit_rules, N_("Color of column dividers in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Frozen Color"), "FrozenCol", rt_color, &gmatrixedit_frozencol, N_("Color of frozen (unchangeable) entries in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Active Color"), "ActiveCol", rt_color, &gmatrixedit_activecol, N_("Color of the active entry in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Active Background"), "ActiveBG", rt_color, &gmatrixedit_activebg, N_("Background color of the active entry in the main section of a matrix edit"), NULL, { 0 }, 0, 0 },
+    {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gmatrixedit_ri = {
     NULL, &ggadget_ri, NULL,NULL,
@@ -67,7 +67,12 @@ static GResInfo gmatrixedit_ri = {
     "Gdraw",
     false,
     omf_border_type|omf_border_width|omf_border_shape|omf_padding|
-	omf_main_background|omf_disabled_background
+	omf_main_background|omf_disabled_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GResInfo gmatrixedit2_ri = {
     NULL, &ggadget_ri, &gmatrixedit_ri,NULL,
@@ -79,7 +84,13 @@ static GResInfo gmatrixedit2_ri = {
     N_("Matrix Edit (sort of like a spreadsheet)"),
     "GMatrixEdit",
     "Gdraw",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void _GMatrixEdit_Init(void) {
@@ -828,7 +839,8 @@ struct gfuncs gmatrixedit_funcs = {
 
     GMatrixEdit_GetDesiredSize,
     GMatrixEdit_SetDesiredSize,
-    GMatrixEdit_FillsWindow
+    GMatrixEdit_FillsWindow,
+    NULL
 };
 
 static void GME_PositionEdit(GMatrixEdit *gme) {
@@ -2102,7 +2114,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     GME_RecalcFH(gme);
     {
-	static GBox small = { 0 };
+	static GBox small = GBOX_EMPTY;
 	static unichar_t nullstr[1] = { 0 };
 
 	small.main_background = gmatrixedit_activebg;

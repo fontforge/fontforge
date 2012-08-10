@@ -194,6 +194,7 @@ return;
     if ( woff==NULL ) {
 	fprintf( stderr, "Failed to create output file: %s\n", outname );
 	fclose(sfnt);
+	free(outname);
 return;
     }
     putlong(woff,CHR('w','O','F','F'));

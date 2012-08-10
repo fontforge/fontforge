@@ -5046,6 +5046,7 @@ return( 0 );
 		}
 	    }
 	}
+	closedir(dir);
     }
     SFDFixupBitmapRefs( bdf );
 return( 1 );
@@ -6966,7 +6967,7 @@ exit(1);
 	    int temp;
 	    getint(sfd,&temp);
 	    sf->texdata.type = temp;
-	    getint(sfd,(int16 *) &temp);
+	    getint(sfd, &temp);
 	    if ( sf->design_size==0 ) {
 	    	sf->design_size = (5*temp+(1<<18))>>19;
 	    }

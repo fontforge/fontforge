@@ -31,14 +31,14 @@
 #include "gkeysym.h"
 #include <math.h>
 
-static GBox radio_box = { /* Don't initialize here */ 0 };
-static GBox radio_on_box = { /* Don't initialize here */ 0 };
-static GBox radio_off_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_on_box = { /* Don't initialize here */ 0 };
-static GBox checkbox_off_box = { /* Don't initialize here */ 0 };
-static GBox visibility_on_box = { /* Don't initialize here */ 0 };
-static GBox visibility_off_box = { /* Don't initialize here */ 0 };
+static GBox radio_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox radio_on_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox radio_off_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox checkbox_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox checkbox_on_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox checkbox_off_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox visibility_on_box = GBOX_EMPTY; /* Don't initialize here */
+static GBox visibility_off_box = GBOX_EMPTY; /* Don't initialize here */
 static GResImage *radon, *radoff, *checkon, *checkoff, *raddison, *raddisoff, *checkdison, *checkdisoff;
 static GResImage *visibilityon, *visibilityoff, *visibilitydison, *visibilitydisoff;
 static FontInstance *checkbox_font = NULL;
@@ -47,19 +47,20 @@ static int gradio_inited = false;
 static GResInfo gradio_ri, gradioon_ri, gradiooff_ri;
 static GResInfo gcheckbox_ri, gcheckboxon_ri, gcheckboxoff_ri;
 static GTextInfo radio_lab[] = {
-	{ (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-	{ (unichar_t *) "Enabled 2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+    { (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled 2" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GGadgetCreateData radio_gcd[] = {
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[0],NULL,gg_visible}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[1],NULL,gg_visible|gg_cb_on}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[2],NULL,gg_visible|gg_enabled}},
-	{GRadioCreate, {{0},NULL,0,0,0,0,0,&radio_lab[3],NULL,gg_visible|gg_enabled|gg_cb_on}}
-    };
+    { GRadioCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &radio_lab[0], { NULL }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GRadioCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &radio_lab[1], { NULL }, gg_visible|gg_cb_on, NULL, NULL }, NULL, NULL },
+    { GRadioCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &radio_lab[2], { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL },
+    { GRadioCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &radio_lab[3], { NULL }, gg_visible|gg_enabled|gg_cb_on, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *rarray[] = { GCD_Glue, &radio_gcd[0], GCD_Glue, &radio_gcd[1], GCD_Glue, &radio_gcd[2], GCD_Glue, &radio_gcd[3], GCD_Glue, NULL, NULL };
 static GGadgetCreateData radiobox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) rarray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) rarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gradio_ri = {
     &gradioon_ri, &ggadget_ri,&gradioon_ri, &gradiooff_ri,
     &radio_box,
@@ -71,12 +72,17 @@ static GResInfo gradio_ri = {
     "GRadio",
     "Gdraw",
     false,
-    omf_border_type|omf_padding
+    omf_border_type|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static struct resed gradioon_re[] = {
-    {N_("Image"), "Image", rt_image, &radon, N_("Image used instead of the Radio On Mark")},
-    {N_("Disabled Image"), "DisabledImage", rt_image, &raddison, N_("Image used instead of the Radio On Mark (when the radio is disabled)")},
-    NULL
+    { N_("Image"), "Image", rt_image, &radon, N_("Image used instead of the Radio On Mark"), NULL, { 0 }, 0, 0 },
+    { N_("Disabled Image"), "DisabledImage", rt_image, &raddison, N_("Image used instead of the Radio On Mark (when the radio is disabled)"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gradioon_ri = {
     &gradiooff_ri, &ggadget_ri,&gradiooff_ri, &gradio_ri,
@@ -89,12 +95,17 @@ static GResInfo gradioon_ri = {
     "GRadioOn",
     "Gdraw",
     false,
-    omf_border_type|omf_border_shape|box_do_depressed_background
+    omf_border_type|omf_border_shape|box_do_depressed_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static struct resed gradiooff_re[] = {
-    {N_("Image"), "Image", rt_image, &radoff, N_("Image used instead of the Radio Off Mark")},
-    {N_("Disabled Image"), "DisabledImage", rt_image, &raddisoff, N_("Image used instead of the Radio Off Mark (when the radio is disabled)")},
-    NULL
+    { N_("Image"), "Image", rt_image, &radoff, N_("Image used instead of the Radio Off Mark"), NULL, { 0 }, 0, 0 },
+    { N_("Disabled Image"), "DisabledImage", rt_image, &raddisoff, N_("Image used instead of the Radio Off Mark (when the radio is disabled)"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gradiooff_ri = {
     &gcheckbox_ri, &ggadget_ri,&gradioon_ri, &gradio_ri,
@@ -107,20 +118,26 @@ static GResInfo gradiooff_ri = {
     "GRadioOff",
     "Gdraw",
     false,
-    omf_border_type|omf_border_shape|box_do_depressed_background
+    omf_border_type|omf_border_shape|box_do_depressed_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static GTextInfo checkbox_lab[] = {
-	{ (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
-	{ (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1}};
+    { (unichar_t *) "Disabled On", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Disabled Off", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Enabled" , NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' }
+};
 static GGadgetCreateData checkbox_gcd[] = {
-	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[0],NULL,gg_visible}},
-	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_cb_on}},
-	{GCheckBoxCreate, {{0},NULL,0,0,0,0,0,&checkbox_lab[1],NULL,gg_visible|gg_enabled}}
-    };
+    { GCheckBoxCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &checkbox_lab[0], { NULL }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GCheckBoxCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &checkbox_lab[1], { NULL }, gg_visible|gg_cb_on, NULL, NULL }, NULL, NULL },
+    { GCheckBoxCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, &checkbox_lab[1], { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+};
 static GGadgetCreateData *carray[] = { GCD_Glue, &checkbox_gcd[0], GCD_Glue, &checkbox_gcd[1], GCD_Glue, &checkbox_gcd[2], GCD_Glue, NULL, NULL };
 static GGadgetCreateData checkboxbox =
-	{GHVGroupCreate, {{2,2},NULL,0,0,0,0,0,NULL,(GTextInfo *) carray,gg_visible|gg_enabled}};
+    { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) carray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo gcheckbox_ri = {
     &gcheckboxon_ri, &ggadget_ri,&gcheckboxon_ri, &gcheckboxoff_ri,
     &checkbox_box,
@@ -132,12 +149,17 @@ static GResInfo gcheckbox_ri = {
     "GCheckBox",
     "Gdraw",
     false,
-    omf_border_type|omf_padding
+    omf_border_type|omf_padding,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static struct resed gcheckboxon_re[] = {
-    {N_("Image"), "Image", rt_image, &checkon, N_("Image used instead of the Radio On Mark")},
-    {N_("Disabled Image"), "DisabledImage", rt_image, &checkdison, N_("Image used instead of the Radio On Mark (when the radio is disabled)")},
-    NULL
+    {N_("Image"), "Image", rt_image, &checkon, N_("Image used instead of the Radio On Mark"), NULL, { 0 }, 0, 0 },
+    {N_("Disabled Image"), "DisabledImage", rt_image, &checkdison, N_("Image used instead of the Radio On Mark (when the radio is disabled)"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gcheckboxon_ri = {
     &gcheckboxoff_ri, &ggadget_ri,&gcheckboxoff_ri, &gcheckbox_ri,
@@ -150,12 +172,18 @@ static GResInfo gcheckboxon_ri = {
     "GCheckBoxOn",
     "Gdraw",
     false,
-    omf_border_type|omf_border_shape|box_do_depressed_background
+    omf_border_type|omf_border_shape|box_do_depressed_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+
 };
 static struct resed gcheckboxoff_re[] = {
-    {N_("Image"), "Image", rt_image, &checkoff, N_("Image used instead of the Check Box Off Mark")},
-    {N_("Disabled Image"), "DisabledImage", rt_image, &checkdisoff, N_("Image used instead of the Check Box Off Mark (when the radio is disabled)")},
-    NULL
+    {N_("Image"), "Image", rt_image, &checkoff, N_("Image used instead of the Check Box Off Mark"), NULL, { 0 }, 0, 0 },
+    {N_("Disabled Image"), "DisabledImage", rt_image, &checkdisoff, N_("Image used instead of the Check Box Off Mark (when the radio is disabled)"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
 };
 static GResInfo gcheckboxoff_ri = {
     NULL, &ggadget_ri,&gcheckboxon_ri, &gcheckbox_ri,
@@ -168,7 +196,12 @@ static GResInfo gcheckboxoff_ri = {
     "GCheckBoxOff",
     "Gdraw",
     false,
-    omf_border_type|omf_border_shape|box_do_depressed_background
+    omf_border_type|omf_border_shape|box_do_depressed_background,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GRadioChanged(GRadio *gr) {
@@ -585,7 +618,9 @@ struct gfuncs gradio_funcs = {
     NULL,
 
     GRadioGetDesiredSize,
-    _ggadget_setDesiredSize
+    _ggadget_setDesiredSize,
+    NULL,
+    NULL
 };
 
 static void GRadioInit() {

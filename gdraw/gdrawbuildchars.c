@@ -991,101 +991,101 @@ static struct gchr_transform trans_asciitilde[] = {
 };
 
 struct gchr_lookup _gdraw_chrlookup[95] = {
-    { 2, trans_space },	/*   */
-    { 1, trans_exclam },	/* ! */
-    { 1, trans_quotedbl },	/* " */
-    { 2, trans_numbersign },	/* # */
-    { 2, trans_dollar },	/* $ */
-    { 0 },			/* % */
-    { 0 },			/* & */
-    { 1, trans_quotesingle },	/* ' */
-    { 0 },			/* ( */
-    { 0 },			/* ) */
-    { 2, trans_asterisk },	/* * */
-    { 1, trans_plus },	/* + */
-    { 1, trans_comma },	/* , */
-    { 2, trans_hyphenminus },	/* - */
-    { 2, trans_period },	/* . */
-    { 1, trans_slash },	/* / */
-    { 1, trans_zero },	/* 0 */
-    { 0 },			/* 1 */
-    { 1, trans_two },	/* 2 */
-    { 0 },			/* 3 */
-    { 1, trans_four },	/* 4 */
-    { 1, trans_five },	/* 5 */
-    { 1, trans_six },	/* 6 */
-    { 1, trans_seven },	/* 7 */
-    { 0 },			/* 8 */
-    { 0 },			/* 9 */
-    { 1, trans_colon },	/* : */
-    { 1, trans_semicolon },	/* ; */
-    { 1, trans_less },	/* < */
-    { 1, trans_equal },	/* = */
-    { 2, trans_greater },	/* > */
-    { 1, trans_question },	/* ? */
-    { 1, trans_at },	/* @ */
-    { 33, trans_A },	/* A */
-    { 4, trans_B },	/* B */
-    { 8, trans_C },	/* C */
-    { 8, trans_D },	/* D */
-    { 28, trans_E },	/* E */
-    { 2, trans_F },	/* F */
-    { 9, trans_G },	/* G */
-    { 12, trans_H },	/* H */
-    { 24, trans_I },	/* I */
-    { 2, trans_J },	/* J */
-    { 6, trans_K },	/* K */
-    { 10, trans_L },	/* L */
-    { 4, trans_M },	/* M */
-    { 9, trans_N },	/* N */
-    { 37, trans_O },	/* O */
-    { 4, trans_P },	/* P */
-    { 1, trans_Q },	/* Q */
-    { 10, trans_R },	/* R */
-    { 10, trans_S },	/* S */
-    { 8, trans_T },	/* T */
-    { 37, trans_U },	/* U */
-    { 3, trans_V },	/* V */
-    { 10, trans_W },	/* W */
-    { 3, trans_X },	/* X */
-    { 9, trans_Y },	/* Y */
-    { 8, trans_Z },	/* Z */
-    { 1, trans_bracketleft },	/* [ */
-    { 2, trans_backslash },	/* \ */
-    { 1, trans_bracketright },	/* ] */
-    { 1, trans_asciicircum },	/* ^ */
-    { 2, trans_underscore },	/* _ */
-    { 1, trans_grave },	/* ` */
-    { 36, trans_a },	/* a */
-    { 5, trans_b },	/* b */
-    { 8, trans_c },	/* c */
-    { 8, trans_d },	/* d */
-    { 29, trans_e },	/* e */
-    { 3, trans_f },	/* f */
-    { 10, trans_g },	/* g */
-    { 15, trans_h },	/* h */
-    { 30, trans_i },	/* i */
-    { 3, trans_j },	/* j */
-    { 6, trans_k },	/* k */
-    { 10, trans_l },	/* l */
-    { 5, trans_m },	/* m */
-    { 10, trans_n },	/* n */
-    { 37, trans_o },	/* o */
-    { 4, trans_p },	/* p */
-    { 1, trans_q },	/* q */
-    { 11, trans_r },	/* r */
-    { 11, trans_s },	/* s */
-    { 10, trans_t },	/* t */
-    { 43, trans_u },	/* u */
-    { 3, trans_v },	/* v */
-    { 11, trans_w },	/* w */
-    { 3, trans_x },	/* x */
-    { 10, trans_y },	/* y */
-    { 9, trans_z },	/* z */
-    { 1, trans_braceleft },	/* { */
-    { 2, trans_bar },	/* | */
-    { 1, trans_braceright },	/* } */
-    { 1, trans_asciitilde },	/* ~ */
+    { 2, trans_space },         /*   */
+    { 1, trans_exclam },        /* ! */
+    { 1, trans_quotedbl },      /* " */
+    { 2, trans_numbersign },    /* # */
+    { 2, trans_dollar },        /* $ */
+    { 0, NULL },                /* % */
+    { 0, NULL },                /* & */
+    { 1, trans_quotesingle },   /* ' */
+    { 0, NULL },                /* ( */
+    { 0, NULL },                /* ) */
+    { 2, trans_asterisk },      /* * */
+    { 1, trans_plus },          /* + */
+    { 1, trans_comma },         /* , */
+    { 2, trans_hyphenminus },   /* - */
+    { 2, trans_period },        /* . */
+    { 1, trans_slash },         /* / */
+    { 1, trans_zero },          /* 0 */
+    { 0, NULL },                /* 1 */
+    { 1, trans_two },           /* 2 */
+    { 0, NULL },                /* 3 */
+    { 1, trans_four },          /* 4 */
+    { 1, trans_five },          /* 5 */
+    { 1, trans_six },           /* 6 */
+    { 1, trans_seven },         /* 7 */
+    { 0, NULL },                /* 8 */
+    { 0, NULL },                /* 9 */
+    { 1, trans_colon },         /* : */
+    { 1, trans_semicolon },     /* ; */
+    { 1, trans_less },          /* < */
+    { 1, trans_equal },         /* = */
+    { 2, trans_greater },       /* > */
+    { 1, trans_question },      /* ? */
+    { 1, trans_at },            /* @ */
+    { 33, trans_A },            /* A */
+    { 4, trans_B },             /* B */
+    { 8, trans_C },             /* C */
+    { 8, trans_D },             /* D */
+    { 28, trans_E },            /* E */
+    { 2, trans_F },             /* F */
+    { 9, trans_G },             /* G */
+    { 12, trans_H },            /* H */
+    { 24, trans_I },            /* I */
+    { 2, trans_J },             /* J */
+    { 6, trans_K },             /* K */
+    { 10, trans_L },            /* L */
+    { 4, trans_M },             /* M */
+    { 9, trans_N },             /* N */
+    { 37, trans_O },            /* O */
+    { 4, trans_P },             /* P */
+    { 1, trans_Q },             /* Q */
+    { 10, trans_R },            /* R */
+    { 10, trans_S },            /* S */
+    { 8, trans_T },             /* T */
+    { 37, trans_U },            /* U */
+    { 3, trans_V },             /* V */
+    { 10, trans_W },            /* W */
+    { 3, trans_X },             /* X */
+    { 9, trans_Y },             /* Y */
+    { 8, trans_Z },             /* Z */
+    { 1, trans_bracketleft },   /* [ */
+    { 2, trans_backslash },     /* \ */
+    { 1, trans_bracketright },  /* ] */
+    { 1, trans_asciicircum },   /* ^ */
+    { 2, trans_underscore },    /* _ */
+    { 1, trans_grave },         /* ` */
+    { 36, trans_a },            /* a */
+    { 5, trans_b },             /* b */
+    { 8, trans_c } ,            /* c */
+    { 8, trans_d },             /* d */
+    { 29, trans_e },            /* e */
+    { 3, trans_f },             /* f */
+    { 10, trans_g } ,           /* g */
+    { 15, trans_h },            /* h */
+    { 30, trans_i },            /* i */
+    { 3, trans_j },             /* j */
+    { 6, trans_k },             /* k */
+    { 10, trans_l },            /* l */
+    { 5, trans_m },             /* m */
+    { 10, trans_n },            /* n */
+    { 37, trans_o },            /* o */
+    { 4, trans_p },             /* p */
+    { 1, trans_q },             /* q */
+    { 11, trans_r },            /* r */
+    { 11, trans_s },            /* s */
+    { 10, trans_t },            /* t */
+    { 43, trans_u },            /* u */
+    { 3, trans_v },             /* v */
+    { 11, trans_w },            /* w */
+    { 3, trans_x },             /* x */
+    { 10, trans_y },            /* y */
+    { 9, trans_z },             /* z */
+    { 1, trans_braceleft },     /* { */
+    { 2, trans_bar },           /* | */
+    { 1, trans_braceright },    /* } */
+    { 1, trans_asciitilde },    /* ~ */
 };
 
 struct gchr_accents _gdraw_accents[] = {
@@ -1114,7 +1114,7 @@ struct gchr_accents _gdraw_accents[] = {
     { 0x030b, 0x0200000 },
     { 0x030b, 0x0400000 },
     { 0x030b, 0x0800000 },
-    { 0 },
+    { 0, 0 },
 };
 
 uint32 _gdraw_chrs_any=ANY, _gdraw_chrs_ctlmask=GREEK, _gdraw_chrs_metamask=0;

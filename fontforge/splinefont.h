@@ -286,7 +286,7 @@ typedef struct italicinfo {
     /* u449 */
     /* u44a */
 
-/* This half of the structure gets filled in later */
+/* This half of the structure gets filled in later - see ITALICINFO_REMAINDER */
     double tan_ia;
     double x_height;
     double pq_depth;
@@ -300,6 +300,9 @@ typedef struct italicinfo {
     struct splinepoint *ff_start1, *ff_end1, *ff_start2, *ff_end2;
     double f_height, ff_height;
 } ItalicInfo;
+
+#define ITALICINFO_REMAINDER 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0
+
 
 typedef struct bluedata {
     real xheight, xheighttop;		/* height of "x" and "o" (u,v,w,x,y,z) */
@@ -1958,10 +1961,13 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		};
 
 struct compressors { char *ext, *decomp, *recomp; };
+#define COMPRESSORS_EMPTY { NULL, NULL, NULL }
+
 struct archivers {
     char *ext, *unarchive, *archive, *listargs, *extractargs, *appendargs;
     enum archive_list_style { ars_tar, ars_zip } ars;
 };
+#define ARCHIVERS_EMPTY { NULL, NULL, NULL, NULL, NULL, NULL, 0 }
 
 struct fontdict;
 struct pschars;
