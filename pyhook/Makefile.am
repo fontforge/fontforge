@@ -13,3 +13,5 @@ fontforge_la_CPPFLAGS = -DLIBDIR='"$(libdir)"' $(PYTHON_CFLAGS)	\
 	$(LIBFONTFORGE_CFLAGS)
 fontforge_la_LDFLAGS = -module -shared -avoid-version
 fontforge_la_LIBADD = $(LIBFONTFORGE_LIBS)
+
+EXTRA_DIST = LICENSE
