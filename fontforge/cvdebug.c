@@ -78,8 +78,8 @@ static int debuggercolsinited = false;
 
 static void DebugColInit( void ) {
     GResStruct debugcolors[] = {
-	{ "Background", rt_color, &rasterbackcol },
-	{ NULL }
+	{ "Background", rt_color, &rasterbackcol, NULL, 0 },
+	GRESSTRUCT_EMPTY
     };
     if ( debuggercolsinited )
 return;
@@ -903,7 +903,7 @@ static GMenuItem popupwindowlist[] = {
     { { (unichar_t *) N_("Cvt"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Cvt },
     { { (unichar_t *) N_("Raster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Raster },
     { { (unichar_t *) N_("Gloss"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 0, 0, '\0' }, '\0', 0, NULL, NULL, DVMenuCreate, MID_Gloss },
-    { NULL }
+    GMENUITEM_EMPTY
 };
 
 static int DV_WindowMenu(GGadget *g, GEvent *e) {
@@ -1023,6 +1023,9 @@ return( DVChar(dv,event));
       case et_mouseup: case et_mousedown:
       case et_mousemove:
 	GGadgetEndPopup();
+      break;
+      default:
+        /* */
       break;
     }
 return( true );
@@ -1967,8 +1970,9 @@ return( DVChar(dv,event));
 	}
       break;
       case et_resize:
-	if ( event->u.resize.sized )
+	if ( event->u.resize.sized ) {
 	    /*DVResize(dv,event)*/;
+	}
       break;
       case et_destroy:
 	dv->dv = NULL;

@@ -202,8 +202,11 @@ static long parsecol(char *start, char *end) {
 	    sscanf(start+1,"%4x%4x%4x",&r,&g,&b);
 	    ret = ((r>>8)<<16) | ((g>>8)<<8) | (b>>8);
 	}
-	if ( *start=='%' )
-	    /* How do I translate from HSB to RGB???? */;
+	if ( *start=='%' ) {
+            /* TODO! */
+	    /* How do I translate from HSB to RGB???? */
+	    ;
+	}
     } else if (( ret=LookupXColorName(start))!=-1 ) {
     } else if ( strcmp(start,"white")==0 ) {
 	ret = COLOR_CREATE(255,255,255);

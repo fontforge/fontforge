@@ -37,7 +37,10 @@ int default_font_filter_index=0;
 struct openfilefilters *user_font_filters = NULL;
 
 struct openfilefilters def_font_filters[] = {
-	N_("All Fonts"), "*.{"
+    {
+        N_("All Fonts"),
+        /* any these files... */
+        "*.{"
 	   "pfa,"
 	   "pfb,"
 	   "pt3,"
@@ -74,10 +77,13 @@ struct openfilefilters def_font_filters[] = {
 /* I used to say "*gf" but that also matched xgf (xgridfit) files -- which ff can't open */
 	   "[0-9]*gf,"
 	   "pdb"
-	   "}"
-/* With any of these methods of compression */
-	     "{.gz,.Z,.bz2,.lzma,}",
-	N_("Outline Fonts"), "*.{"
+        "}"
+        /* With any of these methods of compression */
+	"{.gz,.Z,.bz2,.lzma,}"
+    },
+    {
+	N_("Outline Fonts"),
+	"*.{"
 	   "pfa,"
 	   "pfb,"
 	   "pt3,"
@@ -104,9 +110,12 @@ struct openfilefilters def_font_filters[] = {
 	   "dfont,"
 	   "mf,"
 	   "ik"
-	   "}"
-	     "{.gz,.Z,.bz2,.lzma,}",
-	N_("Bitmap Fonts"), "*.{"
+	"}"
+	"{.gz,.Z,.bz2,.lzma,}"
+    },
+    {
+	N_("Bitmap Fonts"),
+	"*.{"
 	   "bdf,"
 	   "otb,"
 	   "bin,"
@@ -118,30 +127,32 @@ struct openfilefilters def_font_filters[] = {
 	   "*pk,"
 	   "*gf,"
 	   "pdb"
-	   "}"
-	     "{.gz,.Z,.bz2,.lzma,}",
-	NU_("ΤεΧ Bitmap Fonts"), "*{pk,gf}",
-	N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,.lzma,}",
-	N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,.lzma,}",
-	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}",
+	"}"
+	"{.gz,.Z,.bz2,.lzma,}"
+    },
+    { NU_("ΤεΧ Bitmap Fonts"), "*{pk,gf}" },
+    { N_("PostScript"), "*.{pfa,pfb,t42,otf,cef,cff,gai,pf3,pt3,gsf,cid}{.gz,.Z,.bz,.bz2,.lzma,}" },
+    { N_("TrueType"), "*.{ttf,t42,ttc}{.gz,.Z,.bz,.bz2,.lzma,}" },
+    { N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}" },
 #ifdef _NO_LIBPNG
-	N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}",
+    { N_("OpenType"), "*.{ttf,otf}{.gz,.Z,.bz,.bz2,.lzma,}" },
 #else
-	N_("OpenType"), "*.{ttf,otf,woff}{.gz,.Z,.bz,.bz2,.lzma,}",
+    { N_("OpenType"), "*.{ttf,otf,woff}{.gz,.Z,.bz,.bz2,.lzma,}" },
 #endif
-	N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}",
-	N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}",
-	N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}",
+    { N_("Type1"), "*.{pfa,pfb,gsf,cid}{.gz,.Z,.bz2,.lzma,}" },
+    { N_("Type2"), "*.{otf,cef,cff,gai}{.gz,.Z,.bz2,.lzma,}" },
+    { N_("Type3"), "*.{pf3,pt3}{.gz,.Z,.bz2,.lzma,}" },
 #ifndef _NO_LIBXML
-	 N_("SVG"), "*.svg{.gz,.Z,.bz2,.lzma,}",
+    { N_("SVG"), "*.svg{.gz,.Z,.bz2,.lzma,}" },
 #endif
-	 N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,.lzma,}",
-	 N_("Backup SFD"), "*.sfd~",
-	 N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,.lzma,}",
-	 "-", NULL,
-	 N_("Archives"), "*.{zip,tgz,tbz,tbz2,tar.gz,tar.bz,tar.bz2,tar}",
-	 N_("All Files"), "*",
-	 NULL };
+    { N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,.lzma,}" },
+    { N_("Backup SFD"), "*.sfd~" },
+    { N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,.lzma,}" },
+    { "-", NULL },
+    { N_("Archives"), "*.{zip,tgz,tbz,tbz2,tar.gz,tar.bz,tar.bz2,tar}" },
+    { N_("All Files"), "*" },
+    { NULL, NULL }
+};
 
 static GTextInfo **StandardFilters(void) {
     int k, cnt, i;
@@ -281,7 +292,11 @@ static void FilterDlg(void) {
 	2, cols,
 	0, NULL,
 	NULL,
-	filter_candelete
+	filter_candelete,
+	NULL,
+	NULL,
+	NULL,
+	NULL
     };
     struct matrix_data *md;
     int k, cnt, i, ptwidth;

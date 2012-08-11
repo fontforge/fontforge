@@ -1033,10 +1033,12 @@ static int TextWidth2(struct font_data *fd,GChar2b *transbuf,int len) {
     if ( per_char!=NULL ) {
 	ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	while ( tpt<end ) {
-	    if ( ch1>=0 && ch1<tot )
+	    if ( ch1>=0 && ch1<tot ) {
 		width += per_char[ch1].width;
-	    else
-		/*width += info->max_bounds.width*/;
+	    } else {
+		/*width += info->max_bounds.width*/
+		;
+	    }
 	    ++tpt;
 	    ch1 = (tpt->byte1-offset1)*row+tpt->byte2-offset2;
 	}
@@ -1684,7 +1686,7 @@ return( TextWidth2((lcstate>0)?sc:fd,transbuf2,olen)+(olen-1)*letter_spacing );
 return( dist-letter_spacing );
 }
 
-static FontMods dummyfontmods = { 0 };
+static FontMods dummyfontmods = FONTMODS_EMPTY;
 static int32 _GDraw_ScreenDrawToImage(GWindow gw, struct font_data *fd, struct font_data *sc,
 	int enc, int32 x, int32 y,
 	unichar_t *text, unichar_t *end, FontMods *mods, Color col,
