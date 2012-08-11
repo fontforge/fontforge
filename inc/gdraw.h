@@ -51,6 +51,9 @@ typedef struct {
     enum charset charset;
 } FontMods;
 
+#define FONTMODS_EMPTY { 0, 0, 0, 0, 0, 0 }
+
+
 typedef struct gbidata {
     unichar_t *text;
     uint8 *level;

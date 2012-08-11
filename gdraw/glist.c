@@ -1119,8 +1119,10 @@ static void GListPopupFigurePos(GGadget *owner,GTextInfo **ti,GRect *pos) {
 		pt.x += owner->r.width+3;
 	    else if ( pt.x-width-3>=0 )
 		pt.x -= width+3;
-	    else
-		/* But there doesn't seem much we can do about it if we get here */;
+	    else {
+		/* But there doesn't seem much we can do about it if we get here */
+		;
+            }
 	}
     }
     pos->y = pt.y;

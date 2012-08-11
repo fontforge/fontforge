@@ -59,7 +59,7 @@ typedef struct clut {
     Color clut[256];
 } GClut;
 
-#define CLUT_CLUT_EMPTY \
+#define GCLUT_CLUT_EMPTY \
 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \

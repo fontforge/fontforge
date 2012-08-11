@@ -375,24 +375,25 @@ return( NULL );
 	if ( !temp.has_2byte && !good[033]/* escape */ ) {
 	    if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"JP3")!=NULL &&
-		    TryEscape( &temp,"\33$(O" ))
+		    TryEscape( &temp,"\33$(O" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"JP2")!=NULL &&
-		    TryEscape( &temp,"\33$(D" ))
+		    TryEscape( &temp,"\33$(D" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"JP")!=NULL &&
-		    TryEscape( &temp,"\33$B" ))
+		    TryEscape( &temp,"\33$B" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"KR")!=NULL &&
-		    TryEscape( &temp,"\33$)C\16" ))
+		    TryEscape( &temp,"\33$)C\16" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"CN")!=NULL &&
-		    TryEscape( &temp,"\33$)A\16" ))
+		    TryEscape( &temp,"\33$)A\16" )) {
 		;
+	    }
 	}
     }
     if ( !temp.has_1byte && !temp.has_2byte )

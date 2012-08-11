@@ -1014,8 +1014,10 @@ static int inschr_e_h(GWindow gw, GEvent *event) {
 			    cid==INSCHR_Unicode?d_unicode:
 				    d_kuten);
 	} else if ( event->u.control.subtype == et_textchanged ) {
-	    if ( !InsChrFigureShow())
-		/*GDrawBeep(NULL)*/;
+	    if ( !InsChrFigureShow()) {
+		/*GDrawBeep(NULL)*/
+		;
+            }
 	} else if ( event->u.control.subtype == et_listselected ) {
 	    InsChrCharset();
 	}

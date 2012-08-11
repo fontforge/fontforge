@@ -472,8 +472,10 @@ void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) 
 	img->bb.minx = img->xoff; img->bb.maxy = img->yoff;
 	img->bb.maxx = img->xoff + GImageGetWidth(img->image)*img->xscale;
 	img->bb.miny = img->yoff - GImageGetHeight(img->image)*img->yscale;
-    } else
-	/* Don't support rotating, flipping or skewing images */;
+    } else {
+	/* Don't support rotating, flipping or skewing images */
+	;
+    }
     SCOutOfDateBackground(sc);
 }
 

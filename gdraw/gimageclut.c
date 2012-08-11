@@ -886,11 +886,11 @@ void GClut_RevCMapFree(RevCMap *rev) {
 }
 
 int GImageSameClut(GClut *clut,GClut *nclut) {
-    static GClut dummy = { 2, true, COLOR_UNKNOWN,
-	COLOR_CREATE(0,0,0),
-	COLOR_CREATE(0xff,0xff,0xff)
-    };
+    static GClut dummy = { 2, true, COLOR_UNKNOWN, GCLUT_CLUT_EMPTY };
     int i;
+    
+    dummy.clut[0] = COLOR_CREATE(0, 0, 0);
+    dummy.clut[1] = COLOR_CREATE(0xff, 0xff, 0xff);
 
     if ( clut==nclut )
 return( true );
@@ -945,7 +945,8 @@ static struct { char *name; long value; } predefn[] = {
     { "teal", 0x008080 },
     { "fuchsia", 0xff0080 },
     { "silver", 0xcccccc },
-    { NULL }};
+    { NULL, 0 }
+};
 
 Color _GImage_ColourFName(char *name) {
     int i;
