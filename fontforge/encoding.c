@@ -541,22 +541,17 @@ return;
     /* # is a comment character (to eol) */
 static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     char buffer[200];
-    int32 encs[1024];
+    int32 encs[0x10000];
     int enc, unienc, max, i;
     Encoding *item;
 
-    for ( i=0; i<1024; ++i )
-	encs[i] = 0;
-    for ( i=0; i<32; ++i )
-	encs[i] = i;
-    for ( i=127; i<0xa0; ++i )
-	encs[i] = i;
+    memset(encs, 0, sizeof(encs));
     max = -1;
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( ishexdigit(buffer[0]) ) {
 	    if ( sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2 &&
-		    enc<1024 && enc>=0 ) {
+		    enc<0x10000 && enc>=0 ) {
 		encs[enc] = unienc;
 		if ( enc>max ) max = enc;
 	    }
