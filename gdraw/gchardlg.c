@@ -75,7 +75,10 @@ static struct inschr {
     GTimer *flash_time;
     GFont *font;
     GFont *smallfont;
-} inschr = { NULL, EOF, em_iso8859_1, 0, d_hex };
+} inschr = {
+     NULL, 0, 0, 0, 0, EOF, em_iso8859_1, 0, d_hex,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL
+};
 
 static struct unicode_subranges { unichar_t first; int len; char *name; } unicode_ranges[] = {
 	{ 0x100, 0x80, "Latin Extended A" },
