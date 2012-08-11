@@ -38,6 +38,7 @@ fi
 if test x"${i_do_have_python_scripting}" != xyes; then
    AC_DEFINE([_NO_PYTHON],1,[Define if not using Python.])
 fi
+AM_CONDITIONAL([PYTHON_SCRIPTING],[test x"${i_do_have_python_scripting}" = xyes])
 ])
 
 

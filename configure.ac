@@ -347,6 +347,7 @@ AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
 AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([po/mackeys/Makefile])
 AC_CONFIG_FILES([htdocs/Makefile])
+AC_CONFIG_FILES([pycontrib/Makefile])
 
 dnl GNUmakefiles that act as wrappers around portable makefiles,
 dnl or, in the case of GNUstep, are the primary makefiles.
