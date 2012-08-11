@@ -46,10 +46,11 @@ dnl --------------------------------------
 AC_DEFUN([FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION],
 [
 AC_ARG_ENABLE([python-extension],
-        [AS_HELP_STRING([--disable-python-extension],
-                        [do not build the Python extension modules "psMat" and "fontforge"])],
-        [i_do_have_python_extension="${enableval}"],
-        [i_do_have_python_extension=yes])
+         [AS_HELP_STRING([--disable-python-extension],
+                         [do not build the Python extension modules "psMat" and "fontforge",
+                          even if they were included in this source distribution])],
+         [i_do_have_python_extension="${enableval}"],
+         [i_do_have_python_extension=yes])
 ])
 
 

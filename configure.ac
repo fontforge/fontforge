@@ -62,6 +62,7 @@ AM_CONDITIONAL([NATIVE_SCRIPTING],[test x"${i_do_have_native_scripting}" = xyes]
 
 FONTFORGE_ARG_DISABLE_PYTHON_SCRIPTING
 FONTFORGE_ARG_DISABLE_PYTHON_EXTENSION
+test -d "${srcdir}/pyhook" || i_do_have_python_extension="not included in this source distribution"
 
 AC_ARG_ENABLE([freetype-debugger],
         [AS_HELP_STRING([--enable-freetype-debugger[[=DIR]]],
