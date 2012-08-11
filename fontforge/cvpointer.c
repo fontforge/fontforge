@@ -84,7 +84,7 @@ int CVAnySelPoints(CharView *cv) {
 		if ( SPIRO_SELECTED(&spl->spiros[i]))
 return( true );
 	} else {
-	    if ( spl->first->selected );
+	    if ( spl->first->selected )
 return( true );
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
