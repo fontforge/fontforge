@@ -1255,7 +1255,7 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
 			anycp = SpiroClosest(base,anycp,cp);
 		    }
 		} else {
-		    if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
+		    if ( RealNear(cp->x,base->x) && RealNear(cp->y,base->y)) {
 			SPIRO_SELECT(cp);
 			anycp = SpiroClosest(base,anycp,cp);
       goto cpdone;
