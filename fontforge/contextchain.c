@@ -1530,6 +1530,8 @@ static unichar_t **CCD_ClassListCompletion(GGadget *t,int from_tab) {
     int cid;
     struct matrix_data *classnames;
 
+    section = 0;
+
     pt = spt = basept = (unichar_t *) _GGadgetGetTitle(t);
     if ( pt==NULL || *pt=='\0' )
 return( NULL );
