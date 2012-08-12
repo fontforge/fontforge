@@ -1,0 +1,6 @@
+#!@abs_top_builddir@/fontforge/fontforge
+#Needs: fonts/LucidaGrande.ttc
+
+#Test the fontforge module (but not its types)
+import os, fontforge;
+font = fontforge.open(os.path.join("@abs_srcdir@", "fonts", "LucidaGrande.ttc"))
