@@ -224,7 +224,7 @@ static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
     struct gcol clut[256];
     int i,j,end, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    unsigned char *pt, *ipt, *mpt;
+    unsigned char *pt, *ipt;
     short *g_d;
     register int gd;
     struct gcol *pos;
@@ -257,9 +257,9 @@ static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
 		*g_d++ = gd = (gd - 3*255)/2;
 	    }
 	    if ( gdisp->gg.img->bitmap_bit_order == MSBFirst ) {
-		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt; ++mpt;};
+		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt;};
 	    } else {
-		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt; ++mpt;};
+		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt;};
 	    }
 	}
     }
@@ -270,7 +270,7 @@ static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
     int i,j,end, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     uint32 *pt;
-    uint8 *ipt, *mpt;
+    uint8 *ipt;
     short *g_d;
     register int gd;
     int bit;
@@ -301,9 +301,9 @@ static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
 		*g_d++ = gd = (gd - 3*255)/2;
 	    }
 	    if ( gdisp->gg.img->bitmap_bit_order == MSBFirst ) {
-		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt; ++mpt;};
+		if (( bit>>=1 )==0 ) {bit=0x80; ++ipt;};
 	    } else {
-		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt; ++mpt;};
+		if (( bit<<=1 )==256 ) {bit=0x1; ++ipt;};
 	    }
 	}
     }
