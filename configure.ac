@@ -5,6 +5,7 @@ AC_PREREQ([2.68])
 AC_INIT([fontforge],[9999-experimental],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_TESTDIR([tests],[tests:fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
@@ -348,6 +349,7 @@ AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([po/mackeys/Makefile])
 AC_CONFIG_FILES([htdocs/Makefile])
 AC_CONFIG_FILES([pycontrib/Makefile])
+AC_CONFIG_FILES([tests/Makefile])
 
 dnl GNUmakefiles that act as wrappers around portable makefiles,
 dnl or, in the case of GNUstep, are the primary makefiles.
@@ -373,6 +375,8 @@ AC_CONFIG_FILES([libfontforgeexe.pc])
 
 #AC_CONFIG_FILES([gtkui/Makefile])
 #AC_CONFIG_FILES([plugins/Makefile])
+
+FONTFORGE_CONFIG_TESTSUITE
 
 #--------------------------------------------------------------------------
 #
