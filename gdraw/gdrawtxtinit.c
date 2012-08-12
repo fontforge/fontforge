@@ -28,7 +28,7 @@
 #include "utype.h"
 #include "ustring.h"
 
-static enum font_style default_type=ft_serif;
+static enum font_type default_type=ft_serif;
 
 struct fontabbrev _gdraw_fontabbrev[] = {
     { "times", ft_serif, 0, 0, 0, 0, NULL },
