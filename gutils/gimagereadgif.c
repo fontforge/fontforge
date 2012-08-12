@@ -112,7 +112,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 	if ( si->ExtensionBlocks[i].Function==0xf9 &&
 		si->ExtensionBlocks[i].ByteCount>=4 ) {
 	    base->delay = (si->ExtensionBlocks[i].Bytes[2]<<8) |
-		    (si->ExtensionBlocks[i].Bytes[2]&&0xff);
+		    (si->ExtensionBlocks[i].Bytes[2]&0xff);
 	    if ( si->ExtensionBlocks[i].Bytes[0]&1 ) {
 		base->trans = (unsigned char) si->ExtensionBlocks[i].Bytes[3];
 		if ( base->clut!=NULL )
