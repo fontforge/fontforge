@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!/usr/local/bin/fontforge
 #Test the math table
 
 import fontforge;

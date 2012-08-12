@@ -1,10 +1,10 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!/usr/local/bin/fontforge
 #Needs: fonts/ayn+meem.init.svg
 
 # At one point splinestroke failed if the first spline on a contour had a length of 0
 
-import os, fontforge;
+import fontforge;
 
 font=fontforge.font();
 a = font.createChar(65);
-a.importOutlines(os.path.join("@abs_srcdir@", "fonts", "ayn+meem.init.svg"));
+a.importOutlines("fonts/ayn+meem.init.svg");

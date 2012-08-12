@@ -1,9 +1,9 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!/usr/local/bin/fontforge
 #Needs: fonts/AddExtremaTest2.sfd
 
-import os, fontforge;
+import fontforge;
 
-font=fontforge.open(os.path.join("@abs_srcdir@", "fonts", "AddExtremaTest2.sfd"));
+font=fontforge.open("fonts/AddExtremaTest2.sfd");
 font.selection.all();
 
 for g in font.selection.byGlyphs :

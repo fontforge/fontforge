@@ -1,8 +1,8 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!/usr/local/bin/fontforge
 #Needs: fonts/Ambrosia.sfd
 
 #Test the fontforge module (but not its types)
-import os, fontforge;
+import fontforge;
 
 foo = fontforge.getPrefs("DetectDiagonalStems")
 fontforge.setPrefs("DetectDiagonalStems",~foo)
@@ -27,8 +27,6 @@ if ( (fontforge.unicodeFromName("A")!=65) | (fontforge.unicodeFromName("uni030D"
 
 foo = fontforge.version()
 
-ambrosia = os.path.join("@abs_srcdir@", "fonts", "Ambrosia.sfd")
-
 fonts = fontforge.fonts()
 if ( len(fonts)!=0 ) :
   raise ValueError, "Wrong return from fontforge.fonts"
@@ -36,10 +34,10 @@ if ( len(fonts)!=0 ) :
 fontforge.activeFont()
 fontforge.activeGlyph()
 fontforge.activeLayer()
-fontnames= fontforge.fontsInFile(ambrosia)
+fontnames= fontforge.fontsInFile("fonts/Ambrosia.sfd")
 if ( len(fontnames)!=1 ) | (fontnames[0]!='Ambrosia' ):
   raise ValueError, "Wrong return from fontforge.fontsInFile"
-font = fontforge.open(ambrosia)
+font = fontforge.open("fonts/Ambrosia.sfd")
 morefonts = fontforge.fonts()
 if ( len(morefonts)!=1 ) :
   raise ValueError, "Wrong return from fontforge.fonts"

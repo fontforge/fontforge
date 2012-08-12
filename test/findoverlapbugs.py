@@ -1,4 +1,4 @@
-#!@abs_top_builddir@/fontforge/fontforge
+#!/usr/local/bin/fontforge
 import sys;
 import fontforge;
 
