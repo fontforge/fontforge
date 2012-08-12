@@ -3436,8 +3436,14 @@ return( head );
 	}
 	if ( encname!=NULL ) {
 	    tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf));
-	    if ( tok==pt_def )
-		/* Good */;
+	    if ( tok==pt_def ) {
+		/* Good */
+		;
+	    } else {
+        	/* TODO! */
+        	/* I guess it's not good... */
+        	;
+	    }
 	}
 	if ( max!=-1 ) {
 	    if ( ++max<256 ) max = 256;

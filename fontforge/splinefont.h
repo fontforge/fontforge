@@ -2387,6 +2387,8 @@ struct std_bdf_props {
     int type;
     int defaultable;
 };
+#define STD_BDF_PROPS_EMPTY { NULL, 0, 0 }
+
 extern void XLFD_GetComponents(char *xlfd,struct xlfd_components *comp);
 extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_components *comp);
 /* Two lines intersect in at most 1 point */

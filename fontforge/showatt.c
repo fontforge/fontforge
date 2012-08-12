@@ -2370,8 +2370,8 @@ static void AttSaveM(GWindow gw, GMenuItem *mi,GEvent *e) {
 }
 
 static GMenuItem att_popuplist[] = {
-    { { (unichar_t *) N_("Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, AttSaveM },
-    { NULL }
+    { { (unichar_t *) N_("Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'S' }, 'S', ksm_control, NULL, NULL, AttSaveM, 0 },
+    GMENUITEM_EMPTY
 };
 
 static FontView *FVVerify(FontView *fv) {

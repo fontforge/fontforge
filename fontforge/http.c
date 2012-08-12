@@ -759,7 +759,7 @@ return( false );
     }
     ChangeLine2_8("Preparing to transmit...");
     formdata = tmpfile();
-    /* formdata = fopen("foobar","w+");	/* !!!! DEBUG */
+    /* formdata = fopen("foobar","w+");	*//* !!!! DEBUG */
     sprintf( boundary, "-------AaB03x-------%X-------", rand());
     fontfilename = strrchr(oflib->pathspec,'/');
     if ( fontfilename==NULL ) fontfilename = oflib->pathspec;
@@ -855,7 +855,7 @@ return( false );
     ChangeLine2_8("Transmitting font...");
 #if 0
     findHTTPhost(&addr, "powerbook",-1);	/* Debug!!!! */
-	/*addr.sin_port = htons(8080);		/* Debug!!!! */
+	/*addr.sin_port = htons(8080); */	/* Debug!!!! */
 #endif
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
@@ -866,7 +866,7 @@ return( false );
 return( false );
     }
     sprintf( databuf,"POST /media/submit/font HTTP/1.1\r\n"
-    /* sprintf( databuf,"POST /cgi-bin/echo HTTP/1.1\r\n"		/* Debug!!!! */
+    /* sprintf( databuf,"POST /cgi-bin/echo HTTP/1.1\r\n" */	/* Debug!!!! */
 	"Host: www.openfontlibrary.org\r\n"
 	"Accept: text/html,text/plain\r\n"
 	"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n"

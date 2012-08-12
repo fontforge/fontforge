@@ -277,8 +277,11 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 	for ( i=0; i<DASH_MAX && pen.dashes[i]!=0; ++i )
 	    fprintf( file, "%d ", pen.dashes[i]);
 	fprintf( file,"\" ");
-    } else
-	/* fprintf( file, "stroke-dasharray=\"none\" " )*/;	/* That's the default, don't need to say it */
+    } else {
+        /* That's the default, don't need to say it */
+	/* fprintf( file, "stroke-dasharray=\"none\" " )*/
+	;
+    }
 }
 
 static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback,
@@ -2481,7 +2484,8 @@ static int xmlParseColor(xmlChar *name,uint32 *color, char **url,struct svg_stat
 	{ "teal", 0x008080 },
 	{ "fuchsia", 0xff0080 },
 	{ "silver", 0xc0c0c0 },
-	{ NULL }};
+	{ NULL, 0 }
+    };
 
     doit = _xmlStrcmp(name,(xmlChar *) "none")!=0;
     if ( doit ) {
@@ -2789,8 +2793,10 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
 		xmlParseColor(propbuf,&st->stopColor,NULL,st);
 	    else if ( strcmp(namebuf,"stop-opacity")==0 )
 		st->stopOpacity = strtod(propbuf,NULL);
-	    else
-		/* Lots of props we ignore */;
+	    else {
+		/* Lots of props we ignore */
+		;
+            }
 	} else if ( *name==';' )
 	    ++name;
 	if ( *name=='\0' )

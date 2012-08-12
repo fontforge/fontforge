@@ -184,7 +184,7 @@ static struct flaglist menuviews[] = {
     { "Font", menu_fv },
     { "Glyph", menu_cv },
     { "Char", menu_cv },
-    NULL
+    FLAGLIST_EMPTY
 };
 
 static int MenuDataAdd(PyObject *func,PyObject *check,PyObject *data,int is_cv) {

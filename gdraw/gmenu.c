@@ -1341,8 +1341,10 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 		pos.x += awidth+3;
 	    else if ( pos.x-pos.width-3>=0 )
 		pos.x -= pos.width+3;
-	    else
-		/* There doesn't seem much we can do in this case */;
+	    else {
+		/* There doesn't seem much we can do in this case */
+		;
+            }
 	}
     }
     if ( pos.x+pos.width > screen.width ) {

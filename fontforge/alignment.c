@@ -511,8 +511,9 @@ void CVConstrainSelection(CharView *cv,int type) {
 	    /* Can't deal with it */;
 	else if ( first!=NULL )
 	    SpaceOne(cv,first);
-	else
+	else {
 	    /* Nothing selected */;
+	}
     } else if ( type==2 ) {
 	/* Space selected regions */
 	if ( other==NULL )

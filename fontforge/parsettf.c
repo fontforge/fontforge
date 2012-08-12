@@ -264,7 +264,8 @@ static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
     { "ji", 0x43d },	/* Obsolete Yiddish */
     { "yo", 0x46a },
     { "zu", 0x435 },
-    { NULL }};
+    { NULL, 0 }
+};
 
 int MSLanguageFromLocale(void) {
     const char *lang=NULL;
@@ -404,12 +405,15 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	else if ( specific==10 )
 	    enc = "UnicodeFull";
     } else if ( platform==7 ) {		/* Used internally in freetype, but */
-	if ( specific==0 )		/*  there's no harm in looking for it */
+	if ( specific==0 ) {		/*  there's no harm in looking for it */
 	    enc = "AdobeStandard";	/*  even if it never happens */
-	else if ( specific==1 )
-	    /* adobe_expert */;
-	else if ( specific==2 )
-	    /* adobe_custom */;
+	} else if ( specific==1 ) {
+	    /* adobe_expert */
+	    ;
+	} else if ( specific==2 ) {
+	    /* adobe_custom */
+	    ;
+	}
     }
     e = FindOrMakeEncoding(enc);
     if ( e==NULL ) {
@@ -953,7 +957,7 @@ static struct tablenames { uint32 tag; char *name; } stdtables[] = {
     { CHR('v','m','t','x'), N_("vertical metrics table") },
     { CHR('V','O','R','G'), N_("vertical origin table") },
     { CHR('Z','a','p','f'), N_("glyph reference table") },
-    0
+    { 0, NULL }
 };
 
 static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,

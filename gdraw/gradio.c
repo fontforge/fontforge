@@ -217,8 +217,10 @@ return;		/* Do Nothing, it's already on */
 		_ggadget_redraw((GGadget *) other);
 	    }
 	}
-    } else
-	/* Checkboxes just default down */;
+    } else {
+	/* Checkboxes just default down */
+	;
+    }
     gr->ison = !gr->ison;
     e.type = et_controlevent;
     e.w = gr->g.base;
