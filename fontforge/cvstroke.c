@@ -1975,7 +1975,7 @@ static int Pat_HeightChanged(GGadget *g, GEvent *e) {
 return( true );
 	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Aspect)))
 return( true );
-	width = GetCalmReal8(gw,CID_THeight,_("Height"),&err);
+	height = GetCalmReal8(gw,CID_THeight,_("Height"),&err);
 	if ( err )
 return( true );
 	PatternSCBounds(patternsc,&b);
