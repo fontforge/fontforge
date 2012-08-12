@@ -1622,7 +1622,7 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
     }
 
     gfree(gw->ggc);
-    memset(gw,'\0',sizeof(*gw));
+    memset(gw,'\0',sizeof(GXWindow));
     gfree(gw);
 }
 
