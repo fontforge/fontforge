@@ -706,7 +706,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	    p->needs_point_left = p->needs_point_right = false;
 	    p->left_hidden = bends_left;
 	    p->right_hidden = !bends_left;
-	    if ( rot.x<=diff_angle.x ) {
+	    if ( rot.x<=fabs(diff_angle.x) ) {
 		p->right = done.right;
 		p->left = done.left;
 		p->needs_point_left = p->needs_point_right = true;
