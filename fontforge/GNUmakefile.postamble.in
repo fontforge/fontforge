@@ -1,0 +1,44 @@
+# -*- Makefile -*-
+#
+# Support for --with-gnustep-make
+
+before-all::
+	rm -r -f Resources
+
+#	Put pixmaps in the app's resources.
+#
+	$(MKDIR_P) Resources/share/pixmaps
+	$(LN_S) $(addprefix @abs_srcdir@/pixmaps/, $(PNG_LIST)) Resources/share/pixmaps/.
+
+#	Put docs in the app's resources.
+#
+	rm -f __htdocs__.tar
+#	Only tar flags compatible with the Perl script "ptar" are used below;
+#   "make TAR=ptar" should work if you have Perl installed.
+	(cd @top_srcdir@/htdocs; $(TAR) -c -f "@abs_builddir@/__htdocs__.tar" $(INSTALLED_DOC_LIST))
+	$(MKDIR_P) Resources/share/doc/fontforge
+	(cd Resources/share/doc/fontforge; $(TAR) -x -f "@abs_builddir@/__htdocs__.tar")
+	rm -f __htdocs__.tar
+
+#	Put message files in the app's resources.
+#
+	$(MKDIR_P) Resources/share/locale
+	(for po_file in $(PO_FILES); do \
+		locale=`echo "$${po_file}" | $(SED) -e 's/\.po$$//'`; \
+		$(MKDIR_P) "Resources/share/locale/$${locale}/LC_MESSAGES"; \
+		$(MSGFMT) -o "Resources/share/locale/$${locale}/LC_MESSAGES/FontForge.mo" "@top_srcdir@/po/$${po_file}"; \
+	done)
+	(for po_file in $(MACKEYS_PO_FILES); do \
+		locale=`echo "$${po_file}" | $(SED) -e 's/\.po$$//'`; \
+		$(MKDIR_P) "Resources/share/locale/$${locale}/LC_MESSAGES"; \
+		$(MSGFMT) -o "Resources/share/locale/$${locale}/LC_MESSAGES/Mac-FontForge-MenuShortCuts.mo" \
+			"@top_srcdir@/po/mackeys/$${po_file}"; \
+	done)
+
+after-clean::
+	rm -f fontimage fontlint sfddiff libstamp.c exelibstamp.c
+	rm -f __htdocs__.tar
+	rm -r -f Resources
+
+after-distclean::
+	rm -f GNUmakefile GNUmakefile.postamble

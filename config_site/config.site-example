@@ -1,0 +1,53 @@
+# -*- sh -*-
+# Example of CONFIG_SITE as one method to deal with missing pkg-config and other issues.
+#
+# The following worked on OpenIndiana build 151a (plus updates) without pkg-config:
+#
+#    ./configure CONFIG_SITE=config.site-example --with-regular-link [ARG1 ARG2 ...]
+#
+
+# Disable an unusable iconv(3).
+ac_cv_header_iconv_h=no
+
+if test -f /usr/lib/libpython2.6.so; then
+   test x"${PYTHON_CFLAGS}" = x && PYTHON_CFLAGS="-I/usr/include/python2.6"
+   test x"${PYTHON_LIBS}"   = x && PYTHON_LIBS="-lpython2.6"
+fi
+
+if test -f /usr/lib/libcairo.so; then
+   test x"${CAIRO_CFLAGS}" = x && CAIRO_CFLAGS="-I/usr/include/cairo"
+   test x"${CAIRO_LIBS}"   = x && CAIRO_LIBS="-lcairo"
+fi
+
+if test -f /usr/lib/libpango-1.0.so; then
+   test x"${PANGO_CFLAGS}" = x && PANGO_CFLAGS="-I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include"
+   test x"${PANGO_LIBS}"   = x && PANGO_LIBS="-lpango-1.0"
+   if test -f /usr/lib/libpangocairo-1.0.so; then
+       test x"${PANGOCAIRO_CFLAGS}" = x && PANGOCAIRO_CFLAGS=" "
+       test x"${PANGOCAIRO_LIBS}"   = x && PANGOCAIRO_LIBS="-lpangocairo-1.0"
+   fi
+   if test -f /usr/lib/libpangoxft-1.0.so; then
+       test x"${PANGOXFT_CFLAGS}" = x && PANGOXFT_CFLAGS=" "
+       test x"${PANGOXFT_LIBS}"   = x && PANGOXFT_LIBS="-lpangoxft-1.0"
+   fi
+fi
+
+if test -f /usr/lib/libfreetype.so; then
+   test x"${FREETYPE_CFLAGS}" = x && FREETYPE_CFLAGS="-I/usr/include/freetype2"
+   test x"${FREETYPE_LIBS}"   = x && FREETYPE_LIBS="-lfreetype"
+fi
+
+if test -f /usr/lib/libpng14.so; then
+   test x"${LIBPNG_CFLAGS}" = x && LIBPNG_CFLAGS="-I/usr/include/libpng14"
+   test x"${LIBPNG_LIBS}"   = x && LIBPNG_LIBS="-lpng14"
+fi
+
+if test -f /usr/lib/libtiff.so; then
+   test x"${LIBTIFF_CFLAGS}" = x && LIBTIFF_CFLAGS=" "
+   test x"${LIBTIFF_LIBS}"   = x && LIBTIFF_LIBS="-ltiff"
+fi
+
+if test -f /usr/lib/libxml2.so; then
+   test x"${LIBXML_CFLAGS}" = x && LIBXML_CFLAGS="-I/usr/include/libxml2"
+   test x"${LIBXML_LIBS}"   = x && LIBXML_LIBS="-lxml2"
+fi

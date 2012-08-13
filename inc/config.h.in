@@ -1,67 +1,532 @@
-#ifndef _FF_CONFIG_H
-# define _FF_CONFIG_H	1
+/* inc/config.h.in.  Generated from configure.ac by autoheader.  */
 
-#undef HAVE_DLFCN_H
-#undef _NO_PYTHON
-#undef HAVE_ICONV_H
-#undef HAVE_STDINT_H
-#undef HAVE_LANGINFO_H
-#undef HAVE_PTHREAD_H
-#undef HAVE_LIBINTL_H
-#undef HAVE_IEEEFP_H
-#undef FREETYPE_HAS_DEBUGGER
-#undef HAVE_LONG_DOUBLE
-#undef _HAS_LONGLONG
-#undef HAVE_LIBINTL_H
-#undef _STATIC_LIBINTL
-#undef _STATIC_LIBUNGIF
-#undef _STATIC_LIBPNG
-#undef _STATIC_LIBPNG12
-#undef _STATIC_LIBTIFF
-#undef _STATIC_LIBJPEG
-#undef _STATIC_LIBSPIRO
-#undef _STATIC_LIBXML2
-#undef _STATIC_LIBFREETYPE
-#undef _STATIC_LIBUNINAMESLIST
-#undef _STATIC_LIBCAIRO
-#undef _NO_LIBUNINAMESLIST
-#undef SHAREDIR
-#undef LIBDIR
-#undef PREFIX
-#undef _CursorsMustBe16x16
-#undef _Keyboard
-#undef __Mac
-#undef _BrokenBitmapImages
-#undef _ModKeysAutoRepeat
-#undef __CygWin
-#undef _NO_XINPUT
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
+/* Define if enabling feature 'capslock-for-alt'. */
 #undef FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT
-#undef FONTFORGE_CONFIG_SHOW_RAW_POINTS
-#undef FONTFORGE_CONFIG_TYPE3
-#undef FONTFORGE_CONFIG_DEVICETABLES
-#undef FONTFORGE_CONFIG_USE_DOUBLE
-#undef FONTFORGE_CONFIG_USE_LONGDOUBLE
-#undef FONTFORGE_CONFIG_PASTEAFTER
-#undef FONTFORGE_CONFIG_GB12345
-#undef FONTFORGE_CONFIG_TILEPATH
-#undef _NO_FFSCRIPT
-#undef _NO_TZSET
-#undef _NO_FREETYPE
-#undef _NO_LIBXML
-#undef _NO_LIBUNGIF
-#undef _NO_LIBPNG
-#undef _LIBPNG12
-#undef _NO_LIBJPEG
-#undef _NO_LIBTIFF
-#undef _NO_LIBSPIRO
-#undef NODYNAMIC
-#undef FREETYPE_HAS_DEBUGGER
-#undef _NO_SNPRINTF
-#undef _NO_XKB
-#undef X_DISPLAY_MISSING
-#undef PYTHON_LIB_NAME
-#undef _NO_LIBCAIRO
-#undef _NO_LIBPANGO
-#undef WORDS_BIGENDIAN
 
+/* Define if enabling feature 'device-tables'. */
+#undef FONTFORGE_CONFIG_DEVICETABLES
+
+/* Define if enabling feature 'gb12345'. */
+#undef FONTFORGE_CONFIG_GB12345
+
+/* Define if enabling feature 'paste-after'. */
+#undef FONTFORGE_CONFIG_PASTEAFTER
+
+/* Define if enabling feature 'debug-raw-points'. */
+#undef FONTFORGE_CONFIG_SHOW_RAW_POINTS
+
+/* Define if enabling feature 'tile-path'. */
+#undef FONTFORGE_CONFIG_TILEPATH
+
+/* Define if enabling feature 'type3'. */
+#undef FONTFORGE_CONFIG_TYPE3
+
+/* Define if using 'double' precision. */
+#undef FONTFORGE_CONFIG_USE_DOUBLE
+
+/* Define if using 'long double' precision. */
+#undef FONTFORGE_CONFIG_USE_LONGDOUBLE
+
+/* Define if using the freetype debugger (requires freetype source code). */
+#undef FREETYPE_HAS_DEBUGGER
+
+/* Define if building a GNUstep application. */
+#undef GNUSTEP_APP
+
+/* Define to 1 if you have the `alarm' function. */
+#undef HAVE_ALARM
+
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
+
+/* Define to 1 if you have the `atexit' function. */
+#undef HAVE_ATEXIT
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the `dup2' function. */
+#undef HAVE_DUP2
+
+/* Define to 1 if you have the `endpwent' function. */
+#undef HAVE_ENDPWENT
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the `floor' function. */
+#undef HAVE_FLOOR
+
+/* Define to 1 if you have the `fork' function. */
+#undef HAVE_FORK
+
+/* Define to 1 if you have the `getcwd' function. */
+#undef HAVE_GETCWD
+
+/* Define to 1 if you have the `gethostbyname' function. */
+#undef HAVE_GETHOSTBYNAME
+
+/* Define to 1 if you have the `getpagesize' function. */
+#undef HAVE_GETPAGESIZE
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the <iconv.h> header file. */
+#undef HAVE_ICONV_H
+
+/* Define to 1 if you have the <ieeefp.h> header file. */
+#undef HAVE_IEEEFP_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <langinfo.h> header file. */
+#undef HAVE_LANGINFO_H
+
+/* Define to 1 if you have the <libintl.h> header file. */
+#undef HAVE_LIBINTL_H
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the `localeconv' function. */
+#undef HAVE_LOCALECONV
+
+/* Define to 1 if you have the <locale.h> header file. */
+#undef HAVE_LOCALE_H
+
+/* Define to 1 if the system has the type `long double'. */
+#undef HAVE_LONG_DOUBLE
+
+/* Define to 1 if the type `long double' works and has more range or precision
+   than `double'. */
+#undef HAVE_LONG_DOUBLE_WIDER
+
+/* Define to 1 if the system has the type `long long int'. */
+#undef HAVE_LONG_LONG_INT
+
+/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
+   to 0 otherwise. */
+#undef HAVE_MALLOC
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
+#undef HAVE_MEMSET
+
+/* Define to 1 if you have the `mkdir' function. */
+#undef HAVE_MKDIR
+
+/* Define to 1 if you have a working `mmap' system call. */
+#undef HAVE_MMAP
+
+/* Define to 1 if you have the `munmap' function. */
+#undef HAVE_MUNMAP
+
+/* Define to 1 if you have the <netdb.h> header file. */
+#undef HAVE_NETDB_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
+
+/* Define to 1 if you have the `nl_langinfo' function. */
+#undef HAVE_NL_LANGINFO
+
+/* Define to 1 if you have the `pow' function. */
+#undef HAVE_POW
+
+/* Define if you have POSIX threads libraries and header files. */
+#undef HAVE_PTHREAD
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
+/* Have PTHREAD_PRIO_INHERIT. */
+#undef HAVE_PTHREAD_PRIO_INHERIT
+
+/* Define to 1 if you have the `putenv' function. */
+#undef HAVE_PUTENV
+
+/* Define to 1 if your system has a GNU libc compatible `realloc' function,
+   and to 0 otherwise. */
+#undef HAVE_REALLOC
+
+/* Define to 1 if you have the `rint' function. */
+#undef HAVE_RINT
+
+/* Define to 1 if you have the `rmdir' function. */
+#undef HAVE_RMDIR
+
+/* Define to 1 if you have the `select' function. */
+#undef HAVE_SELECT
+
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
+
+/* Define to 1 if you have the `setlocale' function. */
+#undef HAVE_SETLOCALE
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
+/* Define to 1 if you have the `socket' function. */
+#undef HAVE_SOCKET
+
+/* Define to 1 if you have the `sqrt' function. */
+#undef HAVE_SQRT
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
+/* Define to 1 if you have the `strcoll' function and it is properly defined.
+   */
+#undef HAVE_STRCOLL
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
+
+/* Define to 1 if you have the `strpbrk' function. */
+#undef HAVE_STRPBRK
+
+/* Define to 1 if you have the `strrchr' function. */
+#undef HAVE_STRRCHR
+
+/* Define to 1 if you have the `strstr' function. */
+#undef HAVE_STRSTR
+
+/* Define to 1 if you have the `strtol' function. */
+#undef HAVE_STRTOL
+
+/* Define to 1 if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the `tzset' function. */
+#undef HAVE_TZSET
+
+/* Define to 1 if you have the `uname' function. */
+#undef HAVE_UNAME
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `vfork' function. */
+#undef HAVE_VFORK
+
+/* Define to 1 if you have the <vfork.h> header file. */
+#undef HAVE_VFORK_H
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
+
+/* Define to 1 if `fork' works. */
+#undef HAVE_WORKING_FORK
+
+/* Define to 1 if `vfork' works. */
+#undef HAVE_WORKING_VFORK
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Define if enabling feature 'maintainer-tools'. */
+#undef MAINTAINER_TOOLS
+
+/* Define if enabling feature 'native-callbacks'. */
+#undef NATIVE_CALLBACKS
+
+/* Define if enabling feature 'regular-link' for all packages. */
+#undef NODYNAMIC
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to necessary symbol if this constant uses a non-standard name on
+   your system. */
+#undef PTHREAD_CREATE_JOINABLE
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
 #endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
+
+
+/* Version number of package */
+#undef VERSION
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
+
+/* Platform specific stuff */
+#undef _BrokenBitmapImages
+
+/* Platform specific stuff */
+#undef _CursorsMustBe16x16
+
+/* Define if using 'long long int'. */
+#undef _HAS_LONGLONG
+
+/* Platform specific stuff */
+#undef _Keyboard
+
+/* Define to 1 if on MINIX. */
+#undef _MINIX
+
+/* Platform specific stuff */
+#undef _ModKeysAutoRepeat
+
+/* Define if disabling feature 'native-scripting'. */
+#undef _NO_FFSCRIPT
+
+/* Define if not using freetype. */
+#undef _NO_FREETYPE
+
+/* Define if not using cairo. */
+#undef _NO_LIBCAIRO
+
+/* Define if not using libjpeg. */
+#undef _NO_LIBJPEG
+
+/* Define if not using pango. */
+#undef _NO_LIBPANGO
+
+/* Define if not using libpng. */
+#undef _NO_LIBPNG
+
+/* Define if not using libspiro. */
+#undef _NO_LIBSPIRO
+
+/* Define if not using libtiff. */
+#undef _NO_LIBTIFF
+
+/* Define if not using giflib or libungif.) */
+#undef _NO_LIBUNGIF
+
+/* Define if not using libuninameslist. */
+#undef _NO_LIBUNINAMESLIST
+
+/* Define if not using libxml. */
+#undef _NO_LIBXML
+
+/* Define if not using mmap. */
+#undef _NO_MMAP
+
+/* Define if not using Python. */
+#undef _NO_PYTHON
+
+/* Define if not using snprintf. */
+#undef _NO_SNPRINTF
+
+/* Define if not using tzset. */
+#undef _NO_TZSET
+
+/* Define if not using xinput. */
+#undef _NO_XINPUT
+
+/* Define if not using xkb. */
+#undef _NO_XKB
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#undef _POSIX_1_SOURCE
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#undef _POSIX_SOURCE
+
+/* Define if enabling feature 'regular-link' for cairo. */
+#undef _STATIC_LIBCAIRO
+
+/* Define if enabling feature 'regular-link' for freetype. */
+#undef _STATIC_LIBFREETYPE
+
+/* Define if enabling feature 'regular-link' for libintl. */
+#undef _STATIC_LIBINTL
+
+/* Define if enabling feature 'regular-link' for libjpeg. */
+#undef _STATIC_LIBJPEG
+
+/* Define if enabling feature 'regular-link' for pango. */
+#undef _STATIC_LIBPANGO
+
+/* Define if enabling feature 'regular-link' for libpng. */
+#undef _STATIC_LIBPNG
+
+/* Define if enabling feature 'regular-link' for libspiro. */
+#undef _STATIC_LIBSPIRO
+
+/* Define if enabling feature 'regular-link' for libtiff. */
+#undef _STATIC_LIBTIFF
+
+/* Define if enabling feature 'regular-link' for giflib. */
+#undef _STATIC_LIBUNGIF
+
+/* Define if enabling feature 'regular-link' for libuninameslist. */
+#undef _STATIC_LIBUNINAMESLIST
+
+/* Define if enabling feature 'regular-link' for libxml. */
+#undef _STATIC_LIBXML
+
+/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT32_T
+
+/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT8_T
+
+/* Platform specific stuff */
+#undef __CygWin
+
+/* Platform specific stuff */
+#undef __Mac
+
+/* Define to the type of a signed integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#undef int16_t
+
+/* Define to the type of a signed integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#undef int32_t
+
+/* Define to the type of a signed integer type of width exactly 8 bits if such
+   a type exists and the standard includes do not define it. */
+#undef int8_t
+
+/* Define to rpl_malloc if the replacement function should be used. */
+#undef malloc
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
+
+/* Define to rpl_realloc if the replacement function should be used. */
+#undef realloc
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+
+/* Define to the type of an unsigned integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint16_t
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint32_t
+
+/* Define to the type of an unsigned integer type of width exactly 8 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint8_t
+
+/* Define as `fork' if `vfork' does not work. */
+#undef vfork

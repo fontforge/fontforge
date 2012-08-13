@@ -1142,6 +1142,10 @@ extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
+extern GMenuItem2 *cv_menu, *fv_menu;
+extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
 extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);
 
