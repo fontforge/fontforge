@@ -67,7 +67,14 @@ typedef struct styledlg {
 #define CID_SB_Add	1004
 #define CID_CorrectItalic	1005
 
-static struct counterinfo last_ci = { 90, 0, 90, 0, true };
+static struct counterinfo last_ci = {
+    90, 0, 90, 0, true,
+    /* initializers below are dummy... will be set later */
+    BLUEDATA_EMPTY, 0, NULL, 0, DBOUNDS_EMPTY, 0.0, 0.0, 0.0, 0,
+    { 0, 0 }, /* cnts */
+    { 0, 0 }, /* maxes */
+    { NULL, NULL } /* zones */
+};
 
 static int CondenseExtend_OK(GGadget *g, GEvent *e) {
     struct counterinfo ci;

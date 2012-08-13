@@ -1884,13 +1884,15 @@ return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
 
 static SplinePoint *CirclePoint(int which) {
     SplinePoint *sp;
-    static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
-	ellipse3[] = {
-	    { {1,0}, { 1, .552 }, { 1, -.552 }, false},
-	    { {0,-1}, {.552, -1 }, {-.552, -1 }, false},
-	    { {-1,0}, { -1, -.552 }, { -1, .552 }, false},
-	    { {0,1}, { -.552, 1 }, { .552, 1 }, false},
-	    { {0,0}}};
+    static struct shapedescrip {
+        BasePoint me, prevcp, nextcp; int nocp;
+    } ellipse3[] = {
+        { { 1, 0 }, { 1, 0.552 }, { 1, -.552 }, false },
+        { { 0, -1 }, { 0.552, -1 }, { -0.552, -1 }, false },
+        { { -1, 0 }, { -1, -0.552 }, { -1, .552 }, false },
+        { { 0, 1 }, { -0.552, 1 }, { 0.552, 1 }, false },
+        { { 0, 0 }, { 0, 0 }, { 0, 0 }, 0 }
+    };
 
     sp = SplinePointCreate(ellipse3[which].me.x,ellipse3[which].me.y);
     sp->nonextcp = sp->noprevcp = false;

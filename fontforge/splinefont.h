@@ -78,15 +78,24 @@ typedef struct ipoint {
     int y;
 } IPoint;
 
+#define IPOINT_EMPTY { 0, 0 }
+
+
 typedef struct basepoint {
     real x;
     real y;
 } BasePoint;
 
+#define BASEPOINT_EMPTY { (real)0.0, (real)0.0 }
+
+
 typedef struct dbasepoint {
     bigreal x;
     bigreal y;
 } DBasePoint;
+
+#define DBASEPOINT_EMPTY { (bigreal)0.0, (bigreal)0.0 }
+
 
 typedef struct tpoint {
     real x;
@@ -94,15 +103,24 @@ typedef struct tpoint {
     real t;
 } TPoint;
 
+#define TPOINT_EMPTY { (real)0.0, (real)0.0, (real)0.0 }
+
+
 typedef struct dbounds {
     real minx, maxx;
     real miny, maxy;
 } DBounds;
 
+#define DBOUNDS_EMPTY { (real)0.0, (real)0.0, (real)0.0, (real)0.0 }
+
+
 typedef struct ibounds {
     int minx, maxx;
     int miny, maxy;
 } IBounds;
+
+#define IBOUNDS_EMPTY { 0, 0, 0, 0 }
+
 
 typedef struct val {
     enum val_type { v_int, v_real, v_str, v_unicode, v_lval, v_arr, v_arrfree,
@@ -315,6 +333,14 @@ typedef struct bluedata {
     real blues[12][2];			/* 7 pairs from bluevalues, 5 from otherblues */
 } BlueData;
 
+#define BLUEDATA_EMPTY { \
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, \
+    { { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, \
+      { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }, { 0.0, 0.0 }  \
+    } \
+}
+
+
 typedef struct bdffloat {
     int16 xmin,xmax,ymin,ymax;
     int16 bytes_per_line;
@@ -403,6 +429,9 @@ extern struct opentype_feature_friendlynames {
     int masks;
 } friendlies[];
 
+#define OPENTYPE_FEATURE_FRIENDLYNAMES_EMPTY { 0, NULL, NULL, 0 }
+
+
 typedef struct featurescriptlanglist {
     uint32 featuretag;
     struct scriptlanglist *scripts;
@@ -472,6 +501,10 @@ typedef struct otlookup {
     uint32 lookup_length;
     char *tempname;
 } OTLookup;
+
+#define LOOKUP_SUBTABLE_EMPTY { NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, NULL }
+#define OTLOOKUP_EMPTY { NULL, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL }
+
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 typedef struct devicetab {
@@ -2714,7 +2747,7 @@ extern void SFCheckPSBitmap(SplineFont *sf);
 extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
-extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
+extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,char *select_this_font, enum openflags openflags);
 extern SplineFont *SFReadPdfFont(char *filename, enum openflags openflags);
 extern char **GetFontNames(char *filename);
 extern char **NamesReadPDF(char *filename);
@@ -3195,6 +3228,9 @@ extern struct math_constants_descriptor {
     char *message;
     int new_page;
 } math_constants_descriptor[];
+
+#define MATH_CONSTANTS_DESCRIPTOR_EMPTY { NULL, NULL, 0, 0, NULL, 0 }
+
 
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm);
