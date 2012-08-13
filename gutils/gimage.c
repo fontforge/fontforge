@@ -193,7 +193,7 @@ return;
     }
 }
 
-void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y) {
+void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y) {
     struct _GImage *sbase, *dbase;
     int i,j, di, sbi, dbi, val, factor, maxpix, sbit;
 
