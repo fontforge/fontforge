@@ -8,7 +8,7 @@ endif GRAPHICAL_USER_INTERFACE
 
 SUBDIRS += fontforge po htdocs pycontrib $(subdirs) tests
 
-pkgconfigdir = "${libdir}/pkgconfig"
+pkgconfigdir = ${libdir}/pkgconfig
 nodist_pkgconfig_DATA = fontforge.pc libfontforge.pc	\
 	libfontforgeexe.pc
 

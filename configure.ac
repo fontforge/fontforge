@@ -5,7 +5,7 @@ AC_PREREQ([2.68])
 AC_INIT([fontforge],[9999-experimental],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_TESTDIR([tests],[tests:fontforge])
+AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
