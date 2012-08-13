@@ -74,7 +74,10 @@ static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance
 		 "    it_mono,\n" );
     fprintf( file,"    %d,%d,%d,%d,\n",(int) base->delay, (int) base->width, (int) base->height, (int) base->bytes_per_line );
     fprintf( file,"    (uint8 *) %s%d_data,\n", stem,instance );
-    fprintf( file,base->clut==NULL?"    NULL,\n":"    &%s%d_clut,\n", stem, instance );
+    if (base->clut==NULL)
+        fprintf( file,"    NULL,\n" );
+    else
+        fprintf( file,"    &%s%d_clut,\n", stem, instance );
     fprintf( file,"    0x%x\n};\n\n", (int) base->trans );
 }
 
