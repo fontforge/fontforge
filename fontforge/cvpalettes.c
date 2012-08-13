@@ -315,18 +315,23 @@ GMenuItem2 cvspirotoollist[] = {
     GMENUITEM2_EMPTY
 };
 
+static char *editablelayers[] = {
 /* GT: Foreground, make it short */
-static char *editablelayers[] = { N_("F_ore"),
+    N_("F_ore"),
 /* GT: Background, make it short */
     N_("_Back"),
 /* GT: Guide layer, make it short */
-    N_("_Guide") };
+    N_("_Guide")
+};
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
-static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
-	    /* removeexternal */ false,
-	    /* removeinternal */ false,
-	    /* leave users */ false,
-	3.1415926535897932/4, 25, NULL, 50 };
+static StrokeInfo expand = {
+    25, lj_round, lc_butt, si_centerline,
+    false, /* removeexternal */
+    false, /* removeinternal */
+    false, /* leave users */
+    3.1415926535897932/4, 25, NULL, 50,
+    0.0, 0, 0, NULL, NULL
+};
 
 real CVRoundRectRadius(void) {
 return( rr_radius );

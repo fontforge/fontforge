@@ -61,6 +61,18 @@ typedef uint16 unichar_t;
 typedef uint32 unichar_t;
 #endif
 
+/* A macro to mark unused function parameters with. We often
+ * have such parameters, because of extensive use of callbacks.
+ */
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
+
 extern void *galloc(long size);
 extern void *gcalloc(int cnt, long size);
 extern void *grealloc(void *,long size);

@@ -314,7 +314,7 @@ static struct library_descriptor {
 #endif
 	"libcairo",
 	0 },
-    { NULL }
+    { NULL, NULL, NULL, NULL, 0, NULL, 0 }
 };
 
 static void _dolibrary(void) {

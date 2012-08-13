@@ -1162,7 +1162,7 @@ static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
     Display *display = gdisp->display;
     GXWindow nw = gcalloc(1,sizeof(struct gxwindow));
     XSetWindowAttributes attrs;
-    static GWindowAttrs temp = { 0 };
+    static GWindowAttrs temp = GWINDOWATTRS_EMPTY;
     unsigned long wmask = 0;
     XClassHint ch;
     char *pt;

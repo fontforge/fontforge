@@ -2151,7 +2151,8 @@ struct gfuncs sftextarea_funcs = {
 
     SFTextFieldGetDesiredSize,
     SFTextFieldSetDesiredSize,
-    SFtextfield_FillsWindow
+    SFtextfield_FillsWindow,
+    NULL
 };
 
 static void SFTextAreaInit() {
