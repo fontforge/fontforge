@@ -1904,7 +1904,8 @@ static void BDFForceEnc(SplineFont *sf, EncMap *map) {
 	{ "jisx0208", "jis208" },
 	{ "jisx0212", "jis212" },
 	{ "jisx0201", "jis201" },
-	{ NULL }};
+	{ NULL, NULL }
+    };
     char *fn, *pt;
     Encoding *enc;
 

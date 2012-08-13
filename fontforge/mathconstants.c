@@ -100,7 +100,7 @@ struct math_constants_descriptor math_constants_descriptor[] = {
     MCDD(N_("RadicalKernAfterDegree:"),RadicalKernAfterDegree,RadicalKernAfterDegree_adjust,N_("Negative horizontal kern after the degree of a\nradical if such be present."),0),
     MCD(N_("RadicalDegreeBottomRaisePercent:"),RadicalDegreeBottomRaisePercent,N_("Height of the bottom of the radical degree, if\nsuch be present, in proportion to the ascender\nof the radical sign."),0),
     MCD(N_("MinConnectorOverlap:"),MinConnectorOverlap,N_("Minimum overlap of connecting glyphs during\nglyph construction."),1),
-    { NULL }
+    MATH_CONSTANTS_DESCRIPTOR_EMPTY
 };
 
 struct MATH *MathTableNew(SplineFont *sf) {

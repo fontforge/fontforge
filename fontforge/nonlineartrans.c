@@ -47,7 +47,7 @@ static struct builtins { char *name; enum operator op; } builtins[] = {
     { "rint", op_rint },
     { "floor", op_floor },
     { "ceil", op_ceil },
-    { NULL }
+    { NULL, 0 }
 };
 
 void nlt_exprfree(struct expr *e) {

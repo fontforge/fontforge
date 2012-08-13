@@ -194,7 +194,7 @@ struct opentype_feature_friendlynames friendlies[] = {
     { CHR('z','e','r','o'),	"zero", N_("Slashed Zero"),		gsub_single_mask },
 /* This is my hack for setting the "Required feature" field of a script */
     { CHR(' ','R','Q','D'),	" RQD", N_("Required feature"),		gsub_single_mask|gsub_multiple_mask|gsub_alternate_mask|gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|gsub_reversecchain_mask|morx_context_mask|gpos_single_mask|gpos_pair_mask|gpos_cursive_mask|gpos_mark2base_mask|gpos_mark2ligature_mask|gpos_mark2mark_mask|gpos_context_mask|gpos_contextchain_mask },
-    { 0, NULL, 0 }
+    OPENTYPE_FEATURE_FRIENDLYNAMES_EMPTY
 };
 
 static int uint32_cmp(const void *_ui1, const void *_ui2) {
@@ -1261,15 +1261,15 @@ void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 l
 
 char *SuffixFromTags(FeatureScriptLangList *fl) {
     static struct { uint32 tag; char *suffix; } tags2suffix[] = {
-	{ CHR('v','r','t','2'), "vert" },	/* Will check for vrt2 later */
-	{ CHR('o','n','u','m'), "oldstyle" },
-	{ CHR('s','u','p','s'), "superior" },
-	{ CHR('s','u','b','s'), "inferior" },
-	{ CHR('s','w','s','h'), "swash" },
-	{ CHR('f','w','i','d'), "full" },
-	{ CHR('h','w','i','d'), "hw" },
-	{ 0 }
-	};
+        { CHR('v','r','t','2'), "vert" },	/* Will check for vrt2 later */
+        { CHR('o','n','u','m'), "oldstyle" },
+        { CHR('s','u','p','s'), "superior" },
+        { CHR('s','u','b','s'), "inferior" },
+        { CHR('s','w','s','h'), "swash" },
+        { CHR('f','w','i','d'), "full" },
+        { CHR('h','w','i','d'), "hw" },
+        { 0, NULL }
+    };
     int i;
 
     while ( fl!=NULL ) {
@@ -1281,16 +1281,19 @@ return( copy( tags2suffix[i].suffix ));
 return( NULL );
 }
 
-char *lookup_type_names[2][10] =
-	    { { N_("Undefined substitution"), N_("Single Substitution"), N_("Multiple Substitution"),
-		N_("Alternate Substitution"), N_("Ligature Substitution"), N_("Contextual Substitution"),
-		N_("Contextual Chaining Substitution"), N_("Extension"),
-		N_("Reverse Contextual Chaining Substitution") },
-	      { N_("Undefined positioning"), N_("Single Positioning"), N_("Pairwise Positioning (kerning)"),
-		N_("Cursive attachment"), N_("Mark to base attachment"),
-		N_("Mark to Ligature attachment"), N_("Mark to Mark attachment"),
-		N_("Contextual Positioning"), N_("Contextual Chaining Positioning"),
-		N_("Extension") }};
+char *lookup_type_names[2][10] = {
+    {   N_("Undefined substitution"), N_("Single Substitution"), N_("Multiple Substitution"),
+        N_("Alternate Substitution"), N_("Ligature Substitution"), N_("Contextual Substitution"),
+        N_("Contextual Chaining Substitution"), N_("Extension"),
+        N_("Reverse Contextual Chaining Substitution")
+    },
+    {   N_("Undefined positioning"), N_("Single Positioning"), N_("Pairwise Positioning (kerning)"),
+        N_("Cursive attachment"), N_("Mark to base attachment"),
+        N_("Mark to Ligature attachment"), N_("Mark to Mark attachment"),
+        N_("Contextual Positioning"), N_("Contextual Chaining Positioning"),
+        N_("Extension")
+    }
+};
 
 /* This is a non-ui based copy of a similar list in lookupui.c */
 static struct {
@@ -1422,7 +1425,7 @@ static struct {
 /*  { N_("Private Use Script 2"), CHR('q','a','a','b') },*/
 /*  { N_("Undetermined Script"), CHR('z','y','y','y') },*/
 /*  { N_("Uncoded Script"), CHR('z','z','z','z') },*/
-    { NULL }
+    { NULL, 0 }
 };
 
 void LookupInit(void) {

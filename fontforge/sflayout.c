@@ -44,7 +44,7 @@ static struct { uint32 script, *stdfeatures; } script_2_std[] = {
     { CHR('g','r','e','k'), simple_stdfeatures },
     { CHR('a','r','a','b'), arab_stdfeatures },
     { CHR('h','e','b','r'), hebrew_stdfeatures },
-    { 0 }
+    { 0, NULL }
 };
 
 uint32 *StdFeaturesOfScript(uint32 script) {
