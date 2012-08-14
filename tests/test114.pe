@@ -1,0 +1,8 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/CaslonMM.sfd
+
+Open("fonts/CaslonMM.sfd");
+Generate("results/Caslon.mm.pfa")
+Close()
+Open("results/Caslon.mm.pfa")
+Quit()

@@ -1,0 +1,15 @@
+#!/usr/local/bin/fontforge
+
+a = Array($argc-1)
+i = 1
+j = 0
+while ( i < $argc )
+# Open all the fonts
+  Open($argv[i], 1)
+# and store the filenames of all the styles in the array
+  a[j] = $filename
+  j++
+  i++
+endloop
+
+GenerateFamily("results/AmbrosiaAll.otf.dfont","dfont",16,a)

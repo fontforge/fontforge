@@ -1,0 +1,7 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/ItalicHand.sfd
+#Make sure we can generate GPOS, GSUB and morx tables without crashing.
+
+Open("fonts/ItalicHand.sfd")
+Generate("results/ItalicHand.ttf","",0);
+Generate("results/ItalicHand.ttf","",16);

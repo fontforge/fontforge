@@ -1,0 +1,21 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/MinionPro-Regular.fea
+
+# Check that detach glyph works
+New()
+MergeFeature("fonts/MinionPro-Regular.fea")
+Generate("results/Untitled2.otf")
+Open("results/Untitled2.otf")
+if ( SizeOf(GetLookups("GSUB"))<=0 )
+  Error("No lookups")
+endif
+Close()
+
+New()
+MergeFeature("fonts/ffMinionPro-Regular.fea")
+Generate("results/Untitled2.otf")
+Open("results/Untitled2.otf")
+if ( SizeOf(GetLookups("GSUB"))<=0 )
+  Error("No lookups")
+endif
+Close()

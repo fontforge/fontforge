@@ -5484,6 +5484,9 @@ static GMenuItem2 mblist[] = {
 #ifndef _NO_PYTHON
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, fvpy_tllistcheck, NULL, 0 },
 #endif
+#ifdef NATIVE_CALLBACKS
+    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, fv_tl2listcheck, NULL, 0 },
+#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, NULL, htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, enlist, enlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck, NULL, 0 },
@@ -7393,7 +7396,15 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     if ( fvpy_menu!=NULL )
 	mblist[3].ti.disabled = false;
     mblist[3].sub = fvpy_menu;
+#define CALLBACKS_INDEX 4 /* FIXME: There has to be a better way than this. */
+#else
+#define CALLBACKS_INDEX 3 /* FIXME: There has to be a better way than this. */
 #endif		/* _NO_PYTHON */
+#ifdef NATIVE_CALLBACKS
+    if ( fv_menu!=NULL )
+       mblist[CALLBACKS_INDEX].ti.disabled = false;
+    mblist[CALLBACKS_INDEX].sub = fv_menu;
+#endif      /* NATIVE_CALLBACKS */
     gd.u.menu2 = mblist;
     fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);

@@ -1,0 +1,35 @@
+SplineFontDB: 1.0
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Medium
+Copyright: Created by KANOU Hiroki with PfaEdit 1.0 (http://pfaedit.sf.net)
+Comments: 2002-10-19: Created.
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 50
+Ascent: 800
+Descent: 200
+NeedsXUIDChange: 1
+Encoding: unicode
+DisplaySize: -24
+AntiAlias: 1
+BeginChars: 65536 1
+StartChar: A
+Encoding: 65 65
+Width: 1024
+VWidth: 0
+Flags: HWO
+Fore
+602 498 m 1
+ 602 602 l 0
+ 668 612 l 0
+ 602 498 l 1
+756 617 m 1
+ 756 617 449 498 447 624 c 1
+ 756 617 l 1
+EndSplineSet
+EndChar
+EndChars
+EndSplineFont

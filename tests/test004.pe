@@ -1,0 +1,16 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/mingliu.ttc
+# but any other ttc file would do (gulim works just fine).
+# (also needs chunkalloc turned on with 384M memory)
+
+#Yes, mingliu doesn't work without the ttf instructions, but that is irrelevant
+#here. I'm just looking for the smallest ttc file I've got.
+
+Print( "...It's ok to get errors about 'Attempt to encode missing glyphs'")
+Print( " or 'Glyph index out of bounds'")
+Open("fonts/mingliu.ttc(PMingLiU)");
+Print( "...Read mingliu.ttc(PMingLiU)")
+Generate("results/pmingliu.ttf","bdf");
+Print( "...Generated ttf")
+Close();
+Quit()

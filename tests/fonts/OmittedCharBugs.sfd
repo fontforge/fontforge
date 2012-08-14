@@ -1,0 +1,28 @@
+SplineFontDB: 1.0
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Medium
+Copyright: Created by George Williams with PfaEdit 1.0 (http://pfaedit.sf.net)
+Comments: 2002-10-25: Created.
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 50
+Ascent: 800
+Descent: 200
+NeedsXUIDChange: 1
+XUID: [20 1 20 6431352]
+Encoding: iso8859_1
+DisplaySize: -24
+AntiAlias: 1
+BeginChars: 256 1
+StartChar: A
+Encoding: 65 65
+Width: 1000
+Flags: HW
+Ref: 64 N 1 0 0 1 0 0
+Kerns: 64 -346
+EndChar
+EndChars
+EndSplineFont

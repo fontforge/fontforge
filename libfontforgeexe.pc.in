@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+mandir=@mandir@
+localedir=@localedir@
+
+Name: libfontforgeexe
+Description: for embedding the FontForge UI in a program.
+Version: @VERSION@
+Libs: -L${libdir} -lfontforgeexe
+Cflags: -I${includedir}/fontforge

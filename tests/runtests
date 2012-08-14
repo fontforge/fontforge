@@ -1,0 +1,30 @@
+#!/bin/bash
+if test "$1" = "" ; then
+ echo "Please specify the location of fontforge"
+ exit 1
+fi
+fontforge=`echo $1 | sed -e "s%^[^/]%$PWD/&%"`
+
+testdir=`echo $0 | sed -e 's^runtests^^'`
+if test "$testdir" \!= "" ; then
+ cd $testdir
+fi
+mkdir -p results
+
+if $fontforge -lang ff -c 'Quit(! $haspython)' >/dev/null 2>&1 ; then
+ for test in test*.py ; do
+  echo ">>>>" $test
+  if ! ( $fontforge -script $test ); then 
+   echo "!!!!" Test failed $test
+  fi
+  sh -c "rm -rf results/*"
+ done
+fi
+
+for test in test*.pe ; do
+ echo ">>>>" $test
+ if ! ( $fontforge -script $test ); then 
+  echo "!!!!" Test failed $test
+ fi
+ sh -c "rm -rf results/*"
+done

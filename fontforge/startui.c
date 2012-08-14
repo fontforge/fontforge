@@ -47,10 +47,10 @@
 #  endif
 #endif
 #ifdef __Mac
-# include </Developer/Headers/FlatCarbon/Files.h>
+# include <Developer/Headers/FlatCarbon/Files.h>
 # define FontInfo	MacFontInfo
 # define KernPair	MacKernPair
-# include </Developer/Headers/FlatCarbon/CarbonEvents.h>
+# include <Developer/Headers/FlatCarbon/CarbonEvents.h>
 /* For reasons obscure to me RunApplicationEventLoop is not defined in */
 /*  the mac header files if we are in 64 bit mode. Strangely it seems to */
 /*  be in the libraries and functional */
@@ -1041,7 +1041,9 @@ return( sharedir );
 
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
-#ifdef SHAREDIR
+#if defined(GNUSTEP_APP)
+return( sharedir = gnustep_resources_localedir );
+#elif defined(SHAREDIR)
 return( sharedir = SHAREDIR "/../locale" );
 #elif defined( PREFIX )
 return( sharedir = PREFIX "/share/locale" );
@@ -1076,7 +1078,7 @@ static void GrokNavigationMask(void) {
     navigation_mask = GMenuItemParseMask(H_("NavigationMask|None"));
 }
 
-int main( int argc, char **argv ) {
+int fontforge_main( int argc, char **argv ) {
     extern const char *source_modtime_str;
     extern const char *source_version_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
@@ -1244,6 +1246,8 @@ int main( int argc, char **argv ) {
 
 	gfree(path);
     }
+#elif defined(GNUSTEP_APP)
+    GGadgetSetImageDir(gnustep_resources_pixmaps);
 #elif defined(SHAREDIR)
     GGadgetSetImageDir(SHAREDIR "/pixmaps");
 #endif

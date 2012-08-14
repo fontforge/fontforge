@@ -99,4 +99,6 @@ typedef struct library_version_configuration {
 extern Library_Version_Configuration library_version_configuration;
 
 extern int check_library_version(Library_Version_Configuration *exe_lib_version, int fatal, int quiet);
+
+extern int fontforge_main(int, char **);
 #endif

@@ -1,0 +1,8 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/ecrm1000.pfa fonts/ecrm1000.tfm
+
+Open("fonts/ecrm1000.pfa")
+MergeKern("fonts/ecrm1000.tfm")
+Generate("results/ecrm.ttf","",0x200)
+Open("results/ecrm.ttf")
+Quit()

@@ -86,7 +86,9 @@ return( sharedir );
 
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
-#ifdef SHAREDIR
+#if defined(GNUSTEP_APP)
+return( sharedir = gnustep_resources_localedir );
+#elif defined(SHAREDIR)
 return( sharedir = SHAREDIR "/../locale" );
 #elif defined( PREFIX )
 return( sharedir = PREFIX "/share/locale" );
@@ -135,7 +137,7 @@ static void doscripthelp(void) {
 exit(0);
 }
 
-int main( int argc, char **argv ) {
+int fontforge_main( int argc, char **argv ) {
     extern const char *source_version_str;
     extern const char *source_modtime_str;
 

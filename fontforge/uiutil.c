@@ -316,7 +316,12 @@ return;
 	fullspec[0] = 0;
 	if ( ! GFileIsAbsolute(file) ) {
 	    if ( helpdir==NULL || *helpdir=='\0' ) {
-#ifdef DOCDIR
+/*********** FIXME: THIS IS A POTENTIAL BUFFER OVERRUN. Someone may
+ *********** FIXME: already have fixed it in the recent flood of
+ *********** FIXME: patches, though, so be sure to check later. */
+#if defined(GNUSTEP_APP)
+		strcpy(fullspec,gnustep_resources_htdocs);
+#elif defined(DOCDIR)
 		strcpy(fullspec,DOCDIR "/");
 #elif defined(SHAREDIR)
 		strcpy(fullspec,SHAREDIR "/doc/fontforge/");

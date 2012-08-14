@@ -1,0 +1,16 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/NimbusLGCUni-Regular.sfd
+
+#tests whether we get unicode encodings right when there are multiple encodings
+# per glyph
+#tests whether we get references right in postscript fonts
+
+Open("fonts/NimbusLGCUni-Regular.sfd")
+Generate("results/Nimbus.otf")
+Generate("results/Nimbus.ttf")
+Generate("results/Nimbus.pfb")
+"helper118A.pe"("fonts/NimbusLGCUni-Regular.sfd","results/Nimbus.otf")
+"helper118A.pe"("fonts/NimbusLGCUni-Regular.sfd","results/Nimbus.ttf")
+"helper118B.pe"("fonts/NimbusLGCUni-Regular.sfd","results/Nimbus.otf")
+"helper118B.pe"("fonts/NimbusLGCUni-Regular.sfd","results/Nimbus.pfb")
+Quit()

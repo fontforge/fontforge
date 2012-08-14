@@ -1,0 +1,82 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/Caliban.sfd fonts/Zapfino-4.0d3.dfont fonts/Zapfino-4.1d6.dfont
+
+Open("fonts/Caliban.sfd");
+Print( "...Opened Caliban")
+SelectAll()
+AutoHint();
+Print("...AutoHinted");
+Save("results/Caliban.sfd");
+Print("...Saved As");
+Save("results/Caliban.sfdir");
+Print("...Saved As dir");
+Generate("results/Caliban.ps","bdf",-1);
+Print( "...Generated type0")
+Generate("results/Caliban.ttf","ms",2);
+Print( "...Generated ttf w/ ms bitmaps")
+Generate("results/Caliban.ttf","apple",-1);
+Print( "...Generated ttf w/ apple bitmaps")
+Generate("results/Caliban.otf","ms",-1);
+Print( "...Generated otf w/ ms bitmaps")
+Generate("results/Caliban.otf","ttf",0x80);
+Print( "...Generated otf w/ both apple and ot modes set (& bitmaps)")
+Generate("results/Caliban.dfont","sbit",-1);
+Print( "...Generated sbit")
+Generate("results/Caliban.","otb",-1);
+Print( "...Generated X11 opentype bitmap")
+Generate("results/Caliban.dfont","dfont",-1);
+Print( "...Generated dfont w/ apple bitmaps")
+SetFontOrder(2);
+ClearTable("cvt ")
+SelectAll()
+AutoInstr();
+Print("...AutoInstructed");
+Generate("results/Caliban.ttf","apple",-1);
+Print( "...Generated ttf w/ apple bitmaps (again) and instructions")
+Close();
+
+Open("results/Caliban.sfd");
+Print( "...Read sfd")
+Close();
+Open("results/Caliban.sfdir");
+Print( "...Read sfdir")
+Close();
+Open("results/Caliban.ps");
+Print( "...Read type0 (if PfaEdit didn't understand /CalibanBase that's ok)")
+Close();
+Open("results/Caliban.ttf");
+Print( "...Read ttf")
+Close();
+Open("results/Caliban.otf");
+Print( "...Read otf")
+Close();
+Open("results/Caliban.dfont");
+Print( "...Read dfont")
+Close();
+Open("results/Caliban.otb");
+Print( "...Read otb")
+Close();
+Open("results/Caliban-10.bdf");
+Generate("results/Caliban.dfont","sbit",-1);
+Print( "...Read bdf & Generated sbit")
+Close();
+
+New();
+Save("results/foo.sfd");
+Print( "...Saved new font")
+Close();
+
+Open("fonts/Zapfino-4.0d3.dfont");
+Generate("results/Zapfino.ttf","",0x10);
+Close()
+#We used to get PointCount errors in the above.
+Open("results/Zapfino.ttf")
+Close()
+Print( "...Handled Zapfino with control points at points")
+
+Print( "This font has odd 'morx' tables, we just don't want to crash")
+Open("fonts/Zapfino-4.1d6.dfont");
+Generate("results/Zapfino.ttf","",0x10);
+Close()
+
+Quit()

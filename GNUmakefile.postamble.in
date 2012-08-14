@@ -1,0 +1,18 @@
+# -*- Makefile -*-
+#
+# Support for --with-gnustep-make
+
+before-all::
+
+after-all::
+
+after-clean::
+
+after-distclean::
+	rm -f GNUmakefile GNUmakefile.postamble overall_common.mk
+	rm -f fontforge.pc
+	rm -f inc/config.h
+	rm -f config.log config.cache
+	rm -f config.status
+
+after-clean::

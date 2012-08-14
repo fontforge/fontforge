@@ -1,0 +1,5 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/merged.cff
+
+Open("fonts/merged.cff")
+Quit()

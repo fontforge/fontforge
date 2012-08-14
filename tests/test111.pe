@@ -1,0 +1,6 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/cmbsy10.pfb
+#Make sure merge fonts works...
+
+New();
+MergeFonts("fonts/cmbsy10.pfb")

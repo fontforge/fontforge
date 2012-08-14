@@ -1,0 +1,7 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/n019003l.pfb
+
+Open("fonts/n019003l.pfb");
+SelectAll();
+ReplaceWithReference();
+Quit()

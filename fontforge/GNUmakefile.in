@@ -1,0 +1,85 @@
+# Special support for GNU Make.
+
+ifneq (@GNUSTEP_APP@,yes)
+
+include Makefile
+
+ifeq (@MAINTAINER_TOOLS@,yes)
+
+# You need to build the "fontforge" program to do the stamps for
+# release.
+ifeq (@THE_PROGRAMS@,yes)
+
+#######################################################################
+# Run "make stamps-for-release" with GNU Make before doing a release. #
+#######################################################################
+stamps-for-release: stamper $(LIBFFSTAMP_H_DEPENDS) $(STAMP_C_DEPENDS)
+	./stamper$(EXEEXT) > $(srcdir)/stamp.c
+	./stamper$(EXEEXT) -l > $(srcdir)/libffstamp.h
+
+noinst_PROGRAMS = stamper
+stamper_SOURCES = stamper.c
+
+LIBFFSTAMP_H_DEPENDS = \
+	$(filter-out libfontforge_la-stamp.lo, \
+		$(filter %.$(OBJEXT) %.lo, \
+			$(addprefix libfontforge_la-, $(LIBFF_C_SRCFILES:.c=.lo))))
+STAMP_C_DEPENDS = \
+	$(LIBFFSTAMP_H_DEPENDS) \
+	$(filter %.$(OBJEXT) %.lo, \
+		$(addprefix fontforge-, $(FF_C_SRCFILES:.c=.$(OBJEXT))) \
+		$(addprefix libfontforgeexe_la-, $(LIBFFEXE_C_SRCFILES:.c=.lo)) \
+		$(EXTRA_LIBFF_C_SRCFILES:.c=.lo))
+
+$(srcdir)/stamp.c: stamper $(STAMP_C_DEPENDS) 
+$(srcdir)/libffstamp.h: stamper $(LIBFFSTAMP_H_DEPENDS) 
+
+endif # THE_PROGRAMS
+endif # MAINTAINER_TOOLS
+
+else # GNUSTEP_APP
+
+include $(GNUSTEP_MAKEFILES)/common.make
+
+PACKAGE_NAME = FontForgeApp
+
+LIBRARY_NAME = libFontForge libFontForgeExe
+APP_NAME = FontForgeApp
+
+include common.mk
+include pixmaps/png_list.mk
+include @top_srcdir@/htdocs/doc_list.mk
+include @top_srcdir@/po/common.mk
+include @top_srcdir@/po/mackeys/common.mk
+include @top_srcdir@/overall_common.mk
+
+libFontForge_VERSION = ${FF_VERSION}.${FF_REVISION}.${FF_AGE}
+libFontForge_C_FILES = $(LIBFF_C_SRCFILES) $(NODIST_LIBFF_C_SRCFILES)	\
+	$(EXTRA_LIBFF_C_SRCFILES)
+libFontForge_CFLAGS = -USHAREDIR -UDOCDIR -DGNUSTEP_APP
+
+libFontForgeExe_VERSION = ${FF_VERSION}.${FF_REVISION}.${FF_AGE}
+libFontForgeExe_C_FILES = $(LIBFFEXE_C_SRCFILES)	\
+	$(NODIST_LIBFFEXE_C_SRCFILES) $(EXTRA_LIBFFEXE_C_SRCFILES)
+libFontForgeExe_CFLAGS = -USHAREDIR -UDOCDIR -DGNUSTEP_APP
+
+FontForgeApp_OBJC_FILES = $(FF_M_SRCFILES)
+FontForgeApp_LIB_DIRS = $(addprefix -L@top_srcdir@/, $(addsuffix	\
+	/$(GNUSTEP_OBJ_DIR), Unicode gutils gdraw fontforge))
+FontForgeApp_GUI_LIBS = "-lFontForgeExe" "-lFontForge" "-lGDraw"	\
+	"-lGIOFTP" "-lGUtils" "-lGUnicode" @XINPUT_LIBS@ @XKB_LIBS@		\
+	$(gnustep-config --base-libs) -lgnustep-base
+FontForgeApp_CFLAGS = -USHAREDIR -UDOCDIR
+FontForgeApp_OBJCFLAGS = -USHAREDIR -UDOCDIR
+
+# FIXME: Is there a more appropriate setting for this?
+FontForgeApp_PRINCIPAL_CLASS = ""
+
+FontForgeApp_RESOURCE_FILES = Resources/share
+
+-include GNUmakefile.preamble
+include $(GNUSTEP_MAKEFILES)/library.make
+include $(GNUSTEP_MAKEFILES)/application.make
+-include GNUmakefile.postamble
+
+endif # GNUSTEP_APP

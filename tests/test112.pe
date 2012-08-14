@@ -1,0 +1,34 @@
+#!/usr/local/bin/fontforge
+#Needs: fonts/QuadraticConversionBug.sfd, fonts/CourierNew.ttf
+#Make sure quadratic conversion works...
+
+Open("fonts/QuadraticConversionBug.sfd");
+# the following use to crash (when in a script)
+SetFontOrder(2);
+Save("results/QuadraticConversionBug2.sfd")
+Close()
+# this used to give us IErrors
+Open("results/QuadraticConversionBug2.sfd")
+Close()
+
+# Ok. We can do the conversion without egregious errors. But are the glyphs similar?
+Open("fonts/QuadraticConversionBug.sfd");
+Reencode("Original");
+SelectAll()
+Copy()
+SetFontOrder(2);
+CompareGlyphs(-1,1.5)
+Close()
+
+#Now can we go to cubic?
+Open("fonts/CourierNew.ttf");
+Generate("results/CourierNew.pfb")
+SetFontOrder(3);
+Save("results/CourierNew.sfd")
+Close()
+Open("results/CourierNew.pfb")
+Close()
+Open("results/CourierNew.sfd")
+Close()
+
+Quit()

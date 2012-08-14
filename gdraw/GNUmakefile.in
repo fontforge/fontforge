@@ -1,0 +1,26 @@
+# Special support for GNU Make.
+
+ifneq (@GNUSTEP_APP@,yes)
+
+include Makefile
+
+else # GNUSTEP_APP
+
+include $(GNUSTEP_MAKEFILES)/common.make
+
+PACKAGE_NAME = FontForgeApp
+
+LIBRARY_NAME = libGDraw
+
+include common.mk
+include @top_srcdir@/overall_common.mk
+
+libGDraw_VERSION = ${GD_VERSION}.${GD_REVISION}.${GD_AGE}
+libGDraw_C_FILES = $(GDRAW_C_SRCFILES)
+#libGDraw_HEADER_FILES = $(GDRAW_H_SRCFILES)
+
+-include GNUmakefile.preamble
+include $(GNUSTEP_MAKEFILES)/library.make
+-include GNUmakefile.postamble
+
+endif # GNUSTEP_APP

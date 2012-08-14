@@ -1,0 +1,14 @@
+# -*- Makefile -*-
+#
+# Support for --with-gnustep-make
+
+before-all::
+
+after-all::
+
+after-clean::
+
+after-distclean::
+	rm -f GNUmakefile GNUmakefile.postamble
+
+after-clean::
