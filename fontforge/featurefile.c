@@ -1,4 +1,5 @@
 /* Copyright (C) 2000-2012 by George Williams */
+/* Copyright (C) 2012 by Khaled Hosny */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,7 +45,6 @@
 /* Adobe's opentype feature file */
 /* Which suffers incompatible changes according to Adobe's whim */
 /* Currently trying to support the version of december 2008, Version 1.8. */
-/* For the previous version (March 2006), #define FF_V1_6 */
 
 /* Ambiguities */
 /* In section 4.d we are told that MarkAttachmentType/UseMarkFilteringSet */
@@ -388,11 +388,7 @@ return;
 
     fprintf( out, "<anchor %g %g", rint(ap->me.x), rint(ap->me.y) );
     if ( ap->has_ttf_pt )
-#ifdef FF_V1_6
-	fprintf( out, " <contourpoint %d>", ap->ttf_pt_index );
-#else
 	fprintf( out, " contourpoint %d", ap->ttf_pt_index );
-#endif
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     else if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	putc(' ',out);
@@ -605,20 +601,11 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 		fprintf( out, "mark " );
 	}
 	dump_glyphbyname(out,sf,start);
-#ifdef FF_V1_6
-	if ( in_ignore )
-	    putc('\'',out);
-	else if ( otl!=NULL ) {
-	    putc( index&1 ? '"' : '\'', out );
-	    if ( otl->ticked && otl->lookup_type>=gpos_start ) {
-		fprintf(out, "<lookup %s> ", lookupname(otl) );
-#else
 	putc('\'',out);
 	if ( otl!=NULL ) {
 	    if ( otl->ticked ) {
 		fprintf(out, "lookup %s ", lookupname(otl) );
 		uses_lookups = true;
-#endif
 	    } else if ( otl->lookup_type==gpos_single ) {
 		pst = pst_from_single_lookup(sf, otl, start);
 		if ( pst!=NULL )
@@ -710,25 +697,15 @@ static void dump_contextpstcoverage(FILE *out,SplineFont *sf,
 	    putc('\'',out);
 	else {
 	    otl = lookup_in_rule(r,i,&index, &pos);
-#ifdef FF_V1_6
-	    if ( otl!=NULL ) {
-		putc( index&1 ? '"' : '\'', out );
-#else
 	    putc( '\'', out );
 	    if ( otl!=NULL ) {
-#endif
 		/* Ok, I don't see any way to specify a class of value records */
 		/*  so just assume all vr will be the same for the class */
 		pt = nameend_from_class(r->u.coverage.ncovers[i]);
 		ch = *pt; *pt = '\0';
-#ifdef FF_V1_6
-		if ( otl->ticked && otl->lookup_type>=gpos_start ) {
-		    fprintf(out, "<lookup %s> ", lookupname(otl) );
-#else
 		if ( otl->ticked ) {
 		    fprintf(out, "lookup %s ", lookupname(otl) );
 		    uses_lookups = true;
-#endif
 		} else if ( otl->lookup_type==gpos_single ) {
 		    pst = pst_from_single_lookup(sf,otl,r->u.coverage.ncovers[i]);
 		    if ( pst!=NULL )
@@ -774,11 +751,6 @@ static void dump_contextpstcoverage(FILE *out,SplineFont *sf,
 	for ( i=0; i<r->lookup_cnt; ++i ) {
 	    int len;
 	    otl = r->lookups[i].lookup;
-#ifdef FF_V1_6
-	    if ( otl->ticked )
-		fprintf(out, "<lookup %s> ", lookupname(otl) );
-	    else
-#endif
 	    if ( otl->lookup_type==gsub_single ) {
 		len = 40;
 		putc('[',out);
@@ -868,26 +840,16 @@ static void dump_contextpstclass(FILE *out,SplineFont *sf,
 	    putc( '\'',out );
 	else {
 	    otl = lookup_in_rule(r,i,&index, &pos);
-#ifdef FF_V1_6
-	    if ( otl!=NULL ) {
-		putc( index&1 ? '"' : '\'', out );
-#else
 	    putc( '\'', out );
 	    if ( otl!=NULL ) {
-#endif
 		/* Ok, I don't see any way to specify a class of value records */
 		/*  so just assume all vr will be the same for the class */
 		start = fpst->nclass[r->u.class.nclasses[i]];
 		pt = nameend_from_class(start);
 		ch = *pt; *pt = '\0';
-#ifdef FF_V1_6
-		if ( otl->ticked && otl->lookup_type>=gpos_start ) {
-		    fprintf(out, "<lookup %s> ", lookupname(otl) );
-#else
 		if ( otl->ticked ) {
 		    fprintf(out, "lookup %s ", lookupname(otl) );
 		    uses_lookups = true;
-#endif
 		} else if ( otl->lookup_type==gpos_single ) {
 		    pst = pst_from_single_lookup(sf,otl,start);
 		    if ( pst!=NULL )
@@ -922,11 +884,6 @@ static void dump_contextpstclass(FILE *out,SplineFont *sf,
 	fprintf( out, " by " );
 	for ( i=0; i<r->lookup_cnt; ++i ) {
 	    otl = r->lookups[i].lookup;
-#ifdef FF_V1_6
-	    if ( otl->ticked )
-		fprintf(out, "<lookup %s> ", lookupname(otl) );
-	    else
-#endif
 	    if ( otl->lookup_type==gsub_single ) {
 		putc('[',out);
 		if ( fpst->nclass[r->u.class.nclasses[r->lookups[i].seq]]!=NULL ) {
@@ -1128,7 +1085,6 @@ static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
 	    } while ( k<sf->subfontcnt );
 	    if ( cnt==0 )
     continue;		/* No marks? Nothing to be done */
-#ifndef FF_V1_6
 	    /* Now output the marks */
 	    for ( k=0; k<cnt; ++k ) if ( !(sc = marks[k].sc)->ticked ) {
 		SplineChar *osc;
@@ -1152,90 +1108,9 @@ static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
 	    }
 	    /* When positioning, we dump out all of a base glyph's anchors */
 	    /*  for the sub-table at once rather than class by class */
-#else
-	    /* Now output the marks */
-	    for ( k=0; k<cnt; ++k ) {
-		ap = marks[k].ap;
-		sc = marks[k].sc;
-		fprintf( out, "    mark ");
-		dump_glyphname(out,sc);
-		putc(' ',out);
-		dump_anchorpoint(out,ap);
-		fprintf( out, ";\n");
-	    }
-	    k=0;
-	    if ( sub->lookup->lookup_type!=gpos_mark2ligature ) {
-		do {
-		    _sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
-		    for ( i=0; i<_sf->glyphcnt; ++i ) if ( (sc=_sf->glyphs[i])!=NULL ) {
-			for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-			    if ( ap->anchor==ac && ap->type!=at_mark ) {
-				fprintf( out, "    pos ");
-			        if ( sub->lookup->lookup_type == gpos_mark2mark )
-				    fprintf( out, "mark " );
-				dump_glyphname(out,sc);
-				putc(' ',out);
-				dump_anchorpoint(out,ap);
-				fprintf( out, " mark [" );
-				for ( j=0; j<cnt; ++j ) {
-				    dump_glyphname(out,marks[j].sc);
-				    putc(' ',out);
-				}
-				fprintf(out,"];\n" );
-			    }
-			}
-		    }
-		    ++k;
-		} while ( k<sf->subfontcnt );
-	    } else {
-		struct amarks *lig=NULL;
-		int lcnt, lmax=0, ligmax;
-		do {
-		    _sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
-		    for ( i=0; i<_sf->glyphcnt; ++i ) if ( (sc=_sf->glyphs[i])!=NULL ) {
-			lcnt = 0; ligmax=1;
-			for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-			    if ( ap->anchor==ac && ap->type!=at_mark ) {
-				if ( lcnt>=lmax )
-				    lig = grealloc(lig,(lmax+=20)*sizeof(struct amarks));
-				lig[lcnt].sc = sc;
-				lig[lcnt].ap = ap;
-			        if ( ap->lig_index>ligmax )
-				    ligmax = ap->lig_index;
-				++lcnt;
-			    }
-			}
-			if ( lcnt>0 ) {
-			    fprintf( out, "    pos " );
-			    dump_glyphname(out,sc);
-			    for ( j=0; j<=ligmax; ++j ) {
-				putc(' ',out );
-			        for ( l=0; l<lcnt; ++l ) {
-				    if ( lig[l].ap->lig_index==j ) {
-					dump_anchorpoint(out,lig[l].ap);
-				break;
-				    }
-				}
-			        if ( l==lcnt )
-				    dump_anchorpoint(out,NULL);
-			    }
-			    fprintf( out, " mark [" );
-			    for ( j=0; j<cnt; ++j ) {
-				dump_glyphname(out,marks[j].sc);
-				putc(' ',out);
-			    }
-			    fprintf(out,"];\n" );
-			}
-		    }
-		    ++k;
-		} while ( k<sf->subfontcnt );
-		free(lig);
-	    }
-#endif
 	    free(marks);
 	}
     }
-#ifndef FF_V1_6
     if ( sub->lookup->lookup_type==gpos_cursive )
 return;
 
@@ -1310,7 +1185,6 @@ return;
 	}
 	++k;
     } while ( k<sf->subfontcnt );
-#endif
 }
 
 static void number_subtables(SplineFont *sf) {
@@ -1424,7 +1298,6 @@ static void dump_needednestedlookups(FILE *out, SplineFont *sf, OTLookup *otl) {
 	    }
 	}
 	for ( r=0; r<fpst->rule_cnt; ++r ) {
-#ifndef FF_V1_6
 	    /* In 1.8 if a contextual lookup invokes more than one nested */
 	    /*  lookup, then all lookups must be specified with the lookup */
 	    /*  keyword */
@@ -1444,14 +1317,6 @@ static void dump_needednestedlookups(FILE *out, SplineFont *sf, OTLookup *otl) {
 			 fea_bad_contextual_nestedlookup(sf,fpst,nested)))
 		    dump_lookup(out,sf,nested);
 	    }
-#else
-	    for ( s=0; s<fpst->rules[r].lookup_cnt; ++s ) {
-		OTLookup *nested = fpst->rules[r].lookups[s].lookup;
-		if ( nested!=NULL && nested->features==NULL && !nested->ticked &&
-			fea_bad_contextual_nestedlookup(sf,fpst,nested))
-		    dump_lookup(out,sf,nested);
-	    }
-#endif
 	}
     }
 }
@@ -1480,11 +1345,7 @@ return;					/* No support for apple "lookups" */
     number_subtables(sf);
 
     fprintf( out, "\nlookup %s {\n", lookupname(otl) );
-#ifdef FF_V1_6
-    if ( otl->lookup_flags==0 || otl->lookup_flags>15 )
-#else
     if ( otl->lookup_flags==0 || (otl->lookup_flags&0xe0)!=0 )
-#endif
 	fprintf( out, "  lookupflag %d;\n", otl->lookup_flags );
     else {
 	fprintf( out, "  lookupflag" );
@@ -1496,7 +1357,6 @@ return;					/* No support for apple "lookups" */
 		first = false;
 	    fprintf( out, " %s", flagnames[i] );
 	}
-#ifndef FF_V1_6
 	if ( (otl->lookup_flags&0xff00)!=0 ) {
 	    int index = (otl->lookup_flags>>8)&0xff;
 	    if ( index<sf->mark_class_cnt ) {
@@ -1515,7 +1375,6 @@ return;					/* No support for apple "lookups" */
 		dump_ascii( out, sf->mark_set_names[index]);
 	    }
 	}
-#endif
 	putc(';',out);
 	putc('\n',out);
     }
@@ -1633,7 +1492,6 @@ return;					/* No support for apple "lookups" */
     fprintf( out, "} %s;\n", lookupname(otl) );
 }
 
-#ifndef FF_V1_6
 static void note_nested_lookups_used_twice(OTLookup *base) {
     OTLookup *otl;
     struct lookup_subtable *sub;
@@ -1656,7 +1514,6 @@ static void note_nested_lookups_used_twice(OTLookup *base) {
 	}
     }
 }
-#endif
 
 static void untick_lookups(SplineFont *sf) {
     OTLookup *otl;
@@ -1742,7 +1599,6 @@ static void dump_gdef(FILE *out,SplineFont *sf) {
     if ( !needsclasses && lcnt==0 && sf->mark_class_cnt==0 )
 return;					/* No anchor positioning, no ligature carets */
 
-#ifndef FF_V1_6
     if ( sf->mark_class_cnt!=0 ) {
 	fprintf( out, "#Mark attachment classes (defined in GDEF, used in lookupflags)\n" );
 	for ( i=1; i<sf->mark_class_cnt; ++i ) {
@@ -1751,7 +1607,6 @@ return;					/* No anchor positioning, no ligature carets */
 	    fprintf( out, " = [ %s ];\n", sf->mark_classes[i] );
 	}
     }
-#endif
 
     if ( needsclasses ) {
 	int len;
@@ -1891,9 +1746,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 	if ( feats[0]!=0 ) {
 	    uint32 *scripts = SFScriptsInLookups(sf,isgpos);
 	    fprintf( out, "\n# %s \n\n", isgpos ? "GPOS" : "GSUB" );
-#ifndef FF_V1_6
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
-#endif
 	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
 		if ( otl->features!=NULL && !otl->unused )	/* Nested lookups will be output with the lookups which invoke them */
 		    dump_lookup( out, sf, otl );
