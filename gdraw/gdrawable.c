@@ -46,7 +46,12 @@ static GResInfo gdrawable_ri = {
     "GDrawable",
     "Gdraw",
     false,
-    omf_border_width|omf_padding|omf_border_type
+    omf_border_width|omf_padding|omf_border_type,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GDrawableInit() {
@@ -188,7 +193,8 @@ struct gfuncs gdrawable_funcs = {
 
     GDrawableGetDesiredSize,
     _ggadget_setDesiredSize,
-    gdrawable_FillsWindow
+    gdrawable_FillsWindow,
+    NULL
 };
 
 static int drawable_e_h(GWindow pixmap, GEvent *event) {

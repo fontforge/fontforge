@@ -192,8 +192,11 @@
     </TR>
     <TR>
       <TD><CODE>loadEncodingFile</CODE></TD>
-      <TD><CODE>(filename)</CODE></TD>
-      <TD>Loads an encoding file, returns the name of the encoding or None.</TD>
+      <TD><CODE>(filename[,encname])</CODE></TD>
+      <TD>Loads an encoding file, returns the name of the encoding or None.
+        When loading encodings in Unicode consortium format, an encname has to
+        be specefied or the encoding will be ignored and None will be
+        reterned.</TD>
     </TR>
     <TR>
       <TD><CODE>loadNamelist</CODE></TD>

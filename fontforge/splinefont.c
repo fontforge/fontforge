@@ -220,7 +220,7 @@ return( _SFMakeChar(sf,map,enc));
 }
 
 struct unicoderange specialnames[] = {
-    { NULL }
+    UNICODERANGE_EMPTY
 };
 
 int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
@@ -623,7 +623,7 @@ struct archivers archivers[] = {
     { ".tbz", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".zip", "unzip", "zip", "-l", "", "", ars_zip },
     /* { ".tar.lzma", ? } */
-    NULL
+    ARCHIVERS_EMPTY
 };
 
 void ArchiveCleanup(char *archivedir) {
@@ -862,7 +862,7 @@ struct compressors compressors[] = {
     { ".lzma", "unlzma", "lzma" },
 /* file types which are both archived and compressed (.tgz, .zip) are handled */
 /*  by the archiver above */
-    NULL
+    COMPRESSORS_EMPTY
 };
 
 char *Decompress(char *name, int compression) {
@@ -1083,7 +1083,7 @@ return( NULL );
 	    sf = _SFReadPostScript(file,fullname);
 	    checked = 'p';
 	} else if ( ch1=='%' && ch2=='P' && ch3=='D' && ch4=='F' ) {
-	    sf = _SFReadPdfFont(file,fullname,NULL,openflags);
+	    sf = _SFReadPdfFont(file,fullname,openflags);
 	    checked = 'P';
 	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
 	    int len;

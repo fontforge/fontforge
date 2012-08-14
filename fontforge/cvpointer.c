@@ -84,7 +84,7 @@ int CVAnySelPoints(CharView *cv) {
 		if ( SPIRO_SELECTED(&spl->spiros[i]))
 return( true );
 	} else {
-	    if ( spl->first->selected );
+	    if ( spl->first->selected )
 return( true );
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -1255,7 +1255,7 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
 			anycp = SpiroClosest(base,anycp,cp);
 		    }
 		} else {
-		    if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
+		    if ( RealNear(cp->x,base->x) && RealNear(cp->y,base->y)) {
 			SPIRO_SELECT(cp);
 			anycp = SpiroClosest(base,anycp,cp);
       goto cpdone;

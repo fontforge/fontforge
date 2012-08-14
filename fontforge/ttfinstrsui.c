@@ -616,19 +616,23 @@ int ii_v_e_h(GWindow gw, GEvent *event) {
 	instr_expose(ii,gw,&event->u.expose.rect);
       break;
       case et_char:
-	if ( IIChar(ii,event))
-	    /* All Done */;
-	else if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 )
+	if ( IIChar(ii,event)) {
+	    /* All Done */
+	    ;
+	} else if ( event->u.chr.keysym == GK_Help || event->u.chr.keysym == GK_F1 ) {
 	    help("ttfinstrs.html");
+	}
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	GGadgetEndPopup();
-	if ( event->type==et_mousemove )
+	if ( event->type==et_mousemove ) {
 	    instr_mousemove(ii,event->u.mouse.y);
-	else if ( event->type==et_mousedown ) {
+	} else if ( event->type==et_mousedown ) {
 	    instr_mousedown(ii,event->u.mouse.y);
-	    if ( event->u.mouse.clicks==2 )
-		/*InstrModCreate(ii)*/;
+	    if ( event->u.mouse.clicks==2 ) {
+		/*InstrModCreate(ii)*/
+		;
+            }
 	} else {
 	    instr_mousemove(ii,event->u.mouse.y);
 	    ii->mousedown = false;

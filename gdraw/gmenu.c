@@ -70,7 +70,12 @@ static GResInfo gmenubar_ri = {
     "GMenuBar",
     "Gdraw",
     false,
-    omf_border_shape|omf_border_width|box_foreground_border_outer
+    omf_border_shape|omf_border_width|box_foreground_border_outer,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 static struct resed menu_re[] = {
     {N_("MacIcons"), "MacIcons", rt_bool, &mac_menu_icons, N_("Whether to use mac-like icons to indicate modifiers (for instance ^ for Control)\nor to use an abbreviation (for instance \"Cnt-\")"), NULL, { 0 }, 0, 0 },
@@ -87,7 +92,12 @@ static GResInfo gmenu_ri = {
     "GMenu",
     "Gdraw",
     false,
-    omf_border_shape|omf_padding|box_foreground_border_outer    
+    omf_border_shape|omf_padding|box_foreground_border_outer,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GMenuBarChangeSelection(GMenuBar *mb, int newsel,GEvent *);
@@ -1331,8 +1341,10 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 		pos.x += awidth+3;
 	    else if ( pos.x-pos.width-3>=0 )
 		pos.x -= pos.width+3;
-	    else
-		/* There doesn't seem much we can do in this case */;
+	    else {
+		/* There doesn't seem much we can do in this case */
+		;
+            }
 	}
     }
     if ( pos.x+pos.width > screen.width ) {
@@ -1774,7 +1786,24 @@ struct gfuncs gmenubar_funcs = {
     NULL,
     NULL,
     GMenuBarSetFont,
-    GMenuBarGetFont
+    GMenuBarGetFont,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL
 };
 
 static void GMenuBarFit(GMenuBar *mb,GGadgetData *gd) {

@@ -1162,7 +1162,7 @@ static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
     Display *display = gdisp->display;
     GXWindow nw = gcalloc(1,sizeof(struct gxwindow));
     XSetWindowAttributes attrs;
-    static GWindowAttrs temp = { 0 };
+    static GWindowAttrs temp = GWINDOWATTRS_EMPTY;
     unsigned long wmask = 0;
     XClassHint ch;
     char *pt;
@@ -1622,7 +1622,7 @@ static void _GXDraw_CleanUpWindow( GWindow w ) {
     }
 
     gfree(gw->ggc);
-    memset(gw,'\0',sizeof(GXWindow));
+    memset(gw,'\0',sizeof(*gw));
     gfree(gw);
 }
 

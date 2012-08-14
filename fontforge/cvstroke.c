@@ -699,14 +699,24 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *,int),Str
     GTextInfo label[39];
     int yoff=0;
     int gcdoff, mi, swpos;
-    static StrokeInfo defaults = { 25, lj_round, lc_butt, si_std,
-	    /* removeinternal */ false,
-	    /* removeexternal */ false,
-	    /* leave users center */ false,
-	    3.1415926535897932/4,
-	    25,
-	    NULL,
-	    50 };
+    static StrokeInfo defaults = {
+        25,
+        lj_round,
+        lc_butt,
+        si_std,
+        false, /* removeinternal */
+        false, /* removeexternal */
+        false, /* leave users center */
+        3.1415926535897932/4,
+        25,
+        NULL,
+        50,
+        0.0,
+        0,
+        0,
+        NULL,
+        NULL
+    };
     StrokeInfo *def = si?si:&defaults;
     char anglebuf[20], widthbuf[20], axisbuf[20];
 
@@ -1975,7 +1985,7 @@ static int Pat_HeightChanged(GGadget *g, GEvent *e) {
 return( true );
 	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Aspect)))
 return( true );
-	width = GetCalmReal8(gw,CID_THeight,_("Height"),&err);
+	height = GetCalmReal8(gw,CID_THeight,_("Height"),&err);
 	if ( err )
 return( true );
 	PatternSCBounds(patternsc,&b);

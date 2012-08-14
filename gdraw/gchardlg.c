@@ -75,7 +75,10 @@ static struct inschr {
     GTimer *flash_time;
     GFont *font;
     GFont *smallfont;
-} inschr = { NULL, EOF, em_iso8859_1, 0, d_hex };
+} inschr = {
+     NULL, 0, 0, 0, 0, EOF, em_iso8859_1, 0, d_hex,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL
+};
 
 static struct unicode_subranges { unichar_t first; int len; char *name; } unicode_ranges[] = {
 	{ 0x100, 0x80, "Latin Extended A" },
@@ -335,7 +338,7 @@ struct namemap encodingnames[] = {
     {"Fullwidth Symbol Variants", em_max+73 },
     {"Specials", em_max+74 },
 #endif
-    { NULL }};
+    { NULL, 0 }};
 
 static void inituninameannot(void) {
 #if _NO_LIBUNINAMESLIST
@@ -1011,8 +1014,10 @@ static int inschr_e_h(GWindow gw, GEvent *event) {
 			    cid==INSCHR_Unicode?d_unicode:
 				    d_kuten);
 	} else if ( event->u.control.subtype == et_textchanged ) {
-	    if ( !InsChrFigureShow())
-		/*GDrawBeep(NULL)*/;
+	    if ( !InsChrFigureShow()) {
+		/*GDrawBeep(NULL)*/
+		;
+            }
 	} else if ( event->u.control.subtype == et_listselected ) {
 	    InsChrCharset();
 	}
@@ -1038,20 +1043,21 @@ void GWidgetCreateInsChar(void) {
         { (unichar_t *) "Show", NULL, COLOR_UNKNOWN, COLOR_UNKNOWN, NULL, NULL, 0,0,0,0,0,0, 1, 0, 0, '\0' },
     };
     static GGadgetCreateData gcd[] = {
-        { GLabelCreate, {{ 6, 6 }, NULL, 'e', 0, 0, 0, 0, &labels[0], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-        { GListButtonCreate, {{ 6, 21, 168 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-        { GLabelCreate, {{ 6, 50 }, NULL, 'C', 0, 0, 0, 0, &labels[1], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-        { GTextFieldCreate, {{ 6, 64, 65 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, NULL, gg_visible | gg_enabled | gg_pos_use0 | gg_textarea_wrap }}, /* gg_textarea_wrap means (here) that we should not invoke the InsChar Hook for selections */
-        { GRadioCreate, {{ 85, 48 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], NULL, gg_visible | gg_enabled | gg_cb_on | gg_pos_use0 }},
-        { GRadioCreate, {{ 85, 68 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-        { GRadioCreate, {{ 127, 48 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], NULL, gg_visible | gg_enabled | gg_pos_use0 }},
-        { GRadioCreate, {{ 127, 68 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], NULL, gg_visible | gg_pos_use0 }},
-        { GButtonCreate, {{ 73, 93, 50 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], NULL, gg_visible | gg_pos_use0 }},
-        { GButtonCreate, {{ 137, 93, 50 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], NULL, gg_visible | gg_pos_use0 }},
-        { GButtonCreate, {{ 196-3, 6-3, 50+6 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], NULL, gg_visible | gg_enabled | gg_but_default | gg_pos_use0 }},
-        { GButtonCreate, {{ 196, 36, 50 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], NULL, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0 }},
-        { GButtonCreate, {{ 196, 64, 50 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], NULL, gg_visible | gg_pos_use0 }},
-        { NULL }
+        { GLabelCreate, { { 6, 6, 0, 0 }, NULL, 'e', 0, 0, 0, 0, &labels[0], { NULL }, gg_visible | gg_enabled | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GListButtonCreate, { { 6, 21, 168, 0 }, NULL, 'e', 0, 0, 0, INSCHR_CharSet, NULL, { NULL }, gg_visible | gg_enabled | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GLabelCreate, { { 6, 50, 0, 0 }, NULL, 'C', 0, 0, 0, 0, &labels[1], { NULL }, gg_visible | gg_enabled | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        /* gg_textarea_wrap means (here) that we should not invoke the InsChar Hook for selections */
+        { GTextFieldCreate, { { 6, 64, 65, 0 }, NULL, 'C', 0, 0, 0, INSCHR_Char, NULL, { NULL }, gg_visible | gg_enabled | gg_pos_use0 | gg_textarea_wrap, NULL, NULL }, NULL, NULL },
+        { GRadioCreate, { { 85, 48, 0, 0 }, NULL, 'H', 0, 0, 0, INSCHR_Hex, &labels[2], { NULL }, gg_visible | gg_enabled | gg_cb_on | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GRadioCreate, { { 85, 68, 0, 0 }, NULL, 'D', 0, 0, 0, INSCHR_Dec, &labels[3], { NULL }, gg_visible | gg_enabled | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GRadioCreate, { { 127, 48, 0, 0 }, NULL, 'U', 0, 0, 0, INSCHR_Unicode, &labels[4], { NULL }, gg_visible | gg_enabled | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GRadioCreate, { { 127, 68, 0, 0 }, NULL, 'K', 0, 0, 0, INSCHR_KuTen, &labels[5], { NULL }, gg_visible | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GButtonCreate, { { 73, 93, 50, 0 }, NULL, 'P', 0, 0, 0, INSCHR_Prev, &labels[6], { NULL }, gg_visible | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GButtonCreate, { { 137, 93, 50, 0 }, NULL, 'N', 0, 0, 0, INSCHR_Next, &labels[7], { NULL }, gg_visible | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GButtonCreate, { { 196-3, 6-3, 50+6, 0 }, NULL, 'I', 0, 0, 0, INSCHR_Insert, &labels[8], { NULL }, gg_visible | gg_enabled | gg_but_default | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GButtonCreate, { { 196, 36, 50, 0 }, NULL, 'l', 0, 0, 0, INSCHR_Close, &labels[9], { NULL }, gg_visible | gg_enabled | gg_but_cancel | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        { GButtonCreate, { { 196, 64, 50, 0 }, NULL, 'S', 0, 0, 0, INSCHR_Show, &labels[10], { NULL }, gg_visible | gg_pos_use0, NULL, NULL }, NULL, NULL },
+        GGADGETCREATEDATA_EMPTY
     };
 #define keyboard_width 15
 #define keyboard_height 9

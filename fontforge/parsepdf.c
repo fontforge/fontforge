@@ -2033,8 +2033,8 @@ return( NULL );
 return( list );
 }
 
-SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font,
-	enum openflags openflags) {
+SplineFont *_SFReadPdfFont(FILE *pdf,char *filename, enum openflags openflags) {
+    char *select_this_font = NULL, *pt;
     struct pdfcontext pc;
     SplineFont *sf = NULL;
     char oldloc[24];
@@ -2062,6 +2062,12 @@ return( NULL );
 	pcFree(&pc);
 	setlocale(LC_NUMERIC,oldloc);
 return( NULL );
+    }
+    // parse the chosen font name
+    if((pt = strchr(filename, '(')) != NULL) {
+        select_this_font = copy(pt+1);
+        if((pt = strchr(select_this_font, ')')) != NULL)
+            *pt = '\0';
     }
     if ( pc.fcnt==1 ) {
 	sf = pdf_loadfont(&pc,0);
@@ -2094,29 +2100,21 @@ return( NULL );
     }
     setlocale(LC_NUMERIC,oldloc);
     pcFree(&pc);
+    free(select_this_font);
 return( sf );
 }
 
 SplineFont *SFReadPdfFont(char *filename,enum openflags openflags) {
-    char *pt, *freeme=NULL, *freeme2=NULL, *select_this_font=NULL;
     SplineFont *sf;
     FILE *pdf;
-
-    if ( (pt=strchr(filename,'('))!=NULL ) {
-	freeme = filename = copyn(filename,pt-filename);
-	freeme2 = select_this_font = copy(pt+1);
-	if ( (pt=strchr(select_this_font,')'))!=NULL )
-	    *pt = '\0';
-    }
 
     pdf = fopen(filename,"r");
     if ( pdf==NULL )
 	sf = NULL;
     else {
-	sf = _SFReadPdfFont(pdf,filename,select_this_font,openflags);
+	sf = _SFReadPdfFont(pdf,filename,openflags);
 	fclose(pdf);
     }
-    free(freeme); free(freeme2);
 return( sf );
 }
 

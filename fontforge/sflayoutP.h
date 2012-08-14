@@ -89,7 +89,7 @@ typedef struct layoutinfo {
 } LayoutInfo;
 
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
-extern void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y);
+extern void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y);
 extern int LI_FDDrawChar(void *data,
 	void (*drawImage)(void *,GImage *,GRect *,int x, int y),
 	void (*drawRect)(void *,GRect *,Color col),

@@ -772,7 +772,7 @@ extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
 extern void DevTabToString(char **str,DeviceTable *adjust);
 extern void ValDevTabToStrings(struct matrix_data *mds,int first_offset,ValDevTab *adjust);
 #endif
-extern void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
+extern void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i);
 extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);
 extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);

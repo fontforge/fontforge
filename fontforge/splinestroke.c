@@ -706,7 +706,7 @@ return;		/* Essentially colinear */ /* Won't be perfect because control points l
 	    p->needs_point_left = p->needs_point_right = false;
 	    p->left_hidden = bends_left;
 	    p->right_hidden = !bends_left;
-	    if ( rot.x<=diff_angle.x ) {
+	    if ( rot.x<=fabs(diff_angle.x) ) {
 		p->right = done.right;
 		p->left = done.left;
 		p->needs_point_left = p->needs_point_right = true;
@@ -2111,13 +2111,16 @@ return;
     }
 }
 
-static struct shapedescrip { BasePoint me, prevcp, nextcp; }
-    unitcircle[] = {
-	{ {-1,0}, { -1, -.552 }, { -1, .552 }},
-	{ {0,1}, { -.552, 1 }, { .552, 1 }},
-	{ {1,0}, { 1, .552 }, { 1, -.552 }},
-	{ {0,-1}, {.552, -1 }, {-.552, -1 }},
-	{ {0,0}}};
+static struct shapedescrip {
+    BasePoint me, prevcp, nextcp;
+}
+unitcircle[] = {
+    { { -1, 0 }, { -1, -0.552 }, { -1, 0.552 } },
+    { { 0 , 1 }, { -0.552, 1 }, { 0.552, 1 } },
+    { { 1, 0 }, { 1, 0.552 }, { 1, -0.552 } },
+    { { 0, -1 }, { 0.552, -1 }, { -0.552, -1 } },
+    { { 0, 0 }, { 0, 0 }, { 0, 0 } }
+};
 
 static SplinePoint *SpOnCircle(int i,bigreal radius,BasePoint *center) {
     SplinePoint *sp = SplinePointCreate(unitcircle[i].me.x*radius + center->x,

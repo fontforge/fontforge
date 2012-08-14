@@ -3211,14 +3211,15 @@ static void bHasPreservedTable(Context *c) {
 static void bLoadEncodingFile(Context *c) {
     char *t; char *locfilename;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc != 2 && c->a.argc != 3 )
 	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
+    else if ((c->a.vals[1].type!=v_str ) ||
+            (c->a.argc >= 3 && c->a.vals[2].type !=v_str))
 	ScriptError(c,"Bad argument type");
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    ParseEncodingFile(locfilename);
+    ParseEncodingFile(locfilename, (c->a.argc>=3 ? c->a.vals[2].u.sval : NULL));
     free(locfilename); free(t);
     /*DumpPfaEditEncodings();*/
 }
@@ -4443,9 +4444,9 @@ static ItalicInfo default_ii = {
     -13,		/* Italic angle (in degrees) */
     .95,		/* xheight percent */
     /* horizontal squash, lsb, stemsize, countersize, rsb */
-    .91, .89, .90, .91,		/* For lower case */
-    .91, .93, .93, .91,		/* For upper case */
-    .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
+    { .91, .89, .90, .91 },	/* For lower case */
+    { .91, .93, .93, .91 },	/* For upper case */
+    { .91, .93, .93, .91 },	/* For things which are neither upper nor lower case */
     srf_flat,		/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
     true,		/* Transform bottom serifs */
     true,		/* Transform serifs at x-height */
@@ -4463,7 +4464,9 @@ static ItalicInfo default_ii = {
     true,		/* Make the cyrillic "te" glyph look like a latin "m" */
     true,		/* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
     true,		/* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
-    true		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+    true,		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+
+    ITALICINFO_REMAINDER
 };
 
 static void bItalic(Context *c) {
@@ -4778,7 +4781,7 @@ static void bCanonicalContours(Context *c) {
 }
 
 static void bSimplify(Context *c) {
-    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
+    static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
     smpl.err = (c->curfv->sf->ascent+c->curfv->sf->descent)/1000.;
     smpl.linefixup = (c->curfv->sf->ascent+c->curfv->sf->descent)/500.;
     smpl.linelenmax = (c->curfv->sf->ascent+c->curfv->sf->descent)/100.;

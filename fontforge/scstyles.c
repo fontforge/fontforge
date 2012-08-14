@@ -3259,10 +3259,13 @@ static void PerGlyphFindCounters(struct counterinfo *ci,SplineChar *sc, int laye
 	if ( ss->first->prev==NULL )
     continue;
 	for ( sp=ss->first; ; ) {
-	    if ( SpOnEdge(sp,ci->bottom_y,1,ci,BOT_Z))
-		/* All Done */;
-	    else if ( SpOnEdge(sp,ci->top_y,-1,ci,TOP_Z))
-		/* All Done */;
+	    if ( SpOnEdge(sp,ci->bottom_y,1,ci,BOT_Z)) {
+		/* All Done */
+		;
+	    } else if ( SpOnEdge(sp,ci->top_y,-1,ci,TOP_Z)) {
+		/* All Done */
+		;
+            }
 	    /* Checked for sp->next==NULL above loop */
 	    sp = sp->next->to;
 	    if ( sp==ss->first )
@@ -4098,7 +4101,7 @@ static struct {
     { CHR('g','r','e','k'), LCG_HintedEmboldenHook },
 	/* Hebrew probably works too */
     { CHR('h','e','b','r'), LCG_HintedEmboldenHook },
-    0
+    { 0, NULL }
 };
 
 static struct {
@@ -4107,7 +4110,7 @@ static struct {
 } char_hooks[] = {
     { '0','9', LCG_HintedEmboldenHook },
     { '$','%', LCG_HintedEmboldenHook },
-    0
+    { '\0', '\0', NULL } 
 };
 
 static void LCG_ZoneInit(SplineFont *sf, int layer, struct lcg_zones *zones,enum embolden_type type) {

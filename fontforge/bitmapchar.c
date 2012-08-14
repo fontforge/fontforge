@@ -99,7 +99,7 @@ struct std_bdf_props StandardProps[] = {
 	{ "AXIS_NAMES", prt_string|prt_property, false },
 	{ "AXIS_LIMITS", prt_string|prt_property, false },
 	{ "AXIS_TYPES", prt_string|prt_property, false },
-	NULL
+	STD_BDF_PROPS_EMPTY
 };
 
 int IsUnsignedBDFKey(char *key) {
@@ -454,18 +454,28 @@ static void decomposename(BDFFont *font, char *fontname, char *family_name, char
 /* The XLFD spec also supports RI and RO (reverse skewed italic/oblique) */
     
 	if (( bold = strstr(fontname,"Bold"))==NULL &&
-		( bold = strstr(fontname,"Ligh"))==NULL &&
-		( bold = strstr(fontname,"Demi"))==NULL &&
-		( bold = strstr(fontname,"Blac"))==NULL &&
-		( bold = strstr(fontname,"Roma"))==NULL &&
-		( bold = strstr(fontname,"Book"))==NULL &&
-		( bold = strstr(fontname,"Regu"))==NULL &&
-		( bold = strstr(fontname,"Medi"))==NULL );	/* Again, URW */
+            ( bold = strstr(fontname,"Ligh"))==NULL &&
+            ( bold = strstr(fontname,"Demi"))==NULL &&
+            ( bold = strstr(fontname,"Blac"))==NULL &&
+            ( bold = strstr(fontname,"Roma"))==NULL &&
+            ( bold = strstr(fontname,"Book"))==NULL &&
+            ( bold = strstr(fontname,"Regu"))==NULL &&
+            ( bold = strstr(fontname,"Medi"))==NULL )
+        {
+            /* Again, URW */
+            ;
+        }
     
 	if (( style = strstr(fontname,"Sans"))==NULL &&
-		(compress = strstr(fontname,"SmallCaps"))==NULL );
+            (compress = strstr(fontname,"SmallCaps"))==NULL )
+        {
+	    ;
+	}
 	if ((compress = strstr(fontname,"Extended"))==NULL &&
-		(compress = strstr(fontname,"Condensed"))==NULL );
+            (compress = strstr(fontname,"Condensed"))==NULL )
+        {
+            ;
+        }
     
 	strcpy(weight_name,"Medium");
 	*stylename='\0';

@@ -2995,6 +2995,7 @@ static void CVVScroll(CharView *cv,struct sbevent *sb);
 static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
+static void CVPreviewModeSet(GWindow gw, int checked);
 
 
 static void CVFakeMove(CharView *cv, GEvent *event) {
@@ -5819,7 +5820,7 @@ static CharView* cvshowsCopyFrom( CharView* dst, struct cvshows* src )
     return dst;
 }
 
-void CVPreviewModeSet(GWindow gw, int checked ) {
+static void CVPreviewModeSet(GWindow gw, int checked ) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if( checked && cv->inPreviewMode )
         return;
@@ -5846,8 +5847,6 @@ void CVPreviewModeSet(GWindow gw, int checked ) {
     GDrawRequestExpose(cv->v,NULL,false);
 }
 
-
-                                    
 static void CVMenuPreview(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int checked = mi->ti.checked;
@@ -10935,7 +10934,13 @@ GResInfo charview2_ri = {
     N_("This window displays a single outline glyph (more data)"),
     "CharView",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };
 GResInfo charview_ri = {
     &charview2_ri, NULL,NULL, NULL,
@@ -10947,5 +10952,11 @@ GResInfo charview_ri = {
     N_("This window displays a single outline glyph"),
     "CharView",
     "fontforge",
-    false
+    false,
+    0,
+    NULL,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
 };

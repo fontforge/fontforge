@@ -812,7 +812,12 @@ struct gfuncs GRowCol_funcs = {
     GRowColGetFirstSelPos,
     GRowColShowPos,
     GRowColScrollToText,
-    GRowColSetOrderer
+    GRowColSetOrderer,
+
+    NULL,
+    NULL,
+    NULL,
+    NULL
 };
 
 static GBox list_box = { bt_lowered, bs_rect, 2, 2, 3, box_foreground_border_outer, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

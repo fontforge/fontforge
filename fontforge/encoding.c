@@ -110,15 +110,15 @@ static int32 unicode_from_MacSymbol[] = {
 
 /* I don't think iconv provides encodings for zapfdingbats nor jis201 */
 /*  Perhaps I should list them here for compatability, but I think I'll just */
-/*  leave them out. I doubt they get used.				     */
-static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1 };
-       Encoding custom = { "Custom", 0, NULL, NULL, &texbase,			  1, 1, 0, 0, 0, 0, 0, 1, 0, 0 };
-static Encoding original = { "Original", 0, NULL, NULL, &custom,		  1, 1, 0, 0, 0, 0, 0, 0, 1, 0 };
-static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &original, 	  1, 1, 0, 0, 1, 1, 0, 0, 0, 0 };
-static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0 };
+/*  leave them out. I doubt they get used. */
+static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+       Encoding custom = { "Custom", 0, NULL, NULL, &texbase,                        1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+static Encoding original = { "Original", 0, NULL, NULL, &custom,                     1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &original,           1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp,    1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 static Encoding adobestd = { "AdobeStandard", 256, unicode_from_adobestd, AdobeStandardEncoding, &unicodefull,
-										  1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
-static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,1, 1, 1, 1, 0, 0, 0, 0, 0, 0 };
+                                                                                     1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobestd,   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 
 Encoding *enclist = &symbol;
 
@@ -375,24 +375,25 @@ return( NULL );
 	if ( !temp.has_2byte && !good[033]/* escape */ ) {
 	    if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"JP3")!=NULL &&
-		    TryEscape( &temp,"\33$(O" ))
+		    TryEscape( &temp,"\33$(O" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"JP2")!=NULL &&
-		    TryEscape( &temp,"\33$(D" ))
+		    TryEscape( &temp,"\33$(D" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"JP")!=NULL &&
-		    TryEscape( &temp,"\33$B" ))
+		    TryEscape( &temp,"\33$B" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"KR")!=NULL &&
-		    TryEscape( &temp,"\33$)C\16" ))
+		    TryEscape( &temp,"\33$)C\16" )) {
 		;
-	    else if ( strstr(iconv_name,"2022")!=NULL &&
+	    } else if ( strstr(iconv_name,"2022")!=NULL &&
 		    strstr(iconv_name,"CN")!=NULL &&
-		    TryEscape( &temp,"\33$)A\16" ))
+		    TryEscape( &temp,"\33$)A\16" )) {
 		;
+	    }
 	}
     }
     if ( !temp.has_1byte && !temp.has_2byte )
@@ -540,22 +541,17 @@ return;
     /* # is a comment character (to eol) */
 static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     char buffer[200];
-    int32 encs[1024];
+    int32 encs[0x10000];
     int enc, unienc, max, i;
     Encoding *item;
 
-    for ( i=0; i<1024; ++i )
-	encs[i] = 0;
-    for ( i=0; i<32; ++i )
-	encs[i] = i;
-    for ( i=127; i<0xa0; ++i )
-	encs[i] = i;
+    memset(encs, 0, sizeof(encs));
     max = -1;
 
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( ishexdigit(buffer[0]) ) {
 	    if ( sscanf(buffer, "%x %x", (unsigned *) &enc, (unsigned *) &unienc)==2 &&
-		    enc<1024 && enc>=0 ) {
+		    enc<0x10000 && enc>=0 ) {
 		encs[enc] = unienc;
 		if ( enc>max ) max = enc;
 	    }
@@ -586,7 +582,7 @@ void RemoveMultiples(Encoding *item) {
 	DeleteEncoding(test);
 }
 
-char *ParseEncodingFile(char *filename) {
+char *ParseEncodingFile(char *filename, char *encodingname) {
     FILE *file;
     char *orig = filename;
     Encoding *head, *item, *prev, *next;
@@ -608,7 +604,11 @@ return( NULL );
     }
     ungetc(ch,file);
     if ( ch=='#' || ch=='0' )
-	head = ParseConsortiumEncodingFile(file);
+    {
+        head = ParseConsortiumEncodingFile(file);
+        if(encodingname)
+            head->enc_name = copy(encodingname);
+    }
     else
 	head = PSSlurpEncodings(file);
     fclose(file);
@@ -674,7 +674,7 @@ return( copy( head->enc_name ) );
 }
 
 void LoadPfaEditEncodings(void) {
-    ParseEncodingFile(NULL);
+    ParseEncodingFile(NULL, NULL);
 }
 
 void DumpPfaEditEncodings(void) {

@@ -67,7 +67,14 @@ typedef struct styledlg {
 #define CID_SB_Add	1004
 #define CID_CorrectItalic	1005
 
-static struct counterinfo last_ci = { 90, 0, 90, 0, true };
+static struct counterinfo last_ci = {
+    90, 0, 90, 0, true,
+    /* initializers below are dummy... will be set later */
+    BLUEDATA_EMPTY, 0, NULL, 0, DBOUNDS_EMPTY, 0.0, 0.0, 0.0, 0,
+    { 0, 0 }, /* cnts */
+    { 0, 0 }, /* maxes */
+    { NULL, NULL } /* zones */
+};
 
 static int CondenseExtend_OK(GGadget *g, GEvent *e) {
     struct counterinfo ci;
@@ -2253,9 +2260,9 @@ static ItalicInfo last_ii = {
     -13,		/* Italic angle (in degrees) */
     .95,		/* xheight percent */
     /* horizontal squash, lsb, stemsize, countersize, rsb */
-    .91, .89, .90, .91,		/* For lower case */
-    .91, .93, .93, .91,		/* For upper case */
-    .91, .93, .93, .91,		/* For things which are neither upper nor lower case */
+    { .91, .89, .90, .91 },	/* For lower case */
+    { .91, .93, .93, .91 },	/* For upper case */
+    { .91, .93, .93, .91 },	/* For things which are neither upper nor lower case */
     srf_flat,		/* Secondary serifs (initial, medial on "m", descender on "p", "q" */
     true,		/* Transform bottom serifs */
     true,		/* Transform serifs at x-height */
@@ -2273,7 +2280,9 @@ static ItalicInfo last_ii = {
     true,		/* Make the cyrillic "te" glyph look like a latin "m" */
     true,		/* Make the cyrillic "sha" glyph look like a latin "m" rotated 180 */
     true,		/* Make the cyrillic "dje" glyph look like a latin smallcaps T (not implemented) */
-    true		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+    true,		/* Make the cyrillic "dzhe" glyph look like a latin "u" (same glyph used for cyrillic "i") */
+
+    ITALICINFO_REMAINDER
 };
 
 void ObliqueDlg(FontView *fv, CharView *cv) {

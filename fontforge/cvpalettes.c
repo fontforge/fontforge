@@ -72,13 +72,15 @@ struct l2 {
     int rename_active;    /* If >=2, layer number for which the edit box for layer names is active */
     GClut *clut;
     GFont *font;          /* font to draw text in the palette with */
-} layerinfo = { 2 }; /* info about the current layers in the layers palette */
+} layerinfo = {           /* info about the current layers in the layers palette */
+    2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL
+};
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-struct l2 layer2 = { 2 };
+struct l2 layer2 = { 2, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL };
 static int layers2_active = -1;
 #endif
-static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
+static GPoint cvtoolsoff = { -9999, -9999 }, cvlayersoff = { -9999, -9999 }, bvlayersoff = { -9999, -9999 }, bvtoolsoff = { -9999, -9999 }, bvshadesoff = { -9999, -9999 };
 int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 
@@ -313,18 +315,23 @@ GMenuItem2 cvspirotoollist[] = {
     GMENUITEM2_EMPTY
 };
 
+static char *editablelayers[] = {
 /* GT: Foreground, make it short */
-static char *editablelayers[] = { N_("F_ore"),
+    N_("F_ore"),
 /* GT: Background, make it short */
     N_("_Back"),
 /* GT: Guide layer, make it short */
-    N_("_Guide") };
+    N_("_Guide")
+};
 static real raddiam_x = 20, raddiam_y = 20, rotate_by=0;
-static StrokeInfo expand = { 25, lj_round, lc_butt, si_centerline,
-	    /* removeexternal */ false,
-	    /* removeinternal */ false,
-	    /* leave users */ false,
-	3.1415926535897932/4, 25, NULL, 50 };
+static StrokeInfo expand = {
+    25, lj_round, lc_butt, si_centerline,
+    false, /* removeexternal */
+    false, /* removeinternal */
+    false, /* leave users */
+    3.1415926535897932/4, 25, NULL, 50,
+    0.0, 0, 0, NULL, NULL
+};
 
 real CVRoundRectRadius(void) {
 return( rr_radius );
@@ -2717,7 +2724,7 @@ int CVPaletteMnemonicCheck(GEvent *event) {
 	{ N_("_Back"), CID_EBack },
 /* GT: Guide layer, make it short */
 	{ N_("_Guide"), CID_EGrid },
-	{ 0 }
+	{ NULL, 0 }
     };
     unichar_t mn, mnc;
     int j, i, ch;

@@ -59,6 +59,26 @@ typedef struct clut {
     Color clut[256];
 } GClut;
 
+#define GCLUT_CLUT_EMPTY \
+{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+}
+
+
 typedef struct revcmap RevCMap;
 
 enum image_type { it_mono, it_bitmap=it_mono, it_index, it_true, it_rgba };
@@ -99,9 +119,15 @@ typedef struct grect {
     int32 x,y,width,height;
 } GRect;
 
+#define GRECT_EMPTY { 0, 0, 0, 0 }
+
+
 typedef struct gpoint {
     int16 x,y;
 } GPoint;
+
+#define GPOINT_EMPTY { 0, 0 }
+
 
 extern GImage *GImageCreate(enum image_type type, int32 width, int32 height);
 extern GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
@@ -163,7 +189,7 @@ extern GImage *GImageReadRgb(char *filename);		/* SGI */
 extern GImage *GImageRead(char *filename);
 
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
-extern void GImageDrawImage(GImage *dest,GImage *src,void *junk,int x, int y);
+extern void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y);
 extern void GImageBlendOver(GImage *dest,GImage *src,GRect *from,int x, int y);
 
 extern void gRGB2HSL(struct hslrgb *col);

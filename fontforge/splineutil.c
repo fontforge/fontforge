@@ -4143,8 +4143,10 @@ void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 ) {
 	    t2 = -1;
 	else if ( t1!=-1 )
 	    t1 = -1;
-	else
-	    /* Well we should just remove the whole spline? */;
+	else {
+	    /* Well we should just remove the whole spline? */
+	    ;
+	}
     }
     *_t1 = t1; *_t2 = t2;
 }
@@ -4340,8 +4342,10 @@ static void IterateSolve(const Spline1D *sp,extended ts[3]) {
 	}
     } else if ( sp->c!=0 ) {
 	ts[0] = -sp->d/(extended) sp->c;
-    } else
-	/* No solutions, or all solutions */;
+    } else {
+	/* No solutions, or all solutions */
+	;
+    }
 
     for ( i=j=0; i<3; ++i )
 	if ( ts[i]>=0 && ts[i]<=1 )
@@ -7644,6 +7648,6 @@ return;
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
-    strcpy(gb->pt,str);
+    strcpy((char *)gb->pt, str);
     gb->pt += n;
 }
