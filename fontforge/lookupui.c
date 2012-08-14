@@ -3825,7 +3825,7 @@ return( true );
 	} else if ( lookup_type==gpos_pair ) {
 	    for ( r=0; r<rows; ++r ) {
 		sc = SFGetChar(pstkd->sf,-1,psts[cols*r+0].u.md_str);
-		KpMDParse(pstkd->sf,sc,pstkd->sub,psts,rows,cols,r);
+		KpMDParse(sc,pstkd->sub,psts,rows,cols,r);
 	    }
 	}
 

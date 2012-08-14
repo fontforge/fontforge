@@ -490,7 +490,7 @@ static int CI_CounterSelChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
+static int ParseUValue(GWindow gw, int cid, int minusoneok) {
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     unichar_t *end;
     int val;
@@ -703,7 +703,7 @@ return;
 }
 #endif
 
-void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
+void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i) {
     SplineChar *other;
     PST *pst;
@@ -1021,7 +1021,7 @@ return( false );
     cols = GMatrixEditGetColCnt(GWidgetGetControl(ci->gw,CID_List+(pst_pair-1)*100));
     for ( i=0; i<rows; ++i ) {
 	struct lookup_subtable *sub = ((struct lookup_subtable *) possub[cols*i+0].u.md_ival);
-	KpMDParse(sc->parent,sc,sub,possub,rows,cols,i);
+	KpMDParse(sc,sub,possub,rows,cols,i);
     }
 
     /* Now, free anything that did not get ticked */
@@ -1431,7 +1431,7 @@ static int _CI_OK(CharInfo *ci) {
     if ( !CI_ValidateAltUnis(ci))
 return( false );
 
-    val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
+    val = ParseUValue(ci->gw,CID_UValue,true);
     if ( val==-2 )
 return( false );
     tex_height = gettex(ci->gw,CID_TeX_Height,_("Height"),&err);
@@ -2105,7 +2105,7 @@ static int CI_SValue(GGadget *g, GEvent *e) {	/* Set From Value */
 	unichar_t ubuf[2];
 	int val;
 
-	val = ParseUValue(ci->gw,CID_UValue,false,ci->sc->parent);
+	val = ParseUValue(ci->gw,CID_UValue,false);
 	if ( val<0 )
 return( true );
 
