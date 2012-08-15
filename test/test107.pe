@@ -1,5 +1,0 @@
-#!/usr/local/bin/fontforge
-#Needs: fonts/Ambrosia*.sfd
-#Make sure we can generate a font family
-
-helper107.pe("fonts/Ambrosia.sfd", "fonts/AmbrosiaBold.sfd", "fonts/AmbrosiaItalic.sfd");

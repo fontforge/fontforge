@@ -1,8 +1,0 @@
-#!/usr/local/bin/fontforge
-#Needs: fonts/DataURI.sfd
-
-Open("fonts/DataURI.sfd");
-Generate("results/DataURI.svg");
-Generate("results/DataURI.pt3");
-Open("results/DataURI.svg");
-#Open("results/DataURI.pt3");	/* We can't read this type3 font */

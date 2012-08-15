@@ -1,8 +1,0 @@
-#!/usr/local/bin/fontforge
-#Needs: fonts/AHBugs.sfd
-#Used to have a bug in AutoHint so that it would go into an infinite loop
-# on a path containing a 0 length spline.
-
-Open("fonts/AHBugs.sfd")
-SelectAll()
-AutoHint()
