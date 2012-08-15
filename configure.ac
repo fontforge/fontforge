@@ -13,10 +13,8 @@ AM_INIT_AUTOMAKE([1.11.1 foreign silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
-dnl You will need the following for >=automake-1.12. Presumably
-dnl autoupdate will handle that.
-dnl
-dnl AM_PROG_AR
+# Early Automake 1.11.x versions still do not have AM_PROG_AR.
+m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
 
 LT_INIT([dlopen])
 
