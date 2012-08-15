@@ -383,7 +383,10 @@ void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer) {
     ((PyFF_Glyph *) pysc)->layer = layer;
 }
 
-static int PyFF_cant_set(PyFF_Font *self,PyObject *value, void *closure) {
+/* We use this for read-only properties of exported Python objects.
+ * Signature must be compatible with Python.h::setter - hence unused parameters.
+ */
+static int PyFF_cant_set(PyFF_Font *UNUSED(self), PyObject *UNUSED(value), void *UNUSED(closure)) {
     PyErr_Format(PyExc_TypeError, "Cannot set this member");
 return( 0 );
 }
@@ -439,9 +442,10 @@ return( STRING_TO_PY(foo));
 }
 
 /* ************************************************************************** */
-/* FontForge methods */
+/* Methods of module FontForge                                                */
 /* ************************************************************************** */
-static PyObject *PyFF_GetPrefs(PyObject *self, PyObject *args) {
+
+static PyObject *PyFF_GetPrefs(PyObject *UNUSED(self), PyObject *args) {
     const char *prefname;
     Val val;
 
@@ -457,7 +461,7 @@ return( NULL );
 return( PyFF_ValToObject(&val));
 }
 
-static PyObject *PyFF_SetPrefs(PyObject *self, PyObject *args) {
+static PyObject *PyFF_SetPrefs(PyObject *UNUSED(self), PyObject *args) {
     const char *prefname;
     Val val;
     double d;
@@ -487,25 +491,25 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_SavePrefs(PyObject *self, PyObject *args) {
+static PyObject *PyFF_SavePrefs(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     SavePrefs(false);
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_LoadPrefs(PyObject *self, PyObject *args) {
+static PyObject *PyFF_LoadPrefs(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     LoadPrefs();
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_DefaultOtherSubrs(PyObject *self, PyObject *args) {
+static PyObject *PyFF_DefaultOtherSubrs(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     DefaultOtherSubrs();
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_ReadOtherSubrsFile(PyObject *self, PyObject *args) {
+static PyObject *PyFF_ReadOtherSubrsFile(PyObject *UNUSED(self), PyObject *args) {
     const char *filename;
 
     /* here we do want the default encoding */
@@ -513,14 +517,14 @@ static PyObject *PyFF_ReadOtherSubrsFile(PyObject *self, PyObject *args) {
 return( NULL );
 
     if ( ReadOtherSubrsFile((char *) filename)<=0 ) {
-	PyErr_Format(PyExc_ImportError, "Could not find OtherSubrs file %s",  filename);
+        PyErr_Format(PyExc_ImportError, "Could not find OtherSubrs file %s",  filename);
 return( NULL );
     }
 
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_LoadEncodingFile(PyObject *self, PyObject *args) {
+static PyObject *PyFF_LoadEncodingFile(PyObject *UNUSED(self), PyObject *args) {
     const char *filename;
     char * encodingname = NULL;
 
@@ -531,7 +535,7 @@ return( NULL );
 return( Py_BuildValue("s", ParseEncodingFile((char *) filename, encodingname)) );
 }
 
-static PyObject *PyFF_LoadNamelist(PyObject *self, PyObject *args) {
+static PyObject *PyFF_LoadNamelist(PyObject *UNUSED(self), PyObject *args) {
     const char *filename;
 
     /* here we do want the default encoding */
@@ -543,7 +547,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_LoadNamelistDir(PyObject *self, PyObject *args) {
+static PyObject *PyFF_LoadNamelistDir(PyObject *UNUSED(self), PyObject *args) {
     const char *filename;
 
     /* here we do want the default encoding */
@@ -556,7 +560,7 @@ Py_RETURN_NONE;
 }
 
 
-static PyObject *PyFF_LoadPlugin(PyObject *self, PyObject *args) {
+static PyObject *PyFF_LoadPlugin(PyObject *UNUSED(self), PyObject *args) {
     const char *filename;
 
     /* here we do want the default encoding */
@@ -570,7 +574,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_LoadPluginDir(PyObject *self, PyObject *args) {
+static PyObject *PyFF_LoadPluginDir(PyObject *UNUSED(self), PyObject *args) {
     const char *filename;
 
     /* here we do want the default encoding */
@@ -584,7 +588,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_PreloadCidmap(PyObject *self, PyObject *args) {
+static PyObject *PyFF_PreloadCidmap(PyObject *UNUSED(self), PyObject *args) {
     const char *filename, *reg, *order;
     int supplement;
 
@@ -597,7 +601,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_UnicodeFromName(PyObject *self, PyObject *args) {
+static PyObject *PyFF_UnicodeFromName(PyObject *UNUSED(self), PyObject *args) {
     char *name;
     PyObject *ret;
 
@@ -609,7 +613,7 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFF_NameFromUnicode(PyObject *self, PyObject *args) {
+static PyObject *PyFF_NameFromUnicode(PyObject *UNUSED(self), PyObject *args) {
     char buffer[400], *nlist = NULL;
     int uniinterp, uni;
     NameList *for_new_glyphs;
@@ -635,14 +639,14 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFF_Version(PyObject *self, PyObject *args) {
+static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     char buffer[20];
 
     sprintf( buffer, "%d", library_version_configuration.library_source_versiondate);
 return( Py_BuildValue("s", buffer ));
 }
 
-static PyObject *PyFF_FontTuple(PyObject *self, PyObject *args) {
+static PyObject *PyFF_FontTuple(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     FontViewBase *fv;
     int cnt;
     PyObject *tuple;
@@ -655,7 +659,7 @@ static PyObject *PyFF_FontTuple(PyObject *self, PyObject *args) {
 return( tuple );
 }
 
-static PyObject *PyFF_ActiveFont(PyObject *self, PyObject *args) {
+static PyObject *PyFF_ActiveFont(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     if ( fv_active_in_ui==NULL )
 Py_RETURN_NONE;
@@ -663,7 +667,7 @@ Py_RETURN_NONE;
 return( PyFV_From_FV_I( fv_active_in_ui ));
 }
 
-static PyObject *PyFF_ActiveGlyph(PyObject *self, PyObject *args) {
+static PyObject *PyFF_ActiveGlyph(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
     if ( sc_active_in_ui==NULL )
 Py_RETURN_NONE;
@@ -671,7 +675,7 @@ Py_RETURN_NONE;
 return( PySC_From_SC_I( sc_active_in_ui ));
 }
 
-static PyObject *PyFF_ActiveLayer(PyObject *self, PyObject *args) {
+static PyObject *PyFF_ActiveLayer(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 
 return( Py_BuildValue("i", layer_active_in_ui ));
 }
@@ -686,7 +690,7 @@ static FontViewBase *SFAdd(SplineFont *sf,int hide) {
 return( sf->fv );
 }
 
-static PyObject *PyFF_OpenFont(PyObject *self, PyObject *args) {
+static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
     char *filename, *locfilename;
     int openflags = 0;
     SplineFont *sf;
@@ -703,7 +707,7 @@ return( NULL );
 return( PyFV_From_FV_I( SFAdd( sf, openflags&of_hidewindow )));
 }
 
-static PyObject *PyFF_FontsInFile(PyObject *self, PyObject *args) {
+static PyObject *PyFF_FontsInFile(PyObject *UNUSED(self), PyObject *args) {
     char *filename;
     char *locfilename = NULL;
     PyObject *tuple;
@@ -725,11 +729,11 @@ return( NULL );
 return( tuple );
 }
 
-static void prterror(void *foo, char *msg, int pos) {
+static void prterror(void *UNUSED(foo), char *msg, int UNUSED(pos)) {
     fprintf( stderr, "%s\n", msg );
 }
 
-static PyObject *PyFF_ParseTTFInstrs(PyObject *self, PyObject *args) {
+static PyObject *PyFF_ParseTTFInstrs(PyObject *UNUSED(self), PyObject *args) {
     PyObject *binstr;
     char *instr_str;
     int icnt;
@@ -748,7 +752,7 @@ return( NULL );
 return( binstr );
 }
 
-static PyObject *PyFF_UnParseTTFInstrs(PyObject *self, PyObject *args) {
+static PyObject *PyFF_UnParseTTFInstrs(PyObject *UNUSED(self), PyObject *args) {
     PyObject *tuple, *ret;
     int icnt, i;
     uint8 *instrs;
@@ -781,7 +785,7 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFF_unitShape(PyObject *self, PyObject *args) {
+static PyObject *PyFF_unitShape(PyObject *UNUSED(self), PyObject *args) {
     int n=0;
     SplineSet *ss;
     PyObject *ret;
@@ -804,7 +808,7 @@ static struct flaglist printmethod[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFF_printSetup(PyObject *self, PyObject *args) {
+static PyObject *PyFF_printSetup(PyObject *UNUSED(self), PyObject *args) {
     char *ptype, *pcmd = NULL;
     int iptype;
 
@@ -886,7 +890,7 @@ return;
     layer_active_in_ui = ly_fore;
 }
 
-static PyObject *PyFF_registerImportExport(PyObject *self, PyObject *args) {
+static PyObject *PyFF_registerImportExport(PyObject *UNUSED(self), PyObject *args) {
     PyObject *import, *export, *data;
     char *name, *exten, *exten_list=NULL;
     /* I'm assuming the extensions are in ASCII so no conversion will be needed*/
@@ -927,7 +931,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_hasSpiro(PyObject *self, PyObject *args) {
+static PyObject *PyFF_hasSpiro(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     PyObject *ret = hasspiro() ? Py_True : Py_False;
 
     Py_INCREF(ret);
@@ -938,19 +942,19 @@ return( ret );
 /* ************************ User Interface routines ************************* */
 /* ************************************************************************** */
 
-static PyObject *PyFF_registerMenuItemStub(PyObject *self, PyObject *args) {
+static PyObject *PyFF_registerMenuItemStub(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     /* This is a stub which will be replaced when we've got a UI */
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_hasUserInterface(PyObject *self, PyObject *args) {
+static PyObject *PyFF_hasUserInterface(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     PyObject *ret = no_windowing_ui ? Py_False : Py_True;
 
     Py_INCREF(ret);
 return( ret );
 }
 
-static PyObject *PyFF_logError(PyObject *self, PyObject *args) {
+static PyObject *PyFF_logError(PyObject *UNUSED(self), PyObject *args) {
     char *msg;
     if ( !PyArg_ParseTuple(args,"es","UTF-8", &msg) )
 return( NULL );
@@ -959,7 +963,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_postError(PyObject *self, PyObject *args) {
+static PyObject *PyFF_postError(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
 return( NULL );
@@ -967,7 +971,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_postNotice(PyObject *self, PyObject *args) {
+static PyObject *PyFF_postNotice(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
 return( NULL );
@@ -975,7 +979,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFF_openFilename(PyObject *self, PyObject *args) {
+static PyObject *PyFF_openFilename(PyObject *UNUSED(self), PyObject *args) {
     char *title,*def=NULL,*filter=NULL;
     char *ret;
     PyObject *reto;
@@ -998,7 +1002,7 @@ Py_RETURN_NONE;
 return( reto );
 }
 
-static PyObject *PyFF_saveFilename(PyObject *self, PyObject *args) {
+static PyObject *PyFF_saveFilename(PyObject *UNUSED(self), PyObject *args) {
     char *title,*def=NULL,*filter=NULL;
     char *ret;
     PyObject *reto;
@@ -1021,7 +1025,7 @@ Py_RETURN_NONE;
 return( reto );
 }
 
-static PyObject *PyFF_ask(PyObject *self, PyObject *args) {
+static PyObject *PyFF_ask(PyObject *UNUSED(self), PyObject *args) {
     char *title,*quest, **answers;
     int def=0, cancel=-1, cnt;
     PyObject *answero;
@@ -1062,7 +1066,7 @@ return( NULL );
 return( Py_BuildValue("i",ret));
 }
 
-static PyObject *PyFF_askChoices(PyObject *self, PyObject *args) {
+static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args) {
     char *title,*quest, **answers;
     int def=0, cnt;
     PyObject *answero;
@@ -1101,7 +1105,7 @@ return( NULL );
 return( Py_BuildValue("i",ret));
 }
 
-static PyObject *PyFF_askString(PyObject *self, PyObject *args) {
+static PyObject *PyFF_askString(PyObject *UNUSED(self), PyObject *args) {
     char *title,*quest, *def = NULL;
     char *ret;
     PyObject *reto;
@@ -1156,7 +1160,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFPoint_pickleReducer(PyFF_Point *self, PyObject *args) {
+static PyObject *PyFFPoint_pickleReducer(PyFF_Point *self, PyObject *UNUSED(args)) {
     PyObject *reductionTuple, *argTuple;
 
     if ( _new_point==NULL )
@@ -1463,7 +1467,7 @@ static void PyFFContour_ClearSpiros(PyFF_Contour *self) {
     free(self->name);
 }
 
-static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
     PyFF_Contour *self;
 
     self = (PyFF_Contour *)type->tp_alloc(type, 0);
@@ -1557,11 +1561,11 @@ static PyObject *PyFFContour_richcompare(PyObject *a, PyObject *b, int op) {
 /* ************************************************************************** */
 /* Contour getters/setters */
 /* ************************************************************************** */
-static PyObject *PyFF_Contour_get_is_quadratic(PyFF_Contour *self,void *closure) {
+static PyObject *PyFF_Contour_get_is_quadratic(PyFF_Contour *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->is_quadratic ));
 }
 
-static int PyFF_Contour_set_is_quadratic(PyFF_Contour *self,PyObject *value,void *closure) {
+static int PyFF_Contour_set_is_quadratic(PyFF_Contour *self,PyObject *value, void *UNUSED(closure)) {
     int val;
     SplineSet *ss, *ss2;
 
@@ -1587,11 +1591,11 @@ return( 0 );
 return( 0 );
 }
 
-static PyObject *PyFF_Contour_get_closed(PyFF_Contour *self,void *closure) {
+static PyObject *PyFF_Contour_get_closed(PyFF_Contour *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->closed ));
 }
 
-static int PyFF_Contour_set_closed(PyFF_Contour *self,PyObject *value,void *closure) {
+static int PyFF_Contour_set_closed(PyFF_Contour *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -1619,7 +1623,7 @@ return( 0 );
 return( 0 );
 }
 
-static PyObject *PyFF_Contour_get_spiros(PyFF_Contour *self,void *closure) {
+static PyObject *PyFF_Contour_get_spiros(PyFF_Contour *self, void *UNUSED(closure)) {
     PyObject *spirotuple;
     int i;
 
@@ -1649,7 +1653,7 @@ return( NULL );
 return( spirotuple );
 }
 
-static int PyFF_Contour_set_spiros(PyFF_Contour *self,PyObject *value,void *closure) {
+static int PyFF_Contour_set_spiros(PyFF_Contour *self,PyObject *value, void *UNUSED(closure)) {
     PyObject *spirotuple = value;
     int i, cnt;
     spiro_cp *spiros;
@@ -1711,14 +1715,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Contour_get_name(PyFF_Contour *self,void *closure) {
+static PyObject *PyFF_Contour_get_name(PyFF_Contour *self, void *UNUSED(closure)) {
     if ( self->name==NULL )
 Py_RETURN_NONE;
 
 return( Py_BuildValue("s", self->name ));
 }
 
-static int PyFF_Contour_set_name(PyFF_Contour *self,PyObject *value,void *closure) {
+static int PyFF_Contour_set_name(PyFF_Contour *self,PyObject *value, void *UNUSED(closure)) {
 
     free(self->name);
     if ( value==Py_None )
@@ -2238,7 +2242,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFContour_ReverseDirection(PyFF_Contour *self, PyObject *args) {
+static PyObject *PyFFContour_ReverseDirection(PyFF_Contour *self, PyObject *UNUSED(args)) {
     int i, j;
     PyFF_Point **temp, **old;
 
@@ -2261,7 +2265,7 @@ static PyObject *PyFFContour_ReverseDirection(PyFF_Contour *self, PyObject *args
 Py_RETURN( self );
 }
 
-static PyObject *PyFFContour_IsClockwise(PyFF_Contour *self, PyObject *args) {
+static PyObject *PyFFContour_IsClockwise(PyFF_Contour *self, PyObject *UNUSED(args)) {
     SplineSet *ss;
     int ret;
 
@@ -2366,7 +2370,7 @@ struct flaglist simplifyflags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFContour_selfIntersects(PyFF_Contour *self, PyObject *args) {
+static PyObject *PyFFContour_selfIntersects(PyFF_Contour *self, PyObject *UNUSED(args)) {
     SplineSet *ss;
     Spline *s, *s2;
     PyObject *ret;
@@ -2451,7 +2455,7 @@ return( NULL );
 return( retO );
 }
 
-static PyObject *PyFFContour_pickleReducer(PyFF_Contour *self, PyObject *args) {
+static PyObject *PyFFContour_pickleReducer(PyFF_Contour *self, PyObject *UNUSED(args)) {
     PyObject *reductionTuple, *argTuple;
     int i;
 
@@ -2538,7 +2542,7 @@ Py_RETURN( self );		/* no points=> nothing to do */
 Py_RETURN( self );
 }
 
-static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *args) {
+static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(args)) {
     double xmin, xmax, ymin, ymax;
     int i;
 
@@ -3007,7 +3011,7 @@ static void PyFFLayer_dealloc(PyFF_Layer *self) {
     ((PyObject *)self)->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *PyFFLayer_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+static PyObject *PyFFLayer_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
     PyFF_Layer *self;
 
     self = (PyFF_Layer *)type->tp_alloc(type, 0);
@@ -3126,11 +3130,11 @@ static PyObject *PyFFLayer_richcompare(PyObject *a, PyObject *b, int op) {
 /* ************************************************************************** */
 /* Layer getters/setters */
 /* ************************************************************************** */
-static PyObject *PyFF_Layer_get_is_quadratic(PyFF_Layer *self,void *closure) {
+static PyObject *PyFF_Layer_get_is_quadratic(PyFF_Layer *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->is_quadratic ));
 }
 
-static int PyFF_Layer_set_is_quadratic(PyFF_Layer *self,PyObject *value,void *closure) {
+static int PyFF_Layer_set_is_quadratic(PyFF_Layer *self,PyObject *value, void *UNUSED(closure)) {
     int val;
     SplineSet *ss, *ss2;
 
@@ -3307,7 +3311,7 @@ static PyObject *PyFFLayer_IsEmpty(PyFF_Layer *self) {
 return( Py_BuildValue("i",self->cntr_cnt==0 ) );
 }
 
-static PyObject *PyFFLayer_selfIntersects(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_selfIntersects(PyFF_Layer *self, PyObject *UNUSED(args)) {
     SplineSet *ss;
     Spline *s, *s2;
     PyObject *ret;
@@ -3411,7 +3415,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_pickleReducer(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_pickleReducer(PyFF_Layer *self, PyObject *UNUSED(args)) {
     PyObject *reductionTuple, *argTuple;
     int i;
 
@@ -3751,7 +3755,7 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_Correct(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_Correct(PyFF_Layer *self, PyObject *UNUSED(args)) {
     SplineSet *ss, *newss;
     int changed = false;
 
@@ -3765,7 +3769,7 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_ReverseDirection(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_ReverseDirection(PyFF_Layer *self, PyObject *UNUSED(args)) {
     int i;
 
     for ( i=0; i<self->cntr_cnt; ++i )
@@ -3773,7 +3777,7 @@ static PyObject *PyFFLayer_ReverseDirection(PyFF_Layer *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_RemoveOverlap(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_RemoveOverlap(PyFF_Layer *self, PyObject *UNUSED(args)) {
     SplineSet *ss, *newss;
 
     ss = SSFromLayer(self);
@@ -3786,7 +3790,7 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_Intersect(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_Intersect(PyFF_Layer *self, PyObject *UNUSED(args)) {
     SplineSet *ss, *newss;
 
     ss = SSFromLayer(self);
@@ -3869,7 +3873,7 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *UNUSED(args)) {
     double xmin, xmax, ymin, ymax;
     int i,j,none;
     PyFF_Contour *cntr;
@@ -4609,7 +4613,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_closePath(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyphPen_closePath(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SplineSet *ss;
@@ -4636,7 +4640,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_endPath(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyphPen_endPath(PyObject *self, PyObject *UNUSED(args)) {
 
     if ( ((PyFF_GlyphPen *) self)->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
@@ -4755,7 +4759,7 @@ static PyTypeObject PyFF_GlyphPenType = {
 /* Glyph Utilities */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self,void *closure,
+static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, void *UNUSED(closure),
 	int layer) {
     RefChar *ref;
     int cnt;
@@ -4772,7 +4776,7 @@ return( tuple );
 }
 
 static int PyFF_Glyph_set_layer_references(PyFF_Glyph *self,PyObject *value,
-	void *closure, int layer) {
+	void *UNUSED(closure), int layer) {
     int i, j, cnt;
     double m[6];
     real transform[6];
@@ -4823,7 +4827,7 @@ return( NULL );
 return( (PyObject * ) ly );
 }
 
-static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value,void *closure, int layeri) {
+static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure), int layeri) {
     SplineChar *sc = self->sc;
     Layer *layer;
     SplineSet *ss, *newss;
@@ -5504,14 +5508,14 @@ static PyObject *PyFFGlyph_richcompare(PyObject *a, PyObject *b, int op) {
 /* Glyph getters/setters */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Glyph_get_temporary(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_temporary(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->python_temporary==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (self->sc->python_temporary) );
 return( self->sc->python_temporary );
 }
 
-static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     PyObject *old = self->sc->python_temporary;
 
     /* I'd rather not store None, because C routines don't understand it */
@@ -5525,14 +5529,14 @@ static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value,void *closu
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->python_persistent==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (self->sc->python_persistent) );
 return( self->sc->python_persistent );
 }
 
-static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     PyObject *old = self->sc->python_persistent;
 
     /* I'd rather not store None, because C routines don't understand it */
@@ -5546,11 +5550,11 @@ static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value,void *clos
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_activeLayer(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_activeLayer(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->layer ));
 }
 
-static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int layer;
 
     if ( PyInt_Check(value) )
@@ -5569,12 +5573,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_glyphname(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_glyphname(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("s", self->sc->name ));
 }
 
-static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fvs;
 
 #if PY_MAJOR_VERSION >= 3
@@ -5613,19 +5617,19 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_encoding(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_encoding(PyFF_Glyph *self, void *UNUSED(closure)) {
     SplineChar *sc = self->sc;
     EncMap *map = sc->parent->fv->map;
 
 return( Py_BuildValue("i", map->backmap[sc->orig_pos] ));
 }
 
-static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->unicodeenc ));
 }
 
-static int PyFF_Glyph_set_unicode(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_unicode(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fvs;
     int uenc;
 
@@ -5644,7 +5648,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_altuni(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_altuni(PyFF_Glyph *self, void *UNUSED(closure)) {
     int cnt;
     struct altuni *au;
     PyObject *ret;
@@ -5661,7 +5665,7 @@ Py_RETURN_NONE;
 return( ret );
 }
 
-static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int cnt, i;
     struct altuni *head, *last=NULL, *cur;
     int uni, vs, fid;
@@ -5697,12 +5701,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_changed(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_changed(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->changed ));
 }
 
-static int PyFF_Glyph_set_changed(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_changed(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int uenc;
 
     uenc = PyInt_AsLong(value);
@@ -5712,12 +5716,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_texheight(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_texheight(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->tex_height ));
 }
 
-static int PyFF_Glyph_set_texheight(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_texheight(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5727,12 +5731,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_texdepth(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_texdepth(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->tex_depth ));
 }
 
-static int PyFF_Glyph_set_texdepth(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_texdepth(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5742,12 +5746,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_italiccorrection(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_italiccorrection(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->italic_correction ));
 }
 
-static int PyFF_Glyph_set_italiccorrection(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_italiccorrection(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5757,12 +5761,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_topaccent(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_topaccent(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->top_accent_horiz ));
 }
 
-static int PyFF_Glyph_set_topaccent(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_topaccent(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5772,7 +5776,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_isextendedshape(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_isextendedshape(PyFF_Glyph *self, void *UNUSED(closure)) {
     PyObject *ret;
 
     ret = self->sc->is_extended_shape ? Py_True : Py_False;
@@ -5780,7 +5784,7 @@ static PyObject *PyFF_Glyph_get_isextendedshape(PyFF_Glyph *self,void *closure) 
 return( ret );
 }
 
-static int PyFF_Glyph_set_isextendedshape(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_isextendedshape(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5791,12 +5795,12 @@ return( 0 );
 }
 
 
-static PyObject *PyFF_Glyph_get_unlinkRmOvrlpSave(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_unlinkRmOvrlpSave(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->unlink_rm_ovrlp_save_undo ));
 }
 
-static int PyFF_Glyph_set_unlinkRmOvrlpSave(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_unlinkRmOvrlpSave(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5806,17 +5810,17 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_originalgid(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_originalgid(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->orig_pos ));
 }
 
-static PyObject *PyFF_Glyph_get_width(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_width(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->width ));
 }
 
-static int PyFF_Glyph_set_width(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_width(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5827,7 +5831,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_lsb(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_lsb(PyFF_Glyph *self, void *UNUSED(closure)) {
     DBounds b;
 
     SplineCharFindBounds(self->sc,&b);
@@ -5835,7 +5839,7 @@ static PyObject *PyFF_Glyph_get_lsb(PyFF_Glyph *self,void *closure) {
 return( Py_BuildValue("d", b.minx ));
 }
 
-static int PyFF_Glyph_set_lsb(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_lsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
     real trans[6];
     DBounds b;
@@ -5854,7 +5858,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_rsb(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_rsb(PyFF_Glyph *self, void *UNUSED(closure)) {
     DBounds b;
 
     SplineCharFindBounds(self->sc,&b);
@@ -5862,7 +5866,7 @@ static PyObject *PyFF_Glyph_get_rsb(PyFF_Glyph *self,void *closure) {
 return( Py_BuildValue("d", self->sc->width - b.maxx ));
 }
 
-static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
     DBounds b;
 
@@ -5876,12 +5880,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_vwidth(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_vwidth(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->vwidth ));
 }
 
-static int PyFF_Glyph_set_vwidth(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_vwidth(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5891,12 +5895,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_manualhints(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_manualhints(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->manualhints ));
 }
 
-static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self, void *UNUSED(closure)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int cnt=0, i;
     PST *pst, *lcar = NULL;
@@ -5919,7 +5923,7 @@ static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self,void *closure) {
 return( tuple );
 }
 
-static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     SplineChar *sc = self->sc;
     int i, cnt, lig_comp_max = 0, lc;
     char *pt;
@@ -5964,7 +5968,7 @@ return( -1 );
 return( 0 );
 }
 
-static int PyFF_Glyph_set_manualhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_manualhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -5974,20 +5978,20 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( PyFV_From_FV_I(self->sc->parent->fv));
 }
 
-static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self, void *closure) {
 return( PyFF_Glyph_get_layer_references(self,closure,self->layer));
 }
 
-static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value, void *closure) {
 return( PyFF_Glyph_set_layer_references(self,value,closure,self->layer));
 }
 
-static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self, void *UNUSED(closure)) {
     PyFF_RefArray *layerrefs;
 
     if ( self->refs!=NULL )
@@ -6000,7 +6004,7 @@ return NULL;
 Py_RETURN( self->refs );
 }
 
-static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self, void *UNUSED(closure)) {
     SplineChar *sc = self->sc;
     PyObject *binstr;
 
@@ -6008,7 +6012,7 @@ static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self,void *closure) {
 return( binstr );
 }
 
-static int PyFF_Glyph_set_ttfinstrs(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_ttfinstrs(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int i, cnt;
     SplineChar *sc = self->sc;
 
@@ -6050,11 +6054,11 @@ struct flaglist glyphclasses[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFF_Glyph_get_glyphclass(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_glyphclass(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("s", glyphclasses[self->sc->glyph_class].name ));
 }
 
-static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int gc;
     char *str = PyBytes_AsString(value);
 
@@ -6067,23 +6071,23 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_foreground(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_foreground(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( PyFF_Glyph_get_a_layer(self,ly_fore));
 }
 
-static int PyFF_Glyph_set_foreground(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_foreground(PyFF_Glyph *self,PyObject *value, void *closure) {
 return( PyFF_Glyph_set_a_layer(self,value,closure,ly_fore));
 }
 
-static PyObject *PyFF_Glyph_get_background(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_background(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( PyFF_Glyph_get_a_layer(self,ly_back));
 }
 
-static int PyFF_Glyph_set_background(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_background(PyFF_Glyph *self,PyObject *value, void *closure) {
 return( PyFF_Glyph_set_a_layer(self,value,closure,ly_back));
 }
 
-static PyObject *PyFF_Glyph_get_layers(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_layers(PyFF_Glyph *self, void *UNUSED(closure)) {
     PyFF_LayerArray *layers;
 
     if ( self->layers!=NULL )
@@ -6096,7 +6100,7 @@ return NULL;
 Py_RETURN( self->layers );
 }
 
-static PyObject *PyFF_Glyph_get_layer_cnt(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_layer_cnt(PyFF_Glyph *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->sc->layer_cnt ));
 }
@@ -6169,7 +6173,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self, void *UNUSED(closure)) {
     DStemInfo *ds, *dn;
     int cnt;
     PyObject *tuple;
@@ -6188,7 +6192,7 @@ static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self,void *closure) {
 return( tuple );
 }
 
-static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     SplineChar *sc = self->sc;
     DStemInfo *head=NULL, *cur;
     int i, cnt;
@@ -6239,30 +6243,30 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_hhints(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_hhints(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( PyFF_Glyph_get_hints(self->sc->hstem));
 }
 
-static int PyFF_Glyph_set_hhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_hhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Glyph_set_hints(self,false,value));
 }
 
-static PyObject *PyFF_Glyph_get_vhints(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_vhints(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( PyFF_Glyph_get_hints(self->sc->vstem));
 }
 
-static int PyFF_Glyph_set_vhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_vhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Glyph_set_hints(self,true,value));
 }
 
-static PyObject *PyFF_Glyph_get_comment(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_comment(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->comment==NULL )
 return( Py_BuildValue("s", "" ));
     else
 return( PyUnicode_DecodeUTF8(self->sc->comment,strlen(self->sc->comment),NULL));
 }
 
-static int PyFF_Glyph_set_comment(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_comment(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     char *newv;
     PyObject *temp;
 
@@ -6323,11 +6327,11 @@ static PyObject *_PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,int withsel) {
 return( tuple );
 }
 
-static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( _PyFF_Glyph_get_anchorPoints(self,false));
 }
 
-static PyObject *PyFF_Glyph_get_anchorPointsWithSel(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_anchorPointsWithSel(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( _PyFF_Glyph_get_anchorPoints(self,true));
 }
 
@@ -6413,7 +6417,7 @@ return( NULL );
 return( ap );
 }
 
-static int PyFF_Glyph_set_anchorPoints(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_anchorPoints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     AnchorPoint *aphead=NULL, *aplast = NULL, *ap;
     int i;
     SplineChar *sc = self->sc;
@@ -6439,11 +6443,11 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->sc->color ));
 }
 
-static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -6453,13 +6457,13 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_script(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_script(PyFF_Glyph *self, void *UNUSED(closure)) {
     uint32 script = SCScriptFromUnicode(self->sc);
 
 return( TagToPythonString(script, false ));
 }
 
-static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->sc->layers[self->layer].validation_state ));
 }
 
@@ -6579,14 +6583,14 @@ return;
     gv->parts = NULL;
 }
 
-static PyObject *PyFF_Glyph_get_horizontalCIC(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_horizontalCIC(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->horiz_variants==NULL )
 return( Py_BuildValue("i", 0));
 
 return( Py_BuildValue("i", self->sc->horiz_variants->italic_correction ));
 }
 
-static int PyFF_Glyph_set_horizontalCIC(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_horizontalCIC(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -6598,14 +6602,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_verticalCIC(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_verticalCIC(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->vert_variants==NULL )
 return( Py_BuildValue("i", 0));
 
 return( Py_BuildValue("i", self->sc->vert_variants->italic_correction ));
 }
 
-static int PyFF_Glyph_set_verticalCIC(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_verticalCIC(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyInt_AsLong(value);
@@ -6617,14 +6621,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_verticalVariants(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_verticalVariants(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->vert_variants==NULL || self->sc->vert_variants->variants==NULL )
 Py_RETURN_NONE;
 
 return( Py_BuildValue("s", self->sc->vert_variants->variants ));
 }
 
-static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     char *str=NULL;
 
     if ( value == Py_None ) {
@@ -6643,14 +6647,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_horizontalVariants(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_horizontalVariants(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->horiz_variants==NULL || self->sc->horiz_variants->variants==NULL )
 Py_RETURN_NONE;
 
 return( Py_BuildValue("s", self->sc->horiz_variants->variants ));
 }
 
-static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     char *str=NULL;
 
     if ( value == Py_None ) {
@@ -6669,14 +6673,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_horizontalComponents(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_horizontalComponents(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->horiz_variants==0 || self->sc->horiz_variants->part_cnt==0 )
 Py_RETURN_NONE;
 
 return( BuildComponentTuple(self->sc->horiz_variants ));
 }
 
-static int PyFF_Glyph_set_horizontalComponents(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_horizontalComponents(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int cnt;
     struct gv_part *parts;
 
@@ -6697,14 +6701,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_verticalComponents(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_verticalComponents(PyFF_Glyph *self, void *UNUSED(closure)) {
     if ( self->sc->vert_variants==0 || self->sc->vert_variants->part_cnt==0 )
 Py_RETURN_NONE;
 
 return( BuildComponentTuple(self->sc->vert_variants ));
 }
 
-static int PyFF_Glyph_set_verticalComponents(PyFF_Glyph *self,PyObject *value,void *closure) {
+static int PyFF_Glyph_set_verticalComponents(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int cnt;
     struct gv_part *parts;
 
@@ -6725,7 +6729,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_mathKern(PyFF_Glyph *self,void *closure) {
+static PyObject *PyFF_Glyph_get_mathKern(PyFF_Glyph *self, void *UNUSED(closure)) {
     PyFF_MathKern *mk;
 
     if ( self->mk!=NULL )
@@ -6891,7 +6895,7 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 /*  Glyph Methods  */
 /* ************************************************************************** */
 
-static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
 
@@ -6965,7 +6969,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_canonicalContours(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_canonicalContours(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
     CanonicalContours(sc,((PyFF_Glyph *) self)->layer);
@@ -6973,7 +6977,7 @@ static PyObject *PyFFGlyph_canonicalContours(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_canonicalStart(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_canonicalStart(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
     SPLsStartToLeftmost(sc,((PyFF_Glyph *) self)->layer);
@@ -7220,7 +7224,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_autoHint(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_autoHint(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
 
@@ -7229,7 +7233,7 @@ static PyObject *PyFFGlyph_autoHint(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_autoInstr(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_autoInstr(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
     GlobalInstrCt gic;
@@ -7239,7 +7243,7 @@ static PyObject *PyFFGlyph_autoInstr(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_autoTrace(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_autoTrace(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     char **at_args;
@@ -7405,7 +7409,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_unlinkThisGlyph(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_unlinkThisGlyph(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
 
@@ -7922,7 +7926,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *args) {
+static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *UNUSED(args)) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     Spline *s, *s2;
@@ -8067,7 +8071,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_Correct(PyFF_Glyph *self, PyObject *args) {
+static PyObject *PyFFGlyph_Correct(PyFF_Glyph *self, PyObject *UNUSED(args)) {
     int changed = false;
 
     self->sc->layers[self->layer].splines = SplineSetsCorrect(self->sc->layers[self->layer].splines,&changed);
@@ -8076,14 +8080,14 @@ static PyObject *PyFFGlyph_Correct(PyFF_Glyph *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_RemoveOverlap(PyFF_Glyph *self, PyObject *args) {
+static PyObject *PyFFGlyph_RemoveOverlap(PyFF_Glyph *self, PyObject *UNUSED(args)) {
 
     self->sc->layers[self->layer].splines = SplineSetRemoveOverlap(self->sc,self->sc->layers[self->layer].splines,over_remove);
     SCCharChangedUpdate(self->sc,self->layer);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_Intersect(PyFF_Glyph *self, PyObject *args) {
+static PyObject *PyFFGlyph_Intersect(PyFF_Glyph *self, PyObject *UNUSED(args)) {
 
     self->sc->layers[self->layer].splines = SplineSetRemoveOverlap(self->sc,self->sc->layers[self->layer].splines,over_intersect);
     SCCharChangedUpdate(self->sc,self->layer);
@@ -8124,7 +8128,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *args) {
+static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *UNUSED(args)) {
     DBounds bb;
 
     SplineCharFindBounds(self->sc,&bb);
@@ -8132,7 +8136,7 @@ static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *args) {
 return( Py_BuildValue("(dddd)", bb.minx,bb.miny, bb.maxx,bb.maxy ));
 }
 
-static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
+static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *UNUSED(args)) {
 
     SCClearContents(self->sc,self->layer);
     SCCharChangedUpdate(self->sc,self->layer);
@@ -8140,7 +8144,7 @@ static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
 Py_RETURN(self);
 }
 
-static PyObject *PyFFGlyph_isWorthOutputting(PyFF_Glyph *self, PyObject *args) {
+static PyObject *PyFFGlyph_isWorthOutputting(PyFF_Glyph *self, PyObject *UNUSED(args)) {
     PyObject *ret;
 
     ret = SCWorthOutputting(self->sc) ? Py_True : Py_False;
@@ -8703,7 +8707,7 @@ static PyObject *PyFFSelection_Str(PyFF_Selection *self) {
 return( STRING_FROM_FORMAT( "<Selection for %s>", self->fv->sf->fontname ));
 }
 
-static PyObject *PyFFSelection_ByGlyphs(PyFF_Selection *real_selection,void *closure) {
+static PyObject *PyFFSelection_ByGlyphs(PyFF_Selection *real_selection, void *UNUSED(closure)) {
     PyFF_Selection *self;
 
     self = PyObject_New(PyFF_Selection, &PyFF_SelectionType);
@@ -8729,7 +8733,7 @@ struct flaglist select_flags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFFSelection_All(PyObject *self, PyObject *args) {
+static PyObject *PyFFSelection_All(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i;
 
@@ -8738,7 +8742,7 @@ static PyObject *PyFFSelection_All(PyObject *self, PyObject *args) {
 Py_RETURN(self);
 }
 
-static PyObject *PyFFSelection_None(PyObject *self, PyObject *args) {
+static PyObject *PyFFSelection_None(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i;
 
@@ -8747,7 +8751,7 @@ static PyObject *PyFFSelection_None(PyObject *self, PyObject *args) {
 Py_RETURN(self);
 }
 
-static PyObject *PyFFSelection_Changed(PyObject *self, PyObject *args) {
+static PyObject *PyFFSelection_Changed(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i, gid;
 
@@ -8760,7 +8764,7 @@ static PyObject *PyFFSelection_Changed(PyObject *self, PyObject *args) {
 Py_RETURN(self);
 }
 
-static PyObject *PyFFSelection_Invert(PyObject *self, PyObject *args) {
+static PyObject *PyFFSelection_Invert(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i;
 
@@ -9111,11 +9115,11 @@ return( STRING_FROM_FORMAT( "<LayerInfo %s,%d>",
 	self->sf->layers[self->layer].order2));
 }
 
-static PyObject *PyFF_LayerInfo_get_name(PyFF_LayerInfo *self,void *closure) {
+static PyObject *PyFF_LayerInfo_get_name(PyFF_LayerInfo *self, void *UNUSED(closure)) {
 return( Py_BuildValue("s",self->sf->layers[self->layer].name));
 }
 
-static int PyFF_LayerInfo_set_name(PyFF_LayerInfo *self,PyObject *value,void *closure) {
+static int PyFF_LayerInfo_set_name(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
     if ( STRING_CHECK(value)) {
 	free( self->sf->layers[self->layer].name );
 	self->sf->layers[self->layer].name = copy(PyBytes_AsString(value));
@@ -9125,11 +9129,11 @@ return(0);
 return( -1 );
 }
 
-static PyObject *PyFF_LayerInfo_get_order2(PyFF_LayerInfo *self,void *closure) {
+static PyObject *PyFF_LayerInfo_get_order2(PyFF_LayerInfo *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i",self->sf->layers[self->layer].order2));
 }
 
-static int PyFF_LayerInfo_set_order2(PyFF_LayerInfo *self,PyObject *value,void *closure) {
+static int PyFF_LayerInfo_set_order2(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
     if ( PyInt_Check(value)) {
 	int val = PyInt_AsLong(value)!=0;
 	SplineFont *sf = self->sf;
@@ -9146,11 +9150,11 @@ return(0);
 return( -1 );
 }
 
-static PyObject *PyFF_LayerInfo_get_background(PyFF_LayerInfo *self,void *closure) {
+static PyObject *PyFF_LayerInfo_get_background(PyFF_LayerInfo *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i",self->sf->layers[self->layer].background));
 }
 
-static int PyFF_LayerInfo_set_background(PyFF_LayerInfo *self,PyObject *value,void *closure) {
+static int PyFF_LayerInfo_set_background(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
     if ( PyInt_Check(value)) {
 	int val = PyInt_AsLong(value)!=0;
 	SplineFont *sf = self->sf;
@@ -9465,7 +9469,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *args) {
+static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *UNUSED(args)) {
     SplineFont *sf = self->sf;
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
@@ -9476,7 +9480,7 @@ static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFMath_exists(PyFF_Math *self, PyObject *args) {
+static PyObject *PyFFMath_exists(PyFF_Math *self, PyObject *UNUSED(args)) {
     PyObject *ret;
     SplineFont *sf = self->sf;
     if ( sf->cidmaster!=NULL )
@@ -10090,7 +10094,7 @@ static void PyFF_Font_dealloc(PyFF_Font *self) {
     ((PyObject *)self)->ob_type->tp_free((PyObject *) self);
 }
 
-static PyObject *PyFF_Font_new(PyTypeObject *type,PyObject *args,PyObject *kwds) {
+static PyObject *PyFF_Font_new(PyTypeObject *type, PyObject *UNUSED(args), PyObject *UNUSED(kwds)) {
     PyFF_Font *self;
 
     self = (PyFF_Font *) (type->tp_alloc)(type,0);
@@ -10100,7 +10104,7 @@ static PyObject *PyFF_Font_new(PyTypeObject *type,PyObject *args,PyObject *kwds)
 return( (PyObject *) self );
 }
 
-static PyObject *PyFFFont_close(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_close(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FontViewClose(fv);
@@ -10258,7 +10262,7 @@ return( 1 );
 /* Font getters/setters */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self, void *UNUSED(closure)) {
     struct ttflangname *names, *english;
     int cnt, i;
     PyObject *tuple;
@@ -10302,7 +10306,7 @@ static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self,void *closure) {
 return( tuple );
 }
 
-static int PyFF_Font_set_sfntnames(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_sfntnames(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     struct ttflangname *names;
     struct ttflangname dummy;
@@ -10332,7 +10336,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_bitmapSizes(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_bitmapSizes(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple;
     int cnt;
     SplineFont *sf = self->fv->sf;
@@ -10374,7 +10378,7 @@ return( -1 );
 return( 0 );
 }
 
-static int PyFF_Font_set_bitmapSizes(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_bitmapSizes(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( bitmapper(self,value,true));
 }
 
@@ -10386,7 +10390,7 @@ static struct flaglist gaspflags[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFF_Font_get_gasp(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_gasp(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple, *flagstuple;
     int i, j, cnt;
     SplineFont *sf = self->fv->sf;
@@ -10407,7 +10411,7 @@ static PyObject *PyFF_Font_get_gasp(PyFF_Font *self,void *closure) {
 return( tuple );
 }
 
-static int PyFF_Font_set_gasp(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_gasp(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     int cnt, i, flag;
     struct gasp *gasp;
@@ -10436,7 +10440,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_lookups(PyFF_Font *self,void *closure, int isgpos) {
+static PyObject *PyFF_Font_get_lookups(PyFF_Font *self, void *UNUSED(closure), int isgpos) {
     PyObject *tuple;
     OTLookup *otl;
     int cnt;
@@ -10455,15 +10459,15 @@ static PyObject *PyFF_Font_get_lookups(PyFF_Font *self,void *closure, int isgpos
 return( tuple );
 }
 
-static PyObject *PyFF_Font_get_gpos_lookups(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_gpos_lookups(PyFF_Font *self, void *closure) {
 return( PyFF_Font_get_lookups(self,closure,true));
 }
 
-static PyObject *PyFF_Font_get_gsub_lookups(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_gsub_lookups(PyFF_Font *self, void *closure) {
 return( PyFF_Font_get_lookups(self,closure,false));
 }
 
-static PyObject *PyFF_Font_get_math(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_math(PyFF_Font *self, void *UNUSED(closure)) {
     PyFF_Math *math;
 
     if ( self->math!=NULL )
@@ -10476,7 +10480,7 @@ return NULL;
 Py_RETURN( self->math );
 }
 
-static PyObject *PyFF_Font_get_private(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_private(PyFF_Font *self, void *UNUSED(closure)) {
     PyFF_Private *private;
 
     if ( self->private!=NULL )
@@ -10490,7 +10494,7 @@ return NULL;
 Py_RETURN( self->private );
 }
 
-static PyObject *PyFF_Font_get_layers(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_layers(PyFF_Font *self, void *UNUSED(closure)) {
     PyFF_LayerInfoArray *layers;
 
     if ( self->layers!=NULL )
@@ -10503,16 +10507,16 @@ return NULL;
 Py_RETURN( self->layers );
 }
 
-static PyObject *PyFF_Font_get_layer_cnt(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_layer_cnt(PyFF_Font *self, void *UNUSED(closure)) {
 
 return( Py_BuildValue("i", self->fv->sf->layer_cnt ));
 }
 
-static PyObject *PyFF_Font_get_activeLayer(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_activeLayer(PyFF_Font *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->fv->active_layer ));
 }
 
-static int PyFF_Font_set_activeLayer(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_activeLayer(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int layer;
 
     if ( PyInt_Check(value) )
@@ -10531,11 +10535,11 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_selection(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_selection(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFFSelection_new(self));
 }
 
-static int PyFF_Font_set_selection(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_selection(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     PyFF_Selection *sel = (PyFF_Selection *) value;
     int i, len2;
     int is_sel;
@@ -10578,11 +10582,11 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_cvt(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_cvt(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFFCvt_new(self));
 }
 
-static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     PyFF_Cvt *c2 = (PyFF_Cvt *) value;
     int i, len2;
     int is_cvt2;
@@ -10619,7 +10623,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_temporary(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_temporary(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     if ( sf->python_temporary==NULL )
 Py_RETURN_NONE;
@@ -10627,7 +10631,7 @@ Py_RETURN_NONE;
 return( sf->python_temporary );
 }
 
-static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     PyObject *old = sf->python_temporary;
 
@@ -10642,7 +10646,7 @@ static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value,void *closure
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_persistent(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_persistent(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     if ( sf->python_persistent==NULL )
 Py_RETURN_NONE;
@@ -10650,7 +10654,7 @@ Py_RETURN_NONE;
 return( sf->python_persistent );
 }
 
-static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     PyObject *old = sf->python_persistent;
 
@@ -10804,7 +10808,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_texparams(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_texparams(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     int i, em = sf->ascent+sf->descent;
     PyObject *tuple = PyTuple_New(23);
@@ -10831,30 +10835,30 @@ return( tuple );
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_str(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
 return( Py_BuildValue("s", self->fv->sf->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_str(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_strnull(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
     if ( self->fv->sf->name==NULL )			\
 Py_RETURN_NONE;						\
     else						\
 return( Py_BuildValue("s", self->fv->sf->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_str_null(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_cidstrnull(name) \
-static PyObject *PyFF_Font_get_cid##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_cid##name(PyFF_Font *self, void *UNUSED(closure)) { \
     if ( self->fv->cidmaster==NULL )			\
 Py_RETURN_NONE;						\
     if ( self->fv->cidmaster->name==NULL )		\
@@ -10863,77 +10867,77 @@ Py_RETURN_NONE;						\
 return( Py_BuildValue("s", self->fv->cidmaster->name )); \
 }							\
 							\
-static int PyFF_Font_set_cid##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_cid##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_cidstr_null(self,value,"cid" #name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_real(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
 return( Py_BuildValue("d", self->fv->sf->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_real(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_cidreal(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
     if ( self->fv->cidmaster==NULL )			\
 Py_RETURN_NONE;						\
 return( Py_BuildValue("d", self->fv->cidmaster->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_cidreal(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_int(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_int(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_cidint(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
     if ( self->fv->cidmaster==NULL )				\
 Py_RETURN_NONE;							\
 return( Py_BuildValue("i", self->fv->cidmaster->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_cidint(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_int2(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
 return( PyFF_Font_set_int2(self,value,#name,offsetof(SplineFont,name)) );\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_ro_bit(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }
 
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_bit(name) \
-static PyObject *PyFF_Font_get_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_##name(PyFF_Font *self, void *UNUSED(closure)) { \
 return( Py_BuildValue("i", self->fv->sf->name ));	\
 }							\
 							\
-static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value,void *closure) { \
+static int PyFF_Font_set_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) { \
     long temp;						\
 							\
     if ( value==NULL ) {				\
@@ -10956,26 +10960,26 @@ static void SFDefaultOS2(SplineFont *sf) {
 }
 
 #define ff_gs_os2int2(name) \
-static PyObject *PyFF_Font_get_OS2_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_OS2_##name(PyFF_Font *self, void *UNUSED(closure)) { \
     SplineFont *sf = self->fv->sf;			\
     SFDefaultOS2(sf);					\
 return( Py_BuildValue("i", sf->pfminfo.name ));		\
 }							\
 							\
-static int PyFF_Font_set_OS2_##name(PyFF_Font *self,PyObject *value,void *closure) {\
+static int PyFF_Font_set_OS2_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {\
     SplineFont *sf = self->fv->sf;			\
     SFDefaultOS2(sf);					\
 return( PyFF_Font_set_int2(self,value,#name,offsetof(SplineFont,pfminfo)+offsetof(struct pfminfo,name)) );\
 }
 /* *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  */
 #define ff_gs_os2bit(name) \
-static PyObject *PyFF_Font_get_OS2_##name(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_OS2_##name(PyFF_Font *self, void *UNUSED(closure)) { \
     SplineFont *sf = self->fv->sf;			\
     SFDefaultOS2(sf);					\
 return( Py_BuildValue("i", self->fv->sf->pfminfo.name ));	\
 }							\
 							\
-static int PyFF_Font_set_OS2_##name(PyFF_Font *self,PyObject *value,void *closure) { \
+static int PyFF_Font_set_OS2_##name(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) { \
     SplineFont *sf = self->fv->sf;			\
     long temp;						\
 							\
@@ -11070,7 +11074,7 @@ ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
 ff_gs_bit(head_optimized_for_cleartype)
 
-static PyObject *PyFF_Font_get_sfntRevision(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_sfntRevision(PyFF_Font *self, void *UNUSED(closure)) {
     int version = self->fv->sf->sfntRevision;
 
     if ( version==sfntRevisionUnset )
@@ -11079,7 +11083,7 @@ Py_RETURN_NONE;
 return( Py_BuildValue("d", version/65536.0 ));
 }
 
-static int PyFF_Font_set_sfntRevision(PyFF_Font *self,PyObject *value, void *closure) {
+static int PyFF_Font_set_sfntRevision(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( value==Py_None )
@@ -11102,7 +11106,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_woffMajor(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_woffMajor(PyFF_Font *self, void *UNUSED(closure)) {
     int version = self->fv->sf->woffMajor;
 
     if ( version==woffUnset )
@@ -11111,7 +11115,7 @@ Py_RETURN_NONE;
 return( Py_BuildValue("i", version ));
 }
 
-static int PyFF_Font_set_woffMajor(PyFF_Font *self,PyObject *value, void *closure) {
+static int PyFF_Font_set_woffMajor(PyFF_Font *self, PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( value==Py_None ) {
@@ -11130,7 +11134,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_woffMinor(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_woffMinor(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( sf->woffMajor==woffUnset )
@@ -11139,7 +11143,7 @@ Py_RETURN_NONE;
 return( Py_BuildValue("i", sf->woffMinor ));
 }
 
-static int PyFF_Font_set_woffMinor(PyFF_Font *self,PyObject *value, void *closure) {
+static int PyFF_Font_set_woffMinor(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( value==Py_None ) {
@@ -11158,16 +11162,16 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *UNUSED(self), void *UNUSED(closure)) {
 return( Py_BuildValue("i", 0 ));
 }
 
-static int PyFF_Font_set_vertical_origin(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_vertical_origin(PyFF_Font *UNUSED(self), PyObject *UNUSED(value), void *UNUSED(closure)) {
     PyErr_Format(PyExc_NotImplementedError, "No longer supported");
 return( -1 );
 }
 
-static PyObject *PyFF_Font_get_os2codepages(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_os2codepages(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( !sf->pfminfo.hascodepages )
@@ -11176,7 +11180,7 @@ static PyObject *PyFF_Font_get_os2codepages(PyFF_Font *self,void *closure) {
 return( Py_BuildValue("(ii)", sf->pfminfo.codepages[0],sf->pfminfo.codepages[1]));
 }
 
-static int PyFF_Font_set_os2codepages(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_os2codepages(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( value == NULL ) {
@@ -11190,7 +11194,7 @@ return(-1);
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_os2unicoderanges(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_os2unicoderanges(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( !sf->pfminfo.hasunicoderanges )
@@ -11201,7 +11205,7 @@ return( Py_BuildValue("(iiii)",
 	sf->pfminfo.unicoderanges[2], sf->pfminfo.unicoderanges[3]));
 }
 
-static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
 
     if ( value == NULL ) {
@@ -11217,15 +11221,15 @@ return(-1);
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_loadvalidation_state(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_loadvalidation_state(PyFF_Font *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->fv->sf->loadvalidation_state));
 }
 
-static PyObject *PyFF_Font_get_privatevalidation_state(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_privatevalidation_state(PyFF_Font *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", ValidatePrivate(self->fv->sf)));
 }
 
-static PyObject *PyFF_Font_get_baseline(PyFF_Font *self,void *closure,struct Base *base) {
+static PyObject *PyFF_Font_get_baseline(PyFF_Font *UNUSED(self), void *UNUSED(closure), struct Base *base) {
     PyObject *ret, *scripts, *langs, *features, *tags, *script, *poses, *lang, *feature;
     int cnt,i,j,k;
     struct basescript *bs;
@@ -11282,15 +11286,15 @@ Py_RETURN_NONE;
 return( ret );    
 }
 
-static PyObject *PyFF_Font_get_horizontal_baseline(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_horizontal_baseline(PyFF_Font *self, void *closure) {
 return( PyFF_Font_get_baseline(self,closure,self->fv->sf->horiz_base));
 }
 
-static PyObject *PyFF_Font_get_vertical_baseline(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_vertical_baseline(PyFF_Font *self, void *closure) {
 return( PyFF_Font_get_baseline(self,closure,self->fv->sf->vert_base));
 }
 
-static int PyFF_Font_set_baseline(PyFF_Font *self,PyObject *value,void *closure,struct Base **basep) {
+static int PyFF_Font_set_baseline(PyFF_Font *UNUSED(self), PyObject *value, void *UNUSED(closure),struct Base **basep) {
     PyObject *basetags, *scripts;
     int basecnt,i;
     struct Base *base;
@@ -11466,29 +11470,29 @@ return( -1 );
 return( 0 );
 }
 
-static int PyFF_Font_set_horizontal_baseline(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_horizontal_baseline(PyFF_Font *self,PyObject *value, void *closure) {
 return( PyFF_Font_set_baseline(self,value,closure,&self->fv->sf->horiz_base));
 }
 
-static int PyFF_Font_set_vertical_baseline(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_vertical_baseline(PyFF_Font *self,PyObject *value, void *closure) {
 return( PyFF_Font_set_baseline(self,value,closure,&self->fv->sf->vert_base));
 }
 
-static PyObject *PyFF_Font_get_path(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_path(PyFF_Font *self, void *UNUSED(closure)) { \
     if ( self->fv->sf->origname==NULL )
 Py_RETURN_NONE;
     else
 return( Py_BuildValue("s", self->fv->sf->origname ));
 }
 
-static PyObject *PyFF_Font_get_sfd_path(PyFF_Font *self,void *closure) { \
+static PyObject *PyFF_Font_get_sfd_path(PyFF_Font *self, void *UNUSED(closure)) { \
     if ( self->fv->sf->filename==NULL )
 Py_RETURN_NONE;
     else
 return( Py_BuildValue("s", self->fv->sf->filename ));
 }
 
-static PyObject *PyFF_Font_get_OS2_panose(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_OS2_panose(PyFF_Font *self, void *UNUSED(closure)) {
     int i;
     PyObject *tuple;
     SplineFont *sf = self->fv->sf;
@@ -11500,7 +11504,7 @@ static PyObject *PyFF_Font_get_OS2_panose(PyFF_Font *self,void *closure) {
 return( tuple );
 }
 
-static int PyFF_Font_set_OS2_panose(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_OS2_panose(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int panose[10], i;
     SplineFont *sf = self->fv->sf;
 
@@ -11520,7 +11524,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_OS2_vendor(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_OS2_vendor(PyFF_Font *self, void *UNUSED(closure)) {
     char buf[8];
     SplineFont *sf = self->fv->sf;
 
@@ -11533,7 +11537,7 @@ static PyObject *PyFF_Font_get_OS2_vendor(PyFF_Font *self,void *closure) {
 return( Py_BuildValue("s",buf));
 }
 
-static int PyFF_Font_set_OS2_vendor(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_OS2_vendor(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     char *newv;
     PyObject *temp;
@@ -11566,13 +11570,13 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_design_size(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_design_size(PyFF_Font *self, void *UNUSED(closure)) {
     /* Design size is expressed in tenths of points */
 return( Py_BuildValue("d", self->fv->sf->design_size/10.0));
 }
 
-static int PyFF_Font_set_design_size(PyFF_Font *self,PyObject *value,
-	void *closure) {
+static int PyFF_Font_set_design_size(PyFF_Font *self, PyObject *value,
+	void *UNUSED(closure)) {
     double temp;
 
     if ( value==NULL )
@@ -11591,7 +11595,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_size_feature(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_size_feature(PyFF_Font *self, void *UNUSED(closure)) {
     /* Size feature has two formats: Just a design size, or a design size */
     /*  and size bounds, id & name */
     /* First case means a tuple of one element, second a tuple of 5 */
@@ -11623,7 +11627,7 @@ return( Py_BuildValue("(dddiO)", sf->design_size/10.0,
 }
 
 static int PyFF_Font_set_size_feature(PyFF_Font *self,PyObject *value,
-	void *closure) {
+	void *UNUSED(closure)) {
     double temp, top=0, bot=0;
     int id=0;
     PyObject *names=NULL;
@@ -11712,13 +11716,13 @@ return( 0 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_cidsubfontcnt(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_cidsubfontcnt(PyFF_Font *self, void *UNUSED(closure)) {
     if ( self->fv->cidmaster==NULL )
 return( Py_BuildValue("i", 0));
 return( Py_BuildValue("i", self->fv->cidmaster->subfontcnt));
 }
 
-static PyObject *PyFF_Font_get_cidsubfontnames(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_cidsubfontnames(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple;
     SplineFont *sf = self->fv->cidmaster;
     int i;
@@ -11731,7 +11735,7 @@ Py_RETURN_NONE;
 return( tuple );
 }
 
-static PyObject *PyFF_Font_get_cidsubfont(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_cidsubfont(PyFF_Font *self, void *UNUSED(closure)) {
     int i;
     SplineFont *cidmaster = self->fv->cidmaster, *sf = self->fv->sf;
 
@@ -11741,7 +11745,7 @@ return( Py_BuildValue("i", -1));
 return( Py_BuildValue("i", i));
 }
 
-static int PyFF_Font_set_cidsubfont(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_cidsubfont(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int i;
     SplineFont *cidmaster = self->fv->cidmaster, *sf;
     EncMap *map = self->fv->map;
@@ -11790,7 +11794,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_is_cid(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_is_cid(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *cidmaster = self->fv->cidmaster;
 
     if ( cidmaster==NULL )
@@ -11800,7 +11804,7 @@ return( Py_BuildValue("i", 1));
 }
 
 #if 0
-static int PyFF_Font_set_is_cid(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_is_cid(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int i;
     SplineFont *cidmaster = self->fv->cidmaster, *sf;
 
@@ -11824,11 +11828,11 @@ return( 0 );
     MakeCIDMaster(sf, c->curfv->map, false, NULL, map);
 #endif
 
-static PyObject *PyFF_Font_get_encoding(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_encoding(PyFF_Font *self, void *UNUSED(closure)) {
 return( Py_BuildValue("s", self->fv->map->enc->enc_name));
 }
 
-static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fv = self->fv;
     char *encname;
     Encoding *new_enc;
@@ -11896,11 +11900,11 @@ return(0);
 }
 
 /* Not really the right question now... but this is the closest we come */
-static PyObject *PyFF_Font_get_is_quadratic(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_is_quadratic(PyFF_Font *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->fv->sf->layers[self->fv->active_layer].order2));
 }
 
-static int PyFF_Font_set_is_quadratic(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_is_quadratic(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     int order2;
 
@@ -11921,11 +11925,11 @@ return( -1 );
 return(0);
 }
 
-static PyObject *PyFF_Font_get_guide(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_guide(PyFF_Font *self, void *UNUSED(closure)) {
 return( (PyObject *) LayerFromLayer(&self->fv->sf->grid,NULL));
 }
 
-static int PyFF_Font_set_guide(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_guide(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineSet *ss = NULL, *newss;
     int isquad = false;
     SplineFont *sf;
@@ -11960,7 +11964,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_mark_classes(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_mark_classes(PyFF_Font *self, void *UNUSED(closure)) {
     PyObject *tuple, *nametuple;
     SplineFont *sf = self->fv->sf;
     int i;
@@ -11976,7 +11980,7 @@ Py_RETURN_NONE;
 return( tuple );
 }
 
-static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     int i, cnt;
     char **names, **classes;
@@ -12022,11 +12026,11 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_em(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_em(PyFF_Font *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->fv->sf->ascent + self->fv->sf->descent ));
 }
 
-static int PyFF_Font_set_em(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_em(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
     int newem, as, ds, oldem;
     SplineFont *sf;
 
@@ -12123,61 +12127,61 @@ static PyObject *PyFF_Font_GetMaxpValue(PyFF_Font *self,char *str) {
 return( Py_BuildValue("i",val));
 }
 
-static PyObject *PyFF_Font_get_maxp_IDEFs(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_maxp_IDEFs(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFF_Font_GetMaxpValue(self,"IDEFs"));
 }
 
-static int PyFF_Font_set_maxp_IDEFs(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_maxp_IDEFs(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Font_SetMaxpValue(self,value,"IDEFs"));
 }
 
-static PyObject *PyFF_Font_get_maxp_FDEFs(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_maxp_FDEFs(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFF_Font_GetMaxpValue(self,"FDEFs"));
 }
 
-static int PyFF_Font_set_maxp_FDEFs(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_maxp_FDEFs(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Font_SetMaxpValue(self,value,"FDEFs"));
 }
 
-static PyObject *PyFF_Font_get_maxp_maxStackDepth(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_maxp_maxStackDepth(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFF_Font_GetMaxpValue(self,"MaxStackDepth"));
 }
 
-static int PyFF_Font_set_maxp_maxStackDepth(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_maxp_maxStackDepth(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Font_SetMaxpValue(self,value,"MaxStackDepth"));
 }
 
-static PyObject *PyFF_Font_get_maxp_storageCnt(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_maxp_storageCnt(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFF_Font_GetMaxpValue(self,"StorageCnt"));
 }
 
-static int PyFF_Font_set_maxp_storageCnt(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_maxp_storageCnt(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Font_SetMaxpValue(self,value,"StorageCnt"));
 }
 
-static PyObject *PyFF_Font_get_maxp_twilightPtCnt(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_maxp_twilightPtCnt(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFF_Font_GetMaxpValue(self,"TwilightPntCnt"));
 }
 
-static int PyFF_Font_set_maxp_twilightPtCnt(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_maxp_twilightPtCnt(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Font_SetMaxpValue(self,value,"TwilightPntCnt"));
 }
 
-static PyObject *PyFF_Font_get_maxp_zones(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_maxp_zones(PyFF_Font *self, void *UNUSED(closure)) {
 return( PyFF_Font_GetMaxpValue(self,"Zones"));
 }
 
-static int PyFF_Font_set_maxp_zones(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_maxp_zones(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
 return( PyFF_Font_SetMaxpValue(self,value,"Zones"));
 }
 
-static PyObject *PyFF_Font_get_xHeight(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_xHeight(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     double val = SFXHeight(sf,self->fv->active_layer,true);
 return( Py_BuildValue("d",val));
 }
 
-static PyObject *PyFF_Font_get_capHeight(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_capHeight(PyFF_Font *self, void *UNUSED(closure)) {
     SplineFont *sf = self->fv->sf;
     double val = SFCapHeight(sf,self->fv->active_layer,true);
 return( Py_BuildValue("d",val));
@@ -12829,7 +12833,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_cidFlatten(PyFF_Font *self,PyObject *args) {
+static PyObject *PyFFFont_cidFlatten(PyFF_Font *self, PyObject *UNUSED(args)) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
 
     if ( sf->cidmaster==NULL ) {
@@ -12860,7 +12864,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_cidInsertBlankSubFont(PyFF_Font *self,PyObject *args) {
+static PyObject *PyFFFont_cidInsertBlankSubFont(PyFF_Font *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineFont *cidmaster = fv->cidmaster, *sf;
     struct cidmap *map;
@@ -12887,7 +12891,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_cidRemoveSubFont(PyFF_Font *self,PyObject *args) {
+static PyObject *PyFFFont_cidRemoveSubFont(PyFF_Font *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv, *fvs;
     SplineFont *cidmaster = fv->cidmaster, *sf = fv->sf, *replace;
     int i;
@@ -12992,7 +12996,7 @@ return( NULL );
 return( sub );
 }
 
-static PyObject *PyFFFont_buildOrReplaceAALTFeatures(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_buildOrReplaceAALTFeatures(PyObject *self, PyObject *UNUSED(args)) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
 
     AddNewAALTFeatures(sf);
@@ -14457,13 +14461,13 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_revert(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_revert(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVRevert(fv);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_revertToBackup(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_revertToBackup(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVRevertBackup(fv);
 Py_RETURN( self );
@@ -15058,51 +15062,51 @@ return( NULL );
 return( ret );
 }
 
-static PyObject *PyFFFont_clear(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_clear(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVClear(fv);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_cut(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_cut(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVCopy(fv,ct_fullcopy);
     FVClear(fv);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_copy(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_copy(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVCopy(fv,ct_fullcopy);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_copyReference(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_copyReference(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVCopy(fv,ct_reference);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_paste(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_paste(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PasteIntoFV(fv,false,NULL);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_pasteInto(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_pasteInto(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PasteIntoFV(fv,true,NULL);
 Py_RETURN(self);
 }
 
-static PyObject *PyFFFont_unlinkReferences(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_unlinkReferences(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FVUnlinkRef(fv);
 Py_RETURN(self);
 }
 
 
-static PyObject *PyFFFont_Build(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_Build(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FVBuildAccent(fv,false);
@@ -15110,7 +15114,7 @@ static PyObject *PyFFFont_Build(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_canonicalContours(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_canonicalContours(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
@@ -15122,7 +15126,7 @@ static PyObject *PyFFFont_canonicalContours(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_canonicalStart(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_canonicalStart(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
@@ -15575,14 +15579,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoHint(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_autoHint(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FVAutoHint(fv);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FVAutoInstr(fv);
@@ -15603,7 +15607,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_autoTrace(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_autoTrace(PyObject *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FVAutoTrace(fv,false);
@@ -15696,7 +15700,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_AddExtrema(PyFF_Font *self, PyObject *args) {
+static PyObject *PyFFFont_AddExtrema(PyFF_Font *self, PyObject *UNUSED(args)) {
     FontViewBase *fv = self->fv;
 
     FVAddExtrema(fv);
@@ -15714,7 +15718,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_Correct(PyFF_Font *self, PyObject *args) {
+static PyObject *PyFFFont_Correct(PyFF_Font *self, PyObject *UNUSED(args)) {
     int i, gid;
     FontViewBase *fv = self->fv;
     SplineFont *sf = fv->sf;
@@ -15747,13 +15751,13 @@ static PyObject *PyFFFont_Correct(PyFF_Font *self, PyObject *args) {
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_RemoveOverlap(PyFF_Font *self, PyObject *args) {
+static PyObject *PyFFFont_RemoveOverlap(PyFF_Font *self, PyObject *UNUSED(args)) {
 
     FVOverlap(self->fv,over_remove);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_Intersect(PyFF_Font *self, PyObject *args) {
+static PyObject *PyFFFont_Intersect(PyFF_Font *self, PyObject *UNUSED(args)) {
 
     FVOverlap(self->fv,over_intersect);
 Py_RETURN( self );
@@ -15769,7 +15773,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_correctReferences(PyFF_Font *self, PyObject *args) {
+static PyObject *PyFFFont_correctReferences(PyFF_Font *self, PyObject *UNUSED(args)) {
 
     FVCorrectReferences(self->fv);
 Py_RETURN( self );
@@ -16216,7 +16220,7 @@ static PyObject *GetPythonObjectForAWGlyph(AW_Glyph *aw) {
 return( (PyObject *) (aw->python_data) );
 }
 
-static PyObject *PyFF_AWGlyph_getGlyph(PyFF_AWGlyph *self,void *closure) {
+static PyObject *PyFF_AWGlyph_getGlyph(PyFF_AWGlyph *self, void *UNUSED(closure)) {
     PyObject *ret;
     if ( self->base->sc==NULL )
 	ret = Py_None;
@@ -16226,20 +16230,20 @@ static PyObject *PyFF_AWGlyph_getGlyph(PyFF_AWGlyph *self,void *closure) {
 return( ret );
 }
 
-static PyObject *PyFF_AWGlyph_getBB(PyFF_AWGlyph *self,void *closure) {
+static PyObject *PyFF_AWGlyph_getBB(PyFF_AWGlyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("(dddd)", self->base->bb.minx,self->base->bb.miny,
 	    self->base->bb.maxx,self->base->bb.maxy ));
 }
 
-static PyObject *PyFF_AWGlyph_getIminY(PyFF_AWGlyph *self,void *closure) {
+static PyObject *PyFF_AWGlyph_getIminY(PyFF_AWGlyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->base->imin_y ));
 }
 
-static PyObject *PyFF_AWGlyph_getImaxY(PyFF_AWGlyph *self,void *closure) {
+static PyObject *PyFF_AWGlyph_getImaxY(PyFF_AWGlyph *self, void *UNUSED(closure)) {
 return( Py_BuildValue("i", self->base->imax_y ));
 }
 
-static PyObject *PyFF_AWGlyph_getLeft(PyFF_AWGlyph *self,void *closure) {
+static PyObject *PyFF_AWGlyph_getLeft(PyFF_AWGlyph *self, void *UNUSED(closure)) {
     if ( self->left==NULL ) {
 	self->left = PyFF_AWGlyphIndexType.tp_alloc(&PyFF_AWGlyphIndexType,0);
 	((PyFF_AWGlyphI *) (self->left))->base = self->base;
@@ -16250,7 +16254,7 @@ static PyObject *PyFF_AWGlyph_getLeft(PyFF_AWGlyph *self,void *closure) {
 return( self->left );
 }
 
-static PyObject *PyFF_AWGlyph_getRight(PyFF_AWGlyph *self,void *closure) {
+static PyObject *PyFF_AWGlyph_getRight(PyFF_AWGlyph *self, void *UNUSED(closure)) {
     if ( self->right==NULL ) {
 	self->right = PyFF_AWGlyphIndexType.tp_alloc(&PyFF_AWGlyphIndexType,0);
 	((PyFF_AWGlyphI *) (self->right))->base = self->base;
@@ -16358,32 +16362,32 @@ static PyObject *GetPythonObjectForAWData(AW_Data *all) {
 return( (PyObject *) (all->python_data) );
 }
 
-static PyObject *PyFF_AWContext_getFont(PyFF_AWContext *self,void *closure) {
+static PyObject *PyFF_AWContext_getFont(PyFF_AWContext *self, void *UNUSED(closure)) {
 return( PyFV_From_FV( self->base->fv ));
 }
 
-static PyObject *PyFF_AWContext_getEmSize(PyFF_AWContext *self,void *closure) {
+static PyObject *PyFF_AWContext_getEmSize(PyFF_AWContext *self, void *UNUSED(closure)) {
     if ( self->emSize==NULL )
 	self->emSize = PyInt_FromLong(self->base->sf->ascent+self->base->sf->descent);
     Py_INCREF( self->emSize );
 return( self->emSize );
 }
 
-static PyObject *PyFF_AWContext_getLayer(PyFF_AWContext *self,void *closure) {
+static PyObject *PyFF_AWContext_getLayer(PyFF_AWContext *self, void *UNUSED(closure)) {
     if ( self->layer==NULL )
 	self->layer = PyInt_FromLong(self->base->layer);
     Py_INCREF( self->layer );
 return( self->layer );
 }
 
-static PyObject *PyFF_AWContext_getRegionHeight(PyFF_AWContext *self,void *closure) {
+static PyObject *PyFF_AWContext_getRegionHeight(PyFF_AWContext *self, void *UNUSED(closure)) {
     if ( self->regionHeight==NULL )
 	self->regionHeight = PyInt_FromLong(self->base->sub_height);
     Py_INCREF( self->regionHeight );
 return( self->regionHeight );
 }
 
-static PyObject *PyFF_AWContext_getDenom(PyFF_AWContext *self,void *closure) {
+static PyObject *PyFF_AWContext_getDenom(PyFF_AWContext *self, void *UNUSED(closure)) {
     if ( self->denom==NULL )
 	self->denom = PyFloat_FromDouble(self->base->denom);
     Py_INCREF( self->denom );
@@ -16504,7 +16508,7 @@ return( ret );
     }
 }
 
-static PyObject *PyFF_registerGlyphSeparationHook(PyObject *self, PyObject *args) {
+static PyObject *PyFF_registerGlyphSeparationHook(PyObject *UNUSED(self), PyObject *args) {
     PyObject *name;	/* Ignored for now */
     PyObject *hook, *arg=NULL;
 
@@ -16614,11 +16618,11 @@ static PyModuleDef fontforge_module = {
 };
 #endif /* PY_MAJOR_VERSION >= 3 */
 
-static PyObject *PyPS_Identity(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Identity(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
 return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0,  1.0, 0.0, 0.0));
 }
 
-static PyObject *PyPS_Translate(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Translate(PyObject *UNUSED(noself), PyObject *args) {
     double x,y=0;
 
     if ( !PyArg_ParseTuple(args,"d|d",&x,&y) ) {
@@ -16630,7 +16634,7 @@ return( NULL );
 return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0, 1.0,  x, y));
 }
 
-static PyObject *PyPS_Scale(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Scale(PyObject *UNUSED(noself), PyObject *args) {
     double x,y=-99999;
 
     if ( !PyArg_ParseTuple(args,"d|d",&x,&y) )
@@ -16641,7 +16645,7 @@ return( NULL );
 return( Py_BuildValue("(dddddd)",  x, 0.0, 0.0, y,  0.0, 0.0));
 }
 
-static PyObject *PyPS_Rotate(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Rotate(PyObject *UNUSED(noself), PyObject *args) {
     double theta, c, s;
 
     if ( !PyArg_ParseTuple(args,"d",&theta) )
@@ -16651,7 +16655,7 @@ return( NULL );
 return( Py_BuildValue("(dddddd)",  c, s, -s, c,  0.0, 0.0));
 }
 
-static PyObject *PyPS_Skew(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Skew(PyObject *UNUSED(noself), PyObject *args) {
     double theta, t;
 
     if ( !PyArg_ParseTuple(args,"d",&theta) )
@@ -16661,7 +16665,7 @@ return( NULL );
 return( Py_BuildValue("(dddddd)",  1.0, 0.0, t, 1.0,  0.0, 0.0));
 }
 
-static PyObject *PyPS_Compose(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Compose(PyObject *UNUSED(noself), PyObject *args) {
     double m1[6], m2[6];
     real r1[6], r2[6], r3[6];
     int i;
@@ -16681,7 +16685,7 @@ return( NULL );
 return( tuple );
 }
 
-static PyObject *PyPS_Inverse(PyObject *noself, PyObject *args) {
+static PyObject *PyPS_Inverse(PyObject *UNUSED(noself), PyObject *args) {
     double m1[6];
     real r1[6], r3[6];
     int i;
@@ -16776,7 +16780,7 @@ return( NULL );
 return( result );
 }
 
-static PyObject *PyFFi_initPickles(PyObject *noself, PyObject *args) {
+static PyObject *PyFFi_initPickles(PyObject *UNUSED(noself), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"OO",&pickler, &unpickler ))
 return( NULL );
@@ -16784,7 +16788,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFFi_initPickleTypes(PyObject *noself, PyObject *args) {
+static PyObject *PyFFi_initPickleTypes(PyObject *UNUSED(noself), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"OOO",&_new_point, &_new_contour, &_new_layer ))
 return( NULL );
@@ -16792,11 +16796,11 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyObject *PyFFi_newPoint(PyObject *noself, PyObject *args) {
+static PyObject *PyFFi_newPoint(PyObject *UNUSED(noself), PyObject *args) {
 return( PyFFPoint_New(&PyFF_PointType,args,NULL));
 }
 
-static PyObject *PyFFi_newContour(PyObject *noself, PyObject *args) {
+static PyObject *PyFFi_newContour(PyObject *UNUSED(noself), PyObject *args) {
     PyFF_Contour *self = (PyFF_Contour *) PyFFContour_new(&PyFF_ContourType,NULL,NULL);
     int i, len;
 
@@ -16829,7 +16833,7 @@ return( NULL );
 return( (PyObject *) self );
 }
 
-static PyObject *PyFFi_newLayer(PyObject *noself, PyObject *args) {
+static PyObject *PyFFi_newLayer(PyObject *UNUSED(noself), PyObject *args) {
     PyFF_Layer *self = (PyFF_Layer *) PyFFLayer_new(&PyFF_LayerType,NULL,NULL);
     int i, len;
 
