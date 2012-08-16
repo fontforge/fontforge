@@ -1362,11 +1362,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
                 SFDDumpDeviceTable(sfd,kp->adjust);
             }
 #else
-            if ( !SFDOmit(kp->sc))
+            if ( !SFDOmit(kp->sc)) {
                 fprintf( sfd, " %d %d ",
                          newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
                          kp->off );
-		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+            }
 #endif
         }
 	    fprintf(sfd, "\n" );
