@@ -536,6 +536,7 @@ extern int  GDrawLayoutLineStart(GWindow w,int line);
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);
 extern void GDrawError(const char *fmt,...);
+extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);

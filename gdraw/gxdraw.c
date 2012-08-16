@@ -1154,6 +1154,18 @@ static char*  mingw_get_wm_name_utf8(Display* display, Window window){
     }
     return NULL;
 }
+
+#undef PrintDlg
+#undef small
+int GDrawKeyState(int keysym) {
+    /* TBD, translation of GK_ to VK_ */
+
+    if (GetAsyncKeyState(kysym) & 0x8000)
+return 1;
+    else
+return 0;
+}
+
 #endif
 
 static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
@@ -5063,6 +5075,24 @@ return( (GDisplay *) gdisp);
 void _XSyncScreen() {
     XSync(((GXDisplay *) screen_display)->display,false);
 }
+
+#if !defined(__MINGW32__)
+int GDrawKeyState(int keysym) {
+    /* TBD, translation of GK_ to XK_ */
+    char key_map_stat[32];
+    Display *xdisplay = ((GXDisplay *)screen_display)->display;
+    KeyCode code;
+
+    XQueryKeymap(xdisplay, key_map_stat);
+
+    code = XKeysymToKeycode(xdisplay, keysym);
+    if ( !code ) {
+abort();
+return 0;
+    }
+return ((key_map_stat[code >> 3] >> (code & 7)) & 1);
+}
+#endif
 
 #else	/* NO X */
 
