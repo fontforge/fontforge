@@ -24,6 +24,8 @@ fontforge/fontimage
 fontforge/fontlint
 fontforge/libstamp.c
 fontforge.pc
+libfontforge.pc
+libfontforgeexe.pc
 fontforge/sfddiff
 inc/config.h
 libtool
