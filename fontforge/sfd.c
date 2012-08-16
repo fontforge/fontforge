@@ -1351,23 +1351,25 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	kp = v ? sc->vkerns : sc->kerns;
 	if ( kp!=NULL ) {
 	    fprintf( sfd, v ? "VKerns2:" : "Kerns2:" );
-	    for ( ; kp!=NULL; kp=kp->next )
+	    for ( ; kp!=NULL; kp=kp->next ) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-		if ( !SFDOmit(kp->sc)) {
-		    fprintf( sfd, " %d %d ",
-			    newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
-			    kp->off );
-		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
-		    if ( kp->adjust!=NULL ) putc(' ',sfd);
-		    SFDDumpDeviceTable(sfd,kp->adjust);
-		}
+            if ( !SFDOmit(kp->sc)) {
+                fprintf( sfd, " %d %d ",
+                         newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
+                         kp->off );
+                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+                if ( kp->adjust!=NULL ) putc(' ',sfd);
+                SFDDumpDeviceTable(sfd,kp->adjust);
+            }
 #else
-		if ( !SFDOmit(kp->sc))
-		    fprintf( sfd, " %d %d ",
-			    newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
-			    kp->off );
-		    SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+            if ( !SFDOmit(kp->sc)) {
+                fprintf( sfd, " %d %d ",
+                         newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
+                         kp->off );
+                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
+            }
 #endif
+        }
 	    fprintf(sfd, "\n" );
 	}
     }
