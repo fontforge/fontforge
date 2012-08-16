@@ -1,6 +1,9 @@
-syntax: regexp
+syntax: glob
 
+# Useful for outside-of-source builds.
 build
+build.*
+
 configure
 config.log
 config.status
@@ -29,10 +32,16 @@ libfontforgeexe.pc
 fontforge/sfddiff
 inc/config.h
 libtool
+GNUmakefile
+GNUmakefile.preamble
+GNUmakefile.postamble
 Makefile
 Makefile.in
 systemspecific
 .libs
+
+syntax: regexp
+
 \.la$
 \.lo$
 \.mo$
