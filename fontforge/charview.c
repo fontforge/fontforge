@@ -295,6 +295,37 @@ return;
     GDrawSetLineWidth(pixmap,0);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
     GDrawDrawLine(pixmap,x,y,xend,yend,oldoutlinecol);
+    if ( cv->num_ruler_intersections>2 ) {
+	int i;
+
+	GDrawSetFont(pixmap,cv->rfont);
+	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
+	    GRect rect,prev_rect;
+
+	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
+	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;
+	    rect.width = 3;
+	    rect.height = 3;
+
+	    GDrawFillElipse(pixmap,&rect,0xFF0000);
+	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
+		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
+		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
+		real len = sqrt(xoff*xoff+yoff*yoff);
+		char buf[40];
+		unichar_t ubuf[40];
+		int x,y;
+
+		x = (prev_rect.x + rect.x)/2;
+		y = (prev_rect.y + rect.y)/2;
+
+		sprintf(buf,"%5.4f",len);
+		utf82u_strcpy(ubuf,buf);
+		GDrawDrawBiText(pixmap,x,y,ubuf,-1,NULL,0xFF0000);
+	    }
+	    prev_rect = rect;
+	}
+    }
     GDrawSetCopyMode(pixmap);
 }
 
@@ -3466,6 +3497,27 @@ int CVMouseAtSpline(CharView *cv,GEvent *event) {
     SetFS(&fs,&cv->p,cv,event);
     cv->p.pressed = pressed;
 return( InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro()));
+}
+
+Spline *CVPointAtSpline(CharView *cv,int32 x,int32 y) {
+    FindSel fs;
+    PressedOn p;
+    GEvent e;
+    int pressed = cv->p.pressed;
+    int ret;
+
+    e.u.mouse.x = x;
+    e.u.mouse.y = y;
+
+    SetFS(&fs,&p,cv,&e);
+    cv->p.pressed = pressed;
+
+    ret = InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
+
+    if (ret)
+return( p.spline );
+
+return( NULL );
 }
 
 static GEvent *CVConstrainedMouseDown(CharView *cv,GEvent *event, GEvent *fake) {
@@ -10555,6 +10607,9 @@ void CharViewFree(CharView *cv) {
 
     for ( i=0; i<cv->former_cnt; ++i )
 	free(cv->former_names[i]);
+
+    if ( cv->ruler_intersections )
+	gfree(cv->ruler_intersections);
 
     free(cv);
 }
