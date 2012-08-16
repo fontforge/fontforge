@@ -1239,13 +1239,14 @@ int main( int argc, char **argv ) {
 	strcpy(path+len, "/share/fontforge/pixmaps"); /* PixmapDir */
 	GGadgetSetImageDir(path);
 
-	strcpy(path+len, "/fontforge.resource"); /* Resource File */
-	GResourceAddResourceFile(path, GResourceProgramName);
+	strcpy(path+len, "/share/fontforge/resources/fontforge.resource"); /* Resource File */
+	GResourceAddResourceFile(path, GResourceProgramName, false);
 
 	gfree(path);
     }
 #elif defined(SHAREDIR)
     GGadgetSetImageDir(SHAREDIR "/pixmaps");
+    GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);
 #endif
 
     if ( load_prefs!=NULL && strcasecmp(load_prefs,"Always")==0 )

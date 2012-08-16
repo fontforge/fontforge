@@ -52,7 +52,7 @@ typedef uint16_t	uint16;
 typedef int8_t		int8;
 typedef uint8_t		uint8;
 
-	/* An integral type which can hold a pointer */
+/* An integral type which can hold a pointer */
 typedef intptr_t	intpt;
 
 #ifdef UNICHAR_16
@@ -79,3 +79,4 @@ extern void *grealloc(void *,long size);
 extern void gfree(void *);
 extern void galloc_set_trap(void (*)(void));
 #endif
+

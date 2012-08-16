@@ -26,7 +26,7 @@
  */
 #include "fontforgeui.h"
 
-int palettes_docked=0;
+int palettes_docked=1;
 int rectelipse=0, polystar=0, regular_star=1;
 int center_out[2] = { false, true };
 float rr_radius=0;

@@ -50,7 +50,23 @@
       Git HEAD
       <UL>
         <LI>
+          <B>General:</B>
+        <LI>
+          Thanks to Lu Wang, fonts can now be loaded from PDF files using
+          <CODE>filename(fontname)</CODE> notation from command line too.
+        <LI>
+          Increase the limit of entries read from encoding files to 65536 instead of
+          1024.
+        <LI>
+          Support for v1.6 feature file syntax for mark classes have been dropped, v1.8
+          syntax should be always used.
+        <LI>
           <B>UI fixes and additions:</B>
+        <LI>
+          Char view palettes are now docked by default.
+        <LI>
+          A default resource file will be loaded at startup from
+          <CODE>$prefix/share/fontforge/resources/fontforge.resource</CODE>.
         <LI>
           There is now a possibility to have a quick preview in glyph window
           by holding [`] key down. This doesn't work if quick navigation is
@@ -75,6 +91,12 @@
             <LI>
               Updated Russian translation from Alexandre Proukodine.
           </UL>
+        <LI>
+          <B>Python scripting fixes and additions:</B>
+        <LI>
+          Thanks to Lu Wang, <CODE>LoadEncodingFile</CODE> now takes an optional encoding
+          name parameter that is useful for loading Unicode consortium format encoding
+          files, which were just ignored before.
       </UL>
     <LI>
       31-Jul-2012

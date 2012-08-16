@@ -277,13 +277,14 @@ return;
     }
 }
 
-void GResourceAddResourceFile(char *filename,char *prog) {
+void GResourceAddResourceFile(char *filename,char *prog,int warn) {
     FILE *file;
     char buffer[1000];
 
     file = fopen(filename,"r");
     if ( file==NULL ) {
-	fprintf( stderr, "Failed to open resource file: %s\n", filename );
+	if ( warn )
+	    fprintf( stderr, "Failed to open resource file: %s\n", filename );
 return;
     }
     while ( fgets(buffer,sizeof(buffer),file)!=NULL )
