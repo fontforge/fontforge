@@ -1,7 +1,23 @@
 syntax: regexp
 
+build
+configure
 config.log
 config.status
+config.guess
+config.sub
+compile
+depcomp
+missing
+install-sh
+ltmain.sh
+ar-lib
+autom4te.cache
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
 fontforge/exelibstamp.c
 fontforge/fontforge
 fontforge/fontimage
@@ -13,7 +29,6 @@ inc/config.h
 libtool
 Makefile
 Makefile.in
-pyhook/setup.py
 systemspecific
 .libs
 \.la$
