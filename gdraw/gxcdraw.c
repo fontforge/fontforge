@@ -131,6 +131,7 @@ static void (*_cairo_clip)(cairo_t *);
 static void (*_cairo_save)(cairo_t *);
 static void (*_cairo_restore)(cairo_t *);
 static void (*_cairo_new_path)(cairo_t *);
+static void (*_cairo_new_sub_path)(cairo_t *);
 static void (*_cairo_close_path)(cairo_t *);
 static void (*_cairo_move_to)(cairo_t *,double,double);
 static void (*_cairo_line_to)(cairo_t *,double,double);
@@ -160,7 +161,7 @@ static void (*_cairo_push_group)(cairo_t *);
 static void (*_cairo_pop_group_to_source)(cairo_t *);
 static cairo_surface_t *(*_cairo_get_group_target)(cairo_t *);
 static void (*_cairo_paint)(cairo_t *);
-
+static void (*_cairo_set_fill_rule)(cairo_t *cr, cairo_fill_rule_t fill_rule);
 static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
 static FcPattern *(*_FcPatternCreate)(void);
 static void (*_FcPatternDestroy)(FcPattern *);
@@ -263,6 +264,8 @@ return( 0 );
 	    dlsym(libcairo,"cairo_set_source_rgba");
     _cairo_new_path = (void (*)(cairo_t *))
 	    dlsym(libcairo,"cairo_new_path");
+    _cairo_new_sub_path = (void (*)(cairo_t *))
+	    dlsym(libcairo,"cairo_new_sub_path");
     _cairo_move_to = (void (*)(cairo_t *,double,double))
 	    dlsym(libcairo,"cairo_move_to");
     _cairo_line_to = (void (*)(cairo_t *,double,double))
@@ -333,6 +336,8 @@ return( 0 );
 	    dlsym(libcairo,"cairo_get_group_target");
     _cairo_paint = (void (*)(cairo_t *))
 	    dlsym(libcairo,"cairo_paint");
+    _cairo_set_fill_rule = (void (*)(cairo_t *, cairo_fill_rule_t))
+	    dlsym(libcairo,"cairo_set_fill_rule");
 
 /* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
     if ( _cairo_format_stride_for_width==NULL )
@@ -363,6 +368,7 @@ return( true );
 #  define _cairo_set_dash cairo_set_dash
 #  define _cairo_set_source_rgba cairo_set_source_rgba
 #  define _cairo_new_path cairo_new_path
+#  define _cairo_new_sub_path cairo_new_sub_path
 #  define _cairo_move_to cairo_move_to
 #  define _cairo_line_to cairo_line_to
 #  define _cairo_curve_to cairo_curve_to
@@ -719,6 +725,15 @@ void _GXCDraw_FillPoly(GXWindow gw, GPoint *pts, int16 cnt) {
 /* ************************************************************************** */
 void _GXCDraw_PathStartNew(GWindow w) {
     _cairo_new_path( ((GXWindow) w)->cc );
+}
+
+void _GXCDraw_PathStartSubNew(GWindow w) {
+    _cairo_new_sub_path( ((GXWindow) w)->cc );
+}
+
+int _GXCDraw_FillRuleSetWinding(GWindow w) {
+    _cairo_set_fill_rule(((GXWindow) w)->cc,CAIRO_FILL_RULE_WINDING);
+    return 1;
 }
 
 void _GXCDraw_PathClose(GWindow w) {
