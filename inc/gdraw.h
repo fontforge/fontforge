@@ -244,7 +244,7 @@ typedef struct gwindow_attrs {
         wam_isdlg=0x10000, wam_notrestricted=0x20000,
         wam_transient=0x40000,
         wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
-        wam_cairo=0x200000, wam_verytransient=0x400000 } mask;
+        wam_verytransient=0x400000 } mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */

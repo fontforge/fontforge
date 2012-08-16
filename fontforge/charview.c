@@ -10326,7 +10326,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 	pos.x += cv->rulerh; pos.width -= cv->rulerh;
     }
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_cairo|wam_backcol;
+    wattrs.mask = wam_events|wam_cursor|wam_backcol;
     wattrs.background_color = view_bgcol;
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
