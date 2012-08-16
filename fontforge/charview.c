@@ -3499,27 +3499,6 @@ int CVMouseAtSpline(CharView *cv,GEvent *event) {
 return( InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro()));
 }
 
-Spline *CVPointAtSpline(CharView *cv,int32 x,int32 y) {
-    FindSel fs;
-    PressedOn p;
-    GEvent e;
-    int pressed = cv->p.pressed;
-    int ret;
-
-    e.u.mouse.x = x;
-    e.u.mouse.y = y;
-
-    SetFS(&fs,&p,cv,&e);
-    cv->p.pressed = pressed;
-
-    ret = InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
-
-    if (ret)
-return( p.spline );
-
-return( NULL );
-}
-
 static GEvent *CVConstrainedMouseDown(CharView *cv,GEvent *event, GEvent *fake) {
     SplinePoint *base;
     spiro_cp *basecp;
