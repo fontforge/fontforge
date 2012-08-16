@@ -18,3 +18,4 @@ systemspecific
 *.lo
 *.mo
 *.o
+*~
