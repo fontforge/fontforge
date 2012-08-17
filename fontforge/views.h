@@ -173,6 +173,9 @@ typedef struct charview {
     GFont *small, *normal;
     GWindow icon;
     GWindow ruler_w;
+    int num_ruler_intersections;
+    int allocated_ruler_intersections;
+    BasePoint *ruler_intersections;
     GFont *rfont;
     GTimer *pressed;
     GWindow backimgs;
