@@ -344,8 +344,6 @@ static void GMenuDrawArrow(struct gmenu *m, int ybase, int r2l) {
 
 	GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
 	GDrawDrawLine(m->w,p[0].x+pt,p[0].y,p[2].x+pt,p[2].y+pt,m->box->border_brighter);
-	GDrawDrawLine(m->w,p[2].x,p[2].y,p[1].x,p[1].y,m->box->border_brightest);
-	GDrawDrawLine(m->w,p[2].x-pt,p[2].y+pt,p[1].x+pt,p[1].y-pt,m->box->border_brightest);
 	GDrawDrawLine(m->w,p[1].x,p[1].y,p[0].x,p[0].y,m->box->border_darkest);
 	GDrawDrawLine(m->w,p[1].x+pt,p[1].y-pt,p[0].x-pt,p[0].y,m->box->border_darkest);
     } else {
@@ -355,8 +353,6 @@ static void GMenuDrawArrow(struct gmenu *m, int ybase, int r2l) {
 
 	GDrawDrawLine(m->w,p[0].x,p[0].y,p[2].x,p[2].y,m->box->border_brighter);
 	GDrawDrawLine(m->w,p[0].x-pt,p[0].y,p[2].x+pt,p[2].y+pt,m->box->border_brighter);
-	GDrawDrawLine(m->w,p[2].x,p[2].y,p[1].x,p[1].y,m->box->border_brightest);
-	GDrawDrawLine(m->w,p[2].x+pt,p[2].y+pt,p[1].x+pt,p[1].y-pt,m->box->border_brightest);
 	GDrawDrawLine(m->w,p[1].x,p[1].y,p[0].x,p[0].y,m->box->border_darkest);
 	GDrawDrawLine(m->w,p[1].x+pt,p[1].y-pt,p[0].x-pt,p[0].y,m->box->border_darkest);
     }

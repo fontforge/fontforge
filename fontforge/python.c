@@ -17387,6 +17387,7 @@ void ff_init(void) {
 #else
 #include "fontforgevw.h"
 struct flaglist { char *name; int flag; };
+#define FLAGLIST_EMPTY { NULL, 0 }
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */

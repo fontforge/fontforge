@@ -243,10 +243,40 @@ return( false );
 return( true );
 }
 
+static int RulerTextIntersection(CharView *cv, unichar_t *ubuf, int i) {
+    char buf[80];
+
+    if ( i==0 && cv->num_ruler_intersections>4 ) {
+	real xoff = cv->ruler_intersections[cv->num_ruler_intersections-2].x - cv->ruler_intersections[1].x;
+	real yoff = cv->ruler_intersections[cv->num_ruler_intersections-2].y - cv->ruler_intersections[1].y;
+	real len = sqrt(xoff*xoff+yoff*yoff);
+	sprintf(buf,"First Edge to Last Edge: %f",len);
+	utf82u_strcpy(ubuf,buf);
+return( 1 );
+    } else if ( cv->num_ruler_intersections>4 )
+	i -= 1;
+
+    if ( i>=cv->num_ruler_intersections )
+return( 0 );
+
+    if (i==0)
+	sprintf(buf,"[%d] (%f,%f)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
+    else {
+	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
+	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
+	real len = sqrt(xoff*xoff+yoff*yoff);
+	sprintf(buf,"[%d] (%f,%f) length %f",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y, len);
+    }
+
+    utf82u_strcpy(ubuf,buf);
+return( 1 );
+}
+
 static int ruler_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     unichar_t ubuf[80];
     int line;
+    int i;
 
     switch ( event->type ) {
       case et_expose:
@@ -254,6 +284,8 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
 	/*GDrawFillRect(gw,NULL,0xe0e0c0);*/
 	for ( line=0; RulerText(cv,ubuf,line); ++line )
 	    GDrawDrawBiText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
+	for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
+	    GDrawDrawBiText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
       break;
       case et_mousedown:
 	cv->autonomous_ruler_w = false;
@@ -265,6 +297,83 @@ return( true );
 }
 	
 static GFont *rvfont=NULL;
+
+/*
+ * Comparison function for use with qsort.
+ */
+static int BasePointCompare(const BasePoint *l,const BasePoint *r) {
+	if ( l->x>r->x)
+return( 1 );
+	if ( l->x<r->x)
+return( -1 );
+	if ( l->y>r->y)
+return( 1 );
+	if ( l->y<r->y)
+return( -1 );
+return( 0 );
+}
+
+/*
+ * Fill buffer with intersects on a line (from,to).
+ * return number found, buf fill the buffer only up to a max_intersections.
+ *
+ * The points from and to are also put in the buffer. 
+ *
+ * Copied somewhat from CVMouseUpKnife(), perhaps they should be consolidated
+ */
+static int GetIntersections(CharView *cv,BasePoint from,BasePoint to,BasePoint *all_intersections,int max_intersections) {
+    SplineSet *spl;
+    Spline *s, *nexts;
+    Spline dummy;
+    SplinePoint dummyfrom, dummyto;
+    BasePoint inters[9];	/* These bounds are hard coded in the SplinesIntersect function */
+    extended t1s[10], t2s[10];
+    int i;
+    int total_intersections = 0;
+
+    memset(&dummy,0,sizeof(dummy));
+    memset(&dummyfrom,0,sizeof(dummyfrom));
+    memset(&dummyto,0,sizeof(dummyto));
+    dummyfrom.me.x = from.x; dummyfrom.me.y = from.y;
+    dummyto.me.x = to.x; dummyto.me.y = to.y;
+    dummyfrom.nextcp = dummyfrom.prevcp = dummyfrom.me;
+    dummyto.nextcp = dummyto.prevcp = dummyto.me;
+    dummyfrom.nonextcp = dummyfrom.noprevcp = dummyto.nonextcp = dummyto.noprevcp = true;
+    dummy.splines[0].d = from.x; dummy.splines[0].c = to.x-from.x;
+    dummy.splines[1].d = from.y; dummy.splines[1].c = to.y-from.y;
+    dummy.from = &dummyfrom; dummy.to = &dummyto;
+    dummy.islinear = dummy.knownlinear = true;
+    dummyfrom.next = dummyto.prev = &dummy;
+
+    all_intersections[total_intersections++] = from;
+
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	for ( s = spl->first->next; s!=NULL ; ) {
+	    nexts = NULL;
+	    if ( s->to!=spl->first )
+		nexts = s->to->next;
+
+	    if ( SplinesIntersect(s,&dummy,inters,t1s,t2s)>0 ) {
+		/* TBD, why is 4 used here (copied from CVMouseUpKnife()) */
+		for ( i=0; i<4 && t1s[i]!=-1; ++i ) {
+		    if ( (total_intersections+1)<max_intersections )
+			all_intersections[total_intersections] = inters[i];
+		    total_intersections++;
+		}
+	    }
+	    s = nexts;
+	}
+    }
+
+    all_intersections[total_intersections++] = to;
+
+    qsort(all_intersections,
+	total_intersections > max_intersections ? max_intersections : total_intersections,
+	sizeof(all_intersections[0]),
+	BasePointCompare);
+
+return( total_intersections );	/* note that it could be greater than max */
+}
 
 static void RulerPlace(CharView *cv, GEvent *event) {
     unichar_t ubuf[80];
@@ -302,6 +411,27 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     } else
 	GDrawRaise(cv->ruler_w);
 
+    if ( cv->p.pressed ) {
+	BasePoint from;
+
+	from.x = cv->p.cx;
+	from.y = cv->p.cy;
+
+	if ( !cv->ruler_intersections ) {
+	    cv->allocated_ruler_intersections = 32;
+	    cv->ruler_intersections = galloc(cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
+	}
+	for(;;) {
+	    cv->num_ruler_intersections = GetIntersections(cv,from,cv->info,cv->ruler_intersections,cv->allocated_ruler_intersections);
+	    if ( cv->num_ruler_intersections>cv->allocated_ruler_intersections ) {
+		cv->allocated_ruler_intersections = cv->num_ruler_intersections * 2;
+		cv->ruler_intersections = grealloc(cv->ruler_intersections,cv->allocated_ruler_intersections * sizeof(cv->ruler_intersections[0]));
+	    } else
+		break;
+	}
+    } else
+	cv->num_ruler_intersections = 0;
+
     GDrawSetFont(cv->ruler_w,cv->rfont);
     width = h = 0;
     for ( i=0; RulerText(cv,ubuf,i); ++i ) {
@@ -309,6 +439,12 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
+    for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
+	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
+	if ( w>width ) width = w;
+	h += cv->rfh;
+    }
+
     GDrawGetSize(GDrawGetRoot(NULL),&size);
     pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
     GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
@@ -356,10 +492,19 @@ return;
 
 void CVMouseUpRuler(CharView *cv, GEvent *event) {
     if ( cv->ruler_w!=NULL ) {
+	GRect size;
 
 	last_ruler_offset[1] = last_ruler_offset[0];
 	last_ruler_offset[0].x = cv->info.x-cv->p.cx;
 	last_ruler_offset[0].y = cv->info.y-cv->p.cy;
+
+	/* if we have gone out of bounds abandon the window */
+	GDrawGetSize(cv->v,&size);
+	if ( event->u.mouse.x<0 || event->u.mouse.y<0 || event->u.mouse.x>=size.width || event->u.mouse.y>=size.height ) {
+	    GDrawDestroyWindow(cv->ruler_w);
+	    cv->ruler_w = NULL;
+return;
+	}
 
 	if ( !(event->u.mouse.state & ksm_alt) ) {
 	    /*cv->autonomous_ruler_w = true;*/
@@ -609,8 +754,10 @@ return;
 
 void CPEndInfo(CharView *cv) {
     if ( cv->ruler_w!=NULL ) {
-	GDrawDestroyWindow(cv->ruler_w);
-	cv->ruler_w = NULL;
+	if ( !cv->p.pressed ) {
+	    GDrawDestroyWindow(cv->ruler_w);
+	    cv->ruler_w = NULL;
+	}
     }
 }
 

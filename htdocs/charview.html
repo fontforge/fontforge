@@ -250,8 +250,8 @@
   There are also two palettes, one, a layer palette, allowing you to control
   <A HREF="#Layers">which layers are visible</A>, and one, a tool palette,
   from which you <A HREF="#Tools">may pick editing tools</A>. Normally these
-  are free floating windows, but you may choose to dock them in the window
-  with View-&gt;Palettes-&gt;Dock Palettes.
+  are docked in the window, but you may choose to make them free floating
+  windows by unchecking View-&gt;Show-&gt;Palettes-&gt;Dock Palettes.
   <P>
   You select an editing tool by clicking on the appropriate button on the tools
   palette, or you may depress the right mouse button and select a tool from
@@ -638,14 +638,21 @@
   </H3>
   <P>
   <IMG SRC="ruler.png" WIDTH="234" HEIGHT="102" ALIGN="Right">This tool tells
-  you current position of the mouse. If the mouse is near the outline it will
+  you the current position of the mouse. If the mouse is near the outline it will
   give the slope and curvature there. If the mouse is near a point on the outline
   will give the slope and curvature on each side of the point.
   <P>
-  If you depress the button and drag, the tool will show the x-y offsets, distance
-  and angle from the point where you depressed the mouse to the mouse's current
-  location. If you depress the tool at one end point of a spline and move it
-  to the other endpoint then it will also show the length of that spline.
+  If you depress the button and drag, the first line of the tool's pop-up
+  shows the distance, angle and (x-y) offsets from the first point where you depressed 
+  the mouse to the last point, the mouse's current location. The next lines in the pop-up
+  show information about points along the line that intersect splines, including the start and end 
+  points of the line itself.
+  <P>
+  [0] indicates the starting point of the measure line, and the (x-y) co-ordinates 
+  of that point. Initially [1] is the end point; when it intersects with one spline then 
+  [1] becomes the first intersection point and [2] becomes the end point, and so on. 
+  The final number is the length of the section ending at that point; which is also shown 
+  directly on the canvas.
   <P>
   If you hold down the
   <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock </A>key then

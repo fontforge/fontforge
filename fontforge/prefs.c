@@ -1148,7 +1148,7 @@ static void PrefsUI_LoadPrefs(void) {
 	fclose(p);
     }
     if ( xdefs_filename!=NULL )
-	GResourceAddResourceFile(xdefs_filename,GResourceProgramName);
+	GResourceAddResourceFile(xdefs_filename,GResourceProgramName,true);
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	

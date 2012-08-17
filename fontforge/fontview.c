@@ -315,12 +315,9 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
 	    } else if ( (GDrawHasCairo(pixmap)&gc_alpha) && base.image_type==it_index ) {
-		Color oldfg = base.clut->clut[base.clut->clut_len-1];
-		base.clut->clut[base.clut->clut_len-1] = fvselfgcol;
 		GDrawDrawGlyph(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
-		base.clut->clut[base.clut->clut_len-1] = oldfg;
 	    } else
 		GDrawDrawImage(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
