@@ -162,6 +162,7 @@ static void (*_cairo_pop_group_to_source)(cairo_t *);
 static cairo_surface_t *(*_cairo_get_group_target)(cairo_t *);
 static void (*_cairo_paint)(cairo_t *);
 static void (*_cairo_set_fill_rule)(cairo_t *cr, cairo_fill_rule_t fill_rule);
+
 static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
 static FcPattern *(*_FcPatternCreate)(void);
 static void (*_FcPatternDestroy)(FcPattern *);
