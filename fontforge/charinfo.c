@@ -4323,11 +4323,7 @@ return;
 	wattrs.utf8_window_title =  _("Glyph Info");
 	wattrs.is_dlg = false;
 	pos.x = pos.y = 0;
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width));
-#else
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width+65));
-#endif
 	pos.height = GDrawPointsToPixels(NULL,CI_Height);
 	ci->gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,ci,&wattrs);
 
@@ -5035,27 +5031,15 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = cbox;
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Pos");
-#else
 	aspects[i].text = (unichar_t *) _("Positionings");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = pstbox[pst_position-1];
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Pair");
-#else
 	aspects[i].text = (unichar_t *) _("Pairwise Pos");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = pstbox[pst_pair-1];
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Subs");
-#else
 	aspects[i].text = (unichar_t *) _("Substitutions");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[2];
 
@@ -5067,11 +5051,7 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[4];
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Ligature");
-#else
 	aspects[i].text = (unichar_t *) _("Ligatures");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[5];
 
@@ -5120,11 +5100,7 @@ return;
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
 	mgcd[0].gd.u.tabs = aspects;
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	mgcd[0].gd.flags = gg_visible | gg_enabled;
-#else
 	mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
-#endif
 	mgcd[0].gd.cid = CID_Tabs;
 	mgcd[0].gd.handle_controlevent = CI_AspectChange;
 	mgcd[0].creator = GTabSetCreate;

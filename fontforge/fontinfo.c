@@ -7503,11 +7503,7 @@ return;
 	    sf->fontname);
     wattrs.utf8_window_title = title;
     pos.x = pos.y = 0;
-#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268+85));
-#else
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
-#endif
     pos.height = GDrawPointsToPixels(NULL,375);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,d,&wattrs);
 
@@ -10540,7 +10536,6 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mfbox;
 
-#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     aspects[i].text = (unichar_t *) _("Dates");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = dbox;
@@ -10549,21 +10544,14 @@ return;
     aspects[i].text = (unichar_t *) _("Unicode Ranges");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = ubox;
-#endif
 
     aspects[defaspect].selected = true;
 
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.u.tabs = aspects;
-#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
     mgcd[0].gd.pos.width = 260+85;
     mgcd[0].gd.pos.height = 325;
-#else
-    mgcd[0].gd.flags = gg_visible | gg_enabled;
-    mgcd[0].gd.pos.width = 260;
-    mgcd[0].gd.pos.height = 325;
-#endif
     mgcd[0].gd.handle_controlevent = GFI_AspectChange;
     mgcd[0].gd.cid = CID_Tabs;
     mgcd[0].creator = GTabSetCreate;

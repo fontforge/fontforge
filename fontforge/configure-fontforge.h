@@ -180,12 +180,6 @@
 /* Can be set from configure --with-capslock-for-alt			      */
 
 
-/* Use horizontal, rather than vertical, tabsets for the Font and glyph Info  */
-/*  dialogs. This is what things used to look like.                           */
-/*									      */
-/* #define FONTFORGE_CONFIG_INFO_HORIZONTAL				      */
-/*									      */
-
 /* ************************************************************************** */
 /* *********************** Set by configure script ************************** */
 /* ************************************************************************** */
