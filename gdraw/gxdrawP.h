@@ -380,6 +380,10 @@ extern GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size, doubl
 
 extern void _XSyncScreen(void);
 
+#if !defined(__MINGW32__)
+extern int GDrawKeyToXK(int keysym);
+#endif
+
 # ifdef _WACOM_DRV_BROKEN
 void _GXDraw_Wacom_Init(GXDisplay *gdisp);
 void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);

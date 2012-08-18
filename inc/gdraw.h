@@ -512,6 +512,8 @@ extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *d
 extern enum gcairo_flags GDrawHasCairo(GWindow w);
 extern void GDrawQueueDrawing(GWindow w,void (*)(GWindow,void *),void *);
 extern void GDrawPathStartNew(GWindow w);
+extern void GDrawPathStartSubNew(GWindow w);
+extern int GDrawFillRuleSetWinding(GWindow w);
 extern void GDrawPathClose(GWindow w);
 extern void GDrawPathMoveTo(GWindow w,double x, double y);
 extern void GDrawPathLineTo(GWindow w,double x, double y);

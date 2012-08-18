@@ -30,6 +30,8 @@ extern void _GXCDraw_CopyArea( GXWindow from, GXWindow into, GRect *src, int32 x
 
 extern enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow );
 extern void _GXCDraw_PathStartNew(GWindow w);
+extern void _GXCDraw_PathStartSubNew(GWindow w);
+extern int _GXCDraw_FillRuleSetWinding(GWindow w);
 extern void _GXCDraw_PathClose(GWindow w);
 extern void _GXCDraw_PathMoveTo(GWindow w,double x, double y);
 extern void _GXCDraw_PathLineTo(GWindow w,double x, double y);
