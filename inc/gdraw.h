@@ -452,6 +452,7 @@ extern void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Col
 extern void GDrawDrawArrow(GWindow w, int32 x,int32 y, int32 xend,int32 yend, int arrows, Color col);
 extern void GDrawDrawRect(GWindow w, GRect *rect, Color col);
 extern void GDrawFillRect(GWindow w, GRect *rect, Color col);
+extern void GDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col);
 extern void GDrawDrawElipse(GWindow w, GRect *rect, Color col);
 extern void GDrawFillElipse(GWindow w, GRect *rect, Color col);
 extern void GDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 tangle, Color col);

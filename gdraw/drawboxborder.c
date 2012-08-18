@@ -1058,28 +1058,6 @@ return;
 		bstart + bdiff * i / r->height ));
 }
 
-static void BoxFillRoundRect(GWindow gw, GRect *r, int rr, Color color)
-{
-    int radius = rr <= (r->height+1)/2 ? (rr > 0 ? rr : 0) : (r->height+1)/2;
-    int xend = r->x + r->width - 1;
-    int yend = r->y + r->height - 1;
-    int precalc = radius * 2 - 1;
-    int i, xoff;
-
-    GRect middle = {r->x, r->y + radius, r->width, r->height - 2 * radius};
-
-    if (r->height <= 0)
-return;
-
-    for (i = 0; i < radius; i++) {
-	xoff = radius - lrint(sqrt( (double)(i * (precalc - i)) ));
-	GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, color);
-	GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, color);
-    }
-
-    GDrawFillRect(gw, &middle, color);
-}
-
 void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	enum gadget_state state, int is_default) {
     Color gbg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gw));
@@ -1141,7 +1119,7 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	    if ( design->flags & box_gradient_bg )
 		BoxGradientRoundRect(gw,pos,rr,ibg,design->gradient_bg_end);
 	    else
-		BoxFillRoundRect(gw,pos,rr,ibg);
+		GDrawFillRoundRect(gw,pos,rr,ibg);
 	}
     }
     if ( state == gs_disabled )
@@ -1184,7 +1162,7 @@ static void GBoxDrawTabBackground(GWindow pixmap, GRect *rect, int radius, Color
     GDrawSetLineWidth(pixmap,1);
     r.height*=2;
     if (2*radius>=r.height) r.height=2*radius+1;
-    BoxFillRoundRect(pixmap, &r, radius, color);
+    GDrawFillRoundRect(pixmap, &r, radius, color);
     GDrawPopClip(pixmap,&older);
 }
 

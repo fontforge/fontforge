@@ -2371,6 +2371,40 @@ return;
 #endif
 }
 
+static void GXDrawFillRoundRect(GWindow gw, GRect *rect, int radius, Color col) {
+    GXWindow gxw = (GXWindow) gw;
+    int rr = radius <= (rect->height+1)/2 ? (radius > 0 ? radius : 0) : (rect->height+1)/2;
+
+    gxw->ggc->fg = col;
+#ifndef _NO_LIBCAIRO
+    if ( ((GXWindow) gw)->usecairo && gw->ggc->func==df_copy ) {
+	_GXCDraw_FillRoundRect( gxw,rect,rr );
+return;
+    } else {
+	if (((GXWindow) gw)->usecairo )
+	    _GXCDraw_Flush(gxw);
+#endif
+    {
+	GRect middle = {rect->x, rect->y + radius, rect->width, rect->height - 2 * radius};
+	int xend = rect->x + rect->width - 1;
+	int yend = rect->y + rect->height - 1;
+	int precalc = rr * 2 - 1;
+	int i, xoff;
+
+	for (i = 0; i < rr; i++) {
+	    xoff = rr - lrint(sqrt( (double)(i * (precalc - i)) ));
+	    GXDrawDrawLine(gw, rect->x + xoff, rect->y + i, xend - xoff, rect->y + i, col);
+	    GXDrawDrawLine(gw, rect->x + xoff, yend - i, xend - xoff, yend - i, col);
+	}
+	GXDrawFillRect(gw, &middle, col);
+    }
+#ifndef _NO_LIBCAIRO
+	if (((GXWindow) gw)->usecairo )
+	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
+    }
+#endif
+}
+
 static void GXDrawDrawElipse(GWindow gw, GRect *rect, Color col) {
     GXWindow gxw = (GXWindow) gw;
 
@@ -4863,6 +4897,7 @@ static struct displayfuncs xfuncs = {
     GXDrawDrawArrow,
     GXDrawDrawRect,
     GXDrawFillRect,
+    GXDrawFillRoundRect,
     GXDrawDrawElipse,
     GXDrawFillElipse,
     GXDrawDrawArc,
