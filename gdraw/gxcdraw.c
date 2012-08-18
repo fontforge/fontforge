@@ -409,6 +409,7 @@ return( true );
 #  define _cairo_pop_group_to_source cairo_pop_group_to_source
 #  define _cairo_get_group_target cairo_get_group_target
 #  define _cairo_paint cairo_paint
+#  define _cairo_set_fill_rule cairo_set_fill_rule
 
 #  define _FcCharSetHasChar    FcCharSetHasChar     
 #  define _FcPatternDestroy    FcPatternDestroy   
