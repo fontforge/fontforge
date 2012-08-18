@@ -162,19 +162,19 @@ return( false );
     bounds = g->r;
 
     if ( !gts->vertical ) {
-        /* make room for tabs */
-        bounds.y += gts->rcnt*gts->rowh+yoff-1;
-        bounds.height -= gts->rcnt*gts->rowh+yoff-1;
-        /* draw border around horizontal tabs only */
-        GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
+	/* make room for tabs */
+	bounds.y += gts->rcnt*gts->rowh+yoff-1;
+	bounds.height -= gts->rcnt*gts->rowh+yoff-1;
+	/* draw border around horizontal tabs only */
+	GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     }
     else if ( g->state==gs_enabled ) {
-        /* background for labels */
-        GRect old2, vertListRect = g->r;
-        vertListRect.width = gts->vert_list_width+bw-1;
-        GDrawPushClip(pixmap,&vertListRect,&old2);
-        GBoxDrawBackground(pixmap,&g->r,g->box,gs_pressedactive,false);
-        GDrawPopClip(pixmap,&old2);
+	/* background for labels */
+	GRect old2, vertListRect = g->r;
+	vertListRect.width = gts->vert_list_width+bw-1;
+	GDrawPushClip(pixmap,&vertListRect,&old2);
+	GBoxDrawBackground(pixmap,&g->r,g->box,gs_pressedactive,false);
+	GDrawPopClip(pixmap,&old2);
     }
 
     GDrawSetFont(pixmap,gts->font);
