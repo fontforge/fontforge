@@ -35,6 +35,7 @@ libfontforge.pc
 libfontforgeexe.pc
 fontforge/sfddiff
 inc/config.h
+inc/config.h.in
 libtool
 GNUmakefile
 GNUmakefile.preamble
