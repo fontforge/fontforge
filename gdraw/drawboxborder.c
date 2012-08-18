@@ -349,7 +349,7 @@ static void DrawRoundRect(GWindow gw, GRect *pos,int inset,int radius,
 }
 
 static void DrawRoundTab(GWindow gw, GRect *pos,int inset,int radius,
-	Color col1, Color col2, Color col3, Color col4) {
+	Color col1, Color col2, Color col3, Color col4, int active) {
     int off;
     if ( inset<radius ) {
 	off = radius;
@@ -360,6 +360,8 @@ static void DrawRoundTab(GWindow gw, GRect *pos,int inset,int radius,
     GDrawDrawLine(gw,pos->x+inset,pos->y+off,pos->x+inset,pos->y+pos->height-1,col1);
     GDrawDrawLine(gw,pos->x+off,pos->y+inset,pos->x+pos->width-1-off,pos->y+inset,col2);
     GDrawDrawLine(gw,pos->x+pos->width-1-inset,pos->y+off,pos->x+pos->width-1-inset,pos->y+pos->height-1,col3);
+    if ( !active )
+	GDrawDrawLine(gw,pos->x,pos->y+pos->height-1,pos->x+pos->width-1,pos->y+pos->height-1,col4);
 }
 
 static void DrawRoundRects(GWindow gw, GRect *pos,int inset,int radius,
@@ -1221,7 +1223,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
     if ( design->flags & (box_foreground_border_outer|box_foreground_shadow_outer) ) {
 	GDrawSetLineWidth(pixmap,scale);
 	if ( design->flags&box_foreground_border_outer )
-	    DrawRoundTab(pixmap,&r,scale/2,rr,color_outer,color_outer,color_outer,color_outer);
+	    DrawRoundTab(pixmap,&r,scale/2,rr,color_outer,color_outer,color_outer,color_outer,active);
 	else
 	    GDrawDrawLine(pixmap,r.x+r.width-1,r.y+rr,r.x+r.width-1,r.y+r.height-1,fg);
 	inset += scale;
@@ -1238,7 +1240,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
       case bt_box: case bt_raised: case bt_lowered:
 	if ( !(bw&1) ) --bw;
 	GDrawSetLineWidth(pixmap,bw);
-	DrawRoundTab(pixmap,&r,inset+bw/2,rr,cols[0],cols[1],cols[2],cols[3]);
+	DrawRoundTab(pixmap,&r,inset+bw/2,rr,cols[0],cols[1],cols[2],cols[3],active);
       break;
       case bt_engraved: case bt_embossed:
 	bw &= ~1;
@@ -1247,8 +1249,8 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 	if ( bw<=0 )
 	    bw = 2;
 	GDrawSetLineWidth(pixmap,bw/2);
-	DrawRoundTab(pixmap,&r,inset+bw/4,rr,cols[0],cols[1],cols[2],cols[3]);
-	DrawRoundTab(pixmap,&r,inset+bw/2+bw/4,rr,cols[2],cols[3],cols[0],cols[1]);
+	DrawRoundTab(pixmap,&r,inset+bw/4,rr,cols[0],cols[1],cols[2],cols[3],active);
+	DrawRoundTab(pixmap,&r,inset+bw/2+bw/4,rr,cols[2],cols[3],cols[0],cols[1],active);
       break;
       case bt_double: {
 	int width = (bw+1)/3;
@@ -1259,15 +1261,15 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 		--width;
 	}
 	GDrawSetLineWidth(pixmap,width);
-	DrawRoundTab(pixmap,&r,inset+width/2,rr,cols[0],cols[1],cols[2],cols[3]);
-	DrawRoundTab(pixmap,&r,inset+bw-(width+1)/2,rr,cols[0],cols[1],cols[2],cols[3]);
+	DrawRoundTab(pixmap,&r,inset+width/2,rr,cols[0],cols[1],cols[2],cols[3],active);
+	DrawRoundTab(pixmap,&r,inset+bw-(width+1)/2,rr,cols[0],cols[1],cols[2],cols[3],active);
       } break;
     }
     inset += bw;
 
     if ( (design->flags & box_foreground_border_inner) ) {
 	GDrawSetLineWidth(pixmap,scale);
-	DrawRoundTab(pixmap,&r,inset+scale/2,rr,color_inner,color_inner,color_inner,color_inner);
+	DrawRoundTab(pixmap,&r,inset+scale/2,rr,color_inner,color_inner,color_inner,color_inner,active);
 	inset += scale;
     }
 }
