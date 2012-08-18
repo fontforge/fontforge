@@ -1,6 +1,8 @@
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I libltdl/m4
 
-SUBDIRS = libltdl inc Unicode gutils
+SUBDIRS =
+
+SUBDIRS += inc Unicode gutils
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw

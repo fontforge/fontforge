@@ -4,12 +4,13 @@
 AC_PREREQ([2.68])
 AC_INIT([fontforge],[9999-experimental],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([libltdl/m4])
+AC_CONFIG_AUX_DIR([libltdl/config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([1.11.1 foreign silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([1.12.2 foreign silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -19,17 +20,7 @@ m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
 LTDL_INIT
-if test x"${with_included_ltdl}" != xyes; then
-   save_CFLAGS="${CFLAGS}"
-   save_LDFLAGS="${LDFLAGS}"
-   CFLAGS="${CFLAGS} ${LTDLINCL}"
-   LDFLAGS="${LDFLAGS} ${LIBLTDL}"
-   # The lt_dladvise_init symbol was added with libtool-2.2.
-   AC_CHECK_LIB([ltdl],[lt_dladvise_init],[],
-                [AC_MSG_ERROR([installed libltdl is too old])])
-   LDFLAGS="${save_LDFLAGS}"
-   CFLAGS="${save_CFLAGS}"
-fi
+FONTFORGE_CHECK_LTDL_VERSION
 
 AC_PATH_XTRA
 i_do_have_x="${have_x}"
@@ -371,15 +362,17 @@ AC_CONFIG_FILES([Unicode/GNUmakefile])
 AC_CONFIG_FILES([gutils/GNUmakefile])
 AC_CONFIG_FILES([gdraw/GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
-AC_CONFIG_FILES([libltdl/GNUmakefile:libltdl-GNUmakefile.in])
 
 dnl GNUstep-specific makefiles.
-AC_CONFIG_FILES([GNUmakefile.postamble])
-AC_CONFIG_FILES([Unicode/GNUmakefile.postamble])
-AC_CONFIG_FILES([gutils/GNUmakefile.postamble])
-AC_CONFIG_FILES([gdraw/GNUmakefile.postamble])
-AC_CONFIG_FILES([fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
-AC_CONFIG_FILES([overall_common.mk])
+if test x"${with_gnustep_make}" = xyes; then
+   AC_CONFIG_FILES([GNUmakefile.postamble])
+   AC_CONFIG_FILES([Unicode/GNUmakefile.postamble])
+   AC_CONFIG_FILES([gutils/GNUmakefile.postamble])
+   AC_CONFIG_FILES([gdraw/GNUmakefile.postamble])
+   AC_CONFIG_FILES([fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
+   AC_CONFIG_FILES([overall_common.mk])
+   AC_CONFIG_FILES([libltdl/GNUmakefile:libltdl-GNUmakefile.in])
+fi
 
 AC_CONFIG_FILES([fontforge.pc])
 AC_CONFIG_FILES([libfontforge.pc])
