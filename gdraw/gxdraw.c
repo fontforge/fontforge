@@ -2308,7 +2308,7 @@ static void GXDrawDrawArrow(GWindow gw, int32 x,int32 y, int32 xend,int32 yend, 
     GXDisplay *display = gxw->display;
 
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo )
+    if ( gxw->usecairo )
 	GDrawIError("DrawArrow not supported");
 #endif
     gxw->ggc->fg = col;
@@ -2325,10 +2325,10 @@ static void GXDrawDrawRect(GWindow gw, GRect *rect, Color col) {
 
     gxw->ggc->fg = col;
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo && gw->ggc->func==df_copy ) {
-	_GXCDraw_DrawRect((GXWindow) gw,rect);
+    if ( gxw->usecairo && gw->ggc->func==df_copy ) {
+	_GXCDraw_DrawRect(gxw,rect);
     } else {
-	if (((GXWindow) gw)->usecairo )
+	if ( gxw->usecairo )
 	    _GXCDraw_Flush(gxw);
 #endif
     {
@@ -2339,7 +2339,7 @@ static void GXDrawDrawRect(GWindow gw, GRect *rect, Color col) {
 		rect->width,rect->height);
     }
 #ifndef _NO_LIBCAIRO
-	if (((GXWindow) gw)->usecairo )
+	if ( gxw->usecairo )
 	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
     }
 #endif
@@ -2350,11 +2350,11 @@ static void GXDrawFillRect(GWindow gw, GRect *rect, Color col) {
 
     gxw->ggc->fg = col;
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo && gw->ggc->func==df_copy ) {
+    if ( gxw->usecairo && gw->ggc->func==df_copy ) {
 	_GXCDraw_FillRect( gxw,rect);
 return;
     } else {
-	if (((GXWindow) gw)->usecairo )
+	if (gxw->usecairo )
 	    _GXCDraw_Flush(gxw);
 #endif
     {
@@ -2365,7 +2365,7 @@ return;
 		rect->width,rect->height);
     }
 #ifndef _NO_LIBCAIRO
-	if (((GXWindow) gw)->usecairo )
+	if (gxw->usecairo )
 	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
     }
 #endif
@@ -2377,11 +2377,11 @@ static void GXDrawFillRoundRect(GWindow gw, GRect *rect, int radius, Color col) 
 
     gxw->ggc->fg = col;
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo && gw->ggc->func==df_copy ) {
+    if ( gxw->usecairo && gw->ggc->func==df_copy ) {
 	_GXCDraw_FillRoundRect( gxw,rect,rr );
 return;
     } else {
-	if (((GXWindow) gw)->usecairo )
+	if (gxw->usecairo )
 	    _GXCDraw_Flush(gxw);
 #endif
     {
@@ -2399,7 +2399,7 @@ return;
 	GXDrawFillRect(gw, &middle, col);
     }
 #ifndef _NO_LIBCAIRO
-	if (((GXWindow) gw)->usecairo )
+	if (gxw->usecairo )
 	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
     }
 #endif
