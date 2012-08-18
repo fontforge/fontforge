@@ -2,3 +2,6 @@
 # building FontForge with gnustep-make.
 
 include Makefile
+
+distclean:
+	rm -f GNUmakefile
