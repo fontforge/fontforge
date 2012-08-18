@@ -14,5 +14,7 @@ after-distclean::
 	rm -f inc/config.h
 	rm -f config.log config.cache
 	rm -f config.status
+	rm -f tests/atconfig tests/atlocal tests/*.py
+	rm -rf Unicode/.deps gutils/.deps gdraw/.deps fontforge/.deps
 
 after-clean::

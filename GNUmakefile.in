@@ -11,8 +11,7 @@ include $(GNUSTEP_MAKEFILES)/common.make
 PACKAGE_NAME = FontForgeApp
 export PACKAGE_NAME
 
-#SUBPROJECTS = Unicode gutils gdraw fontforge/pixmaps fontforge
-SUBPROJECTS = Unicode gutils gdraw fontforge
+SUBPROJECTS = libltdl Unicode gutils gdraw fontforge
 
 include @top_srcdir@/overall_common.mk
 

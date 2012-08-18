@@ -16,7 +16,20 @@ AC_USE_SYSTEM_EXTENSIONS
 # Early Automake 1.11.x versions still do not have AM_PROG_AR.
 m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
 
+LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
+LTDL_INIT
+if test x"${with_included_ltdl}" != xyes; then
+   save_CFLAGS="${CFLAGS}"
+   save_LDFLAGS="${LDFLAGS}"
+   CFLAGS="${CFLAGS} ${LTDLINCL}"
+   LDFLAGS="${LDFLAGS} ${LIBLTDL}"
+   # The lt_dladvise_init symbol was added with libtool-2.2.
+   AC_CHECK_LIB([ltdl],[lt_dladvise_init],[],
+                [AC_MSG_ERROR([installed libltdl is too old])])
+   LDFLAGS="${save_LDFLAGS}"
+   CFLAGS="${save_CFLAGS}"
+fi
 
 AC_PATH_XTRA
 i_do_have_x="${have_x}"
@@ -358,6 +371,7 @@ AC_CONFIG_FILES([Unicode/GNUmakefile])
 AC_CONFIG_FILES([gutils/GNUmakefile])
 AC_CONFIG_FILES([gdraw/GNUmakefile])
 AC_CONFIG_FILES([fontforge/GNUmakefile])
+AC_CONFIG_FILES([libltdl/GNUmakefile:libltdl-GNUmakefile.in])
 
 dnl GNUstep-specific makefiles.
 AC_CONFIG_FILES([GNUmakefile.postamble])

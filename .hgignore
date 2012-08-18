@@ -22,6 +22,8 @@ m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
+m4/argz.m4
+m4/ltdl.m4
 pyhook/aclocal.m4
 tests/package.m4
 tests/testsuite
@@ -36,7 +38,9 @@ libfontforgeexe.pc
 fontforge/sfddiff
 inc/config.h
 inc/config.h.in
+inc/stamp-h1
 libtool
+libltdl
 GNUmakefile
 GNUmakefile.preamble
 GNUmakefile.postamble
@@ -44,6 +48,7 @@ Makefile
 Makefile.in
 systemspecific
 .libs
+.deps
 
 syntax: regexp
 
