@@ -1154,6 +1154,29 @@ static char*  mingw_get_wm_name_utf8(Display* display, Window window){
     }
     return NULL;
 }
+
+/* translate GK_ keysyms to Virtual Keys */
+/* abort on unimplemented translations */
+int GDrawKeyToVK(int keysym) {
+    switch( keysym ) {
+      case ' ':
+return( VK_SPACE );
+      default:
+	if ( (keysym>='0' && keysym<='9') ||
+		(keysym>='A' && keysym<='Z') )
+return( keysym );
+    }
+    abort();
+return( 0 );
+}
+
+int GDrawKeyState(int keysym) {
+    if (GetAsyncKeyState(GDrawKeyToVK(keysym)) & 0x8000)
+return 1;
+    else
+return 0;
+}
+
 #endif
 
 static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
@@ -5118,6 +5141,40 @@ return( (GDisplay *) gdisp);
 void _XSyncScreen() {
     XSync(((GXDisplay *) screen_display)->display,false);
 }
+
+#if !defined(__MINGW32__)
+
+/* map GK_ keys to X keys */
+/* Assumes most are mapped 1-1, see gkeysym.h */
+/* abort on unimplemented translations */
+int GDrawKeyToXK(int keysym) {
+    switch( keysym ) {
+      default:
+	if ( keysym==' ' ||
+		(keysym>='0' && keysym<='9') ||
+		(keysym>='A' && keysym<='Z') ||
+		(keysym>='a' && keysym<='z') )
+return( keysym );
+    }
+    abort();
+return( 0 );
+}
+
+int GDrawKeyState(int keysym) {
+    char key_map_stat[32];
+    Display *xdisplay = ((GXDisplay *)screen_display)->display;
+    KeyCode code;
+
+    XQueryKeymap(xdisplay, key_map_stat);
+
+    code = XKeysymToKeycode(xdisplay, GDrawKeyToXK(keysym));
+    if ( !code ) {
+abort();
+return 0;
+    }
+return ((key_map_stat[code >> 3] >> (code & 7)) & 1);
+}
+#endif
 
 #else	/* NO X */
 
