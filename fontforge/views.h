@@ -205,6 +205,7 @@ typedef struct charview {
     int8 b1_tool_old;				/* Used by mingw port */
     int8 s1_tool, s2_tool, er_tool;		/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    int8 spacebar_hold;				/* spacebar is held down */
     SplinePointList *active_spl;
     SplinePoint *active_sp;
     spiro_cp *active_cp;
