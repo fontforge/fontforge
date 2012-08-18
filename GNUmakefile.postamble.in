@@ -10,6 +10,8 @@ after-clean::
 
 after-distclean::
 	rm -f GNUmakefile GNUmakefile.postamble overall_common.mk
+	rm -f Makefile
+	rm -f libltdl/GNUmakefile libltdl/Makefile
 	rm -f fontforge.pc
 	rm -f inc/config.h
 	rm -f config.log config.cache

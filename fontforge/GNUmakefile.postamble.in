@@ -42,3 +42,4 @@ after-clean::
 
 after-distclean::
 	rm -f GNUmakefile GNUmakefile.postamble
+	rm -f Makefile
