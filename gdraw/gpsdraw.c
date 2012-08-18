@@ -678,19 +678,9 @@ static void PSDrawFillRect(GWindow w, GRect *rct,Color col) {
     ps->pnt_cnt = 0;
 }
 
-/* XXX: not implemented */
 static void PSDrawFillRoundRect(GWindow w, GRect *rct,int UNUSED(radius),Color col) {
-    GPSWindow ps = (GPSWindow ) w;
-
-    ps->ggc->fg = col;
-    PSDrawSetcol(ps);
-    _GPSDraw_FlushPath(ps);
-    fprintf( ps->output_file, "  %g %g  %g %g  %g %g  %g %g g_quad fill\n",
-	    _GSPDraw_XPos(ps,rct->x), _GSPDraw_YPos(ps,rct->y+rct->height),
-	    _GSPDraw_XPos(ps,rct->x+rct->width), _GSPDraw_YPos(ps,rct->y+rct->height),
-	    _GSPDraw_XPos(ps,rct->x+rct->width), _GSPDraw_YPos(ps,rct->y),
-	    _GSPDraw_XPos(ps,rct->x), _GSPDraw_YPos(ps,rct->y));
-    ps->pnt_cnt = 0;
+    fprintf( stderr, "DrawFillRoundRect not implemented for postscript\n" );
+return NULL;
 }
 
 static void PSDrawClear(GWindow w,GRect *rect) {
