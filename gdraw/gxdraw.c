@@ -2484,6 +2484,18 @@ return;
     _GXCDraw_PathStartNew(w);
 }
 
+static void GXDrawPathStartSubNew(GWindow w) {
+    if ( !((GXWindow) w)->usecairo )
+return;
+    _GXCDraw_PathStartSubNew(w);
+}
+
+static int GXDrawFillRuleSetWinding(GWindow w) {
+    if ( !((GXWindow) w)->usecairo )
+return 0;
+    return _GXCDraw_FillRuleSetWinding(w);
+}
+
 static void GXDrawPathClose(GWindow w) {
     if ( !((GXWindow) w)->usecairo )
 return;
@@ -2538,6 +2550,13 @@ return( gc_xor );
 }
 
 static void GXDrawPathStartNew(GWindow w) {
+}
+
+static void GXDrawPathStartSubNew(GWindow w) {
+}
+
+static int GXDrawFillRuleSetWinding(GWindow w) {
+    return 0;
 }
 
 static void GXDrawPathClose(GWindow w) {
@@ -4917,7 +4936,9 @@ static struct displayfuncs xfuncs = {
     GXDraw_LayoutExtents,
     GXDraw_LayoutSetWidth,
     GXDraw_LayoutLineCount,
-    GXDraw_LayoutLineStart
+    GXDraw_LayoutLineStart,
+    GXDrawPathStartSubNew,
+    GXDrawFillRuleSetWinding
 };
 
 static void GDrawInitXKB(GXDisplay *gdisp) {
