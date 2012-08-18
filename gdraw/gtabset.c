@@ -131,12 +131,6 @@ static int DrawTab(GWindow pixmap, GTabSet *gts, int i, int x, int y ) {
 
     if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     GBoxDrawTabOutline(pixmap,&gts->g,x,y,gts->tabs[i].width,gts->rowh,i==gts->sel);
-    if ( i==gts->sel ) {
-	GRect r;
-	r.x = x+2; r.y = y+1;
-	r.width = gts->tabs[i].width-4; r.height = gts->rowh-2;
-	GDrawFillRect(pixmap,&r,gts->g.box->active_border);
-    }
     GDrawDrawBiText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
 	    gts->tabs[i].name,-1,NULL,fg);
     gts->tabs[i].x = x;
