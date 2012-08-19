@@ -2190,7 +2190,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[20+2*48+5+1], *varray[13], *hvarray[47], *famarray[3*52+1],
+    GGadgetCreateData gcd[20+2*48+5+1], *varray[13], *hvarray[57], *famarray[3*52+1],
 	    *harray[10], boxes[9], *oflarray[11][5], *oflibinfo[8], *parray[3][4], *p2array[5];
     GTextInfo label[20+2*48+4+1];
     struct gfc_data d;
