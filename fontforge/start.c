@@ -26,6 +26,7 @@
  */
 #include "fontforgevw.h"
 #include <gfile.h>
+#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -130,6 +131,9 @@ static void initlibrarysearchpath(void) {
 }
 
 void InitSimpleStuff(void) {
+    int err;
+    char buffer[2000];
+
     initlibrarysearchpath();
     initrand();
     initadobeenc();
@@ -141,6 +145,24 @@ void InitSimpleStuff(void) {
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
+    
+    err = lt_dlinit();
+    if (1 < err) {
+        fprintf(stderr, "%d errors encountered during libltdl startup.\n", err);
+        abort();
+    } else if (1 == err) {
+        fprintf(stderr, "1 error encountered during libltdl startup.\n");
+        abort();
+    }
+
+#ifdef PLUGINDIR
+    lt_dladdsearchdir(PLUGINDIR);
+#endif /* PLUGINDIR */
+    if (getPfaEditDir(buffer)!=NULL ) {
+	    strcpy(buffer,getPfaEditDir(buffer));
+	    strcat(buffer,"/plugins");
+	    lt_dladdsearchdir(strdup(buffer));
+    }
 
     SetDefaults();
 }

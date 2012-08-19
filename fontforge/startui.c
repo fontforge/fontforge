@@ -28,6 +28,7 @@
 #include <gfile.h>
 #include <gresource.h>
 #include <ustring.h>
+#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -1517,5 +1518,8 @@ exit( 0 );
     if ( doopen || !any )
 	MenuOpen(NULL,NULL,NULL);
     GDrawEventLoop(NULL);
+
+    lt_dlexit();
+
 return( 0 );
 }

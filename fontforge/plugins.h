@@ -29,7 +29,7 @@
 
 /*
     I envision that there will eventually be three types of plug-ins. At the
-    moment I am only supporing two of them.
+    moment I am only supporting two of them.
 
     * A plug in which adds a new encoding to the encoding/force encoding
     	menus.
@@ -92,8 +92,8 @@ extern int AddEncoding(char *name,EncFunc enc_to_uni,EncFunc uni_to_enc,int max)
 
 
  /* Internal routines. Plugins shouldn't need these */
-extern void LoadPlugin(char *dynamic_lib_name);
+extern void LoadPlugin(const char *dynamic_lib_name);
     /* Loads a single plugin file */
-extern void LoadPluginDir(char *dir);
-    /* Loads any dynamic libs from this directory. if dir is NULL loads from */
-    /*  default directory */
+extern void LoadPluginDir(const char *search_path);
+    /* Loads any dynamic libs from this search path. if search_path is
+     * NULL loads from the path returned by lt_dlgetsearchpath() */

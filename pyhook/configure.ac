@@ -8,13 +8,11 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AM_INIT_AUTOMAKE([1.11.1 foreign silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([1.12.2 foreign silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
-# Early Automake 1.11.x versions still do not have AM_PROG_AR.
-m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
-
+AM_PROG_AR
 LT_INIT([dlopen])
 
 # Checks for programs.

@@ -27,6 +27,7 @@
 #include "fontforgevw.h"
 #include <gfile.h>
 #include <ustring.h>
+#include <ltdl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -195,5 +196,7 @@ int fontforge_main( int argc, char **argv ) {
 #  else
     PyFF_Stdin();
 #  endif
+
+    lt_dlexit();
 return( 0 );
 }

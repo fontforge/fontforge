@@ -62,9 +62,10 @@ libfontforge_la_SOURCES        = $(LIBFF_C_SRCFILES)
 nodist_libfontforge_la_SOURCES = $(NODIST_LIBFF_C_SRCFILES)
 EXTRA_libfontforge_la_SOURCES  = $(EXTRA_LIBFF_C_SRCFILES)
 
-libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"			\
-	"-I$(top_srcdir)/inc" "-DSHAREDIR=\"${pkgdatadir}\""	\
-	"-DDOCDIR=\"${docdir}\"" $(MY_CFLAGS)
+libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"					\
+	"-I$(top_srcdir)/inc" "-DSHAREDIR=\"${pkgdatadir}\""			\
+	"-DDOCDIR=\"${docdir}\"" "-DPLUGINDIR=\"${pkglibdir}/plugins\""	\
+	$(MY_CFLAGS)
 
 libfontforge_la_LIBADD = splinerefigure.lo		\
 	$(top_builddir)/Unicode/libgunicode.la		\
@@ -93,7 +94,7 @@ endif !GRAPHICAL_USER_INTERFACE
 nodist_libfontforgeexe_la_SOURCES = $(NODIST_LIBFFEXE_C_SRCFILES)
 
 libfontforgeexe_la_CPPFLAGS = $(libfontforge_la_CPPFLAGS)
-libfontforgeexe_la_LIBADD = libfontforge.la
+libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS)
 libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"
 

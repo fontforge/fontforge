@@ -14,9 +14,7 @@ AM_INIT_AUTOMAKE([1.12.2 foreign silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
-# Early Automake 1.11.x versions still do not have AM_PROG_AR.
-m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
-
+AM_PROG_AR
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
 LTDL_INIT
@@ -106,8 +104,9 @@ FONTFORGE_ARG_ENABLE([paste-after],
 
 FONTFORGE_ARG_ENABLE([gb12345],
         [AS_HELP_STRING([--enable-gb12345],
-                [enable support for the GB12345 encoding])],
+                [build the GB12345 encoding plugin])],
         [FONTFORGE_CONFIG_GB12345])
+AM_CONDITIONAL([PLUGIN_GB12345],[test x"${i_do_have_gb12345}" = xyes])
 
 FONTFORGE_ARG_ENABLE([tile-path],
         [AS_HELP_STRING([--enable-tile-path],
@@ -171,6 +170,9 @@ else
    i_do_have_cairo=no
    i_do_have_pango=no
    i_do_have_freetype=no
+   AC_DEFINE([_NO_LIBCAIRO],[1])
+   AC_DEFINE([_NO_LIBPANGO],[1])
+   AC_DEFINE([_NO_FREETYPE],[1])
 fi
 FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
@@ -318,6 +320,7 @@ test x"${LIBXML_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
 test x"${PYTHON_CFLAGS}" = x || my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
 test x"${PTHREAD_CFLAGS}" = x || my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
 test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
+test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
 AC_SUBST([MY_CFLAGS],[${my_cflags}])
 
 my_libs=""
@@ -336,6 +339,7 @@ test x"${regular_link_pango}" = xyes -a x"${PANGOCAIRO_LIBS}" != x && my_libs="$
 test x"${regular_link_pango}" = xyes -a x"${PANGOXFT_LIBS}" != x && my_libs="${my_libs} ${PANGOXFT_LIBS}"
 my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS} ${PTHREAD_LIBS}"
 test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
+test x"${LIBLTDL}" != x && my_libs="${my_libs} ${LIBLTDL}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
 dnl Portable makefiles. These are ignored if you are building
@@ -351,6 +355,7 @@ AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([po/mackeys/Makefile])
 AC_CONFIG_FILES([htdocs/Makefile])
 AC_CONFIG_FILES([pycontrib/Makefile])
+AC_CONFIG_FILES([plugins/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 
 dnl GNUmakefiles that act as wrappers around portable makefiles,

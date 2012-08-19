@@ -8,7 +8,10 @@ if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
-SUBDIRS += fontforge po htdocs pycontrib $(subdirs) tests
+SUBDIRS += fontforge po htdocs pycontrib
+SUBDIRS += $(subdirs)
+SUBDIRS += plugins
+SUBDIRS += tests
 
 pkgconfigdir = ${libdir}/pkgconfig
 nodist_pkgconfig_DATA = fontforge.pc libfontforge.pc	\
