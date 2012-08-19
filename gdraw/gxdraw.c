@@ -1401,7 +1401,7 @@ return( NULL );
     }
 #ifndef _NO_LIBCAIRO
     /* Only do sub-pixel/anti-alias stuff if we've got truecolor */
-    if ( gdisp->visual->class==TrueColor && _GXCDraw_hasCairo() )
+    if ( gdisp->visual->class==TrueColor && !(wattrs->mask&wam_nocairo) &&_GXCDraw_hasCairo() )
 	_GXCDraw_NewWindow(nw,wattrs->background_color);
 #endif
 #ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
