@@ -1077,7 +1077,6 @@ return( false );
 	    MVSetFeatures(mv);
 	}
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	/* If we change the kerning offset, then any pixel corrections*/
 	/*  will no longer apply (they only had meaning with the old  */
 	/*  offset) so free the device table, if any */
@@ -1085,7 +1084,6 @@ return( false );
 	    DeviceTableFree(kp->adjust);
 	    kp->adjust = NULL;
 	}
-#endif
 
 	offset = is_diff && kp != NULL ? kp->off+offset : offset;
 	/* If kern offset has been set to zero by user, then cleanup this kerning pair */

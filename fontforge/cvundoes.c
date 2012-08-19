@@ -2557,7 +2557,6 @@ static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
 	_PasteToSC(sc,paster,fv,pasteinto,layer,trans,mc,refstate,already_complained);
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void DevTabInto(struct vr *vr) {
     ValDevTab *adjust;
 
@@ -2582,7 +2581,6 @@ return;		/* Nothing to do */
 	memcpy(adjust->yadv.corrections,vr->adjust->yadv.corrections,adjust->yadv.last_pixel_size-adjust->yadv.first_pixel_size+1);
     }
 }
-#endif
 
 static void PSTInto(SplineChar *sc,PST *pst,PST *frompst, struct lookup_subtable *sub) {
     if ( pst==NULL ) {
@@ -2609,15 +2607,11 @@ static void PSTInto(SplineChar *sc,PST *pst,PST *frompst, struct lookup_subtable
 	pst->u.pair.paired = copy( frompst->u.pair.paired );
 	pst->u.pair.vr = chunkalloc(sizeof(struct vr[2]));
 	memcpy(pst->u.pair.vr,frompst->u.pair.vr,sizeof(struct vr[2]));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DevTabInto(&pst->u.pair.vr[0]);
 	DevTabInto(&pst->u.pair.vr[1]);
-#endif
     } else if ( pst->type==pst_position ) {
 	memcpy(&pst->u.pos,&frompst->u.pos,sizeof(struct vr));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DevTabInto(&pst->u.pos);
-#endif
     }
 }
 
@@ -2630,14 +2624,11 @@ static void APInto(SplineChar *sc,AnchorPoint *ap,AnchorPoint *fromap,
 	ap->next = sc->anchor;
 	sc->anchor = ap;
     } else {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(ap->xadjust.corrections); free(ap->yadjust.corrections);
 	ap->xadjust = fromap->xadjust;
 	ap->yadjust = fromap->yadjust;
-#endif
 	ap->me = fromap->me;
     }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( fromap->xadjust.corrections!=NULL ) {
 	ap->xadjust.corrections = galloc(ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
 	memcpy(ap->xadjust.corrections,fromap->xadjust.corrections,ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
@@ -2646,7 +2637,6 @@ static void APInto(SplineChar *sc,AnchorPoint *ap,AnchorPoint *fromap,
 	ap->yadjust.corrections = galloc(ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
 	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
     }
-#endif
 }
 
 static void KPInto(SplineChar *owner,KernPair *kp,KernPair *fromkp,int isv,
@@ -2665,14 +2655,12 @@ static void KPInto(SplineChar *owner,KernPair *kp,KernPair *fromkp,int isv,
     }
     kp->sc = other;
     kp->off = fromkp->off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( kp->adjust!=NULL )
 	DeviceTableFree(kp->adjust);
     if ( fromkp->adjust!=NULL )
 	kp->adjust = DeviceTableCopy(fromkp->adjust);
     else
 	kp->adjust = NULL;
-#endif
 }
 
 static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,int pasteinto,

@@ -679,11 +679,7 @@ struct library_version_configuration exe_library_version_configuration = {
     sizeof(struct charviewbase),
     sizeof(struct cvcontainer),
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     1,
-#else
-    0,
-#endif
 
 #ifdef FONTFORGE_CONFIG_TYPE3
     1,

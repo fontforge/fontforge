@@ -41,11 +41,9 @@ typedef struct kernclassdlg {
     struct lookup_subtable *subtable;
     int first_cnt, second_cnt;
     int16 *offsets;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *adjusts;
     DeviceTable active_adjust;		/* The one that is currently active */
     DeviceTable orig_adjust;		/* Initial value for this the active adjust */
-#endif
     GWindow gw, subw;
     GFont *font;
     int fh, as;
@@ -323,10 +321,8 @@ return;
 static void KPD_DoCancel(KernClassDlg *kcd) {
     BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
     kcd->fsc = kcd->ssc = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
     free(kcd->orig_adjust.corrections); kcd->orig_adjust.corrections = NULL;
-#endif
     kcd->done = true;
 }
 
@@ -347,10 +343,8 @@ static int KPD_OK(GGadget *g, GEvent *e) {
 return( true );
 	BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
 	kcd->fsc = kcd->ssc = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
 	free(kcd->orig_adjust.corrections); kcd->orig_adjust.corrections = NULL;
-#endif
 	kcd->done = true;
     }
 return( true );
@@ -369,11 +363,9 @@ return;
 return;
     }
     kcd->offsets[kcd->old_pos] = val;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     free(kcd->adjusts[kcd->old_pos].corrections);
     kcd->adjusts[kcd->old_pos] = kcd->active_adjust;
     kcd->active_adjust.corrections = NULL;
-#endif
 
     BDFCharFree(kcd->fsc); BDFCharFree(kcd->ssc);
     kcd->fsc = kcd->ssc = NULL;
@@ -506,7 +498,6 @@ return;
 	    }
 	    if ( event->type==et_mouseup ) {
 		kcd->down = false;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		if ( nkern!=kcd->orig_kern && kcd->active_adjust.corrections!=NULL ) {
 		    free(kcd->active_adjust.corrections);
 		    kcd->active_adjust.corrections = NULL;
@@ -514,7 +505,6 @@ return;
 		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
 		    GDrawRequestExpose(kcd->subw,NULL,false);
 		}
-#endif
 	    }
 	}
     } else {
@@ -562,7 +552,6 @@ return;
 	    }
 	    if ( event->type==et_mouseup ) {
 		kcd->down = false;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		if ( nkern!=kcd->orig_kern && kcd->active_adjust.corrections!=NULL ) {
 		    free(kcd->active_adjust.corrections);
 		    kcd->active_adjust.corrections = NULL;
@@ -570,7 +559,6 @@ return;
 		    GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
 		    GDrawRequestExpose(kcd->subw,NULL,false);
 		}
-#endif
 	    }
 	}
     }
@@ -588,7 +576,6 @@ static void KCD_KernExpose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
 
     kern = kcd->magfactor*rint(kern*kcd->pixelsize/(double) em);
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     { int correction;
 	unichar_t *end;
 
@@ -598,7 +585,6 @@ static void KCD_KernExpose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
 	if ( *end=='\0' && correction>=-128 && correction<=127 )
 	    kern += correction*kcd->magfactor;
     }
-#endif
 
     if ( !kcd->isv ) {
 	x = (kcd->subwidth-( kcd->magfactor*(kcd->fsc!=NULL?kcd->fsc->width:0)+
@@ -680,7 +666,6 @@ static void _KCD_DisplaySizeChanged(KernClassDlg *kcd) {
 
     while ( *end==' ' ) ++end;
     if ( pixelsize>4 && pixelsize<400 && *end=='\0' ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	unichar_t ubuf[20]; char buffer[20];
 	ubuf[0] = '0'; ubuf[1] = '\0';
 	if ( kcd->active_adjust.corrections!=NULL &&
@@ -691,7 +676,6 @@ static void _KCD_DisplaySizeChanged(KernClassDlg *kcd) {
 	    uc_strcpy(ubuf,buffer);
 	}
 	GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_Correction),ubuf);
-#endif
 	kcd->pixelsize = pixelsize;
 	KCD_UpdateGlyph(kcd,0);
 	KCD_UpdateGlyph(kcd,1);
@@ -730,7 +714,6 @@ static int KCB_FreeTypeChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static int KCD_CorrectionChanged(GGadget *g, GEvent *e) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
@@ -765,7 +748,6 @@ static int KCD_ClearDevice(GGadget *g, GEvent *e) {
     }
 return( true );
 }
-#endif
 
 static int KCD_RevertKerning(GGadget *g, GEvent *e) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -773,7 +755,6 @@ static int KCD_RevertKerning(GGadget *g, GEvent *e) {
 	char buf[20];
 	sprintf( buf, "%d", kcd->orig_kern_offset );
 	GGadgetSetTitle8(GWidgetGetControl(kcd->gw,CID_KernOffset),buf);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(kcd->active_adjust.corrections);
 	kcd->active_adjust = kcd->orig_adjust;
 	if ( kcd->orig_adjust.corrections!=NULL ) {
@@ -782,7 +763,6 @@ static int KCD_RevertKerning(GGadget *g, GEvent *e) {
 	    kcd->active_adjust.corrections = galloc(len);
 	    memcpy(kcd->active_adjust.corrections,kcd->orig_adjust.corrections,len);
 	}
-#endif
 	_KCD_DisplaySizeChanged(kcd);
     }
 return( true );
@@ -802,13 +782,8 @@ static int KPD_FinishKP(KernClassDlg *kcd) {
 
     if ( kcd->scf!=NULL && kcd->scs!=NULL ) {
 	for ( kp = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns; kp!=NULL && kp->sc!=kcd->scs; kp=kp->next );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( kp==NULL && offset==0 && kcd->active_adjust.corrections==NULL )
 return(true);
-#else
-	if ( kp==NULL && offset==0 )
-return(true);
-#endif
 	if ( kcd->subtable==NULL ) {
 	    ff_post_error(_("No lookup selected"),_("You must select a lookup subtable to contain this kerning pair" ));
 return(false);
@@ -824,7 +799,6 @@ return(false);
 	}
 	kp->subtable = kcd->subtable;
 	kp->off = offset;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( kp->adjust!=NULL && kcd->active_adjust.corrections!=NULL ) {
 	    free(kp->adjust->corrections);
 	    *kp->adjust = kcd->active_adjust;
@@ -836,12 +810,10 @@ return(false);
 	    kp->adjust = NULL;
 	}
 	memset(&kcd->active_adjust,0,sizeof(DeviceTable));
-#endif
     }
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void KCD_SetDevTab(KernClassDlg *kcd) {
     unichar_t ubuf[20];
 
@@ -871,7 +843,6 @@ static void KCD_SetDevTab(KernClassDlg *kcd) {
     GGadgetSetEnabled(GWidgetGetControl(kcd->gw,CID_ClearDevice),
 	    kcd->active_adjust.corrections!=NULL);
 }
-#endif
 
 static void KP_SelectSubtable(KernClassDlg *kcd,struct lookup_subtable *sub) {
     int32 len;
@@ -925,16 +896,13 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
     char buf[20];
     unichar_t ubuf[20];
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     free(kcd->active_adjust.corrections); kcd->active_adjust.corrections = NULL;
-#endif
     if ( kcd->scf!=NULL && kcd->scs!=NULL ) {
 	for ( kp = kcd->isv?kcd->scf->vkerns:kcd->scf->kerns; kp!=NULL && kp->sc!=kcd->scs; kp=kp->next );
 	if ( kp!=NULL ) {
 	    offset = kp->off;
 	    kcd->orig_kern_offset = offset;
 	    KP_SelectSubtable(kcd,kp->subtable);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( kp->adjust!=NULL ) {
 		int len = kp->adjust->last_pixel_size-kp->adjust->first_pixel_size+1;
 		kcd->active_adjust = *kp->adjust;
@@ -944,7 +912,6 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
 		kcd->orig_adjust.corrections = galloc(len);
 		memcpy(kcd->orig_adjust.corrections,kp->adjust->corrections,len);
 	    }
-#endif
 	}
     }
     if ( kp==NULL && kcd->scf!=NULL ) {
@@ -967,9 +934,7 @@ static void KPD_PairSearch(KernClassDlg *kcd) {
     sprintf(buf, "%d", offset);
     uc_strcpy(ubuf,buf);
     GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     KCD_SetDevTab(kcd);
-#endif
 }
 
 static void KPD_BuildKernList(KernClassDlg *kcd) {
@@ -1081,7 +1046,6 @@ static void KCD_EditOffset(KernClassDlg *kcd, int first, int second) {
 	uc_strcpy(ubuf,buf);
 	GGadgetSetTitle(GWidgetGetControl(kcd->gw,CID_KernOffset),ubuf);
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	kcd->active_adjust = kcd->adjusts[kcd->st_pos];
 	kcd->orig_adjust = kcd->adjusts[kcd->st_pos];
 	if ( kcd->active_adjust.corrections!=NULL ) {
@@ -1092,7 +1056,6 @@ static void KCD_EditOffset(KernClassDlg *kcd, int first, int second) {
 	    memcpy(kcd->orig_adjust.corrections,kcd->adjusts[kcd->st_pos].corrections,len);
 	}
 	KCD_SetDevTab(kcd);
-#endif
     }
     GDrawRequestExpose(kcd->subw,NULL,false);
     GDrawRequestExpose(kcd->gw,NULL,false);
@@ -1128,9 +1091,7 @@ static int KC_ShowHideKernPane(GGadget *g, GEvent *e) {
     static int cidlist[] = { CID_First, CID_Second, CID_FreeType, CID_SizeLabel,
 	    CID_DisplaySize, CID_MagLabel,CID_Magnifications, CID_OffsetLabel,
 	    CID_KernOffset,
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    CID_CorrectLabel, CID_Correction, CID_Revert, CID_ClearDevice,
-#endif
 	    CID_Display, 0 };
     if ( e==NULL ||
 	    (e->type==et_controlevent && e->u.control.subtype == et_radiochanged) ) {
@@ -1182,9 +1143,7 @@ return( true );
 	free(kc->firsts);
 	free(kc->seconds);
 	free(kc->offsets);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(kc->adjusts);
-#endif
 
 	kc->subtable->separation = separation;
 	kc->subtable->minkern = minkern;
@@ -1206,9 +1165,7 @@ return( true );
 	for ( i=1; i<kc->second_cnt; ++i )
 	    kc->seconds[i] = GlyphNameListDeUnicode(classes[i].u.md_str);
 	kc->offsets = kcd->offsets;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	kc->adjusts = kcd->adjusts;
-#endif
 	kcd->sf->changed = true;
 	sf->changed = true;
 
@@ -1222,13 +1179,11 @@ static void KC_DoCancel(KernClassDlg *kcd) {
 	KPD_DoCancel(kcd);
     else {
 	free(kcd->offsets);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	{ int i;
 	    for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i )
 		free(kcd->adjusts[i].corrections);
 	}
 	free(kcd->adjusts);
-#endif
 	GDrawDestroyWindow(kcd->gw);
     }
 }
@@ -1317,7 +1272,6 @@ static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
 	for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i )
 	    kcd->offsets[i] = 0;
       break;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
       case MID_ClearDevTab: {
 	DeviceTable *devtab = &kcd->adjusts[kcd->st_pos];
 	free(devtab->corrections);
@@ -1332,7 +1286,6 @@ static void kernmenu_dispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
 	    devtab->first_pixel_size = devtab->last_pixel_size = 0;
 	}
       break;
-#endif
     }
     kcd->st_pos = -1;
     GDrawRequestExpose(kcd->gw,NULL,false);
@@ -1346,10 +1299,8 @@ static GMenuItem kernpopupmenu[] = {
 #define Menu_VKern_Offset 4		/* No autokerning for vertical kerning */
     { { (unichar_t *) N_("Clear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_Clear },
     { { (unichar_t *) N_("Clear All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAll },
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     { { (unichar_t *) N_("Clear Device Table"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearDevTab },
     { { (unichar_t *) N_("Clear All Device Tables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, kernmenu_dispatch, MID_ClearAllDevTab },
-#endif
     GMENUITEM_EMPTY
 };
 
@@ -2061,11 +2012,9 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 	    kcd->offsets = grealloc(kcd->offsets,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(int16));
 	    memset(kcd->offsets+kcd->first_cnt*kcd->second_cnt,
 		    0, kcd->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    kcd->adjusts = grealloc(kcd->adjusts,(kcd->first_cnt+1)*kcd->second_cnt*sizeof(DeviceTable));
 	    memset(kcd->adjusts+kcd->first_cnt*kcd->second_cnt,
 		    0, kcd->second_cnt*sizeof(DeviceTable));
-#endif
 	    ++kcd->first_cnt;
 	    if ( autokern )
 		KCD_AutoKernAClass(kcd,kcd->first_cnt-1,true);
@@ -2078,7 +2027,6 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 	    }
 	    free( kcd->offsets );
 	    kcd->offsets = new;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    {
 		DeviceTable *new = galloc(kcd->first_cnt*(kcd->second_cnt+1)*sizeof(DeviceTable));
 		for ( i=0; i<kcd->first_cnt; ++i ) {
@@ -2089,7 +2037,6 @@ static void KCD_FinishEdit(GGadget *g,int r, int c, int wasnew) {
 		free( kcd->adjusts );
 		kcd->adjusts = new;
 	    }
-#endif
 	    ++kcd->second_cnt;
 	    if ( autokern )
 		KCD_AutoKernAClass(kcd,kcd->second_cnt-1,false);
@@ -2123,31 +2070,25 @@ static void KCD_RowMotion(GGadget *g,int oldr, int newr) {
     KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
     int is_first = GGadgetGetCid(g) == CID_ClassList;
     int i;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable tempdt;
-#endif
 
     if ( is_first ) {
 	for ( i=0; i<kcd->second_cnt; ++i ) {
 	    int16 off = kcd->offsets[oldr*kcd->second_cnt + i];
 	    kcd->offsets[oldr*kcd->second_cnt + i] = kcd->offsets[newr*kcd->second_cnt + i];
 	    kcd->offsets[newr*kcd->second_cnt + i] = off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    tempdt = kcd->adjusts[oldr*kcd->second_cnt + i];
 	    kcd->adjusts[oldr*kcd->second_cnt + i] = kcd->adjusts[newr*kcd->second_cnt + i];
 	    kcd->adjusts[newr*kcd->second_cnt + i] = tempdt;
-#endif
 	}
     } else {
 	for ( i=0; i<kcd->first_cnt; ++i ) {
 	    int16 off = kcd->offsets[i*kcd->second_cnt + oldr];
 	    kcd->offsets[i*kcd->second_cnt + oldr] = kcd->offsets[i*kcd->second_cnt + newr];
 	    kcd->offsets[i*kcd->second_cnt + newr] = off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    tempdt = kcd->adjusts[i*kcd->second_cnt + oldr];
 	    kcd->adjusts[i*kcd->second_cnt + oldr] = kcd->adjusts[i*kcd->second_cnt + newr];
 	    kcd->adjusts[i*kcd->second_cnt + newr] = tempdt;
-#endif
 	}
     }
     GDrawRequestExpose(kcd->gw,NULL,false);
@@ -2165,46 +2106,36 @@ static void KCD_DeleteClass(GGadget *g,int whichclass) {
 
     (void) GMatrixEditGet(g,&rows);
     if ( is_first ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	for ( i=0; i<kcd->second_cnt; ++i )
 	    free(kcd->adjusts[whichclass*kcd->second_cnt+i].corrections);
-#endif
 	for ( i=whichclass+1; i<rows; ++i ) {
 	    memcpy(kcd->offsets+(i-1)*kcd->second_cnt,
 		    kcd->offsets+i*kcd->second_cnt,
 		    kcd->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    memcpy(kcd->adjusts+(i-1)*kcd->second_cnt,
 		    kcd->adjusts+i*kcd->second_cnt,
 		    kcd->second_cnt*sizeof(DeviceTable));
-#endif
 	}
 	-- kcd->first_cnt;
     } else {
 	int16 *newoffs = galloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DeviceTable *newadj = galloc(kcd->first_cnt*(kcd->second_cnt-1)*sizeof(DeviceTable));
 	for ( i=0; i<kcd->first_cnt; ++i )
 	    free(kcd->adjusts[i*kcd->second_cnt+whichclass].corrections);
-#endif
 	for ( i=0; i<rows; ++i ) if ( i!=whichclass ) {
 	    int newi = i>whichclass ? i-1 : i;
 	    for ( j=0; j<kcd->first_cnt; ++j ) {
 		newoffs[j*(kcd->second_cnt-1)+newi] =
 			kcd->offsets[j*kcd->second_cnt+i];
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		newadj[j*(kcd->second_cnt-1)+newi] =
 			kcd->adjusts[j*kcd->second_cnt+i];
-#endif
 	    }
 	}
 	-- kcd->second_cnt;
 	free(kcd->offsets);
 	kcd->offsets = newoffs;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(kcd->adjusts);
 	kcd->adjusts = newadj;
-#endif
     }    
 }
 
@@ -2398,11 +2329,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k].gd.cid = CID_DisplaySize;
     gcd[k].gd.handle_controlevent = KCD_DisplaySizeChanged;
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-    gcd[k++].creator = GTextFieldCreate;
-#else
     gcd[k++].creator = GListFieldCreate;
-#endif
     hvarray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Magnification:");
@@ -2437,7 +2364,6 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     gcd[k++].creator = GTextFieldCreate;
     hvarray[7] = &gcd[k-1];
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     label[k].text = (unichar_t *) _("Device Table Correction:\n  (at display size)");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -2476,18 +2402,6 @@ static void FillShowKerningWindow(KernClassDlg *kcd, GGadgetCreateData *left,
     gcd[k++].creator = GButtonCreate;
     hvarray[13] = &gcd[k-1]; hvarray[14] = GCD_ColSpan; hvarray[15] = NULL;
     hvarray[16] = NULL;
-#else
-    label[k].text = (unichar_t *) _("Revert Kerning");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible|gg_enabled|gg_utf8_popup ;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Resets the kerning offset to what it was originally");
-    gcd[k].gd.handle_controlevent = KCD_RevertKerning;
-    gcd[k++].creator = GButtonCreate;
-    hvarray[8] = &gcd[k-1]; hvarray[9] = GCD_ColSpan;
-    hvarray[10] = NULL;
-    hvarray[11] = NULL;
-#endif
 
     hvbox.gd.flags = gg_enabled|gg_visible;
     hvbox.gd.u.boxelements = hvarray;
@@ -2630,7 +2544,6 @@ return;
     kcd->second_cnt = kc->second_cnt;
     kcd->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
     memcpy(kcd->offsets,kc->offsets,kc->first_cnt*kc->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     kcd->adjusts = galloc(kc->first_cnt*kc->second_cnt*sizeof(DeviceTable));
     memcpy(kcd->adjusts,kc->adjusts,kc->first_cnt*kc->second_cnt*sizeof(DeviceTable));
     for ( i=0; i<kcd->first_cnt*kcd->second_cnt; ++i ) {
@@ -2640,7 +2553,6 @@ return;
 	    memcpy(kcd->adjusts[i].corrections,kc->adjusts[i].corrections,len);
 	}
     }
-#endif
 
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));

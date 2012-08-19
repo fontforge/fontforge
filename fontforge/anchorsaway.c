@@ -47,10 +47,8 @@ typedef struct anchord {
     SplineChar *sc;		/* This is the character whose anchor we are */
     AnchorPoint *ap;		/*  interested in, and this is that anchor */
     BasePoint apos;		/* Modified anchor position */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable xadjust;	/* Modified adjustments */
     DeviceTable yadjust;
-#endif
     BDFChar *bdfc;
     int char_off;		/* Mark characters are often positioned oddly */
     int char_size;		/*  and have zero advance widths, this corrects*/
@@ -122,10 +120,8 @@ static void AnchorD_FreeChar(AnchorDlg *a) {
 static void AnchorD_FreeAll(AnchorDlg *a) {
     struct state *old, *oldnext;
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     free(a->xadjust.corrections);
     free(a->yadjust.corrections);
-#endif
     for ( old = a->orig_vals; old!=NULL; old=oldnext ) {
 	oldnext = old->next;
 	chunkfree(old,sizeof(struct state));
@@ -431,7 +427,6 @@ static void AnchorD_ChangeSize(AnchorDlg *a) {
     GDrawSetCursor(a->gw,ct_pointer);
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static int DevTabFind(DeviceTable *adjust,int pixelsize) {
     if ( adjust==NULL || adjust->corrections==NULL ||
 	    pixelsize<adjust->first_pixel_size ||
@@ -439,7 +434,6 @@ static int DevTabFind(DeviceTable *adjust,int pixelsize) {
 return( 0 );
 return( adjust->corrections[pixelsize-adjust->first_pixel_size]);
 }
-#endif
 
 static void AnchorD_Expose(AnchorDlg *a,GWindow pixmap,GEvent *event) {
     GRect *area = &event->u.expose.rect;
@@ -464,7 +458,6 @@ return;
     }
 
     if ( expose_end>a->ctl_len+a->char_size && area->y<a->sb_base ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	int xcor=0, ycor=0;
 	unichar_t *end;
 	const unichar_t *ret;
@@ -479,7 +472,6 @@ return;
 	while ( *end==' ' ) ++end;
 	if ( *end!='\0' || ycor<-128 || ycor>127 )
 	    ycor = 0;
-#endif
 
 	clip = *area;
 	if ( area->x<=a->ctl_len+a->char_size ) {
@@ -504,28 +496,18 @@ return;
 		    a->ap->type==at_basemark ) {
 		x = a->apmatch[i].xstart+a->char_off*factor - a->xoff;
 		KCD_DrawGlyph(pixmap,x,y,a->bdfc,factor);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		x += ((int) rint((-a->apmatch[i].ap->me.x + a->apos.x)*a->scale) +
 			xcor - DevTabFind(&a->apmatch[i].ap->xadjust,a->pixelsize))*factor;
 		y += ((int) rint((a->apmatch[i].ap->me.y - a->apos.y)*a->scale) +
 			-ycor + DevTabFind(&a->apmatch[i].ap->yadjust,a->pixelsize))*factor;
-#else
-		x += ((int) rint((-a->apmatch[i].ap->me.x + a->apos.x)*a->scale))*factor;
-		y += ((int) rint((a->apmatch[i].ap->me.y - a->apos.y)*a->scale))*factor;
-#endif
 		KCD_DrawGlyph(pixmap,x,y,a->apmatch[i].bdfc,factor);
 	    } else {
 		x = a->apmatch[i].xstart+a->apmatch[i].off*factor - a->xoff;
 		KCD_DrawGlyph(pixmap,x,y,a->apmatch[i].bdfc,factor);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		x += ((int) rint((a->apmatch[i].ap->me.x - a->apos.x)*a->scale) +
 			DevTabFind(&a->apmatch[i].ap->xadjust,a->pixelsize)-xcor)*factor;
 		y += ((int) rint((-a->apmatch[i].ap->me.y + a->apos.y)*a->scale) +
 			-DevTabFind(&a->apmatch[i].ap->yadjust,a->pixelsize)+ycor)*factor;
-#else
-		x += ((int) rint((a->apmatch[i].ap->me.x - a->apos.x)*a->scale))*factor;
-		y += ((int) rint((-a->apmatch[i].ap->me.y + a->apos.y)*a->scale))*factor;
-#endif
 		KCD_DrawGlyph(pixmap,x,y,a->bdfc,factor);
 	    }
 	}
@@ -546,7 +528,6 @@ static void AnchorD_FigurePos(AnchorDlg *a,GEvent *event) {
 }
 
 static void AnchorD_ClearCorrections(AnchorDlg *a) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     unichar_t ubuf[2];
 
     ubuf[0] = '0'; ubuf[1] = '\0';
@@ -554,7 +535,6 @@ static void AnchorD_ClearCorrections(AnchorDlg *a) {
     free(a->yadjust.corrections); memset(&a->yadjust,0,sizeof(DeviceTable));
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_XCor),ubuf);
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_YCor),ubuf);
-#endif
 }
 
 static void AnchorD_DrawPos(AnchorDlg *a) {
@@ -714,7 +694,6 @@ return( sp );
 return( NULL );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void SetAnchor(SplineChar *sc,int layer, AnchorPoint *ap,DeviceTable *xadjust, DeviceTable *yadjust, BasePoint *pos) {
     int ly;
 
@@ -732,10 +711,6 @@ static void SetAnchor(SplineChar *sc,int layer, AnchorPoint *ap,DeviceTable *xad
 	ap->yadjust = *yadjust;
 	yadjust->corrections = NULL;
     }
-#else
-static void SetAnchor(SplineChar *sc,int layer,AnchorPoint *ap, BasePoint *pos) {
-    int ly;
-#endif
     ap->me = *pos;
     /* If the anchor is bound to a truetype point we must move the point too */
     /*  or the anchor will just snap back to the point */
@@ -766,11 +741,7 @@ static void AnchorD_DoCancel(AnchorDlg *a) {
     struct state *old;
 
     for ( old = a->orig_vals; old!=NULL; old=old->next ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SetAnchor(old->sc,a->layer,old->ap_pt,&old->ap_vals.xadjust,&old->ap_vals.yadjust,&old->ap_vals.me);
-#else
-	SetAnchor(old->sc,a->layer,old->ap_pt,&old->ap_vals.me);
-#endif
 	old->ap_pt->has_ttf_pt = old->ap_vals.has_ttf_pt;
 	old->sc->changed = old->changed;	/* Must come after the charchangedupdate */
     }
@@ -805,7 +776,6 @@ static int AnchorD_DisplaySizeChanged(GGadget *g, GEvent *e) {
 
 	while ( *end==' ' ) ++end;
 	if ( pixelsize>4 && pixelsize<400 && *end=='\0' ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    unichar_t ubuf[20]; char buffer[20];
 	    ubuf[0] = '0'; ubuf[1] = '\0';
 	    if ( a->xadjust.corrections!=NULL &&
@@ -825,7 +795,6 @@ static int AnchorD_DisplaySizeChanged(GGadget *g, GEvent *e) {
 		uc_strcpy(ubuf,buffer);
 	    }
 	    GGadgetSetTitle(GWidgetGetControl(a->gw,CID_YCor),ubuf);
-#endif
 	    a->xoff = pixelsize*a->xoff/a->pixelsize;
 	    a->pixelsize = aa_pixelsize = pixelsize;
 	    AnchorD_ChangeSize(a);
@@ -835,7 +804,6 @@ static int AnchorD_DisplaySizeChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static int AnchorD_CorrectionChanged(GGadget *g, GEvent *e) {
     AnchorDlg *a = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
@@ -857,7 +825,6 @@ return( true );
     }
 return( true );
 }
-#endif
 
 static int AnchorD_PositionChanged(GGadget *g, GEvent *e) {
     AnchorDlg *a = GDrawGetUserData(GGadgetGetWindow(g));
@@ -892,11 +859,7 @@ return( true );
 }
 
 static int AnchorD_Apply(AnchorDlg *a) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     SetAnchor(a->sc,a->layer,a->ap,&a->xadjust,&a->yadjust,&a->apos);
-#else
-    SetAnchor(a->sc,a->layer,a->ap,&a->apos);
-#endif
 return( true );
 }
 
@@ -909,7 +872,6 @@ static int AnchorD_OK(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void AnchorD_SetDevTabs(AnchorDlg *a) {
     char buffer[20];
     unichar_t ubuf[20];
@@ -958,7 +920,6 @@ static void AnchorD_SetDevTabs(AnchorDlg *a) {
     }
     GGadgetSetTitle(GWidgetGetControl(a->gw,CID_YCor),ubuf);
 }
-#endif
 
 static int AnchorD_ChangeGlyph(AnchorDlg *a, SplineChar *sc, AnchorPoint *ap) {
     char buf[32];
@@ -978,10 +939,8 @@ return( true );
 	old->changed = a->sc->changed;
 	old->ap_pt = a->ap;
 	old->ap_vals = *a->ap;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	memset(&a->ap->xadjust,0,sizeof(DeviceTable));
 	memset(&a->ap->yadjust,0,sizeof(DeviceTable));
-#endif
 	old->next = a->orig_vals;
 	a->orig_vals = old;
     }
@@ -997,9 +956,7 @@ return( true );
     GGadgetSetTitle8(GWidgetGetControl(a->gw,CID_Y),buf);
 
     AnchorD_FindComplements(a);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     AnchorD_SetDevTabs(a);
-#endif
     AnchorD_ChangeSize(a);
     AnchorD_SetTitle(a);
 return( true );
@@ -1214,7 +1171,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     a.pixelsize = aa_pixelsize;
     a.magfactor = 1;
     a.layer = layer;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( ap->xadjust.corrections!=NULL ) {
 	int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
 	a.xadjust = ap->xadjust;
@@ -1227,7 +1183,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
 	a.yadjust.corrections = galloc(len);
 	memcpy(a.yadjust.corrections,ap->yadjust.corrections,len);
     }
-#endif
 
     memset(&wattrs,0,sizeof(wattrs));
 
@@ -1289,15 +1244,9 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     gcd[k].gd.flags = gg_visible|gg_enabled | gg_utf8_popup ;
     gcd[k].gd.cid = CID_DisplaySize;
     gcd[k].gd.handle_controlevent = AnchorD_DisplaySizeChanged;
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-    gcd[k++].creator = GNumericFieldCreate;
-    gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
-	    _("The size at which the current glyph is rasterized.\nFor small pixelsize you may want to use the magnification\nfactor below to get a clearer view.");
-#else
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
 	    _("The size at which the current glyph is rasterized.\nFor small pixelsize you may want to use the magnification\nfactor below to get a clearer view.\n\nThe pulldown list contains the pixelsizes at which there\nare device table corrections.");
     gcd[k++].creator = GListFieldCreate;
-#endif
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_ColSpan; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 
 /* GT: Short for: Magnification */
@@ -1342,7 +1291,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_ColSpan; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 /* GT: Short for Correction */
     label[k].text = (unichar_t *) _("Cor:");
     label[k].text_is_1byte = true;
@@ -1365,7 +1313,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
 	    _("This is the number of pixels by which the anchor\nshould be moved horizontally when the glyph is\nrasterized at the above size.  This information\nis part of the device table for this anchor.\nDevice tables are particularly important at small\npixelsizes where rounding errors will have a\nproportionally greater effect.");
     gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
-#endif
 
     label[k].text = (unichar_t *) _("_Y");
     label[k].text_is_1byte = true;
@@ -1390,7 +1337,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_ColSpan; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 /* GT: Short for Correction */
     label[k].text = (unichar_t *) _("Cor:");
     label[k].text_is_1byte = true;
@@ -1413,7 +1359,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
 	    _("This is the number of pixels by which the anchor\nshould be moved vertically when the glyph is\nrasterized at the above size.  This information\nis part of the device table for this anchor.\nDevice tables are particularly important at small\npixelsizes where rounding errors will have a\nproportionally greater effect.");
     gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
-#endif
 
     hvarray[hv++] = GCD_Glue; hvarray[hv++] = GCD_Glue; hvarray[hv++] = GCD_Glue;
     hvarray[hv++] = GCD_Glue; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
@@ -1477,9 +1422,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     a.hsb = maingcd[1].ret;
 
     AnchorD_FindComplements(&a);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     AnchorD_SetDevTabs(&a);
-#endif
     AnchorD_ChangeSize(&a);
     AnchorD_SetTitle(&a);
 
