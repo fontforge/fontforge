@@ -232,7 +232,7 @@ static Color previewfillcol = 0x0f0f0f;
 #define MID_SelectOpenContours	2140
 #define MID_Clockwise	2201
 #define MID_Counter	2202
-#define MID_GetInfo	2203
+#define MID_PointInfo	2203
 #define MID_Correct	2204
 #define MID_AvailBitmaps	2210
 #define MID_RegenBitmaps	2211
@@ -6271,8 +6271,6 @@ void CVChar(CharView *cv, GEvent *event ) {
     extern float arrowAmount, arrowAccelFactor;
     extern int navigation_mask;
 
-    printf("char2, keysym:%d\n",event->u.chr.keysym);
-    
     if( !cv_auto_goto ) {
 	if( event->u.chr.keysym == GK_Control_L
 	    || event->u.chr.keysym == GK_Control_R )
@@ -7290,6 +7288,27 @@ static void CVMenuImplicit(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) 
     _CVMenuImplicit(cv, mi);
 }
 
+int CVCountSelectedPoints(CharView *cv) {
+    SplinePointList *spl;
+    Spline *spline, *first;
+    int ret = 0;
+    
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	if ( spl->first->selected ) {
+	    ret++;
+	}
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    if ( spline->to->selected ) {
+		ret++;
+	    }
+	    if ( first==NULL ) first = spline;
+	}
+    }
+    return ret;
+}
+
 static GMenuItem2 spiroptlist[], ptlist[];
 static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
     int type = -2, cnt=0, ccp_cnt=0, spline_selected=0;
@@ -8150,7 +8169,7 @@ static void CVMenuMakeLine(GWindow gw, struct gmenuitem *mi, GEvent *e) {
     _CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
 }
 
-static void _CVMenuNameContour(CharView *cv) {
+void _CVMenuNameContour(CharView *cv) {
     SplinePointList *spl, *onlysel = NULL;
     SplinePoint *sp;
     char *ret;
@@ -8307,7 +8326,7 @@ return( false );
 return( true );
 }
 
-static void _CVMenuInsertPt(CharView *cv) {
+void _CVMenuInsertPt(CharView *cv) {
     SplineSet *spl;
     Spline *s, *found=NULL, *first;
     struct insertonsplineat iosa;
@@ -8670,9 +8689,9 @@ static void CVMenuInsertText(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
     InsertTextDlg(cv);
 }
 
-static void CVMenuGetInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void CVMenuPointInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    CVGetInfo(cv);
+    CVPointInfo(cv);
 }
 
 static void CVMenuCharInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -8861,7 +8880,7 @@ static void cv_ellistcheck(CharView *cv, struct gmenuitem *mi) {
 	  case MID_AvailBitmaps:
 	    mi->ti.disabled = cv->b.container!=NULL;
 	  break;
-	  case MID_GetInfo:
+	  case MID_PointInfo:
 	    {
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
 		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&cp);
@@ -9943,7 +9962,7 @@ static GMenuItem2 rndlist[] = {
 static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Font Info..."), (GImage *) "elementfontinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, CVMenuFontInfo, MID_FontInfo },
     { { (unichar_t *) N_("_Glyph Info..."), (GImage *) "elementglyphinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Alt+Ctl+Shft+I"), NULL, NULL, CVMenuCharInfo, MID_CharInfo },
-    { { (unichar_t *) N_("Get _Info..."), (GImage *) "elementgetinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Get Info...|Ctl+I"), NULL, NULL, CVMenuGetInfo, MID_GetInfo },
+    { { (unichar_t *) N_("Point _Info..."), (GImage *) "elementpointinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Point Info...|Ctl+I"), NULL, NULL, CVMenuPointInfo, MID_PointInfo },
     { { (unichar_t *) N_("S_how Dependent"), (GImage *) "elementshowdep.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, delist, delistcheck, NULL, MID_ShowDependentRefs },
     { { (unichar_t *) N_("Find Proble_ms..."), (GImage *) "elementfindprobs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, CVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */

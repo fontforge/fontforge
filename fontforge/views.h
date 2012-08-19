@@ -899,8 +899,8 @@ extern GImage *SC_GetLinedImage(SplineChar *sc, int def_layer, int pos, int is_i
 extern struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
 	struct matrix_data *stuff, int rows, int cols);
 extern void GV_ToMD(GGadget *g, struct glyphvariants *gv);
-extern void CVGetInfo(CharView *cv);
-extern void CVPGetInfo(CharView *cv);
+extern void CVPointInfo(CharView *cv);
+extern void CVPPointInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);
 extern void SCSubBy(SplineChar *sc);
 extern void SCRefBy(SplineChar *sc);

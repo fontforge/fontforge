@@ -825,5 +825,5 @@ void CVMouseUpPoint(CharView *cv,GEvent *event) {
     CVInfoDraw(cv,cv->gw);
     CPEndInfo(cv);
     if ( event->u.mouse.clicks>1 )
-	CVGetInfo(cv);
+	CVPointInfo(cv);
 }

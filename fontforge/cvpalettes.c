@@ -2988,12 +2988,20 @@ static void CVPopupLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
         CVLSelectLayer(cv, layer);
 }
 
+#define MID_MakeLine 100
+#define MID_MakeArc  200
+#define MID_InsertPtOnSplineAt	2309
+#define MID_NameContour	2318
+extern void _CVMenuInsertPt(CharView *cv);
+extern void _CVMenuNameContour(CharView *cv);
+extern int CVCountSelectedPoints(CharView *cv);
+
 static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
 
     switch ( mi->mid ) {
       case 0:
-	CVPGetInfo(cv);
+	CVPPointInfo(cv);
       break;
       case 1:
 	if ( cv->p.ref!=NULL )
@@ -3005,15 +3013,37 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       case 3:
 	CVMakeClipPath(cv);
       break;
+    case MID_MakeLine: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	break;
+    }
+    case MID_MakeArc: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuMakeLine((CharViewBase *) cv,mi->mid==MID_MakeArc, e!=NULL && (e->u.mouse.state&ksm_alt));
+	break;
+    }
+    case MID_InsertPtOnSplineAt: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuInsertPt( cv );
+	break;
+    }
+    case MID_NameContour: {
+	CharView *cv = (CharView *) GDrawGetUserData(v);
+	_CVMenuNameContour( cv );
+	break;
+    }
     }
 }
 
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
     int i, j, anysel;
-    static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
-
+    static char *selectables[] = { N_("Point Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
     memset(mi,'\0',sizeof(mi));
+
+    anysel = CVTestSelectFromEvent(cv,event);
+    if( !anysel ) {
     for ( i=0;i<=cvt_skew; ++i ) {
 	char *msg = _(popupsres[i]);
 	if ( cv->b.sc->inspiro && hasspiro()) {
@@ -3031,26 +3061,30 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].mid = i;
 	mi[i].invoke = CVPopupInvoked;
     }
-
-    if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
-	mi[i].ti.line = true;
-	mi[i].ti.fg = COLOR_DEFAULT;
-	mi[i++].ti.bg = COLOR_DEFAULT;
-	for ( j=0;j<3; ++j, ++i ) {
-	    mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
-	    mi[i].ti.text_in_resource = true;
-	    mi[i].ti.text_is_1byte = true;
+    }
+    
+    if( !anysel ) {
+	if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
+	    mi[i].ti.line = true;
 	    mi[i].ti.fg = COLOR_DEFAULT;
-	    mi[i].ti.bg = COLOR_DEFAULT;
-	    mi[i].mid = j;
-	    mi[i].invoke = CVPopupLayerInvoked;
+	    mi[i++].ti.bg = COLOR_DEFAULT;
+	    for ( j=0;j<3; ++j, ++i ) {
+		mi[i].ti.text = (unichar_t *) _(editablelayers[j]);
+		mi[i].ti.text_in_resource = true;
+		mi[i].ti.text_is_1byte = true;
+		mi[i].ti.fg = COLOR_DEFAULT;
+		mi[i].ti.bg = COLOR_DEFAULT;
+		mi[i].mid = j;
+		mi[i].invoke = CVPopupLayerInvoked;
+	    }
 	}
     }
 
-    anysel = CVTestSelectFromEvent(cv,event);
-    mi[i].ti.line = true;
-    mi[i].ti.fg = COLOR_DEFAULT;
-    mi[i++].ti.bg = COLOR_DEFAULT;
+    if( i > 0 ) {
+	mi[i].ti.line = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i++].ti.bg = COLOR_DEFAULT;
+    }
     for ( j=0;selectables[j]!=0; ++j, ++i ) {
 	mi[i].ti.text = (unichar_t *) _(selectables[j]);
 	mi[i].ti.text_is_1byte = true;
@@ -3071,8 +3105,41 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;
 	mi[i].invoke = CVPopupSelectInvoked;
+	i++; 
     }
 
+    int cnt = CVCountSelectedPoints(cv);
+    if( cnt > 1 ) {
+	mi[i].ti.text = (unichar_t *) _("Make Line");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_MakeLine;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+	mi[i].ti.text = (unichar_t *) _("Make Arc");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_MakeArc;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+	mi[i].ti.text = (unichar_t *) _("Insert Point On Spline At...");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_InsertPtOnSplineAt;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+	mi[i].ti.text = (unichar_t *) _("Name Contour");
+	mi[i].ti.text_is_1byte = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = MID_NameContour;
+	mi[i].invoke = CVPopupSelectInvoked;
+	i++;
+    }
+    
     cv->had_control = (event->u.mouse.state&ksm_control)?1:0;
     GMenuCreatePopupMenu(cv->v,event, mi);
 }
