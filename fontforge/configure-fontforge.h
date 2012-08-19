@@ -40,16 +40,6 @@
 /* Can be set from configure --with-multilayer				      */
 
 
-/* Making FontForge handle device tables uses up more space, so I want        */
-/*  people to be able to turn it off if space is an issue and device tables   */
-/*  (ability to correct rounding errors in spacing, ie. kerning, at small     */
-/*  point sizes) aren't important.					      */
-/*									      */
-/* #define FONTFORGE_CONFIG_DEVICETABLES				      */
-/*									      */
-/* Can be set from configure --with-devicetables			      */
-
-
 /* Apple suggests using a sfnt version of 'true' for fonts designed for use   */
 /*  only on a mac (windows refuses such fonts). I generally prefer to have a  */
 /*  font work everywhere, so normally ff produces fonts with version 1.0      */
@@ -143,7 +133,7 @@
 /*  instead.  The extra precision is usually not needed, but the extra space  */
 /*  can be a problem with large (CJK, UNICODE) fonts.                         */
 /*									      */
-/* #define FONTFORGE_CONFIG_USE_DOUBLE					      */
+#define FONTFORGE_CONFIG_USE_DOUBLE
 /* #define FONTFORGE_CONFIG_USE_LONGDOUBLE				      */
 /*									      */
 
@@ -179,12 +169,6 @@
 /*									      */
 /* Can be set from configure --with-capslock-for-alt			      */
 
-
-/* Use horizontal, rather than vertical, tabsets for the Font and glyph Info  */
-/*  dialogs. This is what things used to look like.                           */
-/*									      */
-/* #define FONTFORGE_CONFIG_INFO_HORIZONTAL				      */
-/*									      */
 
 /* ************************************************************************** */
 /* *********************** Set by configure script ************************** */

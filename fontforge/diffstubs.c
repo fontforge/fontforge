@@ -1029,10 +1029,8 @@ void AnchorPointsFree(AnchorPoint *ap) {
     AnchorPoint *anext;
     for ( ; ap!=NULL; ap = anext ) {
 	anext = ap->next;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(ap->xadjust.corrections);
 	free(ap->yadjust.corrections);
-#endif
 	chunkfree(ap,sizeof(AnchorPoint));
     }
 }

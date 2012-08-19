@@ -2079,9 +2079,9 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
     memset(&wattrs,0,sizeof(wattrs));
     if ( gme->g.box->main_background!=COLOR_TRANSPARENT )
-	wattrs.mask = wam_events|wam_cursor|wam_backcol;
+	wattrs.mask = wam_events|wam_cursor|wam_backcol|wam_nocairo;
     else
-	wattrs.mask = wam_events|wam_cursor;
+	wattrs.mask = wam_events|wam_cursor|wam_nocairo;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
     wattrs.background_color = gme->g.box->main_background;

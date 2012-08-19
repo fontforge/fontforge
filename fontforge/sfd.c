@@ -673,7 +673,6 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     fprintf( sfd, "EndSplineSet\n" );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void SFDDumpDeviceTable(FILE *sfd,DeviceTable *adjust) {
     int i;
 
@@ -697,7 +696,6 @@ return;
     fprintf( sfd, " ddv=" ); SFDDumpDeviceTable(sfd,&adjust->yadv);
     putc(']',sfd);
 }
-#endif
 
 static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
     AnchorPoint *ap;
@@ -713,14 +711,12 @@ static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
 		ap->type==at_basechar ? "basechar" :
 		ap->type==at_baselig ? "baselig" : "basemark",
 		ap->lig_index );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,&ap->xadjust);
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,&ap->yadjust);
 	} else
-#endif
 	if ( ap->has_ttf_pt )
 	    fprintf( sfd, " %d", ap->ttf_pt_index );
 	putc('\n',sfd);
@@ -1048,13 +1044,9 @@ return;
     fprintf( sfd, "%s %d ", name, vert->cnt );
     for ( i=0; i<vert->cnt; ++i ) {
 	fprintf( sfd, " %d", vert->mkd[i].height );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDDumpDeviceTable(sfd,vert->mkd[i].height_adjusts );
-#endif
 	fprintf( sfd, ",%d", vert->mkd[i].kern );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDDumpDeviceTable(sfd,vert->mkd[i].kern_adjusts );
-#endif
     }
     putc('\n',sfd );
 }
@@ -1070,12 +1062,10 @@ return;
     if ( gv->part_cnt!=0 ) {
 	if ( gv->italic_correction!=0 ) {
 	    fprintf( sfd, "GlyphComposition%sIC: %d", name, gv->italic_correction );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( gv->italic_adjusts!=NULL ) {
 		putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,gv->italic_adjusts);
 	    }
-#endif
 	    putc('\n',sfd);
 	}
 	fprintf( sfd, "GlyphComposition%s: %d ", name, gv->part_cnt );
@@ -1093,22 +1083,18 @@ return;
 static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
     if ( sc->italic_correction!=TEX_UNDEF && sc->italic_correction!=0 ) {
 	fprintf( sfd, "ItalicCorrection: %d", sc->italic_correction );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( sc->italic_adjusts!=NULL ) {
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,sc->italic_adjusts);
 	}
-#endif
 	putc('\n',sfd);
     }
     if ( sc->top_accent_horiz!=TEX_UNDEF ) {
 	fprintf( sfd, "TopAccentHorizontal: %d", sc->top_accent_horiz );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( sc->top_accent_adjusts!=NULL ) {
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,sc->top_accent_adjusts);
 	}
-#endif
 	putc('\n',sfd);
     }
     if ( sc->is_extended_shape )
@@ -1352,7 +1338,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	if ( kp!=NULL ) {
 	    fprintf( sfd, v ? "VKerns2:" : "Kerns2:" );
 	    for ( ; kp!=NULL; kp=kp->next ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
             if ( !SFDOmit(kp->sc)) {
                 fprintf( sfd, " %d %d ",
                          newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
@@ -1361,14 +1346,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
                 if ( kp->adjust!=NULL ) putc(' ',sfd);
                 SFDDumpDeviceTable(sfd,kp->adjust);
             }
-#else
-            if ( !SFDOmit(kp->sc)) {
-                fprintf( sfd, " %d %d ",
-                         newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
-                         kp->off );
-                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
-            }
-#endif
         }
 	    fprintf(sfd, "\n" );
 	}
@@ -1388,24 +1365,18 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pos.xoff, pst->u.pos.yoff,
 			pst->u.pos.h_adv_off, pst->u.pos.v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,pst->u.pos.adjust);
-#endif
 		putc('\n',sfd);
 	    } else if ( pst->type==pst_pair ) {
 		fprintf( sfd, "%s dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pair.paired,
 			pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
 			pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,pst->u.pair.vr[0].adjust);
-#endif
 		fprintf( sfd, " dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
 			pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,pst->u.pair.vr[1].adjust);
-#endif
 		putc('\n',sfd);
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
@@ -2060,10 +2031,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		       kc->seconds[i]);
 	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 		fprintf( sfd, " %d", kc->offsets[i]);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,&kc->adjusts[i]);
-#endif
 	    }
 	    fprintf( sfd, "\n" );
 	}
@@ -2229,13 +2198,11 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
 	    fprintf( sfd, "MATH:%s: %d", math_constants_descriptor[i].script_name,
 		    *((int16 *) (((char *) (math)) + math_constants_descriptor[i].offset)) );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( math_constants_descriptor[i].devtab_offset>=0 ) {
 		DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
 		putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,*devtab);
 	    }
-#endif
 	    putc('\n',sfd);
 	}
     }
@@ -3687,7 +3654,6 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
 return( head );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static DeviceTable *SFDReadDeviceTable(FILE *sfd,DeviceTable *adjust) {
     int i, junk, first, last, ch, len;
 
@@ -3762,51 +3728,6 @@ return( v );
 	ungetc(ch,sfd);
 return( NULL );
 }
-#else
-static void SFDSkipDeviceTable(FILE *sfd) {
-    int i, junk, first, last, ch;
-
-    while ( (ch=nlgetc(sfd))==' ' );
-    if ( ch=='{' ) {
-	while ( (ch=nlgetc(sfd))==' ' );
-	if ( ch=='}' )
-return;
-	else
-	    ungetc(ch,sfd);
-	getint(sfd,&first);
-	ch = nlgetc(sfd);		/* Should be '-' */
-	getint(sfd,&last);
-	for ( i=0; i<=last-first; ++i ) {
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    if ( ch!=',' ) ungetc(ch,sfd);
-	    getint(sfd,&junk);
-	}
-	while ( (ch=nlgetc(sfd))==' ' );
-	if ( ch!='}' ) ungetc(ch,sfd);
-    } else
-	ungetc(ch,sfd);
-}
-
-static void SFDSkipValDevTab(FILE *sfd) {
-    int i, j, ch;
-
-    while ( (ch=nlgetc(sfd))==' ' );
-    if ( ch=='[' ) {
-	for ( i=0; i<4; ++i ) {
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    if ( ch==']' )
-	break;
-	    for ( j=0; j<3; ++j ) ch=nlgetc(sfd);
-	    SFDSkipDeviceTable(sfd);
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    if ( ch!=']' ) ungetc(ch,sfd);
-	    else
-	break;
-	}
-    } else
-	ungetc(ch,sfd);
-}
-#endif
 
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *lastap) {
     AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
@@ -3844,13 +3765,8 @@ return( lastap );
     ch = nlgetc(sfd);
     ungetc(ch,sfd);
     if ( ch==' ' ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDReadDeviceTable(sfd,&ap->xadjust);
 	SFDReadDeviceTable(sfd,&ap->yadjust);
-#else
-	SFDSkipDeviceTable(sfd);
-	SFDSkipDeviceTable(sfd);
-#endif
 	ch = nlgetc(sfd);
 	ungetc(ch,sfd);
 	if ( isdigit(ch)) {
@@ -4004,17 +3920,10 @@ static void SCDefaultInterpolation(SplineChar *sc) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void SFDParseMathValueRecord(FILE *sfd,int16 *value,DeviceTable **devtab) {
     getsint(sfd,value);
     *devtab = SFDReadDeviceTable(sfd,NULL);
 }
-#else
-static void SFDParseMathValueRecord(FILE *sfd,int16 *value) {
-    getsint(sfd,value);
-    SFDSkipDeviceTable(sfd);
-}
-#endif
 
 static struct glyphvariants *SFDParseGlyphComposition(FILE *sfd,
 	struct glyphvariants *gv, char *tok) {
@@ -4054,19 +3963,11 @@ static void SFDParseVertexKern(FILE *sfd, struct mathkernvertex *vertex) {
     getint(sfd,&vertex->cnt);
     vertex->mkd = gcalloc(vertex->cnt,sizeof(struct mathkerndata));
     for ( i=0; i<vertex->cnt; ++i ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDParseMathValueRecord(sfd,&vertex->mkd[i].height,&vertex->mkd[i].height_adjusts);
 	while ( (ch=nlgetc(sfd))==' ' );
 	if ( ch!=EOF && ch!=',' )
 	    ungetc(ch,sfd);
 	SFDParseMathValueRecord(sfd,&vertex->mkd[i].kern,&vertex->mkd[i].kern_adjusts);
-#else
-	SFDParseMathValueRecord(sfd,&vertex->mkd[i].height);
-	while ( (ch=nlgetc(sfd))==' ' );
-	if ( ch!=EOF && ch!=',' )
-	    ungetc(ch,sfd);
-	SFDParseMathValueRecord(sfd,&vertex->mkd[i].kern);
-#endif
     }
 }
 
@@ -4279,7 +4180,6 @@ return( NULL );
 		if ( sc->tex_height==0 && sc->tex_depth==0 )		/* Fixup old bug */
 		    sc->tex_height = sc->tex_depth = TEX_UNDEF;
 	    }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	} else if ( strmatch(tok,"ItalicCorrection:")==0 ) {
 	    SFDParseMathValueRecord(sfd,&sc->italic_correction,&sc->italic_adjusts);
 	} else if ( strmatch(tok,"TopAccentHorizontal:")==0 ) {
@@ -4292,20 +4192,6 @@ return( NULL );
 	    if ( sc->horiz_variants==NULL )
 		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
 	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction,&sc->horiz_variants->italic_adjusts);
-#else
-	} else if ( strmatch(tok,"ItalicCorrection:")==0 ) {
-	    SFDParseMathValueRecord(sfd,&sc->italic_correction);
-	} else if ( strmatch(tok,"TopAccentHorizontal:")==0 ) {
-	    SFDParseMathValueRecord(sfd,&sc->top_accent_horiz);
-	} else if ( strmatch(tok,"GlyphCompositionVerticalIC:")==0 ) {
-	    if ( sc->vert_variants==NULL )
-		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-	    SFDParseMathValueRecord(sfd,&sc->vert_variants->italic_correction);
-	} else if ( strmatch(tok,"GlyphCompositionHorizontalIC:")==0 ) {
-	    if ( sc->horiz_variants==NULL )
-		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction);
-#endif
 	} else if ( strmatch(tok,"IsExtendedShape:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -4534,16 +4420,12 @@ return( NULL );
 		kp->off = off;
 		kp->subtable = sub;
 		kp->next = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
 		    kp->adjust=chunkalloc(sizeof(DeviceTable));
 		    SFDReadDeviceTable(sfd,kp->adjust);
 		}
-#else
-		SFDSkipDeviceTable(sfd);
-#endif
 		if ( last != NULL )
 		    last->next = kp;
 		else if ( isv )
@@ -4597,16 +4479,12 @@ exit(1);
 		kp->sli = sli;
 		kp->flags = flags;
 		kp->kp.next = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
 		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
 		    SFDReadDeviceTable(sfd,kp->kp.adjust);
 		}
-#else
-		SFDSkipDeviceTable(sfd);
-#endif
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
 		else if ( isv )
@@ -4710,11 +4588,7 @@ exit(1);
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pos.xoff, &pst->u.pos.yoff,
 			&pst->u.pos.h_adv_off, &pst->u.pos.v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		pst->u.pos.adjust = SFDReadValDevTab(sfd);
-#else
-		SFDSkipValDevTab(sfd);
-#endif
 		ch = nlgetc(sfd);		/* Eat new line */
 	    } else if ( pst->type==pst_pair ) {
 		getname(sfd,tok);
@@ -4723,19 +4597,11 @@ exit(1);
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pair.vr[0].xoff, &pst->u.pair.vr[0].yoff,
 			&pst->u.pair.vr[0].h_adv_off, &pst->u.pair.vr[0].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		pst->u.pair.vr[0].adjust = SFDReadValDevTab(sfd);
-#else
-		SFDSkipValDevTab(sfd);
-#endif
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pair.vr[1].xoff, &pst->u.pair.vr[1].yoff,
 			&pst->u.pair.vr[1].h_adv_off, &pst->u.pair.vr[1].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		pst->u.pair.vr[0].adjust = SFDReadValDevTab(sfd);
-#else
-		SFDSkipValDevTab(sfd);
-#endif
 		ch = nlgetc(sfd);
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
@@ -6156,14 +6022,8 @@ static void SFDParseMathItem(FILE *sfd,SplineFont *sf,char *tok) {
 	    int16 *pos = (int16 *) (((char *) (math)) + math_constants_descriptor[i].offset );
 	    getsint(sfd,pos);
 	    if ( math_constants_descriptor[i].devtab_offset != -1 ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
 		*devtab = SFDReadDeviceTable(sfd,*devtab);
-#else
-		/* A value of -2 means that there would be a device table if */
-		/*  we supported them, so we should be prepared to skip one */
-		SFDSkipDeviceTable(sfd);
-#endif
     break;
 	    }
 	}
@@ -6873,9 +6733,7 @@ exit(1);
 	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
 	    kc->seconds = galloc(kc->second_cnt*sizeof(char *));
 	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
-#endif
 	    kc->firsts[0] = NULL;
 	    for ( i=classstart; i<kc->first_cnt; ++i ) {
 		getint(sfd,&temp);
@@ -6893,11 +6751,7 @@ exit(1);
 	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 		getint(sfd,&temp);
 		kc->offsets[i] = temp;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDReadDeviceTable(sfd,&kc->adjusts[i]);
-#else
-		SFDSkipDeviceTable(sfd);
-#endif
 	    }
 	    if ( !old && kc->subtable == NULL ) {
 		/* Error. Ignore it. Free it. Whatever */;

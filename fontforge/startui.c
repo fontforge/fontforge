@@ -536,9 +536,6 @@ static void SplashLayout() {
 #elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
     uc_strcat(pt,"-D");
 #endif
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-    uc_strcat(pt,"-NoDevTab");
-#endif
     uc_strcat(pt,")");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
@@ -1112,9 +1109,6 @@ int fontforge_main( int argc, char **argv ) {
 	    "-LD"
 #elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
 	    "-D"
-#endif
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-	    "-NoDevTab"
 #endif
 	    ".\n",
 	    source_modtime_str );

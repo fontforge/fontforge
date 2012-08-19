@@ -131,12 +131,6 @@ static int DrawTab(GWindow pixmap, GTabSet *gts, int i, int x, int y ) {
 
     if ( fg==COLOR_DEFAULT ) fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     GBoxDrawTabOutline(pixmap,&gts->g,x,y,gts->tabs[i].width,gts->rowh,i==gts->sel);
-    if ( i==gts->sel ) {
-	GRect r;
-	r.x = x+2; r.y = y+1;
-	r.width = gts->tabs[i].width-4; r.height = gts->rowh-2;
-	GDrawFillRect(pixmap,&r,gts->g.box->active_border);
-    }
     GDrawDrawBiText(pixmap,x+(gts->tabs[i].width-gts->tabs[i].tw)/2,y+gts->rowh-gts->ds,
 	    gts->tabs[i].name,-1,NULL,fg);
     gts->tabs[i].x = x;
@@ -162,20 +156,21 @@ return( false );
     bounds = g->r;
 
     if ( !gts->vertical ) {
-        /* make room for tabs */
-        bounds.y += gts->rcnt*gts->rowh+yoff-1;
-        bounds.height -= gts->rcnt*gts->rowh+yoff-1;
+	/* make room for tabs */
+	bounds.y += gts->rcnt*gts->rowh+yoff-1;
+	bounds.height -= gts->rcnt*gts->rowh+yoff-1;
+	/* draw border around horizontal tabs only */
+	GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     }
     else if ( g->state==gs_enabled ) {
-        /* background for labels */
-        GRect old2, vertListRect = g->r;
-        vertListRect.width = gts->vert_list_width+bw-1;
-        GDrawPushClip(pixmap,&vertListRect,&old2);
-        GBoxDrawBackground(pixmap,&g->r,g->box,gs_pressedactive,false);
-        GDrawPopClip(pixmap,&old2);
+	/* background for labels */
+	GRect old2, vertListRect = g->r;
+	vertListRect.width = gts->vert_list_width+bw-1;
+	GDrawPushClip(pixmap,&vertListRect,&old2);
+	GBoxDrawBackground(pixmap,&g->r,g->box,gs_pressedactive,false);
+	GDrawPopClip(pixmap,&old2);
     }
 
-    GBoxDrawBorder(pixmap,&bounds,g->box,g->state,false);
     GDrawSetFont(pixmap,gts->font);
 
     if ( gts->vertical ) {

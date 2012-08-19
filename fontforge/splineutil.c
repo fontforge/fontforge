@@ -5440,12 +5440,10 @@ void KernPairsFree(KernPair *kp) {
     KernPair *knext;
     for ( ; kp!=NULL; kp = knext ) {
 	knext = kp->next;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( kp->adjust!=NULL ) {
 	    free(kp->adjust->corrections);
 	    chunkfree(kp->adjust,sizeof(DeviceTable));
 	}
-#endif
 	chunkfree(kp,sizeof(KernPair));
     }
 }
@@ -5559,7 +5557,6 @@ AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
     while ( alist!=NULL ) {
 	ap = chunkalloc(sizeof(AnchorPoint));
 	*ap = *alist;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( ap->xadjust.corrections!=NULL ) {
 	    int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
 	    ap->xadjust.corrections = galloc(len);
@@ -5570,7 +5567,6 @@ AnchorPoint *AnchorPointsCopy(AnchorPoint *alist) {
 	    ap->yadjust.corrections = galloc(len);
 	    memcpy(ap->yadjust.corrections,alist->yadjust.corrections,len);
 	}
-#endif
 	if ( head==NULL )
 	    head = ap;
 	else
@@ -5585,15 +5581,12 @@ void AnchorPointsFree(AnchorPoint *ap) {
     AnchorPoint *anext;
     for ( ; ap!=NULL; ap = anext ) {
 	anext = ap->next;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(ap->xadjust.corrections);
 	free(ap->yadjust.corrections);
-#endif
 	chunkfree(ap,sizeof(AnchorPoint));
     }
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 void ValDevFree(ValDevTab *adjust) {
     if ( adjust==NULL )
 return;
@@ -5697,7 +5690,6 @@ return;
 	adjust->corrections[size-adjust->first_pixel_size] = correction;
     }
 }
-#endif
 
 void PSTFree(PST *pst) {
     PST *pnext;
@@ -5707,17 +5699,13 @@ void PSTFree(PST *pst) {
 	    free(pst->u.lcaret.carets);
 	else if ( pst->type==pst_pair ) {
 	    free(pst->u.pair.paired);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    ValDevFree(pst->u.pair.vr[0].adjust);
 	    ValDevFree(pst->u.pair.vr[1].adjust);
-#endif
 	    chunkfree(pst->u.pair.vr,sizeof(struct vr [2]));
 	} else if ( pst->type!=pst_position ) {
 	    free(pst->u.subs.variant);
 	} else if ( pst->type==pst_position ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    ValDevFree(pst->u.pos.adjust);
-#endif
 	}
 	chunkfree(pst,sizeof(PST));
     }
@@ -5988,9 +5976,7 @@ void GlyphVariantsFree(struct glyphvariants *gv) {
     if ( gv==NULL )
 return;
     free(gv->variants);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTableFree(gv->italic_adjusts);
-#endif
     for ( i=0; i<gv->part_cnt; ++i )
 	free( gv->parts[i].component );
     free(gv->parts);
@@ -6005,9 +5991,7 @@ struct glyphvariants *GlyphVariantsCopy(struct glyphvariants *gv) {
 return( NULL );
     newgv = chunkalloc(sizeof(struct glyphvariants));
     newgv->variants = copy(gv->variants);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     newgv->italic_adjusts = DeviceTableCopy(gv->italic_adjusts);
-#endif
     newgv->part_cnt = gv->part_cnt;
     if ( gv->part_cnt!=0 ) {
 	newgv->parts = gcalloc(gv->part_cnt,sizeof(struct gv_part));
@@ -6034,10 +6018,8 @@ return( NULL );
 	    for ( j=0; j<mkv->cnt; ++j ) {
 		mknewv->mkd[j].height = mkv->mkd[j].height;
 		mknewv->mkd[j].kern   = mkv->mkd[j].kern;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		mknewv->mkd[j].height_adjusts = DeviceTableCopy( mkv->mkd[j].height_adjusts );
 		mknewv->mkd[j].kern_adjusts   = DeviceTableCopy( mkv->mkd[j].kern_adjusts );
-#endif
 	    }
 	}
     }
@@ -6045,13 +6027,11 @@ return( mknew );
 }
 
 void MathKernVContentsFree(struct mathkernvertex *mk) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int i;
     for ( i=0; i<mk->cnt; ++i ) {
 	DeviceTableFree(mk->mkd[i].height_adjusts);
 	DeviceTableFree(mk->mkd[i].kern_adjusts);
     }
-#endif
     free(mk->mkd);
 }
 
@@ -6171,10 +6151,8 @@ return;
     AltUniFree(sc->altuni);
     GlyphVariantsFree(sc->horiz_variants);
     GlyphVariantsFree(sc->vert_variants);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTableFree(sc->italic_adjusts);
     DeviceTableFree(sc->top_accent_adjusts);
-#endif
     MathKernFree(sc->mathkern);
 #if defined(_NO_PYTHON)
     free( sc->python_persistent );	/* It's a string of pickled data which we leave as a string */
@@ -6297,7 +6275,6 @@ return( NULL );
 	new->firsts[i] = copy(kc->firsts[i]);
     for ( i=0; i<new->second_cnt; ++i )
 	new->seconds[i] = copy(kc->seconds[i]);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     new->adjusts = gcalloc(new->first_cnt*new->second_cnt,sizeof(DeviceTable));
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
     for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
@@ -6308,7 +6285,6 @@ return( NULL );
 	    memcpy(new->adjusts[i].corrections,old,len);
 	}
     }
-#endif
     new->next = NULL;
 return( new );
 }
@@ -6323,11 +6299,9 @@ void KernClassFreeContents(KernClass *kc) {
     free(kc->firsts);
     free(kc->seconds);
     free(kc->offsets);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=kc->first_cnt*kc->second_cnt-1; i>=0 ; --i )
 	free(kc->adjusts[i].corrections);
     free(kc->adjusts);
-#endif
 }
 
 void KernClassListFree(KernClass *kc) {

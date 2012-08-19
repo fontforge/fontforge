@@ -205,6 +205,7 @@ typedef struct charview {
     int8 b1_tool_old;				/* Used by mingw port */
     int8 s1_tool, s2_tool, er_tool;		/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    int8 spacebar_hold;				/* spacebar is held down */
     SplinePointList *active_spl;
     SplinePoint *active_sp;
     spiro_cp *active_cp;
@@ -770,11 +771,9 @@ extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern char *DevTab_Dlg(GGadget *g, int r, int c);
 extern int DeviceTableOK(char *dvstr, int *_low, int *_high);
 extern void VRDevTabParse(struct vr *vr,struct matrix_data *md);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
 extern void DevTabToString(char **str,DeviceTable *adjust);
 extern void ValDevTabToStrings(struct matrix_data *mds,int first_offset,ValDevTab *adjust);
-#endif
 extern void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i);
 extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);

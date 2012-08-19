@@ -423,6 +423,16 @@ void GDrawFillRect(GWindow w, GRect *rect, Color col) {
 	(w->display->funcs->fillRect)(w,rect,col);
 }
 
+void GDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
+    GRect temp;
+    if ( rect==NULL ) {
+	temp.x = temp.y = 0; temp.width = w->pos.width; temp.height = w->pos.height;
+	rect = &temp;
+    }
+    if ( col!=COLOR_UNKNOWN )
+	(w->display->funcs->fillRoundRect)(w,rect,radius,col);
+}
+
 void GDrawDrawElipse(GWindow w, GRect *rect, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->drawElipse)(w,rect,col);

@@ -1154,6 +1154,29 @@ static char*  mingw_get_wm_name_utf8(Display* display, Window window){
     }
     return NULL;
 }
+
+/* translate GK_ keysyms to Virtual Keys */
+/* abort on unimplemented translations */
+int GDrawKeyToVK(int keysym) {
+    switch( keysym ) {
+      case ' ':
+return( VK_SPACE );
+      default:
+	if ( (keysym>='0' && keysym<='9') ||
+		(keysym>='A' && keysym<='Z') )
+return( keysym );
+    }
+    abort();
+return( 0 );
+}
+
+int GDrawKeyState(int keysym) {
+    if (GetAsyncKeyState(GDrawKeyToVK(keysym)) & 0x8000)
+return 1;
+    else
+return 0;
+}
+
 #endif
 
 static GWindow _GXDraw_CreateWindow(GXDisplay *gdisp, GXWindow gw, GRect *pos,
@@ -1378,7 +1401,7 @@ return( NULL );
     }
 #ifndef _NO_LIBCAIRO
     /* Only do sub-pixel/anti-alias stuff if we've got truecolor */
-    if ( gdisp->visual->class==TrueColor && _GXCDraw_hasCairo() )
+    if ( gdisp->visual->class==TrueColor && !(wattrs->mask&wam_nocairo) &&_GXCDraw_hasCairo() )
 	_GXCDraw_NewWindow(nw,wattrs->background_color);
 #endif
 #ifndef _NO_LIBPANGO	/* Must come after the cairo init so pango will know to use cairo or xft */
@@ -2308,7 +2331,7 @@ static void GXDrawDrawArrow(GWindow gw, int32 x,int32 y, int32 xend,int32 yend, 
     GXDisplay *display = gxw->display;
 
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo )
+    if ( gxw->usecairo )
 	GDrawIError("DrawArrow not supported");
 #endif
     gxw->ggc->fg = col;
@@ -2325,10 +2348,10 @@ static void GXDrawDrawRect(GWindow gw, GRect *rect, Color col) {
 
     gxw->ggc->fg = col;
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo && gw->ggc->func==df_copy ) {
-	_GXCDraw_DrawRect((GXWindow) gw,rect);
+    if ( gxw->usecairo && gw->ggc->func==df_copy ) {
+	_GXCDraw_DrawRect(gxw,rect);
     } else {
-	if (((GXWindow) gw)->usecairo )
+	if ( gxw->usecairo )
 	    _GXCDraw_Flush(gxw);
 #endif
     {
@@ -2339,7 +2362,7 @@ static void GXDrawDrawRect(GWindow gw, GRect *rect, Color col) {
 		rect->width,rect->height);
     }
 #ifndef _NO_LIBCAIRO
-	if (((GXWindow) gw)->usecairo )
+	if ( gxw->usecairo )
 	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
     }
 #endif
@@ -2350,11 +2373,11 @@ static void GXDrawFillRect(GWindow gw, GRect *rect, Color col) {
 
     gxw->ggc->fg = col;
 #ifndef _NO_LIBCAIRO
-    if ( ((GXWindow) gw)->usecairo && gw->ggc->func==df_copy ) {
+    if ( gxw->usecairo && gw->ggc->func==df_copy ) {
 	_GXCDraw_FillRect( gxw,rect);
 return;
     } else {
-	if (((GXWindow) gw)->usecairo )
+	if (gxw->usecairo )
 	    _GXCDraw_Flush(gxw);
 #endif
     {
@@ -2365,7 +2388,41 @@ return;
 		rect->width,rect->height);
     }
 #ifndef _NO_LIBCAIRO
-	if (((GXWindow) gw)->usecairo )
+	if (gxw->usecairo )
+	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
+    }
+#endif
+}
+
+static void GXDrawFillRoundRect(GWindow gw, GRect *rect, int radius, Color col) {
+    GXWindow gxw = (GXWindow) gw;
+    int rr = radius <= (rect->height+1)/2 ? (radius > 0 ? radius : 0) : (rect->height+1)/2;
+
+    gxw->ggc->fg = col;
+#ifndef _NO_LIBCAIRO
+    if ( gxw->usecairo && gw->ggc->func==df_copy ) {
+	_GXCDraw_FillRoundRect( gxw,rect,rr );
+return;
+    } else {
+	if (gxw->usecairo )
+	    _GXCDraw_Flush(gxw);
+#endif
+    {
+	GRect middle = {rect->x, rect->y + radius, rect->width, rect->height - 2 * radius};
+	int xend = rect->x + rect->width - 1;
+	int yend = rect->y + rect->height - 1;
+	int precalc = rr * 2 - 1;
+	int i, xoff;
+
+	for (i = 0; i < rr; i++) {
+	    xoff = rr - lrint(sqrt( (double)(i * (precalc - i)) ));
+	    GXDrawDrawLine(gw, rect->x + xoff, rect->y + i, xend - xoff, rect->y + i, col);
+	    GXDrawDrawLine(gw, rect->x + xoff, yend - i, xend - xoff, yend - i, col);
+	}
+	GXDrawFillRect(gw, &middle, col);
+    }
+#ifndef _NO_LIBCAIRO
+	if (gxw->usecairo )
 	    _GXCDraw_DirtyRect(gxw,rect->x,rect->y,rect->width,rect->height);
     }
 #endif
@@ -4863,6 +4920,7 @@ static struct displayfuncs xfuncs = {
     GXDrawDrawArrow,
     GXDrawDrawRect,
     GXDrawFillRect,
+    GXDrawFillRoundRect,
     GXDrawDrawElipse,
     GXDrawFillElipse,
     GXDrawDrawArc,
@@ -5083,6 +5141,40 @@ return( (GDisplay *) gdisp);
 void _XSyncScreen() {
     XSync(((GXDisplay *) screen_display)->display,false);
 }
+
+#if !defined(__MINGW32__)
+
+/* map GK_ keys to X keys */
+/* Assumes most are mapped 1-1, see gkeysym.h */
+/* abort on unimplemented translations */
+int GDrawKeyToXK(int keysym) {
+    switch( keysym ) {
+      default:
+	if ( keysym==' ' ||
+		(keysym>='0' && keysym<='9') ||
+		(keysym>='A' && keysym<='Z') ||
+		(keysym>='a' && keysym<='z') )
+return( keysym );
+    }
+    abort();
+return( 0 );
+}
+
+int GDrawKeyState(int keysym) {
+    char key_map_stat[32];
+    Display *xdisplay = ((GXDisplay *)screen_display)->display;
+    KeyCode code;
+
+    XQueryKeymap(xdisplay, key_map_stat);
+
+    code = XKeysymToKeycode(xdisplay, GDrawKeyToXK(keysym));
+    if ( !code ) {
+abort();
+return 0;
+    }
+return ((key_map_stat[code >> 3] >> (code & 7)) & 1);
+}
+#endif
 
 #else	/* NO X */
 

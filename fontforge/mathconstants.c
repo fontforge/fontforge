@@ -34,13 +34,8 @@
 #endif
 #include <stddef.h>
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define MCD(ui_name,name,msg,np) { ui_name, #name, offsetof(struct MATH,name), -1,msg,np }
 #define MCDD(ui_name,name,devtab_name,msg,np) { ui_name, #name, offsetof(struct MATH,name), offsetof(struct MATH,devtab_name),msg,np }
-#else
-#define MCD(ui_name,name,msg,np) { ui_name, #name, offsetof(struct MATH,name), -1,msg,np }
-#define MCDD(ui_name,name,devtab_name,msg,np) { ui_name, #name, offsetof(struct MATH,name), -2,msg,np }
-#endif
 
 struct math_constants_descriptor math_constants_descriptor[] = {
     MCD(N_("ScriptPercentScaleDown:"),ScriptPercentScaleDown,N_("Percentage scale down for script level 1"),0),
@@ -164,7 +159,6 @@ return( math );
 }
 
 void MATHFree(struct MATH *math) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int i;
 
     if ( math==NULL )
@@ -174,9 +168,5 @@ return;
 	if ( math_constants_descriptor[i].devtab_offset>=0 )
 	    DeviceTableFree( *(DeviceTable **) (((char *) math) + math_constants_descriptor[i].devtab_offset ) );
     }
-#else
-    if ( math==NULL )
-return;
-#endif
     free(math);
 }

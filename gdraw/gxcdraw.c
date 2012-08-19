@@ -137,6 +137,7 @@ static void (*_cairo_move_to)(cairo_t *,double,double);
 static void (*_cairo_line_to)(cairo_t *,double,double);
 static void (*_cairo_curve_to)(cairo_t *,double,double,double,double,double,double);
 static void (*_cairo_rectangle)(cairo_t *,double,double,double,double);
+static void (*_cairo_arc)(cairo_t *,double,double,double,double,double);
 static void (*_cairo_scaled_font_extents)(cairo_scaled_font_t *,cairo_font_extents_t *);
 static void (*_cairo_scaled_font_text_extents)(cairo_scaled_font_t *,const char *,cairo_text_extents_t *);
 static void (*_cairo_set_scaled_font)(cairo_t *,const cairo_scaled_font_t *);
@@ -275,6 +276,8 @@ return( 0 );
 	    dlsym(libcairo,"cairo_curve_to");
     _cairo_rectangle = (void (*)(cairo_t *,double,double,double,double))
 	    dlsym(libcairo,"cairo_rectangle");
+    _cairo_arc = (void (*)(cairo_t *,double,double,double,double,double))
+	    dlsym(libcairo,"cairo_arc");
     _cairo_close_path = (void (*)(cairo_t *))
 	    dlsym(libcairo,"cairo_close_path");
     _cairo_stroke = (void (*)(cairo_t *))
@@ -374,6 +377,7 @@ return( true );
 #  define _cairo_line_to cairo_line_to
 #  define _cairo_curve_to cairo_curve_to
 #  define _cairo_rectangle cairo_rectangle
+#  define _cairo_arc cairo_arc
 #  define _cairo_close_path cairo_close_path
 #  define _cairo_stroke cairo_stroke
 #  define _cairo_fill cairo_fill
@@ -633,6 +637,21 @@ void _GXCDraw_FillRect(GXWindow gw, GRect *rect) {
     _cairo_new_path(gw->cc);
     _cairo_rectangle(gw->cc,rect->x,rect->y,rect->width,rect->height);
     _cairo_fill(gw->cc);
+}
+
+void _GXCDraw_FillRoundRect(GXWindow gw, GRect *rect, int radius) {
+    double degrees = M_PI / 180.0;
+
+    GXCDrawSetcolfunc(gw,gw->ggc);
+
+    _cairo_new_path(gw->cc);
+    _cairo_arc(gw->cc, rect->x + rect->width - radius, rect->y + radius, radius, -90 * degrees, 0 * degrees);
+    _cairo_arc(gw->cc, rect->x + rect->width - radius, rect->y + rect->height - radius, radius, 0 * degrees, 90 * degrees);
+    _cairo_arc(gw->cc, rect->x + radius, rect->y + rect->height - radius, radius, 90 * degrees, 180 * degrees);
+    _cairo_arc(gw->cc, rect->x + radius, rect->y + radius, radius, 180 * degrees, 270 * degrees);
+    _cairo_close_path(gw->cc);
+    _cairo_fill(gw->cc);
+
 }
 
 static void GXCDraw_EllipsePath(cairo_t *cc,double cx,double cy,double width,double height) {

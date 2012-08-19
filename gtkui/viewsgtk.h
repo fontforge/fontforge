@@ -601,10 +601,8 @@ extern void GetEncodingMenu(GtkMenuItem *menuitem,
 extern void CharInfoInit(void);
 extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern int DeviceTableOK(char *dvstr, int *_low, int *_high);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
 extern void DevTabToString(char **str,DeviceTable *adjust);
-#endif
 extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);
 extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);

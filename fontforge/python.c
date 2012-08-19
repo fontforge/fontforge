@@ -13314,9 +13314,7 @@ return( NULL );
 	sub->kc->firsts = class1_strs;
 	sub->kc->seconds = class2_strs;
 	sub->kc->offsets = offs;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	sub->kc->adjusts = gcalloc(cnt1*cnt2,sizeof(DeviceTable));
-#endif
 	if ( offsets==NULL )
 	    pyAutoKernAll(fv,sub);
     } else {
@@ -13378,9 +13376,7 @@ return( NULL );
     sub->kc->firsts = class1_strs;
     sub->kc->seconds = class2_strs;
     sub->kc->offsets = offs;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     sub->kc->adjusts = gcalloc(cnt1*cnt2,sizeof(DeviceTable));
-#endif
 
 Py_RETURN( self );
 }
