@@ -1068,7 +1068,6 @@ static SplineSet *StrokeOutline(Layer *layer,SplineChar *sc) {
 	}
 return( head );
     } else
-#ifdef FONTFORGE_CONFIG_TYPE3
     {
 	si.radius = layer->stroke_pen.width/2;
 	si.join = layer->stroke_pen.linejoin;
@@ -1076,12 +1075,8 @@ return( head );
 	si.stroke_type = si_std;
 return( SplineSetStroke(layer->splines,&si,layer->order2));
     }
-#else
-return( layer->splines );
-#endif
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
     StrokeInfo si;
 
@@ -1138,15 +1133,12 @@ static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *bru
 	}
     }
 }
-#endif
 
 BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 	int ptsize, int dpi,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap, temp;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i;
-#endif
     int cmax, pmax;
     real rscale = (ptsize*dpi)/72.0/(double) (sc->parent->ascent+sc->parent->descent);
     real scale = rscale*(1<<6);
@@ -1159,7 +1151,6 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 return( NULL );
     if ( sc->layers[layer].order2 && sc->parent->strokedfont )
 return( NULL );
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->layers[layer].order2 && sc->parent->multilayer ) {
 	/* I don't support stroking of order2 splines */
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
@@ -1174,7 +1165,6 @@ return( NULL );
 return( NULL );
 	}
     }
-#endif
 
     SplineCharLayerFindBounds(sc,layer,&b);
     if ( b.maxx-b.minx > 32767 ) b.maxx = b.minx+32767;
@@ -1201,7 +1191,6 @@ return( NULL );
     }
     bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
     memset(&temp,0,sizeof(temp));
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && !(sc->layer_cnt==2 &&
 	    !sc->layers[ly_fore].dostroke &&
 	    sc->layers[ly_fore].dofill &&
@@ -1211,7 +1200,6 @@ return( NULL );
 	temp = bitmap;
 	temp.buffer = galloc(bitmap.pitch*bitmap.rows);
     }
-#endif
 
     memset(&outline,0,sizeof(outline));
     pmax = cmax = 0;
@@ -1223,18 +1211,7 @@ return( NULL );
 		scale,&b,sc->layers[layer].order2,false);
 	err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	SplinePointListsFree(stroked);
-    } else 
-#ifndef FONTFORGE_CONFIG_TYPE3
-    {
-	all = LayerAllOutlines(&sc->layers[layer]);
-	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[layer].order2,false);
-	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
-	if ( sc->layers[layer].splines!=all )
-	    SplinePointListsFree(all);
-    }
-#else
-    if ( temp.buffer==NULL ) {
+    } else if ( temp.buffer==NULL ) {
 	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
 		scale,&b,sc->layers[layer].order2,false);
@@ -1295,7 +1272,6 @@ return( NULL );
 	}
 	free(temp.buffer);
     }
-#endif
 
     free(outline.points);
     free(outline.tags);

@@ -1602,13 +1602,9 @@ return( NULL );
 
     _InterpretPdf(glyph_stream,pc,&ec);
     sc->width = ec.width;
-#ifdef FONTFORGE_CONFIG_TYPE3
     sc->layer_cnt = 1;
     SCAppendEntityLayers(sc,ec.splines);
     if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
-#else
-    sc->layers[ly_fore].splines = SplinesFromEntityChar(&ec,flags,false);
-#endif
 
     fclose(glyph_stream);
 return( sc );
@@ -1875,9 +1871,7 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
     free(sf->comments); sf->comments = NULL;
     sf->ascent = .8*emsize;
     sf->descent = emsize - sf->ascent;
-#ifdef FONTFORGE_CONFIG_TYPE3
     sf->multilayer = true;
-#endif
 
     for ( i=0; i<charprocdict->next; ++i ) {
 	sf->glyphs[i] = pdf_InterpretSC(pc,charprocdict->keys[i],

@@ -521,9 +521,7 @@ static void SplashLayout() {
     uc_strcat(pt,source_modtime_str);
     uc_strcat(pt," (");
     uc_strcat(pt,source_version_str);
-#ifdef FONTFORGE_CONFIG_TYPE3
     uc_strcat(pt,"-ML");
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
 #endif
@@ -1091,9 +1089,7 @@ int main( int argc, char **argv ) {
 #endif
 
     fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif

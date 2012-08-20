@@ -140,9 +140,7 @@ int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
 
     fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif

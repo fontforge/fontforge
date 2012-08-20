@@ -1809,10 +1809,8 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 	msc->parent = &mkd->dummy_sf;
 	msc->layer_cnt = 2;
 	msc->layers = gcalloc(2,sizeof(Layer));
-#ifdef FONTFORGE_CONFIG_TYPE3
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
-#endif
 	mkd->chars[i] = msc;
 
 	mcv->b.sc = msc;

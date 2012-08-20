@@ -28,18 +28,6 @@
 #define _CONFIG_FONTFORGE_H_
 
 
-/* Making FontForge handle more of the capabilities of type3 & svg fonts is not*/
-/*  something most people will want. It wastes space too. So I thought I'd    */
-/*  make it conditional. 						      */
-/*									      */
-/* #define FONTFORGE_CONFIG_TYPE3					      */
-/*									      */
-/* It allows people to have images in a font, multiple layers, strokes, fills */
-/*  transparencies, etc. (type3 doesn't support transparency, svg doesn't do  */
-/*  images)								      */
-/* Can be set from configure --with-multilayer				      */
-
-
 /* Apple suggests using a sfnt version of 'true' for fonts designed for use   */
 /*  only on a mac (windows refuses such fonts). I generally prefer to have a  */
 /*  font work everywhere, so normally ff produces fonts with version 1.0      */

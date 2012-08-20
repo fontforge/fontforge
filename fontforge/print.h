@@ -108,7 +108,5 @@ extern struct printdefaults {
 extern void PI_Init(PI *pi,FontViewBase *fv,SplineChar *sc);
 extern void DoPrinting(PI *pi,char *filename);
 extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);
-#ifdef FONTFORGE_CONFIG_TYPE3
 extern void makePatName(char *buffer,
 	RefChar *ref,SplineChar *sc,int layer,int isstroke,int isgrad);
-#endif

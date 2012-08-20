@@ -391,12 +391,10 @@ return;
     for ( i=0; i<ref->layer_cnt; ++i ) {
 	SplinePointListsFree(ref->layers[i].splines);
 	ImageListsFree(ref->layers[i].images);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	GradientFree(ref->layers[i].fill_brush.gradient);
 	GradientFree(ref->layers[i].stroke_pen.brush.gradient);
 	PatternFree(ref->layers[i].fill_brush.pattern);
 	PatternFree(ref->layers[i].stroke_pen.brush.pattern);
-#endif
     }
     free(ref->layers);
     chunkfree(ref,sizeof(RefChar));
@@ -406,14 +404,12 @@ RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
     ref->layer_cnt = 1;
     ref->layers = gcalloc(1,sizeof(struct reflayer));
-#ifdef FONTFORGE_CONFIG_TYPE3
     ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
     ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
     ref->layers[0].stroke_pen.width = WIDTH_INHERITED;
     ref->layers[0].stroke_pen.linecap = lc_inherited;
     ref->layers[0].stroke_pen.linejoin = lj_inherited;
     ref->layers[0].dofill = true;
-#endif
     ref->round_translation_to_grid = true;
 return( ref );
 }
@@ -701,7 +697,6 @@ static void _SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void _SplineSetFindClippedBounds(const SplinePointList *spl, DBounds *bounds,DBounds *clipb) {
     Spline *spline, *first;
     /* Ignore contours consisting of a single point (used for hinting, anchors */
@@ -740,10 +735,8 @@ static void _SplineSetFindClippedBounds(const SplinePointList *spl, DBounds *bou
 	}
     }
 }
-#endif
 
 void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     DBounds clipb;
     memset(bounds,'\0',sizeof(*bounds));
     memset(&clipb,'\0',sizeof(clipb));
@@ -754,13 +747,8 @@ void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
 	if ( bounds->maxx>clipb.maxx ) bounds->maxx = clipb.maxx;
 	if ( bounds->maxy>clipb.maxy ) bounds->maxy = clipb.maxy;
     }
-#else
-    memset(bounds,'\0',sizeof(*bounds));
-    _SplineSetFindBounds(spl,bounds);
-#endif
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void _ImageFindBounds(ImageList *img,DBounds *bounds) {
     if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
 	*bounds = img->bb;
@@ -771,15 +759,12 @@ static void _ImageFindBounds(ImageList *img,DBounds *bounds) {
 	if ( img->bb.maxy > bounds->maxy ) bounds->maxy = img->bb.maxy;
     }
 }
-#endif
 
 static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds) {
     RefChar *rf;
-#ifdef FONTFORGE_CONFIG_TYPE3
     ImageList *img;
     real e;
     DBounds b, clipb;
-#endif
 
     for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 	if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
@@ -791,7 +776,6 @@ static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds
 	    if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
 	}
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(&b,0,sizeof(b));
     memset(&clipb,0,sizeof(clipb));
     _SplineSetFindClippedBounds(sc->layers[layer].splines,&b,&clipb);
@@ -819,9 +803,6 @@ static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds
 	if ( b.maxx > bounds->maxx ) bounds->maxx = b.maxx;
 	if ( b.maxy > bounds->maxy ) bounds->maxy = b.maxy;
     }
-#else
-    _SplineSetFindBounds(sc->layers[layer].splines,bounds);
-#endif
 
     if ( sc->parent!=NULL && sc->parent->strokedfont &&
 	    (bounds->minx!=bounds->maxx || bounds->miny!=bounds->maxy)) {
@@ -945,15 +926,6 @@ static void _SplineSetFindTop(SplineSet *ss,BasePoint *top) {
     }
 }
 
-#ifndef FONTFORGE_CONFIG_TYPE3
-static void SplineSetFindTop(SplineSet *ss,BasePoint *top) {
-
-    top->y = -1e10;
-    _SplineSetFindTop(ss,top);
-    if ( top->y < -65536 ) top->y = top->x = 0;
-}
-#endif
-
 void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
     SplinePoint *sp;
 
@@ -982,10 +954,8 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
     int i,first, last;
     DBounds temp;
-#ifdef FONTFORGE_CONFIG_TYPE3
     real e;
     ImageList *img;
-#endif
 
     b->minx = b->miny = 1e10;
     b->maxx = b->maxy = -1e10;
@@ -994,7 +964,6 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 	last = sc->layer_cnt-1;
     for ( i=first; i<=last; ++i ) {
 	SplineSetQuickBounds(sc->layers[i].splines,&temp);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
 	    _ImageFindBounds(img,b);
 	if ( sc->layers[i].dostroke && sc->layers[i].splines!=NULL ) {
@@ -1005,7 +974,6 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 	    temp.minx -= e; temp.maxx += e;
 	    temp.miny -= e; temp.maxy += e;
 	}
-#endif
 	if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
 	    if ( temp.minx < b->minx ) b->minx = temp.minx;
 	    if ( temp.miny < b->miny ) b->miny = temp.miny;
@@ -1100,10 +1068,8 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
     int i, first,last;
     DBounds temp;
-#ifdef FONTFORGE_CONFIG_TYPE3
     real e;
     ImageList *img;
-#endif
 
     memset(b,0,sizeof(*b));
     first = last = ly_fore;
@@ -1111,7 +1077,6 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
 	last = sc->layer_cnt-1;
     for ( i=first; i<=last; ++i ) {
 	SplineSetQuickConservativeBounds(sc->layers[i].splines,&temp);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
 	    _ImageFindBounds(img,b);
 	if ( sc->layers[i].dostroke && sc->layers[i].splines!=NULL ) {
@@ -1122,7 +1087,6 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
 	    temp.minx -= e; temp.maxx += e;
 	    temp.miny -= e; temp.maxy += e;
 	}
-#endif
 	if ( temp.minx!=0 || temp.maxx != 0 || temp.maxy != 0 || temp.miny!=0 ) {
 	    if ( temp.minx < b->minx ) b->minx = temp.minx;
 	    if ( temp.miny < b->miny ) b->miny = temp.miny;
@@ -1258,13 +1222,9 @@ void SPLCatagorizePoints(SplinePointList *spl) {
 }
 
 void SCCatagorizePoints(SplineChar *sc) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i;
     for ( i=ly_fore; i<sc->layer_cnt; ++i )
 	SPLCatagorizePoints(sc->layers[i].splines);
-#else
-    SPLCatagorizePoints(sc->layers[ly_fore].splines);
-#endif
 }
 
 static int CharsNotInEncoding(FontDict *fd) {
@@ -2231,7 +2191,6 @@ return;
     }
     rsc->ticked = false;
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sf->multilayer ) {
 	int lbase = topref->layer_cnt;
 	if ( topref->layer_cnt==0 ) {
@@ -2256,9 +2215,6 @@ return;
 	    topref->layers = gcalloc(1,sizeof(struct reflayer));
 	    topref->layer_cnt = 1;
 	}
-#else
-    {
-#endif
 	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[layer].splines),transform,tpt_AllPoints);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
@@ -2492,10 +2448,8 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     } else
 	map = sf->map;
     sf->glyphs = gcalloc(map->backmax,sizeof(SplineChar *));
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( istype3 )	/* We read a type3 */
 	sf->multilayer = true;
-#endif
     if ( istype3 )
 	notdefpos = LookupCharString(".notdef",(struct pschars *) (fd->charprocs));
     else
@@ -2967,7 +2921,6 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 return( sf );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6]) {
     BrushCopy(&rl->fill_brush, &layer->fill_brush,transform);
     PenCopy(&rl->stroke_pen, &layer->stroke_pen,transform);
@@ -2975,10 +2928,8 @@ static void LayerToRefLayer(struct reflayer *rl,Layer *layer, real transform[6])
     rl->dostroke = layer->dostroke;
     rl->fillfirst = layer->fillfirst;
 }
-#endif
 
 void RefCharFindBounds(RefChar *rf) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i;
     SplineChar *rsc = rf->sc;
     real extra=0,e;
@@ -2999,16 +2950,11 @@ void RefCharFindBounds(RefChar *rf) {
     if ( rf->top.y < -65536 ) rf->top.y = rf->top.x = 0;
     rf->bb.minx -= extra; rf->bb.miny -= extra;
     rf->bb.maxx += extra; rf->bb.maxy += extra;
-#else
-    SplineSetFindBounds(rf->layers[0].splines,&rf->bb);
-    SplineSetFindTop(rf->layers[0].splines,&rf->top);
-#endif
 }
 
 void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {
     SplinePointList *new, *last;
     RefChar *refs;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i,j;
     SplineChar *rsc = rf->sc;
     real extra=0,e;
@@ -3082,18 +3028,13 @@ return;
 	rf->bb.minx -= extra; rf->bb.miny -= extra;
 	rf->bb.maxx += extra; rf->bb.maxy += extra;
     } else {
-#else
-    {
-#endif
 	if ( rf->layer_cnt>0 ) {
 	    SplinePointListsFree(rf->layers[0].splines);
 	    rf->layers[0].splines = NULL;
 	}
 	rf->layers = gcalloc(1,sizeof(struct reflayer));
 	rf->layer_cnt = 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	rf->layers[0].dofill = true;
-#endif
 	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,tpt_AllPoints);
 	rf->layers[0].splines = new;
 	last = NULL;
@@ -3216,7 +3157,6 @@ void SCRemoveDependents(SplineChar *dependent) {
 
 void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
     SplineSet *spl;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int rlayer;
 
     if ( sc->parent->multilayer ) {
@@ -3240,9 +3180,6 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 	sc->layer_cnt += rf->layer_cnt;
 	SCMoreLayers(sc,old);
     } else {
-#else
-    {
-#endif
 	if ( (spl = rf->layers[0].splines)!=NULL ) {
 	    while ( spl->next!=NULL )
 		spl = spl->next;
@@ -5907,7 +5844,6 @@ void AltUniFree(struct altuni *altuni) {
 
 void LayerDefault(Layer *layer) {
     memset(layer,0,sizeof(Layer));
-#ifdef FONTFORGE_CONFIG_TYPE3
     layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
     layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
     layer->stroke_pen.width = 10;
@@ -5918,7 +5854,6 @@ void LayerDefault(Layer *layer) {
     layer->stroke_pen.trans[0] = layer->stroke_pen.trans[3] = 1.0;
     layer->stroke_pen.trans[1] = layer->stroke_pen.trans[2] = 0.0;
     /* Dashes default to an unbroken line */
-#endif
 }
 
 SplineChar *SplineCharCreate(int layer_cnt) {
@@ -6098,12 +6033,10 @@ void PenCopy(struct pen *into, struct pen *from,real transform[6]) {
 
 void LayerFreeContents(SplineChar *sc,int layer) {
     SplinePointListsFree(sc->layers[layer].splines);
-#ifdef FONTFORGE_CONFIG_TYPE3
     GradientFree(sc->layers[layer].fill_brush.gradient);
     PatternFree(sc->layers[layer].fill_brush.pattern);
     GradientFree(sc->layers[layer].stroke_pen.brush.gradient);
     PatternFree(sc->layers[layer].stroke_pen.brush.pattern);
-#endif
     RefCharsFree(sc->layers[layer].refs);
     ImageListsFree(sc->layers[layer].images);
     /* image garbage collection????!!!! */

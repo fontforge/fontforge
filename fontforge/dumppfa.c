@@ -40,10 +40,8 @@
 #include <time.h>
 #include "psfont.h"
 #include "splinefont.h"
-#ifdef FONTFORGE_CONFIG_TYPE3
- #include <gdraw.h>		/* For image defn */
- #include "print.h"		/* For makePatName */
-#endif
+#include <gdraw.h>		/* For image defn */
+#include "print.h"		/* For makePatName */
 
 #ifdef __CygWin
  #include <sys/types.h>
@@ -527,7 +525,6 @@ return( false );
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
 	struct gradient *grad, RefChar *ref, SplineChar *sc, int layer, int pdfopers, int isstroke ) {
 
@@ -716,7 +713,6 @@ static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,pdfopers ? "] 0 d\n" : "] 0 setdash\n");
     }
 }
-#endif
 
 struct psfilter {
     int ascii85encode, ascii85n, ascii85bytes_per_line;
@@ -798,7 +794,6 @@ static void FilterStr(struct psfilter *ps,uint8 *pt, int len ) {
 	Filter(ps,*pt++);
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void PSDumpBinaryData(void (*dumpchar)(int ch,void *data), void *data,
 	uint8 *bytes,int rows, int bytes_per_row, int useful_bytes_per_row) {
     struct psfilter ps;
@@ -987,7 +982,6 @@ static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
 	dumpstr(dumpchar,data,"grestore\n");
     }
 }
-#endif
 
 void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	SplineChar *sc, int refs_to_splines, int pdfopers, int layer ) {
@@ -1009,7 +1003,6 @@ return;
 	if ( sc->layers[i].splines!=NULL ) {
 	    temp = sc->layers[i].splines;
 	    if ( sc->layers[i].order2 ) temp = SplineSetsPSApprox(temp);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
 		if ( SSHasClip(temp)) {
@@ -1046,19 +1039,16 @@ return;
 		}
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	    } else
-#endif
 		dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false,
 			false);
 	    if ( sc->layers[i].order2 ) SplinePointListsFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
 		if ( sc->layers[i].dofill )
 		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, NULL, sc, i, pdfopers);
 	    }
-#endif
 	    if ( refs_to_splines ) {
 		if ( !pdfopers || !sc->parent->multilayer ) {
 		    /* In PostScript, patterns are transformed by the page's */
@@ -1075,7 +1065,6 @@ return;
 			dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 		    }
 		} else {
-#ifdef FONTFORGE_CONFIG_TYPE3
 		    /* If we get here we are outputting pdf, are type3, refs_2_splines */
 /*  We need different gradients and patterns for different transform */
 /*  matrices of references */
@@ -1105,7 +1094,6 @@ return;
 				SplinePointListsFree(temp);*/
 			}
 		    }
-#endif
 		}
 	    } else {
 		dumpstr(dumpchar,data,"    pop -1\n" );
@@ -1136,12 +1124,9 @@ return;
 			dumpf(dumpchar,data, "    1 index /CharProcs get /%s get exec\n", ref->sc->name );
 		}
 	    }
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer )
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
-#endif
 	}
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->layers[i].images!=NULL  ) { ImageList *img; int icnt=0;
 	    dumpstr(dumpchar,data,pdfopers ? "q\n" : "gsave\n" );
 	    if ( sc->layers[i].dofill )
@@ -1150,12 +1135,10 @@ return;
 		dumpimage(dumpchar,data,img,sc->layers[i].dofill,pdfopers,i,icnt,sc);
 	    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	}
-#endif
     }
 }
 
 static int SCSetsColor(SplineChar *sc) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int l;
     RefChar *r;
     ImageList *img;
@@ -1181,7 +1164,6 @@ return( true );
 	    if ( SCSetsColor(r->sc) )
 return( true );
     }
-#endif
 return( false );
 }
 
@@ -1863,7 +1845,6 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     if ( format==ff_cid || format==ff_cffcid || format==ff_type42cid ||
 	    format==ff_cff || format==ff_type42 )
 	dumpf(dumpchar,data, "%%%%LanguageLevel: 3\n" );
-#ifdef FONTFORGE_CONFIG_TYPE3
     else if ( sf->multilayer && format==ff_ptype3 ) {
 	int gid, ly;
 	SplineChar *sc;
@@ -1883,7 +1864,6 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	else if ( had_pat )
 	    dumpf(dumpchar,data, "%%%%LanguageLevel: 2\n" );
     }
-#endif
 
     if ( sf->copyright!=NULL ) {
 	char *pt, *strt=sf->copyright, *npt;

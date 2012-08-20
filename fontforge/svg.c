@@ -218,7 +218,6 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout,
 return( lineout );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 	char *scname, SplineChar *nested, int layer, int istop) {
     static char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
@@ -331,7 +330,6 @@ return( ss );
 return( SplinePointListTransform(SplinePointListCopy(
 		    ss),inversetrans,tpt_AllPoints));
 }
-#endif
 
 static int svg_sc_any(SplineChar *sc,int layer) {
     int i,j;
@@ -352,7 +350,6 @@ static int svg_sc_any(SplineChar *sc,int layer) {
 return( any );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static int base64tab[] = {
     'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
     'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
@@ -626,15 +623,12 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop) {
 	}
     }
 }
-#endif
 
 static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
     RefChar *ref;
     int lineout;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i,j;
     int needs_defs=0;
-#endif
 
     if ( !svg_sc_any(sc,layer) ) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
@@ -661,7 +655,6 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 	fputs(" />\n",file);
     } else {
 	fputs(">\n",file);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	for ( i=ly_fore; i<sc->layer_cnt && !needs_defs ; ++i ) {
 	    if ( SSHasClip(sc->layers[i].splines))
 		needs_defs = true;
@@ -688,7 +681,6 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 	    fprintf(file, "  </defs>\n" );
 	}
 	svg_dumptype3(file,sc,sc->name,true);
-#endif
 	fputs(endpath,file);
     }
 }
@@ -3064,14 +3056,10 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
     } else {
 	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	sc->layer_cnt = 1;
 	SCAppendEntityLayers(sc,ent);
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
 	else sc->parent->multilayer = true;
-#else
-	sc->layers[ly_fore].splines = SplinesFromEntities(ent,flags,false);
-#endif
     }
 
     SCCatagorizePoints(sc);

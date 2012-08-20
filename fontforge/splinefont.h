@@ -844,13 +844,11 @@ typedef struct undoes {
 	    uint8 *instrs;
 	    int instrs_len;
 	    AnchorPoint *anchor;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    struct brush fill_brush;
 	    struct pen stroke_pen;
 	    unsigned int dofill: 1;
 	    unsigned int dostroke: 1;
 	    unsigned int fillfirst: 1;
-#endif
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
 	int lbearing;	/* used by ut_lbearing */
@@ -1124,13 +1122,11 @@ typedef struct refchar {
 	unsigned int background: 1;
 	unsigned int order2: 1;
 	unsigned int anyflexes: 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	unsigned int dofill: 1;
 	unsigned int dostroke: 1;
 	unsigned int fillfirst: 1;
 	struct brush fill_brush;
 	struct pen stroke_pen;
-#endif
 	SplinePointList *splines;
 	ImageList *images;			/* Only in background or type3 layer(s) */
     } *layers;
@@ -1214,13 +1210,11 @@ typedef struct layer /* : reflayer */{
     unsigned int background: 1;
     unsigned int order2: 1;
     unsigned int anyflexes: 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
     unsigned int dofill: 1;
     unsigned int dostroke: 1;
     unsigned int fillfirst: 1;
     struct brush fill_brush;
     struct pen stroke_pen;
-#endif
     SplinePointList *splines;
     ImageList *images;			/* Only in background or type3 layer(s) */
     RefChar *refs;			/* Only in foreground layer(s) */
@@ -1425,7 +1419,6 @@ typedef struct splinechar {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
-#ifdef FONTFORGE_CONFIG_TYPE3
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -1434,7 +1427,6 @@ typedef struct splinechar {
 	/*  will be used. */
     real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
-#endif
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff

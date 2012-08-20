@@ -482,12 +482,10 @@ void UndoesFree(Undoes *undo) {
 		PSTFree( undo->u.state.possub );
 	    }
 	    AnchorPointsFree(undo->u.state.anchor);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    GradientFree(undo->u.state.fill_brush.gradient);
 	    PatternFree(undo->u.state.fill_brush.pattern);
 	    GradientFree(undo->u.state.stroke_pen.brush.gradient);
 	    PatternFree(undo->u.state.stroke_pen.brush.pattern);
-#endif
 	  break;
 	  case ut_bitmap:
 	    for ( head=undo->u.bmpstate.refs; head != NULL; ) {
@@ -572,13 +570,11 @@ return(NULL);
 	undo->u.state.anchor = AnchorPointsCopy(cv->sc->anchor);
     }
     undo->u.state.images = ImageListCopy(cv->layerheads[cv->drawmode]->images);
-#ifdef FONTFORGE_CONFIG_TYPE3
     BrushCopy(&undo->u.state.fill_brush,&cv->layerheads[cv->drawmode]->fill_brush,NULL);
     PenCopy(&undo->u.state.stroke_pen,&cv->layerheads[cv->drawmode]->stroke_pen,NULL);
     undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
-#endif
 return( CVAddUndo(cv,undo));
 }
 
@@ -648,13 +644,11 @@ return(NULL);
 	}
     }
     undo->u.state.images = ImageListCopy(sc->layers[layer].images);
-#ifdef FONTFORGE_CONFIG_TYPE3
     BrushCopy(&undo->u.state.fill_brush,&sc->layers[layer].fill_brush,NULL);
     PenCopy(&undo->u.state.stroke_pen,&sc->layers[layer].stroke_pen,NULL);
     undo->u.state.dofill = sc->layers[layer].dofill;
     undo->u.state.dostroke = sc->layers[layer].dostroke;
     undo->u.state.fillfirst = sc->layers[layer].fillfirst;
-#endif
     undo->copied_from = sc->parent;
 return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
@@ -669,13 +663,11 @@ return( _SCPreserveLayer(sc,layer,dohints));
 
 
 Undoes *SCPreserveState(SplineChar *sc,int dohints) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i;
 
     if ( sc->parent->multilayer )
 	for ( i=ly_fore+1; i<sc->layer_cnt; ++i )
 	    SCPreserveLayer(sc,i,false);
-#endif
 return( SCPreserveLayer(sc,ly_fore,dohints));
 }
 
@@ -696,13 +688,11 @@ return(NULL);
     undo->was_order2 = sf->grid.order2;
     undo->u.state.splines = SplinePointListCopy(sf->grid.splines);
     undo->u.state.images = ImageListCopy(sf->grid.images);
-#ifdef FONTFORGE_CONFIG_TYPE3
     undo->u.state.fill_brush = sf->grid.fill_brush;
     undo->u.state.stroke_pen = sf->grid.stroke_pen;
     undo->u.state.dofill = sf->grid.dofill;
     undo->u.state.dostroke = sf->grid.dostroke;
     undo->u.state.fillfirst = sf->grid.fillfirst;
-#endif
     undo->copied_from = sf;
 return( AddUndo(undo,&sf->grid.undoes,&sf->grid.redoes));
 }
@@ -1016,7 +1006,6 @@ void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {
 
     if ( !p->anysel || p->transanyrefs ) {
 	for ( uref=undo->u.state.refs; uref!=NULL; uref=uref->next ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    int i;
 	    for ( i=0; i<uref->layer_cnt; ++i ) {
 		SplinePointListsFree(uref->layers[i].splines);
@@ -1028,10 +1017,6 @@ void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {
 	    free(uref->layers);
 	    uref->layers = NULL;
 	    uref->layer_cnt = 0;
-#else
-	    SplinePointListsFree(uref->layers[0].splines);
-	    uref->layers[0].splines = NULL;
-#endif
 	}
     }
     undo->undotype = ut_state;
@@ -1129,12 +1114,10 @@ void CopyBufferFree(void) {
 	UHintListFree(copybuffer.u.state.hints);
 	free(copybuffer.u.state.instrs);
 	ImageListsFree(copybuffer.u.state.images);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	GradientFree(copybuffer.u.state.fill_brush.gradient);
 	PatternFree(copybuffer.u.state.fill_brush.pattern);
 	GradientFree(copybuffer.u.state.stroke_pen.brush.gradient);
 	PatternFree(copybuffer.u.state.stroke_pen.brush.pattern);
-#endif
       break;
       case ut_bitmapsel:
 	BDFFloatFree(copybuffer.u.bmpstate.selection);
@@ -1254,9 +1237,7 @@ return( head );
 
 #ifndef _NO_LIBXML
 static int FFClipToSC(SplineChar *dummy,Undoes *cur) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int lcnt;
-#endif
 
     if ( cur==NULL )
 return( false );
@@ -1269,7 +1250,6 @@ return( false );
     if ( dummy->parent==NULL )
 	dummy->parent = FontViewFirst()->sf;		/* Might not be right, but we need something */
     dummy->width = cur->u.state.width;
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cur->undotype==ut_layers ) {
 	Undoes *ulayer;
 	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
@@ -1287,14 +1267,11 @@ return( false );
 	    }
 	}
     } else
-#endif
     {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	dummy->layers[ly_fore].fill_brush = cur->u.state.fill_brush;
 	dummy->layers[ly_fore].stroke_pen = cur->u.state.stroke_pen;
 	dummy->layers[ly_fore].dofill = cur->u.state.dofill;
 	dummy->layers[ly_fore].dostroke = cur->u.state.dostroke;
-#endif
 	dummy->layers[ly_fore].splines = cur->u.state.splines;
 	dummy->layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,dummy,ly_fore);
     }
@@ -1475,7 +1452,6 @@ return( copy(""));
 	dummy.parent = cur->u.multiple.mult->copied_from;
     if ( dummy.parent==NULL )
 	dummy.parent = FontViewFirst()->sf;		/* Might not be right, but we need something */
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cur->undotype==ut_layers ) {
 	Undoes *ulayer;
 	for ( ulayer = cur->u.multiple.mult, lcnt=0; ulayer!=NULL; ulayer=ulayer->next, ++lcnt);
@@ -1492,15 +1468,11 @@ return( copy(""));
 		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy,ly_fore);
 	    }
 	}
-    } else
-#endif
-    {
-#ifdef FONTFORGE_CONFIG_TYPE3
+    } else {
 	dummy.layers[ly_fore].fill_brush = cur->u.state.fill_brush;
 	dummy.layers[ly_fore].stroke_pen = cur->u.state.stroke_pen;
 	dummy.layers[ly_fore].dofill = cur->u.state.dofill;
 	dummy.layers[ly_fore].dostroke = cur->u.state.dostroke;
-#endif
 	dummy.layers[ly_fore].splines = cur->u.state.splines;
 	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy,ly_fore);
     }
@@ -1719,7 +1691,6 @@ void CopyReference(SplineChar *sc) {
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = RefCharCreate();
     copybuffer.copied_from = sc->parent;
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( ly_fore<sc->layer_cnt ) {
 	BrushCopy(&copybuffer.u.state.fill_brush, &sc->layers[ly_fore].fill_brush,NULL);
 	PenCopy(&copybuffer.u.state.stroke_pen, &sc->layers[ly_fore].stroke_pen,NULL);
@@ -1727,7 +1698,6 @@ void CopyReference(SplineChar *sc) {
 	copybuffer.u.state.dostroke = sc->layers[ly_fore].dostroke;
 	copybuffer.u.state.fillfirst = sc->layers[ly_fore].fillfirst;
     }
-#endif
     ref->unicode_enc = sc->unicodeenc;
     ref->orig_pos = sc->orig_pos;
     ref->adobe_enc = getAdobeEnc(sc->name);
@@ -1785,7 +1755,6 @@ void CopySelected(CharViewBase *cv,int doanchors) {
 	    copybuffer.u.state.images = new;
 	}
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( cv->drawmode==dm_fore || cv->drawmode==dm_back ) {
 	BrushCopy(&copybuffer.u.state.fill_brush, &cv->layerheads[cv->drawmode]->fill_brush,NULL);
 	PenCopy(&copybuffer.u.state.stroke_pen, &cv->layerheads[cv->drawmode]->stroke_pen,NULL);
@@ -1793,7 +1762,6 @@ void CopySelected(CharViewBase *cv,int doanchors) {
 	copybuffer.u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
 	copybuffer.u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
     }
-#endif
     copybuffer.copied_from = cv->sc->parent;
 
     XClipCheckEps();
@@ -1864,7 +1832,6 @@ static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
 	    ref->adobe_enc = getAdobeEnc(sc->name);
 	    ref->transform[0] = ref->transform[3] = 1.0;
 	}
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( layer<sc->layer_cnt ) {
 	    cur->u.state.images = ImageListCopy(sc->layers[layer].images);
 	    BrushCopy(&cur->u.state.fill_brush, &sc->layers[layer].fill_brush,NULL);
@@ -1873,7 +1840,6 @@ static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
 	    cur->u.state.dostroke = sc->layers[layer].dostroke;
 	    cur->u.state.fillfirst = sc->layers[layer].fillfirst;
 	}
-#endif
 	cur->copied_from = sc->parent;
     }
 return( cur );
@@ -2319,12 +2285,10 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		sc->hstem = sc->vstem = NULL;
 		sc->hconflicts = sc->vconflicts = false;
 	    }
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    GradientFree(sc->layers[layer].fill_brush.gradient); sc->layers[layer].fill_brush.gradient = NULL;
 	    PatternFree(sc->layers[layer].fill_brush.pattern); sc->layers[layer].fill_brush.pattern = NULL;
 	    GradientFree(sc->layers[layer].stroke_pen.brush.gradient); sc->layers[layer].stroke_pen.brush.gradient = NULL;
 	    PatternFree(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
-#endif
 	    was_empty = true;
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
 	} else if ( pasteinto==2 ) {
@@ -2350,7 +2314,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	} else if ( pasteinto==3 && trans!=NULL ) {
 	    xoff = trans[4]; yoff = trans[5];
 	}
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( layer>=ly_fore && sc->layers[layer].splines==NULL &&
 		sc->layers[layer].refs==NULL && sc->layers[layer].images==NULL &&
 		sc->parent->multilayer ) {
@@ -2361,7 +2324,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    sc->layers[layer].dostroke = paster->u.state.dostroke;
 	    sc->layers[layer].fillfirst = paster->u.state.fillfirst;
 	}
-#endif
 	if ( sc->layers[layer].order2 &&
 		!sc->layers[layer].background ) {
 	    if ( paster->undotype==ut_statehint ) {
@@ -2393,7 +2355,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	}
 	if ( !sc->searcherdummy )
 	    APMerge(sc,paster->u.state.anchor);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( paster->u.state.images!=NULL && sc->parent->multilayer ) {
 	    ImageList *new, *cimg;
 	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
@@ -2405,10 +2366,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 	    SCOutOfDateBackground(sc);
 	}
-#else
-	/* Ignore any images, can't be in foreground level */
-	/* but might be hints */
-#endif
 	if ( (paster->undotype==ut_statehint || paster->undotype==ut_statename ) &&
 		!sc->layers[layer].background ) {
 	    if ( !pasteinto ) {	/* Hints aren't meaningful unless we've cleared first */
@@ -2529,12 +2486,10 @@ static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
 		ImageListsFree(sc->layers[layer].images);
 		sc->layers[layer].images = NULL;
 		SCRemoveLayerDependents(sc,layer);
-#ifdef FONTFORGE_CONFIG_TYPE3
 		GradientFree(sc->layers[layer].fill_brush.gradient); sc->layers[layer].fill_brush.gradient = NULL;
 		PatternFree(sc->layers[layer].fill_brush.pattern); sc->layers[layer].fill_brush.pattern = NULL;
 		GradientFree(sc->layers[layer].stroke_pen.brush.gradient); sc->layers[layer].stroke_pen.brush.gradient = NULL;
 		PatternFree(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
-#endif
 	    }
 	} else
 	    start = sc->layer_cnt;
@@ -2942,9 +2897,7 @@ static void _PasteToCV(CharViewBase *cv,SplineChar *cvsc,Undoes *paster) {
     DBounds bb;
     real transform[6];
     int wasempty = false;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int wasemptylayer = false;
-#endif
     int layer = CVLayer(cv);
 
     if ( copybuffer.undotype == ut_none ) {
@@ -2967,7 +2920,6 @@ return;
       break;
       case ut_state: case ut_statehint: case ut_statename:
 	wasempty = SCWasEmpty(cvsc,-1);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	wasemptylayer = layer!=ly_grid && cvsc->layers[layer].splines==NULL &&
 		cvsc->layers[layer].refs==NULL;
 	if ( wasemptylayer && cv->layerheads[dm_fore]->images==NULL &&
@@ -2979,7 +2931,6 @@ return;
 	    cv->layerheads[dm_fore]->dostroke = paster->u.state.dostroke;
 	    cv->layerheads[dm_fore]->fillfirst = paster->u.state.fillfirst;
 	}
-#endif
 	if ( cv->layerheads[cv->drawmode]->order2 &&
 		!cv->layerheads[cv->drawmode]->background ) {
 	    if ( paster->undotype==ut_statehint ) {
