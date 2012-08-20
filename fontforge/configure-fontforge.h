@@ -133,7 +133,7 @@
 /*  instead.  The extra precision is usually not needed, but the extra space  */
 /*  can be a problem with large (CJK, UNICODE) fonts.                         */
 /*									      */
-/* #define FONTFORGE_CONFIG_USE_DOUBLE					      */
+#define FONTFORGE_CONFIG_USE_DOUBLE
 /* #define FONTFORGE_CONFIG_USE_LONGDOUBLE				      */
 /*									      */
 
