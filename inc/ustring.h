@@ -131,4 +131,9 @@ extern int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
 extern char *StripToASCII(const char *utf8_str);
+extern char *copytolower(const char *);
+extern int endswith(const char *haystack,const char *needle);
+extern int endswithi(const char *haystack,const char *needle);
+extern int endswithi_partialExtension( const char *haystack,const char *needle);
+
 #endif

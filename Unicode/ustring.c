@@ -986,3 +986,52 @@ return( false );
     }
 return( true );
 }
+
+char *copytolower(const char *input)
+{
+    char* ret = copy(input);
+    char* p = ret;
+    for( ; *p; ++p ) {
+	*p = tolower(*p);
+    }
+    return ret;
+}
+
+
+int endswith(const char *haystack,const char *needle) {
+    char* p = strstr( haystack, needle );
+    int haylen = strlen( haystack );
+    int nedlen = strlen( needle );
+    if( haylen < nedlen )
+	return 0;
+    return p == ( haystack + haylen - nedlen );
+}
+
+int endswithi(const char *haystackZ,const char *needleZ) {
+    char* haystack = copytolower(haystackZ);
+    char* needle   = copytolower(needleZ);
+    int ret = endswith( haystack, needle );
+    free( haystack );
+    free( needle );
+    return ret;
+}
+
+int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
+    int nedlen = strlen(needleZ);
+    if( nedlen == 0 ) {
+	return 0;
+    }
+    char* haystack = copytolower(haystackZ);
+    char* needle   = copytolower(needleZ);
+    int ret = 0;
+    int i = nedlen-1;
+    ret |= endswith( haystack, needle );
+    for( ; i>=0 && !ret ; --i ) {
+	needle[i] = '\0';
+	ret |= endswith( haystack, needle );
+    }
+    free( haystack );
+    free( needle );
+    return ret;
+}
+

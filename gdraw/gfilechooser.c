@@ -474,12 +474,48 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 static int GFileChooserTextChanged(GGadget *t,GEvent *e) {
     GFileChooser *gfc;
     const unichar_t *pt, *spt;
-
+    printf("GFileChooserTextChanged()\n");
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_textchanged )
 return( true );
     pt = spt = _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( true );
+    {
+	char* p = u_to_c(pt);
+	int plen = strlen(p);
+	int ew = endswithi( p, ".sfdir") || endswithi( p, ".sfd");
+	int trim = 0;
+	/**
+	 * Check to see if they are trying to add chars to a valid extension.
+	 * If so, lets just no allow that to happen.
+	 */
+	if(plen) {
+	    char* pdup = copy(p);
+	    pdup[ plen - 1 ] = '\0';
+	    trim = endswithi( pdup, ".sfdir") || endswithi( pdup, ".sfd");
+	    free(pdup);
+	    if( trim ) {
+		pt = spt = u_copyn( pt, u_strlen(pt)-1 );
+		GGadgetSetTitle((GGadget *)t, pt );
+	    }
+	}
+
+	/**
+	 * If we didn't trim anything, if there is not a correct extension there
+	 * already, then we will add one for the user to be helpful.
+	 */
+	if( !trim ) {
+	    printf("GFileChooserTextChanged() ew:%d last:%c\n",ew,p[plen-1]);
+	    char* extension = ".sfd";
+	    if( *p && p[plen-1] == '.' )
+		extension = "sfd";
+	    if( !ew ) {
+		pt = spt = u_concat( pt, c_to_u(extension) );
+		GGadgetSetTitle((GGadget *)t, pt );
+	    }
+	}
+    }
+    
     while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
 	++pt;
     if ( *spt!='\0' && spt[u_strlen(spt)-1]=='/' )
