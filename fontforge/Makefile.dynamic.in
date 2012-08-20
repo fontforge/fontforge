@@ -4,6 +4,7 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 
 sharedir = @prefix@/share/fontforge
+docdir = @prefix@/share/doc/fontforge
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 top_builddir = ..
@@ -64,7 +65,7 @@ DIFFOBJS = sfddiff.o stamp.o
 ACORNOBJS = acorn2sfd.o stamp.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
-    @DEFS@ '-DSHAREDIR="$(sharedir)"' -DLIBDIR='"$(libdir)"' \
+    @DEFS@ '-DSHAREDIR="$(sharedir)"' '-DDOCDIR="$(docdir)"' -DLIBDIR='"$(libdir)"' \
     @CPPFLAGS@ '-DPREFIX="@prefix@"'
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(_CFLAGS)
 

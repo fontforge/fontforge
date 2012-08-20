@@ -323,8 +323,9 @@ return;
 #else
 		strcpy(fullspec,"/usr/local/share/doc/fontforge/");
 #endif
-	    } else
+	    } else {
 		strcpy(fullspec,helpdir);
+	    }
 	}
 	strcat(fullspec,file);
 	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';

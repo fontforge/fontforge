@@ -258,7 +258,6 @@ void help(char *file) {
 return;
     }
 #endif
-
     if ( strstr(file,"http://")==NULL ) {
 	fullspec[0] = 0;
 	if ( *file!='/' ) {
