@@ -1315,9 +1315,9 @@ int main( int argc, char **argv ) {
 	    recover = 1;
 	} else if ( strcmp(pt,"-recover=inquire")==0 ) {
 	    recover = 2;
-	} else if ( strcmp(pt,"-help")==0 )
+	} else if ( strcmp(pt,"-docs")==0 )
 	    dohelp();
-	else if ( strcmp(pt,"-usage")==0 )
+	else if ( strcmp(pt,"-help")==0 )
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 )
 	    doversion(source_version_str);
