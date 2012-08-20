@@ -198,6 +198,7 @@ struct displayfuncs {
     void (*drawArrow)(GWindow, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
     void (*drawRect)(GWindow, GRect *rect, Color col);
     void (*fillRect)(GWindow, GRect *rect, Color col);
+    void (*fillRoundRect)(GWindow, GRect *rect, int radius, Color col);
     void (*drawElipse)(GWindow, GRect *rect, Color col);
     void (*fillElipse)(GWindow, GRect *rect, Color col);
     void (*drawArc)(GWindow, GRect *rect, int32 sangle, int32 eangle, Color col);
@@ -275,6 +276,8 @@ struct displayfuncs {
     void (*layoutSetWidth)(GWindow w, int width);
     int  (*layoutLineCount)(GWindow w);
     int  (*layoutLineStart)(GWindow w,int line);
+    void (*startNewSubPath)(GWindow w);
+    int  (*fillRuleSetWinding)(GWindow w);
 };
 
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);

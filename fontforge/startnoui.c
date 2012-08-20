@@ -140,22 +140,15 @@ int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
 
     fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-	    "-LD"
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
-#endif
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-	    "-NoDevTab"
 #endif
 	    ".\n",
 	    source_modtime_str );

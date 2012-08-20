@@ -15,6 +15,7 @@ extern void _GXCDraw_Clear(GXWindow gw, GRect *rect);
 extern void _GXCDraw_DrawLine(GXWindow gw, int32 x,int32 y, int32 xend,int32 yend);
 extern void _GXCDraw_DrawRect(GXWindow gw, GRect *rect);
 extern void _GXCDraw_FillRect(GXWindow gw, GRect *rect);
+extern void _GXCDraw_FillRoundRect(GXWindow gw, GRect *rect, int radius);
 extern void _GXCDraw_DrawEllipse(GXWindow gw, GRect *rect);
 extern void _GXCDraw_FillEllipse(GXWindow gw, GRect *rect);
 extern void _GXCDraw_DrawPoly(GXWindow gw, GPoint *pts, int16 cnt);
@@ -29,6 +30,8 @@ extern void _GXCDraw_CopyArea( GXWindow from, GXWindow into, GRect *src, int32 x
 
 extern enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow );
 extern void _GXCDraw_PathStartNew(GWindow w);
+extern void _GXCDraw_PathStartSubNew(GWindow w);
+extern int _GXCDraw_FillRuleSetWinding(GWindow w);
 extern void _GXCDraw_PathClose(GWindow w);
 extern void _GXCDraw_PathMoveTo(GWindow w,double x, double y);
 extern void _GXCDraw_PathLineTo(GWindow w,double x, double y);

@@ -1100,14 +1100,12 @@ static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
 	if ( sc1->parent->multilayer )
 	    last = sc1->layer_cnt-1;
 	for ( layer=ly_fore; layer<=last; ++layer ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc1->layers[layer].dofill != sc2->layers[layer].dofill )
 		GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has a different fill in layer %d\n"),
 			sc1->name, layer );
 	    if ( sc1->layers[layer].dostroke != sc2->layers[layer].dostroke )
 		GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has a different stroke in layer %d\n"),
 			sc1->name, layer );
-#endif
 	    if ( !(fd->flags&fcf_exact) ) {
 		int tdiff, rd;
 		val = SS_NoMatch;

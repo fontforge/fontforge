@@ -244,7 +244,7 @@ typedef struct gwindow_attrs {
         wam_isdlg=0x10000, wam_notrestricted=0x20000,
         wam_transient=0x40000,
         wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
-        wam_cairo=0x200000, wam_verytransient=0x400000 } mask;
+        wam_nocairo=0x200000, wam_verytransient=0x400000 } mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */
@@ -452,6 +452,7 @@ extern void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Col
 extern void GDrawDrawArrow(GWindow w, int32 x,int32 y, int32 xend,int32 yend, int arrows, Color col);
 extern void GDrawDrawRect(GWindow w, GRect *rect, Color col);
 extern void GDrawFillRect(GWindow w, GRect *rect, Color col);
+extern void GDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col);
 extern void GDrawDrawElipse(GWindow w, GRect *rect, Color col);
 extern void GDrawFillElipse(GWindow w, GRect *rect, Color col);
 extern void GDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 tangle, Color col);
@@ -511,6 +512,8 @@ extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *d
 extern enum gcairo_flags GDrawHasCairo(GWindow w);
 extern void GDrawQueueDrawing(GWindow w,void (*)(GWindow,void *),void *);
 extern void GDrawPathStartNew(GWindow w);
+extern void GDrawPathStartSubNew(GWindow w);
+extern int GDrawFillRuleSetWinding(GWindow w);
 extern void GDrawPathClose(GWindow w);
 extern void GDrawPathMoveTo(GWindow w,double x, double y);
 extern void GDrawPathLineTo(GWindow w,double x, double y);
@@ -536,6 +539,7 @@ extern int  GDrawLayoutLineStart(GWindow w,int line);
 extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);
 extern void GDrawError(const char *fmt,...);
+extern int GDrawKeyState(int keysym);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);

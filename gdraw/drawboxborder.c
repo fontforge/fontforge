@@ -349,7 +349,7 @@ static void DrawRoundRect(GWindow gw, GRect *pos,int inset,int radius,
 }
 
 static void DrawRoundTab(GWindow gw, GRect *pos,int inset,int radius,
-	Color col1, Color col2, Color col3, Color col4) {
+	Color col1, Color col2, Color col3, Color col4, int active) {
     int off;
     if ( inset<radius ) {
 	off = radius;
@@ -360,6 +360,8 @@ static void DrawRoundTab(GWindow gw, GRect *pos,int inset,int radius,
     GDrawDrawLine(gw,pos->x+inset,pos->y+off,pos->x+inset,pos->y+pos->height-1,col1);
     GDrawDrawLine(gw,pos->x+off,pos->y+inset,pos->x+pos->width-1-off,pos->y+inset,col2);
     GDrawDrawLine(gw,pos->x+pos->width-1-inset,pos->y+off,pos->x+pos->width-1-inset,pos->y+pos->height-1,col3);
+    if ( !active )
+	GDrawDrawLine(gw,pos->x,pos->y+pos->height-1,pos->x+pos->width-1,pos->y+pos->height-1,col4);
 }
 
 static void DrawRoundRects(GWindow gw, GRect *pos,int inset,int radius,
@@ -957,130 +959,105 @@ return( ret );
 
 static void BoxGradientRect(GWindow gw, GRect *r, Color start, Color end)
 {
-	int xend = r->x + r->width - 1;
-	int i;
+    int xend = r->x + r->width - 1;
+    int i;
 
-	int rstart = COLOR_RED(start);
-	int gstart = COLOR_GREEN(start);
-	int bstart = COLOR_BLUE(start);
-	int rdiff = COLOR_RED(end) - rstart;
-	int gdiff = COLOR_GREEN(end) - gstart;
-	int bdiff = COLOR_BLUE(end) - bstart;
+    int rstart = COLOR_RED(start);
+    int gstart = COLOR_GREEN(start);
+    int bstart = COLOR_BLUE(start);
+    int rdiff = COLOR_RED(end) - rstart;
+    int gdiff = COLOR_GREEN(end) - gstart;
+    int bdiff = COLOR_BLUE(end) - bstart;
 
-	if (r->height <= 0)
+    if (r->height <= 0)
 return;
 
-	for (i = 0; i < r->height; i++)
-		GDrawDrawLine(gw, r->x, r->y + i, xend, r->y + i, COLOR_CREATE(
-			rstart + rdiff * i / r->height,
-			gstart + gdiff * i / r->height,
-			bstart + bdiff * i / r->height ));
+    for (i = 0; i < r->height; i++)
+	GDrawDrawLine(gw, r->x, r->y + i, xend, r->y + i, COLOR_CREATE(
+		rstart + rdiff * i / r->height,
+		gstart + gdiff * i / r->height,
+		bstart + bdiff * i / r->height ));
 }
 
 static void BoxGradientElipse(GWindow gw, GRect *r, Color start, Color end)
 {
-	/*
-	 * Ellipse borders are 1 unit wider and 1 unit higher than the passed GRect.
-	 * With corrected values the gradient-fill will fit its corresponding border.
-	 */
-	int correctedwidth = r->width + 1;
-	int correctedheight = r->height + 1;
+    /*
+     * Ellipse borders are 1 unit wider and 1 unit higher than the passed GRect.
+     * With corrected values the gradient-fill will fit its corresponding border.
+     */
+    int correctedwidth = r->width + 1;
+    int correctedheight = r->height + 1;
 
-	int xend = r->x + correctedwidth - 1;
-	int yend = r->y + correctedheight - 1;
-	int i, xoff;
+    int xend = r->x + correctedwidth - 1;
+    int yend = r->y + correctedheight - 1;
+    int i, xoff;
 
-	double a = (double)correctedwidth / 2.0;
-	double b = (double)correctedheight / 2.0;
-	double precalc = (a * a) / (b * b);
+    double a = (double)correctedwidth / 2.0;
+    double b = (double)correctedheight / 2.0;
+    double precalc = (a * a) / (b * b);
 
-	int rstart = COLOR_RED(start);
-	int gstart = COLOR_GREEN(start);
-	int bstart = COLOR_BLUE(start);
-	int rdiff = COLOR_RED(end) - rstart;
-	int gdiff = COLOR_GREEN(end) - gstart;
-	int bdiff = COLOR_BLUE(end) - bstart;
+    int rstart = COLOR_RED(start);
+    int gstart = COLOR_GREEN(start);
+    int bstart = COLOR_BLUE(start);
+    int rdiff = COLOR_RED(end) - rstart;
+    int gdiff = COLOR_GREEN(end) - gstart;
+    int bdiff = COLOR_BLUE(end) - bstart;
 
-	if (correctedheight <= 0)
+    if (correctedheight <= 0)
 return;
 
-    for (i = 0; i < (correctedheight + 1) / 2; ++i)
-	{
-		xoff = lrint(a - sqrt(precalc * (double)(i * (correctedheight - i)) ));
+    for (i = 0; i < (correctedheight + 1) / 2; ++i) {
+	xoff = lrint(a - sqrt(precalc * (double)(i * (correctedheight - i)) ));
 
-		GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, COLOR_CREATE(
-			rstart + rdiff * i / correctedheight,
-			gstart + gdiff * i / correctedheight,
-			bstart + bdiff * i / correctedheight ));
+	GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, COLOR_CREATE(
+		rstart + rdiff * i / correctedheight,
+		gstart + gdiff * i / correctedheight,
+		bstart + bdiff * i / correctedheight ));
 
-		GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, COLOR_CREATE(
-			rstart + rdiff * (correctedheight - i) / correctedheight,
-			gstart + gdiff * (correctedheight - i) / correctedheight,
-			bstart + bdiff * (correctedheight - i) / correctedheight ));
-	}
+	GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, COLOR_CREATE(
+		rstart + rdiff * (correctedheight - i) / correctedheight,
+		gstart + gdiff * (correctedheight - i) / correctedheight,
+		bstart + bdiff * (correctedheight - i) / correctedheight ));
+    }
 }
 
 static void BoxGradientRoundRect(GWindow gw, GRect *r, int rr, Color start, Color end)
 {
-	int radius = rr <= (r->height+1)/2 ? (rr > 0 ? rr : 0) : (r->height+1)/2;
-	int xend = r->x + r->width - 1;
-	int yend = r->y + r->height - 1;
-	int precalc = radius * 2 - 1;
-	int i, xoff;
+    int radius = rr <= (r->height+1)/2 ? (rr > 0 ? rr : 0) : (r->height+1)/2;
+    int xend = r->x + r->width - 1;
+    int yend = r->y + r->height - 1;
+    int precalc = radius * 2 - 1;
+    int i, xoff;
 
-	int rstart = COLOR_RED(start);
-	int gstart = COLOR_GREEN(start);
-	int bstart = COLOR_BLUE(start);
-	int rdiff = COLOR_RED(end) - rstart;
-	int gdiff = COLOR_GREEN(end) - gstart;
-	int bdiff = COLOR_BLUE(end) - bstart;
-
-    if (r->height <= 0)
-return;
-
-    for (i = 0; i < radius; i++)
-	{
-		xoff = radius - lrint(sqrt( (double)(i * (precalc - i)) ));
-
-		GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, COLOR_CREATE(
-			rstart + rdiff * i / r->height,
-			gstart + gdiff * i / r->height,
-			bstart + bdiff * i / r->height ));
-
-		GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, COLOR_CREATE(
-			rstart + rdiff * (r->height - i) / r->height,
-			gstart + gdiff * (r->height - i) / r->height,
-			bstart + bdiff * (r->height - i) / r->height ));
-	}
-
-	for (i = radius; i < r->height - radius; i++)
-		GDrawDrawLine(gw, r->x, r->y + i, xend, r->y + i, COLOR_CREATE(
-			rstart + rdiff * i / r->height,
-			gstart + gdiff * i / r->height,
-			bstart + bdiff * i / r->height ));
-}
-
-static void BoxFillRoundRect(GWindow gw, GRect *r, int rr, Color color)
-{
-	int radius = rr <= (r->height+1)/2 ? (rr > 0 ? rr : 0) : (r->height+1)/2;
-	int xend = r->x + r->width - 1;
-	int yend = r->y + r->height - 1;
-	int precalc = radius * 2 - 1;
-	int i, xoff;
-
-	GRect middle = {r->x, r->y + radius, r->width, r->height - 2 * radius};
+    int rstart = COLOR_RED(start);
+    int gstart = COLOR_GREEN(start);
+    int bstart = COLOR_BLUE(start);
+    int rdiff = COLOR_RED(end) - rstart;
+    int gdiff = COLOR_GREEN(end) - gstart;
+    int bdiff = COLOR_BLUE(end) - bstart;
 
     if (r->height <= 0)
 return;
 
-    for (i = 0; i < radius; i++)
-	{
-		xoff = radius - lrint(sqrt( (double)(i * (precalc - i)) ));
-		GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, color);
-		GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, color);
-	}
+    for (i = 0; i < radius; i++) {
+	xoff = radius - lrint(sqrt( (double)(i * (precalc - i)) ));
 
-	GDrawFillRect(gw, &middle, color);
+	GDrawDrawLine(gw, r->x + xoff, r->y + i, xend - xoff, r->y + i, COLOR_CREATE(
+		rstart + rdiff * i / r->height,
+		gstart + gdiff * i / r->height,
+		bstart + bdiff * i / r->height ));
+
+	GDrawDrawLine(gw, r->x + xoff, yend - i, xend - xoff, yend - i, COLOR_CREATE(
+		rstart + rdiff * (r->height - i) / r->height,
+		gstart + gdiff * (r->height - i) / r->height,
+		bstart + bdiff * (r->height - i) / r->height ));
+    }
+
+    for (i = radius; i < r->height - radius; i++)
+	GDrawDrawLine(gw, r->x, r->y + i, xend, r->y + i, COLOR_CREATE(
+		rstart + rdiff * i / r->height,
+		gstart + gdiff * i / r->height,
+		bstart + bdiff * i / r->height ));
 }
 
 void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
@@ -1144,7 +1121,7 @@ void GBoxDrawBackground(GWindow gw,GRect *pos,GBox *design,
 	    if ( design->flags & box_gradient_bg )
 		BoxGradientRoundRect(gw,pos,rr,ibg,design->gradient_bg_end);
 	    else
-		BoxFillRoundRect(gw,pos,rr,ibg);
+		GDrawFillRoundRect(gw,pos,rr,ibg);
 	}
     }
     if ( state == gs_disabled )
@@ -1187,7 +1164,7 @@ static void GBoxDrawTabBackground(GWindow pixmap, GRect *rect, int radius, Color
     GDrawSetLineWidth(pixmap,1);
     r.height*=2;
     if (2*radius>=r.height) r.height=2*radius+1;
-    BoxFillRoundRect(pixmap, &r, radius, color);
+    GDrawFillRoundRect(pixmap, &r, radius, color);
     GDrawPopClip(pixmap,&older);
 }
 
@@ -1246,7 +1223,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
     if ( design->flags & (box_foreground_border_outer|box_foreground_shadow_outer) ) {
 	GDrawSetLineWidth(pixmap,scale);
 	if ( design->flags&box_foreground_border_outer )
-	    DrawRoundTab(pixmap,&r,scale/2,rr,color_outer,color_outer,color_outer,color_outer);
+	    DrawRoundTab(pixmap,&r,scale/2,rr,color_outer,color_outer,color_outer,color_outer,active);
 	else
 	    GDrawDrawLine(pixmap,r.x+r.width-1,r.y+rr,r.x+r.width-1,r.y+r.height-1,fg);
 	inset += scale;
@@ -1263,7 +1240,7 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
       case bt_box: case bt_raised: case bt_lowered:
 	if ( !(bw&1) ) --bw;
 	GDrawSetLineWidth(pixmap,bw);
-	DrawRoundTab(pixmap,&r,inset+bw/2,rr,cols[0],cols[1],cols[2],cols[3]);
+	DrawRoundTab(pixmap,&r,inset+bw/2,rr,cols[0],cols[1],cols[2],cols[3],active);
       break;
       case bt_engraved: case bt_embossed:
 	bw &= ~1;
@@ -1272,8 +1249,8 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 	if ( bw<=0 )
 	    bw = 2;
 	GDrawSetLineWidth(pixmap,bw/2);
-	DrawRoundTab(pixmap,&r,inset+bw/4,rr,cols[0],cols[1],cols[2],cols[3]);
-	DrawRoundTab(pixmap,&r,inset+bw/2+bw/4,rr,cols[2],cols[3],cols[0],cols[1]);
+	DrawRoundTab(pixmap,&r,inset+bw/4,rr,cols[0],cols[1],cols[2],cols[3],active);
+	DrawRoundTab(pixmap,&r,inset+bw/2+bw/4,rr,cols[2],cols[3],cols[0],cols[1],active);
       break;
       case bt_double: {
 	int width = (bw+1)/3;
@@ -1284,15 +1261,15 @@ void GBoxDrawTabOutline(GWindow pixmap, GGadget *g, int x, int y,
 		--width;
 	}
 	GDrawSetLineWidth(pixmap,width);
-	DrawRoundTab(pixmap,&r,inset+width/2,rr,cols[0],cols[1],cols[2],cols[3]);
-	DrawRoundTab(pixmap,&r,inset+bw-(width+1)/2,rr,cols[0],cols[1],cols[2],cols[3]);
+	DrawRoundTab(pixmap,&r,inset+width/2,rr,cols[0],cols[1],cols[2],cols[3],active);
+	DrawRoundTab(pixmap,&r,inset+bw-(width+1)/2,rr,cols[0],cols[1],cols[2],cols[3],active);
       } break;
     }
     inset += bw;
 
     if ( (design->flags & box_foreground_border_inner) ) {
 	GDrawSetLineWidth(pixmap,scale);
-	DrawRoundTab(pixmap,&r,inset+scale/2,rr,color_inner,color_inner,color_inner,color_inner);
+	DrawRoundTab(pixmap,&r,inset+scale/2,rr,color_inner,color_inner,color_inner,color_inner,active);
 	inset += scale;
     }
 }

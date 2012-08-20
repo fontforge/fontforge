@@ -315,12 +315,9 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
 	    } else if ( (GDrawHasCairo(pixmap)&gc_alpha) && base.image_type==it_index ) {
-		Color oldfg = base.clut->clut[base.clut->clut_len-1];
-		base.clut->clut[base.clut->clut_len-1] = fvselfgcol;
 		GDrawDrawGlyph(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
-		base.clut->clut[base.clut->clut_len-1] = oldfg;
 	    } else
 		GDrawDrawImage(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-base.width)/2,
@@ -1447,7 +1444,6 @@ return;
     PasteIntoFV((FontViewBase *) fv,true,NULL);
 }
 
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
 static void FVMenuPasteAfter(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int pos = FVAnyCharSelected(fv);
@@ -1455,7 +1451,6 @@ static void FVMenuPasteAfter(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
 return;
     PasteIntoFV(&fv->b,2,NULL);
 }
-#endif
 
 static void FVMenuSameGlyphAs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -3993,11 +3988,9 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_Paste: case MID_PasteInto:
 	    mi->ti.disabled = not_pasteable;
 	  break;
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
 	  case MID_PasteAfter:
 	    mi->ti.disabled = not_pasteable || pos<0;
 	  break;
-#endif
 	  case MID_SameGlyphAs:
 	    mi->ti.disabled = not_pasteable || base==NULL || fv->b.cidmaster!=NULL ||
 		    base_enc==-1 ||
@@ -4409,9 +4402,7 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("Copy RBearin_g"), (GImage *) "editcopyrbearing.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'g' }, H_("Copy RBearing|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
     { { (unichar_t *) N_("_Paste"), (GImage *) "editpaste.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Paste|Ctl+V"), NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) N_("Paste Into"), (GImage *) "editpasteinto.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste Into|Ctl+Shft+V"), NULL, NULL, FVMenuPasteInto, MID_PasteInto },
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
     { { (unichar_t *) N_("Paste After"), (GImage *) "editpasteafter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste After|Alt+Ctl+Shft+V"), NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
-#endif
     { { (unichar_t *) N_("Sa_me Glyph As"), (GImage *) "editsameas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'm' }, H_("Same Glyph As|No Shortcut"), NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
     { { (unichar_t *) N_("C_lear"), (GImage *) "editclear.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Clear|No Shortcut"), NULL, NULL, FVMenuClear, MID_Clear },
     { { (unichar_t *) N_("Clear _Background"), (GImage *) "editclearback.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Clear Background|No Shortcut"), NULL, NULL, FVMenuClearBackground, MID_ClearBackground },

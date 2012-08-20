@@ -678,6 +678,11 @@ static void PSDrawFillRect(GWindow w, GRect *rct,Color col) {
     ps->pnt_cnt = 0;
 }
 
+static void PSDrawFillRoundRect(GWindow w, GRect *rct,int UNUSED(radius),Color col) {
+    fprintf( stderr, "DrawFillRoundRect not implemented for postscript\n" );
+return NULL;
+}
+
 static void PSDrawClear(GWindow w,GRect *rect) {
     GPSWindow ps = (GPSWindow ) w;
     if ( rect==NULL )
@@ -1398,6 +1403,7 @@ static struct displayfuncs psfuncs = {
     PSDrawDrawArrowLine,
     PSDrawDrawRect,
     PSDrawFillRect,
+    PSDrawFillRoundRect,
     PSDrawDrawCircle,
     PSDrawFillCircle,
     PSDrawDrawArc,

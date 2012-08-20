@@ -333,11 +333,7 @@ void ShowAboutScreen(void) {
 	gtk_widget_show(notices);
     version = lookup_widget(splashw,"Version");
     if ( version!=NULL ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	sprintf( buffer, "Version: %s (%s-ML)", source_modtime_str, source_version_str);
-#else
-	sprintf( buffer, "Version: %s (%s)", source_modtime_str, source_version_str);
-#endif
 	gtk_label_set_text(GTK_LABEL( version ),buffer);
     }
     version = lookup_widget(splashw,"LibVersion");
@@ -528,13 +524,8 @@ int main( int argc, char **argv ) {
     gchar *home_dir, *rc_path;
     struct argcontext args;
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s-ML.\n",
 	    source_modtime_str );
-#else
-    fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s.\n",
-	    source_modtime_str );
-#endif
     fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
     gtk_set_locale ();
@@ -678,18 +669,8 @@ struct library_version_configuration exe_library_version_configuration = {
     sizeof(struct fontviewbase),
     sizeof(struct charviewbase),
     sizeof(struct cvcontainer),
-
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     1,
-#else
-    0,
-#endif
-
-#ifdef FONTFORGE_CONFIG_TYPE3
     1,
-#else
-    0,
-#endif
 
 #ifdef _NO_PYTHON
     0,

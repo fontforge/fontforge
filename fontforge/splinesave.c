@@ -325,9 +325,7 @@ void RefCharsFreeRef(RefChar *ref) {
     while ( ref!=NULL ) {
 	rnext = ref->next;
 	/* don't free the splines */
-#ifdef FONTFORGE_CONFIG_TYPE3
 	free(ref->layers);
-#endif
 	chunkfree(ref,sizeof(RefChar));
 	ref = rnext;
     }

@@ -646,7 +646,6 @@ return( sf );
 
 RefChar *RefCharCreate(void) {
     RefChar *ref = chunkalloc(sizeof(RefChar));
-#ifdef FONTFORGE_CONFIG_TYPE3
     ref->layers = gcalloc(1,sizeof(struct reflayer));
     ref->layers[0].fill_brush.opacity = ref->layers[0].stroke_pen.brush.opacity = 1.0;
     ref->layers[0].fill_brush.col = ref->layers[0].stroke_pen.brush.col = COLOR_INHERITED;
@@ -654,7 +653,6 @@ RefChar *RefCharCreate(void) {
     ref->layers[0].stroke_pen.linecap = lc_inherited;
     ref->layers[0].stroke_pen.linejoin = lj_inherited;
     ref->layers[0].dofill = true;
-#endif
     ref->layer_cnt = 1;
 return( ref );
 }
@@ -669,7 +667,6 @@ void chunkfree(void *item,int size) {
 
 void LayerDefault(Layer *layer) {
     memset(layer,0,sizeof(Layer));
-#ifdef FONTFORGE_CONFIG_TYPE3
     layer->fill_brush.opacity = layer->stroke_pen.brush.opacity = 1.0;
     layer->fill_brush.col = layer->stroke_pen.brush.col = COLOR_INHERITED;
     layer->stroke_pen.width = WIDTH_INHERITED;
@@ -679,7 +676,6 @@ void LayerDefault(Layer *layer) {
     layer->fillfirst = true;
     layer->stroke_pen.trans[0] = layer->stroke_pen.trans[3] = 1.0;
     layer->stroke_pen.trans[1] = layer->stroke_pen.trans[2] = 0.0;
-#endif
 }
 
 SplineChar *SplineCharCreate(int layer_cnt) {
@@ -1029,18 +1025,14 @@ void AnchorPointsFree(AnchorPoint *ap) {
     AnchorPoint *anext;
     for ( ; ap!=NULL; ap = anext ) {
 	anext = ap->next;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	free(ap->xadjust.corrections);
 	free(ap->yadjust.corrections);
-#endif
 	chunkfree(ap,sizeof(AnchorPoint));
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 void SFSplinesFromLayers(SplineFont *sf,int flag) {
 }
-#endif
 
 void AltUniFigure(SplineFont *sf,EncMap *map,int check_dups) {
 }

@@ -131,11 +131,13 @@ static void (*_cairo_clip)(cairo_t *);
 static void (*_cairo_save)(cairo_t *);
 static void (*_cairo_restore)(cairo_t *);
 static void (*_cairo_new_path)(cairo_t *);
+static void (*_cairo_new_sub_path)(cairo_t *);
 static void (*_cairo_close_path)(cairo_t *);
 static void (*_cairo_move_to)(cairo_t *,double,double);
 static void (*_cairo_line_to)(cairo_t *,double,double);
 static void (*_cairo_curve_to)(cairo_t *,double,double,double,double,double,double);
 static void (*_cairo_rectangle)(cairo_t *,double,double,double,double);
+static void (*_cairo_arc)(cairo_t *,double,double,double,double,double);
 static void (*_cairo_scaled_font_extents)(cairo_scaled_font_t *,cairo_font_extents_t *);
 static void (*_cairo_scaled_font_text_extents)(cairo_scaled_font_t *,const char *,cairo_text_extents_t *);
 static void (*_cairo_set_scaled_font)(cairo_t *,const cairo_scaled_font_t *);
@@ -160,6 +162,7 @@ static void (*_cairo_push_group)(cairo_t *);
 static void (*_cairo_pop_group_to_source)(cairo_t *);
 static cairo_surface_t *(*_cairo_get_group_target)(cairo_t *);
 static void (*_cairo_paint)(cairo_t *);
+static void (*_cairo_set_fill_rule)(cairo_t *cr, cairo_fill_rule_t fill_rule);
 
 static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
 static FcPattern *(*_FcPatternCreate)(void);
@@ -263,6 +266,8 @@ return( 0 );
 	    dlsym(libcairo,"cairo_set_source_rgba");
     _cairo_new_path = (void (*)(cairo_t *))
 	    dlsym(libcairo,"cairo_new_path");
+    _cairo_new_sub_path = (void (*)(cairo_t *))
+	    dlsym(libcairo,"cairo_new_sub_path");
     _cairo_move_to = (void (*)(cairo_t *,double,double))
 	    dlsym(libcairo,"cairo_move_to");
     _cairo_line_to = (void (*)(cairo_t *,double,double))
@@ -271,6 +276,8 @@ return( 0 );
 	    dlsym(libcairo,"cairo_curve_to");
     _cairo_rectangle = (void (*)(cairo_t *,double,double,double,double))
 	    dlsym(libcairo,"cairo_rectangle");
+    _cairo_arc = (void (*)(cairo_t *,double,double,double,double,double))
+	    dlsym(libcairo,"cairo_arc");
     _cairo_close_path = (void (*)(cairo_t *))
 	    dlsym(libcairo,"cairo_close_path");
     _cairo_stroke = (void (*)(cairo_t *))
@@ -333,6 +340,8 @@ return( 0 );
 	    dlsym(libcairo,"cairo_get_group_target");
     _cairo_paint = (void (*)(cairo_t *))
 	    dlsym(libcairo,"cairo_paint");
+    _cairo_set_fill_rule = (void (*)(cairo_t *, cairo_fill_rule_t))
+	    dlsym(libcairo,"cairo_set_fill_rule");
 
 /* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
     if ( _cairo_format_stride_for_width==NULL )
@@ -363,10 +372,12 @@ return( true );
 #  define _cairo_set_dash cairo_set_dash
 #  define _cairo_set_source_rgba cairo_set_source_rgba
 #  define _cairo_new_path cairo_new_path
+#  define _cairo_new_sub_path cairo_new_sub_path
 #  define _cairo_move_to cairo_move_to
 #  define _cairo_line_to cairo_line_to
 #  define _cairo_curve_to cairo_curve_to
 #  define _cairo_rectangle cairo_rectangle
+#  define _cairo_arc cairo_arc
 #  define _cairo_close_path cairo_close_path
 #  define _cairo_stroke cairo_stroke
 #  define _cairo_fill cairo_fill
@@ -402,6 +413,7 @@ return( true );
 #  define _cairo_pop_group_to_source cairo_pop_group_to_source
 #  define _cairo_get_group_target cairo_get_group_target
 #  define _cairo_paint cairo_paint
+#  define _cairo_set_fill_rule cairo_set_fill_rule
 
 #  define _FcCharSetHasChar    FcCharSetHasChar     
 #  define _FcPatternDestroy    FcPatternDestroy   
@@ -627,6 +639,21 @@ void _GXCDraw_FillRect(GXWindow gw, GRect *rect) {
     _cairo_fill(gw->cc);
 }
 
+void _GXCDraw_FillRoundRect(GXWindow gw, GRect *rect, int radius) {
+    double degrees = M_PI / 180.0;
+
+    GXCDrawSetcolfunc(gw,gw->ggc);
+
+    _cairo_new_path(gw->cc);
+    _cairo_arc(gw->cc, rect->x + rect->width - radius, rect->y + radius, radius, -90 * degrees, 0 * degrees);
+    _cairo_arc(gw->cc, rect->x + rect->width - radius, rect->y + rect->height - radius, radius, 0 * degrees, 90 * degrees);
+    _cairo_arc(gw->cc, rect->x + radius, rect->y + rect->height - radius, radius, 90 * degrees, 180 * degrees);
+    _cairo_arc(gw->cc, rect->x + radius, rect->y + radius, radius, 180 * degrees, 270 * degrees);
+    _cairo_close_path(gw->cc);
+    _cairo_fill(gw->cc);
+
+}
+
 static void GXCDraw_EllipsePath(cairo_t *cc,double cx,double cy,double width,double height) {
     _cairo_new_path(cc);
     _cairo_move_to(cc,cx,cy+height);
@@ -719,6 +746,15 @@ void _GXCDraw_FillPoly(GXWindow gw, GPoint *pts, int16 cnt) {
 /* ************************************************************************** */
 void _GXCDraw_PathStartNew(GWindow w) {
     _cairo_new_path( ((GXWindow) w)->cc );
+}
+
+void _GXCDraw_PathStartSubNew(GWindow w) {
+    _cairo_new_sub_path( ((GXWindow) w)->cc );
+}
+
+int _GXCDraw_FillRuleSetWinding(GWindow w) {
+    _cairo_set_fill_rule(((GXWindow) w)->cc,CAIRO_FILL_RULE_WINDING);
+    return 1;
 }
 
 void _GXCDraw_PathClose(GWindow w) {

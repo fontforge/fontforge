@@ -173,6 +173,9 @@ typedef struct charview {
     GFont *small, *normal;
     GWindow icon;
     GWindow ruler_w;
+    int num_ruler_intersections;
+    int allocated_ruler_intersections;
+    BasePoint *ruler_intersections;
     GFont *rfont;
     GTimer *pressed;
     GWindow backimgs;
@@ -202,6 +205,7 @@ typedef struct charview {
     int8 b1_tool_old;				/* Used by mingw port */
     int8 s1_tool, s2_tool, er_tool;		/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    int8 spacebar_hold;				/* spacebar is held down */
     SplinePointList *active_spl;
     SplinePoint *active_sp;
     spiro_cp *active_cp;
@@ -505,8 +509,6 @@ extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
 extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
-# ifdef FONTFORGE_CONFIG_TYPE3
-
 typedef struct gradientdlg {
     struct cvcontainer base;
     FontView dummy_fv;
@@ -531,7 +533,6 @@ typedef struct gradientdlg {
     struct gradient *active;
 } GradientDlg;
 extern void GDDCharViewInits(GradientDlg *gdd,int cid);
-#endif		/* Type3 */
 
 typedef struct strokedlg {
     struct cvcontainer base;
@@ -767,11 +768,9 @@ extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern char *DevTab_Dlg(GGadget *g, int r, int c);
 extern int DeviceTableOK(char *dvstr, int *_low, int *_high);
 extern void VRDevTabParse(struct vr *vr,struct matrix_data *md);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
 extern void DevTabToString(char **str,DeviceTable *adjust);
 extern void ValDevTabToStrings(struct matrix_data *mds,int first_offset,ValDevTab *adjust);
-#endif
 extern void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i);
 extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);
@@ -786,6 +785,9 @@ extern void SFPrivateInfo(SplineFont *sf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
+enum outlinesfm_flags { sfm_stroke=0x1, sfm_fill=0x2, sfm_nothing=0x4 };
+extern void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *set,
+	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
 extern GWindow CVMakeTools(CharView *cv);

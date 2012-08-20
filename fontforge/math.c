@@ -69,18 +69,14 @@ static struct col_init exten_shape_ci[] = {
 static struct col_init italic_cor_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_int, NULL, NULL, NULL, N_("Italic Correction") },
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
-#endif
     COL_INIT_EMPTY
 };
 
 static struct col_init top_accent_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_int, NULL, NULL, NULL, N_("Top Accent Horiz. Pos") },
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
-#endif
     COL_INIT_EMPTY
 };
 
@@ -94,9 +90,7 @@ static struct col_init glyph_construction_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
 /* GT: Italic correction */
     { me_int, NULL, NULL, NULL, N_("I.C.") },
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
-#endif
     { me_funcedit, GlyphConstruction_Dlg, NULL, NULL, N_("Parts List") },
     COL_INIT_EMPTY
 };
@@ -134,10 +128,8 @@ static struct matrixinit mi_extensionpart =
 static struct col_init mathkern[] = {
     { me_int , NULL, NULL, NULL, N_("Height") },
     { me_int, NULL, NULL, NULL, N_("Kern") },
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Height Adjusts") },
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Kern Adjusts") },
-#endif
     COL_INIT_EMPTY
 };
 static struct matrixinit mi_mathkern =
@@ -372,7 +364,6 @@ static void MATH_Init(MathDlg *math) {
 
 	sprintf( buffer, "%d", *pos );
 	GGadgetSetTitle8(tf,buffer);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( math_constants_descriptor[i].devtab_offset >= 0 ) {
 	    GGadget *tf2 = GWidgetGetControl(math->gw,2*i+2);
 	    DeviceTable **devtab = (DeviceTable **) (((char *) (math->math)) + math_constants_descriptor[i].devtab_offset );
@@ -383,7 +374,6 @@ static void MATH_Init(MathDlg *math) {
 		GGadgetSetTitle8(tf2,str);
 	    free(str);
 	}
-#endif
     }
 
     /* Extension Shapes */
@@ -413,16 +403,12 @@ static void MATH_Init(MathDlg *math) {
 	    if ( ta==0 && sc->italic_correction!=TEX_UNDEF ) {
 		mds[cols*cnt+0].u.md_str = copy(sc->name);
 		mds[cols*cnt+1].u.md_ival = sc->italic_correction;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		DevTabToString(&mds[cols*cnt+2].u.md_str,sc->italic_adjusts);
-#endif
 		++cnt;
 	    } else if ( ta==1 &&sc->top_accent_horiz!=TEX_UNDEF ) {
 		mds[cols*cnt+0].u.md_str = copy(sc->name);
 		mds[cols*cnt+1].u.md_ival = sc->top_accent_horiz;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		DevTabToString(&mds[cols*cnt+2].u.md_str,sc->top_accent_adjusts);
-#endif
 		++cnt;
 	    }
 	}
@@ -475,9 +461,7 @@ static void MATH_Init(MathDlg *math) {
 	    if ( gv!=NULL && gv->part_cnt!=0 ) {
 		mds[cols*cnt+0].u.md_str = copy(sc->name);
 		mds[cols*cnt+1].u.md_ival = gv->italic_correction;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		DevTabToString(&mds[cols*cnt+2].u.md_str,gv->italic_adjusts);
-#endif
 		mds[cols*cnt+cols-1].u.md_str = GV_ToString(gv);
 		++cnt;
 	    }
@@ -879,9 +863,7 @@ static int MATH_OK(GGadget *g, GEvent *e) {
 	MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
 	int err=false;
 	int cid,i;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	int high,low;
-#endif
 	SplineFont *sf = math->sf;
 	SplineChar *sc;
 
@@ -890,7 +872,6 @@ static int MATH_OK(GGadget *g, GEvent *e) {
 	    GetInt8(math->gw,2*i+1,math_constants_descriptor[i].ui_name,&err);
 	    if ( err )
 return( true );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( math_constants_descriptor[i].devtab_offset >= 0 ) {
 		GGadget *tf2 = GWidgetGetControl(math->gw,2*i+2);
 		char *str = GGadgetGetTitle8(tf2);
@@ -902,7 +883,6 @@ return( true );
 		}
 		free(str);
 	    }
-#endif
 	}
 	/* Now check that the various glyph lists are parseable */
 	for ( cid=CID_Exten; cid<=CID_HGlyphConst; ++cid ) {
@@ -915,7 +895,6 @@ return( true );
 			    old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
 return( true );
 		}
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		if ( cid==CID_Italic || cid==CID_TopAccent ||
 			cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
 		    if ( !DeviceTableOK(old[i*cols+2].u.md_str,&low,&high)) {
@@ -924,7 +903,6 @@ return( true );
 return( true );
 		    }
 		}
-#endif
 		if ( cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
 		    if ( GV_StringCheck(sf,old[i*cols+cols-1].u.md_str)==-1 ) {
 			ff_post_error(_("Bad Parts List"), _("Bad parts list for glyph %s in %s"),
@@ -949,7 +927,6 @@ return( true );
 	    int16 *pos = (int16 *) (((char *) (math->math)) + math_constants_descriptor[i].offset );
 	    *pos = GetInt8(math->gw,2*i+1,math_constants_descriptor[i].ui_name,&err);
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( math_constants_descriptor[i].devtab_offset >= 0 ) {
 		GGadget *tf2 = GWidgetGetControl(math->gw,2*i+2);
 		char *str = GGadgetGetTitle8(tf2);
@@ -958,7 +935,6 @@ return( true );
 		*devtab = DeviceTableParse(*devtab,str);
 		free(str);
 	    }
-#endif
 	}
 	sf->MATH = math->math;
 
@@ -970,11 +946,9 @@ return( true );
 	    sc->is_extended_shape = false;
 	    sc->italic_correction = TEX_UNDEF;
 	    sc->top_accent_horiz  = TEX_UNDEF;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    DeviceTableFree(sc->italic_adjusts);
 	    DeviceTableFree(sc->top_accent_adjusts);
 	    sc->italic_adjusts = sc->top_accent_adjusts = NULL;
-#endif
 	    GlyphVariantsFree(sc->vert_variants);
 	    GlyphVariantsFree(sc->horiz_variants);
 	    sc->vert_variants = sc->horiz_variants = NULL;
@@ -991,14 +965,10 @@ return( true );
 		    sc->is_extended_shape = old[i*cols+1].u.md_ival;
 		else if ( cid==CID_Italic ) {
 		    sc->italic_correction = old[i*cols+1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    sc->italic_adjusts = DeviceTableParse(NULL,old[i*cols+2].u.md_str);
-#endif
 		} else if ( cid==CID_TopAccent ) {
 		    sc->top_accent_horiz = old[i*cols+1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    sc->top_accent_adjusts = DeviceTableParse(NULL,old[i*cols+2].u.md_str);
-#endif
 		} else if ( cid==CID_VGlyphVar || cid==CID_HGlyphVar ) {
 		    struct glyphvariants **gvp = cid == CID_VGlyphVar ?
 			    &sc->vert_variants : &sc->horiz_variants;
@@ -1014,9 +984,7 @@ return( true );
 		    *gvp = GV_FromString(*gvp,old[cols*i+cols-1].u.md_str);
 		    if ( *gvp!=NULL && (*gvp)->part_cnt!=0 ) {
 			(*gvp)->italic_correction = old[i*cols+1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			(*gvp)->italic_adjusts = DeviceTableParse(NULL,old[i*cols+2].u.md_str);
-#endif
 		    }
 		}
 	    }
@@ -1124,7 +1092,6 @@ return;
 	gcd[page][row][1].creator = GTextFieldCreate;
 	hvarray[page][row][1] = &gcd[page][row][1];
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( math_constants_descriptor[i].devtab_offset>=0 ) {
 	    gcd[page][row][2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	    gcd[page][row][2].gd.cid = 2*i+2;
@@ -1132,7 +1099,6 @@ return;
 	    gcd[page][row][2].creator = GTextFieldCreate;
 	    hvarray[page][row][2] = &gcd[page][row][2];
 	} else
-#endif
 	    hvarray[page][row][2] = GCD_Glue;
 	hvarray[page][row][3] = NULL;
 
@@ -1512,10 +1478,8 @@ static void MKDFillup(MathKernDlg *mkd, SplineChar *sc) {
 		for ( j=0; j<mkv->cnt; ++j ) {
 		    md[j*cols+0].u.md_ival = mkv->mkd[j].height;
 		    md[j*cols+1].u.md_ival = mkv->mkd[j].kern;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    DevTabToString(&md[j*cols+2].u.md_str,mkv->mkd[j].height_adjusts);
 		    DevTabToString(&md[j*cols+3].u.md_str,mkv->mkd[j].kern_adjusts);
-#endif
 		}
 		GMatrixEditSet(list, md,mkv->cnt,false);
 	    } else
@@ -1609,7 +1573,6 @@ static int MKD_Parse(MathKernDlg *mkd) {
 		if ( !(i&1) ) bases[j]->x -= mkd->cursc->width;
 		if ( !(i&2) ) bases[j]->x -= mkd->cursc->italic_correction==TEX_UNDEF?0:mkd->cursc->italic_correction;
 		bases[j]->y = rint(bases[j]->y);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		/* If we have a previous entry with this height retain the height dv */
 		/* If we have a previous entry with this height and width retain the width dv too */
 		for ( k=j; k<mkv->cnt; ++k )
@@ -1631,24 +1594,20 @@ static int MKD_Parse(MathKernDlg *mkd) {
 		    if ( j!=k )
 			mkv->mkd[k].height_adjusts = mkv->mkd[k].kern_adjusts = NULL;
 		}
-#endif
 		mkv->mkd[j].height = bases[j]->y;
 		mkv->mkd[j].kern   = bases[j]->x;
 	    }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    for ( ; j<mkv->cnt; ++j ) {
 		DeviceTableFree(mkv->mkd[j].height_adjusts);
 		DeviceTableFree(mkv->mkd[j].kern_adjusts);
 		mkv->mkd[j].height_adjusts = mkv->mkd[j].kern_adjusts = NULL;
 	    }
-#endif
 	    mkv->cnt = cnt;
 	    free(bases);
 	    if ( cnt!=0 )
 		allzeroes = false;
 	}
     } else {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	int low, high;
 	/* Parse the textual info */
 	for ( i=0; i<4; ++i ) {
@@ -1665,20 +1624,17 @@ return( false );
 		}
 	    }
 	}
-#endif
 	for ( i=0; i<4; ++i ) {
 	    struct mathkernvertex *mkv = &(&mkd->cursc->mathkern->top_right)[i];
 	    GGadget *list = GWidgetGetControl(mkd->gw,CID_TopRight+i);
 	    int rows, cols = GMatrixEditGetColCnt(list);
 	    struct matrix_data *old = GMatrixEditGet(list,&rows);
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    for ( j=0; j<mkv->cnt; ++j ) {
 		DeviceTableFree(mkv->mkd[j].height_adjusts);
 		DeviceTableFree(mkv->mkd[j].kern_adjusts);
 		mkv->mkd[j].height_adjusts = mkv->mkd[j].kern_adjusts = NULL;
 	    }
-#endif
 	    if ( rows>mkv->cnt ) {
 		mkv->mkd = grealloc(mkv->mkd,rows*sizeof(struct mathkerndata));
 		memset(mkv->mkd+mkv->cnt,0,(rows-mkv->cnt)*sizeof(struct mathkerndata));
@@ -1686,10 +1642,8 @@ return( false );
 	    for ( j=0; j<rows; ++j ) {
 		mkv->mkd[j].height = old[j*cols+0].u.md_ival;
 		mkv->mkd[j].kern   = old[j*cols+1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		mkv->mkd[j].height_adjusts = DeviceTableParse(NULL,old[j*cols+2].u.md_str);
 		mkv->mkd[j].kern_adjusts   = DeviceTableParse(NULL,old[j*cols+3].u.md_str);
-#endif
 	    }
 	    qsort(mkv->mkd,rows,sizeof(struct mathkerndata),mkd_order_height);
 	    mkv->cnt = rows;
@@ -1855,10 +1809,8 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 	msc->parent = &mkd->dummy_sf;
 	msc->layer_cnt = 2;
 	msc->layers = gcalloc(2,sizeof(Layer));
-#ifdef FONTFORGE_CONFIG_TYPE3
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
-#endif
 	mkd->chars[i] = msc;
 
 	mcv->b.sc = msc;

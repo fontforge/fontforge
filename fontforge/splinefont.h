@@ -47,10 +47,7 @@
 #  define ICONV_CONST
 #endif
 
-#if defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
-# define real		long double
-# define bigreal	long double
-#elif defined( FONTFORGE_CONFIG_USE_DOUBLE )
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
 # define bigreal	double
 #else
@@ -58,13 +55,7 @@
 # define bigreal	double
 #endif
 
-#if defined( HAVE_LONG_DOUBLE ) && (defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) || defined( This_does_not_seem_to_make_a_difference ))
-# define extended	long double
-# define CheckExtremaForSingleBitErrors(sp,t,othert)	(t)
-# define EXTENDED_IS_LONG_DOUBLE	1
-#else
-# define extended	double
-#endif
+#define extended	double
 	/* Solaris wants to define extended to be unsigned [3] unless we do this*/
 #define _EXTENDED
 
@@ -506,7 +497,6 @@ typedef struct otlookup {
 #define OTLOOKUP_EMPTY { NULL, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL }
 
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 typedef struct devicetab {
     uint16 first_pixel_size, last_pixel_size;		/* A range of point sizes to which this table applies */
     int8 *corrections;					/* a set of pixel corrections, one for each point size */
@@ -518,7 +508,6 @@ typedef struct valdev {		/* Value records can have four associated device tables
     DeviceTable xadv;
     DeviceTable yadv;
 } ValDevTab;
-#endif
 
 enum anchorclass_type { act_mark, act_mkmk, act_curs, act_mklg };
 typedef struct anchorclass {
@@ -535,9 +524,7 @@ enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark, at_centry, at_
 typedef struct anchorpoint {
     AnchorClass *anchor;
     BasePoint me;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable xadjust, yadjust;
-#endif
     unsigned int type: 4;
     unsigned int selected: 1;
     unsigned int ticked: 1;
@@ -552,9 +539,7 @@ typedef struct kernpair {
     struct splinechar *sc;
     int16 off;
     uint16 kcid;			/* temporary value */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *adjust;		/* Only adjustment in one dimen, if more needed use pst */
-#endif
     struct kernpair *next;
 } KernPair;
 
@@ -566,9 +551,7 @@ typedef struct kernclass {
     struct lookup_subtable *subtable;
     uint16 kcid;			/* Temporary value, used for many things briefly */
     int16 *offsets;			/* array of first_cnt*second_cnt entries */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
-#endif
     struct kernclass *next;
 } KernClass;
 
@@ -590,9 +573,7 @@ enum possub_type { pst_null, pst_position, pst_pair,
 
 struct vr {
     int16 xoff, yoff, h_adv_off, v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     ValDevTab *adjust;
-#endif
 };
 
 typedef struct generic_pst {
@@ -863,13 +844,11 @@ typedef struct undoes {
 	    uint8 *instrs;
 	    int instrs_len;
 	    AnchorPoint *anchor;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    struct brush fill_brush;
 	    struct pen stroke_pen;
 	    unsigned int dofill: 1;
 	    unsigned int dostroke: 1;
 	    unsigned int fillfirst: 1;
-#endif
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
 	int lbearing;	/* used by ut_lbearing */
@@ -1143,13 +1122,11 @@ typedef struct refchar {
 	unsigned int background: 1;
 	unsigned int order2: 1;
 	unsigned int anyflexes: 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	unsigned int dofill: 1;
 	unsigned int dostroke: 1;
 	unsigned int fillfirst: 1;
 	struct brush fill_brush;
 	struct pen stroke_pen;
-#endif
 	SplinePointList *splines;
 	ImageList *images;			/* Only in background or type3 layer(s) */
     } *layers;
@@ -1233,13 +1210,11 @@ typedef struct layer /* : reflayer */{
     unsigned int background: 1;
     unsigned int order2: 1;
     unsigned int anyflexes: 1;
-#ifdef FONTFORGE_CONFIG_TYPE3
     unsigned int dofill: 1;
     unsigned int dostroke: 1;
     unsigned int fillfirst: 1;
     struct brush fill_brush;
     struct pen stroke_pen;
-#endif
     SplinePointList *splines;
     ImageList *images;			/* Only in background or type3 layer(s) */
     RefChar *refs;			/* Only in foreground layer(s) */
@@ -1260,9 +1235,7 @@ struct glyphvariants {
     char *variants;	/* Space separated list of glyph names */
 /* Glyph assembly */
     int16 italic_correction;	/* Of the composed glyph */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *italic_adjusts;
-#endif
     int part_cnt;
     struct gv_part {
 	char *component;
@@ -1281,10 +1254,8 @@ struct mathkernvertex {
 	    /*  is more useful (and that's what I use here). They differ by 1 */
     struct mathkerndata {
 	int16 height,kern;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DeviceTable *height_adjusts;
 	DeviceTable *kern_adjusts;
-#endif
     } *mkd;
 };
 
@@ -1437,10 +1408,8 @@ typedef struct splinechar {
     int16 top_accent_horiz;		/* MATH table allows you to specific a*/
 		/* horizontal anchor for accent attachments, vertical */
 		/* positioning is done elsewhere */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *italic_adjusts;
     DeviceTable *top_accent_adjusts;
-#endif
     struct glyphvariants *vert_variants;
     struct glyphvariants *horiz_variants;
     struct mathkern *mathkern;
@@ -1450,7 +1419,6 @@ typedef struct splinechar {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
-#ifdef FONTFORGE_CONFIG_TYPE3
 	/* If the glyph is used as a tile pattern, then the next two values */
 	/*  determine the amount of white space around the tile. If extra is*/
 	/*  non-zero then we add it to the max components of the bbox and   */
@@ -1459,7 +1427,6 @@ typedef struct splinechar {
 	/*  will be used. */
     real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
-#endif
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1477,7 +1444,6 @@ struct ttflangname {
     struct ttflangname *next;
 };
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 struct MATH {
 /* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
     int16 ScriptPercentScaleDown;
@@ -1590,69 +1556,6 @@ struct MATH {
 /* Global constants from other subtables */
     uint16 MinConnectorOverlap;			/* in the math variants sub-table */
 };
-#else
-struct MATH {
-/* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
-    int16 ScriptPercentScaleDown;
-    int16 ScriptScriptPercentScaleDown;
-    uint16 DelimitedSubFormulaMinHeight;
-    uint16 DisplayOperatorMinHeight;
-    int16 MathLeading;
-    int16 AxisHeight;
-    int16 AccentBaseHeight;
-    int16 FlattenedAccentBaseHeight;
-    int16 SubscriptShiftDown;
-    int16 SubscriptTopMax;
-    int16 SubscriptBaselineDropMin;
-    int16 SuperscriptShiftUp;
-    int16 SuperscriptShiftUpCramped;
-    int16 SuperscriptBottomMin;
-    int16 SuperscriptBaselineDropMax;
-    int16 SubSuperscriptGapMin;
-    int16 SuperscriptBottomMaxWithSubscript;
-    int16 SpaceAfterScript;
-    int16 UpperLimitGapMin;
-    int16 UpperLimitBaselineRiseMin;
-    int16 LowerLimitGapMin;
-    int16 LowerLimitBaselineDropMin;
-    int16 StackTopShiftUp;
-    int16 StackTopDisplayStyleShiftUp;
-    int16 StackBottomShiftDown;
-    int16 StackBottomDisplayStyleShiftDown;
-    int16 StackGapMin;
-    int16 StackDisplayStyleGapMin;
-    int16 StretchStackTopShiftUp;
-    int16 StretchStackBottomShiftDown;
-    int16 StretchStackGapAboveMin;
-    int16 StretchStackGapBelowMin;
-    int16 FractionNumeratorShiftUp;
-    int16 FractionNumeratorDisplayStyleShiftUp;
-    int16 FractionDenominatorShiftDown;
-    int16 FractionDenominatorDisplayStyleShiftDown;
-    int16 FractionNumeratorGapMin;
-    int16 FractionNumeratorDisplayStyleGapMin;
-    int16 FractionRuleThickness;
-    int16 FractionDenominatorGapMin;
-    int16 FractionDenominatorDisplayStyleGapMin;
-    int16 SkewedFractionHorizontalGap;
-    int16 SkewedFractionVerticalGap;
-    int16 OverbarVerticalGap;
-    int16 OverbarRuleThickness;
-    int16 OverbarExtraAscender;
-    int16 UnderbarVerticalGap;
-    int16 UnderbarRuleThickness;
-    int16 UnderbarExtraDescender;
-    int16 RadicalVerticalGap;
-    int16 RadicalDisplayStyleVerticalGap;
-    int16 RadicalRuleThickness;
-    int16 RadicalExtraAscender;
-    int16 RadicalKernBeforeDegree;
-    int16 RadicalKernAfterDegree;
-    uint16 RadicalDegreeBottomRaisePercent;
-/* Global constants from other subtables */
-    uint16 MinConnectorOverlap;			/* in the math variants sub-table */
-};
-#endif
 
 enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
 enum loadvalidation_state {
@@ -2191,13 +2094,11 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern void SCInsertPST(SplineChar *sc,PST *new);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 extern void ValDevFree(ValDevTab *adjust);
 extern ValDevTab *ValDevTabCopy(ValDevTab *orig);
 extern void DeviceTableFree(DeviceTable *adjust);
 extern DeviceTable *DeviceTableCopy(DeviceTable *orig);
 extern void DeviceTableSet(DeviceTable *adjust, int size, int correction);
-#endif
 extern void PSTFree(PST *lig);
 extern uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc );
 extern int PSTContains(const char *components,const char *name);
@@ -2468,12 +2369,7 @@ extern char **AutoTraceArgs(int ask);
 #define CURVATURE_ERROR	-1e9
 extern bigreal SplineCurvature(Spline *s, bigreal t);
 
-#ifndef EXTENDED_IS_LONG_DOUBLE
 extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert);
-#define esqrt(d)	sqrt(d)
-#else
-extern extended esqrt(extended e);
-#endif
 extern int Spline2DFindExtrema(const Spline *sp, extended extrema[4] );
 extern int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] );
 extern int SplineAtInflection(Spline1D *sp, bigreal t );

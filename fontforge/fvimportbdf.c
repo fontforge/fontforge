@@ -2443,7 +2443,6 @@ return( sf );
 }
 
 void SFCheckPSBitmap(SplineFont *sf) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     /* Check to see if this type3 font is actually a bitmap font in disguise */
     /*  (and make sure all bitmaps are the same size */
     /* If so, create a bitmap version of the font too */
@@ -2519,5 +2518,4 @@ return;			/* No images */
 		bdfc->bitmap[j] ^= 0xff;
 	}
     }
-#endif
 }

@@ -638,14 +638,21 @@
   </H3>
   <P>
   <IMG SRC="ruler.png" WIDTH="234" HEIGHT="102" ALIGN="Right">This tool tells
-  you current position of the mouse. If the mouse is near the outline it will
+  you the current position of the mouse. If the mouse is near the outline it will
   give the slope and curvature there. If the mouse is near a point on the outline
   will give the slope and curvature on each side of the point.
   <P>
-  If you depress the button and drag, the tool will show the x-y offsets, distance
-  and angle from the point where you depressed the mouse to the mouse's current
-  location. If you depress the tool at one end point of a spline and move it
-  to the other endpoint then it will also show the length of that spline.
+  If you depress the button and drag, the first line of the tool's pop-up
+  shows the distance, angle and (x-y) offsets from the first point where you depressed 
+  the mouse to the last point, the mouse's current location. The next lines in the pop-up
+  show information about points along the line that intersect splines, including the start and end 
+  points of the line itself.
+  <P>
+  [0] indicates the starting point of the measure line, and the (x-y) co-ordinates 
+  of that point. Initially [1] is the end point; when it intersects with one spline then 
+  [1] becomes the first intersection point and [2] becomes the end point, and so on. 
+  The final number is the length of the section ending at that point; which is also shown 
+  directly on the canvas.
   <P>
   If you hold down the
   <A HREF="charview.html#alt-meta-capslock">Meta/Alt/CapsLock </A>key then
@@ -1068,8 +1075,8 @@
   </H2>
   <P>
   <IMG SRC="charview-multilayer.png" WIDTH="348" HEIGHT="571" ALIGN="Right">If
-  you wish to <A HREF="multilayer.html">edit type3 fonts</A>, and you have
-  configured FontForge correctly, the FontForge can display a glyph broken
+  you wish to <A HREF="multilayer.html">edit type3 fonts</A>,
+  FontForge can display a glyph broken
   down into a series of strokes and fills and allow you to edit each one.
   <P>
   <P ALIGN=Center>
