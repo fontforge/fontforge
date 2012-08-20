@@ -134,8 +134,6 @@
 /*  can be a problem with large (CJK, UNICODE) fonts.                         */
 /*									      */
 #define FONTFORGE_CONFIG_USE_DOUBLE
-/* #define FONTFORGE_CONFIG_USE_LONGDOUBLE				      */
-/*									      */
 
 
 /* In addition to placing snippets of charstrings into subrs, I tried adding  */

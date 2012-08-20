@@ -600,7 +600,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
-#if !defined(FONTFORGE_CONFIG_USE_DOUBLE) && !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE)
+#ifndef FONTFORGE_CONFIG_USE_DOUBLE
 	    if ( first==NULL )
 		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
 	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */

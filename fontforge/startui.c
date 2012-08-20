@@ -530,9 +530,7 @@ static void SplashLayout() {
 #ifdef _NO_PYTHON
     uc_strcat(pt,"-NoPython");
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-    uc_strcat(pt,"-LD");
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
 #endif
     uc_strcat(pt,")");
@@ -1102,9 +1100,7 @@ int main( int argc, char **argv ) {
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-	    "-LD"
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
 #endif
 	    ".\n",

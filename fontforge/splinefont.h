@@ -47,10 +47,7 @@
 #  define ICONV_CONST
 #endif
 
-#if defined( FONTFORGE_CONFIG_USE_LONGDOUBLE )
-# define real		long double
-# define bigreal	long double
-#elif defined( FONTFORGE_CONFIG_USE_DOUBLE )
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 # define real		double
 # define bigreal	double
 #else
@@ -58,13 +55,7 @@
 # define bigreal	double
 #endif
 
-#if defined( HAVE_LONG_DOUBLE ) && (defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) || defined( This_does_not_seem_to_make_a_difference ))
-# define extended	long double
-# define CheckExtremaForSingleBitErrors(sp,t,othert)	(t)
-# define EXTENDED_IS_LONG_DOUBLE	1
-#else
-# define extended	double
-#endif
+#define extended	double
 	/* Solaris wants to define extended to be unsigned [3] unless we do this*/
 #define _EXTENDED
 
@@ -2386,12 +2377,7 @@ extern char **AutoTraceArgs(int ask);
 #define CURVATURE_ERROR	-1e9
 extern bigreal SplineCurvature(Spline *s, bigreal t);
 
-#ifndef EXTENDED_IS_LONG_DOUBLE
 extern double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert);
-#define esqrt(d)	sqrt(d)
-#else
-extern extended esqrt(extended e);
-#endif
 extern int Spline2DFindExtrema(const Spline *sp, extended extrema[4] );
 extern int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] );
 extern int SplineAtInflection(Spline1D *sp, bigreal t );

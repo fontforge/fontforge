@@ -149,9 +149,7 @@ int main( int argc, char **argv ) {
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-	    "-LD"
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
 #endif
 	    ".\n",

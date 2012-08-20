@@ -50,7 +50,7 @@ typedef struct quartic {
 
 #ifndef chunkalloc
 #define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
-#if !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) && !defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifndef FONTFORGE_CONFIG_USE_DOUBLE
 # define CHUNK_MAX	100		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
 #else
@@ -3843,7 +3843,6 @@ return( t );
 return( -1 );
 }
 
-#ifndef EXTENDED_IS_LONG_DOUBLE
 double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t, double othert) {
     double u1, um1;
     double slope, slope1, slopem1;
@@ -3881,21 +3880,6 @@ return( t );
 
 return( t );
 }
-#else
-extended esqrt(extended e) {
-    extended rt, temp;
-
-    rt = sqrt( (double) e );
-    if ( e<=0 )
-return( rt );
-
-    temp = e/rt;
-    rt = (rt+temp)/2;
-    temp = e/rt;
-    rt = (rt+temp)/2;
-return( rt );
-}
-#endif
 
 static void _SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 ) {
     extended t1= -1, t2= -1;
@@ -3911,7 +3895,7 @@ static void _SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 
 	/* cubic, possibly 2 extrema (possibly none) */
 	b2_fourac = 4*(extended)sp->b*sp->b - 12*(extended)sp->a*sp->c;
 	if ( b2_fourac>=0 ) {
-	    b2_fourac = esqrt(b2_fourac);
+	    b2_fourac = sqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
 	    t1 = CheckExtremaForSingleBitErrors(sp,t1,t2);
@@ -3944,7 +3928,7 @@ void SplineFindExtrema(const Spline1D *sp, extended *_t1, extended *_t2 ) {
 	/* cubic, possibly 2 extrema (possibly none) */
 	b2_fourac = 4*(extended) sp->b*sp->b - 12*(extended) sp->a*sp->c;
 	if ( b2_fourac>=0 ) {
-	    b2_fourac = esqrt(b2_fourac);
+	    b2_fourac = sqrt(b2_fourac);
 	    t1 = (-2*sp->b - b2_fourac) / (6*sp->a);
 	    t2 = (-2*sp->b + b2_fourac) / (6*sp->a);
 	    t1 = CheckExtremaForSingleBitErrors(sp,t1,t2);
@@ -4086,7 +4070,7 @@ int Spline2DFindPointsOfInflection(const Spline *sp, extended poi[2] ) {
 	poi[0] = poi[1] = -1;
 	if ( b2_fourac<0 )
 return( 0 );
-	b2_fourac = esqrt( b2_fourac );
+	b2_fourac = sqrt( b2_fourac );
 	t = (-b+b2_fourac)/(2*a);
 	if ( t>=0 && t<=1.0 )
 	    poi[cnt++] = t;
@@ -4335,7 +4319,7 @@ static void IterateSolve(const Spline1D *sp,extended ts[3]) {
     } else if ( sp->b!=0 ) {
 	extended b2_4ac = sp->c*(extended) sp->c - 4*sp->b*(extended) sp->d;
 	if ( b2_4ac>=0 ) {
-	    b2_4ac = esqrt(b2_4ac);
+	    b2_4ac = sqrt(b2_4ac);
 	    ts[0] = (-sp->c-b2_4ac)/(2*sp->b);
 	    ts[1] = (-sp->c+b2_4ac)/(2*sp->b);
 	    if ( ts[0]>ts[1] ) { bigreal t = ts[0]; ts[0] = ts[1]; ts[1] = t; }
