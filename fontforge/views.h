@@ -329,6 +329,7 @@ typedef struct metricsview {
 	int16 kernafter;
 	unsigned int selected: 1;
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
+	GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
     } *perchar;
     SplineChar **sstr;		/* Character input stream */
     int16 mwidth, mbase;
