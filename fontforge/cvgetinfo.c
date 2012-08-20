@@ -3686,7 +3686,7 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
     GDrawDestroyWindow(gi.gw);
 }
 
-void CVPointInfo(CharView *cv) {
+void CVGetInfo(CharView *cv) {
     SplinePoint *sp;
     SplinePointList *spl;
     RefChar *ref;
@@ -3711,7 +3711,7 @@ void CVPointInfo(CharView *cv) {
 	PointGetInfo(cv,sp,spl);
 }
 
-void CVPPointInfo(CharView *cv) {
+void CVPGetInfo(CharView *cv) {
 
     if ( cv->p.ref!=NULL )
 	RefGetInfo(cv,cv->p.ref);

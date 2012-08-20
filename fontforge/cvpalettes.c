@@ -3010,7 +3010,7 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 
     switch ( mi->mid ) {
       case 0:
-	CVPPointInfo(cv);
+	CVPGetInfo(cv);
       break;
       case 1:
 	if ( cv->p.ref!=NULL )
@@ -3048,7 +3048,7 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
 void CVToolsPopup(CharView *cv, GEvent *event) {
     GMenuItem mi[125];
     int i, j, anysel;
-    static char *selectables[] = { N_("Point Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
+    static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
     memset(mi,'\0',sizeof(mi));
 
     anysel = CVTestSelectFromEvent(cv,event);

@@ -698,8 +698,8 @@ extern GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,char *namelist,
 extern GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv,
 	int is_horiz);
 extern GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor);
-extern void CVPointInfo(CharView *cv);
-extern void CVPPointInfo(CharView *cv);
+extern void CVGetInfo(CharView *cv);
+extern void CVPGetInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);
 extern void SCSubBy(SplineChar *sc);
 extern void SCRefBy(SplineChar *sc);
