@@ -4036,6 +4036,7 @@ static void CIFillup(CharInfo *ci) {
     }
     GA_ToMD(GWidgetGetControl(ci->gw,CID_AltUni), sc);
 
+#ifdef FONTFORGE_CONFIG_TYPE3
     if ( ci->sc->parent->multilayer ) {
 	int margined = sc->tile_margin!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0);
 	char buffer[40];
@@ -4057,6 +4058,7 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
 	}
     }
+#endif
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_DefLCCount), !sc->lig_caret_cnt_fixed );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCountLab), sc->lig_caret_cnt_fixed );
