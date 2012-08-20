@@ -92,11 +92,6 @@ FONTFORGE_ARG_ENABLE([type3],
                 [enable support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.])],
         [FONTFORGE_CONFIG_TYPE3])
 
-FONTFORGE_ARG_ENABLE([device-tables],
-        [AS_HELP_STRING([--enable-device-tables],
-                [enable support for device tables which allow fine control of kerning (etc.) at small point sizes])],
-        [FONTFORGE_CONFIG_DEVICETABLES])
-
 FONTFORGE_ARG_ENABLE([paste-after],
         [AS_HELP_STRING([--enable-paste-after],
                 [enable a 'paste after' command (Useful for making words?)])],
@@ -425,7 +420,6 @@ Summary of optional features:
   capslock for alt   ${i_do_have_capslock_for_alt}
   raw points mode    ${i_do_have_capslock_for_alt}
   type 3 fonts       ${i_do_have_type3}
-  device tables      ${i_do_have_device_tables}
   paste after        ${i_do_have_paste_after}
   gb12345 encoding   ${i_do_have_gb12345}
   tile path          ${i_do_have_tile_path}

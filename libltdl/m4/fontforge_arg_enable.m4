@@ -61,21 +61,12 @@ AC_DEFUN([FONTFORGE_ARG_ENABLE_REAL],
 [
 AC_ARG_ENABLE([real],
         [AS_HELP_STRING([--enable-real=TYPE],
-                [TYPE is float, double, or long-double;
-                 sets the floating point type used internally [default=float]])],
+                [TYPE is float or double;
+                 sets the floating point type used internally [default=double]])],
         [my_real_type="${enableval}"],
-        [my_real_type=float])
+        [my_real_type=double])
 if test x"${my_real_type}" = x"double"; then
    AC_DEFINE([FONTFORGE_CONFIG_USE_DOUBLE],1,[Define if using 'double' precision.])
-elif test x"${my_real_type}" = x"long-double"; then
-   AC_TYPE_LONG_DOUBLE_WIDER
-   if test x"${ac_cv_type_long_double_wider}" = xyes; then
-      AC_DEFINE([FONTFORGE_CONFIG_USE_LONGDOUBLE],1,[Define if using 'long double' precision.])
-   else
-      AC_MSG_WARN(['long double' is no wider than 'double' with this compiler, so we will use 'double' instead.])
-      my_real_type=double
-      AC_DEFINE([FONTFORGE_CONFIG_USE_DOUBLE],1)
-   fi
 elif test x"${my_real_type}" != x"float"; then
    AC_MSG_ERROR([Floating point type '${my_real_type}' not recognized.])
 fi   
