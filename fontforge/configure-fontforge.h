@@ -45,19 +45,6 @@
 /*									      */
 
 
-/* Sometimes I want to create a glyph which is a word, and this command       */
-/*  makes that easy                                                           */
-/*									      */
-/* #define FONTFORGE_CONFIG_PASTEAFTER					      */
-/*									      */
-/* The paste after command pastes the contents of the clipboard into the      */
-/*  current glyph, translates that by the advance width of the current glyph  */
-/*  and increments the advance width by the advance width of the clipboard    */
-/*									      */
-/* Can be set from configure --enable-pasteafter			      */
-
-
-
 /* Someone asked for encoding GB12345. Neither libiconv nor iconv supports it.*/
 /*									      */
 /* #define FONTFORGE_CONFIG_GB12345					      */

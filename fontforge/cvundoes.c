@@ -2247,9 +2247,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
     int width, vwidth;
     int xoff=0, yoff=0;
     int was_empty;
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
     RefChar *ref;
-#endif
 
     switch ( paster->undotype ) {
       case ut_noop:
@@ -2290,7 +2288,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    GradientFree(sc->layers[layer].stroke_pen.brush.gradient); sc->layers[layer].stroke_pen.brush.gradient = NULL;
 	    PatternFree(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
 	    was_empty = true;
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
 	} else if ( pasteinto==2 ) {
 	    if ( sc->parent->hasvmetrics ) {
 		yoff = -sc->vwidth;
@@ -2310,7 +2307,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		xoff = sc->width;
 		SCSynchronizeWidth(sc,sc->width+width,sc->width,fv);
 	    }
-#endif
 	} else if ( pasteinto==3 && trans!=NULL ) {
 	    xoff = trans[4]; yoff = trans[5];
 	}
