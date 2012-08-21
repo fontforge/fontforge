@@ -87,26 +87,16 @@ FONTFORGE_ARG_ENABLE([debug-raw-points],
                 [add a raw mode to the points window of the debugger])],
         [FONTFORGE_CONFIG_SHOW_RAW_POINTS])
 
-FONTFORGE_ARG_ENABLE([type3],
-        [AS_HELP_STRING([--enable-type3],
-                [enable support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.])],
-        [FONTFORGE_CONFIG_TYPE3])
-
-FONTFORGE_ARG_ENABLE([paste-after],
-        [AS_HELP_STRING([--enable-paste-after],
-                [enable a 'paste after' command (Useful for making words?)])],
-        [FONTFORGE_CONFIG_PASTEAFTER])
+FONTFORGE_ARG_ENABLE([tile-path],
+        [AS_HELP_STRING([--enable-tile-path],
+                [enable a 'tile path' command (a variant of 'expand stroke')])],
+        [FONTFORGE_CONFIG_TILEPATH])
 
 FONTFORGE_ARG_ENABLE([gb12345],
         [AS_HELP_STRING([--enable-gb12345],
                 [build the GB12345 encoding plugin])],
         [FONTFORGE_CONFIG_GB12345])
 AM_CONDITIONAL([PLUGIN_GB12345],[test x"${i_do_have_gb12345}" = xyes])
-
-FONTFORGE_ARG_ENABLE([tile-path],
-        [AS_HELP_STRING([--enable-tile-path],
-                [enable a 'tile path' command (a variant of 'expand stroke')])],
-        [FONTFORGE_CONFIG_TILEPATH])
 
 FONTFORGE_ARG_ENABLE([native-callbacks],
         [AS_HELP_STRING([--enable-native-callbacks],
@@ -385,10 +375,8 @@ Summary of optional features:
   freetype debugger  ${i_do_have_freetype_debugger}
   capslock for alt   ${i_do_have_capslock_for_alt}
   raw points mode    ${i_do_have_capslock_for_alt}
-  type 3 fonts       ${i_do_have_type3}
-  paste after        ${i_do_have_paste_after}
-  gb12345 encoding   ${i_do_have_gb12345}
   tile path          ${i_do_have_tile_path}
+  gb12345 encoding   ${i_do_have_gb12345}
   native callbacks   ${i_do_have_native_callbacks}
 
 Summary of optional dependencies:
