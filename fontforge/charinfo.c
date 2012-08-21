@@ -1254,10 +1254,8 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->possub = CI_PSTCopy(sc->possub);
     newsc->kerns = CI_KPCopy(sc->kerns);
     newsc->vkerns = CI_KPCopy(sc->vkerns);
-#ifdef FONTFORGE_CONFIG_TYPE3
     newsc->tile_margin = sc->tile_margin;
     newsc->tile_bounds = sc->tile_bounds;
-#endif
 return( newsc );
 }
 
@@ -1379,10 +1377,8 @@ static int _CI_OK(CharInfo *ci) {
     char *italicdevtab=NULL, *accentdevtab=NULL, *hicdt=NULL, *vicdt=NULL;
     int lig_caret_cnt_fixed=0;
     int low,high;
-#ifdef FONTFORGE_CONFIG_TYPE3
     real tile_margin=0;
     DBounds tileb;
-#endif
     SplineChar *oldsc = ci->cachedsc==NULL ? ci->sc : ci->cachedsc;
 
     if ( !CI_ValidateAltUnis(ci))
@@ -1402,7 +1398,6 @@ return( false );
     if ( err )
 return( false );
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(&tileb,0,sizeof(tileb));
     if ( ci->sc->parent->multilayer ) {
 	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin)))
@@ -1416,7 +1411,6 @@ return( false );
 	if ( err )
 return( false );
     }
-#endif
 
     lig_caret_cnt_fixed = !GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_DefLCCount));
     if ( ci->lc_seen ) {
@@ -1527,10 +1521,8 @@ return( false );
 	}
     }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     ci->cachedsc->tile_margin = tile_margin;
     ci->cachedsc->tile_bounds = tileb;
-#endif
 
 return( ret );
 }
@@ -1611,10 +1603,8 @@ static void CI_ApplyAll(CharInfo *ci) {
 	KernPairsFree(sc->kerns); KernPairsFree(sc->vkerns);
 	sc->kerns = cached->kerns; sc->vkerns = cached->vkerns;
 	cached->kerns = cached->vkerns = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	sc->tile_margin = cached->tile_margin;
 	sc->tile_bounds = cached->tile_bounds;
-#endif
 	if ( !sc->changed ) {
 	    sc->changed = true;
 	    refresh_fvdi = true;
@@ -1665,7 +1655,6 @@ static int CI_OK(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void CI_BoundsToMargin(CharInfo *ci) {
     int err=false;
     real margin = GetCalmReal8(ci->gw,CID_TileMargin,NULL,&err);
@@ -1695,7 +1684,6 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 	CI_BoundsToMargin(ci);
 return( true );
 }
-#endif
 
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
@@ -4036,7 +4024,6 @@ static void CIFillup(CharInfo *ci) {
     }
     GA_ToMD(GWidgetGetControl(ci->gw,CID_AltUni), sc);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( ci->sc->parent->multilayer ) {
 	int margined = sc->tile_margin!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0);
 	char buffer[40];
@@ -4058,7 +4045,6 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
 	}
     }
-#endif
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_DefLCCount), !sc->lig_caret_cnt_fixed );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCountLab), sc->lig_caret_cnt_fixed );
@@ -4154,11 +4140,9 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
     GGadgetCreateData lcbox[2], *lchvarray[4][4];
     GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
-#ifdef FONTFORGE_CONFIG_TYPE3
     GGadgetCreateData tilegcd[16], tilebox[4];
     GTextInfo tilelabel[16];
     GGadgetCreateData *tlvarray[6], *tlharray[4], *tlhvarray[4][5];
-#endif
     int i;
     GTabInfo aspects[17];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
@@ -4772,7 +4756,6 @@ return;
 	    varbox[i][0].creator = GHVBoxCreate;
 	}
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	memset(&tilegcd,0,sizeof(tilegcd));
 	memset(&tilebox,0,sizeof(tilebox));
 	memset(&tilelabel,0,sizeof(tilelabel));
@@ -4881,7 +4864,6 @@ return;
 	tilebox[0].gd.flags = gg_enabled|gg_visible;
 	tilebox[0].gd.u.boxelements = tlvarray;
 	tilebox[0].creator = GVBoxCreate;
-#endif
 
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mbox,0,sizeof(mbox));
@@ -4954,13 +4936,11 @@ return;
 	aspects[i].nesting = 1;
 	aspects[i++].gcd = varbox[1];
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    aspects[i].text = (unichar_t *) U_("Tile Size");
 	    aspects[i].text_is_1byte = true;
 	    aspects[i++].gcd = tilebox;
 	}
-#endif
 
 	if ( last_gi_aspect<i )
 	    aspects[last_gi_aspect].selected = true;
@@ -5078,13 +5058,11 @@ return;
 	GHVBoxSetExpandableRow(varbox[0][0].ret,3);
 	GHVBoxSetExpandableRow(varbox[1][0].ret,3);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    GHVBoxSetExpandableRow(tilebox[0].ret,gb_expandglue);
 	    GHVBoxSetExpandableCol(tilebox[2].ret,gb_expandglue);
 	    GHVBoxSetExpandableCol(tilebox[3].ret,gb_expandglue);
 	}
-#endif
 
 	GHVBoxFitWindow(mbox[0].ret);
 

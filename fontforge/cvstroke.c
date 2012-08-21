@@ -1204,8 +1204,6 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 /* ************************************************************************** */
 /* ****************************** Layer Dialog ****************************** */
 /* ************************************************************************** */
-#ifdef FONTFORGE_CONFIG_TYPE3
-
 #define LY_Width	300
 #define LY_Height	336
 
@@ -3364,4 +3362,3 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     }
 return( ld.ok );
 }
-#endif		/* TYPE3 */

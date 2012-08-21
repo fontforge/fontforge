@@ -600,7 +600,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
-#if !defined(FONTFORGE_CONFIG_USE_DOUBLE) && !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE)
+#ifndef FONTFORGE_CONFIG_USE_DOUBLE
 	    if ( first==NULL )
 		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
 	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */
@@ -1169,7 +1169,6 @@ return( PyFF_UnPickleMeToObjects(buf));
     /* buf is a static buffer, I don't free it, I'll reuse it next time */
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 static char *spreads[] = { "pad", "reflect", "repeat", NULL };
@@ -1200,7 +1199,6 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 	    (double) pattern->transform[2], (double) pattern->transform[3],
 	    (double) pattern->transform[4], (double) pattern->transform[5] );
 }
-#endif
 
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir) {
     ImageList *img;
@@ -1286,7 +1284,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     SFDDumpAnchorPoints(sfd,sc);
     fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
     for ( i=0; i<sc->layer_cnt; ++i ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g] [",
 		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
@@ -1310,9 +1307,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpGradient(sfd,"StrokeGradient:", sc->layers[i].stroke_pen.brush.gradient );
 	    else if ( sc->layers[i].stroke_pen.brush.pattern!=NULL )
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
-	} else
-#endif
-	{
+	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
 		    sc->layers[i].refs==NULL )
     continue;
@@ -1395,14 +1390,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->color!=COLOR_DEFAULT )
 	fprintf( sfd, "Colour: %x\n", (int) sc->color );
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer ) {
 	if ( sc->tile_margin!=0 )
 	    fprintf( sfd, "TileMargin: %g\n", (double) sc->tile_margin );
 	else if ( sc->tile_bounds.minx!=0 || sc->tile_bounds.maxx!=0 )
 	    fprintf( sfd, "TileBounds: %g %g %g %g\n", (double) sc->tile_bounds.minx, (double) sc->tile_bounds.miny, (double) sc->tile_bounds.maxx, (double) sc->tile_bounds.maxy );
     }
-#endif
     fprintf(sfd,"EndChar\n" );
 }
 
@@ -3971,7 +3964,6 @@ static void SFDParseVertexKern(FILE *sfd, struct mathkernvertex *vertex) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static struct gradient *SFDParseGradient(FILE *sfd,char *tok) {
     struct gradient *grad = chunkalloc(sizeof(struct gradient));
     int ch, i;
@@ -4033,7 +4025,6 @@ static struct pattern *SFDParsePattern(FILE *sfd,char *tok) {
     if ( ch!=']' ) ungetc(ch,sfd);
 return( pat );
 }
-#endif
 
 static int orig_pos;
 
@@ -4287,19 +4278,16 @@ return( NULL );
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"Layer:")==0 ) {
 	    int layer;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    int dofill, dostroke, fillfirst, linejoin, linecap;
 	    uint32 fillcol, strokecol;
 	    real fillopacity, strokeopacity, strokewidth, trans[4];
 	    DashType dashes[DASH_MAX];
 	    int i;
-#endif
 	    getint(sfd,&layer);
 	    if ( layer>=sc->layer_cnt ) {
 		sc->layers = grealloc(sc->layers,(layer+1)*sizeof(Layer));
 		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
 	    }
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		getint(sfd,&dofill);
 		getint(sfd,&dostroke);
@@ -4354,11 +4342,9 @@ return( NULL );
 		memcpy(sc->layers[layer].stroke_pen.dashes,dashes,sizeof(dashes));
 		memcpy(sc->layers[layer].stroke_pen.trans,trans,sizeof(trans));
 	    }
-#endif
 	    current_layer = layer;
 	    lasti = NULL;
 	    lastr = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	} else if ( strmatch(tok,"FillGradient:")==0 ) {
 	    sc->layers[current_layer].fill_brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"FillPattern:")==0 ) {
@@ -4367,7 +4353,6 @@ return( NULL );
 	    sc->layers[current_layer].stroke_pen.brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"StrokePattern:")==0 ) {
 	    sc->layers[current_layer].stroke_pen.brush.pattern = SFDParsePattern(sfd,tok);
-#endif
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
@@ -4629,7 +4614,6 @@ exit(1);
 	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	} else if ( strmatch(tok,"TileMargin:")==0 ) {
 	    getreal(sfd,&sc->tile_margin);
 	} else if ( strmatch(tok,"TileBounds:")==0 ) {
@@ -4637,7 +4621,6 @@ exit(1);
 	    getreal(sfd,&sc->tile_bounds.miny);
 	    getreal(sfd,&sc->tile_bounds.maxx);
 	    getreal(sfd,&sc->tile_bounds.maxy);
-#endif
 	} else if ( strmatch(tok,"EndChar")==0 ) {
 	    if ( sc->orig_pos<sf->glyphcnt )
 		sf->glyphs[sc->orig_pos] = sc;
@@ -4922,7 +4905,6 @@ return( 1 );
 
 static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
     RefChar *rf;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int ly;
 
     if ( sc->parent->multilayer ) {
@@ -4937,18 +4919,15 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
 	    }
 	}
     } else {
-#endif
-    for ( rf = ref->sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
-	if ( rf->sc==sc ) {	/* Huh? */
-	    ref->sc->layers[layer].refs = NULL;
-    break;
+	for ( rf = ref->sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
+	    if ( rf->sc==sc ) {	/* Huh? */
+		ref->sc->layers[layer].refs = NULL;
+	break;
+	    }
+	    if ( rf->layers[0].splines==NULL )
+		SFDFixupRef(ref->sc,rf,layer);
 	}
-	if ( rf->layers[0].splines==NULL )
-	    SFDFixupRef(ref->sc,rf,layer);
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
-    }
-#endif
     SCReinstanciateRefChar(sc,ref,layer);
     SCMakeDependent(sc,ref->sc);
 }
@@ -6512,11 +6491,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	} else if ( strmatch(tok,"MultiLayer:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    sf->multilayer = temp;
-#else
-	    LogError( _("Warning: This version of FontForge does not contain extended type3/svg support\n needed for this font.\nReconfigure with --with-type3.\n") );
-#endif
 	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -7345,9 +7320,7 @@ return( sc );
 static int ModSF(FILE *asfd,SplineFont *sf) {
     Encoding *newmap;
     int cnt;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int multilayer=0;
-#endif
     char tok[200];
     int i,k;
     SplineChar *sc;
@@ -7405,7 +7378,6 @@ return( false );
 	if ( getname(asfd,tok)!=1 )
 return( false );
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( strcmp(tok,"MultiLayer:")==0 ) {
 	getint(asfd,&multilayer);
 	if ( getname(asfd,tok)!=1 )
@@ -7417,7 +7389,6 @@ return( false );
 	sf->multilayer = multilayer;
 	/* SFLayerChange(sf);*/		/* Shouldn't have any open windows, should not be needed */
     }
-#endif
     if ( strcmp(tok,"BeginChars:")!=0 )
 return(false);
     SFRemoveDependencies(sf);

@@ -117,7 +117,7 @@ static GResInfo popup_ri = {
 };
 static struct resed listmark_re[] = {
     { N_("Image"), "Image", rt_image, &_GListMark_Image, N_("Image used for enabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
-    { N_("Disabled Image"), "DisImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
+    { N_("Disabled Image"), "DisabledImage", rt_image, &_GListMark_DisImage, N_("Image used for disabled listmarks (overrides the box)"), NULL, { 0 }, 0, 0 },
     { N_("Width"), "Width", rt_int, &_GListMarkSize, N_("Size of the list mark"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };

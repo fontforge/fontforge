@@ -509,8 +509,6 @@ extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
 extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
-# ifdef FONTFORGE_CONFIG_TYPE3
-
 typedef struct gradientdlg {
     struct cvcontainer base;
     FontView dummy_fv;
@@ -535,7 +533,6 @@ typedef struct gradientdlg {
     struct gradient *active;
 } GradientDlg;
 extern void GDDCharViewInits(GradientDlg *gdd,int cid);
-#endif		/* Type3 */
 
 typedef struct strokedlg {
     struct cvcontainer base;

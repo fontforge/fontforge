@@ -80,6 +80,7 @@
 /* #define FONTFORGE_CONFIG_CVT_OLD_MAC_FEATURES			      */
 /*									      */
 
+
 /* In addition to placing snippets of charstrings into subrs, I tried adding  */
 /*  whole glyphs (when that was possible). To my surprise, it made things     */
 /*  worse in one of my test cases, and barely registered an improvement in    */

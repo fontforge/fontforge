@@ -640,7 +640,6 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 static void _SCNLTrans(SplineChar *sc,struct context *c,int layer) {
     SplineSet *ss;
     RefChar *ref;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int i, last, first;
 
     if ( sc->layer_cnt==ly_fore+1 &&
@@ -666,22 +665,6 @@ return;
 	    /* we'll fix up the splines after all characters have been transformed*/
 	}
     }
-#else
-
-    if ( sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL )
-return;
-
-    SCPreserveLayer(sc,layer,false);
-    c->sc = sc;
-    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next )
-	SplineSetNLTrans(ss,c,true);
-    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
-	c->x = ref->transform[4]; c->y = ref->transform[5];
-	ref->transform[4] = NL_expr(c,c->x_expr);
-	ref->transform[5] = NL_expr(c,c->y_expr);
-	/* we'll fix up the splines after all characters have been transformed*/
-    }
-#endif
 }
 
 void _SFNLTrans(FontViewBase *fv,struct context *c) {

@@ -580,11 +580,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 		GGadgetSetEnabled(d->background,true);
 	    } else {			/* Images */
 		GGadgetSetChecked(d->background,true);
-#ifdef FONTFORGE_CONFIG_TYPE3
 		GGadgetSetEnabled(d->background,true);
-#else
-		GGadgetSetEnabled(d->background,false);
-#endif
 	    }
 	}
     }
@@ -749,15 +745,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     if ( fv!=NULL ) {
 	gcd[6].gd.pos.x = 185; gcd[6].gd.pos.y = gcd[5].gd.pos.y+4;
 	gcd[6].gd.flags = gg_visible | gg_enabled ;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( format==fv_pk || format==fv_image || format==fv_imgtemplate )
 	    gcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-#else
-	if ( format==fv_pk )
-	    gcd[6].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-	else if ( format==fv_image || format==fv_imgtemplate )
-	    gcd[6].gd.flags = gg_visible | gg_cb_on;
-#endif
 	label[6].text = (unichar_t *) _("As Background");
 	label[6].text_is_1byte = true;
 	gcd[6].gd.label = &label[6];

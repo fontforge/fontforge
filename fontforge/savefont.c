@@ -746,7 +746,6 @@ return( 1 );
 return( err );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 int CheckIfTransparent(SplineFont *sf) {
     /* Type3 doesn't support translucent fills */
     int i,j;
@@ -768,7 +767,6 @@ return( false );
     }
 return( false );
 }
-#endif
 
 int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
 	EncMap *map, char *subfontdefinition,int layer) {
@@ -824,10 +822,8 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,subfontdefinition,map,layer));
 	  case ff_pfa: case ff_pfb: case ff_ptype3: case ff_ptype0:
 	  case ff_cid:
 	  case ff_type42: case ff_type42cid:
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sf->multilayer && CheckIfTransparent(sf))
 return( true );
-#endif
 	    oerr = !WritePSFont(newname,sf,oldformatstate,flags,map,NULL,layer);
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
