@@ -141,24 +141,13 @@ AC_SUBST([XKB_LIBS])
 
 PKG_CHECK_MODULES([ZLIB],[zlib])
 
-if test x"${i_do_have_x}" = xyes; then
-   because_X_is_disabled=""
-   FONTFORGE_ARG_WITH_CAIRO
-   FONTFORGE_ARG_WITH_PANGO
-   FONTFORGE_ARG_WITH_FREETYPE
-   AC_ARG_VAR([FREETYPE_SOURCE],
+FONTFORGE_ARG_WITH_CAIRO
+FONTFORGE_ARG_WITH_PANGO
+FONTFORGE_ARG_WITH_FREETYPE
+AC_ARG_VAR([FREETYPE_SOURCE],
         [directory where freetype source code is located for --enable-freetype-debugger;
          however, if --enable-freetype-debugger=DIR is specified, then DIR overrides
          the setting of FREETYPE_SOURCE])
-else
-   because_X_is_disabled="(because X is disabled)"
-   i_do_have_cairo=no
-   i_do_have_pango=no
-   i_do_have_freetype=no
-   AC_DEFINE([_NO_LIBCAIRO],[1])
-   AC_DEFINE([_NO_LIBPANGO],[1])
-   AC_DEFINE([_NO_FREETYPE],[1])
-fi
 FONTFORGE_ARG_WITH_GIFLIB
 FONTFORGE_ARG_WITH_LIBJPEG
 FONTFORGE_ARG_WITH_LIBPNG
@@ -381,9 +370,9 @@ Summary of optional features:
 
 Summary of optional dependencies:
 
-  cairo            ${i_do_have_cairo}   ${because_X_is_disabled}
-  pango            ${i_do_have_pango}   ${because_X_is_disabled}
-  freetype         ${i_do_have_freetype}   ${because_X_is_disabled}
+  cairo            ${i_do_have_cairo}
+  pango            ${i_do_have_pango}
+  freetype         ${i_do_have_freetype}
   giflib           ${i_do_have_giflib}
   libjpeg          ${i_do_have_libjpeg}
   libpng           ${i_do_have_libpng}
