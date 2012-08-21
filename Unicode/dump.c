@@ -99,6 +99,14 @@ const char CantSaveFile[] = "Can't open or write to output file %s\n";	/* exit(1
 const char NoMoreMemory[] = "Can't access more memory.\n";		/* exit(3) */
 const char LineLengthBg[] = "Error with %s. Found line too long: %s\n";	/* exit(4) */
 
+static add_data_comment_at_EOL(FILE *output, int counter) {
+/* append an EOL index locator marker to make it easier to search for table values */
+    if ( (counter & 63)==0 )
+	fprintf( output, "\t/* 0x%04x */\n",counter);
+    else
+	fprintf( output, "\n");
+}
+
 static int dumpalphas(FILE *output, FILE *header) {
     FILE *file;
     int i,j,k, l, first, last;
@@ -183,10 +191,7 @@ return( 3 );
 		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 			unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
-		if ( (i & 63)==0 )
-		    fprintf( output, "\t/* 0x%04x */\n",i);
-		else
-		    fprintf( output, "\n");
+		add_data_comment_at_EOL(output, i);
 	    }
 	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
@@ -205,10 +210,7 @@ return( 3 );
 				plane[i+4], plane[i+5], plane[i+6], plane[i+7],
 				plane[i+8], plane[i+9], plane[i+10], plane[i+11],
 				plane[i+12], plane[i+13], plane[i+14], plane[i+15]);
-		    if ( (i & 63)==0 )
-			fprintf( output, "\t/* 0x%04x */\n",i);
-		    else
-			fprintf( output, "\n");
+			add_data_comment_at_EOL(output, i);
 		    }
 		    fprintf( output, "  0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x\n};\n\n",
 				plane[i], plane[i+1], plane[i+2], plane[i+3],
@@ -310,40 +312,44 @@ static void dumprandom(FILE *output,FILE *header) {
 	inbase64[base64[i]] = i;
     fprintf( header, "extern signed char inbase64[128];\n" );
     fprintf( output, "signed char inbase64[128] = {\n" );
-    for ( i=0; i<128; i+= 16 )
-	fprintf( output, "  %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d%s\n",
+    for ( i=0; i<128; i+= 16 ) {
+	fprintf( output, "  %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d, %2d%s",
 		inbase64[i], inbase64[i+1], inbase64[i+2], inbase64[i+3],
 		inbase64[i+4], inbase64[i+5], inbase64[i+6], inbase64[i+7],
 		inbase64[i+8], inbase64[i+9], inbase64[i+10], inbase64[i+11],
 		inbase64[i+12], inbase64[i+13], inbase64[i+14], inbase64[i+15],
 		i==128-16?"":",");
+	add_data_comment_at_EOL(output, i);
+    }
     fprintf( output, "};\n" );
 
     fprintf( header, "/* Need to subtract 0xb0 from jis206 before indexing this array */\n" );
     fprintf( header, "extern char nigori[48];\n" );
     fprintf( output, "char nigori[48] = {\n" );
-    for ( i=0; i<48; i+= 16 )
-	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s\n",
+    for ( i=0; i<48; i+= 16 ) {
+	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s",
 		nigori[i], nigori[i+1], nigori[i+2], nigori[i+3],
 		nigori[i+4], nigori[i+5], nigori[i+6], nigori[i+7],
 		nigori[i+8], nigori[i+9], nigori[i+10], nigori[i+11],
 		nigori[i+12], nigori[i+13], nigori[i+14], nigori[i+15],
 		i==48-16?"":",");
-    fprintf( output, "};\n" );
+	add_data_comment_at_EOL(output, i);
+    }
+    fprintf( output, "};\n\n" );
 
     fprintf( header, "/* Need to subtract 0xb0 from jis206 before indexing this array */\n" );
     fprintf( header, "extern char maru[48];\n" );
     fprintf( output, "char maru[48] = {\n" );
-    for ( i=0; i<48; i+= 16 )
-	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s\n",
+    for ( i=0; i<48; i+= 16 ) {
+	fprintf( output, "  %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d%s",
 		maru[i], maru[i+1], maru[i+2], maru[i+3],
 		maru[i+4], maru[i+5], maru[i+6], maru[i+7],
 		maru[i+8], maru[i+9], maru[i+10], maru[i+11],
 		maru[i+12], maru[i+13], maru[i+14], maru[i+15],
 		i==48-16?"":",");
-    fprintf( output, "};\n" );
-
-    fprintf( header, "\n" );
+	add_data_comment_at_EOL(output, i);
+    }
+    fprintf( output, "};\n\n" );
 }
 #endif
 
@@ -576,20 +582,24 @@ return( 3 );
     j=0;
     fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
     fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
-    for ( i=0; i<sizeof(unicode208)/sizeof(unicode208[0]); i+=8 )
-	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+    for ( i=0; i<sizeof(unicode208)/sizeof(unicode208[0]); i+=8 ) {
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		unicode208[i], unicode208[i+1], unicode208[i+2], unicode208[i+3],
 		unicode208[i+4], unicode208[i+5], unicode208[i+6], unicode208[i+7]);
+	add_data_comment_at_EOL(output, i);
+    }
     fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 	    unicode208[i], unicode208[i+1], unicode208[i+2], unicode208[i+3],
 	    unicode208[i+4], unicode208[i+5], unicode208[i+6], unicode208[i+7]);
     j=1;
     fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
     fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
-    for ( i=0; i<sizeof(unicode212)/sizeof(unicode212[0]); i+=8 )
-	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+    for ( i=0; i<sizeof(unicode212)/sizeof(unicode212[0]); i+=8 ) {
+	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		unicode212[i], unicode212[i+1], unicode212[i+2], unicode212[i+3],
 		unicode212[i+4], unicode212[i+5], unicode212[i+6], unicode212[i+7]);
+	add_data_comment_at_EOL(output, i);
+    }
     fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 	    unicode212[i], unicode212[i+1], unicode212[i+2], unicode212[i+3],
 	    unicode212[i+4], unicode212[i+5], unicode212[i+6], unicode212[i+7]);
@@ -601,10 +611,12 @@ return( 3 );
 	    last = k;
 	    plane = table[k];
 	    fprintf( output, "static const unsigned short jis_from_unicode_%x[] = {\n", k );
-	    for ( i=0; i<256-8; i+=8 )
-		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	    for ( i=0; i<256-8; i+=8 ) {
+		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			plane[i], plane[i+1], plane[i+2], plane[i+3],
 			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		add_data_comment_at_EOL(output, i);
+	    }
 	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 			plane[i], plane[i+1], plane[i+2], plane[i+3],
 			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
@@ -720,10 +732,12 @@ return( 3 );
 	fprintf( header, "/* Subtract 0xa100 before indexing this array */\n" );
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
-	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
-	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 ) {
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	    add_data_comment_at_EOL(output, i);
+	}
 	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
@@ -735,10 +749,12 @@ return( 3 );
 		last = k;
 		plane = table[k];
 		fprintf( output, "static const unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
-		for ( i=0; i<256-8; i+=8 )
-		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		for ( i=0; i<256-8; i+=8 ) {
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		    add_data_comment_at_EOL(output, i);
+		}
 		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
@@ -835,10 +851,12 @@ return( 3 );
 	fprintf( header, "/* Subtract 0x8100 before indexing this array */\n" );
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
-	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
-	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 ) {
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	    add_data_comment_at_EOL(output, i);
+	}
 	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
@@ -850,10 +868,12 @@ return( 3 );
 		last = k;
 		plane = table[k];
 		fprintf( output, "static const unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
-		for ( i=0; i<256-8; i+=8 )
-		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		for ( i=0; i<256-8; i+=8 ) {
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		    add_data_comment_at_EOL(output, i);
+		}
 		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
@@ -1013,10 +1033,12 @@ return( 3 );
 	/* First Wansung */
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
-	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
-	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 ) {
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	    add_data_comment_at_EOL(output, i);
+	}
 	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
@@ -1028,10 +1050,12 @@ return( 3 );
 		last = k;
 		plane = table[k];
 		fprintf( output, "static unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
-		for ( i=0; i<256-8; i+=8 )
-		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		for ( i=0; i<256-8; i+=8 ) {
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		    add_data_comment_at_EOL(output, i);
+		}
 		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
@@ -1059,10 +1083,12 @@ return( 3 );
 	fprintf( header, "/* Subtract 0x8400 before indexing this array */\n" );
 	fprintf( header, "extern const unichar_t unicode_from_johab[];\n" );
 	fprintf( output, "const unichar_t unicode_from_johab[] = {\n" );
-	for ( i=0; i<sizeof(junicode)/sizeof(junicode[0]); i+=8 )
-	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	for ( i=0; i<sizeof(junicode)/sizeof(junicode[0]); i+=8 ) {
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		    junicode[i], junicode[i+1], junicode[i+2], junicode[i+3],
 		    junicode[i+4], junicode[i+5], junicode[i+6], junicode[i+7]);
+	    add_data_comment_at_EOL(output, i);
+	}
 	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		junicode[i], junicode[i+1], junicode[i+2], junicode[i+3],
 		junicode[i+4], junicode[i+5], junicode[i+6], junicode[i+7]);
@@ -1074,10 +1100,12 @@ return( 3 );
 		last = k;
 		plane = jtable[k];
 		fprintf( output, "static unsigned short johab_from_unicode_%x[] = {\n", k );
-		for ( i=0; i<256-8; i+=8 )
-		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		for ( i=0; i<256-8; i+=8 ) {
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		    add_data_comment_at_EOL(output, i);
+		}
 		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
@@ -1184,10 +1212,12 @@ return( 3 );
 
 	fprintf( header, "extern const unichar_t unicode_from_%s[];\n", cjknames[j] );
 	fprintf( output, "const unichar_t unicode_from_%s[] = {\n", cjknames[j] );
-	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 )
-	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+	for ( i=0; i<sizeof(unicode)/sizeof(unicode[0]); i+=8 ) {
+	    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 		    unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		    unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
+	    add_data_comment_at_EOL(output, i);
+	}
 	fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 		unicode[i], unicode[i+1], unicode[i+2], unicode[i+3],
 		unicode[i+4], unicode[i+5], unicode[i+6], unicode[i+7]);
@@ -1199,10 +1229,12 @@ return( 3 );
 		last = k;
 		plane = table[k];
 		fprintf( output, "static unsigned short %s_from_unicode_%x[] = {\n", cjknames[j], k );
-		for ( i=0; i<256-8; i+=8 )
-		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,\n",
+		for ( i=0; i<256-8; i+=8 ) {
+		    fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x,",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		    add_data_comment_at_EOL(output, i);
+		}
 		fprintf( output, "  0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n};\n\n",
 			    plane[i], plane[i+1], plane[i+2], plane[i+3],
 			    plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
@@ -1255,10 +1287,12 @@ static void dumptrans(FILE *output, FILE *header) {
 	if ( used[k]!=NULL ) {
 	    plane = used[k];
 	    fprintf( output, "static const unsigned long unicode_backtrans_%x[] = {\n", k );
-	    for ( i=0; i<256-8; i+=8 )
-		fprintf( output, "  0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx,\n",
+	    for ( i=0; i<256-8; i+=8 ) {
+		fprintf( output, "  0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx,",
 			plane[i], plane[i+1], plane[i+2], plane[i+3],
 			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
+		add_data_comment_at_EOL(output, i);
+	    }
 	    fprintf( output, "  0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx, 0x%06lx\n};\n\n",
 			plane[i], plane[i+1], plane[i+2], plane[i+3],
 			plane[i+4], plane[i+5], plane[i+6], plane[i+7]);
