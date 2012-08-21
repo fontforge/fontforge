@@ -46,6 +46,10 @@ static Color selglyphcol = 0x909090;
 static Color kernlinecol = 0x008000;
 static Color rbearinglinecol = 0x000080;
 
+int pref_mv_shift_and_arrow_skip = 10;
+int pref_mv_control_shift_and_arrow_skip = 5;
+
+
 void MVColInit( void ) {
     static int cinit=false;
     GResStruct mvcolors[] = {
@@ -672,7 +676,8 @@ static void MVCreateFields(MetricsView *mv,int i) {
     static unichar_t nullstr[1] = { 0 };
     int j;
     extern GBox _GGadget_gtextfield_box;
-
+    int udaidx = 1; // we leave element zero to be NULL to allow bounds checking.
+    
     small = _GGadget_gtextfield_box;
     small.flags = 0;
     small.border_type = bt_none;
@@ -682,6 +687,7 @@ static void MVCreateFields(MetricsView *mv,int i) {
 
     memset(&gd,'\0',sizeof(gd));
     memset(&label,'\0',sizeof(label));
+    memset(mv->perchar[i].updownkparray,'\0',sizeof(GGadget*)*10);
     label.text = nullstr;
     label.font = mv->font;
     mv->perchar[i].mx = gd.pos.x = mv->mbase+(i+1-mv->coff)*mv->mwidth+2;
@@ -700,21 +706,28 @@ static void MVCreateFields(MetricsView *mv,int i) {
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_WidthChanged;
     mv->perchar[i].width = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].width;
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_LBearingChanged;
     mv->perchar[i].lbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].lbearing;
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_RBearingChanged;
     mv->perchar[i].rbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].rbearing;
 
     if ( i!=0 ) {
 	gd.pos.y += mv->fh+4;
 	gd.pos.x -= mv->mwidth/2;
 	gd.handle_controlevent = MV_KernChanged;
 	mv->perchar[i].kern = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
-
+	if( i==1 ) {
+	    mv->perchar[i-1].updownkparray[udaidx] = mv->perchar[i].kern;
+	}
+	mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].kern;
+	
 	if ( i>=mv->glyphcnt ) {
 	    for ( j=mv->glyphcnt+1; j<=i ; ++ j )
 		mv->perchar[j].dx = mv->perchar[j-1].dx;
@@ -887,6 +900,13 @@ return;
     MVRemetric(mv);
 }
 
+static int isValidInt(unichar_t *end) {
+    if ( *end && !(*end=='-' && end[1]=='\0'))
+	return 0;
+    return 1;
+}
+
+
 static int MV_WidthChanged(GGadget *g, GEvent *e) {
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
     int which = (intpt) GGadgetGetUserData(g);
@@ -900,7 +920,7 @@ return( true );
 	unichar_t *end;
 	int val = u_strtol(_GGadgetGetTitle(g),&end,10);
 	SplineChar *sc = mv->glyphs[which].sc;
-	if ( *end && !(*end=='-' && end[1]=='\0'))
+	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=sc->width ) {
 	    SCPreserveWidth(sc);
@@ -936,9 +956,10 @@ return( true );
 	SplineChar *sc = mv->glyphs[which].sc;
 	DBounds bb;
 	SplineCharFindBounds(sc,&bb);
-	if ( *end && !(*end=='-' && end[1]=='\0'))
+	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=bb.minx ) {
+	    
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
@@ -976,7 +997,7 @@ return( true );
 	SplineChar *sc = mv->glyphs[which].sc;
 	DBounds bb;
 	SplineCharFindBounds(sc,&bb);
-	if ( *end && !(*end=='-' && end[1]=='\0'))
+	if (!isValidInt(end))
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && rint(val+bb.maxx)!=sc->width ) {
 	    int newwidth = rint(bb.maxx+val);
@@ -3697,8 +3718,71 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	MVMenuCharInfo(mv->gw,NULL,NULL);
     else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
-    } else if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
+    }
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up
+	 || event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down
+	 || event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
+	 || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
+	if( event->u.chr.state&ksm_meta ) {
+	    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1
+		: ( ( event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) ? 1 : 0);
+	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
+	    GGadget *toSelect = 0;
+
+	    if( active ) {
+		int i=0, j=0;
+		for ( i=0; i<mv->glyphcnt; ++i ) {
+		    // remember here that j=0 is NULL because updownkparray is NULL terminated
+		    // at both ends.
+		    for ( j=1; j<10 && mv->perchar[i].updownkparray[j]; ++j ) {
+			if ( active == mv->perchar[i].updownkparray[j] ) {
+			    if( dir != 0 ) {
+				toSelect =  mv->perchar[i].updownkparray[j+dir];
+			    } else {
+				int newidx = i;
+				if( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left ) 
+				    newidx--;
+				if( event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right )
+				    newidx++;
+				if( newidx < 0 || newidx >= mv->glyphcnt )
+				    return;
+				toSelect =  mv->perchar[newidx].updownkparray[j];
+			    }
+			}
+		    }
+		}
+	    } 
+	    if( toSelect ) {
+		GWidgetIndicateFocusGadget(toSelect);
+	    }
+	    return;
+	}
+    }
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
 	    event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
+	    GGadget *active = GWindowGetFocusGadgetOfWindow(mv->gw);
+	    unichar_t *end;
+	    double val = u_strtod(_GGadgetGetTitle(active),&end);
+	    if (isValidInt(end)) {
+		int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
+		if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
+		    dir *= pref_mv_control_shift_and_arrow_skip;
+		}
+		else if( event->u.chr.state&ksm_shift ) {
+		    dir *= pref_mv_shift_and_arrow_skip;
+		}
+		val += dir;
+		char buf[100];
+		snprintf(buf,99,"%.0f",val);
+		GGadgetSetTitle8(active, buf);
+
+		event->type=et_controlevent;
+		event->u.control.subtype = et_textchanged;
+		GGadgetDispatchEvent(active,event);
+	    }
+    }
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
+	 event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
 	int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
 	if ( mv->word_index!=-1 ) {
 	    int32 len;
@@ -4379,6 +4463,14 @@ static int mv_v_e_h(GWindow gw, GEvent *event) {
       case et_char:
 	MVChar(mv,event);
       break;
+      case et_charup:
+	  if ( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
+	       || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
+	      if( event->u.chr.state&ksm_meta ) {
+		  MVChar(mv,event);
+	      }
+	  }
+      break;
       case et_mouseup: case et_mousemove: case et_mousedown:
 	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 		(event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
@@ -4412,7 +4504,7 @@ return( true );
 static int mv_e_h(GWindow gw, GEvent *event) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf;
-
+    
     switch ( event->type ) {
       case et_selclear:
 	ClipboardClear();
@@ -4427,6 +4519,14 @@ static int mv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	MVChar(mv,event);
+      break;
+      case et_charup:
+	  if ( event->u.chr.keysym == GK_Left || event->u.chr.keysym==GK_KP_Left
+	       || event->u.chr.keysym == GK_Right || event->u.chr.keysym==GK_KP_Right ) {
+	      if( event->u.chr.state&ksm_meta ) {
+		  MVChar(mv,event);
+	      }
+	  }
       break;
       case et_mouseup: case et_mousemove: case et_mousedown:
 	if (( event->type==et_mouseup || event->type==et_mousedown ) &&
@@ -4607,7 +4707,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon|wam_nocairo;
-    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.event_masks = ~(0);
     wattrs.cursor = ct_mypointer;
     MVWindowTitle(buf,sizeof(buf),mv);
     wattrs.utf8_window_title = buf;

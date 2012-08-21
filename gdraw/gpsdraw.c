@@ -680,7 +680,7 @@ static void PSDrawFillRect(GWindow w, GRect *rct,Color col) {
 
 static void PSDrawFillRoundRect(GWindow w, GRect *rct,int UNUSED(radius),Color col) {
     fprintf( stderr, "DrawFillRoundRect not implemented for postscript\n" );
-return NULL;
+return;
 }
 
 static void PSDrawClear(GWindow w,GRect *rect) {
