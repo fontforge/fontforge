@@ -3509,7 +3509,6 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->candelete = Layers_CanDelete;
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static int GFI_Type3Change(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -3529,7 +3528,6 @@ static int GFI_Type3Change(GGadget *g, GEvent *e) {
     }
 return( true );
 }
-#endif
 
 static int GFI_OrderChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
@@ -3537,9 +3535,7 @@ static int GFI_OrderChange(GGadget *g, GEvent *e) {
 	GGadget *backs = GWidgetGetControl(gw,CID_Backgrounds);
 	int mixed = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMixed));
 	int cubic = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder3));
-#ifdef FONTFORGE_CONFIG_TYPE3
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMultiLayer), cubic);
-#endif
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), mixed);
 	if ( !mixed ) {
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_GuideOrder2), !cubic );
@@ -3989,9 +3985,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int design_size, size_top, size_bottom, styleid;
 	int strokedfont = false;
 	real strokewidth;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	int multilayer = false;
-#endif
 	char os2_vendor[4];
 	NameList *nl;
 	extern int allow_utf8_glyphnames;
@@ -4082,9 +4076,7 @@ return(true);
 	guideorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_GuideOrder2));
 	strokedfont = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsStrokedFont));
 	strokewidth = GetReal8(gw,CID_StrokeWidth,_("Stroke _Width:"),&err);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	multilayer = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
-#endif
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetReal8(gw,CID_UPos, _("Underline _Position:"),&err);
 	uwid = GetReal8(gw,CID_UWidth,S_("Underline|_Height:"),&err);
@@ -4252,7 +4244,6 @@ return(true);
 	}
 	if ( !SSNameValidate(d))
 return( true );
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( strokedfont!=sf->strokedfont || multilayer!=sf->multilayer ) {
 	    if ( sf->strokedfont && multilayer )
 		SFSetLayerWidthsStroked(sf,sf->strokewidth);
@@ -4266,11 +4257,6 @@ return( true );
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 		sf->glyphs[i]->changedsincelasthinted = !strokedfont && !multilayer;
 	}
-#else
-	if ( strokedfont!=sf->strokedfont )
-	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-		sf->glyphs[i]->changedsincelasthinted = !strokedfont;
-#endif
 	sf->strokedfont = strokedfont;
 	sf->strokewidth = strokewidth;
 	GDrawSetCursor(gw,ct_watch);
@@ -7503,11 +7489,7 @@ return;
 	    sf->fontname);
     wattrs.utf8_window_title = title;
     pos.x = pos.y = 0;
-#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268+85));
-#else
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
-#endif
     pos.height = GDrawPointsToPixels(NULL,375);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,d,&wattrs);
 
@@ -8065,7 +8047,6 @@ return;
     lgcd[k++].creator = GLabelCreate;
     larray2[j++] = &lgcd[k-1]; larray2[j++] = GCD_ColSpan; larray2[j++] = GCD_Glue; larray2[j++] = GCD_Glue; larray2[j++] = NULL;
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+k;
     llabel[k].text = (unichar_t *) _("_Outline Font");
     llabel[k].text_is_1byte = true;
@@ -8102,18 +8083,6 @@ return;
     lgcd[k].creator = GRadioCreate;
     lgcd[k++].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
     larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1];
-#else
-    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+16;
-    llabel[k].text = (unichar_t *) _("_Stroked Font");
-    llabel[k].text_is_1byte = true;
-    llabel[k].text_in_resource = true;
-    lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
-    lgcd[k].gd.cid = CID_IsStrokedFont;
-    lgcd[k].creator = GCheckBoxCreate;
-    lgcd[k++].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
-    larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1];
-#endif
 
     lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+20;
     llabel[k].text = (unichar_t *) _("  Stroke _Width:");
@@ -10540,7 +10509,6 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mfbox;
 
-#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     aspects[i].text = (unichar_t *) _("Dates");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = dbox;
@@ -10549,21 +10517,14 @@ return;
     aspects[i].text = (unichar_t *) _("Unicode Ranges");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = ubox;
-#endif
 
     aspects[defaspect].selected = true;
 
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
     mgcd[0].gd.u.tabs = aspects;
-#ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
     mgcd[0].gd.pos.width = 260+85;
     mgcd[0].gd.pos.height = 325;
-#else
-    mgcd[0].gd.flags = gg_visible | gg_enabled;
-    mgcd[0].gd.pos.width = 260;
-    mgcd[0].gd.pos.height = 325;
-#endif
     mgcd[0].gd.handle_controlevent = GFI_AspectChange;
     mgcd[0].gd.cid = CID_Tabs;
     mgcd[0].creator = GTabSetCreate;

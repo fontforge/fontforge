@@ -521,22 +521,15 @@ static void SplashLayout() {
     uc_strcat(pt,source_modtime_str);
     uc_strcat(pt," (");
     uc_strcat(pt,source_version_str);
-#ifdef FONTFORGE_CONFIG_TYPE3
     uc_strcat(pt,"-ML");
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
     uc_strcat(pt,"-TtfDb");
 #endif
 #ifdef _NO_PYTHON
     uc_strcat(pt,"-NoPython");
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-    uc_strcat(pt,"-LD");
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
-#endif
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-    uc_strcat(pt,"-NoDevTab");
 #endif
     uc_strcat(pt,")");
     pt += u_strlen(pt);
@@ -1096,22 +1089,15 @@ int main( int argc, char **argv ) {
 #endif
 
     fprintf( stderr, "Copyright (c) 2000-2012 by George Williams.\n Executable based on sources from %s"
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    "-ML"
-#endif
 #ifdef FREETYPE_HAS_DEBUGGER
 	    "-TtfDb"
 #endif
 #ifdef _NO_PYTHON
 	    "-NoPython"
 #endif
-#ifdef FONTFORGE_CONFIG_USE_LONGDOUBLE
-	    "-LD"
-#elif defined(FONTFORGE_CONFIG_USE_DOUBLE)
+#ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	    "-D"
-#endif
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
-	    "-NoDevTab"
 #endif
 	    ".\n",
 	    source_modtime_str );

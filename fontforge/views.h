@@ -329,6 +329,7 @@ typedef struct metricsview {
 	int16 kernafter;
 	unsigned int selected: 1;
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
+	GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
     } *perchar;
     SplineChar **sstr;		/* Character input stream */
     int16 mwidth, mbase;
@@ -509,8 +510,6 @@ extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
 extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
-# ifdef FONTFORGE_CONFIG_TYPE3
-
 typedef struct gradientdlg {
     struct cvcontainer base;
     FontView dummy_fv;
@@ -535,7 +534,6 @@ typedef struct gradientdlg {
     struct gradient *active;
 } GradientDlg;
 extern void GDDCharViewInits(GradientDlg *gdd,int cid);
-#endif		/* Type3 */
 
 typedef struct strokedlg {
     struct cvcontainer base;
@@ -771,11 +769,9 @@ extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern char *DevTab_Dlg(GGadget *g, int r, int c);
 extern int DeviceTableOK(char *dvstr, int *_low, int *_high);
 extern void VRDevTabParse(struct vr *vr,struct matrix_data *md);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
 extern void DevTabToString(char **str,DeviceTable *adjust);
 extern void ValDevTabToStrings(struct matrix_data *mds,int first_offset,ValDevTab *adjust);
-#endif
 extern void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i);
 extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);

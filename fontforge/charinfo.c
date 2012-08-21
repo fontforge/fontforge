@@ -115,7 +115,6 @@ typedef struct charinfo {
 #define CID_TileBBoxMaxX	3006
 #define CID_TileBBoxMaxY	3007
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define SIM_DX		1
 #define SIM_DY		3
 #define SIM_DX_ADV	5
@@ -128,20 +127,6 @@ typedef struct charinfo {
 #define PAIR_DY2	12
 #define PAIR_DX_ADV2	14
 #define PAIR_DY_ADV2	16
-#else
-#define SIM_DX		1
-#define SIM_DY		2
-#define SIM_DX_ADV	3
-#define SIM_DY_ADV	4
-#define PAIR_DX1	2
-#define PAIR_DY1	3
-#define PAIR_DX_ADV1	4
-#define PAIR_DY_ADV1	5
-#define PAIR_DX2	6
-#define PAIR_DY2	7
-#define PAIR_DX_ADV2	8
-#define PAIR_DY_ADV2	9
-#endif
 
 static GTextInfo glyphclasses[] = {
     { (unichar_t *) N_("Automatic"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
@@ -584,7 +569,6 @@ static void CI_ParseCounters(CharInfo *ci) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 int DeviceTableOK(char *dvstr, int *_low, int *_high) {
     char *pt, *end;
     int low, high, pixel, cor;
@@ -701,7 +685,6 @@ return;
     DevTabToString(&mds[first_offset+4].u.md_str,&adjust->xadv);
     DevTabToString(&mds[first_offset+6].u.md_str,&adjust->yadv);
 }
-#endif
 
 void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i) {
@@ -709,9 +692,7 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
     PST *pst;
     KernPair *kp;
     int isv, iskpable, offset, newv;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     char *dvstr;
-#endif
     char *pt, *start;
     int ch;
 
@@ -751,7 +732,6 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 			possub[cols*i+PAIR_DX_ADV2].u.md_ival==0 &&
 			possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
 	    offset = possub[cols*i+PAIR_DY1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 ) &&
@@ -760,7 +740,6 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 			(possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
 	    dvstr = possub[cols*i+PAIR_DY1+1].u.md_str;
-#endif
 	} else if ( sub->lookup->lookup_flags & pst_r2l ) {
 	    iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
 			possub[cols*i+PAIR_DY1].u.md_ival==0 &&
@@ -770,7 +749,6 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 			possub[cols*i+PAIR_DY2].u.md_ival==0 &&
 			possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
 	    offset = possub[cols*i+PAIR_DX_ADV2].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 ) &&
@@ -779,7 +757,6 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 			(possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
 	    dvstr = possub[cols*i+PAIR_DX_ADV2+1].u.md_str;
-#endif
 	} else {
 	    iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
 			possub[cols*i+PAIR_DY1].u.md_ival==0 &&
@@ -789,7 +766,6 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 			possub[cols*i+PAIR_DX_ADV2].u.md_ival==0 &&
 			possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
 	    offset = possub[cols*i+PAIR_DX_ADV1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 ) &&
@@ -798,7 +774,6 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 			(possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 ) &&
 			(possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
 	    dvstr = possub[cols*i+PAIR_DX_ADV1+1].u.md_str;
-#endif
 	}
 	if ( iskpable ) {
 	    if ( kp==NULL ) {
@@ -815,10 +790,8 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 		    sc->kerns = kp;
 		}
 	    }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    DeviceTableFree(kp->adjust);
 	    kp->adjust = DeviceTableParse(NULL,dvstr);
-#endif
 	    kp->off = offset;
 	    kp->kcid = true;
 	} else {
@@ -833,10 +806,8 @@ void KpMDParse(SplineChar *sc,struct lookup_subtable *sub,
 		pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
 		pst->u.pair.paired = copy(start);
 	    }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    VRDevTabParse(&pst->u.pair.vr[0],&possub[cols*i+PAIR_DX1+1]);
 	    VRDevTabParse(&pst->u.pair.vr[1],&possub[cols*i+PAIR_DX2]+1);
-#endif
 	    pst->u.pair.vr[0].xoff = possub[cols*i+PAIR_DX1].u.md_ival;
 	    pst->u.pair.vr[0].yoff = possub[cols*i+PAIR_DY1].u.md_ival;
 	    pst->u.pair.vr[0].h_adv_off = possub[cols*i+PAIR_DX_ADV1].u.md_ival;
@@ -896,7 +867,6 @@ return( false );
 	}
     }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     /* Check for badly specified device tables */
     for ( pstt = pst_position; pstt<=pst_pair; ++pstt ) {
 	int startc = pstt==pst_position ? SIM_DX+1 : PAIR_DX1+1;
@@ -913,7 +883,6 @@ return( true );
 	    }
 	}
     }
-#endif
 
     for ( pstt = pst_pair; pstt<=pst_ligature; ++pstt ) {
 	possub = GMatrixEditGet(GWidgetGetControl(ci->gw,CID_List+(pstt-1)*100), &rows );
@@ -1007,9 +976,7 @@ return( false );
 	    pst->next = sc->possub;
 	    sc->possub = pst;
 	}
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	VRDevTabParse(&pst->u.pos,&possub[cols*i+SIM_DX+1]);
-#endif
 	pst->u.pos.xoff = possub[cols*i+SIM_DX].u.md_ival;
 	pst->u.pos.yoff = possub[cols*i+SIM_DY].u.md_ival;
 	pst->u.pos.h_adv_off = possub[cols*i+SIM_DX_ADV].u.md_ival;
@@ -1115,9 +1082,7 @@ return( NULL );
     }
     if ( !only_parts ) {
 	gv->italic_correction = italic_correction;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	gv->italic_adjusts = DeviceTableParse(gv->italic_adjusts,italic_correction_devtab);
-#endif
     }
     gv = GV_ParseConstruction(gv,stuff,rows,cols);
 return( gv );
@@ -1217,9 +1182,7 @@ static KernPair *CI_KPCopy(KernPair *kp) {
     while ( kp!=NULL ) {
 	newkp = chunkalloc(sizeof(KernPair));
 	*newkp = *kp;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	newkp->adjust = DeviceTableCopy(kp->adjust);
-#endif
 	newkp->next = NULL;
 	if ( head==NULL )
 	    head = newkp;
@@ -1243,10 +1206,8 @@ static PST *CI_PSTCopy(PST *pst) {
 	    newpst->u.pair.paired = copy(pst->u.pair.paired);
 	    newpst->u.pair.vr = chunkalloc(sizeof( struct vr [2]));
 	    memcpy(newpst->u.pair.vr,pst->u.pair.vr,sizeof(struct vr [2]));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    newpst->u.pair.vr[0].adjust = ValDevTabCopy(pst->u.pair.vr[0].adjust);
 	    newpst->u.pair.vr[1].adjust = ValDevTabCopy(pst->u.pair.vr[1].adjust);
-#endif
 	} else if ( newpst->type==pst_lcaret ) {
 	    newpst->u.lcaret.carets = galloc(pst->u.lcaret.cnt*sizeof(uint16));
 	    memcpy(newpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(uint16));
@@ -1284,10 +1245,8 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->italic_correction = sc->italic_correction;
     newsc->top_accent_horiz = sc->top_accent_horiz;
     newsc->is_extended_shape = sc->is_extended_shape;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     newsc->italic_adjusts = DeviceTableCopy(sc->italic_adjusts);
     newsc->top_accent_adjusts = DeviceTableCopy(sc->top_accent_adjusts);
-#endif
     newsc->horiz_variants = GlyphVariantsCopy(sc->horiz_variants);
     newsc->vert_variants = GlyphVariantsCopy(sc->vert_variants);
     newsc->altuni = AltUniCopy(sc->altuni,NULL);
@@ -1295,10 +1254,8 @@ static SplineChar *CI_SCDuplicate(SplineChar *sc) {
     newsc->possub = CI_PSTCopy(sc->possub);
     newsc->kerns = CI_KPCopy(sc->kerns);
     newsc->vkerns = CI_KPCopy(sc->vkerns);
-#ifdef FONTFORGE_CONFIG_TYPE3
     newsc->tile_margin = sc->tile_margin;
     newsc->tile_bounds = sc->tile_bounds;
-#endif
 return( newsc );
 }
 
@@ -1419,13 +1376,9 @@ static int _CI_OK(CharInfo *ci) {
     int lc_cnt=-1;
     char *italicdevtab=NULL, *accentdevtab=NULL, *hicdt=NULL, *vicdt=NULL;
     int lig_caret_cnt_fixed=0;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int low,high;
-#endif
-#ifdef FONTFORGE_CONFIG_TYPE3
     real tile_margin=0;
     DBounds tileb;
-#endif
     SplineChar *oldsc = ci->cachedsc==NULL ? ci->sc : ci->cachedsc;
 
     if ( !CI_ValidateAltUnis(ci))
@@ -1445,7 +1398,6 @@ return( false );
     if ( err )
 return( false );
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(&tileb,0,sizeof(tileb));
     if ( ci->sc->parent->multilayer ) {
 	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin)))
@@ -1459,7 +1411,6 @@ return( false );
 	if ( err )
 return( false );
     }
-#endif
 
     lig_caret_cnt_fixed = !GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_DefLCCount));
     if ( ci->lc_seen ) {
@@ -1475,7 +1426,6 @@ return( false );
     if ( !CI_NameCheck(nm) )
 return( false );
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     italicdevtab = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ItalicDevTab));
     accentdevtab = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_AccentDevTab));
     hicdt = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+1*100));
@@ -1488,7 +1438,6 @@ return( false );
 	free(hicdt); free(vicdt);
 return( false );
     }
-#endif
     if ( ci->cachedsc==NULL ) {
 	struct splinecharlist *scl;
 	ci->cachedsc = chunkalloc(sizeof(SplineChar));
@@ -1531,10 +1480,8 @@ return( false );
     ci->cachedsc->italic_correction = italic;
     ci->cachedsc->top_accent_horiz = topaccent;
     ci->cachedsc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     ci->cachedsc->italic_adjusts = DeviceTableParse(ci->cachedsc->italic_adjusts,italicdevtab);
     ci->cachedsc->top_accent_adjusts = DeviceTableParse(ci->cachedsc->top_accent_adjusts,accentdevtab);
-#endif
     ci->cachedsc->horiz_variants = CI_ParseVariants(ci->cachedsc->horiz_variants,ci,1,hicdt,hic,false);
     ci->cachedsc->vert_variants  = CI_ParseVariants(ci->cachedsc->vert_variants ,ci,0,vicdt,vic,false);
 
@@ -1574,10 +1521,8 @@ return( false );
 	}
     }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     ci->cachedsc->tile_margin = tile_margin;
     ci->cachedsc->tile_bounds = tileb;
-#endif
 
 return( ret );
 }
@@ -1638,13 +1583,11 @@ static void CI_ApplyAll(CharInfo *ci) {
 	sc->italic_correction = cached->italic_correction;
 	sc->top_accent_horiz = cached->top_accent_horiz;
 	sc->is_extended_shape = cached->is_extended_shape;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DeviceTableFree(sc->italic_adjusts);
 	DeviceTableFree(sc->top_accent_adjusts);
 	sc->italic_adjusts = cached->italic_adjusts;
 	sc->top_accent_adjusts = cached->top_accent_adjusts;
 	cached->italic_adjusts = cached->top_accent_adjusts = NULL;
-#endif
 	GlyphVariantsFree(sc->horiz_variants);
 	GlyphVariantsFree(sc->vert_variants);
 	sc->horiz_variants = cached->horiz_variants;
@@ -1660,10 +1603,8 @@ static void CI_ApplyAll(CharInfo *ci) {
 	KernPairsFree(sc->kerns); KernPairsFree(sc->vkerns);
 	sc->kerns = cached->kerns; sc->vkerns = cached->vkerns;
 	cached->kerns = cached->vkerns = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	sc->tile_margin = cached->tile_margin;
 	sc->tile_bounds = cached->tile_bounds;
-#endif
 	if ( !sc->changed ) {
 	    sc->changed = true;
 	    refresh_fvdi = true;
@@ -1714,7 +1655,6 @@ static int CI_OK(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void CI_BoundsToMargin(CharInfo *ci) {
     int err=false;
     real margin = GetCalmReal8(ci->gw,CID_TileMargin,NULL,&err);
@@ -1744,7 +1684,6 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 	CI_BoundsToMargin(ci);
 return( true );
 }
-#endif
 
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
@@ -2207,7 +2146,6 @@ static int CI_CommentChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 struct devtab_dlg {
     int done;
     GWindow gw;
@@ -2436,7 +2374,6 @@ return( ret );
     } else
 return( copy(dvstr));
 }
-#endif
 
 static void finishedit(GGadget *g, int r, int c, int wasnew);
 static void kernfinishedit(GGadget *g, int r, int c, int wasnew);
@@ -2463,7 +2400,6 @@ static struct col_init multsubsci[] = {
     { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
     COL_INIT_EMPTY
 };
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static struct col_init simpleposci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
     { me_int, NULL, NULL, NULL, NU_("∆x") },	/* delta-x */
@@ -2501,29 +2437,6 @@ static struct col_init pairposci[] = {
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
     COL_INIT_EMPTY
 };
-#else
-static struct col_init simpleposci[] = {
-    { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
-    { me_int, NULL, NULL, NULL, NU_("∆x") },	/* delta-x */
-    { me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
-    { me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
-    { me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
-    COL_INIT_EMPTY
-};
-static struct col_init pairposci[] = {
-    { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple kern-pairs for a glyph */
-    { me_string , NULL, NULL, NULL, N_("Second Glyph Name") },
-    { me_int, NULL, NULL, NULL, NU_("∆x #1") },	/* delta-x */
-    { me_int, NULL, NULL, NULL, NU_("∆y #1") },	/* delta-y */
-    { me_int, NULL, NULL, NULL, NU_("∆x_adv #1") },	/* delta-x-adv */
-    { me_int, NULL, NULL, NULL, NU_("∆y_adv #1") },	/* delta-y-adv */
-    { me_int, NULL, NULL, NULL, NU_("∆x #2") },	/* delta-x */
-    { me_int, NULL, NULL, NULL, NU_("∆y #2") },	/* delta-y */
-    { me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
-    { me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
-    COL_INIT_EMPTY
-};
-#endif
 static int pst2lookuptype[] = { ot_undef, gpos_single, gpos_pair, gsub_single,
      gsub_alternate, gsub_multiple, gsub_ligature, 0 };
 struct matrixinit mi[] = {
@@ -2803,7 +2716,6 @@ static void CI_DoHideUnusedSingle(CharInfo *ci) {
 
     if ( lookup_hideunused ) {
 	memset(cols_used,0,sizeof(cols_used));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	for ( r=0; r<rows; ++r ) {
 	    for ( col=1; col<cols; col+=2 ) {
 		if ( old[cols*r+col].u.md_ival!=0 )
@@ -2812,14 +2724,6 @@ static void CI_DoHideUnusedSingle(CharInfo *ci) {
 		    cols_used[col+1] = true;
 	    }
 	}
-#else
-	for ( r=0; r<rows; ++r ) {
-	    for ( col=1; col<cols; ++col ) {
-		if ( old[cols*r+col].u.md_ival!=0 )
-		    cols_used[col] = true;
-	    }
-	}
-#endif
 	for ( col=1, tot=0; col<cols; ++col )
 	    tot += cols_used[col];
 	/* If no columns used (no info yet, all info is to preempt a kernclass and sets to 0) */
@@ -2850,7 +2754,6 @@ static void CI_DoHideUnusedPair(CharInfo *ci) {
 
     if ( lookup_hideunused ) {
 	memset(cols_used,0,sizeof(cols_used));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	for ( r=0; r<rows; ++r ) {
 	    for ( col=2; col<cols; col+=2 ) {
 		if ( old[cols*r+col].u.md_ival!=0 )
@@ -2859,14 +2762,6 @@ static void CI_DoHideUnusedPair(CharInfo *ci) {
 		    cols_used[col+1] = true;
 	    }
 	}
-#else
-	for ( r=0; r<rows; ++r ) {
-	    for ( col=2; col<cols; ++col ) {
-		if ( old[cols*r+col].u.md_ival!=0 )
-		    cols_used[col] = true;
-	    }
-	}
-#endif
 	for ( col=2, tot=0; col<cols; ++col )
 	    tot += cols_used[col];
 	/* If no columns used (no info yet, all info is to preempt a kernclass and sets to 0) */
@@ -2991,11 +2886,7 @@ return( NULL );
 	    BDFChar *temp = me;
 	    me = other;
 	    other = temp;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    coff1 = 8; coff2 = -8;
-#else
-	    coff1 = 4; coff2 = -4;
-#endif
 	}
 	kern = rint( old[cols*ci->r+PAIR_DX_ADV1+coff1].u.md_ival*scale );
 	minx = me->xmin + rint(old[cols*ci->r+PAIR_DX1+coff1].u.md_ival*scale);
@@ -3929,9 +3820,7 @@ static void CIFillup(CharInfo *ci) {
     KernPair *kp;
     unichar_t ubuf[4];
     GTextInfo **ti;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     char *devtabstr;
-#endif
 
     sprintf(buf,_("Glyph Info for %.40s"),sc->name);
     GDrawSetWindowTitles8(ci->gw, buf, _("Glyph Info..."));
@@ -3984,9 +3873,7 @@ static void CIFillup(CharInfo *ci) {
 	    mds[pst->type][j+SIM_DY].u.md_ival = pst->u.pos.yoff;
 	    mds[pst->type][j+SIM_DX_ADV].u.md_ival = pst->u.pos.h_adv_off;
 	    mds[pst->type][j+SIM_DY_ADV].u.md_ival = pst->u.pos.v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    ValDevTabToStrings(mds[pst_position],j+SIM_DX+1,pst->u.pos.adjust);
-#endif
 	} else if ( pst->type==pst_pair ) {
 	    mds[pst->type][j+1].u.md_str = copy(pst->u.pair.paired);
 	    mds[pst->type][j+PAIR_DX1].u.md_ival = pst->u.pair.vr[0].xoff;
@@ -3997,10 +3884,8 @@ static void CIFillup(CharInfo *ci) {
 	    mds[pst->type][j+PAIR_DY2].u.md_ival = pst->u.pair.vr[1].yoff;
 	    mds[pst->type][j+PAIR_DX_ADV2].u.md_ival = pst->u.pair.vr[1].h_adv_off;
 	    mds[pst->type][j+PAIR_DY_ADV2].u.md_ival = pst->u.pair.vr[1].v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    ValDevTabToStrings(mds[pst_pair],j+PAIR_DX1+1,pst->u.pair.vr[0].adjust);
 	    ValDevTabToStrings(mds[pst_pair],j+PAIR_DX2+1,pst->u.pair.vr[1].adjust);
-#endif
 	} else {
 	    mds[pst->type][j+1].u.md_str = SFNameList2NameUni(sf,pst->u.subs.variant);
 	}
@@ -4010,7 +3895,6 @@ static void CIFillup(CharInfo *ci) {
 	    j = (cnts[pst_pair]++ * mi[pst_pair-1].col_cnt);
 	    mds[pst_pair][j+0].u.md_ival = (intpt) kp->subtable;
 	    mds[pst_pair][j+1].u.md_str = SCNameUniStr(kp->sc);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( isv ) {
 		mds[pst_pair][j+PAIR_DY_ADV1].u.md_ival = kp->off;
 		DevTabToString(&mds[pst_pair][j+PAIR_DY_ADV1+1].u.md_str,kp->adjust);
@@ -4021,15 +3905,6 @@ static void CIFillup(CharInfo *ci) {
 		mds[pst_pair][j+PAIR_DX_ADV1].u.md_ival = kp->off;
 		DevTabToString(&mds[pst_pair][j+PAIR_DX_ADV1+1].u.md_str,kp->adjust);
 	    }
-#else
-	    if ( isv ) {
-		mds[pst_pair][j+PAIR_DY_ADV1].u.md_ival = kp->off;
-	    } else if ( kp->subtable->lookup->lookup_flags&pst_r2l ) {
-		mds[pst_pair][j+PAIR_DX_ADV2].u.md_ival = kp->off;
-	    } else {
-		mds[pst_pair][j+PAIR_DX_ADV1].u.md_ival = kp->off;
-	    }
-#endif
 	}
     }
     for ( i=pst_null+1; i<pst_lcaret /* == pst_max-1 */; ++i ) {
@@ -4100,22 +3975,18 @@ static void CIFillup(CharInfo *ci) {
     else
 	buffer[0] = '\0';
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TeX_Italic),buffer);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DevTabToString(&devtabstr,sc->italic_adjusts);
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ItalicDevTab),devtabstr==NULL?"":devtabstr);
     free(devtabstr);
-#endif
 
     if ( sc->top_accent_horiz!=TEX_UNDEF )
 	sprintf(buffer,"%d",sc->top_accent_horiz);
     else
 	buffer[0] = '\0';
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_HorAccent),buffer);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     DevTabToString(&devtabstr,sc->top_accent_adjusts);
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_AccentDevTab),devtabstr==NULL?"":devtabstr);
     free(devtabstr);
-#endif
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_IsExtended),sc->is_extended_shape);
 
@@ -4127,13 +3998,11 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSetTitle8(g,sc->vert_variants->variants);
 	sprintf(buffer,"%d",sc->vert_variants!=NULL?sc->vert_variants->italic_correction:0);
 	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicCor+0*100),buffer);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DevTabToString(&devtabstr,sc->vert_variants!=NULL?
 		sc->vert_variants->italic_adjusts:
 		NULL);
 	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+0*100),devtabstr==NULL?"":devtabstr);
 	free(devtabstr);
-#endif
 
 	g = GWidgetGetControl(ci->gw,CID_VariantList+1*100);
 	if ( sc->horiz_variants==NULL || sc->horiz_variants->variants==NULL )
@@ -4142,13 +4011,11 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSetTitle8(g,sc->horiz_variants->variants);
 	sprintf(buffer,"%d",sc->horiz_variants!=NULL?sc->horiz_variants->italic_correction:0);
 	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicCor+1*100),buffer);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DevTabToString(&devtabstr,sc->horiz_variants!=NULL?
 		sc->horiz_variants->italic_adjusts:
 		NULL);
 	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+1*100),devtabstr==NULL?"":devtabstr);
 	free(devtabstr);
-#endif
     }
     for ( i=0; i<2; ++i ) {
 	struct glyphvariants *gv = i ? sc->horiz_variants : sc->vert_variants ;
@@ -4157,7 +4024,6 @@ static void CIFillup(CharInfo *ci) {
     }
     GA_ToMD(GWidgetGetControl(ci->gw,CID_AltUni), sc);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( ci->sc->parent->multilayer ) {
 	int margined = sc->tile_margin!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0);
 	char buffer[40];
@@ -4179,7 +4045,6 @@ static void CIFillup(CharInfo *ci) {
 	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
 	}
     }
-#endif
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_DefLCCount), !sc->lig_caret_cnt_fixed );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_LCCountLab), sc->lig_caret_cnt_fixed );
@@ -4275,11 +4140,9 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
     GGadgetCreateData lcbox[2], *lchvarray[4][4];
     GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
-#ifdef FONTFORGE_CONFIG_TYPE3
     GGadgetCreateData tilegcd[16], tilebox[4];
     GTextInfo tilelabel[16];
     GGadgetCreateData *tlvarray[6], *tlharray[4], *tlhvarray[4][5];
-#endif
     int i;
     GTabInfo aspects[17];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
@@ -4323,11 +4186,7 @@ return;
 	wattrs.utf8_window_title =  _("Glyph Info");
 	wattrs.is_dlg = false;
 	pos.x = pos.y = 0;
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width));
-#else
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,CI_Width+65));
-#endif
 	pos.height = GDrawPointsToPixels(NULL,CI_Height);
 	ci->gw = GDrawCreateTopWindow(NULL,&pos,ci_e_h,ci,&wattrs);
 
@@ -4716,15 +4575,11 @@ return;
 	tgcd[8].gd.popup_msg = tgcd[6].gd.popup_msg;
 	thvarray[12] = &tgcd[8];
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	tgcd[9].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[9].gd.cid = CID_ItalicDevTab;
 	tgcd[9].creator = GTextFieldCreate;
 	tgcd[9].gd.popup_msg = (unichar_t *) _("A device table for italic correction.\nExpects a comma separated list of <pixelsize>\":\"<adjustment>\nAs \"9:-1,12:1,13:1\"");
 	thvarray[13] = &tgcd[9]; thvarray[14] = NULL;
-#else
-	thvarray[13] = GCD_Glue; thvarray[14] = NULL;
-#endif
 
 	tlabel[10].text = (unichar_t *) _("Top Accent Pos:");
 	tlabel[10].text_is_1byte = true;
@@ -4754,15 +4609,11 @@ return;
 	tgcd[12].gd.popup_msg = tgcd[10].gd.popup_msg;
 	thvarray[17] = &tgcd[12];
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	tgcd[13].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[13].gd.cid = CID_AccentDevTab;
 	tgcd[13].creator = GTextFieldCreate;
 	tgcd[13].gd.popup_msg = (unichar_t *) _("A device table for horizontal accent positioning.\nExpects a comma separated list of <pixelsize>\":\"<adjustment>\nAs \"9:-1,12:1,13:1\"");
 	thvarray[18] = &tgcd[13]; thvarray[19] = NULL;
-#else
-	thvarray[18] = GCD_Glue; thvarray[19] = NULL;
-#endif
 
 	tlabel[14].text = (unichar_t *) _("Is Extended Shape");
 	tlabel[14].text_is_1byte = true;
@@ -4883,16 +4734,12 @@ return;
 	    vargcd[i][4].gd.popup_msg = vargcd[i][4].gd.popup_msg;
 	    varhvarray[i][2][1] = &vargcd[i][4];
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    vargcd[i][5].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	    vargcd[i][5].gd.pos.width = 60;
 	    vargcd[i][5].gd.cid = CID_ExtItalicDev+i*100;
 	    vargcd[i][5].creator = GTextFieldCreate;
 	    vargcd[i][5].gd.popup_msg = vargcd[i][3].gd.popup_msg;
 	    varhvarray[i][2][2] = &vargcd[i][5];
-#else
-	    varhvarray[i][2][2] = GCD_Glue;
-#endif
 	    varhvarray[i][2][3] = NULL;
 
 	    vargcd[i][6].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
@@ -4909,7 +4756,6 @@ return;
 	    varbox[i][0].creator = GHVBoxCreate;
 	}
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	memset(&tilegcd,0,sizeof(tilegcd));
 	memset(&tilebox,0,sizeof(tilebox));
 	memset(&tilelabel,0,sizeof(tilelabel));
@@ -5018,7 +4864,6 @@ return;
 	tilebox[0].gd.flags = gg_enabled|gg_visible;
 	tilebox[0].gd.u.boxelements = tlvarray;
 	tilebox[0].creator = GVBoxCreate;
-#endif
 
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mbox,0,sizeof(mbox));
@@ -5035,27 +4880,15 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = cbox;
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Pos");
-#else
 	aspects[i].text = (unichar_t *) _("Positionings");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = pstbox[pst_position-1];
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Pair");
-#else
 	aspects[i].text = (unichar_t *) _("Pairwise Pos");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = pstbox[pst_pair-1];
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Subs");
-#else
 	aspects[i].text = (unichar_t *) _("Substitutions");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[2];
 
@@ -5067,11 +4900,7 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[4];
 
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	aspects[i].text = (unichar_t *) _("Ligature");
-#else
 	aspects[i].text = (unichar_t *) _("Ligatures");
-#endif
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[5];
 
@@ -5107,24 +4936,18 @@ return;
 	aspects[i].nesting = 1;
 	aspects[i++].gcd = varbox[1];
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    aspects[i].text = (unichar_t *) U_("Tile Size");
 	    aspects[i].text_is_1byte = true;
 	    aspects[i++].gcd = tilebox;
 	}
-#endif
 
 	if ( last_gi_aspect<i )
 	    aspects[last_gi_aspect].selected = true;
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
 	mgcd[0].gd.u.tabs = aspects;
-#ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
-	mgcd[0].gd.flags = gg_visible | gg_enabled;
-#else
 	mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
-#endif
 	mgcd[0].gd.cid = CID_Tabs;
 	mgcd[0].gd.handle_controlevent = CI_AspectChange;
 	mgcd[0].creator = GTabSetCreate;
@@ -5235,13 +5058,11 @@ return;
 	GHVBoxSetExpandableRow(varbox[0][0].ret,3);
 	GHVBoxSetExpandableRow(varbox[1][0].ret,3);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    GHVBoxSetExpandableRow(tilebox[0].ret,gb_expandglue);
 	    GHVBoxSetExpandableCol(tilebox[2].ret,gb_expandglue);
 	    GHVBoxSetExpandableCol(tilebox[3].ret,gb_expandglue);
 	}
-#endif
 
 	GHVBoxFitWindow(mbox[0].ret);
 
@@ -5493,9 +5314,7 @@ void CharInfoInit(void) {
     int i, j;
     static char **cnames[] = { newstrings, NULL };
     static struct col_init *col_inits[] = { extensionpart, altuniinfo,
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	devtabci,
-#endif
 	simplesubsci, ligatureci, altsubsci, multsubsci, simpleposci,
 	pairposci, NULL };
 

@@ -1474,7 +1474,6 @@ void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePointList *s
 
 static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
     int active = cv->b.layerheads[cv->b.drawmode]==layer;
     int ml = cv->b.sc->parent->multilayer;
 
@@ -1504,9 +1503,6 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 #if 0
     if ( layer->dostroke && layer->stroke_pen.width!=WIDTH_INHERITED )
 	GDrawSetLineWidth(pixmap,0);
-#endif
-#else
-    CVDrawSplineSetSpecialized(cv,pixmap,layer->splines,fg,dopoints,clip,strokeFillMode);
 #endif
 }
 
@@ -4305,9 +4301,7 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
     if ( updateflex && (CharView *) (sc->views)!=NULL && layer>=ly_fore )
 	SplineCharIsFlexible(sc,layer);
     SCUpdateAll(sc);
-# ifdef FONTFORGE_CONFIG_TYPE3
     SCLayersChange(sc);
-# endif
     SCRegenFills(sc);
 }
 
@@ -4321,9 +4315,7 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
     int cvlayer = CVLayer((CharViewBase *) cv);
 
     CVSetCharChanged(cv,changed);
-#ifdef FONTFORGE_CONFIG_TYPE3
     CVLayerChange(cv);
-#endif
     if ( cv->needsrasterize ) {
 	TTFPointMatches(cv->b.sc,cvlayer,true);		/* Must precede regen dependents, as this can change references */
 	SCRegenDependents(cv->b.sc,cvlayer);		/* All chars linked to this one need to get the new splines */
@@ -8570,12 +8562,10 @@ void CVMakeClipPath(CharView *cv) {
 	CVCharChangedUpdate((CharViewBase *) cv);
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void CVMenuClipPath(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVMakeClipPath(cv);
 }
-#endif
 
 void CVAddAnchor(CharView *cv) {
     int waslig;
@@ -9803,9 +9793,7 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("Ma_ke Arc"), (GImage *) "pointsmakearc.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Arc|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeArc },
     { { (unichar_t *) N_("Inse_rt Point On Spline At..."),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Insert Point On Spline At...|No Shortcut"), NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },
     { { (unichar_t *) N_("_Name Contour"),  (GImage *) "pointsnamecontour.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
-#ifdef FONTFORGE_CONFIG_TYPE3
     { { (unichar_t *) N_("Make Clip _Path"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Clip Path|No Shortcut"), NULL, NULL, CVMenuClipPath, MID_ClipPath },
-#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Tool_s"),  (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, cvtoollist, cvtoollist_check, NULL, MID_Tools },
     GMENUITEM2_EMPTY
@@ -10959,8 +10947,6 @@ void PTDCharViewInits(TilePathDlg *tpd, int cid) {
 }
 #endif		/* TilePath */
 
-#ifdef FONTFORGE_CONFIG_TYPE3		/* And gradients */
-
 void GDDCharViewInits(GradientDlg *gdd, int cid) {
     GGadgetData gd;
     GWindowAttrs wattrs;
@@ -10988,7 +10974,6 @@ void GDDCharViewInits(GradientDlg *gdd, int cid) {
 	    &pos,nested_cv_e_h,&gdd->cv_grad,&wattrs);
     _CharViewCreate(&gdd->cv_grad, &gdd->sc_grad, &gdd->dummy_fv, 0);
 }
-#endif			/* Gradients (TYPE3) */
 
 void StrokeCharViewInits(StrokeDlg *sd, int cid) {
     GGadgetData gd;

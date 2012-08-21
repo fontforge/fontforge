@@ -600,7 +600,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     for ( ; spl!=NULL; spl=spl->next ) {
 	first = NULL;
 	for ( sp = spl->first; ; sp=sp->next->to ) {
-#if !defined(FONTFORGE_CONFIG_USE_DOUBLE) && !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE)
+#ifndef FONTFORGE_CONFIG_USE_DOUBLE
 	    if ( first==NULL )
 		fprintf( sfd, "%g %g m ", (double) sp->me.x, (double) sp->me.y );
 	    else if ( sp->prev->islinear && sp->noprevcp )		/* Don't use known linear here. save control points if there are any */
@@ -673,7 +673,6 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
     fprintf( sfd, "EndSplineSet\n" );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void SFDDumpDeviceTable(FILE *sfd,DeviceTable *adjust) {
     int i;
 
@@ -697,7 +696,6 @@ return;
     fprintf( sfd, " ddv=" ); SFDDumpDeviceTable(sfd,&adjust->yadv);
     putc(']',sfd);
 }
-#endif
 
 static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
     AnchorPoint *ap;
@@ -713,14 +711,12 @@ static void SFDDumpAnchorPoints(FILE *sfd,SplineChar *sc) {
 		ap->type==at_basechar ? "basechar" :
 		ap->type==at_baselig ? "baselig" : "basemark",
 		ap->lig_index );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,&ap->xadjust);
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,&ap->yadjust);
 	} else
-#endif
 	if ( ap->has_ttf_pt )
 	    fprintf( sfd, " %d", ap->ttf_pt_index );
 	putc('\n',sfd);
@@ -1048,13 +1044,9 @@ return;
     fprintf( sfd, "%s %d ", name, vert->cnt );
     for ( i=0; i<vert->cnt; ++i ) {
 	fprintf( sfd, " %d", vert->mkd[i].height );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDDumpDeviceTable(sfd,vert->mkd[i].height_adjusts );
-#endif
 	fprintf( sfd, ",%d", vert->mkd[i].kern );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDDumpDeviceTable(sfd,vert->mkd[i].kern_adjusts );
-#endif
     }
     putc('\n',sfd );
 }
@@ -1070,12 +1062,10 @@ return;
     if ( gv->part_cnt!=0 ) {
 	if ( gv->italic_correction!=0 ) {
 	    fprintf( sfd, "GlyphComposition%sIC: %d", name, gv->italic_correction );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( gv->italic_adjusts!=NULL ) {
 		putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,gv->italic_adjusts);
 	    }
-#endif
 	    putc('\n',sfd);
 	}
 	fprintf( sfd, "GlyphComposition%s: %d ", name, gv->part_cnt );
@@ -1093,22 +1083,18 @@ return;
 static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
     if ( sc->italic_correction!=TEX_UNDEF && sc->italic_correction!=0 ) {
 	fprintf( sfd, "ItalicCorrection: %d", sc->italic_correction );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( sc->italic_adjusts!=NULL ) {
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,sc->italic_adjusts);
 	}
-#endif
 	putc('\n',sfd);
     }
     if ( sc->top_accent_horiz!=TEX_UNDEF ) {
 	fprintf( sfd, "TopAccentHorizontal: %d", sc->top_accent_horiz );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( sc->top_accent_adjusts!=NULL ) {
 	    putc(' ',sfd);
 	    SFDDumpDeviceTable(sfd,sc->top_accent_adjusts);
 	}
-#endif
 	putc('\n',sfd);
     }
     if ( sc->is_extended_shape )
@@ -1183,7 +1169,6 @@ return( PyFF_UnPickleMeToObjects(buf));
     /* buf is a static buffer, I don't free it, I'll reuse it next time */
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
 static char *spreads[] = { "pad", "reflect", "repeat", NULL };
@@ -1214,7 +1199,6 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 	    (double) pattern->transform[2], (double) pattern->transform[3],
 	    (double) pattern->transform[4], (double) pattern->transform[5] );
 }
-#endif
 
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int todir) {
     ImageList *img;
@@ -1300,7 +1284,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     SFDDumpAnchorPoints(sfd,sc);
     fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
     for ( i=0; i<sc->layer_cnt; ++i ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer ) {
 	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g] [",
 		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
@@ -1324,9 +1307,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		SFDDumpGradient(sfd,"StrokeGradient:", sc->layers[i].stroke_pen.brush.gradient );
 	    else if ( sc->layers[i].stroke_pen.brush.pattern!=NULL )
 		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
-	} else
-#endif
-	{
+	} else {
 	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
 		    sc->layers[i].refs==NULL )
     continue;
@@ -1352,7 +1333,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	if ( kp!=NULL ) {
 	    fprintf( sfd, v ? "VKerns2:" : "Kerns2:" );
 	    for ( ; kp!=NULL; kp=kp->next ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
             if ( !SFDOmit(kp->sc)) {
                 fprintf( sfd, " %d %d ",
                          newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
@@ -1361,14 +1341,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
                 if ( kp->adjust!=NULL ) putc(' ',sfd);
                 SFDDumpDeviceTable(sfd,kp->adjust);
             }
-#else
-            if ( !SFDOmit(kp->sc)) {
-                fprintf( sfd, " %d %d ",
-                         newgids!=NULL?newgids[kp->sc->orig_pos]:kp->sc->orig_pos,
-                         kp->off );
-                SFDDumpUTF7Str(sfd,kp->subtable->subtable_name );
-            }
-#endif
         }
 	    fprintf(sfd, "\n" );
 	}
@@ -1388,24 +1360,18 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		fprintf( sfd, "dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pos.xoff, pst->u.pos.yoff,
 			pst->u.pos.h_adv_off, pst->u.pos.v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,pst->u.pos.adjust);
-#endif
 		putc('\n',sfd);
 	    } else if ( pst->type==pst_pair ) {
 		fprintf( sfd, "%s dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pair.paired,
 			pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff,
 			pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,pst->u.pair.vr[0].adjust);
-#endif
 		fprintf( sfd, " dx=%d dy=%d dh=%d dv=%d",
 			pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff,
 			pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDDumpValDevTab(sfd,pst->u.pair.vr[1].adjust);
-#endif
 		putc('\n',sfd);
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
@@ -1424,14 +1390,12 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
     }
     if ( sc->color!=COLOR_DEFAULT )
 	fprintf( sfd, "Colour: %x\n", (int) sc->color );
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer ) {
 	if ( sc->tile_margin!=0 )
 	    fprintf( sfd, "TileMargin: %g\n", (double) sc->tile_margin );
 	else if ( sc->tile_bounds.minx!=0 || sc->tile_bounds.maxx!=0 )
 	    fprintf( sfd, "TileBounds: %g %g %g %g\n", (double) sc->tile_bounds.minx, (double) sc->tile_bounds.miny, (double) sc->tile_bounds.maxx, (double) sc->tile_bounds.maxy );
     }
-#endif
     fprintf(sfd,"EndChar\n" );
 }
 
@@ -2060,10 +2024,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		       kc->seconds[i]);
 	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 		fprintf( sfd, " %d", kc->offsets[i]);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,&kc->adjusts[i]);
-#endif
 	    }
 	    fprintf( sfd, "\n" );
 	}
@@ -2229,13 +2191,11 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
 	    fprintf( sfd, "MATH:%s: %d", math_constants_descriptor[i].script_name,
 		    *((int16 *) (((char *) (math)) + math_constants_descriptor[i].offset)) );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( math_constants_descriptor[i].devtab_offset>=0 ) {
 		DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
 		putc(' ',sfd);
 		SFDDumpDeviceTable(sfd,*devtab);
 	    }
-#endif
 	    putc('\n',sfd);
 	}
     }
@@ -3687,7 +3647,6 @@ static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
 return( head );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static DeviceTable *SFDReadDeviceTable(FILE *sfd,DeviceTable *adjust) {
     int i, junk, first, last, ch, len;
 
@@ -3762,51 +3721,6 @@ return( v );
 	ungetc(ch,sfd);
 return( NULL );
 }
-#else
-static void SFDSkipDeviceTable(FILE *sfd) {
-    int i, junk, first, last, ch;
-
-    while ( (ch=nlgetc(sfd))==' ' );
-    if ( ch=='{' ) {
-	while ( (ch=nlgetc(sfd))==' ' );
-	if ( ch=='}' )
-return;
-	else
-	    ungetc(ch,sfd);
-	getint(sfd,&first);
-	ch = nlgetc(sfd);		/* Should be '-' */
-	getint(sfd,&last);
-	for ( i=0; i<=last-first; ++i ) {
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    if ( ch!=',' ) ungetc(ch,sfd);
-	    getint(sfd,&junk);
-	}
-	while ( (ch=nlgetc(sfd))==' ' );
-	if ( ch!='}' ) ungetc(ch,sfd);
-    } else
-	ungetc(ch,sfd);
-}
-
-static void SFDSkipValDevTab(FILE *sfd) {
-    int i, j, ch;
-
-    while ( (ch=nlgetc(sfd))==' ' );
-    if ( ch=='[' ) {
-	for ( i=0; i<4; ++i ) {
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    if ( ch==']' )
-	break;
-	    for ( j=0; j<3; ++j ) ch=nlgetc(sfd);
-	    SFDSkipDeviceTable(sfd);
-	    while ( (ch=nlgetc(sfd))==' ' );
-	    if ( ch!=']' ) ungetc(ch,sfd);
-	    else
-	break;
-	}
-    } else
-	ungetc(ch,sfd);
-}
-#endif
 
 static AnchorPoint *SFDReadAnchorPoints(FILE *sfd,SplineChar *sc,AnchorPoint *lastap) {
     AnchorPoint *ap = chunkalloc(sizeof(AnchorPoint));
@@ -3844,13 +3758,8 @@ return( lastap );
     ch = nlgetc(sfd);
     ungetc(ch,sfd);
     if ( ch==' ' ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDReadDeviceTable(sfd,&ap->xadjust);
 	SFDReadDeviceTable(sfd,&ap->yadjust);
-#else
-	SFDSkipDeviceTable(sfd);
-	SFDSkipDeviceTable(sfd);
-#endif
 	ch = nlgetc(sfd);
 	ungetc(ch,sfd);
 	if ( isdigit(ch)) {
@@ -4004,17 +3913,10 @@ static void SCDefaultInterpolation(SplineChar *sc) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void SFDParseMathValueRecord(FILE *sfd,int16 *value,DeviceTable **devtab) {
     getsint(sfd,value);
     *devtab = SFDReadDeviceTable(sfd,NULL);
 }
-#else
-static void SFDParseMathValueRecord(FILE *sfd,int16 *value) {
-    getsint(sfd,value);
-    SFDSkipDeviceTable(sfd);
-}
-#endif
 
 static struct glyphvariants *SFDParseGlyphComposition(FILE *sfd,
 	struct glyphvariants *gv, char *tok) {
@@ -4054,23 +3956,14 @@ static void SFDParseVertexKern(FILE *sfd, struct mathkernvertex *vertex) {
     getint(sfd,&vertex->cnt);
     vertex->mkd = gcalloc(vertex->cnt,sizeof(struct mathkerndata));
     for ( i=0; i<vertex->cnt; ++i ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	SFDParseMathValueRecord(sfd,&vertex->mkd[i].height,&vertex->mkd[i].height_adjusts);
 	while ( (ch=nlgetc(sfd))==' ' );
 	if ( ch!=EOF && ch!=',' )
 	    ungetc(ch,sfd);
 	SFDParseMathValueRecord(sfd,&vertex->mkd[i].kern,&vertex->mkd[i].kern_adjusts);
-#else
-	SFDParseMathValueRecord(sfd,&vertex->mkd[i].height);
-	while ( (ch=nlgetc(sfd))==' ' );
-	if ( ch!=EOF && ch!=',' )
-	    ungetc(ch,sfd);
-	SFDParseMathValueRecord(sfd,&vertex->mkd[i].kern);
-#endif
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static struct gradient *SFDParseGradient(FILE *sfd,char *tok) {
     struct gradient *grad = chunkalloc(sizeof(struct gradient));
     int ch, i;
@@ -4132,7 +4025,6 @@ static struct pattern *SFDParsePattern(FILE *sfd,char *tok) {
     if ( ch!=']' ) ungetc(ch,sfd);
 return( pat );
 }
-#endif
 
 static int orig_pos;
 
@@ -4279,7 +4171,6 @@ return( NULL );
 		if ( sc->tex_height==0 && sc->tex_depth==0 )		/* Fixup old bug */
 		    sc->tex_height = sc->tex_depth = TEX_UNDEF;
 	    }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	} else if ( strmatch(tok,"ItalicCorrection:")==0 ) {
 	    SFDParseMathValueRecord(sfd,&sc->italic_correction,&sc->italic_adjusts);
 	} else if ( strmatch(tok,"TopAccentHorizontal:")==0 ) {
@@ -4292,20 +4183,6 @@ return( NULL );
 	    if ( sc->horiz_variants==NULL )
 		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
 	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction,&sc->horiz_variants->italic_adjusts);
-#else
-	} else if ( strmatch(tok,"ItalicCorrection:")==0 ) {
-	    SFDParseMathValueRecord(sfd,&sc->italic_correction);
-	} else if ( strmatch(tok,"TopAccentHorizontal:")==0 ) {
-	    SFDParseMathValueRecord(sfd,&sc->top_accent_horiz);
-	} else if ( strmatch(tok,"GlyphCompositionVerticalIC:")==0 ) {
-	    if ( sc->vert_variants==NULL )
-		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-	    SFDParseMathValueRecord(sfd,&sc->vert_variants->italic_correction);
-	} else if ( strmatch(tok,"GlyphCompositionHorizontalIC:")==0 ) {
-	    if ( sc->horiz_variants==NULL )
-		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction);
-#endif
 	} else if ( strmatch(tok,"IsExtendedShape:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -4401,19 +4278,16 @@ return( NULL );
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"Layer:")==0 ) {
 	    int layer;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    int dofill, dostroke, fillfirst, linejoin, linecap;
 	    uint32 fillcol, strokecol;
 	    real fillopacity, strokeopacity, strokewidth, trans[4];
 	    DashType dashes[DASH_MAX];
 	    int i;
-#endif
 	    getint(sfd,&layer);
 	    if ( layer>=sc->layer_cnt ) {
 		sc->layers = grealloc(sc->layers,(layer+1)*sizeof(Layer));
 		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
 	    }
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		getint(sfd,&dofill);
 		getint(sfd,&dostroke);
@@ -4468,11 +4342,9 @@ return( NULL );
 		memcpy(sc->layers[layer].stroke_pen.dashes,dashes,sizeof(dashes));
 		memcpy(sc->layers[layer].stroke_pen.trans,trans,sizeof(trans));
 	    }
-#endif
 	    current_layer = layer;
 	    lasti = NULL;
 	    lastr = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	} else if ( strmatch(tok,"FillGradient:")==0 ) {
 	    sc->layers[current_layer].fill_brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"FillPattern:")==0 ) {
@@ -4481,7 +4353,6 @@ return( NULL );
 	    sc->layers[current_layer].stroke_pen.brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"StrokePattern:")==0 ) {
 	    sc->layers[current_layer].stroke_pen.brush.pattern = SFDParsePattern(sfd,tok);
-#endif
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
@@ -4534,16 +4405,12 @@ return( NULL );
 		kp->off = off;
 		kp->subtable = sub;
 		kp->next = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
 		    kp->adjust=chunkalloc(sizeof(DeviceTable));
 		    SFDReadDeviceTable(sfd,kp->adjust);
 		}
-#else
-		SFDSkipDeviceTable(sfd);
-#endif
 		if ( last != NULL )
 		    last->next = kp;
 		else if ( isv )
@@ -4597,16 +4464,12 @@ exit(1);
 		kp->sli = sli;
 		kp->flags = flags;
 		kp->kp.next = NULL;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
 		if ( ch=='{' ) {
 		    kp->kp.adjust=chunkalloc(sizeof(DeviceTable));
 		    SFDReadDeviceTable(sfd,kp->kp.adjust);
 		}
-#else
-		SFDSkipDeviceTable(sfd);
-#endif
 		if ( last != NULL )
 		    last->kp.next = (KernPair *) kp;
 		else if ( isv )
@@ -4710,11 +4573,7 @@ exit(1);
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pos.xoff, &pst->u.pos.yoff,
 			&pst->u.pos.h_adv_off, &pst->u.pos.v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		pst->u.pos.adjust = SFDReadValDevTab(sfd);
-#else
-		SFDSkipValDevTab(sfd);
-#endif
 		ch = nlgetc(sfd);		/* Eat new line */
 	    } else if ( pst->type==pst_pair ) {
 		getname(sfd,tok);
@@ -4723,19 +4582,11 @@ exit(1);
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pair.vr[0].xoff, &pst->u.pair.vr[0].yoff,
 			&pst->u.pair.vr[0].h_adv_off, &pst->u.pair.vr[0].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		pst->u.pair.vr[0].adjust = SFDReadValDevTab(sfd);
-#else
-		SFDSkipValDevTab(sfd);
-#endif
 		fscanf( sfd, " dx=%hd dy=%hd dh=%hd dv=%hd",
 			&pst->u.pair.vr[1].xoff, &pst->u.pair.vr[1].yoff,
 			&pst->u.pair.vr[1].h_adv_off, &pst->u.pair.vr[1].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		pst->u.pair.vr[0].adjust = SFDReadValDevTab(sfd);
-#else
-		SFDSkipValDevTab(sfd);
-#endif
 		ch = nlgetc(sfd);
 	    } else if ( pst->type==pst_lcaret ) {
 		int i;
@@ -4763,7 +4614,6 @@ exit(1);
 	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	} else if ( strmatch(tok,"TileMargin:")==0 ) {
 	    getreal(sfd,&sc->tile_margin);
 	} else if ( strmatch(tok,"TileBounds:")==0 ) {
@@ -4771,7 +4621,6 @@ exit(1);
 	    getreal(sfd,&sc->tile_bounds.miny);
 	    getreal(sfd,&sc->tile_bounds.maxx);
 	    getreal(sfd,&sc->tile_bounds.maxy);
-#endif
 	} else if ( strmatch(tok,"EndChar")==0 ) {
 	    if ( sc->orig_pos<sf->glyphcnt )
 		sf->glyphs[sc->orig_pos] = sc;
@@ -5056,7 +4905,6 @@ return( 1 );
 
 static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
     RefChar *rf;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int ly;
 
     if ( sc->parent->multilayer ) {
@@ -5071,18 +4919,15 @@ static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
 	    }
 	}
     } else {
-#endif
-    for ( rf = ref->sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
-	if ( rf->sc==sc ) {	/* Huh? */
-	    ref->sc->layers[layer].refs = NULL;
-    break;
+	for ( rf = ref->sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
+	    if ( rf->sc==sc ) {	/* Huh? */
+		ref->sc->layers[layer].refs = NULL;
+	break;
+	    }
+	    if ( rf->layers[0].splines==NULL )
+		SFDFixupRef(ref->sc,rf,layer);
 	}
-	if ( rf->layers[0].splines==NULL )
-	    SFDFixupRef(ref->sc,rf,layer);
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
-    }
-#endif
     SCReinstanciateRefChar(sc,ref,layer);
     SCMakeDependent(sc,ref->sc);
 }
@@ -6156,14 +6001,8 @@ static void SFDParseMathItem(FILE *sfd,SplineFont *sf,char *tok) {
 	    int16 *pos = (int16 *) (((char *) (math)) + math_constants_descriptor[i].offset );
 	    getsint(sfd,pos);
 	    if ( math_constants_descriptor[i].devtab_offset != -1 ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
 		*devtab = SFDReadDeviceTable(sfd,*devtab);
-#else
-		/* A value of -2 means that there would be a device table if */
-		/*  we supported them, so we should be prepared to skip one */
-		SFDSkipDeviceTable(sfd);
-#endif
     break;
 	    }
 	}
@@ -6652,11 +6491,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	} else if ( strmatch(tok,"MultiLayer:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    sf->multilayer = temp;
-#else
-	    LogError( _("Warning: This version of FontForge does not contain extended type3/svg support\n needed for this font.\nReconfigure with --with-type3.\n") );
-#endif
 	} else if ( strmatch(tok,"NeedsXUIDChange:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -6873,9 +6708,7 @@ exit(1);
 	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
 	    kc->seconds = galloc(kc->second_cnt*sizeof(char *));
 	    kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
-#endif
 	    kc->firsts[0] = NULL;
 	    for ( i=classstart; i<kc->first_cnt; ++i ) {
 		getint(sfd,&temp);
@@ -6893,11 +6726,7 @@ exit(1);
 	    for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 		getint(sfd,&temp);
 		kc->offsets[i] = temp;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		SFDReadDeviceTable(sfd,&kc->adjusts[i]);
-#else
-		SFDSkipDeviceTable(sfd);
-#endif
 	    }
 	    if ( !old && kc->subtable == NULL ) {
 		/* Error. Ignore it. Free it. Whatever */;
@@ -7491,9 +7320,7 @@ return( sc );
 static int ModSF(FILE *asfd,SplineFont *sf) {
     Encoding *newmap;
     int cnt;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int multilayer=0;
-#endif
     char tok[200];
     int i,k;
     SplineChar *sc;
@@ -7551,7 +7378,6 @@ return( false );
 	if ( getname(asfd,tok)!=1 )
 return( false );
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( strcmp(tok,"MultiLayer:")==0 ) {
 	getint(asfd,&multilayer);
 	if ( getname(asfd,tok)!=1 )
@@ -7563,7 +7389,6 @@ return( false );
 	sf->multilayer = multilayer;
 	/* SFLayerChange(sf);*/		/* Shouldn't have any open windows, should not be needed */
     }
-#endif
     if ( strcmp(tok,"BeginChars:")!=0 )
 return(false);
     SFRemoveDependencies(sf);

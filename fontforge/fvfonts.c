@@ -36,7 +36,6 @@ RefChar *RefCharsCopy(RefChar *ref) {
 
     while ( ref!=NULL ) {
 	cur = RefCharCreate();
-#ifdef FONTFORGE_CONFIG_TYPE3
 	{ struct reflayer *layers = cur->layers; int layer;
 	layers = grealloc(layers,ref->layer_cnt*sizeof(struct reflayer));
 	memcpy(layers,ref->layers,ref->layer_cnt*sizeof(struct reflayer));
@@ -47,12 +46,6 @@ RefChar *RefCharsCopy(RefChar *ref) {
 	    cur->layers[layer].images = NULL;
 	}
 	}
-#else
-	{struct reflayer *rl = cur->layers;
-	*cur = *ref;
-	cur->layers = rl;
-	}
-#endif
 	if ( cur->sc!=NULL )
 	    cur->orig_pos = cur->sc->orig_pos;
 	cur->next = NULL;
@@ -285,10 +278,8 @@ PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
 	    cur->u.pair.paired = copy(cur->u.pair.paired);
 	    cur->u.pair.vr = chunkalloc(sizeof( struct vr [2]));
 	    memcpy(cur->u.pair.vr,base->u.pair.vr,sizeof(struct vr [2]));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    cur->u.pair.vr[0].adjust = ValDevTabCopy(base->u.pair.vr[0].adjust);
 	    cur->u.pair.vr[1].adjust = ValDevTabCopy(base->u.pair.vr[1].adjust);
-#endif
 	} else if ( cur->type==pst_lcaret ) {
 	    cur->u.lcaret.carets = galloc(cur->u.lcaret.cnt*sizeof(uint16));
 	    memcpy(cur->u.lcaret.carets,base->u.lcaret.carets,cur->u.lcaret.cnt*sizeof(uint16));
@@ -882,12 +873,10 @@ SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
 	sc = SFGetChar(sf,unienc,name);
     if ( sc==NULL && (unienc!=-1 || name!=NULL)) {
 	sc = SFSplineCharCreate(sf);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sf->strokedfont ) {
 	    sc->layers[ly_fore].dostroke = true;
 	    sc->layers[ly_fore].dofill = false;
 	}
-#endif
 	sc->unicodeenc = unienc;
 	if ( name!=NULL )
 	    sc->name = copy(name);
@@ -1406,7 +1395,6 @@ return( NULL );
 return( head );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static uint32 InterpColor( uint32 col1,uint32 col2, real amount ) {
     int r1, g1, b1, r2, b2, g2;
 
@@ -1497,7 +1485,6 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     if ( base->images!=NULL || other->images!=NULL )
 	LogError(_("I can't even imagine how to attempt to interpolate images in layer %d of %s\n"), lc, sc->name );
 }
-#endif
 
 SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other,
 	real amount, SplineFont *newfont) {
@@ -1520,7 +1507,6 @@ return( NULL );
     sc->width = base->width + amount*(other->width-base->width);
     sc->vwidth = base->vwidth + amount*(other->vwidth-base->vwidth);
     sc->lsidebearing = base->lsidebearing + amount*(other->lsidebearing-base->lsidebearing);
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( base->parent->multilayer && other->parent->multilayer ) {
 	int lc = base->layer_cnt;
 	if ( lc!=other->layer_cnt ) {
@@ -1534,9 +1520,7 @@ return( NULL );
 	}
 	for ( i=ly_fore; i<lc; ++i )
 	    LayerInterpolate(&sc->layers[i],&base->layers[i],&other->layers[i],amount,sc,i);
-    } else
-#endif
-    {
+    } else {
 	for ( i=0; i<sc->layer_cnt; ++i ) {
 	    if ( i>=base->layer_cnt || i>= other->layer_cnt )
 	break;
@@ -1597,13 +1581,10 @@ return( NULL );
     } else if ( base->layers[ly_fore].order2!=other->layers[ly_fore].order2 ) {
 	ff_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
 return( NULL );
-    }
-#ifdef FONTFORGE_CONFIG_TYPE3
-    else if ( base->multilayer && other->multilayer ) {
+    } else if ( base->multilayer && other->multilayer ) {
 	ff_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different editing types (ie. between type3 and type1)"));
 return( NULL );
     }
-#endif
     new = SplineFontBlank(base->glyphcnt);
     new->ascent = base->ascent + amount*(other->ascent-base->ascent);
     new->descent = base->descent + amount*(other->descent-base->descent);

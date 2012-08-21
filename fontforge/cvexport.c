@@ -95,7 +95,6 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer ) {
 	int ly, had_grad=0, had_pat=0;
 	for ( ly=ly_fore; ly<sc->layer_cnt; ++ly ) {
@@ -111,7 +110,6 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 	else if ( had_pat )
 	    fprintf( eps, "%%%%LanguageLevel: 2\n" );
     }
-#endif
     fprintf( eps, "%%%%EndComments\n" );
     if ( preview )
 	EpsGeneratePreview(eps,sc,layer,&b);
@@ -120,11 +118,9 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 
     fprintf( eps, "gsave newpath\n" );
     SC_PSDump((void (*)(int,void *)) fputc,eps,sc,true,false,layer);
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer )
 	fprintf( eps, "grestore\n" );
     else
-#endif
     if ( sc->parent->strokedfont )
 	fprintf( eps, "%g setlinewidth stroke grestore\n", (double) sc->parent->strokewidth );
     else
@@ -193,12 +189,9 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, " stream \n" );
     streamstart = ftell(pdf);
     SC_PSDump((void (*)(int,void *)) fputc,pdf,sc,true,true,layer);
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer )
 	/* Already filled or stroked */;
-    else
-#endif
-    if ( sc->parent->strokedfont )
+    else if ( sc->parent->strokedfont )
 	fprintf( pdf, "%g w S\n", (double) sc->parent->strokewidth );
     else
 	fprintf( pdf, "f\n" );

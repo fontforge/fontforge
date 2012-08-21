@@ -387,7 +387,6 @@ static void readvaluerecord(struct valuerecord *vr,int vf,FILE *ttf) {
 	vr->offYadvanceDev = getushort(ttf);
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void ReadDeviceTable(FILE *ttf,DeviceTable *adjust,uint32 devtab,
 	struct ttfinfo *info) {
     long here;
@@ -446,7 +445,6 @@ return( NULL );
 	ReadDeviceTable(ttf,&ret->yadv,base + vr->offYadvanceDev,info);
 return( ret );
 }
-#endif
 
 static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 	struct lookup *l, struct lookup_subtable *subtable, struct valuerecord *vr1,struct valuerecord *vr2,
@@ -469,10 +467,8 @@ static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 	pos->u.pair.vr[1].yoff = vr2->yplacement;
 	pos->u.pair.vr[1].h_adv_off = vr2->xadvance;
 	pos->u.pair.vr[1].v_adv_off = vr2->yadvance;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	pos->u.pair.vr[0].adjust = readValDevTab(ttf,vr1,base,info);
 	pos->u.pair.vr[1].adjust = readValDevTab(ttf,vr2,base,info);
-#endif
     } else {
 	LogError( _("Bad pair position: glyphs %d & %d should have been < %d\n"),
 		glyph1, glyph2, info->glyph_cnt );
@@ -496,12 +492,10 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	    kp->sc = info->chars[glyph2];
 	    kp->off = offset;
 	    kp->subtable = subtable;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( devtab!=0 ) {
 		kp->adjust = chunkalloc(sizeof(DeviceTable));
 		ReadDeviceTable(ttf,kp->adjust,devtab,info);
 	    }
-#endif
 	    if ( isv ) {
 		kp->next = info->chars[glyph1]->vkerns;
 		info->chars[glyph1]->vkerns = kp;
@@ -626,9 +620,7 @@ return;
 	    kc->first_cnt = c1_cnt; kc->second_cnt = c2_cnt;
 	    kc->subtable = subtable;
 	    kc->offsets = galloc(c1_cnt*c2_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    kc->adjusts = gcalloc(c1_cnt*c2_cnt,sizeof(DeviceTable));
-#endif
 	    kc->firsts = ClassToNames(info,c1_cnt,class1,info->glyph_cnt);
 	    kc->seconds = ClassToNames(info,c2_cnt,class2,info->glyph_cnt);
 	    /* Now if the coverage table contains entries which are not in */
@@ -645,7 +637,6 @@ return;
 			kc->offsets[i*c2_cnt+j] = vr2.xadvance;
 		    else
 			kc->offsets[i*c2_cnt+j] = vr1.xadvance;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    if ( isv ) {
 			if ( vr1.offYadvanceDev!=0 )
 			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offYadvanceDev,info);
@@ -656,7 +647,6 @@ return;
 			if ( vr1.offXadvanceDev!=0 )
 			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offXadvanceDev,info);
 		    }
-#endif
 		}
 	    }
 	} else {	/* This happens when we have a feature which is neither 'kern' nor 'vkrn' we don't know what to do with it so we make it into kern pairs */
@@ -701,7 +691,6 @@ static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
 	ap->ttf_pt_index = getushort(ttf);
 	ap->has_ttf_pt = true;
     }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     else if ( format==3 ) {
 	int devoff;
 	devoff = getushort(ttf);
@@ -711,7 +700,6 @@ static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
 	if ( devoff!=0 )
 	    ReadDeviceTable(ttf,&ap->yadjust,base+devoff,info);
     }
-#endif
     ap->next = last;
 return( ap );
 }
@@ -960,13 +948,8 @@ static void gposSimplePos(FILE *ttf, int stoffset, struct ttfinfo *info,
 return;
     coverage = getushort(ttf);
     vf = getushort(ttf);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( vf==0 )
 return;
-#else
-    if ( (vf&0xf)==0 )	/* Not interested in things whose data just live in device tables */
-return;
-#endif
     if ( format==1 ) {
 	memset(&_vr,0,sizeof(_vr));
 	readvaluerecord(&_vr,vf,ttf);
@@ -993,9 +976,7 @@ return;
 	pos->u.pos.yoff = which->yplacement;
 	pos->u.pos.h_adv_off = which->xadvance;
 	pos->u.pos.v_adv_off = which->yadvance;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	pos->u.pos.adjust = readValDevTab(ttf,which,stoffset,info);
-#endif
     }
     subtable->per_glyph_pst_or_kern = true;
     free(vr);
@@ -4956,9 +4937,7 @@ return;
 			kc->first_cnt = class1[i];
 		++ kc->first_cnt;
 		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
-#endif
 		fseek(ttf,begin_table+array,SEEK_SET);
 		for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i )
 		    kc->offsets[i] = getushort(ttf);
@@ -4981,9 +4960,7 @@ return;
 		class2 = gcalloc(gc>info->glyph_cnt?gc:info->glyph_cnt,sizeof(uint16));
 		kvs = galloc(kv*sizeof(int16));
 		kc->offsets = galloc(kc->first_cnt*kc->second_cnt*sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
-#endif
 		for ( i=0; i<kv; ++i )
 		    kvs[i] = (int16) getushort(ttf);
 		for ( i=0; i<gc; ++i )
@@ -5114,9 +5091,7 @@ return;
 static void ttf_math_read_constants(FILE *ttf,struct ttfinfo *info, uint32 start) {
     struct MATH *math;
     int i;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint16 off;
-#endif
 
     fseek(ttf,start,SEEK_SET);
     info->math = math = gcalloc(1,sizeof(struct MATH));
@@ -5126,7 +5101,6 @@ static void ttf_math_read_constants(FILE *ttf,struct ttfinfo *info, uint32 start
 	if ( pos == (int16 *) &math->MinConnectorOverlap )
     continue;		/* Actually lives in the Variant table, not here */
 	*pos = getushort(ttf);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( math_constants_descriptor[i].devtab_offset >= 0 ) {
 	    DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
 	    off = getushort(ttf);
@@ -5135,11 +5109,6 @@ static void ttf_math_read_constants(FILE *ttf,struct ttfinfo *info, uint32 start
 		ReadDeviceTable(ttf,*devtab,start+off,info);
 	    }
 	}
-#else
-	/* No support for device tables, skip it */
-	if ( math_constants_descriptor[i].devtab_offset != -1 )
-	    (void) getushort(ttf);
-#endif
     }
 }
 
@@ -5163,7 +5132,6 @@ return;
 	    info->chars[ glyphs[i] ]->italic_correction = val;
 	else
 	    info->chars[ glyphs[i] ]->top_accent_horiz = val;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( offset!=0 ) {
 	    DeviceTable *dv = chunkalloc(sizeof(DeviceTable));
 	    ReadDeviceTable(ttf,dv,start+offset,info);
@@ -5172,7 +5140,6 @@ return;
 	    else
 		info->chars[ glyphs[i] ]->top_accent_adjusts = dv;
 	}
-#endif
       }
     }
     free(glyphs);
@@ -5202,23 +5169,14 @@ static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernverte
 
     for ( i=0; i<cnt-1; ++i ) {
 	mkv->mkd[i].height = getushort(ttf);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	mkv->mkd[i].height_adjusts = (void *) (intpt) getushort(ttf);
-#else
-	(void) getushort(ttf);
-#endif
     }
 
     for ( i=0; i<cnt; ++i ) {
 	mkv->mkd[i].kern = getushort(ttf);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	mkv->mkd[i].kern_adjusts = (void *) (intpt) getushort(ttf);
-#else
-	(void) getushort(ttf);
-#endif
     }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<cnt; ++i ) {
 	DeviceTable *dv;
 	uint32 offset;
@@ -5233,7 +5191,6 @@ static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernverte
 	    ReadDeviceTable(ttf,dv,offset,info);
 	}
     }
-#endif
 
     if ( cnt>=3 )
 	mkv->mkd[cnt-1].height = 2*mkv->mkd[cnt-2].height - mkv->mkd[cnt-3].height;
@@ -5417,12 +5374,10 @@ return( NULL );
 	    }
 	}
 	gv->part_cnt = j;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( ic_offset!=0 && justinuse==git_normal ) {
 	    gv->italic_adjusts = chunkalloc(sizeof(DeviceTable));
 	    ReadDeviceTable(ttf,gv->italic_adjusts,start+ic_offset,info);
 	}
-#endif
     }
     if ( justinuse==git_justinuse ) {
 	chunkfree(gv,sizeof(*gv));

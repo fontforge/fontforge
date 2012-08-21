@@ -2558,7 +2558,6 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
 	COL_INIT_EMPTY
     };
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define SIM_DX		1
 #define SIM_DY		3
 #define SIM_DX_ADV	5
@@ -2608,41 +2607,6 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	COL_INIT_EMPTY
     };
-#else
-#define SIM_DX		1
-#define SIM_DY		2
-#define SIM_DX_ADV	3
-#define SIM_DY_ADV	4
-#define PAIR_DX1	2
-#define PAIR_DY1	3
-#define PAIR_DX_ADV1	4
-#define PAIR_DY_ADV1	5
-#define PAIR_DX2	6
-#define PAIR_DY2	7
-#define PAIR_DX_ADV2	8
-#define PAIR_DY_ADV2	9
-    static struct col_init simpleposci[] = {
-	{ me_string , NULL, NULL, NULL, N_("Base Glyph Name") },
-	{ me_int, NULL, NULL, NULL, NU_("∆x") },	/* delta-x */
-	{ me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
-	{ me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
-	{ me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
-	COL_INIT_EMPTY
-    };
-    static struct col_init pairposci[] = {
-	{ me_string , NULL, NULL, NULL, N_("First Glyph Name") },
-	{ me_string , NULL, NULL, NULL, N_("Second Glyph Name") },
-	{ me_int, NULL, NULL, NULL, NU_("∆x #1") },	/* delta-x */
-	{ me_int, NULL, NULL, NULL, NU_("∆y #1") },	/* delta-y */
-	{ me_int, NULL, NULL, NULL, NU_("∆x_adv #1") },	/* delta-x-adv */
-	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #1") },	/* delta-y-adv */
-	{ me_int, NULL, NULL, NULL, NU_("∆x #2") },	/* delta-x */
-	{ me_int, NULL, NULL, NULL, NU_("∆y #2") },	/* delta-y */
-	{ me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
-	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
-	COL_INIT_EMPTY
-    };
-#endif
     static struct { int ltype; int cnt; struct col_init *ci; } fuf[] = {
 	{ gsub_single, sizeof(simplesubsci)/sizeof(struct col_init)-1, simplesubsci },
 	{ gsub_multiple, sizeof(altmultsubsci)/sizeof(struct col_init)-1, altmultsubsci },
@@ -2704,9 +2668,7 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 				md[cnt*mi->col_cnt+SIM_DY].u.md_ival = pst->u.pos.yoff;
 				md[cnt*mi->col_cnt+SIM_DX_ADV].u.md_ival = pst->u.pos.h_adv_off;
 				md[cnt*mi->col_cnt+SIM_DY_ADV].u.md_ival = pst->u.pos.v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 				ValDevTabToStrings(md,cnt*mi->col_cnt+SIM_DX+1,pst->u.pos.adjust);
-#endif
 			      break;
 			      case gpos_pair:
 				md[cnt*mi->col_cnt+1].u.md_str = SFNameList2NameUni( sf,pst->u.pair.paired );
@@ -2718,10 +2680,8 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 				md[cnt*mi->col_cnt+PAIR_DY2].u.md_ival = pst->u.pair.vr[1].yoff;
 				md[cnt*mi->col_cnt+PAIR_DX_ADV2].u.md_ival = pst->u.pair.vr[1].h_adv_off;
 				md[cnt*mi->col_cnt+PAIR_DY_ADV2].u.md_ival = pst->u.pair.vr[1].v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 				ValDevTabToStrings(md,cnt*mi->col_cnt+PAIR_DX1+1,pst->u.pair.vr[0].adjust);
 				ValDevTabToStrings(md,cnt*mi->col_cnt+PAIR_DX2+1,pst->u.pair.vr[1].adjust);
-#endif
 			      break;
 			    }
 			}
@@ -2735,7 +2695,6 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 				if ( j ) {
 				    md[cnt*mi->col_cnt+0].u.md_str = SCNameUniStr( sc );
 				    md[cnt*mi->col_cnt+1].u.md_str = SCNameUniStr( kp->sc );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			            if ( isv ) {
 					md[cnt*mi->col_cnt+PAIR_DY_ADV1].u.md_ival = kp->off;
 					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DY_ADV1+1].u.md_str,kp->adjust);
@@ -2748,14 +2707,6 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = kp->off;
 					DevTabToString(&md[cnt*mi->col_cnt+PAIR_DX_ADV1+1].u.md_str,kp->adjust);
 				    }
-#else
-			            if ( isv )
-					md[cnt*mi->col_cnt+PAIR_DY_ADV1].u.md_ival = kp->off;
-				    else if ( r2l )
-					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = md[cnt*mi->col_cnt+PAIR_DX1].u.md_ival = kp->off;
-				    else
-					md[cnt*mi->col_cnt+PAIR_DX_ADV1].u.md_ival = kp->off;
-#endif
 			        }
 			        ++cnt;
 			    }
@@ -2952,7 +2903,6 @@ static void PSTKD_DoHideUnused(PSTKernDlg *pstkd) {
     startc = ( pstkd->sub->lookup->lookup_type == gpos_single ) ? 1 : 2;
     if ( lookup_hideunused ) {
 	memset(cols_used,0,sizeof(cols_used));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	for ( r=0; r<rows; ++r ) {
 	    for ( col=startc; col<cols; col+=2 ) {
 		if ( old[cols*r+col].u.md_ival!=0 )
@@ -2961,14 +2911,6 @@ static void PSTKD_DoHideUnused(PSTKernDlg *pstkd) {
 		    cols_used[col+1] = true;
 	    }
 	}
-#else
-	for ( r=0; r<rows; ++r ) {
-	    for ( col=startc; col<cols; ++col ) {
-		if ( old[cols*r+col].u.md_ival!=0 )
-		    cols_used[col] = true;
-	    }
-	}
-#endif
 	/* If no columns used (no info yet, all info is to preempt a kernclass and sets to 0) */
 	/*  then show what we expect to be the default column for this kerning mode*/
 	for ( col=startc, tot=0; col<cols; ++col )
@@ -3048,17 +2990,14 @@ static void PSTKD_METextChanged(GGadget *g, int r, int c, GGadget *text) {
 static int FigureValue(struct matrix_data *old,int rcol,int c, int startc,
 	GGadget *tf,double scale, int pixelsize) {
     int val;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     char *str, *freeme=NULL;
     DeviceTable dt;
-#endif
 
     if ( c==startc && tf!=NULL )
 	val = u_strtol(_GGadgetGetTitle(tf),NULL,10);
     else
 	val = old[rcol+startc].u.md_ival;
     val = rint(val*scale);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( c==startc+1 && tf!=NULL )
 	str = freeme = GGadgetGetTitle8(tf);
     else
@@ -3069,7 +3008,6 @@ static int FigureValue(struct matrix_data *old,int rcol,int c, int startc,
 	val += dt.corrections[pixelsize-dt.first_pixel_size];
     free(dt.corrections);
     free(freeme);
-#endif
 return( val );
 }
 
@@ -3081,17 +3019,10 @@ static int ParsePSTKVR(PSTKernDlg *pstkd,GGadget *pstk,int startc,struct vr *vr)
     int c = GMatrixEditGetActiveCol(pstk);
     double scale = pstkd->pixelsize/(double) (pstkd->sf->ascent+pstkd->sf->descent);
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     vr->xoff = FigureValue(old,r*cols,c,startc,tf,scale,pstkd->pixelsize);
     vr->yoff = FigureValue(old,r*cols,c,startc+2,tf,scale,pstkd->pixelsize);
     vr->h_adv_off = FigureValue(old,r*cols,c,startc+4,tf,scale,pstkd->pixelsize);
     vr->v_adv_off = FigureValue(old,r*cols,c,startc+6,tf,scale,pstkd->pixelsize);
-#else
-    vr->xoff = FigureValue(old,r*cols,c,startc,tf,scale,pstkd->pixelsize);
-    vr->yoff = FigureValue(old,r*cols,c,startc+1,tf,scale,pstkd->pixelsize);
-    vr->h_adv_off = FigureValue(old,r*cols,c,startc+2,tf,scale,pstkd->pixelsize);
-    vr->v_adv_off = FigureValue(old,r*cols,c,startc+3,tf,scale,pstkd->pixelsize);
-#endif
 return( true );
 }
 
@@ -3760,7 +3691,6 @@ return( true );
 	    }
 	}
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	/* Check for badly specified device tables */
 	if ( _t==pst_position || _t==pst_pair ) {
 	    int startc = _t==pst_position ? SIM_DX+1 : PAIR_DX1+1;
@@ -3775,7 +3705,6 @@ return( true );
 		}
 	    }
 	}
-#endif
 
 	/* Ok, if we get here then there should be no errors and we can parse */
 	/* First mark all the current things as unused */
@@ -3809,9 +3738,7 @@ return( true );
 		    free( pst->u.subs.variant );
 		pst->ticked = true;
 		if ( lookup_type==gpos_single ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    VRDevTabParse(&pst->u.pos,&psts[cols*r+SIM_DX+1]);
-#endif
 		    pst->u.pos.xoff = psts[cols*r+SIM_DX].u.md_ival;
 		    pst->u.pos.yoff = psts[cols*r+SIM_DY].u.md_ival;
 		    pst->u.pos.h_adv_off = psts[cols*r+SIM_DX_ADV].u.md_ival;
@@ -5589,9 +5516,7 @@ return;
 	    sub->kc->firsts = gcalloc(1,sizeof(char *));
 	    sub->kc->seconds = gcalloc(1,sizeof(char *));
 	    sub->kc->offsets = gcalloc(1,sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    sub->kc->adjusts = gcalloc(1,sizeof(DeviceTable));
-#endif
 		/* Need to fix for Hebrew !!!! */
 	    if ( results.autobuild )
 		/* Specifying separation==0 and !touching means use default values */

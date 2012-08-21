@@ -1113,7 +1113,6 @@ static void StrokeGlyph(uint8 *bytemap,EdgeList *es,real wid, SplineChar *sc) {
 	StrokeSS(bytemap,es,width,0xff,ref->layers[0].splines,NULL);
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void StrokePaths(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt,
 	uint8 *clipmask) {
     uint32 col;
@@ -1398,7 +1397,6 @@ return( NULL );
     _FreeEdgeList(es);
 return( clipmask );
 }
-#endif
 
 static void FlattenBytemap(EdgeList *es,uint8 *bytemap) {
     int i,j;
@@ -1444,12 +1442,10 @@ return( NULL );
 	es.bytes_per_line = 1;
 	is_aa = false;
     } else {
-#ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sc->parent->multilayer )
 	    /* I need to include the clipping path, FindBounds excludes it */
 	    SplineCharQuickConservativeBounds(sc,&es.bbox);
 	else
-#endif
 	    SplineCharFindBounds(sc,&es.bbox);
 	es.scale = (pixelsize-.1) / (real) (sc->parent->ascent+sc->parent->descent);
 	es.mmin = floor(es.bbox.miny*es.scale);
@@ -1466,7 +1462,6 @@ return( NULL );
 	    es.bitmap = gcalloc(es.cnt*es.bytes_per_line,1);
 
 	    InitializeHints(sc,&es);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		uint8 *bytemap = gcalloc(es.cnt*es.bytes_per_line*8,1);
 		int layer, i;
@@ -1484,9 +1479,7 @@ return( NULL );
 		    free(clipmask);
 		}
 		depth = FigureBitmap(&es,bytemap,is_aa);
-	    } else
-#endif
-	    if ( sc->parent->strokedfont ) {
+	    } else if ( sc->parent->strokedfont ) {
 		uint8 *bytemap = gcalloc(es.cnt*es.bytes_per_line*8,1);
 		StrokeGlyph(bytemap,&es,sc->parent->strokewidth,sc);
 		depth = FigureBitmap(&es,bytemap,is_aa);

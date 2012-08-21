@@ -341,7 +341,6 @@ return( otl->tempname );
 return( space );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void dumpdevice(FILE *out,DeviceTable *devtab) {
     int i, any = false;
 
@@ -360,11 +359,9 @@ static void dumpdevice(FILE *out,DeviceTable *devtab) {
     else
 	fprintf( out, "NULL>" );
 }
-#endif
 
 static void dump_valuerecord(FILE *out, struct vr *vr) {
     fprintf( out, "<%d %d %d %d", vr->xoff, vr->yoff, vr->h_adv_off, vr->v_adv_off );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( vr->adjust!=NULL ) {
 	putc( ' ', out);
 	dumpdevice(out,&vr->adjust->xadjust);
@@ -375,7 +372,6 @@ static void dump_valuerecord(FILE *out, struct vr *vr) {
 	putc( ' ', out);
 	dumpdevice(out,&vr->adjust->yadv);
     }
-#endif
     putc('>',out);
 }
 
@@ -389,14 +385,12 @@ return;
     fprintf( out, "<anchor %g %g", rint(ap->me.x), rint(ap->me.y) );
     if ( ap->has_ttf_pt )
 	fprintf( out, " contourpoint %d", ap->ttf_pt_index );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     else if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	putc(' ',out);
 	dumpdevice(out,&ap->xadjust);
 	putc(' ',out);
 	dumpdevice(out,&ap->yadjust);
     }
-#endif
     putc('>',out);
 }
 
@@ -1445,7 +1439,6 @@ return;					/* No support for apple "lookups" */
 			    fprintf( out, "    pos " );
 			    dump_glyphname(out,sc);
 			    putc(' ',out);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			    if ( kp->adjust!=NULL ) {
 				/* If we have a device table then we must use the long */
 			        /* format */
@@ -1472,7 +1465,6 @@ return;					/* No support for apple "lookups" */
 			            fprintf( out, " < 0 0 0 0 >;\n" );
 				}
 			    } else
-#endif
 			    if ( otl->lookup_flags&pst_r2l ) {
 				fprintf( out, " < 0 0 0 0 > " );
 				dump_glyphname(out,kp->sc);
@@ -3191,19 +3183,13 @@ struct markedglyphs {
     struct markedglyphs *next;
 };
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void fea_ParseDeviceTable(struct parseState *tok,DeviceTable *adjust)
-#else
-static void fea_ParseDeviceTable(struct parseState *tok)
-#endif
 	{
     int first = true;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int min=0, max= -1;
     int8 values[512];
 
     memset(values,0,sizeof(values));
-#endif
 
     fea_TokenMustBe(tok,tk_device,'\0');
     if ( tok->type!=tk_device )
@@ -3220,11 +3206,8 @@ return;
 	    LogError(_("Expected integer in device table on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    ++tok->err_count;
 	} else {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    int pixel = tok->value;
-#endif
 	    fea_TokenMustBe(tok,tk_int,'\0');
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( pixel>=sizeof(values) || pixel<0 )
 		LogError(_("Pixel size too big in device table on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    else {
@@ -3234,7 +3217,6 @@ return;
 		else if ( pixel<min ) min = pixel;
 		else if ( pixel>max ) max = pixel;
 	    }
-#endif
 	    fea_ParseTok(tok);
 	    if ( tok->type==tk_char && tok->tokbuf[0]==',' )
 		/* That's right... */;
@@ -3247,7 +3229,6 @@ return;
 	}
 	first = false;
     }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( max!=-1 ) {
 	int i;
 	adjust->first_pixel_size = min;
@@ -3256,7 +3237,6 @@ return;
 	for ( i=min; i<=max; ++i )
 	    adjust->corrections[i-min] = values[i];
     }
-#endif
 }
 
 static void fea_ParseCaret(struct parseState *tok) {
@@ -3323,15 +3303,9 @@ static AnchorPoint *fea_ParseAnchor(struct parseState *tok) {
 		    fea_TokenMustBe(tok,tk_int,'>');
 		} else {
 		    fea_UnParseTok(tok);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    fea_ParseDeviceTable(tok,&ap->xadjust);
 		    fea_TokenMustBe(tok,tk_char,'<');
 		    fea_ParseDeviceTable(tok,&ap->yadjust);
-#else
-		    fea_ParseDeviceTable(tok);
-		    fea_TokenMustBe(tok,tk_char,'<');
-		    fea_ParseDeviceTable(tok);
-#endif
 		}
 		fea_ParseTok(tok);
 	    }
@@ -3408,9 +3382,7 @@ static struct vr *ValueRecordCopy(struct vr *ovr) {
 
     nvr = chunkalloc(sizeof(*nvr));
     memcpy(nvr,ovr,sizeof(struct vr));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     nvr->adjust = ValDevTabCopy(ovr->adjust);
-#endif
 return( nvr );
 }
 
@@ -3443,7 +3415,6 @@ static struct vr *fea_ParseValueRecord(struct parseState *tok) {
 	    vr->v_adv_off = tok->value;
 	    fea_ParseTok(tok);
 	    if ( tok->type==tk_char && tok->tokbuf[0]=='<' ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		vr->adjust = chunkalloc(sizeof(struct valdev));
 		fea_ParseDeviceTable(tok,&vr->adjust->xadjust);
 		fea_TokenMustBe(tok,tk_char,'<');
@@ -3452,15 +3423,6 @@ static struct vr *fea_ParseValueRecord(struct parseState *tok) {
 		fea_ParseDeviceTable(tok,&vr->adjust->xadv);
 		fea_TokenMustBe(tok,tk_char,'<');
 		fea_ParseDeviceTable(tok,&vr->adjust->yadv);
-#else
-		fea_ParseDeviceTable(tok);
-		fea_TokenMustBe(tok,tk_char,'<');
-		fea_ParseDeviceTable(tok);
-		fea_TokenMustBe(tok,tk_char,'<');
-		fea_ParseDeviceTable(tok);
-		fea_TokenMustBe(tok,tk_char,'<');
-		fea_ParseDeviceTable(tok);
-#endif
 		fea_ParseTok(tok);
 	    }
 	} else if ( tok->type==tk_char && tok->tokbuf[0]=='>' ) {
@@ -3911,9 +3873,7 @@ static void fea_markedglyphsFree(struct markedglyphs *gl) {
 	}
 	free(gl->ligcomp);
 	if ( gl->vr!=NULL ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    ValDevFree(gl->vr->adjust);
-#endif
 	    chunkfree(gl->vr,sizeof(struct vr));
 	}
 	gl = next;
@@ -6297,7 +6257,6 @@ static void fea_canonicalClassSet(struct class_set *set) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void KCFillDevTab(KernClass *kc,int index,DeviceTable *dt) {
     if ( dt==NULL || dt->corrections == NULL )
 return;
@@ -6317,7 +6276,6 @@ return;
     kp->adjust->corrections = galloc(dt->last_pixel_size-dt->first_pixel_size+1);
     memcpy(kp->adjust->corrections,dt->corrections,dt->last_pixel_size-dt->first_pixel_size+1);
 }
-#endif
 
 static void fea_fillKernClass(KernClass *kc,struct feat_item *l) {
     int i,j;
@@ -6333,22 +6291,16 @@ static void fea_fillKernClass(KernClass *kc,struct feat_item *l) {
 			    /* FontForge only supports kerning classes in one direction at a time, not full value records */
 			    if ( pst->u.pair.vr[0].h_adv_off != 0 ) {
 				kc->offsets[i*kc->second_cnt+j] = pst->u.pair.vr[0].h_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 				if ( pst->u.pair.vr[0].adjust!=NULL )
 				    KCFillDevTab(kc,i*kc->second_cnt+j,&pst->u.pair.vr[0].adjust->xadv);
-#endif
 			    } else if ( pst->u.pair.vr[0].v_adv_off != 0 ) {
 				kc->offsets[i*kc->second_cnt+j] = pst->u.pair.vr[0].v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 				if ( pst->u.pair.vr[0].adjust!=NULL )
 				    KCFillDevTab(kc,i*kc->second_cnt+j,&pst->u.pair.vr[0].adjust->yadv);
-#endif
 			    } else if ( pst->u.pair.vr[1].h_adv_off != 0 ) {
 				kc->offsets[i*kc->second_cnt+j] = pst->u.pair.vr[1].h_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 				if ( pst->u.pair.vr[1].adjust!=NULL )
 				    KCFillDevTab(kc,i*kc->second_cnt+j,&pst->u.pair.vr[1].adjust->xadv);
-#endif
 			    }
 			    if ( strcmp(kc->seconds[j],pst->u.pair.paired)==0 )
 		    break;
@@ -6431,26 +6383,20 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 			    (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
 			kp = chunkalloc(sizeof(KernPair));
 			kp->off = pst->u.pair.vr[1].h_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			if ( pst->u.pair.vr[1].adjust!=NULL )
 			    KPFillDevTab(kp,&pst->u.pair.vr[1].adjust->xadv);
-#endif
 		    } else if ( !(otl->lookup_flags&pst_r2l) &&
 			    (pst->u.pair.vr[1].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
 			kp = chunkalloc(sizeof(KernPair));
 			kp->off = pst->u.pair.vr[0].h_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			if ( pst->u.pair.vr[0].adjust!=NULL )
 			    KPFillDevTab(kp,&pst->u.pair.vr[0].adjust->xadv);
-#endif
 		    } else if ( (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[1].h_adv_off==0 )) {
 			vkern = sub->vertical_kerning = true;
 			kp = chunkalloc(sizeof(KernPair));
 			kp->off = pst->u.pair.vr[0].v_adv_off;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			if ( pst->u.pair.vr[0].adjust!=NULL )
 			    KPFillDevTab(kp,&pst->u.pair.vr[0].adjust->yadv);
-#endif
 		    }
 		}
 		if ( kp!=NULL ) {
@@ -6501,9 +6447,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		kc->seconds[i+1] = rights.classes[i];
 	    kc->subtable = sub;
 	    kc->offsets = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
-#endif
 	    fea_fillKernClass(kc,first);
 	    if ( sub->vertical_kerning ) {
 		kc->next = tok->sf->vkerns;

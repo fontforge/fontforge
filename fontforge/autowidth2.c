@@ -840,9 +840,7 @@ void AutoKern2BuildClasses(SplineFont *sf,int layer,
     if ( kc==NULL )
 return;
     free(kc->firsts); free(kc->seconds); free(kc->offsets);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     free(kc->adjusts);
-#endif
 
     if ( good_enough==-1 )
 	good_enough = (sf->ascent+sf->descent)/100.0;
@@ -1007,9 +1005,7 @@ return;
     free(visual_separation);
 	
     kc->offsets = gcalloc(lclasscnt*rclasscnt,sizeof(int16));;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     kc->adjusts = gcalloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
-#endif
 
     if ( autokern )
 	AutoKern2NewClass(sf,layer,kc->firsts, kc->seconds,

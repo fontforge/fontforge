@@ -2562,7 +2562,6 @@ void SCClearInstrsOrMark(SplineChar *sc, int layer, int complain) {
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 void PatternSCBounds(SplineChar *sc, DBounds *b) {
     if ( sc==NULL )
 	memset(b,0,sizeof(DBounds));
@@ -2577,9 +2576,6 @@ void PatternSCBounds(SplineChar *sc, DBounds *b) {
     if ( b->miny>=b->maxy )
 	b->maxy = b->miny+1;
 }
-#endif
-
-
 
 static void SCUpdateNothing(SplineChar *sc) {
 }

@@ -1458,9 +1458,7 @@ return;
 		    vkp = chunkalloc(sizeof(KernPair));
 		    *vkp = *kp;
 		    vkp->subtable = VSubtableFromH(&lookupmap,kp->subtable);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    vkp->adjust = DeviceTableCopy(vkp->adjust);
-#endif
 		    vkp->sc = sc2;
 		    vkp->next = sc1->vkerns;
 		    sc1->vkerns = vkp;
@@ -1500,21 +1498,17 @@ return;
 	    for ( i=0; i<kc->second_cnt; ++i ) if ( map2[i]!=0 )
 		vkc->seconds[map2[i]] = SCListToName(seconds[i]);
 	    vkc->offsets = gcalloc((any1+1)*(any2+1),sizeof(int16));
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    vkc->adjusts = gcalloc((any1+1)*(any2+1),sizeof(DeviceTable));
-#endif
 	    for ( i=0; i<kc->first_cnt; ++i ) if ( map1[i]!=0 ) {
 		for ( j=0; j<kc->second_cnt; ++j ) if ( map2[j]!=0 ) {
 		    int n=map1[i]*vkc->second_cnt+map2[j], o = i*kc->second_cnt+j;
 		    vkc->offsets[n] = kc->offsets[o];
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    if ( kc->adjusts[o].corrections!=NULL ) {
 			int len = kc->adjusts[o].last_pixel_size - kc->adjusts[o].first_pixel_size + 1;
 			vkc->adjusts[n] = kc->adjusts[o];
 			vkc->adjusts[n].corrections = galloc(len);
 			memcpy(vkc->adjusts[n].corrections,kc->adjusts[o].corrections,len);
 		    }
-#endif
 		}
 	    }
 	}

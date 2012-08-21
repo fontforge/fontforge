@@ -604,7 +604,6 @@ static void gposvrmaskeddump(FILE *gpos,int vf1,int mask,int offset) {
     if ( vf1&8 ) putshort(gpos,mask&8 ? offset : 0 );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static int devtaboffsetsize(DeviceTable *dt) {
     int type = 1, i;
 
@@ -798,7 +797,6 @@ return( DevTabsSame(&vdt1->xadjust,&vdt2->xadjust) &&
 	DevTabsSame(&vdt1->xadv,&vdt2->xadv) &&
 	DevTabsSame(&vdt1->yadv,&vdt2->yadv) );
 }
-#endif
 
 static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub ) {
     int cnt, cnt2;
@@ -818,23 +816,19 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 			    first->u.pos.h_adv_off!=pst->u.pos.h_adv_off ||
 			    first->u.pos.v_adv_off!=pst->u.pos.v_adv_off )
 			same = false;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    if ( !ValDevTabsSame(pst->u.pos.adjust,first->u.pos.adjust))
 			same = false;
-#endif
 		}
 		if ( pst->u.pos.xoff!=0 ) bits |= 1;
 		if ( pst->u.pos.yoff!=0 ) bits |= 2;
 		if ( pst->u.pos.h_adv_off!=0 ) bits |= 4;
 		if ( pst->u.pos.v_adv_off!=0 ) bits |= 8;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		if ( pst->u.pos.adjust!=NULL ) {
 		    if ( pst->u.pos.adjust->xadjust.corrections!=NULL ) bits |= 0x10;
 		    if ( pst->u.pos.adjust->yadjust.corrections!=NULL ) bits |= 0x20;
 		    if ( pst->u.pos.adjust->xadv.corrections!=NULL ) bits |= 0x40;
 		    if ( pst->u.pos.adjust->yadv.corrections!=NULL ) bits |= 0x80;
 		}
-#endif
 		++cnt2;
 	break;
 	    }
@@ -853,7 +847,6 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 	if ( bits&2 ) putshort(gpos,first->u.pos.yoff);
 	if ( bits&4 ) putshort(gpos,first->u.pos.h_adv_off);
 	if ( bits&8 ) putshort(gpos,first->u.pos.v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( bits&0xf0 ) {
 	    int next_dev_tab = ftell(gpos)-coverage_pos+2+
 		sizeof(int16)*((bits&0x10?1:0) + (bits&0x20?1:0) + (bits&0x40?1:0) + (bits&0x80?1:0));
@@ -868,14 +861,11 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 	    if ( next_dev_tab!=ftell(gpos)-coverage_pos+2 )
 		IError( "Device Table offsets wrong in simple positioning 2");
 	}
-#endif
     } else {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	int vr_size = 
 		sizeof(int16)*((bits&0x1?1:0) + (bits&0x2?1:0) + (bits&0x4?1:0) + (bits&0x8?1:0) +
 		    (bits&0x10?1:0) + (bits&0x20?1:0) + (bits&0x40?1:0) + (bits&0x80?1:0));
 	int next_dev_tab = ftell(gpos)-coverage_pos+2+2+vr_size*cnt;
-#endif
 	putshort(gpos,cnt);
 	for ( cnt2 = 0; glyphs[cnt2]!=NULL; ++cnt2 ) {
 	    for ( pst=glyphs[cnt2]->possub; pst!=NULL; pst=pst->next ) {
@@ -884,17 +874,14 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 		    if ( bits&2 ) putshort(gpos,pst->u.pos.yoff);
 		    if ( bits&4 ) putshort(gpos,pst->u.pos.h_adv_off);
 		    if ( bits&8 ) putshort(gpos,pst->u.pos.v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    next_dev_tab = gposdumpvaldevtab(gpos,pst->u.pos.adjust,bits,
 			    next_dev_tab);
-#endif
 	    break;
 		}
 	    }
 	}
 	if ( cnt!=cnt2 )
 	    IError( "Count mismatch in dumpGPOSsimplepos#3 %d vs %d\n", cnt, cnt2 );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( bits&0xf0 ) {
 	    for ( cnt2 = 0; glyphs[cnt2]!=NULL; ++cnt2 ) {
 		for ( pst=glyphs[cnt2]->possub; pst!=NULL; pst=pst->next ) {
@@ -909,7 +896,6 @@ static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *
 	}
 	if ( next_dev_tab!=ftell(gpos)-coverage_pos+2 )
 	    IError( "Device Table offsets wrong in simple positioning 2");
-#endif
     }
     end = ftell(gpos);
     fseek(gpos,coverage_pos,SEEK_SET);
@@ -950,9 +936,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     SplineChar *sc, **glyphs, *gtemp;
     struct sckppst **seconds;
     int devtablen;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int next_dev_tab;
-#endif
 
     /* Figure out all the data we need. First the glyphs with kerning info */
     /*  then the glyphs to which they kern, and by how much */
@@ -971,10 +955,8 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 			seconds[cnt][tot].sc = sc;
 			seconds[cnt][tot].other_gid = sc->ttf_glyph;
 			seconds[cnt][tot].pst = pst;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			devtablen += ValDevTabLen(pst->u.pair.vr[0].adjust) +
 				 ValDevTabLen(pst->u.pair.vr[1].adjust);
-#endif
 
 		    }
 		    ++tot;
@@ -988,9 +970,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 			    seconds[cnt][tot].sc = kp->sc;
 			    seconds[cnt][tot].kp = kp;
 			    seconds[cnt][tot].isv = v;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			    devtablen += DevTabLen(kp->adjust);
-#endif
 			}
 			++tot;
 		    }
@@ -1021,9 +1001,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	    break;
 		if ( test[j].kp!=NULL && test2[j].kp!=NULL &&
 			test[j].kp->off == test2[j].kp->off 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			&& DevTabsSame(test[j].kp->adjust,test2[j].kp->adjust)
-#endif
 			)
 		    /* So far, so good */;
 		else if ( test[j].pst!=NULL && test2[j].pst!=NULL &&
@@ -1035,10 +1013,8 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 			test[j].pst->u.pair.vr[1].yoff == test2[j].pst->u.pair.vr[1].yoff &&
 			test[j].pst->u.pair.vr[1].h_adv_off == test2[j].pst->u.pair.vr[1].h_adv_off &&
 			test[j].pst->u.pair.vr[1].v_adv_off == test2[j].pst->u.pair.vr[1].v_adv_off
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			&& ValDevTabsSame(test[j].pst->u.pair.vr[0].adjust,test2[j].pst->u.pair.vr[0].adjust)
 			&& ValDevTabsSame(test[j].pst->u.pair.vr[1].adjust,test2[j].pst->u.pair.vr[1].adjust)
-#endif
 			)
 		    /* That's ok too. */;
 		else
@@ -1063,26 +1039,22 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		    if ( pst->u.pair.vr[0].yoff!=0 ) vf1 |= 2;
 		    if ( pst->u.pair.vr[0].h_adv_off!=0 ) vf1 |= 4;
 		    if ( pst->u.pair.vr[0].v_adv_off!=0 ) vf1 |= 8;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    if ( pst->u.pair.vr[0].adjust!=NULL ) {
 			if ( pst->u.pair.vr[0].adjust->xadjust.corrections!=NULL ) vf1 |= 0x10;
 			if ( pst->u.pair.vr[0].adjust->yadjust.corrections!=NULL ) vf1 |= 0x20;
 			if ( pst->u.pair.vr[0].adjust->xadv.corrections!=NULL ) vf1 |= 0x40;
 			if ( pst->u.pair.vr[0].adjust->yadv.corrections!=NULL ) vf1 |= 0x80;
 		    }
-#endif
 		    if ( pst->u.pair.vr[1].xoff!=0 ) vf2 |= 1;
 		    if ( pst->u.pair.vr[1].yoff!=0 ) vf2 |= 2;
 		    if ( pst->u.pair.vr[1].h_adv_off!=0 ) vf2 |= 4;
 		    if ( pst->u.pair.vr[1].v_adv_off!=0 ) vf2 |= 8;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    if ( pst->u.pair.vr[1].adjust!=NULL ) {
 			if ( pst->u.pair.vr[1].adjust->xadjust.corrections!=NULL ) vf2 |= 0x10;
 			if ( pst->u.pair.vr[1].adjust->yadjust.corrections!=NULL ) vf2 |= 0x20;
 			if ( pst->u.pair.vr[1].adjust->xadv.corrections!=NULL ) vf2 |= 0x40;
 			if ( pst->u.pair.vr[1].adjust->yadv.corrections!=NULL ) vf2 |= 0x80;
 		    }
-#endif
 		}
 	    }
 	    if ( (kp = seconds[cnt][tot].kp)!=NULL ) {
@@ -1091,12 +1063,10 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		    mask = 0x0008;
 		else
 		    mask = 0x0004;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		if ( kp->adjust!=NULL ) {
 		    mask  |= mask<<4;
 		    mask2 |= mask2<<4;
 		}
-#endif
 		vf1 |= mask;
 		vf2 |= mask2;
 	    }
@@ -1159,7 +1129,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		fseek(gpos,0,SEEK_END);
 	continue;
 	    }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    next_dev_tab = ftell(gpos)-start;
 	    if ( (vf1&0xf0) || (vf2&0xf0) ) {
 		for ( tot=0 ; tot<seconds[i][0].tot; ++tot ) {
@@ -1181,7 +1150,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 			dumpgposdevicetable(gpos,kp->adjust);
 		}
 	    }
-#endif
 	    pos = ftell(gpos);
 	    fseek(gpos,offset_pos+(i-start_cnt)*sizeof(uint16),SEEK_SET);
 	    putshort(gpos,pos-start);
@@ -1195,18 +1163,14 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		    if ( vf1&2 ) putshort(gpos,pst->u.pair.vr[0].yoff);
 		    if ( vf1&4 ) putshort(gpos,pst->u.pair.vr[0].h_adv_off);
 		    if ( vf1&8 ) putshort(gpos,pst->u.pair.vr[0].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    next_dev_tab = gposdumpvaldevtab(gpos,pst->u.pair.vr[0].adjust,vf1,
 			    next_dev_tab);
-#endif
 		    if ( vf2&1 ) putshort(gpos,pst->u.pair.vr[1].xoff);
 		    if ( vf2&2 ) putshort(gpos,pst->u.pair.vr[1].yoff);
 		    if ( vf2&4 ) putshort(gpos,pst->u.pair.vr[1].h_adv_off);
 		    if ( vf2&8 ) putshort(gpos,pst->u.pair.vr[1].v_adv_off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    next_dev_tab = gposdumpvaldevtab(gpos,pst->u.pair.vr[1].adjust,vf2,
 			    next_dev_tab);
-#endif
 		} else if ( (kp=seconds[i][tot].kp)!=NULL ) {
 		    int mask=0, mask2=0;
 		    if ( seconds[i][tot].isv )
@@ -1214,15 +1178,11 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 		    else
 			mask = 0x4;
 		    gposvrmaskeddump(gpos,vf1,mask,kp->off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    next_dev_tab = gposmaskeddumpdevtab(gpos,kp->adjust,vf1,mask<<4,
 			    next_dev_tab);
-#endif
 		    gposvrmaskeddump(gpos,vf2,mask2,kp->off);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    next_dev_tab = gposmaskeddumpdevtab(gpos,kp->adjust,vf2,mask2<<4,
 			    next_dev_tab);
-#endif
 		}
 	    }
 	}
@@ -1361,20 +1321,16 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
     SplineChar **glyphs;
     int i, isv;
     int anydevtab = false;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int next_devtab;
-#endif
 
     putshort(gpos,2);		/* format 2 of the pair adjustment subtable */
     putshort(gpos,0);		/* offset to coverage table */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 	if ( kc->adjusts[i].corrections!=NULL ) {
 	    anydevtab = true;
     break;
 	}
     }
-#endif
 
     for ( test=sf->vkerns; test!=NULL && test!=kc; test=test->next );
     isv = test==kc;
@@ -1395,20 +1351,15 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
     putshort(gpos,0);		/* offset to second glyph classes */
     putshort(gpos,kc->first_cnt);
     putshort(gpos,kc->second_cnt);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     next_devtab = ftell(gpos)-begin_off + kc->first_cnt*kc->second_cnt*2*sizeof(uint16);
-#endif
     for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 	putshort(gpos,kc->offsets[i]);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( anydevtab && kc->adjusts[i].corrections!=NULL ) {
 	    putshort(gpos,next_devtab);
 	    next_devtab += DevTabLen(&kc->adjusts[i]);
 	} else if ( anydevtab )
 	    putshort(gpos,0);
-#endif
     }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( anydevtab ) {
 	for ( i=0; i<kc->first_cnt*kc->second_cnt; ++i ) {
 	    if ( kc->adjusts[i].corrections!=NULL )
@@ -1417,7 +1368,6 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
 	if ( next_devtab!=ftell(gpos)-begin_off )
 	    IError("Device table offsets screwed up in kerning class");
     }
-#endif
     pos = ftell(gpos);
     fseek(gpos,begin_off+4*sizeof(uint16),SEEK_SET);
     putshort(gpos,pos-begin_off);
@@ -1442,20 +1392,17 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
 }
 
 static void dumpanchor(FILE *gpos,AnchorPoint *ap, int is_ttf ) {
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int base = ftell(gpos);
 
     if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
 	putshort(gpos,3);	/* format 3 w/ device tables */
     else
-#endif
     if ( ap->has_ttf_pt && is_ttf )
 	putshort(gpos,2);	/* format 2 w/ a matching ttf point index */
     else
 	putshort(gpos,1);	/* Anchor format 1 just location*/
     putshort(gpos,ap->me.x);	/* X coord of attachment */
     putshort(gpos,ap->me.y);	/* Y coord of attachment */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	putshort(gpos,ap->xadjust.corrections==NULL?0:
 		ftell(gpos)-base+4);
@@ -1464,7 +1411,6 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap, int is_ttf ) {
 	dumpgposdevicetable(gpos,&ap->xadjust);
 	dumpgposdevicetable(gpos,&ap->yadjust);
     } else
-#endif
     if ( ap->has_ttf_pt && is_ttf )
 	putshort(gpos,ap->ttf_pt_index);
 }
@@ -1514,10 +1460,8 @@ return;
 	if ( entry!=NULL ) {
 	    putshort(gpos,offset);
 	    offset += 6;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( entry->xadjust.corrections!=NULL || entry->yadjust.corrections!=NULL )
 		offset += 4 + DevTabLen(&entry->xadjust) + DevTabLen(&entry->yadjust);
-#endif
 	    if ( gi->is_ttf && entry->has_ttf_pt )
 		offset += 2;
 	} else
@@ -1525,11 +1469,9 @@ return;
 	if ( exit!=NULL ) {
 	    putshort(gpos,offset);
 	    offset += 6;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( exit->xadjust.corrections!=NULL || exit->yadjust.corrections!=NULL )
 		offset += 4 + DevTabLen(&exit->xadjust) + DevTabLen(&exit->yadjust);
 	    else
-#endif
 	    if ( gi->is_ttf && exit->has_ttf_pt )
 		offset += 2;
 	} else
@@ -1626,11 +1568,9 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 			else {
 			    putshort(gpos,offset);
 			    offset += 6;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			    if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
 				offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
 			    else
-#endif
 			    if ( gi->is_ttf && ap->has_ttf_pt )
 				offset += 2;
 			}
@@ -1685,12 +1625,10 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 		    else {
 			putshort(gpos,offset);
 			offset += 6;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 			if ( aps[k*max+l]->xadjust.corrections!=NULL || aps[k*max+l]->yadjust.corrections!=NULL )
 			    offset += 4 + DevTabLen(&aps[k*max+l]->xadjust) +
 					DevTabLen(&aps[k*max+l]->yadjust);
 			else
-#endif
 			if ( gi->is_ttf && aps[k*max+l]->has_ttf_pt )
 			    offset += 2;
 		    }
@@ -1739,11 +1677,9 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	}
 	putshort(gpos,offset);
 	offset += 6;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( ap!=NULL && (ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ))
 	    offset += 4 + DevTabLen(&ap->xadjust) + DevTabLen(&ap->yadjust);
 	else
-#endif
 	if ( gi->is_ttf && ap->has_ttf_pt )
 	    offset += 2;
     }
@@ -3577,10 +3513,8 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
     int i, gid, len;
     SplineChar *sc, **glyphs;
     uint32 coverage_pos, coverage_table;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint32 devtab_offset;
     DeviceTable *devtab;
-#endif
 
     /* Figure out our glyph list (and count) */
     for ( i=len=0; i<at->gi.gcnt; ++i )
@@ -3597,21 +3531,16 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
     coverage_pos = ftell(mathf);
     putshort(mathf,0);			/* Coverage table, return to this */
     putshort(mathf,len);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     devtab_offset = 4 + 4*len;
-#endif
     for ( i=0; i<len; ++i ) {
 	putshort(mathf,is_italic ? glyphs[i]->italic_correction : glyphs[i]->top_accent_horiz );
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	devtab = is_italic ? glyphs[i]->italic_adjusts : glyphs[i]->top_accent_adjusts;
 	if ( devtab!=NULL ) {
 	    putshort(mathf,devtab_offset);
 	    devtab_offset += DevTabLen(devtab);
 	} else
-#endif
 	    putshort(mathf,0);
     }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<len; ++i ) {
 	devtab = is_italic ? glyphs[i]->italic_adjusts : glyphs[i]->top_accent_adjusts;
 	if ( devtab!=NULL )
@@ -3620,7 +3549,6 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
     if ( devtab_offset!=ftell(mathf)-coverage_pos )
 	IError("Actual end did not match expected end in %s table, expected=%d, actual=%d",
 		is_italic ? "italic" : "top accent", devtab_offset, ftell(mathf)-coverage_pos );
-#endif
     coverage_table = ftell(mathf);
     fseek( mathf, coverage_pos, SEEK_SET);
     putshort(mathf,coverage_table-coverage_pos);
@@ -3654,36 +3582,29 @@ return( 2+8*mkv->cnt-4 );
 static int ttf_math_dump_mathkernvertex(FILE *mathf,struct mathkernvertex *mkv,
 	int devtab_pos) {
     int i;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint32 here = ftell(mathf);
-#endif
 
     putshort(mathf,mkv->cnt-1);
 
     for ( i=0; i<mkv->cnt-1; ++i ) {
 	putshort(mathf,mkv->mkd[i].height);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( mkv->mkd[i].height_adjusts!=NULL ) {
 	    putshort(mathf,devtab_pos-here);
 	    devtab_pos += DevTabLen(mkv->mkd[i].height_adjusts);
 	} else
-#endif
 	    putshort(mathf,0);
     }
     for ( i=0; i<mkv->cnt; ++i ) {
 	putshort(mathf,mkv->mkd[i].kern);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( mkv->mkd[i].kern_adjusts!=NULL ) {
 	    putshort(mathf,devtab_pos-here);
 	    devtab_pos += DevTabLen(mkv->mkd[i].kern_adjusts);
 	} else
-#endif
 	    putshort(mathf,0);
     }
 return( devtab_pos );
 }
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void ttf_math_dump_mathkerndevtab(FILE *mathf,struct mathkernvertex *mkv) {
     int i;
 
@@ -3694,7 +3615,6 @@ static void ttf_math_dump_mathkerndevtab(FILE *mathf,struct mathkernvertex *mkv)
 	if ( mkv->mkd[i].kern_adjusts!=NULL )
 	    dumpgposdevicetable(mathf,mkv->mkd[i].kern_adjusts);
 }
-#endif
 
 static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *sf) {
     int i, gid, len;
@@ -3764,7 +3684,6 @@ static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *s
 	IError("Actual midpoint2 did not match expected midpoint2 in mathkern table, expected=%d, actual=%d",
 		midpos2, ftell(mathf) );
     
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<len; ++i ) {
 	struct mathkern *mk = glyphs[i]->mathkern;
 	if ( mk->top_right.cnt!=0 )
@@ -3776,7 +3695,6 @@ static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *s
 	if ( mk->bottom_left.cnt!=0 )
 	    ttf_math_dump_mathkerndevtab(mathf,&mk->bottom_left);
     }
-#endif
     if ( kr_pos!=ftell(mathf) )
 	IError("Actual end did not match expected end in mathkern table, expected=%d, actual=%d",
 		kr_pos, ftell(mathf) );
@@ -3874,20 +3792,16 @@ return( pos + gvc_len(gv));
 static uint32 ttf_math_dump_mathglyphassemblytable(FILE *mathf,
 	struct glyphvariants *gv,SplineFont *sf, uint32 devtab_pos) {
     SplineChar *sc;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint32 here = ftell(mathf);
-#endif
     int i;
 
     if ( gv->part_cnt==0 )
 return( devtab_pos );
     putshort(mathf,gv->italic_correction);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( gv->italic_adjusts!=NULL ) {
 	putshort(mathf,devtab_pos-here);
 	devtab_pos += DevTabLen(gv->italic_adjusts);
     } else
-#endif
 	putshort(mathf,0);
     putshort(mathf,gv->part_cnt);
     for ( i=0; i<gv->part_cnt; ++i ) {
@@ -3969,7 +3883,6 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
     for ( i=0; i<hlen; ++i )
 	pos = ttf_math_dump_mathglyphassemblytable(mathf,
 		hglyphs[i]->horiz_variants,sf,pos);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<vlen; ++i )
 	if ( vglyphs[i]->vert_variants->part_cnt!=0 &&
 		vglyphs[i]->vert_variants->italic_adjusts!=NULL )
@@ -3978,7 +3891,6 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
 	if ( hglyphs[i]->horiz_variants->part_cnt!=0 &&
 		hglyphs[i]->horiz_variants->italic_adjusts!=NULL )
 	    dumpgposdevicetable(mathf,hglyphs[i]->horiz_variants->italic_adjusts);
-#endif
     if ( vlen!=0 ) {
 	coverage_table = ftell(mathf);
 	fseek( mathf, coverage_pos, SEEK_SET);
@@ -4026,7 +3938,6 @@ return;
 	    putshort(mathf, 0);		/* Fix up later if we support device tables */
 	}
     }
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
 	int16 *pos = (int16 *) (((char *) (sf->MATH)) + math_constants_descriptor[i].offset );
 	DeviceTable **devtab = (DeviceTable **) (((char *) (sf->MATH)) + math_constants_descriptor[i].devtab_offset );
@@ -4040,7 +3951,6 @@ return;
 	    dumpgposdevicetable(mathf,*devtab);
 	}
     }
-#endif
 
     /* The spec does not say this can be NULL */
     if ( 1 /* bits&mb_gi*/ ) {
