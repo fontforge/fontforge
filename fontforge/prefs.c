@@ -994,8 +994,6 @@ static void DefaultHelp(void) {
     if ( helpdir==NULL ) {
 #if defined(__MINGW32__)
 	helpdir = copy("");
-#elif defined(GNUSTEP_APP)
-    helpdir = copy(gnustep_resources_htdocs);
 #elif defined(DOCDIR)
 	helpdir = copy(DOCDIR "/");
 #elif defined(SHAREDIR)

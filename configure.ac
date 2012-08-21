@@ -212,7 +212,6 @@ use the --disable-freetype-debugger option.
 fi
 
 FONTFORGE_ARG_WITH_ARCH
-FONTFORGE_ARG_WITH_GNUSTEP_MAKE
 
 #--------------------------------------------------------------------------
 #
@@ -240,8 +239,6 @@ AC_TYPE_SIZE_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
-AC_TYPE_LONG_DOUBLE
-AC_TYPE_LONG_DOUBLE_WIDER
 
 AC_TYPE_LONG_LONG_INT
 if test x"${ac_cv_type_long_long_int}" = xyes; then
@@ -249,19 +246,6 @@ if test x"${ac_cv_type_long_long_int}" = xyes; then
 fi
 
 AX_PTHREAD
-
-CONSTANT_STRING_OBJCFLAGS=""
-if test x"${with_gnustep_make}" = xyes; then
-   AC_LANG_PUSH([Objective C])
-   # GNU Objective C by default uses class NXConstantString for
-   # @"string", but GNUstep wants class NSConstantString. There is a
-   # flag specifically for this problem.
-   AX_CHECK_COMPILE_FLAG([-fconstant-string-class=NSConstantString],
-        [CONSTANT_STRING_OBJCFLAGS="-fconstant-string-class=NSConstantString"],
-        [:])
-   AC_LANG_POP
-fi
-AC_SUBST([CONSTANT_STRING_OBJCFLAGS])
 
 #--------------------------------------------------------------------------
 # Checks for library functions.
@@ -337,8 +321,7 @@ test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
 test x"${LIBLTDL}" != x && my_libs="${my_libs} ${LIBLTDL}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
-dnl Portable makefiles. These are ignored if you are building
-dnl with GNUstep.
+dnl Portable makefiles.
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([inc/Makefile])
 AC_CONFIG_FILES([Unicode/Makefile])
@@ -353,26 +336,9 @@ AC_CONFIG_FILES([pycontrib/Makefile])
 AC_CONFIG_FILES([plugins/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 
-dnl GNUmakefiles that act as wrappers around portable makefiles,
-dnl or, in the case of GNUstep, are the primary makefiles.
-dnl (GNUmakefile wrappers can do fancy things that are mainly
-dnl for the benefit of maintainers.)
-AC_CONFIG_FILES([GNUmakefile])
-AC_CONFIG_FILES([Unicode/GNUmakefile])
-AC_CONFIG_FILES([gutils/GNUmakefile])
-AC_CONFIG_FILES([gdraw/GNUmakefile])
+# GNUmakefiles that act as wrappers around portable makefiles, to do
+# fancy things that are mainly for the benefit of maintainers.
 AC_CONFIG_FILES([fontforge/GNUmakefile])
-
-dnl GNUstep-specific makefiles.
-if test x"${with_gnustep_make}" = xyes; then
-   AC_CONFIG_FILES([GNUmakefile.postamble])
-   AC_CONFIG_FILES([Unicode/GNUmakefile.postamble])
-   AC_CONFIG_FILES([gutils/GNUmakefile.postamble])
-   AC_CONFIG_FILES([gdraw/GNUmakefile.postamble])
-   AC_CONFIG_FILES([fontforge/GNUmakefile.preamble fontforge/GNUmakefile.postamble])
-   AC_CONFIG_FILES([overall_common.mk])
-   AC_CONFIG_FILES([libltdl/GNUmakefile:libltdl-GNUmakefile.in])
-fi
 
 AC_CONFIG_FILES([fontforge.pc])
 AC_CONFIG_FILES([libfontforge.pc])
@@ -439,7 +405,6 @@ Summary of optional dependencies:
   libspiro         ${i_do_have_libspiro}
   X Window System  ${i_do_have_x}
   regular link     ${i_do_have_regular_link}
-  gnustep-make     ${with_gnustep_make}
 ])
 
 #--------------------------------------------------------------------------

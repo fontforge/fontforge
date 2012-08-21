@@ -1,2 +1,0 @@
-MACKEYS_PO_FILES = en.po
-MACKEYS_MO_FILES = en.mo

@@ -313,23 +313,18 @@ return;
 #endif
 
     if ( strstr(file,"http://")==NULL ) {
-	fullspec[0] = 0;
+	memset(fullspec,0,sizeof fullspec);
 	if ( ! GFileIsAbsolute(file) ) {
 	    if ( helpdir==NULL || *helpdir=='\0' ) {
-/*********** FIXME: THIS IS A POTENTIAL BUFFER OVERRUN. Someone may
- *********** FIXME: already have fixed it in the recent flood of
- *********** FIXME: patches, though, so be sure to check later. */
-#if defined(GNUSTEP_APP)
-		strcpy(fullspec,gnustep_resources_htdocs);
-#elif defined(DOCDIR)
-		strcpy(fullspec,DOCDIR "/");
+#if defined(DOCDIR)
+		strncpy(fullspec,DOCDIR "/",sizeof fullspec - 1 - strlen(file));
 #elif defined(SHAREDIR)
-		strcpy(fullspec,SHAREDIR "/doc/fontforge/");
+		strncpy(fullspec,SHAREDIR "/doc/fontforge/",sizeof fullspec - 1 - strlen(file));
 #else
-		strcpy(fullspec,"/usr/local/share/doc/fontforge/");
+		strncpy(fullspec,"/usr/local/share/doc/fontforge/",sizeof fullspec - 1 - strlen(file));
 #endif
 	    } else
-		strcpy(fullspec,helpdir);
+		strncpy(fullspec,helpdir,sizeof fullspec - 1);
 	}
 	strcat(fullspec,file);
 	if (( pt = strrchr(fullspec,'#') )!=NULL ) *pt ='\0';

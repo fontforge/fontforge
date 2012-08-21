@@ -1039,9 +1039,7 @@ return( sharedir );
 
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
-#if defined(GNUSTEP_APP)
-return( sharedir = gnustep_resources_localedir );
-#elif defined(SHAREDIR)
+#if defined(SHAREDIR)
 return( sharedir = SHAREDIR "/../locale" );
 #elif defined( PREFIX )
 return( sharedir = PREFIX "/share/locale" );
@@ -1241,8 +1239,6 @@ int fontforge_main( int argc, char **argv ) {
 
 	gfree(path);
     }
-#elif defined(GNUSTEP_APP)
-    GGadgetSetImageDir(gnustep_resources_pixmaps);
 #elif defined(SHAREDIR)
     GGadgetSetImageDir(SHAREDIR "/pixmaps");
     GResourceAddResourceFile(SHAREDIR "/resources/fontforge.resource",GResourceProgramName,false);

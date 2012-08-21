@@ -1,7 +1,0 @@
-# A GNUmakefile in the libltdl subproject is needed if you are
-# building FontForge with gnustep-make.
-
-include Makefile
-
-distclean:
-	rm -f GNUmakefile

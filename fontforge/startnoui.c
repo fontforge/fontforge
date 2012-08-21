@@ -87,9 +87,7 @@ return( sharedir );
 
     pt = strstr(GResourceProgramDir,"/bin");
     if ( pt==NULL ) {
-#if defined(GNUSTEP_APP)
-return( sharedir = gnustep_resources_localedir );
-#elif defined(SHAREDIR)
+#if defined(SHAREDIR)
 return( sharedir = SHAREDIR "/../locale" );
 #elif defined( PREFIX )
 return( sharedir = PREFIX "/share/locale" );

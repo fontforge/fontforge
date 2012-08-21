@@ -31,9 +31,4 @@
 #include "gimage.h"
 #include "baseviews.h"
 
-extern char *gnustep_resources_sharedir;
-extern char *gnustep_resources_pixmaps;
-extern char *gnustep_resources_htdocs;
-extern char *gnustep_resources_localedir;
-
 #endif
