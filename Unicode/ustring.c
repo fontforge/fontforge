@@ -290,6 +290,18 @@ unichar_t *u_copyn(const unichar_t *pt, long n) {
 return(res);
 }
 
+unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
+    unichar_t *res;
+#ifdef MEMORY_MASK
+    if ( n*sizeof(unichar_t)>=MEMORY_MASK )
+	n = MEMORY_MASK/sizeof(unichar_t)-1;
+#endif
+    res = galloc((m+1)*sizeof(unichar_t));
+    memcpy(res,pt,n*sizeof(unichar_t));
+    res[n]='\0';
+return(res);
+}
+
 unichar_t *u_copy(const unichar_t *pt) {
     if(pt)
 return u_copyn(pt,u_strlen(pt));
@@ -999,11 +1011,11 @@ char *copytolower(const char *input)
 
 
 int endswith(const char *haystack,const char *needle) {
-    char* p = strstr( haystack, needle );
     int haylen = strlen( haystack );
     int nedlen = strlen( needle );
     if( haylen < nedlen )
 	return 0;
+    char* p = strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }
 

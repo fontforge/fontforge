@@ -534,7 +534,6 @@ static void FVMenuGenerateTTC(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 extern int save_to_dir;
 
 static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
-    printf("SaveAs_FormatChange()\n");
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GGadget *fc = GWidgetGetControl(GGadgetGetWindow(g),1000);
 	char *oldname = GGadgetGetTitle8(fc);
@@ -634,7 +633,7 @@ int _FVMenuSaveAs(FontView *fv) {
     gcd.data = &s2d;
     gcd.creator = GCheckBoxCreate;
 
-    ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,_FVSaveAsFilterFunc,&gcd);
+    ret = GWidgetSaveAsFileWithGadget8(_("Save as..."),temp,0,NULL,_FVSaveAsFilterFunc,GFileChooserSaveAsInputFilenameFunc,&gcd);
 //    ret = gwwv_save_filename_with_gadget(_("Save as..."),temp,NULL,&gcd);
     free(temp);
     if ( ret==NULL )
