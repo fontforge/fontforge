@@ -100,10 +100,15 @@ libfontforge_la_LIBADD = splinerefigure.lo		\
 	$(top_builddir)/Unicode/libgunicode.la		\
 	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
+
 if GRAPHICAL_USER_INTERFACE
 libfontforge_la_LIBADD += $(top_builddir)/gdraw/libgdraw.la	\
 	$(XINPUT_LIBS) $(XKB_LIBS)
 endif GRAPHICAL_USER_INTERFACE
+
+if PLUGIN_GB12345
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
+endif PLUGIN_GB12345
 
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"

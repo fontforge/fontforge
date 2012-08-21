@@ -8,9 +8,9 @@ if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
+SUBDIRS += plugins
 SUBDIRS += fontforge po htdocs pycontrib
 SUBDIRS += $(subdirs)
-SUBDIRS += plugins
 SUBDIRS += tests
 
 pkgconfigdir = ${libdir}/pkgconfig
