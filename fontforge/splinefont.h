@@ -1898,6 +1898,7 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 
 struct compressors { char *ext, *decomp, *recomp; };
 #define COMPRESSORS_EMPTY { NULL, NULL, NULL }
+extern struct compressors compressors[];
 
 struct archivers {
     char *ext, *unarchive, *archive, *listargs, *extractargs, *appendargs;
@@ -3127,6 +3128,7 @@ extern struct math_constants_descriptor {
 
 #define MATH_CONSTANTS_DESCRIPTOR_EMPTY { NULL, NULL, 0, 0, NULL, 0 }
 
+extern const char *knownweights[], *realweights[], **noticeweights[];
 
 extern int BPTooFar(BasePoint *bp1, BasePoint *bp2);
 extern StemInfo *SCHintOverlapInMask(SplineChar *sc,HintMask *hm);
