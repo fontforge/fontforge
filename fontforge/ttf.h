@@ -763,6 +763,8 @@ struct contexttree {
 #define _UNSCALED_OFFSETS	0x1000	/* Use MS definition */
 
 extern int ttfFixupRef(SplineChar **chars,int i);
+extern const char *cffnames[];
+extern const int nStdStrings;
 
     /* Open type Advanced Typography Tables */
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);

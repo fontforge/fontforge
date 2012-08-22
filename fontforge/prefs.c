@@ -75,7 +75,6 @@ extern char *BDFFoundry;
 extern char *TTFFoundry;
 extern char *xuid;
 extern char *SaveTablesPref;
-extern char *RecentFiles[RECENT_MAX];
 static char *LastFonts[2*RECENT_MAX];
 static int LastFontIndex=0, LastFontsPreserving=0;
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */

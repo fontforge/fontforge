@@ -46,8 +46,6 @@
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
 
-extern struct compressors compressors[];
-
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
 static const char *charset_names[] = {
@@ -2614,7 +2612,6 @@ return( !err );
 
 int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     char *buf, *buf2=NULL/*, *pt, *bpt*/;
-    extern struct compressors compressors[];
     int ret;
 
     if ( sf->save_to_dir )
@@ -7532,7 +7529,6 @@ void SFAutoSave(SplineFont *sf,EncMap *map) {
     FILE *asfd;
     char oldloc[24];
     SplineFont *ssf;
-    extern struct compressors compressors[];
 
     if ( no_windowing_ui )		/* No autosaves when just scripting */
 return;

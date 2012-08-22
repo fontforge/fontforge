@@ -2186,7 +2186,6 @@ return( b );
 }
 
 static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback, EncMap *map) {
-    extern struct compressors compressors[];
     int i;
     char *pt, *temp=NULL;
     char buf[1500];

@@ -60,7 +60,6 @@ fontforge_UIOBJECTS1 = alignment.o anchorsaway.o autowidth2dlg.o basedlg.o \
 fontforge_UIOBJECTS = $(fontforge_UIOBJECTS1) stamp.o
 fontforge_SCRIPTOBJ = startnoui.o stamp.o
 
-DIFFOBJS = sfddiff.o stamp.o
 ACORNOBJS = acorn2sfd.o stamp.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I../inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
@@ -119,9 +118,6 @@ fontlint: fontlint.pe
 	echo "#!$(bindir)/fontforge -lang=ff" >$@
 	cat $< >>$@
 	chmod +x $@
-
-sfddiff.old: $(DIFFOBJS)
-	$(LIBTOOL) --mode=link $(CC) -o sfddiff.old $(DIFFOBJS) $(DLIBS)
 
 acorn2sfd: $(ACORNOBJS)
 	$(LIBTOOL) --mode=link $(CC) -o acorn2sfd $(ACORNOBJS) $(DLIBS)

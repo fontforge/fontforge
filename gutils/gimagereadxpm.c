@@ -182,7 +182,6 @@ return( index );
 static long parsecol(char *start, char *end) {
     long ret = -1;
     int ch;
-    extern long LookupXColorName(char *);
 
     while ( !isspace(*start) && *start!='\0' ) ++start;
     while ( isspace(*start)) ++start;

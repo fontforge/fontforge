@@ -2498,7 +2498,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
     }
-    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
+    if ( layer>=0 )
+	CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
 			 cv->showpoints ,&clip,strokeFillMode);
 
     if ( cv->freehand.current_trace!=NULL )
@@ -2590,6 +2591,7 @@ static void SC_OutOfDateBackground(SplineChar *sc) {
 	cv->back_img_out_of_date = true;
 }
 
+/* CVRegenFill() regenerates data used to show or not show paths as filled */
 /* This is not static so that it can be called from the layers palette */
 void CVRegenFill(CharView *cv) {
     BDFCharFree(cv->filled);
@@ -9727,9 +9729,6 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("Remo_ve Undoes"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, CVRemoveUndoes, MID_RemoveUndoes },
     GMENUITEM2_EMPTY
 };
-
-extern GMenuItem2 cvtoollist[], cvspirotoollist[];
-extern void cvtoollist_check(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *e);
 
 static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("_Curve"), (GImage *) "pointscurve.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve|Ctl+2"), NULL, NULL, CVMenuPointType, MID_Curve },
