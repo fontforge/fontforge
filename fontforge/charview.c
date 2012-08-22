@@ -2498,7 +2498,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
     }
-    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
+    if ( layer>=0 )
+	CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
 			 cv->showpoints ,&clip,strokeFillMode);
 
     if ( cv->freehand.current_trace!=NULL )
