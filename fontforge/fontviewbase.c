@@ -1641,7 +1641,6 @@ static void _FVRevert(FontViewBase *fv,int tobackup) {
     int i;
     FontViewBase *fvs;
     EncMap *map;
-    extern struct compressors compressors[];
 
     if ( old->origname==NULL )
 return;

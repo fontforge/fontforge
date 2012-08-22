@@ -1596,10 +1596,6 @@ return;
 #endif
 }
 
-/* Standard names for cff */
-extern const char *cffnames[];
-extern const int nStdStrings;
-
 static int storesid(struct alltabs *at,char *str) {
     int i;
     FILE *news;

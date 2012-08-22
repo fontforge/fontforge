@@ -2179,9 +2179,6 @@ static char *UniqueLayerName(SplineChar *sc, const char *base)
     return buffer;
 }
 
-/* CVRegenFill() regenerates data used to show or not show paths as filled */
-extern void CVRegenFill(CharView *cv);
-
 /* Layers palette menu selection */
 static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);

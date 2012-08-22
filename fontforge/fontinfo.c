@@ -31,6 +31,7 @@
 #include <utype.h>
 #include "unicoderange.h"
 #include <locale.h>
+#include "lookups.h"
 
 extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
@@ -2174,8 +2175,6 @@ return( true );		/* can't happen */
     }
 return( true );
 }
-
-extern char *knownweights[], *realweights[], **noticeweights[];
 
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
@@ -6526,7 +6525,6 @@ static void LookupDeselect(struct lkdata *lk) {
 
 static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub,
 	struct lkdata *lk) {
-    extern char *lookup_type_names[2][10];
     static char popup_msg[600];
     int pos;
     char *lookuptype;
