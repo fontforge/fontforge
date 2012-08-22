@@ -2639,6 +2639,8 @@ static void AddUnhiddenPoints(StrokeContext *c) {
     int i, any;
     bigreal xdiff, ydiff;
 
+    if ( c==NULL || c->all==NULL )
+return;
     start=0;
     if ( c->all[0].left_hidden )
 	for ( start=0; start<c->cur && c->all[start].left_hidden; ++start );
