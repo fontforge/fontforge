@@ -46,11 +46,11 @@ NameList *namelist_for_new_fonts = &agl;
 	/* Adobe's standard names are wrong for: */
 	/* 0x0162 is named Tcommaaccent, 0x21A should be */
 	/* 0x0163 is named tcommaaccent, 0x21B should be */
-/* The following have been corrected (at least by intent) or removed */
-	/* 0xf6be is named dotlessj, 0x237 should be */
 	/* 0x2206 is named Delta, 0x394 should be */
 	/* 0x2126 is named Omega, 0x3A9 should be */
 	/* 0x00b5 is named mu, 0x3BC should be */
+/* The following have been corrected (at least by intent) or removed */
+	/* 0xf6be is named dotlessj, 0x237 should be */
 
 static int psnamesinited=false;
 #define HASH_SIZE	257
@@ -1224,7 +1224,7 @@ static const char *agl_sans_p0_b0[] = {
 	NULL,
 	NULL,
 	"acute",
-	NULL,
+	"mu",
 	"paragraph",
 	"periodcentered",
 	"cedilla",
@@ -1968,7 +1968,7 @@ static const char *agl_sans_p0_b3[] = {
 	"Alpha",
 	"Beta",
 	"Gamma",
-	"Delta",
+	NULL,
 	"Epsilon",
 	"Zeta",
 	"Eta",
@@ -1989,7 +1989,7 @@ static const char *agl_sans_p0_b3[] = {
 	"Phi",
 	"Chi",
 	"Psi",
-	"Omega",
+	NULL,
 	"Iotadieresis",
 	"Upsilondieresis",
 	"alphatonos",
@@ -2008,7 +2008,7 @@ static const char *agl_sans_p0_b3[] = {
 	"iota",
 	"kappa",
 	"lambda",
-	"mu",
+	NULL,
 	"nu",
 	"xi",
 	"omicron",
@@ -2635,7 +2635,7 @@ static const char *agl_sans_p0_b21[] = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
+	"Omega",
 	NULL,
 	NULL,
 	NULL,
@@ -2862,7 +2862,7 @@ static const char *agl_sans_p0_b22[] = {
 	"existential",
 	NULL,
 	"emptyset",
-	NULL,
+	"Delta",
 	"gradient",
 	"element",
 	"notelement",
