@@ -1,7 +1,21 @@
-ACLOCAL_AMFLAGS = -I libltdl/m4
+ACLOCAL_AMFLAGS = -I m4
+
+AM_CPPFLAGS =
+AM_LDFLAGS =
+
+BUILT_SOURCES =
+EXTRA_DIST =
+CLEANFILES =
+MOSTLYCLEANFILES =
+
+include_HEADERS =
+noinst_LTLIBRARIES =
+lib_LTLIBRARIES =
+EXTRA_LTLIBRARIES =
+
+include libltdl/Makefile.inc
 
 SUBDIRS =
-
 SUBDIRS += inc Unicode gutils
 
 if GRAPHICAL_USER_INTERFACE
@@ -17,7 +31,7 @@ pkgconfigdir = ${libdir}/pkgconfig
 nodist_pkgconfig_DATA = fontforge.pc libfontforge.pc	\
 	libfontforgeexe.pc
 
-EXTRA_DIST = LICENSE README-Mac.html README-MS.html README-unix	\
+EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
 	README-Unix.html Readme.VMS
 
 

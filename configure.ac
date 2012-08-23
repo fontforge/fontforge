@@ -4,20 +4,20 @@
 AC_PREREQ([2.68])
 AC_INIT([fontforge],[9999-experimental],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([Unicode/ArabicForms.c])
-AC_CONFIG_MACRO_DIR([libltdl/m4])
-AC_CONFIG_AUX_DIR([libltdl/config])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([1.12.2 foreign silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([1.12.2 subdir-objects foreign silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
 AM_PROG_AR
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
-LTDL_INIT
+LTDL_INIT([nonrecursive])
 FONTFORGE_CHECK_LTDL_VERSION
 
 AC_PATH_XTRA
