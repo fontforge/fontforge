@@ -250,7 +250,7 @@ static int RulerTextIntersection(CharView *cv, unichar_t *ubuf, int i) {
 	real xoff = cv->ruler_intersections[cv->num_ruler_intersections-2].x - cv->ruler_intersections[1].x;
 	real yoff = cv->ruler_intersections[cv->num_ruler_intersections-2].y - cv->ruler_intersections[1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	sprintf(buf,"First Edge to Last Edge: %f",len);
+	sprintf(buf,"First Edge to Last Edge: %f x %f length %f",fabs(xoff),fabs(yoff),len);
 	utf82u_strcpy(ubuf,buf);
 return( 1 );
     } else if ( cv->num_ruler_intersections>4 )
@@ -265,7 +265,7 @@ return( 0 );
 	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	sprintf(buf,"[%d] (%f,%f) length %f",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y, len);
+	sprintf(buf,"[%d] (%f,%f) %f x %f length %f",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
     }
 
     utf82u_strcpy(ubuf,buf);
@@ -311,6 +311,10 @@ return( 1 );
 	if ( l->y<r->y)
 return( -1 );
 return( 0 );
+}
+
+static int ReverseBasePointCompare(const BasePoint *l,const BasePoint *r) {
+return( -BasePointCompare(l,r) );
 }
 
 /*
@@ -365,12 +369,13 @@ static int GetIntersections(CharView *cv,BasePoint from,BasePoint to,BasePoint *
 	}
     }
 
-    all_intersections[total_intersections++] = to;
+    if ( total_intersections<max_intersections )
+	all_intersections[total_intersections++] = to;
 
     qsort(all_intersections,
 	total_intersections > max_intersections ? max_intersections : total_intersections,
 	sizeof(all_intersections[0]),
-	BasePointCompare);
+	BasePointCompare(&from,&to)<=0 ? BasePointCompare : ReverseBasePointCompare );
 
 return( total_intersections );	/* note that it could be greater than max */
 }
