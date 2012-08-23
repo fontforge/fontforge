@@ -44,7 +44,6 @@ int save_to_dir = 0;			/* use sfdir rather than sfd */
 unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 extern int onlycopydisplayed, copymetadata, copyttfinstr, add_char_to_name_list;
-extern struct compressors compressors[];
 int home_char='A';
 int compact_font_on_open=0;
 int navigation_mask = 0;		/* Initialized in startui.c */
