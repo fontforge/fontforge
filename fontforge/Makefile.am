@@ -135,9 +135,9 @@ if PLUGLIBUNINAMESLIST
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslist.la
 endif PLUGLIBUNINAMESLIST
 
-if PLUGLIBUNINAMESLISTFR
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslistfr.la
-endif PLUGLIBUNINAMESLISTFR
+#if PLUGLIBUNINAMESLISTFR
+#libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslistfr.la
+#endif PLUGLIBUNINAMESLISTFR
 
 if PLUGLIBSPIRO
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibspiro.la

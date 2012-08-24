@@ -138,30 +138,30 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST_fallback],
       [i_do_have_libuninameslist=no])
 ])
 
-dnl A macro that will not be needed if we can count on libuninameslist-fr
-dnl having a pkg-config file. 
-dnl
-dnl FONTFORGE_ARG_WITH_LIBUNINAMESLIST_FR
-dnl -------------------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST_FR],
-[
-   FONTFORGE_ARG_WITH_BASE([libuninameslistfr],
-      [AS_HELP_STRING([--without-libuninameslist-fr],[build without libuninameslist-fr])],
-      [libuninameslist-fr],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNINAMESLISTFR])],
-      [_NO_LIBUNINAMESLISTFR],
-      [FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR_fallback])
-])
-dnl
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR_fallback],
-[
-   FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist-fr],
-      [i_do_have_libuninameslistfr=yes
-       AC_SUBST([LIBUNINAMESLISTFR_CFLAGS],[""])
-       AC_SUBST([LIBUNINAMESLISTFR_LIBS],["${found_lib}"])
-       FONTFORGE_WARN_PKG_FALLBACK([LIBUNINAMESLISTFR])],
-      [i_do_have_libuninameslistfr=no])
-])
+dnl dnl A macro that will not be needed if we can count on libuninameslist-fr
+dnl dnl having a pkg-config file. 
+dnl dnl
+dnl dnl FONTFORGE_ARG_WITH_LIBUNINAMESLIST_FR
+dnl dnl -------------------------------------
+dnl AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST_FR],
+dnl [
+dnl    FONTFORGE_ARG_WITH_BASE([libuninameslistfr],
+dnl       [AS_HELP_STRING([--without-libuninameslist-fr],[build without libuninameslist-fr])],
+dnl       [libuninameslist-fr],
+dnl       [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNINAMESLISTFR])],
+dnl       [_NO_LIBUNINAMESLISTFR],
+dnl       [FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR_fallback])
+dnl ])
+dnl dnl
+dnl AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR_fallback],
+dnl [
+dnl    FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist-fr],
+dnl       [i_do_have_libuninameslistfr=yes
+dnl        AC_SUBST([LIBUNINAMESLISTFR_CFLAGS],[""])
+dnl        AC_SUBST([LIBUNINAMESLISTFR_LIBS],["${found_lib}"])
+dnl        FONTFORGE_WARN_PKG_FALLBACK([LIBUNINAMESLISTFR])],
+dnl       [i_do_have_libuninameslistfr=no])
+dnl ])
 
 dnl A macro that will not be needed if we can count on libspiro
 dnl having a pkg-config file. 

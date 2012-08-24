@@ -154,7 +154,7 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
-FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR
+#FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_REGULAR_LINK
@@ -199,7 +199,7 @@ AM_CONDITIONAL([PLUGLIBPNG],[test x"${i_do_have_libpng}" = xyes])
 AM_CONDITIONAL([PLUGLIBTIFF],[test x"${i_do_have_libtiff}" = xyes])
 AM_CONDITIONAL([PLUGLIBXML],[test x"${i_do_have_libxml}" = xyes])
 AM_CONDITIONAL([PLUGLIBUNINAMESLIST],[test x"${i_do_have_libuninameslist}" = xyes])
-AM_CONDITIONAL([PLUGLIBUNINAMESLISTFR],[test x"${i_do_have_libuninameslistfr}" = xyes])
+#AM_CONDITIONAL([PLUGLIBUNINAMESLISTFR],[test x"${i_do_have_libuninameslistfr}" = xyes])
 AM_CONDITIONAL([PLUGLIBSPIRO],[test x"${i_do_have_libspiro}" = xyes])
 
 #--------------------------------------------------------------------------
@@ -283,7 +283,7 @@ test x"${LIBJPEG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
 test x"${LIBPNG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
 test x"${LIBTIFF_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
 test x"${LIBUNINAMESLIST_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLIST_CFLAGS}"
-test x"${LIBUNINAMESLISTFR_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLISTFR_CFLAGS}"
+#test x"${LIBUNINAMESLISTFR_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLISTFR_CFLAGS}"
 test x"${LIBSPIRO_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBSPIRO_CFLAGS}"
 test x"${LIBXML_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
 test x"${PYTHON_CFLAGS}" = x || my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
@@ -391,7 +391,6 @@ Summary of optional dependencies:
   libtiff            ${i_do_have_libtiff}
   libxml             ${i_do_have_libxml}
   libuninameslist    ${i_do_have_libuninameslist}
-  libuninameslist-fr ${i_do_have_libuninameslistfr}
   libspiro           ${i_do_have_libspiro}
   X Window System    ${i_do_have_x}
   regular link       ${i_do_have_regular_link}

@@ -62,12 +62,12 @@ pluglibuninameslist_la_LDFLAGS = -module -avoid-version
 pluglibuninameslist_la_LIBADD = $(LIBUNINAMESLIST_LIBS)
 endif PLUGLIBUNINAMESLIST
 
-if PLUGLIBUNINAMESLISTFR
-plugin_LTLIBRARIES += pluglibuninameslistfr.la
-pluglibuninameslistfr_la_SOURCES = plug.c
-pluglibuninameslistfr_la_LDFLAGS = -module -avoid-version
-pluglibuninameslistfr_la_LIBADD = $(LIBUNINAMESLIST_FR_LIBS)
-endif PLUGLIBUNINAMESLISTFR
+#if PLUGLIBUNINAMESLISTFR
+#plugin_LTLIBRARIES += pluglibuninameslistfr.la
+#pluglibuninameslistfr_la_SOURCES = plug.c
+#pluglibuninameslistfr_la_LDFLAGS = -module -avoid-version
+#pluglibuninameslistfr_la_LIBADD = $(LIBUNINAMESLIST_FR_LIBS)
+#endif PLUGLIBUNINAMESLISTFR
 
 if PLUGLIBSPIRO
 plugin_LTLIBRARIES += pluglibspiro.la
