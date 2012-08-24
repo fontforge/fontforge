@@ -44,6 +44,9 @@ extern int _GScrollBar_Width;
 #undef H_
 #define H_(str) ("CV*" str)
 
+extern struct gidata;
+extern void PIChangePoint(struct gidata *ci);
+
 
 int ItalicConstrained=true;
 int cv_auto_goto = true;
@@ -4476,6 +4479,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     /*  need the full form of this call */
     if ( cv->needsrasterize || cv->recentchange )
 	_CV_CharChangedUpdate(cv,2);
+
+    dlist_foreach( &cv->pointInfoDialogs, PIChangePoint );
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -5124,7 +5129,8 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	CharViewFree(cv);
       break;
       case et_close:
-	GDrawDestroyWindow(gw);
+	  dlist_foreach( &cv->pointInfoDialogs, PI_Destroy );
+	  GDrawDestroyWindow(gw);
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();
@@ -11107,3 +11113,57 @@ GResInfo charview_ri = {
     NULL,
     NULL
 };
+
+void dlist_pushfront( struct dlistnode** list, struct dlistnode* node ) {
+    if( *list ) {
+	node->next = *list;
+	node->next->prev = node;
+    }
+    *list = node;
+}
+
+int dlist_size( struct dlistnode** list ) {
+    struct dlistnode* node = *list;
+    int ret = 0;
+    for( ; node; node=node->next ) {
+	ret++;
+    }
+    return ret;
+}
+
+int dlist_isempty( struct dlistnode** list ) {
+    return *list == NULL;
+}
+
+void dlist_erase( struct dlistnode** list, struct dlistnode* node ) {
+    if( !node )
+	return;
+    if( *list = node ) {
+	*list = node->next;
+	if( node->next ) {
+	    node->next->prev = 0;
+	}
+	return;
+    }
+    if( node->prev ) {
+	node->prev->next = node->next;
+    }
+    if( node->next ) {
+	node->next->prev = node->prev;
+    }
+	
+}
+
+void dlist_foreach( struct dlistnode** list, dlist_foreach_func_type func )
+{
+    struct dlistnode* node = *list;
+    while( node ) {
+	struct dlistnode* t = node;
+	node = node->next;
+	func( node );
+    }
+}
+
+
+
+

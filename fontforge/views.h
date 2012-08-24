@@ -35,6 +35,26 @@ struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
 
+/**
+ * Doubly linked list abstraction. Putting a full member of this
+ * struct first in another struct means you can treat it as a
+ * dlinkedlist. You can have a struct in many lists simply by
+ * embedding another dlistnode member and handing a pointer to that
+ * member to the dlist() helper functions. Double linking has big
+ * advantages in removal of single elements where you do not need to
+ * rescan to find removeme->prev;
+ */
+struct dlistnode {
+    struct dlistnode* next;
+    struct dlistnode* prev;
+};
+extern void dlist_pushfront( struct dlistnode** list, struct dlistnode* node );
+extern int  dlist_size( struct dlistnode** list );
+extern int  dlist_isempty( struct dlistnode** list );
+extern void dlist_erase( struct dlistnode** list, struct dlistnode* node );
+typedef void (*dlist_foreach_func_type)(struct dlistnode*);
+extern void dlist_foreach( struct dlistnode** list, dlist_foreach_func_type func );
+
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
     int showpoints, showfilled;
@@ -252,6 +272,7 @@ typedef struct charview {
     int guide_pos;
     struct qg_data *qg;
     int16 note_x, note_y;
+    struct dlistnode* pointInfoDialogs;
 } CharView;
 
 typedef struct bitmapview {
@@ -1185,4 +1206,5 @@ extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_ClassCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
+extern void PI_Destroy(struct dlistnode *node);
 #endif	/* _VIEWS_H */
