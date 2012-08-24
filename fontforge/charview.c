@@ -3273,11 +3273,12 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 #endif
 }
 
-static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
+void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GRect r;
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
     Color fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
-    char buffer[50];
+    const int buffersz = 50;
+    char buffer[buffersz+1];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
@@ -3315,14 +3316,22 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     else
 	sprintf( buffer, "%.3g%%", (double) (100*cv->scale));
     GDrawDrawBiText8(pixmap,MAG_DATA,ybase,buffer,-1,NULL,fg);
-    GDrawDrawBiText8(pixmap,LAYER_DATA,ybase,
-/* GT: Guide layer, make it short */
-		cv->b.drawmode==dm_grid ?                      _("Guide") :
-/* GT: Background, make it short */
+
+    const int layernamesz = 100;
+    char layername[layernamesz+1];
+    strcpy(layername,_("Guide"));
+    if(cv->b.drawmode!=dm_grid) {
+	int idx = CVLayer((CharViewBase *) cv);
+	if(idx >= 0 && idx < cv->b.sc->parent->layer_cnt) {
+	    strncpy(layername,cv->b.sc->parent->layers[idx].name,layernamesz);
+	}
+    }
+    snprintf( buffer, buffersz, "Active Layer: %s (%s)",
+	      ( cv->b.drawmode==dm_grid ? _("Guide") :
 		cv->b.layerheads[cv->b.drawmode]->background ? _("Back") :
-/* GT: Foreground, make it short */
-								_("Fore"),
-	    -1,NULL,fg);
+		_("Fore") ),
+	      layername );
+    GDrawDrawBiText8(pixmap,LAYER_DATA,ybase,buffer,-1,NULL,fg);
     if ( cv->coderange!=cr_none ) {
 	GDrawDrawBiText8(pixmap,CODERANGE_DATA,ybase,
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
