@@ -542,7 +542,7 @@ return;
 static Encoding *ParseConsortiumEncodingFile(FILE *file) {
     char buffer[200];
     int32 encs[0x10000];
-    int enc, unienc, max, i;
+    int enc, unienc, max;
     Encoding *item;
 
     memset(encs, 0, sizeof(encs));

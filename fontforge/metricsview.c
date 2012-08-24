@@ -3219,7 +3219,6 @@ static GMenuItem2 dummyall[] = {
 /* Builds up a menu containing all the anchor classes */
 static void aplistbuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(base);
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     GMenuItemArrayFree(mi->sub);
     mi->sub = NULL;
@@ -3278,7 +3277,6 @@ static GMenuItem2 lylist[] = {
 static void lylistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->fv->b.sf;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
     int ly;
     GMenuItem *sub;
 
@@ -3536,8 +3534,6 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int i, j, base, aselection;
     BDFFont *bdf;
     char buffer[60];
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 
     aselection = false;
     for ( j=0; j<mv->glyphcnt; ++j )

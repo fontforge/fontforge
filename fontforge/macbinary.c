@@ -641,7 +641,7 @@ return(resstarts);
 enum psstyle_flags { psf_bold = 1, psf_italic = 2, psf_outline = 4,
 	psf_shadow = 0x8, psf_condense = 0x10, psf_extend = 0x20 };
 
-uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstylecode ) {
+uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstylecode ) {
     unsigned short stylecode= 0, psstyle=0;
 
     if ( strstrmatch( styles, "Bold" ) || strstrmatch(styles,"Demi") ||
@@ -703,8 +703,6 @@ return( stylecode );
 }
 
 uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
-    char *styles;
-
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
 
@@ -714,8 +712,7 @@ uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
 return( sf->macstyle );
     }
 
-    styles = SFGetModifiers(sf);
-return( _MacStyleCode(styles,sf,psstylecode));
+return( _MacStyleCode(SFGetModifiers(sf),sf,psstylecode));
 }
 
 static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
@@ -2550,7 +2547,7 @@ return( copy(buffer));
 
 static int GuessStyle(char *fontname,int *styles,int style_cnt) {
     int which, style;
-    char *stylenames = _GetModifiers(fontname,NULL,NULL);
+    const char *stylenames = _GetModifiers(fontname,NULL,NULL);
 
     style = _MacStyleCode(stylenames,NULL,NULL);
     for ( which = style_cnt; which>=0; --which )

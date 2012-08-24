@@ -4170,7 +4170,6 @@ return;
 
     if ( !boxset ) {
 	extern GBox _ggadget_Default_Box;
-	extern void GGadgetInit(void);
 	GGadgetInit();
 	smallbox = _ggadget_Default_Box;
 	smallbox.padding = 1;

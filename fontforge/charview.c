@@ -1120,11 +1120,9 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     CVDrawSplineSetSpecialized( cv, pixmap, set, fg, dopoints, clip, sfm_stroke );
 }
 
-void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
+static void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
 				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
-    Spline *spline, *first;
     SplinePointList *spl;
-    int truetype_markup = set==cv->b.gridfit && cv->dv!=NULL;
     int currentSplineCounter = 0;
 
     if( strokeFillMode == sfm_fill ) {
@@ -2307,7 +2305,7 @@ return;				/* no points. no side bearings */
 }
 
 static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect* clip ) {
-    int i, layer, rlayer, cvlayer = CVLayer((CharViewBase *) cv);
+    int layer, cvlayer = CVLayer((CharViewBase *) cv);
     int filled = 0;
     if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled &&
 	cv->filled!=NULL ) {
@@ -7276,8 +7274,6 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
     int acceptable = -1;
     uint16 junk;
     int i;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 
     if ( cv->showing_spiro_pt_menu != (cv->b.sc->inspiro && hasspiro())) {
 	GMenuItemArrayFree(mi->sub);
@@ -9986,7 +9982,6 @@ static void ap2listbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     GMenuItem *sub;
     int k, cnt;
     AnchorPoint *ap;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
 
     if ( mi->sub!=NULL ) {
 	GMenuItemArrayFree(mi->sub);
@@ -10054,9 +10049,6 @@ static void aplistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     SplineChar *sc = cv->b.sc, **glyphs;
     SplineFont *sf = sc->parent;
     AnchorPoint *ap, *found;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     GMenuItem2 *mit;
     int cnt;
 
@@ -10215,8 +10207,6 @@ static GMenuItem2 mvlist[] = {
 static void mvlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     MMSet *mm = cv->b.sc->parent->mm;
     uint32 submask;
     SplineFont *sub;
@@ -10294,8 +10284,6 @@ static void CVMenuShowSubChar(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e
 static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int i, base, j;
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     MMSet *mm = cv->b.sc->parent->mm;
     SplineFont *sub;
     GMenuItem2 *mml;
