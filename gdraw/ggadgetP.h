@@ -560,10 +560,6 @@ extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);
 extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
-extern void GMenuItemArrayFree(GMenuItem *mi);
-extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
-extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
-extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 extern int GMenuItemArrayMask(GMenuItem *mi);
 extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
 

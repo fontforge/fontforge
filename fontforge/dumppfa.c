@@ -325,7 +325,7 @@ return( NULL );
 return( ret );
 }
 
-int PSDictFindEntry(struct psdict *dict, char *key) {
+int PSDictFindEntry(struct psdict *dict, const char *key) {
     int i;
 
     if ( dict==NULL )
@@ -338,7 +338,7 @@ return( i );
 return( -1 );
 }
 
-char *PSDictHasEntry(struct psdict *dict, char *key) {
+char *PSDictHasEntry(struct psdict *dict, const char *key) {
     int i;
 
     if ( dict==NULL )
@@ -367,7 +367,7 @@ return( false );
 return( true );
 }
 
-int PSDictRemoveEntry(struct psdict *dict, char *key) {
+int PSDictRemoveEntry(struct psdict *dict, const char *key) {
     int i;
 
     if ( dict==NULL )
@@ -390,7 +390,7 @@ return( false );
 return( true );
 }
 
-int PSDictChangeEntry(struct psdict *dict, char *key, char *newval) {
+int PSDictChangeEntry(struct psdict *dict, const char *key, char *newval) {
     int i;
 
     if ( dict==NULL )

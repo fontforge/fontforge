@@ -2032,8 +2032,8 @@ extern int SFForceEncoding(SplineFont *sf,EncMap *old,Encoding *new_map);
 extern int CountOfEncoding(Encoding *encoding_name);
 extern void SFMatchGlyphs(SplineFont *sf,SplineFont *target,int addempties);
 extern void MMMatchGlyphs(MMSet *mm);
-extern char *_GetModifiers(char *fontname, char *familyname,char *weight);
-extern char *SFGetModifiers(SplineFont *sf);
+extern const char *_GetModifiers(char *fontname, char *familyname,char *weight);
+extern const char *SFGetModifiers(SplineFont *sf);
 extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
 	const unichar_t *weight);
 extern void SFSetFontName(SplineFont *sf, char *family, char *mods, char *full);
@@ -2641,7 +2641,7 @@ extern char *Decompress(char *name, int compression);
 extern SplineFont *SFFromBDF(char *filename,int ispk,int toback);
 extern SplineFont *SFFromMF(char *filename);
 extern void SFCheckPSBitmap(SplineFont *sf);
-extern uint16 _MacStyleCode( char *styles, SplineFont *sf, uint16 *psstyle );
+extern uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstyle );
 extern uint16 MacStyleCode( SplineFont *sf, uint16 *psstyle );
 extern SplineFont *SFReadIkarus(char *fontname);
 extern SplineFont *_SFReadPdfFont(FILE *ttf,char *filename,enum openflags openflags);
@@ -2742,11 +2742,11 @@ extern void SFClearAutoSave(SplineFont *sf);
 extern void PSCharsFree(struct pschars *chrs);
 extern void PSDictFree(struct psdict *chrs);
 extern struct psdict *PSDictCopy(struct psdict *dict);
-extern int PSDictFindEntry(struct psdict *dict, char *key);
-extern char *PSDictHasEntry(struct psdict *dict, char *key);
+extern int PSDictFindEntry(struct psdict *dict, const char *key);
+extern char *PSDictHasEntry(struct psdict *dict, const char *key);
 extern int PSDictSame(struct psdict *dict1, struct psdict *dict2);
-extern int PSDictRemoveEntry(struct psdict *dict, char *key);
-extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
+extern int PSDictRemoveEntry(struct psdict *dict, const char *key);
+extern int PSDictChangeEntry(struct psdict *dict, const char *key, char *newval);
 extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,
 	char *name, int onlyone);
 

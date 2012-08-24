@@ -4662,10 +4662,7 @@ static void fea_ParsePosition(struct parseState *tok, int enumer) {
     /* <marked glyph pos sequence> => context chaining */
     /* [ignore pos] <marked glyph sequence> (, <marked g sequence>)* */
     struct markedglyphs *glyphs = fea_ParseMarkedGlyphs(tok,true,true,false), *g;
-    int cnt, i;
-    struct feat_item *item;
-    char *start, *pt, ch;
-    SplineChar *sc;
+    int cnt;
 
     fea_ParseTok(tok);
     for ( cnt=0, g=glyphs; g!=NULL; g=g->next, ++cnt );

@@ -360,22 +360,22 @@ static int PListOutputTrailer(FILE *plist) {
 return( ret );
 }
 
-static void PListOutputInteger(FILE *plist, char *key, int value) {
+static void PListOutputInteger(FILE *plist, const char *key, int value) {
     fprintf( plist, "\t<key>%s</key>\n", key );
     fprintf( plist, "\t<integer>%d</integer>\n", value );
 }
 
-static void PListOutputReal(FILE *plist, char *key, double value) {
+static void PListOutputReal(FILE *plist, const char *key, double value) {
     fprintf( plist, "\t<key>%s</key>\n", key );
     fprintf( plist, "\t<real>%g</real>\n", value );
 }
 
-static void PListOutputBoolean(FILE *plist, char *key, int value) {
+static void PListOutputBoolean(FILE *plist, const char *key, int value) {
     fprintf( plist, "\t<key>%s</key>\n", key );
     fprintf( plist, value ? "\t<true/>\n" : "\t<false/>\n" );
 }
 
-static void PListOutputDate(FILE *plist, char *key, time_t timestamp) {
+static void PListOutputDate(FILE *plist, const char *key, time_t timestamp) {
     struct tm *tm = gmtime(&timestamp);
 
     fprintf( plist, "\t<key>%s</key>\n", key );
@@ -384,7 +384,7 @@ static void PListOutputDate(FILE *plist, char *key, time_t timestamp) {
 	    tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec );
 }
 
-static void PListOutputString(FILE *plist, char *key, char *value) {
+static void PListOutputString(FILE *plist, const char *key, const char *value) {
     if ( value==NULL ) value = "";
     fprintf( plist, "\t<key>%s</key>\n", key );
     fprintf( plist, "\t<string>" );
@@ -400,7 +400,7 @@ static void PListOutputString(FILE *plist, char *key, char *value) {
     fprintf(plist, "</string>\n" );
 }
 
-static void PListOutputNameString(FILE *plist, char *key, SplineFont *sf, int strid) {
+static void PListOutputNameString(FILE *plist, const char *key, SplineFont *sf, int strid) {
     char *value=NULL, *nonenglish=NULL, *freeme=NULL;
     struct ttflangname *nm;
 
@@ -422,7 +422,7 @@ static void PListOutputNameString(FILE *plist, char *key, SplineFont *sf, int st
     free(freeme);
 }
 
-static void PListOutputIntArray(FILE *plist, char *key, char *entries, int len) {
+static void PListOutputIntArray(FILE *plist, const char *key, char *entries, int len) {
     int i;
 
     fprintf( plist, "\t<key>%s</key>\n", key );
@@ -432,7 +432,7 @@ static void PListOutputIntArray(FILE *plist, char *key, char *entries, int len) 
     fprintf( plist, "\t</array>\n" );
 }
 
-static void PListOutputPrivateArray(FILE *plist, char *key, struct psdict *private) {
+static void PListOutputPrivateArray(FILE *plist, const char *key, struct psdict *private) {
     char *value;
     int skipping;
 
@@ -464,7 +464,7 @@ return;
     fprintf( plist, "\t</array>\n" );
 }
 
-static void PListOutputPrivateThing(FILE *plist, char *key, struct psdict *private, char *type) {
+static void PListOutputPrivateThing(FILE *plist, const char *key, struct psdict *private, char *type) {
     char *value;
 
     if ( private==NULL )
@@ -678,7 +678,7 @@ return( false );
 return( PListOutputTrailer(plist));
 }
 
-static void KerningPListOutputGlyph(FILE *plist, char *key,KernPair *kp) {
+static void KerningPListOutputGlyph(FILE *plist, const char *key,KernPair *kp) {
     fprintf( plist, "\t<key>%s</key>\n", key );
     fprintf( plist, "\t<dict>\n" );
     while ( kp!=NULL ) {
@@ -1615,7 +1615,7 @@ static void UFOAddName(SplineFont *sf,char *value,int strid) {
     names->names[strid] = value;
 }
 
-static void UFOAddPrivate(SplineFont *sf,char *key,char *value) {
+static void UFOAddPrivate(SplineFont *sf,const char *key,char *value) {
     char *pt;
 
     if ( sf->private==NULL )
@@ -1627,7 +1627,7 @@ static void UFOAddPrivate(SplineFont *sf,char *key,char *value) {
     PSDictChangeEntry(sf->private, key, value);
 }
 
-static void UFOAddPrivateArray(SplineFont *sf,char *key,xmlDocPtr doc,xmlNodePtr value) {
+static void UFOAddPrivateArray(SplineFont *sf,const char *key,xmlDocPtr doc,xmlNodePtr value) {
     char space[400], *pt, *end;
     xmlNodePtr kid;
 
