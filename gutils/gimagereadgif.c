@@ -26,47 +26,52 @@
  */
 #include <basics.h>
 
-/* There doesn't seem to be any difference between libgif and libungif (on my
- *  system they are symbolic linked together). Either libungif doesn't support
- *  interlaced gifs, or I'm not using it properly. At the moment I don't care
-*/
-
 #ifdef _NO_LIBUNGIF
+
 static int a_file_must_define_something=0;	/* ANSI says so */
-#elif !defined(_STATIC_LIBUNGIF) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
+
+#else /* ! _NO_LIBUNGIF */
+
 #include <dynamic.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "gimage.h"
+#include "pluginloading.h"
 
 #include <gif_lib.h>
 
-static DL_CONST void *libgif=NULL;
+static lt_dlhandle libgif = NULL;
 static GifFileType *(*_DGifOpenFileName)(char *);
 static int (*_DGifSlurp)(GifFileType *);
 static int (*_DGifCloseFile)(GifFileType *);
+static int initialized = 0;
+static int successful = 0;
 
+static void print_error(const char *fmt,...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+}
+
+/* FIXME: This needs better handling of missing plugins. */
 static int loadgif() {
-    char *err;
-
-    libgif = dlopen("libungif" SO_EXT,RTLD_LAZY);
-    if ( libgif==NULL )
-	libgif = dlopen("libgif" SO_EXT,RTLD_LAZY);
-    if ( libgif==NULL ) {
-	fprintf(stderr,"%s\n", dlerror());
-return( 0 );
+    if (!initialized) {
+        successful = 0;
+        libgif = load_plugin("pluggiflib", print_error);
+        if (libgif != NULL) {
+            _DGifOpenFileName = (GifFileType *(*)(char *)) lt_dlsym(libgif,"DGifOpenFileName");
+            _DGifSlurp = (int (*)(GifFileType *)) lt_dlsym(libgif,"DGifSlurp");
+            _DGifCloseFile = (int (*)(GifFileType *)) lt_dlsym(libgif,"DGifCloseFile");
+            if ( _DGifOpenFileName && _DGifSlurp && _DGifCloseFile )
+                successful = 1;
+            else
+                print_error("Could not load a needed symbol from giflib\n");
+        }
     }
-    _DGifOpenFileName = (GifFileType *(*)(char *)) dlsym(libgif,"DGifOpenFileName");
-    _DGifSlurp = (int (*)(GifFileType *)) dlsym(libgif,"DGifSlurp");
-    _DGifCloseFile = (int (*)(GifFileType *)) dlsym(libgif,"DGifCloseFile");
-    if ( _DGifOpenFileName && _DGifSlurp && _DGifCloseFile )
-return( 1 );
-    dlclose(libgif);
-    err = dlerror();
-    if ( err==NULL )
-	err = "Couldn't load needed symbol from libgif.so";
-    fprintf(stderr,"%s\n", err);
-return( 0 );
+    return successful;
 }
 
 static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
@@ -154,7 +159,16 @@ return( NULL );
     free(images);
 return( ret );
 }
-#else
+
+#endif /* ! _NO_LIBUNGIF */
+
+
+/************************************************************************************/
+#if 0 /* FIXME: Someone please check that this old without-plugins
+       * code did not receive fixes or extensions that failed to
+       * propagate into the code above. The old source code existed in
+       * two similar copies. */
+
 #include <string.h>
 
 #include "gimage.h"
@@ -242,4 +256,7 @@ return( NULL );
     free(images);
 return( ret );
 }
-#endif
+
+#endif /* FIXME */
+/************************************************************************************/
+

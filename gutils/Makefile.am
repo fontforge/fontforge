@@ -1,12 +1,10 @@
+lib_LTLIBRARIES = libgutils.la libgioftp.la
+
+#--------------------------------------------------------------------------
+
 GUTL_VERSION = 1
 GUTL_REVISION = 3
 GUTL_AGE = 0
-
-GFTP_VERSION = 1
-GFTP_REVISION = 0
-GFTP_AGE = 0
-
-lib_LTLIBRARIES = libgutils.la libgioftp.la
 
 libgutils_la_SOURCES = divisors.c fsys.c gcol.c gimage.c				\
 	gimagereadbmp.c gimageread.c gimagereadgif.c gimagereadjpeg.c		\
@@ -16,16 +14,43 @@ libgutils_la_SOURCES = divisors.c fsys.c gcol.c gimage.c				\
 	gimagewritexbm.c gimagewritexpm.c gwwintl.c dynamic.c gio.c			\
 	giofile.c giohosts.c giomime.c giothread.c giotrans.c				\
 	gimagebmpP.h giofuncP.h gioP.h
-libgioftp_la_SOURCES = gioftp.c gioftpP.h
 
 libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)
-libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
-	$(MY_CFLAGS)
 
-libgutils_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la
+libgutils_la_LIBADD =											\
+	$(top_builddir)/pluginloading/libfontforgepluginloading.la	\
+	$(top_builddir)/Unicode/libgunicode.la
+
+if PLUGGIFLIB
+libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluggiflib.la
+endif PLUGGIFLIB
+
+if PLUGLIBJPEG
+libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibjpeg.la
+endif PLUGLIBJPEG
+
+if PLUGLIBPNG
+libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibpng.la
+endif PLUGLIBPNG
+
+if PLUGLIBTIFF
+libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibtiff.la
+endif PLUGLIBTIFF
 
 libgutils_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GUTL_VERSION):$(GUTL_REVISION):$(GUTL_AGE)"
+
+#--------------------------------------------------------------------------
+
+GFTP_VERSION = 1
+GFTP_REVISION = 0
+GFTP_AGE = 0
+
+libgioftp_la_SOURCES = gioftp.c gioftpP.h
+libgioftp_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
+	$(MY_CFLAGS)
 libgioftp_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GFTP_VERSION):$(GFTP_REVISION):$(GFTP_AGE)"
+
+#--------------------------------------------------------------------------

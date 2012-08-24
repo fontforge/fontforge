@@ -53,9 +53,10 @@ return( NULL );
 #  include "plugins.h"
 #  include "pluginloading.h"
 
-static lt_dlhandle libspiro;
+static lt_dlhandle libspiro = NULL;
 static void (*_TaggedSpiroCPsToBezier)(spiro_cp *spiros,bezctx *bc);
-static int inited = false, has_spiro = false;
+static int inited = false;
+static int has_spiro = false;
 
 static void initSpiro(void) {
     if (!inited) {
