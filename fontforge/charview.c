@@ -3188,6 +3188,137 @@ static void CVDoFindInFontView(CharView *cv) {
     GDrawRaise(((FontView *) (cv->b.fv))->gw);
 }
 
+typedef struct hotkey {
+    uint16 state;
+    uint16 keysym;
+} Hotkey;
+Hotkey* HotkeyParse( Hotkey*hk, const char* t );
+int     HotkeyMatches( Hotkey* hk, GEvent *event );
+
+Hotkey* HotkeyParse( Hotkey *hk, const char* t ) {
+    memset( hk, 0, sizeof(Hotkey));
+    if( !t )
+	return hk;
+    if( !strlen(t) )
+	return hk;
+    if( t[0] >= 'a' && t[0] <= 'z' )
+	hk->keysym = t[0];
+    if( t[0] >= '0' && t[0] <= '9' )
+	hk->keysym = t[0];
+    return hk;
+}
+
+int HotkeyMatches( Hotkey* hk, GEvent *event ) {
+
+    if( event->u.chr.autorepeat )
+	return 0;
+    
+    if( hk->keysym ) {
+	return event->u.chr.keysym == hk->keysym;
+    }
+    
+    return 0;
+}
+
+/**
+ * A function that is invoked when the user presses a collection of
+ * keys that they have defined should perform an action
+ */
+typedef void (*CVHotkeyFunc)(CharView *cv,GEvent *event);
+
+/**
+ * A cvhotkey holds the text descrition of a hotkey in keydesc, a
+ * preparsed version of that hotkey definition in Hotkey, and a
+ * callback function that should be called when that hotkey is
+ * pressed. Note that as the Hotkey element is the last in the struct
+ * is can be left out of a definition when creating an array of
+ * cvhotkey elements. The Hotkey struct can later be initialized when
+ * the resources are read from the user's theme file.
+ */
+typedef struct cvhotkey {
+    const char*  keydesc;
+    CVHotkeyFunc func;
+    Hotkey       hk;
+} CVHotkey;
+
+/********
+ * These are a bunch of simple functions that can be called by
+ * hotkeys
+ */
+void CVHotkeyFuncSwitchToZoom(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_magnify );
+}
+void CVHotkeyFuncSwitchToRuler(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_ruler );
+}
+void CVHotkeyFuncSwitchToPointer(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_pointer );
+}
+void CVHotkeyFuncSwitchToHand(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_hand );
+}
+void CVHotkeyFuncSwitchToPointCurve(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_curve );
+}
+void CVHotkeyFuncSwitchToPointHVCurve(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_hvcurve );
+}
+void CVHotkeyFuncSwitchToPointCorner(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_corner );
+}
+void CVHotkeyFuncSwitchToPointTangent(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_tangent );
+}
+void CVHotkeyFuncSwitchToPointFreehand(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_freehand );
+}
+void CVHotkeyFuncSwitchToPointPen(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_pen );
+}
+void CVHotkeyFuncSwitchToPointSpiroToggle(CharView *cv,GEvent *event) {
+    CVChangeSpiroMode( cv );
+//    CVSelectTool( cv, cvt_spiro );
+}
+void CVHotkeyFuncSwitchToPointSpiroG4(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_spirog4 );
+}
+void CVHotkeyFuncSwitchToPointSpiroCorner(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_spirocorner );
+}
+void CVHotkeyFuncSwitchToPointSpiroLeft(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_spiroleft );
+}
+void CVHotkeyFuncSwitchToPointSpiroRight(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_spiroright );
+}
+void CVHotkeyFuncSwitchToPointKnife(CharView *cv,GEvent *event) {
+    CVSelectTool( cv, cvt_knife );
+}
+/**
+ * Keep all the functions and their names in a table for easy selection. 
+ */
+CVHotkey CVHotkeys[] = {
+    { "CharView.Hotkey.Tool.Zoom",         CVHotkeyFuncSwitchToZoom    },
+    { "CharView.Hotkey.Tool.Ruler",        CVHotkeyFuncSwitchToRuler   },
+    { "CharView.Hotkey.Tool.Pointer",      CVHotkeyFuncSwitchToPointer },
+    { "CharView.Hotkey.Tool.Hand",         CVHotkeyFuncSwitchToHand    },
+    { "CharView.Hotkey.Tool.PointCurve",   CVHotkeyFuncSwitchToPointCurve   },
+    { "CharView.Hotkey.Tool.PointHVCurve", CVHotkeyFuncSwitchToPointHVCurve },
+    { "CharView.Hotkey.Tool.PointCorner",  CVHotkeyFuncSwitchToPointCorner  },
+    { "CharView.Hotkey.Tool.PointTangent", CVHotkeyFuncSwitchToPointTangent },
+    { "CharView.Hotkey.Tool.Freehand",     CVHotkeyFuncSwitchToPointFreehand },
+    { "CharView.Hotkey.Tool.Pen",          CVHotkeyFuncSwitchToPointPen },
+    { "CharView.Hotkey.Tool.SpiroToggle",  CVHotkeyFuncSwitchToPointSpiroToggle },
+    { "CharView.Hotkey.Tool.SpiroG4",      CVHotkeyFuncSwitchToPointSpiroG4 },
+    { "CharView.Hotkey.Tool.SpiroCorner",  CVHotkeyFuncSwitchToPointSpiroCorner },
+    { "CharView.Hotkey.Tool.SpiroLeft",    CVHotkeyFuncSwitchToPointSpiroLeft },
+    { "CharView.Hotkey.Tool.SpiroRight",   CVHotkeyFuncSwitchToPointSpiroRight },
+    { "CharView.Hotkey.Tool.Knife",        CVHotkeyFuncSwitchToPointKnife },
+    { NULL, NULL }
+};
+
+
+
 static uint16 HaveModifiers = 0;
 static uint16 PressingTilde = 0;
 static uint16 PrevCharEventWasCharUpOnControl = 0;
@@ -3236,7 +3367,22 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    return;
 	}
     }
-    
+
+    /**
+     * Maybe the user has defined a custom action to be performed when this
+     * key is input.
+     */
+    if( !cv_auto_goto && !event->u.chr.autorepeat ) {
+	CVHotkey* cvhk = CVHotkeys;
+	int i=0;
+	for( ; cvhk->keydesc; cvhk++ ) {
+	    if( HotkeyMatches( &(cvhk->hk), event ) ) {
+		cvhk->func( cv, event );
+		// it ends here if we performed a user defined action.
+		return;
+	    }
+	}
+    }
     
     
 #if _ModKeysAutoRepeat
@@ -10562,6 +10708,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 	ff_post_error(_("You may not use spiros"),_("This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."));
 #endif
     }
+    
 }
 
 void DefaultY(GRect *pos) {
@@ -10736,6 +10883,15 @@ return;
     mb2DoGetText(spiroptlist);
     for ( i=0; mblist_nomm[i].ti.text!=NULL; ++i )
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
+
+    /**
+     * Precache the hotkey parsing.
+     * No point in parsing these all the time.
+     */
+    CVHotkey* cvhk = CVHotkeys;
+    for( i=0; cvhk->keydesc; cvhk++ ) {
+	HotkeyParse( &(cvhk->hk), GResourceFindString(cvhk->keydesc));
+    }
 }
 
 static int nested_cv_e_h(GWindow gw, GEvent *event) {

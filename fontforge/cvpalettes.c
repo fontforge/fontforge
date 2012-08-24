@@ -218,7 +218,6 @@ static void CVMenuTool(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVToolsSetCursor(cv,0,NULL);
 }
 
-static void CVChangeSpiroMode(CharView *cv);
 static void CVMenuSpiroSet(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVChangeSpiroMode(cv);
@@ -770,6 +769,11 @@ static void CVPolyStar(CharView *cv) {
     ps_pointcnt = temp;
 }
 
+void CVSelectTool(CharView *cv,enum cvtools sel) {
+    cv->b1_tool = sel;
+    CVToolsRedraw();
+}
+
 static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect old;
     /* Note: If you change this ordering, change enum cvtools */
@@ -844,10 +848,12 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 /*	else								 */
 	    GDrawDrawImage(pixmap,buttons[mi][j],NULL,j*27+1,i*27+1);
 	norm = (mi*2+j!=tool);
-	GDrawDrawLine(pixmap,j*27,i*27,j*27+25,i*27,norm?0xe0e0e0:0x707070);
-	GDrawDrawLine(pixmap,j*27,i*27,j*27,i*27+25,norm?0xe0e0e0:0x707070);
-	GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
-	GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
+	if( !norm ) {
+	    GDrawDrawLine(pixmap,j*27,i*27,j*27+25,i*27,norm?0xe0e0e0:0x707070);
+	    GDrawDrawLine(pixmap,j*27,i*27,j*27,i*27+25,norm?0xe0e0e0:0x707070);
+	    GDrawDrawLine(pixmap,j*27,i*27+25,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
+	    GDrawDrawLine(pixmap,j*27+25,i*27,j*27+25,i*27+25,norm?0x707070:0xe0e0e0);
+	}
     }
     GDrawSetFont(pixmap,toolsfont);
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
@@ -1028,7 +1034,7 @@ static void SCCheckForSSToOptimize(SplineChar *sc, SplineSet *ss,int order2) {
     }
 }
 
-static void CVChangeSpiroMode(CharView *cv) {
+void CVChangeSpiroMode(CharView *cv) {
     if ( hasspiro() ) {
 	cv->b.sc->inspiro = !cv->b.sc->inspiro;
 	cv->showing_tool = cvt_none;
@@ -4131,4 +4137,8 @@ void PalettesChangeDocking(void) {
 
 int BVPalettesWidth(void) {
 return( GGadgetScale(BV_LAYERS_WIDTH));
+}
+
+void CVToolsRedraw() {
+    GDrawRequestExpose(cvtools,NULL,false);
 }
