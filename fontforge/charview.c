@@ -46,7 +46,7 @@ extern int _GScrollBar_Width;
 
 
 int ItalicConstrained=true;
-int cv_auto_goto = true;
+int cv_auto_goto = false;
 float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
