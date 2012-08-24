@@ -35,8 +35,9 @@
 #include <chardata.h>
 #include <gresource.h>
 #include "ggadgetP.h"		/* For the font family names */
-#if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
+#if !defined(_NO_LIBUNINAMESLIST)
 #  include <dynamic.h>
+#  include "pluginloading.h"
 #endif
 
 struct unicode_nameannot {
@@ -340,23 +341,26 @@ struct namemap encodingnames[] = {
 #endif
     { NULL, 0 }};
 
+#ifdef _NO_LIBUNINAMESLIST
+
 static void inituninameannot(void) {
-#if _NO_LIBUNINAMESLIST
     _UnicodeNameAnnot = NULL;
-#elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
-    extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
-    _UnicodeNameAnnot = UnicodeNameAnnot;
-#else
-    DL_CONST void *libuninames=NULL;
-# ifdef LIBDIR
-    libuninames = dlopen( LIBDIR "/" "libuninameslist" SO_EXT,RTLD_LAZY);
-# endif
-    if ( libuninames==NULL )
-	libuninames = dlopen( "libuninameslist" SO_EXT,RTLD_LAZY);
-    if ( libuninames!=NULL )
-	_UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
-#endif
 }
+
+#else /* ! _NO_LIBUNINAMESLIST */
+
+static void inituninameannot(void) {
+    lt_dlhandle libuninames;
+
+    init_plugins();
+    libuninames = load_plugin("plug_libuninameslist", NULL);
+    if (libuninames != NULL)
+        _UnicodeNameAnnot = lt_dlsym(libuninames,"UnicodeNameAnnot");
+    else
+        _UnicodeNameAnnot = NULL;
+}
+
+#endif /* ! _NO_LIBUNINAMESLIST */
 
 static int mapFromIndex(int i) {
 return( encodingnames[i].map );

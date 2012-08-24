@@ -90,9 +90,8 @@ extern int AddEncoding(char *name,EncFunc enc_to_uni,EncFunc uni_to_enc,int max)
 	/*  an existing encoding, 0 if you attempt to replace a builtin */
 	/*  encoding */
 
-
  /* Internal routines. Plugins shouldn't need these */
-extern void LoadPlugin(const char *dynamic_lib_name);
+extern int LoadPlugin(const char *dynamic_lib_name);
     /* Loads a single plugin file */
 extern void LoadPluginDir(const char *search_path);
     /* Loads any dynamic libs from this search path. if search_path is

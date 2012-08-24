@@ -96,9 +96,10 @@ libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"					\
 	"-DDOCDIR=\"${docdir}\"" "-DPLUGINDIR=\"${pkglibdir}/plugins\""	\
 	$(MY_CFLAGS)
 
-libfontforge_la_LIBADD = splinerefigure.lo		\
-	$(top_builddir)/Unicode/libgunicode.la		\
-	$(top_builddir)/gutils/libgutils.la			\
+libfontforge_la_LIBADD = splinerefigure.lo						\
+	$(top_builddir)/pluginloading/libfontforgepluginloading.la	\
+	$(top_builddir)/Unicode/libgunicode.la						\
+	$(top_builddir)/gutils/libgutils.la							\
 	$(top_builddir)/gutils/libgioftp.la
 
 if GRAPHICAL_USER_INTERFACE
@@ -109,6 +110,38 @@ endif GRAPHICAL_USER_INTERFACE
 if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
+
+if PLUGGIFLIB
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluggiflib.la
+endif PLUGGIFLIB
+
+if PLUGLIBJPEG
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibjpeg.la
+endif PLUGLIBJPEG
+
+if PLUGLIBPNG
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibpng.la
+endif PLUGLIBPNG
+
+if PLUGLIBTIFF
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibtiff.la
+endif PLUGLIBTIFF
+
+if PLUGLIBXML
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibxml.la
+endif PLUGLIBXML
+
+if PLUGLIBUNINAMESLIST
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslist.la
+endif PLUGLIBUNINAMESLIST
+
+if PLUGLIBUNINAMESLISTFR
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslistfr.la
+endif PLUGLIBUNINAMESLISTFR
+
+if PLUGLIBSPIRO
+libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibspiro.la
+endif PLUGLIBSPIRO
 
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"

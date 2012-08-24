@@ -31,6 +31,7 @@
 /* See http://www.levien.com/spiro/ */
 
 #ifdef _NO_LIBSPIRO
+
 static int has_spiro = false;
 
 int hasspiro(void) {
@@ -44,60 +45,39 @@ return( NULL );
 spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
 return( NULL );
 }
-#else
-# include "bezctx_ff.h"
-# if defined(_STATIC_LIBSPIRO) || defined(NODYNAMIC)
-#  define _TaggedSpiroCPsToBezier TaggedSpiroCPsToBezier
-static int has_spiro = true;
 
-int hasspiro(void) {
-return(true);
-}
+#else /* ! _NO_LIBSPIRO */
 
-static void initSpiro(void) {
-}
-# else
-#  include <dynamic.h>
+#  include "bezctx_ff.h"
+#  include "dynamic.h"
+#  include "plugins.h"
+#  include "pluginloading.h"
 
-static DL_CONST void *libspiro;
+static lt_dlhandle libspiro;
 static void (*_TaggedSpiroCPsToBezier)(spiro_cp *spiros,bezctx *bc);
 static int inited = false, has_spiro = false;
 
 static void initSpiro(void) {
-    if ( inited )
-return;
+    if (!inited) {
+        libspiro = load_plugin("pluglibspiro", NULL);
 
-    libspiro = dlopen("libspiro" SO_EXT,RTLD_LAZY);
-    if ( libspiro==NULL )
-#ifdef LIBDIR
-	libspiro = dlopen(LIBDIR "/libspiro" SO_EXT,RTLD_LAZY);
-#else
-	libspiro = dlopen("/usr/local/bin" "/libspiro" SO_EXT,RTLD_LAZY);
-#endif
-	
-    inited = true;
+        if (libspiro != NULL) {
+            _TaggedSpiroCPsToBezier =
+                (void (*)(spiro_cp *spiros, bezctx *bc)) lt_dlsym(libspiro,"TaggedSpiroCPsToBezier");
+            has_spiro = (_TaggedSpiroCPsToBezier != NULL);
+            if (!has_spiro)
+                LogError(_("Hmm. This system has a libspiro, but it doesn't contain the entry points\n"
+                           "fontforge needs. Must be something else.\n"));
+        }
 
-    if ( libspiro==NULL ) {
-#ifndef __Mac
-	fprintf( stderr, "%s\n", dlerror());
-#endif
-return;
+        inited = true;
     }
-
-    _TaggedSpiroCPsToBezier = (void (*)(spiro_cp *spiros,bezctx *bc)) dlsym(libspiro,"TaggedSpiroCPsToBezier");
-   if ( _TaggedSpiroCPsToBezier==NULL ) {
-	LogError(_("Hmm. This system has a libspiro, but it doesn't contain the entry points\nfontforge needs. Must be something else.\n"));
-    } else
-	has_spiro = true;
 }
 
 int hasspiro(void) {
-    if ( has_spiro )
-return( true );
     initSpiro();
-return(has_spiro);
+    return(has_spiro);
 }
-#endif
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     int n;
@@ -211,7 +191,8 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     if ( _cnt!=NULL ) *_cnt = cnt;
 return( ret );
 }
-#endif
+
+#endif /* ! _NO_LIBSPIRO */
 
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
     int n;

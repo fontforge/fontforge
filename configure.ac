@@ -154,6 +154,7 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBUNINAMESLIST
+FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_ICONV
 FONTFORGE_ARG_WITH_REGULAR_LINK
@@ -191,6 +192,15 @@ use the --disable-freetype-debugger option.
 fi
 
 FONTFORGE_ARG_WITH_ARCH
+
+AM_CONDITIONAL([PLUGGIFLIB],[test x"${i_do_have_giflib}" = xyes])
+AM_CONDITIONAL([PLUGLIBJPEG],[test x"${i_do_have_libjpeg}" = xyes])
+AM_CONDITIONAL([PLUGLIBPNG],[test x"${i_do_have_libpng}" = xyes])
+AM_CONDITIONAL([PLUGLIBTIFF],[test x"${i_do_have_libtiff}" = xyes])
+AM_CONDITIONAL([PLUGLIBXML],[test x"${i_do_have_libxml}" = xyes])
+AM_CONDITIONAL([PLUGLIBUNINAMESLIST],[test x"${i_do_have_libuninameslist}" = xyes])
+AM_CONDITIONAL([PLUGLIBUNINAMESLISTFR],[test x"${i_do_have_libuninameslistfr}" = xyes])
+AM_CONDITIONAL([PLUGLIBSPIRO],[test x"${i_do_have_libspiro}" = xyes])
 
 #--------------------------------------------------------------------------
 #
@@ -273,6 +283,7 @@ test x"${LIBJPEG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
 test x"${LIBPNG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
 test x"${LIBTIFF_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
 test x"${LIBUNINAMESLIST_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLIST_CFLAGS}"
+test x"${LIBUNINAMESLISTFR_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLISTFR_CFLAGS}"
 test x"${LIBSPIRO_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBSPIRO_CFLAGS}"
 test x"${LIBXML_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
 test x"${PYTHON_CFLAGS}" = x || my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
@@ -288,9 +299,9 @@ test x"${regular_link_libjpeg}" = xyes -a x"${LIBJPEG_LIBS}" != x && my_libs="${
 test x"${regular_link_libpng}" = xyes -a x"${LIBPNG_LIBS}" != x && my_libs="${my_libs} ${LIBPNG_LIBS}"
 test x"${regular_link_libtiff}" = xyes -a x"${LIBTIFF_LIBS}" != x && my_libs="${my_libs} ${LIBTIFF_LIBS}"
 test x"${regular_link_freetype}" = xyes -a x"${FREETYPE_LIBS}" != x && my_libs="${my_libs} ${FREETYPE_LIBS}"
-test x"${regular_link_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" != x && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
+#test x"${regular_link_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" != x && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
 test x"${regular_link_libxml}" = xyes -a x"${LIBXML_LIBS}" != x && my_libs="${my_libs} ${LIBXML_LIBS}"
-test x"${regular_link_libspiro}" = xyes -a x"${LIBSPIRO_LIBS}" != x && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
+#test x"${regular_link_libspiro}" = xyes -a x"${LIBSPIRO_LIBS}" != x && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
 test x"${regular_link_cairo}" = xyes -a x"${CAIRO_LIBS}" != x && my_libs="${my_libs} ${CAIRO_LIBS}"
 test x"${regular_link_pango}" = xyes -a x"${PANGO_LIBS}" != x && my_libs="${my_libs} ${PANGO_LIBS}"
 test x"${regular_link_pango}" = xyes -a x"${PANGOCAIRO_LIBS}" != x && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
@@ -303,6 +314,7 @@ AC_SUBST([MY_LIBS],[${my_libs}])
 dnl Portable makefiles.
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([inc/Makefile])
+AC_CONFIG_FILES([pluginloading/Makefile])
 AC_CONFIG_FILES([Unicode/Makefile])
 AC_CONFIG_FILES([gutils/Makefile])
 AC_CONFIG_FILES([gdraw/Makefile])
@@ -370,18 +382,19 @@ Summary of optional features:
 
 Summary of optional dependencies:
 
-  cairo            ${i_do_have_cairo}
-  pango            ${i_do_have_pango}
-  freetype         ${i_do_have_freetype}
-  giflib           ${i_do_have_giflib}
-  libjpeg          ${i_do_have_libjpeg}
-  libpng           ${i_do_have_libpng}
-  libtiff          ${i_do_have_libtiff}
-  libxml           ${i_do_have_libxml}
-  libuninameslist  ${i_do_have_libuninameslist}
-  libspiro         ${i_do_have_libspiro}
-  X Window System  ${i_do_have_x}
-  regular link     ${i_do_have_regular_link}
+  cairo              ${i_do_have_cairo}
+  pango              ${i_do_have_pango}
+  freetype           ${i_do_have_freetype}
+  giflib             ${i_do_have_giflib}
+  libjpeg            ${i_do_have_libjpeg}
+  libpng             ${i_do_have_libpng}
+  libtiff            ${i_do_have_libtiff}
+  libxml             ${i_do_have_libxml}
+  libuninameslist    ${i_do_have_libuninameslist}
+  libuninameslist-fr ${i_do_have_libuninameslistfr}
+  libspiro           ${i_do_have_libspiro}
+  X Window System    ${i_do_have_x}
+  regular link       ${i_do_have_regular_link}
 ])
 
 #--------------------------------------------------------------------------

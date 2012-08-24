@@ -15,14 +15,15 @@ EXTRA_LTLIBRARIES =
 
 include libltdl/Makefile.inc
 
-SUBDIRS =
-SUBDIRS += inc Unicode gutils
+SUBDIRS = inc
+SUBDIRS += pluginloading
+SUBDIRS += plugins
+SUBDIRS += Unicode gutils
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
-SUBDIRS += plugins
 SUBDIRS += fontforge po htdocs pycontrib
 SUBDIRS += $(subdirs)
 SUBDIRS += tests
@@ -40,47 +41,6 @@ EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
 
 
 
-#fontforgegtk: fontforge
-#	( cd gtkui ; $(MAKE) )
-#
-#clean:
-#	( cd fontforge ; $(MAKE) clean )
-#	( cd Unicode ; $(MAKE) clean )
-#	( cd gutils ; $(MAKE) clean )
-#	( cd gdraw ; $(MAKE) clean )
-#	( cd plugins ; $(MAKE) clean )
-#	if test -d gtkui; then cd gtkui ; $(MAKE) clean ; fi
-#	-( cd po ; rm *.mo )
-#	-( cd pyhook ; for dir in * ; do if test -d $$dir -a "$$dir" != "CVS" ; then  rm -rf $$dir ; fi; done )
-#	-rm -rf .libs
-#
-#distclean cleaner:
-#	( cd fontforge ; $(MAKE) distclean )
-#	( cd Unicode ; $(MAKE) distclean )
-#	( cd gutils ; $(MAKE) distclean )
-#	( cd gdraw ; $(MAKE) distclean )
-#	( cd plugins ; $(MAKE) distclean )
-#	if test -d gtkui; then cd gtkui ; $(MAKE) distclean ; fi
-#	-( cd po ; rm *.mo Makefile* )
-#	-( cd pyhook ; rm setup.py ; for dir in * ; do if test -d $$dir -a "$$dir" != "CVS" ; then  rm -rf $$dir ; fi; done)
-#	-rm -rf .libs
-#	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific inc/config.h
-#
-#install_libs: libs
-## You may need to be root to do the install
-#	mkdir -p $(DESTDIR)$(libdir)
-#	#-rm $(DESTDIR)$(libdir)/libgdraw.so* $(DESTDIR)$(libdir)/libgunicode.so.*
-#	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(DESTDIR)$(libdir)/libgunicode.la
-#	$(LIBTOOL) --mode=install $(INSTALL) -c libgutils.la $(DESTDIR)$(libdir)/libgutils.la
-#	$(LIBTOOL) --mode=install $(INSTALL) -c libgioftp.la $(DESTDIR)$(libdir)/libgioftp.la
-##We don't build gdraw if no X
-#	if test -r libgdraw.la ; then $(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(DESTDIR)$(libdir)/libgdraw.la ; fi
-##We don't always build libfontforge
-#	if test -r libfontforge.la ; then $(LIBTOOL) --mode=install $(INSTALL) -c libfontforge.la $(DESTDIR)$(libdir)/libfontforge.la ; fi
-#	$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
-#	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
-#	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
-#
 #install_incs:
 #	mkdir -p $(DESTDIR)$(includedir)/fontforge
 #	$(INSTALL_DATA) $(srcdir)/inc/*.h $(DESTDIR)$(includedir)/fontforge

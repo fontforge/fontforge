@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2012 by George Williams */
+/* Copyright (C) 2000-2012 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,29 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "plugins.h"
-#include "pluginloading.h"
-#include "basics.h"
+#ifndef _PLUGIN_LOADING_H
+#define _PLUGIN_LOADING_H
 
-/* Load (or fake loading) a named plugin that is somewhere in the path
- * list for lt_dlopenext(). Returns 'true' on success; otherwise
- * returns 'false'. */
-int LoadPlugin(const char *dynamic_lib_name) {
-    lt_dlhandle plugin;
-    plugin = load_plugin(dynamic_lib_name, LogError);
-    return (plugin != NULL);
-}
+#include <ltdl.h>
 
-/* Callback function for LoadPluginDir(). */
-static int plugin_loading_callback(const char *dynamic_lib_name, void *UNUSED(data)) {
-    (void) LoadPlugin(dynamic_lib_name);
-    return 0;
-}
+void init_plugins(void);
+int plugins_are_initialized(void);
+lt_dlhandle load_plugin(const char *dynamic_lib_name, void (*logger)(const char *fmt,...));
 
-/* Load all the plugins in the given search_path, if search_path !=
-   NULL.  Load plugins in the "user-defined" search path, if
-   search_path == NULL. */
-void LoadPluginDir(const char *search_path) {
-    const char *path = (search_path == NULL) ? lt_dlgetsearchpath() : search_path;
-    (void) lt_dlforeachfile(path, plugin_loading_callback, NULL);
-}
+#endif /* _PLUGIN_LOADING_H */
