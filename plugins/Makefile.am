@@ -20,6 +20,13 @@ endif PLUGIN_GB12345
 #
 # Plugins internal to the design of FontForge.
 
+if PLUGZLIB
+plugin_LTLIBRARIES += plugzlib.la
+plugzlib_la_SOURCES = plug.c
+plugzlib_la_LDFLAGS = -module -avoid-version
+plugzlib_la_LIBADD = $(ZLIB_LIBS)
+endif PLUGZLIB
+
 if PLUGGIFLIB
 plugin_LTLIBRARIES += pluggiflib.la
 pluggiflib_la_SOURCES = plug.c

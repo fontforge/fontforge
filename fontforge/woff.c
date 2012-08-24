@@ -34,6 +34,7 @@
 #include <ctype.h>
 
 #ifdef _NO_LIBPNG
+
 SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,struct fontdict *fd) {
     ff_post_error(_("WOFF not supported"), _("This version of fontforge cannot handle WOFF files. You need to recompile it with libpng and zlib") );
 return( NULL );
@@ -54,15 +55,15 @@ return( 1 );
 int CanWoff(void) {
 return( 0 );
 }
-#else
-# if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
-#  include <dynamic.h>
-# endif
+
+#else /* ! _NO_LIBPNG */
+
+# include <dynamic.h>
 # include <zlib.h>
+# include "pluginloading.h"
 
-# if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
-
-static DL_CONST void *zlib=NULL;
+static lt_dlhandle zlib = NULL;
+static initialized = false;
 static int (*_inflateInit_)(z_stream *,const char *,int);
 static int (*_inflate)(z_stream *,int flags);
 static int (*_inflateEnd)(z_stream *);
@@ -73,28 +74,26 @@ static int (*_uncompress)(Bytef *, uLongf *, const Bytef *, uLong);
 static int (*_compress)(Bytef *, uLongf *, const Bytef *, uLong);
 
 static int haszlib(void) {
-    if ( zlib!=NULL )
-return( true );
-
-    if ( (zlib = dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY))==NULL ) {
-	LogError( "%s", dlerror());
-return( false );
+    if (!initialized) {
+        initialized = true;
+        zlib = load_plugin("plugzlib", LogError);
+        if (zlib != NULL) {
+            _inflateInit_ = (int (*)(z_stream *,const char *,int)) lt_dlsym(zlib,"inflateInit_");
+            _inflate = (int (*)(z_stream *,int )) lt_dlsym(zlib,"inflate");
+            _inflateEnd = (int (*)(z_stream *)) lt_dlsym(zlib,"inflateEnd");
+            _deflateInit_ = (int (*)(z_stream *,int,const char *,int)) lt_dlsym(zlib,"deflateInit_");
+            _deflate = (int (*)(z_stream *,int )) lt_dlsym(zlib,"deflate");
+            _deflateEnd = (int (*)(z_stream *)) lt_dlsym(zlib,"deflateEnd");
+            _uncompress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) lt_dlsym(zlib,"uncompress");
+            _compress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) lt_dlsym(zlib,"compress");
+            if ( _inflateInit_==NULL || _inflate==NULL || _inflateEnd==NULL ||
+                 _deflateInit_==NULL || _deflate==NULL || _deflateEnd==NULL ) {
+                LogError("Could not load a needed symbol from zlib\n");
+                zlib = NULL;
+            }
+        }
     }
-    _inflateInit_ = (int (*)(z_stream *,const char *,int)) dlsym(zlib,"inflateInit_");
-    _inflate = (int (*)(z_stream *,int )) dlsym(zlib,"inflate");
-    _inflateEnd = (int (*)(z_stream *)) dlsym(zlib,"inflateEnd");
-    _deflateInit_ = (int (*)(z_stream *,int,const char *,int)) dlsym(zlib,"deflateInit_");
-    _deflate = (int (*)(z_stream *,int )) dlsym(zlib,"deflate");
-    _deflateEnd = (int (*)(z_stream *)) dlsym(zlib,"deflateEnd");
-    _uncompress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) dlsym(zlib,"uncompress");
-    _compress = (int (*)(Bytef *, uLongf *, const Bytef *, uLong)) dlsym(zlib,"compress");
-    if ( _inflateInit_==NULL || _inflate==NULL || _inflateEnd==NULL ||
-	    _deflateInit_==NULL || _deflate==NULL || _deflateEnd==NULL ) {
-	LogError( "%s", dlerror());
-	dlclose(zlib); zlib=NULL;
-return( false );
-    }
-return( true );
+    return (zlib != NULL);
 }
 
 /* Grump. zlib defines this as a macro */
@@ -102,23 +101,6 @@ return( true );
         _inflateInit_((strm),                ZLIB_VERSION, sizeof(z_stream))
 #define _deflateInit(strm,level) \
         _deflateInit_((strm),level,          ZLIB_VERSION, sizeof(z_stream))
-
-# else
-/* Either statically linked, or loaded at start up */
-static int haszlib(void) {
-return( true );
-}
-
-#define _inflateInit	inflateInit
-#define _inflate	inflate
-#define _inflateEnd	inflateEnd
-#define _deflateInit	deflateInit
-#define _deflate	deflate
-#define _deflateEnd	deflateEnd
-#define _compress	compress
-#define _uncompress	uncompress
-
-# endif /* !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC) */
 
 static void copydata(FILE *to,int off_to,FILE *from,int off_from, int len) {
     int ch, i;
@@ -581,4 +563,5 @@ return( ret );
 int CanWoff(void) {
 return( haszlib());
 }
-#endif		/* NOLIBPNG */
+
+#endif /* ! _NO_LIBPNG */

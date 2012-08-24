@@ -59,6 +59,7 @@ static void print_error(const char *fmt,...) {
 /* FIXME: This needs better handling of missing plugins. */
 static int loadgif() {
     if (!initialized) {
+        initialized = 1;
         successful = 0;
         libgif = load_plugin("pluggiflib", print_error);
         if (libgif != NULL) {

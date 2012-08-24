@@ -193,6 +193,7 @@ fi
 
 FONTFORGE_ARG_WITH_ARCH
 
+AM_CONDITIONAL([PLUGZLIB],[test xyes = xyes])
 AM_CONDITIONAL([PLUGGIFLIB],[test x"${i_do_have_giflib}" = xyes])
 AM_CONDITIONAL([PLUGLIBJPEG],[test x"${i_do_have_libjpeg}" = xyes])
 AM_CONDITIONAL([PLUGLIBPNG],[test x"${i_do_have_libpng}" = xyes])
@@ -278,7 +279,7 @@ test x"${PANGO_CFLAGS}" = x || my_cflags="${my_cflags} ${PANGO_CFLAGS}"
 test x"${PANGOCAIRO_CFLAGS}" = x || my_cflags="${my_cflags} ${PANGOCAIRO_CFLAGS}"
 test x"${PANGOXFT_CFLAGS}" = x || my_cflags="${my_cflags} ${PANGOXFT_CFLAGS}"
 test x"${FREETYPE_CFLAGS}" = x || my_cflags="${my_cflags} ${FREETYPE_CFLAGS}"
-#test x"${GIFLIB_CFLAGS}" = x || my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
+test x"${GIFLIB_CFLAGS}" = x || my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
 test x"${LIBJPEG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
 test x"${LIBPNG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
 test x"${LIBTIFF_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
@@ -294,7 +295,7 @@ AC_SUBST([MY_CFLAGS],[${my_cflags}])
 
 my_libs=""
 test x"${PYTHON_LIBS}" = x || my_libs="${my_libs} ${PYTHON_LIBS}"
-test x"${regular_link_giflib}" = xyes -a x"${GIFLIB_LIBS}" != x && my_libs="${my_libs} ${GIFLIB_LIBS}"
+#test x"${regular_link_giflib}" = xyes -a x"${GIFLIB_LIBS}" != x && my_libs="${my_libs} ${GIFLIB_LIBS}"
 test x"${regular_link_libjpeg}" = xyes -a x"${LIBJPEG_LIBS}" != x && my_libs="${my_libs} ${LIBJPEG_LIBS}"
 test x"${regular_link_libpng}" = xyes -a x"${LIBPNG_LIBS}" != x && my_libs="${my_libs} ${LIBPNG_LIBS}"
 test x"${regular_link_libtiff}" = xyes -a x"${LIBTIFF_LIBS}" != x && my_libs="${my_libs} ${LIBTIFF_LIBS}"
@@ -307,7 +308,7 @@ test x"${regular_link_pango}" = xyes -a x"${PANGO_LIBS}" != x && my_libs="${my_l
 test x"${regular_link_pango}" = xyes -a x"${PANGOCAIRO_LIBS}" != x && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
 test x"${regular_link_pango}" = xyes -a x"${PANGOXFT_LIBS}" != x && my_libs="${my_libs} ${PANGOXFT_LIBS}"
 my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS} ${PTHREAD_LIBS}"
-test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
+#test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
 test x"${LIBLTDL}" != x && my_libs="${my_libs} ${LIBLTDL}"
 AC_SUBST([MY_LIBS],[${my_libs}])
 
