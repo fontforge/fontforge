@@ -791,6 +791,8 @@ extern void CVDrawSplineSetSpecialized(CharView *cv, GWindow pixmap, SplinePoint
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
+extern void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
+	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
 extern GWindow CVMakeTools(CharView *cv);
 extern GWindow CVMakeLayers(CharView *cv);
 extern GWindow BVMakeTools(BitmapView *bv);
