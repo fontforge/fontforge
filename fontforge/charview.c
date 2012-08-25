@@ -244,10 +244,10 @@ return;
     GResEditFind( charview2_re, "CharView.");
     cvcolsinited = true;
 
-    if( _GResource_FindResName("CharView.PreviewFillColor") == -1 ) {
+    if( GResourceFindColor("CharView.PreviewFillColor", COLOR_UNKNOWN) == COLOR_UNKNOWN ) {
 	// no explicit previewfillcolor
 	previewfillcol = fillcol;
-	if( _GResource_FindResName("CharView.FillColor") == -1 ) {
+	if( GResourceFindColor("CharView.FillColor", COLOR_UNKNOWN) == COLOR_UNKNOWN ) {
 	    // no explicit fill color either
 	    previewfillcol = 0x000000;
 	}
