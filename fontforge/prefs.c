@@ -1819,7 +1819,9 @@ static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct pref_data *p = GDrawGetUserData(gw);
 	p->done = true;
-	MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(gw,CID_Features))));
+	if(GWidgetGetControl(gw,CID_Features)) {
+	    MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(gw,CID_Features))));
+	}
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("prefs.html");
