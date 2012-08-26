@@ -50,6 +50,9 @@ int cv_auto_goto = true;
 float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
+float snapdistancemeasuretool=3.5;
+int measuretoolshowhorizontolvertical=true;
+int xorrubberlines=false;
 int updateflex = false;
 extern int clear_tt_instructions_when_needed;
 int use_freetype_with_aa_fill_cv = 1;
@@ -142,6 +145,13 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
+static Color measuretoollinecol = 0x000000;
+static Color measuretoolpointcol = 0xFF0000;
+static Color measuretoolpointsnappedcol = 0x00FF00;
+static Color measuretoolcanvasnumberscol = 0xFF0000;
+static Color measuretoolcanvasnumberssnappedcol = 0x00FF00;
+Color measuretoolwindowforegroundcol = 0x000000;
+Color measuretoolwindowbackgroundcol = 0xe0e0c0;
 
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
@@ -198,6 +208,13 @@ static struct resed charview2_re[] = {
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully covered."), NULL, { 0 }, 0, 0 },
     { N_("Delta Grid Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notable grid pixel when suggesting deltas."), NULL, { 0 }, 0, 0 },
     { N_("Ruler Big Tick Color"), "RulerBigTickColor", rt_color, &rulerbigtickcol, N_("The color used to draw the large tick marks in rulers."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Line Color"), "MeasureToolLineColor", rt_color, &measuretoollinecol, N_("The color used to draw the measure tool line."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Point Color"), "MeasureToolPointColor", rt_color, &measuretoolpointcol, N_("The color used to draw the measure tool points."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Point Snapped Color"), "MeasureToolPointSnappedColor", rt_color, &measuretoolpointsnappedcol, N_("The color used to draw the measure tool points when snapped."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Canvas Number Color"), "MeasureToolCanvasNumbersColor", rt_color, &measuretoolcanvasnumberscol, N_("The color used to draw the measure tool numbers on the canvas."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Canvas Number Snapped Color"), "MeasureToolCanvasNumbersSnappedColor", rt_color, &measuretoolcanvasnumberssnappedcol, N_("The color used to draw the measure tool numbers on the canvas when snapped."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Windows Foreground Color"), "MeasureToolWindowForeground", rt_color, &measuretoolwindowforegroundcol, N_("The measure tool window foreground color."), NULL, { 0 }, 0, 0 },
+    { N_("Measure Tool Windows Background Color"), "MeasureToolWindowBackground", rt_color, &measuretoolwindowbackgroundcol, N_("The measure tool window background color."), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -308,18 +325,49 @@ return;
 
 static void CVDrawRubberLine(GWindow pixmap, CharView *cv) {
     int x,y, xend,yend;
+    Color col = cv->active_tool==cvt_ruler ? measuretoollinecol : oldoutlinecol;
     if ( !cv->p.rubberlining )
 return;
     x =  cv->xoff + rint(cv->p.cx*cv->scale);
     y = -cv->yoff + cv->height - rint(cv->p.cy*cv->scale);
     xend =  cv->xoff + rint(cv->info.x*cv->scale);
     yend = -cv->yoff + cv->height - rint(cv->info.y*cv->scale);
-    GDrawSetXORMode(pixmap);
-    GDrawSetLineWidth(pixmap,0);
-    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    GDrawDrawLine(pixmap,x,y,xend,yend,oldoutlinecol);
-    if ( cv->num_ruler_intersections>2 ) {
+    if ( xorrubberlines ) {		/* XOR prevents use of CAIRO for these lines */
+	GDrawSetXORMode(pixmap);
+	GDrawSetLineWidth(pixmap,0);
+	GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+    } else {
+	GDrawSetCopyMode(pixmap);
+	GDrawSetLineWidth(pixmap,0);
+    }
+    GDrawDrawLine(pixmap,x,y,xend,yend,col);
+
+    if ( cv->active_tool==cvt_ruler ) {
 	int i;
+	int len;
+	int charwidth = 6; /* TBD */
+	Color textcolor = (cv->p.sp && cv->info_sp) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
+
+	if ( measuretoolshowhorizontolvertical ) {
+	    char buf[40];
+	    unichar_t ubuf[40];
+	    real xdist = fabs(cv->p.cx - cv->info.x);
+	    real ydist = fabs(cv->p.cy - cv->info.y);
+
+	    if ( xdist*cv->scale>10.0 && ydist*cv->scale>10.0 ) {
+
+		GDrawSetFont(pixmap,cv->rfont);
+		len = snprintf(buf,sizeof buf,"%g",xdist);
+		utf82u_strcpy(ubuf,buf);
+		GDrawDrawBiText(pixmap,(x+xend)/2 - len*charwidth/2,y + (y > yend ? 12 : -5),ubuf,-1,NULL,textcolor);
+		GDrawDrawLine(pixmap,x,y,xend,y,col);
+
+		len = snprintf(buf,sizeof buf,"%g",ydist);
+		utf82u_strcpy(ubuf,buf);
+		GDrawDrawBiText(pixmap,xend + (x < xend ? charwidth/2 : -(len * charwidth + charwidth/2)),(y+yend)/2,ubuf,-1,NULL,textcolor);
+		GDrawDrawLine(pixmap,xend,y,xend,yend,col);
+	    }
+	}
 
 	GDrawSetFont(pixmap,cv->rfont);
 	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
@@ -330,7 +378,7 @@ return;
 	    rect.width = 3;
 	    rect.height = 3;
 
-	    GDrawFillElipse(pixmap,&rect,0xFF0000);
+	    GDrawFillElipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->info_sp) || (i==0 && cv->p.sp)) ? measuretoolpointsnappedcol : measuretoolpointcol);
 	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
 		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
@@ -342,9 +390,9 @@ return;
 		x = (prev_rect.x + rect.x)/2;
 		y = (prev_rect.y + rect.y)/2;
 
-		sprintf(buf,"%5.4f",len);
+		len = snprintf(buf,sizeof buf,"%g",len);
 		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,x,y,ubuf,-1,NULL,0xFF0000);
+		GDrawDrawBiText(pixmap,x + (x < xend ? -(len*charwidth) : charwidth/2 ),y + (y < yend ? 12 : -5),ubuf,-1,NULL,textcolor);
 	    }
 	    prev_rect = rect;
 	}
@@ -3588,7 +3636,6 @@ return( fs->p->anysel );
 }
 
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
-    extern float snapdistance;
     extern int snaptoint;
 
     memset(p,'\0',sizeof(PressedOn));
@@ -3602,7 +3649,7 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->cx = (event->u.mouse.x-cv->xoff)/cv->scale;
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
 
-    fs->fudge = snapdistance/cv->scale;		/* 3.5 pixel fudge */
+    fs->fudge = (cv->active_tool==cvt_ruler ? snapdistancemeasuretool : snapdistance)/cv->scale;
     fs->c_xl = fs->xl = p->cx - fs->fudge;
     fs->c_xh = fs->xh = p->cx + fs->fudge;
     fs->c_yl = fs->yl = p->cy - fs->fudge;

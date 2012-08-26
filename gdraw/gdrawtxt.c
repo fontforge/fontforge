@@ -2775,20 +2775,24 @@ return( _GDraw_DoText(gw,x,y,(unichar_t *) text,cnt,mods,col,tf_drawit,&arg));
 return( _GDraw_DoBiText(gw,x,y,text,cnt,mods,col,tf_drawit,NULL,ret));
 }
 
-int32 GDrawGetBiTextWidth(GWindow gw,const unichar_t *text, int len, int32 cnt, FontMods *mods) {
+int32 GDrawGetBiTextWidth_color(GWindow gw,const unichar_t *text, int len, int32 cnt, FontMods *mods,Color col) {
     int ret;
     struct tf_arg arg;
 
 #ifndef _NO_LIBPANGO
     if ( gw->usepango )
-return( _GXPDraw_DoText(gw,0,0,text,cnt,mods,0x0,tf_width,&arg));
+return( _GXPDraw_DoText(gw,0,0,text,cnt,mods,col,tf_width,&arg));
     else
 #endif
     if ( len==-1 || len==cnt || ( ret = GDrawIsAllLeftToRight(text,cnt))==1 ) {
 	memset(&arg,'\0',sizeof(arg));
-return( _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_width,&arg));
+return( _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,col,tf_width,&arg));
     }
 return( _GDraw_DoBiWidth(gw,text,len,cnt,mods,tf_width,ret));
+}
+
+int32 GDrawGetBiTextWidth(GWindow gw,const unichar_t *text, int len, int32 cnt, FontMods *mods) {
+return( GDrawGetBiTextWidth_color(gw,text,len,cnt,mods,0x0) );
 }
 
 int32 GDrawGetBiTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods, GTextBounds *bounds) {

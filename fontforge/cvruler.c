@@ -250,7 +250,7 @@ static int RulerTextIntersection(CharView *cv, unichar_t *ubuf, int i) {
 	real xoff = cv->ruler_intersections[cv->num_ruler_intersections-2].x - cv->ruler_intersections[1].x;
 	real yoff = cv->ruler_intersections[cv->num_ruler_intersections-2].y - cv->ruler_intersections[1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	sprintf(buf,"First Edge to Last Edge: %f x %f length %f",fabs(xoff),fabs(yoff),len);
+	snprintf(buf,sizeof buf,"First Edge to Last Edge: %g x %g length %f",fabs(xoff),fabs(yoff),len);
 	utf82u_strcpy(ubuf,buf);
 return( 1 );
     } else if ( cv->num_ruler_intersections>4 )
@@ -259,13 +259,19 @@ return( 1 );
     if ( i>=cv->num_ruler_intersections )
 return( 0 );
 
-    if (i==0)
-	sprintf(buf,"[%d] (%f,%f)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
-    else {
+    if ( i==0 ) {
+	snprintf(buf,sizeof buf,"[%d] (%g,%g)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
+	if ( cv->p.sp )
+	    strcat(buf," snapped");
+    } else {
 	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
-	sprintf(buf,"[%d] (%f,%f) %f x %f length %f",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
+	snprintf(buf,sizeof buf,"[%d] (%g,%g) %g x %g length %g",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
+	if ( i==(cv->num_ruler_intersections-1) ) {
+	    if ( cv->info_sp )
+		strcat(buf," snapped");
+	}
     }
 
     utf82u_strcpy(ubuf,buf);
@@ -377,6 +383,25 @@ static int GetIntersections(CharView *cv,BasePoint from,BasePoint to,BasePoint *
 	sizeof(all_intersections[0]),
 	BasePointCompare(&from,&to)<=0 ? BasePointCompare : ReverseBasePointCompare );
 
+    /*
+     * Filter out intersectsions that are too close.
+     * This is for snapped points, but we get more than one extra per snap,
+     * so do them all for now.
+     */
+    for ( i = 1 ; i<total_intersections && i<max_intersections ; ) {
+	if ( (0.00001 > fabs(all_intersections[i].x-all_intersections[i-1].x)) &&
+	     (0.00001 > fabs(all_intersections[i].y-all_intersections[i-1].y)) ) {
+	    int j;
+
+	    for( j = i+1 ; j<total_intersections &&  j<max_intersections ; j++ )
+		all_intersections[j-1] = all_intersections[j];
+	    if ( total_intersections < max_intersections )
+		total_intersections--;
+	} else {
+	    i++;
+	}
+    }
+
 return( total_intersections );	/* note that it could be greater than max */
 }
 
@@ -390,13 +415,15 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GRect pos;
     FontRequest rq;
     int as, ds, ld;
+    extern Color measuretoolwindowbackgroundcol;
+    extern Color measuretoolwindowforegroundcol;
 
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
 	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
 	wattrs.cursor = ct_mypointer;
-	wattrs.background_color = 0xe0e0c0;
+	wattrs.background_color = measuretoolwindowbackgroundcol;
 	wattrs.nodecoration = 1;
 	wattrs.border_width = 1;
 	pos.x = pos.y = 0; pos.width=pos.height = 20;
@@ -440,12 +467,12 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GDrawSetFont(cv->ruler_w,cv->rfont);
     width = h = 0;
     for ( i=0; RulerText(cv,ubuf,i); ++i ) {
-	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
+	w = GDrawGetBiTextWidth_color(cv->ruler_w,ubuf,-1,-1,NULL,measuretoolwindowforegroundcol);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
     for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
-	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
+	w = GDrawGetBiTextWidth_color(cv->ruler_w,ubuf,-1,-1,NULL,measuretoolwindowforegroundcol);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
