@@ -304,8 +304,13 @@ return( 0 );
 		str = freeme = (gme->col_data[c].func)(&gme->g,r,c);
 	    if ( str==NULL )
 	continue;
-	    pt = strchr(str,'\n');
-	    cur = GDrawGetBiText8Width(gme->g.base,str, -1, pt==NULL ? -1: pt-str, NULL );
+	    /* use the maximum width of 40 characters to avoid insanely wide
+	     * cells and horizontal scrollbars, the magic number 40 is the max
+	     * length of characters after which we use GME_StrBigEdit below */
+	    char buf[1024];
+	    utf8_strncpy(buf, str, 40);
+	    pt = strchr(buf,'\n');
+	    cur = GDrawGetBiText8Width(gme->g.base,buf, -1, pt==NULL ? -1: pt-buf, NULL );
 	    if ( cur>max ) max = cur;
 	    free(freeme);
 	}
