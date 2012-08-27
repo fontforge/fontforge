@@ -1466,7 +1466,7 @@ return;
 	if ( str==NULL )
 	    str = copy("");
 	if ( str!=NULL &&
-		(strlen(str)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
+		(utf8_strlen(str)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
 	    GME_StrBigEdit(gme,str);
 	else
 	    GME_StrSmallEdit(gme,str,event);
