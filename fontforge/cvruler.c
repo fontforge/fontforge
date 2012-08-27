@@ -287,7 +287,6 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_expose:
 	GDrawSetFont(gw,cv->rfont);
-	/*GDrawFillRect(gw,NULL,0xe0e0c0);*/
 	for ( line=0; RulerText(cv,ubuf,line); ++line )
 	    GDrawDrawBiText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
 	for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
