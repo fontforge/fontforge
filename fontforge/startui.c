@@ -101,8 +101,8 @@ static void _dousage(void) {
 #ifndef _NO_LIBPANGO
     printf( "\t-usepango=yes|no  Use (or not) the pango library for text\n" );
 #endif
-    printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
-    printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
+    printf( "\t-help\t\t\t (displays this message, and exits)\n" );
+    printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
     printf( "\t-library-status\t (prints information about optional libraries\n\t\t\t\t and exits)\n" );
 #ifndef _NO_PYTHON
