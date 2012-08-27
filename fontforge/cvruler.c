@@ -28,6 +28,8 @@
 #include <math.h>
 #include <ustring.h>
 
+extern Color measuretoolwindowforegroundcol;
+
 BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
 int infowindowdistance = 30;
 
@@ -288,9 +290,9 @@ static int ruler_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	GDrawSetFont(gw,cv->rfont);
 	for ( line=0; RulerText(cv,ubuf,line); ++line )
-	    GDrawDrawBiText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
+	    GDrawDrawBiText(gw,2,line*cv->rfh+cv->ras+1,ubuf,-1,NULL,measuretoolwindowforegroundcol);
 	for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i )
-	    GDrawDrawBiText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,NULL,0x000000);
+	    GDrawDrawBiText(gw,2,(line+i)*cv->rfh+cv->ras+1,ubuf,-1,NULL,measuretoolwindowforegroundcol);
       break;
       case et_mousedown:
 	cv->autonomous_ruler_w = false;
@@ -415,7 +417,6 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     FontRequest rq;
     int as, ds, ld;
     extern Color measuretoolwindowbackgroundcol;
-    extern Color measuretoolwindowforegroundcol;
 
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
