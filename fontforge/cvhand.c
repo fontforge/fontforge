@@ -40,6 +40,8 @@ void CVMouseMoveHand(CharView *cv, GEvent *event) {
     GScrollBarSetPos(cv->hsb,-cv->xoff);
     GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
     GDrawRequestExpose(cv->v,NULL,false);
+    if ( cv->showrulers )
+	GDrawRequestExpose(cv->gw,NULL,false);
 }
 
 void CVMouseUpHand(CharView *cv) {

@@ -647,11 +647,14 @@
   the mouse to the last point, the mouse's current location. The next lines in the pop-up
   show information about points along the line that intersect splines, including the start and end 
   points of the line itself.
+  If there are more than two intersections then the x, y, and total distance
+  between the first and last intersections are shown before the point list.
   <P>
   [0] indicates the starting point of the measure line, and the (x-y) co-ordinates 
   of that point. Initially [1] is the end point; when it intersects with one spline then 
   [1] becomes the first intersection point and [2] becomes the end point, and so on. 
-  The final number is the length of the section ending at that point; which is also shown 
+  The co-ordinates are followed by the x and y distances and then
+  the final number is the length of the section ending at that point; which is also shown 
   directly on the canvas.
   <P>
   If you hold down the
