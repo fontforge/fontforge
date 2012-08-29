@@ -145,11 +145,11 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
-static Color measuretoollinecol = 0x000000;
-static Color measuretoolpointcol = 0xFF0000;
-static Color measuretoolpointsnappedcol = 0x00FF00;
-static Color measuretoolcanvasnumberscol = 0xFF0000;
-static Color measuretoolcanvasnumberssnappedcol = 0x00FF00;
+Color measuretoollinecol = 0x000000;
+Color measuretoolpointcol = 0xFF0000;
+Color measuretoolpointsnappedcol = 0x00FF00;
+Color measuretoolcanvasnumberscol = 0xFF0000;
+Color measuretoolcanvasnumberssnappedcol = 0x00FF00;
 Color measuretoolwindowforegroundcol = 0x000000;
 Color measuretoolwindowbackgroundcol = 0xe0e0c0;
 
@@ -341,62 +341,6 @@ return;
 	GDrawSetLineWidth(pixmap,0);
     }
     GDrawDrawLine(pixmap,x,y,xend,yend,col);
-
-    if ( cv->active_tool==cvt_ruler ) {
-	int i;
-	int len;
-	int charwidth = 6; /* TBD */
-	Color textcolor = (cv->p.sp && cv->info_sp) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
-
-	if ( measuretoolshowhorizontolvertical ) {
-	    char buf[40];
-	    unichar_t ubuf[40];
-	    real xdist = fabs(cv->p.cx - cv->info.x);
-	    real ydist = fabs(cv->p.cy - cv->info.y);
-
-	    if ( xdist*cv->scale>10.0 && ydist*cv->scale>10.0 ) {
-
-		GDrawSetFont(pixmap,cv->rfont);
-		len = snprintf(buf,sizeof buf,"%g",xdist);
-		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,(x+xend)/2 - len*charwidth/2,y + (y > yend ? 12 : -5),ubuf,-1,NULL,textcolor);
-		GDrawDrawLine(pixmap,x,y,xend,y,col);
-
-		len = snprintf(buf,sizeof buf,"%g",ydist);
-		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,xend + (x < xend ? charwidth/2 : -(len * charwidth + charwidth/2)),(y+yend)/2,ubuf,-1,NULL,textcolor);
-		GDrawDrawLine(pixmap,xend,y,xend,yend,col);
-	    }
-	}
-
-	GDrawSetFont(pixmap,cv->rfont);
-	for ( i=0 ; i<cv->num_ruler_intersections; ++i ) {
-	    GRect rect,prev_rect;
-
-	    rect.x = cv->xoff + rint(cv->ruler_intersections[i].x*cv->scale) - 1;
-	    rect.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[i].y*cv->scale) - 1;
-	    rect.width = 3;
-	    rect.height = 3;
-
-	    GDrawFillElipse(pixmap,&rect,((i==(cv->num_ruler_intersections-1) && cv->info_sp) || (i==0 && cv->p.sp)) ? measuretoolpointsnappedcol : measuretoolpointcol);
-	    if ( i>0 && (cv->num_ruler_intersections<6 || (prev_rect.x + 10)<rect.x || (prev_rect.y + 10)<rect.y || (prev_rect.y - 10)>rect.y) ) {
-		real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
-		real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
-		real len = sqrt(xoff*xoff+yoff*yoff);
-		char buf[40];
-		unichar_t ubuf[40];
-		int x,y;
-
-		x = (prev_rect.x + rect.x)/2;
-		y = (prev_rect.y + rect.y)/2;
-
-		len = snprintf(buf,sizeof buf,"%g",len);
-		utf82u_strcpy(ubuf,buf);
-		GDrawDrawBiText(pixmap,x + (x < xend ? -(len*charwidth) : charwidth/2 ),y + (y < yend ? 12 : -5),ubuf,-1,NULL,textcolor);
-	    }
-	    prev_rect = rect;
-	}
-    }
     GDrawSetCopyMode(pixmap);
 }
 
@@ -2610,6 +2554,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( cv->p.rubberlining )
 	    CVDrawRubberLine(pixmap,cv);
     }
+    CVRulerExpose(pixmap,cv);
 
     GDrawPopClip(pixmap,&old);
 }
@@ -10715,6 +10660,10 @@ void CharViewFree(CharView *cv) {
     if ( cv->ruler_w ) {
 	GDrawDestroyWindow(cv->ruler_w);
 	cv->ruler_w = NULL;
+    }
+    if ( cv->ruler_linger_w ) {
+	GDrawDestroyWindow(cv->ruler_linger_w);
+	cv->ruler_linger_w = NULL;
     }
     free(cv->gi.u.image->clut);
     free(cv->gi.u.image);
