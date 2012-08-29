@@ -2961,7 +2961,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 	hhead->ascender = ymax + sf->pfminfo.hhead_ascent;
     else
 	hhead->ascender = sf->pfminfo.hhead_ascent;
-    if ( sf->pfminfo.hheadascent_add )
+    if ( sf->pfminfo.hheaddescent_add )
 	hhead->descender = ymin + sf->pfminfo.hhead_descent;
     else
 	hhead->descender = sf->pfminfo.hhead_descent;
