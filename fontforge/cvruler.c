@@ -28,15 +28,16 @@
 #include <math.h>
 #include <ustring.h>
 
-extern int measuretoolshowhorizontolvertical;
-extern Color measuretoollinecol;
-extern Color measuretoolpointcol;
-extern Color measuretoolpointsnappedcol;
-extern Color measuretoolcanvasnumberscol;
-extern Color measuretoolcanvasnumberssnappedcol;
-extern Color measuretoolwindowforegroundcol;
-extern Color measuretoolwindowbackgroundcol;
-extern Color measuretoolwindowforegroundcol;
+#include "cvruler.h"
+
+int measuretoolshowhorizontolvertical = true;
+Color measuretoollinecol = 0x000000;
+Color measuretoolpointcol = 0xFF0000;
+Color measuretoolpointsnappedcol = 0x00FF00;
+Color measuretoolcanvasnumberscol = 0xFF0000;
+Color measuretoolcanvasnumberssnappedcol = 0x00FF00;
+Color measuretoolwindowforegroundcol = 0x000000;
+Color measuretoolwindowbackgroundcol = 0xe0e0c0;
 
 BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
 int infowindowdistance = 30;
@@ -444,7 +445,6 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GRect pos;
     FontRequest rq;
     int as, ds, ld;
-    extern Color measuretoolwindowbackgroundcol;
 
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
@@ -494,12 +494,12 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GDrawSetFont(cv->ruler_w,cv->rfont);
     width = h = 0;
     for ( i=0; RulerText(cv,ubuf,i); ++i ) {
-	w = GDrawGetBiTextWidth_color(cv->ruler_w,ubuf,-1,-1,NULL,measuretoolwindowforegroundcol);
+	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
     if ( cv->p.pressed ) for ( i=0; RulerTextIntersection(cv,ubuf,i); ++i ) {
-	w = GDrawGetBiTextWidth_color(cv->ruler_w,ubuf,-1,-1,NULL,measuretoolwindowforegroundcol);
+	w = GDrawGetBiTextWidth(cv->ruler_w,ubuf,-1,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
@@ -525,7 +525,6 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
     GRect pos;
     FontRequest rq;
     int as, ds, ld;
-    extern Color measuretoolwindowbackgroundcol;
     int line;
     int old_pressed;
 
@@ -561,13 +560,13 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
     cv->p.pressed = true;
 
     for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerText(cv,cv->ruler_linger_lines[line],i) ; ++i,++line ) {
-	w = GDrawGetBiTextWidth_color(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1,-1,NULL,measuretoolwindowforegroundcol);
+	w = GDrawGetBiTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }
     cv->p.pressed = old_pressed;
     for ( i=0; line<sizeof(cv->ruler_linger_lines)/sizeof(cv->ruler_linger_lines[0]) && RulerTextIntersection(cv,cv->ruler_linger_lines[line],i); ++i,++line ) {
-	w = GDrawGetBiTextWidth_color(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1,-1,NULL,measuretoolwindowforegroundcol);
+	w = GDrawGetBiTextWidth(cv->ruler_linger_w,cv->ruler_linger_lines[line],-1,-1,NULL);
 	if ( w>width ) width = w;
 	h += cv->rfh;
     }

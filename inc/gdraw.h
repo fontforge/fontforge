@@ -409,7 +409,6 @@ extern int32 GDrawGetTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, FontMo
 int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods,
 	GTextBounds *size);
 extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt, FontMods *mods);
-extern int32 GDrawGetTextWidth_color(GWindow gw, const unichar_t *text, int32 cnt, FontMods *mods,Color col);
 extern int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *txt, int32 cnt, FontMods *mods, Color col);
 /* Routines that handle bidirectional text */
 /* (slower than the equivalent left to right routines) */

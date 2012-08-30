@@ -26,6 +26,7 @@
  */
 
 #include "fontforgeui.h"
+#include "cvruler.h"
 #include <math.h>
 #include <locale.h>
 #include <ustring.h>
@@ -51,7 +52,6 @@ float arrowAmount=1;
 float arrowAccelFactor=10.;
 float snapdistance=3.5;
 float snapdistancemeasuretool=3.5;
-int measuretoolshowhorizontolvertical=true;
 int xorrubberlines=false;
 int updateflex = false;
 extern int clear_tt_instructions_when_needed;
@@ -145,13 +145,6 @@ static Color fillcol = 0x80707070;		/* Translucent */
 static Color tracecol = 0x008000;
 static Color rulerbigtickcol = 0x008000;
 static Color previewfillcol = 0x0f0f0f;
-Color measuretoollinecol = 0x000000;
-Color measuretoolpointcol = 0xFF0000;
-Color measuretoolpointsnappedcol = 0x00FF00;
-Color measuretoolcanvasnumberscol = 0xFF0000;
-Color measuretoolcanvasnumberssnappedcol = 0x00FF00;
-Color measuretoolwindowforegroundcol = 0x000000;
-Color measuretoolwindowbackgroundcol = 0xe0e0c0;
 
 static int cvcolsinited = false;
 static struct resed charview_re[] = {
