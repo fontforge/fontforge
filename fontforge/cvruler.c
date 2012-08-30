@@ -272,16 +272,24 @@ return( 0 );
 
     if ( i==0 ) {
 	snprintf(buf,sizeof buf,"[%d] (%g,%g)",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y);
-	if ( cv->p.sp )
+	if ( cv->p.sp ) {
 	    strcat(buf," snapped");
+	    cv->start_intersection_snapped = 1;
+	} else {
+	    cv->start_intersection_snapped = 0;
+	}
     } else {
 	real xoff = cv->ruler_intersections[i].x - cv->ruler_intersections[i-1].x;
 	real yoff = cv->ruler_intersections[i].y - cv->ruler_intersections[i-1].y;
 	real len = sqrt(xoff*xoff+yoff*yoff);
 	snprintf(buf,sizeof buf,"[%d] (%g,%g) %g x %g length %g",i,cv->ruler_intersections[i].x,cv->ruler_intersections[i].y,fabs(xoff),fabs(yoff),len);
 	if ( i==(cv->num_ruler_intersections-1) ) {
-	    if ( cv->info_sp )
+	    if ( cv->info_sp ) {
 		strcat(buf," snapped");
+		cv->end_intersection_snapped = 1;
+	    } else {
+		cv->end_intersection_snapped = 0;
+	    }
 	}
     }
 
@@ -922,7 +930,7 @@ return;
 	int i;
 	int len;
 	int charwidth = 6; /* TBD */
-	Color textcolor = (cv->p.sp && cv->info_sp) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
+	Color textcolor = (cv->start_intersection_snapped && cv->end_intersection_snapped) ? measuretoolcanvasnumberssnappedcol : measuretoolcanvasnumberscol;
 
 	if ( measuretoolshowhorizontolvertical ) {
 	    char buf[40];
