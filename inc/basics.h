@@ -73,10 +73,18 @@ typedef uint32 unichar_t;
 # define UNUSED(x) x
 #endif
 
+#ifdef USE_OUR_MEMORY
 extern void *galloc(long size);
 extern void *gcalloc(int cnt, long size);
 extern void *grealloc(void *,long size);
 extern void gfree(void *);
+#else
+#define galloc malloc
+#define gcalloc calloc
+#define grealloc realloc
+#define gfree free
+#endif /* USE_OUR_MEMORY */
+
 extern void galloc_set_trap(void (*)(void));
 #endif
 

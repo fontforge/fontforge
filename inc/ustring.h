@@ -105,6 +105,7 @@ extern char *latin1_2_utf8_copy(const char *lbuf);
 extern char *utf8_2_latin1_copy(const char *utf8buf);
 extern int utf8_strlen(const char *utf8_str); /* how many characters in the string */
 extern int utf82u_strlen(const char *utf8_str); /* how many long would this be in shorts (UCS2) */
+extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
 extern char *utf8_strchr(const char *utf8_str, int search_char);

@@ -52,9 +52,21 @@
         <LI>
           <B>General:</B>
         <LI>
-          A new glyph name list based Adobe Glyph List For New Fonts.
+          Typo in hhead generation code caused descent offset setting to be ignored and
+          the ascent offset setting to be used instead.
+        <LI>
+          A new glyph name list based Adobe Glyph List For New Fonts, it is now the
+          default when creating new fonts.
+        <LI>
+          No longer warns about using the names Omega, Delta and mu for ohm, increment and
+          mu, respectively. Adobe fixed the names to point to the Greek letters, then
+          later changed their mind and reverted back to the old names, so now we do the
+          same.
         <LI>
           Fixed a crash in EPS import.
+        <LI>
+          FontForge is internally using doubles by default now, but can be still
+          configured to use floats. Support for log doubles have been removed.
         <LI>
           Thanks to Lu Wang, fonts can now be loaded from PDF files using
           <CODE>filename(fontname)</CODE> notation from command line too.
@@ -67,7 +79,10 @@
         <LI>
           <B>UI fixes and additions:</B>
         <LI>
-          Cairo is now used for drawing all windows (when enabled) whivh improves the
+          Type3/multilayer, device tables and the paste after command are always enabled
+          now.
+        <LI>
+          Cairo is now used for drawing all windows (when enabled) which improves the
           rendering overall.
         <LI>
           Char view palettes are now docked by default.
