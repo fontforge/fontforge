@@ -593,6 +593,37 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
     GDrawSetVisible(cv->ruler_linger_w,true);
 }
 
+static void RulerLingerMove(CharView *cv) {
+    if ( cv->ruler_linger_w ) {
+	int width, x, y;
+	GRect size;
+	GRect rsize;
+	GRect csize;
+	GPoint pt;
+
+	GDrawGetSize(GDrawGetRoot(NULL),&size);
+	GDrawGetSize(cv->ruler_linger_w,&rsize);
+	GDrawGetSize(cv->gw,&csize);
+
+	pt.x = cv->xoff + rint(cv->ruler_intersections[cv->num_ruler_intersections-1].x*cv->scale);
+	pt.y = -cv->yoff + cv->height - rint(cv->ruler_intersections[cv->num_ruler_intersections-1].y*cv->scale);
+	GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
+	x = pt.x + infowindowdistance;
+	if ( x+rsize.width>size.width )
+	    x = pt.x - rsize.width-infowindowdistance;
+	y = pt.y -cv->ras-2;
+	if ( y+rsize.height>size.height )
+	    y = pt.y - rsize.height - cv->ras -10;
+
+	if ( x>=csize.x && x<=(csize.x+csize.width) && y>=csize.y && y<=(csize.y+csize.height) ) {
+	    GDrawMove(cv->ruler_linger_w,x,y);
+	    GDrawSetVisible(cv->ruler_linger_w,true);
+	} else {
+	    GDrawSetVisible(cv->ruler_linger_w,false);
+	}
+    }
+}
+
 void CVMouseDownRuler(CharView *cv, GEvent *event) {
 
     cv->autonomous_ruler_w = false;
@@ -908,14 +939,14 @@ void CPEndInfo(CharView *cv) {
 	}
     }
     /* TBD, wrong time to kill? */
-    if ( cv->ruler_linger_w!=NULL && cv->b1_tool!=cvt_ruler ) {
+    if ( cv->ruler_linger_w!=NULL && cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
 	GDrawDestroyWindow(cv->ruler_linger_w);
 	cv->ruler_linger_w = NULL;
     }
 }
 
 void CVRulerExpose(GWindow pixmap,CharView *cv) {
-    if ( cv->b1_tool!=cvt_ruler ) {
+    if ( cv->b1_tool!=cvt_ruler && cv->b1_tool_old!=cvt_ruler ) {
 	cv->num_ruler_intersections = 0;
 return;
     }
@@ -982,5 +1013,6 @@ return;
 	    }
 	    prev_rect = rect;
 	}
+	RulerLingerMove(cv);	/* in case things are moving or scaling */
     }
 }

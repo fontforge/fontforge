@@ -227,6 +227,7 @@ return 1;
 	    cv->spacebar_hold = 0;
 	    cv->b1_tool = cv->b1_tool_old;
 	    cv->active_tool = cvt_none;
+	    cv->b1_tool_old = cvt_none;
 return 1;
 	}
     }
@@ -4137,6 +4138,8 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 	    CVMouseMoveRuler(cv,event);
 return;
     }
+
+    GDrawRequestExpose(cv->v,NULL,false);	/* TBD, hack to clear ruler */
 
     SetFS(&fs,&p,cv,event);
     if ( cv->active_tool == cvt_freehand )
