@@ -2523,6 +2523,12 @@ struct prefs_list pointer_dialog_list[] = {
     PREFS_LIST_EMPTY
 };
 
+struct prefs_list ruler_dialog_list[] = {
+	{ N_("SnapDistanceMeasureTool"), pr_real, &snapdistancemeasuretool, NULL, NULL, '\0', NULL, 0, N_("When the measure tool is active and when the mouse pointer is within this many pixels\nof one of the various interesting features (baseline,\nwidth, grid splines, etc.) the pointer will snap\nto that feature.") },
+	{ N_("MeasureToolShowHorizonalVertical"), pr_bool, &measuretoolshowhorizontolvertical, NULL, NULL, '\0', NULL, 0, N_("Have the measure tool show horizonal and vertical distances on the canvas.") },
+    PREFS_LIST_EMPTY
+};
+
 static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
     GWindow gw = GGadgetGetWindow(g);
     struct pref_data *p = GDrawGetUserData(GGadgetGetWindow(g));
@@ -2889,5 +2895,9 @@ void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* plist) {
 
 void PointerDlg(CharView *cv) {
     PrefsSubSetDlg( cv, _("Arrow Options"), pointer_dialog_list );
+}
+
+void RulerDlg(CharView *cv) {
+    PrefsSubSetDlg( cv, _("Ruler Options"), ruler_dialog_list );
 }
 
