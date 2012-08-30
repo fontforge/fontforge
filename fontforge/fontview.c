@@ -6177,14 +6177,14 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		GImageDestroy(rotated);
 		rotated = NULL;
 	    } else if ( use_utf8 && sc->unicodeenc!=-1 &&
+		/* Pango complains if we try to draw non characters */
+		/* These two are guaranteed "NOT A UNICODE CHARACTER" in all planes */
 		    ((sc->unicodeenc&0xffff)==0xfffe || (sc->unicodeenc&0xffff)==0xffff ||
+		     (sc->unicodeenc>=0xfdd0 && sc->unicodeenc<=0xfdef) ||	/* noncharacters */
 		     (sc->unicodeenc>=0xfe00 && sc->unicodeenc<=0xfe0f) ||	/* variation selectors */
 		     (sc->unicodeenc>=0xe0110 && sc->unicodeenc<=0xe01ff) ||	/* variation selectors */
-		     (sc->unicodeenc>=0xd800 && sc->unicodeenc<=0xdfff))) {	/* surrogates */
-/* Pango also objects to 0xfdd0-0xfdef and I don't know why */
-		/* These two are guaranteed "NOT A UNICODE CHARACTER" in all planes */
 		/*  The surrogates in BMP aren't valid either */
-		/*  an pango complains if we try to draw them */
+		     (sc->unicodeenc>=0xd800 && sc->unicodeenc<=0xdfff))) {	/* surrogates */
 		GDrawDrawLine(pixmap,r.x,r.y,r.x+r.width-1,r.y+r.height-1,0x000000);
 		GDrawDrawLine(pixmap,r.x,r.y+r.height-1,r.x+r.width-1,r.y,0x000000);
 	    } else if ( use_utf8 ) {

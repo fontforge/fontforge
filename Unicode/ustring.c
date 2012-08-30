@@ -907,6 +907,17 @@ int utf82u_strlen(const char *utf8_str) {
 return( len );
 }
 
+void utf8_strncpy(register char *to, const char *from, int len) {
+    /* copy n characters NOT bytes */
+    const char *old = from;
+    while ( len && *old ) {
+	utf8_ildb(&old);
+	len--;
+    }
+    strncpy(to, from, old-from);
+    to[old-from] = 0;
+}
+
 #include <chardata.h>
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */

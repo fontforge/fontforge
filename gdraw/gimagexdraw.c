@@ -1702,7 +1702,7 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
 	width = neww;
 	if ( width<400 ) width = 400;
     }
-    if ( width > gdisp->gg.iwidth || depth!=gdisp->gg.img->depth ) {
+    if ( width > gdisp->gg.iwidth || (gdisp->gg.img!=NULL && depth!=gdisp->gg.img->depth) ) {
 	if ( depth<=8 ) {
 	    if ( gdisp->gg.red_dith!=NULL ) free(gdisp->gg.red_dith);
 	    if ( gdisp->gg.green_dith!=NULL ) free(gdisp->gg.green_dith);

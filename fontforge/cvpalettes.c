@@ -1122,6 +1122,8 @@ return;			/* Not available in order2 spline mode */
     } else if ( event->type == et_mouseup ) {
 	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
 	    FreeHandStrokeDlg(&expand);
+	} else if ( pos==cvt_pointer && event->u.mouse.clicks==2 ) {
+	    PointerDlg(cv);
 	} else if ( i==cvt_rect/2 && event->u.mouse.clicks==2 ) {
 	    ((j==0)?CVRectElipse:CVPolyStar)(cv);
 	    mi = i;

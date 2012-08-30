@@ -42,6 +42,7 @@ void galloc_set_trap(void (*newtrap)(void)) {
     trap = newtrap;
 }
 
+#ifdef USE_OUR_MEMORY
 void *galloc(long size) {
     void *ret;
     while (( ret = malloc(size))==NULL )
@@ -67,6 +68,7 @@ return( ret );
 void gfree(void *old) {
     free(old);
 }
+#endif /* USE_OUR_MEMORY */
 
 char *copy(const char *str) {
     char *ret;
