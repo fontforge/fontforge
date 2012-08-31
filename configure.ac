@@ -250,6 +250,13 @@ fi
 
 AX_PTHREAD
 
+WARNING_CFLAGS=""
+for i in -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type \
+    -Wparentheses -Wformat -Wchar-subscripts -Wno-unused-but-set-variable; do
+    AX_CHECK_COMPILE_FLAG([${i}],[WARNING_CFLAGS="${WARNING_CFLAGS} ${i}"])
+done
+
+
 #--------------------------------------------------------------------------
 # Checks for library functions.
 
@@ -281,6 +288,7 @@ AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_x}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
 my_cflags=""
+test x"${WARNING_CFLAGS}" = x || my_cflags="${my_cflags} ${WARNING_CFLAGS}"
 if test x"${i_do_have_freetype_debugger}" != xno; then
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
    my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
