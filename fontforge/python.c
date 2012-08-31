@@ -625,8 +625,10 @@ return( NULL );
     if ( nlist != NULL ) {
 	uniinterp = ui_none;
 	for_new_glyphs = NameListByName( nlist );
-	if ( for_new_glyphs == NULL )
-	    PyErr_Format(PyExc_EnvironmentError, "Unknown namelist: %s", nlist);
+	if ( for_new_glyphs == NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "Unknown namelist: %s\n", nlist);
+return( NULL );
+	}
     } else if (fv_active_in_ui == NULL) {
 	uniinterp = ui_none;
 	for_new_glyphs = NameListByName("AGL with PUA");
