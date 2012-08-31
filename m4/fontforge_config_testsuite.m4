@@ -1,3 +1,5 @@
+dnl -*- autoconf -*-
+
 dnl FONTFORGE_CONFIG_TESTSUITE
 dnl --------------------------
 AC_DEFUN([FONTFORGE_CONFIG_TESTSUITE],
@@ -18,8 +20,3 @@ AC_CONFIG_FILES([tests/test1006.py],[chmod +x tests/test1006.py])
 AC_CONFIG_FILES([tests/test1007.py],[chmod +x tests/test1007.py])
 AC_SUBST([i_do_have_python_scripting])
 ])
-
-
-dnl local variables:
-dnl mode: autoconf
-dnl end:

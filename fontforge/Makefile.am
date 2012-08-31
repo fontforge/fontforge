@@ -111,38 +111,6 @@ if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
-if PLUGGIFLIB
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluggiflib.la
-endif PLUGGIFLIB
-
-if PLUGLIBJPEG
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibjpeg.la
-endif PLUGLIBJPEG
-
-if PLUGLIBPNG
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibpng.la
-endif PLUGLIBPNG
-
-if PLUGLIBTIFF
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibtiff.la
-endif PLUGLIBTIFF
-
-if PLUGLIBXML
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibxml.la
-endif PLUGLIBXML
-
-if PLUGLIBUNINAMESLIST
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslist.la
-endif PLUGLIBUNINAMESLIST
-
-#if PLUGLIBUNINAMESLISTFR
-#libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslistfr.la
-#endif PLUGLIBUNINAMESLISTFR
-
-if PLUGLIBSPIRO
-libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibspiro.la
-endif PLUGLIBSPIRO
-
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"
 

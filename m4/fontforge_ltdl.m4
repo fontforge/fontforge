@@ -1,3 +1,5 @@
+dnl -*- autoconf -*-
+
 dnl FONTFORGE_CHECK_LTDL_VERSION
 dnl ----------------------------
 AC_DEFUN([FONTFORGE_CHECK_LTDL_VERSION],
@@ -14,8 +16,3 @@ if test x"${with_included_ltdl}" != xyes; then
    CFLAGS="${save_CFLAGS}"
 fi
 ])
-
-
-dnl local variables:
-dnl mode: autoconf
-dnl end:

@@ -1,3 +1,5 @@
+dnl -*- autoconf -*-
+
 dnl FONTFORGE_ARG_ENABLE(option, help-message, config-entry)
 dnl --------------------------------------------------------
 AC_DEFUN([FONTFORGE_ARG_ENABLE],
@@ -71,8 +73,3 @@ elif test x"${my_real_type}" != x"float"; then
    AC_MSG_ERROR([Floating point type '${my_real_type}' not recognized.])
 fi   
 ])
-
-
-dnl local variables:
-dnl mode: autoconf
-dnl end:

@@ -1,3 +1,5 @@
+dnl -*- autoconf -*-
+
 dnl FONTFORGE_SEARCH_LIBS
 dnl ---------------------
 AC_DEFUN([FONTFORGE_SEARCH_LIBS],
@@ -13,8 +15,3 @@ AC_DEFUN([FONTFORGE_SEARCH_LIBS],
                   [$5])
    LIBS="${_save_LIBS}"
 ])
-
-
-dnl local variables:
-dnl mode: autoconf
-dnl end:

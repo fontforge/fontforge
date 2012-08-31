@@ -32,6 +32,8 @@ AC_SUBST([HOST],["$host"])
 AC_SUBST([MACAPP])
 
 FONTFORGE_PLATFORM_SPECIFICS
+AC_DEFINE([NODYNAMIC],[1],[Define if enabling feature 'regular-link' for all packages.])
+
 
 #--------------------------------------------------------------------------
 #
@@ -103,14 +105,15 @@ FONTFORGE_ARG_ENABLE([gb12345],
         [FONTFORGE_CONFIG_GB12345])
 AM_CONDITIONAL([PLUGIN_GB12345],[test x"${i_do_have_gb12345}" = xyes])
 
-#FONTFORGE_ARG_ENABLE([native-callbacks],
-#        [AS_HELP_STRING([--enable-native-callbacks],
-#                [(experimental, undocumented)
-#                 support for callbacks to native machine code,
-#                 with fontforge called as a library])],
-#        [NATIVE_CALLBACKS])
-#
-# No, that’s too visible! Let us enable this one via an obscure cache variable.
+FONTFORGE_ARG_ENABLE([maintainer-tools],
+        [AS_HELP_STRING([--enable-maintainer-tools],
+                [build programs used normally only by fontforge maintainers and developers])],
+        [MAINTAINER_TOOLS])
+AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes])
+AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
+
+# Enable this experimental feature via an obscure cache variable
+# rather than --enable.
 AC_CACHE_CHECK([whether to enable native callbacks (experimental)],
                [fontforge_cv_native_callbacks],
                [if test x"${fontforge_cv_native_callbacks}" != yes; then
@@ -118,12 +121,6 @@ AC_CACHE_CHECK([whether to enable native callbacks (experimental)],
                 fi])
 i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
 
-FONTFORGE_ARG_ENABLE([maintainer-tools],
-        [AS_HELP_STRING([--enable-maintainer-tools],
-                [build programs used normally only by fontforge maintainers and developers])],
-        [MAINTAINER_TOOLS])
-AM_CONDITIONAL([MAINTAINER_TOOLS],[test x"${i_do_have_maintainer_tools}" = xyes])
-AC_SUBST([MAINTAINER_TOOLS],["${i_do_have_maintainer_tools}"])
 
 #--------------------------------------------------------------------------
 #
@@ -153,6 +150,7 @@ AC_SUBST([XINPUT_LIBS])
 AC_SUBST([XKB_LIBS])
 
 PKG_CHECK_MODULES([ZLIB],[zlib])
+PKG_CHECK_MODULES([LIBUNICODENAMES],[libunicodenames])
 
 FONTFORGE_ARG_WITH_CAIRO
 FONTFORGE_ARG_WITH_PANGO
@@ -166,11 +164,8 @@ FONTFORGE_ARG_WITH_LIBJPEG
 FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
-FONTFORGE_ARG_WITH_LIBUNINAMESLIST
-#FONTFORGE_ARG_WITH_LIBUNINAMESLISTFR
 FONTFORGE_ARG_WITH_LIBSPIRO
 FONTFORGE_ARG_WITH_ICONV
-FONTFORGE_ARG_WITH_REGULAR_LINK
 
 if test x"${i_do_have_cairo}" = xyes -a  x"${i_do_have_pango}" = xyes; then
    PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo])
@@ -203,18 +198,6 @@ use the --disable-freetype-debugger option.
    AC_DEFINE([FREETYPE_HAS_DEBUGGER],[1],
         [Define if using the freetype debugger (requires freetype source code).])
 fi
-
-FONTFORGE_ARG_WITH_ARCH
-
-AM_CONDITIONAL([PLUGZLIB],[test xyes = xyes])
-AM_CONDITIONAL([PLUGGIFLIB],[test x"${i_do_have_giflib}" = xyes])
-AM_CONDITIONAL([PLUGLIBJPEG],[test x"${i_do_have_libjpeg}" = xyes])
-AM_CONDITIONAL([PLUGLIBPNG],[test x"${i_do_have_libpng}" = xyes])
-AM_CONDITIONAL([PLUGLIBTIFF],[test x"${i_do_have_libtiff}" = xyes])
-AM_CONDITIONAL([PLUGLIBXML],[test x"${i_do_have_libxml}" = xyes])
-AM_CONDITIONAL([PLUGLIBUNINAMESLIST],[test x"${i_do_have_libuninameslist}" = xyes])
-#AM_CONDITIONAL([PLUGLIBUNINAMESLISTFR],[test x"${i_do_have_libuninameslistfr}" = xyes])
-AM_CONDITIONAL([PLUGLIBSPIRO],[test x"${i_do_have_libspiro}" = xyes])
 
 #--------------------------------------------------------------------------
 #
@@ -250,12 +233,10 @@ fi
 
 AX_PTHREAD
 
-WARNING_CFLAGS=""
-for i in -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type \
-    -Wparentheses -Wformat -Wchar-subscripts -Wno-unused-but-set-variable; do
-    AX_CHECK_COMPILE_FLAG([${i}],[WARNING_CFLAGS="${WARNING_CFLAGS} ${i}"])
-done
-
+FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
+        [-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type
+         -Wparentheses -Wformat -Wchar-subscripts
+         -Wno-unused-but-set-variable])
 
 #--------------------------------------------------------------------------
 # Checks for library functions.
@@ -287,51 +268,8 @@ AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])
 AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_x}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
-my_cflags=""
-test x"${WARNING_CFLAGS}" = x || my_cflags="${my_cflags} ${WARNING_CFLAGS}"
-if test x"${i_do_have_freetype_debugger}" != xno; then
-   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/src/truetype"
-   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include"
-   my_cflags="${my_cflags} -I${FREETYPE_SOURCE}/include/freetype"
-fi
-test x"${ZLIB_CFLAGS}" = x || my_cflags="${my_cflags} ${ZLIB_CFLAGS}"
-test x"${CAIRO_CFLAGS}" = x || my_cflags="${my_cflags} ${CAIRO_CFLAGS}"
-test x"${PANGO_CFLAGS}" = x || my_cflags="${my_cflags} ${PANGO_CFLAGS}"
-test x"${PANGOCAIRO_CFLAGS}" = x || my_cflags="${my_cflags} ${PANGOCAIRO_CFLAGS}"
-test x"${PANGOXFT_CFLAGS}" = x || my_cflags="${my_cflags} ${PANGOXFT_CFLAGS}"
-test x"${FREETYPE_CFLAGS}" = x || my_cflags="${my_cflags} ${FREETYPE_CFLAGS}"
-test x"${GIFLIB_CFLAGS}" = x || my_cflags="${my_cflags} ${GIFLIB_CFLAGS}"
-test x"${LIBJPEG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBJPEG_CFLAGS}"
-test x"${LIBPNG_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBPNG_CFLAGS}"
-test x"${LIBTIFF_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBTIFF_CFLAGS}"
-test x"${LIBUNINAMESLIST_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLIST_CFLAGS}"
-#test x"${LIBUNINAMESLISTFR_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBUNINAMESLISTFR_CFLAGS}"
-test x"${LIBSPIRO_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBSPIRO_CFLAGS}"
-test x"${LIBXML_CFLAGS}" = x || my_cflags="${my_cflags} ${LIBXML_CFLAGS}"
-test x"${PYTHON_CFLAGS}" = x || my_cflags="${my_cflags} ${PYTHON_CFLAGS}"
-test x"${PTHREAD_CFLAGS}" = x || my_cflags="${my_cflags} ${PTHREAD_CFLAGS}"
-test x"${SDK}" = x || my_cflags="${my_cflags} -I${SDK}"
-test x"${LTDLINCL}" = x || my_cflags="${my_cflags} -I${LTDLINCL}"
-AC_SUBST([MY_CFLAGS],[${my_cflags}])
-
-my_libs=""
-test x"${PYTHON_LIBS}" = x || my_libs="${my_libs} ${PYTHON_LIBS}"
-#test x"${regular_link_giflib}" = xyes -a x"${GIFLIB_LIBS}" != x && my_libs="${my_libs} ${GIFLIB_LIBS}"
-test x"${regular_link_libjpeg}" = xyes -a x"${LIBJPEG_LIBS}" != x && my_libs="${my_libs} ${LIBJPEG_LIBS}"
-test x"${regular_link_libpng}" = xyes -a x"${LIBPNG_LIBS}" != x && my_libs="${my_libs} ${LIBPNG_LIBS}"
-test x"${regular_link_libtiff}" = xyes -a x"${LIBTIFF_LIBS}" != x && my_libs="${my_libs} ${LIBTIFF_LIBS}"
-test x"${regular_link_freetype}" = xyes -a x"${FREETYPE_LIBS}" != x && my_libs="${my_libs} ${FREETYPE_LIBS}"
-#test x"${regular_link_libuninameslist}" = xyes -a x"${LIBUNINAMESLIST_LIBS}" != x && my_libs="${my_libs} ${LIBUNINAMESLIST_LIBS}"
-test x"${regular_link_libxml}" = xyes -a x"${LIBXML_LIBS}" != x && my_libs="${my_libs} ${LIBXML_LIBS}"
-#test x"${regular_link_libspiro}" = xyes -a x"${LIBSPIRO_LIBS}" != x && my_libs="${my_libs} ${LIBSPIRO_LIBS}"
-test x"${regular_link_cairo}" = xyes -a x"${CAIRO_LIBS}" != x && my_libs="${my_libs} ${CAIRO_LIBS}"
-test x"${regular_link_pango}" = xyes -a x"${PANGO_LIBS}" != x && my_libs="${my_libs} ${PANGO_LIBS}"
-test x"${regular_link_pango}" = xyes -a x"${PANGOCAIRO_LIBS}" != x && my_libs="${my_libs} ${PANGOCAIRO_LIBS}"
-test x"${regular_link_pango}" = xyes -a x"${PANGOXFT_LIBS}" != x && my_libs="${my_libs} ${PANGOXFT_LIBS}"
-my_libs="${my_libs} ${X_PRE_LIBS} ${X_LIBS} ${X_EXTRA_LIBS} ${PTHREAD_LIBS}"
-#test x"${ZLIB_LIBS}" != x && my_libs="${my_libs} ${ZLIB_LIBS}"
-test x"${LIBLTDL}" != x && my_libs="${my_libs} ${LIBLTDL}"
-AC_SUBST([MY_LIBS],[${my_libs}])
+FONTFORGE_SET_MY_CFLAGS
+FONTFORGE_SET_MY_LIBS
 
 dnl Portable makefiles.
 AC_CONFIG_FILES([Makefile])
@@ -356,9 +294,6 @@ AC_CONFIG_FILES([fontforge/GNUmakefile])
 AC_CONFIG_FILES([fontforge.pc])
 AC_CONFIG_FILES([libfontforge.pc])
 AC_CONFIG_FILES([libfontforgeexe.pc])
-
-#AC_CONFIG_FILES([gtkui/Makefile])
-#AC_CONFIG_FILES([plugins/Makefile])
 
 FONTFORGE_CONFIG_TESTSUITE
 
@@ -411,10 +346,8 @@ Summary of optional dependencies:
   libpng             ${i_do_have_libpng}
   libtiff            ${i_do_have_libtiff}
   libxml             ${i_do_have_libxml}
-  libuninameslist    ${i_do_have_libuninameslist}
   libspiro           ${i_do_have_libspiro}
   X Window System    ${i_do_have_x}
-  regular link       ${i_do_have_regular_link}
 ])
 
 #--------------------------------------------------------------------------

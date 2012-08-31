@@ -1,3 +1,5 @@
+dnl -*- autoconf -*-
+
 dnl FONTFORGE_PLATFORM_SPECIFICS
 dnl ----------------------------
 AC_DEFUN([FONTFORGE_PLATFORM_SPECIFICS],
@@ -83,8 +85,3 @@ AS_CASE([$host],
 
 ) dnl END AS_CASE
 ])
-
-
-dnl local variables:
-dnl mode: autoconf
-dnl end:

@@ -23,10 +23,5 @@ libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 libgdraw_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la
 
-if PLUGLIBUNINAMESLIST
-libgdraw_la_LIBADD += $(top_builddir)/pluginloading/libfontforgepluginloading.la
-libgdraw_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibuninameslist.la
-endif PLUGLIBUNINAMESLIST
-
 libgdraw_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GD_VERSION):$(GD_REVISION):$(GD_AGE)"

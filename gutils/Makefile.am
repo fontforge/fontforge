@@ -22,22 +22,6 @@ libgutils_la_LIBADD =											\
 	$(top_builddir)/pluginloading/libfontforgepluginloading.la	\
 	$(top_builddir)/Unicode/libgunicode.la
 
-if PLUGGIFLIB
-libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluggiflib.la
-endif PLUGGIFLIB
-
-if PLUGLIBJPEG
-libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibjpeg.la
-endif PLUGLIBJPEG
-
-if PLUGLIBPNG
-libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibpng.la
-endif PLUGLIBPNG
-
-if PLUGLIBTIFF
-libgutils_la_LIBADD += -dlopen $(top_builddir)/plugins/pluglibtiff.la
-endif PLUGLIBTIFF
-
 libgutils_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(GUTL_VERSION):$(GUTL_REVISION):$(GUTL_AGE)"
 

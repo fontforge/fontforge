@@ -34,10 +34,6 @@
 
 static int has_spiro = false;
 
-int hasspiro(void) {
-return(false);
-}
-
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 return( NULL );
 }
@@ -49,36 +45,8 @@ return( NULL );
 #else /* ! _NO_LIBSPIRO */
 
 #  include "bezctx_ff.h"
-#  include "dynamic.h"
-#  include "plugins.h"
-#  include "pluginloading.h"
 
-static lt_dlhandle libspiro = NULL;
-static void (*_TaggedSpiroCPsToBezier)(spiro_cp *spiros,bezctx *bc);
-static int inited = false;
-static int has_spiro = false;
-
-static void initSpiro(void) {
-    if (!inited) {
-        libspiro = load_plugin("pluglibspiro", NULL);
-
-        if (libspiro != NULL) {
-            _TaggedSpiroCPsToBezier =
-                (void (*)(spiro_cp *spiros, bezctx *bc)) lt_dlsym(libspiro,"TaggedSpiroCPsToBezier");
-            has_spiro = (_TaggedSpiroCPsToBezier != NULL);
-            if (!has_spiro)
-                LogError(_("Hmm. This system has a libspiro, but it doesn't contain the entry points\n"
-                           "fontforge needs. Must be something else.\n"));
-        }
-
-        inited = true;
-    }
-}
-
-int hasspiro(void) {
-    initSpiro();
-    return(has_spiro);
-}
+static int has_spiro = true;
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     int n;
@@ -89,7 +57,6 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 
     if ( spiros==NULL )
 return( NULL );
-    initSpiro();
     for ( n=0; spiros[n].ty!=SPIRO_END; ++n )
 	if ( SPIRO_SELECTED(&spiros[n]) )
 	    ++any;
@@ -106,13 +73,13 @@ return( NULL );
 	}
 
 	if ( !any )
-	    _TaggedSpiroCPsToBezier(spiros,bc);
+	    TaggedSpiroCPsToBezier(spiros,bc);
 	else {
 	    nspiros = galloc((n+1)*sizeof(spiro_cp));
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
 	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
 		nspiros[n].ty &= ~0x80;
-	    _TaggedSpiroCPsToBezier(nspiros,bc);
+	    TaggedSpiroCPsToBezier(nspiros,bc);
 	    free(nspiros);
 	}
 	ss = bezctx_ff_close(bc);
@@ -195,6 +162,10 @@ return( ret );
 
 #endif /* ! _NO_LIBSPIRO */
 
+int hasspiro(void) {
+    return has_spiro;
+}
+
 spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
     int n;
     spiro_cp *nspiros;
@@ -213,7 +184,7 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
 
     if ( spl->spiro_cnt<=1 )
 return;
-    if ( !has_spiro && !hasspiro())
+	if ( !has_spiro)
 return;
 
     SplineSetBeziersClear(spl);
