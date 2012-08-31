@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([fontforge-python-extension],[9999-experimental],[fontforge-devel@lists.sourceforge.net])
+AC_INIT([fontforge-python-extension],[2.0-alpha1],[fontforge-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([fontforgepyhook.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
