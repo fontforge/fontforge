@@ -189,6 +189,7 @@ static struct resed charview2_re[] = {
     { N_("Clip Path Color"), "ClipPathColor", rt_color, &clippathcol, N_("The color of the clip path"), NULL, { 0 }, 0, 0 },
     { N_("Background Image Color"), "BackgroundImageColor", rt_coloralpha, &backimagecol, N_("The color used to draw bitmap (single bit) images which do not specify a clut"), NULL, { 0 }, 0, 0 },
     { N_("Fill Color"), "FillColor", rt_coloralpha, &fillcol, N_("The color used to fill the outline if that mode is active"), NULL, { 0 }, 0, 0 },
+    { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
     { N_("Trace Color"), "TraceColor", rt_color, &tracecol, NULL, NULL, { 0 }, 0, 0 },
     { N_("Raster Color"), "RasterColor", rt_coloralpha, &rastercol, N_("The color of grid-fit (and other) raster blocks"), NULL, { 0 }, 0, 0 },
     { N_("Raster New Color"), "RasterNewColor", rt_coloralpha, &rasternewcol, N_("The color of raster blocks which have just been turned on (in the debugger when an instruction moves a point)"), NULL, { 0 }, 0, 0 },
@@ -197,7 +198,6 @@ static struct resed charview2_re[] = {
     { N_("Raster Dark Color"), "RasterDarkColor", rt_coloralpha, &rasterdarkcol, N_("When debugging in grey-scale this is the color of a raster block which is fully covered."), NULL, { 0 }, 0, 0 },
     { N_("Delta Grid Color"), "DeltaGridColor", rt_color, &deltagridcol, N_("Indicates a notable grid pixel when suggesting deltas."), NULL, { 0 }, 0, 0 },
     { N_("Ruler Big Tick Color"), "RulerBigTickColor", rt_color, &rulerbigtickcol, N_("The color used to draw the large tick marks in rulers."), NULL, { 0 }, 0, 0 },
-    { N_("Preview Fill Color"), "PreviewFillColor", rt_coloralpha, &previewfillcol, N_("The color used to fill the outline when in preview mode"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -244,10 +244,10 @@ return;
     GResEditFind( charview2_re, "CharView.");
     cvcolsinited = true;
 
-    if( _GResource_FindResName("CharView.PreviewFillColor") == -1 ) {
+    if( GResourceFindColor("CharView.PreviewFillColor", COLOR_UNKNOWN) == COLOR_UNKNOWN ) {
 	// no explicit previewfillcolor
 	previewfillcol = fillcol;
-	if( _GResource_FindResName("CharView.FillColor") == -1 ) {
+	if( GResourceFindColor("CharView.FillColor", COLOR_UNKNOWN) == COLOR_UNKNOWN ) {
 	    // no explicit fill color either
 	    previewfillcol = 0x000000;
 	}
