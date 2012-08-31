@@ -17199,7 +17199,11 @@ void PyFF_Main(int argc,char **argv,int start) {
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
+#ifndef __MINGW32__
     FILE *fp = fopen(filename,"r");
+#else
+    PyObject *fp = PyFile_FromString(filename,"r");
+#endif
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
@@ -17209,8 +17213,12 @@ void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     if ( fp==NULL )
 	LogError(_("Can't open %s"), filename );
     else {
+#ifndef __MINGW32__
 	PyRun_SimpleFile(fp,filename);
 	fclose(fp);
+#else
+    PyRun_SimpleFile(PyFile_AsFile(fp),filename);
+#endif
     }
 }
 
@@ -17259,13 +17267,21 @@ return;
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    FILE *fp;
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );
+#ifndef __MINGW32__
+	    FILE *fp;
 	    fp = fopen(buffer,"r");
+#else
+	    PyObject *fp = PyFile_FromString(buffer,"r");
+#endif
 	    if ( fp==NULL )
     continue;
+#ifndef __MINGW32__
 	    PyRun_SimpleFile(fp,buffer);
 	    fclose(fp);
+#else
+	    PyRun_SimpleFile(PyFile_AsFile(fp),buffer);
+#endif
 	}
     }
     closedir(diro);
