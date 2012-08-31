@@ -10,9 +10,14 @@ AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([1.12.2 subdir-objects foreign silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([1.12.2 subdir-objects foreign -Wall])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
+
+# I am going to try enabling silent-rules by default, so builders are
+# more likely to see warnings. Use --disable-silent-rules or "make
+# V=1" if you need to see the rules.
+AM_SILENT_RULES([yes])
 
 AM_PROG_AR
 LT_CONFIG_LTDL_DIR([libltdl])
@@ -98,12 +103,20 @@ FONTFORGE_ARG_ENABLE([gb12345],
         [FONTFORGE_CONFIG_GB12345])
 AM_CONDITIONAL([PLUGIN_GB12345],[test x"${i_do_have_gb12345}" = xyes])
 
-FONTFORGE_ARG_ENABLE([native-callbacks],
-        [AS_HELP_STRING([--enable-native-callbacks],
-                [(experimental, undocumented)
-                 support for callbacks to native machine code,
-                 with fontforge called as a library])],
-        [NATIVE_CALLBACKS])
+#FONTFORGE_ARG_ENABLE([native-callbacks],
+#        [AS_HELP_STRING([--enable-native-callbacks],
+#                [(experimental, undocumented)
+#                 support for callbacks to native machine code,
+#                 with fontforge called as a library])],
+#        [NATIVE_CALLBACKS])
+#
+# No, that’s too visible! Let us enable this one via an obscure cache variable.
+AC_CACHE_CHECK([whether to enable native callbacks (experimental)],
+               [fontforge_cv_native_callbacks],
+               [if test x"${fontforge_cv_native_callbacks}" != yes; then
+                   fontforge_cv_native_callbacks=no
+                fi])
+i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
 
 FONTFORGE_ARG_ENABLE([maintainer-tools],
         [AS_HELP_STRING([--enable-maintainer-tools],
@@ -379,7 +392,6 @@ Summary of optional features:
   raw points mode    ${i_do_have_capslock_for_alt}
   tile path          ${i_do_have_tile_path}
   gb12345 encoding   ${i_do_have_gb12345}
-  native callbacks   ${i_do_have_native_callbacks}
 
 Summary of optional dependencies:
 
