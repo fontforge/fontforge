@@ -484,6 +484,11 @@ return( namelist_for_new_fonts );
 
 NameList *NameListByName(char *name) {
     NameList *nl;
+
+    /* ΤεΧ is hard tp type e.g. from scripting, so accept TeX as alias */
+    if (strcmp(name,"TeX Names")==0)
+	name = copy("ΤεΧ Names");
+
     for ( nl = &agl; nl!=NULL; nl=nl->next ) {
 	if ( strcmp(_(nl->title),name)==0 || strcmp(nl->title,name)==0 )
 return( nl );
