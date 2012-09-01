@@ -27,6 +27,7 @@
 #include "fontforgeui.h"
 #include "groups.h"
 #include "psfont.h"
+#include "annotations.h"
 #include <gfile.h>
 #include <gio.h>
 #include <gresedit.h>
@@ -6251,6 +6252,7 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     int uni;
     Color fg = fvglyphinfocol;
     int ulen, tlen;
+    const char *uniname;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh )
 return;
@@ -6312,17 +6314,19 @@ return;
 	}
 	fg = 0x707070;
     }
-    if ( uni!=-1 && uni<0x110000 && _UnicodeNameAnnot!=NULL &&
-	    _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name!=NULL ) {
-	utf82u_strncpy(ubuffer+u_strlen(ubuffer), _UnicodeNameAnnot[uni>>16][(uni>>8)&0xff][uni&0xff].name, 80);
-    } else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
-	sprintf( buffer, "Hangul Syllable %s%s%s",
-		chosung[(uni-0xAC00)/(21*28)],
-		jungsung[(uni-0xAC00)/28%21],
-		jongsung[(uni-0xAC00)%28] );
-	uc_strncat(ubuffer,buffer,80);
-    } else if ( uni!=-1 ) {
-	uc_strncat(ubuffer, UnicodeRange(uni),80);
+    if (uni != -1) {        
+        uniname = uninm_name(names_db, (unsigned int) uni);
+        if (uniname != NULL) {
+            utf82u_strncpy(ubuffer+u_strlen(ubuffer), uniname, 80);
+        } else if ( uni>=0xAC00 && uni<=0xD7A3 ) {
+            sprintf( buffer, "Hangul Syllable %s%s%s",
+                     chosung[(uni-0xAC00)/(21*28)],
+                     jungsung[(uni-0xAC00)/28%21],
+                     jongsung[(uni-0xAC00)%28] );
+            uc_strncat(ubuffer,buffer,80);
+        } else {
+            uc_strncat(ubuffer, UnicodeRange(uni),80);
+        }
     }
 
     tlen = GDrawDrawBiText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,NULL,fvglyphinfocol);
@@ -6530,12 +6534,7 @@ static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
 
     to += u_strlen(to);
     while ( (ch = utf8_ildb(&from)) != '\0' && --len>=0 ) {
-	if ( from[-2]=='\t' ) {
-	    if ( ch=='*' ) ch = 0x2022;
-	    else if ( ch=='x' ) ch = 0x2192;
-	    else if ( ch==':' ) ch = 0x224d;
-	    else if ( ch=='#' ) ch = 0x2245;
-	} else if ( ch=='\t' ) {
+	if ( ch=='\t' ) {
 	    *(to++) = ' ';
 	    ch = ' ';
 	}
@@ -6550,6 +6549,8 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
     char cspace[162];
     int upos=-1;
     int done = false;
+    const char *uniname;
+    const char *uniannot;
 
     /* If a glyph is multiply mapped then the inbuild unicode enc may not be */
     /*  the actual one used to access the glyph */
@@ -6557,7 +6558,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	while ( remap->infont!=-1 ) {
 	    if ( localenc>=remap->infont && localenc<=remap->infont+(remap->lastenc-remap->firstenc) ) {
 		localenc += remap->firstenc-remap->infont;
-	break;
+                break;
 	    }
 	    ++remap;
 	}
@@ -6586,49 +6587,50 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	uc_strcpy(space,cspace);
 	done = true;
     }
-    if ( done )
-	/* Do Nothing */;
-    else if ( upos<0x110000 && _UnicodeNameAnnot!=NULL &&
-	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name!=NULL ) {
+
+    if ( !done ) {
+        uniname = uninm_name(names_db, upos);
+        if (uniname != NULL) {
 #if defined( _NO_SNPRINTF )
-	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
+            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+                     uniname);
 #else
-	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].name);
+            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.100s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+                      uniname);
 #endif
-	utf82u_strcpy(space,cspace);
-    } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
+            utf82u_strcpy(space,cspace);
+        } else if ( upos>=0xAC00 && upos<=0xD7A3 ) {
 #if defined( _NO_SNPRINTF )
-	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-		localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		chosung[(upos-0xAC00)/(21*28)],
-		jungsung[(upos-0xAC00)/28%21],
-		jongsung[(upos-0xAC00)%28] );
+            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
+                     localenc, localenc, upos, sc->name==NULL?"":sc->name,
+                     chosung[(upos-0xAC00)/(21*28)],
+                     jungsung[(upos-0xAC00)/28%21],
+                     jongsung[(upos-0xAC00)%28] );
 #else
-	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
-		localenc, localenc, upos, sc->name==NULL?"":sc->name,
-		chosung[(upos-0xAC00)/(21*28)],
-		jungsung[(upos-0xAC00)/28%21],
-		jongsung[(upos-0xAC00)%28] );
+            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" Hangul Syllable %s%s%s",
+                      localenc, localenc, upos, sc->name==NULL?"":sc->name,
+                      chosung[(upos-0xAC00)/(21*28)],
+                      jungsung[(upos-0xAC00)/28%21],
+                      jongsung[(upos-0xAC00)%28] );
 #endif
-	utf82u_strcpy(space,cspace);
-    } else {
+            utf82u_strcpy(space,cspace);
+        } else {
 #if defined( _NO_SNPRINTF )
-	sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-	    	UnicodeRange(upos));
+            sprintf( cspace, "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+                     UnicodeRange(upos));
 #else
-	snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
-	    	UnicodeRange(upos));
+            snprintf( cspace, sizeof(cspace), "%u 0x%x U+%04x \"%.25s\" %.50s", localenc, localenc, upos, sc->name==NULL?"":sc->name,
+                      UnicodeRange(upos));
 #endif
-	utf82u_strcpy(space,cspace);
+            utf82u_strcpy(space,cspace);
+        }
     }
-    if ( upos>=0 && upos<0x110000 && _UnicodeNameAnnot!=NULL &&
-	    _UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot!=NULL ) {
+    uniannot = uninm_annotation(names_db, upos);
+    if (uniannot != NULL) {
 	int left = sizeof(space)/sizeof(space[0]) - u_strlen(space)-1;
 	if ( left>4 ) {
 	    uc_strcat(space,"\n");
-	    utf82u_annot_strncat(space,_UnicodeNameAnnot[upos>>16][(upos>>8)&0xff][upos&0xff].annot,left-2);
+            utf82u_annot_strncat(space, uniannot, left-2);
 	}
     }
     if ( sc->comment!=NULL ) {
@@ -8012,3 +8014,8 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     GDrawDestroyWindow(gs.gw);
 return( ret );
 }
+
+/* local variables: */
+/* tab-width: 8     */
+/* end:             */
+

@@ -150,7 +150,6 @@ AC_SUBST([XINPUT_LIBS])
 AC_SUBST([XKB_LIBS])
 
 PKG_CHECK_MODULES([ZLIB],[zlib])
-PKG_CHECK_MODULES([LIBUNICODENAMES],[libunicodenames])
 
 FONTFORGE_ARG_WITH_CAIRO
 FONTFORGE_ARG_WITH_PANGO
@@ -165,6 +164,7 @@ FONTFORGE_ARG_WITH_LIBPNG
 FONTFORGE_ARG_WITH_LIBTIFF
 FONTFORGE_ARG_WITH_LIBXML
 FONTFORGE_ARG_WITH_LIBSPIRO
+FONTFORGE_ARG_WITH_LIBUNICODENAMES
 FONTFORGE_ARG_WITH_ICONV
 
 if test x"${i_do_have_cairo}" = xyes -a  x"${i_do_have_pango}" = xyes; then
@@ -347,6 +347,7 @@ Summary of optional dependencies:
   libtiff            ${i_do_have_libtiff}
   libxml             ${i_do_have_libxml}
   libspiro           ${i_do_have_libspiro}
+  libunicodenames    ${i_do_have_libunicodenames}
   X Window System    ${i_do_have_x}
 ])
 

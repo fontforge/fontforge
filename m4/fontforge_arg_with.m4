@@ -30,6 +30,19 @@ AC_DEFUN([FONTFORGE_ARG_WITH],
    [FONTFORGE_ARG_WITH_BASE([$1],[$2],[$3],[$4],[$5],[eval AS_TR_SH(i_do_have_$1)=no])])
 
 
+dnl FONTFORGE_ARG_WITH_LIBUNICODENAMES
+dnl ----------------------------------
+AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNICODENAMES],
+[
+   FONTFORGE_ARG_WITH([libunicodenames],
+      [AS_HELP_STRING([--without-libunicodenames],
+                      [do not include access to Unicode annotation data])],
+      [libunicodenames],
+      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])],
+      [_NO_LIBUNICODENAMES])
+])
+
+
 dnl FONTFORGE_ARG_WITH_CAIRO
 dnl ------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_CAIRO],

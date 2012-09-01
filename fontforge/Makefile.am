@@ -54,7 +54,7 @@ pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	uiinterface.h bezctx_ff.h edgelist.h groups.h nonlineartrans.h		\
 	sd.h unicoderange.h bitmapcontrol.h encoding.h ofl.h search.h		\
 	usermenu.h fffreetype.h PfEd.h sfd1.h ffpython.h import.h			\
-	plugins.h sflayoutP.h print.h splinefont.h
+	plugins.h sflayoutP.h print.h splinefont.h annotations.h
 
 #--------------------------------------------------------------------------
 
