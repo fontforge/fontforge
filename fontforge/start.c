@@ -59,97 +59,6 @@ static void initadobeenc(void) {
     }
 }
 
-//#ifdef _NO_LIBUNINAMESLIST
-
-static void inituninameannot(void) {
-    _UnicodeNameAnnot = NULL;
-}
-
-//#else /* ! _NO_LIBUNINAMESLIST */
-//
-//static const char *get_locale(void) {
-//    const char *locale;
-//    
-//    locale = getenv("LC_ALL");
-//    if (locale == NULL)
-//        locale = getenv("LC_MESSAGES");
-//    if (locale == NULL)
-//        locale = getenv("LANG");
-//    return locale;
-//}
-//
-//static void inituninameannot(void) {
-//    lt_dlhandle libuninames;
-//
-//    /* FIXME FIXME FIXME: We need a new version of libuninameslist
-//     * that takes locale as a parameter. */
-//    libuninames = load_plugin("pluglibuninameslist", NULL);
-//    if (libuninames != NULL)
-//        _UnicodeNameAnnot = lt_dlsym(libuninames,"UnicodeNameAnnot");
-//    else
-//        _UnicodeNameAnnot = NULL;
-//}
-//
-//#endif /* ! _NO_LIBUNINAMESLIST */
-
-//#if 0 /* THIS IS OLD CODE LEFT HERE FOR REFERENCE TEMPORARILY ********************************************** */
-//static void inituninameannot(void) {
-//#if _NO_LIBUNINAMESLIST
-//    _UnicodeNameAnnot = NULL;
-//#elif defined(_STATIC_LIBUNINAMESLIST) || defined(NODYNAMIC)
-//    extern const struct unicode_nameannot * const * const UnicodeNameAnnot[];
-//    _UnicodeNameAnnot = UnicodeNameAnnot;
-//#else
-//    DL_CONST void *libuninames=NULL;
-//    const char *loc = getenv("LC_ALL");
-//# ifdef LIBDIR
-//    char full[1024], buf[100];
-//# else
-//    char buf[100];
-//#endif
-//    int i;
-//
-//    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
-//    if ( loc==NULL ) loc = getenv("LANG");
-//    for ( i=0; i<4; ++i ) {
-//        strcpy(buf,"libuninameslist-");
-//        if ( i==3 )
-//            buf[strlen(buf)-1] = '\0';
-//	    /* Use the default name */
-//        else if ( i==2 ) {
-//            if ( loc==NULL || strlen( loc )<2 )
-//                continue;
-//            strncat(buf,loc,2);
-//        } else if ( i==1 ) {
-//            if ( loc==NULL || strlen( loc )<5 )
-//                continue;
-//            strncat(buf,loc,5);
-//        } else if ( i==0 ) {
-//            if ( loc==NULL || strlen( loc )<6 )
-//                continue;
-//            strcat(buf,loc);
-//        }
-//        strcat(buf, SO_EXT );
-//
-//# ifdef LIBDIR
-//#  if !defined(_NO_SNPRINTF) && !defined(VMS)
-//        snprintf( full, sizeof(full), "%s/%s", LIBDIR, buf );
-//#  else
-//        sprintf( full, "%s/%s", LIBDIR, buf );
-//#  endif
-//        libuninames = dlopen( full,RTLD_LAZY);
-//# endif
-//        if ( libuninames==NULL )
-//            libuninames = dlopen( buf,RTLD_LAZY);
-//        if ( libuninames!=NULL ) {
-//            _UnicodeNameAnnot = dlsym(libuninames,"UnicodeNameAnnot");
-//            return;
-//        }
-//    }
-//#endif
-//}
-//#endif /********************************************************************************************/
-
 static void initrand(void) {
     struct timeval tv;
 
@@ -191,7 +100,6 @@ void InitSimpleStuff(void) {
     initlibltdl();
     initrand();
     initadobeenc();
-    inituninameannot(); //??????????????????????????????????????????????????????????????????????????????????
 
     setlocale(LC_ALL,"");
     localeinfo = *localeconv();
