@@ -25,12 +25,23 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ANNOTATIONS_H_
-#define _ANNOTATIONS_H_
+#ifndef _ANNOTATIONS_BASE_H_
+#define _ANNOTATIONS_BASE_H_
 
-#include <annotations_base.h>
+#ifndef _NO_LIBUNICODENAMES
 
-extern uninm_names_db names_db; /* Unicode character names and
-                                 * annotations. */
+#include <libunicodenames.h>
 
-#endif /* _ANNOTATIONS_H_ */
+#else
+
+typedef void *uninm_names_db;
+
+#define uninm_find_names_db(locale_base)    ((char *) 0)
+#define uninm_names_db_open(filename)       ((uninm_names_db) 0)
+#define uninm_names_db_close(handle)        do {} while (0)
+#define uninm_name(handle, codepoint)       ((const char *) 0)
+#define uninm_annotation(handle, codepoint) ((const char *) 0)
+
+#endif
+
+#endif /* _ANNOTATIONS_BASE_H_ */

@@ -40,10 +40,9 @@
 int32 unicode_from_adobestd[256];
 struct lconv localeinfo;
 char *coord_sep = ",";
-const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
 
-uninm_names_db names_db; /* Unicode character names and
-                          * annotations. */
+/* Unicode character names and annotations. */
+uninm_names_db names_db;
 
 static void initadobeenc(void) {
     int i,j;
@@ -115,6 +114,7 @@ void InitSimpleStuff(void) {
      */
     names_db_file = uninm_find_names_db(NULL);
     names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
+    free(names_db_file);
 
     SetDefaults();
 }
