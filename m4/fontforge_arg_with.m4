@@ -36,7 +36,7 @@ AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNICODENAMES],
 [
    FONTFORGE_ARG_WITH([libunicodenames],
       [AS_HELP_STRING([--without-libunicodenames],
-                      [do not include access to Unicode annotation data])],
+                      [do not include access to Unicode NamesList data])],
       [libunicodenames],
       [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNICODENAMES])],
       [_NO_LIBUNICODENAMES])
@@ -136,7 +136,7 @@ dnl ---------------------------
 AC_DEFUN([FONTFORGE_ARG_WITH_LIBSPIRO],
 [
 FONTFORGE_ARG_WITH_BASE([libspiro],
-   [AS_HELP_STRING([--without-libspiro],[build without support for Spiro])],
+   [AS_HELP_STRING([--without-libspiro],[build without support for Spiro contours])],
    [libspiro],
    [FONTFORGE_WARN_PKG_NOT_FOUND([LIBSPIRO])],
    [_NO_LIBSPIRO],

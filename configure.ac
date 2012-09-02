@@ -34,6 +34,27 @@ AC_SUBST([MACAPP])
 FONTFORGE_PLATFORM_SPECIFICS
 AC_DEFINE([NODYNAMIC],[1],[Define if enabling feature 'regular-link' for all packages.])
 
+#--------------------------------------------------------------------------
+#
+# URLs for dependencies.
+
+cairo_url="http://www.cairographics.org/"
+pango_url="http://www.pango.org/"
+freetype_url="http://www.freetype.org/"
+giflib_url="http://giflib.sourceforge.net/"
+libpng_url="http://www.libpng.org/"
+libxml_url="http://www.xmlsoft.org/"
+libspiro_url="http://libspiro.sourceforge.net/"
+libunicodenames_url="https://github.com/chemoelectric/libunicodenames"
+
+# Point to the Wikipedia page, primarily because one may want
+# libjpeg-turbo rather than the reference implementation.
+libjpeg_url="http://en.wikipedia.org/wiki/Libjpeg"
+
+# Point to the Wikipedia page, so people can learn not to be fooled by
+# the old website, which some while ago was hijacked by androids from
+# beyond the orbit of Neptune.
+libtiff_url="http://en.wikipedia.org/wiki/Libtiff"
 
 #--------------------------------------------------------------------------
 #
@@ -339,16 +360,16 @@ Summary of optional features:
 
 Summary of optional dependencies:
 
-  cairo              ${i_do_have_cairo}
-  pango              ${i_do_have_pango}
-  freetype           ${i_do_have_freetype}
-  giflib             ${i_do_have_giflib}
-  libjpeg            ${i_do_have_libjpeg}
-  libpng             ${i_do_have_libpng}
-  libtiff            ${i_do_have_libtiff}
-  libxml             ${i_do_have_libxml}
-  libspiro           ${i_do_have_libspiro}
-  libunicodenames    ${i_do_have_libunicodenames}
+  cairo              ${i_do_have_cairo}  	${cairo_url}
+  pango              ${i_do_have_pango}  	${pango_url}
+  freetype           ${i_do_have_freetype}  	${freetype_url}
+  giflib             ${i_do_have_giflib}  	${giflib_url}
+  libjpeg            ${i_do_have_libjpeg}  	${libjpeg_url}
+  libpng             ${i_do_have_libpng}  	${libpng_url}
+  libtiff            ${i_do_have_libtiff}  	${libtiff_url}
+  libxml             ${i_do_have_libxml}  	${libxml_url}
+  libspiro           ${i_do_have_libspiro}  	${libspiro_url}
+  libunicodenames    ${i_do_have_libunicodenames}  	${libunicodenames_url}
   X Window System    ${i_do_have_x}
 ])
 
