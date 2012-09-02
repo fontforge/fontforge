@@ -33,6 +33,17 @@
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "is_LIGATURE.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 extern int lookup_hideunused;
 
 static int last_gi_aspect = 0;
@@ -1665,23 +1676,6 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-/* FIXME FIXME FIXME! This will not work in non-English locales
- * supported by LibUnicodeNames (currently that means French). We have
- * to actually catalog the codepoints we want to exclude.
- *
- * We can do that later with a Python/LibUnicodeNames script that
- * writes a table. **************************************************
- * REMEMBER TO DO THAT! :)
- * ******************************************************************
- */
-static int neither_LIGATURE_nor_VULGAR_FRACTION(unsigned int uni) 
-{
-    const char *uname = uninm_name(names_db, (unsigned int) uni);
-    return (uname != NULL &&
-	    strstr(uname,"LIGATURE")==NULL &&
-	    strstr(uname,"VULGAR FRACTION")==NULL);
-}
-
 /* Generate default settings for the entries in ligature lookup
  * subtables. */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
@@ -1703,7 +1697,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if (neither_LIGATURE_nor_VULGAR_FRACTION((unsigned int) uni) &&
+	} else if (! is_LIGATURE_or_VULGAR_FRACTION((unsigned int) uni) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */

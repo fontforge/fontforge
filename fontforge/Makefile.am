@@ -46,7 +46,7 @@ sfddiff: sfddiff.pe
 #--------------------------------------------------------------------------
 
 noinst_HEADERS = fontforgeui.h sftextfieldP.h configure-fontforge.h	\
-	views.h
+	views.h is_LIGATURE.h
 pkginclude_HEADERS = autowidth2.h configure-fontforge.h fontforge.h		\
 	libffstamp.h psfont.h stemdb.h autowidth.h delta.h fontforgevw.h	\
 	lookups.h savefont.h ttf.h baseviews.h fvmetrics.h mm.h				\
@@ -87,7 +87,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c
+	activeinui.c is_LIGATURE.c
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -113,6 +113,17 @@ endif PLUGIN_GB12345
 
 libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"
+
+EXTRA_SCRIPTS = generate_codepoint_selector.py
+
+# "make is_LIGATURE" or "make -C fontforge is_LIGATURE" to regenerate
+# is_LIGATURE.[ch]. You need LibUnicodeNames with Python bindings, and
+# you need cproto.
+is_LIGATURE:
+	$(PYTHON) $(srcdir)/generate_codepoint_selector.py \
+		'LIGATURE|VULGAR FRACTION' \
+		is_LIGATURE_or_VULGAR_FRACTION > $(srcdir)/is_LIGATURE.c
+	$(CPROTO) $(srcdir)/is_LIGATURE.c > $(srcdir)/is_LIGATURE.h
 
 #--------------------------------------------------------------------------
 

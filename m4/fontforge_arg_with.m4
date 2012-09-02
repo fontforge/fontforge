@@ -128,32 +128,6 @@ FONTFORGE_ARG_WITH([libxml],
 ])
 
 
-dnl A macro that will not be needed if we can count on libuninameslist
-dnl having a pkg-config file. 
-dnl
-dnl FONTFORGE_ARG_WITH_LIBUNINAMESLIST
-dnl ----------------------------------
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST],
-[
-   FONTFORGE_ARG_WITH_BASE([libuninameslist],
-      [AS_HELP_STRING([--without-libuninameslist],[build without libuninameslist])],
-      [libuninameslist],
-      [FONTFORGE_WARN_PKG_NOT_FOUND([LIBUNINAMESLIST])],
-      [_NO_LIBUNINAMESLIST],
-      [FONTFORGE_ARG_WITH_LIBUNINAMESLIST_fallback])
-])
-dnl
-AC_DEFUN([FONTFORGE_ARG_WITH_LIBUNINAMESLIST_fallback],
-[
-   FONTFORGE_SEARCH_LIBS([UnicodeNameAnnot],[uninameslist],
-      [i_do_have_libuninameslist=yes
-       AC_SUBST([LIBUNINAMESLIST_CFLAGS],[""])
-       AC_SUBST([LIBUNINAMESLIST_LIBS],["${found_lib}"])
-       FONTFORGE_WARN_PKG_FALLBACK([LIBUNINAMESLIST])],
-      [i_do_have_libuninameslist=no])
-])
-
-
 dnl A macro that will not be needed if we can count on libspiro
 dnl having a pkg-config file. 
 dnl
@@ -246,91 +220,6 @@ AC_ARG_WITH([iconv],
    [i_do_want_iconv="${withval}"],
    [i_do_want_iconv=yes]
 )])
-
-
-#dnl FONTFORGE_ARG_WITH_REGULAR_LINK
-#dnl ---------------------------------
-#AC_DEFUN([FONTFORGE_ARG_WITH_REGULAR_LINK],
-#[
-#AC_ARG_WITH([regular-link],
-#        [AS_HELP_STRING([--with-regular-link[[=PKGS]]],
-#                [use regular linking instead of dlopen, optionally listing individual packages to link
-#                 without dlopen;
-#                 PKGS can include
-#                    cairo,
-#                    pango,
-#                    freetype,
-#                    giflib,
-#                    libjpeg,
-#                    libpng,
-#                    libtiff,
-#                    libxml,
-#                    libuninameslist,
-#                    libspiro,
-#                    libintl])],
-#        [i_do_have_regular_link="${withval}"],
-#        [i_do_have_regular_link=no])
-#
-#if test x"${i_do_have_regular_link}" = xyes; then
-#   AC_DEFINE([NODYNAMIC],1,[Define if enabling feature 'regular-link' for all packages.])
-#   regular_link_giflib=yes
-#   regular_link_libjpeg=yes
-#   regular_link_libpng=yes
-#   regular_link_libtiff=yes
-#   regular_link_freetype=yes
-#   regular_link_libuninameslist=yes
-#   regular_link_libxml=yes
-#   regular_link_libspiro=yes
-#   regular_link_cairo=yes
-#   regular_link_pango=yes
-#   regular_link_libintl=yes
-#fi
-#
-#if test x"${i_do_have_regular_link}" != xyes -a x"${i_do_have_regular_link}" != xno; then
-#   for _my_pkg in `AS_ECHO(["${i_do_have_regular_link}"]) | tr ',' ' '`; do
-#       AS_CASE(["${_my_pkg}"],
-#        [giflib],[AC_DEFINE([_STATIC_LIBUNGIF],[1],[Define if enabling feature 'regular-link' for giflib.])
-#                  regular_link_giflib=yes],
-#        [libjpeg],[AC_DEFINE([_STATIC_LIBJPEG],[1],[Define if enabling feature 'regular-link' for libjpeg.])
-#                   regular_link_libjpeg=yes],
-#        [libpng],[AC_DEFINE([_STATIC_LIBPNG],[1],[Define if enabling feature 'regular-link' for libpng.])
-#                  regular_link_libpng=yes],
-#        [libtiff],[AC_DEFINE([_STATIC_LIBTIFF],[1],[Define if enabling feature 'regular-link' for libtiff.])
-#                   regular_link_libtiff=yes],
-#        [freetype],[AC_DEFINE([_STATIC_LIBFREETYPE],[1],[Define if enabling feature 'regular-link' for freetype.])
-#                    regular_link_freetype=yes],
-#        [libuninameslist],[AC_DEFINE([_STATIC_LIBUNINAMESLIST],[1],[Define if enabling feature 'regular-link' for libuninameslist.])
-#                  regular_link_libuninameslist=yes],
-#        [libxml],[AC_DEFINE([_STATIC_LIBXML],[1],[Define if enabling feature 'regular-link' for libxml.])
-#                  regular_link_libxml=yes],
-#        [libspiro],[AC_DEFINE([_STATIC_LIBSPIRO],[1],[Define if enabling feature 'regular-link' for libspiro.])
-#                    regular_link_libspiro=yes],
-#        [cairo],[AC_DEFINE([_STATIC_LIBCAIRO],[1],[Define if enabling feature 'regular-link' for cairo.])
-#                 regular_link_cairo=yes],
-#        [pango],[AC_DEFINE([_STATIC_LIBPANGO],[1],[Define if enabling feature 'regular-link' for pango.])
-#                 regular_link_pango=yes],
-#        [libintl],[AC_DEFINE([_STATIC_LIBINTL],[1],[Define if enabling feature 'regular-link' for libintl.])
-#                   regular_link_libintl=yes],
-#        [:] dnl FIXME: Give a warning in the default case.
-#       )       
-#   done
-#fi
-#
-#if test x"${i_do_have_regular_link}" = xyes -o x"${regular_link_libintl}" = xyes; then
-#   AC_SEARCH_LIBS([bindtextdomain],[intl])
-#fi
-#
-## glibc has the libintl.h functions in -lc. Therefore libintl.so need
-## not and typically cannot be dynamically loaded on GNU systems and
-## regular-link must be forced.
-#if test x"${regular_link_libintl}" != xyes; then
-#   AC_SEARCH_LIBS([bindtextdomain],[])
-#   if test x"${ac_cv_search_bindtextdomain}" = x"none required"; then
-#      AC_DEFINE([_STATIC_LIBINTL],[1])
-#      regular_link_libintl=yes
-#   fi
-#fi
-#])
 
 
 dnl FONTFORGE_WARN_PKG_NOT_FOUND
