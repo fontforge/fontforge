@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fontforgeui.h"
+#include "annotations.h"
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
@@ -161,6 +162,7 @@ static void BC_CharChangedUpdate(BDFChar *bc) {
 
 static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     char *title;
+    const char *uniname;
     SplineChar *sc;
     BDFFont *bdf = bv->bdf;
 
@@ -175,10 +177,12 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     sprintf(buf,_("%1$.80s at %2$d size %3$d from %4$.80s"),
 	    sc!=NULL ? sc->name : "<Nameless>", bv->enc, bdf->pixelsize, sc==NULL ? "" : sc->parent->fontname);
     title = copy(buf);
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x110000 && _UnicodeNameAnnot!=NULL &&
-	    _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name!=NULL ) {
-	strcat(buf, " ");
-	strcpy(buf+strlen(buf), _UnicodeNameAnnot[sc->unicodeenc>>16][(sc->unicodeenc>>8)&0xff][sc->unicodeenc&0xff].name);
+    if ( sc->unicodeenc != -1) {
+	uniname = uninm_name(names_db, (unsigned int) sc->unicodeenc);
+	if (uniname != NULL) {
+	    strcat(buf, " ");
+	    strcpy(buf+strlen(buf), uniname);
+	}
     }
 return( title );
 }
