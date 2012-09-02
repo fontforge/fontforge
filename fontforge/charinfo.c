@@ -1682,6 +1682,8 @@ static int neither_LIGATURE_nor_VULGAR_FRACTION(unsigned int uni)
 	    strstr(uname,"VULGAR FRACTION")==NULL);
 }
 
+/* Generate default settings for the entries in ligature lookup
+ * subtables. */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL;
