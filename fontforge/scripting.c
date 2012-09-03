@@ -1538,11 +1538,7 @@ static void bLoadPluginDir(Context *c) {
 	_dir = script2utf8_copy(c->a.vals[1].u.sval);
 	dir = utf82def_copy(_dir); free(_dir);
     }
-#if !defined(NODYNAMIC)
     LoadPluginDir(dir);
-#else
-    ScriptError(c,"This version of fontforge does not support plugins");
-#endif
     free(dir);
 }
 
