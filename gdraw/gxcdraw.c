@@ -109,257 +109,10 @@ return( 4*width );
 /* ***************************** Cairo Library ****************************** */
 /* ************************************************************************** */
 
-# if !defined(_STATIC_LIBCAIRO) && !defined(NODYNAMIC)
-#  include <dynamic.h>
-static DL_CONST void *libcairo=NULL, *libfontconfig;
-static cairo_surface_t *(*_cairo_xlib_surface_create)(Display *,Drawable,Visual*,int,int);
-static cairo_t *(*_cairo_create)(cairo_surface_t *);
-static void (*_cairo_destroy)(cairo_t *);
-static void (*_cairo_surface_destroy)(cairo_surface_t *);
-static void (*_cairo_xlib_surface_set_size)(cairo_surface_t *,int,int);
-static void (*_cairo_set_line_width)(cairo_t *,double);
-/* I don't actually use line join/cap. On a screen with small line_width they don't matter */
-static void (*_cairo_set_line_cap)(cairo_t *,cairo_line_cap_t);
-static void (*_cairo_set_line_join)(cairo_t *,cairo_line_join_t);
-static void (*_cairo_set_source_rgba)(cairo_t *,double,double,double,double);
-static void (*_cairo_set_operator)(cairo_t *,cairo_operator_t);
-static void (*_cairo_set_dash)(cairo_t *,double *, int, double);
-static void (*_cairo_stroke)(cairo_t *);
-static void (*_cairo_fill)(cairo_t *);
-static void (*_cairo_fill_preserve)(cairo_t *);
-static void (*_cairo_clip)(cairo_t *);
-static void (*_cairo_save)(cairo_t *);
-static void (*_cairo_restore)(cairo_t *);
-static void (*_cairo_new_path)(cairo_t *);
-static void (*_cairo_new_sub_path)(cairo_t *);
-static void (*_cairo_close_path)(cairo_t *);
-static void (*_cairo_move_to)(cairo_t *,double,double);
-static void (*_cairo_line_to)(cairo_t *,double,double);
-static void (*_cairo_curve_to)(cairo_t *,double,double,double,double,double,double);
-static void (*_cairo_rectangle)(cairo_t *,double,double,double,double);
-static void (*_cairo_arc)(cairo_t *,double,double,double,double,double);
-static void (*_cairo_scaled_font_extents)(cairo_scaled_font_t *,cairo_font_extents_t *);
-static void (*_cairo_scaled_font_text_extents)(cairo_scaled_font_t *,const char *,cairo_text_extents_t *);
-static void (*_cairo_set_scaled_font)(cairo_t *,const cairo_scaled_font_t *);
-static void (*_cairo_show_text)(cairo_t *,const char *);
-static cairo_scaled_font_t *(*_cairo_scaled_font_create)(cairo_font_face_t *, const cairo_matrix_t *, const cairo_matrix_t *, const cairo_font_options_t *);
-static cairo_font_face_t *(*_cairo_ft_font_face_create_for_pattern)(FcPattern *);
-static void (*_cairo_set_source_surface)(cairo_t *,cairo_surface_t *,double,double);
-static void (*_cairo_mask_surface)(cairo_t *,cairo_surface_t *,double,double);
-static void (*_cairo_scale)(cairo_t *,double,double);
-static void (*_cairo_translate)(cairo_t *,double,double);
-static cairo_format_t (*_cairo_image_surface_get_format)(cairo_surface_t *);
-static cairo_surface_t *(*_cairo_image_surface_create_for_data)(unsigned char *,cairo_format_t,int,int,int);
-static int (*_cairo_format_stride_for_width)(cairo_format_t,int);
-static cairo_font_options_t *(*_cairo_font_options_create)(void);
-static void (*_cairo_surface_mark_dirty_rectangle)(cairo_surface_t *,double,double,double,double);
-static void (*_cairo_surface_flush)(cairo_surface_t *);
-static cairo_pattern_t *(*_cairo_pattern_create_for_surface)(cairo_surface_t *);
-static void (*_cairo_pattern_set_extend)(cairo_pattern_t *,cairo_extend_t);
-static void (*_cairo_pattern_destroy)(cairo_pattern_t *);
-static void (*_cairo_set_source)(cairo_t *, cairo_pattern_t *);
-static void (*_cairo_push_group)(cairo_t *);
-static void (*_cairo_pop_group_to_source)(cairo_t *);
-static cairo_surface_t *(*_cairo_get_group_target)(cairo_t *);
-static void (*_cairo_paint)(cairo_t *);
-static void (*_cairo_set_fill_rule)(cairo_t *cr, cairo_fill_rule_t fill_rule);
-
-static FcBool (*_FcCharSetHasChar)(const FcCharSet *,FcChar32);
-static FcPattern *(*_FcPatternCreate)(void);
-static void (*_FcPatternDestroy)(FcPattern *);
-static FcBool (*_FcPatternAddDouble)(FcPattern *,const char *,double);
-static FcBool (*_FcPatternAddInteger)(FcPattern *,const char *,int);
-static FcBool (*_FcPatternAddString)(FcPattern *,const char *,const char *);
-static FcPattern *(*_FcFontRenderPrepare)(FcConfig *, FcPattern *,FcPattern *);
-static FcBool (*_FcConfigSubstitute)(FcConfig *, FcPattern *,FcMatchKind);
-static void (*_FcDefaultSubstitute)(FcPattern *);
-static FcFontSet *(*_FcFontSort)(FcConfig *,FcPattern *,FcBool,FcCharSet **,FcResult *);
-static FcResult (*_FcPatternGetCharSet)(FcPattern *,const char *,int,FcCharSet **);
-
-int _GXCDraw_hasCairo(void) {
-    static int initted = false, hasC=false;
-    FcBool (*_FcInit)(void);
-
-    if ( !usecairo )
-return( false );
-
-    if ( initted )
-return( hasC );
-
-    initted = true;
-    libfontconfig = dlopen("libfontconfig" SO_EXT,RTLD_LAZY);
-#ifdef SO_1_EXT
-    if ( libfontconfig==NULL )
-	libfontconfig = dlopen("libfontconfig" SO_1_EXT,RTLD_LAZY);
-#endif
-    /* The mac doesn't put /usr/X11R6/lib into the default library load path. Very annoying */
-    if ( libfontconfig==NULL )
-	libfontconfig = dlopen("/usr/X11R6/lib/libfontconfig" SO_EXT,RTLD_LAZY);
-#ifdef SO_1_EXT
-    if ( libfontconfig==NULL )
-	libfontconfig = dlopen("/usr/X11R6/lib/libfontconfig" SO_1_EXT,RTLD_LAZY);
-#endif
-    if ( libfontconfig==NULL ) {
-	fprintf(stderr,"libfontconfig: %s\n", dlerror());
-return( 0 );
-    }
-    _FcInit = (FcBool (*)(void)) dlsym(libfontconfig,"FcInit");
-    if ( _FcInit==NULL || !_FcInit() )
-return( 0 );
-    _FcCharSetHasChar = (FcBool (*)(const FcCharSet *,FcChar32))
-	    dlsym(libfontconfig,"FcCharSetHasChar");
-    _FcPatternCreate = (FcPattern *(*)(void))
-	    dlsym(libfontconfig,"FcPatternCreate");
-    _FcPatternDestroy = (void (*)(FcPattern *))
-	    dlsym(libfontconfig,"FcPatternDestroy");
-    _FcPatternAddDouble = (FcBool (*)(FcPattern *,const char *,double))
-	    dlsym(libfontconfig,"FcPatternAddDouble");
-    _FcPatternAddInteger = (FcBool (*)(FcPattern *,const char *,int))
-	    dlsym(libfontconfig,"FcPatternAddInteger");
-    _FcPatternAddString = (FcBool (*)(FcPattern *,const char *,const char *))
-	    dlsym(libfontconfig,"FcPatternAddString");
-    _FcFontRenderPrepare = (FcPattern *(*)(FcConfig *, FcPattern *,FcPattern *))
-	    dlsym(libfontconfig,"FcFontRenderPrepare");
-    _FcConfigSubstitute = (FcBool (*)(FcConfig *, FcPattern *,FcMatchKind))
-	    dlsym(libfontconfig,"FcConfigSubstitute");
-    _FcDefaultSubstitute = (void (*)(FcPattern *))
-	    dlsym(libfontconfig,"FcDefaultSubstitute");
-    _FcFontSort = (FcFontSet *(*)(FcConfig *,FcPattern *,FcBool,FcCharSet **,FcResult *))
-	    dlsym(libfontconfig,"FcFontSort");
-    _FcPatternGetCharSet = (FcResult (*)(FcPattern *,const char *,int,FcCharSet **))
-	    dlsym(libfontconfig,"FcPatternGetCharSet");
-    if ( _FcFontSort==NULL || _FcConfigSubstitute==NULL )
-return( 0 );
-
-
-    libcairo = dlopen("libcairo" SO_EXT,RTLD_LAZY);
-#ifdef SO_2_EXT
-    if ( libcairo==NULL )
-	libcairo = dlopen("libcairo" SO_2_EXT,RTLD_LAZY);
-#endif
-    if ( libcairo==NULL ) {
-	fprintf(stderr,"libcairo: %s\n", dlerror());
-return( 0 );
-    }
-
-    _cairo_xlib_surface_create = (cairo_surface_t *(*)(Display *,Drawable,Visual*,int,int))
-	    dlsym(libcairo,"cairo_xlib_surface_create");
-    _cairo_create = (cairo_t *(*)(cairo_surface_t *))
-	    dlsym(libcairo,"cairo_create");
-    _cairo_destroy = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_destroy");
-    _cairo_surface_destroy = (void (*)(cairo_surface_t *))
-	    dlsym(libcairo,"cairo_surface_destroy");
-    _cairo_xlib_surface_set_size = (void (*)(cairo_surface_t *,int,int))
-	    dlsym(libcairo,"cairo_xlib_surface_set_size");
-    _cairo_set_line_width = (void (*)(cairo_t *, double))
-	    dlsym(libcairo,"cairo_set_line_width");
-    _cairo_set_line_cap = (void (*)(cairo_t *, cairo_line_cap_t))
-	    dlsym(libcairo,"cairo_set_line_cap");
-    _cairo_set_line_join = (void (*)(cairo_t *, cairo_line_join_t))
-	    dlsym(libcairo,"cairo_set_line_join");
-    _cairo_set_operator = (void (*)(cairo_t *, cairo_operator_t))
-	    dlsym(libcairo,"cairo_set_operator");
-    _cairo_set_dash = (void (*)(cairo_t *, double *, int, double))
-	    dlsym(libcairo,"cairo_set_dash");
-    _cairo_set_source_rgba = (void (*)(cairo_t *,double,double,double,double))
-	    dlsym(libcairo,"cairo_set_source_rgba");
-    _cairo_new_path = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_new_path");
-    _cairo_new_sub_path = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_new_sub_path");
-    _cairo_move_to = (void (*)(cairo_t *,double,double))
-	    dlsym(libcairo,"cairo_move_to");
-    _cairo_line_to = (void (*)(cairo_t *,double,double))
-	    dlsym(libcairo,"cairo_line_to");
-    _cairo_curve_to = (void (*)(cairo_t *,double,double,double,double,double,double))
-	    dlsym(libcairo,"cairo_curve_to");
-    _cairo_rectangle = (void (*)(cairo_t *,double,double,double,double))
-	    dlsym(libcairo,"cairo_rectangle");
-    _cairo_arc = (void (*)(cairo_t *,double,double,double,double,double))
-	    dlsym(libcairo,"cairo_arc");
-    _cairo_close_path = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_close_path");
-    _cairo_stroke = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_stroke");
-    _cairo_fill = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_fill");
-    _cairo_fill_preserve = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_fill_preserve");
-    _cairo_clip = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_clip");
-    _cairo_save = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_save");
-    _cairo_restore = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_restore");
-    _cairo_scaled_font_extents = (void (*)(cairo_scaled_font_t *,cairo_font_extents_t *))
-	    dlsym(libcairo,"cairo_scaled_font_extents");
-    _cairo_scaled_font_text_extents = (void (*)(cairo_scaled_font_t *,const char *,cairo_text_extents_t *))
-	    dlsym(libcairo,"cairo_scaled_font_text_extents");
-    _cairo_set_scaled_font = (void (*)(cairo_t *,const cairo_scaled_font_t *))
-	    dlsym(libcairo,"cairo_set_scaled_font");
-    _cairo_show_text = (void (*)(cairo_t *,const char *))
-	    dlsym(libcairo,"cairo_show_text");
-    _cairo_scaled_font_create = (cairo_scaled_font_t *(*)(cairo_font_face_t *, const cairo_matrix_t *, const cairo_matrix_t *, const cairo_font_options_t *))
-	    dlsym(libcairo,"cairo_scaled_font_create");
-    _cairo_ft_font_face_create_for_pattern = (cairo_font_face_t *(*)(FcPattern *))
-	    dlsym(libcairo,"cairo_ft_font_face_create_for_pattern");
-    _cairo_set_source_surface = (void (*)(cairo_t *,cairo_surface_t *,double,double))
-	    dlsym(libcairo,"cairo_set_source_surface");
-    _cairo_mask_surface = (void (*)(cairo_t *,cairo_surface_t *,double,double))
-	    dlsym(libcairo,"cairo_mask_surface");
-    _cairo_scale = (void (*)(cairo_t *,double,double))
-	    dlsym(libcairo,"cairo_scale");
-    _cairo_translate = (void (*)(cairo_t *,double,double))
-	    dlsym(libcairo,"cairo_translate");
-    _cairo_image_surface_get_format = (cairo_format_t (*)(cairo_surface_t *))
-	    dlsym(libcairo,"cairo_image_surface_get_format");
-    _cairo_image_surface_create_for_data = (cairo_surface_t *(*)(unsigned char *,cairo_format_t,int,int,int))
-	    dlsym(libcairo,"cairo_image_surface_create_for_data");
-    _cairo_format_stride_for_width = (int (*)(cairo_format_t,int))
-	    dlsym(libcairo,"cairo_format_stride_for_width");
-    _cairo_font_options_create = (cairo_font_options_t *(*)(void))
-	    dlsym(libcairo,"cairo_font_options_create");
-    _cairo_surface_flush = (void (*)(cairo_surface_t *))
-	    dlsym(libcairo,"cairo_surface_flush");
-    _cairo_surface_mark_dirty_rectangle = (void (*)(cairo_surface_t *,double,double,double,double))
-	    dlsym(libcairo,"cairo_surface_mark_dirty_rectangle");
-    _cairo_pattern_create_for_surface = (cairo_pattern_t *(*)(cairo_surface_t *))
-	    dlsym(libcairo,"cairo_pattern_create_for_surface");
-    _cairo_pattern_destroy = (void (*)(cairo_pattern_t *))
-	    dlsym(libcairo,"cairo_pattern_destroy");
-    _cairo_pattern_set_extend = (void (*)(cairo_pattern_t *,cairo_extend_t))
-	    dlsym(libcairo,"cairo_pattern_set_extend");
-    _cairo_set_source = (void (*)(cairo_t *, cairo_pattern_t *))
-	    dlsym(libcairo,"cairo_set_source");
-    _cairo_push_group = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_push_group");
-    _cairo_pop_group_to_source = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_pop_group_to_source");
-    _cairo_get_group_target = (cairo_surface_t *(*)(cairo_t *))
-	    dlsym(libcairo,"cairo_get_group_target");
-    _cairo_paint = (void (*)(cairo_t *))
-	    dlsym(libcairo,"cairo_paint");
-    _cairo_set_fill_rule = (void (*)(cairo_t *, cairo_fill_rule_t))
-	    dlsym(libcairo,"cairo_set_fill_rule");
-
-/* Didn't show up until 1.6, and I've got 1.2 on my machine */ 
-    if ( _cairo_format_stride_for_width==NULL )
-	_cairo_format_stride_for_width = __cairo_format_stride_for_width;
-
-    if ( _cairo_xlib_surface_create==NULL || _cairo_create==NULL ) {
-	fprintf(stderr,"libcairo: Missing symbols\n" );
-return( 0 );
-    }
-    if ( _cairo_scaled_font_text_extents==NULL ) {
-	fprintf(stderr,"libcairo: FontForge needs at least version 1.2\n" );
-return( 0 );
-    }
-
-    hasC = true;
-return( true );
-}
-# else
+/*
+ * FIXME: Eliminate these redundant macros. They are left over from
+ *        when we sometimes used dlopen(3) to link with Cairo.
+ */
 #  define _cairo_xlib_surface_create cairo_xlib_surface_create
 #  define _cairo_create cairo_create
 #  define _cairo_xlib_surface_set_size cairo_xlib_surface_set_size
@@ -430,12 +183,11 @@ return( true );
 int _GXCDraw_hasCairo(void) {
     int initted = false, hasC;
     if ( !usecairo )
-return( false );
+	return( false );
     if ( !initted )
 	hasC = FcInit();
-return( hasC );
+    return( hasC );
 }
-# endif
 
 /* ************************************************************************** */
 /* ****************************** Cairo Window ****************************** */
@@ -1612,249 +1364,28 @@ void _GXCDraw_DirtyRect(GXWindow gw,double x, double y, double width, double hei
 int _GXCDraw_hasCairo(void) {
 return(false);
 }
-#endif
+
+#endif	/* ! _NO_LIBCAIRO */
 
 /* ************************************************************************** */
 /* ***************************** Pango Library ****************************** */
 /* ************************************************************************** */
 
 #ifndef _NO_LIBPANGO
-# if !defined(_STATIC_LIBPANGO) && !defined(NODYNAMIC)
-#  include <dynamic.h>
-static DL_CONST void *libpango=NULL, *libpangoxft, *libXft;
-static XftDraw *(*_XftDrawCreate)(Display *,Drawable,Visual *,Colormap);
-static void (*_XftDrawDestroy)(XftDraw *);
-static Bool (*_XftColorAllocValue)(Display *,Visual *,Colormap,XRenderColor *,XftColor *);
-static Bool (*_XftDrawSetClipRectangles)(XftDraw *,int,int,_Xconst XRectangle *,int);
 
-
-static PangoFontDescription *(*_pango_font_description_new)(void);
-static void (*_pango_font_description_set_family)(PangoFontDescription *,const char *);
-static void (*_pango_font_description_set_style)(PangoFontDescription *,PangoStyle);
-static void (*_pango_font_description_set_variant)(PangoFontDescription *,PangoVariant);
-static void (*_pango_font_description_set_weight)(PangoFontDescription *,PangoWeight);
-static void (*_pango_font_description_set_stretch)(PangoFontDescription *,PangoStretch);
-static void (*_pango_font_description_set_size)(PangoFontDescription *,gint);
-static void (*_pango_font_description_set_absolute_size)(PangoFontDescription *,double);
-
-static void (*_pango_layout_set_font_description)(PangoLayout *,PangoFontDescription *);
-static void (*_pango_layout_set_text)(PangoLayout *,char *,int);
-static void (*_pango_layout_get_pixel_extents)(PangoLayout *,PangoRectangle *,PangoRectangle *);
-static PangoLayout *(*_pango_layout_new)(PangoContext *);
-static void (*_pango_layout_index_to_pos)(PangoLayout *,int,PangoRectangle *);
-static gboolean (*_pango_layout_xy_to_index)(PangoLayout *,int,int,int *,int *);
-static void (*_pango_layout_set_width)(PangoLayout *layout,int width);   /* -1 => No wrap */
-static int (*_pango_layout_get_line_count)(PangoLayout *layout);
-static PangoLayoutLine *(*_pango_layout_get_line)(PangoLayout *layout, int line);
-
-static PangoLayoutIter *(*_pango_layout_get_iter)(PangoLayout *);
-static void (*_pango_layout_iter_free)(PangoLayoutIter *);
-static gboolean (*_pango_layout_iter_next_run)(PangoLayoutIter *);
-static PangoLayoutRun *(*_pango_layout_iter_get_run)(PangoLayoutIter *);
-static void (*_pango_layout_iter_get_run_extents)(PangoLayoutIter *,PangoRectangle *,PangoRectangle *);
-
-# define GTimer GTimer_GTK
-# include <pango/pangoxft.h>
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
-#  include <pango/pangocairo.h>
-static DL_CONST void *libpangocairo;
-static void (*_pango_cairo_layout_path)(cairo_t *,PangoLayout *);
-static void (*_pango_cairo_show_glyph_string)(cairo_t *,PangoFont *, PangoGlyphString *);
-static PangoContext *(*_pango_cairo_font_map_create_context)(PangoCairoFontMap *);
-static PangoFontMap *(*_pango_cairo_font_map_get_default)(void);
-static void (*_pango_cairo_context_set_resolution)(PangoContext *,double);
-# endif
-# undef GTimer
-
-static PangoFont *(*_pango_font_map_load_font)(PangoFontMap *, PangoContext *, const PangoFontDescription *);
-static PangoFontMetrics *(*_pango_font_get_metrics)(PangoFont *, PangoLanguage *);
-static void (*_pango_font_metrics_unref)(PangoFontMetrics *);
-static int (*_pango_font_metrics_get_ascent)(PangoFontMetrics *);
-static int (*_pango_font_metrics_get_descent)(PangoFontMetrics *);
-
-static void (*_pango_xft_render_layout)(XftDraw *,XftColor *,PangoLayout *,int,int);
-static PangoFontMap *(*_pango_xft_get_font_map)(Display *, int);
-static PangoContext *(*_pango_xft_get_context)(Display *, int);
-static void (*_pango_xft_render)(XftDraw *, XftColor *, PangoFont *,
-				 PangoGlyphString *, gint, gint);
-static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
-	PangoLayout *layout,int x,int y);
-
-static PangoFontDescription *(*_pango_font_describe)(PangoFont *);
-static char *(*_pango_font_description_to_string)(PangoFontDescription *);
-
-static int pango_initted=false, hasP=false;
-
-int _GXPDraw_hasPango(void) {
-
-    if ( !usepango )
-return( false );
-
-    if ( pango_initted )
-return( hasP );
-
-    pango_initted = true;
-    libpango = dlopen("libpango-1.0" SO_EXT,RTLD_LAZY);
-#ifdef SO_0_EXT
-    if ( libpango==NULL )
-	libpango = dlopen("libpango-1.0" SO_0_EXT,RTLD_LAZY);
-#endif
-    if ( libpango==NULL ) {
-	fprintf(stderr,"libpango: %s\n", dlerror());
-return( 0 );
-    }
-    _pango_font_description_new = (PangoFontDescription *(*)(void))
-	    dlsym(libpango,"pango_font_description_new");
-    _pango_font_description_set_family = (void (*)(PangoFontDescription *,const char *))
-	    dlsym(libpango,"pango_font_description_set_family");
-    _pango_font_description_set_style = (void (*)(PangoFontDescription *,PangoStyle))
-	    dlsym(libpango,"pango_font_description_set_style");
-    _pango_font_description_set_variant = (void (*)(PangoFontDescription *,PangoVariant))
-	    dlsym(libpango,"pango_font_description_set_variant");
-    _pango_font_description_set_weight = (void (*)(PangoFontDescription *,PangoWeight))
-	    dlsym(libpango,"pango_font_description_set_weight");
-    _pango_font_description_set_stretch = (void (*)(PangoFontDescription *,PangoStretch))
-	    dlsym(libpango,"pango_font_description_set_stretch");
-    _pango_font_description_set_size = (void (*)(PangoFontDescription *,gint))
-	    dlsym(libpango,"pango_font_description_set_size");
-    _pango_font_description_set_absolute_size = (void (*)(PangoFontDescription *,double))
-	    dlsym(libpango,"pango_font_description_set_absolute_size");
-
-    _pango_layout_set_font_description = (void (*)(PangoLayout *,PangoFontDescription *))
-	    dlsym(libpango,"pango_layout_set_font_description");
-    _pango_layout_set_text = (void (*)(PangoLayout *,char *,int))
-	    dlsym(libpango,"pango_layout_set_text");
-    _pango_layout_get_pixel_extents = (void (*)(PangoLayout *,PangoRectangle *,PangoRectangle *))
-	    dlsym(libpango,"pango_layout_get_pixel_extents");
-    _pango_layout_new = (PangoLayout *(*)(PangoContext *))
-	    dlsym(libpango,"pango_layout_new");
-    _pango_layout_index_to_pos = (void (*)(PangoLayout *, int, PangoRectangle *))
-	    dlsym(libpango,"pango_layout_index_to_pos");
-    _pango_layout_xy_to_index = (gboolean (*)(PangoLayout *,int,int,int *,int *))
-	    dlsym(libpango,"pango_layout_xy_to_index");
-
-    _pango_font_map_load_font = (PangoFont *(*)(PangoFontMap *, PangoContext *, const PangoFontDescription *))
-	    dlsym(libpango,"pango_font_map_load_font");
-    _pango_font_get_metrics = (PangoFontMetrics *(*)(PangoFont *, PangoLanguage *))
-	    dlsym(libpango,"pango_font_get_metrics");
-    _pango_font_metrics_unref = (void (*)(PangoFontMetrics *))
-	    dlsym(libpango,"pango_font_metrics_unref");
-    _pango_font_metrics_get_ascent = (int (*)(PangoFontMetrics *))
-	    dlsym(libpango,"pango_font_metrics_get_ascent");
-    _pango_font_metrics_get_descent = (int (*)(PangoFontMetrics *))
-	    dlsym(libpango,"pango_font_metrics_get_descent");
-
-    /* Only used if we don't have pango_xft_render_layout */
-    _pango_layout_get_iter = (PangoLayoutIter *(*)(PangoLayout *))
-	    dlsym(libpango,"pango_layout_get_iter");
-    _pango_layout_iter_free = (void (*)(PangoLayoutIter *))
-	    dlsym(libpango,"pango_layout_iter_free");
-    _pango_layout_iter_next_run = (gboolean (*)(PangoLayoutIter *))
-	    dlsym(libpango,"pango_layout_iter_next_run");
-    _pango_layout_iter_get_run = (PangoLayoutRun *(*)(PangoLayoutIter *))
-	    dlsym(libpango,"pango_layout_iter_get_run_readonly");
-    if ( _pango_layout_iter_get_run==NULL )
-	_pango_layout_iter_get_run = (PangoLayoutRun *(*)(PangoLayoutIter *))
-		dlsym(libpango,"pango_layout_iter_get_run");	/* Only used if we dont have pango_layout_iter_get_run_readonly */
-    _pango_layout_iter_get_run_extents = (void (*)(PangoLayoutIter *,PangoRectangle *,PangoRectangle *))
-	    dlsym(libpango,"pango_layout_iter_get_run_extents");
-    _pango_layout_set_width = (void (*)(PangoLayout *,int ))
-	    dlsym(libpango,"pango_layout_set_width");
-    _pango_layout_get_line_count = (int (*)(PangoLayout *))
-	    dlsym(libpango,"pango_layout_get_line_count");
-    _pango_layout_get_line = (PangoLayoutLine *(*)(PangoLayout *, int))
-	    dlsym(libpango,"pango_layout_get_line_readonly");
-    if ( _pango_layout_get_line==NULL )
-	_pango_layout_get_line = (PangoLayoutLine *(*)(PangoLayout *, int))
-		dlsym(libpango,"pango_layout_get_line");	/* Only used if we dont have pango_layout_iter_get_run_readonly */
-
-    libpangoxft = dlopen("libpangoxft-1.0" SO_EXT,RTLD_LAZY);
-#ifdef SO_0_EXT
-    if ( libpangoxft==NULL )
-	libpangoxft = dlopen("libpangoxft-1.0" SO_0_EXT,RTLD_LAZY);
-#endif
-    if ( libpangoxft==NULL ) {
-	fprintf(stderr,"libpangoxft: %s\n", dlerror());
-return( 0 );
-    }
-    _pango_xft_render_layout = (void (*)(XftDraw *,XftColor *,PangoLayout *,int,int))
-	    dlsym(libpangoxft,"pango_xft_render_layout");
-    _pango_xft_get_font_map = (PangoFontMap *(*)(Display *, int))
-	    dlsym(libpangoxft,"pango_xft_get_font_map");
-    _pango_xft_get_context = (PangoContext *(*)(Display *, int))
-	    dlsym(libpangoxft,"pango_xft_get_context");
-    _pango_xft_render = (void (*)(XftDraw *,XftColor *,PangoFont *, PangoGlyphString *, gint, gint))
-	    dlsym(libpangoxft,"pango_xft_render");
-
-    if ( _pango_font_description_new==NULL || _pango_xft_render==NULL ) {
-	fprintf(stderr,"libpango: Missing symbols\n" );
-return( 0 );
-    }
-
-    libXft = dlopen("libXft" SO_EXT,RTLD_LAZY);
-#ifdef SO_2_EXT
-    if ( libXft==NULL )
-	libXft = dlopen("libXft" SO_2_EXT,RTLD_LAZY);
-#endif
-    /* The mac doesn't put /usr/X11R6/lib into the default library load path. Very annoying */
-    if ( libXft==NULL )
-	libXft = dlopen("/usr/X11R6/lib/libXft" SO_EXT,RTLD_LAZY);
-#ifdef SO_2_EXT
-    if ( libXft==NULL )
-	libXft = dlopen("/usr/X11R6/lib/libXft" SO_2_EXT,RTLD_LAZY);
-#endif
-    if ( libXft==NULL ) {
-	fprintf(stderr,"libXft: %s\n", dlerror());
-    } else {
-	_XftDrawCreate = (XftDraw *(*)(Display *,Drawable,Visual *,Colormap))
-		dlsym(libXft,"XftDrawCreate");
-	_XftDrawDestroy = (void (*)(XftDraw *))
-		dlsym(libXft,"XftDrawDestroy");
-	_XftColorAllocValue = (Bool (*)(Display *,Visual *,Colormap,XRenderColor *,XftColor *))
-		dlsym(libXft,"XftColorAllocValue");
-	_XftDrawSetClipRectangles = (Bool (*)(XftDraw *,int,int,_Xconst XRectangle *,int))
-		dlsym(libXft,"XftDrawSetClipRectangles");
-	if ( _XftDrawCreate!=NULL && _XftColorAllocValue!=NULL )
-	    hasP |= 1;
-    }
-
-# if !defined(_NO_LIBCAIRO) && PANGO_VERSION_MINOR>=10
-    libpangocairo = dlopen("libpangocairo-1.0" SO_EXT,RTLD_LAZY);
-#ifdef SO_0_EXT
-    if ( libpangocairo==NULL )
-	libpangocairo = dlopen("libpangocairo-1.0" SO_0_EXT,RTLD_LAZY);
-#endif
-    if ( libpangocairo==NULL )
-	fprintf(stderr,"libpangocairo: %s\n", dlerror());
-    else {
-	_pango_cairo_layout_path = (void (*)(cairo_t *,PangoLayout *))
-		dlsym(libpangocairo,"pango_cairo_layout_path");
-	_pango_cairo_show_glyph_string = (void (*)(cairo_t *,PangoFont *, PangoGlyphString *))
-		dlsym(libpangocairo,"pango_cairo_show_glyph_string");
-	_pango_cairo_font_map_create_context = (PangoContext *(*)(PangoCairoFontMap *))
-		dlsym(libpangocairo,"pango_cairo_font_map_create_context");
-	_pango_cairo_font_map_get_default = (PangoFontMap *(*)(void))
-		dlsym(libpangocairo,"pango_cairo_font_map_get_default");
-	_pango_cairo_context_set_resolution = (void (*)(PangoContext *,double))
-		dlsym(libpangocairo,"pango_cairo_context_set_resolution");
-	if ( _pango_cairo_show_glyph_string!=NULL && _pango_cairo_font_map_create_context!=NULL &&
-		_pango_cairo_font_map_get_default!=NULL && _GXCDraw_hasCairo())
-	    hasP |= 2;
-    }
-#endif
-
-	_pango_font_describe = (PangoFontDescription * (*)(PangoFont *))
-		dlsym(libpango,"pango_font_describe");
-	_pango_font_description_to_string = (char * (*)(PangoFontDescription *))
-		dlsym(libpango,"pango_font_description_to_string");
-return( hasP );
-}
-# else
+/*
+ * FIXME: Eliminate these redundant macros. They are left over from
+ *        when we sometimes used dlopen(3) to link with Xft.
+ */
 #  define _XftDrawCreate  XftDrawCreate
 #  define _XftDrawDestroy XftDrawDestroy
 #  define _XftColorAllocValue XftColorAllocValue
 #  define _XftDrawSetClipRectangles XftDrawSetClipRectangles
 
+/*
+ * FIXME: Eliminate these redundant macros. They are left over from
+ *        when we sometimes used dlopen(3) to link with Pango
+ */
 #  define _pango_font_description_new pango_font_description_new
 #  define _pango_font_description_set_family pango_font_description_set_family
 #  define _pango_font_description_set_style pango_font_description_set_style
@@ -1919,7 +1450,6 @@ return( 3 );
 return( 1 );
 # endif
 }
-# endif
 
 /* ************************************************************************** */
 /* ****************************** Pango Render ****************************** */
@@ -2348,4 +1878,4 @@ return( -1 );
 
 return( line->start_index );
 }
-#endif	/* _NO_LIBPANGO */
+#endif	/* ! _NO_LIBPANGO */
