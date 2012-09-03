@@ -1356,10 +1356,13 @@ static char *SCListToName(SplineChar **sclist) {
 return( names );
 }
 
+struct otlmap { OTLookup *from, *to; };
+struct submap { struct lookup_subtable *from, *to; };
+
 struct lookupmap {
     int lc, sc;
-    struct otlmap { OTLookup *from, *to; } *lmap;
-    struct submap { struct lookup_subtable *from, *to; } *smap;
+    struct otlmap *lmap;
+    struct submap *smap;
     SplineFont *sf;
 };
 

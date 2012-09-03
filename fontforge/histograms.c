@@ -35,13 +35,15 @@
 /* This operations are designed to work on a single font. NOT a CID collection*/
 /*  A CID collection must be treated one sub-font at a time */
 
+struct hentry {
+    int cnt, sum;
+    int char_cnt, max;
+    SplineChar **chars;
+};
+
 typedef struct histdata {
     int low, high;
-    struct hentry {
-	int cnt, sum;
-	int char_cnt, max;
-	SplineChar **chars;
-    } *hist;			/* array of high-low+1 elements */
+    struct hentry *hist;	/* array of high-low+1 elements */
     int tot, max;
 } HistData;
 

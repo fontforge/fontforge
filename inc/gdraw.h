@@ -69,13 +69,15 @@ typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
 typedef struct ginput_context GIC;
 
+enum draw_func { df_copy, df_xor };
+
 typedef struct ggc {
     struct gwindow *w;
     int32 xor_base;
     Color fg;
     Color bg;
     GRect clip;
-    enum draw_func { df_copy, df_xor } func;
+    enum draw_func func;
     unsigned int copy_through_sub_windows: 1;
     unsigned int bitmap_col: 1;			/* window is mapped for bitmap */
     int16 skip_len, dash_len;
@@ -291,12 +293,14 @@ enum printer_attr_mask { pam_pagesize=1, pam_margins=2, pam_scale=4,
 			 pam_lpr=0x800, pam_queue=0x1000, pam_eps=0x2000, pam_landscape=0x4000,
 			 pam_title=0x8000 };
 
+enum printer_units { pu_inches, pu_points, pu_mm };
+
 typedef struct gprinter_attrs {
     enum printer_attr_mask mask;
     float width, height;		/* paper size */
     float lmargin, rmargin, tmargin, bmargin;
     float scale;			/* 1.0 implies no scaling */
-    enum printer_units { pu_inches, pu_points, pu_mm } units;
+    enum printer_units units;
     int32 res;				/* printer resolution */
     int16 num_copies;
     int16 thumbnails;			/* linear count of number of thumbnail*/

@@ -62,6 +62,8 @@ struct node {
     int lpos;
 };
 
+enum dlg_type { dt_show_att, dt_font_comp };
+
 struct att_dlg {
     unsigned int done: 1;
     struct node *tables;
@@ -74,7 +76,7 @@ struct att_dlg {
     int fh, as;
     GFont *font, *monofont;
     struct node *current;
-    enum dlg_type { dt_show_att, dt_font_comp } dlg_type;
+    enum dlg_type dlg_type;
     FontView *fv1, *fv2;
     struct node *popup_node;
 };

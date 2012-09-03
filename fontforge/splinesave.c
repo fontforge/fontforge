@@ -87,37 +87,43 @@ int autohint_before_generate = 1;
 /* Then, on top of that I tried generating some full glyph subroutines, and   */
 /*  to my surprise, it just made things worse.                                */
 
+struct potentialsubrs {
+    uint8 *data;		/* the charstring of the subr */
+    int len;			/* the length of the charstring */
+    int idx;			/* initially index into psubrs array */
+    				/*  then index into subrs array or -1 if none */
+    int cnt;			/* the usage count */
+    int fd;			/* Which sub font is it in */
+				/* -1 => used in more than one */
+    int next;
+    int full_glyph_index;	/* Into the glyphbits array */
+				/* for full references */
+    BasePoint *startstop;	/* Again for full references */
+};
+
+struct bits {
+    uint8 *data;
+    int dlen;
+    int psub_index;
+};
+
+struct glyphbits {
+    SplineChar *sc;
+    int fd;			/* Which subfont is it in */
+    int bcnt;
+    struct bits *bits;
+    uint8 wasseac;
+};
+
 #define HSH_SIZE	511
 /* In type2 charstrings we divide every character into bits where a bit is */
 /* bounded by a hintmask/moveto. Each of these is a potential subroutine and */
 /* is stored here */
 typedef struct glyphinfo {
-    struct potentialsubrs {
-	uint8 *data;		/* the charstring of the subr */
-	int len;		/* the length of the charstring */
-	int idx;		/* initially index into psubrs array */
-				/*  then index into subrs array or -1 if none */
-	int cnt;		/* the usage count */
-	int fd;			/* Which sub font is it in */
-				/* -1 => used in more than one */
-	int next;
-	int full_glyph_index;	/* Into the glyphbits array */
-				/* for full references */
-	BasePoint *startstop;	/* Again for full references */
-    } *psubrs;
+    struct potentialsubrs *psubrs;
     int pcnt, pmax;
     int hashed[HSH_SIZE];
-    struct glyphbits {
-	SplineChar *sc;
-	int fd;			/* Which subfont is it in */
-	int bcnt;
-	struct bits {
-	    uint8 *data;
-	    int dlen;
-	    int psub_index;
-	} *bits;
-	uint8 wasseac;
-    } *gb, *active;
+    struct glyphbits *gb, *active;
     SplineFont *sf;
     int layer;
     int glyphcnt;

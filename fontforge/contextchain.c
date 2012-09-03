@@ -35,6 +35,9 @@
 /* ************************************************************************** */
 /* ************************ Context/Chaining Dialog ************************* */
 /* ************************************************************************** */
+enum activewindow { aw_formats, aw_coverage, aw_grules, aw_glyphs,
+		    aw_classrules, aw_classnumber,
+		    aw_coverage_simple, aw_glyphs_simple, aw_classes_simple };
 struct contextchaindlg {
     struct gfi_data *gfi;
     SplineFont *sf;
@@ -44,10 +47,7 @@ struct contextchaindlg {
     GWindow gw;
     GWindow formats, coverage, grules, glyphs, classrules, classnumber;
     GWindow coverage_simple, glyphs_simple, classes_simple;
-    enum activewindow { aw_formats, aw_coverage, aw_grules, aw_glyphs,
-	    aw_classrules, aw_classnumber,
-	    aw_coverage_simple, aw_glyphs_simple, aw_classes_simple
-	    } aw;
+    enum activewindow aw;
 /* Wizard panes:
   formats         -- gives user a choice between by glyph/class/coverage table
 Simple version:

@@ -35,6 +35,23 @@ int aa_pixelsize = 150;
 
 /* The dialog should contain a lig index !!!! */
 
+struct apmatch {
+    SplineChar *sc;
+    AnchorPoint *ap;
+    BDFChar *bdfc;
+    int off;		/* a mark-to-mark display might have the same */
+    int size;		/* odd positioning problems as above */
+    int xstart;		/* This is scaled by factor, others are not */
+};
+
+struct state {
+    SplineChar *sc;
+    int changed;
+    AnchorPoint *ap_pt;
+    AnchorPoint ap_vals;
+    struct state *next;
+};
+
 typedef struct anchord {
     GWindow gw;
     int ctl_len;
@@ -71,27 +88,14 @@ typedef struct anchord {
 	/*	(length is bdfc->width + apmatch->width			  */
 	/*	left to right/right to left is important here!		  */
 	/*   we might be cursive exit, we see all the entries that attach */
-    struct apmatch {
-	SplineChar *sc;
-	AnchorPoint *ap;
-	BDFChar *bdfc;
-	int off;		/* a mark-to-mark display might have the same */
-	int size;		/* odd positioning problems as above */
-	int xstart;		/* This is scaled by factor, others are not */
-    } *apmatch;
+    struct apmatch *apmatch;
     void *freetypecontext;
     int combo, on_ap;
     BasePoint orig_pos;
     int done;
     /* If they change more than one anchor, retain the original values so that */
     /*  we can revert to them */
-    struct state {
-	SplineChar *sc;
-	int changed;
-	AnchorPoint *ap_pt;
-	AnchorPoint ap_vals;
-	struct state *next;
-    } *orig_vals;
+    struct state *orig_vals;
     int layer;
 } AnchorDlg;
 

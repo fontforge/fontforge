@@ -35,6 +35,16 @@
 /* ***************************** Problems Dialog **************************** */
 /* ************************************************************************** */
 
+struct mgrpl {
+    char *search;
+    char *rpl;		/* a rpl of "" means delete (NULL means not found) */
+};
+
+struct mlrpl {
+    uint32 search;
+    uint32 rpl;
+};
+
 struct problems {
     FontView *fv;
     CharView *cv;
@@ -108,14 +118,8 @@ struct problems {
     struct lookup_subtable *badsubs_lsubtable;
     AnchorClass *missinganchor_class;
     int rpl_cnt, rpl_max;
-    struct mgrpl {
-	char *search;
-	char *rpl;		/* a rpl of "" means delete (NULL means not found) */
-    } *mg;
-    struct mlrpl {
-	uint32 search;
-	uint32 rpl;
-    } *mlt;
+    struct mgrpl *mg;
+    struct mlrpl *mlt;
     char *glyphname;
     int glyphenc;
     EncMap *map;

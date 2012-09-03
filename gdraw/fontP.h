@@ -187,6 +187,11 @@ struct family_info {
 			     /* encoding, see if we can use a screen font */
 };
 
+struct charset_cairofont {	/* One of these for every font in the set (nfont of them) */
+    cairo_scaled_font_t *cf;
+    FcCharSet *cs;
+};
+
 struct font_instance {
     FontRequest rq;		/* identification of this instance */
     struct family_info *fam;
@@ -204,10 +209,7 @@ struct font_instance {
     GDisplay *mapped_to;
 #ifndef _NO_LIBCAIRO
     FcFontSet *ordered;
-    struct charset_cairofont {		/* One of these for every font in the set (nfont of them) */
-	cairo_scaled_font_t *cf;
-	FcCharSet *cs;
-    } *cscf;
+    struct charset_cairofont *cscf;	/* One of these for every font in the set (nfont of them) */
     FcPattern *pat;
     int16 replacement_index;
     uint16 replacement_char;

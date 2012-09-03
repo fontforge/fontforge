@@ -29,6 +29,11 @@
 
 # include "fontforge.h"
 
+struct segment { 
+    double start, end, sbase, ebase; 
+    int curved, scurved, ecurved; 
+};
+
 typedef struct glyphdata {
     SplineFont *sf;
     BlueData bd;
@@ -62,10 +67,7 @@ typedef struct glyphdata {
     struct st *stspace;
     DBounds size;
     struct pointdata **pspace;
-    struct segment { 
-        double start, end, sbase, ebase; 
-        int curved, scurved, ecurved; 
-    } *lspace, *rspace, *bothspace, *activespace;
+    struct segment *lspace, *rspace, *bothspace, *activespace;
 
     int only_hv;
 } GlyphData;
@@ -118,6 +120,33 @@ typedef struct linedata {
     struct pointdata **points;
 } LineData;
 
+struct stem_chunk {
+    struct stemdata *parent;
+    struct pointdata *l;
+    struct pointdata *r;
+    uint8 lpotential, rpotential;
+    uint8 lnext, rnext;	/* are we using the next/prev side of the left/right points */
+    uint8 ltick, rtick;
+    uint8 stub;
+    uint8 stemcheat;	/* It's not a real stem, but it's something we'd like PostScript to hint for us */
+    uint8 is_ball;          /* Specifies if this chunk marks the opposite sides of a ball terminal (useful for TTF instructions) */
+    struct stemdata *ball_m;
+    int l_e_idx, r_e_idx;   /* Which of the opposed edges assigned to the left and right points corresponds to this chunk */
+};
+
+struct dependent_stem {
+    struct stemdata *stem;
+    uint8 lbase;
+    char dep_type;          /* can be 'a' (align), 'i' (interpolate), 'm' (move) or 's' (serif) */
+};
+
+struct dependent_serif {
+    struct stemdata *stem;
+    double width;           /* The distance from an edge of the main stem to the opposite edge of the serif stem */
+    uint8 lbase;
+    uint8 is_ball;
+};
+
 typedef struct stemdata {
     BasePoint unit;		/* Unit vector pointing in direction of stem */
     BasePoint l_to_r;		/* Unit vector pointing from left to right (across stem) */
@@ -130,19 +159,7 @@ typedef struct stemdata {
     double lmin, lmax, rmin, rmax;
     double width;
     int chunk_cnt;		/* number of separate point-pairs on this stem */
-    struct stem_chunk {
-	struct stemdata *parent;
-	struct pointdata *l;
-	struct pointdata *r;
-	uint8 lpotential, rpotential;
-	uint8 lnext, rnext;	/* are we using the next/prev side of the left/right points */
-	uint8 ltick, rtick;
-	uint8 stub;
-	uint8 stemcheat;	/* It's not a real stem, but it's something we'd like PostScript to hint for us */
-        uint8 is_ball;          /* Specifies if this chunk marks the opposite sides of a ball terminal (useful for TTF instructions) */
-        struct stemdata *ball_m;
-        int l_e_idx, r_e_idx;   /* Which of the opposed edges assigned to the left and right points corresponds to this chunk */
-    } *chunks;
+    struct stem_chunk *chunks;
     int activecnt;
     struct segment *active;
     uint8 toobig;		/* Stem is fatter than tall, unlikely to be a real stem */
@@ -161,17 +178,8 @@ typedef struct stemdata {
     int confl_cnt;
     int dep_cnt;
     int serif_cnt;
-    struct dependent_stem {
-        struct stemdata *stem;
-        uint8 lbase;
-        char dep_type;          /* can be 'a' (align), 'i' (interpolate), 'm' (move) or 's' (serif) */
-    } *dependent;               /* Lists other stems dependent from the given stem */
-    struct dependent_serif {
-        struct stemdata *stem;
-        double width;           /* The distance from an edge of the main stem to the opposite edge of the serif stem */
-        uint8 lbase;
-        uint8 is_ball;
-    } *serifs;                  /* Lists serifs and other elements protruding from the base stem */
+    struct dependent_stem *dependent;	/* Lists other stems dependent from the given stem */
+    struct dependent_serif *serifs;	/* Lists serifs and other elements protruding from the base stem */
 } StemData;
 
 typedef struct vchunk {

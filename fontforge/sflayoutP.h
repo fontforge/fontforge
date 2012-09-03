@@ -46,40 +46,48 @@ typedef struct fontdata {
     struct sfmaps *sfmap;
 } FontData;
 
+struct lineheights {
+    int32 y;
+    int16 as, fh;
+    uint16 p, linelen;
+    uint32 start_pos;
+};
+
+struct fontlist {
+    int start, end;		/* starting and ending characters [start,end) */
+				/*  always break at newline & will omit it between fontlists */
+    uint32 *feats;		/* Ends with a 0 entry */
+    uint32 script, lang;
+    FontData *fd;
+    SplineChar **sctext;
+    int scmax;
+    struct opentype_str *ottext;
+    struct fontlist *next;
+};
+
+struct sfmaps {
+    SplineFont *sf;
+    EncMap *map;
+    int16 sfbit_id;
+    int16 notdef_gid;
+    SplineChar *fake_notdef;
+    struct sfmaps *next;
+};
+
+struct paras {
+    struct opentype_str **para;	/* An array of pointers to ottext entries */
+    int start_pos;
+};
+
 typedef struct layoutinfo {
     unichar_t *text, *oldtext;	/* Input glyphs (in unicode) */
     int16 lcnt, lmax;
     struct opentype_str ***lines;	/* pointers into the paras array */
     int16 xmax;
-    struct lineheights {
-	int32 y;
-	int16 as, fh;
-	uint16 p, linelen;
-	uint32 start_pos;
-    } *lineheights;
-    struct fontlist {
-	int start, end;		/* starting and ending characters [start,end) */
-				/*  always break at newline & will omit it between fontlists */
-	uint32 *feats;		/* Ends with a 0 entry */
-	uint32 script, lang;
-	FontData *fd;
-	SplineChar **sctext;
-	int scmax;
-	struct opentype_str *ottext;
-	struct fontlist *next;
-    } *fontlist, *oldfontlist;
-    struct sfmaps {
-	SplineFont *sf;
-	EncMap *map;
-	int16 sfbit_id;
-	int16 notdef_gid;
-	SplineChar *fake_notdef;
-	struct sfmaps *next;
-    } *sfmaps;
-    struct paras {
-	struct opentype_str **para;	/* An array of pointers to ottext entries */
-	int start_pos;
-    } *paras;
+    struct lineheights *lineheights;
+    struct fontlist *fontlist, *oldfontlist;
+    struct sfmaps *sfmaps;
+    struct paras *paras;
     int pcnt, pmax;
     int ps, pe, ls, le;
     struct fontlist *oldstart, *oldend;
