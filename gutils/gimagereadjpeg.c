@@ -119,7 +119,7 @@ return( NULL );
     base = ret->u.image;
 
     (void) jpeg_start_decompress(&cinfo);
-    rows[0] = galloc(3*cinfo.image_width);
+    rows[0] = (JSAMPLE *) galloc(3*cinfo.image_width);
     js.cinfo = &cinfo; js.base = base; js.buffer = rows[0];
     while (cinfo.output_scanline < cinfo.output_height) {
 	ypos = cinfo.output_scanline;

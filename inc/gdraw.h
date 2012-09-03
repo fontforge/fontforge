@@ -123,18 +123,39 @@ enum keystate_mask { ksm_shift=1, ksm_capslock=2, ksm_control=4, ksm_meta=8,
 	ksm_buttons=(ksm_button1|ksm_button2|ksm_button3|ksm_button4|ksm_button5)
 	};
 enum mnemonic_focus { mf_normal, mf_tab, mf_mnemonic, mf_shortcut };
+
+enum event_type { et_noevent = -1, et_char, et_charup,
+		  et_mousemove, et_mousedown, et_mouseup,
+		  et_crossing,	/* these four are assumed to be consecutive */
+		  et_focus,
+		  et_expose, et_visibility, et_resize, et_timer,
+		  et_close/*request by user*/, et_create,
+		  et_map, et_destroy/*window being freed*/,
+		  et_selclear,
+		  et_drag, et_dragout, et_drop,
+		  et_lastnativeevent=et_drop,
+		  et_controlevent, et_user };
+
+enum visibility_state { vs_unobscured, vs_partially, vs_obscured };
+
+enum et_subtype { et_buttonpress, et_buttonactivate, et_radiochanged,
+		  et_listselected, et_listdoubleclick,
+		  et_scrollbarchange,
+		  et_textchanged, et_textfocuschanged,
+		  et_lastsubtype };
+
+enum sb { et_sb_top, et_sb_uppage, et_sb_up, et_sb_left=et_sb_up,
+	  et_sb_down, et_sb_right=et_sb_down, et_sb_downpage,
+	  et_sb_bottom,
+	  et_sb_thumb, et_sb_thumbrelease };
+
+struct sbevent {
+    enum sb type;
+    int32 pos;
+};
+
 typedef struct gevent {
-    enum event_type { et_noevent = -1, et_char, et_charup,
-	    et_mousemove, et_mousedown, et_mouseup,
-	    et_crossing,	/* these four are assumed to be consecutive */
-	    et_focus,
-	    et_expose, et_visibility, et_resize, et_timer,
-	    et_close/*request by user*/, et_create,
-	    et_map, et_destroy/*window being freed*/,
-	    et_selclear,
-	    et_drag, et_dragout, et_drop,
-	    et_lastnativeevent=et_drop,
-	    et_controlevent, et_user } type;
+    enum event_type type;
 #define _GD_EVT_CHRLEN	10
     GWindow w;
     union {
@@ -160,7 +181,7 @@ typedef struct gevent {
 	    GRect rect;
 	} expose;
 	struct {
-	    enum visibility_state { vs_unobscured, vs_partially, vs_obscured } state;
+	    enum visibility_state state;
 	} visibility;
 	struct {
 	    GRect size;
@@ -193,20 +214,10 @@ typedef struct gevent {
 	    void *userdata;
 	} timer;
 	struct {
-	    enum { et_buttonpress, et_buttonactivate, et_radiochanged,
-		    et_listselected, et_listdoubleclick,
-		    et_scrollbarchange,
-		    et_textchanged, et_textfocuschanged,
-		    et_lastsubtype } subtype;
+	    enum et_subtype subtype;
 	    struct ggadget *g;
 	    union {
-		struct sbevent {
-		    enum sb { et_sb_top, et_sb_uppage, et_sb_up, et_sb_left=et_sb_up,
-			    et_sb_down, et_sb_right=et_sb_down, et_sb_downpage,
-			    et_sb_bottom,
-			    et_sb_thumb, et_sb_thumbrelease } type;
-		    int32 pos;
-		} sb;
+		struct sbevent sb;
 		struct {
 		    int gained_focus;
 		} tf_focus;
@@ -235,16 +246,18 @@ typedef enum cursor_types { ct_default, ct_pointer, ct_backpointer, ct_hand,
 	ct_invisible, 
 	ct_user, ct_user2 /* and so on */ } GCursor;
 
+enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
+			wam_bordcol=0x8, wam_backcol=0x10, wam_cursor=0x20, wam_wtitle=0x40,
+			wam_ititle=0x80, wam_icon=0x100, wam_nodecor=0x200,
+			wam_positioned=0x400, wam_centered=0x800, wam_undercursor=0x1000,
+			wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
+			wam_isdlg=0x10000, wam_notrestricted=0x20000,
+			wam_transient=0x40000,
+			wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
+			wam_nocairo=0x200000, wam_verytransient=0x400000 };
+
 typedef struct gwindow_attrs {
-    enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
-        wam_bordcol=0x8, wam_backcol=0x10, wam_cursor=0x20, wam_wtitle=0x40,
-        wam_ititle=0x80, wam_icon=0x100, wam_nodecor=0x200,
-        wam_positioned=0x400, wam_centered=0x800, wam_undercursor=0x1000,
-        wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
-        wam_isdlg=0x10000, wam_notrestricted=0x20000,
-        wam_transient=0x40000,
-        wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
-        wam_nocairo=0x200000, wam_verytransient=0x400000 } mask;
+    enum window_attr_mask mask;
     uint32 event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
     int16 border_width;
     Color border_color;			/* Color_UNKNOWN if unspecified */
@@ -272,12 +285,14 @@ typedef struct gwindow_attrs {
 #define GWINDOWATTRS_EMPTY { 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 
 
+enum printer_attr_mask { pam_pagesize=1, pam_margins=2, pam_scale=4,
+			 pam_res=8, pam_copies=0x10, pam_thumbnails=0x20, pam_printername=0x40,
+			 pam_filename=0x80, pam_args=0x100, pam_color=0x200, pam_transparent=0x400,
+			 pam_lpr=0x800, pam_queue=0x1000, pam_eps=0x2000, pam_landscape=0x4000,
+			 pam_title=0x8000 };
+
 typedef struct gprinter_attrs {
-    enum printer_attr_mask { pam_pagesize=1, pam_margins=2, pam_scale=4,
-	    pam_res=8, pam_copies=0x10, pam_thumbnails=0x20, pam_printername=0x40,
-	    pam_filename=0x80, pam_args=0x100, pam_color=0x200, pam_transparent=0x400,
-	    pam_lpr=0x800, pam_queue=0x1000, pam_eps=0x2000, pam_landscape=0x4000,
-	    pam_title=0x8000 } mask;
+    enum printer_attr_mask mask;
     float width, height;		/* paper size */
     float lmargin, rmargin, tmargin, bmargin;
     float scale;			/* 1.0 implies no scaling */

@@ -52,7 +52,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si) {
 		m->Colors[1].Red==255 && m->Colors[1].Green==255 && m->Colors[1].Blue==255 )
 	    /* Don't need a clut */;
 	else
-	    ret->u.image->clut = gcalloc(1,sizeof(GClut));
+	    ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
     } else
 	ret = GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height);
     base = ret->u.image;
@@ -106,7 +106,7 @@ return( NULL );
 return( NULL );
     }
 
-    images = galloc(gif->ImageCount*sizeof(GImage *));
+    images = (GImage **) galloc(gif->ImageCount*sizeof(GImage *));
     for ( i=0; i<gif->ImageCount; ++i )
 	images[i] = ProcessSavedImage(gif,&gif->SavedImages[i]);
     if ( gif->ImageCount==1 )
