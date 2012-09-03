@@ -1,6 +1,12 @@
 prefix=@prefix@
 exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
 Name: FontForge
 Description: Outline font editor.
 Version: @VERSION@
+Requires: python
+
+Libs: -L${libdir} -lfontforge
+Cflags: -I${includedir}/fontforge
