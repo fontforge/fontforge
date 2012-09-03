@@ -75,7 +75,7 @@ char *copy(const char *str) {
 
     if ( str==NULL )
 return( NULL );
-    ret = galloc(strlen(str)+1);
+    ret = (char *) galloc(strlen(str)+1);
     strcpy(ret,str);
 return( ret );
 }
@@ -85,7 +85,7 @@ char *copyn(const char *str,long n) {
 
     if ( str==NULL )
 return( NULL );
-    ret = galloc(n+1);
+    ret = (char *) galloc(n+1);
     memcpy(ret,str,n);
     ret[n]='\0';
 return( ret );

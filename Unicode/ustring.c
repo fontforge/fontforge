@@ -284,7 +284,7 @@ unichar_t *u_copyn(const unichar_t *pt, long n) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -306,7 +306,7 @@ return( u_copy( s2 ));
     else if ( s2==NULL )
 return( u_copy( s1 ));
     len1 = u_strlen(s1); len2 = u_strlen(s2);
-    pt = galloc((len1+len2+1)*sizeof(unichar_t));
+    pt = (unichar_t *) galloc((len1+len2+1)*sizeof(unichar_t));
     u_strcpy(pt,s1);
     u_strcpy(pt+len1,s2);
 return( pt );
@@ -322,7 +322,7 @@ return((unichar_t *)0);
     if ( (len+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	len = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((len+1)*sizeof(unichar_t));
+    res = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
     for ( rpt=res; --len>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -340,7 +340,7 @@ return((unichar_t *)0);
     if ( (n+1)*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc((n+1)*sizeof(unichar_t));
+    res = (unichar_t *) galloc((n+1)*sizeof(unichar_t));
     for ( rpt=res; --n>=0 ; *rpt++ = *(unsigned char *) pt++ );
     *rpt = '\0';
 return(res);
@@ -356,7 +356,7 @@ return(NULL);
     if ( (len+1)>=MEMORY_MASK )
 	len = MEMORY_MASK-1;
 #endif
-    res = galloc(len+1);
+    res = (char *) galloc(len+1);
     for ( rpt=res; --len>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -374,7 +374,7 @@ return((char *)0);
     if ( (n+1)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = galloc(n+1);
+    res = (char *) galloc(n+1);
     for ( rpt=res; --n>=0 ; *rpt++ = *pt++ );
     *rpt = '\0';
 return(res);
@@ -591,13 +591,13 @@ char *u322utf8_copy(const uint32 *ubuf) {
 	    len += 3;
 	else
 	    len += 4;
-    buf = galloc(len+1);
+    buf = (char *) galloc(len+1);
 return( u322utf8_strncpy(buf,ubuf,len+1));
 }
 #endif
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
-    unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
+    unichar_t *ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -609,7 +609,7 @@ unichar_t *utf82u_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    ubuf = galloc((len+1)*sizeof(unichar_t));
+    ubuf = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
 return( utf82u_strncpy(ubuf,utf8buf,len+1));
 }
 
@@ -626,7 +626,7 @@ uint32 *utf82u32_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    ubuf = galloc((len+1)*sizeof(uint32));
+    ubuf = (uint32 *) galloc((len+1)*sizeof(uint32));
 return( utf82u32_strncpy(ubuf,utf8buf,len+1));
 }
 #endif
@@ -708,7 +708,7 @@ char *latin1_2_utf8_copy(const char *lbuf) {
 return( NULL );
 
     len = strlen(lbuf);
-    utf8buf = galloc(2*len+1);
+    utf8buf = (char *) galloc(2*len+1);
 return( latin1_2_utf8_strcpy(utf8buf,lbuf));
 }
 
@@ -721,7 +721,7 @@ char *utf8_2_latin1_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    pt = lbuf = galloc(len+1);
+    pt = lbuf = (char *) galloc(len+1);
     for ( upt=utf8buf; (ch=utf8_ildb(&upt))!='\0'; )
 	if ( ch>=0xff )
 	    *pt++ = '?';
@@ -739,7 +739,7 @@ char *u2utf8_copy(const unichar_t *ubuf) {
 return( NULL );
 
     len = u_strlen(ubuf);
-    utf8buf = galloc((len+1)*4);
+    utf8buf = (char *) galloc((len+1)*4);
 return( u2utf8_strcpy(utf8buf,ubuf));
 }
 
@@ -750,7 +750,7 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
     if ( ubuf==NULL )
 return( NULL );
 
-    utf8buf = pt = galloc((len+1)*4);
+    utf8buf = pt = (char *) galloc((len+1)*4);
     for ( i=0; i<len && *ubuf!='\0'; ++i )
 	pt = utf8_idpb(pt, *ubuf++);
     *pt = '\0';
@@ -926,12 +926,12 @@ char *StripToASCII(const char *utf8_str) {
     const unichar_t *alt;
 
     len = strlen(utf8_str);
-    pt = newcr = galloc(len+1);
+    pt = newcr = (char *) galloc(len+1);
     end = pt+len;
     while ( (ch= utf8_ildb(&utf8_str))!='\0' ) {
 	if ( pt>=end ) {
 	    int off = pt-newcr;
-	    newcr = grealloc(newcr,(off+10)+1);
+	    newcr = (char *) grealloc(newcr,(off+10)+1);
 	    pt = newcr+off;
 	    end = pt+10;
 	}
@@ -943,7 +943,7 @@ char *StripToASCII(const char *utf8_str) {
 	    char *str = "(c)";
 	    if ( pt+strlen(str)>=end ) {
 		int off = pt-newcr;
-		newcr = grealloc(newcr,(off+10+strlen(str))+1);
+		newcr = (char *) grealloc(newcr,(off+10+strlen(str))+1);
 		pt = newcr+off;
 		end = pt+10;
 	    }
@@ -954,7 +954,7 @@ char *StripToASCII(const char *utf8_str) {
 	    while ( *alt!='\0' ) {
 		if ( pt>=end ) {
 		    int off = pt-newcr;
-		    newcr = grealloc(newcr,(off+10)+1);
+		    newcr = (char *) grealloc(newcr,(off+10)+1);
 		    pt = newcr+off;
 		    end = pt+10;
 		}

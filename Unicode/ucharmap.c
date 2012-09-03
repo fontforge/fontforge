@@ -35,7 +35,7 @@
 #include <charset.h>
 #include <chardata.h>
 
-int local_encoding = e_iso8859_1;
+enum encoding local_encoding = e_iso8859_1;
 #if HAVE_ICONV_H
 char *iconv_local_encoding_name = NULL;
 #endif
@@ -544,7 +544,7 @@ unichar_t *def2u_copy(const char *from) {
     if ( from==NULL )
 return( NULL );
     len = strlen(from);
-    uto = galloc((len+1)*sizeof(unichar_t));
+    uto = (unichar_t *) galloc((len+1)*sizeof(unichar_t));
 #if HAVE_ICONV_H
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = sizeof(unichar_t)*len;
@@ -578,7 +578,7 @@ return( NULL );
     if ( my_iconv_setup() ) {
 	size_t in_left = sizeof(unichar_t)*len, out_left = 3*len;
 	char *cfrom = (char *) ufrom, *cto;
-	cto = to = galloc(3*len+2);
+	cto = to = (char *) galloc(3*len+2);
 	iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
@@ -593,7 +593,7 @@ return( to );
 	len *= 3;
     if ( local_encoding>=e_first2byte )
 	len *= 2;
-    to = galloc(len+sizeof(unichar_t));
+    to = (char *) galloc(len+sizeof(unichar_t));
     ret = u2encoding_strncpy(to,ufrom,len,local_encoding);
     if ( ret==NULL )
 	free( to );
@@ -628,7 +628,7 @@ return( NULL );
 return( cret );
     }
 #endif
-    uto = galloc(sizeof(unichar_t)*(len+1));
+    uto = (unichar_t *) galloc(sizeof(unichar_t)*(len+1));
     temp = encoding2u_strncpy(uto,from,len,local_encoding);
     if ( temp==NULL ) {
 	free( uto );
@@ -652,7 +652,7 @@ return( NULL );
     if ( my_iconv_setup() ) {
 	size_t in_left = len, out_left = 3*len;
 	char *cfrom = (char *) ufrom, *cto, *to;
-	cto = to = galloc(3*len+2);
+	cto = to = (char *) galloc(3*len+2);
 	iconv(from_utf8, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
