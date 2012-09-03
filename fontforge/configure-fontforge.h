@@ -106,9 +106,6 @@
 /* The following are expected to be set by the configure script, but I suppose*/
 /*  you could set them here too 					      */
 
-/* If your system does not have a working ldopen (to do dynamic binding of    */
-/*  shared libaries) then set NODYNAMIC					      */
-
 /* If you are on a Mac then set __Mac					      */
 /* If you are on a windows box with cygwin set __CygWin			      */
 
@@ -144,9 +141,6 @@
 /* If there is no tiff library define _NO_LIBTIFF			      */
 /* If there is no xml2 library define _NO_LIBXML			      */
 /* If there is no uninameslist library define _NO_LIBUNINAMESLIST	      */
-
-/* If any of the above libraries exists, but only in static form (on a system */
-/*  with a dynamic loader) then define _STATIC_LIBUNGIF, etc.		      */
 
 /* If there is no snprintf define _NO_SNPRINTF				      */
 

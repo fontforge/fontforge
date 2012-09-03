@@ -11,9 +11,9 @@ libgutils_la_SOURCES = divisors.c fsys.c gcol.c gimage.c				\
 	gimagereadpng.c gimagereadras.c gimagereadrgb.c gimagereadtiff.c	\
 	gimagereadxbm.c gimagereadxpm.c gimagewritebmp.c					\
 	gimagewritegimage.c gimagewritejpeg.c gimagewritepng.c				\
-	gimagewritexbm.c gimagewritexpm.c gwwintl.c dynamic.c gio.c			\
-	giofile.c giohosts.c giomime.c giothread.c giotrans.c				\
-	gimagebmpP.h giofuncP.h gioP.h
+	gimagewritexbm.c gimagewritexpm.c gwwintl.c gio.c giofile.c			\
+	giohosts.c giomime.c giothread.c giotrans.c gimagebmpP.h			\
+	giofuncP.h gioP.h
 
 libgutils_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 	$(MY_CFLAGS)

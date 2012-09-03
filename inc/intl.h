@@ -52,8 +52,6 @@
 
 #else /* HAVE_LIBINTL_H */
 
-//#elif defined( NODYNAMIC ) || defined ( _STATIC_LIBINTL )
-
 # include <libintl.h>
 # define _(str)			gettext(str)
 # define P_(str1,str_non1,n)	ngettext(str1,str_non1,n)
