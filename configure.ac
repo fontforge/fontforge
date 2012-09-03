@@ -32,7 +32,6 @@ AC_SUBST([HOST],["$host"])
 AC_SUBST([MACAPP])
 
 FONTFORGE_PLATFORM_SPECIFICS
-AC_DEFINE([NODYNAMIC],[1],[Define if enabling feature 'regular-link' for all packages.])
 
 #--------------------------------------------------------------------------
 #
