@@ -25,6 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _FFFREETYPE_H
+#define _FFFREETYPE_H
+
 #if !defined(_NO_FREETYPE) && !defined(_NO_MMAP)
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -58,39 +61,6 @@ extern FT_Library ff_ft_context;
 # endif
 #endif
 
-# if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
-
-#define _FT_Init_FreeType FT_Init_FreeType
-#define _FT_New_Memory_Face FT_New_Memory_Face
-#define _FT_Set_Pixel_Sizes FT_Set_Pixel_Sizes
-#define _FT_Set_Char_Size FT_Set_Char_Size
-#define _FT_Done_Face FT_Done_Face
-#define _FT_Load_Glyph FT_Load_Glyph
-#define _FT_Render_Glyph FT_Render_Glyph
-#define _FT_Outline_Decompose FT_Outline_Decompose
-#define _FT_Library_Version FT_Library_Version
-#define _FT_Outline_Get_Bitmap FT_Outline_Get_Bitmap
-#define _FT_Done_FreeType FT_Done_FreeType
-
-# if FREETYPE_HAS_DEBUGGER
-#  define _FT_Set_Debug_Hook FT_Set_Debug_Hook
-#  define _TT_RunIns TT_RunIns
-# endif
-
-#else		/* Do runtime linking */
-
-extern FT_Error (*_FT_Init_FreeType)( FT_Library  * );
-extern FT_Error (*_FT_Done_FreeType)( FT_Library  );
-extern FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
-extern FT_Error (*_FT_Set_Char_Size)( FT_Face, int wid/*=0*/, int height/* =ptsize*64*/, int hdpi, int vdpi);
-extern FT_Error (*_FT_Outline_Get_Bitmap)(FT_Library, FT_Outline *,FT_Bitmap *);
-
-# if FREETYPE_HAS_DEBUGGER
-extern void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
-extern FT_Error (*_TT_RunIns)( TT_ExecContext );
-# endif
-#endif
-
 typedef struct freetypecontext {
     SplineFont *sf;
     int layer;
@@ -111,4 +81,7 @@ extern void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
-#endif
+
+#endif /* we do have FreeType */
+
+#endif /* _FFFREETYPE_H */

@@ -29,6 +29,7 @@
 #include <math.h>
 
 #if _NO_FREETYPE || _NO_MMAP
+
 int hasFreeType(void) {
 return( false );
 }
@@ -87,76 +88,10 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 	int ptsize,int dpi,int depth) {
 return( NULL );
 }
-#else
+
+#else /* do use FreeType */
+
 FT_Library ff_ft_context;
-
-/* Ok, this complication is here because:				    */
-/*	1) I want to be able to deal with static libraries on some systems  */
-/*	2) If I've got a dynamic library and I compile up an executable     */
-/*		I want it to run on systems without freetype		    */
-/* So one case boils down to linking against the standard names, while the  */
-/*  other does the link at run time if it's possible */
-
-# if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
-
-static int freetype_init_base() {
-return( true );
-}
-# else
-#  include <dynamic.h>
-#  include <unistd.h>
-#  include <sys/mman.h>
-
-static DL_CONST void *libfreetype;
-FT_Error (*_FT_Init_FreeType)( FT_Library  * );
-FT_Error (*_FT_Done_FreeType)( FT_Library  );
-static FT_Error (*_FT_New_Memory_Face)( FT_Library, const FT_Byte *, int, int, FT_Face * );
-static FT_Error (*_FT_Done_Face)( FT_Face );
-static FT_Error (*_FT_Set_Pixel_Sizes)( FT_Face, int, int);
-FT_Error (*_FT_Set_Char_Size)( FT_Face, int wid/*=0*/, int height/* =ptsize*64*/, int hdpi, int vdpi);
-FT_Error (*_FT_Load_Glyph)( FT_Face, int, int);
-static FT_Error (*_FT_Render_Glyph)( FT_GlyphSlot, int);
-static FT_Error (*_FT_Outline_Decompose)(FT_Outline *, const FT_Outline_Funcs *,void *);
-static FT_Error (*_FT_Library_Version)(FT_Library, FT_Int *, FT_Int *, FT_Int *);
-FT_Error (*_FT_Outline_Get_Bitmap)(FT_Library, FT_Outline *,FT_Bitmap *);
-
-# if FREETYPE_HAS_DEBUGGER
-#  include "ttobjs.h"
-#  include "ttdriver.h"
-#  include "ttinterp.h"
-
-void (*_FT_Set_Debug_Hook)(FT_Library, FT_UInt, FT_DebugHook_Func);
-FT_Error (*_TT_RunIns)( TT_ExecContext );
-# endif
-
-static int freetype_init_base() {
-    libfreetype = dlopen("libfreetype" SO_EXT,RTLD_LAZY);
-# ifdef SO_6_EXT
-    if ( libfreetype==NULL )
-	libfreetype = dlopen("libfreetype" SO_6_EXT,RTLD_LAZY);
-# endif
-    if ( libfreetype==NULL )
-return( false );
-
-    _FT_Init_FreeType = (FT_Error (*)(FT_Library *)) dlsym(libfreetype,"FT_Init_FreeType");
-    _FT_Done_FreeType = (FT_Error (*)(FT_Library  )) dlsym(libfreetype,"FT_Done_FreeType");
-    _FT_New_Memory_Face = (FT_Error (*)(FT_Library, const FT_Byte *, int, int, FT_Face * )) dlsym(libfreetype,"FT_New_Memory_Face");
-    _FT_Set_Pixel_Sizes = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Set_Pixel_Sizes");
-    _FT_Set_Char_Size = (FT_Error (*)(FT_Face, int, int, int, int)) dlsym(libfreetype,"FT_Set_Char_Size");
-    _FT_Done_Face = (FT_Error (*)(FT_Face)) dlsym(libfreetype,"FT_Done_Face");
-    _FT_Load_Glyph = (FT_Error (*)(FT_Face, int, int)) dlsym(libfreetype,"FT_Load_Glyph");
-    _FT_Render_Glyph = (FT_Error (*)(FT_GlyphSlot, int)) dlsym(libfreetype,"FT_Render_Glyph");
-    _FT_Outline_Decompose = (FT_Error (*)(FT_Outline *, const FT_Outline_Funcs *,void *)) dlsym(libfreetype,"FT_Outline_Decompose");
-    _FT_Outline_Get_Bitmap = (FT_Error (*)(FT_Library, FT_Outline *,  FT_Bitmap *)) dlsym(libfreetype,"FT_Outline_Get_Bitmap");
-    _FT_Library_Version = (FT_Error (*)(FT_Library, FT_Int *,  FT_Int *, FT_Int *)) dlsym(libfreetype,"FT_Library_Version");
-#if FREETYPE_HAS_DEBUGGER
-    _FT_Set_Debug_Hook = (void (*)(FT_Library, FT_UInt, FT_DebugHook_Func)) dlsym(libfreetype,"FT_Set_Debug_Hook");
-    _TT_RunIns = (FT_Error (*)(TT_ExecContext)) dlsym(libfreetype,"TT_RunIns");
-    _FT_Done_FreeType = (FT_Error (*)(FT_Library )) dlsym(libfreetype,"FT_Done_FreeType");
-#endif
-return( true );
-}
-# endif
 
 int hasFreeType(void) {
     static int done=false;
@@ -166,9 +101,7 @@ int hasFreeType(void) {
 return(ok);
     done = true;
 
-    if ( !freetype_init_base())
-return( false );
-    if ( _FT_Init_FreeType( &ff_ft_context ))
+    if ( FT_Init_FreeType( &ff_ft_context ))
 return( false );
 
     ok = true;
@@ -177,7 +110,7 @@ return( true );
 
 void doneFreeType(void) {
     if ( ff_ft_context!=NULL )
-	_FT_Done_FreeType(ff_ft_context);
+	FT_Done_FreeType(ff_ft_context);
     ff_ft_context = NULL;
 }
 
@@ -210,49 +143,31 @@ return( false );
     }
 #endif
 
-#if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
-    /* In a static library, we can assume our headers are accurate */
 # ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 return( true );
 # else
 return( false );
 # endif
-#elif FREETYPE_HAS_DEBUGGER
-    /* Have we already checked for these data? */
-    if ( _FT_Set_Debug_Hook!=NULL && _TT_RunIns!=NULL )
-return( true );
-    else
-return( false );
-#else
-    {
-    static int found = -1;
-    if ( found==-1 )
-	found = dlsym(libfreetype,"TT_RunIns")!=NULL;
-return( found );
-    }
-#endif
 }
 
 int hasFreeTypeDebugger(void) {
     if ( !hasFreeTypeByteCode())
 return( false );
 #if FREETYPE_HAS_DEBUGGER
-    if ( _FT_Set_Debug_Hook!=NULL && _TT_RunIns!=NULL )
+    if ( FT_Set_Debug_Hook!=NULL && TT_RunIns!=NULL )
 return( true );
 #endif
 
 return( false );
 }
 
-# if !defined(_STATIC_LIBFREETYPE) && !defined(NODYNAMIC)
+# if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=4)))
 int FreeTypeAtLeast(int major, int minor, int patch) {
     int ma, mi, pa;
 
     if ( !hasFreeType())
 return( false );
-    if ( _FT_Library_Version==NULL )
-return( false );	/* older than 2.1.4, but don't know how old */
-    _FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
+    FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
     if ( ma>major || (ma==major && (mi>=minor || (mi==minor && pa>=patch))))
 return( true );
 
@@ -265,32 +180,7 @@ char *FreeTypeStringVersion(void) {
 
     if ( !hasFreeType())
 return( "" );
-    if ( _FT_Library_Version==NULL )
-return( "FreeType 2.1.3 (or older)" );	/* older than 2.1.4, but don't know how old */
-    _FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
-    sprintf( buffer, "FreeType %d.%d.%d", ma, mi, pa );
-return( buffer );
-}
-# elif FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=4)))
-int FreeTypeAtLeast(int major, int minor, int patch) {
-    int ma, mi, pa;
-
-    if ( !hasFreeType())
-return( false );
-    _FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
-    if ( ma>major || (ma==major && (mi>=minor || (mi==minor && pa>=patch))))
-return( true );
-
-return( false );
-}
-
-char *FreeTypeStringVersion(void) {
-    int ma, mi, pa;
-    static char buffer[60];
-
-    if ( !hasFreeType())
-return( "" );
-    _FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
+    FT_Library_Version(ff_ft_context,&ma,&mi,&pa);
     sprintf( buffer, "FreeType %d.%d.%d", ma, mi, pa );
 return( buffer );
 }
@@ -333,7 +223,7 @@ void FreeTypeFreeContext(void *freetypecontext) {
 return;
 
     if ( ftc->face!=NULL )
-	_FT_Done_Face(ftc->face);
+	FT_Done_Face(ftc->face);
     if ( ftc->shared_ftc )
 return;
     if ( ftc->mappedfile )
@@ -498,7 +388,7 @@ return( NULL );
 	}
     }
 
-    if ( _FT_New_Memory_Face(context,ftc->mappedfile,ftc->len,0,&ftc->face))
+    if ( FT_New_Memory_Face(context,ftc->mappedfile,ftc->len,0,&ftc->face))
  goto fail;
     GlyphHashFree(sf);		/* If we created a tiny font, our hash table may reflect that */
     
@@ -599,9 +489,9 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 
     if ( ftc->glyph_indeces[gid]==-1 )
  goto fail;
-    if ( _FT_Set_Char_Size(ftc->face,(int) (ptsize*64),(int) (ptsize*64), dpi, dpi))
+    if ( FT_Set_Char_Size(ftc->face,(int) (ptsize*64),(int) (ptsize*64), dpi, dpi))
  goto fail;
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[gid],
+    if ( FT_Load_Glyph(ftc->face,ftc->glyph_indeces[gid],
 	    depth==1?(FT_LOAD_RENDER|FT_LOAD_TARGET_MONO):FT_LOAD_RENDER))
  goto fail;
 
@@ -831,10 +721,10 @@ return( NULL );
 	    ff_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
     }
 
-    if ( _FT_Set_Char_Size(ftc->face,(int) (ptsizex*64),(int) (ptsizey*64), dpi, dpi))
+    if ( FT_Set_Char_Size(ftc->face,(int) (ptsizex*64),(int) (ptsizey*64), dpi, dpi))
 return( NULL );	/* Error Return */
 
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
+    if ( FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
 	depth==1 ? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
 return( NULL );
 
@@ -862,7 +752,7 @@ return( NULL );
 	/* free type skips open contours with a single point in pfbs */
     outline_context.orig_sp = NULL;
     outline_context.order2 = ftc->isttf;
-    if ( !_FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {
+    if ( !FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {
 	FT_ClosePath(&outline_context);
 	*width = outline_context.scalex*slot->advance.x;
 return( outline_context.hcpl );
@@ -879,15 +769,15 @@ struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
     if ( ftc->face==(void *) -1 )
 return( NULL );
 
-    if ( _FT_Set_Char_Size(ftc->face,(int) (ptsizex*64) ,(int) (ptsizey*64), dpi, dpi))
+    if ( FT_Set_Char_Size(ftc->face,(int) (ptsizex*64) ,(int) (ptsizey*64), dpi, dpi))
 return( NULL );	/* Error Return */
 
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
+    if ( FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
 	depth==1? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
 return( NULL );
 
     slot = ((FT_Face) (ftc->face))->glyph;
-    if ( _FT_Render_Glyph(slot,depth==1 ? ft_render_mode_mono :ft_render_mode_normal ))
+    if ( FT_Render_Glyph(slot,depth==1 ? ft_render_mode_mono :ft_render_mode_normal ))
 return( NULL );
 
     if ( slot->bitmap.pixel_mode!=ft_pixel_mode_mono &&
@@ -1209,13 +1099,13 @@ return( NULL );
 	memset(temp.buffer,0,temp.pitch*temp.rows);
 	FillOutline(stroked,&outline,&pmax,&cmax,
 		scale,&b,sc->layers[layer].order2,false);
-	err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
+	err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	SplinePointListsFree(stroked);
     } else if ( temp.buffer==NULL ) {
 	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
 		scale,&b,sc->layers[layer].order2,false);
-	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
+	err = (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	if ( sc->layers[layer].splines!=all )
 	    SplinePointListsFree(all);
     } else {
@@ -1228,7 +1118,7 @@ return( NULL );
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,2);
-		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
+		err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		clipmask = galloc(bitmap.pitch*bitmap.rows);
 		memcpy(clipmask,temp.buffer,bitmap.pitch*bitmap.rows);
 	    }
@@ -1236,7 +1126,7 @@ return( NULL );
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,true);
-		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
+		err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,&sc->layers[i].fill_brush,clipmask,rscale,&b,sc);
 	    }
 	    if ( sc->layers[i].dostroke ) {
@@ -1244,7 +1134,7 @@ return( NULL );
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(stroked,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,true);
-		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
+		err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,&sc->layers[i].stroke_pen.brush,clipmask,rscale,&b,sc);
 		SplinePointListsFree(stroked);
 	    }
@@ -1254,7 +1144,7 @@ return( NULL );
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
-			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
+			err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,&r->layers[j].fill_brush,clipmask,rscale,&b,sc);
 		    }
 		    if ( r->layers[j].dostroke ) {
@@ -1262,7 +1152,7 @@ return( NULL );
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(stroked,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
-			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
+			err |= (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,&r->layers[j].stroke_pen.brush,clipmask,rscale,&b,sc);
 			SplinePointListsFree(stroked);
 		    }
