@@ -119,7 +119,7 @@ void GDrawEnablePango(int on) {
 }
 
 #ifndef _NO_LIBCAIRO
-# if (CAIRO_VERSION_MAJOR==1 && CAIRO_VERSION_MINOR<6) || (!defined(_STATIC_LIBCAIRO) && !defined(NODYNAMIC))
+# if (CAIRO_VERSION_MAJOR==1 && CAIRO_VERSION_MINOR<6)
 static int __cairo_format_stride_for_width(cairo_format_t f,int width) {
     if ( f==CAIRO_FORMAT_ARGB32 || f==CAIRO_FORMAT_RGB24 )
 return( 4*width );
