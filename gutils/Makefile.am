@@ -2,8 +2,8 @@ lib_LTLIBRARIES = libgutils.la libgioftp.la
 
 #--------------------------------------------------------------------------
 
-GUTL_VERSION = 1
-GUTL_REVISION = 3
+GUTL_VERSION = 2
+GUTL_REVISION = 0
 GUTL_AGE = 0
 
 libgutils_la_SOURCES = divisors.c fsys.c gcol.c gimage.c				\
@@ -27,7 +27,7 @@ libgutils_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
 
 #--------------------------------------------------------------------------
 
-GFTP_VERSION = 1
+GFTP_VERSION = 2
 GFTP_REVISION = 0
 GFTP_AGE = 0
 

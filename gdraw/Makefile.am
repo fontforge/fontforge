@@ -1,5 +1,5 @@
-GD_VERSION = 4
-GD_REVISION = 10
+GD_VERSION = 5
+GD_REVISION = 0
 GD_AGE = 0
 
 lib_LTLIBRARIES = libgdraw.la
