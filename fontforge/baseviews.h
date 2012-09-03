@@ -118,9 +118,12 @@ struct cvcontainer {
 };
 
 enum nav_type { nt_prevdef, nt_prev, nt_goto, nt_next, nt_nextdef };
+
+enum cv_container_type { cvc_searcher, cvc_mathkern, cvc_tilepath,
+			 cvc_gradient, cvc_multiplepattern, cvc_stroke };
+
 struct cvcontainer_funcs {
-    enum cv_container_type { cvc_searcher, cvc_mathkern, cvc_tilepath,
-	cvc_gradient, cvc_multiplepattern, cvc_stroke } type;
+    enum cv_container_type type;
     void (*activateMe)(struct cvcontainer *cvc,struct charviewbase *cv);
     void (*charEvent)(struct cvcontainer *cvc,void *event);
     int (*canNavigate)(struct cvcontainer *cvc,enum nav_type type);
@@ -145,8 +148,10 @@ struct fvcontainer {
     struct fvcontainer_funcs *funcs;
 };
 
+enum fv_container_type { fvc_kernformat, fvc_glyphset };
+
 struct fvcontainer_funcs {
-    enum fv_container_type { fvc_kernformat, fvc_glyphset } type;
+    enum fv_container_type type;
     int is_modal;		/* If the fvc is in a modal dialog then we can't create modeless windows (like charviews, fontinfo, etc.) */
     void (*activateMe)(struct fvcontainer *fvc,struct fontviewbase *fv);
     void (*charEvent)(struct fvcontainer *fvc,void *event);
@@ -200,6 +205,8 @@ typedef struct {
     char *upload_id;			/* Way to manipulate upload on OFLib */
 } OFLibData;
 
+enum counter_type { ct_squish, ct_retain, ct_auto };
+
 struct lcg_zones {
     /* info for unhinted processing */
      /* everything abvoe this should be moved down (default xheight/2) */
@@ -216,7 +223,7 @@ struct lcg_zones {
      /* also anything on the other side of a hint from this should be moved down */
     int bottom_bound;
 
-    enum counter_type { ct_squish, ct_retain, ct_auto } counter_type;
+    enum counter_type counter_type;
 
     SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *,int layer);
     int wants_hints;
@@ -230,6 +237,11 @@ struct lcg_zones {
 };
 /* This order is the same order as the radio buttons in the embolden dlg */
 enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom, embolden_error };
+
+struct ci_zones {
+    double start, width;
+    double moveto, newwidth;		/* Only change width for diagonal stems*/
+};
 
 struct counterinfo {
     double c_factor, c_add;		/* For counters */
@@ -248,10 +260,7 @@ struct counterinfo {
 #define BOT_Z	1
     int cnts[2];
     int maxes[2];
-    struct ci_zones {
-	double start, width;
-	double moveto, newwidth;	/* Only change width for diagonal stems*/
-    } *zones[2];
+    struct ci_zones *zones[2];
 };
 
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
@@ -371,6 +380,17 @@ extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf,
 
 enum glyphchange_type { gc_generic, gc_smallcaps, gc_subsuper, gc_max };
 
+struct position_maps {
+    double current  , desired;
+    double cur_width, des_width;
+    int overlap_index;
+};
+
+struct fixed_maps {
+    int cnt;
+    struct position_maps *maps;
+};
+
 struct genericchange {
     enum glyphchange_type gc;
     uint32 feature_tag;
@@ -390,14 +410,7 @@ struct genericchange {
     uint8 petite;				/* generate petite caps rather than smallcaps */
     double vcounter_scale, vcounter_add;	/* If not using mapping */
     double v_scale;				/* If using mapping */
-    struct fixed_maps {
-	int cnt;
-	struct position_maps {
-	    double current  , desired;
-            double cur_width, des_width;
-	    int overlap_index;
-	} *maps;
-    } m;
+    struct fixed_maps m;
     struct fixed_maps g;			/* Adjusted for each glyph */
     double vertical_offset;
     unsigned int dstem_control, serif_control;
@@ -500,6 +513,9 @@ extern int OFLibUploadFont(OFLibData *);
 
 enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 	sv_scale = 0x8, sv_endpoints=0x10 };
+
+enum flipset { flip_none = 0, flip_x, flip_y, flip_xy };
+
 typedef struct searchdata {
     SplineChar sc_srch, sc_rpl;
     SplineSet *path, *revpath, *replacepath, *revreplace;
@@ -526,7 +542,7 @@ typedef struct searchdata {
     real matched_rot, matched_scale;
     real matched_x, matched_y;
     double matched_co, matched_si;		/* Precomputed sin, cos */
-    enum flipset { flip_none = 0, flip_x, flip_y, flip_xy } matched_flip;
+    enum flipset matched_flip;
 #ifdef _HAS_LONGLONG
     unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
     unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */

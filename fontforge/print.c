@@ -400,6 +400,12 @@ static void pdf_dump_type1(PI *pi,int sfid) {
     sfbit->twobyte = false;
 }
 
+struct opac_state {
+    int isfill;
+    float opacity;
+    int obj;
+};
+
 struct glyph_res {
     int pattern_cnt, pattern_max;
     char **pattern_names;
@@ -408,7 +414,7 @@ struct glyph_res {
     char **image_names;
     int *image_objs;
     int opacity_cnt, opacity_max;
-    struct opac_state { int isfill; float opacity; int obj; } *opac_state;
+    struct opac_state *opac_state;
 };
 
 #define GLYPH_RES_EMPTY { 0, 0, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL }

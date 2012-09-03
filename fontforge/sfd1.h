@@ -79,10 +79,31 @@ typedef struct generic_asm1 {		/* Apple State Machine */
     uint32 opentype_tag;		/* If converted from opentype */
 } ASM1;
 
+struct table_ordering {
+    uint32 table_tag;
+    uint32 *ordered_features;
+    struct table_ordering *next;
+};
+
+struct script_record {
+    uint32 script;
+    uint32 *langs;
+};
+
+struct tagtype {
+    enum possub_type type;
+    uint32 tag;
+};
+
+struct gentagtype {
+    uint16 tt_cur, tt_max;
+    struct tagtype *tagtype;
+};
+
 typedef struct splinefont1 {
     SplineFont sf;
 
-    struct table_ordering { uint32 table_tag; uint32 *ordered_features; struct table_ordering *next; } *orders;
+    struct table_ordering *orders;
 
     /* Any GPOS/GSUB entry (PST, AnchorClass, kerns, FPST */
     /*  Has an entry saying what scripts/languages it should appear it */
@@ -91,19 +112,10 @@ typedef struct splinefont1 {
     /* Rather than store the complete list of possibilities in each PST we */
     /*  store all choices used here, and just store an index into this list */
     /*  in the PST. All lists are terminated by a 0 entry */
-    struct script_record {
-	uint32 script;
-	uint32 *langs;
-    } **script_lang;
+    struct script_record **script_lang;
     int16 sli_cnt;
 
-    struct gentagtype {
-	uint16 tt_cur, tt_max;
-	struct tagtype {
-	    enum possub_type type;
-	    uint32 tag;
-	} *tagtype;
-    } gentags;
+    struct gentagtype gentags;
 } SplineFont1;
 
 extern int SFFindBiggestScriptLangIndex(SplineFont *_sf,uint32 script,uint32 lang);

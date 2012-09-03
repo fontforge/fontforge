@@ -866,24 +866,26 @@ static int32 ttfdumpf8_9bchar(FILE *bdat, BDFChar *bc,BDFFont *bdf) {
 return( pos );
 }
 
+struct sbitLineMetrics {
+    int8 ascender;
+    int8 descender;
+    uint8 widthMax;
+    int8 caretRise;
+    int8 caretRun;
+    int8 caretOff;
+    int8 minoriginsb;
+    int8 minAdvancesb;
+    int8 maxbeforebl;
+    int8 minafterbl;
+    int8 pad1, pad2;
+};
+
 struct bitmapSizeTable {
     int32 subtableoffset;
     int32 tablesize;
     int32 numsubtables;
     int32 colorRef;
-    struct sbitLineMetrics {
-	int8 ascender;
-	int8 descender;
-	uint8 widthMax;
-	int8 caretRise;
-	int8 caretRun;
-	int8 caretOff;
-	int8 minoriginsb;
-	int8 minAdvancesb;
-	int8 maxbeforebl;
-	int8 minafterbl;
-	int8 pad1, pad2;
-    } hori, vert;
+    struct sbitLineMetrics hori, vert;
     uint16 startGlyph;
     uint16 endGlyph;
     uint8 ppemX;

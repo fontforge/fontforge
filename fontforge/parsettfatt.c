@@ -183,17 +183,19 @@ return( copy(""));
 return( ret );
 }
 
+struct language {	/* normal entry with lang tag 'dflt' */
+    uint32 tag;
+    uint32 offset;
+    uint16 req;		/* required feature index. 0xffff for null */
+    int fcnt;
+    uint16 *features;
+};
+
 struct scripts {
     uint32 offset;
     uint32 tag;
     int langcnt;		/* the default language is included as a */
-    struct language {		/* normal entry with lang tag 'dflt' */
-	uint32 tag;
-	uint32 offset;
-	uint16 req;		/* required feature index. 0xffff for null */
-	int fcnt;
-	uint16 *features;
-    } *languages;
+    struct language *languages;
 };
 
 struct feature {

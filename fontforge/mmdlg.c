@@ -833,10 +833,12 @@ GTextInfo mastercounts[] = {
     GTEXTINFO_EMPTY
 };
 
+enum mmw_state { mmw_counts, mmw_axes, mmw_designs, mmw_named, mmw_funcs,
+		 mmw_others };
+
 typedef struct mmw {
     GWindow gw;
-    enum mmw_state { mmw_counts, mmw_axes, mmw_designs, mmw_named, mmw_funcs,
-	    mmw_others } state;
+    enum mmw_state state;
     GWindow subwins[mmw_others+1];
     MMSet *mm, *old;
     int isnew;
