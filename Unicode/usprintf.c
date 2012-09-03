@@ -34,25 +34,29 @@
 /*  think is important and leave the rest for later. Maybe */
 /* args begin with 1 */
 
+enum arg_type { at_int, at_double, at_ustr, at_astr, at_iptr };
+
+struct args {
+    unsigned int is_alt:1;			/* # flag */
+    unsigned int is_zeropad:1;		/* 0 flag */
+    unsigned int is_leftadj:1;		/* - flag */
+    unsigned int is_blank:1;		/* " " flag */
+    unsigned int is_signed:1;		/* + flag */
+    unsigned int is_thousand:1;		/* ' flag */
+    unsigned int is_short:1;		/* h */
+    unsigned int is_long:1; 		/* l */
+    unsigned int hasformat:1;		/* else it's a precision/fieldwidth */
+    char format;
+    int fieldwidth, precision;
+    enum arg_type arg_type;
+    long ival;
+    const unichar_t *uval;
+    double dval;
+};
+
 struct state {
     int argmax;
-    struct args {
-	unsigned int is_alt:1;			/* # flag */
-	unsigned int is_zeropad:1;		/* 0 flag */
-	unsigned int is_leftadj:1;		/* - flag */
-	unsigned int is_blank:1;		/* " " flag */
-	unsigned int is_signed:1;		/* + flag */
-	unsigned int is_thousand:1;		/* ' flag */
-	unsigned int is_short:1;		/* h */
-	unsigned int is_long:1; 		/* l */
-	unsigned int hasformat:1;		/* else it's a precision/fieldwidth */
-	char format;
-	int fieldwidth, precision;
-	enum arg_type { at_int, at_double, at_ustr, at_astr, at_iptr } arg_type;
-	long ival;
-	const unichar_t *uval;
-	double dval;
-    } *args;
+    struct args *args;
     unichar_t *opt, *end;
     int cnt;
 };
@@ -251,7 +255,7 @@ int u_vsnprintf(unichar_t *str, int len, const unichar_t *format, va_list ap ) {
     }
     state.argmax = argmax;
     if ( argmax>sizeof(args)/sizeof(args[0]) )
-	state.args = gcalloc(argmax,sizeof(struct args));
+	state.args = (struct args *) gcalloc(argmax,sizeof(struct args));
     else
 	state.args = args;
     state.opt = str; state.end = str+len;
