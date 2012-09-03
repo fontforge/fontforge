@@ -89,7 +89,7 @@ struct _GImage {
 	    true color images are stored in 4 byte units, 0,red,green,blue
 	    rgba       images are stored in 4 byte units, alpha,red,green blue
 */
-    unsigned int image_type: 2;
+    enum image_type image_type: 2;
     int16 delay;		/* for animated GIFs, delay to next frame */
     int32 width, height;
     int32 bytes_per_line;
