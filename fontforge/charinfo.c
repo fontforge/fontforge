@@ -33,16 +33,7 @@
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
 #include <gkeysym.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "is_LIGATURE.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 extern int lookup_hideunused;
 
