@@ -171,6 +171,8 @@ fi
 AC_SUBST([XINPUT_LIBS])
 AC_SUBST([XKB_LIBS])
 
+# zlib is a requirement. It is too commonly available to bother
+# leaving out.
 PKG_CHECK_MODULES([ZLIB],[zlib])
 
 FONTFORGE_ARG_WITH_CAIRO

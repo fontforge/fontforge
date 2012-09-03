@@ -736,59 +736,21 @@ static void pdf_85filter(FILE *to,FILE *from) {
 }
 
 #ifdef _NO_LIBPNG
+
 static int haszlib(void) {
 return( false );
 }
 
 static void pdf_zfilter(FILE *to,FILE *from) {
 }
+
 #else
-# if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)	/* I don't know how to deal with dynamic libs on mac OS/X, hence this */
-#  include <dynamic.h>
-# endif
+
 # include <zlib.h>
 
-# if !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC)
-
-static DL_CONST void *zlib=NULL;
-static int (*_inflateInit_)(z_stream *,const char *,int);
-static int (*_inflate)(z_stream *,int flags);
-static int (*_inflateEnd)(z_stream *);
-
-static int haszlib(void) {
-    if ( zlib!=NULL )
-return( true );
-
-    if ( (zlib = dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY))==NULL ) {
-	LogError( "%s", dlerror());
-return( false );
-    }
-    _inflateInit_ = (int (*)(z_stream *,const char *,int)) dlsym(zlib,"inflateInit_");
-    _inflate = (int (*)(z_stream *,int )) dlsym(zlib,"inflate");
-    _inflateEnd = (int (*)(z_stream *)) dlsym(zlib,"inflateEnd");
-    if ( _inflateInit_==NULL || _inflate==NULL || _inflateEnd==NULL ) {
-	LogError( "%s", dlerror());
-	dlclose(zlib); zlib=NULL;
-return( false );
-    }
-return( true );
-}
-
-/* Grump. zlib defines this as a macro */
-#define _inflateInit(strm) \
-        _inflateInit_((strm),                ZLIB_VERSION, sizeof(z_stream))
-
-# else
-/* Either statically linked, or loaded at start up */
 static int haszlib(void) {
 return( true );
 }
-
-#define _inflateInit	inflateInit
-#define _inflate	inflate
-#define _inflateEnd	inflateEnd
-
-# endif /* !defined(_STATIC_LIBPNG) && !defined(NODYNAMIC) */
 
 #define Z_CHUNK	65536
 /* Copied with few mods from the zlib howto */
@@ -806,7 +768,7 @@ static int pdf_zfilter(FILE *to,FILE *from) {
     strm.opaque = Z_NULL;
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
-    ret = _inflateInit(&strm);
+    ret = inflateInit(&strm);
     if (ret != Z_OK) {
 	LogError( _("Flate decompression failed.\n") );
 return ret;
@@ -821,16 +783,16 @@ return ret;
 	do {
 	    strm.avail_out = Z_CHUNK;
 	    strm.next_out = (uint8 *) out;
-	    ret = _inflate(&strm, Z_NO_FLUSH);
+	    ret = inflate(&strm, Z_NO_FLUSH);
 	    if ( ret==Z_NEED_DICT || ret==Z_DATA_ERROR || ret==Z_MEM_ERROR ) {
-		(void)_inflateEnd(&strm);
+		(void)inflateEnd(&strm);
 		LogError( _("Flate decompression failed.\n") );
 return ret;
 	    }
 	    fwrite(out,1,Z_CHUNK-strm.avail_out,to);
 	} while ( strm.avail_out == 0 );
     } while ( ret != Z_STREAM_END );
-    (void)_inflateEnd(&strm);
+    (void)inflateEnd(&strm);
     free(in); free(out);
 return( ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR );
 }
