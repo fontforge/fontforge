@@ -293,11 +293,8 @@ enum printer_attr_mask { pam_pagesize=1, pam_margins=2, pam_scale=4,
 			 pam_lpr=0x800, pam_queue=0x1000, pam_eps=0x2000, pam_landscape=0x4000,
 			 pam_title=0x8000 };
 
-<<<<<<< local
 enum printer_units { pu_inches, pu_points, pu_mm };
 
-=======
->>>>>>> other
 typedef struct gprinter_attrs {
     enum printer_attr_mask mask;
     float width, height;		/* paper size */
