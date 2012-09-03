@@ -1102,22 +1102,21 @@ return( NULL );
 #undef extended			/* used in xlink.h */
 #include <libxml/parser.h>
 
-/* Ok, this complication is here because:				    */
-/*	1) I want to be able to deal with static libraries on some systems  */
-/*	2) If I've got a dynamic library and I compile up an executable     */
-/*		I want it to run on systems without libxml2		    */
-/* So one case boils down to linking against the standard names, while the  */
-/*  other does the link at run time if it's possible */
-/* On some systems (MS) we need to load libz before we can load libxml2	    */
-
-# if defined(_STATIC_LIBXML) || defined(NODYNAMIC)
-
+/*
+ * FIXME: Eliminate these redundant macros. They are left over from
+ *        when we sometimes used dlopen(3) to link with libxml2.
+ */
 #define _xmlParseMemory		xmlParseMemory
 #define _xmlParseFile		xmlParseFile
 #define _xmlDocGetRootElement	xmlDocGetRootElement
 #define _xmlFreeDoc		xmlFreeDoc
 #ifdef __CygWin
 # define _xmlFree		free
+/*
+ * FIXME: Check whether this kludge is still (a) necessary, (b)
+ * functional. At least (a) seems unlikely to have remained true over
+ * time.
+ */
 /* Nasty kludge, but xmlFree doesn't work on cygwin (or I can't get it to) */
 #else
 # define _xmlFree		xmlFree
@@ -1129,60 +1128,6 @@ return( NULL );
 static int libxml_init_base() {
 return( true );
 }
-# else
-#  include <dynamic.h>
-
-static DL_CONST void *libxml;
-static xmlDocPtr (*_xmlParseMemory)(const char *memory,int memsize);
-static xmlDocPtr (*_xmlParseFile)(const char *filename);
-static xmlNodePtr (*_xmlDocGetRootElement)(xmlDocPtr doc);
-static void (*_xmlFreeDoc)(xmlDocPtr doc);
-static void (*_xmlFree)(void *);
-static int (*_xmlStrcmp)(const xmlChar *,const xmlChar *);
-static xmlChar *(*_xmlGetProp)(xmlNodePtr,const xmlChar *);
-static xmlChar *(*_xmlGetNsProp)(xmlNodePtr,const xmlChar *,const xmlChar *);
-
-static int libxml_init_base() {
-    static int xmltested = false;
-
-    if ( xmltested )
-return( libxml!=NULL );
-
-    dlopen("libz" SO_EXT,RTLD_GLOBAL|RTLD_LAZY);
-
-    libxml = dlopen( "libxml2" SO_EXT,RTLD_LAZY);
-# ifdef SO_2_EXT
-    if ( libxml==NULL )
-	libxml = dlopen("libxml2" SO_2_EXT,RTLD_LAZY);
-# endif
-    xmltested = true;
-    if ( libxml==NULL )
-return( false );
-
-    _xmlParseMemory = (xmlDocPtr (*)(const char *,int)) dlsym(libxml,"xmlParseMemory");
-    _xmlParseFile = (xmlDocPtr (*)(const char *)) dlsym(libxml,"xmlParseFile");
-    _xmlDocGetRootElement = (xmlNodePtr (*)(xmlDocPtr )) dlsym(libxml,"xmlDocGetRootElement");
-    _xmlFreeDoc = (void (*)(xmlDocPtr)) dlsym(libxml,"xmlFreeDoc");
-    /* xmlFree is done differently for threaded and non-threaded libraries. */
-    /*  I hope this gets both right... */
-    if ( dlsym(libxml,"__xmlFree")) {
-	xmlFreeFunc *(*foo)(void) = (xmlFreeFunc *(*)(void)) dlsym(libxml,"__xmlFree");
-	_xmlFree = *(*foo)();
-    } else {
-	xmlFreeFunc *foo = dlsym(libxml,"xmlFree");
-	_xmlFree = *foo;
-    }
-    _xmlStrcmp = (int (*)(const xmlChar *,const xmlChar *)) dlsym(libxml,"xmlStrcmp");
-    _xmlGetProp = (xmlChar *(*)(xmlNodePtr,const xmlChar *)) dlsym(libxml,"xmlGetProp");
-    _xmlGetNsProp = (xmlChar *(*)(xmlNodePtr,const xmlChar *,const xmlChar *)) dlsym(libxml,"xmlGetNsProp");
-    if ( _xmlParseFile==NULL || _xmlDocGetRootElement==NULL || _xmlFree==NULL ) {
-	libxml = NULL;
-return( false );
-    }
-
-return( true );
-}
-# endif
 
 /* Find a node with the given id */
 static xmlNodePtr XmlFindID(xmlNodePtr xml, char *name) {
