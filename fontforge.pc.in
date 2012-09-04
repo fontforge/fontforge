@@ -4,3 +4,7 @@ exec_prefix=${prefix}
 Name: FontForge
 Description: Outline font editor.
 Version: @VERSION@
+Required: python
+
+Cflags: -I${prefix}/include/fontforge
+Libs: -L${prefix}/lib -lfontforge
