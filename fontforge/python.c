@@ -13790,7 +13790,7 @@ return( NULL );
     }
 
     itype = FlagsFromString(type,lookup_types);
-    if ( itype==0x8000000 )
+    if ( itype==PYFF_FLAG_UNKNOWN )
 return( NULL );
 
     flags = ParseLookupFlags(sf,flagtuple);
