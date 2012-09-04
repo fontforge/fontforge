@@ -56,7 +56,8 @@
 #define PYMETHODDEF_EMPTY  {NULL, NULL, 0, NULL}
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
-static struct flaglist sfnt_name_str_ids[], sfnt_name_mslangs[];
+static struct flaglist sfnt_name_str_ids[];
+static struct flaglist sfnt_name_mslangs[];
 
 FontViewBase *fv_active_in_ui = NULL;
 SplineChar *sc_active_in_ui = NULL;
@@ -2347,18 +2348,19 @@ return( NULL );
 Py_RETURN( self );
 }
 
+/* Simplify flags: see 'enum simplify_flags' in splinefont.h */
 struct flaglist simplifyflags[] = {
-    { "cleanup", -1 },
-    { "ignoreslopes", 1 },
-    { "ignoreextrema", 2 },
-    { "smoothcurves", 4 },
-    { "choosehv", 8 },
-    { "forcelines", 16 },
-    { "nearlyhvlines", 32 },
-    { "mergelines", 64 },
-    { "setstarttoextremum", 128 },
-    { "setstarttoextrema", 128 },		/* Documentation error */
-    { "removesingletonpoints", 256 },
+    { "cleanup", sf_cleanup },
+    { "ignoreslopes", sf_ignoreslopes },
+    { "ignoreextrema", sf_ignoreextremum },
+    { "smoothcurves", sf_smoothcurves },
+    { "choosehv", sf_choosehv },
+    { "forcelines", sf_forcelines },
+    { "nearlyhvlines", sf_nearlyhvlines },
+    { "mergelines", sf_mergelines },
+    { "setstarttoextremum", sf_setstart2extremum },
+    { "setstarttoextrema",  sf_setstart2extremum }, /* Documentation error */
+    { "removesingletonpoints", sf_rmsingletonpoints },
     FLAGLIST_EMPTY /* Sentinel */
 };
 
@@ -2505,10 +2507,12 @@ Py_RETURN( self );		/* no points=> no clusters */
 Py_RETURN( self );
 }
 
+/* Add Extrema type: see 'enum ae_type' in splinefont.h */
 struct flaglist addextremaflags[] = {
-    { "all", 0 },
-    { "only_good", 2 },
-    { "only_good_rm", 3 },
+    { "all", ae_all },
+    /*{ "", ae_between_selected },  -- Not needed for python */
+    { "only_good", ae_only_good },
+    { "only_good_rm", ae_only_good_rm_later },
     FLAGLIST_EMPTY /* Sentinel */
 };
 
@@ -3535,6 +3539,7 @@ return( false );
 return( true );
 }
 
+/* Linecap type: see 'enum linecap' in splinefont.h */
 struct flaglist linecap[] = {
     { "butt", lc_butt },
     { "round", lc_round },
@@ -3542,6 +3547,7 @@ struct flaglist linecap[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* Linejoin type: see 'enum linejoin' in splinefont.h */
 struct flaglist linejoin[] = {
     { "miter", lj_miter },
     { "round", lj_round },
@@ -6277,6 +6283,7 @@ return( -1 );
 return( 0 );
 }
 
+/* Anchor type: see 'enum anchor_type' in splinefont.h */
 static struct flaglist ap_types[] = {
     { "mark", at_mark },
     { "base", at_basechar },
@@ -6977,6 +6984,7 @@ static PyObject *PyFFGlyph_canonicalStart(PyObject *self, PyObject *UNUSED(args)
 Py_RETURN( self );
 }
 
+/* Char weight/Embolden types: see 'enum embolden_type' in baseviews.h */
 static struct flaglist cw_types[] = {
     { "lcg", embolden_lcg },
     { "cjk", embolden_cjk },
@@ -6987,6 +6995,7 @@ static struct flaglist cw_types[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* Counter types: see 'enum counter_type' in baseviews.h */
 static struct flaglist co_types[] = {
     { "squish", ct_squish },
     { "retain", ct_retain },
@@ -7249,6 +7258,7 @@ return(NULL);
 Py_RETURN( self );
 }
 
+/* PostScript importing flags */
 static struct flaglist import_ps_flags[] = {
     { "toobigwarn", 0 },			/* Obsolete */
     { "removeoverlap", 0 },			/* Obsolete */
@@ -7942,6 +7952,7 @@ return( NULL );
 return( Py_BuildValue( "i", SCValidate(sc,layer,force)) );
 }
 
+/* Transformation flags: see 'enum fvtrans_flags' in baseviews.h */
 static struct flaglist trans_flags[] = {
     { "partialRefs", fvt_partialreftrans },
     { "round", fvt_round_to_int },
@@ -10374,6 +10385,7 @@ static int PyFF_Font_set_bitmapSizes(PyFF_Font *self,PyObject *value, void *UNUS
 return( bitmapper(self,value,true));
 }
 
+/* GASP (grid-fitting and scan procedure) flags */
 static struct flaglist gaspflags[] = {
     { "gridfit",		1 },
     { "antialias",		2 },
@@ -12715,6 +12727,7 @@ return( NULL );
 Py_RETURN(self);
 }
 
+/* Font comparison flags */
 static struct flaglist compflags[] = {
     { "outlines",		  1 },
     { "outlines-exactly",	  2 },
@@ -13589,6 +13602,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
+/* OpenType lookup types: see 'enum otlookup_type' in splinefont.h */
 static struct flaglist lookup_types[] = {
     { "gsub_single", gsub_single },
     { "gsub_multiple", gsub_multiple },
@@ -13612,11 +13626,15 @@ static struct flaglist lookup_types[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
+/* OpenType lookup flags: see 'enum pst_flags' in splinefont.h */
 static struct flaglist lookup_flags[] = {
     { "right_to_left", pst_r2l },
     { "ignore_bases", pst_ignorebaseglyphs },
     { "ignore_ligatures", pst_ignoreligatures },
     { "ignore_marks", pst_ignorecombiningmarks },
+    /*{ "", pst_usemarkfilteringset },*/
+    /*{ "", pst_markclass },*/
+    /*{ "", pst_markset },*/
     { "right_2_left", pst_r2l },
     { "right2left", pst_r2l },
     FLAGLIST_EMPTY /* Sentinel */
@@ -14325,6 +14343,7 @@ return( NULL );
 return( Py_BuildValue( "i", FVReplaceAll(fv,srch_ss,rpl_ss,err,sv_reverse|sv_flips)));
 }
 
+/* Search flags: see 'enum search_flags' in baseviews.h */
 struct flaglist find_flags[] = {
     {"reverse", sv_reverse},
     {"flips", sv_flips},
@@ -14493,6 +14512,7 @@ struct flaglist gen_flags[] = {
     { "composites-in-afm", 0x400000 },
     FLAGLIST_EMPTY /* Sentinel */
 };
+/* Generate TrueType Collection flags: see 'enum ttc_flags' in splinefont.h */
 struct flaglist genttc_flags[] = {
     { "merge", ttc_flag_trymerge },
     { "cff", ttc_flag_cff },
@@ -14947,6 +14967,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
+/* Print sample flags */
 static struct flaglist printflags[] = {
     { "fontdisplay", 0 },
     { "chars", 1 },
@@ -17368,8 +17389,6 @@ void ff_init(void) {
 
 #else
 #include "fontforgevw.h"
-struct flaglist { char *name; int flag; };
-#define FLAGLIST_EMPTY { NULL, 0 }
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
