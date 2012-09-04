@@ -271,7 +271,7 @@ static int FlagsFromString(char *str,struct flaglist *flags) {
     int i;
     i = FindFlagByName( flaglist, str );
     if ( i == FLAG_UNKNOWN ) {
-	PyErr_Format( PyExc_TypeError, "Unknown flag %s", str );
+	PyErr_Format( PyExc_ValueError, "Unknown flag \"%s\"", str );
     }
 return( i );
 }
