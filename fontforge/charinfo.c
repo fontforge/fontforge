@@ -433,25 +433,26 @@ return( true );
 
 static int CI_DeleteCounter(GGadget *g, GEvent *e) {
     int32 len; int i,j, offset;
-    GTextInfo **old, **new;
+    GTextInfo **old, **new_;
     GGadget *list;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	offset = GGadgetGetCid(g)-CID_Delete;
 	list = GWidgetGetControl(GGadgetGetWindow(g),CID_List+offset);
 	old = GGadgetGetList(list,&len);
-	new = gcalloc(len+1,sizeof(GTextInfo *));
-	for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	    new[j] = galloc(sizeof(GTextInfo));
-	    *new[j] = *old[i];
-	    new[j]->text = u_copy(new[j]->text);
-	    ++j;
-	}
-	new[j] = gcalloc(1,sizeof(GTextInfo));
+	new_ = gcalloc(len+1,sizeof(GTextInfo *));
+	for ( i=j=0; i<len; ++i )
+	    if ( !old[i]->selected ) {
+		new_[j] = (GTextInfo *) galloc(sizeof(GTextInfo));
+		*new_[j] = *old[i];
+		new_[j]->text = u_copy(new_[j]->text);
+		++j;
+	    }
+	new_[j] = (GTextInfo *) gcalloc(1,sizeof(GTextInfo));
 	if ( offset==600 ) {
 	    for ( i=0; i<len; ++i ) if ( old[i]->selected )
 		chunkfree(old[i]->userdata,sizeof(HintMask));
 	}
-	GGadgetSetList(list,new,false);
+	GGadgetSetList(list,new_,false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Delete+offset),false);
 	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Edit+offset),false);
     }
@@ -505,9 +506,9 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     free(temp);
 }
 
-void SCInsertPST(SplineChar *sc,PST *new) {
-    new->next = sc->possub;
-    sc->possub = new;
+void SCInsertPST(SplineChar *sc,PST *new_) {
+    new_->next = sc->possub;
+    sc->possub = new_;
 }
 
 static int CI_NameCheck(const unichar_t *name) {
@@ -4057,7 +4058,7 @@ static int CI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int enc = ci->enc + GGadgetGetCid(g);	/* cid is 1 for next, -1 for prev */
-	SplineChar *new;
+	SplineChar *new_;
 	struct splinecharlist *scl;
 
 	if ( enc<0 || enc>=ci->map->enccount ) {
@@ -4066,14 +4067,14 @@ return( true );
 	}
 	if ( !_CI_OK(ci))
 return( true );
-	new = SFMakeChar(ci->sc->parent,ci->map,enc);
-	if ( new->charinfo!=NULL && new->charinfo!=ci ) {
+	new_ = SFMakeChar(ci->sc->parent,ci->map,enc);
+	if ( new_->charinfo!=NULL && new_->charinfo!=ci ) {
 	    GGadgetSetEnabled(g,false);
 return( true );
 	}
-	ci->sc = new;
+	ci->sc = new_;
 	ci->enc = enc;
-	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new->orig_pos;
+	for ( scl=ci->changes; scl!=NULL && scl->sc->orig_pos!=new_->orig_pos;
 		scl = scl->next );
 	ci->cachedsc = scl==NULL ? NULL : scl->sc;
 	CIFillup(ci);
