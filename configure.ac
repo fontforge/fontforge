@@ -148,27 +148,11 @@ i_do_have_native_callbacks="${fontforge_cv_native_callbacks}"
 # Checks for libraries.
 
 AC_SEARCH_LIBS([cos],[m])
-AC_SEARCH_LIBS([dlopen],[dl])
 
-if test x"${i_do_have_x}" = xyes; then
-   AC_SEARCH_LIBS([XOpenDisplay],[X11])
-   if test x"${gww_iscygwin}" = xyes; then
-      dnl Although present on my cygwin system the Xi library does not load
-      dnl and crashes gdb if we attempt to use it.
-      AC_DEFINE([_NO_XINPUT],[1])
-   else
-      FONTFORGE_SEARCH_LIBS([XOpenDevice],[Xi],
-                     [XINPUT_LIBS="${found_lib}"],
-                     [AC_DEFINE(_NO_XINPUT,1,[Define if not using xinput.])],
-                     [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS])
-   fi
-   FONTFORGE_SEARCH_LIBS([XkbQueryExtension],[xkbui],
-                  [XKB_LIBS="${found_lib}"],
-                  [AC_DEFINE(_NO_XKB,1,[Define if not using xkb.])],
-                  [$X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS])
-fi
-AC_SUBST([XINPUT_LIBS])
-AC_SUBST([XKB_LIBS])
+dnl FIXME: Is this needed, given we are using libltdl?
+dnl AC_SEARCH_LIBS([dlopen],[dl])
+
+FONTFORGE_CONFIG_X_LIBRARIES
 
 # zlib is a requirement. It is too commonly available to bother
 # leaving out.
@@ -197,30 +181,7 @@ if test x"${i_do_have_pango}" = xyes; then
    PKG_CHECK_MODULES([PANGOXFT],[pangoxft])
 fi
 
-if test x"${i_do_have_freetype_debugger}" = xyes; then
-   i_do_have_freetype_debugger="${FREETYPE_SOURCE}"
-elif test x"${i_do_have_freetype_debugger}" != xno; then
-   FREETYPE_SOURCE="${i_do_have_freetype_debugger}"
-fi
-if test x"${i_do_have_freetype_debugger}" != xno; then
-   if test ! -r "${FREETYPE_SOURCE}/src/truetype/ttobjs.h"; then
-      AC_MSG_ERROR([
-
-The file \"${FREETYPE_SOURCE}/src/truetype/ttobjs.h\"
-was not found: \"${FREETYPE_SOURCE}\"
-does not appear to be the top directory of the freetype
-sources.
-
-Please either set the environment variable FREETYPE_SOURCE
-to the top directory of the freetype source tree, or
-use the --disable-freetype-debugger option.
-
-])
-
-   fi
-   AC_DEFINE([FREETYPE_HAS_DEBUGGER],[1],
-        [Define if using the freetype debugger (requires freetype source code).])
-fi
+FONTFORGE_CONFIG_FREETYPE_DEBUGGER
 
 #--------------------------------------------------------------------------
 #
@@ -293,54 +254,10 @@ AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
 FONTFORGE_SET_MY_CFLAGS
 FONTFORGE_SET_MY_LIBS
-
-dnl Portable makefiles.
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([inc/Makefile])
-AC_CONFIG_FILES([pluginloading/Makefile])
-AC_CONFIG_FILES([Unicode/Makefile])
-AC_CONFIG_FILES([gutils/Makefile])
-AC_CONFIG_FILES([gdraw/Makefile])
-AC_CONFIG_FILES([fontforge/Makefile])
-AC_CONFIG_FILES([fontforge/pixmaps/Makefile])
-AC_CONFIG_FILES([po/Makefile])
-AC_CONFIG_FILES([po/mackeys/Makefile])
-AC_CONFIG_FILES([htdocs/Makefile])
-AC_CONFIG_FILES([pycontrib/Makefile])
-AC_CONFIG_FILES([plugins/Makefile])
-AC_CONFIG_FILES([tests/Makefile])
-
-# GNUmakefiles that act as wrappers around portable makefiles, to do
-# fancy things that are mainly for the benefit of maintainers.
-AC_CONFIG_FILES([fontforge/GNUmakefile])
-
-AC_CONFIG_FILES([fontforge.pc])
-AC_CONFIG_FILES([libfontforge.pc])
-AC_CONFIG_FILES([libfontforgeexe.pc])
-
+FONTFORGE_CREATE_MAKEFILES
+FONTFORGE_CREATE_PKGCONFIG_FILES
 FONTFORGE_CONFIG_TESTSUITE
-
-#--------------------------------------------------------------------------
-#
-# Configure the Python extension.
-#
-# The Python extension has its own configure script, so it can be
-# configured for an already installed libfontforge. Here, where we
-# want the extension configured for the libfontforge we are making
-# ourselves, the pkg-config settings for "libfontforge" are
-# overridden.
-
-if test x"${i_do_have_python_extension}" = xyes; then
-   export LIBFONTFORGE_CFLAGS
-   LIBFONTFORGE_CFLAGS="AS_ESCAPE([-I"$(top_srcdir)/../inc"])"
-
-   export LIBFONTFORGE_LIBS
-   LIBFONTFORGE_LIBS="AS_ESCAPE(["$(top_builddir)/../fontforge/libfontforge.la"])"
-
-   AC_CONFIG_SUBDIRS([pyhook])
-fi
-
-#--------------------------------------------------------------------------
+FONTFORGE_CONFIG_PYTHON_EXTENSION
 
 AC_OUTPUT
 
