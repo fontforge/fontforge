@@ -268,37 +268,48 @@ static PyObject *enrichened_compare(cmpfunc compare, PyObject *a, PyObject *b, i
 
 #endif /* PY_MAJOR_VERSION >= 3 */
 
-static int FlagsFromString(char *str,struct flaglist *flags) {
+static int FlagsFromString(char *str, struct flaglist *flags, const char *flagkind) {
     int i;
-    i = FindFlagByName( flaglist, str );
+    i = FindFlagByName( flags, str );
     if ( i == FLAG_UNKNOWN ) {
-	PyErr_Format( PyExc_ValueError, "Unknown flag \"%s\"", str );
+	if ( flagkind == NULL )
+	    flagkind = "flag";
+
+	PyErr_Format( PyExc_ValueError, "Unknown %s \"%s\"", flagkind, str );
     }
 return( i );
 }
 
-int FlagsFromTuple(PyObject *tuple,struct flaglist *flags) {
+/* FlagsFromTuple() - Converts a python sequence of strings into a flags integer.
+ * On an error a python exception is raised and FLAG_UNKNOWN returned.
+ * If flagkind is not NULL, then it is used in any error message to identify
+ * the kind of flags being parsed.
+ */
+int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind) {
     int ret = 0,temp;
     int i;
     char *str = NULL;
     PyObject *obj;
 
+    if ( flagkind == NULL )
+	flagkind = "flag";
+
     /* Might be omitted */
     if ( tuple == NULL )
 return( 0 );
-    /* Might just be one string, might be a tuple of strings */
+    /* Might just be one string, might be a tuple (or any sequence) of strings */
     if ( STRING_CHECK(tuple)) {
 #if PY_MAJOR_VERSION >= 3
         obj = PyUnicode_AsUTF8String(tuple);
         if (obj == NULL)
 return( FLAG_UNKNOWN );
         str = PyBytes_AsString(obj);
-        i = FlagsFromString(str,flags);
+        i = FlagsFromString(str,flags,flagkind);
         Py_DECREF(obj);
         return i;
 #else /* PY_MAJOR_VERSION >= 3 */
 	str = PyBytes_AsString(tuple);
-return( FlagsFromString(str,flags));
+return( FlagsFromString(str,flags,flagkind));
 #endif /* PY_MAJOR_VERSION >= 3 */
     } else if ( PySequence_Check(tuple)) {
 	ret = 0;
@@ -307,7 +318,7 @@ return( FlagsFromString(str,flags));
 	    if ( obj==Py_None )
 	continue;
 	    if ( !STRING_CHECK(obj)) {
-		PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be strings");
+		PyErr_Format(PyExc_TypeError, "Bad %s list, must consist of only strings", flagkind);
 return( FLAG_UNKNOWN );
 	    }
 #if PY_MAJOR_VERSION >= 3
@@ -316,12 +327,12 @@ return( FLAG_UNKNOWN );
             if (obj2 == NULL)
 return( FLAG_UNKNOWN );
             str = PyBytes_AsString(obj2);
-            temp = FlagsFromString(str,flags);
+            temp = FlagsFromString(str,flags,flagkind);
             Py_DECREF(obj2);
         }
 #else /* PY_MAJOR_VERSION >= 3 */
 	    str = PyBytes_AsString(obj);
-	    temp = FlagsFromString(str,flags);
+	    temp = FlagsFromString(str,flags,flagkind);
 #endif /* PY_MAJOR_VERSION >= 3 */
 	    if ( temp==FLAG_UNKNOWN )
 return( FLAG_UNKNOWN );
@@ -329,7 +340,7 @@ return( FLAG_UNKNOWN );
 	}
 return( ret );
     } else {
-	PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be a tuple of strings (or a string)");
+	PyErr_Format(PyExc_TypeError, "Bad %s list, must be a single string or a sequence (tuple/list) of strings", flagkind);
 return( FLAG_UNKNOWN );
     }
 }
@@ -807,9 +818,8 @@ static PyObject *PyFF_printSetup(PyObject *UNUSED(self), PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s|sii", &ptype, &pcmd, &pagewidth, &pageheight ) )
 return( NULL );
-    iptype = FlagsFromString(ptype,printmethod);
+    iptype = FlagsFromString(ptype,printmethod,"printing method");
     if ( iptype==FLAG_UNKNOWN ) {
-	PyErr_Format(PyExc_TypeError, "Unknown printing method" );
 return( NULL );
     }
 
@@ -2392,7 +2402,7 @@ Py_RETURN( self );		/* As simple as it can be */
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -2525,7 +2535,7 @@ static PyObject *PyFFContour_AddExtrema(PyFF_Contour *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
     if ( flag!=NULL )
-	ae = FlagsFromString(flag,addextremaflags);
+	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
     if ( ae==FLAG_UNKNOWN )
 return( NULL );
 
@@ -3334,7 +3344,7 @@ Py_RETURN( self );		/* As simple as it can be */
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -3479,7 +3489,7 @@ static PyObject *PyFFLayer_AddExtrema(PyFF_Layer *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
     if ( flag!=NULL )
-	ae = FlagsFromString(flag,addextremaflags);
+	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
 
     ss = SSFromLayer(self);
     if ( ss==NULL )
@@ -3658,13 +3668,16 @@ return( -1 );
         PyErr_Format(PyExc_ValueError, "Stroke width must be positive" );
 return( -1 );
     }
-    c = FlagsFromString(cap,linecap);
-    j = FlagsFromString(join,linejoin);
-    f = FlagsFromTuple(flagtuple,strokeflags);
-    if ( c==FLAG_UNKNOWN || j==FLAG_UNKNOWN || f==FLAG_UNKNOWN ) {
-	PyErr_Format(PyExc_ValueError, "Bad value for line cap, join or flags" );
+    c = FlagsFromString(cap,linecap,"linecap type");
+    if ( c==FLAG_UNKNOWN )
 return( -1 );
-    }
+    j = FlagsFromString(join,linejoin,"linejoin type");
+    if ( c==FLAG_UNKNOWN )
+return( -1 );
+    f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
+    if ( c==FLAG_UNKNOWN )
+return( -1 );
+
     si->radius = width/2;
     si->join = j;
     si->cap = c;
@@ -6062,7 +6075,7 @@ static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNU
 
     if ( str==NULL )
 return( -1 );
-    gc = FlagsFromString(str,glyphclasses);
+    gc = FlagsFromString(str,glyphclasses,"glyph class");
     if ( gc==FLAG_UNKNOWN )
 return( -1 );
     self->sc->glyph_class = gc;
@@ -6360,7 +6373,7 @@ return( NULL );
 	if ( !PyArg_ParseTuple(tuple, "ssdd|i", &ac_name, &type, &x, &y, &lig_index ))
 return( NULL );
     }
-    aptype = FlagsFromString(type,ap_types);
+    aptype = FlagsFromString(type,ap_types,"anchor type");
     if ( aptype==FLAG_UNKNOWN )
 return( NULL );
     for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
@@ -7020,10 +7033,10 @@ static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, 
 	    &zones->removeoverlap,
 	    &zoneO ))
 return( embolden_error );
-    type = FlagsFromString(type_name,cw_types);
+    type = FlagsFromString(type_name,cw_types,"embolden type");
     if ( type==(uint32)FLAG_UNKNOWN )
 return( embolden_error );
-    zones->counter_type = FlagsFromString(counter_name,co_types);
+    zones->counter_type = FlagsFromString(counter_name,co_types,"counter type");
     if ( zones->counter_type==(uint32)FLAG_UNKNOWN )
 return( embolden_error );
 
@@ -7282,7 +7295,7 @@ return( NULL );
     if ( pt==NULL ) pt=locfilename;
 
     if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,FlagsFromTuple(flags,import_ps_flags));
+	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,FlagsFromTuple(flags,import_ps_flags,"PostScript import flag"));
 #ifndef _NO_LIBXML
     else if ( strcasecmp(pt,".svg")==0 )
 	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
@@ -7970,7 +7983,7 @@ static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"(dddddd)|O",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5],
 	    &flagO) )
 return( NULL );
-    flags = FlagsFromTuple(flagO,trans_flags);
+    flags = FlagsFromTuple(flagO,trans_flags,"transformation flag");
     if ( flags==FLAG_UNKNOWN )
 return( NULL );
     flags |= fvt_alllayers;
@@ -8006,7 +8019,7 @@ static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
@@ -8051,7 +8064,7 @@ static PyObject *PyFFGlyph_AddExtrema(PyFF_Glyph *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
     if ( flag!=NULL )
-	ae = FlagsFromString(flag,addextremaflags);
+	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
 
     SplineCharAddExtrema(sc,sc->layers[self->layer].splines,ae,sf->ascent+sf->descent);
     SCCharChangedUpdate(sc,self->layer);
@@ -8817,7 +8830,7 @@ static PyObject *PyFFSelection_select(PyObject *self, PyObject *args) {
     for ( i=0; i<cnt; ++i ) {
 	PyObject *arg = PyTuple_GetItem(args,i);
 	if ( !STRING_CHECK(arg) && PySequence_Check(arg)) {
-	    int newflags = FlagsFromTuple(arg,select_flags);
+	    int newflags = FlagsFromTuple(arg,select_flags,"select flag");
 	    if ( newflags==FLAG_UNKNOWN )
 return( NULL );
 	    if ( (newflags&(sel_more|sel_less)) == 0 )
@@ -10167,48 +10180,46 @@ return(0);
     val = PySequence_GetItem(tuple,0);
     if ( STRING_CHECK(val) ) {
 #if PY_MAJOR_VERSION >= 3
-    bytes = PyUnicode_AsUTF8String(val);
-    if (bytes == NULL)
+	bytes = PyUnicode_AsUTF8String(val);
+	if (bytes == NULL)
 return( 0 );
 	lang_str = PyBytes_AsString(bytes);
-	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
-    Py_DECREF(bytes);
+	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
+	Py_DECREF(bytes);
 #else /* PY_MAJOR_VERSION >= 3 */
 	lang_str = PyBytes_AsString(val);
-	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
+	lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
 #endif /* PY_MAJOR_VERSION >= 3 */
 	if ( lang==FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown language" );
 return( 0 );
 	}
     } else if ( PyInt_Check(val))
 	lang = PyInt_AsLong(val);
     else {
-	PyErr_Format(PyExc_TypeError, "Unknown language" );
+	PyErr_Format(PyExc_TypeError, "Language must be a string or an integer" );
 return( 0 );
     }
 
     val = PySequence_GetItem(tuple,1);
     if ( STRING_CHECK(val) ) {
 #if PY_MAJOR_VERSION >= 3
-    bytes = PyUnicode_AsUTF8String(val);
-    if (bytes == NULL)
+	bytes = PyUnicode_AsUTF8String(val);
+	if (bytes == NULL)
 return( 0 );
 	strid_str = PyBytes_AsString(bytes);
-	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
-    Py_DECREF(bytes);
+	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
+	Py_DECREF(bytes);
 #else /* PY_MAJOR_VERSION >= 3 */
 	strid_str = PyBytes_AsString(val);
-	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
+	strid = FlagsFromString(strid_str,sfnt_name_str_ids,"string id");
 #endif /* PY_MAJOR_VERSION >= 3 */
 	if ( strid==FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown string id" );
 return( 0 );
 	}
     } else if ( PyInt_Check(val))
 	strid = PyInt_AsLong(val);
     else {
-	PyErr_Format(PyExc_TypeError, "Unknown string id" );
+	PyErr_Format(PyExc_TypeError, "String-id must be a string or an integer" );
 return( 0 );
     }
 
@@ -10432,7 +10443,7 @@ return( -1 );
 	    if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"HO",
 		    &gasp[i].ppem, &flags ))
 return( -1 );
-	    flag = FlagsFromTuple(flags,gaspflags);
+	    flag = FlagsFromTuple(flags,gaspflags,"gasp flag");
 	    if ( flag==FLAG_UNKNOWN )
 return( -1 );
 	    gasp[i].flags = flag;
@@ -11684,21 +11695,19 @@ return( -1 );
 
 	if ( !PySequence_Check(subtuple)) {
 	    PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
-    return(0);
+return(0);
 	}
 
 	val = PySequence_GetItem(subtuple,0);
 	if ( STRING_CHECK(val) ) {
 	    char *lang_str = PyBytes_AsString(val);
-	    lang = FlagsFromString(lang_str,sfnt_name_mslangs);
-	    if ( lang==FLAG_UNKNOWN ) {
-		PyErr_Format(PyExc_TypeError, "Unknown language" );
+	    lang = FlagsFromString(lang_str,sfnt_name_mslangs,"language");
+	    if ( lang==FLAG_UNKNOWN )
 return( 0 );
-	    }
 	} else if ( PyInt_Check(val))
 	    lang = PyInt_AsLong(val);
 	else {
-	    PyErr_Format(PyExc_TypeError, "Unknown language" );
+	    PyErr_Format(PyExc_TypeError, "Language must be a string or an integer");
 return( 0 );
 	}
 
@@ -12762,7 +12771,7 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
 return( NULL );
     }
-    flags = FlagsFromTuple(flagstuple,compflags);
+    flags = FlagsFromTuple(flagstuple,compflags,"comparison flag");
     if ( flags==FLAG_UNKNOWN )
 return( NULL );
 
@@ -12771,7 +12780,7 @@ return( NULL );
     else
 	diffs = fopen(filename,"w");
     if ( diffs==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError,"Failed to open output file: %s", locfilename);
+	PyErr_Format(PyExc_EnvironmentError,"Failed to open output file: \"%s\"", locfilename);
 return( NULL );
     }
 
@@ -13805,7 +13814,7 @@ return( NULL );
 	}
     }
 
-    itype = FlagsFromString(type,lookup_types);
+    itype = FlagsFromString(type,lookup_types,"lookup type");
     if ( itype==FLAG_UNKNOWN )
 return( NULL );
 
@@ -14326,7 +14335,7 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
+	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
 
@@ -14335,7 +14344,7 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)rpl)->ob_type) ) {
 	rpl_ss = SSFromContour((PyFF_Contour *) rpl, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
+	PyErr_Format(PyExc_TypeError, "Expected a contour or layer");
 return( NULL );
     }
 
@@ -14369,11 +14378,11 @@ return( NULL );
     } else if ( PyType_IsSubtype(&PyFF_ContourType,((PyObject *)srch)->ob_type) ) {
 	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected type");
+	PyErr_Format(PyExc_TypeError, "Unexpected a contour or layer");
 return( NULL );
     }
     if (pyflags) 
-	flags = FlagsFromTuple(pyflags, find_flags);
+	flags = FlagsFromTuple(pyflags, find_flags, "search flag");
     else
 	flags = sv_reverse|sv_flips;
 
@@ -14548,9 +14557,8 @@ return( NULL );
 return( NULL );
     }
     if ( flags!=NULL ) {
-	iflags = FlagsFromTuple(flags,gen_flags);
+	iflags = FlagsFromTuple(flags,gen_flags,"generate flag");
 	if ( iflags==FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown flag");
 return( NULL );
 	}
 	/* Legacy screw ups mean that opentype & apple bits don't mean what */
@@ -14637,9 +14645,8 @@ return( NULL );
 return( NULL );
     }
     if ( flags!=NULL ) {
-	iflags = FlagsFromTuple(flags,gen_flags);
+	iflags = FlagsFromTuple(flags,gen_flags,"generate flag");
 	if ( iflags==FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown flag");
 return( NULL );
 	}
 	/* Legacy screw ups mean that opentype & apple bits don't mean what */
@@ -14655,9 +14662,8 @@ return( NULL );
 	    iflags |= 0x90;
     }
     if ( ttcflags!=NULL ) {
-	ittcflags = FlagsFromTuple(ttcflags,genttc_flags);
+	ittcflags = FlagsFromTuple(ttcflags,genttc_flags,"generate TTC flag");
 	if ( ittcflags==FLAG_UNKNOWN ) {
-	    PyErr_Format(PyExc_TypeError, "Unknown ttc flag");
 return( NULL );
 	}
     }
@@ -14997,9 +15003,8 @@ return( NULL );
     ptype = PyBytes_AsString(PyTuple_GetItem(args,0));
     if ( ptype==NULL )
 return( NULL );
-    type = FlagsFromString(ptype,printflags);
+    type = FlagsFromString(ptype,printflags,"print sample type");
     if ( type==FLAG_UNKNOWN ) {
-	PyErr_Format(PyExc_TypeError, "Unknown printing type" );
 return( NULL );
     }
     if ( type==4 ) {
@@ -15663,7 +15668,7 @@ static PyObject *PyFFFont_Simplify(PyFF_Font *self, PyObject *args) {
     if ( PySequence_Size(args)>=1 )
 	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags,"simplify flag");
     if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
 	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
     if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )

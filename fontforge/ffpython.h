@@ -111,5 +111,5 @@ extern int layer_active_in_ui;
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
-extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags);
+extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
 extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
