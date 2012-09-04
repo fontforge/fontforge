@@ -157,7 +157,7 @@ return 0;
   jpeg_start_compress(&cinfo, TRUE);
 
   if ( cinfo.in_color_space != JCS_GRAYSCALE )
-    row_pointer[0]=galloc(3*base->width);
+      row_pointer[0] = (JSAMPROW) galloc(3*base->width);
   while (cinfo.next_scanline < cinfo.image_height) {
     if ( cinfo.in_color_space == JCS_GRAYSCALE )
       row_pointer[0] = (unsigned char *) (base->data + cinfo.next_scanline*base->bytes_per_line);
