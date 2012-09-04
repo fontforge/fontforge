@@ -96,7 +96,7 @@ static void find_scanline(FILE *fp,struct sgiheader *header,int cur,
 	    ptrtab[cur] = ptrtab[i];
 return;
 	}
-    pt = ptrtab[cur] = galloc(header->width);
+    pt = ptrtab[cur] = (unsigned char *) galloc(header->width);
     fseek(fp,starttab[cur],0);
     while (1) {
 	ch = getthingamy(fp);
@@ -198,9 +198,11 @@ return( NULL );
 	} else if ( header.bpc==1 ) {
 	    unsigned char *r,*g,*b, *a=NULL;
 	    unsigned char *rpt, *gpt, *bpt;
-	    r = galloc(header.width); g=galloc(header.width); b=galloc(header.width);
+	    r = (unsigned char *) galloc(header.width);
+	    g = (unsigned char *) galloc(header.width);
+	    b = (unsigned char *) galloc(header.width);
 	    if ( header.chans==4 )
-		a = galloc(header.width);
+		a = (unsigned char *) galloc(header.width);
 	    for ( i=0; i<header.height; ++i ) {
 		fread(r,header.width,1,fp);
 		fread(g,header.width,1,fp);
@@ -217,9 +219,11 @@ return( NULL );
 	} else {
 	    unsigned char *r,*g,*b, *a=NULL;
 	    unsigned char *rpt, *gpt, *bpt;
-	    r = galloc(header.width); g=galloc(header.width); b=galloc(header.width);
+	    r = (unsigned char *) galloc(header.width);
+	    g = (unsigned char *) galloc(header.width);
+	    b = (unsigned char *) galloc(header.width);
 	    if ( header.chans==4 )
-		a = galloc(header.width);
+		a = (unsigned char *) galloc(header.width);
 	    for ( i=0; i<header.height; ++i ) {
 		for ( j=0; j<header.width; ++j )
 		    r[j] = getshort(fp)*255L/header.pixmax;

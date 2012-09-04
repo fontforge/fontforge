@@ -264,7 +264,7 @@ return( NULL );
 		_png_get_image_width(png_ptr,info_ptr),_png_get_image_height(png_ptr,info_ptr));
 	clut = ret->u.image->clut;
 	if ( clut==NULL )
-	    clut = ret->u.image->clut = gcalloc(1,sizeof(GClut));
+	    clut = ret->u.image->clut = (GClut *) gcalloc(1,sizeof(GClut));
 	clut->is_grey = true;
 	_png_get_PLTE(png_ptr,info_ptr,&palette,&num_palette);
 	clut->clut_len = num_palette;
@@ -287,7 +287,7 @@ return( NULL );
 	    base->clut->trans_index = base->trans = trans_alpha ? trans_alpha[0] : 0;
     }
 
-    row_pointers = galloc(_png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
+    row_pointers = (png_byte **) galloc(_png_get_image_height(png_ptr,info_ptr)*sizeof(png_bytep));
     for ( i=0; i<_png_get_image_height(png_ptr,info_ptr); ++i )
 	row_pointers[i] = (png_bytep) (base->data + i*base->bytes_per_line);
 
