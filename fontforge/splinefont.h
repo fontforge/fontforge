@@ -2157,7 +2157,7 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
-extern void SCInsertPST(SplineChar *sc,PST *new);
+extern void SCInsertPST(SplineChar *sc,PST *new_);
 extern void ValDevFree(ValDevTab *adjust);
 extern ValDevTab *ValDevTabCopy(ValDevTab *orig);
 extern void DeviceTableFree(DeviceTable *adjust);
@@ -2567,8 +2567,8 @@ extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum ove
 extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 	real shadow_length,SplineChar *sc, int wireframe);
 
-extern double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]);
-extern double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]);
+extern double BlueScaleFigureForced(struct psdict *private_,real bluevalues[], real otherblues[]);
+extern double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]);
 extern void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, int layer, BlueData *bd);
 extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
