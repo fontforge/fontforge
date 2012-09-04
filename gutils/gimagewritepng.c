@@ -133,12 +133,12 @@ return(false);
 	   png_set_packing(png_ptr);
 
        if ( base->trans!=-1 ) {
-	  trans_alpha = galloc(1);
-	  trans_alpha[0] = base->trans;
+	   trans_alpha = (png_bytep) galloc(1);
+	   trans_alpha[0] = base->trans;
        }
    } else {
        if ( base->trans!=-1 ) {
-	   trans_color = galloc(sizeof(png_color_16));
+	   trans_color = (png_color_16p) galloc(sizeof(png_color_16));
 	   trans_color->red = COLOR_RED(base->trans);
 	   trans_color->green = COLOR_GREEN(base->trans);
 	   trans_color->blue = COLOR_BLUE(base->trans);
@@ -152,7 +152,7 @@ return(false);
     if (color_type == PNG_COLOR_TYPE_RGB)
 	png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
 
-    rows = galloc(base->height*sizeof(png_byte *));
+    rows = (png_byte **) galloc(base->height*sizeof(png_byte *));
     for ( i=0; i<base->height; ++i )
 	rows[i] = (png_byte *) (base->data + i*base->bytes_per_line);
 
