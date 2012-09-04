@@ -238,17 +238,17 @@ return( str );
 
 static long findcol(char *str) {
     char *pt, *end;
-    char *try = "cgm";		/* Try in this order to find something */
+    char *try_order = "cgm"; /* Try in this order to find something */
 
-    while ( *try ) {
+    while ( *try_order ) {
 	pt = findnextkey(str);
 	while ( *pt ) {
 	    end = findnextkey(pt+2);
-	    if ( *pt==*try )
+	    if ( *pt==*try_order )
 return( parsecol(pt,end));
 	    pt = end;
 	}
-	++try;
+	++try_order;
     }
 	
 return 0;
@@ -308,7 +308,7 @@ return( NULL );
 	fclose(fp);
 return( NULL );
     }
-    line = galloc(lsiz = nchar*width+20);
+    line = (unsigned char *) galloc(lsiz = nchar*width+20);
     tab = parse_colors(fp,line,lsiz,cols,nchar,getdata);
     if ( cols<=256 ) {
 	Color clut[257];

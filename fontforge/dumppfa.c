@@ -1424,12 +1424,12 @@ static double FindMaxDiffOfBlues(char *pt, double max_diff) {
 return( max_diff );
 }
 
-double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]) {
+double BlueScaleFigureForced(struct psdict *private_,real bluevalues[], real otherblues[]) {
     double max_diff=0;
     char *pt;
     int i;
 
-    pt = PSDictHasEntry(private,"BlueValues");
+    pt = PSDictHasEntry(private_,"BlueValues");
     if ( pt!=NULL ) {
 	max_diff = FindMaxDiffOfBlues(pt,max_diff);
     } else if ( bluevalues!=NULL ) {
@@ -1438,11 +1438,11 @@ double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real othe
 		max_diff = bluevalues[i+1] - bluevalues[i];
 	}
     }
-    pt = PSDictHasEntry(private,"FamilyBlues");
+    pt = PSDictHasEntry(private_,"FamilyBlues");
     if ( pt!=NULL )
 	max_diff = FindMaxDiffOfBlues(pt,max_diff);
 
-    pt = PSDictHasEntry(private,"OtherBlues");
+    pt = PSDictHasEntry(private_,"OtherBlues");
     if ( pt!=NULL )
 	max_diff = FindMaxDiffOfBlues(pt,max_diff);
     else if ( otherblues!=NULL ) {
@@ -1451,7 +1451,7 @@ double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real othe
 		max_diff = otherblues[i+1] - otherblues[i];
 	}
     }
-    pt = PSDictHasEntry(private,"FamilyOtherBlues");
+    pt = PSDictHasEntry(private_,"FamilyOtherBlues");
     if ( pt!=NULL )
 	max_diff = FindMaxDiffOfBlues(pt,max_diff);
     if ( max_diff<=0 )
@@ -1462,10 +1462,10 @@ return( -1 );
 return( .99/max_diff );
 }
 
-double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]) {
-    if ( PSDictHasEntry(private,"BlueScale")!=NULL )
+double BlueScaleFigure(struct psdict *private_,real bluevalues[], real otherblues[]) {
+    if ( PSDictHasEntry(private_,"BlueScale")!=NULL )
 return( -1 );
-    return BlueScaleFigureForced(private, bluevalues, otherblues);
+    return BlueScaleFigureForced(private_, bluevalues, otherblues);
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
