@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flaglist.h"
+
 #if PY_MAJOR_VERSION >= 3
 
 #define PyInt_Check    PyLong_Check
@@ -101,9 +103,6 @@
 #if PY_MAJOR_VERSION < 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 4)
 typedef int Py_ssize_t;
 #endif
-
-struct flaglist { char *name; int flag; };
-#define FLAGLIST_EMPTY { NULL, 0 }
 
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;

@@ -46,6 +46,7 @@
 #include "plugins.h"
 #include "scripting.h"
 #include "scriptfuncs.h"
+#include "flaglist.h"
 
 int no_windowing_ui = false;
 int running_script = false;
@@ -7576,8 +7577,7 @@ return;
     }
 }
 
-struct flaglist { char *name; int flag; };
-
+/* Anchor type: see 'enum anchor_type' in splinefont.h */
 static struct flaglist ap_types[] = {
     { "mark", at_mark },
     { "base", at_basechar },
@@ -7586,7 +7586,7 @@ static struct flaglist ap_types[] = {
     { "entry", at_centry },
     { "exit", at_cexit },
     { "baselig", at_baselig },
-    { NULL, 0 }
+    FLAGLIST_EMPTY
 };
 
 static void bGetAnchorPoints(Context *c) {
@@ -7618,7 +7618,7 @@ static void bGetAnchorPoints(Context *c) {
 	temp->vals[0].type = v_str;
 	temp->vals[0].u.sval = copy(ap->anchor->name);
 	temp->vals[1].type = v_str;
-	temp->vals[1].u.sval = copy(ap_types[ap->type].name);
+	temp->vals[1].u.sval = copy(FindNameOfFlag(ap_types,ap->type));
 	temp->vals[2].type = v_real;
 	temp->vals[2].u.fval = ap->me.x;
 	temp->vals[3].type = v_real;

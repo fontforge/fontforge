@@ -22,8 +22,8 @@ STATIC_LIBS = @STATIC_LIBS@
 fontforge_LIBOBJECTS = asmfpst.o autohint.o autosave.o autotrace.o autowidth.o \
  bezctx_ff.o bitmapchar.o bitmapcontrol.o bvedit.o clipnoui.o crctab.o \
  cvexport.o cvimages.o cvundoes.o dumpbdf.o dumppfa.o effects.o encoding.o \
- featurefile.o fontviewbase.o freetype.o fvcomposite.o fvfonts.o fvimportbdf.o \
- fvmetrics.o glyphcomp.o http.o ikarus.o lookups.o macbinary.o \
+ featurefile.o flaglist.o fontviewbase.o freetype.o fvcomposite.o fvfonts.o \
+ fvimportbdf.o fvmetrics.o glyphcomp.o http.o ikarus.o lookups.o macbinary.o \
  macenc.o mathconstants.o mm.o namelist.o nonlineartrans.o noprefs.o nouiutil.o \
  nowakowskittfinstr.o ofl.o othersubrs.o palmfonts.o parsepdf.o parsepfa.o \
  parsettfatt.o parsettfbmf.o parsettf.o parsettfvar.o plugins.o print.o \
