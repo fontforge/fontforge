@@ -76,6 +76,9 @@ struct gfuncs {
     int (*is_default)(GGadget *g);
 };
 
+enum gadget_state {gs_invisible, gs_disabled, gs_enabled, gs_active,
+		   gs_focused, gs_pressedactive };
+
 struct ggadget {
     struct gfuncs *funcs;
     struct gwindow *base;
@@ -98,8 +101,7 @@ struct ggadget {
     short cid;
     void *data;
     GBox *box;
-    enum gadget_state {gs_invisible, gs_disabled, gs_enabled, gs_active,
-	    gs_focused, gs_pressedactive } state;
+    enum gadget_state state;
     unichar_t *popup_msg;
     GGadgetHandler handle_controlevent;
     int16 desired_width, desired_height;
@@ -345,9 +347,11 @@ typedef struct gmenubar {
     GMenuItem fake[2];		/* Used if not enough room for menu... */
 } GMenuBar;
 
+struct tabs { unichar_t *name; int16 x, width, tw, nesting; unsigned int disabled: 1; GWindow w; };
+
 typedef struct gtabset {
     struct ggadget g;
-    struct tabs { unichar_t *name; int16 x, width, tw, nesting; unsigned int disabled: 1; GWindow w; } *tabs;
+    struct tabs *tabs;
     int16 *rowstarts;		/* for each row, index into tab array of its first tab, one extra entry at end with tabcnt */
     int16 tabcnt;		/* number of tabs */
     int16 sel;			/* active tab */
@@ -408,22 +412,24 @@ typedef struct ghvbox {
     int label_height;
 } GHVBox;
 
+struct col_data {
+    enum me_type me_type;
+    char *(*func)(GGadget *,int r,int c); /* Produces a string to display if md_str==NULL */
+    GMenuItem *enum_vals;
+    void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
+    GTextCompletionHandler completer;
+    char *title;
+    int16 width, x;			/* Relative to inner.x */
+    uint8 fixed;
+    uint8 disabled;
+    uint8 hidden;
+};
+
 typedef struct gmatrixedit {
     GGadget g;
     int rows, cols;
     int row_max;
-    struct col_data {
-	enum me_type me_type;
-	char *(*func)(GGadget *,int r,int c); /* Produces a string to display if md_str==NULL */
-	GMenuItem *enum_vals;
-	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
-	GTextCompletionHandler completer;
-	char *title;
-	int16 width, x;			/* Relative to inner.x */
-	uint8 fixed;
-	uint8 disabled;
-	uint8 hidden;
-    } *col_data;
+    struct col_data *col_data;
     int hpad, vpad;			/* Internal padding */
     unsigned int has_titles: 1;
     unsigned int lr_pointer: 1;

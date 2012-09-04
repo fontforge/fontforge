@@ -87,6 +87,11 @@ struct instrinfo {
     int  (*handle_char)(struct instrinfo *,GEvent *e);
 };
 
+struct reflist {
+    RefChar *ref;
+    struct reflist *parent;
+};
+
 typedef struct debugview {
     struct debugger_context *dc;	/* Local to freetype.c */
     GWindow dv, v;
@@ -109,12 +114,22 @@ typedef struct debugview {
 
     int codeSize;
     uint8 initialbytes[4];
-    struct reflist { RefChar *ref; struct reflist *parent; } *active_refs;
+    struct reflist *active_refs;
     int last_npoints;
     int layer;
 } DebugView;
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
+
+struct freehand {
+    struct tracedata *head, *last;	/* for the freehand tool */
+    SplinePointList *current_trace;
+    int ignore_wobble;		/* Ignore wiggles smaller than this */
+    int skip_cnt;
+};
+
+enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
+		  ee_sw, ee_left, ee_max };
 
 typedef struct charview {
     CharViewBase b;
@@ -212,14 +227,8 @@ typedef struct charview {
     IPoint handscroll_base;
     uint16 rfh, ras;
     BasePoint lastknife;
-    struct freehand {
-	struct tracedata *head, *last;	/* for the freehand tool */
-	SplinePointList *current_trace;
-	int ignore_wobble;		/* Ignore wiggles smaller than this */
-	int skip_cnt;
-    } freehand;
-    enum expandedge { ee_none, ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down,
-	    ee_sw, ee_left, ee_max } expandedge;
+    struct freehand freehand;
+    enum expandedge expandedge;
     BasePoint expandorigin;
     real expandwidth, expandheight;
     SplinePointList *active_shape;
@@ -298,6 +307,18 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
+
+struct metricchar {
+    int16 dx, dwidth;	/* position and width of the displayed char */
+    int16 dy, dheight;	/*  displayed info for vertical metrics */
+    int xoff, yoff;
+    int16 mx, mwidth;	/* position and width of the text underneath */
+    int16 kernafter;
+    unsigned int selected: 1;
+    GGadget *width, *lbearing, *rbearing, *kern, *name;
+    GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
+};
+
 typedef struct metricsview {
     struct fontview *fv;
     SplineFont *sf;
@@ -321,16 +342,7 @@ typedef struct metricsview {
     int16 cmax, clen; 
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
-    struct metricchar {		/* One for each glyph above */
-	int16 dx, dwidth;	/* position and width of the displayed char */
-	int16 dy, dheight;	/*  displayed info for vertical metrics */
-	int xoff, yoff;
-	int16 mx, mwidth;	/* position and width of the text underneath */
-	int16 kernafter;
-	unsigned int selected: 1;
-	GGadget *width, *lbearing, *rbearing, *kern, *name;
-	GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
-    } *perchar;
+    struct metricchar *perchar;	/* One for each glyph above */
     SplineChar **sstr;		/* Character input stream */
     int16 mwidth, mbase;
     int16 glyphcnt, max;
@@ -564,25 +576,35 @@ typedef struct strokedlg {
 } StrokeDlg;
 extern void StrokeCharViewInits(StrokeDlg *sd,int cid);
 
+struct lksubinfo {
+    struct lookup_subtable *subtable;
+    unsigned int deleted: 1;
+    unsigned int new: 1;
+    unsigned int selected: 1;
+    unsigned int moved: 1;
+};
+
+struct lkinfo {
+    OTLookup *lookup;
+    unsigned int open: 1;
+    unsigned int deleted: 1;
+    unsigned int new: 1;
+    unsigned int selected: 1;
+    unsigned int moved: 1;
+    int16 subtable_cnt, subtable_max;
+    struct lksubinfo *subtables;
+};
+
 struct lkdata {
     int cnt, max;
     int off_top, off_left;
-    struct lkinfo {
-	OTLookup *lookup;
-	unsigned int open: 1;
-	unsigned int deleted: 1;
-	unsigned int new: 1;
-	unsigned int selected: 1;
-	unsigned int moved: 1;
-	int16 subtable_cnt, subtable_max;
-	struct lksubinfo {
-	    struct lookup_subtable *subtable;
-	    unsigned int deleted: 1;
-	    unsigned int new: 1;
-	    unsigned int selected: 1;
-	    unsigned int moved: 1;
-	} *subtables;
-    } *all;
+    struct lkinfo *all;
+};
+
+struct anchor_shows {
+    CharView *cv;
+    SplineChar *sc;
+    int restart;
 };
 
 struct gfi_data {		/* FontInfo */
@@ -600,7 +622,7 @@ struct gfi_data {		/* FontInfo */
     unsigned int mpdone: 1;
     unsigned int lk_drag_and_drop: 1;
     unsigned int lk_dropablecursor: 1;
-    struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
+    struct anchor_shows anchor_shows[2];
     struct texdata texdata;
     GFont *font;
     int as, fh;

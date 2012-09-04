@@ -2132,28 +2132,59 @@ static char *fea_classesSplit(char *class1, char *class2) {
     return( intersection );
 }
 
+enum toktype { tk_name, tk_class, tk_int, tk_char, tk_cid, tk_eof,
+/* keywords */
+	       tk_firstkey,
+	       tk_anchor=tk_firstkey, tk_anonymous, tk_by, tk_caret, tk_cursive, tk_device,
+	       tk_enumerate, tk_excludeDFLT, tk_exclude_dflt, tk_feature, tk_from,
+	       tk_ignore, tk_ignoreDFLT, tk_ignoredflt, tk_IgnoreBaseGlyphs,
+	       tk_IgnoreLigatures, tk_IgnoreMarks, tk_include, tk_includeDFLT,
+	       tk_include_dflt, tk_language, tk_languagesystem, tk_lookup,
+	       tk_lookupflag, tk_mark, tk_nameid, tk_NULL, tk_parameters, tk_position,
+	       tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
+	       tk_table, tk_useExtension,
+/* Additional keywords in the 2008 draft */
+	       tk_anchorDef, tk_valueRecordDef, tk_contourpoint,
+	       tk_MarkAttachmentType, tk_UseMarkFilteringSet,
+	       tk_markClass, tk_reversesub, tk_base, tk_ligature, tk_ligComponent,
+	       tk_featureNames
+};
+
+struct glyphclasses {
+    char *classname, *glyphs;
+    struct glyphclasses *next;
+};
+
+struct namedanchor {
+    char *name;
+    AnchorPoint *ap;
+    struct namedanchor *next;
+};
+
+struct namedvalue {
+    char *name;
+    struct vr *vr;
+    struct namedvalue *next;
+};
+
+struct gdef_mark { char *name; int index; char *glyphs; };
+
+/* GPOS mark classes may have multiple definitions each added a glyph
+ * class and anchor, these are linked under "same" */
+struct gpos_mark {
+    char *name;
+    char *glyphs;
+    AnchorPoint *ap;
+    struct gpos_mark *same, *next;
+    int name_used;	/* Same "markClass" can be used in any mark type lookup, or indeed in multiple lookups of the same type */
+} *gpos_mark;
+
 #define MAXT	80
 #define MAXI	5
 struct parseState {
     char tokbuf[MAXT+1];
     long value;
-    enum toktype { tk_name, tk_class, tk_int, tk_char, tk_cid, tk_eof,
-/* keywords */
-	tk_firstkey,
-	tk_anchor=tk_firstkey, tk_anonymous, tk_by, tk_caret, tk_cursive, tk_device,
-	tk_enumerate, tk_excludeDFLT, tk_exclude_dflt, tk_feature, tk_from,
-	tk_ignore, tk_ignoreDFLT, tk_ignoredflt, tk_IgnoreBaseGlyphs,
-	tk_IgnoreLigatures, tk_IgnoreMarks, tk_include, tk_includeDFLT,
-	tk_include_dflt, tk_language, tk_languagesystem, tk_lookup,
-	tk_lookupflag, tk_mark, tk_nameid, tk_NULL, tk_parameters, tk_position,
-	tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
-	tk_table, tk_useExtension,
-/* Additional keywords in the 2008 draft */
-	tk_anchorDef, tk_valueRecordDef, tk_contourpoint,
-	tk_MarkAttachmentType, tk_UseMarkFilteringSet,
-	tk_markClass, tk_reversesub, tk_base, tk_ligature, tk_ligComponent,
-	tk_featureNames
-    } type;
+    enum toktype type;
     uint32 tag;
     int could_be_tag;
     FILE *inlist[MAXI];
@@ -2168,23 +2199,16 @@ struct parseState {
     unsigned int skipping: 1;
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
-    struct glyphclasses { char *classname, *glyphs; struct glyphclasses *next; } *classes;
-    struct namedanchor { char *name; AnchorPoint *ap; struct namedanchor *next; } *namedAnchors;
-    struct namedvalue { char *name; struct vr *vr; struct namedvalue *next; } *namedValueRs;
+    struct glyphclasses *classes;
+    struct namedanchor *namedAnchors;
+    struct namedvalue *namedValueRs;
     struct feat_item *sofar;
     int base;			/* normally numbers are base 10, but in the case of languages in stringids, they can be octal or hex */
     OTLookup *created, *last;	/* Ordered, but not sorted into GSUB, GPOS yet */
     AnchorClass *accreated;
     int gm_cnt[2], gm_max[2], gm_pos[2];
-    struct gdef_mark { char *name; int index; char *glyphs; } *gdef_mark[2];
-    /* GPOS mark classes may have multiple definitions each added a glyph class and anchor, these are linked under "same" */
-    struct gpos_mark {
-	char *name;
-	char *glyphs;
-	AnchorPoint *ap;
-	struct gpos_mark *same, *next;
-	int name_used;	/* Same "markClass" can be used in any mark type lookup, or indeed in multiple lookups of the same type */
-    } *gpos_mark;
+    struct gdef_mark *gdef_mark[2];
+    struct gpos_mark *gpos_mark;
 };
 
 static struct keywords {
@@ -3160,6 +3184,17 @@ return;
     }
 }
 
+struct apmark {
+    AnchorPoint *ap;
+    struct gpos_mark *mark_class;
+    uint16 mark_count;
+};
+
+struct ligcomponent {
+    int apm_cnt;
+    struct apmark *apmark;
+};
+
 struct markedglyphs {
     unsigned int has_marks: 1;		/* Are there any marked glyphs in the entire sequence? */
     unsigned int is_cursive: 1;		/* Only in a position sequence */
@@ -3176,9 +3211,9 @@ struct markedglyphs {
     int ap_cnt;				/* Number of anchor points */
     AnchorPoint **anchors;
     int apm_cnt;
-    struct apmark { AnchorPoint *ap; struct gpos_mark *mark_class; uint16 mark_count; } *apmark;
+    struct apmark *apmark;
     int lc_cnt;
-    struct ligcomponent { int apm_cnt; struct apmark *apmark; } *ligcomp;
+    struct ligcomponent *ligcomp;
     char *lookupname;
     struct markedglyphs *next;
 };

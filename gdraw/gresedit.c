@@ -33,20 +33,22 @@
 #include <stdlib.h>
 #include <ustring.h>
 
-typedef struct greseditdlg {
-    struct tofree {
-	GGadgetCreateData *gcd;
-	GTextInfo *lab;
-	GGadgetCreateData mainbox[2], flagsbox, colbox, extrabox, ibox, fontbox,
+struct tofree {
+    GGadgetCreateData *gcd;
+    GTextInfo *lab;
+    GGadgetCreateData mainbox[2], flagsbox, colbox, extrabox, ibox, fontbox,
 	sabox;
-	GGadgetCreateData *marray[11], *farray[5][6], *carray[12][9], *(*earray)[8];
-	GGadgetCreateData *iarray[4], *fontarray[5], *saarray[5];
-	char *fontname;
-	char **extradefs;
-	char bw[20], padding[20], rr[20];
-	GResInfo *res;
-	int startcid, fontcid, btcid;
-    } *tofree;
+    GGadgetCreateData *marray[11], *farray[5][6], *carray[12][9], *(*earray)[8];
+    GGadgetCreateData *iarray[4], *fontarray[5], *saarray[5];
+    char *fontname;
+    char **extradefs;
+    char bw[20], padding[20], rr[20];
+    GResInfo *res;
+    int startcid, fontcid, btcid;
+};
+
+typedef struct greseditdlg {
+    struct tofree *tofree;
     GWindow gw;
     GGadget *tabset;
     const char *def_res_file;

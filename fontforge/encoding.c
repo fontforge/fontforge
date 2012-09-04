@@ -1187,10 +1187,11 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 }
 
 enum cmaptype { cmt_out=-1, cmt_coderange, cmt_notdefs, cmt_cid, cmt_max };
+struct coderange { uint32 first, last, cid; };
 struct cmap {
     struct {
 	int n;
-	struct coderange { uint32 first, last, cid; } *ranges;
+	struct coderange *ranges;
     } groups[cmt_max];
     char *registry;
     char *ordering;

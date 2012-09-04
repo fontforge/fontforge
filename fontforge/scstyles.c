@@ -4477,13 +4477,15 @@ static void ItalicCompress(SplineChar *sc,int layer,struct hsquash *squash) {
     }
 }
 
+enum pt_type { pt_oncurve, pt_offcurve, pt_end };
+
 struct italicserifdata {
     int emsize;
     double stemwidth;
     double xheight;
     double ia;
     double stem_angle;
-    struct { double x,y; enum { pt_oncurve, pt_offcurve, pt_end } type; } points[27];
+    struct { double x,y; enum pt_type type; } points[27];
 };
 static struct italicserifdata normalitalicserif =	/* faces right */
     { 1000, 84, 450, -15.2, 90, /* vertical */{
