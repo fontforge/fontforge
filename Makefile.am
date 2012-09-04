@@ -29,8 +29,7 @@ SUBDIRS += $(subdirs)
 SUBDIRS += tests
 
 pkgconfigdir = ${libdir}/pkgconfig
-nodist_pkgconfig_DATA = fontforge.pc libfontforge.pc	\
-	libfontforgeexe.pc
+nodist_pkgconfig_DATA = libfontforge.pc libfontforgeexe.pc
 
 EXTRA_DIST += LICENSE README-Mac.html README-MS.html README-unix	\
 	README-Unix.html Readme.VMS
