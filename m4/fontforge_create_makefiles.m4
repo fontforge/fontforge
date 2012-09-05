@@ -16,6 +16,7 @@ AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([po/mackeys/Makefile])
 AC_CONFIG_FILES([htdocs/Makefile])
 AC_CONFIG_FILES([pycontrib/Makefile])
+AC_CONFIG_FILES([cidmap/Makefile])
 AC_CONFIG_FILES([plugins/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 
