@@ -56,6 +56,8 @@ static const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL;
 #define INSCHR_Close	10
 #define INSCHR_Show	11
 
+enum dsp_mode { d_hex, d_dec, d_unicode, d_kuten };
+
 static struct inschr {
     GWindow icw;
     int width, height;
@@ -63,7 +65,7 @@ static struct inschr {
     long sel_char;
     enum charset map;
     int page;
-    enum dsp_mode { d_hex, d_dec, d_unicode, d_kuten } dsp_mode;
+    enum dsp_mode dsp_mode;
     unsigned int hidden: 1;
     unsigned int show_enabled: 1;
     unsigned int mouse_down: 1;

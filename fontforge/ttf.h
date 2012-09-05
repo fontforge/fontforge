@@ -37,33 +37,50 @@ struct dup {
     struct dup *prev;
 };
 
+struct taxis {
+    uint32 tag;
+    real min, def, max;	/* in user design space */
+    int nameid;
+    int paircount;
+    real *mapfrom;		/* after conversion from [-1,1] */
+    real *mapto;		/* secondary conversiont to [-1,1] */
+};
+
+struct tinstance {
+    int nameid;
+    real *coords;	/* Location along axes array[axis_count] */
+};
+
+struct tuples {
+    real *coords;	/* Location along axes array[axis_count] */
+    SplineChar **chars;	/* Varied glyphs, array parallels one in info */
+    struct ttf_table *cvt;
+    KernClass *khead, *klast, *vkhead, *vklast; /* Varied kern classes */
+};
+
 struct variations {
     int axis_count;
-    struct taxis {
-	uint32 tag;
-	real min, def, max;	/* in user design space */
-	int nameid;
-	int paircount;
-	real *mapfrom;		/* after conversion from [-1,1] */
-	real *mapto;		/* secondary conversiont to [-1,1] */
-    } *axes;		/* Array of axis_count entries */
+    struct taxis *axes;		/* Array of axis_count entries */
     int instance_count;	/* Not master designs, but named interpolations in design space */
-    struct tinstance {
-	int nameid;
-	real *coords;	/* Location along axes array[axis_count] */
-    } *instances;
+    struct tinstance *instances;
     int tuple_count;
-    struct tuples {
-	real *coords;	/* Location along axes array[axis_count] */
-	SplineChar **chars;	/* Varied glyphs, array parallels one in info */
-	struct ttf_table *cvt;
-	KernClass *khead, *klast, *vkhead, *vklast;
-				/* Varied kern classes */
-    } *tuples;
+    struct tuples *tuples;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
 	
+struct macidname {
+    int id;
+    struct macname *head, *last;
+    struct macidname *next;
+};
+
+struct savetab {
+    uint32 tag;
+    uint32 offset;
+    int len;
+};
+
 struct ttfinfo {
     int emsize;			/* ascent + descent? from the head table */
     int ascent, descent;	/* from the hhea table */
@@ -260,18 +277,10 @@ struct ttfinfo {
     int lookup_cnt;		/* Max lookup in current GPOS/GSUB table */
     int feature_cnt;		/* Max feature in current GPOS/GSUB table */
     struct variations *variations;
-    struct macidname {
-	int id;
-	struct macname *head, *last;
-	struct macidname *next;
-    } *macstrids;
+    struct macidname *macstrids;
     struct fontdict *fd;	/* For reading in Type42 fonts. Glyph names in postscript section must be associated with glyphs in TTF section */
     int savecnt;
-    struct savetab {
-	uint32 tag;
-	uint32 offset;
-	int len;
-    } *savetab;
+    struct savetab *savetab;
     int32 last_size_pos;
     uint16 design_size;
     uint16 fontstyle_id;
@@ -323,6 +332,16 @@ struct ttfinfo {
     enum gsub_inusetype justinuse;
 };
 
+struct taboff {
+    uint32 tag;	/* Table name */
+    uint32 checksum;/* for table */
+    uint32 offset;	/* to start of table in file */
+    uint32 length;
+    FILE *data;
+    uint16 dup_of;
+    uint16 orderingval;
+};
+
 #define MAX_TAB	48
 struct tabdir {
     int32 version;	/* 0x00010000 */
@@ -330,15 +349,7 @@ struct tabdir {
     uint16 searchRange;	/* (Max power of 2 <= numtab) *16 */
     uint16 entrySel;	/* Log2(Max power of 2 <= numtab ) */
     uint16 rangeShift;	/* numtab*16 - searchRange */
-    struct taboff {
-	uint32 tag;	/* Table name */
-	uint32 checksum;/* for table */
-	uint32 offset;	/* to start of table in file */
-	uint32 length;
-	FILE *data;
-	uint16 dup_of;
-	uint16 orderingval;
-    } tabs[MAX_TAB];		/* room for all the above tables */
+    struct taboff tabs[MAX_TAB];/* room for all the tables */
 				/* Not in any particular order. */
     struct taboff *ordered[MAX_TAB];	/* Ordered the way the tables should be output in file */
     struct taboff *alpha[MAX_TAB];	/* Ordered alphabetically by tag for the ttf header */
@@ -395,6 +406,13 @@ struct hmtx {
     int16 lsb;
 };
 
+struct kp {
+    uint16 left;	/* left glyph num */
+    uint16 right;	/* right glyph num */
+    /* table is ordered by these two above treated as uint32 */
+    int16 offset;	/* kern amount */
+};
+
 struct kern {
     uint16 version;	/* 0 */
     uint16 ntab;	/* 1, number of subtables */
@@ -406,12 +424,7 @@ struct kern {
     uint16 searchRange;	/* (Max power of 2 <= nPairs) *6 */
     uint16 entrySel;	/* Log2(Max power of 2 <= nPairs ) */
     uint16 rangeShift;	/* numtab*6 - searchRange */
-    struct kp {
-	uint16 left;	/* left glyph num */
-	uint16 right;	/* right glyph num */
-	/* table is ordered by these two above treated as uint32 */
-	int16 offset;	/* kern amount */
-    } *kerns;		/* Array should be nPairs big */
+    struct kp *kerns;	/* Array should be nPairs big */
 };
 
 struct maxp {
@@ -434,19 +447,21 @@ struct maxp {
 	/* OpenType docs say: 1 (if no composits), any depth allowed */
 };
 
+struct namerec {
+    uint16 platform;	/* 3 => MS */
+    uint16 specific;	/* 1 */
+    uint16 language;	/* 0x0409 */
+    uint16 nameid;	/* 0=>copyright, 1=>family, 2=>weight, 4=>fullname */
+			/*  5=>version, 6=>postscript name */
+    uint16 strlen;
+    uint16 stroff;
+};
+
 struct nametab {
     uint16 format;	/* 0 */
     uint16 numrec;	/* 1 */
     uint16 startOfStrings;	/* offset from start of table to start of strings */
-    struct namerec {
-	uint16 platform;	/* 3 => MS */
-	uint16 specific;	/* 1 */
-	uint16 language;	/* 0x0409 */
-	uint16 nameid;		/* 0=>copyright, 1=>family, 2=>weight, 4=>fullname */
-				/*  5=>version, 6=>postscript name */
-	uint16 strlen;
-	uint16 stroff;
-    } nr[6];
+    struct namerec nr[6];
 };
 
 struct os2 {
@@ -581,6 +596,17 @@ struct vorg {
 #endif
 };
 
+struct feat_name {
+    int strid;
+    struct macname *mn, *smn;
+};
+
+struct other_names {
+    int strid;
+    struct macname *mn;
+    struct other_names *next;
+};
+
 struct alltabs {
     struct tabdir tabdir;
     struct head head;
@@ -702,8 +728,8 @@ struct alltabs {
     struct fd2data *fds;
     int next_strid;
 
-    struct feat_name { int strid; struct macname *mn, *smn; } *feat_name;
-    struct other_names { int strid; struct macname *mn; struct other_names *next; } *other_names;
+    struct feat_name *feat_name;
+    struct other_names *other_names;
     struct macname2 *ordered_feat;
 
     int next_lookup;	/* for doing nested lookups in contextual features */
@@ -720,20 +746,24 @@ struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 
 
 enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };
 
+struct ct_branch {
+    uint16 classnum;
+    struct contexttree *branch;
+};
+
+struct ct_subs {
+    struct fpst_rule *rule;
+    struct contexttree *branch;/* if the rule ends here this will be null */
+    uint16 thisclassnum;
+};
+
 struct contexttree {
     int depth;
     int branch_cnt;	/* count of subbranches of this node */
-    struct ct_branch {
-	uint16 classnum;
-	struct contexttree *branch;
-    } *branches;
+    struct ct_branch *branches;
     struct fpst_rule *ends_here;
     int rule_cnt;	/* count of rules which are active here */
-    struct ct_subs {
-	struct fpst_rule *rule;
-	struct contexttree *branch;/* if the rule ends here this will be null */
-	uint16 thisclassnum;
-    } *rules;
+    struct ct_subs *rules;
     int pending_pos;
     OTLookup *applymarkedsubs;
     OTLookup *applycursubs;

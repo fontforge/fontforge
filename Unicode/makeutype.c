@@ -621,11 +621,18 @@ static void dumparabicdata(FILE *header) {
     fprintf( data, GeneratedFileMessage );
 
     fprintf( data, "struct arabicforms ArabicForms[] = {\n" );
+    fprintf( data, "\t/* initial, medial, final, isolated, isletter, joindual, required_lig_with_alef */\n");
     for ( i=0; i<256; ++i ) {
-	fprintf( data, "\t{ 0x%04x, 0x%04x, 0x%04x, 0x%04x, %d, %d, %d }%s\n",
+	fprintf( data, "\t{ 0x%04x, 0x%04x, 0x%04x, 0x%04x, %d, %d, %d }",
 		forms[i].initial, forms[i].medial, forms[i].final, forms[i].isolated,
-		forms[i].isletter, forms[i].joindual, forms[i].required_lig_with_alef,
-		i==255?"":",");
+		forms[i].isletter, forms[i].joindual, forms[i].required_lig_with_alef);
+	if ( i==255 )
+	    fprintf( data, "\n");
+	else
+	    if ( (i & 31)==0 )
+		fprintf( data, ",\t/* 0x%04x */\n",0x600+i);
+	    else
+		fprintf( data, ",\n");
     }
     fprintf( data, "};\n" );
     fclose( data );
@@ -786,86 +793,118 @@ static void dump() {
 
     fprintf( data, "#include \"utype.h\"\n" );
     fprintf( data, GeneratedFileMessage );
-    fprintf( data, "const unsigned short ____tolower[]= { 0,\n " );
+    fprintf( data, "const unsigned short ____tolower[]= { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mytolower[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytolower[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____toupper[] = { 0,\n " );
+    fprintf( data, "const unsigned short ____toupper[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mytoupper[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytoupper[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____totitle[] = { 0,\n " );
+    fprintf( data, "const unsigned short ____totitle[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mytotitle[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mytotitle[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned short ____tomirror[] = { 0,\n " );
+    fprintf( data, "const unsigned short ____tomirror[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%04x,", mymirror[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%04x\n};\n\n", mymirror[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned char ____digitval[] = { 0,\n " );
+    fprintf( data, "const unsigned char ____digitval[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%02x,", mynumericvalue[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%02x\n};\n\n", mynumericvalue[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned int ____utype[] = { 0,\n " );
+    fprintf( data, "const unsigned int ____utype[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%08x,", flags[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
-    fprintf( data, "const unsigned int ____utype2[] = { 0,\n " );
+    fprintf( data, "const unsigned int ____utype2[] = { 0,\n" );
     for ( i=0; i<MAXC; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<MAXC-1; ++j )
 	    fprintf(data, " 0x%08x,", flags2[i+j]);
 	if ( i+j==MAXC-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", flags2[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
 
-    fprintf( data, "const unsigned int ____codepointassigned[] = {\n " );
+    fprintf( data, "const unsigned int ____codepointassigned[] = {\n" );
     for ( i=0; i<0x120000/32; i+=j ) {
+	fprintf( data, " " );
 	for ( j=0; j<8 && i+j<0x120000/32-1; ++j )
 	    fprintf(data, " 0x%08x,", assignedcodepoints[i+j]);
 	if ( i+j==0x120000/32-1 ) {
 	    fprintf(data, " 0x%08x\n};\n\n", assignedcodepoints[i+j]);
     break;
 	} else
-	    fprintf( data, "\n ");
+	    if ( (i & 63)==0 )
+		fprintf( data, "\t/* 0x%04x */\n",i);
+	    else
+		fprintf( data, "\n");
     }
 
     fclose( data );
@@ -1782,8 +1821,8 @@ int main() {
     /*  so apply at a different level */
     /* readcorpfile("ADOBE ", "AdobeCorporateuse.txt"); */
     cheat();				/* over-ride with these mods after reading input files */
-    dump();
-    dump_alttable();
+    dump();				/* create utype.h, utype.c and ArabicForms.c */
+    dump_alttable();			/* create unialt.c */
     FreeNamesMemorySpace();		/* cleanup alloc of memory */
 return( 0 );
 }

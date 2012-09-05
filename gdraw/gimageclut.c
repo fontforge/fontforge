@@ -29,18 +29,22 @@
 #include "charset.h"
 #include "ustring.h"
 
+struct clutinf {
+    Color col;
+    int32 cnt;
+    struct clutinf *next;
+};
+
+struct clutcube {
+    int32 cnt;
+    struct clutinf *ours;
+};
+
 struct clutcnt {
     int sofar;
-    struct clutinf {
-	Color col;
-	int32 cnt;
-	struct clutinf *next;
-    } clut[256];
+    struct clutinf clut[256];
     struct clutinf transinf;
-    struct clutcube {
-	int32 cnt;
-	struct clutinf *ours;
-    } cube[16][16][16];
+    struct clutcube cube[16][16][16];
     int32 dither[6*6*6];
     int size, div;
 };

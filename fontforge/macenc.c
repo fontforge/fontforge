@@ -1194,9 +1194,7 @@ return( NULL );
 	out = ret = galloc(outlen+sizeof(unichar_t));
 	iconv(fromutf8,&in,&inlen,&out,&outlen);
 	out[0] = out[1] = '\0';
-#ifndef UNICHAR_16
 	out[2] = out[3] = '\0';
-#endif
 	iconv_close(fromutf8);
 return( ret );
     }

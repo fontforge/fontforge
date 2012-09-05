@@ -62,18 +62,22 @@ extern GBox _ggadget_Default_Box;
 static int fakemons[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 static char *monnames[] = { N_("January"), N_("February"), N_("March"), N_("April"), N_("May"), N_("June"), N_("July"), N_("August"), N_("September"), N_("October"), N_("November"), N_("December") };
 
+enum ofl_license { ofll_ofl, ofll_pd };
+
+struct ofl_download_urls {
+    char *url;
+    char *comment;
+    uint8 selected;
+    struct ofl_download_urls *next;
+};
+
 struct ofl_font_info {
     char *name;
     char *author;
     int date;	/* Not real date. Minutes since 2005, assuming Feb has 29 days*/
     char *taglist;
-    enum ofl_license { ofll_ofl, ofll_pd } license;
-    struct ofl_download_urls {
-	char *url;
-	char *comment;
-	uint8 selected;
-	struct ofl_download_urls *next;
-    } *urls;
+    enum ofl_license license;
+    struct ofl_download_urls *urls;
     /* If they've looked at the preview image in the past, cache that locally */
     char *preview_filename;
     GImage *preview;
@@ -443,10 +447,12 @@ return( anymatches );
     }
 }
 
+enum tok_type { tok_int, tok_str, tok_name, tok_EOF };
+
 struct tokbuf {
     char *buf;
     int buf_max;
-    enum tok_type { tok_int, tok_str, tok_name, tok_EOF } type;
+    enum tok_type type;
     int ival;
 };
 
