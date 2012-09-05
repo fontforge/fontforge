@@ -2085,65 +2085,31 @@ return( dist );
 
 int32 GDrawDrawText(GWindow gw, int32 x, int32 y,
 	const unichar_t *text, int32 cnt, FontMods *mods, Color col) {
-    struct tf_arg arg;
-    memset(&arg,'\0',sizeof(arg));
-return( _GDraw_DoText(gw,x,y,(unichar_t *) text,cnt,mods,col,tf_drawit,&arg));
+return( GDrawDrawBiText(gw, x, y, text, cnt, mods, col) );
 }
 
 int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods) {
-    struct tf_arg arg;
-    memset(&arg,'\0',sizeof(arg));
-return( _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_width,&arg));
+return( GDrawGetBiTextWidth(gw, text, cnt, cnt, mods) );
 }
 
 int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, FontMods *mods,
 	GTextBounds *size) {
-    struct tf_arg arg;
-    int width;
-    memset(&arg,'\0',sizeof(arg));
-    arg.first = true;
-    width = _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_rect,&arg);
-    *size = arg.size;
-return( width );
+return( GDrawGetBiTextBounds(gw, text, cnt, mods, size) );
 }
 
 int32 GDrawGetTextPtFromPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end) {
-    struct tf_arg arg;
-    int width;
-    memset(&arg,'\0',sizeof(arg));
-    arg.maxwidth = maxwidth;
-    width = _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_stopat,&arg);
-    if ( arg.last==NULL )
-	arg.last = text + (cnt==-1?u_strlen(text):cnt);
-    *end = arg.last;
-return( width );
+return( GDrawGetBiTextPtFromPos(gw, text, cnt, mods, maxwidth, end) );
 }
 
 int32 GDrawGetTextPtBeforePos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end) {
-    struct tf_arg arg;
-    int width;
-    memset(&arg,'\0',sizeof(arg));
-    arg.maxwidth = maxwidth;
-    width = _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_stopbefore,&arg);
-    if ( arg.last==NULL )
-	arg.last = text + (cnt==-1?u_strlen(text):cnt);
-    *end = arg.last;
-return( width );
+return( GDrawGetBiTextPtBeforePos(gw, text, cnt, mods, maxwidth, end) );
 }
 
 int32 GDrawGetTextPtAfterPos(GWindow gw,unichar_t *text, int32 cnt, FontMods *mods,
 	int32 maxwidth, unichar_t **end) {
-    struct tf_arg arg;
-    int width;
-    memset(&arg,'\0',sizeof(arg));
-    arg.maxwidth = maxwidth;
-    width = _GDraw_DoText(gw,0,0,(unichar_t *) text,cnt,mods,0,tf_stopafter,&arg);
-    if ( arg.last==NULL )
-	arg.last = text + (cnt==-1?u_strlen(text):cnt);
-    *end = arg.last;
-return( width );
+return( GDrawGetBiTextPtAfterPos(gw, text, cnt, mods, maxwidth, end) );
 }
 
 /* UTF8 routines */
@@ -2256,26 +2222,16 @@ return( dist );
 
 int32 GDrawDrawText8(GWindow gw, int32 x, int32 y,
 	const char *text, int32 cnt, FontMods *mods, Color col) {
-    struct tf_arg arg;
-    memset(&arg,'\0',sizeof(arg));
-return( _GDraw_DoText8(gw,x,y,text,cnt,mods,col,tf_drawit,&arg));
+return( GDrawDrawBiText8(gw, x, y, text, cnt, mods, col) );
 }
 
 int32 GDrawGetText8Width(GWindow gw,const char *text, int32 cnt, FontMods *mods) {
-    struct tf_arg arg;
-    memset(&arg,'\0',sizeof(arg));
-return( _GDraw_DoText8(gw,0,0, text,cnt,mods,0,tf_width,&arg));
+return( GDrawGetBiText8Width(gw, text, cnt, cnt, mods) );
 }
 
 int32 GDrawGetText8Bounds(GWindow gw,char *text, int32 cnt, FontMods *mods,
 	GTextBounds *size) {
-    struct tf_arg arg;
-    int width;
-    memset(&arg,'\0',sizeof(arg));
-    arg.first = true;
-    width = _GDraw_DoText8(gw,0,0,text,cnt,mods,0,tf_rect,&arg);
-    *size = arg.size;
-return( width );
+return( GDrawGetBiText8Bounds(gw, text, cnt, mods, size) );
 }
 
 int32 GDrawGetText8PtFromPos(GWindow gw,char *text, int32 cnt, FontMods *mods,
