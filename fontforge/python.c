@@ -702,12 +702,20 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
     if ( !PyArg_ParseTuple(args,"es|i", "UTF-8", &filename, &openflags ))
 return( NULL );
     locfilename = utf82def_copy(filename);
+    free(filename);
+
+    /* The actual filename opened may be different from the one passed
+     * to LoadSplineFont, so we can't report the filename on an
+     * error.
+     */
     sf = LoadSplineFont(locfilename,openflags);
-    free(filename); free(locfilename);
+
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Open failed");
+	free(locfilename);
 return( NULL );
     }
+    free(locfilename);
 return( PyFV_From_FV_I( SFAdd( sf, openflags&of_hidewindow )));
 }
 
@@ -2534,10 +2542,11 @@ static PyObject *PyFFContour_AddExtrema(PyFF_Contour *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
-    if ( flag!=NULL )
+    if ( flag!=NULL ) {
 	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
-    if ( ae==FLAG_UNKNOWN )
+	if ( ae==FLAG_UNKNOWN )
 return( NULL );
+    }
 
     ss = SSFromContour(self,NULL);
     if ( ss==NULL )
@@ -3488,8 +3497,11 @@ static PyObject *PyFFLayer_AddExtrema(PyFF_Layer *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
-    if ( flag!=NULL )
+    if ( flag!=NULL ) {
 	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
+        if ( ae==FLAG_UNKNOWN )
+return( NULL );
+    }
 
     ss = SSFromLayer(self);
     if ( ss==NULL )
@@ -3709,9 +3721,10 @@ return( NULL );
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
-    file = fopen( locfilename,"w");
+    file = fopen( locfilename,"wb");
     if ( file==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	free(locfilename);
 return( NULL );
     }
 
@@ -3735,7 +3748,7 @@ return( NULL );
 	_ExportPlate(file,&sc,ly_fore);
     /* else if ( strcasecmp(pt,".fig")==0 )*/
     else {
-	PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );
+	PyErr_Format(PyExc_ValueError, "Unknown file name extension \"%s\" to export", pt );
 	free( locfilename );
 	fclose(file);
 	SplinePointListsFree(dummylayers[ly_fore].splines);
@@ -7291,20 +7304,50 @@ return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
 
+    /* Check if the file exists and is readable */
+    if ( access(locfilename,R_OK)!=0 ) {
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	free(locfilename);
+return( NULL );
+    }
+
     pt = strrchr(locfilename,'.');
     if ( pt==NULL ) pt=locfilename;
 
-    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,FlagsFromTuple(flags,import_ps_flags,"PostScript import flag"));
+    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 ) {
+	int psflags = FlagsFromTuple(flags,import_ps_flags,"PostScript import flag");
+	if ( psflags==FLAG_UNKNOWN ) {
+	    free(locfilename);
+return( NULL );
+	}
+	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,psflags);
+    }
+    else if ( strcasecmp(pt,".svg")==0 ) {
 #ifndef _NO_LIBXML
-    else if ( strcasecmp(pt,".svg")==0 )
 	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
-    else if ( strcasecmp(pt,".glif")==0 )
-	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
+#else
+	PyErr_Format(PyExc_NotImplementedError,"Cannot read file because XML support is not enabled");
+	free(locfilename);
+return( NULL );
 #endif
+    }
+    else if ( strcasecmp(pt,".glif")==0 ) {
+#ifndef _NO_LIBXML
+	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false);
+#else
+	PyErr_Format(PyExc_NotImplementedError,"Cannot read file because XML support is not enabled");
+	free(locfilename);
+return( NULL );
+#endif
+    }
     else if ( strcasecmp(pt,".plate")==0 ) {
 	FILE *plate = fopen(locfilename,"r");
-	if ( plate!=NULL ) {
+	if ( plate==NULL ) {
+	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	    free(locfilename);
+return( NULL );
+	}
+	else {
 	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false,0);
 	    fclose(plate);
 	}
@@ -7313,7 +7356,8 @@ return( NULL );
 	GImage *image = GImageRead(locfilename);
 	int ly = ((PyFF_Glyph *) self)->layer;
 	if ( image==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file %s", locfilename );
+	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file \"%s\"", locfilename );
+	    free(locfilename);
 return(NULL);
 	}
 	if ( !sc->layers[ly].background )
@@ -7351,28 +7395,41 @@ return( NULL );
 	format=2;
 
     if ( format!=-1 ) {
-	if ( !PyArg_ParseTuple(args,"O|ii",&foo,&pixels,&bits) )
+	if ( !PyArg_ParseTuple(args,"O|ii",&foo,&pixels,&bits) ) {
+	    free(locfilename);
 return( NULL );
+	}
 	if ( !ExportImage(locfilename,sc,layer,format,pixels,bits)) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file %s", locfilename );
+	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file \"%s\"", locfilename );
+	    free(locfilename);
 return( NULL );
 	}
     } else {
-	file = fopen( locfilename,"w");
+	file = fopen( locfilename,"wb");
 	if ( file==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	    free(locfilename);
 return( NULL );
 	}
+
 	if ( !PyArg_ParseTuple(args,"O|i",&foo,&layer) ) {
 	    PyErr_Clear();
-	    if ( !PyArg_ParseTuple(args,"O|s",&foo,&layer_str) )
+	    if ( !PyArg_ParseTuple(args,"O|s",&foo,&layer_str) ) {
+		free(locfilename);
+		fclose(file);
 return( NULL );
+	    }
 	    layer = SFFindLayerIndexByName(sc->parent,layer_str);
-	    if ( layer<0 )
+	    if ( layer<0 ) {
+		free(locfilename);
+		fclose(file);
 return( NULL );
+	    }
 	}
 	if ( layer<0 || layer>=sc->layer_cnt ) {
 	    PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+	    free(locfilename);
+	    fclose(file);
 return( NULL );
 	}
 
@@ -8063,9 +8120,11 @@ static PyObject *PyFFGlyph_AddExtrema(PyFF_Glyph *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
 return( NULL );
-    if ( flag!=NULL )
+    if ( flag!=NULL ) {
 	ae = FlagsFromString(flag,addextremaflags,"extrema flag");
-
+	if ( ae == FLAG_UNKNOWN )
+return( NULL );
+    }
     SplineCharAddExtrema(sc,sc->layers[self->layer].splines,ae,sf->ascent+sf->descent);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
@@ -12769,19 +12828,24 @@ return( NULL );
 
     if ( !PyType_IsSubtype(&PyFF_FontType,((PyObject *)other)->ob_type) ) {
 	PyErr_Format(PyExc_TypeError,"First argument must be a fontforge font");
+	free(locfilename);
 return( NULL );
     }
     flags = FlagsFromTuple(flagstuple,compflags,"comparison flag");
-    if ( flags==FLAG_UNKNOWN )
+    if ( flags==FLAG_UNKNOWN ) {
+	free(locfilename);
 return( NULL );
+    }
 
-    if ( strcmp(filename,"-")==0 )
+    if ( strcmp(locfilename,"-")==0 )
 	diffs = stdout;
-    else
-	diffs = fopen(filename,"w");
-    if ( diffs==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError,"Failed to open output file: \"%s\"", locfilename);
+    else {
+	diffs = fopen(locfilename,"w");
+	if ( diffs==NULL ) {
+	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	    free(locfilename);
 return( NULL );
+	}
     }
 
     free( locfilename );
@@ -13977,7 +14041,8 @@ Py_RETURN( self );
 static PyObject *PyFFFont_getLookupInfo(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
     OTLookup *otl;
-    char *lookup, *type;
+    char *lookup;
+    const char *type;
     int i, cnt;
     PyObject *flags_tuple;
     FeatureScriptLangList *fl;
@@ -14313,7 +14378,7 @@ return( NULL );
 
     file = fopen(filename,"w");
     if ( file==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "Could not open %s for writing.", filename );
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,filename);
 return(NULL);
     }
     FVB_MakeNamelist(fv, file);
@@ -14381,8 +14446,11 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Unexpected a contour or layer");
 return( NULL );
     }
-    if (pyflags) 
+    if (pyflags) {
 	flags = FlagsFromTuple(pyflags, find_flags, "search flag");
+	if ( flags==FLAG_UNKNOWN )
+return( NULL );
+    }
     else
 	flags = sv_reverse|sv_flips;
 
@@ -14746,7 +14814,8 @@ return( NULL );
     }
     out = fopen(locfilename,"w");
     if ( out==NULL ) {
-	PyErr_Format(PyExc_EnvironmentError, "Failed to open file, %s, for writing", locfilename );
+	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+	free(locfilename);
 return( NULL );
     }
     if ( otl!=NULL )
@@ -14756,6 +14825,7 @@ return( NULL );
     err = ferror(out);
     if ( fclose(out)!=0 || err ) {
 	PyErr_Format(PyExc_EnvironmentError, "IO error on file %s", locfilename);
+	free(locfilename);
 return( NULL );
     }
     free(locfilename);
@@ -17215,7 +17285,7 @@ void PyFF_Main(int argc,char **argv,int start) {
 #endif /* PY_MAJOR_VERSION >= 3 -------------------------------------------------*/
 
 void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
-    FILE *fp = fopen(filename,"r");
+    FILE *fp = fopen(filename,"rb");
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
@@ -17277,7 +17347,7 @@ return;
 	if ( strcmp(pt,".py")==0 ) {
 	    FILE *fp;
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );
-	    fp = fopen(buffer,"r");
+	    fp = fopen(buffer,"rb");
 	    if ( fp==NULL )
     continue;
 	    PyRun_SimpleFile(fp,buffer);
