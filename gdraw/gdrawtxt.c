@@ -1962,7 +1962,6 @@ return( _GXCDraw_DoText(gw,x,y,text,cnt,mods,col,drawit,arg));
 #endif
 
     while ( text<end ) {
-#ifndef UNICHAR_16
 	if ( *text>=0x1f0000 ) {
 	    /* Not a valid Unicode character */
 	    ++text;
@@ -2002,7 +2001,6 @@ return( dist );
 return( dist );
     continue;
 	}
-#endif
 	if ( mods->has_charset ) {
 	    enc = mods->charset;
 	    next = end;
@@ -2120,12 +2118,6 @@ static int32 _GDraw_DoText8(GWindow gw, int32 x, int32 y,
     const char *end = text+(cnt<0?strlen(text):cnt);
     int32 dist = 0;
     const char *start;
-#ifdef UNICHAR_16
-    const char *last;
-    struct font_data *fd;
-    GDisplay *disp = gw->display;
-    int enc;
-#endif
     int i;
     struct font_instance *fi = gw->ggc->fi;
     unichar_t ubuffer[200], *upt;
@@ -2141,58 +2133,6 @@ return( 0 );
 return( _GXCDraw_DoText8(gw,x,y,text,cnt,mods,col,drawit,arg));
 #endif
 
-#ifdef UNICHAR_16
-    forever {
-	if ( text>=end )
-    break;
-	start = text;
-	last = text;
-	val = utf8_ildb(&text);
-	if ( val<=0xffff ) {
-	    upt = ubuffer;
-	    while ( val<=0xffff && text<=end &&
-		    upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
-		*upt++ = val;
-		last = text;
-		val = utf8_ildb(&text);
-	    }
-	    text = last;
-	    dist += _GDraw_DoText(gw,x+dist,y,ubuffer,upt-ubuffer,mods,col,drawit,arg);
-	} else if ( val!=(uint32) -1 ) {
-	    int plane = (val>>16);
-	    upt = ubuffer;
-	    while ( (val>>16)==plane && text<=end &&
-		    upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
-		*upt++ = val&0xffff;
-		last = text;
-		val = utf8_ildb(&text);
-	    }
-	    text = last;
-	    /* the "encoding" we want to use is "unicodeplane-plane" which is */
-	    /* em_uplane+plane */
-	    enc = em_uplane0 + plane;
-	    fd = fi->fonts[enc];
-
-	    if ( fd!=NULL && fd->info==NULL )
-		_loadFontMetrics(disp,fd,fi);
-	    if ( fd!=NULL )
-		dist += _GDraw_Transform(gw,fd,NULL,enc,x+dist,y,ubuffer,upt,mods,col,drawit,arg);
-	    if ( drawit==tf_rect ) {
-		arg->size.rbearing += dist;
-		arg->size.width = dist;
-	    }
-	}
-	if ( drawit>=tf_stopat && arg->width>=arg->maxwidth ) {
-	    if ( arg->last!=upt ) {
-		text = start;
-		for ( i = arg->last-ubuffer; i>0 ; --i )
-		    utf8_ildb(&text);
-	    }
-	    arg->utf8_last = (char *) text;
-return( dist );
-	}
-    }
-#else
     forever {
 	if ( text>=end )
     break;
@@ -2216,7 +2156,6 @@ return( dist );
 return( dist );
 	}
     }
-#endif
 return( dist );
 }
 

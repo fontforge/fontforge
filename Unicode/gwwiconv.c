@@ -143,15 +143,9 @@ gww_iconv_t gww_iconv_open(const char *toenc,const char *fromenc) {
     if ( stuff.from==(enum encoding) -1 || stuff.to==(enum encoding) -1 ) {
 	/*fprintf( stderr, "Unknown encoding\n" );*/
 return( (iconv_t)(-1) );
-#ifdef UNICHAR_16
-    } else if ( stuff.from!=e_unicode && stuff.to!=e_unicode ) {
-	fprintf( stderr, "Bad call to gww_iconv_open, neither arg is UCS2\n" );
-return( (iconv_t)(-1) );
-#else
     } else if ( stuff.from!=e_ucs4 && stuff.to!=e_ucs4 ) {
 	fprintf( stderr, "Bad call to gww_iconv_open, neither arg is UCS4\n" );
 return( (iconv_t)(-1) );
-#endif
     }
 
     ret = galloc(sizeof(struct gww_iconv_t));

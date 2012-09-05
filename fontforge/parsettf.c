@@ -475,9 +475,7 @@ return( NULL );
 	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
-#ifndef UNICHAR_16
 	    out[2] = '\0'; out[3] = '\0';
-#endif
 	    free(cstr);
 	} else {
 	    str = uc_copy("");

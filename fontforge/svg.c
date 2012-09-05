@@ -3097,11 +3097,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
     orientation = _xmlGetProp(glyph,(xmlChar *) "orientation");
     if ( unicode!=NULL ) {
 
-#ifdef UNICHAR_16
-	u = utf82u32_copy((char *) unicode);
-#else
 	u = utf82u_copy((char *) unicode);
-#endif
 	_xmlFree(unicode);
 	if ( u[1]=='\0' ) {
 	    sc->unicodeenc = u[0];
@@ -3171,11 +3167,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 
     unicode = _xmlGetProp(glyph,(xmlChar *) "unicode");
     if ( unicode!=NULL ) {
-#ifdef UNICHAR_16
-	u = utf82u32_copy((char *) unicode);
-#else
 	u = utf82u_copy((char *) unicode);
-#endif
 	_xmlFree(unicode);
 	if ( u[1]!='\0' && u[2]=='\0' &&
 		((u[1]>=0x180B && u[1]<=0x180D) ||	/* Mongolian VS */
@@ -3257,11 +3249,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
     *sc = NULL;
     len = 0;
     if ( utf8!=NULL ) {
-#ifdef UNICHAR_16
-	u = utf82u32_copy((char *) utf8);
-#else
 	u = utf82u_copy((char *) utf8);
-#endif
 	for ( i=0; u[i]!=0; ++i ) {
 	    temp = SFGetChar(sf,u[i],NULL);
 	    if ( temp!=NULL ) {
