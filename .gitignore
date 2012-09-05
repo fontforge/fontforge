@@ -5,8 +5,9 @@ fontforge/fontforge
 fontforge/fontimage
 fontforge/fontlint
 fontforge/libstamp.c
-fontforge.pc
 fontforge/sfddiff
+fontforge/stamper
+fontforge.pc
 inc/config.h
 libtool
 Makefile
