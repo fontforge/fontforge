@@ -204,7 +204,7 @@ MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 
 if MACINTOSH
 
-# FIXME: All of this needs testing on Mac OS X.x
+# FIXME: All of this needs testing on Mac OS X.
 
 install-exec-local: FontForge.app/Contents/Info.plist
 	$(SHELL) -x darwinsetup
