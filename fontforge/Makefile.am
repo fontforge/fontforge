@@ -195,6 +195,36 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 #--------------------------------------------------------------------------
 
 EXTRA_DIST = fontimage.pe fontlint.pe sfddiff.pe libstamp.pre	\
-	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1
+	exelibstamp.pre fontimage.1 fontlint.1 sfddiff.1			\
+	MacFontForgeApp.zip darwinsetup.in
 MOSTLYCLEANFILES = fontimage fontlint sfddiff libstamp.c	\
 	exelibstamp.c
+
+#--------------------------------------------------------------------------
+
+if MACINTOSH
+
+# FIXME: All of this needs testing on Mac OS X.x
+
+install-exec-local: FontForge.app/Contents/Info.plist
+	$(SHELL) -x darwinsetup
+
+FontForge.app/Contents/Info.plist: $(srcdir)/MacFontForgeApp.zip $(srcdir)/stamp.c clean-darwin-stuff
+	$(UNZIP) $(srcdir)/MacFontForgeApp.zip
+	mkdir -p darwinsetup_tmpdir
+	cp FontForge.app/Contents/Info.plist darwinsetup_tmpdir
+	( VERSION=`$(GREP) source_version_str $(srcdir)/stamp.c | $(SED) 's/const char \*source_version_str = "//' | $(SED) 's/";//'` ; $(SED) s/20080810/$$VERSION/ < darwinsetup_tmpdir/Info.plist > FontForge.app/Contents/Info.plist )
+
+mostlyclean-local: clean-darwin-stuff
+
+clean-darwin-stuff:
+	@if test -d darwinsetup_tmpdir; then rm -r -f darwinsetup_tmpdir;	\
+		echo rm -r -f darwinsetup_tmpdir; else :; fi
+	@if test -d FontForge.app; then rm -r -f FontForge.app;	\
+		echo rm -r -f FontForge.app; else :; fi
+	@if test -d __MACOSX; then rm -r -f __MACOSX;	\
+		echo rm -r -f __MACOSX; else :; fi
+
+endif MACINTOSH
+
+#--------------------------------------------------------------------------
