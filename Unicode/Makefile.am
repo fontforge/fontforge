@@ -1,7 +1,3 @@
-GUNI_VERSION = 4
-GUNI_REVISION = 0
-GUNI_AGE = 0
-
 lib_LTLIBRARIES = libgunicode.la
 
 libgunicode_la_SOURCES = ArabicForms.c alphabet.c backtrns.c char.c		\
@@ -11,5 +7,6 @@ libgunicode_la_SOURCES = ArabicForms.c alphabet.c backtrns.c char.c		\
 libgunicode_la_CPPFLAGS = "-I$(top_builddir)/inc"	\
 	"-I$(top_srcdir)/inc" $(MY_CFLAGS)
 
-libgunicode_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
-	"$(GUNI_VERSION):$(GUNI_REVISION):$(GUNI_AGE)"
+# Using -release instead of -version-info seems appropriate in the
+# absence of a well defined ABI.
+libgunicode_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)

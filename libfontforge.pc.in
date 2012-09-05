@@ -9,6 +9,9 @@ localedir=@localedir@
 
 Name: libfontforge
 Description: a font manipulation library.
-Version: @VERSION@
-Libs: -L${libdir} -lfontforge
+Version: @LIBFONTFORGE_PKGCONFIG_VERSION@
+Requires: @LIBFONTFORGE_PKGCONFIG_REQUIRES@
+Requires.private: @LIBFONTFORGE_PKGCONFIG_REQUIRES_PRIVATE@
+Libs: @LIBFONTFORGE_PKGCONFIG_LIBS@
+Libs.private: @LIBFONTFORGE_PKGCONFIG_LIBS_PRIVATE@
 Cflags: -I${includedir}/fontforge

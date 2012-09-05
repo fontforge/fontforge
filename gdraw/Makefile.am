@@ -1,7 +1,3 @@
-GD_VERSION = 5
-GD_REVISION = 0
-GD_AGE = 0
-
 lib_LTLIBRARIES = libgdraw.la
 
 libgdraw_la_SOURCES = choosericons.c ctlvalues.c drawboxborder.c		\
@@ -23,5 +19,7 @@ libgdraw_la_CPPFLAGS = "-I$(top_builddir)/inc" "-I$(top_srcdir)/inc"	\
 libgdraw_la_LIBADD = $(top_builddir)/Unicode/libgunicode.la	\
 	$(top_builddir)/gutils/libgutils.la
 
-libgdraw_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
-	"$(GD_VERSION):$(GD_REVISION):$(GD_AGE)"
+# Using -release instead of -version-info seems appropriate in the
+# absence of a well defined ABI.
+libgdraw_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
+

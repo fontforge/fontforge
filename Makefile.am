@@ -16,14 +16,13 @@ EXTRA_LTLIBRARIES =
 include libltdl/Makefile.inc
 
 SUBDIRS = inc
-SUBDIRS += pluginloading
-SUBDIRS += plugins
 SUBDIRS += Unicode gutils
 
 if GRAPHICAL_USER_INTERFACE
 SUBDIRS += gdraw
 endif GRAPHICAL_USER_INTERFACE
 
+SUBDIRS += plugins
 SUBDIRS += fontforge po htdocs pycontrib
 SUBDIRS += $(subdirs)
 SUBDIRS += tests

@@ -1,11 +1,5 @@
 #--------------------------------------------------------------------------
 
-FF_VERSION = 2
-FF_REVISION = 0
-FF_AGE = 0
-
-#--------------------------------------------------------------------------
-
 if THE_PROGRAMS
 
 bin_PROGRAMS = fontforge
@@ -39,8 +33,8 @@ sfddiff: sfddiff.pe
 	chmod +x sfddiff
 
 .pre.c:
-	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/'  \
-	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' \
+	$(SED) -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(VERSION_MAJOR)/'	\
+	       -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(VERSION_MINOR)/'	\
 	    < $< > $@
 
 #--------------------------------------------------------------------------
@@ -87,7 +81,7 @@ libfontforge_la_SOURCES = asmfpst.c autohint.c autosave.c autotrace.c	\
 	tottfaat.c tottfgpos.c tottf.c tottfvar.c ttfinstrs.c				\
 	ttfspecial.c ufo.c unicoderange.c utils.c winfonts.c zapfnomen.c	\
 	groups.c langfreq.c ftdelta.c autowidth2.c woff.c stamp.c			\
-	activeinui.c is_LIGATURE.c
+	activeinui.c pluginloading.c is_LIGATURE.c
 nodist_libfontforge_la_SOURCES = libstamp.c
 EXTRA_libfontforge_la_SOURCES = splinerefigure.c
 
@@ -96,10 +90,9 @@ libfontforge_la_CPPFLAGS = "-I$(top_builddir)/inc"					\
 	"-DDOCDIR=\"${docdir}\"" "-DPLUGINDIR=\"${pkglibdir}/plugins\""	\
 	$(MY_CFLAGS)
 
-libfontforge_la_LIBADD = splinerefigure.lo						\
-	$(top_builddir)/pluginloading/libfontforgepluginloading.la	\
-	$(top_builddir)/Unicode/libgunicode.la						\
-	$(top_builddir)/gutils/libgutils.la							\
+libfontforge_la_LIBADD = splinerefigure.lo		\
+	$(top_builddir)/Unicode/libgunicode.la		\
+	$(top_builddir)/gutils/libgutils.la			\
 	$(top_builddir)/gutils/libgioftp.la
 
 if GRAPHICAL_USER_INTERFACE
@@ -111,8 +104,9 @@ if PLUGIN_GB12345
 libfontforge_la_LIBADD += -dlopen $(top_builddir)/plugins/gb12345.la
 endif PLUGIN_GB12345
 
-libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
-	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"
+# Using -release instead of -version-info seems appropriate in the
+# absence of a well defined ABI.
+libfontforge_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
 
 EXTRA_SCRIPTS = generate_codepoint_selector.py
 
@@ -156,8 +150,10 @@ nodist_libfontforgeexe_la_SOURCES = exelibstamp.c
 
 libfontforgeexe_la_CPPFLAGS = $(libfontforge_la_CPPFLAGS)
 libfontforgeexe_la_LIBADD = libfontforge.la $(LTDLDEPS)
-libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -version-info	\
-	"$(FF_VERSION):$(FF_REVISION):$(FF_AGE)"
+
+# Using -release instead of -version-info seems appropriate in the
+# absence of a well defined ABI.
+libfontforgeexe_la_LDFLAGS = $(MY_CFLAGS) $(MY_LIBS) -release $(VERSION)
 
 #--------------------------------------------------------------------------
 

@@ -33,6 +33,11 @@ AC_SUBST([MACAPP])
 
 FONTFORGE_PLATFORM_SPECIFICS
 
+VERSION_MAJOR=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^\([[0-9]][[0-9]]*\).*/\1/'`
+VERSION_MINOR=`AS_ECHO(["${PACKAGE_VERSION}"]) | sed -e 's/^[[0-9]][[0-9]]*\.\([[0-9]][[0-9]]*\).*/\1/'`
+AC_SUBST([VERSION_MAJOR])
+AC_SUBST([VERSION_MINOR])
+
 #--------------------------------------------------------------------------
 #
 # URLs for dependencies.
@@ -61,10 +66,10 @@ libtiff_url="http://en.wikipedia.org/wiki/Libtiff"
 
 AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_CC_C99
 AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
-AC_PROG_OBJC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -249,7 +254,8 @@ AC_CHECK_FUNC([tzset],[:],[AC_DEFINE([_NO_TZSET],1,[Define if not using tzset.])
 
 #--------------------------------------------------------------------------
 
-AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_x}" = xyes])
+i_do_have_gui="${i_do_have_x}"
+AM_CONDITIONAL([GRAPHICAL_USER_INTERFACE],[test x"${i_do_have_gui}" = xyes])
 AM_CONDITIONAL([MACINTOSH],[test x"${gww_ismac}" = xyes])
 
 FONTFORGE_SET_MY_CFLAGS

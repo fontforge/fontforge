@@ -9,6 +9,9 @@ localedir=@localedir@
 
 Name: libfontforgeexe
 Description: for embedding the FontForge UI in a program.
-Version: @VERSION@
-Libs: -L${libdir} -lfontforgeexe
+Version: @LIBFONTFORGEEXE_PKGCONFIG_VERSION@
+Requires: @LIBFONTFORGEEXE_PKGCONFIG_REQUIRES@
+Requires.private: @LIBFONTFORGEEXE_PKGCONFIG_REQUIRES_PRIVATE@
+Libs: @LIBFONTFORGEEXE_PKGCONFIG_LIBS@
+Libs.private: @LIBFONTFORGEEXE_PKGCONFIG_LIBS_PRIVATE@
 Cflags: -I${includedir}/fontforge

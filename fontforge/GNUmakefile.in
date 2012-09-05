@@ -12,8 +12,8 @@ ifeq (@THE_PROGRAMS@,yes)
 # Run "make stamps-for-release" with GNU Make before doing a release. #
 #######################################################################
 stamps-for-release: stamper $(LIBFFSTAMP_H_DEPENDS) $(STAMP_C_DEPENDS)
-	./stamper$(EXEEXT) > $(srcdir)/stamp.c
-	./stamper$(EXEEXT) -l > $(srcdir)/libffstamp.h
+	$(builddir)/stamper$(EXEEXT) > $(srcdir)/stamp.c
+	$(builddir)/stamper$(EXEEXT) -l > $(srcdir)/libffstamp.h
 
 noinst_PROGRAMS = stamper
 stamper_SOURCES = stamper.c
