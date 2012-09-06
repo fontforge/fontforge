@@ -37,16 +37,16 @@ AC_CONFIG_TESTDIR([tests],[fontforge])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([inc/config.h])
-AM_INIT_AUTOMAKE([1.12.2 subdir-objects foreign -Wall])
+AM_INIT_AUTOMAKE([subdir-objects foreign -Wall])
 AM_MAINTAINER_MODE([enable])
 AC_USE_SYSTEM_EXTENSIONS
 
 # I am going to try enabling silent-rules by default, so builders are
 # more likely to see warnings. Use --disable-silent-rules or "make
 # V=1" if you need to see the rules.
-AM_SILENT_RULES([yes])
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
-AM_PROG_AR
+m4_ifdef([AM_PROG_AR],[AM_PROG_AR])
 LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT([dlopen])
 LTDL_INIT([nonrecursive])
