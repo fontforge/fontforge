@@ -70,7 +70,8 @@ PKG_CHECK_MODULES([LIBFONTFORGE],[libfontforge])
 
 # Checks for typedefs, structures, and compiler characteristics.
 for i in -Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type \
-    -Wparentheses -Wformat -Wchar-subscripts -Wno-unused-but-set-variable; do
+    -Wparentheses -Wformat -Wchar-subscripts \
+    -Wno-unused-but-set-variable -Wno-unused-result; do
     AX_CHECK_COMPILE_FLAG([${i}],[CFLAGS="${i} ${CFLAGS}"])
 done
 

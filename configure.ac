@@ -255,7 +255,7 @@ AX_PTHREAD
 FONTFORGE_COMPILER_FLAGS([WARNING_CFLAGS],
         [-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type
          -Wparentheses -Wformat -Wchar-subscripts
-         -Wno-unused-but-set-variable])
+         -Wno-unused-but-set-variable -Wno-unused-result])
 
 #--------------------------------------------------------------------------
 # Checks for library functions.
