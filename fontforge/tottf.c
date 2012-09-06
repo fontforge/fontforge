@@ -4742,7 +4742,7 @@ static FILE *NeedsVariationSequenceTable(SplineFont *sf,int *vslen,EncMap *map) 
     struct altuni *altuni, *au;
     uint32 vsbuf[512], *vses = vsbuf;
     FILE *format14;
-    uint32 *avail = galloc(65536*sizeof(uint32));
+    uint32 *avail = NULL;
     enum vs_type {vs_default=(1<<24), vs_nondefault=(2<<24) };
     SplineChar *sc;
     uint32 here;
